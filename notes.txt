@@ -1,0 +1,22 @@
+********************
+** Non C++ 11 interface ***
+
+model file should use stack defined objects
+
+AgentFunctionDescription output_data("output_data");
+output_data->addOutput(AgentFunctionOutput("location"));
+some_agent.addAgentFunction(output_data);
+
+functions accepting model descriptors should accept a const ref to object and then copy it using copy constructor
+
+void addAgentFunction(const &AgentFunctionDescription func){
+	functions.insert(new AgentFunctionDescription(func));
+}
+
+where functions is a vector of smart pointers
+
+References to model description objects should never be returned other than as smart pointers however there should always be a non c++ 11 modifier based on string searching and primitive types.
+
+*************
+** C++ 11 interface
+all model objects are created as smart pointers and passed directly to the descriptors. No copying is necessary

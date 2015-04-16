@@ -1,0 +1,126 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="api">
+      <UniqueIdentifier>{07cbe6c9-e799-40c2-8027-77ca0a10275e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="gpu">
+      <UniqueIdentifier>{964d2f15-c3e8-440e-8ff2-962463dca9fa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="model">
+      <UniqueIdentifier>{0503a3bf-942f-4dae-99ed-6ddf4db16d5f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="pop">
+      <UniqueIdentifier>{02a897a4-968c-47c6-8865-aba01c0504c8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sim">
+      <UniqueIdentifier>{2d5bb87a-93dd-496b-ad5f-2dbdc524bb40}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="api\flame_api.h">
+      <Filter>api</Filter>
+    </ClInclude>
+    <ClInclude Include="gpu\CUDAAgentFunction.h">
+      <Filter>gpu</Filter>
+    </ClInclude>
+    <ClInclude Include="gpu\CUDAAgentModel.h">
+      <Filter>gpu</Filter>
+    </ClInclude>
+    <ClInclude Include="gpu\CUDAAgentState.h">
+      <Filter>gpu</Filter>
+    </ClInclude>
+    <ClInclude Include="model\AgentDescription.h">
+      <Filter>model</Filter>
+    </ClInclude>
+    <ClInclude Include="model\AgentFunctionDescription.h">
+      <Filter>model</Filter>
+    </ClInclude>
+    <ClInclude Include="model\AgentFunctionInput.h">
+      <Filter>model</Filter>
+    </ClInclude>
+    <ClInclude Include="model\AgentFunctionOutput.h">
+      <Filter>model</Filter>
+    </ClInclude>
+    <ClInclude Include="model\AgentStateDescription.h">
+      <Filter>model</Filter>
+    </ClInclude>
+    <ClInclude Include="model\MessageDescription.h">
+      <Filter>model</Filter>
+    </ClInclude>
+    <ClInclude Include="model\ModelDescription.h">
+      <Filter>model</Filter>
+    </ClInclude>
+    <ClInclude Include="pop\AgentInstance.h">
+      <Filter>pop</Filter>
+    </ClInclude>
+    <ClInclude Include="pop\AgentPopulation.h">
+      <Filter>pop</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation.h">
+      <Filter>sim</Filter>
+    </ClInclude>
+    <ClInclude Include="SimulationLayer.h">
+      <Filter>sim</Filter>
+    </ClInclude>
+    <ClInclude Include="gpu\CUDAAgentList.h">
+      <Filter>gpu</Filter>
+    </ClInclude>
+    <ClInclude Include="pop\AgentStateMemory.h">
+      <Filter>pop</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="gpu\CUDAAgentFunction.cpp">
+      <Filter>gpu</Filter>
+    </ClCompile>
+    <ClCompile Include="gpu\CUDAAgentModel.cpp">
+      <Filter>gpu</Filter>
+    </ClCompile>
+    <ClCompile Include="gpu\CUDAAgentState.cpp">
+      <Filter>gpu</Filter>
+    </ClCompile>
+    <ClCompile Include="model\AgentDescription.cpp">
+      <Filter>model</Filter>
+    </ClCompile>
+    <ClCompile Include="model\AgentFunctionDescription.cpp">
+      <Filter>model</Filter>
+    </ClCompile>
+    <ClCompile Include="model\AgentFunctionInput.cpp">
+      <Filter>model</Filter>
+    </ClCompile>
+    <ClCompile Include="model\AgentFunctionOutput.cpp">
+      <Filter>model</Filter>
+    </ClCompile>
+    <ClCompile Include="model\AgentStateDescription.cpp">
+      <Filter>model</Filter>
+    </ClCompile>
+    <ClCompile Include="model\MessageDescription.cpp">
+      <Filter>model</Filter>
+    </ClCompile>
+    <ClCompile Include="model\ModelDescription.cpp">
+      <Filter>model</Filter>
+    </ClCompile>
+    <ClCompile Include="pop\AgentInstance.cpp">
+      <Filter>pop</Filter>
+    </ClCompile>
+    <ClCompile Include="pop\AgentPopulation.cpp">
+      <Filter>pop</Filter>
+    </ClCompile>
+    <ClCompile Include="Simulation.cpp">
+      <Filter>sim</Filter>
+    </ClCompile>
+    <ClCompile Include="SimulationLayer.cpp">
+      <Filter>sim</Filter>
+    </ClCompile>
+    <ClCompile Include="gpu\CUDAAgentList.cpp">
+      <Filter>gpu</Filter>
+    </ClCompile>
+    <ClCompile Include="pop\AgentStateMemory.cpp">
+      <Filter>pop</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="main.cpp" />
+  </ItemGroup>
+</Project>
