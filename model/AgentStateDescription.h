@@ -12,16 +12,14 @@
 
 class AgentStateDescription {
 public:
-	AgentStateDescription(std::string name) { this->name = name; }
-	virtual ~AgentStateDescription() {}
+	AgentStateDescription(const std::string name);
+	virtual ~AgentStateDescription();
 
-	std::string getName();
-
-	void setName(std::string name);
+	const std::string getName() const;
 
 private:
 
-	std::string name;
+	const std::string name;
 };
 
 #endif /* AGENTSTATEDESCRIPTION_H_ */

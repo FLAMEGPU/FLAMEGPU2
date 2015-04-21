@@ -15,30 +15,27 @@
 #include "AgentFunctionInput.h"
 #include "AgentFunctionOutput.h"
 
-typedef boost::ptr_map<std::string, AgentFunctionInput> InputsMap;
-typedef boost::ptr_map<std::string, AgentFunctionOutput> OutputsMap;
+typedef std::map<std::string, const AgentFunctionInput&> InputsMap;
+typedef std::map<std::string, const AgentFunctionOutput&> OutputsMap;
 
 class AgentFunctionDescription {
 public:
 
-	AgentFunctionDescription() {}
+	AgentFunctionDescription(); //todo remove this
 
-	AgentFunctionDescription(std::string function_name) : function_name(function_name), initial_state("default"), end_state("default") {  }
+	AgentFunctionDescription(const std::string function_name);
 
+	virtual ~AgentFunctionDescription();
 
-	virtual ~AgentFunctionDescription() {}
+	const std::string getEndState() const;
 
-	std::string getEndState();
+	void setEndState(const std::string end_state);
 
-	void setEndState(std::string end_state);
+	const std::string getIntialState() const;
 
-	std::string getIntialState();
+	void setIntialState(const std::string intial_state);
 
-	void setIntialState(std::string intial_state);
-
-	std::string getName() const;
-
-	void setName(std::string name);
+	const std::string getName() const;
 
 	void addInput(const AgentFunctionInput &input);
 
@@ -48,7 +45,7 @@ public:
 
 public:
 
-	std::string function_name;
+	const std::string function_name;
 	std::string initial_state;
 	std::string end_state;
 	InputsMap inputs;

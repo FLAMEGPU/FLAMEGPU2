@@ -17,24 +17,22 @@
 #include "AgentDescription.h"
 #include "MessageDescription.h"
 
-typedef boost::ptr_map<std::string, AgentDescription> AgentMap;
-typedef boost::ptr_map<std::string, MessageDescription> MessageMap;
+typedef std::map<const std::string, const AgentDescription&> AgentMap;
+typedef std::map<const std::string, const MessageDescription&> MessageMap;
 
 class ModelDescription {
 public:
-	ModelDescription(std::string name) : agents(), messages() { this->name = name;}
+	ModelDescription(const std::string model_name);
 
-	virtual ~ModelDescription() {}
+	virtual ~ModelDescription();
 
-	std::string getName() const;
-
-	void setName(std::string name);
+	const std::string getName() const;
 
 	void addAgent(const AgentDescription &agent);
 
 	void addMessage(const MessageDescription &message);
 
-	AgentDescription& getAgentDescription(std::string agent_name);
+	const AgentDescription& getAgentDescription(const std::string agent_name) const;
 
 private:
 	std::string name;

@@ -71,8 +71,6 @@ void CUDAAgentList::allocateDeviceAgentList(AgentList** agent_list){
 
 void CUDAAgentList::setAgentData(const AgentStateMemory &state_memory){
 
-	
-
 	//iterate the 
 
 	

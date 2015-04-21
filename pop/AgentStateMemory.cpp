@@ -5,23 +5,21 @@
  *      Author: paul
  */
 
-#include <boost/container/map.hpp>
+#include "AgentStateMemory.h"
 
-#include "AgentMemory.h"
-
-AgentStateMemory::AgentStateMemory(AgentDescription& description, std::string state): agent_description(description), state_memory(), agent_name(description.getName()), agent_state(state), size(0) {
+AgentStateMemory::AgentStateMemory(const AgentDescription& description, const std::string state): agent_description(description), state_memory(), agent_state(state), size(0) {
 	MemoryMap::const_iterator iter;
-	MemoryMap &m = description.getMemoryMap();
+	const MemoryMap &m = description.getMemoryMap();
 
 	for (iter = m.begin(); iter != m.end(); iter++){
-		std::string variable_name = iter->first;
+		const std::string variable_name = iter->first;
 		const std::type_info& type = iter->second;
 
-		state_memory.insert(variable_name, new std::vector<boost::any>());
+		state_memory.insert(StateMemoryMap::value_type(variable_name, std::unique_ptr<std::vector<boost::any>> (new std::vector<boost::any>())));
 	}
 }
 
-unsigned int AgentStateMemory::getSize() {
+unsigned int AgentStateMemory::getSize() const{
 	return size;
 }
 
@@ -50,5 +48,5 @@ const std::vector<boost::any>& AgentStateMemory::getReadOnlyMemoryVector(const s
 }
 
 const std::type_info& AgentStateMemory::getVariableType(std::string variable_name) {
-	return agent_description.getVariableType(variable_name);
+		return agent_description.getVariableType(variable_name);
 }

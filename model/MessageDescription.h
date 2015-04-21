@@ -13,23 +13,22 @@
 #include <boost/container/map.hpp>
 #include <typeinfo>
 
-typedef std::map<std::string, const std::type_info&> VariableMap;
+typedef std::map<const std::string, const std::type_info&> VariableMap;
 
 class MessageDescription {
 public:
-	MessageDescription(std::string name) : variables() { this->name = name; }
-	virtual ~MessageDescription() {}
+	MessageDescription(const std::string message_name);
 
-	std::string getName() const;
+	virtual ~MessageDescription();
 
-	void setName(std::string name);
+	const std::string getName() const;
 
-	template <typename T> void addVariable(std::string variable_name){
+	template <typename T> void addVariable(const std::string variable_name){
 		variables.insert(variables.end(), VariableMap::value_type(variable_name, typeid(T)));
 	}
 
 private:
-	std::string name;
+	const std::string name;
 	VariableMap variables;
 };
 

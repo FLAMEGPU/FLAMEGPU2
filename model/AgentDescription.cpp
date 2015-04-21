@@ -7,6 +7,16 @@
 
 #include "AgentDescription.h"
 
+AgentDescription::AgentDescription(std::string name) : states(), functions(), memory(), sizes(), default_state(new AgentStateDescription("default")){
+	stateless = true;
+	this->name = name;
+	addState(*default_state, true);
+}
+
+AgentDescription::~AgentDescription() {
+
+}
+
 
 void AgentDescription::setName(std::string name) {
 }
@@ -15,26 +25,25 @@ std::string AgentDescription::getName() const{
 	return name;
 }
 
-void AgentDescription::addState(std::string state_name, AgentStateDescription *state, bool initial_state) {
+void AgentDescription::addState(const AgentStateDescription& state, bool initial_state) {
 
 	//check if this is a stateless system
 	if (stateless){
-		states.release();
 		stateless = false;
 	}
 
-	states.insert(state_name, state);
+	states.insert(StateMap::value_type(state.getName(), state));
 	if (initial_state)
-		this->initial_state = state_name;
+		setInitialState(state.getName());
 }
 
-void AgentDescription::setInitialState(std::string state_name) {
-	initial_state = state_name;
+void AgentDescription::setInitialState(const std::string initial_state) {
+	this->initial_state = initial_state;
 }
 
 void AgentDescription::addAgentFunction(const AgentFunctionDescription& function) {
 
-	functions.insert(function.getName(), new AgentFunctionDescription(function));
+	functions.insert(FunctionMap::value_type(function.getName(), function));
 }
 
 MemoryMap& AgentDescription::getMemoryMap() {
@@ -82,8 +91,8 @@ bool AgentDescription::requiresAgentCreation() const{
 	return false;
 }
 
-const std::type_info& AgentDescription::getVariableType(std::string variable_name) {
-	MemoryMap::iterator iter;
+const std::type_info& AgentDescription::getVariableType(const std::string variable_name) const{
+	MemoryMap::const_iterator iter;
 	iter = memory.find(variable_name);
 
 	if (iter == memory.end())

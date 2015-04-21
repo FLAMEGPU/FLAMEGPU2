@@ -7,11 +7,12 @@
 
 #include "AgentFunctionInput.h"
 
+AgentFunctionInput::AgentFunctionInput(const std::string input_message_name) :  message_name(input_message_name){
 
-std::string AgentFunctionInput::getMessageName() const{
-	return message_name;
 }
 
-void AgentFunctionInput::setMessageName(std::string message_name) {
-	this->message_name = message_name;
+AgentFunctionInput::~AgentFunctionInput() {}
+
+const std::string AgentFunctionInput::getMessageName() const{
+	return message_name;
 }

@@ -8,26 +8,26 @@
 #ifndef AGENTPOPULATION_H_
 #define AGENTPOPULATION_H_
 
-#include <boost/shared_ptr.hpp>
-#include <boost/ptr_container/ptr_map.hpp>
-#include "boost/tuple/tuple.hpp"
+#include <memory>
+#include <map>
 
 #include "../model/ModelDescription.h"
 #include "AgentStateMemory.h"
 #include "AgentInstance.h"
 
-typedef boost::ptr_map<std::string, AgentStateMemory> AgentStatesMap;	//key is concat of agent and state name!
+typedef std::map<const std::string, std::unique_ptr<AgentStateMemory>> AgentStatesMap;	//key is concat of agent and state name!
 
 class AgentPopulation {
 public:
-	AgentPopulation(ModelDescription &model_description): model(model_description), states_map() {}
-	virtual ~AgentPopulation() {}
+	AgentPopulation(const ModelDescription &model_description);
 
-	AgentInstance addInstance(std::string agent_name, std::string agent_state);
+	virtual ~AgentPopulation();
+
+	AgentInstance addInstance(const std::string agent_name, const std::string agent_state);
 
 private:
 
-	ModelDescription &model;
+	const ModelDescription &model;
 	AgentStatesMap states_map;
 
 

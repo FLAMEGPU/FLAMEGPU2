@@ -21,7 +21,8 @@ class AgentInstance; //forward declaration
 class AgentInstance {
 public:
 	AgentInstance(AgentStateMemory& state_memory);
-	virtual ~AgentInstance() {}
+
+	virtual ~AgentInstance();
 
 	template <typename T> void setVariable(std::string variable_name, const T value){
 		std::vector<boost::any>& v = agent_state_memory.getMemoryVector(variable_name);
@@ -41,8 +42,8 @@ public:
 	}
 
 private:
-	unsigned int index;
-	const AgentStateMemory& agent_state_memory;
+	const unsigned int index;
+	AgentStateMemory& agent_state_memory;
 };
 
 #endif /* AGENTINSTANCE_H_ */

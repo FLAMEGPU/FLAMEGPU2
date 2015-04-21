@@ -8,12 +8,15 @@
 #include "AgentFunctionOutput.h"
 
 
-
-void AgentFunctionOutput::setMessageName(std::string message_name) {
-	this->message_name = message_name;
+AgentFunctionOutput::AgentFunctionOutput(const std::string output_message_name): message_name(output_message_name) { 
+	setFunctionOutputType(SINGLE_MESSAGE); 
 }
 
-std::string AgentFunctionOutput::getMessageName() const{
+AgentFunctionOutput::~AgentFunctionOutput() {
+
+}
+
+const std::string AgentFunctionOutput::getMessageName() const{
 	return message_name;
 }
 

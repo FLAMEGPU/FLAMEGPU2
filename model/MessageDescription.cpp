@@ -7,10 +7,10 @@
 
 #include "MessageDescription.h"
 
-std::string MessageDescription::getName() const{
-	return name;
-}
+MessageDescription::MessageDescription(const std::string message_name) : variables(), name(message_name) { }
 
-void MessageDescription::setName(std::string name) {
-	this->name = name;
+MessageDescription::~MessageDescription() {}
+
+const std::string MessageDescription::getName() const{
+	return name;
 }

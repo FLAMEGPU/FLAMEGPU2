@@ -7,7 +7,11 @@
 
 #include "AgentPopulation.h"
 
-AgentInstance AgentPopulation::addInstance(std::string agent_name, std::string agent_state) {
+AgentPopulation::AgentPopulation(const ModelDescription &model_description): model(model_description), states_map() {}
+
+AgentPopulation::~AgentPopulation() {}
+
+AgentInstance AgentPopulation::addInstance(const std::string agent_name, const std::string agent_state) {
 
 	//boost::tuple<std::string, std::string> k(agent_name, agent_state);
 	std::string k = agent_name + "_" + agent_state;
@@ -24,8 +28,8 @@ AgentInstance AgentPopulation::addInstance(std::string agent_name, std::string a
 	//create new state map
 	else
 	{
-		AgentDescription& agent_description = model.getAgentDescription(agent_name);
-		iter = states_map.insert(k, new AgentStateMemory(agent_description, agent_state)).first;
+		const AgentDescription& agent_description = model.getAgentDescription(agent_name);
+		iter = states_map.insert(AgentStatesMap::value_type(k, std::unique_ptr<AgentStateMemory>(new AgentStateMemory(agent_description, agent_state)))).first;
 		return AgentInstance(*iter->second);
 	}
 }

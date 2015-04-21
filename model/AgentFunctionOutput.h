@@ -17,19 +17,18 @@ typedef enum{
 
 class AgentFunctionOutput {
 public:
-	AgentFunctionOutput(std::string message_name) { this->message_name = message_name; type = SINGLE_MESSAGE; }
-	virtual ~AgentFunctionOutput() {}
+	AgentFunctionOutput(const std::string output_message_name);
 
-	void setMessageName(std::string message_name);
+	virtual ~AgentFunctionOutput();
 
-	std::string getMessageName() const;
+	const std::string getMessageName() const;
 
 	void setFunctionOutputType(FunctionOutputType type);
 
 	FunctionOutputType getFunctionOutoutType();
 
 private:
-	std::string message_name;
+	const std::string message_name;
 	FunctionOutputType type;
 };
 

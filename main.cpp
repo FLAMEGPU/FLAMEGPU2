@@ -42,12 +42,14 @@ int main(void) {
 	
 	//circle agent output_data function
 	AgentFunctionDescription output_data("output_data");
-	output_data.addOutput(AgentFunctionOutput("location"));
+	AgentFunctionOutput output_location("location");
+	output_data.addOutput(output_location);
 	circle_agent.addAgentFunction(output_data);
 	
 	//circle agent input_data function
 	AgentFunctionDescription input_data("input_data");
-	input_data.addInput(AgentFunctionInput("location"));
+	AgentFunctionInput input_location("location");
+	input_data.addInput(input_location);
 	circle_agent.addAgentFunction(input_data);
 
 	

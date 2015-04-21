@@ -8,10 +8,14 @@
 #include "AgentStateDescription.h"
 
 
-std::string AgentStateDescription::getName() {
-	return name;
+AgentStateDescription::AgentStateDescription(const std::string state_name) : name(state_name){ 
+	
 }
 
-void AgentStateDescription::setName(std::string name) {
-	this->name = name;
+AgentStateDescription::~AgentStateDescription() {
+
+}
+
+const std::string AgentStateDescription::getName() const {
+	return name;
 }
