@@ -39,6 +39,8 @@ public:
 
 	const std::type_info& getVariableType(std::string variable_name); //const
 
+	bool isSameDescription(const AgentDescription& description) const;
+
 protected:
 	const AgentDescription &agent_description;
 	const std::string agent_state;

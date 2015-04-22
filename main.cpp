@@ -65,9 +65,9 @@ int main(void) {
 
 	// POPULATION (FLAME2 mem) 
 	
-	AgentPopulation population(flame_model);
+	AgentPopulation population(flame_model, "circle");
 	for (int i=0; i< 100; i++){
-		AgentInstance instance = population.addInstance("circle", "default");
+		AgentInstance instance = population.addInstance("default");
 		instance.setVariable<float>("x", i*0.1f);
 		instance.setVariable<float>("y", i*0.1f);
 		instance.setVariable<float>("dx", 0);

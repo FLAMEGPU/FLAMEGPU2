@@ -55,6 +55,9 @@ const MemoryMap& AgentDescription::getMemoryMap() const {
 	return memory;
 }
 
+const StateMap& AgentDescription::getStateMap() const {
+	return states;
+}
 
 unsigned int AgentDescription::getMemorySize() const {
 	unsigned int size = 0;

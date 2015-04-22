@@ -7,11 +7,11 @@
 
 #include "AgentPopulation.h"
 
-AgentPopulation::AgentPopulation(const ModelDescription &model_description): model(model_description), states_map() {}
+AgentPopulation::AgentPopulation(const ModelDescription &model_description, const std::string name): model(model_description), agent_name(name), states_map() {}
 
 AgentPopulation::~AgentPopulation() {}
 
-AgentInstance AgentPopulation::addInstance(const std::string agent_name, const std::string agent_state) {
+AgentInstance AgentPopulation::addInstance(const std::string agent_state) {
 
 	//boost::tuple<std::string, std::string> k(agent_name, agent_state);
 	std::string k = agent_name + "_" + agent_state;
@@ -32,4 +32,18 @@ AgentInstance AgentPopulation::addInstance(const std::string agent_name, const s
 		iter = states_map.insert(AgentStatesMap::value_type(k, std::unique_ptr<AgentStateMemory>(new AgentStateMemory(agent_description, agent_state)))).first;
 		return AgentInstance(*iter->second);
 	}
+}
+
+const AgentStateMemory& AgentPopulation::getStateMemory(const std::string agent_state) const {
+	std::string k = agent_name + "_" + agent_state;
+
+	//check if the state map exists
+	AgentStatesMap::const_iterator iter;
+	iter = states_map.find(k);
+
+	if (iter == states_map.end()){
+		throw std::runtime_error("Invalid agent state name");
+	}
+
+	return *iter->second;
 }

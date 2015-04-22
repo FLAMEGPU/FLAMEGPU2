@@ -7,7 +7,6 @@
 
 #include "AgentFunctionDescription.h"
 
-AgentFunctionDescription::AgentFunctionDescription() {}
 
 AgentFunctionDescription::AgentFunctionDescription(const std::string function_name) : function_name(function_name), initial_state("default"), end_state("default") {  
 

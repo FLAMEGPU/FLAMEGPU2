@@ -27,9 +27,6 @@
     <ClInclude Include="gpu\CUDAAgentModel.h">
       <Filter>gpu</Filter>
     </ClInclude>
-    <ClInclude Include="gpu\CUDAAgentState.h">
-      <Filter>gpu</Filter>
-    </ClInclude>
     <ClInclude Include="model\AgentDescription.h">
       <Filter>model</Filter>
     </ClInclude>
@@ -57,17 +54,26 @@
     <ClInclude Include="pop\AgentPopulation.h">
       <Filter>pop</Filter>
     </ClInclude>
-    <ClInclude Include="Simulation.h">
-      <Filter>sim</Filter>
-    </ClInclude>
-    <ClInclude Include="SimulationLayer.h">
-      <Filter>sim</Filter>
-    </ClInclude>
-    <ClInclude Include="gpu\CUDAAgentList.h">
-      <Filter>gpu</Filter>
-    </ClInclude>
     <ClInclude Include="pop\AgentStateMemory.h">
       <Filter>pop</Filter>
+    </ClInclude>
+    <ClInclude Include="gpu\RuntimeHashing.h">
+      <Filter>gpu</Filter>
+    </ClInclude>
+    <ClInclude Include="gpu\CUDAAgentStateList.h">
+      <Filter>gpu</Filter>
+    </ClInclude>
+    <ClInclude Include="gpu\CUDAAgent.h">
+      <Filter>gpu</Filter>
+    </ClInclude>
+    <ClInclude Include="sim\Simulation.h">
+      <Filter>sim</Filter>
+    </ClInclude>
+    <ClInclude Include="sim\SimulationLayer.h">
+      <Filter>sim</Filter>
+    </ClInclude>
+    <ClInclude Include="gpu\CUDAErrorChecking.h">
+      <Filter>gpu</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -75,9 +81,6 @@
       <Filter>gpu</Filter>
     </ClCompile>
     <ClCompile Include="gpu\CUDAAgentModel.cpp">
-      <Filter>gpu</Filter>
-    </ClCompile>
-    <ClCompile Include="gpu\CUDAAgentState.cpp">
       <Filter>gpu</Filter>
     </ClCompile>
     <ClCompile Include="model\AgentDescription.cpp">
@@ -107,17 +110,20 @@
     <ClCompile Include="pop\AgentPopulation.cpp">
       <Filter>pop</Filter>
     </ClCompile>
-    <ClCompile Include="Simulation.cpp">
-      <Filter>sim</Filter>
-    </ClCompile>
-    <ClCompile Include="SimulationLayer.cpp">
-      <Filter>sim</Filter>
-    </ClCompile>
-    <ClCompile Include="gpu\CUDAAgentList.cpp">
-      <Filter>gpu</Filter>
-    </ClCompile>
     <ClCompile Include="pop\AgentStateMemory.cpp">
       <Filter>pop</Filter>
+    </ClCompile>
+    <ClCompile Include="gpu\CUDAAgentStateList.cpp">
+      <Filter>gpu</Filter>
+    </ClCompile>
+    <ClCompile Include="gpu\CUDAAgent.cpp">
+      <Filter>gpu</Filter>
+    </ClCompile>
+    <ClCompile Include="sim\Simulation.cpp">
+      <Filter>sim</Filter>
+    </ClCompile>
+    <ClCompile Include="sim\SimulationLayer.cpp">
+      <Filter>sim</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -50,3 +50,7 @@ const std::vector<boost::any>& AgentStateMemory::getReadOnlyMemoryVector(const s
 const std::type_info& AgentStateMemory::getVariableType(std::string variable_name) {
 		return agent_description.getVariableType(variable_name);
 }
+
+bool AgentStateMemory::isSameDescription(const AgentDescription& description) const{
+	return (&description == &agent_description);
+}

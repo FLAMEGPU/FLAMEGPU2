@@ -48,6 +48,8 @@ public:
 
 	const MemoryMap& getMemoryMap() const;
 
+	const StateMap& getStateMap() const;
+
 	const unsigned int getAgentVariableSize(const std::string variable_name) const;
 
 	unsigned int getMemorySize() const;

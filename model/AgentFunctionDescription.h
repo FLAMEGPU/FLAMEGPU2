@@ -9,8 +9,8 @@
 #define AGENTFUNCTIONDESCRIPTION_H_
 
 #include <string>
-#include <boost/ptr_container/ptr_map.hpp>
-#include <boost/container/map.hpp>
+#include <map>
+#include <memory>
 
 #include "AgentFunctionInput.h"
 #include "AgentFunctionOutput.h"
@@ -20,8 +20,6 @@ typedef std::map<std::string, const AgentFunctionOutput&> OutputsMap;
 
 class AgentFunctionDescription {
 public:
-
-	AgentFunctionDescription(); //todo remove this
 
 	AgentFunctionDescription(const std::string function_name);
 

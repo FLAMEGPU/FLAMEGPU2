@@ -19,15 +19,18 @@ typedef std::map<const std::string, std::unique_ptr<AgentStateMemory>> AgentStat
 
 class AgentPopulation {
 public:
-	AgentPopulation(const ModelDescription &model_description);
+	AgentPopulation(const ModelDescription &model_description, const std::string agent_name);
 
 	virtual ~AgentPopulation();
 
-	AgentInstance addInstance(const std::string agent_name, const std::string agent_state);
+	AgentInstance addInstance(const std::string agent_state = "default");
+
+	const AgentStateMemory& getStateMemory(const std::string agent_state = "default") const;
 
 private:
 
 	const ModelDescription &model;
+	const std::string agent_name;
 	AgentStatesMap states_map;
 
 

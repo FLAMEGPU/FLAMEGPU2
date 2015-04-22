@@ -20,10 +20,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="api\flame_api.h" />
-    <ClInclude Include="gpu\CUDAAgentList.h" />
+    <ClInclude Include="gpu\CUDAAgent.h" />
+    <ClInclude Include="gpu\CUDAAgentStateList.h" />
     <ClInclude Include="gpu\CUDAAgentFunction.h" />
     <ClInclude Include="gpu\CUDAAgentModel.h" />
-    <ClInclude Include="gpu\CUDAAgentState.h" />
+    <ClInclude Include="gpu\CUDAErrorChecking.h" />
+    <ClInclude Include="gpu\RuntimeHashing.h" />
     <ClInclude Include="model\AgentDescription.h" />
     <ClInclude Include="model\AgentFunctionDescription.h" />
     <ClInclude Include="model\AgentFunctionInput.h" />
@@ -34,14 +36,14 @@
     <ClInclude Include="pop\AgentInstance.h" />
     <ClInclude Include="pop\AgentStateMemory.h" />
     <ClInclude Include="pop\AgentPopulation.h" />
-    <ClInclude Include="Simulation.h" />
-    <ClInclude Include="SimulationLayer.h" />
+    <ClInclude Include="sim\Simulation.h" />
+    <ClInclude Include="sim\SimulationLayer.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="gpu\CUDAAgentList.cpp" />
+    <ClCompile Include="gpu\CUDAAgent.cpp" />
+    <ClCompile Include="gpu\CUDAAgentStateList.cpp" />
     <ClCompile Include="gpu\CUDAAgentFunction.cpp" />
     <ClCompile Include="gpu\CUDAAgentModel.cpp" />
-    <ClCompile Include="gpu\CUDAAgentState.cpp" />
     <ClCompile Include="model\AgentDescription.cpp" />
     <ClCompile Include="model\AgentFunctionDescription.cpp" />
     <ClCompile Include="model\AgentFunctionInput.cpp" />
@@ -52,8 +54,8 @@
     <ClCompile Include="pop\AgentInstance.cpp" />
     <ClCompile Include="pop\AgentStateMemory.cpp" />
     <ClCompile Include="pop\AgentPopulation.cpp" />
-    <ClCompile Include="Simulation.cpp" />
-    <ClCompile Include="SimulationLayer.cpp" />
+    <ClCompile Include="sim\Simulation.cpp" />
+    <ClCompile Include="sim\SimulationLayer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="main.cpp">

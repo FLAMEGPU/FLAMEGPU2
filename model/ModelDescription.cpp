@@ -30,3 +30,7 @@ const AgentDescription& ModelDescription::getAgentDescription(const std::string 
 		throw std::runtime_error("Invalid agent memory variable");
 	return iter->second;
 }
+
+const AgentMap& ModelDescription::getAgentMap() const {
+	return agents;
+}

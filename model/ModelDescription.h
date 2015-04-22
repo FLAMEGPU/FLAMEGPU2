@@ -10,8 +10,9 @@
 
 
 #include <string>
-#include <boost/ptr_container/ptr_map.hpp>
-#include <boost/container/map.hpp>
+#include <map>
+#include <memory>
+#include <vector>
 #include <typeinfo>
 
 #include "AgentDescription.h"
@@ -33,6 +34,9 @@ public:
 	void addMessage(const MessageDescription &message);
 
 	const AgentDescription& getAgentDescription(const std::string agent_name) const;
+
+	const AgentMap& getAgentMap() const;
+
 
 private:
 	std::string name;
