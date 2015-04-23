@@ -5,6 +5,7 @@
 #include <map>
 
 #include "../model/AgentDescription.h"
+#include "../pop/AgentPopulation.h"
 
 class CUDAAgentStateList; //forward declaration to avoid cirular references
 
@@ -17,10 +18,13 @@ public:
 	CUDAAgent(const AgentDescription& description);
 	virtual ~CUDAAgent(void);
 
-	
 	unsigned int getHashListSize();
 
 	const AgentDescription& getAgentDescription() const;
+
+	void setPopulationData(const AgentPopulation& population);
+
+	unsigned int getMaximumListSize() const;
 
 
 private:
@@ -29,6 +33,8 @@ private:
 
 	unsigned int* h_hashes; //same for each list of same max_size
 	unsigned int* d_hashes; //same for each list of same max_size
+
+	unsigned int max_list_size;
 };
 
 #endif

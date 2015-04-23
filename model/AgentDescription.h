@@ -60,6 +60,8 @@ public:
 
 	const std::type_info& getVariableType(const std::string variable_name) const;
 
+	bool hasAgentFunction(const std::string function_name) const;
+
 
 
 private:

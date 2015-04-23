@@ -1,20 +1,26 @@
 #pragma once
 
 #include <vector>
+#include <string>
 
 #include "SimulationLayer.h"
+#include "Simulation.h"
+#include "../model/ModelDescription.h"
 
 class Simulation
 {
 public:
-	Simulation(void);
+	Simulation(const ModelDescription& model);
 	~Simulation(void);
 
-	void addSimulationLayer(SimulationLayer layer);
+	unsigned int addSimulationLayer(SimulationLayer& layer);
 	void addFunctionToLayer(int layer, std::string function_name);
-	int addFunctionLayer();
+	void setSimulationSteps(unsigned int steps);
+	const ModelDescription& getModelDescritpion() const;
 
 private:
-	std::vector<SimulationLayer> layers;
+	std::vector<SimulationLayer*> layers;
+	const ModelDescription& model_description;
+	unsigned int simulation_steps;
 };
 

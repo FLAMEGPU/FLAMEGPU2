@@ -3,6 +3,8 @@
 
 #include "cuda_runtime.h"
 
+#define EMPTY_HASH_VALUE 0x00
+
 /* TEMPLATE HASHING FUNCTIONS */
 
 /** @brief Non terminal template structure has function for a constant char array

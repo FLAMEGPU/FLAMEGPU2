@@ -42,7 +42,6 @@ private:
 	AgentList *d_new_list;
 
 	unsigned int current_list_size; //???
-	unsigned int max_list_size;
 
 	CUDAAgent& agent;
 };

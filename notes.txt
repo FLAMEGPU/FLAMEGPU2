@@ -1,22 +1,19 @@
-********************
-** Non C++ 11 interface ***
+*********************************************************************************************
 
-model file should use stack defined objects
+Front end API
 
-AgentFunctionDescription output_data("output_data");
-output_data->addOutput(AgentFunctionOutput("location"));
-some_agent.addAgentFunction(output_data);
+User is responsible for object creation and deletion. Objects passed as refernce to the API must not go out of scope!!! This is user responsibility
 
-functions accepting model descriptors should accept a const ref to object and then copy it using copy constructor
+Smart pointers: Used internally to avoid new and delete. This avoids having to declare constructors in most cases. Not possible for CUDA classes which manage memory manually.
 
-void addAgentFunction(const &AgentFunctionDescription func){
-	functions.insert(new AgentFunctionDescription(func));
-}
 
-where functions is a vector of smart pointers
+********************************
 
-References to model description objects should never be returned other than as smart pointers however there should always be a non c++ 11 modifier based on string searching and primitive types.
+TODO 
 
-*************
-** C++ 11 interface
-all model objects are created as smart pointers and passed directly to the descriptors. No copying is necessary
+Rule of Three
+Thread safety mutex lock description objects and populations once passed into model
+
+Error checking in model creation layer:
+Function name repetition
+Dependency checking for function layers

@@ -104,3 +104,9 @@ const std::type_info& AgentDescription::getVariableType(const std::string variab
 	return iter->second;
 
 }
+
+bool AgentDescription::hasAgentFunction(const std::string function_name) const {
+	FunctionMap::const_iterator f;
+	f = functions.find(function_name);
+	return (f != functions.end());
+}

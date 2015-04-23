@@ -17,9 +17,6 @@
 
 CUDAAgentStateList::CUDAAgentStateList(CUDAAgent& cuda_agent) : agent(cuda_agent){
 
-	//allocate some device memory
-	max_list_size = 0; //TODO
-
 	//allocate state lists
 	allocateDeviceAgentList(&d_list);
 	allocateDeviceAgentList(&d_swap_list);
@@ -50,7 +47,7 @@ void CUDAAgentStateList::allocateDeviceAgentList(AgentList** agent_list){
 	//for each variable allocate a device array and register in the hash list
 	unsigned int i = 0;
 	for (MemoryMap::const_iterator it = mem.begin(); it != mem.end(); it++){
-		gpuErrchk( cudaMalloc( (void**) &((*agent_list)->h_d_memory[i]), agent.getAgentDescription().getAgentVariableSize(it->first) * max_list_size));
+		gpuErrchk( cudaMalloc( (void**) &((*agent_list)->h_d_memory[i]), agent.getAgentDescription().getAgentVariableSize(it->first) * agent.getMaximumListSize()));
 		i++;
 	}
 

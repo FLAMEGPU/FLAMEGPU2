@@ -7,19 +7,12 @@
 #include "RuntimeHashing.h"
 #include "CUDAErrorChecking.h"
 
-CUDAAgent::CUDAAgent(const AgentDescription& description) : agent_description(description), state_map()
+CUDAAgent::CUDAAgent(const AgentDescription& description) : agent_description(description), state_map(), max_list_size(0)
 {
-	const StateMap& sm = agent_description.getStateMap();
-	StateMap::const_iterator it;
 
-	//create map of device state lists
-	for(it = sm.begin(); it != sm.end(); it++){
-		state_map.insert(CUDAStateMap::value_type(it->first, std::unique_ptr<CUDAAgentStateList>( new CUDAAgentStateList(*this))));
-	}
-
-	
 	//allocate hash list
 	h_hashes = (unsigned int*) malloc(sizeof(unsigned int)*getHashListSize());
+	memset(h_hashes, EMPTY_HASH_VALUE, sizeof(unsigned int)*getHashListSize());
 	gpuErrchk( cudaMalloc( (void**) &d_hashes, sizeof(unsigned int)*getHashListSize()));
 
 	//init has list
@@ -31,15 +24,15 @@ CUDAAgent::CUDAAgent(const AgentDescription& description) : agent_description(de
 		unsigned int n = 0;
 		unsigned int i = (hash) % agent_description.getNumberAgentVariables();
 
-		while (h_hashes[i] != 0)
+		while (h_hashes[i] != EMPTY_HASH_VALUE)
 		{
 			n += 1;
-			if (n >= agent_description.getNumberAgentVariables())
+			if (n >= getHashListSize())
 			{
 				throw std::runtime_error("Hash list full. This should never happen.");  
 			}
 			i += 1;
-			if (i >= agent_description.getNumberAgentVariables())
+			if (i >= getHashListSize())
 			{
 				i = 0;
 			}
@@ -66,4 +59,20 @@ unsigned int CUDAAgent::getHashListSize(){
 
 const AgentDescription& CUDAAgent::getAgentDescription() const {
 	return agent_description;
+}
+
+void CUDAAgent::setPopulationData(const AgentPopulation& population){
+	max_list_size = population.getMaximumPopulationSize();
+	const StateMap& sm = agent_description.getStateMap();
+	StateMap::const_iterator it;
+
+	//create map of device state lists
+	for(it = sm.begin(); it != sm.end(); it++){
+		state_map.insert(CUDAStateMap::value_type(it->first, std::unique_ptr<CUDAAgentStateList>( new CUDAAgentStateList(*this))));
+	}
+
+}
+
+unsigned int CUDAAgent::getMaximumListSize() const{
+	return max_list_size;
 }

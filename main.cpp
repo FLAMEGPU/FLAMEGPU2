@@ -12,6 +12,8 @@
 
 #include "model/ModelDescription.h"
 #include "pop/AgentPopulation.h"
+#include "sim/Simulation.h"
+#include "gpu/CUDAAgentModel.h"
 
 /* must be compiled separately using FLAME GPU builder
  * This will generate object files for different architecture targets as well as ptx info for each agent function (registers, memory use etc.)
@@ -77,24 +79,32 @@ int main(void) {
 
 	/* GLOBALS */
 
-/*
+
 	// SIMULATION
-	GPUSimulation simulation(&flame_model, &population, &globals);
+	Simulation simulation(flame_model);
 
-	SimulationLayer output_layer("output_layer");
+	SimulationLayer output_layer(simulation, "output_layer");
 	output_layer.addAgentFunction("output_data");
-	simulation.addLayer(&input_layer);
+	simulation.addSimulationLayer(output_layer);
 
-	SimulationLayer input_layer("input_layer");
+	SimulationLayer input_layer(simulation, "input_layer");
 	input_layer.addAgentFunction("input_data");
-	simulation.addLayer(&input_layer);
+	simulation.addSimulationLayer(input_layer);
 
-	SimulationLayer move_layer("move_layer");
+	SimulationLayer move_layer(simulation, "move_layer");
 	move_layer.addAgentFunction("move");
-	simulation.addLayer(&move_layer);
+	simulation.addSimulationLayer(move_layer);
 
-	simulation.simulationSteps(10);
+	simulation.setSimulationSteps(10);
 
+	/* CUDA agent model */
+
+	CUDAAgentModel cuda_model(flame_model);
+	cuda_model.setPopulationData(population);
+	cuda_model.simulate(simulation);
+
+
+	/*
 	// EXECUTION
 	HardwareDescription hardware_config();
 	hardware_config.addGPUResource(SM_30);
@@ -115,6 +125,6 @@ int main(void) {
 
 
 
-
+	system("pause");
 	return 0;
 }
