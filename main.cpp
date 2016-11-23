@@ -1,12 +1,3 @@
-/* *
- * Copyright 1993-2012 NVIDIA Corporation.  All rights reserved.
- *
- * Please refer to the NVIDIA end user license agreement (EULA) associated
- * with this source code for terms and conditions that govern your use of
- * this software. Any use, reproduction, disclosure, or distribution of
- * this software and related documentation outside the terms of the EULA
- * is strictly prohibited.
- */
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -23,10 +14,15 @@
 
 /**
  * Host function that prepares data array and passes it to the CUDA kernel.
+ * This main.cpp would either be specified by a user or automatically generated from the model.xml.
+ * Each of the API functions will have a 121 mapping with XML elements
+ * The API is very similar to FLAME 2. The directory structure and general project is set out very similarly.
  */
 int main(void) {
 
 	/* MODEL */
+	/* The model is the description of the actual model that is equivalent to that described by model.xml*/
+	/* Nothing with GPUs it is only about building the model description in memory */
 	ModelDescription flame_model("circles_model");
 
 	//circle agent
@@ -36,6 +32,10 @@ int main(void) {
 	circle_agent.addAgentVariable<float>("dx");
 	circle_agent.addAgentVariable<float>("dy");
 
+	//circle add states
+	//circle_agent.addState("state1");
+	//circle_agent.addState("state2");
+
 	
 	//location message
 	MessageDescription location_message("location");
@@ -43,9 +43,11 @@ int main(void) {
 	location_message.addVariable<float>("y");
 	
 	//circle agent output_data function
+	//Do not specify the state. As their are no states in the system it is assumed that this model is stateless.
 	AgentFunctionDescription output_data("output_data");
 	AgentFunctionOutput output_location("location");
 	output_data.addOutput(output_location);
+	//output_data.setInitialState("state1");
 	circle_agent.addAgentFunction(output_data);
 	
 	//circle agent input_data function
@@ -62,10 +64,14 @@ int main(void) {
 	//model
 	flame_model.addMessage(location_message);
 	flame_model.addAgent(circle_agent);
+
+	//TODO: At some point the model should become read only. You should not be bale to add new agent variables once you have instances of the population for example.
 	
 	//TODO: globals
 
 	// POPULATION (FLAME2 mem) 
+	/* Population is an instantiation of the model. It is equivalent to the data from 0.xml or any other state of the model. It requires a model description to know what the agent variables and states are. */
+	/* Data in populations and instances are only on the host. No concept of GPUs at this stage. */
 	
 	AgentPopulation population(flame_model, "circle");
 	for (int i=0; i< 100; i++){
@@ -78,13 +84,17 @@ int main(void) {
 	
 
 	/* GLOBALS */
+	/* TODO: We will consdier this later. Not in the circles model. */
 
 
 	// SIMULATION
+	/* This is essentially the function layers from a model.xml */
+	/* Currently this is specified by the user. In the future this could be generated automatically through dependency analysis like with FLAME HPC */
+
 	Simulation simulation(flame_model);
 
-	SimulationLayer output_layer(simulation, "output_layer");
-	output_layer.addAgentFunction("output_data");
+	SimulationLayer output_layer(simulation, "output_layer"); //in the original schema layers are not named
+	output_layer.addAgentFunction("output_data");			  //equivalent of layerfunction in FLAMEGPU
 	simulation.addSimulationLayer(output_layer);
 
 	SimulationLayer input_layer(simulation, "input_layer");
@@ -95,15 +105,20 @@ int main(void) {
 	move_layer.addAgentFunction("move");
 	simulation.addSimulationLayer(move_layer);
 
+	//This would come from the program arguments. Would be argv[2] if this file had been generated from model.xml
 	simulation.setSimulationSteps(10);
 
 	/* CUDA agent model */
-
+	/* Instantiate the model with a set of data (agents) on the device */
+	/* Run the model */
 	CUDAAgentModel cuda_model(flame_model);
 	cuda_model.setPopulationData(population);
 	cuda_model.simulate(simulation);
+	//cuda_model.step(simulation);
 
+	//cuda_model.getPopulation(population);
 
+	/* This is not to be done yet. We want to first replicate the functionality of FLAMEGPU on a single device */
 	/*
 	// EXECUTION
 	HardwareDescription hardware_config();
@@ -121,7 +136,7 @@ int main(void) {
 	scheduler.map();
 
 	scheduler.simulationIteration();
-*/
+	*/
 
 
 
