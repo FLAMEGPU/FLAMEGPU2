@@ -36,12 +36,12 @@ int main(void) {
 	//circle_agent.addState("state1");
 	//circle_agent.addState("state2");
 
-	
+
 	//location message
 	MessageDescription location_message("location");
 	location_message.addVariable<float>("x");
 	location_message.addVariable<float>("y");
-	
+
 	//circle agent output_data function
 	//Do not specify the state. As their are no states in the system it is assumed that this model is stateless.
 	AgentFunctionDescription output_data("output_data");
@@ -49,30 +49,30 @@ int main(void) {
 	output_data.addOutput(output_location);
 	//output_data.setInitialState("state1");
 	circle_agent.addAgentFunction(output_data);
-	
+
 	//circle agent input_data function
 	AgentFunctionDescription input_data("input_data");
 	AgentFunctionInput input_location("location");
 	input_data.addInput(input_location);
 	circle_agent.addAgentFunction(input_data);
 
-	
+
 	//circle agent move function
 	AgentFunctionDescription move("move");
 	circle_agent.addAgentFunction(move);
-	
+
 	//model
 	flame_model.addMessage(location_message);
 	flame_model.addAgent(circle_agent);
 
 	//TODO: At some point the model should become read only. You should not be bale to add new agent variables once you have instances of the population for example.
-	
+
 	//TODO: globals
 
-	// POPULATION (FLAME2 mem) 
+	// POPULATION (FLAME2 mem)
 	/* Population is an instantiation of the model. It is equivalent to the data from 0.xml or any other state of the model. It requires a model description to know what the agent variables and states are. */
 	/* Data in populations and instances are only on the host. No concept of GPUs at this stage. */
-	
+
 	AgentPopulation population(flame_model, "circle");
 	for (int i=0; i< 100; i++){
 		AgentInstance instance = population.addInstance("default");
@@ -81,10 +81,10 @@ int main(void) {
 		instance.setVariable<float>("dx", 0);
 		instance.setVariable<float>("dy", 0);
 	}
-	
+
 
 	/* GLOBALS */
-	/* TODO: We will consdier this later. Not in the circles model. */
+	/* TODO: We will consider this later. Not in the circles model. */
 
 
 	// SIMULATION

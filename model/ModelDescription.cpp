@@ -3,6 +3,7 @@
  *
  *  Created on: 20 Feb 2014
  *      Author: paul
+ *  Last modified : 28 Nov 2016
  */
 
 #include "ModelDescription.h"
@@ -33,4 +34,13 @@ const AgentDescription& ModelDescription::getAgentDescription(const std::string 
 
 const AgentMap& ModelDescription::getAgentMap() const {
 	return agents;
+}
+
+/*Moz*/
+const MessageMap& ModelDescription::getMessageMap() const {
+	return messages;
+
+/*Moz*/
+const FunctionMap& ModelDescription::getFunctionMap() const {
+	return functions;
 }

@@ -13,8 +13,6 @@
 
 
 
-
-
 CUDAAgentStateList::CUDAAgentStateList(CUDAAgent& cuda_agent) : agent(cuda_agent){
 
 	//allocate state lists

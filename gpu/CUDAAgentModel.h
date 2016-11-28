@@ -3,6 +3,7 @@
  *
  *  Created on: 20 Feb 2014
  *      Author: paul
+ *  Last modified : 28 Nov 2016
  */
 
 #ifndef CUDAAGENTMODEL_H_
@@ -18,6 +19,8 @@
 #include "CUDAAgent.h"
 
 typedef std::map<const std::string, std::unique_ptr<CUDAAgent>> CUDAAgentMap;
+typedef std::map<const std::string, std::unique_ptr<CUDAMessage>> CUDAMessageMap; /*Moz*/
+typedef std::map<const std::string, std::unique_ptr<CUDAAgentFunction>> CUDAFunctionMap; /*Moz*/
 
 class CUDAAgentModel {
 public:
@@ -31,6 +34,8 @@ public:
 private:
 	const ModelDescription& model_description;
 	CUDAAgentMap agent_map;
+	CUDAMessageMap message_map; /*Moz*/
+	CUDAFunctionMap function_map; /*Moz*/
 
 };
 
