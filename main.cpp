@@ -65,7 +65,8 @@ int main(void) {
 	flame_model.addMessage(location_message);
 	flame_model.addAgent(circle_agent);
 
-	//TODO: At some point the model should become read only. You should not be bale to add new agent variables once you have instances of the population for example.
+	//TODO: At some point the model should be validated and then become read only. You should not be bale to add new agent variables once you have instances of the population for example.
+	//flame_model.validate();
 	
 	//TODO: globals
 
