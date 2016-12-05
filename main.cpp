@@ -1,3 +1,4 @@
+#include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -5,6 +6,8 @@
 #include "pop/AgentPopulation.h"
 #include "sim/Simulation.h"
 #include "gpu/CUDAAgentModel.h"
+
+using namespace std;
 
 /* must be compiled separately using FLAME GPU builder
  * This will generate object files for different architecture targets as well as ptx info for each agent function (registers, memory use etc.)
@@ -32,16 +35,20 @@ int main(void) {
 	circle_agent.addAgentVariable<float>("dx");
 	circle_agent.addAgentVariable<float>("dy");
 
+// TODO (mozhgan#1#05/12/16): write some tests that check the model object (model folder)
+// TODO (mozhgan#1#05/12/16): Write some tests for population objects. Check that the data is correct.
+
+
 	//circle add states
 	//circle_agent.addState("state1");
 	//circle_agent.addState("state2");
 
-	
+
 	//location message
 	MessageDescription location_message("location");
 	location_message.addVariable<float>("x");
 	location_message.addVariable<float>("y");
-	
+
 	//circle agent output_data function
 	//Do not specify the state. As their are no states in the system it is assumed that this model is stateless.
 	AgentFunctionDescription output_data("output_data");
@@ -49,18 +56,18 @@ int main(void) {
 	output_data.addOutput(output_location);
 	//output_data.setInitialState("state1");
 	circle_agent.addAgentFunction(output_data);
-	
+
 	//circle agent input_data function
 	AgentFunctionDescription input_data("input_data");
 	AgentFunctionInput input_location("location");
 	input_data.addInput(input_location);
 	circle_agent.addAgentFunction(input_data);
 
-	
+
 	//circle agent move function
 	AgentFunctionDescription move("move");
 	circle_agent.addAgentFunction(move);
-	
+
 	//model
 	flame_model.addMessage(location_message);
 	flame_model.addAgent(circle_agent);
@@ -68,12 +75,14 @@ int main(void) {
 	//TODO: At some point the model should be validated and then become read only. You should not be bale to add new agent variables once you have instances of the population for example.
 	//flame_model.validate();
 	
+
+
 	//TODO: globals
 
-	// POPULATION (FLAME2 mem) 
+	// POPULATION (FLAME2 mem)
 	/* Population is an instantiation of the model. It is equivalent to the data from 0.xml or any other state of the model. It requires a model description to know what the agent variables and states are. */
 	/* Data in populations and instances are only on the host. No concept of GPUs at this stage. */
-	
+
 	AgentPopulation population(flame_model, "circle");
 	for (int i=0; i< 100; i++){
 		AgentInstance instance = population.addInstance("default");
@@ -82,10 +91,10 @@ int main(void) {
 		instance.setVariable<float>("dx", 0);
 		instance.setVariable<float>("dy", 0);
 	}
-	
+
 
 	/* GLOBALS */
-	/* TODO: We will consdier this later. Not in the circles model. */
+	/* TODO: We will consider this later. Not in the circles model. */
 
 
 	// SIMULATION

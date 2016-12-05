@@ -46,7 +46,7 @@ void AgentDescription::addAgentFunction(const AgentFunctionDescription& function
 	functions.insert(FunctionMap::value_type(function.getName(), function));
 }
 
-MemoryMap& AgentDescription::getMemoryMap() {
+MemoryMap& AgentDescription::getMemoryMap() { // Moz: why two getMemoryMap, one is const
 	return memory;
 }
 
@@ -85,7 +85,7 @@ const unsigned int AgentDescription::getAgentVariableSize(const std::string vari
 }
 
 bool AgentDescription::requiresAgentCreation() const{
-	
+
 	//needs to search entire model for any functions with an agent output for this agent
 	for (FunctionMap::const_iterator it= functions.begin(); it != functions.end(); it++){
 		//if (*it->second()->)

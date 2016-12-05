@@ -3,6 +3,7 @@
  *
  *  Created on: 20 Feb 2014
  *      Author: paul
+ *  Last modified : 28 Nov 2016
  */
 
 #ifndef MODELDESCRIPTION_H_
@@ -20,6 +21,7 @@
 
 typedef std::map<const std::string, const AgentDescription&> AgentMap;
 typedef std::map<const std::string, const MessageDescription&> MessageMap;
+typedef std::map<const std::string, const AgentFunctionDescription&> FunctionMap; /*Moz*/
 
 class ModelDescription {
 public:
@@ -37,11 +39,19 @@ public:
 
 	const AgentMap& getAgentMap() const;
 
+	// Moz
+	const MessageMap& getMessageMap() const;
+	// Moz
+	const FunctionMap& getFunctionMap() const;
+
 
 private:
 	std::string name;
 	AgentMap agents;
 	MessageMap messages;
+    
+	/*Moz*/
+	FunctionMap functions;
 };
 
 

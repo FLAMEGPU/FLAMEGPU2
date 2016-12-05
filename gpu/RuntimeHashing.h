@@ -41,7 +41,7 @@ template <unsigned int N> __device__ __host__ inline static unsigned int Variabl
 
 
 /**
- * Non runtime hashing function
+ * Non compile time hashing function
  */
 
 unsigned int VariableHash(const char* str){
