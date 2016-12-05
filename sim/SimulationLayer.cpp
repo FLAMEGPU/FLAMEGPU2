@@ -1,5 +1,6 @@
-#include "SimulationLayer.h"
 #include "Simulation.h"
+#include "SimulationLayer.h"
+
 
 SimulationLayer::SimulationLayer(Simulation& sim, const std::string name) : simulation(sim), layer_name(name)
 {

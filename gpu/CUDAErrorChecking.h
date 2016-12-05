@@ -2,6 +2,8 @@
 
 
 #include <cuda_runtime.h>
+#include <string>
+#include <stdexcept>
 #include <device_launch_parameters.h>
 
 

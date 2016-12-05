@@ -1,10 +1,10 @@
-#pragma once
+#ifndef _SIMULATION
+#define _SIMULATION
 
 #include <vector>
-#include <string>
+#include <string.h>
 
 #include "SimulationLayer.h"
-#include "Simulation.h"
 #include "../model/ModelDescription.h"
 
 class Simulation
@@ -23,4 +23,6 @@ private:
 	const ModelDescription& model_description;
 	unsigned int simulation_steps;
 };
+
+#endif
 

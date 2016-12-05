@@ -44,6 +44,7 @@ SRC_MODEL:=model/
 
 #OPENGL_FLAGS := -lglut -lGLEW -lGLU -lGL
 #FLAMELIB := -I $(IDIR) -I $(SRC_) -I $(SRC_CUDA) -I $(SRC_VIZ) -I $(IDIR)GL/
+FLAMELIB := -I $(IDIR) -I $(SRC_GPU) -I $(SRC_MODEL) -I $(SRC_POP)  -I $(SRC_SIM) -I/usr/include/boost
 
 ################################################################################
 #Generating Dynamic Code from FLAMEGPU Templates
@@ -273,16 +274,16 @@ MODEL_CO_FILES := $(addprefix $(SRC_MODEL),$(notdir $(MODEL_C_FILES:.cpp=.o)))
 
 # MOZ: FIX THIS LATER, SO IT CAN COMPILES ALL TOGETHER
 $(SRC_GPU)%.o: $(SRC_GPU)%.cpp
-	$(EXEC) $(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(DEBUG) $(GENCODE_FLAGS) $(FLAMELIB) -o $@ -c $<
+	$(EXEC) g++ $(INCLUDES) $(ALL_CCFLAGS) $(DEBUG)  $(FLAMELIB) -o $@ -c $<
 
 $(SRC_SIM)%.o: $(SRC_SIM)%.cpp
-	$(EXEC) $(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(DEBUG) $(GENCODE_FLAGS) $(FLAMELIB) -o $@ -c $<
+	$(EXEC) g++ $(INCLUDES) $(ALL_CCFLAGS) $(DEBUG)  $(FLAMELIB) -o $@ -c $<
 
 $(SRC_MODEL)%.o: $(SRC_MODEL)%.cpp
-	$(EXEC) $(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(DEBUG) $(GENCODE_FLAGS) $(FLAMELIB) -o $@ -c $<
+	$(EXEC) g++ $(INCLUDES) $(ALL_CCFLAGS) $(DEBUG)  $(FLAMELIB) -o $@ -c $<
 
 $(SRC_POP)%.o: $(SRC_POP)%.cpp
-	$(EXEC) $(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(DEBUG) $(GENCODE_FLAGS) $(FLAMELIB) -o $@ -c $<
+	$(EXEC) g++ $(INCLUDES) $(ALL_CCFLAGS) $(DEBUG)  $(FLAMELIB) -o $@ -c $<
 
 
 Console_mode: BUILD_TYPE=$(Mode_TYPE)_Console

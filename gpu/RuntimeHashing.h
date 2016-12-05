@@ -1,6 +1,8 @@
 #ifndef HASHING_H_
 #define HASHING_H_
 
+#include <string.h>
+
 #include "cuda_runtime.h"
 
 #define EMPTY_HASH_VALUE 0x00

@@ -16,6 +16,6 @@ public:
 private:
 	const std::string layer_name; //not required
 	Simulation &simulation;
-	std::vector<const std::string> functions; //function names
+	std::vector<std::string> functions; //function names
 };
 
