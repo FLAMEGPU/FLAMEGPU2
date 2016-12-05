@@ -10,7 +10,7 @@
 
 // agent_map is a type CUDAAgentMap
 
-CUDAAgentModel::CUDAAgentModel(const ModelDescription& description) : model_description(description), agent_map(), message_map(), function_map() {
+CUDAAgentModel::CUDAAgentModel(const ModelDescription& description) : model_description(description), agent_map() {//, message_map(), function_map() {
 
 	//populate the CUDA agent map
 	const AgentMap &am = model_description.getAgentMap();
@@ -24,7 +24,7 @@ CUDAAgentModel::CUDAAgentModel(const ModelDescription& description) : model_desc
 	//same for messages - done
 	//same for functions - done
 
-	/*Moz*/
+	/*Moz
 	//populate the CUDA message map
 	const MessageMap &mm = model_description.getMessageMap();
 	MessageMap::const_iterator it;
@@ -34,7 +34,7 @@ CUDAAgentModel::CUDAAgentModel(const ModelDescription& description) : model_desc
 		MessageMap.insert(CUDAMessageMap::value_type(it->first, std::unique_ptr<CUDAMessage>(new CUDAMessage(it->second))));
 	}
 
-	/*Moz*/
+	
 	//populate the CUDA function map
 	const FunctionMap &mm = model_description.getFunctionMap();
 	FunctioneMap::const_iterator it;
@@ -42,6 +42,7 @@ CUDAAgentModel::CUDAAgentModel(const ModelDescription& description) : model_desc
 	for(it = mm.begin(); it != mm.end(); it++){
 		FunctionMap.insert(CUDAFunctionMap::value_type(it->first, std::unique_ptr<CUDAAgentFunction>(new CUDAAgentFunction(it->second))));
 	}
+	*/
 
 }
 
