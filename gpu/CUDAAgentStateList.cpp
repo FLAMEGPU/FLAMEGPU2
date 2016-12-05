@@ -18,7 +18,7 @@ CUDAAgentStateList::CUDAAgentStateList(CUDAAgent& cuda_agent) : agent(cuda_agent
 	//allocate state lists
 	allocateDeviceAgentList(&d_list);
 	allocateDeviceAgentList(&d_swap_list);
-	if (agent.getAgentDescription().requiresAgentCreation())
+	if (agent.getAgentDescription().requiresAgentCreation()) // Moz:  how about in 'CUDAAgentModel::simulate'?
 		allocateDeviceAgentList(&d_new_list);
 	else
 		d_new_list = 0;

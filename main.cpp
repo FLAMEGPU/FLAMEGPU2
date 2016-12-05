@@ -1,3 +1,4 @@
+#include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -5,6 +6,8 @@
 #include "pop/AgentPopulation.h"
 #include "sim/Simulation.h"
 #include "gpu/CUDAAgentModel.h"
+
+using namespace std;
 
 /* must be compiled separately using FLAME GPU builder
  * This will generate object files for different architecture targets as well as ptx info for each agent function (registers, memory use etc.)
@@ -31,6 +34,10 @@ int main(void) {
 	circle_agent.addAgentVariable<float>("y");
 	circle_agent.addAgentVariable<float>("dx");
 	circle_agent.addAgentVariable<float>("dy");
+
+// TODO (mozhgan#1#05/12/16): write some tests that check the model object (model folder)
+// TODO (mozhgan#1#05/12/16): Write some tests for population objects. Check that the data is correct.
+
 
 	//circle add states
 	//circle_agent.addState("state1");

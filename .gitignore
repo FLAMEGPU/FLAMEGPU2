@@ -2,6 +2,8 @@
 DoxyGen*/
 handler.cpp
 api/handler.h
+bin/
+obj/
 
 CUDA
 *.i
