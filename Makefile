@@ -42,6 +42,8 @@ STD14     := -std=c++14
 BOOST_LIB := -I/usr/include/boost
 CUDA_LIB  := -I/usr/local/cuda/include
 
+TEST_DIR := TEST
+
 ################################################################################
 
 # Location of the CUDA Toolkit
@@ -131,6 +133,9 @@ all: Console_mode
 
 main.o: main.cpp
 	$(EXEC) $(NVCC) $(DEBUG) $(STD11) $(BOOST_LIB)  $(CUDA_LIB)  $(GENCODE_FLAGS) -o $@ -c $<
+	
+test_model_validation.o: test_model_validation.cpp
+	$(EXEC) $(NVCC) $(DEBUG) $(STD11) $(BOOST_LIB) $(GENCODE_FLAGS) -o $@ -c $<
 
 
 GPU_C_FILES := $(wildcard $(SRC_GPU)*.cpp)
@@ -169,6 +174,17 @@ Console_mode: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILE
 	chmod +x $(BIN_DIR)Console_mode.sh
 
 
+Test_model: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES) test_model_validation.o
+	$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
+	$(EXEC) mkdir -p $(BIN_DIR)$(TEST_DIR)
+	$(EXEC) mv $@ $(BIN_DIR)$(TEST_DIR)
+	@echo ./$(TEST_DIR)/Test_model --log_level=test_suite> $(BIN_DIR)RUN_TEST.sh
+	chmod +x $(BIN_DIR)RUN_TEST.sh
+	find . -name '*.gch' -delete
+
+run_Test: Test_model
+	cd $(BIN_DIR) && ./RUN_TEST.sh
+		
 run: Console_mode
 	cd $(BIN_DIR) && ./Console_mode.sh $(iter)
 

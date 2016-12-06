@@ -67,6 +67,7 @@
 		<Unit filename="sim/Simulation.h" />
 		<Unit filename="sim/SimulationLayer.cpp" />
 		<Unit filename="sim/SimulationLayer.h" />
+		<Unit filename="test_model_validation.cpp" />
 		<Extensions>
 			<code_completion />
 			<debugger />

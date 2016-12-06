@@ -74,7 +74,7 @@ int main(void) {
 
 	//TODO: At some point the model should be validated and then become read only. You should not be bale to add new agent variables once you have instances of the population for example.
 	//flame_model.validate();
-	
+
 
 
 	//TODO: globals
