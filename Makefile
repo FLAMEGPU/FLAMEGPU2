@@ -182,7 +182,15 @@ Test_model: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES)
 	chmod +x $(BIN_DIR)RUN_TEST.sh
 	find . -name '*.gch' -delete
 
-run_Test: Test_model
+Test_pop: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES) test_pop_validation.o
+	$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
+	$(EXEC) mkdir -p $(BIN_DIR)$(TEST_DIR)
+	$(EXEC) mv $@ $(BIN_DIR)$(TEST_DIR)
+	@echo ./$(TEST_DIR)/Test_pop --log_level=test_suite> $(BIN_DIR)RUN_TEST.sh #--log_level=message
+	chmod +x $(BIN_DIR)RUN_TEST.sh
+	find . -name '*.gch' -delete
+	
+run_Test: Test_model Test_pop
 	cd $(BIN_DIR) && ./RUN_TEST.sh
 		
 run: Console_mode

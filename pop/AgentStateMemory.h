@@ -22,7 +22,7 @@
 
 typedef std::map<const std::string, std::unique_ptr<std::vector<boost::any>>> StateMemoryMap;
 
-class AgentStateMemory {
+class AgentStateMemory {// agent_list
 public:
 	AgentStateMemory(const AgentDescription &description, const std::string agent_state) ;
 	virtual ~AgentStateMemory() {}

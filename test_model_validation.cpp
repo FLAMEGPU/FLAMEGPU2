@@ -6,6 +6,7 @@
 //#include "boost/test/unit_test.hpp"
 #include <boost/test/included/unit_test.hpp>
 #include "model/ModelDescription.h"
+#include <typeinfo>
 
 using namespace std;
 
@@ -30,7 +31,7 @@ BOOST_AUTO_TEST_CASE(AgentVarCheck)
 
     BOOST_CHECK(circle_agent.getNumberAgentVariables() == 1);
     BOOST_CHECK(circle_agent.getAgentVariableSize("x") == 4);
-    BOOST_CHECK(circle_agent.getVariableType("x").name() == "f");
+    BOOST_CHECK(circle_agent.getVariableType("x") == typeid(float));
 }
 
 // NOTE (mozhgan#1#06/12/16): What do we expect the 'getVarableType' to do?
@@ -61,6 +62,8 @@ BOOST_AUTO_TEST_CASE(FunctionCheck)
 {
     BOOST_TEST_MESSAGE( "\nTesting Function and Message Name .." );
 
+    ModelDescription flame_model("circles_model");
+
     AgentDescription circle_agent("circle");
 
     AgentFunctionDescription output_data("output_data");
@@ -69,6 +72,13 @@ BOOST_AUTO_TEST_CASE(FunctionCheck)
     //output_data.setInitialState("state1");
     circle_agent.addAgentFunction(output_data);
 
+    AgentFunctionDescription move("move");
+    circle_agent.addAgentFunction(move);
+
+    //model
+    flame_model.addMessage(location_message);
+    flame_model.addAgent(circle_agent);
+
 
     BOOST_CHECK(output_data.getName()=="output_data");
     BOOST_CHECK(output_location.getMessageName()=="location");
@@ -76,6 +86,10 @@ BOOST_AUTO_TEST_CASE(FunctionCheck)
     BOOST_CHECK(circle_agent.hasAgentFunction("output_data")==true);
 
     BOOST_CHECK(output_data.getIntialState()=="default");
+
+    BOOST_CHECK(flame_model.getName()== "circles_model");
+    BOOST_CHECK(flame_model.getAgentDescription("circle").hasAgentFunction("move") == true);
+
 
 }
 BOOST_AUTO_TEST_SUITE_END()
