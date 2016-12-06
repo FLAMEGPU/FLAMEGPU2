@@ -32,7 +32,41 @@
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
 		</Compiler>
+		<Unit filename="api/flame_api.h" />
+		<Unit filename="api/flamegpu2.h" />
+		<Unit filename="gpu/CUDAAgent.cpp" />
+		<Unit filename="gpu/CUDAAgent.h" />
+		<Unit filename="gpu/CUDAAgentModel.cpp" />
+		<Unit filename="gpu/CUDAAgentModel.h" />
+		<Unit filename="gpu/CUDAAgentStateList.cpp" />
+		<Unit filename="gpu/CUDAAgentStateList.h" />
+		<Unit filename="gpu/CUDAErrorChecking.h" />
+		<Unit filename="gpu/RuntimeHashing.h" />
 		<Unit filename="main.cpp" />
+		<Unit filename="model/AgentDescription.cpp" />
+		<Unit filename="model/AgentDescription.h" />
+		<Unit filename="model/AgentFunctionDescription.cpp" />
+		<Unit filename="model/AgentFunctionDescription.h" />
+		<Unit filename="model/AgentFunctionInput.cpp" />
+		<Unit filename="model/AgentFunctionInput.h" />
+		<Unit filename="model/AgentFunctionOutput.cpp" />
+		<Unit filename="model/AgentFunctionOutput.h" />
+		<Unit filename="model/AgentStateDescription.cpp" />
+		<Unit filename="model/AgentStateDescription.h" />
+		<Unit filename="model/MessageDescription.cpp" />
+		<Unit filename="model/MessageDescription.h" />
+		<Unit filename="model/ModelDescription.cpp" />
+		<Unit filename="model/ModelDescription.h" />
+		<Unit filename="pop/AgentInstance.cpp" />
+		<Unit filename="pop/AgentInstance.h" />
+		<Unit filename="pop/AgentPopulation.cpp" />
+		<Unit filename="pop/AgentPopulation.h" />
+		<Unit filename="pop/AgentStateMemory.cpp" />
+		<Unit filename="pop/AgentStateMemory.h" />
+		<Unit filename="sim/Simulation.cpp" />
+		<Unit filename="sim/Simulation.h" />
+		<Unit filename="sim/SimulationLayer.cpp" />
+		<Unit filename="sim/SimulationLayer.h" />
 		<Extensions>
 			<code_completion />
 			<debugger />
