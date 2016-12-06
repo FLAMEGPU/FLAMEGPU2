@@ -1,67 +1,83 @@
+// NOTE (mozhgan#1#06/12/16): We can have each BOOST_CHECK as a seperate Test case, or we can seperate them with a message, or leave it as it is jsut now.
+
 #define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE Suites
+#define BOOST_TEST_MODULE Model_TestSuites
 
 //#include "boost/test/unit_test.hpp"
 #include <boost/test/included/unit_test.hpp>
 #include "model/ModelDescription.h"
-//#include "model/AgentDescription.h"
+
 using namespace std;
 
-BOOST_AUTO_TEST_SUITE(modelTest) //name of the test suite is modelTest
+BOOST_AUTO_TEST_SUITE(ModelDescTest) //name of the test suite is modelTest
 
-BOOST_AUTO_TEST_CASE(AgentNameCheck)
+BOOST_AUTO_TEST_CASE(AgentCheck)
 {
 
-    ModelDescription flame_model("circles_model");
-	AgentDescription circle_agent("circle");
+    BOOST_TEST_MESSAGE( "\nTesting Agent Name and Size .." );
+
+    AgentDescription circle_agent("circle");
 
     BOOST_CHECK(circle_agent.getName() == "circle");
-}
-
-BOOST_AUTO_TEST_CASE(memSizeCheck)
-{
-
-    ModelDescription flame_model("circles_model");
-	AgentDescription circle_agent("circle");
-
     BOOST_CHECK(circle_agent.getMemorySize()== 0);
 }
 
-BOOST_AUTO_TEST_CASE(AgentVarNumCheck)
+BOOST_AUTO_TEST_CASE(AgentVarCheck)
 {
-
-    ModelDescription flame_model("circles_model");
-	AgentDescription circle_agent("circle");
-	circle_agent.addAgentVariable<float>("x");
-
+    BOOST_TEST_MESSAGE( "Testing Agent Variable Size, Type, and Number .." );
+    AgentDescription circle_agent("circle");
+    circle_agent.addAgentVariable<float>("x");
 
     BOOST_CHECK(circle_agent.getNumberAgentVariables() == 1);
-
-}
-
-BOOST_AUTO_TEST_CASE(AgentVarSizeCheck)
-{
-
-    ModelDescription flame_model("circles_model");
-	AgentDescription circle_agent("circle");
-	circle_agent.addAgentVariable<float>("x");
-
     BOOST_CHECK(circle_agent.getAgentVariableSize("x") == 4);
-}
-
-
-BOOST_AUTO_TEST_CASE(AgentVarTypeCheck)
-{
-
-    std::type_info *temp ;
-    ModelDescription flame_model("circles_model");
-	AgentDescription circle_agent("circle");
-	circle_agent.addAgentVariable<float>("x");
-
     BOOST_CHECK(circle_agent.getVariableType("x").name() == "f");
 }
 
+// NOTE (mozhgan#1#06/12/16): What do we expect the 'getVarableType' to do?
+// FIXME (mozhgan#1#06/12/16): This test FAILS as the type is not equal. Is it gonna be 'f' or 'float' ?
 
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(MessageTest)
+
+BOOST_AUTO_TEST_CASE(MessageNameCheck)
+{
+
+    BOOST_TEST_MESSAGE( "\nTesting Message Name .." );
+    MessageDescription location_message("location");
+
+    BOOST_CHECK(location_message.getName()== "location");
+    location_message.addVariable<float>("x");
+// TODO (mozhgan#1#06/12/16): Test the variable
+
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(FunctionTest)
+
+BOOST_AUTO_TEST_CASE(FunctionCheck)
+{
+    BOOST_TEST_MESSAGE( "\nTesting Function and Message Name .." );
+
+    AgentDescription circle_agent("circle");
+
+    AgentFunctionDescription output_data("output_data");
+    AgentFunctionOutput output_location("location");
+    output_data.addOutput(output_location);
+    //output_data.setInitialState("state1");
+    circle_agent.addAgentFunction(output_data);
+
+
+    BOOST_CHECK(output_data.getName()=="output_data");
+    BOOST_CHECK(output_location.getMessageName()=="location");
+
+    BOOST_CHECK(circle_agent.hasAgentFunction("output_data")==true);
+
+    BOOST_CHECK(output_data.getIntialState()=="default");
+
+}
 BOOST_AUTO_TEST_SUITE_END()
 
 /*
