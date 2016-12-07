@@ -15,7 +15,10 @@
 #include "../pop/AgentPopulation.h"
 #include "CUDAAgent.h"
 
+#define UNIFIED_GPU_MEMORY
+
 struct AgentList{
+
 	//void **d_memory;	//device array of pointers to device variable arrays
 	void **h_d_memory;  //host array of pointers to device variable arrays
 };

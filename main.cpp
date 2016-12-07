@@ -90,6 +90,9 @@ int main(void) {
 		instance.setVariable<float>("y", i*0.1f);
 		instance.setVariable<float>("dx", 0);
 		instance.setVariable<float>("dy", 0);
+
+		//get function would look like
+		int x = instance.getVariable<int>("x");
 	}
 
 
