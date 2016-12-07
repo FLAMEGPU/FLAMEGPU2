@@ -1,4 +1,4 @@
-// NOTE (mozhgan#1#06/12/16): We can have each BOOST_CHECK as a seperate Test case, or we can seperate them with a message, or leave it as it is jsut now.
+// NOTE (mozhgan#1#07/12/16): We SHOULD have each BOOST_CHECK as a seperate Test case. The reason for this is if it fails one test, it never reach the next BOOST_CHECK that exist in the same TEST_CASE.
 
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE Model_TestSuites
@@ -65,6 +65,8 @@ BOOST_AUTO_TEST_CASE(FunctionCheck)
     ModelDescription flame_model("circles_model");
 
     AgentDescription circle_agent("circle");
+
+    MessageDescription location_message("location");
 
     AgentFunctionDescription output_data("output_data");
     AgentFunctionOutput output_location("location");

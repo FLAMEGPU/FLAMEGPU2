@@ -137,7 +137,12 @@ main.o: main.cpp
 test_model_validation.o: test_model_validation.cpp
 	$(EXEC) $(NVCC) $(DEBUG) $(STD11) $(BOOST_LIB) $(GENCODE_FLAGS) -o $@ -c $<
 
-
+test_pop_validation.o: test_pop_validation.cpp
+	$(EXEC) $(NVCC) $(DEBUG) $(STD11) $(BOOST_LIB) $(GENCODE_FLAGS) -o $@ -c $<
+	
+test_sim_validation.o: test_sim_validation.cpp
+	$(EXEC) $(NVCC) $(DEBUG) $(STD11) $(BOOST_LIB) $(GENCODE_FLAGS) -o $@ -c $<
+	
 GPU_C_FILES := $(wildcard $(SRC_GPU)*.cpp)
 GPU_CO_FILES := $(addprefix $(SRC_GPU),$(notdir $(GPU_C_FILES:.cpp=.o)))
 
@@ -190,8 +195,25 @@ Test_pop: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES) t
 	chmod +x $(BIN_DIR)RUN_TEST.sh
 	find . -name '*.gch' -delete
 	
-run_Test: Test_model Test_pop
+Test_sim: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES) test_sim_validation.o
+	$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
+	$(EXEC) mkdir -p $(BIN_DIR)$(TEST_DIR)
+	$(EXEC) mv $@ $(BIN_DIR)$(TEST_DIR)
+	@echo ./$(TEST_DIR)/Test_sim --log_level=test_suite> $(BIN_DIR)RUN_TEST.sh #--log_level=message
+	chmod +x $(BIN_DIR)RUN_TEST.sh
+	find . -name '*.gch' -delete
+	
+run_Test_model: Test_model 
 	cd $(BIN_DIR) && ./RUN_TEST.sh
+
+run_Test_pop: Test_pop
+	cd $(BIN_DIR) && ./RUN_TEST.sh
+	
+run_Test_sim: Test_sim
+	cd $(BIN_DIR) && ./RUN_TEST.sh
+	
+#run_Test: Test_model Test_pop Test_sim
+#	cd $(BIN_DIR) && ./RUN_TEST.sh
 		
 run: Console_mode
 	cd $(BIN_DIR) && ./Console_mode.sh $(iter)

@@ -69,6 +69,7 @@
 		<Unit filename="sim/SimulationLayer.h" />
 		<Unit filename="test_model_validation.cpp" />
 		<Unit filename="test_pop_validation.cpp" />
+		<Unit filename="test_sim_validation.cpp" />
 		<Extensions>
 			<code_completion />
 			<debugger />

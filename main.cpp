@@ -92,7 +92,7 @@ int main(void) {
 		instance.setVariable<float>("dy", 0);
 
 		//get function would look like
-		int x = instance.getVariable<int>("x");
+		//int x = instance.getVariable<int>("x");
 	}
 
 

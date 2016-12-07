@@ -17,14 +17,25 @@ AgentStateMemory::AgentStateMemory(const AgentDescription& description, const st
 
 		state_memory.insert(StateMemoryMap::value_type(variable_name, std::unique_ptr<std::vector<boost::any>> (new std::vector<boost::any>())));
 	}
+
 }
 
 unsigned int AgentStateMemory::getSize() const{
 	return size;
+
 }
 
-void AgentStateMemory::incrementSize() {
+void AgentStateMemory::incrementSize() { // loop through state map and set the values to zero
 	size++;
+
+
+	for (iter = m.begin(); iter != m.end(); iter++){
+		const std::string variable_name = iter->first;
+        std::vector<boost::any>& sm = getMemoryVector(variable_name);
+        //sm.insert(size, 0); // check
+
+	}
+
 }
 
 std::vector<boost::any>& AgentStateMemory::getMemoryVector(const std::string variable_name) {
