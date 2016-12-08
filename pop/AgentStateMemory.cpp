@@ -91,7 +91,7 @@ MemoryMap::const_iterator iter;
 std::vector<boost::any>& AgentStateMemory::getMemoryVector(const std::string variable_name) {
 	StateMemoryMap::iterator iter;
 	iter = state_memory.find(variable_name);
-        std::cout <<"get " <<variable_name << "\n";
+
 	if (iter == state_memory.end())
 		throw std::runtime_error("Invalid agent memory variable");
 
