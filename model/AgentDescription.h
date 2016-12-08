@@ -23,7 +23,7 @@ typedef std::map<const std::string, const AgentFunctionDescription&> FunctionMap
 
 typedef std::map<const std::string, const std::type_info&> MemoryMap;
 
-typedef std::map<const std::string, boost::any&> DefaultValueMap; // <--- this is not a template as used in addAgentVariable method! maybe boost::any<T>() , and add template <typename T>, hmm?
+typedef std::map<const std::string, boost::any> DefaultValueMap; // <--- this is not a template as used in addAgentVariable method! maybe boost::any<T>() , and add template <typename T>, hmm?
 
 typedef std::map<const std::type_info*, std::size_t> TypeSizeMap;	//not something that the user every sees. This is an interval map only for tracking the size of data types.
 
@@ -61,10 +61,10 @@ public:
     {
         memory.insert(MemoryMap::value_type(variable_name, typeid(T)));
         sizes.insert(TypeSizeMap::value_type(&typeid(T), (unsigned int)sizeof(T)));
-        defaults.insert(DefaultValueMap::value_type(variable_name, boost::any<T>()));
+        defaults.insert(DefaultValueMap::value_type(variable_name, T()));
     }
 
-    boost::any getDefaultValue(const std::string variable_name);
+    boost::any getDefaultValue(const std::string variable_name) const;
 
     MemoryMap& getMemoryMap(); //TODO should be shared pointer
 

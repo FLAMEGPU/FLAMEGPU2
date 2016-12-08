@@ -67,6 +67,7 @@
 		<Unit filename="sim/Simulation.h" />
 		<Unit filename="sim/SimulationLayer.cpp" />
 		<Unit filename="sim/SimulationLayer.h" />
+		<Unit filename="test_gpu_validation.cpp" />
 		<Unit filename="test_model_validation.cpp" />
 		<Unit filename="test_pop_validation.cpp" />
 		<Unit filename="test_sim_validation.cpp" />

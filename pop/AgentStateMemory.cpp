@@ -57,8 +57,8 @@ unsigned int AgentStateMemory::getSize() const{
 
 unsigned int AgentStateMemory::creatNewInstance(){
 
-//loop through the memory maps
-MemoryMap::const_iterator iter;
+    //loop through the memory maps
+    MemoryMap::const_iterator iter;
 	const MemoryMap &m = agent_description.getMemoryMap();
 
 	for (iter = m.begin(); iter != m.end(); iter++){

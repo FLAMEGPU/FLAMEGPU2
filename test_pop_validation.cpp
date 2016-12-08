@@ -32,6 +32,7 @@ BOOST_AUTO_TEST_CASE(PopulationNameCheck)
     BOOST_CHECK(population.getAgentName()=="circle");
 }
 
+
 BOOST_AUTO_TEST_CASE(PopulationInstVarCheck1)
 {
 
@@ -52,6 +53,11 @@ BOOST_AUTO_TEST_CASE(PopulationInstVarCheck1)
     instance.setVariable<float>("x", 0.1f);
 
     BOOST_CHECK_MESSAGE(instance.getVariable<float>("x")==0.1f, "Variable is "<< instance.getVariable<float>("x") << " and not 0.1f!!");
+    std::exception e;
+    // define my own exceptio  . Check if it is the right exception or not
+    //try{
+
+   // }catch()
     BOOST_CHECK_MESSAGE(instance.getVariable<int>("x")==0.1f, "Variable is "<< instance.getVariable<int>("x") << " and not 0.1f or there is problem with the type!!");
 
 }
@@ -75,10 +81,12 @@ BOOST_AUTO_TEST_CASE(PopulationInstVarCheck2)
     AgentInstance instance = population.addInstance("default");
     instance.setVariable<float>("x", 0.1f);
 
-    //cout<< instance.getVariable<float>("y") << endl;
-    BOOST_CHECK_MESSAGE(instance.getVariable<float>("y")==0, "Variable is "<< instance.getVariable<float>("y") << " and not 0 by default!!");
+
+    BOOST_CHECK_MESSAGE(instance.getVariable<float>("y")==0.0f, "Variable is "<< instance.getVariable<float>("y") << " and not 0.0f by default!!");
 
 }
+
+
 
 BOOST_AUTO_TEST_CASE(PopulationInstVarCheck3)
 {
@@ -160,17 +168,5 @@ BOOST_AUTO_TEST_CASE(PopulationSizeExtraCheck)
 
 }
 
-
 BOOST_AUTO_TEST_SUITE_END()
 
-/*
-Build object files by compiling with g++
-
-nvcc -c test_model_validation.cpp -o test.o -std=c++11 -I/usr/include/boost/test/included/
-
-To Link:
-/usr/local/cuda-8.0//bin/nvcc -ccbin g++   -m64    -Xlinker -L  -gencode arch=compute_37,code=sm_37 -gencode arch=compute_50,code=sm_50 -gencode arch=compute_52,code=sm_52 -gencode arch=compute_52,code=compute_52 -o suites model/AgentDescription.o model/MessageDescription.o model/AgentFunctionOutput.o model/AgentStateDescription.o model/ModelDescription.o model/AgentFunctionInput.o model/AgentFunctionDescription.o test.o
-
-To run:
-./suites --log_level=test_suite
-*/

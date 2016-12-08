@@ -80,15 +80,15 @@ unsigned int AgentDescription::getMemorySize() const
     return size;
 }
 
-boost::any AgentDescription::getDefaultValue(const std::string variable_name)
+boost::any AgentDescription::getDefaultValue(const std::string variable_name) const
 {
     //need to do a check to make sure that the varibale name exists
     //if it does then the following is safe
-    MemoryMap::const_iterator mm = memory.find(variable_name);
-    if (mm == memory.end())
+    DefaultValueMap::const_iterator dm = defaults.find(variable_name);
+    if (dm == defaults.end())
         throw std::runtime_error("Invalid agent memory variable");
 
-    return defaults.at(variable_name);
+    return dm->second;
 }
 
 unsigned int AgentDescription::getNumberAgentVariables() const

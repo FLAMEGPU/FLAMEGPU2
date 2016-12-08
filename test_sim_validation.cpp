@@ -39,14 +39,3 @@ BOOST_AUTO_TEST_CASE(SimulationNameCheck)
 
 BOOST_AUTO_TEST_SUITE_END()
 
-/*
-Build object files by compiling with g++
-
-nvcc -c test_model_validation.cpp -o test.o -std=c++11 -I/usr/include/boost/test/included/
-
-To Link:
-/usr/local/cuda-8.0//bin/nvcc -ccbin g++   -m64    -Xlinker -L  -gencode arch=compute_37,code=sm_37 -gencode arch=compute_50,code=sm_50 -gencode arch=compute_52,code=sm_52 -gencode arch=compute_52,code=compute_52 -o suites model/AgentDescription.o model/MessageDescription.o model/AgentFunctionOutput.o model/AgentStateDescription.o model/ModelDescription.o model/AgentFunctionInput.o model/AgentFunctionDescription.o test.o
-
-To run:
-./suites --log_level=test_suite
-*/

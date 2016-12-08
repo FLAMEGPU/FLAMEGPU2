@@ -5,6 +5,7 @@
 
 //#include "boost/test/unit_test.hpp"
 #include <boost/test/included/unit_test.hpp>
+#include <boost/any.hpp>
 #include "model/ModelDescription.h"
 #include <typeinfo>
 
@@ -32,6 +33,19 @@ BOOST_AUTO_TEST_CASE(AgentVarCheck)
     BOOST_CHECK(circle_agent.getNumberAgentVariables() == 1);
     BOOST_CHECK(circle_agent.getAgentVariableSize("x") == 4);
     BOOST_CHECK(circle_agent.getVariableType("x") == typeid(float));
+}
+
+BOOST_AUTO_TEST_CASE(DefaultValueCheck)
+{
+    BOOST_TEST_MESSAGE( "Testing Agent Variable Default Value" );
+    AgentDescription circle_agent("circle");
+    circle_agent.addAgentVariable<float>("f");
+    circle_agent.addAgentVariable<int>("i");
+
+
+    BOOST_CHECK(boost::any_cast<float>(circle_agent.getDefaultValue("f")) == 0.0f);
+    BOOST_CHECK(boost::any_cast<int>(circle_agent.getDefaultValue("i")) == 0);
+
 }
 
 // NOTE (mozhgan#1#06/12/16): What do we expect the 'getVarableType' to do?
@@ -96,14 +110,3 @@ BOOST_AUTO_TEST_CASE(FunctionCheck)
 }
 BOOST_AUTO_TEST_SUITE_END()
 
-/*
-Build object files by compiling with g++
-
-nvcc -c test_model_validation.cpp -o test.o -std=c++11 -I/usr/include/boost/test/included/
-
-To Link:
-/usr/local/cuda-8.0//bin/nvcc -ccbin g++   -m64    -Xlinker -L  -gencode arch=compute_37,code=sm_37 -gencode arch=compute_50,code=sm_50 -gencode arch=compute_52,code=sm_52 -gencode arch=compute_52,code=compute_52 -o suites model/AgentDescription.o model/MessageDescription.o model/AgentFunctionOutput.o model/AgentStateDescription.o model/ModelDescription.o model/AgentFunctionInput.o model/AgentFunctionDescription.o test.o
-
-To run:
-./suites --log_level=test_suite
-*/
