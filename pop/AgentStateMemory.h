@@ -22,30 +22,32 @@
 
 typedef std::map<const std::string, std::unique_ptr<std::vector<boost::any>>> StateMemoryMap;
 
-class AgentStateMemory {// agent_list
+class AgentStateMemory  // agent_list
+{
 public:
-	AgentStateMemory(const AgentDescription &description, const std::string agent_state) ;
-	virtual ~AgentStateMemory() {}
+    AgentStateMemory(const AgentDescription &description, const std::string agent_state) ;
+    virtual ~AgentStateMemory() {}
 
-	unsigned int getSize() const;
+    unsigned int getSize() const;
 
-	void incrementSize();
+    //void init(const AgentDescription &agent_description);
+    unsigned int creatNewInstance();
 
-	std::vector<boost::any>& getMemoryVector(const std::string variable_name);
+    std::vector<boost::any>& getMemoryVector(const std::string variable_name);
 
-	const std::vector<boost::any>& getReadOnlyMemoryVector(const std::string variable_name) const;
+    const std::vector<boost::any>& getReadOnlyMemoryVector(const std::string variable_name) const;
 
-	//todo:templated get vector function with boost any cast
+    //todo:templated get vector function with boost any cast
 
-	const std::type_info& getVariableType(std::string variable_name); //const
+    const std::type_info& getVariableType(std::string variable_name); //const
 
-	bool isSameDescription(const AgentDescription& description) const;
+    bool isSameDescription(const AgentDescription& description) const;
 
 protected:
-	const AgentDescription &agent_description;
-	const std::string agent_state;
-	StateMemoryMap state_memory;
-	unsigned int size;
+    const AgentDescription &agent_description;
+    const std::string agent_state;
+    StateMemoryMap state_memory;
+    unsigned int size;
 };
 
 #endif /* AGENTMEMORY_H_ */
