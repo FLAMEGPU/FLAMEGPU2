@@ -7,106 +7,136 @@
 
 #include "AgentDescription.h"
 
-AgentDescription::AgentDescription(std::string name) : states(), functions(), memory(), sizes(), default_state(new AgentStateDescription("default")){
-	stateless = true;
-	this->name = name;
-	addState(*default_state, true);
+AgentDescription::AgentDescription(std::string name) : states(), functions(), memory(), sizes(), default_state(new AgentStateDescription("default"))
+{
+    stateless = true;
+    this->name = name;
+    addState(*default_state, true);
 }
 
-AgentDescription::~AgentDescription() {
+AgentDescription::~AgentDescription()
+{
 
-}
-
-
-void AgentDescription::setName(std::string name) {
-}
-
-std::string AgentDescription::getName() const{
-	return name;
-}
-
-void AgentDescription::addState(const AgentStateDescription& state, bool initial_state) {
-
-	//check if this is a stateless system
-	if (stateless){
-		stateless = false;
-	}
-
-	states.insert(StateMap::value_type(state.getName(), state));
-	if (initial_state)
-		setInitialState(state.getName());
-}
-
-void AgentDescription::setInitialState(const std::string initial_state) {
-	this->initial_state = initial_state;
-}
-
-void AgentDescription::addAgentFunction(const AgentFunctionDescription& function) {
-
-	functions.insert(FunctionMap::value_type(function.getName(), function));
-}
-
-MemoryMap& AgentDescription::getMemoryMap() { // Moz: why two getMemoryMap, one is const
-	return memory;
 }
 
 
-const MemoryMap& AgentDescription::getMemoryMap() const {
-	return memory;
+void AgentDescription::setName(std::string name)
+{
 }
 
-const StateMap& AgentDescription::getStateMap() const {
-	return states;
+std::string AgentDescription::getName() const
+{
+    return name;
 }
 
-unsigned int AgentDescription::getMemorySize() const {
-	unsigned int size = 0;
-	for (TypeSizeMap::const_iterator it = sizes.begin(); it != sizes.end(); it++){
-		size += it->second;
-	}
-	return size;
+void AgentDescription::addState(const AgentStateDescription& state, bool initial_state)
+{
+
+    //check if this is a stateless system
+    if (stateless)
+    {
+        stateless = false;
+    }
+
+    states.insert(StateMap::value_type(state.getName(), state));
+    if (initial_state)
+        setInitialState(state.getName());
 }
 
-unsigned int AgentDescription::getNumberAgentVariables() const{
-	return memory.size();
+void AgentDescription::setInitialState(const std::string initial_state)
+{
+    this->initial_state = initial_state;
 }
 
-const unsigned int AgentDescription::getAgentVariableSize(const std::string variable_name) const{
-	//get the variable name type
-	MemoryMap::const_iterator mm = memory.find(variable_name);
-	if (mm == memory.end())
-		throw std::runtime_error("Invalid agent memory variable");
-	const std::type_info *t = &(mm->second);
-	//get the type size
-	TypeSizeMap::const_iterator tsm = sizes.find(t);
-	if (tsm == sizes.end())
-		throw std::runtime_error("Missing entry in type sizes map. Something went bad.");
-	return tsm->second;
+void AgentDescription::addAgentFunction(const AgentFunctionDescription& function)
+{
+
+    functions.insert(FunctionMap::value_type(function.getName(), function));
 }
 
-bool AgentDescription::requiresAgentCreation() const{
-
-	//needs to search entire model for any functions with an agent output for this agent
-	for (FunctionMap::const_iterator it= functions.begin(); it != functions.end(); it++){
-		//if (*it->second()->)
-	}
-
-	return false;
+MemoryMap& AgentDescription::getMemoryMap()   // Moz: why two getMemoryMap, one is const
+{
+    return memory;
 }
 
-const std::type_info& AgentDescription::getVariableType(const std::string variable_name) const{
-	MemoryMap::const_iterator iter;
-	iter = memory.find(variable_name);
 
-	if (iter == memory.end())
-		throw std::runtime_error("Invalid agent memory variable");
+const MemoryMap& AgentDescription::getMemoryMap() const
+{
+    return memory;
+}
 
-	return iter->second;
+const StateMap& AgentDescription::getStateMap() const
+{
+    return states;
+}
+
+unsigned int AgentDescription::getMemorySize() const
+{
+    unsigned int size = 0;
+    for (TypeSizeMap::const_iterator it = sizes.begin(); it != sizes.end(); it++)
+    {
+        size += it->second;
+    }
+    return size;
+}
+
+boost::any AgentDescription::getDefaultValue(const std::string variable_name)
+{
+    //need to do a check to make sure that the varibale name exists
+    //if it does then the following is safe
+    MemoryMap::const_iterator mm = memory.find(variable_name);
+    if (mm == memory.end())
+        throw std::runtime_error("Invalid agent memory variable");
+
+    return defaults.at(variable_name);
+}
+
+unsigned int AgentDescription::getNumberAgentVariables() const
+{
+    return memory.size();
+}
+
+const unsigned int AgentDescription::getAgentVariableSize(const std::string variable_name) const
+{
+    //get the variable name type
+    MemoryMap::const_iterator mm = memory.find(variable_name);
+    if (mm == memory.end())
+        throw std::runtime_error("Invalid agent memory variable");
+    const std::type_info *t = &(mm->second);
+    //get the type size
+    TypeSizeMap::const_iterator tsm = sizes.find(t);
+    if (tsm == sizes.end())
+        throw std::runtime_error("Missing entry in type sizes map. Something went bad.");
+    return tsm->second;
+}
+
+bool AgentDescription::requiresAgentCreation() const
+{
+
+    //needs to search entire model for any functions with an agent output for this agent
+    for (FunctionMap::const_iterator it= functions.begin(); it != functions.end(); it++)
+    {
+        //if (*it->second()->)
+    }
+
+    return false;
+}
+
+const std::type_info& AgentDescription::getVariableType(const std::string variable_name) const
+{
+    MemoryMap::const_iterator iter;
+    iter = memory.find(variable_name);
+
+    if (iter == memory.end())
+        throw std::runtime_error("Invalid agent memory variable");
+
+    return iter->second;
 
 }
 
-bool AgentDescription::hasAgentFunction(const std::string function_name) const {
-	FunctionMap::const_iterator f;
-	f = functions.find(function_name);
-	return (f != functions.end());
+bool AgentDescription::hasAgentFunction(const std::string function_name) const
+{
+    FunctionMap::const_iterator f;
+    f = functions.find(function_name);
+    return (f != functions.end());
 }

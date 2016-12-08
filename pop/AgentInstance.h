@@ -48,7 +48,7 @@ public:
 		const std::type_info& v_type = agent_state_memory.getVariableType(variable_name);
 		if (v_type != typeid(T))
 			throw std::runtime_error("Bad variable type in agent instance get variable");
-std::cout<<"index in getVar : "<<index ;
+
 		//todo error handling around the cast to check for exceptions
 		return boost::any_cast<T>(v.at(index));
 	}

@@ -72,9 +72,11 @@ MemoryMap::const_iterator iter;
 		//const std::type_info& v_type = state_memory.getVariableType(variable_name);
 		//creat a varibale of that type and add it to the vector
 		//auto zero = 0;
-        int zero = 0;
 
-		v.insert(it, zero);
+		//get the default value for this varibale name from the model description and add a copy of this.
+
+
+		v.insert(it, agent_description.getDefaultValue(variable_name));
 
 
     }
