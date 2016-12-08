@@ -74,9 +74,9 @@ MemoryMap::const_iterator iter;
 		//auto zero = 0;
 
 		//get the default value for this varibale name from the model description and add a copy of this.
+        boost::any temp =  agent_description.getDefaultValue(variable_name);
 
-
-		v.insert(it, agent_description.getDefaultValue(variable_name));
+		v.insert(it,temp);
 
 
     }
