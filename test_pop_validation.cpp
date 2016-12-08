@@ -80,6 +80,87 @@ BOOST_AUTO_TEST_CASE(PopulationInstVarCheck2)
 
 }
 
+BOOST_AUTO_TEST_CASE(PopulationInstVarCheck3)
+{
+
+
+    BOOST_TEST_MESSAGE( "\nTesting Agent population Instance Variable .." );
+
+    ModelDescription flame_model("circles_model");
+    AgentDescription circle_agent("circle");
+
+    circle_agent.addAgentVariable<float>("x");
+    circle_agent.addAgentVariable<float>("y");
+
+    flame_model.addAgent(circle_agent);
+
+    AgentPopulation population(flame_model, "circle");
+
+    AgentInstance instance = population.addInstance("default");
+    instance.setVariable<float>("x", 0.1f);
+
+    BOOST_CHECK_MESSAGE(instance.getVariable<float>("z")==0, "Variable does not exist Error -->  "<< instance.getVariable<float>("z") << " !!");
+
+}
+
+
+BOOST_AUTO_TEST_CASE(PopulationSizeCheck)
+{
+
+    BOOST_TEST_MESSAGE( "\nTesting Agent population size set by default .." );
+
+    ModelDescription flame_model("circles_model");
+    AgentDescription circle_agent("circle");
+
+    circle_agent.addAgentVariable<float>("x");
+    circle_agent.addAgentVariable<float>("y");
+
+    flame_model.addAgent(circle_agent);
+
+    AgentPopulation population(flame_model, "circle", 10);
+
+    BOOST_CHECK(population.getMaximumPopulationSize()==10);
+
+    for (int i=0; i< 100; i++)
+    {
+        AgentInstance instance = population.addInstance("default");
+        instance.setVariable<float>("x", i*0.1f);
+    }
+
+
+    BOOST_CHECK_MESSAGE(population.getMaximumPopulationSize()==1034, "population is " << population.getMaximumPopulationSize() << " and not 1034!!");
+
+}
+
+
+BOOST_AUTO_TEST_CASE(PopulationSizeExtraCheck)
+{
+
+
+    BOOST_TEST_MESSAGE( "\nTesting adding agents more than the max population .." );
+
+    ModelDescription flame_model("circles_model");
+    AgentDescription circle_agent("circle");
+
+    circle_agent.addAgentVariable<float>("x");
+    circle_agent.addAgentVariable<float>("y");
+
+    flame_model.addAgent(circle_agent);
+
+    AgentPopulation population(flame_model, "circle", 1);
+
+    for (int i=0; i< 1026; i++)
+    {
+        AgentInstance instance = population.addInstance("default");
+        instance.setVariable<float>("x", i*0.1f);
+    }
+
+
+    BOOST_CHECK_MESSAGE(population.getMaximumPopulationSize()==2049, "population is " << population.getMaximumPopulationSize() << " and not 2049!!");
+
+}
+
+
 BOOST_AUTO_TEST_SUITE_END()
 
 /*
