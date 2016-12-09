@@ -41,7 +41,7 @@ void AgentFunctionDescription::addInput(const AgentFunctionInput &input) {
 }
 
 void AgentFunctionDescription::addOutput(const AgentFunctionOutput &output) {
-	if (inputs.size() == 0)
+	if (outputs.size() == 0)
 		outputs.insert(OutputsMap::value_type(output.getMessageName(), output));
 	//else TODO: raise error
 
