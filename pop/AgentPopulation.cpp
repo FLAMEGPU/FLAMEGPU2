@@ -7,10 +7,10 @@
 
 #include "AgentPopulation.h"
 
-AgentPopulation::AgentPopulation(const ModelDescription &model_description, const std::string name, unsigned int max_size): 
-	model(model_description), 
-	agent_name(name), 
-	maximum_size(max_size), 
+AgentPopulation::AgentPopulation(const ModelDescription &model_description, const std::string name, unsigned int max_size):
+	model(model_description),
+	agent_name(name),
+	maximum_size(max_size),
 	states_map() {
 
 }
@@ -52,7 +52,7 @@ const AgentStateMemory& AgentPopulation::getStateMemory(const std::string agent_
 	AgentStatesMap::const_iterator iter;
 	iter = states_map.find(k);
 
-	if (iter == states_map.end()){
+    if (iter == states_map.end()){
 		throw std::runtime_error("Invalid agent state name");
 	}
 

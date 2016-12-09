@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "exception/FGPUException.h"
 #include "model/ModelDescription.h"
 #include "pop/AgentPopulation.h"
 #include "sim/Simulation.h"

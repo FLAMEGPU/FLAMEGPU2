@@ -19,36 +19,8 @@ AgentStateMemory::AgentStateMemory(const AgentDescription& description, const st
 		state_memory.insert(StateMemoryMap::value_type(variable_name, std::unique_ptr<std::vector<boost::any>> (new std::vector<boost::any>())));
 
     }
-    //init(description);
-}
-
-/*
-void AgentStateMemory::init(const AgentDescription &description){
-
-	MemoryMap::const_iterator iter;
-	const MemoryMap &m = description.getMemoryMap();
-
-	for (iter = m.begin(); iter != m.end(); iter++){
-		const std::string variable_name = iter->first;
-
-		std::vector<boost::any>& v = getMemoryVector(variable_name);
-		std::cout << "after get \n" ;
-		std::vector<boost::any>::iterator it = v.begin() + getSize();
-        std::cout << "after iter \n" ;
-		//do the insert
-		v.insert(it,0);
-		std::cout << "after insert\n" ;
-
-		  std::cout << "myvector contains:";
-  for ()
-    std::cout << ' ' << *it;
-  std::cout << '\n';
-
-		}
-		std::cout << "init done \n" ;
 
 }
-*/
 
 unsigned int AgentStateMemory::getSize() const{
 	return size;
@@ -64,25 +36,18 @@ unsigned int AgentStateMemory::creatNewInstance(){
 	for (iter = m.begin(); iter != m.end(); iter++){
 		const std::string variable_name = iter->first;
 
-        //add zero values at current size
+
 		std::vector<boost::any>& v = getMemoryVector(variable_name);
 		std::vector<boost::any>::iterator it = v.begin() + size;
-		//do the insert
-		//get the type of the variable
-		//const std::type_info& v_type = state_memory.getVariableType(variable_name);
-		//creat a varibale of that type and add it to the vector
-		//auto zero = 0;
+
 
 		//get the default value for this varibale name from the model description and add a copy of this.
         boost::any temp =  agent_description.getDefaultValue(variable_name);
 
+                //add zero values at current size
 		v.insert(it,temp);
 
-
     }
-
-    //return current size
-    //increment size
     return size++;
 
 
