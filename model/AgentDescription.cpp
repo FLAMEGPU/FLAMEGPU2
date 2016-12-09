@@ -86,7 +86,8 @@ boost::any AgentDescription::getDefaultValue(const std::string variable_name) co
     //if it does then the following is safe
     DefaultValueMap::const_iterator dm = defaults.find(variable_name);
     if (dm == defaults.end())
-        throw std::runtime_error("Invalid agent memory variable");
+        //throw std::runtime_error("Invalid agent memory variable");
+        throw InvalidAgentVar();
 
     return dm->second;
 }
@@ -101,12 +102,14 @@ const unsigned int AgentDescription::getAgentVariableSize(const std::string vari
     //get the variable name type
     MemoryMap::const_iterator mm = memory.find(variable_name);
     if (mm == memory.end())
-        throw std::runtime_error("Invalid agent memory variable");
+       // throw std::runtime_error("Invalid agent memory variable");
+        throw InvalidAgentVar();
     const std::type_info *t = &(mm->second);
     //get the type size
     TypeSizeMap::const_iterator tsm = sizes.find(t);
     if (tsm == sizes.end())
-        throw std::runtime_error("Missing entry in type sizes map. Something went bad.");
+        //throw std::runtime_error("Missing entry in type sizes map. Something went bad.");
+        throw InvalidMapEntry();
     return tsm->second;
 }
 
@@ -128,7 +131,8 @@ const std::type_info& AgentDescription::getVariableType(const std::string variab
     iter = memory.find(variable_name);
 
     if (iter == memory.end())
-        throw std::runtime_error("Invalid agent memory variable");
+       // throw std::runtime_error("Invalid agent memory variable");
+        throw InvalidAgentVar();
 
     return iter->second;
 

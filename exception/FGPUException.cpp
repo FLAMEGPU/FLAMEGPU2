@@ -93,10 +93,10 @@ virtual const char *what() const
     }
 };
 
-class MissingEntry : public FGPUException
+class InvalidMapEntry : public FGPUException
 {
 public:
-MissingEntry():FGPUException(){}
+InvalidMapEntry():FGPUException(){}
 virtual const char *what() const
     {
         std::cout << "Missing entry in type sizes map. Something went bad.\n";
@@ -140,6 +140,26 @@ public:
 virtual const char *what() const
     {
         std::cout << "CUDA Agent uses different agent description\n";
+    }
+};
+
+class InvalidAgentFunc : public FGPUException
+{
+public:
+ InvalidAgentFunc():FGPUException(){}
+virtual const char *what() const
+    {
+        std::cout << "Unknown agent function\n";
+    }
+};
+
+class InvalidFuncLayerIndx : public FGPUException
+{
+public:
+ InvalidFuncLayerIndx():FGPUException(){}
+virtual const char *what() const
+    {
+        std::cout << "Agent layer index out of bounds!\n";
     }
 };
 

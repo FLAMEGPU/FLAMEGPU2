@@ -15,7 +15,7 @@ void SimulationLayer::addAgentFunction(const std::string function_name){
 	bool found = false;
 	AgentMap::const_iterator it;
 	const AgentMap& agents = simulation.getModelDescritpion().getAgentMap();
-	
+
 	//check agent function exists
 	for (it = agents.begin(); it != agents.end(); it++){
 		if (it->second.hasAgentFunction(function_name))
@@ -25,5 +25,6 @@ void SimulationLayer::addAgentFunction(const std::string function_name){
 	if (found)
 		functions.push_back(function_name);
 	else
-		throw std::runtime_error("Unknown agent function!");
+		//throw std::runtime_error("Unknown agent function!");
+		throw InvalidAgentFunc();
 }

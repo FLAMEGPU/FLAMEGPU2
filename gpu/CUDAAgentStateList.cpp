@@ -71,7 +71,8 @@ void CUDAAgentStateList::setAgentData(const AgentStateMemory &state_memory){
 
 	//check that we are refering to the same agent description
 	if (!state_memory.isSameDescription(agent.getAgentDescription())){
-		throw std::runtime_error("CUDA Agent uses different agent description."); 
+		//throw std::runtime_error("CUDA Agent uses different agent description.");
+		throw InvalidCudaAgentDesc();
 	}
 
 	//copy raw agent data to device pointers
@@ -79,13 +80,13 @@ void CUDAAgentStateList::setAgentData(const AgentStateMemory &state_memory){
 
 	int i=0;
 	for (MemoryMap::const_iterator it = mem.begin(); it != mem.end(); it++){
-		
+
 		//gpuErrchk( cudaMemcpy( d_Circles_default, h_Circles_default, xmachine_Circle_SoA_size, cudaMemcpyHostToDevice));
 
 		//gpuErrchk( cudaMalloc( (void**) &((*agent_list)->h_d_memory[i]), agent_description.getAgentVariableSize(it->first) * max_list_size));
 		i++;
 	}
 
-	
+
 }
 

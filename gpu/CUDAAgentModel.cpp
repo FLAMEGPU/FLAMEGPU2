@@ -34,7 +34,7 @@ CUDAAgentModel::CUDAAgentModel(const ModelDescription& description) : model_desc
 		MessageMap.insert(CUDAMessageMap::value_type(it->first, std::unique_ptr<CUDAMessage>(new CUDAMessage(it->second))));
 	}
 
-	
+
 	//populate the CUDA function map
 	const FunctionMap &mm = model_description.getFunctionMap();
 	FunctioneMap::const_iterator it;
@@ -55,7 +55,8 @@ void CUDAAgentModel::setPopulationData(AgentPopulation& population, bool overwit
 	it = agent_map.find(population.getAgentName());
 
 	if (it == agent_map.end()){
-		throw std::runtime_error("CUDA agent not found. This should not happen.");
+		//throw std::runtime_error("CUDA agent not found. This should not happen.");
+		throw InvalidCudaAgent();
 	}
 
 	//create agent state lists

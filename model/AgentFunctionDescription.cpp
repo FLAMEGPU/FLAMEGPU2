@@ -8,7 +8,7 @@
 #include "AgentFunctionDescription.h"
 
 
-AgentFunctionDescription::AgentFunctionDescription(const std::string function_name) : function_name(function_name), initial_state("default"), end_state("default") {  
+AgentFunctionDescription::AgentFunctionDescription(const std::string function_name) : function_name(function_name), initial_state("default"), end_state("default") {
 
 }
 
@@ -44,4 +44,5 @@ void AgentFunctionDescription::addOutput(const AgentFunctionOutput &output) {
 	if (inputs.size() == 0)
 		outputs.insert(OutputsMap::value_type(output.getMessageName(), output));
 	//else TODO: raise error
+
 }

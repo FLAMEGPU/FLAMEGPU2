@@ -54,6 +54,7 @@ const AgentStateMemory& AgentPopulation::getStateMemory(const std::string agent_
 
     if (iter == states_map.end()){
 		throw std::runtime_error("Invalid agent state name");
+		throw InvalidStateName();
 	}
 
 	return *iter->second;

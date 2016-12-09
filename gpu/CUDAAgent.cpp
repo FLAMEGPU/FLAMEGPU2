@@ -29,7 +29,8 @@ CUDAAgent::CUDAAgent(const AgentDescription& description) : agent_description(de
 			n += 1;
 			if (n >= getHashListSize())
 			{
-				throw std::runtime_error("Hash list full. This should never happen.");  
+				//throw std::runtime_error("Hash list full. This should never happen.");
+				throw InvalidHashList();
 			}
 			i += 1;
 			if (i >= getHashListSize())

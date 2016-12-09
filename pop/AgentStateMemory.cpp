@@ -60,7 +60,8 @@ std::vector<boost::any>& AgentStateMemory::getMemoryVector(const std::string var
 	iter = state_memory.find(variable_name);
 
 	if (iter == state_memory.end())
-		throw std::runtime_error("Invalid agent memory variable");
+		//throw std::runtime_error("Invalid agent memory variable");
+		throw InvalidAgentVar();
 
 	return *iter->second;
 }
@@ -70,7 +71,8 @@ const std::vector<boost::any>& AgentStateMemory::getReadOnlyMemoryVector(const s
 	iter = state_memory.find(variable_name);
 
 	if (iter == state_memory.end())
-		throw std::runtime_error("Invalid agent memory variable");
+		//throw std::runtime_error("Invalid agent memory variable");
+		throw InvalidAgentVar();
 
 	return *iter->second;
 }
