@@ -65,7 +65,8 @@ void CUDAAgentModel::setPopulationData(AgentPopulation& population, bool overwit
 
 void CUDAAgentModel::simulate(const Simulation& sim){ // Moz:
 	if (agent_map.size() == 0)
-		throw std::runtime_error("CUDA agent map size is zero"); // population size = 0 ? do we mean checking the number of elements in the map container?
+		//throw std::runtime_error("CUDA agent map size is zero"); // population size = 0 ? do we mean checking the number of elements in the map container?
+		throw InvalidCudaAgentMapSize();
 
 	//CUDAAgentMap::iterator it;
 

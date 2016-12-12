@@ -15,6 +15,7 @@
 
 #include "AgentStateDescription.h"
 #include "AgentFunctionDescription.h"
+#include "../exception/FGPUException.h"
 
 //State map is a mapping between a state name (i.e. default) and a state description object reference
 typedef std::map<const std::string, const AgentStateDescription&> StateMap;	//is the reference constant or the object the reference points to????

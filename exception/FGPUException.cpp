@@ -5,8 +5,12 @@
  *      Author:
  */
 
+#include <string>
+#include <iostream>
+
 #include "FGPUException.h"
-using namespace std;
+
+//using namespace std;
 
 
 ///////////////////////////////////////////// 1st solution

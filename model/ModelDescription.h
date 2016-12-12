@@ -19,6 +19,7 @@
 #include "AgentDescription.h"
 #include "MessageDescription.h"
 
+
 typedef std::map<const std::string, const AgentDescription&> AgentMap;
 typedef std::map<const std::string, const MessageDescription&> MessageMap;
 typedef std::map<const std::string, const AgentFunctionDescription&> FunctionMap; /*Moz*/
@@ -49,7 +50,7 @@ private:
 	std::string name;
 	AgentMap agents;
 	MessageMap messages;
-    
+
 	/*Moz*/
 	FunctionMap functions;
 };

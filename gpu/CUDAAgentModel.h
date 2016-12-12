@@ -16,6 +16,7 @@
 #include "../pop/AgentPopulation.h"
 #include "../sim/Simulation.h"
 
+
 #include "CUDAAgent.h"
 
 typedef std::map<const std::string, std::unique_ptr<CUDAAgent>> CUDAAgentMap;
