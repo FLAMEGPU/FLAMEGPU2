@@ -40,28 +40,11 @@ unsigned int AgentStateMemory::creatNewInstance()
     for (iter = m.begin(); iter != m.end(); iter++)
     {
         const std::string variable_name = iter->first;
-        std::vector<boost::any> v; // was &v , a reference
-        try
-        {
-            v = getMemoryVector(variable_name);
 
-             }
-        catch (FGPUException& theException)
-        {
-            theException.what();
-        }
-
+        std::vector<boost::any> &v= getMemoryVector(variable_name);
         std::vector<boost::any>::iterator it = v.begin() + size;
- boost::any temp ;
+        boost::any temp =  agent_description.getDefaultValue(variable_name);
 
-        //get the default value for this varibale name from the model description and add a copy of this.
-try{
-        temp =  agent_description.getDefaultValue(variable_name);
-}
-        catch (FGPUException& theException)
-        {
-            theException.what();
-        }
         //add zero values at current size
         v.insert(it,temp);
 

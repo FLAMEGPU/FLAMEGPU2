@@ -7,40 +7,13 @@
 
 #include <string>
 #include <iostream>
+#include <exception>
 
 using namespace std;
 
-
-///////////////////////////////////////////// 1st solution
-/*
-class Overflow
-{
-public:
-    Overflow() {};
-    ~Overflow() {};
-    const char *what() const
-    {
-        return "Overflow msg";
-    }
-};
-
-class Underflow
-{
-public:
-    Underflow() {};
-    ~Underflow() {};
-    const char *what() const
-    {
-        return "Underflow msg";
-    }
-};
-*/
-
-////////////////////////////// 2nd solution
-
 class UnknownError {};
 
-class FGPUException
+class FGPUException//: public exception
 {
 public:
     FGPUException() {};
@@ -48,11 +21,8 @@ public:
 
     virtual const char *what() const
     {
-        std::cout << "Unknown Error Message\n";
-        //return "Error msg";
+        return "Unknown Error Message";
     }
-
-//protected:
 };
 
 class InvalidInputFile: public FGPUException
@@ -61,7 +31,7 @@ public:
 InvalidInputFile():FGPUException(){}
 virtual const char *what() const
     {
-        std::cout << "Invalid Input File\n";
+        return "Invalid Input File";
     }
 };
 
@@ -71,7 +41,7 @@ public:
 InvalidHashList():FGPUException(){}
 virtual const char *what() const
     {
-        std::cout << "Hash list full. This should never happen\n";
+        return "Hash list full. This should never happen";
     }
 };
 
@@ -81,7 +51,7 @@ public:
 InvalidVarType():FGPUException(){}
 virtual const char *what() const
     {
-        std::cout << "Bad variable type in agent instance set variable\n";
+      return "Bad variable type in agent instance set variable";
     }
 };
 
@@ -91,7 +61,7 @@ public:
 InvalidStateName():FGPUException(){}
 virtual const char *what() const
     {
-        std::cout << "Invalid agent state name\n";
+      return "Invalid agent state name";
     }
 };
 
@@ -101,7 +71,7 @@ public:
 InvalidMapEntry():FGPUException(){}
 virtual const char *what() const
     {
-        std::cout << "Missing entry in type sizes map. Something went bad.\n";
+       return "Missing entry in type sizes map. Something went bad.";
     }
 };
 
@@ -111,7 +81,7 @@ public:
  InvalidAgentVar():FGPUException(){}
 virtual const char *what() const
     {
-        std::cout << "Invalid agent memory variable\n";
+       return "Invalid agent memory variable";
     }
 };
 
@@ -121,7 +91,7 @@ public:
  InvalidCudaAgent():FGPUException(){}
 virtual const char *what() const
     {
-        std::cout << "CUDA agent not found. This should not happen\n";
+       return "CUDA agent not found. This should not happen";
     }
 };
 
@@ -131,7 +101,7 @@ public:
  InvalidCudaAgentMapSize():FGPUException(){}
 virtual const char *what() const
     {
-        std::cout << "CUDA agent map size is zero\n";
+        return "CUDA agent map size is zero";
     }
 };
 
@@ -141,7 +111,7 @@ public:
  InvalidCudaAgentDesc():FGPUException(){}
 virtual const char *what() const
     {
-        std::cout << "CUDA Agent uses different agent description\n";
+        return "CUDA Agent uses different agent description";
     }
 };
 
@@ -151,7 +121,7 @@ public:
  InvalidAgentFunc():FGPUException(){}
 virtual const char *what() const
     {
-        std::cout << "Unknown agent function\n";
+        return "Unknown agent function";
     }
 };
 
@@ -161,45 +131,6 @@ public:
  InvalidFuncLayerIndx():FGPUException(){}
 virtual const char *what() const
     {
-        std::cout << "Agent layer index out of bounds!\n";
+        return "Agent layer index out of bounds!";
     }
 };
-
-
-
-
-
-// USAGE for solution 2
-/*
-void MyFunc()
-{
-    int a = 1;
-    cout<< "In MyFunc(). Throwing Overflow exception." << endl;
-    throw Overflow();
-}
-
-
- int main()
- { // we can throw class name in any func,, then catch it below
-     try
-     {
-MyFunc();
-
-     }
-     catch (UnknownError)
-     {
-         std::cout << "Unable to process the error!\n";
-     }
-     catch (FGPUException& theException)
-     {
-         theException.what();
-     }
-     catch (...)
-     {
-         std::cout << "Something went wrong,"
-             << "but I've no idea what!" << std::endl;
-     }
-     std::cout << "Done.\n";
-     return 0;
- }
-*/

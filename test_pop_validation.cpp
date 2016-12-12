@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE(PopulationInstVarCheck1)
     // define my own exceptio  . Check if it is the right exception or not
     //try{
 
-   // }catch()
+    // }catch()
     BOOST_CHECK_MESSAGE(instance.getVariable<int>("x")==0.1f, "Variable is "<< instance.getVariable<int>("x") << " and not 0.1f or there is problem with the type!!");
 
 }

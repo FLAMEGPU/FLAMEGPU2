@@ -34,7 +34,6 @@
 		</Compiler>
 		<Unit filename="api/flame_api.h" />
 		<Unit filename="api/flamegpu2.h" />
-		<Unit filename="exception/FGPUException.cpp" />
 		<Unit filename="exception/FGPUException.h" />
 		<Unit filename="gpu/CUDAAgent.cpp" />
 		<Unit filename="gpu/CUDAAgent.h" />

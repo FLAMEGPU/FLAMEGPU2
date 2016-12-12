@@ -102,7 +102,7 @@ const unsigned int AgentDescription::getAgentVariableSize(const std::string vari
     //get the variable name type
     MemoryMap::const_iterator mm = memory.find(variable_name);
     if (mm == memory.end())
-       // throw std::runtime_error("Invalid agent memory variable");
+        // throw std::runtime_error("Invalid agent memory variable");
         throw InvalidAgentVar();
     const std::type_info *t = &(mm->second);
     //get the type size
@@ -131,7 +131,7 @@ const std::type_info& AgentDescription::getVariableType(const std::string variab
     iter = memory.find(variable_name);
 
     if (iter == memory.end())
-       // throw std::runtime_error("Invalid agent memory variable");
+        // throw std::runtime_error("Invalid agent memory variable");
         throw InvalidAgentVar();
 
     return iter->second;

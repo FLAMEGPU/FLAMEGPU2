@@ -42,16 +42,11 @@ AgentInstance AgentPopulation::addInstance(const std::string agent_state)
     //create new state map
     else
     {
-        try
-        {
-            const AgentDescription& agent_description = model.getAgentDescription(agent_name);
 
-            iter = states_map.insert(AgentStatesMap::value_type(k, std::unique_ptr<AgentStateMemory>(new AgentStateMemory(agent_description, agent_state)))).first;
-        }
-        catch (FGPUException& theException)
-        {
-            theException.what();
-        }
+        const AgentDescription& agent_description = model.getAgentDescription(agent_name);
+
+        iter = states_map.insert(AgentStatesMap::value_type(k, std::unique_ptr<AgentStateMemory>(new AgentStateMemory(agent_description, agent_state)))).first;
+
         return AgentInstance(*iter->second);
     }
 }

@@ -110,40 +110,15 @@ int main(void)
     Simulation simulation(flame_model);
 
     SimulationLayer output_layer(simulation, "output_layer"); //in the original schema layers are not named
-
-    try
-    {
-        output_layer.addAgentFunction("output_data");			  //equivalent of layerfunction in FLAMEGPU
-    }
-    catch (FGPUException& theException)
-    {
-        theException.what();
-    }
+    output_layer.addAgentFunction("output_data");			  //equivalent of layerfunction in FLAMEGPU
     simulation.addSimulationLayer(output_layer);
 
     SimulationLayer input_layer(simulation, "input_layer");
-    try
-    {
-        input_layer.addAgentFunction("input_data");
-    }
-    catch (FGPUException& theException)
-    {
-        theException.what();
-    }
-
+    input_layer.addAgentFunction("input_data");
     simulation.addSimulationLayer(input_layer);
 
     SimulationLayer move_layer(simulation, "move_layer");
-
-    try
-    {
-        move_layer.addAgentFunction("move");
-    }
-    catch (FGPUException& theException)
-    {
-        theException.what();
-    }
-
+    move_layer.addAgentFunction("move");
     simulation.addSimulationLayer(move_layer);
 
     //This would come from the program arguments. Would be argv[2] if this file had been generated from model.xml
@@ -153,23 +128,11 @@ int main(void)
     /* Instantiate the model with a set of data (agents) on the device */
     /* Run the model */
     CUDAAgentModel cuda_model(flame_model);
-    try
-    {
-        cuda_model.setPopulationData(population);
-    }
-    catch (FGPUException& theException)
-    {
-        theException.what();
-    }
 
-    try
-    {
-        cuda_model.simulate(simulation);
-    }
-    catch (FGPUException& theException)
-    {
-        theException.what();
-    }
+    cuda_model.setPopulationData(population);
+
+    cuda_model.simulate(simulation);
+
     //cuda_model.step(simulation);
 
     //cuda_model.getPopulation(population);

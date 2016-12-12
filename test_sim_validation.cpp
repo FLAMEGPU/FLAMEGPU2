@@ -18,18 +18,18 @@ BOOST_AUTO_TEST_CASE(SimulationNameCheck)
     AgentDescription circle_agent("circle");
 
     AgentFunctionDescription output_data("output_data");
-	AgentFunctionOutput output_location("location");
-	output_data.addOutput(output_location);
-	//output_data.setInitialState("state1");
-	circle_agent.addAgentFunction(output_data);
-	flame_model.addAgent(circle_agent);
+    AgentFunctionOutput output_location("location");
+    output_data.addOutput(output_location);
+    //output_data.setInitialState("state1");
+    circle_agent.addAgentFunction(output_data);
+    flame_model.addAgent(circle_agent);
 
 
     Simulation simulation(flame_model);
 
-	SimulationLayer output_layer(simulation, "output_layer");
-	output_layer.addAgentFunction("output_data");
-	simulation.addSimulationLayer(output_layer);
+    SimulationLayer output_layer(simulation, "output_layer");
+    output_layer.addAgentFunction("output_data");
+    simulation.addSimulationLayer(output_layer);
 
 
     BOOST_TEST_MESSAGE( "\nTesting Simulation Name and Size .." );

@@ -1,3 +1,5 @@
+// NOTE (mozhgan#1#07/12/16): We SHOULD have each BOOST_CHECK as a seperate Test case. The reason for this is if it fails one test, it never reach the next BOOST_CHECK that exist in the same TEST_CASE.
+
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE Model_TestSuites
 
@@ -45,6 +47,9 @@ BOOST_AUTO_TEST_CASE(DefaultValueCheck)
     BOOST_CHECK(boost::any_cast<int>(circle_agent.getDefaultValue("i")) == 0);
 
 }
+
+// NOTE (mozhgan#1#06/12/16): What do we expect the 'getVarableType' to do?
+// FIXME (mozhgan#1#06/12/16): This test FAILS as the type is not equal. Is it gonna be 'f' or 'float' ?
 
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -102,7 +107,6 @@ BOOST_AUTO_TEST_CASE(FunctionCheck)
     BOOST_CHECK(flame_model.getAgentDescription("circle").hasAgentFunction("move") == true);
 
 
-    BOOST_CHECK_THROW(flame_model.getAgentDescription("circle"),InvalidAgentVar); // expecting an error
-
 }
 BOOST_AUTO_TEST_SUITE_END()
+
