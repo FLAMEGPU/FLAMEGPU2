@@ -30,7 +30,10 @@ BOOST_AUTO_TEST_CASE(PopulationNameCheck)
 
     BOOST_TEST_MESSAGE( "\nTesting Agent population Name .." );
     BOOST_CHECK(population.getAgentName()=="circle");
+
+    BOOST_CHECK_THROW(population.getStateMemory("circe"),InvalidStateName); // expecting an error
 }
+
 
 
 BOOST_AUTO_TEST_CASE(PopulationInstVarCheck1)
@@ -50,15 +53,14 @@ BOOST_AUTO_TEST_CASE(PopulationInstVarCheck1)
     AgentPopulation population(flame_model, "circle");
 
     AgentInstance instance = population.addInstance("default");
+
+    BOOST_CHECK_THROW(instance.setVariable<int>("x", 0.1f),InvalidVarType);
+
     instance.setVariable<float>("x", 0.1f);
 
     BOOST_CHECK_MESSAGE(instance.getVariable<float>("x")==0.1f, "Variable is "<< instance.getVariable<float>("x") << " and not 0.1f!!");
-    std::exception e;
-    // define my own exceptio  . Check if it is the right exception or not
-    //try{
 
-    // }catch()
-    BOOST_CHECK_MESSAGE(instance.getVariable<int>("x")==0.1f, "Variable is "<< instance.getVariable<int>("x") << " and not 0.1f or there is problem with the type!!");
+    BOOST_CHECK_THROW(instance.getVariable<int>("x")==0.1f,InvalidVarType); // expecting an error
 
 }
 

@@ -112,6 +112,7 @@ int main(void)
     SimulationLayer output_layer(simulation, "output_layer"); //in the original schema layers are not named
     output_layer.addAgentFunction("output_data");			  //equivalent of layerfunction in FLAMEGPU
     simulation.addSimulationLayer(output_layer);
+    //TOD: simulation.insertFunctionLayerAt(layer, int index) //Should inster at the layer position and move all other layer back
 
     SimulationLayer input_layer(simulation, "input_layer");
     input_layer.addAgentFunction("input_data");
@@ -121,6 +122,8 @@ int main(void)
     move_layer.addAgentFunction("move");
     simulation.addSimulationLayer(move_layer);
 
+    //TODO: simulation.getLayerPosition("layer name") - returns an int
+    //Simulation.addFunctionToLayer(0,"lmove")
     //This would come from the program arguments. Would be argv[2] if this file had been generated from model.xml
     simulation.setSimulationSteps(10);
 

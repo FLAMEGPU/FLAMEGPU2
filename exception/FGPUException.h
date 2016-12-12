@@ -51,7 +51,7 @@ public:
 InvalidVarType():FGPUException(){}
 virtual const char *what() const
     {
-      return "Bad variable type in agent instance set variable";
+      return "Bad variable type in agent instance set/get variable";
     }
 };
 

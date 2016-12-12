@@ -39,7 +39,10 @@ BOOST_AUTO_TEST_CASE(SimulationNameCheck)
 
     cuda_model.simulate(simulation);
 
-
+    //BOOST_CHECK_THROW(..,InvalidCudaAgent); // expecting an error
+    //BOOST_CHECK_THROW(..,InvalidCudaAgentDesc); // expecting an error
+    //BOOST_CHECK_THROW(..,InvalidCudaAgentMapSize); // expecting an error
+    //BOOST_CHECK_THROW(..,InvalidHashList); // expecting an error
 
 }
 

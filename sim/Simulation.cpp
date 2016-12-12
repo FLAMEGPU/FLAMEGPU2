@@ -11,10 +11,19 @@ Simulation::~Simulation(void)
 {
 }
 
-void Simulation::addFunctionToLayer(int layer, std::string function_name)
+void Simulation::addFunctionToLayer(int layer, std::string function_name) // we haven't used it yet
+
 {
 
-    layers.at(layer)->addAgentFunction(function_name);
+    try
+    {
+        layers.at(layer)->addAgentFunction(function_name);
+    }
+    catch (const std::out_of_range&)
+    {
+        throw std::runtime_error("Agent layer index out of bounds!");
+    }
+
 }
 
 unsigned int Simulation::addSimulationLayer(SimulationLayer& layer)
