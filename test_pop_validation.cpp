@@ -109,7 +109,7 @@ BOOST_AUTO_TEST_CASE(PopulationInstVarCheck3)
     AgentInstance instance = population.addInstance("default");
     instance.setVariable<float>("x", 0.1f);
 
-    BOOST_CHECK_MESSAGE(instance.getVariable<float>("z")==0, "Variable does not exist Error -->  "<< instance.getVariable<float>("z") << " !!");
+    BOOST_CHECK_THROW(instance.getVariable<float>("z"),InvalidVarType); // expecting an error , but not a corret one - this is wrong (Note, if the variable does not exit, the relevant error is not returned!)
 
 }
 

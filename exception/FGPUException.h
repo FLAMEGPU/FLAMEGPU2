@@ -1,8 +1,7 @@
-/*
- * FGPUException.cpp
+
+ /** FGPUException.cpp
  *
- *  Created on: 09 Dec 2016
- *      Author:
+ * Created on: 09 Dec 2016
  */
 
 #include <string>

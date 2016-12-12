@@ -31,7 +31,7 @@ BOOST_AUTO_TEST_CASE(AgentVarCheck)
     BOOST_CHECK(circle_agent.getNumberAgentVariables() == 1);
     BOOST_CHECK(circle_agent.getAgentVariableSize("x") == 4);
     BOOST_CHECK(circle_agent.getVariableType("x") == typeid(float));
-    BOOST_CHECK_THROW(circle_agent.getAgentVariableSize("y"),InvalidMapEntry); // expecting an error
+    BOOST_CHECK_THROW(circle_agent.getAgentVariableSize("y"),InvalidAgentVar); // expecting an error
 }
 
 BOOST_AUTO_TEST_CASE(DefaultValueCheck)
@@ -103,7 +103,7 @@ BOOST_AUTO_TEST_CASE(FunctionCheck)
     BOOST_CHECK(flame_model.getAgentDescription("circle").hasAgentFunction("move") == true);
 
 
-    BOOST_CHECK_THROW(flame_model.getAgentDescription("circle"),InvalidAgentVar); // expecting an error
+    BOOST_CHECK_THROW(flame_model.getAgentDescription("cirle"),InvalidAgentVar); // expecting an error
 
 }
 BOOST_AUTO_TEST_SUITE_END()

@@ -183,7 +183,7 @@ Test_model: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES)
 	$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
 	$(EXEC) mkdir -p $(BIN_DIR)$(TEST_DIR)
 	$(EXEC) mv $@ $(BIN_DIR)$(TEST_DIR)
-	@echo ./$(TEST_DIR)/Test_model --log_level=test_suite --run_test='$$'{1:-}> >  $(BIN_DIR)RUN_TEST.sh #--log_level=message
+	@echo ./$(TEST_DIR)/Test_model --log_level=test_suite --run_test='$$'{1:-}> $(BIN_DIR)RUN_TEST.sh #--log_level=message
 	chmod +x $(BIN_DIR)RUN_TEST.sh
 	find . -name '*.gch' -delete
 
