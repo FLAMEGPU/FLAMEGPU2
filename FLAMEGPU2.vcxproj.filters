@@ -24,9 +24,6 @@
     <ClInclude Include="api\flame_api.h">
       <Filter>api</Filter>
     </ClInclude>
-    <ClInclude Include="gpu\CUDAAgentFunction.h">
-      <Filter>gpu</Filter>
-    </ClInclude>
     <ClInclude Include="gpu\CUDAAgentModel.h">
       <Filter>gpu</Filter>
     </ClInclude>
@@ -80,9 +77,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="gpu\CUDAAgentFunction.cpp">
-      <Filter>gpu</Filter>
-    </ClCompile>
     <ClCompile Include="gpu\CUDAAgentModel.cpp">
       <Filter>gpu</Filter>
     </ClCompile>
@@ -138,6 +132,9 @@
       <Filter>tests</Filter>
     </ClCompile>
     <ClCompile Include="test_sim_validation.cpp">
+      <Filter>tests</Filter>
+    </ClCompile>
+    <ClCompile Include="test_all.cpp">
       <Filter>tests</Filter>
     </ClCompile>
   </ItemGroup>

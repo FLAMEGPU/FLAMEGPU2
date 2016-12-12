@@ -1,9 +1,9 @@
 // NOTE (mozhgan#1#07/12/16): We SHOULD have each BOOST_CHECK as a seperate Test case. The reason for this is if it fails one test, it never reach the next BOOST_CHECK that exist in the same TEST_CASE.
 
-#define BOOST_TEST_DYN_LINK
+//#define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE GPU_TestSuites
 
-//#include "boost/test/unit_test.hpp"
+#include <boost/test/unit_test.hpp>
 #include <boost/test/included/unit_test.hpp>
 #include "pop/AgentPopulation.h"
 #include "sim/Simulation.h"

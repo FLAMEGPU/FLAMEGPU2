@@ -30,7 +30,6 @@
     <ClInclude Include="api\flame_api.h" />
     <ClInclude Include="gpu\CUDAAgent.h" />
     <ClInclude Include="gpu\CUDAAgentStateList.h" />
-    <ClInclude Include="gpu\CUDAAgentFunction.h" />
     <ClInclude Include="gpu\CUDAAgentModel.h" />
     <ClInclude Include="gpu\CUDAErrorChecking.h" />
     <ClInclude Include="gpu\RuntimeHashing.h" />
@@ -50,7 +49,6 @@
   <ItemGroup>
     <ClCompile Include="gpu\CUDAAgent.cpp" />
     <ClCompile Include="gpu\CUDAAgentStateList.cpp" />
-    <ClCompile Include="gpu\CUDAAgentFunction.cpp" />
     <ClCompile Include="gpu\CUDAAgentModel.cpp" />
     <ClCompile Include="model\AgentDescription.cpp" />
     <ClCompile Include="model\AgentFunctionDescription.cpp" />
@@ -64,15 +62,26 @@
     <ClCompile Include="pop\AgentPopulation.cpp" />
     <ClCompile Include="sim\Simulation.cpp" />
     <ClCompile Include="sim\SimulationLayer.cpp" />
-    <ClCompile Include="test_gpu_validation.cpp" />
-    <ClCompile Include="test_model_validation.cpp" />
-    <ClCompile Include="test_pop_validation.cpp" />
-    <ClCompile Include="test_sim_validation.cpp" />
+    <ClCompile Include="test_all.cpp" />
+    <ClCompile Include="test_gpu_validation.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='BoostTest|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="test_model_validation.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="test_pop_validation.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="test_sim_validation.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="main.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='BoostTest|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='BoostTest|x64'">true</ExcludedFromBuild>
     </CudaCompile>
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -225,7 +234,8 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>cudart.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>cudart.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;libboost_unit_test_framework-vc120-mt-gd-1_62.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(BOOST_DIR)\stage\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>echo copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"
