@@ -1,8 +1,6 @@
-#define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE Model_TestSuites
 
 //#include "boost/test/unit_test.hpp"
-#include <boost/test/included/unit_test.hpp>
+#include <boost/test/unit_test.hpp>
 #include <boost/any.hpp>
 #include "model/ModelDescription.h"
 #include <typeinfo>
@@ -103,7 +101,7 @@ BOOST_AUTO_TEST_CASE(FunctionCheck)
     BOOST_CHECK(flame_model.getAgentDescription("circle").hasAgentFunction("move") == true);
 
 
-    BOOST_CHECK_THROW(flame_model.getAgentDescription("circle"),InvalidAgentVar); // expecting an error
+    BOOST_CHECK_THROW(flame_model.getAgentDescription("error"),InvalidAgentVar); // expecting an error
 
 }
 BOOST_AUTO_TEST_SUITE_END()
