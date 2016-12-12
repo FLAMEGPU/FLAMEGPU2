@@ -16,6 +16,9 @@
     <Filter Include="sim">
       <UniqueIdentifier>{2d5bb87a-93dd-496b-ad5f-2dbdc524bb40}</UniqueIdentifier>
     </Filter>
+    <Filter Include="tests">
+      <UniqueIdentifier>{4137b97e-dbf7-4914-86d4-ac980a31ec73}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="api\flame_api.h">
@@ -124,6 +127,18 @@
     </ClCompile>
     <ClCompile Include="sim\SimulationLayer.cpp">
       <Filter>sim</Filter>
+    </ClCompile>
+    <ClCompile Include="test_gpu_validation.cpp">
+      <Filter>tests</Filter>
+    </ClCompile>
+    <ClCompile Include="test_model_validation.cpp">
+      <Filter>tests</Filter>
+    </ClCompile>
+    <ClCompile Include="test_pop_validation.cpp">
+      <Filter>tests</Filter>
+    </ClCompile>
+    <ClCompile Include="test_sim_validation.cpp">
+      <Filter>tests</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
