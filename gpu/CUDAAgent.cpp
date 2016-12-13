@@ -22,7 +22,7 @@ CUDAAgent::CUDAAgent(const AgentDescription& description) : agent_description(de
         //save the variable hash in the host hash list
         unsigned int hash = VariableHash(it->first.c_str());
         unsigned int n = 0;
-        unsigned int i = (hash) % agent_description.getNumberAgentVariables();
+		unsigned int i = (hash) % getHashListSize();	// agent_description.getNumberAgentVariables();
 
         while (h_hashes[i] != EMPTY_HASH_VALUE)
         {
@@ -54,9 +54,38 @@ CUDAAgent::~CUDAAgent(void)
 }
 
 
-unsigned int CUDAAgent::getHashListSize()
+unsigned int CUDAAgent::getHashListSize() const
 {
     return 2*agent_description.getNumberAgentVariables();
+}
+
+int CUDAAgent::getHashIndex(const char * variable_name) const
+{
+	//function resolves hash collisions
+	unsigned int hash = VariableHash(variable_name);
+	unsigned int n = 0;
+	unsigned int i = (hash) % agent_description.getNumberAgentVariables();
+
+	while (h_hashes[i] != EMPTY_HASH_VALUE)
+	{
+		if (h_hashes[i] == hash){
+			return i; //return index if hash is found
+		}
+		n += 1;
+		if (n >= getHashListSize())
+		{
+			//throw std::runtime_error("Hash list full. This should never happen.");
+			throw InvalidHashList();
+		}
+		i += 1;
+		if (i >= getHashListSize())
+		{
+			i = 0;
+		}
+	}
+	
+	throw std::runtime_error("This should be an unknown variable error. Should never occur");
+	return -1; //return invalid index
 }
 
 const AgentDescription& CUDAAgent::getAgentDescription() const

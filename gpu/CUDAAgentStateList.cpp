@@ -40,7 +40,7 @@ void CUDAAgentStateList::allocateDeviceAgentList(AgentList** agent_list)
 
     const MemoryMap &mem = agent.getAgentDescription().getMemoryMap();
 
-    //allocate host vector to hold device pointers
+    //allocate host vector to hold device pointers //TODO: Check this. No need for a structure. Not currently being cleaned up
     *agent_list = new AgentList();
     (*agent_list)->h_d_memory = (void**)malloc(sizeof(void*)*agent.getHashListSize());
     memset((*agent_list)->h_d_memory, 0, sizeof(void*)*agent.getHashListSize());
@@ -50,7 +50,13 @@ void CUDAAgentStateList::allocateDeviceAgentList(AgentList** agent_list)
     for (MemoryMap::const_iterator it = mem.begin(); it != mem.end(); it++)
     {
 		//allocate memory for the state list on the device
-        gpuErrchk( cudaMalloc( (void**) &((*agent_list)->h_d_memory[i]), agent.getAgentDescription().getAgentVariableSize(it->first) * agent.getMaximumListSize()));
+		
+		//get the hash index of the variable so we know what position to allocate
+		int hash_index = agent.getHashIndex(it->first.c_str());
+
+		//do the allocation at the correct index
+		gpuErrchk(cudaMalloc((void**)&((*agent_list)->h_d_memory[hash_index]), agent.getAgentDescription().getAgentVariableSize(it->first) * agent.getMaximumListSize()));
+        //gpuErrchk( cudaMalloc( (void**) &((*agent_list)->h_d_memory[i]), agent.getAgentDescription().getAgentVariableSize(it->first) * agent.getMaximumListSize()));
         i++;
     }
 
@@ -65,7 +71,10 @@ void CUDAAgentStateList::releaseDeviceAgentList(AgentList* agent_list)
     int i=0;
     for (MemoryMap::const_iterator it = mem.begin(); it != mem.end(); it++)
     {
-        gpuErrchk( cudaFree( &agent_list->h_d_memory[i] )); //todo suspect.....
+		//get the hash index of the variable so we know what position to allocate
+		int hash_index = agent.getHashIndex(it->first.c_str());
+
+        gpuErrchk( cudaFree( &agent_list->h_d_memory[hash_index] )); //todo suspect.....
         i++;
     }
 
