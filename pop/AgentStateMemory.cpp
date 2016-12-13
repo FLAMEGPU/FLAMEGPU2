@@ -65,6 +65,7 @@ std::vector<boost::any>& AgentStateMemory::getMemoryVector(const std::string var
         //throw std::runtime_error("Invalid agent memory variable");
         throw InvalidAgentVar();
 
+
     return *iter->second;
 }
 

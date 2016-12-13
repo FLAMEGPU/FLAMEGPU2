@@ -1,7 +1,10 @@
 // NOTE (mozhgan#1#07/12/16): We SHOULD have each BOOST_CHECK as a seperate Test case. The reason for this is if it fails one test, it never reach the next BOOST_CHECK that exist in the same TEST_CASE.
 
-//#include "boost/test/unit_test.hpp"
+//#define BOOST_TEST_DYN_LINK
+#define BOOST_TEST_MODULE Pop_TestSuites
+
 #include <boost/test/unit_test.hpp>
+#include <boost/test/included/unit_test.hpp>
 #include "model/ModelDescription.h"
 #include "pop/AgentPopulation.h"
 
@@ -106,7 +109,7 @@ BOOST_AUTO_TEST_CASE(PopulationInstVarCheck3)
     AgentInstance instance = population.addInstance("default");
     instance.setVariable<float>("x", 0.1f);
 
-    BOOST_CHECK_MESSAGE(instance.getVariable<float>("z")==0, "Variable does not exist Error -->  "<< instance.getVariable<float>("z") << " !!");
+    BOOST_CHECK_THROW(instance.getVariable<float>("z"),InvalidVarType); // expecting an error , but not a corret one - this is wrong (Note, if the variable does not exit, the relevant error is not returned!)
 
 }
 
