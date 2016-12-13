@@ -117,32 +117,29 @@ help:
 	@echo "************************************************************************"
 	@echo "*  Copyright 2016 University of Sheffield.  All rights reserved.       *"
 	@echo "************************************************************************"
-	@echo "           ------------------------------------------------            *"
 	@echo "make all -> builds all executables in either release or debug          *"
 	@echo "           ------------------------------------------------            *"
-	@echo "make console_mode -> builds executables in console mode                *"
+	@echo "make FGPU -> builds executables for FGPU                               *"
 	@echo "                                                                       *"
 	@echo "make < .. > dbg='arg' -> builds in Release/Debug only                  *"
 	@echo "                                'arg' -> 0 or 1 value                  *"
-	@echo "                                                                       *"
-	@echo "To run executables for console mode, run below command:                *"
-	@echo "make run_console           
+	@echo "           ------------------------------------------------            *"
+	@echo "To run FGPU, run below command:                                        *"
+	@echo "make run                                                               *"
+	@echo "           ------------------------------------------------            *"
+	@echo "To run Test units, run below command:                                  *"
+	@echo "make run_BOOST_TEST TSuite='arg'                                       *"
+	@echo "                          'arg' can be the name the specific unit test *"
 	@echo "************************************************************************"
  
-all: Console_mode 
+all: FGPU 
 
 main.o: main.cpp
 	$(EXEC) $(NVCC) $(DEBUG) $(STD11) $(BOOST_LIB)  $(CUDA_LIB)  $(GENCODE_FLAGS) -o $@ -c $<
 	
-test_model_validation.o: test_model_validation.cpp
+test_all.o: test_all.cpp
 	$(EXEC) $(NVCC) $(DEBUG) $(STD11) $(BOOST_LIB) $(GENCODE_FLAGS) -o $@ -c $<
 
-test_pop_validation.o: test_pop_validation.cpp
-	$(EXEC) $(NVCC) $(DEBUG) $(STD11) $(BOOST_LIB) $(GENCODE_FLAGS) -o $@ -c $<
-	
-test_sim_validation.o: test_sim_validation.cpp
-	$(EXEC) $(NVCC) $(DEBUG) $(STD11) $(BOOST_LIB) $(GENCODE_FLAGS) -o $@ -c $<
-	
 GPU_C_FILES := $(wildcard $(SRC_GPU)*.cpp)
 GPU_CO_FILES := $(addprefix $(SRC_GPU),$(notdir $(GPU_C_FILES:.cpp=.o)))
 
@@ -169,54 +166,29 @@ $(SRC_POP)%.o: $(SRC_POP)%.cpp
 	$(EXEC) $(HOST_COMPILER) $(DEBUG) $(STD11) $(BOOST_LIB) -o $@ -c $<
 
 
-Console_mode: BUILD_TYPE=$(Mode_TYPE)_Console
-Console_mode: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES) main.o 
+FGPU: BUILD_TYPE=$(Mode_TYPE)
+FGPU: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES) main.o 
 	$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
 	$(EXEC) mkdir -p $(BIN_DIR)$(BUILD_TYPE)
 	$(EXEC) mv $@ $(BIN_DIR)$(BUILD_TYPE)
 	find . -name '*.gch' -delete
-	@echo ./$(BUILD_TYPE)/Console_mode ../../$(INPUT_DATA) '$$'{1:-1}> $(BIN_DIR)Console_mode.sh
-	chmod +x $(BIN_DIR)Console_mode.sh
+	@echo ./$(BUILD_TYPE)/FGPU ../../$(INPUT_DATA) '$$'{1:-1}> $(BIN_DIR)FGPU.sh
+	chmod +x $(BIN_DIR)FGPU.sh
 
 
-Test_model: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES) test_model_validation.o
+BOOST_TEST: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES) test_all.o
 	$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
 	$(EXEC) mkdir -p $(BIN_DIR)$(TEST_DIR)
 	$(EXEC) mv $@ $(BIN_DIR)$(TEST_DIR)
-	@echo ./$(TEST_DIR)/Test_model --log_level=test_suite --run_test='$$'{1:-}> $(BIN_DIR)RUN_TEST.sh #--log_level=message
-	chmod +x $(BIN_DIR)RUN_TEST.sh
-	find . -name '*.gch' -delete
-
-Test_pop: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES) test_pop_validation.o
-	$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	$(EXEC) mkdir -p $(BIN_DIR)$(TEST_DIR)
-	$(EXEC) mv $@ $(BIN_DIR)$(TEST_DIR)
-	@echo ./$(TEST_DIR)/Test_pop --log_level=test_suite --run_test='$$'{1:-}> $(BIN_DIR)RUN_TEST.sh #--log_level=message
+	@echo ./$(TEST_DIR)/BOOST_TEST --log_level=test_suite --run_test='$$'{1:-}> $(BIN_DIR)RUN_TEST.sh #--log_level=message
 	chmod +x $(BIN_DIR)RUN_TEST.sh
 	find . -name '*.gch' -delete
 	
-Test_sim: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES) test_sim_validation.o
-	$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	$(EXEC) mkdir -p $(BIN_DIR)$(TEST_DIR)
-	$(EXEC) mv $@ $(BIN_DIR)$(TEST_DIR)
-	@echo ./$(TEST_DIR)/Test_sim --log_level=test_suite --run_test='$$'{1:-}>$(BIN_DIR)RUN_TEST.sh #--log_level=message
-	chmod +x $(BIN_DIR)RUN_TEST.sh
-	find . -name '*.gch' -delete
-	
-run_Test_model: Test_model 
-	cd $(BIN_DIR) && ./RUN_TEST.sh
-
-run_Test_pop: Test_pop
-	cd $(BIN_DIR) && ./RUN_TEST.sh
-	
-run_Test_sim: Test_sim
-	cd $(BIN_DIR) && ./RUN_TEST.sh
-	
-#run_Test: Test_model Test_pop Test_sim
-#	cd $(BIN_DIR) && ./RUN_TEST.sh
+run_BOOST_TEST: BOOST_TEST 
+	cd $(BIN_DIR) && ./RUN_TEST.sh $(TSuite)
 		
-run: Console_mode
-	cd $(BIN_DIR) && ./Console_mode.sh $(iter)
+run: FGPU
+	cd $(BIN_DIR) && ./FGPU.sh $(iter)
 
 clean:
 	rm -f *.o
