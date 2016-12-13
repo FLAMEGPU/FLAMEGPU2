@@ -7,9 +7,9 @@
 #include "../model/AgentDescription.h"
 #include "../pop/AgentPopulation.h"
 
-class CUDAAgentStateList; //forward declaration to avoid cirular references
+class CUDAAgentStateList; //forward declaration to avoid circular references
 
-typedef std::map<const std::string, std::unique_ptr<CUDAAgentStateList>> CUDAStateMap;
+typedef std::map<const std::string, std::unique_ptr<CUDAAgentStateList>> CUDAStateMap;	//map of state name to CUDAAgentStateList which allocates memory on the device
 
 
 class CUDAAgent
@@ -22,6 +22,7 @@ public:
 
 	const AgentDescription& getAgentDescription() const;
 
+	/* SHould be set initial population data and should only be called once as it does all the GPU device memory allocation */
 	void setPopulationData(const AgentPopulation& population);
 
 	unsigned int getMaximumListSize() const;

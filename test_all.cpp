@@ -6,8 +6,9 @@
 
 #include <boost/test/included/unit_test.hpp>
 
-//#include "test_gpu_validation.h"
+
 #include "test_model_validation.h"
 #include "test_pop_validation.h"
 #include "test_sim_validation.h"
+#include "test_gpu_validation.h"
 

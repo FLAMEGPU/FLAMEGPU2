@@ -1,7 +1,5 @@
 // NOTE (mozhgan#1#07/12/16): We SHOULD have each BOOST_CHECK as a seperate Test case. The reason for this is if it fails one test, it never reach the next BOOST_CHECK that exist in the same TEST_CASE.
 
-//#include <boost/test/unit_test.hpp>
-//#include <boost/test/included/unit_test.hpp>
 #include "pop/AgentPopulation.h"
 #include "sim/Simulation.h"
 #include "gpu/CUDAAgentModel.h"
@@ -28,13 +26,24 @@ BOOST_AUTO_TEST_CASE(SimulationNameCheck)
     output_layer.addAgentFunction("output_data");
     simulation.addSimulationLayer(output_layer);
 
+	AgentPopulation population(flame_model, "circle");
+	for (int i = 0; i< 100; i++)
+	{
+		AgentInstance instance = population.addInstance("default");
+		instance.setVariable<float>("x", i*0.1f);
+		instance.setVariable<float>("y", i*0.1f);
+		instance.setVariable<float>("dx", 0);
+		instance.setVariable<float>("dy", 0);
+	}
+	
     CUDAAgentModel cuda_model(flame_model);
     cuda_model.setPopulationData(population);
-
+	/*
     BOOST_TEST_MESSAGE( "\nTesting CUDA Agent model name" );
     BOOST_CHECK_MESSAGE(cuda_model.);
+	*/
 
-    cuda_model.simulate(simulation);
+    //cuda_model.simulate(simulation);
 
     //BOOST_CHECK_THROW(..,InvalidCudaAgent); // expecting an error
     //BOOST_CHECK_THROW(..,InvalidCudaAgentDesc); // expecting an error

@@ -34,6 +34,9 @@ public:
 
 protected:
 
+	/*
+	 * The purpose of this function is to allocate on the device a block of memory for each variable. These vectors are stored within a hash list using the cuRVE technique so that the location of the vectors can be quickly determined at runtime by FLAME GPU functions.
+	 */
 	void allocateDeviceAgentList(AgentList** agent_list);
 	
 	void releaseDeviceAgentList(AgentList* agent_list);

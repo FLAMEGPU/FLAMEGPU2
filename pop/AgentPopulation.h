@@ -32,6 +32,7 @@ public:
 
 	const std::string getAgentName() const;
 
+	/* This is the maximum size of any single state list. */
 	unsigned int getMaximumPopulationSize() const;
 
 private:

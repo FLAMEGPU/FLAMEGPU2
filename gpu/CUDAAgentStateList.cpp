@@ -49,6 +49,7 @@ void CUDAAgentStateList::allocateDeviceAgentList(AgentList** agent_list)
     unsigned int i = 0;
     for (MemoryMap::const_iterator it = mem.begin(); it != mem.end(); it++)
     {
+		//allocate memory for the state list on the device
         gpuErrchk( cudaMalloc( (void**) &((*agent_list)->h_d_memory[i]), agent.getAgentDescription().getAgentVariableSize(it->first) * agent.getMaximumListSize()));
         i++;
     }

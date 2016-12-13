@@ -65,7 +65,7 @@
     <ClCompile Include="test_all.cpp" />
     <ClInclude Include="test_gpu_validation.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='BoostTest|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='BoostTest|x64'">false</ExcludedFromBuild>
       <FileType>CppCode</FileType>
     </ClInclude>
     <ClInclude Include="test_model_validation.h">
