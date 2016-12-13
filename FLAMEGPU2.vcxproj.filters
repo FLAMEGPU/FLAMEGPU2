@@ -75,6 +75,12 @@
     <ClInclude Include="gpu\CUDAErrorChecking.h">
       <Filter>gpu</Filter>
     </ClInclude>
+    <ClInclude Include="test_model_validation.h">
+      <Filter>tests</Filter>
+    </ClInclude>
+    <ClInclude Include="test_pop_validation.h">
+      <Filter>tests</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="gpu\CUDAAgentModel.cpp">
@@ -122,19 +128,13 @@
     <ClCompile Include="sim\SimulationLayer.cpp">
       <Filter>sim</Filter>
     </ClCompile>
-    <ClCompile Include="test_gpu_validation.cpp">
-      <Filter>tests</Filter>
-    </ClCompile>
-    <ClCompile Include="test_model_validation.cpp">
-      <Filter>tests</Filter>
-    </ClCompile>
-    <ClCompile Include="test_pop_validation.cpp">
-      <Filter>tests</Filter>
-    </ClCompile>
-    <ClCompile Include="test_sim_validation.cpp">
-      <Filter>tests</Filter>
-    </ClCompile>
     <ClCompile Include="test_all.cpp">
+      <Filter>tests</Filter>
+    </ClCompile>
+    <ClCompile Include="test_gpu_validation.h">
+      <Filter>tests</Filter>
+    </ClCompile>
+    <ClCompile Include="test_sim_validation.h">
       <Filter>tests</Filter>
     </ClCompile>
   </ItemGroup>

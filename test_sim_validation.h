@@ -1,6 +1,6 @@
 // NOTE (mozhgan#1#07/12/16): We SHOULD have each BOOST_CHECK as a seperate Test case. The reason for this is if it fails one test, it never reach the next BOOST_CHECK that exist in the same TEST_CASE.
 
-#include <boost/test/unit_test.hpp>
+//#include <boost/test/unit_test.hpp>
 //#include <boost/test/included/unit_test.hpp>
 #include "model/ModelDescription.h"
 #include "sim/Simulation.h"
