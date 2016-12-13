@@ -106,7 +106,7 @@ BOOST_AUTO_TEST_CASE(PopulationInstVarCheck3)
     AgentInstance instance = population.addInstance("default");
     instance.setVariable<float>("x", 0.1f);
 
-    BOOST_CHECK_THROW(instance.getVariable<float>("z"),InvalidVarType); // expecting an error , but not a corret one - this is wrong (Note, if the variable does not exit, the relevant error is not returned!)
+    BOOST_CHECK_THROW(instance.getVariable<float>("z"), InvalidAgentVar);
 
 }
 
