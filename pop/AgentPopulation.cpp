@@ -28,15 +28,15 @@ AgentInstance AgentPopulation::addInstance(const std::string agent_state)
     AgentStatesMap::iterator iter;
     iter = states_map.find(k);
 
-    //check max size is not exceeded if it is then increase it
-    if (iter->second->getSize() == maximum_size)
-    {
-        maximum_size += POPULATION_SIZE_INCREMENT;
-    }
-
     //existing state map
     if (iter != states_map.end())
     {
+		//check max size is not exceeded if it is then increase it
+		if (iter->second->getSize() == maximum_size)
+		{
+			maximum_size += POPULATION_SIZE_INCREMENT;
+		}
+
         return AgentInstance(*iter->second);
     }
     //create new state map

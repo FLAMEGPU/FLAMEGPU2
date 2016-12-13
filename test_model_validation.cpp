@@ -29,7 +29,7 @@ BOOST_AUTO_TEST_CASE(AgentVarCheck)
     BOOST_CHECK(circle_agent.getNumberAgentVariables() == 1);
     BOOST_CHECK(circle_agent.getAgentVariableSize("x") == 4);
     BOOST_CHECK(circle_agent.getVariableType("x") == typeid(float));
-    BOOST_CHECK_THROW(circle_agent.getAgentVariableSize("y"),InvalidMapEntry); // expecting an error
+	BOOST_CHECK_THROW(circle_agent.getAgentVariableSize("y"), InvalidAgentVar); // expecting an error
 }
 
 BOOST_AUTO_TEST_CASE(DefaultValueCheck)
