@@ -21,64 +21,78 @@ CUDAAgentStateList::CUDAAgentStateList(CUDAAgent& cuda_agent) : agent(cuda_agent
     allocateDeviceAgentList(&d_swap_list);
     if (agent.getAgentDescription().requiresAgentCreation()) // Moz:  how about in 'CUDAAgentModel::simulate'?
         allocateDeviceAgentList(&d_new_list);
-    else
-        d_new_list = 0;
+	else
+	{
+		//set new list hash map pointers to zero
+		d_new_list.d_d_memory = 0;
+		d_new_list.h_d_memory = 0;
+	}
 
 }
 
 CUDAAgentStateList::~CUDAAgentStateList()
 {
     //cleanup
-    releaseDeviceAgentList(d_list);
-    releaseDeviceAgentList(d_swap_list);
-    if (d_new_list != 0)
-        releaseDeviceAgentList(d_new_list);
+    releaseDeviceAgentList(&d_list);
+    releaseDeviceAgentList(&d_swap_list);
+	if (agent.getAgentDescription().requiresAgentCreation())
+        releaseDeviceAgentList(&d_new_list);
 }
 
-void CUDAAgentStateList::allocateDeviceAgentList(AgentList** agent_list)
+void CUDAAgentStateList::allocateDeviceAgentList(CUDAAgentMemoryHashMap* memory_map)
 {
-
+	//we use the agents memory map to iterate the agent variables and do allocation within our GPU hash map
     const MemoryMap &mem = agent.getAgentDescription().getMemoryMap();
 
-    //allocate host vector to hold device pointers //TODO: Check this. No need for a structure. Not currently being cleaned up
-    *agent_list = new AgentList();
-    (*agent_list)->h_d_memory = (void**)malloc(sizeof(void*)*agent.getHashListSize());
-    memset((*agent_list)->h_d_memory, 0, sizeof(void*)*agent.getHashListSize());
+    //allocate host vector (the map) to hold device pointers
+	memory_map->h_d_memory = (void**)malloc(sizeof(void*)*agent.getHashListSize());
+	//set all map values to zero
+	memset(memory_map->h_d_memory, 0, sizeof(void*)*agent.getHashListSize());
 
-    //for each variable allocate a device array and register in the hash list
+    //for each variable allocate a device array and register in the hash map
 	for (const MemoryMapPair mm : mem)
     {
 	
-		//get the hash index of the variable so we know what position to allocate
+		//get the hash index of the variable so we know what position to allocate in the map
 		int hash_index = agent.getHashIndex(mm.first.c_str());
 
 		//get the variable size from agent description
 		size_t var_size = agent.getAgentDescription().getAgentVariableSize(mm.first);
 
-		//do the allocation at the correct index
-		gpuErrchk(cudaMalloc((void**)&((*agent_list)->h_d_memory[hash_index]), var_size * agent.getMaximumListSize()));
+		//do the device allocation at the correct index and store the pointer in the host hash map
+		gpuErrchk(cudaMalloc((void**)&(memory_map->h_d_memory[hash_index]), var_size * agent.getMaximumListSize()));
     }
+
+	//allocate device vector (the map) to hold device pointers (which have already been allocated)
+	gpuErrchk(cudaMalloc((void**)&(memory_map->d_d_memory), sizeof(void*)*agent.getHashListSize()));
+
+	//copy the host array of map pointers to the device array of map pointers
+	gpuErrchk(cudaMemcpy(memory_map->d_d_memory, memory_map->h_d_memory, sizeof(void*)*agent.getHashListSize(), cudaMemcpyHostToDevice));
 
 
 
 }
 
-void CUDAAgentStateList::releaseDeviceAgentList(AgentList* agent_list)
+void CUDAAgentStateList::releaseDeviceAgentList(CUDAAgentMemoryHashMap* memory_map)
 {
+	//we use the agents memory map to iterate the agent variables and do deallocation within our GPU hash map
     const MemoryMap &mem = agent.getAgentDescription().getMemoryMap();
-    //for each variable allocate a device array
-    int i=0;
-    for (MemoryMap::const_iterator it = mem.begin(); it != mem.end(); it++)
+    
+	//for each device pointer in the map we need to free these
+	for (const MemoryMapPair mm : mem)
     {
 		//get the hash index of the variable so we know what position to allocate
-		int hash_index = agent.getHashIndex(it->first.c_str());
+		int hash_index = agent.getHashIndex(mm.first.c_str());
 
-        gpuErrchk( cudaFree( &agent_list->h_d_memory[hash_index] )); //todo suspect.....
-        i++;
+		//free the memory on the device
+		gpuErrchk(cudaFree(memory_map->h_d_memory[hash_index]));
     }
 
-    free(agent_list->h_d_memory);
-    delete agent_list;
+	//free the device memory map
+	gpuErrchk(cudaFree(memory_map->d_d_memory));
+
+	//free the host memory map
+	free(memory_map->h_d_memory);
 }
 
 

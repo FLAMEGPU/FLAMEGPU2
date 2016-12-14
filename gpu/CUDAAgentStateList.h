@@ -17,9 +17,11 @@
 
 #define UNIFIED_GPU_MEMORY
 
-struct AgentList{
-
-	//void **d_memory;	//device array of pointers to device variable arrays
+/**
+ * Stores a map of pointers to device memory locations. Must use the CUDAAgent hash table functions to access the correct index.
+ */
+struct CUDAAgentMemoryHashMap{
+	void **d_d_memory;	//device array of pointers to device variable arrays
 	void **h_d_memory;  //host array of pointers to device variable arrays
 };
 
@@ -37,15 +39,15 @@ protected:
 	/*
 	 * The purpose of this function is to allocate on the device a block of memory for each variable. These vectors are stored within a hash list using the cuRVE technique so that the location of the vectors can be quickly determined at runtime by FLAME GPU functions.
 	 */
-	void allocateDeviceAgentList(AgentList** agent_list);
+	void allocateDeviceAgentList(CUDAAgentMemoryHashMap* agent_list);
 	
-	void releaseDeviceAgentList(AgentList* agent_list);
+	void releaseDeviceAgentList(CUDAAgentMemoryHashMap* agent_list);
 
 
 private:
-	AgentList *d_list;
-	AgentList *d_swap_list;
-	AgentList *d_new_list;
+	CUDAAgentMemoryHashMap d_list;
+	CUDAAgentMemoryHashMap d_swap_list;
+	CUDAAgentMemoryHashMap d_new_list;
 
 	unsigned int current_list_size; //???
 
