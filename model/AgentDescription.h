@@ -23,10 +23,12 @@ typedef std::map<const std::string, const AgentStateDescription&> StateMap;	//is
 typedef std::map<const std::string, const AgentFunctionDescription&> FunctionMap;
 
 typedef std::map<const std::string, const std::type_info&> MemoryMap;
+typedef std::pair<const std::string, const std::type_info&> MemoryMapPair;
 
 typedef std::map<const std::string, boost::any> DefaultValueMap; // <--- this is not a template as used in addAgentVariable method! maybe boost::any<T>() , and add template <typename T>, hmm?
 
 typedef std::map<const std::type_info*, std::size_t> TypeSizeMap;	//not something that the user every sees. This is an interval map only for tracking the size of data types.
+
 
 class AgentDescription
 {

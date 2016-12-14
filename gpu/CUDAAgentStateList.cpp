@@ -46,18 +46,17 @@ void CUDAAgentStateList::allocateDeviceAgentList(AgentList** agent_list)
     memset((*agent_list)->h_d_memory, 0, sizeof(void*)*agent.getHashListSize());
 
     //for each variable allocate a device array and register in the hash list
-    unsigned int i = 0;
-    for (MemoryMap::const_iterator it = mem.begin(); it != mem.end(); it++)
+	for (const MemoryMapPair mm : mem)
     {
-		//allocate memory for the state list on the device
-		
+	
 		//get the hash index of the variable so we know what position to allocate
-		int hash_index = agent.getHashIndex(it->first.c_str());
+		int hash_index = agent.getHashIndex(mm.first.c_str());
+
+		//get the variable size from agent description
+		size_t var_size = agent.getAgentDescription().getAgentVariableSize(mm.first);
 
 		//do the allocation at the correct index
-		gpuErrchk(cudaMalloc((void**)&((*agent_list)->h_d_memory[hash_index]), agent.getAgentDescription().getAgentVariableSize(it->first) * agent.getMaximumListSize()));
-        //gpuErrchk( cudaMalloc( (void**) &((*agent_list)->h_d_memory[i]), agent.getAgentDescription().getAgentVariableSize(it->first) * agent.getMaximumListSize()));
-        i++;
+		gpuErrchk(cudaMalloc((void**)&((*agent_list)->h_d_memory[hash_index]), var_size * agent.getMaximumListSize()));
     }
 
 
