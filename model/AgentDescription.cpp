@@ -65,6 +65,7 @@ const MemoryMap& AgentDescription::getMemoryMap() const
     return memory;
 }
 
+
 const StateMap& AgentDescription::getStateMap() const
 {
     return states;
