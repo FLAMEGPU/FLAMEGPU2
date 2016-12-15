@@ -18,7 +18,8 @@
 #include "../exception/FGPUException.h"
 
 //State map is a mapping between a state name (i.e. default) and a state description object reference
-typedef std::map<const std::string, const AgentStateDescription&> StateMap;	//is the reference constant or the object the reference points to????
+typedef std::map<const std::string, const AgentStateDescription&> StateMap;
+typedef std::pair<const std::string, const AgentStateDescription&> StateMapPair;
 
 typedef std::map<const std::string, const AgentFunctionDescription&> FunctionMap;
 
@@ -43,7 +44,7 @@ public:
 
     void setName(std::string name);
 
-    std::string getName() const;
+    const std::string getName() const;
 
     /*
      * All agent models start initially by being defined as stateless. A stateless model has a single state called "default".

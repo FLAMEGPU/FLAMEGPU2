@@ -53,7 +53,7 @@ CUDAAgentModel::~CUDAAgentModel()
     //unique pointers cleanup by automatically
 }
 
-void CUDAAgentModel::setPopulationData(AgentPopulation& population, bool overwite_exiting)
+void CUDAAgentModel::setInitialPopulationData(AgentPopulation& population)
 {
     CUDAAgentMap::iterator it;
     it = agent_map.find(population.getAgentName());
@@ -65,7 +65,23 @@ void CUDAAgentModel::setPopulationData(AgentPopulation& population, bool overwit
     }
 
     //create agent state lists
-    it->second->setPopulationData(population);
+    it->second->setInitialPopulationData(population);
+}
+
+
+void CUDAAgentModel::setPopulationData(AgentPopulation& population)
+{
+	CUDAAgentMap::iterator it;
+	it = agent_map.find(population.getAgentName());
+
+	if (it == agent_map.end())
+	{
+		//throw std::runtime_error("CUDA agent not found. This should not happen.");
+		throw InvalidCudaAgent();
+	}
+
+	//create agent state lists
+	it->second->setPopulationData(population);
 }
 
 void CUDAAgentModel::simulate(const Simulation& sim)  // Moz:

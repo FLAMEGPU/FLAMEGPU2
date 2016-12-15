@@ -73,6 +73,11 @@ const std::string AgentPopulation::getAgentName() const
     return agent_name;
 }
 
+const ModelDescription& AgentPopulation::getModelDescription() const
+{
+	return model;
+}
+
 unsigned int AgentPopulation::getMaximumPopulationSize() const
 {
     return maximum_size;

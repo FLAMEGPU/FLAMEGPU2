@@ -19,7 +19,7 @@
 
 #include "CUDAAgent.h"
 
-typedef std::map<const std::string, std::unique_ptr<CUDAAgent>> CUDAAgentMap;
+typedef std::map<const std::string, std::unique_ptr<CUDAAgent>> CUDAAgentMap; //map of a number of CUDA agents by name. The CUDA agents are responsible for allocating and managing all the device memory
 //typedef std::map<const std::string, std::unique_ptr<CUDAMessage>> CUDAMessageMap; /*Moz*/
 //typedef std::map<const std::string, std::unique_ptr<CUDAAgentFunction>> CUDAFunctionMap; /*Moz*/
 
@@ -28,7 +28,9 @@ public:
 	CUDAAgentModel(const ModelDescription& description);
 	virtual ~CUDAAgentModel();
 
-	void setPopulationData(AgentPopulation& population, bool overwite_exiting = true);
+	void setInitialPopulationData(AgentPopulation& population);
+
+	void setPopulationData(AgentPopulation& population);
 
 
 	void simulate(const Simulation& sim);

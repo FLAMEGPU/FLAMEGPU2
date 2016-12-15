@@ -34,6 +34,8 @@ public:
 
 	void getAgentData(AgentStateMemory &state_memory);
 
+	void zeroAgentData();
+
 protected:
 
 	/*
@@ -42,6 +44,8 @@ protected:
 	void allocateDeviceAgentList(CUDAAgentMemoryHashMap* agent_list);
 	
 	void releaseDeviceAgentList(CUDAAgentMemoryHashMap* agent_list);
+
+	void zeroDeviceAgentList(CUDAAgentMemoryHashMap* agent_list);
 
 
 private:

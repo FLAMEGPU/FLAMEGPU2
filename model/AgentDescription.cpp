@@ -24,7 +24,7 @@ void AgentDescription::setName(std::string name)
 {
 }
 
-std::string AgentDescription::getName() const
+const std::string AgentDescription::getName() const
 {
     return name;
 }

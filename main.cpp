@@ -85,6 +85,7 @@ int main(void)
     /* Data in populations and instances are only on the host. No concept of GPUs at this stage. */
 
     AgentPopulation population(flame_model, "circle");
+	//TODO: Set maximum population size if known in advance
     for (int i=0; i< 100; i++)
     {
         AgentInstance instance = population.addInstance("default");

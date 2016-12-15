@@ -21,6 +21,7 @@
 #include "../model/AgentDescription.h"
 
 typedef std::map<const std::string, std::unique_ptr<std::vector<boost::any>>> StateMemoryMap;
+typedef std::pair<const std::string, std::unique_ptr<std::vector<boost::any>>> StateMemoryMapPair;
 
 class AgentStateMemory  // agent_list
 {
