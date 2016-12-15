@@ -1,9 +1,11 @@
 # DoxyGen folder
 DoxyGen*/
-handler.cpp
-api/handler.h
+#handler.cpp
+#api/handler.h
 bin/
 obj/
+*.cbp
+*.layout
 
 CUDA
 *.i
