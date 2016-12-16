@@ -11,7 +11,10 @@
 #include "CUDAAgentModel.h"
 
 // agent_map is a type CUDAAgentMap
-
+/**
+* CUDAAgentModel class
+* @brief populates CUDA agent map, CUDA message map
+*/
 CUDAAgentModel::CUDAAgentModel(const ModelDescription& description) : model_description(description), agent_map()  //, message_map(), function_map() {
 {
 
@@ -50,11 +53,20 @@ CUDAAgentModel::CUDAAgentModel(const ModelDescription& description) : model_desc
 
 }
 
+/**
+ * A destructor.
+ * @brief Destroys the CUDAAgentModel object
+ */
 CUDAAgentModel::~CUDAAgentModel()
 {
     //unique pointers cleanup by automatically
 }
 
+/**
+* @brief Sets the initial population data
+* @param AgentPopulation object
+* @return none
+*/
 void CUDAAgentModel::setInitialPopulationData(AgentPopulation& population)
 {
     CUDAAgentMap::iterator it;
@@ -70,7 +82,11 @@ void CUDAAgentModel::setInitialPopulationData(AgentPopulation& population)
     it->second->setInitialPopulationData(population);
 }
 
-
+/**
+* @brief Sets the population data
+* @param AgentPopulation object
+* @return none
+*/
 void CUDAAgentModel::setPopulationData(AgentPopulation& population)
 {
 	CUDAAgentMap::iterator it;
@@ -86,6 +102,12 @@ void CUDAAgentModel::setPopulationData(AgentPopulation& population)
 	it->second->setPopulationData(population);
 }
 
+/**
+* @brief simulates functions
+* @param simulation object
+* @return none
+* @todo not yet completed
+*/
 void CUDAAgentModel::simulate(const Simulation& sim)  // Moz:
 {
     if (agent_map.size() == 0)

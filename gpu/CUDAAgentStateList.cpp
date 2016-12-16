@@ -15,7 +15,10 @@
 #include "CUDAErrorChecking.h"
 
 
-
+/**
+* CUDAAgentStateList class
+* @brief populates CUDA agent map, CUDA message map
+*/
 CUDAAgentStateList::CUDAAgentStateList(CUDAAgent& cuda_agent) : agent(cuda_agent)
 {
 
@@ -33,6 +36,10 @@ CUDAAgentStateList::CUDAAgentStateList(CUDAAgent& cuda_agent) : agent(cuda_agent
 
 }
 
+/**
+ * A destructor.
+ * @brief Destroys the CUDAAgentStateList object
+ */
 CUDAAgentStateList::~CUDAAgentStateList()
 {
     //cleanup
@@ -42,6 +49,11 @@ CUDAAgentStateList::~CUDAAgentStateList()
         releaseDeviceAgentList(&d_new_list);
 }
 
+/**
+* @brief Allocates Device agent list
+* @param variable of type CUDAAgentMemoryHashMap struct type
+* @return none
+*/
 void CUDAAgentStateList::allocateDeviceAgentList(CUDAAgentMemoryHashMap* memory_map)
 {
 	//we use the agents memory map to iterate the agent variables and do allocation within our GPU hash map
@@ -76,6 +88,11 @@ void CUDAAgentStateList::allocateDeviceAgentList(CUDAAgentMemoryHashMap* memory_
 
 }
 
+/**
+* @brief Frees
+* @param variable of type CUDAAgentMemoryHashMap struct type
+* @return none
+*/
 void CUDAAgentStateList::releaseDeviceAgentList(CUDAAgentMemoryHashMap* memory_map)
 {
 	//we use the agents memory map to iterate the agent variables and do deallocation within our GPU hash map
@@ -98,6 +115,11 @@ void CUDAAgentStateList::releaseDeviceAgentList(CUDAAgentMemoryHashMap* memory_m
 	free(memory_map->h_d_memory);
 }
 
+/**
+* @brief
+* @param variable of type CUDAAgentMemoryHashMap struct type
+* @return none
+*/
 void CUDAAgentStateList::zeroDeviceAgentList(CUDAAgentMemoryHashMap* memory_map)
 {
 	//we use the agents memory map to iterate the agent variables and do deallocation within our GPU hash map
@@ -117,7 +139,12 @@ void CUDAAgentStateList::zeroDeviceAgentList(CUDAAgentMemoryHashMap* memory_map)
 	}
 }
 
-
+/**
+* @brief
+* @param AgenstStateMemory object
+* @return none
+* @todo
+*/
 void CUDAAgentStateList::setAgentData(const AgentStateMemory &state_memory)
 {
 
@@ -150,6 +177,11 @@ void CUDAAgentStateList::setAgentData(const AgentStateMemory &state_memory)
 
 }
 
+/**
+* @brief
+* @param none
+* @return none
+*/
 void CUDAAgentStateList::zeroAgentData(){
 	zeroDeviceAgentList(&d_list);
 	zeroDeviceAgentList(&d_swap_list);
