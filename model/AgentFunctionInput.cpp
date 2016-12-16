@@ -1,8 +1,11 @@
-/*
- * AgentFunctionInput.cpp
+/**
+ * @file AgentFunctionInput.cpp
+ * @authors Paul
+ * @date
+ * @brief
  *
- *  Created on: 4 Mar 2014
- *      Author: paul
+ * @see
+ * @warning
  */
 
 #include "AgentFunctionInput.h"

@@ -1,3 +1,13 @@
+ /**
+ * @file CUDAErrorChecking.h
+ * @authors Paul
+ * @date 5 Mar 2014
+ * @brief
+ *
+ * @see
+ * @warning
+ */
+
 #pragma once
 
 
@@ -11,7 +21,7 @@
 #define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
 inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=true)
 {
-   if (code != cudaSuccess) 
+   if (code != cudaSuccess)
    {
 	  throw std::runtime_error("CUDA Error: " + std::string(cudaGetErrorString(code)) + " " + file + " " + std::to_string(line));
       if (abort) exit(code);

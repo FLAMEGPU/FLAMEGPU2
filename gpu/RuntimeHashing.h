@@ -1,5 +1,15 @@
-#ifndef HASHING_H_
-#define HASHING_H_
+ /**
+ * @file RuntimeHashing.h
+ * @authors Paul
+ * @date 5 Mar 2014
+ * @brief
+ *
+ * @see
+ * @warning
+ */
+
+#ifndef RUNTIMEHASHING_H_
+#define RUNTIMEHASHING_H_
 
 #include <string.h>
 

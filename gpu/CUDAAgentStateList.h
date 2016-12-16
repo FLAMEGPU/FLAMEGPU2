@@ -1,8 +1,11 @@
-/*
- * CUDAAgentList.h
+ /**
+ * @file CUDAAgentList.h
+ * @authors Paul
+ * @date 5 Mar 2014
+ * @brief
  *
- *  Created on: 20 Feb 2014
- *      Author: paul
+ * @see
+ * @warning
  */
 
 #ifndef CUDAAGENTLIST_H_
@@ -42,7 +45,7 @@ protected:
 	 * The purpose of this function is to allocate on the device a block of memory for each variable. These vectors are stored within a hash list using the cuRVE technique so that the location of the vectors can be quickly determined at runtime by FLAME GPU functions.
 	 */
 	void allocateDeviceAgentList(CUDAAgentMemoryHashMap* agent_list);
-	
+
 	void releaseDeviceAgentList(CUDAAgentMemoryHashMap* agent_list);
 
 	void zeroDeviceAgentList(CUDAAgentMemoryHashMap* agent_list);

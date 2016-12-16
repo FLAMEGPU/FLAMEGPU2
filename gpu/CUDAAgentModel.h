@@ -1,9 +1,11 @@
-/*
- * CUDAAgentModel.h
+ /**
+ * @file CUDAAgentModel.h
+ * @authors Paul
+ * @date 5 Mar 2014
+ * @brief
  *
- *  Created on: 20 Feb 2014
- *      Author: paul
- *  Last modified : 28 Nov 2016
+ * @see
+ * @warning
  */
 
 #ifndef CUDAAGENTMODEL_H_

@@ -1,8 +1,11 @@
-/*
- * AgentDescription.h
+/**
+ * @file AgentDescription.h
+ * @authors Paul
+ * @date 5 Mar 2014
+ * @brief
  *
- *  Created on: 20 Feb 2014
- *      Author: paul
+ * @see
+ * @warning
  */
 
 #ifndef AGENTDESCRIPTION_H_

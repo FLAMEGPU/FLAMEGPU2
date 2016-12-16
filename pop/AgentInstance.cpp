@@ -1,8 +1,11 @@
-/*
- * AgentInstance.cpp
+/**
+ * @file AgentInstance.cpp
+ * @authors Paul
+ * @date
+ * @brief
  *
- *  Created on: 5 Mar 2014
- *      Author: paul
+ * @see
+ * @warning
  */
 
 #include "AgentInstance.h"

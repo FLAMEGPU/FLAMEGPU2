@@ -1,15 +1,18 @@
-/*
- * AgentFunctionOutput.cpp
+ /**
+ * @file AgentFunctionOutput.cpp
+ * @authors Paul
+ * @date
+ * @brief
  *
- *  Created on: 4 Mar 2014
- *      Author: paul
+ * @see
+ * @warning
  */
 
 #include "AgentFunctionOutput.h"
 
 
-AgentFunctionOutput::AgentFunctionOutput(const std::string output_message_name): message_name(output_message_name) { 
-	setFunctionOutputType(SINGLE_MESSAGE); 
+AgentFunctionOutput::AgentFunctionOutput(const std::string output_message_name): message_name(output_message_name) {
+	setFunctionOutputType(SINGLE_MESSAGE);
 }
 
 AgentFunctionOutput::~AgentFunctionOutput() {

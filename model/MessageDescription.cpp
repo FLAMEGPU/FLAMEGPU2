@@ -1,8 +1,11 @@
-/*
- * MessageDescription.cpp
+/**
+ * @file MessageDescription.cpp
+ * @authors Paul
+ * @date
+ * @brief
  *
- *  Created on: 20 Feb 2014
- *      Author: paul
+ * @see
+ * @warning
  */
 
 #include "MessageDescription.h"

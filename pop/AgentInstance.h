@@ -1,8 +1,11 @@
-/*
- * AgentInstance.h
+ /**
+ * @file AgentInstance.h
+ * @authors Paul
+ * @date 5 Mar 2014
+ * @brief
  *
- *  Created on: 5 Mar 2014
- *      Author: paul
+ * @see
+ * @warning
  */
 
 #ifndef AGENTINSTANCE_H_
