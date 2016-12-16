@@ -39,7 +39,8 @@ BOOST_AUTO_TEST_CASE(SimulationNameCheck)
 	}
 
     CUDAAgentModel cuda_model(flame_model);
-    cuda_model.setPopulationData(population);
+    cuda_model.setInitialPopulationData(population);
+
 
 
 	/*
