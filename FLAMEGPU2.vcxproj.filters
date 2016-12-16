@@ -19,6 +19,9 @@
     <Filter Include="tests">
       <UniqueIdentifier>{4137b97e-dbf7-4914-86d4-ac980a31ec73}</UniqueIdentifier>
     </Filter>
+    <Filter Include="exceptions">
+      <UniqueIdentifier>{7c4cd09c-4b23-4143-a13e-192947641074}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="api\flame_api.h">
@@ -81,6 +84,18 @@
     <ClInclude Include="test_pop_validation.h">
       <Filter>tests</Filter>
     </ClInclude>
+    <ClInclude Include="exception\FGPUException.h">
+      <Filter>exceptions</Filter>
+    </ClInclude>
+    <ClInclude Include="test_gpu_validation.h">
+      <Filter>tests</Filter>
+    </ClInclude>
+    <ClInclude Include="test_sim_validation.h">
+      <Filter>tests</Filter>
+    </ClInclude>
+    <ClInclude Include="pop\AgentMemoryVector.h">
+      <Filter>pop</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="gpu\CUDAAgentModel.cpp">
@@ -129,12 +144,6 @@
       <Filter>sim</Filter>
     </ClCompile>
     <ClCompile Include="test_all.cpp">
-      <Filter>tests</Filter>
-    </ClCompile>
-    <ClCompile Include="test_gpu_validation.h">
-      <Filter>tests</Filter>
-    </ClCompile>
-    <ClCompile Include="test_sim_validation.h">
       <Filter>tests</Filter>
     </ClCompile>
   </ItemGroup>

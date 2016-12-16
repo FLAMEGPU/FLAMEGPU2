@@ -28,6 +28,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="api\flame_api.h" />
+    <ClInclude Include="exception\FGPUException.h" />
     <ClInclude Include="gpu\CUDAAgent.h" />
     <ClInclude Include="gpu\CUDAAgentStateList.h" />
     <ClInclude Include="gpu\CUDAAgentModel.h" />
@@ -41,6 +42,7 @@
     <ClInclude Include="model\MessageDescription.h" />
     <ClInclude Include="model\ModelDescription.h" />
     <ClInclude Include="pop\AgentInstance.h" />
+    <ClInclude Include="pop\AgentMemoryVector.h" />
     <ClInclude Include="pop\AgentStateMemory.h" />
     <ClInclude Include="pop\AgentPopulation.h" />
     <ClInclude Include="sim\Simulation.h" />

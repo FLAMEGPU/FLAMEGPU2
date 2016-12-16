@@ -130,13 +130,13 @@ void CUDAAgentStateList::setAgentData(const AgentStateMemory &state_memory)
     const MemoryMap &mem = agent.getAgentDescription().getMemoryMap();
 	for (const MemoryMapPair& m : mem){
 		//get the hash index of the variable so we know what position to allocate
-		int hash_index = agent.getHashIndex(mm.first.c_str());
+		int hash_index = agent.getHashIndex(m.first.c_str());
 
 		//get the variable size from agent description
-		size_t var_size = agent.getAgentDescription().getAgentVariableSize(mm.first);
+		size_t var_size = agent.getAgentDescription().getAgentVariableSize(m.first);
 
 		//get the boost any data for this memory 
-		const std::vector<boost::any>& m_data = state_memory.getReadOnlyMemoryVector(m.first);
+		//const std::vector<boost::any>& m_data = state_memory.getReadOnlyMemoryVector(m.first);
 
 		//TODO: cast vector of boost any to correct agent variable type
 		//TODO: This will NOT work. Need to change the memory storage. See github issue.

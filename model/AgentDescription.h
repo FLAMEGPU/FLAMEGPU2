@@ -16,6 +16,7 @@
 #include "AgentStateDescription.h"
 #include "AgentFunctionDescription.h"
 #include "../exception/FGPUException.h"
+#include "../pop/AgentMemoryVector.h"
 
 //State map is a mapping between a state name (i.e. default) and a state description object reference
 typedef std::map<const std::string, const AgentStateDescription&> StateMap;
@@ -30,6 +31,9 @@ typedef std::map<const std::string, boost::any> DefaultValueMap; // <--- this is
 
 typedef std::map<const std::type_info*, std::size_t> TypeSizeMap;	//not something that the user every sees. This is an interval map only for tracking the size of data types.
 
+//use this to store default values for a population, must be here to register the correct types at compile time
+typedef std::map<const std::string, std::unique_ptr<GenericAgentMemoryVector>> StateMemoryMap;	//state, empty vector of correct type stored in the boost any
+typedef std::pair<const std::string, std::unique_ptr<GenericAgentMemoryVector>> StateMemoryMapPair;
 
 class AgentDescription
 {
@@ -66,6 +70,7 @@ public:
         memory.insert(MemoryMap::value_type(variable_name, typeid(T)));
         sizes.insert(TypeSizeMap::value_type(&typeid(T), (unsigned int)sizeof(T)));
         defaults.insert(DefaultValueMap::value_type(variable_name, T()));
+		sm_map.insert(StateMemoryMap::value_type(variable_name, std::unique_ptr<GenericAgentMemoryVector>(new AgentMemoryVector<T>())));
     }
 
     boost::any getDefaultValue(const std::string variable_name) const;
@@ -88,7 +93,9 @@ public:
 
     bool hasAgentFunction(const std::string function_name) const;
 
+	//StateMemoryMap getEmptyStateMemoryMap() const;
 
+	void initEmptyStateMemoryMap(StateMemoryMap&) const;
 
 private:
     std::string name;
@@ -101,6 +108,7 @@ private:
     MemoryMap memory;
     TypeSizeMap sizes;
     DefaultValueMap defaults;
+	StateMemoryMap sm_map;									//used to hold a default empty vector
 };
 
 #endif /* AGENTDESCRIPTION_H_ */

@@ -20,8 +20,9 @@
 
 #include "../model/AgentDescription.h"
 
-typedef std::map<const std::string, std::unique_ptr<std::vector<boost::any>>> StateMemoryMap;
-typedef std::pair<const std::string, std::unique_ptr<std::vector<boost::any>>> StateMemoryMapPair;
+//now define in agentstatememory
+//typedef std::map<const std::string, GenericAgentMemoryVector> StateMemoryMap;
+//typedef std::pair<const std::string, GenericAgentMemoryVector> StateMemoryMapPair;
 
 class AgentStateMemory  // agent_list
 {
@@ -34,9 +35,9 @@ public:
     //void init(const AgentDescription &agent_description);
     unsigned int creatNewInstance();
 
-    std::vector<boost::any>& getMemoryVector(const std::string variable_name);
+	GenericAgentMemoryVector& getMemoryVector(const std::string variable_name);
 
-    const std::vector<boost::any>& getReadOnlyMemoryVector(const std::string variable_name) const;
+	const GenericAgentMemoryVector& getReadOnlyMemoryVector(const std::string variable_name) const;
 
     //todo:templated get vector function with boost any cast
 
