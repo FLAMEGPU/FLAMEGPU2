@@ -94,7 +94,8 @@ int CUDAAgent::getHashIndex(const char * variable_name) const
 		}
 	}
 
-	throw std::runtime_error("This should be an unknown variable error. Should never occur");
+	//throw std::runtime_error("This should be an unknown variable error. Should never occur");
+	throw InvalidAgentVar("This should be an unknown variable error. Should never occur");
 	return -1; //return invalid index
 }
 
@@ -107,7 +108,8 @@ void CUDAAgent::setInitialPopulationData(const AgentPopulation& population)
 {
 	//check that the initial population data has not already been set
 	if (!state_map.empty())
-		throw std::exception("Error: Initial population data already set");
+		//throw std::exception("Error: Initial population data already set");
+		throw InvalidPopulationData("Error: Initial population data already set");
 
     //set the maximum population state size
 	max_list_size = population.getMaximumPopulationSize();
@@ -115,8 +117,8 @@ void CUDAAgent::setInitialPopulationData(const AgentPopulation& population)
 	//Make sure population uses same agent description as was used to initialise the agent CUDAAgent
 	const std::string agent_name = agent_description.getName();
 	if (&(population.getModelDescription().getAgentDescription(agent_name)) != &agent_description)
-		throw std::exception("Error: setInitialPopulationData population has a different agent description to that which was used to initialise the CUDAAgent");
-
+		//throw std::exception("Error: setInitialPopulationData population has a different agent description to that which was used to initialise the CUDAAgent");
+        throw InvalidPopulationData("Error: setInitialPopulationData population has a different agent description to that which was used to initialise the CUDAAgent");
 
 	//create map of device state lists by traversing the state list
     const StateMap& sm = agent_description.getStateMap();
@@ -135,16 +137,19 @@ void CUDAAgent::setPopulationData(const AgentPopulation& population)
 {
 	//check that the gpu state lists have been initialised by a previous call to setInitialPopulationData
 	if (state_map.empty())
-		throw std::exception("Error: Initial population data not set. Have you called setInitialPopulationData?");
+		//throw std::exception("Error: Initial population data not set. Have you called setInitialPopulationData?");
+		throw InvalidPopulationData("Error: Initial population data not set. Have you called setInitialPopulationData?");
 
 	//check that the population maximums do not exceed the current maximum (as their will not be enough GPU memory to hold it)
 	if (population.getMaximumPopulationSize() < max_list_size)
-		throw std::exception("Error: Maximum population size exceeds that of the initial population data?");
+		//throw std::exception("Error: Maximum population size exceeds that of the initial population data?");
+		throw InvalidPopulationData("Error: Maximum population size exceeds that of the initial population data?");
 
 	//Make sure population uses same agent description as was used to initialise the agent CUDAAgent
 	const std::string agent_name = agent_description.getName();
 	if (&(population.getModelDescription().getAgentDescription(agent_name)) != &agent_description)
-		throw std::exception("Error: setPopulationData population has a different agent description to that which was used to initialise the CUDAAgent");
+		//throw std::exception("Error: setPopulationData population has a different agent description to that which was used to initialise the CUDAAgent");
+		throw InvalidPopulationData("Error: setPopulationData population has a different agent description to that which was used to initialise the CUDAAgent");
 
 
 	//set all population data to zero
@@ -159,7 +164,8 @@ void CUDAAgent::setPopulationData(const AgentPopulation& population)
 
 		//check that the CUDAAgentStateList was found (should ALWAYS be the case)
 		if (i == state_map.end())
-			throw std::exception("Error: failed to find memory allocated for a state. This should never happen!");
+			//throw std::exception("Error: failed to find memory allocated for a state. This should never happen!");
+			throw InvalidMapEntry("Error: failed to find memory allocated for a state. This should never happen!")
 
 		//copy the data from the population state memory to the state_maps CUDAAgentStateList
 		i->second->setAgentData(population.getStateMemory(i->first));

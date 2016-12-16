@@ -250,3 +250,17 @@ public:
         return err_message;
     }
 };
+
+/**
+* Defines a type of object to be thrown as exception.
+* It reports errors that are due to invalid population data.
+*/
+class InvalidPopulationData : public FGPUException
+{
+public:
+    InvalidPopulationData(const char *msg= "Invalid Population data"):FGPUException(msg) {}
+    virtual const char *what() const
+    {
+        return err_message;
+    }
+};

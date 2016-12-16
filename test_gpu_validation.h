@@ -40,6 +40,8 @@ BOOST_AUTO_TEST_CASE(SimulationNameCheck)
 
     CUDAAgentModel cuda_model(flame_model);
     cuda_model.setPopulationData(population);
+
+
 	/*
     BOOST_TEST_MESSAGE( "\nTesting CUDA Agent model name" );
     BOOST_CHECK_MESSAGE(cuda_model.);
