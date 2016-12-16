@@ -1,8 +1,11 @@
-/*
- * AgentFunctionInput.h
+/**
+ * @file AgentFunctionInput.h
+ * @authors Paul
+ * @date 5 Mar 2014
+ * @brief
  *
- *  Created on: 4 Mar 2014
- *      Author: paul
+ * @see
+ * @warning
  */
 
 #ifndef AGENTFUNCTIONINPUT_H_

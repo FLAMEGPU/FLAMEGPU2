@@ -1,3 +1,13 @@
+ /**
+ * @file CUDAAgent.cpp
+ * @authors Paul
+ * @date
+ * @brief
+ *
+ * @see
+ * @warning
+ */
+
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 
@@ -83,7 +93,7 @@ int CUDAAgent::getHashIndex(const char * variable_name) const
 			i = 0;
 		}
 	}
-	
+
 	throw std::runtime_error("This should be an unknown variable error. Should never occur");
 	return -1; //return invalid index
 }

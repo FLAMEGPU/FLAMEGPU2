@@ -1,8 +1,11 @@
-/*
- * AgentFunctionDescription.cpp
+ /**
+ * @file AgentFunctionDescription.cpp
+ * @authors Paul
+ * @date
+ * @brief
  *
- *  Created on: 20 Feb 2014
- *      Author: paul
+ * @see
+ * @warning
  */
 
 #include "AgentFunctionDescription.h"

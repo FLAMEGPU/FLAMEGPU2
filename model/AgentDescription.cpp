@@ -1,8 +1,11 @@
-/*
- * AgentDescription.cpp
+/**
+ * @file AgentDescription.cpp
+ * @authors Paul
+ * @date
+ * @brief
  *
- *  Created on: 20 Feb 2014
- *      Author: paul
+ * @see
+ * @warning
  */
 
 #include "AgentDescription.h"

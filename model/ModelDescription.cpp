@@ -1,9 +1,11 @@
-/*
- * ModelDescription.cpp
+ /**
+ * @file ModelDescription.cpp
+ * @authors Paul
+ * @date
+ * @brief
  *
- *  Created on: 20 Feb 2014
- *      Author: paul
- *  Last modified : 28 Nov 2016
+ * @see
+ * @warning
  */
 
 #include "ModelDescription.h"

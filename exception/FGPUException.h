@@ -5,7 +5,7 @@
 * \note      The Javadoc style was used. The JAVADOC_AUTOBRIEF should be set to yes
 * \see       http://fnch.users.sourceforge.net/doxygen_c.html  for commenting style
 * \version
-* \date      2016 - ..
+* \date      Dec 2016
 * \bug
 * \warning
 * \copyright

@@ -1,5 +1,7 @@
-// NOTE (mozhgan#1#07/12/16): We SHOULD have each BOOST_CHECK as a seperate Test case. The reason for this is if it fails one test, it never reach the next BOOST_CHECK that exist in the same TEST_CASE.
-
+/**
+ * @file test_gpu_validation.h
+ * @brief Testing Using the Boost Unit Test Framework
+ */
 #include "pop/AgentPopulation.h"
 #include "sim/Simulation.h"
 #include "gpu/CUDAAgentModel.h"
@@ -35,7 +37,7 @@ BOOST_AUTO_TEST_CASE(SimulationNameCheck)
 		instance.setVariable<float>("dx", 0);
 		instance.setVariable<float>("dy", 0);
 	}
-	
+
     CUDAAgentModel cuda_model(flame_model);
     cuda_model.setPopulationData(population);
 	/*

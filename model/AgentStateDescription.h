@@ -1,8 +1,11 @@
-/*
- * AgentStateDescription.h
+ /**
+ * @file AgentStateDescription.h
+ * @authors Paul
+ * @date 5 Mar 2014
+ * @brief
  *
- *  Created on: 20 Feb 2014
- *      Author: paul
+ * @see
+ * @warning
  */
 
 #ifndef AGENTSTATEDESCRIPTION_H_

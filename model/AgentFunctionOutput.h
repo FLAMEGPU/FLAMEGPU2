@@ -1,8 +1,11 @@
-/*
- * AgentFunctionOutput.h
+ /**
+ * @file AgentFunctionOutput.h
+ * @authors Paul
+ * @date 5 Mar 2014
+ * @brief
  *
- *  Created on: 4 Mar 2014
- *      Author: paul
+ * @see
+ * @warning
  */
 
 #ifndef AGENTFUNCTIONOUTPUT_H_

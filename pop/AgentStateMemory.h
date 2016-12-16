@@ -1,12 +1,15 @@
-/*
- * AgentMemory.h
+ /**
+ * @file AgentStateMemory.h
+ * @authors Paul
+ * @date 5 Mar 2014
+ * @brief
  *
- *  Created on: 5 Mar 2014
- *      Author: paul
+ * @see
+ * @warning
  */
 
-#ifndef AGENTMEMORY_H_
-#define AGENTMEMORY_H_
+#ifndef AGENTSTATEDESCRIPTION_H_
+#define AGENTSTATEDESCRIPTION_H_
 
 
 #include <string>
@@ -51,4 +54,4 @@ protected:
     unsigned int size;
 };
 
-#endif /* AGENTMEMORY_H_ */
+#endif /* AGENTSTATEDESCRIPTION_H_ */

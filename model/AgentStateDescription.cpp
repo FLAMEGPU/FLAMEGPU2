@@ -1,15 +1,17 @@
-/*
- * AgentStateDescription.cpp
+ /**
+ * @file AgentStateDescription.cpp
+ * @authors Paul
+ * @date
+ * @brief
  *
- *  Created on: 20 Feb 2014
- *      Author: paul
+ * @see
+ * @warning
  */
-
 #include "AgentStateDescription.h"
 
 
-AgentStateDescription::AgentStateDescription(const std::string state_name) : name(state_name){ 
-	
+AgentStateDescription::AgentStateDescription(const std::string state_name) : name(state_name){
+
 }
 
 AgentStateDescription::~AgentStateDescription() {

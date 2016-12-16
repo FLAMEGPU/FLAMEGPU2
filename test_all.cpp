@@ -1,3 +1,13 @@
+ /**
+ * @file test_all.cpp
+ * @authors Paul
+ * @date
+ * @brief
+ *
+ * @see
+ * @warning
+ */
+
 #define BOOST_TEST_MODULE "All Unit Tests for FLAMEGPU 2"
 
 //requires that boost is built with the following

@@ -1,8 +1,11 @@
-/*
- * AgentPopulation.h
+ /**
+ * @file AgentPopulation.h
+ * @authors Paul
+ * @date 5 Mar 2014
+ * @brief
  *
- *  Created on: 5 Mar 2014
- *      Author: paul
+ * @see
+ * @warning
  */
 
 #ifndef AGENTPOPULATION_H_

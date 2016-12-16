@@ -1,8 +1,11 @@
-/*
- * CUDAAgentStateList.cpp
+ /**
+ * @file CUDAAgentStateList.cpp
+ * @authors Paul
+ * @date
+ * @brief
  *
- *  Created on: 20 Feb 2014
- *      Author: paul
+ * @see
+ * @warning
  */
 
 #include <cuda_runtime.h>
@@ -19,7 +22,7 @@ CUDAAgentStateList::CUDAAgentStateList(CUDAAgent& cuda_agent) : agent(cuda_agent
     //allocate state lists
     allocateDeviceAgentList(&d_list);
     allocateDeviceAgentList(&d_swap_list);
-    if (agent.getAgentDescription().requiresAgentCreation()) // Moz:  how about in 'CUDAAgentModel::simulate'?
+    if (agent.getAgentDescription().requiresAgentCreation())
         allocateDeviceAgentList(&d_new_list);
 	else
 	{
@@ -52,7 +55,7 @@ void CUDAAgentStateList::allocateDeviceAgentList(CUDAAgentMemoryHashMap* memory_
     //for each variable allocate a device array and register in the hash map
 	for (const MemoryMapPair& mm : mem)
     {
-	
+
 		//get the hash index of the variable so we know what position to allocate in the map
 		int hash_index = agent.getHashIndex(mm.first.c_str());
 
@@ -77,7 +80,7 @@ void CUDAAgentStateList::releaseDeviceAgentList(CUDAAgentMemoryHashMap* memory_m
 {
 	//we use the agents memory map to iterate the agent variables and do deallocation within our GPU hash map
     const MemoryMap &mem = agent.getAgentDescription().getMemoryMap();
-    
+
 	//for each device pointer in the map we need to free these
 	for (const MemoryMapPair& mm : mem)
     {
@@ -135,7 +138,7 @@ void CUDAAgentStateList::setAgentData(const AgentStateMemory &state_memory)
 		//get the variable size from agent description
 		size_t var_size = agent.getAgentDescription().getAgentVariableSize(mm.first);
 
-		//get the boost any data for this memory 
+		//get the boost any data for this memory
 		const std::vector<boost::any>& m_data = state_memory.getReadOnlyMemoryVector(m.first);
 
 		//TODO: cast vector of boost any to correct agent variable type

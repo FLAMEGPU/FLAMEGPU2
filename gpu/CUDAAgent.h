@@ -1,3 +1,13 @@
+ /**
+ * @file CUDAAgent.h
+ * @authors Paul
+ * @date 5 Mar 2014
+ * @brief
+ *
+ * @see
+ * @warning
+ */
+
 #ifndef CUDAAGENT_H_
 #define CUDAAGENT_H_
 
