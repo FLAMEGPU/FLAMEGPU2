@@ -11,38 +11,27 @@
 #include "AgentStateMemory.h"
 #include <iostream>
 
-AgentStateMemory::AgentStateMemory(const AgentDescription& description, const std::string state) : agent_description(description), agent_state(state), size(0)
+AgentStateMemory::AgentStateMemory(const AgentPopulation &p, unsigned int initial_size) : population(p)
 {
 	//state memory map is cloned from the agent description
-	description.initEmptyStateMemoryMap(state_memory);
+	population.getAgentDescription().initEmptyStateMemoryMap(state_memory);
+
+	//if there is an initial population size then resize the memory vectors
+	if (initial_size > 0)
+		resizeMemoryVectors(initial_size);
 }
 
-unsigned int AgentStateMemory::getSize() const
+
+void AgentStateMemory::incrementSize()
 {
-    return size;
-}
-
-
-unsigned int AgentStateMemory::creatNewInstance()
-{
-
-    //loop through the memory maps
-    MemoryMap::const_iterator iter;
-    const MemoryMap &m = agent_description.getMemoryMap();
-
-    for (iter = m.begin(); iter != m.end(); iter++)
-    {
-        const std::string variable_name = iter->first;
-
-		GenericAgentMemoryVector &v = getMemoryVector(variable_name);
+    //loop through the memory maps and increment the vector size by 1
+	const MemoryMap &m = population.getAgentDescription().getMemoryMap();
+	for (const MemoryMapPair &mmp : m){
+		GenericAgentMemoryVector &v = getMemoryVector(mmp.first);
 		v.incrementVector();
-    }
-    return size++;
-
+	}
 
 }
-
-
 
 
 GenericAgentMemoryVector& AgentStateMemory::getMemoryVector(const std::string variable_name)
@@ -70,10 +59,31 @@ const GenericAgentMemoryVector& AgentStateMemory::getReadOnlyMemoryVector(const 
 
 const std::type_info& AgentStateMemory::getVariableType(std::string variable_name)
 {
-    return agent_description.getVariableType(variable_name);
+	return population.getAgentDescription().getVariableType(variable_name);
 }
 
 bool AgentStateMemory::isSameDescription(const AgentDescription& description) const
 {
-    return (&description == &agent_description);
+	return (&description == &population.getAgentDescription());
+}
+
+void AgentStateMemory::resizeMemoryVectors(unsigned int s)
+{
+	//all size checking is done by the population
+
+	MemoryMap::const_iterator iter;
+	const MemoryMap &m = population.getAgentDescription().getMemoryMap();
+
+	for (iter = m.begin(); iter != m.end(); iter++)
+	{
+		const std::string variable_name = iter->first;
+
+		GenericAgentMemoryVector &v = getMemoryVector(variable_name);
+		v.resize(s);
+	}
+}
+
+unsigned int AgentStateMemory::getPopulationSize() const
+{
+	return population.getMaximumStateListSize();
 }

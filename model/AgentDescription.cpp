@@ -74,9 +74,9 @@ const StateMap& AgentDescription::getStateMap() const
     return states;
 }
 
-unsigned int AgentDescription::getMemorySize() const
+size_t AgentDescription::getMemorySize() const
 {
-    unsigned int size = 0;
+    size_t size = 0;
     for (TypeSizeMap::const_iterator it = sizes.begin(); it != sizes.end(); it++)
     {
         size += it->second;
@@ -98,10 +98,10 @@ boost::any AgentDescription::getDefaultValue(const std::string variable_name) co
 
 unsigned int AgentDescription::getNumberAgentVariables() const
 {
-    return memory.size();
+    return static_cast<unsigned int>(memory.size());
 }
 
-const unsigned int AgentDescription::getAgentVariableSize(const std::string variable_name) const
+const size_t AgentDescription::getAgentVariableSize(const std::string variable_name) const
 {
     //get the variable name type
     MemoryMap::const_iterator mm = memory.find(variable_name);

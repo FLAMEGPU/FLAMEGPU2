@@ -8,8 +8,8 @@
  * @warning
  */
 
-#ifndef AGENTSTATEDESCRIPTION_H_
-#define AGENTSTATEDESCRIPTION_H_
+#ifndef AGENTSTATEMEMORY_H_
+#define AGENTSTATEMEMORY_H_
 
 
 #include <string>
@@ -20,39 +20,35 @@
 #include <boost/any.hpp>
 #include <typeinfo>
 
+class AgentPopulation;
 
-#include "../model/AgentDescription.h"
-
-//now define in agentstatememory
-//typedef std::map<const std::string, GenericAgentMemoryVector> StateMemoryMap;
-//typedef std::pair<const std::string, GenericAgentMemoryVector> StateMemoryMapPair;
+#include "AgentPopulation.h"
 
 class AgentStateMemory  // agent_list
 {
 public:
-    AgentStateMemory(const AgentDescription &description, const std::string agent_state) ;
+	AgentStateMemory(const AgentPopulation &population, unsigned int initial_size = 0);
     virtual ~AgentStateMemory() {}
 
-    unsigned int getSize() const;
-
-    //void init(const AgentDescription &agent_description);
-    unsigned int creatNewInstance();
+    void incrementSize();
 
 	GenericAgentMemoryVector& getMemoryVector(const std::string variable_name);
 
 	const GenericAgentMemoryVector& getReadOnlyMemoryVector(const std::string variable_name) const;
 
-    //todo:templated get vector function with boost any cast
-
     const std::type_info& getVariableType(std::string variable_name); //const
 
     bool isSameDescription(const AgentDescription& description) const;
 
+	void resizeMemoryVectors(unsigned int size);
+
+	unsigned int getPopulationSize() const;
+
 protected:
-    const AgentDescription &agent_description;
+	const AgentPopulation &population;
     const std::string agent_state;
     StateMemoryMap state_memory;
-    unsigned int size;
+
 };
 
-#endif /* AGENTSTATEDESCRIPTION_H_ */
+#endif /* AGENTSTATEMEMORY_H_ */

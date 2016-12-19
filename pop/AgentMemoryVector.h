@@ -20,7 +20,7 @@ public:
 	
 	virtual const std::type_info& getType() = 0;
 
-	virtual void* getDataPtr() = 0;
+	virtual const void* getDataPtr() const = 0;
 
 	virtual void* getVectorPtr() = 0;
 
@@ -28,6 +28,29 @@ public:
 
 	virtual GenericAgentMemoryVector* clone() const = 0;
 
+	virtual void resize(unsigned int) = 0;
+
+	template <typename T>
+	std::vector<T>& getVector(){
+
+		if (getType() != typeid(T))
+			//throw std::runtime_error("Bad variable type in agent instance set variable");
+			throw InvalidVarType();
+
+		//must cast the vector as the correct type
+		std::vector<T> *t_v = static_cast<std::vector<T>*>(getVectorPtr());
+		//return reference
+		return *t_v;
+	}
+
+	template <typename T>
+	std::vector<T> getVectorIteratorAt(unsigned int i){
+
+		//return an iterator at correct position
+		std::vector<T>& v = getVector<T>();
+		return (v.begin() + i);
+
+	}
 
 };
 
@@ -47,7 +70,7 @@ public:
 		return type;
 	}
 
-	virtual void* getDataPtr(){
+	virtual const void* getDataPtr() const{
 		if (vec.empty())
 			return NULL;
 		else
@@ -70,6 +93,10 @@ public:
 		return (new AgentMemoryVector<T>());
 	}
 
+	virtual void resize(unsigned int s)
+	{
+		vec.resize(s);
+	}
 
 
 protected:

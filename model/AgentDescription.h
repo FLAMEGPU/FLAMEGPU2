@@ -84,9 +84,9 @@ public:
 
     const StateMap& getStateMap() const;
 
-    const unsigned int getAgentVariableSize(const std::string variable_name) const;
+    const size_t getAgentVariableSize(const std::string variable_name) const;
 
-    unsigned int getMemorySize() const;
+	size_t getMemorySize() const;
 
     unsigned int getNumberAgentVariables() const;
 

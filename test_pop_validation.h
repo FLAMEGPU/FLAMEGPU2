@@ -18,10 +18,10 @@ BOOST_AUTO_TEST_CASE(PopulationNameCheck)
     circle_agent.addAgentVariable<float>("y");
 
     flame_model.addAgent(circle_agent);
-    AgentPopulation population(flame_model, "circle");
+	AgentPopulation population(circle_agent);
     for (int i=0; i< 100; i++)
     {
-        AgentInstance instance = population.addInstance("default");
+        AgentInstance instance = population.pushBackInstance("default");
         instance.setVariable<float>("x", i*0.1f);
     }
 
@@ -47,17 +47,20 @@ BOOST_AUTO_TEST_CASE(PopulationInstVarCheck1)
 
     flame_model.addAgent(circle_agent);
 
-    AgentPopulation population(flame_model, "circle");
+	AgentPopulation population(circle_agent);
 
-    AgentInstance instance = population.addInstance("default");
+    AgentInstance instance = population.pushBackInstance("default");
 
+#pragma warning( push )
+#pragma warning( disable : 4244)
     BOOST_CHECK_THROW(instance.setVariable<int>("x", 0.1f),InvalidVarType);
+#pragma warning( pop )
 
     instance.setVariable<float>("x", 0.1f);
 
     BOOST_CHECK_MESSAGE(instance.getVariable<float>("x")==0.1f, "Variable is "<< instance.getVariable<float>("x") << " and not 0.1f!!");
 
-    BOOST_CHECK_THROW(instance.getVariable<int>("x")==0.1f,InvalidVarType); // expecting an error
+    BOOST_CHECK_THROW(instance.getVariable<int>("x"), InvalidVarType); // expecting an error
 
 }
 
@@ -75,9 +78,9 @@ BOOST_AUTO_TEST_CASE(PopulationInstVarCheck2)
 
     flame_model.addAgent(circle_agent);
 
-    AgentPopulation population(flame_model, "circle");
+	AgentPopulation population(circle_agent);
 
-    AgentInstance instance = population.addInstance("default");
+    AgentInstance instance = population.pushBackInstance("default");
     instance.setVariable<float>("x", 0.1f);
 
 
@@ -101,9 +104,9 @@ BOOST_AUTO_TEST_CASE(PopulationInstVarCheck3)
 
     flame_model.addAgent(circle_agent);
 
-    AgentPopulation population(flame_model, "circle");
+	AgentPopulation population(circle_agent);
 
-    AgentInstance instance = population.addInstance("default");
+    AgentInstance instance = population.pushBackInstance("default");
     instance.setVariable<float>("x", 0.1f);
 
     BOOST_CHECK_THROW(instance.getVariable<float>("z"), InvalidAgentVar);
@@ -124,18 +127,18 @@ BOOST_AUTO_TEST_CASE(PopulationSizeCheck)
 
     flame_model.addAgent(circle_agent);
 
-    AgentPopulation population(flame_model, "circle", 10);
+	AgentPopulation population(circle_agent, 10);
 
-    BOOST_CHECK(population.getMaximumPopulationSize()==10);
+    BOOST_CHECK(population.getMaximumStateListSize()==10);
 
     for (int i=0; i< 100; i++)
     {
-        AgentInstance instance = population.addInstance("default");
+        AgentInstance instance = population.pushBackInstance("default");
         instance.setVariable<float>("x", i*0.1f);
     }
 
 
-    BOOST_CHECK_MESSAGE(population.getMaximumPopulationSize()==1034, "population is " << population.getMaximumPopulationSize() << " and not 1034!!");
+    BOOST_CHECK_MESSAGE(population.getMaximumStateListSize()==110, "population is " << population.getMaximumStateListSize() << " and not 110!!");
 
 }
 
@@ -154,16 +157,16 @@ BOOST_AUTO_TEST_CASE(PopulationSizeExtraCheck)
 
     flame_model.addAgent(circle_agent);
 
-    AgentPopulation population(flame_model, "circle", 1);
+	AgentPopulation population(circle_agent); //default size is 1024
 
     for (int i=0; i< 1026; i++)
     {
-        AgentInstance instance = population.addInstance("default");
+        AgentInstance instance = population.pushBackInstance("default");
         instance.setVariable<float>("x", i*0.1f);
     }
 
 
-    BOOST_CHECK_MESSAGE(population.getMaximumPopulationSize()==2049, "population is " << population.getMaximumPopulationSize() << " and not 2049!!");
+    BOOST_CHECK_MESSAGE(population.getMaximumStateListSize()==2050, "population is " << population.getMaximumStateListSize() << " and not 2050!!");
 
 }
 

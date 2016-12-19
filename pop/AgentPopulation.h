@@ -14,36 +14,41 @@
 #include <memory>
 #include <map>
 
-#include "../model/ModelDescription.h"
+class AgentStateMemory;	//forward declaration
+
+#include "../model/AgentDescription.h"
 #include "AgentStateMemory.h"
 #include "AgentInstance.h"
 
-#define POPULATION_SIZE_INCREMENT 1024
 #define DEFAULT_POPULATION_SIZE 1024
 
 typedef std::map<const std::string, std::unique_ptr<AgentStateMemory>> AgentStatesMap;	//key is concat of agent and state name!
+typedef std::pair<const std::string, std::unique_ptr<AgentStateMemory>> AgentStatesMapPair;
 
 class AgentPopulation {
 public:
-	AgentPopulation(const ModelDescription &model_description, const std::string agent_name, unsigned int size_hint=DEFAULT_POPULATION_SIZE);
+	AgentPopulation(const AgentDescription &agent_description, unsigned int initial_size = DEFAULT_POPULATION_SIZE);
 
 	virtual ~AgentPopulation();
 
-	AgentInstance addInstance(const std::string agent_state = "default");
+	AgentInstance pushBackInstance(const std::string agent_state = "default");
+
+	AgentInstance getInstanceAt(unsigned int index, const std::string agent_state = "default");
 
 	const AgentStateMemory& getStateMemory(const std::string agent_state = "default") const;
 
 	const std::string getAgentName() const;
 
-	const ModelDescription& getModelDescription() const;
+	const AgentDescription& getAgentDescription() const;
 
 	/* This is the maximum size of any single state list. */
-	unsigned int getMaximumPopulationSize() const;
+	unsigned int getMaximumStateListSize() const;
+
+	void setStateListSize(unsigned int);
 
 private:
 
-	const ModelDescription &model;
-	const std::string agent_name;
+	const AgentDescription &agent;
 	AgentStatesMap states_map;
 	unsigned int maximum_size; //size is maximum size for agents in any single state (same for all states of same agent type)
 

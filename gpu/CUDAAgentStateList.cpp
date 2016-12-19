@@ -165,14 +165,17 @@ void CUDAAgentStateList::setAgentData(const AgentStateMemory &state_memory)
 		//get the variable size from agent description
 		size_t var_size = agent.getAgentDescription().getAgentVariableSize(m.first);
 
-		//get the boost any data for this memory 
-		//const std::vector<boost::any>& m_data = state_memory.getReadOnlyMemoryVector(m.first);
+		//get the vector
+		const GenericAgentMemoryVector &m_vec = state_memory.getReadOnlyMemoryVector(m.first);
 
-		//TODO: cast vector of boost any to correct agent variable type
-		//TODO: This will NOT work. Need to change the memory storage. See github issue.
+		//get pointer to vector data
+		const void * v_data = m_vec.getDataPtr();
 
-		//TODO: copy the boost any data to GPU memory
-		//gpuErrchk( cudaMemcpy( d_Circles_default, h_Circles_default, xmachine_Circle_SoA_size, cudaMemcpyHostToDevice));
+		//set the current list size
+		current_list_size = state_memory.getPopulationSize();
+
+		//TODO: copy the boost any data to GPU
+		gpuErrchk(cudaMemcpy(d_list.h_d_memory[hash_index], v_data, var_size*current_list_size, cudaMemcpyHostToDevice));
 	}
 
 }

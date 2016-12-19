@@ -39,7 +39,7 @@ void Simulation::addFunctionToLayer(int layer, std::string function_name) // we 
 unsigned int Simulation::addSimulationLayer(SimulationLayer& layer)
 {
     layers.push_back(&layer);
-    return layers.size()-1;
+    return static_cast<unsigned int>(layers.size())-1;
 }
 
 void Simulation::setSimulationSteps(unsigned int steps)

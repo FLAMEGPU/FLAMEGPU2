@@ -10,57 +10,63 @@
 
 #include "AgentPopulation.h"
 
-AgentPopulation::AgentPopulation(const ModelDescription &model_description, const std::string name, unsigned int max_size):
-    model(model_description),
-    agent_name(name),
-    maximum_size(max_size),
+AgentPopulation::AgentPopulation(const AgentDescription &agent_description, unsigned int initial_size):
+	agent(agent_description),
+    maximum_size(initial_size),
     states_map()
 {
+	//init the state maps
+	const StateMap& sm = agent.getStateMap();
 
+	//loop through states in agent description and create memory for each
+	for (const StateMapPair &smp : sm){
+		//add a new state memory object to the states map
+		states_map.insert(AgentStatesMap::value_type(smp.first, std::unique_ptr<AgentStateMemory>(new AgentStateMemory(*this, initial_size))));
+	}
 }
 
 AgentPopulation::~AgentPopulation() {}
 
-AgentInstance AgentPopulation::addInstance(const std::string agent_state)
+AgentInstance AgentPopulation::pushBackInstance(const std::string agent_state)
 {
+	//increment all state memory vectors
+	for (AgentStatesMapPair &smp : states_map){
+		smp.second->incrementSize();
+	}
+	
+	//get correct state memory
+	AgentStatesMap::iterator sm;
+	sm = states_map.find(agent_state);
+	if (sm == states_map.end())
+		throw std::exception("Agent state not found when pushing back instance");
 
-    //boost::tuple<std::string, std::string> k(agent_name, agent_state);
-    std::string k = agent_name + "_" + agent_state;
+	//return new instance from state memory with index of current size (then increment)
+	return AgentInstance(*sm->second, maximum_size++);
 
-    //check if the state map exists
-    AgentStatesMap::iterator iter;
-    iter = states_map.find(k);
+}
 
-    //existing state map
-    if (iter != states_map.end())
-    {
-		//check max size is not exceeded if it is then increase it
-		if (iter->second->getSize() == maximum_size)
-		{
-			maximum_size += POPULATION_SIZE_INCREMENT;
-		}
+AgentInstance AgentPopulation::getInstanceAt(unsigned int index, const std::string agent_state)
+{
+	//check the index does not exceed current size
+	if (index <= maximum_size)
+		throw std::exception("Can not get instance. Try increasing size of pushing new instance.");
 
-        return AgentInstance(*iter->second);
-    }
-    //create new state map
-    else
-    {
+	//get correct state memory
+	AgentStatesMap::iterator sm;
+	sm = states_map.find(agent_state);
+	if (sm == states_map.end())
+		throw std::exception("Agent state not found when pushing back instance");
 
-        const AgentDescription& agent_description = model.getAgentDescription(agent_name);
+	//return new instance from state memory with index of current size (then increment)
+	return AgentInstance(*sm->second, index);
 
-        iter = states_map.insert(AgentStatesMap::value_type(k, std::unique_ptr<AgentStateMemory>(new AgentStateMemory(agent_description, agent_state)))).first;
-
-        return AgentInstance(*iter->second);
-    }
 }
 
 const AgentStateMemory& AgentPopulation::getStateMemory(const std::string agent_state) const
 {
-    std::string k = agent_name + "_" + agent_state;
-
     //check if the state map exists
     AgentStatesMap::const_iterator iter;
-    iter = states_map.find(k);
+	iter = states_map.find(agent_state);
 
     if (iter == states_map.end())
     {
@@ -73,15 +79,29 @@ const AgentStateMemory& AgentPopulation::getStateMemory(const std::string agent_
 
 const std::string AgentPopulation::getAgentName() const
 {
-    return agent_name;
+    return agent.getName();
 }
 
-const ModelDescription& AgentPopulation::getModelDescription() const
+const AgentDescription& AgentPopulation::getAgentDescription() const
 {
-	return model;
+	return agent;
 }
 
-unsigned int AgentPopulation::getMaximumPopulationSize() const
+unsigned int AgentPopulation::getMaximumStateListSize() const
 {
-    return maximum_size;
+	return maximum_size;
+}
+
+void AgentPopulation::setStateListSize(unsigned int size)
+{
+	if (size < maximum_size){
+		throw std::exception("Can not reduce size of agent population state list!");
+	}
+
+	//set the maximum size
+	maximum_size = size;
+
+	for (AgentStatesMapPair &smp : states_map){
+		smp.second->resizeMemoryVectors(maximum_size);
+	}
 }
