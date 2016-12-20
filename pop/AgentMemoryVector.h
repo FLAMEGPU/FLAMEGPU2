@@ -12,6 +12,7 @@
 #include <ostream>
 #include <typeinfo>
 
+#include "../exception/FGPUException.h"
 
 class GenericAgentMemoryVector{
 public:
@@ -91,7 +92,7 @@ template <typename T> std::vector<T>& GenericAgentMemoryVector::getVector(){
 
 	if (getType() != typeid(T))
 		//throw std::runtime_error("Bad variable type in agent instance set variable");
-		throw InvalidVarType();
+		throw InvalidVarType("bad");
 
 	//must cast the vector as the correct type
 	std::vector<T> *t_v = static_cast<std::vector<T>*>(getVectorPtr());

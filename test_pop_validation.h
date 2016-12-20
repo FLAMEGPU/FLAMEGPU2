@@ -4,6 +4,7 @@
  */
 #include "model/ModelDescription.h"
 #include "pop/AgentPopulation.h"
+#include "pop/AgentInstance.h"
 
 using namespace std;
 

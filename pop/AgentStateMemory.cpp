@@ -9,6 +9,8 @@
  */
 
 #include "AgentStateMemory.h"
+#include "AgentPopulation.h"
+
 #include <iostream>
 
 AgentStateMemory::AgentStateMemory(const AgentPopulation &p, unsigned int initial_size) : population(p)

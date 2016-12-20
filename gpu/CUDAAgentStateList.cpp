@@ -13,6 +13,7 @@
 
 #include "CUDAAgentStateList.h"
 #include "CUDAErrorChecking.h"
+#include "../pop/AgentStateMemory.h"
 
 
 /**

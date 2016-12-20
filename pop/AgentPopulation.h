@@ -18,7 +18,9 @@ class AgentStateMemory;	//forward declaration
 
 #include "../model/AgentDescription.h"
 //#include "AgentStateMemory.h"
-#include "AgentInstance.h"
+//#include "AgentInstance.h"
+
+class AgentInstance;
 
 #define DEFAULT_POPULATION_SIZE 1024
 

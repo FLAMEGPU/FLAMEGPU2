@@ -12,6 +12,9 @@
 * Created on: 09 Dec 2016
 */
 
+#ifndef _FGPUEXCEPTION
+#define _FGPUEXCEPTION
+
 #include <string>
 #include <iostream>
 #include <exception>
@@ -264,3 +267,5 @@ public:
         return err_message;
     }
 };
+
+#endif //_FGPUEXCEPTION

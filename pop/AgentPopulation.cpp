@@ -9,6 +9,7 @@
  */
 
 #include "AgentPopulation.h"
+#include "AgentInstance.h"
 
 AgentPopulation::AgentPopulation(const AgentDescription &agent_description, unsigned int initial_size):
 	agent(agent_description),
