@@ -17,3 +17,4 @@ MessageDescription::~MessageDescription() {}
 const std::string MessageDescription::getName() const{
 	return name;
 }
+

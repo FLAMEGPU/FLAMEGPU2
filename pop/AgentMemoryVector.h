@@ -30,27 +30,9 @@ public:
 
 	virtual void resize(unsigned int) = 0;
 
-	template <typename T>
-	std::vector<T>& getVector(){
+	template <typename T> std::vector<T>& getVector();
 
-		if (getType() != typeid(T))
-			//throw std::runtime_error("Bad variable type in agent instance set variable");
-			throw InvalidVarType();
-
-		//must cast the vector as the correct type
-		std::vector<T> *t_v = static_cast<std::vector<T>*>(getVectorPtr());
-		//return reference
-		return *t_v;
-	}
-
-	template <typename T>
-	std::vector<T> getVectorIteratorAt(unsigned int i){
-
-		//return an iterator at correct position
-		std::vector<T>& v = getVector<T>();
-		return (v.begin() + i);
-
-	}
+	template <typename T> std::vector<T> getVectorIteratorAt(unsigned int i);
 
 };
 
@@ -104,5 +86,25 @@ protected:
 	T default_value;
 	const std::type_info& type;
 };
+
+template <typename T> std::vector<T>& GenericAgentMemoryVector::getVector(){
+
+	if (getType() != typeid(T))
+		//throw std::runtime_error("Bad variable type in agent instance set variable");
+		throw InvalidVarType();
+
+	//must cast the vector as the correct type
+	std::vector<T> *t_v = static_cast<std::vector<T>*>(getVectorPtr());
+	//return reference
+	return *t_v;
+}
+
+template <typename T> std::vector<T> GenericAgentMemoryVector::getVectorIteratorAt(unsigned int i){
+
+	//return an iterator at correct position
+	std::vector<T>& v = getVector<T>();
+	return (v.begin() + i);
+}
+
 
 #endif //AGENTMEMORYVECTOR_H_

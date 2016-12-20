@@ -80,13 +80,7 @@ public:
     /*
      *
      */
-    template <typename T> void addAgentVariable(const std::string variable_name)
-    {
-        memory.insert(MemoryMap::value_type(variable_name, typeid(T)));
-        sizes.insert(TypeSizeMap::value_type(&typeid(T), (unsigned int)sizeof(T)));
-        defaults.insert(DefaultValueMap::value_type(variable_name, T()));
-		sm_map.insert(StateMemoryMap::value_type(variable_name, std::unique_ptr<GenericAgentMemoryVector>(new AgentMemoryVector<T>())));
-    }
+	template <typename T> void addAgentVariable(const std::string variable_name);
 
     boost::any getDefaultValue(const std::string variable_name) const;
 
@@ -125,5 +119,14 @@ private:
     DefaultValueMap defaults;
 	StateMemoryMap sm_map;									//used to hold a default empty vector
 };
+
+template <typename T> void AgentDescription::addAgentVariable(const std::string variable_name)
+{
+	memory.insert(MemoryMap::value_type(variable_name, typeid(T)));
+	sizes.insert(TypeSizeMap::value_type(&typeid(T), (unsigned int)sizeof(T)));
+	defaults.insert(DefaultValueMap::value_type(variable_name, T()));
+	sm_map.insert(StateMemoryMap::value_type(variable_name, std::unique_ptr<GenericAgentMemoryVector>(new AgentMemoryVector<T>())));
+}
+
 
 #endif /* AGENTDESCRIPTION_H_ */

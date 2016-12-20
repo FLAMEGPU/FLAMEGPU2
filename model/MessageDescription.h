@@ -27,13 +27,16 @@ public:
 
 	const std::string getName() const;
 
-	template <typename T> void addVariable(const std::string variable_name){
-		variables.insert(variables.end(), VariableMap::value_type(variable_name, typeid(T)));
-	}
+	template <typename T> void addVariable(const std::string variable_name);
 
 private:
 	const std::string name;
 	VariableMap variables;
 };
+
+template <typename T> void MessageDescription::addVariable(const std::string variable_name){
+	variables.insert(variables.end(), VariableMap::value_type(variable_name, typeid(T)));
+}
+
 
 #endif /* MESSAGEDESCRIPTION_H_ */

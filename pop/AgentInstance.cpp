@@ -16,3 +16,4 @@ AgentInstance::AgentInstance(AgentStateMemory& state_memory, unsigned int i) : a
 }
 
 AgentInstance::~AgentInstance() {}
+
