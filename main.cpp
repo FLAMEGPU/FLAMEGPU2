@@ -98,7 +98,7 @@ int main(void)
 	//TODO: Set maximum population size if known in advance
     for (int i=0; i< 100; i++)
     {
-        AgentInstance instance = population.addInstance("default");
+        AgentInstance instance = population.pushBackInstance("default");
         instance.setVariable<float>("x", i*0.1f);
         instance.setVariable<float>("y", i*0.1f);
         instance.setVariable<float>("dx", 0);

@@ -21,7 +21,7 @@ class AgentInstance; //forward declaration
 
 
 #include "AgentStateMemory.h"
-#include "AgentPopulation.h"
+//#include "AgentPopulation.h"
 
 
 
@@ -38,7 +38,7 @@ public:
 
 		//get the vector of correct type
 		std::vector<T> &t_v = v.getVector<T>();
-		std::vector<T>::iterator it = t_v.begin() + index;
+		typename std::vector<T>::iterator it = t_v.begin() + index;
 
 		//do the insert
 		t_v.insert(it, value);
@@ -51,7 +51,7 @@ public:
 
 		//get the vector of correct type
 		std::vector<T> &t_v = v.getVector<T>();
-		std::vector<T>::iterator it = t_v.begin() + index;
+		typename std::vector<T>::iterator it = t_v.begin() + index;
 
 		//todo error handling around the cast to check for exceptions
 		return t_v.at(index);

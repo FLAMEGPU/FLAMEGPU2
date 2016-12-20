@@ -1,4 +1,3 @@
-# DoxyGen folder
 DoxyGen*/
 #handler.cpp
 #api/handler.h
@@ -6,6 +5,7 @@ bin/
 obj/
 *.cbp
 *.layout
+BoostTest/
 
 CUDA
 *.i

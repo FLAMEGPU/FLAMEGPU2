@@ -33,12 +33,13 @@ AgentInstance AgentPopulation::pushBackInstance(const std::string agent_state)
 	for (AgentStatesMapPair &smp : states_map){
 		smp.second->incrementSize();
 	}
-	
+
 	//get correct state memory
 	AgentStatesMap::iterator sm;
 	sm = states_map.find(agent_state);
 	if (sm == states_map.end())
-		throw std::exception("Agent state not found when pushing back instance");
+		//throw std::exception("Agent state not found when pushing back instance");
+		throw InvalidPopulationData("Agent state not found when pushing back instance");
 
 	//return new instance from state memory with index of current size (then increment)
 	return AgentInstance(*sm->second, maximum_size++);
@@ -49,13 +50,15 @@ AgentInstance AgentPopulation::getInstanceAt(unsigned int index, const std::stri
 {
 	//check the index does not exceed current size
 	if (index <= maximum_size)
-		throw std::exception("Can not get instance. Try increasing size of pushing new instance.");
+		//throw std::exception("Can not get instance. Try increasing size of pushing new instance.");
+		throw InvalidPopulationData("Can not get instance. Try increasing size of pushing new instance.");
 
 	//get correct state memory
 	AgentStatesMap::iterator sm;
 	sm = states_map.find(agent_state);
 	if (sm == states_map.end())
-		throw std::exception("Agent state not found when pushing back instance");
+		//throw std::exception("Agent state not found when pushing back instance");
+		throw InvalidPopulationData("Agent state not found when pushing back instance");;
 
 	//return new instance from state memory with index of current size (then increment)
 	return AgentInstance(*sm->second, index);
@@ -95,7 +98,8 @@ unsigned int AgentPopulation::getMaximumStateListSize() const
 void AgentPopulation::setStateListSize(unsigned int size)
 {
 	if (size < maximum_size){
-		throw std::exception("Can not reduce size of agent population state list!");
+		//throw std::exception("Can not reduce size of agent population state list!");
+		throw InvalidPopulationData("Can not reduce size of agent population state list!");
 	}
 
 	//set the maximum size
