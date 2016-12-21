@@ -27,9 +27,9 @@ typedef std::pair<const std::string, std::unique_ptr<CUDAAgentStateList>> CUDASt
 /** \breif CUDAAgent class is used as a container for storing the GPU data of all variables in all states
  * The CUDAAgent contains a hash index which maps a variable name to a unique index. Each CUDAAgentStateList will use this hash index to map variable names to unique pointers in GPU memory space. This is required so that at runtime a variable name can be related to a unique array of data on the device. It works like a traditional hashmap however the same hashing is used for all states that an agent can be in (as agents have the same variables regardless of state).
  */
-class CUDAAgent : public std::enable_shared_from_this<CUDAAgent>
+class CUDAAgent
 {
-public: 
+public:
 	CUDAAgent(const AgentDescription& description);
 	virtual ~CUDAAgent(void);
 
@@ -63,7 +63,7 @@ private:
 	const AgentDescription& agent_description;
 	CUDAStateMap state_map;
 
-	unsigned int* h_hashes; //host hash index table
+	unsigned int* h_hashes; //host hash index table //USE SHARED POINTER??
 	unsigned int* d_hashes; //device hash index table (used by runtime)
 
 	unsigned int max_list_size; //The maximum length of the agent variable arrays based on the maximum population size passed to setPopulationData
