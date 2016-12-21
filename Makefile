@@ -47,11 +47,12 @@ TEST_DIR := TEST
 ################################################################################
 
 # Location of the CUDA Toolkit
-CUDA_PATH ?= "/usr/local/cuda-7.5"
+# CUDA_PATH ?= "/usr/local/cuda-7.5"
 # export CUDA_PATH=/usr/local/cuda-8.0
 
 HOST_COMPILER := g++
-NVCC          := $(CUDA_PATH)/bin/nvcc -ccbin $(HOST_COMPILER)
+NVCC          := nvcc -ccbin $(HOST_COMPILER)
+#NVCC          := $(CUDA_PATH)/bin/nvcc -ccbin $(HOST_COMPILER)
 
 # internal flags
 NVCCFLAGS   := -m64
