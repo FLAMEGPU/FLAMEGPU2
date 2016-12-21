@@ -29,7 +29,7 @@ struct CUDAAgentMemoryHashMap{
 
 class CUDAAgentStateList {
 public:
-	CUDAAgentStateList(CUDAAgent& cuda_agent);
+	CUDAAgentStateList(std::shared_ptr<CUDAAgent> cuda_agent);
 	virtual ~CUDAAgentStateList();
 
 	void setAgentData(const AgentStateMemory &state_memory);
@@ -57,7 +57,7 @@ private:
 
 	unsigned int current_list_size; //???
 
-	CUDAAgent& agent;
+	std::shared_ptr<CUDAAgent> agent;
 };
 
 #endif /* CUDAAGENTLIST_H_ */

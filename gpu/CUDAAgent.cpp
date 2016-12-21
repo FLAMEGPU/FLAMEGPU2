@@ -156,7 +156,7 @@ void CUDAAgent::setInitialPopulationData(const AgentPopulation& population)
     for(const StateMapPair& s: sm)
     {
         //allocate memory for each state list by creating a new Agent State List
-        state_map.insert(CUDAStateMap::value_type(s.first, std::unique_ptr<CUDAAgentStateList>( new CUDAAgentStateList(*this))));
+        state_map.insert(CUDAStateMap::value_type(s.first, std::unique_ptr<CUDAAgentStateList>( new CUDAAgentStateList(shared_from_this()))));
     }
 
     /**set the population data*/
