@@ -22,7 +22,7 @@
 
 /**
 * CUDAAgent class
-* @brief allocates the hash table/list for agent varibles and copy the list to device
+* @brief allocates the hash table/list for agent variables and copy the list to device
 */
 CUDAAgent::CUDAAgent(const AgentDescription& description) : agent_description(description), state_map(), max_list_size(0)
 {
@@ -97,7 +97,7 @@ int CUDAAgent::getHashIndex(const char * variable_name) const
     //function resolves hash collisions
     unsigned int hash = VariableHash(variable_name);
     unsigned int n = 0;
-    unsigned int i = (hash) % agent_description.getNumberAgentVariables();
+	unsigned int i = (hash) % getHashListSize();
 
     while (h_hashes[i] != EMPTY_HASH_VALUE)
     {
@@ -176,7 +176,7 @@ void CUDAAgent::setPopulationData(const AgentPopulation& population)
         throw InvalidPopulationData("Error: Initial population data not set. Have you called setInitialPopulationData?");
 
     //check that the population maximums do not exceed the current maximum (as their will not be enough GPU memory to hold it)
-    if (population.getMaximumStateListCapacity() < max_list_size)
+    if (population.getMaximumStateListCapacity() > max_list_size)
         throw InvalidPopulationData("Error: Maximum population size exceeds that of the initial population data?");
 
     //Make sure population uses same agent description as was used to initialise the agent CUDAAgent

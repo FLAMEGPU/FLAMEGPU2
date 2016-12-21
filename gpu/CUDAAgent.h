@@ -63,7 +63,7 @@ private:
 	const AgentDescription& agent_description;
 	CUDAStateMap state_map;
 
-	unsigned int* h_hashes; //host hash index table
+	unsigned int* h_hashes; //host hash index table //USE SHARED POINTER??
 	unsigned int* d_hashes; //device hash index table (used by runtime)
 
 	unsigned int max_list_size; //The maximum length of the agent variable arrays based on the maximum population size passed to setPopulationData

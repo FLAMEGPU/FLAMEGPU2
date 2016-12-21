@@ -69,7 +69,11 @@
     <ClCompile Include="pop\AgentPopulation.cpp" />
     <ClCompile Include="sim\Simulation.cpp" />
     <ClCompile Include="sim\SimulationLayer.cpp" />
-    <ClCompile Include="tests\test_all.cpp" />
+    <ClCompile Include="tests\test_all.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='BoostTest|x64'">
+      </ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="main.cpp">

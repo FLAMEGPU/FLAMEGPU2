@@ -92,11 +92,11 @@ int main(void)
     /* Population is an instantiation of the model. It is equivalent to the data from 0.xml or any other state of the model. It requires a model description to know what the agent variables and states are. */
     /* Data in populations and instances are only on the host. No concept of GPUs at this stage. */
 
-    AgentPopulation population(flame_model, "circle");
+	AgentPopulation population(circle_agent);
 	//TODO: Set maximum population size if known in advance
     for (int i=0; i< 100; i++)
     {
-        AgentInstance instance = population.pushBackInstance("default");
+        AgentInstance instance = population.getNextInstance("default");
         instance.setVariable<float>("x", i*0.1f);
         instance.setVariable<float>("y", i*0.1f);
         instance.setVariable<float>("dx", 0);
@@ -141,9 +141,9 @@ int main(void)
     /* Run the model */
     CUDAAgentModel cuda_model(flame_model);
 
-    cuda_model.setPopulationData(population);
+    cuda_model.setInitialPopulationData(population);
 
-    cuda_model.simulate(simulation);
+    //cuda_model.simulate(simulation);
 
     //cuda_model.step(simulation);
 
@@ -171,6 +171,6 @@ int main(void)
 
 
 
-    system("pause");
+  //  system("pause");
     return 0;
 }
