@@ -52,17 +52,18 @@ AgentInstance AgentPopulation::getNextInstance(const std::string agent_state)
 
 AgentInstance AgentPopulation::getInstanceAt(unsigned int index, const std::string agent_state)
 {
-	//check the index does not exceed current size
-	if (index <= maximum_size)
-		//throw std::exception("Can not get instance. Try increasing size of pushing new instance.");
-		throw InvalidPopulationData("Can not get instance. Try increasing size of pushing new instance.");
-
 	//get correct state memory
 	AgentStatesMap::iterator sm;
 	sm = states_map.find(agent_state);
 	if (sm == states_map.end())
 		//throw std::exception("Agent state not found when pushing back instance");
-		throw InvalidPopulationData("Agent state not found when pushing back instance");;
+		throw InvalidPopulationData("Agent state not found when pushing back instance");
+
+	//check the index does not exceed current size
+	if (index <= sm->second->getStateListSize())
+		//TODO: should not be a InvalidPopulationData exception but perhaps a MemoryCapacity exception
+		throw std::exception("Can not get Instance. Index exceeds current size.");
+
 
 	//return new instance from state memory with index of current size (then increment)
 	return AgentInstance(*sm->second, index);
