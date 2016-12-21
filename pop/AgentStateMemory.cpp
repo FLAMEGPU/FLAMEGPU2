@@ -96,3 +96,8 @@ unsigned int AgentStateMemory::getPopulationCapacity() const
 unsigned int AgentStateMemory::getStateListSize() const{
 	return current_size;
 }
+
+void AgentStateMemory::overrideStateListSize(unsigned int size)
+{
+	current_size = size;
+}

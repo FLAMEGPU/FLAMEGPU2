@@ -108,6 +108,21 @@ void CUDAAgentModel::setPopulationData(AgentPopulation& population)
 	it->second->setPopulationData(population);
 }
 
+void CUDAAgentModel::getPopulationData(AgentPopulation& population)
+{
+	CUDAAgentMap::iterator it;
+	it = agent_map.find(population.getAgentName());
+
+	if (it == agent_map.end())
+	{
+		//throw std::runtime_error("CUDA agent not found. This should not happen.");
+		throw InvalidCudaAgent();
+	}
+
+	//create agent state lists
+	it->second->getPopulationData(population);
+}
+
 /**
 * @brief simulates functions
 * @param simulation object

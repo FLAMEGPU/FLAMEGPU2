@@ -51,6 +51,8 @@ public:
 	//the actual number of agents in this state
 	unsigned int getStateListSize() const;
 
+	void overrideStateListSize(unsigned int size);
+
 protected:
 	const AgentPopulation &population;
     const std::string agent_state;

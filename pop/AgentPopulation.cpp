@@ -70,7 +70,7 @@ AgentInstance AgentPopulation::getInstanceAt(unsigned int index, const std::stri
 
 }
 
-const AgentStateMemory& AgentPopulation::getStateMemory(const std::string agent_state) const
+AgentStateMemory& AgentPopulation::getStateMemory(const std::string agent_state)
 {
     //check if the state map exists
     AgentStatesMap::const_iterator iter;
@@ -83,6 +83,21 @@ const AgentStateMemory& AgentPopulation::getStateMemory(const std::string agent_
     }
 
     return *iter->second;
+}
+
+const AgentStateMemory& AgentPopulation::getReadOnlyStateMemory(const std::string agent_state) const
+{
+	//check if the state map exists
+	AgentStatesMap::const_iterator iter;
+	iter = states_map.find(agent_state);
+
+	if (iter == states_map.end())
+	{
+		//throw std::runtime_error("Invalid agent state name");
+		throw InvalidStateName();
+	}
+
+	return *iter->second;
 }
 
 const std::string AgentPopulation::getAgentName() const

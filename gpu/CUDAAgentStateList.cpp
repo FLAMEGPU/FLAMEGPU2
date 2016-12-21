@@ -190,13 +190,53 @@ void CUDAAgentStateList::setAgentData(const AgentStateMemory &state_memory)
 		const GenericMemoryVector &m_vec = state_memory.getReadOnlyMemoryVector(m.first);
 
 		//get pointer to vector data
-		const void * v_data = m_vec.getDataPtr();
+		const void * v_data = m_vec.getReadOnlyDataPtr();
 
 		//set the current list size
 		current_list_size = state_memory.getStateListSize();
 
 		//TODO: copy the boost any data to GPU
 		gpuErrchk(cudaMemcpy(d_list.h_d_memory[hash_index], v_data, var_size*current_list_size, cudaMemcpyHostToDevice));
+	}
+
+}
+
+void CUDAAgentStateList::getAgentData(AgentStateMemory &state_memory)
+{
+
+	//check that we are using the same agent description
+	if (!state_memory.isSameDescription(agent.getAgentDescription()))
+	{
+		//throw std::runtime_error("CUDA Agent uses different agent description.");
+		throw InvalidCudaAgentDesc();
+	}
+
+
+	//copy raw agent data to device pointers
+	const MemoryMap &mem = agent.getAgentDescription().getMemoryMap();
+	for (const MemoryMapPair& m : mem){
+		//get the hash index of the variable so we know what position to allocate
+		int hash_index = agent.getHashIndex(m.first.c_str());
+
+		//get the variable size from agent description
+		size_t var_size = agent.getAgentDescription().getAgentVariableSize(m.first);
+
+		//get the vector
+		GenericMemoryVector &m_vec = state_memory.getMemoryVector(m.first);
+
+		//get pointer to vector data
+		void * v_data = m_vec.getDataPtr();
+
+		//check  the current list size
+		if (current_list_size > state_memory.getPopulationCapacity())
+			throw std::exception("Current GPU state list size exceed the state memory available!");
+		
+
+		//copy the GPU data to host
+		gpuErrchk(cudaMemcpy(v_data, d_list.h_d_memory[hash_index], var_size*current_list_size, cudaMemcpyDeviceToHost));
+
+		//set the new state list size
+		state_memory.overrideStateListSize(current_list_size);
 	}
 
 }

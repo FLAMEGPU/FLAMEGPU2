@@ -205,8 +205,44 @@ void CUDAAgent::setPopulationData(const AgentPopulation& population)
 			throw InvalidMapEntry("Error: failed to find memory allocated for a state. This should never happen!");
 
         //copy the data from the population state memory to the state_maps CUDAAgentStateList
-        i->second->setAgentData(population.getStateMemory(i->first));
+        i->second->setAgentData(population.getReadOnlyStateMemory(i->first));
     }
+
+}
+
+
+
+void CUDAAgent::getPopulationData(AgentPopulation& population)
+{
+	//check that the gpu state lists have been initialised by a previous call to setInitialPopulationData
+	if (state_map.empty())
+		throw InvalidPopulationData("Error: Initial population data not set. Have you called setInitialPopulationData?");
+
+	//check that the population maximums do not exceed the current maximum (as their will not be enough GPU memory to hold it)
+	if (population.getMaximumStateListCapacity() < max_list_size)
+		throw InvalidPopulationData("Error: Maximum population size is not large enough for CUDAAgent");
+
+	//Make sure population uses same agent description as was used to initialise the agent CUDAAgent
+	const std::string agent_name = agent_description.getName();
+	if (&(population.getAgentDescription()) != &agent_description)
+		throw InvalidPopulationData("Error: getPopulationData population has a different agent description to that which was used to initialise the CUDAAgent");
+
+
+	/* copy all population from correct state maps */
+	const StateMap& sm = agent_description.getStateMap();
+	for (const StateMapPair& s : sm)
+	{
+		//get an associated CUDA statemap pair
+		CUDAStateMap::iterator i = state_map.find(s.first);
+
+		/**check that the CUDAAgentStateList was found (should ALWAYS be the case)*/
+		if (i == state_map.end())
+			//throw std::exception("Error: failed to find memory allocated for a state. This should never happen!");
+			throw InvalidMapEntry("Error: failed to find memory allocated for a state. This should never happen!");
+
+		//copy the data from the population state memory to the state_maps CUDAAgentStateList
+		i->second->getAgentData(population.getStateMemory(i->first));
+	}
 
 }
 

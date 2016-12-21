@@ -23,7 +23,9 @@ public:
 	
 	virtual const std::type_info& getType() = 0;
 
-	virtual const void* getDataPtr() const = 0;
+	virtual void* getDataPtr() = 0;
+
+	virtual const void* getReadOnlyDataPtr() const = 0;
 
 	virtual void* getVectorPtr() = 0;
 
@@ -53,7 +55,14 @@ public:
 		return type;
 	}
 
-	virtual const void* getDataPtr() const{
+	virtual void* getDataPtr(){
+		if (vec.empty())
+			return NULL;
+		else
+			return &(vec.front());
+	}
+
+	virtual const void* getReadOnlyDataPtr() const{
 		if (vec.empty())
 			return NULL;
 		else

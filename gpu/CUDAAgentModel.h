@@ -35,6 +35,8 @@ public:
 
 	void setPopulationData(AgentPopulation& population);
 
+	void getPopulationData(AgentPopulation& population);
+
 
 	void simulate(const Simulation& sim);
 private:

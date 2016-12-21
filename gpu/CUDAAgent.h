@@ -51,6 +51,8 @@ public:
 	/* Can be used to override the current population data without reallocating */
 	void setPopulationData(const AgentPopulation& population);
 
+	void getPopulationData(AgentPopulation& population);
+
 	unsigned int getMaximumListSize() const;
 
 protected:

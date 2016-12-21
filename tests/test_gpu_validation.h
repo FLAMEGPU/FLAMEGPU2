@@ -18,36 +18,31 @@ BOOST_AUTO_TEST_CASE(GPUMemoryTest)
     AgentDescription circle_agent("circle");
 
 
-	circle_agent.addAgentVariable<float>("x");
-	circle_agent.addAgentVariable<float>("y");
+	circle_agent.addAgentVariable<int>("id");
 
     flame_model.addAgent(circle_agent);
 
-	AgentPopulation population(circle_agent);
+	AgentPopulation population(circle_agent, 100);
 	for (int i = 0; i< 100; i++)
 	{
 		AgentInstance instance = population.getNextInstance("default");
-		instance.setVariable<float>("x", i*0.1f);
-		instance.setVariable<float>("y", i*0.1f);
+		instance.setVariable<int>("id", i);
 	}
 	
 
     CUDAAgentModel cuda_model(flame_model);
     cuda_model.setInitialPopulationData(population);
 
-	//AgentPopulation population2(circle_agent);
+	AgentPopulation population2(circle_agent, 100);
+	cuda_model.getPopulationData(population2);
 
-	/*
-    BOOST_TEST_MESSAGE( "\nTesting CUDA Agent model name" );
-    BOOST_CHECK_MESSAGE(cuda_model.);
-	*/
-
-    //cuda_model.simulate(simulation);
-
-    //BOOST_CHECK_THROW(..,InvalidCudaAgent); // expecting an error
-    //BOOST_CHECK_THROW(..,InvalidCudaAgentDesc); // expecting an error
-    //BOOST_CHECK_THROW(..,InvalidCudaAgentMapSize); // expecting an error
-    //BOOST_CHECK_THROW(..,InvalidHashList); // expecting an error
+	//check values are the same
+	for (int i = 0; i < 100; i++){
+		AgentInstance i1 = population.getInstanceAt(i, "default");
+		AgentInstance i2 = population2.getInstanceAt(i, "default");
+		//use AgentInstance equality operator
+		BOOST_CHECK(i1.getVariable<int>("id") == i2.getVariable<int>("id"));
+	}
 
 }
 

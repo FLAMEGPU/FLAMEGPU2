@@ -36,7 +36,9 @@ public:
 
 	AgentInstance getInstanceAt(unsigned int index, const std::string agent_state = "default");
 
-	const AgentStateMemory& getStateMemory(const std::string agent_state = "default") const;
+	AgentStateMemory& getStateMemory(const std::string agent_state = "default");
+
+	const AgentStateMemory& getReadOnlyStateMemory(const std::string agent_state = "default") const;
 
 	const std::string getAgentName() const;
 
