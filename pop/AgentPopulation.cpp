@@ -60,7 +60,7 @@ AgentInstance AgentPopulation::getInstanceAt(unsigned int index, const std::stri
 		throw InvalidPopulationData("Agent state not found when pushing back instance");
 
 	//check the index does not exceed current size
-	if (index <= sm->second->getStateListSize())
+	if (index >= sm->second->getStateListSize())
 		//TODO: should not be a InvalidPopulationData exception but perhaps a MemoryCapacity exception
 		throw std::exception("Can not get Instance. Index exceeds current size.");
 

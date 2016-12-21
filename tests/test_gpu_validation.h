@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE(GPUMemoryTest)
     CUDAAgentModel cuda_model(flame_model);
     cuda_model.setInitialPopulationData(population);
 
-	AgentPopulation population2(circle_agent);
+	//AgentPopulation population2(circle_agent);
 
 	/*
     BOOST_TEST_MESSAGE( "\nTesting CUDA Agent model name" );

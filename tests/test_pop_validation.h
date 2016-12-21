@@ -229,11 +229,11 @@ BOOST_AUTO_TEST_CASE(PopulationDataValuesMultipleStates)
 }
 
 
-BOOST_AUTO_TEST_CASE(PopulationSizeExtraCheck)
+BOOST_AUTO_TEST_CASE(PopulationCheckGetInstanceBeyondSize)
 {
 
 
-    BOOST_TEST_MESSAGE( "\nTesting adding agents more than the max population .." );
+    BOOST_TEST_MESSAGE( "\nTesting getting an instance beynd current size .." );
 
     ModelDescription flame_model("circles_model");
     AgentDescription circle_agent("circle");
@@ -243,9 +243,11 @@ BOOST_AUTO_TEST_CASE(PopulationSizeExtraCheck)
 
     flame_model.addAgent(circle_agent);
 
-	AgentPopulation population(circle_agent, 100); //default size is 1024
+	AgentPopulation population(circle_agent, 100);
 
-	//TODO: Test must check that getNextInstance fails if capacity is too small when for loop creates 101 agents
+	//TODO: Test must check that getInstanceAt should fail if index is less than size
+	//AgentInstance instance = population.getInstanceAt(0, "default");
+
 }
 
 BOOST_AUTO_TEST_SUITE_END()
