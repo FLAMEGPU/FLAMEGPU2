@@ -132,7 +132,10 @@ help:
 	@echo "                          'arg' can be the name the specific unit test *"
 	@echo "************************************************************************"
  
-all: FGPU 
+all: FGPU doxygen
+
+doxygen:
+	doxygen Doxyfile
 
 main.o: main.cpp
 	$(EXEC) $(NVCC) $(DEBUG) $(STD11) $(BOOST_LIB)  $(CUDA_LIB)  $(GENCODE_FLAGS) -o $@ -c $<
