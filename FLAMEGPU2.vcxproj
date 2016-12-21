@@ -27,8 +27,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="api\flame_api.h" />
     <ClInclude Include="exception\FGPUException.h" />
+    <ClInclude Include="flame_api.h" />
+    <ClInclude Include="flame_functions_api.h" />
     <ClInclude Include="gpu\CUDAAgent.h" />
     <ClInclude Include="gpu\CUDAAgentStateList.h" />
     <ClInclude Include="gpu\CUDAAgentModel.h" />
@@ -47,6 +48,10 @@
     <ClInclude Include="pop\AgentPopulation.h" />
     <ClInclude Include="sim\Simulation.h" />
     <ClInclude Include="sim\SimulationLayer.h" />
+    <ClInclude Include="tests\test_gpu_validation.h" />
+    <ClInclude Include="tests\test_model_validation.h" />
+    <ClInclude Include="tests\test_pop_validation.h" />
+    <ClInclude Include="tests\test_sim_validation.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="gpu\CUDAAgent.cpp" />
@@ -64,24 +69,7 @@
     <ClCompile Include="pop\AgentPopulation.cpp" />
     <ClCompile Include="sim\Simulation.cpp" />
     <ClCompile Include="sim\SimulationLayer.cpp" />
-    <ClCompile Include="test_all.cpp" />
-    <ClInclude Include="test_gpu_validation.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='BoostTest|x64'">false</ExcludedFromBuild>
-      <FileType>CppCode</FileType>
-    </ClInclude>
-    <ClInclude Include="test_model_validation.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <FileType>CppCode</FileType>
-    </ClInclude>
-    <ClInclude Include="test_pop_validation.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <FileType>CppCode</FileType>
-    </ClInclude>
-    <ClInclude Include="test_sim_validation.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <FileType>CppCode</FileType>
-    </ClInclude>
+    <ClCompile Include="tests\test_all.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="main.cpp">

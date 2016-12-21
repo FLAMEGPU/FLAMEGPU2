@@ -15,15 +15,9 @@
 #include <string>
 #include <vector>
 #include <typeinfo>
-#include <boost/any.hpp>
 
-class AgentInstance; //forward declaration
-
-
+//include dependant class agent state memory (required in template functions)
 #include "AgentStateMemory.h"
-//#include "AgentPopulation.h"
-
-
 
 class AgentInstance {
 public:

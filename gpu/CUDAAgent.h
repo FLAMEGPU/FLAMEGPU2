@@ -14,10 +14,12 @@
 #include <memory>
 #include <map>
 
-#include "../model/AgentDescription.h"
-#include "../pop/AgentPopulation.h"
+//include sub classes
+#include "CUDAAgentStateList.h"
 
-class CUDAAgentStateList; //forward declaration to avoid circular references
+//forward declare classes from other modules
+class AgentDescription;
+class AgentPopulation;
 
 typedef std::map<const std::string, std::unique_ptr<CUDAAgentStateList>> CUDAStateMap;	//map of state name to CUDAAgentStateList which allocates memory on the device
 typedef std::pair<const std::string, std::unique_ptr<CUDAAgentStateList>> CUDAStateMapPair;

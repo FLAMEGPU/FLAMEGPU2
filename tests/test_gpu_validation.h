@@ -2,9 +2,8 @@
  * @file test_gpu_validation.h
  * @brief Testing Using the Boost Unit Test Framework
  */
-#include "pop/AgentPopulation.h"
-#include "sim/Simulation.h"
-#include "gpu/CUDAAgentModel.h"
+#include "../flame_api.h"
+
 
 using namespace std;
 

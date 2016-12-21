@@ -10,6 +10,12 @@
 
 #include "CUDAAgentModel.h"
 
+#include "../model/ModelDescription.h"
+#include "../pop/AgentPopulation.h"
+#include "../sim/Simulation.h"
+
+
+
 // agent_map is a type CUDAAgentMap
 /**
 * CUDAAgentModel class

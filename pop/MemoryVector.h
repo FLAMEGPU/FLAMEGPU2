@@ -11,6 +11,8 @@
 #include <vector>
 #include <ostream>
 #include <typeinfo>
+#include <map>
+#include <memory>
 
 #include "../exception/FGPUException.h"
 
@@ -106,5 +108,12 @@ template <typename T> std::vector<T> GenericMemoryVector::getVectorIteratorAt(un
 	return (v.begin() + i);
 }
 
+
+//use this to store default values for a population, must be here to register the correct types at compile time
+/*! Create a map with std::strings for keys (indexes) and GenericAgentMemoryVector object. A smart pointer has been used to automaticaly manage the object*/
+typedef std::map<const std::string, std::unique_ptr<GenericMemoryVector>> StateMemoryMap;
+
+/*! Create a pair with std::strings for keys (indexes) and GenericAgentMemoryVector object.  A smart pointer has been used to automaticaly manage the object*/
+typedef std::pair<const std::string, std::unique_ptr<GenericMemoryVector>> StateMemoryMapPair;
 
 #endif //AGENTMEMORYVECTOR_H_

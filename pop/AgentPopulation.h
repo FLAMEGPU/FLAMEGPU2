@@ -14,12 +14,12 @@
 #include <memory>
 #include <map>
 
-class AgentStateMemory;	//forward declaration
+//include sub dependency AgentInstance which includes AgentStateMemory
+#include "AgentInstance.h"
 
-#include "../model/AgentDescription.h"
+//forward declarations
+class AgentDescription;
 
-class AgentDescrption;
-class AgentInstance;
 
 #define DEFAULT_POPULATION_SIZE 1024
 

@@ -8,10 +8,14 @@
  * @warning
  */
 
-#include "AgentStateMemory.h"
-#include "AgentPopulation.h"
-
 #include <iostream>
+
+#include "AgentStateMemory.h"
+
+#include "AgentPopulation.h"
+#include "../model/AgentDescription.h"
+
+
 
 AgentStateMemory::AgentStateMemory(const AgentPopulation &p, unsigned int initial_size) : population(p)
 {

@@ -3,8 +3,7 @@
  * @brief Testing Using the Boost Unit Test Framework
  */
 
-#include "model/ModelDescription.h"
-#include "sim/Simulation.h"
+#include "../flame_api.h"
 
 using namespace std;
 

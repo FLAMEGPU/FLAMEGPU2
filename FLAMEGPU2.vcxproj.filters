@@ -1,9 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="api">
-      <UniqueIdentifier>{07cbe6c9-e799-40c2-8027-77ca0a10275e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="gpu">
       <UniqueIdentifier>{964d2f15-c3e8-440e-8ff2-962463dca9fa}</UniqueIdentifier>
     </Filter>
@@ -24,9 +21,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="api\flame_api.h">
-      <Filter>api</Filter>
-    </ClInclude>
     <ClInclude Include="gpu\CUDAAgentModel.h">
       <Filter>gpu</Filter>
     </ClInclude>
@@ -78,23 +72,25 @@
     <ClInclude Include="gpu\CUDAErrorChecking.h">
       <Filter>gpu</Filter>
     </ClInclude>
-    <ClInclude Include="test_model_validation.h">
-      <Filter>tests</Filter>
-    </ClInclude>
-    <ClInclude Include="test_pop_validation.h">
-      <Filter>tests</Filter>
-    </ClInclude>
     <ClInclude Include="exception\FGPUException.h">
       <Filter>exceptions</Filter>
     </ClInclude>
-    <ClInclude Include="test_gpu_validation.h">
-      <Filter>tests</Filter>
-    </ClInclude>
-    <ClInclude Include="test_sim_validation.h">
-      <Filter>tests</Filter>
-    </ClInclude>
     <ClInclude Include="pop\MemoryVector.h">
       <Filter>pop</Filter>
+    </ClInclude>
+    <ClInclude Include="flame_api.h" />
+    <ClInclude Include="flame_functions_api.h" />
+    <ClInclude Include="tests\test_gpu_validation.h">
+      <Filter>tests</Filter>
+    </ClInclude>
+    <ClInclude Include="tests\test_model_validation.h">
+      <Filter>tests</Filter>
+    </ClInclude>
+    <ClInclude Include="tests\test_pop_validation.h">
+      <Filter>tests</Filter>
+    </ClInclude>
+    <ClInclude Include="tests\test_sim_validation.h">
+      <Filter>tests</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -143,7 +139,7 @@
     <ClCompile Include="sim\SimulationLayer.cpp">
       <Filter>sim</Filter>
     </ClCompile>
-    <ClCompile Include="test_all.cpp">
+    <ClCompile Include="tests\test_all.cpp">
       <Filter>tests</Filter>
     </ClCompile>
   </ItemGroup>

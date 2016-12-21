@@ -14,12 +14,13 @@
 #include <memory>
 #include <map>
 
-#include "../model/ModelDescription.h"
-#include "../pop/AgentPopulation.h"
-#include "../sim/Simulation.h"
 
-
+//include sub classes
 #include "CUDAAgent.h"
+
+//forward declare classes from other modules
+class ModelDescription;
+class Simulation;
 
 typedef std::map<const std::string, std::unique_ptr<CUDAAgent>> CUDAAgentMap; //map of a number of CUDA agents by name. The CUDA agents are responsible for allocating and managing all the device memory
 //typedef std::map<const std::string, std::unique_ptr<CUDAMessage>> CUDAMessageMap; /*Moz*/

@@ -42,12 +42,7 @@ typedef std::pair<const std::string, const std::type_info&> MemoryMapPair;
 /*! Create a map with std::type_info for keys (indexes) and std::size_t values*/
 typedef std::map<const std::type_info*, std::size_t> TypeSizeMap;	//not something that the user every sees. This is an interval map only for tracking the size of data types.
 
-//use this to store default values for a population, must be here to register the correct types at compile time
-/*! Create a map with std::strings for keys (indexes) and GenericAgentMemoryVector object. A smart pointer has been used to automaticaly manage the object*/
-typedef std::map<const std::string, std::unique_ptr<GenericMemoryVector>> StateMemoryMap;
 
-/*! Create a pair with std::strings for keys (indexes) and GenericAgentMemoryVector object.  A smart pointer has been used to automaticaly manage the object*/
-typedef std::pair<const std::string, std::unique_ptr<GenericMemoryVector>> StateMemoryMapPair;
 
 class AgentDescription
 {

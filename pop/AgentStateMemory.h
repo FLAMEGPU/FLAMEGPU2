@@ -20,10 +20,11 @@
 #include <boost/any.hpp>
 #include <typeinfo>
 
+//include generic memory vectors
 #include "MemoryVector.h"
-#include "../model/AgentDescription.h"
 
 class AgentPopulation;
+class AgentDescription;
 
 
 class AgentStateMemory  // agent_list

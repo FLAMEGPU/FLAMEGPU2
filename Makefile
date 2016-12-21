@@ -140,7 +140,7 @@ doxygen:
 main.o: main.cpp
 	$(EXEC) $(NVCC) $(DEBUG) $(STD11) $(BOOST_LIB)  $(CUDA_LIB)  $(GENCODE_FLAGS) -o $@ -c $<
 	
-test_all.o: test_all.cpp
+test_all.o: tests/test_all.cpp
 	$(EXEC) $(NVCC) $(DEBUG) $(STD11) $(BOOST_LIB) $(GENCODE_FLAGS) -o $@ -c $<
 
 GPU_C_FILES := $(wildcard $(SRC_GPU)*.cpp)

@@ -12,8 +12,12 @@
 #include <device_launch_parameters.h>
 
 #include "CUDAAgentStateList.h"
+
+#include "CUDAAgent.h"
 #include "CUDAErrorChecking.h"
 #include "../pop/AgentStateMemory.h"
+#include "../model/AgentDescription.h"
+#include "../pop/AgentPopulation.h"
 
 
 /**

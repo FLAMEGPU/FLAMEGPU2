@@ -14,9 +14,8 @@
 #include <memory>
 #include <vector>
 
-#include "../model/AgentDescription.h"
-#include "../pop/AgentPopulation.h"
-#include "CUDAAgent.h"
+class CUDAAgent;
+class AgentStateMemory;
 
 #define UNIFIED_GPU_MEMORY
 

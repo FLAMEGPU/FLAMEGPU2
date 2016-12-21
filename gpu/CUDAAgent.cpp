@@ -16,6 +16,9 @@
 #include "RuntimeHashing.h"
 #include "CUDAErrorChecking.h"
 
+#include "../model/AgentDescription.h"
+#include "../pop/AgentPopulation.h"
+
 
 /**
 * CUDAAgent class

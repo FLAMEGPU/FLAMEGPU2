@@ -12,10 +12,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "model/ModelDescription.h"
-#include "pop/AgentPopulation.h"
-#include "sim/Simulation.h"
-#include "gpu/CUDAAgentModel.h"
+#include "flame_api.h"
+
 
 using namespace std;
 

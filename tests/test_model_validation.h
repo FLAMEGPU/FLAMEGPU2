@@ -2,9 +2,7 @@
  * @file test_model_validation.h
  * @brief Testing Using the Boost Unit Test Framework
  */
-#include <boost/any.hpp>
-#include "model/ModelDescription.h"
-#include <typeinfo>
+#include "../flame_api.h"
 
 using namespace std;
 

@@ -2,9 +2,8 @@
  * @file test_pop_validation.h
  * @brief Testing Using the Boost Unit Test Framework
  */
-#include "model/ModelDescription.h"
-#include "pop/AgentPopulation.h"
-#include "pop/AgentInstance.h"
+#include "../flame_api.h"
+
 
 using namespace std;
 
