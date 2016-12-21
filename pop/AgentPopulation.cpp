@@ -8,6 +8,8 @@
  * @warning
  */
 
+#include <exception>
+
 #include "AgentPopulation.h"
 
 #include "AgentInstance.h"
@@ -43,7 +45,8 @@ AgentInstance AgentPopulation::getNextInstance(const std::string agent_state)
 	unsigned int index = sm->second->incrementSize();
 	if (index >= getMaximumStateListCapacity())
 		//TODO: should not be a InvalidPopulationData exception but perhaps a MemoryCapacity exception
-		throw std::exception("Agent state size will be exceeded");
+		//throw std::exception("Agent state size will be exceeded");
+		throw std::exception();
 
 	//return new instance from state memory with index of current size (then increment)
 	return AgentInstance(*sm->second, index);
@@ -62,7 +65,8 @@ AgentInstance AgentPopulation::getInstanceAt(unsigned int index, const std::stri
 	//check the index does not exceed current size
 	if (index >= sm->second->getStateListSize())
 		//TODO: should not be a InvalidPopulationData exception but perhaps a MemoryCapacity exception
-		throw std::exception("Can not get Instance. Index exceeds current size.");
+		//throw std::exception("Can not get Instance. Index exceeds current size.");
+		throw std::exception();
 
 
 	//return new instance from state memory with index of current size (then increment)
