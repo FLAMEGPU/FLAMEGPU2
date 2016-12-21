@@ -10,6 +10,8 @@
 
 #include "AgentDescription.h"
 
+#include "../exception/FGPUException.h"
+
 AgentDescription::AgentDescription(std::string name) : states(), functions(), memory(), sizes(), default_state(new AgentStateDescription("default"))
 {
     stateless = true;
@@ -84,17 +86,6 @@ size_t AgentDescription::getMemorySize() const
     return size;
 }
 
-boost::any AgentDescription::getDefaultValue(const std::string variable_name) const
-{
-    //need to do a check to make sure that the varibale name exists
-    //if it does then the following is safe
-    DefaultValueMap::const_iterator dm = defaults.find(variable_name);
-    if (dm == defaults.end())
-        //throw std::runtime_error("Invalid agent memory variable");
-        throw InvalidAgentVar();
-
-    return dm->second;
-}
 
 unsigned int AgentDescription::getNumberAgentVariables() const
 {
@@ -160,6 +151,6 @@ StateMemoryMap AgentDescription::getEmptyStateMemoryMap() const
 void AgentDescription::initEmptyStateMemoryMap(StateMemoryMap& map) const
 {
 	for (const StateMemoryMapPair& sm_p : sm_map){
-		map.insert(StateMemoryMap::value_type(sm_p.first, std::unique_ptr<GenericAgentMemoryVector>(sm_p.second->clone())));
+		map.insert(StateMemoryMap::value_type(sm_p.first, std::unique_ptr<GenericMemoryVector>(sm_p.second->clone())));
 	}
 }

@@ -42,7 +42,7 @@
     <ClInclude Include="model\MessageDescription.h" />
     <ClInclude Include="model\ModelDescription.h" />
     <ClInclude Include="pop\AgentInstance.h" />
-    <ClInclude Include="pop\AgentMemoryVector.h" />
+    <ClInclude Include="pop\MemoryVector.h" />
     <ClInclude Include="pop\AgentStateMemory.h" />
     <ClInclude Include="pop\AgentPopulation.h" />
     <ClInclude Include="sim\Simulation.h" />

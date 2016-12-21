@@ -20,7 +20,7 @@
 #include <boost/any.hpp>
 #include <typeinfo>
 
-#include "AgentMemoryVector.h"
+#include "MemoryVector.h"
 #include "../model/AgentDescription.h"
 
 class AgentPopulation;
@@ -34,9 +34,9 @@ public:
 
     void incrementSize();
 
-	GenericAgentMemoryVector& getMemoryVector(const std::string variable_name);
+	GenericMemoryVector& getMemoryVector(const std::string variable_name);
 
-	const GenericAgentMemoryVector& getReadOnlyMemoryVector(const std::string variable_name) const;
+	const GenericMemoryVector& getReadOnlyMemoryVector(const std::string variable_name) const;
 
     const std::type_info& getVariableType(std::string variable_name); //const
 

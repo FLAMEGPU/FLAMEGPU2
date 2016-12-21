@@ -93,7 +93,7 @@
     <ClInclude Include="test_sim_validation.h">
       <Filter>tests</Filter>
     </ClInclude>
-    <ClInclude Include="pop\AgentMemoryVector.h">
+    <ClInclude Include="pop\MemoryVector.h">
       <Filter>pop</Filter>
     </ClInclude>
   </ItemGroup>

@@ -3,7 +3,7 @@
  * @file ModelDescription.h
  * @authors Paul
  * @date 5 Mar 2014
- * @brief
+ * @brief Top level include for Model objects
  *
  * @see
  * @warning
@@ -19,13 +19,15 @@
 #include <vector>
 #include <typeinfo>
 
+//include class dependencies
 #include "AgentDescription.h"
 #include "MessageDescription.h"
 
 
+
 typedef std::map<const std::string, const AgentDescription&> AgentMap;
 typedef std::map<const std::string, const MessageDescription&> MessageMap;
-typedef std::map<const std::string, const AgentFunctionDescription&> FunctionMap; /*Moz*/
+
 
 class ModelDescription {
 public:
@@ -45,8 +47,6 @@ public:
 
 	// Moz
 	const MessageMap& getMessageMap() const;
-	// Moz
-	const FunctionMap& getFunctionMap() const;
 
 
 private:
@@ -54,8 +54,7 @@ private:
 	AgentMap agents;
 	MessageMap messages;
 
-	/*Moz*/
-	FunctionMap functions;
+	//function map removed. This belongs to agents.
 };
 
 

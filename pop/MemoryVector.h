@@ -1,5 +1,5 @@
 /*
-* AgentMemoryVector.h
+* MemoryVector.h
 *
 */
 
@@ -14,10 +14,10 @@
 
 #include "../exception/FGPUException.h"
 
-class GenericAgentMemoryVector{
+class GenericMemoryVector{
 public:
 
-	virtual ~GenericAgentMemoryVector(){ ; }
+	virtual ~GenericMemoryVector(){ ; }
 	
 	virtual const std::type_info& getType() = 0;
 
@@ -27,7 +27,7 @@ public:
 
 	virtual unsigned int incrementVector() = 0;
 
-	virtual GenericAgentMemoryVector* clone() const = 0;
+	virtual GenericMemoryVector* clone() const = 0;
 
 	virtual void resize(unsigned int) = 0;
 
@@ -38,16 +38,16 @@ public:
 };
 
 template <typename T> 
-class AgentMemoryVector : public GenericAgentMemoryVector
+class MemoryVector : public GenericMemoryVector
 {
 
 public:
 
-	AgentMemoryVector() : GenericAgentMemoryVector(), type(typeid(T)) {
+	MemoryVector() : GenericMemoryVector(), type(typeid(T)) {
 		default_value = T();
 	}
 
-	virtual ~AgentMemoryVector(){ ; }
+	virtual ~MemoryVector(){ ; }
 
 	virtual const std::type_info& getType(){
 		return type;
@@ -71,9 +71,9 @@ public:
 		return static_cast<unsigned int>(vec.size());
 	}
 
-	virtual AgentMemoryVector<T>* clone() const
+	virtual MemoryVector<T>* clone() const
 	{
-		return (new AgentMemoryVector<T>());
+		return (new MemoryVector<T>());
 	}
 
 	virtual void resize(unsigned int s)
@@ -88,11 +88,10 @@ protected:
 	const std::type_info& type;
 };
 
-template <typename T> std::vector<T>& GenericAgentMemoryVector::getVector(){
+template <typename T> std::vector<T>& GenericMemoryVector::getVector(){
 
 	if (getType() != typeid(T))
-		//throw std::runtime_error("Bad variable type in agent instance set variable");
-		throw InvalidVarType("bad");
+		throw InvalidVarType("Wring variable type getting agent data vector");
 
 	//must cast the vector as the correct type
 	std::vector<T> *t_v = static_cast<std::vector<T>*>(getVectorPtr());
@@ -100,7 +99,7 @@ template <typename T> std::vector<T>& GenericAgentMemoryVector::getVector(){
 	return *t_v;
 }
 
-template <typename T> std::vector<T> GenericAgentMemoryVector::getVectorIteratorAt(unsigned int i){
+template <typename T> std::vector<T> GenericMemoryVector::getVectorIteratorAt(unsigned int i){
 
 	//return an iterator at correct position
 	std::vector<T>& v = getVector<T>();

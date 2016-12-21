@@ -4,8 +4,11 @@
 #include <vector>
 #include <string.h>
 
+//include class dependencies
 #include "SimulationLayer.h"
-#include "../model/ModelDescription.h"
+
+//forward declare dependencies from other modules
+class ModelDescription;
 
 class Simulation
 {

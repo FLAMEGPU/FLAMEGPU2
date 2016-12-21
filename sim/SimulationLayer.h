@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 
+//forward declare dependencies from higher up hierarchy
 class Simulation;
 
 class SimulationLayer

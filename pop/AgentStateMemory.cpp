@@ -29,14 +29,14 @@ void AgentStateMemory::incrementSize()
     //loop through the memory maps and increment the vector size by 1
 	const MemoryMap &m = population.getAgentDescription().getMemoryMap();
 	for (const MemoryMapPair &mmp : m){
-		GenericAgentMemoryVector &v = getMemoryVector(mmp.first);
+		GenericMemoryVector &v = getMemoryVector(mmp.first);
 		v.incrementVector();
 	}
 
 }
 
 
-GenericAgentMemoryVector& AgentStateMemory::getMemoryVector(const std::string variable_name)
+GenericMemoryVector& AgentStateMemory::getMemoryVector(const std::string variable_name)
 {
     StateMemoryMap::iterator iter;
     iter = state_memory.find(variable_name);
@@ -48,7 +48,7 @@ GenericAgentMemoryVector& AgentStateMemory::getMemoryVector(const std::string va
     return *(iter->second);
 }
 
-const GenericAgentMemoryVector& AgentStateMemory::getReadOnlyMemoryVector(const std::string variable_name) const
+const GenericMemoryVector& AgentStateMemory::getReadOnlyMemoryVector(const std::string variable_name) const
 {
     StateMemoryMap::const_iterator iter;
     iter = state_memory.find(variable_name);
@@ -80,7 +80,7 @@ void AgentStateMemory::resizeMemoryVectors(unsigned int s)
 	{
 		const std::string variable_name = iter->first;
 
-		GenericAgentMemoryVector &v = getMemoryVector(variable_name);
+		GenericMemoryVector &v = getMemoryVector(variable_name);
 		v.resize(s);
 	}
 }

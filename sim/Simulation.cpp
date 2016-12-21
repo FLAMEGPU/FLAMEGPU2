@@ -8,7 +8,10 @@
  * @warning
  */
 
+#include <exception>
+
 #include "Simulation.h"
+#include "../model/ModelDescription.h"
 
 
 Simulation::Simulation(const ModelDescription& model) : model_description(model), layers()

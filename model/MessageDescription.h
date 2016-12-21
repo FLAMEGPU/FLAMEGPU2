@@ -13,9 +13,8 @@
 #define MESSAGEDESCRIPTION_H_
 
 #include <string>
-#include <boost/ptr_container/ptr_map.hpp>
-#include <boost/container/map.hpp>
 #include <typeinfo>
+#include <map>
 
 typedef std::map<const std::string, const std::type_info&> VariableMap;
 

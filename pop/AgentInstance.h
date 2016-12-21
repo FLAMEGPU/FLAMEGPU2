@@ -44,7 +44,7 @@ private:
 template <typename T> void AgentInstance::setVariable(std::string variable_name, const T value){
 	//todo check that the variable exists
 
-	GenericAgentMemoryVector& v = agent_state_memory.getMemoryVector(variable_name);
+	GenericMemoryVector& v = agent_state_memory.getMemoryVector(variable_name);
 
 	//get the vector of correct type
 	std::vector<T> &t_v = v.getVector<T>();
@@ -57,7 +57,7 @@ template <typename T> void AgentInstance::setVariable(std::string variable_name,
 template <typename T>  const T AgentInstance::getVariable(std::string variable_name){
 
 	//todo check that the variable exists
-	GenericAgentMemoryVector& v = agent_state_memory.getMemoryVector(variable_name);
+	GenericMemoryVector& v = agent_state_memory.getMemoryVector(variable_name);
 
 	//get the vector of correct type
 	std::vector<T> &t_v = v.getVector<T>();

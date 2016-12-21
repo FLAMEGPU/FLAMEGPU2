@@ -8,8 +8,10 @@
  * @warning
  */
 
-#include "Simulation.h"
 #include "SimulationLayer.h"
+
+#include "Simulation.h"
+#include "../model//ModelDescription.h"
 
 
 SimulationLayer::SimulationLayer(Simulation& sim, const std::string name) : simulation(sim), layer_name(name)

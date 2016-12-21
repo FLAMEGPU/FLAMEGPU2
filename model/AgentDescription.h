@@ -14,12 +14,14 @@
 #include <string>
 #include <map>
 #include <typeinfo>
-#include <boost/any.hpp>
 
+//include generic memory vector 
+#include "../pop/MemoryVector.h"
+
+//include class dependencies
 #include "AgentStateDescription.h"
 #include "AgentFunctionDescription.h"
-#include "../exception/FGPUException.h"
-#include "../pop/AgentMemoryVector.h"
+
 
 //State map is a mapping between a state name (i.e. default) and a state description object reference
 /*! */
@@ -38,17 +40,14 @@ typedef std::map<const std::string, const std::type_info&> MemoryMap;
 typedef std::pair<const std::string, const std::type_info&> MemoryMapPair;
 
 /*! Create a map with std::type_info for keys (indexes) and std::size_t values*/
-typedef std::map<const std::string, boost::any> DefaultValueMap; // <--- this is not a template as used in addAgentVariable method! maybe boost::any<T>() , and add template <typename T>, hmm?
-
-/*! Create a map with std::type_info for keys (indexes) and std::size_t values*/
 typedef std::map<const std::type_info*, std::size_t> TypeSizeMap;	//not something that the user every sees. This is an interval map only for tracking the size of data types.
 
 //use this to store default values for a population, must be here to register the correct types at compile time
 /*! Create a map with std::strings for keys (indexes) and GenericAgentMemoryVector object. A smart pointer has been used to automaticaly manage the object*/
-typedef std::map<const std::string, std::unique_ptr<GenericAgentMemoryVector>> StateMemoryMap;
+typedef std::map<const std::string, std::unique_ptr<GenericMemoryVector>> StateMemoryMap;
 
 /*! Create a pair with std::strings for keys (indexes) and GenericAgentMemoryVector object.  A smart pointer has been used to automaticaly manage the object*/
-typedef std::pair<const std::string, std::unique_ptr<GenericAgentMemoryVector>> StateMemoryMapPair;
+typedef std::pair<const std::string, std::unique_ptr<GenericMemoryVector>> StateMemoryMapPair;
 
 class AgentDescription
 {
@@ -82,7 +81,6 @@ public:
      */
 	template <typename T> void addAgentVariable(const std::string variable_name);
 
-    boost::any getDefaultValue(const std::string variable_name) const;
 
     MemoryMap& getMemoryMap(); //TODO should be shared pointer
 
@@ -116,7 +114,6 @@ private:
     FunctionMap functions;
     MemoryMap memory;
     TypeSizeMap sizes;
-    DefaultValueMap defaults;
 	StateMemoryMap sm_map;									//used to hold a default empty vector
 };
 
@@ -124,8 +121,7 @@ template <typename T> void AgentDescription::addAgentVariable(const std::string 
 {
 	memory.insert(MemoryMap::value_type(variable_name, typeid(T)));
 	sizes.insert(TypeSizeMap::value_type(&typeid(T), (unsigned int)sizeof(T)));
-	defaults.insert(DefaultValueMap::value_type(variable_name, T()));
-	sm_map.insert(StateMemoryMap::value_type(variable_name, std::unique_ptr<GenericAgentMemoryVector>(new AgentMemoryVector<T>())));
+	sm_map.insert(StateMemoryMap::value_type(variable_name, std::unique_ptr<GenericMemoryVector>(new MemoryVector<T>())));
 }
 
 

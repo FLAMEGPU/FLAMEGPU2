@@ -43,8 +43,4 @@ const AgentMap& ModelDescription::getAgentMap() const {
 const MessageMap& ModelDescription::getMessageMap() const {
 	return messages;
 
-
-const FunctionMap& ModelDescription::getFunctionMap() const {
-	return functions;
-}
 */

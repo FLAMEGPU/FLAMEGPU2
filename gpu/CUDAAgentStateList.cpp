@@ -167,7 +167,7 @@ void CUDAAgentStateList::setAgentData(const AgentStateMemory &state_memory)
 		size_t var_size = agent.getAgentDescription().getAgentVariableSize(m.first);
 
 		//get the vector
-		const GenericAgentMemoryVector &m_vec = state_memory.getReadOnlyMemoryVector(m.first);
+		const GenericMemoryVector &m_vec = state_memory.getReadOnlyMemoryVector(m.first);
 
 		//get pointer to vector data
 		const void * v_data = m_vec.getDataPtr();
