@@ -17,25 +17,24 @@
 
 
 
-AgentStateMemory::AgentStateMemory(const AgentPopulation &p, unsigned int initial_size) : population(p)
+AgentStateMemory::AgentStateMemory(const AgentPopulation &p, unsigned int initial_capacity) : population(p)
 {
 	//state memory map is cloned from the agent description
 	population.getAgentDescription().initEmptyStateMemoryMap(state_memory);
 
+	//set current size to 0 (no agents in this state yet)
+	current_size = 0;
+
 	//if there is an initial population size then resize the memory vectors
-	if (initial_size > 0)
-		resizeMemoryVectors(initial_size);
+	if (initial_capacity > 0)
+		resizeMemoryVectors(initial_capacity);
 }
 
 
-void AgentStateMemory::incrementSize()
+unsigned int AgentStateMemory::incrementSize()
 {
-    //loop through the memory maps and increment the vector size by 1
-	const MemoryMap &m = population.getAgentDescription().getMemoryMap();
-	for (const MemoryMapPair &mmp : m){
-		GenericMemoryVector &v = getMemoryVector(mmp.first);
-		v.incrementVector();
-	}
+    //add one to current size (returns old size)
+	return current_size++;
 
 }
 
@@ -89,7 +88,11 @@ void AgentStateMemory::resizeMemoryVectors(unsigned int s)
 	}
 }
 
-unsigned int AgentStateMemory::getPopulationSize() const
+unsigned int AgentStateMemory::getPopulationCapacity() const
 {
-	return population.getMaximumStateListSize();
+	return population.getMaximumStateListCapacity();
+}
+
+unsigned int AgentStateMemory::getStateListSize() const{
+	return current_size;
 }

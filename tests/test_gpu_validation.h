@@ -26,7 +26,7 @@ BOOST_AUTO_TEST_CASE(GPUMemoryTest)
 	AgentPopulation population(circle_agent);
 	for (int i = 0; i< 100; i++)
 	{
-		AgentInstance instance = population.pushBackInstance("default");
+		AgentInstance instance = population.getNextInstance("default");
 		instance.setVariable<float>("x", i*0.1f);
 		instance.setVariable<float>("y", i*0.1f);
 	}

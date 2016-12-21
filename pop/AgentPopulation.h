@@ -32,7 +32,7 @@ public:
 
 	virtual ~AgentPopulation();
 
-	AgentInstance pushBackInstance(const std::string agent_state = "default");
+	AgentInstance getNextInstance(const std::string agent_state = "default");
 
 	AgentInstance getInstanceAt(unsigned int index, const std::string agent_state = "default");
 
@@ -43,9 +43,9 @@ public:
 	const AgentDescription& getAgentDescription() const;
 
 	/* This is the maximum size of any single state list. */
-	unsigned int getMaximumStateListSize() const;
+	unsigned int getMaximumStateListCapacity() const;
 
-	void setStateListSize(unsigned int);
+	void setStateListCapacity(unsigned int);
 
 private:
 

@@ -30,10 +30,10 @@ class AgentDescription;
 class AgentStateMemory  // agent_list
 {
 public:
-	AgentStateMemory(const AgentPopulation &population, unsigned int initial_size = 0);
+	AgentStateMemory(const AgentPopulation &population, unsigned int initial_capacity = 0);
     virtual ~AgentStateMemory() {}
 
-    void incrementSize();
+    unsigned int incrementSize();
 
 	GenericMemoryVector& getMemoryVector(const std::string variable_name);
 
@@ -45,12 +45,17 @@ public:
 
 	void resizeMemoryVectors(unsigned int size);
 
-	unsigned int getPopulationSize() const;
+	//the maximum number of possible agents in this population (same for all state lists)
+	unsigned int getPopulationCapacity() const;
+
+	//the actual number of agents in this state
+	unsigned int getStateListSize() const;
 
 protected:
 	const AgentPopulation &population;
     const std::string agent_state;
     StateMemoryMap state_memory;
+	unsigned int current_size;
 
 };
 

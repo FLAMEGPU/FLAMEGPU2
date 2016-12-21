@@ -177,7 +177,7 @@ void CUDAAgentStateList::setAgentData(const AgentStateMemory &state_memory)
 		const void * v_data = m_vec.getDataPtr();
 
 		//set the current list size
-		current_list_size = state_memory.getPopulationSize();
+		current_list_size = state_memory.getPopulationCapacity();
 
 		//TODO: copy the boost any data to GPU
 		gpuErrchk(cudaMemcpy(d_list.h_d_memory[hash_index], v_data, var_size*current_list_size, cudaMemcpyHostToDevice));

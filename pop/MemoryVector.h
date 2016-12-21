@@ -27,8 +27,6 @@ public:
 
 	virtual void* getVectorPtr() = 0;
 
-	virtual unsigned int incrementVector() = 0;
-
 	virtual GenericMemoryVector* clone() const = 0;
 
 	virtual void resize(unsigned int) = 0;
@@ -65,12 +63,6 @@ public:
 	virtual void* getVectorPtr()
 	{
 		return static_cast<void*>(&vec);
-	}
-
-	virtual unsigned int incrementVector()
-	{
-		vec.push_back(default_value);
-		return static_cast<unsigned int>(vec.size());
 	}
 
 	virtual MemoryVector<T>* clone() const
