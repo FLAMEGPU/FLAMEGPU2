@@ -47,11 +47,27 @@ CUDAAgentStateList::CUDAAgentStateList(CUDAAgent& cuda_agent) : agent(cuda_agent
  */
 CUDAAgentStateList::~CUDAAgentStateList()
 {
-    //cleanup
-    releaseDeviceAgentList(&d_list);
-    releaseDeviceAgentList(&d_swap_list);
-	if (agent.getAgentDescription().requiresAgentCreation())
-        releaseDeviceAgentList(&d_new_list);
+	//if cleanupAllocatedData function has not been called throw an error.
+	if (d_list.d_d_memory != 0){
+		throw std::exception("Error cleaning up CUDAStateList data. cleanupAllocatedData function must be called!");
+	}
+}
+
+void CUDAAgentStateList::cleanupAllocatedData()
+{
+	//clean up
+	releaseDeviceAgentList(&d_list);
+	d_list.d_d_memory = 0;
+	d_list.h_d_memory = 0;
+	releaseDeviceAgentList(&d_swap_list);
+	d_swap_list.d_d_memory = 0;
+	d_swap_list.h_d_memory = 0;
+	if (agent.getAgentDescription().requiresAgentCreation()){
+		releaseDeviceAgentList(&d_new_list);
+		d_new_list.d_d_memory = 0;
+		d_new_list.h_d_memory = 0;
+	}
+
 }
 
 /**

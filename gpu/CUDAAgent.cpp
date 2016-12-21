@@ -71,6 +71,10 @@ CUDAAgent::CUDAAgent(const AgentDescription& description) : agent_description(de
  */
 CUDAAgent::~CUDAAgent(void)
 {
+	//loop through CUDAStateMap to clean up any cuda allocated data before the hash data is destroyed
+	for (CUDAStateMapPair &sm : state_map){
+		sm.second->cleanupAllocatedData();
+	}
     free (h_hashes);
     gpuErrchk( cudaFree(d_hashes));
 }

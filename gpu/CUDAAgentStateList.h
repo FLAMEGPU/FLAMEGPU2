@@ -32,6 +32,9 @@ public:
 	CUDAAgentStateList(CUDAAgent& cuda_agent);
 	virtual ~CUDAAgentStateList();
 
+	//cant be done in destructor as it requires access to the parent CUDAAgent object
+	void cleanupAllocatedData();
+
 	void setAgentData(const AgentStateMemory &state_memory);
 
 	void getAgentData(AgentStateMemory &state_memory);
