@@ -1,9 +1,7 @@
+# CPP language
 language: cpp
 
-# Compiler selection
-compiler: gcc
-
-
+# Compiler matrix for recent GCC versions
 matrix:
   include:
     - compiler: gcc
@@ -24,7 +22,7 @@ matrix:
       env: GCC_VERSION=g++-5
 
 # Install CUDA
-install: "./scripts/"
+install: "sudo -E ./scripts/travis_install.sh"
 
 # Build steps
 script: "make BOOST_TEST HOST_COMPILER=$GCC_VERSION"
