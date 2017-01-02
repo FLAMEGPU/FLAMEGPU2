@@ -22,7 +22,7 @@ init:
   - cmd: msbuild /version
 
 # clone directory
-  clone_folder: C:\projects\FLAMEGPU2_dev
+clone_folder: C:\projects\FLAMEGPU2_dev
 
 # scripts that run after cloning repository
 install:
