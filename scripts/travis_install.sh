@@ -27,7 +27,7 @@ apt-get install -y --no-install-recommends \
   cuda-core-$CUDA_PKG_VERSION
   
 # manually create CUDA symlink
-# ln -s /usr/local/cuda-$CUDA_VERSION /usr/local/cuda
+ln -s /usr/local/cuda-$CUDA_VERSION /usr/local/cuda
 
 # add nvcc to PATH
 export PATH="$PATH:/usr/local/cuda-$CUDA_VERSION/bin"
