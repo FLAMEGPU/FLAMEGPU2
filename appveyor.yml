@@ -1,0 +1,32 @@
+# Specify version format
+version: "0.1.{build}"
+
+# Operating system (build VM template)
+os: Visual Studio 2013
+
+# build platform, i.e. Win32 (instead of x86), x64, Any CPU. This setting is optional.
+platform: 
+  # - Win32 Diable Win32
+  - x64
+
+# specify custom environment variables
+environment:
+  BOOST_DIR: C:\Libraries\boost_1_59_0
+
+# build configuration, i.e. Debug, Release, etc.
+configuration:
+  - BoostTest
+
+# scripts that are called at very beginning, before repo cloning
+init:
+  - cmd: msbuild /version
+
+# clone directory
+clone_folder: C:\projects\FLAMEGPU2_dev
+
+# scripts that run after cloning repository
+install:
+  - ps: .\scripts\appveyor_install.ps1
+
+build:
+  project: C:\projects\FLAMEGPU2_dev\FLAMEGPU2.sln # path to Visual Studio solution or project
