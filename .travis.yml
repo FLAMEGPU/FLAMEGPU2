@@ -27,6 +27,7 @@ matrix:
 
 # Install CUDA
 install: 
+ - chmod +x ./scripts/travis_install.sh
  - sudo -E ./scripts/travis_install.sh
  
 # Add nvcc to path
