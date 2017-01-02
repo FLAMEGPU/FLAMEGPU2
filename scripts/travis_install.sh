@@ -8,6 +8,9 @@ set -ev
 # Update
 apt-get -y update
 
+# Install Boost
+apt-get install libboost-dev
+
 # Install CUDA (see caffe example https://github.com/BVLC/caffe/blob/master/scripts/travis/install-deps.sh)
 CUDA_REPO_PKG=cuda-repo-ubuntu1404_8.0.44-1_amd64.deb
 wget http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1404/x86_64/$CUDA_REPO_PKG
