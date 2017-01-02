@@ -24,7 +24,8 @@ apt-get -y update
 CUDA_PKG_VERSION="8-0"
 CUDA_VERSION="8.0"
 apt-get install -y --no-install-recommends \
-  cuda-core-$CUDA_PKG_VERSION
+  cuda-core-$CUDA_PKG_VERSION \
+  cuda-cudart-dev-$CUDA_PKG_VERSION
   
 # manually create CUDA symlink
 ln -s /usr/local/cuda-$CUDA_VERSION /usr/local/cuda
