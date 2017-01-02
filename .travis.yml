@@ -26,7 +26,9 @@ matrix:
       env: GCC_VERSION=g++-5
 
 # Install CUDA
-install: "sudo -E ./scripts/travis_install.sh"
+install: 
+ - chmod +x ./scripts/travis_install.sh
+ - sudo -E ./scripts/travis_install.sh
 
 # Build steps
 script: "make BOOST_TEST HOST_COMPILER=$GCC_VERSION"
