@@ -1,3 +1,7 @@
+#!/bin/bash
+# install dependencies
+# (this script must be run as root)
+
 # Update
 apt-get -y update
 
