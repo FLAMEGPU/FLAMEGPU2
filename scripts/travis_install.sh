@@ -2,6 +2,9 @@
 # install dependencies
 # (this script must be run as root)
 
+# Usfull for debugging
+set -ev
+
 # Update
 apt-get -y update
 
