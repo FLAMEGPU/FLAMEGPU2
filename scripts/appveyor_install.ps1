@@ -5,8 +5,7 @@ $env:CUDA_REPO_PKG="cuda_8.0.44_win10_network.exe"
 
 # Get network installer
 Write-Host 'Downloading CUDA Network Installer'
-&dl_job = Invoke-WebRequest $env:CUDA_REPO_PKG_LOCATION -OutFile $env:CUDA_REPO_PKG -AsJob
-Wait-Job -Job $dl_job
+Invoke-WebRequest $env:CUDA_REPO_PKG_LOCATION -OutFile $env:CUDA_REPO_PKG | Out-Null
 Write-Host 'Downloading Complete'
   
 # Invoke silent install of CUDA compiler and runtime (via network installer)
