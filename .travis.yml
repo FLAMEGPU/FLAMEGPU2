@@ -1,6 +1,9 @@
 # CPP language
 language: cpp
 
+# Requires sudo for CUDA install
+sudo: required
+
 # Compiler matrix for recent GCC versions
 matrix:
   include:
