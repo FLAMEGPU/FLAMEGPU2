@@ -27,8 +27,10 @@ matrix:
 
 # Install CUDA
 install: 
- - chmod +x ./scripts/travis_install.sh
  - sudo -E ./scripts/travis_install.sh
+ 
+# Add nvcc to path
+before_script: "export PATH=$PATH:/usr/local/cuda/bin/"
 
 # Build steps
 script: "make BOOST_TEST HOST_COMPILER=$GCC_VERSION"
