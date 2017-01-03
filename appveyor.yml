@@ -32,7 +32,7 @@ install:
   - ps: Invoke-WebRequest $env:CUDA_REPO_PKG_NETWORK -OutFile $env:CUDA_REPO_PKG_LOCAL | Out-Null
   - ps: Write-Host 'Downloading Complete'
   - ps: Write-Host 'Installing CUDA Compiler and Runtime'
-  - ps: &amp; .\$env:CUDA_REPO_PKG_LOCAL -s compiler_8.0 visual_studio_integration_8.0 command_line_tools_8.0 cudart_8.0 | Out-Null
+  - ps: .\$env:CUDA_REPO_PKG_LOCAL -s compiler_8.0 visual_studio_integration_8.0 command_line_tools_8.0 cudart_8.0 | Out-Null
   - ps: Write-Host 'Installation Complete.'
 
 # The build
