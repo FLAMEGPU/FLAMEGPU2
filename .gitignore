@@ -1,7 +1,5 @@
 DoxyGen*/
 docs/
-#handler.cpp
-#api/handler.h
 bin/
 obj/
 *.cbp

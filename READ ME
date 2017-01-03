@@ -34,6 +34,6 @@ now, run:
 $ doxygen Doxyfile
 
 To view, open:
-DoxyGen_html/index.html
+docs/index.html
 
 #https://www.daniweb.com/programming/software-development/threads/398953/doxygen-multiple-files
