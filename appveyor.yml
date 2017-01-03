@@ -26,17 +26,12 @@ clone_folder: C:\projects\FLAMEGPU2_dev
 
 # scripts that run after cloning repository
 install:
-  - ps: Write-Host 'Downloading CUDA Network Installer'
-  - ps: Invoke-WebRequest https://developer.nvidia.com/compute/cuda/8.0/prod/network_installers/cuda_8.0.44_windows_network-exe -OutFile cuda_8.0.44_win10_network.exe | Out-Null
-  - ps: Write-Host 'Downloading Complete'
-  - ps: Write-Host 'Installing CUDA Compiler and Runtime'
-  - ps: .\cuda_8.0.44_win10_network.exe -s compiler_8.0 visual_studio_integration_8.0 command_line_tools_8.0 cudart_8.0 | Out-Null
-  - ps: Write-Host 'Installation Complete.'
+  - ps: .\scripts\appveyor_install.ps1
 
 # The build
 build:
   project: C:\projects\FLAMEGPU2_dev\FLAMEGPU2.sln # path to Visual Studio solution or project
 
 #debugging
-#on_finish:
-#  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+on_finish:
+  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
