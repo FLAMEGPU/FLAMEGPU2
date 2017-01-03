@@ -8,21 +8,13 @@ Write-Host 'Downloading CUDA Network Installer'
 Invoke-WebRequest $env:CUDA_REPO_PKG_LOCATION -OutFile $env:CUDA_REPO_PKG | Out-Null
 Write-Host 'Downloading Complete'
   
-# Invoke silent install of CUDA compiler and runtime (via network installer)
+# Invoke silent install of CUDA compiler and runtime with Visual Studio integration (via network installer)
 Write-Host 'Installing CUDA Compiler and Runtime'
 $install_result = & .\$env:CUDA_REPO_PKG -s compiler_8.0 visual_studio_integration_8.0 | Out-String
-Write-Host "$install_result"
+$nvcc_version = nvcc -V | Out-String 
+Write-Host "$install_result $nvcc_version"
 Write-Host 'Installation Complete.'
-<# try {
-    Write-Host 'Installing CUDA Compiler and Runtime'
-    $cuda_install_proc = Start-Process -FilePath "$env:CUDA_REPO_PKG" -ArgumentList "/s compiler_8.0" -Wait -PassThru
-    $proc1.waitForExit()
-    Write-Host 'Installation Complete.'
-} catch [exception] {
-    write-host '$_ is' $_
-    write-host '$_.GetType().FullName is' $_.GetType().FullName
-    write-host '$_.Exception is' $_.Exception
-    write-host '$_.Exception.GetType().FullName is' $_.Exception.GetType().FullName
-    write-host '$_.Exception.Message is' $_.Exception.Message
-}
-#>
+
+# List directory output
+$rules = ls "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V120\BuildCustomizations\" | Out-String
+Write-Host "$rules"
