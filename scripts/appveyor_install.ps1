@@ -10,9 +10,7 @@ Write-Host 'Downloading Complete'
   
 # Invoke silent install of CUDA compiler and runtime with Visual Studio integration (via network installer)
 Write-Host 'Installing CUDA Compiler and Runtime'
-& .\$env:CUDA_REPO_PKG -s compiler_8.0 visual_studio_integration_8.0 command_line_tools_8.0| Out-Null
+& .\$env:CUDA_REPO_PKG -s compiler_8.0 visual_studio_integration_8.0 command_line_tools_8.0 cudart_8.0| Out-Null
 Write-Host 'Installation Complete.'
 
-# output nvcc version info
-$nvcc_version = nvcc -V | Out-String 
-Write-Host "nvcc - v $nvcc_version"
+# TODO: Test the install was successful
