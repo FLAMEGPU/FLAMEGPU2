@@ -10,7 +10,8 @@ Write-Host 'Downloading Complete'
   
 # Invoke silent install of CUDA compiler and runtime (via network installer)
 Write-Host 'Installing CUDA Compiler and Runtime'
-& .\$env:CUDA_REPO_PKG -s compiler_8.0 visual_studio_integration_8.0 | Out-Null
+$install_result = & .\$env:CUDA_REPO_PKG -s compiler_8.0 visual_studio_integration_8.0 | Out-String
+Write-Host '$install_result'
 Write-Host 'Installation Complete.'
 <# try {
     Write-Host 'Installing CUDA Compiler and Runtime'
