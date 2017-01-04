@@ -27,7 +27,11 @@ clone_folder: C:\projects\FLAMEGPU2_dev
 # scripts that run after cloning repository (requires reboot to propagate installer env variables)
 install:
   - ps: .\scripts\appveyor_install.ps1
+  - ps: Write-Output 'Rebooting worker node...'
+  - ps: sleep 5
   - ps: restart-computer -f
+  - ps: sleep 5
+  - ps: Write-Output 'Reboot complete'
 
 # The build
 build:
