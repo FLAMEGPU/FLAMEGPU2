@@ -1,0 +1,42 @@
+# Specify version format
+version: "0.1.{build}"
+
+# Operating system (build VM template)
+os: Visual Studio 2013
+
+# build platform, i.e. Win32 (instead of x86), x64, Any CPU. This setting is optional.
+platform: 
+  # - Win32 Diable Win32
+  - x64
+
+# specify custom environment variables
+environment:
+  BOOST_DIR: C:\Libraries\boost_1_59_0
+
+# build configuration, i.e. Debug, Release, etc.
+configuration:
+  - BoostTest
+
+# scripts that are called at very beginning, before repo cloning
+init:
+  - cmd: msbuild /version
+
+# clone directory
+clone_folder: C:\projects\FLAMEGPU2_dev
+
+# scripts that run after cloning repository (requires reboot to propagate installer env variables)
+install:
+  - ps: .\scripts\appveyor_install.ps1
+  - ps: Write-Output 'Rebooting worker node...'
+  - ps: sleep 5
+  - ps: restart-computer -f
+  - ps: sleep 5
+  - ps: Write-Output 'Reboot complete'
+
+# The build
+build:
+  project: C:\projects\FLAMEGPU2_dev\FLAMEGPU2.sln # path to Visual Studio solution or project
+
+#debugging
+#on_finish:
+#  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
