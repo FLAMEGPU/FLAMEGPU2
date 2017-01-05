@@ -1,12 +1,12 @@
- /**
- * @file SimulationLayer.cpp
- * @authors Paul
- * @date
- * @brief
- *
- * @see
- * @warning
- */
+/**
+* @file SimulationLayer.cpp
+* @authors Paul
+* @date
+* @brief
+*
+* @see
+* @warning
+*/
 
 #include "SimulationLayer.h"
 
@@ -23,20 +23,32 @@ SimulationLayer::~SimulationLayer(void)
 {
 }
 
-void SimulationLayer::addAgentFunction(const std::string function_name){
-	bool found = false;
-	AgentMap::const_iterator it;
-	const AgentMap& agents = simulation.getModelDescritpion().getAgentMap();
+void SimulationLayer::addAgentFunction(const std::string function_name)
+{
+    bool found = false;
+    AgentMap::const_iterator it;
+    const AgentMap& agents = simulation.getModelDescritpion().getAgentMap();
 
-	//check agent function exists
-	for (it = agents.begin(); it != agents.end(); it++){
-		if (it->second.hasAgentFunction(function_name))
-			found = true;
-	}
+    //check agent function exists
+    for (it = agents.begin(); it != agents.end(); it++)
+    {
+        if (it->second.hasAgentFunction(function_name))
+            found = true;
+    }
 
-	if (found)
-		functions.push_back(function_name);
-	else
-		//throw std::runtime_error("Unknown agent function!");
-		throw InvalidAgentFunc();
+    if (found)
+        functions.push_back(function_name);
+    else
+        //throw std::runtime_error("Unknown agent function!");
+        throw InvalidAgentFunc();
+}
+
+
+/**
+* @return agent functions name vector (string type)
+*/
+
+const std::vector<std::string> SimulationLayer::getAgentFunctions()
+{
+    return functions;
 }
