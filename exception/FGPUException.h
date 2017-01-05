@@ -268,4 +268,18 @@ public:
     }
 };
 
+/**
+* Defines a type of object to be thrown as exception.
+* It reports errors that are due to invalid memory capacity.
+*/
+class InvalidMemoryCapacity : public FGPUException
+{
+public:
+    InvalidMemoryCapacity(const char *msg= "Invalid Memory Capacity"):FGPUException(msg) {}
+    virtual const char *what() const
+    {
+        return err_message;
+    }
+};
+
 #endif //_FGPUEXCEPTION

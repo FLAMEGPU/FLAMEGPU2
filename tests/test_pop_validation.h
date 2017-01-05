@@ -18,7 +18,7 @@ BOOST_AUTO_TEST_CASE(PopulationNameCheck)
     circle_agent.addAgentVariable<float>("y");
 
     flame_model.addAgent(circle_agent);
-	AgentPopulation population(circle_agent);
+    AgentPopulation population(circle_agent);
     for (int i=0; i< 100; i++)
     {
         AgentInstance instance = population.getNextInstance("default");
@@ -47,7 +47,7 @@ BOOST_AUTO_TEST_CASE(PopulationInstVarCheck1)
 
     flame_model.addAgent(circle_agent);
 
-	AgentPopulation population(circle_agent);
+    AgentPopulation population(circle_agent);
 
     AgentInstance instance = population.getNextInstance("default");
 
@@ -78,7 +78,7 @@ BOOST_AUTO_TEST_CASE(PopulationInstVarCheck2)
 
     flame_model.addAgent(circle_agent);
 
-	AgentPopulation population(circle_agent);
+    AgentPopulation population(circle_agent);
 
     AgentInstance instance = population.getNextInstance("default");
     instance.setVariable<float>("x", 0.1f);
@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE(PopulationInstVarCheck3)
 
     flame_model.addAgent(circle_agent);
 
-	AgentPopulation population(circle_agent);
+    AgentPopulation population(circle_agent);
 
     AgentInstance instance = population.getNextInstance("default");
     instance.setVariable<float>("x", 0.1f);
@@ -127,7 +127,7 @@ BOOST_AUTO_TEST_CASE(PopulationSizeCheck)
 
     flame_model.addAgent(circle_agent);
 
-	AgentPopulation population(circle_agent);
+    AgentPopulation population(circle_agent);
 
     BOOST_CHECK(population.getMaximumStateListCapacity()==1024);
 
@@ -137,95 +137,90 @@ BOOST_AUTO_TEST_CASE(PopulationAddMoreCapacity)
 {
 
 
-	BOOST_TEST_MESSAGE("\nTesting changing the capacity..");
+    BOOST_TEST_MESSAGE("\nTesting changing the capacity..");
 
-	ModelDescription flame_model("circles_model");
-	AgentDescription circle_agent("circle");
+    ModelDescription flame_model("circles_model");
+    AgentDescription circle_agent("circle");
 
-	circle_agent.addAgentVariable<float>("x");
-	circle_agent.addAgentVariable<float>("y");
+    circle_agent.addAgentVariable<float>("x");
+    circle_agent.addAgentVariable<float>("y");
 
-	flame_model.addAgent(circle_agent);
+    flame_model.addAgent(circle_agent);
 
-	AgentPopulation population(circle_agent, 100);
-	BOOST_CHECK(population.getMaximumStateListCapacity() == 100);
+    AgentPopulation population(circle_agent, 100);
+    BOOST_CHECK(population.getMaximumStateListCapacity() == 100);
 
-	population.setStateListCapacity(200);
-	BOOST_CHECK(population.getMaximumStateListCapacity() == 200);
+    population.setStateListCapacity(200);
+    BOOST_CHECK(population.getMaximumStateListCapacity() == 200);
 
-	//population.setStateListCapacity(100);
-	//TODO: Catch exception that fails on above call (can't reduce population capacity)
-
+    //Catch exception that fails on above call (can't reduce population capacity)
+    BOOST_CHECK_THROW(population.setStateListCapacity(100),InvalidPopulationData);
 }
 
 BOOST_AUTO_TEST_CASE(PopulationOverflowCapacity)
 {
 
+    BOOST_TEST_MESSAGE("\nTesting overflowing the capacity of a state list..");
 
-	BOOST_TEST_MESSAGE("\nTesting overflowing the capacity of a state list..");
+    ModelDescription flame_model("circles_model");
+    AgentDescription circle_agent("circle");
 
-	ModelDescription flame_model("circles_model");
-	AgentDescription circle_agent("circle");
+    circle_agent.addAgentVariable<float>("x");
+    circle_agent.addAgentVariable<float>("y");
 
-	circle_agent.addAgentVariable<float>("x");
-	circle_agent.addAgentVariable<float>("y");
+    flame_model.addAgent(circle_agent);
 
-	flame_model.addAgent(circle_agent);
+    AgentPopulation population(circle_agent, 100);
+    BOOST_CHECK(population.getMaximumStateListCapacity() == 100);
 
-	AgentPopulation population(circle_agent, 100);
-	BOOST_CHECK(population.getMaximumStateListCapacity() == 100);
-
-	//add 100 instances (no problem)
-	for (int i = 0; i< 100; i++)
-	{
-		AgentInstance instance = population.getNextInstance("default");
-		instance.setVariable<float>("x", i*0.1f);
-	}
-	//add one more (should fail)
-	//TODO: Test must check that getNextInstance fails if capacity is too small when for loop creates 101 agents
-	//AgentInstance instance = population.getNextInstance("default");
-	//instance.setVariable<float>("x", 101*0.1f);
-
+    //add 100 instances (no problem)
+    for (int i = 0; i< 100; i++)
+    {
+        AgentInstance instance = population.getNextInstance("default");
+        instance.setVariable<float>("x", i*0.1f);
+    }
+    // getNextInstance fails if capacity is too small when for loop creates 101 agents
+    BOOST_CHECK_THROW(population.getNextInstance("default"),InvalidMemoryCapacity);
 }
 
 BOOST_AUTO_TEST_CASE(PopulationDataValuesMultipleStates)
 {
 
 
-	BOOST_TEST_MESSAGE("\nTesting adding changing the capacity size ..");
+    BOOST_TEST_MESSAGE("\nTesting adding changing the capacity size ..");
 
-	ModelDescription flame_model("circles_model");
-	AgentDescription circle_agent("circle");
-	AgentStateDescription s1("s1");
-	AgentStateDescription s2("s2");
-	circle_agent.addState(s1);
-	circle_agent.addState(s2);
+    ModelDescription flame_model("circles_model");
+    AgentDescription circle_agent("circle");
+    AgentStateDescription s1("s1");
+    AgentStateDescription s2("s2");
+    circle_agent.addState(s1);
+    circle_agent.addState(s2);
 
-	circle_agent.addAgentVariable<int>("id");
+    circle_agent.addAgentVariable<int>("id");
 
-	flame_model.addAgent(circle_agent);
+    flame_model.addAgent(circle_agent);
 
-	AgentPopulation population(circle_agent, 100);
+    AgentPopulation population(circle_agent, 100);
 
-	//add 100 instances (no problem)
-	for (int i = 0; i< 100; i++)
-	{
-		AgentInstance instance_s1 = population.getNextInstance("s1");
-		instance_s1.setVariable<int>("id", i);
+    //add 100 instances (no problem)
+    for (int i = 0; i< 100; i++)
+    {
+        AgentInstance instance_s1 = population.getNextInstance("s1");
+        instance_s1.setVariable<int>("id", i);
 
-		AgentInstance instance_s2 = population.getNextInstance("s2");
-		instance_s2.setVariable<int>("id", i + 1000);
-	}
+        AgentInstance instance_s2 = population.getNextInstance("s2");
+        instance_s2.setVariable<int>("id", i + 1000);
+    }
 
-	//check values are correct
-	for (int i = 0; i< 100; i++)
-	{
-		AgentInstance instance_s1 = population.getInstanceAt(i, "s1");
-		BOOST_CHECK(instance_s1.getVariable<int>("id") == i);
+    //check values are correct
+    for (int i = 0; i< 100; i++)
+    {
+        AgentInstance instance_s1 = population.getInstanceAt(i, "s1");
+        BOOST_CHECK(instance_s1.getVariable<int>("id") == i);
 
-		AgentInstance instance_s2 = population.getInstanceAt(i, "s2");
-		BOOST_CHECK(instance_s2.getVariable<int>("id") == i + 1000);
-	}
+        AgentInstance instance_s2 = population.getInstanceAt(i, "s2");
+        BOOST_CHECK(instance_s2.getVariable<int>("id") == i + 1000);
+    }
 }
 
 
@@ -238,15 +233,21 @@ BOOST_AUTO_TEST_CASE(PopulationCheckGetInstanceBeyondSize)
     ModelDescription flame_model("circles_model");
     AgentDescription circle_agent("circle");
 
+    AgentStateDescription s1("default");
+    circle_agent.addState(s1);
+
     circle_agent.addAgentVariable<float>("x");
     circle_agent.addAgentVariable<float>("y");
 
     flame_model.addAgent(circle_agent);
 
-	AgentPopulation population(circle_agent, 100);
+    AgentPopulation population(circle_agent, 100);
 
-	//TODO: Test must check that getInstanceAt should fail if index is less than size
-	//AgentInstance instance = population.getInstanceAt(0, "default");
+    AgentInstance instance_s1 = population.getNextInstance("default");
+    instance_s1.setVariable<float>("x", 0.1f);
+
+    //check that getInstanceAt should fail if index is less than size
+    BOOST_CHECK_THROW(population.getInstanceAt(1,"default"),InvalidMemoryCapacity);
 
 }
 
