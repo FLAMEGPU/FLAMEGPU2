@@ -49,9 +49,7 @@ CUDAAgentStateList::~CUDAAgentStateList()
 {
 	//if cleanupAllocatedData function has not been called throw an error.
 	if (d_list.d_d_memory != 0){
-		//TODO: proper exception
-		//throw std::exception("Error cleaning up CUDAStateList data. cleanupAllocatedData function must be called!");
-		throw std::exception();
+		throw InvalidOperation("Error cleaning up CUDAStateList data. cleanupAllocatedData function must be called!");
 	}
 }
 
@@ -231,9 +229,7 @@ void CUDAAgentStateList::getAgentData(AgentStateMemory &state_memory)
 
 		//check  the current list size
 		if (current_list_size > state_memory.getPopulationCapacity())
-			//TODO: Proper exception
-			//throw std::exception("Current GPU state list size exceed the state memory available!");
-			throw std::exception();
+			throw InvalidMemoryCapacity("Current GPU state list size exceed the state memory available!");
 
 		//copy the GPU data to host
 		gpuErrchk(cudaMemcpy(v_data, d_list.h_d_memory[hash_index], var_size*current_list_size, cudaMemcpyDeviceToHost));

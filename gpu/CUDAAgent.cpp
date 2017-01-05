@@ -71,10 +71,11 @@ CUDAAgent::CUDAAgent(const AgentDescription& description) : agent_description(de
  */
 CUDAAgent::~CUDAAgent(void)
 {
-	//loop through CUDAStateMap to clean up any cuda allocated data before the hash data is destroyed
-	for (CUDAStateMapPair &sm : state_map){
-		sm.second->cleanupAllocatedData();
-	}
+    //loop through CUDAStateMap to clean up any cuda allocated data before the hash data is destroyed
+    for (CUDAStateMapPair &sm : state_map)
+    {
+        sm.second->cleanupAllocatedData();
+    }
     free (h_hashes);
     gpuErrchk( cudaFree(d_hashes));
 }
@@ -101,7 +102,7 @@ int CUDAAgent::getHashIndex(const char * variable_name) const
     //function resolves hash collisions
     unsigned int hash = VariableHash(variable_name);
     unsigned int n = 0;
-	unsigned int i = (hash) % getHashListSize();
+    unsigned int i = (hash) % getHashListSize();
 
     while (h_hashes[i] != EMPTY_HASH_VALUE)
     {
@@ -200,9 +201,9 @@ void CUDAAgent::setPopulationData(const AgentPopulation& population)
         CUDAStateMap::iterator i = state_map.find(s.first);
 
         /**check that the CUDAAgentStateList was found (should ALWAYS be the case)*/
-		if (i == state_map.end())
-			//throw std::exception("Error: failed to find memory allocated for a state. This should never happen!");
-			throw InvalidMapEntry("Error: failed to find memory allocated for a state. This should never happen!");
+        if (i == state_map.end())
+
+            throw InvalidMapEntry("Error: failed to find memory allocated for a state. This should never happen!");
 
         //copy the data from the population state memory to the state_maps CUDAAgentStateList
         i->second->setAgentData(population.getReadOnlyStateMemory(i->first));
@@ -214,35 +215,35 @@ void CUDAAgent::setPopulationData(const AgentPopulation& population)
 
 void CUDAAgent::getPopulationData(AgentPopulation& population)
 {
-	//check that the gpu state lists have been initialised by a previous call to setInitialPopulationData
-	if (state_map.empty())
-		throw InvalidPopulationData("Error: Initial population data not set. Have you called setInitialPopulationData?");
+    //check that the gpu state lists have been initialised by a previous call to setInitialPopulationData
+    if (state_map.empty())
+        throw InvalidPopulationData("Error: Initial population data not set. Have you called setInitialPopulationData?");
 
-	//check that the population maximums do not exceed the current maximum (as their will not be enough GPU memory to hold it)
-	if (population.getMaximumStateListCapacity() < max_list_size)
-		throw InvalidPopulationData("Error: Maximum population size is not large enough for CUDAAgent");
+    //check that the population maximums do not exceed the current maximum (as their will not be enough GPU memory to hold it)
+    if (population.getMaximumStateListCapacity() < max_list_size)
+        throw InvalidPopulationData("Error: Maximum population size is not large enough for CUDAAgent");
 
-	//Make sure population uses same agent description as was used to initialise the agent CUDAAgent
-	const std::string agent_name = agent_description.getName();
-	if (&(population.getAgentDescription()) != &agent_description)
-		throw InvalidPopulationData("Error: getPopulationData population has a different agent description to that which was used to initialise the CUDAAgent");
+    //Make sure population uses same agent description as was used to initialise the agent CUDAAgent
+    const std::string agent_name = agent_description.getName();
+    if (&(population.getAgentDescription()) != &agent_description)
+        throw InvalidPopulationData("Error: getPopulationData population has a different agent description to that which was used to initialise the CUDAAgent");
 
 
-	/* copy all population from correct state maps */
-	const StateMap& sm = agent_description.getStateMap();
-	for (const StateMapPair& s : sm)
-	{
-		//get an associated CUDA statemap pair
-		CUDAStateMap::iterator i = state_map.find(s.first);
+    /* copy all population from correct state maps */
+    const StateMap& sm = agent_description.getStateMap();
+    for (const StateMapPair& s : sm)
+    {
+        //get an associated CUDA statemap pair
+        CUDAStateMap::iterator i = state_map.find(s.first);
 
-		/**check that the CUDAAgentStateList was found (should ALWAYS be the case)*/
-		if (i == state_map.end())
-			//throw std::exception("Error: failed to find memory allocated for a state. This should never happen!");
-			throw InvalidMapEntry("Error: failed to find memory allocated for a state. This should never happen!");
+        /**check that the CUDAAgentStateList was found (should ALWAYS be the case)*/
+        if (i == state_map.end())
 
-		//copy the data from the population state memory to the state_maps CUDAAgentStateList
-		i->second->getAgentData(population.getStateMemory(i->first));
-	}
+            throw InvalidMapEntry("Error: failed to find memory allocated for a state. This should never happen!");
+
+        //copy the data from the population state memory to the state_maps CUDAAgentStateList
+        i->second->getAgentData(population.getStateMemory(i->first));
+    }
 
 }
 

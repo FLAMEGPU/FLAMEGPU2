@@ -282,4 +282,19 @@ public:
     }
 };
 
+
+/**
+* Defines a type of object to be thrown as exception.
+* It reports errors that are due to invalid operation.
+*/
+class InvalidOperation : public FGPUException
+{
+public:
+    InvalidOperation(const char *msg= "Invalid Operation"):FGPUException(msg) {}
+    virtual const char *what() const
+    {
+        return err_message;
+    }
+};
+
 #endif //_FGPUEXCEPTION

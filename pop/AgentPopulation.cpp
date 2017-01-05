@@ -39,7 +39,7 @@ AgentInstance AgentPopulation::getNextInstance(const std::string agent_state)
     AgentStatesMap::iterator sm;
     sm = states_map.find(agent_state);
     if (sm == states_map.end())
-        //throw std::exception("Agent state not found when pushing back instance");
+
         throw InvalidPopulationData("Agent state not found when pushing back instance");
 
     //increment size gives old size
@@ -58,7 +58,7 @@ AgentInstance AgentPopulation::getInstanceAt(unsigned int index, const std::stri
     AgentStatesMap::iterator sm;
     sm = states_map.find(agent_state);
     if (sm == states_map.end())
-        //throw std::exception("Agent state not found when pushing back instance");
+
         throw InvalidPopulationData("Agent state not found when pushing back instance");
 
     //check the index does not exceed current size
@@ -118,10 +118,9 @@ unsigned int AgentPopulation::getMaximumStateListCapacity() const
 void AgentPopulation::setStateListCapacity(unsigned int size)
 {
     if (size < maximum_size)
-    {
-        //throw std::exception("Can not reduce size of agent population state list!");
+
         throw InvalidPopulationData("Can not reduce size of agent population state list!");
-    }
+
 
     //set the maximum size
     maximum_size = size;
