@@ -116,7 +116,7 @@ void CUDAAgentModel::getPopulationData(AgentPopulation& population)
 	if (it == agent_map.end())
 	{
 		//throw std::runtime_error("CUDA agent not found. This should not happen.");
-		throw InvalidCudaAgent();
+		throw InvalidCudaAgent("CUDA agent not found.");
 	}
 
 	//create agent state lists
