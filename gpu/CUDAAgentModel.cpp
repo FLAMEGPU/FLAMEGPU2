@@ -128,6 +128,7 @@ void CUDAAgentModel::getPopulationData(AgentPopulation& population)
 * @param simulation object
 * @return none
 * @todo not yet completed
+* @warning not tested
 */
 void CUDAAgentModel::simulate(const Simulation& sim)  // Moz:
 {

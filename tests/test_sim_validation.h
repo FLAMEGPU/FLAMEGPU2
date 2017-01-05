@@ -45,12 +45,14 @@ BOOST_AUTO_TEST_CASE(SimulationFunctionCheck)
 
 
     // check the name of the agent function
-    for (auto i: simulation.getFunctionAtLayer(0))
+    for (auto i: simulation.getFunctionAtLayer(0)){
         BOOST_CHECK(i=="output_data");
+        }
 
     // check the name of the agent function
-    for (auto i: simulation.getFunctionAtLayer(1))
+    for (auto i: simulation.getFunctionAtLayer(1)){
         BOOST_CHECK(i=="move");
+        }
 
     //check that getFunctionAtLayer should fail if layer does not exist
     BOOST_CHECK_THROW(simulation.getFunctionAtLayer(2), InvalidMemoryCapacity); // expecting an error
