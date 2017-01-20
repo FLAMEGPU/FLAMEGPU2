@@ -22,6 +22,8 @@ public:
     const ModelDescription& getModelDescritpion() const;
 
     const std::vector<std::string> getFunctionAtLayer(int layer);
+    //const fpMap&  getFunctionPAtLayer(int layer);
+    void  getFunctionPAtLayer(int layer);
 
 
 

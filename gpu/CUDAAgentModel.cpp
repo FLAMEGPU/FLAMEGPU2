@@ -95,32 +95,32 @@ void CUDAAgentModel::setInitialPopulationData(AgentPopulation& population)
 */
 void CUDAAgentModel::setPopulationData(AgentPopulation& population)
 {
-	CUDAAgentMap::iterator it;
-	it = agent_map.find(population.getAgentName());
+    CUDAAgentMap::iterator it;
+    it = agent_map.find(population.getAgentName());
 
-	if (it == agent_map.end())
-	{
-		//throw std::runtime_error("CUDA agent not found. This should not happen.");
-		throw InvalidCudaAgent();
-	}
+    if (it == agent_map.end())
+    {
+        //throw std::runtime_error("CUDA agent not found. This should not happen.");
+        throw InvalidCudaAgent();
+    }
 
-	//create agent state lists
-	it->second->setPopulationData(population);
+    //create agent state lists
+    it->second->setPopulationData(population);
 }
 
 void CUDAAgentModel::getPopulationData(AgentPopulation& population)
 {
-	CUDAAgentMap::iterator it;
-	it = agent_map.find(population.getAgentName());
+    CUDAAgentMap::iterator it;
+    it = agent_map.find(population.getAgentName());
 
-	if (it == agent_map.end())
-	{
-		//throw std::runtime_error("CUDA agent not found. This should not happen.");
-		throw InvalidCudaAgent("CUDA agent not found.");
-	}
+    if (it == agent_map.end())
+    {
+        //throw std::runtime_error("CUDA agent not found. This should not happen.");
+        throw InvalidCudaAgent("CUDA agent not found.");
+    }
 
-	//create agent state lists
-	it->second->getPopulationData(population);
+    //create agent state lists
+    it->second->getPopulationData(population);
 }
 
 /**
@@ -135,6 +135,24 @@ void CUDAAgentModel::simulate(const Simulation& sim)  // Moz:
     if (agent_map.size() == 0)
         //throw std::runtime_error("CUDA agent map size is zero"); // population size = 0 ? do we mean checking the number of elements in the map container?
         throw InvalidCudaAgentMapSize();
+
+    // based on not using a func pointer
+    for (auto j: sim.layers.size())
+    {
+        std::vector<std::string> func = sim.getFunctionAtLayer(j);
+        for (auto i: func.size())
+        {
+            std::cout<<func.at(i) << endl;
+        }
+    }
+
+    // alternative
+    // todo : now we should use func pointer instead. Meaning func point will be executed
+    for (auto j: sim.layers.size())
+    {
+        sim.getFunctionPAtLayer(j); // need to add agent function pointers too
+
+    }
 
     //CUDAAgentMap::iterator it;
 

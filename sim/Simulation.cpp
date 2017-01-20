@@ -49,7 +49,34 @@ const std::vector<std::string> Simulation::getFunctionAtLayer(int layer)
     if (layer>=layers.size())
         throw InvalidMemoryCapacity("Function layer doesn't exists!"); // out of bound index
     else
-        return layers.at(layer)->getAgentFunctions();
+    {
+        //std::string fn = layers.at(layer)->getAgentFunctions();// function name
+        return layers.at(layer)->getAgentFunctions(); // callFunc<void>(fn);
+    }
+}
+
+/**
+* @param layer number (integer type)
+* //@return fpMap type that contains a string name and a function pointer
+* @warning the return type may not be right!
+*/
+//const fpMap&  Simulation::getFunctionPAtLayer(int layer)
+void  Simulation::getFunctionPAtLayer(int layer)
+
+{
+    const std::vector<std::string> fns = layers.at(layer)->getAgentFunctions();// function name
+
+    if (layer>=layers.size())
+        throw InvalidMemoryCapacity("Function layer doesn't exists!"); // out of bound index
+    else
+        // return layers.at(layer)->getAgentFuncPointers();
+    {
+        for(auto i:fns.size())
+            layers.at(layer).callFunc<void>(i);
+    }
+
+
+    //e.g callFunc<void>(fn);
 }
 
 unsigned int Simulation::addSimulationLayer(SimulationLayer& layer)
