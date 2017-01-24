@@ -13,6 +13,7 @@
 #include <stdlib.h>
 
 #include "flame_api.h"
+#include "tests/test_func_pointer.h"
 
 
 using namespace std;
@@ -120,21 +121,21 @@ int main(void)
 
     SimulationLayer output_layer(simulation, "output_layer"); //in the original schema layers are not named
     //output_layer.addAgentFunction("output_data");			  //equivalent of layerfunction in FLAMEGPU
-    //output_layer.addAgentFunction("output_data",output_data_func);
-    output_layer.addAgentFunction(output_data,output_data_func);
+    output_layer.addAgentFunction("output_data",output_func);
+    //output_layer.addAgentFunction(output_data,output_func);
     simulation.addSimulationLayer(output_layer);
     //TOD: simulation.insertFunctionLayerAt(layer, int index) //Should inster at the layer position and move all other layer back
 
     SimulationLayer input_layer(simulation, "input_layer");
     //input_layer.addAgentFunction("input_data");
-    //input_layer.addAgentFunction("input_data",input_data_func);
-    input_layer.addAgentFunction(input_data,input_data_func);
+    input_layer.addAgentFunction("input_data",input_func);
+    //input_layer.addAgentFunction(input_data,input_func);
     simulation.addSimulationLayer(input_layer);
 
     SimulationLayer move_layer(simulation, "move_layer");
     //move_layer.addAgentFunction("move");
-    //move_layer.addAgentFunction("move",move_func); // example usage of func pointer
-    move_layer.addAgentFunction(move,move_func);
+    move_layer.addAgentFunction("move",move_func); // example usage of func pointer
+    //move_layer.addAgentFunction(move,move_func);
     simulation.addSimulationLayer(move_layer);
 
     //TODO: simulation.getLayerPosition("layer name") - returns an int
@@ -149,9 +150,9 @@ int main(void)
 
     cuda_model.setInitialPopulationData(population);
 
-    cuda_model.addSimulation(simulation)
+    //cuda_model.addSimulation(simulation)
 
-    cuda_model.simulate();
+    //cuda_model.simulate();
 
     //cuda_model.step(simulation);
 

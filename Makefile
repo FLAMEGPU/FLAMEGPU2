@@ -144,6 +144,9 @@ main.o: main.cpp
 test_all.o: tests/test_all.cpp
 	$(EXEC) $(NVCC) $(DEBUG) $(STD11) $(BOOST_LIB) $(GENCODE_FLAGS) -o $@ -c $<
 
+test_func_pointer.o: tests/test_func_pointer.cpp
+	$(EXEC) $(NVCC) $(DEBUG) $(STD11) $(BOOST_LIB) $(GENCODE_FLAGS) -o $@ -c $<
+
 GPU_C_FILES := $(wildcard $(SRC_GPU)*.cpp)
 GPU_CO_FILES := $(addprefix $(SRC_GPU),$(notdir $(GPU_C_FILES:.cpp=.o)))
 
@@ -171,7 +174,7 @@ $(SRC_POP)%.o: $(SRC_POP)%.cpp
 
 
 FGPU: BUILD_TYPE=$(Mode_TYPE)
-FGPU: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES) main.o 
+FGPU: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES) main.o test_func_pointer.o
 	$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
 	$(EXEC) mkdir -p $(BIN_DIR)$(BUILD_TYPE)
 	$(EXEC) mv $@ $(BIN_DIR)$(BUILD_TYPE)
@@ -180,7 +183,7 @@ FGPU: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES) main.
 	chmod +x $(BIN_DIR)FGPU.sh
 
 
-BOOST_TEST: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES) test_all.o
+BOOST_TEST: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES) test_all.o test_func_pointer.o
 	$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
 	$(EXEC) mkdir -p $(BIN_DIR)$(TEST_DIR)
 	$(EXEC) mv $@ $(BIN_DIR)$(TEST_DIR)

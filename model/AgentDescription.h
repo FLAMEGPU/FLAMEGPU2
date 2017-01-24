@@ -15,7 +15,7 @@
 #include <map>
 #include <typeinfo>
 
-//include generic memory vector 
+//include generic memory vector
 #include "../pop/MemoryVector.h"
 
 //include class dependencies
@@ -82,6 +82,8 @@ public:
     const MemoryMap& getMemoryMap() const;
 
     const StateMap& getStateMap() const;
+
+    const FunctionMap& getFunctionMap() const;
 
     const size_t getAgentVariableSize(const std::string variable_name) const;
 

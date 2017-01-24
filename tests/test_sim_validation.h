@@ -4,13 +4,15 @@
  */
 
 #include "../flame_api.h"
+#include "test_func_pointer.h"
 
 using namespace std;
 
-BOOST_AUTO_TEST_SUITE(SimTest) //name of the test suite is modelTest
+BOOST_AUTO_TEST_SUITE(SimTest)
 
 BOOST_AUTO_TEST_CASE(SimulationFunctionCheck)
 {
+
     ModelDescription flame_model("circles_model");
     AgentDescription circle_agent("circle");
 
@@ -29,16 +31,16 @@ BOOST_AUTO_TEST_CASE(SimulationFunctionCheck)
     Simulation simulation(flame_model);
 
     SimulationLayer output_layer(simulation, "output_layer");
-    output_layer.addAgentFunction("output_data");
+    output_layer.addAgentFunction("output_data",output_func);
     simulation.addSimulationLayer(output_layer);
 
 
     SimulationLayer input_layer(simulation, "input_layer");
     //check if the function name exists
-    BOOST_CHECK_THROW(input_layer.addAgentFunction("output_"), InvalidAgentFunc); // expecting an error
+    BOOST_CHECK_THROW(input_layer.addAgentFunction("output_",output_func), InvalidAgentFunc); // expecting an error
 
     SimulationLayer move_layer(simulation, "move_layer");
-    move_layer.addAgentFunction("move");
+    move_layer.addAgentFunction("move",move_func);
     simulation.addSimulationLayer(move_layer);
 
     BOOST_TEST_MESSAGE( "\nTesting Simulation function layers .." );
@@ -46,19 +48,19 @@ BOOST_AUTO_TEST_CASE(SimulationFunctionCheck)
 
     // check the name of the agent function
     for (auto i: simulation.getFunctionAtLayer(0)){
-        BOOST_CHECK(i=="output_data");
+        BOOST_CHECK(i.first==output_func);
         }
 
     // check the name of the agent function
     for (auto i: simulation.getFunctionAtLayer(1)){
-        BOOST_CHECK(i=="move");
+        BOOST_CHECK(i.first==move_func);
         }
 
     //check that getFunctionAtLayer should fail if layer does not exist
     BOOST_CHECK_THROW(simulation.getFunctionAtLayer(2), InvalidMemoryCapacity); // expecting an error
 
     size_t one = 1;
-    std::vector<std::string> func = simulation.getFunctionAtLayer(0);
+     const AgentFunctionMap& func = simulation.getFunctionAtLayer(0);
     BOOST_CHECK(func.size()==one);  //check the layer 0 size
 
     //BOOST_CHECK(simulation.getModelDescritpion().getName()=="circle");
@@ -66,6 +68,7 @@ BOOST_AUTO_TEST_CASE(SimulationFunctionCheck)
 
 BOOST_AUTO_TEST_CASE(SimulationFunctionLayerCheck)
 {
+
     ModelDescription flame_model("circles_model");
     AgentDescription circle_agent("circle");
 
@@ -81,8 +84,8 @@ BOOST_AUTO_TEST_CASE(SimulationFunctionLayerCheck)
     Simulation simulation(flame_model);
 
     SimulationLayer move_layer(simulation, "move_layer");
-    move_layer.addAgentFunction("move");
-    move_layer.addAgentFunction("stay");
+    move_layer.addAgentFunction("move",move_func);
+    move_layer.addAgentFunction("stay",stay_func);
     simulation.addSimulationLayer(move_layer);
 
 
@@ -90,10 +93,11 @@ BOOST_AUTO_TEST_CASE(SimulationFunctionLayerCheck)
 
     //check more than one function per layer
     size_t two = 2;
-    std::vector<std::string> func = simulation.getFunctionAtLayer(0);
+    const AgentFunctionMap& func = simulation.getFunctionAtLayer(0);
     BOOST_CHECK(func.size()==two);
-    BOOST_CHECK(func.at(0)=="move");
-    BOOST_CHECK(func.at(1)=="stay");
+   // BOOST_CHECK(func.at(0)->first==move_func);
+   // BOOST_CHECK(func.at(1)->first==stay_func);
+
 
     //BOOST_CHECK(simulation.getModelDescritpion().getName()=="circle");
 }

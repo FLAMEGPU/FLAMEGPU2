@@ -76,6 +76,11 @@ const StateMap& AgentDescription::getStateMap() const
     return states;
 }
 
+const FunctionMap& AgentDescription::getFunctionMap() const
+{
+    return functions;
+}
+
 size_t AgentDescription::getMemorySize() const
 {
     size_t size = 0;

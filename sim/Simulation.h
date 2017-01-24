@@ -21,9 +21,9 @@ public:
     void setSimulationSteps(unsigned int steps);
     const ModelDescription& getModelDescritpion() const;
 
-    const std::vector<std::string> getFunctionAtLayer(int layer);
+    //const std::vector<std::string> getFunctionAtLayer(int layer);
     //const fpMap&  getFunctionPAtLayer(int layer);
-    void  getFunctionPAtLayer(int layer);
+    const AgentFunctionMap& getFunctionAtLayer(int layer);
 
 
 

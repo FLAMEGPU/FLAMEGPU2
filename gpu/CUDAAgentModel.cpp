@@ -136,23 +136,23 @@ void CUDAAgentModel::simulate(const Simulation& sim)  // Moz:
         //throw std::runtime_error("CUDA agent map size is zero"); // population size = 0 ? do we mean checking the number of elements in the map container?
         throw InvalidCudaAgentMapSize();
 
-    // based on not using a func pointer
-    for (auto j: sim.layers.size())
-    {
-        std::vector<std::string> func = sim.getFunctionAtLayer(j);
-        for (auto i: func.size())
-        {
-            std::cout<<func.at(i) << endl;
-        }
-    }
-
-    // alternative
-    // todo : now we should use func pointer instead. Meaning func point will be executed
-    for (auto j: sim.layers.size())
-    {
-        sim.getFunctionPAtLayer(j); // need to add agent function pointers too
-
-    }
+//    // based on not using a func pointer
+//    for (auto j: sim.layers.size())
+//    {
+//        std::vector<std::string> func = sim.getFunctionAtLayer(j);
+//        for (auto i: func.size())
+//        {
+//            std::cout<<func.at(i) << endl;
+//        }
+//    }
+//
+//    // alternative
+//    // todo : now we should use func pointer instead. Meaning func point will be executed
+//    for (auto j: sim.layers.size())
+//    {
+//        sim.getFunctionPAtLayer(j); // need to add agent function pointers too
+//
+//    }
 
     //CUDAAgentMap::iterator it;
 
