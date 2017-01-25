@@ -16,6 +16,9 @@ BOOST_AUTO_TEST_CASE(SimulationFunctionCheck)
     ModelDescription flame_model("circles_model");
     AgentDescription circle_agent("circle");
 
+//    circle_agent.addAgentVariable<float>("x");
+//    circle_agent.addAgentVariable<float>("y");
+
     AgentFunctionDescription output_data("output_data");
     AgentFunctionOutput output_location("location");
     output_data.addOutput(output_location);
@@ -26,6 +29,16 @@ BOOST_AUTO_TEST_CASE(SimulationFunctionCheck)
     circle_agent.addAgentFunction(move);
 
     flame_model.addAgent(circle_agent);
+
+
+//    	AgentPopulation population(circle_agent);
+//
+//    for (int i=0; i< 10; i++)
+//    {
+//        AgentInstance instance = population.getNextInstance("default");
+//        instance.setVariable<float>("x", i*0.1f);
+//        instance.setVariable<float>("y", i*0.1f);
+//    }
 
 
     Simulation simulation(flame_model);

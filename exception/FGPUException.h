@@ -297,4 +297,18 @@ public:
     }
 };
 
+/**
+* Defines a type of object to be thrown as exception.
+* It reports errors that are due to CUDA device.
+*/
+class InvalidCUDAdevice : public FGPUException
+{
+public:
+    InvalidCUDAdevice(const char *msg= "Invalid CUDA Device"):FGPUException(msg) {}
+    virtual const char *what() const
+    {
+        return err_message;
+    }
+};
+
 #endif //_FGPUEXCEPTION

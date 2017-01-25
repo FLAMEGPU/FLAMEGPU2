@@ -86,7 +86,6 @@ int main(void)
     //flame_model.validate();
 
 
-
     //TODO: globals
 
     // POPULATION (FLAME2 mem)
@@ -107,7 +106,6 @@ int main(void)
         //int x = instance.getVariable<int>("x");
 
     }
-
 
     /* GLOBALS */
     /* TODO: We will consider this later. Not in the circles model. */
@@ -150,13 +148,13 @@ int main(void)
 
     cuda_model.setInitialPopulationData(population);
 
-    //cuda_model.addSimulation(simulation)
+    cuda_model.addSimulation(simulation);
 
-    //cuda_model.simulate();
+    cuda_model.simulate(simulation);
 
-    //cuda_model.step(simulation);
+    cuda_model.step(simulation);
 
-    //cuda_model.getPopulation(population);
+    cuda_model.getPopulationData(population);
 
     /* This is not to be done yet. We want to first replicate the functionality of FLAMEGPU on a single device */
     /*

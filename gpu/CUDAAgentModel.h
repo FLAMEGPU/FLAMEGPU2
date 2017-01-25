@@ -1,18 +1,19 @@
- /**
- * @file CUDAAgentModel.h
- * @authors Paul
- * @date 5 Mar 2014
- * @brief
- *
- * @see
- * @warning
- */
+/**
+* @file CUDAAgentModel.h
+* @authors Paul
+* @date 5 Mar 2014
+* @brief
+*
+* @see
+* @warning
+*/
 
 #ifndef CUDAAGENTMODEL_H_
 #define CUDAAGENTMODEL_H_
 
 #include <memory>
 #include <map>
+#include <cuda_runtime.h>
 
 
 //include sub classes
@@ -26,22 +27,28 @@ typedef std::map<const std::string, std::unique_ptr<CUDAAgent>> CUDAAgentMap; //
 //typedef std::map<const std::string, std::unique_ptr<CUDAMessage>> CUDAMessageMap; /*Moz*/
 //typedef std::map<const std::string, std::unique_ptr<CUDAAgentFunction>> CUDAFunctionMap; /*Moz*/
 
-class CUDAAgentModel {
+class CUDAAgentModel
+{
 public:
-	CUDAAgentModel(const ModelDescription& description);
-	virtual ~CUDAAgentModel();
+    CUDAAgentModel(const ModelDescription& description);
+    virtual ~CUDAAgentModel();
 
-	void setInitialPopulationData(AgentPopulation& population);
+    void setInitialPopulationData(AgentPopulation& population);
 
-	void setPopulationData(AgentPopulation& population);
+    void setPopulationData(AgentPopulation& population);
 
-	void getPopulationData(AgentPopulation& population);
+    void getPopulationData(AgentPopulation& population);
 
+    void init(void);
 
-	void simulate(const Simulation& sim);
+    void addSimulation(const Simulation& sim);
+
+    void step(const Simulation& sim);
+
+    void simulate(const Simulation& sim);
 private:
-	const ModelDescription& model_description;
-	CUDAAgentMap agent_map;
+    const ModelDescription& model_description;
+    CUDAAgentMap agent_map;
 //	CUDAMessageMap message_map; /*Moz*/
 //	CUDAFunctionMap function_map; /*Moz*/
 

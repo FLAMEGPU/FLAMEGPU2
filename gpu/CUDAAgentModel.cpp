@@ -115,13 +115,48 @@ void CUDAAgentModel::getPopulationData(AgentPopulation& population)
 
     if (it == agent_map.end())
     {
-        //throw std::runtime_error("CUDA agent not found. This should not happen.");
         throw InvalidCudaAgent("CUDA agent not found.");
     }
 
     //create agent state lists
     it->second->getPopulationData(population);
 }
+
+
+void CUDAAgentModel::addSimulation(const Simulation& simulation) {}
+void CUDAAgentModel::step(const Simulation& simulation) {}
+
+/**
+* @brief initialize CUDA params (e.g: set CUDA device)
+* @warning not tested
+*/
+void CUDAAgentModel::init(void) { // (int argc, char** argv)
+
+	cudaError_t cudaStatus;
+	int device;
+	int device_count;
+
+	//default device
+	device = 0;
+	cudaStatus = cudaGetDeviceCount(&device_count);
+
+	if (cudaStatus != cudaSuccess) {
+	    throw InvalidCUDAdevice("Error finding CUDA devices!  Do you have a CUDA-capable GPU installed?");
+		exit(0);
+	}
+	if (device_count == 0){
+		throw InvalidCUDAdevice("Error no CUDA devices found!");
+		exit(0);
+	}
+
+	// Select device
+	cudaStatus = cudaSetDevice(device);
+	if (cudaStatus != cudaSuccess) {
+		throw InvalidCUDAdevice("Error setting CUDA device!");
+		exit(0);
+	}
+}
+
 
 /**
 * @brief simulates functions
@@ -130,7 +165,7 @@ void CUDAAgentModel::getPopulationData(AgentPopulation& population)
 * @todo not yet completed
 * @warning not tested
 */
-void CUDAAgentModel::simulate(const Simulation& sim)  // Moz:
+void CUDAAgentModel::simulate(const Simulation& sim)
 {
     if (agent_map.size() == 0)
         //throw std::runtime_error("CUDA agent map size is zero"); // population size = 0 ? do we mean checking the number of elements in the map container?
