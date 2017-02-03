@@ -92,6 +92,9 @@
     <ClInclude Include="tests\test_sim_validation.h">
       <Filter>tests</Filter>
     </ClInclude>
+    <ClInclude Include="tests\test_func_pointer.h">
+      <Filter>tests</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="gpu\CUDAAgentModel.cpp">
@@ -140,6 +143,9 @@
       <Filter>sim</Filter>
     </ClCompile>
     <ClCompile Include="tests\test_all.cpp">
+      <Filter>tests</Filter>
+    </ClCompile>
+    <ClCompile Include="tests\test_func_pointer.cpp">
       <Filter>tests</Filter>
     </ClCompile>
   </ItemGroup>

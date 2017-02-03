@@ -43,6 +43,7 @@ public:
 
     void addSimulation(const Simulation& sim);
 
+	//TODO: Is this needed? Probably not as it is the same as simulate. Do however require a SimulateN() for simulate a number of iterations.
     void step(const Simulation& sim);
 
     void simulate(const Simulation& sim);

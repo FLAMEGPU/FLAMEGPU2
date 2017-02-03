@@ -171,6 +171,16 @@ void CUDAAgentModel::simulate(const Simulation& sim)
         //throw std::runtime_error("CUDA agent map size is zero"); // population size = 0 ? do we mean checking the number of elements in the map container?
         throw InvalidCudaAgentMapSize();
 
+	//TODO: Pauls comments on how to simulate
+	//go through the simulation layers and get a FunctionDesMap (this allows us to get a description of the function as well as the pointer to execute)
+	//for each agentfunctdesc
+	//	ensure that the agent variables can be accessed via curve type calls (some kind of binding)
+	//	construct a FLAMEGPU_agent_handle
+	//	call the function (with handle passed)
+	//	some kind of unbinding
+
+	//The thing that is missing is movement of agent data between states etc.
+
 //    // based on not using a func pointer
 //    for (auto j: sim.layers.size())
 //    {

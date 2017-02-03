@@ -22,6 +22,7 @@ BOOST_AUTO_TEST_CASE(SimulationFunctionCheck)
     AgentFunctionDescription output_data("output_data");
     AgentFunctionOutput output_location("location");
     output_data.addOutput(output_location);
+	output_data.setFunction(output_func);
     //output_data.setInitialState("state1");
     circle_agent.addAgentFunction(output_data);
 
@@ -44,7 +45,7 @@ BOOST_AUTO_TEST_CASE(SimulationFunctionCheck)
     Simulation simulation(flame_model);
 
     SimulationLayer output_layer(simulation, "output_layer");
-    output_layer.addAgentFunction("output_data",output_func);
+    output_layer.addAgentFunction("output_data");
     simulation.addSimulationLayer(output_layer);
 
 
@@ -114,6 +115,7 @@ BOOST_AUTO_TEST_CASE(SimulationFunctionLayerCheck)
 
     //BOOST_CHECK(simulation.getModelDescritpion().getName()=="circle");
 }
+
 
 
 BOOST_AUTO_TEST_SUITE_END()
