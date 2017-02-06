@@ -38,19 +38,24 @@ FLAME_GPU_AGENT_STATUS stay_func(void)
 
 //TODO: Some example code of the handle class and an example function
 
-class FLAMEGPU_agent_handle{
+//singleton class (only one of them)
+class FLAMEGPU_API{
 
+	//use the has list to get the right piece of memory
 	template<type> getVariable(string name)
 	{
 		agent->getVariable<float>(agent.getName(), "x")
 	}
 
 private:
-	CUDAAgent agent;
-	CUDAAgentMemoryHashMap agent_memory_map;
+	//data structures for hash list
 };
 
-FLAME_GPU_AGENT_STATUS temp_func(FLAMEGPU_agent_handle* h){
+//before this function would be called the GPU simulation engine would configure the FLAMEGPU_API object.
+//This would map any variables to the hash table that the function has access to (but only these variables)
+FLAME_GPU_AGENT_STATUS temp_func(FLAMEGPU_API *api){
 
-	float x = h->getVariable<float>("x")
+	int x = api->getVariable<int>("x");
+	x++;
+	api->setVariable<int>("x", x);
 }
