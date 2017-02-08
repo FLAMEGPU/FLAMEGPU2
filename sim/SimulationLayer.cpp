@@ -110,6 +110,9 @@ void SimulationLayer::addAgentFunction(const std::string name, FLAMEGPU_AGENT_FU
         throw InvalidAgentFunc();
 }
 
+// To me
+// get functionmap that returns a map of func name and agent function desc
+// use above in addAgentFunction
 
 /**
 * @param AgentFunctionDescription object and a function pointer

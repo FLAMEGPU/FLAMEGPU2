@@ -56,6 +56,7 @@ public:
 	//TODO
 	//sets the function pointer by adding to the FunctionPointerMap
 	void setFunction(FLAMEGPU_AGENT_FUNCTION p_func);
+    const FLAMEGPU_AGENT_FUNCTION& getFunction();
 
 	//todo: add agent output
 
@@ -67,6 +68,7 @@ public:
 	InputsMap inputs;
 	OutputsMap outputs;
 	FLAMEGPU_AGENT_FUNCTION func = NULL;
+	FunctionPointerMap  fp_map;
 
 };
 

@@ -65,17 +65,20 @@ int main(void)
     AgentFunctionOutput output_location("location");
     output_data.addOutput(output_location);
     //output_data.setInitialState("state1");
+    output_data.setFunction(output_func);
     circle_agent.addAgentFunction(output_data);
 
     //circle agent input_data function
     AgentFunctionDescription input_data("input_data");
     AgentFunctionInput input_location("location");
     input_data.addInput(input_location);
+    input_data.setFunction(input_func);
     circle_agent.addAgentFunction(input_data);
 
 
     //circle agent move function
     AgentFunctionDescription move("move");
+    move.setFunction(move_func);
     circle_agent.addAgentFunction(move);
 
     //model
@@ -118,21 +121,21 @@ int main(void)
     Simulation simulation(flame_model);
 
     SimulationLayer output_layer(simulation, "output_layer"); //in the original schema layers are not named
-    //output_layer.addAgentFunction("output_data");			  //equivalent of layerfunction in FLAMEGPU
-    output_layer.addAgentFunction("output_data",output_func);
+    output_layer.addAgentFunction("output_data");			  //equivalent of layerfunction in FLAMEGPU
+    //output_layer.addAgentFunction("output_data",output_func);
     //output_layer.addAgentFunction(output_data,output_func);
     simulation.addSimulationLayer(output_layer);
     //TOD: simulation.insertFunctionLayerAt(layer, int index) //Should inster at the layer position and move all other layer back
 
     SimulationLayer input_layer(simulation, "input_layer");
-    //input_layer.addAgentFunction("input_data");
-    input_layer.addAgentFunction("input_data",input_func);
+    input_layer.addAgentFunction("input_data");
+    //input_layer.addAgentFunction("input_data",input_func);
     //input_layer.addAgentFunction(input_data,input_func);
     simulation.addSimulationLayer(input_layer);
 
     SimulationLayer move_layer(simulation, "move_layer");
-    //move_layer.addAgentFunction("move");
-    move_layer.addAgentFunction("move",move_func); // example usage of func pointer
+    move_layer.addAgentFunction("move");
+    //move_layer.addAgentFunction("move",move_func); // example usage of func pointer
     //move_layer.addAgentFunction(move,move_func);
     simulation.addSimulationLayer(move_layer);
 
