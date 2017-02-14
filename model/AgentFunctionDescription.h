@@ -18,10 +18,10 @@
 #include "AgentFunctionInput.h"
 #include "AgentFunctionOutput.h"
 
-/*! function pointer type */
+/*! FLAMEGPU function return type */
 enum FLAME_GPU_AGENT_STATUS { ALIVE, DEAD };
 
-//FLAME GPU Agent Function pointer
+//! FLAME GPU Agent Function pointer
 typedef FLAME_GPU_AGENT_STATUS(*FLAMEGPU_AGENT_FUNCTION)(void);
 
 

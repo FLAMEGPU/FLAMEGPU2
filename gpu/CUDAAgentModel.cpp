@@ -34,8 +34,8 @@ CUDAAgentModel::CUDAAgentModel(const ModelDescription& description) : model_desc
         agent_map.insert(CUDAAgentMap::value_type(it->first, std::unique_ptr<CUDAAgent>(new CUDAAgent(it->second))));
     } // insert into map using value_type
 
-    //same for messages - done
-    //same for functions - done
+    //same for messages - Todo
+    //same for functions - Todo
 
     /*Moz
     //populate the CUDA message map
