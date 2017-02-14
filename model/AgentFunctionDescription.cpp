@@ -58,19 +58,28 @@ void AgentFunctionDescription::addOutput(const AgentFunctionOutput &output)
 
 }
 
-
+/**
+* sets the function pointer
+* @param function pointer
+* @todo raise error
+*/
 void AgentFunctionDescription::setFunction(FLAMEGPU_AGENT_FUNCTION func_p)
 {
-
+    if (fp_map.size() == 0){
     func = func_p;
 
-    fp_map.insert(std::make_pair(function_name,(FLAMEGPU_AGENT_FUNCTION)func_p);
+    fp_map.insert(FunctionPointerMap::value_type(function_name, (FLAMEGPU_AGENT_FUNCTION)func_p));
+    }
+    //else ..
+
 }
 
 
-
+/**
+* gets the function pointer
+* @return the function pointer
+*/
 const FLAMEGPU_AGENT_FUNCTION& AgentFunctionDescription::getFunction()
 {
-
     return func;
 }

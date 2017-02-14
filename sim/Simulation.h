@@ -22,10 +22,9 @@ public:
     const ModelDescription& getModelDescritpion() const;
 
     //const std::vector<std::string> getFunctionAtLayer(int layer);
-    //const fpMap&  getFunctionPAtLayer(int layer);
-    const AgentFunctionMap& getFunctionAtLayer(int layer);
+    const FunctionDesMap& getFunctionAtLayer(int layer);
 
-
+// todo : return a function pointer
 
 private:
     std::vector<SimulationLayer*> layers;

@@ -39,12 +39,12 @@ Simulation::~Simulation(void)
 //
 //}
 
-///**
-//* @param layer number (integer type)
-//* @return functions' name (string vector) at a specific layer
-//*/
+/**
+* @param layer number (integer type)
+* @return a map container of type FunctionDesMap at a specific layer
+*/
 //const std::vector<std::string> Simulation::getFunctionAtLayer(int layer)
-const AgentFunctionMap& Simulation::getFunctionAtLayer(int layer)
+const FunctionDesMap& Simulation::getFunctionAtLayer(int layer)
 {
     if (layer>=layers.size())
         throw InvalidMemoryCapacity("Function layer doesn't exists!"); // out of bound index

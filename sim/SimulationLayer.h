@@ -31,9 +31,7 @@ public:
 
     //const std::vector<std::string> getAgentFunctions();
 
-
-	//
-	const FunctionDesMap& getAgentFunctionsInLayer();
+	const FunctionDesMap& getAgentFunctions(); // alternative
 
     // template<typename T,typename... Args>
     //T callFunc(std::string s1, Args&&... args);

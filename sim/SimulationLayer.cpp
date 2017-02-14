@@ -22,7 +22,7 @@ SimulationLayer::SimulationLayer(Simulation& sim, const std::string name) : simu
 SimulationLayer::~SimulationLayer(void)
 {
 }
-//
+
 //void SimulationLayer::addAgentFunction(const std::string function_name)
 //{
 //    bool found = false;
@@ -77,98 +77,41 @@ SimulationLayer::~SimulationLayer(void)
 
 
 /**
-* @param function name of type string and a function pointer
-* @note example of usage: addAgentFunction("move",move_func);
-* @warning may have errors
+* @param function name of type string
 */
-void SimulationLayer::addAgentFunction(const std::string name, FLAMEGPU_AGENT_FUNCTION funcp)
+void SimulationLayer::addAgentFunction(const std::string name)
 {
     bool found = false;
     AgentMap::const_iterator it;
     const AgentMap& agents = simulation.getModelDescritpion().getAgentMap();
-
-    //const FunctionMap& funcs = agents->second.getFunctionMap();
 
     //check agent function exists
     for (it = agents.begin(); it != agents.end(); it++)
     {
         if (it->second.hasAgentFunction(name))
         {
-            functionPointer.insert(std::make_pair(name, (FLAMEGPU_AGENT_FUNCTION)funcp));
 
             const FunctionMap& funcs = it->second.getFunctionMap();
             auto temp = funcs.find(name);
             if (temp != funcs.end())
-                addAgentFunctionP(temp->second,funcp);
+                funcMap.insert(FunctionDesMap::value_type(name, temp->second ));
             found = true;
             // break;
         }
     }
 
     if (!found)
-        //throw std::runtime_error("Unknown agent function!");
-        throw InvalidAgentFunc();
+        throw InvalidAgentFunc("Unknown agent function!");
 }
-
-// To me
-// get functionmap that returns a map of func name and agent function desc
-// use above in addAgentFunction
-
-/**
-* @param AgentFunctionDescription object and a function pointer
-* @note we can even not have this function and insert the values to the map in the prev function
-* @note Alternatively, we could have a map of map which maps a string to the pair of function pointer and an object
-* @note Or we could just use next function instead which map a string name to the AgentFunctionDescription object
-* @warning no error handling
-*/
-void SimulationLayer::addAgentFunctionP(const AgentFunctionDescription& func, FLAMEGPU_AGENT_FUNCTION funcp)
-{
-
-    agentfpMap.insert(std::make_pair((FLAMEGPU_AGENT_FUNCTION)funcp,func));
-}
-
-
-///**
-//* @param function name of type string and AgentFunctionDescription object
-//* @note hasn't been used yet
-//* @warning no error handling
-//*/
-//void SimulationLayer::addAgentFunctionDesc(const AgentFunctionDescription& func, const std::string name)
-//{
-//
-//    funcMap.insert(std::make_pair(name,func));
-//}
-
-/**
-* @return fpMap type that contains a string name and a function pointer
-*/
-const fpMap& SimulationLayer::getAgentFuncPointers()
-{
-    return functionPointer;
-}
-
-///**
-//* @return function pointer
-//* @note hasn't been used yet
-//*/
-//const FLAMEGPU_AGENT_FUNCTION& SimulationLayer::getfunctionPointer(){}
 
 
 /**
-* @return AgentFunctionMap type that contains AgentFunctionDescription object and a function pointer
+* @return FunctionDescMap type that contains a string name and AgentFunctionDescription object
+* @note  may change this to add an arg indicating the layer number
 */
-const AgentFunctionMap& SimulationLayer::getAgentFunctions()
+const FunctionDesMap& SimulationLayer::getAgentFunctions()
 {
-    return agentfpMap;
+    return funcMap;
 }
 
 
-
-/**
-* @note hasn't been used yet
-* @warning no error handling
-*/
-void SimulationLayer::executeAll()
-{
-
-}
