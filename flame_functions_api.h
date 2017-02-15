@@ -87,8 +87,8 @@ private:
     // Users can create object directly but with GetInstance() method.
     FLAMEGPU_API(const AgentDescription& description) : agent_description(description), state_map(), max_list_size(0); // or empty
 
-    // copy constructor private
-    FLAMEGPU_API(const FLAMEGPU_API& obj)
+        // copy constructor private
+        FLAMEGPU_API(const FLAMEGPU_API& obj)
     {
         instance = obj.instance;
     }
@@ -159,7 +159,7 @@ public:
     template<typenae T>
     T setVariable(std::string name, T value);
 
-    protected:
+protected:
 
     void zeroAllStateVariableData();
 };
@@ -179,44 +179,6 @@ FLAMEGPU_API* FLAMEGPU_API::instance = nullptr; //0
 //}
 
 
-
-//class FLAMEGPU_API
-//{
-//public:
-//    FLAMEGPU_API(const AgentDescription& description);
-//    virtual ~FLAMEGPU_API(void);
-//
-//    unsigned int getHashListSize() const;
-//
-//    int getHashIndex(const char * variable_name) const;
-//
-//    const AgentDescription& getAgentDescription() const;
-//
-//    /* Should be set initial population data and should only be called once as it does all the GPU device memory allocation */
-//    // void setInitialPopulationData(const AgentPopulation& population);
-//
-//    /* Can be used to override the current population data without reallocating */
-//    //void setPopulationData(const AgentPopulation& population);
-//
-//    //void getPopulationData(AgentPopulation& population);
-//
-//    unsigned int getMaximumListSize() const;
-//
-//    template<typename T>
-//    T getVariable(std::string name);
-//
-//    template<typenae T>
-//    T setVariable(std::string name, T value);
-//
-//private:
-//    const AgentDescription& agent_description;
-//    CUDAStateMap state_map;
-//
-//    unsigned int* h_hashes; //host hash index table //USE SHARED POINTER??
-//    unsigned int* d_hashes; //device hash index table (used by runtime)
-//
-//    unsigned int max_list_size; //The maximum length of the agent variable arrays based on the maximum population size passed to setPopulationData
-//};
 
 class CUDAAgentStateList
 {
@@ -511,6 +473,21 @@ void FLAMEGPU_API::zeroAllStateVariableData()
     }
 }
 
+//An example of how the getVariable should work
+//1) Given the string name argument use runtime hashing to get a variable unsigned int (call function in RuntimeHashing.h)
+//2) Call (a new local) getHashIndex function to check the actual index in the hash table for the variable name. Once found we have a pointer to the vector of data for that agent variable
+//3) Using the CUDA thread and block index (threadIdx.x) return the specific agent variable value from the vector
+// Useful existing code to look at is CUDAAgentStateList setAgentData function
+// Note that this is using the hashing to get a specific pointer for a given variable name. This is exactly what we want to do in the FLAME GPU API class
+
+template<typename T>
+T void FLAMEGPU_API::getVariable(std::string name){}
+
+template<typenae T>
+T void FLAMEGPU_API::setVariable(std::string name, T value){}
+
+
+/////////////////////////////////////////////////////////////// copied from CUDAAgentStateList class
 /**
 * CUDAAgentStateList class
 * @brief populates CUDA agent map, CUDA message map
@@ -747,6 +724,7 @@ void CUDAAgentStateList::zeroAgentData()
     if (agent.getAgentDescription().requiresAgentCreation())
         zeroDeviceAgentList(&d_new_list);
 }
+
 
 
 
