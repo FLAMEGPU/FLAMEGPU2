@@ -144,6 +144,12 @@ int main(void)
     //This would come from the program arguments. Would be argv[2] if this file had been generated from model.xml
     simulation.setSimulationSteps(10);
 
+
+    // Singleton pattern
+    FLAMEGPU_API *fgpu = &FLAMEGPU_API::getInstance(flame_model);
+
+
+
     /* CUDA agent model */
     /* Instantiate the model with a set of data (agents) on the device */
     /* Run the model */
