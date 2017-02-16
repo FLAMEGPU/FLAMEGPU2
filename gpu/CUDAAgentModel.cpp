@@ -123,7 +123,23 @@ void CUDAAgentModel::getPopulationData(AgentPopulation& population)
 
 
 void CUDAAgentModel::addSimulation(const Simulation& simulation) {}
-void CUDAAgentModel::step(const Simulation& simulation) {}
+void CUDAAgentModel::step(const Simulation& simulation) {
+
+
+	//for each each sim layer
+
+		//for each func function
+
+			//configure FLAME_API object based on the agent calling the function
+			//cuda_agent->configureSingleton(function_name);
+
+				//what does configureSingleton do
+				//reset the data in the hash table
+				//populate the hash table with agent variables from the agent which will call the function (this will therefore only point to agent variables which the function has access to)
+
+			//execute the agent function
+
+}
 
 /**
 * @brief initialize CUDA params (e.g: set CUDA device)

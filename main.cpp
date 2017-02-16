@@ -146,7 +146,7 @@ int main(void)
 
 
     // Singleton pattern
-    FLAMEGPU_API *fgpu = &FLAMEGPU_API::getInstance(flame_model);
+   // FLAMEGPU_API *fgpu = &FLAMEGPU_API::getInstance(flame_model);
 
 
 
@@ -159,7 +159,7 @@ int main(void)
 
     cuda_model.addSimulation(simulation);
 
-    cuda_model.simulate(simulation);
+    //cuda_model.simulate(simulation);
 
     cuda_model.step(simulation);
 
