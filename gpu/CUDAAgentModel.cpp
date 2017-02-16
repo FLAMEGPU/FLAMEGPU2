@@ -106,7 +106,6 @@ void CUDAAgentModel::setPopulationData(AgentPopulation& population)
 
     //create agent state lists
     it->second->setPopulationData(population);
-}
 
 void CUDAAgentModel::getPopulationData(AgentPopulation& population)
 {
