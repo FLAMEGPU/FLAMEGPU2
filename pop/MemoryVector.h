@@ -20,7 +20,7 @@ class GenericMemoryVector{
 public:
 
 	virtual ~GenericMemoryVector(){ ; }
-	
+
 	virtual const std::type_info& getType() = 0;
 
 	virtual void* getDataPtr() = 0;
@@ -39,7 +39,7 @@ public:
 
 };
 
-template <typename T> 
+template <typename T>
 class MemoryVector : public GenericMemoryVector
 {
 
@@ -94,7 +94,7 @@ protected:
 template <typename T> std::vector<T>& GenericMemoryVector::getVector(){
 
 	if (getType() != typeid(T))
-		throw InvalidVarType("Wring variable type getting agent data vector");
+		throw InvalidVarType("Wrong variable type getting agent data vector");
 
 	//must cast the vector as the correct type
 	std::vector<T> *t_v = static_cast<std::vector<T>*>(getVectorPtr());

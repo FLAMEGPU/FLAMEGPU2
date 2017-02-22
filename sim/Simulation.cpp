@@ -91,6 +91,11 @@ void Simulation::setSimulationSteps(unsigned int steps)
     simulation_steps = steps;
 }
 
+int Simulation::getNumLayer()()
+{
+    layer_num = layers.size();
+}
+
 const ModelDescription& Simulation::getModelDescritpion() const
 {
     return model_description;

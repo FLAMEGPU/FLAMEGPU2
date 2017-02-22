@@ -125,6 +125,18 @@ void CUDAAgentModel::getPopulationData(AgentPopulation& population)
 void CUDAAgentModel::addSimulation(const Simulation& simulation) {}
 void CUDAAgentModel::step(const Simulation& simulation) {
 
+// todo - raw
+    int layer_size = simulation.getNumLayer();  // returns number of simulation layers
+
+    const FunctionDesMap& func = simulation.getFunctionAtLayer(0);
+
+    int concur_func= func.size(); // returns number of functions in the same simulation layer
+
+    // or
+    for (auto i: simulation.getFunctionAtLayer(0))
+    {
+       // i.first
+    }
 
 	//for each each sim layer
 
@@ -175,7 +187,7 @@ void CUDAAgentModel::init(void) { // (int argc, char** argv)
 
 /**
 * @brief simulates functions
-* @param simulation object
+* @param   object
 * @return none
 * @todo not yet completed
 * @warning not tested

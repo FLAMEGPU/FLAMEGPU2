@@ -54,15 +54,6 @@ FLAMEGPU_AGENT_FUNCTION(move_func) {
 
 #define UNIFIED_GPU_MEMORY
 
-/**
- * Stores a map of pointers to device memory locations. Must use the CUDAAgent hash table functions to access the correct index.
- */
-struct CUDAAgentMemoryHashMap
-{
-    void **d_d_memory;	//device array of pointers to device variable arrays
-    void **h_d_memory;  //host array of pointers to device variable arrays
-};
-
 
 /**
 * Scott Meyers version of singleton class in his Effective C++ book
@@ -85,7 +76,7 @@ private:
 
     // Private constructor to prevent instancing.
     // Users can create object directly but with GetInstance() method.
-    FLAMEGPU_API(const AgentDescription& description) : agent_description(description), state_map(), max_list_size(0); // or empty
+    FLAMEGPU_API(const AgentDescription& description) : agent_description(description), state_map(), max_list_size(0);
 
         // copy constructor private
         FLAMEGPU_API(const FLAMEGPU_API& obj)
@@ -131,12 +122,6 @@ public:
 
     }
 
-
-    void demo()
-    {
-        std::cout << "other singleton # next - your code ..." << std::endl;
-    }
-
     unsigned int getHashListSize() const;
 
     int getHashIndex(const char * variable_name) const;
@@ -147,10 +132,10 @@ public:
     unsigned int getMaximumListSize() const;
 
     template<typename T>
-    T getVariable(std::string name);
+    T getVariable(std::string variable_name);
 
-    template<typenae T>
-    T setVariable(std::string name, T value);
+    template<typename T>
+    T setVariable(std::string variable_name, T value);
 
 protected:
 
@@ -325,10 +310,17 @@ void FLAMEGPU_API::zeroAllStateVariableData()
 // Note that this is using the hashing to get a specific pointer for a given variable name. This is exactly what we want to do in the FLAME GPU API class
 
 template<typename T>
-T void FLAMEGPU_API::getVariable(std::string name)
+T void FLAMEGPU_API::getVariable(std::string name,int index)
 {
-    int hash_index = this.getHashIndex(name);
+    unsigned int hash = VariableHash(name.c_str());
+    int hash_index = this.getHashIndex(name.c_str());
 
+    //return d_list.h_d_memory[hash_index][index];
+// checking the type?
+
+// how to use  get func
+// unsigned int index =  (blockDim.x * blockIdx.x) + threadIdx.x;
+// auto x = getVariable("x", index);
 
 }
 
