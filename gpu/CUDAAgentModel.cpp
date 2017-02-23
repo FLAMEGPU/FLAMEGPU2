@@ -95,17 +95,18 @@ void CUDAAgentModel::setInitialPopulationData(AgentPopulation& population)
 */
 void CUDAAgentModel::setPopulationData(AgentPopulation& population)
 {
-    CUDAAgentMap::iterator it;
-    it = agent_map.find(population.getAgentName());
+	CUDAAgentMap::iterator it;
+	it = agent_map.find(population.getAgentName());
 
-    if (it == agent_map.end())
-    {
-        //throw std::runtime_error("CUDA agent not found. This should not happen.");
-        throw InvalidCudaAgent();
-    }
+	if (it == agent_map.end())
+	{
+		//throw std::runtime_error("CUDA agent not found. This should not happen.");
+		throw InvalidCudaAgent();
+	}
 
-    //create agent state lists
-    it->second->setPopulationData(population);
+	//create agent state lists
+	it->second->setPopulationData(population);
+}
 
 void CUDAAgentModel::getPopulationData(AgentPopulation& population)
 {
@@ -130,7 +131,7 @@ void CUDAAgentModel::step(const Simulation& simulation) {
 
     const FunctionDesMap& func = simulation.getFunctionAtLayer(0);
 
-    int concur_func= func.size(); // returns number of functions in the same simulation layer
+    unsigned int concur_func = (unsigned int)func.size(); // returns number of functions in the same simulation layer
 
     // or
     for (auto i: simulation.getFunctionAtLayer(0))

@@ -23,16 +23,23 @@ FLAME_GPU_AGENT_STATUS output_func()
 //    }
 //    return ALIVE;
 	printf("hello\n");
+
+	return ALIVE;
 }
 
 FLAME_GPU_AGENT_STATUS input_func(void)
 {
+
+	return ALIVE;
 }
 
 FLAME_GPU_AGENT_STATUS move_func(void)
 {
+	return ALIVE;
 }
+
 FLAME_GPU_AGENT_STATUS stay_func(void)
 {
+	return ALIVE;
 }
 

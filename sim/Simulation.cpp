@@ -44,7 +44,7 @@ Simulation::~Simulation(void)
 * @return a map container of type FunctionDesMap at a specific layer
 */
 //const std::vector<std::string> Simulation::getFunctionAtLayer(int layer)
-const FunctionDesMap& Simulation::getFunctionAtLayer(int layer)
+const FunctionDesMap& Simulation::getFunctionAtLayer(int layer) const
 {
     if (layer>=layers.size())
         throw InvalidMemoryCapacity("Function layer doesn't exists!"); // out of bound index
@@ -91,9 +91,9 @@ void Simulation::setSimulationSteps(unsigned int steps)
     simulation_steps = steps;
 }
 
-int Simulation::getNumLayer()()
+unsigned int Simulation::getNumLayer() const
 {
-    layer_num = layers.size();
+    return (unsigned int) layers.size();
 }
 
 const ModelDescription& Simulation::getModelDescritpion() const

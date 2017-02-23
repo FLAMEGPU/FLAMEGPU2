@@ -22,8 +22,8 @@ public:
     const ModelDescription& getModelDescritpion() const;
 
     //const std::vector<std::string> getFunctionAtLayer(int layer);
-    const FunctionDesMap& getFunctionAtLayer(int layer);
-    int getNumLayer();
+    const FunctionDesMap& getFunctionAtLayer(int layer) const;
+    unsigned int getNumLayer() const;
 
 // todo : return a function pointer
 
@@ -31,7 +31,7 @@ private:
     std::vector<SimulationLayer*> layers;
     const ModelDescription& model_description;
     unsigned int simulation_steps;
-    int layer_num;
+    //int layer_num;
 };
 
 #endif
