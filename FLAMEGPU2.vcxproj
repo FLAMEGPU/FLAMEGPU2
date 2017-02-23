@@ -35,7 +35,6 @@
     <ClInclude Include="gpu\CUDAAgentModel.h" />
     <ClInclude Include="gpu\CUDAErrorChecking.h" />
     <ClInclude Include="gpu\cuRVE\curve.h" />
-    <ClInclude Include="gpu\RuntimeHashing.h" />
     <ClInclude Include="model\AgentDescription.h" />
     <ClInclude Include="model\AgentFunctionDescription.h" />
     <ClInclude Include="model\AgentFunctionInput.h" />
@@ -82,7 +81,7 @@
     <CudaCompile Include="gpu\cuRVE\curve.cu" />
     <CudaCompile Include="main.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='BoostTest|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='BoostTest|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='BoostTest|x64'">true</ExcludedFromBuild>
     </CudaCompile>
   </ItemGroup>

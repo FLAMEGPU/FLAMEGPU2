@@ -35,15 +35,6 @@ public:
     CUDAAgent(const AgentDescription& description);
     virtual ~CUDAAgent(void);
 
-    /*
-    * Returns the hash list size required to store pointers to all agent variables. Current 2X the number of agent variables to minimise hash collisions.
-    */
-    unsigned int getHashListSize() const;
-
-    /*
-    * Host function to get the hash index given a variable name. The hash list will have been completed by initialisation.
-    */
-    int getHashIndex(const char * variable_name) const;
 
     const AgentDescription& getAgentDescription() const;
 
@@ -77,10 +68,7 @@ private:
     const AgentDescription& agent_description;
     CUDAStateMap state_map;
 
-    unsigned int* h_hashes; //host hash index table //USE SHARED POINTER??
-    unsigned int* d_hashes; //device hash index table (used by runtime)
-
-    unsigned int max_list_size; //The maximum length of the agent variable arrays based on the maximum population size passed to setPopulationData
+	unsigned int max_list_size; //The maximum length of the agent variable arrays based on the maximum population size passed to setPopulationData
 };
 
 #endif

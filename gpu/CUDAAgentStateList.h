@@ -13,19 +13,15 @@
 
 #include <memory>
 #include <vector>
+#include <map>
 
 class CUDAAgent;
 class AgentStateMemory;
 
-#define UNIFIED_GPU_MEMORY
+//#define UNIFIED_GPU_MEMORY
 
-/**
- * Stores a map of pointers to device memory locations. Must use the CUDAAgent hash table functions to access the correct index.
- */
-struct CUDAAgentMemoryHashMap{
-	void **d_d_memory;	//device array of pointers to device variable arrays
-	void **h_d_memory;  //host array of pointers to device variable arrays
-};
+typedef std::map <std::string, void*> CUDAMemoryMap;		//map of pointers to gpu memory for each variable
+typedef std::pair <std::string, void*> CUDAMemoryMapPair;
 
 class CUDAAgentStateList {
 public:
@@ -46,17 +42,17 @@ protected:
 	/*
 	 * The purpose of this function is to allocate on the device a block of memory for each variable. These vectors are stored within a hash list using the cuRVE technique so that the location of the vectors can be quickly determined at runtime by FLAME GPU functions.
 	 */
-	void allocateDeviceAgentList(CUDAAgentMemoryHashMap* agent_list);
+	void allocateDeviceAgentList(CUDAMemoryMap &agent_list);
 
-	void releaseDeviceAgentList(CUDAAgentMemoryHashMap* agent_list);
+	void releaseDeviceAgentList(CUDAMemoryMap &agent_list);
 
-	void zeroDeviceAgentList(CUDAAgentMemoryHashMap* agent_list);
+	void zeroDeviceAgentList(CUDAMemoryMap &agent_list);
 
 
 private:
-	CUDAAgentMemoryHashMap d_list;
-	CUDAAgentMemoryHashMap d_swap_list;
-	CUDAAgentMemoryHashMap d_new_list;
+	CUDAMemoryMap d_list;
+	CUDAMemoryMap d_swap_list;
+	CUDAMemoryMap d_new_list;
 
 	unsigned int current_list_size; //???
 

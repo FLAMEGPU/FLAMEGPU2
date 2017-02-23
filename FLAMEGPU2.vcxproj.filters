@@ -57,9 +57,6 @@
     <ClInclude Include="pop\AgentStateMemory.h">
       <Filter>pop</Filter>
     </ClInclude>
-    <ClInclude Include="gpu\RuntimeHashing.h">
-      <Filter>gpu</Filter>
-    </ClInclude>
     <ClInclude Include="gpu\CUDAAgentStateList.h">
       <Filter>gpu</Filter>
     </ClInclude>
