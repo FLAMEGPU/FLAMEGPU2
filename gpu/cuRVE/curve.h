@@ -12,7 +12,7 @@
  */
 
 
-#include "cuda_runtime.h"
+#include <cuda_runtime.h>
 
 #define UNKNOWN_CURVE_VARIABLE 	-1						//!< value returned as a CurveVariable if an API function encounters an error
 
