@@ -19,6 +19,9 @@
     <Filter Include="exceptions">
       <UniqueIdentifier>{7c4cd09c-4b23-4143-a13e-192947641074}</UniqueIdentifier>
     </Filter>
+    <Filter Include="gpu\cuRVE">
+      <UniqueIdentifier>{f9bf7c5e-66c9-4919-81a5-dc55f7208d4f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="gpu\CUDAAgentModel.h">
@@ -95,6 +98,9 @@
     <ClInclude Include="tests\test_func_pointer.h">
       <Filter>tests</Filter>
     </ClInclude>
+    <ClInclude Include="gpu\cuRVE\curve.h">
+      <Filter>gpu\cuRVE</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="gpu\CUDAAgentModel.cpp">
@@ -151,5 +157,8 @@
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="main.cpp" />
+    <CudaCompile Include="gpu\cuRVE\curve.cu">
+      <Filter>gpu\cuRVE</Filter>
+    </CudaCompile>
   </ItemGroup>
 </Project>

@@ -124,33 +124,33 @@ void CUDAAgentModel::getPopulationData(AgentPopulation& population)
 
 
 void CUDAAgentModel::addSimulation(const Simulation& simulation) {}
+
 void CUDAAgentModel::step(const Simulation& simulation) {
 
-// todo - raw
-    int layer_size = simulation.getNumLayer();  // returns number of simulation layers
-
-    const FunctionDesMap& func = simulation.getFunctionAtLayer(0);
-
-    unsigned int concur_func = (unsigned int)func.size(); // returns number of functions in the same simulation layer
-
-    // or
-    for (auto i: simulation.getFunctionAtLayer(0))
-    {
-       // i.first
-    }
-
 	//for each each sim layer
+	for (unsigned int i = 0; i < simulation.getLayerCount(); i++){
+		const FunctionDescriptionVector& functions = simulation.getFunctionsAtLayer(i);
 
 		//for each func function
+		for (const AgentFunctionDescription func_des : functions){
+			//configure runtime access of the functions variables within the FLAME_API object
+			//requires getting the correct cuda agent from the function name
 
-			//configure FLAME_API object based on the agent calling the function
-			//cuda_agent->configureSingleton(function_name);
+			//cuda_agent.mapRuntimeVariables();
 
-				//what does configureSingleton do
-				//reset the data in the hash table
-				//populate the hash table with agent variables from the agent which will call the function (this will therefore only point to agent variables which the function has access to)
+			//call the agent function
+			FLAMEGPU_AGENT_FUNCTION agent_func = func_des.getFunction();
+			agent_func();
 
-			//execute the agent function
+			//unmap the function variables
+			//cuda_agent.mapRuntimeVariables();
+		}
+
+	}
+	
+
+
+
 
 }
 

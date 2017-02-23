@@ -9,6 +9,8 @@
 */
 
 #include "AgentFunctionDescription.h"
+#include "AgentDescription.h"
+#include "../gpu/cuRVE/curve.h"
 
 
 AgentFunctionDescription::AgentFunctionDescription(const std::string function_name) : function_name(function_name), initial_state("default"), end_state("default")
@@ -65,13 +67,7 @@ void AgentFunctionDescription::addOutput(const AgentFunctionOutput &output)
 */
 void AgentFunctionDescription::setFunction(FLAMEGPU_AGENT_FUNCTION func_p)
 {
-    if (fp_map.size() == 0){
-    func = func_p;
-
-    fp_map.insert(FunctionPointerMap::value_type(function_name, (FLAMEGPU_AGENT_FUNCTION)func_p));
-    }
-    //else ..
-
+	func = func_p;
 }
 
 
@@ -79,7 +75,7 @@ void AgentFunctionDescription::setFunction(FLAMEGPU_AGENT_FUNCTION func_p)
 * gets the function pointer
 * @return the function pointer
 */
-const FLAMEGPU_AGENT_FUNCTION& AgentFunctionDescription::getFunction()
+FLAMEGPU_AGENT_FUNCTION AgentFunctionDescription::getFunction() const
 {
     return func;
 }

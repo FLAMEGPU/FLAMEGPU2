@@ -23,34 +23,6 @@ SimulationLayer::~SimulationLayer(void)
 {
 }
 
-//void SimulationLayer::addAgentFunction(const std::string function_name)
-//{
-//    bool found = false;
-//    AgentMap::const_iterator it;
-//    const AgentMap& agents = simulation.getModelDescritpion().getAgentMap();
-//
-//    //check agent function exists
-//    for (it = agents.begin(); it != agents.end(); it++)
-//    {
-//        if (it->second.hasAgentFunction(function_name))
-//            found = true;
-//    }
-//
-//    if (found)
-//        functions.push_back(function_name);
-//    else
-//        //throw std::runtime_error("Unknown agent function!");
-//        throw InvalidAgentFunc();
-//}
-
-///**
-//* @return agent functions name vector (string type)
-//*/
-//const std::vector<std::string> SimulationLayer::getAgentFunctions()
-//{
-//    return functions;
-//}
-
 
 ///**
 //* @return find and execute the function
@@ -90,18 +62,19 @@ void SimulationLayer::addAgentFunction(const std::string name)
     {
         if (it->second.hasAgentFunction(name))
         {
-
+			//Search the function map for current agent to see if the agent function exists (it should do the above function has confirmed this)
             const FunctionMap& funcs = it->second.getFunctionMap();
-            auto temp = funcs.find(name);
-            if (temp != funcs.end())
-                funcMap.insert(FunctionDesMap::value_type(name, temp->second ));
+            FunctionMap::const_iterator pos = funcs.find(name);
+			//If found then add function the AgentFunctionDescription to the function vector for this layer
+			if (pos != funcs.end())
+				functions.push_back(pos->second);
             found = true;
-            // break;
+            break;
         }
     }
 
     if (!found)
-        throw InvalidAgentFunc("Unknown agent function!");
+        throw InvalidAgentFunc("Unknown agent function can not be added to the Function Layer!");
 }
 
 
@@ -109,9 +82,9 @@ void SimulationLayer::addAgentFunction(const std::string name)
 * @return FunctionDescMap type that contains a string name and AgentFunctionDescription object
 * @note  may change this to add an arg indicating the layer number
 */
-const FunctionDesMap& SimulationLayer::getAgentFunctions()
+const FunctionDescriptionVector& SimulationLayer::getAgentFunctions() const
 {
-    return funcMap;
+    return functions;
 }
 
 

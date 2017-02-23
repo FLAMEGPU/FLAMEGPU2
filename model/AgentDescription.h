@@ -69,7 +69,7 @@ public:
 
     void setInitialState(const std::string initial_state);
 
-    void addAgentFunction(const AgentFunctionDescription &function);
+    void addAgentFunction(AgentFunctionDescription &function);
 
     /*
      *

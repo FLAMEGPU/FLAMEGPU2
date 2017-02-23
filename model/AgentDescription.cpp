@@ -53,9 +53,8 @@ void AgentDescription::setInitialState(const std::string initial_state)
     this->initial_state = initial_state;
 }
 
-void AgentDescription::addAgentFunction(const AgentFunctionDescription& function)
+void AgentDescription::addAgentFunction(AgentFunctionDescription& function)
 {
-
     functions.insert(FunctionMap::value_type(function.getName(), function));
 }
 

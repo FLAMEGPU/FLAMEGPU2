@@ -7,14 +7,12 @@
 
 #ifndef FLAME_FUNCTIONS_API_H_
 #define FLAME_FUNCTIONS_API_H_
-/*
-singleton class FLAME
-{
-GetMessageIterator("messagename");
-FLAME.getMem<type>("variablename");
 
-};
-*/
+
+#include "gpu/RuntimeHashing.h"				//required for runtime hashing of strings
+#include "gpu/CUDAErrorChecking.h"			//required for CUDA error handling functions
+#include "gpu/cuRVE/curve.h"
+
 
 //TODO: Some example code of the handle class and an example function
 //! FLAMEGPU_API is a singleton class
@@ -28,13 +26,6 @@ typedef FLAME_GPU_AGENT_STATUS FLAMEGPU_AgentFunctionReturnType;
 // re-defined in AgentFunctionDescription
 //! FLAMEGPU function return type
 enum FLAME_GPU_AGENT_STATUS { ALIVE, DEAD };
-//#define FLAMEGPU_AGENT_ALIVE 0
-//#define FLAMEGPU_AGENT_DEAD  1
-
-typedef std::map<const std::string, std::unique_ptr<FLAMEGPUStateList>> FGPU_StateMap;	//map of state name to CUDAAgentStateList which allocates memory on the device
-typedef std::pair<const std::string, std::unique_ptr<FLAMEGPUStateList>> FGPU_StateMapPair;
-
-
 
 //! Macro for defining agent transition functions with the correct input
 //! argument and return type
@@ -52,9 +43,6 @@ FLAMEGPU_AGENT_FUNCTION(move_func) {
 */
 
 
-#define UNIFIED_GPU_MEMORY
-
-
 /**
 * Scott Meyers version of singleton class in his Effective C++ book
 * Usage in main.cpp:
@@ -66,44 +54,24 @@ FLAMEGPU_API::getInstance().demo();
 *
 * @note advantages : The function-static object is initialized when the control flow is first passing its definition and no copy object creation is not allowed
 * http://silviuardelean.ro/2012/06/05/few-singleton-approaches/
-* @warning THIS IS NOT THE RIGHT WAY ! I should pass modeldescription object to this instead of agentDescription. In other words, the singleton class should iterate the agentmap and does what CUDAAgentModel do. (Under investigation)
+* @warning THIS IS NOT THE RIGHT WAY ! I should pass model description object to this instead of agentDescription. In other words, the singleton class should iterate the agentmap and does what CUDAAgentModel do. (Under investigation)
+* Paul: The singleton class should not have ANY C++ objects at all. Its should be configured by objects but kept its functions should simple as possible (i.e. using only the hash tables) to reduce overhead in the CUDA runtime.
+* Paul: IMORTANT: We should migrate all hashing stuff to curve. This will simplify our own code lots. Some changes to curve are required. I have started to do these.
 */
 class FLAMEGPU_API
 {
 private:
-    /* Here will be the instance stored. */
-    static FLAMEGPU_API* instance;
+    // Private constructor to prevent instancing. Users can create object directly but with GetInstance() method.
+	FLAMEGPU_API();
 
-    // Private constructor to prevent instancing.
-    // Users can create object directly but with GetInstance() method.
-    FLAMEGPU_API(const AgentDescription& description) : agent_description(description), state_map(), max_list_size(0);
+	//! private destructor, so users can't delete the pointer to the object by accident
+	~FLAMEGPU_API();
 
-        // copy constructor private
-        FLAMEGPU_API(const FLAMEGPU_API& obj)
-    {
-        instance = obj.instance;
-    }
+    // copy constructor private
+	FLAMEGPU_API(const FLAMEGPU_API& obj);
 
-    FLAMEGPU_API& operator = (const FLAMEGPU_API& rs)
-    {
-        if (this != &rs)
-        {
-            instance = rs.instance;
-        }
-
-        return *this;
-    }
-    //! private destructor, so users can't delete the pointer to the object by accident
-    ~FLAMEGPU_API();
-
-    const AgentDescription& agent_description;
-    FGPU_StateMap state_map;
-
-    unsigned int* h_hashes; //host hash index table //USE SHARED POINTER??
-    unsigned int* d_hashes; //device hash index table (used by runtime)
-
-    unsigned int max_list_size; //The maximum length of the agent variable arrays based on the maximum population size passed to setPopulationData
-
+	//overload = operator (@question Mozhgan why is this required?)
+	FLAMEGPU_API& operator= (const FLAMEGPU_API& rs);
 
 public:
 
@@ -111,25 +79,8 @@ public:
     * static access method
     @return a reference instead of pointer
     */
-    static FLAMEGPU_API* getInstance(const AgentDescription& description)
-    {
-        static FLAMEGPU_API theInstance(description);
-        instance = &theInstance(description);
+	static FLAMEGPU_API* getInstance();
 
-        // test :
-        std::cout << "test in getInstance (Print Model Name): " << instance.agent_description.getName();
-        return *instance;
-
-    }
-
-    unsigned int getHashListSize() const;
-
-    int getHashIndex(const char * variable_name) const;
-
-    const AgentDescription& getAgentDescription() const;
-
-
-    unsigned int getMaximumListSize() const;
 
     template<typename T>
     T getVariable(std::string variable_name);
@@ -137,9 +88,10 @@ public:
     template<typename T>
     T setVariable(std::string variable_name, T value);
 
-protected:
+private:
+	
+	static FLAMEGPU_API* instance;	/* Here will be the instance stored. */
 
-    void zeroAllStateVariableData();
 };
 
 //! Initialize pointer. It's Null, because instance will be initialized on demand. */
@@ -156,49 +108,43 @@ FLAMEGPU_API* FLAMEGPU_API::instance = nullptr; //0
 //    return instance; // address of sole instance
 //}
 
+/******************************************************************************************************* Implementation ********************************************************/
 /**
 * FLAMEGPU_API class
 * @brief allocates the hash table/list for agent variables and copy the list to device
 */
-FLAMEGPU_API::FLAMEGPU_API(const AgentDescription& description) : agent_description(description), state_map(), max_list_size(0)
+FLAMEGPU_API::FLAMEGPU_API()
 {
 
-    //! allocate hash list
-    h_hashes = (unsigned int*) malloc(sizeof(unsigned int)*getHashListSize());
-    memset(h_hashes, EMPTY_HASH_VALUE, sizeof(unsigned int)*getHashListSize());
-    gpuErrchk( cudaMalloc( (void**) &d_hashes, sizeof(unsigned int)*getHashListSize()));
+	//init curve for runtime hashing of variables
+	curveInit();
+}
 
-    //! init hash list
-    const MemoryMap &mem = agent_description.getMemoryMap();
-    for (MemoryMap::const_iterator it = mem.begin(); it != mem.end(); it++)
-    {
+//copy constructor implementation
+FLAMEGPU_API::FLAMEGPU_API(const FLAMEGPU_API& obj)
+{
+	instance = obj.instance;
+}
 
-        //! save the variable hash in the host hash list
-        unsigned int hash = VariableHash(it->first.c_str());
-        unsigned int n = 0;
-        unsigned int i = (hash) % getHashListSize();	// agent_description.getNumberAgentVariables();
+FLAMEGPU_API& FLAMEGPU_API::operator= (const FLAMEGPU_API& rs)
+{
+	if (this != &rs)
+	{
+		instance = rs.instance;
+	}
 
-        while (h_hashes[i] != EMPTY_HASH_VALUE)
-        {
-            n += 1;
-            if (n >= getHashListSize())
-            {
-                //throw std::runtime_error("Hash list full. This should never happen.");
-                throw InvalidHashList();
-            }
-            i += 1;
-            if (i >= getHashListSize())
-            {
-                i = 0;
-            }
-        }
-        h_hashes[i] = hash;
-    }
+	return *this;
+}
 
-    //copy hash list to device
-    gpuErrchk( cudaMemcpy( d_hashes, h_hashes, sizeof(unsigned int) * getHashListSize(), cudaMemcpyHostToDevice));
+static FLAMEGPU_API* FLAMEGPU_API::getInstance()
+{
+	static FLAMEGPU_API theInstance();
+	instance = &theInstance();
+
+	return *instance;
 
 }
+
 
 
 /**
@@ -207,125 +153,45 @@ FLAMEGPU_API::FLAMEGPU_API(const AgentDescription& description) : agent_descript
  */
 FLAMEGPU_API::~FLAMEGPU_API(void)
 {
-    //loop through CUDAStateMap to clean up any cuda allocated data before the hash data is destroyed
-    for (FGPU_StateMapPair &sm : state_map)
-    {
-        sm.second->cleanupAllocatedData();
-    }
-    free (h_hashes);
-    gpuErrchk( cudaFree(d_hashes));
+	//curve requires no clean up as all memory is statically allocated at compile time (required for CUDA const memory)
 }
 
 
-/**
-* @brief Returns the hash list size
-* @param none
-* @return the hash list size required to store pointers to all agent variables (the size of hash table) that is double of the size of agent variables to minimise hash collisions
-*/
-unsigned int FLAMEGPU_API::getHashListSize() const
-{
-    return 2*agent_description.getNumberAgentVariables();
-}
-
-/**
-* @brief Host function to get the hash index given a variable name. The hash list will have been completed by initialisation.
-* @param agent variable name
-* @return a hash index that corresponds to the agent variable name
-*/
-int FLAMEGPU_API::getHashIndex(const char * variable_name) const
-{
-    //function resolves hash collisions
-    unsigned int hash = VariableHash(variable_name);
-    unsigned int n = 0;
-    unsigned int i = (hash) % getHashListSize();
-
-    while (h_hashes[i] != EMPTY_HASH_VALUE)
-    {
-        if (h_hashes[i] == hash)
-        {
-            return i; //return index if hash is found
-        }
-        n += 1;
-        if (n >= getHashListSize())
-        {
-            //throw std::runtime_error("Hash list full. This should never happen.");
-            throw InvalidHashList();
-        }
-        i += 1;
-        if (i >= getHashListSize())
-        {
-            i = 0;
-        }
-    }
-
-    //throw std::runtime_error("This should be an unknown variable error. Should never occur");
-    throw InvalidAgentVar("This should be an unknown variable error. Should never occur");
-    return -1; //return invalid index
-}
-
-/**
-* @brief Returns agent description
-* @param none
-* @return AgentDescription object
-*/
-const AgentDescription& FLAMEGPU_API::getAgentDescription() const
-{
-    return agent_description;
-}
 
 
-/**
-* @brief Returns the maximum list size
-* @param none
-* @return maximum size list that is equal to the maxmimum population size
-*/
-unsigned int FLAMEGPU_API::getMaximumListSize() const
-{
-    return max_list_size;
-}
 
 
-/**
-* @brief Sets all state variable data to zero
-* It loops through sate maps and resets the values
-* @param none
-* @return none
-* @warning zeroAgentData
-* @todo 'zeroAgentData'
-*/
-void FLAMEGPU_API::zeroAllStateVariableData()
-{
-    //loop through state maps and reset the values
-    for (FGPU_StateMapPair& s : state_map)
-    {
-        s.second->zeroAgentData();
-    }
-}
-
-//An example of how the getVariable should work
+//An example of how the getVariable should work 
 //1) Given the string name argument use runtime hashing to get a variable unsigned int (call function in RuntimeHashing.h)
 //2) Call (a new local) getHashIndex function to check the actual index in the hash table for the variable name. Once found we have a pointer to the vector of data for that agent variable
 //3) Using the CUDA thread and block index (threadIdx.x) return the specific agent variable value from the vector
 // Useful existing code to look at is CUDAAgentStateList setAgentData function
 // Note that this is using the hashing to get a specific pointer for a given variable name. This is exactly what we want to do in the FLAME GPU API class
 
-template<typename T>
-T void FLAMEGPU_API::getVariable(std::string name,int index)
+template<typename T, unisgned int N>
+T __device__ void FLAMEGPU_API::getVariable(const char(&variable_name)[N])
 {
-    unsigned int hash = VariableHash(name.c_str());
-    int hash_index = this.getHashIndex(name.c_str());
+	//simple indexing assumes index is the thread number (this may change later)
+	unsigned int index =  (blockDim.x * blockIdx.x) + threadIdx.x;
 
-    //return d_list.h_d_memory[hash_index][index];
-// checking the type?
+	//get the value from curve
+	T value = curveGetVariable<T>(name, index);
 
-// how to use  get func
-// unsigned int index =  (blockDim.x * blockIdx.x) + threadIdx.x;
-// auto x = getVariable("x", index);
+	//TODO: Some error checking?
 
+	//return the variable from curve
+	return value;
 }
 
-template<typenae T>
-T void FLAMEGPU_API::setVariable(std::string name, T value) {}
+template<typename T, unisgned int N>
+T void FLAMEGPU_API::setVariable(const char(&variable_name)[N], T value){
+
+	//simple indexing assumes index is the thread number (this may change later)
+	unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
+
+	//set the variable using curve
+	curveSetVariable<T>(name, value, index);
+}
 
 
 /**

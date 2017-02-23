@@ -18,6 +18,8 @@
 #include "AgentFunctionInput.h"
 #include "AgentFunctionOutput.h"
 
+class AgentDescription;
+
 /*! FLAMEGPU function return type */
 enum FLAME_GPU_AGENT_STATUS { ALIVE, DEAD };
 
@@ -29,7 +31,7 @@ typedef FLAME_GPU_AGENT_STATUS(*FLAMEGPU_AGENT_FUNCTION)(void);
 
 typedef std::map<std::string, const AgentFunctionInput&> InputsMap;
 typedef std::map<std::string, const AgentFunctionOutput&> OutputsMap;
-typedef std::map<const std::string, FLAMEGPU_AGENT_FUNCTION> FunctionPointerMap; //maps function name to function pointer
+//typedef std::map<const std::string, FLAMEGPU_AGENT_FUNCTION> FunctionPointerMap; //@question: This is not required as each agent function will have only a single pointer
 
 
 class AgentFunctionDescription {
@@ -56,9 +58,11 @@ public:
 	//TODO
 	//sets the function pointer by adding to the FunctionPointerMap
 	void setFunction(FLAMEGPU_AGENT_FUNCTION p_func);
-    const FLAMEGPU_AGENT_FUNCTION& getFunction();
+
+    FLAMEGPU_AGENT_FUNCTION getFunction() const;
 
 	//todo: add agent output
+
 
 public:
 
@@ -68,8 +72,6 @@ public:
 	InputsMap inputs;
 	OutputsMap outputs;
 	FLAMEGPU_AGENT_FUNCTION func = NULL;
-	FunctionPointerMap  fp_map;
-
 };
 
 #endif /* AGENTFUNCTIONDESCRIPTION_H_ */
