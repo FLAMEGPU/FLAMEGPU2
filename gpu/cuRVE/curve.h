@@ -8,6 +8,7 @@
  * @brief  Main cuRVE header file
  *
  * The main cuRVE header file for the CUDA Runtime Variable Environment (cuRVE)
+ * Based off the following article http://www.gamasutra.com/view/news/127915/InDepth_Quasi_CompileTime_String_Hashing.php
  * @TODO: Requires vector length table for each variable (or namespace) which is registered. For now no safe checking of vector length is done.
  */
 
@@ -76,6 +77,24 @@ template <unsigned int N> __device__ __host__ inline static CurveVariableHash cu
 }
 
 
+/** @brief Main cuRVE variable hashing function for strings of length determined at runtime and not compile time
+*  Should only be used for registered variables as this will be much slower than the compile time alternative.
+*  @return a 32 bit cuRVE string variable hash.
+*/
+__host__ inline static CurveVariableHash curveVariableRuntimeHash(const char* str)
+{
+	const size_t length = strlen(str) + 1;
+	unsigned int hash = 2166136261u;
+
+	for (size_t i = 0; i<length; ++i){
+		hash ^= *str++;
+		hash *= 16777619u;
+	}
+
+	return hash;
+}
+
+
 /* CURVE HOST API FUNCTIONS */
 
 /** @brief cuRVE initialisation function
@@ -92,7 +111,7 @@ __host__ CurveVariable curveGetVariable(CurveVariableHash variable_hash);
 
 
 /** @brief Function for registering a variable by a CurveVariableHash
- * 	Registers a variable by insertion in a hash table. Recommend using the provided curveRegisterVariable template function. The default vector width (set by curveInit) will be used.
+ * 	Registers a variable by insertion in a hash table. Recommend using the provided curveRegisterVariable template function.
  *  @param variable_hash A cuRVE variable string hash from curveVariableHash.
  *  @param d_ptr a pointer to the vector which holds the hashed variable of give name
  *  @return CurveVariable Handle of registered variable or UNKNOWN_CURVE_VARIABLE if an error is encountered.
@@ -108,6 +127,24 @@ __host__ CurveVariable curveRegisterVariableByHash(CurveVariableHash variable_ha
 template <unsigned int N> __host__ CurveVariable curveRegisterVariable(const char(&variableName)[N], void* d_prt){
 	CurveVariableHash variable_hash = curveVariableHash(variableName);
 	return curveRegisterVariableByHash(variable_hash, d_ptr);
+}
+
+
+
+/** @brief Function for un-registering a variable by a CurveVariableHash
+* 	Un-registers a variable by removal from a hash table. Recommend using the provided curveUnregisterVariable template function. 
+*  @param variable_hash A cuRVE variable string hash from curveVariableHash.
+
+*/
+__host__ void curveUnregisterVariableByHash(CurveVariableHash variable_hash);
+
+/** @brief Template function for un-registering a constant string
+* 	Un-registers a constant string variable name by hashing and then removing from the hash table.
+*  @param variableName A constant char array (C string) variable name.
+*/
+template <unsigned int N> __host__ void curveUnregisterVariable(const char(&variableName)[N]){
+	CurveVariableHash variable_hash = curveVariableHash(variableName);
+	curveUnregisterVariableByHash(variable_hash);
 }
 
 

@@ -76,7 +76,15 @@ void CUDAAgentStateList::allocateDeviceAgentList(CUDAMemoryMap &memory_map)
 
 		//do the device allocation
 		void * d_ptr;
+
+#ifdef UNIFIED_GPU_MEMORY
+		//unified memory allocation
+		gpuErrchk(cudaMallocManaged((void**)&d_ptr, var_size * agent.getMaximumListSize()))
+#else
+		//non unified memory allocation
 		gpuErrchk(cudaMalloc((void**)&d_ptr, var_size * agent.getMaximumListSize()));
+#endif
+
 
 		//store the pointer in the map
 		memory_map.insert(CUDAMemoryMap::value_type(var_name, d_ptr));
@@ -190,11 +198,18 @@ void CUDAAgentStateList::getAgentData(AgentStateMemory &state_memory)
 
 }
 
-/**
-* @brief
-* @param none
-* @return none
-*/
+void* CUDAAgentStateList::getAgentListVariablePointer(std::string variable_name)
+{
+	CUDAMemoryMap::iterator mm = d_list.find(variable_name);
+	if (mm == d_list.end()){
+		//TODO: Error variable not found in agent state list
+		return 0;
+	}
+
+	return mm->second;
+}
+
+
 void CUDAAgentStateList::zeroAgentData(){
 	zeroDeviceAgentList(d_list);
 	zeroDeviceAgentList(d_swap_list);

@@ -166,8 +166,7 @@ __host__ CurveVariable curveRegisterVariableByHash(CurveVariableHash variable_ha
 	//copy hash to device
 	CUDA_SAFE_CALL(cudaMemcpy(&_d_hashes[i], &h_hashes[i], sizeof(unsigned int), cudaMemcpyHostToDevice));
 
-	//set the host pointer copy to device pointer and then copy to device variable list
-	//allocate the variable array on the device (with host pointer) and then copy to device
+	//make a host copy of the pointer and copy to the device
 	h_d_variables[i] = d_ptr;
 	CUDA_SAFE_CALL(cudaMemcpy(&_d_variables[i], &h_d_variables[i], sizeof(float*), cudaMemcpyHostToDevice));
 
@@ -175,9 +174,49 @@ __host__ CurveVariable curveRegisterVariableByHash(CurveVariableHash variable_ha
 	h_states[i] = VARIABLE_ENABLED;
 	CUDA_SAFE_CALL(cudaMemcpy(&_d_states[i], &h_states[i], sizeof(int), cudaMemcpyHostToDevice));
 
-	printf("Var name %s hash is %u at index %d with %d collisions\n", "todo", variable_hash, i, n);
+	printf("Var with hash is %u at index %d with %d collisions\n", variable_hash, i, n);
 
 	return i;
+}
+
+/**
+ * TODO: Does un-registering imply that other variable with collisions will no longer be found. I.e. do you need to re-register all other variable when one is removed.
+ */
+__host__ void curveUnregisterVariableByHash(CurveVariableHash variable_hash)
+{
+	unsigned int *_d_hashes;
+	void** _d_variables;
+	int** _d_states;
+	CurveVariable cv;
+
+	//get the curve variable
+	cv = curveGetVariable(variable_hash);
+
+	//error checking
+	if (cv == UNKNOWN_CURVE_VARIABLE)
+	{
+		h_curve_error = CURVE_ERROR_UNKNOWN_VARIABLE;
+		return;
+	}
+
+	//get a host pointer to d_hashes and d_variables
+	CUDA_SAFE_CALL(cudaGetSymbolAddress((void **)&_d_hashes, d_hashes));
+	CUDA_SAFE_CALL(cudaGetSymbolAddress((void **)&_d_variables, d_variables));
+	CUDA_SAFE_CALL(cudaGetSymbolAddress((void **)&_d_states, d_states));
+
+	//clear hash location on host and copy hash to device
+	h_hashes[cv] = 0;
+	CUDA_SAFE_CALL(cudaMemcpy(&_d_hashes[cv], &h_hashes[cv], sizeof(unsigned int), cudaMemcpyHostToDevice));
+
+	//set a host pointer to null and copy to the device 
+	h_d_variables[cv] = 0;
+	CUDA_SAFE_CALL(cudaMemcpy(&_d_variables[cv], &h_d_variables[cv], sizeof(float*), cudaMemcpyHostToDevice));
+
+	//return the state to disabled
+	h_states[cv] = VARIABLE_DISABLED;
+	CUDA_SAFE_CALL(cudaMemcpy(&_d_states[cv], &h_states[cv], sizeof(int), cudaMemcpyHostToDevice));
+
+	printf("Var with hash %d has been un-registered\n", variable_hash);
 }
 
 
@@ -232,7 +271,7 @@ __device__ void* getVariablePtrByHash(const CurveVariableHash variable_hash, siz
 {
     CurveVariable cv;
 
-    cv = getVariable(variable_hash);
+	cv = getVariable(variable_hash);
 
     //error checking
     if (cv == UNKNOWN_CURVE_VARIABLE)
@@ -249,27 +288,6 @@ __device__ void* getVariablePtrByHash(const CurveVariableHash variable_hash, siz
 	//return a generic pointer to variable address for given offset
 	//TODO: Add vector length checking
     return &(d_variables[cv])[offset];
-}
-
-__device__ void setFloatVariableByHash(const CurveVariableHash variable_hash, float variable, unsigned int index)
-{
-    CurveVariable cv;
-
-    cv = getVariable(variable_hash);
-
-    //error checking
-    if (cv == UNKNOWN_CURVE_VARIABLE)
-	{
-		d_curve_error = CURVE_DEVICE_ERROR_UNKNOWN_VARIABLE;
-		return;
-	}
-    if(!d_states[cv])
-    {
-    	d_curve_error = CURVE_DEVICE_ERROR_VARIABLE_DISABLED;
-    	return;
-    }
-
-    ((float*)d_variables[cv])[index] = variable;
 }
 
 

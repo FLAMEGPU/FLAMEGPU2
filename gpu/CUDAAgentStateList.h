@@ -20,7 +20,7 @@ class AgentStateMemory;
 
 //#define UNIFIED_GPU_MEMORY
 
-typedef std::map <std::string, void*> CUDAMemoryMap;		//map of pointers to gpu memory for each variable
+typedef std::map <std::string, void*> CUDAMemoryMap;		//map of pointers to gpu memory for each variable name
 typedef std::pair <std::string, void*> CUDAMemoryMapPair;
 
 class CUDAAgentStateList {
@@ -34,6 +34,8 @@ public:
 	void setAgentData(const AgentStateMemory &state_memory);
 
 	void getAgentData(AgentStateMemory &state_memory);
+
+	void* getAgentListVariablePointer(std::string variable_name);
 
 	void zeroAgentData();
 

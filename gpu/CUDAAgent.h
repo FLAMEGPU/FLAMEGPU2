@@ -20,6 +20,7 @@
 //forward declare classes from other modules
 class AgentDescription;
 class AgentPopulation;
+class AgentFunctionDescription;
 
 typedef std::map<const std::string, std::unique_ptr<CUDAAgentStateList>> CUDAStateMap;	//map of state name to CUDAAgentStateList which allocates memory on the device
 typedef std::pair<const std::string, std::unique_ptr<CUDAAgentStateList>> CUDAStateMapPair;
@@ -51,11 +52,11 @@ public:
 
 	/** @breif Uses the cuRVE runtime to map the variables used by the agent function to the cuRVE library so that can be accessed by name within a n agent function
 	*/
-	void mapRuntimeVariables() const;
+	void mapRuntimeVariables(const AgentFunctionDescription& func) const;
 
 	/** @breif Uses the cuRVE runtime to unmap the variables used by the agent function to the cuRVE library so that they are unavailable to be accessed by name within an agent function
 	*/
-	void unmapRuntimeVariables() const;
+	void unmapRuntimeVariables(const AgentFunctionDescription& func) const;
 
 
 protected:
