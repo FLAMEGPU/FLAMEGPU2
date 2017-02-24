@@ -136,14 +136,14 @@ void CUDAAgentModel::step(const Simulation& simulation) {
 			//configure runtime access of the functions variables within the FLAME_API object
 			//requires getting the correct cuda agent from the function name
 
-			//cuda_agent.mapRuntimeVariables();
+			//cuda_agent.mapRuntimeVariables(func_des);
 
 			//call the agent function
 			FLAMEGPU_AGENT_FUNCTION agent_func = func_des.getFunction();
 			agent_func();
 
 			//unmap the function variables
-			//cuda_agent.mapRuntimeVariables();
+			//cuda_agent.mapRuntimeVariables(func_des);
 		}
 
 	}
