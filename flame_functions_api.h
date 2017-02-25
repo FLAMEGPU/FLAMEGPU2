@@ -46,7 +46,7 @@ FLAMEGPU_AGENT_FUNCTION(move_func) {
 
 /** @brief	A flame gpu api class for the device runtime only  
  * Singleton classes are not suitable for device objects. This will have to be scoped as an object in CUDAModel.h
- * We have the same behaviour as a singleton class for cuRVE however as it is C code and not C++. Therefore all the hash tables are defined once for the programs lifetime.*/
+ * We have the same behaviour as a singleton class for cuRVE however as it is C code and not C++. Therefore all the hash tables are defined once for the programs lifetime.
  */
 class FLAMEGPU_API
 {
