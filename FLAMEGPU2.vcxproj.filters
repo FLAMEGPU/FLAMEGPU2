@@ -19,7 +19,10 @@
     <Filter Include="exceptions">
       <UniqueIdentifier>{7c4cd09c-4b23-4143-a13e-192947641074}</UniqueIdentifier>
     </Filter>
-    <Filter Include="gpu\cuRVE">
+    <Filter Include="runtime">
+      <UniqueIdentifier>{507628b0-cab9-430b-b382-a8b91da5d0fd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="runtime\cuRVE">
       <UniqueIdentifier>{f9bf7c5e-66c9-4919-81a5-dc55f7208d4f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -95,11 +98,11 @@
     <ClInclude Include="tests\test_func_pointer.h">
       <Filter>tests</Filter>
     </ClInclude>
-    <ClInclude Include="gpu\cuRVE\curve.h">
-      <Filter>gpu\cuRVE</Filter>
+    <ClInclude Include="runtime\cuRVE\curve.h">
+      <Filter>runtime\cuRVE</Filter>
     </ClInclude>
-    <ClInclude Include="gpu\cuRVE\cuRVEInstance.h">
-      <Filter>gpu\cuRVE</Filter>
+    <ClInclude Include="runtime\cuRVE\cuRVEInstance.h">
+      <Filter>runtime\cuRVE</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -157,8 +160,11 @@
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="main.cpp" />
-    <CudaCompile Include="gpu\cuRVE\curve.cu">
-      <Filter>gpu\cuRVE</Filter>
+    <CudaCompile Include="runtime\cuRVE\curve.cu">
+      <Filter>runtime\cuRVE</Filter>
+    </CudaCompile>
+    <CudaCompile Include="runtime\agent_function.cu">
+      <Filter>runtime</Filter>
     </CudaCompile>
   </ItemGroup>
 </Project>

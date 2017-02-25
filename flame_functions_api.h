@@ -8,10 +8,8 @@
 #ifndef FLAME_FUNCTIONS_API_H_
 #define FLAME_FUNCTIONS_API_H_
 
-
-#include "gpu/RuntimeHashing.h"				//required for runtime hashing of strings
 #include "gpu/CUDAErrorChecking.h"			//required for CUDA error handling functions
-#include "gpu/cuRVE/curve.h"
+#include "runtime/cuRVE/curve.h"
 
 
 //TODO: Some example code of the handle class and an example function
@@ -19,19 +17,24 @@
 class FLAMEGPU_API;  // Forward declaration (class defined below)
 
 //! Datatype for argument of all agent transition functions
-typedef FLAMEGPU_API& FLAMEGPU_AgentFunctionParamType;
+//typedef FLAMEGPU_API& FLAMEGPU_AgentFunctionParamType;
 //! Datatype for return value for all agent transition functions
-typedef FLAME_GPU_AGENT_STATUS FLAMEGPU_AgentFunctionReturnType;
+//typedef FLAME_GPU_AGENT_STATUS FLAMEGPU_AgentFunctionReturnType;
 
 // re-defined in AgentFunctionDescription
 //! FLAMEGPU function return type
 enum FLAME_GPU_AGENT_STATUS { ALIVE, DEAD };
 
-//! Macro for defining agent transition functions with the correct input
-//! argument and return type
-#define FLAMEGPU_AGENT_FUNCTION(funcName) \
-          FLAMEGPU_AgentFunctionReturnType \
+//! Macro for defining agent transition functions with the correct input. Must always be a device function to be called by CUDA.
+//Currently replicated within AgentFunctionDescription
+/*#define FLAMEGPU_AGENT_FUNCTION(funcName) \
+          __device__ \
+		  FLAMEGPU_AgentFunctionReturnType \
           funcName(FLAMEGPU_AgentFunctionParamType FLAMEGPU)
+		  */
+
+typedef FLAME_GPU_AGENT_STATUS(*FLAMEGPU_AGENT_FUNCTION_POINTER)(FLAMEGPU_API *api);
+
 /**
 * @note Example Usage:
 
@@ -45,8 +48,10 @@ FLAMEGPU_AGENT_FUNCTION(move_func) {
 
 
 /** @brief	A flame gpu api class for the device runtime only  
- * Singleton classes are not suitable for device objects. This will have to be scoped as an object in CUDAModel.h
+ * Singleton classes are not suitable for device objects. This will have to be scoped as an object in CUDAAgentModel.h
  * We have the same behaviour as a singleton class for cuRVE however as it is C code and not C++. Therefore all the hash tables are defined once for the programs lifetime.
+ * 
+ * This class should only be used by the device and never created on the host
  */
 class FLAMEGPU_API
 {
@@ -72,8 +77,8 @@ public:
 // Useful existing code to look at is CUDAAgentStateList setAgentData function
 // Note that this is using the hashing to get a specific pointer for a given variable name. This is exactly what we want to do in the FLAME GPU API class
 
-template<typename T, unisgned int N>
-T __device__ void FLAMEGPU_API::getVariable(const char(&variable_name)[N])
+template<unsigned int N, typename T>
+__device__ T FLAMEGPU_API::getVariable(const char(&variable_name)[N])
 {
 	//simple indexing assumes index is the thread number (this may change later)
 	unsigned int index =  (blockDim.x * blockIdx.x) + threadIdx.x;
@@ -87,8 +92,8 @@ T __device__ void FLAMEGPU_API::getVariable(const char(&variable_name)[N])
 	return value;
 }
 
-template<typename T, unisgned int N>
-T __device__ void FLAMEGPU_API::setVariable(const char(&variable_name)[N], T value){
+template<unsigned int N, typename T>
+__device__ void FLAMEGPU_API::setVariable(const char(&variable_name)[N], T value){
 
 	//simple indexing assumes index is the thread number (this may change later)
 	unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;

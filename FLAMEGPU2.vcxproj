@@ -34,8 +34,6 @@
     <ClInclude Include="gpu\CUDAAgentStateList.h" />
     <ClInclude Include="gpu\CUDAAgentModel.h" />
     <ClInclude Include="gpu\CUDAErrorChecking.h" />
-    <ClInclude Include="gpu\cuRVE\curve.h" />
-    <ClInclude Include="gpu\cuRVE\cuRVEInstance.h" />
     <ClInclude Include="model\AgentDescription.h" />
     <ClInclude Include="model\AgentFunctionDescription.h" />
     <ClInclude Include="model\AgentFunctionInput.h" />
@@ -47,6 +45,8 @@
     <ClInclude Include="pop\MemoryVector.h" />
     <ClInclude Include="pop\AgentStateMemory.h" />
     <ClInclude Include="pop\AgentPopulation.h" />
+    <ClInclude Include="runtime\cuRVE\curve.h" />
+    <ClInclude Include="runtime\cuRVE\cuRVEInstance.h" />
     <ClInclude Include="sim\Simulation.h" />
     <ClInclude Include="sim\SimulationLayer.h" />
     <ClInclude Include="tests\test_func_pointer.h" />
@@ -79,12 +79,13 @@
     <ClCompile Include="tests\test_func_pointer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <CudaCompile Include="gpu\cuRVE\curve.cu" />
     <CudaCompile Include="main.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='BoostTest|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='BoostTest|x64'">true</ExcludedFromBuild>
     </CudaCompile>
+    <CudaCompile Include="runtime\agent_function.cu" />
+    <CudaCompile Include="runtime\cuRVE\curve.cu" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{FDF174EE-541F-4706-B28A-7BA39AF9F61C}</ProjectGuid>

@@ -8,7 +8,7 @@
 #ifndef FLAME_API_H_
 #define FLAME_API_H_
 
-//include all host API classes (one from each module)
+//include all host API classes (top level header from each module)
 #include "model/ModelDescription.h"
 #include "pop/AgentPopulation.h"
 #include "sim/Simulation.h"
