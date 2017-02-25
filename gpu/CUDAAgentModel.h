@@ -18,6 +18,7 @@
 
 //include sub classes
 #include "CUDAAgent.h"
+#include "curve/cuRVEInstance.h"
 
 //forward declare classes from other modules
 class ModelDescription;
@@ -50,6 +51,7 @@ public:
 private:
     const ModelDescription& model_description;
     CUDAAgentMap agent_map;
+	cuRVEInstance &curve;
 //	CUDAMessageMap message_map; /*Moz*/
 //	CUDAFunctionMap function_map; /*Moz*/
 

@@ -54,13 +54,19 @@ public:
 	*/
 	void mapRuntimeVariables(const AgentFunctionDescription& func) const;
 
-	/** @brief Uses the cuRVE runtime to unmap the variables used by the agent function to the cuRVE library so that they are unavailable to be accessed by name within an agent function
-	*/
+	/**
+	 * @brief	Uses the cuRVE runtime to unmap the variables used by the agent function to the cuRVE
+	 * 			library so that they are unavailable to be accessed by name within an agent function.
+	 *
+	 * @param	func	The function.
+	 */
+
 	void unmapRuntimeVariables(const AgentFunctionDescription& func) const;
 
 
 protected:
 
+    /** @brief	Zero all state variable data. */
     void zeroAllStateVariableData();
 
 

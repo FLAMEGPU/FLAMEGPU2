@@ -35,6 +35,7 @@
     <ClInclude Include="gpu\CUDAAgentModel.h" />
     <ClInclude Include="gpu\CUDAErrorChecking.h" />
     <ClInclude Include="gpu\cuRVE\curve.h" />
+    <ClInclude Include="gpu\cuRVE\cuRVEInstance.h" />
     <ClInclude Include="model\AgentDescription.h" />
     <ClInclude Include="model\AgentFunctionDescription.h" />
     <ClInclude Include="model\AgentFunctionInput.h" />
