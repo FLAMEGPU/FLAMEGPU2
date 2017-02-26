@@ -5,10 +5,10 @@
 
 //include all host API classes (one from each module)
 
-FLAME_GPU_AGENT_STATUS input_func(void);
-FLAME_GPU_AGENT_STATUS output_func(void);
-FLAME_GPU_AGENT_STATUS move_func(void);
-FLAME_GPU_AGENT_STATUS stay_func(void);
+FLAMEGPU_AGENT_FUNCTION(input_func);
+FLAMEGPU_AGENT_FUNCTION(output_func);
+FLAMEGPU_AGENT_FUNCTION(move_func);
+FLAMEGPU_AGENT_FUNCTION(stay_func);
 
 #endif /* TEST_FUNC_POINTER_H_ */
 

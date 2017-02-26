@@ -12,7 +12,7 @@
 #include "test_func_pointer.h"
 
 // Problem
-FLAME_GPU_AGENT_STATUS output_func()
+FLAMEGPU_AGENT_FUNCTION(output_func)
 {
 
 //    for (int i = 0; i< population.getStateMemory().getStateListSize(); i++)
@@ -27,18 +27,18 @@ FLAME_GPU_AGENT_STATUS output_func()
 	return ALIVE;
 }
 
-FLAME_GPU_AGENT_STATUS input_func(void)
+FLAMEGPU_AGENT_FUNCTION(input_func)
 {
 
 	return ALIVE;
 }
 
-FLAME_GPU_AGENT_STATUS move_func(void)
+FLAMEGPU_AGENT_FUNCTION(move_func)
 {
 	return ALIVE;
 }
 
-FLAME_GPU_AGENT_STATUS stay_func(void)
+FLAMEGPU_AGENT_FUNCTION(stay_func)
 {
 	return ALIVE;
 }
