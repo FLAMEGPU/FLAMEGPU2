@@ -10,7 +10,7 @@
 
 #include "AgentFunctionDescription.h"
 #include "AgentDescription.h"
-#include "../gpu/cuRVE/curve.h"
+#include "../runtime/cuRVE/curve.h"
 
 
 AgentFunctionDescription::AgentFunctionDescription(const std::string function_name) : function_name(function_name), initial_state("default"), end_state("default")

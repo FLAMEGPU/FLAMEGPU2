@@ -17,7 +17,7 @@
 
 #include "../model/AgentDescription.h"
 #include "../pop/AgentPopulation.h"
-#include "cuRVE/curve.h"
+#include "../runtime/cuRVE/curve.h"
 
 
 /**

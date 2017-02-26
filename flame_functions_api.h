@@ -59,11 +59,11 @@ class FLAMEGPU_API
 public:
 	__device__ FLAMEGPU_API(){};
 
-	template<typename T> __device__
-    T getVariable(std::string variable_name);
+	template<typename T, unsigned int N> __device__
+		T getVariable(const char(&variable_name)[N]);
 
-	template<typename T> __device__
-    T setVariable(std::string variable_name, T value);
+	template<typename T, unsigned int N> __device__
+		void setVariable(const char(&variable_name)[N], T value);
 
 };
 
@@ -77,7 +77,7 @@ public:
 // Useful existing code to look at is CUDAAgentStateList setAgentData function
 // Note that this is using the hashing to get a specific pointer for a given variable name. This is exactly what we want to do in the FLAME GPU API class
 
-template<unsigned int N, typename T>
+template<typename T, unsigned int N>
 __device__ T FLAMEGPU_API::getVariable(const char(&variable_name)[N])
 {
 	//simple indexing assumes index is the thread number (this may change later)
@@ -92,7 +92,7 @@ __device__ T FLAMEGPU_API::getVariable(const char(&variable_name)[N])
 	return value;
 }
 
-template<unsigned int N, typename T>
+template<typename T, unsigned int N>
 __device__ void FLAMEGPU_API::setVariable(const char(&variable_name)[N], T value){
 
 	//simple indexing assumes index is the thread number (this may change later)

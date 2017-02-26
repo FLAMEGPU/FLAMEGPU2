@@ -72,7 +72,7 @@ __device__ __inline__ CurveVariable getVariable(const CurveVariableHash variable
 
 /* header implementations */
 
-__host__ CurveVariable curveGetVariable(CurveVariableHash variable_hash)
+__host__ CurveVariable curveGetVariableHandle(CurveVariableHash variable_hash)
 {
     unsigned int i, n;
 
@@ -190,7 +190,7 @@ __host__ void curveUnregisterVariableByHash(CurveVariableHash variable_hash)
 	CurveVariable cv;
 
 	//get the curve variable
-	cv = curveGetVariable(variable_hash);
+	cv = curveGetVariableHandle(variable_hash);
 
 	//error checking
 	if (cv == UNKNOWN_CURVE_VARIABLE)
@@ -223,7 +223,7 @@ __host__ void curveUnregisterVariableByHash(CurveVariableHash variable_hash)
 
 __host__ void curveDisableVariableByHash(CurveVariableHash variable_hash)
 {
-	CurveVariable cv = curveGetVariable(variable_hash);
+	CurveVariable cv = curveGetVariableHandle(variable_hash);
 	int** _d_states;
 
 	//error checking
@@ -240,7 +240,7 @@ __host__ void curveDisableVariableByHash(CurveVariableHash variable_hash)
 
 __host__ void curveEnableVariableByHash(CurveVariableHash variable_hash)
 {
-	CurveVariable cv = curveGetVariable(variable_hash);
+	CurveVariable cv = curveGetVariableHandle(variable_hash);
 	int** _d_states;
 
 	//error checking
@@ -267,7 +267,7 @@ __host__ void curveSetDefaultNamespace()
 	CUDA_SAFE_CALL(cudaMemcpyToSymbol(d_namespace, &h_namespace, sizeof(unsigned int)));
 }
 
-__device__ void* getVariablePtrByHash(const CurveVariableHash variable_hash, size_t offset)
+__device__ void* curveGetVariablePtrByHash(const CurveVariableHash variable_hash, size_t offset)
 {
     CurveVariable cv;
 

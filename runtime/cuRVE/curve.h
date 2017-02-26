@@ -102,12 +102,12 @@ __host__ inline static CurveVariableHash curveVariableRuntimeHash(const char* st
  */
 __host__ void curveInit();
 
-/** @brief Function for getting a handle to a cuRVE variable from a variable string hash
+/** @brief Function for getting a handle (hash table index) to a cuRVE variable from a variable string hash
  * 	Function performs hash collision avoidance using linear probing.
  *  @param variable_hash A cuRVE variable string hash from curveVariableHash.
  *  @return CurveVariable Handle for the cuRVE variable.
  */
-__host__ CurveVariable curveGetVariable(CurveVariableHash variable_hash);
+__host__ CurveVariable curveGetVariableHandle(CurveVariableHash variable_hash);
 
 
 /** @brief Function for registering a variable by a CurveVariableHash
@@ -212,7 +212,7 @@ __host__ void curveSetDefaultNamespace();
  *  @param offset an offset into the variable array in bytes (offset is variable index * sizeof(variable type))
  *  @return A generic pointer to the variable value. Will be NULL if there is an error.
  */
-extern __device__ void* getVariablePtrByHash(const CurveVariableHash variable_hash, size_t offset);
+extern __device__ void* curveGetVariablePtrByHash(const CurveVariableHash variable_hash, size_t offset);
 
 
 /** @brief Device function for getting a single typed value from a CurveVariableHash at a given index
@@ -223,9 +223,9 @@ extern __device__ void* getVariablePtrByHash(const CurveVariableHash variable_ha
  *  @return T A value of given type at the given index for the variable with the provided hash. Will return 0 if an error is raised.
  */
 template <typename T>
-__device__ float getVariableByHash(const CurveVariableHash variable_hash, unsigned int index){
+__device__ float curveGetVariableByHash(const CurveVariableHash variable_hash, unsigned int index){
 	size_t offset = index *sizeof(T);
-	T *value_ptr = (T*)getVariablePtrByHash(variable_hash, offset);
+	T *value_ptr = (T*)curveGetVariablePtrByHash(variable_hash, offset);
 	if (value_ptr)
 		return *value_ptr;
 	else
@@ -239,10 +239,10 @@ __device__ float getVariableByHash(const CurveVariableHash variable_hash, unsign
  *  @return T A value of given typr at the given index for the variable with the provided hash. Will return 0 if an error is raised.
  */
 template <typename T, unsigned int N> 
-__device__ float getVariable(const char (&variableName)[N], unsigned int index)
+__device__ float curveGetVariable(const char (&variableName)[N], unsigned int index)
 {
 	CurveVariableHash variable_hash = curveVariableHash(variableName);
-	return getVariableByHash<T>(variable_hash, index);
+	return curveGetVariableByHash<T>(variable_hash, index);
 }
 
 
@@ -253,10 +253,10 @@ __device__ float getVariable(const char (&variableName)[N], unsigned int index)
  *  @param value The typed value to set at the given index.
  */
 template <typename T>
-__device__ void setVariableByHash(const CurveVariableHash variable_hash, T variable, unsigned int index)
+__device__ void curveSetVariableByHash(const CurveVariableHash variable_hash, T variable, unsigned int index)
 {
 	size_t offset = index *sizeof(T);
-	T *value_ptr = (T*)getVariablePtrByHash(variable_hash, offset);
+	T *value_ptr = (T*)curveGetVariablePtrByHash(variable_hash, offset);
 	*value_ptr = variable;
 }
 
@@ -267,9 +267,9 @@ __device__ void setVariableByHash(const CurveVariableHash variable_hash, T varia
  *  @param value The typed value to set at the given index.
  */
 template <typename T, unsigned int N> 
-__device__ void setVariable(const char(&variableName)[N], T variable, unsigned int index){
+__device__ void curveSetVariable(const char(&variableName)[N], T variable, unsigned int index){
 	CurveVariableHash variable_hash = curveVariableHash(variableName);
-	setVariableByHash<T>(variable_hash, variable, index);
+	curveSetVariableByHash<T>(variable_hash, variable, index);
 }
 
 /* ERROR CHECKING API FUNCTIONS */
