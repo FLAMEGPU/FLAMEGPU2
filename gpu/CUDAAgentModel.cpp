@@ -134,14 +134,19 @@ void CUDAAgentModel::step(const Simulation& simulation) {
 
 		//for each func function
 		for (const AgentFunctionDescription func_des : functions){
-			//configure runtime access of the functions variables within the FLAME_API object
-			//requires getting the correct cuda agent from the function name
+			//get the CUDA Agent
+			//TODO: Need a method to get a cuda agent name from an agent function!
+			//const CUDAAgent& ca = getCUDAAgent(func_des.)
 
+			//configure runtime access of the functions variables within the FLAME_API object
 			//cuda_agent.mapRuntimeVariables(func_des);
 
-			//call the agent function
-			FLAMEGPU_AGENT_FUNCTION agent_func = func_des.getFunction();
-			agent_func();
+			//get the agent function
+			FLAMEGPU_AGENT_FUNCTION_POINTER agent_func = func_des.getFunction();
+			
+			//call the agent function wrapper which creates an instance of FLAMEGPU_API on the device to pass to the agent function.
+			//TODO: Kernel dimensions will come from the CUDAAgent state list size
+			//agent_function_wrapper << < >> >(func_des.getName().c_str(), agent_func)
 
 			//unmap the function variables
 			//cuda_agent.mapRuntimeVariables(func_des);
@@ -234,5 +239,18 @@ void CUDAAgentModel::simulate(const Simulation& sim)
     //check any CUDAAgents with population size == 0  // Moz : not sure what this means ! population size is set by default
     //if they have executable functions then these can be ignored
     //if they have agent creations then buffer space must be allocated for them
+}
+
+const CUDAAgent& CUDAAgentModel::getCUDAAgent(std::string agent_name) const
+{
+	CUDAAgentMap::const_iterator it;
+	it = agent_map.find(agent_name);
+
+	if (it == agent_map.end())
+	{
+		throw InvalidCudaAgent("CUDA agent not found.");
+	}
+
+	return *(it->second);
 }
 

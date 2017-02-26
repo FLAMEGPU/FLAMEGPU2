@@ -48,6 +48,9 @@ public:
     void step(const Simulation& sim);
 
     void simulate(const Simulation& sim);
+
+	const CUDAAgent& getCUDAAgent(std::string agent_name) const;
+
 private:
     const ModelDescription& model_description;
     CUDAAgentMap agent_map;

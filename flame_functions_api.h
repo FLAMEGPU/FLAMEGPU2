@@ -16,42 +16,31 @@
 //! FLAMEGPU_API is a singleton class
 class FLAMEGPU_API;  // Forward declaration (class defined below)
 
-//! Datatype for argument of all agent transition functions
-//typedef FLAMEGPU_API& FLAMEGPU_AgentFunctionParamType;
-//! Datatype for return value for all agent transition functions
-//typedef FLAME_GPU_AGENT_STATUS FLAMEGPU_AgentFunctionReturnType;
-
-// re-defined in AgentFunctionDescription
 //! FLAMEGPU function return type
 enum FLAME_GPU_AGENT_STATUS { ALIVE, DEAD };
 
-//! Macro for defining agent transition functions with the correct input. Must always be a device function to be called by CUDA.
-//Currently replicated within AgentFunctionDescription
-/*#define FLAMEGPU_AGENT_FUNCTION(funcName) \
-          __device__ \
-		  FLAMEGPU_AgentFunctionReturnType \
-          funcName(FLAMEGPU_AgentFunctionParamType FLAMEGPU)
-		  */
-
+/**
+ * @breif FLAMEGPU function pointer definition
+ */
 typedef FLAME_GPU_AGENT_STATUS(*FLAMEGPU_AGENT_FUNCTION_POINTER)(FLAMEGPU_API *api);
 
 /**
-* @note Example Usage:
-
-FLAMEGPU_AGENT_FUNCTION(move_func) {
-  int x = FLAMEGPU.getVariable<int>("x");
-  FLAMEGPU.setVariable<int>("x", x*10);
-  return ALIVE;
-}
-*/
+ * Macro for defining agent transition functions with the correct input. Must always be a device function to be called by CUDA.
+ *
+ * FLAMEGPU_AGENT_FUNCTION(move_func) {
+ *   int x = FLAMEGPU.getVariable<int>("x");
+ *   FLAMEGPU.setVariable<int>("x", x*10);
+ * return ALIVE;
+ *}
+ */
+#define FLAMEGPU_AGENT_FUNCTION(funcName) FLAME_GPU_AGENT_STATUS funcName(FLAMEGPU_API& FLAMEGPU)
 
 
 
 /** @brief	A flame gpu api class for the device runtime only  
- * Singleton classes are not suitable for device objects. This will have to be scoped as an object in CUDAAgentModel.h
- * We have the same behaviour as a singleton class for cuRVE however as it is C code and not C++. Therefore all the hash tables are defined once for the programs lifetime.
- * 
- * This class should only be used by the device and never created on the host
+ *
+ * This class should only be used by the device and never created on the host. It is safe for each agent function to create a copy of this class on the device. Any singleton type 
+ * behaviour is handled by the curveInstance class. This will ensure that initialisation of the curve (C) library is done only once.
  */
 class FLAMEGPU_API
 {

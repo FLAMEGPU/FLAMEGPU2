@@ -18,14 +18,10 @@
 #include "AgentFunctionInput.h"
 #include "AgentFunctionOutput.h"
 
+//include the agent function syntax form the runtime api
+#include "../flame_functions_api.h"
+
 class AgentDescription;
-
-/*! FLAMEGPU function return type */
-enum FLAME_GPU_AGENT_STATUS { ALIVE, DEAD };
-
-//! FLAME GPU Agent Function pointer
-typedef FLAME_GPU_AGENT_STATUS(*FLAMEGPU_AGENT_FUNCTION)(void);
-
 
 
 
@@ -57,9 +53,9 @@ public:
 
 	//TODO
 	//sets the function pointer by adding to the FunctionPointerMap
-	void setFunction(FLAMEGPU_AGENT_FUNCTION p_func);
+	void setFunction(FLAMEGPU_AGENT_FUNCTION_POINTER p_func);
 
-    FLAMEGPU_AGENT_FUNCTION getFunction() const;
+	FLAMEGPU_AGENT_FUNCTION_POINTER getFunction() const;
 
 	//todo: add agent output
 
@@ -71,7 +67,7 @@ public:
 	std::string end_state;
 	InputsMap inputs;
 	OutputsMap outputs;
-	FLAMEGPU_AGENT_FUNCTION func = NULL;
+	FLAMEGPU_AGENT_FUNCTION_POINTER func = NULL;
 };
 
 #endif /* AGENTFUNCTIONDESCRIPTION_H_ */
