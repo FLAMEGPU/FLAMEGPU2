@@ -23,8 +23,8 @@
 */
 CUDAAgentModel::CUDAAgentModel(const ModelDescription& description) : model_description(description), agent_map(), curve(cuRVEInstance::getInstance()) //, message_map(), function_map() {
 {
-	//create a reference to curve to ensure that it is initialised. This is a singleton class so will only be done once regardless of the number of CUDAgentModels.
-	
+    //create a reference to curve to ensure that it is initialised. This is a singleton class so will only be done once regardless of the number of CUDAgentModels.
+
     //populate the CUDA agent map
     const AgentMap &am = model_description.getAgentMap();
     AgentMap::const_iterator it; // const_iterator returns a reference to a constant value (const T&) and prevents modification of the reference value
@@ -96,17 +96,17 @@ void CUDAAgentModel::setInitialPopulationData(AgentPopulation& population)
 */
 void CUDAAgentModel::setPopulationData(AgentPopulation& population)
 {
-	CUDAAgentMap::iterator it;
-	it = agent_map.find(population.getAgentName());
+    CUDAAgentMap::iterator it;
+    it = agent_map.find(population.getAgentName());
 
-	if (it == agent_map.end())
-	{
-		//throw std::runtime_error("CUDA agent not found. This should not happen.");
-		throw InvalidCudaAgent();
-	}
+    if (it == agent_map.end())
+    {
+        //throw std::runtime_error("CUDA agent not found. This should not happen.");
+        throw InvalidCudaAgent();
+    }
 
-	//create agent state lists
-	it->second->setPopulationData(population);
+    //create agent state lists
+    it->second->setPopulationData(population);
 }
 
 void CUDAAgentModel::getPopulationData(AgentPopulation& population)
@@ -126,34 +126,55 @@ void CUDAAgentModel::getPopulationData(AgentPopulation& population)
 
 void CUDAAgentModel::addSimulation(const Simulation& simulation) {}
 
-void CUDAAgentModel::step(const Simulation& simulation) {
+void CUDAAgentModel::step(const Simulation& simulation)
+{
 
-	//for each each sim layer
-	for (unsigned int i = 0; i < simulation.getLayerCount(); i++){
-		const FunctionDescriptionVector& functions = simulation.getFunctionsAtLayer(i);
+    //for each each sim layer
+    for (unsigned int i = 0; i < simulation.getLayerCount(); i++)
+    {
+        const FunctionDescriptionVector& functions = simulation.getFunctionsAtLayer(i);
 
-		//for each func function
-		for (const AgentFunctionDescription func_des : functions){
-			//get the CUDA Agent
-			//TODO: Need a method to get a cuda agent name from an agent function!
-			//const CUDAAgent& ca = getCUDAAgent(func_des.)
+        //for each func function
+        for (AgentFunctionDescription func_des : functions) // const AgentFunctionDescription returns an error!
+        {
 
-			//configure runtime access of the functions variables within the FLAME_API object
-			//cuda_agent.mapRuntimeVariables(func_des);
+            //get the CUDA Agent
+            //TODO: Need a method to get a cuda agent name from an agent function!
+            const CUDAAgent& cuda_agent = getCUDAAgent(func_des.getParent().getName());
 
-			//get the agent function
-			FLAMEGPU_AGENT_FUNCTION_POINTER agent_func = func_des.getFunction();
-			
-			//call the agent function wrapper which creates an instance of FLAMEGPU_API on the device to pass to the agent function.
-			//TODO: Kernel dimensions will come from the CUDAAgent state list size
-			//agent_function_wrapper << < >> >(func_des.getName().c_str(), agent_func)
+            //configure runtime access of the functions variables within the FLAME_API object
+            cuda_agent.mapRuntimeVariables(func_des);
 
-			//unmap the function variables
-			//cuda_agent.mapRuntimeVariables(func_des);
-		}
+            //get the agent function
+            FLAMEGPU_AGENT_FUNCTION_POINTER agent_func = func_des.getFunction();
 
-	}
-	
+            //call the agent function wrapper which creates an instance of FLAMEGPU_API on the device to pass to the agent function.
+            //TODO: Kernel dimensions will come from the CUDAAgent state list size
+            //calculate the grid block size for main agent function
+
+            int blockSize; // The launch configurator returned block size
+            int minGridSize; // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
+            int gridSize; // The actual grid size needed, based on input size
+
+
+            int state_list_size = cuda_agent.getMaximumListSize();
+
+            //calculate the grid block size for main agent function
+            //cudaOccupancyMaxPotentialBlockSize( &minGridSize, &blockSize, agent_function_wrapper, 0, state_list_size);
+            //cudaOccupancyMaxPotentialBlockSizeVariableSMem ?
+
+            // Round up according to CUDAAgent state list size
+            gridSize = (state_list_size + blockSize - 1) / blockSize;
+
+            //agent_function_wrapper <<<gridSize,blockSize >>>(func_des.getName().c_str(), agent_func);
+            cudaDeviceSynchronize();
+
+            //unmap the function variables
+            cuda_agent.mapRuntimeVariables(func_des);
+        }
+
+    }
+
 
 
 
@@ -164,31 +185,35 @@ void CUDAAgentModel::step(const Simulation& simulation) {
 * @brief initialize CUDA params (e.g: set CUDA device)
 * @warning not tested
 */
-void CUDAAgentModel::init(void) { // (int argc, char** argv)
+void CUDAAgentModel::init(void)   // (int argc, char** argv)
+{
 
-	cudaError_t cudaStatus;
-	int device;
-	int device_count;
+    cudaError_t cudaStatus;
+    int device;
+    int device_count;
 
-	//default device
-	device = 0;
-	cudaStatus = cudaGetDeviceCount(&device_count);
+    //default device
+    device = 0;
+    cudaStatus = cudaGetDeviceCount(&device_count);
 
-	if (cudaStatus != cudaSuccess) {
-	    throw InvalidCUDAdevice("Error finding CUDA devices!  Do you have a CUDA-capable GPU installed?");
-		exit(0);
-	}
-	if (device_count == 0){
-		throw InvalidCUDAdevice("Error no CUDA devices found!");
-		exit(0);
-	}
+    if (cudaStatus != cudaSuccess)
+    {
+        throw InvalidCUDAdevice("Error finding CUDA devices!  Do you have a CUDA-capable GPU installed?");
+        exit(0);
+    }
+    if (device_count == 0)
+    {
+        throw InvalidCUDAdevice("Error no CUDA devices found!");
+        exit(0);
+    }
 
-	// Select device
-	cudaStatus = cudaSetDevice(device);
-	if (cudaStatus != cudaSuccess) {
-		throw InvalidCUDAdevice("Error setting CUDA device!");
-		exit(0);
-	}
+    // Select device
+    cudaStatus = cudaSetDevice(device);
+    if (cudaStatus != cudaSuccess)
+    {
+        throw InvalidCUDAdevice("Error setting CUDA device!");
+        exit(0);
+    }
 }
 
 
@@ -205,15 +230,15 @@ void CUDAAgentModel::simulate(const Simulation& sim)
         //throw std::runtime_error("CUDA agent map size is zero"); // population size = 0 ? do we mean checking the number of elements in the map container?
         throw InvalidCudaAgentMapSize();
 
-	//TODO: Pauls comments on how to simulate
-	//go through the simulation layers and get a FunctionDesMap (this allows us to get a description of the function as well as the pointer to execute)
-	//for each agentfunctdesc
-	//	ensure that the agent variables can be accessed via curve type calls (some kind of binding)
-	//	construct a FLAMEGPU_agent_handle
-	//	call the function (with handle passed)
-	//	some kind of unbinding
+    //TODO: Pauls comments on how to simulate
+    //go through the simulation layers and get a FunctionDesMap (this allows us to get a description of the function as well as the pointer to execute)
+    //for each agentfunctdesc
+    //	ensure that the agent variables can be accessed via curve type calls (some kind of binding)
+    //	construct a FLAMEGPU_agent_handle
+    //	call the function (with handle passed)
+    //	some kind of unbinding
 
-	//The thing that is missing is movement of agent data between states etc.
+    //The thing that is missing is movement of agent data between states etc.
 
 //    // based on not using a func pointer
 //    for (auto j: sim.layers.size())
@@ -243,14 +268,14 @@ void CUDAAgentModel::simulate(const Simulation& sim)
 
 const CUDAAgent& CUDAAgentModel::getCUDAAgent(std::string agent_name) const
 {
-	CUDAAgentMap::const_iterator it;
-	it = agent_map.find(agent_name);
+    CUDAAgentMap::const_iterator it;
+    it = agent_map.find(agent_name);
 
-	if (it == agent_map.end())
-	{
-		throw InvalidCudaAgent("CUDA agent not found.");
-	}
+    if (it == agent_map.end())
+    {
+        throw InvalidCudaAgent("CUDA agent not found.");
+    }
 
-	return *(it->second);
+    return *(it->second);
 }
 

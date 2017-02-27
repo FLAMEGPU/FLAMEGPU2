@@ -67,7 +67,7 @@ void AgentFunctionDescription::addOutput(const AgentFunctionOutput &output)
 */
 void AgentFunctionDescription::setFunction(FLAMEGPU_AGENT_FUNCTION_POINTER func_p)
 {
-	func = func_p;
+    func = func_p;
 }
 
 
@@ -79,3 +79,20 @@ FLAMEGPU_AGENT_FUNCTION_POINTER AgentFunctionDescription::getFunction() const
 {
     return func;
 }
+
+void AgentFunctionDescription::setParent(AgentDescription& agent)
+{
+    //check to make sure it is not owened by any other object
+    if (parent != NULL)
+        throw InvalidOperation("This object is already owned by another agent description");
+
+    parent = &agent;
+}
+
+const AgentDescription& AgentFunctionDescription::getParent()
+{
+    if (parent==NULL)
+        throw InvalidOperation("Does not belong to a model object");
+    return *parent;//&(*parent);
+}
+

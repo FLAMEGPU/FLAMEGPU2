@@ -20,7 +20,7 @@ class FLAMEGPU_API;  // Forward declaration (class defined below)
 enum FLAME_GPU_AGENT_STATUS { ALIVE, DEAD };
 
 /**
- * @breif FLAMEGPU function pointer definition
+ * @brief FLAMEGPU function pointer definition
  */
 typedef FLAME_GPU_AGENT_STATUS(*FLAMEGPU_AGENT_FUNCTION_POINTER)(FLAMEGPU_API *api);
 
@@ -37,9 +37,9 @@ typedef FLAME_GPU_AGENT_STATUS(*FLAMEGPU_AGENT_FUNCTION_POINTER)(FLAMEGPU_API *a
 
 
 
-/** @brief	A flame gpu api class for the device runtime only  
+/** @brief	A flame gpu api class for the device runtime only
  *
- * This class should only be used by the device and never created on the host. It is safe for each agent function to create a copy of this class on the device. Any singleton type 
+ * This class should only be used by the device and never created on the host. It is safe for each agent function to create a copy of this class on the device. Any singleton type
  * behaviour is handled by the curveInstance class. This will ensure that initialisation of the curve (C) library is done only once.
  */
 class FLAMEGPU_API
@@ -59,7 +59,7 @@ public:
 
 /******************************************************************************************************* Implementation ********************************************************/
 
-//An example of how the getVariable should work 
+//An example of how the getVariable should work
 //1) Given the string name argument use runtime hashing to get a variable unsigned int (call function in RuntimeHashing.h)
 //2) Call (a new local) getHashIndex function to check the actual index in the hash table for the variable name. Once found we have a pointer to the vector of data for that agent variable
 //3) Using the CUDA thread and block index (threadIdx.x) return the specific agent variable value from the vector

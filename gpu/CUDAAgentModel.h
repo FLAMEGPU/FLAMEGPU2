@@ -18,7 +18,7 @@
 
 //include sub classes
 #include "CUDAAgent.h"
-#include "../runtime/curve/cuRVEInstance.h"
+#include "../runtime/cuRVE/cuRVEInstance.h"
 
 //forward declare classes from other modules
 class ModelDescription;

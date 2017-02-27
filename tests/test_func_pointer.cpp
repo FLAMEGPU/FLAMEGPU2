@@ -42,4 +42,3 @@ FLAMEGPU_AGENT_FUNCTION(stay_func)
 {
 	return ALIVE;
 }
-

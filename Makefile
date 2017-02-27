@@ -31,11 +31,13 @@ LDIR :=
 
 INPUT_DATA:=iterations/0.xml
 
-IDIR := api/
+IDIR := *.h
 SRC_GPU := gpu/
 SRC_POP := pop/
 SRC_SIM := sim/
 SRC_MODEL:=model/
+SRC_RUNTIME := runtime/
+SRC_CURVE := runtime/cuRVE/
 
 STD11     := -std=c++11
 STD14     := -std=c++14
@@ -51,7 +53,7 @@ TEST_DIR := TEST
 # export CUDA_PATH=/usr/local/cuda-8.0
 
 HOST_COMPILER := g++
-NVCC          := nvcc -ccbin $(HOST_COMPILER)
+NVCC          := nvcc -ccbin $(HOST_COMPILER) -c
 #NVCC          := $(CUDA_PATH)/bin/nvcc -ccbin $(HOST_COMPILER)
 
 # internal flags
@@ -159,22 +161,32 @@ POP_CO_FILES := $(addprefix $(SRC_POP),$(notdir $(POP_C_FILES:.cpp=.o)))
 MODEL_C_FILES := $(wildcard $(SRC_MODEL)*.cpp)
 MODEL_CO_FILES := $(addprefix $(SRC_MODEL),$(notdir $(MODEL_C_FILES:.cpp=.o)))
 
+RUNTIME_CU_FILES := $(wildcard $(SRC_RUNTIME)*.cu)
+RUNTIME_CUO_FILES := $(addprefix $(SRC_RUNTIME),$(notdir $(RUNTIME_CU_FILES:.cu=.o)))
+
+CURVE_CU_FILES := $(wildcard $(SRC_CURVE)*.cu)
+CURVE_CUO_FILES := $(addprefix $(SRC_CURVE),$(notdir $(CURVE_CU_FILES:.cu=.o)))
 
 $(SRC_GPU)%.o: $(SRC_GPU)%.cpp
 	$(EXEC) $(HOST_COMPILER) $(DEBUG) $(STD11) $(CUDA_LIB)  -o $@ -c $<
 
 $(SRC_SIM)%.o: $(SRC_SIM)%.cpp
-	$(EXEC) $(HOST_COMPILER) $(DEBUG) $(STD11)  -o $@ -c $<
+	$(EXEC) $(HOST_COMPILER) $(DEBUG) $(STD11) $(CUDA_LIB) -o $@ -c $<
 
 $(SRC_MODEL)%.o: $(SRC_MODEL)%.cpp
-	$(EXEC) $(HOST_COMPILER) $(DEBUG) $(STD11) -o $@ -c $<
+	$(EXEC) $(HOST_COMPILER) $(DEBUG) $(STD11) $(CUDA_LIB) -o $@ -c $<
 
 $(SRC_POP)%.o: $(SRC_POP)%.cpp
-	$(EXEC) $(HOST_COMPILER) $(DEBUG) $(STD11) $(BOOST_LIB) -o $@ -c $<
+	$(EXEC) $(HOST_COMPILER) $(DEBUG) $(STD11) $(BOOST_LIB)  $(CUDA_LIB) -o $@ -c $<
 
+$(SRC_RUNTIME)%.o: $(SRC_RUNTIME)%.cu
+	$(EXEC) $(NVCC) $(DEBUG) $(STD11) $(BOOST_LIB)  $(CUDA_LIB)  $(GENCODE_FLAGS) -o $@ -c $<
+	
+$(SRC_CURVE)%.o: $(SRC_CURVE)%.cu
+	$(EXEC) $(NVCC) $(DEBUG) $(STD11) $(BOOST_LIB)  $(CUDA_LIB)  $(GENCODE_FLAGS) -o $@ -c $<
 
 FGPU: BUILD_TYPE=$(Mode_TYPE)
-FGPU: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES) main.o test_func_pointer.o
+FGPU: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES) $(CURVE_CUO_FILES) main.o test_func_pointer.o 
 	$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
 	$(EXEC) mkdir -p $(BIN_DIR)$(BUILD_TYPE)
 	$(EXEC) mv $@ $(BIN_DIR)$(BUILD_TYPE)
@@ -183,7 +195,7 @@ FGPU: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES) main.
 	chmod +x $(BIN_DIR)FGPU.sh
 
 
-BOOST_TEST: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES) test_all.o test_func_pointer.o
+BOOST_TEST: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES) $(CURVE_CUO_FILES) test_all.o test_func_pointer.o
 	$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
 	$(EXEC) mkdir -p $(BIN_DIR)$(TEST_DIR)
 	$(EXEC) mv $@ $(BIN_DIR)$(TEST_DIR)

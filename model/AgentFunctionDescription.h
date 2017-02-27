@@ -59,6 +59,8 @@ public:
 
 	//todo: add agent output
 
+	void setParent(AgentDescription& agent);
+	const AgentDescription& getParent();
 
 public:
 
@@ -68,6 +70,8 @@ public:
 	InputsMap inputs;
 	OutputsMap outputs;
 	FLAMEGPU_AGENT_FUNCTION_POINTER func = NULL;
+	//TODO:Paul idea for parent objects
+	AgentDescription* parent = 0;
 };
 
 #endif /* AGENTFUNCTIONDESCRIPTION_H_ */

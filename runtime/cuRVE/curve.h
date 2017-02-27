@@ -12,7 +12,7 @@
  * @TODO: Requires vector length table for each variable (or namespace) which is registered. For now no safe checking of vector length is done.
  */
 
-
+#include <cstring>
 #include <cuda_runtime.h>
 
 #define UNKNOWN_CURVE_VARIABLE 	-1						//!< value returned as a CurveVariable if an API function encounters an error
@@ -83,7 +83,7 @@ template <unsigned int N> __device__ __host__ inline static CurveVariableHash cu
 */
 __host__ inline static CurveVariableHash curveVariableRuntimeHash(const char* str)
 {
-	const size_t length = strlen(str) + 1;
+	const size_t length = std::strlen(str) + 1;
 	unsigned int hash = 2166136261u;
 
 	for (size_t i = 0; i<length; ++i){
@@ -116,7 +116,7 @@ __host__ CurveVariable curveGetVariableHandle(CurveVariableHash variable_hash);
  *  @param d_ptr a pointer to the vector which holds the hashed variable of give name
  *  @return CurveVariable Handle of registered variable or UNKNOWN_CURVE_VARIABLE if an error is encountered.
  */
-__host__ CurveVariable curveRegisterVariableByHash(CurveVariableHash variable_hash, void* d_prt);
+__host__ CurveVariable curveRegisterVariableByHash(CurveVariableHash variable_hash, void* d_ptr);
 
 /** @brief Template function for registering a constant string
  * 	Registers a constant string variable name by hashing and then inserting into a hash table.
@@ -124,7 +124,7 @@ __host__ CurveVariable curveRegisterVariableByHash(CurveVariableHash variable_ha
  *  @param d_ptr a pointer to the vector which holds the variable of give name
  *  @return CurveVariable Handle of registered variable or UNKNOWN_CURVE_VARIABLE if an error is encountered.
  */
-template <unsigned int N> __host__ CurveVariable curveRegisterVariable(const char(&variableName)[N], void* d_prt){
+template <unsigned int N> __host__ CurveVariable curveRegisterVariable(const char(&variableName)[N], void* d_ptr){
 	CurveVariableHash variable_hash = curveVariableHash(variableName);
 	return curveRegisterVariableByHash(variable_hash, d_ptr);
 }
@@ -132,7 +132,7 @@ template <unsigned int N> __host__ CurveVariable curveRegisterVariable(const cha
 
 
 /** @brief Function for un-registering a variable by a CurveVariableHash
-* 	Un-registers a variable by removal from a hash table. Recommend using the provided curveUnregisterVariable template function. 
+* 	Un-registers a variable by removal from a hash table. Recommend using the provided curveUnregisterVariable template function.
 *  @param variable_hash A cuRVE variable string hash from curveVariableHash.
 
 */
@@ -206,7 +206,7 @@ __host__ void curveSetDefaultNamespace();
 
 /* DEVICE API FUNCTIONS */
 
-/** @breif Device function for getting a pointer to a variable of given name 
+/** @brief Device function for getting a pointer to a variable of given name
  * Returns a generic pointer to a variable of given name at a specific offset in bytes from the start of the variable array.
  *  @param variable_hash A cuRVE variable string hash from CurveVariableHash.
  *  @param offset an offset into the variable array in bytes (offset is variable index * sizeof(variable type))
@@ -238,7 +238,7 @@ __device__ float curveGetVariableByHash(const CurveVariableHash variable_hash, u
  *  @param index The index of the variable in the named variable vector
  *  @return T A value of given typr at the given index for the variable with the provided hash. Will return 0 if an error is raised.
  */
-template <typename T, unsigned int N> 
+template <typename T, unsigned int N>
 __device__ float curveGetVariable(const char (&variableName)[N], unsigned int index)
 {
 	CurveVariableHash variable_hash = curveVariableHash(variableName);
@@ -266,7 +266,7 @@ __device__ void curveSetVariableByHash(const CurveVariableHash variable_hash, T 
  *  @param index The index of the variable in the named variable vector
  *  @param value The typed value to set at the given index.
  */
-template <typename T, unsigned int N> 
+template <typename T, unsigned int N>
 __device__ void curveSetVariable(const char(&variableName)[N], T variable, unsigned int index){
 	CurveVariableHash variable_hash = curveVariableHash(variableName);
 	curveSetVariableByHash<T>(variable_hash, variable, index);
