@@ -11,6 +11,7 @@
 #ifndef CUDAAGENTLIST_H_
 #define CUDAAGENTLIST_H_
 
+#include <string>
 #include <memory>
 #include <vector>
 #include <map>

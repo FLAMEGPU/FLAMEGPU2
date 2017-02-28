@@ -14,7 +14,8 @@
 #include "../pop/AgentPopulation.h"
 #include "../sim/Simulation.h"
 
-
+// include FLAMEGPU kernel wrapper
+#include "../runtime/agent_function.cu"
 
 // agent_map is a type CUDAAgentMap
 /**
@@ -160,13 +161,13 @@ void CUDAAgentModel::step(const Simulation& simulation)
             int state_list_size = cuda_agent.getMaximumListSize();
 
             //calculate the grid block size for main agent function
-            //cudaOccupancyMaxPotentialBlockSize( &minGridSize, &blockSize, agent_function_wrapper, 0, state_list_size);
+            cudaOccupancyMaxPotentialBlockSize( &minGridSize, &blockSize, agent_function_wrapper, 0, state_list_size);
             //cudaOccupancyMaxPotentialBlockSizeVariableSMem ?
 
             // Round up according to CUDAAgent state list size
             gridSize = (state_list_size + blockSize - 1) / blockSize;
 
-            //agent_function_wrapper <<<gridSize,blockSize >>>(func_des.getName().c_str(), agent_func);
+            agent_function_wrapper <<<gridSize,blockSize >>>(func_des.getName().c_str(), agent_func);
             cudaDeviceSynchronize();
 
             //unmap the function variables

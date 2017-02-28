@@ -27,7 +27,7 @@
 ################################################################################
 
 BIN_DIR := bin/
-LDIR := 
+LDIR := ../../lib/x86_64-linux-gnu/
 
 INPUT_DATA:=iterations/0.xml
 
@@ -53,7 +53,7 @@ TEST_DIR := TEST
 # export CUDA_PATH=/usr/local/cuda-8.0
 
 HOST_COMPILER := g++
-NVCC          := nvcc -ccbin $(HOST_COMPILER) -c
+NVCC          := nvcc -ccbin $(HOST_COMPILER)
 #NVCC          := $(CUDA_PATH)/bin/nvcc -ccbin $(HOST_COMPILER)
 
 # internal flags
@@ -152,6 +152,9 @@ test_func_pointer.o: tests/test_func_pointer.cpp
 GPU_C_FILES := $(wildcard $(SRC_GPU)*.cpp)
 GPU_CO_FILES := $(addprefix $(SRC_GPU),$(notdir $(GPU_C_FILES:.cpp=.o)))
 
+GPU_CU_FILES := $(wildcard $(SRC_GPU)*.cu)
+GPU_CUO_FILES := $(addprefix $(SRC_GPU),$(notdir $(GPU_CU_FILES:.cu=.o)))
+
 SIM_C_FILES := $(wildcard $(SRC_SIM)*.cpp)
 SIM_CO_FILES := $(addprefix $(SRC_SIM),$(notdir $(SIM_C_FILES:.cpp=.o)))
 
@@ -169,6 +172,9 @@ CURVE_CUO_FILES := $(addprefix $(SRC_CURVE),$(notdir $(CURVE_CU_FILES:.cu=.o)))
 
 $(SRC_GPU)%.o: $(SRC_GPU)%.cpp
 	$(EXEC) $(HOST_COMPILER) $(DEBUG) $(STD11) $(CUDA_LIB)  -o $@ -c $<
+	
+$(SRC_GPU)%.o: $(SRC_GPU)%.cu
+	$(EXEC) $(NVCC) $(DEBUG) $(STD11) $(BOOST_LIB)  $(CUDA_LIB)  $(GENCODE_FLAGS) -o $@ -c $<
 
 $(SRC_SIM)%.o: $(SRC_SIM)%.cpp
 	$(EXEC) $(HOST_COMPILER) $(DEBUG) $(STD11) $(CUDA_LIB) -o $@ -c $<
@@ -178,17 +184,20 @@ $(SRC_MODEL)%.o: $(SRC_MODEL)%.cpp
 
 $(SRC_POP)%.o: $(SRC_POP)%.cpp
 	$(EXEC) $(HOST_COMPILER) $(DEBUG) $(STD11) $(BOOST_LIB)  $(CUDA_LIB) -o $@ -c $<
-
-$(SRC_RUNTIME)%.o: $(SRC_RUNTIME)%.cu
-	$(EXEC) $(NVCC) $(DEBUG) $(STD11) $(BOOST_LIB)  $(CUDA_LIB)  $(GENCODE_FLAGS) -o $@ -c $<
 	
 $(SRC_CURVE)%.o: $(SRC_CURVE)%.cu
 	$(EXEC) $(NVCC) $(DEBUG) $(STD11) $(BOOST_LIB)  $(CUDA_LIB)  $(GENCODE_FLAGS) -o $@ -c $<
 
+# excluded
+$(SRC_RUNTIME)%.o: $(SRC_RUNTIME)%.cu
+	$(EXEC) $(NVCC) $(DEBUG) $(STD11) $(BOOST_LIB)  $(CUDA_LIB)  $(GENCODE_FLAGS) -o $@ -c $<
+	
+#$(EXEC) nvcc $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
+#$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
+
 FGPU: BUILD_TYPE=$(Mode_TYPE)
-FGPU: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES) $(CURVE_CUO_FILES) $(RUNTIME_CUO_FILES) main.o test_func_pointer.o 
-	#$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	$(EXEC) nvcc $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
+FGPU: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES)  $(GPU_CUO_FILES) $(CURVE_CUO_FILES) main.o test_func_pointer.o 
+	$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
 	$(EXEC) mkdir -p $(BIN_DIR)$(BUILD_TYPE)
 	$(EXEC) mv $@ $(BIN_DIR)$(BUILD_TYPE)
 	find . -name '*.gch' -delete
@@ -196,8 +205,7 @@ FGPU: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES) $(CUR
 	chmod +x $(BIN_DIR)FGPU.sh
 
 
-BOOST_TEST: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES) $(CURVE_CUO_FILES) $(RUNTIME_CUO_FILES) test_all.o test_func_pointer.o
-	#$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
+BOOST_TEST: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES) $(GPU_CUO_FILES) $(CURVE_CUO_FILES) test_all.o test_func_pointer.o
 	$(EXEC) nvcc $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
 	$(EXEC) mkdir -p $(BIN_DIR)$(TEST_DIR)
 	$(EXEC) mv $@ $(BIN_DIR)$(TEST_DIR)
