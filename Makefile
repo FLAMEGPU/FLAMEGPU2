@@ -186,8 +186,9 @@ $(SRC_CURVE)%.o: $(SRC_CURVE)%.cu
 	$(EXEC) $(NVCC) $(DEBUG) $(STD11) $(BOOST_LIB)  $(CUDA_LIB)  $(GENCODE_FLAGS) -o $@ -c $<
 
 FGPU: BUILD_TYPE=$(Mode_TYPE)
-FGPU: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES) $(CURVE_CUO_FILES) main.o test_func_pointer.o 
-	$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
+FGPU: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES) $(CURVE_CUO_FILES) $(RUNTIME_CUO_FILES) main.o test_func_pointer.o 
+	#$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
+	$(EXEC) nvcc $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
 	$(EXEC) mkdir -p $(BIN_DIR)$(BUILD_TYPE)
 	$(EXEC) mv $@ $(BIN_DIR)$(BUILD_TYPE)
 	find . -name '*.gch' -delete
@@ -195,8 +196,9 @@ FGPU: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES) $(CUR
 	chmod +x $(BIN_DIR)FGPU.sh
 
 
-BOOST_TEST: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES) $(CURVE_CUO_FILES) test_all.o test_func_pointer.o
-	$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
+BOOST_TEST: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES) $(CURVE_CUO_FILES) $(RUNTIME_CUO_FILES) test_all.o test_func_pointer.o
+	#$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
+	$(EXEC) nvcc $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
 	$(EXEC) mkdir -p $(BIN_DIR)$(TEST_DIR)
 	$(EXEC) mv $@ $(BIN_DIR)$(TEST_DIR)
 	@echo ./$(TEST_DIR)/BOOST_TEST --log_level=test_suite --run_test='$$'{1:-}> $(BIN_DIR)RUN_TEST.sh #--log_level=message
