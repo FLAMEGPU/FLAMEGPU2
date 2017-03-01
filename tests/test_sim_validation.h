@@ -16,8 +16,7 @@ BOOST_AUTO_TEST_CASE(SimulationFunctionCheck)
     ModelDescription flame_model("circles_model");
     AgentDescription circle_agent("circle");
 
-//    circle_agent.addAgentVariable<float>("x");
-//    circle_agent.addAgentVariable<float>("y");
+    circle_agent.addAgentVariable<float>("x");
 
     AgentFunctionDescription output_data("output_data");
     AgentFunctionOutput output_location("location");
@@ -30,17 +29,20 @@ BOOST_AUTO_TEST_CASE(SimulationFunctionCheck)
     move.setFunction(move_func);
     circle_agent.addAgentFunction(move);
 
+    AgentFunctionDescription stay("stay");
+    stay.setFunction(stay_func);
+    circle_agent.addAgentFunction(stay);
+
     flame_model.addAgent(circle_agent);
 
 
-//    	AgentPopulation population(circle_agent);
-//
-//    for (int i=0; i< 10; i++)
-//    {
-//        AgentInstance instance = population.getNextInstance("default");
-//        instance.setVariable<float>("x", i*0.1f);
-//        instance.setVariable<float>("y", i*0.1f);
-//    }
+    AgentPopulation population(circle_agent);
+
+    for (int i=0; i< 10; i++)
+    {
+        AgentInstance instance = population.getNextInstance("default");
+        instance.setVariable<float>("x", i*0.1f);
+    }
 
 
     Simulation simulation(flame_model);
@@ -51,70 +53,9 @@ BOOST_AUTO_TEST_CASE(SimulationFunctionCheck)
 
 
     SimulationLayer input_layer(simulation, "input_layer");
+
     //check if the function name exists
     BOOST_CHECK_THROW(input_layer.addAgentFunction("output_"), InvalidAgentFunc); // expecting an error
-
-    SimulationLayer move_layer(simulation, "move_layer");
-    move_layer.addAgentFunction("move");
-    simulation.addSimulationLayer(move_layer);
-
-    BOOST_TEST_MESSAGE( "\nTesting Simulation function layers (names and function pointers - one func per layer) .." );
-
-    // NOTE : this test only works if there is one func per layer.
-	//TODO: What is this testing? Layers have multiple functions so the getFunctionAtLayer semantics is wrong. Perhaps getFunctionsAtLayer() then check all functions if the function is in the layer. Or getLayerAt(int).getFunctionAt(int)
-	/*
-    // check the name of the agent function
-    for (auto i: simulation.getFunctionAtLayer(0))
-    {
-        BOOST_CHECK(i.first=="output_data");
-    }
-    // check the name of the function pointer
-    for (auto i: simulation.getFunctionAtLayer(0))
-    {
-        //BOOST_CHECK(i.second.getFunction()==output_func);
-    }
-
-    // check the name of the agent function
-    for (auto i: simulation.getFunctionAtLayer(1))
-    {
-        BOOST_CHECK(i.first=="move");
-    }
-    // check the name of the function pointer
-    for (auto i: simulation.getFunctionAtLayer(1))
-    {
-        //BOOST_CHECK(i.second.getFunction()==move_func);
-    }
-
-    //check that getFunctionAtLayer should fail if layer does not exist
-    BOOST_CHECK_THROW(simulation.getFunctionAtLayer(2), InvalidMemoryCapacity); // expecting an error
-
-    size_t one = 1;
-    const FunctionDesMap& func = simulation.getFunctionAtLayer(0);
-    BOOST_CHECK(func.size()==one);  //check the layer 0 size
-	*/
-
-    BOOST_CHECK(simulation.getModelDescritpion().getName()=="circles_model");
-}
-
-BOOST_AUTO_TEST_CASE(SimulationFunctionLayerCheck)
-{
-
-    ModelDescription flame_model("circles_model");
-    AgentDescription circle_agent("circle");
-
-    AgentFunctionDescription move("move");
-    move.setFunction(move_func);
-    circle_agent.addAgentFunction(move);
-
-
-    AgentFunctionDescription stay("stay");
-    stay.setFunction(stay_func);
-    circle_agent.addAgentFunction(stay);
-
-    flame_model.addAgent(circle_agent);
-
-
-    Simulation simulation(flame_model);
 
     SimulationLayer moveStay_layer(simulation, "move_layer");
     moveStay_layer.addAgentFunction("move");
@@ -122,17 +63,62 @@ BOOST_AUTO_TEST_CASE(SimulationFunctionLayerCheck)
     simulation.addSimulationLayer(moveStay_layer);
 
 
-    BOOST_TEST_MESSAGE( "\nTesting each simulation function layer  (names and function pointers - multi func per layer) .." );
 
-    //check more than one function per layer
-  //  size_t two = 2;
-//    const FunctionDesMap& func = simulation.getFunctionAtLayer(0);
- //   BOOST_CHECK(func.size()==two);
-    //BOOST_CHECK(func.at(0)->second.getFunction()==move_func);
-    // BOOST_CHECK(func.at(1)->second.getFunction()==stay_func);
+    BOOST_TEST_MESSAGE( "\nTesting simulation of functions per layers .." );
+
+    // check number of function layers
+    BOOST_CHECK(simulation.getLayerCount()==2);
+
+    //for each each sim layer
+    for (unsigned int i = 0; i < simulation.getLayerCount(); i++)
+    {
+        const FunctionDescriptionVector& functions = simulation.getFunctionsAtLayer(i);
+
+        //for each func function
+        for (AgentFunctionDescription func_des : functions)
+        {
+
+            //get the agent function
+            FLAMEGPU_AGENT_FUNCTION_POINTER agent_func = func_des.getFunction();
+
+            FLAMEGPU_API *api = new FLAMEGPU_API();
+
+            // check functions - printing Hello only
+            BOOST_TEST_MESSAGE( "Calling agent function "<< func_des.getName() << " at layer " << i << " returns \n" << agent_func(api) <<  "!\n");
+        }
+    }
+
+    BOOST_CHECK(simulation.getModelDescritpion().getName()=="circles_model");
 }
+//
+//BOOST_AUTO_TEST_CASE(SimulationFunctionLayerCheck)
+//{
+//
+//    ModelDescription flame_model("circles_model");
+//    AgentDescription circle_agent("circle");
+//
+//    AgentFunctionDescription move("move");
+//    move.setFunction(move_func);
+//    circle_agent.addAgentFunction(move);
+//
+//
+//    AgentFunctionDescription stay("stay");
+//    stay.setFunction(stay_func);
+//    circle_agent.addAgentFunction(stay);
+//
+//    flame_model.addAgent(circle_agent);
+//
+//
+//    Simulation simulation(flame_model);
+//
+//    SimulationLayer moveStay_layer(simulation, "move_layer");
+//    moveStay_layer.addAgentFunction("move");
+//    moveStay_layer.addAgentFunction("stay");
+//    simulation.addSimulationLayer(moveStay_layer);
+//
+//}
 
-// TODO : test funcs executing (printing hello only)
+// DONE : test funcs executing (printing hello only)
 // TODO : test funcs executing (printing values only)
 // TODO : test funcs executing (on device)
 

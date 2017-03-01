@@ -145,11 +145,6 @@ int main(void)
     simulation.setSimulationSteps(10);
 
 
-    // Singleton pattern
-   // FLAMEGPU_API *fgpu = &FLAMEGPU_API::getInstance(flame_model);
-
-
-
     /* CUDA agent model */
     /* Instantiate the model with a set of data (agents) on the device */
     /* Run the model */

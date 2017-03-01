@@ -12,6 +12,10 @@ __global__ void agent_function_wrapper(const char* func_name, FLAMEGPU_AGENT_FUN
 
     if (flag == 1){
     // delete the agent
+    printf("Agent DEAD!\n");
+    }
+    else{
+    printf("Agent ALIVE!\n");
     }
 
 

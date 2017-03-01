@@ -22,23 +22,25 @@ FLAMEGPU_AGENT_FUNCTION(output_func)
 //        cout<<instance_s1.getVariable<int>("x");
 //    }
 //    return ALIVE;
-	printf("hello\n");
+    printf("Hello from output_func\n");
 
-	return ALIVE;
+    return ALIVE;
 }
 
 FLAMEGPU_AGENT_FUNCTION(input_func)
 {
-
-	return ALIVE;
+    printf("Hello from input_func\n");
+    return ALIVE;
 }
 
 FLAMEGPU_AGENT_FUNCTION(move_func)
 {
-	return ALIVE;
+    printf("Hello from move_func\n");
+    return ALIVE;
 }
 
 FLAMEGPU_AGENT_FUNCTION(stay_func)
 {
-	return ALIVE;
+    printf("Hello from stay_func\n");
+    return ALIVE;
 }

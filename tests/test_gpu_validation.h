@@ -28,10 +28,14 @@ BOOST_AUTO_TEST_CASE(GPUMemoryTest)
 		AgentInstance instance = population.getNextInstance("default");
 		instance.setVariable<int>("id", i);
 	}
-	
+
 
     CUDAAgentModel cuda_model(flame_model);
     cuda_model.setInitialPopulationData(population);
+
+
+   // cuda_model.step();
+
 
 	AgentPopulation population2(circle_agent, 100);
 	cuda_model.getPopulationData(population2);
