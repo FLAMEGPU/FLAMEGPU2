@@ -81,6 +81,7 @@ int main(void)
     move.setFunction(move_func);
     circle_agent.addAgentFunction(move);
 
+
     //model
     flame_model.addMessage(location_message);
     flame_model.addAgent(circle_agent);

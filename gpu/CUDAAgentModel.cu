@@ -171,7 +171,8 @@ void CUDAAgentModel::step(const Simulation& simulation)
             cudaDeviceSynchronize();
 
             //unmap the function variables
-            cuda_agent.mapRuntimeVariables(func_des);
+            cuda_agent.unmapRuntimeVariables(func_des);
+
         }
 
     }
