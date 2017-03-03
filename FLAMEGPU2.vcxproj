@@ -75,16 +75,32 @@
       </ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="tests\test_func_pointer.cpp" />
+    <CudaCompile Include="tests\test_func_pointer.cu">
+      <FileType>CppCode</FileType>
+      <GenerateRelocatableDeviceCode Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</GenerateRelocatableDeviceCode>
+      <GenerateRelocatableDeviceCode Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</GenerateRelocatableDeviceCode>
+      <GenerateRelocatableDeviceCode Condition="'$(Configuration)|$(Platform)'=='BoostTest|x64'">true</GenerateRelocatableDeviceCode>
+    </CudaCompile>
   </ItemGroup>
   <ItemGroup>
-    <CudaCompile Include="gpu\CUDAAgentModel.cu" />
-    <CudaCompile Include="main.cpp">
+    <CudaCompile Include="gpu\CUDAAgentModel.cu">
+      <CodeGeneration Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">compute_20,sm_20;compute_50,sm_50</CodeGeneration>
+      <CodeGeneration Condition="'$(Configuration)|$(Platform)'=='Release|x64'">compute_20,sm_20;compute_50,sm_50</CodeGeneration>
+      <CodeGeneration Condition="'$(Configuration)|$(Platform)'=='BoostTest|x64'">compute_20,sm_20;compute_50,sm_50</CodeGeneration>
+      <GenerateRelocatableDeviceCode Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</GenerateRelocatableDeviceCode>
+      <GenerateRelocatableDeviceCode Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</GenerateRelocatableDeviceCode>
+      <GenerateRelocatableDeviceCode Condition="'$(Configuration)|$(Platform)'=='BoostTest|x64'">true</GenerateRelocatableDeviceCode>
+    </CudaCompile>
+    <CudaCompile Include="main.cu">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='BoostTest|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='BoostTest|x64'">true</ExcludedFromBuild>
     </CudaCompile>
-    <CudaCompile Include="runtime\agent_function.cu" />
+    <CudaCompile Include="runtime\agent_function.cu">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='BoostTest|x64'">true</ExcludedFromBuild>
+    </CudaCompile>
     <CudaCompile Include="runtime\cuRVE\curve.cu" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

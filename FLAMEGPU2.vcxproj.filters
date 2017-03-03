@@ -151,12 +151,8 @@
     <ClCompile Include="tests\test_all.cpp">
       <Filter>tests</Filter>
     </ClCompile>
-    <ClCompile Include="tests\test_func_pointer.cpp">
-      <Filter>tests</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <CudaCompile Include="main.cpp" />
     <CudaCompile Include="runtime\cuRVE\curve.cu">
       <Filter>runtime\cuRVE</Filter>
     </CudaCompile>
@@ -165,6 +161,10 @@
     </CudaCompile>
     <CudaCompile Include="gpu\CUDAAgentModel.cu">
       <Filter>gpu</Filter>
+    </CudaCompile>
+    <CudaCompile Include="main.cu" />
+    <CudaCompile Include="tests\test_func_pointer.cu">
+      <Filter>tests</Filter>
     </CudaCompile>
   </ItemGroup>
 </Project>

@@ -17,6 +17,9 @@
 // include FLAMEGPU kernel wrapper
 #include "../runtime/agent_function.cu"
 
+//CHEATING!!!!!!
+#include "../tests/test_func_pointer.h"
+
 
 /*
 // NOTE device functions are supported in CUDA 3.2 on sm_2x platforms
@@ -159,7 +162,7 @@ void CUDAAgentModel::step(const Simulation& simulation)
             const CUDAAgent& cuda_agent = getCUDAAgent(func_des.getParent().getName());
 
             //configure runtime access of the functions variables within the FLAME_API object
-            cuda_agent.mapRuntimeVariables(func_des);
+           // cuda_agent.mapRuntimeVariables(func_des);
 
             //get the agent function
             FLAMEGPU_AGENT_FUNCTION_POINTER agent_func = func_des.getFunction();
@@ -176,6 +179,11 @@ void CUDAAgentModel::step(const Simulation& simulation)
 
             int state_list_size = cuda_agent.getMaximumListSize();
 
+			//FLAMEGPU_AGENT_FUNCTION_POINTER h_func_ptr;
+			//cudaMemcpyFromSymbol(h_func_ptr, output_func_ptr, sizeof(FLAMEGPU_AGENT_FUNCTION_POINTER), cudaMemcpyDeviceToHost);
+			//cudaMalloc(&d_func_ptr, sizeof(FLAMEGPU_AGENT_FUNCTION_POINTER));
+			//cudaMemcpy(d_func_ptr, agent_func, sizeof(FLAMEGPU_AGENT_FUNCTION_POINTER), cudaMemcpyHostToDevice);
+
             //calculate the grid block size for main agent function
             cudaOccupancyMaxPotentialBlockSize( &minGridSize, &blockSize, agent_function_wrapper, 0, state_list_size);
             //cudaOccupancyMaxPotentialBlockSizeVariableSMem ?
@@ -184,11 +192,12 @@ void CUDAAgentModel::step(const Simulation& simulation)
             gridSize = (state_list_size + blockSize - 1) / blockSize;
 
 
-            agent_function_wrapper <<<gridSize,blockSize >>>(func_des.getName().c_str(), agent_func);
-            cudaDeviceSynchronize();
+			agent_function_wrapper << <1, 1 >> >();
+			//agent_function_wrapper <<<gridSize, blockSize >>>(agent_func);
+			cudaDeviceSynchronize();
 
             //unmap the function variables
-            cuda_agent.unmapRuntimeVariables(func_des);
+           // cuda_agent.unmapRuntimeVariables(func_des);
 
         }
 
