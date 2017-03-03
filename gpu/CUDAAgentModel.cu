@@ -17,6 +17,21 @@
 // include FLAMEGPU kernel wrapper
 #include "../runtime/agent_function.cu"
 
+
+/*
+// NOTE device functions are supported in CUDA 3.2 on sm_2x platforms
+//Using func pointer (idea) -> we may need to create static function pointer variable
+//Having static pointers to device functions (globaly)
+__device__ FLAMEGPU_AGENT_FUNCTION_POINTER agent_func[num] = .. ;
+//----- NEXT
+// Declare a host and device varible inside the void CUDAAgentModel::step(const Simulation& simulation)
+FLAMEGPU_AGENT_FUNCTION_POINTER h
+Then copying device function pointer to host side with cudaMemcpyFromSymbol
+// note : we can have vector of function pointer declared as device variable
+// To Do
+*/
+
+
 // agent_map is a type CUDAAgentMap
 /**
 * CUDAAgentModel class
@@ -149,6 +164,7 @@ void CUDAAgentModel::step(const Simulation& simulation)
             //get the agent function
             FLAMEGPU_AGENT_FUNCTION_POINTER agent_func = func_des.getFunction();
 
+
             //call the agent function wrapper which creates an instance of FLAMEGPU_API on the device to pass to the agent function.
             //TODO: Kernel dimensions will come from the CUDAAgent state list size
             //calculate the grid block size for main agent function
@@ -166,6 +182,7 @@ void CUDAAgentModel::step(const Simulation& simulation)
 
             // Round up according to CUDAAgent state list size
             gridSize = (state_list_size + blockSize - 1) / blockSize;
+
 
             agent_function_wrapper <<<gridSize,blockSize >>>(func_des.getName().c_str(), agent_func);
             cudaDeviceSynchronize();

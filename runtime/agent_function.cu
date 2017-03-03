@@ -7,7 +7,7 @@ __global__ void agent_function_wrapper(const char* func_name, FLAMEGPU_AGENT_FUN
 
     //create a new device FLAME_GPU instance
     FLAMEGPU_API *api = new FLAMEGPU_API();
-
+printf("hello from wrapper %d\n",threadIdx.x);
     //call the user specified device function
     func(api);
 

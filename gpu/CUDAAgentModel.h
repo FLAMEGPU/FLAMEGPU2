@@ -55,6 +55,7 @@ private:
     const ModelDescription& model_description;
     CUDAAgentMap agent_map;
 	cuRVEInstance &curve;
+
 //	CUDAMessageMap message_map; /*Moz*/
 //	CUDAFunctionMap function_map; /*Moz*/
 

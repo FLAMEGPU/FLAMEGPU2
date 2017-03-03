@@ -12,7 +12,7 @@
 #include "test_func_pointer.h"
 
 // Problem
-FLAMEGPU_AGENT_FUNCTION(output_func)
+__device__ FLAMEGPU_AGENT_FUNCTION(output_func)
 {
 
 
@@ -32,19 +32,19 @@ FLAMEGPU_AGENT_FUNCTION(output_func)
     return ALIVE;
 }
 
-FLAMEGPU_AGENT_FUNCTION(input_func)
+__device__ FLAMEGPU_AGENT_FUNCTION(input_func)
 {
     printf("Hello from input_func\n");
     return ALIVE;
 }
 
-FLAMEGPU_AGENT_FUNCTION(move_func)
+__device__ FLAMEGPU_AGENT_FUNCTION(move_func)
 {
     printf("Hello from move_func\n");
     return ALIVE;
 }
 
-FLAMEGPU_AGENT_FUNCTION(stay_func)
+__device__ FLAMEGPU_AGENT_FUNCTION(stay_func)
 {
     printf("Hello from stay_func\n");
     return ALIVE;
