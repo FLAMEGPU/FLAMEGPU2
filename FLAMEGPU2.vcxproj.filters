@@ -106,9 +106,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="gpu\CUDAAgentModel.cpp">
-      <Filter>gpu</Filter>
-    </ClCompile>
     <ClCompile Include="model\AgentDescription.cpp">
       <Filter>model</Filter>
     </ClCompile>
@@ -165,6 +162,9 @@
     </CudaCompile>
     <CudaCompile Include="runtime\agent_function.cu">
       <Filter>runtime</Filter>
+    </CudaCompile>
+    <CudaCompile Include="gpu\CUDAAgentModel.cu">
+      <Filter>gpu</Filter>
     </CudaCompile>
   </ItemGroup>
 </Project>
