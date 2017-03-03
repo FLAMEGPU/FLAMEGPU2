@@ -58,7 +58,6 @@
   <ItemGroup>
     <ClCompile Include="gpu\CUDAAgent.cpp" />
     <ClCompile Include="gpu\CUDAAgentStateList.cpp" />
-    <ClCompile Include="gpu\CUDAAgentModel.cpp" />
     <ClCompile Include="model\AgentDescription.cpp" />
     <ClCompile Include="model\AgentFunctionDescription.cpp" />
     <ClCompile Include="model\AgentFunctionInput.cpp" />
@@ -79,6 +78,7 @@
     <ClCompile Include="tests\test_func_pointer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <CudaCompile Include="gpu\CUDAAgentModel.cu" />
     <CudaCompile Include="main.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='BoostTest|Win32'">true</ExcludedFromBuild>
