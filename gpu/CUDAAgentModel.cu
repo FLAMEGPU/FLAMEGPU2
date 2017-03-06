@@ -34,6 +34,8 @@ Then copying device function pointer to host side with cudaMemcpyFromSymbol
 // To Do
 */
 
+// Needs changing. This only works for one specific func
+__device__ FLAMEGPU_AGENT_FUNCTION_POINTER d_func_ptr = output_func;
 
 // agent_map is a type CUDAAgentMap
 /**
@@ -179,10 +181,12 @@ void CUDAAgentModel::step(const Simulation& simulation)
 
             int state_list_size = cuda_agent.getMaximumListSize();
 
-			//FLAMEGPU_AGENT_FUNCTION_POINTER h_func_ptr;
-			//cudaMemcpyFromSymbol(h_func_ptr, output_func_ptr, sizeof(FLAMEGPU_AGENT_FUNCTION_POINTER), cudaMemcpyDeviceToHost);
-			//cudaMalloc(&d_func_ptr, sizeof(FLAMEGPU_AGENT_FUNCTION_POINTER));
-			//cudaMemcpy(d_func_ptr, agent_func, sizeof(FLAMEGPU_AGENT_FUNCTION_POINTER), cudaMemcpyHostToDevice);
+            //host_pointer
+			FLAMEGPU_AGENT_FUNCTION_POINTER h_func_ptr;
+
+			//get d_func_ptr as a device address rather than a device symbol address
+			cudaMemcpyFromSymbol(&h_func_ptr, d_func_ptr, sizeof(FLAMEGPU_AGENT_FUNCTION_POINTER));
+
 
             //calculate the grid block size for main agent function
             cudaOccupancyMaxPotentialBlockSize( &minGridSize, &blockSize, agent_function_wrapper, 0, state_list_size);
@@ -192,7 +196,7 @@ void CUDAAgentModel::step(const Simulation& simulation)
             gridSize = (state_list_size + blockSize - 1) / blockSize;
 
 
-			agent_function_wrapper << <1, 1 >> >();
+			agent_function_wrapper << <1, 1 >> >(h_func_ptr);
 			//agent_function_wrapper <<<gridSize, blockSize >>>(agent_func);
 			cudaDeviceSynchronize();
 
