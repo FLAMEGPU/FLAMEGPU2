@@ -21,16 +21,16 @@ BOOST_AUTO_TEST_CASE(SimulationFunctionCheck)
     AgentFunctionDescription output_data("output_data");
     AgentFunctionOutput output_location("location");
     output_data.addOutput(output_location);
-    output_data.setFunction(output_func);
+    output_data.setFunction(&output_func);
     //output_data.setInitialState("state1");
     circle_agent.addAgentFunction(output_data);
 
     AgentFunctionDescription move("move");
-    move.setFunction(move_func);
+    move.setFunction(&move_func);
     circle_agent.addAgentFunction(move);
 
     AgentFunctionDescription stay("stay");
-    stay.setFunction(stay_func);
+    stay.setFunction(&stay_func);
     circle_agent.addAgentFunction(stay);
 
     flame_model.addAgent(circle_agent);
@@ -77,14 +77,8 @@ BOOST_AUTO_TEST_CASE(SimulationFunctionCheck)
         //for each func function
         for (AgentFunctionDescription func_des : functions)
         {
-
-            //get the agent function
-            FLAMEGPU_AGENT_FUNCTION_POINTER agent_func = func_des.getFunction();
-
-            FLAMEGPU_API *api = new FLAMEGPU_API();
-
-            // check functions - printing Hello only
-            BOOST_TEST_MESSAGE( "Calling agent function "<< func_des.getName() << " at layer " << i << " returns \n" << agent_func(api) <<  "!\n");
+            // check functions - printing function name only
+            BOOST_TEST_MESSAGE( "Calling agent function "<< func_des.getName() << " at layer " << i << "!\n");
         }
     }
 

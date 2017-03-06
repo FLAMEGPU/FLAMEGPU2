@@ -12,17 +12,19 @@ __global__ void agent_function_wrapper(FLAMEGPU_AGENT_FUNCTION_POINTER func)
     printf("hello from wrapper %d\n",threadIdx.x);
 
     //call the user specified device function
-    func(api);
+    //func(api);
 
-    /*FLAME_GPU_AGENT_STATUS flag = func(api);
-        if (flag == 1){
+    FLAME_GPU_AGENT_STATUS flag = func(api);
+    if (flag == 1)
+    {
         // delete the agent
         printf("Agent DEAD!\n");
-        }
-        else{
+    }
+    else
+    {
         printf("Agent ALIVE!\n");
-        }
-    */
+    }
+
 
     //do something with the return value to set a flag for deletion
 }

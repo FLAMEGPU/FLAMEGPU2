@@ -13,8 +13,10 @@ __device__ FLAME_GPU_AGENT_STATUS output_func_impl(FLAMEGPU_API* FLAMEGPU)
    printf("Hello from output_func\n");
 
 //    int x = FLAMEGPU->getVariable<int>("x");
-//    cout << "x = " << x << endl;
+//    printf("x = %d\n", x);
 //    FLAMEGPU->setVariable<int>("x", x*10);
+//    x = FLAMEGPU->getVariable<int>("x");
+//    printf("x after set = %d\n", x);
 
     return ALIVE;
 }
