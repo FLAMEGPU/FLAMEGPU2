@@ -65,7 +65,7 @@ void AgentFunctionDescription::addOutput(const AgentFunctionOutput &output)
 * @param function pointer
 * @todo raise error
 */
-void AgentFunctionDescription::setFunction(FLAMEGPU_AGENT_FUNCTION_POINTER func_p)
+void AgentFunctionDescription::setFunction(FLAMEGPU_AGENT_FUNCTION_POINTER *func_p)
 {
     func = func_p;
 }
@@ -75,7 +75,7 @@ void AgentFunctionDescription::setFunction(FLAMEGPU_AGENT_FUNCTION_POINTER func_
 * gets the function pointer
 * @return the function pointer
 */
-FLAMEGPU_AGENT_FUNCTION_POINTER AgentFunctionDescription::getFunction() const
+FLAMEGPU_AGENT_FUNCTION_POINTER* AgentFunctionDescription::getFunction() const
 {
     return func;
 }

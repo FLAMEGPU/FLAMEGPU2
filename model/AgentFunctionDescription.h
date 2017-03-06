@@ -53,9 +53,9 @@ public:
 
 	//TODO
 	//sets the function pointer by adding to the FunctionPointerMap
-	void setFunction(FLAMEGPU_AGENT_FUNCTION_POINTER p_func);
+	void setFunction(FLAMEGPU_AGENT_FUNCTION_POINTER *p_func);
 
-	FLAMEGPU_AGENT_FUNCTION_POINTER getFunction() const;
+	FLAMEGPU_AGENT_FUNCTION_POINTER* getFunction() const;
 
 	//todo: add agent output
 
@@ -69,7 +69,7 @@ public:
 	std::string end_state;
 	InputsMap inputs;
 	OutputsMap outputs;
-	FLAMEGPU_AGENT_FUNCTION_POINTER func = NULL;
+	FLAMEGPU_AGENT_FUNCTION_POINTER *func = NULL;
 	//TODO:Paul idea for parent objects
 	AgentDescription* parent = 0;
 };

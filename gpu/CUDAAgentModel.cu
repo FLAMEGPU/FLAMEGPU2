@@ -17,26 +17,6 @@
 // include FLAMEGPU kernel wrapper
 #include "../runtime/agent_function.cu"
 
-//CHEATING!!!!!!
-#include "../tests/test_func_pointer.h"
-
-
-/*
-// NOTE device functions are supported in CUDA 3.2 on sm_2x platforms
-//Using func pointer (idea) -> we may need to create static function pointer variable
-//Having static pointers to device functions (globaly)
-__device__ FLAMEGPU_AGENT_FUNCTION_POINTER agent_func[num] = .. ;
-//----- NEXT
-// Declare a host and device varible inside the void CUDAAgentModel::step(const Simulation& simulation)
-FLAMEGPU_AGENT_FUNCTION_POINTER h
-Then copying device function pointer to host side with cudaMemcpyFromSymbol
-// note : we can have vector of function pointer declared as device variable
-// To Do
-*/
-
-// Needs changing. This only works for one specific func
-__device__ FLAMEGPU_AGENT_FUNCTION_POINTER d_func_ptr = output_func;
-
 // agent_map is a type CUDAAgentMap
 /**
 * CUDAAgentModel class
@@ -164,11 +144,17 @@ void CUDAAgentModel::step(const Simulation& simulation)
             const CUDAAgent& cuda_agent = getCUDAAgent(func_des.getParent().getName());
 
             //configure runtime access of the functions variables within the FLAME_API object
-           // cuda_agent.mapRuntimeVariables(func_des);
+            // cuda_agent.mapRuntimeVariables(func_des);
 
             //get the agent function
-            FLAMEGPU_AGENT_FUNCTION_POINTER agent_func = func_des.getFunction();
+            FLAMEGPU_AGENT_FUNCTION_POINTER* agent_func = func_des.getFunction();
 
+            //host_pointer
+            FLAMEGPU_AGENT_FUNCTION_POINTER h_func_ptr;
+
+            //get d_func_ptr as a device address rather than a device symbol address
+            //cudaMemcpyFromSymbol(&h_func_ptr, d_func_ptr, sizeof(FLAMEGPU_AGENT_FUNCTION_POINTER));
+            cudaMemcpyFromSymbol(&h_func_ptr, *agent_func, sizeof(FLAMEGPU_AGENT_FUNCTION_POINTER));
 
             //call the agent function wrapper which creates an instance of FLAMEGPU_API on the device to pass to the agent function.
             //TODO: Kernel dimensions will come from the CUDAAgent state list size
@@ -178,15 +164,7 @@ void CUDAAgentModel::step(const Simulation& simulation)
             int minGridSize; // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
             int gridSize; // The actual grid size needed, based on input size
 
-
             int state_list_size = cuda_agent.getMaximumListSize();
-
-            //host_pointer
-			FLAMEGPU_AGENT_FUNCTION_POINTER h_func_ptr;
-
-			//get d_func_ptr as a device address rather than a device symbol address
-			cudaMemcpyFromSymbol(&h_func_ptr, d_func_ptr, sizeof(FLAMEGPU_AGENT_FUNCTION_POINTER));
-
 
             //calculate the grid block size for main agent function
             cudaOccupancyMaxPotentialBlockSize( &minGridSize, &blockSize, agent_function_wrapper, 0, state_list_size);
@@ -195,22 +173,14 @@ void CUDAAgentModel::step(const Simulation& simulation)
             // Round up according to CUDAAgent state list size
             gridSize = (state_list_size + blockSize - 1) / blockSize;
 
-
-			agent_function_wrapper << <1, 1 >> >(h_func_ptr);
-			//agent_function_wrapper <<<gridSize, blockSize >>>(agent_func);
-			cudaDeviceSynchronize();
+ agent_function_wrapper <<<1,3>>>(h_func_ptr);
+           // agent_function_wrapper <<<gridSize, blockSize>>>(h_func_ptr);
+            cudaDeviceSynchronize();
 
             //unmap the function variables
-           // cuda_agent.unmapRuntimeVariables(func_des);
-
+            // cuda_agent.unmapRuntimeVariables(func_des);
         }
-
     }
-
-
-
-
-
 }
 
 /**

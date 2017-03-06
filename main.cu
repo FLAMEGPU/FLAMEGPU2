@@ -1,28 +1,29 @@
- /**
- * @file main.cpp
- * @authors Paul
- * @date
- * @brief
- *
- * @see
- * @warning
- */
+/**
+* @file main.cpp
+* @authors Paul
+* @date
+* @brief
+*
+* @see
+* @warning
+*/
 
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
 
 #include "flame_api.h"
+
 #include "tests/test_func_pointer.h"
 
-
 using namespace std;
+
 
 /* must be compiled separately using FLAME GPU builder
  * This will generate object files for different architecture targets as well as ptx info for each agent function (registers, memory use etc.)
  * http://stackoverflow.com/questions/12388207/interpreting-output-of-ptxas-options-v
  */
-//#include "agent_functions.h"
+
 
 /**
  * Host function that prepares data array and passes it to the CUDA kernel.
@@ -65,20 +66,20 @@ int main(void)
     AgentFunctionOutput output_location("location");
     output_data.addOutput(output_location);
     //output_data.setInitialState("state1");
-    output_data.setFunction(output_func);
+    output_data.setFunction(&output_func);
     circle_agent.addAgentFunction(output_data);
 
     //circle agent input_data function
     AgentFunctionDescription input_data("input_data");
     AgentFunctionInput input_location("location");
     input_data.addInput(input_location);
-    input_data.setFunction(input_func);
+    input_data.setFunction(&input_func);
     circle_agent.addAgentFunction(input_data);
 
 
     //circle agent move function
     AgentFunctionDescription move("move");
-    move.setFunction(move_func);
+    move.setFunction(&move_func);
     circle_agent.addAgentFunction(move);
 
 
@@ -96,8 +97,8 @@ int main(void)
     /* Population is an instantiation of the model. It is equivalent to the data from 0.xml or any other state of the model. It requires a model description to know what the agent variables and states are. */
     /* Data in populations and instances are only on the host. No concept of GPUs at this stage. */
 
-	AgentPopulation population(circle_agent);
-	//TODO: Set maximum population size if known in advance
+    AgentPopulation population(circle_agent);
+    //TODO: Set maximum population size if known in advance
     for (int i=0; i< 100; i++)
     {
         AgentInstance instance = population.getNextInstance("default");
@@ -183,6 +184,6 @@ int main(void)
 
 
 
-  //  system("pause");
+    //  system("pause");
     return 0;
 }
