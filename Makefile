@@ -141,7 +141,7 @@ doxygen:
 	doxygen Doxyfile
 
 main.o: main.cu
-	$(EXEC) $(NVCC) $(DEBUG) $(STD11) $(BOOST_LIB)  $(CUDA_LIB)  $(GENCODE_FLAGS) -dc -o $@ -c $<
+	$(EXEC) $(NVCC) $(DEBUG) $(STD11) $(BOOST_LIB)  $(CUDA_LIB)  $(GENCODE_FLAGS) -dc -o $@ -c $<	
 	
 test_all.o: tests/test_all.cpp
 	$(EXEC) $(NVCC) $(DEBUG) $(STD11) $(BOOST_LIB) $(GENCODE_FLAGS) -dc -o $@ -c $<
