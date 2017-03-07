@@ -99,6 +99,9 @@
       <GenerateRelocatableDeviceCode Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</GenerateRelocatableDeviceCode>
       <GenerateRelocatableDeviceCode Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</GenerateRelocatableDeviceCode>
       <GenerateRelocatableDeviceCode Condition="'$(Configuration)|$(Platform)'=='BoostTest|x64'">true</GenerateRelocatableDeviceCode>
+      <Keep Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</Keep>
+      <Keep Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</Keep>
+      <Keep Condition="'$(Configuration)|$(Platform)'=='BoostTest|x64'">true</Keep>
     </CudaCompile>
     <CudaCompile Include="runtime\agent_function.cu">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>

@@ -14,7 +14,7 @@
 
 #include "flame_api.h"
 
-#include "tests/test_func_pointer.h"
+
 
 using namespace std;
 
@@ -24,6 +24,38 @@ using namespace std;
  * http://stackoverflow.com/questions/12388207/interpreting-output-of-ptxas-options-v
  */
 
+
+FLAMEGPU_AGENT_FUNCTION(output_func)
+{
+	printf("Hello from output_func\n");
+
+	// should've returned error if the type was not correct. Needs type check
+	float x = FLAMEGPU->getVariable<float>("x");
+	printf("x = %f\n", x);
+	FLAMEGPU->setVariable<float>("x", x + 2);
+	x = FLAMEGPU->getVariable<float>("x");
+	printf("x after set = %f\n", x);
+
+	return ALIVE;
+}
+
+FLAMEGPU_AGENT_FUNCTION(input_func)
+{
+	printf("Hello from input_func\n");
+	return ALIVE;
+}
+
+FLAMEGPU_AGENT_FUNCTION(move_func)
+{
+	printf("Hello from move_func\n");
+	return ALIVE;
+}
+
+FLAMEGPU_AGENT_FUNCTION(stay_func)
+{
+	printf("Hello from stay_func\n");
+	return ALIVE;
+}
 
 
 int main(void)
@@ -76,7 +108,6 @@ int main(void)
     AgentFunctionDescription move("move");
     move.setFunction(&move_func);
     circle_agent.addAgentFunction(move);
-
 
     //model
     flame_model.addMessage(location_message);
