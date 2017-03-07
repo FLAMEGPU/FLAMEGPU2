@@ -90,7 +90,6 @@ __host__ inline static CurveVariableHash curveVariableRuntimeHash(const char* st
 		hash ^= *str++;
 		hash *= 16777619u;
 	}
-
 	return hash;
 }
 

@@ -58,7 +58,6 @@ public:
 
 	template<typename T, unsigned int N> __device__
 		void setVariable(const char(&variable_name)[N], T value);
-
 };
 
 
@@ -74,6 +73,7 @@ public:
 template<typename T, unsigned int N>
 __device__ T FLAMEGPU_API::getVariable(const char(&variable_name)[N])
 {
+
 	//simple indexing assumes index is the thread number (this may change later)
 	unsigned int index =  (blockDim.x * blockIdx.x) + threadIdx.x;
 
@@ -81,6 +81,8 @@ __device__ T FLAMEGPU_API::getVariable(const char(&variable_name)[N])
 	T value = curveGetVariable<T>(variable_name, index);
 
 	//TODO: Some error checking?
+	// needs type checking
+	//throw InvalidVarType("Wrong variable type getting agent data vector");
 
 	//return the variable from curve
 	return value;

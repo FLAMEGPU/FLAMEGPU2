@@ -12,11 +12,12 @@ __device__ FLAME_GPU_AGENT_STATUS output_func_impl(FLAMEGPU_API* FLAMEGPU)
 {
    printf("Hello from output_func\n");
 
-//    int x = FLAMEGPU->getVariable<int>("x");
-//    printf("x = %d\n", x);
-//    FLAMEGPU->setVariable<int>("x", x*10);
-//    x = FLAMEGPU->getVariable<int>("x");
-//    printf("x after set = %d\n", x);
+    // should've returned error if the type was not correct. Needs type check
+    float x = FLAMEGPU->getVariable<float>("x");
+    printf("x = %f\n", x);
+    FLAMEGPU->setVariable<float>("x", x+2);
+    x = FLAMEGPU->getVariable<float>("x");
+    printf("x after set = %f\n", x);
 
     return ALIVE;
 }

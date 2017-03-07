@@ -42,7 +42,7 @@ CurveVariableHash h_hashes[CURVE_MAX_VARIABLES];				//Host array of the hash val
 void* h_d_variables[CURVE_MAX_VARIABLES];						//Host array of pointer to device memory addresses for variable storage
 int	h_states[CURVE_MAX_VARIABLES];								//Host array of the states of registered variables
 
-__constant__ CurveNamespaceHash d_namespace;					
+__constant__ CurveNamespaceHash d_namespace;
 __constant__ CurveVariableHash d_hashes[CURVE_MAX_VARIABLES];	//Device array of the hash values of registered variables
 __device__ float* d_variables[CURVE_MAX_VARIABLES];				//Device array of pointer to device memory addresses for variable storage
 __constant__ int* d_states[CURVE_MAX_VARIABLES];				//Device array of the states of registered variables
@@ -208,7 +208,7 @@ __host__ void curveUnregisterVariableByHash(CurveVariableHash variable_hash)
 	h_hashes[cv] = 0;
 	CUDA_SAFE_CALL(cudaMemcpy(&_d_hashes[cv], &h_hashes[cv], sizeof(unsigned int), cudaMemcpyHostToDevice));
 
-	//set a host pointer to null and copy to the device 
+	//set a host pointer to null and copy to the device
 	h_d_variables[cv] = 0;
 	CUDA_SAFE_CALL(cudaMemcpy(&_d_variables[cv], &h_d_variables[cv], sizeof(float*), cudaMemcpyHostToDevice));
 
@@ -216,7 +216,7 @@ __host__ void curveUnregisterVariableByHash(CurveVariableHash variable_hash)
 	h_states[cv] = VARIABLE_DISABLED;
 	CUDA_SAFE_CALL(cudaMemcpy(&_d_states[cv], &h_states[cv], sizeof(int), cudaMemcpyHostToDevice));
 
-	printf("Var with hash %d has been un-registered\n", variable_hash);
+	printf("Var with hash %u has been un-registered\n", variable_hash);
 }
 
 
