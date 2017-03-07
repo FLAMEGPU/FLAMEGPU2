@@ -7,13 +7,11 @@
 
 
 #include "../flame_api.h"
-#include "test_func_pointer.h"
-
-
 
 using namespace std;
 
 BOOST_AUTO_TEST_SUITE(GPUTest) //name of the test suite is modelTest
+
 
 BOOST_AUTO_TEST_CASE(GPUMemoryTest)
 {

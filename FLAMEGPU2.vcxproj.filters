@@ -148,7 +148,7 @@
     <ClCompile Include="sim\SimulationLayer.cpp">
       <Filter>sim</Filter>
     </ClCompile>
-    <ClCompile Include="tests\test_all.cpp">
+    <ClCompile Include="tests\test_all.cu">
       <Filter>tests</Filter>
     </ClCompile>
   </ItemGroup>
@@ -163,8 +163,5 @@
       <Filter>gpu</Filter>
     </CudaCompile>
     <CudaCompile Include="main.cu" />
-    <CudaCompile Include="tests\test_func_pointer.cu">
-      <Filter>tests</Filter>
-    </CudaCompile>
   </ItemGroup>
 </Project>
