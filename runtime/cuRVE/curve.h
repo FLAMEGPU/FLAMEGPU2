@@ -3,13 +3,13 @@
 
 /**
  * @file   curve.h
- * @Author Paul Richmond (p.richmond@sheffield.ac.uk) http://www.paulrichmond.staff.shef.ac.uk/
+ * @author Paul Richmond (p.richmond@sheffield.ac.uk) http://www.paulrichmond.staff.shef.ac.uk/
  * @date   Feb 2017
  * @brief  Main cuRVE header file
  *
  * The main cuRVE header file for the CUDA Runtime Variable Environment (cuRVE)
  * Based off the following article http://www.gamasutra.com/view/news/127915/InDepth_Quasi_CompileTime_String_Hashing.php
- * @TODO: Requires vector length table for each variable (or namespace) which is registered. For now no safe checking of vector length is done.
+ * \todo Requires vector length table for each variable (or namespace) which is registered. For now no safe checking of vector length is done.
  */
 
 #include <cstring>

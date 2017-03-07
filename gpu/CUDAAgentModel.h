@@ -1,12 +1,11 @@
 /**
-* @file CUDAAgentModel.h
-* @authors Paul
-* @date 5 Mar 2014
-* @brief
-*
-* @see
-* @warning
-*/
+ * @file CUDAAgentModel.h
+ * @author
+ * @date    Feb 2017
+ * @brief
+ *
+ * \todo longer description
+ */
 
 #ifndef CUDAAGENTMODEL_H_
 #define CUDAAGENTMODEL_H_

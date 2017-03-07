@@ -1,11 +1,10 @@
-/**
- * @file AgentFunctionInput.h
- * @authors Paul
- * @date 5 Mar 2014
+ /**
+ * @file  AgentFunctionInput.h
+ * @author  Paul Richmond, Mozhgan Kabiri Chimeh
+ * @date    Feb 2017
  * @brief
  *
- * @see
- * @warning
+ * \todo longer description
  */
 
 #ifndef AGENTFUNCTIONINPUT_H_

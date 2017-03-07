@@ -1,11 +1,10 @@
 /**
  * @file AgentDescription.h
- * @authors Paul
- * @date 5 Mar 2014
+ * @author  Paul Richmond, Mozhgan Kabiri Chimeh
+ * @date    Feb 2017
  * @brief
  *
- * @see
- * @warning
+ * \todo longer description
  */
 
 #ifndef AGENTDESCRIPTION_H_

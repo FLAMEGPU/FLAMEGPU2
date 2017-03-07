@@ -1,16 +1,19 @@
-/*
-* flame_api.h
-*
-*  Created on: 19 Feb 2014
-*      Author: paul
-*/
 
 #ifndef FLAME_FUNCTIONS_API_H_
 #define FLAME_FUNCTIONS_API_H_
 
+/**
+ * @file flame_functions_api.h
+ * @author  Paul Richmond, Mozhgan Kabiri Chimeh
+ * @date    Feb 2017
+ * @brief  FLAMEGPU_API is a singleton class for the device runtime
+ *
+ * \todo longer description
+ */
+
+
 #include "gpu/CUDAErrorChecking.h"			//required for CUDA error handling functions
 #include "runtime/cuRVE/curve.h"
-
 
 //TODO: Some example code of the handle class and an example function
 //! FLAMEGPU_API is a singleton class

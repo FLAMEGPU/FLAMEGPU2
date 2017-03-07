@@ -144,7 +144,7 @@ main.o: main.cu
 	$(EXEC) $(NVCC) $(DEBUG) $(STD11) $(BOOST_LIB)  $(CUDA_LIB)  $(GENCODE_FLAGS) -dc -o $@ -c $<
 	
 test_all.o: tests/test_all.cpp
-	$(EXEC) $(NVCC) $(DEBUG) $(STD11) $(BOOST_LIB) $(GENCODE_FLAGS) -o $@ -c $<
+	$(EXEC) $(NVCC) $(DEBUG) $(STD11) $(BOOST_LIB) $(GENCODE_FLAGS) -dc -o $@ -c $<
 
 GPU_C_FILES := $(wildcard $(SRC_GPU)*.cpp)
 GPU_CO_FILES := $(addprefix $(SRC_GPU),$(notdir $(GPU_C_FILES:.cpp=.o)))
@@ -203,7 +203,7 @@ FGPU: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES)  $(GP
 
 
 BOOST_TEST: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES) $(GPU_CUO_FILES) $(CURVE_CUO_FILES) test_all.o 
-	$(EXEC) nvcc $(GENCODE_FLAGS) -rdc=true -o $@ $+ $(LIBRARIES)
+	$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -rdc=true -o $@ $+ $(LIBRARIES)
 	$(EXEC) mkdir -p $(BIN_DIR)$(TEST_DIR)
 	$(EXEC) mv $@ $(BIN_DIR)$(TEST_DIR)
 	@echo ./$(TEST_DIR)/BOOST_TEST --log_level=message --run_test='$$'{1:-}> $(BIN_DIR)RUN_TEST.sh #--log_level=test_suite

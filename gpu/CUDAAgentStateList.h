@@ -1,11 +1,10 @@
  /**
  * @file CUDAAgentList.h
- * @authors Paul
- * @date 5 Mar 2014
+ * @author
+ * @date    Feb 2017
  * @brief
  *
- * @see
- * @warning
+ * \todo longer description
  */
 
 #ifndef CUDAAGENTLIST_H_

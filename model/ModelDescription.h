@@ -1,17 +1,15 @@
 
- /**
- * @file ModelDescription.h
- * @authors Paul
- * @date 5 Mar 2014
- * @brief Top level include for Model objects
- *
- * @see
- * @warning
- */
-
 #ifndef MODELDESCRIPTION_H_
 #define MODELDESCRIPTION_H_
 
+/**
+ * @file ModelDescription.h
+ * @author  Paul Richmond, Mozhgan Kabiri Chimeh
+ * @date    Feb 2017
+ * @brief
+ *
+ * \todo longer description
+ */
 
 #include <string>
 #include <map>
@@ -45,7 +43,6 @@ public:
 
 	const AgentMap& getAgentMap() const;
 
-	// Moz
 	const MessageMap& getMessageMap() const;
 
 

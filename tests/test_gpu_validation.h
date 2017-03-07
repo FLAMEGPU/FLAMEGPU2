@@ -1,8 +1,13 @@
 /**
- * @file test_gpu_validation.h
- * @brief Testing Using the Boost Unit Test Framework
- */
+* @file test_gpu_validation.h
+* @author
+* @date    Feb 2017
+* @brief Testing Using the Boost Unit Test Framework
+*/
+
 #include "../flame_api.h"
+#include "test_func_pointer.h"
+
 
 
 using namespace std;
@@ -43,6 +48,7 @@ BOOST_AUTO_TEST_CASE(GPUMemoryTest)
 
 }
 
+// change file type
 //BOOST_AUTO_TEST_CASE(GPUSimulationTest)
 //{
 //
@@ -63,8 +69,8 @@ BOOST_AUTO_TEST_CASE(GPUMemoryTest)
 //
 //    flame_model.addAgent(circle_agent);
 //
-//    AgentPopulation population(circle_agent, 100);
-//    for (int i = 0; i< 100; i++)
+//    AgentPopulation population(circle_agent, 10);
+//    for (int i = 0; i< 10; i++)
 //    {
 //        AgentInstance instance = population.getNextInstance("default");
 //        instance.setVariable<float>("x", i);
@@ -87,9 +93,13 @@ BOOST_AUTO_TEST_CASE(GPUMemoryTest)
 //
 //    cuda_model.step(simulation);
 //
-//    //  cuda_model.getPopulationData(population);
+//    cuda_model.getPopulationData(population);
+//    for (int i = 0; i < 100; i++)
+//    {
+//        AgentInstance i1 = population.getInstanceAt(i, "default");
+//        BOOST_TEST_MESSAGE( "i value is : "<< i1.getVariable<float>("x")<< "!\n");
 //
+//    }
 //}
-
-BOOST_AUTO_TEST_SUITE_END()
+    BOOST_AUTO_TEST_SUITE_END()
 

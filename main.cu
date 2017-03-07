@@ -1,12 +1,12 @@
-/**
-* @file main.cpp
-* @authors Paul
-* @date
-* @brief
-*
-* @see
-* @warning
-*/
+/******************************************************************************
+ * main.cu is a host function that prepares data array and passes it to the CUDA kernel.
+ * This main.cu would either be specified by a user or automatically generated from the model.xml.
+ * Each of the API functions will have a 121 mapping with XML elements
+ * The API is very similar to FLAME 2. The directory structure and general project is set out very similarly.
+ ******************************************************************************
+ * Author  Paul Richmond, Mozhgan Kabiri Chimeh
+ * Date    Feb 2017
+ *****************************************************************************/
 
 #include <iostream>
 #include <stdio.h>
@@ -25,12 +25,7 @@ using namespace std;
  */
 
 
-/**
- * Host function that prepares data array and passes it to the CUDA kernel.
- * This main.cpp would either be specified by a user or automatically generated from the model.xml.
- * Each of the API functions will have a 121 mapping with XML elements
- * The API is very similar to FLAME 2. The directory structure and general project is set out very similarly.
- */
+
 int main(void)
 {
 

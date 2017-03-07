@@ -1,7 +1,16 @@
-/**
- * @file test_pop_validation.h
+ /**
+ * @file test_sim_validation.h
+ * @author  Paul Richmond, Mozhgan Kabiri Chimeh
+ * @date    Feb 2017
  * @brief Testing Using the Boost Unit Test Framework
  */
+  /**
+ * @file test_pop_validation.h
+ * @author
+ * @date    Feb 2017
+ * @brief Testing Using the Boost Unit Test Framework
+ */
+
 #include "../flame_api.h"
 
 
