@@ -10,16 +10,17 @@
 
 FLAMEGPU_AGENT_FUNCTION(add_func)
 {
-	printf("Hello from add_func\n");
+    //printf("Hello from add_func\n");
 
-	// should've returned error if the type was not correct. Needs type check
-	float x = FLAMEGPU->getVariable<float>("x");
-	printf("x = %f\n", x);
-	FLAMEGPU->setVariable<float>("x", x + 2);
-	x = FLAMEGPU->getVariable<float>("x");
-	printf("x after set = %f\n", x);
+    // should've returned error if the type was not correct. Needs type check
+    double x = FLAMEGPU->getVariable<float>("m");
 
-	return ALIVE;
+    printf("thread %d, x = %f\n", threadIdx.x,x);
+    FLAMEGPU->setVariable<double>("m",  FLAMEGPU->getVariable<double>("m") + 2);
+    //x = FLAMEGPU->getVariable<float>("m");
+    //printf("x after set = %f\n", x);
+
+    return ALIVE;
 }
 
 using namespace std;
@@ -50,7 +51,7 @@ BOOST_AUTO_TEST_CASE(GPUMemoryTest)
     AgentPopulation population2(circle_agent, 100);
     cuda_model.getPopulationData(population2);
 
-    BOOST_TEST_MESSAGE( "\nTesting values copied back from device .." );
+    BOOST_TEST_MESSAGE( "\nTesting values copied back from device without simulating any functions .." );
 
     //check values are the same
     for (int i = 0; i < 100; i++)
@@ -63,6 +64,7 @@ BOOST_AUTO_TEST_CASE(GPUMemoryTest)
 
 }
 
+// the test should verify the correctness of get/set variable and hashing, however every 4th variable in the array is updated
 BOOST_AUTO_TEST_CASE(GPUSimulationTest)
 {
 
@@ -70,7 +72,7 @@ BOOST_AUTO_TEST_CASE(GPUSimulationTest)
     AgentDescription circle_agent("circle");
 
 
-    circle_agent.addAgentVariable<float>("x");
+    circle_agent.addAgentVariable<double>("m");
 
 
 
@@ -82,11 +84,19 @@ BOOST_AUTO_TEST_CASE(GPUSimulationTest)
 
     flame_model.addAgent(circle_agent);
 
-    AgentPopulation population(circle_agent, 40);
-    for (int i = 0; i< 40; i++)
+    AgentPopulation population(circle_agent);
+    for (int i = 0; i< 50; i++)
     {
         AgentInstance instance = population.getNextInstance("default");
-        instance.setVariable<float>("x", i);
+        instance.setVariable<double>("m", i);
+    }
+
+    BOOST_TEST_MESSAGE( "\nTesting initial values .." );
+
+    for (int i = 0; i< 50; i++)
+    {
+        AgentInstance instance = population.getInstanceAt(i,"default");
+        BOOST_TEST_MESSAGE( i << "th value is : "<< instance.getVariable<double>("m")<< "!");
     }
 
     Simulation simulation(flame_model);
@@ -96,7 +106,7 @@ BOOST_AUTO_TEST_CASE(GPUSimulationTest)
 
     simulation.addSimulationLayer(add_layer);
 
-   //simulation.setSimulationSteps(10);
+    //simulation.setSimulationSteps(10);
 
     CUDAAgentModel cuda_model(flame_model);
 
@@ -106,15 +116,15 @@ BOOST_AUTO_TEST_CASE(GPUSimulationTest)
 
     cuda_model.step(simulation);
 
-BOOST_TEST_MESSAGE( "\nTesting values copied back from device after simulating functions .." );
+    BOOST_TEST_MESSAGE( "\nTesting values copied back from device after simulating functions .." );
 
     cuda_model.getPopulationData(population);
-    for (int i = 0; i < 40; i++)
+    for (int i = 0; i < 50; i++)
     {
         AgentInstance i1 = population.getInstanceAt(i, "default");
-        BOOST_TEST_MESSAGE( i << "th value is : "<< i1.getVariable<float>("x")<< "!");
+        BOOST_TEST_MESSAGE( i << "th value is : "<< i1.getVariable<double>("m")<< "!");
 
     }
 }
-    BOOST_AUTO_TEST_SUITE_END()
+BOOST_AUTO_TEST_SUITE_END()
 
