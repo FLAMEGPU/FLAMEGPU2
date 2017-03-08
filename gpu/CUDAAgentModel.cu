@@ -173,8 +173,8 @@ void CUDAAgentModel::step(const Simulation& simulation)
             // Round up according to CUDAAgent state list size
             gridSize = (state_list_size + blockSize - 1) / blockSize;
 
-            agent_function_wrapper <<<1,3>>>(h_func_ptr);
-            // agent_function_wrapper <<<gridSize, blockSize>>>(h_func_ptr);
+            //agent_function_wrapper <<<1,10>>>(h_func_ptr);
+            agent_function_wrapper <<<gridSize, blockSize>>>(h_func_ptr);
             cudaDeviceSynchronize();
 
             //unmap the function variables

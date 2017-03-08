@@ -8,7 +8,7 @@
 #include "../flame_api.h"
 
 
-__device__ FLAME_GPU_AGENT_STATUS output_func_impl(FLAMEGPU_API* FLAMEGPU)
+FLAMEGPU_AGENT_FUNCTION(output_func)
 {
 	printf("Hello from output_func\n");
 
@@ -21,29 +21,24 @@ __device__ FLAME_GPU_AGENT_STATUS output_func_impl(FLAMEGPU_API* FLAMEGPU)
 
 	return ALIVE;
 }
-__device__ FLAME_GPU_AGENT_STATUS input_func_impl(FLAMEGPU_API* FLAMEGPU)
+
+FLAMEGPU_AGENT_FUNCTION(input_func)
 {
 	printf("Hello from input_func\n");
 	return ALIVE;
 }
-__device__ FLAME_GPU_AGENT_STATUS move_func_impl(FLAMEGPU_API* FLAMEGPU)
+
+FLAMEGPU_AGENT_FUNCTION(move_func)
 {
 	printf("Hello from move_func\n");
 	return ALIVE;
 }
-__device__ FLAME_GPU_AGENT_STATUS stay_func_impl(FLAMEGPU_API* FLAMEGPU)
+
+FLAMEGPU_AGENT_FUNCTION(stay_func)
 {
 	printf("Hello from stay_func\n");
 	return ALIVE;
 }
-
-// Declaring function pointers as symbols on device
-__device__ FLAMEGPU_AGENT_FUNCTION_POINTER output_func = output_func_impl;
-__device__ FLAMEGPU_AGENT_FUNCTION_POINTER input_func = input_func_impl;
-__device__ FLAMEGPU_AGENT_FUNCTION_POINTER move_func = move_func_impl;
-__device__ FLAMEGPU_AGENT_FUNCTION_POINTER stay_func = stay_func_impl;
-
-
 
 using namespace std;
 
