@@ -13,8 +13,8 @@ __global__ void agent_function_wrapper(FLAMEGPU_AGENT_FUNCTION_POINTER func, int
     //printf("hello from wrapper %d\n",threadIdx.x);
 
     //call the user specified device function
-    int tid = (blockDim.x * blockIdx.x) + threadIdx.x;
-    if (tid<popNo)
+    int tid = (blockDim.x * blockIdx.x) + threadIdx.x;//threadIdx.x + blockIdx.x * gridDim.x;
+    if(tid < popNo)
     {
         FLAME_GPU_AGENT_STATUS flag = func(api);
         if (flag == 1)
@@ -24,9 +24,10 @@ __global__ void agent_function_wrapper(FLAMEGPU_AGENT_FUNCTION_POINTER func, int
         }
         else
         {
-            //printf("Agent ALIVE!\n");
+            printf("Agent ALIVE!\n");
         }
 
     }
+
     //do something with the return value to set a flag for deletion
 }

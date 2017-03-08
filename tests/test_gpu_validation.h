@@ -13,7 +13,7 @@ FLAMEGPU_AGENT_FUNCTION(add_func)
     //printf("Hello from add_func\n");
 
     // should've returned error if the type was not correct. Needs type check
-    double x = FLAMEGPU->getVariable<float>("m");
+    double x = FLAMEGPU->getVariable<double>("m");
 
     printf("thread %d, x = %f\n", threadIdx.x,x);
     FLAMEGPU->setVariable<double>("m",  FLAMEGPU->getVariable<double>("m") + 2);
