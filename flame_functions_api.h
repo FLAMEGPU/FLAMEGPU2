@@ -78,15 +78,19 @@ template<typename T, unsigned int N>
 __device__ T FLAMEGPU_API::getVariable(const char(&variable_name)[N])
 {
 
+// TODO
+//if(curveGetVariableType(curveVariableHash(variable_Name))!=typeid(T))
+//	throw InvalidVarType("Wrong variable type getting agent data vector");
+//else{
 	//simple indexing assumes index is the thread number (this may change later)
 	unsigned int index =  (blockDim.x * blockIdx.x) + threadIdx.x;
 
 	//get the value from curve
 	T value = curveGetVariable<T>(variable_name, index);
-
+//}
 	//TODO: Some error checking?
 	// needs type checking
-	//throw InvalidVarType("Wrong variable type getting agent data vector");
+
 
 	//return the variable from curve
 	return value;

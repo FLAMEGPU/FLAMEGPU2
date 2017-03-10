@@ -267,6 +267,8 @@ __host__ void curveSetDefaultNamespace()
 	CUDA_SAFE_CALL(cudaMemcpyToSymbol(d_namespace, &h_namespace, sizeof(unsigned int)));
 }
 
+
+
 __device__ void* curveGetVariablePtrByHash(const CurveVariableHash variable_hash, size_t offset)
 {
     CurveVariable cv;
@@ -283,7 +285,7 @@ __device__ void* curveGetVariablePtrByHash(const CurveVariableHash variable_hash
     	d_curve_error = CURVE_DEVICE_ERROR_VARIABLE_DISABLED;
     	return NULL;
     }
-printf("thread %d , offset %u, %d\n",threadIdx.x, offset,cv);
+printf("thread %d , offset %u, cv %d\n",threadIdx.x, offset,cv );
 	//return a generic pointer to variable address for given offset
 	//TODO: Add vector length checking
     return &(d_variables[cv])[offset];

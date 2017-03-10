@@ -13,6 +13,7 @@
  */
 
 #include <cstring>
+#include <typeinfo>
 #include <cuda_runtime.h>
 
 #define UNKNOWN_CURVE_VARIABLE 	-1						//!< value returned as a CurveVariable if an API function encounters an error
@@ -201,6 +202,7 @@ template <unsigned int N> __host__ void curveSetNamespace(const char (&namespace
 __host__ void curveSetDefaultNamespace();
 
 
+__host__ std::type_info& curveGetVariableType(const CurveVariableHash variable_hash);//const char (&variableName)[N]);
 
 
 /* DEVICE API FUNCTIONS */
