@@ -44,7 +44,7 @@ int	h_states[CURVE_MAX_VARIABLES];								//Host array of the states of register
 
 __constant__ CurveNamespaceHash d_namespace;
 __constant__ CurveVariableHash d_hashes[CURVE_MAX_VARIABLES];	//Device array of the hash values of registered variables
-__device__ float* d_variables[CURVE_MAX_VARIABLES];				//Device array of pointer to device memory addresses for variable storage
+__device__ char* d_variables[CURVE_MAX_VARIABLES];				//Device array of pointer to device memory addresses for variable storage
 __constant__ int* d_states[CURVE_MAX_VARIABLES];				//Device array of the states of registered variables
 
 __device__ curveDeviceError d_curve_error;
@@ -283,10 +283,10 @@ __device__ void* curveGetVariablePtrByHash(const CurveVariableHash variable_hash
     	d_curve_error = CURVE_DEVICE_ERROR_VARIABLE_DISABLED;
     	return NULL;
     }
-printf("thread %d , offset %u, %d\n",threadIdx.x, offset,cv);
+printf("thread %d , offset %d, %d\n",threadIdx.x, offset,cv);
 	//return a generic pointer to variable address for given offset
 	//TODO: Add vector length checking
-    return &(d_variables[cv])[offset];
+    return d_variables[cv] + offset;
 }
 
 

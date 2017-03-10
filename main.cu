@@ -123,9 +123,9 @@ int main(void)
     /* Population is an instantiation of the model. It is equivalent to the data from 0.xml or any other state of the model. It requires a model description to know what the agent variables and states are. */
     /* Data in populations and instances are only on the host. No concept of GPUs at this stage. */
 
-    AgentPopulation population(circle_agent);
+    AgentPopulation population(circle_agent, 10);
     //TODO: Set maximum population size if known in advance
-    for (int i=0; i< 100; i++)
+    for (int i=0; i< 10; i++)
     {
         AgentInstance instance = population.getNextInstance("default");
         instance.setVariable<float>("x", i*0.1f);
@@ -155,22 +155,22 @@ int main(void)
     simulation.addSimulationLayer(output_layer);
     //TOD: simulation.insertFunctionLayerAt(layer, int index) //Should inster at the layer position and move all other layer back
 
-    SimulationLayer input_layer(simulation, "input_layer");
-    input_layer.addAgentFunction("input_data");
+    //SimulationLayer input_layer(simulation, "input_layer");
+    //input_layer.addAgentFunction("input_data");
     //input_layer.addAgentFunction("input_data",input_func);
     //input_layer.addAgentFunction(input_data,input_func);
-    simulation.addSimulationLayer(input_layer);
+    //simulation.addSimulationLayer(input_layer);
 
-    SimulationLayer move_layer(simulation, "move_layer");
-    move_layer.addAgentFunction("move");
+    //SimulationLayer move_layer(simulation, "move_layer");
+    //move_layer.addAgentFunction("move");
     //move_layer.addAgentFunction("move",move_func); // example usage of func pointer
     //move_layer.addAgentFunction(move,move_func);
-    simulation.addSimulationLayer(move_layer);
+    //simulation.addSimulationLayer(move_layer);
 
     //TODO: simulation.getLayerPosition("layer name") - returns an int
     //Simulation.addFunctionToLayer(0,"lmove")
     //This would come from the program arguments. Would be argv[2] if this file had been generated from model.xml
-    simulation.setSimulationSteps(10);
+    simulation.setSimulationSteps(1);
 
 
     /* CUDA agent model */
