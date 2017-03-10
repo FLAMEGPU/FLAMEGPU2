@@ -41,13 +41,13 @@ unsigned int h_namespace;
 CurveVariableHash h_hashes[CURVE_MAX_VARIABLES];				//Host array of the hash values of registered variables
 void* h_d_variables[CURVE_MAX_VARIABLES];						//Host array of pointer to device memory addresses for variable storage
 int	h_states[CURVE_MAX_VARIABLES];								//Host array of the states of registered variables
-std::typeinfo h_types[CURVE_MAX_VARIABLES];                     //Host array of the types of registered variables
+//std::type_info h_types[CURVE_MAX_VARIABLES];                     //Host array of the types of registered variables
 
 __constant__ CurveNamespaceHash d_namespace;
 __constant__ CurveVariableHash d_hashes[CURVE_MAX_VARIABLES];	//Device array of the hash values of registered variables
 __device__ char* d_variables[CURVE_MAX_VARIABLES];				//Device array of pointer to device memory addresses for variable storage
 __constant__ int* d_states[CURVE_MAX_VARIABLES];				//Device array of the states of registered variables
-__constant__ std::typeinfo* d_types[CURVE_MAX_VARIABLES];       //Device array of the types of registered variables
+__constant__ std::type_info* d_types[CURVE_MAX_VARIABLES];       //Device array of the types of registered variables
 
 __device__ curveDeviceError d_curve_error;
 curveHostError h_curve_error;

@@ -116,7 +116,7 @@ __host__ CurveVariable curveGetVariableHandle(CurveVariableHash variable_hash);
  *  @param d_ptr a pointer to the vector which holds the hashed variable of give name
  *  @return CurveVariable Handle of registered variable or UNKNOWN_CURVE_VARIABLE if an error is encountered.
  */
-__host__ CurveVariable curveRegisterVariableByHash(CurveVariableHash variable_hash, void* d_ptr);
+__host__ CurveVariable curveRegisterVariableByHash(CurveVariableHash variable_hash, void* d_ptr);//, std::type_info *type);
 
 /** @brief Template function for registering a constant string
  * 	Registers a constant string variable name by hashing and then inserting into a hash table.
@@ -126,8 +126,9 @@ __host__ CurveVariable curveRegisterVariableByHash(CurveVariableHash variable_ha
  */
 template <unsigned int N, typename T> __host__ CurveVariable curveRegisterVariable(const char(&variableName)[N], void* d_ptr){
 	CurveVariableHash variable_hash = curveVariableHash(variableName);
-	std::typeinfo * type = typeid(T);
-	return curveRegisterVariableByHash(variable_hash, d_ptr, type);
+	std::type_info type = typeid(T);
+	//return curveRegisterVariableByHash(variable_hash, d_ptr, type);
+	return curveRegisterVariableByHash(variable_hash, d_ptr);
 }
 
 
