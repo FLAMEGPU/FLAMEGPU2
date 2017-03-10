@@ -124,9 +124,10 @@ __host__ CurveVariable curveRegisterVariableByHash(CurveVariableHash variable_ha
  *  @param d_ptr a pointer to the vector which holds the variable of give name
  *  @return CurveVariable Handle of registered variable or UNKNOWN_CURVE_VARIABLE if an error is encountered.
  */
-template <unsigned int N> __host__ CurveVariable curveRegisterVariable(const char(&variableName)[N], void* d_ptr){
+template <unsigned int N, typename T> __host__ CurveVariable curveRegisterVariable(const char(&variableName)[N], void* d_ptr){
 	CurveVariableHash variable_hash = curveVariableHash(variableName);
-	return curveRegisterVariableByHash(variable_hash, d_ptr);
+	std::typeinfo * type = typeid(T);
+	return curveRegisterVariableByHash(variable_hash, d_ptr, type);
 }
 
 

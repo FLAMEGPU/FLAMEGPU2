@@ -41,11 +41,13 @@ unsigned int h_namespace;
 CurveVariableHash h_hashes[CURVE_MAX_VARIABLES];				//Host array of the hash values of registered variables
 void* h_d_variables[CURVE_MAX_VARIABLES];						//Host array of pointer to device memory addresses for variable storage
 int	h_states[CURVE_MAX_VARIABLES];								//Host array of the states of registered variables
+std::typeinfo h_types[CURVE_MAX_VARIABLES];                     //Host array of the types of registered variables
 
 __constant__ CurveNamespaceHash d_namespace;
 __constant__ CurveVariableHash d_hashes[CURVE_MAX_VARIABLES];	//Device array of the hash values of registered variables
-__device__ float* d_variables[CURVE_MAX_VARIABLES];				//Device array of pointer to device memory addresses for variable storage
+__device__ char* d_variables[CURVE_MAX_VARIABLES];				//Device array of pointer to device memory addresses for variable storage
 __constant__ int* d_states[CURVE_MAX_VARIABLES];				//Device array of the states of registered variables
+__constant__ std::typeinfo* d_types[CURVE_MAX_VARIABLES];       //Device array of the types of registered variables
 
 __device__ curveDeviceError d_curve_error;
 curveHostError h_curve_error;
@@ -119,6 +121,7 @@ __host__ void curveInit()
 	CUDA_SAFE_CALL(cudaGetSymbolAddress((void **)&_d_variables, d_variables));
 	CUDA_SAFE_CALL(cudaGetSymbolAddress((void **)&_d_states, d_states));
 
+
 	//set values of hash table to 0 on host and device
 	memset(h_hashes, 0,  sizeof(unsigned int)*CURVE_MAX_VARIABLES);
 	memset(h_states, 0,  sizeof(int)*CURVE_MAX_VARIABLES);
@@ -128,9 +131,12 @@ __host__ void curveInit()
 	CUDA_SAFE_CALL(cudaMemset(_d_variables, 0, sizeof(void*)*CURVE_MAX_VARIABLES));
 	CUDA_SAFE_CALL(cudaMemset(_d_states, VARIABLE_DISABLED, sizeof(int)*CURVE_MAX_VARIABLES));
 
+	//memset the h and d types array
+
 	curveClearErrors();
 }
 
+// set the type
 __host__ CurveVariable curveRegisterVariableByHash(CurveVariableHash variable_hash, void * d_ptr)
 {
 	unsigned int i, n;
@@ -288,7 +294,7 @@ __device__ void* curveGetVariablePtrByHash(const CurveVariableHash variable_hash
 printf("thread %d , offset %u, cv %d\n",threadIdx.x, offset,cv );
 	//return a generic pointer to variable address for given offset
 	//TODO: Add vector length checking
-    return &(d_variables[cv])[offset];
+    return d_variables[cv] + offset;
 }
 
 
