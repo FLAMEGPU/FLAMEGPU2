@@ -17,7 +17,7 @@ FLAMEGPU_AGENT_FUNCTION(add_func)
 
     printf("thread %d, x = %f\n", threadIdx.x,x);
     FLAMEGPU->setVariable<double>("m",  FLAMEGPU->getVariable<double>("m") + 2);
-    //x = FLAMEGPU->getVariable<float>("m");
+    //x = FLAMEGPU->getVariable<double>("m");
     //printf("x after set = %f\n", x);
 
     return ALIVE;
@@ -85,7 +85,7 @@ BOOST_AUTO_TEST_CASE(GPUSimulationTest)
     flame_model.addAgent(circle_agent);
 
     AgentPopulation population(circle_agent);
-    for (int i = 0; i< 50; i++)
+    for (int i = 0; i< 32; i++)
     {
         AgentInstance instance = population.getNextInstance("default");
         instance.setVariable<double>("m", i);
@@ -93,7 +93,7 @@ BOOST_AUTO_TEST_CASE(GPUSimulationTest)
 
     BOOST_TEST_MESSAGE( "\nTesting initial values .." );
 
-    for (int i = 0; i< 50; i++)
+    for (int i = 0; i< 32; i++)
     {
         AgentInstance instance = population.getInstanceAt(i,"default");
         BOOST_TEST_MESSAGE( i << "th value is : "<< instance.getVariable<double>("m")<< "!");
@@ -119,7 +119,7 @@ BOOST_AUTO_TEST_CASE(GPUSimulationTest)
     BOOST_TEST_MESSAGE( "\nTesting values copied back from device after simulating functions .." );
 
     cuda_model.getPopulationData(population);
-    for (int i = 0; i < 50; i++)
+    for (int i = 0; i < 32; i++)
     {
         AgentInstance i1 = population.getInstanceAt(i, "default");
         BOOST_TEST_MESSAGE( i << "th value is : "<< i1.getVariable<double>("m")<< "!");

@@ -224,6 +224,8 @@ extern __device__ void* curveGetVariablePtrByHash(const CurveVariableHash variab
 template <typename T>
 __device__ float curveGetVariableByHash(const CurveVariableHash variable_hash, unsigned int index){
 	size_t offset = index *sizeof(T);
+
+	printf("thread %d , index %d,  offset %u\n",threadIdx.x, index, offset);
 	T *value_ptr = (T*)curveGetVariablePtrByHash(variable_hash, offset);
 	if (value_ptr)
 		return *value_ptr;
@@ -240,6 +242,7 @@ __device__ float curveGetVariableByHash(const CurveVariableHash variable_hash, u
 template <typename T, unsigned int N>
 __device__ float curveGetVariable(const char (&variableName)[N], unsigned int index)
 {
+
 	CurveVariableHash variable_hash = curveVariableHash(variableName);
 	return curveGetVariableByHash<T>(variable_hash, index);
 }
@@ -254,6 +257,7 @@ __device__ float curveGetVariable(const char (&variableName)[N], unsigned int in
 template <typename T>
 __device__ void curveSetVariableByHash(const CurveVariableHash variable_hash, T variable, unsigned int index)
 {
+
 	size_t offset = index *sizeof(T);
 	T *value_ptr = (T*)curveGetVariablePtrByHash(variable_hash, offset);
 	*value_ptr = variable;

@@ -24,7 +24,7 @@ __global__ void agent_function_wrapper(FLAMEGPU_AGENT_FUNCTION_POINTER func, int
         }
         else
         {
-            printf("Agent ALIVE!\n");
+            //printf("Agent ALIVE!\n");
         }
 
     }

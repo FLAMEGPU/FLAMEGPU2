@@ -272,7 +272,6 @@ __device__ void* curveGetVariablePtrByHash(const CurveVariableHash variable_hash
     CurveVariable cv;
 
 	cv = getVariable(variable_hash);
-
     //error checking
     if (cv == UNKNOWN_CURVE_VARIABLE)
     {
@@ -284,7 +283,7 @@ __device__ void* curveGetVariablePtrByHash(const CurveVariableHash variable_hash
     	d_curve_error = CURVE_DEVICE_ERROR_VARIABLE_DISABLED;
     	return NULL;
     }
-
+printf("thread %d , offset %u, %d\n",threadIdx.x, offset,cv);
 	//return a generic pointer to variable address for given offset
 	//TODO: Add vector length checking
     return &(d_variables[cv])[offset];
