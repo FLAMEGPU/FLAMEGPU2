@@ -30,6 +30,7 @@
 #include "test_pop_validation.h"
 #include "test_sim_validation.h"
 #include "test_gpu_validation.h"
+//#include "VS_test_gpu_validation.h"   # to work with VS
 
 
 
