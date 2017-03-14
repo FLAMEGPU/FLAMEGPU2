@@ -2,25 +2,22 @@
 
 FLAMEGPU_AGENT_FUNCTION(add_func)
 {
-    //printf("Hello from add_func\n");
-
     // should've returned error if the type was not correct. Needs type check
     double x = FLAMEGPU->getVariable<double>("m");
 
-    printf("thread %d, x = %f\n", threadIdx.x,x);
-    FLAMEGPU->setVariable<double>("m",  FLAMEGPU->getVariable<double>("m") + 2);
-    //x = FLAMEGPU->getVariable<double>("m");
-    //printf("x after set = %f\n", x);
+    FLAMEGPU->setVariable<double>("m", x + 2);
+    x = FLAMEGPU->getVariable<double>("m");
 
     return ALIVE;
 }
+
 
 using namespace std;
 
 bool gpu_test_1()
 {
 bool equal = true;
-    ModelDescription flame_model("circles_model");
+     ModelDescription flame_model("circles_model");
     AgentDescription circle_agent("circle");
 
 
@@ -41,6 +38,8 @@ bool equal = true;
     AgentPopulation population2(circle_agent, 100);
     cuda_model.getPopulationData(population2);
 
+    BOOST_TEST_MESSAGE( "\nTesting values copied back from device without simulating any functions .." );
+
 while(equal){
     //check values are the same
     for (int i = 0; i < 100; i++)
@@ -59,13 +58,11 @@ while(equal){
 // the test should verify the correctness of get/set variable and hashing, however every 4th variable in the array is updated
 bool gpu_test_2()
 {
-
     ModelDescription flame_model("circles_model");
     AgentDescription circle_agent("circle");
 
 
     circle_agent.addAgentVariable<double>("m");
-
 
     AgentFunctionDescription add_data("add_data");
     AgentFunctionOutput add_location("location");
@@ -75,17 +72,11 @@ bool gpu_test_2()
 
     flame_model.addAgent(circle_agent);
 
-    AgentPopulation population(circle_agent);
-    for (int i = 0; i< 32; i++)
+    AgentPopulation population(circle_agent,10);
+    for (int i = 0; i< 10; i++)
     {
         AgentInstance instance = population.getNextInstance("default");
         instance.setVariable<double>("m", i);
-    }
-
-    for (int i = 0; i< 32; i++)
-    {
-        AgentInstance instance = population.getInstanceAt(i,"default");
-        printf( "%d th value is : %d\n", instance.getVariable<double>("m"));
     }
 
     Simulation simulation(flame_model);
@@ -107,12 +98,17 @@ bool gpu_test_2()
 
     BOOST_TEST_MESSAGE( "\nTesting values copied back from device after simulating functions .." );
 
-    cuda_model.getPopulationData(population);
-    for (int i = 0; i < 32; i++)
+
+    AgentPopulation population2(circle_agent, 10);
+    cuda_model.getPopulationData(population2);
+
+    //check values are the same
+    for (int i = 0; i < 10; i++)
     {
         AgentInstance i1 = population.getInstanceAt(i, "default");
-        printf( "%d th value is : %d\n", i1.getVariable<double>("m"));
-
+        AgentInstance i2 = population2.getInstanceAt(i, "default");
+        //use AgentInstance equality operator
+        BOOST_CHECK(i1.getVariable<double>("m") + 2 == i2.getVariable<double>("m"));
     }
     retrun 1;
 }
