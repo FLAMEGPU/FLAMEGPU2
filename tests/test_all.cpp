@@ -28,7 +28,7 @@
 
 #include "test_model_validation.h"
 #include "test_pop_validation.h"
-//#include "VS_test_sim_validation.h"   // to do
+#include "VS_test_sim_validation.h"   // to work with VS
 #include "VS_test_gpu_validation.h"   // to work with VS
 
 
