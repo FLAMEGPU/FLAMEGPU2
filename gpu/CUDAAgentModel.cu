@@ -136,12 +136,14 @@ void CUDAAgentModel::step(const Simulation& simulation)
         const FunctionDescriptionVector& functions = simulation.getFunctionsAtLayer(i);
 
         //for each func function
-        for (AgentFunctionDescription func_des : functions) // const AgentFunctionDescription returns an error!
+        for (AgentFunctionDescription func_des : functions)
         {
 
-            //get the CUDA Agent
-            //TODO: Need a method to get a cuda agent name from an agent function!
+            std::string agent_name = func_des.getParent().getName();
             const CUDAAgent& cuda_agent = getCUDAAgent(func_des.getParent().getName());
+
+            // set namespace
+            cuda_agent.setNamespace(agent_name);
 
             //configure runtime access of the functions variables within the FLAME_API object
             cuda_agent.mapRuntimeVariables(func_des);
@@ -152,8 +154,6 @@ void CUDAAgentModel::step(const Simulation& simulation)
             //host_pointer
             FLAMEGPU_AGENT_FUNCTION_POINTER h_func_ptr;
 
-            //get d_func_ptr as a device address rather than a device symbol address
-            //cudaMemcpyFromSymbol(&h_func_ptr, d_func_ptr, sizeof(FLAMEGPU_AGENT_FUNCTION_POINTER));
             cudaMemcpyFromSymbol(&h_func_ptr, *agent_func, sizeof(FLAMEGPU_AGENT_FUNCTION_POINTER));
 
             //call the agent function wrapper which creates an instance of FLAMEGPU_API on the device to pass to the agent function.
@@ -174,8 +174,8 @@ void CUDAAgentModel::step(const Simulation& simulation)
             gridSize = (state_list_size + blockSize - 1) / blockSize;
 
 
-           // agent_function_wrapper <<<gridSize, blockSize>>>(h_func_ptr, state_list_size);
-            agent_function_wrapper <<<1,256>>>(h_func_ptr, state_list_size);
+            agent_function_wrapper <<<gridSize, blockSize>>>(h_func_ptr, state_list_size);
+           // agent_function_wrapper <<<1,256>>>(h_func_ptr, state_list_size);
             cudaDeviceSynchronize();
 
             //unmap the function variables
@@ -233,38 +233,11 @@ void CUDAAgentModel::simulate(const Simulation& sim)
         //throw std::runtime_error("CUDA agent map size is zero"); // population size = 0 ? do we mean checking the number of elements in the map container?
         throw InvalidCudaAgentMapSize();
 
-    //TODO: Pauls comments on how to simulate
-    //go through the simulation layers and get a FunctionDesMap (this allows us to get a description of the function as well as the pointer to execute)
-    //for each agentfunctdesc
-    //	ensure that the agent variables can be accessed via curve type calls (some kind of binding)
-    //	construct a FLAMEGPU_agent_handle
-    //	call the function (with handle passed)
-    //	some kind of unbinding
-
-    //The thing that is missing is movement of agent data between states etc.
-
-//    // based on not using a func pointer
-//    for (auto j: sim.layers.size())
-//    {
-//        std::vector<std::string> func = sim.getFunctionAtLayer(j);
-//        for (auto i: func.size())
-//        {
-//            std::cout<<func.at(i) << endl;
-//        }
-//    }
-//
-//    // alternative
-//    // todo : now we should use func pointer instead. Meaning func point will be executed
-//    for (auto j: sim.layers.size())
-//    {
-//        sim.getFunctionPAtLayer(j); // need to add agent function pointers too
-//
-//    }
 
     //CUDAAgentMap::iterator it;
 
 
-    //check any CUDAAgents with population size == 0  // Moz : not sure what this means ! population size is set by default
+    //check any CUDAAgents with population size == 0
     //if they have executable functions then these can be ignored
     //if they have agent creations then buffer space must be allocated for them
 }

@@ -27,7 +27,7 @@
 CUDAAgent::CUDAAgent(const AgentDescription& description) : agent_description(description), state_map(), max_list_size(0)
 {
 
-    
+
 
 }
 
@@ -191,44 +191,57 @@ void CUDAAgent::zeroAllStateVariableData()
     }
 }
 
+void CUDAAgent::setNamespace(std::string agent_name)
+{
+    curveSetNamespace(agent_name);
+
+}
+
+// this is done for all the variables for now.
 void CUDAAgent::mapRuntimeVariables(const AgentFunctionDescription& func) const
 {
-	//check the cuda agent state map to find the correct state list for functions starting state
-	CUDAStateMap::const_iterator sm = state_map.find(func.getIntialState());
+    //check the cuda agent state map to find the correct state list for functions starting state
+    CUDAStateMap::const_iterator sm = state_map.find(func.getIntialState());
 
-	if (sm == state_map.end()){
-		//TODO: Error. The state does not exist within the CUDA agent.
-	}
+    if (sm == state_map.end())
+    {
+        //TODO: Error. The state does not exist within the CUDA agent.
+    }
 
-	//loop through the agents variables to map each variable name using cuRVE
-	for (MemoryMapPair mmp : agent_description.getMemoryMap()){
-		//get a device pointer for the agent variable name
-		void* d_ptr = sm->second->getAgentListVariablePointer(mmp.first);
+    //loop through the agents variables to map each variable name using cuRVE
+    for (MemoryMapPair mmp : agent_description.getMemoryMap())
+    {
+        //get a device pointer for the agent variable name
+        void* d_ptr = sm->second->getAgentListVariablePointer(mmp.first);
 
-		//map using curve
-		CurveVariableHash hash = curveVariableRuntimeHash(mmp.first.c_str());
-		curveRegisterVariableByHash(hash, d_ptr);
-	}
+        //map using curve
+        CurveVariableHash hash = curveVariableRuntimeHash(mmp.first.c_str());
+
+        const std::type_info &var_Type = mmp.second;
+        curveRegisterVariableByHash(hash, d_ptr, var_Type); // var_type or &var_type
+    }
 
 }
 
 void CUDAAgent::unmapRuntimeVariables(const AgentFunctionDescription& func) const
 {
-	//check the cuda agent state map to find the correct state list for functions starting state
-	CUDAStateMap::const_iterator sm = state_map.find(func.getIntialState());
+    //check the cuda agent state map to find the correct state list for functions starting state
+    CUDAStateMap::const_iterator sm = state_map.find(func.getIntialState());
 
-	if (sm == state_map.end()){
-		//TODO: Error. The state does not exist within the CUDA agent.
-	}
+    if (sm == state_map.end())
+    {
+        //TODO: Error. The state does not exist within the CUDA agent.
+    }
 
-	//loop through the agents variables to map each variable name using cuRVE
-	for (MemoryMapPair mmp : agent_description.getMemoryMap()){
-		//get a device pointer for the agent variable name
-		void* d_ptr = sm->second->getAgentListVariablePointer(mmp.first);
+    //loop through the agents variables to map each variable name using cuRVE
+    for (MemoryMapPair mmp : agent_description.getMemoryMap())
+    {
+        //get a device pointer for the agent variable name
+        void* d_ptr = sm->second->getAgentListVariablePointer(mmp.first);
 
-		//unmap using curve
-		CurveVariableHash hash = curveVariableRuntimeHash(mmp.first.c_str());
-		curveUnregisterVariableByHash(hash);
-	}
+        //unmap using curve
+        CurveVariableHash hash = curveVariableRuntimeHash(mmp.first.c_str());
+        curveUnregisterVariableByHash(hash);
+    }
 
 }

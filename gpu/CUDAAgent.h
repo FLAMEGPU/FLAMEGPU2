@@ -50,6 +50,8 @@ public:
     unsigned int getMaximumListSize() const;
 
 
+    void setNamespace(std::string agent_name);
+
 	/** @brief Uses the cuRVE runtime to map the variables used by the agent function to the cuRVE library so that can be accessed by name within a n agent function
 	*/
 	void mapRuntimeVariables(const AgentFunctionDescription& func) const;

@@ -27,7 +27,7 @@ using namespace std;
 
 FLAMEGPU_AGENT_FUNCTION(output_func)
 {
-	printf("Hello from output_func\n");
+	//printf("Hello from output_func\n");
 
 	// should've returned error if the type was not correct. Needs type check
 	float x = FLAMEGPU->getVariable<float>("x");
@@ -41,19 +41,19 @@ FLAMEGPU_AGENT_FUNCTION(output_func)
 
 FLAMEGPU_AGENT_FUNCTION(input_func)
 {
-	printf("Hello from input_func\n");
+	//printf("Hello from input_func\n");
 	return ALIVE;
 }
 
 FLAMEGPU_AGENT_FUNCTION(move_func)
 {
-	printf("Hello from move_func\n");
+	//printf("Hello from move_func\n");
 	return ALIVE;
 }
 
 FLAMEGPU_AGENT_FUNCTION(stay_func)
 {
-	printf("Hello from stay_func\n");
+	//printf("Hello from stay_func\n");
 	return ALIVE;
 }
 

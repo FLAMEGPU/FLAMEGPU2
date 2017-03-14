@@ -1,5 +1,5 @@
 bool gpu_test_1();
-bool gpu_test_1();
+bool gpu_test_2();
 
 
 BOOST_AUTO_TEST_SUITE(GPUTests)

@@ -61,7 +61,7 @@ void AgentDescription::addAgentFunction(AgentFunctionDescription& function)
     function.setParent(*this);
 }
 
-MemoryMap& AgentDescription::getMemoryMap()   // Moz: why two getMemoryMap, one is const
+MemoryMap& AgentDescription::getMemoryMap()
 {
     return memory;
 }
