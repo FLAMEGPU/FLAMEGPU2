@@ -27,7 +27,7 @@
 CUDAAgent::CUDAAgent(const AgentDescription& description) : agent_description(description), state_map(), max_list_size(0)
 {
 
-    
+
 
 }
 
@@ -207,7 +207,9 @@ void CUDAAgent::mapRuntimeVariables(const AgentFunctionDescription& func) const
 
 		//map using curve
 		CurveVariableHash hash = curveVariableRuntimeHash(mmp.first.c_str());
-		curveRegisterVariableByHash(hash, d_ptr);
+
+		const std::type_info &var_Type = mmp.second;
+		curveRegisterVariableByHash(hash, d_ptr, var_Type); // var_type or &var_type
 	}
 
 }

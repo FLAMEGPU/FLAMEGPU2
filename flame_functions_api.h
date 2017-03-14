@@ -1,4 +1,3 @@
-
 #ifndef FLAME_FUNCTIONS_API_H_
 #define FLAME_FUNCTIONS_API_H_
 
@@ -14,6 +13,7 @@
 
 #include "gpu/CUDAErrorChecking.h"			//required for CUDA error handling functions
 #include "runtime/cuRVE/curve.h"
+#include "exception/FGPUException.h"
 
 //TODO: Some example code of the handle class and an example function
 //! FLAMEGPU_API is a singleton class
@@ -55,13 +55,13 @@ class FLAMEGPU_API
 {
 
 public:
-	__device__ FLAMEGPU_API(){};
+    __device__ FLAMEGPU_API() {};
 
-	template<typename T, unsigned int N> __device__
-		T getVariable(const char(&variable_name)[N]);
+    template<typename T, unsigned int N> __device__
+    T getVariable(const char(&variable_name)[N]);
 
-	template<typename T, unsigned int N> __device__
-		void setVariable(const char(&variable_name)[N], T value);
+    template<typename T, unsigned int N> __device__
+    void setVariable(const char(&variable_name)[N], T value);
 };
 
 
@@ -78,32 +78,30 @@ template<typename T, unsigned int N>
 __device__ T FLAMEGPU_API::getVariable(const char(&variable_name)[N])
 {
 
-// TODO
-//if(curveGetVariableType(curveVariableHash(variable_Name))!=typeid(T))
-//	throw InvalidVarType("Wrong variable type getting agent data vector");
-
-	//simple indexing assumes index is the thread number (this may change later)
-	unsigned int index =  (blockDim.x * blockIdx.x) + threadIdx.x;
-
-	//get the value from curve
-	T value = curveGetVariable<T>(variable_name, index);
-
-	//TODO: Some error checking?
-	// needs type checking
+// Not tested
+   // if(curveGetType<T>(variable_name)!=typeid(T))
+        //throw InvalidVarType("Wrong variable type getting agent data vector");
 
 
-	//return the variable from curve
-	return value;
+    //simple indexing assumes index is the thread number (this may change later)
+    unsigned int index =  (blockDim.x * blockIdx.x) + threadIdx.x;
+
+    //get the value from curve
+    T value = curveGetVariable<T>(variable_name, index);
+
+    //return the variable from curve
+    return value;
 }
 
 template<typename T, unsigned int N>
-__device__ void FLAMEGPU_API::setVariable(const char(&variable_name)[N], T value){
+__device__ void FLAMEGPU_API::setVariable(const char(&variable_name)[N], T value)
+{
 
-	//simple indexing assumes index is the thread number (this may change later)
-	unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
+    //simple indexing assumes index is the thread number (this may change later)
+    unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
 
-	//set the variable using curve
-	curveSetVariable<T>(variable_name, value, index);
+    //set the variable using curve
+    curveSetVariable<T>(variable_name, value, index);
 }
 
 #endif /* FLAME_FUNCTIONS_API_H_ */

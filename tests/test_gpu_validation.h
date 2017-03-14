@@ -10,15 +10,11 @@
 
 FLAMEGPU_AGENT_FUNCTION(add_func)
 {
-    //printf("Hello from add_func\n");
-
     // should've returned error if the type was not correct. Needs type check
     double x = FLAMEGPU->getVariable<double>("m");
 
-    printf("thread %d, x = %f\n", threadIdx.x,x);
     FLAMEGPU->setVariable<double>("m", x + 2);
     x = FLAMEGPU->getVariable<double>("m");
-    printf("x after set = %f\n", x);
 
     return ALIVE;
 }
@@ -74,8 +70,6 @@ BOOST_AUTO_TEST_CASE(GPUSimulationTest)
 
     circle_agent.addAgentVariable<double>("m");
 
-
-
     AgentFunctionDescription add_data("add_data");
     AgentFunctionOutput add_location("location");
     add_data.addOutput(add_location);
@@ -91,13 +85,13 @@ BOOST_AUTO_TEST_CASE(GPUSimulationTest)
         instance.setVariable<double>("m", i);
     }
 
-    BOOST_TEST_MESSAGE( "\nTesting initial values .." );
-
-    for (int i = 0; i< 10; i++)
-    {
-        AgentInstance instance = population.getInstanceAt(i,"default");
-        BOOST_TEST_MESSAGE( i << "th value is : "<< instance.getVariable<double>("m")<< "!");
-    }
+//    BOOST_TEST_MESSAGE( "\nTesting initial values .." );
+//
+//    for (int i = 0; i< 10; i++)
+//    {
+//        AgentInstance instance = population.getInstanceAt(i,"default");
+//        BOOST_TEST_MESSAGE( i << "th value is : "<< instance.getVariable<double>("m")<< "!");
+//    }
 
     Simulation simulation(flame_model);
 
@@ -118,12 +112,24 @@ BOOST_AUTO_TEST_CASE(GPUSimulationTest)
 
     BOOST_TEST_MESSAGE( "\nTesting values copied back from device after simulating functions .." );
 
-    cuda_model.getPopulationData(population);
+
+    AgentPopulation population2(circle_agent, 10);
+    cuda_model.getPopulationData(population2);
+
+//    for (int i = 0; i < 10; i++)
+//    {
+//        AgentInstance i1 = population2.getInstanceAt(i, "default");
+//        BOOST_TEST_MESSAGE( i << "th value is : "<< i1.getVariable<double>("m")<< "!");
+//
+//    }
+
+    //check values are the same
     for (int i = 0; i < 10; i++)
     {
         AgentInstance i1 = population.getInstanceAt(i, "default");
-        BOOST_TEST_MESSAGE( i << "th value is : "<< i1.getVariable<double>("m")<< "!");
-
+        AgentInstance i2 = population2.getInstanceAt(i, "default");
+        //use AgentInstance equality operator
+        BOOST_CHECK(i1.getVariable<double>("m") + 2 == i2.getVariable<double>("m"));
     }
 }
 BOOST_AUTO_TEST_SUITE_END()
