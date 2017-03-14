@@ -193,7 +193,7 @@ void CUDAAgent::zeroAllStateVariableData()
 
 void CUDAAgent::setNamespace(std::string agent_name)
 {
-    curveSetNamespace(agent_name);
+    //curveSetNamespace(agent_name);
 
 }
 

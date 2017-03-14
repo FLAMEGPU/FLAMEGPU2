@@ -143,7 +143,7 @@ void CUDAAgentModel::step(const Simulation& simulation)
             const CUDAAgent& cuda_agent = getCUDAAgent(func_des.getParent().getName());
 
             // set namespace
-            cuda_agent.setNamespace(agent_name);
+            //cuda_agent.setNamespace(agent_name);
 
             //configure runtime access of the functions variables within the FLAME_API object
             cuda_agent.mapRuntimeVariables(func_des);

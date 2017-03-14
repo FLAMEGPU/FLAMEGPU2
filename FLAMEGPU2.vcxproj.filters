@@ -104,6 +104,12 @@
     <ClInclude Include="runtime\cuRVE\cuRVEInstance.h">
       <Filter>runtime\cuRVE</Filter>
     </ClInclude>
+    <ClInclude Include="tests\VS_test_gpu_validation.h">
+      <Filter>tests</Filter>
+    </ClInclude>
+    <ClInclude Include="tests\VS_test_sim_validation.h">
+      <Filter>tests</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="model\AgentDescription.cpp">
@@ -148,6 +154,9 @@
     <ClCompile Include="sim\SimulationLayer.cpp">
       <Filter>sim</Filter>
     </ClCompile>
+    <ClCompile Include="tests\test_all.cpp">
+      <Filter>tests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="runtime\cuRVE\curve.cu">
@@ -160,6 +169,11 @@
       <Filter>gpu</Filter>
     </CudaCompile>
     <CudaCompile Include="main.cu" />
-    <CudaCompile Include="tests\test_all.cu" />
+    <CudaCompile Include="tests\VS_test_gpu_validation.cu">
+      <Filter>tests</Filter>
+    </CudaCompile>
+    <CudaCompile Include="tests\VS_test_sim_validation.cu">
+      <Filter>tests</Filter>
+    </CudaCompile>
   </ItemGroup>
 </Project>

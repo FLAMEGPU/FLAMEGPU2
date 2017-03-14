@@ -54,6 +54,8 @@
     <ClInclude Include="tests\test_model_validation.h" />
     <ClInclude Include="tests\test_pop_validation.h" />
     <ClInclude Include="tests\test_sim_validation.h" />
+    <ClInclude Include="tests\VS_test_gpu_validation.h" />
+    <ClInclude Include="tests\VS_test_sim_validation.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="gpu\CUDAAgent.cpp" />
@@ -70,17 +72,17 @@
     <ClCompile Include="pop\AgentPopulation.cpp" />
     <ClCompile Include="sim\Simulation.cpp" />
     <ClCompile Include="sim\SimulationLayer.cpp" />
-    <CudaCompile Include="tests\test_all.cu">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='BoostTest|x64'">
-      </ExcludedFromBuild>
+    <ClCompile Include="tests\test_all.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <FileType>CppCode</FileType>
-      <GenerateRelocatableDeviceCode Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</GenerateRelocatableDeviceCode>
-      <GenerateRelocatableDeviceCode Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</GenerateRelocatableDeviceCode>
-      <GenerateRelocatableDeviceCode Condition="'$(Configuration)|$(Platform)'=='BoostTest|x64'">true</GenerateRelocatableDeviceCode>
-      <CodeGeneration Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">compute_20,sm_20;compute_50,sm_50</CodeGeneration>
-      <CodeGeneration Condition="'$(Configuration)|$(Platform)'=='Release|x64'">compute_20,sm_20;compute_50,sm_50</CodeGeneration>
-      <CodeGeneration Condition="'$(Configuration)|$(Platform)'=='BoostTest|x64'">compute_20,sm_20;compute_50,sm_50</CodeGeneration>
+    </ClCompile>
+    <CudaCompile Include="tests\VS_test_gpu_validation.cu">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </CudaCompile>
+    <CudaCompile Include="tests\VS_test_sim_validation.cu">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </CudaCompile>
   </ItemGroup>
   <ItemGroup>

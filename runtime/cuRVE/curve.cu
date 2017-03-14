@@ -41,11 +41,11 @@ unsigned int h_namespace;
 CurveVariableHash h_hashes[CURVE_MAX_VARIABLES];				//Host array of the hash values of registered variables
 void* h_d_variables[CURVE_MAX_VARIABLES];						//Host array of pointer to device memory addresses for variable storage
 int	h_states[CURVE_MAX_VARIABLES];								//Host array of the states of registered variables
-std::type_info * h_Var_types[CURVE_MAX_VARIABLES];              //Host array of the types of registered variables
+const std::type_info * h_Var_types[CURVE_MAX_VARIABLES];              //Host array of the types of registered variables
 __constant__ CurveNamespaceHash d_namespace;
 __constant__ CurveVariableHash d_hashes[CURVE_MAX_VARIABLES];	//Device array of the hash values of registered variables
 __device__ char* d_variables[CURVE_MAX_VARIABLES];				//Device array of pointer to device memory addresses for variable storage
-__constant__ int* d_states[CURVE_MAX_VARIABLES];				//Device array of the states of registered variables
+__constant__ int d_states[CURVE_MAX_VARIABLES];				//Device array of the states of registered variables
 __constant__ std::type_info* d_Var_types[CURVE_MAX_VARIABLES];       //Device array of the types of registered variables
 
 __device__ curveDeviceError d_curve_error;
@@ -108,8 +108,8 @@ __host__ CurveVariable curveGetVariableHandle(CurveVariableHash variable_hash)
 __host__ void curveInit()
 {
     unsigned int *_d_hashes;
-    float** _d_variables;
-    int** _d_states;
+    char** _d_variables;
+    int* _d_states;
 
     std::type_info** _d_Var_types;
 
@@ -127,13 +127,13 @@ __host__ void curveInit()
     //set values of hash table to 0 on host and device
     memset(h_hashes, 0,  sizeof(unsigned int)*CURVE_MAX_VARIABLES);
     memset(h_states, 0,  sizeof(int)*CURVE_MAX_VARIABLES);
-    memset(h_Var_types, 0,  sizeof(std::type_info)*CURVE_MAX_VARIABLES);
+    memset(h_Var_types, 0,  sizeof(const std::type_info*)*CURVE_MAX_VARIABLES);
 
     //initialise data to 0 on device
     CUDA_SAFE_CALL(cudaMemset(_d_hashes, 0, sizeof(unsigned int)*CURVE_MAX_VARIABLES));
     CUDA_SAFE_CALL(cudaMemset(_d_variables, 0, sizeof(void*)*CURVE_MAX_VARIABLES));
     CUDA_SAFE_CALL(cudaMemset(_d_states, VARIABLE_DISABLED, sizeof(int)*CURVE_MAX_VARIABLES));
-    CUDA_SAFE_CALL(cudaMemset(_d_Var_types, 0, sizeof(std::type_info)*CURVE_MAX_VARIABLES));
+    CUDA_SAFE_CALL(cudaMemset(_d_Var_types, 0, sizeof(const std::type_info *)*CURVE_MAX_VARIABLES));
 
     //memset the h and d types array
 
@@ -146,7 +146,7 @@ __host__ CurveVariable curveRegisterVariableByHash(CurveVariableHash variable_ha
     unsigned int i, n;
     unsigned int *_d_hashes;
     void** _d_variables;
-    int** _d_states;
+    int* _d_states;
     std::type_info** _d_Var_types;
 
     n = 0;
@@ -187,9 +187,9 @@ __host__ CurveVariable curveRegisterVariableByHash(CurveVariableHash variable_ha
     h_states[i] = VARIABLE_ENABLED;
     CUDA_SAFE_CALL(cudaMemcpy(&_d_states[i], &h_states[i], sizeof(int), cudaMemcpyHostToDevice));
 
-        //make a host copy of the pointer and copy to the device
-    h_Var_types[i] = var_type; // can't do this !
-    CUDA_SAFE_CALL(cudaMemcpy(&_d_Var_types[i], &h_Var_types[i], sizeof(std::type_info), cudaMemcpyHostToDevice));
+    //make a host copy of the pointer and copy to the device
+    //h_Var_types[i] = &var_type; // can't do this !
+    //CUDA_SAFE_CALL(cudaMemcpy(&_d_Var_types[i], &h_Var_types[i], sizeof(std::type_info), cudaMemcpyHostToDevice));
 
 
     printf("Var with hash is %u at index %d with %d collisions\n", variable_hash, i, n);
@@ -204,7 +204,7 @@ __host__ void curveUnregisterVariableByHash(CurveVariableHash variable_hash)
 {
     unsigned int *_d_hashes;
     void** _d_variables;
-    int** _d_states;
+    int* _d_states;
     std::type_info** _d_Var_types;
 
     CurveVariable cv;
@@ -237,8 +237,9 @@ __host__ void curveUnregisterVariableByHash(CurveVariableHash variable_hash)
     h_states[cv] = VARIABLE_DISABLED;
     CUDA_SAFE_CALL(cudaMemcpy(&_d_states[cv], &h_states[cv], sizeof(int), cudaMemcpyHostToDevice));
 
-    h_Var_types[cv] = 0;
-    CUDA_SAFE_CALL(cudaMemcpy(&_d_Var_types[cv], &h_Var_types[cv], sizeof(std::type_info), cudaMemcpyHostToDevice));
+	//PROBLEM: We can copy a type_info to device! It is a complex object not a basic data type..... Needs some research.
+    //h_Var_types[cv] = 0;
+    //CUDA_SAFE_CALL(cudaMemcpy(&_d_Var_types[cv], &h_Var_types[cv], sizeof(std::type_info), cudaMemcpyHostToDevice));
 
     printf("Var with hash %u has been un-registered\n", variable_hash);
 }
@@ -248,7 +249,7 @@ __host__ void curveUnregisterVariableByHash(CurveVariableHash variable_hash)
 __host__ void curveDisableVariableByHash(CurveVariableHash variable_hash)
 {
     CurveVariable cv = curveGetVariableHandle(variable_hash);
-    int** _d_states;
+    int* _d_states;
 
     //error checking
     if (cv == UNKNOWN_CURVE_VARIABLE)
@@ -265,7 +266,7 @@ __host__ void curveDisableVariableByHash(CurveVariableHash variable_hash)
 __host__ void curveEnableVariableByHash(CurveVariableHash variable_hash)
 {
     CurveVariable cv = curveGetVariableHandle(variable_hash);
-    int** _d_states;
+    int* _d_states;
 
     //error checking
     if (cv == UNKNOWN_CURVE_VARIABLE)
