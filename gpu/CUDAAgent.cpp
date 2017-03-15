@@ -217,8 +217,10 @@ void CUDAAgent::mapRuntimeVariables(const AgentFunctionDescription& func) const
         //map using curve
         CurveVariableHash hash = curveVariableRuntimeHash(mmp.first.c_str());
 
-        const std::type_info &var_Type = mmp.second;
-        curveRegisterVariableByHash(hash, d_ptr, var_Type); // var_type or &var_type
+		//THIs need to come from the TypeSizeMap in Agent Description.
+		size_t size = 0;
+
+        curveRegisterVariableByHash(hash, d_ptr, size); // var_type or &var_type
     }
 
 }

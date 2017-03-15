@@ -116,8 +116,9 @@ __host__ CurveVariable curveGetVariableHandle(CurveVariableHash variable_hash);
  *  @param d_ptr a pointer to the vector which holds the hashed variable of give name
  *  @return CurveVariable Handle of registered variable or UNKNOWN_CURVE_VARIABLE if an error is encountered.
  */
-//__host__ CurveVariable curveRegisterVariableByHash(CurveVariableHash variable_hash, void* d_ptr);//, std::type_info *type);
-__host__ CurveVariable curveRegisterVariableByHash(CurveVariableHash variable_hash, void* d_ptr, const std::type_info &type);
+__host__ CurveVariable curveRegisterVariableByHash(CurveVariableHash variable_hash, void* d_ptr, size_t size);
+
+
 /** @brief Template function for registering a constant string
  * 	Registers a constant string variable name by hashing and then inserting into a hash table.
  *  @param variableName A constant char array (C string) variable name.
@@ -126,9 +127,8 @@ __host__ CurveVariable curveRegisterVariableByHash(CurveVariableHash variable_ha
  */// Note: this function was never called
 template <unsigned int N, typename T> __host__ CurveVariable curveRegisterVariable(const char(&variableName)[N], void* d_ptr){
 	CurveVariableHash variable_hash = curveVariableHash(variableName);
-	const std::type_info & type = typeid(T); // could be without &
-	return curveRegisterVariableByHash(variable_hash, d_ptr, type); // the const func can get const and non const argument (for 3rd argument)
-	//return curveRegisterVariableByHash(variable_hash, d_ptr);
+	size_t size = sizeof(T);
+	return curveRegisterVariableByHash(variable_hash, d_ptr, size); // the const func can get const and non const argument (for 3rd argument)
 }
 
 
@@ -208,9 +208,12 @@ __host__ void curveSetDefaultNamespace();
 /* DEVICE API FUNCTIONS */
 
 
-
-//__host__ std::type_info& curveGetVariableType(const CurveVariableHash variable_hash);//const char (&variableName)[N]);
-//extern __device__ std::type_info * curveGetVariableType(const CurveVariableHash variable_hash);
+/** @brief Gets the size of the cuRVE variable type given the variable hash
+* Gets the size of the cuRVE variable type given the variable hash
+*  @param variable_hash A cuRVE variable string hash from CurveVariableHash.
+*  @return A size_t which is the size of the variable or 0 otherwise
+*/
+extern __device__ size_t curveGetVariableSize(const CurveVariableHash variable_hash);
 
 
 /** @brief Device function for getting a pointer to a variable of given name
@@ -221,16 +224,7 @@ __host__ void curveSetDefaultNamespace();
  */
 extern __device__ void* curveGetVariablePtrByHash(const CurveVariableHash variable_hash, size_t offset);
 
-//template <typename T, unsigned int N>
-//__device__ void curveGetType(const char (&variableName)[N]) //std::type_info
-//{
-//
-//	CurveVariableHash variable_hash = curveVariableHash(variableName);
-//	//if (curveGetVariableType(variable_hash) != typeid(T))
-//	//printf("error\n");
-//   // std::type_info *value_ptr = (std::type_info*)curveGetVariableType(variable_hash);
-//	//	return *value_ptr;
-//}
+
 
 /** @brief Device function for getting a single typed value from a CurveVariableHash at a given index
  * 	Returns a single value of specified type from a curveVariableHash using the given index position.
@@ -243,7 +237,15 @@ template <typename T>
 __device__ float curveGetVariableByHash(const CurveVariableHash variable_hash, unsigned int index){
 	size_t offset = index *sizeof(T);
 
+	//do a check on the size as otherwise the value_ptr may eb out of bounds.
+	size_t size = curveGetVariableSize(variable_hash);
+
+	//if (size != sizeof(T))
+	// error!
+
+	//get a pointer to the specific variable by offsetting by the provided index
 	T *value_ptr = (T*)curveGetVariablePtrByHash(variable_hash, offset);
+
 	if (value_ptr)
 		return *value_ptr;
 	else
@@ -274,6 +276,10 @@ __device__ float curveGetVariable(const char (&variableName)[N], unsigned int in
 template <typename T>
 __device__ void curveSetVariableByHash(const CurveVariableHash variable_hash, T variable, unsigned int index)
 {
+
+	//if (size != sizeof(T))
+	// error!
+
 
 	size_t offset = index *sizeof(T);
 	T *value_ptr = (T*)curveGetVariablePtrByHash(variable_hash, offset);
