@@ -33,7 +33,7 @@ enum curveDeviceError
     CURVE_DEVICE_ERROR_UNKNOWN_VARIABLE,		//!< A function has requested an unknown variable or a variable not registered in the current namespace
     CURVE_DEVICE_ERROR_VARIABLE_DISABLED,		//!< A function has requested a variable which is disabled
     CURVE_DEVICE_ERROR_UNKNOWN_TYPE,            //!< A function has requested an unknown type or a type not registered in the current namespace
-    CURVE_DEVICE_ERROR_UNKNOWN_LENGHT           //!< A function has requested an unknown vector lenght or the lenght not registered in the current namespace
+    CURVE_DEVICE_ERROR_UNKNOWN_LENGTH           //!< A function has requested an unknown vector length or the length not registered in the current namespace
 };
 
 /**
