@@ -196,6 +196,7 @@ void CUDAAgent::setNamespace(std::string agent_name)
 {
     //curveSetNamespace(agent_name);
 
+
 }
 
 // this is done for all the variables for now.
@@ -206,7 +207,7 @@ void CUDAAgent::mapRuntimeVariables(const AgentFunctionDescription& func) const
 
     if (sm == state_map.end())
     {
-        //TODO: Error. The state does not exist within the CUDA agent.
+        throw InvalidCudaAgentState();
     }
 
     //loop through the agents variables to map each variable name using cuRVE
@@ -218,10 +219,15 @@ void CUDAAgent::mapRuntimeVariables(const AgentFunctionDescription& func) const
         //map using curve
         CurveVariableHash hash = curveVariableRuntimeHash(mmp.first.c_str());
 
-		//TODO:THIs need to come from the TypeSizeMap in Agent Description.
-		size_t size = 0;
+        // get the agent variable size
+        size_t size;
+        size = agent_description.getAgentVariableSize(mmp.first.c_str());
 
-        curveRegisterVariableByHash(hash, d_ptr, size); // var_type or &var_type
+        // initialized to 1, unless the user sets this when calling curveRegisterVariable . (for now)
+        unsigned int length = 1;
+
+
+        curveRegisterVariableByHash(hash, d_ptr, size, length);
     }
 
 }

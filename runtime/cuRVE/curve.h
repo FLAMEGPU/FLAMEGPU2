@@ -18,6 +18,8 @@
 
 #define UNKNOWN_CURVE_VARIABLE 	-1						//!< value returned as a CurveVariable if an API function encounters an error
 
+
+
 typedef int 					CurveVariable;			//!< Typedef for cuRVE variable handle
 typedef unsigned int 			CurveVariableHash;		//!< Typedef for cuRVE variable name string hash
 typedef unsigned int 			CurveNamespaceHash;		//!< Typedef for cuRVE variable namespace string hash
@@ -27,11 +29,11 @@ typedef unsigned int 			CurveNamespaceHash;		//!< Typedef for cuRVE variable nam
  */
 enum curveDeviceError
 {
-	CURVE_DEVICE_ERROR_NO_ERRORS,				//!< No errors raised on the device
-	CURVE_DEVICE_ERROR_UNKNOWN_VARIABLE,		//!< A function has requested an unknown variable or a variable not registered in the current namespace
-	CURVE_DEVICE_ERROR_VARIABLE_DISABLED,		//!< A function has requested a variable which is disabled
-	CURVE_DEVICE_ERROR_UNKNOWN_TYPE,            //!< A function has requested an unknown type or a type not registered in the current namespace
-	CURVE_DEVICE_ERROR_UNKNOWN_LENGHT           //!< A function has requested an unknown vector lenght or the lenght not registered in the current namespace
+    CURVE_DEVICE_ERROR_NO_ERRORS,				//!< No errors raised on the device
+    CURVE_DEVICE_ERROR_UNKNOWN_VARIABLE,		//!< A function has requested an unknown variable or a variable not registered in the current namespace
+    CURVE_DEVICE_ERROR_VARIABLE_DISABLED,		//!< A function has requested a variable which is disabled
+    CURVE_DEVICE_ERROR_UNKNOWN_TYPE,            //!< A function has requested an unknown type or a type not registered in the current namespace
+    CURVE_DEVICE_ERROR_UNKNOWN_LENGHT           //!< A function has requested an unknown vector lenght or the lenght not registered in the current namespace
 };
 
 /**
@@ -39,11 +41,13 @@ enum curveDeviceError
  */
 enum curveHostError
 {
-	CURVE_ERROR_NO_ERRORS,						//!< No errors raised by host API functions
-	CURVE_ERROR_UNKNOWN_VARIABLE,				//!< A host API function has requested an unknown variable or a variable not registered in the current namespace
-	CURVE_ERROR_TOO_MANY_VARIABLES				//!< The maximum number of curve variables has been reached
+    CURVE_ERROR_NO_ERRORS,						//!< No errors raised by host API functions
+    CURVE_ERROR_UNKNOWN_VARIABLE,				//!< A host API function has requested an unknown variable or a variable not registered in the current namespace
+    CURVE_ERROR_TOO_MANY_VARIABLES				//!< The maximum number of curve variables has been reached
 };
 
+extern __device__ curveDeviceError d_curve_error;
+extern curveHostError h_curve_error;
 
 /* TEMPLATE HASHING FUNCTIONS */
 
@@ -54,10 +58,10 @@ enum curveHostError
  */
 template <unsigned int N, unsigned int I> struct CurveStringHash
 {
-	__device__ __host__ inline static CurveVariableHash Hash(const char (&str)[N])
-	{
-		return (CurveStringHash<N, I-1>::Hash(str) ^ str[I-1])*16777619u;
-	}
+    __device__ __host__ inline static CurveVariableHash Hash(const char (&str)[N])
+    {
+        return (CurveStringHash<N, I-1>::Hash(str) ^ str[I-1])*16777619u;
+    }
 };
 /** @brief Terminal template structure has function for a constant char array
  * 	Function within a template structure allows partial template specialisation for terminal case.
@@ -65,10 +69,10 @@ template <unsigned int N, unsigned int I> struct CurveStringHash
  */
 template <unsigned int N> struct CurveStringHash<N, 1>
 {
-	__device__ __host__ inline static CurveVariableHash Hash(const char (&str)[N])
-	{
-	    return (2166136261u ^ str[0])*16777619u;
-	}
+    __device__ __host__ inline static CurveVariableHash Hash(const char (&str)[N])
+    {
+        return (2166136261u ^ str[0])*16777619u;
+    }
 };
 /** @brief Main cuRVE variable hashing function
  *  Calls recursive hashing functions
@@ -76,7 +80,7 @@ template <unsigned int N> struct CurveStringHash<N, 1>
  */
 template <unsigned int N> __device__ __host__ inline static CurveVariableHash curveVariableHash(const char (&str)[N])
 {
-	return CurveStringHash<N, N>::Hash(str);
+    return CurveStringHash<N, N>::Hash(str);
 }
 
 
@@ -86,14 +90,15 @@ template <unsigned int N> __device__ __host__ inline static CurveVariableHash cu
 */
 __host__ inline static CurveVariableHash curveVariableRuntimeHash(const char* str)
 {
-	const size_t length = std::strlen(str) + 1;
-	unsigned int hash = 2166136261u;
+    const size_t length = std::strlen(str) + 1;
+    unsigned int hash = 2166136261u;
 
-	for (size_t i = 0; i<length; ++i){
-		hash ^= *str++;
-		hash *= 16777619u;
-	}
-	return hash;
+    for (size_t i = 0; i<length; ++i)
+    {
+        hash ^= *str++;
+        hash *= 16777619u;
+    }
+    return hash;
 }
 
 
@@ -118,7 +123,7 @@ __host__ CurveVariable curveGetVariableHandle(CurveVariableHash variable_hash);
  *  @param d_ptr a pointer to the vector which holds the hashed variable of give name
  *  @return CurveVariable Handle of registered variable or UNKNOWN_CURVE_VARIABLE if an error is encountered.
  */
-__host__ CurveVariable curveRegisterVariableByHash(CurveVariableHash variable_hash, void* d_ptr, size_t size,unsigned int lenght);
+__host__ CurveVariable curveRegisterVariableByHash(CurveVariableHash variable_hash, void* d_ptr, size_t size,unsigned int length);
 
 
 /** @brief Template function for registering a constant string
@@ -127,10 +132,11 @@ __host__ CurveVariable curveRegisterVariableByHash(CurveVariableHash variable_ha
  *  @param d_ptr a pointer to the vector which holds the variable of give name
  *  @return CurveVariable Handle of registered variable or UNKNOWN_CURVE_VARIABLE if an error is encountered.
  */// Note: this function was never called
-template <unsigned int N, typename T> __host__ CurveVariable curveRegisterVariable(const char(&variableName)[N], void* d_ptr, unsigned int lenght){
-	CurveVariableHash variable_hash = curveVariableHash(variableName);
-	size_t size = sizeof(T);
-	return curveRegisterVariableByHash(variable_hash, d_ptr, size, lenght); // the const func can get const and non const argument (for 3rd argument)
+template <unsigned int N, typename T> __host__ CurveVariable curveRegisterVariable(const char(&variableName)[N], void* d_ptr, unsigned int length)
+{
+    CurveVariableHash variable_hash = curveVariableHash(variableName);
+    size_t size = sizeof(T);
+    return curveRegisterVariableByHash(variable_hash, d_ptr, size, length); // the const func can get const and non const argument (for 3rd argument)
 }
 
 
@@ -146,9 +152,10 @@ __host__ void curveUnregisterVariableByHash(CurveVariableHash variable_hash);
 * 	Un-registers a constant string variable name by hashing and then removing from the hash table.
 *  @param variableName A constant char array (C string) variable name.
 */
-template <unsigned int N> __host__ void curveUnregisterVariable(const char(&variableName)[N]){
-	CurveVariableHash variable_hash = curveVariableHash(variableName);
-	curveUnregisterVariableByHash(variable_hash);
+template <unsigned int N> __host__ void curveUnregisterVariable(const char(&variableName)[N])
+{
+    CurveVariableHash variable_hash = curveVariableHash(variableName);
+    curveUnregisterVariableByHash(variable_hash);
 }
 
 
@@ -163,9 +170,10 @@ __host__ void curveDisableVariableByHash(CurveVariableHash variable_hash);
  * 	Disables device access to the cuRVE variable. Does not disable host access.
  *  @param variableName A constant string variable name which must have been registered as a curve variable
  */
-template <unsigned int N> __host__ void curveDisableVariable(const char (&variableName)[N]){
-	CurveVariableHash variable_hash = curveVariableHash(variableName);
-	curveDisableVariableByHash(variable_hash);
+template <unsigned int N> __host__ void curveDisableVariable(const char (&variableName)[N])
+{
+    CurveVariableHash variable_hash = curveVariableHash(variableName);
+    curveDisableVariableByHash(variable_hash);
 }
 
 
@@ -179,9 +187,10 @@ __host__ void curveEnableVariableByHash(CurveVariableHash variable_hash);
  * 	Enables device access to the cuRVE variable.
  *  @param variableName A constant string variable name which must have been registered as a curve variable
  */
-template <unsigned int N> __host__ void curveEnableVariable(const char (&variableName)[N]){
-	CurveVariableHash variable_hash = curveVariableHash(variableName);
-	curveEnableVariableByHash(variable_hash);
+template <unsigned int N> __host__ void curveEnableVariable(const char (&variableName)[N])
+{
+    CurveVariableHash variable_hash = curveVariableHash(variableName);
+    curveEnableVariableByHash(variable_hash);
 }
 
 
@@ -195,9 +204,10 @@ __host__ void curveSetNamespaceByHash(CurveNamespaceHash variable_hash);
  * 	Changing the namespace will affect both the host and device.
  *  @param namespaceName A constant string variable name which must have been registered as a curve variable
  */
-template <unsigned int N> __host__ void curveSetNamespace(const char (&namespaceName)[N]){
-	CurveNamespaceHash namespace_hash = curveVariableHash(namespaceName);
-	curveSetNamespaceByHash(namespace_hash);
+template <unsigned int N> __host__ void curveSetNamespace(const char (&namespaceName)[N])
+{
+    CurveNamespaceHash namespace_hash = curveVariableHash(namespaceName);
+    curveSetNamespaceByHash(namespace_hash);
 }
 
 /** @brief Function changes the current namespace to the default empty namespace
@@ -236,11 +246,12 @@ extern __device__ void* curveGetVariablePtrByHash(const CurveVariableHash variab
  *  @return T A value of given type at the given index for the variable with the provided hash. Will return 0 if an error is raised.
  */
 template <typename T>
-__device__ float curveGetVariableByHash(const CurveVariableHash variable_hash, unsigned int index){
-	size_t offset = index *sizeof(T);
+__device__ float curveGetVariableByHash(const CurveVariableHash variable_hash, unsigned int index)
+{
+    size_t offset = index *sizeof(T);
 
-	//do a check on the size as otherwise the value_ptr may eb out of bounds.
-	size_t size = curveGetVariableSize(variable_hash);
+    //do a check on the size as otherwise the value_ptr may eb out of bounds.
+    size_t size = curveGetVariableSize(variable_hash);
 
     //error checking
     if (size != sizeof(T))
@@ -248,16 +259,17 @@ __device__ float curveGetVariableByHash(const CurveVariableHash variable_hash, u
         d_curve_error = CURVE_DEVICE_ERROR_UNKNOWN_TYPE;
         return NULL;
     }
-   else{
+    else
+    {
 
-	//get a pointer to the specific variable by offsetting by the provided index
-	T *value_ptr = (T*)curveGetVariablePtrByHash(variable_hash, offset);
+        //get a pointer to the specific variable by offsetting by the provided index
+        T *value_ptr = (T*)curveGetVariablePtrByHash(variable_hash, offset);
 
-	if (value_ptr)
-		return *value_ptr;
-	else
-		return 0;
-		}
+        if (value_ptr)
+            return *value_ptr;
+        else
+            return 0;
+    }
 }
 
 /** @brief Template device function for getting a single typed value from a constant string variable name
@@ -270,8 +282,8 @@ template <typename T, unsigned int N>
 __device__ float curveGetVariable(const char (&variableName)[N], unsigned int index)
 {
 
-	CurveVariableHash variable_hash = curveVariableHash(variableName);
-	return curveGetVariableByHash<T>(variable_hash, index);
+    CurveVariableHash variable_hash = curveVariableHash(variableName);
+    return curveGetVariableByHash<T>(variable_hash, index);
 }
 
 
@@ -285,18 +297,20 @@ template <typename T>
 __device__ void curveSetVariableByHash(const CurveVariableHash variable_hash, T variable, unsigned int index)
 {
 
-size_t size = curveGetVariableSize(variable_hash);
+    size_t size = curveGetVariableSize(variable_hash);
 
- if (size != sizeof(T))
+    if (size != sizeof(T))
     {
         d_curve_error = CURVE_DEVICE_ERROR_UNKNOWN_TYPE;
+        return;
     }
-   else{
+    else
+    {
 
-	size_t offset = index *sizeof(T);
-	T *value_ptr = (T*)curveGetVariablePtrByHash(variable_hash, offset);
-	*value_ptr = variable;
-	}
+        size_t offset = index *sizeof(T);
+        T *value_ptr = (T*)curveGetVariablePtrByHash(variable_hash, offset);
+        *value_ptr = variable;
+    }
 }
 
 /** @brief Device template function for getting a setting a single typed value from a constant string variable name
@@ -306,9 +320,10 @@ size_t size = curveGetVariableSize(variable_hash);
  *  @param value The typed value to set at the given index.
  */
 template <typename T, unsigned int N>
-__device__ void curveSetVariable(const char(&variableName)[N], T variable, unsigned int index){
-	CurveVariableHash variable_hash = curveVariableHash(variableName);
-	curveSetVariableByHash<T>(variable_hash, variable, index);
+__device__ void curveSetVariable(const char(&variableName)[N], T variable, unsigned int index)
+{
+    CurveVariableHash variable_hash = curveVariableHash(variableName);
+    curveSetVariableByHash<T>(variable_hash, variable, index);
 }
 
 /* ERROR CHECKING API FUNCTIONS */

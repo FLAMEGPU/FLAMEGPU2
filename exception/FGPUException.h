@@ -16,6 +16,8 @@
 #include <iostream>
 #include <exception>
 
+#include <cuda_runtime.h>
+
 using namespace std;
 
 /*! Class for unknown exceptions thrown*/
