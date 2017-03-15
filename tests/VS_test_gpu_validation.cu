@@ -38,7 +38,6 @@ bool equal = true;
     AgentPopulation population2(circle_agent, 100);
     cuda_model.getPopulationData(population2);
 
-    BOOST_TEST_MESSAGE( "\nTesting values copied back from device without simulating any functions .." );
 
 while(equal){
     //check values are the same
@@ -58,6 +57,7 @@ while(equal){
 // the test should verify the correctness of get/set variable and hashing, however every 4th variable in the array is updated
 bool gpu_test_2()
 {
+bool equal = true;
     ModelDescription flame_model("circles_model");
     AgentDescription circle_agent("circle");
 
@@ -96,21 +96,22 @@ bool gpu_test_2()
 
     cuda_model.step(simulation);
 
-    BOOST_TEST_MESSAGE( "\nTesting values copied back from device after simulating functions .." );
-
 
     AgentPopulation population2(circle_agent, 10);
     cuda_model.getPopulationData(population2);
 
+while(equal){
     //check values are the same
     for (int i = 0; i < 10; i++)
     {
         AgentInstance i1 = population.getInstanceAt(i, "default");
         AgentInstance i2 = population2.getInstanceAt(i, "default");
         //use AgentInstance equality operator
-        BOOST_CHECK(i1.getVariable<double>("m") + 2 == i2.getVariable<double>("m"));
+        if(i1.getVariable<double>("m") + 2 != i2.getVariable<double>("m"))
+        equal = false;
     }
-    retrun 1;
+    }
+    retrun equal;
 }
 
 
