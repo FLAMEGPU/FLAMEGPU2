@@ -221,6 +221,24 @@ public:
 
 /**
 * Defines a type of object to be thrown as exception.
+* It reports errors that are due to invalid CUDA agent state.
+*/
+class InvalidCudaAgentState : public FGPUException
+{
+public:
+    InvalidCudaAgentState(const char *msg="The state does not exist within the CUDA agent."):FGPUException(msg) {}
+    /**
+    * @brief Returns the explanatory string
+    * @see FGPUException.what()
+    */
+    virtual const char *what() const
+    {
+        return err_message;
+    }
+};
+
+/**
+* Defines a type of object to be thrown as exception.
 * It reports errors that are due to invalid agent variable type. This could happen when retriving or setting a variable of differet type.
 */
 class InvalidAgentFunc : public FGPUException

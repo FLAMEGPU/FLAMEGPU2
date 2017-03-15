@@ -29,7 +29,9 @@ enum curveDeviceError
 {
 	CURVE_DEVICE_ERROR_NO_ERRORS,				//!< No errors raised on the device
 	CURVE_DEVICE_ERROR_UNKNOWN_VARIABLE,		//!< A function has requested an unknown variable or a variable not registered in the current namespace
-	CURVE_DEVICE_ERROR_VARIABLE_DISABLED		//!< A function has requested a variable which is disabled
+	CURVE_DEVICE_ERROR_VARIABLE_DISABLED,		//!< A function has requested a variable which is disabled
+	CURVE_DEVICE_ERROR_UNKNOWN_TYPE,            //!< A function has requested an unknown type or a type not registered in the current namespace
+	CURVE_DEVICE_ERROR_UNKNOWN_LENGHT           //!< A function has requested an unknown vector lenght or the lenght not registered in the current namespace
 };
 
 /**
@@ -116,7 +118,7 @@ __host__ CurveVariable curveGetVariableHandle(CurveVariableHash variable_hash);
  *  @param d_ptr a pointer to the vector which holds the hashed variable of give name
  *  @return CurveVariable Handle of registered variable or UNKNOWN_CURVE_VARIABLE if an error is encountered.
  */
-__host__ CurveVariable curveRegisterVariableByHash(CurveVariableHash variable_hash, void* d_ptr, size_t size);
+__host__ CurveVariable curveRegisterVariableByHash(CurveVariableHash variable_hash, void* d_ptr, size_t size,unsigned int lenght);
 
 
 /** @brief Template function for registering a constant string
@@ -125,10 +127,10 @@ __host__ CurveVariable curveRegisterVariableByHash(CurveVariableHash variable_ha
  *  @param d_ptr a pointer to the vector which holds the variable of give name
  *  @return CurveVariable Handle of registered variable or UNKNOWN_CURVE_VARIABLE if an error is encountered.
  */// Note: this function was never called
-template <unsigned int N, typename T> __host__ CurveVariable curveRegisterVariable(const char(&variableName)[N], void* d_ptr){
+template <unsigned int N, typename T> __host__ CurveVariable curveRegisterVariable(const char(&variableName)[N], void* d_ptr, unsigned int lenght){
 	CurveVariableHash variable_hash = curveVariableHash(variableName);
 	size_t size = sizeof(T);
-	return curveRegisterVariableByHash(variable_hash, d_ptr, size); // the const func can get const and non const argument (for 3rd argument)
+	return curveRegisterVariableByHash(variable_hash, d_ptr, size, lenght); // the const func can get const and non const argument (for 3rd argument)
 }
 
 
@@ -240,8 +242,13 @@ __device__ float curveGetVariableByHash(const CurveVariableHash variable_hash, u
 	//do a check on the size as otherwise the value_ptr may eb out of bounds.
 	size_t size = curveGetVariableSize(variable_hash);
 
-	//if (size != sizeof(T))
-	// error!
+    //error checking
+    if (size != sizeof(T))
+    {
+        d_curve_error = CURVE_DEVICE_ERROR_UNKNOWN_TYPE;
+        return NULL;
+    }
+   else{
 
 	//get a pointer to the specific variable by offsetting by the provided index
 	T *value_ptr = (T*)curveGetVariablePtrByHash(variable_hash, offset);
@@ -250,6 +257,7 @@ __device__ float curveGetVariableByHash(const CurveVariableHash variable_hash, u
 		return *value_ptr;
 	else
 		return 0;
+		}
 }
 
 /** @brief Template device function for getting a single typed value from a constant string variable name
@@ -277,13 +285,18 @@ template <typename T>
 __device__ void curveSetVariableByHash(const CurveVariableHash variable_hash, T variable, unsigned int index)
 {
 
-	//if (size != sizeof(T))
-	// error!
+size_t size = curveGetVariableSize(variable_hash);
 
+ if (size != sizeof(T))
+    {
+        d_curve_error = CURVE_DEVICE_ERROR_UNKNOWN_TYPE;
+    }
+   else{
 
 	size_t offset = index *sizeof(T);
 	T *value_ptr = (T*)curveGetVariablePtrByHash(variable_hash, offset);
 	*value_ptr = variable;
+	}
 }
 
 /** @brief Device template function for getting a setting a single typed value from a constant string variable name
