@@ -31,10 +31,10 @@ FLAMEGPU_AGENT_FUNCTION(output_func)
 
 	// should've returned error if the type was not correct. Needs type check
 	float x = FLAMEGPU->getVariable<float>("x");
-	printf("x = %f\n", x);
+	//printf("x = %f\n", x);
 	FLAMEGPU->setVariable<float>("x", x + 2);
 	x = FLAMEGPU->getVariable<float>("x");
-	printf("x after set = %f\n", x);
+	//printf("x after set = %f\n", x);
 
 	return ALIVE;
 }
@@ -123,7 +123,7 @@ int main(void)
     /* Population is an instantiation of the model. It is equivalent to the data from 0.xml or any other state of the model. It requires a model description to know what the agent variables and states are. */
     /* Data in populations and instances are only on the host. No concept of GPUs at this stage. */
 
-    AgentPopulation population(circle_agent, 10);
+    AgentPopulation population(circle_agent,10);
     //TODO: Set maximum population size if known in advance
     for (int i=0; i< 10; i++)
     {

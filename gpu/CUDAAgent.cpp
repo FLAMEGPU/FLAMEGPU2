@@ -223,9 +223,8 @@ void CUDAAgent::mapRuntimeVariables(const AgentFunctionDescription& func) const
         size_t size;
         size = agent_description.getAgentVariableSize(mmp.first.c_str());
 
-        // initialized to 1, unless the user sets this when calling curveRegisterVariable . (for now)
-        unsigned int length = 1;
-
+       // maximum population num
+        unsigned int length = this->getMaximumListSize();
 
         curveRegisterVariableByHash(hash, d_ptr, size, length);
     }
