@@ -26,23 +26,23 @@ using namespace std;
 
 FLAMEGPU_AGENT_FUNCTION(output_func)
 {
-    //printf("Hello from output_func\n");
+    printf("Hello from output_func\n");
     float x = FLAMEGPU->getVariable<float>("x");
-    //printf("x = %f\n", x);
+    printf("x = %f\n", x);
     FLAMEGPU->setVariable<float>("x", x + 2);
     x = FLAMEGPU->getVariable<float>("x");
-    //printf("x after set = %f\n", x);
+    printf("x after set = %f\n", x);
     return ALIVE;
 }
 
 FLAMEGPU_AGENT_FUNCTION(input_func)
 {
-    //printf("Hello from input_func\n");
+    printf("Hello from input_func\n");
     float x = FLAMEGPU->getVariable<float>("x");
-    //printf("x = %f\n", x);
+    printf("x = %f\n", x);
     FLAMEGPU->setVariable<float>("x", x + 2);
     x = FLAMEGPU->getVariable<float>("x");
-    //printf("x after set = %f\n", x);
+    printf("x after set = %f\n", x);
     return ALIVE;
 }
 

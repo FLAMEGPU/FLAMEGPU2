@@ -210,7 +210,7 @@ FGPU_MAS: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES)  
 	$(EXEC) mkdir -p $(BIN_DIR)$(BUILD_TYPE)
 	$(EXEC) mv $@ $(BIN_DIR)$(BUILD_TYPE)
 	find . -name '*.gch' -delete
-	@echo ./$(BUILD_TYPE)/FGPU ../../$(INPUT_DATA) '$$'{1:-1}> $(BIN_DIR)FGPU_MAS.sh
+	@echo ./$(BUILD_TYPE)/FGPU_MAS ../../$(INPUT_DATA) '$$'{1:-1}> $(BIN_DIR)FGPU_MAS.sh
 	chmod +x $(BIN_DIR)FGPU_MAS.sh
 
 BOOST_TEST: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES) $(GPU_CUO_FILES) $(CURVE_CUO_FILES) test_all.o 

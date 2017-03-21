@@ -50,20 +50,21 @@ public:
     unsigned int getMaximumListSize() const;
 
 
-    void setNamespace(std::string agent_name);
+//template <unsigned int N>    void setNamespace(const char (&variableName)[N]);
+    void setNamespace(const std::string agent_name) const;
 
-	/** @brief Uses the cuRVE runtime to map the variables used by the agent function to the cuRVE library so that can be accessed by name within a n agent function
-	*/
-	void mapRuntimeVariables(const AgentFunctionDescription& func) const;
+    /** @brief Uses the cuRVE runtime to map the variables used by the agent function to the cuRVE library so that can be accessed by name within a n agent function
+    */
+    void mapRuntimeVariables(const AgentFunctionDescription& func) const;
 
-	/**
-	 * @brief	Uses the cuRVE runtime to unmap the variables used by the agent function to the cuRVE
-	 * 			library so that they are unavailable to be accessed by name within an agent function.
-	 *
-	 * @param	func	The function.
-	 */
+    /**
+     * @brief	Uses the cuRVE runtime to unmap the variables used by the agent function to the cuRVE
+     * 			library so that they are unavailable to be accessed by name within an agent function.
+     *
+     * @param	func	The function.
+     */
 
-	void unmapRuntimeVariables(const AgentFunctionDescription& func) const;
+    void unmapRuntimeVariables(const AgentFunctionDescription& func) const;
 
 
 protected:
@@ -77,7 +78,7 @@ private:
     const AgentDescription& agent_description;
     CUDAStateMap state_map;
 
-	unsigned int max_list_size; //The maximum length of the agent variable arrays based on the maximum population size passed to setPopulationData
+    unsigned int max_list_size; //The maximum length of the agent variable arrays based on the maximum population size passed to setPopulationData
 };
 
 #endif
