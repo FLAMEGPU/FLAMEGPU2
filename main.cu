@@ -29,7 +29,6 @@ FLAMEGPU_AGENT_FUNCTION(output_func)
 {
 	//printf("Hello from output_func\n");
 
-	// should've returned error if the type was not correct. Needs type check
 	float x = FLAMEGPU->getVariable<float>("x");
 	//printf("x = %f\n", x);
 	FLAMEGPU->setVariable<float>("x", x + 2);
@@ -72,9 +71,6 @@ int main(void)
     circle_agent.addAgentVariable<float>("y");
     circle_agent.addAgentVariable<float>("dx");
     circle_agent.addAgentVariable<float>("dy");
-
-// TODO (mozhgan#1#05/12/16): write some tests that check the model object (model folder)
-// TODO (mozhgan#1#05/12/16): Write some tests for population objects. Check that the data is correct.
 
 
     //circle add states

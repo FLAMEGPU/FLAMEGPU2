@@ -143,6 +143,9 @@ doxygen:
 main.o: main.cu
 	$(EXEC) $(NVCC) $(DEBUG) $(STD11) $(BOOST_LIB)  $(CUDA_LIB)  $(GENCODE_FLAGS) -dc -o $@ -c $<	
 	
+main_MAS.o: main_MAS.cu
+	$(EXEC) $(NVCC) $(DEBUG) $(STD11) $(BOOST_LIB)  $(CUDA_LIB)  $(GENCODE_FLAGS) -dc -o $@ -c $<	
+	
 test_all.o: tests/test_all.cu
 	$(EXEC) $(NVCC) $(DEBUG) $(STD11) $(BOOST_LIB)  $(CUDA_LIB)  $(GENCODE_FLAGS) -dc -o $@ -c $<	
 
@@ -201,6 +204,14 @@ FGPU: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES)  $(GP
 	@echo ./$(BUILD_TYPE)/FGPU ../../$(INPUT_DATA) '$$'{1:-1}> $(BIN_DIR)FGPU.sh
 	chmod +x $(BIN_DIR)FGPU.sh
 
+FGPU_MAS: BUILD_TYPE=$(Mode_TYPE)
+FGPU_MAS: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES)  $(GPU_CUO_FILES) $(CURVE_CUO_FILES) main_MAS.o 
+	$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -rdc=true -o $@ $+ $(LIBRARIES)
+	$(EXEC) mkdir -p $(BIN_DIR)$(BUILD_TYPE)
+	$(EXEC) mv $@ $(BIN_DIR)$(BUILD_TYPE)
+	find . -name '*.gch' -delete
+	@echo ./$(BUILD_TYPE)/FGPU ../../$(INPUT_DATA) '$$'{1:-1}> $(BIN_DIR)FGPU_MAS.sh
+	chmod +x $(BIN_DIR)FGPU_MAS.sh
 
 BOOST_TEST: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES) $(GPU_CUO_FILES) $(CURVE_CUO_FILES) test_all.o 
 	$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -rdc=true -o $@ $+ $(LIBRARIES)
@@ -213,9 +224,11 @@ BOOST_TEST: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES)
 run_BOOST_TEST: BOOST_TEST 
 	cd $(BIN_DIR) && ./RUN_TEST.sh $(TSuite)
 		
+run_MAS: FGPU_MAS
+	cd $(BIN_DIR) && ./FGPU_MAS.sh $(iter)
+
 run: FGPU
 	cd $(BIN_DIR) && ./FGPU.sh $(iter)
-
 clean:
 	rm -f *.o
 	find . -name '*.o' -delete
