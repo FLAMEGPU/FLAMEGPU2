@@ -50,8 +50,7 @@ FLAMEGPU_AGENT_FUNCTION(input_func)
 int main(void)
 {
     /* Multi agent model */
-    ModelDescription flame_model("circles1_model");
-    ModelDescription flame_model("circles2_model");
+    ModelDescription flame_model("circles_model");
 
     AgentDescription circle1_agent("circle1");
     circle1_agent.addAgentVariable<float>("x");
