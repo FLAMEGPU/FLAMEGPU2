@@ -51,7 +51,6 @@ public:
 
 
 //template <unsigned int N>    void setNamespace(const char (&variableName)[N]);
-    void setNamespace(const std::string agent_name) const;
 
     /** @brief Uses the cuRVE runtime to map the variables used by the agent function to the cuRVE library so that can be accessed by name within a n agent function
     */

@@ -143,7 +143,7 @@ void CUDAAgentModel::step(const Simulation& simulation)
             const CUDAAgent& cuda_agent = getCUDAAgent(func_des.getParent().getName());
 
             // set namespace
-            cuda_agent.setNamespace(agent_name);
+            //cuda_agent.setNamespace(agent_name);
 
 
             //configure runtime access of the functions variables within the FLAME_API object
@@ -156,10 +156,6 @@ void CUDAAgentModel::step(const Simulation& simulation)
             FLAMEGPU_AGENT_FUNCTION_POINTER h_func_ptr;
 
             cudaMemcpyFromSymbol(&h_func_ptr, *agent_func, sizeof(FLAMEGPU_AGENT_FUNCTION_POINTER));
-
-            //call the agent function wrapper which creates an instance of FLAMEGPU_API on the device to pass to the agent function.
-            //TODO: Kernel dimensions will come from the CUDAAgent state list size
-            //calculate the grid block size for main agent function
 
             int blockSize; // The launch configurator returned block size
             int minGridSize; // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
@@ -177,9 +173,11 @@ void CUDAAgentModel::step(const Simulation& simulation)
 			//hash agent name
 			CurveNamespaceHash agentname_hash = curveVariableRuntimeHash(agent_name.c_str());
 
+			// NOTE: when we use curveRegisterVariableByHash function, we use the default name space for hashing. Later we don't change this.
+			// Then we use getVariable function in any of the FLAMEGPU functions, we are accesing the variables based on the hashvalues for a default namespace.
+			// BTW, we can call the host function (curveSetNamespcaceByHash) from the FLAMEGPU_API
 
 			agent_function_wrapper << <gridSize, blockSize >> >(agentname_hash, h_func_ptr, state_list_size);
-           // agent_function_wrapper <<<1,256>>>(h_func_ptr, state_list_size);
             cudaDeviceSynchronize();
 
             //unmap the function variables

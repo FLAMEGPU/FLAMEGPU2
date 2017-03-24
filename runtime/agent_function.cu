@@ -8,7 +8,7 @@ __global__ void agent_function_wrapper(CurveNamespaceHash agentname_hash, FLAMEG
 
     //create a new device FLAME_GPU instance
     FLAMEGPU_API *api = new FLAMEGPU_API();
-	api.setNameSpace(agentname_hash);
+	api->setNameSpace(agentname_hash);
 
 
     //printf("hello from wrapper %d\n",threadIdx.x);
