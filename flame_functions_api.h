@@ -62,6 +62,9 @@ public:
 
     template<typename T, unsigned int N> __device__
     void setVariable(const char(&variable_name)[N], T value);
+
+private:
+	CurveNamespaceHash agent_name_hash;
 };
 
 
@@ -81,7 +84,7 @@ __device__ T FLAMEGPU_API::getVariable(const char(&variable_name)[N])
     unsigned int index =  (blockDim.x * blockIdx.x) + threadIdx.x;
 
     //get the value from curve
-    T value = curveGetVariable<T>(variable_name, index);
+	T value = curveGetVariable<T>(variable_name, agent_name_hash, index);
 
     //return the variable from curve
     return value;
@@ -95,7 +98,7 @@ __device__ void FLAMEGPU_API::setVariable(const char(&variable_name)[N], T value
     unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
 
     //set the variable using curve
-    curveSetVariable<T>(variable_name, value, index);
+	curveSetVariable<T>(variable_name, agent_name_hash,  value, index);
 }
 
 #endif /* FLAME_FUNCTIONS_API_H_ */

@@ -3,14 +3,18 @@
 #include "../flame_functions_api.h"
 
 
-__global__ void agent_function_wrapper(FLAMEGPU_AGENT_FUNCTION_POINTER func, int popNo)
+__global__ void agent_function_wrapper(CurveNamespaceHash agentname_hash, FLAMEGPU_AGENT_FUNCTION_POINTER func, int popNo)
 {
 
     //create a new device FLAME_GPU instance
     FLAMEGPU_API *api = new FLAMEGPU_API();
+	api.setNameSpace(agentname_hash);
 
 
     //printf("hello from wrapper %d\n",threadIdx.x);
+	//set namespace for agent name
+
+
 
     //call the user specified device function
     int tid = (blockDim.x * blockIdx.x) + threadIdx.x;//threadIdx.x + blockIdx.x * gridDim.x;

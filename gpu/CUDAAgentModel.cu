@@ -174,8 +174,11 @@ void CUDAAgentModel::step(const Simulation& simulation)
             // Round up according to CUDAAgent state list size
             gridSize = (state_list_size + blockSize - 1) / blockSize;
 
+			//hash agent name
+			CurveNamespaceHash agentname_hash = curveVariableRuntimeHash(agent_name.c_str());
 
-            agent_function_wrapper <<<gridSize, blockSize>>>(h_func_ptr, state_list_size);
+
+			agent_function_wrapper << <gridSize, blockSize >> >(agentname_hash, h_func_ptr, state_list_size);
            // agent_function_wrapper <<<1,256>>>(h_func_ptr, state_list_size);
             cudaDeviceSynchronize();
 
