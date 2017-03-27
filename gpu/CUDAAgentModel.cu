@@ -1,5 +1,5 @@
 /**
- * @file CUDAAgentModel.cpp
+ * @file CUDAAgentModel.cu
  * @authors Paul
  * @date
  * @brief
@@ -142,9 +142,6 @@ void CUDAAgentModel::step(const Simulation& simulation)
             std::string agent_name = func_des.getParent().getName();
             const CUDAAgent& cuda_agent = getCUDAAgent(func_des.getParent().getName());
 
-            // set namespace
-            //cuda_agent.setNamespace(agent_name);
-
 
             //configure runtime access of the functions variables within the FLAME_API object
             cuda_agent.mapRuntimeVariables(func_des);
@@ -178,6 +175,9 @@ void CUDAAgentModel::step(const Simulation& simulation)
 			// BTW, we can call the host function (curveSetNamespcaceByHash) from the FLAMEGPU_API
 
 			agent_function_wrapper << <gridSize, blockSize >> >(agentname_hash, h_func_ptr, state_list_size);
+
+			//agent_function_wrapper << <gridSize, blockSize,0,stream[i] >> >(agentname_hash, h_func_ptr, state_list_size); // todo
+
             cudaDeviceSynchronize();
 
             //unmap the function variables

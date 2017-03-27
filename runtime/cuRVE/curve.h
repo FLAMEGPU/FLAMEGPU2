@@ -279,11 +279,13 @@ __device__ float curveGetVariableByHash(const CurveVariableHash variable_hash, u
  *  @return T A value of given typr at the given index for the variable with the provided hash. Will return 0 if an error is raised.
  */
 template <typename T, unsigned int N>
-__device__ float curveGetVariable(const char (&variableName)[N], unsigned int index)
+__device__ float curveGetVariable(const char (&variableName)[N], CurveVariableHash namespace_hash, unsigned int index)
 {
 
     CurveVariableHash variable_hash = curveVariableHash(variableName);
-    return curveGetVariableByHash<T>(variable_hash, index);
+
+    return curveGetVariableByHash<T>(variable_hash+namespace_hash, index);
+
 }
 
 
@@ -320,10 +322,10 @@ __device__ void curveSetVariableByHash(const CurveVariableHash variable_hash, T 
  *  @param value The typed value to set at the given index.
  */
 template <typename T, unsigned int N>
-__device__ void curveSetVariable(const char(&variableName)[N], T variable, unsigned int index)
+__device__ void curveSetVariable(const char(&variableName)[N], CurveVariableHash namespace_hash, T variable, unsigned int index)
 {
     CurveVariableHash variable_hash = curveVariableHash(variableName);
-    curveSetVariableByHash<T>(variable_hash, variable, index);
+    curveSetVariableByHash<T>(variable_hash+namespace_hash, variable, index);
 }
 
 /* ERROR CHECKING API FUNCTIONS */

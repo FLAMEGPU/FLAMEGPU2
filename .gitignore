@@ -2,9 +2,9 @@ DoxyGen*/
 docs/
 bin/
 obj/
-*.cbp
-*.layout
-BoostTest/
+#*.cbp
+#*.layout
+
 
 CUDA
 *.i

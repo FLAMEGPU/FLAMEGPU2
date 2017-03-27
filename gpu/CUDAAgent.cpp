@@ -191,14 +191,6 @@ void CUDAAgent::zeroAllStateVariableData()
     }
 }
 
-// todo
-//void CUDAAgent::setNamespace(const std::string agent_name) const
-//template <unsigned int N> void CUDAAgent::setNamespace(const char (&variableName)[N]);
-//{
-    //curveSetNamespace(agent_name.c_str());  //mismatched types ‘const char [N]’ and ‘const char*’
-
- //  printf("%s",agent_name.c_str());
-//}
 
 // this is done for all the variables for now.
 void CUDAAgent::mapRuntimeVariables(const AgentFunctionDescription& func) const
