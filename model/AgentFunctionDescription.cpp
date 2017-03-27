@@ -89,7 +89,7 @@ void AgentFunctionDescription::setParent(AgentDescription& agent)
     parent = &agent;
 }
 
-const AgentDescription& AgentFunctionDescription::getParent()
+const AgentDescription& AgentFunctionDescription::getParent() const
 {
     if (parent==NULL)
         throw InvalidOperation("Does not belong to a model object");

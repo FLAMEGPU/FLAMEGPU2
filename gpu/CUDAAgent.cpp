@@ -218,7 +218,8 @@ void CUDAAgent::mapRuntimeVariables(const AgentFunctionDescription& func) const
         void* d_ptr = sm->second->getAgentListVariablePointer(mmp.first);
 
         //map using curve
-        CurveVariableHash hash = curveVariableRuntimeHash(mmp.first.c_str());
+		CurveVariableHash var_hash = curveVariableRuntimeHash(mmp.first.c_str());
+		CurveVariableHash agent_hash = curveVariableRuntimeHash(func.getParent().getName().c_str());
 
         // get the agent variable size
         size_t size;
@@ -227,7 +228,7 @@ void CUDAAgent::mapRuntimeVariables(const AgentFunctionDescription& func) const
        // maximum population num
         unsigned int length = this->getMaximumListSize();
 
-        curveRegisterVariableByHash(hash, d_ptr, size, length);
+		curveRegisterVariableByHash(var_hash + agent_hash, d_ptr, size, length);
     }
 
 }
@@ -249,8 +250,11 @@ void CUDAAgent::unmapRuntimeVariables(const AgentFunctionDescription& func) cons
         void* d_ptr = sm->second->getAgentListVariablePointer(mmp.first);
 
         //unmap using curve
-        CurveVariableHash hash = curveVariableRuntimeHash(mmp.first.c_str());
-        curveUnregisterVariableByHash(hash);
+		CurveVariableHash var_hash = curveVariableRuntimeHash(mmp.first.c_str());
+		CurveVariableHash agent_hash = curveVariableRuntimeHash(func.getParent().getName().c_str());
+
+
+		curveUnregisterVariableByHash(var_hash + agent_hash);
     }
 
 }

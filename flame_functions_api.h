@@ -86,7 +86,7 @@ __device__ T FLAMEGPU_API::getVariable(const char(&variable_name)[N])
     unsigned int index =  (blockDim.x * blockIdx.x) + threadIdx.x;
 
     //get the value from curve
-	T value = curveGetVariable<T>(variable_name, agent_name_hash, index);
+	T value = curveGetVariable<T>(variable_name + agent_name_hash, index);
 
     //return the variable from curve
     return value;
@@ -100,11 +100,11 @@ __device__ void FLAMEGPU_API::setVariable(const char(&variable_name)[N], T value
     unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
 
     //set the variable using curve
-	curveSetVariable<T>(variable_name, agent_name_hash,  value, index);
+	curveSetVariable<T>(variable_name + agent_name_hash,  value, index);
 }
 
 __device__ void FLAMEGPU_API::setNameSpace(CurveNamespaceHash agentname_hash){
-    curveSetNamespaceByHash(agentname_hash);
+	agent_name_hash = agentname_hash;
 
 }
 

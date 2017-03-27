@@ -60,7 +60,7 @@ public:
 	//todo: add agent output
 
 	void setParent(AgentDescription& agent);
-	const AgentDescription& getParent();
+	const AgentDescription& getParent() const;
 
 public:
 
