@@ -130,35 +130,59 @@ void CUDAAgentModel::addSimulation(const Simulation& simulation) {}
 void CUDAAgentModel::step(const Simulation& simulation)
 {
 
+    int j;
+    int nStreams=1;
+
+    for (unsigned int i = 0; i < simulation.getLayerCount(); i++){
+        int temp = simulation.getFunctionsAtLayer(i).size();
+        nStreams = std::max(nStreams,temp);
+    }
+
+    // Stream creations
+    cudaStream_t stream[nStreams];
+
+    // Stream initialisation
+    for (int j=0; j<nStreams; ++j)
+        gpuErrchk(cudaStreamCreate(& stream[j]));
+
+
     //for each each sim layer
     for (unsigned int i = 0; i < simulation.getLayerCount(); i++)
     {
         const FunctionDescriptionVector& functions = simulation.getFunctionsAtLayer(i);
 
+        j=0;
+
         //for each func function
         for (AgentFunctionDescription func_des : functions)
         {
-
-            std::string agent_name = func_des.getParent().getName();
             const CUDAAgent& cuda_agent = getCUDAAgent(func_des.getParent().getName());
-
-
             //configure runtime access of the functions variables within the FLAME_API object
             cuda_agent.mapRuntimeVariables(func_des);
 
-            //get the agent function
+        }
+
+        for (AgentFunctionDescription func_des : functions)
+        {
+        std::string agent_name = func_des.getParent().getName();
+
+        const CUDAAgent& cuda_agent = getCUDAAgent(func_des.getParent().getName());
+
+                   //get the agent function
             FLAMEGPU_AGENT_FUNCTION_POINTER* agent_func = func_des.getFunction();
 
             //host_pointer
             FLAMEGPU_AGENT_FUNCTION_POINTER h_func_ptr;
 
-            cudaMemcpyFromSymbol(&h_func_ptr, *agent_func, sizeof(FLAMEGPU_AGENT_FUNCTION_POINTER));
+           // cudaMemcpyFromSymbolAsync(&h_func_ptr, *agent_func, sizeof(FLAMEGPU_AGENT_FUNCTION_POINTER),0,cudaMemcpyDeviceToHost,stream[j]);
+            cudaMemcpyFromSymbolAsync(&h_func_ptr, *agent_func, sizeof(FLAMEGPU_AGENT_FUNCTION_POINTER));
+
+            int state_list_size = cuda_agent.getMaximumListSize();
+
 
             int blockSize; // The launch configurator returned block size
             int minGridSize; // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
             int gridSize; // The actual grid size needed, based on input size
-
-            int state_list_size = cuda_agent.getMaximumListSize();
 
             //calculate the grid block size for main agent function
             cudaOccupancyMaxPotentialBlockSize( &minGridSize, &blockSize, agent_function_wrapper, 0, state_list_size);
@@ -167,23 +191,29 @@ void CUDAAgentModel::step(const Simulation& simulation)
             // Round up according to CUDAAgent state list size
             gridSize = (state_list_size + blockSize - 1) / blockSize;
 
-			//hash agent name
-			CurveNamespaceHash agentname_hash = curveVariableRuntimeHash(agent_name.c_str());
+            //hash agent name
+            CurveNamespaceHash agentname_hash = curveVariableRuntimeHash(agent_name.c_str());
 
-			// NOTE: when we use curveRegisterVariableByHash function, we use the default name space for hashing. Later we don't change this.
-			// Then we use getVariable function in any of the FLAMEGPU functions, we are accesing the variables based on the hashvalues for a default namespace.
-			// BTW, we can call the host function (curveSetNamespcaceByHash) from the FLAMEGPU_API
+            agent_function_wrapper << <gridSize, blockSize,0,stream[j] >> >(agentname_hash, h_func_ptr, state_list_size);
 
-			agent_function_wrapper << <gridSize, blockSize >> >(agentname_hash, h_func_ptr, state_list_size);
 
-			//agent_function_wrapper << <gridSize, blockSize,0,stream[i] >> >(agentname_hash, h_func_ptr, state_list_size); // todo
-
-            cudaDeviceSynchronize();
+            ++j;
+        }
+        for (AgentFunctionDescription func_des : functions) {
+            const CUDAAgent& cuda_agent = getCUDAAgent(func_des.getParent().getName());
 
             //unmap the function variables
             cuda_agent.unmapRuntimeVariables(func_des);
         }
+
+
+        //cudaDeviceSynchronize();
+
+
     }
+    // Stream deletion
+    for (int j=0; j<nStreams; ++j)
+        gpuErrchk(cudaStreamDestroy(stream[j]));
 }
 
 /**

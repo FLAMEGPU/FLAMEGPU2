@@ -195,6 +195,7 @@ $(SRC_RUNTIME)%.o: $(SRC_RUNTIME)%.cu
 #$(EXEC) nvcc $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
 #$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
 
+# build
 FGPU: BUILD_TYPE=$(Mode_TYPE)
 FGPU: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES)  $(GPU_CUO_FILES) $(CURVE_CUO_FILES) main.o 
 	$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -rdc=true -o $@ $+ $(LIBRARIES)
@@ -206,7 +207,7 @@ FGPU: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES)  $(GP
 
 FGPU_MAS: BUILD_TYPE=$(Mode_TYPE)
 FGPU_MAS: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES)  $(GPU_CUO_FILES) $(CURVE_CUO_FILES) main_MAS.o 
-	$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -rdc=true -o $@ $+ $(LIBRARIES)
+	$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -rdc=true -lineinfo -o $@ $+ $(LIBRARIES)
 	$(EXEC) mkdir -p $(BIN_DIR)$(BUILD_TYPE)
 	$(EXEC) mv $@ $(BIN_DIR)$(BUILD_TYPE)
 	find . -name '*.gch' -delete
@@ -220,7 +221,8 @@ BOOST_TEST: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES)
 	@echo ./$(TEST_DIR)/BOOST_TEST --log_level=message --run_test='$$'{1:-}> $(BIN_DIR)RUN_TEST.sh #--log_level=test_suite
 	chmod +x $(BIN_DIR)RUN_TEST.sh
 	find . -name '*.gch' -delete
-	
+
+# execute	
 run_BOOST_TEST: BOOST_TEST 
 	cd $(BIN_DIR) && ./RUN_TEST.sh $(TSuite)
 		
@@ -229,6 +231,21 @@ run_MAS: FGPU_MAS
 
 run: FGPU
 	cd $(BIN_DIR) && ./FGPU.sh $(iter)
+	
+# profiling
+profile_timeline:
+	cd $(BIN_DIR)Release && nvprof --unified-memory-profiling off -f -o timeline.prof ./FGPU_MAS 
+
+profile_metric:
+	cd $(BIN_DIR)Release && nvprof --unified-memory-profiling off --metrics achieved_occupancy,executed_ipc -f -o metrics.prof ./FGPU_MAS 
+
+profile_analysis:	
+	cd $(BIN_DIR)Release && nvprof --unified-memory-profiling off --analysis-metrics -f -o analysis.prof ./FGPU_MAS 
+
+	
+profile_full: profile_timeline profile_metric profile_analysis
+	
+# cleaning
 clean:
 	rm -f *.o
 	find . -name '*.o' -delete
@@ -236,4 +253,6 @@ clean:
 	
 clobber: clean 
 	rm -r $(BIN_DIR)
+
+	
 

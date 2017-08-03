@@ -3,6 +3,9 @@
  * This main_MAS.cu would either be specified by a user or automatically generated from the model.xml.
  * Each of the API functions will have a 121 mapping with XML elements
  * The API is very similar to FLAME 2. The directory structure and general project is set out very similarly.
+
+ * Multi Agent model example
+
  ******************************************************************************
  * Author  Paul Richmond, Mozhgan Kabiri Chimeh
  * Date    Feb 2017
@@ -28,8 +31,9 @@ FLAMEGPU_AGENT_FUNCTION(output_func)
 {
     printf("Hello from output_func\n");
     float x = FLAMEGPU->getVariable<float>("x");
-    printf("x = %f\n", x);
-    FLAMEGPU->setVariable<float>("x", x + 2);
+    float y = FLAMEGPU->getVariable<float>("y");
+    printf("x = %f, y = %f\n", x, y);
+    FLAMEGPU->setVariable<float>("x", x + 3);
     x = FLAMEGPU->getVariable<float>("x");
     printf("x after set = %f\n", x);
     return ALIVE;
@@ -37,15 +41,39 @@ FLAMEGPU_AGENT_FUNCTION(output_func)
 
 FLAMEGPU_AGENT_FUNCTION(input_func)
 {
-    printf("Hello from input_func\n");
+   printf("Hello from input_func\n");
     float x = FLAMEGPU->getVariable<float>("x");
-    printf("x = %f\n", x);
+    float y = FLAMEGPU->getVariable<float>("y");
+    printf("x = %f, y = %f\n", x, y);
     FLAMEGPU->setVariable<float>("x", x + 2);
     x = FLAMEGPU->getVariable<float>("x");
     printf("x after set = %f\n", x);
     return ALIVE;
 }
 
+FLAMEGPU_AGENT_FUNCTION(add_func)
+{
+   printf("Hello from add_func\n");
+    float x = FLAMEGPU->getVariable<float>("x");
+    float y = FLAMEGPU->getVariable<float>("y");
+   printf("-y = %f, x = %f\n", y, x);
+    FLAMEGPU->setVariable<float>("y", y + x);
+    y = FLAMEGPU->getVariable<float>("y");
+   printf("-y after set = %f\n", y);
+    return ALIVE;
+}
+
+FLAMEGPU_AGENT_FUNCTION(subtract_func)
+{
+    printf("Hello from subtract_func\n");
+    float x = FLAMEGPU->getVariable<float>("x");
+    float y = FLAMEGPU->getVariable<float>("y");
+    printf("y = %f, x = %f\n", y, x);
+    FLAMEGPU->setVariable<float>("y", x - y);
+    y = FLAMEGPU->getVariable<float>("y");
+    printf("y after set = %f\n", y);
+    return ALIVE;
+}
 
 int main(void)
 {
@@ -82,6 +110,17 @@ int main(void)
     input_data.setFunction(&input_func);
     circle2_agent.addAgentFunction(input_data);
 
+    AgentFunctionDescription add_data("add_data");
+    add_data.addInput(input_location);
+    add_data.setFunction(&add_func);
+    circle1_agent.addAgentFunction(add_data);
+
+    AgentFunctionDescription subtract_data("subtract_data");
+    subtract_data.addInput(input_location);
+    subtract_data.setFunction(&subtract_func);
+    circle2_agent.addAgentFunction(subtract_data);
+
+
     //model
     flame_model.addMessage(location1_message);
     flame_model.addAgent(circle1_agent);
@@ -114,6 +153,12 @@ int main(void)
     SimulationLayer input_layer(simulation, "input_layer");
     input_layer.addAgentFunction("input_data");
     simulation.addSimulationLayer(input_layer);
+
+    //multiple functions per simulation layer (from different agents)
+    SimulationLayer concurrent_layer(simulation, "concurrent_layer");
+    concurrent_layer.addAgentFunction("add_data");
+    concurrent_layer.addAgentFunction("subtract_data");
+    simulation.addSimulationLayer(concurrent_layer);
 
     simulation.setSimulationSteps(1);
 
