@@ -1,9 +1,18 @@
 /**
-* @file test_gpu_validation.h
-* @author
-* @date    Feb 2017
-* @brief Testing Using the Boost Unit Test Framework
-*/
+ * @copyright  2017 University of Sheffield
+ *
+ *
+ * @file       test_gpu_validation.h
+ * @authors    Mozhgan Kabiri Chimeh, Paul Richmond
+ * @date       16 Oct 2017
+ * @brief      Test suite for validating methods in GPU folder
+ *
+ * These are example device agent functions to be used for testing.
+ * Each function returns a ALIVE or DEAD value indicating where the agent is dead and should be removed or not.
+ *
+ * @see        https://github.com/FLAMEGPU/FLAMEGPU2_dev
+ * @bug        No known bugs
+ */
 
 
 #include "../flame_api.h"
@@ -25,6 +34,14 @@ using namespace std;
 BOOST_AUTO_TEST_SUITE(GPUTest) //name of the test suite is modelTest
 
 
+/**
+ * @brief      To verify the correctness of set and get variable function without
+ * simulating any function
+ *
+ * To ensure initial values for agent population is transferred correctly onto
+ * the GPU, this test compares the values copied back from the device with the initial
+ * population data. This test should pass.
+*/
 BOOST_AUTO_TEST_CASE(GPUMemoryTest)
 {
     ModelDescription flame_model("circles_model");
@@ -61,7 +78,16 @@ BOOST_AUTO_TEST_CASE(GPUMemoryTest)
 
 }
 
-// the test should verify the correctness of get/set variable and hashing, however every 4th variable in the array is updated
+/**
+ * @brief      To verify the correctness of ::AgentInstance::setVariable  and
+ *  ::AgentInstance::getVariable variable function after simulating a function
+ *
+ * To ensure initial values for agent population is transferred correctly onto
+ * the GPU, this test checks the correctness of the values copied back from the device
+ * after being updated/changed during the simulation of an agent function.
+ * This test should pass.
+*/
+//and hashing however every 4th variable in the array is updated
 BOOST_AUTO_TEST_CASE(GPUSimulationTest)
 {
 

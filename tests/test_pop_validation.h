@@ -1,14 +1,17 @@
- /**
- * @file test_sim_validation.h
- * @author  Paul Richmond, Mozhgan Kabiri Chimeh
- * @date    Feb 2017
- * @brief Testing Using the Boost Unit Test Framework
- */
-  /**
- * @file test_pop_validation.h
- * @author
- * @date    Feb 2017
- * @brief Testing Using the Boost Unit Test Framework
+/**
+ * @copyright  2017 University of Sheffield
+ *
+ *
+ * @file       test_pop_validation.h
+ * @authors    Mozhgan Kabiri Chimeh, Paul Richmond
+ * @date       16 Oct 2017
+ * @brief      Test suite for validating methods in population folder
+ *
+ * These are example device agent functions to be used for testing.
+ * Each function returns a ALIVE or DEAD value indicating where the agent is dead and should be removed or not.
+ *
+ * @see        https://github.com/FLAMEGPU/FLAMEGPU2_dev
+ * @bug        No known bugs
  */
 
 #include "../flame_api.h"
@@ -18,6 +21,11 @@ using namespace std;
 
 BOOST_AUTO_TEST_SUITE(PopTest) //name of the test suite is modelTest
 
+/**
+ * @brief      To verify the correctness of agent population name and exception handler
+ *
+ * This test should pass by throwing the correct exception.
+*/
 BOOST_AUTO_TEST_CASE(PopulationNameCheck)
 {
     ModelDescription flame_model("circles_model");
@@ -36,12 +44,17 @@ BOOST_AUTO_TEST_CASE(PopulationNameCheck)
 
     BOOST_TEST_MESSAGE( "\nTesting Agent population Name .." );
     BOOST_CHECK(population.getAgentName()=="circle");
-
+// what do we expect here?default or circle
     BOOST_CHECK_THROW(population.getStateMemory("circe"),InvalidStateName); // expecting an error
 }
 
 
-
+/**
+ * @brief      To verify the correctness of exception handler when setting or
+ * getting a variable of invalid type.
+ *
+ * This test should pass by throwing the correct exception.
+*/
 BOOST_AUTO_TEST_CASE(PopulationInstVarCheck1)
 {
 
@@ -73,6 +86,12 @@ BOOST_AUTO_TEST_CASE(PopulationInstVarCheck1)
 
 }
 
+/**
+ * @brief      To verify the correctness of ::AgentInstance::getVariable and
+ * ::AgentInstance::getVariable functions by checking the population data
+ *
+ * This test should pass.
+*/
 BOOST_AUTO_TEST_CASE(PopulationInstVarCheck2)
 {
 
@@ -98,7 +117,12 @@ BOOST_AUTO_TEST_CASE(PopulationInstVarCheck2)
 }
 
 
-
+/**
+ * @brief      To verify the correctness of exception handler when trying to
+ * access the invalid variable that does not exist.
+ *
+ * This test should pass by throwing the correct exception.
+*/
 BOOST_AUTO_TEST_CASE(PopulationInstVarCheck3)
 {
 

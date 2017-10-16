@@ -1,8 +1,17 @@
- /**
- * @file test_sim_validation.h
- * @author
- * @date    Feb 2017
- * @brief Testing Using the Boost Unit Test Framework
+/**
+ * @copyright  2017 University of Sheffield
+ *
+ *
+ * @file       test_sim_validation.h
+ * @authors    Mozhgan Kabiri Chimeh, Paul Richmond
+ * @date       16 Oct 2017
+ * @brief      Test suite for validating methods in simulation folder
+ *
+ * These are example device agent functions to be used for testing.
+ * Each function returns a ALIVE or DEAD value indicating where the agent is dead and should be removed or not.
+ *
+ * @see        https://github.com/FLAMEGPU/FLAMEGPU2_dev
+ * @bug        No known bugs
  */
 
 #include "../flame_api.h"

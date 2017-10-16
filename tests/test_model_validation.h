@@ -1,7 +1,19 @@
 /**
- * @file test_model_validation.h
- * @brief Testing Using the Boost Unit Test Framework
+ * @copyright  2017 University of Sheffield
+ *
+ *
+ * @file       test_model_validation.h
+ * @authors    Mozhgan Kabiri Chimeh, Paul Richmond
+ * @date       16 Oct 2017
+ * @brief      Test suite for validating methods in model folder
+ *
+ * These are example device agent functions to be used for testing.
+ * Each function returns a ALIVE or DEAD value indicating where the agent is dead and should be removed or not.
+ *
+ * @see        https://github.com/FLAMEGPU/FLAMEGPU2_dev
+ * @bug        No known bugs
  */
+
 #include "../flame_api.h"
 
 using namespace std;
@@ -35,7 +47,7 @@ BOOST_AUTO_TEST_CASE(AgentVarCheck)
 //default values removed from model as no longer using boost::any
 BOOST_AUTO_TEST_CASE(DefaultValueCheck)
 {
-	
+
     BOOST_TEST_MESSAGE( "Testing Agent Variable Default Value" );
     AgentDescription circle_agent("circle");
     circle_agent.addAgentVariable<float>("f");
@@ -45,7 +57,7 @@ BOOST_AUTO_TEST_CASE(DefaultValueCheck)
 
     BOOST_CHECK(boost::any_cast<float>(circle_agent.getDefaultValue("f")) == 0.0f);
     BOOST_CHECK(boost::any_cast<int>(circle_agent.getDefaultValue("i")) == 0);
-	
+
 	//TODO: Should be a population check which checks the default value of population values
 
 }
