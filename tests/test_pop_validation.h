@@ -146,7 +146,14 @@ BOOST_AUTO_TEST_CASE(PopulationInstVarCheck3)
 
 }
 
-
+/**
+ * @brief      To verify the correctness of ::AgentPopulation::getMaximumStateListCapacity
+ *
+ *  In cases where the agent population is not set, the maximum state list size
+ *  would be set to 1024. The test checks the maximum state list size.
+ *
+ * This test should pass.
+*/
 BOOST_AUTO_TEST_CASE(PopulationSizeCheck)
 {
 
@@ -166,6 +173,15 @@ BOOST_AUTO_TEST_CASE(PopulationSizeCheck)
 
 }
 
+/**
+ * @brief      To verify the correctness of exception handler when trying to
+ * reduce the maximum state list size.
+ *
+ * Once the state list size is set, it can only be increased. This is to catch
+ * the exception when the population capacity is set below the previous size.
+ *
+ * This test should pass by throwing the correct exception.
+*/
 BOOST_AUTO_TEST_CASE(PopulationAddMoreCapacity)
 {
 
@@ -190,6 +206,12 @@ BOOST_AUTO_TEST_CASE(PopulationAddMoreCapacity)
     BOOST_CHECK_THROW(population.setStateListCapacity(100),InvalidPopulationData);
 }
 
+/**
+ * @brief      To verify the correctness of exception handler when trying to
+ * access agents more than population size.
+ *
+ * This test should pass by throwing the correct exception.
+*/
 BOOST_AUTO_TEST_CASE(PopulationOverflowCapacity)
 {
 
@@ -216,6 +238,13 @@ BOOST_AUTO_TEST_CASE(PopulationOverflowCapacity)
     BOOST_CHECK_THROW(population.getNextInstance("default"),InvalidMemoryCapacity);
 }
 
+/**
+ * @brief      To verify the correctness of ::AgentPopulation::getVariable
+ *
+ * todo { paragraph_describing_what_is_to_be_done }
+ *
+ * This test should pass.
+*/
 BOOST_AUTO_TEST_CASE(PopulationDataValuesMultipleStates)
 {
 
@@ -256,7 +285,16 @@ BOOST_AUTO_TEST_CASE(PopulationDataValuesMultipleStates)
     }
 }
 
-
+/**
+ * @brief      To verify the correctness of exception handler when trying to
+ * access agent population value that is not set.
+ *
+ * After setting initial values for any number of agent population that is less
+ * than the maximum population capacity, only the variables been set can be accessed.
+ * Accessing index less than actual population size should be handled through an exception.
+ *
+ * This test should pass by throwing the correct exception.
+*/
 BOOST_AUTO_TEST_CASE(PopulationCheckGetInstanceBeyondSize)
 {
 
