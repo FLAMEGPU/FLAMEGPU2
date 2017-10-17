@@ -175,5 +175,6 @@
     <CudaCompile Include="tests\VS_test_sim_validation.cu">
       <Filter>tests</Filter>
     </CudaCompile>
+    <CudaCompile Include="main_MAS.cu" />
   </ItemGroup>
 </Project>

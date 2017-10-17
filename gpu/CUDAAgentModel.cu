@@ -219,6 +219,8 @@ void CUDAAgentModel::addSimulation(const Simulation& simulation) {}
 void CUDAAgentModel::step(const Simulation& simulation)
 {
 
+	//TODO: simulation.getMaxFunctionsPerLayer()
+	//Create streams using the above value
     const int num_streams = 4; //example
 
     // Stream creations
@@ -228,12 +230,15 @@ void CUDAAgentModel::step(const Simulation& simulation)
     for (int j=0; j<num_streams; j++)
       gpuErrchk(cudaStreamCreate(& streams[j]));
 
-    //for each each sim layer
+	//loop through agents functions and register all variables (variable has must also be tied to function name using the namespace thing in curve)
+	//TODO: Move registering here. It can happen in the default stream
+
+    //loop through and launch each agent function in its own stream
+	//TODO: take out registering
     for (unsigned int i = 0; i < simulation.getLayerCount(); i++)
     {
         int j=0;
         const FunctionDescriptionVector& functions = simulation.getFunctionsAtLayer(i);
-
 
         //for each func function
         for (AgentFunctionDescription func_des : functions)
@@ -282,7 +287,11 @@ void CUDAAgentModel::step(const Simulation& simulation)
             j++;
        //
        cudaDeviceSynchronize();
-}
+	}
+
+	//loop through and unregister all curve variables
+	//TODO
+
 
     }
     // Stream deletion
