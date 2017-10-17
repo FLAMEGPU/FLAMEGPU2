@@ -219,11 +219,14 @@ void CUDAAgentModel::addSimulation(const Simulation& simulation) {}
 void CUDAAgentModel::step(const Simulation& simulation)
 {
 
-    const int num_streams = 2; //example
+    const int num_streams = 4; //example
 
     // Stream creations
     cudaStream_t streams[num_streams];
 
+    // Stream initialisation
+    for (int j=0; j<num_streams; j++)
+      gpuErrchk(cudaStreamCreate(& streams[j]));
 
     //for each each sim layer
     for (unsigned int i = 0; i < simulation.getLayerCount(); i++)
@@ -236,7 +239,7 @@ void CUDAAgentModel::step(const Simulation& simulation)
         for (AgentFunctionDescription func_des : functions)
         {
 
-            cudaStreamCreate(&streams[j]);
+            //cudaStreamCreate(&streams[j]);
             const CUDAAgent& cuda_agent = getCUDAAgent(func_des.getParent().getName());
             //configure runtime access of the functions variables within the FLAME_API object
             cuda_agent.mapRuntimeVariables(func_des);
@@ -283,7 +286,8 @@ void CUDAAgentModel::step(const Simulation& simulation)
 
     }
     // Stream deletion
-      //  gpuErrchk(cudaStreamDestroy(stream[j]));
+   for (int j=0; j<num_streams; j++)
+        gpuErrchk(cudaStreamDestroy(streams[j]));
 }
 
 /**

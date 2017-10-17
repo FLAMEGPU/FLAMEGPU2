@@ -44,6 +44,7 @@ STD14     := -std=c++14
 BOOST_LIB := -I/usr/include/boost
 CUDA_LIB  := -I/usr/local/cuda/include
 PER_THREAD:= --default-stream per-thread 
+LINE_INFO := -lineinfo
 
 TEST_DIR := TEST
 
@@ -54,7 +55,7 @@ TEST_DIR := TEST
 # export CUDA_PATH=/usr/local/cuda-8.0
 
 HOST_COMPILER := g++
-NVCC          := nvcc -ccbin $(HOST_COMPILER) #$(PER_THREAD)
+NVCC          := nvcc -ccbin $(HOST_COMPILER) $(LINE_INFO) #$(PER_THREAD)
 #NVCC          := $(CUDA_PATH)/bin/nvcc -ccbin $(HOST_COMPILER)
 
 # internal flags
@@ -255,5 +256,5 @@ clean:
 clobber: clean 
 	rm -r $(BIN_DIR)
 
-	
+#--events all --metrics all	
 
