@@ -29,25 +29,25 @@ using namespace std;
 
 FLAMEGPU_AGENT_FUNCTION(output_func)
 {
-    //printf("Hello from output_func\n");
+    printf("Hello from output_func\n");
     float x = FLAMEGPU->getVariable<float>("x");
     float y = FLAMEGPU->getVariable<float>("y");
-    //printf("x = %f, y = %f\n", x, y);
+    printf("x = %f, y = %f\n", x, y);
     FLAMEGPU->setVariable<float>("x", x + 3);
     x = FLAMEGPU->getVariable<float>("x");
-    //printf("x after set = %f\n", x);
+    printf("x after set = %f\n", x);
     return ALIVE;
 }
 
 FLAMEGPU_AGENT_FUNCTION(input_func)
 {
-   //printf("Hello from input_func\n");
+   printf("Hello from input_func\n");
     float x = FLAMEGPU->getVariable<float>("x");
     float y = FLAMEGPU->getVariable<float>("y");
-    //printf("x = %f, y = %f\n", x, y);
+    printf("x = %f, y = %f\n", x, y);
     FLAMEGPU->setVariable<float>("x", x + 2);
     x = FLAMEGPU->getVariable<float>("x");
-    //printf("x after set = %f\n", x);
+    printf("x after set = %f\n", x);
     return ALIVE;
 }
 
@@ -56,10 +56,10 @@ FLAMEGPU_AGENT_FUNCTION(add_func)
    //printf("Hello from add_func\n");
     float x = FLAMEGPU->getVariable<float>("x");
     float y = FLAMEGPU->getVariable<float>("y");
-   //printf("-y = %f, x = %f\n", y, x);
+   printf("-y = %f, x = %f\n", y, x);
     FLAMEGPU->setVariable<float>("y", y + x);
     y = FLAMEGPU->getVariable<float>("y");
-   //printf("-y after set = %f\n", y);
+   printf("-y after set = %f\n", y);
     return ALIVE;
 }
 
@@ -68,10 +68,10 @@ FLAMEGPU_AGENT_FUNCTION(subtract_func)
     //printf("Hello from subtract_func\n");
     float x = FLAMEGPU->getVariable<float>("x");
     float y = FLAMEGPU->getVariable<float>("y");
-    //printf("y = %f, x = %f\n", y, x);
+    printf("y = %f, x = %f\n", y, x);
     FLAMEGPU->setVariable<float>("y", x - y);
     y = FLAMEGPU->getVariable<float>("y");
-    //printf("y after set = %f\n", y);
+    printf("y after set = %f\n", y);
     return ALIVE;
 }
 
@@ -98,17 +98,17 @@ int main(void)
     //location2_message.addVariable<float>("y");
 
 
-    //AgentFunctionDescription output_data("output_data");
+    AgentFunctionDescription output_data("output_data");
     //AgentFunctionOutput output_location("location");
     //output_data.addOutput(output_location);
-    //output_data.setFunction(&output_func);
-    //circle1_agent.addAgentFunction(output_data);
+    output_data.setFunction(&output_func);
+    circle1_agent.addAgentFunction(output_data);
 
-    //AgentFunctionDescription input_data("input_data");
+    AgentFunctionDescription input_data("input_data");
     //AgentFunctionInput input_location("location");
     //input_data.addInput(input_location);
-    //input_data.setFunction(&input_func);
-    //circle2_agent.addAgentFunction(input_data);
+    input_data.setFunction(&input_func);
+    circle2_agent.addAgentFunction(input_data);
 
     AgentFunctionDescription add_data("add_data");
     //add_data.addInput(input_location);
@@ -127,7 +127,7 @@ int main(void)
 
    // flame_model.addMessage(location2_message);
     flame_model.addAgent(circle2_agent);
-#define SIZE 10000
+#define SIZE 10
     AgentPopulation population1(circle1_agent, SIZE);
     for (int i=0; i< SIZE; i++)
     {
@@ -146,13 +146,13 @@ int main(void)
 
     Simulation simulation(flame_model);
 
-    /*SimulationLayer output_layer(simulation, "output_layer");
+    SimulationLayer output_layer(simulation, "output_layer");
     output_layer.addAgentFunction("output_data");
     simulation.addSimulationLayer(output_layer);
 
     SimulationLayer input_layer(simulation, "input_layer");
     input_layer.addAgentFunction("input_data");
-    simulation.addSimulationLayer(input_layer);*/
+    simulation.addSimulationLayer(input_layer);
 
     //multiple functions per simulation layer (from different agents)
     SimulationLayer concurrent_layer(simulation, "concurrent_layer");

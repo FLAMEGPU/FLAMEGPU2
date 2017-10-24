@@ -162,9 +162,6 @@
     <CudaCompile Include="runtime\cuRVE\curve.cu">
       <Filter>runtime\cuRVE</Filter>
     </CudaCompile>
-    <CudaCompile Include="runtime\agent_function.cu">
-      <Filter>runtime</Filter>
-    </CudaCompile>
     <CudaCompile Include="gpu\CUDAAgentModel.cu">
       <Filter>gpu</Filter>
     </CudaCompile>
@@ -176,5 +173,8 @@
       <Filter>tests</Filter>
     </CudaCompile>
     <CudaCompile Include="main_MAS.cu" />
+    <CudaCompile Include="runtime\agent_function.cu">
+      <Filter>runtime</Filter>
+    </CudaCompile>
   </ItemGroup>
 </Project>
