@@ -86,14 +86,13 @@ BOOST_AUTO_TEST_CASE(GPUMemoryTest)
 
 /**
  * @brief      To verify the correctness of ::AgentInstance::setVariable  and
- *  ::AgentInstance::getVariable variable function after simulating a function
+ *  ::AgentInstance::getVariable variable function and hashing after simulating a function
  *
  * To ensure initial values for agent population is transferred correctly onto
  * the GPU, this test checks the correctness of the values copied back from the device
- * after being updated/changed during the simulation of an agent function.
+ * after being updated/changed during the simulation of an agent function. Note that hashing
  * This test should pass.
 */
-//and hashing however every 4th variable in the array is updated
 BOOST_AUTO_TEST_CASE(GPUSimulationTest)
 {
 
@@ -145,13 +144,6 @@ BOOST_AUTO_TEST_CASE(GPUSimulationTest)
 // Moz: I don't think we need this, we can simply compare it with i. See below test
     AgentPopulation population2(circle_agent, 10);
     cuda_model.getPopulationData(population2);
-//
-//    for (int i = 0; i < 10; i++)
-//    {
-//        AgentInstance i1 = population2.getInstanceAt(i, "default");
-//        BOOST_TEST_MESSAGE( i << "th value is : "<< i1.getVariable<double>("m")<< "!");
-//
-//    }
 
     //check values are the same
     for (int i = 0; i < 10; i++)

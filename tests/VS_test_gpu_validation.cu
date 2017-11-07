@@ -24,6 +24,14 @@ FLAMEGPU_AGENT_FUNCTION(subtract_func)
 
 using namespace std;
 
+/**
+ * @brief      To verify the correctness of set and get variable function without
+ * simulating any function
+ *
+ * To ensure initial values for agent population is transferred correctly onto
+ * the GPU, this test compares the values copied back from the device with the initial
+ * population data. This test should pass.
+*/
 bool gpu_test_1()
 {
 bool equal = true;
@@ -64,7 +72,15 @@ while(equal){
 
 }
 
-// the test should verify the correctness of get/set variable and hashing, however every 4th variable in the array is updated
+/**
+ * @brief      To verify the correctness of ::AgentInstance::setVariable  and
+ *  ::AgentInstance::getVariable variable function and hashing after simulating a function
+ *
+ * To ensure initial values for agent population is transferred correctly onto
+ * the GPU, this test checks the correctness of the values copied back from the device
+ * after being updated/changed during the simulation of an agent function.
+ * This test should pass.
+*/
 bool gpu_test_2()
 {
 bool equal = true;
@@ -125,7 +141,12 @@ while(equal){
     retrun equal;
 }
 
-
+/**
+ * @brief      To verify the correctness of running multiple functions simultaneously
+ *
+ * To test CUDA streams for overlapping host and device operations
+ * This test should pass.
+*/
 bool gpu_test_3()
 {
 bool equal = true;
