@@ -17,11 +17,20 @@
 FLAMEGPU_AGENT_FUNCTION(add_func)
 {
     // should've returned error if the type was not correct. Needs type check
-    double x = FLAMEGPU->getVariable<double>("m");
+    double x = FLAMEGPU->getVariable<double>("x");
 
-    FLAMEGPU->setVariable<double>("m", x + 2);
-    x = FLAMEGPU->getVariable<double>("m");
+    FLAMEGPU->setVariable<double>("x", x + 2);
 
+    return ALIVE;
+}
+
+FLAMEGPU_AGENT_FUNCTION(subtract_func)
+{
+
+    double x = FLAMEGPU->getVariable<double>("x");
+    double y = FLAMEGPU->getVariable<double>("y");
+
+    FLAMEGPU->setVariable<double>("y", x - y);
 
     return ALIVE;
 }
@@ -92,7 +101,7 @@ BOOST_AUTO_TEST_CASE(GPUSimulationTest)
     AgentDescription circle_agent("circle");
 
 
-    circle_agent.addAgentVariable<double>("m");
+    circle_agent.addAgentVariable<double>("x");
 
     AgentFunctionDescription add_data("add_data");
     AgentFunctionOutput add_location("location");
@@ -106,16 +115,11 @@ BOOST_AUTO_TEST_CASE(GPUSimulationTest)
     for (int i = 0; i< 10; i++)
     {
         AgentInstance instance = population.getNextInstance("default");
-        instance.setVariable<double>("m", i);
+        instance.setVariable<double>("x", i);
     }
 
     BOOST_TEST_MESSAGE( "\nTesting initial values .." );
 
-//    for (int i = 0; i< 10; i++)
-//    {
-//        AgentInstance instance = population.getInstanceAt(i,"default");
-//        BOOST_TEST_MESSAGE( i << "th value is : "<< instance.getVariable<double>("m")<< "!");
-//    }
 
     Simulation simulation(flame_model);
 
@@ -137,8 +141,10 @@ BOOST_AUTO_TEST_CASE(GPUSimulationTest)
     BOOST_TEST_MESSAGE( "\nTesting values copied back from device after simulating functions .." );
 
 
+
+// Moz: I don't think we need this, we can simply compare it with i. See below test
     AgentPopulation population2(circle_agent, 10);
-   cuda_model.getPopulationData(population2);
+    cuda_model.getPopulationData(population2);
 //
 //    for (int i = 0; i < 10; i++)
 //    {
@@ -153,7 +159,7 @@ BOOST_AUTO_TEST_CASE(GPUSimulationTest)
         AgentInstance i1 = population.getInstanceAt(i, "default");
         AgentInstance i2 = population2.getInstanceAt(i, "default");
         //use AgentInstance equality operator
-        BOOST_CHECK(i1.getVariable<double>("m") + 2 == i2.getVariable<double>("m"));
+        BOOST_CHECK(i1.getVariable<double>("x") + 2 == i2.getVariable<double>("x"));
     }
 }
 
@@ -163,19 +169,18 @@ BOOST_AUTO_TEST_CASE(GPUSimulationTest)
  * To test CUDA streams for overlapping host and device operations
  * This test should pass.
 */
-BOOST_AUTO_TEST_CASE(GPUSimulationTest)
+BOOST_AUTO_TEST_CASE(GPUSimulationTestMultiple)
 {
 
  /* Multi agent model */
     ModelDescription flame_model("circles_model");
 
     AgentDescription circle1_agent("circle1");
-    circle1_agent.addAgentVariable<float>("x");
-    circle1_agent.addAgentVariable<float>("y");
+    circle1_agent.addAgentVariable<double>("x");
 
     AgentDescription circle2_agent("circle2");
-    circle2_agent.addAgentVariable<float>("x");
-    circle2_agent.addAgentVariable<float>("y");
+    circle2_agent.addAgentVariable<double>("x");
+    circle2_agent.addAgentVariable<double>("y");
 
     AgentFunctionDescription add_data("add_data");
     //add_data.addInput(input_location);
@@ -196,16 +201,15 @@ BOOST_AUTO_TEST_CASE(GPUSimulationTest)
     for (int i=0; i< SIZE; i++)
     {
         AgentInstance instance = population1.getNextInstance("default");
-        instance.setVariable<float>("x", i*0.1f);
-        instance.setVariable<float>("y", i*0.1f);
+        instance.setVariable<double>("x", i);
     }
 
     AgentPopulation population2(circle2_agent, SIZE);
     for (int i=0; i< SIZE; i++)
     {
         AgentInstance instance = population2.getNextInstance("default");
-        instance.setVariable<float>("x", i*0.2f);
-        instance.setVariable<float>("y", i*0.2f);
+        instance.setVariable<double>("x", i);
+        instance.setVariable<double>("y", i);
     }
 
     Simulation simulation(flame_model);
@@ -228,17 +232,22 @@ BOOST_AUTO_TEST_CASE(GPUSimulationTest)
 
     cuda_model.step(simulation);
 
+
+
     cuda_model.getPopulationData(population1);
     cuda_model.getPopulationData(population2);
+
 
     //check values are the same
     for (int i = 0; i < SIZE; i++)
     {
         AgentInstance i1 = population1.getInstanceAt(i, "default");
         AgentInstance i2 = population2.getInstanceAt(i, "default");
+
         //use AgentInstance equality operator
-        BOOST_CHECK(i1.getVariable<float>("y") == i1.getVariable<float>("x")+1);
-        BOOST_CHECK(i2.getVariable<float>("y") == 0);
+        BOOST_CHECK(i1.getVariable<double>("x") == i + 2);
+        BOOST_CHECK(i2.getVariable<double>("y") == 0);
+
     }
     }
 

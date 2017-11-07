@@ -16,5 +16,11 @@ BOOST_AUTO_TEST_CASE(GPUSimulationTest)
     BOOST_CHECK(gpu_test_2==true);
 }
 
+BOOST_AUTO_TEST_CASE(GPUSimulationTestMultiple)
+{
+    BOOST_TEST_MESSAGE( "\nTesting values copied back from device after simulating multiple functions concurrently.." );
+    BOOST_CHECK(gpu_test_3==true);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
