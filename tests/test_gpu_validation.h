@@ -7,9 +7,6 @@
  * @date       16 Oct 2017
  * @brief      Test suite for validating methods in GPU folder
  *
- * These are example device agent functions to be used for testing.
- * Each function returns a ALIVE or DEAD value indicating where the agent is dead and should be removed or not.
- *
  * @see        https://github.com/FLAMEGPU/FLAMEGPU2_dev
  * @bug        No known bugs
  */
@@ -159,5 +156,91 @@ BOOST_AUTO_TEST_CASE(GPUSimulationTest)
         BOOST_CHECK(i1.getVariable<double>("m") + 2 == i2.getVariable<double>("m"));
     }
 }
+
+/**
+ * @brief      To verify the correctness of running multiple functions simultaneously
+ *
+ * To test CUDA streams for overlapping host and device operations
+ * This test should pass.
+*/
+BOOST_AUTO_TEST_CASE(GPUSimulationTest)
+{
+
+ /* Multi agent model */
+    ModelDescription flame_model("circles_model");
+
+    AgentDescription circle1_agent("circle1");
+    circle1_agent.addAgentVariable<float>("x");
+    circle1_agent.addAgentVariable<float>("y");
+
+    AgentDescription circle2_agent("circle2");
+    circle2_agent.addAgentVariable<float>("x");
+    circle2_agent.addAgentVariable<float>("y");
+
+    AgentFunctionDescription add_data("add_data");
+    //add_data.addInput(input_location);
+    add_data.setFunction(&add_func);
+    circle1_agent.addAgentFunction(add_data);
+
+    AgentFunctionDescription subtract_data("subtract_data");
+    //subtract_data.addInput(input_location);
+    subtract_data.setFunction(&subtract_func);
+    circle2_agent.addAgentFunction(subtract_data);
+
+
+    flame_model.addAgent(circle1_agent);
+    flame_model.addAgent(circle2_agent);
+
+    #define SIZE 10
+    AgentPopulation population1(circle1_agent, SIZE);
+    for (int i=0; i< SIZE; i++)
+    {
+        AgentInstance instance = population1.getNextInstance("default");
+        instance.setVariable<float>("x", i*0.1f);
+        instance.setVariable<float>("y", i*0.1f);
+    }
+
+    AgentPopulation population2(circle2_agent, SIZE);
+    for (int i=0; i< SIZE; i++)
+    {
+        AgentInstance instance = population2.getNextInstance("default");
+        instance.setVariable<float>("x", i*0.2f);
+        instance.setVariable<float>("y", i*0.2f);
+    }
+
+    Simulation simulation(flame_model);
+
+    //multiple functions per simulation layer (from different agents)
+    SimulationLayer concurrent_layer(simulation, "concurrent_layer");
+    concurrent_layer.addAgentFunction("add_data");
+    concurrent_layer.addAgentFunction("subtract_data");
+    simulation.addSimulationLayer(concurrent_layer);
+
+    simulation.setSimulationSteps(1);
+
+    /* Run the model */
+    CUDAAgentModel cuda_model(flame_model);
+
+    cuda_model.setInitialPopulationData(population1);
+    cuda_model.setInitialPopulationData(population2);
+
+    cuda_model.addSimulation(simulation);
+
+    cuda_model.step(simulation);
+
+    cuda_model.getPopulationData(population1);
+    cuda_model.getPopulationData(population2);
+
+    //check values are the same
+    for (int i = 0; i < SIZE; i++)
+    {
+        AgentInstance i1 = population1.getInstanceAt(i, "default");
+        AgentInstance i2 = population2.getInstanceAt(i, "default");
+        //use AgentInstance equality operator
+        BOOST_CHECK(i1.getVariable<float>("y") == i1.getVariable<float>("x")+1);
+        BOOST_CHECK(i2.getVariable<float>("y") == 0);
+    }
+    }
+
 BOOST_AUTO_TEST_SUITE_END()
 

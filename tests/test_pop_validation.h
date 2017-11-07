@@ -7,9 +7,6 @@
  * @date       16 Oct 2017
  * @brief      Test suite for validating methods in population folder
  *
- * These are example device agent functions to be used for testing.
- * Each function returns a ALIVE or DEAD value indicating where the agent is dead and should be removed or not.
- *
  * @see        https://github.com/FLAMEGPU/FLAMEGPU2_dev
  * @bug        No known bugs
  */
@@ -239,9 +236,44 @@ BOOST_AUTO_TEST_CASE(PopulationOverflowCapacity)
 }
 
 /**
- * @brief      To verify the correctness of ::AgentPopulation::getVariable
+ * @brief      To verify the correctness of exception handler when trying to
+ * access agent population value that is not set.
  *
- * todo { paragraph_describing_what_is_to_be_done }
+ * After setting initial values for any number of agent population that is less
+ * than the maximum population capacity, only the variables been set can be accessed.
+ * Accessing index less than actual population size should be handled through an exception.
+ *
+ * This test should pass by throwing the correct exception.
+*/
+BOOST_AUTO_TEST_CASE(PopulationCheckGetInstanceBeyondSize)
+{
+
+
+    BOOST_TEST_MESSAGE( "\nTesting getting an instance beyond current size .." );
+
+    ModelDescription flame_model("circles_model");
+    AgentDescription circle_agent("circle");
+
+    AgentStateDescription s1("default");
+    circle_agent.addState(s1);
+
+    circle_agent.addAgentVariable<float>("x");
+    circle_agent.addAgentVariable<float>("y");
+
+    flame_model.addAgent(circle_agent);
+
+    AgentPopulation population(circle_agent, 100);
+
+    AgentInstance instance_s1 = population.getNextInstance("default");
+    instance_s1.setVariable<float>("x", 0.1f);
+
+    //check that getInstanceAt should fail if index is less than size
+    BOOST_CHECK_THROW(population.getInstanceAt(1,"default"),InvalidMemoryCapacity);
+
+}
+
+/**
+ * @brief      To verify the correctness of population data values when using multiple states.
  *
  * This test should pass.
 */
@@ -249,7 +281,7 @@ BOOST_AUTO_TEST_CASE(PopulationDataValuesMultipleStates)
 {
 
 
-    BOOST_TEST_MESSAGE("\nTesting adding changing the capacity size ..");
+    BOOST_TEST_MESSAGE("\nTesting the population data with multiple states ..");
 
     ModelDescription flame_model("circles_model");
     AgentDescription circle_agent("circle");
@@ -285,42 +317,6 @@ BOOST_AUTO_TEST_CASE(PopulationDataValuesMultipleStates)
     }
 }
 
-/**
- * @brief      To verify the correctness of exception handler when trying to
- * access agent population value that is not set.
- *
- * After setting initial values for any number of agent population that is less
- * than the maximum population capacity, only the variables been set can be accessed.
- * Accessing index less than actual population size should be handled through an exception.
- *
- * This test should pass by throwing the correct exception.
-*/
-BOOST_AUTO_TEST_CASE(PopulationCheckGetInstanceBeyondSize)
-{
-
-
-    BOOST_TEST_MESSAGE( "\nTesting getting an instance beynd current size .." );
-
-    ModelDescription flame_model("circles_model");
-    AgentDescription circle_agent("circle");
-
-    AgentStateDescription s1("default");
-    circle_agent.addState(s1);
-
-    circle_agent.addAgentVariable<float>("x");
-    circle_agent.addAgentVariable<float>("y");
-
-    flame_model.addAgent(circle_agent);
-
-    AgentPopulation population(circle_agent, 100);
-
-    AgentInstance instance_s1 = population.getNextInstance("default");
-    instance_s1.setVariable<float>("x", 0.1f);
-
-    //check that getInstanceAt should fail if index is less than size
-    BOOST_CHECK_THROW(population.getInstanceAt(1,"default"),InvalidMemoryCapacity);
-
-}
 
 BOOST_AUTO_TEST_SUITE_END()
 

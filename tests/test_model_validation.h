@@ -7,9 +7,6 @@
  * @date       16 Oct 2017
  * @brief      Test suite for validating methods in model folder
  *
- * These are example device agent functions to be used for testing.
- * Each function returns a ALIVE or DEAD value indicating where the agent is dead and should be removed or not.
- *
  * @see        https://github.com/FLAMEGPU/FLAMEGPU2_dev
  * @bug        No known bugs
  */
