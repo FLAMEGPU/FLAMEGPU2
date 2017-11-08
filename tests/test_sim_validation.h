@@ -16,33 +16,32 @@
 
 FLAMEGPU_AGENT_FUNCTION(output_func)
 {
-	printf("Hello from output_func\n");
+	//printf("Hello from output_func\n");
 
 	// should've returned error if the type was not correct. Needs type check
 	float x = FLAMEGPU->getVariable<float>("x");
-	printf("x = %f\n", x);
 	FLAMEGPU->setVariable<float>("x", x + 2);
-	x = FLAMEGPU->getVariable<float>("x");
-	printf("x after set = %f\n", x);
+    x = FLAMEGPU->getVariable<float>("x");
+    printf("x after set = %f\n", x);
 
 	return ALIVE;
 }
 
 FLAMEGPU_AGENT_FUNCTION(input_func)
 {
-	printf("Hello from input_func\n");
+	//printf("Hello from input_func\n");
 	return ALIVE;
 }
 
 FLAMEGPU_AGENT_FUNCTION(move_func)
 {
-	printf("Hello from move_func\n");
+	//printf("Hello from move_func\n");
 	return ALIVE;
 }
 
 FLAMEGPU_AGENT_FUNCTION(stay_func)
 {
-	printf("Hello from stay_func\n");
+	//printf("Hello from stay_func\n");
 	return ALIVE;
 }
 
@@ -50,7 +49,111 @@ using namespace std;
 
 BOOST_AUTO_TEST_SUITE(SimTest)
 
+/**
+ * @brief      To verify the correctness of simulation functions
+ *
+ * This test checks whether functions are executing on device by printing 'Hello'.
+ * This test should pass.
+*/
 BOOST_AUTO_TEST_CASE(SimulationFunctionCheck)
+{
+
+    ModelDescription flame_model("circles_model");
+    AgentDescription circle_agent("circle");
+
+    circle_agent.addAgentVariable<float>("x");
+
+    AgentFunctionDescription output_data("output_data");
+    AgentFunctionOutput output_location("location");
+    output_data.addOutput(output_location);
+    output_data.setFunction(&output_func);
+    circle_agent.addAgentFunction(output_data);
+
+    AgentFunctionDescription move("move");
+    move.setFunction(&move_func);
+    circle_agent.addAgentFunction(move);
+
+    AgentFunctionDescription stay("stay");
+    stay.setFunction(&stay_func);
+    circle_agent.addAgentFunction(stay);
+
+    flame_model.addAgent(circle_agent);
+
+
+    AgentPopulation population(circle_agent,5);
+
+    for (int i=0; i< 5; i++)
+    {
+        AgentInstance instance = population.getNextInstance("default");
+        instance.setVariable<float>("x", i*0.1f);
+    }
+
+
+    Simulation simulation(flame_model);
+
+    SimulationLayer output_layer(simulation, "output_layer");
+    output_layer.addAgentFunction("output_data");
+    simulation.addSimulationLayer(output_layer);
+
+
+    /**
+     * @brief      Checks if the function name exists
+     * This is to perform an exception detection check. It executes the supplied
+     * statement and checks if it throws the exception or not. The second argument
+     * is the expected exception.
+     */
+    BOOST_CHECK_THROW(output_layer.addAgentFunction("output_"), InvalidAgentFunc); // expecting an error
+
+    SimulationLayer moveStay_layer(simulation, "move_layer");
+    moveStay_layer.addAgentFunction("move");
+    moveStay_layer.addAgentFunction("stay");
+    simulation.addSimulationLayer(moveStay_layer);
+
+
+    BOOST_TEST_MESSAGE( "\nTesting simulation of functions per layers .." );
+
+    /**
+     * @brief      Checks the number of function layers
+     * This is to validate the predicate value. The test should pass.
+     */
+    BOOST_CHECK(simulation.getLayerCount()==2);
+
+    //for each each simulation layer
+    for (unsigned int i = 0; i < simulation.getLayerCount(); i++)
+    {
+        const FunctionDescriptionVector& functions = simulation.getFunctionsAtLayer(i);
+
+        //for each function per simulation layer
+        for (AgentFunctionDescription func_des : functions)
+        {
+            // check functions - printing function name only
+            BOOST_TEST_MESSAGE( "Calling agent function "<< func_des.getName() << " at layer " << i << "!\n");
+        }
+    }
+
+
+    CUDAAgentModel cuda_model(flame_model);
+
+    cuda_model.setInitialPopulationData(population);
+
+    cuda_model.addSimulation(simulation);
+
+    cuda_model.step(simulation);
+
+
+    /**
+     * @todo : may not need this below test
+     */
+    BOOST_CHECK(simulation.getModelDescritpion().getName()=="circles_model");
+}
+
+/**
+ * @brief      { function_description }
+ *
+ * @param[in]  <unnamed>  { parameter_description }
+ * @todo to test the mismatch var type
+ */
+BOOST_AUTO_TEST_CASE(SimulationFunctionTypeCheck)
 {
 
     ModelDescription flame_model("circles_model");
@@ -65,23 +168,15 @@ BOOST_AUTO_TEST_CASE(SimulationFunctionCheck)
     //output_data.setInitialState("state1");
     circle_agent.addAgentFunction(output_data);
 
-    AgentFunctionDescription move("move");
-    move.setFunction(&move_func);
-    circle_agent.addAgentFunction(move);
-
-    AgentFunctionDescription stay("stay");
-    stay.setFunction(&stay_func);
-    circle_agent.addAgentFunction(stay);
-
     flame_model.addAgent(circle_agent);
 
 
     AgentPopulation population(circle_agent);
 
-    for (int i=0; i< 10; i++)
+    for (int i=0; i< 5; i++)
     {
         AgentInstance instance = population.getNextInstance("default");
-        instance.setVariable<int>("x", i*0.1f);
+        instance.setVariable<int>("x", i);
     }
 
 
@@ -92,69 +187,19 @@ BOOST_AUTO_TEST_CASE(SimulationFunctionCheck)
     simulation.addSimulationLayer(output_layer);
 
 
-    SimulationLayer input_layer(simulation, "input_layer");
-
-    //check if the function name exists
-    BOOST_CHECK_THROW(input_layer.addAgentFunction("output_"), InvalidAgentFunc); // expecting an error
-
-    SimulationLayer moveStay_layer(simulation, "move_layer");
-    moveStay_layer.addAgentFunction("move");
-    moveStay_layer.addAgentFunction("stay");
-    simulation.addSimulationLayer(moveStay_layer);
+    BOOST_TEST_MESSAGE( "\nTesting variable type mismatch during the simulation .." );
 
 
+  //  CUDAAgentModel cuda_model(flame_model);
 
-    BOOST_TEST_MESSAGE( "\nTesting simulation of functions per layers .." );
+  //  cuda_model.setInitialPopulationData(population);
 
-    // check number of function layers
-    BOOST_CHECK(simulation.getLayerCount()==2);
+  //  cuda_model.addSimulation(simulation);
 
-    //for each each sim layer
-    for (unsigned int i = 0; i < simulation.getLayerCount(); i++)
-    {
-        const FunctionDescriptionVector& functions = simulation.getFunctionsAtLayer(i);
+  //  cuda_model.step(simulation);
 
-        //for each func function
-        for (AgentFunctionDescription func_des : functions)
-        {
-            // check functions - printing function name only
-            BOOST_TEST_MESSAGE( "Calling agent function "<< func_des.getName() << " at layer " << i << "!\n");
-        }
-    }
-
-    BOOST_CHECK(simulation.getModelDescritpion().getName()=="circles_model");
 }
-//
-//BOOST_AUTO_TEST_CASE(SimulationFunctionLayerCheck)
-//{
-//
-//    ModelDescription flame_model("circles_model");
-//    AgentDescription circle_agent("circle");
-//
-//    AgentFunctionDescription move("move");
-//    move.setFunction(move_func);
-//    circle_agent.addAgentFunction(move);
-//
-//
-//    AgentFunctionDescription stay("stay");
-//    stay.setFunction(stay_func);
-//    circle_agent.addAgentFunction(stay);
-//
-//    flame_model.addAgent(circle_agent);
-//
-//
-//    Simulation simulation(flame_model);
-//
-//    SimulationLayer moveStay_layer(simulation, "move_layer");
-//    moveStay_layer.addAgentFunction("move");
-//    moveStay_layer.addAgentFunction("stay");
-//    simulation.addSimulationLayer(moveStay_layer);
-//
-//}
 
-// DONE : test funcs executing (printing hello only)
-// TODO : test funcs executing (printing values only)
-// TODO : test funcs executing (on device)
 
 BOOST_AUTO_TEST_SUITE_END()
 

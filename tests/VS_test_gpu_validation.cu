@@ -1,3 +1,16 @@
+/**
+ * @copyright  2017 University of Sheffield
+ *
+ *
+ * @file       VS_test_gpu_validation.h
+ * @authors    Mozhgan Kabiri Chimeh, Paul Richmond
+ * @date       16 Oct 2017
+ * @brief      Test suite for validating methods in gpu folder
+ *
+ * @see        https://github.com/FLAMEGPU/FLAMEGPU2_dev
+ * @bug        No known bugs
+ */
+
 #include "../flame_api.h"
 
 FLAMEGPU_AGENT_FUNCTION(add_func)

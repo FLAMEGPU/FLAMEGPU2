@@ -17,6 +17,11 @@ using namespace std;
 
 BOOST_AUTO_TEST_SUITE(ModelDescTest) //name of the test suite is modelTest
 
+/**
+ * @brief      To verify the correctness of agent name,variable type and size.
+ *
+ * This test should pass.
+*/
 BOOST_AUTO_TEST_CASE(AgentCheck)
 {
 
@@ -34,9 +39,30 @@ BOOST_AUTO_TEST_CASE(AgentVarCheck)
     AgentDescription circle_agent("circle");
     circle_agent.addAgentVariable<float>("x");
 
+   /**
+     * @brief      Checks the number of agent variables
+     * This is to validate the predicate value. The test should pass.
+     */
     BOOST_CHECK(circle_agent.getNumberAgentVariables() == 1);
+
+   /**
+     * @brief      Checks the agent variable size
+     * This is to validate the predicate value. The test should pass.
+     */
     BOOST_CHECK(circle_agent.getAgentVariableSize("x") == 4);
+
+   /**
+     * @brief      Checks the agent variable type
+     * This is to validate the predicate value. The test should pass.
+     */
     BOOST_CHECK(circle_agent.getVariableType("x") == typeid(float));
+
+    /**
+     * @brief      Checks if the agent variable exists
+     * This is to perform an exception detection check. It executes the supplied
+     * statement and checks if it throws the exception or not. The second argument
+     * is the expected exception.
+     */
 	BOOST_CHECK_THROW(circle_agent.getAgentVariableSize("y"), InvalidAgentVar); // expecting an error
 }
 
@@ -61,27 +87,12 @@ BOOST_AUTO_TEST_CASE(DefaultValueCheck)
 */
 
 
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_AUTO_TEST_SUITE(MessageTest)
-
-BOOST_AUTO_TEST_CASE(MessageNameCheck)
-{
-
-    BOOST_TEST_MESSAGE( "\nTesting Message Name .." );
-    MessageDescription location_message("location");
-
-    BOOST_CHECK(location_message.getName()== "location");
-    location_message.addVariable<float>("x");
-// TODO (mozhgan#1#06/12/16): Test the variable
-
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_AUTO_TEST_SUITE(FunctionTest)
-
-BOOST_AUTO_TEST_CASE(FunctionCheck)
+/**
+ * @brief      To verify the correctness of function and message names.
+ *
+ * This test should pass.
+*/
+BOOST_AUTO_TEST_CASE(MessageFunctionCheck)
 {
     BOOST_TEST_MESSAGE( "\nTesting Function and Message Name .." );
 
@@ -94,29 +105,57 @@ BOOST_AUTO_TEST_CASE(FunctionCheck)
     AgentFunctionDescription output_data("output_data");
     AgentFunctionOutput output_location("location");
     output_data.addOutput(output_location);
-    //output_data.setInitialState("state1");
     circle_agent.addAgentFunction(output_data);
 
     AgentFunctionDescription move("move");
     circle_agent.addAgentFunction(move);
 
-
-    //model
     flame_model.addMessage(location_message);
     flame_model.addAgent(circle_agent);
 
 
+   /**
+     * @brief      Checks the name of agent function description
+     * This is to validate the predicate value. The test should pass.
+     */
     BOOST_CHECK(output_data.getName()=="output_data");
+
+   /**
+     * @brief      Checks the message name
+     * This is to validate the predicate value. The test should pass.
+     */
     BOOST_CHECK(output_location.getMessageName()=="location");
 
+   /**
+     * @brief      Checks whether the agent function exists or not
+     * This is to validate the predicate value. The test should pass.
+     */
     BOOST_CHECK(circle_agent.hasAgentFunction("output_data")==true);
 
+   /**
+     * @brief      Checks the name of the initial state
+     * This is to validate the predicate value. The test should pass.
+     */
     BOOST_CHECK(output_data.getIntialState()=="default");
 
+   /**
+     * @brief      Checks the name of model description
+     * This is to validate the predicate value. The test should pass.
+     */
     BOOST_CHECK(flame_model.getName()== "circles_model");
+
+   /**
+     * @brief      Checks whether the agent function exists or not
+     * This is to validate the predicate value. The test should pass.
+     */
     BOOST_CHECK(flame_model.getAgentDescription("circle").hasAgentFunction("move") == true);
 
-
+    /**
+     * @brief      Checks if the agent description name exists
+     * This is to perform an exception detection check. It executes the supplied
+     * statement and checks if it throws the exception or not. The second argument
+     * is the expected exception.
+     */
     BOOST_CHECK_THROW(flame_model.getAgentDescription("error"),InvalidAgentVar); // expecting an error
 
 }
