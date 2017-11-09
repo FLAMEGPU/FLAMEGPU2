@@ -127,7 +127,7 @@ int main(void)
 
    // flame_model.addMessage(location2_message);
     flame_model.addAgent(circle2_agent);
-#define SIZE 10000
+#define SIZE 10
     AgentPopulation population1(circle1_agent, SIZE);
     for (int i=0; i< SIZE; i++)
     {
