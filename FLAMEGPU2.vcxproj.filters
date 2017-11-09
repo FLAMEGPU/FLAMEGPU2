@@ -110,6 +110,9 @@
     <ClInclude Include="tests\VS_test_sim_validation.h">
       <Filter>tests</Filter>
     </ClInclude>
+    <ClInclude Include="tests\device_functions.h">
+      <Filter>tests</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="model\AgentDescription.cpp">
@@ -175,6 +178,9 @@
     <CudaCompile Include="main_MAS.cu" />
     <CudaCompile Include="runtime\agent_function.cu">
       <Filter>runtime</Filter>
+    </CudaCompile>
+    <CudaCompile Include="tests\device_functions.cu">
+      <Filter>tests</Filter>
     </CudaCompile>
   </ItemGroup>
 </Project>

@@ -14,26 +14,7 @@
 
 #include "../flame_api.h"
 
-FLAMEGPU_AGENT_FUNCTION(add_func)
-{
-    // should've returned error if the type was not correct. Needs type check
-    double x = FLAMEGPU->getVariable<double>("x");
-
-    FLAMEGPU->setVariable<double>("x", x + 2);
-
-    return ALIVE;
-}
-
-FLAMEGPU_AGENT_FUNCTION(subtract_func)
-{
-
-    double x = FLAMEGPU->getVariable<double>("x");
-    double y = FLAMEGPU->getVariable<double>("y");
-
-    FLAMEGPU->setVariable<double>("y", x - y);
-
-    return ALIVE;
-}
+#include "device_functions.h"
 
 using namespace std;
 
@@ -84,82 +65,89 @@ BOOST_AUTO_TEST_CASE(GPUMemoryTest)
 
 }
 
+
+
 /**
- * @brief      To verify the correctness of ::AgentInstance::setVariable  and
- *  ::AgentInstance::getVariable variable function and hashing after simulating a function
- *
- * To ensure initial values for agent population is transferred correctly onto
- * the GPU, this test checks the correctness of the values copied back from the device
- * after being updated/changed during the simulation of an agent function. Note that hashing
- * This test should pass.
+* @brief      To verify the correctness of ::AgentInstance::setVariable  and
+*  ::AgentInstance::getVariable variable function and hashing after simulating a function
+*
+* To ensure initial values for agent population is transferred correctly onto
+* the GPU, this test checks the correctness of the values copied back from the device
+* after being updated/changed during the simulation of an agent function. The 'add_function' agent function simply increases the agent variable x by a value of 2.
+* This test will re-use the original population to read the results of the simulation step so it also acts to test that the original values are correctly overwritten.
+*  Note that hashing
+* This test should pass.
 */
 BOOST_AUTO_TEST_CASE(GPUSimulationTest)
 {
 
-    ModelDescription flame_model("circles_model");
-    AgentDescription circle_agent("circle");
+	// create  single FLAME GPU model and agent
+	ModelDescription flame_model("circles_model");
+	AgentDescription circle_agent("circle");
+
+	// test requires only a  single agent variable
+	circle_agent.addAgentVariable<double>("x");
 
 
-    circle_agent.addAgentVariable<double>("x");
+	AgentFunctionDescription add_data("add_data");
+	AgentFunctionOutput add_location("location");
+	add_data.addOutput(add_location);
+	//add_data.setFunction(&add_func);
+	attach_add_func(add_data);
+	circle_agent.addAgentFunction(add_data);
 
-    AgentFunctionDescription add_data("add_data");
-    AgentFunctionOutput add_location("location");
-    add_data.addOutput(add_location);
-    add_data.setFunction(&add_func);
-    circle_agent.addAgentFunction(add_data);
+	flame_model.addAgent(circle_agent);
 
-    flame_model.addAgent(circle_agent);
+	AgentPopulation population(circle_agent, 10);
+	for (int i = 0; i< 10; i++)
+	{
+		AgentInstance instance = population.getNextInstance("default");
+		// The value of x will be the index of the agent 
+		instance.setVariable<double>("x", i);
+	}
 
-    AgentPopulation population(circle_agent,10);
-    for (int i = 0; i< 10; i++)
-    {
-        AgentInstance instance = population.getNextInstance("default");
-        instance.setVariable<double>("x", i);
-    }
-
-    BOOST_TEST_MESSAGE( "\nTesting initial values .." );
-
-
-    Simulation simulation(flame_model);
-
-    SimulationLayer add_layer(simulation, "add_layer");
-    add_layer.addAgentFunction("add_data");
-
-    simulation.addSimulationLayer(add_layer);
-
-    //simulation.setSimulationSteps(10);
-
-    CUDAAgentModel cuda_model(flame_model);
-
-    cuda_model.setInitialPopulationData(population);
-
-    cuda_model.addSimulation(simulation);
-
-    cuda_model.step(simulation);
-
-    BOOST_TEST_MESSAGE( "\nTesting values copied back from device after simulating functions .." );
+	BOOST_TEST_MESSAGE("\nTesting initial values ..");
 
 
+	Simulation simulation(flame_model);
 
-// Moz: I don't think we need this, we can simply compare it with i. See below test
-    AgentPopulation population2(circle_agent, 10);
-    cuda_model.getPopulationData(population2);
+	SimulationLayer add_layer(simulation, "add_layer");
+	add_layer.addAgentFunction("add_data");
 
-    //check values are the same
-    for (int i = 0; i < 10; i++)
-    {
-        AgentInstance i1 = population.getInstanceAt(i, "default");
-        AgentInstance i2 = population2.getInstanceAt(i, "default");
-        //use AgentInstance equality operator
-        BOOST_CHECK(i1.getVariable<double>("x") + 2 == i2.getVariable<double>("x"));
-    }
+	simulation.addSimulationLayer(add_layer);
+
+	//simulation.setSimulationSteps(10);
+
+	CUDAAgentModel cuda_model(flame_model);
+
+	cuda_model.setInitialPopulationData(population);
+
+	cuda_model.addSimulation(simulation);
+
+	cuda_model.step(simulation);
+
+	BOOST_TEST_MESSAGE("\nTesting values copied back from device after simulating functions ..");
+
+
+
+	// Re-use the same population to read back the simulation step results
+	cuda_model.getPopulationData(population);
+
+	//check values are the same
+	for (int i = 0; i < 10; i++)
+	{
+		AgentInstance i1 = population.getInstanceAt(i, "default");
+		//use AgentInstance equality operator
+		BOOST_CHECK(i1.getVariable<double>("x") == i + 2);
+	}
 }
 
 /**
  * @brief      To verify the correctness of running multiple functions simultaneously
  *
- * To test CUDA streams for overlapping host and device operations
- * This test should pass.
+ * To test CUDA streams for overlapping host and device operations. This test is a test for concurrency. 
+ * It is expected that add and subtract functions should execute simultaneously as they are functions belonging to different agents with the functions on the same simulation layer. 
+ * Note: To observe that the functions are actually executing concurrently requires that you profile the test and observe the kernels in the NVProf profiler.
 */
 BOOST_AUTO_TEST_CASE(GPUSimulationTestMultiple)
 {
@@ -176,12 +164,14 @@ BOOST_AUTO_TEST_CASE(GPUSimulationTestMultiple)
 
     AgentFunctionDescription add_data("add_data");
     //add_data.addInput(input_location);
-    add_data.setFunction(&add_func);
+//    add_data.setFunction(&add_func);
+	attach_add_func(add_data);
     circle1_agent.addAgentFunction(add_data);
 
     AgentFunctionDescription subtract_data("subtract_data");
     //subtract_data.addInput(input_location);
-    subtract_data.setFunction(&subtract_func);
+//    subtract_data.setFunction(&subtract_func);
+	attach_subtract_func(subtract_data);
     circle2_agent.addAgentFunction(subtract_data);
 
 

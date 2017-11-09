@@ -7,7 +7,7 @@
  * @date       16 Oct 2017
  * @brief      Example of device agent functions
  *
- * These are example device agent functions to be used for testing.
+ * These are example device agent functions to be used for testing. These are not tests themselves but are included by most of the unit test.
  * Each function returns a ALIVE or DEAD value indicating where the agent is dead and should be removed or not.
  *
  * @see        https://github.com/FLAMEGPU/FLAMEGPU2_dev
