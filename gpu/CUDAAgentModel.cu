@@ -16,7 +16,7 @@
 #include "../sim/Simulation.h"
 
 // include FLAMEGPU kernel wrapper
-#include "../runtime/agent_function.cu"
+#include "../runtime/agent_function.h"
 
 // agent_map is a type CUDAAgentMap
 /**

@@ -4,14 +4,13 @@
  *
  * @file       test_model_validation.h
  * @authors    Mozhgan Kabiri Chimeh, Paul Richmond
- * @date       16 Oct 2017
  * @brief      Test suite for validating methods in model folder
  *
  * @see        https://github.com/FLAMEGPU/FLAMEGPU2_dev
  * @bug        No known bugs
  */
 
-#include "../flame_api.h"
+#include "../runtime/flame_api.h"
 
 using namespace std;
 
@@ -19,8 +18,8 @@ BOOST_AUTO_TEST_SUITE(ModelDescTest) //name of the test suite is modelTest
 
 /**
  * @brief      To verify the correctness of agent name,variable type and size.
+ * To test the case separately, run: make run_BOOST_TEST TSuite=ModelDescTest/AgentCheck
  *
- * This test should pass.
 */
 BOOST_AUTO_TEST_CASE(AgentCheck)
 {
@@ -33,6 +32,11 @@ BOOST_AUTO_TEST_CASE(AgentCheck)
     BOOST_CHECK(circle_agent.getMemorySize()== 0);
 }
 
+/**
+ * @brief     To verify the correctness of agent variable size and type.
+ * To test the case separately, run: make run_BOOST_TEST TSuite=ModelDescTest/AgentVarCheck
+ *
+*/
 BOOST_AUTO_TEST_CASE(AgentVarCheck)
 {
     BOOST_TEST_MESSAGE( "Testing Agent Variable Size, Type, and Number .." );
@@ -89,8 +93,8 @@ BOOST_AUTO_TEST_CASE(DefaultValueCheck)
 
 /**
  * @brief      To verify the correctness of function and message names.
+ * To test the case separately, run: make run_BOOST_TEST TSuite=ModelDescTest/MessageFunctionCheck
  *
- * This test should pass.
 */
 BOOST_AUTO_TEST_CASE(MessageFunctionCheck)
 {

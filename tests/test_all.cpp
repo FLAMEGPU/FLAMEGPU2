@@ -4,7 +4,6 @@
  *
  * @file       test_all.cpp
  * @authors    Mozhgan Kabiri Chimeh, Paul Richmond
- * @date       16 Oct 2017
  * @brief
  *
  * @see        https://github.com/FLAMEGPU/FLAMEGPU2_dev
@@ -31,8 +30,8 @@
 
 #include "test_model_validation.h"
 #include "test_pop_validation.h"
-//#include "test_sim_validation.h"   // to work with VS
-#include "test_gpu_validation.h"   // to work with VS
+#include "test_sim_validation.h"
+#include "test_gpu_validation.h"
 
 
 

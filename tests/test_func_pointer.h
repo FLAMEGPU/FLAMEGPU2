@@ -4,7 +4,6 @@
  *
  * @file       test_func_pointer.h
  * @authors    Mozhgan Kabiri Chimeh, Paul Richmond
- * @date       16 Oct 2017
  * @brief      Example of device agent functions
  *
  * These are example device agent functions to be used for testing. These are not tests themselves but are included by most of the unit test.

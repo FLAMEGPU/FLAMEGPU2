@@ -15,7 +15,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "flame_api.h"
+#include "runtime/flame_api.h"
 
 
 using namespace std;

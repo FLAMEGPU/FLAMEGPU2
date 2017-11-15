@@ -4,46 +4,15 @@
  *
  * @file       test_sim_validation.h
  * @authors    Mozhgan Kabiri Chimeh, Paul Richmond
- * @date       16 Oct 2017
  * @brief      Test suite for validating methods in simulation folder
  *
  * @see        https://github.com/FLAMEGPU/FLAMEGPU2_dev
  * @bug        No known bugs
  */
 
-#include "../flame_api.h"
+#include "../runtime/flame_api.h"
 
-
-FLAMEGPU_AGENT_FUNCTION(output_func)
-{
-	//printf("Hello from output_func\n");
-
-	// should've returned error if the type was not correct. Needs type check
-	float x = FLAMEGPU->getVariable<float>("x");
-	FLAMEGPU->setVariable<float>("x", x + 2);
-    x = FLAMEGPU->getVariable<float>("x");
-    printf("x after set = %f\n", x);
-
-	return ALIVE;
-}
-
-FLAMEGPU_AGENT_FUNCTION(input_func)
-{
-	//printf("Hello from input_func\n");
-	return ALIVE;
-}
-
-FLAMEGPU_AGENT_FUNCTION(move_func)
-{
-	//printf("Hello from move_func\n");
-	return ALIVE;
-}
-
-FLAMEGPU_AGENT_FUNCTION(stay_func)
-{
-	//printf("Hello from stay_func\n");
-	return ALIVE;
-}
+#include "device_functions.h"
 
 using namespace std;
 
@@ -53,7 +22,7 @@ BOOST_AUTO_TEST_SUITE(SimTest)
  * @brief      To verify the correctness of simulation functions
  *
  * This test checks whether functions are executing on device by printing 'Hello'.
- * This test should pass.
+ * To test the case separately, run: make run_BOOST_TEST TSuite=SimTest/SimulationFunctionCheck
 */
 BOOST_AUTO_TEST_CASE(SimulationFunctionCheck)
 {
@@ -65,16 +34,19 @@ BOOST_AUTO_TEST_CASE(SimulationFunctionCheck)
 
     AgentFunctionDescription output_data("output_data");
     AgentFunctionOutput output_location("location");
-    output_data.addOutput(output_location);
-    output_data.setFunction(&output_func);
+    //output_data.addOutput(output_location);
+    //output_data.setFunction(&output_func);
+    attach_output_func(output_data);
     circle_agent.addAgentFunction(output_data);
 
     AgentFunctionDescription move("move");
-    move.setFunction(&move_func);
+   // move.setFunction(&move_func);
+    attach_move_func(move);
     circle_agent.addAgentFunction(move);
 
     AgentFunctionDescription stay("stay");
-    stay.setFunction(&stay_func);
+    //stay.setFunction(&stay_func);
+    attach_stay_func(stay);
     circle_agent.addAgentFunction(stay);
 
     flame_model.addAgent(circle_agent);
@@ -101,6 +73,7 @@ BOOST_AUTO_TEST_CASE(SimulationFunctionCheck)
      * This is to perform an exception detection check. It executes the supplied
      * statement and checks if it throws the exception or not. The second argument
      * is the expected exception.
+     * To test the case separately, run: make run_BOOST_TEST TSuite=SimTest/SimulationFunctionCheck
      */
     BOOST_CHECK_THROW(output_layer.addAgentFunction("output_"), InvalidAgentFunc); // expecting an error
 
@@ -149,6 +122,7 @@ BOOST_AUTO_TEST_CASE(SimulationFunctionCheck)
 
 /**
  * @brief      { function_description }
+ * To test the case separately, run: make run_BOOST_TEST TSuite=SimTest/SimulationFunctionTypeCheck
  *
  * @param[in]  <unnamed>  { parameter_description }
  * @todo to test the mismatch var type
@@ -164,7 +138,8 @@ BOOST_AUTO_TEST_CASE(SimulationFunctionTypeCheck)
     AgentFunctionDescription output_data("output_data");
     AgentFunctionOutput output_location("location");
     output_data.addOutput(output_location);
-    output_data.setFunction(&output_func);
+    //output_data.setFunction(&output_func);
+    attach_output_func(output_data);
     //output_data.setInitialState("state1");
     circle_agent.addAgentFunction(output_data);
 

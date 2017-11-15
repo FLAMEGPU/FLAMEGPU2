@@ -11,9 +11,9 @@
  */
 
 
-#include "gpu/CUDAErrorChecking.h"			//required for CUDA error handling functions
-#include "runtime/cuRVE/curve.h"
-#include "exception/FGPUException.h"
+#include "../gpu/CUDAErrorChecking.h"			//required for CUDA error handling functions
+#include "cuRVE/curve.h"
+#include "../exception/FGPUException.h"
 
 //TODO: Some example code of the handle class and an example function
 //! FLAMEGPU_API is a singleton class

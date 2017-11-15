@@ -19,7 +19,7 @@
 #include "AgentFunctionOutput.h"
 
 //include the agent function syntax form the runtime api
-#include "../flame_functions_api.h"
+#include "../runtime/flame_functions_api.h"
 
 class AgentDescription;
 

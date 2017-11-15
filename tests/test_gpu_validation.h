@@ -4,7 +4,6 @@
  *
  * @file       test_gpu_validation.h
  * @authors    Mozhgan Kabiri Chimeh, Paul Richmond
- * @date       16 Oct 2017
  * @brief      Test suite for validating methods in GPU folder
  *
  * @see        https://github.com/FLAMEGPU/FLAMEGPU2_dev
@@ -12,7 +11,7 @@
  */
 
 
-#include "../flame_api.h"
+#include "../runtime/flame_api.h"
 
 #include "device_functions.h"
 
@@ -27,7 +26,8 @@ BOOST_AUTO_TEST_SUITE(GPUTest) //name of the test suite is modelTest
  *
  * To ensure initial values for agent population is transferred correctly onto
  * the GPU, this test compares the values copied back from the device with the initial
- * population data. This test should pass.
+ * population data.
+ * To test the case separately, run: make run_BOOST_TEST TSuite=GPUTest/GPUMemoryTest
 */
 BOOST_AUTO_TEST_CASE(GPUMemoryTest)
 {
@@ -75,8 +75,8 @@ BOOST_AUTO_TEST_CASE(GPUMemoryTest)
 * the GPU, this test checks the correctness of the values copied back from the device
 * after being updated/changed during the simulation of an agent function. The 'add_function' agent function simply increases the agent variable x by a value of 2.
 * This test will re-use the original population to read the results of the simulation step so it also acts to test that the original values are correctly overwritten.
-*  Note that hashing
-* This test should pass.
+*
+* To test the case separately, run: make run_BOOST_TEST TSuite=GPUTest/GPUSimulationTest
 */
 BOOST_AUTO_TEST_CASE(GPUSimulationTest)
 {
@@ -102,7 +102,7 @@ BOOST_AUTO_TEST_CASE(GPUSimulationTest)
 	for (int i = 0; i< 10; i++)
 	{
 		AgentInstance instance = population.getNextInstance("default");
-		// The value of x will be the index of the agent 
+		// The value of x will be the index of the agent
 		instance.setVariable<double>("x", i);
 	}
 
@@ -145,10 +145,11 @@ BOOST_AUTO_TEST_CASE(GPUSimulationTest)
 /**
  * @brief      To verify the correctness of running multiple functions simultaneously
  *
- * To test CUDA streams for overlapping host and device operations. This test is a test for concurrency. 
- * It is expected that add and subtract functions should execute simultaneously as they are functions belonging to different agents with the functions on the same simulation layer. 
+ * To test CUDA streams for overlapping host and device operations. This test is a test for concurrency.
+ * It is expected that add and subtract functions should execute simultaneously as they are functions belonging to different agents with the functions on the same simulation layer.
  * Note: To observe that the functions are actually executing concurrently requires that you profile the test and observe the kernels in the NVProf profiler.
-*/
+ * To test the case separately, run: make run_BOOST_TEST TSuite=GPUTest/GPUSimulationTestMultiple
+ */
 BOOST_AUTO_TEST_CASE(GPUSimulationTestMultiple)
 {
 
