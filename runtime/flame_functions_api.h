@@ -15,6 +15,7 @@
 #include "cuRVE/curve.h"
 #include "../exception/FGPUException.h"
 
+
 //TODO: Some example code of the handle class and an example function
 //! FLAMEGPU_API is a singleton class
 class FLAMEGPU_API;  // Forward declaration (class defined below)
@@ -44,8 +45,6 @@ __device__ FLAMEGPU_AGENT_FUNCTION_POINTER funcName = funcName ## _impl;\
 __device__ FLAME_GPU_AGENT_STATUS funcName ## _impl(FLAMEGPU_API* FLAMEGPU)
 
 
-
-
 /** @brief	A flame gpu api class for the device runtime only
  *
  * This class should only be used by the device and never created on the host. It is safe for each agent function to create a copy of this class on the device. Any singleton type
@@ -66,6 +65,8 @@ public:
     __device__ void setNameSpace(CurveNamespaceHash agentname_hash)
     {agent_name_hash = agentname_hash;}
 
+
+
 private:
 	CurveNamespaceHash agent_name_hash;
 };
@@ -83,13 +84,13 @@ private:
 template<typename T, unsigned int N>
 __device__ T FLAMEGPU_API::getVariable(const char(&variable_name)[N])
 {
+
     //simple indexing assumes index is the thread number (this may change later)
     unsigned int index =  (blockDim.x * blockIdx.x) + threadIdx.x;
 
 
     //get the value from curve
-	T value = curveGetVariable<T>(variable_name, agent_name_hash , index); // strcat(variable_name,agent_name_hash)
-
+	T value = curveGetVariable<T>(variable_name, agent_name_hash , index);
     //return the variable from curve
     return value;
 }

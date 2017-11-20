@@ -170,8 +170,7 @@ void CUDAAgentModel::step(const Simulation& simulation)
         std::string agent_name = func_des.getParent().getName();
         std::string func_name = func_des.getName();
 
-
-        const CUDAAgent& cuda_agent = getCUDAAgent(func_des.getParent().getName());
+        const CUDAAgent& cuda_agent = getCUDAAgent(agent_name);
 
             //get the agent function
             FLAMEGPU_AGENT_FUNCTION_POINTER* agent_func = func_des.getFunction();
@@ -200,7 +199,7 @@ void CUDAAgentModel::step(const Simulation& simulation)
             //hash func name
             CurveNamespaceHash funcname_hash = curveVariableRuntimeHash(func_name.c_str()); // function name
 
-            //agent_function_wrapper << <gridSize, blockSize,0,stream[j] >> >(agentname_hash, h_func_ptr, state_list_size);
+            //agent_function_wrapper << <gridSize, blockSize,0,stream[j] >> >(agentname_hash+funcname_hash, h_func_ptr, state_list_size);
             agent_function_wrapper << <gridSize, blockSize,0,stream[j] >> >(agentname_hash+funcname_hash, h_func_ptr, state_list_size);
 
             ++j;

@@ -11,6 +11,7 @@ __global__ void agent_function_wrapper(CurveNamespaceHash agentname_hash, FLAMEG
 	api->setNameSpace(agentname_hash);
 
 
+
     //printf("hello from wrapper %d %u\n",threadIdx.x,agentname_hash);
 	//set namespace for agent name
 

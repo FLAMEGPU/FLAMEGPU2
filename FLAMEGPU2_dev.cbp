@@ -32,10 +32,7 @@
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
 		</Compiler>
-		<Unit filename="LokiTypeInfo.h" />
 		<Unit filename="exception/FGPUException.h" />
-		<Unit filename="flame_api.h" />
-		<Unit filename="flame_functions_api.h" />
 		<Unit filename="function.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -70,17 +67,20 @@
 		<Unit filename="pop/AgentStateMemory.h" />
 		<Unit filename="pop/MemoryVector.h" />
 		<Unit filename="runtime/agent_function.cu" />
+		<Unit filename="runtime/agent_function.h" />
 		<Unit filename="runtime/cuRVE/cuRVEInstance.h" />
 		<Unit filename="runtime/cuRVE/curve.cu" />
 		<Unit filename="runtime/cuRVE/curve.h" />
+		<Unit filename="runtime/flame_api.h" />
+		<Unit filename="runtime/flame_functions_api.h" />
 		<Unit filename="sim/Simulation.cpp" />
 		<Unit filename="sim/Simulation.h" />
 		<Unit filename="sim/SimulationLayer.cpp" />
 		<Unit filename="sim/SimulationLayer.h" />
 		<Unit filename="tests/VS_test_gpu_validation.cu" />
-		<Unit filename="tests/VS_test_gpu_validation.h" />
 		<Unit filename="tests/VS_test_sim_validation.cu" />
-		<Unit filename="tests/VS_test_sim_validation.h" />
+		<Unit filename="tests/device_functions.cu" />
+		<Unit filename="tests/device_functions.h" />
 		<Unit filename="tests/test_all.cpp" />
 		<Unit filename="tests/test_all.cu" />
 		<Unit filename="tests/test_func_pointer.h" />

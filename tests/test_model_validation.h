@@ -17,7 +17,7 @@ using namespace std;
 BOOST_AUTO_TEST_SUITE(ModelDescTest) //name of the test suite is modelTest
 
 /**
- * @brief      To verify the correctness of agent name,variable type and size.
+ * @brief      To verify the correctness of agent name and size.
  * To test the case separately, run: make run_BOOST_TEST TSuite=ModelDescTest/AgentCheck
  *
 */
@@ -69,26 +69,6 @@ BOOST_AUTO_TEST_CASE(AgentVarCheck)
      */
 	BOOST_CHECK_THROW(circle_agent.getAgentVariableSize("y"), InvalidAgentVar); // expecting an error
 }
-
-/*
-//default values removed from model as no longer using boost::any
-BOOST_AUTO_TEST_CASE(DefaultValueCheck)
-{
-
-    BOOST_TEST_MESSAGE( "Testing Agent Variable Default Value" );
-    AgentDescription circle_agent("circle");
-    circle_agent.addAgentVariable<float>("f");
-    circle_agent.addAgentVariable<int>("i");
-
-	float default_f = float();
-
-    BOOST_CHECK(boost::any_cast<float>(circle_agent.getDefaultValue("f")) == 0.0f);
-    BOOST_CHECK(boost::any_cast<int>(circle_agent.getDefaultValue("i")) == 0);
-
-	//TODO: Should be a population check which checks the default value of population values
-
-}
-*/
 
 
 /**

@@ -120,61 +120,6 @@ BOOST_AUTO_TEST_CASE(SimulationFunctionCheck)
     BOOST_CHECK(simulation.getModelDescritpion().getName()=="circles_model");
 }
 
-/**
- * @brief      { function_description }
- * To test the case separately, run: make run_BOOST_TEST TSuite=SimTest/SimulationFunctionTypeCheck
- *
- * @param[in]  <unnamed>  { parameter_description }
- * @todo to test the mismatch var type
- */
-BOOST_AUTO_TEST_CASE(SimulationFunctionTypeCheck)
-{
-
-    ModelDescription flame_model("circles_model");
-    AgentDescription circle_agent("circle");
-
-    circle_agent.addAgentVariable<int>("x");
-
-    AgentFunctionDescription output_data("output_data");
-    AgentFunctionOutput output_location("location");
-    output_data.addOutput(output_location);
-    //output_data.setFunction(&output_func);
-    attach_output_func(output_data);
-    //output_data.setInitialState("state1");
-    circle_agent.addAgentFunction(output_data);
-
-    flame_model.addAgent(circle_agent);
-
-
-    AgentPopulation population(circle_agent);
-
-    for (int i=0; i< 5; i++)
-    {
-        AgentInstance instance = population.getNextInstance("default");
-        instance.setVariable<int>("x", i);
-    }
-
-
-    Simulation simulation(flame_model);
-
-    SimulationLayer output_layer(simulation, "output_layer");
-    output_layer.addAgentFunction("output_data");
-    simulation.addSimulationLayer(output_layer);
-
-
-    BOOST_TEST_MESSAGE( "\nTesting variable type mismatch during the simulation .." );
-
-
-  //  CUDAAgentModel cuda_model(flame_model);
-
-  //  cuda_model.setInitialPopulationData(population);
-
-  //  cuda_model.addSimulation(simulation);
-
-  //  cuda_model.step(simulation);
-
-}
-
 
 BOOST_AUTO_TEST_SUITE_END()
 
