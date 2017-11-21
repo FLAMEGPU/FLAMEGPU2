@@ -28,8 +28,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="exception\FGPUException.h" />
-    <ClInclude Include="flame_api.h" />
-    <ClInclude Include="flame_functions_api.h" />
     <ClInclude Include="gpu\CUDAAgent.h" />
     <ClInclude Include="gpu\CUDAAgentStateList.h" />
     <ClInclude Include="gpu\CUDAAgentModel.h" />
@@ -45,8 +43,11 @@
     <ClInclude Include="pop\MemoryVector.h" />
     <ClInclude Include="pop\AgentStateMemory.h" />
     <ClInclude Include="pop\AgentPopulation.h" />
+    <ClInclude Include="runtime\agent_function.h" />
     <ClInclude Include="runtime\cuRVE\curve.h" />
     <ClInclude Include="runtime\cuRVE\cuRVEInstance.h" />
+    <ClInclude Include="runtime\flame_api.h" />
+    <ClInclude Include="runtime\flame_functions_api.h" />
     <ClInclude Include="sim\Simulation.h" />
     <ClInclude Include="sim\SimulationLayer.h" />
     <ClInclude Include="tests\device_functions.h" />
@@ -55,12 +56,6 @@
     <ClInclude Include="tests\test_model_validation.h" />
     <ClInclude Include="tests\test_pop_validation.h" />
     <ClInclude Include="tests\test_sim_validation.h" />
-    <ClInclude Include="tests\VS_test_gpu_validation.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='BoostTest|x64'">true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="tests\VS_test_sim_validation.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='BoostTest|x64'">true</ExcludedFromBuild>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="gpu\CUDAAgent.cpp" />
@@ -90,20 +85,10 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <GenerateRelocatableDeviceCode Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</GenerateRelocatableDeviceCode>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='BoostTest|x64'">true</ExcludedFromBuild>
+      <GenerateRelocatableDeviceCode Condition="'$(Configuration)|$(Platform)'=='BoostTest|x64'">true</GenerateRelocatableDeviceCode>
     </CudaCompile>
     <CudaCompile Include="tests\device_functions.cu">
       <GenerateRelocatableDeviceCode Condition="'$(Configuration)|$(Platform)'=='BoostTest|x64'">true</GenerateRelocatableDeviceCode>
-    </CudaCompile>
-    <CudaCompile Include="tests\VS_test_gpu_validation.cu">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='BoostTest|x64'">true</ExcludedFromBuild>
-    </CudaCompile>
-    <CudaCompile Include="tests\VS_test_sim_validation.cu">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='BoostTest|x64'">true</ExcludedFromBuild>
     </CudaCompile>
   </ItemGroup>
   <ItemGroup>

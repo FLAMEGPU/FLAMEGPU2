@@ -81,8 +81,6 @@
     <ClInclude Include="pop\MemoryVector.h">
       <Filter>pop</Filter>
     </ClInclude>
-    <ClInclude Include="flame_api.h" />
-    <ClInclude Include="flame_functions_api.h" />
     <ClInclude Include="tests\test_gpu_validation.h">
       <Filter>tests</Filter>
     </ClInclude>
@@ -104,14 +102,17 @@
     <ClInclude Include="runtime\cuRVE\cuRVEInstance.h">
       <Filter>runtime\cuRVE</Filter>
     </ClInclude>
-    <ClInclude Include="tests\VS_test_gpu_validation.h">
-      <Filter>tests</Filter>
-    </ClInclude>
-    <ClInclude Include="tests\VS_test_sim_validation.h">
-      <Filter>tests</Filter>
-    </ClInclude>
     <ClInclude Include="tests\device_functions.h">
       <Filter>tests</Filter>
+    </ClInclude>
+    <ClInclude Include="runtime\agent_function.h">
+      <Filter>runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="runtime\flame_api.h">
+      <Filter>runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="runtime\flame_functions_api.h">
+      <Filter>runtime</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -157,9 +158,6 @@
     <ClCompile Include="sim\SimulationLayer.cpp">
       <Filter>sim</Filter>
     </ClCompile>
-    <ClCompile Include="tests\test_all.cpp">
-      <Filter>tests</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="runtime\cuRVE\curve.cu">
@@ -169,12 +167,6 @@
       <Filter>gpu</Filter>
     </CudaCompile>
     <CudaCompile Include="main.cu" />
-    <CudaCompile Include="tests\VS_test_gpu_validation.cu">
-      <Filter>tests</Filter>
-    </CudaCompile>
-    <CudaCompile Include="tests\VS_test_sim_validation.cu">
-      <Filter>tests</Filter>
-    </CudaCompile>
     <CudaCompile Include="main_MAS.cu" />
     <CudaCompile Include="runtime\agent_function.cu">
       <Filter>runtime</Filter>
@@ -182,5 +174,6 @@
     <CudaCompile Include="tests\device_functions.cu">
       <Filter>tests</Filter>
     </CudaCompile>
+    <CudaCompile Include="tests\test_all.cpp" />
   </ItemGroup>
 </Project>
