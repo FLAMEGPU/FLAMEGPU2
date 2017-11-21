@@ -1,4 +1,4 @@
-To use Doxygen, run:
+To create a new Doxyfile, run:
 $ doxygen -g
 
 Then configure the Doxyfile and set below:
@@ -21,7 +21,7 @@ DOT_TRANSPARENT      = NO
 CALL_GRAPH           = YES
 CALLER_GRAPH         = YES
 GENERATE_TREEVIEW    = YES
-HTML_OUTPUT          = DoxyGen_html
+HTML_OUTPUT          = docs
 DOT_IMAGE_FORMAT     = png # can be  svg, but the add --> INTERACTIVE_SVG      = YES
 
 # -- added later
