@@ -18,6 +18,7 @@
 
 typedef std::map<const std::string, const std::type_info&> VariableMap;
 
+
 class MessageDescription {
 public:
 	MessageDescription(const std::string message_name);
