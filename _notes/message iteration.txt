@@ -1,0 +1,68 @@
+
+//old way
+FLAMEGPU_AGENT_FUNCTION(subtract_func)
+{
+
+    double x = FLAMEGPU->getVariable<double>("x");
+    double y = FLAMEGPU->getVariable<double>("y");
+
+    FLAMEGPU->setVariable<double>("y", x - y);
+    
+    LocationMessage *message = get_first_location_message(location_message_list);
+    
+    while(message){
+        
+        //do stuff
+        
+        message = get_next_location_message();
+    }
+
+    return ALIVE;
+}
+
+//new way 1
+FLAMEGPU_AGENT_FUNCTION(subtract_func)
+{
+
+    double x = FLAMEGPU->getVariable<double>("x");
+    double y = FLAMEGPU->getVariable<double>("y");
+
+    FLAMEGPU->setVariable<double>("y", x - y);
+    
+    Message *message = FLAMEGPU->getMessage("location");
+    double m_x = message->getVariable<double>("x");
+    
+    while(message){
+        
+        //do stuff
+        
+        message = FLAMEGPU->getNextMessage("location");
+        or
+        message->next() //internally this is going to increment the index of which message we are looking at
+    }
+    
+}
+
+
+// new way 2
+FLAMEGPU_AGENT_FUNCTION(subtract_func)
+{
+
+    double x = FLAMEGPU->getVariable<double>("x");
+    double y = FLAMEGPU->getVariable<double>("y");
+
+    FLAMEGPU->setVariable<double>("y", x - y);
+    
+    MessageList *ml = FLAMEGPU->getMessageList("location");
+    MessageIterator mi;
+    
+    for(mi = ml.begin(); mi != ml.end();  mi++)
+    {
+            double m_x = mi->getVariable<double>("x");
+   
+    }
+
+    return ALIVE;
+}
+
+

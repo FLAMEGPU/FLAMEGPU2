@@ -1,11 +1,13 @@
- /**
- * @file test_all.cpp
- * @authors Paul
- * @date
+/**
+ * @copyright  2017 University of Sheffield
+ *
+ *
+ * @file       test_all.cpp
+ * @authors    Mozhgan Kabiri Chimeh, Paul Richmond
  * @brief
  *
- * @see
- * @warning
+ * @see        https://github.com/FLAMEGPU/FLAMEGPU2_dev
+ * @bug        No known bugs
  */
 
 #define BOOST_TEST_MODULE "All Unit Tests for FLAMEGPU 2"
@@ -30,4 +32,7 @@
 #include "test_pop_validation.h"
 #include "test_sim_validation.h"
 #include "test_gpu_validation.h"
+
+
+
 

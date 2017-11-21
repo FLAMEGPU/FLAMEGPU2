@@ -19,6 +19,12 @@
     <Filter Include="exceptions">
       <UniqueIdentifier>{7c4cd09c-4b23-4143-a13e-192947641074}</UniqueIdentifier>
     </Filter>
+    <Filter Include="runtime">
+      <UniqueIdentifier>{507628b0-cab9-430b-b382-a8b91da5d0fd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="runtime\cuRVE">
+      <UniqueIdentifier>{f9bf7c5e-66c9-4919-81a5-dc55f7208d4f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="gpu\CUDAAgentModel.h">
@@ -54,9 +60,6 @@
     <ClInclude Include="pop\AgentStateMemory.h">
       <Filter>pop</Filter>
     </ClInclude>
-    <ClInclude Include="gpu\RuntimeHashing.h">
-      <Filter>gpu</Filter>
-    </ClInclude>
     <ClInclude Include="gpu\CUDAAgentStateList.h">
       <Filter>gpu</Filter>
     </ClInclude>
@@ -78,8 +81,6 @@
     <ClInclude Include="pop\MemoryVector.h">
       <Filter>pop</Filter>
     </ClInclude>
-    <ClInclude Include="flame_api.h" />
-    <ClInclude Include="flame_functions_api.h" />
     <ClInclude Include="tests\test_gpu_validation.h">
       <Filter>tests</Filter>
     </ClInclude>
@@ -92,11 +93,29 @@
     <ClInclude Include="tests\test_sim_validation.h">
       <Filter>tests</Filter>
     </ClInclude>
+    <ClInclude Include="tests\test_func_pointer.h">
+      <Filter>tests</Filter>
+    </ClInclude>
+    <ClInclude Include="runtime\cuRVE\curve.h">
+      <Filter>runtime\cuRVE</Filter>
+    </ClInclude>
+    <ClInclude Include="runtime\cuRVE\cuRVEInstance.h">
+      <Filter>runtime\cuRVE</Filter>
+    </ClInclude>
+    <ClInclude Include="tests\device_functions.h">
+      <Filter>tests</Filter>
+    </ClInclude>
+    <ClInclude Include="runtime\agent_function.h">
+      <Filter>runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="runtime\flame_api.h">
+      <Filter>runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="runtime\flame_functions_api.h">
+      <Filter>runtime</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="gpu\CUDAAgentModel.cpp">
-      <Filter>gpu</Filter>
-    </ClCompile>
     <ClCompile Include="model\AgentDescription.cpp">
       <Filter>model</Filter>
     </ClCompile>
@@ -139,11 +158,22 @@
     <ClCompile Include="sim\SimulationLayer.cpp">
       <Filter>sim</Filter>
     </ClCompile>
-    <ClCompile Include="tests\test_all.cpp">
-      <Filter>tests</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <CudaCompile Include="main.cpp" />
+    <CudaCompile Include="runtime\cuRVE\curve.cu">
+      <Filter>runtime\cuRVE</Filter>
+    </CudaCompile>
+    <CudaCompile Include="gpu\CUDAAgentModel.cu">
+      <Filter>gpu</Filter>
+    </CudaCompile>
+    <CudaCompile Include="main.cu" />
+    <CudaCompile Include="main_MAS.cu" />
+    <CudaCompile Include="runtime\agent_function.cu">
+      <Filter>runtime</Filter>
+    </CudaCompile>
+    <CudaCompile Include="tests\device_functions.cu">
+      <Filter>tests</Filter>
+    </CudaCompile>
+    <CudaCompile Include="tests\test_all.cpp" />
   </ItemGroup>
 </Project>

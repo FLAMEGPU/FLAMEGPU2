@@ -1,11 +1,10 @@
- /**
+/**
  * @file CUDAAgentModel.h
- * @authors Paul
- * @date 5 Mar 2014
+ * @author
+ * @date    Feb 2017
  * @brief
  *
- * @see
- * @warning
+ * \todo longer description
  */
 
 #ifndef CUDAAGENTMODEL_H_
@@ -13,10 +12,12 @@
 
 #include <memory>
 #include <map>
+#include <cuda_runtime.h>
 
 
 //include sub classes
 #include "CUDAAgent.h"
+#include "../runtime/cuRVE/cuRVEInstance.h"
 
 //forward declare classes from other modules
 class ModelDescription;
@@ -26,22 +27,34 @@ typedef std::map<const std::string, std::unique_ptr<CUDAAgent>> CUDAAgentMap; //
 //typedef std::map<const std::string, std::unique_ptr<CUDAMessage>> CUDAMessageMap; /*Moz*/
 //typedef std::map<const std::string, std::unique_ptr<CUDAAgentFunction>> CUDAFunctionMap; /*Moz*/
 
-class CUDAAgentModel {
+class CUDAAgentModel
+{
 public:
-	CUDAAgentModel(const ModelDescription& description);
-	virtual ~CUDAAgentModel();
+    CUDAAgentModel(const ModelDescription& description);
+    virtual ~CUDAAgentModel();
 
-	void setInitialPopulationData(AgentPopulation& population);
+    void setInitialPopulationData(AgentPopulation& population);
 
-	void setPopulationData(AgentPopulation& population);
+    void setPopulationData(AgentPopulation& population);
 
-	void getPopulationData(AgentPopulation& population);
+    void getPopulationData(AgentPopulation& population);
 
+    void init(void);
 
-	void simulate(const Simulation& sim);
+    void addSimulation(const Simulation& sim);
+
+	//TODO: Is this needed? Probably not as it is the same as simulate. Do however require a SimulateN() for simulate a number of iterations.
+    void step(const Simulation& sim);
+
+    void simulate(const Simulation& sim);
+
+	const CUDAAgent& getCUDAAgent(std::string agent_name) const;
+
 private:
-	const ModelDescription& model_description;
-	CUDAAgentMap agent_map;
+    const ModelDescription& model_description;
+    CUDAAgentMap agent_map;
+	cuRVEInstance &curve;
+
 //	CUDAMessageMap message_map; /*Moz*/
 //	CUDAFunctionMap function_map; /*Moz*/
 

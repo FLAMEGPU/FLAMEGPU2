@@ -1,14 +1,27 @@
 /**
- * @file test_pop_validation.h
- * @brief Testing Using the Boost Unit Test Framework
+ * @copyright  2017 University of Sheffield
+ *
+ *
+ * @file       test_pop_validation.h
+ * @authors    Mozhgan Kabiri Chimeh, Paul Richmond
+ * @brief      Test suite for validating methods in population folder
+ *
+ * @see        https://github.com/FLAMEGPU/FLAMEGPU2_dev
+ * @bug        No known bugs
  */
-#include "../flame_api.h"
+
+#include "../runtime/flame_api.h"
 
 
 using namespace std;
 
 BOOST_AUTO_TEST_SUITE(PopTest) //name of the test suite is modelTest
 
+/**
+ * @brief      To verify the correctness of agent population name and exception handler
+ * To test the case separately, run: make run_BOOST_TEST TSuite=PopTest/PopulationNameCheck
+ * This test should pass by throwing the correct exception.
+*/
 BOOST_AUTO_TEST_CASE(PopulationNameCheck)
 {
     ModelDescription flame_model("circles_model");
@@ -27,12 +40,18 @@ BOOST_AUTO_TEST_CASE(PopulationNameCheck)
 
     BOOST_TEST_MESSAGE( "\nTesting Agent population Name .." );
     BOOST_CHECK(population.getAgentName()=="circle");
-
+// what do we expect here?default or circle
     BOOST_CHECK_THROW(population.getStateMemory("circe"),InvalidStateName); // expecting an error
 }
 
 
-
+/**
+ * @brief      To verify the correctness of exception handler when setting or
+ * getting a variable of invalid type.
+ * To test the case separately, run: make run_BOOST_TEST TSuite=PopTest/PopulationInstVarCheck1
+ *
+ * This test should pass by throwing the correct exception.
+*/
 BOOST_AUTO_TEST_CASE(PopulationInstVarCheck1)
 {
 
@@ -64,6 +83,11 @@ BOOST_AUTO_TEST_CASE(PopulationInstVarCheck1)
 
 }
 
+/**
+ * @brief      To verify the correctness of ::AgentInstance::getVariable and
+ * ::AgentInstance::getVariable functions by checking the population data
+ * To test the case separately, run: make run_BOOST_TEST TSuite=PopTest/PopulationInstVarCheck2
+*/
 BOOST_AUTO_TEST_CASE(PopulationInstVarCheck2)
 {
 
@@ -89,7 +113,13 @@ BOOST_AUTO_TEST_CASE(PopulationInstVarCheck2)
 }
 
 
-
+/**
+ * @brief      To verify the correctness of exception handler when trying to
+ * access the invalid variable that does not exist.
+ *
+ * To test the case separately, run: make run_BOOST_TEST TSuite=PopTest/PopulationInstVarCheck3
+ * This test should pass by throwing the correct exception.
+*/
 BOOST_AUTO_TEST_CASE(PopulationInstVarCheck3)
 {
 
@@ -113,7 +143,14 @@ BOOST_AUTO_TEST_CASE(PopulationInstVarCheck3)
 
 }
 
-
+/**
+ * @brief      To verify the correctness of ::AgentPopulation::getMaximumStateListCapacity
+ *
+ *  In cases where the agent population is not set, the maximum state list size
+ *  would be set to 1024. The test checks the maximum state list size.
+ *  To test the case separately, run: make run_BOOST_TEST TSuite=PopTest/PopulationSizeCheck
+ *
+*/
 BOOST_AUTO_TEST_CASE(PopulationSizeCheck)
 {
 
@@ -133,6 +170,16 @@ BOOST_AUTO_TEST_CASE(PopulationSizeCheck)
 
 }
 
+/**
+ * @brief      To verify the correctness of exception handler when trying to
+ * reduce the maximum state list size.
+ *
+ * Once the state list size is set, it can only be increased. This is to catch
+ * the exception when the population capacity is set below the previous size.
+ * To test the case separately, run: make run_BOOST_TEST TSuite=PopTest/PopulationAddMoreCapacity
+ *
+ * This test should pass by throwing the correct exception.
+*/
 BOOST_AUTO_TEST_CASE(PopulationAddMoreCapacity)
 {
 
@@ -157,6 +204,13 @@ BOOST_AUTO_TEST_CASE(PopulationAddMoreCapacity)
     BOOST_CHECK_THROW(population.setStateListCapacity(100),InvalidPopulationData);
 }
 
+/**
+ * @brief      To verify the correctness of exception handler when trying to
+ * access agents more than population size.
+ * To test the case separately, run: make run_BOOST_TEST TSuite=PopTest/PopulationOverflowCapacity
+ *
+ * This test should pass by throwing the correct exception.
+*/
 BOOST_AUTO_TEST_CASE(PopulationOverflowCapacity)
 {
 
@@ -183,11 +237,54 @@ BOOST_AUTO_TEST_CASE(PopulationOverflowCapacity)
     BOOST_CHECK_THROW(population.getNextInstance("default"),InvalidMemoryCapacity);
 }
 
+/**
+ * @brief      To verify the correctness of exception handler when trying to
+ * access agent population value that is not set.
+ *
+ * After setting initial values for any number of agent population that is less
+ * than the maximum population capacity, only the variables been set can be accessed.
+ * Accessing index less than actual population size should be handled through an exception.
+ * To test the case separately, run: make run_BOOST_TEST TSuite=PopTest/PopulationCheckGetInstanceBeyondSize
+ *
+ * This test should pass by throwing the correct exception.
+*/
+BOOST_AUTO_TEST_CASE(PopulationCheckGetInstanceBeyondSize)
+{
+
+
+    BOOST_TEST_MESSAGE( "\nTesting getting an instance beyond current size .." );
+
+    ModelDescription flame_model("circles_model");
+    AgentDescription circle_agent("circle");
+
+    AgentStateDescription s1("default");
+    circle_agent.addState(s1);
+
+    circle_agent.addAgentVariable<float>("x");
+    circle_agent.addAgentVariable<float>("y");
+
+    flame_model.addAgent(circle_agent);
+
+    AgentPopulation population(circle_agent, 100);
+
+    AgentInstance instance_s1 = population.getNextInstance("default");
+    instance_s1.setVariable<float>("x", 0.1f);
+
+    //check that getInstanceAt should fail if index is less than size
+    BOOST_CHECK_THROW(population.getInstanceAt(1,"default"),InvalidMemoryCapacity);
+
+}
+
+/**
+ * @brief      To verify the correctness of population data values when using multiple states.
+ * To test the case separately, run: make run_BOOST_TEST TSuite=PopTest/PopulationDataValuesMultipleStates
+ *
+*/
 BOOST_AUTO_TEST_CASE(PopulationDataValuesMultipleStates)
 {
 
 
-    BOOST_TEST_MESSAGE("\nTesting adding changing the capacity size ..");
+    BOOST_TEST_MESSAGE("\nTesting the population data with multiple states ..");
 
     ModelDescription flame_model("circles_model");
     AgentDescription circle_agent("circle");
@@ -223,33 +320,6 @@ BOOST_AUTO_TEST_CASE(PopulationDataValuesMultipleStates)
     }
 }
 
-
-BOOST_AUTO_TEST_CASE(PopulationCheckGetInstanceBeyondSize)
-{
-
-
-    BOOST_TEST_MESSAGE( "\nTesting getting an instance beynd current size .." );
-
-    ModelDescription flame_model("circles_model");
-    AgentDescription circle_agent("circle");
-
-    AgentStateDescription s1("default");
-    circle_agent.addState(s1);
-
-    circle_agent.addAgentVariable<float>("x");
-    circle_agent.addAgentVariable<float>("y");
-
-    flame_model.addAgent(circle_agent);
-
-    AgentPopulation population(circle_agent, 100);
-
-    AgentInstance instance_s1 = population.getNextInstance("default");
-    instance_s1.setVariable<float>("x", 0.1f);
-
-    //check that getInstanceAt should fail if index is less than size
-    BOOST_CHECK_THROW(population.getInstanceAt(1,"default"),InvalidMemoryCapacity);
-
-}
 
 BOOST_AUTO_TEST_SUITE_END()
 

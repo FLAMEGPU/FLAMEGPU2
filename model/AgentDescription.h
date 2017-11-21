@@ -1,11 +1,10 @@
 /**
  * @file AgentDescription.h
- * @authors Paul
- * @date 5 Mar 2014
+ * @author  Paul Richmond, Mozhgan Kabiri Chimeh
+ * @date    Feb 2017
  * @brief
  *
- * @see
- * @warning
+ * \todo longer description
  */
 
 #ifndef AGENTDESCRIPTION_H_
@@ -15,7 +14,7 @@
 #include <map>
 #include <typeinfo>
 
-//include generic memory vector 
+//include generic memory vector
 #include "../pop/MemoryVector.h"
 
 //include class dependencies
@@ -69,7 +68,7 @@ public:
 
     void setInitialState(const std::string initial_state);
 
-    void addAgentFunction(const AgentFunctionDescription &function);
+    void addAgentFunction(AgentFunctionDescription &function);
 
     /*
      *
@@ -82,6 +81,8 @@ public:
     const MemoryMap& getMemoryMap() const;
 
     const StateMap& getStateMap() const;
+
+    const FunctionMap& getFunctionMap() const;
 
     const size_t getAgentVariableSize(const std::string variable_name) const;
 

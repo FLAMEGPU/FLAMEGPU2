@@ -53,13 +53,15 @@ void AgentDescription::setInitialState(const std::string initial_state)
     this->initial_state = initial_state;
 }
 
-void AgentDescription::addAgentFunction(const AgentFunctionDescription& function)
+void AgentDescription::addAgentFunction(AgentFunctionDescription& function)
 {
-
     functions.insert(FunctionMap::value_type(function.getName(), function));
+
+    //TODO: Set the parent of the function
+    function.setParent(*this);
 }
 
-MemoryMap& AgentDescription::getMemoryMap()   // Moz: why two getMemoryMap, one is const
+MemoryMap& AgentDescription::getMemoryMap()
 {
     return memory;
 }
@@ -74,6 +76,11 @@ const MemoryMap& AgentDescription::getMemoryMap() const
 const StateMap& AgentDescription::getStateMap() const
 {
     return states;
+}
+
+const FunctionMap& AgentDescription::getFunctionMap() const
+{
+    return functions;
 }
 
 size_t AgentDescription::getMemorySize() const
@@ -98,13 +105,13 @@ const size_t AgentDescription::getAgentVariableSize(const std::string variable_n
     MemoryMap::const_iterator mm = memory.find(variable_name);
     if (mm == memory.end())
         // throw std::runtime_error("Invalid agent memory variable");
-        throw InvalidAgentVar();
+        throw InvalidAgentVar("Invalid agent memory variable");
     const std::type_info *t = &(mm->second);
     //get the type size
     TypeSizeMap::const_iterator tsm = sizes.find(t);
     if (tsm == sizes.end())
         //throw std::runtime_error("Missing entry in type sizes map. Something went bad.");
-        throw InvalidMapEntry();
+        throw InvalidMapEntry("Missing entry in type sizes map");
     return tsm->second;
 }
 
@@ -127,7 +134,7 @@ const std::type_info& AgentDescription::getVariableType(const std::string variab
 
     if (iter == memory.end())
         // throw std::runtime_error("Invalid agent memory variable");
-        throw InvalidAgentVar();
+        throw InvalidAgentVar("Invalid agent memory variable");
 
     return iter->second;
 

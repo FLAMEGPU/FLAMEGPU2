@@ -2,9 +2,9 @@ DoxyGen*/
 docs/
 bin/
 obj/
-*.cbp
-*.layout
-BoostTest/
+#*.cbp
+#*.layout
+
 
 CUDA
 *.i
@@ -76,6 +76,7 @@ Temporary Items
 # Windows image file caches
 Thumbs.db
 ehthumbs.db
+*.opendb
 
 # Folder config file
 Desktop.ini
@@ -156,6 +157,7 @@ dlldata.c
 *.pidb
 *.svclog
 *.scc
+*.db
 
 # Chutzpah Test files
 _Chutzpah*

@@ -13,11 +13,11 @@
 
 #include "CUDAAgent.h"
 #include "CUDAAgentStateList.h"
-#include "RuntimeHashing.h"
 #include "CUDAErrorChecking.h"
 
 #include "../model/AgentDescription.h"
 #include "../pop/AgentPopulation.h"
+#include "../runtime/cuRVE/curve.h"
 
 
 /**
@@ -27,40 +27,7 @@
 CUDAAgent::CUDAAgent(const AgentDescription& description) : agent_description(description), state_map(), max_list_size(0)
 {
 
-    //allocate hash list
-    h_hashes = (unsigned int*) malloc(sizeof(unsigned int)*getHashListSize());
-    memset(h_hashes, EMPTY_HASH_VALUE, sizeof(unsigned int)*getHashListSize());
-    gpuErrchk( cudaMalloc( (void**) &d_hashes, sizeof(unsigned int)*getHashListSize()));
 
-    //init hash list
-    const MemoryMap &mem = agent_description.getMemoryMap();
-    for (MemoryMap::const_iterator it = mem.begin(); it != mem.end(); it++)
-    {
-
-        //save the variable hash in the host hash list
-        unsigned int hash = VariableHash(it->first.c_str());
-        unsigned int n = 0;
-        unsigned int i = (hash) % getHashListSize();	// agent_description.getNumberAgentVariables();
-
-        while (h_hashes[i] != EMPTY_HASH_VALUE)
-        {
-            n += 1;
-            if (n >= getHashListSize())
-            {
-                //throw std::runtime_error("Hash list full. This should never happen.");
-                throw InvalidHashList();
-            }
-            i += 1;
-            if (i >= getHashListSize())
-            {
-                i = 0;
-            }
-        }
-        h_hashes[i] = hash;
-    }
-
-    //copy hash list to device
-    gpuErrchk( cudaMemcpy( d_hashes, h_hashes, sizeof(unsigned int) * getHashListSize(), cudaMemcpyHostToDevice));
 
 }
 
@@ -71,62 +38,11 @@ CUDAAgent::CUDAAgent(const AgentDescription& description) : agent_description(de
  */
 CUDAAgent::~CUDAAgent(void)
 {
-    //loop through CUDAStateMap to clean up any cuda allocated data before the hash data is destroyed
-    for (CUDAStateMapPair &sm : state_map)
-    {
-        sm.second->cleanupAllocatedData();
-    }
-    free (h_hashes);
-    gpuErrchk( cudaFree(d_hashes));
+
 }
 
 
 
-/**
-* @brief Returns the hash list size
-* @param none
-* @return the size of hash table that is double of the size of agent variables
-*/
-unsigned int CUDAAgent::getHashListSize() const
-{
-    return 2*agent_description.getNumberAgentVariables();
-}
-
-/**
-* @brief Returns hash index
-* @param agent variable name
-* @return a hash index that corresponds to the agent variable name
-*/
-int CUDAAgent::getHashIndex(const char * variable_name) const
-{
-    //function resolves hash collisions
-    unsigned int hash = VariableHash(variable_name);
-    unsigned int n = 0;
-    unsigned int i = (hash) % getHashListSize();
-
-    while (h_hashes[i] != EMPTY_HASH_VALUE)
-    {
-        if (h_hashes[i] == hash)
-        {
-            return i; //return index if hash is found
-        }
-        n += 1;
-        if (n >= getHashListSize())
-        {
-            //throw std::runtime_error("Hash list full. This should never happen.");
-            throw InvalidHashList();
-        }
-        i += 1;
-        if (i >= getHashListSize())
-        {
-            i = 0;
-        }
-    }
-
-    //throw std::runtime_error("This should be an unknown variable error. Should never occur");
-    throw InvalidAgentVar("This should be an unknown variable error. Should never occur");
-    return -1; //return invalid index
-}
 
 /**
 * @brief Returns agent description
@@ -273,4 +189,65 @@ void CUDAAgent::zeroAllStateVariableData()
     {
         s.second->zeroAgentData();
     }
+}
+
+
+// this is done for all the variables for now.
+void CUDAAgent::mapRuntimeVariables(const AgentFunctionDescription& func) const
+{
+    //check the cuda agent state map to find the correct state list for functions starting state
+    CUDAStateMap::const_iterator sm = state_map.find(func.getIntialState());
+
+    if (sm == state_map.end())
+    {
+        throw InvalidCudaAgentState();
+    }
+
+    //loop through the agents variables to map each variable name using cuRVE
+    for (MemoryMapPair mmp : agent_description.getMemoryMap())
+    {
+        //get a device pointer for the agent variable name
+        void* d_ptr = sm->second->getAgentListVariablePointer(mmp.first);
+
+        //map using curve
+		CurveVariableHash var_hash = curveVariableRuntimeHash(mmp.first.c_str());
+		CurveVariableHash agent_hash = curveVariableRuntimeHash(func.getParent().getName().c_str());
+		CurveVariableHash func_hash = curveVariableRuntimeHash(func.getName().c_str());
+
+        // get the agent variable size
+        size_t size;
+        size = agent_description.getAgentVariableSize(mmp.first.c_str());
+
+       // maximum population num
+        unsigned int length = this->getMaximumListSize();
+
+		curveRegisterVariableByHash(var_hash + agent_hash + func_hash, d_ptr, size, length);
+    }
+
+}
+
+void CUDAAgent::unmapRuntimeVariables(const AgentFunctionDescription& func) const
+{
+    //check the cuda agent state map to find the correct state list for functions starting state
+    CUDAStateMap::const_iterator sm = state_map.find(func.getIntialState());
+
+    if (sm == state_map.end())
+    {
+        throw InvalidCudaAgentState();
+    }
+
+    //loop through the agents variables to map each variable name using cuRVE
+    for (MemoryMapPair mmp : agent_description.getMemoryMap())
+    {
+        //get a device pointer for the agent variable name
+        void* d_ptr = sm->second->getAgentListVariablePointer(mmp.first);
+
+        //unmap using curve
+		CurveVariableHash var_hash = curveVariableRuntimeHash(mmp.first.c_str());
+		CurveVariableHash agent_hash = curveVariableRuntimeHash(func.getParent().getName().c_str());
+		CurveVariableHash func_hash = curveVariableRuntimeHash(func.getName().c_str());
+
+		curveUnregisterVariableByHash(var_hash + agent_hash + func_hash);
+    }
+
 }

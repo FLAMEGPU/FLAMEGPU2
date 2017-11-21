@@ -17,7 +17,6 @@
 #include <map>
 #include <typeinfo>
 #include <memory>
-#include <boost/any.hpp>
 #include <typeinfo>
 
 //include generic memory vectors

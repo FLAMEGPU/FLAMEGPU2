@@ -1,34 +1,65 @@
- /**
- * @file main.cpp
- * @authors Paul
- * @date
- * @brief
- *
- * @see
- * @warning
- */
+/******************************************************************************
+ * main.cu is a host function that prepares data array and passes it to the CUDA kernel.
+ * This main.cu would either be specified by a user or automatically generated from the model.xml.
+ * Each of the API functions will have a 121 mapping with XML elements
+ * The API is very similar to FLAME 2. The directory structure and general project is set out very similarly.
+  
+ * Single Agent model example 
+ 
+ ******************************************************************************
+ * Author  Paul Richmond, Mozhgan Kabiri Chimeh
+ * Date    Feb 2017
+ *****************************************************************************/
 
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "flame_api.h"
+#include "runtime/flame_api.h"
+
 
 
 using namespace std;
+
 
 /* must be compiled separately using FLAME GPU builder
  * This will generate object files for different architecture targets as well as ptx info for each agent function (registers, memory use etc.)
  * http://stackoverflow.com/questions/12388207/interpreting-output-of-ptxas-options-v
  */
-//#include "agent_functions.h"
 
-/**
- * Host function that prepares data array and passes it to the CUDA kernel.
- * This main.cpp would either be specified by a user or automatically generated from the model.xml.
- * Each of the API functions will have a 121 mapping with XML elements
- * The API is very similar to FLAME 2. The directory structure and general project is set out very similarly.
- */
+
+FLAMEGPU_AGENT_FUNCTION(output_func)
+{
+	//printf("Hello from output_func\n");
+
+	float x = FLAMEGPU->getVariable<float>("x");
+	//printf("x = %f\n", x);
+	FLAMEGPU->setVariable<float>("x", x + 2);
+	x = FLAMEGPU->getVariable<float>("x");
+	//printf("x after set = %f\n", x);
+
+	return ALIVE;
+}
+
+FLAMEGPU_AGENT_FUNCTION(input_func)
+{
+	//printf("Hello from input_func\n");
+	return ALIVE;
+}
+
+FLAMEGPU_AGENT_FUNCTION(move_func)
+{
+	//printf("Hello from move_func\n");
+	return ALIVE;
+}
+
+FLAMEGPU_AGENT_FUNCTION(stay_func)
+{
+	//printf("Hello from stay_func\n");
+	return ALIVE;
+}
+
+
 int main(void)
 {
 
@@ -43,9 +74,6 @@ int main(void)
     circle_agent.addAgentVariable<float>("y");
     circle_agent.addAgentVariable<float>("dx");
     circle_agent.addAgentVariable<float>("dy");
-
-// TODO (mozhgan#1#05/12/16): write some tests that check the model object (model folder)
-// TODO (mozhgan#1#05/12/16): Write some tests for population objects. Check that the data is correct.
 
 
     //circle add states
@@ -64,17 +92,20 @@ int main(void)
     AgentFunctionOutput output_location("location");
     output_data.addOutput(output_location);
     //output_data.setInitialState("state1");
+    output_data.setFunction(&output_func);
     circle_agent.addAgentFunction(output_data);
 
     //circle agent input_data function
     AgentFunctionDescription input_data("input_data");
     AgentFunctionInput input_location("location");
     input_data.addInput(input_location);
+    input_data.setFunction(&input_func);
     circle_agent.addAgentFunction(input_data);
 
 
     //circle agent move function
     AgentFunctionDescription move("move");
+    move.setFunction(&move_func);
     circle_agent.addAgentFunction(move);
 
     //model
@@ -85,16 +116,15 @@ int main(void)
     //flame_model.validate();
 
 
-
     //TODO: globals
 
     // POPULATION (FLAME2 mem)
     /* Population is an instantiation of the model. It is equivalent to the data from 0.xml or any other state of the model. It requires a model description to know what the agent variables and states are. */
     /* Data in populations and instances are only on the host. No concept of GPUs at this stage. */
 
-	AgentPopulation population(circle_agent);
-	//TODO: Set maximum population size if known in advance
-    for (int i=0; i< 100; i++)
+    AgentPopulation population(circle_agent,10);
+    //TODO: Set maximum population size if known in advance
+    for (int i=0; i< 10; i++)
     {
         AgentInstance instance = population.getNextInstance("default");
         instance.setVariable<float>("x", i*0.1f);
@@ -106,7 +136,6 @@ int main(void)
         //int x = instance.getVariable<int>("x");
 
     }
-
 
     /* GLOBALS */
     /* TODO: We will consider this later. Not in the circles model. */
@@ -120,21 +149,28 @@ int main(void)
 
     SimulationLayer output_layer(simulation, "output_layer"); //in the original schema layers are not named
     output_layer.addAgentFunction("output_data");			  //equivalent of layerfunction in FLAMEGPU
+    //output_layer.addAgentFunction("output_data",output_func);
+    //output_layer.addAgentFunction(output_data,output_func);
     simulation.addSimulationLayer(output_layer);
     //TOD: simulation.insertFunctionLayerAt(layer, int index) //Should inster at the layer position and move all other layer back
 
-    SimulationLayer input_layer(simulation, "input_layer");
-    input_layer.addAgentFunction("input_data");
-    simulation.addSimulationLayer(input_layer);
+    //SimulationLayer input_layer(simulation, "input_layer");
+    //input_layer.addAgentFunction("input_data");
+    //input_layer.addAgentFunction("input_data",input_func);
+    //input_layer.addAgentFunction(input_data,input_func);
+    //simulation.addSimulationLayer(input_layer);
 
-    SimulationLayer move_layer(simulation, "move_layer");
-    move_layer.addAgentFunction("move");
-    simulation.addSimulationLayer(move_layer);
+    //SimulationLayer move_layer(simulation, "move_layer");
+    //move_layer.addAgentFunction("move");
+    //move_layer.addAgentFunction("move",move_func); // example usage of func pointer
+    //move_layer.addAgentFunction(move,move_func);
+    //simulation.addSimulationLayer(move_layer);
 
     //TODO: simulation.getLayerPosition("layer name") - returns an int
     //Simulation.addFunctionToLayer(0,"lmove")
     //This would come from the program arguments. Would be argv[2] if this file had been generated from model.xml
-    simulation.setSimulationSteps(10);
+    simulation.setSimulationSteps(1);
+
 
     /* CUDA agent model */
     /* Instantiate the model with a set of data (agents) on the device */
@@ -143,11 +179,13 @@ int main(void)
 
     cuda_model.setInitialPopulationData(population);
 
+    cuda_model.addSimulation(simulation);
+
     //cuda_model.simulate(simulation);
 
-    //cuda_model.step(simulation);
+    cuda_model.step(simulation);
 
-    //cuda_model.getPopulation(population);
+    cuda_model.getPopulationData(population);
 
     /* This is not to be done yet. We want to first replicate the functionality of FLAMEGPU on a single device */
     /*
@@ -171,6 +209,6 @@ int main(void)
 
 
 
-  //  system("pause");
+    //  system("pause");
     return 0;
 }

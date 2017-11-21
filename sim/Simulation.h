@@ -10,6 +10,12 @@
 //forward declare dependencies from other modules
 class ModelDescription;
 
+
+typedef std::vector<std::reference_wrapper<SimulationLayer>> SimulationLayerVector;
+
+/**
+ * A much nice user method of specifying layer order is required!
+ */
 class Simulation
 {
 public:
@@ -17,16 +23,15 @@ public:
     ~Simulation(void);
 
     unsigned int addSimulationLayer(SimulationLayer& layer);
-    void addFunctionToLayer(int layer, std::string function_name);
     void setSimulationSteps(unsigned int steps);
     const ModelDescription& getModelDescritpion() const;
 
-    const std::vector<std::string> getFunctionAtLayer(int layer);
-
+	const FunctionDescriptionVector& getFunctionsAtLayer(int layer) const;
+    unsigned int getLayerCount() const;
 
 
 private:
-    std::vector<SimulationLayer*> layers;
+	SimulationLayerVector layers;
     const ModelDescription& model_description;
     unsigned int simulation_steps;
 };
