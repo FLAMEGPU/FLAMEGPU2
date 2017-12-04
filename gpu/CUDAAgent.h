@@ -73,6 +73,7 @@ protected:
 
 private:
     const AgentDescription& agent_description;
+
     CUDAStateMap state_map;
 
     unsigned int max_list_size; //The maximum length of the agent variable arrays based on the maximum population size passed to setPopulationData

@@ -30,17 +30,22 @@ const AgentDescription& ModelDescription::getAgentDescription(const std::string 
 	AgentMap::const_iterator iter;
 	iter = agents.find(agent_name);
 	if (iter == agents.end())
-		//throw std::runtime_error("Invalid agent memory variable");
 		throw InvalidAgentVar();
+	return iter->second;
+}
+
+const MessageDescription& ModelDescription::getMessageDescription(const std::string message_name) const{
+	MessageMap::const_iterator iter;
+	iter = messages.find(message_name);
+	if (iter == messages.end())
+		throw InvalidMessageVar();
 	return iter->second;
 }
 
 const AgentMap& ModelDescription::getAgentMap() const {
 	return agents;
 }
-/*
 
 const MessageMap& ModelDescription::getMessageMap() const {
 	return messages;
-
-*/
+}

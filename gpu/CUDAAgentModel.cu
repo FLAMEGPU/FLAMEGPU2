@@ -40,17 +40,17 @@ CUDAAgentModel::CUDAAgentModel(const ModelDescription& description) : model_desc
     //same for messages - Todo
     //same for functions - Todo
 
-    /*Moz
+
     //populate the CUDA message map
     const MessageMap &mm = model_description.getMessageMap();
-    MessageMap::const_iterator it;
+    MessageMap::const_iterator it_m;
 
     //create new cuda message and add to the map
-    for(it = mm.begin(); it != mm.end(); it++){
-    	MessageMap.insert(CUDAMessageMap::value_type(it->first, std::unique_ptr<CUDAMessage>(new CUDAMessage(it->second))));
+    for(it_m = mm.begin(); it_m != mm.end(); it_m++){
+    	message_map.insert(CUDAMessageMap::value_type(it_m->first, std::unique_ptr<CUDAMessage>(new CUDAMessage(it_m->second))));
     }
 
-
+/*
     //populate the CUDA function map
     const FunctionMap &mm = model_description.getFunctionMap();
     FunctioneMap::const_iterator it;
@@ -289,3 +289,15 @@ const CUDAAgent& CUDAAgentModel::getCUDAAgent(std::string agent_name) const
     return *(it->second);
 }
 
+const CUDAMessage& CUDAAgentModel::getCUDAMessage(std::string message_name) const
+{
+    CUDAMessageMap::const_iterator it;
+    it = message_map.find(message_name);
+
+    if (it == message_map.end())
+    {
+        throw InvalidCudaMessage("CUDA message not found.");
+    }
+
+    return *(it->second);
+}

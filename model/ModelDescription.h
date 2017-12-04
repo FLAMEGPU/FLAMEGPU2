@@ -40,6 +40,7 @@ public:
 	void addMessage(const MessageDescription &message);
 
 	const AgentDescription& getAgentDescription(const std::string agent_name) const;
+	const MessageDescription& getMessageDescription(const std::string message_name) const;
 
 	const AgentMap& getAgentMap() const;
 

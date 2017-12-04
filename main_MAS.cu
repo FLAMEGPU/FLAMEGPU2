@@ -89,13 +89,13 @@ int main(void)
     circle2_agent.addAgentVariable<float>("y");
 
     //same name ?
-    //MessageDescription location1_message("location");
-    //location1_message.addVariable<float>("x");
-    //location1_message.addVariable<float>("y");
+    MessageDescription location1_message("location1");
+    location1_message.addVariable<float>("x");
+    location1_message.addVariable<float>("y");
 
-    //MessageDescription location2_message("location");
-    //location2_message.addVariable<float>("x");
-    //location2_message.addVariable<float>("y");
+    MessageDescription location2_message("location2");
+    location2_message.addVariable<float>("x");
+    location2_message.addVariable<float>("y");
 
 
     AgentFunctionDescription output_data("output_data");
@@ -122,10 +122,10 @@ int main(void)
 
 
     //model
-    //flame_model.addMessage(location1_message);
+    flame_model.addMessage(location1_message);
     flame_model.addAgent(circle1_agent);
 
-   // flame_model.addMessage(location2_message);
+    flame_model.addMessage(location2_message);
     flame_model.addAgent(circle2_agent);
 #define SIZE 10
     AgentPopulation population1(circle1_agent, SIZE);

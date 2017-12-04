@@ -2,8 +2,8 @@ DoxyGen*/
 docs/
 bin/
 obj/
-#*.cbp
-#*.layout
+*.cbp
+*.layout
 
 
 CUDA

@@ -17,6 +17,7 @@
 
 //include sub classes
 #include "CUDAAgent.h"
+#include "CUDAMessage.h"
 #include "../runtime/cuRVE/cuRVEInstance.h"
 
 //forward declare classes from other modules
@@ -24,7 +25,7 @@ class ModelDescription;
 class Simulation;
 
 typedef std::map<const std::string, std::unique_ptr<CUDAAgent>> CUDAAgentMap; //map of a number of CUDA agents by name. The CUDA agents are responsible for allocating and managing all the device memory
-//typedef std::map<const std::string, std::unique_ptr<CUDAMessage>> CUDAMessageMap; /*Moz*/
+typedef std::map<const std::string, std::unique_ptr<CUDAMessage>> CUDAMessageMap;
 //typedef std::map<const std::string, std::unique_ptr<CUDAAgentFunction>> CUDAFunctionMap; /*Moz*/
 
 class CUDAAgentModel
@@ -49,13 +50,14 @@ public:
     void simulate(const Simulation& sim);
 
 	const CUDAAgent& getCUDAAgent(std::string agent_name) const;
+	const CUDAMessage& getCUDAMessage(std::string message_name) const;
 
 private:
     const ModelDescription& model_description;
     CUDAAgentMap agent_map;
 	cuRVEInstance &curve;
 
-//	CUDAMessageMap message_map; /*Moz*/
+	CUDAMessageMap message_map;
 //	CUDAFunctionMap function_map; /*Moz*/
 
 };

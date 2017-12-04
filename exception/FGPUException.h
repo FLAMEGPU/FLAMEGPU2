@@ -166,6 +166,23 @@ public:
     }
 };
 
+/**
+* Defines a type of object to be thrown as exception.
+* It reports errors that are due to invalid message memory variable type.
+*/
+class InvalidMessageVar : public FGPUException
+{
+public:
+    InvalidMessageVar(const char *msg="Invalid message memory variable"):FGPUException(msg) {}
+    /**
+    * @brief Returns the explanatory string
+    * @see FGPUException.what()
+    */
+    virtual const char *what() const
+    {
+        return err_message;
+    }
+};
 
 /**
 * Defines a type of object to be thrown as exception.
@@ -175,6 +192,24 @@ class InvalidCudaAgent: public FGPUException
 {
 public:
     InvalidCudaAgent(const char *msg="CUDA agent not found. This should not happen"):FGPUException(msg) {}
+    /**
+    * @brief Returns the explanatory string
+    * @see FGPUException.what()
+    */
+    virtual const char *what() const
+    {
+        return err_message;
+    }
+};
+
+/**
+* Defines a type of object to be thrown as exception.
+* It reports errors that are due to invalid CUDA message variable.
+*/
+class InvalidCudaMessage: public FGPUException
+{
+public:
+    InvalidCudaMessage(const char *msg="CUDA message not found. This should not happen"):FGPUException(msg) {}
     /**
     * @brief Returns the explanatory string
     * @see FGPUException.what()
