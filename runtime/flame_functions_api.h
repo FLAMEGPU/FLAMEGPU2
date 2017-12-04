@@ -65,7 +65,7 @@ public:
     __device__ void setNameSpace(CurveNamespaceHash agentname_hash)
     {agent_name_hash = agentname_hash;}
 
-
+// first message, next message method ?
 
 private:
 	CurveNamespaceHash agent_name_hash;

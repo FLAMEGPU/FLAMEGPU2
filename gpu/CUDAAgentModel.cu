@@ -23,7 +23,7 @@
 * CUDAAgentModel class
 * @brief populates CUDA agent map, CUDA message map
 */
-CUDAAgentModel::CUDAAgentModel(const ModelDescription& description) : model_description(description), agent_map(), curve(cuRVEInstance::getInstance()) //, message_map(), function_map() {
+CUDAAgentModel::CUDAAgentModel(const ModelDescription& description) : model_description(description), agent_map(), message_map(), curve(cuRVEInstance::getInstance()) //, message_map(), function_map() {
 {
     //create a reference to curve to ensure that it is initialised. This is a singleton class so will only be done once regardless of the number of CUDAgentModels.
 
@@ -37,16 +37,14 @@ CUDAAgentModel::CUDAAgentModel(const ModelDescription& description) : model_desc
         agent_map.insert(CUDAAgentMap::value_type(it->first, std::unique_ptr<CUDAAgent>(new CUDAAgent(it->second))));
     } // insert into map using value_type
 
-    //same for messages - Todo
-    //same for functions - Todo
-
 
     //populate the CUDA message map
     const MessageMap &mm = model_description.getMessageMap();
     MessageMap::const_iterator it_m;
 
     //create new cuda message and add to the map
-    for(it_m = mm.begin(); it_m != mm.end(); it_m++){
+    for(it_m = mm.begin(); it_m != mm.end(); it_m++)
+    {
     	message_map.insert(CUDAMessageMap::value_type(it_m->first, std::unique_ptr<CUDAMessage>(new CUDAMessage(it_m->second))));
     }
 
