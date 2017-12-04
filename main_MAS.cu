@@ -99,8 +99,8 @@ int main(void)
 
 
     AgentFunctionDescription output_data("output_data");
-    //AgentFunctionOutput output_location("location");
-    //output_data.addOutput(output_location);
+    AgentFunctionOutput output_location("location");
+    output_data.addOutput(output_location);
     output_data.setFunction(&output_func);
     circle1_agent.addAgentFunction(output_data);
 
