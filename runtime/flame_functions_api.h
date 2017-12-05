@@ -66,6 +66,11 @@ public:
     {agent_name_hash = agentname_hash;}
 
 // first message, next message method ?
+    template<typename T, unsigned int N> __device__
+    void outputMessage(const char(&message_name)[N], T msg);
+
+  //  template<unsigned int N> __device__
+  //  MessageIteratorWrapper getMessageIterator(const char(&message_name)[N]);
 
 private:
 	CurveNamespaceHash agent_name_hash;
@@ -81,6 +86,10 @@ private:
 // Useful existing code to look at is CUDAAgentStateList setAgentData function
 // Note that this is using the hashing to get a specific pointer for a given variable name. This is exactly what we want to do in the FLAME GPU API class
 
+/**
+ * \brief Gets an agent memory value
+ * \param variable_name Name of memory variable to retrieve
+ */
 template<typename T, unsigned int N>
 __device__ T FLAMEGPU_API::getVariable(const char(&variable_name)[N])
 {
@@ -95,6 +104,11 @@ __device__ T FLAMEGPU_API::getVariable(const char(&variable_name)[N])
     return value;
 }
 
+/**
+ * \brief Sets an agent memory value
+ * \param variable_name Name of memory variable to set
+ * \param value Value to set it to
+ */
 template<typename T, unsigned int N>
 __device__ void FLAMEGPU_API::setVariable(const char(&variable_name)[N], T value)
 {
@@ -105,11 +119,21 @@ __device__ void FLAMEGPU_API::setVariable(const char(&variable_name)[N], T value
     //set the variable using curve
 	curveSetVariable<T>(variable_name , agent_name_hash,  value, index);
 }
-/*
-__device__ void FLAMEGPU_API::setNameSpace(CurveNamespaceHash agentname_hash)
-{
-	agent_name_hash = agentname_hash;
 
-}
-*/
+/**
+ * \brief Outputs a message
+ * \param message_name Name of message to output
+ * \param msg Value of the message
+ */
+template<typename T, unsigned int N>
+__device__ void FLAMEGPU_API::outputMessage(const char(&message_name)[N], T msg)
+{}
+
+/**
+ * \brief Returns a message iterator
+ * \param msg_name Name of message
+ */
+//template<unsigned int N>
+//__device__ MessageIteratorWrapper FLAMEGPU_API::getMessageIterator(const char(&message_name)[N])
+//{}
 #endif /* FLAME_FUNCTIONS_API_H_ */

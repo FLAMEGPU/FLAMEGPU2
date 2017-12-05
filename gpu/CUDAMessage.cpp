@@ -57,3 +57,66 @@ unsigned int CUDAMessage::getMaximumListSize() const
 {
     return max_list_size;
 }
+
+
+// TODO - not done at all - from cudaAgent
+/* this is done for all the variables for now.
+void CUDAAgent::mapRuntimeVariables(const AgentFunctionDescription& func) const
+{
+    //check the cuda agent state map to find the correct state list for functions starting state
+    CUDAStateMap::const_iterator sm = state_map.find(func.getIntialState());
+
+    if (sm == state_map.end())
+    {
+        throw InvalidCudaAgentState();
+    }
+
+    //loop through the agents variables to map each variable name using cuRVE
+    for (VariableMapPair mmp : message_description.getVariableMap())
+    {
+        //get a device pointer for the agent variable name
+        void* d_ptr = sm->second->getAgentListVariablePointer(mmp.first);
+
+        //map using curve
+		CurveVariableHash var_hash = curveVariableRuntimeHash(mmp.first.c_str());
+		CurveVariableHash message_hash = 0; //curveVariableRuntimeHash(// todo);
+		CurveVariableHash func_hash = curveVariableRuntimeHash(func.getName().c_str());
+
+        // get the agent variable size
+        size_t size;
+        size = message_description.getAgentVariableSize(mmp.first.c_str());
+
+       // maximum population num
+        unsigned int length = this->getMaximumListSize();
+
+		curveRegisterVariableByHash(var_hash + message_hash + func_hash, d_ptr, size, length);
+    }
+
+}
+
+void CUDAAgent::unmapRuntimeVariables(const AgentFunctionDescription& func) const
+{
+    //check the cuda agent state map to find the correct state list for functions starting state
+    CUDAStateMap::const_iterator sm = state_map.find(func.getIntialState());
+
+    if (sm == state_map.end())
+    {
+        throw InvalidCudaAgentState();
+    }
+
+    //loop through the agents variables to map each variable name using cuRVE
+    for (VariableMapPair mmp : message_description.getVariableMap())
+    {
+        //get a device pointer for the agent variable name
+        void* d_ptr = sm->second->getAgentListVariablePointer(mmp.first);
+
+        //unmap using curve
+		CurveVariableHash var_hash = curveVariableRuntimeHash(mmp.first.c_str());
+		CurveVariableHash message_hash = 0;//curveVariableRuntimeHash(//todo);
+		CurveVariableHash func_hash = curveVariableRuntimeHash(func.getName().c_str());
+
+		curveUnregisterVariableByHash(var_hash + message_hash + func_hash);
+    }
+
+}
+*/

@@ -13,6 +13,9 @@
 
 
 //forward declare classes from other modules
+
+class AgentPopulation;
+class AgentFunctionDescription;
 class MessageDescription;
 
 class CUDAMessage
@@ -24,11 +27,26 @@ public:
     const MessageDescription& getMessageDescription() const;
     unsigned int getMaximumListSize() const;
 
+    /**
+     * @brief Uses the cuRVE runtime to map the variables used by the agent function to the cuRVE library so that can be accessed by name within a n agent function
+     */
+    void mapRuntimeVariables(const AgentFunctionDescription& func) const;
+
+    /**
+     * @brief	Uses the cuRVE runtime to unmap the variables used by the agent function to the cuRVE
+     * 			library so that they are unavailable to be accessed by name within an agent function.
+     *
+     * @param	func	The function.
+     */
+
+    void unmapRuntimeVariables(const AgentFunctionDescription& func) const;
+
 protected:
 
 
 private:
     const MessageDescription& message_description;
+
     unsigned int max_list_size;
 
 };

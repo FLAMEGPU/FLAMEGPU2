@@ -1,6 +1,6 @@
 /**
 * @file AgentFunctionDescription.cpp
-* @authors Paul
+* @authors
 * @date
 * @brief
 *
@@ -49,15 +49,30 @@ void AgentFunctionDescription::addInput(const AgentFunctionInput &input)
 {
     if (inputs.size() == 0)
         inputs.insert(InputsMap::value_type(input.getMessageName(), input));
-    //else TODO: raise error
+    else
+        throw InvalidOperation("Agent function inpput is not empty");
 }
 
 void AgentFunctionDescription::addOutput(const AgentFunctionOutput &output)
 {
     if (outputs.size() == 0)
         outputs.insert(OutputsMap::value_type(output.getMessageName(), output));
-    //else TODO: raise error
+    else
+        throw InvalidOperation("Agent function output is not empty");
 
+}
+
+const InputsMap & AgentFunctionDescription::getInput()
+{
+   // if (inputs != NULL)
+        return inputs;
+
+}
+
+const OutputsMap & AgentFunctionDescription::getOutput()
+{
+    //if (outputs != NULL)
+        return outputs;
 }
 
 /**
@@ -96,3 +111,33 @@ const AgentDescription& AgentFunctionDescription::getParent() const
     return *parent;//&(*parent);
 }
 
+void AgentFunctionDescription::setInputChild(AgentFunctionInput& input)
+{
+    //check to make sure it is not owened by any other object
+    if (inputChild != NULL)
+        throw InvalidOperation("This object is already owned by another agent description");
+
+    inputChild = &input;
+}
+
+const AgentFunctionInput& AgentFunctionDescription::getInputChild() const
+{
+    if (inputChild==NULL)
+        throw InvalidOperation("Does not belong to a model object");
+    return *inputChild;
+}
+
+void AgentFunctionDescription::setOutputChild(AgentFunctionOutput& output)
+{
+    //check to make sure it is not owened by any other object
+    if (outputChild != NULL)
+        throw InvalidOperation("This object is already owned by another agent description");
+
+    outputChild = &output;
+}
+const AgentFunctionOutput& AgentFunctionDescription::getOutputChild() const
+{
+    if (outputChild==NULL)
+        throw InvalidOperation("Does not belong to a model object");
+    return *outputChild;
+}
