@@ -75,6 +75,22 @@ const OutputsMap & AgentFunctionDescription::getOutput()
         return outputs;
 }
 
+const std::string AgentFunctionDescription::getInputMessageName() const
+{
+    InputsMap::const_iterator iter;
+    iter = inputs.begin();
+
+    return iter->first;
+}
+
+const std::string AgentFunctionDescription::getOutputMessageName() const
+{
+    OutputsMap::const_iterator iter;
+    iter = outputs.begin();
+
+    return iter->first;
+}
+
 /**
 * sets the function pointer
 * @param function pointer
@@ -141,3 +157,13 @@ const AgentFunctionOutput& AgentFunctionDescription::getOutputChild() const
         throw InvalidOperation("Does not belong to a model object");
     return *outputChild;
 }
+
+bool AgentFunctionDescription::hasInputMessage()
+{
+    return !(inputs.empty());
+}
+bool AgentFunctionDescription::hasOutputMessage()
+{
+    return !(outputs.empty());
+}
+

@@ -157,8 +157,18 @@ void CUDAAgentModel::step(const Simulation& simulation)
         for (AgentFunctionDescription func_des : functions)
         {
             const CUDAAgent& cuda_agent = getCUDAAgent(func_des.getParent().getName());
-            //const CUDAMessage& cuda_inpMessage = getCUDAMessage(func_des.getInput.getMessageName());
-            //const CUDAMessage& cuda_outpMessage = getCUDAMessage(func_des.getOutput.getMessageName());
+
+                    //! check if a function has an output massage
+        if (func_des.hasInputMessage()){
+            std::string inpMessage_name = func_des.getInputMessageName();
+            const CUDAMessage& cuda_message = getCUDAMessage(inpMessage_name);
+            }
+
+        //! check if a function has an output massage
+        if (func_des.hasOutputMessage()){
+            std::string outpMessage_name = func_des.getOutputMessageName();
+            const CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
+            }
 
 
             /**
@@ -174,15 +184,20 @@ void CUDAAgentModel::step(const Simulation& simulation)
 
         std::string agent_name = func_des.getParent().getName();
         std::string func_name = func_des.getName();
-        //std::string message_name = func_des.getmessageName();
-        //std::string inpMessage_name = func_des.getInput.getMessageName();
-        //std::string outpMessage_name = func_des.getOutput.getMessageName();
+
+        //! check if a function has an output massage
+        if (func_des.hasInputMessage()){
+            std::string inpMessage_name = func_des.getInputMessageName();
+            const CUDAMessage& cuda_message = getCUDAMessage(inpMessage_name);
+            }
+
+        //! check if a function has an output massage
+        if (func_des.hasOutputMessage()){
+            std::string outpMessage_name = func_des.getOutputMessageName();
+            const CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
+            }
 
         const CUDAAgent& cuda_agent = getCUDAAgent(agent_name);
-
-        // check if a function has input/output massage
-        //const CUDAMessage& cuda_message = getCUDAMessage(inpMessage_name);
-        //const CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
 
 
             /*! get the agent function */
@@ -222,8 +237,20 @@ void CUDAAgentModel::step(const Simulation& simulation)
         //! for each func function
         for (AgentFunctionDescription func_des : functions) {
             const CUDAAgent& cuda_agent = getCUDAAgent(func_des.getParent().getName());
-            //const CUDAMessage& cuda_inpMessage = getCUDAMessage(func_des.getInput.getMessageName()); // use getInputChild .. instead
-            //const CUDAMessage& cuda_outpMessage = getCUDAMessage(func_des.getOutput.getMessageName()); // use getOutputChild .. instead
+
+                    //! check if a function has an output massage
+        if (func_des.hasInputMessage()){
+            std::string inpMessage_name = func_des.getInputMessageName();
+            const CUDAMessage& cuda_message = getCUDAMessage(inpMessage_name);
+            }
+
+        //! check if a function has an output massage
+        if (func_des.hasOutputMessage()){
+            std::string outpMessage_name = func_des.getOutputMessageName();
+            const CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
+            }
+            //const CUDAMessage& cuda_inpMessage = getCUDAMessage(func_des.getInputChild.getMessageName());
+            //const CUDAMessage& cuda_outpMessage = getCUDAMessage(func_des.getOutputChild.getMessageName());
 
             //! unmap the function variables
             cuda_agent.unmapRuntimeVariables(func_des);

@@ -14,7 +14,7 @@
 
 using namespace std;
 
-BOOST_AUTO_TEST_SUITE(ModelDescTest) //name of the test suite is modelTest
+BOOST_AUTO_TEST_SUITE(ModelDescTest) //name of the test suite is modelDescTest
 
 /**
  * @brief      To verify the correctness of agent name and size.
@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE(AgentVarCheck)
 
 
 /**
- * @brief      To verify the correctness of function and message names.
+ * @brief      To verify the correctness of function name and existance.
  * To test the case separately, run: make run_BOOST_TEST TSuite=ModelDescTest/MessageFunctionCheck
  *
 */
@@ -84,17 +84,12 @@ BOOST_AUTO_TEST_CASE(MessageFunctionCheck)
 
     AgentDescription circle_agent("circle");
 
-    MessageDescription location_message("location");
-
     AgentFunctionDescription output_data("output_data");
-    AgentFunctionOutput output_location("location");
-    output_data.addOutput(output_location);
     circle_agent.addAgentFunction(output_data);
 
     AgentFunctionDescription move("move");
     circle_agent.addAgentFunction(move);
 
-    flame_model.addMessage(location_message);
     flame_model.addAgent(circle_agent);
 
 
@@ -103,12 +98,6 @@ BOOST_AUTO_TEST_CASE(MessageFunctionCheck)
      * This is to validate the predicate value. The test should pass.
      */
     BOOST_CHECK(output_data.getName()=="output_data");
-
-   /**
-     * @brief      Checks the message name
-     * This is to validate the predicate value. The test should pass.
-     */
-    BOOST_CHECK(output_location.getMessageName()=="location");
 
    /**
      * @brief      Checks whether the agent function exists or not

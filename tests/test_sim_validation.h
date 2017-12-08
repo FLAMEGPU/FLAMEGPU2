@@ -16,7 +16,7 @@
 
 using namespace std;
 
-BOOST_AUTO_TEST_SUITE(SimTest)
+BOOST_AUTO_TEST_SUITE(SimTest) //name of the test suite is SimTest
 
 /**
  * @brief      To verify the correctness of simulation functions

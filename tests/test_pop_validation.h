@@ -15,7 +15,7 @@
 
 using namespace std;
 
-BOOST_AUTO_TEST_SUITE(PopTest) //name of the test suite is modelTest
+BOOST_AUTO_TEST_SUITE(PopTest) //name of the test suite is PopTest
 
 /**
  * @brief      To verify the correctness of agent population name and exception handler

@@ -54,6 +54,9 @@ public:
     const InputsMap & getInput();
 	const OutputsMap & getOutput();
 
+    const std::string getInputMessageName() const;
+	const std::string getOutputMessageName() const;
+
 	//TODO
 	//sets the function pointer by adding to the FunctionPointerMap
 	void setFunction(FLAMEGPU_AGENT_FUNCTION_POINTER *p_func);
@@ -70,6 +73,9 @@ public:
 
     void setOutputChild(AgentFunctionOutput& output);
 	const AgentFunctionOutput& getOutputChild() const;
+
+	bool hasInputMessage();
+	bool hasOutputMessage();
 
 public:
 
