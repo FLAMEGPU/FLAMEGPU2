@@ -17,7 +17,7 @@
 class AgentPopulation;
 class AgentFunctionDescription;
 class MessageDescription;
-class CUDAMessageStateList;
+class CUDAMessageList;
 
 class CUDAMessage
 {
@@ -48,7 +48,8 @@ protected:
 private:
     const MessageDescription& message_description;
 
-	std::unique_ptr<CUDAMessageStateList> list;
+	//std::unique_ptr<CUDAMessageStateList> list;
+	//CUDAMessageList& message_list = null;
 
     unsigned int max_list_size;
 

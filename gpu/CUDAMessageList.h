@@ -1,5 +1,5 @@
  /**
- * @file CUDAAgentList.h
+ * @file CUDAMessageList.h
  * @author
  * @date
  * @brief
@@ -23,10 +23,10 @@ class AgentStateMemory;
 typedef std::map <std::string, void*> CUDAMemoryMap;
 typedef std::pair <std::string, void*> CUDAMemoryMapPair;
 
-class CUDAMessageStateList {
+class CUDAMessageList {
 public:
-	CUDAMessageStateList(CUDAMessage& cuda_message);
-	virtual ~CUDAMessageStateList();
+	CUDAMessageList(CUDAMessage& cuda_message);
+	virtual ~CUDAMessageList();
 
 	void cleanupAllocatedData();
 
@@ -46,12 +46,12 @@ protected:
 
 private:
 	CUDAMemoryMap d_list;
-	//CUDAMemoryMap d_swap_list;
+	CUDAMemoryMap d_swap_list; // may not need this later
 	CUDAMemoryMap d_new_list;
 
 	unsigned int current_list_size; //???
 
-	CUDAMessage& message;
+	const CUDAMessage& message;
 };
 
 #endif

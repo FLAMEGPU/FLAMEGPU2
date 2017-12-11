@@ -46,21 +46,10 @@ BOOST_AUTO_TEST_CASE(GPUMemoryTest)
         instance.setVariable<int>("id", i);
     }
 
-        for (int i = 0; i < 10; i++)
-    {
-        AgentInstance i1 = population.getInstanceAt(i, "default");
-
-        //use AgentInstance equality operator
-        //BOOST_CHECK(i1.getVariable<int>("id") == i);//i2.getVariable<int>("id"));
-        BOOST_TEST_MESSAGE( "value is " << i1.getVariable<int>("id") << "\n"  );
-    }
-
-
     CUDAAgentModel cuda_model(flame_model);
     cuda_model.setInitialPopulationData(population);
 
-    //AgentPopulation population2(circle_agent, 100);
-    cuda_model.getPopulationData(population); //2
+    cuda_model.getPopulationData(population);
 
     BOOST_TEST_MESSAGE( "\nTesting values copied back from device without simulating any functions .." );
 
@@ -68,10 +57,8 @@ BOOST_AUTO_TEST_CASE(GPUMemoryTest)
     for (int i = 0; i < 10; i++)
     {
         AgentInstance i1 = population.getInstanceAt(i, "default");
-       // AgentInstance i2 = population2.getInstanceAt(i, "default");
         //use AgentInstance equality operator
-        //BOOST_CHECK(i1.getVariable<int>("id") == i);//i2.getVariable<int>("id"));
-        BOOST_TEST_MESSAGE( "value is  " << i1.getVariable<int>("id") << " \n"  ); //! @todo returns error, needs looking
+        BOOST_CHECK(i1.getVariable<int>("id") == i);
     }
 
 }
@@ -101,9 +88,6 @@ BOOST_AUTO_TEST_CASE(GPUSimulationTest)
 
 
 	AgentFunctionDescription add_data("add_data");
-	AgentFunctionOutput add_location("location");
-	add_data.addOutput(add_location);
-	//add_data.setFunction(&add_func);
 	attach_add_func(add_data);
 	circle_agent.addAgentFunction(add_data);
 
@@ -139,8 +123,6 @@ BOOST_AUTO_TEST_CASE(GPUSimulationTest)
 
 	BOOST_TEST_MESSAGE("\nTesting values copied back from device after simulating functions ..");
 
-
-
 	// Re-use the same population to read back the simulation step results
 	cuda_model.getPopulationData(population);
 
@@ -149,7 +131,7 @@ BOOST_AUTO_TEST_CASE(GPUSimulationTest)
 	{
 		AgentInstance i1 = population.getInstanceAt(i, "default");
 		//use AgentInstance equality operator
-		BOOST_CHECK(i1.getVariable<double>("x") == i + 2); //! @todo returns error, needs looking
+		BOOST_CHECK(i1.getVariable<double>("x") == i + 2);
 	}
 }
 
@@ -175,14 +157,12 @@ BOOST_AUTO_TEST_CASE(GPUSimulationTestMultiple)
     circle2_agent.addAgentVariable<double>("y");
 
     AgentFunctionDescription add_data("add_data");
-    //add_data.addInput(input_location);
-//    add_data.setFunction(&add_func);
+
 	attach_add_func(add_data);
     circle1_agent.addAgentFunction(add_data);
 
     AgentFunctionDescription subtract_data("subtract_data");
-    //subtract_data.addInput(input_location);
-//    subtract_data.setFunction(&subtract_func);
+
 	attach_subtract_func(subtract_data);
     circle2_agent.addAgentFunction(subtract_data);
 

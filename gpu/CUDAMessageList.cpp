@@ -1,5 +1,5 @@
  /**
- * @file CUDAMessageStateList.cpp
+ * @file CUDAMessageList.cpp
  * @authors
  * @date
  * @brief
@@ -11,7 +11,7 @@
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 
-#include "CUDAMessageStateList.h"
+#include "CUDAMessageList.h"
 
 #include "CUDAMessage.h"
 #include "CUDAErrorChecking.h"
@@ -24,7 +24,7 @@
 * CUDAAgentStateList class
 * @brief populates CUDA agent map, CUDA message map
 */
-CUDAMessageStateList::CUDAMessageStateList(CUDAMessage& cuda_message) : message(cuda_message)
+CUDAMessageList::CUDAMessageList(CUDAMessage& cuda_message) : message(cuda_message)
 {
 
     //allocate state lists
@@ -38,12 +38,12 @@ CUDAMessageStateList::CUDAMessageStateList(CUDAMessage& cuda_message) : message(
  * A destructor.
  * @brief Destroys the CUDAAgentStateList object
  */
-CUDAMessageStateList::~CUDAMessageStateList()
+CUDAMessageList::~CUDAMessageList()
 {
 
 }
 
-void CUDAMessageStateList::cleanupAllocatedData()
+void CUDAMessageList::cleanupAllocatedData()
 {
 	//clean up
 	releaseDeviceMessageList(d_list);
@@ -57,7 +57,7 @@ void CUDAMessageStateList::cleanupAllocatedData()
 * @param variable of type CUDAAgentMemoryHashMap struct type
 * @return none
 */
-void CUDAMessageStateList::allocateDeviceMessageList(CUDAMemoryMap &memory_map)
+void CUDAMessageList::allocateDeviceMessageList(CUDAMemoryMap &memory_map)
 {
 	//we use the  messages memory map to iterate the  message variables and do allocation within our GPU hash map
     const VariableMap &mem = message.getMessageDescription().getVariableMap();
@@ -94,7 +94,7 @@ void CUDAMessageStateList::allocateDeviceMessageList(CUDAMemoryMap &memory_map)
 * @param variable of type CUDAAgentMemoryHashMap struct type
 * @return none
 */
-void CUDAMessageStateList::releaseDeviceMessageList(CUDAMemoryMap& memory_map)
+void CUDAMessageList::releaseDeviceMessageList(CUDAMemoryMap& memory_map)
 {
 	//for each device pointer in the cuda memory map we need to free these
 	for (const CUDAMemoryMapPair& mm : memory_map)
@@ -109,7 +109,7 @@ void CUDAMessageStateList::releaseDeviceMessageList(CUDAMemoryMap& memory_map)
 * @param variable of type CUDAAgentMemoryHashMap struct type
 * @return none
 */
-void CUDAMessageStateList::zeroDeviceMessageList(CUDAMemoryMap& memory_map)
+void CUDAMessageList::zeroDeviceMessageList(CUDAMemoryMap& memory_map)
 {
 
 	//for each device pointer in the cuda memory map set the values to 0
@@ -123,7 +123,7 @@ void CUDAMessageStateList::zeroDeviceMessageList(CUDAMemoryMap& memory_map)
 	}
 }
 
-void* CUDAMessageStateList::getMessageListVariablePointer(std::string variable_name)
+void* CUDAMessageList::getMessageListVariablePointer(std::string variable_name)
 {
 	CUDAMemoryMap::iterator mm = d_list.find(variable_name);
 	if (mm == d_list.end()){
@@ -135,7 +135,7 @@ void* CUDAMessageStateList::getMessageListVariablePointer(std::string variable_n
 }
 
 
-void CUDAMessageStateList::zeroMessageData(){
+void CUDAMessageList::zeroMessageData(){
 	zeroDeviceMessageList(d_list);
 	zeroDeviceMessageList(d_swap_list);
     zeroDeviceMessageList(d_new_list);

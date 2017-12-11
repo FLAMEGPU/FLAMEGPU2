@@ -2,6 +2,7 @@ DoxyGen*/
 docs/
 bin/
 obj/
+BoostTest/
 *.cbp
 *.layout
 

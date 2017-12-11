@@ -162,7 +162,7 @@ void CUDAAgentModel::step(const Simulation& simulation)
 			if (func_des.hasInputMessage()) {
 				std::string inpMessage_name = func_des.getInputMessageName();
 				const CUDAMessage& cuda_message = getCUDAMessage(inpMessage_name);
-				cuda_message.mapRuntimeVariables(func_desc);
+				//cuda_message.mapRuntimeVariables(func_des);
 			}
 
 			//! check if a function has an output massage
