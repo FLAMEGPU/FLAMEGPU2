@@ -162,13 +162,14 @@ void CUDAAgentModel::step(const Simulation& simulation)
 			if (func_des.hasInputMessage()) {
 				std::string inpMessage_name = func_des.getInputMessageName();
 				const CUDAMessage& cuda_message = getCUDAMessage(inpMessage_name);
-				//cuda_message.mapRuntimeVariables(func_des);
+				cuda_message.mapRuntimeVariables(func_des);
 			}
 
 			//! check if a function has an output massage
 			if (func_des.hasOutputMessage()) {
 				std::string outpMessage_name = func_des.getOutputMessageName();
 				const CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
+				cuda_message.mapRuntimeVariables(func_des);
 			}
 
 
@@ -176,7 +177,6 @@ void CUDAAgentModel::step(const Simulation& simulation)
 			 * Configure runtime access of the functions variables within the FLAME_API object
 			 */
 			cuda_agent.mapRuntimeVariables(func_des);
-			//cuda_message.mapRuntimeVariables(func_des);
 
 		}
 		//! for each func function - Loop through to launch all agent functions
@@ -231,7 +231,7 @@ void CUDAAgentModel::step(const Simulation& simulation)
 			//CurveNamespaceHash messagename_hash = curveVariableRuntimeHash(message_name.c_str());
 
 			agent_function_wrapper << <gridSize, blockSize, 0, stream[j] >> > (agentname_hash + funcname_hash, h_func_ptr, state_list_size);
-			// agent_function_wrapper << <gridSize, blockSize,0,stream[j] >> >(agentname_hash+funcname_hash, h_func_ptr, state_list_size);
+			// agent_function_wrapper << <gridSize, blockSize,0,stream[j] >> >(agentname_hash+funcname_hash, message_name_inp, message_name_out h_func_ptr, state_list_size);
 
 			++j;
 		}
@@ -243,19 +243,20 @@ void CUDAAgentModel::step(const Simulation& simulation)
 			if (func_des.hasInputMessage()) {
 				std::string inpMessage_name = func_des.getInputMessageName();
 				const CUDAMessage& cuda_message = getCUDAMessage(inpMessage_name);
+				cuda_message.unmapRuntimeVariables(func_des);
 			}
 
 			//! check if a function has an output massage
 			if (func_des.hasOutputMessage()) {
 				std::string outpMessage_name = func_des.getOutputMessageName();
 				const CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
+				cuda_message.unmapRuntimeVariables(func_des);
 			}
 			//const CUDAMessage& cuda_inpMessage = getCUDAMessage(func_des.getInputChild.getMessageName());
 			//const CUDAMessage& cuda_outpMessage = getCUDAMessage(func_des.getOutputChild.getMessageName());
 
 			//! unmap the function variables
 			cuda_agent.unmapRuntimeVariables(func_des);
-			//cuda_message.mapRuntimeVariables(func_des);
 		}
 		//cudaDeviceSynchronize();
 	}

@@ -3,9 +3,9 @@
  * This main.cu would either be specified by a user or automatically generated from the model.xml.
  * Each of the API functions will have a 121 mapping with XML elements
  * The API is very similar to FLAME 2. The directory structure and general project is set out very similarly.
-  
- * Single Agent model example 
- 
+
+ * Single Agent model example
+
  ******************************************************************************
  * Author  Paul Richmond, Mozhgan Kabiri Chimeh
  * Date    Feb 2017
@@ -27,7 +27,7 @@ using namespace std;
  * http://stackoverflow.com/questions/12388207/interpreting-output-of-ptxas-options-v
  */
 
-
+/*
 FLAMEGPU_AGENT_FUNCTION(output_func)
 {
 	//printf("Hello from output_func\n");
@@ -40,22 +40,40 @@ FLAMEGPU_AGENT_FUNCTION(output_func)
 
 	return ALIVE;
 }
+*/
+FLAMEGPU_AGENT_FUNCTION(output_func)
+{
+
+   // FLAMEGPU->outputMessage<float>("location","x");
+   // FLAMEGPU->outputMessage<float>("location","x",FLAMEGPU->getVariable<float>("x"));
+    //FLAMEGPU->outputMessage("location");
+
+	float x = FLAMEGPU->getVariable<float>("x");
+	//printf("x = %f\n", x);
+	FLAMEGPU->setVariable<float>("x", x + 2);
+	x = FLAMEGPU->getVariable<float>("x");
+
+	return ALIVE;
+}
 
 FLAMEGPU_AGENT_FUNCTION(input_func)
 {
-	//printf("Hello from input_func\n");
+	float x = FLAMEGPU->getVariable<float>("x");
+	//printf("x = %f\n", x);
+	FLAMEGPU->setVariable<float>("x", x + 2);
+	x = FLAMEGPU->getVariable<float>("x");
+
 	return ALIVE;
 }
 
 FLAMEGPU_AGENT_FUNCTION(move_func)
 {
-	//printf("Hello from move_func\n");
+
 	return ALIVE;
 }
 
 FLAMEGPU_AGENT_FUNCTION(stay_func)
 {
-	//printf("Hello from stay_func\n");
 	return ALIVE;
 }
 

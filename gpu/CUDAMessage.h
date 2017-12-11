@@ -11,13 +11,15 @@
 #ifndef CUDAMESSAGE_H_
 #define CUDAMESSAGE_H_
 
+#include <memory>
+
+//include sub classes
+#include "CUDAMessageList.h"
 
 //forward declare classes from other modules
 
-class AgentPopulation;
 class AgentFunctionDescription;
 class MessageDescription;
-class CUDAMessageList;
 
 class CUDAMessage
 {
@@ -48,8 +50,7 @@ protected:
 private:
     const MessageDescription& message_description;
 
-	//std::unique_ptr<CUDAMessageStateList> list;
-	//CUDAMessageList& message_list = null;
+	std::unique_ptr<CUDAMessageList> message_list;
 
     unsigned int max_list_size;
 

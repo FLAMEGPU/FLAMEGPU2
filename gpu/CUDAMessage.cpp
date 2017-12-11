@@ -12,9 +12,11 @@
 #include <device_launch_parameters.h>
 
 #include "CUDAMessage.h"
+#include "CUDAMessageList.h"
 #include "CUDAErrorChecking.h"
 
 #include "../model/MessageDescription.h"
+#include "../model/AgentFunctionDescription.h"
 #include "../runtime/cuRVE/curve.h"
 
 
@@ -59,24 +61,24 @@ unsigned int CUDAMessage::getMaximumListSize() const
 }
 
 
-// TODO - not done at all - from cudaAgent
-/*
 void CUDAMessage::mapRuntimeVariables(const AgentFunctionDescription& func) const
 {
+
+    const std::string message_name = message_description.getName();
     //loop through the agents variables to map each variable name using cuRVE
     for (VariableMapPair mmp : message_description.getVariableMap())
     {
         //get a device pointer for the agent variable name
-        void* d_ptr = list->getMEssageListVariablePointer(mmp.first);
+        void* d_ptr = message_list->getMessageListVariablePointer(mmp.first);
 
         //map using curve
 		CurveVariableHash var_hash = curveVariableRuntimeHash(mmp.first.c_str());
-		CurveVariableHash message_hash = 0; //curveVariableRuntimeHash(// todo);
+		CurveVariableHash message_hash = curveVariableRuntimeHash(message_name.c_str());
 		CurveVariableHash func_hash = curveVariableRuntimeHash(func.getName().c_str());
 
         // get the agent variable size
         size_t size;
-        size = message_description.getAgentVariableSize(mmp.first.c_str());
+        size = message_description.getMessageVariableSize(mmp.first.c_str());
 
        // maximum population num
         unsigned int length = this->getMaximumListSize();
@@ -85,32 +87,24 @@ void CUDAMessage::mapRuntimeVariables(const AgentFunctionDescription& func) cons
     }
 
 }
-*/
 
-/*
-void CUDAAgent::unmapRuntimeVariables(const AgentFunctionDescription& func) const
+void CUDAMessage::unmapRuntimeVariables(const AgentFunctionDescription& func) const
 {
-    //check the cuda agent state map to find the correct state list for functions starting state
-    CUDAStateMap::const_iterator sm = state_map.find(func.getIntialState());
 
-    if (sm == state_map.end())
-    {
-        throw InvalidCudaAgentState();
-    }
-
+    const std::string message_name = message_description.getName();
     //loop through the agents variables to map each variable name using cuRVE
     for (VariableMapPair mmp : message_description.getVariableMap())
     {
         //get a device pointer for the agent variable name
-        void* d_ptr = sm->second->getAgentListVariablePointer(mmp.first);
+        void* d_ptr = message_list->getMessageListVariablePointer(mmp.first);
 
         //unmap using curve
 		CurveVariableHash var_hash = curveVariableRuntimeHash(mmp.first.c_str());
-		CurveVariableHash message_hash = 0;//curveVariableRuntimeHash(//todo);
+		CurveVariableHash message_hash = curveVariableRuntimeHash(message_name.c_str());
 		CurveVariableHash func_hash = curveVariableRuntimeHash(func.getName().c_str());
 
 		curveUnregisterVariableByHash(var_hash + message_hash + func_hash);
     }
 
 }
-*/
+

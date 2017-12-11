@@ -74,6 +74,8 @@ public:
 
 private:
 	CurveNamespaceHash agent_name_hash;
+	//CurveNamespaceHash messagename_inp_hash;
+	//CurveNamespaceHash messagename_out_hash;
 };
 
 
@@ -127,6 +129,14 @@ __device__ void FLAMEGPU_API::setVariable(const char(&variable_name)[N], T value
  */
 template<typename T, unsigned int N>
 __device__ void FLAMEGPU_API::outputMessage(const char(&message_name)[N], T msg)
+{
+    unsigned int index =  (blockDim.x * blockIdx.x) + threadIdx.x;
+
+   // curveSetVariable<T>(,,  value, index); // bind message name, variable name, function name
+}
+/*
+template<unsigned int N>
+__device__ void FLAMEGPU_API::outputMessage(const char(&message_name)[N])
 {}
 
 /**
