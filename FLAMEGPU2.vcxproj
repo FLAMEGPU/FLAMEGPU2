@@ -32,6 +32,8 @@
     <ClInclude Include="gpu\CUDAAgentStateList.h" />
     <ClInclude Include="gpu\CUDAAgentModel.h" />
     <ClInclude Include="gpu\CUDAErrorChecking.h" />
+    <ClInclude Include="gpu\CUDAMessage.h" />
+    <ClInclude Include="gpu\CUDAMessageStateList.h" />
     <ClInclude Include="model\AgentDescription.h" />
     <ClInclude Include="model\AgentFunctionDescription.h" />
     <ClInclude Include="model\AgentFunctionInput.h" />
@@ -53,6 +55,7 @@
     <ClInclude Include="tests\device_functions.h" />
     <ClInclude Include="tests\test_func_pointer.h" />
     <ClInclude Include="tests\test_gpu_validation.h" />
+    <ClInclude Include="tests\test_message_validation.h" />
     <ClInclude Include="tests\test_model_validation.h" />
     <ClInclude Include="tests\test_pop_validation.h" />
     <ClInclude Include="tests\test_sim_validation.h" />
@@ -60,6 +63,8 @@
   <ItemGroup>
     <ClCompile Include="gpu\CUDAAgent.cpp" />
     <ClCompile Include="gpu\CUDAAgentStateList.cpp" />
+    <ClCompile Include="gpu\CUDAMessage.cpp" />
+    <ClCompile Include="gpu\CUDAMessageStateList.cpp" />
     <ClCompile Include="model\AgentDescription.cpp" />
     <ClCompile Include="model\AgentFunctionDescription.cpp" />
     <ClCompile Include="model\AgentFunctionInput.cpp" />
@@ -80,6 +85,9 @@
     <CudaCompile Include="main_MAS.cu">
       <GenerateRelocatableDeviceCode Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</GenerateRelocatableDeviceCode>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='BoostTest|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='BoostTest|Win32'">true</ExcludedFromBuild>
     </CudaCompile>
     <CudaCompile Include="runtime\agent_function.cu">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
@@ -89,6 +97,7 @@
     </CudaCompile>
     <CudaCompile Include="tests\device_functions.cu">
       <GenerateRelocatableDeviceCode Condition="'$(Configuration)|$(Platform)'=='BoostTest|x64'">true</GenerateRelocatableDeviceCode>
+      <GenerateRelocatableDeviceCode Condition="'$(Configuration)|$(Platform)'=='BoostTest|Win32'">true</GenerateRelocatableDeviceCode>
     </CudaCompile>
   </ItemGroup>
   <ItemGroup>
@@ -99,6 +108,7 @@
       <GenerateRelocatableDeviceCode Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</GenerateRelocatableDeviceCode>
       <GenerateRelocatableDeviceCode Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</GenerateRelocatableDeviceCode>
       <GenerateRelocatableDeviceCode Condition="'$(Configuration)|$(Platform)'=='BoostTest|x64'">true</GenerateRelocatableDeviceCode>
+      <GenerateRelocatableDeviceCode Condition="'$(Configuration)|$(Platform)'=='BoostTest|Win32'">true</GenerateRelocatableDeviceCode>
     </CudaCompile>
     <CudaCompile Include="main.cu">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
@@ -119,6 +129,7 @@
       <CodeGeneration Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">compute_20,sm_20;compute_50,sm_50</CodeGeneration>
       <CodeGeneration Condition="'$(Configuration)|$(Platform)'=='Release|x64'">compute_20,sm_20;compute_50,sm_50</CodeGeneration>
       <CodeGeneration Condition="'$(Configuration)|$(Platform)'=='BoostTest|x64'">compute_20,sm_20;compute_50,sm_50</CodeGeneration>
+      <GenerateRelocatableDeviceCode Condition="'$(Configuration)|$(Platform)'=='BoostTest|Win32'">true</GenerateRelocatableDeviceCode>
     </CudaCompile>
   </ItemGroup>
   <PropertyGroup Label="Globals">

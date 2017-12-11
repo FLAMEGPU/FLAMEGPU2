@@ -114,6 +114,15 @@
     <ClInclude Include="runtime\flame_functions_api.h">
       <Filter>runtime</Filter>
     </ClInclude>
+    <ClInclude Include="tests\test_message_validation.h">
+      <Filter>tests</Filter>
+    </ClInclude>
+    <ClInclude Include="gpu\CUDAMessage.h">
+      <Filter>gpu</Filter>
+    </ClInclude>
+    <ClInclude Include="gpu\CUDAMessageStateList.h">
+      <Filter>gpu</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="model\AgentDescription.cpp">
@@ -157,6 +166,12 @@
     </ClCompile>
     <ClCompile Include="sim\SimulationLayer.cpp">
       <Filter>sim</Filter>
+    </ClCompile>
+    <ClCompile Include="gpu\CUDAMessage.cpp">
+      <Filter>gpu</Filter>
+    </ClCompile>
+    <ClCompile Include="gpu\CUDAMessageStateList.cpp">
+      <Filter>gpu</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

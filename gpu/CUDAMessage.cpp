@@ -60,22 +60,14 @@ unsigned int CUDAMessage::getMaximumListSize() const
 
 
 // TODO - not done at all - from cudaAgent
-/* this is done for all the variables for now.
-void CUDAAgent::mapRuntimeVariables(const AgentFunctionDescription& func) const
+/*
+void CUDAMessage::mapRuntimeVariables(const AgentFunctionDescription& func) const
 {
-    //check the cuda agent state map to find the correct state list for functions starting state
-    CUDAStateMap::const_iterator sm = state_map.find(func.getIntialState());
-
-    if (sm == state_map.end())
-    {
-        throw InvalidCudaAgentState();
-    }
-
     //loop through the agents variables to map each variable name using cuRVE
     for (VariableMapPair mmp : message_description.getVariableMap())
     {
         //get a device pointer for the agent variable name
-        void* d_ptr = sm->second->getAgentListVariablePointer(mmp.first);
+        void* d_ptr = list->getMEssageListVariablePointer(mmp.first);
 
         //map using curve
 		CurveVariableHash var_hash = curveVariableRuntimeHash(mmp.first.c_str());
@@ -93,7 +85,9 @@ void CUDAAgent::mapRuntimeVariables(const AgentFunctionDescription& func) const
     }
 
 }
+*/
 
+/*
 void CUDAAgent::unmapRuntimeVariables(const AgentFunctionDescription& func) const
 {
     //check the cuda agent state map to find the correct state list for functions starting state

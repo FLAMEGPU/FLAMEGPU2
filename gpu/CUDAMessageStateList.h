@@ -46,7 +46,7 @@ protected:
 
 private:
 	CUDAMemoryMap d_list;
-	CUDAMemoryMap d_swap_list;
+	//CUDAMemoryMap d_swap_list;
 	CUDAMemoryMap d_new_list;
 
 	unsigned int current_list_size; //???
