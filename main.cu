@@ -43,9 +43,10 @@ FLAMEGPU_AGENT_FUNCTION(output_func)
 */
 FLAMEGPU_AGENT_FUNCTION(output_func)
 {
-
+// some thoughts on how to use messages
    // FLAMEGPU->outputMessage<float>("location","x");
    // FLAMEGPU->outputMessage<float>("location","x",FLAMEGPU->getVariable<float>("x"));
+   //FLAMEGPU->outputMessage<float>("location","x",FLAMEGPU->getVariable<float>("x"),"y",FLAMEGPU->getVariable<float>("y"));
     //FLAMEGPU->outputMessage("location");
 
 	float x = FLAMEGPU->getVariable<float>("x");

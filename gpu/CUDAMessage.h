@@ -32,6 +32,8 @@ public:
 
     /**
      * @brief Uses the cuRVE runtime to map the variables used by the agent function to the cuRVE library so that can be accessed by name within a n agent function
+     *
+     * @param	func	The function.
      */
     void mapRuntimeVariables(const AgentFunctionDescription& func) const;
 

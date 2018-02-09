@@ -60,7 +60,9 @@ unsigned int CUDAMessage::getMaximumListSize() const
     return max_list_size;
 }
 
-
+/**
+@bug message_name is input or output, run some tests to see which one is correct
+*/
 void CUDAMessage::mapRuntimeVariables(const AgentFunctionDescription& func) const
 {
 

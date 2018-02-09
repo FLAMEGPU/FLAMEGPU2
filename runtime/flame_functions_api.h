@@ -69,6 +69,12 @@ public:
     template<typename T, unsigned int N> __device__
     void outputMessage(const char(&message_name)[N], T msg);
 
+    template<typename T, unsigned int N> __device__
+    void outputMessage(const char(&message_name)[N]);
+
+    template<typename T, unsigned int N, typename... Args> __device__
+    void outputMessage(const char(&message_name)[N], T msg, Args... args);
+
   //  template<unsigned int N> __device__
   //  MessageIteratorWrapper getMessageIterator(const char(&message_name)[N]);
 
@@ -135,9 +141,22 @@ __device__ void FLAMEGPU_API::outputMessage(const char(&message_name)[N], T msg)
    // curveSetVariable<T>(,,  value, index); // bind message name, variable name, function name
 }
 /*
+
+template<typename T, unsigned int N>
+__device__ void FLAMEGPU_API::outputMessage(const char(&message_name)[N], T msg, T value)
+{}
+
 template<unsigned int N>
 __device__ void FLAMEGPU_API::outputMessage(const char(&message_name)[N])
 {}
+
+template<typename T, unsigned int N, typename... Args>
+__device__ void outputMessage(const char(&message_name)[N], T msg, Args... args)
+{
+    unsigned int index =  (blockDim.x * blockIdx.x) + threadIdx.x;
+    outputMessage(message_name,)
+
+}
 
 /**
  * \brief Returns a message iterator

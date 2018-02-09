@@ -4,7 +4,7 @@
 #include "handler.h"
 #define radius 2.0f
 
-int inputdate(AGENT_HANDLE *agent){ //__FLAME_GPU_FUNC__ int inputdata(xmachine_memory_Circle* xmemory, xmachine_message_location_list* location_messages){
+int inputdata(AGENT_HANDLE *agent){ //__FLAME_GPU_FUNC__ int inputdata(xmachine_memory_Circle* xmemory, xmachine_message_location_list* location_messages){
 
 const float kr = 0.1f; /* Stiffness variable for repulsion */
 const float ka = 0.0f; /* Stiffness variable for attraction */

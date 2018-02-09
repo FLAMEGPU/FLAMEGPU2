@@ -131,6 +131,7 @@ void CUDAAgentModel::step(const Simulation& simulation)
 {
 	int j;
 	int nStreams = 1;
+	std::string message_name;
 
 	//TODO: simulation.getMaxFunctionsPerLayer()
 	for (unsigned int i = 0; i < simulation.getLayerCount(); i++) {
@@ -162,14 +163,14 @@ void CUDAAgentModel::step(const Simulation& simulation)
 			if (func_des.hasInputMessage()) {
 				std::string inpMessage_name = func_des.getInputMessageName();
 				const CUDAMessage& cuda_message = getCUDAMessage(inpMessage_name);
-				cuda_message.mapRuntimeVariables(func_des);
+				//cuda_message.mapRuntimeVariables(func_des);
 			}
 
 			//! check if a function has an output massage
 			if (func_des.hasOutputMessage()) {
 				std::string outpMessage_name = func_des.getOutputMessageName();
 				const CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
-				cuda_message.mapRuntimeVariables(func_des);
+				//cuda_message.mapRuntimeVariables(func_des);
 			}
 
 
@@ -190,12 +191,14 @@ void CUDAAgentModel::step(const Simulation& simulation)
 			if (func_des.hasInputMessage()) {
 				std::string inpMessage_name = func_des.getInputMessageName();
 				const CUDAMessage& cuda_message = getCUDAMessage(inpMessage_name);
+				message_name = inpMessage_name;
 			}
 
 			//! check if a function has an output massage
 			if (func_des.hasOutputMessage()) {
 				std::string outpMessage_name = func_des.getOutputMessageName();
 				const CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
+				message_name = outpMessage_name;
 			}
 
 			const CUDAAgent& cuda_agent = getCUDAAgent(agent_name);
@@ -227,11 +230,16 @@ void CUDAAgentModel::step(const Simulation& simulation)
 			CurveNamespaceHash agentname_hash = curveVariableRuntimeHash(agent_name.c_str());
 			//! hash func name
 			CurveNamespaceHash funcname_hash = curveVariableRuntimeHash(func_name.c_str());
+
+
 			//! hash message name
-			//CurveNamespaceHash messagename_hash = curveVariableRuntimeHash(message_name.c_str());
+			//if (func_des.hasOutputMessage() || func_des.hasInputMessage())
+		    	//CurveNamespaceHash messagename_hash = curveVariableRuntimeHash(message_name.c_str());
 
 			agent_function_wrapper << <gridSize, blockSize, 0, stream[j] >> > (agentname_hash + funcname_hash, h_func_ptr, state_list_size);
-			// agent_function_wrapper << <gridSize, blockSize,0,stream[j] >> >(agentname_hash+funcname_hash, message_name_inp, message_name_out h_func_ptr, state_list_size);
+			// agent_function_wrapper << <gridSize, blockSize,0,stream[j] >> >(agentname_hash+funcname_hash, message_name_inp, message_name_out, h_func_ptr, state_list_size);
+            // agent_function_wrapper << <gridSize, blockSize,0,stream[j] >> >(agentname_hash+funcname_hash, message_name, h_func_ptr, state_list_size);
+            // agent_function_wrapper << <gridSize, blockSize,0,stream[j] >> >(agentname_hash+funcname_hash + message_name, h_func_ptr, state_list_size);
 
 			++j;
 		}
@@ -243,14 +251,14 @@ void CUDAAgentModel::step(const Simulation& simulation)
 			if (func_des.hasInputMessage()) {
 				std::string inpMessage_name = func_des.getInputMessageName();
 				const CUDAMessage& cuda_message = getCUDAMessage(inpMessage_name);
-				cuda_message.unmapRuntimeVariables(func_des);
+				//cuda_message.unmapRuntimeVariables(func_des);
 			}
 
 			//! check if a function has an output massage
 			if (func_des.hasOutputMessage()) {
 				std::string outpMessage_name = func_des.getOutputMessageName();
 				const CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
-				cuda_message.unmapRuntimeVariables(func_des);
+				//cuda_message.unmapRuntimeVariables(func_des);
 			}
 			//const CUDAMessage& cuda_inpMessage = getCUDAMessage(func_des.getInputChild.getMessageName());
 			//const CUDAMessage& cuda_outpMessage = getCUDAMessage(func_des.getOutputChild.getMessageName());
