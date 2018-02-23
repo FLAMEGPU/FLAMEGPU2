@@ -16,5 +16,4 @@ Write-Host 'Installing CUDA Compiler and Runtime'
 #& .\$env:CUDA_REPO_PKG -s compiler_8.0 visual_studio_integration_8.0 command_line_tools_8.0 cudart_8.0| Out-Null
 Write-Host 'Installation Complete.'
 
-nvcc -V
 # TODO: Test the install was successful
