@@ -2,10 +2,8 @@ DoxyGen*/
 docs/
 bin/
 obj/
-BoostTest/
 *.cbp
 *.layout
-
 
 CUDA
 *.i
@@ -113,7 +111,7 @@ $RECYCLE.BIN/
 [Rr]eleases/
 x64/
 x86/
-build/
+[Bb]uild/
 bld/
 [Bb]in/
 [Oo]bj/
@@ -167,14 +165,17 @@ _Chutzpah*
 ipch/
 *.aps
 *.ncb
+*.opendb
 *.opensdf
 *.sdf
 *.cachefile
+*.VC.db
 
 # Visual Studio profiler
 *.psess
 *.vsp
 *.vspx
+*.sap
 
 # TFS 2012 Local Workspace
 $tf/

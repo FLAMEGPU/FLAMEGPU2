@@ -120,7 +120,7 @@
     <ClInclude Include="gpu\CUDAMessage.h">
       <Filter>gpu</Filter>
     </ClInclude>
-    <ClInclude Include="gpu\CUDAMessageStateList.h">
+    <ClInclude Include="gpu\CUDAMessageList.h">
       <Filter>gpu</Filter>
     </ClInclude>
   </ItemGroup>
@@ -170,8 +170,11 @@
     <ClCompile Include="gpu\CUDAMessage.cpp">
       <Filter>gpu</Filter>
     </ClCompile>
-    <ClCompile Include="gpu\CUDAMessageStateList.cpp">
+    <ClCompile Include="gpu\CUDAMessageList.cpp">
       <Filter>gpu</Filter>
+    </ClCompile>
+    <ClCompile Include="tests\test_all.cpp">
+      <Filter>tests</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -181,7 +184,6 @@
     <CudaCompile Include="gpu\CUDAAgentModel.cu">
       <Filter>gpu</Filter>
     </CudaCompile>
-    <CudaCompile Include="main.cu" />
     <CudaCompile Include="main_MAS.cu" />
     <CudaCompile Include="runtime\agent_function.cu">
       <Filter>runtime</Filter>
@@ -189,6 +191,6 @@
     <CudaCompile Include="tests\device_functions.cu">
       <Filter>tests</Filter>
     </CudaCompile>
-    <CudaCompile Include="tests\test_all.cpp" />
+    <CudaCompile Include="main.cu" />
   </ItemGroup>
 </Project>

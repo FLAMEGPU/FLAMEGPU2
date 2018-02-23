@@ -2,7 +2,8 @@
 version: "0.1.{build}"
 
 # Operating system (build VM template)
-os: Visual Studio 2013
+os: Visual Studio 2015
+#Visual Studio 2013 #older version
 
 # build platform, i.e. Win32 (instead of x86), x64, Any CPU. This setting is optional.
 platform: 
@@ -11,7 +12,8 @@ platform:
 
 # specify custom environment variables
 environment:
-  BOOST_DIR: C:\Libraries\boost_1_59_0
+  # - BOOST_DIR: C:\Libraries\boost_1_59_0
+  - BOOST_DIR: C:\Libraries\boost_1_60_0
 
 # build configuration, i.e. Debug, Release, etc.
 configuration:

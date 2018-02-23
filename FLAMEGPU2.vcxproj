@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="BoostTest|Win32">
       <Configuration>BoostTest</Configuration>
@@ -33,7 +33,7 @@
     <ClInclude Include="gpu\CUDAAgentModel.h" />
     <ClInclude Include="gpu\CUDAErrorChecking.h" />
     <ClInclude Include="gpu\CUDAMessage.h" />
-    <ClInclude Include="gpu\CUDAMessageStateList.h" />
+    <ClInclude Include="gpu\CUDAMessageList.h" />
     <ClInclude Include="model\AgentDescription.h" />
     <ClInclude Include="model\AgentFunctionDescription.h" />
     <ClInclude Include="model\AgentFunctionInput.h" />
@@ -64,7 +64,7 @@
     <ClCompile Include="gpu\CUDAAgent.cpp" />
     <ClCompile Include="gpu\CUDAAgentStateList.cpp" />
     <ClCompile Include="gpu\CUDAMessage.cpp" />
-    <ClCompile Include="gpu\CUDAMessageStateList.cpp" />
+    <ClCompile Include="gpu\CUDAMessageList.cpp" />
     <ClCompile Include="model\AgentDescription.cpp" />
     <ClCompile Include="model\AgentFunctionDescription.cpp" />
     <ClCompile Include="model\AgentFunctionInput.cpp" />
@@ -77,10 +77,14 @@
     <ClCompile Include="pop\AgentPopulation.cpp" />
     <ClCompile Include="sim\Simulation.cpp" />
     <ClCompile Include="sim\SimulationLayer.cpp" />
-    <CudaCompile Include="tests\test_all.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    <ClCompile Include="tests\test_all.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <GenerateRelocatableDeviceCode Condition="'$(Configuration)|$(Platform)'=='BoostTest|x64'">true</GenerateRelocatableDeviceCode>
+    </ClCompile>
+    <CudaCompile Include="main.cu">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='BoostTest|x64'">true</ExcludedFromBuild>
     </CudaCompile>
     <CudaCompile Include="main_MAS.cu">
       <GenerateRelocatableDeviceCode Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</GenerateRelocatableDeviceCode>
@@ -88,47 +92,39 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='BoostTest|Win32'">true</ExcludedFromBuild>
+      <GenerateRelocatableDeviceCode Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</GenerateRelocatableDeviceCode>
     </CudaCompile>
     <CudaCompile Include="runtime\agent_function.cu">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <GenerateRelocatableDeviceCode Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</GenerateRelocatableDeviceCode>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <GenerateRelocatableDeviceCode Condition="'$(Configuration)|$(Platform)'=='BoostTest|x64'">true</GenerateRelocatableDeviceCode>
+      <GenerateRelocatableDeviceCode Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</GenerateRelocatableDeviceCode>
     </CudaCompile>
     <CudaCompile Include="tests\device_functions.cu">
       <GenerateRelocatableDeviceCode Condition="'$(Configuration)|$(Platform)'=='BoostTest|x64'">true</GenerateRelocatableDeviceCode>
       <GenerateRelocatableDeviceCode Condition="'$(Configuration)|$(Platform)'=='BoostTest|Win32'">true</GenerateRelocatableDeviceCode>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </CudaCompile>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="gpu\CUDAAgentModel.cu">
-      <CodeGeneration Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">compute_20,sm_20;compute_50,sm_50</CodeGeneration>
-      <CodeGeneration Condition="'$(Configuration)|$(Platform)'=='Release|x64'">compute_20,sm_20;compute_50,sm_50</CodeGeneration>
-      <CodeGeneration Condition="'$(Configuration)|$(Platform)'=='BoostTest|x64'">compute_20,sm_20;compute_50,sm_50</CodeGeneration>
+      <CodeGeneration Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">compute_50,sm_50</CodeGeneration>
+      <CodeGeneration Condition="'$(Configuration)|$(Platform)'=='Release|x64'">compute_50,sm_50</CodeGeneration>
+      <CodeGeneration Condition="'$(Configuration)|$(Platform)'=='BoostTest|x64'">compute_50,sm_50</CodeGeneration>
       <GenerateRelocatableDeviceCode Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</GenerateRelocatableDeviceCode>
       <GenerateRelocatableDeviceCode Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</GenerateRelocatableDeviceCode>
       <GenerateRelocatableDeviceCode Condition="'$(Configuration)|$(Platform)'=='BoostTest|x64'">true</GenerateRelocatableDeviceCode>
       <GenerateRelocatableDeviceCode Condition="'$(Configuration)|$(Platform)'=='BoostTest|Win32'">true</GenerateRelocatableDeviceCode>
-    </CudaCompile>
-    <CudaCompile Include="main.cu">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='BoostTest|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='BoostTest|x64'">true</ExcludedFromBuild>
-      <GenerateRelocatableDeviceCode Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</GenerateRelocatableDeviceCode>
-      <GenerateRelocatableDeviceCode Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</GenerateRelocatableDeviceCode>
-      <GenerateRelocatableDeviceCode Condition="'$(Configuration)|$(Platform)'=='BoostTest|x64'">true</GenerateRelocatableDeviceCode>
-      <Keep Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</Keep>
-      <Keep Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</Keep>
-      <Keep Condition="'$(Configuration)|$(Platform)'=='BoostTest|x64'">true</Keep>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </CudaCompile>
     <CudaCompile Include="runtime\cuRVE\curve.cu">
       <GenerateRelocatableDeviceCode Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</GenerateRelocatableDeviceCode>
       <GenerateRelocatableDeviceCode Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</GenerateRelocatableDeviceCode>
       <GenerateRelocatableDeviceCode Condition="'$(Configuration)|$(Platform)'=='BoostTest|x64'">true</GenerateRelocatableDeviceCode>
-      <CodeGeneration Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">compute_20,sm_20;compute_50,sm_50</CodeGeneration>
-      <CodeGeneration Condition="'$(Configuration)|$(Platform)'=='Release|x64'">compute_20,sm_20;compute_50,sm_50</CodeGeneration>
-      <CodeGeneration Condition="'$(Configuration)|$(Platform)'=='BoostTest|x64'">compute_20,sm_20;compute_50,sm_50</CodeGeneration>
+      <CodeGeneration Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">compute_50,sm_50</CodeGeneration>
+      <CodeGeneration Condition="'$(Configuration)|$(Platform)'=='Release|x64'">compute_50,sm_50</CodeGeneration>
+      <CodeGeneration Condition="'$(Configuration)|$(Platform)'=='BoostTest|x64'">compute_50,sm_50</CodeGeneration>
       <GenerateRelocatableDeviceCode Condition="'$(Configuration)|$(Platform)'=='BoostTest|Win32'">true</GenerateRelocatableDeviceCode>
     </CudaCompile>
   </ItemGroup>
@@ -141,43 +137,43 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='BoostTest|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='BoostTest|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 8.0.props" />
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 9.1.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -228,9 +224,10 @@
 copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
     </PostBuildEvent>
     <CudaCompile>
-      <Include>E:\SDKs\boost_1_57_0;%(Include)</Include>
+      <Include>C:\Boost_1_66_0;%(Include)</Include>
       <GenerateRelocatableDeviceCode>true</GenerateRelocatableDeviceCode>
-      <CodeGeneration>compute_35,sm_35</CodeGeneration>
+      <CodeGeneration>compute_50,sm_50</CodeGeneration>
+      <TargetMachinePlatform>64</TargetMachinePlatform>
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='BoostTest|Win32'">
@@ -259,7 +256,7 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;WIN64;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(BOOST_DIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\boost_1_60_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -272,6 +269,8 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
     </PostBuildEvent>
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
+      <Include>C:\boost_1_60_0;%(Include)</Include>
+      <CodeGeneration>compute_50,sm_50</CodeGeneration>
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='BoostTest|x64'">
@@ -279,14 +278,14 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;WIN64;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(BOOST_DIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\boost_1_60_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <AdditionalDependencies>cudart.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\boost_1_60_0\stage\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>echo copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"
@@ -294,6 +293,8 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
     </PostBuildEvent>
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
+      <Include>C:\boost_1_60_0;%(Include)</Include>
+      <CodeGeneration>compute_50,sm_50</CodeGeneration>
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -337,10 +338,12 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
     </PostBuildEvent>
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
+      <Include>C:\boost_1_60_0;%(Include)</Include>
+      <CodeGeneration>compute_50,sm_50</CodeGeneration>
     </CudaCompile>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 8.0.targets" />
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 9.1.targets" />
   </ImportGroup>
 </Project>
