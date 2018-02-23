@@ -1,7 +1,7 @@
 # Powershell script for installing CUDA on appveyor instances
 
 #$env:CUDA_REPO_PKG_LOCATION="https://developer.nvidia.com/compute/cuda/8.0/prod/network_installers/cuda_8.0.44_windows_network-exe"
-$env:CUDA_REPO_PKG_LOCATION="https://developer.nvidia.com/compute/cuda/9.1/prod/network_installers/cuda_9.1.85_windows_network-exe"
+$env:CUDA_REPO_PKG_LOCATION="https://developer.nvidia.com/compute/cuda/9.1/Prod/network_installers/cuda_9.1.85_win10_network"
 #$env:CUDA_REPO_PKG="cuda_8.0.44_win10_network.exe"
 $env:CUDA_REPO_PKG="cuda_9.1.85_win10_network.exe"
 

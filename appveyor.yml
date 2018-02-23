@@ -9,7 +9,7 @@ os: Visual Studio 2015
 platform: 
   # - Win32 Disable Win32
   - x64
-
+  
 # specify custom environment variables
 environment:
   # - BOOST_DIR: C:\Libraries\boost_1_59_0
@@ -17,8 +17,8 @@ environment:
 
 # build configuration, i.e. Debug, Release, etc.
 configuration:
-  - BoostTest
   - Release
+  - BoostTest
 
 # scripts that are called at very beginning, before repo cloning
 init:
@@ -29,6 +29,8 @@ clone_folder: C:\projects\FLAMEGPU2_dev
 
 # scripts that run after cloning repository (requires reboot to propagate installer env variables)
 install:
+  #- call "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64
+  #- call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
   - ps: .\scripts\appveyor_install.ps1
   - ps: Write-Output 'Rebooting worker node...'
   - ps: sleep 5
