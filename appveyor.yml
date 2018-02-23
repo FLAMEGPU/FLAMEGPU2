@@ -13,7 +13,7 @@ platform:
 # specify custom environment variables
 environment:
   # - BOOST_DIR: C:\Libraries\boost_1_59_0
-  - BOOST_DIR: C:\Libraries\boost_1_60_0
+  BOOST_DIR: C:\Libraries\boost_1_60_0
 
 # build configuration, i.e. Debug, Release, etc.
 configuration:
