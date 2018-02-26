@@ -12,7 +12,7 @@ Write-Host 'Downloading Complete'
   
 # Invoke silent install of CUDA compiler and runtime with Visual Studio integration (via network installer)
 Write-Host 'Installing CUDA Compiler and Runtime'
-#& .\$env:CUDA_REPO_PKG -s compiler_9.1 nvcc_9.1 Display.Driver visual_studio_integration_9.1 nvprof_9.1 memcheck_9.1 gpu-library-advisor_9.1 nvprune_9.1 cudart_9.1 cublas_9.1 cublas_dev_9.1 curand_9.1 curand_dev_9.1| Out-Null
+#& .\$env:CUDA_REPO_PKG -s nvcc_9.1 Display.Driver visual_studio_integration_9.1 nvprof_9.1 memcheck_9.1 gpu-library-advisor_9.1 nvprune_9.1 cudart_9.1 cublas_9.1 cublas_dev_9.1 curand_9.1 curand_dev_9.1| Out-Null
 & .\$env:CUDA_REPO_PKG -s compiler_8.0 visual_studio_integration_8.0 command_line_tools_8.0 cudart_8.0| Out-Null
 Write-Host 'Installation Complete.'
 

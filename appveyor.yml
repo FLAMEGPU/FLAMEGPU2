@@ -38,7 +38,8 @@ install:
   - ps: restart-computer -f
   - ps: sleep 5
   - ps: Write-Output 'Reboot complete'
-   # make sure nvcc is working correctly
+  - ps: (Get-Content "C:\projects\FLAMEGPU2_dev\FLAMEGPU2.vcxproj") -replace '9.1', '8.0' | Out-File C:\projects\FLAMEGPU2_dev\FLAMEGPU2.vcxproj
+# make sure nvcc is working correctly
   #- cmd: nvcc -V
 
 # The build
