@@ -33,13 +33,13 @@ install:
   - call "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64  #installing vc++
   - call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64 #installing vc++
   - ps: .\scripts\appveyor_install.ps1
- # make sure nvcc is working correctly
-  - nvcc -V
   - ps: Write-Output 'Rebooting worker node...'
   - ps: sleep 5
   - ps: restart-computer -f
   - ps: sleep 5
   - ps: Write-Output 'Reboot complete'
+   # make sure nvcc is working correctly
+  #- cmd: nvcc -V
 
 # The build
 build:
