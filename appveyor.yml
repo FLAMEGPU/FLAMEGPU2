@@ -38,7 +38,8 @@ install:
   - ps: restart-computer -f
   - ps: sleep 5
   - ps: Write-Output 'Reboot complete'
-  - ps: (Get-Content "C:\projects\FLAMEGPU2_dev\FLAMEGPU2.vcxproj") -replace '9.1', '8.0' | Out-File C:\projects\FLAMEGPU2_dev\FLAMEGPU2.vcxproj
+  - ps: (Get-Content -Path "C:\projects\FLAMEGPU2_dev\FLAMEGPU2.vcxproj") | ForEach-Object {$_ -Replace "9.1", "8.0"} | Set-Content -Encoding UTF8 -Path C:\projects\FLAMEGPU2_dev\FLAMEGPU2.vcxproj
+  #- ps: (Get-Content "C:\projects\FLAMEGPU2_dev\FLAMEGPU2.vcxproj") -replace '9.1', '8.0' | Out-File C:\projects\FLAMEGPU2_dev\FLAMEGPU2.vcxproj
 # make sure nvcc is working correctly
   #- cmd: nvcc -V
 
