@@ -21,6 +21,9 @@
 class AgentFunctionDescription;
 class MessageDescription;
 
+//typedef std::map<const std::string, std::unique_ptr<CUDAMessageList>> CUDAMessageMap;	
+//typedef std::pair<const std::string, std::unique_ptr<CUDAMessageList>> CUDAMessageMapPair;
+
 class CUDAMessage
 {
 public:
@@ -52,7 +55,7 @@ protected:
 private:
     const MessageDescription& message_description;
 
-	std::unique_ptr<CUDAMessageList> message_list;
+	std::unique_ptr<CUDAMessageList> message_list; //CUDAMessageMap message_list;
 
     unsigned int max_list_size;
 

@@ -62,6 +62,7 @@ BOOST_AUTO_TEST_CASE(MessageCheck)
      */
     BOOST_CHECK(location_message.getVariableType("x")== typeid(float));
 
+
    /**
      * @brief      Checks if the message variable exists
      * This is to perform an exception detection check. It executes the supplied
@@ -134,4 +135,5 @@ BOOST_AUTO_TEST_CASE(MessageFunctionCheck)
     BOOST_CHECK_THROW(flame_model.getMessageDescription("error"),InvalidMessageVar); // expecting an error
 
 }
+
 BOOST_AUTO_TEST_SUITE_END()

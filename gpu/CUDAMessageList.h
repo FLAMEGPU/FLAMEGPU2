@@ -16,7 +16,7 @@
 #include <map>
 
 class CUDAMessage;
-class AgentStateMemory;
+//class AgentStateMemory;
 
 //#define UNIFIED_GPU_MEMORY
 

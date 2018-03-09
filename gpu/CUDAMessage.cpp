@@ -53,7 +53,7 @@ const MessageDescription& CUDAMessage::getMessageDescription() const
 /**
 * @brief Returns the maximum list size
 * @param none
-* @return maximum size list that is equal to the maxmimum population size
+* @return maximum size list that is equal to the maximum population size
 */
 unsigned int CUDAMessage::getMaximumListSize() const
 {
@@ -67,11 +67,13 @@ void CUDAMessage::mapRuntimeVariables(const AgentFunctionDescription& func) cons
 {
 
     const std::string message_name = message_description.getName();
+
+	printf("message name: %s\n", message_name);
     //loop through the agents variables to map each variable name using cuRVE
     for (VariableMapPair mmp : message_description.getVariableMap())
     {
         //get a device pointer for the agent variable name
-        void* d_ptr = message_list->getMessageListVariablePointer(mmp.first);
+        void* d_ptr = message_list->getMessageListVariablePointer(mmp.first); // message_list is empty
 
         //map using curve
 		CurveVariableHash var_hash = curveVariableRuntimeHash(mmp.first.c_str());
