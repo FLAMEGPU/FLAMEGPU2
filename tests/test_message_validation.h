@@ -133,7 +133,21 @@ BOOST_AUTO_TEST_CASE(MessageFunctionCheck)
      * is the expected exception.
      */
     BOOST_CHECK_THROW(flame_model.getMessageDescription("error"),InvalidMessageVar); // expecting an error
-
 }
+
+
+
+
+//TODO: Check that we can output (single) messages during simulation without error
+
+//TODO: Ensure that agents can not output more than a single message (correct error must be thrown)
+
+//TODO: Check that we can output (optional) messages during simulation without error - must check that the sparse message list becomes dense
+
+//TODO: Check that message iterators count over the correct number of agents
+
+//TODO: More advanced input of messages to check the values are correct
+
+
 
 BOOST_AUTO_TEST_SUITE_END()
