@@ -78,6 +78,7 @@ void CUDAMessage::mapRuntimeVariables(const AgentFunctionDescription& func) cons
         //map using curve
 		CurveVariableHash var_hash = curveVariableRuntimeHash(mmp.first.c_str());
 		CurveVariableHash message_hash = curveVariableRuntimeHash(message_name.c_str());
+		//CurveVariableHash agent_hash = curveVariableRuntimeHash(func.getParent().getName().c_str());
 		CurveVariableHash func_hash = curveVariableRuntimeHash(func.getName().c_str());
 
         // get the agent variable size
