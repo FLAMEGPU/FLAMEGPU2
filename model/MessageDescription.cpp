@@ -12,7 +12,7 @@
 
 #include "../exception/FGPUException.h"
 
-MessageDescription::MessageDescription(const std::string message_name) : variables(), name(message_name) { }
+MessageDescription::MessageDescription(const std::string message_name, unsigned int initial_size) : variables(), name(message_name), maximum_size(initial_size) { }
 
 MessageDescription::~MessageDescription() {}
 
@@ -69,4 +69,9 @@ const std::type_info& MessageDescription::getVariableType(const std::string vari
 
     return iter->second;
 
+}
+
+unsigned int MessageDescription::getMaximumMessageListCapacity() const
+{
+	return maximum_size;
 }

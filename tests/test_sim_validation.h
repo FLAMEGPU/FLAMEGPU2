@@ -66,7 +66,7 @@ BOOST_AUTO_TEST_CASE(SimulationFunctionCheck)
     SimulationLayer output_layer(simulation, "output_layer");
     output_layer.addAgentFunction("output_data");
     simulation.addSimulationLayer(output_layer);
-
+	
 
     /**
      * @brief      Checks if the function name exists

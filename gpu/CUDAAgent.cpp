@@ -180,7 +180,6 @@ unsigned int CUDAAgent::getMaximumListSize() const
 * @param none
 * @return none
 * @warning zeroAgentData
-* @todo 'zeroAgentData'
 */
 void CUDAAgent::zeroAllStateVariableData()
 {

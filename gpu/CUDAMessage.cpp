@@ -18,6 +18,8 @@
 #include "../model/MessageDescription.h"
 #include "../model/AgentFunctionDescription.h"
 #include "../runtime/cuRVE/curve.h"
+#include "../model/AgentDescription.h"
+#include "../pop/AgentPopulation.h"
 
 
 /**
@@ -51,6 +53,37 @@ const MessageDescription& CUDAMessage::getMessageDescription() const
 }
 
 /**
+* @brief Sets initial message data to zero by allocating memory for each state list by creating a new agent state list
+* @param AgentPopulation object
+* @return none
+*/
+void CUDAMessage::setInitialMessageList() // const AgentPopulation& population
+{
+	//check that the message list has not already been set
+	if (!message_list)
+		throw InvalidMessageData("Error: Initial message list already set");
+
+/*
+	unsigned int size = message_description.getMaximumMessageListCapacity();
+	max_list_size = population.getMaximumStateListCapacity();
+
+	//set the maximum population state size
+	if (max_list_size > size)
+		throw InvalidMessageSize("Error: Invalid Message List size");
+*/
+	max_list_size = message_description.getMaximumMessageListCapacity(); // maxmimum message list not the population
+
+	//allocate memory for each message list 
+	//message_list = std::unique_ptr<CUDAMessageList>(new CUDAMessageList(*this));
+	message_list = std::make_unique<CUDAMessageList>(*this);
+
+	/**set the message list to zero*/
+	zeroAllMessageData();
+
+}
+
+
+/**
 * @brief Returns the maximum list size
 * @param none
 * @return maximum size list that is equal to the maximum population size
@@ -59,6 +92,19 @@ unsigned int CUDAMessage::getMaximumListSize() const
 {
     return max_list_size;
 }
+
+/**
+* @brief Sets all message variable data to zero
+* @param none
+* @return none
+*/
+void CUDAMessage::zeroAllMessageData()
+{
+	//loop through message data and reset the values
+
+		message_list->zeroMessageData();
+}
+
 
 /**
 @bug message_name is input or output, run some tests to see which one is correct
@@ -78,17 +124,17 @@ void CUDAMessage::mapRuntimeVariables(const AgentFunctionDescription& func) cons
         //map using curve
 		CurveVariableHash var_hash = curveVariableRuntimeHash(mmp.first.c_str());
 		CurveVariableHash message_hash = curveVariableRuntimeHash(message_name.c_str());
-		//CurveVariableHash agent_hash = curveVariableRuntimeHash(func.getParent().getName().c_str());
+		CurveVariableHash agent_hash = curveVariableRuntimeHash(func.getParent().getName().c_str());
 		CurveVariableHash func_hash = curveVariableRuntimeHash(func.getName().c_str());
 
         // get the agent variable size
         size_t size;
         size = message_description.getMessageVariableSize(mmp.first.c_str());
 
-       // maximum population num
+       // maximum population size
         unsigned int length = this->getMaximumListSize();
 
-		curveRegisterVariableByHash(var_hash + message_hash + func_hash, d_ptr, size, length);
+		curveRegisterVariableByHash(var_hash + agent_hash + func_hash + message_hash, d_ptr, size, length);
     }
 
 }
@@ -106,9 +152,10 @@ void CUDAMessage::unmapRuntimeVariables(const AgentFunctionDescription& func) co
         //unmap using curve
 		CurveVariableHash var_hash = curveVariableRuntimeHash(mmp.first.c_str());
 		CurveVariableHash message_hash = curveVariableRuntimeHash(message_name.c_str());
+		CurveVariableHash agent_hash = curveVariableRuntimeHash(func.getParent().getName().c_str());
 		CurveVariableHash func_hash = curveVariableRuntimeHash(func.getName().c_str());
 
-		curveUnregisterVariableByHash(var_hash + message_hash + func_hash);
+		curveUnregisterVariableByHash(var_hash + agent_hash + func_hash + message_hash);
     }
 
 }

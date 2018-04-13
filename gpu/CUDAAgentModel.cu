@@ -88,6 +88,25 @@ void CUDAAgentModel::setInitialPopulationData(AgentPopulation& population)
 }
 
 /**
+* @brief Sets the initial message data
+* @param AgentPopulation object
+* @return none
+*/
+void CUDAAgentModel::setMessageData(MessageDescription& message)
+{
+	CUDAMessageMap::iterator it;
+	it = message_map.find(message.getName());
+
+	if (it == message_map.end())
+	{
+		throw InvalidCudaAgent();
+	}
+
+	/*! create agent state lists */
+	it->second->setInitialMessageList();
+}
+
+/**
 * @brief Sets the population data
 * @param AgentPopulation object
 * @return none
@@ -132,6 +151,8 @@ void CUDAAgentModel::step(const Simulation& simulation)
 	int j;
 	int nStreams = 1;
 	std::string message_name;
+	CurveNamespaceHash message_name_inp_hash;
+	CurveNamespaceHash message_name_outp_hash;
 
 	//TODO: simulation.getMaxFunctionsPerLayer()
 	for (unsigned int i = 0; i < simulation.getLayerCount(); i++) {
@@ -191,14 +212,20 @@ void CUDAAgentModel::step(const Simulation& simulation)
 			if (func_des.hasInputMessage()) {
 				std::string inpMessage_name = func_des.getInputMessageName();
 				const CUDAMessage& cuda_message = getCUDAMessage(inpMessage_name);
-				message_name = inpMessage_name;
+				//message_name = inpMessage_name;
+
+				//! hash message name
+				message_name_inp_hash = curveVariableRuntimeHash(inpMessage_name.c_str());
 			}
 
 			//! check if a function has an output massage
 			if (func_des.hasOutputMessage()) {
 				std::string outpMessage_name = func_des.getOutputMessageName();
 				const CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
-				message_name = outpMessage_name;
+				//message_name = outpMessage_name;
+
+				//! hash message name
+				message_name_outp_hash = curveVariableRuntimeHash(outpMessage_name.c_str());
 			}
 
 			const CUDAAgent& cuda_agent = getCUDAAgent(agent_name);
@@ -228,19 +255,12 @@ void CUDAAgentModel::step(const Simulation& simulation)
 
 			//! hash agent name
 			CurveNamespaceHash agentname_hash = curveVariableRuntimeHash(agent_name.c_str());
-			//! hash func name
+			//! hash function name
 			CurveNamespaceHash funcname_hash = curveVariableRuntimeHash(func_name.c_str());
 
-
-			//! hash message name
-			//if (func_des.hasOutputMessage() || func_des.hasInputMessage())
-		    	//CurveNamespaceHash messagename_hash = curveVariableRuntimeHash(message_name.c_str());
-
 			agent_function_wrapper << <gridSize, blockSize, 0, stream[j] >> > (agentname_hash + funcname_hash, h_func_ptr, state_list_size);
-			// agent_function_wrapper << <gridSize, blockSize,0,stream[j] >> >(agentname_hash+funcname_hash, message_name_inp, message_name_out, h_func_ptr, state_list_size);
-            // agent_function_wrapper << <gridSize, blockSize,0,stream[j] >> >(agentname_hash+funcname_hash, message_name, h_func_ptr, state_list_size);
-            // agent_function_wrapper << <gridSize, blockSize,0,stream[j] >> >(agentname_hash+funcname_hash + message_name, h_func_ptr, state_list_size);
-
+			// agent_function_wrapper << <gridSize, blockSize,0,stream[j] >> >(agentname_hash+funcname_hash, message_name_inp_hash, message_name_outp_hash, h_func_ptr, state_list_size);
+ 
 			++j;
 		}
 		//! for each func function - Loop through to un-map all agent and message variables
@@ -271,6 +291,7 @@ void CUDAAgentModel::step(const Simulation& simulation)
 	//! stream deletion
 	for (int j = 0; j < nStreams; ++j)
 		gpuErrchk(cudaStreamDestroy(stream[j]));
+	free(stream);
 }
 
 /**

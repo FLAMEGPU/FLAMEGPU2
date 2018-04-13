@@ -15,6 +15,8 @@
 #include <typeinfo>
 #include <map>
 
+#define DEFAULT_MESSAGE_BUFFER_SIZE 1024
+
 typedef std::map<const std::string, const std::type_info&> VariableMap;
 
 typedef std::pair<const std::string, const std::type_info&> VariableMapPair;
@@ -24,7 +26,7 @@ typedef std::map<const std::type_info*, std::size_t> VarTypeSizeMap;	// to track
 
 class MessageDescription {
 public:
-	MessageDescription(const std::string message_name);
+	MessageDescription(const std::string message_name, unsigned int initial_size = DEFAULT_MESSAGE_BUFFER_SIZE);
 
 	virtual ~MessageDescription();
 
@@ -44,10 +46,13 @@ public:
 
 	const std::type_info& getVariableType(const std::string variable_name) const;
 
+	unsigned int getMaximumMessageListCapacity() const;
+
 private:
 	const std::string name;
 	VariableMap variables;
     VarTypeSizeMap sizes;
+	unsigned int maximum_size; //size is maximum buffer size for messages
 };
 
 template <typename T> void MessageDescription::addVariable(const std::string variable_name){

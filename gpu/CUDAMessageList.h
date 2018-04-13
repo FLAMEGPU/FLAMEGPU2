@@ -20,8 +20,8 @@ class CUDAMessage;
 
 //#define UNIFIED_GPU_MEMORY
 
-typedef std::map <std::string, void*> CUDAMemoryMap;
-typedef std::pair <std::string, void*> CUDAMemoryMapPair;
+typedef std::map <std::string, void*> CUDAMsgMap;
+typedef std::pair <std::string, void*> CUDAMsgMapPair;
 
 class CUDAMessageList {
 public:
@@ -37,17 +37,17 @@ public:
 protected:
 
 
-	void allocateDeviceMessageList(CUDAMemoryMap &Message_list);
+	void allocateDeviceMessageList(CUDAMsgMap &Message_list);
 
-	void releaseDeviceMessageList(CUDAMemoryMap &Message_list);
+	void releaseDeviceMessageList(CUDAMsgMap &Message_list);
 
-	void zeroDeviceMessageList(CUDAMemoryMap &Message_list);
+	void zeroDeviceMessageList(CUDAMsgMap &Message_list);
 
 
 private:
-	CUDAMemoryMap d_list;
-	CUDAMemoryMap d_swap_list; // may not need this later
-	CUDAMemoryMap d_new_list;
+	CUDAMsgMap d_list;
+	CUDAMsgMap d_swap_list; // may not need this later
+	CUDAMsgMap d_new_list;
 
 	unsigned int current_list_size; //???
 

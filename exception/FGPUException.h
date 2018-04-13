@@ -186,6 +186,36 @@ public:
 
 /**
 * Defines a type of object to be thrown as exception.
+* It reports errors that are due to invalid message list.
+*/
+class InvalidMessageData : public FGPUException
+{
+public:
+	InvalidMessageData(const char *msg = "Invalid Message data") :FGPUException(msg) {}
+	virtual const char *what() const
+	{
+		return err_message;
+	}
+};
+
+
+/**
+* Defines a type of object to be thrown as exception.
+* It reports errors that are due to invalid message list size.
+*/
+class InvalidMessageSize : public FGPUException
+{
+public:
+	InvalidMessageSize(const char *msg = "Invalid Message List size") :FGPUException(msg) {}
+	virtual const char *what() const
+	{
+		return err_message;
+	}
+};
+
+
+/**
+* Defines a type of object to be thrown as exception.
 * It reports errors that are due to invalid CUDA agent variable.
 */
 class InvalidCudaAgent: public FGPUException

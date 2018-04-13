@@ -62,6 +62,20 @@ BOOST_AUTO_TEST_CASE(MessageCheck)
      */
     BOOST_CHECK(location_message.getVariableType("x")== typeid(float));
 
+	
+
+	/**
+	* @brief      Checks the mapped message variables
+	* @todo change the boost test message style to boost_check
+	*/
+	const VariableMap &mem = location_message.getVariableMap();
+	for (const VariableMapPair& mm : mem)
+	{
+		//get the variable name
+		std::string var_name = mm.first;
+		BOOST_TEST_MESSAGE("variable names:" << var_name);
+	}
+	
 
    /**
      * @brief      Checks if the message variable exists

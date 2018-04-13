@@ -57,7 +57,7 @@ void CUDAMessageList::cleanupAllocatedData()
 * @param variable of type CUDAAgentMemoryHashMap struct type
 * @return none
 */
-void CUDAMessageList::allocateDeviceMessageList(CUDAMemoryMap &memory_map)
+void CUDAMessageList::allocateDeviceMessageList(CUDAMsgMap &memory_map)
 {
 	//we use the  messages memory map to iterate the  message variables and do allocation within our GPU hash map
     const VariableMap &mem = message.getMessageDescription().getVariableMap();
@@ -67,10 +67,10 @@ void CUDAMessageList::allocateDeviceMessageList(CUDAMemoryMap &memory_map)
     {
 		//get the variable name
 		std::string var_name = mm.first;
-
+		
 		//get the variable size from  message description
 		size_t var_size = message.getMessageDescription().getMessageVariableSize(mm.first);
-
+	
 		//do the device allocation
 		void * d_ptr;
 
@@ -84,7 +84,7 @@ void CUDAMessageList::allocateDeviceMessageList(CUDAMemoryMap &memory_map)
 
 
 		//store the pointer in the map
-		memory_map.insert(CUDAMemoryMap::value_type(var_name, d_ptr));
+		memory_map.insert(CUDAMsgMap::value_type(var_name, d_ptr));
     }
 
 }
@@ -94,10 +94,10 @@ void CUDAMessageList::allocateDeviceMessageList(CUDAMemoryMap &memory_map)
 * @param variable of type CUDAAgentMemoryHashMap struct type
 * @return none
 */
-void CUDAMessageList::releaseDeviceMessageList(CUDAMemoryMap& memory_map)
+void CUDAMessageList::releaseDeviceMessageList(CUDAMsgMap& memory_map)
 {
 	//for each device pointer in the cuda memory map we need to free these
-	for (const CUDAMemoryMapPair& mm : memory_map)
+	for (const CUDAMsgMapPair& mm : memory_map)
     {
 		//free the memory on the device
 		gpuErrchk(cudaFree(mm.second));
@@ -109,11 +109,11 @@ void CUDAMessageList::releaseDeviceMessageList(CUDAMemoryMap& memory_map)
 * @param variable of type CUDAAgentMemoryHashMap struct type
 * @return none
 */
-void CUDAMessageList::zeroDeviceMessageList(CUDAMemoryMap& memory_map)
+void CUDAMessageList::zeroDeviceMessageList(CUDAMsgMap& memory_map)
 {
 
 	//for each device pointer in the cuda memory map set the values to 0
-	for (const CUDAMemoryMapPair& mm : memory_map)
+	for (const CUDAMsgMapPair& mm : memory_map)
 	{
 		//get the variable size from message description
 		size_t var_size = message.getMessageDescription().getMessageVariableSize(mm.first);
@@ -125,7 +125,7 @@ void CUDAMessageList::zeroDeviceMessageList(CUDAMemoryMap& memory_map)
 
 void* CUDAMessageList::getMessageListVariablePointer(std::string variable_name)
 {
-	CUDAMemoryMap::iterator mm = d_list.find(variable_name);
+	CUDAMsgMap::iterator mm = d_list.find(variable_name);
 	if (mm == d_list.end()){
 		//TODO: Error variable not found in message list
 		return 0;

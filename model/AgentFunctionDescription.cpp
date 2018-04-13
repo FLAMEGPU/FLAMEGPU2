@@ -50,7 +50,7 @@ void AgentFunctionDescription::addInput(const AgentFunctionInput &input)
     if (inputs.size() == 0)
         inputs.insert(InputsMap::value_type(input.getMessageName(), input));
     else
-        throw InvalidOperation("Agent function inpput is not empty");
+        throw InvalidOperation("Agent function input is not empty");
 }
 
 void AgentFunctionDescription::addOutput(const AgentFunctionOutput &output)

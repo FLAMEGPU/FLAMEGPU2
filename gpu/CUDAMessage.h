@@ -18,9 +18,11 @@
 
 //forward declare classes from other modules
 
+class AgentPopulation;
 class AgentFunctionDescription;
 class MessageDescription;
 
+// not required
 //typedef std::map<const std::string, std::unique_ptr<CUDAMessageList>> CUDAMessageMap;	
 //typedef std::pair<const std::string, std::unique_ptr<CUDAMessageList>> CUDAMessageMapPair;
 
@@ -31,6 +33,7 @@ public:
     virtual ~CUDAMessage(void);
 
     const MessageDescription& getMessageDescription() const;
+	void setInitialMessageList();
     unsigned int getMaximumListSize() const;
 
     /**
@@ -46,10 +49,12 @@ public:
      *
      * @param	func	The function.
      */
-
     void unmapRuntimeVariables(const AgentFunctionDescription& func) const;
 
 protected:
+
+	/** @brief	Zero all message variable data. */
+	void zeroAllMessageData();
 
 
 private:
