@@ -17,17 +17,16 @@
 #include "CUDAErrorChecking.h"
 #include "../pop/AgentStateMemory.h"
 #include "../model/MessageDescription.h"
-#include "../pop/AgentPopulation.h"
 
 
 /**
-* CUDAAgentStateList class
-* @brief populates CUDA agent map, CUDA message map
+* CUDAMessageList class
+* @brief populates CUDA message map
 */
 CUDAMessageList::CUDAMessageList(CUDAMessage& cuda_message) : message(cuda_message)
 {
 
-    //allocate state lists
+    //allocate message lists
     allocateDeviceMessageList(d_list);
     allocateDeviceMessageList(d_swap_list);
     allocateDeviceMessageList(d_new_list);
@@ -36,7 +35,7 @@ CUDAMessageList::CUDAMessageList(CUDAMessage& cuda_message) : message(cuda_messa
 
 /**
  * A destructor.
- * @brief Destroys the CUDAAgentStateList object
+ * @brief Destroys the CUDAMessageList object
  */
 CUDAMessageList::~CUDAMessageList()
 {
@@ -54,7 +53,7 @@ void CUDAMessageList::cleanupAllocatedData()
 
 /**
 * @brief Allocates Device  message list
-* @param variable of type CUDAAgentMemoryHashMap struct type
+* @param variable of type CUDAMessageMap struct type
 * @return none
 */
 void CUDAMessageList::allocateDeviceMessageList(CUDAMsgMap &memory_map)
@@ -91,7 +90,7 @@ void CUDAMessageList::allocateDeviceMessageList(CUDAMsgMap &memory_map)
 
 /**
 * @brief Frees
-* @param variable of type CUDAAgentMemoryHashMap struct type
+* @param variable of type CUDAMsgMap struct type
 * @return none
 */
 void CUDAMessageList::releaseDeviceMessageList(CUDAMsgMap& memory_map)
@@ -106,7 +105,7 @@ void CUDAMessageList::releaseDeviceMessageList(CUDAMsgMap& memory_map)
 
 /**
 * @brief
-* @param variable of type CUDAAgentMemoryHashMap struct type
+* @param variable of type CUDAMsgMap struct type
 * @return none
 */
 void CUDAMessageList::zeroDeviceMessageList(CUDAMsgMap& memory_map)

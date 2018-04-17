@@ -22,7 +22,7 @@
 * CUDAAgentModel class
 * @brief populates CUDA agent map, CUDA message map
 */
-CUDAAgentModel::CUDAAgentModel(const ModelDescription& description) : model_description(description), agent_map(), message_map(), curve(cuRVEInstance::getInstance()) //, message_map(), function_map() {
+CUDAAgentModel::CUDAAgentModel(const ModelDescription& description) : model_description(description), agent_map(), message_map(), curve(cuRVEInstance::getInstance()) //, function_map() {
 {
 	//create a reference to curve to ensure that it is initialised. This is a singleton class so will only be done once regardless of the number of CUDAgentModels.
 
@@ -89,7 +89,7 @@ void CUDAAgentModel::setInitialPopulationData(AgentPopulation& population)
 
 /**
 * @brief Sets the initial message data
-* @param AgentPopulation object
+* @param MessageDescription object
 * @return none
 */
 void CUDAAgentModel::setMessageData(MessageDescription& message)
@@ -104,6 +104,7 @@ void CUDAAgentModel::setMessageData(MessageDescription& message)
 
 	/*! create agent state lists */
 	it->second->setInitialMessageList();
+
 }
 
 /**
@@ -151,8 +152,8 @@ void CUDAAgentModel::step(const Simulation& simulation)
 	int j;
 	int nStreams = 1;
 	std::string message_name;
-	CurveNamespaceHash message_name_inp_hash;
-	CurveNamespaceHash message_name_outp_hash;
+	CurveNamespaceHash message_name_inp_hash = 0;
+	CurveNamespaceHash message_name_outp_hash = 0;
 
 	//TODO: simulation.getMaxFunctionsPerLayer()
 	for (unsigned int i = 0; i < simulation.getLayerCount(); i++) {
@@ -184,14 +185,14 @@ void CUDAAgentModel::step(const Simulation& simulation)
 			if (func_des.hasInputMessage()) {
 				std::string inpMessage_name = func_des.getInputMessageName();
 				const CUDAMessage& cuda_message = getCUDAMessage(inpMessage_name); printf("inp msg name: %s\n",inpMessage_name);
-				//cuda_message.mapRuntimeVariables(func_des); // msg_list empty
+				cuda_message.mapRuntimeVariables(func_des); 
 			}
 
 			//! check if a function has an output massage
 			if (func_des.hasOutputMessage()) {
 				std::string outpMessage_name = func_des.getOutputMessageName();
 				const CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name); printf("inp msg name: %s\n", outpMessage_name);
-				//cuda_message.mapRuntimeVariables(func_des);
+				cuda_message.mapRuntimeVariables(func_des);
 			}
 
 
@@ -258,8 +259,8 @@ void CUDAAgentModel::step(const Simulation& simulation)
 			//! hash function name
 			CurveNamespaceHash funcname_hash = curveVariableRuntimeHash(func_name.c_str());
 
-			agent_function_wrapper << <gridSize, blockSize, 0, stream[j] >> > (agentname_hash + funcname_hash, h_func_ptr, state_list_size);
-			// agent_function_wrapper << <gridSize, blockSize,0,stream[j] >> >(agentname_hash+funcname_hash, message_name_inp_hash, message_name_outp_hash, h_func_ptr, state_list_size);
+			//agent_function_wrapper << <gridSize, blockSize, 0, stream[j] >> > (agentname_hash + funcname_hash, h_func_ptr, state_list_size);
+		    agent_function_wrapper <<<gridSize, blockSize, 0, stream[j] >>>(agentname_hash + funcname_hash, message_name_inp_hash, message_name_outp_hash, h_func_ptr, state_list_size);
  
 			++j;
 		}
@@ -271,14 +272,14 @@ void CUDAAgentModel::step(const Simulation& simulation)
 			if (func_des.hasInputMessage()) {
 				std::string inpMessage_name = func_des.getInputMessageName();
 				const CUDAMessage& cuda_message = getCUDAMessage(inpMessage_name);
-				//cuda_message.unmapRuntimeVariables(func_des);
+				cuda_message.unmapRuntimeVariables(func_des);
 			}
 
 			//! check if a function has an output massage
 			if (func_des.hasOutputMessage()) {
 				std::string outpMessage_name = func_des.getOutputMessageName();
 				const CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
-				//cuda_message.unmapRuntimeVariables(func_des);
+				cuda_message.unmapRuntimeVariables(func_des);
 			}
 			//const CUDAMessage& cuda_inpMessage = getCUDAMessage(func_des.getInputChild.getMessageName());
 			//const CUDAMessage& cuda_outpMessage = getCUDAMessage(func_des.getOutputChild.getMessageName());

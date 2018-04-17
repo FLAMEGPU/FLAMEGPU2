@@ -63,17 +63,17 @@ public:
     void setVariable(const char(&variable_name)[N], T value);
 
 	template<typename T, unsigned int N> __device__
-		T getMessage(const char(&variable_name)[N]);
+		T getMessageVariable(const char(&variable_name)[N]);
 
 	template<typename T, unsigned int N> __device__
-		void setMessage(const char(&variable_name)[N], T value);
+		void setMessageVariable(const char(&variable_name)[N], T value);
 
 	/**
      * \brief 
      * \param agentname_hash 
      */
     __device__ void setAgentNameSpace(CurveNamespaceHash agentname_hash)
-    {agent_name_hash = agentname_hash;}
+    {agent_func_name_hash = agentname_hash;}
 
 	/**
 	 * \brief 
@@ -93,7 +93,11 @@ public:
 		messagename_outp_hash = messagename_hash;
 	}
 
+/*
 // first message, next message method ?
+	template<typename T, unsigned int N, typename... Args> __device__
+		void addMessage(const char(&message_name)[N], Args... args);
+
     template<typename T, unsigned int N> __device__
     void outputMessage(const char(&message_name)[N], T msg);
 
@@ -105,9 +109,10 @@ public:
 
   //  template<unsigned int N> __device__
   //  MessageIteratorWrapper getMessageIterator(const char(&message_name)[N]);
+*/
 
 private:
-	CurveNamespaceHash agent_name_hash;
+	CurveNamespaceHash agent_func_name_hash;
 	CurveNamespaceHash messagename_inp_hash;
 	CurveNamespaceHash messagename_outp_hash;
 };
@@ -135,7 +140,7 @@ __device__ T FLAMEGPU_API::getVariable(const char(&variable_name)[N])
 
 
     //get the value from curve
-	T value = curveGetVariable<T>(variable_name, agent_name_hash , index);
+	T value = curveGetVariable<T>(variable_name, agent_func_name_hash , index);
     //return the variable from curve
     return value;
 }
@@ -153,7 +158,7 @@ __device__ void FLAMEGPU_API::setVariable(const char(&variable_name)[N], T value
     unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
 
     //set the variable using curve
-	curveSetVariable<T>(variable_name , agent_name_hash,  value, index);
+	curveSetVariable<T>(variable_name , agent_func_name_hash,  value, index);
 }
 
 /**
@@ -162,7 +167,7 @@ __device__ void FLAMEGPU_API::setVariable(const char(&variable_name)[N], T value
 * \todo check the hashing
 */
 template<typename T, unsigned int N>
-__device__ T FLAMEGPU_API::getMessage(const char(&variable_name)[N])
+__device__ T FLAMEGPU_API::getMessageVariable(const char(&variable_name)[N])
 {
 
 	//simple indexing assumes index is the thread number (this may change later)
@@ -170,7 +175,7 @@ __device__ T FLAMEGPU_API::getMessage(const char(&variable_name)[N])
 
 
 	//get the value from curve
-	T value = curveGetVariable<T>(variable_name, agent_name_hash+messagename_inp_hash+messagename_outp_hash, index);
+	T value = curveGetVariable<T>(variable_name, agent_func_name_hash+messagename_inp_hash, index);
 	//return the variable from curve
 	return value;
 }
@@ -182,14 +187,21 @@ __device__ T FLAMEGPU_API::getMessage(const char(&variable_name)[N])
 * \todo check the hashing
 */
 template<typename T, unsigned int N>
-__device__ void FLAMEGPU_API::setMessage(const char(&variable_name)[N], T value)
+__device__ void FLAMEGPU_API::setMessageVariable(const char(&variable_name)[N], T value)
 {
 
 	//simple indexing assumes index is the thread number (this may change later)
 	unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
 
 	//set the variable using curve
-	curveSetVariable<T>(variable_name, agent_name_hash+messagename_inp_hash+messagename_outp_hash, value, index);
+	curveSetVariable<T>(variable_name, agent_func_name_hash+messagename_outp_hash, value, index);
+}
+
+/*Not being used*/
+template<typename T, unsigned int N, typename... Args> __device__
+void addMessage(const char(&message_name)[N], Args... args)
+{
+	
 }
 
 /**

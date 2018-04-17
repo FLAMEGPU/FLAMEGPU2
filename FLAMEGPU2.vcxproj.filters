@@ -176,6 +176,7 @@
     <ClCompile Include="tests\test_all.cpp">
       <Filter>tests</Filter>
     </ClCompile>
+    <ClCompile Include="function.c" />
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="runtime\cuRVE\curve.cu">

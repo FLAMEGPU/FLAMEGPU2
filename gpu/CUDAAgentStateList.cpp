@@ -22,7 +22,7 @@
 
 /**
 * CUDAAgentStateList class
-* @brief populates CUDA agent map, CUDA message map
+* @brief populates CUDA agent map
 */
 CUDAAgentStateList::CUDAAgentStateList(CUDAAgent& cuda_agent) : agent(cuda_agent)
 {
@@ -57,7 +57,7 @@ void CUDAAgentStateList::cleanupAllocatedData()
 
 /**
 * @brief Allocates Device agent list
-* @param variable of type CUDAAgentMemoryHashMap struct type
+* @param variable of type CUDAMemoryMap type
 * @return none
 */
 void CUDAAgentStateList::allocateDeviceAgentList(CUDAMemoryMap &memory_map)
@@ -94,7 +94,7 @@ void CUDAAgentStateList::allocateDeviceAgentList(CUDAMemoryMap &memory_map)
 
 /**
 * @brief Frees
-* @param variable of type CUDAAgentMemoryHashMap struct type
+* @param variable of type CUDAMemoryMap struct type
 * @return none
 */
 void CUDAAgentStateList::releaseDeviceAgentList(CUDAMemoryMap& memory_map)
@@ -109,7 +109,7 @@ void CUDAAgentStateList::releaseDeviceAgentList(CUDAMemoryMap& memory_map)
 
 /**
 * @brief
-* @param variable of type CUDAAgentMemoryHashMap struct type
+* @param variable of type CUDAMemoryMap struct type
 * @return none
 */
 void CUDAAgentStateList::zeroDeviceAgentList(CUDAMemoryMap& memory_map)

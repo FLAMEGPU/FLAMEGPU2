@@ -53,14 +53,14 @@ const MessageDescription& CUDAMessage::getMessageDescription() const
 }
 
 /**
-* @brief Sets initial message data to zero by allocating memory for each state list by creating a new agent state list
-* @param AgentPopulation object
+* @brief Sets initial message data to zero by allocating memory for message lists
+* @param empty
 * @return none
 */
-void CUDAMessage::setInitialMessageList() // const AgentPopulation& population
+void CUDAMessage::setInitialMessageList() // used to be const AgentPopulation& population
 {
 	//check that the message list has not already been set
-	if (!message_list)
+	if (message_list)
 		throw InvalidMessageData("Error: Initial message list already set");
 
 /*
@@ -71,11 +71,12 @@ void CUDAMessage::setInitialMessageList() // const AgentPopulation& population
 	if (max_list_size > size)
 		throw InvalidMessageSize("Error: Invalid Message List size");
 */
-	max_list_size = message_description.getMaximumMessageListCapacity(); // maxmimum message list not the population
+
+	max_list_size = message_description.getMaximumMessageListCapacity(); // maxmimum message list, not the population
 
 	//allocate memory for each message list 
 	//message_list = std::unique_ptr<CUDAMessageList>(new CUDAMessageList(*this));
-	message_list = std::make_unique<CUDAMessageList>(*this);
+	message_list = std::make_unique<CUDAMessageList>(*this); // you may replace *this with "new CUDAMessageList(*this)" , compile this with -std=c++14
 
 	/**set the message list to zero*/
 	zeroAllMessageData();
@@ -86,7 +87,8 @@ void CUDAMessage::setInitialMessageList() // const AgentPopulation& population
 /**
 * @brief Returns the maximum list size
 * @param none
-* @return maximum size list that is equal to the maximum population size
+* @return maximum size list that is equal to the maximum list size 
+* @note may want to change this to maximum population size
 */
 unsigned int CUDAMessage::getMaximumListSize() const
 {
@@ -100,8 +102,6 @@ unsigned int CUDAMessage::getMaximumListSize() const
 */
 void CUDAMessage::zeroAllMessageData()
 {
-	//loop through message data and reset the values
-
 		message_list->zeroMessageData();
 }
 
@@ -114,12 +114,11 @@ void CUDAMessage::mapRuntimeVariables(const AgentFunctionDescription& func) cons
 
     const std::string message_name = message_description.getName();
 
-	printf("message name: %s\n", message_name);
-    //loop through the agents variables to map each variable name using cuRVE
+    //loop through the message variables to map each variable name using cuRVE
     for (VariableMapPair mmp : message_description.getVariableMap())
     {
-        //get a device pointer for the agent variable name
-        void* d_ptr = message_list->getMessageListVariablePointer(mmp.first); // message_list is empty
+        //get a device pointer for the message variable name
+        void* d_ptr = message_list->getMessageListVariablePointer(mmp.first); 
 
         //map using curve
 		CurveVariableHash var_hash = curveVariableRuntimeHash(mmp.first.c_str());
@@ -127,7 +126,7 @@ void CUDAMessage::mapRuntimeVariables(const AgentFunctionDescription& func) cons
 		CurveVariableHash agent_hash = curveVariableRuntimeHash(func.getParent().getName().c_str());
 		CurveVariableHash func_hash = curveVariableRuntimeHash(func.getName().c_str());
 
-        // get the agent variable size
+        // get the message variable size
         size_t size;
         size = message_description.getMessageVariableSize(mmp.first.c_str());
 
@@ -143,10 +142,10 @@ void CUDAMessage::unmapRuntimeVariables(const AgentFunctionDescription& func) co
 {
 
     const std::string message_name = message_description.getName();
-    //loop through the agents variables to map each variable name using cuRVE
+    //loop through the message variables to map each variable name using cuRVE
     for (VariableMapPair mmp : message_description.getVariableMap())
     {
-        //get a device pointer for the agent variable name
+        //get a device pointer for the message variable name
         void* d_ptr = message_list->getMessageListVariablePointer(mmp.first);
 
         //unmap using curve

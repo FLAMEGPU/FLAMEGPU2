@@ -35,7 +35,14 @@ FLAMEGPU_AGENT_FUNCTION(output_func)
     printf("x = %f, y = %f\n", x, y);
     FLAMEGPU->setVariable<float>("x", x + 3);
     x = FLAMEGPU->getVariable<float>("x");
-    printf("x after set = %f\n", x);
+   
+	printf("(output func): x = %f, y = %f\n", x, y);
+
+	FLAMEGPU->setMessageVariable<float>("x", x);
+	FLAMEGPU->setMessageVariable<float>("y", y);
+
+	//FLAMEGPU->addMessage("location1", x, y);  using variadic functions instead?
+
     return ALIVE;
 }
 
@@ -47,7 +54,14 @@ FLAMEGPU_AGENT_FUNCTION(input_func)
     printf("x = %f, y = %f\n", x, y);
     FLAMEGPU->setVariable<float>("x", x + 2);
     x = FLAMEGPU->getVariable<float>("x");
-    printf("x after set = %f\n", x);
+
+	printf("(input func): x = %f, y = %f\n", x, y);
+
+	float x1 = FLAMEGPU->getMessageVariable<float>("x");
+	float y1 = FLAMEGPU->getMessageVariable<float>("y");
+
+	printf("(input func - get msg): x = %f, y = %f\n", x1, y1);
+
     return ALIVE;
 }
 
@@ -167,6 +181,8 @@ int main(void)
 
     cuda_model.setInitialPopulationData(population1);
     cuda_model.setInitialPopulationData(population2);
+
+	cuda_model.setMessageData(location1_message);
 
     cuda_model.addSimulation(simulation);
 
