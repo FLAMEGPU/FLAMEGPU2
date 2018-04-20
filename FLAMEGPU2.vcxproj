@@ -38,6 +38,7 @@
     <ClInclude Include="runtime\cuRVE\cuRVEInstance.h" />
     <ClInclude Include="runtime\flame_api.h" />
     <ClInclude Include="runtime\flame_functions_api.h" />
+    <ClInclude Include="runtime\message_iterator_wrapper.h" />
     <ClInclude Include="sim\Simulation.h" />
     <ClInclude Include="sim\SimulationLayer.h" />
     <ClInclude Include="tests\device_functions.h" />

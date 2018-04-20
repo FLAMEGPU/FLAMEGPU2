@@ -123,6 +123,9 @@
     <ClInclude Include="gpu\CUDAMessageList.h">
       <Filter>gpu</Filter>
     </ClInclude>
+    <ClInclude Include="runtime\message_iterator_wrapper.h">
+      <Filter>runtime</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="model\AgentDescription.cpp">

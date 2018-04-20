@@ -38,10 +38,25 @@ FLAMEGPU_AGENT_FUNCTION(output_func)
    
 	printf("(output func): x = %f, y = %f\n", x, y);
 
+	FLAMEGPU->addMessage<float>("x", x);
+	FLAMEGPU->addMessage<float>("y", y);
+
+	/* Possible ways of adding message. Chose number 2)
+	1)
+	FLAMEGPU->addMessage("location1", x, y);  using variadic functions instead?
+	
+	2)
+    FLAMEGPU->addMessage("x", x);
+	FLAMEGPU->addMessage("y", y);
+
+	3)
+	FLAMEGPU->addMessage("location1", "x", x);
+	FLAMEGPU->addMessage("location1", "y", y); 
+	
+	4)
 	FLAMEGPU->setMessageVariable<float>("x", x);
 	FLAMEGPU->setMessageVariable<float>("y", y);
-
-	//FLAMEGPU->addMessage("location1", x, y);  using variadic functions instead?
+	*/
 
     return ALIVE;
 }
@@ -61,6 +76,9 @@ FLAMEGPU_AGENT_FUNCTION(input_func)
 	float y1 = FLAMEGPU->getMessageVariable<float>("y");
 
 	printf("(input func - get msg): x = %f, y = %f\n", x1, y1);
+
+	MessageIteratorWrapper messages = FLAMEGPU->getMessageIterator("location1");
+
 
     return ALIVE;
 }

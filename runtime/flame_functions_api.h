@@ -14,6 +14,7 @@
 #include "../gpu/CUDAErrorChecking.h"			//required for CUDA error handling functions
 #include "cuRVE/curve.h"
 #include "../exception/FGPUException.h"
+#include "message_iterator_wrapper.h"
 
 
 //TODO: Some example code of the handle class and an example function
@@ -68,6 +69,13 @@ public:
 	template<typename T, unsigned int N> __device__
 		void setMessageVariable(const char(&variable_name)[N], T value);
 
+	template<typename T, unsigned int N> __device__
+		void addMessage(const char(&variable_name)[N], T value);
+
+	template<unsigned int N> __device__
+		MessageIteratorWrapper getMessageIterator(const char(&message_name)[N]);
+
+
 	/**
      * \brief 
      * \param agentname_hash 
@@ -99,16 +107,7 @@ public:
 		void addMessage(const char(&message_name)[N], Args... args);
 
     template<typename T, unsigned int N> __device__
-    void outputMessage(const char(&message_name)[N], T msg);
-
-    template<typename T, unsigned int N> __device__
-    void outputMessage(const char(&message_name)[N]);
-
-    template<typename T, unsigned int N, typename... Args> __device__
-    void outputMessage(const char(&message_name)[N], T msg, Args... args);
-
-  //  template<unsigned int N> __device__
-  //  MessageIteratorWrapper getMessageIterator(const char(&message_name)[N]);
+    void addMessage(const char(&message_name)[N]);
 */
 
 private:
@@ -141,6 +140,7 @@ __device__ T FLAMEGPU_API::getVariable(const char(&variable_name)[N])
 
     //get the value from curve
 	T value = curveGetVariable<T>(variable_name, agent_func_name_hash , index);
+
     //return the variable from curve
     return value;
 }
@@ -176,6 +176,7 @@ __device__ T FLAMEGPU_API::getMessageVariable(const char(&variable_name)[N])
 
 	//get the value from curve
 	T value = curveGetVariable<T>(variable_name, agent_func_name_hash+messagename_inp_hash, index);
+
 	//return the variable from curve
 	return value;
 }
@@ -197,48 +198,32 @@ __device__ void FLAMEGPU_API::setMessageVariable(const char(&variable_name)[N], 
 	curveSetVariable<T>(variable_name, agent_func_name_hash+messagename_outp_hash, value, index);
 }
 
-/*Not being used*/
-template<typename T, unsigned int N, typename... Args> __device__
-void addMessage(const char(&message_name)[N], Args... args)
+/**
+* \brief adds a message
+* \param variable_name Name of message variable to set
+* \param value Value to set it to
+*/
+template<typename T, unsigned int N> 
+__device__ void FLAMEGPU_API::addMessage(const char(&variable_name)[N], T value) // message name or variable name
 {
-	
+	unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x ; // + d_message_count;
+
+	// Todo: checking if the output message type is single or optional?  (d_message_type)
+
+	//set the variable using curve
+	curveSetVariable<T>(variable_name, agent_func_name_hash + messagename_outp_hash, value, index);
 }
+
 
 /**
- * \brief Outputs a message
- * \param message_name Name of message to output
- * \param msg Value of the message
- */
-template<typename T, unsigned int N>
-__device__ void FLAMEGPU_API::outputMessage(const char(&message_name)[N], T msg)
-{
-    unsigned int index =  (blockDim.x * blockIdx.x) + threadIdx.x;
-
-   // curveSetVariable<T>(,,  value, index); // bind message name, variable name, function name
-}
-/*
-
-template<typename T, unsigned int N>
-__device__ void FLAMEGPU_API::outputMessage(const char(&message_name)[N], T msg, T value)
-{}
-
+* \brief Returns a message iterator
+* \param msg_name Name of message
+* \todo not quite right
+*/
 template<unsigned int N>
-__device__ void FLAMEGPU_API::outputMessage(const char(&message_name)[N])
-{}
-
-template<typename T, unsigned int N, typename... Args>
-__device__ void outputMessage(const char(&message_name)[N], T msg, Args... args)
+__device__ MessageIteratorWrapper FLAMEGPU_API::getMessageIterator(const char(&message_name)[N])
 {
-    unsigned int index =  (blockDim.x * blockIdx.x) + threadIdx.x;
-    outputMessage(message_name,)
-
+	return MessageIteratorWrapper(); // should return getmessage
 }
 
-/**
- * \brief Returns a message iterator
- * \param msg_name Name of message
- */
-//template<unsigned int N>
-//__device__ MessageIteratorWrapper FLAMEGPU_API::getMessageIterator(const char(&message_name)[N])
-//{}
 #endif /* FLAME_FUNCTIONS_API_H_ */
