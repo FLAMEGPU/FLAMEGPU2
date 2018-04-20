@@ -30,6 +30,19 @@ FLAMEGPU_AGENT_FUNCTION(inputdata) {
   //xmachine_message_location* location_message = get_first_location_message(location_messages);
 	MSG_HANDLE message_handle = getFirstMessage("location"); // returns the first message, we can use auto return types c++14
 
+	MessageIterator* mi = FLAMEGPU->GetMessageIterator("message_name");
+
+	//do this first
+	for (mi.begin(); mi.end(); m.next()) {
+		float m_x = mi.getVariable<float>("x");
+	}
+
+	//this requires a class callsed message which just calls the getVariable function in the MessageIterator
+	foreach(Message m in mi) {
+		float m_x = mi.getVariable<float>("x"); //or
+		float m_x = m.getVariable<float>(mi, "x");
+	}
+
   // may use iterator
 	while (message_handle) {
 		if (FLAMEGPU->getMessageVariable("id") != FLAMEGPU->getVariable("id")) {
