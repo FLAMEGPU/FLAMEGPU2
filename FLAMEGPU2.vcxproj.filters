@@ -123,7 +123,13 @@
     <ClInclude Include="gpu\CUDAMessageList.h">
       <Filter>gpu</Filter>
     </ClInclude>
-    <ClInclude Include="runtime\message_iterator_wrapper.h">
+    <ClInclude Include="runtime\message_iterator.h">
+      <Filter>runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="runtime\message.h">
+      <Filter>runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="runtime\custom_iterator.h">
       <Filter>runtime</Filter>
     </ClInclude>
   </ItemGroup>

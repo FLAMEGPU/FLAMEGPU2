@@ -77,7 +77,19 @@ FLAMEGPU_AGENT_FUNCTION(input_func)
 
 	printf("(input func - get msg): x = %f, y = %f\n", x1, y1);
 
-	MessageIteratorWrapper messages = FLAMEGPU->getMessageIterator("location1");
+	MessageIterator mi = FLAMEGPU->GetMessageIterator("location1");
+
+	// 1) First method
+	for (MessageIterator::iterator i = mi.begin(); i != mi.end(); i++)
+	{
+		float m_x = mi.getVariable<float>("x");
+	}
+
+	// 2) Second method
+	for(Message m : mi) {
+		float m_x = mi.getVariable<float>("x"); //or
+		float m_x = m.getVariable<float>(mi, "x");
+	}
 
 
     return ALIVE;

@@ -14,7 +14,8 @@
 #include "../gpu/CUDAErrorChecking.h"			//required for CUDA error handling functions
 #include "cuRVE/curve.h"
 #include "../exception/FGPUException.h"
-#include "message_iterator_wrapper.h"
+#include "message_iterator.h"
+#include "message.h"
 
 
 //TODO: Some example code of the handle class and an example function
@@ -73,8 +74,18 @@ public:
 		void addMessage(const char(&variable_name)[N], T value);
 
 	template<unsigned int N> __device__
-		MessageIteratorWrapper getMessageIterator(const char(&message_name)[N]);
+		MessageIterator GetMessageIterator(const char(&message_name)[N]);
 
+
+
+	/**
+	* \brief
+	* \param  messageList_Size
+	*/
+	__device__ void setMessageListSize(unsigned int messageList_Size)
+	{
+		messageListSize = messageList_Size;
+	}
 
 	/**
      * \brief 
@@ -114,6 +125,9 @@ private:
 	CurveNamespaceHash agent_func_name_hash;
 	CurveNamespaceHash messagename_inp_hash;
 	CurveNamespaceHash messagename_outp_hash;
+	MessageIterator message_iterator;
+
+	unsigned int  messageListSize;
 };
 
 
@@ -221,9 +235,14 @@ __device__ void FLAMEGPU_API::addMessage(const char(&variable_name)[N], T value)
 * \todo not quite right
 */
 template<unsigned int N>
-__device__ MessageIteratorWrapper FLAMEGPU_API::getMessageIterator(const char(&message_name)[N])
+__device__ MessageIterator FLAMEGPU_API::GetMessageIterator(const char(&message_name)[N])
 {
-	return MessageIteratorWrapper(); // should return getmessage
+	message_iterator.setAgentNameSpace(agent_func_name_hash);
+	message_iterator.setMessageInpNameSpace(messagename_inp_hash);
+	message_iterator.setMessageOutpNameSpace(messagename_outp_hash);
+	message_iterator.setMessageListSize(messageListSize);
+
+	return message_iterator; 
 }
 
 #endif /* FLAME_FUNCTIONS_API_H_ */

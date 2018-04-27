@@ -154,6 +154,7 @@ void CUDAAgentModel::step(const Simulation& simulation)
 	std::string message_name;
 	CurveNamespaceHash message_name_inp_hash = 0;
 	CurveNamespaceHash message_name_outp_hash = 0;
+	unsigned int messageList_Size = 0;
 
 	//TODO: simulation.getMaxFunctionsPerLayer()
 	for (unsigned int i = 0; i < simulation.getLayerCount(); i++) {
@@ -217,6 +218,8 @@ void CUDAAgentModel::step(const Simulation& simulation)
 
 				//! hash message name
 				message_name_inp_hash = curveVariableRuntimeHash(inpMessage_name.c_str());
+
+				messageList_Size = cuda_message.getMaximumListSize();
 			}
 
 			//! check if a function has an output massage
@@ -260,7 +263,7 @@ void CUDAAgentModel::step(const Simulation& simulation)
 			CurveNamespaceHash funcname_hash = curveVariableRuntimeHash(func_name.c_str());
 
 			//agent_function_wrapper << <gridSize, blockSize, 0, stream[j] >> > (agentname_hash + funcname_hash, h_func_ptr, state_list_size);
-		    agent_function_wrapper <<<gridSize, blockSize, 0, stream[j] >>>(agentname_hash + funcname_hash, message_name_inp_hash, message_name_outp_hash, h_func_ptr, state_list_size);
+		    agent_function_wrapper <<<gridSize, blockSize, 0, stream[j] >>>(agentname_hash + funcname_hash, message_name_inp_hash, message_name_outp_hash, h_func_ptr, state_list_size, messageList_Size);
  
 			++j;
 		}

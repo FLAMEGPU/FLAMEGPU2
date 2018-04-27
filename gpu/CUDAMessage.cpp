@@ -131,7 +131,7 @@ void CUDAMessage::mapRuntimeVariables(const AgentFunctionDescription& func) cons
         size = message_description.getMessageVariableSize(mmp.first.c_str());
 
        // maximum population size
-        unsigned int length = this->getMaximumListSize();
+        unsigned int length = this->getMaximumListSize(); // check to see if it is equal to pop
 
 		curveRegisterVariableByHash(var_hash + agent_hash + func_hash + message_hash, d_ptr, size, length);
     }
