@@ -36,11 +36,11 @@
     <ClInclude Include="runtime\agent_function.h" />
     <ClInclude Include="runtime\cuRVE\curve.h" />
     <ClInclude Include="runtime\cuRVE\cuRVEInstance.h" />
-    <ClInclude Include="runtime\custom_iterator.h" />
     <ClInclude Include="runtime\flame_api.h" />
     <ClInclude Include="runtime\flame_functions_api.h" />
     <ClInclude Include="runtime\message.h" />
     <ClInclude Include="runtime\message_iterator.h" />
+    <ClInclude Include="runtime\custom_iter.h" />
     <ClInclude Include="sim\Simulation.h" />
     <ClInclude Include="sim\SimulationLayer.h" />
     <ClInclude Include="tests\device_functions.h" />

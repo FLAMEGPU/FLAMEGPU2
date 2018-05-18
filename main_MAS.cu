@@ -19,7 +19,7 @@
 
 
 using namespace std;
-
+#define SIZE 10  // default value for the pop and msg size
 
 /* must be compiled separately using FLAME GPU builder
  * This will generate object files for different architecture targets as well as ptx info for each agent function (registers, memory use etc.)
@@ -32,11 +32,13 @@ FLAMEGPU_AGENT_FUNCTION(output_func)
     printf("Hello from output_func\n");
     float x = FLAMEGPU->getVariable<float>("x");
     float y = FLAMEGPU->getVariable<float>("y");
-    printf("x = %f, y = %f\n", x, y);
+    
+	printf("[get (x,y)]: x = %f, y = %f\n", x, y);
+
     FLAMEGPU->setVariable<float>("x", x + 3);
     x = FLAMEGPU->getVariable<float>("x");
    
-	printf("(output func): x = %f, y = %f\n", x, y);
+	printf("[set (x)]: x = %f, y = %f\n", x, y);
 
 	FLAMEGPU->addMessage<float>("x", x);
 	FLAMEGPU->addMessage<float>("y", y);
@@ -66,31 +68,34 @@ FLAMEGPU_AGENT_FUNCTION(input_func)
    printf("Hello from input_func\n");
     float x = FLAMEGPU->getVariable<float>("x");
     float y = FLAMEGPU->getVariable<float>("y");
-    printf("x = %f, y = %f\n", x, y);
-    FLAMEGPU->setVariable<float>("x", x + 2);
+
+    printf("[get (x,y)]: x = %f, y = %f\n", x, y);
+    
+	FLAMEGPU->setVariable<float>("x", x + 2);
     x = FLAMEGPU->getVariable<float>("x");
 
-	printf("(input func): x = %f, y = %f\n", x, y);
+	printf("[set (x)]: x = %f, y = %f\n", x, y);
 
+	// 0) not interested
 	float x1 = FLAMEGPU->getMessageVariable<float>("x");
 	float y1 = FLAMEGPU->getMessageVariable<float>("y");
-
 	printf("(input func - get msg): x = %f, y = %f\n", x1, y1);
 
 	MessageIterator mi = FLAMEGPU->GetMessageIterator("location1");
 
-	// 1) First method
-	for (MessageIterator::iterator i = mi.begin(); i != mi.end(); i++)
+	// 1) First method	
+	for (auto i = mi.begin(); i != mi.end(); i++)
 	{
 		float m_x = mi.getVariable<float>("x");
+		printf("(input func - for loop, get msg variable): x = %f\n", m_x);
 	}
 
 	// 2) Second method
+	/*
 	for(Message m : mi) {
-		float m_x = mi.getVariable<float>("x"); //or
 		float m_x = m.getVariable<float>(mi, "x");
 	}
-
+	*/
 
     return ALIVE;
 }
@@ -133,7 +138,7 @@ int main(void)
     circle2_agent.addAgentVariable<float>("y");
 
     //same name ?
-    MessageDescription location1_message("location1");
+    MessageDescription location1_message("location1",SIZE);
     location1_message.addVariable<float>("x");
     location1_message.addVariable<float>("y");
 /*
@@ -171,7 +176,7 @@ int main(void)
 
     //flame_model.addMessage(location2_message);
     flame_model.addAgent(circle2_agent);
-#define SIZE 10
+
     AgentPopulation population1(circle1_agent, SIZE);
     for (int i=0; i< SIZE; i++)
     {
@@ -204,7 +209,7 @@ int main(void)
     concurrent_layer.addAgentFunction("subtract_data");
     simulation.addSimulationLayer(concurrent_layer);
 
-    simulation.setSimulationSteps(1);
+    simulation.setSimulationSteps(1); // steps>1 --> does not work for now
 
     /* Run the model */
     CUDAAgentModel cuda_model(flame_model);

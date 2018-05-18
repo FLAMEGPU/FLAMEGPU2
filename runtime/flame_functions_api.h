@@ -189,7 +189,7 @@ __device__ T FLAMEGPU_API::getMessageVariable(const char(&variable_name)[N])
 
 
 	//get the value from curve
-	T value = curveGetVariable<T>(variable_name, agent_func_name_hash+messagename_inp_hash, index);
+	T value = curveGetVariable<T>(variable_name, agent_func_name_hash + messagename_inp_hash, index);
 
 	//return the variable from curve
 	return value;
@@ -209,7 +209,7 @@ __device__ void FLAMEGPU_API::setMessageVariable(const char(&variable_name)[N], 
 	unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
 
 	//set the variable using curve
-	curveSetVariable<T>(variable_name, agent_func_name_hash+messagename_outp_hash, value, index);
+	curveSetVariable<T>(variable_name, agent_func_name_hash + messagename_outp_hash, value, index);
 }
 
 /**
@@ -239,7 +239,6 @@ __device__ MessageIterator FLAMEGPU_API::GetMessageIterator(const char(&message_
 {
 	message_iterator.setAgentNameSpace(agent_func_name_hash);
 	message_iterator.setMessageInpNameSpace(messagename_inp_hash);
-	message_iterator.setMessageOutpNameSpace(messagename_outp_hash);
 	message_iterator.setMessageListSize(messageListSize);
 
 	return message_iterator; 

@@ -4,6 +4,11 @@ bin/
 obj/
 *.cbp
 *.layout
+build/
+
+# will be removed later
+runtime/custom_iterator*
+runtime/MsgIterator*
 
 CUDA
 *.i

@@ -129,7 +129,7 @@
     <ClInclude Include="runtime\message.h">
       <Filter>runtime</Filter>
     </ClInclude>
-    <ClInclude Include="runtime\custom_iterator.h">
+    <ClInclude Include="runtime\custom_iter.h">
       <Filter>runtime</Filter>
     </ClInclude>
   </ItemGroup>

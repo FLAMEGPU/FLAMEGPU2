@@ -175,7 +175,7 @@ CURVE_CU_FILES := $(wildcard $(SRC_CURVE)*.cu)
 CURVE_CUO_FILES := $(addprefix $(SRC_CURVE),$(notdir $(CURVE_CU_FILES:.cu=.o)))
 
 $(SRC_GPU)%.o: $(SRC_GPU)%.cpp
-	$(EXEC) $(HOST_COMPILER) $(DEBUG) $(STD11) $(CUDA_LIB)  -o $@ -c $<
+	$(EXEC) $(HOST_COMPILER) $(DEBUG) $(STD11) $(STD14) $(CUDA_LIB)  -o $@ -c $<
 	
 $(SRC_GPU)%.o: $(SRC_GPU)%.cu
 	$(EXEC) $(NVCC) $(DEBUG) $(STD11) $(BOOST_LIB)  $(CUDA_LIB)  $(GENCODE_FLAGS) -dc -o $@ -c $<

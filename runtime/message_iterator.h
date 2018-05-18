@@ -14,22 +14,26 @@
 #include "../gpu/CUDAErrorChecking.h"			//required for CUDA error handling functions
 #include "cuRVE/curve.h"
 #include "../exception/FGPUException.h"
+#include "custom_iter.h"
 
 
 //TODO: Some example code of the handle class and an example function
 
 class MessageIterator;  // Forward declaration (class defined below)
 
+
 class MessageIterator 
 {
 
 public:
-    __device__ MessageIterator() {};
+   // __device__ MessageIterator() {};
+	__device__ MessageIterator(unsigned int start= 0, unsigned int end = 0) : start_(start), messageList_size(end) {};
 
-	using iterator = impl::MsgIterator;
+	__device__ ~MessageIterator() {};
 
-	__device__ iterator begin(void);
-    __device__ iterator end(void);
+	__device__ custom_iter begin() { return custom_iter(start_); }
+	__device__ custom_iter end() { return custom_iter(messageList_size); }
+
 	//__device__ auto next(void);
 
 	template<typename T, unsigned int N> __device__
@@ -55,16 +59,6 @@ public:
 
 	/**
 	* \brief
-	* \param messagename_hash
-	*/
-	__device__ void setMessageOutpNameSpace(CurveNamespaceHash messagename_hash)
-	{
-		messagename_outp_hash = messagename_hash;
-	}
-
-
-	/**
-	* \brief
 	* \param  messageList_Size
 	*/
 	__device__ void setMessageListSize(unsigned int message_size)
@@ -73,32 +67,15 @@ public:
 	}
 
 private:
-	CurveNamespaceHash agent_func_name_hash;
-	CurveNamespaceHash messagename_inp_hash;
-	CurveNamespaceHash messagename_outp_hash;
-
+	const unsigned int start_;
+	//const unsigned  end_;
 	unsigned int messageList_size;
 
+	int index = 0;
+	CurveNamespaceHash agent_func_name_hash;
+	CurveNamespaceHash messagename_inp_hash;
+
 };
-
-
-__device__  iterator MessageIterator::begin()
-{
-	return;
-}
-
-
-__device__  iterator MessageIterator::end()
-{
-	return ;
-}
-
-
-__device__  auto MessageIterator::next()
-{
-	return 
-}
-
 
 /**
 * \brief Gets an agent memory value
@@ -108,12 +85,10 @@ template<typename T, unsigned int N>
 __device__ T MessageIterator::getVariable(const char(&variable_name)[N])
 {
 
-	//simple indexing assumes index is the thread number (this may change later)
-	unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
-
-
 	//get the value from curve
 	T value = curveGetVariable<T>(variable_name, agent_func_name_hash + messagename_inp_hash, index);
+
+	index++;
 
 	//return the variable from curve
 	return value;
