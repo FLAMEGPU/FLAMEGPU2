@@ -81,19 +81,29 @@ FLAMEGPU_AGENT_FUNCTION(input_func)
 	float y1 = FLAMEGPU->getMessageVariable<float>("y");
 	printf("(input func - get msg): x = %f, y = %f\n", x1, y1);
 
-	MessageIterator mi = FLAMEGPU->GetMessageIterator("location1");
+	MessageList ml = FLAMEGPU->GetMessageIterator("location1");
 
 	// 1) First method	
+	for (MessageList::iterator it = ml.begin(); it != ml.end(); ++it)
+	{
+		float m_x = ml.getVariable<float>(it, "x");
+		float m_x2 = it.getVariable<float>("x");
+		//auto m = *it; 
+		//m.getVariable<float>(ml, "x");
+		printf("(input func - for loop, get msg variable): x = %f  %f\n", m_x, m_x2);
+	}
+/*
 	for (auto i = mi.begin(); i != mi.end(); i++)
 	{
 		float m_x = mi.getVariable<float>("x");
 		printf("(input func - for loop, get msg variable): x = %f\n", m_x);
 	}
-
+	*/
 	// 2) Second method
 	/*
-	for(Message m : mi) {
-		float m_x = m.getVariable<float>(mi, "x");
+	for(Message m : ml) {
+	// If the Message class needs to know about the message list (ML) and the message list needs needs to know about the Message class - @todo - forward declaration or similar to avoid dependancy hell
+		float m_x = m.getVariable<float>(ml, "x");
 	}
 	*/
 
