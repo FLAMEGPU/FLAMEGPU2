@@ -84,28 +84,43 @@ FLAMEGPU_AGENT_FUNCTION(input_func)
 	MessageList ml = FLAMEGPU->GetMessageIterator("location1");
 
 	// 1) First method	
+	
 	for (MessageList::iterator it = ml.begin(); it != ml.end(); ++it)
 	{
-		float m_x = ml.getVariable<float>(it, "x");
+		auto m = *it;
+
+		float m_x0 = ml.getVariable<float>(it, "x");
+		float m_x1 = ml.getVariable<float>(m, "x");
 		float m_x2 = it.getVariable<float>("x");
-		//auto m = *it; 
-		//m.getVariable<float>(ml, "x");
-		printf("(input func - for loop, get msg variable): x = %f  %f\n", m_x, m_x2);
+		float m_x3 = m.getVariable<float>(ml, "x");
+		printf("(input func - for loop, get msg variable): x = %f %f %f %f\n", m_x0, m_x1, m_x2, m_x3);
 	}
-/*
-	for (auto i = mi.begin(); i != mi.end(); i++)
-	{
-		float m_x = mi.getVariable<float>("x");
-		printf("(input func - for loop, get msg variable): x = %f\n", m_x);
-	}
-	*/
-	// 2) Second method
+	
+
 	/*
-	for(Message m : ml) {
-	// If the Message class needs to know about the message list (ML) and the message list needs needs to know about the Message class - @todo - forward declaration or similar to avoid dependancy hell
-		float m_x = m.getVariable<float>(ml, "x");
+	for (auto it = ml.begin(); it != ml.end(); it++)
+	{
+		float m_x = it.getVariable<float>("x");
+		printf("(input func - auto loop, get msg variable): x = %f\n", m_x);
 	}
 	*/
+
+	
+	
+	// 2) Second method
+	
+	for(Message &m : ml) {
+		// @note - after disucssion with Phil, on how best to avoid circular dependency it may be better to simplify "Message", and instead call it waht it is - some form of MessageIndex, which can be passed to a ml.getVariable to get the actual data - Ie you always get dat from the message list, using either the messageList::iterator or the messageList::message. It may even make more sense to make it a nested class. 
+		float m_x = m.getVariable<float>(ml, "x");
+
+		//ml.getVariable<float>(m, "x");
+		printf("(input func - for-range, get msg variables): x = %f \n", m_x);
+	}
+		
+	/* Cannot use std::for_each in device code, as it is not defined.
+	std::for_each(ml.begin(), ml.end(), [](auto const & message) {
+	});*/
+	
 
     return ALIVE;
 }

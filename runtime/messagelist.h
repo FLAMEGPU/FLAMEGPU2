@@ -23,6 +23,24 @@ using namespace std;
 //TODO: Some example code of the handle class and an example function
 
 class MessageList;  // Forward declaration (class defined below)
+class Message;
+
+class Message {
+
+public:
+	__device__ Message() : index(0) {};
+	__device__ Message(unsigned int index) : index(index) {};
+	//template<typename T, unsigned int N> __device__ T getVariable(MessageIterator mi, const char(&variable_name)[N]);
+	__host__ __device__ bool operator==(const Message& rhs) { return  index == rhs.index; }
+	__host__ __device__ bool operator!=(const Message& rhs) { return  index != rhs.index; }
+	__host__ __device__ Message& operator++() { ++index;  return *this; }
+	unsigned int index; // @todo - make this private/protected? We don't want the end user accessing it. Or make the variable private and have a public/protected getter so we can access it in the Iterator/ MessageList classes
+	template<typename T, unsigned int N>
+	__device__ T getVariable(MessageList messageList, const char(&variable_name)[N]);
+private:
+
+
+};
 
 
 class MessageList 
@@ -76,6 +94,8 @@ public:
 
 	template<typename T, unsigned int N> __device__
 		T getVariable(MessageList::iterator iterator, const char(&variable_name)[N]);
+	template<typename T, unsigned int N> __device__
+		T getVariable(Message message, const char(&variable_name)[N]);
 
 	/**
 	* \brief
@@ -104,6 +124,15 @@ public:
 		messageList_size = message_size;
 	}
 
+
+	__device__ CurveNamespaceHash getAgentNameSpace() {
+		return this->agent_func_name_hash;
+	}
+
+	__device__ CurveNamespaceHash getMessageInpNameSpace() {
+		return this->messagename_inp_hash;
+	}
+
 private:
 
 	unsigned int start_;
@@ -111,13 +140,23 @@ private:
 
 	std::size_t messageList_size;
 
+	// @todo - why does this have a pointer to itself?
 	MessageList *message_;
-
 
 	CurveNamespaceHash agent_func_name_hash;
 	CurveNamespaceHash messagename_inp_hash;
 
+
 };
+
+
+
+//template<typename T, unsigned int N> 
+//__device__ T Message::getVariable(MessageList messageList, const char(&variable_name)[N])
+//{
+//	return mi.getVariable<T>(variable_name);
+//}
+
 
 /**
 * \brief Gets an agent memory value
@@ -136,26 +175,35 @@ __device__ T MessageList::getVariable(MessageList::iterator iterator, const char
 }
 
 template<typename T, unsigned int N>
-__device__ T MessageList::iterator::getVariable(const char(&variable_name)[N])
+__device__ T MessageList::getVariable(Message message, const char(&variable_name)[N])
 {
 
 	//get the value from curve
-	T value = curveGetVariable<T>(variable_name, _parent.agent_func_name_hash + _parent.messagename_inp_hash, this->_message.index);
+	T value = curveGetVariable<T>(variable_name, agent_func_name_hash + messagename_inp_hash, message.index);
 
 	//return the variable from curve
 	return value;
 }
 
-//template<typename T, unsigned int N>
-//__device__ T Message::getVariable(MessageList::iterator iterator, const char(&variable_name)[N])
-//{
-//
-//	//get the value from curve
-//	T value = curveGetVariable<T>(variable_name, agent_func_name_hash + messagename_inp_hash, (*iterator).index);
-//
-//	//return the variable from curve
-//	return value;
-//}
+template<typename T, unsigned int N>
+__device__ T MessageList::iterator::getVariable(const char(&variable_name)[N])
+{
+
+	//get the value from curve
+	//T value = curveGetVariable<T>(variable_name, _parent.agent_func_name_hash + _parent.messagename_inp_hash, this->_message.index);
+
+	T value = this->_message.getVariable<T>(this->_parent, variable_name);
+	//return the variable from curve
+	return value;
+}
+
+template<typename T, unsigned int N>
+__device__ T Message::getVariable(MessageList messageList, const char(&variable_name)[N]) {
+	T value = curveGetVariable<T>(variable_name, messageList.getAgentNameSpace() + messageList.getMessageInpNameSpace(), this->index);
+	return value;
+}
+
+
 
 
 #endif /* MESSAGELIST_H_ */
