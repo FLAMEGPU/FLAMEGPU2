@@ -76,51 +76,37 @@ FLAMEGPU_AGENT_FUNCTION(input_func)
 
 	printf("[set (x)]: x = %f, y = %f\n", x, y);
 
-	// 0) not interested
+	// 0) not interested - need to remove.
 	float x1 = FLAMEGPU->getMessageVariable<float>("x");
 	float y1 = FLAMEGPU->getMessageVariable<float>("y");
 	printf("(input func - get msg): x = %f, y = %f\n", x1, y1);
 
-	MessageList ml = FLAMEGPU->GetMessageIterator("location1");
+	MessageList messageList = FLAMEGPU->GetMessageIterator("location1");
 
-	// 1) First method	
-	
-	for (MessageList::iterator it = ml.begin(); it != ml.end(); ++it)
+
+    // Multiple options for iterating messages
+    // Cannot use std::for_each in device code, as it is not defined.
+
+	// 1) First method: iterator loop.
+    // for (MessageList::iterator iterator = messageList.begin(); iterator != messageList.end(); ++iterator)
+	for (auto iterator = messageList.begin(); iterator != messageList.end(); ++iterator)
 	{
-		auto m = *it;
+        // De-reference the iterator to get to the message object
+		auto message = *iterator;
 
-		float m_x0 = ml.getVariable<float>(it, "x");
-		float m_x1 = ml.getVariable<float>(m, "x");
-		float m_x2 = it.getVariable<float>("x");
-		float m_x3 = m.getVariable<float>(ml, "x");
-		printf("(input func - for loop, get msg variable): x = %f %f %f %f\n", m_x0, m_x1, m_x2, m_x3);
+		float x0 = messageList.getVariable<float>(iterator, "x");
+		float x1 = messageList.getVariable<float>(message, "x");
+		float x2 = message.getVariable<float>("x");
+		printf("(input func - for loop, get msg variable): x = %f %f %f\n", x0, x1, x2);
 	}
-	
 
-	/*
-	for (auto it = ml.begin(); it != ml.end(); it++)
-	{
-		float m_x = it.getVariable<float>("x");
-		printf("(input func - auto loop, get msg variable): x = %f\n", m_x);
+	
+	// 2) Second method: Range based for loop
+	for(auto &message : messageList) {
+		float x0 = message.getVariable<float>("x");
+        float x1 = messageList.getVariable<float>(message, "x");
+		printf("(input func - for-range, get msg variables): x = %f %f \n", x0, x1);
 	}
-	*/
-
-	
-	
-	// 2) Second method
-	
-	for(Message &m : ml) {
-		// @note - after disucssion with Phil, on how best to avoid circular dependency it may be better to simplify "Message", and instead call it waht it is - some form of MessageIndex, which can be passed to a ml.getVariable to get the actual data - Ie you always get dat from the message list, using either the messageList::iterator or the messageList::message. It may even make more sense to make it a nested class. 
-		float m_x = m.getVariable<float>(ml, "x");
-
-		//ml.getVariable<float>(m, "x");
-		printf("(input func - for-range, get msg variables): x = %f \n", m_x);
-	}
-		
-	/* Cannot use std::for_each in device code, as it is not defined.
-	std::for_each(ml.begin(), ml.end(), [](auto const & message) {
-	});*/
-	
 
     return ALIVE;
 }
