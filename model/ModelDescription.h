@@ -22,6 +22,9 @@
 #include "MessageDescription.h"
 
 
+/* IO Variables*/
+char inputfile[100];          /**< Input path char buffer*/
+char outputpath[1000];         /**< Output path char buffer*/
 
 typedef std::map<const std::string, const AgentDescription&> AgentMap;
 typedef std::map<const std::string, const MessageDescription&> MessageMap;
@@ -38,6 +41,9 @@ public:
 	void addAgent(const AgentDescription &agent);
 
 	void addMessage(const MessageDescription &message);
+
+	void initialise(char * input, AgentDescription agent_desc);
+
 
 	const AgentDescription& getAgentDescription(const std::string agent_name) const;
 	const MessageDescription& getMessageDescription(const std::string message_name) const;

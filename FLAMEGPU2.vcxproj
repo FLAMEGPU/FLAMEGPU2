@@ -22,6 +22,8 @@
     <ClInclude Include="gpu\CUDAErrorChecking.h" />
     <ClInclude Include="gpu\CUDAMessage.h" />
     <ClInclude Include="gpu\CUDAMessageList.h" />
+    <ClInclude Include="io\statereader.h" />
+    <ClInclude Include="io\statewriter.h" />
     <ClInclude Include="model\AgentDescription.h" />
     <ClInclude Include="model\AgentFunctionDescription.h" />
     <ClInclude Include="model\AgentFunctionInput.h" />
@@ -49,6 +51,7 @@
     <ClInclude Include="tests\test_model_validation.h" />
     <ClInclude Include="tests\test_pop_validation.h" />
     <ClInclude Include="tests\test_sim_validation.h" />
+    <ClInclude Include="xmlparser\tinyxml2.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="function.c">
@@ -76,6 +79,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="xmlparser\tinyxml2.cpp" />
     <CudaCompile Include="main.cu">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>

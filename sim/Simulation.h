@@ -24,6 +24,7 @@ public:
 
     unsigned int addSimulationLayer(SimulationLayer& layer);
     void setSimulationSteps(unsigned int steps);
+	const unsigned int getSimulationSteps() const;
     const ModelDescription& getModelDescritpion() const;
 
 	const FunctionDescriptionVector& getFunctionsAtLayer(int layer) const;

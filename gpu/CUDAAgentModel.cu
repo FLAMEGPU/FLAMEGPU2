@@ -141,8 +141,6 @@ void CUDAAgentModel::getPopulationData(AgentPopulation& population)
 }
 
 
-void CUDAAgentModel::addSimulation(const Simulation& simulation) {}
-
 /**
  * @brief Loops through agents functions and register all variables
  * (variable has must also be tied to function name using the namespace thing in curve)
@@ -341,20 +339,21 @@ void CUDAAgentModel::init(void)   // (int argc, char** argv)
 * @todo not yet completed
 * @warning not tested
 */
-void CUDAAgentModel::simulate(const Simulation& sim)
+void CUDAAgentModel::simulate(const Simulation& simulation)
 {
 	if (agent_map.size() == 0)
-		//throw std::runtime_error("CUDA agent map size is zero"); // population size = 0 ? do we mean checking the number of elements in the map container?
-		throw InvalidCudaAgentMapSize();
-
+		throw InvalidCudaAgentMapSize("CUDA agent map size is zero"); // recheck if this is really required
 
 	//CUDAAgentMap::iterator it;
-
 
 	//check any CUDAAgents with population size == 0
 	//if they have executable functions then these can be ignored
 	//if they have agent creations then buffer space must be allocated for them
+
+	for (int i = 0; i<simulation.getSimulationSteps(); i++)
+		step(simulation);
 }
+
 
 const CUDAAgent& CUDAAgentModel::getCUDAAgent(std::string agent_name) const
 {

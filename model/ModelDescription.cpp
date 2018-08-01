@@ -26,6 +26,24 @@ void ModelDescription::addMessage(const MessageDescription &message) {
 	messages.insert(MessageMap::value_type(message.getName(), message));
 }
 
+/** 
+* Initialise the simulation. Allocated host and device memory. Reads the initial agent configuration from XML.
+* @param input	XML file path for agent initial configuration
+*/
+void ModelDescription::initialise(char* input, AgentDescription agent_desc)
+{
+	//set the padding and offset values depending on architecture and OS
+	//setPaddingAndOffset();
+
+
+	printf("Allocating Host and Device memory\n");
+
+	//read initial states
+	//readInitialStates(inputfile, agent_desc);
+
+}
+
+
 const AgentDescription& ModelDescription::getAgentDescription(const std::string agent_name) const{
 	AgentMap::const_iterator iter;
 	iter = agents.find(agent_name);

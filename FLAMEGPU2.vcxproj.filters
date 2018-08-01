@@ -25,6 +25,12 @@
     <Filter Include="runtime\cuRVE">
       <UniqueIdentifier>{f9bf7c5e-66c9-4919-81a5-dc55f7208d4f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="io">
+      <UniqueIdentifier>{103250ae-ebba-4efe-b25d-9b66d1fe115f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="xmlparser">
+      <UniqueIdentifier>{e4a0e30f-9015-4af3-b0aa-b15f5b49b393}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="gpu\CUDAAgentModel.h">
@@ -129,6 +135,15 @@
     <ClInclude Include="runtime\messagelist.h">
       <Filter>runtime</Filter>
     </ClInclude>
+    <ClInclude Include="io\statewriter.h">
+      <Filter>io</Filter>
+    </ClInclude>
+    <ClInclude Include="io\statereader.h">
+      <Filter>io</Filter>
+    </ClInclude>
+    <ClInclude Include="xmlparser\tinyxml2.h">
+      <Filter>xmlparser</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="model\AgentDescription.cpp">
@@ -183,6 +198,9 @@
       <Filter>tests</Filter>
     </ClCompile>
     <ClCompile Include="function.c" />
+    <ClCompile Include="xmlparser\tinyxml2.cpp">
+      <Filter>xmlparser</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="runtime\cuRVE\curve.cu">

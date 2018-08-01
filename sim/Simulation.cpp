@@ -49,6 +49,11 @@ void Simulation::setSimulationSteps(unsigned int steps)
     simulation_steps = steps;
 }
 
+const unsigned int Simulation::getSimulationSteps() const
+{
+	return simulation_steps;
+}
+
 unsigned int Simulation::getLayerCount() const
 {
     return (unsigned int) layers.size();

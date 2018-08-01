@@ -59,7 +59,6 @@ private:
 	cuRVEInstance &curve;
 
 	CUDAMessageMap message_map;
-//	CUDAFunctionMap function_map; /*Moz*/
 
 };
 

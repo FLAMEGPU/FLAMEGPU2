@@ -102,7 +102,7 @@ FLAMEGPU_AGENT_FUNCTION(input_func)
 	// 2) Second method
 	/*
 	for(Message m : ml) {
-	// If the Message class needs to know about the message list (ML) and the message list needs needs to know about the Message class - @todo - forward declaration or similar to avoid dependancy hell
+	// If the Message class needs to know about the message list (ML) and the message list needs to know about the Message class - @todo - forward declaration or similar to avoid dependancy
 		float m_x = m.getVariable<float>(ml, "x");
 	}
 	*/
@@ -138,7 +138,7 @@ int main(void)
 {
     /* Multi agent model */
     ModelDescription flame_model("circles_model");
-
+	
     AgentDescription circle1_agent("circle1");
     circle1_agent.addAgentVariable<float>("x");
     circle1_agent.addAgentVariable<float>("y");
@@ -187,6 +187,10 @@ int main(void)
     //flame_model.addMessage(location2_message);
     flame_model.addAgent(circle2_agent);
 
+
+	//1)
+	flame_model.initialise(inputfile, circle1_agent);
+	//2)
     AgentPopulation population1(circle1_agent, SIZE);
     for (int i=0; i< SIZE; i++)
     {
@@ -219,7 +223,7 @@ int main(void)
     concurrent_layer.addAgentFunction("subtract_data");
     simulation.addSimulationLayer(concurrent_layer);
 
-    simulation.setSimulationSteps(1); // steps>1 --> does not work for now
+    simulation.setSimulationSteps(2); // steps>1 --> does not work for now
 
     /* Run the model */
     CUDAAgentModel cuda_model(flame_model);
@@ -229,9 +233,10 @@ int main(void)
 
 	cuda_model.setMessageData(location1_message);
 
-    cuda_model.addSimulation(simulation);
+    //cuda_model.addSimulation(simulation); 
 
-    cuda_model.step(simulation);
+    //cuda_model.step(simulation); // replaced by below
+	cuda_model.simulate(simulation);
 
     cuda_model.getPopulationData(population1);
     cuda_model.getPopulationData(population2);
