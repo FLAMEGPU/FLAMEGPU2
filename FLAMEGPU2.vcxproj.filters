@@ -129,9 +129,6 @@
     <ClInclude Include="gpu\CUDAMessageList.h">
       <Filter>gpu</Filter>
     </ClInclude>
-    <ClInclude Include="runtime\message.h">
-      <Filter>runtime</Filter>
-    </ClInclude>
     <ClInclude Include="runtime\messagelist.h">
       <Filter>runtime</Filter>
     </ClInclude>

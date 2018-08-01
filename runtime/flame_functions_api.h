@@ -15,7 +15,6 @@
 #include "cuRVE/curve.h"
 #include "../exception/FGPUException.h"
 #include "messagelist.h"
-#include "message.h"
 
 
 //TODO: Some example code of the handle class and an example function
