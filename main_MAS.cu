@@ -134,7 +134,7 @@ FLAMEGPU_AGENT_FUNCTION(subtract_func)
     return ALIVE;
 }
 
-int main(void)
+int main(int argc, char* argv[])
 {
     /* Multi agent model */
     ModelDescription flame_model("circles_model");
@@ -188,8 +188,8 @@ int main(void)
     flame_model.addAgent(circle2_agent);
 
 
-	//1)
-	flame_model.initialise(inputfile, circle1_agent);
+	//1) later change it
+	flame_model.initialise(circle1_agent, "0.xml");
 	//2)
     AgentPopulation population1(circle1_agent, SIZE);
     for (int i=0; i< SIZE; i++)

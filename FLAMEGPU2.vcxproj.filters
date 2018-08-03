@@ -132,9 +132,6 @@
     <ClInclude Include="runtime\messagelist.h">
       <Filter>runtime</Filter>
     </ClInclude>
-    <ClInclude Include="io\statewriter.h">
-      <Filter>io</Filter>
-    </ClInclude>
     <ClInclude Include="io\statereader.h">
       <Filter>io</Filter>
     </ClInclude>

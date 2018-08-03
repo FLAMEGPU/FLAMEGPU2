@@ -9,6 +9,7 @@
  */
 
 #include "ModelDescription.h"
+#include "../io/statereader.h"
 
 ModelDescription::ModelDescription(const std::string model_name) : agents(), messages(), name(model_name) {}
 
@@ -30,16 +31,11 @@ void ModelDescription::addMessage(const MessageDescription &message) {
 * Initialise the simulation. Allocated host and device memory. Reads the initial agent configuration from XML.
 * @param input	XML file path for agent initial configuration
 */
-void ModelDescription::initialise(char* input, AgentDescription agent_desc)
+void ModelDescription::initialise(const AgentDescription &agent, char* input)
 {
-	//set the padding and offset values depending on architecture and OS
-	//setPaddingAndOffset();
-
-
-	printf("Allocating Host and Device memory\n");
-
 	//read initial states
-	//readInitialStates(inputfile, agent_desc);
+	StateReader stateread_;
+	stateread_.readInitialStates(agent, input);
 
 }
 
