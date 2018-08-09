@@ -11,7 +11,7 @@
 #include "ModelDescription.h"
 #include "../io/statereader.h"
 
-ModelDescription::ModelDescription(const std::string model_name) : agents(), messages(), name(model_name) {}
+ModelDescription::ModelDescription(const std::string model_name) : agents(), messages(), name(model_name), population() {}
 
 ModelDescription::~ModelDescription() {}
 
@@ -27,16 +27,21 @@ void ModelDescription::addMessage(const MessageDescription &message) {
 	messages.insert(MessageMap::value_type(message.getName(), message));
 }
 
+void ModelDescription::addPopulation(AgentPopulation &pop)
+{
+ 	population.insert(PopulationMap::value_type(pop.getAgentName(), pop));
+}
+
 /** 
 * Initialise the simulation. Allocated host and device memory. Reads the initial agent configuration from XML.
 * @param input	XML file path for agent initial configuration
 */
-void ModelDescription::initialise(const AgentDescription &agent, char* input)
+void ModelDescription::initialise(const ModelDescription &model, char* input)
 {
 	//read initial states
 	StateReader stateread_;
-	stateread_.readInitialStates(agent, input);
-
+	//stateread_.readInitialStates(agent, input);
+	stateread_.readInitialStates(model, input);
 }
 
 
@@ -53,6 +58,14 @@ const MessageDescription& ModelDescription::getMessageDescription(const std::str
 	iter = messages.find(message_name);
 	if (iter == messages.end())
 		throw InvalidMessageVar();
+	return iter->second;
+}
+
+AgentPopulation& ModelDescription::getAgentPopulation(const std::string agent_name) const{
+	PopulationMap::const_iterator iter;
+	iter = population.find(agent_name);
+	if (iter == population.end())
+		throw InvalidAgentVar();
 	return iter->second;
 }
 

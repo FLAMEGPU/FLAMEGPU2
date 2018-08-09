@@ -50,7 +50,7 @@ public:
 	 *
 	 */
 	 //virtual void parse(const char &source) = 0;
-	int readInitialStates(const AgentDescription &agent_description, char* inputpath);
+	int readInitialStates(const ModelDescription &model_description, char* inputpath);
 
 
 private:
@@ -68,12 +68,8 @@ private:
 */
 //void StateReader::parse(const inputSource &source)
 
-
-int StateReader::readInitialStates(const AgentDescription &agent_description, char* inputpath)
+int StateReader::readInitialStates(const ModelDescription &model_description, char* inputpath)
 {
-	AgentPopulation population1(agent_description);
-
-	//using Tinyxml Library:
 	XMLDocument doc;
 
 	XMLError errorId = doc.LoadFile(inputpath);
@@ -97,14 +93,6 @@ int StateReader::readInitialStates(const AgentDescription &agent_description, ch
 	/* Close the file */
 	fclose(fp);
 
-	// Structure of the XML file:
-	// -Element "states"        the root Element, which is the
-	//                          FirstChildElement of the Document
-	// --Element "itno"         child of the root states Element
-	// --Element "environment"  child of the root states Element
-	// --Element "xagent"       child of the root states Element
-	// --- Text                 child of the xagent Element
-
 	XMLNode* pRoot = doc.FirstChild();
 	if (pRoot == nullptr)
 		return XML_ERROR_FILE_READ_ERROR;
@@ -116,63 +104,37 @@ int StateReader::readInitialStates(const AgentDescription &agent_description, ch
 	int error;
 	errorId = pElement->QueryIntText(&error);
 	XMLCheckResult(errorId);
-
-	pElement = pRoot->FirstChildElement("xagent");
-	if (pElement == nullptr)
-		return XML_ERROR_PARSING_ELEMENT;
 	
-	//88888888888888888888888
-	// Note: either you need to know the name of the variables and their types (int or float) or you have to use the nextsiblingelement to retrieve these
+	
+	// then check the agent name agent the tag name to avoid doing the inialization agent.
 
-/*	
-	///// Solution 1 - not what we want
-	for (XMLElement* child = pElement->FirstChildElement(); child; child = child->NextSiblingElement())
+	// note: either pass the vector of varnames to the statereader , create the objects on the main and pass the varnames
+	// or look at the population , maybe instead of passing the flamemodel, we can pass the population. But we need to be able to get the instances
+	// or add these to the flame model
+	
+
+	for (pElement = pRoot->FirstChildElement("xagent"); pElement != nullptr; pElement = pElement->NextSiblingElement("xagent"))
 	{
-		// do what you want with the element; in this case and as a simple example,
-		// we try to convert its text to an int and display it on the standard output
-		cout << child->GetText() << endl;
-	}
-*/
+		if (pElement == nullptr)
+			return XML_ERROR_PARSING_ELEMENT;
 
+		XMLElement* pListElement = pElement->FirstChildElement("name");
+		const char* agentName = pListElement->GetText();
 
-	XMLElement* pListElement = pElement->FirstChildElement("name");
-	const char* agentName = pListElement->GetText();
-	printf("Agent name: %s\n", agentName);
+		printf("Agent name: %s\n", agentName);	
 
-/*
-	///// Solution 2 - good, but we have to know the variable's type/name
-	//while (pListElement != nullptr)
-	{
-		int iOutInt;
-		pListElement = pElement->FirstChildElement("x"); // "x"
-		XMLCheckResult(errorId);
-		pListElement->QueryIntText(&iOutInt);
+		const MemoryMap &m = model_description.getAgentDescription(agentName).getMemoryMap();
+		AgentInstance instance = model_description.getAgentPopulation(agentName).getNextInstance("default");
 
-		pListElement = pElement->FirstChildElement("y"); // "y"
-		float fOutFloat;
-		errorId = pListElement->QueryFloatText(&fOutFloat);
-		XMLCheckResult(errorId);
-
-		printf("%d %f\n", iOutInt, fOutFloat);
-	}
-*/
-
-	///// Solution 3
-	MemoryMap::const_iterator iter;
-	const MemoryMap &m = agent_description.getMemoryMap();
-
-	//while (pListElement != nullptr) {
-		AgentInstance instance = population1.getNextInstance("default");
-
-		for (iter = m.begin(); iter != m.end(); iter++)
+		for (MemoryMap::const_iterator iter = m.begin(); iter != m.end(); iter++)
 		{
 			float outFloat;
 			int outInt;
 
 			const std::string variable_name = iter->first;
-			pListElement = pElement->FirstChildElement(variable_name.c_str()); 
+			pListElement = pElement->FirstChildElement(variable_name.c_str());
 			XMLCheckResult(errorId);
-			
+
 			if (iter->second == typeid(float)) {
 				errorId = pListElement->QueryFloatText(&outFloat);
 				XMLCheckResult(errorId);
@@ -189,51 +151,8 @@ int StateReader::readInitialStates(const AgentDescription &agent_description, ch
 			}
 			printf(": %s\n", variable_name);
 		}
-
-	//88888888888888888888888
-	/*
-	std::vector<int> vecList;
-	while (pListElement != nullptr)
-	{
-		AgentInstance instance = population1.getNextInstance("default");
-		//instance.setVariable<float>("x",..);
-		//instance.setVariable<float>("y",..);
-
-		int iOutListValue;
-		errorId = pListElement->QueryIntText(&iOutListValue);
-		XMLCheckResult(errorId);
-
-		float fOutFloat;
-		errorId = pListElement->QueryFloatText(&fOutFloat);
-		XMLCheckResult(errorId);
-
-		vecList.push_back(iOutListValue);
-		pListElement = pListElement->NextSiblingElement("Item");
 	}
-
-	/*
-	XMLElement * pListElement = pElement->FirstChildElement("Item");
-	std::vector<int> vecList;
-	while (pListElement != nullptr)
-	{
-		int iOutListValue;
-		eResult = pListElement->QueryIntText(&iOutListValue);
-		XMLCheckResult(eResult);
-
-		vecList.push_back(iOutListValue);
-		pListElement = pListElement->NextSiblingElement("Item");
-	}
-	*/
-	/*
-	pElement = pRoot->FirstChildElement("FloatValue");
-	if (pElement == nullptr) 
-		return XML_ERROR_PARSING_ELEMENT;
-
-	float fOutFloat;
-	errorId = pElement->QueryFloatText(&fOutFloat);
-	XMLCheckResult(errorId);
-	*/
-
+	
 	return XML_SUCCESS;
 }
 

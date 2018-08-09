@@ -17,13 +17,15 @@
 #include <vector>
 #include <typeinfo>
 
+
 //include class dependencies
 #include "AgentDescription.h"
 #include "MessageDescription.h"
-
+#include "../pop/AgentPopulation.h"
 
 typedef std::map<const std::string, const AgentDescription&> AgentMap;
 typedef std::map<const std::string, const MessageDescription&> MessageMap;
+typedef std::map<const std::string, AgentPopulation&> PopulationMap;
 
 
 class ModelDescription {
@@ -38,21 +40,25 @@ public:
 
 	void addMessage(const MessageDescription &message);
 
-	void initialise(const AgentDescription &agent, char * input);
+	void addPopulation(AgentPopulation &population);
+	void initialise(const ModelDescription &model, char * input);
 
 
 	const AgentDescription& getAgentDescription(const std::string agent_name) const;
 	const MessageDescription& getMessageDescription(const std::string message_name) const;
+	AgentPopulation& getAgentPopulation(const std::string agent_name) const;
 
 	const AgentMap& getAgentMap() const;
 
 	const MessageMap& getMessageMap() const;
 
+	//const PopulationMap& getPopulationMap() const;
 
 private:
 	std::string name;
 	AgentMap agents;
 	MessageMap messages;
+	PopulationMap population;
 
 	//function map removed. This belongs to agents.
 };

@@ -20,6 +20,7 @@
 
 using namespace std;
 #define SIZE 10  // default value for the pop and msg size
+#define enable_read 1
 
 /* must be compiled separately using FLAME GPU builder
  * This will generate object files for different architecture targets as well as ptx info for each agent function (registers, memory use etc.)
@@ -136,76 +137,96 @@ FLAMEGPU_AGENT_FUNCTION(subtract_func)
 
 int main(int argc, char* argv[])
 {
-    /* Multi agent model */
-    ModelDescription flame_model("circles_model");
-	
-    AgentDescription circle1_agent("circle1");
-    circle1_agent.addAgentVariable<float>("x");
-    circle1_agent.addAgentVariable<float>("y");
+	/* Multi agent model */
+	ModelDescription flame_model("circles_model");
 
-    AgentDescription circle2_agent("circle2");
-    circle2_agent.addAgentVariable<float>("x");
-    circle2_agent.addAgentVariable<float>("y");
+	AgentDescription circle1_agent("circle1");
+	circle1_agent.addAgentVariable<float>("x");
+	circle1_agent.addAgentVariable<float>("y");
 
-    //same name ?
-    MessageDescription location1_message("location1",SIZE);
-    location1_message.addVariable<float>("x");
-    location1_message.addVariable<float>("y");
-/*
-    MessageDescription location2_message("location2");
-    location2_message.addVariable<float>("x");
-    location2_message.addVariable<float>("y");
-*/
+	AgentDescription circle2_agent("circle2");
+	circle2_agent.addAgentVariable<float>("x");
+	circle2_agent.addAgentVariable<float>("y");
 
-    AgentFunctionDescription output_data("output_data");
-    AgentFunctionOutput output_location("location1");
-    output_data.addOutput(output_location);
-    output_data.setFunction(&output_func);
-    circle1_agent.addAgentFunction(output_data);
+	//same name ?
+	MessageDescription location1_message("location1", SIZE);
+	location1_message.addVariable<float>("x");
+	location1_message.addVariable<float>("y");
+	/*
+		MessageDescription location2_message("location2");
+		location2_message.addVariable<float>("x");
+		location2_message.addVariable<float>("y");
+	*/
 
-    AgentFunctionDescription input_data("input_data");
-    AgentFunctionInput input_location("location1");
-    input_data.addInput(input_location);
-    input_data.setFunction(&input_func);
-    circle2_agent.addAgentFunction(input_data);
+	AgentFunctionDescription output_data("output_data");
+	AgentFunctionOutput output_location("location1");
+	output_data.addOutput(output_location);
+	output_data.setFunction(&output_func);
+	circle1_agent.addAgentFunction(output_data);
 
-    AgentFunctionDescription add_data("add_data");
-    //add_data.addInput(input_location);
-    add_data.setFunction(&add_func);
-    circle1_agent.addAgentFunction(add_data);
+	AgentFunctionDescription input_data("input_data");
+	AgentFunctionInput input_location("location1");
+	input_data.addInput(input_location);
+	input_data.setFunction(&input_func);
+	circle2_agent.addAgentFunction(input_data);
 
-    AgentFunctionDescription subtract_data("subtract_data");
-    //subtract_data.addInput(input_location);
-    subtract_data.setFunction(&subtract_func);
-    circle2_agent.addAgentFunction(subtract_data);
+	AgentFunctionDescription add_data("add_data");
+	//add_data.addInput(input_location);
+	add_data.setFunction(&add_func);
+	circle1_agent.addAgentFunction(add_data);
 
-
-    //model
-    flame_model.addMessage(location1_message);
-    flame_model.addAgent(circle1_agent);
-
-    //flame_model.addMessage(location2_message);
-    flame_model.addAgent(circle2_agent);
+	AgentFunctionDescription subtract_data("subtract_data");
+	//subtract_data.addInput(input_location);
+	subtract_data.setFunction(&subtract_func);
+	circle2_agent.addAgentFunction(subtract_data);
 
 
-	//1) later change it
-	flame_model.initialise(circle1_agent, "0.xml");
-	//2)
-    AgentPopulation population1(circle1_agent, SIZE);
-    for (int i=0; i< SIZE; i++)
-    {
-        AgentInstance instance = population1.getNextInstance("default");
-        instance.setVariable<float>("x", i*0.1f);
-        instance.setVariable<float>("y", i*0.1f);
-    }
+	//model
+	flame_model.addMessage(location1_message);
+	flame_model.addAgent(circle1_agent);
 
-    AgentPopulation population2(circle2_agent, SIZE);
-    for (int i=0; i< SIZE; i++)
-    {
-        AgentInstance instance = population2.getNextInstance("default");
-        instance.setVariable<float>("x", i*0.2f);
-        instance.setVariable<float>("y", i*0.2f);
-    }
+	//flame_model.addMessage(location2_message);
+	flame_model.addAgent(circle2_agent);
+
+#ifdef enable_read
+		//1) later change it
+		AgentPopulation population1(circle1_agent);
+		AgentPopulation population2(circle2_agent);
+		flame_model.addPopulation(population1);
+		flame_model.addPopulation(population2);
+
+		flame_model.initialise(flame_model, "0.xml"); // argv[1]
+
+	/* test
+		for (int i = 0; i < 2; i++)
+		{
+			AgentInstance instance1 = population1.getInstanceAt(i, "default"); 
+			if (instance1.getVariable<float>("x") != 0) { cout << i <<" : " << instance1.getVariable<float>("x") << endl; }
+			AgentInstance instance2 = population2.getInstanceAt(i, "default");
+			if (instance2.getVariable<float>("x") != 0) { cout << i << " : " << instance2.getVariable<float>("x") << endl; }
+		}
+   */
+#else
+		//2)
+		AgentPopulation population1(circle1_agent, SIZE);
+		for (int i = 0; i < SIZE; i++)
+		{
+			AgentInstance instance = population1.getNextInstance("default");
+			instance.setVariable<float>("x", i*0.1f);
+			instance.setVariable<float>("y", i*0.1f);
+		}
+
+		AgentPopulation population2(circle2_agent, SIZE);
+		for (int i = 0; i < SIZE; i++)
+		{
+			AgentInstance instance = population2.getNextInstance("default");
+			instance.setVariable<float>("x", i*0.2f);
+			instance.setVariable<float>("y", i*0.2f);
+		}
+
+
+#endif
+
 
     Simulation simulation(flame_model);
 
