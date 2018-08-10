@@ -14,8 +14,6 @@
 #include "../xmlparser/tinyxml2.h"              //downloaded from https://github.com/leethomason/tinyxml2, the list of xml parsers : http://lars.ruoff.free.fr/xmlcpp/
 #include "../exception/FGPUException.h"
 #include "../pop/AgentPopulation.h"
-//#include "../model/AgentDescription.h"
- //#include "../pop/AgentPopulation.h"
 
 using namespace std;
 using namespace tinyxml2;

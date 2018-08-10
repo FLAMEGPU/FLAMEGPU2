@@ -117,9 +117,7 @@ BOOST_AUTO_TEST_CASE(GPUSimulationTest)
 
 	cuda_model.setInitialPopulationData(population);
 
-	cuda_model.addSimulation(simulation);
-
-	cuda_model.step(simulation);
+	cuda_model.simulate(simulation);
 
 	BOOST_TEST_MESSAGE("\nTesting values copied back from device after simulating functions ..");
 
@@ -202,11 +200,7 @@ BOOST_AUTO_TEST_CASE(GPUSimulationTestMultiple)
     cuda_model.setInitialPopulationData(population1);
     cuda_model.setInitialPopulationData(population2);
 
-    cuda_model.addSimulation(simulation);
-
-    cuda_model.step(simulation);
-
-
+    cuda_model.simulate(simulation);
 
     cuda_model.getPopulationData(population1);
     cuda_model.getPopulationData(population2);

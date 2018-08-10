@@ -10,6 +10,7 @@
 
 #include "ModelDescription.h"
 #include "../io/statereader.h"
+#include "../io/statewriter.h"
 
 ModelDescription::ModelDescription(const std::string model_name) : agents(), messages(), name(model_name), population() {}
 
@@ -40,10 +41,15 @@ void ModelDescription::initialise(const ModelDescription &model, char* input)
 {
 	//read initial states
 	StateReader stateread_;
-	//stateread_.readInitialStates(agent, input);
 	stateread_.readInitialStates(model, input);
 }
 
+void ModelDescription::output(const ModelDescription &model, char* output)
+{
+	//read initial states
+	StateWriter statewrite_;
+	statewrite_.writeStates(model, output);
+}
 
 const AgentDescription& ModelDescription::getAgentDescription(const std::string agent_name) const{
 	AgentMap::const_iterator iter;

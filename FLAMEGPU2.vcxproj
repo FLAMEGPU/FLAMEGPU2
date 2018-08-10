@@ -27,6 +27,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='BoostTest|x64'">false</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="io\statewriter.h" />
     <ClInclude Include="model\AgentDescription.h" />
     <ClInclude Include="model\AgentFunctionDescription.h" />
     <ClInclude Include="model\AgentFunctionInput.h" />

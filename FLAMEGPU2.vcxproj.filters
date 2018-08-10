@@ -138,6 +138,9 @@
     <ClInclude Include="xmlparser\tinyxml2.h">
       <Filter>xmlparser</Filter>
     </ClInclude>
+    <ClInclude Include="io\statewriter.h">
+      <Filter>io</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="model\AgentDescription.cpp">

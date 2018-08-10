@@ -109,10 +109,7 @@ BOOST_AUTO_TEST_CASE(SimulationFunctionCheck)
 
     cuda_model.setInitialPopulationData(population);
 
-    cuda_model.addSimulation(simulation);
-
-    cuda_model.step(simulation);
-
+    cuda_model.simulate(simulation);
 
     /**
      * @todo : may not need this below test

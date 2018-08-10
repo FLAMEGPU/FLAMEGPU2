@@ -262,6 +262,12 @@ int main(int argc, char* argv[])
     cuda_model.getPopulationData(population1);
     cuda_model.getPopulationData(population2);
 
+	/* 
+	 * Note: this should be in a way that outputs the results per iteration not just the end. 
+	 * So, maybe it should be callable from the CUDA model
+	*/
+	//flame_model.output(flame_model, "out.xml"); // argv[2]
+
     return 0;
 }
 

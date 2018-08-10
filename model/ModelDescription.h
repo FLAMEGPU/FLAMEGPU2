@@ -42,6 +42,7 @@ public:
 
 	void addPopulation(AgentPopulation &population);
 	void initialise(const ModelDescription &model, char * input);
+	void output(const ModelDescription &model, char * output);
 
 
 	const AgentDescription& getAgentDescription(const std::string agent_name) const;
