@@ -39,6 +39,8 @@ public:
 
 	void zeroAgentData();
 
+	unsigned int getCUDAStateListSize() const;
+
 protected:
 
 	/*

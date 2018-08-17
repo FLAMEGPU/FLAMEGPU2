@@ -111,15 +111,6 @@ public:
 		messagename_outp_hash = messagename_hash;
 	}
 
-/*
-// first message, next message method ?
-	template<typename T, unsigned int N, typename... Args> __device__
-		void addMessage(const char(&message_name)[N], Args... args);
-
-    template<typename T, unsigned int N> __device__
-    void addMessage(const char(&message_name)[N]);
-*/
-
 private:
 	CurveNamespaceHash agent_func_name_hash;
 	CurveNamespaceHash messagename_inp_hash;

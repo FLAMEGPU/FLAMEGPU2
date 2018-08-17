@@ -18,6 +18,7 @@
 #include "runtime/flame_api.h"
 
 
+
 using namespace std;
 #define SIZE 10  // default value for the pop and msg size
 #define enable_read 1
@@ -44,23 +45,6 @@ FLAMEGPU_AGENT_FUNCTION(output_func)
 	FLAMEGPU->addMessage<float>("x", x);
 	FLAMEGPU->addMessage<float>("y", y);
 
-	/* Possible ways of adding message. Chose number 2)
-	1)
-	FLAMEGPU->addMessage("location1", x, y);  using variadic functions instead?
-	
-	2)
-    FLAMEGPU->addMessage("x", x);
-	FLAMEGPU->addMessage("y", y);
-
-	3)
-	FLAMEGPU->addMessage("location1", "x", x);
-	FLAMEGPU->addMessage("location1", "y", y); 
-	
-	4)
-	FLAMEGPU->setMessageVariable<float>("x", x);
-	FLAMEGPU->setMessageVariable<float>("y", y);
-	*/
-
     return ALIVE;
 }
 
@@ -86,8 +70,7 @@ FLAMEGPU_AGENT_FUNCTION(input_func)
 
 
     // Multiple options for iterating messages
-    // Cannot use std::for_each in device code, as it is not defined.
-
+  
 	// 1) First method: iterator loop.
     // for (MessageList::iterator iterator = messageList.begin(); iterator != messageList.end(); ++iterator)
 	for (auto iterator = messageList.begin(); iterator != messageList.end(); ++iterator)
@@ -189,23 +172,12 @@ int main(int argc, char* argv[])
 	flame_model.addAgent(circle2_agent);
 
 #ifdef enable_read
-		//1) later change it
 		AgentPopulation population1(circle1_agent);
 		AgentPopulation population2(circle2_agent);
 		flame_model.addPopulation(population1);
 		flame_model.addPopulation(population2);
 
-		flame_model.initialise(flame_model, "0.xml"); // argv[1]
-
-	/* test
-		for (int i = 0; i < 2; i++)
-		{
-			AgentInstance instance1 = population1.getInstanceAt(i, "default"); 
-			if (instance1.getVariable<float>("x") != 0) { cout << i <<" : " << instance1.getVariable<float>("x") << endl; }
-			AgentInstance instance2 = population2.getInstanceAt(i, "default");
-			if (instance2.getVariable<float>("x") != 0) { cout << i << " : " << instance2.getVariable<float>("x") << endl; }
-		}
-   */
+		flame_model.initialise(flame_model, argv[1]);
 #else
 		//2)
 		AgentPopulation population1(circle1_agent, SIZE);
@@ -224,9 +196,9 @@ int main(int argc, char* argv[])
 			instance.setVariable<float>("y", i*0.2f);
 		}
 
-
+		flame_model.addPopulation(population1);
+		flame_model.addPopulation(population2);
 #endif
-
 
     Simulation simulation(flame_model);
 
@@ -244,7 +216,7 @@ int main(int argc, char* argv[])
     concurrent_layer.addAgentFunction("subtract_data");
     simulation.addSimulationLayer(concurrent_layer);
 
-    simulation.setSimulationSteps(2); // steps>1 --> does not work for now
+    simulation.setSimulationSteps(1); // steps>1 --> does not work for now
 
     /* Run the model */
     CUDAAgentModel cuda_model(flame_model);
@@ -255,19 +227,14 @@ int main(int argc, char* argv[])
 	cuda_model.setMessageData(location1_message);
 
     //cuda_model.addSimulation(simulation); 
-
-    //cuda_model.step(simulation); // replaced by below
-	cuda_model.simulate(simulation);
-
+	
+	cuda_model.simulate(simulation); 
+	
     cuda_model.getPopulationData(population1);
     cuda_model.getPopulationData(population2);
 
-	/* 
-	 * Note: this should be in a way that outputs the results per iteration not just the end. 
-	 * So, maybe it should be callable from the CUDA model
-	*/
-	//flame_model.output(flame_model, "out.xml"); // argv[2]
-
+	flame_model.outputXML(flame_model, argv[2]); 
+	
     return 0;
 }
 

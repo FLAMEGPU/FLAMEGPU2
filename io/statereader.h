@@ -78,6 +78,7 @@ int StateReader::readInitialStates(const ModelDescription &model_description, ch
 	//printf("XML file '%s' loaded. ErrorID=%d\n", inputpath, errorID);
 	printf("XML file '%s' loaded.\n", inputpath);
 
+
 	/* Pointer to file */
 	FILE* fp = fopen(inputpath, "r");
 
@@ -103,14 +104,6 @@ int StateReader::readInitialStates(const ModelDescription &model_description, ch
 	errorId = pElement->QueryIntText(&error);
 	XMLCheckResult(errorId);
 	
-	
-	// then check the agent name agent the tag name to avoid doing the inialization agent.
-
-	// note: either pass the vector of varnames to the statereader , create the objects on the main and pass the varnames
-	// or look at the population , maybe instead of passing the flamemodel, we can pass the population. But we need to be able to get the instances
-	// or add these to the flame model
-	
-
 	for (pElement = pRoot->FirstChildElement("xagent"); pElement != nullptr; pElement = pElement->NextSiblingElement("xagent"))
 	{
 		if (pElement == nullptr)
@@ -119,15 +112,15 @@ int StateReader::readInitialStates(const ModelDescription &model_description, ch
 		XMLElement* pListElement = pElement->FirstChildElement("name");
 		const char* agentName = pListElement->GetText();
 
-		printf("Agent name: %s\n", agentName);	
-
 		const MemoryMap &m = model_description.getAgentDescription(agentName).getMemoryMap();
 		AgentInstance instance = model_description.getAgentPopulation(agentName).getNextInstance("default");
 
 		for (MemoryMap::const_iterator iter = m.begin(); iter != m.end(); iter++)
 		{
 			float outFloat;
+			double outDouble;
 			int outInt;
+			bool outBool;
 
 			const std::string variable_name = iter->first;
 			pListElement = pElement->FirstChildElement(variable_name.c_str());
@@ -135,19 +128,27 @@ int StateReader::readInitialStates(const ModelDescription &model_description, ch
 
 			if (iter->second == typeid(float)) {
 				errorId = pListElement->QueryFloatText(&outFloat);
-				XMLCheckResult(errorId);
 
 				instance.setVariable<float>(variable_name, outFloat);
-				printf(": %f\n", outFloat);
 			}
-			else {
-				pListElement->QueryIntText(&outInt);
+			else if (iter->second == typeid(double)) {
+				errorId = pListElement->QueryDoubleText(&outDouble);
+				XMLCheckResult(errorId);
+
+				instance.setVariable<double>(variable_name, outDouble);
+			}
+			else if (iter->second == typeid(int)) {
+				errorId = pListElement->QueryIntText(&outInt);
 				XMLCheckResult(errorId);
 
 				instance.setVariable<int>(variable_name, outInt);
-				printf(": %d\n", outInt);
 			}
-			printf(": %s\n", variable_name);
+			else if (iter->second == typeid(bool)) {
+				errorId = pListElement->QueryBoolText(&outBool);
+				XMLCheckResult(errorId);
+
+				instance.setVariable<bool>(variable_name, outBool);
+			}
 		}
 	}
 	

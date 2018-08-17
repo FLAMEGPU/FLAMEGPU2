@@ -44,7 +44,7 @@ void ModelDescription::initialise(const ModelDescription &model, char* input)
 	stateread_.readInitialStates(model, input);
 }
 
-void ModelDescription::output(const ModelDescription &model, char* output)
+void ModelDescription::outputXML(const ModelDescription &model, char* output)
 {
 	//read initial states
 	StateWriter statewrite_;

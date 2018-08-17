@@ -47,7 +47,7 @@ public:
 	/*!
 	 *
 	 */
-	int writeStates(const ModelDescription &model_description, char* inputpath);
+	int writeStates(const ModelDescription &model_description, char* outputpath);
 
 
 private:
@@ -73,25 +73,54 @@ int StateWriter::writeStates(const ModelDescription &model_description, char* ou
 	pElement = doc.NewElement("environment");
 	pRoot->InsertEndChild(pElement);
 
-	pElement = doc.NewElement("xagent");
+	
+	int populationSize;
 
-	/* example
-	for (int i = 0; i < populationSize; i++)
+	const AgentMap &am = model_description.getAgentMap();
+
+	// for each agent types
+	for (AgentMap::const_iterator iter_am = am.begin(); iter_am != am.end(); iter_am++)
 	{
-		AgentInstance instance1 = model_description.getAgentPopulation(agentName).getInstanceAt(i, "default");
-		if (instance1.getVariable<float>("x") != 0) { cout << i << " : " << instance1.getVariable<float>("x") << endl; }
+		const char* agentName = iter_am->first.c_str();
+
+		populationSize = model_description.getAgentPopulation(agentName).getStateMemory().getStateListSize();
+
+		// for each agent
+		for (int i = 0; i < populationSize; i++)
+		{
+
+			pElement = doc.NewElement("xagent");
+
+			XMLElement* pListElement = doc.NewElement("name");
+			pListElement->SetText(agentName);
+			pElement->InsertEndChild(pListElement);
+
+			AgentInstance instance = model_description.getAgentPopulation(agentName).getInstanceAt(i, "default");
+			const MemoryMap &mm = model_description.getAgentDescription(agentName).getMemoryMap();
+
+			// for each variable
+			for (MemoryMap::const_iterator iter_mm = mm.begin(); iter_mm != mm.end(); iter_mm++)
+			{
+				const std::string variable_name = iter_mm->first;
+				
+				pListElement = doc.NewElement(variable_name.c_str());
+
+				if (iter_mm->second == typeid(float)) 
+					pListElement->SetText(instance.getVariable<float>(variable_name));
+				else if (iter_mm->second == typeid(double))
+					pListElement->SetText(instance.getVariable<double>(variable_name));
+				else if (iter_mm->second == typeid(int))
+					pListElement->SetText(instance.getVariable<int>(variable_name));
+				else if (iter_mm->second == typeid(bool))
+					pListElement->SetText(instance.getVariable<bool>(variable_name));
+
+				pElement->InsertEndChild(pListElement);
+			}
+
+			pRoot->InsertEndChild(pElement);
+		}
 	}
-
-	for (auto &item: )
-	{
-		XMLElement* pListElement = doc->NewElement("name");
-		pListElement->SetText(agentName);
-	}
-	*/
-	pRoot->InsertEndChild(pElement);
-
-
-	pRoot->InsertEndChild(pElement);
+	
 	XMLError errorId = doc.SaveFile(outputpath);
 	XMLCheckResult(errorId);
 

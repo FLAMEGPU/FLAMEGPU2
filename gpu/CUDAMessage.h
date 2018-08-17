@@ -22,9 +22,6 @@ class AgentPopulation;
 class AgentFunctionDescription;
 class MessageDescription;
 
-// not required
-//typedef std::map<const std::string, std::unique_ptr<CUDAMessageList>> CUDAMessageMap;	
-//typedef std::pair<const std::string, std::unique_ptr<CUDAMessageList>> CUDAMessageMapPair;
 
 class CUDAMessage
 {

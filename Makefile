@@ -121,7 +121,7 @@ endif
 # Target rules
 help:
 	@echo "************************************************************************"
-	@echo "*  Copyright 2016 University of Sheffield.  All rights reserved.       *"
+	@echo "*  Copyright 2018 University of Sheffield.  All rights reserved.       *"
 	@echo "************************************************************************"
 	@echo "make all -> builds all executables in either release or debug          *"
 	@echo "           ------------------------------------------------            *"
@@ -175,9 +175,6 @@ RUNTIME_CUO_FILES := $(addprefix $(SRC_RUNTIME),$(notdir $(RUNTIME_CU_FILES:.cu=
 CURVE_CU_FILES := $(wildcard $(SRC_CURVE)*.cu)
 CURVE_CUO_FILES := $(addprefix $(SRC_CURVE),$(notdir $(CURVE_CU_FILES:.cu=.o)))
 
-XML_PARSER_C_FILES := $(wildcard $(SRC_XML)*.cpp)
-XML_PARSER_CO_FILES := $(addprefix $(SRC_XML),$(notdir $(XML_PARSER_C_FILES:.cpp=.o)))
-
 $(SRC_GPU)%.o: $(SRC_GPU)%.cpp
 	$(EXEC) $(HOST_COMPILER) $(DEBUG) $(STD11) $(STD14) $(CUDA_LIB)  -o $@ -c $<
 	
@@ -196,9 +193,6 @@ $(SRC_POP)%.o: $(SRC_POP)%.cpp
 $(SRC_CURVE)%.o: $(SRC_CURVE)%.cu
 	$(EXEC) $(NVCC) $(DEBUG) $(STD11) $(BOOST_LIB)  $(CUDA_LIB)  $(GENCODE_FLAGS) -dc -o $@ -c $<
 
-$(SRC_XML)%.o: $(SRC_XML)%.cpp
-	$(EXEC) $(HOST_COMPILER) $(DEBUG) $(STD11) $(STD14) $(CUDA_LIB)  -o $@ -c $<
-
 # excluded
 $(SRC_RUNTIME)%.o: $(SRC_RUNTIME)%.cu
 	$(EXEC) $(NVCC) $(DEBUG) $(STD11) $(BOOST_LIB)  $(CUDA_LIB)  $(GENCODE_FLAGS) -dc -o $@ -c $<
@@ -208,7 +202,7 @@ $(SRC_RUNTIME)%.o: $(SRC_RUNTIME)%.cu
 
 # build
 FGPU: BUILD_TYPE=$(Mode_TYPE)
-FGPU: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES)  $(GPU_CUO_FILES) $(CURVE_CUO_FILES) $(RUNTIME_CUO_FILES) $(XML_PARSER_CO_FILES) main.o 
+FGPU: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES)  $(GPU_CUO_FILES) $(CURVE_CUO_FILES) $(RUNTIME_CUO_FILES) main.o 
 	$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -rdc=true -o $@ $+ $(LIBRARIES)
 	$(EXEC) mkdir -p $(BIN_DIR)$(BUILD_TYPE)
 	$(EXEC) mv $@ $(BIN_DIR)$(BUILD_TYPE)
@@ -217,7 +211,7 @@ FGPU: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES)  $(GP
 	chmod +x $(BIN_DIR)FGPU.sh
 
 FGPU_MAS: BUILD_TYPE=$(Mode_TYPE)
-FGPU_MAS: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES)  $(GPU_CUO_FILES) $(CURVE_CUO_FILES) $(RUNTIME_CUO_FILES) $(XML_PARSER_CO_FILES) main_MAS.o 
+FGPU_MAS: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES)  $(GPU_CUO_FILES) $(CURVE_CUO_FILES) $(RUNTIME_CUO_FILES) main_MAS.o 
 	$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -rdc=true -lineinfo -o $@ $+ $(LIBRARIES)
 	$(EXEC) mkdir -p $(BIN_DIR)$(BUILD_TYPE)
 	$(EXEC) mv $@ $(BIN_DIR)$(BUILD_TYPE)
@@ -225,7 +219,7 @@ FGPU_MAS: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES)  
 	@echo ./$(BUILD_TYPE)/FGPU_MAS ../../$(INPUT_DATA) '$$'{1:-1}> $(BIN_DIR)FGPU_MAS.sh
 	chmod +x $(BIN_DIR)FGPU_MAS.sh
 
-BOOST_TEST: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES) $(GPU_CUO_FILES) $(CURVE_CUO_FILES) $(RUNTIME_CUO_FILES) $(XML_PARSER_CO_FILES) device_functions.o test_all.o 
+BOOST_TEST: $(MODEL_CO_FILES)  $(POP_CO_FILES)  $(SIM_CO_FILES)  $(GPU_CO_FILES) $(GPU_CUO_FILES) $(CURVE_CUO_FILES) $(RUNTIME_CUO_FILES) device_functions.o test_all.o 
 	$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -rdc=true -o $@ $+ $(LIBRARIES)
 	$(EXEC) mkdir -p $(BIN_DIR)$(TEST_DIR)
 	$(EXEC) mv $@ $(BIN_DIR)$(TEST_DIR)

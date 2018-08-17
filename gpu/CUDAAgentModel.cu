@@ -244,7 +244,6 @@ void CUDAAgentModel::step(const Simulation& simulation)
 
 			int state_list_size = cuda_agent.getMaximumListSize();
 
-
 			int blockSize; //! The launch configurator returned block size
 			int minGridSize; //! The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
 			int gridSize; //! The actual grid size needed, based on input size
@@ -350,8 +349,10 @@ void CUDAAgentModel::simulate(const Simulation& simulation)
 	//if they have executable functions then these can be ignored
 	//if they have agent creations then buffer space must be allocated for them
 
-	for (int i = 0; i<simulation.getSimulationSteps(); i++)
+	for (int i = 0; i < simulation.getSimulationSteps(); i++) {
+		cout <<"step: " << i << endl;
 		step(simulation);
+	}
 }
 
 

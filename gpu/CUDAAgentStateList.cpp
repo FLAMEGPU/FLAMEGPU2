@@ -217,3 +217,8 @@ void CUDAAgentStateList::zeroAgentData(){
 		zeroDeviceAgentList(d_new_list);
 }
 
+//the actual number of agents in this state
+unsigned int CUDAAgentStateList::getCUDAStateListSize() const
+{
+	return current_list_size;
+}

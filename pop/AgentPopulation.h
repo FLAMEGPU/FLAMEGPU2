@@ -21,7 +21,7 @@
 class AgentDescription;
 
 
-#define DEFAULT_POPULATION_SIZE 1024
+#define DEFAULT_POPULATION_SIZE 10//1024
 
 typedef std::map<const std::string, std::unique_ptr<AgentStateMemory>> AgentStatesMap;	//key is concat of agent and state name!
 typedef std::pair<const std::string, std::unique_ptr<AgentStateMemory>> AgentStatesMapPair;
@@ -37,6 +37,8 @@ public:
 	AgentInstance getInstanceAt(unsigned int index, const std::string agent_state = "default");
 
 	AgentStateMemory& getStateMemory(const std::string agent_state = "default");
+
+	unsigned int getCurrentListSize(const std::string agent_state = "default");
 
 	const AgentStateMemory& getReadOnlyStateMemory(const std::string agent_state = "default") const;
 

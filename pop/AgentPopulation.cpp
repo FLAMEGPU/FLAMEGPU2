@@ -85,6 +85,12 @@ AgentStateMemory& AgentPopulation::getStateMemory(const std::string agent_state)
     return *iter->second;
 }
 
+/* this is the current size */
+unsigned int AgentPopulation::getCurrentListSize(const std::string agent_state)
+{
+	return getStateMemory(agent_state).getStateListSize();
+}
+
 const AgentStateMemory& AgentPopulation::getReadOnlyStateMemory(const std::string agent_state) const
 {
     //check if the state map exists
@@ -112,7 +118,7 @@ const AgentDescription& AgentPopulation::getAgentDescription() const
 
 unsigned int AgentPopulation::getMaximumStateListCapacity() const
 {
-    return maximum_size;
+	return maximum_size;
 }
 
 void AgentPopulation::setStateListCapacity(unsigned int size)
