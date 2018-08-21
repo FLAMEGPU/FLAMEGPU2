@@ -177,7 +177,7 @@ int main(int argc, char* argv[])
 		flame_model.addPopulation(population1);
 		flame_model.addPopulation(population2);
 
-		flame_model.initialise(flame_model, argv[1]);
+		flame_model.initialise(flame_model, "0.xml"); //argv[1]
 #else
 		//2)
 		AgentPopulation population1(circle1_agent, SIZE);

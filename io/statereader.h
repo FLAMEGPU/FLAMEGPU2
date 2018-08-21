@@ -26,71 +26,94 @@ using namespace tinyxml2;
 
 class StateReader;  // Forward declaration (class defined below)
 
-
-class StateReader
-{
-
+// Base class			
+class StateReader {
 public:
 
 	// -----------------------------------------------------------------------
 	//  Constructors and Destructor
 	// -----------------------------------------------------------------------
-
-	StateReader() {};
-
+	StateReader(const ModelDescription &model):model_description_(model) {};
 	~StateReader() {};
 
 	// -----------------------------------------------------------------------
 	//  The interface
 	// -----------------------------------------------------------------------
 
-	/*!
-	 *
-	 */
-	 //virtual void parse(const char &source) = 0;
-	int readInitialStates(const ModelDescription &model_description, char* inputpath);
+	virtual int parse( ) = 0;
 
+	void setFileName(char* input) {	inputFile = input; }
 
-private:
+	void setModelDesc(const ModelDescription &model_desc) {	model_description_ = model_desc; }
 
-	/* The copy constructor, you cannot call this directly */
-	//StateReader(const StateReader&);
+	StateReader& create(const ModelDescription &model, char *input);
+	string getFileExt(const string& s);
 
-	/* The assignment operator, you cannot call this directly */
-	//StateReader& operator=(const StateReader&);
+protected:
+	char* inputFile = "";
+	ModelDescription model_description_;
 };
 
-/**
-* \brief
-* \param source name of the inputfile
-*/
-//void StateReader::parse(const inputSource &source)
-
-int StateReader::readInitialStates(const ModelDescription &model_description, char* inputpath)
+// Derived classes
+class xmlReader : public StateReader
 {
-	XMLDocument doc;
+public:
+	xmlReader(const ModelDescription &model) : StateReader(model) {};
+	int parse();
+};
 
-	XMLError errorId = doc.LoadFile(inputpath);
-	XMLCheckResult(errorId);
-
-	//int errorID = doc.ErrorID(); // not required
-
-	//printf("XML file '%s' loaded. ErrorID=%d\n", inputpath, errorID);
-	printf("XML file '%s' loaded.\n", inputpath);
-
-
-	/* Pointer to file */
-	FILE* fp = fopen(inputpath, "r");
-
-	/* Open config file to read-only */
-	if (!fp)
+class binReader : public StateReader
+{
+public:
+	binReader(const ModelDescription &model) : StateReader(model) {};
+    int parse()
 	{
-		printf("Error opening initial states\n");
+		printf("to do, will exit now");
 		exit(0);
 	}
+};
 
-	/* Close the file */
-	fclose(fp);
+string StateReader::getFileExt(const string& s) {
+
+	// Find the last position of '.' in given string
+	size_t i = s.rfind('.', s.length());
+	if (i != string::npos) {
+		return(s.substr(i + 1, s.length() - i));
+	}
+
+	// In case of no extension return empty string
+	return("");
+}
+
+StateReader& StateReader::create(const ModelDescription &model,char *input)
+{
+	string extension = getFileExt(input);
+	StateReader *object_to_return = NULL;
+
+	if (extension == "xml")
+	{
+		object_to_return = new xmlReader(model);
+	}
+	if (extension == "bin") 
+	{
+		object_to_return = new binReader(model);
+	}
+
+	return *object_to_return;
+}
+
+/**
+* \brief parses the xml file
+* \param source name of the inputfile
+*/
+int xmlReader::parse()
+{
+	XMLDocument doc;
+	
+	XMLError errorId = doc.LoadFile(inputFile);
+	XMLCheckResult(errorId);
+
+	printf("XML file '%s' loaded.\n", inputFile);
 
 	XMLNode* pRoot = doc.FirstChild();
 	if (pRoot == nullptr)
@@ -112,8 +135,8 @@ int StateReader::readInitialStates(const ModelDescription &model_description, ch
 		XMLElement* pListElement = pElement->FirstChildElement("name");
 		const char* agentName = pListElement->GetText();
 
-		const MemoryMap &m = model_description.getAgentDescription(agentName).getMemoryMap();
-		AgentInstance instance = model_description.getAgentPopulation(agentName).getNextInstance("default");
+		const MemoryMap &m = model_description_.getAgentDescription(agentName).getMemoryMap();
+		AgentInstance instance = model_description_.getAgentPopulation(agentName).getNextInstance("default");
 
 		for (MemoryMap::const_iterator iter = m.begin(); iter != m.end(); iter++)
 		{
@@ -154,7 +177,5 @@ int StateReader::readInitialStates(const ModelDescription &model_description, ch
 	
 	return XML_SUCCESS;
 }
-
-
 
 #endif /* STATEREADER_H_ */

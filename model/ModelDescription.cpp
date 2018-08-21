@@ -39,10 +39,25 @@ void ModelDescription::addPopulation(AgentPopulation &pop)
 */
 void ModelDescription::initialise(const ModelDescription &model, char* input)
 {
-	//read initial states
-	StateReader stateread_;
-	stateread_.readInitialStates(model, input);
+	std::unique_ptr<StateReader> read_ ;
+
+	StateReader &read__(read_->create(model, input));
+	read__.setFileName(input);
+	read__.setModelDesc(model);
+	read__.parse();
+
+	// todo : move factory class to outside (later)
+ //We could use an if condition here to find out which derived class to create
+/* 
+	xmlReader read_ (model);
+
+	read_.setFileName(input);
+	read_.setModelDesc(model);
+	read_.parse();
+*/
 }
+	
+
 
 void ModelDescription::outputXML(const ModelDescription &model, char* output)
 {
