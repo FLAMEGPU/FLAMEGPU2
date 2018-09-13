@@ -26,4 +26,4 @@ install:
 before_script: "export PATH=$PATH:/usr/local/cuda/bin"
 
 # Build steps
-script: "make BOOST_TEST HOST_COMPILER=$GCC_VERSION"
+script: "mkdir build && cd build && cmake .. && make -DBUILDTESTS=ON"

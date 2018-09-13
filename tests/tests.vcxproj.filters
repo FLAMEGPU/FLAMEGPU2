@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="device_functions.h">
+      <Filter>tests</Filter>
+    </ClInclude>
+    <ClInclude Include="test_func_pointer.h">
+      <Filter>tests</Filter>
+    </ClInclude>
+    <ClInclude Include="test_gpu_validation.h">
+      <Filter>tests</Filter>
+    </ClInclude>
+    <ClInclude Include="test_message_validation.h">
+      <Filter>tests</Filter>
+    </ClInclude>
+    <ClInclude Include="test_model_validation.h">
+      <Filter>tests</Filter>
+    </ClInclude>
+    <ClInclude Include="test_pop_validation.h">
+      <Filter>tests</Filter>
+    </ClInclude>
+    <ClInclude Include="test_sim_validation.h">
+      <Filter>tests</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="tests">
+      <UniqueIdentifier>{ec314123-61cd-49e0-9791-fba99fb86d65}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="device_functions.cu">
+      <Filter>tests</Filter>
+    </CudaCompile>
+    <CudaCompile Include="test_all.cu">
+      <Filter>tests</Filter>
+    </CudaCompile>
+  </ItemGroup>
+</Project>

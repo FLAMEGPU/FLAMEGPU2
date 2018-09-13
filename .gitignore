@@ -5,6 +5,9 @@ obj/
 *.cbp
 *.layout
 build/
+.vscode
+.cbp
+.layout
 
 CUDA
 *.i

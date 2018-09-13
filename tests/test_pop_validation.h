@@ -10,7 +10,7 @@
  * @bug        No known bugs
  */
 
-#include "../runtime/flame_api.h"
+#include <flamegpu/flame_api.h>
 
 
 using namespace std;
