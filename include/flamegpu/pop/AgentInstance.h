@@ -55,7 +55,7 @@ template <typename T>  const T AgentInstance::getVariable(std::string variable_n
 
 	//get the vector of correct type
 	std::vector<T> &t_v = v.getVector<T>();
-	typename std::vector<T>::iterator it = t_v.begin() + index;
+	//typename std::vector<T>::iterator it = t_v.begin() + index;
 
 	//todo error handling around the cast to check for exceptions
 	return t_v.at(index);

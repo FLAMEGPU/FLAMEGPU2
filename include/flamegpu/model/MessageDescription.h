@@ -38,7 +38,7 @@ public:
 
     const VariableMap& getVariableMap() const;
 
-    const size_t getMessageVariableSize(const std::string variable_name) const;
+    size_t getMessageVariableSize(const std::string variable_name) const;
 
 	size_t getMemorySize() const;
 

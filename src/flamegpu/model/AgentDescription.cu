@@ -99,7 +99,7 @@ unsigned int AgentDescription::getNumberAgentVariables() const
     return static_cast<unsigned int>(memory.size());
 }
 
-const size_t AgentDescription::getAgentVariableSize(const std::string variable_name) const
+size_t AgentDescription::getAgentVariableSize(const std::string variable_name) const
 {
     //get the variable name type
     MemoryMap::const_iterator mm = memory.find(variable_name);

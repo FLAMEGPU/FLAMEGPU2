@@ -11,6 +11,7 @@
  */
 
 
+#include <string>
 #include <tinyxml2/tinyxml2.h>              //downloaded from https://github.com/leethomason/tinyxml2, the list of xml parsers : http://lars.ruoff.free.fr/xmlcpp/
 #include <flamegpu/exception/FGPUException.h>
 #include <flamegpu/pop/AgentPopulation.h>
@@ -42,15 +43,15 @@ public:
 
 	virtual int parse( ) = 0;
 
-	void setFileName(char* input) {	inputFile = input; }
+	void setFileName(const char* input) {	inputFile = std::string(input); }
 
 	void setModelDesc(const ModelDescription &model_desc) {	model_description_ = model_desc; }
 
-	StateReader& create(const ModelDescription &model, char *input);
+	StateReader& create(const ModelDescription &model, const char *input);
 	string getFileExt(const string& s);
 
 protected:
-	char* inputFile = "";
+	std::string inputFile;
 	ModelDescription model_description_;
 };
 
@@ -85,7 +86,7 @@ string StateReader::getFileExt(const string& s) {
 	return("");
 }
 
-StateReader& StateReader::create(const ModelDescription &model,char *input)
+StateReader& StateReader::create(const ModelDescription &model, const char *input)
 {
 	string extension = getFileExt(input);
 	StateReader *object_to_return = NULL;
@@ -110,10 +111,10 @@ int xmlReader::parse()
 {
 	XMLDocument doc;
 	
-	XMLError errorId = doc.LoadFile(inputFile);
+	XMLError errorId = doc.LoadFile(inputFile.c_str());
 	XMLCheckResult(errorId);
 
-	printf("XML file '%s' loaded.\n", inputFile);
+	printf("XML file '%s' loaded.\n", inputFile.c_str());
 
 	XMLNode* pRoot = doc.FirstChild();
 	if (pRoot == nullptr)

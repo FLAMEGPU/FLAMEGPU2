@@ -44,7 +44,7 @@ unsigned int MessageDescription::getNumberMessageVariables() const
     return static_cast<unsigned int>(variables.size());
 }
 
-const size_t MessageDescription::getMessageVariableSize(const std::string variable_name) const
+size_t MessageDescription::getMessageVariableSize(const std::string variable_name) const
 {
     //get the variable name type
     VariableMap::const_iterator mm = variables.find(variable_name);

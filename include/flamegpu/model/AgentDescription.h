@@ -84,7 +84,7 @@ public:
 
     const FunctionMap& getFunctionMap() const;
 
-    const size_t getAgentVariableSize(const std::string variable_name) const;
+    size_t getAgentVariableSize(const std::string variable_name) const;
 
 	size_t getMemorySize() const;
 

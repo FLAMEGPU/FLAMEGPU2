@@ -111,6 +111,7 @@ FLAMEGPU_AGENT_FUNCTION(subtract_func) {
 }
 
 int main(int argc, char* argv[]) {
+
     /* Multi agent model */
     ModelDescription flame_model("circles_model");
 
@@ -168,7 +169,13 @@ int main(int argc, char* argv[]) {
         flame_model.addPopulation(population1);
         flame_model.addPopulation(population2);
 
-        flame_model.initialise(flame_model, "0.xml");  // argv[1]
+        // If there is not enough arguments bail.
+        if(argc < 2){
+            fprintf(stderr, "Error not enough arguments.\n");
+            return EXIT_FAILURE;
+        }
+
+        flame_model.initialise(flame_model, argv[1]);  // argv[1]
 #else
         // 2)
         AgentPopulation population1(circle1_agent, SIZE);

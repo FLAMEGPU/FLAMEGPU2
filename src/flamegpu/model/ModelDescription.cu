@@ -37,7 +37,7 @@ void ModelDescription::addPopulation(AgentPopulation &pop)
 * Initialise the simulation. Allocated host and device memory. Reads the initial agent configuration from XML.
 * @param input	XML file path for agent initial configuration
 */
-void ModelDescription::initialise(const ModelDescription &model, char* input)
+void ModelDescription::initialise(const ModelDescription &model, const char* input)
 {
 	std::unique_ptr<StateReader> read_ ;
 
