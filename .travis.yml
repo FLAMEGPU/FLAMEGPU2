@@ -23,7 +23,8 @@ install:
  - sudo -E ./scripts/travis_install.sh
  
 # Add nvcc to path
-before_script: "export PATH=$PATH:/usr/local/cuda/bin"
+before_script: 
+ - "export PATH=/usr/local/cmake/bin/:/usr/local/cuda/bin:$PATH"
 
 # Build steps
-script: "mkdir build && cd build && cmake .. && make -DBUILDTESTS=ON"
+script: "mkdir build && cd build && cmake .. -DBUILD_TESTS=ON && make"

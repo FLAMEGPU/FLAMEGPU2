@@ -11,6 +11,15 @@ apt-get -y update
 # Install Boost
 apt-get install libboost-dev
 
+# Install redent CMAKE
+CMAKE_SH=https://cmake.org/files/v3.12/cmake-3.12.2-Linux-x86_64.sh
+wget -O cmake.sh $CMAKE_SH
+sh cmake.sh --skip-license --exclude-subdir --prefix=/usr/local/cmake/
+export PATH="/usr/local/cmake/bin/:$PATH"
+
+cmake --version
+which cmake
+
 # Install CUDA (see caffe example https://github.com/BVLC/caffe/blob/master/scripts/travis/install-deps.sh)
 CUDA_REPO_PKG=cuda-repo-ubuntu1404_8.0.44-1_amd64.deb
 #CUDA_REPO_PKG=cuda-repo-ubuntu1604_9.1.85-1_amd64.deb

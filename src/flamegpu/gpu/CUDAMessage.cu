@@ -75,8 +75,8 @@ void CUDAMessage::setInitialMessageList() // used to be const AgentPopulation& p
 	max_list_size = message_description.getMaximumMessageListCapacity(); // maxmimum message list, not the population
 
 	//allocate memory for each message list 
-	//message_list = std::unique_ptr<CUDAMessageList>(new CUDAMessageList(*this));
-	message_list = std::make_unique<CUDAMessageList>(*this); // you may replace *this with "new CUDAMessageList(*this)" , compile this with -std=c++14
+	message_list = std::unique_ptr<CUDAMessageList>(new CUDAMessageList(*this));
+	// message_list = std::make_unique<CUDAMessageList>(*this); // you may replace *this with "new CUDAMessageList(*this)" , compile this with -std=c++14. Not possible with CUDA 8 under linux using cmake.
 
 	/**set the message list to zero*/
 	zeroAllMessageData();

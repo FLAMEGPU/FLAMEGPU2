@@ -8,7 +8,7 @@ project(flamegpu2 CUDA CXX)
 get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/.. REALPATH)
 
 # Define output location of static libraries
-SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${FLAMEGPU_ROOT}/lib/${CMAKE_BUILD_TYPE}/)
+SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${FLAMEGPU_ROOT}/lib/linux-x64/${CMAKE_BUILD_TYPE}/)
 
 # Include common rules.
 include(${FLAMEGPU_ROOT}/cmake/common.cmake)
