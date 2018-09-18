@@ -10,7 +10,7 @@
  * @bug        No known bugs
  */
 
-#include "../runtime/flame_api.h"
+#include <flamegpu/flame_api.h>
 
 
 using namespace std;
@@ -70,10 +70,14 @@ BOOST_AUTO_TEST_CASE(PopulationInstVarCheck1)
 
     AgentInstance instance = population.getNextInstance("default");
 
-#pragma warning( push )
-#pragma warning( disable : 4244)
+#if defined(_MSC_VER)
+    #pragma warning( push )
+    #pragma warning( disable : 4244)
+#endif
     BOOST_CHECK_THROW(instance.setVariable<int>("x", 0.1f),InvalidVarType);
+#if defined(_MSC_VER)
 #pragma warning( pop )
+#endif
 
     instance.setVariable<float>("x", 0.1f);
 

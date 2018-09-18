@@ -11,7 +11,7 @@
  */
 
 
-#include "../runtime/flame_api.h"
+#include <flamegpu/flame_api.h>
 
 #include "device_functions.h"
 

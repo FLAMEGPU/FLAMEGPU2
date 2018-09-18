@@ -3,21 +3,45 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FLAMEGPU2", "FLAMEGPU2.vcxproj", "{FDF174EE-541F-4706-B28A-7BA39AF9F61C}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libflamegpu2", "src\libflamegpu2.vcxproj", "{FDF174EE-541F-4706-B28A-7BA39AF9F61C}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tests", "tests\tests.vcxproj", "{35B0C8A4-1936-4BA2-91B4-6B682E9F441E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{FDF174EE-541F-4706-B28A-7BA39AF9F61C} = {FDF174EE-541F-4706-B28A-7BA39AF9F61C}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mas", "examples\mas\mas.vcxproj", "{E96E2F3F-05B0-49CC-800E-8BE9EBC31F93}"
+	ProjectSection(ProjectDependencies) = postProject
+		{FDF174EE-541F-4706-B28A-7BA39AF9F61C} = {FDF174EE-541F-4706-B28A-7BA39AF9F61C}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "simple_example", "examples\simple_example\simple_example.vcxproj", "{93EB1AAB-0CA9-4984-9B76-11FC9F75C05D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{FDF174EE-541F-4706-B28A-7BA39AF9F61C} = {FDF174EE-541F-4706-B28A-7BA39AF9F61C}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		BoostTest|x64 = BoostTest|x64
 		Debug|x64 = Debug|x64
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{FDF174EE-541F-4706-B28A-7BA39AF9F61C}.BoostTest|x64.ActiveCfg = BoostTest|x64
-		{FDF174EE-541F-4706-B28A-7BA39AF9F61C}.BoostTest|x64.Build.0 = BoostTest|x64
 		{FDF174EE-541F-4706-B28A-7BA39AF9F61C}.Debug|x64.ActiveCfg = Debug|x64
 		{FDF174EE-541F-4706-B28A-7BA39AF9F61C}.Debug|x64.Build.0 = Debug|x64
 		{FDF174EE-541F-4706-B28A-7BA39AF9F61C}.Release|x64.ActiveCfg = Release|x64
 		{FDF174EE-541F-4706-B28A-7BA39AF9F61C}.Release|x64.Build.0 = Release|x64
+		{35B0C8A4-1936-4BA2-91B4-6B682E9F441E}.Debug|x64.ActiveCfg = Debug|x64
+		{35B0C8A4-1936-4BA2-91B4-6B682E9F441E}.Debug|x64.Build.0 = Debug|x64
+		{35B0C8A4-1936-4BA2-91B4-6B682E9F441E}.Release|x64.ActiveCfg = Release|x64
+		{35B0C8A4-1936-4BA2-91B4-6B682E9F441E}.Release|x64.Build.0 = Release|x64
+		{E96E2F3F-05B0-49CC-800E-8BE9EBC31F93}.Debug|x64.ActiveCfg = Debug|x64
+		{E96E2F3F-05B0-49CC-800E-8BE9EBC31F93}.Debug|x64.Build.0 = Debug|x64
+		{E96E2F3F-05B0-49CC-800E-8BE9EBC31F93}.Release|x64.ActiveCfg = Release|x64
+		{E96E2F3F-05B0-49CC-800E-8BE9EBC31F93}.Release|x64.Build.0 = Release|x64
+		{93EB1AAB-0CA9-4984-9B76-11FC9F75C05D}.Debug|x64.ActiveCfg = Debug|x64
+		{93EB1AAB-0CA9-4984-9B76-11FC9F75C05D}.Debug|x64.Build.0 = Debug|x64
+		{93EB1AAB-0CA9-4984-9B76-11FC9F75C05D}.Release|x64.ActiveCfg = Release|x64
+		{93EB1AAB-0CA9-4984-9B76-11FC9F75C05D}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
