@@ -14,5 +14,5 @@ $proj_files = $all_files | where {$_.extension -eq ".vcxproj"} | % { $_.FullName
 # For each vcxproj file
 foreach ($file in $proj_files){
     # Replace occurances of CUDA D.D (where D is a digit) with CUDA {new_verison} in place
-    (Get-Content -Path $file) | ForEach-Object {$_ -Replace "(CUDA )([0-9]\.[0-9])", "CUDA $new_cuda_version"} | Set-Content -Encoding UTF8 -Path $file
+    (Get-Content -Path $file) | ForEach-Object {$_ -Replace "(CUDA )([0-9]+\.[0-9])", "CUDA $new_cuda_version"} | Set-Content -Encoding UTF8 -Path $file
 }
