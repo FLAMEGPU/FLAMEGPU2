@@ -71,8 +71,8 @@ SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAAgentModel.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/agent_function.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/cuRVE/curve.cu
-	${FLAMEGPU_ROOT}/include/flamegpu/io/xmlReader.cpp
-	${FLAMEGPU_ROOT}/include/flamegpu/io/xmlWriter.cpp
+	${FLAMEGPU_ROOT}/src/flamegpu/io/xmlReader.cpp
+	${FLAMEGPU_ROOT}/src/flamegpu/io/xmlWriter.cpp
 )
 
 SET(ALL_SRC 
