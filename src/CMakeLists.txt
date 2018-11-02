@@ -20,6 +20,9 @@ SET(SRC_EXTERNALS
 SET(SRC_INCLUDE 
     ${FLAMEGPU_ROOT}/include/flamegpu/io/statereader.h
     ${FLAMEGPU_ROOT}/include/flamegpu/io/statewriter.h
+	${FLAMEGPU_ROOT}/include/flamegpu/io/xmlReader.h
+	${FLAMEGPU_ROOT}/include/flamegpu/io/xmlWriter.h
+	${FLAMEGPU_ROOT}/include/flamegpu/io/factory.h
     ${FLAMEGPU_ROOT}/include/flamegpu/exception/FGPUException.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/MessageDescription.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/AgentFunctionInput.h
@@ -68,6 +71,8 @@ SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAAgentModel.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/agent_function.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/cuRVE/curve.cu
+	${FLAMEGPU_ROOT}/include/flamegpu/io/xmlReader.cpp
+	${FLAMEGPU_ROOT}/include/flamegpu/io/xmlWriter.cpp
 )
 
 SET(ALL_SRC 

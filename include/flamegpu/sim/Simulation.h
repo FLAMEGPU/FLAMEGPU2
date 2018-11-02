@@ -31,7 +31,6 @@ public:
 	const FunctionDescriptionVector& getFunctionsAtLayer(unsigned int layer) const;
     unsigned int getLayerCount() const;
 
-	std::string getFileExt(const std::string& s);
 	int checkArgs(int argc, char** argv);
 	
 	void initialise(int argc, char** argv); //void initialise(const char * input);

@@ -19,60 +19,46 @@
 
 using namespace std;
 
-/**
-* Abstract factory defines methods to create all
-* related products.
-*/
-class Factory {
-public:
-	virtual StateReader *create_xml_reader(const ModelDescription &model, const char *input) = 0;
-	virtual StateReader *create_hdf_reader(const ModelDescription &model, const char *input) = 0;
-
-	virtual StateWriter *create_xml_writer() = 0;
-	virtual StateWriter *create_hdf_writer() = 0;
-};
-
-/**
-* Concrete factory creates concrete products, but
-* returns them as abstract.
-*/
-class ReaderFactory : public Factory {
-public:
-	StateReader *create_xml_reader(const ModelDescription &model, const char *input) {
-		return new xmlReader(model,input);
+//  move later
+std::string getFileExt(const string& s)
+{
+	// Find the last position of '.' in given string
+	size_t i = s.rfind('.', s.length());
+	if (i != string::npos) {
+		return(s.substr(i + 1, s.length() - i));
 	}
-	//StateReader *create_hdf(const ModelDescription &model, const char *input) {
-		//return new hdfReader(model,input);}
-};
+	// In case of no extension return empty string
+	return("");
+}
 
 /**
 * Concrete factory creates concrete products, but
 * returns them as abstract.
 */
-class WriterFactory : public Factory {
+class ReaderFactory {
 public:
-	StateWriter *create_xml_writer();
-	StateWriter *create_hdf_writer();
-};
+	static StateReader *createReader(const ModelDescription &model, const char *input) {
 
+		string extension = getFileExt(input);
 
-/**
-* Concrete factory creates concrete products, but
-* returns them as abstract.
-*/
-class ReaderFactory1 {
-public:
-	StateReader *create_xml(const ModelDescription &model, const char *input) {
-		return new xmlReader(model, input);
+		if (extension == "xml")
+		{
+			return new xmlReader(model, input);
+		}
+		/*
+		if (extension == "bin")
+		{
+			return new xmlReader(model, input);
+		}
+		*/
+
 	}
-	//StateReader *create_hdf(const ModelDescription &model, const char *input) {
-	//return new hdfReader(model,input);}
 };
 
 
-class WriterFactory1 {
+class WriterFactory {
 public:
-	StateWriter *write_xml(const ModelDescription &model, const char *input) {
+	static StateWriter *createWriter(const ModelDescription &model, const char *input) {
 		return new xmlWriter(model, input);
 	}
 };
