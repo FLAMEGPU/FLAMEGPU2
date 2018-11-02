@@ -163,8 +163,6 @@ int main(int argc, char* argv[]) {
     // flame_model.addMessage(location2_message);
     flame_model.addAgent(circle2_agent);
 
-	Simulation simulation(flame_model);
-
 #ifdef enable_read
         AgentPopulation population1(circle1_agent);
         AgentPopulation population2(circle2_agent);
@@ -177,8 +175,7 @@ int main(int argc, char* argv[]) {
             return EXIT_FAILURE;
         }
 
-       simulation.initialise(argc, argv); // argv[1]
-	  // simulation.initialise(new StateReader(flame_model,argv[1])); 
+        flame_model.initialise(flame_model, argv[1]);  // argv[1]
 #else
         // 2)
         AgentPopulation population1(circle1_agent, SIZE);
@@ -199,7 +196,7 @@ int main(int argc, char* argv[]) {
         flame_model.addPopulation(population2);
 #endif
 
-    
+    Simulation simulation(flame_model);
 
     SimulationLayer output_layer(simulation, "output_layer");
     output_layer.addAgentFunction("output_data");
@@ -232,7 +229,7 @@ int main(int argc, char* argv[]) {
     cuda_model.getPopulationData(population1);
     cuda_model.getPopulationData(population2);
 
-	simulation.output(argc, argv); // argv[1]
+    flame_model.outputXML(flame_model, argv[2]);
 
     return 0;
 }

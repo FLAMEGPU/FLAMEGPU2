@@ -29,6 +29,11 @@
   <ItemGroup>
     <ClCompile Include="..\externals\tinyxml2\tinyxml2.cpp" />
     <ClCompile Include="..\externals\tinyxml2\xmltest.cpp" />
+    <ClCompile Include="flamegpu\io\xmlReader.cpp" />
+    <ClCompile Include="flamegpu\io\xmlWriter.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="flamegpu\model\AgentFunctionInput.cpp" />
     <ClCompile Include="flamegpu\model\AgentFunctionOutput.cpp" />
     <ClCompile Include="flamegpu\model\AgentStateDescription.cpp" />
@@ -46,8 +51,17 @@
     <ClInclude Include="..\include\flamegpu\gpu\CUDAErrorChecking.h" />
     <ClInclude Include="..\include\flamegpu\gpu\CUDAMessage.h" />
     <ClInclude Include="..\include\flamegpu\gpu\CUDAMessageList.h" />
+    <ClInclude Include="..\include\flamegpu\io\factory.h" />
     <ClInclude Include="..\include\flamegpu\io\statereader.h" />
-    <ClInclude Include="..\include\flamegpu\io\statewriter.h" />
+    <ClInclude Include="..\include\flamegpu\io\statewriter.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="..\include\flamegpu\io\xmlReader.h" />
+    <ClInclude Include="..\include\flamegpu\io\xmlWriter.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="..\include\flamegpu\model\AgentDescription.h" />
     <ClInclude Include="..\include\flamegpu\model\AgentFunctionDescription.h" />
     <ClInclude Include="..\include\flamegpu\model\AgentFunctionInput.h" />

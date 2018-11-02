@@ -7,9 +7,10 @@
 //include class dependencies
 #include <flamegpu/sim/SimulationLayer.h>
 
+
 //forward declare dependencies from other modules
 class ModelDescription;
-
+class StateReader;
 
 typedef std::vector<std::reference_wrapper<SimulationLayer>> SimulationLayerVector;
 
@@ -29,6 +30,13 @@ public:
 
 	const FunctionDescriptionVector& getFunctionsAtLayer(unsigned int layer) const;
     unsigned int getLayerCount() const;
+
+	std::string getFileExt(const std::string& s);
+	int checkArgs(int argc, char** argv);
+	
+	void initialise(int argc, char** argv); //void initialise(const char * input);
+	//void initialise(StateReader& reader);
+	void output(int argc, char** argv);
 
 
 private:

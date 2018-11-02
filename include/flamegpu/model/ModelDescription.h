@@ -41,9 +41,6 @@ public:
 	void addMessage(const MessageDescription &message);
 
 	void addPopulation(AgentPopulation &population);
-	void initialise(const ModelDescription &model, const char * input);
-	void outputXML(const ModelDescription &model, char * output);
-
 
 	const AgentDescription& getAgentDescription(const std::string agent_name) const;
 	const MessageDescription& getMessageDescription(const std::string message_name) const;

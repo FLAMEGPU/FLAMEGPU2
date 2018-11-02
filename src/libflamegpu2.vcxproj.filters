@@ -66,6 +66,12 @@
     <ClCompile Include="flamegpu\pop\AgentInstance.cpp">
       <Filter>src\flamegpu\pop</Filter>
     </ClCompile>
+    <ClCompile Include="flamegpu\io\xmlReader.cpp">
+      <Filter>src\flamegpu\io</Filter>
+    </ClCompile>
+    <ClCompile Include="flamegpu\io\xmlWriter.cpp">
+      <Filter>src\flamegpu\io</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\externals\tinyxml2\tinyxml2.h">
@@ -158,6 +164,15 @@
     <ClInclude Include="..\include\flamegpu\defines.h">
       <Filter>include\flamegpu</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\flamegpu\io\xmlReader.h">
+      <Filter>include\flamegpu\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\flamegpu\io\factory.h">
+      <Filter>include\flamegpu\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\flamegpu\io\xmlWriter.h">
+      <Filter>include\flamegpu\io</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="include">
@@ -219,6 +234,9 @@
     </Filter>
     <Filter Include="include\flamegpu\runtime\cuRVE">
       <UniqueIdentifier>{27e0d7ea-13e4-446d-bac2-5195f38a6c37}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\flamegpu\io">
+      <UniqueIdentifier>{a7908a6e-68ea-471a-b306-367fb928fb98}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
