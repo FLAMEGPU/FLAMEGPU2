@@ -66,10 +66,10 @@
     <ClCompile Include="flamegpu\pop\AgentInstance.cpp">
       <Filter>src\flamegpu\pop</Filter>
     </ClCompile>
-    <ClCompile Include="flamegpu\io\xmlReader.cpp">
+    <ClCompile Include="flamegpu\io\xmlReader.cu">
       <Filter>src\flamegpu\io</Filter>
     </ClCompile>
-    <ClCompile Include="flamegpu\io\xmlWriter.cpp">
+    <ClCompile Include="flamegpu\io\xmlWriter.cu">
       <Filter>src\flamegpu\io</Filter>
     </ClCompile>
   </ItemGroup>

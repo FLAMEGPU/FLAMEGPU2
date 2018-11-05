@@ -29,8 +29,8 @@
   <ItemGroup>
     <ClCompile Include="..\externals\tinyxml2\tinyxml2.cpp" />
     <ClCompile Include="..\externals\tinyxml2\xmltest.cpp" />
-    <ClCompile Include="flamegpu\io\xmlReader.cpp" />
-    <ClCompile Include="flamegpu\io\xmlWriter.cpp">
+    <ClCompile Include="flamegpu\io\xmlReader.cu" />
+    <ClCompile Include="flamegpu\io\xmlWriter.cu">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
