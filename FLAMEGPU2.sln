@@ -20,8 +20,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "simple_example", "examples\
 		{FDF174EE-541F-4706-B28A-7BA39AF9F61C} = {FDF174EE-541F-4706-B28A-7BA39AF9F61C}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "circles_model", "examples\circles_model\circles_model.vcxproj", "{5592DD72-3E18-4739-BF73-E0081B8EAAA3}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
