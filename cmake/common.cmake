@@ -128,9 +128,14 @@ set(CMAKE_CUDA_FLAGS_RELEASE "${CMAKE_CUDA_FLAGS_RELEASE} -lineinfo")
 # profile specific CUDA flags.
 set(CMAKE_CUDA_FLAGS_PROFILE "${CMAKE_CUDA_FLAGS_PROFILE} -lineinfo -DPROFILE -D_PROFILE")
 
-# All warnings for all modes.
-set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -Wall")
-
+# Set high level of warnings, specific to the host compiler.
+if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    # Only set W4 for MSVC, WAll is more like Wall, Wextra and Wpedantic
+    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler \"/W4\"")
+else()
+    # Assume using GCC/Clang which Wall is relatively sane for. 
+    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -Wall")
+endif()
 
 # Use C++14 standard - std::make_unique is 14 not 11
 # Specify using C++14 standard
