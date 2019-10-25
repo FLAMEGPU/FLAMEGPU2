@@ -89,6 +89,10 @@ if(SMS_COUNT EQUAL 0)
     if(CMAKE_CUDA_COMPILER_VERSION GREATER_EQUAL 9.0 )
         list(APPEND SMS "70") # CUDA >= 9.0
     endif()
+    # If the CUDA version is >= 10.0, build for Turing
+    if(CMAKE_CUDA_COMPILER_VERSION GREATER_EQUAL 10.0 )
+        list(APPEND SMS "75") # CUDA >= 10.0
+    endif()
 endif()
 
 # Replace commas and spaces with semicolons to correclty form a cmake list
