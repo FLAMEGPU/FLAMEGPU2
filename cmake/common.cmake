@@ -169,7 +169,7 @@ find_file(CPPLINT NAMES cpplint cpplint.exe)
 if(CPPLINT)
     function(new_linter_target NAME SRC)
         # Don't lint external files
-        list(FILTER SRC EXCLUDE REGEX "${FLAMEGPU_ROOT}/externals/.*")
+        list(FILTER SRC EXCLUDE REGEX "^${FLAMEGPU_ROOT}/externals/.*")
         # Add custom target for linting this
         add_custom_target(
             "lint_${NAME}"
@@ -217,6 +217,14 @@ function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT)
 
     # Flag the new linter target and the files to be linted.
     new_linter_target(${NAME} ${SRC})
+    
+    # Setup Visual Studio (and eclipse) filters
+    set(T_SRC "${SRC}")
+    list(FILTER T_SRC INCLUDE REGEX ".*\.(h|hpp|cuh)$")
+    source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src PREFIX headers FILES ${T_SRC})
+    set(T_SRC "${SRC}")
+    list(FILTER T_SRC EXCLUDE REGEX ".*\.(h|hpp|cuh)$")
+    source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src PREFIX src FILES ${T_SRC})
 
 
 endfunction()

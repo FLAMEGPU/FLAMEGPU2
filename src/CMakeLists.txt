@@ -81,5 +81,10 @@ SET(ALL_SRC
     ${SRC_FLAMEGPU2}
 )
 
+# Setup Visual Studio (and eclipse) filters
+source_group(TREE ${FLAMEGPU_ROOT} FILES ${SRC_EXTERNALS})
+source_group(TREE ${FLAMEGPU_ROOT}/include/flamegpu PREFIX include FILES ${SRC_INCLUDE})
+source_group(TREE ${FLAMEGPU_ROOT}/src/flamegpu PREFIX src FILES ${SRC_FLAMEGPU2})
+
 # Define which source files are required for the target executable
 add_flamegpu_library("${PROJECT_NAME}" "${ALL_SRC}" "${FLAMEGPU_ROOT}")
