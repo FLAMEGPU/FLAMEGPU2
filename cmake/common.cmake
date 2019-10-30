@@ -137,6 +137,9 @@ set(CMAKE_CUDA_FLAGS_PROFILE "${CMAKE_CUDA_FLAGS_PROFILE} -lineinfo -DPROFILE -D
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     # Only set W4 for MSVC, WAll is more like Wall, Wextra and Wpedantic
     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler \"/W4\"")
+    # Also suppress some unwanted W4 warnings
+    # 'function' : unreferenced local function has been removed
+    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler /wd4505")
 else()
     # Assume using GCC/Clang which Wall is relatively sane for. 
     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -Wall")
