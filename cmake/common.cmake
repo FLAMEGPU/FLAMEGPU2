@@ -168,6 +168,8 @@ endif()
 find_file(CPPLINT NAMES cpplint cpplint.exe)
 if(CPPLINT)
     function(new_linter_target NAME SRC)
+        # Don't lint external files
+        list(FILTER SRC EXCLUDE REGEX "${FLAMEGPU_ROOT}/externals/.*")
         # Add custom target for linting this
         add_custom_target(
             "lint_${NAME}"
@@ -231,6 +233,6 @@ function(add_flamegpu_library NAME SRC FLAMEGPU_ROOT)
     target_include_directories(${NAME}  PRIVATE ${FLAMEGPU_ROOT}/externals)
 
     # Flag the new linter target and the files to be linted.
-    new_linter_target(${NAME} ${SRC})
+    new_linter_target(${NAME} "${SRC}")
 
 endfunction()
