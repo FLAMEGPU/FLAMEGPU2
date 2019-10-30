@@ -155,19 +155,28 @@ if(NOT DEFINED CMAKE_CUDA_STANDARD)
 endif()
 
 # Define a function to add a lint target.
-function(new_linter_target NAME SRC)
-    # Add custom target for linting this
-    add_custom_target(
-        "lint_${NAME}"
-        COMMAND cpplint
-        ${SRC}
-    )
-    # Add the custom target as a dependency of the global lint target
-    if(TARGET lint)
-        add_dependencies(lint lint_${NAME})
-    endif()
-endfunction()
-
+find_file(CPPLINT NAMES cpplint cpplint.exe)
+if(CPPLINT)
+    function(new_linter_target NAME SRC)
+        # Add custom target for linting this
+        add_custom_target(
+            "lint_${NAME}"
+            COMMAND cpplint
+            ${SRC}
+        )
+        # Add the custom target as a dependency of the global lint target
+        if(TARGET lint)
+            add_dependencies(lint lint_${NAME})
+        endif()
+    endfunction()
+else()
+    message(WARNING "cpplint script: NOT FOUND! "
+                    "Lint projects will not be generated"
+                    "Please install cpplint as described on https://pypi.python.org/pypi/cpplint. "
+			        "In most cases command '(sudo )pip install cpplint' should be sufficient.")
+    function(new_linter_target NAME SRC)
+    endfunction()
+endif()
 
 # Function to mask some of the steps to create an executable which links against the static library
 function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT)
