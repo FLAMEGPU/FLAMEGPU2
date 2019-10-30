@@ -177,8 +177,8 @@ if(CPPLINT)
             ${SRC}
         )
         # Add the custom target as a dependency of the global lint target
-        if(TARGET lint)
-            add_dependencies(lint lint_${NAME})
+        if(TARGET all_lint)
+            add_dependencies(all_lint lint_${NAME})
         endif()
     endfunction()
 else()

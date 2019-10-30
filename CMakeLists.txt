@@ -16,7 +16,7 @@ option(BUILD_EXAMPLE_SIMPLE_EXAMPLE "Enable building examples/simple_example" OF
 option(BUILD_TESTS "Enable building tests" OFF)
 
 # Add a custom target to lint all child projects. Dependencies are specified in child projcets.
-add_custom_target(lint)
+add_custom_target(all_lint)
 
 # Add the library building subdirectory
 if(BUILD_FLAMEGPU2)
