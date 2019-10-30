@@ -15,8 +15,9 @@ option(BUILD_EXAMPLE_SIMPLE_EXAMPLE "Enable building examples/simple_example" OF
 # Option to enable/disable tests.
 option(BUILD_TESTS "Enable building tests" OFF)
 
-# Add a custom target to lint all child projects. Dependencies are specified in child projcets.
+# Add a custom target to lint all child projects. Dependencies are specified in child projects.
 add_custom_target(all_lint)
+set_target_properties(all_lint PROPERTIES EXCLUDE_FROM_ALL TRUE)
 
 # Add the library building subdirectory
 if(BUILD_FLAMEGPU2)

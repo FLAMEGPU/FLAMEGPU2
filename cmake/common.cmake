@@ -176,6 +176,7 @@ if(CPPLINT)
             COMMAND cpplint
             ${SRC}
         )
+        set_target_properties("lint_${NAME}" PROPERTIES EXCLUDE_FROM_ALL TRUE)
         # Add the custom target as a dependency of the global lint target
         if(TARGET all_lint)
             add_dependencies(all_lint lint_${NAME})
