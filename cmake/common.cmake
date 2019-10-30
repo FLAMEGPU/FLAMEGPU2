@@ -1,3 +1,4 @@
+message(STATUS "-----Configuring Project: ${PROJECT_NAME}-----")
 # Common rules for other cmake files
 STRING(TOLOWER "${CMAKE_SYSTEM_NAME}" CMAKE_SYSTEM_NAME_LOWER)
 
