@@ -1,5 +1,5 @@
 # Common rules for other cmake files
-
+STRING(TOLOWER "${CMAKE_SYSTEM_NAME}" CMAKE_SYSTEM_NAME_LOWER)
 
 # Set a default build type if not passed (https://blog.kitware.com/cmake-and-the-default-build-type/)
 set(default_build_type "Release")
