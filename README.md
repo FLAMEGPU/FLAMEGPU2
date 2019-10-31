@@ -21,6 +21,37 @@ Continuous integration is provided by Travis (Linux) and windows (AppVeyor). Thi
 
 Visual studio project files are provided to build the static library and example projects.
 
+It is also possible to generate Visual studio project files using `cmake` (or `cmake-gui`).
+
+When generating Visual studio project files, using either version of CMake, the platform **must** be specified as `x64`.
+
+Using `cmake` this takes the form `-A x64`
+
+I.e
+
+```
+mkdir build && cd build
+cmake .. -A x64
+FLAMEGPU2.sln
+```
+
+This command will use the latest version of Visual studio detected, and open the created Visual studio solution.
+If the `cmake` command fails, the detected version does not support CUDA.
+
+CUDA may need to be reinstalled, alternatively using `-G` the desired version of Visual studio can be specified.
+
+I.e
+
+```
+mkdir build && cd build
+cmake .. -G "Visual Studio 14 2015" -A x64
+FLAMEGPU2.sln
+```
+
+`Visual Studio 14 2015` can be replaced with any supported [Visual studio generator](https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html#visual-studio-generators) that is installed.
+
+*The below section 'CMake' contains examples of further useful `cmake` parameters.*
+
 ##### Testing
 
 If you wish to build and run the unit tests, boost must be installed and the environment variable `BOOST_ROOT` must be set. 
@@ -114,4 +145,4 @@ doxygen Doxyfile
 To view, open:
 docs/index.html
 
-#https://www.daniweb.com/programming/software-development/threads/398953/doxygen-multiple-files
+<!--https://www.daniweb.com/programming/software-development/threads/398953/doxygen-multiple-files-->
