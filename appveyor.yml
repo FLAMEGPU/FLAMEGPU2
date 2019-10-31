@@ -2,18 +2,20 @@
 version: "0.1.{build}"
 
 # Operating system (build VM template)
-os: Previous Visual Studio 2015
-#Visual Studio 2013 #older version
+os: Visual Studio 2015
+# os: Visual Studio 2017
+# os: Visual Studio 2019
 
 # build platform, i.e. Win32 (instead of x86), x64, Any CPU. This setting is optional.
 platform: 
-  # - Win32 Disable Win32
   - x64
   
-# specify custom environment variables
+# specify custom environment variables, including boost version, which corresponds to which windows image is used.
+# https://www.appveyor.com/docs/windows-images-software/#boost
 environment:
-  # - BOOST_ROOT: C:\Libraries\boost_1_59_0
-  BOOST_ROOT: C:\Libraries\boost_1_60_0
+  BOOST_ROOT: C:\Libraries\boost_1_60_0 # VS 2015
+  # BOOST_ROOT: C:\Libraries\boost_1_69_0 # VS 2017
+  # BOOST_ROOT: C:\Libraries\boost_1_71_0 # VS 2019
 
 
 # build configuration, i.e. Debug, Release, etc.
@@ -42,9 +44,17 @@ install:
   # Set the device architectures for the appropriate device architecture sessions
   - ps: .\scripts\vcxproj-device-architectures.ps1 "35"
 
+# Before build use cmake
+before_build:
+- cmd: |-
+    mkdir build
+    cd build
+    cmake --version
+    cmake .. -A x64
+
 # The build
 build:
-  project: FLAMEGPU2.sln
+  project: build\FLAMEGPU2.sln
 
 #debugging
 #on_finish:
