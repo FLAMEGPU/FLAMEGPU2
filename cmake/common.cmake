@@ -189,7 +189,7 @@ else()
     message(WARNING "cpplint script: NOT FOUND! "
                     "Lint projects will not be generated"
                     "Please install cpplint as described on https://pypi.python.org/pypi/cpplint. "
-			        "In most cases command '(sudo )pip install cpplint' should be sufficient.")
+			        "In most cases command '(sudo) pip install cpplint' should be sufficient.")
     function(new_linter_target NAME SRC)
     endfunction()
 endif()
