@@ -233,7 +233,7 @@ function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT)
     set(T_SRC "${SRC}")
     list(FILTER T_SRC INCLUDE REGEX "^${CMAKE_CURRENT_SOURCE_DIR}/src")
     list(FILTER T_SRC EXCLUDE REGEX ".*\.(h|hpp|cuh)$")
-    source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src PREFIX headers FILES ${T_SRC})
+    source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src PREFIX src FILES ${T_SRC})
     #./.h
     set(T_SRC "${SRC}")
     list(FILTER T_SRC EXCLUDE REGEX "^${CMAKE_CURRENT_SOURCE_DIR}/src")
@@ -243,7 +243,7 @@ function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT)
     set(T_SRC "${SRC}")
     list(FILTER T_SRC EXCLUDE REGEX "^${CMAKE_CURRENT_SOURCE_DIR}/src")
     list(FILTER T_SRC EXCLUDE REGEX ".*\.(h|hpp|cuh)$")
-    source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX headers FILES ${T_SRC})
+    source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX src FILES ${T_SRC})
 
 
 endfunction()
