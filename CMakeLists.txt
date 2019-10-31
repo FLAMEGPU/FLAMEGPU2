@@ -4,6 +4,9 @@ cmake_minimum_required(VERSION VERSION 3.10 FATAL_ERROR)
 
 project(FLAMEGPU2)
 
+# Don't create installation scripts
+set(CMAKE_SKIP_INSTALL_RULES TRUE)
+
 # Option to enable/disable building the static library
 option(BUILD_FLAMEGPU2 "Enable building FLAMEGPU2 library" ON)
 # Option to enable building all examples

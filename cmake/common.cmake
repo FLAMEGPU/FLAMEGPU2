@@ -1,6 +1,9 @@
 message(STATUS "-----Configuring Project: ${PROJECT_NAME}-----")
 # Common rules for other cmake files
+# Make available lowercase 'linux'/'windows' vars (used for build dirs)
 STRING(TOLOWER "${CMAKE_SYSTEM_NAME}" CMAKE_SYSTEM_NAME_LOWER)
+# Don't create installation scripts
+set(CMAKE_SKIP_INSTALL_RULES TRUE)
 
 # Set a default build type if not passed (https://blog.kitware.com/cmake-and-the-default-build-type/)
 set(default_build_type "Release")
@@ -173,7 +176,7 @@ if(CPPLINT)
         # Add custom target for linting this
         add_custom_target(
             "lint_${NAME}"
-            COMMAND cpplint
+            COMMAND ${CPPLINT}
             ${SRC}
         )
         set_target_properties("lint_${NAME}" PROPERTIES EXCLUDE_FROM_ALL TRUE)
