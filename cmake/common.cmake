@@ -222,8 +222,6 @@ function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT)
     new_linter_target(${NAME} ${SRC})
     
     # Setup Visual Studio (and eclipse) filters
-    
-    string(FIND "${CMAKE_CURRENT_SOURCE_DIR}/src" "${T_SRC}" _result)
     #src/.h
     set(T_SRC "${SRC}")
     list(FILTER T_SRC INCLUDE REGEX "^${CMAKE_CURRENT_SOURCE_DIR}/src")

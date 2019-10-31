@@ -14,6 +14,7 @@ include(${FLAMEGPU_ROOT}/cmake/common.cmake)
 SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${FLAMEGPU_ROOT}/lib/${CMAKE_SYSTEM_NAME_LOWER}-x64/${CMAKE_BUILD_TYPE}/)
 
 # Specify source files for the static library
+# Can't do this automatically, as CMake wouldn't know when to regen (as CMakeLists.txt would be unchanged)
 SET(SRC_EXTERNALS 
     ${FLAMEGPU_ROOT}/externals/tinyxml2/tinyxml2.cpp
 )
@@ -84,7 +85,12 @@ SET(ALL_SRC
 # Setup Visual Studio (and eclipse) filters
 source_group(TREE ${FLAMEGPU_ROOT} FILES ${SRC_EXTERNALS})
 source_group(TREE ${FLAMEGPU_ROOT}/include/flamegpu PREFIX include FILES ${SRC_INCLUDE})
-source_group(TREE ${FLAMEGPU_ROOT}/src/flamegpu PREFIX src FILES ${SRC_FLAMEGPU2})
+set(T_SRC "${SRC_FLAMEGPU2}")
+list(FILTER T_SRC INCLUDE REGEX ".*\.(h|hpp|cuh)$")
+source_group(TREE ${FLAMEGPU_ROOT}/src/flamegpu PREFIX headers FILES ${T_SRC})
+set(T_SRC "${SRC_FLAMEGPU2}")
+list(FILTER T_SRC EXCLUDE REGEX ".*\.(h|hpp|cuh)$")
+source_group(TREE ${FLAMEGPU_ROOT}/src/flamegpu PREFIX src FILES ${T_SRC})
 
 # Define which source files are required for the target executable
 add_flamegpu_library("${PROJECT_NAME}" "${ALL_SRC}" "${FLAMEGPU_ROOT}")

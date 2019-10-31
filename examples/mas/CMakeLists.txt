@@ -16,6 +16,7 @@ SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${FLAMEGPU_ROOT}/bin/${CMAKE_SYSTEM_NAME_LOWE
 # SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE}/) # Project specific
 
 # Prepare list of source files
+# Can't do this automatically, as CMake wouldn't know when to regen (as CMakeLists.txt would be unchanged)
 SET(ALL_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cu
 )
