@@ -1,6 +1,6 @@
 # Set the minimum cmake version to that which supports cuda natively.
-# 3.10 required for cuda -std=c++14, 3.12 is better to fix some device linker errors
-cmake_minimum_required(VERSION VERSION 3.10 FATAL_ERROR)
+# 3.10 required for cuda -std=c++14, however 3.12 fixes some device linker errors
+cmake_minimum_required(VERSION VERSION 3.12 FATAL_ERROR)
 
 project(FLAMEGPU2)
 
