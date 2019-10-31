@@ -11,7 +11,7 @@ get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/.. REALPATH)
 include(${FLAMEGPU_ROOT}/cmake/common.cmake)
 
 # Define output location of static library
-SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${FLAMEGPU_ROOT}/lib/${CMAKE_SYSTEM_NAME_LOWER}-x64/${CMAKE_BUILD_TYPE}/)
+SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../lib/${CMAKE_SYSTEM_NAME_LOWER}-x64/${CMAKE_BUILD_TYPE}/)
 
 # Specify source files for the static library
 # Can't do this automatically, as CMake wouldn't know when to regen (as CMakeLists.txt would be unchanged)
