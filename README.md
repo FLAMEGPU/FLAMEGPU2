@@ -28,6 +28,16 @@ cmake ..
 make
 ```
 
+By default a `Makefile` for the `Release` build configuration will be generated.
+
+Alternatively, using `-DCMAKE_BUILD_TYPE=`, `Debug` or `Profile` build configurations can be generated:
+ 
+```
+mkdir -p build && cd build
+cmake .. -DCMAKE_BUILD_TYPE=Profile
+make
+```
+
 #### Windows
 
 *Note: If installing CMake on Windows ensure CMake is added to the system path, allowing `cmake` to be used via `cmd`, this option is disabled within the installer by default.*
