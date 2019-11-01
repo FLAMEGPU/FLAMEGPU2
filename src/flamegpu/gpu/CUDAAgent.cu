@@ -195,7 +195,7 @@ void CUDAAgent::zeroAllStateVariableData()
 void CUDAAgent::mapRuntimeVariables(const AgentFunctionDescription& func) const
 {
     //check the cuda agent state map to find the correct state list for functions starting state
-    CUDAStateMap::const_iterator sm = state_map.find(func.getIntialState());
+    CUDAStateMap::const_iterator sm = state_map.find(func.getInitialState());
 
     if (sm == state_map.end())
     {
@@ -228,7 +228,7 @@ void CUDAAgent::mapRuntimeVariables(const AgentFunctionDescription& func) const
 void CUDAAgent::unmapRuntimeVariables(const AgentFunctionDescription& func) const
 {
     //check the cuda agent state map to find the correct state list for functions starting state
-    CUDAStateMap::const_iterator sm = state_map.find(func.getIntialState());
+    CUDAStateMap::const_iterator sm = state_map.find(func.getInitialState());
 
     if (sm == state_map.end())
     {
