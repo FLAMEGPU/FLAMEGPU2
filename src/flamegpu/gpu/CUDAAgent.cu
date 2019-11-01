@@ -239,7 +239,7 @@ void CUDAAgent::unmapRuntimeVariables(const AgentFunctionDescription& func) cons
     for (MemoryMapPair mmp : agent_description.getMemoryMap())
     {
         //get a device pointer for the agent variable name
-        void* d_ptr = sm->second->getAgentListVariablePointer(mmp.first);
+        //void* d_ptr = sm->second->getAgentListVariablePointer(mmp.first);
 
         //unmap using curve
 		CurveVariableHash var_hash = curveVariableRuntimeHash(mmp.first.c_str());
