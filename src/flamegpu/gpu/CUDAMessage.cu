@@ -68,19 +68,18 @@ void CUDAMessage::setInitialMessageList() { // used to be const AgentPopulation&
 
     max_list_size = message_description.getMaximumMessageListCapacity(); // maxmimum message list, not the population
 
-    // allocate memory for each message list 
+    // allocate memory for each message list
     message_list = std::unique_ptr<CUDAMessageList>(new CUDAMessageList(*this));
     // message_list = std::make_unique<CUDAMessageList>(*this); // you may replace *this with "new CUDAMessageList(*this)" , compile this with -std=c++14. Not possible with CUDA 8 under linux using cmake.
 
     /**set the message list to zero*/
     zeroAllMessageData();
-
 }
 
 /**
 * @brief Returns the maximum list size
 * @param none
-* @return maximum size list that is equal to the maximum list size 
+* @return maximum size list that is equal to the maximum list size
 * @note may want to change this to maximum population size
 */
 unsigned int CUDAMessage::getMaximumListSize() const {
@@ -110,7 +109,7 @@ void CUDAMessage::mapRuntimeVariables(const AgentFunctionDescription& func) cons
     // loop through the message variables to map each variable name using cuRVE
     for (VariableMapPair mmp : message_description.getVariableMap()) {
         // get a device pointer for the message variable name
-        void* d_ptr = message_list->getMessageListVariablePointer(mmp.first); 
+        void* d_ptr = message_list->getMessageListVariablePointer(mmp.first);
 
         // map using curve
         CurveVariableHash var_hash = curveVariableRuntimeHash(mmp.first.c_str());
@@ -127,11 +126,9 @@ void CUDAMessage::mapRuntimeVariables(const AgentFunctionDescription& func) cons
 
         curveRegisterVariableByHash(var_hash + agent_hash + func_hash + message_hash, d_ptr, size, length);
     }
-
 }
 
 void CUDAMessage::unmapRuntimeVariables(const AgentFunctionDescription& func) const {
-
     const std::string message_name = message_description.getName();
     // loop through the message variables to map each variable name using cuRVE
     for (VariableMapPair mmp : message_description.getVariableMap()) {
@@ -146,6 +143,5 @@ void CUDAMessage::unmapRuntimeVariables(const AgentFunctionDescription& func) co
 
         curveUnregisterVariableByHash(var_hash + agent_hash + func_hash + message_hash);
     }
-
 }
 

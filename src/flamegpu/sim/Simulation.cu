@@ -27,7 +27,7 @@ const FunctionDescriptionVector& Simulation::getFunctionsAtLayer(unsigned int la
     if (layer>=layers.size())
         throw InvalidMemoryCapacity("Function layer doesn't exists!"); // out of bound index
     else {
-        return layers.at(layer).get().getAgentFunctions(); 
+        return layers.at(layer).get().getAgentFunctions();
     }
 }
 
@@ -72,7 +72,7 @@ void Simulation::initialise(int argc, char** argv) {
     if (!checkArgs(argc, argv))
         exit(0);
     const char* input = argv[1];
-    
+
     StateReader *read__ = ReaderFactory::createReader(model_description, input);
     read__->parse();
 }

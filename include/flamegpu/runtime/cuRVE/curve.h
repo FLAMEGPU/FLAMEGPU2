@@ -223,8 +223,7 @@ __device__ float curveGetVariableByHash(const CurveVariableHash variable_hash, u
     if (size != sizeof(T)) {
         d_curve_error = CURVE_DEVICE_ERROR_UNKNOWN_TYPE;
         return NULL;
-    }
-    else {
+    } else {
         // get a pointer to the specific variable by offsetting by the provided index
         T *value_ptr = reinterpret_cast<T*>(curveGetVariablePtrByHash(variable_hash, offset));
 
@@ -246,7 +245,6 @@ __device__ float curveGetVariable(const char (&variableName)[N], CurveVariableHa
     CurveVariableHash variable_hash = curveVariableHash(variableName);
 
     return curveGetVariableByHash<T>(variable_hash+namespace_hash, index);
-
 }
 
 /** @brief Device function for setting a single typed value from a CurveVariableHash
@@ -262,8 +260,7 @@ __device__ void curveSetVariableByHash(const CurveVariableHash variable_hash, T 
     if (size != sizeof(T)) {
         d_curve_error = CURVE_DEVICE_ERROR_UNKNOWN_TYPE;
         return;
-    }
-    else {
+    } else {
         size_t offset = index *sizeof(T);
         T *value_ptr = reinterpret_cast<T*>(curveGetVariablePtrByHash(variable_hash, offset));
         *value_ptr = variable;

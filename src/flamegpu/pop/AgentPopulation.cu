@@ -51,7 +51,6 @@ AgentInstance AgentPopulation::getNextInstance(const std::string agent_state) {
 
     // return new instance from state memory with index of current size (then increment)
     return AgentInstance(*sm->second, index);
-
 }
 
 AgentInstance AgentPopulation::getInstanceAt(unsigned int index, const std::string agent_state) {
@@ -68,7 +67,6 @@ AgentInstance AgentPopulation::getInstanceAt(unsigned int index, const std::stri
 
     // return new instance from state memory with index of current size (then increment)
     return AgentInstance(*sm->second, index);
-
 }
 
 AgentStateMemory& AgentPopulation::getStateMemory(const std::string agent_state) {

@@ -52,7 +52,6 @@ CUDAAgentModel::CUDAAgentModel(const ModelDescription& description) : model_desc
             FunctionMap.insert(CUDAFunctionMap::value_type(it->first, std::unique_ptr<CUDAAgentFunction>(new CUDAAgentFunction(it->second))));
         }
         */
-
 }
 
 /**
@@ -147,7 +146,7 @@ void CUDAAgentModel::step(const Simulation& simulation) {
             if (func_des.hasInputMessage()) {
                 std::string inpMessage_name = func_des.getInputMessageName();
                 const CUDAMessage& cuda_message = getCUDAMessage(inpMessage_name); printf("inp msg name: %s\n",inpMessage_name.c_str());
-                cuda_message.mapRuntimeVariables(func_des); 
+                cuda_message.mapRuntimeVariables(func_des);
             }
 
             // ! check if a function has an output massage
@@ -165,7 +164,6 @@ void CUDAAgentModel::step(const Simulation& simulation) {
         }
         // ! for each func function - Loop through to launch all agent functions
         for (AgentFunctionDescription func_des : functions) {
-
             std::string agent_name = func_des.getParent().getName();
             std::string func_name = func_des.getName();
 
@@ -221,7 +219,7 @@ void CUDAAgentModel::step(const Simulation& simulation) {
 
             // agent_function_wrapper << <gridSize, blockSize, 0, stream[j] >> > (agentname_hash + funcname_hash, h_func_ptr, state_list_size);
             agent_function_wrapper <<<gridSize, blockSize, 0, stream[j] >>>(agentname_hash + funcname_hash, message_name_inp_hash, message_name_outp_hash, h_func_ptr, state_list_size, messageList_Size);
- 
+
             ++j;
         }
         // ! for each func function - Loop through to un-map all agent and message variables
@@ -260,7 +258,6 @@ void CUDAAgentModel::step(const Simulation& simulation) {
 * @warning not tested
 */
 void CUDAAgentModel::init(void) {  // (int argc, char** argv) {
-
     cudaError_t cudaStatus;
     int device;
     int device_count;

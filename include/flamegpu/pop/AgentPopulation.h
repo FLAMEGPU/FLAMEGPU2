@@ -57,7 +57,6 @@ class AgentPopulation {
     const AgentDescription &agent;
     AgentStatesMap states_map;
     unsigned int maximum_size; // size is maximum size for agents in any single state (same for all states of same agent type)
-
 };
 
 #endif // INCLUDE_FLAMEGPU_POP_AGENTPOPULATION_H_

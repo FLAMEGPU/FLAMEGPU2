@@ -50,13 +50,11 @@ void AgentFunctionDescription::addOutput(const AgentFunctionOutput &output) {
         outputs.insert(OutputsMap::value_type(output.getMessageName(), output));
     else
         throw InvalidOperation("Agent function output is not empty");
-
 }
 
 const InputsMap & AgentFunctionDescription::getInput() {
    // if (inputs != NULL)
         return inputs;
-
 }
 
 const OutputsMap & AgentFunctionDescription::getOutput() {

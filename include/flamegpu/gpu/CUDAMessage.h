@@ -60,7 +60,6 @@ protected:
     std::unique_ptr<CUDAMessageList> message_list; // CUDAMessageMap message_list;
 
     unsigned int max_list_size;
-
 };
 
 #endif //INCLUDE_FLAMEGPU_GPU_CUDAMESSAGE_H_

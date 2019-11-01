@@ -23,12 +23,10 @@
 * @brief populates CUDA message map
 */
 CUDAMessageList::CUDAMessageList(CUDAMessage& cuda_message) : message(cuda_message) {
-
     // allocate message lists
     allocateDeviceMessageList(d_list);
     allocateDeviceMessageList(d_swap_list);
     allocateDeviceMessageList(d_new_list);
-
 }
 
 /**
@@ -44,7 +42,6 @@ void CUDAMessageList::cleanupAllocatedData() {
     releaseDeviceMessageList(d_list);
     releaseDeviceMessageList(d_swap_list);
     releaseDeviceMessageList(d_new_list);
-
 }
 
 /**
@@ -60,10 +57,10 @@ void CUDAMessageList::allocateDeviceMessageList(CUDAMsgMap &memory_map) {
     for (const VariableMapPair& mm : mem) {
         // get the variable name
         std::string var_name = mm.first;
-        
+
         // get the variable size from  message description
         size_t var_size = message.getMessageDescription().getMessageVariableSize(mm.first);
-    
+
         // do the device allocation
         void * d_ptr;
 
@@ -78,7 +75,6 @@ void CUDAMessageList::allocateDeviceMessageList(CUDAMsgMap &memory_map) {
         // store the pointer in the map
         memory_map.insert(CUDAMsgMap::value_type(var_name, d_ptr));
     }
-
 }
 
 /**
@@ -100,7 +96,6 @@ void CUDAMessageList::releaseDeviceMessageList(CUDAMsgMap& memory_map) {
 * @return none
 */
 void CUDAMessageList::zeroDeviceMessageList(CUDAMsgMap& memory_map) {
-
     // for each device pointer in the cuda memory map set the values to 0
     for (const CUDAMsgMapPair& mm : memory_map) {
         // get the variable size from message description

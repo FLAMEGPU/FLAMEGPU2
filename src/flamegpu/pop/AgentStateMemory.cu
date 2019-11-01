@@ -30,7 +30,6 @@ AgentStateMemory::AgentStateMemory(const AgentPopulation &p, unsigned int initia
 unsigned int AgentStateMemory::incrementSize() {
     // add one to current size (returns old size)
     return current_size++;
-
 }
 
 GenericMemoryVector& AgentStateMemory::getMemoryVector(const std::string variable_name) {

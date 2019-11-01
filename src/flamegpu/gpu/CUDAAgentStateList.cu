@@ -36,7 +36,6 @@ CUDAAgentStateList::CUDAAgentStateList(CUDAAgent& cuda_agent) : agent(cuda_agent
  * @brief Destroys the CUDAAgentStateList object
  */
 CUDAAgentStateList::~CUDAAgentStateList() {
-
 }
 
 void CUDAAgentStateList::cleanupAllocatedData() {
@@ -46,7 +45,6 @@ void CUDAAgentStateList::cleanupAllocatedData() {
     if (agent.getAgentDescription().requiresAgentCreation()){
         releaseDeviceAgentList(d_new_list);
     }
-
 }
 
 /**
@@ -80,7 +78,6 @@ void CUDAAgentStateList::allocateDeviceAgentList(CUDAMemoryMap &memory_map) {
         // store the pointer in the map
         memory_map.insert(CUDAMemoryMap::value_type(var_name, d_ptr));
     }
-
 }
 
 /**
@@ -102,7 +99,6 @@ void CUDAAgentStateList::releaseDeviceAgentList(CUDAMemoryMap& memory_map) {
 * @return none
 */
 void CUDAAgentStateList::zeroDeviceAgentList(CUDAMemoryMap& memory_map) {
-
     // for each device pointer in the cuda memory map set the values to 0
     for (const CUDAMemoryMapPair& mm : memory_map) {
         // get the variable size from agent description
@@ -120,7 +116,6 @@ void CUDAAgentStateList::zeroDeviceAgentList(CUDAMemoryMap& memory_map) {
 * @todo
 */
 void CUDAAgentStateList::setAgentData(const AgentStateMemory &state_memory) {
-
     // check that we are using the same agent description
     if (!state_memory.isSameDescription(agent.getAgentDescription())) {
         // throw std::runtime_error("CUDA Agent uses different agent description.");
@@ -144,11 +139,10 @@ void CUDAAgentStateList::setAgentData(const AgentStateMemory &state_memory) {
         // copy the host data to the GPU
         gpuErrchk(cudaMemcpy(m.second, v_data, var_size*current_list_size, cudaMemcpyHostToDevice));
     }
-    
+
 }
 
 void CUDAAgentStateList::getAgentData(AgentStateMemory &state_memory) {
-
     // check that we are using the same agent description
     if (!state_memory.isSameDescription(agent.getAgentDescription())) {
         // throw std::runtime_error("CUDA Agent uses different agent description.");
@@ -176,7 +170,6 @@ void CUDAAgentStateList::getAgentData(AgentStateMemory &state_memory) {
         // set the new state list size
         state_memory.overrideStateListSize(current_list_size);
     }
-
 }
 
 void* CUDAAgentStateList::getAgentListVariablePointer(std::string variable_name) {

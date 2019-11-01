@@ -26,16 +26,16 @@ SimulationLayer::~SimulationLayer(void) {
 // */
 // template<typename T,typename... Args>
 // T SimulationLayer::callFunc(std::string name, Args&&... args) {
-// 
+//
 //    auto iter = functionPointer.find(name);
-//    if(iter == functionPointer.end()) {
+//    if (iter == functionPointer.end()) {
 //        throw InvalidAgentFunc("Agent Function name not valid ");
 //    }
-// 
+//
 //    auto v = iter->second;
-// 
+//
 //    auto typeCast = (T(*)(Args ...))(iter->second);
-// 
+//
 //    /** @todo checking if the func types are the same? */
 //    return typeCast(std::forward<Args>(args)...);
 // }

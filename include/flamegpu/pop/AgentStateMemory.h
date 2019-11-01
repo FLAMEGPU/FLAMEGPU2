@@ -54,7 +54,6 @@ class AgentStateMemory { // agent_list
     const std::string agent_state;
     StateMemoryMap state_memory;
     unsigned int current_size;
-
 };
 
 #endif // INCLUDE_FLAMEGPU_POP_AGENTSTATEMEMORY_H_

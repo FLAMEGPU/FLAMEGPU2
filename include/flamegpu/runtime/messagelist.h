@@ -3,8 +3,8 @@
 
 /**
  * @file messagelist.h
- * @author  
- * @date    
+ * @author
+ * @date
  * @brief  MessageList is a wrapper class
  *
  * \todo longer description
@@ -20,7 +20,6 @@
 class MessageList;  // Forward declaration (class defined below)
 
 class MessageList  {
-
  public:
 
     typedef unsigned int size_type;
@@ -144,7 +143,7 @@ __device__ T MessageList::getVariable(MessageList::iterator iterator, const char
 template<typename T, MessageList::size_type N>
 __device__ T MessageList::getVariable(MessageList::Message message, const char(&variable_name)[N]) {
     // Ensure that the message is within bounds.
-    if(message.getIndex() < this->_messageCount){
+    if (message.getIndex() < this->_messageCount){
         // get the value from curve using the stored hashes and message index.
         T value = curveGetVariable<T>(variable_name, agent_func_name_hash + messagename_inp_hash, message.getIndex());
         return value;
@@ -160,7 +159,7 @@ __device__ T MessageList::getVariable(MessageList::Message message, const char(&
 */
 template<typename T, MessageList::size_type N>
 __device__ T MessageList::Message::getVariable(const char(&variable_name)[N]) {
-    // Get the value from curve, using the internal messageList. 
+    // Get the value from curve, using the internal messageList.
     T value = _messageList.getVariable<T>(*this, variable_name);
     return value;
 }

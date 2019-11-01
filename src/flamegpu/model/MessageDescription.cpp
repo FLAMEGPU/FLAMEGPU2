@@ -60,7 +60,6 @@ const std::type_info& MessageDescription::getVariableType(const std::string vari
         throw InvalidMessageVar("Invalid message memory variable");
 
     return iter->second;
-
 }
 
 unsigned int MessageDescription::getMaximumMessageListCapacity() const {

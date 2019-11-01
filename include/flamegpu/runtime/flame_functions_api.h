@@ -79,23 +79,23 @@ class FLAMEGPU_API {
     }
 
     /**
-     * \brief 
-     * \param agentname_hash 
+     * \brief
+     * \param agentname_hash
      */
     __device__ void setAgentNameSpace(CurveNamespaceHash agentname_hash) {
 agent_func_name_hash = agentname_hash;}
 
     /**
-     * \brief 
-     * \param messagename_hash 
+     * \brief
+     * \param messagename_hash
      */
     __device__ void setMessageInpNameSpace(CurveNamespaceHash messagename_hash) {
         messagename_inp_hash = messagename_hash;
     }
 
     /**
-     * \brief 
-     * \param messagename_hash 
+     * \brief
+     * \param messagename_hash
      */
     __device__ void setMessageOutpNameSpace(CurveNamespaceHash messagename_hash) {
         messagename_outp_hash = messagename_hash;
@@ -125,7 +125,6 @@ agent_func_name_hash = agentname_hash;}
  */
 template<typename T, unsigned int N>
 __device__ T FLAMEGPU_API::getVariable(const char(&variable_name)[N]) {
-
     // simple indexing assumes index is the thread number (this may change later)
     unsigned int index =  (blockDim.x * blockIdx.x) + threadIdx.x;
 
@@ -143,7 +142,6 @@ __device__ T FLAMEGPU_API::getVariable(const char(&variable_name)[N]) {
  */
 template<typename T, unsigned int N>
 __device__ void FLAMEGPU_API::setVariable(const char(&variable_name)[N], T value) {
-
     // simple indexing assumes index is the thread number (this may change later)
     unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
 
@@ -158,7 +156,6 @@ __device__ void FLAMEGPU_API::setVariable(const char(&variable_name)[N], T value
 */
 template<typename T, unsigned int N>
 __device__ T FLAMEGPU_API::getMessageVariable(const char(&variable_name)[N]) {
-
     // simple indexing assumes index is the thread number (this may change later)
     unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
 
@@ -177,7 +174,6 @@ __device__ T FLAMEGPU_API::getMessageVariable(const char(&variable_name)[N]) {
 */
 template<typename T, unsigned int N>
 __device__ void FLAMEGPU_API::setMessageVariable(const char(&variable_name)[N], T value) {
-
     // simple indexing assumes index is the thread number (this may change later)
     unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
 
@@ -190,7 +186,7 @@ __device__ void FLAMEGPU_API::setMessageVariable(const char(&variable_name)[N], 
 * \param variable_name Name of message variable to set
 * \param value Value to set it to
 */
-template<typename T, unsigned int N> 
+template<typename T, unsigned int N>
 __device__ void FLAMEGPU_API::addMessage(const char(&variable_name)[N], T value) {// message name or variable name
     unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x; // + d_message_count;
 
@@ -211,7 +207,7 @@ __device__ MessageList FLAMEGPU_API::GetMessageIterator(const char(&message_name
     messageList.setMessageInpNameSpace(messagename_inp_hash);
     messageList.setMessageListSize(messageListSize);
 
-    return messageList; 
+    return messageList;
 }
 
 #endif // INCLUDE_FLAMEGPU_RUNTIME_FLAME_FUNCTIONS_API_H_

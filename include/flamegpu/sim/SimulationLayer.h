@@ -30,6 +30,5 @@ class SimulationLayer {
     const std::string layer_name; // not required: TODO: Remove
     Simulation &simulation;
     FunctionDescriptionVector functions;
-
 };
 

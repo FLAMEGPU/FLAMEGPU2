@@ -2,7 +2,7 @@
 #define INCLUDE_FLAMEGPU_IO_FACTORY_H_
 
 /**
- * @file 
+ * @file
  * @author
  * @date
  * @brief

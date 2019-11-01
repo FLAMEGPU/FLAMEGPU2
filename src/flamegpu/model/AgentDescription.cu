@@ -111,7 +111,6 @@ const std::type_info& AgentDescription::getVariableType(const std::string variab
         throw InvalidAgentVar("Invalid agent memory variable");
 
     return iter->second;
-
 }
 
 bool AgentDescription::hasAgentFunction(const std::string function_name) const {

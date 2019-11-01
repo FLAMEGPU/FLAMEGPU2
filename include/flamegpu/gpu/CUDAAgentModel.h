@@ -55,7 +55,6 @@ class CUDAAgentModel {
     cuRVEInstance &curve;
 
     CUDAMessageMap message_map;
-
 };
 
 #endif // INCLUDE_FLAMEGPU_GPU_CUDAAGENTMODEL_H_

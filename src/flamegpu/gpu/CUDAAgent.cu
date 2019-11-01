@@ -71,7 +71,6 @@ void CUDAAgent::setInitialPopulationData(const AgentPopulation& population) {
 
     /**set the population data*/
     setPopulationData(population);
-
 }
 
 /**
@@ -110,7 +109,6 @@ void CUDAAgent::setPopulationData(const AgentPopulation& population) {
         // copy the data from the population state memory to the state_maps CUDAAgentStateList
         i->second->setAgentData(population.getReadOnlyStateMemory(i->first));
     }
-
 }
 
 void CUDAAgent::getPopulationData(AgentPopulation& population) {
@@ -141,7 +139,6 @@ void CUDAAgent::getPopulationData(AgentPopulation& population) {
         // copy the data from the population state memory to the state_maps CUDAAgentStateList
         i->second->getAgentData(population.getStateMemory(i->first));
     }
-
 }
 
 /**
@@ -195,7 +192,6 @@ void CUDAAgent::mapRuntimeVariables(const AgentFunctionDescription& func) const 
 
         curveRegisterVariableByHash(var_hash + agent_hash + func_hash, d_ptr, size, length);
     }
-
 }
 
 void CUDAAgent::unmapRuntimeVariables(const AgentFunctionDescription& func) const {
@@ -218,5 +214,4 @@ void CUDAAgent::unmapRuntimeVariables(const AgentFunctionDescription& func) cons
 
         curveUnregisterVariableByHash(var_hash + agent_hash + func_hash);
     }
-
 }

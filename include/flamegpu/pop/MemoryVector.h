@@ -36,12 +36,10 @@ class GenericMemoryVector{
     template <typename T> std::vector<T>& getVector();
 
     template <typename T> std::vector<T> getVectorIteratorAt(unsigned int i);
-
 };
 
 template <typename T>
 class MemoryVector : public GenericMemoryVector {
-
  public:
 
     MemoryVector() : GenericMemoryVector(), type(typeid(T)) {

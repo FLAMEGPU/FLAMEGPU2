@@ -290,7 +290,7 @@ __device__ void* curveGetVariablePtrByHash(const CurveVariableHash variable_hash
         d_curve_error = CURVE_DEVICE_ERROR_UNKNOWN_VARIABLE;
         return NULL;
     }
-    if(!d_states[cv]) {
+    if (!d_states[cv]) {
         d_curve_error = CURVE_DEVICE_ERROR_VARIABLE_DISABLED;
         return NULL;
     }
@@ -371,6 +371,5 @@ __host__ void curveClearErrors() {
     h_curve_error  = CURVE_ERROR_NO_ERRORS;
 
     CUDA_SAFE_CALL(cudaMemcpyToSymbol(d_curve_error, &curve_error_none, sizeof(curveDeviceError)));
-
 }
 
