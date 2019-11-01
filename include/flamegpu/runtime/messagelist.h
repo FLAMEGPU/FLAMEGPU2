@@ -27,7 +27,7 @@ class MessageList;  // Forward declaration (class defined below)
 class MessageList 
 {
 
-public:
+ public:
 
     typedef unsigned int size_type;
 
@@ -129,7 +129,7 @@ public:
         return this->messagename_inp_hash;
     }
 
-private:
+ private:
 
     size_type start_;
     size_type end_;

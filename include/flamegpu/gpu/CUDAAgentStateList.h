@@ -24,7 +24,7 @@ typedef std::map <std::string, void*> CUDAMemoryMap;        // map of pointers t
 typedef std::pair <std::string, void*> CUDAMemoryMapPair;
 
 class CUDAAgentStateList {
-public:
+ public:
     CUDAAgentStateList(CUDAAgent& cuda_agent);
     virtual ~CUDAAgentStateList();
 
@@ -41,7 +41,7 @@ public:
 
     unsigned int getCUDAStateListSize() const;
 
-protected:
+ protected:
 
     /*
      * The purpose of this function is to allocate on the device a block of memory for each variable. These vectors are stored within a hash list using the cuRVE technique so that the location of the vectors can be quickly determined at runtime by FLAME GPU functions.
@@ -53,7 +53,7 @@ protected:
     void zeroDeviceAgentList(CUDAMemoryMap &agent_list);
 
 
-private:
+ private:
     CUDAMemoryMap d_list;
     CUDAMemoryMap d_swap_list;
     CUDAMemoryMap d_new_list;

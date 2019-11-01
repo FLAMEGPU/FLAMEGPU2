@@ -18,7 +18,7 @@ typedef std::vector<std::reference_wrapper<const AgentFunctionDescription>> Func
 
 class SimulationLayer
 {
-public:
+ public:
     SimulationLayer(Simulation& sim, const std::string name = "none");
     ~SimulationLayer(void);
 
@@ -30,7 +30,7 @@ public:
     const FunctionDescriptionVector& getAgentFunctions() const; // returns a reference to a vector of agent function descriptions
 
 
-private:
+ private:
     const std::string layer_name; // not required: TODO: Remove
     Simulation &simulation;
     FunctionDescriptionVector functions;

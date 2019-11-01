@@ -32,7 +32,7 @@ typedef std::pair<const std::string, std::unique_ptr<CUDAAgentStateList>> CUDASt
  */
 class CUDAAgent
 {
-public:
+ public:
     CUDAAgent(const AgentDescription& description);
     virtual ~CUDAAgent(void);
 
@@ -64,14 +64,14 @@ public:
     void unmapRuntimeVariables(const AgentFunctionDescription& func) const;
 
 
-protected:
+ protected:
 
     /** @brief    Zero all state variable data. */
     void zeroAllStateVariableData();
 
 
 
-private:
+ private:
     const AgentDescription& agent_description;
 
     CUDAStateMap state_map;

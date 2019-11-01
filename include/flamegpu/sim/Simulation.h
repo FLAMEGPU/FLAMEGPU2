@@ -19,7 +19,7 @@ typedef std::vector<std::reference_wrapper<SimulationLayer>> SimulationLayerVect
  */
 class Simulation
 {
-public:
+ public:
     Simulation(const ModelDescription& model);
     ~Simulation(void);
 
@@ -38,7 +38,7 @@ public:
     void output(int argc, char** argv);
 
 
-private:
+ private:
     SimulationLayerVector layers;
     const ModelDescription& model_description;
     unsigned int simulation_steps;

@@ -14,13 +14,13 @@
 #include <string>
 
 class AgentStateDescription {
-public:
+ public:
     AgentStateDescription(const std::string name);
     virtual ~AgentStateDescription();
 
     const std::string getName() const;
 
-private:
+ private:
 
     const std::string name;
 };

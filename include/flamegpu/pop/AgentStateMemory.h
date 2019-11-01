@@ -28,7 +28,7 @@ class AgentDescription;
 
 class AgentStateMemory  // agent_list
 {
-public:
+ public:
     AgentStateMemory(const AgentPopulation &population, unsigned int initial_capacity = 0);
     virtual ~AgentStateMemory() {}
 
@@ -52,7 +52,7 @@ public:
 
     void overrideStateListSize(unsigned int size);
 
-protected:
+ protected:
     const AgentPopulation &population;
     const std::string agent_state;
     StateMemoryMap state_memory;

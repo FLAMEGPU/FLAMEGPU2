@@ -24,7 +24,7 @@ typedef std::map <std::string, void*> CUDAMsgMap;
 typedef std::pair <std::string, void*> CUDAMsgMapPair;
 
 class CUDAMessageList {
-public:
+ public:
     CUDAMessageList(CUDAMessage& cuda_message);
     virtual ~CUDAMessageList();
 
@@ -34,7 +34,7 @@ public:
 
     void zeroMessageData();
 
-protected:
+ protected:
 
 
     void allocateDeviceMessageList(CUDAMsgMap &Message_list);
@@ -44,7 +44,7 @@ protected:
     void zeroDeviceMessageList(CUDAMsgMap &Message_list);
 
 
-private:
+ private:
     CUDAMsgMap d_list;
     CUDAMsgMap d_swap_list; // may not need this later
     CUDAMsgMap d_new_list;

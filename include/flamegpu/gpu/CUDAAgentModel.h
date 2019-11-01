@@ -30,7 +30,7 @@ typedef std::map<const std::string, std::unique_ptr<CUDAMessage>> CUDAMessageMap
 
 class CUDAAgentModel
 {
-public:
+ public:
     CUDAAgentModel(const ModelDescription& description);
     virtual ~CUDAAgentModel();
 
@@ -50,7 +50,7 @@ public:
     const CUDAAgent& getCUDAAgent(std::string agent_name) const;
     const CUDAMessage& getCUDAMessage(std::string message_name) const;
 
-private:
+ private:
     const ModelDescription& model_description;
     CUDAAgentMap agent_map;
     cuRVEInstance &curve;

@@ -25,7 +25,7 @@ class MessageDescription;
 
 class CUDAMessage
 {
-public:
+ public:
     CUDAMessage(const MessageDescription& description);
     virtual ~CUDAMessage(void);
 
@@ -57,7 +57,7 @@ protected:
     void zeroAllMessageData();
 
 
-private:
+ private:
     const MessageDescription& message_description;
 
     std::unique_ptr<CUDAMessageList> message_list; // CUDAMessageMap message_list;

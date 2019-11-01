@@ -27,7 +27,7 @@ typedef std::map<const std::string, std::unique_ptr<AgentStateMemory>> AgentStat
 typedef std::pair<const std::string, std::unique_ptr<AgentStateMemory>> AgentStatesMapPair;
 
 class AgentPopulation {
-public:
+ public:
     AgentPopulation(const AgentDescription &agent_description, unsigned int initial_size = DEFAULT_POPULATION_SIZE);
 
     virtual ~AgentPopulation();
@@ -51,7 +51,7 @@ public:
 
     void setStateListCapacity(unsigned int);
 
-private:
+ private:
 
     const AgentDescription &agent;
     AgentStatesMap states_map;

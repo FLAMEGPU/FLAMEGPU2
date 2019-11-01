@@ -29,7 +29,7 @@ typedef std::map<const std::string, AgentPopulation&> PopulationMap;
 
 
 class ModelDescription {
-public:
+ public:
     ModelDescription(const std::string model_name);
 
     virtual ~ModelDescription();
@@ -52,7 +52,7 @@ public:
 
     // const PopulationMap& getPopulationMap() const;
 
-private:
+ private:
     std::string name;
     AgentMap agents;
     MessageMap messages;

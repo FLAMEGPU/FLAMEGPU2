@@ -51,11 +51,9 @@ __device__ FLAME_GPU_AGENT_STATUS funcName ## _impl(FLAMEGPU_API* FLAMEGPU)
  * This class should only be used by the device and never created on the host. It is safe for each agent function to create a copy of this class on the device. Any singleton type
  * behaviour is handled by the curveInstance class. This will ensure that initialisation of the curve (C) library is done only once.
  */
-class FLAMEGPU_API
-{
-
-public:
-    __device__ FLAMEGPU_API() {};
+class FLAMEGPU_API {
+ public:
+    __device__ FLAMEGPU_API() {}
 
     template<typename T, unsigned int N> __device__
     T getVariable(const char(&variable_name)[N]);
@@ -81,8 +79,7 @@ public:
     * \brief
     * \param  messageList_Size
     */
-    __device__ void setMessageListSize(unsigned int messageList_Size)
-    {
+    __device__ void setMessageListSize(unsigned int messageList_Size) {
         messageListSize = messageList_Size;
     }
 
@@ -97,8 +94,7 @@ public:
      * \brief 
      * \param messagename_hash 
      */
-    __device__ void setMessageInpNameSpace(CurveNamespaceHash messagename_hash)
-    {
+    __device__ void setMessageInpNameSpace(CurveNamespaceHash messagename_hash) {
         messagename_inp_hash = messagename_hash;
     }
 
@@ -106,12 +102,11 @@ public:
      * \brief 
      * \param messagename_hash 
      */
-    __device__ void setMessageOutpNameSpace(CurveNamespaceHash messagename_hash)
-    {
+    __device__ void setMessageOutpNameSpace(CurveNamespaceHash messagename_hash) {
         messagename_outp_hash = messagename_hash;
     }
 
-private:
+ private:
     CurveNamespaceHash agent_func_name_hash;
     CurveNamespaceHash messagename_inp_hash;
     CurveNamespaceHash messagename_outp_hash;

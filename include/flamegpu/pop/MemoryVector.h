@@ -17,7 +17,7 @@
 #include <flamegpu/exception/FGPUException.h>
 
 class GenericMemoryVector{
-public:
+ public:
 
     virtual ~GenericMemoryVector(){ ; }
 
@@ -43,7 +43,7 @@ template <typename T>
 class MemoryVector : public GenericMemoryVector
 {
 
-public:
+ public:
 
     MemoryVector() : GenericMemoryVector(), type(typeid(T)) {
         default_value = T();
@@ -85,7 +85,7 @@ public:
     }
 
 
-protected:
+ protected:
     std::vector<T> vec;
     T default_value;
     const std::type_info& type;

@@ -45,7 +45,7 @@ typedef std::map<const std::type_info*, std::size_t> TypeSizeMap;    // not some
 
 class AgentDescription
 {
-public:
+ public:
 
     /**
     *
@@ -100,7 +100,7 @@ public:
 
     void initEmptyStateMemoryMap(StateMemoryMap&) const;
 
-private:
+ private:
     std::string name;
     bool stateless;                                                // system does not use states (i.e. only has a default state)
     std::string initial_state;

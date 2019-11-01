@@ -10,7 +10,7 @@
  */
 class cuRVEInstance
 {
-private:
+ private:
 
     /** @brief    Default constructor.    
      *
@@ -22,7 +22,7 @@ private:
     };
     
     ~cuRVEInstance() {};
-public:
+ public:
 
     /**
      * @brief    Gets the instance.
