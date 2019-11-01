@@ -109,7 +109,7 @@ BOOST_AUTO_TEST_CASE(MessageFunctionCheck)
      * @brief      Checks the name of the initial state
      * This is to validate the predicate value. The test should pass.
      */
-    BOOST_CHECK(output_data.getIntialState()=="default");
+    BOOST_CHECK(output_data.getInitialState()=="default");
 
    /**
      * @brief      Checks the name of model description

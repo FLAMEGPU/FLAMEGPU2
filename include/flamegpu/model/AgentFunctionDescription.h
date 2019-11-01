@@ -39,11 +39,11 @@ public:
 
 	const std::string getEndState() const;
 
-	void setEndState(const std::string end_state);
+	void setEndState(const std::string _end_state);
 
-	const std::string getIntialState() const;
+	const std::string getInitialState() const;
 
-	void setIntialState(const std::string intial_state);
+	void setInitialState(const std::string _initial_state);
 
 	const std::string getName() const;
 
