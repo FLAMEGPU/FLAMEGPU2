@@ -25,7 +25,7 @@ AgentDescription::~AgentDescription()
 }
 
 
-void AgentDescription::setName(std::string name)
+void AgentDescription::setName(std::string _name)
 {
 }
 

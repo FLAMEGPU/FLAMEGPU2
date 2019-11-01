@@ -70,7 +70,7 @@ int Simulation::checkArgs(int argc, char** argv) {
 	printf("FLAMEGPU Console mode\n");
 	if (argc < 2)
 	{
-		printf("Usage: main [XML model data] [Iterations] [Optional CUDA device ID]\n");
+		printf("Usage: %s [XML model data] [Iterations] [Optional CUDA device ID]\n", argv[0]);
 		return false;
 	}
 
