@@ -9,30 +9,30 @@
  */
 
 #include <algorithm>
-#include <flamegpu/gpu/CUDAAgentModel.h>
+#include "flamegpu/gpu/CUDAAgentModel.h"
 
-#include <flamegpu/model/ModelDescription.h>
-#include <flamegpu/pop/AgentPopulation.h>
-#include <flamegpu/sim/Simulation.h>
+#include "flamegpu/model/ModelDescription.h"
+#include "flamegpu/pop/AgentPopulation.h"
+#include "flamegpu/sim/Simulation.h"
 
- // include FLAMEGPU kernel wrapper
-#include <flamegpu/runtime/agent_function.h>
+// include FLAMEGPU kernel wrapper
+#include "flamegpu/runtime/agent_function.h"
 
 /**
 * CUDAAgentModel class
 * @brief populates CUDA agent map, CUDA message map
 */
-CUDAAgentModel::CUDAAgentModel(const ModelDescription& description) : model_description(description), agent_map(), curve(cuRVEInstance::getInstance()), message_map() { // , function_map() {
+CUDAAgentModel::CUDAAgentModel(const ModelDescription& description) : model_description(description), agent_map(), curve(cuRVEInstance::getInstance()), message_map() {  // , function_map() {
     // create a reference to curve to ensure that it is initialised. This is a singleton class so will only be done once regardless of the number of CUDAgentModels.
 
     // populate the CUDA agent map
     const AgentMap &am = model_description.getAgentMap();
-    AgentMap::const_iterator it; // const_iterator returns a reference to a constant value (const T&) and prevents modification of the reference value
+    AgentMap::const_iterator it;  // const_iterator returns a reference to a constant value (const T&) and prevents modification of the reference value
 
     // create new cuda agent and add to the map
     for (it = am.begin(); it != am.end(); it++) {
         agent_map.insert(CUDAAgentMap::value_type(it->first, std::unique_ptr<CUDAAgent>(new CUDAAgent(it->second))));
-    } // insert into map using value_type
+    }  // insert into map using value_type
 
     // populate the CUDA message map
     const MessageMap &mm = model_description.getMessageMap();
@@ -48,7 +48,7 @@ CUDAAgentModel::CUDAAgentModel(const ModelDescription& description) : model_desc
         const FunctionMap &mm = model_description.getFunctionMap();
         FunctioneMap::const_iterator it;
 
-        for(it = mm.begin(); it != mm.end(); it++){
+        for (it = mm.begin(); it != mm.end(); it++) {
             FunctionMap.insert(CUDAFunctionMap::value_type(it->first, std::unique_ptr<CUDAAgentFunction>(new CUDAAgentFunction(it->second))));
         }
         */
@@ -160,7 +160,6 @@ void CUDAAgentModel::step(const Simulation& simulation) {
              * Configure runtime access of the functions variables within the FLAME_API object
              */
             cuda_agent.mapRuntimeVariables(func_des);
-
         }
         // ! for each func function - Loop through to launch all agent functions
         for (AgentFunctionDescription func_des : functions) {
@@ -202,9 +201,9 @@ void CUDAAgentModel::step(const Simulation& simulation) {
 
             int state_list_size = cuda_agent.getMaximumListSize();
 
-            int blockSize = 0; // ! The launch configurator returned block size
-            int minGridSize = 0; // ! The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
-            int gridSize = 0; // ! The actual grid size needed, based on input size
+            int blockSize = 0;  // ! The launch configurator returned block size
+            int minGridSize = 0;  // ! The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
+            int gridSize = 0;  // ! The actual grid size needed, based on input size
 
             // !calculate the grid block size for main agent function
             cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, agent_function_wrapper, 0, state_list_size);
@@ -289,7 +288,7 @@ void CUDAAgentModel::init(void) {  // (int argc, char** argv) {
 */
 void CUDAAgentModel::simulate(const Simulation& simulation) {
     if (agent_map.size() == 0)
-        throw InvalidCudaAgentMapSize("CUDA agent map size is zero"); // recheck if this is really required
+        throw InvalidCudaAgentMapSize("CUDA agent map size is zero");  // recheck if this is really required
 
     // CUDAAgentMap::iterator it;
 

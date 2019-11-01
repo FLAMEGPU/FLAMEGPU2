@@ -16,15 +16,15 @@
 #include <cuda_runtime.h>
 
 // include sub classes
-#include <flamegpu/gpu/CUDAAgent.h>
-#include <flamegpu/gpu/CUDAMessage.h>
-#include <flamegpu/runtime/cuRVE/cuRVEInstance.h> // @todo move to externals
+#include "flamegpu/gpu/CUDAAgent.h"
+#include "flamegpu/gpu/CUDAMessage.h"
+#include "flamegpu/runtime/cuRVE/cuRVEInstance.h" // @todo move to externals
 
 // forward declare classes from other modules
 class ModelDescription;
 class Simulation;
 
-typedef std::map<const std::string, std::unique_ptr<CUDAAgent>> CUDAAgentMap; // map of a number of CUDA agents by name. The CUDA agents are responsible for allocating and managing all the device memory
+typedef std::map<const std::string, std::unique_ptr<CUDAAgent>> CUDAAgentMap;  // map of a number of CUDA agents by name. The CUDA agents are responsible for allocating and managing all the device memory
 typedef std::map<const std::string, std::unique_ptr<CUDAMessage>> CUDAMessageMap;
 // typedef std::map<const std::string, std::unique_ptr<CUDAAgentFunction>> CUDAFunctionMap; /*Moz*/
 

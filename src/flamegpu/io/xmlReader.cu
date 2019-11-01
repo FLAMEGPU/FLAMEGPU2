@@ -10,15 +10,15 @@
 
 #include <string>
 #include <tinyxml2/tinyxml2.h>              // downloaded from https:// github.com/leethomason/tinyxml2, the list of xml parsers : http:// lars.ruoff.free.fr/xmlcpp/
-#include <flamegpu/exception/FGPUException.h>
-#include <flamegpu/pop/AgentPopulation.h>
-#include <flamegpu/io/xmlReader.h>
+#include "flamegpu/exception/FGPUException.h"
+#include "flamegpu/pop/AgentPopulation.h"
+#include "flamegpu/io/xmlReader.h"
 
 #ifndef XMLCheckResult
 #define XMLCheckResult(a_eResult) if (a_eResult != tinyxml2::XML_SUCCESS) { printf("XMLCheckResult Error: %i\n", a_eResult); return a_eResult; }
 #endif
 
-xmlReader::xmlReader(const ModelDescription &model, const char* input) : StateReader(model, input) {};
+xmlReader::xmlReader(const ModelDescription &model, const char* input) : StateReader(model, input) {}
 
 /**
 * \brief parses the xml file

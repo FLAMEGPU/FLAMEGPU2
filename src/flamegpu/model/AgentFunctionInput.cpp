@@ -8,9 +8,9 @@
  * @warning
  */
 
-#include <flamegpu/model/AgentFunctionInput.h>
+#include "flamegpu/model/AgentFunctionInput.h"
 
-AgentFunctionInput::AgentFunctionInput(const std::string input_message_name) :  message_name(input_message_name){
+AgentFunctionInput::AgentFunctionInput(const std::string input_message_name) :  message_name(input_message_name) {
 }
 
 AgentFunctionInput::~AgentFunctionInput() {}

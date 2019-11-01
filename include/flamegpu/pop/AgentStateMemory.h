@@ -19,7 +19,7 @@
 #include <typeinfo>
 
 // include generic memory vectors
-#include <flamegpu/pop/MemoryVector.h>
+#include "flamegpu/pop/MemoryVector.h"
 
 class AgentPopulation;
 class AgentDescription;
@@ -35,7 +35,7 @@ class AgentStateMemory { // agent_list
 
     const GenericMemoryVector& getReadOnlyMemoryVector(const std::string variable_name) const;
 
-    const std::type_info& getVariableType(std::string variable_name); // const
+    const std::type_info& getVariableType(std::string variable_name);  // const
 
     bool isSameDescription(const AgentDescription& description) const;
 

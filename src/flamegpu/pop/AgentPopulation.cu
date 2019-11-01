@@ -10,10 +10,10 @@
 
 #include <exception>
 
-#include <flamegpu/pop/AgentPopulation.h>
+#include "flamegpu/pop/AgentPopulation.h"
 
-#include <flamegpu/pop/AgentInstance.h>
-#include <flamegpu/model/AgentDescription.h>
+#include "flamegpu/pop/AgentInstance.h"
+#include "flamegpu/model/AgentDescription.h"
 
 AgentPopulation::AgentPopulation(const AgentDescription &agent_description, unsigned int initial_size):
     agent(agent_description),

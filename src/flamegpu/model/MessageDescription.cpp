@@ -8,14 +8,14 @@
  * @warning
  */
 
-#include <flamegpu/model/MessageDescription.h>
-#include <flamegpu/exception/FGPUException.h>
+#include "flamegpu/model/MessageDescription.h"
+#include "flamegpu/exception/FGPUException.h"
 
 MessageDescription::MessageDescription(const std::string message_name, unsigned int initial_size) : name(message_name), variables(), maximum_size(initial_size) { }
 
 MessageDescription::~MessageDescription() {}
 
-const std::string MessageDescription::getName() const{
+const std::string MessageDescription::getName() const {
     return name;
 }
 

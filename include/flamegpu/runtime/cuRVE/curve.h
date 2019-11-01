@@ -82,7 +82,7 @@ __host__ inline static CurveVariableHash curveVariableRuntimeHash(const char* st
     const size_t length = std::strlen(str) + 1;
     unsigned int hash = 2166136261u;
 
-    for (size_t i = 0; i<length; ++i) {
+    for (size_t i = 0; i < length; ++i) {
         hash ^= *str++;
         hash *= 16777619u;
     }
@@ -120,7 +120,7 @@ __host__ CurveVariable curveRegisterVariableByHash(CurveVariableHash variable_ha
 template <unsigned int N, typename T> __host__ CurveVariable curveRegisterVariable(const char(&variableName)[N], void* d_ptr, unsigned int length) {
     CurveVariableHash variable_hash = curveVariableHash(variableName);
     size_t size = sizeof(T);
-    return curveRegisterVariableByHash(variable_hash, d_ptr, size, length); // the const func can get const and non const argument (for 3rd argument)
+    return curveRegisterVariableByHash(variable_hash, d_ptr, size, length);  // the const func can get const and non const argument (for 3rd argument)
 }
 
 /** @brief Function for un-registering a variable by a CurveVariableHash
@@ -201,7 +201,7 @@ extern __device__ size_t curveGetVariableSize(const CurveVariableHash variable_h
  * Returns a generic pointer to a variable of given name at a specific offset in bytes from the start of the variable array.
  *  @param variable_hash A cuRVE variable string hash from CurveVariableHash.
  *  @param offset an offset into the variable array in bytes (offset is variable index * sizeof(variable type))
- *  @return A generic pointer to the variable value. Will be NULL if there is an error.
+ *  @return A generic pointer to the variable value. Will be nullptr if there is an error.
  */
 extern __device__ void* curveGetVariablePtrByHash(const CurveVariableHash variable_hash, size_t offset);
 
@@ -222,7 +222,7 @@ __device__ float curveGetVariableByHash(const CurveVariableHash variable_hash, u
     // error checking
     if (size != sizeof(T)) {
         d_curve_error = CURVE_DEVICE_ERROR_UNKNOWN_TYPE;
-        return NULL;
+        return nullptr;
     } else {
         // get a pointer to the specific variable by offsetting by the provided index
         T *value_ptr = reinterpret_cast<T*>(curveGetVariablePtrByHash(variable_hash, offset));

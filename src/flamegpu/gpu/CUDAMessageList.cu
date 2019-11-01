@@ -11,12 +11,12 @@
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 
-#include <flamegpu/gpu/CUDAMessageList.h>
+#include "flamegpu/gpu/CUDAMessageList.h"
 
-#include <flamegpu/gpu/CUDAMessage.h>
-#include <flamegpu/gpu/CUDAErrorChecking.h>
-#include <flamegpu/pop/AgentStateMemory.h>
-#include <flamegpu/model/MessageDescription.h>
+#include "flamegpu/gpu/CUDAMessage.h"
+#include "flamegpu/gpu/CUDAErrorChecking.h"
+#include "flamegpu/pop/AgentStateMemory.h"
+#include "flamegpu/model/MessageDescription.h"
 
 /**
 * CUDAMessageList class
@@ -34,7 +34,6 @@ CUDAMessageList::CUDAMessageList(CUDAMessage& cuda_message) : message(cuda_messa
  * @brief Destroys the CUDAMessageList object
  */
 CUDAMessageList::~CUDAMessageList() {
-
 }
 
 void CUDAMessageList::cleanupAllocatedData() {
@@ -108,7 +107,7 @@ void CUDAMessageList::zeroDeviceMessageList(CUDAMsgMap& memory_map) {
 
 void* CUDAMessageList::getMessageListVariablePointer(std::string variable_name) {
     CUDAMsgMap::iterator mm = d_list.find(variable_name);
-    if (mm == d_list.end()){
+    if (mm == d_list.end()) {
         // TODO: Error variable not found in message list
         return 0;
     }
@@ -116,7 +115,7 @@ void* CUDAMessageList::getMessageListVariablePointer(std::string variable_name) 
     return mm->second;
 }
 
-void CUDAMessageList::zeroMessageData(){
+void CUDAMessageList::zeroMessageData() {
     zeroDeviceMessageList(d_list);
     zeroDeviceMessageList(d_swap_list);
     zeroDeviceMessageList(d_new_list);

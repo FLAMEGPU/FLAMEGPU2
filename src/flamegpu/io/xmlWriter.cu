@@ -17,7 +17,7 @@
 #define XMLCheckResult(a_eResult) if (a_eResult != tinyxml2::XML_SUCCESS) { printf("XMLCheckResult Error: %i\n", a_eResult); return a_eResult; }
 #endif
 
-xmlWriter::xmlWriter(const ModelDescription &model, const char* output) : StateWriter(model, output) {};
+xmlWriter::xmlWriter(const ModelDescription &model, const char* output) : StateWriter(model, output) {}
 
 int xmlWriter::writeStates() {
     tinyxml2::XMLDocument doc;
@@ -26,7 +26,7 @@ int xmlWriter::writeStates() {
     doc.InsertFirstChild(pRoot);
 
     tinyxml2::XMLElement * pElement = doc.NewElement("itno");
-    pElement->SetText(1); // get simulation step here - later
+    pElement->SetText(1);  // get simulation step here - later
     pRoot->InsertEndChild(pElement);
 
     pElement = doc.NewElement("environment");

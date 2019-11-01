@@ -12,7 +12,7 @@
 
 #include <string>
 
-#include  <flamegpu/io/statewriter.h>
+#include "flamegpu/io/statewriter.h"
 #include "flamegpu/model/ModelDescription.h"
 
 // Derived classes

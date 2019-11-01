@@ -18,9 +18,9 @@
 #include <typeinfo>
 
 // include class dependencies
-#include <flamegpu/model/AgentDescription.h>
-#include <flamegpu/model/MessageDescription.h>
-#include <flamegpu/pop/AgentPopulation.h>
+#include "flamegpu/model/AgentDescription.h"
+#include "flamegpu/model/MessageDescription.h"
+#include "flamegpu/pop/AgentPopulation.h"
 
 typedef std::map<const std::string, const AgentDescription&> AgentMap;
 typedef std::map<const std::string, const MessageDescription&> MessageMap;
@@ -28,7 +28,7 @@ typedef std::map<const std::string, AgentPopulation&> PopulationMap;
 
 class ModelDescription {
  public:
-    ModelDescription(const std::string model_name);
+    explicit ModelDescription(const std::string model_name);
 
     virtual ~ModelDescription();
 

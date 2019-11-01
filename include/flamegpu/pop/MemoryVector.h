@@ -14,12 +14,11 @@
 #include <memory>
 #include <utility>
 
-#include <flamegpu/exception/FGPUException.h>
+#include "flamegpu/exception/FGPUException.h"
 
 class GenericMemoryVector{
  public:
-
-    virtual ~GenericMemoryVector(){ ; }
+    virtual ~GenericMemoryVector() { ; }
 
     virtual const std::type_info& getType() = 0;
 
@@ -41,27 +40,26 @@ class GenericMemoryVector{
 template <typename T>
 class MemoryVector : public GenericMemoryVector {
  public:
-
     MemoryVector() : GenericMemoryVector(), type(typeid(T)) {
         default_value = T();
     }
 
-    virtual ~MemoryVector(){ ; }
+    virtual ~MemoryVector() { ; }
 
-    virtual const std::type_info& getType(){
+    virtual const std::type_info& getType() {
         return type;
     }
 
-    virtual void* getDataPtr(){
+    virtual void* getDataPtr() {
         if (vec.empty())
-            return NULL;
+            return nullptr;
         else
             return &(vec.front());
     }
 
     virtual const void* getReadOnlyDataPtr() const{
         if (vec.empty())
-            return NULL;
+            return nullptr;
         else
             return &(vec.front());
     }
@@ -84,7 +82,7 @@ class MemoryVector : public GenericMemoryVector {
     const std::type_info& type;
 };
 
-template <typename T> std::vector<T>& GenericMemoryVector::getVector(){
+template <typename T> std::vector<T>& GenericMemoryVector::getVector() {
     if (getType() != typeid(T))
         throw InvalidVarType("Wrong variable type getting agent data vector");
 
@@ -94,7 +92,7 @@ template <typename T> std::vector<T>& GenericMemoryVector::getVector(){
     return *t_v;
 }
 
-template <typename T> std::vector<T> GenericMemoryVector::getVectorIteratorAt(unsigned int i){
+template <typename T> std::vector<T> GenericMemoryVector::getVectorIteratorAt(unsigned int i) {
     // return an iterator at correct position
     std::vector<T>& v = getVector<T>();
     return (v.begin() + i);

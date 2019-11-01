@@ -26,7 +26,7 @@ typedef std::pair <std::string, void*> CUDAMemoryMapPair;
 
 class CUDAAgentStateList {
  public:
-    CUDAAgentStateList(CUDAAgent& cuda_agent);
+    explicit CUDAAgentStateList(CUDAAgent& cuda_agent);
     virtual ~CUDAAgentStateList();
 
     // cant be done in destructor as it requires access to the parent CUDAAgent object
@@ -43,7 +43,6 @@ class CUDAAgentStateList {
     unsigned int getCUDAStateListSize() const;
 
  protected:
-
     /*
      * The purpose of this function is to allocate on the device a block of memory for each variable. These vectors are stored within a hash list using the cuRVE technique so that the location of the vectors can be quickly determined at runtime by FLAME GPU functions.
      */
@@ -58,7 +57,7 @@ class CUDAAgentStateList {
     CUDAMemoryMap d_swap_list;
     CUDAMemoryMap d_new_list;
 
-    unsigned int current_list_size; // ???
+    unsigned int current_list_size;  // ???
 
     CUDAAgent& agent;
 };

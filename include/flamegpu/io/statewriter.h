@@ -12,7 +12,7 @@
 
 #include <string>
 
-#include <flamegpu/exception/FGPUException.h>
+#include "flamegpu/exception/FGPUException.h"
 #include "flamegpu/model/ModelDescription.h"
 
 class StateWriter {

@@ -22,7 +22,7 @@
 class UnknownError {};
 
 /*! Base class for exceptions thrown */
-class FGPUException { // : public exception
+class FGPUException {  // : public exception
  public:
     /**
      * A constructor
@@ -41,7 +41,7 @@ class FGPUException { // : public exception
     /**
     * @brief Returns the explanatory string
     * @param none
-    * @return Pointer to a null-terminated string with explanatory information. The pointer is guaranteed to be valid at least until the exception object from which it is obtained is destroyed, or until a non-const member function on the FGPUException object is called.
+    * @return Pointer to a nullptr-terminated string with explanatory information. The pointer is guaranteed to be valid at least until the exception object from which it is obtained is destroyed, or until a non-const member function on the FGPUException object is called.
     */
     virtual const char *what() const {
         return err_message;

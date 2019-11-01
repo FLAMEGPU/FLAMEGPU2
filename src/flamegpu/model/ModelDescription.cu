@@ -8,7 +8,7 @@
  * @warning
  */
 
-#include <flamegpu/model/ModelDescription.h>
+#include "flamegpu/model/ModelDescription.h"
 
 ModelDescription::ModelDescription(const std::string model_name) : name(model_name), agents(), messages(), population() {}
 

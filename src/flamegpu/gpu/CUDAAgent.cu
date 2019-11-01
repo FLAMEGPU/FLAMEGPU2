@@ -11,20 +11,19 @@
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 
-#include <flamegpu/gpu/CUDAAgent.h>
-#include <flamegpu/gpu/CUDAAgentStateList.h>
-#include <flamegpu/gpu/CUDAErrorChecking.h>
+#include "flamegpu/gpu/CUDAAgent.h"
+#include "flamegpu/gpu/CUDAAgentStateList.h"
+#include "flamegpu/gpu/CUDAErrorChecking.h"
 
-#include <flamegpu/model/AgentDescription.h>
-#include <flamegpu/pop/AgentPopulation.h>
-#include <flamegpu/runtime/cuRVE/curve.h>
+#include "flamegpu/model/AgentDescription.h"
+#include "flamegpu/pop/AgentPopulation.h"
+#include "flamegpu/runtime/cuRVE/curve.h"
 
 /**
 * CUDAAgent class
 * @brief allocates the hash table/list for agent variables and copy the list to device
 */
 CUDAAgent::CUDAAgent(const AgentDescription& description) : agent_description(description), state_map(), max_list_size(0) {
-
 }
 
 /**
@@ -32,7 +31,6 @@ CUDAAgent::CUDAAgent(const AgentDescription& description) : agent_description(de
  * @brief Destroys the CUDAAgent object
  */
 CUDAAgent::~CUDAAgent(void) {
-
 }
 
 
@@ -64,7 +62,7 @@ void CUDAAgent::setInitialPopulationData(const AgentPopulation& population) {
 
     // create map of device state lists by traversing the state list
     const StateMap& sm = agent_description.getStateMap();
-    for(const StateMapPair& s: sm) {
+    for (const StateMapPair& s : sm) {
         // allocate memory for each state list by creating a new Agent State List
         state_map.insert(CUDAStateMap::value_type(s.first, std::unique_ptr<CUDAAgentStateList>( new CUDAAgentStateList(*this))));
     }

@@ -31,7 +31,7 @@ class Simulation {
 
     int checkArgs(int argc, char** argv);
 
-    void initialise(int argc, char** argv); // void initialise(const char * input);
+    void initialise(int argc, char** argv);  // void initialise(const char * input);
     // void initialise(StateReader& reader);
     void output(int argc, char** argv);
 

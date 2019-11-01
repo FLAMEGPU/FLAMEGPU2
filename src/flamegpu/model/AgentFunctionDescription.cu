@@ -8,12 +8,11 @@
 * @warning
 */
 
-#include <flamegpu/model/AgentFunctionDescription.h>
-#include <flamegpu/model/AgentDescription.h>
-#include <flamegpu/runtime/cuRVE/curve.h>
+#include "flamegpu/model/AgentFunctionDescription.h"
+#include "flamegpu/model/AgentDescription.h"
+#include "flamegpu/runtime/cuRVE/curve.h"
 
 AgentFunctionDescription::AgentFunctionDescription(const std::string function_name) : function_name(function_name), initial_state("default"), end_state("default") {
-
 }
 
 AgentFunctionDescription::~AgentFunctionDescription() {}
@@ -53,12 +52,12 @@ void AgentFunctionDescription::addOutput(const AgentFunctionOutput &output) {
 }
 
 const InputsMap & AgentFunctionDescription::getInput() {
-   // if (inputs != NULL)
+    // if (inputs != nullptr)
         return inputs;
 }
 
 const OutputsMap & AgentFunctionDescription::getOutput() {
-    // if (outputs != NULL)
+    // if (outputs != nullptr)
         return outputs;
 }
 
@@ -95,41 +94,41 @@ FLAMEGPU_AGENT_FUNCTION_POINTER* AgentFunctionDescription::getFunction() const {
 
 void AgentFunctionDescription::setParent(AgentDescription& agent) {
     // check to make sure it is not owened by any other object
-    if (parent != NULL)
+    if (parent != nullptr)
         throw InvalidOperation("This object is already owned by another agent description");
 
     parent = &agent;
 }
 
 const AgentDescription& AgentFunctionDescription::getParent() const {
-    if (parent==NULL)
+    if (parent == nullptr)
         throw InvalidOperation("Does not belong to a model object");
-    return *parent;// &(*parent);
+    return *parent;  // &(*parent);
 }
 
 void AgentFunctionDescription::setInputChild(AgentFunctionInput& input) {
     // check to make sure it is not owened by any other object
-    if (inputChild != NULL)
+    if (inputChild != nullptr)
         throw InvalidOperation("This object is already owned by another agent description");
 
     inputChild = &input;
 }
 
 const AgentFunctionInput& AgentFunctionDescription::getInputChild() const {
-    if (inputChild==NULL)
+    if (inputChild == nullptr)
         throw InvalidOperation("Does not belong to a model object");
     return *inputChild;
 }
 
 void AgentFunctionDescription::setOutputChild(AgentFunctionOutput& output) {
     // check to make sure it is not owened by any other object
-    if (outputChild != NULL)
+    if (outputChild != nullptr)
         throw InvalidOperation("This object is already owned by another agent description");
 
     outputChild = &output;
 }
 const AgentFunctionOutput& AgentFunctionDescription::getOutputChild() const {
-    if (outputChild==NULL)
+    if (outputChild == nullptr)
         throw InvalidOperation("Does not belong to a model object");
     return *outputChild;
 }

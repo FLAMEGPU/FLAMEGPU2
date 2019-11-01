@@ -9,9 +9,9 @@
 #define INCLUDE_FLAMEGPU_FLAME_API_H_
 
 // include all host API classes (top level header from each module)
-#include <flamegpu/model/ModelDescription.h>
-#include <flamegpu/pop/AgentPopulation.h>
-#include <flamegpu/sim/Simulation.h>
-#include <flamegpu/gpu/CUDAAgentModel.h>
+#include "flamegpu/model/ModelDescription.h"
+#include "flamegpu/pop/AgentPopulation.h"
+#include "flamegpu/sim/Simulation.h"
+#include "flamegpu/gpu/CUDAAgentModel.h"
 
 #endif // INCLUDE_FLAMEGPU_FLAME_API_H_

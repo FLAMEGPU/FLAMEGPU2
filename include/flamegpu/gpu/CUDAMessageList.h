@@ -36,7 +36,6 @@ class CUDAMessageList {
     void zeroMessageData();
 
  protected:
-
     void allocateDeviceMessageList(CUDAMsgMap &Message_list);
 
     void releaseDeviceMessageList(CUDAMsgMap &Message_list);
@@ -45,10 +44,10 @@ class CUDAMessageList {
 
  private:
     CUDAMsgMap d_list;
-    CUDAMsgMap d_swap_list; // may not need this later
+    CUDAMsgMap d_swap_list;  // may not need this later
     CUDAMsgMap d_new_list;
 
-    unsigned int current_list_size; // ???
+    unsigned int current_list_size;  // ???
 
     const CUDAMessage& message;
 };

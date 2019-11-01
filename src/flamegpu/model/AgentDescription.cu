@@ -8,9 +8,9 @@
  * @warning
  */
 
-#include <flamegpu/model/AgentDescription.h>
+#include "flamegpu/model/AgentDescription.h"
 
-#include <flamegpu/exception/FGPUException.h>
+#include "flamegpu/exception/FGPUException.h"
 
 AgentDescription::AgentDescription(std::string name) : default_state(new AgentStateDescription("default")), states(), functions(), memory(), sizes() {
     stateless = true;
@@ -19,7 +19,6 @@ AgentDescription::AgentDescription(std::string name) : default_state(new AgentSt
 }
 
 AgentDescription::~AgentDescription() {
-
 }
 
 void AgentDescription::setName(std::string _name) {
@@ -30,7 +29,6 @@ const std::string AgentDescription::getName() const {
 }
 
 void AgentDescription::addState(const AgentStateDescription& state, bool is_initial_state) {
-
     // check if this is a stateless system
     if (stateless) {
         stateless = false;
@@ -94,7 +92,6 @@ size_t AgentDescription::getAgentVariableSize(const std::string variable_name) c
 }
 
 bool AgentDescription::requiresAgentCreation() const {
-
     // needs to search entire model for any functions with an agent output for this agent
     for (FunctionMap::const_iterator it= functions.begin(); it != functions.end(); it++) {
         // if (*it->second()->)
@@ -127,7 +124,7 @@ StateMemoryMap AgentDescription::getEmptyStateMemoryMap() const {
 */
 
 void AgentDescription::initEmptyStateMemoryMap(StateMemoryMap& map) const {
-    for (const StateMemoryMapPair& sm_p : sm_map){
+    for (const StateMemoryMapPair& sm_p : sm_map) {
         map.insert(StateMemoryMap::value_type(sm_p.first, std::unique_ptr<GenericMemoryVector>(sm_p.second->clone())));
     }
 }

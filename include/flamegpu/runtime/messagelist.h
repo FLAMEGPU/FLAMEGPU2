@@ -11,9 +11,9 @@
  */
 
 #include <iterator>
-#include <flamegpu/gpu/CUDAErrorChecking.h>            // required for CUDA error handling functions
+#include "flamegpu/gpu/CUDAErrorChecking.h"            // required for CUDA error handling functions
 #include "cuRVE/curve.h" // @todo migrate
-#include <flamegpu/exception/FGPUException.h>
+#include "flamegpu/exception/FGPUException.h"
 
 // TODO: Some example code of the handle class and an example function
 
@@ -21,11 +21,10 @@ class MessageList;  // Forward declaration (class defined below)
 
 class MessageList  {
  public:
-
     typedef unsigned int size_type;
 
-    class Message; // Forward declare inner classes
-    class iterator; // Forward declare inner classes
+    class Message;  // Forward declare inner classes
+    class iterator;  // Forward declare inner classes
 
     // Inner class representing an individual message
     class Message {
@@ -33,8 +32,8 @@ class MessageList  {
         MessageList &_messageList;
         size_type index;
     public:
-    __device__ Message(MessageList &messageList) : _messageList(messageList), index(0) {};
-    __device__ Message(MessageList &messageList, size_type index) : _messageList(messageList), index(index) {};
+    __device__ Message(MessageList &messageList) : _messageList(messageList), index(0) {}
+    __device__ Message(MessageList &messageList, size_type index) : _messageList(messageList), index(index) {}
     __host__ __device__ bool operator==(const Message& rhs) { return  this->getIndex() == rhs.getIndex(); }
     __host__ __device__ bool operator!=(const Message& rhs) { return  this->getIndex() != rhs.getIndex(); }
     __host__ __device__ Message& operator++() { ++index;  return *this; }
@@ -46,9 +45,9 @@ class MessageList  {
 
     // message list iterator inner class.
     class iterator : public std::iterator <std::random_access_iterator_tag, void, void, void, void> {
-    private:
+ private:
         MessageList::Message _message;
-    public:
+ public:
         __host__ __device__ iterator(MessageList &messageList, size_type index) : _message(messageList, index) {}
         __host__ __device__ iterator& operator++() { ++_message;  return *this; }
         __host__ __device__ iterator operator++(int) { iterator tmp(*this); operator++(); return tmp; }
@@ -57,9 +56,9 @@ class MessageList  {
         __host__ __device__ MessageList::Message& operator*() { return _message; }
     };
 
-    __device__ MessageList(size_type start= 0, size_type end = 0) : start_(start), _messageCount(end) {};
+    __device__ MessageList(size_type start = 0, size_type end = 0) : start_(start), _messageCount(end) {}
 
-    __device__ ~MessageList() {};
+    __device__ ~MessageList() {}
 
     /*! Returns the number of elements in the message list.
     */
@@ -112,7 +111,6 @@ class MessageList  {
     }
 
  private:
-
     size_type start_;
     size_type end_;
 
@@ -143,7 +141,7 @@ __device__ T MessageList::getVariable(MessageList::iterator iterator, const char
 template<typename T, MessageList::size_type N>
 __device__ T MessageList::getVariable(MessageList::Message message, const char(&variable_name)[N]) {
     // Ensure that the message is within bounds.
-    if (message.getIndex() < this->_messageCount){
+    if (message.getIndex() < this->_messageCount) {
         // get the value from curve using the stored hashes and message index.
         T value = curveGetVariable<T>(variable_name, agent_func_name_hash + messagename_inp_hash, message.getIndex());
         return value;

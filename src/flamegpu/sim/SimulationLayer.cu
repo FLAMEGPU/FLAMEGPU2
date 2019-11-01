@@ -8,9 +8,9 @@
 * @warning
 */
 
-#include <flamegpu/sim/SimulationLayer.h>
-#include <flamegpu/sim/Simulation.h>
-#include <flamegpu/model/ModelDescription.h>
+#include "flamegpu/sim/SimulationLayer.h"
+#include "flamegpu/sim/Simulation.h"
+#include "flamegpu/model/ModelDescription.h"
 
 SimulationLayer::SimulationLayer(Simulation& sim, const std::string name) : layer_name(name), simulation(sim) {
 

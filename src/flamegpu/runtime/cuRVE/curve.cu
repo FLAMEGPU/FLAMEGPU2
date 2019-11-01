@@ -1,6 +1,7 @@
-#include <stdio.h>
-#include <flamegpu/runtime/cuRVE/curve.h>
-#include <assert.h>
+#include <cstdio>
+#include <cassert>
+
+#include "flamegpu/runtime/cuRVE/curve.h"
 
 #define CURVE_MAX_VARIABLES             32                             // !< Default maximum number of cuRVE variables (must be a power of 2)
 #define VARIABLE_DISABLED                 0
@@ -214,7 +215,7 @@ __host__ void curveUnregisterVariableByHash(CurveVariableHash variable_hash) {
     h_hashes[cv] = 0;
     CUDA_SAFE_CALL(cudaMemcpy(&_d_hashes[cv], &h_hashes[cv], sizeof(unsigned int), cudaMemcpyHostToDevice));
 
-    // set a host pointer to null and copy to the device
+    // set a host pointer to nullptr and copy to the device
     h_d_variables[cv] = 0;
     CUDA_SAFE_CALL(cudaMemcpy(&_d_variables[cv], &h_d_variables[cv], sizeof(void*), cudaMemcpyHostToDevice));
 
@@ -288,17 +289,17 @@ __device__ void* curveGetVariablePtrByHash(const CurveVariableHash variable_hash
     // error checking
     if (cv == UNKNOWN_CURVE_VARIABLE) {
         d_curve_error = CURVE_DEVICE_ERROR_UNKNOWN_VARIABLE;
-        return NULL;
+        return nullptr;
     }
     if (!d_states[cv]) {
         d_curve_error = CURVE_DEVICE_ERROR_VARIABLE_DISABLED;
-        return NULL;
+        return nullptr;
     }
 
     // check vector length
-    if (offset > d_sizes[cv]*d_lengths[cv]) { // Note : offset is basicly index * sizeof(T)
+    if (offset > d_sizes[cv]*d_lengths[cv]) {  // Note : offset is basicly index * sizeof(T)
         d_curve_error = CURVE_DEVICE_ERROR_UNKNOWN_LENGTH;
-        return NULL;
+        return nullptr;
     }
 
     // return a generic pointer to variable address for given offset (no bounds checking here!)

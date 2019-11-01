@@ -8,7 +8,7 @@
  * @warning
  */
 
-#include <flamegpu/model/AgentFunctionOutput.h>
+#include "flamegpu/model/AgentFunctionOutput.h"
 
 AgentFunctionOutput::AgentFunctionOutput(const std::string output_message_name): message_name(output_message_name) {
     setFunctionOutputType(SINGLE_MESSAGE);
@@ -17,7 +17,7 @@ AgentFunctionOutput::AgentFunctionOutput(const std::string output_message_name):
 AgentFunctionOutput::~AgentFunctionOutput() {
 }
 
-const std::string AgentFunctionOutput::getMessageName() const{
+const std::string AgentFunctionOutput::getMessageName() const {
     return message_name;
 }
 

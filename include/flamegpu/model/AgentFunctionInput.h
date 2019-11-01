@@ -14,7 +14,7 @@
 
 class AgentFunctionInput {
  public:
-   explicit AgentFunctionInput(const std::string input_message_name);
+    explicit AgentFunctionInput(const std::string input_message_name);
     virtual ~AgentFunctionInput();
 
     const std::string getMessageName() const;

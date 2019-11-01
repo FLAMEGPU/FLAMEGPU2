@@ -15,21 +15,21 @@
 #include <map>
 #include <memory>
 
-#include <flamegpu/model/AgentFunctionInput.h>
-#include <flamegpu/model/AgentFunctionOutput.h>
+#include "flamegpu/model/AgentFunctionInput.h"
+#include "flamegpu/model/AgentFunctionOutput.h"
 
 // include the agent function syntax form the runtime api
-#include <flamegpu/runtime/flame_functions_api.h>
+#include "flamegpu/runtime/flame_functions_api.h"
 
 class AgentDescription;
 
 typedef std::map<std::string, const AgentFunctionInput&> InputsMap;
 typedef std::map<std::string, const AgentFunctionOutput&> OutputsMap;
-// typedef std::map<const std::string, FLAMEGPU_AGENT_FUNCTION> FunctionPointerMap; // @question: This is not required as each agent function will have only a single pointer
+// typedef std::map<const std::string, FLAMEGPU_AGENT_FUNCTION> FunctionPointerMap;  // @question: This is not required as each agent function will have only a single pointer
 
 class AgentFunctionDescription {
  public:
-    AgentFunctionDescription(const std::string function_name);
+    explicit AgentFunctionDescription(const std::string function_name);
 
     virtual ~AgentFunctionDescription();
 
@@ -79,7 +79,7 @@ class AgentFunctionDescription {
     std::string end_state;
     InputsMap inputs;
     OutputsMap outputs;
-    FLAMEGPU_AGENT_FUNCTION_POINTER *func = NULL;
+    FLAMEGPU_AGENT_FUNCTION_POINTER *func = nullptr;
     // TODO(Paul): Paul idea for parent objects
     AgentDescription* parent = 0;
     AgentFunctionInput* inputChild = 0;

@@ -14,7 +14,7 @@
 #include <memory>
 
 // include sub classes
-#include <flamegpu/gpu/CUDAMessageList.h>
+#include "flamegpu/gpu/CUDAMessageList.h"
 
 // forward declare classes from other modules
 
@@ -45,19 +45,23 @@ class CUDAMessage {
      */
     void unmapRuntimeVariables(const AgentFunctionDescription& func) const;
 
+<<<<<<< HEAD
 protected:
     /**
      * @brief Allocates the messagelist memory, called by constructor
      */
     void setInitialMessageList();
 
+=======
+ protected:
+>>>>>>> Addresses Lint: various.
     /** @brief    Zero all message variable data. */
     void zeroAllMessageData();
 
  private:
     const MessageDescription& message_description;
 
-    std::unique_ptr<CUDAMessageList> message_list; // CUDAMessageMap message_list;
+    std::unique_ptr<CUDAMessageList> message_list;  // CUDAMessageMap message_list;
 
     unsigned int max_list_size;
 };

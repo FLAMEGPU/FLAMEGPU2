@@ -52,7 +52,7 @@ class MessageDescription {
     const std::string name;
     VariableMap variables;
     VarTypeSizeMap sizes;
-    unsigned int maximum_size; // size is maximum buffer size for messages
+    unsigned int maximum_size;  // size is maximum buffer size for messages
 };
 
 template <typename T> void MessageDescription::addVariable(const std::string variable_name) {

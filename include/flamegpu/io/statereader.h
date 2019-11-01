@@ -34,7 +34,7 @@ class StateReader {
 /*
     StateReader& create(const ModelDescription &model, const char *input) {
         string extension = getFileExt(input);
-        StateReader *object_to_return = NULL;
+        StateReader *object_to_return = nullptr;
 
         if (extension == "xml") {
             object_to_return = new xmlReader(model);

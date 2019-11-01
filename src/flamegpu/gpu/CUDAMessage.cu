@@ -11,15 +11,15 @@
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 
-#include <flamegpu/gpu/CUDAMessage.h>
-#include <flamegpu/gpu/CUDAMessageList.h>
-#include <flamegpu/gpu/CUDAErrorChecking.h>
+#include "flamegpu/gpu/CUDAMessage.h"
+#include "flamegpu/gpu/CUDAMessageList.h"
+#include "flamegpu/gpu/CUDAErrorChecking.h"
 
-#include <flamegpu/model/MessageDescription.h>
-#include <flamegpu/model/AgentFunctionDescription.h>
-#include <flamegpu/runtime/cuRVE/curve.h>
-#include <flamegpu/model/AgentDescription.h>
-#include <flamegpu/pop/AgentPopulation.h>
+#include "flamegpu/model/MessageDescription.h"
+#include "flamegpu/model/AgentFunctionDescription.h"
+#include "flamegpu/runtime/cuRVE/curve.h"
+#include "flamegpu/model/AgentDescription.h"
+#include "flamegpu/pop/AgentPopulation.h"
 
 /**
 * CUDAMessage class
@@ -35,7 +35,6 @@ CUDAMessage::CUDAMessage(const MessageDescription& description) : message_descri
  * @brief Destroys the CUDAMessage object
  */
 CUDAMessage::~CUDAMessage(void) {
-
 }
 
 /**
@@ -52,7 +51,7 @@ const MessageDescription& CUDAMessage::getMessageDescription() const {
 * @param empty
 * @return none
 */
-void CUDAMessage::setInitialMessageList() { // used to be const AgentPopulation& population
+void CUDAMessage::setInitialMessageList() {  // used to be const AgentPopulation& population
     // check that the message list has not already been set
     if (message_list)
         throw InvalidMessageData("Error: Initial message list already set");
@@ -66,11 +65,11 @@ void CUDAMessage::setInitialMessageList() { // used to be const AgentPopulation&
         throw InvalidMessageSize("Error: Invalid Message List size");
 */
 
-    max_list_size = message_description.getMaximumMessageListCapacity(); // maxmimum message list, not the population
+    max_list_size = message_description.getMaximumMessageListCapacity();  // maxmimum message list, not the population
 
     // allocate memory for each message list
     message_list = std::unique_ptr<CUDAMessageList>(new CUDAMessageList(*this));
-    // message_list = std::make_unique<CUDAMessageList>(*this); // you may replace *this with "new CUDAMessageList(*this)" , compile this with -std=c++14. Not possible with CUDA 8 under linux using cmake.
+    // message_list = std::make_unique<CUDAMessageList>(*this);  // you may replace *this with "new CUDAMessageList(*this)" , compile this with -std=c++14. Not possible with CUDA 8 under linux using cmake.
 
     /**set the message list to zero*/
     zeroAllMessageData();
@@ -122,7 +121,7 @@ void CUDAMessage::mapRuntimeVariables(const AgentFunctionDescription& func) cons
         size = message_description.getMessageVariableSize(mmp.first.c_str());
 
        // maximum population size
-        unsigned int length = this->getMaximumListSize(); // check to see if it is equal to pop
+        unsigned int length = this->getMaximumListSize();  // check to see if it is equal to pop
 
         curveRegisterVariableByHash(var_hash + agent_hash + func_hash + message_hash, d_ptr, size, length);
     }

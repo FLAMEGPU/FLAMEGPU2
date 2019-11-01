@@ -10,10 +10,10 @@
 
 #include <iostream>
 
-#include <flamegpu/pop/AgentStateMemory.h>
+#include "flamegpu/pop/AgentStateMemory.h"
 
-#include <flamegpu/pop/AgentPopulation.h>
-#include <flamegpu/model/AgentDescription.h>
+#include "flamegpu/pop/AgentPopulation.h"
+#include "flamegpu/model/AgentDescription.h"
 
 AgentStateMemory::AgentStateMemory(const AgentPopulation &p, unsigned int initial_capacity) : population(p) {
     // state memory map is cloned from the agent description
@@ -78,7 +78,7 @@ unsigned int AgentStateMemory::getPopulationCapacity() const {
     return population.getMaximumStateListCapacity();
 }
 
-unsigned int AgentStateMemory::getStateListSize() const{
+unsigned int AgentStateMemory::getStateListSize() const {
     return current_size;
 }
 

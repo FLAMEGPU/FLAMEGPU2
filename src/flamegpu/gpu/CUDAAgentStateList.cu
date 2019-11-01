@@ -11,13 +11,13 @@
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 
-#include <flamegpu/gpu/CUDAAgentStateList.h>
+#include "flamegpu/gpu/CUDAAgentStateList.h"
 
-#include <flamegpu/gpu/CUDAAgent.h>
-#include <flamegpu/gpu/CUDAErrorChecking.h>
-#include <flamegpu/pop/AgentStateMemory.h>
-#include <flamegpu/model/AgentDescription.h>
-#include <flamegpu/pop/AgentPopulation.h>
+#include "flamegpu/gpu/CUDAAgent.h"
+#include "flamegpu/gpu/CUDAErrorChecking.h"
+#include "flamegpu/pop/AgentStateMemory.h"
+#include "flamegpu/model/AgentDescription.h"
+#include "flamegpu/pop/AgentPopulation.h"
 
 /**
 * CUDAAgentStateList class
@@ -42,7 +42,7 @@ void CUDAAgentStateList::cleanupAllocatedData() {
     // clean up
     releaseDeviceAgentList(d_list);
     releaseDeviceAgentList(d_swap_list);
-    if (agent.getAgentDescription().requiresAgentCreation()){
+    if (agent.getAgentDescription().requiresAgentCreation()) {
         releaseDeviceAgentList(d_new_list);
     }
 }
@@ -123,7 +123,7 @@ void CUDAAgentStateList::setAgentData(const AgentStateMemory &state_memory) {
     }
 
     // copy raw agent data to device pointers
-    for (CUDAMemoryMapPair m : d_list){
+    for (CUDAMemoryMapPair m : d_list) {
         // get the variable size from agent description
         size_t var_size = agent.getAgentDescription().getAgentVariableSize(m.first);
 
@@ -139,7 +139,6 @@ void CUDAAgentStateList::setAgentData(const AgentStateMemory &state_memory) {
         // copy the host data to the GPU
         gpuErrchk(cudaMemcpy(m.second, v_data, var_size*current_list_size, cudaMemcpyHostToDevice));
     }
-
 }
 
 void CUDAAgentStateList::getAgentData(AgentStateMemory &state_memory) {
@@ -150,7 +149,7 @@ void CUDAAgentStateList::getAgentData(AgentStateMemory &state_memory) {
     }
 
     // copy raw agent data to device pointers
-    for (CUDAMemoryMapPair m : d_list){
+    for (CUDAMemoryMapPair m : d_list) {
         // get the variable size from agent description
         size_t var_size = agent.getAgentDescription().getAgentVariableSize(m.first);
 
@@ -174,7 +173,7 @@ void CUDAAgentStateList::getAgentData(AgentStateMemory &state_memory) {
 
 void* CUDAAgentStateList::getAgentListVariablePointer(std::string variable_name) {
     CUDAMemoryMap::iterator mm = d_list.find(variable_name);
-    if (mm == d_list.end()){
+    if (mm == d_list.end()) {
         // TODO: Error variable not found in agent state list
         return 0;
     }
@@ -182,7 +181,7 @@ void* CUDAAgentStateList::getAgentListVariablePointer(std::string variable_name)
     return mm->second;
 }
 
-void CUDAAgentStateList::zeroAgentData(){
+void CUDAAgentStateList::zeroAgentData() {
     zeroDeviceAgentList(d_list);
     zeroDeviceAgentList(d_swap_list);
     if (agent.getAgentDescription().requiresAgentCreation())

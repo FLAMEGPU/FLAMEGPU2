@@ -17,7 +17,7 @@
 #include <vector>
 
 // include dependant class agent state memory (required in template functions)
-#include <flamegpu/pop/AgentStateMemory.h>
+#include "flamegpu/pop/AgentStateMemory.h"
 
 class AgentInstance {
  public:

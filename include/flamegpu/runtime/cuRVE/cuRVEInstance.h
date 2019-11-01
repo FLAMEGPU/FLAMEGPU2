@@ -10,7 +10,6 @@
  */
 class cuRVEInstance {
  private:
-
     /** @brief    Default constructor.
      *
      *  Private destructor to prevent this singleton being created more than once. Classes requiring a cuRVEInstance object should instead use the getInstance() method.
@@ -18,17 +17,16 @@ class cuRVEInstance {
      */
     cuRVEInstance() {
         curveInit();
-    };
+    }
 
-    ~cuRVEInstance() {};
+    ~cuRVEInstance() {}
  public:
-
     /**
      * @brief    Gets the instance.
      *
      * @return    A new instance if this is the first request for an instance otherwise an existing instance.
      */
-    static cuRVEInstance& getInstance(){
+    static cuRVEInstance& getInstance() {
         static cuRVEInstance c;
         return c;
     }

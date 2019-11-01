@@ -10,10 +10,10 @@
 
 #include <exception>
 
-#include <flamegpu/sim/Simulation.h>
-#include <flamegpu/model/ModelDescription.h>
-#include <flamegpu/io/statereader.h>
-#include <flamegpu/io/statewriter.h>
+#include "flamegpu/sim/Simulation.h"
+#include "flamegpu/model/ModelDescription.h"
+#include "flamegpu/io/statereader.h"
+#include "flamegpu/io/statewriter.h"
 #include "flamegpu/io/factory.h"
 
 Simulation::Simulation(const ModelDescription& model) : layers(), model_description(model) {
@@ -24,9 +24,9 @@ Simulation::~Simulation(void) {
 }
 
 const FunctionDescriptionVector& Simulation::getFunctionsAtLayer(unsigned int layer) const {
-    if (layer>=layers.size())
-        throw InvalidMemoryCapacity("Function layer doesn't exists!"); // out of bound index
-    else {
+    if (layer >= layers.size()) {
+        throw InvalidMemoryCapacity("Function layer doesn't exists!");  // out of bound index
+    } else {
         return layers.at(layer).get().getAgentFunctions();
     }
 }
@@ -90,7 +90,7 @@ void Simulation::output(int argc, char** argv) {
     // check input args
     if (!checkArgs(argc, argv))
         exit(0);
-    const char* input =  "finalIteration.xml";// argv[2];
+    const char* input =  "finalIteration.xml";  // argv[2];
 
     StateWriter *write__ = WriterFactory::createWriter(model_description, input);
     write__->writeStates();
