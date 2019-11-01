@@ -35,4 +35,4 @@ class StateWriter {
     std::string outputFile;
 };
 
-#endif // INCLUDE_FLAMEGPU_IO_STATEWRITER_H_
+#endif  // INCLUDE_FLAMEGPU_IO_STATEWRITER_H_

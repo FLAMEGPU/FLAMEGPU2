@@ -56,4 +56,4 @@ class AgentStateMemory { // agent_list
     unsigned int current_size;
 };
 
-#endif // INCLUDE_FLAMEGPU_POP_AGENTSTATEMEMORY_H_
+#endif  // INCLUDE_FLAMEGPU_POP_AGENTSTATEMEMORY_H_

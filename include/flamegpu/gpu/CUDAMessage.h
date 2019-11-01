@@ -66,4 +66,4 @@ protected:
     unsigned int max_list_size;
 };
 
-#endif //INCLUDE_FLAMEGPU_GPU_CUDAMESSAGE_H_
+#endif  //INCLUDE_FLAMEGPU_GPU_CUDAMESSAGE_H_

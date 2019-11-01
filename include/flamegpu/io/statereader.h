@@ -52,4 +52,4 @@ class StateReader {
     std::string inputFile;
 };
 
-#endif // INCLUDE_FLAMEGPU_IO_STATEREADER_H_
+#endif  // INCLUDE_FLAMEGPU_IO_STATEREADER_H_

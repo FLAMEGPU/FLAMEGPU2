@@ -35,4 +35,4 @@ class AgentFunctionOutput {
     FunctionOutputType type;
 };
 
-#endif // INCLUDE_FLAMEGPU_MODEL_AGENTFUNCTIONOUTPUT_H_
+#endif  // INCLUDE_FLAMEGPU_MODEL_AGENTFUNCTIONOUTPUT_H_

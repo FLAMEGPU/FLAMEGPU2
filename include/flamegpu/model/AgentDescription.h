@@ -115,4 +115,4 @@ template <typename T> void AgentDescription::addAgentVariable(const std::string 
     sm_map.insert(StateMemoryMap::value_type(variable_name, std::unique_ptr<GenericMemoryVector>(new MemoryVector<T>())));
 }
 
-#endif // INCLUDE_FLAMEGPU_MODEL_AGENTDESCRIPTION_H_
+#endif  // INCLUDE_FLAMEGPU_MODEL_AGENTDESCRIPTION_H_

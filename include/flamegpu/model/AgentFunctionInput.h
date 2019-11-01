@@ -25,4 +25,4 @@ class AgentFunctionInput {
 // input type (single or optional)
 };
 
-#endif // INCLUDE_FLAMEGPU_MODEL_AGENTFUNCTIONINPUT_H_
+#endif  // INCLUDE_FLAMEGPU_MODEL_AGENTFUNCTIONINPUT_H_

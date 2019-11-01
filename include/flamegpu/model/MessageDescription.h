@@ -60,4 +60,4 @@ template <typename T> void MessageDescription::addVariable(const std::string var
     sizes.insert(VarTypeSizeMap::value_type(&typeid(T), (unsigned int)sizeof(T)));
 }
 
-#endif // INCLUDE_FLAMEGPU_MODEL_MESSAGEDESCRIPTION_H_
+#endif  // INCLUDE_FLAMEGPU_MODEL_MESSAGEDESCRIPTION_H_

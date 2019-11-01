@@ -30,7 +30,7 @@ void ModelDescription::addPopulation(AgentPopulation &pop) {
      population.insert(PopulationMap::value_type(pop.getAgentName(), pop));
 }
 
-const AgentDescription& ModelDescription::getAgentDescription(const std::string agent_name) const{
+const AgentDescription& ModelDescription::getAgentDescription(const std::string agent_name) const {
     AgentMap::const_iterator iter;
     iter = agents.find(agent_name);
     if (iter == agents.end())
@@ -38,7 +38,7 @@ const AgentDescription& ModelDescription::getAgentDescription(const std::string 
     return iter->second;
 }
 
-const MessageDescription& ModelDescription::getMessageDescription(const std::string message_name) const{
+const MessageDescription& ModelDescription::getMessageDescription(const std::string message_name) const {
     MessageMap::const_iterator iter;
     iter = messages.find(message_name);
     if (iter == messages.end())
@@ -46,7 +46,7 @@ const MessageDescription& ModelDescription::getMessageDescription(const std::str
     return iter->second;
 }
 
-AgentPopulation& ModelDescription::getAgentPopulation(const std::string agent_name) const{
+AgentPopulation& ModelDescription::getAgentPopulation(const std::string agent_name) const {
     PopulationMap::const_iterator iter;
     iter = population.find(agent_name);
     if (iter == population.end())

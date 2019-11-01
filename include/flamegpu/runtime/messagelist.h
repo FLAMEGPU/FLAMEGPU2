@@ -12,7 +12,7 @@
 
 #include <iterator>
 #include "flamegpu/gpu/CUDAErrorChecking.h"            // required for CUDA error handling functions
-#include "cuRVE/curve.h" // @todo migrate
+#include "cuRVE/curve.h"  // @todo migrate
 #include "flamegpu/exception/FGPUException.h"
 
 // TODO: Some example code of the handle class and an example function
@@ -28,26 +28,25 @@ class MessageList  {
 
     // Inner class representing an individual message
     class Message {
-    private:
+     private:
         MessageList &_messageList;
         size_type index;
-    public:
+     public:
     __device__ Message(MessageList &messageList) : _messageList(messageList), index(0) {}
     __device__ Message(MessageList &messageList, size_type index) : _messageList(messageList), index(index) {}
     __host__ __device__ bool operator==(const Message& rhs) { return  this->getIndex() == rhs.getIndex(); }
     __host__ __device__ bool operator!=(const Message& rhs) { return  this->getIndex() != rhs.getIndex(); }
     __host__ __device__ Message& operator++() { ++index;  return *this; }
-    __host__ __device__ size_type getIndex() const { return this->index; };
+    __host__ __device__ size_type getIndex() const { return this->index; }
     template<typename T, size_type N>
     __device__ T getVariable(const char(&variable_name)[N]);
-
     };
 
     // message list iterator inner class.
     class iterator : public std::iterator <std::random_access_iterator_tag, void, void, void, void> {
- private:
+     private:
         MessageList::Message _message;
- public:
+     public:
         __host__ __device__ iterator(MessageList &messageList, size_type index) : _message(messageList, index) {}
         __host__ __device__ iterator& operator++() { ++_message;  return *this; }
         __host__ __device__ iterator operator++(int) { iterator tmp(*this); operator++(); return tmp; }
@@ -66,10 +65,10 @@ class MessageList  {
         return _messageCount;
     }
 
-    inline __host__ __device__ iterator begin(void) { // const
+    inline __host__ __device__ iterator begin(void) {  // const
         return iterator(*this, start_);
     }
-    inline __host__ __device__ iterator end(void) { // const
+    inline __host__ __device__ iterator end(void) {  // const
         return iterator(*this, start_ + size());
     }
 
@@ -163,4 +162,4 @@ __device__ T MessageList::Message::getVariable(const char(&variable_name)[N]) {
 }
 
 
-#endif // INCLUDE_FLAMEGPU_RUNTIME_MESSAGELIST_H_
+#endif  // INCLUDE_FLAMEGPU_RUNTIME_MESSAGELIST_H_

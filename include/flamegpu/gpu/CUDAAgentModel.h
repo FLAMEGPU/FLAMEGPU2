@@ -57,4 +57,4 @@ class CUDAAgentModel {
     CUDAMessageMap message_map;
 };
 
-#endif // INCLUDE_FLAMEGPU_GPU_CUDAAGENTMODEL_H_
+#endif  // INCLUDE_FLAMEGPU_GPU_CUDAAGENTMODEL_H_

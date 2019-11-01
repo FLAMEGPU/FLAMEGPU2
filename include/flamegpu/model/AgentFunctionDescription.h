@@ -86,4 +86,4 @@ class AgentFunctionDescription {
     AgentFunctionOutput* outputChild = 0;
 };
 
-#endif // INCLUDE_FLAMEGPU_MODEL_AGENTFUNCTIONDESCRIPTION_H_
+#endif  // INCLUDE_FLAMEGPU_MODEL_AGENTFUNCTIONDESCRIPTION_H_

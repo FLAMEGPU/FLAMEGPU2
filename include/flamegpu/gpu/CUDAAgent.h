@@ -74,4 +74,4 @@ class CUDAAgent {
     unsigned int max_list_size;  // The maximum length of the agent variable arrays based on the maximum population size passed to setPopulationData
 };
 
-#endif //INCLUDE_FLAMEGPU_GPU_CUDAAGENT_H_
+#endif  //INCLUDE_FLAMEGPU_GPU_CUDAAGENT_H_

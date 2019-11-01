@@ -22,4 +22,4 @@ class xmlReader : public StateReader {
     int parse();
 };
 
-#endif // INCLUDE_FLAMEGPU_IO_XMLREADER_H_
+#endif  // INCLUDE_FLAMEGPU_IO_XMLREADER_H_

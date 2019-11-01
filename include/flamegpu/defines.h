@@ -6,4 +6,4 @@
 // Not yet in use. @todo
 
 
-#endif // INCLUDE_FLAMEGPU_DEFINES_H_
+#endif  // INCLUDE_FLAMEGPU_DEFINES_H_

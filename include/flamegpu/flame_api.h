@@ -14,4 +14,4 @@
 #include "flamegpu/sim/Simulation.h"
 #include "flamegpu/gpu/CUDAAgentModel.h"
 
-#endif // INCLUDE_FLAMEGPU_FLAME_API_H_
+#endif  // INCLUDE_FLAMEGPU_FLAME_API_H_

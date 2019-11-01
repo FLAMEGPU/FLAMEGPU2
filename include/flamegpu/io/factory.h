@@ -55,4 +55,4 @@ class WriterFactory {
     }
 };
 
-#endif // INCLUDE_FLAMEGPU_IO_FACTORY_H_
+#endif  // INCLUDE_FLAMEGPU_IO_FACTORY_H_

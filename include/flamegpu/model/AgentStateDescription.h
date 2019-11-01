@@ -24,4 +24,4 @@ class AgentStateDescription {
     const std::string name;
 };
 
-#endif // INCLUDE_FLAMEGPU_MODEL_AGENTSTATEDESCRIPTION_H_
+#endif  // INCLUDE_FLAMEGPU_MODEL_AGENTSTATEDESCRIPTION_H_

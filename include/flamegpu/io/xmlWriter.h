@@ -22,4 +22,4 @@ class xmlWriter : public StateWriter {
     int writeStates();
 };
 
-#endif // INCLUDE_FLAMEGPU_IO_XMLWRITER_H_
+#endif  // INCLUDE_FLAMEGPU_IO_XMLWRITER_H_

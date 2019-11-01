@@ -210,4 +210,4 @@ __device__ MessageList FLAMEGPU_API::GetMessageIterator(const char(&message_name
     return messageList;
 }
 
-#endif // INCLUDE_FLAMEGPU_RUNTIME_FLAME_FUNCTIONS_API_H_
+#endif  // INCLUDE_FLAMEGPU_RUNTIME_FLAME_FUNCTIONS_API_H_

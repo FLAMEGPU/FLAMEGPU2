@@ -18,7 +18,7 @@ typedef std::vector<std::reference_wrapper<SimulationLayer>> SimulationLayerVect
  */
 class Simulation {
  public:
-    Simulation(const ModelDescription& model);
+    explicit Simulation(const ModelDescription& model);
     ~Simulation(void);
 
     unsigned int addSimulationLayer(SimulationLayer& layer);
@@ -41,5 +41,5 @@ class Simulation {
     unsigned int simulation_steps;
 };
 
-#endif //INCLUDE_FLAMEGPU_SIM_SIMULATION_H_
+#endif  //INCLUDE_FLAMEGPU_SIM_SIMULATION_H_
 

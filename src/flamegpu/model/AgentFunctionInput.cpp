@@ -15,6 +15,6 @@ AgentFunctionInput::AgentFunctionInput(const std::string input_message_name) :  
 
 AgentFunctionInput::~AgentFunctionInput() {}
 
-const std::string AgentFunctionInput::getMessageName() const{
+const std::string AgentFunctionInput::getMessageName() const {
     return message_name;
 }

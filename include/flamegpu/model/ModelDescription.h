@@ -59,4 +59,4 @@ class ModelDescription {
     // function map removed. This belongs to agents.
 };
 
-#endif // INCLUDE_FLAMEGPU_MODEL_MODELDESCRIPTION_H_
+#endif  // INCLUDE_FLAMEGPU_MODEL_MODELDESCRIPTION_H_

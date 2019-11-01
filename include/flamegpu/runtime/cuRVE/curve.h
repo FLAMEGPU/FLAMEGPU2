@@ -109,7 +109,7 @@ __host__ CurveVariable curveGetVariableHandle(CurveVariableHash variable_hash);
  *  @param d_ptr a pointer to the vector which holds the hashed variable of give name
  *  @return CurveVariable Handle of registered variable or UNKNOWN_CURVE_VARIABLE if an error is encountered.
  */
-__host__ CurveVariable curveRegisterVariableByHash(CurveVariableHash variable_hash, void* d_ptr, size_t size,unsigned int length);
+__host__ CurveVariable curveRegisterVariableByHash(CurveVariableHash variable_hash, void* d_ptr, size_t size, unsigned int length);
 
 /** @brief Template function for registering a constant string
  *     Registers a constant string variable name by hashing and then inserting into a hash table.
@@ -339,4 +339,4 @@ __host__ curveHostError curveGetLastHostError();
  */
 __host__ void curveClearErrors();
 
-#endif // INCLUDE_FLAMEGPU_RUNTIME_CURVE_CURVE_H_
+#endif  // INCLUDE_FLAMEGPU_RUNTIME_CURVE_CURVE_H_

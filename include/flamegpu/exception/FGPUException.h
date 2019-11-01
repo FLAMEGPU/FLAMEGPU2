@@ -343,4 +343,4 @@ class InvalidCUDAdevice : public FGPUException {
     }
 };
 
-#endif // INCLUDE_FLAMEGPU_EXCEPTION_FGPUEXCEPTION_H_
+#endif  // INCLUDE_FLAMEGPU_EXCEPTION_FGPUEXCEPTION_H_

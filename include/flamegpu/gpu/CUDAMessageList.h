@@ -52,4 +52,4 @@ class CUDAMessageList {
     const CUDAMessage& message;
 };
 
-#endif // INCLUDE_FLAMEGPU_GPU_CUDAMESSAGELIST_H_
+#endif  // INCLUDE_FLAMEGPU_GPU_CUDAMESSAGELIST_H_
