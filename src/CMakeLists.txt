@@ -7,7 +7,6 @@ project(flamegpu2 CUDA CXX)
 # Set the location of the ROOT flame gpu project relative to this CMakeList.txt
 get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/.. REALPATH)
 
-
 # Include common rules.
 include(${FLAMEGPU_ROOT}/cmake/common.cmake)
 

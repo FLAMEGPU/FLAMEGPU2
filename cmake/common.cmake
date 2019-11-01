@@ -99,9 +99,10 @@ if(SMS_COUNT EQUAL 0)
     endif()
 endif()
 
-# Replace commas and spaces with semicolons to correclty form a cmake list
+# Replace commas and spaces with semicolons to correctly form a cmake list
 string (REPLACE " " ";" SMS "${SMS}")
 string (REPLACE "," ";" SMS "${SMS}")
+SET(SMS "${SMS}" CACHE STRING "compute capabilities to build" FORCE)
 
 # Initialise the variable to contain actual -gencode arguments
 SET(GENCODES)
