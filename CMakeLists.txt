@@ -4,8 +4,9 @@ cmake_minimum_required(VERSION VERSION 3.12 FATAL_ERROR)
 
 project(FLAMEGPU2)
 
-# Don't create installation scripts
+# Don't create installation scripts (and hide CMAKE_INSTALL_PREFIX from cmake-gui)
 set(CMAKE_SKIP_INSTALL_RULES TRUE)
+set(CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}" CACHE INTERNAL ""  FORCE)
 
 # Option to enable/disable building the static library
 option(BUILD_FLAMEGPU2 "Enable building FLAMEGPU2 library" ON)
