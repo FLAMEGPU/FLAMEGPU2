@@ -64,7 +64,7 @@ public:
      * Care should be taken if default is removed as this may invalidate some agent functions already added to the model that use the default state. Not clear yet if model validation should be done at the end or during model building.
      * Inclined to think that validation should be done at the end and then the model set to read only.
      */
-    void addState(const AgentStateDescription& state, bool initial_state=false);
+    void addState(const AgentStateDescription& state, bool is_initial_state =false);
 
     void setInitialState(const std::string initial_state);
 

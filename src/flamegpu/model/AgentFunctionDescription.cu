@@ -25,9 +25,9 @@ const std::string AgentFunctionDescription::getEndState() const
     return end_state;
 }
 
-void AgentFunctionDescription::setEndState(const std::string end_state)
+void AgentFunctionDescription::setEndState(const std::string _end_state)
 {
-    this->end_state = end_state;
+    this->end_state = _end_state;
 }
 
 const std::string AgentFunctionDescription::getIntialState() const

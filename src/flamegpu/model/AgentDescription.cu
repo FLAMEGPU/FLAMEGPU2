@@ -34,7 +34,7 @@ const std::string AgentDescription::getName() const
     return name;
 }
 
-void AgentDescription::addState(const AgentStateDescription& state, bool initial_state)
+void AgentDescription::addState(const AgentStateDescription& state, bool is_initial_state)
 {
 
     //check if this is a stateless system
@@ -44,13 +44,13 @@ void AgentDescription::addState(const AgentStateDescription& state, bool initial
     }
 
     states.insert(StateMap::value_type(state.getName(), state));
-    if (initial_state)
+    if (is_initial_state)
         setInitialState(state.getName());
 }
 
-void AgentDescription::setInitialState(const std::string initial_state)
+void AgentDescription::setInitialState(const std::string _initial_state)
 {
-    this->initial_state = initial_state;
+    this->initial_state = _initial_state;
 }
 
 void AgentDescription::addAgentFunction(AgentFunctionDescription& function)
