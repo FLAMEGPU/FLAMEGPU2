@@ -13,23 +13,20 @@
 #include <flamegpu/pop/AgentPopulation.h>
 #include "flamegpu/io/xmlWriter.h"
 
-using namespace std;
-using namespace tinyxml2;
-
 #ifndef XMLCheckResult
-#define XMLCheckResult(a_eResult) if (a_eResult != XML_SUCCESS) { printf("XMLCheckResult Error: %i\n", a_eResult); return a_eResult; }
+#define XMLCheckResult(a_eResult) if (a_eResult != tinyxml2::XML_SUCCESS) { printf("XMLCheckResult Error: %i\n", a_eResult); return a_eResult; }
 #endif
 
 xmlWriter::xmlWriter(const ModelDescription &model, const char* output) : StateWriter(model, output) {};
 
 int xmlWriter::writeStates()
 {
-    XMLDocument doc;
+    tinyxml2::XMLDocument doc;
 
-    XMLNode * pRoot = doc.NewElement("states");
+    tinyxml2::XMLNode * pRoot = doc.NewElement("states");
     doc.InsertFirstChild(pRoot);
 
-    XMLElement * pElement = doc.NewElement("itno");
+    tinyxml2::XMLElement * pElement = doc.NewElement("itno");
     pElement->SetText(1); // get simulation step here - later
     pRoot->InsertEndChild(pElement);
 
@@ -54,7 +51,7 @@ int xmlWriter::writeStates()
 
             pElement = doc.NewElement("xagent");
 
-            XMLElement* pListElement = doc.NewElement("name");
+            tinyxml2::XMLElement* pListElement = doc.NewElement("name");
             pListElement->SetText(agentName);
             pElement->InsertEndChild(pListElement);
 
@@ -84,9 +81,9 @@ int xmlWriter::writeStates()
         }
     }
 
-    XMLError errorId = doc.SaveFile(outputFile.c_str());
+    tinyxml2::XMLError errorId = doc.SaveFile(outputFile.c_str());
     XMLCheckResult(errorId);
 
-    return XML_SUCCESS;
+    return tinyxml2::XML_SUCCESS;
 }
 

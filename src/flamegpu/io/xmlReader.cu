@@ -15,11 +15,8 @@
 #include <flamegpu/pop/AgentPopulation.h>
 #include <flamegpu/io/xmlReader.h>
 
-using namespace std;
-using namespace tinyxml2;
-
 #ifndef XMLCheckResult
-#define XMLCheckResult(a_eResult) if (a_eResult != XML_SUCCESS) { printf("XMLCheckResult Error: %i\n", a_eResult); return a_eResult; }
+#define XMLCheckResult(a_eResult) if (a_eResult != tinyxml2::XML_SUCCESS) { printf("XMLCheckResult Error: %i\n", a_eResult); return a_eResult; }
 #endif
 
 xmlReader::xmlReader(const ModelDescription &model, const char* input) : StateReader(model, input) {};
@@ -29,20 +26,20 @@ xmlReader::xmlReader(const ModelDescription &model, const char* input) : StateRe
 */
 int xmlReader::parse()
 {
-    XMLDocument doc;
-    
-    XMLError errorId = doc.LoadFile(inputFile.c_str());
+    tinyxml2::XMLDocument doc;
+
+    tinyxml2::XMLError errorId = doc.LoadFile(inputFile.c_str());
     XMLCheckResult(errorId);
 
     printf("XML file '%s' loaded.\n", inputFile.c_str());
 
-    XMLNode* pRoot = doc.FirstChild();
+    tinyxml2::XMLNode* pRoot = doc.FirstChild();
     if (pRoot == nullptr)
-        return XML_ERROR_FILE_READ_ERROR;
+        return tinyxml2::XML_ERROR_FILE_READ_ERROR;
 
-    XMLElement * pElement = pRoot->FirstChildElement("itno");
+    tinyxml2::XMLElement * pElement = pRoot->FirstChildElement("itno");
     if (pElement == nullptr)
-        return XML_ERROR_PARSING_ELEMENT;
+        return tinyxml2::XML_ERROR_PARSING_ELEMENT;
 
     int error;
     errorId = pElement->QueryIntText(&error);
@@ -51,9 +48,9 @@ int xmlReader::parse()
     for (pElement = pRoot->FirstChildElement("xagent"); pElement != nullptr; pElement = pElement->NextSiblingElement("xagent"))
     {
         if (pElement == nullptr)
-            return XML_ERROR_PARSING_ELEMENT;
+            return tinyxml2::XML_ERROR_PARSING_ELEMENT;
 
-        XMLElement* pListElement = pElement->FirstChildElement("name");
+        tinyxml2::XMLElement* pListElement = pElement->FirstChildElement("name");
         const char* agentName = pListElement->GetText();
 
         const MemoryMap &m = model_description_.getAgentDescription(agentName).getMemoryMap();
@@ -96,5 +93,5 @@ int xmlReader::parse()
         }
     }
     
-    return XML_SUCCESS;
+    return tinyxml2::XML_SUCCESS;
 }

@@ -16,13 +16,9 @@
 #include "cuRVE/curve.h" // @todo migrate
 #include <flamegpu/exception/FGPUException.h>
 
-
-using namespace std;
-
 // TODO: Some example code of the handle class and an example function
 
 class MessageList;  // Forward declaration (class defined below)
-
 
 class MessageList 
 {
