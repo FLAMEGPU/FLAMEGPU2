@@ -13,6 +13,8 @@
 
 #include <memory>
 #include <map>
+#include <utility>
+#include <string>
 
 // include sub classes
 #include <flamegpu/gpu/CUDAAgentStateList.h>

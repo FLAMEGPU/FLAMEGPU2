@@ -12,6 +12,7 @@
 
 #include <memory>
 #include <map>
+#include<string>
 #include <cuda_runtime.h>
 
 

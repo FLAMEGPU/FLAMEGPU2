@@ -13,6 +13,7 @@
 #include <typeinfo>
 #include <map>
 #include <memory>
+#include <utility>
 
 #include <flamegpu/exception/FGPUException.h>
 

@@ -13,6 +13,8 @@
 #include <string>
 #include <map>
 #include <typeinfo>
+#include <utility>
+#include <memory>
 
 // include generic memory vector
 #include <flamegpu/pop/MemoryVector.h>

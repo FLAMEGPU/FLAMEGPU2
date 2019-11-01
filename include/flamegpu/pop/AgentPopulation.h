@@ -13,6 +13,8 @@
 
 #include <memory>
 #include <map>
+#include <memory>
+#include <string>
 
 // include sub dependency AgentInstance which includes AgentStateMemory
 #include <flamegpu/pop/AgentInstance.h>

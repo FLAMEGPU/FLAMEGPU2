@@ -14,6 +14,7 @@
 #include <memory>
 #include <vector>
 #include <map>
+#include <utility>
 
 class CUDAAgent;
 class AgentStateMemory;
