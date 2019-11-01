@@ -156,7 +156,7 @@ void CUDAAgentModel::step(const Simulation& simulation)
 
 	//TODO: simulation.getMaxFunctionsPerLayer()
 	for (unsigned int i = 0; i < simulation.getLayerCount(); i++) {
-		int temp = simulation.getFunctionsAtLayer(i).size();
+		int temp = static_cast<int>(simulation.getFunctionsAtLayer(i).size());
 		nStreams = std::max(nStreams, temp);
 	}
 
