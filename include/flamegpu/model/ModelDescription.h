@@ -30,35 +30,35 @@ typedef std::map<const std::string, AgentPopulation&> PopulationMap;
 
 class ModelDescription {
 public:
-	ModelDescription(const std::string model_name);
+    ModelDescription(const std::string model_name);
 
-	virtual ~ModelDescription();
+    virtual ~ModelDescription();
 
-	const std::string getName() const;
+    const std::string getName() const;
 
-	void addAgent(const AgentDescription &agent);
+    void addAgent(const AgentDescription &agent);
 
-	void addMessage(const MessageDescription &message);
+    void addMessage(const MessageDescription &message);
 
-	void addPopulation(AgentPopulation &population);
+    void addPopulation(AgentPopulation &population);
 
-	const AgentDescription& getAgentDescription(const std::string agent_name) const;
-	const MessageDescription& getMessageDescription(const std::string message_name) const;
-	AgentPopulation& getAgentPopulation(const std::string agent_name) const;
+    const AgentDescription& getAgentDescription(const std::string agent_name) const;
+    const MessageDescription& getMessageDescription(const std::string message_name) const;
+    AgentPopulation& getAgentPopulation(const std::string agent_name) const;
 
-	const AgentMap& getAgentMap() const;
+    const AgentMap& getAgentMap() const;
 
-	const MessageMap& getMessageMap() const;
+    const MessageMap& getMessageMap() const;
 
-	//const PopulationMap& getPopulationMap() const;
+    //const PopulationMap& getPopulationMap() const;
 
 private:
-	std::string name;
-	AgentMap agents;
-	MessageMap messages;
-	PopulationMap population;
+    std::string name;
+    AgentMap agents;
+    MessageMap messages;
+    PopulationMap population;
 
-	//function map removed. This belongs to agents.
+    //function map removed. This belongs to agents.
 };
 
 

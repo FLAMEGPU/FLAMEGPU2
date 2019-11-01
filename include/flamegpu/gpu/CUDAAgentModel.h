@@ -42,20 +42,20 @@ public:
 
     void init(void);
 
-	//TODO: Is this needed? Probably not as it is the same as simulate. Do however require a SimulateN() for simulate a number of iterations.
+    //TODO: Is this needed? Probably not as it is the same as simulate. Do however require a SimulateN() for simulate a number of iterations.
     void step(const Simulation& sim);
 
     void simulate(const Simulation& sim);
 
-	const CUDAAgent& getCUDAAgent(std::string agent_name) const;
-	const CUDAMessage& getCUDAMessage(std::string message_name) const;
+    const CUDAAgent& getCUDAAgent(std::string agent_name) const;
+    const CUDAMessage& getCUDAMessage(std::string message_name) const;
 
 private:
     const ModelDescription& model_description;
     CUDAAgentMap agent_map;
-	cuRVEInstance &curve;
+    cuRVEInstance &curve;
 
-	CUDAMessageMap message_map;
+    CUDAMessageMap message_map;
 
 };
 

@@ -22,7 +22,7 @@ class AgentDescription;
 class AgentPopulation;
 class AgentFunctionDescription;
 
-typedef std::map<const std::string, std::unique_ptr<CUDAAgentStateList>> CUDAStateMap;	//map of state name to CUDAAgentStateList which allocates memory on the device
+typedef std::map<const std::string, std::unique_ptr<CUDAAgentStateList>> CUDAStateMap;    //map of state name to CUDAAgentStateList which allocates memory on the device
 typedef std::pair<const std::string, std::unique_ptr<CUDAAgentStateList>> CUDAStateMapPair;
 
 /** \brief CUDAAgent class is used as a container for storing the GPU data of all variables in all states
@@ -55,10 +55,10 @@ public:
     void mapRuntimeVariables(const AgentFunctionDescription& func) const;
 
     /**
-     * @brief	Uses the cuRVE runtime to unmap the variables used by the agent function to the cuRVE
-     * 			library so that they are unavailable to be accessed by name within an agent function.
+     * @brief    Uses the cuRVE runtime to unmap the variables used by the agent function to the cuRVE
+     *             library so that they are unavailable to be accessed by name within an agent function.
      *
-     * @param	func	The function.
+     * @param    func    The function.
      */
 
     void unmapRuntimeVariables(const AgentFunctionDescription& func) const;
@@ -66,7 +66,7 @@ public:
 
 protected:
 
-    /** @brief	Zero all state variable data. */
+    /** @brief    Zero all state variable data. */
     void zeroAllStateVariableData();
 
 

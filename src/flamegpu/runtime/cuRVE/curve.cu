@@ -2,21 +2,21 @@
 #include <flamegpu/runtime/cuRVE/curve.h>
 #include <assert.h>
 
-#define CURVE_MAX_VARIABLES 			32 							//!< Default maximum number of cuRVE variables (must be a power of 2)
-#define VARIABLE_DISABLED 				0
-#define VARIABLE_ENABLED 				1
-#define NAMESPACE_NONE 					0
+#define CURVE_MAX_VARIABLES             32                             //!< Default maximum number of cuRVE variables (must be a power of 2)
+#define VARIABLE_DISABLED                 0
+#define VARIABLE_ENABLED                 1
+#define NAMESPACE_NONE                     0
 
 #ifdef DEBUG
-#define CUDA_SAFE_CALL(x)                                                                               		\
-{                                                                                                         		\
-	cudaError_t error = (x);                                                                                	\
-	if (error != cudaSuccess && error != cudaErrorNotReady)                                                 	\
-	{                                                                                                       	\
-		printf("%s.%s.%d: 0x%x (%s)\n", __FILE__, __FUNCTION__, __LINE__, error, cudaGetErrorString(error));  	\
-		cudaGetLastError();                                                                                   	\
-		exit(1);                                                                                              	\
-	}                                                                                                       	\
+#define CUDA_SAFE_CALL(x)                                                                                       \
+{                                                                                                                 \
+    cudaError_t error = (x);                                                                                    \
+    if (error != cudaSuccess && error != cudaErrorNotReady)                                                     \
+    {                                                                                                           \
+        printf("%s.%s.%d: 0x%x (%s)\n", __FILE__, __FUNCTION__, __LINE__, error, cudaGetErrorString(error));      \
+        cudaGetLastError();                                                                                       \
+        exit(1);                                                                                                  \
+    }                                                                                                           \
 }
 #else
 #define CUDA_SAFE_CALL(x) (x)
@@ -38,18 +38,18 @@ inline void cudaCheckError(cudaError_t error, char* file, char* function, int li
 
 unsigned int h_namespace;
 
-CurveVariableHash h_hashes[CURVE_MAX_VARIABLES];				//Host array of the hash values of registered variables
-void* h_d_variables[CURVE_MAX_VARIABLES];						//Host array of pointer to device memory addresses for variable storage
-int	h_states[CURVE_MAX_VARIABLES];								//Host array of the states of registered variables
-size_t h_sizes[CURVE_MAX_VARIABLES];							//Host array of the sizes of registered variable types (Note: RTTI not supported in CUDA so this is the best we can do for now)
-unsigned int h_lengths[CURVE_MAX_VARIABLES];					//Host array of the length of registered variables (i.e: vector length)
+CurveVariableHash h_hashes[CURVE_MAX_VARIABLES];                //Host array of the hash values of registered variables
+void* h_d_variables[CURVE_MAX_VARIABLES];                        //Host array of pointer to device memory addresses for variable storage
+int    h_states[CURVE_MAX_VARIABLES];                                //Host array of the states of registered variables
+size_t h_sizes[CURVE_MAX_VARIABLES];                            //Host array of the sizes of registered variable types (Note: RTTI not supported in CUDA so this is the best we can do for now)
+unsigned int h_lengths[CURVE_MAX_VARIABLES];                    //Host array of the length of registered variables (i.e: vector length)
 
 __constant__ CurveNamespaceHash d_namespace;
-__constant__ CurveVariableHash d_hashes[CURVE_MAX_VARIABLES];	//Device array of the hash values of registered variables
-__device__ char* d_variables[CURVE_MAX_VARIABLES];				//Device array of pointer to device memory addresses for variable storage
-__constant__ int d_states[CURVE_MAX_VARIABLES];					//Device array of the states of registered variables
-__constant__ size_t d_sizes[CURVE_MAX_VARIABLES];				//Device array of the types of registered variables
-__constant__ unsigned int d_lengths[CURVE_MAX_VARIABLES];		//Device array of the length of registered variables (i.e: vector length)
+__constant__ CurveVariableHash d_hashes[CURVE_MAX_VARIABLES];    //Device array of the hash values of registered variables
+__device__ char* d_variables[CURVE_MAX_VARIABLES];                //Device array of pointer to device memory addresses for variable storage
+__constant__ int d_states[CURVE_MAX_VARIABLES];                    //Device array of the states of registered variables
+__constant__ size_t d_sizes[CURVE_MAX_VARIABLES];                //Device array of the types of registered variables
+__constant__ unsigned int d_lengths[CURVE_MAX_VARIABLES];        //Device array of the length of registered variables (i.e: vector length)
 
 __device__ curveDeviceError d_curve_error;
 curveHostError h_curve_error;

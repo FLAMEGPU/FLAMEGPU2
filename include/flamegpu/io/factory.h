@@ -1,4 +1,5 @@
-#pragma once
+#ifndef INCLUDE_FLAMEGPU_IO_FACTORY_H_
+#define INCLUDE_FLAMEGPU_IO_FACTORY_H_
 
 /**
  * @file 
@@ -16,19 +17,15 @@
 #include "xmlReader.h"
 #include "xmlWriter.h"
 
-
-using namespace std;
-
 //  move later
-std::string getFileExt(const string& s)
-{
-	// Find the last position of '.' in given string
-	size_t i = s.rfind('.', s.length());
-	if (i != string::npos) {
-		return(s.substr(i + 1, s.length() - i));
-	}
-	// In case of no extension return empty string
-	return("");
+std::string getFileExt(const string& s) {
+    // Find the last position of '.' in given string
+    size_t i = s.rfind('.', s.length());
+    if (i != string::npos) {
+        return(s.substr(i + 1, s.length() - i));
+    }
+    // In case of no extension return empty string
+    return("");
 }
 
 /**
@@ -36,29 +33,28 @@ std::string getFileExt(const string& s)
 * returns them as abstract.
 */
 class ReaderFactory {
-public:
-	static StateReader *createReader(const ModelDescription &model, const char *input) {
+ public:
+    static StateReader *createReader(const ModelDescription &model, const char *input) {
+        string extension = getFileExt(input);
 
-		string extension = getFileExt(input);
-
-		if (extension == "xml")
-		{
-			return new xmlReader(model, input);
-		}
-		/*
-		if (extension == "bin")
-		{
-			return new xmlReader(model, input);
-		}
-		*/
-		return nullptr;
-	}
+        if (extension == "xml") {
+            return new xmlReader(model, input);
+        }
+        /*
+        if (extension == "bin") {
+            return new xmlReader(model, input);
+        }
+        */
+        return nullptr;
+    }
 };
 
 
 class WriterFactory {
-public:
-	static StateWriter *createWriter(const ModelDescription &model, const char *input) {
-		return new xmlWriter(model, input);
-	}
+ public:
+    static StateWriter *createWriter(const ModelDescription &model, const char *input) {
+        return new xmlWriter(model, input);
+    }
 };
+
+#endif // INCLUDE_FLAMEGPU_IO_FACTORY_H_

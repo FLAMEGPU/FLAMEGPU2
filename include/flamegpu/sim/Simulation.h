@@ -25,21 +25,21 @@ public:
 
     unsigned int addSimulationLayer(SimulationLayer& layer);
     void setSimulationSteps(unsigned int steps);
-	unsigned int getSimulationSteps() const;
+    unsigned int getSimulationSteps() const;
     const ModelDescription& getModelDescritpion() const;
 
-	const FunctionDescriptionVector& getFunctionsAtLayer(unsigned int layer) const;
+    const FunctionDescriptionVector& getFunctionsAtLayer(unsigned int layer) const;
     unsigned int getLayerCount() const;
 
-	int checkArgs(int argc, char** argv);
-	
-	void initialise(int argc, char** argv); //void initialise(const char * input);
-	//void initialise(StateReader& reader);
-	void output(int argc, char** argv);
+    int checkArgs(int argc, char** argv);
+    
+    void initialise(int argc, char** argv); //void initialise(const char * input);
+    //void initialise(StateReader& reader);
+    void output(int argc, char** argv);
 
 
 private:
-	SimulationLayerVector layers;
+    SimulationLayerVector layers;
     const ModelDescription& model_description;
     unsigned int simulation_steps;
 };

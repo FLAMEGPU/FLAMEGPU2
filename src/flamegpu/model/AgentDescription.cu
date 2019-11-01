@@ -147,14 +147,14 @@ bool AgentDescription::hasAgentFunction(const std::string function_name) const
 /*
 StateMemoryMap AgentDescription::getEmptyStateMemoryMap() const
 {
-	//needs to do some deep copying
-	return sm_map;	//returns a copy of the sm memorymap
+    //needs to do some deep copying
+    return sm_map;    //returns a copy of the sm memorymap
 }
 */
 
 void AgentDescription::initEmptyStateMemoryMap(StateMemoryMap& map) const
 {
-	for (const StateMemoryMapPair& sm_p : sm_map){
-		map.insert(StateMemoryMap::value_type(sm_p.first, std::unique_ptr<GenericMemoryVector>(sm_p.second->clone())));
-	}
+    for (const StateMemoryMapPair& sm_p : sm_map){
+        map.insert(StateMemoryMap::value_type(sm_p.first, std::unique_ptr<GenericMemoryVector>(sm_p.second->clone())));
+    }
 }

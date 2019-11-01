@@ -8,9 +8,10 @@
  * @warning
  */
 
-#ifndef MESSAGEDESCRIPTION_H_
-#define MESSAGEDESCRIPTION_H_
+#ifndef INCLUDE_FLAMEGPU_MODEL_MESSAGEDESCRIPTION_H_
+#define INCLUDE_FLAMEGPU_MODEL_MESSAGEDESCRIPTION_H_
 
+#include <utility>
 #include <string>
 #include <typeinfo>
 #include <map>
@@ -21,44 +22,44 @@ typedef std::map<const std::string, const std::type_info&> VariableMap;
 
 typedef std::pair<const std::string, const std::type_info&> VariableMapPair;
 
-typedef std::map<const std::type_info*, std::size_t> VarTypeSizeMap;	// to track size of data types
+typedef std::map<const std::type_info*, std::size_t> VarTypeSizeMap;    // to track size of data types
 
 
 class MessageDescription {
-public:
-	MessageDescription(const std::string message_name, unsigned int initial_size = DEFAULT_MESSAGE_BUFFER_SIZE);
+ public:
+    explicit MessageDescription(const std::string message_name, unsigned int initial_size = DEFAULT_MESSAGE_BUFFER_SIZE);
 
-	virtual ~MessageDescription();
+    virtual ~MessageDescription();
 
-	const std::string getName() const;
+    const std::string getName() const;
 
-	template <typename T> void addVariable(const std::string variable_name);
+    template <typename T> void addVariable(const std::string variable_name);
 
-	VariableMap& getVariableMap();
+    VariableMap& getVariableMap();
 
     const VariableMap& getVariableMap() const;
 
     size_t getMessageVariableSize(const std::string variable_name) const;
 
-	size_t getMemorySize() const;
+    size_t getMemorySize() const;
 
     unsigned int getNumberMessageVariables() const;
 
-	const std::type_info& getVariableType(const std::string variable_name) const;
+    const std::type_info& getVariableType(const std::string variable_name) const;
 
-	unsigned int getMaximumMessageListCapacity() const;
+    unsigned int getMaximumMessageListCapacity() const;
 
-private:
-	const std::string name;
-	VariableMap variables;
+ private:
+    const std::string name;
+    VariableMap variables;
     VarTypeSizeMap sizes;
-	unsigned int maximum_size; //size is maximum buffer size for messages
+    unsigned int maximum_size; // size is maximum buffer size for messages
 };
 
-template <typename T> void MessageDescription::addVariable(const std::string variable_name){
-	variables.insert(variables.end(), VariableMap::value_type(variable_name, typeid(T)));
-	sizes.insert(VarTypeSizeMap::value_type(&typeid(T), (unsigned int)sizeof(T)));
+template <typename T> void MessageDescription::addVariable(const std::string variable_name) {
+    variables.insert(variables.end(), VariableMap::value_type(variable_name, typeid(T)));
+    sizes.insert(VarTypeSizeMap::value_type(&typeid(T), (unsigned int)sizeof(T)));
 }
 
 
-#endif /* MESSAGEDESCRIPTION_H_ */
+#endif // INCLUDE_FLAMEGPU_MODEL_MESSAGEDESCRIPTION_H_

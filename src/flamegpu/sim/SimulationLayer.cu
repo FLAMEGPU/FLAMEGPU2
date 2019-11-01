@@ -61,12 +61,12 @@ void SimulationLayer::addAgentFunction(const std::string name)
     {
         if (it->second.hasAgentFunction(name))
         {
-			//Search the function map for current agent to see if the agent function exists (it should do the above function has confirmed this)
+            //Search the function map for current agent to see if the agent function exists (it should do the above function has confirmed this)
             const FunctionMap& funcs = it->second.getFunctionMap();
             FunctionMap::const_iterator pos = funcs.find(name);
-			//If found then add function the AgentFunctionDescription to the function vector for this layer
-			if (pos != funcs.end())
-				functions.push_back(pos->second);
+            //If found then add function the AgentFunctionDescription to the function vector for this layer
+            if (pos != funcs.end())
+                functions.push_back(pos->second);
             found = true;
             break;
         }

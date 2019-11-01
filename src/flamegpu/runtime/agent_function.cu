@@ -7,18 +7,18 @@ __global__ void agent_function_wrapper(CurveNamespaceHash agent_func_name_hash, 
 
     //create a new device FLAME_GPU instance
     FLAMEGPU_API *api = new FLAMEGPU_API();
-	
-	api->setMessageListSize(messageList_size);
-	
-	//! set namespace for agent name
-	api->setAgentNameSpace(agent_func_name_hash);
-	
-	//! set namespace for input message name
-	api->setMessageInpNameSpace(messagename_inp_hash);
+    
+    api->setMessageListSize(messageList_size);
+    
+    //! set namespace for agent name
+    api->setAgentNameSpace(agent_func_name_hash);
+    
+    //! set namespace for input message name
+    api->setMessageInpNameSpace(messagename_inp_hash);
 
-	//! set namespace for output message name
-	api->setMessageOutpNameSpace(messagename_outp_hash);
-	
+    //! set namespace for output message name
+    api->setMessageOutpNameSpace(messagename_outp_hash);
+    
 
     //printf("hello from wrapper %d %u\n",threadIdx.x,agentname_hash);
 

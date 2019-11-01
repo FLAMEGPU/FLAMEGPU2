@@ -19,5 +19,5 @@ AgentStateDescription::~AgentStateDescription() {
 }
 
 const std::string AgentStateDescription::getName() const {
-	return name;
+    return name;
 }

@@ -23,7 +23,7 @@ inline void gpuAssert(cudaError_t code, const char *file, int line)
 {
    if (code != cudaSuccess)
    {
-	  throw std::runtime_error("CUDA Error: " + std::string(cudaGetErrorString(code)) + " " + file + " " + std::to_string(line));
+      throw std::runtime_error("CUDA Error: " + std::string(cudaGetErrorString(code)) + " " + file + " " + std::to_string(line));
    }
 }
 
@@ -32,7 +32,7 @@ inline void gpuAssert(cudaError_t code, const char *file, int line)
 inline void gpuLaunchAssert(const char *file, int line)
 {
 #ifdef _DEBUG
-	gpuAssert( cudaDeviceSynchronize(), file, line );
+    gpuAssert( cudaDeviceSynchronize(), file, line );
 #endif
     gpuAssert( cudaPeekAtLastError(), file, line );
 }

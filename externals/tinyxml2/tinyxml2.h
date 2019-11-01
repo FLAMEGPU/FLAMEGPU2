@@ -40,7 +40,7 @@ distribution.
 #   include <cstdlib>
 #   include <cstring>
 #endif
-#include <stdint.h>
+#include <cstdint>
 
 /*
    TODO: intern strings instead of allocation.

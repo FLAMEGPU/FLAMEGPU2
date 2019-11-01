@@ -52,7 +52,7 @@ void Simulation::setSimulationSteps(unsigned int steps)
 
 unsigned int Simulation::getSimulationSteps() const
 {
-	return simulation_steps;
+    return simulation_steps;
 }
 
 unsigned int Simulation::getLayerCount() const
@@ -66,36 +66,36 @@ const ModelDescription& Simulation::getModelDescritpion() const
 }
 
 int Simulation::checkArgs(int argc, char** argv) {
-	//Check args
-	printf("FLAMEGPU Console mode\n");
-	if (argc < 2)
-	{
-		printf("Usage: %s [XML model data] [Iterations] [Optional CUDA device ID]\n", argv[0]);
-		return false;
-	}
+    //Check args
+    printf("FLAMEGPU Console mode\n");
+    if (argc < 2)
+    {
+        printf("Usage: %s [XML model data] [Iterations] [Optional CUDA device ID]\n", argv[0]);
+        return false;
+    }
 
-	return true;
+    return true;
 }
 
 /**
 * Initialise the simulation. Allocated host and device memory. Reads the initial agent configuration from XML.
-* @param input	XML file path for agent initial configuration
+* @param input    XML file path for agent initial configuration
 */
 void Simulation::initialise(int argc, char** argv)
 {
-	//check input args
-	if (!checkArgs(argc, argv))
-		exit(0);
-	const char* input = argv[1];
-	
-	StateReader *read__ = ReaderFactory::createReader(model_description, input);
-	read__->parse();
+    //check input args
+    if (!checkArgs(argc, argv))
+        exit(0);
+    const char* input = argv[1];
+    
+    StateReader *read__ = ReaderFactory::createReader(model_description, input);
+    read__->parse();
 }
 
 /*
 void Simulation::initialise(StateReader& read__)
 {
-	read__.parse();
+    read__.parse();
 }
 */
 
@@ -105,11 +105,11 @@ void Simulation::initialise(StateReader& read__)
  */
 void Simulation::output(int argc, char** argv)
 {
-	//check input args
-	if (!checkArgs(argc, argv))
-		exit(0);
-	const char* input =  "finalIteration.xml";//argv[2];
+    //check input args
+    if (!checkArgs(argc, argv))
+        exit(0);
+    const char* input =  "finalIteration.xml";//argv[2];
 
-	StateWriter *write__ = WriterFactory::createWriter(model_description, input);
-	write__->writeStates();
+    StateWriter *write__ = WriterFactory::createWriter(model_description, input);
+    write__->writeStates();
 }

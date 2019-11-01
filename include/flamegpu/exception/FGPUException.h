@@ -9,51 +9,46 @@
  * \see       http://fnch.users.sourceforge.net/doxygen_c.html  for commenting style
  */
 
-#ifndef _FGPUEXCEPTION
-#define _FGPUEXCEPTION
+#ifndef INCLUDE_FLAMEGPU_EXCEPTION_FGPUEXCEPTION_H_
+#define INCLUDE_FLAMEGPU_EXCEPTION_FGPUEXCEPTION_H_
 
 #include <string>
 #include <iostream>
 #include <exception>
 
-//#include <cuda_runtime.h>
-
-using namespace std;
+// #include <cuda_runtime.h>
 
 /*! Class for unknown exceptions thrown*/
 class UnknownError {};
 
 
 /*! Base class for exceptions thrown */
-class FGPUException//: public exception
-{
-
-public:
+class FGPUException { //: public exception
+ public:
     /**
      * A constructor
      * @brief Constructs the FGPUException object
      */
-    FGPUException(const char * msg="Unknown error msg")
-    {
+     explicit FGPUException(const char * msg = "Unknown error msg") {
         err_message = msg;
-    };
+    }
 
     /**
      * A destructor.
      * @brief Destroys the FGPUException object
      */
-    ~FGPUException() {};
+    ~FGPUException() {}
 
     /**
     * @brief Returns the explanatory string
     * @param none
     * @return Pointer to a null-terminated string with explanatory information. The pointer is guaranteed to be valid at least until the exception object from which it is obtained is destroyed, or until a non-const member function on the FGPUException object is called.
     */
-    virtual const char *what() const
-    {
+    virtual const char *what() const {
         return err_message;
     }
-protected:
+
+ protected:
     const char * err_message;
 };
 
@@ -61,17 +56,14 @@ protected:
 * Defines a type of object to be thrown as exception.
 * It reports errors that are due to invalid input file. Situations where the input file does not exist or cannot be read by the program.
 */
-class InvalidInputFile: public FGPUException
-{
-public:
-
-    InvalidInputFile(const char * msg="Invalid Input File"):FGPUException(msg) {}
+class InvalidInputFile: public FGPUException {
+ public:
+    explicit InvalidInputFile(const char * msg = "Invalid Input File"):FGPUException(msg) {}
     /**
     * @brief Returns the explanatory string
     * @see FGPUException.what()
     */
-    virtual const char *what() const
-    {
+    virtual const char *what() const {
         return err_message;
     }
 };
@@ -80,16 +72,14 @@ public:
 * Defines a type of object to be thrown as exception.
 * It is used to report errors when hash list is full.
 */
-class InvalidHashList : public FGPUException
-{
-public:
-    InvalidHashList(const char *msg="Hash list full. This should never happen"):FGPUException(msg) {}
+class InvalidHashList : public FGPUException {
+ public:
+     explicit InvalidHashList(const char *msg = "Hash list full. This should never happen"):FGPUException(msg) {}
     /**
     * @brief Returns the explanatory string
     * @see FGPUException.what()
     */
-    virtual const char *what() const
-    {
+    virtual const char *what() const {
         return err_message;
     }
 };
@@ -98,16 +88,14 @@ public:
 * Defines a type of object to be thrown as exception.
 * It reports errors that are due to invalid agent variable type. This could happen when retriving or setting a variable of differet type.
 */
-class InvalidVarType : public FGPUException
-{
-public:
-    InvalidVarType(const char *msg="Bad variable type in agent instance set/get variable"):FGPUException(msg) {}
+class InvalidVarType : public FGPUException {
+ public:
+     explicit InvalidVarType(const char *msg = "Bad variable type in agent instance set/get variable"):FGPUException(msg) {}
     /**
     * @brief Returns the explanatory string
     * @see FGPUException.what()
     */
-    virtual const char *what() const
-    {
+    virtual const char *what() const {
         return err_message;
     }
 };
@@ -116,16 +104,14 @@ public:
 * Defines a type of object to be thrown as exception.
 * It reports errors that are due to invalid agent state name.
 */
-class InvalidStateName : public FGPUException
-{
-public:
-    InvalidStateName(const char *msg= "Invalid agent state name"):FGPUException(msg) {}
+class InvalidStateName : public FGPUException {
+ public:
+     explicit InvalidStateName(const char *msg =  "Invalid agent state name"):FGPUException(msg) {}
     /**
     * @brief Returns the explanatory string
     * @see FGPUException.what()
     */
-    virtual const char *what() const
-    {
+    virtual const char *what() const {
         return err_message;
     }
 };
@@ -134,16 +120,14 @@ public:
 * Defines a type of object to be thrown as exception.
 * It reports errors that are due to invalid map entry.
 */
-class InvalidMapEntry : public FGPUException
-{
-public:
-    InvalidMapEntry(const char *msg="Missing entry in type sizes map. Something went bad."):FGPUException(msg) {}
+class InvalidMapEntry : public FGPUException {
+ public:
+     explicit InvalidMapEntry(const char *msg = "Missing entry in type sizes map. Something went bad."):FGPUException(msg) {}
     /**
     * @brief Returns the explanatory string
     * @see FGPUException.what()
     */
-    virtual const char *what() const
-    {
+    virtual const char *what() const {
         return err_message;
     }
 };
@@ -152,16 +136,14 @@ public:
 * Defines a type of object to be thrown as exception.
 * It reports errors that are due to invalid agent memory variable type.
 */
-class InvalidAgentVar : public FGPUException
-{
-public:
-    InvalidAgentVar(const char *msg="Invalid agent memory variable"):FGPUException(msg) {}
+class InvalidAgentVar : public FGPUException {
+ public:
+     explicit InvalidAgentVar(const char *msg = "Invalid agent memory variable"):FGPUException(msg) {}
     /**
     * @brief Returns the explanatory string
     * @see FGPUException.what()
     */
-    virtual const char *what() const
-    {
+    virtual const char *what() const {
         return err_message;
     }
 };
@@ -170,16 +152,14 @@ public:
 * Defines a type of object to be thrown as exception.
 * It reports errors that are due to invalid message memory variable type.
 */
-class InvalidMessageVar : public FGPUException
-{
-public:
-    InvalidMessageVar(const char *msg="Invalid message memory variable"):FGPUException(msg) {}
+class InvalidMessageVar : public FGPUException {
+ public:
+     explicit InvalidMessageVar(const char *msg = "Invalid message memory variable"):FGPUException(msg) {}
     /**
     * @brief Returns the explanatory string
     * @see FGPUException.what()
     */
-    virtual const char *what() const
-    {
+    virtual const char *what() const {
         return err_message;
     }
 };
@@ -188,14 +168,12 @@ public:
 * Defines a type of object to be thrown as exception.
 * It reports errors that are due to invalid message list.
 */
-class InvalidMessageData : public FGPUException
-{
-public:
-	InvalidMessageData(const char *msg = "Invalid Message data") :FGPUException(msg) {}
-	virtual const char *what() const
-	{
-		return err_message;
-	}
+class InvalidMessageData : public FGPUException {
+ public:
+    explicit InvalidMessageData(const char *msg = "Invalid Message data") :FGPUException(msg) {}
+    virtual const char *what() const {
+        return err_message;
+    }
 };
 
 
@@ -203,14 +181,12 @@ public:
 * Defines a type of object to be thrown as exception.
 * It reports errors that are due to invalid message list size.
 */
-class InvalidMessageSize : public FGPUException
-{
-public:
-	InvalidMessageSize(const char *msg = "Invalid Message List size") :FGPUException(msg) {}
-	virtual const char *what() const
-	{
-		return err_message;
-	}
+class InvalidMessageSize : public FGPUException {
+ public:
+    explicit InvalidMessageSize(const char *msg = "Invalid Message List size") :FGPUException(msg) {}
+    virtual const char *what() const {
+        return err_message;
+    }
 };
 
 
@@ -218,16 +194,14 @@ public:
 * Defines a type of object to be thrown as exception.
 * It reports errors that are due to invalid CUDA agent variable.
 */
-class InvalidCudaAgent: public FGPUException
-{
-public:
-    InvalidCudaAgent(const char *msg="CUDA agent not found. This should not happen"):FGPUException(msg) {}
+class InvalidCudaAgent: public FGPUException {
+ public:
+     explicit InvalidCudaAgent(const char *msg = "CUDA agent not found. This should not happen"):FGPUException(msg) {}
     /**
     * @brief Returns the explanatory string
     * @see FGPUException.what()
     */
-    virtual const char *what() const
-    {
+    virtual const char *what() const {
         return err_message;
     }
 };
@@ -236,16 +210,14 @@ public:
 * Defines a type of object to be thrown as exception.
 * It reports errors that are due to invalid CUDA message variable.
 */
-class InvalidCudaMessage: public FGPUException
-{
-public:
-    InvalidCudaMessage(const char *msg="CUDA message not found. This should not happen"):FGPUException(msg) {}
+class InvalidCudaMessage: public FGPUException {
+ public:
+     explicit InvalidCudaMessage(const char *msg = "CUDA message not found. This should not happen"):FGPUException(msg) {}
     /**
     * @brief Returns the explanatory string
     * @see FGPUException.what()
     */
-    virtual const char *what() const
-    {
+    virtual const char *what() const {
         return err_message;
     }
 };
@@ -254,16 +226,14 @@ public:
 * Defines a type of object to be thrown as exception.
 * It reports errors that are due to invalid CUDA agent map size (i.e.map size is qual to zero).
 */
-class InvalidCudaAgentMapSize : public FGPUException
-{
-public:
-    InvalidCudaAgentMapSize(const char *msg="CUDA agent map size is zero"):FGPUException(msg) {}
+class InvalidCudaAgentMapSize : public FGPUException {
+ public:
+     explicit InvalidCudaAgentMapSize(const char *msg = "CUDA agent map size is zero"):FGPUException(msg) {}
     /**
     * @brief Returns the explanatory string
     * @see FGPUException.what()
     */
-    virtual const char *what() const
-    {
+    virtual const char *what() const {
         return err_message;
     }
 };
@@ -272,16 +242,14 @@ public:
 * Defines a type of object to be thrown as exception.
 * It reports errors that are due to invalid CUDA agent description.
 */
-class InvalidCudaAgentDesc : public FGPUException
-{
-public:
-    InvalidCudaAgentDesc(const char *msg="CUDA Agent uses different agent description"):FGPUException(msg) {}
+class InvalidCudaAgentDesc : public FGPUException {
+ public:
+     explicit InvalidCudaAgentDesc(const char *msg = "CUDA Agent uses different agent description"):FGPUException(msg) {}
     /**
     * @brief Returns the explanatory string
     * @see FGPUException.what()
     */
-    virtual const char *what() const
-    {
+    virtual const char *what() const {
         return err_message;
     }
 };
@@ -290,16 +258,14 @@ public:
 * Defines a type of object to be thrown as exception.
 * It reports errors that are due to invalid CUDA agent state.
 */
-class InvalidCudaAgentState : public FGPUException
-{
-public:
-    InvalidCudaAgentState(const char *msg="The state does not exist within the CUDA agent."):FGPUException(msg) {}
+class InvalidCudaAgentState : public FGPUException {
+ public:
+     explicit InvalidCudaAgentState(const char *msg = "The state does not exist within the CUDA agent."):FGPUException(msg) {}
     /**
     * @brief Returns the explanatory string
     * @see FGPUException.what()
     */
-    virtual const char *what() const
-    {
+    virtual const char *what() const {
         return err_message;
     }
 };
@@ -308,16 +274,14 @@ public:
 * Defines a type of object to be thrown as exception.
 * It reports errors that are due to invalid agent variable type. This could happen when retriving or setting a variable of differet type.
 */
-class InvalidAgentFunc : public FGPUException
-{
-public:
-    InvalidAgentFunc(const char *msg="Unknown agent function"):FGPUException(msg) {}
+class InvalidAgentFunc : public FGPUException {
+ public:
+     explicit InvalidAgentFunc(const char *msg = "Unknown agent function"):FGPUException(msg) {}
     /**
     * @brief Returns the explanatory string
     * @see FGPUException.what()
     */
-    virtual const char *what() const
-    {
+    virtual const char *what() const {
         return err_message;
     }
 };
@@ -326,12 +290,10 @@ public:
 * Defines a type of object to be thrown as exception.
 * It reports errors that are due to invalid function layer index.
 */
-class InvalidFuncLayerIndx : public FGPUException
-{
-public:
-    InvalidFuncLayerIndx(const char *msg= "Agent function layer index out of bounds!"):FGPUException(msg) {}
-    virtual const char *what() const
-    {
+class InvalidFuncLayerIndx : public FGPUException {
+ public:
+     explicit InvalidFuncLayerIndx(const char *msg =  "Agent function layer index out of bounds!"):FGPUException(msg) {}
+    virtual const char *what() const {
         return err_message;
     }
 };
@@ -340,12 +302,10 @@ public:
 * Defines a type of object to be thrown as exception.
 * It reports errors that are due to invalid population data.
 */
-class InvalidPopulationData : public FGPUException
-{
-public:
-    InvalidPopulationData(const char *msg= "Invalid Population data"):FGPUException(msg) {}
-    virtual const char *what() const
-    {
+class InvalidPopulationData : public FGPUException {
+ public:
+     explicit InvalidPopulationData(const char *msg =  "Invalid Population data"):FGPUException(msg) {}
+    virtual const char *what() const {
         return err_message;
     }
 };
@@ -354,12 +314,10 @@ public:
 * Defines a type of object to be thrown as exception.
 * It reports errors that are due to invalid memory capacity.
 */
-class InvalidMemoryCapacity : public FGPUException
-{
-public:
-    InvalidMemoryCapacity(const char *msg= "Invalid Memory Capacity"):FGPUException(msg) {}
-    virtual const char *what() const
-    {
+class InvalidMemoryCapacity : public FGPUException {
+ public:
+     explicit InvalidMemoryCapacity(const char *msg =  "Invalid Memory Capacity"):FGPUException(msg) {}
+    virtual const char *what() const {
         return err_message;
     }
 };
@@ -369,12 +327,10 @@ public:
 * Defines a type of object to be thrown as exception.
 * It reports errors that are due to invalid operation.
 */
-class InvalidOperation : public FGPUException
-{
-public:
-    InvalidOperation(const char *msg= "Invalid Operation"):FGPUException(msg) {}
-    virtual const char *what() const
-    {
+class InvalidOperation : public FGPUException {
+ public:
+     explicit InvalidOperation(const char *msg =  "Invalid Operation"):FGPUException(msg) {}
+    virtual const char *what() const {
         return err_message;
     }
 };
@@ -383,14 +339,12 @@ public:
 * Defines a type of object to be thrown as exception.
 * It reports errors that are due to CUDA device.
 */
-class InvalidCUDAdevice : public FGPUException
-{
-public:
-    InvalidCUDAdevice(const char *msg= "Invalid CUDA Device"):FGPUException(msg) {}
-    virtual const char *what() const
-    {
+class InvalidCUDAdevice : public FGPUException {
+ public:
+     explicit InvalidCUDAdevice(const char *msg =  "Invalid CUDA Device"):FGPUException(msg) {}
+    virtual const char *what() const {
         return err_message;
     }
 };
 
-#endif //_FGPUEXCEPTION
+#endif // INCLUDE_FLAMEGPU_EXCEPTION_FGPUEXCEPTION_H_

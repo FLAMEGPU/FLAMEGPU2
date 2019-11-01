@@ -39,7 +39,7 @@ typedef std::map<const std::string, const std::type_info&> MemoryMap;
 typedef std::pair<const std::string, const std::type_info&> MemoryMapPair;
 
 /*! Create a map with std::type_info for keys (indexes) and std::size_t values*/
-typedef std::map<const std::type_info*, std::size_t> TypeSizeMap;	//not something that the user every sees. This is an interval map only for tracking the size of data types.
+typedef std::map<const std::type_info*, std::size_t> TypeSizeMap;    //not something that the user every sees. This is an interval map only for tracking the size of data types.
 
 
 
@@ -73,7 +73,7 @@ public:
     /*
      *
      */
-	template <typename T> void addAgentVariable(const std::string variable_name);
+    template <typename T> void addAgentVariable(const std::string variable_name);
 
 
     MemoryMap& getMemoryMap(); //TODO should be shared pointer
@@ -86,7 +86,7 @@ public:
 
     size_t getAgentVariableSize(const std::string variable_name) const;
 
-	size_t getMemorySize() const;
+    size_t getMemorySize() const;
 
     unsigned int getNumberAgentVariables() const;
 
@@ -96,13 +96,13 @@ public:
 
     bool hasAgentFunction(const std::string function_name) const;
 
-	//StateMemoryMap getEmptyStateMemoryMap() const;
+    //StateMemoryMap getEmptyStateMemoryMap() const;
 
-	void initEmptyStateMemoryMap(StateMemoryMap&) const;
+    void initEmptyStateMemoryMap(StateMemoryMap&) const;
 
 private:
     std::string name;
-    bool stateless;												//system does not use states (i.e. only has a default state)
+    bool stateless;                                                //system does not use states (i.e. only has a default state)
     std::string initial_state;
     std::unique_ptr<AgentStateDescription> default_state;
 
@@ -110,14 +110,14 @@ private:
     FunctionMap functions;
     MemoryMap memory;
     TypeSizeMap sizes;
-	StateMemoryMap sm_map;									//used to hold a default empty vector
+    StateMemoryMap sm_map;                                    //used to hold a default empty vector
 };
 
 template <typename T> void AgentDescription::addAgentVariable(const std::string variable_name)
 {
-	memory.insert(MemoryMap::value_type(variable_name, typeid(T)));
-	sizes.insert(TypeSizeMap::value_type(&typeid(T), (unsigned int)sizeof(T)));
-	sm_map.insert(StateMemoryMap::value_type(variable_name, std::unique_ptr<GenericMemoryVector>(new MemoryVector<T>())));
+    memory.insert(MemoryMap::value_type(variable_name, typeid(T)));
+    sizes.insert(TypeSizeMap::value_type(&typeid(T), (unsigned int)sizeof(T)));
+    sm_map.insert(StateMemoryMap::value_type(variable_name, std::unique_ptr<GenericMemoryVector>(new MemoryVector<T>())));
 }
 
 

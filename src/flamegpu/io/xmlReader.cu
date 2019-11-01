@@ -29,72 +29,72 @@ xmlReader::xmlReader(const ModelDescription &model, const char* input) : StateRe
 */
 int xmlReader::parse()
 {
-	XMLDocument doc;
-	
-	XMLError errorId = doc.LoadFile(inputFile.c_str());
-	XMLCheckResult(errorId);
+    XMLDocument doc;
+    
+    XMLError errorId = doc.LoadFile(inputFile.c_str());
+    XMLCheckResult(errorId);
 
-	printf("XML file '%s' loaded.\n", inputFile.c_str());
+    printf("XML file '%s' loaded.\n", inputFile.c_str());
 
-	XMLNode* pRoot = doc.FirstChild();
-	if (pRoot == nullptr)
-		return XML_ERROR_FILE_READ_ERROR;
+    XMLNode* pRoot = doc.FirstChild();
+    if (pRoot == nullptr)
+        return XML_ERROR_FILE_READ_ERROR;
 
-	XMLElement * pElement = pRoot->FirstChildElement("itno");
-	if (pElement == nullptr)
-		return XML_ERROR_PARSING_ELEMENT;
+    XMLElement * pElement = pRoot->FirstChildElement("itno");
+    if (pElement == nullptr)
+        return XML_ERROR_PARSING_ELEMENT;
 
-	int error;
-	errorId = pElement->QueryIntText(&error);
-	XMLCheckResult(errorId);
-	
-	for (pElement = pRoot->FirstChildElement("xagent"); pElement != nullptr; pElement = pElement->NextSiblingElement("xagent"))
-	{
-		if (pElement == nullptr)
-			return XML_ERROR_PARSING_ELEMENT;
+    int error;
+    errorId = pElement->QueryIntText(&error);
+    XMLCheckResult(errorId);
+    
+    for (pElement = pRoot->FirstChildElement("xagent"); pElement != nullptr; pElement = pElement->NextSiblingElement("xagent"))
+    {
+        if (pElement == nullptr)
+            return XML_ERROR_PARSING_ELEMENT;
 
-		XMLElement* pListElement = pElement->FirstChildElement("name");
-		const char* agentName = pListElement->GetText();
+        XMLElement* pListElement = pElement->FirstChildElement("name");
+        const char* agentName = pListElement->GetText();
 
-		const MemoryMap &m = model_description_.getAgentDescription(agentName).getMemoryMap();
-		AgentInstance instance = model_description_.getAgentPopulation(agentName).getNextInstance("default");
+        const MemoryMap &m = model_description_.getAgentDescription(agentName).getMemoryMap();
+        AgentInstance instance = model_description_.getAgentPopulation(agentName).getNextInstance("default");
 
-		for (MemoryMap::const_iterator iter = m.begin(); iter != m.end(); iter++)
-		{
-			float outFloat;
-			double outDouble;
-			int outInt;
-			bool outBool;
+        for (MemoryMap::const_iterator iter = m.begin(); iter != m.end(); iter++)
+        {
+            float outFloat;
+            double outDouble;
+            int outInt;
+            bool outBool;
 
-			const std::string variable_name = iter->first;
-			pListElement = pElement->FirstChildElement(variable_name.c_str());
-			XMLCheckResult(errorId);
+            const std::string variable_name = iter->first;
+            pListElement = pElement->FirstChildElement(variable_name.c_str());
+            XMLCheckResult(errorId);
 
-			if (iter->second == typeid(float)) {
-				errorId = pListElement->QueryFloatText(&outFloat);
+            if (iter->second == typeid(float)) {
+                errorId = pListElement->QueryFloatText(&outFloat);
 
-				instance.setVariable<float>(variable_name, outFloat);
-			}
-			else if (iter->second == typeid(double)) {
-				errorId = pListElement->QueryDoubleText(&outDouble);
-				XMLCheckResult(errorId);
+                instance.setVariable<float>(variable_name, outFloat);
+            }
+            else if (iter->second == typeid(double)) {
+                errorId = pListElement->QueryDoubleText(&outDouble);
+                XMLCheckResult(errorId);
 
-				instance.setVariable<double>(variable_name, outDouble);
-			}
-			else if (iter->second == typeid(int)) {
-				errorId = pListElement->QueryIntText(&outInt);
-				XMLCheckResult(errorId);
+                instance.setVariable<double>(variable_name, outDouble);
+            }
+            else if (iter->second == typeid(int)) {
+                errorId = pListElement->QueryIntText(&outInt);
+                XMLCheckResult(errorId);
 
-				instance.setVariable<int>(variable_name, outInt);
-			}
-			else if (iter->second == typeid(bool)) {
-				errorId = pListElement->QueryBoolText(&outBool);
-				XMLCheckResult(errorId);
+                instance.setVariable<int>(variable_name, outInt);
+            }
+            else if (iter->second == typeid(bool)) {
+                errorId = pListElement->QueryBoolText(&outBool);
+                XMLCheckResult(errorId);
 
-				instance.setVariable<bool>(variable_name, outBool);
-			}
-		}
-	}
-	
-	return XML_SUCCESS;
+                instance.setVariable<bool>(variable_name, outBool);
+            }
+        }
+    }
+    
+    return XML_SUCCESS;
 }

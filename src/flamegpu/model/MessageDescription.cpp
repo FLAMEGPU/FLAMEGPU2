@@ -16,7 +16,7 @@ MessageDescription::MessageDescription(const std::string message_name, unsigned 
 MessageDescription::~MessageDescription() {}
 
 const std::string MessageDescription::getName() const{
-	return name;
+    return name;
 }
 
 VariableMap& MessageDescription::getVariableMap()
@@ -72,5 +72,5 @@ const std::type_info& MessageDescription::getVariableType(const std::string vari
 
 unsigned int MessageDescription::getMaximumMessageListCapacity() const
 {
-	return maximum_size;
+    return maximum_size;
 }

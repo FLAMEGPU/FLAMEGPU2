@@ -7,22 +7,22 @@
  * \todo longer description
  */
 
-#ifndef AGENTFUNCTIONINPUT_H_
-#define AGENTFUNCTIONINPUT_H_
+#ifndef INCLUDE_FLAMEGPU_MODEL_AGENTFUNCTIONINPUT_H_
+#define INCLUDE_FLAMEGPU_MODEL_AGENTFUNCTIONINPUT_H_
 
 #include <string>
 
 class AgentFunctionInput {
-public:
-	AgentFunctionInput(const std::string input_message_name);
-	virtual ~AgentFunctionInput();
+ public:
+   explicit AgentFunctionInput(const std::string input_message_name);
+    virtual ~AgentFunctionInput();
 
-	const std::string getMessageName() const;
+    const std::string getMessageName() const;
 
-private:
-	const std::string message_name;
+ private:
+    const std::string message_name;
 
-//input type (single or optional)
+// input type (single or optional)
 };
 
-#endif /* AGENTFUNCTIONINPUT_H_ */
+#endif // INCLUDE_FLAMEGPU_MODEL_AGENTFUNCTIONINPUT_H_
