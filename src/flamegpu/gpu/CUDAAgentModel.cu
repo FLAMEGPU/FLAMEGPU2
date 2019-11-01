@@ -147,7 +147,6 @@ void CUDAAgentModel::getPopulationData(AgentPopulation& population)
 */
 void CUDAAgentModel::step(const Simulation& simulation)
 {
-	int j;
 	int nStreams = 1;
 	std::string message_name;
 	CurveNamespaceHash message_name_inp_hash = 0;
@@ -173,7 +172,7 @@ void CUDAAgentModel::step(const Simulation& simulation)
 	{
 		const FunctionDescriptionVector& functions = simulation.getFunctionsAtLayer(i);
 
-		j = 0;
+		int j = 0;
 
 		/*! for each func function - Loop through to do all mapping of agent and message variables */
 		for (AgentFunctionDescription func_des : functions)
