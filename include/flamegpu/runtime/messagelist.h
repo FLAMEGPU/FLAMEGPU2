@@ -69,11 +69,9 @@ class MessageList  {
     }
 
     inline __host__ __device__ iterator begin(void) { // const
-
         return iterator(*this, start_);
     }
     inline __host__ __device__ iterator end(void) { // const
-
         return iterator(*this, start_ + size());
     }
 

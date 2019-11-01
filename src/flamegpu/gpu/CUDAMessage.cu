@@ -53,7 +53,6 @@ const MessageDescription& CUDAMessage::getMessageDescription() const {
 * @return none
 */
 void CUDAMessage::setInitialMessageList() { // used to be const AgentPopulation& population
-
     // check that the message list has not already been set
     if (message_list)
         throw InvalidMessageData("Error: Initial message list already set");

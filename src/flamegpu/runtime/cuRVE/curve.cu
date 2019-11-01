@@ -297,7 +297,6 @@ __device__ void* curveGetVariablePtrByHash(const CurveVariableHash variable_hash
 
     // check vector length
     if (offset > d_sizes[cv]*d_lengths[cv]) { // Note : offset is basicly index * sizeof(T)
-
         d_curve_error = CURVE_DEVICE_ERROR_UNKNOWN_LENGTH;
         return NULL;
     }
