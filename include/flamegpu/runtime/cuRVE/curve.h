@@ -222,7 +222,7 @@ __device__ float curveGetVariableByHash(const CurveVariableHash variable_hash, u
     // error checking
     if (size != sizeof(T)) {
         d_curve_error = CURVE_DEVICE_ERROR_UNKNOWN_TYPE;
-        return nullptr;
+        return NULL;
     } else {
         // get a pointer to the specific variable by offsetting by the provided index
         T *value_ptr = reinterpret_cast<T*>(curveGetVariablePtrByHash(variable_hash, offset));
