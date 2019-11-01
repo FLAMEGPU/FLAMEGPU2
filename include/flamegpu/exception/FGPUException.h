@@ -21,7 +21,6 @@
 /*! Class for unknown exceptions thrown*/
 class UnknownError {};
 
-
 /*! Base class for exceptions thrown */
 class FGPUException { // : public exception
  public:
@@ -176,7 +175,6 @@ class InvalidMessageData : public FGPUException {
     }
 };
 
-
 /**
 * Defines a type of object to be thrown as exception.
 * It reports errors that are due to invalid message list size.
@@ -188,7 +186,6 @@ class InvalidMessageSize : public FGPUException {
         return err_message;
     }
 };
-
 
 /**
 * Defines a type of object to be thrown as exception.
@@ -321,7 +318,6 @@ class InvalidMemoryCapacity : public FGPUException {
         return err_message;
     }
 };
-
 
 /**
 * Defines a type of object to be thrown as exception.

@@ -21,7 +21,6 @@
 #include <flamegpu/model/AgentDescription.h>
 #include <flamegpu/pop/AgentPopulation.h>
 
-
 /**
 * CUDAMessage class
 * @brief allocates the hash table/list for message variables and copy the list to device
@@ -31,7 +30,6 @@ CUDAMessage::CUDAMessage(const MessageDescription& description) : message_descri
     setInitialMessageList();
 }
 
-
 /**
  * A destructor.
  * @brief Destroys the CUDAMessage object
@@ -40,7 +38,6 @@ CUDAMessage::~CUDAMessage(void)
 {
 
 }
-
 
 /**
 * @brief Returns message description
@@ -83,7 +80,6 @@ void CUDAMessage::setInitialMessageList() // used to be const AgentPopulation& p
 
 }
 
-
 /**
 * @brief Returns the maximum list size
 * @param none
@@ -104,7 +100,6 @@ void CUDAMessage::zeroAllMessageData()
 {
         message_list->zeroMessageData();
 }
-
 
 /**
 @bug message_name is input or output, run some tests to see which one is correct

@@ -10,12 +10,10 @@
  * \todo longer description
  */
 
-
 #include <flamegpu/gpu/CUDAErrorChecking.h>            // required for CUDA error handling functions
 #include <flamegpu/runtime/cuRVE/curve.h>
 #include <flamegpu/exception/FGPUException.h>
 #include <flamegpu/runtime/messagelist.h>
-
 
 // TODO: Some example code of the handle class and an example function
 // ! FLAMEGPU_API is a singleton class
@@ -45,7 +43,6 @@ __device__ FLAME_GPU_AGENT_STATUS funcName ## _impl(FLAMEGPU_API* FLAMEGPU); \
 __device__ FLAMEGPU_AGENT_FUNCTION_POINTER funcName = funcName ## _impl;\
 __device__ FLAME_GPU_AGENT_STATUS funcName ## _impl(FLAMEGPU_API* FLAMEGPU)
 
-
 /** @brief    A flame gpu api class for the device runtime only
  *
  * This class should only be used by the device and never created on the host. It is safe for each agent function to create a copy of this class on the device. Any singleton type
@@ -72,8 +69,6 @@ class FLAMEGPU_API {
 
     template<unsigned int N> __device__
         MessageList GetMessageIterator(const char(&message_name)[N]);
-
-
 
     /**
     * \brief
@@ -115,7 +110,6 @@ class FLAMEGPU_API {
     unsigned int  messageListSize;
 };
 
-
 /******************************************************************************************************* Implementation ********************************************************/
 
 // An example of how the getVariable should work
@@ -135,7 +129,6 @@ __device__ T FLAMEGPU_API::getVariable(const char(&variable_name)[N])
 
     // simple indexing assumes index is the thread number (this may change later)
     unsigned int index =  (blockDim.x * blockIdx.x) + threadIdx.x;
-
 
     // get the value from curve
     T value = curveGetVariable<T>(variable_name, agent_func_name_hash , index);
@@ -171,7 +164,6 @@ __device__ T FLAMEGPU_API::getMessageVariable(const char(&variable_name)[N])
 
     // simple indexing assumes index is the thread number (this may change later)
     unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
-
 
     // get the value from curve
     T value = curveGetVariable<T>(variable_name, agent_func_name_hash + messagename_inp_hash, index);
@@ -212,7 +204,6 @@ __device__ void FLAMEGPU_API::addMessage(const char(&variable_name)[N], T value)
     // set the variable using curve
     curveSetVariable<T>(variable_name, agent_func_name_hash + messagename_outp_hash, value, index);
 }
-
 
 /**
 * \brief Returns a message iterator

@@ -22,7 +22,6 @@
 // forward declarations
 class AgentDescription;
 
-
 #define DEFAULT_POPULATION_SIZE 10// 1024
 
 typedef std::map<const std::string, std::unique_ptr<AgentStateMemory>> AgentStatesMap;    // key is concat of agent and state name!
@@ -58,7 +57,6 @@ class AgentPopulation {
     const AgentDescription &agent;
     AgentStatesMap states_map;
     unsigned int maximum_size; // size is maximum size for agents in any single state (same for all states of same agent type)
-
 
 };
 

@@ -7,7 +7,6 @@
 // include class dependencies
 #include <flamegpu/sim/SimulationLayer.h>
 
-
 // forward declare dependencies from other modules
 class ModelDescription;
 class StateReader;
@@ -36,7 +35,6 @@ class Simulation
     void initialise(int argc, char** argv); // void initialise(const char * input);
     // void initialise(StateReader& reader);
     void output(int argc, char** argv);
-
 
  private:
     SimulationLayerVector layers;

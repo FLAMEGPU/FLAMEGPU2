@@ -127,7 +127,6 @@ void AgentPopulation::setStateListCapacity(unsigned int size)
 
         throw InvalidPopulationData("Can not reduce size of agent population state list!");
 
-
     // set the maximum size
     maximum_size = size;
 

@@ -24,7 +24,6 @@ AgentDescription::~AgentDescription()
 
 }
 
-
 void AgentDescription::setName(std::string _name)
 {
 }
@@ -66,12 +65,10 @@ MemoryMap& AgentDescription::getMemoryMap()
     return memory;
 }
 
-
 const MemoryMap& AgentDescription::getMemoryMap() const
 {
     return memory;
 }
-
 
 const StateMap& AgentDescription::getStateMap() const
 {
@@ -92,7 +89,6 @@ size_t AgentDescription::getMemorySize() const
     }
     return size;
 }
-
 
 unsigned int AgentDescription::getNumberAgentVariables() const
 {

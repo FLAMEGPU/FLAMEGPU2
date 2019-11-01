@@ -3,7 +3,6 @@
 *
 */
 
-
 #ifndef AGENTMEMORYVECTOR_H_
 #define AGENTMEMORYVECTOR_H_
 
@@ -85,7 +84,6 @@ class MemoryVector : public GenericMemoryVector
         vec.resize(s);
     }
 
-
  protected:
     std::vector<T> vec;
     T default_value;
@@ -109,7 +107,6 @@ template <typename T> std::vector<T> GenericMemoryVector::getVectorIteratorAt(un
     std::vector<T>& v = getVector<T>();
     return (v.begin() + i);
 }
-
 
 // use this to store default values for a population, must be here to register the correct types at compile time
 /*! Create a map with std::strings for keys (indexes) and GenericAgentMemoryVector object. A smart pointer has been used to automaticaly manage the object*/

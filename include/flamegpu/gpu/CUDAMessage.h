@@ -22,7 +22,6 @@ class AgentPopulation;
 class AgentFunctionDescription;
 class MessageDescription;
 
-
 class CUDAMessage
 {
  public:
@@ -55,7 +54,6 @@ protected:
 
     /** @brief    Zero all message variable data. */
     void zeroAllMessageData();
-
 
  private:
     const MessageDescription& message_description;

@@ -33,7 +33,6 @@ int xmlWriter::writeStates()
     pElement = doc.NewElement("environment");
     pRoot->InsertEndChild(pElement);
 
-
     int populationSize;
 
     const AgentMap &am = model_description_.getAgentMap();

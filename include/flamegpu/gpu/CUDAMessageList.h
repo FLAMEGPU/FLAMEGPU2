@@ -37,13 +37,11 @@ class CUDAMessageList {
 
  protected:
 
-
     void allocateDeviceMessageList(CUDAMsgMap &Message_list);
 
     void releaseDeviceMessageList(CUDAMsgMap &Message_list);
 
     void zeroDeviceMessageList(CUDAMsgMap &Message_list);
-
 
  private:
     CUDAMsgMap d_list;

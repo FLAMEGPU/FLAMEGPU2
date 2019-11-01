@@ -10,12 +10,10 @@
 
 #pragma once
 
-
 #include <string>
 #include <stdexcept>
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
-
 
 /* Error check function for safe CUDA API calling */
 #define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }

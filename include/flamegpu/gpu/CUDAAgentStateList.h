@@ -53,7 +53,6 @@ class CUDAAgentStateList {
 
     void zeroDeviceAgentList(CUDAMemoryMap &agent_list);
 
-
  private:
     CUDAMemoryMap d_list;
     CUDAMemoryMap d_swap_list;

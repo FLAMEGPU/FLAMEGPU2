@@ -36,7 +36,6 @@ CUDAAgentModel::CUDAAgentModel(const ModelDescription& description) : model_desc
         agent_map.insert(CUDAAgentMap::value_type(it->first, std::unique_ptr<CUDAAgent>(new CUDAAgent(it->second))));
     } // insert into map using value_type
 
-
     // populate the CUDA message map
     const MessageMap &mm = model_description.getMessageMap();
     MessageMap::const_iterator it_m;
@@ -120,7 +119,6 @@ void CUDAAgentModel::getPopulationData(AgentPopulation& population)
     it->second->getPopulationData(population);
 }
 
-
 /**
  * @brief Loops through agents functions and register all variables
  * (variable has must also be tied to function name using the namespace thing in curve)
@@ -145,7 +143,6 @@ void CUDAAgentModel::step(const Simulation& simulation)
     /*!  Stream initialisation */
     for (int j = 0; j < nStreams; j++)
         gpuErrchk(cudaStreamCreate(&stream[j]));
-
 
     /*! for each each sim layer, launch each agent function in its own stream */
     for (unsigned int i = 0; i < simulation.getLayerCount(); i++)
@@ -172,7 +169,6 @@ void CUDAAgentModel::step(const Simulation& simulation)
                 const CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name); printf("inp msg name: %s\n", outpMessage_name.c_str());
                 cuda_message.mapRuntimeVariables(func_des);
             }
-
 
             /**
              * Configure runtime access of the functions variables within the FLAME_API object
@@ -210,7 +206,6 @@ void CUDAAgentModel::step(const Simulation& simulation)
             }
 
             const CUDAAgent& cuda_agent = getCUDAAgent(agent_name);
-
 
             /*! get the agent function */
             FLAMEGPU_AGENT_FUNCTION_POINTER* agent_func = func_des.getFunction();
@@ -306,7 +301,6 @@ void CUDAAgentModel::init(void)   // (int argc, char** argv)
     }
 }
 
-
 /**
 * @brief simulates functions
 * @param   object
@@ -326,11 +320,10 @@ void CUDAAgentModel::simulate(const Simulation& simulation)
     // if they have agent creations then buffer space must be allocated for them
 
     for (unsigned int i = 0; i < simulation.getSimulationSteps(); i++) {
-        cout <<"step: " << i << endl;
+        std::cout <<"step: " << i << std::endl;
         step(simulation);
     }
 }
-
 
 const CUDAAgent& CUDAAgentModel::getCUDAAgent(std::string agent_name) const
 {

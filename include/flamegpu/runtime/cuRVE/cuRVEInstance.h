@@ -36,6 +36,5 @@ class cuRVEInstance
 
 };
 
-
 #endif // CURVEINSTANCE
 

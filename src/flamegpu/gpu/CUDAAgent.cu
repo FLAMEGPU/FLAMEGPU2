@@ -19,7 +19,6 @@
 #include <flamegpu/pop/AgentPopulation.h>
 #include <flamegpu/runtime/cuRVE/curve.h>
 
-
 /**
 * CUDAAgent class
 * @brief allocates the hash table/list for agent variables and copy the list to device
@@ -27,10 +26,7 @@
 CUDAAgent::CUDAAgent(const AgentDescription& description) : agent_description(description), state_map(), max_list_size(0)
 {
 
-
-
 }
-
 
 /**
  * A destructor.
@@ -40,8 +36,6 @@ CUDAAgent::~CUDAAgent(void)
 {
 
 }
-
-
 
 
 /**
@@ -105,7 +99,6 @@ void CUDAAgent::setPopulationData(const AgentPopulation& population)
     if (&(population.getAgentDescription()) != &agent_description)
         throw InvalidPopulationData("Error: setPopulationData population has a different agent description to that which was used to initialise the CUDAAgent");
 
-
     /**set all population data to zero*/
     zeroAllStateVariableData();
 
@@ -127,8 +120,6 @@ void CUDAAgent::setPopulationData(const AgentPopulation& population)
 
 }
 
-
-
 void CUDAAgent::getPopulationData(AgentPopulation& population)
 {
     // check that the gpu state lists have been initialised by a previous call to setInitialPopulationData
@@ -143,7 +134,6 @@ void CUDAAgent::getPopulationData(AgentPopulation& population)
     const std::string agent_name = agent_description.getName();
     if (&(population.getAgentDescription()) != &agent_description)
         throw InvalidPopulationData("Error: getPopulationData population has a different agent description to that which was used to initialise the CUDAAgent");
-
 
     /* copy all population from correct state maps */
     const StateMap& sm = agent_description.getStateMap();
@@ -173,7 +163,6 @@ unsigned int CUDAAgent::getMaximumListSize() const
     return max_list_size;
 }
 
-
 /**
 * @brief Sets all state variable data to zero
 * It loops through sate maps and resets the values
@@ -189,7 +178,6 @@ void CUDAAgent::zeroAllStateVariableData()
         s.second->zeroAgentData();
     }
 }
-
 
 // this is done for all the variables for now.
 void CUDAAgent::mapRuntimeVariables(const AgentFunctionDescription& func) const

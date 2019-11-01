@@ -15,8 +15,6 @@
 #include <flamegpu/pop/AgentPopulation.h>
 #include <flamegpu/model/AgentDescription.h>
 
-
-
 AgentStateMemory::AgentStateMemory(const AgentPopulation &p, unsigned int initial_capacity) : population(p)
 {
     // state memory map is cloned from the agent description
@@ -30,14 +28,12 @@ AgentStateMemory::AgentStateMemory(const AgentPopulation &p, unsigned int initia
         resizeMemoryVectors(initial_capacity);
 }
 
-
 unsigned int AgentStateMemory::incrementSize()
 {
     // add one to current size (returns old size)
     return current_size++;
 
 }
-
 
 GenericMemoryVector& AgentStateMemory::getMemoryVector(const std::string variable_name)
 {
@@ -46,7 +42,6 @@ GenericMemoryVector& AgentStateMemory::getMemoryVector(const std::string variabl
 
     if (iter == state_memory.end())
         throw InvalidAgentVar();
-
 
     return *(iter->second);
 }

@@ -10,7 +10,6 @@
 
 #include <flamegpu/model/AgentFunctionOutput.h>
 
-
 AgentFunctionOutput::AgentFunctionOutput(const std::string output_message_name): message_name(output_message_name) {
     setFunctionOutputType(SINGLE_MESSAGE);
 }

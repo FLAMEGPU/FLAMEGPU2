@@ -12,7 +12,6 @@
 #include <flamegpu/model/AgentDescription.h>
 #include <flamegpu/runtime/cuRVE/curve.h>
 
-
 AgentFunctionDescription::AgentFunctionDescription(const std::string function_name) : function_name(function_name), initial_state("default"), end_state("default")
 {
 
@@ -100,7 +99,6 @@ void AgentFunctionDescription::setFunction(FLAMEGPU_AGENT_FUNCTION_POINTER *func
 {
     func = func_p;
 }
-
 
 /**
 * gets the function pointer

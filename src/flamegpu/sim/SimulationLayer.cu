@@ -12,16 +12,13 @@
 #include <flamegpu/sim/Simulation.h>
 #include <flamegpu/model/ModelDescription.h>
 
-
 SimulationLayer::SimulationLayer(Simulation& sim, const std::string name) : layer_name(name), simulation(sim)
 {
 }
 
-
 SimulationLayer::~SimulationLayer(void)
 {
 }
-
 
 // /**
 // * @return find and execute the function
@@ -45,7 +42,6 @@ SimulationLayer::~SimulationLayer(void)
 //    /** @todo checking if the func types are the same? */
 //    return typeCast(std::forward<Args>(args)...);
 // }
-
 
 /**
 * @param function name of type string
@@ -75,7 +71,6 @@ void SimulationLayer::addAgentFunction(const std::string name)
     if (!found)
         throw InvalidAgentFunc("Unknown agent function can not be added to the Function Layer!");
 }
-
 
 /**
 * @return FunctionDescMap type that contains a string name and AgentFunctionDescription object

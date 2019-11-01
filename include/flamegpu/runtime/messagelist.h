@@ -10,7 +10,6 @@
  * \todo longer description
  */
 
-
 #include <iterator>
 #include <flamegpu/gpu/CUDAErrorChecking.h>            // required for CUDA error handling functions
 #include "cuRVE/curve.h" // @todo migrate
@@ -45,7 +44,6 @@ class MessageList
     __host__ __device__ size_type getIndex() const { return this->index; };
     template<typename T, size_type N>
     __device__ T getVariable(const char(&variable_name)[N]);
-
 
     };
 
@@ -83,7 +81,6 @@ class MessageList
         return iterator(*this, start_ + size());
     }
 
-
     template<typename T, size_type N> __device__
         T getVariable(MessageList::iterator iterator, const char(&variable_name)[N]);
     template<typename T, size_type N> __device__
@@ -116,7 +113,6 @@ class MessageList
         _messageCount = messageCount;
     }
 
-
     __device__ CurveNamespaceHash getAgentNameSpace() {
         return this->agent_func_name_hash;
     }
@@ -135,8 +131,6 @@ class MessageList
     CurveNamespaceHash agent_func_name_hash;
     CurveNamespaceHash messagename_inp_hash;
 };
-
-
 
 /**
 * \brief Gets an agent memory value given an iterator for the message list
@@ -172,7 +166,6 @@ __device__ T MessageList::getVariable(MessageList::Message message, const char(&
     }
 }
 
-
 /**
 * \brief Gets an agent memory value for a given MessageList::message
 * \param variable_name Name of memory variable to retrieve
@@ -183,8 +176,6 @@ __device__ T MessageList::Message::getVariable(const char(&variable_name)[N]) {
     T value = _messageList.getVariable<T>(*this, variable_name);
     return value;
 }
-
-
 
 
 #endif /* MESSAGELIST_H_ */

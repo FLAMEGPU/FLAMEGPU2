@@ -18,7 +18,6 @@
 #include <flamegpu/pop/AgentStateMemory.h>
 #include <flamegpu/model/MessageDescription.h>
 
-
 /**
 * CUDAMessageList class
 * @brief populates CUDA message map
@@ -81,7 +80,6 @@ void CUDAMessageList::allocateDeviceMessageList(CUDAMsgMap &memory_map)
         gpuErrchk(cudaMalloc((void**)&d_ptr, var_size * message.getMaximumListSize()));
 #endif
 
-
         // store the pointer in the map
         memory_map.insert(CUDAMsgMap::value_type(var_name, d_ptr));
     }
@@ -132,7 +130,6 @@ void* CUDAMessageList::getMessageListVariablePointer(std::string variable_name)
 
     return mm->second;
 }
-
 
 void CUDAMessageList::zeroMessageData(){
     zeroDeviceMessageList(d_list);

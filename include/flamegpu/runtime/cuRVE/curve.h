@@ -18,8 +18,6 @@
 
 #define UNKNOWN_CURVE_VARIABLE     -1                        // !< value returned as a CurveVariable if an API function encounters an error
 
-
-
 typedef int                     CurveVariable;            // !< Typedef for cuRVE variable handle
 typedef unsigned int             CurveVariableHash;        // !< Typedef for cuRVE variable name string hash
 typedef unsigned int             CurveNamespaceHash;        // !< Typedef for cuRVE variable namespace string hash
@@ -83,7 +81,6 @@ template <unsigned int N> __device__ __host__ inline static CurveVariableHash cu
     return CurveStringHash<N, N>::Hash(str);
 }
 
-
 /** @brief Main cuRVE variable hashing function for strings of length determined at runtime and not compile time
 *  Should only be used for registered variables as this will be much slower than the compile time alternative.
 *  @return a 32 bit cuRVE string variable hash.
@@ -101,7 +98,6 @@ __host__ inline static CurveVariableHash curveVariableRuntimeHash(const char* st
     return hash;
 }
 
-
 /* CURVE HOST API FUNCTIONS */
 
 /** @brief cuRVE initialisation function
@@ -116,7 +112,6 @@ __host__ void curveInit();
  */
 __host__ CurveVariable curveGetVariableHandle(CurveVariableHash variable_hash);
 
-
 /** @brief Function for registering a variable by a CurveVariableHash
  *     Registers a variable by insertion in a hash table. Recommend using the provided curveRegisterVariable template function.
  *  @param variable_hash A cuRVE variable string hash from curveVariableHash.
@@ -124,7 +119,6 @@ __host__ CurveVariable curveGetVariableHandle(CurveVariableHash variable_hash);
  *  @return CurveVariable Handle of registered variable or UNKNOWN_CURVE_VARIABLE if an error is encountered.
  */
 __host__ CurveVariable curveRegisterVariableByHash(CurveVariableHash variable_hash, void* d_ptr, size_t size,unsigned int length);
-
 
 /** @brief Template function for registering a constant string
  *     Registers a constant string variable name by hashing and then inserting into a hash table.
@@ -138,8 +132,6 @@ template <unsigned int N, typename T> __host__ CurveVariable curveRegisterVariab
     size_t size = sizeof(T);
     return curveRegisterVariableByHash(variable_hash, d_ptr, size, length); // the const func can get const and non const argument (for 3rd argument)
 }
-
-
 
 /** @brief Function for un-registering a variable by a CurveVariableHash
 *     Un-registers a variable by removal from a hash table. Recommend using the provided curveUnregisterVariable template function.
@@ -157,8 +149,6 @@ template <unsigned int N> __host__ void curveUnregisterVariable(const char(&vari
     curveUnregisterVariableByHash(variable_hash);
 }
 
-
-
 /** @brief Function for disabling access to a cuRVE variable from a CurveVariableHash
  *     Disables device access to the cuRVE variable. Does not disable host access.
  *  @param variable_hash A cuRVE variable string hash from CurveVariableHash.
@@ -175,7 +165,6 @@ template <unsigned int N> __host__ void curveDisableVariable(const char (&variab
     curveDisableVariableByHash(variable_hash);
 }
 
-
 /** @brief Function for enabling access to a cuRVE variable from a CurveVariableHash
  *     Enables device access to the cuRVE variable.
  *  @param variable_hash A cuRVE variable string hash from CurveVariableHash.
@@ -191,7 +180,6 @@ template <unsigned int N> __host__ void curveEnableVariable(const char (&variabl
     CurveVariableHash variable_hash = curveVariableHash(variableName);
     curveEnableVariableByHash(variable_hash);
 }
-
 
 /** @brief Function changes the current namespace from a CurveNamespaceHash
  *     Changing the namespace will affect both the host and device.
@@ -214,10 +202,7 @@ template <unsigned int N> __host__ void curveSetNamespace(const char (&namespace
  */
 __host__ void curveSetDefaultNamespace();
 
-
-
 /* DEVICE API FUNCTIONS */
-
 
 /** @brief Gets the size of the cuRVE variable type given the variable hash
 * Gets the size of the cuRVE variable type given the variable hash
@@ -226,7 +211,6 @@ __host__ void curveSetDefaultNamespace();
 */
 extern __device__ size_t curveGetVariableSize(const CurveVariableHash variable_hash);
 
-
 /** @brief Device function for getting a pointer to a variable of given name
  * Returns a generic pointer to a variable of given name at a specific offset in bytes from the start of the variable array.
  *  @param variable_hash A cuRVE variable string hash from CurveVariableHash.
@@ -234,8 +218,6 @@ extern __device__ size_t curveGetVariableSize(const CurveVariableHash variable_h
  *  @return A generic pointer to the variable value. Will be NULL if there is an error.
  */
 extern __device__ void* curveGetVariablePtrByHash(const CurveVariableHash variable_hash, size_t offset);
-
-
 
 /** @brief Device function for getting a single typed value from a CurveVariableHash at a given index
  *     Returns a single value of specified type from a curveVariableHash using the given index position.
@@ -286,7 +268,6 @@ __device__ float curveGetVariable(const char (&variableName)[N], CurveVariableHa
     return curveGetVariableByHash<T>(variable_hash+namespace_hash, index);
 
 }
-
 
 /** @brief Device function for setting a single typed value from a CurveVariableHash
  *     Sets a single value from a curveVariableHash using the given index position.

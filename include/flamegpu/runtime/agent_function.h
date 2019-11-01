@@ -1,7 +1,6 @@
 #ifndef AGENT_FUNCTION_H_
 #define AGENT_FUNCTION_H_
 
-
 #include <cuda_runtime.h>
 // #include "flame_functions_api.h"
 

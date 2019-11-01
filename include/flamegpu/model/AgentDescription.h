@@ -23,7 +23,6 @@
 #include <flamegpu/model/AgentStateDescription.h>
 #include <flamegpu/model/AgentFunctionDescription.h>
 
-
 // State map is a mapping between a state name (i.e. default) and a state description object reference
 /*! */
 typedef std::map<const std::string, const AgentStateDescription&> StateMap;
@@ -42,8 +41,6 @@ typedef std::pair<const std::string, const std::type_info&> MemoryMapPair;
 
 /*! Create a map with std::type_info for keys (indexes) and std::size_t values*/
 typedef std::map<const std::type_info*, std::size_t> TypeSizeMap;    // not something that the user every sees. This is an interval map only for tracking the size of data types.
-
-
 
 class AgentDescription
 {
@@ -76,7 +73,6 @@ class AgentDescription
      *
      */
     template <typename T> void addAgentVariable(const std::string variable_name);
-
 
     MemoryMap& getMemoryMap(); // TODO should be shared pointer
 
@@ -121,6 +117,5 @@ template <typename T> void AgentDescription::addAgentVariable(const std::string 
     sizes.insert(TypeSizeMap::value_type(&typeid(T), (unsigned int)sizeof(T)));
     sm_map.insert(StateMemoryMap::value_type(variable_name, std::unique_ptr<GenericMemoryVector>(new MemoryVector<T>())));
 }
-
 
 #endif /* AGENTDESCRIPTION_H_ */

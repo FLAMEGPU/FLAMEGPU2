@@ -38,7 +38,6 @@ class CUDAAgent
     CUDAAgent(const AgentDescription& description);
     virtual ~CUDAAgent(void);
 
-
     const AgentDescription& getAgentDescription() const;
 
     /* Should be set initial population data and should only be called once as it does all the GPU device memory allocation */
@@ -50,7 +49,6 @@ class CUDAAgent
     void getPopulationData(AgentPopulation& population);
 
     unsigned int getMaximumListSize() const;
-
 
     /** @brief Uses the cuRVE runtime to map the variables used by the agent function to the cuRVE library so that can be accessed by name within a n agent function
     */
@@ -65,13 +63,10 @@ class CUDAAgent
 
     void unmapRuntimeVariables(const AgentFunctionDescription& func) const;
 
-
  protected:
 
     /** @brief    Zero all state variable data. */
     void zeroAllStateVariableData();
-
-
 
  private:
     const AgentDescription& agent_description;

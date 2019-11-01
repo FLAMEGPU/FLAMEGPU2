@@ -34,7 +34,6 @@ class AgentInstance {
     AgentStateMemory& agent_state_memory;
 };
 
-
 template <typename T> void AgentInstance::setVariable(std::string variable_name, const T value) {
     // todo check that the variable exists
 

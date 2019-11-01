@@ -17,7 +17,6 @@
 #include <vector>
 #include <typeinfo>
 
-
 // include class dependencies
 #include <flamegpu/model/AgentDescription.h>
 #include <flamegpu/model/MessageDescription.h>
@@ -26,7 +25,6 @@
 typedef std::map<const std::string, const AgentDescription&> AgentMap;
 typedef std::map<const std::string, const MessageDescription&> MessageMap;
 typedef std::map<const std::string, AgentPopulation&> PopulationMap;
-
 
 class ModelDescription {
  public:
@@ -60,6 +58,5 @@ class ModelDescription {
 
     // function map removed. This belongs to agents.
 };
-
 
 #endif /* MODELDESCRIPTION_H_ */

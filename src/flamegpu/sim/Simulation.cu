@@ -16,17 +16,14 @@
 #include <flamegpu/io/statewriter.h>
 #include "flamegpu/io/factory.h"
 
-
 Simulation::Simulation(const ModelDescription& model) : layers(), model_description(model)
 {
     simulation_steps = 1;
 }
 
-
 Simulation::~Simulation(void)
 {
 }
-
 
 const FunctionDescriptionVector& Simulation::getFunctionsAtLayer(unsigned int layer) const
 {
@@ -37,7 +34,6 @@ const FunctionDescriptionVector& Simulation::getFunctionsAtLayer(unsigned int la
         return layers.at(layer).get().getAgentFunctions(); 
     }
 }
-
 
 unsigned int Simulation::addSimulationLayer(SimulationLayer& layer)
 {
@@ -98,7 +94,6 @@ void Simulation::initialise(StateReader& read__)
     read__.parse();
 }
 */
-
 
 /*
  * issues: only saves the last output, hardcoded, will be changed

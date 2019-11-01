@@ -15,7 +15,6 @@
 #include<string>
 #include <cuda_runtime.h>
 
-
 // include sub classes
 #include <flamegpu/gpu/CUDAAgent.h>
 #include <flamegpu/gpu/CUDAMessage.h>

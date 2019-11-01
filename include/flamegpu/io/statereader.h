@@ -10,7 +10,6 @@
  * \todo longer description
  */
 
-
 #include <string>
 #include "flamegpu/model/ModelDescription.h"
 
@@ -55,6 +54,5 @@ class StateReader {
     ModelDescription model_description_;
     std::string inputFile;
 };
-
 
 #endif // INCLUDE_FLAMEGPU_IO_STATEREADER_H_

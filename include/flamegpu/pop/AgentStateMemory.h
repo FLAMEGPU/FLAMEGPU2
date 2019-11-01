@@ -11,7 +11,6 @@
 #ifndef AGENTSTATEMEMORY_H_
 #define AGENTSTATEMEMORY_H_
 
-
 #include <string>
 #include <vector>
 #include <map>
@@ -24,7 +23,6 @@
 
 class AgentPopulation;
 class AgentDescription;
-
 
 class AgentStateMemory  // agent_list
 {

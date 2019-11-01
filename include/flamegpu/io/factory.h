@@ -10,7 +10,6 @@
  * \todo longer description
  */
 
-
 #include <string>
 #include "statereader.h"
 #include "statewriter.h"
@@ -18,10 +17,10 @@
 #include "xmlWriter.h"
 
 //  move later
-std::string getFileExt(const string& s) {
+std::string getFileExt(const std::string& s) {
     // Find the last position of '.' in given string
     size_t i = s.rfind('.', s.length());
-    if (i != string::npos) {
+    if (i != std::string::npos) {
         return(s.substr(i + 1, s.length() - i));
     }
     // In case of no extension return empty string
@@ -35,7 +34,7 @@ std::string getFileExt(const string& s) {
 class ReaderFactory {
  public:
     static StateReader *createReader(const ModelDescription &model, const char *input) {
-        string extension = getFileExt(input);
+        std::string extension = getFileExt(input);
 
         if (extension == "xml") {
             return new xmlReader(model, input);
@@ -48,7 +47,6 @@ class ReaderFactory {
         return nullptr;
     }
 };
-
 
 class WriterFactory {
  public:

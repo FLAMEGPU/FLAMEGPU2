@@ -19,7 +19,6 @@
 #include <flamegpu/model/AgentDescription.h>
 #include <flamegpu/pop/AgentPopulation.h>
 
-
 /**
 * CUDAAgentStateList class
 * @brief populates CUDA agent map
@@ -84,7 +83,6 @@ void CUDAAgentStateList::allocateDeviceAgentList(CUDAMemoryMap &memory_map)
         // non unified memory allocation
         gpuErrchk(cudaMalloc((void**)&d_ptr, var_size * agent.getMaximumListSize()));
 #endif
-
 
         // store the pointer in the map
         memory_map.insert(CUDAMemoryMap::value_type(var_name, d_ptr));
@@ -195,7 +193,6 @@ void CUDAAgentStateList::getAgentData(AgentStateMemory &state_memory)
         state_memory.overrideStateListSize(current_list_size);
     }
 
-
 }
 
 void* CUDAAgentStateList::getAgentListVariablePointer(std::string variable_name)
@@ -208,7 +205,6 @@ void* CUDAAgentStateList::getAgentListVariablePointer(std::string variable_name)
 
     return mm->second;
 }
-
 
 void CUDAAgentStateList::zeroAgentData(){
     zeroDeviceAgentList(d_list);

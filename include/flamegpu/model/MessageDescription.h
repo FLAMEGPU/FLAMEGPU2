@@ -24,7 +24,6 @@ typedef std::pair<const std::string, const std::type_info&> VariableMapPair;
 
 typedef std::map<const std::type_info*, std::size_t> VarTypeSizeMap;    // to track size of data types
 
-
 class MessageDescription {
  public:
     explicit MessageDescription(const std::string message_name, unsigned int initial_size = DEFAULT_MESSAGE_BUFFER_SIZE);
@@ -60,6 +59,5 @@ template <typename T> void MessageDescription::addVariable(const std::string var
     variables.insert(variables.end(), VariableMap::value_type(variable_name, typeid(T)));
     sizes.insert(VarTypeSizeMap::value_type(&typeid(T), (unsigned int)sizeof(T)));
 }
-
 
 #endif // INCLUDE_FLAMEGPU_MODEL_MESSAGEDESCRIPTION_H_
