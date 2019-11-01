@@ -7,8 +7,8 @@
  * \todo longer description
  */
 
-#ifndef CUDAAGENTLIST_H_
-#define CUDAAGENTLIST_H_
+#ifndef INCLUDE_FLAMEGPU_GPU_CUDAAGENTSTATELIST_H_
+#define INCLUDE_FLAMEGPU_GPU_CUDAAGENTSTATELIST_H_
 
 #include <string>
 #include <memory>
@@ -63,4 +63,4 @@ class CUDAAgentStateList {
     CUDAAgent& agent;
 };
 
-#endif /* CUDAAGENTLIST_H_ */
+#endif // INCLUDE_FLAMEGPU_GPU_CUDAAGENTSTATELIST_H_

@@ -3,8 +3,8 @@
 *
 */
 
-#ifndef AGENTMEMORYVECTOR_H_
-#define AGENTMEMORYVECTOR_H_
+#ifndef INCLUDE_FLAMEGPU_POP_MEMORYVECTOR_H_
+#define INCLUDE_FLAMEGPU_POP_MEMORYVECTOR_H_
 
 #include <string>
 #include <vector>
@@ -115,4 +115,4 @@ typedef std::map<const std::string, std::unique_ptr<GenericMemoryVector>> StateM
 /*! Create a pair with std::strings for keys (indexes) and GenericAgentMemoryVector object.  A smart pointer has been used to automaticaly manage the object*/
 typedef std::pair<const std::string, std::unique_ptr<GenericMemoryVector>> StateMemoryMapPair;
 
-#endif // AGENTMEMORYVECTOR_H_
+#endif // INCLUDE_FLAMEGPU_POP_MEMORYVECTOR_H_

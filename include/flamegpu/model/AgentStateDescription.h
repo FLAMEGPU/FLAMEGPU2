@@ -8,8 +8,8 @@
  * \todo longer description
  */
 
-#ifndef AGENTSTATEDESCRIPTION_H_
-#define AGENTSTATEDESCRIPTION_H_
+#ifndef INCLUDE_FLAMEGPU_MODEL_AGENTSTATEDESCRIPTION_H_
+#define INCLUDE_FLAMEGPU_MODEL_AGENTSTATEDESCRIPTION_H_
 
 #include <string>
 
@@ -25,4 +25,4 @@ class AgentStateDescription {
     const std::string name;
 };
 
-#endif /* AGENTSTATEDESCRIPTION_H_ */
+#endif // INCLUDE_FLAMEGPU_MODEL_AGENTSTATEDESCRIPTION_H_

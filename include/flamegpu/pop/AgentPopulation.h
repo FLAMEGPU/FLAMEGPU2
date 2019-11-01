@@ -8,8 +8,8 @@
  * @warning
  */
 
-#ifndef AGENTPOPULATION_H_
-#define AGENTPOPULATION_H_
+#ifndef INCLUDE_FLAMEGPU_POP_AGENTPOPULATION_H_
+#define INCLUDE_FLAMEGPU_POP_AGENTPOPULATION_H_
 
 #include <memory>
 #include <map>
@@ -60,4 +60,4 @@ class AgentPopulation {
 
 };
 
-#endif /* AGENTPOPULATION_H_ */
+#endif // INCLUDE_FLAMEGPU_POP_AGENTPOPULATION_H_

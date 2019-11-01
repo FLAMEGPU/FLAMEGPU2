@@ -8,8 +8,8 @@
 * @warning
 */
 
-#ifndef CUDAAGENT_H_
-#define CUDAAGENT_H_
+#ifndef INCLUDE_FLAMEGPU_GPU_CUDAAGENT_H_
+#define INCLUDE_FLAMEGPU_GPU_CUDAAGENT_H_
 
 #include <memory>
 #include <map>
@@ -76,4 +76,4 @@ class CUDAAgent {
     unsigned int max_list_size; // The maximum length of the agent variable arrays based on the maximum population size passed to setPopulationData
 };
 
-#endif
+#endif //INCLUDE_FLAMEGPU_GPU_CUDAAGENT_H_

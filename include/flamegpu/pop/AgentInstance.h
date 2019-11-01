@@ -8,8 +8,8 @@
  * @warning
  */
 
-#ifndef AGENTINSTANCE_H_
-#define AGENTINSTANCE_H_
+#ifndef INCLUDE_FLAMEGPU_POP_AGENTINSTANCE_H_
+#define INCLUDE_FLAMEGPU_POP_AGENTINSTANCE_H_
 
 #include <iostream>
 #include <string>
@@ -60,4 +60,4 @@ template <typename T>  const T AgentInstance::getVariable(std::string variable_n
     return t_v.at(index);
 }
 
-#endif  // AGENTINSTANCE_H_
+#endif  // INCLUDE_FLAMEGPU_POP_AGENTINSTANCE_H_

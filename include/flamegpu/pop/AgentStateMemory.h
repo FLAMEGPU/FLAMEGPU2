@@ -8,8 +8,8 @@
  * @warning
  */
 
-#ifndef AGENTSTATEMEMORY_H_
-#define AGENTSTATEMEMORY_H_
+#ifndef INCLUDE_FLAMEGPU_POP_AGENTSTATEMEMORY_H_
+#define INCLUDE_FLAMEGPU_POP_AGENTSTATEMEMORY_H_
 
 #include <string>
 #include <vector>
@@ -58,4 +58,4 @@ class AgentStateMemory { // agent_list
 
 };
 
-#endif /* AGENTSTATEMEMORY_H_ */
+#endif // INCLUDE_FLAMEGPU_POP_AGENTSTATEMEMORY_H_

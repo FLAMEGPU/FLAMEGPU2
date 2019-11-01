@@ -1,5 +1,5 @@
-#ifndef _SIMULATION
-#define _SIMULATION
+#ifndef INCLUDE_FLAMEGPU_SIM_SIMULATION_H_
+#define INCLUDE_FLAMEGPU_SIM_SIMULATION_H_
 
 #include <vector>
 #include <string.h>
@@ -42,5 +42,5 @@ class Simulation {
     unsigned int simulation_steps;
 };
 
-#endif
+#endif //INCLUDE_FLAMEGPU_SIM_SIMULATION_H_
 

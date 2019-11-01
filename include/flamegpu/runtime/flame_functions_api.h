@@ -1,5 +1,5 @@
-#ifndef FLAME_FUNCTIONS_API_H_
-#define FLAME_FUNCTIONS_API_H_
+#ifndef INCLUDE_FLAMEGPU_RUNTIME_FLAME_FUNCTIONS_API_H_
+#define INCLUDE_FLAMEGPU_RUNTIME_FLAME_FUNCTIONS_API_H_
 
 /**
  * @file flame_functions_api.h
@@ -220,4 +220,4 @@ __device__ MessageList FLAMEGPU_API::GetMessageIterator(const char(&message_name
     return messageList; 
 }
 
-#endif /* FLAME_FUNCTIONS_API_H_ */
+#endif // INCLUDE_FLAMEGPU_RUNTIME_FLAME_FUNCTIONS_API_H_

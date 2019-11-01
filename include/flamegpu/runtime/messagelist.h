@@ -1,5 +1,5 @@
-#ifndef MESSAGELIST_H_
-#define MESSAGELIST_H_
+#ifndef INCLUDE_FLAMEGPU_RUNTIME_MESSAGELIST_H_
+#define INCLUDE_FLAMEGPU_RUNTIME_MESSAGELIST_H_
 
 /**
  * @file messagelist.h
@@ -178,4 +178,4 @@ __device__ T MessageList::Message::getVariable(const char(&variable_name)[N]) {
 }
 
 
-#endif /* MESSAGELIST_H_ */
+#endif // INCLUDE_FLAMEGPU_RUNTIME_MESSAGELIST_H_

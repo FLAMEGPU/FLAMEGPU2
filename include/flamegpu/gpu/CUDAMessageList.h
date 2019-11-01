@@ -7,8 +7,8 @@
  * \todo longer description
  */
 
-#ifndef CUDAMESSAGELIST_H_
-#define CUDAMESSAGELIST_H_
+#ifndef INCLUDE_FLAMEGPU_GPU_CUDAMESSAGELIST_H_
+#define INCLUDE_FLAMEGPU_GPU_CUDAMESSAGELIST_H_
 
 #include <string>
 #include <memory>
@@ -53,4 +53,4 @@ class CUDAMessageList {
     const CUDAMessage& message;
 };
 
-#endif
+#endif // INCLUDE_FLAMEGPU_GPU_CUDAMESSAGELIST_H_

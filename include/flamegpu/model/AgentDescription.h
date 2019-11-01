@@ -7,8 +7,8 @@
  * \todo longer description
  */
 
-#ifndef AGENTDESCRIPTION_H_
-#define AGENTDESCRIPTION_H_
+#ifndef INCLUDE_FLAMEGPU_MODEL_AGENTDESCRIPTION_H_
+#define INCLUDE_FLAMEGPU_MODEL_AGENTDESCRIPTION_H_
 
 #include <string>
 #include <map>
@@ -118,4 +118,4 @@ template <typename T> void AgentDescription::addAgentVariable(const std::string 
     sm_map.insert(StateMemoryMap::value_type(variable_name, std::unique_ptr<GenericMemoryVector>(new MemoryVector<T>())));
 }
 
-#endif /* AGENTDESCRIPTION_H_ */
+#endif // INCLUDE_FLAMEGPU_MODEL_AGENTDESCRIPTION_H_

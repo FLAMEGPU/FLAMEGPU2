@@ -7,8 +7,8 @@
  * \todo longer description
  */
 
-#ifndef CUDAAGENTMODEL_H_
-#define CUDAAGENTMODEL_H_
+#ifndef INCLUDE_FLAMEGPU_GPU_CUDAAGENTMODEL_H_
+#define INCLUDE_FLAMEGPU_GPU_CUDAAGENTMODEL_H_
 
 #include <memory>
 #include <map>
@@ -59,4 +59,4 @@ class CUDAAgentModel {
 
 };
 
-#endif /* CUDAAGENTMODEL_H_ */
+#endif // INCLUDE_FLAMEGPU_GPU_CUDAAGENTMODEL_H_

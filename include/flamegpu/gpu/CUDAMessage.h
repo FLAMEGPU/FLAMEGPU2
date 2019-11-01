@@ -8,8 +8,8 @@
 * @warning
 */
 
-#ifndef CUDAMESSAGE_H_
-#define CUDAMESSAGE_H_
+#ifndef INCLUDE_FLAMEGPU_GPU_CUDAMESSAGE_H_
+#define INCLUDE_FLAMEGPU_GPU_CUDAMESSAGE_H_
 
 #include <memory>
 
@@ -64,4 +64,4 @@ protected:
 
 };
 
-#endif
+#endif //INCLUDE_FLAMEGPU_GPU_CUDAMESSAGE_H_

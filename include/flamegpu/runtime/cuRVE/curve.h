@@ -1,5 +1,5 @@
-#ifndef __CURVE_RUNTIME_H__
-#define __CURVE_RUNTIME_H__
+#ifndef INCLUDE_FLAMEGPU_RUNTIME_CURVE_CURVE_H_
+#define INCLUDE_FLAMEGPU_RUNTIME_CURVE_CURVE_H_
 
 /**
  * @file   curve.h
@@ -368,4 +368,4 @@ __host__ curveHostError curveGetLastHostError();
  */
 __host__ void curveClearErrors();
 
-#endif // __CURVE_RUNTIME_H__
+#endif // INCLUDE_FLAMEGPU_RUNTIME_CURVE_CURVE_H_

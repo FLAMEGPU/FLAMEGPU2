@@ -5,8 +5,8 @@
 *      Author: paul
 */
 
-#ifndef FLAME_API_H_
-#define FLAME_API_H_
+#ifndef INCLUDE_FLAMEGPU_FLAME_API_H_
+#define INCLUDE_FLAMEGPU_FLAME_API_H_
 
 // include all host API classes (top level header from each module)
 #include <flamegpu/model/ModelDescription.h>
@@ -14,4 +14,4 @@
 #include <flamegpu/sim/Simulation.h>
 #include <flamegpu/gpu/CUDAAgentModel.h>
 
-#endif /* FLAME_API_H_ */
+#endif // INCLUDE_FLAMEGPU_FLAME_API_H_

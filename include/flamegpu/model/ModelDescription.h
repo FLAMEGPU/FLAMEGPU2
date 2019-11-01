@@ -1,6 +1,6 @@
 
-#ifndef MODELDESCRIPTION_H_
-#define MODELDESCRIPTION_H_
+#ifndef INCLUDE_FLAMEGPU_MODEL_MODELDESCRIPTION_H_
+#define INCLUDE_FLAMEGPU_MODEL_MODELDESCRIPTION_H_
 
 /**
  * @file ModelDescription.h
@@ -59,4 +59,4 @@ class ModelDescription {
     // function map removed. This belongs to agents.
 };
 
-#endif /* MODELDESCRIPTION_H_ */
+#endif // INCLUDE_FLAMEGPU_MODEL_MODELDESCRIPTION_H_
