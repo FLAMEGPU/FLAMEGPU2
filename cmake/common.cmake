@@ -6,23 +6,22 @@ STRING(TOLOWER "${CMAKE_SYSTEM_NAME}" CMAKE_SYSTEM_NAME_LOWER)
 set(CMAKE_SKIP_INSTALL_RULES TRUE)
 set(CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}" CACHE INTERNAL "" FORCE)
 
-# Set a default build type if not passed (https://blog.kitware.com/cmake-and-the-default-build-type/)
-set(default_build_type "Release")
-if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-  message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
-  set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE STRING "Choose the type of build." FORCE)
-  # Set the possible values of build type for cmake-gui
-  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
-    "Debug" "Release" "Profile")
+# Set a default build type if not passed
+get_property(GENERATOR_IS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+if(${GENERATOR_IS_MULTI_CONFIG})
+    # CMAKE_CONFIGURATION_TYPES defaults to something platform specific
+    # Therefore can't detect if user has changed value and not reset it
+    # So force "Debug;Release;Profile"
+    set(CMAKE_CONFIGURATION_TYPES "Debug;Release;Profile" CACHE INTERNAL
+        "Choose the types of build, options are: Debug Release Profile." FORCE)#
+else()
+    if(NOT CMAKE_BUILD_TYPE)
+        set(default_build_type "Release")
+        message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
+        set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE STRING 
+            "Choose the type of build, options are: None Debug Release Profile." FORCE)
+    endif()
 endif()
-
-if(CMAKE_CONFIGURATION_TYPES)
-  set(CMAKE_CONFIGURATION_TYPES Debug Release Profile)
-  set(CMAKE_CONFIGURATION_TYPES "${CMAKE_CONFIGURATION_TYPES}" CACHE STRING
-    "Reset the configurations to what we need"
-    FORCE)
-endif()
-
 
 # Create the profile build modes, based on release
 SET( CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_RELEASE}" CACHE STRING
@@ -47,13 +46,6 @@ MARK_AS_ADVANCED(
     CMAKE_C_FLAGS_PROFILE
     CMAKE_EXE_LINKER_FLAGS_PROFILE
     CMAKE_SHARED_LINKER_FLAGS_PROFILE )
-# Update the documentation string of CMAKE_BUILD_TYPE for GUIs
-SET( CMAKE_BUILD_TYPE "${CMAKE_BUILD_TYPE}" CACHE STRING
-    "Choose the type of build, options are: None Debug Release Profile."
-    FORCE )
-
-
-
 
 # Require a minimum cuda version
 if(CMAKE_CUDA_COMPILER_VERSION VERSION_LESS 7.0)
