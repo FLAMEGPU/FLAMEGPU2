@@ -26,8 +26,8 @@ void ModelDescription::addMessage(const MessageDescription &message) {
     messages.insert(MessageMap::value_type(message.getName(), message));
 }
 
-void ModelDescription::addPopulation(AgentPopulation &pop)
-{
+void ModelDescription::addPopulation(AgentPopulation &pop) {
+
      population.insert(PopulationMap::value_type(pop.getAgentName(), pop));
 }
 

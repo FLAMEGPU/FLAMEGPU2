@@ -32,8 +32,8 @@ typedef std::pair<const std::string, std::unique_ptr<CUDAAgentStateList>> CUDASt
  * will use this hash index to map variable names to unique pointers in GPU memory space. This is required so
  * that at runtime a variable name can be related to a unique array of data on the device. It works like a traditional hashmap however the same hashing is used for all states that an agent can be in (as agents have the same variables regardless of state).
  */
-class CUDAAgent
-{
+class CUDAAgent {
+
  public:
     CUDAAgent(const AgentDescription& description);
     virtual ~CUDAAgent(void);

@@ -22,8 +22,8 @@ class AgentPopulation;
 class AgentFunctionDescription;
 class MessageDescription;
 
-class CUDAMessage
-{
+class CUDAMessage {
+
  public:
     CUDAMessage(const MessageDescription& description);
     virtual ~CUDAMessage(void);

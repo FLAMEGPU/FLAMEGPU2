@@ -19,33 +19,33 @@ const std::string MessageDescription::getName() const{
     return name;
 }
 
-VariableMap& MessageDescription::getVariableMap()
-{
+VariableMap& MessageDescription::getVariableMap() {
+
     return variables;
 }
 
-const VariableMap& MessageDescription::getVariableMap() const
-{
+const VariableMap& MessageDescription::getVariableMap() const {
+
     return variables;
 }
 
-size_t MessageDescription::getMemorySize() const
-{
+size_t MessageDescription::getMemorySize() const {
+
     size_t size = 0;
-    for (VarTypeSizeMap::const_iterator it = sizes.begin(); it != sizes.end(); it++)
-    {
+    for (VarTypeSizeMap::const_iterator it = sizes.begin(); it != sizes.end(); it++) {
+
         size += it->second;
     }
     return size;
 }
 
-unsigned int MessageDescription::getNumberMessageVariables() const
-{
+unsigned int MessageDescription::getNumberMessageVariables() const {
+
     return static_cast<unsigned int>(variables.size());
 }
 
-size_t MessageDescription::getMessageVariableSize(const std::string variable_name) const
-{
+size_t MessageDescription::getMessageVariableSize(const std::string variable_name) const {
+
     // get the variable name type
     VariableMap::const_iterator mm = variables.find(variable_name);
     if (mm == variables.end())
@@ -58,8 +58,8 @@ size_t MessageDescription::getMessageVariableSize(const std::string variable_nam
     return tsm->second;
 }
 
-const std::type_info& MessageDescription::getVariableType(const std::string variable_name) const
-{
+const std::type_info& MessageDescription::getVariableType(const std::string variable_name) const {
+
     VariableMap::const_iterator iter;
     iter = variables.find(variable_name);
 
@@ -70,7 +70,7 @@ const std::type_info& MessageDescription::getVariableType(const std::string vari
 
 }
 
-unsigned int MessageDescription::getMaximumMessageListCapacity() const
-{
+unsigned int MessageDescription::getMaximumMessageListCapacity() const {
+
     return maximum_size;
 }

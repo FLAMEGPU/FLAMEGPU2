@@ -24,8 +24,8 @@
 class AgentPopulation;
 class AgentDescription;
 
-class AgentStateMemory  // agent_list
-{
+class AgentStateMemory { // agent_list
+
  public:
     AgentStateMemory(const AgentPopulation &population, unsigned int initial_capacity = 0);
     virtual ~AgentStateMemory() {}

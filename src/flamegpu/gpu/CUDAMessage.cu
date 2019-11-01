@@ -34,8 +34,8 @@ CUDAMessage::CUDAMessage(const MessageDescription& description) : message_descri
  * A destructor.
  * @brief Destroys the CUDAMessage object
  */
-CUDAMessage::~CUDAMessage(void)
-{
+CUDAMessage::~CUDAMessage(void) {
+
 
 }
 
@@ -44,8 +44,8 @@ CUDAMessage::~CUDAMessage(void)
 * @param none
 * @return MessageDescription object
 */
-const MessageDescription& CUDAMessage::getMessageDescription() const
-{
+const MessageDescription& CUDAMessage::getMessageDescription() const {
+
     return message_description;
 }
 
@@ -54,8 +54,8 @@ const MessageDescription& CUDAMessage::getMessageDescription() const
 * @param empty
 * @return none
 */
-void CUDAMessage::setInitialMessageList() // used to be const AgentPopulation& population
-{
+void CUDAMessage::setInitialMessageList() { // used to be const AgentPopulation& population
+
     // check that the message list has not already been set
     if (message_list)
         throw InvalidMessageData("Error: Initial message list already set");
@@ -86,8 +86,8 @@ void CUDAMessage::setInitialMessageList() // used to be const AgentPopulation& p
 * @return maximum size list that is equal to the maximum list size 
 * @note may want to change this to maximum population size
 */
-unsigned int CUDAMessage::getMaximumListSize() const
-{
+unsigned int CUDAMessage::getMaximumListSize() const {
+
     return max_list_size;
 }
 
@@ -96,8 +96,8 @@ unsigned int CUDAMessage::getMaximumListSize() const
 * @param none
 * @return none
 */
-void CUDAMessage::zeroAllMessageData()
-{
+void CUDAMessage::zeroAllMessageData() {
+
         message_list->zeroMessageData();
 }
 
@@ -113,8 +113,8 @@ void CUDAMessage::mapRuntimeVariables(const AgentFunctionDescription& func) cons
     const std::string message_name = message_description.getName();
 
     // loop through the message variables to map each variable name using cuRVE
-    for (VariableMapPair mmp : message_description.getVariableMap())
-    {
+    for (VariableMapPair mmp : message_description.getVariableMap()) {
+
         // get a device pointer for the message variable name
         void* d_ptr = message_list->getMessageListVariablePointer(mmp.first); 
 
@@ -136,13 +136,13 @@ void CUDAMessage::mapRuntimeVariables(const AgentFunctionDescription& func) cons
 
 }
 
-void CUDAMessage::unmapRuntimeVariables(const AgentFunctionDescription& func) const
-{
+void CUDAMessage::unmapRuntimeVariables(const AgentFunctionDescription& func) const {
+
 
     const std::string message_name = message_description.getName();
     // loop through the message variables to map each variable name using cuRVE
-    for (VariableMapPair mmp : message_description.getVariableMap())
-    {
+    for (VariableMapPair mmp : message_description.getVariableMap()) {
+
         // get a device pointer for the message variable name
         // void* d_ptr = message_list->getMessageListVariablePointer(mmp.first);
 

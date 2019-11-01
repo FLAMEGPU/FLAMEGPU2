@@ -40,8 +40,8 @@ class GenericMemoryVector{
 };
 
 template <typename T>
-class MemoryVector : public GenericMemoryVector
-{
+class MemoryVector : public GenericMemoryVector {
+
 
  public:
 
@@ -69,18 +69,18 @@ class MemoryVector : public GenericMemoryVector
             return &(vec.front());
     }
 
-    virtual void* getVectorPtr()
-    {
+    virtual void* getVectorPtr() {
+
         return static_cast<void*>(&vec);
     }
 
-    virtual MemoryVector<T>* clone() const
-    {
+    virtual MemoryVector<T>* clone() const {
+
         return (new MemoryVector<T>());
     }
 
-    virtual void resize(unsigned int s)
-    {
+    virtual void resize(unsigned int s) {
+
         vec.resize(s);
     }
 

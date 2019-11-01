@@ -23,8 +23,8 @@
 * CUDAAgentStateList class
 * @brief populates CUDA agent map
 */
-CUDAAgentStateList::CUDAAgentStateList(CUDAAgent& cuda_agent) : agent(cuda_agent)
-{
+CUDAAgentStateList::CUDAAgentStateList(CUDAAgent& cuda_agent) : agent(cuda_agent) {
+
 
     // allocate state lists
     allocateDeviceAgentList(d_list);
@@ -38,13 +38,13 @@ CUDAAgentStateList::CUDAAgentStateList(CUDAAgent& cuda_agent) : agent(cuda_agent
  * A destructor.
  * @brief Destroys the CUDAAgentStateList object
  */
-CUDAAgentStateList::~CUDAAgentStateList()
-{
+CUDAAgentStateList::~CUDAAgentStateList() {
+
 
 }
 
-void CUDAAgentStateList::cleanupAllocatedData()
-{
+void CUDAAgentStateList::cleanupAllocatedData() {
+
     // clean up
     releaseDeviceAgentList(d_list);
     releaseDeviceAgentList(d_swap_list);
@@ -59,14 +59,14 @@ void CUDAAgentStateList::cleanupAllocatedData()
 * @param variable of type CUDAMemoryMap type
 * @return none
 */
-void CUDAAgentStateList::allocateDeviceAgentList(CUDAMemoryMap &memory_map)
-{
+void CUDAAgentStateList::allocateDeviceAgentList(CUDAMemoryMap &memory_map) {
+
     // we use the agents memory map to iterate the agent variables and do allocation within our GPU hash map
     const MemoryMap &mem = agent.getAgentDescription().getMemoryMap();
 
     // for each variable allocate a device array and add to map
-    for (const MemoryMapPair& mm : mem)
-    {
+    for (const MemoryMapPair& mm : mem) {
+
         // get the variable name
         std::string var_name = mm.first;
 
@@ -95,11 +95,11 @@ void CUDAAgentStateList::allocateDeviceAgentList(CUDAMemoryMap &memory_map)
 * @param variable of type CUDAMemoryMap struct type
 * @return none
 */
-void CUDAAgentStateList::releaseDeviceAgentList(CUDAMemoryMap& memory_map)
-{
+void CUDAAgentStateList::releaseDeviceAgentList(CUDAMemoryMap& memory_map) {
+
     // for each device pointer in the cuda memory map we need to free these
-    for (const CUDAMemoryMapPair& mm : memory_map)
-    {
+    for (const CUDAMemoryMapPair& mm : memory_map) {
+
         // free the memory on the device
         gpuErrchk(cudaFree(mm.second));
     }
@@ -110,12 +110,12 @@ void CUDAAgentStateList::releaseDeviceAgentList(CUDAMemoryMap& memory_map)
 * @param variable of type CUDAMemoryMap struct type
 * @return none
 */
-void CUDAAgentStateList::zeroDeviceAgentList(CUDAMemoryMap& memory_map)
-{
+void CUDAAgentStateList::zeroDeviceAgentList(CUDAMemoryMap& memory_map) {
+
 
     // for each device pointer in the cuda memory map set the values to 0
-    for (const CUDAMemoryMapPair& mm : memory_map)
-    {
+    for (const CUDAMemoryMapPair& mm : memory_map) {
+
         // get the variable size from agent description
         size_t var_size = agent.getAgentDescription().getAgentVariableSize(mm.first);
 
@@ -130,12 +130,12 @@ void CUDAAgentStateList::zeroDeviceAgentList(CUDAMemoryMap& memory_map)
 * @return none
 * @todo
 */
-void CUDAAgentStateList::setAgentData(const AgentStateMemory &state_memory)
-{
+void CUDAAgentStateList::setAgentData(const AgentStateMemory &state_memory) {
+
 
     // check that we are using the same agent description
-    if (!state_memory.isSameDescription(agent.getAgentDescription()))
-    {
+    if (!state_memory.isSameDescription(agent.getAgentDescription())) {
+
         // throw std::runtime_error("CUDA Agent uses different agent description.");
         throw InvalidCudaAgentDesc();
     }
@@ -161,12 +161,12 @@ void CUDAAgentStateList::setAgentData(const AgentStateMemory &state_memory)
     
 }
 
-void CUDAAgentStateList::getAgentData(AgentStateMemory &state_memory)
-{
+void CUDAAgentStateList::getAgentData(AgentStateMemory &state_memory) {
+
 
     // check that we are using the same agent description
-    if (!state_memory.isSameDescription(agent.getAgentDescription()))
-    {
+    if (!state_memory.isSameDescription(agent.getAgentDescription())) {
+
         // throw std::runtime_error("CUDA Agent uses different agent description.");
         throw InvalidCudaAgentDesc();
     }
@@ -195,8 +195,8 @@ void CUDAAgentStateList::getAgentData(AgentStateMemory &state_memory)
 
 }
 
-void* CUDAAgentStateList::getAgentListVariablePointer(std::string variable_name)
-{
+void* CUDAAgentStateList::getAgentListVariablePointer(std::string variable_name) {
+
     CUDAMemoryMap::iterator mm = d_list.find(variable_name);
     if (mm == d_list.end()){
         // TODO: Error variable not found in agent state list
@@ -214,7 +214,7 @@ void CUDAAgentStateList::zeroAgentData(){
 }
 
 // the actual number of agents in this state
-unsigned int CUDAAgentStateList::getCUDAStateListSize() const
-{
+unsigned int CUDAAgentStateList::getCUDAStateListSize() const {
+
     return current_list_size;
 }

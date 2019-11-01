@@ -14,8 +14,8 @@ class AgentFunctionDescription;
 
 typedef std::vector<std::reference_wrapper<const AgentFunctionDescription>> FunctionDescriptionVector;
 
-class SimulationLayer
-{
+class SimulationLayer {
+
  public:
     SimulationLayer(Simulation& sim, const std::string name = "none");
     ~SimulationLayer(void);

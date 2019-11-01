@@ -28,8 +28,8 @@ typedef std::map<const std::string, std::unique_ptr<CUDAAgent>> CUDAAgentMap; //
 typedef std::map<const std::string, std::unique_ptr<CUDAMessage>> CUDAMessageMap;
 // typedef std::map<const std::string, std::unique_ptr<CUDAAgentFunction>> CUDAFunctionMap; /*Moz*/
 
-class CUDAAgentModel
-{
+class CUDAAgentModel {
+
  public:
     CUDAAgentModel(const ModelDescription& description);
     virtual ~CUDAAgentModel();

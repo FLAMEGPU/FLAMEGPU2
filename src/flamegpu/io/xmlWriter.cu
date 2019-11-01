@@ -19,8 +19,8 @@
 
 xmlWriter::xmlWriter(const ModelDescription &model, const char* output) : StateWriter(model, output) {};
 
-int xmlWriter::writeStates()
-{
+int xmlWriter::writeStates() {
+
     tinyxml2::XMLDocument doc;
 
     tinyxml2::XMLNode * pRoot = doc.NewElement("states");
@@ -38,15 +38,15 @@ int xmlWriter::writeStates()
     const AgentMap &am = model_description_.getAgentMap();
 
     // for each agent types
-    for (AgentMap::const_iterator iter_am = am.begin(); iter_am != am.end(); iter_am++)
-    {
+    for (AgentMap::const_iterator iter_am = am.begin(); iter_am != am.end(); iter_am++) {
+
         const char* agentName = iter_am->first.c_str();
 
         populationSize = model_description_.getAgentPopulation(agentName).getStateMemory().getStateListSize();
 
         // for each agent
-        for (int i = 0; i < populationSize; i++)
-        {
+        for (int i = 0; i < populationSize; i++) {
+
 
             pElement = doc.NewElement("xagent");
 
@@ -58,8 +58,8 @@ int xmlWriter::writeStates()
             const MemoryMap &mm = model_description_.getAgentDescription(agentName).getMemoryMap();
 
             // for each variable
-            for (MemoryMap::const_iterator iter_mm = mm.begin(); iter_mm != mm.end(); iter_mm++)
-            {
+            for (MemoryMap::const_iterator iter_mm = mm.begin(); iter_mm != mm.end(); iter_mm++) {
+
                 const std::string variable_name = iter_mm->first;
 
                 pListElement = doc.NewElement(variable_name.c_str());

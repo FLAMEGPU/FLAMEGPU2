@@ -42,8 +42,8 @@ typedef std::pair<const std::string, const std::type_info&> MemoryMapPair;
 /*! Create a map with std::type_info for keys (indexes) and std::size_t values*/
 typedef std::map<const std::type_info*, std::size_t> TypeSizeMap;    // not something that the user every sees. This is an interval map only for tracking the size of data types.
 
-class AgentDescription
-{
+class AgentDescription {
+
  public:
 
     /**
@@ -111,8 +111,8 @@ class AgentDescription
     StateMemoryMap sm_map;                                    // used to hold a default empty vector
 };
 
-template <typename T> void AgentDescription::addAgentVariable(const std::string variable_name)
-{
+template <typename T> void AgentDescription::addAgentVariable(const std::string variable_name) {
+
     memory.insert(MemoryMap::value_type(variable_name, typeid(T)));
     sizes.insert(TypeSizeMap::value_type(&typeid(T), (unsigned int)sizeof(T)));
     sm_map.insert(StateMemoryMap::value_type(variable_name, std::unique_ptr<GenericMemoryVector>(new MemoryVector<T>())));

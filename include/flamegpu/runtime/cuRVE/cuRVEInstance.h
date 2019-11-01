@@ -8,8 +8,8 @@
  * cuRVE is a C library and this singleton class acts as a mechanism to ensure that any reference to the library is handled correctly.
  * For example multiple objects may which to request that curve is initialised. This class will ensure that this function call is only made once the first time that a cuRVEInstance is required.
  */
-class cuRVEInstance
-{
+class cuRVEInstance {
+
  private:
 
     /** @brief    Default constructor.    
