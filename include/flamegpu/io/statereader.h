@@ -33,16 +33,13 @@ class StateReader {
     // void setModelDesc(const ModelDescription &model_desc) {    model_description_ = model_desc; }
 /*
     StateReader& create(const ModelDescription &model, const char *input) {
-
         string extension = getFileExt(input);
         StateReader *object_to_return = NULL;
 
         if (extension == "xml") {
-
             object_to_return = new xmlReader(model);
         }
         if (extension == "bin") {
-
             object_to_return = new binReader(model);
         }
 

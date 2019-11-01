@@ -24,7 +24,6 @@
 */
 CUDAMessageList::CUDAMessageList(CUDAMessage& cuda_message) : message(cuda_message) {
 
-
     // allocate message lists
     allocateDeviceMessageList(d_list);
     allocateDeviceMessageList(d_swap_list);
@@ -38,11 +37,9 @@ CUDAMessageList::CUDAMessageList(CUDAMessage& cuda_message) : message(cuda_messa
  */
 CUDAMessageList::~CUDAMessageList() {
 
-
 }
 
 void CUDAMessageList::cleanupAllocatedData() {
-
     // clean up
     releaseDeviceMessageList(d_list);
     releaseDeviceMessageList(d_swap_list);
@@ -56,13 +53,11 @@ void CUDAMessageList::cleanupAllocatedData() {
 * @return none
 */
 void CUDAMessageList::allocateDeviceMessageList(CUDAMsgMap &memory_map) {
-
     // we use the  messages memory map to iterate the  message variables and do allocation within our GPU hash map
     const VariableMap &mem = message.getMessageDescription().getVariableMap();
 
     // for each variable allocate a device array and add to map
     for (const VariableMapPair& mm : mem) {
-
         // get the variable name
         std::string var_name = mm.first;
         
@@ -92,10 +87,8 @@ void CUDAMessageList::allocateDeviceMessageList(CUDAMsgMap &memory_map) {
 * @return none
 */
 void CUDAMessageList::releaseDeviceMessageList(CUDAMsgMap& memory_map) {
-
     // for each device pointer in the cuda memory map we need to free these
     for (const CUDAMsgMapPair& mm : memory_map) {
-
         // free the memory on the device
         gpuErrchk(cudaFree(mm.second));
     }
@@ -108,10 +101,8 @@ void CUDAMessageList::releaseDeviceMessageList(CUDAMsgMap& memory_map) {
 */
 void CUDAMessageList::zeroDeviceMessageList(CUDAMsgMap& memory_map) {
 
-
     // for each device pointer in the cuda memory map set the values to 0
     for (const CUDAMsgMapPair& mm : memory_map) {
-
         // get the variable size from message description
         size_t var_size = message.getMessageDescription().getMessageVariableSize(mm.first);
 
@@ -121,7 +112,6 @@ void CUDAMessageList::zeroDeviceMessageList(CUDAMsgMap& memory_map) {
 }
 
 void* CUDAMessageList::getMessageListVariablePointer(std::string variable_name) {
-
     CUDAMsgMap::iterator mm = d_list.find(variable_name);
     if (mm == d_list.end()){
         // TODO: Error variable not found in message list

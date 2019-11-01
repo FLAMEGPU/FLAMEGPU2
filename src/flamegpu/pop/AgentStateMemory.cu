@@ -16,7 +16,6 @@
 #include <flamegpu/model/AgentDescription.h>
 
 AgentStateMemory::AgentStateMemory(const AgentPopulation &p, unsigned int initial_capacity) : population(p) {
-
     // state memory map is cloned from the agent description
     population.getAgentDescription().initEmptyStateMemoryMap(state_memory);
 
@@ -29,14 +28,12 @@ AgentStateMemory::AgentStateMemory(const AgentPopulation &p, unsigned int initia
 }
 
 unsigned int AgentStateMemory::incrementSize() {
-
     // add one to current size (returns old size)
     return current_size++;
 
 }
 
 GenericMemoryVector& AgentStateMemory::getMemoryVector(const std::string variable_name) {
-
     StateMemoryMap::iterator iter;
     iter = state_memory.find(variable_name);
 
@@ -47,7 +44,6 @@ GenericMemoryVector& AgentStateMemory::getMemoryVector(const std::string variabl
 }
 
 const GenericMemoryVector& AgentStateMemory::getReadOnlyMemoryVector(const std::string variable_name) const {
-
     StateMemoryMap::const_iterator iter;
     iter = state_memory.find(variable_name);
 
@@ -58,24 +54,20 @@ const GenericMemoryVector& AgentStateMemory::getReadOnlyMemoryVector(const std::
 }
 
 const std::type_info& AgentStateMemory::getVariableType(std::string variable_name) {
-
     return population.getAgentDescription().getVariableType(variable_name);
 }
 
 bool AgentStateMemory::isSameDescription(const AgentDescription& description) const {
-
     return (&description == &population.getAgentDescription());
 }
 
 void AgentStateMemory::resizeMemoryVectors(unsigned int s) {
-
     // all size checking is done by the population
 
     MemoryMap::const_iterator iter;
     const MemoryMap &m = population.getAgentDescription().getMemoryMap();
 
     for (iter = m.begin(); iter != m.end(); iter++) {
-
         const std::string variable_name = iter->first;
 
         GenericMemoryVector &v = getMemoryVector(variable_name);
@@ -84,7 +76,6 @@ void AgentStateMemory::resizeMemoryVectors(unsigned int s) {
 }
 
 unsigned int AgentStateMemory::getPopulationCapacity() const {
-
     return population.getMaximumStateListCapacity();
 }
 
@@ -93,6 +84,5 @@ unsigned int AgentStateMemory::getStateListSize() const{
 }
 
 void AgentStateMemory::overrideStateListSize(unsigned int size) {
-
     current_size = size;
 }

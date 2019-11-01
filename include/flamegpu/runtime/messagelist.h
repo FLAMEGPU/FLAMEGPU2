@@ -21,7 +21,6 @@ class MessageList;  // Forward declaration (class defined below)
 
 class MessageList  {
 
-
  public:
 
     typedef unsigned int size_type;
@@ -31,7 +30,6 @@ class MessageList  {
 
     // Inner class representing an individual message
     class Message {
-
     private:
         MessageList &_messageList;
         size_type index;
@@ -49,7 +47,6 @@ class MessageList  {
 
     // message list iterator inner class.
     class iterator : public std::iterator <std::random_access_iterator_tag, void, void, void, void> {
-
     private:
         MessageList::Message _message;
     public:
@@ -68,7 +65,6 @@ class MessageList  {
     /*! Returns the number of elements in the message list.
     */
     inline __host__ __device__ size_type size(void) const {
-
         return _messageCount;
     }
 
@@ -91,7 +87,6 @@ class MessageList  {
     * \param agentname_hash
     */
     __device__ void setAgentNameSpace(CurveNamespaceHash agentname_hash) {
-
         agent_func_name_hash = agentname_hash;
     }
 
@@ -100,7 +95,6 @@ class MessageList  {
     * \param messagename_hash
     */
     __device__ void setMessageInpNameSpace(CurveNamespaceHash messagename_hash) {
-
         messagename_inp_hash = messagename_hash;
     }
 
@@ -109,7 +103,6 @@ class MessageList  {
     * \param  messageList_Size
     */
     __device__ void setMessageListSize(size_type messageCount) {
-
         _messageCount = messageCount;
     }
 
@@ -139,7 +132,6 @@ class MessageList  {
 */
 template<typename T, MessageList::size_type N>
 __device__ T MessageList::getVariable(MessageList::iterator iterator, const char(&variable_name)[N]) {
-
     // get the value from curve using the message index.
     auto message = *iterator;
     T value = this->getVariable<T>(message, variable_name);
@@ -153,10 +145,8 @@ __device__ T MessageList::getVariable(MessageList::iterator iterator, const char
 */
 template<typename T, MessageList::size_type N>
 __device__ T MessageList::getVariable(MessageList::Message message, const char(&variable_name)[N]) {
-
     // Ensure that the message is within bounds.
     if(message.getIndex() < this->_messageCount){
-
         // get the value from curve using the stored hashes and message index.
         T value = curveGetVariable<T>(variable_name, agent_func_name_hash + messagename_inp_hash, message.getIndex());
         return value;

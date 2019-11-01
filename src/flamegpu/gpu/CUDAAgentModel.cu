@@ -31,7 +31,6 @@ CUDAAgentModel::CUDAAgentModel(const ModelDescription& description) : model_desc
 
     // create new cuda agent and add to the map
     for (it = am.begin(); it != am.end(); it++) {
-
         agent_map.insert(CUDAAgentMap::value_type(it->first, std::unique_ptr<CUDAAgent>(new CUDAAgent(it->second))));
     } // insert into map using value_type
 
@@ -41,7 +40,6 @@ CUDAAgentModel::CUDAAgentModel(const ModelDescription& description) : model_desc
 
     // create new cuda message and add to the map
     for (it_m = mm.begin(); it_m != mm.end(); it_m++) {
-
         message_map.insert(CUDAMessageMap::value_type(it_m->first, std::unique_ptr<CUDAMessage>(new CUDAMessage(it_m->second))));
     }
 
@@ -62,7 +60,6 @@ CUDAAgentModel::CUDAAgentModel(const ModelDescription& description) : model_desc
  * @brief Destroys the CUDAAgentModel object
  */
 CUDAAgentModel::~CUDAAgentModel() {
-
     // unique pointers cleanup by automatically
 }
 
@@ -72,12 +69,10 @@ CUDAAgentModel::~CUDAAgentModel() {
 * @return none
 */
 void CUDAAgentModel::setInitialPopulationData(AgentPopulation& population) {
-
     CUDAAgentMap::iterator it;
     it = agent_map.find(population.getAgentName());
 
     if (it == agent_map.end()) {
-
         throw InvalidCudaAgent();
     }
 
@@ -91,12 +86,10 @@ void CUDAAgentModel::setInitialPopulationData(AgentPopulation& population) {
 * @return none
 */
 void CUDAAgentModel::setPopulationData(AgentPopulation& population) {
-
     CUDAAgentMap::iterator it;
     it = agent_map.find(population.getAgentName());
 
     if (it == agent_map.end()) {
-
         throw InvalidCudaAgent();
     }
 
@@ -105,12 +98,10 @@ void CUDAAgentModel::setPopulationData(AgentPopulation& population) {
 }
 
 void CUDAAgentModel::getPopulationData(AgentPopulation& population) {
-
     CUDAAgentMap::iterator it;
     it = agent_map.find(population.getAgentName());
 
     if (it == agent_map.end()) {
-
         throw InvalidCudaAgent("CUDA agent not found.");
     }
 
@@ -123,7 +114,6 @@ void CUDAAgentModel::getPopulationData(AgentPopulation& population) {
  * (variable has must also be tied to function name using the namespace thing in curve)
 */
 void CUDAAgentModel::step(const Simulation& simulation) {
-
     int nStreams = 1;
     std::string message_name;
     CurveNamespaceHash message_name_inp_hash = 0;
@@ -145,14 +135,12 @@ void CUDAAgentModel::step(const Simulation& simulation) {
 
     /*! for each each sim layer, launch each agent function in its own stream */
     for (unsigned int i = 0; i < simulation.getLayerCount(); i++) {
-
         const FunctionDescriptionVector& functions = simulation.getFunctionsAtLayer(i);
 
         int j = 0;
 
         /*! for each func function - Loop through to do all mapping of agent and message variables */
         for (AgentFunctionDescription func_des : functions) {
-
             const CUDAAgent& cuda_agent = getCUDAAgent(func_des.getParent().getName());
 
             // ! check if a function has an input massage
@@ -177,7 +165,6 @@ void CUDAAgentModel::step(const Simulation& simulation) {
         }
         // ! for each func function - Loop through to launch all agent functions
         for (AgentFunctionDescription func_des : functions) {
-
 
             std::string agent_name = func_des.getParent().getName();
             std::string func_name = func_des.getName();
@@ -274,7 +261,6 @@ void CUDAAgentModel::step(const Simulation& simulation) {
 */
 void CUDAAgentModel::init(void) {  // (int argc, char** argv) {
 
-
     cudaError_t cudaStatus;
     int device;
     int device_count;
@@ -284,18 +270,15 @@ void CUDAAgentModel::init(void) {  // (int argc, char** argv) {
     cudaStatus = cudaGetDeviceCount(&device_count);
 
     if (cudaStatus != cudaSuccess) {
-
         throw InvalidCUDAdevice("Error finding CUDA devices!  Do you have a CUDA-capable GPU installed?");
     }
     if (device_count == 0) {
-
         throw InvalidCUDAdevice("Error no CUDA devices found!");
     }
 
     // Select device
     cudaStatus = cudaSetDevice(device);
     if (cudaStatus != cudaSuccess) {
-
         throw InvalidCUDAdevice("Error setting CUDA device!");
     }
 }
@@ -308,7 +291,6 @@ void CUDAAgentModel::init(void) {  // (int argc, char** argv) {
 * @warning not tested
 */
 void CUDAAgentModel::simulate(const Simulation& simulation) {
-
     if (agent_map.size() == 0)
         throw InvalidCudaAgentMapSize("CUDA agent map size is zero"); // recheck if this is really required
 
@@ -325,12 +307,10 @@ void CUDAAgentModel::simulate(const Simulation& simulation) {
 }
 
 const CUDAAgent& CUDAAgentModel::getCUDAAgent(std::string agent_name) const {
-
     CUDAAgentMap::const_iterator it;
     it = agent_map.find(agent_name);
 
     if (it == agent_map.end()) {
-
         throw InvalidCudaAgent("CUDA agent not found.");
     }
 
@@ -338,12 +318,10 @@ const CUDAAgent& CUDAAgentModel::getCUDAAgent(std::string agent_name) const {
 }
 
 const CUDAMessage& CUDAAgentModel::getCUDAMessage(std::string message_name) const {
-
     CUDAMessageMap::const_iterator it;
     it = message_map.find(message_name);
 
     if (it == message_map.end()) {
-
         throw InvalidCudaMessage("CUDA message not found.");
     }
 

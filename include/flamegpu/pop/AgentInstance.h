@@ -48,7 +48,6 @@ template <typename T> void AgentInstance::setVariable(std::string variable_name,
 }
 
 template <typename T>  const T AgentInstance::getVariable(std::string variable_name) {
-
     // todo check that the variable exists
     GenericMemoryVector& v = agent_state_memory.getMemoryVector(variable_name);
 

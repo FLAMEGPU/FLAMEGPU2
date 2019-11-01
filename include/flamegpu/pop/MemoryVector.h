@@ -42,7 +42,6 @@ class GenericMemoryVector{
 template <typename T>
 class MemoryVector : public GenericMemoryVector {
 
-
  public:
 
     MemoryVector() : GenericMemoryVector(), type(typeid(T)) {
@@ -70,17 +69,14 @@ class MemoryVector : public GenericMemoryVector {
     }
 
     virtual void* getVectorPtr() {
-
         return static_cast<void*>(&vec);
     }
 
     virtual MemoryVector<T>* clone() const {
-
         return (new MemoryVector<T>());
     }
 
     virtual void resize(unsigned int s) {
-
         vec.resize(s);
     }
 
@@ -91,7 +87,6 @@ class MemoryVector : public GenericMemoryVector {
 };
 
 template <typename T> std::vector<T>& GenericMemoryVector::getVector(){
-
     if (getType() != typeid(T))
         throw InvalidVarType("Wrong variable type getting agent data vector");
 
@@ -102,7 +97,6 @@ template <typename T> std::vector<T>& GenericMemoryVector::getVector(){
 }
 
 template <typename T> std::vector<T> GenericMemoryVector::getVectorIteratorAt(unsigned int i){
-
     // return an iterator at correct position
     std::vector<T>& v = getVector<T>();
     return (v.begin() + i);

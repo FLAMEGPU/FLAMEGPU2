@@ -9,7 +9,6 @@
  * For example multiple objects may which to request that curve is initialised. This class will ensure that this function call is only made once the first time that a cuRVEInstance is required.
  */
 class cuRVEInstance {
-
  private:
 
     /** @brief    Default constructor.    

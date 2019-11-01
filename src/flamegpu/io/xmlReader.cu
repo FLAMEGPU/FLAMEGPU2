@@ -24,7 +24,6 @@ xmlReader::xmlReader(const ModelDescription &model, const char* input) : StateRe
 * \brief parses the xml file
 */
 int xmlReader::parse() {
-
     tinyxml2::XMLDocument doc;
 
     tinyxml2::XMLError errorId = doc.LoadFile(inputFile.c_str());
@@ -45,7 +44,6 @@ int xmlReader::parse() {
     XMLCheckResult(errorId);
     
     for (pElement = pRoot->FirstChildElement("xagent"); pElement != nullptr; pElement = pElement->NextSiblingElement("xagent")) {
-
         if (pElement == nullptr)
             return tinyxml2::XML_ERROR_PARSING_ELEMENT;
 
@@ -56,7 +54,6 @@ int xmlReader::parse() {
         AgentInstance instance = model_description_.getAgentPopulation(agentName).getNextInstance("default");
 
         for (MemoryMap::const_iterator iter = m.begin(); iter != m.end(); iter++) {
-
             float outFloat;
             double outDouble;
             int outInt;

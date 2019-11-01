@@ -17,7 +17,6 @@ SimulationLayer::SimulationLayer(Simulation& sim, const std::string name) : laye
 }
 
 SimulationLayer::~SimulationLayer(void) {
-
 }
 
 // /**
@@ -45,16 +44,13 @@ SimulationLayer::~SimulationLayer(void) {
 * @param function name of type string
 */
 void SimulationLayer::addAgentFunction(const std::string name) {
-
     bool found = false;
     AgentMap::const_iterator it;
     const AgentMap& agents = simulation.getModelDescritpion().getAgentMap();
 
     // check agent function exists
     for (it = agents.begin(); it != agents.end(); it++) {
-
         if (it->second.hasAgentFunction(name)) {
-
             // Search the function map for current agent to see if the agent function exists (it should do the above function has confirmed this)
             const FunctionMap& funcs = it->second.getFunctionMap();
             FunctionMap::const_iterator pos = funcs.find(name);
@@ -75,7 +71,6 @@ void SimulationLayer::addAgentFunction(const std::string name) {
 * @note  may change this to add an arg indicating the layer number
 */
 const FunctionDescriptionVector& SimulationLayer::getAgentFunctions() const {
-
     return functions;
 }
 

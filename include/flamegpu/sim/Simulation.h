@@ -17,7 +17,6 @@ typedef std::vector<std::reference_wrapper<SimulationLayer>> SimulationLayerVect
  * A much nice user method of specifying layer order is required!
  */
 class Simulation {
-
  public:
     Simulation(const ModelDescription& model);
     ~Simulation(void);

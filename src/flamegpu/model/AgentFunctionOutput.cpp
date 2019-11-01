@@ -15,7 +15,6 @@ AgentFunctionOutput::AgentFunctionOutput(const std::string output_message_name):
 }
 
 AgentFunctionOutput::~AgentFunctionOutput() {
-
 }
 
 const std::string AgentFunctionOutput::getMessageName() const{

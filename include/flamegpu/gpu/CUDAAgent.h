@@ -33,7 +33,6 @@ typedef std::pair<const std::string, std::unique_ptr<CUDAAgentStateList>> CUDASt
  * that at runtime a variable name can be related to a unique array of data on the device. It works like a traditional hashmap however the same hashing is used for all states that an agent can be in (as agents have the same variables regardless of state).
  */
 class CUDAAgent {
-
  public:
     CUDAAgent(const AgentDescription& description);
     virtual ~CUDAAgent(void);
