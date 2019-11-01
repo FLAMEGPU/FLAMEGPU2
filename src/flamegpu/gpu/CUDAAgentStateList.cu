@@ -24,13 +24,11 @@
 * @brief populates CUDA agent map
 */
 CUDAAgentStateList::CUDAAgentStateList(CUDAAgent& cuda_agent) : agent(cuda_agent) {
-
     // allocate state lists
     allocateDeviceAgentList(d_list);
     allocateDeviceAgentList(d_swap_list);
     if (agent.getAgentDescription().requiresAgentCreation())
         allocateDeviceAgentList(d_new_list);
-
 }
 
 /**
@@ -73,10 +71,10 @@ void CUDAAgentStateList::allocateDeviceAgentList(CUDAMemoryMap &memory_map) {
 
 #ifdef UNIFIED_GPU_MEMORY
         // unified memory allocation
-        gpuErrchk(cudaMallocManaged((void**)&d_ptr, var_size * agent.getMaximumListSize()))
+        gpuErrchk(cudaMallocManaged(reinterpret_cast<void**>(&d_ptr), var_size * agent.getMaximumListSize()))
 #else
         // non unified memory allocation
-        gpuErrchk(cudaMalloc((void**)&d_ptr, var_size * agent.getMaximumListSize()));
+        gpuErrchk(cudaMalloc(reinterpret_cast<void**>(&d_ptr), var_size * agent.getMaximumListSize()));
 #endif
 
         // store the pointer in the map

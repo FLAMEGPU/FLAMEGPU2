@@ -226,7 +226,7 @@ __device__ float curveGetVariableByHash(const CurveVariableHash variable_hash, u
     }
     else {
         // get a pointer to the specific variable by offsetting by the provided index
-        T *value_ptr = (T*)curveGetVariablePtrByHash(variable_hash, offset);
+        T *value_ptr = reinterpret_cast<T*>(curveGetVariablePtrByHash(variable_hash, offset));
 
         if (value_ptr)
             return *value_ptr;
@@ -265,7 +265,7 @@ __device__ void curveSetVariableByHash(const CurveVariableHash variable_hash, T 
     }
     else {
         size_t offset = index *sizeof(T);
-        T *value_ptr = (T*)curveGetVariablePtrByHash(variable_hash, offset);
+        T *value_ptr = reinterpret_cast<T*>(curveGetVariablePtrByHash(variable_hash, offset));
         *value_ptr = variable;
     }
 }

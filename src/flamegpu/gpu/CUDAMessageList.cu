@@ -69,10 +69,10 @@ void CUDAMessageList::allocateDeviceMessageList(CUDAMsgMap &memory_map) {
 
 #ifdef UNIFIED_GPU_MEMORY
         // unified memory allocation
-        gpuErrchk(cudaMallocManaged((void**)&d_ptr, var_size *  message.getMaximumListSize()))
+        gpuErrchk(cudaMallocManaged(reinterpret_cast<void**>(&d_ptr), var_size *  message.getMaximumListSize()))
 #else
         // non unified memory allocation
-        gpuErrchk(cudaMalloc((void**)&d_ptr, var_size * message.getMaximumListSize()));
+        gpuErrchk(cudaMalloc(reinterpret_cast<void**>(&d_ptr), var_size * message.getMaximumListSize()));
 #endif
 
         // store the pointer in the map

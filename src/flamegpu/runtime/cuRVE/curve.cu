@@ -102,11 +102,11 @@ __host__ void curveInit() {
     CUDA_SAFE_CALL(cudaMemcpyToSymbol(d_namespace, &h_namespace, sizeof(unsigned int)));
 
     // get a host pointer to d_hashes and d_variables
-    CUDA_SAFE_CALL(cudaGetSymbolAddress((void **)&_d_hashes, d_hashes));
-    CUDA_SAFE_CALL(cudaGetSymbolAddress((void **)&_d_variables, d_variables));
-    CUDA_SAFE_CALL(cudaGetSymbolAddress((void **)&_d_states, d_states));
-    CUDA_SAFE_CALL(cudaGetSymbolAddress((void **)&_d_lengths, d_lengths));
-    CUDA_SAFE_CALL(cudaGetSymbolAddress((void **)&_d_sizes, d_sizes));
+    CUDA_SAFE_CALL(cudaGetSymbolAddress(reinterpret_cast<void **>(&_d_hashes), d_hashes));
+    CUDA_SAFE_CALL(cudaGetSymbolAddress(reinterpret_cast<void **>(&_d_variables), d_variables));
+    CUDA_SAFE_CALL(cudaGetSymbolAddress(reinterpret_cast<void **>(&_d_states), d_states));
+    CUDA_SAFE_CALL(cudaGetSymbolAddress(reinterpret_cast<void **>(&_d_lengths), d_lengths));
+    CUDA_SAFE_CALL(cudaGetSymbolAddress(reinterpret_cast<void **>(&_d_sizes), d_sizes));
 
     // set values of hash table to 0 on host and device
     memset(h_hashes, 0,  sizeof(unsigned int)*CURVE_MAX_VARIABLES);
@@ -152,11 +152,11 @@ __host__ CurveVariable curveRegisterVariableByHash(CurveVariableHash variable_ha
     h_hashes[i] = variable_hash;
 
     // get a host pointer to d_hashes and d_variables
-    CUDA_SAFE_CALL(cudaGetSymbolAddress((void **)&_d_hashes, d_hashes));
-    CUDA_SAFE_CALL(cudaGetSymbolAddress((void **)&_d_variables, d_variables));
-    CUDA_SAFE_CALL(cudaGetSymbolAddress((void **)&_d_states, d_states));
-    CUDA_SAFE_CALL(cudaGetSymbolAddress((void **)&_d_lengths, d_lengths));
-    CUDA_SAFE_CALL(cudaGetSymbolAddress((void **)&_d_sizes, d_sizes));
+    CUDA_SAFE_CALL(cudaGetSymbolAddress(reinterpret_cast<void **>(&_d_hashes), d_hashes));
+    CUDA_SAFE_CALL(cudaGetSymbolAddress(reinterpret_cast<void **>(&_d_variables), d_variables));
+    CUDA_SAFE_CALL(cudaGetSymbolAddress(reinterpret_cast<void **>(&_d_states), d_states));
+    CUDA_SAFE_CALL(cudaGetSymbolAddress(reinterpret_cast<void **>(&_d_lengths), d_lengths));
+    CUDA_SAFE_CALL(cudaGetSymbolAddress(reinterpret_cast<void **>(&_d_sizes), d_sizes));
 
     // copy hash to device
     CUDA_SAFE_CALL(cudaMemcpy(&_d_hashes[i], &h_hashes[i], sizeof(unsigned int), cudaMemcpyHostToDevice));
@@ -204,11 +204,11 @@ __host__ void curveUnregisterVariableByHash(CurveVariableHash variable_hash) {
     }
 
     // get a host pointer to d_hashes and d_variables
-    CUDA_SAFE_CALL(cudaGetSymbolAddress((void **)&_d_hashes, d_hashes));
-    CUDA_SAFE_CALL(cudaGetSymbolAddress((void **)&_d_variables, d_variables));
-    CUDA_SAFE_CALL(cudaGetSymbolAddress((void **)&_d_states, d_states));
-    CUDA_SAFE_CALL(cudaGetSymbolAddress((void **)&_d_lengths, d_lengths));
-    CUDA_SAFE_CALL(cudaGetSymbolAddress((void **)&_d_sizes, d_sizes));
+    CUDA_SAFE_CALL(cudaGetSymbolAddress(reinterpret_cast<void **>(&_d_hashes), d_hashes));
+    CUDA_SAFE_CALL(cudaGetSymbolAddress(reinterpret_cast<void **>(&_d_variables), d_variables));
+    CUDA_SAFE_CALL(cudaGetSymbolAddress(reinterpret_cast<void **>(&_d_states), d_states));
+    CUDA_SAFE_CALL(cudaGetSymbolAddress(reinterpret_cast<void **>(&_d_lengths), d_lengths));
+    CUDA_SAFE_CALL(cudaGetSymbolAddress(reinterpret_cast<void **>(&_d_sizes), d_sizes));
 
     // clear hash location on host and copy hash to device
     h_hashes[cv] = 0;
@@ -243,7 +243,7 @@ __host__ void curveDisableVariableByHash(CurveVariableHash variable_hash) {
         return;
     }
 
-    CUDA_SAFE_CALL(cudaGetSymbolAddress((void **)&_d_states, d_states));
+    CUDA_SAFE_CALL(cudaGetSymbolAddress(reinterpret_cast<void **>(&_d_states), d_states));
     h_states[cv] = VARIABLE_DISABLED;
     CUDA_SAFE_CALL(cudaMemcpy(&_d_states[cv], &h_states[cv], sizeof(int), cudaMemcpyHostToDevice));
 }
@@ -258,7 +258,7 @@ __host__ void curveEnableVariableByHash(CurveVariableHash variable_hash) {
         return;
     }
 
-    CUDA_SAFE_CALL(cudaGetSymbolAddress((void **)&_d_states, d_states));
+    CUDA_SAFE_CALL(cudaGetSymbolAddress(reinterpret_cast<void **>(&_d_states), d_states));
     h_states[cv] = VARIABLE_ENABLED;
     CUDA_SAFE_CALL(cudaMemcpy(&_d_states[cv], &h_states[cv], sizeof(int), cudaMemcpyHostToDevice));
 }
