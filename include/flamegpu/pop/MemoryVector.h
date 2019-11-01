@@ -96,21 +96,21 @@ template <typename T> std::vector<T>& GenericMemoryVector::getVector(){
     if (getType() != typeid(T))
         throw InvalidVarType("Wrong variable type getting agent data vector");
 
-    //must cast the vector as the correct type
+    // must cast the vector as the correct type
     std::vector<T> *t_v = static_cast<std::vector<T>*>(getVectorPtr());
-    //return reference
+    // return reference
     return *t_v;
 }
 
 template <typename T> std::vector<T> GenericMemoryVector::getVectorIteratorAt(unsigned int i){
 
-    //return an iterator at correct position
+    // return an iterator at correct position
     std::vector<T>& v = getVector<T>();
     return (v.begin() + i);
 }
 
 
-//use this to store default values for a population, must be here to register the correct types at compile time
+// use this to store default values for a population, must be here to register the correct types at compile time
 /*! Create a map with std::strings for keys (indexes) and GenericAgentMemoryVector object. A smart pointer has been used to automaticaly manage the object*/
 typedef std::map<const std::string, std::unique_ptr<GenericMemoryVector>> StateMemoryMap;
 

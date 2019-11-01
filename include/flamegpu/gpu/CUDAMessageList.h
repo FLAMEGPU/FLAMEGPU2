@@ -16,9 +16,9 @@
 #include <map>
 
 class CUDAMessage;
-//class AgentStateMemory;
+// class AgentStateMemory;
 
-//#define UNIFIED_GPU_MEMORY
+// #define UNIFIED_GPU_MEMORY
 
 typedef std::map <std::string, void*> CUDAMsgMap;
 typedef std::pair <std::string, void*> CUDAMsgMapPair;
@@ -49,7 +49,7 @@ private:
     CUDAMsgMap d_swap_list; // may not need this later
     CUDAMsgMap d_new_list;
 
-    unsigned int current_list_size; //???
+    unsigned int current_list_size; // ???
 
     const CUDAMessage& message;
 };

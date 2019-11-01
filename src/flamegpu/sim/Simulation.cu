@@ -66,7 +66,7 @@ const ModelDescription& Simulation::getModelDescritpion() const
 }
 
 int Simulation::checkArgs(int argc, char** argv) {
-    //Check args
+    // Check args
     printf("FLAMEGPU Console mode\n");
     if (argc < 2)
     {
@@ -83,7 +83,7 @@ int Simulation::checkArgs(int argc, char** argv) {
 */
 void Simulation::initialise(int argc, char** argv)
 {
-    //check input args
+    // check input args
     if (!checkArgs(argc, argv))
         exit(0);
     const char* input = argv[1];
@@ -105,10 +105,10 @@ void Simulation::initialise(StateReader& read__)
  */
 void Simulation::output(int argc, char** argv)
 {
-    //check input args
+    // check input args
     if (!checkArgs(argc, argv))
         exit(0);
-    const char* input =  "finalIteration.xml";//argv[2];
+    const char* input =  "finalIteration.xml";// argv[2];
 
     StateWriter *write__ = WriterFactory::createWriter(model_description, input);
     write__->writeStates();

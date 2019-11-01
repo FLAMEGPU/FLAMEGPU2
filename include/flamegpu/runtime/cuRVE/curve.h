@@ -3,12 +3,12 @@
 
 /**
  * @file   curve.h
- * @author Paul Richmond (p.richmond@sheffield.ac.uk) http://www.paulrichmond.staff.shef.ac.uk/
+ * @author Paul Richmond (p.richmond@sheffield.ac.uk) http:// www.paulrichmond.staff.shef.ac.uk/
  * @date   Feb 2017
  * @brief  Main cuRVE header file
  *
  * The main cuRVE header file for the CUDA Runtime Variable Environment (cuRVE)
- * Based off the following article http://www.gamasutra.com/view/news/127915/InDepth_Quasi_CompileTime_String_Hashing.php
+ * Based off the following article http:// www.gamasutra.com/view/news/127915/InDepth_Quasi_CompileTime_String_Hashing.php
  * \todo Requires vector length table for each variable (or namespace) which is registered. For now no safe checking of vector length is done.
  */
 
@@ -16,24 +16,24 @@
 #include <typeinfo>
 #include <cuda_runtime.h>
 
-#define UNKNOWN_CURVE_VARIABLE     -1                        //!< value returned as a CurveVariable if an API function encounters an error
+#define UNKNOWN_CURVE_VARIABLE     -1                        // !< value returned as a CurveVariable if an API function encounters an error
 
 
 
-typedef int                     CurveVariable;            //!< Typedef for cuRVE variable handle
-typedef unsigned int             CurveVariableHash;        //!< Typedef for cuRVE variable name string hash
-typedef unsigned int             CurveNamespaceHash;        //!< Typedef for cuRVE variable namespace string hash
+typedef int                     CurveVariable;            // !< Typedef for cuRVE variable handle
+typedef unsigned int             CurveVariableHash;        // !< Typedef for cuRVE variable name string hash
+typedef unsigned int             CurveNamespaceHash;        // !< Typedef for cuRVE variable namespace string hash
 
 /**
  * Enumerator for GPU device error code which may be raised by CUDA kernels
  */
 enum curveDeviceError
 {
-    CURVE_DEVICE_ERROR_NO_ERRORS,                //!< No errors raised on the device
-    CURVE_DEVICE_ERROR_UNKNOWN_VARIABLE,        //!< A function has requested an unknown variable or a variable not registered in the current namespace
-    CURVE_DEVICE_ERROR_VARIABLE_DISABLED,        //!< A function has requested a variable which is disabled
-    CURVE_DEVICE_ERROR_UNKNOWN_TYPE,            //!< A function has requested an unknown type or a type not registered in the current namespace
-    CURVE_DEVICE_ERROR_UNKNOWN_LENGTH           //!< A function has requested an unknown vector length or the length not registered in the current namespace
+    CURVE_DEVICE_ERROR_NO_ERRORS,                // !< No errors raised on the device
+    CURVE_DEVICE_ERROR_UNKNOWN_VARIABLE,        // !< A function has requested an unknown variable or a variable not registered in the current namespace
+    CURVE_DEVICE_ERROR_VARIABLE_DISABLED,        // !< A function has requested a variable which is disabled
+    CURVE_DEVICE_ERROR_UNKNOWN_TYPE,            // !< A function has requested an unknown type or a type not registered in the current namespace
+    CURVE_DEVICE_ERROR_UNKNOWN_LENGTH           // !< A function has requested an unknown vector length or the length not registered in the current namespace
 };
 
 /**
@@ -41,9 +41,9 @@ enum curveDeviceError
  */
 enum curveHostError
 {
-    CURVE_ERROR_NO_ERRORS,                        //!< No errors raised by host API functions
-    CURVE_ERROR_UNKNOWN_VARIABLE,                //!< A host API function has requested an unknown variable or a variable not registered in the current namespace
-    CURVE_ERROR_TOO_MANY_VARIABLES                //!< The maximum number of curve variables has been reached
+    CURVE_ERROR_NO_ERRORS,                        // !< No errors raised by host API functions
+    CURVE_ERROR_UNKNOWN_VARIABLE,                // !< A host API function has requested an unknown variable or a variable not registered in the current namespace
+    CURVE_ERROR_TOO_MANY_VARIABLES                // !< The maximum number of curve variables has been reached
 };
 
 extern __device__ curveDeviceError d_curve_error;
@@ -52,7 +52,7 @@ extern curveHostError h_curve_error;
 /* TEMPLATE HASHING FUNCTIONS */
 
 /** @brief Non terminal template structure has function for a constant char array
- *     Use of template meta-programming ensures the compiler can evaluate string hashes at compile time. This reduces constant string variable names to a single 32 bit value. Hashing is based on 'Quasi Compile Time String Hashing' at http://www.altdevblogaday.com/2011/10/27/quasi-compile-time-string-hashing/
+ *     Use of template meta-programming ensures the compiler can evaluate string hashes at compile time. This reduces constant string variable names to a single 32 bit value. Hashing is based on 'Quasi Compile Time String Hashing' at http:// www.altdevblogaday.com/2011/10/27/quasi-compile-time-string-hashing/
  *     Code uses compilation flags for both the host and the CUDA device.
  *  @return a 32 bit cuRVE string variable hash.
  */
@@ -131,7 +131,7 @@ __host__ CurveVariable curveRegisterVariableByHash(CurveVariableHash variable_ha
  *  @param variableName A constant char array (C string) variable name.
  *  @param d_ptr a pointer to the vector which holds the variable of give name
  *  @return CurveVariable Handle of registered variable or UNKNOWN_CURVE_VARIABLE if an error is encountered.
- */// Note: this function was never called
+ */ // Note: this function was never called
 template <unsigned int N, typename T> __host__ CurveVariable curveRegisterVariable(const char(&variableName)[N], void* d_ptr, unsigned int length)
 {
     CurveVariableHash variable_hash = curveVariableHash(variableName);
@@ -144,7 +144,6 @@ template <unsigned int N, typename T> __host__ CurveVariable curveRegisterVariab
 /** @brief Function for un-registering a variable by a CurveVariableHash
 *     Un-registers a variable by removal from a hash table. Recommend using the provided curveUnregisterVariable template function.
 *  @param variable_hash A cuRVE variable string hash from curveVariableHash.
-
 */
 __host__ void curveUnregisterVariableByHash(CurveVariableHash variable_hash);
 
@@ -250,10 +249,10 @@ __device__ float curveGetVariableByHash(const CurveVariableHash variable_hash, u
 {
     size_t offset = index *sizeof(T);
 
-    //do a check on the size as otherwise the value_ptr may eb out of bounds.
+    // do a check on the size as otherwise the value_ptr may eb out of bounds.
     size_t size = curveGetVariableSize(variable_hash);
 
-    //error checking
+    // error checking
     if (size != sizeof(T))
     {
         d_curve_error = CURVE_DEVICE_ERROR_UNKNOWN_TYPE;
@@ -262,7 +261,7 @@ __device__ float curveGetVariableByHash(const CurveVariableHash variable_hash, u
     else
     {
 
-        //get a pointer to the specific variable by offsetting by the provided index
+        // get a pointer to the specific variable by offsetting by the provided index
         T *value_ptr = (T*)curveGetVariablePtrByHash(variable_hash, offset);
 
         if (value_ptr)
@@ -338,7 +337,7 @@ __device__ void curveSetVariable(const char(&variableName)[N], CurveVariableHash
  */
 __device__ void curvePrintLastDeviceError(const char* file, const char* function, const int line);
 
-#define curveReportLastDeviceError() { curvePrintLastDeviceError(__FILE__, __FUNCTION__, __LINE__); }    //! Prints the last reported device error using the file, function and line number of the call to this macro
+#define curveReportLastDeviceError() { curvePrintLastDeviceError(__FILE__, __FUNCTION__, __LINE__); }    // ! Prints the last reported device error using the file, function and line number of the call to this macro
 
 /** @brief Host API function for printing the last host error
  *     Prints the last host API error using the provided source location information. The preferred method for printing is to use the curveReportLastHostError macro which inserts source location information.
@@ -348,7 +347,7 @@ __device__ void curvePrintLastDeviceError(const char* file, const char* function
  */
 void __host__ curvePrintLastHostError(const char* file, const char* function, const int line);
 
-#define curveReportLastHostError() { curvePrintLastHostError(__FILE__, __FUNCTION__, __LINE__); }        //! Prints the last reported host API error using the file, function and line number of the call to this macro
+#define curveReportLastHostError() { curvePrintLastHostError(__FILE__, __FUNCTION__, __LINE__); }        // ! Prints the last reported host API error using the file, function and line number of the call to this macro
 
 /** @brief Host API function for printing the last host or device error
  *     Prints the last device or host API error (or both) using the provided source location information. The preferred method for printing is to use the curveReportErrors macro which inserts source location information.
@@ -358,7 +357,7 @@ void __host__ curvePrintLastHostError(const char* file, const char* function, co
  */
 void __host__ curvePrintErrors(const char* file, const char* function, const int line);
 
-#define curveReportErrors() { curvePrintErrors(__FILE__, __FUNCTION__, __LINE__); }                        //! Prints the last reported device or host API error using the file, function and line number of the call to this macro
+#define curveReportErrors() { curvePrintErrors(__FILE__, __FUNCTION__, __LINE__); }                        // ! Prints the last reported device or host API error using the file, function and line number of the call to this macro
 
 /** @brief Device API function for returning a constant string error description
  *     Returns an error description given a curveDeviceError error code.
@@ -388,4 +387,4 @@ __host__ curveHostError curveGetLastHostError();
  */
 __host__ void curveClearErrors();
 
-#endif //__CURVE_RUNTIME_H__
+#endif // __CURVE_RUNTIME_H__

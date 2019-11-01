@@ -23,28 +23,28 @@ SimulationLayer::~SimulationLayer(void)
 }
 
 
-///**
-//* @return find and execute the function
-//* @note assuming we know the return type
-//* example of usage: callFunc<void>("move"); <-- executes move
-//*/
-//template<typename T,typename... Args>
-//T SimulationLayer::callFunc(std::string name, Args&&... args)
-//{
-//
+// /**
+// * @return find and execute the function
+// * @note assuming we know the return type
+// * example of usage: callFunc<void>("move"); <-- executes move
+// */
+// template<typename T,typename... Args>
+// T SimulationLayer::callFunc(std::string name, Args&&... args)
+// {
+// 
 //    auto iter = functionPointer.find(name);
 //    if(iter == functionPointer.end())
 //    {
 //        throw InvalidAgentFunc("Agent Function name not valid ");
 //    }
-//
+// 
 //    auto v = iter->second;
-//
+// 
 //    auto typeCast = (T(*)(Args ...))(iter->second);
-//
+// 
 //    /** @todo checking if the func types are the same? */
 //    return typeCast(std::forward<Args>(args)...);
-//}
+// }
 
 
 /**
@@ -56,15 +56,15 @@ void SimulationLayer::addAgentFunction(const std::string name)
     AgentMap::const_iterator it;
     const AgentMap& agents = simulation.getModelDescritpion().getAgentMap();
 
-    //check agent function exists
+    // check agent function exists
     for (it = agents.begin(); it != agents.end(); it++)
     {
         if (it->second.hasAgentFunction(name))
         {
-            //Search the function map for current agent to see if the agent function exists (it should do the above function has confirmed this)
+            // Search the function map for current agent to see if the agent function exists (it should do the above function has confirmed this)
             const FunctionMap& funcs = it->second.getFunctionMap();
             FunctionMap::const_iterator pos = funcs.find(name);
-            //If found then add function the AgentFunctionDescription to the function vector for this layer
+            // If found then add function the AgentFunctionDescription to the function vector for this layer
             if (pos != funcs.end())
                 functions.push_back(pos->second);
             found = true;

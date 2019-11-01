@@ -4,11 +4,11 @@
 #include <vector>
 #include <string.h>
 
-//include class dependencies
+// include class dependencies
 #include <flamegpu/sim/SimulationLayer.h>
 
 
-//forward declare dependencies from other modules
+// forward declare dependencies from other modules
 class ModelDescription;
 class StateReader;
 
@@ -33,8 +33,8 @@ public:
 
     int checkArgs(int argc, char** argv);
     
-    void initialise(int argc, char** argv); //void initialise(const char * input);
-    //void initialise(StateReader& reader);
+    void initialise(int argc, char** argv); // void initialise(const char * input);
+    // void initialise(StateReader& reader);
     void output(int argc, char** argv);
 
 

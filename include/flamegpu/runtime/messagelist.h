@@ -12,14 +12,14 @@
 
 
 #include <iterator>
-#include <flamegpu/gpu/CUDAErrorChecking.h>            //required for CUDA error handling functions
+#include <flamegpu/gpu/CUDAErrorChecking.h>            // required for CUDA error handling functions
 #include "cuRVE/curve.h" // @todo migrate
 #include <flamegpu/exception/FGPUException.h>
 
 
 using namespace std;
 
-//TODO: Some example code of the handle class and an example function
+// TODO: Some example code of the handle class and an example function
 
 class MessageList;  // Forward declaration (class defined below)
 
@@ -78,11 +78,11 @@ public:
         return _messageCount;
     }
 
-    inline __host__ __device__ iterator begin(void) //const
+    inline __host__ __device__ iterator begin(void) // const
     {
         return iterator(*this, start_);
     }
-    inline __host__ __device__ iterator end(void) //const
+    inline __host__ __device__ iterator end(void) // const
     {
         return iterator(*this, start_ + size());
     }
@@ -150,7 +150,7 @@ private:
 template<typename T, MessageList::size_type N>
 __device__ T MessageList::getVariable(MessageList::iterator iterator, const char(&variable_name)[N])
 {
-    //get the value from curve using the message index.
+    // get the value from curve using the message index.
     auto message = *iterator;
     T value = this->getVariable<T>(message, variable_name);
     return value;

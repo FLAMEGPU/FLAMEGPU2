@@ -71,7 +71,7 @@ const InputsMap & AgentFunctionDescription::getInput()
 
 const OutputsMap & AgentFunctionDescription::getOutput()
 {
-    //if (outputs != NULL)
+    // if (outputs != NULL)
         return outputs;
 }
 
@@ -113,7 +113,7 @@ FLAMEGPU_AGENT_FUNCTION_POINTER* AgentFunctionDescription::getFunction() const
 
 void AgentFunctionDescription::setParent(AgentDescription& agent)
 {
-    //check to make sure it is not owened by any other object
+    // check to make sure it is not owened by any other object
     if (parent != NULL)
         throw InvalidOperation("This object is already owned by another agent description");
 
@@ -124,12 +124,12 @@ const AgentDescription& AgentFunctionDescription::getParent() const
 {
     if (parent==NULL)
         throw InvalidOperation("Does not belong to a model object");
-    return *parent;//&(*parent);
+    return *parent;// &(*parent);
 }
 
 void AgentFunctionDescription::setInputChild(AgentFunctionInput& input)
 {
-    //check to make sure it is not owened by any other object
+    // check to make sure it is not owened by any other object
     if (inputChild != NULL)
         throw InvalidOperation("This object is already owned by another agent description");
 
@@ -145,7 +145,7 @@ const AgentFunctionInput& AgentFunctionDescription::getInputChild() const
 
 void AgentFunctionDescription::setOutputChild(AgentFunctionOutput& output)
 {
-    //check to make sure it is not owened by any other object
+    // check to make sure it is not owened by any other object
     if (outputChild != NULL)
         throw InvalidOperation("This object is already owned by another agent description");
 

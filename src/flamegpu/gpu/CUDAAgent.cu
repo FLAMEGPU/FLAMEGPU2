@@ -61,22 +61,22 @@ const AgentDescription& CUDAAgent::getAgentDescription() const
 */
 void CUDAAgent::setInitialPopulationData(const AgentPopulation& population)
 {
-    //check that the initial population data has not already been set
+    // check that the initial population data has not already been set
     if (!state_map.empty())
         throw InvalidPopulationData("Error: Initial population data already set");
 
-    //set the maximum population state size
+    // set the maximum population state size
     max_list_size = population.getMaximumStateListCapacity();
 
-    //Make sure population uses same agent description as was used to initialise the agent CUDAAgent
+    // Make sure population uses same agent description as was used to initialise the agent CUDAAgent
     if (&(population.getAgentDescription()) != &agent_description)
         throw InvalidPopulationData("Error: setInitialPopulationData population has a different agent description to that which was used to initialise the CUDAAgent");
 
-    //create map of device state lists by traversing the state list
+    // create map of device state lists by traversing the state list
     const StateMap& sm = agent_description.getStateMap();
     for(const StateMapPair& s: sm)
     {
-        //allocate memory for each state list by creating a new Agent State List
+        // allocate memory for each state list by creating a new Agent State List
         state_map.insert(CUDAStateMap::value_type(s.first, std::unique_ptr<CUDAAgentStateList>( new CUDAAgentStateList(*this))));
     }
 
@@ -92,15 +92,15 @@ void CUDAAgent::setInitialPopulationData(const AgentPopulation& population)
 */
 void CUDAAgent::setPopulationData(const AgentPopulation& population)
 {
-    //check that the gpu state lists have been initialised by a previous call to setInitialPopulationData
+    // check that the gpu state lists have been initialised by a previous call to setInitialPopulationData
     if (state_map.empty())
         throw InvalidPopulationData("Error: Initial population data not set. Have you called setInitialPopulationData?");
 
-    //check that the population maximums do not exceed the current maximum (as their will not be enough GPU memory to hold it)
+    // check that the population maximums do not exceed the current maximum (as their will not be enough GPU memory to hold it)
     if (population.getMaximumStateListCapacity() > max_list_size)
         throw InvalidPopulationData("Error: Maximum population size exceeds that of the initial population data?");
 
-    //Make sure population uses same agent description as was used to initialise the agent CUDAAgent
+    // Make sure population uses same agent description as was used to initialise the agent CUDAAgent
     const std::string agent_name = agent_description.getName();
     if (&(population.getAgentDescription()) != &agent_description)
         throw InvalidPopulationData("Error: setPopulationData population has a different agent description to that which was used to initialise the CUDAAgent");
@@ -113,7 +113,7 @@ void CUDAAgent::setPopulationData(const AgentPopulation& population)
     const StateMap& sm = agent_description.getStateMap();
     for (const StateMapPair& s : sm)
     {
-        //get an associated CUDA statemap pair
+        // get an associated CUDA statemap pair
         CUDAStateMap::iterator i = state_map.find(s.first);
 
         /**check that the CUDAAgentStateList was found (should ALWAYS be the case)*/
@@ -121,7 +121,7 @@ void CUDAAgent::setPopulationData(const AgentPopulation& population)
 
             throw InvalidMapEntry("Error: failed to find memory allocated for a state. This should never happen!");
 
-        //copy the data from the population state memory to the state_maps CUDAAgentStateList
+        // copy the data from the population state memory to the state_maps CUDAAgentStateList
         i->second->setAgentData(population.getReadOnlyStateMemory(i->first));
     }
 
@@ -131,15 +131,15 @@ void CUDAAgent::setPopulationData(const AgentPopulation& population)
 
 void CUDAAgent::getPopulationData(AgentPopulation& population)
 {
-    //check that the gpu state lists have been initialised by a previous call to setInitialPopulationData
+    // check that the gpu state lists have been initialised by a previous call to setInitialPopulationData
     if (state_map.empty())
         throw InvalidPopulationData("Error: Initial population data not set. Have you called setInitialPopulationData?");
 
-    //check that the population maximums do not exceed the current maximum (as their will not be enough GPU memory to hold it)
+    // check that the population maximums do not exceed the current maximum (as their will not be enough GPU memory to hold it)
     if (population.getMaximumStateListCapacity() < max_list_size)
         throw InvalidPopulationData("Error: Maximum population size is not large enough for CUDAAgent");
 
-    //Make sure population uses same agent description as was used to initialise the agent CUDAAgent
+    // Make sure population uses same agent description as was used to initialise the agent CUDAAgent
     const std::string agent_name = agent_description.getName();
     if (&(population.getAgentDescription()) != &agent_description)
         throw InvalidPopulationData("Error: getPopulationData population has a different agent description to that which was used to initialise the CUDAAgent");
@@ -149,7 +149,7 @@ void CUDAAgent::getPopulationData(AgentPopulation& population)
     const StateMap& sm = agent_description.getStateMap();
     for (const StateMapPair& s : sm)
     {
-        //get an associated CUDA statemap pair
+        // get an associated CUDA statemap pair
         CUDAStateMap::iterator i = state_map.find(s.first);
 
         /**check that the CUDAAgentStateList was found (should ALWAYS be the case)*/
@@ -157,7 +157,7 @@ void CUDAAgent::getPopulationData(AgentPopulation& population)
 
             throw InvalidMapEntry("Error: failed to find memory allocated for a state. This should never happen!");
 
-        //copy the data from the population state memory to the state_maps CUDAAgentStateList
+        // copy the data from the population state memory to the state_maps CUDAAgentStateList
         i->second->getAgentData(population.getStateMemory(i->first));
     }
 
@@ -183,7 +183,7 @@ unsigned int CUDAAgent::getMaximumListSize() const
 */
 void CUDAAgent::zeroAllStateVariableData()
 {
-    //loop through state maps and reset the values
+    // loop through state maps and reset the values
     for (CUDAStateMapPair& s : state_map)
     {
         s.second->zeroAgentData();
@@ -194,7 +194,7 @@ void CUDAAgent::zeroAllStateVariableData()
 // this is done for all the variables for now.
 void CUDAAgent::mapRuntimeVariables(const AgentFunctionDescription& func) const
 {
-    //check the cuda agent state map to find the correct state list for functions starting state
+    // check the cuda agent state map to find the correct state list for functions starting state
     CUDAStateMap::const_iterator sm = state_map.find(func.getInitialState());
 
     if (sm == state_map.end())
@@ -202,13 +202,13 @@ void CUDAAgent::mapRuntimeVariables(const AgentFunctionDescription& func) const
         throw InvalidCudaAgentState();
     }
 
-    //loop through the agents variables to map each variable name using cuRVE
+    // loop through the agents variables to map each variable name using cuRVE
     for (MemoryMapPair mmp : agent_description.getMemoryMap())
     {
-        //get a device pointer for the agent variable name
+        // get a device pointer for the agent variable name
         void* d_ptr = sm->second->getAgentListVariablePointer(mmp.first);
 
-        //map using curve
+        // map using curve
         CurveVariableHash var_hash = curveVariableRuntimeHash(mmp.first.c_str());
         CurveVariableHash agent_hash = curveVariableRuntimeHash(func.getParent().getName().c_str());
         CurveVariableHash func_hash = curveVariableRuntimeHash(func.getName().c_str());
@@ -227,7 +227,7 @@ void CUDAAgent::mapRuntimeVariables(const AgentFunctionDescription& func) const
 
 void CUDAAgent::unmapRuntimeVariables(const AgentFunctionDescription& func) const
 {
-    //check the cuda agent state map to find the correct state list for functions starting state
+    // check the cuda agent state map to find the correct state list for functions starting state
     CUDAStateMap::const_iterator sm = state_map.find(func.getInitialState());
 
     if (sm == state_map.end())
@@ -235,13 +235,13 @@ void CUDAAgent::unmapRuntimeVariables(const AgentFunctionDescription& func) cons
         throw InvalidCudaAgentState();
     }
 
-    //loop through the agents variables to map each variable name using cuRVE
+    // loop through the agents variables to map each variable name using cuRVE
     for (MemoryMapPair mmp : agent_description.getMemoryMap())
     {
-        //get a device pointer for the agent variable name
-        //void* d_ptr = sm->second->getAgentListVariablePointer(mmp.first);
+        // get a device pointer for the agent variable name
+        // void* d_ptr = sm->second->getAgentListVariablePointer(mmp.first);
 
-        //unmap using curve
+        // unmap using curve
         CurveVariableHash var_hash = curveVariableRuntimeHash(mmp.first.c_str());
         CurveVariableHash agent_hash = curveVariableRuntimeHash(func.getParent().getName().c_str());
         CurveVariableHash func_hash = curveVariableRuntimeHash(func.getName().c_str());

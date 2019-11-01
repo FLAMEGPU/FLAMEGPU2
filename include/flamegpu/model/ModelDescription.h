@@ -18,7 +18,7 @@
 #include <typeinfo>
 
 
-//include class dependencies
+// include class dependencies
 #include <flamegpu/model/AgentDescription.h>
 #include <flamegpu/model/MessageDescription.h>
 #include <flamegpu/pop/AgentPopulation.h>
@@ -50,7 +50,7 @@ public:
 
     const MessageMap& getMessageMap() const;
 
-    //const PopulationMap& getPopulationMap() const;
+    // const PopulationMap& getPopulationMap() const;
 
 private:
     std::string name;
@@ -58,7 +58,7 @@ private:
     MessageMap messages;
     PopulationMap population;
 
-    //function map removed. This belongs to agents.
+    // function map removed. This belongs to agents.
 };
 
 

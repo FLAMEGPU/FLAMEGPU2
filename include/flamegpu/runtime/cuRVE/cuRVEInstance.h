@@ -37,5 +37,5 @@ public:
 };
 
 
-#endif //CURVEINSTANCE
+#endif // CURVEINSTANCE
 

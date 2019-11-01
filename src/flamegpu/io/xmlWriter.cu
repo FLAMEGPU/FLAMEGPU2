@@ -8,7 +8,7 @@
  * \todo longer description
  */
 
-#include <tinyxml2/tinyxml2.h>              // downloaded from https://github.com/leethomason/tinyxml2, the list of xml parsers : http://lars.ruoff.free.fr/xmlcpp/
+#include <tinyxml2/tinyxml2.h>              // downloaded from https:// github.com/leethomason/tinyxml2, the list of xml parsers : http:// lars.ruoff.free.fr/xmlcpp/
 #include <flamegpu/exception/FGPUException.h>
 #include <flamegpu/pop/AgentPopulation.h>
 #include "flamegpu/io/xmlWriter.h"

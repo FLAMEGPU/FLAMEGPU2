@@ -11,17 +11,17 @@
  */
 
 
-#include <flamegpu/gpu/CUDAErrorChecking.h>            //required for CUDA error handling functions
+#include <flamegpu/gpu/CUDAErrorChecking.h>            // required for CUDA error handling functions
 #include <flamegpu/runtime/cuRVE/curve.h>
 #include <flamegpu/exception/FGPUException.h>
 #include <flamegpu/runtime/messagelist.h>
 
 
-//TODO: Some example code of the handle class and an example function
-//! FLAMEGPU_API is a singleton class
+// TODO: Some example code of the handle class and an example function
+// ! FLAMEGPU_API is a singleton class
 class FLAMEGPU_API;  // Forward declaration (class defined below)
 
-//! FLAMEGPU function return type
+// ! FLAMEGPU function return type
 enum FLAME_GPU_AGENT_STATUS { ALIVE, DEAD };
 
 /**
@@ -38,7 +38,7 @@ typedef FLAME_GPU_AGENT_STATUS(*FLAMEGPU_AGENT_FUNCTION_POINTER)(FLAMEGPU_API *a
  * return ALIVE;
  *}
  */
-//#define FLAMEGPU_AGENT_FUNCTION(funcName) __device__ FLAME_GPU_AGENT_STATUS funcName(FLAMEGPU_API* FLAMEGPU)
+// #define FLAMEGPU_AGENT_FUNCTION(funcName) __device__ FLAME_GPU_AGENT_STATUS funcName(FLAMEGPU_API* FLAMEGPU)
 
 #define FLAMEGPU_AGENT_FUNCTION(funcName) \
 __device__ FLAME_GPU_AGENT_STATUS funcName ## _impl(FLAMEGPU_API* FLAMEGPU); \
@@ -123,10 +123,10 @@ private:
 
 /******************************************************************************************************* Implementation ********************************************************/
 
-//An example of how the getVariable should work
-//1) Given the string name argument use runtime hashing to get a variable unsigned int (call function in RuntimeHashing.h)
-//2) Call (a new local) getHashIndex function to check the actual index in the hash table for the variable name. Once found we have a pointer to the vector of data for that agent variable
-//3) Using the CUDA thread and block index (threadIdx.x) return the specific agent variable value from the vector
+// An example of how the getVariable should work
+// 1) Given the string name argument use runtime hashing to get a variable unsigned int (call function in RuntimeHashing.h)
+// 2) Call (a new local) getHashIndex function to check the actual index in the hash table for the variable name. Once found we have a pointer to the vector of data for that agent variable
+// 3) Using the CUDA thread and block index (threadIdx.x) return the specific agent variable value from the vector
 // Useful existing code to look at is CUDAAgentStateList setAgentData function
 // Note that this is using the hashing to get a specific pointer for a given variable name. This is exactly what we want to do in the FLAME GPU API class
 
@@ -138,14 +138,14 @@ template<typename T, unsigned int N>
 __device__ T FLAMEGPU_API::getVariable(const char(&variable_name)[N])
 {
 
-    //simple indexing assumes index is the thread number (this may change later)
+    // simple indexing assumes index is the thread number (this may change later)
     unsigned int index =  (blockDim.x * blockIdx.x) + threadIdx.x;
 
 
-    //get the value from curve
+    // get the value from curve
     T value = curveGetVariable<T>(variable_name, agent_func_name_hash , index);
 
-    //return the variable from curve
+    // return the variable from curve
     return value;
 }
 
@@ -158,10 +158,10 @@ template<typename T, unsigned int N>
 __device__ void FLAMEGPU_API::setVariable(const char(&variable_name)[N], T value)
 {
 
-    //simple indexing assumes index is the thread number (this may change later)
+    // simple indexing assumes index is the thread number (this may change later)
     unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
 
-    //set the variable using curve
+    // set the variable using curve
     curveSetVariable<T>(variable_name , agent_func_name_hash,  value, index);
 }
 
@@ -174,14 +174,14 @@ template<typename T, unsigned int N>
 __device__ T FLAMEGPU_API::getMessageVariable(const char(&variable_name)[N])
 {
 
-    //simple indexing assumes index is the thread number (this may change later)
+    // simple indexing assumes index is the thread number (this may change later)
     unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
 
 
-    //get the value from curve
+    // get the value from curve
     T value = curveGetVariable<T>(variable_name, agent_func_name_hash + messagename_inp_hash, index);
 
-    //return the variable from curve
+    // return the variable from curve
     return value;
 }
 
@@ -195,10 +195,10 @@ template<typename T, unsigned int N>
 __device__ void FLAMEGPU_API::setMessageVariable(const char(&variable_name)[N], T value)
 {
 
-    //simple indexing assumes index is the thread number (this may change later)
+    // simple indexing assumes index is the thread number (this may change later)
     unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
 
-    //set the variable using curve
+    // set the variable using curve
     curveSetVariable<T>(variable_name, agent_func_name_hash + messagename_outp_hash, value, index);
 }
 
@@ -214,7 +214,7 @@ __device__ void FLAMEGPU_API::addMessage(const char(&variable_name)[N], T value)
 
     // Todo: checking if the output message type is single or optional?  (d_message_type)
 
-    //set the variable using curve
+    // set the variable using curve
     curveSetVariable<T>(variable_name, agent_func_name_hash + messagename_outp_hash, value, index);
 }
 

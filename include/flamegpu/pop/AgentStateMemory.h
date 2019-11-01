@@ -19,7 +19,7 @@
 #include <memory>
 #include <typeinfo>
 
-//include generic memory vectors
+// include generic memory vectors
 #include <flamegpu/pop/MemoryVector.h>
 
 class AgentPopulation;
@@ -38,16 +38,16 @@ public:
 
     const GenericMemoryVector& getReadOnlyMemoryVector(const std::string variable_name) const;
 
-    const std::type_info& getVariableType(std::string variable_name); //const
+    const std::type_info& getVariableType(std::string variable_name); // const
 
     bool isSameDescription(const AgentDescription& description) const;
 
     void resizeMemoryVectors(unsigned int size);
 
-    //the maximum number of possible agents in this population (same for all state lists)
+    // the maximum number of possible agents in this population (same for all state lists)
     unsigned int getPopulationCapacity() const;
 
-    //the actual number of agents in this state
+    // the actual number of agents in this state
     unsigned int getStateListSize() const;
 
     void overrideStateListSize(unsigned int size);

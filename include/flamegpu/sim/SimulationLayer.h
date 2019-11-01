@@ -4,11 +4,11 @@
 #include <vector>
 #include <map>
 
-//include class dependencies
-//#include "../model//ModelDescription.h"
-//#include "../model/AgentFunctionDescription.h"
+// include class dependencies
+// #include "../model// ModelDescription.h"
+// #include "../model/AgentFunctionDescription.h"
 
-//forward declare dependencies from higher up hierarchy
+// forward declare dependencies from higher up hierarchy
 class Simulation;
 class AgentFunctionDescription;
 
@@ -31,7 +31,7 @@ public:
 
 
 private:
-    const std::string layer_name; //not required: TODO: Remove
+    const std::string layer_name; // not required: TODO: Remove
     Simulation &simulation;
     FunctionDescriptionVector functions;
 

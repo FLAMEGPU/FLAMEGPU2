@@ -2,7 +2,7 @@
 #include <flamegpu/runtime/cuRVE/curve.h>
 #include <assert.h>
 
-#define CURVE_MAX_VARIABLES             32                             //!< Default maximum number of cuRVE variables (must be a power of 2)
+#define CURVE_MAX_VARIABLES             32                             // !< Default maximum number of cuRVE variables (must be a power of 2)
 #define VARIABLE_DISABLED                 0
 #define VARIABLE_ENABLED                 1
 #define NAMESPACE_NONE                     0
@@ -38,18 +38,18 @@ inline void cudaCheckError(cudaError_t error, char* file, char* function, int li
 
 unsigned int h_namespace;
 
-CurveVariableHash h_hashes[CURVE_MAX_VARIABLES];                //Host array of the hash values of registered variables
-void* h_d_variables[CURVE_MAX_VARIABLES];                        //Host array of pointer to device memory addresses for variable storage
-int    h_states[CURVE_MAX_VARIABLES];                                //Host array of the states of registered variables
-size_t h_sizes[CURVE_MAX_VARIABLES];                            //Host array of the sizes of registered variable types (Note: RTTI not supported in CUDA so this is the best we can do for now)
-unsigned int h_lengths[CURVE_MAX_VARIABLES];                    //Host array of the length of registered variables (i.e: vector length)
+CurveVariableHash h_hashes[CURVE_MAX_VARIABLES];                // Host array of the hash values of registered variables
+void* h_d_variables[CURVE_MAX_VARIABLES];                        // Host array of pointer to device memory addresses for variable storage
+int    h_states[CURVE_MAX_VARIABLES];                                // Host array of the states of registered variables
+size_t h_sizes[CURVE_MAX_VARIABLES];                            // Host array of the sizes of registered variable types (Note: RTTI not supported in CUDA so this is the best we can do for now)
+unsigned int h_lengths[CURVE_MAX_VARIABLES];                    // Host array of the length of registered variables (i.e: vector length)
 
 __constant__ CurveNamespaceHash d_namespace;
-__constant__ CurveVariableHash d_hashes[CURVE_MAX_VARIABLES];    //Device array of the hash values of registered variables
-__device__ char* d_variables[CURVE_MAX_VARIABLES];                //Device array of pointer to device memory addresses for variable storage
-__constant__ int d_states[CURVE_MAX_VARIABLES];                    //Device array of the states of registered variables
-__constant__ size_t d_sizes[CURVE_MAX_VARIABLES];                //Device array of the types of registered variables
-__constant__ unsigned int d_lengths[CURVE_MAX_VARIABLES];        //Device array of the length of registered variables (i.e: vector length)
+__constant__ CurveVariableHash d_hashes[CURVE_MAX_VARIABLES];    // Device array of the hash values of registered variables
+__device__ char* d_variables[CURVE_MAX_VARIABLES];                // Device array of pointer to device memory addresses for variable storage
+__constant__ int d_states[CURVE_MAX_VARIABLES];                    // Device array of the states of registered variables
+__constant__ size_t d_sizes[CURVE_MAX_VARIABLES];                // Device array of the types of registered variables
+__constant__ unsigned int d_lengths[CURVE_MAX_VARIABLES];        // Device array of the length of registered variables (i.e: vector length)
 
 __device__ curveDeviceError d_curve_error;
 curveHostError h_curve_error;
@@ -115,11 +115,11 @@ __host__ void curveInit()
     unsigned int* _d_lengths;
     size_t* _d_sizes;
 
-    //namespace
+    // namespace
     h_namespace = NAMESPACE_NONE;
     CUDA_SAFE_CALL(cudaMemcpyToSymbol(d_namespace, &h_namespace, sizeof(unsigned int)));
 
-    //get a host pointer to d_hashes and d_variables
+    // get a host pointer to d_hashes and d_variables
     CUDA_SAFE_CALL(cudaGetSymbolAddress((void **)&_d_hashes, d_hashes));
     CUDA_SAFE_CALL(cudaGetSymbolAddress((void **)&_d_variables, d_variables));
     CUDA_SAFE_CALL(cudaGetSymbolAddress((void **)&_d_states, d_states));
@@ -127,20 +127,20 @@ __host__ void curveInit()
     CUDA_SAFE_CALL(cudaGetSymbolAddress((void **)&_d_sizes, d_sizes));
 
 
-    //set values of hash table to 0 on host and device
+    // set values of hash table to 0 on host and device
     memset(h_hashes, 0,  sizeof(unsigned int)*CURVE_MAX_VARIABLES);
     memset(h_lengths, 0,  sizeof(unsigned int)*CURVE_MAX_VARIABLES);
     memset(h_states, 0,  sizeof(int)*CURVE_MAX_VARIABLES);
     memset(h_sizes, 0,  sizeof(size_t)*CURVE_MAX_VARIABLES);
 
-    //initialise data to 0 on device
+    // initialise data to 0 on device
     CUDA_SAFE_CALL(cudaMemset(_d_hashes, 0, sizeof(unsigned int)*CURVE_MAX_VARIABLES));
     CUDA_SAFE_CALL(cudaMemset(_d_variables, 0, sizeof(void*)*CURVE_MAX_VARIABLES));
     CUDA_SAFE_CALL(cudaMemset(_d_states, VARIABLE_DISABLED, sizeof(int)*CURVE_MAX_VARIABLES));
     CUDA_SAFE_CALL(cudaMemset(_d_lengths, 0, sizeof(unsigned int)*CURVE_MAX_VARIABLES));
     CUDA_SAFE_CALL(cudaMemset(_d_sizes, 0, sizeof(size_t)*CURVE_MAX_VARIABLES));
 
-    //memset the h and d types array
+    // memset the h and d types array
 
     curveClearErrors();
 }
@@ -174,30 +174,30 @@ __host__ CurveVariable curveRegisterVariableByHash(CurveVariableHash variable_ha
     }
     h_hashes[i] = variable_hash;
 
-    //get a host pointer to d_hashes and d_variables
+    // get a host pointer to d_hashes and d_variables
     CUDA_SAFE_CALL(cudaGetSymbolAddress((void **)&_d_hashes, d_hashes));
     CUDA_SAFE_CALL(cudaGetSymbolAddress((void **)&_d_variables, d_variables));
     CUDA_SAFE_CALL(cudaGetSymbolAddress((void **)&_d_states, d_states));
     CUDA_SAFE_CALL(cudaGetSymbolAddress((void **)&_d_lengths, d_lengths));
     CUDA_SAFE_CALL(cudaGetSymbolAddress((void **)&_d_sizes, d_sizes));
 
-    //copy hash to device
+    // copy hash to device
     CUDA_SAFE_CALL(cudaMemcpy(&_d_hashes[i], &h_hashes[i], sizeof(unsigned int), cudaMemcpyHostToDevice));
 
-    //make a host copy of the pointer and copy to the device
+    // make a host copy of the pointer and copy to the device
     h_d_variables[i] = d_ptr;
     CUDA_SAFE_CALL(cudaMemcpy(&_d_variables[i], &h_d_variables[i], sizeof(void*), cudaMemcpyHostToDevice));
 
 
-    //set the state to enabled
+    // set the state to enabled
     h_states[i] = VARIABLE_ENABLED;
     CUDA_SAFE_CALL(cudaMemcpy(&_d_states[i], &h_states[i], sizeof(int), cudaMemcpyHostToDevice));
 
-    //set the size of the data type
+    // set the size of the data type
     h_sizes[i] = size;
     CUDA_SAFE_CALL(cudaMemcpy(&_d_sizes[i], &h_sizes[i], sizeof(size_t), cudaMemcpyHostToDevice));
 
-    //set the length of variable
+    // set the length of variable
     h_lengths[i] = length;
     CUDA_SAFE_CALL(cudaMemcpy(&_d_lengths[i], &h_lengths[i], sizeof(unsigned int), cudaMemcpyHostToDevice));
 
@@ -220,40 +220,40 @@ __host__ void curveUnregisterVariableByHash(CurveVariableHash variable_hash)
 
     CurveVariable cv;
 
-    //get the curve variable
+    // get the curve variable
     cv = curveGetVariableHandle(variable_hash);
 
-    //error checking
+    // error checking
     if (cv == UNKNOWN_CURVE_VARIABLE)
     {
         h_curve_error = CURVE_ERROR_UNKNOWN_VARIABLE;
         return;
     }
 
-    //get a host pointer to d_hashes and d_variables
+    // get a host pointer to d_hashes and d_variables
     CUDA_SAFE_CALL(cudaGetSymbolAddress((void **)&_d_hashes, d_hashes));
     CUDA_SAFE_CALL(cudaGetSymbolAddress((void **)&_d_variables, d_variables));
     CUDA_SAFE_CALL(cudaGetSymbolAddress((void **)&_d_states, d_states));
     CUDA_SAFE_CALL(cudaGetSymbolAddress((void **)&_d_lengths, d_lengths));
     CUDA_SAFE_CALL(cudaGetSymbolAddress((void **)&_d_sizes, d_sizes));
 
-    //clear hash location on host and copy hash to device
+    // clear hash location on host and copy hash to device
     h_hashes[cv] = 0;
     CUDA_SAFE_CALL(cudaMemcpy(&_d_hashes[cv], &h_hashes[cv], sizeof(unsigned int), cudaMemcpyHostToDevice));
 
-    //set a host pointer to null and copy to the device
+    // set a host pointer to null and copy to the device
     h_d_variables[cv] = 0;
     CUDA_SAFE_CALL(cudaMemcpy(&_d_variables[cv], &h_d_variables[cv], sizeof(void*), cudaMemcpyHostToDevice));
 
-    //return the state to disabled
+    // return the state to disabled
     h_states[cv] = VARIABLE_DISABLED;
     CUDA_SAFE_CALL(cudaMemcpy(&_d_states[cv], &h_states[cv], sizeof(int), cudaMemcpyHostToDevice));
 
-    //set the empty size to 0
+    // set the empty size to 0
     h_sizes[cv] = 0;
     CUDA_SAFE_CALL(cudaMemcpy(&_d_sizes[cv], &h_sizes[cv], sizeof(size_t), cudaMemcpyHostToDevice));
 
-    //set the length of variable to 0
+    // set the length of variable to 0
     h_lengths[cv] = 0;
     CUDA_SAFE_CALL(cudaMemcpy(&_d_lengths[cv], &h_lengths[cv], sizeof(unsigned int), cudaMemcpyHostToDevice));
 
@@ -267,7 +267,7 @@ __host__ void curveDisableVariableByHash(CurveVariableHash variable_hash)
     CurveVariable cv = curveGetVariableHandle(variable_hash);
     int* _d_states;
 
-    //error checking
+    // error checking
     if (cv == UNKNOWN_CURVE_VARIABLE)
     {
         h_curve_error = CURVE_ERROR_UNKNOWN_VARIABLE;
@@ -284,7 +284,7 @@ __host__ void curveEnableVariableByHash(CurveVariableHash variable_hash)
     CurveVariable cv = curveGetVariableHandle(variable_hash);
     int* _d_states;
 
-    //error checking
+    // error checking
     if (cv == UNKNOWN_CURVE_VARIABLE)
     {
         h_curve_error = CURVE_ERROR_UNKNOWN_VARIABLE;
@@ -323,7 +323,7 @@ __device__ void* curveGetVariablePtrByHash(const CurveVariableHash variable_hash
     CurveVariable cv;
 
     cv = getVariable(variable_hash);
-    //error checking
+    // error checking
     if (cv == UNKNOWN_CURVE_VARIABLE)
     {
         d_curve_error = CURVE_DEVICE_ERROR_UNKNOWN_VARIABLE;
@@ -335,14 +335,14 @@ __device__ void* curveGetVariablePtrByHash(const CurveVariableHash variable_hash
         return NULL;
     }
 
-    //check vector length
+    // check vector length
     if (offset > d_sizes[cv]*d_lengths[cv]) // Note : offset is basicly index * sizeof(T)
     {
         d_curve_error = CURVE_DEVICE_ERROR_UNKNOWN_LENGTH;
         return NULL;
     }
 
-    //return a generic pointer to variable address for given offset (no bounds checking here!)
+    // return a generic pointer to variable address for given offset (no bounds checking here!)
     return d_variables[cv] + offset;
 }
 
@@ -370,7 +370,7 @@ void __host__ curvePrintErrors(const char* file, const char* function, const int
 
     curvePrintLastHostError(file, function, line);
 
-    //check device errors
+    // check device errors
     CUDA_SAFE_CALL(cudaMemcpyFromSymbol(&d_curve_error_local, d_curve_error, sizeof(curveDeviceError)));
     if (d_curve_error_local != CURVE_DEVICE_ERROR_NO_ERRORS)
     {

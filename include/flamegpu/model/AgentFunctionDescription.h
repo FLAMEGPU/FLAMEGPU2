@@ -27,7 +27,7 @@ class AgentDescription;
 
 typedef std::map<std::string, const AgentFunctionInput&> InputsMap;
 typedef std::map<std::string, const AgentFunctionOutput&> OutputsMap;
-// typedef std::map<const std::string, FLAMEGPU_AGENT_FUNCTION> FunctionPointerMap; //@question: This is not required as each agent function will have only a single pointer
+// typedef std::map<const std::string, FLAMEGPU_AGENT_FUNCTION> FunctionPointerMap; // @question: This is not required as each agent function will have only a single pointer
 
 
 class AgentFunctionDescription {

@@ -13,10 +13,10 @@
 
 #include <memory>
 
-//include sub classes
+// include sub classes
 #include <flamegpu/gpu/CUDAMessageList.h>
 
-//forward declare classes from other modules
+// forward declare classes from other modules
 
 class AgentPopulation;
 class AgentFunctionDescription;
@@ -60,7 +60,7 @@ protected:
 private:
     const MessageDescription& message_description;
 
-    std::unique_ptr<CUDAMessageList> message_list; //CUDAMessageMap message_list;
+    std::unique_ptr<CUDAMessageList> message_list; // CUDAMessageMap message_list;
 
     unsigned int max_list_size;
 

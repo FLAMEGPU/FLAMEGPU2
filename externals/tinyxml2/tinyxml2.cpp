@@ -88,7 +88,7 @@ distribution.
     #endif
 #else
     // GCC version 3 and higher
-    //#warning( "Using sn* functions." )
+    // #warning( "Using sn* functions." )
     #define TIXML_SNPRINTF    snprintf
     #define TIXML_VSNPRINTF    vsnprintf
     static inline int TIXML_VSCPRINTF( const char* format, va_list va )
@@ -109,7 +109,7 @@ static const char SINGLE_QUOTE            = '\'';
 static const char DOUBLE_QUOTE            = '\"';
 
 // Bunch of unicode info at:
-//        http://www.unicode.org/faq/utf_bom.html
+//        http:// www.unicode.org/faq/utf_bom.html
 //    ef bb bf (Microsoft "lead bytes") - designates UTF-8
 
 static const unsigned char TIXML_UTF_LEAD_0 = 0xefU;
@@ -367,7 +367,7 @@ const char* StrPair::GetStr()
 
 
 
-// --------- XMLUtil ----------- //
+// --------- XMLUtil ----------- // 
 
 const char* XMLUtil::writeBoolTrue  = "true";
 const char* XMLUtil::writeBoolFalse = "false";
@@ -432,17 +432,17 @@ void XMLUtil::ConvertUTF32ToUTF8( unsigned long input, char* output, int* length
             --output;
             *output = (char)((input | BYTE_MARK) & BYTE_MASK);
             input >>= 6;
-            //fall through
+            // fall through
         case 3:
             --output;
             *output = (char)((input | BYTE_MARK) & BYTE_MASK);
             input >>= 6;
-            //fall through
+            // fall through
         case 2:
             --output;
             *output = (char)((input | BYTE_MARK) & BYTE_MASK);
             input >>= 6;
-            //fall through
+            // fall through
         case 1:
             --output;
             *output = (char)(input | FIRST_BYTE_MARK[*length]);
@@ -568,7 +568,7 @@ void XMLUtil::ToStr( bool v, char* buffer, int bufferSize )
 
 /*
     ToStr() of a number is a very tricky topic.
-    https://github.com/leethomason/tinyxml2/issues/106
+    https:// github.com/leethomason/tinyxml2/issues/106
 */
 void XMLUtil::ToStr( float v, char* buffer, int bufferSize )
 {
@@ -737,7 +737,7 @@ bool XMLDocument::Accept( XMLVisitor* visitor ) const
 }
 
 
-// --------- XMLNode ----------- //
+// --------- XMLNode ----------- // 
 
 XMLNode::XMLNode( XMLDocument* doc ) :
     _document( doc ),
@@ -991,16 +991,16 @@ char* XMLNode::ParseDeep( char* p, StrPair* parentEndTag, int* curLineNumPtr )
     // it is a pretty simple flat list:
     //        <foo/>
     //        <!-- comment -->
-    //
+    // 
     // With a special case:
     //        <foo>
     //        </foo>
     //        <!-- comment -->
-    //
+    // 
     // Where the closing element (/foo) *must* be the next thing after the opening
     // element, and the names must match. BUT the tricky bit is that the closing
     // element will be read by the child.
-    //
+    // 
     // 'endTag' is the end tag for this node, it is returned by a call to a child.
     // 'parentEnd' is the end tag for the parent, which is filled in and returned.
 
@@ -1133,7 +1133,7 @@ const XMLElement* XMLNode::ToElementWithName( const char* name ) const
     return 0;
 }
 
-// --------- XMLText ---------- //
+// --------- XMLText ---------- // 
 char* XMLText::ParseDeep( char* p, StrPair*, int* curLineNumPtr )
 {
     if ( this->CData() ) {
@@ -1187,7 +1187,7 @@ bool XMLText::Accept( XMLVisitor* visitor ) const
 }
 
 
-// --------- XMLComment ---------- //
+// --------- XMLComment ---------- // 
 
 XMLComment::XMLComment( XMLDocument* doc ) : XMLNode( doc )
 {
@@ -1235,7 +1235,7 @@ bool XMLComment::Accept( XMLVisitor* visitor ) const
 }
 
 
-// --------- XMLDeclaration ---------- //
+// --------- XMLDeclaration ---------- // 
 
 XMLDeclaration::XMLDeclaration( XMLDocument* doc ) : XMLNode( doc )
 {
@@ -1244,7 +1244,7 @@ XMLDeclaration::XMLDeclaration( XMLDocument* doc ) : XMLNode( doc )
 
 XMLDeclaration::~XMLDeclaration()
 {
-    //printf( "~XMLDeclaration\n" );
+    // printf( "~XMLDeclaration\n" );
 }
 
 
@@ -1284,7 +1284,7 @@ bool XMLDeclaration::Accept( XMLVisitor* visitor ) const
     return visitor->Visit( *this );
 }
 
-// --------- XMLUnknown ---------- //
+// --------- XMLUnknown ---------- // 
 
 XMLUnknown::XMLUnknown( XMLDocument* doc ) : XMLNode( doc )
 {
@@ -1331,7 +1331,7 @@ bool XMLUnknown::Accept( XMLVisitor* visitor ) const
     return visitor->Visit( *this );
 }
 
-// --------- XMLAttribute ---------- //
+// --------- XMLAttribute ---------- // 
 
 const char* XMLAttribute::Name() const
 {
@@ -1484,7 +1484,7 @@ void XMLAttribute::SetAttribute( float v )
 }
 
 
-// --------- XMLElement ---------- //
+// --------- XMLElement ---------- // 
 XMLElement::XMLElement( XMLDocument* doc ) : XMLNode( doc ),
     _closingType( OPEN ),
     _rootAttribute( 0 )
@@ -1881,10 +1881,10 @@ XMLAttribute* XMLElement::CreateAttribute()
     return attrib;
 }
 
-//
+// 
 //    <ele></ele>
 //    <ele>foo<b>bar</b></ele>
-//
+// 
 char* XMLElement::ParseDeep( char* p, StrPair* parentEndTag, int* curLineNumPtr )
 {
     // Read the element name.
@@ -1967,7 +1967,7 @@ bool XMLElement::Accept( XMLVisitor* visitor ) const
 }
 
 
-// --------- XMLDocument ----------- //
+// --------- XMLDocument ----------- // 
 
 // Warning: List must match 'enum XMLError'
 const char* XMLDocument::_errorNames[XML_ERROR_COUNT] = {

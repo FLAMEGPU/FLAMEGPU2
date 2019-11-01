@@ -18,9 +18,9 @@
 class CUDAAgent;
 class AgentStateMemory;
 
-//#define UNIFIED_GPU_MEMORY
+// #define UNIFIED_GPU_MEMORY
 
-typedef std::map <std::string, void*> CUDAMemoryMap;        //map of pointers to gpu memory for each variable name
+typedef std::map <std::string, void*> CUDAMemoryMap;        // map of pointers to gpu memory for each variable name
 typedef std::pair <std::string, void*> CUDAMemoryMapPair;
 
 class CUDAAgentStateList {
@@ -28,7 +28,7 @@ public:
     CUDAAgentStateList(CUDAAgent& cuda_agent);
     virtual ~CUDAAgentStateList();
 
-    //cant be done in destructor as it requires access to the parent CUDAAgent object
+    // cant be done in destructor as it requires access to the parent CUDAAgent object
     void cleanupAllocatedData();
 
     void setAgentData(const AgentStateMemory &state_memory);
@@ -58,7 +58,7 @@ private:
     CUDAMemoryMap d_swap_list;
     CUDAMemoryMap d_new_list;
 
-    unsigned int current_list_size; //???
+    unsigned int current_list_size; // ???
 
     CUDAAgent& agent;
 };

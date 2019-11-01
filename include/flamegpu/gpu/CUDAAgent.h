@@ -14,15 +14,15 @@
 #include <memory>
 #include <map>
 
-//include sub classes
+// include sub classes
 #include <flamegpu/gpu/CUDAAgentStateList.h>
 
-//forward declare classes from other modules
+// forward declare classes from other modules
 class AgentDescription;
 class AgentPopulation;
 class AgentFunctionDescription;
 
-typedef std::map<const std::string, std::unique_ptr<CUDAAgentStateList>> CUDAStateMap;    //map of state name to CUDAAgentStateList which allocates memory on the device
+typedef std::map<const std::string, std::unique_ptr<CUDAAgentStateList>> CUDAStateMap;    // map of state name to CUDAAgentStateList which allocates memory on the device
 typedef std::pair<const std::string, std::unique_ptr<CUDAAgentStateList>> CUDAStateMapPair;
 
 /** \brief CUDAAgent class is used as a container for storing the GPU data of all variables in all states
@@ -76,7 +76,7 @@ private:
 
     CUDAStateMap state_map;
 
-    unsigned int max_list_size; //The maximum length of the agent variable arrays based on the maximum population size passed to setPopulationData
+    unsigned int max_list_size; // The maximum length of the agent variable arrays based on the maximum population size passed to setPopulationData
 };
 
 #endif

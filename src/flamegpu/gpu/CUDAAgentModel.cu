@@ -24,31 +24,31 @@
 */
 CUDAAgentModel::CUDAAgentModel(const ModelDescription& description) : model_description(description), agent_map(), curve(cuRVEInstance::getInstance()), message_map() //, function_map() {
 {
-    //create a reference to curve to ensure that it is initialised. This is a singleton class so will only be done once regardless of the number of CUDAgentModels.
+    // create a reference to curve to ensure that it is initialised. This is a singleton class so will only be done once regardless of the number of CUDAgentModels.
 
-    //populate the CUDA agent map
+    // populate the CUDA agent map
     const AgentMap &am = model_description.getAgentMap();
     AgentMap::const_iterator it; // const_iterator returns a reference to a constant value (const T&) and prevents modification of the reference value
 
-    //create new cuda agent and add to the map
+    // create new cuda agent and add to the map
     for (it = am.begin(); it != am.end(); it++)
     {
         agent_map.insert(CUDAAgentMap::value_type(it->first, std::unique_ptr<CUDAAgent>(new CUDAAgent(it->second))));
     } // insert into map using value_type
 
 
-    //populate the CUDA message map
+    // populate the CUDA message map
     const MessageMap &mm = model_description.getMessageMap();
     MessageMap::const_iterator it_m;
 
-    //create new cuda message and add to the map
+    // create new cuda message and add to the map
     for (it_m = mm.begin(); it_m != mm.end(); it_m++)
     {
         message_map.insert(CUDAMessageMap::value_type(it_m->first, std::unique_ptr<CUDAMessage>(new CUDAMessage(it_m->second))));
     }
 
     /*
-        //populate the CUDA function map
+        // populate the CUDA function map
         const FunctionMap &mm = model_description.getFunctionMap();
         FunctioneMap::const_iterator it;
 
@@ -65,7 +65,7 @@ CUDAAgentModel::CUDAAgentModel(const ModelDescription& description) : model_desc
  */
 CUDAAgentModel::~CUDAAgentModel()
 {
-    //unique pointers cleanup by automatically
+    // unique pointers cleanup by automatically
 }
 
 /**
@@ -133,7 +133,7 @@ void CUDAAgentModel::step(const Simulation& simulation)
     CurveNamespaceHash message_name_outp_hash = 0;
     unsigned int messageList_Size = 0;
 
-    //TODO: simulation.getMaxFunctionsPerLayer()
+    // TODO: simulation.getMaxFunctionsPerLayer()
     for (unsigned int i = 0; i < simulation.getLayerCount(); i++) {
         int temp = static_cast<int>(simulation.getFunctionsAtLayer(i).size());
         nStreams = std::max(nStreams, temp);
@@ -159,14 +159,14 @@ void CUDAAgentModel::step(const Simulation& simulation)
         {
             const CUDAAgent& cuda_agent = getCUDAAgent(func_des.getParent().getName());
 
-            //! check if a function has an input massage
+            // ! check if a function has an input massage
             if (func_des.hasInputMessage()) {
                 std::string inpMessage_name = func_des.getInputMessageName();
                 const CUDAMessage& cuda_message = getCUDAMessage(inpMessage_name); printf("inp msg name: %s\n",inpMessage_name.c_str());
                 cuda_message.mapRuntimeVariables(func_des); 
             }
 
-            //! check if a function has an output massage
+            // ! check if a function has an output massage
             if (func_des.hasOutputMessage()) {
                 std::string outpMessage_name = func_des.getOutputMessageName();
                 const CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name); printf("inp msg name: %s\n", outpMessage_name.c_str());
@@ -180,32 +180,32 @@ void CUDAAgentModel::step(const Simulation& simulation)
             cuda_agent.mapRuntimeVariables(func_des);
 
         }
-        //! for each func function - Loop through to launch all agent functions
+        // ! for each func function - Loop through to launch all agent functions
         for (AgentFunctionDescription func_des : functions)
         {
 
             std::string agent_name = func_des.getParent().getName();
             std::string func_name = func_des.getName();
 
-            //! check if a function has an output massage
+            // ! check if a function has an output massage
             if (func_des.hasInputMessage()) {
                 std::string inpMessage_name = func_des.getInputMessageName();
                 const CUDAMessage& cuda_message = getCUDAMessage(inpMessage_name);
-                //message_name = inpMessage_name;
+                // message_name = inpMessage_name;
 
-                //! hash message name
+                // ! hash message name
                 message_name_inp_hash = curveVariableRuntimeHash(inpMessage_name.c_str());
 
                 messageList_Size = cuda_message.getMaximumListSize();
             }
 
-            //! check if a function has an output massage
+            // ! check if a function has an output massage
             if (func_des.hasOutputMessage()) {
                 std::string outpMessage_name = func_des.getOutputMessageName();
-                //const CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
-                //message_name = outpMessage_name;
+                // const CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
+                // message_name = outpMessage_name;
 
-                //! hash message name
+                // ! hash message name
                 message_name_outp_hash = curveVariableRuntimeHash(outpMessage_name.c_str());
             }
 
@@ -223,52 +223,52 @@ void CUDAAgentModel::step(const Simulation& simulation)
 
             int state_list_size = cuda_agent.getMaximumListSize();
 
-            int blockSize = 0; //! The launch configurator returned block size
-            int minGridSize = 0; //! The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
-            int gridSize = 0; //! The actual grid size needed, based on input size
+            int blockSize = 0; // ! The launch configurator returned block size
+            int minGridSize = 0; // ! The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
+            int gridSize = 0; // ! The actual grid size needed, based on input size
 
-            //!calculate the grid block size for main agent function
+            // !calculate the grid block size for main agent function
             cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, agent_function_wrapper, 0, state_list_size);
 
-            //! Round up according to CUDAAgent state list size
+            // ! Round up according to CUDAAgent state list size
             gridSize = (state_list_size + blockSize - 1) / blockSize;
 
-            //! hash agent name
+            // ! hash agent name
             CurveNamespaceHash agentname_hash = curveVariableRuntimeHash(agent_name.c_str());
-            //! hash function name
+            // ! hash function name
             CurveNamespaceHash funcname_hash = curveVariableRuntimeHash(func_name.c_str());
 
-            //agent_function_wrapper << <gridSize, blockSize, 0, stream[j] >> > (agentname_hash + funcname_hash, h_func_ptr, state_list_size);
+            // agent_function_wrapper << <gridSize, blockSize, 0, stream[j] >> > (agentname_hash + funcname_hash, h_func_ptr, state_list_size);
             agent_function_wrapper <<<gridSize, blockSize, 0, stream[j] >>>(agentname_hash + funcname_hash, message_name_inp_hash, message_name_outp_hash, h_func_ptr, state_list_size, messageList_Size);
  
             ++j;
         }
-        //! for each func function - Loop through to un-map all agent and message variables
+        // ! for each func function - Loop through to un-map all agent and message variables
         for (AgentFunctionDescription func_des : functions) {
             const CUDAAgent& cuda_agent = getCUDAAgent(func_des.getParent().getName());
 
-            //! check if a function has an output massage
+            // ! check if a function has an output massage
             if (func_des.hasInputMessage()) {
                 std::string inpMessage_name = func_des.getInputMessageName();
                 const CUDAMessage& cuda_message = getCUDAMessage(inpMessage_name);
                 cuda_message.unmapRuntimeVariables(func_des);
             }
 
-            //! check if a function has an output massage
+            // ! check if a function has an output massage
             if (func_des.hasOutputMessage()) {
                 std::string outpMessage_name = func_des.getOutputMessageName();
                 const CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
                 cuda_message.unmapRuntimeVariables(func_des);
             }
-            //const CUDAMessage& cuda_inpMessage = getCUDAMessage(func_des.getInputChild.getMessageName());
-            //const CUDAMessage& cuda_outpMessage = getCUDAMessage(func_des.getOutputChild.getMessageName());
+            // const CUDAMessage& cuda_inpMessage = getCUDAMessage(func_des.getInputChild.getMessageName());
+            // const CUDAMessage& cuda_outpMessage = getCUDAMessage(func_des.getOutputChild.getMessageName());
 
-            //! unmap the function variables
+            // ! unmap the function variables
             cuda_agent.unmapRuntimeVariables(func_des);
         }
-        //cudaDeviceSynchronize();
+        // cudaDeviceSynchronize();
     }
-    //! stream deletion
+    // ! stream deletion
     for (int j = 0; j < nStreams; ++j)
         gpuErrchk(cudaStreamDestroy(stream[j]));
     free(stream);
@@ -285,7 +285,7 @@ void CUDAAgentModel::init(void)   // (int argc, char** argv)
     int device;
     int device_count;
 
-    //default device
+    // default device
     device = 0;
     cudaStatus = cudaGetDeviceCount(&device_count);
 
@@ -319,11 +319,11 @@ void CUDAAgentModel::simulate(const Simulation& simulation)
     if (agent_map.size() == 0)
         throw InvalidCudaAgentMapSize("CUDA agent map size is zero"); // recheck if this is really required
 
-    //CUDAAgentMap::iterator it;
+    // CUDAAgentMap::iterator it;
 
-    //check any CUDAAgents with population size == 0
-    //if they have executable functions then these can be ignored
-    //if they have agent creations then buffer space must be allocated for them
+    // check any CUDAAgents with population size == 0
+    // if they have executable functions then these can be ignored
+    // if they have agent creations then buffer space must be allocated for them
 
     for (unsigned int i = 0; i < simulation.getSimulationSteps(); i++) {
         cout <<"step: " << i << endl;

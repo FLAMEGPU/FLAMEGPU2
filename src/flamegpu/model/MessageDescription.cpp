@@ -46,12 +46,12 @@ unsigned int MessageDescription::getNumberMessageVariables() const
 
 size_t MessageDescription::getMessageVariableSize(const std::string variable_name) const
 {
-    //get the variable name type
+    // get the variable name type
     VariableMap::const_iterator mm = variables.find(variable_name);
     if (mm == variables.end())
         throw InvalidMessageVar("Invalid message memory variable");
     const std::type_info *t = &(mm->second);
-    //get the type size
+    // get the type size
     VarTypeSizeMap::const_iterator tsm = sizes.find(t);
     if (tsm == sizes.end())
         throw InvalidMapEntry("Missing entry in type sizes map");

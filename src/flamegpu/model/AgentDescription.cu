@@ -37,7 +37,7 @@ const std::string AgentDescription::getName() const
 void AgentDescription::addState(const AgentStateDescription& state, bool is_initial_state)
 {
 
-    //check if this is a stateless system
+    // check if this is a stateless system
     if (stateless)
     {
         stateless = false;
@@ -57,7 +57,7 @@ void AgentDescription::addAgentFunction(AgentFunctionDescription& function)
 {
     functions.insert(FunctionMap::value_type(function.getName(), function));
 
-    //TODO: Set the parent of the function
+    // TODO: Set the parent of the function
     function.setParent(*this);
 }
 
@@ -101,12 +101,12 @@ unsigned int AgentDescription::getNumberAgentVariables() const
 
 size_t AgentDescription::getAgentVariableSize(const std::string variable_name) const
 {
-    //get the variable name type
+    // get the variable name type
     MemoryMap::const_iterator mm = memory.find(variable_name);
     if (mm == memory.end())
         throw InvalidAgentVar("Invalid agent memory variable");
     const std::type_info *t = &(mm->second);
-    //get the type size
+    // get the type size
     TypeSizeMap::const_iterator tsm = sizes.find(t);
     if (tsm == sizes.end())
         throw InvalidMapEntry("Missing entry in type sizes map");
@@ -116,10 +116,10 @@ size_t AgentDescription::getAgentVariableSize(const std::string variable_name) c
 bool AgentDescription::requiresAgentCreation() const
 {
 
-    //needs to search entire model for any functions with an agent output for this agent
+    // needs to search entire model for any functions with an agent output for this agent
     for (FunctionMap::const_iterator it= functions.begin(); it != functions.end(); it++)
     {
-        //if (*it->second()->)
+        // if (*it->second()->)
     }
 
     return false;
@@ -147,8 +147,8 @@ bool AgentDescription::hasAgentFunction(const std::string function_name) const
 /*
 StateMemoryMap AgentDescription::getEmptyStateMemoryMap() const
 {
-    //needs to do some deep copying
-    return sm_map;    //returns a copy of the sm memorymap
+    // needs to do some deep copying
+    return sm_map;    // returns a copy of the sm memorymap
 }
 */
 
