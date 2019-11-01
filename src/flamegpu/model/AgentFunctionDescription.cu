@@ -35,9 +35,9 @@ const std::string AgentFunctionDescription::getIntialState() const
     return initial_state;
 }
 
-void AgentFunctionDescription::setIntialState(const std::string intial_state)
+void AgentFunctionDescription::setIntialState(const std::string _initial_state)
 {
-    this->initial_state = initial_state;
+    this->initial_state = _initial_state;
 }
 
 const std::string AgentFunctionDescription::getName() const
