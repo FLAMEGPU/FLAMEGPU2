@@ -180,10 +180,11 @@ if(CPPLINT)
         endif()
     endfunction()
 else()
-    message(WARNING "cpplint script: NOT FOUND! "
-                    "Lint projects will not be generated"
-                    "Please install cpplint as described on https://pypi.python.org/pypi/cpplint. "
-			        "In most cases command 'pip install --user cpplint' should be sufficient.")
+    message(WARNING 
+        " cpplint script: NOT FOUND!\n"
+        " Lint projects will not be generated.\n"
+        " Please install cpplint as described on https://pypi.python.org/pypi/cpplint.\n"
+        " In most cases command 'pip install --user cpplint' should be sufficient.")
     function(new_linter_target NAME SRC)
     endfunction()
 endif()
