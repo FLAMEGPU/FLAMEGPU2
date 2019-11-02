@@ -10,7 +10,7 @@
 
 #include <flamegpu/model/ModelDescription.h>
 
-ModelDescription::ModelDescription(const std::string model_name) : agents(), messages(), name(model_name), population() {}
+ModelDescription::ModelDescription(const std::string model_name) : name(model_name), agents(), messages(), population() {}
 
 ModelDescription::~ModelDescription() {}
 

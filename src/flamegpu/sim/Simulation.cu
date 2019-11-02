@@ -17,7 +17,7 @@
 #include "flamegpu/io/factory.h"
 
 
-Simulation::Simulation(const ModelDescription& model) : model_description(model), layers()
+Simulation::Simulation(const ModelDescription& model) : layers(), model_description(model)
 {
     simulation_steps = 1;
 }
