@@ -5,6 +5,11 @@ STRING(TOLOWER "${CMAKE_SYSTEM_NAME}" CMAKE_SYSTEM_NAME_LOWER)
 # Don't create installation scripts (and hide CMAKE_INSTALL_PREFIX from cmake-gui)
 set(CMAKE_SKIP_INSTALL_RULES TRUE)
 set(CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}" CACHE INTERNAL "" FORCE)
+# Option to promote compilation warnings to error, useful for strict CI
+option(WARNINGS_AS_ERRORS "Promote compilation warnings to errors" OFF)
+# Option to group CMake generated projects into folders in supported IDEs
+option(CMAKE_USE_FOLDERS "Enable folder grouping of projects in IDEs." ON)
+mark_as_advanced(CMAKE_USE_FOLDERS)
 
 # Set a default build type if not passed
 get_property(GENERATOR_IS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
@@ -177,7 +182,9 @@ if(CPPLINT)
         # Add the custom target as a dependency of the global lint target
         if(TARGET all_lint)
             add_dependencies(all_lint lint_${NAME})
-        endif()
+        endif()        
+        # Put Within Lint filter
+        CMAKE_SET_TARGET_FOLDER(${NAME} "Lint")
     endfunction()
 else()
     message(WARNING 
@@ -190,7 +197,7 @@ else()
 endif()
 
 # Function to mask some of the steps to create an executable which links against the static library
-function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT)
+function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT MAKE_FOLDER)
 
     # If the library does not exist as a target, add it.
     if (NOT TARGET flamegpu2)
@@ -239,6 +246,10 @@ function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT)
     source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX src FILES ${T_SRC})
 
 
+    # Put within Examples filter
+    if(MAKE_FOLDER)
+        CMAKE_SET_TARGET_FOLDER(${NAME} "Examples")
+    endif()
 endfunction()
 
 # Function to mask some of the flag setting for the static library
@@ -255,5 +266,23 @@ function(add_flamegpu_library NAME SRC FLAMEGPU_ROOT)
 
     # Flag the new linter target and the files to be linted.
     new_linter_target(${NAME} "${SRC}")
-
+    
+    # Put within FLAMEGPU filter
+    CMAKE_SET_TARGET_FOLDER(${NAME} "FLAMEGPU")
 endfunction()
+
+#-----------------------------------------------------------------------
+# a macro that only sets the FOLDER target property if it's
+# "appropriate"
+# Borrowed from cmake's own CMakeLists.txt
+#-----------------------------------------------------------------------
+macro(CMAKE_SET_TARGET_FOLDER tgt folder)
+  if(CMAKE_USE_FOLDERS)
+    set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+    if(MSVC AND TARGET ${tgt})
+      set_property(TARGET "${tgt}" PROPERTY FOLDER "${folder}")
+    endif()
+  else()
+    set_property(GLOBAL PROPERTY USE_FOLDERS OFF)
+  endif()
+endmacro()

@@ -30,4 +30,8 @@ SET(ALL_SRC
 include(${FLAMEGPU_ROOT}/cmake/common.cmake)
 
 # Add the executable and set required flags for the target
-add_flamegpu_executable("${PROJECT_NAME}" "${ALL_SRC}" "${FLAMEGPU_ROOT}")
+add_flamegpu_executable("${PROJECT_NAME}" "${ALL_SRC}" "${FLAMEGPU_ROOT}" FALSE)
+
+
+# Put Within Tests filter
+CMAKE_SET_TARGET_FOLDER("${PROJECT_NAME}" "Tests")

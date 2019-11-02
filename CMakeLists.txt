@@ -40,8 +40,12 @@ endif()
 # Add the tests directory (if required)
 if(BUILD_TESTS)
     add_subdirectory(tests)
+    # Put within Lint filter
+    CMAKE_SET_TARGET_FOLDER(all_lint "Tests")
 endif()
 
+# Put all_lint within Lint filter
+CMAKE_SET_TARGET_FOLDER(all_lint "Lint")
 
 # message("Generated with CMAKE_BUILD_TYPE types: ${CMAKE_BUILD_TYPE}")
 # message("Generated with config types: ${CMAKE_CONFIGURATION_TYPES}")
