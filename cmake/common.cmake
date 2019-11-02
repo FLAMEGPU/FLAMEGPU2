@@ -122,8 +122,11 @@ set(GENCODES "${GENCODES} -gencode arch=compute_${LAST_SM},code=compute_${LAST_S
 # Append the gencodes to the nvcc flags
 set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} ${GENCODES}")
 
-# Output the GENCODES to teh user.
-message(STATUS "Targeting Compute Capabilities: ${SMS}")
+# Don't create this message multiple times
+if(NOT COMMAND add_flamegpu_executable)
+    # Output the GENCODES to the user.
+    message(STATUS "Targeting Compute Capabilities: ${SMS}")
+endif()
 
 # Specify some additional compiler flags
 # CUDA debug symbols
@@ -187,13 +190,16 @@ if(CPPLINT)
         CMAKE_SET_TARGET_FOLDER(${NAME} "Lint")
     endfunction()
 else()
-    message(WARNING 
-        " cpplint script: NOT FOUND!\n"
-        " Lint projects will not be generated.\n"
-        " Please install cpplint as described on https://pypi.python.org/pypi/cpplint.\n"
-        " In most cases command 'pip install --user cpplint' should be sufficient.")
-    function(new_linter_target NAME SRC)
-    endfunction()
+    # Don't create this message multiple times
+    if(NOT COMMAND add_flamegpu_executable)
+        message( 
+            " cpplint script: NOT FOUND!\n"
+            " Lint projects will not be generated.\n"
+            " Please install cpplint as described on https://pypi.python.org/pypi/cpplint.\n"
+            " In most cases command 'pip install --user cpplint' should be sufficient.")
+        function(new_linter_target NAME SRC)
+        endfunction()
+    endif()
 endif()
 
 # Function to mask some of the steps to create an executable which links against the static library
