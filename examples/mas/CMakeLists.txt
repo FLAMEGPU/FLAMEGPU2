@@ -20,7 +20,6 @@ else()
     SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin/${CMAKE_SYSTEM_NAME_LOWER}-x64/${CMAKE_BUILD_TYPE}/)
 endif()
 
-
 # Prepare list of source files
 # Can't do this automatically, as CMake wouldn't know when to regen (as CMakeLists.txt would be unchanged)
 SET(ALL_SRC
@@ -29,3 +28,6 @@ SET(ALL_SRC
 
 # Add the executable and set required flags for the target
 add_flamegpu_executable("${PROJECT_NAME}" "${ALL_SRC}" "${FLAMEGPU_ROOT}" TRUE)
+
+# Also set as startup project (if top level project)
+set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"  PROPERTY VS_STARTUP_PROJECT "${PROJECT_NAME}")

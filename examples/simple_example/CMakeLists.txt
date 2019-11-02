@@ -26,6 +26,8 @@ SET(ALL_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cu
 )
 
-
 # Add the executable and set required flags for the target
 add_flamegpu_executable("${PROJECT_NAME}" "${ALL_SRC}" "${FLAMEGPU_ROOT}" TRUE)
+
+# Also set as startup project (if top level project)
+set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"  PROPERTY VS_STARTUP_PROJECT "${PROJECT_NAME}")

@@ -35,3 +35,7 @@ add_flamegpu_executable("${PROJECT_NAME}" "${ALL_SRC}" "${FLAMEGPU_ROOT}" FALSE)
 
 # Put Within Tests filter
 CMAKE_SET_TARGET_FOLDER("${PROJECT_NAME}" "Tests")
+
+
+# Also set as startup project (if top level project)
+set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"  PROPERTY VS_STARTUP_PROJECT "${PROJECT_NAME}")

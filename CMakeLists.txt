@@ -30,6 +30,8 @@ endif()
 # Add the library building subdirectory
 if(BUILD_FLAMEGPU2)
     add_subdirectory(src)
+    # Set as startup project
+    set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"  PROPERTY VS_STARTUP_PROJECT flamegpu2)
 endif()
 
 # Add each example
@@ -50,6 +52,7 @@ endif()
 
 # Put all_lint within Lint filter
 CMAKE_SET_TARGET_FOLDER(all_lint "Lint")
+
 
 # message("Generated with CMAKE_BUILD_TYPE types: ${CMAKE_BUILD_TYPE}")
 # message("Generated with config types: ${CMAKE_CONFIGURATION_TYPES}")
