@@ -12,7 +12,7 @@
 
 #include <flamegpu/exception/FGPUException.h>
 
-AgentDescription::AgentDescription(std::string name) : states(), functions(), memory(), sizes(), default_state(new AgentStateDescription("default"))
+AgentDescription::AgentDescription(std::string name) : default_state(new AgentStateDescription("default")), states(), functions(), memory(), sizes()
 {
     stateless = true;
     this->name = name;
