@@ -20,7 +20,7 @@ namespace flamegpu_internal {
 /**
  * Static member vars
  */
-unsigned long long Random::seed = 0;
+unsigned long long Random::mSeed = 0;
 Random::size_type Random::length = 0;
 float Random::growthModifier = 0;
 float Random::shrinkModifier = 0;
@@ -32,8 +32,8 @@ Random::size_type Random::h_max_random_size = 0;
 unsigned long long Random::seedFromTime() {
     return static_cast<unsigned long long>(time(nullptr));
 }
-void Random::init(const unsigned long long &_seed) {
-    Random::seed = _seed;
+void Random::init(const unsigned long long &seed) {
+    Random::mSeed = seed;
     free();
 }
 void Random::free() {   
@@ -60,8 +60,7 @@ bool Random::resize(const size_type &_length) {
     while (t_length < _length) {
         t_length  = static_cast<Random::size_type>(t_length * growthModifier);
         if(shrinkModifier < 1.0f) {
-            while(t_length * shrinkModifier > _length)
-            {
+            while(t_length * shrinkModifier > _length) {
                 t_length = static_cast<Random::size_type>(t_length * shrinkModifier);
             }
         }        
@@ -102,10 +101,9 @@ void Random::resizeDeviceArray(const size_type &_length) {
             //Init remainder for first time
             unsigned int initThreads = 512;
             unsigned int initBlocks = (_length - length / initThreads) + 1;
-            init_curand<<<initBlocks, initThreads>>>(_length - length, seed, length);// This could be async with above memcpy?
+            init_curand<<<initBlocks, initThreads>>>(_length - length, mSeed, length);// This could be async with above memcpy?
         }
-    }
-    else {
+    } else {
         // Shrinking array
         curandState *t_hd_random_state = nullptr;
         curandState *t_h_max_random_state = nullptr;
@@ -162,4 +160,7 @@ float Random::getShrinkModifier() {
 }
 Random::size_type Random::size() {
     return length;
+}
+unsigned long long Random::seed() {
+    return mSeed;
 }

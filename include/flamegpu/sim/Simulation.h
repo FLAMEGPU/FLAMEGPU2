@@ -39,6 +39,8 @@ public:
 
 
 private:
+    static void printHelp(const char *executable);
+
 	SimulationLayerVector layers;
     const ModelDescription& model_description;
     unsigned int simulation_steps;

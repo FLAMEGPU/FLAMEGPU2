@@ -9,22 +9,26 @@
 */
 
 #include <exception>
+#include <algorithm>
 
 #include <flamegpu/sim/Simulation.h>
 #include <flamegpu/model/ModelDescription.h>
 #include <flamegpu/io/statereader.h>
 #include <flamegpu/io/statewriter.h>
 #include "flamegpu/io/factory.h"
+#include "../runtime/utility/Random.cuh"
 
 
 Simulation::Simulation(const ModelDescription& model) : layers(), model_description(model)
 {
     simulation_steps = 1;
+    Random::init(Random::seedFromTime());
 }
 
 
 Simulation::~Simulation(void)
 {
+    Random::free();
 }
 
 
@@ -66,15 +70,53 @@ const ModelDescription& Simulation::getModelDescritpion() const
 }
 
 int Simulation::checkArgs(int argc, char** argv) {
-	//Check args
-	printf("FLAMEGPU Console mode\n");
-	if (argc < 2)
-	{
-		printf("Usage: %s [XML model data] [Iterations] [Optional CUDA device ID]\n", argv[0]);
-		return false;
-	}
+    // These should really be in some kind of config struct
+    std::string xml_model_path;
+    unsigned int device_id = 0;
+    unsigned int iterations = 0;
+    // Parse args
+    int i = 1; 
+    for (; i < argc; i++)
+    {
+        // Get arg as lowercase
+        std::string arg(argv[i]);
+        std::transform(arg.begin(), arg.end(), arg.begin(), ::tolower);
 
+        // -in <string>, Specifies the input state file
+        if (arg.compare("--in") == 0 || arg.compare("-i") == 0) {
+            xml_model_path = std::string(argv[++i]);
+            continue;
+        }
+        // -steps <uint>, The number of steps to be executed
+        if (arg.compare("--steps") == 0 || arg.compare("-s") == 0) {
+            iterations = static_cast<int>(strtoul(argv[++i], nullptr, 0));
+            continue;
+        }
+        // -device <uint>, Uses the specified cuda device, defaults to 0
+        if (arg.compare("--device") == 0 || arg.compare("-d") == 0) {
+            device_id = static_cast<unsigned int>(strtoul(argv[++i], nullptr, 0));
+            continue;
+        }
+        //-seed <uint>, Uses the specified random seed, defaults to clock
+        if (arg.compare("--random") == 0 || arg.compare("-r") == 0)
+        {
+            //Reinitialise Random state
+            Random::init(static_cast<unsigned long long>(strtoul(argv[++i], nullptr, 0)));
+            continue;
+        }		
+        fprintf(stderr, "Unexpected argument: %s\n", arg.c_str());
+        printHelp(argv[0]);
+        return false;
+    }
 	return true;
+}
+
+void Simulation::printHelp(const char *executable) {
+    printf("Usage: %s [-i input_xml_file] [-s steps] [-d device_id] [-r random_seed]\n", executable);
+    printf("Optional Arguments:\n");
+    const char *line_fmt = "%-18s %s\n";
+    printf(line_fmt, "-d, --device", "GPU index");
+    printf(line_fmt, "-r, --random", "Random seed");
 }
 
 /**

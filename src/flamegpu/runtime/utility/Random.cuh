@@ -10,12 +10,23 @@
  */
 class Random {
  public:
+    /**
+     * Inherit size_type from include-public partner class
+     */
     typedef AgentRandom::size_type size_type;
     /**
      * Utility for passing to init()
      */
     static unsigned long long seedFromTime();
+    /**
+     * Acts as constructor
+     * @note Can be called multiple times to reseed, doing so releases existing memory allocations
+     */
     static void init(const unsigned long long &seed);
+    /**
+     * Acts as destructor
+     * @note Safe to call multiple times
+     */
     static void free();
     /**
      * Resizes random array according to the rules:
@@ -26,6 +37,9 @@ class Random {
      *       length*=shrinkModifier
      */
     static bool resize(const size_type &_length);
+    /**
+     * Accessors
+     */
     static void setGrowthModifier(float);
     static float getGrowthModifier();
     static void setShrinkModifier(float);
@@ -34,8 +48,9 @@ class Random {
      * Returns length of curand state array currently allocated
      */
     static size_type size();
+    static unsigned long long seed();
  private:
-    static unsigned long long seed;
+    static unsigned long long mSeed;
     static size_type length;
     static float shrinkModifier;
     static float growthModifier;
