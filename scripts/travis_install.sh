@@ -38,7 +38,7 @@ apt-key add 7fa2af80.pub
 apt-get -qq update
 
 # Install CUDA packages
-apt-get install -y --no-install-recommends cuda-core-${CUDA_PACKAGE_VERSION} cuda-cudart-dev-${CUDA_PACKAGE_VERSION}
+apt-get install -y --no-install-recommends cuda-core-${CUDA_PACKAGE_VERSION} cuda-cudart-dev-${CUDA_PACKAGE_VERSION} cuda-curand-dev-${CUDA_PACKAGE_VERSION}
 
 # Install cpplint (optional, not currently used at CI time)
 # pip3 install cpplint
