@@ -295,8 +295,8 @@ function(add_flamegpu_library NAME SRC FLAMEGPU_ROOT)
     set_property(TARGET ${NAME}  PROPERTY CUDA_SEPARABLE_COMPILATION ON)
 
     # Define include dirs
-    target_include_directories(${NAME} PRIVATE ${FLAMEGPU_ROOT}/include)
-    target_include_directories(${NAME} PRIVATE ${FLAMEGPU_ROOT}/externals)
+    target_include_directories(${NAME}  PRIVATE ${FLAMEGPU_ROOT}/include)
+    target_include_directories(${NAME}  PRIVATE ${FLAMEGPU_ROOT}/externals)
 
     # Flag the new linter target and the files to be linted.
     new_linter_target(${NAME} "${SRC}")

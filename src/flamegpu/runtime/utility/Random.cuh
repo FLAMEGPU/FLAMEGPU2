@@ -1,12 +1,16 @@
 #ifndef __Random_cuh__
 #define __Random_cuh__
+#include <vector>
+#include <curand_kernel.h>
+#include "flamegpu/runtime/utility/AgentRandom.cuh"
 
 /**
  * Static manager for the shared array of curand state used by a simulation
+ * Pairs with device size AgentRandom
  */
 class Random {
  public:
-    typedef unsigned int size_type;
+    typedef AgentRandom::size_type size_type;
     /**
      * Utility for passing to init()
      */

@@ -1,10 +1,10 @@
-#include "Random.h"
+#include "Random.cuh"
 
 #include<ctime>
 
 #include <cuda_runtime.h>
 #include <curand_kernel.h>
-#include <assert.h>
+#include <cassert>
 #include <cstdio>
 
 /**
@@ -34,15 +34,15 @@ void Random::init(const unsigned long long &_seed) {
     free();
 }
 void Random::free() {   
-    //Clear size
+    // Clear size
     length = 0;
     hd_random_size = 0;
     if (cudaMemcpyToSymbol(d_random_size, &hd_random_size, sizeof(Random::size_type)) != cudaSuccess)
         printf("(%s:%d) CUDA Error initialising curand.", __FILE__, __LINE__);
-    //Release old
+    // Release old
     if (hd_random_state != nullptr && cudaFree(hd_random_state) != cudaSuccess)
         printf("(%s:%d) CUDA Error Random::~Random().", __FILE__, __LINE__);
-    //Update pointers
+    // Update pointers
     hd_random_state = nullptr;
     if (cudaMemcpyToSymbol(d_random_state, &hd_random_state, sizeof(curandState*)) != cudaSuccess)
         printf("(%s:%d) CUDA Error Random::~Random().", __FILE__, __LINE__);
@@ -73,34 +73,34 @@ __global__ void init_curand(unsigned long threadCount, unsigned long long seed, 
  */
 void Random::resizeDeviceArray(const size_type &_length) {
     if(_length > length) {
-        //Growing array
+        // Growing array
         curandState *t_hd_random_state = nullptr;
-        //Allocate new
+        // Allocate new
         if (cudaMalloc(&t_hd_random_state, _length * sizeof(curandState)) != cudaSuccess)
             printf("(%s:%d) CUDA Error Random::resizeDeviceArray().", __FILE__, __LINE__);
-        //Copy old->new[****    ]
+        // Copy old->new[****    ]
         if (hd_random_state != nullptr)
             if (cudaMemcpy(t_hd_random_state, hd_random_state, length * sizeof(curandState), cudaMemcpyDeviceToDevice))
                 printf("(%s:%d) CUDA Error Random::resizeDeviceArray().", __FILE__, __LINE__);
-        //Update pointers
+        // Update pointers
         hd_random_state = t_hd_random_state;
         if (cudaMemcpyToSymbol(d_random_state, &hd_random_state, sizeof(curandState*)) != cudaSuccess)
             printf("(%s:%d) CUDA Error Random::resizeDeviceArray().", __FILE__, __LINE__);
-        //Init new[    ****]
+        // Init new[    ****]
         unsigned int initThreads = 512;
         unsigned int initBlocks = (_length - length / initThreads) + 1;
         init_curand<<<initBlocks, initThreads>>>(_length - length, seed, length);
     } else {
-        //Shrinking array
+        // Shrinking array
         curandState *t_hd_random_state = nullptr;
-        //Allocate new
+        // Allocate new
         if (cudaMalloc(&t_hd_random_state, _length * sizeof(curandState)) != cudaSuccess)
             printf("(%s:%d) CUDA Error Random::resizeDeviceArray().", __FILE__, __LINE__);
-        //Copy old->new
+        // Copy old->new
         if (hd_random_state != nullptr) 
             if(cudaMemcpy(t_hd_random_state, hd_random_state, _length * sizeof(curandState), cudaMemcpyDeviceToDevice))
                 printf("(%s:%d) CUDA Error Random::resizeDeviceArray().", __FILE__, __LINE__);
-        //Update pointers
+        // Update pointers
         hd_random_state = t_hd_random_state;
         if (cudaMemcpyToSymbol(d_random_state, &hd_random_state, sizeof(curandState*)) != cudaSuccess)
             printf("(%s:%d) CUDA Error Random::resizeDeviceArray().", __FILE__, __LINE__);
@@ -108,7 +108,7 @@ void Random::resizeDeviceArray(const size_type &_length) {
         if (hd_random_state!=nullptr && cudaFree(hd_random_state) != cudaSuccess)
             printf("(%s:%d) CUDA Error Random::resizeDeviceArray().", __FILE__, __LINE__);
     }
-    //Update length
+    // Update length
     length = _length;
     hd_random_size = _length;
     if (cudaMemcpyToSymbol(d_random_size, &hd_random_size, sizeof(Random::size_type)) != cudaSuccess)
