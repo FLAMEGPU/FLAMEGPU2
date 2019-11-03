@@ -245,7 +245,11 @@ function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
 
     # Add include directories
     target_include_directories(${NAME} PRIVATE ${FLAMEGPU_ROOT}/include)
-    target_include_directories(${NAME} PRIVATE ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
+    target_include_directories(${NAME} PRIVATE "${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}")
+    
+    # Looking for curand on travis
+    find_path(IS_CURAND NAMES "curand_kernel.h" PATHS ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
+    message("CURAND.h: ${IS_CURAND}")
 
     # Enable RDC for the target
     set_property(TARGET ${NAME} PROPERTY CUDA_SEPARABLE_COMPILATION ON)
