@@ -9,9 +9,9 @@
 #include <algorithm>
 
 /**
- * Anonymous namespace to hide __device__ declarations
+ * Internal namespace to hide __device__ declarations from modeller
  */
-namespace {
+namespace flamegpu_internal {
 	__device__ curandState *d_random_state;
 	__device__ Random::size_type d_random_size;
     curandState *hd_random_state;
@@ -39,15 +39,15 @@ void Random::init(const unsigned long long &_seed) {
 void Random::free() {   
     // Clear size
     length = 0;
-    hd_random_size = 0;
-    if (cudaMemcpyToSymbol(d_random_size, &hd_random_size, sizeof(Random::size_type)) != cudaSuccess)
+    flamegpu_internal::hd_random_size = 0;
+    if (cudaMemcpyToSymbol(flamegpu_internal::d_random_size, &flamegpu_internal::hd_random_size, sizeof(Random::size_type)) != cudaSuccess)
         printf("(%s:%d) CUDA Error initialising curand.", __FILE__, __LINE__);
     // Release old
-    if (hd_random_state != nullptr && cudaFree(hd_random_state) != cudaSuccess)
+    if (flamegpu_internal::hd_random_state != nullptr && cudaFree(flamegpu_internal::hd_random_state) != cudaSuccess)
         printf("(%s:%d) CUDA Error Random::~Random().", __FILE__, __LINE__);
     // Update pointers
-    hd_random_state = nullptr;
-    if (cudaMemcpyToSymbol(d_random_state, &hd_random_state, sizeof(curandState*)) != cudaSuccess)
+    flamegpu_internal::hd_random_state = nullptr;
+    if (cudaMemcpyToSymbol(flamegpu_internal::d_random_state, &flamegpu_internal::hd_random_state, sizeof(curandState*)) != cudaSuccess)
         printf("(%s:%d) CUDA Error Random::~Random().", __FILE__, __LINE__);
     // Release host_max
     if (h_max_random_state)
@@ -72,7 +72,7 @@ bool Random::resize(const size_type &_length) {
 __global__ void init_curand(unsigned long threadCount, unsigned long long seed, Random::size_type offset) {
     int id = blockIdx.x * blockDim.x + threadIdx.x;
     if (id < threadCount)
-        curand_init(seed, offset + id, 0, &d_random_state[offset + id]);
+        curand_init(seed, offset + id, 0, &flamegpu_internal::d_random_state[offset + id]);
 }
 void Random::resizeDeviceArray(const size_type &_length) {
     if(_length > length) {
@@ -82,18 +82,18 @@ void Random::resizeDeviceArray(const size_type &_length) {
         if (cudaMalloc(&t_hd_random_state, _length * sizeof(curandState)) != cudaSuccess)
             printf("(%s:%d) CUDA Error Random::resizeDeviceArray().", __FILE__, __LINE__);
         // Copy old->new[****    ]
-        if (hd_random_state)
-            if (cudaMemcpy(t_hd_random_state, hd_random_state, length * sizeof(curandState), cudaMemcpyDeviceToDevice))
+        if (flamegpu_internal::hd_random_state)
+            if (cudaMemcpy(t_hd_random_state, flamegpu_internal::hd_random_state, length * sizeof(curandState), cudaMemcpyDeviceToDevice))
                 printf("(%s:%d) CUDA Error Random::resizeDeviceArray().", __FILE__, __LINE__);
         // Update pointers
-        hd_random_state = t_hd_random_state;
-        if (cudaMemcpyToSymbol(d_random_state, &hd_random_state, sizeof(curandState*)) != cudaSuccess)
+        flamegpu_internal::hd_random_state = t_hd_random_state;
+        if (cudaMemcpyToSymbol(flamegpu_internal::d_random_state, &flamegpu_internal::hd_random_state, sizeof(curandState*)) != cudaSuccess)
             printf("(%s:%d) CUDA Error Random::resizeDeviceArray().", __FILE__, __LINE__);
         // Init new[    ****]
         if (h_max_random_size > length) {
             //We have part/all host backup, copy to device array
             size_type copy_len = std::min(h_max_random_size, _length);
-            if (cudaMemcpy(t_hd_random_state + length, hd_random_state + length, copy_len * sizeof(curandState), cudaMemcpyDeviceToDevice))
+            if (cudaMemcpy(t_hd_random_state + length, flamegpu_internal::hd_random_state + length, copy_len * sizeof(curandState), cudaMemcpyDeviceToDevice))
                 printf("(%s:%d) CUDA Error Random::resizeDeviceArray().", __FILE__, __LINE__);
             length += copy_len;
         }
@@ -118,11 +118,11 @@ void Random::resizeDeviceArray(const size_type &_length) {
         else
             t_h_max_random_state = h_max_random_state;
         // Copy old->new
-        assert(hd_random_state != nullptr);
-        if (cudaMemcpy(t_hd_random_state, hd_random_state, _length * sizeof(curandState), cudaMemcpyDeviceToDevice))
+        assert(flamegpu_internal::hd_random_state != nullptr);
+        if (cudaMemcpy(t_hd_random_state, flamegpu_internal::hd_random_state, _length * sizeof(curandState), cudaMemcpyDeviceToDevice))
             printf("(%s:%d) CUDA Error Random::resizeDeviceArray().", __FILE__, __LINE__);
         // Copy part being shrunk away to host storage
-        if (cudaMemcpy(t_h_max_random_state + _length, hd_random_state + _length, (length - _length) * sizeof(curandState), cudaMemcpyDeviceToHost))
+        if (cudaMemcpy(t_h_max_random_state + _length, flamegpu_internal::hd_random_state + _length, (length - _length) * sizeof(curandState), cudaMemcpyDeviceToHost))
             printf("(%s:%d) CUDA Error Random::resizeDeviceArray().", __FILE__, __LINE__);
         // Release and replace old host ptr
         if (length > h_max_random_size) {
@@ -132,17 +132,17 @@ void Random::resizeDeviceArray(const size_type &_length) {
             h_max_random_size = length;
         }
         // Update pointers
-        hd_random_state = t_hd_random_state;
-        if (cudaMemcpyToSymbol(d_random_state, &hd_random_state, sizeof(curandState*)) != cudaSuccess)
+        flamegpu_internal::hd_random_state = t_hd_random_state;
+        if (cudaMemcpyToSymbol(flamegpu_internal::d_random_state, &flamegpu_internal::hd_random_state, sizeof(curandState*)) != cudaSuccess)
             printf("(%s:%d) CUDA Error Random::resizeDeviceArray().", __FILE__, __LINE__);
         //Release old
-        if (hd_random_state!=nullptr && cudaFree(hd_random_state) != cudaSuccess)
+        if (flamegpu_internal::hd_random_state!=nullptr && cudaFree(flamegpu_internal::hd_random_state) != cudaSuccess)
             printf("(%s:%d) CUDA Error Random::resizeDeviceArray().", __FILE__, __LINE__);
     }
     // Update length
     length = _length;
-    hd_random_size = _length;
-    if (cudaMemcpyToSymbol(d_random_size, &hd_random_size, sizeof(Random::size_type)) != cudaSuccess)
+    flamegpu_internal::hd_random_size = _length;
+    if (cudaMemcpyToSymbol(flamegpu_internal::d_random_size, &flamegpu_internal::hd_random_size, sizeof(Random::size_type)) != cudaSuccess)
         printf("(%s:%d) CUDA Error initialising curand.", __FILE__, __LINE__);
 }
 void Random::setGrowthModifier(float _growthModifier) {

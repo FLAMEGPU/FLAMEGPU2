@@ -56,9 +56,9 @@ private:
 };
 
 /**
- * Anonymous namespace to hide __device__ declarations
+ * Internal namespace to hide __device__ declarations from modeller
  */
-namespace {
+namespace flamegpu_internal {
     extern __device__ curandState *d_random_state;
     extern __device__ AgentRandom::size_type d_random_size;
 }
@@ -69,7 +69,7 @@ namespace {
 __forceinline__ __device__ AgentRandom::AgentRandom() {
     // Check once per agent per kernel
     // as opposed to every time rng is called
-    assert(tid() < d_random_size);
+    assert(tid() < flamegpu_internal::d_random_size);
 }
 /**
  * All templates are specialised
@@ -80,11 +80,11 @@ __forceinline__ __device__ AgentRandom::AgentRandom() {
  */
 template<>
 __forceinline__ __device__ float AgentRandom::uniform() const {
-    return curand_uniform(&d_random_state[tid()]);
+    return curand_uniform(&flamegpu_internal::d_random_state[tid()]);
 }
 template<>
 __forceinline__ __device__ double AgentRandom::uniform() const {
-    return curand_uniform_double(&d_random_state[tid()]);
+    return curand_uniform_double(&flamegpu_internal::d_random_state[tid()]);
 }
 
 /**
@@ -92,22 +92,22 @@ __forceinline__ __device__ double AgentRandom::uniform() const {
  */
 template<>
 __forceinline__ __device__ float AgentRandom::normal() const {
-    return curand_normal(&d_random_state[tid()]);
+    return curand_normal(&flamegpu_internal::d_random_state[tid()]);
 }
 template<>
 __forceinline__ __device__ double AgentRandom::normal() const {
-    return curand_normal_double(&d_random_state[tid()]);
+    return curand_normal_double(&flamegpu_internal::d_random_state[tid()]);
 }
 /**
  * Log Normal floating point
  */
 template<>
 __forceinline__ __device__ float AgentRandom::logNormal(const float& mean, const float& stddev) const {
-    return curand_log_normal(&d_random_state[tid()], mean, stddev);
+    return curand_log_normal(&flamegpu_internal::d_random_state[tid()], mean, stddev);
 }
 template<>
 __forceinline__ __device__ double AgentRandom::logNormal(const double& mean, const double& stddev) const {
-    return curand_log_normal_double(&d_random_state[tid()], mean, stddev);
+    return curand_log_normal_double(&flamegpu_internal::d_random_state[tid()], mean, stddev);
 }
 /**
 * Uniform Int
