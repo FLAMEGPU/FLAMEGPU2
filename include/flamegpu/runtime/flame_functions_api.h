@@ -15,6 +15,7 @@
 #include <flamegpu/runtime/cuRVE/curve.h>
 #include <flamegpu/exception/FGPUException.h>
 #include <flamegpu/runtime/messagelist.h>
+#include <flamegpu/runtime/utility/AgentRandom.cuh>
 
 
 //TODO: Some example code of the handle class and an example function
@@ -55,7 +56,7 @@ class FLAMEGPU_API
 {
 
 public:
-    __device__ FLAMEGPU_API() {};
+    __device__ FLAMEGPU_API() : random(AgentRandom()) {};
 
     template<typename T, unsigned int N> __device__
     T getVariable(const char(&variable_name)[N]);
@@ -110,7 +111,11 @@ public:
 	{
 		messagename_outp_hash = messagename_hash;
 	}
-
+    /**
+     * Provides access to random functionality inside agent functions
+     * @note random state isn't stored within the object, so it can be const
+     */
+    const AgentRandom random;
 private:
 	CurveNamespaceHash agent_func_name_hash;
 	CurveNamespaceHash messagename_inp_hash;

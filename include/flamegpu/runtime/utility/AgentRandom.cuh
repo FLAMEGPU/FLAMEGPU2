@@ -2,7 +2,6 @@
 #define __AgentRandom_cuh__
 
 #include <cassert>
-#include <cuda_runtime.h>
 #include <curand_kernel.h>
 #include <device_launch_parameters.h>
 
