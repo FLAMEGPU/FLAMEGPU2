@@ -16,7 +16,7 @@
 #include <flamegpu/io/statereader.h>
 #include <flamegpu/io/statewriter.h>
 #include "flamegpu/io/factory.h"
-#include "../runtime/utility/Random.cuh"
+#include "flamegpu/runtime/utility/Random.cuh"
 
 
 Simulation::Simulation(const ModelDescription& model) : layers(), model_description(model)

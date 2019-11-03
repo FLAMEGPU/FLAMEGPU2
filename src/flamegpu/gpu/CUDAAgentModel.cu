@@ -14,7 +14,7 @@
 #include <flamegpu/model/ModelDescription.h>
 #include <flamegpu/pop/AgentPopulation.h>
 #include <flamegpu/sim/Simulation.h>
-#include "../runtime/utility/random.cuh"
+#include "flamegpu/runtime/utility/Random.cuh"
 
  // include FLAMEGPU kernel wrapper
 #include <flamegpu/runtime/agent_function.h>

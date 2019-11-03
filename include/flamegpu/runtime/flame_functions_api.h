@@ -15,7 +15,7 @@
 #include <flamegpu/runtime/cuRVE/curve.h>
 #include <flamegpu/exception/FGPUException.h>
 #include <flamegpu/runtime/messagelist.h>
-#include <flamegpu/runtime/utility/AgentRandom.cuh>
+#include "flamegpu/runtime/utility/AgentRandom.cuh"
 
 
 //TODO: Some example code of the handle class and an example function

@@ -297,6 +297,7 @@ function(add_flamegpu_library NAME SRC FLAMEGPU_ROOT)
     # Define include dirs
     target_include_directories(${NAME}  PRIVATE ${FLAMEGPU_ROOT}/include)
     target_include_directories(${NAME}  PRIVATE ${FLAMEGPU_ROOT}/externals)
+    target_include_directories(${NAME}  PRIVATE ${FLAMEGPU_ROOT}/src) #private headers
 
     # Flag the new linter target and the files to be linted.
     new_linter_target(${NAME} "${SRC}")

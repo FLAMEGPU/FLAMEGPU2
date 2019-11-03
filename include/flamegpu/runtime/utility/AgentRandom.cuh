@@ -3,9 +3,6 @@
 
 #include <cassert>
 #include <curand_kernel.h>
-#include <device_launch_parameters.h>
-
-class FLAMEGPU_API;
 
 /**
  * Utility for accessing random generation within agent functions

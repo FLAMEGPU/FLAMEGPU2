@@ -1,6 +1,5 @@
 #ifndef __Random_cuh__
 #define __Random_cuh__
-#include <vector>
 #include <curand_kernel.h>
 #include "flamegpu/runtime/utility/AgentRandom.cuh"
 
