@@ -54,9 +54,13 @@ __device__ FLAME_GPU_AGENT_STATUS funcName ## _impl(FLAMEGPU_API* FLAMEGPU)
  */
 class FLAMEGPU_API
 {
-
+    //Friends have access to TID() & TS_ID()
+    friend __global__ void agent_function_wrapper(CurveNamespaceHash, CurveNamespaceHash, CurveNamespaceHash, FLAMEGPU_AGENT_FUNCTION_POINTER, const int, const unsigned int, const unsigned int);
 public:
-    __device__ FLAMEGPU_API() : random(AgentRandom()) {};
+    /**
+     * @param thread_in_layer_offset This offset can be added to TID to give a thread-safe unique index for the thread
+     */
+    __device__ FLAMEGPU_API(const unsigned int &_thread_in_layer_offset) : random(AgentRandom(_thread_in_layer_offset)), thread_in_layer_offset(_thread_in_layer_offset){};
 
     template<typename T, unsigned int N> __device__
     T getVariable(const char(&variable_name)[N]);
@@ -75,8 +79,6 @@ public:
 
 	template<unsigned int N> __device__
 		MessageList GetMessageIterator(const char(&message_name)[N]);
-
-
 
 	/**
 	* \brief
@@ -123,6 +125,30 @@ private:
 	MessageList messageList;
 
 	unsigned int  messageListSize;
+
+    unsigned int thread_in_layer_offset;
+    /**
+     * Thread index
+     */
+    __forceinline__ __device__ static unsigned int TID()
+    {
+        // 3D incase
+        // Regardless, this should be optimised away
+        auto blockId = blockIdx.x + blockIdx.y * gridDim.x
+            + gridDim.x * gridDim.y * blockIdx.z;
+        auto threadId = blockId * (blockDim.x * blockDim.y * blockDim.z)
+            + (threadIdx.z * (blockDim.x * blockDim.y))
+            + (threadIdx.y * blockDim.x)
+            + threadIdx.x;
+        return threadId;
+    }
+    /**
+     * Thread-safe index
+     */
+    __forceinline__ __device__ unsigned int TS_ID() const
+    {
+        return thread_in_layer_offset + TID();
+    }
 };
 
 

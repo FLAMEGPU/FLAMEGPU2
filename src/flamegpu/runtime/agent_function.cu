@@ -2,11 +2,11 @@
 
 #include <flamegpu/runtime/flame_functions_api.h>
 
-__global__ void agent_function_wrapper(CurveNamespaceHash agent_func_name_hash, CurveNamespaceHash messagename_inp_hash, CurveNamespaceHash messagename_outp_hash, FLAMEGPU_AGENT_FUNCTION_POINTER func, int popNo, unsigned int messageList_size)
+__global__ void agent_function_wrapper(CurveNamespaceHash agent_func_name_hash, CurveNamespaceHash messagename_inp_hash, CurveNamespaceHash messagename_outp_hash, FLAMEGPU_AGENT_FUNCTION_POINTER func, const int popNo, const unsigned int messageList_size, const unsigned int thread_in_layer_offset)
 {
 
     //create a new device FLAME_GPU instance
-    FLAMEGPU_API *api = new FLAMEGPU_API();
+    FLAMEGPU_API *api = new FLAMEGPU_API(thread_in_layer_offset);
 	
 	api->setMessageListSize(messageList_size);
 	
@@ -22,9 +22,8 @@ __global__ void agent_function_wrapper(CurveNamespaceHash agent_func_name_hash, 
 
     //printf("hello from wrapper %d %u\n",threadIdx.x,agentname_hash);
 
-    //call the user specified device function
-    int tid = (blockDim.x * blockIdx.x) + threadIdx.x;//threadIdx.x + blockIdx.x * gridDim.x;
-    if(tid < popNo)
+    //call the user specified device 
+    if(api->TID() < popNo)
     {
         FLAME_GPU_AGENT_STATUS flag = func(api);
         if (flag == 1)

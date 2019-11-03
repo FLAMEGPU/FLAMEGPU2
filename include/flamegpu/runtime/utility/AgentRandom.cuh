@@ -5,6 +5,8 @@
 #include <curand_kernel.h>
 #include <device_launch_parameters.h>
 
+class FLAMEGPU_API;
+
 /**
  * Utility for accessing random generation within agent functions
  * Wraps curand
@@ -13,7 +15,7 @@ class AgentRandom {
  public:
     typedef unsigned int size_type;
 
-    __forceinline__ __device__ AgentRandom();
+    __forceinline__ __device__ AgentRandom(const unsigned int &_TS_ID);
     /**
      * Returns a float uniformly distributed between 0.0 and 1.0. 
      * @note It may return from 0.0 to 1.0, where 1.0 is included and 0.0 is excluded.
@@ -40,19 +42,11 @@ class AgentRandom {
      */
     template<typename T>
     __forceinline__ __device__ T uniform(const T& min, const T& max) const;
-
 private:
-    __forceinline__ __device__ static unsigned int tid() {
-        // 3D incase
-        // Regardless, this should be optimised away
-        auto blockId = blockIdx.x + blockIdx.y * gridDim.x
-            + gridDim.x * gridDim.y * blockIdx.z;
-        auto threadId = blockId * (blockDim.x * blockDim.y * blockDim.z)
-            + (threadIdx.z * (blockDim.x * blockDim.y))
-            + (threadIdx.y * blockDim.x)
-            + threadIdx.x;
-        return threadId;
-    }
+    /**
+     * Thread-safe index for accessing curand
+     */
+    const unsigned int &TS_ID;
 };
 
 /**
@@ -66,10 +60,10 @@ namespace flamegpu_internal {
 /**
  * Implmenetation
  */
-__forceinline__ __device__ AgentRandom::AgentRandom() {
+__forceinline__ __device__ AgentRandom::AgentRandom(const unsigned int &_TS_ID) : TS_ID(_TS_ID) {
     // Check once per agent per kernel
     // as opposed to every time rng is called
-    assert(tid() < flamegpu_internal::d_random_size);
+    assert(TS_ID < flamegpu_internal::d_random_size);
 }
 /**
  * All templates are specialised
@@ -80,11 +74,11 @@ __forceinline__ __device__ AgentRandom::AgentRandom() {
  */
 template<>
 __forceinline__ __device__ float AgentRandom::uniform() const {
-    return curand_uniform(&flamegpu_internal::d_random_state[tid()]);
+    return curand_uniform(&flamegpu_internal::d_random_state[TS_ID]);
 }
 template<>
 __forceinline__ __device__ double AgentRandom::uniform() const {
-    return curand_uniform_double(&flamegpu_internal::d_random_state[tid()]);
+    return curand_uniform_double(&flamegpu_internal::d_random_state[TS_ID]);
 }
 
 /**
@@ -92,22 +86,22 @@ __forceinline__ __device__ double AgentRandom::uniform() const {
  */
 template<>
 __forceinline__ __device__ float AgentRandom::normal() const {
-    return curand_normal(&flamegpu_internal::d_random_state[tid()]);
+    return curand_normal(&flamegpu_internal::d_random_state[TS_ID]);
 }
 template<>
 __forceinline__ __device__ double AgentRandom::normal() const {
-    return curand_normal_double(&flamegpu_internal::d_random_state[tid()]);
+    return curand_normal_double(&flamegpu_internal::d_random_state[TS_ID]);
 }
 /**
  * Log Normal floating point
  */
 template<>
 __forceinline__ __device__ float AgentRandom::logNormal(const float& mean, const float& stddev) const {
-    return curand_log_normal(&flamegpu_internal::d_random_state[tid()], mean, stddev);
+    return curand_log_normal(&flamegpu_internal::d_random_state[TS_ID], mean, stddev);
 }
 template<>
 __forceinline__ __device__ double AgentRandom::logNormal(const double& mean, const double& stddev) const {
-    return curand_log_normal_double(&flamegpu_internal::d_random_state[tid()], mean, stddev);
+    return curand_log_normal_double(&flamegpu_internal::d_random_state[TS_ID], mean, stddev);
 }
 /**
 * Uniform Int

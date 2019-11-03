@@ -14,6 +14,7 @@
 #include <flamegpu/model/ModelDescription.h>
 #include <flamegpu/pop/AgentPopulation.h>
 #include <flamegpu/sim/Simulation.h>
+#include "../runtime/utility/random.cuh"
 
  // include FLAMEGPU kernel wrapper
 #include <flamegpu/runtime/agent_function.h>
@@ -153,7 +154,7 @@ void CUDAAgentModel::step(const Simulation& simulation)
 		const FunctionDescriptionVector& functions = simulation.getFunctionsAtLayer(i);
 
 		int j = 0;
-
+        unsigned int totalThreads = 0;
 		/*! for each func function - Loop through to do all mapping of agent and message variables */
 		for (AgentFunctionDescription func_des : functions)
 		{
@@ -179,7 +180,15 @@ void CUDAAgentModel::step(const Simulation& simulation)
 			 */
 			cuda_agent.mapRuntimeVariables(func_des);
 
+
+            // Count total threads being launched
+            totalThreads += cuda_agent.getMaximumListSize();
 		}
+
+        //Set random size()
+        Random::resize(totalThreads);
+        totalThreads = 0;
+
 		//! for each func function - Loop through to launch all agent functions
 		for (AgentFunctionDescription func_des : functions)
 		{
@@ -239,8 +248,8 @@ void CUDAAgentModel::step(const Simulation& simulation)
 			CurveNamespaceHash funcname_hash = curveVariableRuntimeHash(func_name.c_str());
 
 			//agent_function_wrapper << <gridSize, blockSize, 0, stream[j] >> > (agentname_hash + funcname_hash, h_func_ptr, state_list_size);
-		    agent_function_wrapper <<<gridSize, blockSize, 0, stream[j] >>>(agentname_hash + funcname_hash, message_name_inp_hash, message_name_outp_hash, h_func_ptr, state_list_size, messageList_Size);
- 
+		    agent_function_wrapper <<<gridSize, blockSize, 0, stream[j] >>>(agentname_hash + funcname_hash, message_name_inp_hash, message_name_outp_hash, h_func_ptr, state_list_size, messageList_Size, totalThreads);
+            totalThreads += state_list_size;
 			++j;
 		}
 		//! for each func function - Loop through to un-map all agent and message variables
