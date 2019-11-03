@@ -119,7 +119,7 @@ void Random::resizeDeviceArray(const size_type &_length) {
         assert(flamegpu_internal::hd_random_state != nullptr);
         if (cudaMemcpy(t_hd_random_state, flamegpu_internal::hd_random_state, _length * sizeof(curandState), cudaMemcpyDeviceToDevice))
             printf("(%s:%d) CUDA Error Random::resizeDeviceArray().", __FILE__, __LINE__);
-        // Copy part being shrunk away to host storage
+        // Copy part being shrunk away to host storage (This could be async with above memcpy?)
         if (cudaMemcpy(t_h_max_random_state + _length, flamegpu_internal::hd_random_state + _length, (length - _length) * sizeof(curandState), cudaMemcpyDeviceToHost))
             printf("(%s:%d) CUDA Error Random::resizeDeviceArray().", __FILE__, __LINE__);
         // Release and replace old host ptr

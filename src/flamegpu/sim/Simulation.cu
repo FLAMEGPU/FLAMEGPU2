@@ -69,41 +69,49 @@ const ModelDescription& Simulation::getModelDescritpion() const
     return model_description;
 }
 
-int Simulation::checkArgs(int argc, char** argv) {
+int Simulation::checkArgs(int argc, char** argv, std::string &xml_model_path) {
     // These should really be in some kind of config struct
-    std::string xml_model_path;
-    unsigned int device_id = 0;
-    unsigned int iterations = 0;
-    // Parse args
-    int i = 1; 
-    for (; i < argc; i++)
+    // unsigned int device_id = 0;
+    // unsigned int iterations = 0;
+
+    // Required args
+    if(argc<2)
     {
+        printHelp(argv[0]);
+        return false;
+    }
+    xml_model_path = std::string(argv[1]);
+
+    // Parse optional args
+    int i = 2; 
+    for (; i < argc; i++) {
+
         // Get arg as lowercase
         std::string arg(argv[i]);
         std::transform(arg.begin(), arg.end(), arg.begin(), ::tolower);
 
         // -in <string>, Specifies the input state file
-        if (arg.compare("--in") == 0 || arg.compare("-i") == 0) {
+        /*if (arg.compare("--in") == 0 || arg.compare("-i") == 0) {
             xml_model_path = std::string(argv[++i]);
             continue;
-        }
+        }*/
         // -steps <uint>, The number of steps to be executed
         if (arg.compare("--steps") == 0 || arg.compare("-s") == 0) {
-            iterations = static_cast<int>(strtoul(argv[++i], nullptr, 0));
+            // iterations = static_cast<int>(strtoul(argv[++i], nullptr, 0));
             continue;
         }
         // -device <uint>, Uses the specified cuda device, defaults to 0
         if (arg.compare("--device") == 0 || arg.compare("-d") == 0) {
-            device_id = static_cast<unsigned int>(strtoul(argv[++i], nullptr, 0));
+            // device_id = static_cast<unsigned int>(strtoul(argv[++i], nullptr, 0));
             continue;
         }
-        //-seed <uint>, Uses the specified random seed, defaults to clock
+        //-random <uint>, Uses the specified random seed, defaults to clock
         if (arg.compare("--random") == 0 || arg.compare("-r") == 0)
         {
             //Reinitialise Random state
             Random::init(static_cast<unsigned long long>(strtoul(argv[++i], nullptr, 0)));
             continue;
-        }		
+        }
         fprintf(stderr, "Unexpected argument: %s\n", arg.c_str());
         printHelp(argv[0]);
         return false;
@@ -112,9 +120,10 @@ int Simulation::checkArgs(int argc, char** argv) {
 }
 
 void Simulation::printHelp(const char *executable) {
-    printf("Usage: %s [-i input_xml_file] [-s steps] [-d device_id] [-r random_seed]\n", executable);
+    printf("Usage: %s xml_input_file [-s steps] [-d device_id] [-r random_seed]\n", executable);
     printf("Optional Arguments:\n");
     const char *line_fmt = "%-18s %s\n";
+    printf(line_fmt, "-s, --steps", "Number of simulation iterations");
     printf(line_fmt, "-d, --device", "GPU index");
     printf(line_fmt, "-r, --random", "Random seed");
 }
@@ -126,11 +135,12 @@ void Simulation::printHelp(const char *executable) {
 void Simulation::initialise(int argc, char** argv)
 {
 	//check input args
-	if (!checkArgs(argc, argv))
+    std::string xml_model_path;
+	if (!checkArgs(argc, argv, xml_model_path) && !xml_model_path.empty())
 		exit(0);
-	const char* input = argv[1];
 	
-	StateReader *read__ = ReaderFactory::createReader(model_description, input);
+	
+	StateReader *read__ = ReaderFactory::createReader(model_description, xml_model_path.c_str());
 	read__->parse();
 }
 
@@ -145,11 +155,11 @@ void Simulation::initialise(StateReader& read__)
 /*
  * issues: only saves the last output, hardcoded, will be changed
  */
-void Simulation::output(int argc, char** argv)
+void Simulation::output(int /*argc*/, char** /*argv*/)
 {
 	//check input args
-	if (!checkArgs(argc, argv))
-		exit(0);
+	// if (!checkArgs(argc, argv))
+		// exit(0);
 	const char* input =  "finalIteration.xml";//argv[2];
 
 	StateWriter *write__ = WriterFactory::createWriter(model_description, input);
