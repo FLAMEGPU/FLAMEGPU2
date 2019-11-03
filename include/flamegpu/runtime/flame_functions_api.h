@@ -10,6 +10,7 @@
  * \todo longer description
  */
 
+#include <cassert>
 
 #include <flamegpu/gpu/CUDAErrorChecking.h>			//required for CUDA error handling functions
 #include <flamegpu/runtime/cuRVE/curve.h>
@@ -60,7 +61,7 @@ public:
     /**
      * @param thread_in_layer_offset This offset can be added to TID to give a thread-safe unique index for the thread
      */
-    __device__ FLAMEGPU_API(const unsigned int &_thread_in_layer_offset) : random(AgentRandom(_thread_in_layer_offset)), thread_in_layer_offset(_thread_in_layer_offset){};
+    __device__ FLAMEGPU_API(const unsigned int &_thread_in_layer_offset) : random(AgentRandom(TID()+_thread_in_layer_offset)), thread_in_layer_offset(_thread_in_layer_offset){};
 
     template<typename T, unsigned int N> __device__
     T getVariable(const char(&variable_name)[N]);
@@ -132,15 +133,20 @@ private:
      */
     __forceinline__ __device__ static unsigned int TID()
     {
-        // 3D incase
-        // Regardless, this should be optimised away
+        /*
+        // 3D version
         auto blockId = blockIdx.x + blockIdx.y * gridDim.x
             + gridDim.x * gridDim.y * blockIdx.z;
         auto threadId = blockId * (blockDim.x * blockDim.y * blockDim.z)
             + (threadIdx.z * (blockDim.x * blockDim.y))
             + (threadIdx.y * blockDim.x)
             + threadIdx.x;
-        return threadId;
+        return threadId;*/
+        assert(blockDim.y == 1);
+        assert(blockDim.z == 1);
+        assert(gridDim.y == 1);
+        assert(gridDim.z == 1);
+        return blockIdx.x * blockDim.x +threadIdx.x;
     }
     /**
      * Thread-safe index
