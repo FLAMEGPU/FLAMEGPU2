@@ -1,6 +1,9 @@
 #ifndef __Random_cuh__
 #define __Random_cuh__
 
+/**
+ * Static manager for the shared array of curand state used by a simulation
+ */
 class Random {
  public:
     typedef unsigned int size_type;
@@ -23,6 +26,10 @@ class Random {
     static float getGrowthModifier();
     static void setShrinkModifier(float);
     static float getShrinkModifier();
+    /**
+     * Returns length of curand state array currently allocated
+     */
+    static size_type size();
  private:
     static unsigned long long seed;
     static size_type length;

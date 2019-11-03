@@ -26,17 +26,14 @@ float Random::growthModifier = 0;
 /**
  * Member fns
  */
-unsigned long long Random::seedFromTime()
-{
+unsigned long long Random::seedFromTime() {
     return static_cast<unsigned long long>(time(nullptr));
 }
-void Random::init(const unsigned long long &_seed)
-{
+void Random::init(const unsigned long long &_seed) {
     Random::seed = _seed;
     free();
 }
-void Random::free()
-{   
+void Random::free() {   
     //Clear size
     length = 0;
     hd_random_size = 0;
@@ -51,8 +48,7 @@ void Random::free()
         printf("(%s:%d) CUDA Error Random::~Random().", __FILE__, __LINE__);
 }
 
-bool Random::resize(const size_type &_length)
-{
+bool Random::resize(const size_type &_length) {
     auto t_length = length;
     while (t_length < _length) {
         t_length  = static_cast<Random::size_type>(t_length * growthModifier);
@@ -75,10 +71,8 @@ __global__ void init_curand(unsigned long threadCount, unsigned long long seed, 
  * Should probably implement shrink differently, otherwise a curand state being shrunk and regrowed seed will reset
  * Perhaps maintain longest length curand on host and only shrink device side
  */
-void Random::resizeDeviceArray(const size_type &_length)
-{
-    if(_length > length)
-    {
+void Random::resizeDeviceArray(const size_type &_length) {
+    if(_length > length) {
         //Growing array
         curandState *t_hd_random_state = nullptr;
         //Allocate new
@@ -88,17 +82,15 @@ void Random::resizeDeviceArray(const size_type &_length)
         if (hd_random_state != nullptr)
             if (cudaMemcpy(t_hd_random_state, hd_random_state, length * sizeof(curandState), cudaMemcpyDeviceToDevice))
                 printf("(%s:%d) CUDA Error Random::resizeDeviceArray().", __FILE__, __LINE__);
-        //Init new[    ****]
-        unsigned int initThreads = 512;
-        unsigned int initBlocks = (_length - length / initThreads) + 1;
-        init_curand<<<initBlocks, initThreads>>>(_length - length, seed, length);
         //Update pointers
         hd_random_state = t_hd_random_state;
         if (cudaMemcpyToSymbol(d_random_state, &hd_random_state, sizeof(curandState*)) != cudaSuccess)
             printf("(%s:%d) CUDA Error Random::resizeDeviceArray().", __FILE__, __LINE__);
-    }
-    else
-    {
+        //Init new[    ****]
+        unsigned int initThreads = 512;
+        unsigned int initBlocks = (_length - length / initThreads) + 1;
+        init_curand<<<initBlocks, initThreads>>>(_length - length, seed, length);
+    } else {
         //Shrinking array
         curandState *t_hd_random_state = nullptr;
         //Allocate new
@@ -136,4 +128,7 @@ void Random::setShrinkModifier(float _shrinkModifier) {
 }
 float Random::getShrinkModifier() {
     return Random::shrinkModifier;
+}
+Random::size_type Random::size() {
+    return length;
 }
