@@ -40,6 +40,12 @@ class Random {
     static float shrinkModifier;
     static float growthModifier;
     static void resizeDeviceArray(const size_type &_length);
+    /**
+     * @note h_max_random_state will be allocated to length h_max_random_size
+     * However, it will only be initialised from hd_random_size(aka length) onwards
+     */
+    static curandState *h_max_random_state;
+    static Random::size_type h_max_random_size;
 };
 
 #endif //__Random_cuh__

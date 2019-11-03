@@ -10,7 +10,7 @@
  * Utility for accessing random generation within agent functions
  * Wraps curand
  */
-__device__ class AgentRandom {
+class AgentRandom {
  public:
     typedef unsigned int size_type;
 
@@ -67,7 +67,7 @@ namespace {
 /**
  * Implmenetation
  */
-AgentRandom::AgentRandom() {
+__forceinline__ __device__ AgentRandom::AgentRandom() {
     // Check once per agent per kernel
     // as opposed to every time rng is called
     assert(tid() < d_random_size);
