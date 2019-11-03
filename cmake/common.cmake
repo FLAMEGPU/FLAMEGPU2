@@ -245,6 +245,7 @@ function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
 
     # Add include directories
     target_include_directories(${NAME} PRIVATE ${FLAMEGPU_ROOT}/include)
+    target_include_directories(${NAME} PRIVATE ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
 
     # Enable RDC for the target
     set_property(TARGET ${NAME} PROPERTY CUDA_SEPARABLE_COMPILATION ON)
@@ -295,8 +296,9 @@ function(add_flamegpu_library NAME SRC FLAMEGPU_ROOT)
     set_property(TARGET ${NAME}  PROPERTY CUDA_SEPARABLE_COMPILATION ON)
 
     # Define include dirs
-    target_include_directories(${NAME}  PRIVATE ${FLAMEGPU_ROOT}/include)
-    target_include_directories(${NAME}  PRIVATE ${FLAMEGPU_ROOT}/externals)
+    target_include_directories(${NAME} PRIVATE ${FLAMEGPU_ROOT}/include)
+    target_include_directories(${NAME} PRIVATE ${FLAMEGPU_ROOT}/externals)
+    target_include_directories(${NAME} PRIVATE ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
 
     # Flag the new linter target and the files to be linted.
     new_linter_target(${NAME} "${SRC}")
