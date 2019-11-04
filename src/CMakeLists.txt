@@ -9,14 +9,17 @@ get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/.. REALPATH)
 
 # Include common rules.
 include(${FLAMEGPU_ROOT}/cmake/common.cmake)
+include(${FLAMEGPU_ROOT}/cmake/doxygen.cmake)
 
 # Define output location of static library
 if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
     # If top level project
     SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib/${CMAKE_SYSTEM_NAME_LOWER}-x64/${CMAKE_BUILD_TYPE}/)
+    create_doxygen_target("${CMAKE_CURRENT_BINARY_DIR}") 
 else()
     # If called via add_subdirectory()
     SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../lib/${CMAKE_SYSTEM_NAME_LOWER}-x64/${CMAKE_BUILD_TYPE}/)
+    create_doxygen_target("${CMAKE_CURRENT_BINARY_DIR}/..")
 endif()
 
 # Specify source files for the static library

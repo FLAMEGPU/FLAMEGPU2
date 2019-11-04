@@ -185,15 +185,15 @@ if(CPPLINT)
         # Add the custom target as a dependency of the global lint target
         if(TARGET all_lint)
             add_dependencies(all_lint lint_${NAME})
-        endif()        
-        # Put Within Lint filter
+        endif()
+        # Put within Lint filter
         CMAKE_SET_TARGET_FOLDER("lint_${NAME}" "Lint")
     endfunction()
 else()
     # Don't create this message multiple times
     if(NOT COMMAND add_flamegpu_executable)
         message( 
-            " cpplint script: NOT FOUND!\n"
+            " cpplint: NOT FOUND!\n"
             " Lint projects will not be generated.\n"
             " Please install cpplint as described on https://pypi.python.org/pypi/cpplint.\n"
             " In most cases command 'pip install --user cpplint' should be sufficient.")
