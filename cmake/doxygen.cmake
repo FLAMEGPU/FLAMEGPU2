@@ -1,6 +1,6 @@
 # Doxygen
 macro(create_doxygen_target DOXY_OUT_DIR)
-    find_package(Doxygen REQUIRED dot OPTIONAL_COMPONENTS mscgen dia)
+    find_package(Doxygen OPTIONAL_COMPONENTS mscgen dia dot)
     if(DOXYGEN_FOUND)
         # Modern method which generates unique doxyfile
         # These args taken from readme.md at time of commit

@@ -12,7 +12,7 @@ UBUNTU_CODENAME=$(lsb_release -c | cut -f2)
 apt-get -y update
 
 # Install apt dependencies
-apt-get install apt-transport-https ca-certificates gnupg software-properties-common wget libboost-dev python3-pip
+apt-get install apt-transport-https ca-certificates gnupg software-properties-common wget libboost-dev python3-pip doxygen
 
 # Install recent CMAKE via kitware APT repo
 wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | sudo apt-key add -
