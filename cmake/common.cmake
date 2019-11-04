@@ -187,7 +187,7 @@ if(CPPLINT)
             add_dependencies(all_lint lint_${NAME})
         endif()        
         # Put Within Lint filter
-        CMAKE_SET_TARGET_FOLDER(${NAME} "Lint")
+        CMAKE_SET_TARGET_FOLDER("lint_${NAME}" "Lint")
     endfunction()
 else()
     # Don't create this message multiple times
