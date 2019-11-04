@@ -29,7 +29,7 @@ endif()
 
 # Add the library building subdirectory
 if(BUILD_FLAMEGPU2)
-    add_subdirectory(src)
+    add_subdirectory(src "${PROJECT_BINARY_DIR}/FLAMEGPU2")
     # Set as startup project
     set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"  PROPERTY VS_STARTUP_PROJECT flamegpu2)
 endif()

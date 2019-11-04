@@ -203,13 +203,11 @@ else()
 endif()
 
 # Function to mask some of the steps to create an executable which links against the static library
-function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT MAKE_FOLDER)
+function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT MAKE_FOLDER)
 
     # If the library does not exist as a target, add it.
     if (NOT TARGET flamegpu2)
-        # Use the expected build directory location for the static library, so that multiple examples can be built without the need for a rebuild.
-        add_subdirectory(${FLAMEGPU_ROOT}/src ${FLAMEGPU_ROOT}/src/build) # Use the src/build dir to avoid re-builds
-        # add_subdirectory(${FLAMEGPU_ROOT}/src ./flamegpu2) # Use a child directory for more locality
+        add_subdirectory("${FLAMEGPU_ROOT}/src" "${PROJECT_ROOT}/FLAMEGPU2")
     endif()
 
     # Define which source files are required for the target executable
