@@ -51,7 +51,7 @@ public:
 			return new xmlReader(model, input);
 		}
 		*/
-
+		return nullptr;
 	}
 };
 

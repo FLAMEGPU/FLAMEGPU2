@@ -29,6 +29,8 @@ class MessageList
 
 public:
 
+	typedef unsigned int size_type;
+
 	class Message; // Forward declare inner classes
 	class iterator; // Forward declare inner classes
 
@@ -37,15 +39,15 @@ public:
 	{
 	private:
 		MessageList &_messageList;
-		unsigned int index;
+		size_type index;
 	public:
 	__device__ Message(MessageList &messageList) : _messageList(messageList), index(0) {};
-	__device__ Message(MessageList &messageList, unsigned int index) : _messageList(messageList), index(index) {};
+	__device__ Message(MessageList &messageList, size_type index) : _messageList(messageList), index(index) {};
 	__host__ __device__ bool operator==(const Message& rhs) { return  this->getIndex() == rhs.getIndex(); }
 	__host__ __device__ bool operator!=(const Message& rhs) { return  this->getIndex() != rhs.getIndex(); }
 	__host__ __device__ Message& operator++() { ++index;  return *this; }
-	__host__ __device__ unsigned int getIndex() const { return this->index; };
-	template<typename T, unsigned int N>
+	__host__ __device__ size_type getIndex() const { return this->index; };
+	template<typename T, size_type N>
 	__device__ T getVariable(const char(&variable_name)[N]);
 
 
@@ -57,7 +59,7 @@ public:
 	private:
 		MessageList::Message _message;
 	public:
-		__host__ __device__ iterator(MessageList &messageList, unsigned int index) : _message(messageList, index) {}
+		__host__ __device__ iterator(MessageList &messageList, size_type index) : _message(messageList, index) {}
 		__host__ __device__ iterator& operator++() { ++_message;  return *this; }
 		__host__ __device__ iterator operator++(int) { iterator tmp(*this); operator++(); return tmp; }
 		__host__ __device__ bool operator==(const iterator& rhs) { return  _message == rhs._message; }
@@ -65,13 +67,13 @@ public:
 		__host__ __device__ MessageList::Message& operator*() { return _message; }
 	};
 
-	__device__ MessageList(unsigned int start= 0, unsigned int end = 0) : start_(start), _messageCount(end) {};
+	__device__ MessageList(size_type start= 0, size_type end = 0) : start_(start), _messageCount(end) {};
 
 	__device__ ~MessageList() {};
 
 	/*! Returns the number of elements in the message list.
 	*/
-	inline __host__ __device__ std::size_t size(void) const
+	inline __host__ __device__ size_type size(void) const
 	{
 		return _messageCount;
 	}
@@ -86,9 +88,9 @@ public:
 	}
 
 
-	template<typename T, unsigned int N> __device__
+	template<typename T, size_type N> __device__
 		T getVariable(MessageList::iterator iterator, const char(&variable_name)[N]);
-	template<typename T, unsigned int N> __device__
+	template<typename T, size_type N> __device__
 		T getVariable(MessageList::Message message, const char(&variable_name)[N]);
 
 	/**
@@ -113,7 +115,7 @@ public:
 	* \brief
 	* \param  messageList_Size
 	*/
-	__device__ void setMessageListSize(unsigned int messageCount)
+	__device__ void setMessageListSize(size_type messageCount)
 	{
 		_messageCount = messageCount;
 	}
@@ -129,10 +131,10 @@ public:
 
 private:
 
-	unsigned int start_;
-	unsigned int end_;
+	size_type start_;
+	size_type end_;
 
-	std::size_t _messageCount;
+	size_type _messageCount;
 
 	CurveNamespaceHash agent_func_name_hash;
 	CurveNamespaceHash messagename_inp_hash;
@@ -145,7 +147,7 @@ private:
 * \param iterator MessageList iterator object for the target message.
 * \param variable_name Name of memory variable to retrieve
 */
-template<typename T, unsigned int N>
+template<typename T, MessageList::size_type N>
 __device__ T MessageList::getVariable(MessageList::iterator iterator, const char(&variable_name)[N])
 {
 	//get the value from curve using the message index.
@@ -159,7 +161,7 @@ __device__ T MessageList::getVariable(MessageList::iterator iterator, const char
 * \param iterator MessageList iterator object for the target message.
 * \param variable_name Name of memory variable to retrieve
 */
-template<typename T, unsigned int N>
+template<typename T, MessageList::size_type N>
 __device__ T MessageList::getVariable(MessageList::Message message, const char(&variable_name)[N])
 {
 	// Ensure that the message is within bounds.
@@ -179,7 +181,7 @@ __device__ T MessageList::getVariable(MessageList::Message message, const char(&
 * \brief Gets an agent memory value for a given MessageList::message
 * \param variable_name Name of memory variable to retrieve
 */
-template<typename T, unsigned int N>
+template<typename T, MessageList::size_type N>
 __device__ T MessageList::Message::getVariable(const char(&variable_name)[N]) {
 	// Get the value from curve, using the internal messageList. 
 	T value = _messageList.getVariable<T>(*this, variable_name);

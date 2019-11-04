@@ -11,7 +11,7 @@
 #include <flamegpu/model/MessageDescription.h>
 #include <flamegpu/exception/FGPUException.h>
 
-MessageDescription::MessageDescription(const std::string message_name, unsigned int initial_size) : variables(), name(message_name), maximum_size(initial_size) { }
+MessageDescription::MessageDescription(const std::string message_name, unsigned int initial_size) : name(message_name), variables(), maximum_size(initial_size) { }
 
 MessageDescription::~MessageDescription() {}
 

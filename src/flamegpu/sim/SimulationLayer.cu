@@ -13,7 +13,7 @@
 #include <flamegpu/model/ModelDescription.h>
 
 
-SimulationLayer::SimulationLayer(Simulation& sim, const std::string name) : simulation(sim), layer_name(name)
+SimulationLayer::SimulationLayer(Simulation& sim, const std::string name) : layer_name(name), simulation(sim)
 {
 }
 

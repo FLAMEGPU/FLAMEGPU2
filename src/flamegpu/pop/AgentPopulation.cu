@@ -17,8 +17,8 @@
 
 AgentPopulation::AgentPopulation(const AgentDescription &agent_description, unsigned int initial_size):
     agent(agent_description),
-    maximum_size(initial_size),
-    states_map()
+    states_map(),
+    maximum_size(initial_size)
 {
     //init the state maps
     const StateMap& sm = agent.getStateMap();

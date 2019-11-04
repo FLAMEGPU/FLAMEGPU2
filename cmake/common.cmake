@@ -139,6 +139,7 @@ set(CMAKE_CUDA_FLAGS_RELEASE "${CMAKE_CUDA_FLAGS_RELEASE} -lineinfo")
 set(CMAKE_CUDA_FLAGS_PROFILE "${CMAKE_CUDA_FLAGS_PROFILE} -lineinfo -DPROFILE -D_PROFILE")
 
 # Set high level of warnings, specific to the host compiler.
+set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --Wreorder --Werror reorder,cross-execution-space-call -Xptxas=\"-Werror\"  -Xnvlink=\"-Werror\"")
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     # Only set W4 for MSVC, WAll is more like Wall, Wextra and Wpedantic
     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler /W4")
@@ -149,12 +150,26 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler /wd4505")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4505")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4505")
+    set(CUDA_DEVICE_LINK_FLAGS "${CUDA_DEVICE_LINK_FLAGS} -Xcompiler /wd4100")
+    if(WARNINGS_AS_ERRORS)
+        set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler /WX")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /WX")
+        set(CUDA_DEVICE_LINK_FLAGS "${CUDA_DEVICE_LINK_FLAGS} -Xcompiler /WX")
+    endif()
 else()
     # Assume using GCC/Clang which Wall is relatively sane for. 
     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -Wall")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
+    if(WARNINGS_AS_ERRORS)
+        set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -Werror")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror")
+        set(CUDA_DEVICE_LINK_FLAGS "${CUDA_DEVICE_LINK_FLAGS} -Xcompiler -Werror")
+    endif()
 endif()
+# Common CUDA args
 
 # Use C++14 standard - std::make_unique is 14 not 11
 # Specify using C++14 standard

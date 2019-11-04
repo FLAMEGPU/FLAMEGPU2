@@ -17,7 +17,7 @@
 #include "flamegpu/io/factory.h"
 
 
-Simulation::Simulation(const ModelDescription& model) : model_description(model), layers()
+Simulation::Simulation(const ModelDescription& model) : layers(), model_description(model)
 {
     simulation_steps = 1;
 }
@@ -70,7 +70,7 @@ int Simulation::checkArgs(int argc, char** argv) {
 	printf("FLAMEGPU Console mode\n");
 	if (argc < 2)
 	{
-		printf("Usage: main [XML model data] [Iterations] [Optional CUDA device ID]\n");
+		printf("Usage: %s [XML model data] [Iterations] [Optional CUDA device ID]\n", argv[0]);
 		return false;
 	}
 

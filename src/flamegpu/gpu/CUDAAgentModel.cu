@@ -22,7 +22,7 @@
 * CUDAAgentModel class
 * @brief populates CUDA agent map, CUDA message map
 */
-CUDAAgentModel::CUDAAgentModel(const ModelDescription& description) : model_description(description), agent_map(), message_map(), curve(cuRVEInstance::getInstance()) //, function_map() {
+CUDAAgentModel::CUDAAgentModel(const ModelDescription& description) : model_description(description), agent_map(), curve(cuRVEInstance::getInstance()), message_map() //, function_map() {
 {
 	//create a reference to curve to ensure that it is initialised. This is a singleton class so will only be done once regardless of the number of CUDAgentModels.
 
@@ -147,7 +147,6 @@ void CUDAAgentModel::getPopulationData(AgentPopulation& population)
 */
 void CUDAAgentModel::step(const Simulation& simulation)
 {
-	int j;
 	int nStreams = 1;
 	std::string message_name;
 	CurveNamespaceHash message_name_inp_hash = 0;
@@ -156,7 +155,7 @@ void CUDAAgentModel::step(const Simulation& simulation)
 
 	//TODO: simulation.getMaxFunctionsPerLayer()
 	for (unsigned int i = 0; i < simulation.getLayerCount(); i++) {
-		int temp = simulation.getFunctionsAtLayer(i).size();
+		int temp = static_cast<int>(simulation.getFunctionsAtLayer(i).size());
 		nStreams = std::max(nStreams, temp);
 	}
 
@@ -173,7 +172,7 @@ void CUDAAgentModel::step(const Simulation& simulation)
 	{
 		const FunctionDescriptionVector& functions = simulation.getFunctionsAtLayer(i);
 
-		j = 0;
+		int j = 0;
 
 		/*! for each func function - Loop through to do all mapping of agent and message variables */
 		for (AgentFunctionDescription func_des : functions)
@@ -223,7 +222,7 @@ void CUDAAgentModel::step(const Simulation& simulation)
 			//! check if a function has an output massage
 			if (func_des.hasOutputMessage()) {
 				std::string outpMessage_name = func_des.getOutputMessageName();
-				const CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
+				//const CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
 				//message_name = outpMessage_name;
 
 				//! hash message name

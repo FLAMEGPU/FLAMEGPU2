@@ -10,7 +10,7 @@
 
 #include <flamegpu/pop/AgentInstance.h>
 
-AgentInstance::AgentInstance(AgentStateMemory& state_memory, unsigned int i) : agent_state_memory(state_memory), index(i)
+AgentInstance::AgentInstance(AgentStateMemory& state_memory, unsigned int i) : index(i), agent_state_memory(state_memory)
 {
 
 }

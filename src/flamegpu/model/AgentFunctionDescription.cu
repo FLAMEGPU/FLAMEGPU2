@@ -25,19 +25,19 @@ const std::string AgentFunctionDescription::getEndState() const
     return end_state;
 }
 
-void AgentFunctionDescription::setEndState(const std::string end_state)
+void AgentFunctionDescription::setEndState(const std::string _end_state)
 {
-    this->end_state = end_state;
+    this->end_state = _end_state;
 }
 
-const std::string AgentFunctionDescription::getIntialState() const
+const std::string AgentFunctionDescription::getInitialState() const
 {
     return initial_state;
 }
 
-void AgentFunctionDescription::setIntialState(const std::string intial_state)
+void AgentFunctionDescription::setInitialState(const std::string _initial_state)
 {
-    this->initial_state = initial_state;
+    this->initial_state = _initial_state;
 }
 
 const std::string AgentFunctionDescription::getName() const

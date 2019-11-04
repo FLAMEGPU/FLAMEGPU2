@@ -146,7 +146,7 @@ void CUDAMessage::unmapRuntimeVariables(const AgentFunctionDescription& func) co
     for (VariableMapPair mmp : message_description.getVariableMap())
     {
         //get a device pointer for the message variable name
-        void* d_ptr = message_list->getMessageListVariablePointer(mmp.first);
+        //void* d_ptr = message_list->getMessageListVariablePointer(mmp.first);
 
         //unmap using curve
 		CurveVariableHash var_hash = curveVariableRuntimeHash(mmp.first.c_str());

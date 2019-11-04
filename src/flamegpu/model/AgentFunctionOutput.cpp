@@ -23,8 +23,8 @@ const std::string AgentFunctionOutput::getMessageName() const{
 	return message_name;
 }
 
-void AgentFunctionOutput::setFunctionOutputType(FunctionOutputType type) {
-	this->type = type;
+void AgentFunctionOutput::setFunctionOutputType(FunctionOutputType _type) {
+	this->type = _type;
 }
 
 FunctionOutputType AgentFunctionOutput::getFunctionOutoutType() {
