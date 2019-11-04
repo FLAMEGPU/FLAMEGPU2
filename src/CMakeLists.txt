@@ -1,5 +1,5 @@
-# Set the minimum cmake version to that which supports cuda natively.
-cmake_minimum_required(VERSION VERSION 3.8 FATAL_ERROR)
+# 3.10 required for cuda -std=c++14, however 3.12 fixes some device linker errors
+cmake_minimum_required(VERSION VERSION 3.12 FATAL_ERROR)
 
 # Name the project and set languages
 project(flamegpu2 CUDA CXX)
@@ -7,13 +7,23 @@ project(flamegpu2 CUDA CXX)
 # Set the location of the ROOT flame gpu project relative to this CMakeList.txt
 get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/.. REALPATH)
 
-# Define output location of static libraries
-SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${FLAMEGPU_ROOT}/lib/linux-x64/${CMAKE_BUILD_TYPE}/)
-
 # Include common rules.
 include(${FLAMEGPU_ROOT}/cmake/common.cmake)
+include(${FLAMEGPU_ROOT}/cmake/doxygen.cmake)
+
+# Define output location of static library
+if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
+    # If top level project
+    SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib/${CMAKE_SYSTEM_NAME_LOWER}-x64/${CMAKE_BUILD_TYPE}/)
+    create_doxygen_target("${CMAKE_CURRENT_BINARY_DIR}") 
+else()
+    # If called via add_subdirectory()
+    SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../lib/${CMAKE_SYSTEM_NAME_LOWER}-x64/${CMAKE_BUILD_TYPE}/)
+    create_doxygen_target("${CMAKE_CURRENT_BINARY_DIR}/..")
+endif()
 
 # Specify source files for the static library
+# Can't do this automatically, as CMake wouldn't know when to regen (as CMakeLists.txt would be unchanged)
 SET(SRC_EXTERNALS 
     ${FLAMEGPU_ROOT}/externals/tinyxml2/tinyxml2.cpp
 )
@@ -81,5 +91,18 @@ SET(ALL_SRC
     ${SRC_FLAMEGPU2}
 )
 
+# Setup Visual Studio (and eclipse) filters
+source_group(TREE ${FLAMEGPU_ROOT} FILES ${SRC_EXTERNALS})
+source_group(TREE ${FLAMEGPU_ROOT}/include/flamegpu PREFIX include FILES ${SRC_INCLUDE})
+set(T_SRC "${SRC_FLAMEGPU2}")
+list(FILTER T_SRC INCLUDE REGEX ".*\.(h|hpp|cuh)$")
+source_group(TREE ${FLAMEGPU_ROOT}/src/flamegpu PREFIX headers FILES ${T_SRC})
+set(T_SRC "${SRC_FLAMEGPU2}")
+list(FILTER T_SRC EXCLUDE REGEX ".*\.(h|hpp|cuh)$")
+source_group(TREE ${FLAMEGPU_ROOT}/src/flamegpu PREFIX src FILES ${T_SRC})
+
 # Define which source files are required for the target executable
 add_flamegpu_library("${PROJECT_NAME}" "${ALL_SRC}" "${FLAMEGPU_ROOT}")
+
+# Also set as startup project (if top level project)
+set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"  PROPERTY VS_STARTUP_PROJECT "${PROJECT_NAME}")

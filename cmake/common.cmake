@@ -1,23 +1,32 @@
+message(STATUS "-----Configuring Project: ${PROJECT_NAME}-----")
 # Common rules for other cmake files
+# Make available lowercase 'linux'/'windows' vars (used for build dirs)
+STRING(TOLOWER "${CMAKE_SYSTEM_NAME}" CMAKE_SYSTEM_NAME_LOWER)
+# Don't create installation scripts (and hide CMAKE_INSTALL_PREFIX from cmake-gui)
+set(CMAKE_SKIP_INSTALL_RULES TRUE)
+set(CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}" CACHE INTERNAL "" FORCE)
+# Option to promote compilation warnings to error, useful for strict CI
+option(WARNINGS_AS_ERRORS "Promote compilation warnings to errors" OFF)
+# Option to group CMake generated projects into folders in supported IDEs
+option(CMAKE_USE_FOLDERS "Enable folder grouping of projects in IDEs." ON)
+mark_as_advanced(CMAKE_USE_FOLDERS)
 
-
-# Set a default build type if not passed (https://blog.kitware.com/cmake-and-the-default-build-type/)
-set(default_build_type "Release")
-if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-  message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
-  set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE STRING "Choose the type of build." FORCE)
-  # Set the possible values of build type for cmake-gui
-  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
-    "Debug" "Release" "Profile")
+# Set a default build type if not passed
+get_property(GENERATOR_IS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+if(${GENERATOR_IS_MULTI_CONFIG})
+    # CMAKE_CONFIGURATION_TYPES defaults to something platform specific
+    # Therefore can't detect if user has changed value and not reset it
+    # So force "Debug;Release;Profile"
+    set(CMAKE_CONFIGURATION_TYPES "Debug;Release;Profile" CACHE INTERNAL
+        "Choose the types of build, options are: Debug Release Profile." FORCE)#
+else()
+    if(NOT CMAKE_BUILD_TYPE)
+        set(default_build_type "Release")
+        message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
+        set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE STRING 
+            "Choose the type of build, options are: None Debug Release Profile." FORCE)
+    endif()
 endif()
-
-if(CMAKE_CONFIGURATION_TYPES)
-  set(CMAKE_CONFIGURATION_TYPES Debug Release Profile)
-  set(CMAKE_CONFIGURATION_TYPES "${CMAKE_CONFIGURATION_TYPES}" CACHE STRING
-    "Reset the configurations to what we need"
-    FORCE)
-endif()
-
 
 # Create the profile build modes, based on release
 SET( CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_RELEASE}" CACHE STRING
@@ -42,13 +51,6 @@ MARK_AS_ADVANCED(
     CMAKE_C_FLAGS_PROFILE
     CMAKE_EXE_LINKER_FLAGS_PROFILE
     CMAKE_SHARED_LINKER_FLAGS_PROFILE )
-# Update the documentation string of CMAKE_BUILD_TYPE for GUIs
-SET( CMAKE_BUILD_TYPE "${CMAKE_BUILD_TYPE}" CACHE STRING
-    "Choose the type of build, options are: None Debug Release Profile."
-    FORCE )
-
-
-
 
 # Require a minimum cuda version
 if(CMAKE_CUDA_COMPILER_VERSION VERSION_LESS 7.0)
@@ -95,9 +97,10 @@ if(SMS_COUNT EQUAL 0)
     endif()
 endif()
 
-# Replace commas and spaces with semicolons to correclty form a cmake list
+# Replace commas and spaces with semicolons to correctly form a cmake list
 string (REPLACE " " ";" SMS "${SMS}")
 string (REPLACE "," ";" SMS "${SMS}")
+SET(SMS "${SMS}" CACHE STRING "compute capabilities to build" FORCE)
 
 # Initialise the variable to contain actual -gencode arguments
 SET(GENCODES)
@@ -119,8 +122,11 @@ set(GENCODES "${GENCODES} -gencode arch=compute_${LAST_SM},code=compute_${LAST_S
 # Append the gencodes to the nvcc flags
 set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} ${GENCODES}")
 
-# Output the GENCODES to teh user.
-message(STATUS "Targeting Compute Capabilities: ${SMS}")
+# Don't create this message multiple times
+if(NOT COMMAND add_flamegpu_executable)
+    # Output the GENCODES to the user.
+    message(STATUS "Targeting Compute Capabilities: ${SMS}")
+endif()
 
 # Specify some additional compiler flags
 # CUDA debug symbols
@@ -132,9 +138,23 @@ set(CMAKE_CUDA_FLAGS_RELEASE "${CMAKE_CUDA_FLAGS_RELEASE} -lineinfo")
 # profile specific CUDA flags.
 set(CMAKE_CUDA_FLAGS_PROFILE "${CMAKE_CUDA_FLAGS_PROFILE} -lineinfo -DPROFILE -D_PROFILE")
 
-# All warnings for all modes.
-set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -Wall")
-
+# Set high level of warnings, specific to the host compiler.
+if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    # Only set W4 for MSVC, WAll is more like Wall, Wextra and Wpedantic
+    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler /W4")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /W4")
+    # Also suppress some unwanted W4 warnings
+    # 'function' : unreferenced local function has been removed
+    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler /wd4505")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4505")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4505")
+else()
+    # Assume using GCC/Clang which Wall is relatively sane for. 
+    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -Wall")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
+endif()
 
 # Use C++14 standard - std::make_unique is 14 not 11
 # Specify using C++14 standard
@@ -150,28 +170,44 @@ if(NOT DEFINED CMAKE_CUDA_STANDARD)
 endif()
 
 # Define a function to add a lint target.
-function(new_linter_target NAME SRC)
-    # Add custom target for linting this
-    add_custom_target(
-        "lint_${NAME}"
-        COMMAND cpplint
-        ${SRC}
-    )
-    # Add the custom target as a dependency of the global lint target
-    if(TARGET lint)
-        add_dependencies(lint lint_${NAME})
+find_file(CPPLINT NAMES cpplint cpplint.exe)
+if(CPPLINT)
+    function(new_linter_target NAME SRC)
+        # Don't lint external files
+        list(FILTER SRC EXCLUDE REGEX "^${FLAMEGPU_ROOT}/externals/.*")
+        # Add custom target for linting this
+        add_custom_target(
+            "lint_${NAME}"
+            COMMAND ${CPPLINT}
+            ${SRC}
+        )
+        set_target_properties("lint_${NAME}" PROPERTIES EXCLUDE_FROM_ALL TRUE)
+        # Add the custom target as a dependency of the global lint target
+        if(TARGET all_lint)
+            add_dependencies(all_lint lint_${NAME})
+        endif()
+        # Put within Lint filter
+        CMAKE_SET_TARGET_FOLDER("lint_${NAME}" "Lint")
+    endfunction()
+else()
+    # Don't create this message multiple times
+    if(NOT COMMAND add_flamegpu_executable)
+        message( 
+            " cpplint: NOT FOUND!\n"
+            " Lint projects will not be generated.\n"
+            " Please install cpplint as described on https://pypi.python.org/pypi/cpplint.\n"
+            " In most cases command 'pip install --user cpplint' should be sufficient.")
+        function(new_linter_target NAME SRC)
+        endfunction()
     endif()
-endfunction()
-
+endif()
 
 # Function to mask some of the steps to create an executable which links against the static library
-function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT)
+function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT MAKE_FOLDER)
 
     # If the library does not exist as a target, add it.
     if (NOT TARGET flamegpu2)
-        # Use the expected build directory location for the static library, so that multiple examples can be built without the need for a rebuild.
-        add_subdirectory(${FLAMEGPU_ROOT}/src ${FLAMEGPU_ROOT}/src/build) # Use the src/build dir to avoid re-builds
-        # add_subdirectory(${FLAMEGPU_ROOT}/src ./flamegpu2) # Use a child directory for more locality
+        add_subdirectory("${FLAMEGPU_ROOT}/src" "${PROJECT_ROOT}/FLAMEGPU2")
     endif()
 
     # Define which source files are required for the target executable
@@ -190,8 +226,34 @@ function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT)
 
     # Flag the new linter target and the files to be linted.
     new_linter_target(${NAME} ${SRC})
+    
+    # Setup Visual Studio (and eclipse) filters
+    #src/.h
+    set(T_SRC "${SRC}")
+    list(FILTER T_SRC INCLUDE REGEX "^${CMAKE_CURRENT_SOURCE_DIR}/src")
+    list(FILTER T_SRC INCLUDE REGEX ".*\.(h|hpp|cuh)$")
+    source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src PREFIX headers FILES ${T_SRC})
+    #src/.cpp
+    set(T_SRC "${SRC}")
+    list(FILTER T_SRC INCLUDE REGEX "^${CMAKE_CURRENT_SOURCE_DIR}/src")
+    list(FILTER T_SRC EXCLUDE REGEX ".*\.(h|hpp|cuh)$")
+    source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src PREFIX src FILES ${T_SRC})
+    #./.h
+    set(T_SRC "${SRC}")
+    list(FILTER T_SRC EXCLUDE REGEX "^${CMAKE_CURRENT_SOURCE_DIR}/src")
+    list(FILTER T_SRC INCLUDE REGEX ".*\.(h|hpp|cuh)$")
+    source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX headers FILES ${T_SRC})
+    #./.cpp
+    set(T_SRC "${SRC}")
+    list(FILTER T_SRC EXCLUDE REGEX "^${CMAKE_CURRENT_SOURCE_DIR}/src")
+    list(FILTER T_SRC EXCLUDE REGEX ".*\.(h|hpp|cuh)$")
+    source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX src FILES ${T_SRC})
 
 
+    # Put within Examples filter
+    if(MAKE_FOLDER)
+        CMAKE_SET_TARGET_FOLDER(${NAME} "Examples")
+    endif()
 endfunction()
 
 # Function to mask some of the flag setting for the static library
@@ -207,6 +269,24 @@ function(add_flamegpu_library NAME SRC FLAMEGPU_ROOT)
     target_include_directories(${NAME}  PRIVATE ${FLAMEGPU_ROOT}/externals)
 
     # Flag the new linter target and the files to be linted.
-    new_linter_target(${NAME} ${SRC})
-
+    new_linter_target(${NAME} "${SRC}")
+    
+    # Put within FLAMEGPU filter
+    CMAKE_SET_TARGET_FOLDER(${NAME} "FLAMEGPU")
 endfunction()
+
+#-----------------------------------------------------------------------
+# a macro that only sets the FOLDER target property if it's
+# "appropriate"
+# Borrowed from cmake's own CMakeLists.txt
+#-----------------------------------------------------------------------
+macro(CMAKE_SET_TARGET_FOLDER tgt folder)
+  if(CMAKE_USE_FOLDERS)
+    set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+    if(MSVC AND TARGET ${tgt})
+      set_property(TARGET "${tgt}" PROPERTY FOLDER "${folder}")
+    endif()
+  else()
+    set_property(GLOBAL PROPERTY USE_FOLDERS OFF)
+  endif()
+endmacro()

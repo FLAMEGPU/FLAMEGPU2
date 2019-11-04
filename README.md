@@ -16,20 +16,11 @@ Continuous integration is provided by Travis (Linux) and windows (AppVeyor). Thi
 
 ### Building FLAME GPU 2
 
+FLAME GPU 2 uses [CMake](https://cmake.org/), as a cross-platform process, for configuring and generating build directives, e.g. `Makefile` or `.vcxproj`. This is used to build the FLAMEGPU2 library, examples, tests and documentation.
 
-#### Visual Studio
+#### Linux
 
-Visual studio project files are provided to build the static library and example projects.
-
-##### Testing
-
-If you wish to build and run the unit tests, boost must be installed and the environment variable `BOOST_ROOT` must be set. 
-
-#### CMake
-
-Under linux, `cmake` can be used to generate makefiles specific to your system.
-
-I.e
+Under Linux, `cmake` can be used to generate makefiles specific to your system:
 
 ```
 mkdir -p build && cd build
@@ -37,17 +28,64 @@ cmake ..
 make
 ```
 
-Individual examples can be built from their respective directories
+By default a `Makefile` for the `Release` build configuration will be generated.
+
+Alternatively, using `-DCMAKE_BUILD_TYPE=`, `Debug` or `Profile` build configurations can be generated:
+ 
+```
+mkdir -p build && cd build
+cmake .. -DCMAKE_BUILD_TYPE=Profile
+make
+```
+
+#### Windows
+
+*Note: If installing CMake on Windows ensure CMake is added to the system path, allowing `cmake` to be used via `cmd`, this option is disabled within the installer by default.*
+
+When generating Visual studio project files, using `cmake` (or `cmake-gui`), the platform **must** be specified as `x64`.
+
+Using `cmake` this takes the form `-A x64`:
+
+```
+mkdir build && cd build
+cmake .. -A x64
+FLAMEGPU2.sln
+```
+
+This command will use the latest version of Visual studio detected, and open the created Visual studio solution.
+If the `cmake` command fails, the detected version does not support CUDA. Reinstalling CUDA may correct this issue.
+
+Alternatively using `-G` the desired version of Visual studio can be specified:
+
+```
+mkdir build && cd build
+cmake .. -G "Visual Studio 14 2015" -A x64
+FLAMEGPU2.sln
+```
+
+`Visual Studio 14 2015` can be replaced with any supported [Visual studio generator](https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html#visual-studio-generators) that is installed.
+
+#### Configuring CMake
+
+The following options are available when calling `cmake` on either Linux or Windows. It is also possible to manage these options via `cmake-gui` on Windows, often by setting the variable of the same name.
+
+*The examples in the following sections use Linux syntax, it is necessary to include the `-A` (and `-G`) arguments from above when calling `cmake` on Windows. Similarly `.vcxproj` and `.sln` files will be generated rather than `Makefile`.*
+
+##### Individual examples
+
+Build directives for individual examples can be built from their respective directories
 
 ```
 cd examples/mas/
 mkdir -p build && cd build
 cmake ..
-make 
 ```
 
 ##### Testing
-If you wish to build the unit tests, boost must be available on your system. The test suite can be built from the root directory via
+
+If you wish to build the unit tests, [boost](https://www.boost.org/) must be available on your system. 
+
+The test suite can be built from the root directory using `-DBUILD_TEST=ON`:
 
 ```
 mkdir -p build && cd build
@@ -55,63 +93,33 @@ cmake .. -DBUILD_TEST=ON
 make
 ```
 
+*On Windows it is also necessary to set the `BOOST_ROOT` environment variable to assist CMake in finding boost.*
+
+#### Documentation
+
+If you wish to build the documentation, [doxygen](http://www.doxygen.nl/) must be available on your system.
+
+A build file for documentation is generated at the same time as build files for the flamegpu2 library.
+
+This generates the target `docs` which can be called with `make`.
+
+```
+cd src
+mkdir -p build && cd build
+cmake ..
+make docs
+```
+
+*When using Visual Studio, the target `docs` will appear as a project within the created solution.*
+
 ##### Device Architectures
 
-Cuda device architectures can be specified when generating make files, using a semi colon, space or comma separated list of compute capability numbers. I.e to build for just SM_61 and SM_70:
+Cuda device architectures can be specified via `-DSMS` when generating make files, using a semi colon, space or comma separated list of compute capability numbers. I.e to build for just SM_61 and SM_70:
 
 ```
 mkdir -p build && cd build
-cmake .. -DSMS="60;70"
+cmake .. -DSMS="61;70"
 make
 ```
 
 Pass `-DSMS=` to reset to the default.
-
-
-### Doxygen Readme 
-
-> @todo - this may not be required.
-
-To create a new Doxyfile, run:
-```
-doxygen -g
-```
-Then configure the Doxyfile and set below:
-
-```
-INPUT                = api/ gpu/ model/ pop/ sim/ main.cpp
-PROJECT_NAME         = "FLAMEGPU 2.0"
-GENERATE_LATEX       = NO
-EXTRACT_ALL          = YES
-CLASS _DIAGRAMS      = YES
-HIDE_UNDOC_RELATIONS = NO
-HAVE_DOT             = YES
-CLASS_GRAPH          = YES
-COLLABORATION_GRAPH  = YES
-UML_LOOK             = YES
-UML_LIMIT_NUM_FIELDS = 50
-TEMPLATE_RELATIONS   = YES
-DOT_GRAPH_MAX_NODES  = 100
-MAX_DOT_GRAPH_DEPTH  = 0
-DOT_TRANSPARENT      = NO
-CALL_GRAPH           = YES
-CALLER_GRAPH         = YES
-GENERATE_TREEVIEW    = YES
-HTML_OUTPUT          = docs
-DOT_IMAGE_FORMAT     = png # can be  svg, but the add --> INTERACTIVE_SVG      = YES
-
-# -- added later
-
-EXTRACT_PRIVATE        = YES
-EXTRACT_STATIC         = YES
-EXTRACT_LOCAL_METHODS  = NO
-```
-now, run:
-```
-doxygen Doxyfile
-```
-
-To view, open:
-docs/index.html
-
-#https://www.daniweb.com/programming/software-development/threads/398953/doxygen-multiple-files

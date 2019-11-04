@@ -1,8 +1,12 @@
 # Set the minimum cmake version to that which supports cuda natively.
-# 3.10 required for cuda -std=c++14, 3.12 is better to fix some device linker errors
-cmake_minimum_required(VERSION VERSION 3.10 FATAL_ERROR)
+# 3.10 required for cuda -std=c++14, however 3.12 fixes some device linker errors
+cmake_minimum_required(VERSION VERSION 3.12 FATAL_ERROR)
 
 project(FLAMEGPU2)
+
+# Don't create installation scripts (and hide CMAKE_INSTALL_PREFIX from cmake-gui)
+set(CMAKE_SKIP_INSTALL_RULES TRUE)
+set(CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}" CACHE INTERNAL ""  FORCE)
 
 # Option to enable/disable building the static library
 option(BUILD_FLAMEGPU2 "Enable building FLAMEGPU2 library" ON)
@@ -15,12 +19,19 @@ option(BUILD_EXAMPLE_SIMPLE_EXAMPLE "Enable building examples/simple_example" OF
 # Option to enable/disable tests.
 option(BUILD_TESTS "Enable building tests" OFF)
 
-# Add a custom target to lint all child projects. Dependencies are specified in child projcets.
-add_custom_target(lint)
+# Define a function to add a lint target.
+find_file(CPPLINT NAMES cpplint cpplint.exe)
+if(CPPLINT)
+  # Add a custom target to lint all child projects. Dependencies are specified in child projects.
+  add_custom_target(all_lint)
+  set_target_properties(all_lint PROPERTIES EXCLUDE_FROM_ALL TRUE)
+endif()
 
 # Add the library building subdirectory
 if(BUILD_FLAMEGPU2)
-    add_subdirectory(src)
+    add_subdirectory(src "${PROJECT_BINARY_DIR}/FLAMEGPU2")
+    # Set as startup project
+    set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"  PROPERTY VS_STARTUP_PROJECT flamegpu2)
 endif()
 
 # Add each example
@@ -35,7 +46,12 @@ endif()
 # Add the tests directory (if required)
 if(BUILD_TESTS)
     add_subdirectory(tests)
+    # Put within Lint filter
+    CMAKE_SET_TARGET_FOLDER(all_lint "Tests")
 endif()
+
+# Put all_lint within Lint filter
+CMAKE_SET_TARGET_FOLDER(all_lint "Lint")
 
 
 # message("Generated with CMAKE_BUILD_TYPE types: ${CMAKE_BUILD_TYPE}")

@@ -1,6 +1,6 @@
 # Set the minimum cmake version to that which supports cuda natively.
-# 3.10 required for cuda -std=c++14, 3.12 is better to fix some device linker errors
-cmake_minimum_required(VERSION VERSION 3.10 FATAL_ERROR)
+# 3.10 required for cuda -std=c++14, however 3.12 fixes some device linker errors
+cmake_minimum_required(VERSION VERSION 3.12 FATAL_ERROR)
 
 # Name the project and set languages
 project(mas CUDA CXX)
@@ -8,17 +8,26 @@ project(mas CUDA CXX)
 # Set the location of the ROOT flame gpu project relative to this CMakeList.txt
 get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../.. REALPATH)
 
+# Include common rules.
+include(${FLAMEGPU_ROOT}/cmake/common.cmake)
+
 # Define output location of binary files
-SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${FLAMEGPU_ROOT}/bin/linux-x64/${CMAKE_BUILD_TYPE}/) # Global dir
-# SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE}/) # Project specific
+if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
+    # If top level project
+    SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin/${CMAKE_SYSTEM_NAME_LOWER}-x64/${CMAKE_BUILD_TYPE}/)
+else()
+    # If called via add_subdirectory()
+    SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../bin/${CMAKE_SYSTEM_NAME_LOWER}-x64/${CMAKE_BUILD_TYPE}/)
+endif()
 
 # Prepare list of source files
+# Can't do this automatically, as CMake wouldn't know when to regen (as CMakeLists.txt would be unchanged)
 SET(ALL_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cu
 )
 
-# Include common rules.
-include(${FLAMEGPU_ROOT}/cmake/common.cmake)
-
 # Add the executable and set required flags for the target
-add_flamegpu_executable("${PROJECT_NAME}" "${ALL_SRC}" "${FLAMEGPU_ROOT}")
+add_flamegpu_executable("${PROJECT_NAME}" "${ALL_SRC}" "${FLAMEGPU_ROOT}" "${PROJECT_BINARY_DIR}" TRUE)
+
+# Also set as startup project (if top level project)
+set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"  PROPERTY VS_STARTUP_PROJECT "${PROJECT_NAME}")
