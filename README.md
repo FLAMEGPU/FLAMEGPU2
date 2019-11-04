@@ -16,7 +16,7 @@ Continuous integration is provided by Travis (Linux) and windows (AppVeyor). Thi
 
 ### Building FLAME GPU 2
 
-FLAME GPU 2 uses [CMake](https://cmake.org/), as a cross-platform process, for configuring and generating build directives, e.g. `Makefile` or `.vcxproj`.
+FLAME GPU 2 uses [CMake](https://cmake.org/), as a cross-platform process, for configuring and generating build directives, e.g. `Makefile` or `.vcxproj`. This is used to build the FLAMEGPU2 library, examples, tests and documentation.
 
 #### Linux
 
@@ -95,6 +95,23 @@ make
 
 *On Windows it is also necessary to set the `BOOST_ROOT` environment variable to assist CMake in finding boost.*
 
+#### Documentation
+
+If you wish to build the documentation, [doxygen](http://www.doxygen.nl/) must be available on your system.
+
+A build file for documentation is generated at the same time as build files for the flamegpu2 library.
+
+This generates the target `docs` which can be called with `make`.
+
+```
+cd src
+mkdir -p build && cd build
+cmake ..
+make docs
+```
+
+*When using Visual Studio, the target `docs` will appear as a project within the created solution.*
+
 ##### Device Architectures
 
 Cuda device architectures can be specified via `-DSMS` when generating make files, using a semi colon, space or comma separated list of compute capability numbers. I.e to build for just SM_61 and SM_70:
@@ -106,52 +123,3 @@ make
 ```
 
 Pass `-DSMS=` to reset to the default.
-
-
-### Doxygen Readme 
-
-> @todo - this may not be required.
-
-To create a new Doxyfile, run:
-```
-doxygen -g
-```
-Then configure the Doxyfile and set below:
-
-```
-INPUT                = api/ gpu/ model/ pop/ sim/ main.cpp
-PROJECT_NAME         = "FLAMEGPU 2.0"
-GENERATE_LATEX       = NO
-EXTRACT_ALL          = YES
-CLASS _DIAGRAMS      = YES
-HIDE_UNDOC_RELATIONS = NO
-HAVE_DOT             = YES
-CLASS_GRAPH          = YES
-COLLABORATION_GRAPH  = YES
-UML_LOOK             = YES
-UML_LIMIT_NUM_FIELDS = 50
-TEMPLATE_RELATIONS   = YES
-DOT_GRAPH_MAX_NODES  = 100
-MAX_DOT_GRAPH_DEPTH  = 0
-DOT_TRANSPARENT      = NO
-CALL_GRAPH           = YES
-CALLER_GRAPH         = YES
-GENERATE_TREEVIEW    = YES
-HTML_OUTPUT          = docs
-DOT_IMAGE_FORMAT     = png # can be  svg, but the add --> INTERACTIVE_SVG      = YES
-
-# -- added later
-
-EXTRACT_PRIVATE        = YES
-EXTRACT_STATIC         = YES
-EXTRACT_LOCAL_METHODS  = NO
-```
-now, run:
-```
-doxygen Doxyfile
-```
-
-To view, open:
-docs/index.html
-
-<!--https://www.daniweb.com/programming/software-development/threads/398953/doxygen-multiple-files-->
