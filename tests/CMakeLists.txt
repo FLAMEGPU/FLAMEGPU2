@@ -8,8 +8,14 @@ find_package(Boost 1.54 REQUIRED)
 # Name the project and set languages
 project(tests CUDA CXX)
 
+# Project requires boost include
+include_directories(${Boost_INCLUDE_DIRS})
+
 # Set the location of the ROOT flame gpu project relative to this CMakeList.txt
 get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/.. REALPATH)
+
+# Include common rules.
+include(${FLAMEGPU_ROOT}/cmake/common.cmake)
 
 # Define output location of binary files
 if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
@@ -17,17 +23,28 @@ if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
     SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin/${CMAKE_SYSTEM_NAME_LOWER}-x64/${CMAKE_BUILD_TYPE}/)
 else()
     # If called via add_subdirectory()
-    SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../bin/${CMAKE_SYSTEM_NAME_LOWER}-x64/${CMAKE_BUILD_TYPE}/tests/)
+    SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../bin/${CMAKE_SYSTEM_NAME_LOWER}-x64/${CMAKE_BUILD_TYPE}/tests/)
 endif()
 
 # Prepare list of source files
-SET(ALL_SRC
+SET(TEST_CASE_SRC
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_func_pointer.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_gpu_validation.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_message_validation.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_model_validation.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_pop_validation.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_sim_validation.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_actor_random.h
+)
+SET(OTHER_SRC
+    ${CMAKE_CURRENT_SOURCE_DIR}/device_functions.h
     ${CMAKE_CURRENT_SOURCE_DIR}/test_all.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/device_functions.cu
 )
-
-# Include common rules.
-include(${FLAMEGPU_ROOT}/cmake/common.cmake)
+SET(ALL_SRC
+    ${TEST_CASE_SRC}
+    ${OTHER_SRC}
+)
 
 # Add the executable and set required flags for the target
 add_flamegpu_executable("${PROJECT_NAME}" "${ALL_SRC}" "${FLAMEGPU_ROOT}" "${PROJECT_BINARY_DIR}" FALSE)
