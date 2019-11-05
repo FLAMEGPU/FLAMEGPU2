@@ -138,13 +138,13 @@ set(CMAKE_CUDA_FLAGS_RELEASE "${CMAKE_CUDA_FLAGS_RELEASE} -lineinfo")
 # profile specific CUDA flags.
 set(CMAKE_CUDA_FLAGS_PROFILE "${CMAKE_CUDA_FLAGS_PROFILE} -lineinfo -DPROFILE -D_PROFILE")
 
-# Set high level of warnings, specific to the host compiler.
+# Set high level of warnings
 if(WARNINGS_AS_ERRORS)
     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --Wreorder --Werror reorder,cross-execution-space-call -Xptxas=\"-Werror\"  -Xnvlink=\"-Werror\"")
 else()
     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --Wreorder")
 endif()
-# Compiler version specific flags
+# Compiler version specific high warnings
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     # Only set W4 for MSVC, WAll is more like Wall, Wextra and Wpedantic
     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler /W4")
@@ -196,11 +196,21 @@ if(CPPLINT)
         # Don't lint external files
         list(FILTER SRC EXCLUDE REGEX "^${FLAMEGPU_ROOT}/externals/.*")
         # Add custom target for linting this
-        add_custom_target(
-            "lint_${NAME}"
-            COMMAND ${CPPLINT}
-            ${SRC}
-        )
+        if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+            # Output in visual studio format
+            add_custom_target(
+                "lint_${NAME}"
+                COMMAND ${CPPLINT} "--output" "vs7"
+                ${SRC}
+            )
+        else()
+            # Output in default format
+            add_custom_target(
+                "lint_${NAME}"
+                COMMAND ${CPPLINT}
+                ${SRC}
+            )
+        endif()
         set_target_properties("lint_${NAME}" PROPERTIES EXCLUDE_FROM_ALL TRUE)
         # Add the custom target as a dependency of the global lint target
         if(TARGET all_lint)
