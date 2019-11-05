@@ -34,6 +34,7 @@ SET(TEST_CASE_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/test_model_validation.h
     ${CMAKE_CURRENT_SOURCE_DIR}/test_pop_validation.h
     ${CMAKE_CURRENT_SOURCE_DIR}/test_sim_validation.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_actor_random.h
 )
 SET(OTHER_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/device_functions.h
