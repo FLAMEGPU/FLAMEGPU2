@@ -57,6 +57,9 @@ void Random::free() {
 }
 
 bool Random::resize(const size_type &_length) {
+    assert(growthModifier > 1.0);
+    assert(shrinkModifier > 0.0);
+    assert(shrinkModifier <= 1.0);
     auto t_length = length;
     if (length)
     {
@@ -86,14 +89,14 @@ void Random::resizeDeviceArray(const size_type &_length) {
     if(_length > length) {
         // Growing array
         curandState *t_hd_random_state = nullptr;
-        // Allocate new
+        // Allocate new mem to t_hd
         if (cudaMalloc(&t_hd_random_state, _length * sizeof(curandState)) != cudaSuccess)
             printf("(%s:%d) CUDA Error Random::resizeDeviceArray().", __FILE__, __LINE__);
-        // Copy old->new[****    ]
+        // Copy hd->t_hd[****    ]
         if (flamegpu_internal::hd_random_state)
             if (cudaMemcpy(t_hd_random_state, flamegpu_internal::hd_random_state, length * sizeof(curandState), cudaMemcpyDeviceToDevice))
                 printf("(%s:%d) CUDA Error Random::resizeDeviceArray().", __FILE__, __LINE__);
-        // Update pointers
+        // Update pointers hd=t_hd
         if(flamegpu_internal::hd_random_state)
             if (cudaFree(flamegpu_internal::hd_random_state) != cudaSuccess)
                 printf("(%s:%d) CUDA Error Random::resizeDeviceArray().", __FILE__, __LINE__);
@@ -103,6 +106,7 @@ void Random::resizeDeviceArray(const size_type &_length) {
         // Init new[    ****]
         if (h_max_random_size > length) {
             //We have part/all host backup, copy to device array
+            //Reinit backup[    **  ]
             size_type copy_len = std::min(h_max_random_size, _length);
             if (cudaMemcpy(flamegpu_internal::hd_random_state + length, h_max_random_state + length, copy_len * sizeof(curandState), cudaMemcpyHostToDevice))
                 printf("(%s:%d) CUDA Error Random::resizeDeviceArray().", __FILE__, __LINE__);
@@ -110,7 +114,7 @@ void Random::resizeDeviceArray(const size_type &_length) {
         }
         if (_length > length)
         {
-            //Init remainder for first time
+            //Init remainder[     **] 
             unsigned int initThreads = 512;
             unsigned int initBlocks = (_length - length / initThreads) + 1;
             init_curand<<<initBlocks, initThreads>>>(_length - length, mSeed, length);// This could be async with above memcpy?
