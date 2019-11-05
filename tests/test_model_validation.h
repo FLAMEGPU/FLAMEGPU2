@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE(AgentVarCheck)
 
 
 /**
- * @brief      To verify the correctness of function name and existance.
+ * @brief      To verify the correctness of function name and existence.
  * To test the case separately, run: make run_BOOST_TEST TSuite=ModelDescTest/MessageFunctionCheck
  *
 */
