@@ -110,7 +110,7 @@ FLAMEGPU_AGENT_FUNCTION(subtract_func) {
     return ALIVE;
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, const char* argv[]) {
 
     /* Multi agent model */
     ModelDescription flame_model("circles_model");
