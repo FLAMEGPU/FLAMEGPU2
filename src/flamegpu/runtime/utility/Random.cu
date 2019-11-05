@@ -104,7 +104,7 @@ void Random::resizeDeviceArray(const size_type &_length) {
         if (h_max_random_size > length) {
             //We have part/all host backup, copy to device array
             size_type copy_len = std::min(h_max_random_size, _length);
-            if (cudaMemcpy(t_hd_random_state + length, flamegpu_internal::hd_random_state + length, copy_len * sizeof(curandState), cudaMemcpyDeviceToDevice))
+            if (cudaMemcpy(flamegpu_internal::hd_random_state + length, h_max_random_state + length, copy_len * sizeof(curandState), cudaMemcpyHostToDevice))
                 printf("(%s:%d) CUDA Error Random::resizeDeviceArray().", __FILE__, __LINE__);
             length += copy_len;
         }
