@@ -1,6 +1,9 @@
-#ifndef __Random_cuh__
-#define __Random_cuh__
-#include <curand_kernel.h>
+#ifndef SRC_FLAMEGPU_RUNTIME_UTILITY_RANDOM_CUH_
+#define SRC_FLAMEGPU_RUNTIME_UTILITY_RANDOM_CUH_
+
+#include <cstdint>
+
+#include "./curand_kernel.h"
 #include "flamegpu/runtime/utility/AgentRandom.cuh"
 
 /**
@@ -16,12 +19,12 @@ class Random {
     /**
      * Utility for passing to init()
      */
-    static unsigned long long seedFromTime();
+    static uint64_t seedFromTime();
     /**
      * Acts as constructor
      * @note Can be called multiple times to reseed, doing so releases existing memory allocations
      */
-    static void init(const unsigned long long &seed);
+    static void init(const uint64_t &seed);
     /**
      * Acts as destructor
      * @note Safe to call multiple times
@@ -47,9 +50,10 @@ class Random {
      * Returns length of curand state array currently allocated
      */
     static size_type size();
-    static unsigned long long seed();
+    static uint64_t seed();
+
  private:
-    static unsigned long long mSeed;
+    static uint64_t mSeed;
     static size_type length;
     static size_type min_length;
     static float shrinkModifier;
@@ -63,4 +67,4 @@ class Random {
     static Random::size_type h_max_random_size;
 };
 
-#endif //__Random_cuh__
+#endif  // SRC_FLAMEGPU_RUNTIME_UTILITY_RANDOM_CUH_

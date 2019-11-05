@@ -1,8 +1,8 @@
-#ifndef __AgentRandom_cuh__
-#define __AgentRandom_cuh__
+#ifndef INCLUDE_FLAMEGPU_RUNTIME_UTILITY_AGENTRANDOM_CUH_
+#define INCLUDE_FLAMEGPU_RUNTIME_UTILITY_AGENTRANDOM_CUH_
 
 #include <cassert>
-#include <curand_kernel.h>
+#include "./curand_kernel.h"
 
 /**
  * Utility for accessing random generation within agent functions
@@ -41,7 +41,8 @@ class AgentRandom {
      */
     template<typename T>
     __forceinline__ __device__ T uniform(const T& min, const T& max) const;
-private:
+
+ private:
     /**
      * Thread-safe index for accessing curand
      */
@@ -114,41 +115,27 @@ __forceinline__ __device__ unsigned char AgentRandom::uniform(const unsigned cha
     return static_cast<unsigned char>(min + (max - min) * uniform<float>());
 }
 template<>
-__forceinline__ __device__ short AgentRandom::uniform(const short& min, const short& max) const {
-    return static_cast<short>(min + (max - min) * uniform<float>());
+__forceinline__ __device__ int16_t AgentRandom::uniform(const int16_t& min, const int16_t& max) const {
+    return static_cast<int16_t>(min + (max - min) * uniform<float>());
 }
 template<>
-__forceinline__ __device__ unsigned short AgentRandom::uniform(const unsigned short& min, const unsigned short& max) const {
-    return static_cast<unsigned short>(min + (max - min) * uniform<float>());
+__forceinline__ __device__ uint16_t AgentRandom::uniform(const uint16_t& min, const uint16_t& max) const {
+    return static_cast<uint16_t>(min + (max - min) * uniform<float>());
 }
 template<>
-__forceinline__ __device__ int AgentRandom::uniform(const int& min, const int& max) const {
-    return static_cast<int>(min + (max - min) * uniform<float>());
+__forceinline__ __device__ int32_t AgentRandom::uniform(const int32_t& min, const int32_t& max) const {
+    return static_cast<int32_t>(min + (max - min) * uniform<float>());
 }
 template<>
-__forceinline__ __device__ unsigned int AgentRandom::uniform(const unsigned int& min, const unsigned int& max) const {
-    return static_cast<unsigned int>(min + (max - min) * uniform<float>());
+__forceinline__ __device__ uint32_t AgentRandom::uniform(const uint32_t& min, const uint32_t& max) const {
+    return static_cast<uint32_t>(min + (max - min) * uniform<float>());
 }
 template<>
-__forceinline__ __device__ long AgentRandom::uniform(const long& min, const long& max) const {
-    //Platform specific, will be optimised away
-    if (sizeof(long) == sizeof(float))
-        return static_cast<long>(min + (max - min) * uniform<float>());
-    return static_cast<long>(min + (max - min) * uniform<double>());
+__forceinline__ __device__ int64_t AgentRandom::uniform(const int64_t& min, const int64_t& max) const {
+    return static_cast<int64_t>(min + (max - min) * uniform<double>());
 }
 template<>
-__forceinline__ __device__ unsigned long AgentRandom::uniform(const unsigned long& min, const unsigned long& max) const {
-    //Platform specific, will be optimised away
-    if (sizeof(unsigned long) == sizeof(float))
-        return static_cast<unsigned long>(min + (max - min) * uniform<float>());
-    return static_cast<unsigned long>(min + (max - min) * uniform<double>());
+__forceinline__ __device__ uint64_t AgentRandom::uniform(const uint64_t& min, const uint64_t& max) const {
+    return static_cast<uint64_t>(min + (max - min) * uniform<double>());
 }
-template<>
-__forceinline__ __device__ long long AgentRandom::uniform(const long long& min, const long long& max) const {
-    return static_cast<long long>(min + (max - min) * uniform<double>());
-}
-template<>
-__forceinline__ __device__ unsigned long long AgentRandom::uniform(const unsigned long long& min, const unsigned long long& max) const {
-    return static_cast<unsigned long long>(min + (max - min) * uniform<double>());
-}
-#endif //__AgentRandom_cuh__
+#endif  // INCLUDE_FLAMEGPU_RUNTIME_UTILITY_AGENTRANDOM_CUH_

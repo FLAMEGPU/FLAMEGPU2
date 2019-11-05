@@ -1,6 +1,5 @@
-
-#ifndef DEVICE_FUNCTIONS_H
-#define DEVICE_FUNCTIONS_H
+#ifndef TESTS_DEVICE_FUNCTIONS_H_
+#define TESTS_DEVICE_FUNCTIONS_H_
 
 #include <flamegpu/flame_api.h>
 
@@ -17,7 +16,7 @@ void attach_output_func(AgentFunctionDescription& func);
 /**
  * test_actor_random.h
  */
-void attach_random1_func(AgentFunctionDescription& func);
-void attach_random2_func(AgentFunctionDescription& func);
+void attach_random1_func(AgentFunctionDescription *const func);
+void attach_random2_func(AgentFunctionDescription *const func);
 
-#endif
+#endif  //TESTS_DEVICE_FUNCTIONS_H_
