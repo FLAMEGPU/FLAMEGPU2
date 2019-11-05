@@ -27,7 +27,7 @@ BOOST_AUTO_TEST_CASE(ActorRandomCheck)
 {
     BOOST_TEST_MESSAGE("\nTesting ActorRandom and Random Name ..");
 
-    const int AGENT_COUNT = 5;
+    const unsigned int AGENT_COUNT = 5;
 
 
     ModelDescription model("random_model");
@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE(ActorRandomCheck)
 
 
     AgentPopulation population(agent, AGENT_COUNT);
-    for (auto i = 0; i< AGENT_COUNT; i++)
+    for (unsigned int i = 0; i< AGENT_COUNT; i++)
     {
         AgentInstance instance = population.getNextInstance("default");
         //AgentInstance instance = population.getInstanceAt(i);
@@ -81,7 +81,7 @@ BOOST_AUTO_TEST_CASE(ActorRandomCheck)
         cuda_model.getPopulationData(population);
 
         float a1 = -1, b1 = -1, c1 = -1, a2 = -1, b2 = -1, c2 = -1;
-        for (auto i = 0; i < population.getCurrentListSize(); i++)
+        for (unsigned int i = 0; i < population.getCurrentListSize(); i++)
         {
             if (i != 0)
             {
@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE(ActorRandomCheck)
 
         cuda_model.getPopulationData(population);
 
-        for (auto i = 0; i < population.getCurrentListSize(); i++)
+        for (unsigned int i = 0; i < population.getCurrentListSize(); i++)
         {
             AgentInstance instance = population.getInstanceAt(i);
             results2.push_back({ 
@@ -131,7 +131,7 @@ BOOST_AUTO_TEST_CASE(ActorRandomCheck)
         }
         BOOST_CHECK(results2.size() == AGENT_COUNT);
 
-        for(auto i = 0; i<results1.size();++i)
+        for(unsigned int i = 0; i<results1.size();++i)
         {
             //Different seed produces different results
             BOOST_CHECK(results1[i]!=results2[i]);
@@ -150,7 +150,7 @@ BOOST_AUTO_TEST_CASE(ActorRandomCheck)
 
         cuda_model.getPopulationData(population);
 
-        for (int i = 0; i < population.getCurrentListSize(); i++)
+        for (unsigned int i = 0; i < population.getCurrentListSize(); i++)
         {
             AgentInstance instance = population.getInstanceAt(i);
             results2.push_back({
@@ -161,7 +161,7 @@ BOOST_AUTO_TEST_CASE(ActorRandomCheck)
         }
         BOOST_CHECK(results2.size() == AGENT_COUNT);
 
-        for (int i = 0; i<results1.size(); ++i)
+        for (unsigned int i = 0; i<results1.size(); ++i)
         {
             //Same seed produces different results
             BOOST_CHECK(results1[i] == results2[i]);
@@ -174,7 +174,7 @@ BOOST_AUTO_TEST_CASE(ActorRandomFunctionsNoExcept)
 {
     BOOST_TEST_MESSAGE("\nTesting ActorRandom functions all work");
 
-    const int AGENT_COUNT = 5;
+    const unsigned int AGENT_COUNT = 5;
 
 
     ModelDescription model("random_model");
@@ -214,7 +214,7 @@ BOOST_AUTO_TEST_CASE(ActorRandomFunctionsNoExcept)
 
 
     AgentPopulation population(agent, AGENT_COUNT);
-    for (auto i = 0; i< AGENT_COUNT; i++)
+    for (unsigned int i = 0; i< AGENT_COUNT; i++)
     {
         //Actually create the agents
         AgentInstance instance = population.getNextInstance("default");
