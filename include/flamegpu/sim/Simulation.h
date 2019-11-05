@@ -31,7 +31,7 @@ public:
 	const FunctionDescriptionVector& getFunctionsAtLayer(unsigned int layer) const;
     unsigned int getLayerCount() const;
 
-	int checkArgs(int argc, char** argv, std::string &xml_model_path);
+	int checkArgs(int argc, const char** argv, std::string &xml_model_path);
 	
 	void initialise(int argc, char** argv); //void initialise(const char * input);
 	//void initialise(StateReader& reader);

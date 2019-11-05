@@ -69,7 +69,7 @@ const ModelDescription& Simulation::getModelDescritpion() const
     return model_description;
 }
 
-int Simulation::checkArgs(int argc, char** argv, std::string &xml_model_path) {
+int Simulation::checkArgs(int argc, const char** argv, std::string &xml_model_path) {
     // These should really be in some kind of config struct
     // unsigned int device_id = 0;
     // unsigned int iterations = 0;
