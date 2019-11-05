@@ -218,7 +218,7 @@ else()
 endif()
 
 # Function to mask some of the steps to create an executable which links against the static library
-function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT MAKE_FOLDER)
+function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
 
     # If the library does not exist as a target, add it.
     if (NOT TARGET flamegpu2)
@@ -266,7 +266,7 @@ function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT MAKE_FOLDER
 
 
     # Put within Examples filter
-    if(MAKE_FOLDER)
+    if(IS_EXAMPLE)
         CMAKE_SET_TARGET_FOLDER(${NAME} "Examples")
     endif()
 endfunction()
