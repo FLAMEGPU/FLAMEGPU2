@@ -22,8 +22,8 @@ namespace flamegpu_internal {
  */
 unsigned long long Random::mSeed = 0;
 Random::size_type Random::length = 0;
-float Random::growthModifier = 0;
-float Random::shrinkModifier = 0;
+float Random::growthModifier = 1.5;
+float Random::shrinkModifier = 1.0;
 curandState *Random::h_max_random_state = nullptr;
 Random::size_type Random::h_max_random_size = 0;
 /**
