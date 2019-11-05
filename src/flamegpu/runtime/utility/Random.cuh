@@ -51,6 +51,7 @@ class Random {
  private:
     static unsigned long long mSeed;
     static size_type length;
+    static size_type min_length;
     static float shrinkModifier;
     static float growthModifier;
     static void resizeDeviceArray(const size_type &_length);

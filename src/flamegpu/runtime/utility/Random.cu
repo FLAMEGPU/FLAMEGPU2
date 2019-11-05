@@ -22,6 +22,7 @@ namespace flamegpu_internal {
  */
 unsigned long long Random::mSeed = 0;
 Random::size_type Random::length = 0;
+Random::size_type Random::min_length = 1024;
 float Random::growthModifier = 1.5;
 float Random::shrinkModifier = 1.0;
 curandState *Random::h_max_random_state = nullptr;
@@ -57,15 +58,23 @@ void Random::free() {
 
 bool Random::resize(const size_type &_length) {
     auto t_length = length;
-    while (t_length < _length) {
-        t_length  = static_cast<Random::size_type>(t_length * growthModifier);
-        if(shrinkModifier < 1.0f) {
-            while(t_length * shrinkModifier > _length) {
-                t_length = static_cast<Random::size_type>(t_length * shrinkModifier);
+    if (length)
+    {
+        while (t_length < _length) {
+            t_length = static_cast<Random::size_type>(t_length * growthModifier);
+            if (shrinkModifier < 1.0f) {
+                while (t_length * shrinkModifier > _length) {
+                    t_length = static_cast<Random::size_type>(t_length * shrinkModifier);
+                }
             }
-        }        
+        }
     }
-    resizeDeviceArray(t_length);
+    else //Special case for first run
+        t_length = _length;
+    //Don't allow array to go below Random::min_length elements
+    t_length = std::max<size_type>(t_length, Random::min_length);
+    if(t_length != length)
+        resizeDeviceArray(t_length);
     return t_length != length;
 }
 __global__ void init_curand(unsigned long threadCount, unsigned long long seed, Random::size_type offset) {
@@ -85,6 +94,9 @@ void Random::resizeDeviceArray(const size_type &_length) {
             if (cudaMemcpy(t_hd_random_state, flamegpu_internal::hd_random_state, length * sizeof(curandState), cudaMemcpyDeviceToDevice))
                 printf("(%s:%d) CUDA Error Random::resizeDeviceArray().", __FILE__, __LINE__);
         // Update pointers
+        if(flamegpu_internal::hd_random_state)
+            if (cudaFree(flamegpu_internal::hd_random_state) != cudaSuccess)
+                printf("(%s:%d) CUDA Error Random::resizeDeviceArray().", __FILE__, __LINE__);
         flamegpu_internal::hd_random_state = t_hd_random_state;
         if (cudaMemcpyToSymbol(flamegpu_internal::d_random_state, &flamegpu_internal::hd_random_state, sizeof(curandState*)) != cudaSuccess)
             printf("(%s:%d) CUDA Error Random::resizeDeviceArray().", __FILE__, __LINE__);
@@ -116,7 +128,7 @@ void Random::resizeDeviceArray(const size_type &_length) {
         else
             t_h_max_random_state = h_max_random_state;
         // Copy old->new
-        assert(flamegpu_internal::hd_random_state != nullptr);
+        assert(flamegpu_internal::hd_random_state);
         if (cudaMemcpy(t_hd_random_state, flamegpu_internal::hd_random_state, _length * sizeof(curandState), cudaMemcpyDeviceToDevice))
             printf("(%s:%d) CUDA Error Random::resizeDeviceArray().", __FILE__, __LINE__);
         // Copy part being shrunk away to host storage (This could be async with above memcpy?)
