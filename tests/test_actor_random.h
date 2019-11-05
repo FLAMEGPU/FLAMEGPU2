@@ -170,7 +170,7 @@ BOOST_AUTO_TEST_CASE(ActorRandomCheck)
 }
 
 
-BOOST_AUTO_TEST_CASE(ActorRandomNoExcept)
+BOOST_AUTO_TEST_CASE(ActorRandomFunctionsNoExcept)
 {
     BOOST_TEST_MESSAGE("\nTesting ActorRandom functions all work");
 
@@ -233,7 +233,7 @@ BOOST_AUTO_TEST_CASE(ActorRandomNoExcept)
     //Success if we get this far without an exception being thrown.
 }
 
-BOOST_AUTO_TEST_CASE(ActorRandomNoExcept)
+BOOST_AUTO_TEST_CASE(ActorRandomArrayResizeNoExcept)
 {
     BOOST_TEST_MESSAGE("\nTesting d_random scales up/down without breaking");
     
