@@ -10,13 +10,13 @@
  * @bug        No known bugs
  */
 
-#include "../runtime/flame_api.h"
+#include <flamegpu/flame_api.h>
 
 #include "device_functions.h"
 
 using namespace std;
 
-BOOST_AUTO_TEST_SUITE(SimTest)
+BOOST_AUTO_TEST_SUITE(SimTest) //name of the test suite is SimTest
 
 /**
  * @brief      To verify the correctness of simulation functions
@@ -66,7 +66,7 @@ BOOST_AUTO_TEST_CASE(SimulationFunctionCheck)
     SimulationLayer output_layer(simulation, "output_layer");
     output_layer.addAgentFunction("output_data");
     simulation.addSimulationLayer(output_layer);
-
+	
 
     /**
      * @brief      Checks if the function name exists
@@ -109,10 +109,7 @@ BOOST_AUTO_TEST_CASE(SimulationFunctionCheck)
 
     cuda_model.setInitialPopulationData(population);
 
-    cuda_model.addSimulation(simulation);
-
-    cuda_model.step(simulation);
-
+    cuda_model.simulate(simulation);
 
     /**
      * @todo : may not need this below test

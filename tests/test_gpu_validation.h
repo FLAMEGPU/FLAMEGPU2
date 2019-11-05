@@ -11,13 +11,13 @@
  */
 
 
-#include "../runtime/flame_api.h"
+#include <flamegpu/flame_api.h>
 
 #include "device_functions.h"
 
 using namespace std;
 
-BOOST_AUTO_TEST_SUITE(GPUTest) //name of the test suite is modelTest
+BOOST_AUTO_TEST_SUITE(GPUTest) //name of the test suite is GPUTest
 
 
 /**
@@ -49,18 +49,16 @@ BOOST_AUTO_TEST_CASE(GPUMemoryTest)
     CUDAAgentModel cuda_model(flame_model);
     cuda_model.setInitialPopulationData(population);
 
-    AgentPopulation population2(circle_agent, 100);
-    cuda_model.getPopulationData(population2);
+    cuda_model.getPopulationData(population);
 
     BOOST_TEST_MESSAGE( "\nTesting values copied back from device without simulating any functions .." );
 
     //check values are the same
-    for (int i = 0; i < 100; i++)
+    for (int i = 0; i < 10; i++)
     {
         AgentInstance i1 = population.getInstanceAt(i, "default");
-        AgentInstance i2 = population2.getInstanceAt(i, "default");
         //use AgentInstance equality operator
-        BOOST_CHECK(i1.getVariable<int>("id") == i2.getVariable<int>("id"));
+        BOOST_CHECK(i1.getVariable<int>("id") == i);
     }
 
 }
@@ -90,9 +88,6 @@ BOOST_AUTO_TEST_CASE(GPUSimulationTest)
 
 
 	AgentFunctionDescription add_data("add_data");
-	AgentFunctionOutput add_location("location");
-	add_data.addOutput(add_location);
-	//add_data.setFunction(&add_func);
 	attach_add_func(add_data);
 	circle_agent.addAgentFunction(add_data);
 
@@ -122,13 +117,9 @@ BOOST_AUTO_TEST_CASE(GPUSimulationTest)
 
 	cuda_model.setInitialPopulationData(population);
 
-	cuda_model.addSimulation(simulation);
-
-	cuda_model.step(simulation);
+	cuda_model.simulate(simulation);
 
 	BOOST_TEST_MESSAGE("\nTesting values copied back from device after simulating functions ..");
-
-
 
 	// Re-use the same population to read back the simulation step results
 	cuda_model.getPopulationData(population);
@@ -164,14 +155,12 @@ BOOST_AUTO_TEST_CASE(GPUSimulationTestMultiple)
     circle2_agent.addAgentVariable<double>("y");
 
     AgentFunctionDescription add_data("add_data");
-    //add_data.addInput(input_location);
-//    add_data.setFunction(&add_func);
+
 	attach_add_func(add_data);
     circle1_agent.addAgentFunction(add_data);
 
     AgentFunctionDescription subtract_data("subtract_data");
-    //subtract_data.addInput(input_location);
-//    subtract_data.setFunction(&subtract_func);
+
 	attach_subtract_func(subtract_data);
     circle2_agent.addAgentFunction(subtract_data);
 
@@ -211,11 +200,7 @@ BOOST_AUTO_TEST_CASE(GPUSimulationTestMultiple)
     cuda_model.setInitialPopulationData(population1);
     cuda_model.setInitialPopulationData(population2);
 
-    cuda_model.addSimulation(simulation);
-
-    cuda_model.step(simulation);
-
-
+    cuda_model.simulate(simulation);
 
     cuda_model.getPopulationData(population1);
     cuda_model.getPopulationData(population2);

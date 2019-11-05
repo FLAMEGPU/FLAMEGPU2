@@ -1,21 +1,29 @@
 # Requires sudo for CUDA install
-dist: trusty
 sudo: required
 
 # CPP language
 language: cpp
 
-# Compiler matrix for recent GCC versions
+# Compiler, bionic should ship with recent enough GCC. 
+compiler:
+  - gcc
+
+# Compiler matrix for CUDA version(s)
+# see https://github.com/jeremad/cuda-travis/blob/master/.travis.yml
 matrix:
   include:
-    - compiler: gcc
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-5
-      env: GCC_VERSION=g++-5
+    # - name: CUDA 9.2
+    #   env:
+    #   - CUDA_LONG=9.2.148-1
+    #   - CUDA_SHORT=9.2
+    #   - UBUNTU_VERSION=ubuntu1604
+    #   dist: xenial
+    - name: CUDA 10.1
+      env:
+      - CUDA_LONG=10.1.105-1
+      - CUDA_SHORT=10.1
+      - UBUNTU_VERSION=ubuntu1804
+      dist: bionic
 
 # Install CUDA
 install: 
@@ -23,7 +31,11 @@ install:
  - sudo -E ./scripts/travis_install.sh
  
 # Add nvcc to path
-before_script: "export PATH=$PATH:/usr/local/cuda/bin"
+before_script: 
+  - PATH=~/.local/bin:${PATH}
+  - CUDA_HOME=/usr/local/cuda-${CUDA_SHORT}
+  - LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${LD_LIBRARY_PATH}
+  - PATH=${CUDA_HOME}/bin:${PATH}
 
 # Build steps
-script: "make BOOST_TEST HOST_COMPILER=$GCC_VERSION"
+script: "mkdir build && cd build && cmake .. -DBUILD_TESTS=ON -DWARNINGS_AS_ERRORS=ON && make all docs"

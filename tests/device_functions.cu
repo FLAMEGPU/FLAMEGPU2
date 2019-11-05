@@ -33,6 +33,19 @@ FLAMEGPU_AGENT_FUNCTION(output_func)
 	return ALIVE;
 }
 
+//FLAMEGPU_AGENT_FUNCTION(move_func)
+//{
+//	float x = FLAMEGPU->getVariable<float>("x");
+//	FLAMEGPU->setVariable<float>("x", x + 2);
+//	x = FLAMEGPU->getVariable<float>("x");
+//
+//	//??
+//
+//
+//
+//	return ALIVE;
+//}
+
 FLAMEGPU_AGENT_FUNCTION(input_func)
 {
 	return ALIVE;

@@ -2,20 +2,25 @@
 version: "0.1.{build}"
 
 # Operating system (build VM template)
-os: Visual Studio 2013
+os: Visual Studio 2015
+# os: Visual Studio 2017
+# os: Visual Studio 2019
 
 # build platform, i.e. Win32 (instead of x86), x64, Any CPU. This setting is optional.
 platform: 
-  # - Win32 Diable Win32
   - x64
-
-# specify custom environment variables
+  
+# specify custom environment variables, including boost version, which corresponds to which windows image is used.
+# https://www.appveyor.com/docs/windows-images-software/#boost
 environment:
-  BOOST_DIR: C:\Libraries\boost_1_59_0
+  BOOST_ROOT: C:\Libraries\boost_1_60_0 # VS 2015
+  # BOOST_ROOT: C:\Libraries\boost_1_69_0 # VS 2017
+  # BOOST_ROOT: C:\Libraries\boost_1_71_0 # VS 2019
+
 
 # build configuration, i.e. Debug, Release, etc.
 configuration:
-  - BoostTest
+ - Release
 
 # scripts that are called at very beginning, before repo cloning
 init:
@@ -26,16 +31,30 @@ clone_folder: C:\projects\FLAMEGPU2_dev
 
 # scripts that run after cloning repository (requires reboot to propagate installer env variables)
 install:
+  - call "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64  #installing vc++
+  - call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64 #installing vc++
   - ps: .\scripts\appveyor_install.ps1
   - ps: Write-Output 'Rebooting worker node...'
   - ps: sleep 5
   - ps: restart-computer -f
   - ps: sleep 5
   - ps: Write-Output 'Reboot complete'
+  # Set the cuda version used by this appveyor image
+  - ps: .\scripts\vcxproj-cuda-version.ps1 "8.0"
+  # Set the device architectures for the appropriate device architecture sessions
+  - ps: .\scripts\vcxproj-device-architectures.ps1 "35"
+
+# Before build use cmake
+before_build:
+- cmd: |-
+    mkdir build
+    cd build
+    cmake --version
+    cmake .. -A x64 -DWARNINGS_AS_ERRORS=ON
 
 # The build
 build:
-  project: C:\projects\FLAMEGPU2_dev\FLAMEGPU2.sln # path to Visual Studio solution or project
+  project: build\FLAMEGPU2.sln
 
 #debugging
 #on_finish:
