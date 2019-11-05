@@ -132,7 +132,7 @@ void Simulation::printHelp(const char *executable) {
 * Initialise the simulation. Allocated host and device memory. Reads the initial agent configuration from XML.
 * @param input	XML file path for agent initial configuration
 */
-void Simulation::initialise(int argc, char** argv)
+void Simulation::initialise(int argc, const char** argv)
 {
 	//check input args
     std::string xml_model_path;
@@ -155,7 +155,7 @@ void Simulation::initialise(StateReader& read__)
 /*
  * issues: only saves the last output, hardcoded, will be changed
  */
-void Simulation::output(int /*argc*/, char** /*argv*/)
+void Simulation::output(int /*argc*/, const char** /*argv*/)
 {
 	//check input args
 	// if (!checkArgs(argc, argv))

@@ -12,10 +12,9 @@ class AgentRandom {
  public:
     typedef unsigned int size_type;
     /**
-     * @note When _TS_ID is '&' rather than '&&' there was a memory error due to a reference to r-value being passed to it
-     * @note Similarly adding dual constructors causes it to break too
+     * @note DO NOT USE REFERENCES FOR TS_ID, CAUSES MEMORY ERROR
      */
-    __forceinline__ __device__ AgentRandom(const unsigned int&& _TS_ID);
+    __forceinline__ __device__ AgentRandom(const unsigned int _TS_ID);
     /**
      * Returns a float uniformly distributed between 0.0 and 1.0. 
      * @note It may return from 0.0 to 1.0, where 1.0 is included and 0.0 is excluded.
@@ -46,7 +45,7 @@ private:
     /**
      * Thread-safe index for accessing curand
      */
-    const unsigned int &TS_ID;
+    const unsigned int TS_ID;
 };
 
 /**
@@ -60,7 +59,7 @@ namespace flamegpu_internal {
 /**
  * Implmenetation
  */
-__forceinline__ __device__ AgentRandom::AgentRandom(const unsigned int &&_TS_ID) : TS_ID(_TS_ID) {
+__forceinline__ __device__ AgentRandom::AgentRandom(const unsigned int _TS_ID) : TS_ID(_TS_ID) {
     // Check once per agent per kernel
     // as opposed to every time rng is called
     assert(TS_ID < flamegpu_internal::d_random_size);

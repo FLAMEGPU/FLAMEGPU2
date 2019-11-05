@@ -33,9 +33,9 @@ public:
 
 	int checkArgs(int argc, const char** argv, std::string &xml_model_path);
 	
-	void initialise(int argc, char** argv); //void initialise(const char * input);
+	void initialise(int argc, const char** argv); //void initialise(const char * input);
 	//void initialise(StateReader& reader);
-	void output(int argc, char** argv);
+	void output(int argc, const char** argv);
 
 
 private:
