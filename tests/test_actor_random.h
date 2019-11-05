@@ -229,7 +229,7 @@ BOOST_AUTO_TEST_CASE(ActorRandomFunctionsNoExcept)
 
     CUDAAgentModel cuda_model(model);
     cuda_model.setInitialPopulationData(population);
-    cuda_model.simulate(simulation);
+    BOOST_CHECK_NO_THROW(cuda_model.simulate(simulation));
     //Success if we get this far without an exception being thrown.
 }
 
