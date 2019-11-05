@@ -139,7 +139,12 @@ set(CMAKE_CUDA_FLAGS_RELEASE "${CMAKE_CUDA_FLAGS_RELEASE} -lineinfo")
 set(CMAKE_CUDA_FLAGS_PROFILE "${CMAKE_CUDA_FLAGS_PROFILE} -lineinfo -DPROFILE -D_PROFILE")
 
 # Set high level of warnings, specific to the host compiler.
-set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --Wreorder --Werror reorder,cross-execution-space-call -Xptxas=\"-Werror\"  -Xnvlink=\"-Werror\"")
+if(WARNINGS_AS_ERRORS)
+    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --Wreorder --Werror reorder,cross-execution-space-call -Xptxas=\"-Werror\"  -Xnvlink=\"-Werror\"")
+else()
+    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --Wreorder")
+endif()
+# Compiler version specific flags
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     # Only set W4 for MSVC, WAll is more like Wall, Wextra and Wpedantic
     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler /W4")
