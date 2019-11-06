@@ -30,7 +30,6 @@ public:
     virtual ~CUDAMessage(void);
 
     const MessageDescription& getMessageDescription() const;
-	void setInitialMessageList();
     unsigned int getMaximumListSize() const;
 
     /**
@@ -49,6 +48,10 @@ public:
     void unmapRuntimeVariables(const AgentFunctionDescription& func) const;
 
 protected:
+    /**
+     * @brief Allocates the messagelist memory, called by constructor
+     */
+    void setInitialMessageList();
 
 	/** @brief	Zero all message variable data. */
 	void zeroAllMessageData();
