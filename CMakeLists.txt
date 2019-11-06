@@ -10,10 +10,8 @@ set(CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}" CACHE INTERNAL ""  FORCE)
 
 # See what languages are supported
 include(CheckLanguage)
-check_language(C)
-check_language(CXX)
 check_language(CUDA)
-if(NOT CMAKE_C_COMPILER OR NOT CMAKE_CXX_COMPILER OR NOT CMAKE_CUDA_HOST_COMPILER)
+if(CMAKE_CUDA_COMPILER STREQUAL NOTFOUND)
 	#Not able to build code, so just make docs	
 	message("Suitable compilers for building code not found.\n" "Attempting generation of minimal documentation only project.")	
 	get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR} REALPATH)

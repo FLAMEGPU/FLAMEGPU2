@@ -4,21 +4,17 @@ cmake_minimum_required(VERSION VERSION 3.12 FATAL_ERROR)
 # Set the location of the ROOT flame gpu project relative to this CMakeList.txt
 get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/.. REALPATH)
 
-#If top level project and no suitable compilers, only make docs
-if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
-	# See what languages are supported
-	include(CheckLanguage)
-	check_language(C)
-	check_language(CXX)
-	check_language(CUDA)
-	if(NOT CMAKE_C_COMPILER OR NOT CMAKE_CXX_COMPILER OR NOT CMAKE_CUDA_HOST_COMPILER)
-		project(flamegpu2 NONE)
-		#Not able to build code, so just make docs
-		message("Suitable compilers for building code not found.\n" "Attempting generation of minimal documentation only project.")
-		include(${FLAMEGPU_ROOT}/cmake/doxygen.cmake)
-		create_doxygen_target("${CMAKE_CURRENT_BINARY_DIR}")
-		return()
-	endif()
+# See what languages are supported
+# This is primarily here incase someone targets src/CMakeFiles.txt directly
+include(CheckLanguage)
+check_language(CUDA)
+if(CMAKE_CUDA_COMPILER STREQUAL NOTFOUND)
+    project(flamegpu2 NONE)
+    #Not able to build code, so just make docs
+    message("Suitable compilers for building code not found.\n" "Attempting generation of minimal documentation only project.")
+    include(${FLAMEGPU_ROOT}/cmake/doxygen.cmake)
+    create_doxygen_target("${CMAKE_CURRENT_BINARY_DIR}")
+    return()
 endif()
 
 # Name the project and set languages
