@@ -1,15 +1,23 @@
+# Doxygen / CMake + Doxygen generated files
 DoxyGen*/
+CMakeDoxyfile.in
+CMakeDoxygenDefaults.cmake
+Doxyfile.docs
+
+# Directories
 docs/
 bin/
 obj/
+build/
+
+# Editor configuration files/directories
+.vscode
 *.cbp
 *.layout
-build/
-.vscode
 .cbp
 .layout
 
-CUDA
+# CUDA
 *.i
 *.ii
 *.gpu
