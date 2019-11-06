@@ -4,6 +4,11 @@ CMakeDoxyfile.in
 CMakeDoxygenDefaults.cmake
 Doxyfile.docs
 
+# Visual Studio (these are gen by CMake, don't want tracked)
+*.vcxproj
+*.vcxproj.filters
+*.sln
+
 # Directories
 docs/
 bin/
