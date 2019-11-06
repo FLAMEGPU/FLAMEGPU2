@@ -2,11 +2,23 @@
 # 3.10 required for cuda -std=c++14, however 3.12 fixes some device linker errors
 cmake_minimum_required(VERSION VERSION 3.12 FATAL_ERROR)
 
-project(FLAMEGPU2)
+project(FLAMEGPU2 LANGUAGES NONE)
 
 # Don't create installation scripts (and hide CMAKE_INSTALL_PREFIX from cmake-gui)
 set(CMAKE_SKIP_INSTALL_RULES TRUE)
 set(CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}" CACHE INTERNAL ""  FORCE)
+
+# See what languages are supported
+include(CheckLanguage)
+check_language(CUDA)
+if(CMAKE_CUDA_COMPILER STREQUAL NOTFOUND)
+	#Not able to build code, so just make docs	
+	message("Suitable compilers for building code not found.\n" "Attempting generation of minimal documentation only project.")	
+	get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR} REALPATH)
+	include(./cmake/doxygen.cmake)
+	create_doxygen_target("${CMAKE_CURRENT_BINARY_DIR}") 
+	return()
+endif()
 
 # Option to enable/disable building the static library
 option(BUILD_FLAMEGPU2 "Enable building FLAMEGPU2 library" ON)
