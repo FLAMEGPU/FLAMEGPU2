@@ -1,6 +1,6 @@
 ### Introduction
 
-The project aim is to develop an existing computer application called FLAMEGPU, a high performance Graphics Processing Unit (GPU) extension to the FLAME framework that provides a mapping between a formal agent specifications with C based scripting and optimised CUDA code to support scalable muti-agent simulation.  The plan it to expand/extend features and capabilities of the exiting <a href="https://github.com/FLAMEGPU/FLAMEGPU">FLAMEGPU software</a>, in order to position it as a middle-ware for complex systems simulation. The application is expected to be the equivalent of Thrust for simplifying complex systems on GPUs.  The FLAMEGPU library includes  algorithms such as spatial partitioning, network communication.
+The project aim is to develop an existing computer application called FLAMEGPU, a high performance Graphics Processing Unit (GPU) extension to the FLAME framework that provides a mapping between a formal agent specifications with C based scripting and optimised CUDA code to support scalable muti-agent simulation.  The plan it to expand/extend features and capabilities of the exiting <a href="https://github.com/FLAMEGPU/FLAMEGPU">FLAMEGPU software</a>, in order to position it as a middle-ware for complex systems simulation. The application is expected to be the equivalent of Thrust for simplifying complex systems on GPUs.  The FLAMEGPU library includes algorithms such as spatial partitioning, network communication.
 
 The Code is currently under active development and should **not be used** until the first release.
 
@@ -13,6 +13,31 @@ Continuous integration is provided by Travis (Linux) and windows (AppVeyor). Thi
 [![Build status](https://ci.appveyor.com/api/projects/status/4p58gnu8tyj7y3a7/branch/master?svg=true)](https://ci.appveyor.com/project/mondus/flamegpu2-dev/branch/master)
 
 [![Build Status](https://travis-ci.org/FLAMEGPU/FLAMEGPU2_dev.svg?branch=master)](https://travis-ci.org/FLAMEGPU/FLAMEGPU2_dev)
+
+### Dependencies
+
+The dependencies below are required for building FLAME GPU 2.
+
+Only documentation can be built without the required dependencies (however Doxygen is still required).
+
+#### Required
+
+* [CMake](https://cmake.org/) >= 3.12
+* [CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit) >= 1.54
+
+**Linux**
+* [make](https://www.gnu.org/software/make/)
+* gcc (version requirements [here](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#system-requirements))
+
+**Windows**
+* Visual studio 2015 or higher
+
+
+#### Optional
+* [cpplint](https://github.com/cpplint/cpplint): Required for linting code
+* [Doxygen](http://www.doxygen.nl/): Required for building documentation
+* [Boost](https://www.boost.org/) >= 1.54 : Required for building tests
+
 
 ### Building FLAME GPU 2
 
