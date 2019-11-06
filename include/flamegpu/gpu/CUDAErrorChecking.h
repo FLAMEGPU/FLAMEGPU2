@@ -1,4 +1,6 @@
- /**
+#ifndef INCLUDE_FLAMEGPU_GPU_CUDAERRORCHECKING_H_
+#define INCLUDE_FLAMEGPU_GPU_CUDAERRORCHECKING_H_
+/**
  * @file CUDAErrorChecking.h
  * @authors Paul
  * @date 5 Mar 2014
@@ -8,12 +10,13 @@
  * @warning
  */
 
-#pragma once
+
+
+#include <device_launch_parameters.h>
+#include <cuda_runtime.h>
 
 #include <string>
 #include <stdexcept>
-#include <cuda_runtime.h>
-#include <device_launch_parameters.h>
 
 /* Error check function for safe CUDA API calling */
 #define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
@@ -31,3 +34,5 @@ inline void gpuLaunchAssert(const char *file, int line) {
 #endif
     gpuAssert(cudaPeekAtLastError(), file, line);
 }
+
+#endif  // INCLUDE_FLAMEGPU_GPU_CUDAERRORCHECKING_H_

@@ -47,7 +47,7 @@ class AgentDescription {
     /**
     *
     */
-    AgentDescription(std::string name);
+    explicit AgentDescription(std::string name);
 
     virtual ~AgentDescription();
 

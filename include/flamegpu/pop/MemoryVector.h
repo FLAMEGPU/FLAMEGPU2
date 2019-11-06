@@ -6,13 +6,13 @@
 #ifndef INCLUDE_FLAMEGPU_POP_MEMORYVECTOR_H_
 #define INCLUDE_FLAMEGPU_POP_MEMORYVECTOR_H_
 
-#include <string>
 #include <vector>
 #include <ostream>
 #include <typeinfo>
 #include <map>
 #include <memory>
 #include <utility>
+#include <string>
 
 #include "flamegpu/exception/FGPUException.h"
 
@@ -57,7 +57,7 @@ class MemoryVector : public GenericMemoryVector {
             return &(vec.front());
     }
 
-    virtual const void* getReadOnlyDataPtr() const{
+    virtual const void* getReadOnlyDataPtr() const {
         if (vec.empty())
             return nullptr;
         else

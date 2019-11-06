@@ -2,7 +2,14 @@
 
 #include "flamegpu/runtime/flame_functions_api.h"
 
-__global__ void agent_function_wrapper(CurveNamespaceHash agent_func_name_hash, CurveNamespaceHash messagename_inp_hash, CurveNamespaceHash messagename_outp_hash, FLAMEGPU_AGENT_FUNCTION_POINTER func, int popNo, unsigned int messageList_size) {
+__global__ void agent_function_wrapper(
+    CurveNamespaceHash agent_func_name_hash,
+    CurveNamespaceHash messagename_inp_hash,
+    CurveNamespaceHash messagename_outp_hash,
+    FLAMEGPU_AGENT_FUNCTION_POINTER func,
+    int popNo,
+    unsigned int messageList_size
+    ) {
     // create a new device FLAME_GPU instance
     FLAMEGPU_API *api = new FLAMEGPU_API();
 

@@ -12,9 +12,10 @@
  * \todo Requires vector length table for each variable (or namespace) which is registered. For now no safe checking of vector length is done.
  */
 
+#include <cuda_runtime.h>
+
 #include <cstring>
 #include <typeinfo>
-#include <cuda_runtime.h>
 
 #define UNKNOWN_CURVE_VARIABLE     -1                        // !< value returned as a CurveVariable if an API function encounters an error
 

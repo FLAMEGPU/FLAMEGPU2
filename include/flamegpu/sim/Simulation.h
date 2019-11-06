@@ -2,10 +2,10 @@
 #define INCLUDE_FLAMEGPU_SIM_SIMULATION_H_
 
 #include <vector>
-#include <string.h>
+#include <cstring>
 
 // include class dependencies
-#include <flamegpu/sim/SimulationLayer.h>
+#include "flamegpu/sim/SimulationLayer.h"
 
 // forward declare dependencies from other modules
 class ModelDescription;
@@ -21,7 +21,7 @@ class Simulation {
     explicit Simulation(const ModelDescription& model);
     ~Simulation(void);
 
-    unsigned int addSimulationLayer(SimulationLayer& layer);
+    unsigned int addSimulationLayer(SimulationLayer &layer);
     void setSimulationSteps(unsigned int steps);
     unsigned int getSimulationSteps() const;
     const ModelDescription& getModelDescritpion() const;
@@ -41,5 +41,5 @@ class Simulation {
     unsigned int simulation_steps;
 };
 
-#endif  //INCLUDE_FLAMEGPU_SIM_SIMULATION_H_
+#endif  // INCLUDE_FLAMEGPU_SIM_SIMULATION_H_
 

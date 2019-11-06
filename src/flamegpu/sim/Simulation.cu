@@ -31,7 +31,7 @@ const FunctionDescriptionVector& Simulation::getFunctionsAtLayer(unsigned int la
     }
 }
 
-unsigned int Simulation::addSimulationLayer(SimulationLayer& layer) {
+unsigned int Simulation::addSimulationLayer(SimulationLayer &layer) {
     layers.push_back(layer);
     return static_cast<unsigned int>(layers.size())-1;
 }

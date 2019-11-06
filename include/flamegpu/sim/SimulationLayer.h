@@ -5,8 +5,8 @@
 #include <map>
 
 // include class dependencies
-// #include "../model// ModelDescription.h"
-// #include "../model/AgentFunctionDescription.h"
+// #include "flamegpu/model/ModelDescription.h"
+// #include "flamegpu/model/AgentFunctionDescription.h"
 
 // forward declare dependencies from higher up hierarchy
 class Simulation;

@@ -11,10 +11,10 @@
  */
 
 #include <string>
-#include "statereader.h"
-#include "statewriter.h"
-#include "xmlReader.h"
-#include "xmlWriter.h"
+#include "flamegpu/io/statereader.h"
+#include "flamegpu/io/statewriter.h"
+#include "flamegpu/io/xmlReader.h"
+#include "flamegpu/io/xmlWriter.h"
 
 //  move later
 std::string getFileExt(const std::string& s) {

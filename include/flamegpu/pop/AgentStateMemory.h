@@ -15,8 +15,6 @@
 #include <vector>
 #include <map>
 #include <typeinfo>
-#include <memory>
-#include <typeinfo>
 
 // include generic memory vectors
 #include "flamegpu/pop/MemoryVector.h"
@@ -24,9 +22,9 @@
 class AgentPopulation;
 class AgentDescription;
 
-class AgentStateMemory { // agent_list
+class AgentStateMemory {  // agent_list
  public:
-    AgentStateMemory(const AgentPopulation &population, unsigned int initial_capacity = 0);
+    explicit AgentStateMemory(const AgentPopulation &population, unsigned int initial_capacity = 0);
     virtual ~AgentStateMemory() {}
 
     unsigned int incrementSize();

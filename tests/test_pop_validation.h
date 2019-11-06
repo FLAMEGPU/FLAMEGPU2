@@ -1,3 +1,5 @@
+#ifndef TESTS_TEST_POP_VALIDATION_H_
+#define TESTS_TEST_POP_VALIDATION_H_
 /**
  * @copyright  2017 University of Sheffield
  *
@@ -10,20 +12,17 @@
  * @bug        No known bugs
  */
 
-#include <flamegpu/flame_api.h>
+#include "flamegpu/flame_api.h"
 
 
-using namespace std;
-
-BOOST_AUTO_TEST_SUITE(PopTest) //name of the test suite is PopTest
+BOOST_AUTO_TEST_SUITE(PopTest)  // name of the test suite is PopTest
 
 /**
  * @brief      To verify the correctness of agent population name and exception handler
  * To test the case separately, run: make run_BOOST_TEST TSuite=PopTest/PopulationNameCheck
  * This test should pass by throwing the correct exception.
 */
-BOOST_AUTO_TEST_CASE(PopulationNameCheck)
-{
+BOOST_AUTO_TEST_CASE(PopulationNameCheck) {
     ModelDescription flame_model("circles_model");
     AgentDescription circle_agent("circle");
 
@@ -32,16 +31,15 @@ BOOST_AUTO_TEST_CASE(PopulationNameCheck)
 
     flame_model.addAgent(circle_agent);
     AgentPopulation population(circle_agent);
-    for (int i=0; i< 100; i++)
-    {
+    for (int i=0; i< 100; i++) {
         AgentInstance instance = population.getNextInstance("default");
         instance.setVariable<float>("x", i*0.1f);
     }
 
-    BOOST_TEST_MESSAGE( "\nTesting Agent population Name .." );
-    BOOST_CHECK(population.getAgentName()=="circle");
-// what do we expect here?default or circle
-    BOOST_CHECK_THROW(population.getStateMemory("circe"),InvalidStateName); // expecting an error
+    BOOST_TEST_MESSAGE("\nTesting Agent population Name ..");
+    BOOST_CHECK(population.getAgentName() == "circle");
+    // what do we expect here?default or circle
+    BOOST_CHECK_THROW(population.getStateMemory("circe"), InvalidStateName);  // expecting an error
 }
 
 
@@ -52,11 +50,8 @@ BOOST_AUTO_TEST_CASE(PopulationNameCheck)
  *
  * This test should pass by throwing the correct exception.
 */
-BOOST_AUTO_TEST_CASE(PopulationInstVarCheck1)
-{
-
-
-    BOOST_TEST_MESSAGE( "\nTesting Agent population Instance Variable .." );
+BOOST_AUTO_TEST_CASE(PopulationInstVarCheck1) {
+    BOOST_TEST_MESSAGE("\nTesting Agent population Instance Variable ..");
 
     ModelDescription flame_model("circles_model");
     AgentDescription circle_agent("circle");
@@ -71,20 +66,19 @@ BOOST_AUTO_TEST_CASE(PopulationInstVarCheck1)
     AgentInstance instance = population.getNextInstance("default");
 
 #if defined(_MSC_VER)
-    #pragma warning( push )
-    #pragma warning( disable : 4244)
+    #pragma warning(push)
+    #pragma warning(disable : 4244)
 #endif
-    BOOST_CHECK_THROW(instance.setVariable<int>("x", 0.1f),InvalidVarType);
+    BOOST_CHECK_THROW(instance.setVariable<int>("x", 0.1f), InvalidVarType);
 #if defined(_MSC_VER)
-#pragma warning( pop )
+#pragma warning(pop)
 #endif
 
     instance.setVariable<float>("x", 0.1f);
 
-    BOOST_CHECK_MESSAGE(instance.getVariable<float>("x")==0.1f, "Variable is "<< instance.getVariable<float>("x") << " and not 0.1f!!");
+    BOOST_CHECK_MESSAGE(instance.getVariable<float>("x") == 0.1f, "Variable is " << instance.getVariable<float>("x") << " and not 0.1f!!");
 
-    BOOST_CHECK_THROW(instance.getVariable<int>("x"), InvalidVarType); // expecting an error
-
+    BOOST_CHECK_THROW(instance.getVariable<int>("x"), InvalidVarType);  // expecting an error
 }
 
 /**
@@ -92,11 +86,8 @@ BOOST_AUTO_TEST_CASE(PopulationInstVarCheck1)
  * ::AgentInstance::getVariable functions by checking the population data
  * To test the case separately, run: make run_BOOST_TEST TSuite=PopTest/PopulationInstVarCheck2
 */
-BOOST_AUTO_TEST_CASE(PopulationInstVarCheck2)
-{
-
-
-    BOOST_TEST_MESSAGE( "\nTesting Agent population Instance Variable .." );
+BOOST_AUTO_TEST_CASE(PopulationInstVarCheck2) {
+    BOOST_TEST_MESSAGE("\nTesting Agent population Instance Variable ..");
 
     ModelDescription flame_model("circles_model");
     AgentDescription circle_agent("circle");
@@ -112,8 +103,7 @@ BOOST_AUTO_TEST_CASE(PopulationInstVarCheck2)
     instance.setVariable<float>("x", 0.1f);
 
 
-    BOOST_CHECK_MESSAGE(instance.getVariable<float>("y")==0.0f, "Variable is "<< instance.getVariable<float>("y") << " and not 0.0f by default!!");
-
+    BOOST_CHECK_MESSAGE(instance.getVariable<float>("y") == 0.0f, "Variable is " << instance.getVariable<float>("y") << " and not 0.0f by default!!");
 }
 
 
@@ -124,11 +114,8 @@ BOOST_AUTO_TEST_CASE(PopulationInstVarCheck2)
  * To test the case separately, run: make run_BOOST_TEST TSuite=PopTest/PopulationInstVarCheck3
  * This test should pass by throwing the correct exception.
 */
-BOOST_AUTO_TEST_CASE(PopulationInstVarCheck3)
-{
-
-
-    BOOST_TEST_MESSAGE( "\nTesting Agent population Instance Variable .." );
+BOOST_AUTO_TEST_CASE(PopulationInstVarCheck3) {
+    BOOST_TEST_MESSAGE("\nTesting Agent population Instance Variable ..");
 
     ModelDescription flame_model("circles_model");
     AgentDescription circle_agent("circle");
@@ -144,7 +131,6 @@ BOOST_AUTO_TEST_CASE(PopulationInstVarCheck3)
     instance.setVariable<float>("x", 0.1f);
 
     BOOST_CHECK_THROW(instance.getVariable<float>("z"), InvalidAgentVar);
-
 }
 
 /**
@@ -155,10 +141,8 @@ BOOST_AUTO_TEST_CASE(PopulationInstVarCheck3)
  *  To test the case separately, run: make run_BOOST_TEST TSuite=PopTest/PopulationSizeCheck
  *
 */
-BOOST_AUTO_TEST_CASE(PopulationSizeCheck)
-{
-
-    BOOST_TEST_MESSAGE( "\nTesting Agent population size set by default .." );
+BOOST_AUTO_TEST_CASE(PopulationSizeCheck) {
+    BOOST_TEST_MESSAGE("\nTesting Agent population size set by default ..");
 
     ModelDescription flame_model("circles_model");
     AgentDescription circle_agent("circle");
@@ -170,8 +154,7 @@ BOOST_AUTO_TEST_CASE(PopulationSizeCheck)
 
     AgentPopulation population(circle_agent);
 
-    BOOST_CHECK(population.getMaximumStateListCapacity()==1024);
-
+    BOOST_CHECK(population.getMaximumStateListCapacity() == 1024);
 }
 
 /**
@@ -184,10 +167,7 @@ BOOST_AUTO_TEST_CASE(PopulationSizeCheck)
  *
  * This test should pass by throwing the correct exception.
 */
-BOOST_AUTO_TEST_CASE(PopulationAddMoreCapacity)
-{
-
-
+BOOST_AUTO_TEST_CASE(PopulationAddMoreCapacity) {
     BOOST_TEST_MESSAGE("\nTesting changing the capacity..");
 
     ModelDescription flame_model("circles_model");
@@ -204,8 +184,8 @@ BOOST_AUTO_TEST_CASE(PopulationAddMoreCapacity)
     population.setStateListCapacity(200);
     BOOST_CHECK(population.getMaximumStateListCapacity() == 200);
 
-    //Catch exception that fails on above call (can't reduce population capacity)
-    BOOST_CHECK_THROW(population.setStateListCapacity(100),InvalidPopulationData);
+    // Catch exception that fails on above call (can't reduce population capacity)
+    BOOST_CHECK_THROW(population.setStateListCapacity(100), InvalidPopulationData);
 }
 
 /**
@@ -215,9 +195,7 @@ BOOST_AUTO_TEST_CASE(PopulationAddMoreCapacity)
  *
  * This test should pass by throwing the correct exception.
 */
-BOOST_AUTO_TEST_CASE(PopulationOverflowCapacity)
-{
-
+BOOST_AUTO_TEST_CASE(PopulationOverflowCapacity) {
     BOOST_TEST_MESSAGE("\nTesting overflowing the capacity of a state list..");
 
     ModelDescription flame_model("circles_model");
@@ -231,14 +209,13 @@ BOOST_AUTO_TEST_CASE(PopulationOverflowCapacity)
     AgentPopulation population(circle_agent, 100);
     BOOST_CHECK(population.getMaximumStateListCapacity() == 100);
 
-    //add 100 instances (no problem)
-    for (int i = 0; i< 100; i++)
-    {
+    // add 100 instances (no problem)
+    for (int i = 0; i< 100; i++)     {
         AgentInstance instance = population.getNextInstance("default");
         instance.setVariable<float>("x", i*0.1f);
     }
     // getNextInstance fails if capacity is too small when for loop creates 101 agents
-    BOOST_CHECK_THROW(population.getNextInstance("default"),InvalidMemoryCapacity);
+    BOOST_CHECK_THROW(population.getNextInstance("default"), InvalidMemoryCapacity);
 }
 
 /**
@@ -252,11 +229,8 @@ BOOST_AUTO_TEST_CASE(PopulationOverflowCapacity)
  *
  * This test should pass by throwing the correct exception.
 */
-BOOST_AUTO_TEST_CASE(PopulationCheckGetInstanceBeyondSize)
-{
-
-
-    BOOST_TEST_MESSAGE( "\nTesting getting an instance beyond current size .." );
+BOOST_AUTO_TEST_CASE(PopulationCheckGetInstanceBeyondSize) {
+    BOOST_TEST_MESSAGE("\nTesting getting an instance beyond current size ..");
 
     ModelDescription flame_model("circles_model");
     AgentDescription circle_agent("circle");
@@ -274,9 +248,8 @@ BOOST_AUTO_TEST_CASE(PopulationCheckGetInstanceBeyondSize)
     AgentInstance instance_s1 = population.getNextInstance("default");
     instance_s1.setVariable<float>("x", 0.1f);
 
-    //check that getInstanceAt should fail if index is less than size
-    BOOST_CHECK_THROW(population.getInstanceAt(1,"default"),InvalidMemoryCapacity);
-
+    // check that getInstanceAt should fail if index is less than size
+    BOOST_CHECK_THROW(population.getInstanceAt(1, "default"), InvalidMemoryCapacity);
 }
 
 /**
@@ -284,10 +257,7 @@ BOOST_AUTO_TEST_CASE(PopulationCheckGetInstanceBeyondSize)
  * To test the case separately, run: make run_BOOST_TEST TSuite=PopTest/PopulationDataValuesMultipleStates
  *
 */
-BOOST_AUTO_TEST_CASE(PopulationDataValuesMultipleStates)
-{
-
-
+BOOST_AUTO_TEST_CASE(PopulationDataValuesMultipleStates) {
     BOOST_TEST_MESSAGE("\nTesting the population data with multiple states ..");
 
     ModelDescription flame_model("circles_model");
@@ -303,9 +273,8 @@ BOOST_AUTO_TEST_CASE(PopulationDataValuesMultipleStates)
 
     AgentPopulation population(circle_agent, 100);
 
-    //add 100 instances (no problem)
-    for (int i = 0; i< 100; i++)
-    {
+    // add 100 instances (no problem)
+    for (int i = 0; i< 100; i++) {
         AgentInstance instance_s1 = population.getNextInstance("s1");
         instance_s1.setVariable<int>("id", i);
 
@@ -313,9 +282,8 @@ BOOST_AUTO_TEST_CASE(PopulationDataValuesMultipleStates)
         instance_s2.setVariable<int>("id", i + 1000);
     }
 
-    //check values are correct
-    for (int i = 0; i< 100; i++)
-    {
+    // check values are correct
+    for (int i = 0; i< 100; i++) {
         AgentInstance instance_s1 = population.getInstanceAt(i, "s1");
         BOOST_CHECK(instance_s1.getVariable<int>("id") == i);
 
@@ -327,3 +295,4 @@ BOOST_AUTO_TEST_CASE(PopulationDataValuesMultipleStates)
 
 BOOST_AUTO_TEST_SUITE_END()
 
+#endif  // TESTS_TEST_POP_VALIDATION_H_

@@ -10,15 +10,16 @@
 #ifndef INCLUDE_FLAMEGPU_GPU_CUDAAGENTMODEL_H_
 #define INCLUDE_FLAMEGPU_GPU_CUDAAGENTMODEL_H_
 
+#include <cuda_runtime.h>
+
 #include <memory>
 #include <map>
 #include<string>
-#include <cuda_runtime.h>
 
 // include sub classes
 #include "flamegpu/gpu/CUDAAgent.h"
 #include "flamegpu/gpu/CUDAMessage.h"
-#include "flamegpu/runtime/cuRVE/cuRVEInstance.h" // @todo move to externals
+#include "flamegpu/runtime/cuRVE/cuRVEInstance.h"  // @todo move to externals
 
 // forward declare classes from other modules
 class ModelDescription;
@@ -30,7 +31,7 @@ typedef std::map<const std::string, std::unique_ptr<CUDAMessage>> CUDAMessageMap
 
 class CUDAAgentModel {
  public:
-    CUDAAgentModel(const ModelDescription& description);
+    explicit CUDAAgentModel(const ModelDescription& description);
     virtual ~CUDAAgentModel();
 
     void setInitialPopulationData(AgentPopulation& population);

@@ -13,9 +13,8 @@
 
 #include <memory>
 #include <map>
-#include <memory>
-#include <string>
 #include <utility>
+#include <string>
 
 // include sub dependency AgentInstance which includes AgentStateMemory
 #include "flamegpu/pop/AgentInstance.h"
@@ -23,7 +22,7 @@
 // forward declarations
 class AgentDescription;
 
-#define DEFAULT_POPULATION_SIZE 10// 1024
+#define DEFAULT_POPULATION_SIZE 10  // 1024
 
 typedef std::map<const std::string, std::unique_ptr<AgentStateMemory>> AgentStatesMap;    // key is concat of agent and state name!
 typedef std::pair<const std::string, std::unique_ptr<AgentStateMemory>> AgentStatesMapPair;

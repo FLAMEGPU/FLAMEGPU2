@@ -1,7 +1,7 @@
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_CURVE_CURVEINSTANCE_H_
 #define INCLUDE_FLAMEGPU_RUNTIME_CURVE_CURVEINSTANCE_H_
 
-#include "curve.h"
+#include "flamegpu/runtime/cuRVE/curve.h"
 
 /** @brief    A cuRVE instance.
  *

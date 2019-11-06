@@ -11,10 +11,8 @@
 #ifndef INCLUDE_FLAMEGPU_POP_AGENTINSTANCE_H_
 #define INCLUDE_FLAMEGPU_POP_AGENTINSTANCE_H_
 
-#include <iostream>
-#include <string>
-#include <typeinfo>
 #include <vector>
+#include <string>
 
 // include dependant class agent state memory (required in template functions)
 #include "flamegpu/pop/AgentStateMemory.h"

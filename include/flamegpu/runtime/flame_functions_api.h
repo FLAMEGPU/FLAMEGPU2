@@ -187,7 +187,7 @@ __device__ void FLAMEGPU_API::setMessageVariable(const char(&variable_name)[N], 
 * \param value Value to set it to
 */
 template<typename T, unsigned int N>
-__device__ void FLAMEGPU_API::addMessage(const char(&variable_name)[N], T value) {// message name or variable name
+__device__ void FLAMEGPU_API::addMessage(const char(&variable_name)[N], T value) {  // message name or variable name
     unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;  // + d_message_count;
 
     // Todo: checking if the output message type is single or optional?  (d_message_type)

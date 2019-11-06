@@ -24,7 +24,7 @@ class MessageDescription;
 
 class CUDAMessage {
  public:
-    CUDAMessage(const MessageDescription& description);
+    explicit CUDAMessage(const MessageDescription& description);
     virtual ~CUDAMessage(void);
 
     const MessageDescription& getMessageDescription() const;
@@ -66,4 +66,4 @@ protected:
     unsigned int max_list_size;
 };
 
-#endif  //INCLUDE_FLAMEGPU_GPU_CUDAMESSAGE_H_
+#endif  // INCLUDE_FLAMEGPU_GPU_CUDAMESSAGE_H_

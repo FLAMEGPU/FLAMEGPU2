@@ -11,8 +11,6 @@
 #define INCLUDE_FLAMEGPU_GPU_CUDAMESSAGELIST_H_
 
 #include <string>
-#include <memory>
-#include <vector>
 #include <map>
 #include <utility>
 
@@ -26,7 +24,7 @@ typedef std::pair <std::string, void*> CUDAMsgMapPair;
 
 class CUDAMessageList {
  public:
-    CUDAMessageList(CUDAMessage& cuda_message);
+    explicit CUDAMessageList(CUDAMessage& cuda_message);
     virtual ~CUDAMessageList();
 
     void cleanupAllocatedData();

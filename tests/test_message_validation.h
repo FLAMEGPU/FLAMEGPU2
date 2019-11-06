@@ -1,3 +1,5 @@
+#ifndef TESTS_TEST_MESSAGE_VALIDATION_H_
+#define TESTS_TEST_MESSAGE_VALIDATION_H_
 /**
  * @copyright  2017 University of Sheffield
  *
@@ -10,21 +12,20 @@
  * @bug        No known bugs
  */
 
-#include <flamegpu/flame_api.h>
+#include <string>
+#include <utility>
 
-using namespace std;
+#include "flamegpu/flame_api.h"
 
-BOOST_AUTO_TEST_SUITE(MessageTest) //name of the test suite is MessageTest
+BOOST_AUTO_TEST_SUITE(MessageTest)  // name of the test suite is MessageTest
 
 /**
  * @brief      To verify the correctness of message name, size, and type.
  * To test the case separately, run: make run_BOOST_TEST TSuite=MessageTest/MessageCheck
  *
 */
-BOOST_AUTO_TEST_CASE(MessageCheck)
-{
-
-    BOOST_TEST_MESSAGE( "\nTesting Message Name and Size, Type, and Number .." );
+BOOST_AUTO_TEST_CASE(MessageCheck) {
+    BOOST_TEST_MESSAGE("\nTesting Message Name and Size, Type, and Number ..");
 
     MessageDescription location_message("location");
 
@@ -62,20 +63,17 @@ BOOST_AUTO_TEST_CASE(MessageCheck)
      */
     BOOST_CHECK(location_message.getVariableType("x")== typeid(float));
 
-	
 
-	/**
-	* @brief      Checks the mapped message variables
-	* @todo change the boost test message style to boost_check
-	*/
-	const VariableMap &mem = location_message.getVariableMap();
-	for (const VariableMapPair& mm : mem)
-	{
-		//get the variable name
-		std::string var_name = mm.first;
-		BOOST_TEST_MESSAGE("variable names:" << var_name);
-	}
-	
+    /**
+    * @brief      Checks the mapped message variables
+    * @todo change the boost test message style to boost_check
+    */
+    const VariableMap &mem = location_message.getVariableMap();
+    for (const VariableMapPair& mm : mem) {
+        // get the variable name
+        std::string var_name = mm.first;
+        BOOST_TEST_MESSAGE("variable names:" << var_name);
+    }
 
    /**
      * @brief      Checks if the message variable exists
@@ -83,7 +81,7 @@ BOOST_AUTO_TEST_CASE(MessageCheck)
      * statement and checks if it throws the exception or not. The second argument
      * is the expected exception.
      */
-	BOOST_CHECK_THROW(location_message.getMessageVariableSize("z"), InvalidMessageVar); // expecting an error
+    BOOST_CHECK_THROW(location_message.getMessageVariableSize("z"), InvalidMessageVar);  // expecting an error
 }
 
 
@@ -92,9 +90,8 @@ BOOST_AUTO_TEST_CASE(MessageCheck)
  * To test the case separately, run: make run_BOOST_TEST TSuite=MessageTest/MessageFunctionCheck
  *
 */
-BOOST_AUTO_TEST_CASE(MessageFunctionCheck)
-{
-    BOOST_TEST_MESSAGE( "\nTesting Function and Message Name .." );
+BOOST_AUTO_TEST_CASE(MessageFunctionCheck) {
+    BOOST_TEST_MESSAGE("\nTesting Function and Message Name ..");
 
     ModelDescription flame_model("circles_model");
 
@@ -117,27 +114,27 @@ BOOST_AUTO_TEST_CASE(MessageFunctionCheck)
      * @brief      Checks the name of agent function description
      * This is to validate the predicate value. The test should pass.
      */
-    BOOST_CHECK(output_data.getName()=="output_data");
+    BOOST_CHECK(output_data.getName() == "output_data");
 
    /**
      * @brief      Checks whether the agent function reads an input message
      * This is to validate the predicate value. The test should pass.
      */
-    BOOST_CHECK(output_data.hasInputMessage()==false);
-    BOOST_CHECK(move.hasInputMessage()==false);
+    BOOST_CHECK(output_data.hasInputMessage() == false);
+    BOOST_CHECK(move.hasInputMessage() == false);
 
    /**
      * @brief      Checks whether the agent function outputs a message
      * This is to validate the predicate value. The test should pass.
      */
-    BOOST_CHECK(output_data.hasOutputMessage()==true);
-    BOOST_CHECK(move.hasOutputMessage()==false);
+    BOOST_CHECK(output_data.hasOutputMessage() == true);
+    BOOST_CHECK(move.hasOutputMessage() == false);
 
    /**
      * @brief      Checks the message name
      * This is to validate the predicate value. The test should pass.
      */
-    BOOST_CHECK(output_location.getMessageName()=="location");
+    BOOST_CHECK(output_location.getMessageName() == "location");
 
 
     /**
@@ -146,22 +143,19 @@ BOOST_AUTO_TEST_CASE(MessageFunctionCheck)
      * statement and checks if it throws the exception or not. The second argument
      * is the expected exception.
      */
-    BOOST_CHECK_THROW(flame_model.getMessageDescription("error"),InvalidMessageVar); // expecting an error
+    BOOST_CHECK_THROW(flame_model.getMessageDescription("error"), InvalidMessageVar);  // expecting an error
 }
 
+// TODO: Check that we can output (single) messages during simulation without error
 
+// TODO: Ensure that agents can not output more than a single message (correct error must be thrown)
 
+// TODO: Check that we can output (optional) messages during simulation without error - must check that the sparse message list becomes dense
 
-//TODO: Check that we can output (single) messages during simulation without error
+// TODO: Check that message iterators count over the correct number of agents
 
-//TODO: Ensure that agents can not output more than a single message (correct error must be thrown)
-
-//TODO: Check that we can output (optional) messages during simulation without error - must check that the sparse message list becomes dense
-
-//TODO: Check that message iterators count over the correct number of agents
-
-//TODO: More advanced input of messages to check the values are correct
-
-
+// TODO: More advanced input of messages to check the values are correct
 
 BOOST_AUTO_TEST_SUITE_END()
+
+#endif  // TESTS_TEST_MESSAGE_VALIDATION_H_

@@ -10,9 +10,7 @@
  * \todo longer description
  */
 
-#include <string>
-
-#include  <flamegpu/io/statereader.h>
+#include "flamegpu/io/statereader.h"
 #include "flamegpu/model/ModelDescription.h"
 
 // Derived classes
