@@ -36,9 +36,9 @@ SET(TEST_CASE_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/test_sim_validation.h
 )
 SET(OTHER_SRC
-    ${CMAKE_CURRENT_SOURCE_DIR}/device_functions.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/device_test_functions.h
     ${CMAKE_CURRENT_SOURCE_DIR}/test_all.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/device_functions.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/device_test_functions.cu
 )
 SET(ALL_SRC
     ${TEST_CASE_SRC}

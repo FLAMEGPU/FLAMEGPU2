@@ -16,7 +16,7 @@
 
 #include "flamegpu/flame_api.h"
 
-#include "device_functions.h"
+#include "device_test_functions.h"
 
 BOOST_AUTO_TEST_SUITE(SimTest)  // name of the test suite is SimTest
 
