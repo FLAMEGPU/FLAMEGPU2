@@ -3,7 +3,7 @@ find_package(Doxygen OPTIONAL_COMPONENTS mscgen dia dot)
 if(DOXYGEN_FOUND)
 	option(CMAKE_MAKE_DOCUMENTATION "Enable building documentation (requires Doxygen)" ON)
 else()
-	if(NOT CMAKE_C_COMPILER OR NOT CMAKE_CXX_COMPILER OR NOT CMAKE_CUDA_HOST_COMPILER)
+	if(CMAKE_CUDA_COMPILER STREQUAL NOTFOUND)
 		message(FATAL_ERROR 
 			" Doxygen: NOT FOUND!\n"
 			" Documentation project cannot be generated.\n"
