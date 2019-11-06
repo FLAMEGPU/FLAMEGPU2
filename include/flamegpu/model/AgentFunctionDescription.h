@@ -53,13 +53,13 @@ class AgentFunctionDescription {
     const std::string getInputMessageName() const;
     const std::string getOutputMessageName() const;
 
-    // TODO(Paul)
+    // TODO
     // sets the function pointer by adding to the FunctionPointerMap
     void setFunction(FLAMEGPU_AGENT_FUNCTION_POINTER *p_func);
 
     FLAMEGPU_AGENT_FUNCTION_POINTER* getFunction() const;
 
-    // TODO(Paul): add agent output
+    // TODO add agent output
 
     void setParent(AgentDescription& agent);
     const AgentDescription& getParent() const;
@@ -80,7 +80,7 @@ class AgentFunctionDescription {
     InputsMap inputs;
     OutputsMap outputs;
     FLAMEGPU_AGENT_FUNCTION_POINTER *func = nullptr;
-    // TODO(Paul): Paul idea for parent objects
+    // TODO Paul idea for parent objects
     AgentDescription* parent = 0;
     AgentFunctionInput* inputChild = 0;
     AgentFunctionOutput* outputChild = 0;
