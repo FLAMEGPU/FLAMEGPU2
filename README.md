@@ -25,11 +25,11 @@ Only documentation can be built without the required dependencies (however Doxyg
 * [CMake](https://cmake.org/) >= 3.12
 * [CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit) >= 1.54
 
-**Linux**
+*Linux*
 * [make](https://www.gnu.org/software/make/)
 * gcc (version requirements [here](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#system-requirements))
 
-**Windows**
+*Windows*
 * Visual studio 2015 or higher
 
 
