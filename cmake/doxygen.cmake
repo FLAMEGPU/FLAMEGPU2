@@ -50,9 +50,11 @@ macro(create_doxygen_target DOXY_OUT_DIR)
 			doxygen_add_docs("docs" 
 				"${FLAMEGPU_ROOT}/include;${FLAMEGPU_ROOT}/src;${FLAMEGPU_ROOT}/README.md" 
 			)
-			set_target_properties("docs" PROPERTIES EXCLUDE_FROM_ALL TRUE)        
-			# Put within FLAMEGPU filter
-			CMAKE_SET_TARGET_FOLDER("docs" "FLAMEGPU")
+			set_target_properties("docs" PROPERTIES EXCLUDE_FROM_ALL TRUE)
+			if(COMMAND CMAKE_SET_TARGET_FOLDER)
+				# Put within FLAMEGPU filter
+				CMAKE_SET_TARGET_FOLDER("docs" "FLAMEGPU")
+			endif()
 		endif()
     endif()    
 endmacro()
