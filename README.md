@@ -95,7 +95,7 @@ make
 
 *On Windows it is also necessary to set the `BOOST_ROOT` environment variable to assist CMake in finding boost.*
 
-#### Documentation
+##### Documentation
 
 If you wish to build the documentation, [doxygen](http://www.doxygen.nl/) must be available on your system.
 
@@ -111,6 +111,17 @@ make docs
 ```
 
 *When using Visual Studio, the target `docs` will appear as a project within the created solution.*
+
+**Building Documentation Without CUDA**
+If you have Doxygen and don't have the CUDA compiler, CMake will generate a minimal project for only building the documentation.
+
+On Linux the standard documentation command, shown above, can be used if `make` is available.
+
+If `make` is unavailable, *e.g. on Windows*, `make docs` can be replaced with a direct call to `doxygen`:
+
+```
+doxygen Doxyfile.docs
+```
 
 ##### Device Architectures
 
