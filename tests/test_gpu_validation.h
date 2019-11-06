@@ -12,7 +12,7 @@
  * @bug        No known bugs
  */
 
-#include <device_functions.h>
+#include "device_functions.h"
 
 #include "flamegpu/flame_api.h"
 
