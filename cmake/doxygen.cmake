@@ -1,7 +1,7 @@
 # Doxygen
 find_package(Doxygen OPTIONAL_COMPONENTS mscgen dia dot)
 if(DOXYGEN_FOUND)
-	option(CMAKE_MAKE_DOCUMENTATION "Enable building documentation (requires Doxygen)" ON)
+	option(BUILD_DOCUMENTATION "Enable building documentation (requires Doxygen)" ON)
 else()
 	if(CMAKE_CUDA_COMPILER STREQUAL NOTFOUND)
 		message(FATAL_ERROR 
@@ -18,7 +18,7 @@ else()
 endif()
 
 macro(create_doxygen_target DOXY_OUT_DIR)
-	if(CMAKE_MAKE_DOCUMENTATION)
+	if(BUILD_DOCUMENTATION)
 		if(DOXYGEN_FOUND)
 			# Modern method which generates unique doxyfile
 			# These args taken from readme.md at time of commit
