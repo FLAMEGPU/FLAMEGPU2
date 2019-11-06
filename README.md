@@ -24,20 +24,16 @@ Only documentation can be built without the required dependencies (however Doxyg
 
 * [CMake](https://cmake.org/) >= 3.12
 * [CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit) >= 8.0
-
-*Linux*
-* [make](https://www.gnu.org/software/make/)
-* gcc (version requirements [here](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#system-requirements))
-
-*Windows*
-* Visual studio 2015 or higher
-
+* *Linux:*
+  * [make](https://www.gnu.org/software/make/)
+  * gcc (version requirements [here](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#system-requirements))
+* *Windows:*
+  * Visual studio 2015 or higher
 
 #### Optional
 * [cpplint](https://github.com/cpplint/cpplint): Required for linting code
 * [Doxygen](http://www.doxygen.nl/): Required for building documentation
 * [Boost](https://www.boost.org/) >= 1.54 : Required for building tests
-
 
 ### Building FLAME GPU 2
 
