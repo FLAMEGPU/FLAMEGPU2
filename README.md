@@ -28,7 +28,7 @@ Only documentation can be built without the required dependencies (however Doxyg
   * [make](https://www.gnu.org/software/make/)
   * gcc (version requirements [here](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#system-requirements))
 * *Windows:*
-  * Visual studio 2015 or higher
+  * Visual Studio 2015 or higher
 
 #### Optional
 * [cpplint](https://github.com/cpplint/cpplint): Required for linting code
