@@ -255,7 +255,7 @@ function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
     endif()
 
     # Flag the new linter target and the files to be linted.
-    new_linter_target(${NAME} ${SRC})
+    new_linter_target(${NAME} "${SRC}")
     
     # Setup Visual Studio (and eclipse) filters
     #src/.h
