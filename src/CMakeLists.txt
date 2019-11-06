@@ -1,11 +1,28 @@
 # 3.10 required for cuda -std=c++14, however 3.12 fixes some device linker errors
 cmake_minimum_required(VERSION VERSION 3.12 FATAL_ERROR)
 
-# Name the project and set languages
-project(flamegpu2 CUDA CXX)
-
 # Set the location of the ROOT flame gpu project relative to this CMakeList.txt
 get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/.. REALPATH)
+
+#If top level project and no suitable compilers, only make docs
+if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
+	# See what languages are supported
+	include(CheckLanguage)
+	check_language(C)
+	check_language(CXX)
+	check_language(CUDA)
+	if(NOT CMAKE_C_COMPILER OR NOT CMAKE_CXX_COMPILER OR NOT CMAKE_CUDA_HOST_COMPILER)
+		project(flamegpu2 NONE)
+		#Not able to build code, so just make docs
+		message("Suitable compilers for building code not found.\n" "Attempting generation of minimal documentation only project.")
+		include(${FLAMEGPU_ROOT}/cmake/doxygen.cmake)
+		create_doxygen_target("${CMAKE_CURRENT_BINARY_DIR}")
+		return()
+	endif()
+endif()
+
+# Name the project and set languages
+project(flamegpu2 CUDA CXX)
 
 # Include common rules.
 include(${FLAMEGPU_ROOT}/cmake/common.cmake)
@@ -15,11 +32,11 @@ include(${FLAMEGPU_ROOT}/cmake/doxygen.cmake)
 if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
     # If top level project
     SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib/${CMAKE_SYSTEM_NAME_LOWER}-x64/${CMAKE_BUILD_TYPE}/)
-    create_doxygen_target("${CMAKE_CURRENT_BINARY_DIR}") 
+	create_doxygen_target("${CMAKE_CURRENT_BINARY_DIR}")
 else()
     # If called via add_subdirectory()
     SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../lib/${CMAKE_SYSTEM_NAME_LOWER}-x64/${CMAKE_BUILD_TYPE}/)
-    create_doxygen_target("${CMAKE_CURRENT_BINARY_DIR}/..")
+	create_doxygen_target("${CMAKE_CURRENT_BINARY_DIR}/..")
 endif()
 
 # Specify source files for the static library
