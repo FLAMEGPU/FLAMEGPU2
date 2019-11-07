@@ -32,6 +32,7 @@
 #include "test_cases/pop/test_pop_validation.h"
 #include "test_cases/sim/test_sim_validation.h"
 #include "test_cases/gpu/test_gpu_validation.h"
+#include "test_cases/runtime/test_agent_random.h"
 
 // Disabled, currently breaks compilation.
 // #include "test_cases/runtime/test_func_pointer.h"

@@ -34,6 +34,7 @@ SET(TEST_CASE_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/model/test_model_validation.h
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/pop/test_pop_validation.h
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/sim/test_sim_validation.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_agent_random.h
 )
 SET(OTHER_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/helpers/device_test_functions.h
@@ -53,7 +54,6 @@ target_include_directories("${PROJECT_NAME}" PRIVATE "${CMAKE_CURRENT_SOURCE_DIR
 
 # Put Within Tests filter
 CMAKE_SET_TARGET_FOLDER("${PROJECT_NAME}" "Tests")
-
 
 # Also set as startup project (if top level project)
 set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"  PROPERTY VS_STARTUP_PROJECT "${PROJECT_NAME}")

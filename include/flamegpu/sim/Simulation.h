@@ -2,7 +2,7 @@
 #define INCLUDE_FLAMEGPU_SIM_SIMULATION_H_
 
 #include <vector>
-#include <cstring>
+#include <string>
 
 // include class dependencies
 #include "flamegpu/sim/SimulationLayer.h"
@@ -29,17 +29,19 @@ class Simulation {
     const FunctionDescriptionVector& getFunctionsAtLayer(unsigned int layer) const;
     unsigned int getLayerCount() const;
 
-    int checkArgs(int argc, char** argv);
+    int checkArgs(int argc, const char** argv, std::string &xml_model_path);
 
-    void initialise(int argc, char** argv);  // void initialise(const char * input);
+    void initialise(int argc, const char** argv);
+
     // void initialise(StateReader& reader);
-    void output(int argc, char** argv);
+    void output(int argc, const char** argv);
 
  private:
+    static void printHelp(const char *executable);
+
     SimulationLayerVector layers;
     const ModelDescription& model_description;
     unsigned int simulation_steps;
 };
 
 #endif  // INCLUDE_FLAMEGPU_SIM_SIMULATION_H_
-
