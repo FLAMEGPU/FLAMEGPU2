@@ -28,7 +28,7 @@
 */
 CUDAMessage::CUDAMessage(const MessageDescription& description) : message_description(description), max_list_size(0)
 {
-
+    setInitialMessageList();
 }
 
 
@@ -111,6 +111,9 @@ void CUDAMessage::zeroAllMessageData()
 */
 void CUDAMessage::mapRuntimeVariables(const AgentFunctionDescription& func) const
 {
+    //check that the message list has been allocated
+    if (!message_list)
+        throw InvalidMessageData("Error: Initial message has not been allocated");
 
     const std::string message_name = message_description.getName();
 

@@ -35,7 +35,6 @@ public:
     virtual ~CUDAAgentModel();
 
     void setInitialPopulationData(AgentPopulation& population);
-	void setMessageData(MessageDescription& message);
 
     void setPopulationData(AgentPopulation& population);
 
