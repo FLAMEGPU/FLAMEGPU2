@@ -8,21 +8,20 @@
  * \todo longer description
  */
 
-#ifndef AGENTSTATEDESCRIPTION_H_
-#define AGENTSTATEDESCRIPTION_H_
+#ifndef INCLUDE_FLAMEGPU_MODEL_AGENTSTATEDESCRIPTION_H_
+#define INCLUDE_FLAMEGPU_MODEL_AGENTSTATEDESCRIPTION_H_
 
 #include <string>
 
 class AgentStateDescription {
-public:
-	AgentStateDescription(const std::string name);
-	virtual ~AgentStateDescription();
+ public:
+    explicit AgentStateDescription(const std::string name);
+    virtual ~AgentStateDescription();
 
-	const std::string getName() const;
+    const std::string getName() const;
 
-private:
-
-	const std::string name;
+ private:
+    const std::string name;
 };
 
-#endif /* AGENTSTATEDESCRIPTION_H_ */
+#endif  // INCLUDE_FLAMEGPU_MODEL_AGENTSTATEDESCRIPTION_H_

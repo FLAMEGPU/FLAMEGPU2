@@ -8,31 +8,31 @@
  * @warning
  */
 
-#ifndef AGENTFUNCTIONOUTPUT_H_
-#define AGENTFUNCTIONOUTPUT_H_
+#ifndef INCLUDE_FLAMEGPU_MODEL_AGENTFUNCTIONOUTPUT_H_
+#define INCLUDE_FLAMEGPU_MODEL_AGENTFUNCTIONOUTPUT_H_
 
 #include <string>
 
-typedef enum{
-	SINGLE_MESSAGE,
-	OPTIONAL_MESSAGE
+typedef enum {
+    SINGLE_MESSAGE,
+    OPTIONAL_MESSAGE
 } FunctionOutputType;
 
 class AgentFunctionOutput {
-public:
-	AgentFunctionOutput(const std::string output_message_name);
+ public:
+    explicit AgentFunctionOutput(const std::string output_message_name);
 
-	virtual ~AgentFunctionOutput();
+    virtual ~AgentFunctionOutput();
 
-	const std::string getMessageName() const;
+    const std::string getMessageName() const;
 
-	void setFunctionOutputType(FunctionOutputType type);
+    void setFunctionOutputType(FunctionOutputType type);
 
-	FunctionOutputType getFunctionOutoutType();
+    FunctionOutputType getFunctionOutoutType();
 
-private:
-	const std::string message_name;
-	FunctionOutputType type;
+ private:
+    const std::string message_name;
+    FunctionOutputType type;
 };
 
-#endif /* AGENTFUNCTIONOUTPUT_H_ */
+#endif  // INCLUDE_FLAMEGPU_MODEL_AGENTFUNCTIONOUTPUT_H_

@@ -11,8 +11,8 @@
  * Date    Feb 2017
  *****************************************************************************/
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <iostream>
 
 #include "flamegpu/flame_api.h"  // @todo rename flamegpu2.h or similar?
@@ -111,7 +111,6 @@ FLAMEGPU_AGENT_FUNCTION(subtract_func) {
 }
 
 int main(int argc, char* argv[]) {
-
     /* Multi agent model */
     ModelDescription flame_model("circles_model");
 
@@ -163,7 +162,7 @@ int main(int argc, char* argv[]) {
     // flame_model.addMessage(location2_message);
     flame_model.addAgent(circle2_agent);
 
-	Simulation simulation(flame_model);
+    Simulation simulation(flame_model);
 
 #ifdef enable_read
         AgentPopulation population1(circle1_agent);
@@ -172,13 +171,13 @@ int main(int argc, char* argv[]) {
         flame_model.addPopulation(population2);
 
         // If there is not enough arguments bail.
-        if(argc < 2){
+        if (argc < 2) {
             fprintf(stderr, "Error not enough arguments.\n");
             return EXIT_FAILURE;
         }
 
-       simulation.initialise(argc, argv); // argv[1]
-	  // simulation.initialise(new StateReader(flame_model,argv[1])); 
+       simulation.initialise(argc, argv);  // argv[1]
+      // simulation.initialise(new StateReader(flame_model,argv[1]));
 #else
         // 2)
         AgentPopulation population1(circle1_agent, SIZE);
@@ -199,7 +198,6 @@ int main(int argc, char* argv[]) {
         flame_model.addPopulation(population2);
 #endif
 
-    
 
     SimulationLayer output_layer(simulation, "output_layer");
     output_layer.addAgentFunction("output_data");
@@ -230,7 +228,7 @@ int main(int argc, char* argv[]) {
     cuda_model.getPopulationData(population1);
     cuda_model.getPopulationData(population2);
 
-	simulation.output(argc, argv); // argv[1]
+    simulation.output(argc, argv);  // argv[1]
 
     return 0;
 }

@@ -41,4 +41,4 @@ apt-get -qq update
 apt-get install -y --no-install-recommends cuda-core-${CUDA_PACKAGE_VERSION} cuda-cudart-dev-${CUDA_PACKAGE_VERSION}
 
 # Install cpplint (optional, not currently used at CI time)
-# pip3 install cpplint
+pip3 install cpplint #--user

@@ -1,5 +1,5 @@
-#ifndef STATEWRITER_H_
-#define STATEWRITER_H_
+#ifndef INCLUDE_FLAMEGPU_IO_STATEWRITER_H_
+#define INCLUDE_FLAMEGPU_IO_STATEWRITER_H_
 
 /**
  * @file statewriter.h
@@ -10,33 +10,29 @@
  * \todo longer description
  */
 
+#include <string>
 
-#include <tinyxml2/tinyxml2.h>              //downloaded from https://github.com/leethomason/tinyxml2, the list of xml parsers : http://lars.ruoff.free.fr/xmlcpp/
-#include <flamegpu/exception/FGPUException.h>
+#include "flamegpu/exception/FGPUException.h"
 #include "flamegpu/model/ModelDescription.h"
 
+class StateWriter {
+ public:
+    // -----------------------------------------------------------------------
+    //  Constructors and Destructor
+    // -----------------------------------------------------------------------
 
-class StateWriter
-{
+    StateWriter(const ModelDescription &model, const char* output) : model_description_(model), outputFile(std::string(output)) {}
+    ~StateWriter() {}
 
-public:
+    // -----------------------------------------------------------------------
+    //  The interface
+    // -----------------------------------------------------------------------
 
-	// -----------------------------------------------------------------------
-	//  Constructors and Destructor
-	// -----------------------------------------------------------------------
+    virtual int writeStates() = 0;
 
-	StateWriter(const ModelDescription &model, const char* output) : model_description_(model), outputFile(std::string(output)) {};
-	~StateWriter() {};
-
-	// -----------------------------------------------------------------------
-	//  The interface
-	// -----------------------------------------------------------------------
-
-	virtual int writeStates() = 0;
-
-protected:
-	ModelDescription model_description_;
-	std::string outputFile;
+ protected:
+    ModelDescription model_description_;
+    std::string outputFile;
 };
 
-#endif /* STATEWRITER_H_ */
+#endif  // INCLUDE_FLAMEGPU_IO_STATEWRITER_H_

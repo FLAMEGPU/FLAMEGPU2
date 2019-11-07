@@ -1,6 +1,6 @@
 
 /**
- * @file 
+ * @file
  * @author
  * @date
  * @brief
@@ -8,93 +8,83 @@
  * \todo longer description
  */
 
-
 #include <string>
-#include <tinyxml2/tinyxml2.h>              //downloaded from https://github.com/leethomason/tinyxml2, the list of xml parsers : http://lars.ruoff.free.fr/xmlcpp/
-#include <flamegpu/exception/FGPUException.h>
-#include <flamegpu/pop/AgentPopulation.h>
-#include <flamegpu/io/xmlReader.h>
-
-using namespace std;
-using namespace tinyxml2;
+#include "tinyxml2/tinyxml2.h"              // downloaded from https:// github.com/leethomason/tinyxml2, the list of xml parsers : http:// lars.ruoff.free.fr/xmlcpp/
+#include "flamegpu/exception/FGPUException.h"
+#include "flamegpu/pop/AgentPopulation.h"
+#include "flamegpu/io/xmlReader.h"
 
 #ifndef XMLCheckResult
-#define XMLCheckResult(a_eResult) if (a_eResult != XML_SUCCESS) { printf("XMLCheckResult Error: %i\n", a_eResult); return a_eResult; }
+#define XMLCheckResult(a_eResult) if (a_eResult != tinyxml2::XML_SUCCESS) { printf("XMLCheckResult Error: %i\n", a_eResult); return a_eResult; }
 #endif
 
-xmlReader::xmlReader(const ModelDescription &model, const char* input) : StateReader(model, input) {};
+xmlReader::xmlReader(const ModelDescription &model, const char* input) : StateReader(model, input) {}
 
 /**
 * \brief parses the xml file
 */
-int xmlReader::parse()
-{
-	XMLDocument doc;
-	
-	XMLError errorId = doc.LoadFile(inputFile.c_str());
-	XMLCheckResult(errorId);
+int xmlReader::parse() {
+    tinyxml2::XMLDocument doc;
 
-	printf("XML file '%s' loaded.\n", inputFile.c_str());
+    tinyxml2::XMLError errorId = doc.LoadFile(inputFile.c_str());
+    XMLCheckResult(errorId);
 
-	XMLNode* pRoot = doc.FirstChild();
-	if (pRoot == nullptr)
-		return XML_ERROR_FILE_READ_ERROR;
+    printf("XML file '%s' loaded.\n", inputFile.c_str());
 
-	XMLElement * pElement = pRoot->FirstChildElement("itno");
-	if (pElement == nullptr)
-		return XML_ERROR_PARSING_ELEMENT;
+    tinyxml2::XMLNode* pRoot = doc.FirstChild();
+    if (pRoot == nullptr)
+        return tinyxml2::XML_ERROR_FILE_READ_ERROR;
 
-	int error;
-	errorId = pElement->QueryIntText(&error);
-	XMLCheckResult(errorId);
-	
-	for (pElement = pRoot->FirstChildElement("xagent"); pElement != nullptr; pElement = pElement->NextSiblingElement("xagent"))
-	{
-		if (pElement == nullptr)
-			return XML_ERROR_PARSING_ELEMENT;
+    tinyxml2::XMLElement * pElement = pRoot->FirstChildElement("itno");
+    if (pElement == nullptr)
+        return tinyxml2::XML_ERROR_PARSING_ELEMENT;
 
-		XMLElement* pListElement = pElement->FirstChildElement("name");
-		const char* agentName = pListElement->GetText();
+    int error;
+    errorId = pElement->QueryIntText(&error);
+    XMLCheckResult(errorId);
 
-		const MemoryMap &m = model_description_.getAgentDescription(agentName).getMemoryMap();
-		AgentInstance instance = model_description_.getAgentPopulation(agentName).getNextInstance("default");
+    for (pElement = pRoot->FirstChildElement("xagent"); pElement != nullptr; pElement = pElement->NextSiblingElement("xagent")) {
+        if (pElement == nullptr)
+            return tinyxml2::XML_ERROR_PARSING_ELEMENT;
 
-		for (MemoryMap::const_iterator iter = m.begin(); iter != m.end(); iter++)
-		{
-			float outFloat;
-			double outDouble;
-			int outInt;
-			bool outBool;
+        tinyxml2::XMLElement* pListElement = pElement->FirstChildElement("name");
+        const char* agentName = pListElement->GetText();
 
-			const std::string variable_name = iter->first;
-			pListElement = pElement->FirstChildElement(variable_name.c_str());
-			XMLCheckResult(errorId);
+        const MemoryMap &m = model_description_.getAgentDescription(agentName).getMemoryMap();
+        AgentInstance instance = model_description_.getAgentPopulation(agentName).getNextInstance("default");
 
-			if (iter->second == typeid(float)) {
-				errorId = pListElement->QueryFloatText(&outFloat);
+        for (MemoryMap::const_iterator iter = m.begin(); iter != m.end(); iter++) {
+            float outFloat;
+            double outDouble;
+            int outInt;
+            bool outBool;
 
-				instance.setVariable<float>(variable_name, outFloat);
-			}
-			else if (iter->second == typeid(double)) {
-				errorId = pListElement->QueryDoubleText(&outDouble);
-				XMLCheckResult(errorId);
+            const std::string variable_name = iter->first;
+            pListElement = pElement->FirstChildElement(variable_name.c_str());
+            XMLCheckResult(errorId);
 
-				instance.setVariable<double>(variable_name, outDouble);
-			}
-			else if (iter->second == typeid(int)) {
-				errorId = pListElement->QueryIntText(&outInt);
-				XMLCheckResult(errorId);
+            if (iter->second == typeid(float)) {
+                errorId = pListElement->QueryFloatText(&outFloat);
 
-				instance.setVariable<int>(variable_name, outInt);
-			}
-			else if (iter->second == typeid(bool)) {
-				errorId = pListElement->QueryBoolText(&outBool);
-				XMLCheckResult(errorId);
+                instance.setVariable<float>(variable_name, outFloat);
+            } else if (iter->second == typeid(double)) {
+                errorId = pListElement->QueryDoubleText(&outDouble);
+                XMLCheckResult(errorId);
 
-				instance.setVariable<bool>(variable_name, outBool);
-			}
-		}
-	}
-	
-	return XML_SUCCESS;
+                instance.setVariable<double>(variable_name, outDouble);
+            } else if (iter->second == typeid(int)) {
+                errorId = pListElement->QueryIntText(&outInt);
+                XMLCheckResult(errorId);
+
+                instance.setVariable<int>(variable_name, outInt);
+            } else if (iter->second == typeid(bool)) {
+                errorId = pListElement->QueryBoolText(&outBool);
+                XMLCheckResult(errorId);
+
+                instance.setVariable<bool>(variable_name, outBool);
+            }
+        }
+    }
+
+    return tinyxml2::XML_SUCCESS;
 }

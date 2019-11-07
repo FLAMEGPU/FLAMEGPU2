@@ -37,15 +37,15 @@ endif()
 
 # Specify source files for the static library
 # Can't do this automatically, as CMake wouldn't know when to regen (as CMakeLists.txt would be unchanged)
-SET(SRC_EXTERNALS 
+SET(SRC_EXTERNALS
     ${FLAMEGPU_ROOT}/externals/tinyxml2/tinyxml2.cpp
 )
-SET(SRC_INCLUDE 
+SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/io/statereader.h
     ${FLAMEGPU_ROOT}/include/flamegpu/io/statewriter.h
-	${FLAMEGPU_ROOT}/include/flamegpu/io/xmlReader.h
-	${FLAMEGPU_ROOT}/include/flamegpu/io/xmlWriter.h
-	${FLAMEGPU_ROOT}/include/flamegpu/io/factory.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/io/xmlReader.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/io/xmlWriter.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/io/factory.h
     ${FLAMEGPU_ROOT}/include/flamegpu/exception/FGPUException.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/MessageDescription.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/AgentFunctionInput.h
@@ -94,11 +94,11 @@ SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAAgentModel.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/agent_function.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/cuRVE/curve.cu
-	${FLAMEGPU_ROOT}/src/flamegpu/io/xmlReader.cu
-	${FLAMEGPU_ROOT}/src/flamegpu/io/xmlWriter.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/io/xmlReader.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/io/xmlWriter.cu
 )
 
-SET(ALL_SRC 
+SET(ALL_SRC
     ${SRC_EXTERNALS}
     ${SRC_INCLUDE}
     ${SRC_FLAMEGPU2}

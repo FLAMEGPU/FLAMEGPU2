@@ -7,17 +7,14 @@
  * @see
  * @warning
  */
-#include <flamegpu/model/AgentStateDescription.h>
+#include "flamegpu/model/AgentStateDescription.h"
 
-
-AgentStateDescription::AgentStateDescription(const std::string state_name) : name(state_name){
-
+AgentStateDescription::AgentStateDescription(const std::string state_name) : name(state_name) {
 }
 
 AgentStateDescription::~AgentStateDescription() {
-
 }
 
 const std::string AgentStateDescription::getName() const {
-	return name;
+    return name;
 }
