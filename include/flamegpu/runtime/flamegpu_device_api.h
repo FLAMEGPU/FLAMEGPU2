@@ -1,5 +1,5 @@
-#ifndef INCLUDE_FLAMEGPU_RUNTIME_FLAME_FUNCTIONS_API_H_
-#define INCLUDE_FLAMEGPU_RUNTIME_FLAME_FUNCTIONS_API_H_
+#ifndef INCLUDE_FLAMEGPU_RUNTIME_FLAMEGPU_DEVICE_API_H_
+#define INCLUDE_FLAMEGPU_RUNTIME_FLAMEGPU_DEVICE_API_H_
 
 /**
  * @file flame_functions_api.h
@@ -20,7 +20,7 @@
 
 // TODO: Some example code of the handle class and an example function
 // ! FLAMEGPU_API is a singleton class
-class FLAMEGPU_API;  // Forward declaration (class defined below)
+class FLAMEGPU_DEVICE_API;  // Forward declaration (class defined below)
 
 // ! FLAMEGPU function return type
 enum FLAME_GPU_AGENT_STATUS { ALIVE, DEAD };
@@ -28,7 +28,7 @@ enum FLAME_GPU_AGENT_STATUS { ALIVE, DEAD };
 /**
  * @brief FLAMEGPU function pointer definition
  */
-typedef FLAME_GPU_AGENT_STATUS(*FLAMEGPU_AGENT_FUNCTION_POINTER)(FLAMEGPU_API *api);
+typedef FLAME_GPU_AGENT_STATUS(*FLAMEGPU_AGENT_FUNCTION_POINTER)(FLAMEGPU_DEVICE_API *api);
 
 /**
  * Macro for defining agent transition functions with the correct input. Must always be a device function to be called by CUDA.
@@ -42,16 +42,16 @@ typedef FLAME_GPU_AGENT_STATUS(*FLAMEGPU_AGENT_FUNCTION_POINTER)(FLAMEGPU_API *a
 // #define FLAMEGPU_AGENT_FUNCTION(funcName) __device__ FLAME_GPU_AGENT_STATUS funcName(FLAMEGPU_API* FLAMEGPU)
 
 #define FLAMEGPU_AGENT_FUNCTION(funcName) \
-__device__ FLAME_GPU_AGENT_STATUS funcName ## _impl(FLAMEGPU_API* FLAMEGPU); \
+__device__ FLAME_GPU_AGENT_STATUS funcName ## _impl(FLAMEGPU_DEVICE_API* FLAMEGPU); \
 __device__ FLAMEGPU_AGENT_FUNCTION_POINTER funcName = funcName ## _impl;\
-__device__ FLAME_GPU_AGENT_STATUS funcName ## _impl(FLAMEGPU_API* FLAMEGPU)
+__device__ FLAME_GPU_AGENT_STATUS funcName ## _impl(FLAMEGPU_DEVICE_API* FLAMEGPU)
 
 /** @brief    A flame gpu api class for the device runtime only
  *
  * This class should only be used by the device and never created on the host. It is safe for each agent function to create a copy of this class on the device. Any singleton type
  * behaviour is handled by the curveInstance class. This will ensure that initialisation of the curve (C) library is done only once.
  */
-class FLAMEGPU_API {
+class FLAMEGPU_DEVICE_API {
     // Friends have access to TID() & TS_ID()
     friend __global__ void agent_function_wrapper(CurveNamespaceHash, CurveNamespaceHash, CurveNamespaceHash, FLAMEGPU_AGENT_FUNCTION_POINTER, const int, const unsigned int, const unsigned int);
 
@@ -59,7 +59,7 @@ class FLAMEGPU_API {
     /**
      * @param _thread_in_layer_offset This offset can be added to TID to give a thread-safe unique index for the thread
      */
-    __device__ FLAMEGPU_API(const unsigned int &_thread_in_layer_offset) : random(AgentRandom(TID()+_thread_in_layer_offset)), thread_in_layer_offset(_thread_in_layer_offset) {}
+    __device__ FLAMEGPU_DEVICE_API(const unsigned int &_thread_in_layer_offset) : random(AgentRandom(TID()+_thread_in_layer_offset)), thread_in_layer_offset(_thread_in_layer_offset) {}
 
     template<typename T, unsigned int N> __device__
     T getVariable(const char(&variable_name)[N]);
@@ -167,7 +167,7 @@ class FLAMEGPU_API {
  * \param variable_name Name of memory variable to retrieve
  */
 template<typename T, unsigned int N>
-__device__ T FLAMEGPU_API::getVariable(const char(&variable_name)[N]) {
+__device__ T FLAMEGPU_DEVICE_API::getVariable(const char(&variable_name)[N]) {
     // simple indexing assumes index is the thread number (this may change later)
     unsigned int index =  (blockDim.x * blockIdx.x) + threadIdx.x;
 
@@ -184,7 +184,7 @@ __device__ T FLAMEGPU_API::getVariable(const char(&variable_name)[N]) {
  * \param value Value to set it to
  */
 template<typename T, unsigned int N>
-__device__ void FLAMEGPU_API::setVariable(const char(&variable_name)[N], T value) {
+__device__ void FLAMEGPU_DEVICE_API::setVariable(const char(&variable_name)[N], T value) {
     // simple indexing assumes index is the thread number (this may change later)
     unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
 
@@ -198,7 +198,7 @@ __device__ void FLAMEGPU_API::setVariable(const char(&variable_name)[N], T value
 * \todo check the hashing
 */
 template<typename T, unsigned int N>
-__device__ T FLAMEGPU_API::getMessageVariable(const char(&variable_name)[N]) {
+__device__ T FLAMEGPU_DEVICE_API::getMessageVariable(const char(&variable_name)[N]) {
     // simple indexing assumes index is the thread number (this may change later)
     unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
 
@@ -216,7 +216,7 @@ __device__ T FLAMEGPU_API::getMessageVariable(const char(&variable_name)[N]) {
 * \todo check the hashing
 */
 template<typename T, unsigned int N>
-__device__ void FLAMEGPU_API::setMessageVariable(const char(&variable_name)[N], T value) {
+__device__ void FLAMEGPU_DEVICE_API::setMessageVariable(const char(&variable_name)[N], T value) {
     // simple indexing assumes index is the thread number (this may change later)
     unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
 
@@ -230,7 +230,7 @@ __device__ void FLAMEGPU_API::setMessageVariable(const char(&variable_name)[N], 
 * \param value Value to set it to
 */
 template<typename T, unsigned int N>
-__device__ void FLAMEGPU_API::addMessage(const char(&variable_name)[N], T value) {  // message name or variable name
+__device__ void FLAMEGPU_DEVICE_API::addMessage(const char(&variable_name)[N], T value) {  // message name or variable name
     unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;  // + d_message_count;
 
     // Todo: checking if the output message type is single or optional?  (d_message_type)
@@ -245,7 +245,7 @@ __device__ void FLAMEGPU_API::addMessage(const char(&variable_name)[N], T value)
 * \todo not quite right
 */
 template<unsigned int N>
-__device__ MessageList FLAMEGPU_API::GetMessageIterator(const char(&message_name)[N]) {
+__device__ MessageList FLAMEGPU_DEVICE_API::GetMessageIterator(const char(&message_name)[N]) {
     messageList.setAgentNameSpace(agent_func_name_hash);
     messageList.setMessageInpNameSpace(messagename_inp_hash);
     messageList.setMessageListSize(messageListSize);
@@ -253,4 +253,4 @@ __device__ MessageList FLAMEGPU_API::GetMessageIterator(const char(&message_name
     return messageList;
 }
 
-#endif  // INCLUDE_FLAMEGPU_RUNTIME_FLAME_FUNCTIONS_API_H_
+#endif  // INCLUDE_FLAMEGPU_RUNTIME_FLAMEGPU_DEVICE_API_H_

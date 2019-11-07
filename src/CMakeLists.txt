@@ -70,7 +70,9 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/sim/Simulation.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messagelist.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/agent_function.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/flame_functions_api.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/flamegpu_api.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/flamegpu_device_api.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/flamegpu_host_api.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/cuRVE/curve.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/cuRVE/cuRVEInstance.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/AgentRandom.cuh
