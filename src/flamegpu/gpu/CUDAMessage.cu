@@ -25,8 +25,7 @@
 * CUDAMessage class
 * @brief allocates the hash table/list for message variables and copy the list to device
 */
-CUDAMessage::CUDAMessage(const MessageDescription& description) : message_description(description), max_list_size(0)
-{
+CUDAMessage::CUDAMessage(const MessageDescription& description) : message_description(description), max_list_size(0) {
     setInitialMessageList();
 }
 
@@ -97,9 +96,8 @@ void CUDAMessage::zeroAllMessageData() {
 /**
 @bug message_name is input or output, run some tests to see which one is correct
 */
-void CUDAMessage::mapRuntimeVariables(const AgentFunctionDescription& func) const
-{
-    //check that the message list has been allocated
+void CUDAMessage::mapRuntimeVariables(const AgentFunctionDescription& func) const {
+    // check that the message list has been allocated
     if (!message_list)
         throw InvalidMessageData("Error: Initial message has not been allocated");
 

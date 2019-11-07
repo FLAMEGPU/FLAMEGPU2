@@ -45,16 +45,12 @@ class CUDAMessage {
      */
     void unmapRuntimeVariables(const AgentFunctionDescription& func) const;
 
-<<<<<<< HEAD
-protected:
+ protected:
     /**
      * @brief Allocates the messagelist memory, called by constructor
      */
     void setInitialMessageList();
 
-=======
- protected:
->>>>>>> Addresses Lint: various.
     /** @brief    Zero all message variable data. */
     void zeroAllMessageData();
 
