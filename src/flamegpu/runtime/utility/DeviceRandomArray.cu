@@ -14,9 +14,22 @@
  * Internal namespace to hide __device__ declarations from modeller
  */
 namespace flamegpu_internal {
+    /**
+     * Device array holding curand states
+     * They should always be initialised
+     */
     __device__ curandState *d_random_state;
+    /**
+     * Device copy of the length of d_random_state
+     */
     __device__ DeviceRandomArray::size_type d_random_size;
+    /**
+     * Host mirror of d_random_state
+     */
     curandState *hd_random_state;
+    /**
+     * Host mirror of d_random_size
+     */
     DeviceRandomArray::size_type hd_random_size;
 }
 /**
@@ -24,7 +37,7 @@ namespace flamegpu_internal {
  */
 uint64_t DeviceRandomArray::mSeed = 0;
 DeviceRandomArray::size_type DeviceRandomArray::length = 0;
-DeviceRandomArray::size_type DeviceRandomArray::min_length = 1024;
+const DeviceRandomArray::size_type DeviceRandomArray::min_length = 1024;
 float DeviceRandomArray::growthModifier = 1.5;
 float DeviceRandomArray::shrinkModifier = 1.0;
 curandState *DeviceRandomArray::h_max_random_state = nullptr;

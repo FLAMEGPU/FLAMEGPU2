@@ -59,7 +59,7 @@ class FLAMEGPU_API
     friend __global__ void agent_function_wrapper(CurveNamespaceHash, CurveNamespaceHash, CurveNamespaceHash, FLAMEGPU_AGENT_FUNCTION_POINTER, const int, const unsigned int, const unsigned int);
 public:
     /**
-     * @param thread_in_layer_offset This offset can be added to TID to give a thread-safe unique index for the thread
+     * @param _thread_in_layer_offset This offset can be added to TID to give a thread-safe unique index for the thread
      */
     __device__ FLAMEGPU_API(const unsigned int &_thread_in_layer_offset) : random(AgentRandom(TID()+_thread_in_layer_offset)), thread_in_layer_offset(_thread_in_layer_offset){};
 

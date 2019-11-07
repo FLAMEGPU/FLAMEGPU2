@@ -154,6 +154,7 @@ void CUDAAgentModel::step(const Simulation& simulation)
 		const FunctionDescriptionVector& functions = simulation.getFunctionsAtLayer(i);
 
 		int j = 0;
+        // Sum the total number of threads being launched in the layer
         unsigned int totalThreads = 0;
 		/*! for each func function - Loop through to do all mapping of agent and message variables */
 		for (AgentFunctionDescription func_des : functions)
@@ -185,8 +186,9 @@ void CUDAAgentModel::step(const Simulation& simulation)
             totalThreads += cuda_agent.getMaximumListSize();
 		}
 
-        //Set random size()
+        // Ensure DeviceRandomArray is the correct size to accomodate all threads to be launched
         DeviceRandomArray::resize(totalThreads);
+        // Total threads is now used to provide kernel launches an offset to thread-safe thread-index
         totalThreads = 0;
 
 		//! for each func function - Loop through to launch all agent functions

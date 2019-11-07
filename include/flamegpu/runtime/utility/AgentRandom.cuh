@@ -1,17 +1,22 @@
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_UTILITY_AGENTRANDOM_CUH_
 #define INCLUDE_FLAMEGPU_RUNTIME_UTILITY_AGENTRANDOM_CUH_
 
+#include <curand_kernel.h>
 #include <cassert>
-#include "./curand_kernel.h"
 
 /**
  * Utility for accessing random generation within agent functions
- * Wraps curand
+ * This should only be instantiated by FLAMEGPU_API
+ * Wraps curand functions to access an internal curand state * 
  */
 class AgentRandom {
  public:
     typedef unsigned int size_type;
     /**
+     * Constructs an AgentRandom instance
+     * @param _TS_ID ThreadSafe-Index
+     *   this is a unique index for the thread among all concurrently executing kernels
+     *   It is used as the index into the device side random array
      * @note DO NOT USE REFERENCES FOR TS_ID, CAUSES MEMORY ERROR
      */
     __forceinline__ __device__ AgentRandom(const unsigned int _TS_ID);
@@ -57,9 +62,7 @@ namespace flamegpu_internal {
     extern __device__ AgentRandom::size_type d_random_size;
 }
 
-/**
- * Implmenetation
- */
+
 __forceinline__ __device__ AgentRandom::AgentRandom(const unsigned int _TS_ID) : TS_ID(_TS_ID) {
     // Check once per agent per kernel
     // as opposed to every time rng is called
