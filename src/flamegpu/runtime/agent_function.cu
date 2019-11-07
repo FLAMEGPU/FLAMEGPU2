@@ -1,6 +1,6 @@
 #include <cuda_runtime.h>
 
-#include "flamegpu/runtime/flame_functions_api.h"
+#include "flamegpu/runtime/flamegpu_device_api.h"
 
 __global__ void agent_function_wrapper(
     CurveNamespaceHash agent_func_name_hash,
@@ -12,7 +12,7 @@ __global__ void agent_function_wrapper(
     const unsigned int thread_in_layer_offset
     ) {
     // create a new device FLAME_GPU instance
-    FLAMEGPU_API *api = new FLAMEGPU_API(thread_in_layer_offset);
+    FLAMEGPU_DEVICE_API *api = new FLAMEGPU_DEVICE_API(thread_in_layer_offset);
 
     api->setMessageListSize(messageList_size);
 
