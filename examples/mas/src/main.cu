@@ -223,8 +223,6 @@ int main(int argc, char* argv[]) {
     cuda_model.setInitialPopulationData(population1);
     cuda_model.setInitialPopulationData(population2);
 
-    // cuda_model.setMessageData(location1_message);
-
     // cuda_model.addSimulation(simulation);
 
     cuda_model.simulate(simulation);

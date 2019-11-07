@@ -35,7 +35,6 @@ public:
     virtual ~CUDAAgentModel();
 
     void setInitialPopulationData(AgentPopulation& population);
-	// void setMessageData(MessageDescription& message); // redundant? Messages are allocated implicity
 
     void setPopulationData(AgentPopulation& population);
 

@@ -88,26 +88,6 @@ void CUDAAgentModel::setInitialPopulationData(AgentPopulation& population)
 }
 
 /**
-* @brief Sets the initial message data
-* @param MessageDescription object
-* @return none
-*/
-/*void CUDAAgentModel::setMessageData(MessageDescription& message)
-{
-	CUDAMessageMap::iterator it;
-	it = message_map.find(message.getName());
-
-	if (it == message_map.end())
-	{
-		throw InvalidCudaAgent();
-	}
-
-	// create agent state lists
-	it->second->setInitialMessageList();
-
-}*/
-
-/**
 * @brief Sets the population data
 * @param AgentPopulation object
 * @return none
