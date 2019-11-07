@@ -1,5 +1,5 @@
-#ifndef TESTS_DEVICE_FUNCTIONS_H_
-#define TESTS_DEVICE_FUNCTIONS_H_
+#ifndef TESTS_HELPERS_DEVICE_TEST_FUNCTIONS_H_
+#define TESTS_HELPERS_DEVICE_TEST_FUNCTIONS_H_
 
 #include "flamegpu/flame_api.h"
 
@@ -13,4 +13,4 @@ void attach_move_func(AgentFunctionDescription& func);
 void attach_stay_func(AgentFunctionDescription& func);
 void attach_output_func(AgentFunctionDescription& func);
 
-#endif  // TESTS_DEVICE_FUNCTIONS_H_
+#endif  // TESTS_HELPERS_DEVICE_TEST_FUNCTIONS_H_

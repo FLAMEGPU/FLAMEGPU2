@@ -1,4 +1,4 @@
-#include "device_test_functions.h"
+#include "helpers/device_test_functions.h"
 
 FLAMEGPU_AGENT_FUNCTION(add_func) {
     // should've returned error if the type was not correct. Needs type check

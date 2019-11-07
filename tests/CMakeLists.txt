@@ -28,17 +28,17 @@ endif()
 
 # Prepare list of source files
 SET(TEST_CASE_SRC
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_func_pointer.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_gpu_validation.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_message_validation.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_model_validation.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_pop_validation.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_sim_validation.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_func_pointer.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/gpu/test_gpu_validation.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/model/test_message_validation.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/model/test_model_validation.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/pop/test_pop_validation.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/sim/test_sim_validation.h
 )
 SET(OTHER_SRC
-    ${CMAKE_CURRENT_SOURCE_DIR}/device_test_functions.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/helpers/device_test_functions.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/helpers/device_test_functions.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_all.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/device_test_functions.cu
 )
 SET(ALL_SRC
     ${TEST_CASE_SRC}
@@ -48,6 +48,8 @@ SET(ALL_SRC
 # Add the executable and set required flags for the target
 add_flamegpu_executable("${PROJECT_NAME}" "${ALL_SRC}" "${FLAMEGPU_ROOT}" "${PROJECT_BINARY_DIR}" FALSE)
 
+# Add the tests directory to the include path,
+target_include_directories("${PROJECT_NAME}" PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
 
 # Put Within Tests filter
 CMAKE_SET_TARGET_FOLDER("${PROJECT_NAME}" "Tests")

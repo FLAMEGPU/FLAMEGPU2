@@ -1,5 +1,5 @@
-#ifndef TESTS_TEST_GPU_VALIDATION_H_
-#define TESTS_TEST_GPU_VALIDATION_H_
+#ifndef TESTS_TEST_CASES_GPU_TEST_GPU_VALIDATION_H_
+#define TESTS_TEST_CASES_GPU_TEST_GPU_VALIDATION_H_
 /**
  * @copyright  2017 University of Sheffield
  *
@@ -12,7 +12,7 @@
  * @bug        No known bugs
  */
 
-#include "device_test_functions.h"
+#include "helpers/device_test_functions.h"
 
 #include "flamegpu/flame_api.h"
 
@@ -202,4 +202,4 @@ BOOST_AUTO_TEST_CASE(GPUSimulationTestMultiple) {
 
 BOOST_AUTO_TEST_SUITE_END()
 
-#endif  // TESTS_TEST_GPU_VALIDATION_H_
+#endif  // TESTS_TEST_CASES_GPU_TEST_GPU_VALIDATION_H_

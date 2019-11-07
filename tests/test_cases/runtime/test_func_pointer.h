@@ -13,8 +13,8 @@
  * @bug        No known bugs
  */
 
-#ifndef TESTS_TEST_FUNC_POINTER_H_
-#define TESTS_TEST_FUNC_POINTER_H_
+#ifndef TESTS_TEST_CASES_RUNTIME_TEST_FUNC_POINTER_H_
+#define TESTS_TEST_CASES_RUNTIME_TEST_FUNC_POINTER_H_
 
 // include all host API classes (one from each module)
 
@@ -76,12 +76,12 @@ __device__ FLAME_GPU_AGENT_STATUS stay_func_impl(FLAMEGPU_API* FLAMEGPU) {
     return ALIVE;
 }
 
-// Declaring function pointers as symbols on device
-__device__ FLAMEGPU_AGENT_FUNCTION_POINTER output_func = output_func_impl;
-__device__ FLAMEGPU_AGENT_FUNCTION_POINTER input_func = input_func_impl;
-__device__ FLAMEGPU_AGENT_FUNCTION_POINTER move_func = move_func_impl;
-__device__ FLAMEGPU_AGENT_FUNCTION_POINTER stay_func = stay_func_impl;
+// // Declaring function pointers as symbols on device
+// __device__ FLAMEGPU_AGENT_FUNCTION_POINTER output_func = output_func_impl;
+// __device__ FLAMEGPU_AGENT_FUNCTION_POINTER input_func = input_func_impl;
+// __device__ FLAMEGPU_AGENT_FUNCTION_POINTER move_func = move_func_impl;
+// __device__ FLAMEGPU_AGENT_FUNCTION_POINTER stay_func = stay_func_impl;
 
 
-#endif  // TESTS_TEST_FUNC_POINTER_H_
+#endif  // TESTS_TEST_CASES_RUNTIME_TEST_FUNC_POINTER_H_
 

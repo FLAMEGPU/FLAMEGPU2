@@ -27,9 +27,11 @@
 
 #include <boost/test/included/unit_test.hpp>
 
-#include "test_model_validation.h"
-#include "test_message_validation.h"
-#include "test_pop_validation.h"
-#include "test_sim_validation.h"
-#include "test_gpu_validation.h"
+#include "test_cases/model/test_model_validation.h"
+#include "test_cases/model/test_message_validation.h"
+#include "test_cases/pop/test_pop_validation.h"
+#include "test_cases/sim/test_sim_validation.h"
+#include "test_cases/gpu/test_gpu_validation.h"
 
+// Disabled, currently breaks compilation.
+// #include "test_cases/runtime/test_func_pointer.h"

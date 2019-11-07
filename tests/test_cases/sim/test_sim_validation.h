@@ -1,5 +1,5 @@
-#ifndef TESTS_TEST_SIM_VALIDATION_H_
-#define TESTS_TEST_SIM_VALIDATION_H_
+#ifndef TESTS_TEST_CASES_SIM_TEST_SIM_VALIDATION_H_
+#define TESTS_TEST_CASES_SIM_TEST_SIM_VALIDATION_H_
 /**
  * @copyright  2017 University of Sheffield
  *
@@ -16,7 +16,7 @@
 
 #include "flamegpu/flame_api.h"
 
-#include "device_test_functions.h"
+#include "helpers/device_test_functions.h"
 
 BOOST_AUTO_TEST_SUITE(SimTest)  // name of the test suite is SimTest
 
@@ -115,4 +115,4 @@ BOOST_AUTO_TEST_CASE(SimulationFunctionCheck) {
 
 BOOST_AUTO_TEST_SUITE_END()
 
-#endif  // TESTS_TEST_SIM_VALIDATION_H_
+#endif  // TESTS_TEST_CASES_SIM_TEST_SIM_VALIDATION_H_
