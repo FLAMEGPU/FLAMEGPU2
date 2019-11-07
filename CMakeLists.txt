@@ -36,7 +36,9 @@ find_file(CPPLINT NAMES cpplint cpplint.exe)
 if(CPPLINT)
   # Add a custom target to lint all child projects. Dependencies are specified in child projects.
   add_custom_target(all_lint)
+  # Don't trigger this target on ALL_BUILD or Visual Studio 'Rebuild Solution'
   set_target_properties(all_lint PROPERTIES EXCLUDE_FROM_ALL TRUE)
+  set_target_properties(all_lint PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD TRUE)
 endif()
 
 # Add the library building subdirectory

@@ -211,7 +211,9 @@ if(CPPLINT)
                 ${SRC}
             )
         endif()
+        # Don't trigger this target on ALL_BUILD or Visual Studio 'Rebuild Solution'
         set_target_properties("lint_${NAME}" PROPERTIES EXCLUDE_FROM_ALL TRUE)
+        set_target_properties("lint_${NAME}" PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD TRUE)
         # Add the custom target as a dependency of the global lint target
         if(TARGET all_lint)
             add_dependencies(all_lint lint_${NAME})
