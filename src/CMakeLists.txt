@@ -98,8 +98,8 @@ SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/cuRVE/curve.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/io/xmlReader.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/io/xmlWriter.cu
-    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/utility/Random.cuh
-    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/utility/Random.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/utility/DeviceRandomArray.cuh
+    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/utility/DeviceRandomArray.cu
 )
 
 SET(ALL_SRC 

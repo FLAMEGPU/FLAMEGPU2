@@ -24,12 +24,12 @@ BOOST_AUTO_TEST_SUITE(AgentRandomTest)  // name of the test suite is SimTest
 /**
  * @brief      To verify the correctness of agent random
  *
- * This test checks whether AgentRandom and Random behave correctly
+ * This test checks whether AgentRandom and DeviceRandomArray behave correctly
 */
 
 
 BOOST_AUTO_TEST_CASE(AgentRandomCheck) {
-    BOOST_TEST_MESSAGE("\nTesting AgentRandom and Random Name ..");
+    BOOST_TEST_MESSAGE("\nTesting AgentRandom and DeviceRandomArray Name ..");
 
     const unsigned int AGENT_COUNT = 5;
 

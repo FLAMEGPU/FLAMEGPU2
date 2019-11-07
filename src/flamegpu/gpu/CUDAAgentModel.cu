@@ -14,7 +14,7 @@
 #include <flamegpu/model/ModelDescription.h>
 #include <flamegpu/pop/AgentPopulation.h>
 #include <flamegpu/sim/Simulation.h>
-#include "flamegpu/runtime/utility/Random.cuh"
+#include "flamegpu/runtime/utility/DeviceRandomArray.cuh"
 
  // include FLAMEGPU kernel wrapper
 #include <flamegpu/runtime/agent_function.h>
@@ -186,7 +186,7 @@ void CUDAAgentModel::step(const Simulation& simulation)
 		}
 
         //Set random size()
-        Random::resize(totalThreads);
+        DeviceRandomArray::resize(totalThreads);
         totalThreads = 0;
 
 		//! for each func function - Loop through to launch all agent functions

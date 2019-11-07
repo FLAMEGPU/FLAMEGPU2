@@ -10,7 +10,7 @@
  * Static manager for the shared array of curand state used by a simulation
  * Pairs with device size AgentRandom
  */
-class Random {
+class DeviceRandomArray {
  public:
     /**
      * Inherit size_type from include-public partner class
@@ -64,7 +64,7 @@ class Random {
      * However, it will only be initialised from hd_random_size(aka length) onwards
      */
     static curandState *h_max_random_state;
-    static Random::size_type h_max_random_size;
+    static DeviceRandomArray::size_type h_max_random_size;
 };
 
 #endif  // SRC_FLAMEGPU_RUNTIME_UTILITY_RANDOM_CUH_

@@ -16,19 +16,19 @@
 #include <flamegpu/io/statereader.h>
 #include <flamegpu/io/statewriter.h>
 #include "flamegpu/io/factory.h"
-#include "flamegpu/runtime/utility/Random.cuh"
+#include "flamegpu/runtime/utility/DeviceRandomArray.cuh"
 
 
 Simulation::Simulation(const ModelDescription& model) : layers(), model_description(model)
 {
     simulation_steps = 1;
-    Random::init(Random::seedFromTime());
+    DeviceRandomArray::init(DeviceRandomArray::seedFromTime());
 }
 
 
 Simulation::~Simulation(void)
 {
-    Random::free();
+    DeviceRandomArray::free();
 }
 
 
@@ -108,8 +108,8 @@ int Simulation::checkArgs(int argc, const char** argv, std::string &xml_model_pa
         //-random <uint>, Uses the specified random seed, defaults to clock
         if (arg.compare("--random") == 0 || arg.compare("-r") == 0)
         {
-            //Reinitialise Random state
-            Random::init(static_cast<unsigned long long>(strtoul(argv[++i], nullptr, 0)));
+            //Reinitialise DeviceRandomArray state
+            DeviceRandomArray::init(static_cast<unsigned long long>(strtoul(argv[++i], nullptr, 0)));
             continue;
         }
         fprintf(stderr, "Unexpected argument: %s\n", arg.c_str());
@@ -125,7 +125,7 @@ void Simulation::printHelp(const char *executable) {
     const char *line_fmt = "%-18s %s\n";
     printf(line_fmt, "-s, --steps", "Number of simulation iterations");
     printf(line_fmt, "-d, --device", "GPU index");
-    printf(line_fmt, "-r, --random", "Random seed");
+    printf(line_fmt, "-r, --random", "DeviceRandomArray seed");
 }
 
 /**
