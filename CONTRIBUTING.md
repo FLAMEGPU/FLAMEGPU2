@@ -77,4 +77,4 @@ Similarly if submitting a new example model, it will need to include it's own `C
 This ensure that users on both Linux and Windows can continue to build FLAME GPU 2.
 
 ## License
-By contributing your code, you agree to license your contribution under the [MIT License](LICENSE).
+By contributing your code, you agree to license your contribution under the [MIT License](LICENSE.md).
