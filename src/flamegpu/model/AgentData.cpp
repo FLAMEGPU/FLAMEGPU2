@@ -4,7 +4,7 @@
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/model/AgentFunctionDescription.h"
 
-AgentData::AgentData(ModelData *const model, const std::string &agent_name)
+AgentData::AgentData(std::shared_ptr<const ModelData> model, const std::string &agent_name)
     : initial_state(ModelData::DEFAULT_STATE)
     , agent_outputs(0)
     , description(new AgentDescription(model, this))
@@ -17,11 +17,12 @@ std::shared_ptr<const AgentData> AgentData::clone() const {
     std::shared_ptr<AgentData> b = std::shared_ptr<AgentData>(new AgentData(nullptr, *this));
     // Manually copy construct maps of shared ptr
     for (const auto f : functions) {
-        b->functions.emplace(f.first, std::shared_ptr<AgentFunctionData>(new AgentFunctionData(nullptr, b, *f.second)));
+        // Passing model is risky here, as the weak_ptr for agent output will point here
+        b->functions.emplace(f.first, std::shared_ptr<AgentFunctionData>(new AgentFunctionData(description->model.lock(), b, *f.second)));
     }
     return b;
 }
-AgentData::AgentData(ModelData *const model, const AgentData &other)
+AgentData::AgentData(std::shared_ptr<const ModelData> model, const AgentData &other)
     : variables(other.variables)
     , states(other.states)
     , initial_state(other.initial_state)
@@ -45,7 +46,7 @@ bool AgentData::operator==(const AgentData &rhs) const {
                 auto _v = rhs.functions.find(v.first);
                 if (_v == rhs.functions.end())
                     return false;
-                if (v.second->operator==(*_v->second))
+                if (*v.second != *_v->second)
                     return false;
             }
         }

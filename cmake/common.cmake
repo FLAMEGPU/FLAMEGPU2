@@ -135,18 +135,11 @@ set(CMAKE_CUDA_FLAGS_RELEASE "${CMAKE_CUDA_FLAGS_RELEASE} -lineinfo")
 set(CMAKE_CUDA_FLAGS_PROFILE "${CMAKE_CUDA_FLAGS_PROFILE} -lineinfo -DPROFILE -D_PROFILE")
 # Addresses a cub::histogram warning
 set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr")
-# Set high level of warnings (only for linux due to Jitify bug: https://github.com/NVIDIA/jitify/issues/62)
-if(WARNINGS_AS_ERRORS)
-    if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-        # Jitify has a problem with cross-execution-space-call under windows, enabling that currently blocks appveyor
-        set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --Wreorder --Werror reorder -Xptxas=\"-Werror\"  -Xnvlink=\"-Werror\"")
-    else()
-        set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --Wreorder --Werror reorder,cross-execution-space-call -Xptxas=\"-Werror\"  -Xnvlink=\"-Werror\"")
-    endif()
-else()
-    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --Wreorder")
-endif()
-# Compiler version specific high warnings
+
+# Enable nvcc warnings for initilisation order
+set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --Wreorder")
+
+# Host Compiler version specific high warnings
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     # Only set W4 for MSVC, WAll is more like Wall, Wextra and Wpedantic
     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler /W4")
@@ -169,20 +162,37 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     # These flags don't currently have any effect on how CMake passes system-private includes to msvc
     set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "/external:I")
     set(CMAKE_INCLUDE_SYSTEM_FLAG_CUDA "/external:I")
-    if(WARNINGS_AS_ERRORS)
-        set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler /WX")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX")
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /WX")
-    endif()
 else()
     # Assume using GCC/Clang which Wall is relatively sane for. 
     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -Wall,-Wsign-compare")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wsign-compare")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wsign-compare")
-    if(WARNINGS_AS_ERRORS)
+endif()
+
+# Promote  warnings to errors if requested
+if(WARNINGS_AS_ERRORS)
+    # OS Specific flags
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+        set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler /WX")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /WX")
+    else()
         set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -Werror")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror")
+    endif()
+
+    # Generic WError settings for nvcc
+    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Werror reorder -Xptxas=\"-Werror\"  -Xnvlink=\"-Werror\"")
+
+    # If CUDA 10.2+, add all_warnings to the Werror option
+    if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL "10.2")
+        set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Werror all-warnings")
+    endif()
+
+    # If not msvc, add cross-execution-space-call. This is blocked under msvc by a jitify related bug (untested > CUDA 10.1): https://github.com/NVIDIA/jitify/issues/62
+    if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+        set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Werror cross-execution-space-call ")
     endif()
 endif()
 # Common CUDA args

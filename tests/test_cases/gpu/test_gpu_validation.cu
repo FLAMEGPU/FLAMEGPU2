@@ -12,13 +12,61 @@
  * @bug        No known bugs
  */
 
-#include "helpers/device_test_functions.h"
 #include "helpers/common.h"
 
 #include "gtest/gtest.h"
 
 #include "flamegpu/flame_api.h"
+namespace test_gpu_validation {
+FLAMEGPU_AGENT_FUNCTION(add_func, MsgNone, MsgNone) {
+    // should've returned error if the type was not correct. Needs type check
+    double x = FLAMEGPU->getVariable<double>("x");
 
+    FLAMEGPU->setVariable<double>("x", x + 2);
+
+    return ALIVE;
+}
+
+FLAMEGPU_AGENT_FUNCTION(subtract_func, MsgNone, MsgNone) {
+    double x = FLAMEGPU->getVariable<double>("x");
+    double y = FLAMEGPU->getVariable<double>("y");
+
+    FLAMEGPU->setVariable<double>("y", x - y);
+
+    return ALIVE;
+}
+
+FLAMEGPU_AGENT_FUNCTION(output_func, MsgNone, MsgNone) {
+    float x = FLAMEGPU->getVariable<float>("x");
+    FLAMEGPU->setVariable<float>("x", x + 2);
+    x = FLAMEGPU->getVariable<float>("x");
+
+    return ALIVE;
+}
+
+// FLAMEGPU_AGENT_FUNCTION(move_func, MsgNone, MsgNone) {
+//     float x = FLAMEGPU->getVariable<float>("x");
+//    FLAMEGPU->setVariable<float>("x", x + 2);
+//    x = FLAMEGPU->getVariable<float>("x");
+//
+//    // ??
+//
+//
+//
+//    return ALIVE;
+// }
+
+FLAMEGPU_AGENT_FUNCTION(input_func, MsgNone, MsgNone) {
+    return ALIVE;
+}
+
+FLAMEGPU_AGENT_FUNCTION(move_func, MsgNone, MsgNone) {
+    return ALIVE;
+}
+
+FLAMEGPU_AGENT_FUNCTION(stay_func, MsgNone, MsgNone) {
+    return ALIVE;
+}
 /**
  * @brief      To verify the correctness of set and get variable function without
  * simulating any function
@@ -76,7 +124,7 @@ TEST(GPUTest, GPUSimulationTest) {
     circle_agent.newVariable<double>("x");
 
 
-    AgentFunctionDescription &add_data = attach_add_func(circle_agent);
+    AgentFunctionDescription &add_data = circle_agent.newFunction("add", add_func);
 
     AgentPopulation population(circle_agent, 10);
     for (int i = 0; i< 10; i++) {
@@ -131,8 +179,8 @@ TEST(GPUTest, GPUSimulationTestMultiple) {
     circle2_agent.newVariable<double>("x");
     circle2_agent.newVariable<double>("y");
 
-    AgentFunctionDescription &add_data = attach_add_func(circle1_agent);
-    AgentFunctionDescription &subtract_data = attach_subtract_func(circle2_agent);
+    AgentFunctionDescription &add_data = circle1_agent.newFunction("add", add_func);
+    AgentFunctionDescription &subtract_data = circle2_agent.newFunction("subtract", subtract_func);
 
 
     #define SIZE 10
@@ -178,5 +226,6 @@ TEST(GPUTest, GPUSimulationTestMultiple) {
         EXPECT_EQ(i2.getVariable<double>("y"), 0);
     }
 }
+    }  // namespace test_gpu_validation
 
 #endif  // TESTS_TEST_CASES_GPU_TEST_GPU_VALIDATION_H_

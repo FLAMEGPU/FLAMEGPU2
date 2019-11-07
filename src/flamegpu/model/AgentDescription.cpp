@@ -6,7 +6,7 @@
 /**
  * Constructors
  */
-AgentDescription::AgentDescription(ModelData *const _model, AgentData *const description)
+AgentDescription::AgentDescription(std::shared_ptr<const ModelData> _model, AgentData *const description)
     : model(_model)
     , agent(description) { }
 

@@ -231,22 +231,22 @@ void CUDAMessage::swap(bool isOptional, const unsigned int &newMsgCount, const u
                 gpuErrchk(cudaFree(flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::MESSAGE_OUTPUT][streamId].hd_cub_temp));
             }
             flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::MESSAGE_OUTPUT][streamId].cub_temp_size = 0;
-            cub::DeviceScan::ExclusiveSum(
+            gpuErrchk(cub::DeviceScan::ExclusiveSum(
                 nullptr,
                 flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::MESSAGE_OUTPUT][streamId].cub_temp_size,
                 flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::MESSAGE_OUTPUT][streamId].d_ptrs.scan_flag,
                 flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::MESSAGE_OUTPUT][streamId].d_ptrs.position,
-                max_list_size + 1);
+                max_list_size + 1));
             gpuErrchk(cudaMalloc(&flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::MESSAGE_OUTPUT][streamId].hd_cub_temp,
                 flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::MESSAGE_OUTPUT][streamId].cub_temp_size));
             flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::MESSAGE_OUTPUT][streamId].cub_temp_size_max_list_size = max_list_size;
         }
-        cub::DeviceScan::ExclusiveSum(
+        gpuErrchk(cub::DeviceScan::ExclusiveSum(
             flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::MESSAGE_OUTPUT][streamId].hd_cub_temp,
             flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::MESSAGE_OUTPUT][streamId].cub_temp_size,
             flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::MESSAGE_OUTPUT][streamId].d_ptrs.scan_flag,
             flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::MESSAGE_OUTPUT][streamId].d_ptrs.position,
-            newMsgCount + 1);
+            newMsgCount + 1));
         // Scatter
         // Update count
         message_count = message_list->scatter(newMsgCount, streamId, !this->truncate_messagelist_flag);

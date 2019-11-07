@@ -16,7 +16,7 @@ AgentFunctionData::AgentFunctionData(std::shared_ptr<AgentData> _parent, const s
     , rtc_condition_source("")
     , rtc_func_condition_name("")
     , parent(_parent)
-    , description(new AgentFunctionDescription(_parent->description->model, this))
+    , description(new AgentFunctionDescription(_parent->description->model.lock(), this))
     , name(function_name)
     , msg_in_type(in_type)
     , msg_out_type(out_type) { }
@@ -32,12 +32,12 @@ AgentFunctionData::AgentFunctionData(std::shared_ptr<AgentData> _parent, const s
     , rtc_condition_source("")
     , rtc_func_condition_name("")
     , parent(_parent)
-    , description(new AgentFunctionDescription(_parent->description->model, this))
+    , description(new AgentFunctionDescription(_parent->description->model.lock(), this))
     , name(function_name)
     , msg_in_type(in_type)
     , msg_out_type(out_type) { }
 
-AgentFunctionData::AgentFunctionData(ModelData *const model, std::shared_ptr<AgentData> _parent, const AgentFunctionData &other)
+AgentFunctionData::AgentFunctionData(const std::shared_ptr<const ModelData> &model, std::shared_ptr<AgentData> _parent, const AgentFunctionData &other)
     : func(other.func)
     , rtc_source(other.rtc_source)
     , rtc_func_name(other.rtc_func_name)
@@ -103,7 +103,7 @@ bool AgentFunctionData::operator==(const AgentFunctionData &rhs) const {
             if (a && b) {
                 if (*a != *b)
                     return false;
-            } else if ((a && !b) || (!a && !b)) {
+            } else if ((a && !b) || (!a && b)) {
                 return false;
             }
         }
@@ -113,7 +113,7 @@ bool AgentFunctionData::operator==(const AgentFunctionData &rhs) const {
             if (a && b) {
                 if (*a != *b)
                     return false;
-            } else if ((a && !b) || (!a && !b)) {
+            } else if ((a && !b) || (!a && b)) {
                 return false;
             }
         }
@@ -146,7 +146,7 @@ bool AgentFunctionData::operator==(const AgentFunctionData &rhs) const {
                             return false;
                     }
                 }
-            } else if ((a && !b) || (!a && !b)) {
+            } else if ((a && !b) || (!a && b)) {
                 return false;
             }
         }

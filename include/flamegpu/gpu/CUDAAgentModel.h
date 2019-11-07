@@ -1,18 +1,17 @@
 #ifndef INCLUDE_FLAMEGPU_GPU_CUDAAGENTMODEL_H_
 #define INCLUDE_FLAMEGPU_GPU_CUDAAGENTMODEL_H_
-
-#include <map>
 #include <memory>
 #include <vector>
 #include <string>
 #include <unordered_map>
+#include <map>
 
 #include "flamegpu/sim/Simulation.h"
 
 #include "flamegpu/gpu/CUDAAgent.h"
 #include "flamegpu/gpu/CUDAMessage.h"
+#include "flamegpu/gpu/CUDAScatter.h"
 #include "flamegpu/runtime/utility/RandomManager.cuh"
-#include "CUDAScatter.h"
 #include "flamegpu/runtime/flamegpu_host_new_agent_api.h"
 #include "flamegpu/visualiser/ModelVis.h"
 
@@ -26,12 +25,18 @@ class CUDAAgentModel : public Simulation {
      * Map of a number of CUDA agents by name.
      * The CUDA agents are responsible for allocating and managing all the device memory
      */
-    typedef std::map<std::string, std::unique_ptr<CUDAAgent>> CUDAAgentMap;
+    typedef std::unordered_map<std::string, std::unique_ptr<CUDAAgent>> CUDAAgentMap;
     /**
      * Map of a number of CUDA messages by name.
      * The CUDA messages are responsible for allocating and managing all the device memory
      */
-    typedef std::map<std::string, std::unique_ptr<CUDAMessage>> CUDAMessageMap;
+    typedef std::unordered_map<std::string, std::unique_ptr<CUDAMessage>> CUDAMessageMap;
+    /**
+     * Map of a number of CUDA sub models by name.
+     * The CUDA submodels are responsible for allocating and managing all the device memory of non mapped agent vars
+     * Ordered is used, so that random seed mutation always occurs same order.
+     */
+    typedef std::map<std::string, std::unique_ptr<CUDAAgentModel>> CUDASubModelMap;
 
  public:
      /**
@@ -50,6 +55,18 @@ class CUDAAgentModel : public Simulation {
      * @param model The model description to initialise the runner to execute
      */
     explicit CUDAAgentModel(const ModelDescription& model);
+
+ private:
+    /**
+     * Private constructor, used to initialise submodels
+     * Allocates CUDASubAgents, and handles mappings
+     * @param submodel_desc The submodel description of the submodel (this should be from the already cloned model hierarchy)
+     * @param master_model The CUDAAgentModel of the master model
+     * @todo Move common components (init list and initOffsetsAndMap()) into a common/shared constructor
+     */
+    CUDAAgentModel(const std::shared_ptr<SubModelData>& submodel_desc, CUDAAgentModel *master_model);
+
+ public:
     /**
      * Inverse operation of contructor
      */
@@ -133,7 +150,7 @@ class CUDAAgentModel : public Simulation {
     void RTCSafeCudaMemcpyToSymbolAddress(void* ptr, const char* rtc_symbol_name, const void* src, size_t count, size_t offset = 0) const;
 
     // TODO
-    void RTCSetEnvironmentVariable(const char* variable_name, const void* src, size_t count, size_t offset = 0) const;
+    void RTCSetEnvironmentVariable(const std::string &variable_name, const void* src, size_t count, size_t offset = 0) const;
 
     /**
      * Get the duration of the last call to simulate() in milliseconds. 
@@ -142,6 +159,15 @@ class CUDAAgentModel : public Simulation {
     float getSimulationElapsedTime() const;
 
  protected:
+    /**
+     * Returns the model to a clean state
+     * This clears all agents and message lists, resets environment properties and reseeds random generation.
+     * Also calls resetStepCounter();
+     * @param submodelReset This should only be set to true when called automatically when a submodel reaches it's exit condition during execution. This performs a subset of the regular reset procedure.
+     * @note If triggered on a submodel, agent states and environment properties mapped to a parent agent, and random generation are not affected.
+     * @note If random was manually seeded, it will return to it's original state. If random was seeded from time, it will return to a new random state.
+     */
+    void reset(bool submodelReset) override;
     /**
      * Called by Simulation::applyConfig() to trigger any runner specific configs
      * @see CUDAAgentModel::CUDAConfig()
@@ -167,6 +193,11 @@ class CUDAAgentModel : public Simulation {
 
  private:
     /**
+     * Reinitalises random generation for this model and all submodels
+     * @param seed New random seed (this updates stored seed in config)
+     */
+    void reseed(const unsigned int &seed);
+    /**
      * Number of times step() has been called since sim was last reset/init
      */
     unsigned int step_count;
@@ -190,6 +221,10 @@ class CUDAAgentModel : public Simulation {
      * Map of message storage 
      */
     CUDAMessageMap message_map;
+    /**
+     * Map of submodel storage
+     */
+    CUDASubModelMap submodel_map;
     /**
      * Streams created within this cuda context for executing functions within layers in parallel
      */

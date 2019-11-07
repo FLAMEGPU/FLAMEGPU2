@@ -23,17 +23,17 @@ void MsgBruteForce::CUDAModelHandler::buildIndex() {
     }
 }
 
-MsgBruteForce::Data::Data(ModelData *const model, const std::string &message_name)
+MsgBruteForce::Data::Data(const std::shared_ptr<const ModelData> &model, const std::string &message_name)
     : description(new Description(model, this))
     , name(message_name)
     , optional_outputs(0) { }
 MsgBruteForce::Data::~Data() {}
-MsgBruteForce::Data::Data(ModelData *const model, const MsgBruteForce::Data &other)
+MsgBruteForce::Data::Data(const std::shared_ptr<const ModelData> &model, const MsgBruteForce::Data &other)
     : variables(other.variables)
     , description(model ? new Description(model, this) : nullptr)
     , name(other.name)
     , optional_outputs(other.optional_outputs) { }
-MsgBruteForce::Data *MsgBruteForce::Data::clone(ModelData *const newParent) {
+MsgBruteForce::Data *MsgBruteForce::Data::clone(const std::shared_ptr<const ModelData> &newParent) {
     return new MsgBruteForce::Data(newParent, *this);
 }
 bool MsgBruteForce::Data::operator==(const MsgBruteForce::Data& rhs) const {
@@ -71,7 +71,7 @@ std::type_index MsgBruteForce::Data::getType() const { return std::type_index(ty
 /**
 * Constructors
 */
-MsgBruteForce::Description::Description(ModelData *const _model, Data *const description)
+MsgBruteForce::Description::Description(const std::shared_ptr<const ModelData> &_model, Data *const description)
     : model(_model)
     , message(description) { }
 

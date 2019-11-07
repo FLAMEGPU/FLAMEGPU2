@@ -447,16 +447,16 @@ class MsgArray {
         std::type_index getType() const override;
 
      protected:
-         Data *clone(ModelData *const newParent) override;
+         Data *clone(const std::shared_ptr<const ModelData> &newParent) override;
         /**
          * Copy constructor
          * This is unsafe, should only be used internally, use clone() instead
          */
-         Data(ModelData *const, const Data &other);
+         Data(const std::shared_ptr<const ModelData>&, const Data &other);
         /**
          * Normal constructor, only to be called by ModelDescription
          */
-         Data(ModelData *const, const std::string &message_name);
+         Data(const std::shared_ptr<const ModelData>&, const std::string &message_name);
     };
     /**
      * User accessible interface to Array messages within mode description hierarchy
@@ -472,7 +472,7 @@ class MsgArray {
         /**
          * Constructors
          */
-         Description(ModelData *const _model, Data *const data);
+         Description(const std::shared_ptr<const ModelData>&_model, Data *const data);
         /**
          * Default copy constructor, not implemented
          */

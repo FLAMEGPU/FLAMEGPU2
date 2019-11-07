@@ -123,7 +123,7 @@ struct AgentFunctionData {
      * Copy constructor
      * This is unsafe, should only be used internally, use clone() instead
      */
-    AgentFunctionData(ModelData *const model, std::shared_ptr<AgentData> _parent, const AgentFunctionData &other);
+    AgentFunctionData(const std::shared_ptr<const ModelData> &model, std::shared_ptr<AgentData> _parent, const AgentFunctionData &other);
     /**
      * Normal constructor, only to be called by AgentDescription
      */

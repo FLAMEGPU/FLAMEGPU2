@@ -93,11 +93,11 @@ struct AgentData : std::enable_shared_from_this<AgentData> {
      * This is unsafe, should only be used internally, use clone() instead
      * This does not setup functions map 
      */
-    AgentData(ModelData *const model, const AgentData &other);
+    AgentData(std::shared_ptr<const ModelData> model, const AgentData &other);
     /**
      * Normal constructor, only to be called by ModelDescription
      */
-    AgentData(ModelData *const model, const std::string &agent_name);
+    AgentData(std::shared_ptr<const ModelData> model, const std::string &agent_name);
 };
 
 #endif  // INCLUDE_FLAMEGPU_MODEL_AGENTDATA_H_

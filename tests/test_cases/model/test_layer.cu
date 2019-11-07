@@ -27,6 +27,9 @@ FLAMEGPU_AGENT_FUNCTION(agent_fn5, MsgNone, MsgNone) {
 FLAMEGPU_HOST_FUNCTION(host_fn) {
     // do nothing
 }
+FLAMEGPU_EXIT_CONDITION(exit_cdn) {
+    return EXIT;
+}
 const char *MODEL_NAME = "Model";
 const char *AGENT_NAME = "Agent1";
 const char *LAYER_NAME = "Layer1";
@@ -223,5 +226,39 @@ TEST(LayerDescriptionTest, SameAgentAndState6) {
     EXPECT_THROW(l.addAgentFunction(agent_fn3), InvalidAgentFunc);
     EXPECT_THROW(l.addAgentFunction(FUNCTION_NAME2), InvalidAgentFunc);
     EXPECT_THROW(l.addAgentFunction(f2), InvalidAgentFunc);
+}
+
+TEST(LayerDescriptionTest, SubModelAndHostOrAgentFunction) {
+    ModelDescription m2("model2");
+    m2.addExitCondition(exit_cdn);
+    ModelDescription m3("model2");
+    m3.addExitCondition(exit_cdn);
+    ModelDescription m(MODEL_NAME);
+    auto &sm = m.newSubModel("sm", m2);
+    auto &sm2 = m.newSubModel("sm2", m3);
+    AgentDescription &a = m.newAgent(AGENT_NAME);
+    auto &af1 = a.newFunction("", agent_fn1);
+    // Submodel can't go in layer with agent function and host fn
+    auto &layer1 = m.newLayer();
+    EXPECT_NO_THROW(layer1.addAgentFunction(af1));
+    EXPECT_NO_THROW(layer1.addHostFunction(host_fn));
+    EXPECT_THROW(layer1.addSubModel(sm), InvalidLayerMember);
+    // Submodel can't go in layer with agent function
+    auto &layer2 = m.newLayer();
+    EXPECT_NO_THROW(layer2.addAgentFunction(af1));
+    EXPECT_THROW(layer2.addSubModel(sm), InvalidLayerMember);
+    EXPECT_NO_THROW(layer2.addHostFunction(host_fn));
+    // Submodel can't go in layer with host function
+    auto &layer3 = m.newLayer();
+    EXPECT_NO_THROW(layer3.addHostFunction(host_fn));
+    EXPECT_THROW(layer3.addSubModel(sm), InvalidLayerMember);
+    EXPECT_NO_THROW(layer3.addAgentFunction(af1));
+    // Host and agent functions can't go in layer with submodel
+    // Submodel can't go in layer with submodel
+    auto &layer4 = m.newLayer();
+    EXPECT_NO_THROW(layer4.addSubModel(sm));
+    EXPECT_THROW(layer4.addSubModel(sm2), InvalidSubModel);
+    EXPECT_THROW(layer4.addAgentFunction(af1), InvalidLayerMember);
+    EXPECT_THROW(layer4.addHostFunction(host_fn), InvalidLayerMember);
 }
 }  // namespace test_layer

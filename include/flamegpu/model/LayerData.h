@@ -30,6 +30,11 @@ struct LayerData {
      */
     std::set<FLAMEGPU_HOST_FUNCTION_POINTER> host_functions;
     /**
+     * SubModel
+     * (If present, layer can hold no host_functions or agent_functions)
+     */
+    std::shared_ptr<SubModelData> sub_model;
+    /**
      * Description class which provides convenient accessors
      */
     std::unique_ptr<LayerDescription> description;
@@ -64,11 +69,11 @@ struct LayerData {
      * Copy constructor
      * This is unsafe, should only be used internally, use clone() instead
      */
-    LayerData(ModelData *const model, const LayerData &other);
+    LayerData(const std::shared_ptr<const ModelData> &model, const LayerData &other);
     /**
      * Normal constructor, only to be called by ModelDescription
      */
-    LayerData(ModelData *const model, const std::string &name, const ModelData::size_type &index);
+    LayerData(const std::shared_ptr<const ModelData> &model, const std::string &name, const ModelData::size_type &index);
 };
 
 #endif  // INCLUDE_FLAMEGPU_MODEL_LAYERDATA_H_

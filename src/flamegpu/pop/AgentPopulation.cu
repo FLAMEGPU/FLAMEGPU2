@@ -19,7 +19,7 @@
 const unsigned int AgentPopulation::DEFAULT_POPULATION_SIZE = 10;  // 1024
 
 AgentPopulation::AgentPopulation(const AgentDescription &agent_description, unsigned int initial_size)
-    : agent(agent_description.agent->clone())  // Set parent to nullptr, shouldn't need to refer upwards
+    : agent(agent_description.agent->clone())
     , states_map()
     , maximum_size(initial_size) {
     // init the state maps

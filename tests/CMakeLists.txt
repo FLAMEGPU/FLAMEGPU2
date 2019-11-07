@@ -87,6 +87,7 @@ SET(TEST_CASE_SRC
     # ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_func_pointer.cu # Does not currently build
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/gpu/test_cuda_agent_model.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/gpu/test_gpu_validation.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/gpu/test_cuda_subagent.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/io/test_xml_io.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/model/test_environment_description.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/model/test_message_validation.cu
@@ -96,6 +97,8 @@ SET(TEST_CASE_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/model/test_message.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/model/test_agent_function.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/model/test_layer.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/model/test_subagent.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/model/test_subenvironment.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/pop/test_pop_validation.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/pop/test_agent_instance.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/sim/test_host_functions.cu
@@ -118,6 +121,7 @@ SET(TEST_CASE_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/host_reduction/test_transform_reduce.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/host_reduction/test_histogram_even.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/host_reduction/test_misc.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_subenvironment_manager.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/messaging/test_spatial_2d.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/messaging/test_spatial_3d.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/messaging/test_brute_force.cu
@@ -130,11 +134,8 @@ SET(TEST_CASE_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_rtc_device_api.cu
 )
 SET(DEV_TEST_CASE_SRC
-
 )
 SET(OTHER_SRC
-    ${CMAKE_CURRENT_SOURCE_DIR}/helpers/device_test_functions.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/helpers/device_test_functions.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/helpers/host_reductions_common.h
     ${CMAKE_CURRENT_SOURCE_DIR}/helpers/host_reductions_common.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/helpers/device_initialisation.h

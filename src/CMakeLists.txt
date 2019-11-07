@@ -88,6 +88,8 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAMessage.h
     ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAAgent.h
     ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAAgentStateList.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAFatAgent.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAFatAgentStateList.h
     ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAScatter.h
     ${FLAMEGPU_ROOT}/include/flamegpu/flame_api.h
     ${FLAMEGPU_ROOT}/include/flamegpu/sim/AgentInterface.h
@@ -103,7 +105,7 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/flamegpu_host_agent_api.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/flamegpu_host_new_agent_api.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/cuRVE/curve.h
-	${FLAMEGPU_ROOT}/include/flamegpu/runtime/cuRVE/curve_rtc.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/cuRVE/curve_rtc.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/None.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/BruteForce.h
@@ -117,10 +119,16 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/EnvironmentManager.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/HostEnvironment.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/HostRandom.cuh
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/RandomManager.cuh
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/RandomManager.cuh    
     ${FLAMEGPU_ROOT}/include/flamegpu/util/nvtx.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/util/compute_capability.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/util/SignalHandlers.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/util/compute_capability.cuh
+    ${FLAMEGPU_ROOT}/include/flamegpu/model/SubModelData.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/model/SubAgentData.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/model/SubEnvironmentData.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/model/SubModelDescription.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/model/SubAgentDescription.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/model/SubEnvironmentDescription.h
 )
 SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/exception/FGPUException.cpp
@@ -138,14 +146,16 @@ SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/pop/AgentStateMemory.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAScanCompaction.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAMessageList.cu
-    ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAAgentStateList.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAAgent.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAAgentStateList.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAFatAgent.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAFatAgentStateList.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAMessage.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAScatter.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/sim/Simulation.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAAgentModel.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/cuRVE/curve.cu
-	${FLAMEGPU_ROOT}/src/flamegpu/runtime/cuRVE/curve_rtc.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/cuRVE/curve_rtc.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/flamegpu_host_api.cu    
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/BruteForce.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/Spatial2D.cu
@@ -159,6 +169,12 @@ SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/utility/EnvironmentManager.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/utility/RandomManager.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/util/compute_capability.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/model/SubModelData.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/model/SubAgentData.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/model/SubEnvironmentData.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/model/SubModelDescription.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/model/SubAgentDescription.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/model/SubEnvironmentDescription.cpp
 )
 if (VISUALISATION)
     SET(SRC_INCLUDE

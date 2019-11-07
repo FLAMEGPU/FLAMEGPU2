@@ -119,13 +119,13 @@ void MsgArray2D::CUDAModelHandler::buildIndex() {
 }
 
 
-MsgArray2D::Data::Data(ModelData *const model, const std::string &message_name)
+MsgArray2D::Data::Data(const std::shared_ptr<const ModelData> &model, const std::string &message_name)
     : MsgBruteForce::Data(model, message_name)
     , dimensions({ 0, 0 }) {
     description = std::unique_ptr<MsgArray2D::Description>(new MsgArray2D::Description(model, this));
     variables.emplace("___INDEX", Variable(1, size_type()));
 }
-MsgArray2D::Data::Data(ModelData *const model, const Data &other)
+MsgArray2D::Data::Data(const std::shared_ptr<const ModelData> &model, const Data &other)
     : MsgBruteForce::Data(model, other)
     , dimensions(other.dimensions) {
     description = std::unique_ptr<MsgArray2D::Description>(model ? new MsgArray2D::Description(model, this) : nullptr);
@@ -133,7 +133,7 @@ MsgArray2D::Data::Data(ModelData *const model, const Data &other)
         THROW InvalidMessage("All dimensions must be ABOVE zero in array2D message '%s'\n", other.name.c_str());
     }
 }
-MsgArray2D::Data *MsgArray2D::Data::clone(ModelData *const newParent) {
+MsgArray2D::Data *MsgArray2D::Data::clone(const std::shared_ptr<const ModelData> &newParent) {
     return new Data(newParent, *this);
 }
 std::unique_ptr<MsgSpecialisationHandler> MsgArray2D::Data::getSpecialisationHander(CUDAMessage &owner) const {
@@ -142,7 +142,7 @@ std::unique_ptr<MsgSpecialisationHandler> MsgArray2D::Data::getSpecialisationHan
 std::type_index MsgArray2D::Data::getType() const { return std::type_index(typeid(MsgArray2D)); }
 
 
-MsgArray2D::Description::Description(ModelData *const _model, Data *const data)
+MsgArray2D::Description::Description(const std::shared_ptr<const ModelData> &_model, Data *const data)
     : MsgBruteForce::Description(_model, data) { }
 
 void MsgArray2D::Description::setDimensions(const size_type& len_x, const size_type& len_y) {

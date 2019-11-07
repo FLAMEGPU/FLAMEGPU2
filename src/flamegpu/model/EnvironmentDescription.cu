@@ -35,22 +35,6 @@ void EnvironmentDescription::add(const std::string &name, const char *ptr, const
     properties.emplace(name, PropData(isConst,  elements, Any(ptr, length), type));
 }
 
-void EnvironmentDescription::setConst(const std::string &name, const bool &isConst) {
-    if (!name.empty() && name[0] == '_') {
-        THROW ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
-            "in EnvironmentDescription::setConst().");
-    }
-    for (auto &i : properties) {
-        if (i.first == name) {
-            i.second.isConst = isConst;
-            return;
-        }
-    }
-    THROW InvalidEnvProperty("Environmental property with name '%s' does not exist, "
-        "in EnvironmentDescription::setConst().",
-        name.c_str());
-}
-
 bool EnvironmentDescription::getConst(const std::string &name) {
     for (auto &i : properties) {
         if (i.first == name) {
