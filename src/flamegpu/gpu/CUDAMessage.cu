@@ -55,14 +55,14 @@ void CUDAMessage::setInitialMessageList() {  // used to be const AgentPopulation
     if (message_list)
         throw InvalidMessageData("Error: Initial message list already set");
 
-/*
+    /*
     unsigned int size = message_description.getMaximumMessageListCapacity();
     max_list_size = population.getMaximumStateListCapacity();
 
     // set the maximum population state size
     if (max_list_size > size)
         throw InvalidMessageSize("Error: Invalid Message List size");
-*/
+    */
 
     max_list_size = message_description.getMaximumMessageListCapacity();  // maxmimum message list, not the population
 
@@ -90,7 +90,7 @@ unsigned int CUDAMessage::getMaximumListSize() const {
 * @return none
 */
 void CUDAMessage::zeroAllMessageData() {
-        message_list->zeroMessageData();
+    message_list->zeroMessageData();
 }
 
 /**
