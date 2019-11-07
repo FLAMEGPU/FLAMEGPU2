@@ -10,10 +10,13 @@
  * \todo longer description
  */
 
+#include <cassert>
+
 #include "flamegpu/gpu/CUDAErrorChecking.h"            // required for CUDA error handling functions
 #include "flamegpu/runtime/cuRVE/curve.h"
 #include "flamegpu/exception/FGPUException.h"
 #include "flamegpu/runtime/messagelist.h"
+#include "flamegpu/runtime/utility/AgentRandom.cuh"
 
 // TODO: Some example code of the handle class and an example function
 // ! FLAMEGPU_API is a singleton class
@@ -49,8 +52,14 @@ __device__ FLAME_GPU_AGENT_STATUS funcName ## _impl(FLAMEGPU_API* FLAMEGPU)
  * behaviour is handled by the curveInstance class. This will ensure that initialisation of the curve (C) library is done only once.
  */
 class FLAMEGPU_API {
+    // Friends have access to TID() & TS_ID()
+    friend __global__ void agent_function_wrapper(CurveNamespaceHash, CurveNamespaceHash, CurveNamespaceHash, FLAMEGPU_AGENT_FUNCTION_POINTER, const int, const unsigned int, const unsigned int);
+
  public:
-    __device__ FLAMEGPU_API() {}
+    /**
+     * @param _thread_in_layer_offset This offset can be added to TID to give a thread-safe unique index for the thread
+     */
+    __device__ FLAMEGPU_API(const unsigned int &_thread_in_layer_offset) : random(AgentRandom(TID()+_thread_in_layer_offset)), thread_in_layer_offset(_thread_in_layer_offset) {}
 
     template<typename T, unsigned int N> __device__
     T getVariable(const char(&variable_name)[N]);
@@ -83,7 +92,8 @@ class FLAMEGPU_API {
      * \param agentname_hash
      */
     __device__ void setAgentNameSpace(CurveNamespaceHash agentname_hash) {
-agent_func_name_hash = agentname_hash;}
+        agent_func_name_hash = agentname_hash;
+    }
 
     /**
      * \brief
@@ -101,6 +111,12 @@ agent_func_name_hash = agentname_hash;}
         messagename_outp_hash = messagename_hash;
     }
 
+    /**
+    * Provides access to random functionality inside agent functions
+    * @note random state isn't stored within the object, so it can be const
+    */
+    const AgentRandom random;
+
  private:
     CurveNamespaceHash agent_func_name_hash;
     CurveNamespaceHash messagename_inp_hash;
@@ -108,6 +124,33 @@ agent_func_name_hash = agentname_hash;}
     MessageList messageList;
 
     unsigned int  messageListSize;
+
+    unsigned int thread_in_layer_offset;
+    /**
+     * Thread index
+     */
+    __forceinline__ __device__ static unsigned int TID() {
+        /*
+        // 3D version
+        auto blockId = blockIdx.x + blockIdx.y * gridDim.x
+            + gridDim.x * gridDim.y * blockIdx.z;
+        auto threadId = blockId * (blockDim.x * blockDim.y * blockDim.z)
+            + (threadIdx.z * (blockDim.x * blockDim.y))
+            + (threadIdx.y * blockDim.x)
+            + threadIdx.x;
+        return threadId;*/
+        assert(blockDim.y == 1);
+        assert(blockDim.z == 1);
+        assert(gridDim.y == 1);
+        assert(gridDim.z == 1);
+        return blockIdx.x * blockDim.x +threadIdx.x;
+    }
+    /**
+     * Thread-safe index
+     */
+    __forceinline__ __device__ unsigned int TS_ID() const {
+        return thread_in_layer_offset + TID();
+    }
 };
 
 /******************************************************************************************************* Implementation ********************************************************/

@@ -14,6 +14,7 @@
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/pop/AgentPopulation.h"
 #include "flamegpu/sim/Simulation.h"
+#include "flamegpu/runtime/utility/DeviceRandomArray.cuh"
 
 // include FLAMEGPU kernel wrapper
 #include "flamegpu/runtime/agent_function.h"
@@ -132,68 +133,81 @@ void CUDAAgentModel::step(const Simulation& simulation) {
     for (int j = 0; j < nStreams; j++)
         gpuErrchk(cudaStreamCreate(&stream[j]));
 
+
     /*! for each each sim layer, launch each agent function in its own stream */
     for (unsigned int i = 0; i < simulation.getLayerCount(); i++) {
         const FunctionDescriptionVector& functions = simulation.getFunctionsAtLayer(i);
 
         int j = 0;
-
+        // Sum the total number of threads being launched in the layer
+        unsigned int totalThreads = 0;
         /*! for each func function - Loop through to do all mapping of agent and message variables */
         for (AgentFunctionDescription func_des : functions) {
             const CUDAAgent& cuda_agent = getCUDAAgent(func_des.getParent().getName());
 
-            // ! check if a function has an input massage
+            // check if a function has an input massage
             if (func_des.hasInputMessage()) {
                 std::string inpMessage_name = func_des.getInputMessageName();
                 const CUDAMessage& cuda_message = getCUDAMessage(inpMessage_name); printf("inp msg name: %s\n", inpMessage_name.c_str());
                 cuda_message.mapRuntimeVariables(func_des);
             }
 
-            // ! check if a function has an output massage
+            // check if a function has an output massage
             if (func_des.hasOutputMessage()) {
                 std::string outpMessage_name = func_des.getOutputMessageName();
                 const CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name); printf("inp msg name: %s\n", outpMessage_name.c_str());
                 cuda_message.mapRuntimeVariables(func_des);
             }
 
+
             /**
              * Configure runtime access of the functions variables within the FLAME_API object
              */
             cuda_agent.mapRuntimeVariables(func_des);
+
+
+            // Count total threads being launched
+            totalThreads += cuda_agent.getMaximumListSize();
         }
-        // ! for each func function - Loop through to launch all agent functions
+
+        // Ensure DeviceRandomArray is the correct size to accomodate all threads to be launched
+        DeviceRandomArray::resize(totalThreads);
+        // Total threads is now used to provide kernel launches an offset to thread-safe thread-index
+        totalThreads = 0;
+
+        //! for each func function - Loop through to launch all agent functions
         for (AgentFunctionDescription func_des : functions) {
             std::string agent_name = func_des.getParent().getName();
             std::string func_name = func_des.getName();
 
-            // ! check if a function has an output massage
+            // check if a function has an output massage
             if (func_des.hasInputMessage()) {
                 std::string inpMessage_name = func_des.getInputMessageName();
                 const CUDAMessage& cuda_message = getCUDAMessage(inpMessage_name);
                 // message_name = inpMessage_name;
 
-                // ! hash message name
+                // hash message name
                 message_name_inp_hash = curveVariableRuntimeHash(inpMessage_name.c_str());
 
                 messageList_Size = cuda_message.getMaximumListSize();
             }
 
-            // ! check if a function has an output massage
+            // check if a function has an output massage
             if (func_des.hasOutputMessage()) {
                 std::string outpMessage_name = func_des.getOutputMessageName();
                 // const CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
                 // message_name = outpMessage_name;
 
-                // ! hash message name
+                // hash message name
                 message_name_outp_hash = curveVariableRuntimeHash(outpMessage_name.c_str());
             }
 
             const CUDAAgent& cuda_agent = getCUDAAgent(agent_name);
 
-            /*! get the agent function */
+            // get the agent function
             FLAMEGPU_AGENT_FUNCTION_POINTER* agent_func = func_des.getFunction();
 
-            /*! host_pointer */
+            // host_pointer
             FLAMEGPU_AGENT_FUNCTION_POINTER h_func_ptr;
 
             // cudaMemcpyFromSymbolAsync(&h_func_ptr, *agent_func, sizeof(FLAMEGPU_AGENT_FUNCTION_POINTER),0,cudaMemcpyDeviceToHost,stream[j]);
@@ -201,38 +215,38 @@ void CUDAAgentModel::step(const Simulation& simulation) {
 
             int state_list_size = cuda_agent.getMaximumListSize();
 
-            int blockSize = 0;  // ! The launch configurator returned block size
-            int minGridSize = 0;  // ! The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
-            int gridSize = 0;  // ! The actual grid size needed, based on input size
+            int blockSize = 0;  // The launch configurator returned block size
+            int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
+            int gridSize = 0;  // The actual grid size needed, based on input size
 
-            // !calculate the grid block size for main agent function
+            // calculate the grid block size for main agent function
             cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, agent_function_wrapper, 0, state_list_size);
 
-            // ! Round up according to CUDAAgent state list size
+            //! Round up according to CUDAAgent state list size
             gridSize = (state_list_size + blockSize - 1) / blockSize;
 
-            // ! hash agent name
+            // hash agent name
             CurveNamespaceHash agentname_hash = curveVariableRuntimeHash(agent_name.c_str());
-            // ! hash function name
+            // hash function name
             CurveNamespaceHash funcname_hash = curveVariableRuntimeHash(func_name.c_str());
 
             // agent_function_wrapper << <gridSize, blockSize, 0, stream[j] >> > (agentname_hash + funcname_hash, h_func_ptr, state_list_size);
-            agent_function_wrapper <<<gridSize, blockSize, 0, stream[j] >>>(agentname_hash + funcname_hash, message_name_inp_hash, message_name_outp_hash, h_func_ptr, state_list_size, messageList_Size);
-
+            agent_function_wrapper <<<gridSize, blockSize, 0, stream[j] >>>(agentname_hash + funcname_hash, message_name_inp_hash, message_name_outp_hash, h_func_ptr, state_list_size, messageList_Size, totalThreads);
+            totalThreads += state_list_size;
             ++j;
         }
-        // ! for each func function - Loop through to un-map all agent and message variables
+        // for each func function - Loop through to un-map all agent and message variables
         for (AgentFunctionDescription func_des : functions) {
             const CUDAAgent& cuda_agent = getCUDAAgent(func_des.getParent().getName());
 
-            // ! check if a function has an output massage
+            // check if a function has an output massage
             if (func_des.hasInputMessage()) {
                 std::string inpMessage_name = func_des.getInputMessageName();
                 const CUDAMessage& cuda_message = getCUDAMessage(inpMessage_name);
                 cuda_message.unmapRuntimeVariables(func_des);
             }
 
-            // ! check if a function has an output massage
+            // check if a function has an output massage
             if (func_des.hasOutputMessage()) {
                 std::string outpMessage_name = func_des.getOutputMessageName();
                 const CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
@@ -241,12 +255,12 @@ void CUDAAgentModel::step(const Simulation& simulation) {
             // const CUDAMessage& cuda_inpMessage = getCUDAMessage(func_des.getInputChild.getMessageName());
             // const CUDAMessage& cuda_outpMessage = getCUDAMessage(func_des.getOutputChild.getMessageName());
 
-            // ! unmap the function variables
+            // unmap the function variables
             cuda_agent.unmapRuntimeVariables(func_des);
         }
         // cudaDeviceSynchronize();
     }
-    // ! stream deletion
+    // stream deletion
     for (int j = 0; j < nStreams; ++j)
         gpuErrchk(cudaStreamDestroy(stream[j]));
     free(stream);

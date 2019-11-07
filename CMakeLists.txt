@@ -12,12 +12,12 @@ set(CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}" CACHE INTERNAL ""  FORCE)
 include(CheckLanguage)
 check_language(CUDA)
 if(CMAKE_CUDA_COMPILER STREQUAL NOTFOUND)
-	#Not able to build code, so just make docs	
-	message("Suitable compilers for building code not found.\n" "Attempting generation of minimal documentation only project.")	
-	get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR} REALPATH)
-	include(./cmake/doxygen.cmake)
-	create_doxygen_target("${CMAKE_CURRENT_BINARY_DIR}") 
-	return()
+    #Not able to build code, so just make docs    
+    message("Suitable compilers for building code not found.\n" "Attempting generation of minimal documentation only project.")    
+    get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR} REALPATH)
+    include(./cmake/doxygen.cmake)
+    create_doxygen_target("${CMAKE_CURRENT_BINARY_DIR}") 
+    return()
 endif()
 
 # Option to enable/disable building the static library
@@ -38,7 +38,7 @@ if(CPPLINT)
   add_custom_target(all_lint)
   # Don't trigger this target on ALL_BUILD or Visual Studio 'Rebuild Solution'
   set_target_properties(all_lint PROPERTIES EXCLUDE_FROM_ALL TRUE)
-  set_target_properties(all_lint PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD TRUE)
+  # set_target_properties(all_lint PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD TRUE)
 endif()
 
 # Add the library building subdirectory
@@ -60,8 +60,6 @@ endif()
 # Add the tests directory (if required)
 if(BUILD_TESTS)
     add_subdirectory(tests)
-    # Put within Lint filter
-    CMAKE_SET_TARGET_FOLDER(all_lint "Tests")
 endif()
 
 # Put all_lint within Lint filter

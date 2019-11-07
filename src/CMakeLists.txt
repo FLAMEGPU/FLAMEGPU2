@@ -28,11 +28,11 @@ include(${FLAMEGPU_ROOT}/cmake/doxygen.cmake)
 if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
     # If top level project
     SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib/${CMAKE_SYSTEM_NAME_LOWER}-x64/${CMAKE_BUILD_TYPE}/)
-	create_doxygen_target("${CMAKE_CURRENT_BINARY_DIR}")
+    create_doxygen_target("${CMAKE_CURRENT_BINARY_DIR}")
 else()
     # If called via add_subdirectory()
     SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../lib/${CMAKE_SYSTEM_NAME_LOWER}-x64/${CMAKE_BUILD_TYPE}/)
-	create_doxygen_target("${CMAKE_CURRENT_BINARY_DIR}/..")
+    create_doxygen_target("${CMAKE_CURRENT_BINARY_DIR}/..")
 endif()
 
 # Specify source files for the static library
@@ -73,6 +73,8 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/flame_functions_api.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/cuRVE/curve.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/cuRVE/cuRVEInstance.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/AgentRandom.cuh
+    
 )
 SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/model/ModelDescription.cu
@@ -96,6 +98,8 @@ SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/cuRVE/curve.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/io/xmlReader.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/io/xmlWriter.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/utility/DeviceRandomArray.cuh
+    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/utility/DeviceRandomArray.cu
 )
 
 SET(ALL_SRC
