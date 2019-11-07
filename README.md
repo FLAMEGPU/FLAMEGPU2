@@ -146,7 +146,7 @@ doxygen Doxyfile.docs
 
 ##### Device Architectures
 
-Cuda device architectures can be specified via `-DSMS` when generating make files, using a semi colon, space or comma separated list of compute capability numbers. I.e to build for just SM_61 and SM_70:
+CUDA device architectures can be specified via `-DSMS` when generating make files, using a semi colon, space or comma separated list of compute capability numbers. I.e to build for just SM_61 and SM_70:
 
 ```
 mkdir -p build && cd build
