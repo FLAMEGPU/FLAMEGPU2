@@ -57,6 +57,10 @@ if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_SIMPLE_EXAMPLE)
     add_subdirectory(examples/simple_example)
 endif()
 
+if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_HOST_FUNCTIONS)
+    add_subdirectory(examples/host_functions)
+endif()
+
 # Add the tests directory (if required)
 if(BUILD_TESTS)
     add_subdirectory(tests)

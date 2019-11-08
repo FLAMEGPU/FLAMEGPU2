@@ -23,7 +23,12 @@
 * CUDAAgentModel class
 * @brief populates CUDA agent map, CUDA message map
 */
-CUDAAgentModel::CUDAAgentModel(const ModelDescription& description) : model_description(description), agent_map(), curve(cuRVEInstance::getInstance()), message_map() {  // , function_map() {
+CUDAAgentModel::CUDAAgentModel(const ModelDescription& description)
+    : model_description(description),
+    agent_map(),
+    curve(cuRVEInstance::getInstance()),
+    message_map(),
+    host_api() {  // , function_map() {
     // create a reference to curve to ensure that it is initialised. This is a singleton class so will only be done once regardless of the number of CUDAgentModels.
 
     // populate the CUDA agent map
@@ -113,7 +118,7 @@ void CUDAAgentModel::getPopulationData(AgentPopulation& population) {
  * @brief Loops through agents functions and register all variables
  * (variable has must also be tied to function name using the namespace thing in curve)
 */
-void CUDAAgentModel::step(const Simulation& simulation) {
+bool CUDAAgentModel::step(const Simulation& simulation) {
     int nStreams = 1;
     std::string message_name;
     CurveNamespaceHash message_name_inp_hash = 0;
@@ -264,6 +269,18 @@ void CUDAAgentModel::step(const Simulation& simulation) {
     for (int j = 0; j < nStreams; ++j)
         gpuErrchk(cudaStreamDestroy(stream[j]));
     free(stream);
+
+
+    // Execute step functions
+    for (auto &stepFn : simulation.getStepFunctions())
+        stepFn(&this->host_api);
+
+
+    // Execute exit conditions
+    for (auto &exitCdns : simulation.getExitConditions())
+        if (exitCdns(&this->host_api) == EXIT)
+            return false;
+    return true;
 }
 
 /**
@@ -310,10 +327,19 @@ void CUDAAgentModel::simulate(const Simulation& simulation) {
     // if they have executable functions then these can be ignored
     // if they have agent creations then buffer space must be allocated for them
 
+    // Execute init functions
+    for (auto &initFn : simulation.getInitFunctions())
+        initFn(&this->host_api);
+
     for (unsigned int i = 0; i < simulation.getSimulationSteps(); i++) {
         std::cout <<"step: " << i << std::endl;
-        step(simulation);
+        if (!step(simulation))
+            break;
     }
+
+    // Execute exit functions
+    for (auto &exitFn : simulation.getExitFunctions())
+        exitFn(&this->host_api);
 }
 
 const CUDAAgent& CUDAAgentModel::getCUDAAgent(std::string agent_name) const {
