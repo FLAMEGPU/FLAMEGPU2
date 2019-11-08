@@ -1,3 +1,8 @@
+# GoogleTest directories (handled by CMake)
+googletest-build/
+googletest-download/
+googletest-src/
+
 # Doxygen / CMake + Doxygen generated files
 DoxyGen*/
 CMakeDoxyfile.in
