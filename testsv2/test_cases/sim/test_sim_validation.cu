@@ -87,7 +87,7 @@ TEST(SimTest, SimulationFunctionCheck) {
      * @brief      Checks the number of function layers
      * This is to validate the predicate value. The test should pass.
      */
-    EXPECT_TRUE(simulation.getLayerCount() == 2);
+    EXPECT_EQ(simulation.getLayerCount(), 2);
 
     // for each each simulation layer
     for (unsigned int i = 0; i < simulation.getLayerCount(); i++) {
@@ -110,7 +110,7 @@ TEST(SimTest, SimulationFunctionCheck) {
     /**
      * @todo : may not need this below test
      */
-    EXPECT_TRUE(simulation.getModelDescritpion().getName() == "circles_model");
+    EXPECT_EQ(simulation.getModelDescritpion().getName(), "circles_model");
 }
 
 #endif  // TESTS_TEST_CASES_SIM_TEST_SIM_VALIDATION_H_

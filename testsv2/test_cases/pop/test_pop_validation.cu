@@ -17,7 +17,6 @@
 #include "helpers/common.h"
 
 #include "flamegpu/flame_api.h"
-#include "helpers/common.h"
 
 /**
  * @brief      To verify the correctness of agent population name and exception handler
@@ -40,7 +39,7 @@ TEST(PopTest, PopulationNameCheck) {
     }
 
     GTEST_COUT << "Testing Agent population Name .." << std::endl;
-    EXPECT_TRUE(population.getAgentName() == "circle");
+    EXPECT_EQ(population.getAgentName(), "circle");
     // what do we expect here?default or circle
     EXPECT_THROW(population.getStateMemory("circe"), InvalidStateName);  // expecting an error
 }
@@ -182,10 +181,10 @@ TEST(PopTest, PopulationAddMoreCapacity) {
     flame_model.addAgent(circle_agent);
 
     AgentPopulation population(circle_agent, 100);
-    EXPECT_TRUE(population.getMaximumStateListCapacity() == 100);
+    EXPECT_EQ(population.getMaximumStateListCapacity(), 100);
 
     population.setStateListCapacity(200);
-    EXPECT_TRUE(population.getMaximumStateListCapacity() == 200);
+    EXPECT_EQ(population.getMaximumStateListCapacity(), 200);
 
     // Catch exception that fails on above call (can't reduce population capacity)
     EXPECT_THROW(population.setStateListCapacity(100), InvalidPopulationData);
@@ -210,7 +209,7 @@ TEST(PopTest, PopulationOverflowCapacity) {
     flame_model.addAgent(circle_agent);
 
     AgentPopulation population(circle_agent, 100);
-    EXPECT_TRUE(population.getMaximumStateListCapacity() == 100);
+    EXPECT_EQ(population.getMaximumStateListCapacity(), 100);
 
     // add 100 instances (no problem)
     for (int i = 0; i< 100; i++)     {

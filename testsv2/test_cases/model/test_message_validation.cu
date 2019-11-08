@@ -35,13 +35,13 @@ TEST(MessageTest, MessageCheck) {
      * @brief      Checks the number of message name
      * This is to validate the predicate value. The test should pass.
      */
-    EXPECT_TRUE(location_message.getName() == "location");
+    EXPECT_EQ(location_message.getName(), "location");
 
    /**
      * @brief      Checks the number of message memory size
      * This is to validate the predicate value. The test should pass.
      */
-    EXPECT_TRUE(location_message.getMemorySize()== 0);
+    EXPECT_EQ(location_message.getMemorySize(), 0);
 
 
     location_message.addVariable<float>("x");
@@ -51,19 +51,19 @@ TEST(MessageTest, MessageCheck) {
      * @brief      Checks the number of message variables
      * This is to validate the predicate value. The test should pass.
      */
-    EXPECT_TRUE(location_message.getNumberMessageVariables()== 2);
+    EXPECT_EQ(location_message.getNumberMessageVariables(), 2);
 
    /**
      * @brief      Checks the message variable size
      * This is to validate the predicate value. The test should pass.
      */
-    EXPECT_TRUE(location_message.getMessageVariableSize("x")== 4);
+    EXPECT_EQ(location_message.getMessageVariableSize("x"), 4);
 
    /**
      * @brief      Checks the message variable type
      * This is to validate the predicate value. The test should pass.
      */
-    EXPECT_TRUE(location_message.getVariableType("x")== typeid(float));
+    EXPECT_EQ(location_message.getVariableType("x"), typeid(float));
 
 
     /**
@@ -116,27 +116,27 @@ TEST(MessageTest, MessageFunctionCheck) {
      * @brief      Checks the name of agent function description
      * This is to validate the predicate value. The test should pass.
      */
-    EXPECT_TRUE(output_data.getName() == "output_data");
+    EXPECT_EQ(output_data.getName(), "output_data");
 
    /**
      * @brief      Checks whether the agent function reads an input message
      * This is to validate the predicate value. The test should pass.
      */
-    EXPECT_TRUE(output_data.hasInputMessage() == false);
-    EXPECT_TRUE(move.hasInputMessage() == false);
+    EXPECT_FALSE(output_data.hasInputMessage());
+    EXPECT_FALSE(move.hasInputMessage());
 
    /**
      * @brief      Checks whether the agent function outputs a message
      * This is to validate the predicate value. The test should pass.
      */
-    EXPECT_TRUE(output_data.hasOutputMessage() == true);
-    EXPECT_TRUE(move.hasOutputMessage() == false);
+    EXPECT_TRUE(output_data.hasOutputMessage());
+    EXPECT_FALSE(move.hasOutputMessage());
 
    /**
      * @brief      Checks the message name
      * This is to validate the predicate value. The test should pass.
      */
-    EXPECT_TRUE(output_location.getMessageName() == "location");
+    EXPECT_EQ(output_location.getMessageName(, "location");
 
 
     /**

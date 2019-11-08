@@ -30,8 +30,8 @@ TEST(ModelDescTest, AgentCheck) {
 
     AgentDescription circle_agent("circle");
 
-    EXPECT_TRUE(circle_agent.getName() == "circle");
-    EXPECT_TRUE(circle_agent.getMemorySize()== 0);
+    EXPECT_EQ(circle_agent.getName(), "circle");
+    EXPECT_EQ(circle_agent.getMemorySize(), 0);
 }
 
 /**
@@ -48,19 +48,19 @@ TEST(ModelDescTest, AgentVarCheck) {
      * @brief      Checks the number of agent variables
      * This is to validate the predicate value. The test should pass.
      */
-    EXPECT_TRUE(circle_agent.getNumberAgentVariables() == 1);
+    EXPECT_EQ(circle_agent.getNumberAgentVariables(), 1);
 
    /**
      * @brief      Checks the agent variable size
      * This is to validate the predicate value. The test should pass.
      */
-    EXPECT_TRUE(circle_agent.getAgentVariableSize("x") == 4);
+    EXPECT_EQ(circle_agent.getAgentVariableSize("x"), 4);
 
    /**
      * @brief      Checks the agent variable type
      * This is to validate the predicate value. The test should pass.
      */
-    EXPECT_TRUE(circle_agent.getVariableType("x") == typeid(float));
+    EXPECT_EQ(circle_agent.getVariableType("x"), typeid(float));
 
     /**
      * @brief      Checks if the agent variable exists
@@ -97,31 +97,31 @@ TEST(ModelDescTest, MessageFunctionCheck) {
      * @brief      Checks the name of agent function description
      * This is to validate the predicate value. The test should pass.
      */
-    EXPECT_TRUE(output_data.getName() == "output_data");
+    EXPECT_EQ(output_data.getName(), "output_data");
 
    /**
      * @brief      Checks whether the agent function exists or not
      * This is to validate the predicate value. The test should pass.
      */
-    EXPECT_TRUE(circle_agent.hasAgentFunction("output_data") == true);
+    EXPECT_TRUE(circle_agent.hasAgentFunction("output_data"));
 
    /**
      * @brief      Checks the name of the initial state
      * This is to validate the predicate value. The test should pass.
      */
-    EXPECT_TRUE(output_data.getInitialState() == "default");
+    EXPECT_EQ(output_data.getInitialState(), "default");
 
    /**
      * @brief      Checks the name of model description
      * This is to validate the predicate value. The test should pass.
      */
-    EXPECT_TRUE(flame_model.getName() == "circles_model");
+    EXPECT_EQ(flame_model.getName(), "circles_model");
 
    /**
      * @brief      Checks whether the agent function exists or not
      * This is to validate the predicate value. The test should pass.
      */
-    EXPECT_TRUE(flame_model.getAgentDescription("circle").hasAgentFunction("move") == true);
+    EXPECT_TRUE(flame_model.getAgentDescription("circle").hasAgentFunction("move"));
 
     /**
      * @brief      Checks if the agent description name exists
