@@ -73,6 +73,7 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/flamegpu_api.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/flamegpu_device_api.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/flamegpu_host_api.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/flamegpu_host_agent_api.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/cuRVE/curve.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/cuRVE/cuRVEInstance.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/AgentRandom.cuh
@@ -98,6 +99,7 @@ SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAAgentModel.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/agent_function.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/cuRVE/curve.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/flamegpu_host_api.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/io/xmlReader.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/io/xmlWriter.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/utility/DeviceRandomArray.cuh

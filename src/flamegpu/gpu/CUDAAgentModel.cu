@@ -28,7 +28,7 @@ CUDAAgentModel::CUDAAgentModel(const ModelDescription& description)
     agent_map(),
     curve(cuRVEInstance::getInstance()),
     message_map(),
-    host_api() {  // , function_map() {
+    host_api(*this) {  // , function_map() {
     // create a reference to curve to ensure that it is initialised. This is a singleton class so will only be done once regardless of the number of CUDAgentModels.
 
     // populate the CUDA agent map
