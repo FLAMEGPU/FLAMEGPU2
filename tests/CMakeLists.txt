@@ -29,6 +29,9 @@ endif()
 # settings on Windows
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 
+# Suppress installation target, as this makes a warning
+set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
+
 # Add googletest directly to our build. This defines
 # the gtest and gtest_main targets.
 add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src

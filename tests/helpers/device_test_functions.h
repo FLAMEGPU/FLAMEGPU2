@@ -1,5 +1,5 @@
-#ifndef TESTSV2_HELPERS_DEVICE_TEST_FUNCTIONS_H_
-#define TESTSV2_HELPERS_DEVICE_TEST_FUNCTIONS_H_
+#ifndef TESTS_HELPERS_DEVICE_TEST_FUNCTIONS_H_
+#define TESTS_HELPERS_DEVICE_TEST_FUNCTIONS_H_
 
 #include "flamegpu/flame_api.h"
 
@@ -19,4 +19,4 @@ void attach_output_func(AgentFunctionDescription& func);
 void attach_random1_func(AgentFunctionDescription *const func);
 void attach_random2_func(AgentFunctionDescription *const func);
 
-#endif  // TESTSV2_HELPERS_DEVICE_TEST_FUNCTIONS_H_
+#endif  // TESTS_HELPERS_DEVICE_TEST_FUNCTIONS_H_
