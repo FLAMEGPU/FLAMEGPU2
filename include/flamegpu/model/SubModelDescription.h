@@ -8,7 +8,7 @@
 
 #include "ModelDescription.h"
 
-//TODO:
+// TODO:
 class FLAMEGPU_HOST_API{};
 enum FLAME_GPU_SUBMODEL_EXIT_STATUS { CONTINUE, EXIT };
 typedef FLAME_GPU_SUBMODEL_EXIT_STATUS(*FLAMEGPU_SUBMODEL_EXIT_FUNCTION_POINTER)(FLAMEGPU_HOST_API *api);
@@ -27,21 +27,18 @@ FLAME_GPU_SUBMODEL_EXIT_STATUS funcName ## _impl(FLAMEGPU_HOST_API* FLAMEGPU)
  * @issue Unclear whether this should be an optional member to ModelDescription
  *     or a separate object either that pairs-with/encapsulates the ModelDescription
  */
-class SubModelImports
-{
+class SubModelImports {
  public:
     typedef std::map<const std::string, std::set<const std::string>> SubAgents;
     typedef std::map<const std::string, std::set<const std::string>> SubMessages;
-    //TODO: typedef std::set<const std::string> SubEnvironmentConstants;
+    // TODO: typedef std::set<const std::string> SubEnvironmentConstants;
 
     typedef std::pair<const std::string, std::set<const std::string>> SubAgent;
     typedef std::pair<const std::string, std::set<const std::string>> SubMessage;
-    //TODO: std::string SubEnvironmentConstant;
+    // TODO: std::string SubEnvironmentConstant;
 
-    SubModelImports(const ModelDescription &model)
-        : m_model(model)
-    {
-
+    explicit SubModelImports(const ModelDescription &model)
+        : m_model(model) {
     }
     /**
      * Mark one of the model's agents as having imported variables
@@ -62,18 +59,18 @@ class SubModelImports
                     if (parent_agent_var != parent_agent_vars.end())
                         throw InvalidAgentVar();
                 }
-            }
-            else
+            } else {
                 throw InvalidCudaAgent();
+            }
         }
 
         // If we got this far, it validated!
         const auto &agentImport = m_agentImports.find(name);
         if (agentImport != m_agentImports.end()) {
-            //Merge with existing SubAgent
+            // Merge with existing SubAgent
             agentImport->second.insert(variable_names.begin(), variable_names.end());
         } else {
-            //New SubAgent
+            // New SubAgent
             m_agentImports.insert({ name, variable_names });
         }
     }
@@ -96,28 +93,27 @@ class SubModelImports
                     if (parent_message_var != parent_message_vars.end())
                         throw InvalidMessageVar();
                 }
-            }
-            else
+            } else {
                 throw InvalidCudaMessage();
+            }
         }
 
-        //TODO: Validate that model does not write to the messages??
+        // TODO: Validate that model does not write to the messages??
 
         // If we got this far, it validated!
         const auto &messageImport = m_messageImports.find(name);
         if (messageImport != m_messageImports.end()) {
-            //Merge with existing SubAgent
+            // Merge with existing SubAgent
             messageImport->second.insert(variable_names.begin(), variable_names.end());
-        }
-        else {
-            //New SubAgent
+        } else {
+            // New SubAgent
             m_messageImports.insert({ name, variable_names });
         }
     }
-    //TODO: void addEnvironmentConstantImport(const std::string &name) { }
+    // TODO: void addEnvironmentConstantImport(const std::string &name) { }
 
-    //TODO: Utility methods, add all of an agent/message's variables
-    //TODO: Utility methods, add agent/message's variables individually
+    // TODO: Utility methods, add all of an agent/message's variables
+    // TODO: Utility methods, add agent/message's variables individually
     /**
     * Name of the SubModelExitConditionFunction (Step function with bool return)
     */
@@ -138,17 +134,17 @@ class SubModelImports
             const AgentMap &parent_agents = m_model.getAgentMap();
             for (auto &&s_agent : m_agentImports) {
                 const auto &parent_agent = parent_agents.find(s_agent.first);
-                if(parent_agent != parent_agents.end()) {
+                if (parent_agent != parent_agents.end()) {
                     // SubAgent exists!
                     const MemoryMap &parent_agent_vars = parent_agent->second.getMemoryMap();
                     for (auto &&s_agent_var : s_agent.second) {
                         const auto &parent_agent_var = parent_agent_vars.find(s_agent_var);
                         if (parent_agent_var != parent_agent_vars.end())
-                            errCount++; //SubAgentVar missing!
+                            errCount++;  // SubAgentVar missing!
                     }
+                } else {
+                    errCount++;  // SubAgent missing!
                 }
-                else
-                    errCount++;  //SubAgent missing!
             }
         }
         {
@@ -162,18 +158,18 @@ class SubModelImports
                     for (auto &&s_message_var : s_message.second) {
                         const auto &parent_message_var = parent_message_vars.find(s_message_var);
                         if (parent_message_var != parent_message_vars.end())
-                            errCount++; //SubMessageVar missing!
+                            errCount++;  // SubMessageVar missing!
                     }
+                } else {
+                    errCount++;  // SubMessage missing!
                 }
-                else
-                    errCount++;  //SubMessage missing!
             }
         }
         {
             // SubEnvironmentConstants
-            //TODO: EnvConstants don't yet exist
+            // TODO: EnvConstants don't yet exist
         }
-        return errCount==0;
+        return errCount == 0;
     }
     /**
      * The model which this class describes imports for
@@ -190,11 +186,11 @@ class SubModelImports
     /**
      * List of importable environment constants
      */
-    //TODO: SubEnvironmentConstants m_environmentConstantImports;
+    // TODO: SubEnvironmentConstants m_environmentConstantImports;
     /**
      * Pointer to the submodel exit function executed to check whether to exit
      */
     FLAMEGPU_SUBMODEL_EXIT_FUNCTION_POINTER *m_exitCondition = nullptr;
 };
 
-#endif // INCLUDE_FLAMEGPU_MODEL_SUBMODELDESCRIPTION_H_
+#endif  // INCLUDE_FLAMEGPU_MODEL_SUBMODELDESCRIPTION_H_
