@@ -20,6 +20,7 @@
 #include "flamegpu/gpu/CUDAAgent.h"
 #include "flamegpu/gpu/CUDAMessage.h"
 #include "flamegpu/runtime/cuRVE/cuRVEInstance.h"  // @todo move to externals
+#include "flamegpu/runtime/flamegpu_host_api.h"
 
 // forward declare classes from other modules
 class ModelDescription;
@@ -43,7 +44,10 @@ class CUDAAgentModel {
     void init(void);
 
     // TODO: Is this needed? Probably not as it is the same as simulate. Do however require a SimulateN() for simulate a number of iterations.
-    void step(const Simulation& sim);
+    /**
+     * @return Returns False if an exit condition has requested exit
+     */
+    bool step(const Simulation& sim);
 
     void simulate(const Simulation& sim);
 
@@ -56,6 +60,10 @@ class CUDAAgentModel {
     cuRVEInstance &curve;
 
     CUDAMessageMap message_map;
+    /**
+     * One instance of host api is used for entire CUDA model
+     */
+    FLAMEGPU_HOST_API host_api;
 };
 
 #endif  // INCLUDE_FLAMEGPU_GPU_CUDAAGENTMODEL_H_
