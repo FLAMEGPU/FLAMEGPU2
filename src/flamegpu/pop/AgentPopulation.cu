@@ -15,6 +15,9 @@
 #include "flamegpu/pop/AgentInstance.h"
 #include "flamegpu/model/AgentDescription.h"
 
+
+const unsigned int AgentPopulation::DEFAULT_POPULATION_SIZE = 10;  // 1024
+
 AgentPopulation::AgentPopulation(const AgentDescription &agent_description, unsigned int initial_size):
     agent(agent_description),
     states_map(),

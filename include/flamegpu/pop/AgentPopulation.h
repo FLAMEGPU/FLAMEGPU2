@@ -22,13 +22,12 @@
 // forward declarations
 class AgentDescription;
 
-#define DEFAULT_POPULATION_SIZE 10  // 1024
-
 typedef std::map<const std::string, std::unique_ptr<AgentStateMemory>> AgentStatesMap;    // key is concat of agent and state name!
 typedef std::pair<const std::string, std::unique_ptr<AgentStateMemory>> AgentStatesMapPair;
 
 class AgentPopulation {
  public:
+    static const unsigned int DEFAULT_POPULATION_SIZE;
     explicit AgentPopulation(const AgentDescription &agent_description, unsigned int initial_size = DEFAULT_POPULATION_SIZE);
 
     virtual ~AgentPopulation();
