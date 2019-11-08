@@ -60,7 +60,6 @@ endif()
 # Add the tests directory (if required)
 if(BUILD_TESTS)
     add_subdirectory(tests)
-    add_subdirectory(testsv2)
 endif()
 
 # Put all_lint within Lint filter
