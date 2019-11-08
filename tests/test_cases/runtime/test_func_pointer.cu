@@ -16,6 +16,11 @@
 #ifndef TESTS_TEST_CASES_RUNTIME_TEST_FUNC_POINTER_H_
 #define TESTS_TEST_CASES_RUNTIME_TEST_FUNC_POINTER_H_
 
+
+#include "gtest/gtest.h"
+
+#include "helpers/common.h"
+
 // include all host API classes (one from each module)
 
 // FLAMEGPU_AGENT_FUNCTION(input_func);

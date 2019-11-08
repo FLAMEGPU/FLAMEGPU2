@@ -6,7 +6,7 @@ The Code is currently under active development and should **not be used** until 
 
 ### Continuous Integration
 
-Continuous integration is provided by Travis (Linux) and windows (AppVeyor). This performs only build tests and the virtual machines do not support executing the Boost unit tests. Each build has a script which is required to install the CUDA toolkit on the VM worker node. See the scripts folder for more details.
+Continuous integration is provided by Travis (Linux) and windows (AppVeyor). This performs only build tests and the virtual machines do not support executing the unit tests. Each build has a script which is required to install the CUDA toolkit on the VM worker node. See the scripts folder for more details.
 
 #### Current Master Branch Build Status
 
@@ -33,7 +33,7 @@ Only documentation can be built without the required dependencies (however Doxyg
 #### Optional
 * [cpplint](https://github.com/cpplint/cpplint): Required for linting code
 * [Doxygen](http://www.doxygen.nl/): Required for building documentation
-* [Boost](https://www.boost.org/) >= 1.54 : Required for building tests
+* [git](https://git-scm.com/): Required by CMake for preparing GoogleTest, to build the test suite
 
 ### Building FLAME GPU 2
 
@@ -104,7 +104,6 @@ cmake ..
 
 ##### Testing
 
-If you wish to build the unit tests, [boost](https://www.boost.org/) must be available on your system. 
 
 The test suite can be built from the root directory using `-DBUILD_TEST=ON`:
 
@@ -114,7 +113,9 @@ cmake .. -DBUILD_TEST=ON
 make
 ```
 
-*On Windows it is also necessary to set the `BOOST_ROOT` environment variable to assist CMake in finding boost.*
+The first time CMake is configured with `-DBUILD_TEST=ON` an internet connection is required, as [GoogleTest](https://github.com/google/googletest) is downloaded and built. 
+Subsequent reconfigures will attempt to update this copy, but will continue if updating fails.
+Automatic updating of GoogleTest can be disabled by passing `-DBUILD_TEST=OFF`.
 
 ##### Documentation
 
