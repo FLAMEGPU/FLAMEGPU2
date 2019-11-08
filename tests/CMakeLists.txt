@@ -6,25 +6,40 @@ cmake_minimum_required(VERSION VERSION 3.12 FATAL_ERROR)
 #enable_testing()
 
 # START Download & Build GoogleTest
-configure_file(CMakeLists.txt.in googletest-download/CMakeLists.txt)
-execute_process(
-    COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
-    RESULT_VARIABLE result
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download
-    )
-
-if (result)
-    message(FATAL_ERROR "CMake step for googletest failed: ${result}")
-endif()
-execute_process(
+MACRO (download_gtest)
+    configure_file(CMakeLists.txt.in googletest-download/CMakeLists.txt)
+    execute_process(
+        COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
+        RESULT_VARIABLE result
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download
+        )
+    if (result)
+        message(WARNING 
+                "CMake step for googletest failed: ${result}\n")
+    endif()
+    execute_process(
     COMMAND ${CMAKE_COMMAND} --build .
     RESULT_VARIABLE result
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download
     )
 
 if (result)
-    message(FATAL_ERROR "Build step for googletest failed: ${result}")
+    message(WARNING 
+            "Build step for googletest-build failed: ${result}\n"
+            "Attempting to continue\n"
+            "You may want to disable BUILD_TESTS")
 endif()
+ENDMACRO()
+
+IF(NOT EXISTS ${CMAKE_CURRENT_BINARY_DIR}/googletest-src)
+    download_gtest()
+    # Give option to disable trying to update after first run
+    set(UPDATE_GTEST ON CACHE BOOL "Update GTest from Git")
+ENDIF()
+IF(UPDATE_GTEST)
+    download_gtest()
+ENDIF()
+
 # Prevent overriding the parent project's compiler/linker
 # settings on Windows
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
