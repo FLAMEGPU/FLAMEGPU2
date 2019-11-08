@@ -62,14 +62,12 @@ class FLAMEGPU_HOST_AGENT_API;
 class FLAMEGPU_HOST_API {
     friend class FLAMEGPU_HOST_AGENT_API;
  public:
-    FLAMEGPU_HOST_API(CUDAAgentModel &_agentModel)
+    explicit FLAMEGPU_HOST_API(CUDAAgentModel &_agentModel)
         :agentModel(_agentModel),
         d_cub_temp(nullptr),
         d_cub_temp_size(0),
         d_output_space(nullptr),
-        d_output_space_size(0)
-    {
-        
+        d_output_space_size(0) {
     }
     /**
      * Returns methods that work on all agents of a certain type
@@ -81,7 +79,7 @@ class FLAMEGPU_HOST_API {
     FLAMEGPU_HOST_AGENT_API agent(const std::string &agent_name, const std::string &stateName);
     // const HostRandom;
 
-private:
+ private:
     CUDAAgentModel &agentModel;
     void *d_cub_temp;
     size_t d_cub_temp_size;
