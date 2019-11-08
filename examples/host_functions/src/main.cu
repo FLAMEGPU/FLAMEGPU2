@@ -17,14 +17,16 @@ FLAMEGPU_AGENT_FUNCTION(device_function) {
     return ALIVE;
 }
 FLAMEGPU_INIT_FUNCTION(init_function) {
-    printf("Init Function!\n");
+    float min_a = FLAMEGPU->agent("agent").min<float>("x");
+    printf("Init Function! (Min: %g)\n", min_a);
 }
 FLAMEGPU_STEP_FUNCTION(step_function) {
     int sum_a = FLAMEGPU->agent("agent").sum<int>("a");
-    printf("Step Function!: %d\n", sum_a);
+    printf("Step Function! (Sum: %d)\n", sum_a);
 }
 FLAMEGPU_EXIT_FUNCTION(exit_function) {
-    printf("Exit Function!\n");
+    float max_a = FLAMEGPU->agent("agent").max<float>("x");
+    printf("Exit Function! (Max: %g)\n", max_a);
 }
 FLAMEGPU_HOST_FUNCTION(host_function) {
     printf("Host Function!\n");
@@ -58,7 +60,7 @@ int main(void) {
         AgentPopulation population(agent, AGENT_COUNT);
         for (unsigned int i = 0; i < AGENT_COUNT; i++) {
             AgentInstance instance = population.getNextInstance();
-            instance.setVariable<float>("x", i*0.1f);
+            instance.setVariable<float>("x", i);
             instance.setVariable<int>("a", 1);
         }
     // }
@@ -101,8 +103,6 @@ int main(void) {
      */
     CUDAAgentModel cuda_model(flame_model);
     cuda_model.setInitialPopulationData(population);
-    cuda_model.simulate(simulation);
-
     cuda_model.simulate(simulation);
 
     cuda_model.getPopulationData(population);
