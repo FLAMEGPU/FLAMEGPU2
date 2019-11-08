@@ -136,7 +136,7 @@ TEST(MessageTest, MessageFunctionCheck) {
      * @brief      Checks the message name
      * This is to validate the predicate value. The test should pass.
      */
-    EXPECT_EQ(output_location.getMessageName(, "location");
+    EXPECT_EQ(output_location.getMessageName(), "location");
 
 
     /**
