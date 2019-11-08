@@ -26,7 +26,7 @@ class FLAMEGPU_DEVICE_API;  // Forward declaration (class defined below)
 enum FLAME_GPU_AGENT_STATUS { ALIVE, DEAD };
 
 /**
- * @brief FLAMEGPU function pointer definition
+ * @brief FLAMEGPU agent function pointer definition, this runs on the device
  */
 typedef FLAME_GPU_AGENT_STATUS(*FLAMEGPU_AGENT_FUNCTION_POINTER)(FLAMEGPU_DEVICE_API *api);
 
