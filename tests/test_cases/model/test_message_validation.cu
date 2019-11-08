@@ -15,17 +15,19 @@
 #include <string>
 #include <utility>
 
-#include "flamegpu/flame_api.h"
+#include "gtest/gtest.h"
 
-BOOST_AUTO_TEST_SUITE(MessageTest)  // name of the test suite is MessageTest
+#include "helpers/common.h"
+
+#include "flamegpu/flame_api.h"
 
 /**
  * @brief      To verify the correctness of message name, size, and type.
  * To test the case separately, run: make run_BOOST_TEST TSuite=MessageTest/MessageCheck
  *
 */
-BOOST_AUTO_TEST_CASE(MessageCheck) {
-    BOOST_TEST_MESSAGE("\nTesting Message Name and Size, Type, and Number ..");
+TEST(MessageTest, MessageCheck) {
+    GTEST_COUT << "Testing Message Name and Size, Type, and Number .." << std::endl;
 
     MessageDescription location_message("location");
 
@@ -33,13 +35,13 @@ BOOST_AUTO_TEST_CASE(MessageCheck) {
      * @brief      Checks the number of message name
      * This is to validate the predicate value. The test should pass.
      */
-    BOOST_CHECK(location_message.getName() == "location");
+    EXPECT_EQ(location_message.getName(), "location");
 
    /**
      * @brief      Checks the number of message memory size
      * This is to validate the predicate value. The test should pass.
      */
-    BOOST_CHECK(location_message.getMemorySize()== 0);
+    EXPECT_EQ(location_message.getMemorySize(), 0llu);
 
 
     location_message.addVariable<float>("x");
@@ -49,30 +51,30 @@ BOOST_AUTO_TEST_CASE(MessageCheck) {
      * @brief      Checks the number of message variables
      * This is to validate the predicate value. The test should pass.
      */
-    BOOST_CHECK(location_message.getNumberMessageVariables()== 2);
+    EXPECT_EQ(location_message.getNumberMessageVariables(), 2u);
 
    /**
      * @brief      Checks the message variable size
      * This is to validate the predicate value. The test should pass.
      */
-    BOOST_CHECK(location_message.getMessageVariableSize("x")== 4);
+    EXPECT_EQ(location_message.getMessageVariableSize("x"), 4llu);
 
    /**
      * @brief      Checks the message variable type
      * This is to validate the predicate value. The test should pass.
      */
-    BOOST_CHECK(location_message.getVariableType("x")== typeid(float));
+    EXPECT_EQ(location_message.getVariableType("x"), typeid(float));
 
 
     /**
     * @brief      Checks the mapped message variables
-    * @todo change the boost test message style to boost_check
+    * @todo change the boost test message style to EXPECT_TRUE
     */
     const VariableMap &mem = location_message.getVariableMap();
     for (const VariableMapPair& mm : mem) {
         // get the variable name
         std::string var_name = mm.first;
-        BOOST_TEST_MESSAGE("variable names:" << var_name);
+        GTEST_COUT << "variable names:" << var_name << std::endl;
     }
 
    /**
@@ -81,7 +83,7 @@ BOOST_AUTO_TEST_CASE(MessageCheck) {
      * statement and checks if it throws the exception or not. The second argument
      * is the expected exception.
      */
-    BOOST_CHECK_THROW(location_message.getMessageVariableSize("z"), InvalidMessageVar);  // expecting an error
+    EXPECT_THROW(location_message.getMessageVariableSize("z"), InvalidMessageVar);  // expecting an error
 }
 
 
@@ -90,8 +92,8 @@ BOOST_AUTO_TEST_CASE(MessageCheck) {
  * To test the case separately, run: make run_BOOST_TEST TSuite=MessageTest/MessageFunctionCheck
  *
 */
-BOOST_AUTO_TEST_CASE(MessageFunctionCheck) {
-    BOOST_TEST_MESSAGE("\nTesting Function and Message Name ..");
+TEST(MessageTest, MessageFunctionCheck) {
+    GTEST_COUT << "Testing Function and Message Name .." << std::endl;
 
     ModelDescription flame_model("circles_model");
 
@@ -114,27 +116,27 @@ BOOST_AUTO_TEST_CASE(MessageFunctionCheck) {
      * @brief      Checks the name of agent function description
      * This is to validate the predicate value. The test should pass.
      */
-    BOOST_CHECK(output_data.getName() == "output_data");
+    EXPECT_EQ(output_data.getName(), "output_data");
 
    /**
      * @brief      Checks whether the agent function reads an input message
      * This is to validate the predicate value. The test should pass.
      */
-    BOOST_CHECK(output_data.hasInputMessage() == false);
-    BOOST_CHECK(move.hasInputMessage() == false);
+    EXPECT_FALSE(output_data.hasInputMessage());
+    EXPECT_FALSE(move.hasInputMessage());
 
    /**
      * @brief      Checks whether the agent function outputs a message
      * This is to validate the predicate value. The test should pass.
      */
-    BOOST_CHECK(output_data.hasOutputMessage() == true);
-    BOOST_CHECK(move.hasOutputMessage() == false);
+    EXPECT_TRUE(output_data.hasOutputMessage());
+    EXPECT_FALSE(move.hasOutputMessage());
 
    /**
      * @brief      Checks the message name
      * This is to validate the predicate value. The test should pass.
      */
-    BOOST_CHECK(output_location.getMessageName() == "location");
+    EXPECT_EQ(output_location.getMessageName(), "location");
 
 
     /**
@@ -143,7 +145,7 @@ BOOST_AUTO_TEST_CASE(MessageFunctionCheck) {
      * statement and checks if it throws the exception or not. The second argument
      * is the expected exception.
      */
-    BOOST_CHECK_THROW(flame_model.getMessageDescription("error"), InvalidMessageVar);  // expecting an error
+    EXPECT_THROW(flame_model.getMessageDescription("error"), InvalidMessageVar);  // expecting an error
 }
 
 // TODO: Check that we can output (single) messages during simulation without error
@@ -156,6 +158,5 @@ BOOST_AUTO_TEST_CASE(MessageFunctionCheck) {
 
 // TODO: More advanced input of messages to check the values are correct
 
-BOOST_AUTO_TEST_SUITE_END()
 
 #endif  // TESTS_TEST_CASES_MODEL_TEST_MESSAGE_VALIDATION_H_

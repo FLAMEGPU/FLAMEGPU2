@@ -12,14 +12,16 @@
 #ifndef TESTS_TEST_CASES_RUNTIME_TEST_AGENT_RANDOM_H_
 #define TESTS_TEST_CASES_RUNTIME_TEST_AGENT_RANDOM_H_
 
+
 #include <string>
 #include <tuple>
 #include <vector>
 
+#include "gtest/gtest.h"
+
 #include "flamegpu/flame_api.h"
 #include "helpers/device_test_functions.h"
-
-BOOST_AUTO_TEST_SUITE(AgentRandomTest)  // name of the test suite is SimTest
+#include "helpers/common.h"
 
 /**
  * @brief      To verify the correctness of agent random
@@ -28,11 +30,10 @@ BOOST_AUTO_TEST_SUITE(AgentRandomTest)  // name of the test suite is SimTest
 */
 
 
-BOOST_AUTO_TEST_CASE(AgentRandomCheck) {
-    BOOST_TEST_MESSAGE("\nTesting AgentRandom and DeviceRandomArray Name ..");
+TEST(AgentRandomTest, AgentRandomCheck) {
+    GTEST_COUT << "Testing AgentRandom and DeviceRandomArray Name .." << std::endl;
 
     const unsigned int AGENT_COUNT = 5;
-
 
     ModelDescription model("random_model");
     AgentDescription agent("agent");
@@ -96,16 +97,16 @@ BOOST_AUTO_TEST_CASE(AgentRandomCheck) {
             results1.push_back({a1, b1, c1});
             if (i != 0) {
                 // Different agents get different random numbers
-                BOOST_CHECK(a1 != a2);
-                BOOST_CHECK(b1 != b2);
-                BOOST_CHECK(c1 != c2);
+                EXPECT_TRUE(a1 != a2);
+                EXPECT_TRUE(b1 != b2);
+                EXPECT_TRUE(c1 != c2);
             }
             // Multiple calls get multiple random numbers
-            BOOST_CHECK(a1 != b1);
-            BOOST_CHECK(b1 != c1);
-            BOOST_CHECK(a1 != c1);
+            EXPECT_TRUE(a1 != b1);
+            EXPECT_TRUE(b1 != c1);
+            EXPECT_TRUE(a1 != c1);
         }
-        BOOST_CHECK(results1.size() == AGENT_COUNT);
+        EXPECT_TRUE(results1.size() == AGENT_COUNT);
     }
     {
         /**
@@ -127,11 +128,11 @@ BOOST_AUTO_TEST_CASE(AgentRandomCheck) {
                 instance.getVariable<float>("c")
             });
         }
-        BOOST_CHECK(results2.size() == AGENT_COUNT);
+        EXPECT_TRUE(results2.size() == AGENT_COUNT);
 
         for (unsigned int i = 0; i < results1.size(); ++i) {
             // Different seed produces different results
-            BOOST_CHECK(results1[i] != results2[i]);
+            EXPECT_TRUE(results1[i] != results2[i]);
         }
     }
     {
@@ -155,18 +156,18 @@ BOOST_AUTO_TEST_CASE(AgentRandomCheck) {
                 instance.getVariable<float>("c")
             });
         }
-        BOOST_CHECK(results2.size() == AGENT_COUNT);
+        EXPECT_TRUE(results2.size() == AGENT_COUNT);
 
         for (unsigned int i = 0; i < results1.size(); ++i) {
             // Same seed produces different results
-            BOOST_CHECK(results1[i] == results2[i]);
+            EXPECT_TRUE(results1[i] == results2[i]);
         }
     }
 }
 
 
-BOOST_AUTO_TEST_CASE(AgentRandomFunctionsNoExcept) {
-    BOOST_TEST_MESSAGE("\nTesting AgentRandom functions all work");
+TEST(AgentRandomTest, AgentRandomFunctionsNoExcept) {
+    GTEST_COUT << "Testing AgentRandom functions all work" << std::endl;
 
     const unsigned int AGENT_COUNT = 5;
 
@@ -219,12 +220,12 @@ BOOST_AUTO_TEST_CASE(AgentRandomFunctionsNoExcept) {
 
     CUDAAgentModel cuda_model(model);
     cuda_model.setInitialPopulationData(population);
-    BOOST_CHECK_NO_THROW(cuda_model.simulate(simulation));
+    ASSERT_NO_THROW(cuda_model.simulate(simulation));
     // Success if we get this far without an exception being thrown.
 }
 
-BOOST_AUTO_TEST_CASE(AgentRandomArrayResizeNoExcept) {
-    BOOST_TEST_MESSAGE("\nTesting d_random scales up/down without breaking");
+TEST(AgentRandomTest, AgentRandomArrayResizeNoExcept) {
+    GTEST_COUT << "Testing d_random scales up / down without breaking" << std::endl;
 
     std::vector<int> AGENT_COUNTS = {1024, 512 * 1024, 1024, 1024 * 1024};
 
@@ -232,7 +233,5 @@ BOOST_AUTO_TEST_CASE(AgentRandomArrayResizeNoExcept) {
 
     // Success if we get this far without an exception being thrown.
 }
-
-BOOST_AUTO_TEST_SUITE_END()
 
 #endif  // TESTS_TEST_CASES_RUNTIME_TEST_AGENT_RANDOM_H_

@@ -14,22 +14,24 @@
 
 #include <utility>
 
-#include "flamegpu/flame_api.h"
+#include "gtest/gtest.h"
 
-BOOST_AUTO_TEST_SUITE(ModelDescTest)  // name of the test suite is modelDescTest
+#include "helpers/common.h"
+
+#include "flamegpu/flame_api.h"
 
 /**
  * @brief      To verify the correctness of agent name and size.
  * To test the case separately, run: make run_BOOST_TEST TSuite=ModelDescTest/AgentCheck
  *
 */
-BOOST_AUTO_TEST_CASE(AgentCheck) {
-    BOOST_TEST_MESSAGE("\nTesting Agent Name and Size ..");
+TEST(ModelDescTest, AgentCheck) {
+    GTEST_COUT << "Testing Agent Name and Size .." << std::endl;
 
     AgentDescription circle_agent("circle");
 
-    BOOST_CHECK(circle_agent.getName() == "circle");
-    BOOST_CHECK(circle_agent.getMemorySize()== 0);
+    EXPECT_EQ(circle_agent.getName(), "circle");
+    EXPECT_EQ(circle_agent.getMemorySize(), 0llu);
 }
 
 /**
@@ -37,8 +39,8 @@ BOOST_AUTO_TEST_CASE(AgentCheck) {
  * To test the case separately, run: make run_BOOST_TEST TSuite=ModelDescTest/AgentVarCheck
  *
 */
-BOOST_AUTO_TEST_CASE(AgentVarCheck) {
-    BOOST_TEST_MESSAGE("Testing Agent Variable Size, Type, and Number ..");
+TEST(ModelDescTest, AgentVarCheck) {
+    GTEST_COUT << "Testing Agent Variable Size, Type, and Number .." << std::endl;
     AgentDescription circle_agent("circle");
     circle_agent.addAgentVariable<float>("x");
 
@@ -46,19 +48,19 @@ BOOST_AUTO_TEST_CASE(AgentVarCheck) {
      * @brief      Checks the number of agent variables
      * This is to validate the predicate value. The test should pass.
      */
-    BOOST_CHECK(circle_agent.getNumberAgentVariables() == 1);
+    EXPECT_EQ(circle_agent.getNumberAgentVariables(), 1u);
 
    /**
      * @brief      Checks the agent variable size
      * This is to validate the predicate value. The test should pass.
      */
-    BOOST_CHECK(circle_agent.getAgentVariableSize("x") == 4);
+    EXPECT_EQ(circle_agent.getAgentVariableSize("x"), 4llu);
 
    /**
      * @brief      Checks the agent variable type
      * This is to validate the predicate value. The test should pass.
      */
-    BOOST_CHECK(circle_agent.getVariableType("x") == typeid(float));
+    EXPECT_EQ(circle_agent.getVariableType("x"), typeid(float));
 
     /**
      * @brief      Checks if the agent variable exists
@@ -66,7 +68,7 @@ BOOST_AUTO_TEST_CASE(AgentVarCheck) {
      * statement and checks if it throws the exception or not. The second argument
      * is the expected exception.
      */
-    BOOST_CHECK_THROW(circle_agent.getAgentVariableSize("y"), InvalidAgentVar);  // expecting an error
+    EXPECT_THROW(circle_agent.getAgentVariableSize("y"), InvalidAgentVar);  // expecting an error
 }
 
 
@@ -75,8 +77,8 @@ BOOST_AUTO_TEST_CASE(AgentVarCheck) {
  * To test the case separately, run: make run_BOOST_TEST TSuite=ModelDescTest/MessageFunctionCheck
  *
 */
-BOOST_AUTO_TEST_CASE(MessageFunctionCheck) {
-    BOOST_TEST_MESSAGE("\nTesting Function and Message Name ..");
+TEST(ModelDescTest, MessageFunctionCheck) {
+    GTEST_COUT << "Testing Function and Message Name .." << std::endl;
 
     ModelDescription flame_model("circles_model");
 
@@ -95,31 +97,31 @@ BOOST_AUTO_TEST_CASE(MessageFunctionCheck) {
      * @brief      Checks the name of agent function description
      * This is to validate the predicate value. The test should pass.
      */
-    BOOST_CHECK(output_data.getName() == "output_data");
+    EXPECT_EQ(output_data.getName(), "output_data");
 
    /**
      * @brief      Checks whether the agent function exists or not
      * This is to validate the predicate value. The test should pass.
      */
-    BOOST_CHECK(circle_agent.hasAgentFunction("output_data") == true);
+    EXPECT_TRUE(circle_agent.hasAgentFunction("output_data"));
 
    /**
      * @brief      Checks the name of the initial state
      * This is to validate the predicate value. The test should pass.
      */
-    BOOST_CHECK(output_data.getInitialState() == "default");
+    EXPECT_EQ(output_data.getInitialState(), "default");
 
    /**
      * @brief      Checks the name of model description
      * This is to validate the predicate value. The test should pass.
      */
-    BOOST_CHECK(flame_model.getName() == "circles_model");
+    EXPECT_EQ(flame_model.getName(), "circles_model");
 
    /**
      * @brief      Checks whether the agent function exists or not
      * This is to validate the predicate value. The test should pass.
      */
-    BOOST_CHECK(flame_model.getAgentDescription("circle").hasAgentFunction("move") == true);
+    EXPECT_TRUE(flame_model.getAgentDescription("circle").hasAgentFunction("move"));
 
     /**
      * @brief      Checks if the agent description name exists
@@ -127,8 +129,7 @@ BOOST_AUTO_TEST_CASE(MessageFunctionCheck) {
      * statement and checks if it throws the exception or not. The second argument
      * is the expected exception.
      */
-    BOOST_CHECK_THROW(flame_model.getAgentDescription("error"), InvalidAgentVar);  // expecting an error
+    EXPECT_THROW(flame_model.getAgentDescription("error"), InvalidAgentVar);  // expecting an error
 }
-BOOST_AUTO_TEST_SUITE_END()
 
 #endif  // TESTS_TEST_CASES_MODEL_TEST_MODEL_VALIDATION_H_

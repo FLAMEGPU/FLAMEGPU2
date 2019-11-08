@@ -12,17 +12,19 @@
  * @bug        No known bugs
  */
 
+#include "gtest/gtest.h"
+
+#include "helpers/common.h"
+
 #include "flamegpu/flame_api.h"
-
-
-BOOST_AUTO_TEST_SUITE(PopTest)  // name of the test suite is PopTest
 
 /**
  * @brief      To verify the correctness of agent population name and exception handler
  * To test the case separately, run: make run_BOOST_TEST TSuite=PopTest/PopulationNameCheck
  * This test should pass by throwing the correct exception.
 */
-BOOST_AUTO_TEST_CASE(PopulationNameCheck) {
+TEST(PopTest, PopulationNameCheck) {
+    const int POPULATION_SIZE = 100;
     ModelDescription flame_model("circles_model");
     AgentDescription circle_agent("circle");
 
@@ -30,16 +32,16 @@ BOOST_AUTO_TEST_CASE(PopulationNameCheck) {
     circle_agent.addAgentVariable<float>("y");
 
     flame_model.addAgent(circle_agent);
-    AgentPopulation population(circle_agent);
-    for (int i=0; i< 100; i++) {
+    AgentPopulation population(circle_agent, POPULATION_SIZE);
+    for (int i=0; i< POPULATION_SIZE; i++) {
         AgentInstance instance = population.getNextInstance("default");
         instance.setVariable<float>("x", i*0.1f);
     }
 
-    BOOST_TEST_MESSAGE("\nTesting Agent population Name ..");
-    BOOST_CHECK(population.getAgentName() == "circle");
+    GTEST_COUT << "Testing Agent population Name .." << std::endl;
+    EXPECT_EQ(population.getAgentName(), "circle");
     // what do we expect here?default or circle
-    BOOST_CHECK_THROW(population.getStateMemory("circe"), InvalidStateName);  // expecting an error
+    EXPECT_THROW(population.getStateMemory("circe"), InvalidStateName);  // expecting an error
 }
 
 
@@ -50,8 +52,8 @@ BOOST_AUTO_TEST_CASE(PopulationNameCheck) {
  *
  * This test should pass by throwing the correct exception.
 */
-BOOST_AUTO_TEST_CASE(PopulationInstVarCheck1) {
-    BOOST_TEST_MESSAGE("\nTesting Agent population Instance Variable ..");
+TEST(PopTest, PopulationInstVarCheck1) {
+    GTEST_COUT << "Testing Agent population Instance Variable .." << std::endl;
 
     ModelDescription flame_model("circles_model");
     AgentDescription circle_agent("circle");
@@ -69,16 +71,16 @@ BOOST_AUTO_TEST_CASE(PopulationInstVarCheck1) {
     #pragma warning(push)
     #pragma warning(disable : 4244)
 #endif
-    BOOST_CHECK_THROW(instance.setVariable<int>("x", 0.1f), InvalidVarType);
+    EXPECT_THROW(instance.setVariable<int>("x", 0.1f), InvalidVarType);
 #if defined(_MSC_VER)
 #pragma warning(pop)
 #endif
 
     instance.setVariable<float>("x", 0.1f);
 
-    BOOST_CHECK_MESSAGE(instance.getVariable<float>("x") == 0.1f, "Variable is " << instance.getVariable<float>("x") << " and not 0.1f!!");
+    EXPECT_TRUE(instance.getVariable<float>("x") == 0.1f) << "Variable is " << instance.getVariable<float>("x") << " and not 0.1f!!";
 
-    BOOST_CHECK_THROW(instance.getVariable<int>("x"), InvalidVarType);  // expecting an error
+    EXPECT_THROW(instance.getVariable<int>("x"), InvalidVarType);  // expecting an error
 }
 
 /**
@@ -86,8 +88,8 @@ BOOST_AUTO_TEST_CASE(PopulationInstVarCheck1) {
  * ::AgentInstance::getVariable functions by checking the population data
  * To test the case separately, run: make run_BOOST_TEST TSuite=PopTest/PopulationInstVarCheck2
 */
-BOOST_AUTO_TEST_CASE(PopulationInstVarCheck2) {
-    BOOST_TEST_MESSAGE("\nTesting Agent population Instance Variable ..");
+TEST(PopTest, PopulationInstVarCheck2) {
+    GTEST_COUT << "Testing Agent population Instance Variable .." << std::endl;
 
     ModelDescription flame_model("circles_model");
     AgentDescription circle_agent("circle");
@@ -103,7 +105,7 @@ BOOST_AUTO_TEST_CASE(PopulationInstVarCheck2) {
     instance.setVariable<float>("x", 0.1f);
 
 
-    BOOST_CHECK_MESSAGE(instance.getVariable<float>("y") == 0.0f, "Variable is " << instance.getVariable<float>("y") << " and not 0.0f by default!!");
+    EXPECT_TRUE(instance.getVariable<float>("y") == 0.0f) << "Variable is " << instance.getVariable<float>("y") << " and not 0.0f by default!!";
 }
 
 
@@ -114,8 +116,8 @@ BOOST_AUTO_TEST_CASE(PopulationInstVarCheck2) {
  * To test the case separately, run: make run_BOOST_TEST TSuite=PopTest/PopulationInstVarCheck3
  * This test should pass by throwing the correct exception.
 */
-BOOST_AUTO_TEST_CASE(PopulationInstVarCheck3) {
-    BOOST_TEST_MESSAGE("\nTesting Agent population Instance Variable ..");
+TEST(PopTest, PopulationInstVarCheck3) {
+    GTEST_COUT << "Testing Agent population Instance Variable .." << std::endl;
 
     ModelDescription flame_model("circles_model");
     AgentDescription circle_agent("circle");
@@ -130,7 +132,7 @@ BOOST_AUTO_TEST_CASE(PopulationInstVarCheck3) {
     AgentInstance instance = population.getNextInstance("default");
     instance.setVariable<float>("x", 0.1f);
 
-    BOOST_CHECK_THROW(instance.getVariable<float>("z"), InvalidAgentVar);
+    EXPECT_THROW(instance.getVariable<float>("z"), InvalidAgentVar);
 }
 
 /**
@@ -141,8 +143,8 @@ BOOST_AUTO_TEST_CASE(PopulationInstVarCheck3) {
  *  To test the case separately, run: make run_BOOST_TEST TSuite=PopTest/PopulationSizeCheck
  *
 */
-BOOST_AUTO_TEST_CASE(PopulationSizeCheck) {
-    BOOST_TEST_MESSAGE("\nTesting Agent population size set by default ..");
+TEST(PopTest, PopulationSizeCheck) {
+    GTEST_COUT << "Testing Agent population size set by default .." << std::endl;
 
     ModelDescription flame_model("circles_model");
     AgentDescription circle_agent("circle");
@@ -154,7 +156,7 @@ BOOST_AUTO_TEST_CASE(PopulationSizeCheck) {
 
     AgentPopulation population(circle_agent);
 
-    BOOST_CHECK(population.getMaximumStateListCapacity() == 1024);
+    EXPECT_TRUE(population.getMaximumStateListCapacity() == AgentPopulation::DEFAULT_POPULATION_SIZE);
 }
 
 /**
@@ -167,8 +169,8 @@ BOOST_AUTO_TEST_CASE(PopulationSizeCheck) {
  *
  * This test should pass by throwing the correct exception.
 */
-BOOST_AUTO_TEST_CASE(PopulationAddMoreCapacity) {
-    BOOST_TEST_MESSAGE("\nTesting changing the capacity..");
+TEST(PopTest, PopulationAddMoreCapacity) {
+    GTEST_COUT << "Testing changing the capacity.." << std::endl;
 
     ModelDescription flame_model("circles_model");
     AgentDescription circle_agent("circle");
@@ -179,13 +181,13 @@ BOOST_AUTO_TEST_CASE(PopulationAddMoreCapacity) {
     flame_model.addAgent(circle_agent);
 
     AgentPopulation population(circle_agent, 100);
-    BOOST_CHECK(population.getMaximumStateListCapacity() == 100);
+    EXPECT_EQ(population.getMaximumStateListCapacity(), 100u);
 
     population.setStateListCapacity(200);
-    BOOST_CHECK(population.getMaximumStateListCapacity() == 200);
+    EXPECT_EQ(population.getMaximumStateListCapacity(), 200u);
 
     // Catch exception that fails on above call (can't reduce population capacity)
-    BOOST_CHECK_THROW(population.setStateListCapacity(100), InvalidPopulationData);
+    EXPECT_THROW(population.setStateListCapacity(100), InvalidPopulationData);
 }
 
 /**
@@ -195,8 +197,8 @@ BOOST_AUTO_TEST_CASE(PopulationAddMoreCapacity) {
  *
  * This test should pass by throwing the correct exception.
 */
-BOOST_AUTO_TEST_CASE(PopulationOverflowCapacity) {
-    BOOST_TEST_MESSAGE("\nTesting overflowing the capacity of a state list..");
+TEST(PopTest, PopulationOverflowCapacity) {
+    GTEST_COUT << "Testing overflowing the capacity of a state list.." << std::endl;
 
     ModelDescription flame_model("circles_model");
     AgentDescription circle_agent("circle");
@@ -207,7 +209,7 @@ BOOST_AUTO_TEST_CASE(PopulationOverflowCapacity) {
     flame_model.addAgent(circle_agent);
 
     AgentPopulation population(circle_agent, 100);
-    BOOST_CHECK(population.getMaximumStateListCapacity() == 100);
+    EXPECT_EQ(population.getMaximumStateListCapacity(), 100u);
 
     // add 100 instances (no problem)
     for (int i = 0; i< 100; i++)     {
@@ -215,7 +217,7 @@ BOOST_AUTO_TEST_CASE(PopulationOverflowCapacity) {
         instance.setVariable<float>("x", i*0.1f);
     }
     // getNextInstance fails if capacity is too small when for loop creates 101 agents
-    BOOST_CHECK_THROW(population.getNextInstance("default"), InvalidMemoryCapacity);
+    EXPECT_THROW(population.getNextInstance("default"), InvalidMemoryCapacity);
 }
 
 /**
@@ -229,8 +231,8 @@ BOOST_AUTO_TEST_CASE(PopulationOverflowCapacity) {
  *
  * This test should pass by throwing the correct exception.
 */
-BOOST_AUTO_TEST_CASE(PopulationCheckGetInstanceBeyondSize) {
-    BOOST_TEST_MESSAGE("\nTesting getting an instance beyond current size ..");
+TEST(PopTest, PopulationCheckGetInstanceBeyondSize) {
+    GTEST_COUT << "Testing getting an instance beyond current size .." << std::endl;
 
     ModelDescription flame_model("circles_model");
     AgentDescription circle_agent("circle");
@@ -249,7 +251,7 @@ BOOST_AUTO_TEST_CASE(PopulationCheckGetInstanceBeyondSize) {
     instance_s1.setVariable<float>("x", 0.1f);
 
     // check that getInstanceAt should fail if index is less than size
-    BOOST_CHECK_THROW(population.getInstanceAt(1, "default"), InvalidMemoryCapacity);
+    EXPECT_THROW(population.getInstanceAt(1, "default"), InvalidMemoryCapacity);
 }
 
 /**
@@ -257,8 +259,8 @@ BOOST_AUTO_TEST_CASE(PopulationCheckGetInstanceBeyondSize) {
  * To test the case separately, run: make run_BOOST_TEST TSuite=PopTest/PopulationDataValuesMultipleStates
  *
 */
-BOOST_AUTO_TEST_CASE(PopulationDataValuesMultipleStates) {
-    BOOST_TEST_MESSAGE("\nTesting the population data with multiple states ..");
+TEST(PopTest, PopulationDataValuesMultipleStates) {
+    GTEST_COUT << "Testing the population data with multiple states .." << std::endl;
 
     ModelDescription flame_model("circles_model");
     AgentDescription circle_agent("circle");
@@ -285,14 +287,11 @@ BOOST_AUTO_TEST_CASE(PopulationDataValuesMultipleStates) {
     // check values are correct
     for (int i = 0; i< 100; i++) {
         AgentInstance instance_s1 = population.getInstanceAt(i, "s1");
-        BOOST_CHECK(instance_s1.getVariable<int>("id") == i);
+        EXPECT_TRUE(instance_s1.getVariable<int>("id") == i);
 
         AgentInstance instance_s2 = population.getInstanceAt(i, "s2");
-        BOOST_CHECK(instance_s2.getVariable<int>("id") == i + 1000);
+        EXPECT_TRUE(instance_s2.getVariable<int>("id") == i + 1000);
     }
 }
-
-
-BOOST_AUTO_TEST_SUITE_END()
 
 #endif  // TESTS_TEST_CASES_POP_TEST_POP_VALIDATION_H_

@@ -14,11 +14,12 @@
 
 #include <utility>
 
+#include "gtest/gtest.h"
+
 #include "flamegpu/flame_api.h"
 
 #include "helpers/device_test_functions.h"
-
-BOOST_AUTO_TEST_SUITE(SimTest)  // name of the test suite is SimTest
+#include "helpers/common.h"
 
 /**
  * @brief      To verify the correctness of simulation functions
@@ -26,7 +27,7 @@ BOOST_AUTO_TEST_SUITE(SimTest)  // name of the test suite is SimTest
  * This test checks whether functions are executing on device by printing 'Hello'.
  * To test the case separately, run: make run_BOOST_TEST TSuite=SimTest/SimulationFunctionCheck
 */
-BOOST_AUTO_TEST_CASE(SimulationFunctionCheck) {
+TEST(SimTest, SimulationFunctionCheck) {
     ModelDescription flame_model("circles_model");
     AgentDescription circle_agent("circle");
 
@@ -72,7 +73,7 @@ BOOST_AUTO_TEST_CASE(SimulationFunctionCheck) {
      * is the expected exception.
      * To test the case separately, run: make run_BOOST_TEST TSuite=SimTest/SimulationFunctionCheck
      */
-    BOOST_CHECK_THROW(output_layer.addAgentFunction("output_"), InvalidAgentFunc);  // expecting an error
+    EXPECT_THROW(output_layer.addAgentFunction("output_"), InvalidAgentFunc);  // expecting an error
 
     SimulationLayer moveStay_layer(simulation, "move_layer");
     moveStay_layer.addAgentFunction("move");
@@ -80,13 +81,13 @@ BOOST_AUTO_TEST_CASE(SimulationFunctionCheck) {
     simulation.addSimulationLayer(moveStay_layer);
 
 
-    BOOST_TEST_MESSAGE("\nTesting simulation of functions per layers ..");
+    GTEST_COUT << "Testing simulation of functions per layers .." << std::endl;
 
     /**
      * @brief      Checks the number of function layers
      * This is to validate the predicate value. The test should pass.
      */
-    BOOST_CHECK(simulation.getLayerCount() == 2);
+    EXPECT_EQ(simulation.getLayerCount(), 2u);
 
     // for each each simulation layer
     for (unsigned int i = 0; i < simulation.getLayerCount(); i++) {
@@ -95,7 +96,7 @@ BOOST_AUTO_TEST_CASE(SimulationFunctionCheck) {
         // for each function per simulation layer
         for (AgentFunctionDescription func_des : functions) {
             // check functions - printing function name only
-            BOOST_TEST_MESSAGE("Calling agent function "<< func_des.getName() << " at layer " << i << "!\n");
+            GTEST_COUT << "Calling agent function "<< func_des.getName() << " at layer " << i << "!" << std::endl;
         }
     }
 
@@ -109,10 +110,7 @@ BOOST_AUTO_TEST_CASE(SimulationFunctionCheck) {
     /**
      * @todo : may not need this below test
      */
-    BOOST_CHECK(simulation.getModelDescritpion().getName() == "circles_model");
+    EXPECT_EQ(simulation.getModelDescritpion().getName(), "circles_model");
 }
-
-
-BOOST_AUTO_TEST_SUITE_END()
 
 #endif  // TESTS_TEST_CASES_SIM_TEST_SIM_VALIDATION_H_

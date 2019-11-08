@@ -13,10 +13,11 @@
  */
 
 #include "helpers/device_test_functions.h"
+#include "helpers/common.h"
+
+#include "gtest/gtest.h"
 
 #include "flamegpu/flame_api.h"
-
-BOOST_AUTO_TEST_SUITE(GPUTest)  // name of the test suite is GPUTest
 
 /**
  * @brief      To verify the correctness of set and get variable function without
@@ -27,7 +28,7 @@ BOOST_AUTO_TEST_SUITE(GPUTest)  // name of the test suite is GPUTest
  * population data.
  * To test the case separately, run: make run_BOOST_TEST TSuite=GPUTest/GPUMemoryTest
 */
-BOOST_AUTO_TEST_CASE(GPUMemoryTest) {
+TEST(GPUTest, GPUMemoryTest) {
     ModelDescription flame_model("circles_model");
     AgentDescription circle_agent("circle");
 
@@ -47,13 +48,13 @@ BOOST_AUTO_TEST_CASE(GPUMemoryTest) {
 
     cuda_model.getPopulationData(population);
 
-    BOOST_TEST_MESSAGE("\nTesting values copied back from device without simulating any functions ..");
+    GTEST_COUT << "Testing values copied back from device without simulating any functions .." << std::endl;
 
     // check values are the same
     for (int i = 0; i < 10; i++) {
         AgentInstance i1 = population.getInstanceAt(i, "default");
         // use AgentInstance equality operator
-        BOOST_CHECK(i1.getVariable<int>("id") == i);
+        EXPECT_TRUE(i1.getVariable<int>("id") == i);
     }
 }
 
@@ -68,7 +69,7 @@ BOOST_AUTO_TEST_CASE(GPUMemoryTest) {
 *
 * To test the case separately, run: make run_BOOST_TEST TSuite=GPUTest/GPUSimulationTest
 */
-BOOST_AUTO_TEST_CASE(GPUSimulationTest) {
+TEST(GPUTest, GPUSimulationTest) {
     // create  single FLAME GPU model and agent
     ModelDescription flame_model("circles_model");
     AgentDescription circle_agent("circle");
@@ -90,7 +91,7 @@ BOOST_AUTO_TEST_CASE(GPUSimulationTest) {
         instance.setVariable<double>("x", i);
     }
 
-    BOOST_TEST_MESSAGE("\nTesting initial values ..");
+    GTEST_COUT << "Testing initial values .." << std::endl;
 
     Simulation simulation(flame_model);
 
@@ -107,7 +108,7 @@ BOOST_AUTO_TEST_CASE(GPUSimulationTest) {
 
     cuda_model.simulate(simulation);
 
-    BOOST_TEST_MESSAGE("\nTesting values copied back from device after simulating functions ..");
+    GTEST_COUT << "Testing values copied back from device after simulating functions .." << std::endl;
 
     // Re-use the same population to read back the simulation step results
     cuda_model.getPopulationData(population);
@@ -116,7 +117,7 @@ BOOST_AUTO_TEST_CASE(GPUSimulationTest) {
     for (int i = 0; i < 10; i++) {
         AgentInstance i1 = population.getInstanceAt(i, "default");
         // use AgentInstance equality operator
-        BOOST_CHECK(i1.getVariable<double>("x") == i + 2);
+        EXPECT_TRUE(i1.getVariable<double>("x") == i + 2);
     }
 }
 
@@ -128,7 +129,7 @@ BOOST_AUTO_TEST_CASE(GPUSimulationTest) {
  * Note: To observe that the functions are actually executing concurrently requires that you profile the test and observe the kernels in the NVProf profiler.
  * To test the case separately, run: make run_BOOST_TEST TSuite=GPUTest/GPUSimulationTestMultiple
  */
-BOOST_AUTO_TEST_CASE(GPUSimulationTestMultiple) {
+TEST(GPUTest, GPUSimulationTestMultiple) {
     /* Multi agent model */
     ModelDescription flame_model("circles_model");
 
@@ -195,11 +196,9 @@ BOOST_AUTO_TEST_CASE(GPUSimulationTestMultiple) {
         AgentInstance i2 = population2.getInstanceAt(i, "default");
 
         // use AgentInstance equality operator
-        BOOST_CHECK(i1.getVariable<double>("x") == i + 2);
-        BOOST_CHECK(i2.getVariable<double>("y") == 0);
+        EXPECT_TRUE(i1.getVariable<double>("x") == i + 2);
+        EXPECT_TRUE(i2.getVariable<double>("y") == 0);
     }
 }
-
-BOOST_AUTO_TEST_SUITE_END()
 
 #endif  // TESTS_TEST_CASES_GPU_TEST_GPU_VALIDATION_H_
