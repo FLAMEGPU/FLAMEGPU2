@@ -86,6 +86,8 @@ target_link_libraries("${PROJECT_NAME}" gtest_main)
 
 # Put Within Tests filter
 CMAKE_SET_TARGET_FOLDER("${PROJECT_NAME}" "Tests")
+CMAKE_SET_TARGET_FOLDER("gtest" "Tests/Dependencies")
+CMAKE_SET_TARGET_FOLDER("gtest_main" "Tests/Dependencies")
 
 # Also set as startup project (if top level project)
 set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"  PROPERTY VS_STARTUP_PROJECT "${PROJECT_NAME}")
