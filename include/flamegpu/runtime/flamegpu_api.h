@@ -3,5 +3,6 @@
 
 #include "flamegpu/runtime/flamegpu_device_api.h"
 #include "flamegpu/runtime/flamegpu_host_api.h"
+#include "flamegpu/runtime/flamegpu_host_agent_api.h"
 
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_FLAMEGPU_API_H_

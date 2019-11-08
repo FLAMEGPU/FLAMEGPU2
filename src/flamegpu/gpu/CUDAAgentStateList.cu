@@ -171,8 +171,8 @@ void CUDAAgentStateList::getAgentData(AgentStateMemory &state_memory) {
     }
 }
 
-void* CUDAAgentStateList::getAgentListVariablePointer(std::string variable_name) {
-    CUDAMemoryMap::iterator mm = d_list.find(variable_name);
+void* CUDAAgentStateList::getAgentListVariablePointer(std::string variable_name) const {
+    CUDAMemoryMap::const_iterator mm = d_list.find(variable_name);
     if (mm == d_list.end()) {
         // TODO: Error variable not found in agent state list
         return 0;

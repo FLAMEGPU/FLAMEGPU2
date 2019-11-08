@@ -19,8 +19,9 @@ FLAMEGPU_AGENT_FUNCTION(device_function) {
 FLAMEGPU_INIT_FUNCTION(init_function) {
     printf("Init Function!\n");
 }
-FLAMEGPU_EXIT_FUNCTION(step_function) {
-    printf("Step Function!\n");
+FLAMEGPU_STEP_FUNCTION(step_function) {
+    int sum_a = FLAMEGPU->agent("agent").sum<int>("a");
+    printf("Step Function!: %d\n", sum_a);
 }
 FLAMEGPU_EXIT_FUNCTION(exit_function) {
     printf("Exit Function!\n");
@@ -43,7 +44,7 @@ int main(void) {
     // {//circle agent
         AgentDescription agent("agent");
         agent.addAgentVariable<float>("x");
-        agent.addAgentVariable<float>("y");
+        agent.addAgentVariable<int>("a");
 
         // {// Device fn
             AgentFunctionDescription deviceFn("device_function");
@@ -58,7 +59,7 @@ int main(void) {
         for (unsigned int i = 0; i < AGENT_COUNT; i++) {
             AgentInstance instance = population.getNextInstance();
             instance.setVariable<float>("x", i*0.1f);
-            instance.setVariable<float>("y", i*0.1f);
+            instance.setVariable<int>("a", 1);
         }
     // }
 

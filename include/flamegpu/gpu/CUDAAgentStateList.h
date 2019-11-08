@@ -36,7 +36,7 @@ class CUDAAgentStateList {
 
     void getAgentData(AgentStateMemory &state_memory);
 
-    void* getAgentListVariablePointer(std::string variable_name);
+    void* getAgentListVariablePointer(std::string variable_name) const;
 
     void zeroAgentData();
 
