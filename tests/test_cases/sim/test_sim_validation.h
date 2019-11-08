@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE(SimulationFunctionCheck) {
 
     // for each each simulation layer
     for (unsigned int i = 0; i < simulation.getLayerCount(); i++) {
-        const FunctionDescriptionVector& functions = simulation.getFunctionsAtLayer(i);
+        const SimulationLayer::FunctionDescriptionVector& functions = simulation.getFunctionsAtLayer(i);
 
         // for each function per simulation layer
         for (AgentFunctionDescription func_des : functions) {
