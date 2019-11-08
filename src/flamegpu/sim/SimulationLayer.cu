@@ -64,13 +64,18 @@ void SimulationLayer::addAgentFunction(const std::string name) {
     if (!found)
         throw InvalidAgentFunc("Unknown agent function can not be added to the Function Layer!");
 }
-
+void SimulationLayer::addHostFunction(const FLAMEGPU_HOST_FUNCTION_POINTER *func_p) {
+    if (!hostFunctions.insert(*func_p).second)
+        throw InvalidHostFunc("Attempted to add same host function to same layer twice.");
+}
 /**
 * @return FunctionDescMap type that contains a string name and AgentFunctionDescription object
 * @note  may change this to add an arg indicating the layer number
 */
-const FunctionDescriptionVector& SimulationLayer::getAgentFunctions() const {
+const SimulationLayer::FunctionDescriptionVector& SimulationLayer::getAgentFunctions() const {
     return functions;
 }
-
+const SimulationLayer::HostFunctionSet& SimulationLayer::getHostFunctions() const {
+    return hostFunctions;
+}
 

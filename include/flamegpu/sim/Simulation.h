@@ -58,7 +58,16 @@ class Simulation {
     unsigned int getSimulationSteps() const;
     const ModelDescription& getModelDescritpion() const;
 
-    const FunctionDescriptionVector& getFunctionsAtLayer(unsigned int layer) const;
+    /**
+     * Returns the set of host functions for the given layer
+     * @throws InvalidMemoryCapacity If layer number is invalid
+     */
+    const SimulationLayer::FunctionDescriptionVector& getFunctionsAtLayer(const unsigned int &layer) const;
+    /**
+     * Returns the set of host functions for the given layer
+     * @throws InvalidMemoryCapacity If layer number is invalid
+     */
+    const SimulationLayer::HostFunctionSet& getHostFunctionsAtLayer(const unsigned int &layer) const;
     /**
      * Returns the set of init functions attached to the simulation
      */

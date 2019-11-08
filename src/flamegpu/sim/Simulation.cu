@@ -29,11 +29,18 @@ Simulation::~Simulation(void) {
     DeviceRandomArray::free();
 }
 
-const FunctionDescriptionVector& Simulation::getFunctionsAtLayer(unsigned int layer) const {
+const SimulationLayer::FunctionDescriptionVector& Simulation::getFunctionsAtLayer(const unsigned int &layer) const {
     if (layer >= layers.size()) {
         throw InvalidMemoryCapacity("Function layer doesn't exists!");  // out of bound index
     } else {
         return layers.at(layer).get().getAgentFunctions();
+    }
+}
+const SimulationLayer::HostFunctionSet& Simulation::getHostFunctionsAtLayer(const unsigned int &layer) const {
+    if (layer >= layers.size()) {
+        throw InvalidMemoryCapacity("Function layer doesn't exists!");  // out of bound index
+    } else {
+        return layers.at(layer).get().getHostFunctions();
     }
 }
 const Simulation::InitFunctionSet& Simulation::getInitFunctions() const {

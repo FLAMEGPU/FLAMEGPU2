@@ -141,7 +141,7 @@ bool CUDAAgentModel::step(const Simulation& simulation) {
 
     /*! for each each sim layer, launch each agent function in its own stream */
     for (unsigned int i = 0; i < simulation.getLayerCount(); i++) {
-        const FunctionDescriptionVector& functions = simulation.getFunctionsAtLayer(i);
+        const auto& functions = simulation.getFunctionsAtLayer(i);
 
         int j = 0;
         // Sum the total number of threads being launched in the layer
@@ -263,6 +263,12 @@ bool CUDAAgentModel::step(const Simulation& simulation) {
             // unmap the function variables
             cuda_agent.unmapRuntimeVariables(func_des);
         }
+
+        // Execute all host functions attached to layer
+        // TODO: Concurrency?
+        for (auto &stepFn : simulation.getHostFunctionsAtLayer(i))
+            stepFn(&this->host_api);
+
         // cudaDeviceSynchronize();
     }
     // stream deletion
