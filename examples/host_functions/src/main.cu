@@ -10,9 +10,6 @@
  * This will generate object files for different architecture targets as well as ptx info for each agent function (registers, memory use etc.)
  * http://stackoverflow.com/questions/12388207/interpreting-output-of-ptxas-options-v
  */
-#ifdef _MSVC
-#pragma warning(disable : 4100)
-#endif
 FLAMEGPU_AGENT_FUNCTION(device_function) {
     return ALIVE;
 }
@@ -20,9 +17,13 @@ FLAMEGPU_INIT_FUNCTION(init_function) {
     float min_x = FLAMEGPU->agent("agent").min<float>("x");
     printf("Init Function! (Min: %g)\n", min_x);
 }
+FLAMEGPU_CUSTOM_REDUCTION(customSum, a, b) {
+    return a + b;
+}
 FLAMEGPU_STEP_FUNCTION(step_function) {
     int sum_a = FLAMEGPU->agent("agent").sum<int>("a");
-    printf("Step Function! (Sum: %d)\n", sum_a);
+    int custom_sum_a = FLAMEGPU->agent("agent").reduce<int>("a", customSum, 0);
+    printf("Step Function! (Sum: %d, CustomSum: %d)\n", sum_a, custom_sum_a);
 }
 FLAMEGPU_EXIT_FUNCTION(exit_function) {
     float max_x = FLAMEGPU->agent("agent").max<float>("x");
@@ -37,9 +38,6 @@ FLAMEGPU_EXIT_CONDITION(exit_condition) {
     printf("Host Condition!\n");
     return CONTINUE;
 }
-#ifdef _MSVC
-#pragma warning(op)
-#endif
 
 int main(void) {
     const unsigned int AGENT_COUNT = 1024;

@@ -97,6 +97,7 @@ class FLAMEGPU_HOST_API {
         MIN,
         MAX,
         SUM,
+        CUSTOM_REDUCE,
         HISTOGRAM_EVEN
     };
     // Can't put type_info in map, deleted constructors, so we use it's hash code
@@ -126,7 +127,7 @@ template<typename T>
 void FLAMEGPU_HOST_API::resizeOutputSpace(const unsigned int &items) {
     if (sizeof(T) * items > d_output_space_size) {
         if (d_output_space_size) {
-            gpuErrchk((d_output_space));
+            gpuErrchk(cudaFree(d_output_space));
         }
         gpuErrchk(cudaMalloc(&d_output_space, sizeof(T) * items));
         d_output_space_size = sizeof(T) * items;

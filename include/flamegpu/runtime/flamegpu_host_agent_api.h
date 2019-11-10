@@ -12,6 +12,15 @@
 #include "flamegpu/runtime/flamegpu_host_api.h"
 #include "flamegpu/gpu/CUDAErrorChecking.h"
 
+#define FLAMEGPU_CUSTOM_REDUCTION(funcName, a, b) \
+struct funcName ## _impl { \
+    template <typename T> \
+    __device__ __forceinline__ T operator()(const T &, const T &) const;\
+}; \
+funcName ## _impl funcName; \
+template <typename T> \
+__device__ __forceinline__ T funcName ## _impl::operator()(const T & a, const T & b) const
+
 class FLAMEGPU_HOST_AGENT_API {
  public:
     FLAMEGPU_HOST_AGENT_API(FLAMEGPU_HOST_API &_api, const CUDAAgent &_agent, const std::string &_stateName = "default")
@@ -45,11 +54,13 @@ class FLAMEGPU_HOST_AGENT_API {
     template<typename T>
     T max(const std::string &variable) const;
     /**
-     * Wraps cub::DeviceReduce::Reduce()
+     * Wraps cub::DeviceReduce::Reduce(), to perform a reduction with a custom operator
      * @param variable The agent variable to perform the reduction across
+     * @param reductionOperator The custom reduction function
+     * @param init Initial value of the reduction
      */
-    // template<typename T>
-    // T reduce(const std::string &variable, ? reductionOperator) const;
+    template<typename T, typename reductionOperatorT>
+    T reduce(const std::string &variable, reductionOperatorT reductionOperator, const T&init) const;
     /**
     * Wraps cub::DeviceHistogram::HistogramEven()
     * @param variable The agent variable to perform the reduction across
@@ -140,6 +151,31 @@ T FLAMEGPU_HOST_AGENT_API::max(const std::string &variable) const {
     // Resize output storage
     api.resizeOutputSpace<T>();
     cub::DeviceReduce::Max(api.d_cub_temp, api.d_cub_temp_size, reinterpret_cast<T*>(var_ptr), reinterpret_cast<T*>(api.d_output_space), static_cast<int>(agentCount));
+    gpuErrchkLaunch();
+    T rtn;
+    gpuErrchk(cudaMemcpy(&rtn, api.d_output_space, sizeof(T), cudaMemcpyDeviceToHost));
+    return rtn;
+}
+template<typename T, typename reductionOperatorT>
+T FLAMEGPU_HOST_AGENT_API::reduce(const std::string &variable, reductionOperatorT reductionOperator, const T &init) const {
+    const auto &agentDesc = agent.getAgentDescription();
+    if (typeid(T) != agentDesc.getVariableType(variable))
+        throw InvalidVarType("variable type does not match type of reduce()");
+    const auto &stateAgent = agent.getAgentStateList(stateName);
+    void *var_ptr = stateAgent->getAgentListVariablePointer(variable);
+    const auto agentCount = stateAgent->getCUDAStateListSize();
+    // Check if we need to resize cub storage
+    FLAMEGPU_HOST_API::CUB_Config cc = { FLAMEGPU_HOST_API::CUSTOM_REDUCE, typeid(T).hash_code() };
+    if (api.tempStorageRequiresResize(cc, agentCount)) {
+        // Resize cub storage
+        size_t tempByte = 0;
+        cub::DeviceReduce::Reduce(nullptr, tempByte, reinterpret_cast<T*>(var_ptr), reinterpret_cast<T*>(api.d_output_space), static_cast<int>(agentCount), reductionOperator, init);
+        gpuErrchkLaunch();
+        api.resizeTempStorage(cc, agentCount, tempByte);
+    }
+    // Resize output storage
+    api.resizeOutputSpace<T>();
+    cub::DeviceReduce::Reduce(api.d_cub_temp, api.d_cub_temp_size, reinterpret_cast<T*>(var_ptr), reinterpret_cast<T*>(api.d_output_space), static_cast<int>(agentCount), reductionOperator, init);
     gpuErrchkLaunch();
     T rtn;
     gpuErrchk(cudaMemcpy(&rtn, api.d_output_space, sizeof(T), cudaMemcpyDeviceToHost));
