@@ -11,11 +11,11 @@ FLAMEGPU_HOST_API::FLAMEGPU_HOST_API(CUDAAgentModel &_agentModel)
 }
 FLAMEGPU_HOST_API::~FLAMEGPU_HOST_API() {
     if (d_cub_temp) {
-        cudaFree(d_cub_temp);
+        gpuErrchk(cudaFree(d_cub_temp));
         d_cub_temp_size = 0;
     }
     if (d_output_space_size) {
-        cudaFree(d_output_space);
+        gpuErrchk(cudaFree(d_output_space));
         d_output_space_size = 0;
     }
 }
@@ -39,9 +39,9 @@ bool FLAMEGPU_HOST_API::tempStorageRequiresResize(const CUB_Config &cc, const un
 void FLAMEGPU_HOST_API::resizeTempStorage(const CUB_Config &cc, const unsigned int &items, const size_t &newSize) {
     if (newSize > d_cub_temp_size) {
         if (d_cub_temp) {
-            cudaFree(d_cub_temp);
+            gpuErrchk(cudaFree(d_cub_temp));
         }
-        cudaMalloc(&d_cub_temp, newSize);
+        gpuErrchk(cudaMalloc(&d_cub_temp, newSize));
         d_cub_temp_size = newSize;
     }
     assert(tempStorageRequiresResize(cc, items));
