@@ -4,6 +4,7 @@
 #include <cub/cub.cuh>
 #include <algorithm>
 #include <string>
+#include <vector>
 
 
 #include "flamegpu/gpu/CUDAAgent.h"
@@ -26,24 +27,37 @@ class FLAMEGPU_HOST_AGENT_API {
     }*/
     /**
      * Wraps cub::DeviceReduce::Sum()
+     * @param variable The agent variable to perform the sum reduction across
      */
     template<typename T>
     T sum(const std::string &variable) const;
     /**
      * Wraps cub::DeviceReduce::Min()
+     * @param variable The agent variable to perform the min reduction across
      */
     template<typename T>
     T min(const std::string &variable) const;
     /**
      * Wraps cub::DeviceReduce::Max()
+     * @param variable The agent variable to perform the max reduction across
      */
     template<typename T>
     T max(const std::string &variable) const;
     /**
      * Wraps cub::DeviceReduce::Reduce()
+     * @param variable The agent variable to perform the reduction across
      */
     // template<typename T>
     // T reduce(const std::string &variable, ? reductionOperator) const;
+    /**
+    * Wraps cub::DeviceHistogram::HistogramEven()
+    * @param variable The agent variable to perform the reduction across
+    * @param histogramBins The number of bins the histogram should have
+    * @param lowerBound The lower sample value boundary of lowest bin
+    * @param upperBound The upper sample value boundary of upper bin
+    */
+    template<typename T>
+    std::vector<int> histogramEven(const std::string &variable, const unsigned int &histogramBins, const T &lowerBound, const T &upperBound) const;
 
  private:
     FLAMEGPU_HOST_API &api;
@@ -52,7 +66,9 @@ class FLAMEGPU_HOST_AGENT_API {
     const std::string stateName;
 };
 
-
+//
+// Implementation
+//
 
 template<typename T>
 T FLAMEGPU_HOST_AGENT_API::sum(const std::string &variable) const {
@@ -81,7 +97,7 @@ template<typename T>
 T FLAMEGPU_HOST_AGENT_API::min(const std::string &variable) const {
     const auto &agentDesc = agent.getAgentDescription();
     if (typeid(T) != agentDesc.getVariableType(variable))
-        throw InvalidVarType("variable type does not match type of sum()");
+        throw InvalidVarType("variable type does not match type of min()");
     const auto &stateAgent = agent.getAgentStateList(stateName);
     void *var_ptr = stateAgent->getAgentListVariablePointer(variable);
     const auto agentCount = stateAgent->getCUDAStateListSize();
@@ -104,7 +120,7 @@ template<typename T>
 T FLAMEGPU_HOST_AGENT_API::max(const std::string &variable) const {
     const auto &agentDesc = agent.getAgentDescription();
     if (typeid(T) != agentDesc.getVariableType(variable))
-        throw InvalidVarType("variable type does not match type of sum()");
+        throw InvalidVarType("variable type does not match type of max()");
     const auto &stateAgent = agent.getAgentStateList(stateName);
     void *var_ptr = stateAgent->getAgentListVariablePointer(variable);
     const auto agentCount = stateAgent->getCUDAStateListSize();
@@ -121,6 +137,32 @@ T FLAMEGPU_HOST_AGENT_API::max(const std::string &variable) const {
     cub::DeviceReduce::Max(api.d_cub_temp, api.d_cub_temp_size, reinterpret_cast<T*>(var_ptr), reinterpret_cast<T*>(api.d_output_space), static_cast<int>(agentCount));
     T rtn;
     cudaMemcpy(&rtn, api.d_output_space, sizeof(T), cudaMemcpyDeviceToHost);
+    return rtn;
+}
+template<typename T>
+std::vector<int> FLAMEGPU_HOST_AGENT_API::histogramEven(const std::string &variable, const unsigned int &histogramBins, const T &lowerBound, const T &upperBound) const {
+    assert(lowerBound < upperBound);
+    const auto &agentDesc = agent.getAgentDescription();
+    if (typeid(T) != agentDesc.getVariableType(variable))
+        throw InvalidVarType("variable type does not match type of histogramEven()");
+    const auto &stateAgent = agent.getAgentStateList(stateName);
+    void *var_ptr = stateAgent->getAgentListVariablePointer(variable);
+    const auto agentCount = stateAgent->getCUDAStateListSize();
+    // Check if we need to resize cub storage
+    FLAMEGPU_HOST_API::CUB_Config cc = { FLAMEGPU_HOST_API::HISTOGRAM_EVEN, histogramBins };
+    if (api.tempStorageRequiresResize(cc, agentCount)) {
+        // Resize cub storage
+        size_t tempByte = 0;
+        cub::DeviceHistogram::HistogramEven(nullptr, tempByte,
+            reinterpret_cast<T*>(var_ptr), reinterpret_cast<int*>(api.d_output_space), histogramBins + 1, lowerBound, upperBound, static_cast<int>(agentCount));
+        api.resizeTempStorage(cc, agentCount, tempByte);
+    }
+    // Resize output storage
+    api.resizeOutputSpace<int>(histogramBins);
+    cub::DeviceHistogram::HistogramEven(api.d_cub_temp, api.d_cub_temp_size,
+        reinterpret_cast<T*>(var_ptr), reinterpret_cast<int*>(api.d_output_space), histogramBins + 1, lowerBound, upperBound, static_cast<int>(agentCount));
+    std::vector<int> rtn(histogramBins);
+    cudaMemcpy(rtn.data(), api.d_output_space, histogramBins * sizeof(int), cudaMemcpyDeviceToHost);
     return rtn;
 }
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_FLAMEGPU_HOST_AGENT_API_H_
