@@ -8,6 +8,8 @@
 #include <functional>
 #include <unordered_map>
 
+#include "flamegpu/gpu/CUDAErrorChecking.h"
+
 class FLAMEGPU_HOST_API;
 class FLAMEGPU_HOST_AGENT_API;
 
@@ -124,9 +126,9 @@ template<typename T>
 void FLAMEGPU_HOST_API::resizeOutputSpace(const unsigned int &items) {
     if (sizeof(T) * items > d_output_space_size) {
         if (d_output_space_size) {
-            cudaFree(d_output_space);
+            gpuErrchk((d_output_space));
         }
-        cudaMalloc(&d_output_space, sizeof(T) * items);
+        gpuErrchk(cudaMalloc(&d_output_space, sizeof(T) * items));
         d_output_space_size = sizeof(T) * items;
     }
 }

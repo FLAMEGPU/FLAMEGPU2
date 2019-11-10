@@ -10,6 +10,7 @@
 #include "flamegpu/gpu/CUDAAgent.h"
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/runtime/flamegpu_host_api.h"
+#include "flamegpu/gpu/CUDAErrorChecking.h"
 
 class FLAMEGPU_HOST_AGENT_API {
  public:
@@ -89,8 +90,9 @@ T FLAMEGPU_HOST_AGENT_API::sum(const std::string &variable) const {
     // Resize output storage
     api.resizeOutputSpace<T>();
     cub::DeviceReduce::Sum(api.d_cub_temp, api.d_cub_temp_size, reinterpret_cast<T*>(var_ptr), reinterpret_cast<T*>(api.d_output_space), static_cast<int>(agentCount));
+    gpuErrchkLaunch();
     T rtn;
-    cudaMemcpy(&rtn, api.d_output_space, sizeof(T), cudaMemcpyDeviceToHost);
+    gpuErrchk(cudaMemcpy(&rtn, api.d_output_space, sizeof(T), cudaMemcpyDeviceToHost));
     return rtn;
 }
 template<typename T>
@@ -107,13 +109,15 @@ T FLAMEGPU_HOST_AGENT_API::min(const std::string &variable) const {
         // Resize cub storage
         size_t tempByte = 0;
         cub::DeviceReduce::Min(nullptr, tempByte, reinterpret_cast<T*>(var_ptr), reinterpret_cast<T*>(api.d_output_space), static_cast<int>(agentCount));
+        gpuErrchkLaunch();
         api.resizeTempStorage(cc, agentCount, tempByte);
     }
     // Resize output storage
     api.resizeOutputSpace<T>();
     cub::DeviceReduce::Min(api.d_cub_temp, api.d_cub_temp_size, reinterpret_cast<T*>(var_ptr), reinterpret_cast<T*>(api.d_output_space), static_cast<int>(agentCount));
+    gpuErrchkLaunch();
     T rtn;
-    cudaMemcpy(&rtn, api.d_output_space, sizeof(T), cudaMemcpyDeviceToHost);
+    gpuErrchk(cudaMemcpy(&rtn, api.d_output_space, sizeof(T), cudaMemcpyDeviceToHost));
     return rtn;
 }
 template<typename T>
@@ -130,13 +134,15 @@ T FLAMEGPU_HOST_AGENT_API::max(const std::string &variable) const {
         // Resize cub storage
         size_t tempByte = 0;
         cub::DeviceReduce::Max(nullptr, tempByte, reinterpret_cast<T*>(var_ptr), reinterpret_cast<T*>(api.d_output_space), static_cast<int>(agentCount));
+        gpuErrchkLaunch();
         api.resizeTempStorage(cc, agentCount, tempByte);
     }
     // Resize output storage
     api.resizeOutputSpace<T>();
     cub::DeviceReduce::Max(api.d_cub_temp, api.d_cub_temp_size, reinterpret_cast<T*>(var_ptr), reinterpret_cast<T*>(api.d_output_space), static_cast<int>(agentCount));
+    gpuErrchkLaunch();
     T rtn;
-    cudaMemcpy(&rtn, api.d_output_space, sizeof(T), cudaMemcpyDeviceToHost);
+    gpuErrchk(cudaMemcpy(&rtn, api.d_output_space, sizeof(T), cudaMemcpyDeviceToHost));
     return rtn;
 }
 template<typename T>
@@ -155,14 +161,16 @@ std::vector<int> FLAMEGPU_HOST_AGENT_API::histogramEven(const std::string &varia
         size_t tempByte = 0;
         cub::DeviceHistogram::HistogramEven(nullptr, tempByte,
             reinterpret_cast<T*>(var_ptr), reinterpret_cast<int*>(api.d_output_space), histogramBins + 1, lowerBound, upperBound, static_cast<int>(agentCount));
+        gpuErrchkLaunch();
         api.resizeTempStorage(cc, agentCount, tempByte);
     }
     // Resize output storage
     api.resizeOutputSpace<int>(histogramBins);
     cub::DeviceHistogram::HistogramEven(api.d_cub_temp, api.d_cub_temp_size,
         reinterpret_cast<T*>(var_ptr), reinterpret_cast<int*>(api.d_output_space), histogramBins + 1, lowerBound, upperBound, static_cast<int>(agentCount));
+    gpuErrchkLaunch();
     std::vector<int> rtn(histogramBins);
-    cudaMemcpy(rtn.data(), api.d_output_space, histogramBins * sizeof(int), cudaMemcpyDeviceToHost);
+    gpuErrchk(cudaMemcpy(rtn.data(), api.d_output_space, histogramBins * sizeof(int), cudaMemcpyDeviceToHost));
     return rtn;
 }
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_FLAMEGPU_HOST_AGENT_API_H_
