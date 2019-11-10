@@ -1,14 +1,16 @@
 #include "DeviceRandomArray.cuh"
 
+#include <cuda_runtime.h>
+#include <curand_kernel.h>
+#include <device_launch_parameters.h>
+
 #include<ctime>
 
 #include <cassert>
 #include <cstdio>
 #include <algorithm>
 
-#include "./cuda_runtime.h"
-#include "./curand_kernel.h"
-#include "./device_launch_parameters.h"
+#include "flamegpu/gpu/CUDAErrorChecking.h"
 
 /**
  * Internal namespace to hide __device__ declarations from modeller
@@ -57,15 +59,15 @@ void DeviceRandomArray::free() {
     // Clear size
     length = 0;
     flamegpu_internal::hd_random_size = 0;
-    if (cudaMemcpyToSymbol(flamegpu_internal::d_random_size, &flamegpu_internal::hd_random_size, sizeof(DeviceRandomArray::size_type)) != cudaSuccess)
+    gpuErrchk(cudaMemcpyToSymbol(flamegpu_internal::d_random_size, &flamegpu_internal::hd_random_size, sizeof(DeviceRandomArray::size_type)))
         printf("(%s:%d) CUDA Error initialising curand.", __FILE__, __LINE__);
     // Release old
-    if (flamegpu_internal::hd_random_state != nullptr && cudaFree(flamegpu_internal::hd_random_state) != cudaSuccess)
-        printf("(%s:%d) CUDA Error DeviceRandomArray::~DeviceRandomArray().", __FILE__, __LINE__);
+    if (flamegpu_internal::hd_random_state != nullptr) {
+        gpuErrchk(cudaFree(flamegpu_internal::hd_random_state));
+    }
     // Update pointers
     flamegpu_internal::hd_random_state = nullptr;
-    if (cudaMemcpyToSymbol(flamegpu_internal::d_random_state, &flamegpu_internal::hd_random_state, sizeof(curandState*)) != cudaSuccess)
-        printf("(%s:%d) CUDA Error DeviceRandomArray::~DeviceRandomArray().", __FILE__, __LINE__);
+    gpuErrchk(cudaMemcpyToSymbol(flamegpu_internal::d_random_state, &flamegpu_internal::hd_random_state, sizeof(curandState*)))
     // Release host_max
     if (h_max_random_state)
         ::free(h_max_random_state);
@@ -105,26 +107,24 @@ void DeviceRandomArray::resizeDeviceArray(const size_type &_length) {
         // Growing array
         curandState *t_hd_random_state = nullptr;
         // Allocate new mem to t_hd
-        if (cudaMalloc(&t_hd_random_state, _length * sizeof(curandState)) != cudaSuccess)
+        gpuErrchk(cudaMalloc(&t_hd_random_state, _length * sizeof(curandState)));
             printf("(%s:%d) CUDA Error DeviceRandomArray::resizeDeviceArray().", __FILE__, __LINE__);
         // Copy hd->t_hd[****    ]
-        if (flamegpu_internal::hd_random_state)
-            if (cudaMemcpy(t_hd_random_state, flamegpu_internal::hd_random_state, length * sizeof(curandState), cudaMemcpyDeviceToDevice))
-                printf("(%s:%d) CUDA Error DeviceRandomArray::resizeDeviceArray().", __FILE__, __LINE__);
+        if (flamegpu_internal::hd_random_state) {
+            gpuErrchk(cudaMemcpy(t_hd_random_state, flamegpu_internal::hd_random_state, length * sizeof(curandState), cudaMemcpyDeviceToDevice));
+        }
         // Update pointers hd=t_hd
-        if (flamegpu_internal::hd_random_state)
-            if (cudaFree(flamegpu_internal::hd_random_state) != cudaSuccess)
-                printf("(%s:%d) CUDA Error DeviceRandomArray::resizeDeviceArray().", __FILE__, __LINE__);
+        if (flamegpu_internal::hd_random_state) {
+            gpuErrchk(cudaFree(flamegpu_internal::hd_random_state));
+        }
         flamegpu_internal::hd_random_state = t_hd_random_state;
-        if (cudaMemcpyToSymbol(flamegpu_internal::d_random_state, &flamegpu_internal::hd_random_state, sizeof(curandState*)) != cudaSuccess)
-            printf("(%s:%d) CUDA Error DeviceRandomArray::resizeDeviceArray().", __FILE__, __LINE__);
+        gpuErrchk(cudaMemcpyToSymbol(flamegpu_internal::d_random_state, &flamegpu_internal::hd_random_state, sizeof(curandState*)));
         // Init new[    ****]
         if (h_max_random_size > length) {
             // We have part/all host backup, copy to device array
             // Reinit backup[    **  ]
             size_type copy_len = std::min(h_max_random_size, _length);
-            if (cudaMemcpy(flamegpu_internal::hd_random_state + length, h_max_random_state + length, copy_len * sizeof(curandState), cudaMemcpyHostToDevice))
-                printf("(%s:%d) CUDA Error DeviceRandomArray::resizeDeviceArray().", __FILE__, __LINE__);
+            gpuErrchk(cudaMemcpy(flamegpu_internal::hd_random_state + length, h_max_random_state + length, copy_len * sizeof(curandState), cudaMemcpyHostToDevice));
             length += copy_len;
         }
         if (_length > length) {
@@ -132,14 +132,14 @@ void DeviceRandomArray::resizeDeviceArray(const size_type &_length) {
             unsigned int initThreads = 512;
             unsigned int initBlocks = (_length - length / initThreads) + 1;
             init_curand<<<initBlocks, initThreads>>>(_length - length, mSeed, length);  // This could be async with above memcpy?
+            gpuErrchkLaunch();
         }
     } else {
         // Shrinking array
         curandState *t_hd_random_state = nullptr;
         curandState *t_h_max_random_state = nullptr;
         // Allocate new
-        if (cudaMalloc(&t_hd_random_state, _length * sizeof(curandState)) != cudaSuccess)
-            printf("(%s:%d) CUDA Error DeviceRandomArray::resizeDeviceArray().", __FILE__, __LINE__);
+        gpuErrchk(cudaMalloc(&t_hd_random_state, _length * sizeof(curandState)));
         // Allocate host backup
         if (length > h_max_random_size)
             t_h_max_random_state = reinterpret_cast<curandState *>(malloc(length * sizeof(curandState)));
@@ -147,11 +147,9 @@ void DeviceRandomArray::resizeDeviceArray(const size_type &_length) {
             t_h_max_random_state = h_max_random_state;
         // Copy old->new
         assert(flamegpu_internal::hd_random_state);
-        if (cudaMemcpy(t_hd_random_state, flamegpu_internal::hd_random_state, _length * sizeof(curandState), cudaMemcpyDeviceToDevice))
-            printf("(%s:%d) CUDA Error DeviceRandomArray::resizeDeviceArray().", __FILE__, __LINE__);
+        gpuErrchk(cudaMemcpy(t_hd_random_state, flamegpu_internal::hd_random_state, _length * sizeof(curandState), cudaMemcpyDeviceToDevice));
         // Copy part being shrunk away to host storage (This could be async with above memcpy?)
-        if (cudaMemcpy(t_h_max_random_state + _length, flamegpu_internal::hd_random_state + _length, (length - _length) * sizeof(curandState), cudaMemcpyDeviceToHost))
-            printf("(%s:%d) CUDA Error DeviceRandomArray::resizeDeviceArray().", __FILE__, __LINE__);
+        gpuErrchk(cudaMemcpy(t_h_max_random_state + _length, flamegpu_internal::hd_random_state + _length, (length - _length) * sizeof(curandState), cudaMemcpyDeviceToHost));
         // Release and replace old host ptr
         if (length > h_max_random_size) {
             if (h_max_random_state)
@@ -161,17 +159,16 @@ void DeviceRandomArray::resizeDeviceArray(const size_type &_length) {
         }
         // Update pointers
         flamegpu_internal::hd_random_state = t_hd_random_state;
-        if (cudaMemcpyToSymbol(flamegpu_internal::d_random_state, &flamegpu_internal::hd_random_state, sizeof(curandState*)) != cudaSuccess)
-            printf("(%s:%d) CUDA Error DeviceRandomArray::resizeDeviceArray().", __FILE__, __LINE__);
+        gpuErrchk(cudaMemcpyToSymbol(flamegpu_internal::d_random_state, &flamegpu_internal::hd_random_state, sizeof(curandState*)));
         // Release old
-        if (flamegpu_internal::hd_random_state != nullptr && cudaFree(flamegpu_internal::hd_random_state) != cudaSuccess)
-            printf("(%s:%d) CUDA Error DeviceRandomArray::resizeDeviceArray().", __FILE__, __LINE__);
+        if (flamegpu_internal::hd_random_state != nullptr) {
+            gpuErrchk(cudaFree(flamegpu_internal::hd_random_state));
+        }
     }
     // Update length
     length = _length;
     flamegpu_internal::hd_random_size = _length;
-    if (cudaMemcpyToSymbol(flamegpu_internal::d_random_size, &flamegpu_internal::hd_random_size, sizeof(DeviceRandomArray::size_type)) != cudaSuccess)
-        printf("(%s:%d) CUDA Error initialising curand.", __FILE__, __LINE__);
+    gpuErrchk(cudaMemcpyToSymbol(flamegpu_internal::d_random_size, &flamegpu_internal::hd_random_size, sizeof(DeviceRandomArray::size_type)));
 }
 void DeviceRandomArray::setGrowthModifier(float _growthModifier) {
     assert(growthModifier > 1.0);
