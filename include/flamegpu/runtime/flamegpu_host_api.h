@@ -94,9 +94,12 @@ class FLAMEGPU_HOST_API {
     enum CUB_Operation {
         MIN,
         MAX,
-        SUM
+        SUM,
+        HISTOGRAM_EVEN
     };
-    typedef std::pair<CUB_Operation, size_t> CUB_Config;  // Can't put type_info in map, deleted constructors, so we use it's hash code
+    // Can't put type_info in map, deleted constructors, so we use it's hash code
+    // Histogram always has type int, so we use number of bins instead
+    typedef std::pair<CUB_Operation, size_t> CUB_Config;
     /**
      * Need to define a hash_fn for tuple
      */
