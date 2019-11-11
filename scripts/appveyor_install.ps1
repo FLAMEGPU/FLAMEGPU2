@@ -25,6 +25,9 @@ $CUDA_KNOWN_URLS = @{
     "10.1.105" = "https://developer.nvidia.com/compute/cuda/10.1/Prod/network_installers/cuda_10.1.105_win10_network.exe";
     "10.1.168" = "https://developer.nvidia.com/compute/cuda/10.1/Prod/network_installers/cuda_10.1.168_win10_network.exe";
     # "10.1.243" = "http://developer.download.nvidia.com/compute/cuda/10.1/Prod/network_installers/cuda_10.1.243_win10_network.exe";
+    http://developer.download.nvidia.com/compute/cuda/10.1/Prod/network_installers/cuda_10.1.243_win10_network.exe
+    https://developer.nvidia.com/compute/cuda/10.1/prod/network_installers/cuda_10.1.243_windows_network.exe
+
 }
 
 ## -----------------
@@ -51,7 +54,7 @@ if($CUDA_KNOWN_URLS.containsKey($CUDA_VERSION_FULL)){
 } else{
     # Guess what the url is given the most recent pattern (at the time of writing, 10.1)
     Write-Host "note: URL for CUDA ${$CUDA_VERSION_FULL} not known, estimating."
-    $CUDA_REPO_PKG_LOCATION="https://developer.nvidia.com/compute/cuda/$($CUDA_MAJOR).$($CUDA_MINOR)/prod/network_installers/cuda_$($CUDA_VERSION_FULL)_windows_network.exe"
+    $CUDA_REPO_PKG_LOCATION="http://developer.download.nvidia.com/compute/cuda/$($CUDA_MAJOR).$($CUDA_MINOR)/Prod/network_installers/cuda_$($CUDA_VERSION_FULL)_win10_network.exe"
 }
 $CUDA_REPO_PKG="cuda_network.exe"
 
