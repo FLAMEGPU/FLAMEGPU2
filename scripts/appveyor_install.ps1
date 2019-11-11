@@ -51,7 +51,7 @@ if($CUDA_KNOWN_URLS.containsKey($CUDA_VERSION_FULL)){
 } else{
     # Guess what the url is given the most recent pattern (at the time of writing, 10.1)
     Write-Host "note: URL for CUDA ${$CUDA_VERSION_FULL} not known, estimating."
-    $CUDA_REPO_PKG_LOCATION="https://developer.nvidia.com/compute/cuda/$($CUDA_MAJOR).$($CUDA_MINOR)/prod/network_installers/cuda_$($CUDA_VERSION_FULL)_windows_network-exe"
+    $CUDA_REPO_PKG_LOCATION="https://developer.nvidia.com/compute/cuda/$($CUDA_MAJOR).$($CUDA_MINOR)/prod/network_installers/cuda_$($CUDA_VERSION_FULL)_windows_network.exe"
 }
 $CUDA_REPO_PKG="cuda_network.exe"
 
@@ -98,9 +98,7 @@ if (Test-Path env:APPVEYOR_BUILD_WORKER_IMAGE){
 ## ------------
 
 # Get CUDA network installer
-Write-Host "Downloading CUDA Network Installer for $($CUDA_VERSION_FULL)"
-Write-Host $CUDA_REPO_PKG_LOCATION
-Write-Host $CUDA_REPO_PKG
+Write-Host "Downloading CUDA Network Installer for $($CUDA_VERSION_FULL) from: $($CUDA_REPO_PKG_LOCATION)"
 Invoke-WebRequest $CUDA_REPO_PKG_LOCATION -OutFile $CUDA_REPO_PKG | Out-Null
 if(Test-Path -Path $CUDA_REPO_PKG){
     Write-Host "Downloading Complete"
