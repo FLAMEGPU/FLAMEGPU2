@@ -4,7 +4,7 @@
 # Select CUDA version, requires major, minor and patch to be included.
 # $env:CUDA_VERSION_FULL="8.0.44"
 # $env:CUDA_VERSION_FULL="9.1.85"
-$env:CUDA_VERSION_FULL="10.1.243s"
+$env:CUDA_VERSION_FULL="10.1.243"
 
 
 $cuda_ver_matched = $env:CUDA_VERSION_FULL -match  "(^(?<major>[1-9][0-9]*)\.(?<minor>[0-9]+)\.(?<patch>[0-9]+)$)"
@@ -13,7 +13,7 @@ Write-Host $Matches
 Write-Host $cuda_ver_matched
 
 if(-not $cuda_ver_matched){
-    Write-Host "Invalid CUDA Version Specified. <major>.<minor>.<path.. $env:CUDA_VERSION_FULL."
+    Write-Host "Invalid CUDA version specified, <major>.<minor>.<patch> required. '$env:CUDA_VERSION_FULL'."
     exit 1
 }
 
