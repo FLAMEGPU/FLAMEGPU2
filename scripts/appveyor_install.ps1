@@ -7,7 +7,7 @@
 $env:CUDA_VERSION_FULL="10.1.243"
 
 
-$env:CUDA_VERSION_FULL -match  "^(?<major>[1-9][0-9]*)\.(?<minor>[0-9]+)\.(?<patch>[0-9]+)$"
+$env:CUDA_VERSION_FULL -match  "(^(?<major>[1-9][0-9]*)\.(?<minor>[0-9]+)\.(?<patch>[0-9]+)$)"
 $Matches
 Write-Host $Matches
 
