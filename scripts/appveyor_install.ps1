@@ -125,9 +125,9 @@ Write-Host "Manual, working version?"
 Write-Host 'Downloading CUDA Network Installer'
 Invoke-WebRequest $env:CUDA_REPO_PKG_LOCATION -OutFile $env:CUDA_REPO_PKG | Out-Null
 Write-Host 'Downloading Complete'
-# & .\$env:CUDA_REPO_PKG -s nvcc_10.1 visual_studio_integration_10.1 curand_10.1 curand_dev_10.1|  Out-Null
-Write-Host "& .\$env:CUDA_REPO_PKG -s $($CUDA_PACKAGES)|  Out-Null"
-& .\$env:CUDA_REPO_PKG -s "$($CUDA_PACKAGES)"|  Out-Null
+& .\$env:CUDA_REPO_PKG -s nvcc_10.1 visual_studio_integration_10.1 curand_10.1 curand_dev_10.1|  Out-Null
+# Write-Host "& .\$env:CUDA_REPO_PKG -s $($CUDA_PACKAGES)|  Out-Null"
+# & .\$env:CUDA_REPO_PKG -s "$($CUDA_PACKAGES)"|  Out-Null
 
 if ($? -eq $false) {
     write-host "Error: CUDA installer reported error. $($LASTEXITCODE)"
