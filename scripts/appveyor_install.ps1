@@ -17,7 +17,6 @@ $CUDA_VERSION_FULL = "10.1.243" # CUDA 10.1 update2
 
 $CUDA_KNOWN_URLS = @{
     "8.0.44" = "https://developer.nvidia.com/compute/cuda/8.0/Prod/network_installers/cuda_8.0.44_win10_network-exe";
-    "8.0.44" = "https://developer.nvidia.com/compute/cuda/8.0/Prod/network_installers/cuda_8.0.44_win10_network-exe";
     "8.0.61" = "https://developer.nvidia.com/compute/cuda/8.0/Prod2/network_installers/cuda_8.0.61_win10_network-exe";
     "9.0.176" = "https://developer.nvidia.com/compute/cuda/9.0/Prod/network_installers/cuda_9.0.176_win10_network-exe";
     "9.1.85" = "https://developer.nvidia.com/compute/cuda/9.1/Prod/network_installers/cuda_9.1.85_win10_network";
@@ -33,6 +32,10 @@ Write-Host $CUDA_KNOWN_URLS
 
 Write-Host $CUDA_KNOWN_URLS[$CUDA_VERSION_FULL]
 Write-Host $CUDA_KNOWN_URLS["should fail?"]
+
+if(-not $CUDA_KNOWN_URLS["should fail?"]){
+    Write-Host "not found?"
+}
 
 exit 1
 
