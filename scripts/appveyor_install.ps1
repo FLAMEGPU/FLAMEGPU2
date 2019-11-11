@@ -46,7 +46,6 @@ $CUDA_PATCH=$Matches.patch
 
 
 # If the specified version is in the known addresses, use that one. 
-$CUDA_REPO_PKG_LOCAL="cuda_network.exe"
 $CUDA_REPO_PKG_REMOTE=""
 if($CUDA_KNOWN_URLS.containsKey($CUDA_VERSION_FULL)){
     $CUDA_REPO_PKG_REMOTE=$CUDA_KNOWN_URLS[$CUDA_VERSION_FULL]
@@ -55,6 +54,7 @@ if($CUDA_KNOWN_URLS.containsKey($CUDA_VERSION_FULL)){
     Write-Host "note: URL for CUDA ${$CUDA_VERSION_FULL} not known, estimating."
     $CUDA_REPO_PKG_REMOTE="http://developer.download.nvidia.com/compute/cuda/$($CUDA_MAJOR).$($CUDA_MINOR)/Prod/network_installers/cuda_$($CUDA_VERSION_FULL)_win10_network.exe"
 }
+$CUDA_REPO_PKG_LOCAL="cuda_$($CUDA_VERSION_FULL)_win10_network.exe"
 
 # Build list of required cuda packages to be installed. See https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html#install-cuda-software for pacakge details. 
 
