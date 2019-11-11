@@ -118,7 +118,7 @@ if(Test-Path -Path $CUDA_REPO_PKG_LOCAL){
 # Invoke silent install of CUDA (via network installer)
 Write-Host "Installing CUDA $($CUDA_VERSION_FULL) Compiler and Runtime"
 Write-Host "& .\$($CUDA_REPO_PKG_LOCAL) -s $($CUDA_PACKAGES)|  Out-Null"
-& .\"$($CUDA_REPO_PKG_LOCAL)" -s "$($CUDA_PACKAGES)" | Out-Null
+& .\"($CUDA_REPO_PKG_LOCAL)" -s "$($CUDA_PACKAGES)" | Out-Null
 
 # Write-Host 'Downloading CUDA Network Installer'
 # Invoke-WebRequest $env:CUDA_REPO_PKG_LOCATION -OutFile $env:CUDA_REPO_PKG | Out-Null
@@ -126,7 +126,7 @@ Write-Host "& .\$($CUDA_REPO_PKG_LOCAL) -s $($CUDA_PACKAGES)|  Out-Null"
 # & .\$env:CUDA_REPO_PKG -s nvcc_10.1 visual_studio_integration_10.1 curand_10.1 curand_dev_10.1|  Out-Null
 
 if ($? -eq $false) {
-    write-host "Error: CUDA installer reported error."
+    write-host "Error: CUDA installer reported error. $($LASTEXITCODE)"
     exit 1 
 }
 
