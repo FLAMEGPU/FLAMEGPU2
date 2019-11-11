@@ -22,11 +22,17 @@ Write-Host "CUDA_VER: $($env:CUDA_MAJOR).$($env:CUDA_MINOR).$($env:CUDA_PATCH)"
 $env:CUDA_REPO_PKG_LOCATION="https://developer.nvidia.com/compute/cuda/$($env:CUDA_MAJOR).$($env:CUDA_MINOR)/prod/network_installers/cuda_$($env:CUDA_VERSION_FULL)_windows_network-exe"
 $env:CUDA_REPO_PKG="cuda_$($env:CUDA_VERSION_FULL)_win10_network.exe"
 
+# Build list of required pacakges. See https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html#install-cuda-software for pacakge details. 
 $env:CUDA_PACKAGES=""
 
-$env:CUDA_PACKAGES += "nvcc_$($env:CUDA_MAJOR).$($env:CUDA_MINOR)"
+$NVCC_PACKAGE_NAME="nvcc"
+if ([int]$env:CUDA_MAJOR -le 8 || [int]$env:CUDA_MAJOR -eq 9 && [int]$env:CUDA_MAJOR -eq 0){
+    $NVCC_PACKAGE_NAME="compiler"
+
+}
+$env:CUDA_PACKAGES += "$($NVCC_PACKAGE_NAME)_$($env:CUDA_MAJOR).$($env:CUDA_MINOR)"
 $env:CUDA_PACKAGES += "visual_studio_integration_$($env:CUDA_MAJOR).$($env:CUDA_MINOR)"
-$env:CUDA_PACKAGES += "curand_$($env:CUDA_MAJOR).$($env:CUDA_MINOR)"
+# $env:CUDA_PACKAGES += "curand_$($env:CUDA_MAJOR).$($env:CUDA_MINOR)"
 $env:CUDA_PACKAGES += "curand_dev_$($env:CUDA_MAJOR).$($env:CUDA_MINOR)"
 
 
@@ -61,10 +67,10 @@ Write-Host 'Installing CUDA Compiler and Runtime'
 # Do not need Display.Driver
 
 # CUDA 8.0
-# & .\$env:CUDA_REPO_PKG -s compiler_8.0 visual_studio_integration_8.0 command_line_tools_8.0 cudart_8.0| Out-Null
+# & .\$env:CUDA_REPO_PKG -s compiler_8.0 visual_studio_integration_8.0 curand_8.0	curand_dev_8.0| Out-Null
 
 # CUDA 9.1
-# & .\$env:CUDA_REPO_PKG -s nvcc_9.1 visual_studio_integration_9.1 cudart_9.1 curand_9.1 curand_dev_9.1| Out-Null
+# & .\$env:CUDA_REPO_PKG -s nvcc_9.1 visual_studio_integration_9.1 curand_9.1 curand_dev_9.1| Out-Null
 
 # CUDA 10.1
 & .\$env:CUDA_REPO_PKG -s nvcc_10.1 visual_studio_integration_10.1 curand_10.1 curand_dev_10.1|  Out-Null
