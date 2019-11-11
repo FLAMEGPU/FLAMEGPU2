@@ -135,3 +135,4 @@ if(Test-Path -Path $nvcc_path){
 }
 
 Write-Host "Installation Complete!"
+exit(1)
