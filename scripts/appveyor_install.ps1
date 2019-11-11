@@ -3,51 +3,51 @@
 ## -------------------
 ## Select CUDA version
 ## -------------------
-# $env:CUDA_VERSION_FULL =  "8.0.44"  # CUDA 8.0 GA 1
-# $env:CUDA_VERSION_FULL =  "8.0.61"  # CUDA 8.0 GA 2
-$env:CUDA_VERSION_FULL =  "9.0.176" # CUDA 9.0
-# $env:CUDA_VERSION_FULL =  "9.1.85"  # CUDA 9.1
-# $env:CUDA_VERSION_FULL =  "9.2.148" # CUDA 9.2
-# $env:CUDA_VERSION_FULL = "10.0.130" # CUDA 10.0
-# $env:CUDA_VERSION_FULL = "10.1.105" # CUDA 1.1
-# $env:CUDA_VERSION_FULL = "10.1.168" # CUDA 10.1 update1
-# $env:CUDA_VERSION_FULL = "10.1.243" # CUDA 10.1 update2
+# $CUDA_VERSION_FULL =  "8.0.44"  # CUDA 8.0 GA 1
+# $CUDA_VERSION_FULL =  "8.0.61"  # CUDA 8.0 GA 2
+# $CUDA_VERSION_FULL =  "9.0.176" # CUDA 9.0
+# $CUDA_VERSION_FULL =  "9.1.85"  # CUDA 9.1
+# $CUDA_VERSION_FULL =  "9.2.148" # CUDA 9.2
+# $CUDA_VERSION_FULL = "10.0.130" # CUDA 10.0
+# $CUDA_VERSION_FULL = "10.1.105" # CUDA 1.1
+# $CUDA_VERSION_FULL = "10.1.168" # CUDA 10.1 update1
+$CUDA_VERSION_FULL = "10.1.243" # CUDA 10.1 update2
 
 
 ## -----------------
 ## Prepare Variables
 ## -----------------
 # Validate CUDA version, extracting components via regex
-$cuda_ver_matched = $env:CUDA_VERSION_FULL -match "^(?<major>[1-9][0-9]*)\.(?<minor>[0-9]+)\.(?<patch>[0-9]+)$"
+$cuda_ver_matched = $CUDA_VERSION_FULL -match "^(?<major>[1-9][0-9]*)\.(?<minor>[0-9]+)\.(?<patch>[0-9]+)$"
 if(-not $cuda_ver_matched){
-    Write-Host "Invalid CUDA version specified, <major>.<minor>.<patch> required. '$env:CUDA_VERSION_FULL'."
+    Write-Host "Invalid CUDA version specified, <major>.<minor>.<patch> required. '$CUDA_VERSION_FULL'."
     exit 1
 }
-$env:CUDA_MAJOR=$Matches.major
-$env:CUDA_MINOR=$Matches.minor
-$env:CUDA_PATCH=$Matches.patch
+$CUDA_MAJOR=$Matches.major
+$CUDA_MINOR=$Matches.minor
+$CUDA_PATCH=$Matches.patch
 
 # Build CUDA related variables.
-$env:CUDA_REPO_PKG_LOCATION="https://developer.nvidia.com/compute/cuda/$($env:CUDA_MAJOR).$($env:CUDA_MINOR)/prod/network_installers/cuda_$($env:CUDA_VERSION_FULL)_windows_network-exe"
-$env:CUDA_REPO_PKG="cuda_$($env:CUDA_VERSION_FULL)_win10_network.exe"
+$CUDA_REPO_PKG_LOCATION="https://developer.nvidia.com/compute/cuda/$($CUDA_MAJOR).$($CUDA_MINOR)/prod/network_installers/cuda_$($CUDA_VERSION_FULL)_windows_network-exe"
+$CUDA_REPO_PKG="cuda_$($CUDA_VERSION_FULL)_win10_network.exe"
 
 # Build list of required cuda packages to be installed. See https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html#install-cuda-software for pacakge details. 
 
 # CUDA < 9.1 had a differnt package name for the compiler.
 $NVCC_PACKAGE_NAME="nvcc"
-if ([int]$env:CUDA_MAJOR -le 8 -Or ([int]$env:CUDA_MAJOR -eq 9 -And [int]$env:CUDA_MINOR -eq 0)){
+if ([int]$CUDA_MAJOR -le 8 -Or ([int]$CUDA_MAJOR -eq 9 -And [int]$CUDA_MINOR -eq 0)){
     $NVCC_PACKAGE_NAME="compiler"
 }
 # Build string containing list of pacakges. Do not need Display.Driver
-$env:CUDA_PACKAGES = ""
-$env:CUDA_PACKAGES += "$($NVCC_PACKAGE_NAME)_$($env:CUDA_MAJOR).$($env:CUDA_MINOR) "
-$env:CUDA_PACKAGES += "visual_studio_integration_$($env:CUDA_MAJOR).$($env:CUDA_MINOR) "
-# $env:CUDA_PACKAGES += "curand_$($env:CUDA_MAJOR).$($env:CUDA_MINOR) "
-$env:CUDA_PACKAGES += "curand_dev_$($env:CUDA_MAJOR).$($env:CUDA_MINOR) "
+$CUDA_PACKAGES = ""
+$CUDA_PACKAGES += "$($NVCC_PACKAGE_NAME)_$($CUDA_MAJOR).$($CUDA_MINOR) "
+$CUDA_PACKAGES += "visual_studio_integration_$($CUDA_MAJOR).$($CUDA_MINOR) "
+# $CUDA_PACKAGES += "curand_$($CUDA_MAJOR).$($CUDA_MINOR) "
+$CUDA_PACKAGES += "curand_dev_$($CUDA_MAJOR).$($CUDA_MINOR) "
 
-Write-Host $env:CUDA_REPO_PKG_LOCATION
-Write-Host $env:CUDA_REPO_PKG
-Write-Host $env:CUDA_PACKAGES
+# Write-Host $CUDA_REPO_PKG_LOCATION
+# Write-Host $CUDA_REPO_PKG
+# Write-Host $CUDA_PACKAGES
 exit 1
 
 ## ------------
@@ -72,12 +72,12 @@ if (Test-Path env:APPVEYOR_BUILD_WORKER_IMAGE){
 ## ------------
 
 # Get CUDA network installer
-Write-Host "Downloading CUDA Network Installer for $($env:CUDA_VERSION_FULL)"
-Invoke-WebRequest $env:CUDA_REPO_PKG_LOCATION -OutFile $env:CUDA_REPO_PKG | Out-Null
+Write-Host "Downloading CUDA Network Installer for $($CUDA_VERSION_FULL)"
+Invoke-WebRequest $CUDA_REPO_PKG_LOCATION -OutFile $CUDA_REPO_PKG | Out-Null
 Write-Host "Downloading Complete"
   
 # Invoke silent install of CUDA (via network installer)
-Write-Host "Installing CUDA $($env:CUDA_VERSION_FULL) Compiler and Runtime"
-& .\$env:CUDA_REPO_PKG -s $env:CUDA_PACKAGES | Out-Null
+Write-Host "Installing CUDA $($CUDA_VERSION_FULL) Compiler and Runtime"
+& .\$CUDA_REPO_PKG -s $CUDA_PACKAGES | Out-Null
 
 Write-Host "Installation Complete."
