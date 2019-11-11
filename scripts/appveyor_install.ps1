@@ -14,16 +14,18 @@ $env:CUDA_REPO_PKG_LOCATION="http://developer.download.nvidia.com/compute/cuda/1
 $env:CUDA_REPO_PKG="cuda_10.1.243_win10_network.exe"
 
 # Install VS 2015 VC++
-Write-Host "Installing vc++ for Visual Studio $env:APPVEYOR_BUILD_WORKER_IMAGE"
-if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq "Visual Studio 2015"){
-    cmd.exe /c "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64
-    cmd.exe /c "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
-}
-elseif ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq "Visual Studio 2017"){
-    cmd.exe /c "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
-}
-elseif ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq "Visual Studio 2019"){
-    cmd.exe /c "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
+if (Test-Path $env:APPVEYOR_BUILD_WORKER_IMAGE){
+    Write-Host "Installing vc++ for $env:APPVEYOR_BUILD_WORKER_IMAGE"
+    if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq "Visual Studio 2015"){
+        cmd.exe /c "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64
+        cmd.exe /c "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
+    }
+    elseif ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq "Visual Studio 2017"){
+        cmd.exe /c "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
+    }
+    elseif ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq "Visual Studio 2019"){
+        cmd.exe /c "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
+    }
 }
 exit 1
 
