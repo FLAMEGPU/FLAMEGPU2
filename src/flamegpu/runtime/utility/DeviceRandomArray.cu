@@ -1,4 +1,4 @@
-#include "DeviceRandomArray.cuh"
+#include "flamegpu/runtime/utility/DeviceRandomArray.cuh"
 
 #include <cuda_runtime.h>
 #include <curand_kernel.h>
@@ -38,22 +38,24 @@ namespace flamegpu_internal {
 /**
  * Static member vars
  */
-uint64_t DeviceRandomArray::mSeed = 0;
+unsigned int DeviceRandomArray::mSeed = 0;
 DeviceRandomArray::size_type DeviceRandomArray::length = 0;
 const DeviceRandomArray::size_type DeviceRandomArray::min_length = 1024;
 float DeviceRandomArray::growthModifier = 1.5;
 float DeviceRandomArray::shrinkModifier = 1.0;
 curandState *DeviceRandomArray::h_max_random_state = nullptr;
 DeviceRandomArray::size_type DeviceRandomArray::h_max_random_size = 0;
+std::default_random_engine DeviceRandomArray::host_rng;
 /**
  * Member fns
  */
 uint64_t DeviceRandomArray::seedFromTime() {
     return static_cast<uint64_t>(time(nullptr));
 }
-void DeviceRandomArray::init(const uint64_t &seed) {
+void DeviceRandomArray::init(const unsigned int &seed) {
     DeviceRandomArray::mSeed = seed;
-    free();
+    host_rng = std::default_random_engine();
+    free();  //This seeds host_rng
 }
 void DeviceRandomArray::free() {
     // Clear size
@@ -72,6 +74,8 @@ void DeviceRandomArray::free() {
     if (h_max_random_state)
         ::free(h_max_random_state);
     h_max_random_size = 0;
+    // Reset host random generator/s
+    host_rng.seed(mSeed);
 }
 
 bool DeviceRandomArray::resize(const size_type &_length) {

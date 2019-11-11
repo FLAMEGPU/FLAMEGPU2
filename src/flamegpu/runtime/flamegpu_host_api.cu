@@ -3,7 +3,8 @@
 #include "flamegpu/gpu/CUDAAgentModel.h"
 
 FLAMEGPU_HOST_API::FLAMEGPU_HOST_API(CUDAAgentModel &_agentModel)
-    :agentModel(_agentModel),
+    : random(),
+    agentModel(_agentModel),
     d_cub_temp(nullptr),
     d_cub_temp_size(0),
     d_output_space(nullptr),

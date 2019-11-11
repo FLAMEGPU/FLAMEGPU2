@@ -12,6 +12,7 @@
 
 class FLAMEGPU_HOST_API;
 class FLAMEGPU_HOST_AGENT_API;
+#include "flamegpu/runtime/utility/HostRandom.cuh" //class HostRandom;
 
 /**
  * @brief FLAMEGPU host function pointer definition
@@ -83,10 +84,10 @@ class FLAMEGPU_HOST_API {
      */
     // FLAMEGPU_HOST_AGENT_API agent(const std::string &agent_name);
     /**
-    * Returns methods that work on all agents of a certain type currently in a given state
-    */
+     * Returns methods that work on all agents of a certain type currently in a given state
+     */
     FLAMEGPU_HOST_AGENT_API agent(const std::string &agent_name, const std::string &stateName = "default");
-    // const HostRandom;
+    const HostRandom random;
 
  private:
     /**

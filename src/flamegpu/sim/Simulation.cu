@@ -20,7 +20,7 @@
 
 Simulation::Simulation(const ModelDescription& model) : layers(), model_description(model) {
     simulation_steps = 1;
-    DeviceRandomArray::init(DeviceRandomArray::seedFromTime());
+    DeviceRandomArray::init(static_cast<unsigned int>(DeviceRandomArray::seedFromTime()%UINT_MAX));
 }
 
 
@@ -130,7 +130,7 @@ int Simulation::checkArgs(int argc, const char** argv, std::string &xml_model_pa
         // -random <uint>, Uses the specified random seed, defaults to clock
         if (arg.compare("--random") == 0 || arg.compare("-r") == 0) {
             // Reinitialise DeviceRandomArray state
-            DeviceRandomArray::init(static_cast<uint64_t>(strtoul(argv[++i], nullptr, 0)));
+            DeviceRandomArray::init(static_cast<unsigned int>(strtoul(argv[++i], nullptr, 0)));
             continue;
         }
         fprintf(stderr, "Unexpected argument: %s\n", arg.c_str());

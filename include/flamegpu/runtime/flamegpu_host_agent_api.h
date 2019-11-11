@@ -62,12 +62,12 @@ class FLAMEGPU_HOST_AGENT_API {
     template<typename T, typename reductionOperatorT>
     T reduce(const std::string &variable, reductionOperatorT reductionOperator, const T&init) const;
     /**
-    * Wraps cub::DeviceHistogram::HistogramEven()
-    * @param variable The agent variable to perform the reduction across
-    * @param histogramBins The number of bins the histogram should have
-    * @param lowerBound The lower sample value boundary of lowest bin
-    * @param upperBound The upper sample value boundary of upper bin
-    */
+     * Wraps cub::DeviceHistogram::HistogramEven()
+     * @param variable The agent variable to perform the reduction across
+     * @param histogramBins The number of bins the histogram should have
+     * @param lowerBound The lower sample value boundary of lowest bin
+     * @param upperBound The upper sample value boundary of upper bin
+     */
     template<typename T>
     std::vector<int> histogramEven(const std::string &variable, const unsigned int &histogramBins, const T &lowerBound, const T &upperBound) const;
 
