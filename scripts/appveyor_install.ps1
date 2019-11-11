@@ -12,10 +12,9 @@ $Matches
 Write-Host $Matches
 Write-Host $cuda_ver_matched
 
-if($Matches){
-    Write-Host "match"
-} else {
-    Write-Host "no match"
+if(-not $cuda_ver_matched){
+    Write-Host "Invalid CUDA Version Specified. <major>.<minor>.<path.. $env:CUDA_VERSION_FULL."
+    exit 1
 }
 
 
