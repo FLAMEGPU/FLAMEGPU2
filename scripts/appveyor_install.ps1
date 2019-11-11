@@ -15,7 +15,9 @@ $env:CUDA_REPO_PKG="cuda_10.1.243_win10_network.exe"
 
 
 Write-Host "APPVEYOR_BUILD_WORKER_IMAGE"
-Write-Host $APPVEYOR_BUILD_WORKER_IMAGE
+Write-Host "$env:APPVEYOR_BUILD_WORKER_IMAGE"
+$IMG_NAME = Get-Variable $env:APPVEYOR_BUILD_WORKER_IMAGE -valueOnly
+Write-Host "IMG_NAME: $IMG_NAME"
 # Install vc++, depending on which visual studio image is being used. 
 # VS 2015
 if (Test-Path -Path "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" -PathType Leaf) {
