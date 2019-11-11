@@ -1,4 +1,4 @@
-#include "flamegpu/runtime/utility/DeviceRandomArray.cuh"
+#include "flamegpu/runtime/utility/RandomManager.cuh"
 
 #include <cuda_runtime.h>
 #include <curand_kernel.h>
@@ -24,7 +24,7 @@ namespace flamegpu_internal {
     /**
      * Device copy of the length of d_random_state
      */
-    __device__ DeviceRandomArray::size_type d_random_size;
+    __device__ RandomManager::size_type d_random_size;
     /**
      * Host mirror of d_random_state
      */
@@ -32,36 +32,36 @@ namespace flamegpu_internal {
     /**
      * Host mirror of d_random_size
      */
-    DeviceRandomArray::size_type hd_random_size;
+    RandomManager::size_type hd_random_size;
 }  // namespace flamegpu_internal
 
 /**
  * Static member vars
  */
-unsigned int DeviceRandomArray::mSeed = 0;
-DeviceRandomArray::size_type DeviceRandomArray::length = 0;
-const DeviceRandomArray::size_type DeviceRandomArray::min_length = 1024;
-float DeviceRandomArray::growthModifier = 1.5;
-float DeviceRandomArray::shrinkModifier = 1.0;
-curandState *DeviceRandomArray::h_max_random_state = nullptr;
-DeviceRandomArray::size_type DeviceRandomArray::h_max_random_size = 0;
-std::default_random_engine DeviceRandomArray::host_rng;
+unsigned int RandomManager::mSeed = 0;
+RandomManager::size_type RandomManager::length = 0;
+const RandomManager::size_type RandomManager::min_length = 1024;
+float RandomManager::growthModifier = 1.5;
+float RandomManager::shrinkModifier = 1.0;
+curandState *RandomManager::h_max_random_state = nullptr;
+RandomManager::size_type RandomManager::h_max_random_size = 0;
+std::default_random_engine RandomManager::host_rng;
 /**
  * Member fns
  */
-uint64_t DeviceRandomArray::seedFromTime() {
+uint64_t RandomManager::seedFromTime() {
     return static_cast<uint64_t>(time(nullptr));
 }
-void DeviceRandomArray::init(const unsigned int &seed) {
-    DeviceRandomArray::mSeed = seed;
+void RandomManager::init(const unsigned int &seed) {
+    RandomManager::mSeed = seed;
     host_rng = std::default_random_engine();
-    free();  //This seeds host_rng
+    free();  // This seeds host_rng
 }
-void DeviceRandomArray::free() {
+void RandomManager::free() {
     // Clear size
     length = 0;
     flamegpu_internal::hd_random_size = 0;
-    gpuErrchk(cudaMemcpyToSymbol(flamegpu_internal::d_random_size, &flamegpu_internal::hd_random_size, sizeof(DeviceRandomArray::size_type)))
+    gpuErrchk(cudaMemcpyToSymbol(flamegpu_internal::d_random_size, &flamegpu_internal::hd_random_size, sizeof(RandomManager::size_type)))
         printf("(%s:%d) CUDA Error initialising curand.", __FILE__, __LINE__);
     // Release old
     if (flamegpu_internal::hd_random_state != nullptr) {
@@ -78,41 +78,41 @@ void DeviceRandomArray::free() {
     host_rng.seed(mSeed);
 }
 
-bool DeviceRandomArray::resize(const size_type &_length) {
+bool RandomManager::resize(const size_type &_length) {
     assert(growthModifier > 1.0);
     assert(shrinkModifier > 0.0);
     assert(shrinkModifier <= 1.0);
     auto t_length = length;
     if (length) {
         while (t_length < _length) {
-            t_length = static_cast<DeviceRandomArray::size_type>(t_length * growthModifier);
+            t_length = static_cast<RandomManager::size_type>(t_length * growthModifier);
             if (shrinkModifier < 1.0f) {
                 while (t_length * shrinkModifier > _length) {
-                    t_length = static_cast<DeviceRandomArray::size_type>(t_length * shrinkModifier);
+                    t_length = static_cast<RandomManager::size_type>(t_length * shrinkModifier);
                 }
             }
         }
     } else {  // Special case for first run
         t_length = _length;
     }
-    // Don't allow array to go below DeviceRandomArray::min_length elements
-    t_length = std::max<size_type>(t_length, DeviceRandomArray::min_length);
+    // Don't allow array to go below RandomManager::min_length elements
+    t_length = std::max<size_type>(t_length, RandomManager::min_length);
     if (t_length != length)
         resizeDeviceArray(t_length);
     return t_length != length;
 }
-__global__ void init_curand(unsigned int threadCount, uint64_t seed, DeviceRandomArray::size_type offset) {
+__global__ void init_curand(unsigned int threadCount, uint64_t seed, RandomManager::size_type offset) {
     int id = blockIdx.x * blockDim.x + threadIdx.x;
     if (id < threadCount)
         curand_init(seed, offset + id, 0, &flamegpu_internal::d_random_state[offset + id]);
 }
-void DeviceRandomArray::resizeDeviceArray(const size_type &_length) {
+void RandomManager::resizeDeviceArray(const size_type &_length) {
     if (_length > length) {
         // Growing array
         curandState *t_hd_random_state = nullptr;
         // Allocate new mem to t_hd
         gpuErrchk(cudaMalloc(&t_hd_random_state, _length * sizeof(curandState)));
-            printf("(%s:%d) CUDA Error DeviceRandomArray::resizeDeviceArray().", __FILE__, __LINE__);
+            printf("(%s:%d) CUDA Error RandomManager::resizeDeviceArray().", __FILE__, __LINE__);
         // Copy hd->t_hd[****    ]
         if (flamegpu_internal::hd_random_state) {
             gpuErrchk(cudaMemcpy(t_hd_random_state, flamegpu_internal::hd_random_state, length * sizeof(curandState), cudaMemcpyDeviceToDevice));
@@ -172,26 +172,26 @@ void DeviceRandomArray::resizeDeviceArray(const size_type &_length) {
     // Update length
     length = _length;
     flamegpu_internal::hd_random_size = _length;
-    gpuErrchk(cudaMemcpyToSymbol(flamegpu_internal::d_random_size, &flamegpu_internal::hd_random_size, sizeof(DeviceRandomArray::size_type)));
+    gpuErrchk(cudaMemcpyToSymbol(flamegpu_internal::d_random_size, &flamegpu_internal::hd_random_size, sizeof(RandomManager::size_type)));
 }
-void DeviceRandomArray::setGrowthModifier(float _growthModifier) {
+void RandomManager::setGrowthModifier(float _growthModifier) {
     assert(growthModifier > 1.0);
-    DeviceRandomArray::growthModifier = _growthModifier;
+    RandomManager::growthModifier = _growthModifier;
 }
-float DeviceRandomArray::getGrowthModifier() {
-    return DeviceRandomArray::growthModifier;
+float RandomManager::getGrowthModifier() {
+    return RandomManager::growthModifier;
 }
-void DeviceRandomArray::setShrinkModifier(float _shrinkModifier) {
+void RandomManager::setShrinkModifier(float _shrinkModifier) {
     assert(shrinkModifier > 0.0);
     assert(shrinkModifier <= 1.0);
-    DeviceRandomArray::shrinkModifier = _shrinkModifier;
+    RandomManager::shrinkModifier = _shrinkModifier;
 }
-float DeviceRandomArray::getShrinkModifier() {
-    return DeviceRandomArray::shrinkModifier;
+float RandomManager::getShrinkModifier() {
+    return RandomManager::shrinkModifier;
 }
-DeviceRandomArray::size_type DeviceRandomArray::size() {
+RandomManager::size_type RandomManager::size() {
     return length;
 }
-uint64_t DeviceRandomArray::seed() {
+uint64_t RandomManager::seed() {
     return mSeed;
 }

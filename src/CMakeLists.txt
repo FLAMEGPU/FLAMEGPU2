@@ -85,7 +85,7 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/cuRVE/cuRVEInstance.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/AgentRandom.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/HostRandom.cuh
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/DeviceRandomArray.cuh
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/RandomManager.cuh
     
 )
 SET(SRC_FLAMEGPU2
@@ -111,7 +111,7 @@ SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/flamegpu_host_api.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/io/xmlReader.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/io/xmlWriter.cu
-    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/utility/DeviceRandomArray.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/utility/RandomManager.cu
 )
 
 SET(ALL_SRC

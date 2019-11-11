@@ -12,7 +12,7 @@
 
 class FLAMEGPU_HOST_API;
 class FLAMEGPU_HOST_AGENT_API;
-#include "flamegpu/runtime/utility/HostRandom.cuh" //class HostRandom;
+#include "flamegpu/runtime/utility/HostRandom.cuh"
 
 /**
  * @brief FLAMEGPU host function pointer definition

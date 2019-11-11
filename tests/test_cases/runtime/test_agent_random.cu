@@ -26,9 +26,8 @@
 /**
  * @brief      To verify the correctness of agent random
  *
- * This test checks whether AgentRandom and DeviceRandomArray behave correctly
+ * This test checks whether AgentRandom and RandomManager behave correctly
 */
-
 
 TEST(AgentRandomTest, AgentRandomCheck) {
     GTEST_COUT << "Testing AgentRandom and DeviceRandomArray Name .." << std::endl;
