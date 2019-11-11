@@ -118,9 +118,7 @@ if(Test-Path -Path $CUDA_REPO_PKG_LOCAL){
 # Invoke silent install of CUDA (via network installer)
 Write-Host "Installing CUDA $($CUDA_VERSION_FULL) Compiler and Runtime"
 Write-Host "& .\$($CUDA_REPO_PKG_LOCAL) -s $($CUDA_PACKAGES)|  Out-Null"
-& .\$CUDA_REPO_PKG_LOCAL -s $CUDA_PACKAGES | Out-Null
-
-sleep 100
+& .\"($CUDA_REPO_PKG_LOCAL)" -s "$($CUDA_PACKAGES)" | Out-Null
 
 # Write-Host 'Downloading CUDA Network Installer'
 # Invoke-WebRequest $env:CUDA_REPO_PKG_LOCATION -OutFile $env:CUDA_REPO_PKG | Out-Null
