@@ -100,7 +100,7 @@ $env:CUDA_REPO_PKG="cuda_10.1.243_win10_network.exe"
 
 Write-Host "$($CUDA_VERSION_FULL)"
 Write-Host "$($CUDA_REPO_PKG_REMOTE) - $($CUDA_REPO_PKG_LOCAL)"
-Write-Host "$($env:CUDA_REPO_PKG) - $($env:CUDA_REPO_PKG)"
+Write-Host "$($env:CUDA_REPO_PKG_LOCATION) - $($env:CUDA_REPO_PKG)"
 Write-Host "& .\$($CUDA_REPO_PKG_LOCAL) -s $($CUDA_PACKAGES) | Out-Null"
 Write-Host "& .\$($env:CUDA_REPO_PKG) -s nvcc_10.1 visual_studio_integration_10.1 curand_10.1 curand_dev_10.1|  Out-Null"
 
