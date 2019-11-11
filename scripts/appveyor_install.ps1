@@ -125,9 +125,6 @@ Write-Host "& .\$($CUDA_REPO_PKG_LOCAL) -s $($CUDA_PACKAGES)|  Out-Null"
 # Write-Host 'Downloading Complete'
 # & .\$env:CUDA_REPO_PKG -s nvcc_10.1 visual_studio_integration_10.1 curand_10.1 curand_dev_10.1|  Out-Null
 
-
-
-Write-Host "$LASTEXITCODE"
 if ($? -eq $false) {
     write-host "Error: CUDA installer reported error."
     exit 1 
