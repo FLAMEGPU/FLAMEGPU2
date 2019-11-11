@@ -105,28 +105,28 @@ if(Test-Path -Path $CUDA_REPO_PKG_LOCAL){
 }
   
 # Invoke silent install of CUDA (via network installer)
-Write-Host "Installing CUDA $($CUDA_VERSION_FULL) Compiler and Runtime"
-# & .\$CUDA_REPO_PKG_LOCAL -s $CUDA_PACKAGES | Out-Null
-Write-Host "& .\$($CUDA_REPO_PKG_LOCAL) -s $($CUDA_PACKAGES)"
-# & .\$CUDA_REPO_PKG_LOCAL -s $CUDA_PACKAGES
-Write-Host "& .\$($CUDA_REPO_PKG_LOCAL) -s nvcc_10.1 visual_studio_integration_10.1 curand_10.1 curand_dev_10.1"
-& .\$CUDA_REPO_PKG_LOCAL -s nvcc_10.1 visual_studio_integration_10.1 curand_10.1 curand_dev_10.1
+# Write-Host "Installing CUDA $($CUDA_VERSION_FULL) Compiler and Runtime"
+# # & .\$CUDA_REPO_PKG_LOCAL -s $CUDA_PACKAGES | Out-Null
+# Write-Host "& .\$($CUDA_REPO_PKG_LOCAL) -s $($CUDA_PACKAGES)"
+# # & .\$CUDA_REPO_PKG_LOCAL -s $CUDA_PACKAGES
+# Write-Host "& .\$($CUDA_REPO_PKG_LOCAL) -s nvcc_10.1 visual_studio_integration_10.1 curand_10.1 curand_dev_10.1"
+# & .\$CUDA_REPO_PKG_LOCAL -s nvcc_10.1 visual_studio_integration_10.1 curand_10.1 curand_dev_10.1
 
 
-Write-Host "$LASTEXITCODE"
-if ($? -eq $false) {
-    write-host "Error: CUDA installer reported error."
-    exit 1 
-}
+# Write-Host "$LASTEXITCODE"
+# if ($? -eq $false) {
+#     write-host "Error: CUDA installer reported error."
+#     exit 1 
+# }
 
-$nvcc_path = "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v$($CUDA_MAJOR).$($CUDA_MINOR)/bin/nvcc.exe"
-Write-Host "Checking $($nvcc_path)"
-if(Test-Path -Path $nvcc_path){
-    Write-Host "Found"
-    & $nvcc_path --version
-} else {
-    Write-Host "not-found"
-}
+# $nvcc_path = "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v$($CUDA_MAJOR).$($CUDA_MINOR)/bin/nvcc.exe"
+# Write-Host "Checking $($nvcc_path)"
+# if(Test-Path -Path $nvcc_path){
+#     Write-Host "Found"
+#     & $nvcc_path --version
+# } else {
+#     Write-Host "not-found"
+# }
 
 $env:CUDA_REPO_PKG_LOCATION="http://developer.download.nvidia.com/compute/cuda/10.1/Prod/network_installers/cuda_10.1.243_win10_network.exe"
 $env:CUDA_REPO_PKG="cuda_10.1.243_win10_network.exe"
