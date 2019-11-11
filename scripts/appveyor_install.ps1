@@ -71,6 +71,8 @@ if (Test-Path env:APPVEYOR_BUILD_WORKER_IMAGE){
 
 # Get CUDA network installer
 Write-Host "Downloading CUDA Network Installer for $($CUDA_VERSION_FULL)"
+Write-Host $CUDA_REPO_PKG_LOCATION
+Write-Host $CUDA_REPO_PKG
 Invoke-WebRequest $CUDA_REPO_PKG_LOCATION -OutFile $CUDA_REPO_PKG | Out-Null
 if(Test-Path -Path $CUDA_REPO_PKG){
     Write-Host "Downloading Complete"
