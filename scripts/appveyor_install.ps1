@@ -10,10 +10,10 @@
 # $CUDA_VERSION_FULL =  "9.0.176" # CUDA 9.0
 # $CUDA_VERSION_FULL =  "9.1.85"  # CUDA 9.1
 # $CUDA_VERSION_FULL =  "9.2.148" # CUDA 9.2
-# $CUDA_VERSION_FULL = "10.0.130" # CUDA 10.0
+$CUDA_VERSION_FULL = "10.0.130" # CUDA 10.0
 # $CUDA_VERSION_FULL = "10.1.105" # CUDA 10.1
 # $CUDA_VERSION_FULL = "10.1.168" # CUDA 10.1 update1
-$CUDA_VERSION_FULL = "10.1.243" # CUDA 10.1 update2
+# $CUDA_VERSION_FULL = "10.1.243" # CUDA 10.1 update2
 
 
 $CUDA_KNOWN_URLS = @{
@@ -105,6 +105,7 @@ if(Test-Path -Path $CUDA_REPO_PKG_LOCAL){
 # Invoke silent install of CUDA (via network installer)
 Write-Host "Installing CUDA $($CUDA_VERSION_FULL) Compiler and Runtime"
 # & .\$CUDA_REPO_PKG_LOCAL -s $CUDA_PACKAGES | Out-Null
+Write-Host "& .\$($CUDA_REPO_PKG_LOCAL) -s $($CUDA_PACKAGES) | Out-Null"
 & .\$CUDA_REPO_PKG_LOCAL -s $CUDA_PACKAGES
 Write-Host "$LASTEXITCODE"
 
