@@ -3,6 +3,7 @@
 ## -------------------
 ## Select CUDA version
 ## -------------------
+
 # $CUDA_VERSION_FULL =  "8.0.44"  # CUDA 8.0 GA 1
 # $CUDA_VERSION_FULL =  "8.0.61"  # CUDA 8.0 GA 2
 # $CUDA_VERSION_FULL =  "9.0.176" # CUDA 9.0
@@ -17,6 +18,7 @@ $CUDA_VERSION_FULL = "10.1.243" # CUDA 10.1 update2
 ## -----------------
 ## Prepare Variables
 ## -----------------
+
 # Validate CUDA version, extracting components via regex
 $cuda_ver_matched = $CUDA_VERSION_FULL -match "^(?<major>[1-9][0-9]*)\.(?<minor>[0-9]+)\.(?<patch>[0-9]+)$"
 if(-not $cuda_ver_matched){
@@ -39,20 +41,15 @@ if ([int]$CUDA_MAJOR -le 8 -Or ([int]$CUDA_MAJOR -eq 9 -And [int]$CUDA_MINOR -eq
     $NVCC_PACKAGE_NAME="compiler"
 }
 # Build string containing list of pacakges. Do not need Display.Driver
-$CUDA_PACKAGES = ""
-$CUDA_PACKAGES += "$($NVCC_PACKAGE_NAME)_$($CUDA_MAJOR).$($CUDA_MINOR) "
+$CUDA_PACKAGES  = "$($NVCC_PACKAGE_NAME)_$($CUDA_MAJOR).$($CUDA_MINOR) "
 $CUDA_PACKAGES += "visual_studio_integration_$($CUDA_MAJOR).$($CUDA_MINOR) "
-# $CUDA_PACKAGES += "curand_$($CUDA_MAJOR).$($CUDA_MINOR) "
 $CUDA_PACKAGES += "curand_dev_$($CUDA_MAJOR).$($CUDA_MINOR) "
 
-Write-Host $CUDA_REPO_PKG_LOCATION
-Write-Host $CUDA_REPO_PKG
-Write-Host $CUDA_PACKAGES
-exit 1
 
 ## ------------
 ## Install vc++
 ## ------------
+
 if (Test-Path env:APPVEYOR_BUILD_WORKER_IMAGE){
     Write-Host "Installing vc++ for $env:APPVEYOR_BUILD_WORKER_IMAGE"
     if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq "Visual Studio 2015"){
@@ -66,6 +63,7 @@ if (Test-Path env:APPVEYOR_BUILD_WORKER_IMAGE){
         cmd.exe /c "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
     }
 }
+
 
 ## ------------
 ## Install CUDA
