@@ -7,7 +7,7 @@
 $env:CUDA_VERSION_FULL="10.1.243s"
 
 
-$cuda_version_pattern = [Regex]::new("^(?<major>[1-9][0-9]*)\.(?<minor>[0-9]+)\.(?<patch>[0-9]+)$")
+$cuda_version_pattern = "^(?<major>[1-9][0-9]*)\.(?<minor>[0-9]+)\.(?<patch>[0-9]+)$"
 
 $env:CUDA_VERSION_FULL -match $cuda_version_pattern
 $Matches
