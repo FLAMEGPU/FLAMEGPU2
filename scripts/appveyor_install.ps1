@@ -120,9 +120,9 @@ if(Test-Path -Path $CUDA_REPO_PKG_LOCAL){
 Write-Host "Installing CUDA $($CUDA_VERSION_FULL) Compiler and Runtime"
 Write-Host "& .\$($CUDA_REPO_PKG_LOCAL) -s $($CUDA_PACKAGES)|  Out-Null"
 # & .\"$($CUDA_REPO_PKG_LOCAL)" -s "$($CUDA_PACKAGES)" | Out-Null
-# & .\"$($CUDA_REPO_PKG_LOCAL)" -s nvcc_10.1 visual_studio_integration_10.1 curand_10.1 curand_dev_10.1| Out-Null
+& .\"$($CUDA_REPO_PKG_LOCAL)" -s nvcc_10.1 visual_studio_integration_10.1 curand_10.1 curand_dev_10.1| Out-Null
 
-Start-Process -Wait -FilePath .\"$($CUDA_REPO_PKG_LOCAL)" -ArgumentList "-s $($CUDA_PACKAGES)"
+# Start-Process -Wait -FilePath .\"$($CUDA_REPO_PKG_LOCAL)" -ArgumentList "-s $($CUDA_PACKAGES)"
 
 
 Write-Host "$? $LASTEXITCODE"
