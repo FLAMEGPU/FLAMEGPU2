@@ -6,11 +6,10 @@ $env:CUDA_VERSION_FULL="8.0.44"
 # $env:CUDA_VERSION_FULL="9.1.85"
 # $env:CUDA_VERSION_FULL="10.1.243"
 
-
-# Validate input CUDA version, extracting major minor and patch.
-
-$cuda_ver_matched = $env:CUDA_VERSION_FULL -match  "^(?<major>[1-9][0-9]*)\.(?<minor>[0-9]+)\.(?<patch>[0-9]+)$"
+# Validate input CUDA version, extracting major minor and patch via regex
+$cuda_ver_matched = $env:CUDA_VERSION_FULL -match "^(?<major>[1-9][0-9]*)\.(?<minor>[0-9]+)\.(?<patch>[0-9]+)$"
 if(-not $cuda_ver_matched){
+    # Error if invalid CUDA version specified.
     Write-Host "Invalid CUDA version specified, <major>.<minor>.<patch> required. '$env:CUDA_VERSION_FULL'."
     exit 1
 }
@@ -18,11 +17,10 @@ $env:CUDA_MAJOR=$Matches.major
 $env:CUDA_MINOR=$Matches.minor
 $env:CUDA_PATCH=$Matches.patch
 
-
 # Build CUDA related variables.
 Write-Host "CUDA_VER: $($env:CUDA_MAJOR).$($env:CUDA_MINOR).$($env:CUDA_PATCH)"
 $env:CUDA_REPO_PKG_LOCATION="https://developer.nvidia.com/compute/cuda/$($env:CUDA_MAJOR).$($env:CUDA_MINOR)/prod/network_installers/cuda_$($env:CUDA_VERSION_FULL)_windows_network-exe"
-$env:CUDA_REPO_PKG="cuda_($env:CUDA_VERSION_FULL)_win10_network.exe"
+$env:CUDA_REPO_PKG="cuda_$($env:CUDA_VERSION_FULL)_win10_network.exe"
 
 Write-Host $env:CUDA_REPO_PKG_LOCATION
 Write-Host $env:CUDA_REPO_PKG
