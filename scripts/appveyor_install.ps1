@@ -108,12 +108,12 @@ Write-Host "& .\$($env:CUDA_REPO_PKG) -s nvcc_10.1 visual_studio_integration_10.
 # Get CUDA network installer
 Write-Host "Downloading CUDA Network Installer for $($CUDA_VERSION_FULL) from: $($CUDA_REPO_PKG_REMOTE)"
 # Invoke-WebRequest $CUDA_REPO_PKG_REMOTE -OutFile $CUDA_REPO_PKG_LOCAL | Out-Null
-if(Test-Path -Path $CUDA_REPO_PKG_LOCAL){
-    Write-Host "Downloading Complete"
-} else {
-    Write-Host "Error: Failed to download $($CUDA_REPO_PKG_LOCAL) from $($CUDA_REPO_PKG_REMOTE)"
-    exit 1
-}
+# if(Test-Path -Path $CUDA_REPO_PKG_LOCAL){
+#     Write-Host "Downloading Complete"
+# } else {
+#     Write-Host "Error: Failed to download $($CUDA_REPO_PKG_LOCAL) from $($CUDA_REPO_PKG_REMOTE)"
+#     exit 1
+# }
   
 # Invoke silent install of CUDA (via network installer)
 Write-Host "Installing CUDA $($CUDA_VERSION_FULL) Compiler and Runtime"
