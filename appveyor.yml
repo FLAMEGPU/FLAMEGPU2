@@ -2,8 +2,8 @@
 version: "0.1.{build}"
 
 # Operating system (build VM template)
-os: Visual Studio 2015
-# os: Visual Studio 2017
+# os: Visual Studio 2015
+os: Visual Studio 2017
 # os: Visual Studio 2019
 
 # build platform, i.e. Win32 (instead of x86), x64, Any CPU. This setting is optional.
@@ -28,9 +28,12 @@ init:
 clone_folder: C:\projects\FLAMEGPU2_dev
 
 # scripts that run after cloning repository (requires reboot to propagate installer env variables)
+# 2015
+# - call "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64  #installing vc++
+# - call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64 #installing vc++
+# 2017
 install:
-  - call "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64  #installing vc++
-  - call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64 #installing vc++
+  -   call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
   - ps: .\scripts\appveyor_install.ps1
   - ps: Write-Output 'Rebooting worker node...'
   - ps: sleep 5
