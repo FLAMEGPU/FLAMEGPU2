@@ -1,7 +1,7 @@
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_UTILITY_HOSTRANDOM_CUH_
 #define INCLUDE_FLAMEGPU_RUNTIME_UTILITY_HOSTRANDOM_CUH_
 
-#include <Random>
+#include <random>
 
 #include "flamegpu/runtime/utility/RandomManager.cuh"
 
