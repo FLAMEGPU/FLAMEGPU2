@@ -28,22 +28,13 @@ init:
 clone_folder: C:\projects\FLAMEGPU2_dev
 
 # scripts that run after cloning repository (requires reboot to propagate installer env variables)
-# 2015
-# - call "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64  #installing vc++
-# - call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64 #installing vc++
-# 2017
 install:
-  -   call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
   - ps: .\scripts\appveyor_install.ps1
   - ps: Write-Output 'Rebooting worker node...'
   - ps: sleep 5
   - ps: restart-computer -f
   - ps: sleep 5
   - ps: Write-Output 'Reboot complete'
-  # Set the cuda version used by this appveyor image
-  - ps: .\scripts\vcxproj-cuda-version.ps1 "8.0"
-  # Set the device architectures for the appropriate device architecture sessions
-  - ps: .\scripts\vcxproj-device-architectures.ps1 "35"
 
 # Before build use cmake
 before_build:

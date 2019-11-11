@@ -1,4 +1,4 @@
-# Powershell script for installing CUDA on appveyor instances
+# Powershell script for installing vc++ support and CUDA on appveyor instances
 # @future - Use powershell variables for cuda versions etc. 
 
 # CUDA 8
@@ -13,7 +13,24 @@
 $env:CUDA_REPO_PKG_LOCATION="http://developer.download.nvidia.com/compute/cuda/10.1/Prod/network_installers/cuda_10.1.243_win10_network.exe"
 $env:CUDA_REPO_PKG="cuda_10.1.243_win10_network.exe"
 
-# Get network installer
+
+# Install vc++, depending on which visual studio image is being used. 
+# VS 2015
+if (Test-Path "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" -PathType Leaf) {
+    "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64
+    "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
+}
+elseif (Test-Path "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat" -PathType Leaf) {
+    # VS 2017
+    "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
+}
+elseif (Test-Path "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat" -PathType Leaf) {
+    # VS 2019?
+    "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
+}
+
+# Install CUDA
+# Get CUDA network installer
 Write-Host 'Downloading CUDA Network Installer'
 Invoke-WebRequest $env:CUDA_REPO_PKG_LOCATION -OutFile $env:CUDA_REPO_PKG | Out-Null
 Write-Host 'Downloading Complete'
@@ -34,5 +51,3 @@ Write-Host 'Installing CUDA Compiler and Runtime'
 
 
 Write-Host 'Installation Complete.'
-
-# TODO: Test the install was successful
