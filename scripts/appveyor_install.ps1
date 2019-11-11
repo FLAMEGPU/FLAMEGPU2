@@ -45,21 +45,15 @@ $CUDA_PATCH=$Matches.patch
 
 
 # If the specified version is in the known addresses, use that one. 
-$CUDA_REPO_PKG_LOCATION=""
+$CUDA_REPO_PKG_LOCAL="cuda_network.exe"
+$CUDA_REPO_PKG_REMOTE=""
 if($CUDA_KNOWN_URLS.containsKey($CUDA_VERSION_FULL)){
-    $CUDA_REPO_PKG_LOCATION=$CUDA_KNOWN_URLS[$CUDA_VERSION_FULL]
+    $CUDA_REPO_PKG_REMOTE=$CUDA_KNOWN_URLS[$CUDA_VERSION_FULL]
 } else{
     # Guess what the url is given the most recent pattern (at the time of writing, 10.1)
     Write-Host "note: URL for CUDA ${$CUDA_VERSION_FULL} not known, estimating."
-    $CUDA_REPO_PKG_LOCATION="http://developer.download.nvidia.com/compute/cuda/$($CUDA_MAJOR).$($CUDA_MINOR)/Prod/network_installers/cuda_$($CUDA_VERSION_FULL)_win10_network.exe"
+    $CUDA_REPO_PKG_REMOTE="http://developer.download.nvidia.com/compute/cuda/$($CUDA_MAJOR).$($CUDA_MINOR)/Prod/network_installers/cuda_$($CUDA_VERSION_FULL)_win10_network.exe"
 }
-$CUDA_REPO_PKG="cuda_network.exe"
-
-Write-Host $CUDA_REPO_PKG_LOCATION
-
-exit 1
-
-
 
 # Build list of required cuda packages to be installed. See https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html#install-cuda-software for pacakge details. 
 
@@ -98,17 +92,17 @@ if (Test-Path env:APPVEYOR_BUILD_WORKER_IMAGE){
 ## ------------
 
 # Get CUDA network installer
-Write-Host "Downloading CUDA Network Installer for $($CUDA_VERSION_FULL) from: $($CUDA_REPO_PKG_LOCATION)"
-Invoke-WebRequest $CUDA_REPO_PKG_LOCATION -OutFile $CUDA_REPO_PKG | Out-Null
-if(Test-Path -Path $CUDA_REPO_PKG){
+Write-Host "Downloading CUDA Network Installer for $($CUDA_VERSION_FULL) from: $($CUDA_REPO_PKG_REMOTE)"
+Invoke-WebRequest $CUDA_REPO_PKG_REMOTE -OutFile $CUDA_REPO_PKG_LOCAL | Out-Null
+if(Test-Path -Path $CUDA_REPO_PKG_LOCAL){
     Write-Host "Downloading Complete"
 } else {
-    Write-Host "Error: Failed to download $($CUDA_REPO_PKG) from $($CUDA_REPO_PKG_LOCATION)"
+    Write-Host "Error: Failed to download $($CUDA_REPO_PKG_LOCAL) from $($CUDA_REPO_PKG_REMOTE)"
     exit 1
 }
   
 # Invoke silent install of CUDA (via network installer)
 Write-Host "Installing CUDA $($CUDA_VERSION_FULL) Compiler and Runtime"
-& .\$CUDA_REPO_PKG -s $CUDA_PACKAGES | Out-Null
+& .\$CUDA_REPO_PKG_LOCAL -s $CUDA_PACKAGES | Out-Null
 
 Write-Host "Installation Complete."
