@@ -115,13 +115,16 @@ if(Test-Path -Path $CUDA_REPO_PKG_LOCAL){
     exit 1
 }
 
+Get-Childitem -file $($CUDA_REPO_PKG_LOCAL) | select length
+
+
 # Invoke silent install of CUDA (via network installer)
 Write-Host "Installing CUDA $($CUDA_VERSION_FULL) Compiler and Runtime"
 Write-Host "& .\$($CUDA_REPO_PKG_LOCAL) -s $($CUDA_PACKAGES)"
 Write-Host $([string]$CUDA_PACKAGES)
 # & .\$($CUDA_REPO_PKG_LOCAL) -s $([string]$CUDA_PACKAGES)
 & .\$($CUDA_REPO_PKG_LOCAL) -s nvcc_10.1 visual_studio_integration_10.1
-& .\$($CUDA_REPO_PKG_LOCAL) --help -s
+& .\$($CUDA_REPO_PKG_LOCAL) --version
 # & .\$($CUDA_REPO_PKG_LOCAL) -s nvcc_10.1 visual_studio_integration_10.1 curand_10.1 curand_dev_10.1
 
 Write-Host "$? $LASTEXITCODE"
