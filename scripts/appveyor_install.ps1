@@ -1,37 +1,32 @@
 # Powershell script for installing vc++ support and CUDA on appveyor instances
 
 # Select CUDA version, requires major, minor and patch to be included.
-# $env:CUDA_VERSION_FULL="8.0.44"
-$env:CUDA_VERSION_FULL="09.1.85"
+
+$env:CUDA_VERSION_FULL="8.0.44"
+# $env:CUDA_VERSION_FULL="9.1.85"
 # $env:CUDA_VERSION_FULL="10.1.243"
 
 
-$cuda_ver_matched = $env:CUDA_VERSION_FULL -match  "^(?<major>[1-9][0-9]*)\.(?<minor>[0-9]+)\.(?<patch>[0-9]+)$"
+# Validate input CUDA version, extracting major minor and patch.
 
+$cuda_ver_matched = $env:CUDA_VERSION_FULL -match  "^(?<major>[1-9][0-9]*)\.(?<minor>[0-9]+)\.(?<patch>[0-9]+)$"
 if(-not $cuda_ver_matched){
     Write-Host "Invalid CUDA version specified, <major>.<minor>.<patch> required. '$env:CUDA_VERSION_FULL'."
     exit 1
 }
-
 $env:CUDA_MAJOR=$Matches.major
 $env:CUDA_MINOR=$Matches.minor
 $env:CUDA_PATCH=$Matches.patch
 
-Write-Host "CUDA_VER: $env:CUDA_MAJOR.$env:CUDA_MINOR.$env:CUDA_PATCH"
 
+# Build CUDA related variables.
+Write-Host "CUDA_VER: $($env:CUDA_MAJOR).$($env:CUDA_MINOR).$($env:CUDA_PATCH)"
+$env:CUDA_REPO_PKG_LOCATION="https://developer.nvidia.com/compute/cuda/$($env:CUDA_MAJOR).$($env:CUDA_MINOR)/prod/network_installers/cuda_$($env:CUDA_VERSION_FULL)_windows_network-exe"
+$env:CUDA_REPO_PKG="cuda_($env:CUDA_VERSION_FULL)_win10_network.exe"
+
+Write-Host $env:CUDA_REPO_PKG_LOCATION
+Write-Host $env:CUDA_REPO_PKG
 exit 1
-
-# CUDA 8
-# $env:CUDA_REPO_PKG_LOCATION="https://developer.nvidia.com/compute/cuda/8.0/prod/network_installers/cuda_8.0.44_windows_network-exe"
-# $env:CUDA_REPO_PKG="cuda_8.0.44_win10_network.exe"
-
-# CUDA 9.1
-#$env:CUDA_REPO_PKG_LOCATION="https://developer.nvidia.com/compute/cuda/9.1/Prod/network_installers/cuda_9.1.85_win10_network"
-#$env:CUDA_REPO_PKG="cuda_9.1.85_win10_network.exe"
-
-# CUDA 10.1
-$env:CUDA_REPO_PKG_LOCATION="http://developer.download.nvidia.com/compute/cuda/10.1/Prod/network_installers/cuda_10.1.243_win10_network.exe"
-$env:CUDA_REPO_PKG="cuda_10.1.243_win10_network.exe"
 
 # Install vc++ for the appropriate visual studio version if this is executed on appveyor.
 if (Test-Path env:APPVEYOR_BUILD_WORKER_IMAGE){
