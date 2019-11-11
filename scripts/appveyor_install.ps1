@@ -22,8 +22,17 @@ Write-Host "CUDA_VER: $($env:CUDA_MAJOR).$($env:CUDA_MINOR).$($env:CUDA_PATCH)"
 $env:CUDA_REPO_PKG_LOCATION="https://developer.nvidia.com/compute/cuda/$($env:CUDA_MAJOR).$($env:CUDA_MINOR)/prod/network_installers/cuda_$($env:CUDA_VERSION_FULL)_windows_network-exe"
 $env:CUDA_REPO_PKG="cuda_$($env:CUDA_VERSION_FULL)_win10_network.exe"
 
+$env:CUDA_PACKAGES=""
+
+$env:CUDA_PACKAGES += "nvcc_$($env:CUDA_MAJOR).$($env:CUDA_MINOR)"
+$env:CUDA_PACKAGES += "visual_studio_integration_$($env:CUDA_MAJOR).$($env:CUDA_MINOR)"
+$env:CUDA_PACKAGES += "curand_$($env:CUDA_MAJOR).$($env:CUDA_MINOR)"
+$env:CUDA_PACKAGES += "curand_dev_$($env:CUDA_MAJOR).$($env:CUDA_MINOR"
+
+
 Write-Host $env:CUDA_REPO_PKG_LOCATION
 Write-Host $env:CUDA_REPO_PKG
+Write-Host $env:CUDA_PACKAGES
 exit 1
 
 # Install vc++ for the appropriate visual studio version if this is executed on appveyor.
@@ -42,9 +51,9 @@ if (Test-Path env:APPVEYOR_BUILD_WORKER_IMAGE){
 }
 # Install CUDA
 # Get CUDA network installer
-Write-Host 'Downloading CUDA Network Installer'
+Write-Host "Downloading CUDA Network Installer for $($env:CUDA_VERSION_FULL)"
 Invoke-WebRequest $env:CUDA_REPO_PKG_LOCATION -OutFile $env:CUDA_REPO_PKG | Out-Null
-Write-Host 'Downloading Complete'
+Write-Host "Downloading Complete"
   
 # Invoke silent install of CUDA compiler and runtime with Visual Studio integration (via network installer)
 Write-Host 'Installing CUDA Compiler and Runtime'
