@@ -1,7 +1,8 @@
 # Powershell script for installing vc++ support and CUDA on appveyor instances
 
-## Select CUDA version (major.minor.patch)
-
+## -------------------
+## Select CUDA version
+## -------------------
 # $env:CUDA_VERSION_FULL =  "8.0.44"  # CUDA 8.0 GA 1
 # $env:CUDA_VERSION_FULL =  "8.0.61"  # CUDA 8.0 GA 2
 $env:CUDA_VERSION_FULL =  "9.0.176" # CUDA 9.0
@@ -12,6 +13,10 @@ $env:CUDA_VERSION_FULL =  "9.0.176" # CUDA 9.0
 # $env:CUDA_VERSION_FULL = "10.1.168" # CUDA 10.1 update1
 # $env:CUDA_VERSION_FULL = "10.1.243" # CUDA 10.1 update2
 
+
+## -----------------
+## Prepare Variables
+## -----------------
 # Validate CUDA version, extracting components via regex
 $cuda_ver_matched = $env:CUDA_VERSION_FULL -match "^(?<major>[1-9][0-9]*)\.(?<minor>[0-9]+)\.(?<patch>[0-9]+)$"
 if(-not $cuda_ver_matched){
@@ -30,7 +35,7 @@ $env:CUDA_REPO_PKG="cuda_$($env:CUDA_VERSION_FULL)_win10_network.exe"
 
 # CUDA < 9.1 had a differnt package name for the compiler.
 $NVCC_PACKAGE_NAME="nvcc"
-if ([int]$env:CUDA_MAJOR -le 8 -Or ([int]$env:CUDA_MAJOR -eq 9 -And [int]$env:CUDA_MAJOR -eq 0)){
+if ([int]$env:CUDA_MAJOR -le 8 -Or ([int]$env:CUDA_MAJOR -eq 9 -And [int]$env:CUDA_MINOR -eq 0)){
     $NVCC_PACKAGE_NAME="compiler"
 }
 # Build string containing list of pacakges. Do not need Display.Driver
@@ -45,7 +50,9 @@ Write-Host $env:CUDA_REPO_PKG
 Write-Host $env:CUDA_PACKAGES
 exit 1
 
-# Install vc++ for the appropriate visual studio version if this is executed on appveyor.
+## ------------
+## Install vc++
+## ------------
 if (Test-Path env:APPVEYOR_BUILD_WORKER_IMAGE){
     Write-Host "Installing vc++ for $env:APPVEYOR_BUILD_WORKER_IMAGE"
     if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq "Visual Studio 2015"){
@@ -59,23 +66,18 @@ if (Test-Path env:APPVEYOR_BUILD_WORKER_IMAGE){
         cmd.exe /c "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
     }
 }
-# Install CUDA
+
+## ------------
+## Install CUDA
+## ------------
+
 # Get CUDA network installer
 Write-Host "Downloading CUDA Network Installer for $($env:CUDA_VERSION_FULL)"
 Invoke-WebRequest $env:CUDA_REPO_PKG_LOCATION -OutFile $env:CUDA_REPO_PKG | Out-Null
 Write-Host "Downloading Complete"
   
-# Invoke silent install of CUDA compiler and runtime with Visual Studio integration (via network installer)
-Write-Host 'Installing CUDA Compiler and Runtime'
-
-# CUDA 8.0
-# & .\$env:CUDA_REPO_PKG -s compiler_8.0 visual_studio_integration_8.0 curand_8.0	curand_dev_8.0| Out-Null
-
-# CUDA 9.1
-# & .\$env:CUDA_REPO_PKG -s nvcc_9.1 visual_studio_integration_9.1 curand_9.1 curand_dev_9.1| Out-Null
-
-# CUDA 10.1
+# Invoke silent install of CUDA (via network installer)
+Write-Host "Installing CUDA $($env:CUDA_VERSION_FULL) Compiler and Runtime"
 & .\$env:CUDA_REPO_PKG -s $env:CUDA_PACKAGES | Out-Null
 
-
-Write-Host 'Installation Complete.'
+Write-Host "Installation Complete."
