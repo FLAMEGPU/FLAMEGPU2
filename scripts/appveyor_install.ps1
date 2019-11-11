@@ -16,17 +16,17 @@ $env:CUDA_REPO_PKG="cuda_10.1.243_win10_network.exe"
 
 # Install vc++, depending on which visual studio image is being used. 
 # VS 2015
-if (Test-Path "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" -PathType Leaf) {
-    "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64
-    "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
+if (Test-Path -Path "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" -PathType Leaf) {
+    cmd.exe /c "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64
+    cmd.exe /c "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
 }
-elseif (Test-Path "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat" -PathType Leaf) {
+elseif (Test-Path -Path "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat" -PathType Leaf) {
     # VS 2017
-    "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
+    cmd.exe /c "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
 }
-elseif (Test-Path "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat" -PathType Leaf) {
+elseif (Test-Path -Path "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat" -PathType Leaf) {
     # VS 2019?
-    "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
+    cmd.exe /c "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
 }
 
 # Install CUDA
