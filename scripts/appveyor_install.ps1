@@ -45,9 +45,9 @@ $CUDA_PACKAGES += "visual_studio_integration_$($CUDA_MAJOR).$($CUDA_MINOR) "
 # $CUDA_PACKAGES += "curand_$($CUDA_MAJOR).$($CUDA_MINOR) "
 $CUDA_PACKAGES += "curand_dev_$($CUDA_MAJOR).$($CUDA_MINOR) "
 
-# Write-Host $CUDA_REPO_PKG_LOCATION
-# Write-Host $CUDA_REPO_PKG
-# Write-Host $CUDA_PACKAGES
+Write-Host $CUDA_REPO_PKG_LOCATION
+Write-Host $CUDA_REPO_PKG
+Write-Host $CUDA_PACKAGES
 exit 1
 
 ## ------------
