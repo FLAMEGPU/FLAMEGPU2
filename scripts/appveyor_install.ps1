@@ -14,20 +14,26 @@ $env:CUDA_REPO_PKG_LOCATION="http://developer.download.nvidia.com/compute/cuda/1
 $env:CUDA_REPO_PKG="cuda_10.1.243_win10_network.exe"
 
 
+Write-Host "APPVEYOR_BUILD_WORKER_IMAGE"
+Write-Host $APPVEYOR_BUILD_WORKER_IMAGE
 # Install vc++, depending on which visual studio image is being used. 
 # VS 2015
 if (Test-Path -Path "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" -PathType Leaf) {
+    Write-Host 'VS 2015 detected?'
     cmd.exe /c "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64
     cmd.exe /c "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
 }
 elseif (Test-Path -Path "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat" -PathType Leaf) {
+    Write-Host 'VS 2015 detected?'
     # VS 2017
     cmd.exe /c "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
 }
 elseif (Test-Path -Path "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat" -PathType Leaf) {
+    Write-Host 'VS 2015 detected?'
     # VS 2019?
     cmd.exe /c "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
 }
+exit 1
 
 # Install CUDA
 # Get CUDA network installer
