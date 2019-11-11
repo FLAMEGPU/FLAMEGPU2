@@ -25,8 +25,8 @@ $CUDA_KNOWN_URLS = @{
     "10.1.105" = "https://developer.nvidia.com/compute/cuda/10.1/Prod/network_installers/cuda_10.1.105_win10_network.exe";
     "10.1.168" = "https://developer.nvidia.com/compute/cuda/10.1/Prod/network_installers/cuda_10.1.168_win10_network.exe";
     # "10.1.243" = "http://developer.download.nvidia.com/compute/cuda/10.1/Prod/network_installers/cuda_10.1.243_win10_network.exe";
-    http://developer.download.nvidia.com/compute/cuda/10.1/Prod/network_installers/cuda_10.1.243_win10_network.exe
-    https://developer.nvidia.com/compute/cuda/10.1/prod/network_installers/cuda_10.1.243_windows_network.exe
+    # http://developer.download.nvidia.com/compute/cuda/10.1/Prod/network_installers/cuda_10.1.243_win10_network.exe
+    # https://developer.nvidia.com/compute/cuda/10.1/prod/network_installers/cuda_10.1.243_windows_network.exe
 
 }
 
