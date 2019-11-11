@@ -10,10 +10,10 @@
 # $CUDA_VERSION_FULL =  "9.0.176" # CUDA 9.0
 # $CUDA_VERSION_FULL =  "9.1.85"  # CUDA 9.1
 # $CUDA_VERSION_FULL =  "9.2.148" # CUDA 9.2
-$CUDA_VERSION_FULL = "10.0.130" # CUDA 10.0
+# $CUDA_VERSION_FULL = "10.0.130" # CUDA 10.0
 # $CUDA_VERSION_FULL = "10.1.105" # CUDA 10.1
 # $CUDA_VERSION_FULL = "10.1.168" # CUDA 10.1 update1
-# $CUDA_VERSION_FULL = "10.1.243" # CUDA 10.1 update2
+$CUDA_VERSION_FULL = "10.1.243" # CUDA 10.1 update2
 
 
 $CUDA_KNOWN_URLS = @{
@@ -72,17 +72,19 @@ $CUDA_PACKAGES += "curand_dev_$($CUDA_MAJOR).$($CUDA_MINOR) "
 ## ------------
 ## Install vc++
 ## ------------
-
 if (Test-Path env:APPVEYOR_BUILD_WORKER_IMAGE){
     Write-Host "Installing vc++ for $env:APPVEYOR_BUILD_WORKER_IMAGE"
     if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq "Visual Studio 2015"){
+        Write-Host "Vs2015"
         cmd.exe /c "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64
         cmd.exe /c "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
     }
     elseif ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq "Visual Studio 2017"){
+        Write-Host "Vs2017"
         cmd.exe /c "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
     }
     elseif ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq "Visual Studio 2019"){
+        Write-Host "Vs2019"
         cmd.exe /c "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
     }
 }
@@ -108,5 +110,18 @@ Write-Host "Installing CUDA $($CUDA_VERSION_FULL) Compiler and Runtime"
 Write-Host "& .\$($CUDA_REPO_PKG_LOCAL) -s $($CUDA_PACKAGES) | Out-Null"
 & .\$CUDA_REPO_PKG_LOCAL -s $CUDA_PACKAGES
 Write-Host "$LASTEXITCODE"
+
+$nvcc_path = "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v$($CUDA_MAJOR).$($CUDA_MINOR)/bin/nvcc.exe"
+
+Write-Host "Checking $($nvcc_path)"
+if(Test-Path -Path $nvcc_path){
+    Write-Host "Found"
+    & $nvcc_path --version
+} else {
+    Write-Host "not-found"
+}
+
+
+
 
 Write-Host "Installation Complete."
