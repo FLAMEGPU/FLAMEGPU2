@@ -5,6 +5,8 @@
 ## To make this part of an appveyor matrix, move this to appveyor.yaml and read from $env:CUDA_VERSION_FULL (or equivalent)
 ## -------------------
 
+Set-PSDebug -Trace 1
+
 # $CUDA_VERSION_FULL =  "8.0.44"  # CUDA 8.0 GA 1
 # $CUDA_VERSION_FULL =  "8.0.61"  # CUDA 8.0 GA 2
 # $CUDA_VERSION_FULL =  "9.0.176" # CUDA 9.0
