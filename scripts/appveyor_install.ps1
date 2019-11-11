@@ -4,20 +4,19 @@
 # Select CUDA version, requires major, minor and patch to be included.
 # $env:CUDA_VERSION_FULL="8.0.44"
 # $env:CUDA_VERSION_FULL="9.1.85"
-$env:CUDA_VERSION_FULL="10.1.243"
+$env:CUDA_VERSION_FULL="10.1.243s"
 
 
 $cuda_version_pattern = [Regex]::new("^(?<major>[1-9][0-9]*)\.(?<minor>[0-9]+)\.(?<patch>[0-9]+)$")
 
-$matches = $
 $env:CUDA_VERSION_FULL -match $cuda_version_pattern
 $Matches
 Write-Host $Matches
 
 if($Matches){
-    write-host "match"
+    Write-Host "match"
 } else {
-    write-host "no match"
+    Write-Host "no match"
 }
 
 
