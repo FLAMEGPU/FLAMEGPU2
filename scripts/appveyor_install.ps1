@@ -5,10 +5,10 @@
 ## To make this part of an appveyor matrix, move this to appveyor.yaml and read from $env:CUDA_VERSION_FULL (or equivalent)
 ## -------------------
 
-$CUDA_VERSION_FULL =  "8.0.44"  # CUDA 8.0 GA 1
+# $CUDA_VERSION_FULL =  "8.0.44"  # CUDA 8.0 GA 1
 # $CUDA_VERSION_FULL =  "8.0.61"  # CUDA 8.0 GA 2
 # $CUDA_VERSION_FULL =  "9.0.176" # CUDA 9.0
-# $CUDA_VERSION_FULL =  "9.1.85"  # CUDA 9.1
+$CUDA_VERSION_FULL =  "9.1.85"  # CUDA 9.1
 # $CUDA_VERSION_FULL =  "9.2.148" # CUDA 9.2
 # $CUDA_VERSION_FULL = "10.0.130" # CUDA 10.0
 # $CUDA_VERSION_FULL = "10.1.105" # CUDA 10.1
