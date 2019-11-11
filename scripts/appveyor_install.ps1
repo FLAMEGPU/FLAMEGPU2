@@ -5,8 +5,6 @@
 ## To make this part of an appveyor matrix, move this to appveyor.yaml and read from $env:CUDA_VERSION_FULL (or equivalent)
 ## -------------------
 
-Set-PSDebug -Trace 1
-
 # $CUDA_VERSION_FULL =  "8.0.44"  # CUDA 8.0 GA 1
 # $CUDA_VERSION_FULL =  "8.0.61"  # CUDA 8.0 GA 2
 # $CUDA_VERSION_FULL =  "9.0.176" # CUDA 9.0
@@ -29,6 +27,7 @@ $CUDA_KNOWN_URLS = @{
     "10.1.168" = "https://developer.nvidia.com/compute/cuda/10.1/Prod/network_installers/cuda_10.1.168_win10_network.exe";
     "10.1.243" = "http://developer.download.nvidia.com/compute/cuda/10.1/Prod/network_installers/cuda_10.1.243_win10_network.exe";
 }
+# @todo - why is the last one a different subdomain?
 
 ## -----------------
 ## Prepare Variables
@@ -68,7 +67,6 @@ if ([int]$CUDA_MAJOR -le 8 -Or ([int]$CUDA_MAJOR -eq 9 -And [int]$CUDA_MINOR -eq
 # Build string containing list of pacakges. Do not need Display.Driver
 $CUDA_PACKAGES  = "$($NVCC_PACKAGE_NAME)_$($CUDA_MAJOR).$($CUDA_MINOR)"
 $CUDA_PACKAGES += " visual_studio_integration_$($CUDA_MAJOR).$($CUDA_MINOR)"
-$CUDA_PACKAGES += " curand_$($CUDA_MAJOR).$($CUDA_MINOR)"
 $CUDA_PACKAGES += " curand_dev_$($CUDA_MAJOR).$($CUDA_MINOR)"
 
 
@@ -97,9 +95,6 @@ if (Test-Path env:APPVEYOR_BUILD_WORKER_IMAGE){
 ## Install CUDA
 ## ------------
 
-Write-Host "-$($CUDA_PACKAGES)-"
-Write-Host "-nvcc_10.1 visual_studio_integration_10.1 curand_10.1 curand_dev_10.1-"
-
 if ($CUDA_PACKAGES -eq "nvcc_10.1 visual_studio_integration_10.1 curand_10.1 curand_dev_10.1"){
     Write-Host "CUDA_PACKAGES MAtch"
 } else {
@@ -118,29 +113,21 @@ if(Test-Path -Path $CUDA_REPO_PKG_LOCAL){
 
 # Invoke silent install of CUDA (via network installer)
 Write-Host "Installing CUDA $($CUDA_VERSION_FULL) Compiler and Runtime"
-Write-Host "& .\$($CUDA_REPO_PKG_LOCAL) -s $($CUDA_PACKAGES)|  Out-Null"
-# & .\"$($CUDA_REPO_PKG_LOCAL)" -s "$($CUDA_PACKAGES)" | Out-Null
-& .\"$($CUDA_REPO_PKG_LOCAL)" -s nvcc_10.1 visual_studio_integration_10.1 curand_10.1 curand_dev_10.1| Out-Null
+Start-Process -Wait -FilePath .\"$($CUDA_REPO_PKG_LOCAL)" -ArgumentList "-s $($CUDA_PACKAGES)"
 
-# Start-Process -Wait -FilePath .\"$($CUDA_REPO_PKG_LOCAL)" -ArgumentList "-s $($CUDA_PACKAGES)"
-
-
-Write-Host "$? $LASTEXITCODE"
+# Check the return status of the CUDA installer.
 if ($? -eq $false) {
     Write-Host "Error: CUDA installer reported error. $($LASTEXITCODE)"
     exit 1 
 }
 
-sleep 10
+# Check for NVCC in the expected location
 $nvcc_path = "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v$($CUDA_MAJOR).$($CUDA_MINOR)/bin/nvcc.exe"
-Write-Host "Checking $($nvcc_path)"
 if(Test-Path -Path $nvcc_path){
-    Write-Host "Found"
-    & $nvcc_path --version
+    Start-Process -Wait -FilePath "$nvcc_path" -ArgumentList "--version"
 } else {
-    Write-Host "nvcc not-found"
+    Write-Host "Error: nvcc not-found in expected location."
     exit 1
 }
 
 Write-Host "Installation Complete!"
-exit 2
