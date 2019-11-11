@@ -66,6 +66,7 @@ if ([int]$CUDA_MAJOR -le 8 -Or ([int]$CUDA_MAJOR -eq 9 -And [int]$CUDA_MINOR -eq
 # Build string containing list of pacakges. Do not need Display.Driver
 $CUDA_PACKAGES  = "$($NVCC_PACKAGE_NAME)_$($CUDA_MAJOR).$($CUDA_MINOR) "
 $CUDA_PACKAGES += "visual_studio_integration_$($CUDA_MAJOR).$($CUDA_MINOR) "
+$CUDA_PACKAGES += "curand_$($CUDA_MAJOR).$($CUDA_MINOR) "
 $CUDA_PACKAGES += "curand_dev_$($CUDA_MAJOR).$($CUDA_MINOR) "
 
 
@@ -94,6 +95,16 @@ if (Test-Path env:APPVEYOR_BUILD_WORKER_IMAGE){
 ## Install CUDA
 ## ------------
 
+$env:CUDA_REPO_PKG_LOCATION="http://developer.download.nvidia.com/compute/cuda/10.1/Prod/network_installers/cuda_10.1.243_win10_network.exe"
+$env:CUDA_REPO_PKG="cuda_10.1.243_win10_network.exe"
+
+Write-Host "$($CUDA_VERSION_FULL)"
+Write-Host "$($CUDA_REPO_PKG_REMOTE) - $($CUDA_REPO_PKG_LOCAL)"
+Write-Host "$($env:CUDA_REPO_PKG) - $($env:CUDA_REPO_PKG)"
+Write-Host "& .\$($CUDA_REPO_PKG_LOCAL) -s $($CUDA_PACKAGES) | Out-Null"
+Write-Host "& .\$($env:CUDA_REPO_PKG) -s nvcc_10.1 visual_studio_integration_10.1 curand_10.1 curand_dev_10.1|  Out-Null"
+
+
 # Get CUDA network installer
 Write-Host "Downloading CUDA Network Installer for $($CUDA_VERSION_FULL) from: $($CUDA_REPO_PKG_REMOTE)"
 Invoke-WebRequest $CUDA_REPO_PKG_REMOTE -OutFile $CUDA_REPO_PKG_LOCAL | Out-Null
@@ -104,20 +115,25 @@ if(Test-Path -Path $CUDA_REPO_PKG_LOCAL){
     exit 1
 }
   
-# Invoke silent install of CUDA (via network installer)
-# Write-Host "Installing CUDA $($CUDA_VERSION_FULL) Compiler and Runtime"
-# # & .\$CUDA_REPO_PKG_LOCAL -s $CUDA_PACKAGES | Out-Null
-# Write-Host "& .\$($CUDA_REPO_PKG_LOCAL) -s $($CUDA_PACKAGES)"
-# # & .\$CUDA_REPO_PKG_LOCAL -s $CUDA_PACKAGES
-# Write-Host "& .\$($CUDA_REPO_PKG_LOCAL) -s nvcc_10.1 visual_studio_integration_10.1 curand_10.1 curand_dev_10.1"
-# & .\$CUDA_REPO_PKG_LOCAL -s nvcc_10.1 visual_studio_integration_10.1 curand_10.1 curand_dev_10.1
+Invoke silent install of CUDA (via network installer)
+Write-Host "Installing CUDA $($CUDA_VERSION_FULL) Compiler and Runtime"
+Write-Host "& .\$($CUDA_REPO_PKG_LOCAL) -s $($CUDA_PACKAGES) | Out-Null"
+# & .\$CUDA_REPO_PKG_LOCAL -s $CUDA_PACKAGES | Out-Null
+
+sleep 100
+
+# Write-Host 'Downloading CUDA Network Installer'
+# Invoke-WebRequest $env:CUDA_REPO_PKG_LOCATION -OutFile $env:CUDA_REPO_PKG | Out-Null
+# Write-Host 'Downloading Complete'
+# & .\$env:CUDA_REPO_PKG -s nvcc_10.1 visual_studio_integration_10.1 curand_10.1 curand_dev_10.1|  Out-Null
 
 
-# Write-Host "$LASTEXITCODE"
-# if ($? -eq $false) {
-#     write-host "Error: CUDA installer reported error."
-#     exit 1 
-# }
+
+Write-Host "$LASTEXITCODE"
+if ($? -eq $false) {
+    write-host "Error: CUDA installer reported error."
+    exit 1 
+}
 
 # $nvcc_path = "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v$($CUDA_MAJOR).$($CUDA_MINOR)/bin/nvcc.exe"
 # Write-Host "Checking $($nvcc_path)"
@@ -127,27 +143,6 @@ if(Test-Path -Path $CUDA_REPO_PKG_LOCAL){
 # } else {
 #     Write-Host "not-found"
 # }
-
-$env:CUDA_REPO_PKG_LOCATION="http://developer.download.nvidia.com/compute/cuda/10.1/Prod/network_installers/cuda_10.1.243_win10_network.exe"
-$env:CUDA_REPO_PKG="cuda_10.1.243_win10_network.exe"
-Write-Host 'Downloading CUDA Network Installer'
-Invoke-WebRequest $env:CUDA_REPO_PKG_LOCATION -OutFile $env:CUDA_REPO_PKG | Out-Null
-Write-Host 'Downloading Complete'
-& .\$env:CUDA_REPO_PKG -s nvcc_10.1 visual_studio_integration_10.1 curand_10.1 curand_dev_10.1|  Out-Null
-Write-Host "$LASTEXITCODE"
-if ($? -eq $false) {
-    write-host "Error: CUDA installer reported error."
-    exit 1 
-}
-
-
-Write-Host "Checking $($nvcc_path)"
-if(Test-Path -Path $nvcc_path){
-    Write-Host "Found"
-    & $nvcc_path --version
-} else {
-    Write-Host "not-found"
-}
 
 
 
