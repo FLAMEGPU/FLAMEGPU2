@@ -23,18 +23,16 @@ $env:CUDA_REPO_PKG_LOCATION="https://developer.nvidia.com/compute/cuda/$($env:CU
 $env:CUDA_REPO_PKG="cuda_$($env:CUDA_VERSION_FULL)_win10_network.exe"
 
 # Build list of required pacakges. See https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html#install-cuda-software for pacakge details. 
-$env:CUDA_PACKAGES=""
-
+# CUDA < 9.1 had a differnt package name for the compiler.
 $NVCC_PACKAGE_NAME="nvcc"
-if ([int]$env:CUDA_MAJOR -le 8 || [int]$env:CUDA_MAJOR -eq 9 && [int]$env:CUDA_MAJOR -eq 0){
+if ([int]$env:CUDA_MAJOR -le 8 -Or ([int]$env:CUDA_MAJOR -eq 9 -And [int]$env:CUDA_MAJOR -eq 0)){
     $NVCC_PACKAGE_NAME="compiler"
-
 }
-$env:CUDA_PACKAGES += "$($NVCC_PACKAGE_NAME)_$($env:CUDA_MAJOR).$($env:CUDA_MINOR)"
-$env:CUDA_PACKAGES += "visual_studio_integration_$($env:CUDA_MAJOR).$($env:CUDA_MINOR)"
-# $env:CUDA_PACKAGES += "curand_$($env:CUDA_MAJOR).$($env:CUDA_MINOR)"
-$env:CUDA_PACKAGES += "curand_dev_$($env:CUDA_MAJOR).$($env:CUDA_MINOR)"
-
+$env:CUDA_PACKAGES = ""
+$env:CUDA_PACKAGES += "$($NVCC_PACKAGE_NAME)_$($env:CUDA_MAJOR).$($env:CUDA_MINOR) "
+$env:CUDA_PACKAGES += "visual_studio_integration_$($env:CUDA_MAJOR).$($env:CUDA_MINOR) "
+# $env:CUDA_PACKAGES += "curand_$($env:CUDA_MAJOR).$($env:CUDA_MINOR) "
+$env:CUDA_PACKAGES += "curand_dev_$($env:CUDA_MAJOR).$($env:CUDA_MINOR) "
 
 Write-Host $env:CUDA_REPO_PKG_LOCATION
 Write-Host $env:CUDA_REPO_PKG
