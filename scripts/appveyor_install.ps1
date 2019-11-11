@@ -1,4 +1,5 @@
 # Powershell script for installing vc++ support and CUDA on appveyor instances
+# @future - Use powershell variables for cuda versions etc. 
 
 # Select CUDA version, requires major, minor and patch to be included.
 # $env:CUDA_VERSION_FULL="8.0.44"
@@ -8,17 +9,21 @@ $env:CUDA_VERSION_FULL="10.1.243"
 
 $cuda_version_pattern = [Regex]::new("^(?<major>[1-9][0-9]*)\.(?<minor>[0-9]+)\.(?<patch>[0-9]+)$")
 
-$matches = $cuda_version_pattern.Matches($env:CUDA_VERSION_FULL)
-Write-Host $matches
-if($matches){
-    Write-Host "Matched"
+$matches = $
+$env:CUDA_VERSION_FULL -match $cuda_version_pattern
+$Matches
+Write-Host $Matches
+
+if($Matches){
+    write-host "match"
 } else {
-    Write-Host "did not match"
+    write-host "no match"
 }
 
-$env:CUDA_MAJOR=$matches[major]
-$env:CUDA_MINOR=$matches[minor]
-$env:CUDA_PATCH=$matches[patch]
+
+$env:CUDA_MAJOR=$Matches.major
+$env:CUDA_MINOR=$Matches.minor
+$env:CUDA_PATCH=$Matches.patch
 
 Write-Host "CUDA_VER: $env:CUDA_MAJOR.$env:CUDA_MINOR.$env:CUDA_PATCH"
 
