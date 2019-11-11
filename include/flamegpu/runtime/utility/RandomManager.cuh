@@ -1,17 +1,19 @@
-#include <random>
-#ifndef SRC_FLAMEGPU_RUNTIME_UTILITY_DEVICERANDOMARRAY_CUH_
-#define SRC_FLAMEGPU_RUNTIME_UTILITY_DEVICERANDOMARRAY_CUH_
+#ifndef INCLUDE_FLAMEGPU_RUNTIME_UTILITY_RANDOMMANAGER_CUH_
+#define INCLUDE_FLAMEGPU_RUNTIME_UTILITY_RANDOMMANAGER_CUH_
 
 #include <curand_kernel.h>
 #include <cstdint>
+#include <random>
 
 #include "flamegpu/runtime/utility/AgentRandom.cuh"
 
 /**
- * Static manager for the shared array of curand state used by a simulation
- * Pairs with device size AgentRandom
+ * Static manager for initialising simulation wide random with a common seed
+ * Manages the shared array of curand state use by agent functions
+ * Manages the random engine/s used by host functions
+ * Pairs with HostRandom and device side AgentRandom
  */
-class DeviceRandomArray {
+class RandomManager {
  public:
     /**
      * Inherit size_type from include-public partner class
@@ -65,7 +67,7 @@ class DeviceRandomArray {
      * Device array of currand must be declared as __device__
      * Therefore it cannot be instanced, so neither should it's manager.
      */
-    DeviceRandomArray() {}
+    RandomManager() {}
 
  private:
     /**
@@ -107,7 +109,7 @@ class DeviceRandomArray {
     /**
      * Allocated length of h_max_random_state
      */
-    static DeviceRandomArray::size_type h_max_random_size;
+    static RandomManager::size_type h_max_random_size;
     /**
      * Seeded host random generator
      * Don't believe this to be thread-safe!
@@ -117,8 +119,8 @@ class DeviceRandomArray {
 
 
 template<typename T, typename dist>
-T DeviceRandomArray::getDistribution(dist &distribution) {
+T RandomManager::getDistribution(dist &distribution) {
     return distribution(host_rng);
 }
 
-#endif  // SRC_FLAMEGPU_RUNTIME_UTILITY_DEVICERANDOMARRAY_CUH_
+#endif  // INCLUDE_FLAMEGPU_RUNTIME_UTILITY_RANDOMMANAGER_CUH_

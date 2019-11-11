@@ -14,7 +14,7 @@
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/pop/AgentPopulation.h"
 #include "flamegpu/sim/Simulation.h"
-#include "flamegpu/runtime/utility/DeviceRandomArray.cuh"
+#include "flamegpu/runtime/utility/RandomManager.cuh"
 
 // include FLAMEGPU kernel wrapper
 #include "flamegpu/runtime/agent_function.h"
@@ -175,8 +175,8 @@ bool CUDAAgentModel::step(const Simulation& simulation) {
             totalThreads += cuda_agent.getMaximumListSize();
         }
 
-        // Ensure DeviceRandomArray is the correct size to accomodate all threads to be launched
-        DeviceRandomArray::resize(totalThreads);
+        // Ensure RandomManager is the correct size to accomodate all threads to be launched
+        RandomManager::resize(totalThreads);
         // Total threads is now used to provide kernel launches an offset to thread-safe thread-index
         totalThreads = 0;
 
