@@ -133,7 +133,9 @@ if(Test-Path -Path $nvcc_path){
     Write-Host "Found"
     & $nvcc_path --version
 } else {
-    Write-Host "not-found"
+    Write-Host "nvcc not-found"
+    exit 1
 }
 
 Write-Host "Installation Complete!"
+exit 2
