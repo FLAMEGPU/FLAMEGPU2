@@ -64,11 +64,10 @@ if ([int]$CUDA_MAJOR -le 8 -Or ([int]$CUDA_MAJOR -eq 9 -And [int]$CUDA_MINOR -eq
     $NVCC_PACKAGE_NAME="compiler"
 }
 # Build string containing list of pacakges. Do not need Display.Driver
-$CUDA_PACKAGES  = "$($NVCC_PACKAGE_NAME)_$($CUDA_MAJOR).$($CUDA_MINOR) visual_studio_integration_$($CUDA_MAJOR).$($CUDA_MINOR) "
-# $CUDA_PACKAGES  = "$($NVCC_PACKAGE_NAME)_$($CUDA_MAJOR).$($CUDA_MINOR) "
-# $CUDA_PACKAGES += " visual_studio_integration_$($CUDA_MAJOR).$($CUDA_MINOR)"
-# $CUDA_PACKAGES += " curand_$($CUDA_MAJOR).$($CUDA_MINOR)"
-# $CUDA_PACKAGES += " curand_dev_$($CUDA_MAJOR).$($CUDA_MINOR)"
+$CUDA_PACKAGES  = "$($NVCC_PACKAGE_NAME)_$($CUDA_MAJOR).$($CUDA_MINOR)"
+$CUDA_PACKAGES += " visual_studio_integration_$($CUDA_MAJOR).$($CUDA_MINOR)"
+$CUDA_PACKAGES += " curand_$($CUDA_MAJOR).$($CUDA_MINOR)"
+$CUDA_PACKAGES += " curand_dev_$($CUDA_MAJOR).$($CUDA_MINOR)"
 
 
 ## ------------
@@ -115,17 +114,11 @@ if(Test-Path -Path $CUDA_REPO_PKG_LOCAL){
     exit 1
 }
 
-Get-Childitem -file $($CUDA_REPO_PKG_LOCAL) | select length
-
-
 # Invoke silent install of CUDA (via network installer)
 Write-Host "Installing CUDA $($CUDA_VERSION_FULL) Compiler and Runtime"
-Write-Host "& .\$($CUDA_REPO_PKG_LOCAL) -s $($CUDA_PACKAGES)"
-Write-Host $([string]$CUDA_PACKAGES)
-# & .\$($CUDA_REPO_PKG_LOCAL) -s $([string]$CUDA_PACKAGES)
-& .\$($CUDA_REPO_PKG_LOCAL) -s nvcc_10.1 visual_studio_integration_10.1
-& .\$($CUDA_REPO_PKG_LOCAL) --version
-# & .\$($CUDA_REPO_PKG_LOCAL) -s nvcc_10.1 visual_studio_integration_10.1 curand_10.1 curand_dev_10.1
+Write-Host "& .\$($CUDA_REPO_PKG_LOCAL) -s $($CUDA_PACKAGES)|  Out-Null"
+# & .\"$($CUDA_REPO_PKG_LOCAL)" -s "$($CUDA_PACKAGES)" | Out-Null
+& .\"$($CUDA_REPO_PKG_LOCAL)" -s nvcc_10.1 visual_studio_integration_10.1 curand_10.1 curand_dev_10.1| Out-Null
 
 Write-Host "$? $LASTEXITCODE"
 if ($? -eq $false) {
@@ -144,4 +137,3 @@ if(Test-Path -Path $nvcc_path){
 }
 
 Write-Host "Installation Complete!"
-exit(1)
