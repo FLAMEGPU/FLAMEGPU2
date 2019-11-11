@@ -42,7 +42,7 @@ class AgentRandom {
     __forceinline__ __device__ T logNormal(const T& mean, const T& stddev) const;
     /**
      * Returns an integer uniformly distributed in the inclusive range [min, max]
-     * @note Available as signed and unsigned: char, short, int, long, long long
+     * @note Available as signed and unsigned: char, short, int, long long
      */
     template<typename T>
     __forceinline__ __device__ T uniform(const T& min, const T& max) const;

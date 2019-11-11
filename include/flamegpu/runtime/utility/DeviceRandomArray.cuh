@@ -1,3 +1,4 @@
+#include <random>
 #ifndef SRC_FLAMEGPU_RUNTIME_UTILITY_DEVICERANDOMARRAY_CUH_
 #define SRC_FLAMEGPU_RUNTIME_UTILITY_DEVICERANDOMARRAY_CUH_
 
@@ -24,7 +25,7 @@ class DeviceRandomArray {
      * Acts as constructor
      * @note Can be called multiple times to reseed, doing so releases existing memory allocations
      */
-    static void init(const uint64_t &seed);
+    static void init(const unsigned int &seed);
     /**
      * Acts as destructor
      * @note Safe to call multiple times
@@ -46,6 +47,12 @@ class DeviceRandomArray {
     static float getGrowthModifier();
     static void setShrinkModifier(float);
     static float getShrinkModifier();
+    template<typename T, typename dist>
+    /**
+     * Generates a random number with the provided distribution
+     * Note: Not believed to be thread-safe!
+     */
+    static T getDistribution(dist &distribution);
     /**
      * Returns length of curand state array currently allocated
      */
@@ -64,7 +71,7 @@ class DeviceRandomArray {
     /**
      * Random seed used to initialise all currently allocated curand states
      */
-    static uint64_t mSeed;
+    static unsigned int mSeed;
     /**
      * Local copy of the length of d_random_state
      */
@@ -101,6 +108,17 @@ class DeviceRandomArray {
      * Allocated length of h_max_random_state
      */
     static DeviceRandomArray::size_type h_max_random_size;
+    /**
+     * Seeded host random generator
+     * Don't believe this to be thread-safe!
+     */
+    static std::default_random_engine host_rng;
 };
+
+
+template<typename T, typename dist>
+T DeviceRandomArray::getDistribution(dist &distribution) {
+    return distribution(host_rng);
+}
 
 #endif  // SRC_FLAMEGPU_RUNTIME_UTILITY_DEVICERANDOMARRAY_CUH_

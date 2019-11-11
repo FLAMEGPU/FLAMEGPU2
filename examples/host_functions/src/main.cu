@@ -15,7 +15,8 @@ FLAMEGPU_AGENT_FUNCTION(device_function) {
 }
 FLAMEGPU_INIT_FUNCTION(init_function) {
     float min_x = FLAMEGPU->agent("agent").min<float>("x");
-    printf("Init Function! (Min: %g)\n", min_x);
+    float max_x = FLAMEGPU->agent("agent").max<float>("x");
+    printf("Init Function! (Min: %g, Max: %g)\n", min_x, max_x);
 }
 FLAMEGPU_CUSTOM_REDUCTION(customSum, a, b) {
     return a + b;
@@ -26,8 +27,12 @@ FLAMEGPU_STEP_FUNCTION(step_function) {
     printf("Step Function! (Sum: %d, CustomSum: %d)\n", sum_a, custom_sum_a);
 }
 FLAMEGPU_EXIT_FUNCTION(exit_function) {
-    float max_x = FLAMEGPU->agent("agent").max<float>("x");
-    printf("Exit Function! (Max: %g)\n", max_x);
+    float uniform_real = FLAMEGPU->random.uniform<float>();
+    int uniform_int = FLAMEGPU->random.uniform<int>(1, 10);
+    float normal = FLAMEGPU->random.normal<float>();
+    float logNormal = FLAMEGPU->random.logNormal<float>(1, 1);
+    printf("Exit Function! (%g, %i, %g, %g)\n",
+        uniform_real, uniform_int, normal, logNormal);
 }
 FLAMEGPU_HOST_FUNCTION(host_function) {
     std::vector<int> hist_x = FLAMEGPU->agent("agent").histogramEven<float>("x", 8, -0.5, 1023.5);
