@@ -10,9 +10,31 @@
 # $CUDA_VERSION_FULL =  "9.1.85"  # CUDA 9.1
 # $CUDA_VERSION_FULL =  "9.2.148" # CUDA 9.2
 # $CUDA_VERSION_FULL = "10.0.130" # CUDA 10.0
-# $CUDA_VERSION_FULL = "10.1.105" # CUDA 1.1
+# $CUDA_VERSION_FULL = "10.1.105" # CUDA 10.1
 # $CUDA_VERSION_FULL = "10.1.168" # CUDA 10.1 update1
 $CUDA_VERSION_FULL = "10.1.243" # CUDA 10.1 update2
+
+
+$CUDA_KNOWN_URLS = @{
+    "8.0.44" = "https://developer.nvidia.com/compute/cuda/8.0/Prod/network_installers/cuda_8.0.44_win10_network-exe";
+    "8.0.44" = "https://developer.nvidia.com/compute/cuda/8.0/Prod/network_installers/cuda_8.0.44_win10_network-exe";
+    "8.0.61" = "https://developer.nvidia.com/compute/cuda/8.0/Prod2/network_installers/cuda_8.0.61_win10_network-exe";
+    "9.0.176" = "https://developer.nvidia.com/compute/cuda/9.0/Prod/network_installers/cuda_9.0.176_win10_network-exe";
+    "9.1.85" = "https://developer.nvidia.com/compute/cuda/9.1/Prod/network_installers/cuda_9.1.85_win10_network";
+    "9.2.148" = "https://developer.nvidia.com/compute/cuda/9.2/Prod2/network_installers2/cuda_9.2.148_win10_network";
+    "10.0.130" = "https://developer.nvidia.com/compute/cuda/10.0/Prod/network_installers/cuda_10.0.130_win10_network";
+    "10.1.105" = "https://developer.nvidia.com/compute/cuda/10.1/Prod/network_installers/cuda_10.1.105_win10_network.exe";
+    "10.1.168" = "https://developer.nvidia.com/compute/cuda/10.1/Prod/network_installers/cuda_10.1.168_win10_network.exe";
+    "10.1.243" = "http://developer.download.nvidia.com/compute/cuda/10.1/Prod/network_installers/cuda_10.1.243_win10_network.exe";
+}
+
+
+Write-Host $CUDA_KNOWN_URLS
+
+Write-Host $CUDA_KNOWN_URLS[$CUDA_VERSION_FULL]
+Write-Host $CUDA_KNOWN_URLS["should fail?"]
+
+exit 1
 
 
 ## -----------------
@@ -30,8 +52,11 @@ $CUDA_MINOR=$Matches.minor
 $CUDA_PATCH=$Matches.patch
 
 # Build CUDA related variables.
+
+
 $CUDA_REPO_PKG_LOCATION="https://developer.nvidia.com/compute/cuda/$($CUDA_MAJOR).$($CUDA_MINOR)/prod/network_installers/cuda_$($CUDA_VERSION_FULL)_windows_network-exe"
-$CUDA_REPO_PKG="cuda_$($CUDA_VERSION_FULL)_win10_network.exe"
+
+$CUDA_REPO_PKG="cuda_network.exe"
 
 # Build list of required cuda packages to be installed. See https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html#install-cuda-software for pacakge details. 
 
