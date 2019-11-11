@@ -6,15 +6,20 @@
 # $env:CUDA_VERSION_FULL="9.1.85"
 $env:CUDA_VERSION_FULL="10.1.243"
 
-$env:CUDA_VERSION_FULL -match "^(?<major>[1-9][0-9]*)\.(?<minor>[0-9]+)\.(?<patch>[0-9]+)$"
-$Matches
-Write-Host $Matches
 
+$cuda_version_pattern = [Regex]::new("^(?<major>[1-9][0-9]*)\.(?<minor>[0-9]+)\.(?<patch>[0-9]+)$")
 
+$matches = $cuda_version_pattern.Matches($env:CUDA_VERSION_FULL)
+Write-Host $matches
+if($matches){
+    Write-Host "Matched"
+} else {
+    Write-Host "did not match"
+}
 
-$env:CUDA_MAJOR=$Matches.major
-$env:CUDA_MINOR=$Matches.minor
-$env:CUDA_PATCH=$Matches.patch
+$env:CUDA_MAJOR=$matches.major
+$env:CUDA_MINOR=$matches.minor
+$env:CUDA_PATCH=$matches.patch
 
 Write-Host "CUDA_VER: $env:CUDA_MAJOR.$env:CUDA_MINOR.$env:CUDA_PATCH"
 
