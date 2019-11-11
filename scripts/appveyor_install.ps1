@@ -130,6 +130,7 @@ if ($? -eq $false) {
     exit 1 
 }
 
+sleep 10
 $nvcc_path = "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v$($CUDA_MAJOR).$($CUDA_MINOR)/bin/nvcc.exe"
 Write-Host "Checking $($nvcc_path)"
 if(Test-Path -Path $nvcc_path){
