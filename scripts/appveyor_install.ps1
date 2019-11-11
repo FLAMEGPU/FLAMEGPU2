@@ -4,7 +4,7 @@
 # Select CUDA version, requires major, minor and patch to be included.
 # $env:CUDA_VERSION_FULL="8.0.44"
 # $env:CUDA_VERSION_FULL="9.1.85"
-$env:CUDA_VERSION_FULL="10.1.243s"
+$env:CUDA_VERSION_FULL="10.1.243"
 
 
 $env:CUDA_VERSION_FULL -match  "^(?<major>[1-9][0-9]*)\.(?<minor>[0-9]+)\.(?<patch>[0-9]+)$"
@@ -52,7 +52,6 @@ if (Test-Path env:APPVEYOR_BUILD_WORKER_IMAGE){
         cmd.exe /c "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
     }
 }
-
 # Install CUDA
 # Get CUDA network installer
 Write-Host 'Downloading CUDA Network Installer'
