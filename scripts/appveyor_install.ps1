@@ -27,7 +27,7 @@ $env:CUDA_PACKAGES=""
 $env:CUDA_PACKAGES += "nvcc_$($env:CUDA_MAJOR).$($env:CUDA_MINOR)"
 $env:CUDA_PACKAGES += "visual_studio_integration_$($env:CUDA_MAJOR).$($env:CUDA_MINOR)"
 $env:CUDA_PACKAGES += "curand_$($env:CUDA_MAJOR).$($env:CUDA_MINOR)"
-$env:CUDA_PACKAGES += "curand_dev_$($env:CUDA_MAJOR).$($env:CUDA_MINOR"
+$env:CUDA_PACKAGES += "curand_dev_$($env:CUDA_MAJOR).$($env:CUDA_MINOR)"
 
 
 Write-Host $env:CUDA_REPO_PKG_LOCATION
