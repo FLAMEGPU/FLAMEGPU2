@@ -9,8 +9,8 @@
 # $CUDA_VERSION_FULL =  "8.0.61"  # CUDA 8.0 GA 2
 # $CUDA_VERSION_FULL =  "9.0.176" # CUDA 9.0
 # $CUDA_VERSION_FULL =  "9.1.85"  # CUDA 9.1
-$CUDA_VERSION_FULL =  "9.2.148" # CUDA 9.2
-# $CUDA_VERSION_FULL = "10.0.130" # CUDA 10.0
+# $CUDA_VERSION_FULL =  "9.2.148" # CUDA 9.2
+$CUDA_VERSION_FULL = "10.0.130" # CUDA 10.0
 # $CUDA_VERSION_FULL = "10.1.105" # CUDA 10.1
 # $CUDA_VERSION_FULL = "10.1.168" # CUDA 10.1 update1
 # $CUDA_VERSION_FULL = "10.1.243" # CUDA 10.1 update2
@@ -122,12 +122,12 @@ if ($? -eq $false) {
 }
 
 # Check for NVCC in the expected location
-$nvcc_path = "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v$($CUDA_MAJOR).$($CUDA_MINOR)/bin/nvcc.exe"
-if(Test-Path -Path $nvcc_path){
-    Start-Process -Wait -FilePath "$nvcc_path" -ArgumentList "--version"
-} else {
-    Write-Host "Error: nvcc not-found in expected location."
-    exit 1
-}
+#$nvcc_path = "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v$($CUDA_MAJOR).$($CUDA_MINOR)/bin/nvcc.exe"
+#if(Test-Path -Path $nvcc_path){
+#    Start-Process -Wait -FilePath "$nvcc_path" -ArgumentList "--version"
+#} else {
+#    Write-Host "Error: nvcc not-found in expected location."
+#    exit 1
+#}
 
 Write-Host "Installation Complete!"
