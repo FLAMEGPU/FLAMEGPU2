@@ -1,6 +1,25 @@
 # Powershell script for installing vc++ support and CUDA on appveyor instances
 # @future - Use powershell variables for cuda versions etc. 
 
+# Select CUDA version, requires major, minor and patch to be included.
+# $env:CUDA_VERSION_FULL="8.0.44"
+# $env:CUDA_VERSION_FULL="9.1.85"
+$env:CUDA_VERSION_FULL="10.1.243"
+
+$env:CUDA_VERSION_FULL -match "^(?<major>[1-9][0-9]*)\.(?<minor>[0-9]+)\.(?<patch>[0-9]+)$"
+$Matches
+Write-Host $Matches
+
+
+
+$env:CUDA_MAJOR=$Matches.major
+$env:CUDA_MINOR=$Matches.minor
+$env:CUDA_PATCH=$Matches.patch
+
+Write-Host "CUDA_VER: $env:CUDA_MAJOR.$env:CUDA_MINOR.$env:CUDA_PATCH"
+
+exit 1
+
 # CUDA 8
 # $env:CUDA_REPO_PKG_LOCATION="https://developer.nvidia.com/compute/cuda/8.0/prod/network_installers/cuda_8.0.44_windows_network-exe"
 # $env:CUDA_REPO_PKG="cuda_8.0.44_win10_network.exe"
@@ -13,7 +32,7 @@
 $env:CUDA_REPO_PKG_LOCATION="http://developer.download.nvidia.com/compute/cuda/10.1/Prod/network_installers/cuda_10.1.243_win10_network.exe"
 $env:CUDA_REPO_PKG="cuda_10.1.243_win10_network.exe"
 
-# Install VS 2015 VC++
+# Install vc++ for the appropriate visual studio version if this is executed on appveyor.
 if (Test-Path env:APPVEYOR_BUILD_WORKER_IMAGE){
     Write-Host "Installing vc++ for $env:APPVEYOR_BUILD_WORKER_IMAGE"
     if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq "Visual Studio 2015"){
@@ -27,10 +46,6 @@ if (Test-Path env:APPVEYOR_BUILD_WORKER_IMAGE){
         cmd.exe /c "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
     }
 }
-else {
-    Write-Host "Check fail?"
-}
-exit 1
 
 # Install CUDA
 # Get CUDA network installer
