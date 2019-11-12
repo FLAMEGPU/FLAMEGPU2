@@ -39,17 +39,17 @@ FLAMEGPU_HOST_FUNCTION(host_function) {
     printf("Host Function! (Hist: [%d, %d, %d, %d, %d, %d, %d, %d]\n",
         hist_x[0], hist_x[1], hist_x[2], hist_x[3], hist_x[4], hist_x[5], hist_x[6], hist_x[7]);
 }
-#if defined(_MSC_VER)
-#pragma warning(push)
-#pragma warning(disable : 4100)
-#endif
 FLAMEGPU_EXIT_CONDITION(exit_condition) {
-    printf("Host Condition!\n");
+    const float CHANCE = 0.15f;
+    float uniform_real = FLAMEGPU->random.uniform<float>();
+    printf("Exit Condition! (Rolled: %g)\n", uniform_real);
+    if (uniform_real < CHANCE) {
+        printf("Rolled number is less than %g, exiting!\n", CHANCE);
+        return EXIT;
+    }
     return CONTINUE;
 }
-#if defined(_MSC_VER)
-#pragma warning(pop)
-#endif
+
 
 int main(void) {
     const unsigned int AGENT_COUNT = 1024;
@@ -94,7 +94,7 @@ int main(void) {
         simulation.addExitFunction(&exit_function);
         simulation.addExitCondition(&exit_condition);
         // Run until exit condition triggers
-        simulation.setSimulationSteps(5);
+        simulation.setSimulationSteps(0);
     // }
 
     // {
