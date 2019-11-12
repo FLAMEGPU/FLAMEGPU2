@@ -7,9 +7,9 @@
 
 # $CUDA_VERSION_FULL =  "8.0.44"  # CUDA 8.0 GA 1
 # $CUDA_VERSION_FULL =  "8.0.61"  # CUDA 8.0 GA 2
-# $CUDA_VERSION_FULL =  "9.0.176" # CUDA 9.0
+$CUDA_VERSION_FULL =  "9.0.176" # CUDA 9.0
 # $CUDA_VERSION_FULL =  "9.1.85"  # CUDA 9.1
-$CUDA_VERSION_FULL =  "9.2.148" # CUDA 9.2
+# $CUDA_VERSION_FULL =  "9.2.148" # CUDA 9.2
 # $CUDA_VERSION_FULL = "10.0.130" # CUDA 10.0
 # $CUDA_VERSION_FULL = "10.1.105" # CUDA 10.1
 # $CUDA_VERSION_FULL = "10.1.168" # CUDA 10.1 update1
@@ -42,6 +42,7 @@ $CUDA_MAJOR=$Matches.major
 $CUDA_MINOR=$Matches.minor
 $CUDA_PATCH=$Matches.patch
 
+
 # Build CUDA related variables.
 
 
@@ -61,6 +62,7 @@ $CUDA_REPO_PKG_LOCAL="cuda_$($CUDA_VERSION_FULL)_win10_network.exe"
 # CUDA < 9.1 had a differnt package name for the compiler.
 $NVCC_PACKAGE_NAME="nvcc"
 if ([int]$CUDA_MAJOR -le 8 -Or ([int]$CUDA_MAJOR -eq 9 -And [int]$CUDA_MINOR -eq 0)){
+if ([version]$CUDA_VERSION_FULL -lt [version]"9.1")){
     $NVCC_PACKAGE_NAME="compiler"
 }
 # Build string containing list of pacakges. Do not need Display.Driver
@@ -75,16 +77,18 @@ $CUDA_PACKAGES += " curand_dev_$($CUDA_MAJOR).$($CUDA_MINOR)"
 if (Test-Path env:APPVEYOR_BUILD_WORKER_IMAGE){
     Write-Host "Installing vc++ for $env:APPVEYOR_BUILD_WORKER_IMAGE"
     if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq "Visual Studio 2015"){
-        Write-Host "Vs2015"
         cmd.exe /c "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64
         cmd.exe /c "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
     }
     elseif ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq "Visual Studio 2017"){
-        Write-Host "Vs2017"
         cmd.exe /c "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
+
+        # Output a warning if building for 2017 that only CUDA 10.1 or newer seems to work. 
+        if([version]$CUDA_VERSION_FULL -lt [version]"10.1.243"){
+            Write-Host "Warning: VS2017 + CMake + CUDA < 10.1.243 do not appear to work, and the build may fail."
+        }
     }
     elseif ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq "Visual Studio 2019"){
-        Write-Host "Vs2019"
         cmd.exe /c "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
     }
 }
