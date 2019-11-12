@@ -61,8 +61,7 @@ void RandomManager::free() {
     // Clear size
     length = 0;
     flamegpu_internal::hd_random_size = 0;
-    gpuErrchk(cudaMemcpyToSymbol(flamegpu_internal::d_random_size, &flamegpu_internal::hd_random_size, sizeof(RandomManager::size_type)))
-        printf("(%s:%d) CUDA Error initialising curand.", __FILE__, __LINE__);
+    gpuErrchk(cudaMemcpyToSymbol(flamegpu_internal::d_random_size, &flamegpu_internal::hd_random_size, sizeof(RandomManager::size_type)));
     // Release old
     if (flamegpu_internal::hd_random_state != nullptr) {
         gpuErrchk(cudaFree(flamegpu_internal::hd_random_state));
@@ -112,7 +111,6 @@ void RandomManager::resizeDeviceArray(const size_type &_length) {
         curandState *t_hd_random_state = nullptr;
         // Allocate new mem to t_hd
         gpuErrchk(cudaMalloc(&t_hd_random_state, _length * sizeof(curandState)));
-            printf("(%s:%d) CUDA Error RandomManager::resizeDeviceArray().", __FILE__, __LINE__);
         // Copy hd->t_hd[****    ]
         if (flamegpu_internal::hd_random_state) {
             gpuErrchk(cudaMemcpy(t_hd_random_state, flamegpu_internal::hd_random_state, length * sizeof(curandState), cudaMemcpyDeviceToDevice));
