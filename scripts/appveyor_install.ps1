@@ -81,7 +81,6 @@ if (Test-Path env:APPVEYOR_BUILD_WORKER_IMAGE){
     }
     elseif ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq "Visual Studio 2017"){
         cmd.exe /c "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
-
         # Output a warning if building for 2017 that only CUDA 10.1 or newer seems to work. 
         if([version]$CUDA_VERSION_FULL -lt [version]"10.1.243"){
             Write-Host "Warning: VS2017 + CMake + CUDA < 10.1.243 do not appear to work, and the build may fail."
@@ -116,14 +115,5 @@ if ($? -eq $false) {
     Write-Host "Error: CUDA installer reported error. $($LASTEXITCODE)"
     exit 1 
 }
-
-# Check for NVCC in the expected location
-#$nvcc_path = "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v$($CUDA_MAJOR).$($CUDA_MINOR)/bin/nvcc.exe"
-#if(Test-Path -Path $nvcc_path){
-#    Start-Process -Wait -FilePath "$nvcc_path" -ArgumentList "--version"
-#} else {
-#    Write-Host "Error: nvcc not-found in expected location."
-#    exit 1
-#}
 
 Write-Host "Installation Complete!"
