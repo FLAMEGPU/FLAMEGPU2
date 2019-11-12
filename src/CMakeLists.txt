@@ -35,6 +35,13 @@ else()
     create_doxygen_target("${CMAKE_CURRENT_BINARY_DIR}/..")
 endif()
 
+# Enable parallel compilation
+# Only do this for lib, as examples already build target parallel
+if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP")
+endif()
+
 # Specify source files for the static library
 # Can't do this automatically, as CMake wouldn't know when to regen (as CMakeLists.txt would be unchanged)
 SET(SRC_EXTERNALS

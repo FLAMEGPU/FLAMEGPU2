@@ -46,8 +46,10 @@ Under Linux, `cmake` can be used to generate makefiles specific to your system:
 ```
 mkdir -p build && cd build
 cmake .. 
-make
+make -j8
 ```
+
+The option `-j8` enables parallel compilation using upto 8 threads, this is recommended to improve build times.
 
 By default a `Makefile` for the `Release` build configuration will be generated.
 
@@ -56,7 +58,7 @@ Alternatively, using `-DCMAKE_BUILD_TYPE=`, `Debug` or `Profile` build configura
 ```
 mkdir -p build && cd build
 cmake .. -DCMAKE_BUILD_TYPE=Profile
-make
+make -j8
 ```
 
 #### Windows
@@ -110,7 +112,7 @@ The test suite can be built from the root directory using `-DBUILD_TEST=ON`:
 ```
 mkdir -p build && cd build
 cmake .. -DBUILD_TEST=ON
-make
+make -j8
 ```
 
 The first time CMake is configured with `-DBUILD_TEST=ON` an internet connection is required, as [GoogleTest](https://github.com/google/googletest) is downloaded and built. 
@@ -152,7 +154,7 @@ CUDA device architectures can be specified via `-DSMS` when generating make file
 ```
 mkdir -p build && cd build
 cmake .. -DSMS="61;70"
-make
+make -j8
 ```
 
 Pass `-DSMS=` to reset to the default.
