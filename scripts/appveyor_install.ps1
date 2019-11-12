@@ -10,10 +10,10 @@
 # $CUDA_VERSION_FULL =  "9.0.176" # CUDA 9.0
 # $CUDA_VERSION_FULL =  "9.1.85"  # CUDA 9.1
 # $CUDA_VERSION_FULL =  "9.2.148" # CUDA 9.2
-# $CUDA_VERSION_FULL = "10.0.130" # CUDA 10.0
+$CUDA_VERSION_FULL = "10.0.130" # CUDA 10.0
 # $CUDA_VERSION_FULL = "10.1.105" # CUDA 10.1
 # $CUDA_VERSION_FULL = "10.1.168" # CUDA 10.1 update1
-$CUDA_VERSION_FULL = "10.1.243" # CUDA 10.1 update2
+# $CUDA_VERSION_FULL = "10.1.243" # CUDA 10.1 update2
 
 
 $CUDA_KNOWN_URLS = @{
@@ -88,6 +88,10 @@ if (Test-Path env:APPVEYOR_BUILD_WORKER_IMAGE){
     }
     elseif ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq "Visual Studio 2019"){
         cmd.exe /c "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
+        # VS 2019 is only supported by CUDA 10.1 and newer. 
+        if([version]$CUDA_VERSION_FULL -lt [version]"10.1"){
+            Write-Host "Warning: VS2019 requires CUDA >= 10.1."
+        }
     }
 }
 
