@@ -42,9 +42,7 @@ before_build:
     mkdir build
     cd build
     cmake --version
-    cmake .. -A x64 -DSMS=60
-
-# cmake .. -A x64 -DWARNINGS_AS_ERRORS=ON -DSMS=60
+    cmake .. -A x64 -DWARNINGS_AS_ERRORS=ON
 
 # The build
 build:
