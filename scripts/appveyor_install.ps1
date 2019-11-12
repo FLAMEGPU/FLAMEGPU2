@@ -94,12 +94,6 @@ if (Test-Path env:APPVEYOR_BUILD_WORKER_IMAGE){
 ## Install CUDA
 ## ------------
 
-if ($CUDA_PACKAGES -eq "nvcc_10.1 visual_studio_integration_10.1 curand_10.1 curand_dev_10.1"){
-    Write-Host "CUDA_PACKAGES MAtch"
-} else {
-    Write-Host "CUDA Packages does not match"
-}
-
 # Get CUDA network installer
 Write-Host "Downloading CUDA Network Installer for $($CUDA_VERSION_FULL) from: $($CUDA_REPO_PKG_REMOTE)"
 Invoke-WebRequest $CUDA_REPO_PKG_REMOTE -OutFile $CUDA_REPO_PKG_LOCAL | Out-Null
