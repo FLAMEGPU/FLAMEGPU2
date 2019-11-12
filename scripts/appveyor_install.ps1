@@ -83,14 +83,15 @@ if (Test-Path env:APPVEYOR_BUILD_WORKER_IMAGE){
         cmd.exe /c "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
         # Output a warning if building for 2017 that only CUDA 10.1 or newer seems to work. 
         if([version]$CUDA_VERSION_FULL -lt [version]"10.1.243"){
-            Write-Host "Warning: VS2017 + CMake + CUDA < 10.1.243 do not appear to work, and the build may fail."
+            Write-Host "Warning: VS2017 + CMake + CUDA < 10.1.243 do not appear to work, and the build may fail"
         }
     }
     elseif ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq "Visual Studio 2019"){
         cmd.exe /c "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
         # VS 2019 is only supported by CUDA 10.1 and newer. 
         if([version]$CUDA_VERSION_FULL -lt [version]"10.1"){
-            Write-Host "Warning: VS2019 requires CUDA >= 10.1."
+            Write-Host "Error: VS2019 requires CUDA >= 10.1"
+            exit 1
         }
     }
 }
