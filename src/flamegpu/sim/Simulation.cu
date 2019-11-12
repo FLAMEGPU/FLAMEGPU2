@@ -10,6 +10,7 @@
 
 #include <exception>
 #include <algorithm>
+#include <locale>
 
 #include "flamegpu/sim/Simulation.h"
 #include "flamegpu/model/ModelDescription.h"
@@ -74,8 +75,7 @@ int Simulation::checkArgs(int argc, const char** argv, std::string &xml_model_pa
     for (; i < argc; i++) {
         // Get arg as lowercase
         std::string arg(argv[i]);
-        std::transform(arg.begin(), arg.end(), arg.begin(), ::tolower);
-
+        std::transform(arg.begin(), arg.end(), arg.begin(), [](unsigned char c) { return std::use_facet< std::ctype<char>>(std::locale()).tolower(c); });
         // -in <string>, Specifies the input state file
         /*if (arg.compare("--in") == 0 || arg.compare("-i") == 0) {
             xml_model_path = std::string(argv[++i]);
