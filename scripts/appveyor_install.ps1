@@ -61,8 +61,7 @@ $CUDA_REPO_PKG_LOCAL="cuda_$($CUDA_VERSION_FULL)_win10_network.exe"
 
 # CUDA < 9.1 had a differnt package name for the compiler.
 $NVCC_PACKAGE_NAME="nvcc"
-if ([int]$CUDA_MAJOR -le 8 -Or ([int]$CUDA_MAJOR -eq 9 -And [int]$CUDA_MINOR -eq 0)){
-if ([version]$CUDA_VERSION_FULL -lt [version]"9.1")){
+if ([version]$CUDA_VERSION_FULL -lt [version]"9.1"){
     $NVCC_PACKAGE_NAME="compiler"
 }
 # Build string containing list of pacakges. Do not need Display.Driver
