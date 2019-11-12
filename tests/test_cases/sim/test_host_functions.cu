@@ -11,8 +11,10 @@
 namespace {
 enum FunctionType { Init, Step, Exit, HostLayer, ExitCondition };
 std::vector<FunctionType> function_order;
+#ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4100)
+#endif
 FLAMEGPU_INIT_FUNCTION(init_function) {
     function_order.push_back(Init);
 }
@@ -35,7 +37,9 @@ FLAMEGPU_EXIT_CONDITION(exit_condition) {
         return EXIT;
     return CONTINUE;
 }
+#ifdef _MSC_VER
 #pragma warning(pop)
+#endif
 
 class MiniSim {
  public:
