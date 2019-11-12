@@ -1,7 +1,12 @@
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_FLAMEGPU_HOST_AGENT_API_H_
 #define INCLUDE_FLAMEGPU_RUNTIME_FLAMEGPU_HOST_AGENT_API_H_
-
+#ifdef _MSC_VER
+#pragma warning(push, 3)
 #include <cub/cub.cuh>
+#pragma warning(pop)
+#else
+#include <cub/cub.cuh>
+#endif
 #include <algorithm>
 #include <string>
 #include <vector>
