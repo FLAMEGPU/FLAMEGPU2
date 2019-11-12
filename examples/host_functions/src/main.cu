@@ -39,10 +39,17 @@ FLAMEGPU_HOST_FUNCTION(host_function) {
     printf("Host Function! (Hist: [%d, %d, %d, %d, %d, %d, %d, %d]\n",
         hist_x[0], hist_x[1], hist_x[2], hist_x[3], hist_x[4], hist_x[5], hist_x[6], hist_x[7]);
 }
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4100)
+#endif
 FLAMEGPU_EXIT_CONDITION(exit_condition) {
     printf("Host Condition!\n");
     return CONTINUE;
 }
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
 
 int main(void) {
     const unsigned int AGENT_COUNT = 1024;
@@ -65,7 +72,7 @@ int main(void) {
         AgentPopulation population(agent, AGENT_COUNT);
         for (unsigned int i = 0; i < AGENT_COUNT; i++) {
             AgentInstance instance = population.getNextInstance();
-            instance.setVariable<float>("x", i);
+            instance.setVariable<float>("x", static_cast<float>(i));
             instance.setVariable<int>("a", 1);
         }
     // }

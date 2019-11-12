@@ -137,7 +137,8 @@ set(CMAKE_CUDA_FLAGS_RELEASE "${CMAKE_CUDA_FLAGS_RELEASE} -lineinfo")
 
 # profile specific CUDA flags.
 set(CMAKE_CUDA_FLAGS_PROFILE "${CMAKE_CUDA_FLAGS_PROFILE} -lineinfo -DPROFILE -D_PROFILE")
-
+# Addresses a cub::histogram warning
+set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr")
 # Set high level of warnings
 if(WARNINGS_AS_ERRORS)
     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --Wreorder --Werror reorder,cross-execution-space-call -Xptxas=\"-Werror\"  -Xnvlink=\"-Werror\"")
@@ -157,7 +158,9 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4505")
     set(CUDA_DEVICE_LINK_FLAGS "${CUDA_DEVICE_LINK_FLAGS} -Xcompiler /wd4100")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /experimental:external")
+    # These flags don't currently have any effect on how CMake passes system-private includes to msvc
     set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "/external:I")
+    set(CMAKE_INCLUDE_SYSTEM_FLAG_CUDA "/external:I")
     if(WARNINGS_AS_ERRORS)
         set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler /WX")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX")
