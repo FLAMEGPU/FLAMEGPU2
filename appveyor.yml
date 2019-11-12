@@ -10,13 +10,12 @@ os: Visual Studio 2019
 platform: 
   - x64
   
-# specify custom environment variables, including boost version, which corresponds to which windows image is used.
-# https://www.appveyor.com/docs/windows-images-software/#boost
+# specify custom environment variables to pass to the image.
 # environment:
   # <name>: <value>
 
 
-# build configuration, i.e. Debug, Release, etc.
+# build configuration to be built, i.e. Debug, Release, Profile etc.
 configuration:
  - Release
 
