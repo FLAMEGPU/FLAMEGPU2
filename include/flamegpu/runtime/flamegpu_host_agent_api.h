@@ -44,8 +44,8 @@ class FLAMEGPU_HOST_AGENT_API {
      * Wraps cub::DeviceReduce::Sum()
      * @param variable The agent variable to perform the sum reduction across
      */
-    template<typename T>
-    T sum(const std::string &variable) const;
+    template<typename InT>
+    InT sum(const std::string &variable) const;
     /**
      * Wraps cub::DeviceReduce::Sum()
      * @param variable The agent variable to perform the sum reduction across
@@ -57,22 +57,22 @@ class FLAMEGPU_HOST_AGENT_API {
      * Wraps cub::DeviceReduce::Min()
      * @param variable The agent variable to perform the min reduction across
      */
-    template<typename T>
-    T min(const std::string &variable) const;
+    template<typename InT>
+    InT min(const std::string &variable) const;
     /**
      * Wraps cub::DeviceReduce::Max()
      * @param variable The agent variable to perform the max reduction across
      */
-    template<typename T>
-    T max(const std::string &variable) const;
+    template<typename InT>
+    InT max(const std::string &variable) const;
     /**
      * Wraps cub::DeviceReduce::Reduce(), to perform a reduction with a custom operator
      * @param variable The agent variable to perform the reduction across
      * @param reductionOperator The custom reduction function
      * @param init Initial value of the reduction
      */
-    template<typename T, typename reductionOperatorT>
-    T reduce(const std::string &variable, reductionOperatorT reductionOperator, const T&init) const;
+    template<typename InT, typename reductionOperatorT>
+    InT reduce(const std::string &variable, reductionOperatorT reductionOperator, const InT&init) const;
     /**
      * Wraps cub::DeviceHistogram::HistogramEven()
      * @param variable The agent variable to perform the reduction across
@@ -96,9 +96,9 @@ class FLAMEGPU_HOST_AGENT_API {
 // Implementation
 //
 
-template<typename T>
-T FLAMEGPU_HOST_AGENT_API::sum(const std::string &variable) const {
-    return sum<T, T>(variable);
+template<typename InT>
+InT FLAMEGPU_HOST_AGENT_API::sum(const std::string &variable) const {
+    return sum<InT, InT>(variable);
 }
 template<typename InT, typename OutT>
 OutT FLAMEGPU_HOST_AGENT_API::sum(const std::string &variable) const {
@@ -125,84 +125,84 @@ OutT FLAMEGPU_HOST_AGENT_API::sum(const std::string &variable) const {
     gpuErrchk(cudaMemcpy(&rtn, api.d_output_space, sizeof(OutT), cudaMemcpyDeviceToHost));
     return rtn;
 }
-template<typename T>
-T FLAMEGPU_HOST_AGENT_API::min(const std::string &variable) const {
+template<typename InT>
+InT FLAMEGPU_HOST_AGENT_API::min(const std::string &variable) const {
     const auto &agentDesc = agent.getAgentDescription();
-    if (typeid(T) != agentDesc.getVariableType(variable))
+    if (typeid(InT) != agentDesc.getVariableType(variable))
         throw InvalidVarType("variable type does not match type of min()");
     const auto &stateAgent = agent.getAgentStateList(stateName);
     void *var_ptr = stateAgent->getAgentListVariablePointer(variable);
     const auto agentCount = stateAgent->getCUDAStateListSize();
     // Check if we need to resize cub storage
-    FLAMEGPU_HOST_API::CUB_Config cc = { FLAMEGPU_HOST_API::MIN, typeid(T).hash_code() };
+    FLAMEGPU_HOST_API::CUB_Config cc = { FLAMEGPU_HOST_API::MIN, typeid(InT).hash_code() };
     if (api.tempStorageRequiresResize(cc, agentCount)) {
         // Resize cub storage
         size_t tempByte = 0;
-        cub::DeviceReduce::Min(nullptr, tempByte, reinterpret_cast<T*>(var_ptr), reinterpret_cast<T*>(api.d_output_space), static_cast<int>(agentCount));
+        cub::DeviceReduce::Min(nullptr, tempByte, reinterpret_cast<InT*>(var_ptr), reinterpret_cast<InT*>(api.d_output_space), static_cast<int>(agentCount));
         gpuErrchkLaunch();
         api.resizeTempStorage(cc, agentCount, tempByte);
     }
     // Resize output storage
-    api.resizeOutputSpace<T>();
-    cub::DeviceReduce::Min(api.d_cub_temp, api.d_cub_temp_size, reinterpret_cast<T*>(var_ptr), reinterpret_cast<T*>(api.d_output_space), static_cast<int>(agentCount));
+    api.resizeOutputSpace<InT>();
+    cub::DeviceReduce::Min(api.d_cub_temp, api.d_cub_temp_size, reinterpret_cast<InT*>(var_ptr), reinterpret_cast<InT*>(api.d_output_space), static_cast<int>(agentCount));
     gpuErrchkLaunch();
-    T rtn;
-    gpuErrchk(cudaMemcpy(&rtn, api.d_output_space, sizeof(T), cudaMemcpyDeviceToHost));
+    InT rtn;
+    gpuErrchk(cudaMemcpy(&rtn, api.d_output_space, sizeof(InT), cudaMemcpyDeviceToHost));
     return rtn;
 }
-template<typename T>
-T FLAMEGPU_HOST_AGENT_API::max(const std::string &variable) const {
+template<typename InT>
+InT FLAMEGPU_HOST_AGENT_API::max(const std::string &variable) const {
     const auto &agentDesc = agent.getAgentDescription();
-    if (typeid(T) != agentDesc.getVariableType(variable))
+    if (typeid(InT) != agentDesc.getVariableType(variable))
         throw InvalidVarType("variable type does not match type of max()");
     const auto &stateAgent = agent.getAgentStateList(stateName);
     void *var_ptr = stateAgent->getAgentListVariablePointer(variable);
     const auto agentCount = stateAgent->getCUDAStateListSize();
     // Check if we need to resize cub storage
-    FLAMEGPU_HOST_API::CUB_Config cc = { FLAMEGPU_HOST_API::MAX, typeid(T).hash_code() };
+    FLAMEGPU_HOST_API::CUB_Config cc = { FLAMEGPU_HOST_API::MAX, typeid(InT).hash_code() };
     if (api.tempStorageRequiresResize(cc, agentCount)) {
         // Resize cub storage
         size_t tempByte = 0;
-        cub::DeviceReduce::Max(nullptr, tempByte, reinterpret_cast<T*>(var_ptr), reinterpret_cast<T*>(api.d_output_space), static_cast<int>(agentCount));
+        cub::DeviceReduce::Max(nullptr, tempByte, reinterpret_cast<InT*>(var_ptr), reinterpret_cast<InT*>(api.d_output_space), static_cast<int>(agentCount));
         gpuErrchkLaunch();
         api.resizeTempStorage(cc, agentCount, tempByte);
     }
     // Resize output storage
-    api.resizeOutputSpace<T>();
-    cub::DeviceReduce::Max(api.d_cub_temp, api.d_cub_temp_size, reinterpret_cast<T*>(var_ptr), reinterpret_cast<T*>(api.d_output_space), static_cast<int>(agentCount));
+    api.resizeOutputSpace<InT>();
+    cub::DeviceReduce::Max(api.d_cub_temp, api.d_cub_temp_size, reinterpret_cast<InT*>(var_ptr), reinterpret_cast<InT*>(api.d_output_space), static_cast<int>(agentCount));
     gpuErrchkLaunch();
-    T rtn;
-    gpuErrchk(cudaMemcpy(&rtn, api.d_output_space, sizeof(T), cudaMemcpyDeviceToHost));
+    InT rtn;
+    gpuErrchk(cudaMemcpy(&rtn, api.d_output_space, sizeof(InT), cudaMemcpyDeviceToHost));
     return rtn;
 }
-template<typename T, typename reductionOperatorT>
-T FLAMEGPU_HOST_AGENT_API::reduce(const std::string &variable, reductionOperatorT reductionOperator, const T &init) const {
+template<typename InT, typename reductionOperatorT>
+InT FLAMEGPU_HOST_AGENT_API::reduce(const std::string &variable, reductionOperatorT reductionOperator, const InT &init) const {
     const auto &agentDesc = agent.getAgentDescription();
-    if (typeid(T) != agentDesc.getVariableType(variable))
+    if (typeid(InT) != agentDesc.getVariableType(variable))
         throw InvalidVarType("variable type does not match type of reduce()");
     const auto &stateAgent = agent.getAgentStateList(stateName);
     void *var_ptr = stateAgent->getAgentListVariablePointer(variable);
     const auto agentCount = stateAgent->getCUDAStateListSize();
     // Check if we need to resize cub storage
-    FLAMEGPU_HOST_API::CUB_Config cc = { FLAMEGPU_HOST_API::CUSTOM_REDUCE, typeid(T).hash_code() };
+    FLAMEGPU_HOST_API::CUB_Config cc = { FLAMEGPU_HOST_API::CUSTOM_REDUCE, typeid(InT).hash_code() };
     if (api.tempStorageRequiresResize(cc, agentCount)) {
         // Resize cub storage
         size_t tempByte = 0;
-        cub::DeviceReduce::Reduce(nullptr, tempByte, reinterpret_cast<T*>(var_ptr), reinterpret_cast<T*>(api.d_output_space), static_cast<int>(agentCount), reductionOperator, init);
+        cub::DeviceReduce::Reduce(nullptr, tempByte, reinterpret_cast<InT*>(var_ptr), reinterpret_cast<InT*>(api.d_output_space), static_cast<int>(agentCount), reductionOperator, init);
         gpuErrchkLaunch();
         api.resizeTempStorage(cc, agentCount, tempByte);
     }
     // Resize output storage
-    api.resizeOutputSpace<T>();
-    cub::DeviceReduce::Reduce(api.d_cub_temp, api.d_cub_temp_size, reinterpret_cast<T*>(var_ptr), reinterpret_cast<T*>(api.d_output_space), static_cast<int>(agentCount), reductionOperator, init);
+    api.resizeOutputSpace<InT>();
+    cub::DeviceReduce::Reduce(api.d_cub_temp, api.d_cub_temp_size, reinterpret_cast<InT*>(var_ptr), reinterpret_cast<InT*>(api.d_output_space), static_cast<int>(agentCount), reductionOperator, init);
     gpuErrchkLaunch();
-    T rtn;
-    gpuErrchk(cudaMemcpy(&rtn, api.d_output_space, sizeof(T), cudaMemcpyDeviceToHost));
+    InT rtn;
+    gpuErrchk(cudaMemcpy(&rtn, api.d_output_space, sizeof(InT), cudaMemcpyDeviceToHost));
     return rtn;
 }
-template<typename T>
-std::vector<unsigned int> FLAMEGPU_HOST_AGENT_API::histogramEven(const std::string &variable, const unsigned int &histogramBins, const T &lowerBound, const T &upperBound) const {
-    return histogramEven<T, unsigned int>(variable, histogramBins, lowerBound, upperBound);
+template<typename InT>
+std::vector<unsigned int> FLAMEGPU_HOST_AGENT_API::histogramEven(const std::string &variable, const unsigned int &histogramBins, const InT &lowerBound, const InT &upperBound) const {
+    return histogramEven<InT, unsigned int>(variable, histogramBins, lowerBound, upperBound);
 }
 template<typename InT, typename OutT>
 std::vector<OutT> FLAMEGPU_HOST_AGENT_API::histogramEven(const std::string &variable, const unsigned int &histogramBins, const InT &lowerBound, const InT &upperBound) const {
