@@ -172,8 +172,7 @@ class HostReductionTest : public testing::Test {
 /**
  * Float
  */
-TEST_F(HostReductionTest, MinFloat)
-{
+TEST_F(HostReductionTest, MinFloat) {
     ms->simulation.addStepFunction(&step_minfloat);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_real_distribution <float> dist(FLT_MIN, FLT_MAX);
@@ -186,8 +185,7 @@ TEST_F(HostReductionTest, MinFloat)
     ms->run();
     EXPECT_EQ(float_out, *std::min_element(in.begin(), in.end()));
 }
-TEST_F(HostReductionTest, MaxFloat)
-{
+TEST_F(HostReductionTest, MaxFloat) {
     ms->simulation.addStepFunction(&step_maxfloat);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_real_distribution <float> dist(FLT_MIN, FLT_MAX);
@@ -200,8 +198,7 @@ TEST_F(HostReductionTest, MaxFloat)
     ms->run();
     EXPECT_EQ(float_out, *std::max_element(in.begin(), in.end()));
 }
-TEST_F(HostReductionTest, SumFloat)
-{
+TEST_F(HostReductionTest, SumFloat) {
     ms->simulation.addStepFunction(&step_sumfloat);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_real_distribution <float> dist(FLT_MIN, FLT_MAX);
@@ -218,8 +215,7 @@ TEST_F(HostReductionTest, SumFloat)
 /**
  * Double
  */
-TEST_F(HostReductionTest, MinDouble)
-{
+TEST_F(HostReductionTest, MinDouble) {
     ms->simulation.addStepFunction(&step_mindouble);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_real_distribution <double> dist(DBL_MIN, DBL_MAX);
@@ -232,8 +228,7 @@ TEST_F(HostReductionTest, MinDouble)
     ms->run();
     EXPECT_EQ(double_out, *std::min_element(in.begin(), in.end()));
 }
-TEST_F(HostReductionTest, MaxDouble)
-{
+TEST_F(HostReductionTest, MaxDouble) {
     ms->simulation.addStepFunction(&step_maxdouble);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_real_distribution <double> dist(DBL_MIN, DBL_MAX);
@@ -246,8 +241,7 @@ TEST_F(HostReductionTest, MaxDouble)
     ms->run();
     EXPECT_EQ(double_out, *std::max_element(in.begin(), in.end()));
 }
-TEST_F(HostReductionTest, SumDouble)
-{
+TEST_F(HostReductionTest, SumDouble) {
     ms->simulation.addStepFunction(&step_sumdouble);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_real_distribution <double> dist(DBL_MIN, DBL_MAX);
@@ -265,8 +259,7 @@ TEST_F(HostReductionTest, SumDouble)
 /**
  * Char
  */
-TEST_F(HostReductionTest, MinChar)
-{
+TEST_F(HostReductionTest, MinChar) {
     ms->simulation.addStepFunction(&step_minchar);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <int16_t> dist(CHAR_MIN, CHAR_MAX);
@@ -279,44 +272,49 @@ TEST_F(HostReductionTest, MinChar)
     ms->run();
     EXPECT_EQ(char_out, *std::min_element(in.begin(), in.end()));
 }
-TEST_F(HostReductionTest, MaxChar)
-{
+TEST_F(HostReductionTest, MaxChar) {
     ms->simulation.addStepFunction(&step_maxchar);
     std::mt19937 rd;  // Seed does not matter
-    std::uniform_int_distribution <int16_t> dist(CHAR_MIN, CHAR_MAX);
-    std::array<double, TEST_LEN> in;
+    std::uniform_int_distribution <int16_t> dist(0, 1);
+    std::array<char, TEST_LEN> in;
     for (unsigned int i = 0; i < TEST_LEN; i++) {
         AgentInstance instance = ms->population->getNextInstance();
-        in[i] = static_cast<char>(dist(rd));
+        if (i < 256) {
+            in[i] = static_cast<char>(dist(rd));
+        } else {
+            in[i] = 0;
+        }
         instance.setVariable<char>("char", in[i]);
     }
     ms->run();
     EXPECT_EQ(char_out, *std::max_element(in.begin(), in.end()));
 }
-TEST_F(HostReductionTest, SumChar)
-{
+TEST_F(HostReductionTest, SumChar) {
     ms->simulation.addStepFunction(&step_sumchar);
     std::mt19937 rd;  // Seed does not matter
-    std::uniform_int_distribution <int16_t> dist(CHAR_MIN, CHAR_MAX);
-    std::array<double, TEST_LEN> in;
+    std::uniform_int_distribution <int16_t> dist(-1, 1);
+    std::array<char, TEST_LEN> in;
     for (unsigned int i = 0; i < TEST_LEN; i++) {
         AgentInstance instance = ms->population->getNextInstance();
-        in[i] = static_cast<char>(dist(rd));
+        if (i < 256) {
+            in[i] = static_cast<char>(dist(rd));
+        } else {
+            in[i] = 0;
+        }
         instance.setVariable<char>("char", in[i]);
     }
     ms->run();
-    EXPECT_EQ(char_out, std::accumulate(in.begin(), in.end(), 0.0));
+    EXPECT_EQ(char_out, std::accumulate(in.begin(), in.end(), 0));
 }
 
 /**
  * Unsigned Char
  */
-TEST_F(HostReductionTest, MinUnsignedChar)
-{
+TEST_F(HostReductionTest, MinUnsignedChar) {
     ms->simulation.addStepFunction(&step_minuchar);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <uint16_t> dist(0, UCHAR_MAX);
-    std::array<char, TEST_LEN> in;
+    std::array<unsigned char, TEST_LEN> in;
     for (unsigned int i = 0; i < TEST_LEN; i++) {
         AgentInstance instance = ms->population->getNextInstance();
         in[i] = static_cast<unsigned char>(dist(rd));
@@ -325,12 +323,11 @@ TEST_F(HostReductionTest, MinUnsignedChar)
     ms->run();
     EXPECT_EQ(uchar_out, *std::min_element(in.begin(), in.end()));
 }
-TEST_F(HostReductionTest, MaxUnsignedChar)
-{
+TEST_F(HostReductionTest, MaxUnsignedChar) {
     ms->simulation.addStepFunction(&step_maxuchar);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <uint16_t> dist(0, UCHAR_MAX);
-    std::array<double, TEST_LEN> in;
+    std::array<unsigned char, TEST_LEN> in;
     for (unsigned int i = 0; i < TEST_LEN; i++) {
         AgentInstance instance = ms->population->getNextInstance();
         in[i] = static_cast<unsigned char>(dist(rd));
@@ -339,26 +336,24 @@ TEST_F(HostReductionTest, MaxUnsignedChar)
     ms->run();
     EXPECT_EQ(uchar_out, *std::max_element(in.begin(), in.end()));
 }
-TEST_F(HostReductionTest, SumUnsignedChar)
-{
+TEST_F(HostReductionTest, SumUnsignedChar) {
     ms->simulation.addStepFunction(&step_sumuchar);
     std::mt19937 rd;  // Seed does not matter
-    std::uniform_int_distribution <uint16_t> dist(0, UCHAR_MAX);
-    std::array<double, TEST_LEN> in;
+    std::uniform_int_distribution <uint16_t> dist(0, 1);
+    std::array<unsigned char, TEST_LEN> in;
     for (unsigned int i = 0; i < TEST_LEN; i++) {
         AgentInstance instance = ms->population->getNextInstance();
         in[i] = static_cast<unsigned char>(dist(rd));
         instance.setVariable<unsigned char>("uchar", in[i]);
     }
     ms->run();
-    EXPECT_EQ(uchar_out, std::accumulate(in.begin(), in.end(), 0.0));
+    EXPECT_EQ(uchar_out, std::accumulate(in.begin(), in.end(), 0u));
 }
 
 /**
  * int16_t
  */
-TEST_F(HostReductionTest, MinInt16)
-{
+TEST_F(HostReductionTest, MinInt16) {
     ms->simulation.addStepFunction(&step_minint16_t);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <int16_t> dist(INT16_MIN, INT16_MAX);
@@ -371,8 +366,7 @@ TEST_F(HostReductionTest, MinInt16)
     ms->run();
     EXPECT_EQ(int16_t_out, *std::min_element(in.begin(), in.end()));
 }
-TEST_F(HostReductionTest, MaxInt16)
-{
+TEST_F(HostReductionTest, MaxInt16) {
     ms->simulation.addStepFunction(&step_maxint16_t);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <int16_t> dist(INT16_MIN, INT16_MAX);
@@ -385,11 +379,10 @@ TEST_F(HostReductionTest, MaxInt16)
     ms->run();
     EXPECT_EQ(int16_t_out, *std::max_element(in.begin(), in.end()));
 }
-TEST_F(HostReductionTest, SumInt16)
-{
+TEST_F(HostReductionTest, SumInt16) {
     ms->simulation.addStepFunction(&step_sumint16_t);
     std::mt19937 rd;  // Seed does not matter
-    std::uniform_int_distribution <int16_t> dist(INT16_MIN, INT16_MAX);
+    std::uniform_int_distribution <int16_t> dist(INT16_MIN / (static_cast<int16_t>(TEST_LEN) / 2i16), INT16_MAX / (static_cast<int16_t>(TEST_LEN) / 2i16));
     std::array<int16_t, TEST_LEN> in;
     for (unsigned int i = 0; i < TEST_LEN; i++) {
         AgentInstance instance = ms->population->getNextInstance();
@@ -397,17 +390,16 @@ TEST_F(HostReductionTest, SumInt16)
         instance.setVariable<int16_t>("int16_t", in[i]);
     }
     ms->run();
-    EXPECT_EQ(int16_t_out, std::accumulate(in.begin(), in.end(), 0.0));
+    EXPECT_EQ(int16_t_out, std::accumulate(in.begin(), in.end(), 0));
 }
 
 /**
  * uint16_t
  */
-TEST_F(HostReductionTest, MinUnsignedInt16)
-{
+TEST_F(HostReductionTest, MinUnsignedInt16) {
     ms->simulation.addStepFunction(&step_minuint16_t);
     std::mt19937 rd;  // Seed does not matter
-    std::uniform_int_distribution <uint64_t> dist(0, UINT16_MAX);
+    std::uniform_int_distribution <uint16_t> dist(0, UINT16_MAX);
     std::array<uint16_t, TEST_LEN> in;
     for (unsigned int i = 0; i < TEST_LEN; i++) {
         AgentInstance instance = ms->population->getNextInstance();
@@ -417,11 +409,10 @@ TEST_F(HostReductionTest, MinUnsignedInt16)
     ms->run();
     EXPECT_EQ(uint16_t_out, *std::min_element(in.begin(), in.end()));
 }
-TEST_F(HostReductionTest, MaxUnsignedInt16)
-{
+TEST_F(HostReductionTest, MaxUnsignedInt16) {
     ms->simulation.addStepFunction(&step_maxuint16_t);
     std::mt19937 rd;  // Seed does not matter
-    std::uniform_int_distribution <uint64_t> dist(0, UINT16_MAX);
+    std::uniform_int_distribution <uint16_t> dist(0, UINT16_MAX);
     std::array<uint16_t, TEST_LEN> in;
     for (unsigned int i = 0; i < TEST_LEN; i++) {
         AgentInstance instance = ms->population->getNextInstance();
@@ -431,11 +422,10 @@ TEST_F(HostReductionTest, MaxUnsignedInt16)
     ms->run();
     EXPECT_EQ(uint16_t_out, *std::max_element(in.begin(), in.end()));
 }
-TEST_F(HostReductionTest, SumUnsignedInt16)
-{
+TEST_F(HostReductionTest, SumUnsignedInt16) {
     ms->simulation.addStepFunction(&step_sumuint16_t);
     std::mt19937 rd;  // Seed does not matter
-    std::uniform_int_distribution <uint64_t> dist(0, UINT16_MAX);
+    std::uniform_int_distribution <uint16_t> dist(0, UINT16_MAX / TEST_LEN);
     std::array<uint16_t, TEST_LEN> in;
     for (unsigned int i = 0; i < TEST_LEN; i++) {
         AgentInstance instance = ms->population->getNextInstance();
@@ -443,14 +433,13 @@ TEST_F(HostReductionTest, SumUnsignedInt16)
         instance.setVariable<uint16_t>("uint16_t", in[i]);
     }
     ms->run();
-    EXPECT_EQ(uint16_t_out, std::accumulate(in.begin(), in.end(), 0.0));
+    EXPECT_EQ(uint16_t_out, std::accumulate(in.begin(), in.end(), 0u));
 }
 
 /**
  * int32_t
  */
-TEST_F(HostReductionTest, MinInt32)
-{
+TEST_F(HostReductionTest, MinInt32) {
     ms->simulation.addStepFunction(&step_minint32_t);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <int32_t> dist(INT32_MIN, INT32_MAX);
@@ -463,8 +452,7 @@ TEST_F(HostReductionTest, MinInt32)
     ms->run();
     EXPECT_EQ(int32_t_out, *std::min_element(in.begin(), in.end()));
 }
-TEST_F(HostReductionTest, MaxInt32)
-{
+TEST_F(HostReductionTest, MaxInt32) {
     ms->simulation.addStepFunction(&step_maxint32_t);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <int32_t> dist(INT32_MIN, INT32_MAX);
@@ -477,11 +465,10 @@ TEST_F(HostReductionTest, MaxInt32)
     ms->run();
     EXPECT_EQ(int32_t_out, *std::max_element(in.begin(), in.end()));
 }
-TEST_F(HostReductionTest, SumInt32)
-{
+TEST_F(HostReductionTest, SumInt32) {
     ms->simulation.addStepFunction(&step_sumint32_t);
     std::mt19937 rd;  // Seed does not matter
-    std::uniform_int_distribution <int32_t> dist(INT32_MIN, INT32_MAX);
+    std::uniform_int_distribution <int32_t> dist(INT32_MIN / (static_cast<int32_t>(TEST_LEN) / 2i32), INT32_MAX / (static_cast<int32_t>(TEST_LEN) / 2i32));
     std::array<int32_t, TEST_LEN> in;
     for (unsigned int i = 0; i < TEST_LEN; i++) {
         AgentInstance instance = ms->population->getNextInstance();
@@ -489,14 +476,13 @@ TEST_F(HostReductionTest, SumInt32)
         instance.setVariable<int32_t>("int32_t", in[i]);
     }
     ms->run();
-    EXPECT_EQ(int32_t_out, std::accumulate(in.begin(), in.end(), 0.0));
+    EXPECT_EQ(int32_t_out, std::accumulate(in.begin(), in.end(), 0));
 }
 
 /**
  * uint32_t
  */
-TEST_F(HostReductionTest, MinUnsignedInt32)
-{
+TEST_F(HostReductionTest, MinUnsignedInt32) {
     ms->simulation.addStepFunction(&step_minuint32_t);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <uint32_t> dist(0, UINT32_MAX);
@@ -509,8 +495,7 @@ TEST_F(HostReductionTest, MinUnsignedInt32)
     ms->run();
     EXPECT_EQ(uint32_t_out, *std::min_element(in.begin(), in.end()));
 }
-TEST_F(HostReductionTest, MaxUnsignedInt32)
-{
+TEST_F(HostReductionTest, MaxUnsignedInt32) {
     ms->simulation.addStepFunction(&step_maxuint32_t);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <uint32_t> dist(0, UINT32_MAX);
@@ -523,11 +508,10 @@ TEST_F(HostReductionTest, MaxUnsignedInt32)
     ms->run();
     EXPECT_EQ(uint32_t_out, *std::max_element(in.begin(), in.end()));
 }
-TEST_F(HostReductionTest, SumUnsignedInt32)
-{
+TEST_F(HostReductionTest, SumUnsignedInt32) {
     ms->simulation.addStepFunction(&step_sumuint32_t);
     std::mt19937 rd;  // Seed does not matter
-    std::uniform_int_distribution <uint32_t> dist(0, UINT32_MAX);
+    std::uniform_int_distribution <uint32_t> dist(0, UINT32_MAX / TEST_LEN);
     std::array<uint32_t, TEST_LEN> in;
     for (unsigned int i = 0; i < TEST_LEN; i++) {
         AgentInstance instance = ms->population->getNextInstance();
@@ -535,14 +519,13 @@ TEST_F(HostReductionTest, SumUnsignedInt32)
         instance.setVariable<uint32_t>("uint32_t", in[i]);
     }
     ms->run();
-    EXPECT_EQ(uint32_t_out, std::accumulate(in.begin(), in.end(), 0.0));
+    EXPECT_EQ(uint32_t_out, std::accumulate(in.begin(), in.end(), 0u));
 }
 
 /**
  * int64_t
  */
-TEST_F(HostReductionTest, MinInt64)
-{
+TEST_F(HostReductionTest, MinInt64) {
     ms->simulation.addStepFunction(&step_minint64_t);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <int64_t> dist(INT64_MIN, INT64_MAX);
@@ -555,8 +538,7 @@ TEST_F(HostReductionTest, MinInt64)
     ms->run();
     EXPECT_EQ(int64_t_out, *std::min_element(in.begin(), in.end()));
 }
-TEST_F(HostReductionTest, MaxInt64)
-{
+TEST_F(HostReductionTest, MaxInt64) {
     ms->simulation.addStepFunction(&step_maxint64_t);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <int64_t> dist(INT64_MIN, INT64_MAX);
@@ -569,11 +551,10 @@ TEST_F(HostReductionTest, MaxInt64)
     ms->run();
     EXPECT_EQ(int64_t_out, *std::max_element(in.begin(), in.end()));
 }
-TEST_F(HostReductionTest, SumInt64)
-{
+TEST_F(HostReductionTest, SumInt64) {
     ms->simulation.addStepFunction(&step_sumint64_t);
     std::mt19937 rd;  // Seed does not matter
-    std::uniform_int_distribution <int64_t> dist(INT64_MIN, INT64_MAX);
+    std::uniform_int_distribution <int64_t> dist(INT64_MIN / (TEST_LEN / 2), INT64_MAX / (TEST_LEN / 2));
     std::array<int64_t, TEST_LEN> in;
     for (unsigned int i = 0; i < TEST_LEN; i++) {
         AgentInstance instance = ms->population->getNextInstance();
@@ -581,14 +562,13 @@ TEST_F(HostReductionTest, SumInt64)
         instance.setVariable<int64_t>("int64_t", in[i]);
     }
     ms->run();
-    EXPECT_EQ(int64_t_out, std::accumulate(in.begin(), in.end(), 0.0));
+    EXPECT_EQ(int64_t_out, std::accumulate(in.begin(), in.end(), 0ll));
 }
 
 /**
  * uint64_t
  */
-TEST_F(HostReductionTest, MinUnsignedInt64)
-{
+TEST_F(HostReductionTest, MinUnsignedInt64) {
     ms->simulation.addStepFunction(&step_minuint64_t);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <uint64_t> dist(0, UINT64_MAX);
@@ -601,8 +581,7 @@ TEST_F(HostReductionTest, MinUnsignedInt64)
     ms->run();
     EXPECT_EQ(uint64_t_out, *std::min_element(in.begin(), in.end()));
 }
-TEST_F(HostReductionTest, MaxUnsignedInt64)
-{
+TEST_F(HostReductionTest, MaxUnsignedInt64) {
     ms->simulation.addStepFunction(&step_maxuint64_t);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <uint64_t> dist(0, UINT64_MAX);
@@ -615,11 +594,10 @@ TEST_F(HostReductionTest, MaxUnsignedInt64)
     ms->run();
     EXPECT_EQ(uint64_t_out, *std::max_element(in.begin(), in.end()));
 }
-TEST_F(HostReductionTest, SumUnsignedInt64)
-{
+TEST_F(HostReductionTest, SumUnsignedInt64) {
     ms->simulation.addStepFunction(&step_sumuint64_t);
     std::mt19937 rd;  // Seed does not matter
-    std::uniform_int_distribution <uint64_t> dist(0, UINT64_MAX);
+    std::uniform_int_distribution <uint64_t> dist(0, UINT64_MAX / TEST_LEN);
     std::array<uint64_t, TEST_LEN> in;
     for (unsigned int i = 0; i < TEST_LEN; i++) {
         AgentInstance instance = ms->population->getNextInstance();
@@ -627,7 +605,7 @@ TEST_F(HostReductionTest, SumUnsignedInt64)
         instance.setVariable<uint64_t>("uint64_t", in[i]);
     }
     ms->run();
-    EXPECT_EQ(uint64_t_out, std::accumulate(in.begin(), in.end(), 0.0));
+    EXPECT_EQ(uint64_t_out, std::accumulate(in.begin(), in.end(), 0llu));
 }
 
 #endif  // TESTS_TEST_CASES_RUNTIME_TEST_HOST_REDUCTIONS_H_

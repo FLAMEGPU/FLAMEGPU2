@@ -121,8 +121,8 @@ FLAMEGPU_STEP_FUNCTION(step_uniform_ulonglong_range) {
 FLAMEGPU_STEP_FUNCTION(step_uniform_longlong_range) {
     for (auto &i : longlong_out)
         ASSERT_NO_THROW(i = FLAMEGPU->random.uniform<int64_t>(
-            static_cast<int64_t>(INT64_MIN * 0.5),
-            static_cast<int64_t>(INT64_MAX * 0.5)));
+            static_cast<int64_t>(INT64_MIN >> 1),
+            static_cast<int64_t>(INT64_MAX >> 1)));
 }
 class MiniSim {
  public:
@@ -1081,8 +1081,8 @@ TEST_F(HostRandomTest, UniformLongLongRange) {
     ms->simulation.addStepFunction(&step_uniform_longlong_range);
     ms->run();
     for (auto &i : longlong_out) {
-        EXPECT_GE(i, static_cast<int64_t>(INT64_MIN*0.5));
-        EXPECT_LE(i, static_cast<int64_t>(INT64_MAX*0.5));
+        EXPECT_GE(i, static_cast<int64_t>(INT64_MIN >> 1));
+        EXPECT_LE(i, static_cast<int64_t>(INT64_MAX >> 1));
     }
 }
 
