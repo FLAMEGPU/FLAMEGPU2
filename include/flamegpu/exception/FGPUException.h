@@ -355,4 +355,15 @@ class InvalidHostFunc : public FGPUException {
     }
 };
 
+/**
+* Defines a type of object to be thrown as exception.
+* It reports errors that are due unsuitable arguments
+*/
+class InvalidArgument : public FGPUException {
+ public:
+    explicit InvalidArgument(const char *msg = "Invalid Argument Function") :FGPUException(msg) {}
+    virtual const char *what() const {
+        return err_message;
+    }
+};
 #endif  // INCLUDE_FLAMEGPU_EXCEPTION_FGPUEXCEPTION_H_

@@ -187,6 +187,44 @@ FLAMEGPU_STEP_FUNCTION(step_histogramEvenuint64_t) {
     int_vec = FLAMEGPU->agent("agent").histogramEven<uint64_t, int>("uint64_t", 10, 0, 20);
 }
 
+FLAMEGPU_STEP_FUNCTION(step_sumException) {
+    EXPECT_THROW(FLAMEGPU->agent("agedddnt"), InvalidCudaAgent);
+    EXPECT_THROW(FLAMEGPU->agent("agent").sum<unsigned char>("float"), InvalidVarType);
+    EXPECT_THROW(FLAMEGPU->agent("agent").sum<int64_t>("uint64_t"), InvalidVarType);
+    EXPECT_THROW(FLAMEGPU->agent("agent").sum<double>("intsssssssss16_t"), InvalidAgentVar);
+    EXPECT_THROW(FLAMEGPU->agent("agent").sum<uint64_t>("isssssssssssnt"), InvalidAgentVar);
+}
+FLAMEGPU_STEP_FUNCTION(step_minException) {
+    EXPECT_THROW(FLAMEGPU->agent("agsssedddnt"), InvalidCudaAgent);
+    EXPECT_THROW(FLAMEGPU->agent("agent").min<uint64_t>("char"), InvalidVarType);
+    EXPECT_THROW(FLAMEGPU->agent("agent").min<int64_t>("uint64_t"), InvalidVarType);
+    EXPECT_THROW(FLAMEGPU->agent("agent").min<double>("intssssssssssssss16_t"), InvalidAgentVar);
+    EXPECT_THROW(FLAMEGPU->agent("agent").min<uint64_t>("issssssssssssnt"), InvalidAgentVar);
+}
+FLAMEGPU_STEP_FUNCTION(step_maxException) {
+    EXPECT_THROW(FLAMEGPU->agent("ageaadddnt"), InvalidCudaAgent);
+    EXPECT_THROW(FLAMEGPU->agent("agent").max<double>("float"), InvalidVarType);
+    EXPECT_THROW(FLAMEGPU->agent("agent").max<float>("uint64_t"), InvalidVarType);
+    EXPECT_THROW(FLAMEGPU->agent("agent").max<double>("intsssssssssss16_t"), InvalidAgentVar);
+    EXPECT_THROW(FLAMEGPU->agent("agent").max<uint64_t>("ssssssssssssssint"), InvalidAgentVar);
+}
+FLAMEGPU_STEP_FUNCTION(step_customReductionException) {
+    EXPECT_THROW(FLAMEGPU->agent("ageaadddnt"), InvalidCudaAgent);
+    EXPECT_THROW(FLAMEGPU->agent("agent").reduce<double>("float", customMax, 0), InvalidVarType);
+    EXPECT_THROW(FLAMEGPU->agent("agent").reduce<float>("uint64_t", customMax, 0), InvalidVarType);
+    EXPECT_THROW(FLAMEGPU->agent("agent").reduce<double>("intsssssssssss16_t", customMax, 0), InvalidAgentVar);
+    EXPECT_THROW(FLAMEGPU->agent("agent").reduce<uint64_t>("ssssssssssssssint", customMax, 0), InvalidAgentVar);
+}
+FLAMEGPU_STEP_FUNCTION(step_histogramEvenException) {
+    EXPECT_THROW(FLAMEGPU->agent("ageaadddnt"), InvalidCudaAgent);
+    EXPECT_THROW(FLAMEGPU->agent("agent").histogramEven<double>("float", 10, 0, 10), InvalidVarType);
+    EXPECT_THROW(FLAMEGPU->agent("agent").histogramEven<float>("uint64_t", 10, 0, 10), InvalidVarType);
+    EXPECT_THROW(FLAMEGPU->agent("agent").histogramEven<double>("intsssssssssss16_t", 10, 0, 10), InvalidAgentVar);
+    EXPECT_THROW(FLAMEGPU->agent("agent").histogramEven<uint64_t>("ssssssssssssssint", 10, 0, 10), InvalidAgentVar);
+    EXPECT_THROW(FLAMEGPU->agent("agent").histogramEven<int>("int", 10, 0, 0), InvalidArgument);
+    EXPECT_THROW(FLAMEGPU->agent("agent").histogramEven<double>("double", 10, 11, 10), InvalidArgument);
+}
+
 class MiniSim {
  public:
     MiniSim() :
@@ -255,7 +293,7 @@ std::vector<OutT> histogramEven(const std::array<InT, TEST_LEN> &variables, cons
     for (auto &i : rtn)
         i = static_cast<OutT>(0);
     const InT diff = upperBound - lowerBound;
-    const double diffP = diff / (double)histogramBins;
+    const double diffP = diff / static_cast<double>(histogramBins);
     for (auto &i : variables) {
         if (i >= lowerBound && i < upperBound) {
             ++rtn[static_cast<int>(i/ diffP)];
@@ -486,8 +524,7 @@ TEST_F(HostReductionTest, HistogramEvenChar) {
         AgentInstance instance = ms->population->getNextInstance();
         if (i < 256) {
             in[i] = static_cast<char>(dist(rd));
-        }
-        else {
+        } else {
             in[i] = 0;
         }
         instance.setVariable<char>("char", in[i]);
@@ -567,10 +604,6 @@ TEST_F(HostReductionTest, HistogramEvenUnsignedChar) {
     }
     ms->run();
     auto check = histogramEven<unsigned char, int>(in, 10, 0, 20);
-    //printf("[%d, %d, %d, %d, %d, %d, %d, %d, %d, %d]\n",
-    //    int_vec[0], int_vec[1], int_vec[2], int_vec[3], int_vec[4], int_vec[5], int_vec[6], int_vec[7], int_vec[8], int_vec[9]);
-    //printf("[%d, %d, %d, %d, %d, %d, %d, %d, %d, %d]\n",
-    //    check[0], check[1], check[2], check[3], check[4], check[5], check[6], check[7], check[8], check[9]);
     for (int i = 0; i < int_vec.size(); ++i) {
         EXPECT_EQ(int_vec[i], check[i]);
     }
@@ -1010,6 +1043,45 @@ TEST_F(HostReductionTest, HistogramEvenUnsignedInt64) {
     for (int i = 0; i < int_vec.size(); ++i) {
         EXPECT_EQ(int_vec[i], check[i]);
     }
+}
+
+/**
+ * Bad Types
+ */
+TEST_F(HostReductionTest, SumException) {
+    ms->simulation.addStepFunction(&step_sumException);
+    for (unsigned int i = 0; i < TEST_LEN; i++) {
+        AgentInstance instance = ms->population->getNextInstance();
+    }
+    ms->run();
+}
+TEST_F(HostReductionTest, MinException) {
+    ms->simulation.addStepFunction(&step_minException);
+    for (unsigned int i = 0; i < TEST_LEN; i++) {
+        AgentInstance instance = ms->population->getNextInstance();
+    }
+    ms->run();
+}
+TEST_F(HostReductionTest, MaxException) {
+    ms->simulation.addStepFunction(&step_maxException);
+    for (unsigned int i = 0; i < TEST_LEN; i++) {
+        AgentInstance instance = ms->population->getNextInstance();
+    }
+    ms->run();
+}
+TEST_F(HostReductionTest, CustomReductionException) {
+    ms->simulation.addStepFunction(&step_customReductionException);
+    for (unsigned int i = 0; i < TEST_LEN; i++) {
+        AgentInstance instance = ms->population->getNextInstance();
+    }
+    ms->run();
+}
+TEST_F(HostReductionTest, HistogramEvenException) {
+    ms->simulation.addStepFunction(&step_histogramEvenException);
+    for (unsigned int i = 0; i < TEST_LEN; i++) {
+        AgentInstance instance = ms->population->getNextInstance();
+    }
+    ms->run();
 }
 
 #endif  // TESTS_TEST_CASES_RUNTIME_TEST_HOST_REDUCTIONS_H_
