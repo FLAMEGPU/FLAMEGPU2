@@ -8,7 +8,7 @@
 #include "flamegpu/flame_api.h"
 
 namespace {
-const unsigned int TEST_LEN = 12;
+const unsigned int TEST_LEN = 256;
 
 std::array<float, TEST_LEN> float_out;
 std::array<double, TEST_LEN> double_out;
@@ -168,8 +168,7 @@ class HostRandomTest : public testing::Test {
 };
 
 const char *args_1[4] = { "process.exe", "input.xml", "-r", "0" };
-const char *args_2[4] = { "process.exe", "input.xml", "-r", "2" };
-// Seeds '0 & 2' because '0 & 1' causes char/uchar collision
+const char *args_2[4] = { "process.exe", "input.xml", "-r", "1" };
 
 }  // namespace
 
@@ -183,13 +182,19 @@ TEST_F(HostRandomTest, UniformFloat) {
         EXPECT_EQ(i, 0.0f);
     ms->run();
     // Value has changed
-    for (float&i : float_out)
-        EXPECT_NE(i, 0.0f);
+    unsigned int diff = 0;
+    for (float &i : float_out)
+        if (i != 0)
+            diff++;
+    EXPECT_GT(diff, 0u);
     // Multiple calls == different values
+    diff = 0;
     for (unsigned int i = 0; i < float_out.size(); ++i)
         for (unsigned int j = 0; j < float_out.size(); ++j)
             if (i != j)
-                EXPECT_NE(float_out[i], float_out[j]);
+                if (float_out[i] != float_out[j])
+                    diff++;
+    EXPECT_GT(diff, 0u);
     std::array<float, TEST_LEN> _float_out = float_out;
     for (float&i : float_out)
         i = 0.0f;
@@ -197,20 +202,28 @@ TEST_F(HostRandomTest, UniformFloat) {
     ms->simulation.checkArgs(4, args_2, _t_unused);
     ms->run();
     // Value has changed
-    for (float&i : float_out)
-        EXPECT_NE(i, 0.0f);
-    // New Seed == new values
+    diff = 0;
+    for (float &i : float_out)
+        if (i != 0)
+            diff++;
+    EXPECT_GT(diff, 0u);
+    // New Seed == new sequence
+    diff = 0;
     for (unsigned int i = 0; i < float_out.size(); ++i)
-        for (unsigned int j = 0; j < float_out.size(); ++j)
-            EXPECT_NE(float_out[i], _float_out[j]);
+        if (float_out[i] != _float_out[i])
+            diff++;
+    EXPECT_GT(diff, 0u);
     for (float&i : float_out)
         i = 0.0f;
     // First Seed
     ms->simulation.checkArgs(4, args_1, _t_unused);
     ms->run();
     // Value has changed
-    for (float&i : float_out)
-        EXPECT_NE(i, 0.0f);
+    diff = 0;
+    for (float &i : float_out)
+        if (i != 0)
+            diff++;
+    EXPECT_GT(diff, 0u);
     // Old Seed == old values
     for (unsigned int i = 0; i < float_out.size(); ++i)
         EXPECT_EQ(float_out[i], _float_out[i]);
@@ -224,13 +237,19 @@ TEST_F(HostRandomTest, UniformDouble) {
         EXPECT_EQ(i, 0.0);
     ms->run();
     // Value has changed
-    for (double&i : double_out)
-        EXPECT_NE(i, 0.0);
+    unsigned int diff = 0;
+    for (double &i : double_out)
+        if (i != 0)
+            diff++;
+    EXPECT_GT(diff, 0u);
     // Multiple calls == different values
+    diff = 0;
     for (unsigned int i = 0; i < double_out.size(); ++i)
         for (unsigned int j = 0; j < double_out.size(); ++j)
             if (i != j)
-                EXPECT_NE(double_out[i], double_out[j]);
+                if (double_out[i] != double_out[j])
+                    diff++;
+    EXPECT_GT(diff, 0u);
     std::array<double, TEST_LEN> _double_out = double_out;
     for (double&i : double_out)
         i = 0.0;
@@ -238,20 +257,28 @@ TEST_F(HostRandomTest, UniformDouble) {
     ms->simulation.checkArgs(4, args_2, _t_unused);
     ms->run();
     // Value has changed
-    for (double&i : double_out)
-        EXPECT_NE(i, 0.0);
-    // New Seed == new values
+    diff = 0;
+    for (double &i : double_out)
+        if (i != 0)
+            diff++;
+    EXPECT_GT(diff, 0u);
+    // New Seed == new sequence
+    diff = 0;
     for (unsigned int i = 0; i < double_out.size(); ++i)
-        for (unsigned int j = 0; j < double_out.size(); ++j)
-            EXPECT_NE(double_out[i], _double_out[j]);
+        if (double_out[i] != _double_out[i])
+            diff++;
+    EXPECT_GT(diff, 0u);
     for (double&i : double_out)
         i = 0.0;
     // First Seed
     ms->simulation.checkArgs(4, args_1, _t_unused);
     ms->run();
     // Value has changed
-    for (double&i : double_out)
-        EXPECT_NE(i, 0.0);
+    diff = 0;
+    for (double &i : double_out)
+        if (i != 0)
+            diff++;
+    EXPECT_GT(diff, 0u);
     // Old Seed == old values
     for (unsigned int i = 0; i < double_out.size(); ++i)
         EXPECT_EQ(double_out[i], _double_out[i]);
@@ -266,13 +293,19 @@ TEST_F(HostRandomTest, NormalFloat) {
         EXPECT_EQ(i, 0.0f);
     ms->run();
     // Value has changed
-    for (float&i : float_out)
-        EXPECT_NE(i, 0.0f);
+    unsigned int diff = 0;
+    for (float &i : float_out)
+        if (i != 0)
+            diff++;
+    EXPECT_GT(diff, 0u);
     // Multiple calls == different values
+    diff = 0;
     for (unsigned int i = 0; i < float_out.size(); ++i)
         for (unsigned int j = 0; j < float_out.size(); ++j)
             if (i != j)
-                EXPECT_NE(float_out[i], float_out[j]);
+                if (float_out[i] != float_out[j])
+                    diff++;
+    EXPECT_GT(diff, 0u);
     std::array<float, TEST_LEN> _float_out = float_out;
     for (float&i : float_out)
         i = 0.0f;
@@ -280,20 +313,28 @@ TEST_F(HostRandomTest, NormalFloat) {
     ms->simulation.checkArgs(4, args_2, _t_unused);
     ms->run();
     // Value has changed
-    for (float&i : float_out)
-        EXPECT_NE(i, 0.0f);
-    // New Seed == new values
+    diff = 0;
+    for (float &i : float_out)
+        if (i != 0)
+            diff++;
+    EXPECT_GT(diff, 0u);
+    // New Seed == new sequence
+    diff = 0;
     for (unsigned int i = 0; i < float_out.size(); ++i)
-        for (unsigned int j = 0; j < float_out.size(); ++j)
-            EXPECT_NE(float_out[i], _float_out[j]);
+        if (float_out[i] != _float_out[i])
+            diff++;
+    EXPECT_GT(diff, 0u);
     for (float&i : float_out)
         i = 0.0f;
     // First Seed
     ms->simulation.checkArgs(4, args_1, _t_unused);
     ms->run();
     // Value has changed
-    for (float&i : float_out)
-        EXPECT_NE(i, 0.0f);
+    diff = 0;
+    for (float &i : float_out)
+        if (i != 0)
+            diff++;
+    EXPECT_GT(diff, 0u);
     // Old Seed == old values
     for (unsigned int i = 0; i < float_out.size(); ++i)
         EXPECT_EQ(float_out[i], _float_out[i]);
@@ -307,13 +348,19 @@ TEST_F(HostRandomTest, NormalDouble) {
         EXPECT_EQ(i, 0.0);
     ms->run();
     // Value has changed
-    for (double&i : double_out)
-        EXPECT_NE(i, 0.0);
+    unsigned int diff = 0;
+    for (double &i : double_out)
+        if (i != 0)
+            diff++;
+    EXPECT_GT(diff, 0u);
     // Multiple calls == different values
+    diff = 0;
     for (unsigned int i = 0; i < double_out.size(); ++i)
         for (unsigned int j = 0; j < double_out.size(); ++j)
             if (i != j)
-                EXPECT_NE(double_out[i], double_out[j]);
+                if (double_out[i] != double_out[j])
+                    diff++;
+    EXPECT_GT(diff, 0u);
     std::array<double, TEST_LEN> _double_out = double_out;
     for (double&i : double_out)
         i = 0.0;
@@ -321,20 +368,28 @@ TEST_F(HostRandomTest, NormalDouble) {
     ms->simulation.checkArgs(4, args_2, _t_unused);
     ms->run();
     // Value has changed
-    for (double&i : double_out)
-        EXPECT_NE(i, 0.0);
-    // New Seed == new values
+    diff = 0;
+    for (double &i : double_out)
+        if (i != 0)
+            diff++;
+    EXPECT_GT(diff, 0u);
+    // New Seed == new sequence
+    diff = 0;
     for (unsigned int i = 0; i < double_out.size(); ++i)
-        for (unsigned int j = 0; j < double_out.size(); ++j)
-            EXPECT_NE(double_out[i], _double_out[j]);
+        if (double_out[i] != _double_out[i])
+            diff++;
+    EXPECT_GT(diff, 0u);
     for (double&i : double_out)
         i = 0.0;
     // First Seed
     ms->simulation.checkArgs(4, args_1, _t_unused);
     ms->run();
     // Value has changed
-    for (double&i : double_out)
-        EXPECT_NE(i, 0.0);
+    diff = 0;
+    for (double &i : double_out)
+        if (i != 0)
+            diff++;
+    EXPECT_GT(diff, 0u);
     // Old Seed == old values
     for (unsigned int i = 0; i < double_out.size(); ++i)
         EXPECT_EQ(double_out[i], _double_out[i]);
@@ -345,17 +400,23 @@ TEST_F(HostRandomTest, LogNormalFloat) {
     // Seed RNG
     ms->simulation.checkArgs(4, args_1, _t_unused);
     // Initially 0
-    for (float&i : float_out)
+    for (float &i : float_out)
         EXPECT_EQ(i, 0.0f);
     ms->run();
     // Value has changed
+    unsigned int diff = 0;
     for (float&i : float_out)
-        EXPECT_NE(i, 0.0f);
+        if (i != 0)
+            diff++;
+    EXPECT_GT(diff, 0u);
     // Multiple calls == different values
+    diff = 0;
     for (unsigned int i = 0; i < float_out.size(); ++i)
         for (unsigned int j = 0; j < float_out.size(); ++j)
             if (i != j)
-                EXPECT_NE(float_out[i], float_out[j]);
+                if (float_out[i] != float_out[j])
+                    diff++;
+    EXPECT_GT(diff, 0u);
     std::array<float, TEST_LEN> _float_out = float_out;
     for (float&i : float_out)
         i = 0.0f;
@@ -363,20 +424,28 @@ TEST_F(HostRandomTest, LogNormalFloat) {
     ms->simulation.checkArgs(4, args_2, _t_unused);
     ms->run();
     // Value has changed
-    for (float&i : float_out)
-        EXPECT_NE(i, 0.0f);
-    // New Seed == new values
+    diff = 0;
+    for (float &i : float_out)
+        if (i != 0)
+            diff++;
+    EXPECT_GT(diff, 0u);
+    // New Seed == new sequence
+    diff = 0;
     for (unsigned int i = 0; i < float_out.size(); ++i)
-        for (unsigned int j = 0; j < float_out.size(); ++j)
-            EXPECT_NE(float_out[i], _float_out[j]);
+        if (float_out[i] != _float_out[i])
+            diff++;
+    EXPECT_GT(diff, 0u);
     for (float&i : float_out)
         i = 0.0f;
     // First Seed
     ms->simulation.checkArgs(4, args_1, _t_unused);
     ms->run();
     // Value has changed
-    for (float&i : float_out)
-        EXPECT_NE(i, 0.0f);
+    diff = 0;
+    for (float &i : float_out)
+        if (i != 0)
+            diff++;
+    EXPECT_GT(diff, 0u);
     // Old Seed == old values
     for (unsigned int i = 0; i < float_out.size(); ++i)
         EXPECT_EQ(float_out[i], _float_out[i]);
@@ -390,13 +459,19 @@ TEST_F(HostRandomTest, LogNormalDouble) {
         EXPECT_EQ(i, 0.0);
     ms->run();
     // Value has changed
-    for (double&i : double_out)
-        EXPECT_NE(i, 0.0);
+    unsigned int diff = 0;
+    for (double &i : double_out)
+        if (i != 0)
+            diff++;
+    EXPECT_GT(diff, 0u);
     // Multiple calls == different values
+    diff = 0;
     for (unsigned int i = 0; i < double_out.size(); ++i)
         for (unsigned int j = 0; j < double_out.size(); ++j)
             if (i != j)
-                EXPECT_NE(double_out[i], double_out[j]);
+                if (double_out[i] != double_out[j])
+                    diff++;
+    EXPECT_GT(diff, 0u);
     std::array<double, TEST_LEN> _double_out = double_out;
     for (double&i : double_out)
         i = 0.0;
@@ -404,20 +479,28 @@ TEST_F(HostRandomTest, LogNormalDouble) {
     ms->simulation.checkArgs(4, args_2, _t_unused);
     ms->run();
     // Value has changed
-    for (double&i : double_out)
-        EXPECT_NE(i, 0.0);
-    // New Seed == new values
+    diff = 0;
+    for (double &i : double_out)
+        if (i != 0)
+            diff++;
+    EXPECT_GT(diff, 0u);
+    // New Seed == new sequence
+    diff = 0;
     for (unsigned int i = 0; i < double_out.size(); ++i)
-        for (unsigned int j = 0; j < double_out.size(); ++j)
-            EXPECT_NE(double_out[i], _double_out[j]);
+        if (double_out[i] != _double_out[i])
+            diff++;
+    EXPECT_GT(diff, 0u);
     for (double&i : double_out)
         i = 0.0;
     // First Seed
     ms->simulation.checkArgs(4, args_1, _t_unused);
     ms->run();
     // Value has changed
-    for (double&i : double_out)
-        EXPECT_NE(i, 0.0);
+    diff = 0;
+    for (double &i : double_out)
+        if (i != 0)
+            diff++;
+    EXPECT_GT(diff, 0u);
     // Old Seed == old values
     for (unsigned int i = 0; i < double_out.size(); ++i)
         EXPECT_EQ(double_out[i], _double_out[i]);
@@ -432,13 +515,19 @@ TEST_F(HostRandomTest, UniformUChar) {
         EXPECT_EQ(i, 0);
     ms->run();
     // Value has changed
-    for (unsigned char&i : unsigned_char_out)
-        EXPECT_NE(i, 0);
+    unsigned int diff = 0;
+    for (unsigned char &i : unsigned_char_out)
+        if (i != 0)
+            diff++;
+    EXPECT_GT(diff, 0u);
     // Multiple calls == different values
+    diff = 0;
     for (unsigned int i = 0; i < unsigned_char_out.size(); ++i)
         for (unsigned int j = 0; j < unsigned_char_out.size(); ++j)
             if (i != j)
-                EXPECT_NE(unsigned_char_out[i], unsigned_char_out[j]);
+                if (unsigned_char_out[i] != unsigned_char_out[j])
+                    diff++;
+    EXPECT_GT(diff, 0u);
     std::array<unsigned char, TEST_LEN> _unsigned_char_out = unsigned_char_out;
     for (unsigned char&i : unsigned_char_out)
         i = 0;
@@ -446,20 +535,28 @@ TEST_F(HostRandomTest, UniformUChar) {
     ms->simulation.checkArgs(4, args_2, _t_unused);
     ms->run();
     // Value has changed
-    for (unsigned char&i : unsigned_char_out)
-        EXPECT_NE(i, 0);
-    // New Seed == new values
+    diff = 0;
+    for (unsigned char &i : unsigned_char_out)
+        if (i != 0)
+            diff++;
+    EXPECT_GT(diff, 0u);
+    // New Seed == new sequence
+    diff = 0;
     for (unsigned int i = 0; i < unsigned_char_out.size(); ++i)
-        for (unsigned int j = 0; j < unsigned_char_out.size(); ++j)
-            EXPECT_NE(unsigned_char_out[i], _unsigned_char_out[j]);
+        if (unsigned_char_out[i] != _unsigned_char_out[i])
+            diff++;
+    EXPECT_GT(diff, 0u);
     for (unsigned char&i : unsigned_char_out)
         i = 0;
     // First Seed
     ms->simulation.checkArgs(4, args_1, _t_unused);
     ms->run();
     // Value has changed
-    for (unsigned char&i : unsigned_char_out)
-        EXPECT_NE(i, 0);
+    diff = 0;
+    for (unsigned char &i : unsigned_char_out)
+        if (i != 0)
+            diff++;
+    EXPECT_GT(diff, 0u);
     // Old Seed == old values
     for (unsigned int i = 0; i < unsigned_char_out.size(); ++i)
         EXPECT_EQ(unsigned_char_out[i], _unsigned_char_out[i]);
@@ -473,13 +570,19 @@ TEST_F(HostRandomTest, UniformChar) {
         EXPECT_EQ(i, 0);
     ms->run();
     // Value has changed
+    unsigned int diff = 0;
     for (char&i : char_out)
-        EXPECT_NE(i, 0);
+        if (i != 0)
+            diff++;
+    EXPECT_GT(diff, 0u);
     // Multiple calls == different values
+    diff = 0;
     for (unsigned int i = 0; i < char_out.size(); ++i)
         for (unsigned int j = 0; j < char_out.size(); ++j)
             if (i != j)
-                EXPECT_NE(char_out[i], char_out[j]);
+                if (char_out[i] != char_out[j])
+                    diff++;
+    EXPECT_GT(diff, 0u);
     std::array<char, TEST_LEN> _char_out = char_out;
     for (char&i : char_out)
         i = 0;
@@ -487,20 +590,28 @@ TEST_F(HostRandomTest, UniformChar) {
     ms->simulation.checkArgs(4, args_2, _t_unused);
     ms->run();
     // Value has changed
+    diff = 0;
     for (char&i : char_out)
-        EXPECT_NE(i, 0);
-    // New Seed == new values
+        if (i != 0)
+            diff++;
+    EXPECT_GT(diff, 0u);
+    // New Seed == new sequence
+    diff = 0;
     for (unsigned int i = 0; i < char_out.size(); ++i)
-        for (unsigned int j = 0; j < char_out.size(); ++j)
-            EXPECT_NE(char_out[i], _char_out[j]);
+        if (char_out[i] != _char_out[i])
+            diff++;
+    EXPECT_GT(diff, 0u);
     for (char&i : char_out)
         i = 0;
     // First Seed
     ms->simulation.checkArgs(4, args_1, _t_unused);
     ms->run();
     // Value has changed
+    diff = 0;
     for (char&i : char_out)
-        EXPECT_NE(i, 0);
+        if (i != 0)
+            diff++;
+    EXPECT_GT(diff, 0u);
     // Old Seed == old values
     for (unsigned int i = 0; i < char_out.size(); ++i)
         EXPECT_EQ(char_out[i], _char_out[i]);
@@ -515,13 +626,19 @@ TEST_F(HostRandomTest, UniformUShort) {
         EXPECT_EQ(i, 0u);
     ms->run();
     // Value has changed
+    unsigned int diff = 0;
     for (uint16_t &i : unsigned_short_out)
-        EXPECT_NE(i, 0u);
+        if (i != 0ll)
+            diff++;
+    EXPECT_GT(diff, 0u);
     // Multiple calls == different values
-    for (uint16_t i = 0; i < unsigned_short_out.size(); ++i)
-        for (uint16_t j = 0; j < unsigned_short_out.size(); ++j)
+    diff = 0;
+    for (unsigned int i = 0; i < unsigned_short_out.size(); ++i)
+        for (unsigned int j = 0; j < unsigned_short_out.size(); ++j)
             if (i != j)
-                EXPECT_NE(unsigned_short_out[i], unsigned_short_out[j]);
+                if (unsigned_short_out[i] != unsigned_short_out[j])
+                    diff++;
+    EXPECT_GT(diff, 0u);
     std::array<uint16_t, TEST_LEN> _unsigned_short_out = unsigned_short_out;
     for (uint16_t &i : unsigned_short_out)
         i = 0u;
@@ -529,20 +646,27 @@ TEST_F(HostRandomTest, UniformUShort) {
     ms->simulation.checkArgs(4, args_2, _t_unused);
     ms->run();
     // Value has changed
+    diff = 0;
     for (uint16_t &i : unsigned_short_out)
-        EXPECT_NE(i, 0u);
-    // New Seed == new values
+        if (i != 0u)
+            diff++;
+    EXPECT_GT(diff, 0u);
+    // New Seed == new sequence
+    diff = 0;
     for (unsigned int i = 0; i < unsigned_short_out.size(); ++i)
-        for (unsigned int j = 0; j < unsigned_short_out.size(); ++j)
-            EXPECT_NE(unsigned_short_out[i], _unsigned_short_out[j]);
+        if (unsigned_short_out[i] != _unsigned_short_out[i])
+            diff++;
+    EXPECT_GT(diff, 0u);
     for (uint16_t &i : unsigned_short_out)
         i = 0;
     // First Seed
     ms->simulation.checkArgs(4, args_1, _t_unused);
     ms->run();
     // Value has changed
+    diff = 0;
     for (uint16_t &i : unsigned_short_out)
-        EXPECT_NE(i, 0u);
+        if (i != 0ll)
+            diff++;
     // Old Seed == old values
     for (unsigned int i = 0; i < unsigned_short_out.size(); ++i)
         EXPECT_EQ(unsigned_short_out[i], _unsigned_short_out[i]);
@@ -556,13 +680,19 @@ TEST_F(HostRandomTest, UniformShort) {
         EXPECT_EQ(i, 0);
     ms->run();
     // Value has changed
-    for (int16_t&i : short_out)
-        EXPECT_NE(i, 0);
+    unsigned int diff = 0;
+    for (int16_t &i : short_out)
+        if (i != 0ll)
+            diff++;
+    EXPECT_GT(diff, 0u);
     // Multiple calls == different values
+    diff = 0;
     for (unsigned int i = 0; i < short_out.size(); ++i)
         for (unsigned int j = 0; j < short_out.size(); ++j)
             if (i != j)
-                EXPECT_NE(short_out[i], short_out[j]);
+                if (short_out[i] != short_out[j])
+                    diff++;
+    EXPECT_GT(diff, 0u);
     std::array<int16_t, TEST_LEN> _short_out = short_out;
     for (int16_t &i : short_out)
         i = 0;
@@ -570,20 +700,28 @@ TEST_F(HostRandomTest, UniformShort) {
     ms->simulation.checkArgs(4, args_2, _t_unused);
     ms->run();
     // Value has changed
+    diff = 0;
     for (int16_t &i : short_out)
-        EXPECT_NE(i, 0);
-    // New Seed == new values
+        if (i != 0ll)
+            diff++;
+    EXPECT_GT(diff, 0u);
+    // New Seed == new sequence
+    diff = 0;
     for (unsigned int i = 0; i < short_out.size(); ++i)
-        for (unsigned int j = 0; j < short_out.size(); ++j)
-            EXPECT_NE(short_out[i], _short_out[j]);
+        if (short_out[i] != _short_out[i])
+            diff++;
+    EXPECT_GT(diff, 0u);
     for (int16_t &i : short_out)
         i = 0;
     // First Seed
     ms->simulation.checkArgs(4, args_1, _t_unused);
     ms->run();
     // Value has changed
+    diff = 0;
     for (int16_t &i : short_out)
-        EXPECT_NE(i, 0);
+        if (i != 0ll)
+            diff++;
+    EXPECT_GT(diff, 0u);
     // Old Seed == old values
     for (unsigned int i = 0; i < short_out.size(); ++i)
         EXPECT_EQ(short_out[i], _short_out[i]);
@@ -598,13 +736,19 @@ TEST_F(HostRandomTest, UniformUInt) {
         EXPECT_EQ(i, 0u);
     ms->run();
     // Value has changed
-    for (unsigned int&i : unsigned_int_out)
-        EXPECT_NE(i, 0u);
+    unsigned int diff = 0;
+    for (unsigned int &i : unsigned_int_out)
+        if (i != 0ll)
+            diff++;
+    EXPECT_GT(diff, 0u);
     // Multiple calls == different values
+    diff = 0;
     for (unsigned int i = 0; i < unsigned_int_out.size(); ++i)
         for (unsigned int j = 0; j < unsigned_int_out.size(); ++j)
             if (i != j)
-                EXPECT_NE(unsigned_int_out[i], unsigned_int_out[j]);
+                if (unsigned_int_out[i] != unsigned_int_out[j])
+                    diff++;
+    EXPECT_GT(diff, 0u);
     std::array<unsigned int, TEST_LEN> _unsigned_int_out = unsigned_int_out;
     for (unsigned int&i : unsigned_int_out)
         i = 0u;
@@ -612,20 +756,28 @@ TEST_F(HostRandomTest, UniformUInt) {
     ms->simulation.checkArgs(4, args_2, _t_unused);
     ms->run();
     // Value has changed
-    for (unsigned int&i : unsigned_int_out)
-        EXPECT_NE(i, 0u);
-    // New Seed == new values
+    diff = 0;
+    for (unsigned int &i : unsigned_int_out)
+        if (i != 0u)
+            diff++;
+    EXPECT_GT(diff, 0u);
+    // New Seed == new sequence
+    diff = 0;
     for (unsigned int i = 0; i < unsigned_int_out.size(); ++i)
-        for (unsigned int j = 0; j < unsigned_int_out.size(); ++j)
-            EXPECT_NE(unsigned_int_out[i], _unsigned_int_out[j]);
+        if (unsigned_int_out[i] != _unsigned_int_out[i])
+            diff++;
+    EXPECT_GT(diff, 0u);
     for (unsigned int&i : unsigned_int_out)
         i = 0u;
     // First Seed
     ms->simulation.checkArgs(4, args_1, _t_unused);
     ms->run();
     // Value has changed
-    for (unsigned int&i : unsigned_int_out)
-        EXPECT_NE(i, 0u);
+    diff = 0;
+    for (unsigned int &i : unsigned_int_out)
+        if (i != 0u)
+            diff++;
+    EXPECT_GT(diff, 0u);
     // Old Seed == old values
     for (unsigned int i = 0; i < unsigned_int_out.size(); ++i)
         EXPECT_EQ(unsigned_int_out[i], _unsigned_int_out[i]);
@@ -639,13 +791,19 @@ TEST_F(HostRandomTest, UniformInt) {
         EXPECT_EQ(i, 0);
     ms->run();
     // Value has changed
-    for (int&i : int_out)
-        EXPECT_NE(i, 0);
+    unsigned int diff = 0;
+    for (int32_t &i : int_out)
+        if (i != 0ll)
+            diff++;
+    EXPECT_GT(diff, 0u);
     // Multiple calls == different values
+    diff = 0;
     for (unsigned int i = 0; i < int_out.size(); ++i)
         for (unsigned int j = 0; j < int_out.size(); ++j)
             if (i != j)
-                EXPECT_NE(int_out[i], int_out[j]);
+                if (int_out[i] != int_out[j])
+                    diff++;
+    EXPECT_GT(diff, 0u);
     std::array<int, TEST_LEN> _int_out = int_out;
     for (int&i : int_out)
         i = 0;
@@ -653,20 +811,28 @@ TEST_F(HostRandomTest, UniformInt) {
     ms->simulation.checkArgs(4, args_2, _t_unused);
     ms->run();
     // Value has changed
-    for (int&i : int_out)
-        EXPECT_NE(i, 0);
-    // New Seed == new values
+    diff = 0;
+    for (int32_t &i : int_out)
+        if (i != 0)
+            diff++;
+    EXPECT_GT(diff, 0u);
+    // New Seed == new sequence
+    diff = 0;
     for (unsigned int i = 0; i < int_out.size(); ++i)
-        for (unsigned int j = 0; j < int_out.size(); ++j)
-            EXPECT_NE(int_out[i], _int_out[j]);
+        if (int_out[i] != _int_out[i])
+            diff++;
+    EXPECT_GT(diff, 0u);
     for (int&i : int_out)
         i = 0;
     // First Seed
     ms->simulation.checkArgs(4, args_1, _t_unused);
     ms->run();
     // Value has changed
-    for (int&i : int_out)
-        EXPECT_NE(i, 0);
+    diff = 0;
+    for (int32_t &i : int_out)
+        if (i != 0)
+            diff++;
+    EXPECT_GT(diff, 0u);
     // Old Seed == old values
     for (unsigned int i = 0; i < int_out.size(); ++i)
         EXPECT_EQ(int_out[i], _int_out[i]);
@@ -681,13 +847,19 @@ TEST_F(HostRandomTest, UniformULongLong) {
         EXPECT_EQ(i, 0llu);
     ms->run();
     // Value has changed
+    unsigned int diff = 0;
     for (uint64_t &i : unsigned_longlong_out)
-        EXPECT_NE(i, 0llu);
+        if (i != 0ll)
+            diff++;
+    EXPECT_GT(diff, 0u);
     // Multiple calls == different values
+    diff = 0;
     for (unsigned int i = 0; i < unsigned_longlong_out.size(); ++i)
         for (unsigned int j = 0; j < unsigned_longlong_out.size(); ++j)
             if (i != j)
-                EXPECT_NE(unsigned_longlong_out[i], unsigned_longlong_out[j]);
+                if (unsigned_longlong_out[i] != unsigned_longlong_out[j])
+                    diff++;
+    EXPECT_GT(diff, 0u);
     std::array<uint64_t, TEST_LEN> _unsigned_longlong_out = unsigned_longlong_out;
     for (uint64_t &i : unsigned_longlong_out)
         i = 0llu;
@@ -695,20 +867,28 @@ TEST_F(HostRandomTest, UniformULongLong) {
     ms->simulation.checkArgs(4, args_2, _t_unused);
     ms->run();
     // Value has changed
+    diff = 0;
     for (uint64_t &i : unsigned_longlong_out)
-        EXPECT_NE(i, 0llu);
-    // New Seed == new values
+        if (i != 0ll)
+            diff++;
+    EXPECT_GT(diff, 0u);
+    // New Seed == new sequence
+    diff = 0;
     for (unsigned int i = 0; i < unsigned_longlong_out.size(); ++i)
-        for (unsigned int j = 0; j < unsigned_longlong_out.size(); ++j)
-            EXPECT_NE(unsigned_longlong_out[i], _unsigned_longlong_out[j]);
+        if (unsigned_longlong_out[i] != _unsigned_longlong_out[i])
+            diff++;
+    EXPECT_GT(diff, 0u);
     for (uint64_t &i : unsigned_longlong_out)
         i = 0llu;
     // First Seed
     ms->simulation.checkArgs(4, args_1, _t_unused);
     ms->run();
     // Value has changed
+    diff = 0;
     for (uint64_t &i : unsigned_longlong_out)
-        EXPECT_NE(i, 0llu);
+        if (i != 0ll)
+            diff++;
+    EXPECT_GT(diff, 0u);
     // Old Seed == old values
     for (unsigned int i = 0; i < unsigned_longlong_out.size(); ++i)
         EXPECT_EQ(unsigned_longlong_out[i], _unsigned_longlong_out[i]);
@@ -722,13 +902,19 @@ TEST_F(HostRandomTest, UniformLongLong) {
         EXPECT_EQ(i, 0ll);
     ms->run();
     // Value has changed
+    unsigned int diff = 0;
     for (int64_t &i : longlong_out)
-        EXPECT_NE(i, 0ll);
+        if (i != 0ll)
+            diff++;
+    EXPECT_GT(diff, 0u);
     // Multiple calls == different values
+    diff = 0;
     for (unsigned int i = 0; i < longlong_out.size(); ++i)
         for (unsigned int j = 0; j < longlong_out.size(); ++j)
             if (i != j)
-                EXPECT_NE(longlong_out[i], longlong_out[j]);
+                if (longlong_out[i] != longlong_out[j])
+                    diff++;
+    EXPECT_GT(diff, 0u);
     std::array<int64_t, TEST_LEN> _longlong_out = longlong_out;
     for (int64_t &i : longlong_out)
         i = 0ll;
@@ -736,20 +922,28 @@ TEST_F(HostRandomTest, UniformLongLong) {
     ms->simulation.checkArgs(4, args_2, _t_unused);
     ms->run();
     // Value has changed
+    diff = 0;
     for (int64_t &i : longlong_out)
-        EXPECT_NE(i, 0ll);
-    // New Seed == new values
+        if (i != 0ll)
+            diff++;
+    EXPECT_GT(diff, 0u);
+    // New Seed == new sequence
+    diff = 0;
     for (unsigned int i = 0; i < longlong_out.size(); ++i)
-        for (unsigned int j = 0; j < longlong_out.size(); ++j)
-            EXPECT_NE(longlong_out[i], _longlong_out[j]);
+        if (longlong_out[i]!= _longlong_out[i])
+            diff++;
+    EXPECT_GT(diff, 0u);
     for (int64_t &i : longlong_out)
         i = 0ll;
     // First Seed
     ms->simulation.checkArgs(4, args_1, _t_unused);
     ms->run();
     // Value has changed
+    diff = 0;
     for (int64_t &i : longlong_out)
-        EXPECT_NE(i, 0ll);
+        if (i != 0ll)
+            diff++;
+    EXPECT_GT(diff, 0u);
     // Old Seed == old values
     for (unsigned int i = 0; i < longlong_out.size(); ++i)
         EXPECT_EQ(longlong_out[i], _longlong_out[i]);
