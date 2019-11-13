@@ -79,58 +79,50 @@ FLAMEGPU_STEP_FUNCTION(step_uniform_longlong) {
 FLAMEGPU_STEP_FUNCTION(step_uniform_uchar_range) {
     for (auto &i : unsigned_char_out)
         ASSERT_NO_THROW(i = FLAMEGPU->random.uniform<unsigned char>(
-            static_cast<unsigned char>(UCHAR_MAX * 0.25), 
-            static_cast<unsigned char>(UCHAR_MAX * 0.75)
-            ));
+            static_cast<unsigned char>(UCHAR_MAX * 0.25),
+            static_cast<unsigned char>(UCHAR_MAX * 0.75)));
 }
 FLAMEGPU_STEP_FUNCTION(step_uniform_char_range) {
     for (char &i : char_out)
         ASSERT_NO_THROW(i = FLAMEGPU->random.uniform<char>(
             static_cast<char>(CHAR_MIN * 0.5),
-            static_cast<char>(CHAR_MAX * 0.5)
-            ));
+            static_cast<char>(CHAR_MAX * 0.5)));
 }
 FLAMEGPU_STEP_FUNCTION(step_uniform_ushort_range) {
     for (auto &i : unsigned_short_out)
         ASSERT_NO_THROW(i = FLAMEGPU->random.uniform<uint16_t>(
             static_cast<uint16_t>(UINT16_MAX * 0.25),
-            static_cast<uint16_t>(UINT16_MAX * 0.75)
-            ));
+            static_cast<uint16_t>(UINT16_MAX * 0.75)));
 }
 FLAMEGPU_STEP_FUNCTION(step_uniform_short_range) {
     for (auto &i : short_out)
         ASSERT_NO_THROW(i = FLAMEGPU->random.uniform<int16_t>(
             static_cast<int16_t>(INT16_MIN * 0.5),
-            static_cast<int16_t>(INT16_MAX * 0.5)
-            ));
+            static_cast<int16_t>(INT16_MAX * 0.5)));
 }
 FLAMEGPU_STEP_FUNCTION(step_uniform_uint_range) {
     for (auto &i : unsigned_int_out)
         ASSERT_NO_THROW(i = FLAMEGPU->random.uniform<unsigned int>(
             static_cast<unsigned int>(UINT_MAX * 0.25),
-            static_cast<unsigned int>(UINT_MAX * 0.75)
-            ));
+            static_cast<unsigned int>(UINT_MAX * 0.75)));
 }
 FLAMEGPU_STEP_FUNCTION(step_uniform_int_range) {
     for (auto &i : int_out)
         ASSERT_NO_THROW(i = FLAMEGPU->random.uniform<int>(
             static_cast<int>(INT_MIN * 0.5),
-            static_cast<int>(INT_MAX * 0.5)
-            ));
+            static_cast<int>(INT_MAX * 0.5)));
 }
 FLAMEGPU_STEP_FUNCTION(step_uniform_ulonglong_range) {
     for (auto &i : unsigned_longlong_out)
         ASSERT_NO_THROW(i = FLAMEGPU->random.uniform<uint64_t>(
             static_cast<uint64_t>(UINT64_MAX * 0.25),
-            static_cast<uint64_t>(UINT64_MAX * 0.75)
-            ));
+            static_cast<uint64_t>(UINT64_MAX * 0.75)));
 }
 FLAMEGPU_STEP_FUNCTION(step_uniform_longlong_range) {
     for (auto &i : longlong_out)
         ASSERT_NO_THROW(i = FLAMEGPU->random.uniform<int64_t>(
             static_cast<int64_t>(INT64_MIN * 0.5),
-            static_cast<int64_t>(INT64_MAX * 0.5)
-            ));
+            static_cast<int64_t>(INT64_MAX * 0.5)));
 }
 class MiniSim {
  public:
@@ -224,7 +216,7 @@ class HostRandomTest : public testing::Test {
 };
 
 const char *args_1[4] = { "process.exe", "input.xml", "-r", "0" };
-const char *args_2[4] = { "process.exe", "input.xml", "-r", "1" };
+const char *args_2[4] = { "process.exe", "input.xml", "-r", "2" };  //GCC fails (for Pete?) if this is 1
 
 }  // namespace
 
@@ -1011,7 +1003,7 @@ TEST_F(HostRandomTest, UniformLongLong) {
 TEST_F(HostRandomTest, UniformFloatRange) {
     ms->simulation.addStepFunction(&step_uniform_float);
     ms->run();
-    for(auto &i:float_out) {
+    for (auto &i : float_out) {
         EXPECT_GE(i, 0.0f);
         EXPECT_LT(i, 1.0f);
     }
