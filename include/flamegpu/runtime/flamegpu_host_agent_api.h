@@ -77,8 +77,8 @@ class FLAMEGPU_HOST_AGENT_API {
      * Wraps cub::DeviceHistogram::HistogramEven()
      * @param variable The agent variable to perform the reduction across
      * @param histogramBins The number of bins the histogram should have
-     * @param lowerBound The lower sample value boundary of lowest bin
-     * @param upperBound The upper sample value boundary of upper bin
+     * @param lowerBound The (inclusive) lower sample value boundary of lowest bin
+     * @param upperBound The (exclusive) upper sample value boundary of upper bin
      */
     template<typename InT>
     std::vector<unsigned int> histogramEven(const std::string &variable, const unsigned int &histogramBins, const InT &lowerBound, const InT &upperBound) const;
