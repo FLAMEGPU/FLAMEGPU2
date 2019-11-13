@@ -45,7 +45,7 @@ float RandomManager::growthModifier = 1.5;
 float RandomManager::shrinkModifier = 1.0;
 curandState *RandomManager::h_max_random_state = nullptr;
 RandomManager::size_type RandomManager::h_max_random_size = 0;
-std::default_random_engine RandomManager::host_rng;
+std::mt19937 RandomManager::host_rng;
 /**
  * Member fns
  */
@@ -54,7 +54,7 @@ uint64_t RandomManager::seedFromTime() {
 }
 void RandomManager::init(const unsigned int &seed) {
     RandomManager::mSeed = seed;
-    host_rng = std::default_random_engine();
+    host_rng = std::mt19937();
     free();  // This seeds host_rng
 }
 void RandomManager::free() {

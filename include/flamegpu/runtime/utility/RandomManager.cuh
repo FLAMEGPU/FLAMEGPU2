@@ -113,8 +113,9 @@ class RandomManager {
     /**
      * Seeded host random generator
      * Don't believe this to be thread-safe!
+     * @note - std::default_random_engine is platform (compiler) specific. GCC (7.4) defaults to a linear_congruential_engine, which returns the same sequence for seeds 0 and 1. mt19937 is the default in MSVC and generally seems more sane.
      */
-    static std::default_random_engine host_rng;
+    static std::mt19937 host_rng;
 };
 
 
