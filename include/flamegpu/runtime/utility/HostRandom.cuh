@@ -3,6 +3,7 @@
 
 #include <random>
 
+#include "flamegpu/exception/FGPUStaticAssert.h"
 #include "flamegpu/runtime/utility/RandomManager.cuh"
 
 /**
@@ -11,29 +12,6 @@
 * This should only be instantiated by FLAMEGPU_HOST_API
 */
 class HostRandom {
-    /**
-     * Determine whether _Ty satisfies HostRandom's RealType requirements
-     */
-    template<class _Ty>
-    struct _Is_RealType
-        : std::_Cat_base<std::is_same<_Ty, float>::value
-        || std::is_same<_Ty, double>::value> {
-    };
-    /**
-     * Determine whether _Ty satisfies HostRandom's IntType requirements
-     */
-    template<class _Ty>
-    struct _Is_IntType
-        : std::_Cat_base<std::is_same<_Ty, unsigned char>::value
-        || std::is_same<_Ty, char>::value
-        || std::is_same<_Ty, uint16_t>::value
-        || std::is_same<_Ty, int16_t>::value
-        || std::is_same<_Ty, uint32_t>::value
-        || std::is_same<_Ty, int32_t>::value
-        || std::is_same<_Ty, uint64_t>::value
-        || std::is_same<_Ty, int64_t>::value> {
-    };
-
  public:
     /**
     * Returns a float uniformly distributed between 0.0 and 1.0.
@@ -67,28 +45,28 @@ class HostRandom {
 
 template<typename T>
 inline T HostRandom::uniform() const {
-    static_assert(_Is_RealType<T>::value, "Invalid template argument for HostRandom::uniform()");
+    static_assert(FGPU_SA::_Is_RealType<T>::value, "Invalid template argument for HostRandom::uniform()");
     std::uniform_real_distribution<T> dist(0, 1);
     return RandomManager::getDistribution<T>(dist);
 }
 
 template<typename T>
 inline T HostRandom::normal() const {
-    static_assert(_Is_RealType<T>::value, "Invalid template argument for HostRandom::normal()");
+    static_assert(FGPU_SA::_Is_RealType<T>::value, "Invalid template argument for HostRandom::normal()");
     std::normal_distribution<T> dist(0, 1);
     return RandomManager::getDistribution<T>(dist);
 }
 
 template<typename T>
 inline T HostRandom::logNormal(const T& mean, const T& stddev) const {
-    static_assert(_Is_RealType<T>::value, "Invalid template argument for HostRandom::logNormal(const T& mean, const T& stddev)");
+    static_assert(FGPU_SA::_Is_RealType<T>::value, "Invalid template argument for HostRandom::logNormal(const T& mean, const T& stddev)");
     std::lognormal_distribution<T> dist(mean, stddev);
     return RandomManager::getDistribution<T>(dist);
 }
 
 template<typename T>
 inline T HostRandom::uniform(const T& min, const T& max) const {
-    static_assert(_Is_IntType<T>::value, "Invalid template argument for HostRandom::uniform(const T& min, const T& max)");
+    static_assert(FGPU_SA::_Is_IntType<T>::value, "Invalid template argument for HostRandom::uniform(const T& min, const T& max)");
     std::uniform_int_distribution<T> dist(min, max);
     return RandomManager::getDistribution<T>(dist);
 }

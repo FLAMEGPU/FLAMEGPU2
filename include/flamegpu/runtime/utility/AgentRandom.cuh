@@ -4,35 +4,14 @@
 #include <curand_kernel.h>
 #include <cassert>
 
+#include "flamegpu/exception/FGPUStaticAssert.h"
+
 /**
  * Utility for accessing random generation within agent functions
  * This should only be instantiated by FLAMEGPU_API
  * Wraps curand functions to access an internal curand state * 
  */
 class AgentRandom {
-    /**
-     * Determine whether _Ty satisfies HostRandom's RealType requirements
-     */
-    template<class _Ty>
-    struct _Is_RealType
-        : std::_Cat_base<std::is_same<_Ty, float>::value
-        || std::is_same<_Ty, double>::value> {
-    };
-    /**
-     * Determine whether _Ty satisfies HostRandom's IntType requirements
-     */
-    template<class _Ty>
-    struct _Is_IntType
-        : std::_Cat_base<std::is_same<_Ty, unsigned char>::value
-        || std::is_same<_Ty, char>::value
-        || std::is_same<_Ty, uint16_t>::value
-        || std::is_same<_Ty, int16_t>::value
-        || std::is_same<_Ty, uint32_t>::value
-        || std::is_same<_Ty, int32_t>::value
-        || std::is_same<_Ty, uint64_t>::value
-        || std::is_same<_Ty, int64_t>::value> {
-    };
-
  public:
     typedef unsigned int size_type;
     /**
@@ -134,7 +113,7 @@ __forceinline__ __device__ double AgentRandom::logNormal(const double& mean, con
 */
 template<typename T>
 __forceinline__ __device__ T AgentRandom::uniform(const T& min, const T& max) const {
-    static_assert(_Is_IntType<T>::value, "Invalid template argument for AgentRandom::uniform(const T& min, const T& max)");
+    static_assert(FGPU_SA::_Is_IntType<T>::value, "Invalid template argument for AgentRandom::uniform(const T& min, const T& max)");
     return static_cast<T>(min + (max - min) * uniform<float>());
 }
 template<>

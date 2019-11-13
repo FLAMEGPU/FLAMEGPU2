@@ -54,6 +54,7 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/io/xmlWriter.h
     ${FLAMEGPU_ROOT}/include/flamegpu/io/factory.h
     ${FLAMEGPU_ROOT}/include/flamegpu/exception/FGPUException.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/exception/FGPUStaticAssert.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/MessageDescription.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/AgentFunctionInput.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/AgentFunctionOutput.h
