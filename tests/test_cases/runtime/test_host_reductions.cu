@@ -382,7 +382,7 @@ TEST_F(HostReductionTest, MaxInt16) {
 TEST_F(HostReductionTest, SumInt16) {
     ms->simulation.addStepFunction(&step_sumint16_t);
     std::mt19937 rd;  // Seed does not matter
-    std::uniform_int_distribution <int16_t> dist(INT16_MIN / (static_cast<int16_t>(TEST_LEN) / 2i16), INT16_MAX / (static_cast<int16_t>(TEST_LEN) / 2i16));
+    std::uniform_int_distribution <int16_t> dist(INT16_MIN / static_cast<int16_t>(TEST_LEN / 2), INT16_MAX / static_cast<int16_t>(TEST_LEN / 2));
     std::array<int16_t, TEST_LEN> in;
     for (unsigned int i = 0; i < TEST_LEN; i++) {
         AgentInstance instance = ms->population->getNextInstance();
@@ -468,7 +468,7 @@ TEST_F(HostReductionTest, MaxInt32) {
 TEST_F(HostReductionTest, SumInt32) {
     ms->simulation.addStepFunction(&step_sumint32_t);
     std::mt19937 rd;  // Seed does not matter
-    std::uniform_int_distribution <int32_t> dist(INT32_MIN / (static_cast<int32_t>(TEST_LEN) / 2i32), INT32_MAX / (static_cast<int32_t>(TEST_LEN) / 2i32));
+    std::uniform_int_distribution <int32_t> dist(INT32_MIN / static_cast<int32_t>(TEST_LEN / 2), INT32_MAX / static_cast<int32_t>(TEST_LEN / 2));
     std::array<int32_t, TEST_LEN> in;
     for (unsigned int i = 0; i < TEST_LEN; i++) {
         AgentInstance instance = ms->population->getNextInstance();
