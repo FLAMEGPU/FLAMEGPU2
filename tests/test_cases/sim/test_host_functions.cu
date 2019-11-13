@@ -1,3 +1,4 @@
+#include <algorithm>
 #ifndef TESTS_TEST_CASES_SIM_TEST_SIM_VALIDATION_H_
 #define TESTS_TEST_CASES_SIM_TEST_SIM_VALIDATION_H_
 
@@ -9,7 +10,7 @@
 
 
 namespace {
-enum FunctionType { Init, Step, Exit, HostLayer, ExitCondition };
+enum FunctionType { Init, Step, Exit, HostLayer, ExitCondition, Init2, Step2, Exit2, HostLayer2, ExitCondition2 };
 std::vector<FunctionType> function_order;
 #ifdef _MSC_VER
 #pragma warning(push)
@@ -35,6 +36,22 @@ FLAMEGPU_EXIT_CONDITION(exit_condition) {
             i++;
     if (i > 1)
         return EXIT;
+    return CONTINUE;
+}
+FLAMEGPU_INIT_FUNCTION(init_function2) {
+    function_order.push_back(Init2);
+}
+FLAMEGPU_STEP_FUNCTION(step_function2) {
+    function_order.push_back(Step2);
+}
+FLAMEGPU_EXIT_FUNCTION(exit_function2) {
+    function_order.push_back(Exit2);
+}
+FLAMEGPU_HOST_FUNCTION(host_function2) {
+    function_order.push_back(HostLayer2);
+}
+FLAMEGPU_EXIT_CONDITION(exit_condition2) {
+    function_order.push_back(ExitCondition2);
     return CONTINUE;
 }
 #ifdef _MSC_VER
@@ -64,6 +81,18 @@ class MiniSim {
         // Run until exit condition triggers
         simulation.setSimulationSteps(0);
     }
+    void run() {
+        // CudaModel must be declared here
+        // As the initial call to constructor fixes the agent population
+        // This means if we haven't called model.addAgent(agent) first
+        CUDAAgentModel cuda_model(model);
+        // This fails as agentMap is empty
+        cuda_model.setInitialPopulationData(population);
+        ASSERT_NO_THROW(cuda_model.simulate(simulation));
+        // The negative of this, is that cuda_model is inaccessible within the test!
+        // So copy across population data here
+        ASSERT_NO_THROW(cuda_model.getPopulationData(population));
+    }
 
     const unsigned int AGENT_COUNT = 5;
     ModelDescription model;
@@ -81,16 +110,6 @@ class HostFunctionTest : public testing::Test {
     void SetUp() override {
         ms = new MiniSim();
         function_order.clear();
-        // CudaModel must be declared here
-        // As the initial call to constructor fixes the agent population
-        // This means if we haven't called model.addAgent(agent) first
-        CUDAAgentModel cuda_model(ms->model);
-        // This fails as agentMap is empty
-        cuda_model.setInitialPopulationData(ms->population);
-        cuda_model.simulate(ms->simulation);
-        // The negative of this, is that cuda_model is inaccessible within the test!
-        // So copy across population data here
-        cuda_model.getPopulationData(ms->population);
     }
 
     void TearDown() override {
@@ -102,26 +121,73 @@ class HostFunctionTest : public testing::Test {
 };
 }  // namespace
 
-
+/**
+ * Test order
+ */
 TEST_F(HostFunctionTest, ExitConditionWorks) {
+    ms->run();
     ASSERT_EQ(function_order.size(), 8llu) << "Exit condition triggered exit correctly";
 }
 TEST_F(HostFunctionTest, InitFuncCorrectOrder) {
-    ASSERT_EQ(function_order[0], Init) << "Init function in correct place";
+    ms->run();
+    EXPECT_EQ(function_order[0], Init) << "Init function in correct place";
 }
 TEST_F(HostFunctionTest, HostLayerFuncCorrectOrder) {
-    ASSERT_EQ(function_order[1], HostLayer) << "HostLayer function#1 in correct place";
-    ASSERT_EQ(function_order[4], HostLayer) << "HostLayer function#2 in correct place";
+    ms->run();
+    EXPECT_EQ(function_order[1], HostLayer) << "HostLayer function#1 in correct place";
+    EXPECT_EQ(function_order[4], HostLayer) << "HostLayer function#2 in correct place";
 }
 TEST_F(HostFunctionTest, StepFuncCorrectOrder) {
-    ASSERT_EQ(function_order[2], Step) << "Step function#1 in correct place";
-    ASSERT_EQ(function_order[5], Step) << "Step function#2 in correct place";
+    ms->run();
+    EXPECT_EQ(function_order[2], Step) << "Step function#1 in correct place";
+    EXPECT_EQ(function_order[5], Step) << "Step function#2 in correct place";
 }
 TEST_F(HostFunctionTest, ExitConditionCorrectOrder) {
-    ASSERT_EQ(function_order[3], ExitCondition) << "ExitCondition#1 in correct place";
-    ASSERT_EQ(function_order[6], ExitCondition) << "ExitCondition#2 in correct place";
+    ms->run();
+    EXPECT_EQ(function_order[3], ExitCondition) << "ExitCondition#1 in correct place";
+    EXPECT_EQ(function_order[6], ExitCondition) << "ExitCondition#2 in correct place";
 }
 TEST_F(HostFunctionTest, ExitFuncCorrectOrder) {
-    ASSERT_EQ(function_order[7], Exit) << "Exit function in correct place";
+    ms->run();
+    EXPECT_EQ(function_order[7], Exit) << "Exit function in correct place";
+}
+
+/**
+ * Test Dual Host Function support
+ */
+TEST_F(HostFunctionTest, InitFuncMultiple) {
+    ms->simulation.setSimulationSteps(1);
+    ms->simulation.addInitFunction(&init_function2);
+    ms->run();
+    EXPECT_NE(std::find(function_order.begin(), function_order.end(), Init), function_order.end());
+    EXPECT_NE(std::find(function_order.begin(), function_order.end(), Init2), function_order.end());
+}
+TEST_F(HostFunctionTest, HostLayerFuncMultiple) {
+    ms->simulation.setSimulationSteps(1);
+    ms->hostfn_layer.addHostFunction(&host_function2);
+    ms->run();
+    EXPECT_NE(std::find(function_order.begin(), function_order.end(), HostLayer), function_order.end());
+    EXPECT_NE(std::find(function_order.begin(), function_order.end(), HostLayer2), function_order.end());
+}
+TEST_F(HostFunctionTest, StepFuncMultiple) {
+    ms->simulation.setSimulationSteps(1);
+    ms->simulation.addStepFunction(&step_function2);
+    ms->run();
+    EXPECT_NE(std::find(function_order.begin(), function_order.end(), Step), function_order.end());
+    EXPECT_NE(std::find(function_order.begin(), function_order.end(), Step2), function_order.end());
+}
+TEST_F(HostFunctionTest, ExitConditionMultiple) {
+    ms->simulation.setSimulationSteps(1);
+    ms->simulation.addExitCondition(&exit_condition2);
+    ms->run();
+    EXPECT_NE(std::find(function_order.begin(), function_order.end(), ExitCondition), function_order.end());
+    EXPECT_NE(std::find(function_order.begin(), function_order.end(), ExitCondition2), function_order.end());
+}
+TEST_F(HostFunctionTest, ExitFuncMultiple) {
+    ms->simulation.setSimulationSteps(1);
+    ms->simulation.addExitFunction(&exit_function2);
+    ms->run();
+    EXPECT_NE(std::find(function_order.begin(), function_order.end(), Exit), function_order.end());
+    EXPECT_NE(std::find(function_order.begin(), function_order.end(), Exit2), function_order.end());
 }
 #endif  // TESTS_TEST_CASES_SIM_TEST_SIM_VALIDATION_H_
