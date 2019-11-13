@@ -47,6 +47,13 @@ class FLAMEGPU_HOST_AGENT_API {
     template<typename T>
     T sum(const std::string &variable) const;
     /**
+     * Wraps cub::DeviceReduce::Sum()
+     * @param variable The agent variable to perform the sum reduction across
+     * @note The template arg, 'OutT' can be used if the sum is expected to exceed the representation of the type being summed
+     */
+    template<typename InT, typename OutT>
+    OutT sum(const std::string &variable) const;
+    /**
      * Wraps cub::DeviceReduce::Min()
      * @param variable The agent variable to perform the min reduction across
      */
@@ -89,26 +96,31 @@ class FLAMEGPU_HOST_AGENT_API {
 
 template<typename T>
 T FLAMEGPU_HOST_AGENT_API::sum(const std::string &variable) const {
+    return sum<T, T>(variable);
+}
+template<typename InT, typename OutT>
+OutT FLAMEGPU_HOST_AGENT_API::sum(const std::string &variable) const {
+    static_assert(sizeof(InT) <= sizeof(OutT), "Template arg OutT should not be of a smaller size than InT");
     const auto &agentDesc = agent.getAgentDescription();
-    if (typeid(T) != agentDesc.getVariableType(variable))
+    if (typeid(InT) != agentDesc.getVariableType(variable))
         throw InvalidVarType("variable type does not match type of sum()");
     const auto &stateAgent = agent.getAgentStateList(stateName);
     void *var_ptr = stateAgent->getAgentListVariablePointer(variable);
     const auto agentCount = stateAgent->getCUDAStateListSize();
     // Check if we need to resize cub storage
-    FLAMEGPU_HOST_API::CUB_Config cc = { FLAMEGPU_HOST_API::SUM, typeid(T).hash_code() };
+    FLAMEGPU_HOST_API::CUB_Config cc = { FLAMEGPU_HOST_API::SUM, typeid(OutT).hash_code() };
     if (api.tempStorageRequiresResize(cc, agentCount)) {
         // Resize cub storage
         size_t tempByte = 0;
-        cub::DeviceReduce::Sum(nullptr, tempByte, reinterpret_cast<T*>(var_ptr), reinterpret_cast<T*>(api.d_output_space), static_cast<int>(agentCount));
+        cub::DeviceReduce::Sum(nullptr, tempByte, reinterpret_cast<InT*>(var_ptr), reinterpret_cast<OutT*>(api.d_output_space), static_cast<int>(agentCount));
         api.resizeTempStorage(cc, agentCount, tempByte);
     }
     // Resize output storage
-    api.resizeOutputSpace<T>();
-    cub::DeviceReduce::Sum(api.d_cub_temp, api.d_cub_temp_size, reinterpret_cast<T*>(var_ptr), reinterpret_cast<T*>(api.d_output_space), static_cast<int>(agentCount));
+    api.resizeOutputSpace<OutT>();
+    cub::DeviceReduce::Sum(api.d_cub_temp, api.d_cub_temp_size, reinterpret_cast<InT*>(var_ptr), reinterpret_cast<OutT*>(api.d_output_space), static_cast<int>(agentCount));
     gpuErrchkLaunch();
-    T rtn;
-    gpuErrchk(cudaMemcpy(&rtn, api.d_output_space, sizeof(T), cudaMemcpyDeviceToHost));
+    OutT rtn;
+    gpuErrchk(cudaMemcpy(&rtn, api.d_output_space, sizeof(OutT), cudaMemcpyDeviceToHost));
     return rtn;
 }
 template<typename T>
