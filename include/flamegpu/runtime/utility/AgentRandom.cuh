@@ -10,6 +10,29 @@
  * Wraps curand functions to access an internal curand state * 
  */
 class AgentRandom {
+    /**
+     * Determine whether _Ty satisfies HostRandom's RealType requirements
+     */
+    template<class _Ty>
+    struct _Is_RealType
+        : std::_Cat_base<std::is_same<_Ty, float>::value
+        || std::is_same<_Ty, double>::value> {
+    };
+    /**
+     * Determine whether _Ty satisfies HostRandom's IntType requirements
+     */
+    template<class _Ty>
+    struct _Is_IntType
+        : std::_Cat_base<std::is_same<_Ty, unsigned char>::value
+        || std::is_same<_Ty, char>::value
+        || std::is_same<_Ty, uint16_t>::value
+        || std::is_same<_Ty, int16_t>::value
+        || std::is_same<_Ty, uint32_t>::value
+        || std::is_same<_Ty, int32_t>::value
+        || std::is_same<_Ty, uint64_t>::value
+        || std::is_same<_Ty, int64_t>::value> {
+    };
+
  public:
     typedef unsigned int size_type;
     /**
@@ -109,29 +132,10 @@ __forceinline__ __device__ double AgentRandom::logNormal(const double& mean, con
 /**
 * Uniform Int
 */
-template<>
-__forceinline__ __device__ char AgentRandom::uniform(const char& min, const char& max) const {
-    return static_cast<char>(min + (max - min) * uniform<float>());
-}
-template<>
-__forceinline__ __device__ unsigned char AgentRandom::uniform(const unsigned char& min, const unsigned char& max) const {
-    return static_cast<unsigned char>(min + (max - min) * uniform<float>());
-}
-template<>
-__forceinline__ __device__ int16_t AgentRandom::uniform(const int16_t& min, const int16_t& max) const {
-    return static_cast<int16_t>(min + (max - min) * uniform<float>());
-}
-template<>
-__forceinline__ __device__ uint16_t AgentRandom::uniform(const uint16_t& min, const uint16_t& max) const {
-    return static_cast<uint16_t>(min + (max - min) * uniform<float>());
-}
-template<>
-__forceinline__ __device__ int32_t AgentRandom::uniform(const int32_t& min, const int32_t& max) const {
-    return static_cast<int32_t>(min + (max - min) * uniform<float>());
-}
-template<>
-__forceinline__ __device__ uint32_t AgentRandom::uniform(const uint32_t& min, const uint32_t& max) const {
-    return static_cast<uint32_t>(min + (max - min) * uniform<float>());
+template<typename T>
+__forceinline__ __device__ T AgentRandom::uniform(const T& min, const T& max) const {
+    static_assert(_Is_IntType<T>::value, "Invalid template argument for AgentRandom::uniform(const T& min, const T& max)");
+    return static_cast<T>(min + (max - min) * uniform<float>());
 }
 template<>
 __forceinline__ __device__ int64_t AgentRandom::uniform(const int64_t& min, const int64_t& max) const {

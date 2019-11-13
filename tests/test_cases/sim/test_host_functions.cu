@@ -1,8 +1,7 @@
-#include <algorithm>
 #ifndef TESTS_TEST_CASES_SIM_TEST_SIM_VALIDATION_H_
 #define TESTS_TEST_CASES_SIM_TEST_SIM_VALIDATION_H_
 
-#include <utility>
+#include <algorithm>
 
 #include "gtest/gtest.h"
 
