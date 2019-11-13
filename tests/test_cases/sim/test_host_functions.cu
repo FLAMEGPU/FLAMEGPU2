@@ -125,6 +125,7 @@ class HostFunctionTest : public testing::Test {
  * Test order
  */
 TEST_F(HostFunctionTest, ExitConditionWorks) {
+    ASSERT_EQ(function_order.size(), 0u);
     ms->run();
     ASSERT_EQ(function_order.size(), 8llu) << "Exit condition triggered exit correctly";
 }
@@ -158,6 +159,8 @@ TEST_F(HostFunctionTest, ExitFuncCorrectOrder) {
 TEST_F(HostFunctionTest, InitFuncMultiple) {
     ms->simulation.setSimulationSteps(1);
     ms->simulation.addInitFunction(&init_function2);
+    EXPECT_EQ(std::find(function_order.begin(), function_order.end(), Init), function_order.end());
+    EXPECT_EQ(std::find(function_order.begin(), function_order.end(), Init2), function_order.end());
     ms->run();
     EXPECT_NE(std::find(function_order.begin(), function_order.end(), Init), function_order.end());
     EXPECT_NE(std::find(function_order.begin(), function_order.end(), Init2), function_order.end());
@@ -165,6 +168,8 @@ TEST_F(HostFunctionTest, InitFuncMultiple) {
 TEST_F(HostFunctionTest, HostLayerFuncMultiple) {
     ms->simulation.setSimulationSteps(1);
     ms->hostfn_layer.addHostFunction(&host_function2);
+    EXPECT_EQ(std::find(function_order.begin(), function_order.end(), HostLayer), function_order.end());
+    EXPECT_EQ(std::find(function_order.begin(), function_order.end(), HostLayer2), function_order.end());
     ms->run();
     EXPECT_NE(std::find(function_order.begin(), function_order.end(), HostLayer), function_order.end());
     EXPECT_NE(std::find(function_order.begin(), function_order.end(), HostLayer2), function_order.end());
@@ -172,6 +177,8 @@ TEST_F(HostFunctionTest, HostLayerFuncMultiple) {
 TEST_F(HostFunctionTest, StepFuncMultiple) {
     ms->simulation.setSimulationSteps(1);
     ms->simulation.addStepFunction(&step_function2);
+    EXPECT_EQ(std::find(function_order.begin(), function_order.end(), Step), function_order.end());
+    EXPECT_EQ(std::find(function_order.begin(), function_order.end(), Step2), function_order.end());
     ms->run();
     EXPECT_NE(std::find(function_order.begin(), function_order.end(), Step), function_order.end());
     EXPECT_NE(std::find(function_order.begin(), function_order.end(), Step2), function_order.end());
@@ -179,6 +186,8 @@ TEST_F(HostFunctionTest, StepFuncMultiple) {
 TEST_F(HostFunctionTest, ExitConditionMultiple) {
     ms->simulation.setSimulationSteps(1);
     ms->simulation.addExitCondition(&exit_condition2);
+    EXPECT_EQ(std::find(function_order.begin(), function_order.end(), ExitCondition), function_order.end());
+    EXPECT_EQ(std::find(function_order.begin(), function_order.end(), ExitCondition2), function_order.end());
     ms->run();
     EXPECT_NE(std::find(function_order.begin(), function_order.end(), ExitCondition), function_order.end());
     EXPECT_NE(std::find(function_order.begin(), function_order.end(), ExitCondition2), function_order.end());
@@ -186,8 +195,61 @@ TEST_F(HostFunctionTest, ExitConditionMultiple) {
 TEST_F(HostFunctionTest, ExitFuncMultiple) {
     ms->simulation.setSimulationSteps(1);
     ms->simulation.addExitFunction(&exit_function2);
+    EXPECT_EQ(std::find(function_order.begin(), function_order.end(), Exit), function_order.end());
+    EXPECT_EQ(std::find(function_order.begin(), function_order.end(), Exit2), function_order.end());
     ms->run();
     EXPECT_NE(std::find(function_order.begin(), function_order.end(), Exit), function_order.end());
     EXPECT_NE(std::find(function_order.begin(), function_order.end(), Exit2), function_order.end());
+}
+
+/**
+ * Test Duplication Host Function exception thrown
+ */
+TEST_F(HostFunctionTest, InitFuncDuplicateException) {
+    EXPECT_THROW(ms->simulation.addInitFunction(&init_function), InvalidHostFunc);
+}
+TEST_F(HostFunctionTest, HostLayerFuncDuplicateException) {
+    EXPECT_THROW(ms->hostfn_layer.addHostFunction(&host_function), InvalidHostFunc);
+}
+TEST_F(HostFunctionTest, StepFuncDuplicateException) {
+    EXPECT_THROW(ms->simulation.addStepFunction(&step_function), InvalidHostFunc);
+}
+TEST_F(HostFunctionTest, ExitConditionDuplicateException) {
+    EXPECT_THROW(ms->simulation.addExitCondition(&exit_condition), InvalidHostFunc);
+}
+TEST_F(HostFunctionTest, ExitFuncDuplicateException) {
+    EXPECT_THROW(ms->simulation.addExitFunction(&exit_function), InvalidHostFunc);
+}
+
+/**
+ * Special case, layers can be added twice
+ */
+TEST_F(HostFunctionTest, LayerDuplicateNoException) {
+    ms->simulation.setSimulationSteps(1);
+    EXPECT_EQ(std::count(function_order.begin(), function_order.end(), HostLayer), 0u);
+    ASSERT_NO_THROW(ms->run());
+    EXPECT_EQ(std::count(function_order.begin(), function_order.end(), HostLayer), 1u);
+    function_order.clear();
+    EXPECT_EQ(std::count(function_order.begin(), function_order.end(), HostLayer), 0u);
+    EXPECT_NO_THROW(ms->simulation.addSimulationLayer(ms->hostfn_layer));
+    ASSERT_NO_THROW(ms->run());
+    EXPECT_EQ(std::count(function_order.begin(), function_order.end(), HostLayer), 2u);
+}
+
+/**
+ * Special case, host function can be added to multiple different layers
+ */
+TEST_F(HostFunctionTest, HostLayerFuncDuplicateLayerNoException) {
+    ms->simulation.setSimulationSteps(1);
+    EXPECT_EQ(std::count(function_order.begin(), function_order.end(), HostLayer), 0u);
+    ASSERT_NO_THROW(ms->run());
+    EXPECT_EQ(std::count(function_order.begin(), function_order.end(), HostLayer), 1u);
+    function_order.clear();
+    EXPECT_EQ(std::count(function_order.begin(), function_order.end(), HostLayer), 0u);
+    SimulationLayer hostfn_layer2(ms->simulation, "hostfn_layer2");
+    ASSERT_NO_THROW(hostfn_layer2.addHostFunction(&host_function));
+    ASSERT_NO_THROW(ms->simulation.addSimulationLayer(hostfn_layer2));
+    ASSERT_NO_THROW(ms->run());
+    EXPECT_EQ(std::count(function_order.begin(), function_order.end(), HostLayer), 2u);
 }
 #endif  // TESTS_TEST_CASES_SIM_TEST_SIM_VALIDATION_H_
