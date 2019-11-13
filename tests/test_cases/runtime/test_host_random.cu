@@ -76,6 +76,62 @@ FLAMEGPU_STEP_FUNCTION(step_uniform_longlong) {
     for (int64_t &i : longlong_out)
         ASSERT_NO_THROW(i = FLAMEGPU->random.uniform<int64_t>(INT64_MIN, INT64_MAX));
 }
+FLAMEGPU_STEP_FUNCTION(step_uniform_uchar_range) {
+    for (auto &i : unsigned_char_out)
+        ASSERT_NO_THROW(i = FLAMEGPU->random.uniform<unsigned char>(
+            static_cast<unsigned char>(UCHAR_MAX * 0.25), 
+            static_cast<unsigned char>(UCHAR_MAX * 0.75)
+            ));
+}
+FLAMEGPU_STEP_FUNCTION(step_uniform_char_range) {
+    for (char &i : char_out)
+        ASSERT_NO_THROW(i = FLAMEGPU->random.uniform<char>(
+            static_cast<char>(CHAR_MIN * 0.5),
+            static_cast<char>(CHAR_MAX * 0.5)
+            ));
+}
+FLAMEGPU_STEP_FUNCTION(step_uniform_ushort_range) {
+    for (auto &i : unsigned_short_out)
+        ASSERT_NO_THROW(i = FLAMEGPU->random.uniform<uint16_t>(
+            static_cast<uint16_t>(UINT16_MAX * 0.25),
+            static_cast<uint16_t>(UINT16_MAX * 0.75)
+            ));
+}
+FLAMEGPU_STEP_FUNCTION(step_uniform_short_range) {
+    for (auto &i : short_out)
+        ASSERT_NO_THROW(i = FLAMEGPU->random.uniform<int16_t>(
+            static_cast<int16_t>(INT16_MIN * 0.5),
+            static_cast<int16_t>(INT16_MAX * 0.5)
+            ));
+}
+FLAMEGPU_STEP_FUNCTION(step_uniform_uint_range) {
+    for (auto &i : unsigned_int_out)
+        ASSERT_NO_THROW(i = FLAMEGPU->random.uniform<unsigned int>(
+            static_cast<unsigned int>(UINT_MAX * 0.25),
+            static_cast<unsigned int>(UINT_MAX * 0.75)
+            ));
+}
+FLAMEGPU_STEP_FUNCTION(step_uniform_int_range) {
+    for (auto &i : int_out)
+        ASSERT_NO_THROW(i = FLAMEGPU->random.uniform<int>(
+            static_cast<int>(INT_MIN * 0.5),
+            static_cast<int>(INT_MAX * 0.5)
+            ));
+}
+FLAMEGPU_STEP_FUNCTION(step_uniform_ulonglong_range) {
+    for (auto &i : unsigned_longlong_out)
+        ASSERT_NO_THROW(i = FLAMEGPU->random.uniform<uint64_t>(
+            static_cast<uint64_t>(UINT64_MAX * 0.25),
+            static_cast<uint64_t>(UINT64_MAX * 0.75)
+            ));
+}
+FLAMEGPU_STEP_FUNCTION(step_uniform_longlong_range) {
+    for (auto &i : longlong_out)
+        ASSERT_NO_THROW(i = FLAMEGPU->random.uniform<int64_t>(
+            static_cast<int64_t>(INT64_MIN * 0.5),
+            static_cast<int64_t>(INT64_MAX * 0.5)
+            ));
+}
 class MiniSim {
  public:
     MiniSim() :
@@ -947,6 +1003,94 @@ TEST_F(HostRandomTest, UniformLongLong) {
     // Old Seed == old values
     for (unsigned int i = 0; i < longlong_out.size(); ++i)
         EXPECT_EQ(longlong_out[i], _longlong_out[i]);
+}
+
+/**
+ * Range tests
+ */
+TEST_F(HostRandomTest, UniformFloatRange) {
+    ms->simulation.addStepFunction(&step_uniform_float);
+    ms->run();
+    for(auto &i:float_out) {
+        EXPECT_GE(i, 0.0f);
+        EXPECT_LT(i, 1.0f);
+    }
+}
+TEST_F(HostRandomTest, UniformDoubleRange) {
+    ms->simulation.addStepFunction(&step_uniform_double);
+    ms->run();
+    for (auto &i : double_out) {
+        EXPECT_GE(i, 0.0f);
+        EXPECT_LT(i, 1.0f);
+    }
+}
+
+TEST_F(HostRandomTest, UniformUCharRange) {
+    ms->simulation.addStepFunction(&step_uniform_uchar_range);
+    ms->run();
+    for (auto &i : unsigned_char_out) {
+        EXPECT_GE(i, static_cast<unsigned char>(UCHAR_MAX*0.25));
+        EXPECT_LE(i, static_cast<unsigned char>(UCHAR_MAX*0.75));
+    }
+}
+TEST_F(HostRandomTest, UniformCharRange) {
+    ms->simulation.addStepFunction(&step_uniform_char_range);
+    ms->run();
+    for (auto &i : unsigned_char_out) {
+        EXPECT_GE(i, static_cast<char>(CHAR_MIN*0.5));
+        EXPECT_LE(i, static_cast<char>(CHAR_MAX*0.5));
+    }
+}
+
+TEST_F(HostRandomTest, UniformUShortRange) {
+    ms->simulation.addStepFunction(&step_uniform_ushort_range);
+    ms->run();
+    for (auto &i : unsigned_short_out) {
+        EXPECT_GE(i, static_cast<uint16_t>(UINT16_MAX*0.25));
+        EXPECT_LE(i, static_cast<uint16_t>(UINT16_MAX*0.75));
+    }
+}
+TEST_F(HostRandomTest, UniformShortRange) {
+    ms->simulation.addStepFunction(&step_uniform_short_range);
+    ms->run();
+    for (auto &i : short_out) {
+        EXPECT_GE(i, static_cast<int16_t>(INT16_MIN*0.5));
+        EXPECT_LE(i, static_cast<int16_t>(INT16_MAX*0.5));
+    }
+}
+
+TEST_F(HostRandomTest, UniformUIntRange) {
+    ms->simulation.addStepFunction(&step_uniform_uint_range);
+    ms->run();
+    for (auto &i : unsigned_int_out) {
+        EXPECT_GE(i, static_cast<unsigned int>(UINT_MAX*0.25));
+        EXPECT_LE(i, static_cast<unsigned int>(UINT_MAX*0.75));
+    }
+}
+TEST_F(HostRandomTest, UniformIntRange) {
+    ms->simulation.addStepFunction(&step_uniform_int_range);
+    ms->run();
+    for (auto &i : int_out) {
+        EXPECT_GE(i, static_cast<int>(INT_MIN*0.5));
+        EXPECT_LE(i, static_cast<int>(INT_MAX*0.5));
+    }
+}
+
+TEST_F(HostRandomTest, UniformULongLongRange) {
+    ms->simulation.addStepFunction(&step_uniform_ulonglong_range);
+    ms->run();
+    for (auto &i : unsigned_longlong_out) {
+        EXPECT_GE(i, static_cast<uint64_t>(UINT64_MAX*0.25));
+        EXPECT_LE(i, static_cast<uint64_t>(UINT64_MAX*0.75));
+    }
+}
+TEST_F(HostRandomTest, UniformLongLongRange) {
+    ms->simulation.addStepFunction(&step_uniform_longlong_range);
+    ms->run();
+    for (auto &i : longlong_out) {
+        EXPECT_GE(i, static_cast<int64_t>(INT64_MIN*0.5));
+        EXPECT_LE(i, static_cast<int64_t>(INT64_MAX*0.5));
+    }
 }
 
 #endif  // TESTS_TEST_CASES_RUNTIME_TEST_HOST_RANDOM_H_
