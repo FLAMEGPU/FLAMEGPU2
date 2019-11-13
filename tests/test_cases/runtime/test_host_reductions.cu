@@ -153,6 +153,11 @@ FLAMEGPU_STEP_FUNCTION(step_reduceint64_t) {
     int64_t_out = FLAMEGPU->agent("agent").reduce<int64_t>("int64_t", customMax, 0);
 }
 
+std::vector<unsigned int> uint_vec;
+FLAMEGPU_STEP_FUNCTION(step_histogramEvenfloat) {
+    uint_vec = FLAMEGPU->agent("agent").histogramEven<float, unsigned int>("float", TEST_LEN/10, FLT_MIN, FLT_MAX);
+}
+
 class MiniSim {
  public:
     MiniSim() :
@@ -207,6 +212,22 @@ class HostReductionTest : public testing::Test {
 
     MiniSim *ms = nullptr;
 };
+
+template<typename InT, typename OutT>
+std::vector<OutT> histogramEven(const std::array<InT, TEST_LEN> &variables, const unsigned int &histogramBins, const InT &lowerBound, const InT &upperBound) {
+    assert(upperBound > lowerBound);
+    std::vector<OutT> rtn(histogramBins);
+    for (auto &i : rtn)
+        i = static_cast<OutT>(0);
+    const InT diff = upperBound - lowerBound;
+    const double diffP = diff / histogramBins;
+    for (auto &i : variables) {
+        if (i >= lowerBound && i <= upperBound) {
+            ++rtn[static_cast<int>((i - lowerBound) / diffP)];
+        }
+    }
+    return rtn;
+}
 }  // namespace
 
 /**
@@ -263,6 +284,22 @@ TEST_F(HostReductionTest, CustomReduceFloat) {
     }
     ms->run();
     EXPECT_EQ(float_out, *std::max_element(in.begin(), in.end()));
+}
+TEST_F(HostReductionTest, HistogramEvenFloat) {
+    ms->simulation.addStepFunction(&step_histogramEvenfloat);
+    std::mt19937 rd;  // Seed does not matter
+    std::uniform_real_distribution <float> dist(FLT_MIN, FLT_MAX);
+    std::array<float, TEST_LEN> in;
+    for (unsigned int i = 0; i < TEST_LEN; i++) {
+        AgentInstance instance = ms->population->getNextInstance();
+        in[i] = dist(rd);
+        instance.setVariable<float>("float", in[i]);
+    }
+    ms->run();
+    auto check = histogramEven<float, unsigned int>(in, TEST_LEN / 10, FLT_MIN, FLT_MAX);
+    for (int i = 0; i < uint_vec.size(); ++i) {
+        EXPECT_EQ(uint_vec[i], check[i]);
+    }
 }
 
 /**
