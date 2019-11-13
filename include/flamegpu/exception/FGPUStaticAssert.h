@@ -16,11 +16,11 @@ struct integral_constant {
     typedef _Ty value_type;
     typedef integral_constant<_Ty, _Val> type;
 
-    constexpr operator value_type() const _NOEXCEPT {
+    constexpr operator value_type() const noexcept {
         return (value);  // return stored value
     }
 
-    constexpr value_type operator()() const _NOEXCEPT {
+    constexpr value_type operator()() const noexcept {
         return (value);  // return stored value
     }
 };
