@@ -37,7 +37,7 @@ GenericMemoryVector& AgentStateMemory::getMemoryVector(const std::string variabl
     iter = state_memory.find(variable_name);
 
     if (iter == state_memory.end()) {
-        THROW InvalidAgentVar("Agent ('%s') variable ('%s) was not found, "
+        THROW InvalidAgentVar("Agent ('%s') variable ('%s') was not found, "
             "in AgentStateMemory::getMemoryVector().",
             population.getAgentName().c_str(), variable_name.c_str());
     }
@@ -49,7 +49,7 @@ const GenericMemoryVector& AgentStateMemory::getReadOnlyMemoryVector(const std::
     iter = state_memory.find(variable_name);
 
     if (iter == state_memory.end()) {
-        THROW InvalidAgentVar("Agent ('%s') variable ('%s) was not found, "
+        THROW InvalidAgentVar("Agent ('%s') variable ('%s') was not found, "
             "in AgentStateMemory::getReadOnlyMemoryVector().",
             population.getAgentName().c_str(), variable_name.c_str());
     }

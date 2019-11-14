@@ -142,6 +142,13 @@ class Curve {
      *  @return A size_t which is the size of the variable or 0 otherwise
      */
     __device__ __forceinline__ static size_t getVariableSize(const VariableHash variable_hash);
+    /** @brief Gets the length of the cuRVE variable given the variable hash
+     *  Gets the length of the cuRVE variable given the variable hash
+     *  This will be 1 unless the variable is an array
+     *  @param variable_hash A cuRVE variable string hash from VariableHash.
+     *  @return An unsigned int which is the number of elements within the curve variable (1 unless it's an array)
+     */
+    __device__ __forceinline__ static unsigned int getVariableLength(const VariableHash variable_hash);
     /** @brief Device function for getting a pointer to a variable of given name
      * Returns a generic pointer to a variable of given name at a specific offset in bytes from the start of the variable array.
      *  @param variable_hash A cuRVE variable string hash from VariableHash.
@@ -360,6 +367,13 @@ __device__ __forceinline__ size_t Curve::getVariableSize(const VariableHash vari
     cv = getVariable(variable_hash);
 
     return curve_internal::d_sizes[cv];
+}
+__device__ __forceinline__ unsigned int Curve::getVariableLength(const VariableHash variable_hash) {
+    Variable cv;
+
+    cv = getVariable(variable_hash);
+
+    return curve_internal::d_lengths[cv];
 }
 __device__ __forceinline__ void* Curve::getVariablePtrByHash(const VariableHash variable_hash, size_t offset) {
     Variable cv;
