@@ -269,4 +269,3 @@ __host__ void Curve::clearErrors() {
 
     gpuErrchk(cudaMemcpyToSymbol(curve_internal::d_curve_error, &curve_error_none, sizeof(DeviceError)));
 }
-

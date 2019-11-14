@@ -89,12 +89,16 @@ endif()
 SET(TEST_CASE_SRC
     # ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_func_pointer.cu # Does not currently build
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/gpu/test_gpu_validation.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/model/test_environment_description.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/model/test_message_validation.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/model/test_model_validation.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/pop/test_pop_validation.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/sim/test_sim_validation.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/sim/test_host_functions.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_agent_random.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_agent_environment.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_agent_random.cu    
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_environment_manager.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_host_environment.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_host_random.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/host_reduction/test_min.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/host_reduction/test_max.cu

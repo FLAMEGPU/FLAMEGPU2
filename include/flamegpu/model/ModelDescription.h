@@ -21,6 +21,7 @@
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/model/MessageDescription.h"
 #include "flamegpu/pop/AgentPopulation.h"
+#include "flamegpu/model/EnvironmentDescription.h"
 
 typedef std::map<const std::string, const AgentDescription&> AgentMap;
 typedef std::map<const std::string, const MessageDescription&> MessageMap;
@@ -39,6 +40,13 @@ class ModelDescription {
     void addMessage(const MessageDescription &message);
 
     void addPopulation(AgentPopulation &population);
+    /**
+     * Sets (or replaces) stored EnvironmentDescription
+     * @note Reference is stored, ensure you don't let the object go out of scope
+     * until CUDAAgentModel has been constructed
+     * @note This also means any changes made until then will be reflected
+     */
+    void setEnvironment(EnvironmentDescription &envDesc);
 
     const AgentDescription& getAgentDescription(const std::string agent_name) const;
     const MessageDescription& getMessageDescription(const std::string message_name) const;
@@ -50,12 +58,16 @@ class ModelDescription {
 
     // const PopulationMap& getPopulationMap() const;
 
+    bool hasEnvironment() const;
+
+    const EnvironmentDescription& getEnvironment() const;
+
  private:
     std::string name;
     AgentMap agents;
     MessageMap messages;
     PopulationMap population;
-
+    EnvironmentDescription *environmentProperties;
     // function map removed. This belongs to agents.
 };
 

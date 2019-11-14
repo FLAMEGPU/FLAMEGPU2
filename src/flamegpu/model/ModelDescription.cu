@@ -10,7 +10,12 @@
 
 #include "flamegpu/model/ModelDescription.h"
 
-ModelDescription::ModelDescription(const std::string model_name) : name(model_name), agents(), messages(), population() {}
+ModelDescription::ModelDescription(const std::string model_name)
+    : name(model_name),
+    agents(),
+    messages(),
+    population(),
+    environmentProperties(nullptr) { }
 
 ModelDescription::~ModelDescription() {}
 
@@ -28,6 +33,11 @@ void ModelDescription::addMessage(const MessageDescription &message) {
 
 void ModelDescription::addPopulation(AgentPopulation &pop) {
      population.insert(PopulationMap::value_type(pop.getAgentName(), pop));
+}
+
+void ModelDescription::setEnvironment(EnvironmentDescription &envDesc) {
+    // We never want more than 1 env properties stored
+    environmentProperties = &envDesc;
 }
 
 const AgentDescription& ModelDescription::getAgentDescription(const std::string agent_name) const {
@@ -69,4 +79,12 @@ const AgentMap& ModelDescription::getAgentMap() const {
 
 const MessageMap& ModelDescription::getMessageMap() const {
     return messages;
+}
+bool ModelDescription::hasEnvironment() const {
+    return environmentProperties != nullptr;
+}
+const EnvironmentDescription& ModelDescription::getEnvironment() const {
+    if (hasEnvironment())
+        return *environmentProperties;
+    throw std::runtime_error("This preference for references is stupid!\n Can't return a reference we don't have.\n The ModelDescription should create an EnvironmentDescription at construction, and leave it empty if unused.");
 }

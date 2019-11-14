@@ -10,6 +10,7 @@
 
 #include "flamegpu/gpu/CUDAErrorChecking.h"
 #include "flamegpu/runtime/utility/HostRandom.cuh"
+#include "flamegpu/runtime/utility/HostEnvironment.cuh"
 #include "flamegpu/runtime/flamegpu_host_api_macros.h"
 
 class CUDAAgentModel;
@@ -43,7 +44,14 @@ class FLAMEGPU_HOST_API {
      * Returns methods that work on all agents of a certain type currently in a given state
      */
     FLAMEGPU_HOST_AGENT_API agent(const std::string &agent_name, const std::string &stateName = "default");
+    /**
+     * Host API access to seeded random number generation
+     */
     const HostRandom random;
+    /**
+     * Host API access to environmental properties
+     */
+    const HostEnvironment environment;
 
  private:
     /**

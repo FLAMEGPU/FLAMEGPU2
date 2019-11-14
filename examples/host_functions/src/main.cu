@@ -5,12 +5,15 @@
 #include "flamegpu/flame_api.h"
 #include "flamegpu/runtime/flamegpu_api.h"
 
-
-/* must be compiled separately using FLAME GPU builder
- * This will generate object files for different architecture targets as well as ptx info for each agent function (registers, memory use etc.)
- * http://stackoverflow.com/questions/12388207/interpreting-output-of-ptxas-options-v
- */
 FLAMEGPU_AGENT_FUNCTION(device_function) {
+    const float &prop_float = FLAMEGPU->environment.get<float>("float");
+    const int16_t &prop_int16 = FLAMEGPU->environment.get<int16_t>("int16_t");
+    const uint64_t &prop_uint64_0 = FLAMEGPU->environment.get<uint64_t>("uint64_t", 0);
+    const uint64_t &prop_uint64_1 = FLAMEGPU->environment.get<uint64_t>("uint64_t", 1);
+    const uint64_t &prop_uint64_2 = FLAMEGPU->environment.get<uint64_t>("uint64_t", 2);
+    if (blockIdx.x * blockDim.x + threadIdx.x == 0) {
+        printf("Agent Function[Thread 0]! Properties(Float: %g, int16: %hd, uint64[3]: {%llu, %llu, %llu})\n", prop_float, prop_int16, prop_uint64_0, prop_uint64_1, prop_uint64_2);
+    }
     return ALIVE;
 }
 FLAMEGPU_INIT_FUNCTION(init_function) {
@@ -44,6 +47,7 @@ FLAMEGPU_HOST_FUNCTION(host_function) {
     std::vector<unsigned int> hist_x = FLAMEGPU->agent("agent").histogramEven<float>("x", 8, -0.5, 1023.5);
     printf("Host Function! (Hist: [%u, %u, %u, %u, %u, %u, %u, %u]\n",
         hist_x[0], hist_x[1], hist_x[2], hist_x[3], hist_x[4], hist_x[5], hist_x[6], hist_x[7]);
+    FLAMEGPU->environment.set<int16_t>("int16_t", FLAMEGPU->environment.get<int16_t>("int16_t") + 1);
 }
 FLAMEGPU_EXIT_CONDITION(exit_condition) {
     const float CHANCE = 0.15f;
@@ -61,7 +65,7 @@ int main(void) {
     const unsigned int AGENT_COUNT = 1024;
     ModelDescription flame_model("host_functions_example");
 
-    // {//circle agent
+    // {//agent
         AgentDescription agent("agent");
         agent.addAgentVariable<float>("x");
         agent.addAgentVariable<int>("a");
@@ -86,10 +90,16 @@ int main(void) {
     /**
      * GLOBALS
      */
-
+    EnvironmentDescription envProperties;
+    {
+        envProperties.add<float>("float", 12.0f);
+        envProperties.add<int16_t>("int16_t", 0);
+        envProperties.add<uint64_t, 3>("uint64_t", {11llu, 12llu, 13llu});
+        flame_model.setEnvironment(envProperties);
+    }
      /**
-     * Simulation
-     */
+      * Simulation
+      */
 
     Simulation simulation(flame_model);
 

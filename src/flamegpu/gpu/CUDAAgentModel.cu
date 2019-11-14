@@ -62,6 +62,11 @@ CUDAAgentModel::CUDAAgentModel(const ModelDescription& description)
             FunctionMap.insert(CUDAFunctionMap::value_type(it->first, std::unique_ptr<CUDAAgentFunction>(new CUDAAgentFunction(it->second))));
         }
         */
+    // Populate the environment properties in constant Cache
+    {
+        if (model_description.hasEnvironment())
+            EnvironmentManager::getInstance().init(model_description.getName(), model_description.getEnvironment());
+    }
 }
 
 /**
@@ -71,6 +76,10 @@ CUDAAgentModel::CUDAAgentModel(const ModelDescription& description)
 CUDAAgentModel::~CUDAAgentModel() {
     rng.decreaseSimCounter();
     // unique pointers cleanup by automatically
+
+    // Drop all constants from the constant cache linked to this model
+    if (model_description.hasEnvironment())
+        EnvironmentManager::getInstance().free(model_description.getName());
 }
 
 /**
@@ -134,6 +143,9 @@ bool CUDAAgentModel::step(const Simulation& simulation) {
     std::string message_name;
     Curve::NamespaceHash message_name_inp_hash = 0;
     Curve::NamespaceHash message_name_outp_hash = 0;
+    // hash model name
+    const Curve::NamespaceHash modelname_hash = curve.variableRuntimeHash(model_description.getName().c_str());
+
     unsigned int messageList_Size = 0;
 
     // TODO: simulation.getMaxFunctionsPerLayer()
@@ -247,7 +259,7 @@ bool CUDAAgentModel::step(const Simulation& simulation) {
             Curve::NamespaceHash funcname_hash = curve.variableRuntimeHash(func_name.c_str());
 
             // agent_function_wrapper << <gridSize, blockSize, 0, stream[j] >> > (agentname_hash + funcname_hash, h_func_ptr, state_list_size);
-            agent_function_wrapper <<<gridSize, blockSize, 0, stream[j] >>>(agentname_hash + funcname_hash, message_name_inp_hash, message_name_outp_hash, h_func_ptr, state_list_size, messageList_Size, totalThreads);
+            agent_function_wrapper <<<gridSize, blockSize, 0, stream[j] >>>(modelname_hash, agentname_hash + funcname_hash, message_name_inp_hash, message_name_outp_hash, h_func_ptr, state_list_size, messageList_Size, totalThreads);
             totalThreads += state_list_size;
             ++j;
         }

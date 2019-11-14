@@ -159,7 +159,8 @@ DERIVED_FGPUException(InvalidCudaAgentState, "The state does not exist within th
 
 /**
  * Defines a type of object to be thrown as exception.
- * It reports errors that are due to invalid agent variable type. This could happen when retriving or setting a variable of differet type.
+ * It reports errors that are due to invalid agent variable type. 
+ * This could happen when retrieving or setting a variable of different type.
  */
 DERIVED_FGPUException(InvalidAgentFunc, "Unknown agent function");
 
@@ -204,5 +205,52 @@ DERIVED_FGPUException(InvalidHostFunc, "Invalid Host Function");
  * It reports errors that are due unsuitable arguments
  */
 DERIVED_FGPUException(InvalidArgument, "Invalid Argument Exception");
+
+/**
+ * Defines a type of object to be thrown as exception.
+ * It reports errors that are due environment property name already in use
+ */
+DERIVED_FGPUException(DuplicateEnvProperty, "Environment property of same name already exists");
+
+/**
+ * Defines a type of object to be thrown as exception.
+ * It reports errors that are due invalid environment property names
+ */
+DERIVED_FGPUException(InvalidEnvProperty, "Environment property of name does not exist");
+
+/**
+ * Defines a type of object to be thrown as exception.
+ * It reports errors that an environment property has been accessed with the wrong type
+ */
+DERIVED_FGPUException(InvalidEnvPropertyType, "Environment property of name does not have same type");
+
+/**
+ * Defines a type of object to be thrown as exception.
+ * It reports that a change to a constant environment property was attempted
+ */
+DERIVED_FGPUException(ReadOnlyEnvProperty, "Cannot modify environment properties marked as constant");
+
+/**
+* Defines a type of object to be thrown as exception.
+* It reports that EnvironmentManager already holds data from a model description of the same name
+*/
+DERIVED_FGPUException(EnvDescriptionAlreadyLoaded, "Environment description with same model name already is already loaded.");
+
+/**
+ * Defines a type of object to be thrown as exception.
+ * It reports that memory limits have been exceeded
+ */
+DERIVED_FGPUException(OutOfMemory, "Allocation failed, sufficient memory unavailable");
+
+/**
+ * Defines a type of object to be thrown as exception.
+ * It reports that CURVE reported a failure
+ */
+DERIVED_FGPUException(CurveException, "Curve reported an error!");
+
+/**
+ * Defines an attempt to access outside the valid bounds of an array
+ */
+DERIVED_FGPUException(OutOfBoundsException, "Index exceeds bounds of array!");
 
 #endif  // INCLUDE_FLAMEGPU_EXCEPTION_FGPUEXCEPTION_H_

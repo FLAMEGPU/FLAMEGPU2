@@ -19,7 +19,6 @@
 // include sub classes
 #include "flamegpu/gpu/CUDAAgent.h"
 #include "flamegpu/gpu/CUDAMessage.h"
-#include "flamegpu/runtime/cuRVE/cuRVEInstance.h"  // @todo move to externals
 #include "flamegpu/runtime/flamegpu_host_api.h"
 
 // forward declare classes from other modules
@@ -54,6 +53,8 @@ class CUDAAgentModel {
 
     const CUDAAgent& getCUDAAgent(std::string agent_name) const;
     const CUDAMessage& getCUDAMessage(std::string message_name) const;
+
+    const ModelDescription& getModelDescription() const { return model_description; }
 
  private:
     const ModelDescription& model_description;

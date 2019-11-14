@@ -17,6 +17,7 @@
 #include "flamegpu/exception/FGPUException.h"
 #include "flamegpu/runtime/messagelist.h"
 #include "flamegpu/runtime/utility/AgentRandom.cuh"
+#include "flamegpu/runtime/utility/DeviceEnvironment.cuh"
 
 // TODO: Some example code of the handle class and an example function
 // ! FLAMEGPU_API is a singleton class
@@ -53,13 +54,16 @@ __device__ FLAME_GPU_AGENT_STATUS funcName ## _impl(FLAMEGPU_DEVICE_API* FLAMEGP
  */
 class FLAMEGPU_DEVICE_API {
     // Friends have access to TID() & TS_ID()
-    friend __global__ void agent_function_wrapper(Curve::NamespaceHash, Curve::NamespaceHash, Curve::NamespaceHash, FLAMEGPU_AGENT_FUNCTION_POINTER, const int, const unsigned int, const unsigned int);
+    friend __global__ void agent_function_wrapper(Curve::NamespaceHash, Curve::NamespaceHash, Curve::NamespaceHash, Curve::NamespaceHash, FLAMEGPU_AGENT_FUNCTION_POINTER, const int, const unsigned int, const unsigned int);
 
  public:
     /**
      * @param _thread_in_layer_offset This offset can be added to TID to give a thread-safe unique index for the thread
      */
-    __device__ FLAMEGPU_DEVICE_API(const unsigned int &_thread_in_layer_offset) : random(AgentRandom(TID()+_thread_in_layer_offset)), thread_in_layer_offset(_thread_in_layer_offset) {}
+    __device__ FLAMEGPU_DEVICE_API(const unsigned int &_thread_in_layer_offset, const Curve::NamespaceHash &modelname_hash)
+        : random(AgentRandom(TID()+_thread_in_layer_offset)),
+        environment(DeviceEnvironment(modelname_hash)),
+        thread_in_layer_offset(_thread_in_layer_offset) { }
 
     template<typename T, unsigned int N> __device__
     T getVariable(const char(&variable_name)[N]);
@@ -116,6 +120,7 @@ class FLAMEGPU_DEVICE_API {
     * @note random state isn't stored within the object, so it can be const
     */
     const AgentRandom random;
+    const DeviceEnvironment environment;
 
  private:
     Curve::NamespaceHash agent_func_name_hash;
