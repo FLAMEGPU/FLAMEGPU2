@@ -370,7 +370,7 @@ TEST_F(HostReductionTest, HistogramEvenFloat) {
     }
     ms->run();
     auto check = histogramEven<float, unsigned int>(in, 10, 0, 20);
-    for (int i = 0; i < uint_vec.size(); ++i) {
+    for (unsigned int i = 0; i < uint_vec.size(); ++i) {
         EXPECT_EQ(uint_vec[i], check[i]);
     }
 }
@@ -442,7 +442,7 @@ TEST_F(HostReductionTest, HistogramEvenDouble) {
     }
     ms->run();
     auto check = histogramEven<double, int>(in, 10, 0, 20);
-    for (int i = 0; i < int_vec.size(); ++i) {
+    for (unsigned int i = 0; i < int_vec.size(); ++i) {
         EXPECT_EQ(int_vec[i], check[i]);
     }
 }
@@ -531,7 +531,7 @@ TEST_F(HostReductionTest, HistogramEvenChar) {
     }
     ms->run();
     auto check = histogramEven<char, unsigned int>(in, 10, 0, 20);
-    for (int i = 0; i < uint_vec.size(); ++i) {
+    for (unsigned int i = 0; i < uint_vec.size(); ++i) {
         EXPECT_EQ(uint_vec[i], check[i]);
     }
 }
@@ -604,7 +604,7 @@ TEST_F(HostReductionTest, HistogramEvenUnsignedChar) {
     }
     ms->run();
     auto check = histogramEven<unsigned char, int>(in, 10, 0, 20);
-    for (int i = 0; i < int_vec.size(); ++i) {
+    for (unsigned int i = 0; i < int_vec.size(); ++i) {
         EXPECT_EQ(int_vec[i], check[i]);
     }
 }
@@ -677,7 +677,7 @@ TEST_F(HostReductionTest, HistogramEvenInt16) {
     }
     ms->run();
     auto check = histogramEven<int16_t, unsigned int>(in, 10, 0, 20);
-    for (int i = 0; i < uint_vec.size(); ++i) {
+    for (unsigned int i = 0; i < uint_vec.size(); ++i) {
         EXPECT_EQ(uint_vec[i], check[i]);
     }
 }
@@ -750,7 +750,7 @@ TEST_F(HostReductionTest, HistogramEvenUnsignedInt16) {
     }
     ms->run();
     auto check = histogramEven<uint16_t, int>(in, 10, 0, 20);
-    for (int i = 0; i < int_vec.size(); ++i) {
+    for (unsigned int i = 0; i < int_vec.size(); ++i) {
         EXPECT_EQ(int_vec[i], check[i]);
     }
 }
@@ -823,7 +823,7 @@ TEST_F(HostReductionTest, HistogramEvenInt32) {
     }
     ms->run();
     auto check = histogramEven<int32_t, unsigned int>(in, 10, 0, 20);
-    for (int i = 0; i < uint_vec.size(); ++i) {
+    for (unsigned int i = 0; i < uint_vec.size(); ++i) {
         EXPECT_EQ(uint_vec[i], check[i]);
     }
 }
@@ -896,7 +896,7 @@ TEST_F(HostReductionTest, HistogramEvenUnsignedInt32) {
     }
     ms->run();
     auto check = histogramEven<uint32_t, int>(in, 10, 0, 20);
-    for (int i = 0; i < int_vec.size(); ++i) {
+    for (unsigned int i = 0; i < int_vec.size(); ++i) {
         EXPECT_EQ(int_vec[i], check[i]);
     }
 }
@@ -968,7 +968,7 @@ TEST_F(HostReductionTest, HistogramEvenInt64) {
     }
     ms->run();
     auto check = histogramEven<int64_t, unsigned int>(in, 10, 0, 20);
-    for (int i = 0; i < uint_vec.size(); ++i) {
+    for (unsigned int i = 0; i < uint_vec.size(); ++i) {
         EXPECT_EQ(uint_vec[i], check[i]);
     }
 }
@@ -1040,7 +1040,7 @@ TEST_F(HostReductionTest, HistogramEvenUnsignedInt64) {
     }
     ms->run();
     auto check = histogramEven<uint64_t, int>(in, 10, 0, 20);
-    for (int i = 0; i < int_vec.size(); ++i) {
+    for (unsigned int i = 0; i < int_vec.size(); ++i) {
         EXPECT_EQ(int_vec[i], check[i]);
     }
 }
