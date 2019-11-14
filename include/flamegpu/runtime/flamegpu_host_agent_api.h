@@ -3,10 +3,15 @@
 #ifdef _MSC_VER
 #pragma warning(push, 3)
 #include <cub/cub.cuh>
+#include <thrust/count.h>
+#include <thrust/device_ptr.h>
 #pragma warning(pop)
 #else
 #include <cub/cub.cuh>
+#include <thrust/count.h>
+#include <thrust/device_ptr.h>
 #endif
+
 #include <algorithm>
 #include <string>
 #include <vector>
@@ -72,13 +77,21 @@ class FLAMEGPU_HOST_AGENT_API {
      * @param init Initial value of the reduction
      */
     template<typename InT, typename reductionOperatorT>
-    InT reduce(const std::string &variable, reductionOperatorT reductionOperator, const InT&init) const;
+    InT reduce(const std::string &variable, reductionOperatorT reductionOperator, const InT &init) const;
+    /**
+     * Wraps thrust::count(), to count the number of occurences of the provided value
+     * @param variable The agent variable to perform the count reduction across
+     * @param value The value to count occurences of
+     */
+    template<typename InT>
+    unsigned int count(const std::string &variable, const InT &value);
     /**
      * Wraps cub::DeviceHistogram::HistogramEven()
      * @param variable The agent variable to perform the reduction across
      * @param histogramBins The number of bins the histogram should have
      * @param lowerBound The (inclusive) lower sample value boundary of lowest bin
      * @param upperBound The (exclusive) upper sample value boundary of upper bin
+     * @note 2nd template arg can be used if calculation requires higher bit type to avoid overflow
      */
     template<typename InT>
     std::vector<unsigned int> histogramEven(const std::string &variable, const unsigned int &histogramBins, const InT &lowerBound, const InT &upperBound) const;
@@ -198,6 +211,19 @@ InT FLAMEGPU_HOST_AGENT_API::reduce(const std::string &variable, reductionOperat
     gpuErrchkLaunch();
     InT rtn;
     gpuErrchk(cudaMemcpy(&rtn, api.d_output_space, sizeof(InT), cudaMemcpyDeviceToHost));
+    return rtn;
+}
+template<typename InT>
+unsigned int FLAMEGPU_HOST_AGENT_API::count(const std::string &variable, const InT &value) {
+    const auto &agentDesc = agent.getAgentDescription();
+    if (typeid(InT) != agentDesc.getVariableType(variable))
+        throw InvalidVarType("variable type does not match type of count()");
+    const auto &stateAgent = agent.getAgentStateList(stateName);
+    void *var_ptr = stateAgent->getAgentListVariablePointer(variable);
+    const auto agentCount = stateAgent->getCUDAStateListSize();
+    // Cast return from ptrdiff_t (int64_t) to (uint32_t)
+    unsigned int rtn = static_cast<unsigned int>(thrust::count(thrust::device_ptr<InT>(reinterpret_cast<InT*>(var_ptr)), thrust::device_ptr<InT>(reinterpret_cast<InT*>(var_ptr) + agentCount), value));
+    gpuErrchkLaunch();
     return rtn;
 }
 template<typename InT>
