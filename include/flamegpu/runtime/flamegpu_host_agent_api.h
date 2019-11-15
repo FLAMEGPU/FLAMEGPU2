@@ -31,7 +31,7 @@ struct funcName ## _impl {\
         __device__ __forceinline__ OutT operator()(const OutT &a, const OutT &b) const;\
     };\
 };\
-funcName ## _impl customSum;\
+funcName ## _impl funcName;\
 template <typename OutT>\
 __device__ __forceinline__ OutT funcName ## _impl::binary_function<OutT>::operator()(const OutT & a, const OutT & b) const
 
@@ -43,7 +43,7 @@ struct funcName ## _impl {\
         __host__ __device__ OutT operator()(const InT &a) const;\
     };\
 };\
-funcName ## _impl customTransform;\
+funcName ## _impl funcName;\
 template<typename InT, typename OutT>\
 __device__ __forceinline__ OutT funcName ## _impl::unary_function<InT, OutT>::operator()(const InT &a) const
 
