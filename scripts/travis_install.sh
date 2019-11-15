@@ -14,13 +14,6 @@ apt-get -y update
 # Install apt dependencies
 apt-get install apt-transport-https ca-certificates gnupg software-properties-common wget python3-pip doxygen
 
-# Install recent CMAKE via kitware APT repo
-wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | sudo apt-key add -
-sudo apt-add-repository "deb https://apt.kitware.com/ubuntu/ ${UBUNTU_CODENAME} main"
-sudo apt update -qq 
-sudo apt install -y cmake
-
-
 # Install CUDA (see https://github.com/jeremad/cuda-travis/blob/master/.travis.yml)
 CUDA_REPO_PKG=cuda-repo-${UBUNTU_VERSION}_${CUDA_LONG}_amd64.deb
 CUDA_PACKAGE_VERSION=${CUDA_SHORT/./-}
@@ -42,3 +35,14 @@ apt-get install -y --no-install-recommends cuda-core-${CUDA_PACKAGE_VERSION} cud
 
 # Install cpplint (optional, not currently used at CI time)
 pip3 install cpplint #--user
+
+# Disbale exit on error when kitware has terrible apt behaviour
+set +e
+# Install recent CMAKE via kitware APT repo
+wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | sudo apt-key add -
+sudo apt-add-repository "deb https://apt.kitware.com/ubuntu/ ${UBUNTU_CODENAME} main"
+sudo apt update -qq && sudo apt install -y cmake
+set -e
+
+# Horrible thrust fix. This needs addressing propperly at cmake time? See issue on github. @todo
+rm -rf /usr/local/cuda-${CUDA_SHORT}/targets/x86_64-linux/include/thrust

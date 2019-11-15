@@ -62,6 +62,8 @@ class CUDAAgent {
 
     void unmapRuntimeVariables(const AgentFunctionDescription& func) const;
 
+    const std::unique_ptr<CUDAAgentStateList> &getAgentStateList(const std::string &state_name) const;
+
  protected:
     /** @brief    Zero all state variable data. */
     void zeroAllStateVariableData();

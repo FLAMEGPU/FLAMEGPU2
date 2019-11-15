@@ -92,7 +92,10 @@ SET(TEST_CASE_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/model/test_model_validation.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/pop/test_pop_validation.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/sim/test_sim_validation.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/sim/test_host_functions.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_agent_random.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_host_random.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_host_reductions.cu
 )
 SET(OTHER_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/helpers/device_test_functions.h

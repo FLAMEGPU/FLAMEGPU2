@@ -14,7 +14,7 @@
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/pop/AgentPopulation.h"
 #include "flamegpu/sim/Simulation.h"
-#include "flamegpu/runtime/utility/DeviceRandomArray.cuh"
+#include "flamegpu/runtime/utility/RandomManager.cuh"
 
 // include FLAMEGPU kernel wrapper
 #include "flamegpu/runtime/agent_function.h"
@@ -23,7 +23,12 @@
 * CUDAAgentModel class
 * @brief populates CUDA agent map, CUDA message map
 */
-CUDAAgentModel::CUDAAgentModel(const ModelDescription& description) : model_description(description), agent_map(), curve(cuRVEInstance::getInstance()), message_map() {  // , function_map() {
+CUDAAgentModel::CUDAAgentModel(const ModelDescription& description)
+    : model_description(description),
+    agent_map(),
+    curve(cuRVEInstance::getInstance()),
+    message_map(),
+    host_api(*this) {  // , function_map() {
     // create a reference to curve to ensure that it is initialised. This is a singleton class so will only be done once regardless of the number of CUDAgentModels.
 
     // populate the CUDA agent map
@@ -113,7 +118,7 @@ void CUDAAgentModel::getPopulationData(AgentPopulation& population) {
  * @brief Loops through agents functions and register all variables
  * (variable has must also be tied to function name using the namespace thing in curve)
 */
-void CUDAAgentModel::step(const Simulation& simulation) {
+bool CUDAAgentModel::step(const Simulation& simulation) {
     int nStreams = 1;
     std::string message_name;
     CurveNamespaceHash message_name_inp_hash = 0;
@@ -136,7 +141,7 @@ void CUDAAgentModel::step(const Simulation& simulation) {
 
     /*! for each each sim layer, launch each agent function in its own stream */
     for (unsigned int i = 0; i < simulation.getLayerCount(); i++) {
-        const FunctionDescriptionVector& functions = simulation.getFunctionsAtLayer(i);
+        const auto& functions = simulation.getFunctionsAtLayer(i);
 
         int j = 0;
         // Sum the total number of threads being launched in the layer
@@ -170,8 +175,8 @@ void CUDAAgentModel::step(const Simulation& simulation) {
             totalThreads += cuda_agent.getMaximumListSize();
         }
 
-        // Ensure DeviceRandomArray is the correct size to accomodate all threads to be launched
-        DeviceRandomArray::resize(totalThreads);
+        // Ensure RandomManager is the correct size to accomodate all threads to be launched
+        RandomManager::resize(totalThreads);
         // Total threads is now used to provide kernel launches an offset to thread-safe thread-index
         totalThreads = 0;
 
@@ -258,12 +263,30 @@ void CUDAAgentModel::step(const Simulation& simulation) {
             // unmap the function variables
             cuda_agent.unmapRuntimeVariables(func_des);
         }
+
+        // Execute all host functions attached to layer
+        // TODO: Concurrency?
+        for (auto &stepFn : simulation.getHostFunctionsAtLayer(i))
+            stepFn(&this->host_api);
+
         // cudaDeviceSynchronize();
     }
     // stream deletion
     for (int j = 0; j < nStreams; ++j)
         gpuErrchk(cudaStreamDestroy(stream[j]));
     free(stream);
+
+
+    // Execute step functions
+    for (auto &stepFn : simulation.getStepFunctions())
+        stepFn(&this->host_api);
+
+
+    // Execute exit conditions
+    for (auto &exitCdns : simulation.getExitConditions())
+        if (exitCdns(&this->host_api) == EXIT)
+            return false;
+    return true;
 }
 
 /**
@@ -310,10 +333,19 @@ void CUDAAgentModel::simulate(const Simulation& simulation) {
     // if they have executable functions then these can be ignored
     // if they have agent creations then buffer space must be allocated for them
 
-    for (unsigned int i = 0; i < simulation.getSimulationSteps(); i++) {
+    // Execute init functions
+    for (auto &initFn : simulation.getInitFunctions())
+        initFn(&this->host_api);
+
+    for (unsigned int i = 0; simulation.getSimulationSteps() == 0 ? true : i < simulation.getSimulationSteps(); i++) {
         std::cout <<"step: " << i << std::endl;
-        step(simulation);
+        if (!step(simulation))
+            break;
     }
+
+    // Execute exit functions
+    for (auto &exitFn : simulation.getExitFunctions())
+        exitFn(&this->host_api);
 }
 
 const CUDAAgent& CUDAAgentModel::getCUDAAgent(std::string agent_name) const {

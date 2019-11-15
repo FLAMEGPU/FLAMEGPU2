@@ -17,29 +17,65 @@
 #include "flamegpu/io/statereader.h"
 #include "flamegpu/io/statewriter.h"
 #include "flamegpu/io/factory.h"
-#include "flamegpu/runtime/utility/DeviceRandomArray.cuh"
+#include "flamegpu/runtime/utility/RandomManager.cuh"
 
 Simulation::Simulation(const ModelDescription& model) : layers(), model_description(model) {
     simulation_steps = 1;
-    DeviceRandomArray::init(DeviceRandomArray::seedFromTime());
+    RandomManager::init(static_cast<unsigned int>(RandomManager::seedFromTime()%UINT_MAX));
 }
 
 
 Simulation::~Simulation(void) {
-    DeviceRandomArray::free();
+    RandomManager::free();
 }
 
-const FunctionDescriptionVector& Simulation::getFunctionsAtLayer(unsigned int layer) const {
+const SimulationLayer::FunctionDescriptionVector& Simulation::getFunctionsAtLayer(const unsigned int &layer) const {
     if (layer >= layers.size()) {
         throw InvalidMemoryCapacity("Function layer doesn't exists!");  // out of bound index
     } else {
         return layers.at(layer).get().getAgentFunctions();
     }
 }
+const SimulationLayer::HostFunctionSet& Simulation::getHostFunctionsAtLayer(const unsigned int &layer) const {
+    if (layer >= layers.size()) {
+        throw InvalidMemoryCapacity("Function layer doesn't exists!");  // out of bound index
+    } else {
+        return layers.at(layer).get().getHostFunctions();
+    }
+}
+const Simulation::InitFunctionSet& Simulation::getInitFunctions() const {
+    return initFunctions;
+}
+const Simulation::StepFunctionSet& Simulation::getStepFunctions() const {
+    return stepFunctions;
+}
+const Simulation::ExitFunctionSet& Simulation::getExitFunctions() const {
+    return exitFunctions;
+}
+const Simulation::ExitConditionSet& Simulation::getExitConditions() const {
+    return exitConditions;
+}
 
 unsigned int Simulation::addSimulationLayer(SimulationLayer &layer) {
     layers.push_back(layer);
     return static_cast<unsigned int>(layers.size())-1;
+}
+
+void Simulation::addInitFunction(const FLAMEGPU_INIT_FUNCTION_POINTER *func_p) {
+    if (!initFunctions.insert(*func_p).second)
+        throw InvalidHostFunc("Attempted to add same init function twice.");
+}
+void Simulation::addStepFunction(const FLAMEGPU_STEP_FUNCTION_POINTER *func_p) {
+    if (!stepFunctions.insert(*func_p).second)
+        throw InvalidHostFunc("Attempted to add same step function twice.");
+}
+void Simulation::addExitFunction(const FLAMEGPU_EXIT_FUNCTION_POINTER *func_p) {
+    if (!exitFunctions.insert(*func_p).second)
+        throw InvalidHostFunc("Attempted to add same exit function twice.");
+}
+void Simulation::addExitCondition(const FLAMEGPU_EXIT_CONDITION_POINTER *func_p) {
+    if (!exitConditions.insert(*func_p).second)
+        throw InvalidHostFunc("Attempted to add same exit condition twice.");
 }
 
 void Simulation::setSimulationSteps(unsigned int steps) {
@@ -93,8 +129,8 @@ int Simulation::checkArgs(int argc, const char** argv, std::string &xml_model_pa
         }
         // -random <uint>, Uses the specified random seed, defaults to clock
         if (arg.compare("--random") == 0 || arg.compare("-r") == 0) {
-            // Reinitialise DeviceRandomArray state
-            DeviceRandomArray::init(static_cast<uint64_t>(strtoul(argv[++i], nullptr, 0)));
+            // Reinitialise RandomManager state
+            RandomManager::init(static_cast<unsigned int>(strtoul(argv[++i], nullptr, 0)));
             continue;
         }
         fprintf(stderr, "Unexpected argument: %s\n", arg.c_str());
@@ -110,7 +146,7 @@ void Simulation::printHelp(const char *executable) {
     const char *line_fmt = "%-18s %s\n";
     printf(line_fmt, "-s, --steps", "Number of simulation iterations");
     printf(line_fmt, "-d, --device", "GPU index");
-    printf(line_fmt, "-r, --random", "DeviceRandomArray seed");
+    printf(line_fmt, "-r, --random", "RandomManager seed");
 }
 
 /**

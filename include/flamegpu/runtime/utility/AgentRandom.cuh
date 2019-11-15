@@ -4,6 +4,8 @@
 #include <curand_kernel.h>
 #include <cassert>
 
+#include "flamegpu/exception/FGPUStaticAssert.h"
+
 /**
  * Utility for accessing random generation within agent functions
  * This should only be instantiated by FLAMEGPU_API
@@ -42,7 +44,7 @@ class AgentRandom {
     __forceinline__ __device__ T logNormal(const T& mean, const T& stddev) const;
     /**
      * Returns an integer uniformly distributed in the inclusive range [min, max]
-     * @note Available as signed and unsigned: char, short, int, long, long long
+     * @note Available as signed and unsigned: char, short, int, long long
      */
     template<typename T>
     __forceinline__ __device__ T uniform(const T& min, const T& max) const;
@@ -109,29 +111,10 @@ __forceinline__ __device__ double AgentRandom::logNormal(const double& mean, con
 /**
 * Uniform Int
 */
-template<>
-__forceinline__ __device__ char AgentRandom::uniform(const char& min, const char& max) const {
-    return static_cast<char>(min + (max - min) * uniform<float>());
-}
-template<>
-__forceinline__ __device__ unsigned char AgentRandom::uniform(const unsigned char& min, const unsigned char& max) const {
-    return static_cast<unsigned char>(min + (max - min) * uniform<float>());
-}
-template<>
-__forceinline__ __device__ int16_t AgentRandom::uniform(const int16_t& min, const int16_t& max) const {
-    return static_cast<int16_t>(min + (max - min) * uniform<float>());
-}
-template<>
-__forceinline__ __device__ uint16_t AgentRandom::uniform(const uint16_t& min, const uint16_t& max) const {
-    return static_cast<uint16_t>(min + (max - min) * uniform<float>());
-}
-template<>
-__forceinline__ __device__ int32_t AgentRandom::uniform(const int32_t& min, const int32_t& max) const {
-    return static_cast<int32_t>(min + (max - min) * uniform<float>());
-}
-template<>
-__forceinline__ __device__ uint32_t AgentRandom::uniform(const uint32_t& min, const uint32_t& max) const {
-    return static_cast<uint32_t>(min + (max - min) * uniform<float>());
+template<typename T>
+__forceinline__ __device__ T AgentRandom::uniform(const T& min, const T& max) const {
+    static_assert(FGPU_SA::_Is_IntType<T>::value, "Invalid template argument for AgentRandom::uniform(const T& min, const T& max)");
+    return static_cast<T>(min + (max - min) * uniform<float>());
 }
 template<>
 __forceinline__ __device__ int64_t AgentRandom::uniform(const int64_t& min, const int64_t& max) const {

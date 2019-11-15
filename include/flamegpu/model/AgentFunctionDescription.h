@@ -19,7 +19,7 @@
 #include "flamegpu/model/AgentFunctionOutput.h"
 
 // include the agent function syntax form the runtime api
-#include "flamegpu/runtime/flame_functions_api.h"
+#include "flamegpu/runtime/flamegpu_device_api.h"
 
 class AgentDescription;
 

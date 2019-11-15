@@ -213,3 +213,14 @@ void CUDAAgent::unmapRuntimeVariables(const AgentFunctionDescription& func) cons
         curveUnregisterVariableByHash(var_hash + agent_hash + func_hash);
     }
 }
+
+
+const std::unique_ptr<CUDAAgentStateList> &CUDAAgent::getAgentStateList(const std::string &state_name) const {
+    // check the cuda agent state map to find the correct state list for functions starting state
+    CUDAStateMap::const_iterator sm = state_map.find(state_name);
+
+    if (sm == state_map.end()) {
+        throw InvalidCudaAgentState();
+    }
+    return sm->second;
+}
