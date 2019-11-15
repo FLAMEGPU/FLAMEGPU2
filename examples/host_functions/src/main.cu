@@ -21,12 +21,16 @@ FLAMEGPU_INIT_FUNCTION(init_function) {
 FLAMEGPU_CUSTOM_REDUCTION(customSum, a, b) {
     return a + b;
 }
+FLAMEGPU_CUSTOM_TRANSFORM(customTransform, a) {
+    return (a == 0 || a == 1) ? 1 : 0;
+}
 FLAMEGPU_STEP_FUNCTION(step_function) {
     auto agent = FLAMEGPU->agent("agent");
     int sum_a = agent.sum<int>("a");
     int custom_sum_a = agent.reduce<int>("a", customSum, 0);
     unsigned int count_a = agent.count<int>("a", 1);
-    printf("Step Function! (Sum: %d, CustomSum: %d, Count: %u)\n", sum_a, custom_sum_a, count_a);
+    unsigned int countif_a = agent.transformReduce<int, unsigned int>("a", customTransform, customSum, 0u);
+    printf("Step Function! (Sum: %d, CustomSum: %d, Count: %u, CustomCountIf: %u)\n", sum_a, custom_sum_a, count_a, countif_a);
 }
 FLAMEGPU_EXIT_FUNCTION(exit_function) {
     float uniform_real = FLAMEGPU->random.uniform<float>();
