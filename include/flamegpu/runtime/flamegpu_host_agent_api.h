@@ -3,6 +3,8 @@
 #ifdef _MSC_VER
 #pragma warning(push, 3)
 #include <cub/cub.cuh>
+#pragma warning(pop)
+#pragma warning(push, 2)
 #include <thrust/count.h>
 #include <thrust/device_ptr.h>
 #pragma warning(pop)

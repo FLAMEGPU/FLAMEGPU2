@@ -1,0 +1,3 @@
+https://github.com/thrust/thrust/commit/324243f6bb70687aeaeb2419193a335648c5869d
+This is included as external, rather than version with CUDA toolkit, as it fixes initialiser list compilation warnings/errors.
+No changes have been made from cloning the above commit
