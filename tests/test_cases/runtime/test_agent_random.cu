@@ -28,7 +28,6 @@
  *
  * This test checks whether AgentRandom and RandomManager behave correctly
 */
-
 TEST(AgentRandomTest, AgentRandomCheck) {
     GTEST_COUT << "Testing AgentRandom and DeviceRandomArray Name .." << std::endl;
 
