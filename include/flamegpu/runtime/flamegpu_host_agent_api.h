@@ -274,7 +274,8 @@ InT FLAMEGPU_HOST_AGENT_API::reduce(const std::string &variable, reductionOperat
     if (api.tempStorageRequiresResize(cc, agentCount)) {
         // Resize cub storage
         size_t tempByte = 0;
-        cub::DeviceReduce::Reduce(nullptr, tempByte, reinterpret_cast<InT*>(var_ptr), reinterpret_cast<InT*>(api.d_output_space), static_cast<int>(agentCount), reductionOperatorT::template binary_function<InT>(), init);
+        cub::DeviceReduce::Reduce(nullptr, tempByte, reinterpret_cast<InT*>(var_ptr), reinterpret_cast<InT*>(api.d_output_space),
+            static_cast<int>(agentCount), typename reductionOperatorT::template binary_function<InT>(), init);
         gpuErrchkLaunch();
         api.resizeTempStorage(cc, agentCount, tempByte);
     }
@@ -298,7 +299,7 @@ OutT FLAMEGPU_HOST_AGENT_API::transformReduce(const std::string &variable, trans
     // auto b = my_sum<OutT>();
     // <thrust::device_ptr<InT>, std::unary_function<InT, OutT>, OutT, std::binary_function<OutT, OutT, OutT>>
     OutT rtn = thrust::transform_reduce(thrust::device_ptr<InT>(reinterpret_cast<InT*>(var_ptr)), thrust::device_ptr<InT>(reinterpret_cast<InT*>(var_ptr) + agentCount),
-        transformOperatorT::template unary_function<InT, OutT>(), init, reductionOperatorT::template binary_function<OutT>());
+        typename transformOperatorT::template unary_function<InT, OutT>(), init, typename reductionOperatorT::template binary_function<OutT>());
     gpuErrchkLaunch();
     return rtn;
 }
