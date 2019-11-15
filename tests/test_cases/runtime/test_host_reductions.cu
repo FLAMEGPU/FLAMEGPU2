@@ -187,6 +187,37 @@ FLAMEGPU_STEP_FUNCTION(step_histogramEvenuint64_t) {
     int_vec = FLAMEGPU->agent("agent").histogramEven<uint64_t, int>("uint64_t", 10, 0, 20);
 }
 
+FLAMEGPU_STEP_FUNCTION(step_countfloat) {
+    uint32_t_out = FLAMEGPU->agent("agent").count<float>("float", 0);
+}
+FLAMEGPU_STEP_FUNCTION(step_countdouble) {
+    uint32_t_out = FLAMEGPU->agent("agent").count<double>("double", 0);
+}
+FLAMEGPU_STEP_FUNCTION(step_countchar) {
+    uint32_t_out = FLAMEGPU->agent("agent").count<char>("char", 0);
+}
+FLAMEGPU_STEP_FUNCTION(step_countuchar) {
+    uint32_t_out = FLAMEGPU->agent("agent").count<unsigned char>("uchar", 0);
+}
+FLAMEGPU_STEP_FUNCTION(step_countint16_t) {
+    uint32_t_out = FLAMEGPU->agent("agent").count<int16_t>("int16_t", 0);
+}
+FLAMEGPU_STEP_FUNCTION(step_countuint16_t) {
+    uint32_t_out = FLAMEGPU->agent("agent").count<uint16_t>("uint16_t", 0);
+}
+FLAMEGPU_STEP_FUNCTION(step_countint32_t) {
+    uint32_t_out = FLAMEGPU->agent("agent").count<int32_t>("int32_t", 0);
+}
+FLAMEGPU_STEP_FUNCTION(step_countuint32_t) {
+    uint32_t_out = FLAMEGPU->agent("agent").count<uint32_t>("uint32_t", 0);
+}
+FLAMEGPU_STEP_FUNCTION(step_countint64_t) {
+    uint32_t_out = FLAMEGPU->agent("agent").count<int64_t>("int64_t", 0);
+}
+FLAMEGPU_STEP_FUNCTION(step_countuint64_t) {
+    uint32_t_out = FLAMEGPU->agent("agent").count<uint64_t>("uint64_t", 0);
+}
+
 FLAMEGPU_CUSTOM_REDUCTION(customSum, a, b) {
     return a + b;
 }
@@ -267,8 +298,13 @@ FLAMEGPU_STEP_FUNCTION(step_transformReduceException) {
     EXPECT_THROW(FLAMEGPU->agent("agent").transformReduce<double>("intsssssssssss16_t", customTransform, customSum, 0), InvalidAgentVar);
     EXPECT_THROW(FLAMEGPU->agent("agent").transformReduce<uint64_t>("ssssssssssssssint", customTransform, customSum, 0), InvalidAgentVar);
 }
-
-
+FLAMEGPU_STEP_FUNCTION(step_countException) {
+    EXPECT_THROW(FLAMEGPU->agent("ageaadddnt"), InvalidCudaAgent);
+    EXPECT_THROW(FLAMEGPU->agent("agent").count<int32_t>("double", 0), InvalidVarType);
+    EXPECT_THROW(FLAMEGPU->agent("agent").count<float>("uint64_t", 0), InvalidVarType);
+    EXPECT_THROW(FLAMEGPU->agent("agent").count<double>("intsssssssssss16_t", 0), InvalidAgentVar);
+    EXPECT_THROW(FLAMEGPU->agent("agent").count<uint64_t>("ssssssssssssssint", 0), InvalidAgentVar);
+}
 
 class MiniSim {
  public:
@@ -434,6 +470,23 @@ TEST_F(HostReductionTest, CustomTransformReduceFloat) {
     std::transform(in.begin(), in.end(), inTransform.begin(), customTransform_impl::unary_function<float, uint32_t>());
     EXPECT_EQ(uint32_t_out, std::count(inTransform.begin(), inTransform.end(), static_cast<uint32_t>(1)));
 }
+TEST_F(HostReductionTest, CountFloat) {
+    ms->simulation.addStepFunction(&step_countfloat);
+    std::mt19937 rd;  // Seed does not matter
+    std::uniform_real_distribution <float> dist(FLT_MIN, FLT_MAX);
+    std::array<float, TEST_LEN> in;
+    for (unsigned int i = 0; i < TEST_LEN; i++) {
+        AgentInstance instance = ms->population->getNextInstance();
+        if (i < TEST_LEN/2) {
+            in[i] = dist(rd);
+        } else {
+            in[i] = 0;
+        }
+        instance.setVariable<float>("float", in[i]);
+    }
+    ms->run();
+    EXPECT_EQ(uint32_t_out, std::count(in.begin(), in.end(), static_cast<float>(0)));
+}
 
 /**
  * Double
@@ -520,6 +573,23 @@ TEST_F(HostReductionTest, CustomTransformReduceDouble) {
     ms->run();
     std::transform(in.begin(), in.end(), inTransform.begin(), customTransform_impl::unary_function<double, int>());
     EXPECT_EQ(int32_t_out, std::count(inTransform.begin(), inTransform.end(), static_cast<int>(1)));
+}
+TEST_F(HostReductionTest, CountDouble) {
+    ms->simulation.addStepFunction(&step_countdouble);
+    std::mt19937 rd;  // Seed does not matter
+    std::uniform_real_distribution <double> dist(DBL_MIN, DBL_MAX);
+    std::array<double, TEST_LEN> in;
+    for (unsigned int i = 0; i < TEST_LEN; i++) {
+        AgentInstance instance = ms->population->getNextInstance();
+        if (i < TEST_LEN / 2) {
+            in[i] = dist(rd);
+        } else {
+            in[i] = 0;
+        }
+        instance.setVariable<double>("double", in[i]);
+    }
+    ms->run();
+    EXPECT_EQ(uint32_t_out, std::count(in.begin(), in.end(), static_cast<double>(0)));
 }
 
 /**
@@ -629,6 +699,23 @@ TEST_F(HostReductionTest, CustomTransformReduceChar) {
     std::transform(in.begin(), in.end(), inTransform.begin(), customTransform_impl::unary_function<char, int>());
     EXPECT_EQ(int32_t_out, std::count(inTransform.begin(), inTransform.end(), static_cast<int>(1)));
 }
+TEST_F(HostReductionTest, CountChar) {
+    ms->simulation.addStepFunction(&step_countchar);
+    std::mt19937 rd;  // Seed does not matter
+    std::uniform_int_distribution <int16_t> dist(CHAR_MIN, CHAR_MAX);
+    std::array<char, TEST_LEN> in;
+    for (unsigned int i = 0; i < TEST_LEN; i++) {
+        AgentInstance instance = ms->population->getNextInstance();
+        if (i < TEST_LEN / 2) {
+            in[i] = static_cast<char>(dist(rd));
+        } else {
+            in[i] = 0;
+        }
+        instance.setVariable<char>("char", in[i]);
+    }
+    ms->run();
+    EXPECT_EQ(uint32_t_out, std::count(in.begin(), in.end(), static_cast<char>(0)));
+}
 
 /**
  * Unsigned Char
@@ -716,6 +803,23 @@ TEST_F(HostReductionTest, CustomTransformReduceUnsignedChar) {
     ms->run();
     std::transform(in.begin(), in.end(), inTransform.begin(), customTransform_impl::unary_function<unsigned char, int>());
     EXPECT_EQ(int32_t_out, std::count(inTransform.begin(), inTransform.end(), static_cast<int>(1)));
+}
+TEST_F(HostReductionTest, CountUnsignedChar) {
+    ms->simulation.addStepFunction(&step_countuchar);
+    std::mt19937 rd;  // Seed does not matter
+    std::uniform_int_distribution <uint16_t> dist(0, UCHAR_MAX);
+    std::array<unsigned char, TEST_LEN> in;
+    for (unsigned int i = 0; i < TEST_LEN; i++) {
+        AgentInstance instance = ms->population->getNextInstance();
+        if (i < TEST_LEN / 2) {
+            in[i] = static_cast<unsigned char>(dist(rd));
+        } else {
+            in[i] = 0;
+        }
+        instance.setVariable<unsigned char>("uchar", in[i]);
+    }
+    ms->run();
+    EXPECT_EQ(uint32_t_out, std::count(in.begin(), in.end(), static_cast<unsigned char>(0)));
 }
 
 /**
@@ -805,6 +909,23 @@ TEST_F(HostReductionTest, CustomTransformReduceInt16) {
     std::transform(in.begin(), in.end(), inTransform.begin(), customTransform_impl::unary_function<int16_t, int>());
     EXPECT_EQ(int32_t_out, std::count(inTransform.begin(), inTransform.end(), static_cast<int>(1)));
 }
+TEST_F(HostReductionTest, CountInt16) {
+    ms->simulation.addStepFunction(&step_countint16_t);
+    std::mt19937 rd;  // Seed does not matter
+    std::uniform_int_distribution <int16_t> dist(INT16_MIN, INT16_MAX);
+    std::array<int16_t, TEST_LEN> in;
+    for (unsigned int i = 0; i < TEST_LEN; i++) {
+        AgentInstance instance = ms->population->getNextInstance();
+        if (i < TEST_LEN / 2) {
+            in[i] = dist(rd);
+        } else {
+            in[i] = 0;
+        }
+        instance.setVariable<int16_t>("int16_t", in[i]);
+    }
+    ms->run();
+    EXPECT_EQ(uint32_t_out, std::count(in.begin(), in.end(), static_cast<int16_t>(0)));
+}
 
 /**
  * uint16_t
@@ -892,6 +1013,23 @@ TEST_F(HostReductionTest, CustomTransformReduceUnsignedInt16) {
     ms->run();
     std::transform(in.begin(), in.end(), inTransform.begin(), customTransform_impl::unary_function<uint16_t, int>());
     EXPECT_EQ(int32_t_out, std::count(inTransform.begin(), inTransform.end(), static_cast<int>(1)));
+}
+TEST_F(HostReductionTest, CountUnsignedInt16) {
+    ms->simulation.addStepFunction(&step_countuint16_t);
+    std::mt19937 rd;  // Seed does not matter
+    std::uniform_int_distribution <uint16_t> dist(0, UINT16_MAX);
+    std::array<uint16_t, TEST_LEN> in;
+    for (unsigned int i = 0; i < TEST_LEN; i++) {
+        AgentInstance instance = ms->population->getNextInstance();
+        if (i < TEST_LEN / 2) {
+            in[i] = dist(rd);
+        } else {
+            in[i] = 0;
+        }
+        instance.setVariable<uint16_t>("uint16_t", in[i]);
+    }
+    ms->run();
+    EXPECT_EQ(uint32_t_out, std::count(in.begin(), in.end(), static_cast<uint16_t>(0)));
 }
 
 /**
@@ -981,6 +1119,23 @@ TEST_F(HostReductionTest, CustomTransformReduceInt32) {
     std::transform(in.begin(), in.end(), inTransform.begin(), customTransform_impl::unary_function<int32_t, int>());
     EXPECT_EQ(int32_t_out, std::count(inTransform.begin(), inTransform.end(), static_cast<int>(1)));
 }
+TEST_F(HostReductionTest, CountInt32) {
+    ms->simulation.addStepFunction(&step_countint32_t);
+    std::mt19937 rd;  // Seed does not matter
+    std::uniform_int_distribution <int32_t> dist(INT32_MIN, INT32_MAX);
+    std::array<int32_t, TEST_LEN> in;
+    for (unsigned int i = 0; i < TEST_LEN; i++) {
+        AgentInstance instance = ms->population->getNextInstance();
+        if (i < TEST_LEN / 2) {
+            in[i] = dist(rd);
+        } else {
+            in[i] = 0;
+        }
+        instance.setVariable<int32_t>("int32_t", in[i]);
+    }
+    ms->run();
+    EXPECT_EQ(uint32_t_out, std::count(in.begin(), in.end(), static_cast<int32_t>(0)));
+}
 
 /**
  * uint32_t
@@ -1069,6 +1224,23 @@ TEST_F(HostReductionTest, CustomTransformReduceUnsignedInt32) {
     std::transform(in.begin(), in.end(), inTransform.begin(), customTransform_impl::unary_function<uint32_t, int>());
     EXPECT_EQ(int32_t_out, std::count(inTransform.begin(), inTransform.end(), static_cast<int>(1)));
 }
+TEST_F(HostReductionTest, CountUnsignedInt32) {
+    ms->simulation.addStepFunction(&step_countuint32_t);
+    std::mt19937 rd;  // Seed does not matter
+    std::uniform_int_distribution <uint32_t> dist(0, UINT32_MAX);
+    std::array<uint32_t, TEST_LEN> in;
+    for (unsigned int i = 0; i < TEST_LEN; i++) {
+        AgentInstance instance = ms->population->getNextInstance();
+        if (i < TEST_LEN / 2) {
+            in[i] = dist(rd);
+        } else {
+            in[i] = 0;
+        }
+        instance.setVariable<uint32_t>("uint32_t", in[i]);
+    }
+    ms->run();
+    EXPECT_EQ(uint32_t_out, std::count(in.begin(), in.end(), static_cast<uint32_t>(0)));
+}
 
 /**
  * int64_t
@@ -1155,6 +1327,23 @@ TEST_F(HostReductionTest, CustomTransformReduceInt64) {
     ms->run();
     std::transform(in.begin(), in.end(), inTransform.begin(), customTransform_impl::unary_function<int64_t, int>());
     EXPECT_EQ(int32_t_out, std::count(inTransform.begin(), inTransform.end(), static_cast<int>(1)));
+}
+TEST_F(HostReductionTest, CountInt64) {
+    ms->simulation.addStepFunction(&step_countint64_t);
+    std::mt19937 rd;  // Seed does not matter
+    std::uniform_int_distribution <int64_t> dist(INT64_MIN, INT64_MAX);
+    std::array<int64_t, TEST_LEN> in;
+    for (unsigned int i = 0; i < TEST_LEN; i++) {
+        AgentInstance instance = ms->population->getNextInstance();
+        if (i < TEST_LEN / 2) {
+            in[i] = dist(rd);
+        } else {
+            in[i] = 0;
+        }
+        instance.setVariable<int64_t>("int64_t", in[i]);
+    }
+    ms->run();
+    EXPECT_EQ(uint32_t_out, std::count(in.begin(), in.end(), static_cast<int64_t>(0)));
 }
 
 /**
@@ -1243,6 +1432,23 @@ TEST_F(HostReductionTest, CustomTransformReduceUnsignedInt64) {
     std::transform(in.begin(), in.end(), inTransform.begin(), customTransform_impl::unary_function<uint64_t, int>());
     EXPECT_EQ(int32_t_out, std::count(inTransform.begin(), inTransform.end(), static_cast<int>(1)));
 }
+TEST_F(HostReductionTest, CountUnsignedInt64) {
+    ms->simulation.addStepFunction(&step_countuint64_t);
+    std::mt19937 rd;  // Seed does not matter
+    std::uniform_int_distribution <uint64_t> dist(0, UINT64_MAX);
+    std::array<uint64_t, TEST_LEN> in;
+    for (unsigned int i = 0; i < TEST_LEN; i++) {
+        AgentInstance instance = ms->population->getNextInstance();
+        if (i < TEST_LEN / 2) {
+            in[i] = dist(rd);
+        } else {
+            in[i] = 0;
+        }
+        instance.setVariable<uint64_t>("uint64_t", in[i]);
+    }
+    ms->run();
+    EXPECT_EQ(uint32_t_out, std::count(in.begin(), in.end(), static_cast<uint64_t>(0)));
+}
 
 /**
  * Bad Types
@@ -1284,6 +1490,13 @@ TEST_F(HostReductionTest, HistogramEvenException) {
 }
 TEST_F(HostReductionTest, CustomTransformException) {
     ms->simulation.addStepFunction(&step_transformReduceException);
+    for (unsigned int i = 0; i < TEST_LEN; i++) {
+        AgentInstance instance = ms->population->getNextInstance();
+    }
+    ms->run();
+}
+TEST_F(HostReductionTest, CountException) {
+    ms->simulation.addStepFunction(&step_countException);
     for (unsigned int i = 0; i < TEST_LEN; i++) {
         AgentInstance instance = ms->population->getNextInstance();
     }
