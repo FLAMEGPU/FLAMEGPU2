@@ -8,8 +8,10 @@
  * @warning
  */
 
-#include <algorithm>
 #include "flamegpu/gpu/CUDAAgentModel.h"
+
+#include <iostream>
+#include <algorithm>
 
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/pop/AgentPopulation.h"
