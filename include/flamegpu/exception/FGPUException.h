@@ -1,4 +1,5 @@
-
+#ifndef INCLUDE_FLAMEGPU_EXCEPTION_FGPUEXCEPTION_H_
+#define INCLUDE_FLAMEGPU_EXCEPTION_FGPUEXCEPTION_H_
  /**
  * @file  FGPUException.h
  * @author  Paul Richmond, Mozhgan Kabiri Chimeh
@@ -9,20 +10,15 @@
  * \see       http:// fnch.users.sourceforge.net/doxygen_c.html  for commenting style
  */
 
-#ifndef INCLUDE_FLAMEGPU_EXCEPTION_FGPUEXCEPTION_H_
-#define INCLUDE_FLAMEGPU_EXCEPTION_FGPUEXCEPTION_H_
-
 #include <string>
 #include <iostream>
 #include <exception>
 
-// #include <cuda_runtime.h>
-
 /*! Class for unknown exceptions thrown*/
-class UnknownError {};
+class UnknownError : public std::exception {};
 
 /*! Base class for exceptions thrown */
-class FGPUException {  // : public exception
+class FGPUException : public std::exception {
  public:
     /**
      * A constructor
