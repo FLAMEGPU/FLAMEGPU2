@@ -250,7 +250,7 @@ template<typename InT, typename OutT>
 std::vector<OutT> FLAMEGPU_HOST_AGENT_API::histogramEven(const std::string &variable, const unsigned int &histogramBins, const InT &lowerBound, const InT &upperBound) const {
     if (lowerBound >= upperBound) {
         THROW InvalidArgument("lowerBound (%s) must be lower than < upperBound (%s) in FLAMEGPU_HOST_AGENT_API::histogramEven().",
-            std::to_string(lowerBound), std::to_string(upperBound));
+            std::to_string(lowerBound).c_str(), std::to_string(upperBound).c_str());
     }
     const auto &agentDesc = agent.getAgentDescription();
     if (typeid(InT) != agentDesc.getVariableType(variable)) {
