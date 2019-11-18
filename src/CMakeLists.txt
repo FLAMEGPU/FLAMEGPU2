@@ -90,6 +90,7 @@ SET(SRC_INCLUDE
     
 )
 SET(SRC_FLAMEGPU2
+    ${FLAMEGPU_ROOT}/src/flamegpu/exception/FGPUException.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/model/ModelDescription.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/model/AgentFunctionInput.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/model/AgentDescription.cu

@@ -52,16 +52,21 @@ const MessageDescription& CUDAMessage::getMessageDescription() const {
 */
 void CUDAMessage::setInitialMessageList() {  // used to be const AgentPopulation& population
     // check that the message list has not already been set
-    if (message_list)
-        throw InvalidMessageData("Error: Initial message list already set");
-
+    if (message_list) {
+        THROW InvalidMessageData("Error: Initial message list for message '%s' already set, "
+            "in CUDAMessage::setInitialMessageList()",
+            message_description.getName().c_str());
+    }
     /*
     unsigned int size = message_description.getMaximumMessageListCapacity();
     max_list_size = population.getMaximumStateListCapacity();
 
     // set the maximum population state size
-    if (max_list_size > size)
-        throw InvalidMessageSize("Error: Invalid Message List size");
+    if (max_list_size > size) {
+        THROW InvalidMessageSize("Error: Initial message list size for message '%s', "
+            "in CUDAMessage::setInitialMessageList()",
+            message_description.getName().c_str());
+    }
     */
 
     max_list_size = message_description.getMaximumMessageListCapacity();  // maxmimum message list, not the population
@@ -98,8 +103,11 @@ void CUDAMessage::zeroAllMessageData() {
 */
 void CUDAMessage::mapRuntimeVariables(const AgentFunctionDescription& func) const {
     // check that the message list has been allocated
-    if (!message_list)
-        throw InvalidMessageData("Error: Initial message has not been allocated");
+    if (!message_list) {
+        THROW InvalidMessageData("Error: Initial message list for message '%s' has not been allocated, "
+            "in CUDAMessage::mapRuntimeVariables()",
+            message_description.getName().c_str());
+    }
 
     const std::string message_name = message_description.getName();
 

@@ -31,14 +31,16 @@ Simulation::~Simulation(void) {
 
 const SimulationLayer::FunctionDescriptionVector& Simulation::getFunctionsAtLayer(const unsigned int &layer) const {
     if (layer >= layers.size()) {
-        throw InvalidMemoryCapacity("Function layer doesn't exists!");  // out of bound index
+        THROW InvalidMemoryCapacity("Function layer '%u' doesn't exists, "
+            "in Simulation::getHostFunctionsAtLayer()", layer);  // out of bound index
     } else {
         return layers.at(layer).get().getAgentFunctions();
     }
 }
 const SimulationLayer::HostFunctionSet& Simulation::getHostFunctionsAtLayer(const unsigned int &layer) const {
     if (layer >= layers.size()) {
-        throw InvalidMemoryCapacity("Function layer doesn't exists!");  // out of bound index
+        THROW InvalidMemoryCapacity("Function layer '%u' doesn't exists, "
+            "in Simulation::getHostFunctionsAtLayer()", layer);  // out of bound index
     } else {
         return layers.at(layer).get().getHostFunctions();
     }
@@ -62,20 +64,28 @@ unsigned int Simulation::addSimulationLayer(SimulationLayer &layer) {
 }
 
 void Simulation::addInitFunction(const FLAMEGPU_INIT_FUNCTION_POINTER *func_p) {
-    if (!initFunctions.insert(*func_p).second)
-        throw InvalidHostFunc("Attempted to add same init function twice.");
+    if (!initFunctions.insert(*func_p).second) {
+        THROW InvalidHostFunc("Attempted to add same init function twice,"
+            "in Simulation::addInitFunction()");
+    }
 }
 void Simulation::addStepFunction(const FLAMEGPU_STEP_FUNCTION_POINTER *func_p) {
-    if (!stepFunctions.insert(*func_p).second)
-        throw InvalidHostFunc("Attempted to add same step function twice.");
+    if (!stepFunctions.insert(*func_p).second) {
+        THROW InvalidHostFunc("Attempted to add same step function twice,"
+            "in Simulation::addStepFunction()");
+    }
 }
 void Simulation::addExitFunction(const FLAMEGPU_EXIT_FUNCTION_POINTER *func_p) {
-    if (!exitFunctions.insert(*func_p).second)
-        throw InvalidHostFunc("Attempted to add same exit function twice.");
+    if (!exitFunctions.insert(*func_p).second) {
+        THROW InvalidHostFunc("Attempted to add same exit function twice,"
+            "in Simulation::addExitFunction()");
+    }
 }
 void Simulation::addExitCondition(const FLAMEGPU_EXIT_CONDITION_POINTER *func_p) {
-    if (!exitConditions.insert(*func_p).second)
-        throw InvalidHostFunc("Attempted to add same exit condition twice.");
+    if (!exitConditions.insert(*func_p).second) {
+        THROW InvalidHostFunc("Attempted to add same exit condition twice,"
+            "in Simulation::addExitCondition()");
+    }
 }
 
 void Simulation::setSimulationSteps(unsigned int steps) {

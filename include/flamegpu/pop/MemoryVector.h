@@ -83,9 +83,11 @@ class MemoryVector : public GenericMemoryVector {
 };
 
 template <typename T> std::vector<T>& GenericMemoryVector::getVector() {
-    if (getType() != typeid(T))
-        throw InvalidVarType("Wrong variable type getting agent data vector");
-
+    if (getType() != typeid(T)) {
+        THROW InvalidVarType("Wrong variable type passed to GenericMemoryVector::getVector(). "
+            "This agent data vector expects '%s', but '%s' was requested.",
+            getType().name(), typeid(T).name());
+    }
     // must cast the vector as the correct type
     std::vector<T> *t_v = static_cast<std::vector<T>*>(getVectorPtr());
     // return reference

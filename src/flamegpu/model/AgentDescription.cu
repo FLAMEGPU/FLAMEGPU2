@@ -81,13 +81,19 @@ unsigned int AgentDescription::getNumberAgentVariables() const {
 size_t AgentDescription::getAgentVariableSize(const std::string variable_name) const {
     // get the variable name type
     MemoryMap::const_iterator mm = memory.find(variable_name);
-    if (mm == memory.end())
-        throw InvalidAgentVar("Invalid agent memory variable");
+    if (mm == memory.end()) {
+        THROW InvalidAgentVar("Agent ('%s') variable '%s' was not found, "
+            "in AgentDescription::getAgentVariableSize()",
+            name.c_str(), variable_name.c_str());
+    }
     const std::type_info *t = &(mm->second);
     // get the type size
     TypeSizeMap::const_iterator tsm = sizes.find(t);
-    if (tsm == sizes.end())
-        throw InvalidMapEntry("Missing entry in type sizes map");
+    if (tsm == sizes.end()) {
+        THROW InvalidMapEntry("Agent ('%s') variable '%s's size was not found in type sizes map, "
+            "in AgentDescription::getAgentVariableSize()",
+            name.c_str(), variable_name.c_str());
+    }
     return tsm->second;
 }
 
@@ -104,9 +110,11 @@ const std::type_info& AgentDescription::getVariableType(const std::string variab
     MemoryMap::const_iterator iter;
     iter = memory.find(variable_name);
 
-    if (iter == memory.end())
-        throw InvalidAgentVar("Invalid agent memory variable");
-
+    if (iter == memory.end()) {
+        THROW InvalidAgentVar("Agent ('%s') variable '%s' was not found, "
+            "in AgentDescription::getVariableType()",
+            name.c_str(), variable_name.c_str());
+    }
     return iter->second;
 }
 

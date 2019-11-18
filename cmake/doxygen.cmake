@@ -46,6 +46,11 @@ macro(create_doxygen_target DOXY_OUT_DIR)
 			set(DOXYGEN_EXTRACT_PRIVATE       YES)
 			set(DOXYGEN_EXTRACT_STATIC        YES)
 			set(DOXYGEN_EXTRACT_LOCAL_METHODS NO)
+			# These are required for expanding FGPUException definition macros to be documented
+			set(DOXYGEN_ENABLE_PREPROCESSING  YES)
+			set(DOXYGEN_MACRO_EXPANSION       YES)
+			set(DOXYGEN_EXPAND_ONLY_PREDEF    YES)
+			set(DOXYGEN_PREDEFINED            "DERIVED_FGPUException(name,default_msg)=class name: public FGPUException { public: explicit name(const char *format = default_msg)\; }")
 			# Create doxygen target
 			doxygen_add_docs("docs" 
 				"${FLAMEGPU_ROOT}/include;${FLAMEGPU_ROOT}/src;${FLAMEGPU_ROOT}/README.md" 
