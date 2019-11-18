@@ -97,7 +97,7 @@ int main(void) {
     // Do not specify the state. As their are no states in the system it is assumed that this model is stateless.
     AgentFunctionDescription output_data("output_data");
     AgentFunctionOutput output_location("location");
-    output_data.addOutput(output_location);
+    output_data.setOutput(output_location);
     // output_data.setInitialState("state1");
     output_data.setFunction(&output_func);
     circle_agent.addAgentFunction(output_data);
@@ -105,7 +105,7 @@ int main(void) {
     // circle agent input_data function
     AgentFunctionDescription input_data("input_data");
     AgentFunctionInput input_location("location");
-    input_data.addInput(input_location);
+    input_data.setInput(input_location);
     input_data.setFunction(&input_func);
     circle_agent.addAgentFunction(input_data);
 

@@ -28,7 +28,9 @@ SimulationLayer::~SimulationLayer(void) {
 //
 //    auto iter = functionPointer.find(name);
 //    if (iter == functionPointer.end()) {
-//        throw InvalidAgentFunc("Agent Function name not valid ");
+//        THROW InvalidAgentFunc("Agent Function name ('%s') is not valid, "
+//            "in SimulationLayer::callFunc().",
+//            name.c_str());
 //    }
 //
 //    auto v = iter->second;
@@ -61,12 +63,18 @@ void SimulationLayer::addAgentFunction(const std::string name) {
         }
     }
 
-    if (!found)
-        throw InvalidAgentFunc("Unknown agent function can not be added to the Function Layer!");
+    if (!found) {
+        THROW InvalidAgentFunc("Unknown agent function ('%s') can not be added to the Function Layer ('%s'), "
+            "in SimulationLayer::addAgentFunction()",
+            name.c_str(), layer_name.c_str());
+    }
 }
 void SimulationLayer::addHostFunction(const FLAMEGPU_HOST_FUNCTION_POINTER *func_p) {
-    if (!hostFunctions.insert(*func_p).second)
-        throw InvalidHostFunc("Attempted to add same host function to same layer twice.");
+    if (!hostFunctions.insert(*func_p).second) {
+        THROW InvalidHostFunc("Attempted to add same host function to layer ('%s') twice, "
+            "in SimulationLayer::addHostFunction()",
+            layer_name.c_str());
+    }
 }
 /**
 * @return FunctionDescMap type that contains a string name and AgentFunctionDescription object

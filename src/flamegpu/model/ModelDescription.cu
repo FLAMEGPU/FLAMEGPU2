@@ -33,24 +33,33 @@ void ModelDescription::addPopulation(AgentPopulation &pop) {
 const AgentDescription& ModelDescription::getAgentDescription(const std::string agent_name) const {
     AgentMap::const_iterator iter;
     iter = agents.find(agent_name);
-    if (iter == agents.end())
-        throw InvalidAgentVar();
+    if (iter == agents.end()) {
+        THROW InvalidAgentVar("Agent ('%s') was not found, "
+            "in ModelDescription::getAgentDescription().",
+            agent_name.c_str());
+    }
     return iter->second;
 }
 
 const MessageDescription& ModelDescription::getMessageDescription(const std::string message_name) const {
     MessageMap::const_iterator iter;
     iter = messages.find(message_name);
-    if (iter == messages.end())
-        throw InvalidMessageVar();
+    if (iter == messages.end()) {
+        THROW InvalidMessageVar("Message ('%s') was not found, "
+            "in ModelDescription::getMessageDescription().",
+            message_name.c_str());
+    }
     return iter->second;
 }
 
 AgentPopulation& ModelDescription::getAgentPopulation(const std::string agent_name) const {
     PopulationMap::const_iterator iter;
     iter = population.find(agent_name);
-    if (iter == population.end())
-        throw InvalidAgentVar();
+    if (iter == population.end()) {
+        THROW InvalidAgentVar("Agent ('%s') was not found, "
+            "in ModelDescription::getAgentPopulation().",
+            agent_name.c_str());
+    }
     return iter->second;
 }
 

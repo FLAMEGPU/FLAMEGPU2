@@ -17,12 +17,13 @@
 
 #include <string>
 #include <stdexcept>
+#include "flamegpu/exception/FGPUException.h"
 
 /* Error check function for safe CUDA API calling */
 #define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
 inline void gpuAssert(cudaError_t code, const char *file, int line) {
     if (code != cudaSuccess) {
-        throw std::runtime_error("CUDA Error: " + std::string(cudaGetErrorString(code)) + " " + file + " " + std::to_string(line));
+        THROW CUDAError("CUDA Error: %s(%d): %s", file, line, cudaGetErrorString(code));
     }
 }
 

@@ -35,7 +35,7 @@ TEST(SimTest, SimulationFunctionCheck) {
 
     AgentFunctionDescription output_data("output_data");
     AgentFunctionOutput output_location("location");
-    // output_data.addOutput(output_location);
+    // output_data.setOutput(output_location);
     // output_data.setFunction(&output_func);
     attach_output_func(output_data);
     circle_agent.addAgentFunction(output_data);

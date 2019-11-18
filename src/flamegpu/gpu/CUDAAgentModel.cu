@@ -80,7 +80,9 @@ void CUDAAgentModel::setInitialPopulationData(AgentPopulation& population) {
     it = agent_map.find(population.getAgentName());
 
     if (it == agent_map.end()) {
-        throw InvalidCudaAgent();
+        THROW InvalidCudaAgent("Error: Agent ('%s') was not found, "
+            "in CUDAAgentModel::setInitialPopulationData()",
+            population.getAgentName().c_str());
     }
 
     /*! create agent state lists */
@@ -97,7 +99,9 @@ void CUDAAgentModel::setPopulationData(AgentPopulation& population) {
     it = agent_map.find(population.getAgentName());
 
     if (it == agent_map.end()) {
-        throw InvalidCudaAgent();
+        THROW InvalidCudaAgent("Error: Agent ('%s') was not found, "
+            "in CUDAAgentModel::setPopulationData()",
+            population.getAgentName().c_str());
     }
 
     /*! create agent state lists */
@@ -109,7 +113,9 @@ void CUDAAgentModel::getPopulationData(AgentPopulation& population) {
     it = agent_map.find(population.getAgentName());
 
     if (it == agent_map.end()) {
-        throw InvalidCudaAgent("CUDA agent not found.");
+        THROW InvalidCudaAgent("Error: Agent ('%s') was not found, "
+            "in CUDAAgentModel::getPopulationData()",
+            population.getAgentName().c_str());
     }
 
     /*!create agent state lists */
@@ -305,16 +311,16 @@ void CUDAAgentModel::init(void) {  // (int argc, char** argv) {
     cudaStatus = cudaGetDeviceCount(&device_count);
 
     if (cudaStatus != cudaSuccess) {
-        throw InvalidCUDAdevice("Error finding CUDA devices!  Do you have a CUDA-capable GPU installed?");
+        THROW InvalidCUDAdevice("Error finding CUDA devices!  Do you have a CUDA-capable GPU installed?");
     }
     if (device_count == 0) {
-        throw InvalidCUDAdevice("Error no CUDA devices found!");
+        THROW InvalidCUDAdevice("Error no CUDA devices found!");
     }
 
     // Select device
     cudaStatus = cudaSetDevice(device);
     if (cudaStatus != cudaSuccess) {
-        throw InvalidCUDAdevice("Error setting CUDA device!");
+        THROW InvalidCUDAdevice("Error setting CUDA device to '%d', only %d available!", device, device_count);
     }
 }
 
@@ -326,9 +332,9 @@ void CUDAAgentModel::init(void) {  // (int argc, char** argv) {
 * @warning not tested
 */
 void CUDAAgentModel::simulate(const Simulation& simulation) {
-    if (agent_map.size() == 0)
-        throw InvalidCudaAgentMapSize("CUDA agent map size is zero");  // recheck if this is really required
-
+    if (agent_map.size() == 0) {
+        THROW InvalidCudaAgentMapSize("Simulation has no agents, in CUDAAgentModel::simulate().");  // recheck if this is really required
+    }
     // CUDAAgentMap::iterator it;
 
     // check any CUDAAgents with population size == 0
@@ -355,7 +361,8 @@ const CUDAAgent& CUDAAgentModel::getCUDAAgent(std::string agent_name) const {
     it = agent_map.find(agent_name);
 
     if (it == agent_map.end()) {
-        throw InvalidCudaAgent("CUDA agent not found.");
+        THROW InvalidCudaAgent("CUDA agent ('%s') not found, in CUDAAgentModel::getCUDAAgent().",
+            agent_name.c_str());
     }
 
     return *(it->second);
@@ -366,7 +373,8 @@ const CUDAMessage& CUDAAgentModel::getCUDAMessage(std::string message_name) cons
     it = message_map.find(message_name);
 
     if (it == message_map.end()) {
-        throw InvalidCudaMessage("CUDA message not found.");
+        THROW InvalidCudaMessage("CUDA message ('%s') not found, in CUDAAgentModel::getCUDAMessage().",
+            message_name.c_str());
     }
 
     return *(it->second);

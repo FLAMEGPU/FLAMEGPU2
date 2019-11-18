@@ -118,8 +118,9 @@ void CUDAAgentStateList::zeroDeviceAgentList(CUDAMemoryMap& memory_map) {
 void CUDAAgentStateList::setAgentData(const AgentStateMemory &state_memory) {
     // check that we are using the same agent description
     if (!state_memory.isSameDescription(agent.getAgentDescription())) {
-        // throw std::runtime_error("CUDA Agent uses different agent description.");
-        throw InvalidCudaAgentDesc();
+        THROW InvalidCudaAgentDesc("Agent State memory has different description to CUDA Agent ('%s'), "
+            "in CUDAAgentStateList::setAgentData().",
+            agent.getAgentDescription().getName().c_str());
     }
 
     // copy raw agent data to device pointers
@@ -144,8 +145,9 @@ void CUDAAgentStateList::setAgentData(const AgentStateMemory &state_memory) {
 void CUDAAgentStateList::getAgentData(AgentStateMemory &state_memory) {
     // check that we are using the same agent description
     if (!state_memory.isSameDescription(agent.getAgentDescription())) {
-        // throw std::runtime_error("CUDA Agent uses different agent description.");
-        throw InvalidCudaAgentDesc();
+        THROW InvalidCudaAgentDesc("Agent State memory has different description to CUDA Agent ('%s'), "
+            "in CUDAAgentStateList::getAgentData().",
+            agent.getAgentDescription().getName().c_str());
     }
 
     // copy raw agent data to device pointers
@@ -160,9 +162,11 @@ void CUDAAgentStateList::getAgentData(AgentStateMemory &state_memory) {
         void * v_data = m_vec.getDataPtr();
 
         // check  the current list size
-        if (current_list_size > state_memory.getPopulationCapacity())
-            throw InvalidMemoryCapacity("Current GPU state list size exceed the state memory available!");
-
+        if (current_list_size > state_memory.getPopulationCapacity()) {
+            THROW InvalidMemoryCapacity("Current GPU state list size (%u) exceeds the state memory available (%u), "
+                "in CUDAAgentStateList::getAgentData()",
+                current_list_size, state_memory.getPopulationCapacity());
+        }
         // copy the GPU data to host
         gpuErrchk(cudaMemcpy(v_data, m.second, var_size*current_list_size, cudaMemcpyDeviceToHost));
 

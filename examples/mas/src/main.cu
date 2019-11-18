@@ -134,23 +134,23 @@ int main(int argc, const char* argv[]) {
 
     AgentFunctionDescription output_data("output_data");
     AgentFunctionOutput output_location("location1");
-    output_data.addOutput(output_location);
+    output_data.setOutput(output_location);
     output_data.setFunction(&output_func);
     circle1_agent.addAgentFunction(output_data);
 
     AgentFunctionDescription input_data("input_data");
     AgentFunctionInput input_location("location1");
-    input_data.addInput(input_location);
+    input_data.setInput(input_location);
     input_data.setFunction(&input_func);
     circle2_agent.addAgentFunction(input_data);
 
     AgentFunctionDescription add_data("add_data");
-    // add_data.addInput(input_location);
+    // add_data.setInput(input_location);
     add_data.setFunction(&add_func);
     circle1_agent.addAgentFunction(add_data);
 
     AgentFunctionDescription subtract_data("subtract_data");
-    // subtract_data.addInput(input_location);
+    // subtract_data.setInput(input_location);
     subtract_data.setFunction(&subtract_func);
     circle2_agent.addAgentFunction(subtract_data);
 

@@ -43,9 +43,9 @@ class AgentFunctionDescription {
 
     const std::string getName() const;
 
-    void addInput(const AgentFunctionInput &input);
+    void setInput(const AgentFunctionInput &input);
 
-    void addOutput(const AgentFunctionOutput &output);
+    void setOutput(const AgentFunctionOutput &output);
 
     const InputsMap & getInput();
     const OutputsMap & getOutput();
@@ -70,8 +70,8 @@ class AgentFunctionDescription {
     void setOutputChild(AgentFunctionOutput& output);
     const AgentFunctionOutput& getOutputChild() const;
 
-    bool hasInputMessage();
-    bool hasOutputMessage();
+    bool hasInputMessage() const;
+    bool hasOutputMessage() const;
 
  public:
     const std::string function_name;

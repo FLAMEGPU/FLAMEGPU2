@@ -38,15 +38,20 @@ AgentInstance AgentPopulation::getNextInstance(const std::string agent_state) {
     // get correct state memory
     AgentStatesMap::iterator sm;
     sm = states_map.find(agent_state);
-    if (sm == states_map.end())
+    if (sm == states_map.end()) {
+        THROW InvalidPopulationData("Agent ('%s') state ('%s') not found, "
+            "in AgentPopulation::getNextInstance()",
+            agent.getName(), agent_state.c_str());
+    }
 
-        throw InvalidPopulationData("Agent state not found when pushing back instance");
 
     // increment size gives old size
     unsigned int index = sm->second->incrementSize();
-    if (index >= getMaximumStateListCapacity())
-        throw InvalidMemoryCapacity("Agent state size will be exceeded");
-
+    if (index >= getMaximumStateListCapacity()) {
+        THROW InvalidPopulationData("Agent ('%s') state ('%s') size would be execeed, "
+            "in AgentPopulation::getNextInstance()",
+            agent.getName(), agent_state.c_str());
+    }
     // return new instance from state memory with index of current size (then increment)
     return AgentInstance(*sm->second, index);
 }
@@ -55,14 +60,17 @@ AgentInstance AgentPopulation::getInstanceAt(unsigned int index, const std::stri
     // get correct state memory
     AgentStatesMap::iterator sm;
     sm = states_map.find(agent_state);
-    if (sm == states_map.end())
-
-        throw InvalidPopulationData("Agent state not found when pushing back instance");
-
+    if (sm == states_map.end()) {
+        THROW InvalidPopulationData("Agent state ('%s') was not found, "
+            "in AgentPopulation::getInstanceAt().",
+            agent_state.c_str());
+    }
     // check the index does not exceed current size
-    if (index >= sm->second->getStateListSize())
-        throw InvalidMemoryCapacity("Can not get Instance. Index exceeds current size.");
-
+    if (index >= sm->second->getStateListSize()) {
+        THROW InvalidMemoryCapacity("Index '%u' exceeds Agent ('%s') state ('%s') current size, "
+            "in AgentPopulation::getInstanceAt().",
+            index, agent.getName().c_str(), agent_state.c_str());
+    }
     // return new instance from state memory with index of current size (then increment)
     return AgentInstance(*sm->second, index);
 }
@@ -73,8 +81,9 @@ AgentStateMemory& AgentPopulation::getStateMemory(const std::string agent_state)
     iter = states_map.find(agent_state);
 
     if (iter == states_map.end()) {
-        // throw std::runtime_error("Invalid agent state name");
-        throw InvalidStateName();
+        THROW InvalidAgentFunc("Agent ('%s') state name ('%s') was not found, "
+            "in AgentPopulation::getStateMemory().",
+            agent.getName().c_str(), agent_state.c_str());
     }
 
     return *iter->second;
@@ -91,8 +100,9 @@ const AgentStateMemory& AgentPopulation::getReadOnlyStateMemory(const std::strin
     iter = states_map.find(agent_state);
 
     if (iter == states_map.end()) {
-        // throw std::runtime_error("Invalid agent state name");
-        throw InvalidStateName();
+        THROW InvalidAgentFunc("Agent ('%s') state name ('%s') was not found, "
+            "in AgentPopulation::getReadOnlyStateMemory().",
+            agent.getName().c_str(), agent_state.c_str());
     }
 
     return *iter->second;
@@ -111,9 +121,11 @@ unsigned int AgentPopulation::getMaximumStateListCapacity() const {
 }
 
 void AgentPopulation::setStateListCapacity(unsigned int size) {
-    if (size < maximum_size)
-
-        throw InvalidPopulationData("Can not reduce size of agent population state list!");
+    if (size < maximum_size) {
+        THROW InvalidPopulationData("Agent population state list sizes cannot be reduced (%u -> %u attempted), "
+            "in AgentPopulation::setStateListCapacity().",
+            maximum_size, size);
+    }
 
     // set the maximum size
     maximum_size = size;
