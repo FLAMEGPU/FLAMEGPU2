@@ -41,7 +41,7 @@ AgentInstance AgentPopulation::getNextInstance(const std::string agent_state) {
     if (sm == states_map.end()) {
         THROW InvalidPopulationData("Agent ('%s') state ('%s') not found, "
             "in AgentPopulation::getNextInstance()",
-            agent.getName(), agent_state.c_str());
+            agent.getName().c_str(), agent_state.c_str());
     }
 
 
@@ -50,7 +50,7 @@ AgentInstance AgentPopulation::getNextInstance(const std::string agent_state) {
     if (index >= getMaximumStateListCapacity()) {
         THROW InvalidMemoryCapacity("Agent ('%s') state ('%s') size would be execeed, "
             "in AgentPopulation::getNextInstance()",
-            agent.getName(), agent_state.c_str());
+            agent.getName().c_str(), agent_state.c_str());
     }
     // return new instance from state memory with index of current size (then increment)
     return AgentInstance(*sm->second, index);
