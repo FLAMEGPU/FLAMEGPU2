@@ -35,7 +35,7 @@ pipeline {
                 sh 'rm -rf build'
                 sh 'mkdir -p build'
                 dir("build") {
-                    sh 'cmake .. -DBUILD_TESTS=ON'
+                    sh 'cmake .. -DBUILD_TESTS=ON -DWARNINGS_AS_ERRORS=ON'
                     sh 'make all docs -j8' // CXXFLAGS="-fdiagnostics-color=always" 
                     archiveArtifacts artifacts: '**/bin/linux-x64/Release/*', fingerprint: true
                 }
@@ -52,8 +52,8 @@ pipeline {
         stage('MemCheck') {
             steps {
                 dir("build") {
-                    sh 'cmake .. -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=ON'
-                    sh 'make all -j8'
+                    sh 'cmake .. -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=ON -DBUILD_ALL_EXAMPLES=OFF -BUILD_DOCUMENTATION=OFF -DSMS="52"'
+                    sh 'make tests -j8'
                     sh 'valgrind --suppressions=../tools/valgrind-cuda-suppression.supp --error-exitcode=1 --leak-check=full --gen-suppressions=no ./bin/linux-x64/Debug/tests'
                 }
             }
