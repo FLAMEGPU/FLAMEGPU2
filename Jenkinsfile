@@ -51,6 +51,7 @@ pipeline {
         
         stage('MemCheck') {
             steps {
+                sh 'rm -rf build'
                 dir("build") {
                     sh 'cmake .. -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=ON -DBUILD_ALL_EXAMPLES=OFF -BUILD_DOCUMENTATION=OFF -DSMS="52"'
                     sh 'make tests -j8'
