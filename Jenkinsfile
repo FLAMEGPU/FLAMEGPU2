@@ -1,8 +1,9 @@
 pipeline {
     agent { 
-        dockerfile {
-            args '-t'
-        }
+        dockerfile true
+        // dockerfile {
+        //     args '-t'
+        // }
     }
     options {
         ansiColor('xterm')
@@ -27,7 +28,7 @@ pipeline {
                 sh 'mkdir -p build'
                 dir("build") {
                     sh 'cmake .. -DBUILD_TESTS=ON'
-                    sh 'make all docs -j8 CXXFLAGS="-fdiagnostics-color=always"' 
+                    sh 'make all docs -j8 // CXXFLAGS="-fdiagnostics-color=always"' 
                     archiveArtifacts artifacts: '**/bin/linux-x64/Release/*', fingerprint: true
                 }
             }
