@@ -178,8 +178,6 @@ __host__ CurveVariable curveRegisterVariableByHash(CurveVariableHash variable_ha
     h_lengths[i] = length;
     CUDA_SAFE_CALL(cudaMemcpy(&_d_lengths[i], &h_lengths[i], sizeof(unsigned int), cudaMemcpyHostToDevice));
 
-    printf("Var with hash is %u at index %d with %d collisions\n", variable_hash, i, n);
-
     return i;
 }
 
@@ -230,8 +228,6 @@ __host__ void curveUnregisterVariableByHash(CurveVariableHash variable_hash) {
     // set the length of variable to 0
     h_lengths[cv] = 0;
     CUDA_SAFE_CALL(cudaMemcpy(&_d_lengths[cv], &h_lengths[cv], sizeof(unsigned int), cudaMemcpyHostToDevice));
-
-    printf("Var with hash %u has been un-registered\n", variable_hash);
 }
 
 __host__ void curveDisableVariableByHash(CurveVariableHash variable_hash) {
