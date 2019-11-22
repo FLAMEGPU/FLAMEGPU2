@@ -252,6 +252,8 @@ function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
 
     # Add include directories
     target_include_directories(${NAME} SYSTEM PRIVATE ${FLAMEGPU_ROOT}/externals)
+    target_include_directories(${NAME} SYSTEM PRIVATE ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
+    
     target_include_directories(${NAME} PRIVATE ${FLAMEGPU_ROOT}/include)
 
     # Enable RDC for the target
@@ -304,6 +306,7 @@ function(add_flamegpu_library NAME SRC FLAMEGPU_ROOT)
 
     # Define include dirs
     target_include_directories(${NAME}  SYSTEM PRIVATE ${FLAMEGPU_ROOT}/externals)
+    target_include_directories(${NAME} SYSTEM PRIVATE ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
     target_include_directories(${NAME}  PRIVATE ${FLAMEGPU_ROOT}/include)
     target_include_directories(${NAME}  PRIVATE ${FLAMEGPU_ROOT}/src) #private headers
 
