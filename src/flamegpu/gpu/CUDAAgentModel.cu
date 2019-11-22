@@ -282,7 +282,7 @@ bool CUDAAgentModel::step(const Simulation& simulation) {
     // stream deletion
     for (int j = 0; j < nStreams; ++j)
         gpuErrchk(cudaStreamDestroy(stream[j]));
-    free(stream);
+    delete[] stream;
 
 
     // Execute step functions
