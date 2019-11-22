@@ -17,6 +17,7 @@ pipeline {
 
         stage('Build') {
             steps {
+                sh 'rm -rf build'
                 sh 'mkdir -p build'
                 dir("build") {
                     sh 'cmake .. -DBUILD_TESTS=ON'

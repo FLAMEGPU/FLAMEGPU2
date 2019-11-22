@@ -38,8 +38,5 @@ RUN apt-get update --fix-missing && apt-get install -y \
 
 RUN pip3 install cpplint
 
-# Horrible thrust fix. This needs addressing properly at cmake time? See issue on github. @todo
-RUN rm -rf /usr/local/cuda-10.1/targets/x86_64-linux/include/thrust
-
 CMD ["/bin/bash"]
 WORKDIR /stage
