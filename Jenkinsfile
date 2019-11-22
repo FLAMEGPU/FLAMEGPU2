@@ -14,6 +14,14 @@ pipeline {
                 sh ''
             }
         }
+        
+        stage('Lint') {
+            steps {
+                dir("build") {
+                    sh 'make all_lint' 
+                }
+            }
+        }
 
         stage('GPU Check') {
             steps {
@@ -38,12 +46,6 @@ pipeline {
             steps {
                 sh 'ls build/bin/linux-x64/Release/'
                 sh './build/bin/linux-x64/Release/tests'
-            }
-        }
-        
-        stage('Lint') {
-            steps {
-                sh 'make all_lint' 
             }
         }
     }
