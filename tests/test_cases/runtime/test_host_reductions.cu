@@ -326,6 +326,7 @@ class MiniSim {
         population = new AgentPopulation(agent, TEST_LEN);
         simulation.setSimulationSteps(1);
     }
+    ~MiniSim() { delete population; }
     void run() {
         model.addAgent(agent);
         // CudaModel must be declared here
