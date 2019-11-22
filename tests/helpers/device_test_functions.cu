@@ -21,8 +21,7 @@ FLAMEGPU_AGENT_FUNCTION(subtract_func) {
 FLAMEGPU_AGENT_FUNCTION(output_func) {
     float x = FLAMEGPU->getVariable<float>("x");
     FLAMEGPU->setVariable<float>("x", x + 2);
-  x = FLAMEGPU->getVariable<float>("x");
-  printf("x after set = %f\n", x);
+    x = FLAMEGPU->getVariable<float>("x");
 
     return ALIVE;
 }

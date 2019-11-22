@@ -1,2 +1,2 @@
 
-#define GTEST_COUT std::cerr << "[          ] [ INFO ]"
+#define GTEST_COUT std::cerr << "[ INFO     ] "

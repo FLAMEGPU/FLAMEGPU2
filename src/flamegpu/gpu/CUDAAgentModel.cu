@@ -346,7 +346,7 @@ void CUDAAgentModel::simulate(const Simulation& simulation) {
         initFn(&this->host_api);
 
     for (unsigned int i = 0; simulation.getSimulationSteps() == 0 ? true : i < simulation.getSimulationSteps(); i++) {
-        std::cout <<"step: " << i << std::endl;
+        // std::cout <<"step: " << i << std::endl;
         if (!step(simulation))
             break;
     }
