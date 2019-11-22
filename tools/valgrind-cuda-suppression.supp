@@ -1,0 +1,38 @@
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   ...
+   obj:*libcuda.so.*
+   fun:cuInit
+   fun:_ZN6cudart11globalState18loadDriverInternalEv
+   fun:_ZN6cudart24__loadDriverInternalUtilEv
+   fun:__pthread_once_slow
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Value8
+   ...
+   obj:*libcuda.so.*
+   fun:cuInit
+   fun:_ZN6cudart11globalState18loadDriverInternalEv
+   fun:_ZN6cudart24__loadDriverInternalUtilEv
+   fun:__pthread_once_slow
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:calloc
+   ...
+   obj:*libcuda.so*
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc
+   ...
+   obj:*libcuda.so.*
+}
+
