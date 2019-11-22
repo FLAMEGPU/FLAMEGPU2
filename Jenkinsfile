@@ -17,7 +17,10 @@ pipeline {
         
         stage('Lint') {
             steps {
+                sh 'rm -rf build'
+                sh 'mkdir -p build'
                 dir("build") {
+                    sh 'cmake .. -DBUILD_TESTS=ON'
                     sh 'make all_lint' 
                 }
             }
@@ -32,10 +35,7 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh 'rm -rf build'
-                sh 'mkdir -p build'
                 dir("build") {
-                    sh 'cmake .. -DBUILD_TESTS=ON'
                     sh 'make all docs -j8 VERBOSE=1' // CXXFLAGS="-fdiagnostics-color=always" 
                     archiveArtifacts artifacts: '**/bin/linux-x64/Release/*', fingerprint: true
                 }
