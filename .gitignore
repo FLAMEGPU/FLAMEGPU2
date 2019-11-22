@@ -37,6 +37,9 @@ build/
 *.tlog
 *.cache
 
+# Valgrind log files (for syntax-highlight enabled editors such as vscode with plugin)
+*.valgrind
+
 # Compiled Object files
 *.slo
 *.lo
