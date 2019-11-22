@@ -107,17 +107,17 @@ cmake ..
 ##### Testing
 
 
-The test suite can be built from the root directory using `-DBUILD_TEST=ON`:
+The test suite can be built from the root directory using `-DBUILD_TESTS=ON`:
 
 ```
 mkdir -p build && cd build
-cmake .. -DBUILD_TEST=ON
+cmake .. -DBUILD_TESTS=ON
 make -j8
 ```
 
-The first time CMake is configured with `-DBUILD_TEST=ON` an internet connection is required, as [GoogleTest](https://github.com/google/googletest) is downloaded and built. 
+The first time CMake is configured with `-DBUILD_TESTS=ON` an internet connection is required, as [GoogleTest](https://github.com/google/googletest) is downloaded and built. 
 Subsequent reconfigures will attempt to update this copy, but will continue if updating fails.
-Automatic updating of GoogleTest can be disabled by passing `-DBUILD_TEST=OFF`.
+Automatic updating of GoogleTest can be disabled by passing `-DBUILD_TESTS=OFF`.
 
 ##### Documentation
 
