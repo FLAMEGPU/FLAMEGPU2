@@ -56,6 +56,7 @@ class name : public FGPUException {\
         va_list argp;\
         va_start(argp, format);\
         err_message += parseArgs(format, argp);\
+        va_end(argp);\
     }\
 }
 

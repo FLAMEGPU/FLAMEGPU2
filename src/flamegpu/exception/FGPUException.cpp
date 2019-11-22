@@ -1,6 +1,7 @@
 #include "flamegpu/exception/FGPUException.h"
 
 #include <cstdio>
+#include <cstring>
 #include <sstream>
 #include <limits>
 
@@ -30,10 +31,14 @@ std::string FGPUException::parseArgs(const char * format, va_list argp) {
     if (!argp)
         return format;
     std::string rtn = format;
-    const int buffLen = vsnprintf(nullptr, 0, format, argp) + 1;
+    // Create a copy of the va_list, as vsnprintf can invalidate elements of argp and find the required buffer length
+    va_list argpCopy;
+    va_copy(argpCopy, argp);
+    const int buffLen = vsnprintf(nullptr, 0, format, argpCopy) + 1;
+    va_end(argpCopy);
     char *buffer = reinterpret_cast<char *>(malloc(buffLen * sizeof(char)));
+    // Populate the buffer with the original va_list
     int ct = vsnprintf(buffer, buffLen, format, argp);
-    va_end(argp);
     if (ct >= 0) {
         // Success!
         buffer[buffLen - 1] = '\0';
