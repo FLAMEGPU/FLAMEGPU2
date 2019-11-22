@@ -43,6 +43,3 @@ wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | 
 sudo apt-add-repository "deb https://apt.kitware.com/ubuntu/ ${UBUNTU_CODENAME} main"
 sudo apt update -qq && sudo apt install -y cmake
 set -e
-
-# Horrible thrust fix. This needs addressing propperly at cmake time? See issue on github. @todo
-rm -rf /usr/local/cuda-${CUDA_SHORT}/targets/x86_64-linux/include/thrust
