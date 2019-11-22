@@ -50,10 +50,12 @@ pipeline {
         }
         
         stage('MemCheck') {
+            steps {
                 dir("build") {
                     sh 'cmake .. -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=ON'
                     sh 'valgrind --suppressions=../tools/valgrind-cuda-suppression.supp --error-exitcode=1 --leak-check=full --gen-suppressions=no ./bin/linux-x64/Debug/tests'
-                }        
+                }
+            }
         }
     }
 }
