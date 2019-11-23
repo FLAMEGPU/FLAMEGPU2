@@ -14,9 +14,9 @@
  * @param thread_in_layer_offset Add this value to TID to calculate a thread-safe TID (TS_ID), used by ActorRandom for accessing curand array in a thread-safe manner
  */
 __global__ void agent_function_wrapper(
-    Curve::CurveNamespaceHash agent_func_name_hash,
-    Curve::CurveNamespaceHash messagename_inp_hash,
-    Curve::CurveNamespaceHash messagename_outp_hash,
+    Curve::NamespaceHash agent_func_name_hash,
+    Curve::NamespaceHash messagename_inp_hash,
+    Curve::NamespaceHash messagename_outp_hash,
     FLAMEGPU_AGENT_FUNCTION_POINTER func,
     int popNo,
     unsigned int messageList_size,

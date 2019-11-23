@@ -81,7 +81,7 @@ class MessageList  {
     * \brief
     * \param agentname_hash
     */
-    __device__ void setAgentNameSpace(Curve::CurveNamespaceHash agentname_hash) {
+    __device__ void setAgentNameSpace(Curve::NamespaceHash agentname_hash) {
         agent_func_name_hash = agentname_hash;
     }
 
@@ -89,7 +89,7 @@ class MessageList  {
     * \brief
     * \param messagename_hash
     */
-    __device__ void setMessageInpNameSpace(Curve::CurveNamespaceHash messagename_hash) {
+    __device__ void setMessageInpNameSpace(Curve::NamespaceHash messagename_hash) {
         messagename_inp_hash = messagename_hash;
     }
 
@@ -101,11 +101,11 @@ class MessageList  {
         _messageCount = messageCount;
     }
 
-    __device__ Curve::CurveNamespaceHash getAgentNameSpace() {
+    __device__ Curve::NamespaceHash getAgentNameSpace() {
         return this->agent_func_name_hash;
     }
 
-    __device__ Curve::CurveNamespaceHash getMessageInpNameSpace() {
+    __device__ Curve::NamespaceHash getMessageInpNameSpace() {
         return this->messagename_inp_hash;
     }
 
@@ -115,8 +115,8 @@ class MessageList  {
 
     size_type _messageCount;
 
-    Curve::CurveNamespaceHash agent_func_name_hash;
-    Curve::CurveNamespaceHash messagename_inp_hash;
+    Curve::NamespaceHash agent_func_name_hash;
+    Curve::NamespaceHash messagename_inp_hash;
 };
 
 /**
@@ -142,7 +142,7 @@ __device__ T MessageList::getVariable(MessageList::Message message, const char(&
     // Ensure that the message is within bounds.
     if (message.getIndex() < this->_messageCount) {
         // get the value from curve using the stored hashes and message index.
-        T value = Curve::curveGetVariable<T>(variable_name, agent_func_name_hash + messagename_inp_hash, message.getIndex());
+        T value = Curve::getVariable<T>(variable_name, agent_func_name_hash + messagename_inp_hash, message.getIndex());
         return value;
     } else {
         // @todo - Improved error handling of out of bounds message access? Return a default value or assert?

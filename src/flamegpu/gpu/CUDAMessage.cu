@@ -120,10 +120,10 @@ void CUDAMessage::mapRuntimeVariables(const AgentFunctionDescription& func) cons
         void* d_ptr = message_list->getMessageListVariablePointer(mmp.first);
 
         // map using curve
-        Curve::CurveVariableHash var_hash = curve.curveVariableRuntimeHash(mmp.first.c_str());
-        Curve::CurveVariableHash message_hash = curve.curveVariableRuntimeHash(message_name.c_str());
-        Curve::CurveVariableHash agent_hash = curve.curveVariableRuntimeHash(func.getParent().getName().c_str());
-        Curve::CurveVariableHash func_hash = curve.curveVariableRuntimeHash(func.getName().c_str());
+        Curve::VariableHash var_hash = curve.variableRuntimeHash(mmp.first.c_str());
+        Curve::VariableHash message_hash = curve.variableRuntimeHash(message_name.c_str());
+        Curve::VariableHash agent_hash = curve.variableRuntimeHash(func.getParent().getName().c_str());
+        Curve::VariableHash func_hash = curve.variableRuntimeHash(func.getName().c_str());
 
         // get the message variable size
         size_t size;
@@ -132,7 +132,7 @@ void CUDAMessage::mapRuntimeVariables(const AgentFunctionDescription& func) cons
        // maximum population size
         unsigned int length = this->getMaximumListSize();  // check to see if it is equal to pop
 
-        curve.curveRegisterVariableByHash(var_hash + agent_hash + func_hash + message_hash, d_ptr, size, length);
+        curve.registerVariableByHash(var_hash + agent_hash + func_hash + message_hash, d_ptr, size, length);
     }
 }
 
@@ -144,12 +144,12 @@ void CUDAMessage::unmapRuntimeVariables(const AgentFunctionDescription& func) co
         // void* d_ptr = message_list->getMessageListVariablePointer(mmp.first);
 
         // unmap using curve
-        Curve::CurveVariableHash var_hash = curve.curveVariableRuntimeHash(mmp.first.c_str());
-        Curve::CurveVariableHash message_hash = curve.curveVariableRuntimeHash(message_name.c_str());
-        Curve::CurveVariableHash agent_hash = curve.curveVariableRuntimeHash(func.getParent().getName().c_str());
-        Curve::CurveVariableHash func_hash = curve.curveVariableRuntimeHash(func.getName().c_str());
+        Curve::VariableHash var_hash = curve.variableRuntimeHash(mmp.first.c_str());
+        Curve::VariableHash message_hash = curve.variableRuntimeHash(message_name.c_str());
+        Curve::VariableHash agent_hash = curve.variableRuntimeHash(func.getParent().getName().c_str());
+        Curve::VariableHash func_hash = curve.variableRuntimeHash(func.getName().c_str());
 
-        curve.curveUnregisterVariableByHash(var_hash + agent_hash + func_hash + message_hash);
+        curve.unregisterVariableByHash(var_hash + agent_hash + func_hash + message_hash);
     }
 }
 

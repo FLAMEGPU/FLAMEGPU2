@@ -130,8 +130,8 @@ void CUDAAgentModel::getPopulationData(AgentPopulation& population) {
 bool CUDAAgentModel::step(const Simulation& simulation) {
     int nStreams = 1;
     std::string message_name;
-    Curve::CurveNamespaceHash message_name_inp_hash = 0;
-    Curve::CurveNamespaceHash message_name_outp_hash = 0;
+    Curve::NamespaceHash message_name_inp_hash = 0;
+    Curve::NamespaceHash message_name_outp_hash = 0;
     unsigned int messageList_Size = 0;
 
     // TODO: simulation.getMaxFunctionsPerLayer()
@@ -201,7 +201,7 @@ bool CUDAAgentModel::step(const Simulation& simulation) {
                 // message_name = inpMessage_name;
 
                 // hash message name
-                message_name_inp_hash = curve.curveVariableRuntimeHash(inpMessage_name.c_str());
+                message_name_inp_hash = curve.variableRuntimeHash(inpMessage_name.c_str());
 
                 messageList_Size = cuda_message.getMaximumListSize();
             }
@@ -213,7 +213,7 @@ bool CUDAAgentModel::step(const Simulation& simulation) {
                 // message_name = outpMessage_name;
 
                 // hash message name
-                message_name_outp_hash =  curve.curveVariableRuntimeHash(outpMessage_name.c_str());
+                message_name_outp_hash =  curve.variableRuntimeHash(outpMessage_name.c_str());
             }
 
             const CUDAAgent& cuda_agent = getCUDAAgent(agent_name);
@@ -240,9 +240,9 @@ bool CUDAAgentModel::step(const Simulation& simulation) {
             gridSize = (state_list_size + blockSize - 1) / blockSize;
 
             // hash agent name
-            Curve::CurveNamespaceHash agentname_hash = curve.curveVariableRuntimeHash(agent_name.c_str());
+            Curve::NamespaceHash agentname_hash = curve.variableRuntimeHash(agent_name.c_str());
             // hash function name
-            Curve::CurveNamespaceHash funcname_hash = curve.curveVariableRuntimeHash(func_name.c_str());
+            Curve::NamespaceHash funcname_hash = curve.variableRuntimeHash(func_name.c_str());
 
             // agent_function_wrapper << <gridSize, blockSize, 0, stream[j] >> > (agentname_hash + funcname_hash, h_func_ptr, state_list_size);
             agent_function_wrapper <<<gridSize, blockSize, 0, stream[j] >>>(agentname_hash + funcname_hash, message_name_inp_hash, message_name_outp_hash, h_func_ptr, state_list_size, messageList_Size, totalThreads);

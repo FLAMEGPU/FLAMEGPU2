@@ -3,9 +3,9 @@
 #include "flamegpu/runtime/flamegpu_device_api.h"
 
 __global__ void agent_function_wrapper(
-    Curve::CurveNamespaceHash agent_func_name_hash,
-    Curve::CurveNamespaceHash messagename_inp_hash,
-    Curve::CurveNamespaceHash messagename_outp_hash,
+    Curve::NamespaceHash agent_func_name_hash,
+    Curve::NamespaceHash messagename_inp_hash,
+    Curve::NamespaceHash messagename_outp_hash,
     FLAMEGPU_AGENT_FUNCTION_POINTER func,
     int popNo,
     unsigned int messageList_size,

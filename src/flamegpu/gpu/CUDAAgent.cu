@@ -210,9 +210,9 @@ void CUDAAgent::mapRuntimeVariables(const AgentFunctionDescription& func) const 
         void* d_ptr = sm->second->getAgentListVariablePointer(mmp.first);
 
         // map using curve
-        Curve::CurveVariableHash var_hash = curve.curveVariableRuntimeHash(mmp.first.c_str());
-        Curve::CurveVariableHash agent_hash = curve.curveVariableRuntimeHash(func.getParent().getName().c_str());
-        Curve::CurveVariableHash func_hash = curve.curveVariableRuntimeHash(func.getName().c_str());
+        Curve::VariableHash var_hash = curve.variableRuntimeHash(mmp.first.c_str());
+        Curve::VariableHash agent_hash = curve.variableRuntimeHash(func.getParent().getName().c_str());
+        Curve::VariableHash func_hash = curve.variableRuntimeHash(func.getName().c_str());
 
         // get the agent variable size
         size_t size;
@@ -221,7 +221,7 @@ void CUDAAgent::mapRuntimeVariables(const AgentFunctionDescription& func) const 
        // maximum population num
         unsigned int length = this->getMaximumListSize();
 
-        curve.curveRegisterVariableByHash(var_hash + agent_hash + func_hash, d_ptr, size, length);
+        curve.registerVariableByHash(var_hash + agent_hash + func_hash, d_ptr, size, length);
     }
 }
 
@@ -241,11 +241,11 @@ void CUDAAgent::unmapRuntimeVariables(const AgentFunctionDescription& func) cons
         // void* d_ptr = sm->second->getAgentListVariablePointer(mmp.first);
 
         // unmap using curve
-        Curve::CurveVariableHash var_hash = curve.curveVariableRuntimeHash(mmp.first.c_str());
-        Curve::CurveVariableHash agent_hash = curve.curveVariableRuntimeHash(func.getParent().getName().c_str());
-        Curve::CurveVariableHash func_hash = curve.curveVariableRuntimeHash(func.getName().c_str());
+        Curve::VariableHash var_hash = curve.variableRuntimeHash(mmp.first.c_str());
+        Curve::VariableHash agent_hash = curve.variableRuntimeHash(func.getParent().getName().c_str());
+        Curve::VariableHash func_hash = curve.variableRuntimeHash(func.getName().c_str());
 
-        curve.curveUnregisterVariableByHash(var_hash + agent_hash + func_hash);
+        curve.unregisterVariableByHash(var_hash + agent_hash + func_hash);
     }
 }
 
