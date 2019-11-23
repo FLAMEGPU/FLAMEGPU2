@@ -23,6 +23,7 @@
 class AgentDescription;
 class AgentPopulation;
 class AgentFunctionDescription;
+class Curve;
 
 typedef std::map<const std::string, std::unique_ptr<CUDAAgentStateList>> CUDAStateMap;  // map of state name to CUDAAgentStateList which allocates memory on the device
 typedef std::pair<const std::string, std::unique_ptr<CUDAAgentStateList>> CUDAStateMapPair;
@@ -74,6 +75,8 @@ class CUDAAgent {
     CUDAStateMap state_map;
 
     unsigned int max_list_size;  // The maximum length of the agent variable arrays based on the maximum population size passed to setPopulationData
+
+    Curve &curve;
 };
 
 #endif  // INCLUDE_FLAMEGPU_GPU_CUDAAGENT_H_

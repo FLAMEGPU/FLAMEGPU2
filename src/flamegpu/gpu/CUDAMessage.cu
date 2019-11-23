@@ -25,7 +25,10 @@
 * CUDAMessage class
 * @brief allocates the hash table/list for message variables and copy the list to device
 */
-CUDAMessage::CUDAMessage(const MessageDescription& description) : message_description(description), max_list_size(0) {
+CUDAMessage::CUDAMessage(const MessageDescription& description)
+    : message_description(description)
+    , max_list_size(0)
+    , curve(Curve::getInstance()) {
     setInitialMessageList();
 }
 
@@ -117,10 +120,10 @@ void CUDAMessage::mapRuntimeVariables(const AgentFunctionDescription& func) cons
         void* d_ptr = message_list->getMessageListVariablePointer(mmp.first);
 
         // map using curve
-        CurveVariableHash var_hash = curveVariableRuntimeHash(mmp.first.c_str());
-        CurveVariableHash message_hash = curveVariableRuntimeHash(message_name.c_str());
-        CurveVariableHash agent_hash = curveVariableRuntimeHash(func.getParent().getName().c_str());
-        CurveVariableHash func_hash = curveVariableRuntimeHash(func.getName().c_str());
+        Curve::CurveVariableHash var_hash = curve.curveVariableRuntimeHash(mmp.first.c_str());
+        Curve::CurveVariableHash message_hash = curve.curveVariableRuntimeHash(message_name.c_str());
+        Curve::CurveVariableHash agent_hash = curve.curveVariableRuntimeHash(func.getParent().getName().c_str());
+        Curve::CurveVariableHash func_hash = curve.curveVariableRuntimeHash(func.getName().c_str());
 
         // get the message variable size
         size_t size;
@@ -129,7 +132,7 @@ void CUDAMessage::mapRuntimeVariables(const AgentFunctionDescription& func) cons
        // maximum population size
         unsigned int length = this->getMaximumListSize();  // check to see if it is equal to pop
 
-        curveRegisterVariableByHash(var_hash + agent_hash + func_hash + message_hash, d_ptr, size, length);
+        curve.curveRegisterVariableByHash(var_hash + agent_hash + func_hash + message_hash, d_ptr, size, length);
     }
 }
 
@@ -141,12 +144,12 @@ void CUDAMessage::unmapRuntimeVariables(const AgentFunctionDescription& func) co
         // void* d_ptr = message_list->getMessageListVariablePointer(mmp.first);
 
         // unmap using curve
-        CurveVariableHash var_hash = curveVariableRuntimeHash(mmp.first.c_str());
-        CurveVariableHash message_hash = curveVariableRuntimeHash(message_name.c_str());
-        CurveVariableHash agent_hash = curveVariableRuntimeHash(func.getParent().getName().c_str());
-        CurveVariableHash func_hash = curveVariableRuntimeHash(func.getName().c_str());
+        Curve::CurveVariableHash var_hash = curve.curveVariableRuntimeHash(mmp.first.c_str());
+        Curve::CurveVariableHash message_hash = curve.curveVariableRuntimeHash(message_name.c_str());
+        Curve::CurveVariableHash agent_hash = curve.curveVariableRuntimeHash(func.getParent().getName().c_str());
+        Curve::CurveVariableHash func_hash = curve.curveVariableRuntimeHash(func.getName().c_str());
 
-        curveUnregisterVariableByHash(var_hash + agent_hash + func_hash + message_hash);
+        curve.curveUnregisterVariableByHash(var_hash + agent_hash + func_hash + message_hash);
     }
 }
 
