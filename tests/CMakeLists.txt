@@ -95,11 +95,20 @@ SET(TEST_CASE_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/sim/test_host_functions.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_agent_random.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_host_random.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_host_reductions.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/host_reduction/test_min.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/host_reduction/test_max.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/host_reduction/test_sum.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/host_reduction/test_reduce.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/host_reduction/test_count.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/host_reduction/test_transform_reduce.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/host_reduction/test_histogram_even.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/host_reduction/test_misc.cu
 )
 SET(OTHER_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/helpers/device_test_functions.h
     ${CMAKE_CURRENT_SOURCE_DIR}/helpers/device_test_functions.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/helpers/host_reductions_common.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/helpers/host_reductions_common.cu
 )
 SET(ALL_SRC
     ${TEST_CASE_SRC}
