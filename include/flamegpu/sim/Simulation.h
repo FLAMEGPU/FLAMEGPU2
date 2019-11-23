@@ -7,7 +7,7 @@
 
 // include class dependencies
 #include "flamegpu/sim/SimulationLayer.h"
-#include "flamegpu/runtime/flamegpu_host_api.h"
+#include "flamegpu/runtime/flamegpu_host_api_macros.h"
 
 // forward declare dependencies from other modules
 class ModelDescription;

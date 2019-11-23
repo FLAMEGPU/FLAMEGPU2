@@ -35,24 +35,19 @@ namespace flamegpu_internal {
     RandomManager::size_type hd_random_size;
 }  // namespace flamegpu_internal
 
-/**
- * Static member vars
- */
-unsigned int RandomManager::mSeed = 0;
-RandomManager::size_type RandomManager::length = 0;
-const RandomManager::size_type RandomManager::min_length = 1024;
-float RandomManager::growthModifier = 1.5;
-float RandomManager::shrinkModifier = 1.0;
-curandState *RandomManager::h_max_random_state = nullptr;
-RandomManager::size_type RandomManager::h_max_random_size = 0;
-std::mt19937 RandomManager::host_rng;
+RandomManager::RandomManager() {
+    reseed(static_cast<unsigned int>(seedFromTime() % UINT_MAX));
+}
+RandomManager::~RandomManager() {
+    free();
+}
 /**
  * Member fns
  */
 uint64_t RandomManager::seedFromTime() {
     return static_cast<uint64_t>(time(nullptr));
 }
-void RandomManager::init(const unsigned int &seed) {
+void RandomManager::reseed(const unsigned int &seed) {
     RandomManager::mSeed = seed;
     host_rng = std::mt19937();
     free();  // This seeds host_rng
@@ -63,15 +58,17 @@ void RandomManager::free() {
     flamegpu_internal::hd_random_size = 0;
     gpuErrchk(cudaMemcpyToSymbol(flamegpu_internal::d_random_size, &flamegpu_internal::hd_random_size, sizeof(RandomManager::size_type)));
     // Release old
-    if (flamegpu_internal::hd_random_state != nullptr) {
+    if (flamegpu_internal::hd_random_state) {
         gpuErrchk(cudaFree(flamegpu_internal::hd_random_state));
     }
     // Update pointers
     flamegpu_internal::hd_random_state = nullptr;
     gpuErrchk(cudaMemcpyToSymbol(flamegpu_internal::d_random_state, &flamegpu_internal::hd_random_state, sizeof(curandState*)))
     // Release host_max
-    if (h_max_random_state)
+    if (h_max_random_state) {
         ::free(h_max_random_state);
+        h_max_random_state = nullptr;
+    }
     h_max_random_size = 0;
     // Reset host random generator/s
     host_rng.seed(mSeed);

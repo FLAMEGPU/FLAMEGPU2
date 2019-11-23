@@ -25,6 +25,7 @@
 // forward declare classes from other modules
 class ModelDescription;
 class Simulation;
+class RandomManager;
 
 typedef std::map<const std::string, std::unique_ptr<CUDAAgent>> CUDAAgentMap;  // map of a number of CUDA agents by name. The CUDA agents are responsible for allocating and managing all the device memory
 typedef std::map<const std::string, std::unique_ptr<CUDAMessage>> CUDAMessageMap;
@@ -64,6 +65,10 @@ class CUDAAgentModel {
      * One instance of host api is used for entire CUDA model
      */
     FLAMEGPU_HOST_API host_api;
+    /**
+     * Resizes device random array during step()
+     */
+    RandomManager &rng;
 };
 
 #endif  // INCLUDE_FLAMEGPU_GPU_CUDAAGENTMODEL_H_
