@@ -32,6 +32,7 @@ CUDAAgentModel::CUDAAgentModel(const ModelDescription& description)
     message_map(),
     host_api(*this),
     rng(RandomManager::getInstance()) {  // , function_map() {
+    rng.increaseSimCounter();
     // create a reference to curve to ensure that it is initialised. This is a singleton class so will only be done once regardless of the number of CUDAgentModels.
 
     // populate the CUDA agent map
@@ -68,6 +69,7 @@ CUDAAgentModel::CUDAAgentModel(const ModelDescription& description)
  * @brief Destroys the CUDAAgentModel object
  */
 CUDAAgentModel::~CUDAAgentModel() {
+    rng.decreaseSimCounter();
     // unique pointers cleanup by automatically
 }
 
