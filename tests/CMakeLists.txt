@@ -8,6 +8,7 @@ cmake_minimum_required(VERSION VERSION 3.12 FATAL_ERROR)
 # START Download & Build GoogleTest
 MACRO (download_gtest)
     configure_file(CMakeLists.txt.in googletest-download/CMakeLists.txt)
+    # Run CMake generate
     execute_process(
         COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
         RESULT_VARIABLE result
@@ -17,27 +18,27 @@ MACRO (download_gtest)
         message(WARNING 
                 "CMake step for googletest failed: ${result}\n")
     endif()
+    # Run CMake build (this only downloads, it is built at build time)
     execute_process(
     COMMAND ${CMAKE_COMMAND} --build .
     RESULT_VARIABLE result
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download
     )
-
-if (result)
-    message(WARNING 
-            "Build step for googletest-build failed: ${result}\n"
-            "Attempting to continue\n"
-            "You may want to disable BUILD_TESTS")
-endif()
+    if (result)
+        message(WARNING 
+                "Download step for googletest-build failed: ${result}\n"
+                "Attempting to continue\n"
+                "You may want to disable BUILD_TESTS")
+    endif()
 ENDMACRO()
 
+IF(UPDATE_GTEST)
+    download_gtest()
+ENDIF()
 IF(NOT EXISTS ${CMAKE_CURRENT_BINARY_DIR}/googletest-src)
     download_gtest()
     # Give option to disable trying to update after first run
     set(UPDATE_GTEST ON CACHE BOOL "Update GTest from Git")
-ENDIF()
-IF(UPDATE_GTEST)
-    download_gtest()
 ENDIF()
 
 # Prevent overriding the parent project's compiler/linker
@@ -109,6 +110,7 @@ SET(OTHER_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/helpers/device_test_functions.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/helpers/host_reductions_common.h
     ${CMAKE_CURRENT_SOURCE_DIR}/helpers/host_reductions_common.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/helpers/main.cu
 )
 SET(ALL_SRC
     ${TEST_CASE_SRC}
@@ -120,12 +122,11 @@ add_flamegpu_executable("${PROJECT_NAME}" "${ALL_SRC}" "${FLAMEGPU_ROOT}" "${PRO
 
 # Add the tests directory to the include path,
 target_include_directories("${PROJECT_NAME}" PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
-target_link_libraries("${PROJECT_NAME}" gtest_main)
+target_link_libraries("${PROJECT_NAME}" gtest)
 
 # Put Within Tests filter
 CMAKE_SET_TARGET_FOLDER("${PROJECT_NAME}" "Tests")
 CMAKE_SET_TARGET_FOLDER("gtest" "Tests/Dependencies")
-CMAKE_SET_TARGET_FOLDER("gtest_main" "Tests/Dependencies")
 
 # Also set as startup project (if top level project)
 set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"  PROPERTY VS_STARTUP_PROJECT "${PROJECT_NAME}")
