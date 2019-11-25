@@ -21,13 +21,10 @@
 
 Simulation::Simulation(const ModelDescription& model) : layers(), model_description(model) {
     simulation_steps = 1;
-    RandomManager::init(static_cast<unsigned int>(RandomManager::seedFromTime()%UINT_MAX));
 }
 
 
-Simulation::~Simulation(void) {
-    RandomManager::free();
-}
+Simulation::~Simulation(void) { }
 
 const SimulationLayer::FunctionDescriptionVector& Simulation::getFunctionsAtLayer(const unsigned int &layer) const {
     if (layer >= layers.size()) {
@@ -140,7 +137,7 @@ int Simulation::checkArgs(int argc, const char** argv, std::string &xml_model_pa
         // -random <uint>, Uses the specified random seed, defaults to clock
         if (arg.compare("--random") == 0 || arg.compare("-r") == 0) {
             // Reinitialise RandomManager state
-            RandomManager::init(static_cast<unsigned int>(strtoul(argv[++i], nullptr, 0)));
+            RandomManager::getInstance().reseed(static_cast<unsigned int>(strtoul(argv[++i], nullptr, 0)));
             continue;
         }
         fprintf(stderr, "Unexpected argument: %s\n", arg.c_str());

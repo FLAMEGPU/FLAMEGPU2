@@ -30,7 +30,8 @@ CUDAAgentModel::CUDAAgentModel(const ModelDescription& description)
     agent_map(),
     curve(cuRVEInstance::getInstance()),
     message_map(),
-    host_api(*this) {  // , function_map() {
+    host_api(*this),
+    rng(RandomManager::getInstance()) {  // , function_map() {
     // create a reference to curve to ensure that it is initialised. This is a singleton class so will only be done once regardless of the number of CUDAgentModels.
 
     // populate the CUDA agent map
@@ -184,7 +185,7 @@ bool CUDAAgentModel::step(const Simulation& simulation) {
         }
 
         // Ensure RandomManager is the correct size to accomodate all threads to be launched
-        RandomManager::resize(totalThreads);
+        rng.resize(totalThreads);
         // Total threads is now used to provide kernel launches an offset to thread-safe thread-index
         totalThreads = 0;
 

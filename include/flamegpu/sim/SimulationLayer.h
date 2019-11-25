@@ -8,7 +8,7 @@
 // include class dependencies
 // #include "flamegpu/model/ModelDescription.h"
 // #include "flamegpu/model/AgentFunctionDescription.h"
-#include "flamegpu/runtime/flamegpu_host_api.h"
+#include "flamegpu/runtime/flamegpu_host_api_macros.h"
 
 // forward declare dependencies from higher up hierarchy
 class Simulation;
