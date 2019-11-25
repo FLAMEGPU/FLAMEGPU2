@@ -190,3 +190,12 @@ RandomManager::size_type RandomManager::size() {
 uint64_t RandomManager::seed() {
     return mSeed;
 }
+
+void RandomManager::increaseSimCounter() {
+    simulationInstances++;
+}
+void RandomManager::decreaseSimCounter() {
+    simulationInstances--;
+    if (simulationInstances == 0)
+        free();
+}

@@ -26,7 +26,6 @@ class RandomManager {
     /**
      * Handles seeding of random generation
      */
-    // friend class Simulation;  // bool CUDAAgentModel::step(const Simulation&)
     friend int Simulation::checkArgs(int, const char**, std::string &);
     /**
      * Calls resize() during simulation execution to resize device random array
@@ -136,6 +135,19 @@ class RandomManager {
      * Creates the singleton and calls reseed() with the return value from seedFromTime()
      */
     RandomManager();
+    /**
+     * Logs how many CUDAAgentModel objects exist, if this reaches 0, free is called
+     */
+    unsigned int simulationInstances = 0;
+    /**
+     * Increases internal counter of CUDAAgentModel instances
+     */
+    void increaseSimCounter();
+    /**
+    * Decreases internal counter of CUDAAgentModel instances
+    * If this reaches 0, free() is called
+    */
+    void decreaseSimCounter();
 
  protected:
      /**

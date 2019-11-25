@@ -39,4 +39,6 @@ __global__ void agent_function_wrapper(
         }
     }
     // do something with the return value to set a flag for deletion
+
+    delete api;
 }

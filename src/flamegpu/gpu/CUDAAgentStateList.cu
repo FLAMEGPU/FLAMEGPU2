@@ -36,6 +36,7 @@ CUDAAgentStateList::CUDAAgentStateList(CUDAAgent& cuda_agent) : agent(cuda_agent
  * @brief Destroys the CUDAAgentStateList object
  */
 CUDAAgentStateList::~CUDAAgentStateList() {
+    cleanupAllocatedData();
 }
 
 void CUDAAgentStateList::cleanupAllocatedData() {
