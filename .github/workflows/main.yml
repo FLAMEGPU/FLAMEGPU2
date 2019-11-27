@@ -1,0 +1,19 @@
+name: CI
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: [self-hosted, linux]
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Run a one-line script
+      run: echo Hello, world!
+    - name: Run a multi-line script
+      run: |
+        mkdir build && cd build
+        cmake .. -DBUILD_TESTS=ON -DWARNINGS_AS_ERRORS=ON && make all docs all_lint
+        cd bin/linux-x64
+        ./build/bin/linux-x64/Release/tests
