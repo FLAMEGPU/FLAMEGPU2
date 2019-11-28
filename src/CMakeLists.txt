@@ -84,7 +84,6 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/flamegpu_host_api_macros.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/flamegpu_host_agent_api.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/cuRVE/curve.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/cuRVE/cuRVEInstance.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/AgentRandom.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/HostRandom.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/RandomManager.cuh

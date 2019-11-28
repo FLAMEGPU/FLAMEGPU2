@@ -53,7 +53,7 @@ __device__ FLAME_GPU_AGENT_STATUS funcName ## _impl(FLAMEGPU_DEVICE_API* FLAMEGP
  */
 class FLAMEGPU_DEVICE_API {
     // Friends have access to TID() & TS_ID()
-    friend __global__ void agent_function_wrapper(CurveNamespaceHash, CurveNamespaceHash, CurveNamespaceHash, FLAMEGPU_AGENT_FUNCTION_POINTER, const int, const unsigned int, const unsigned int);
+    friend __global__ void agent_function_wrapper(Curve::NamespaceHash, Curve::NamespaceHash, Curve::NamespaceHash, FLAMEGPU_AGENT_FUNCTION_POINTER, const int, const unsigned int, const unsigned int);
 
  public:
     /**
@@ -91,7 +91,7 @@ class FLAMEGPU_DEVICE_API {
      * \brief
      * \param agentname_hash
      */
-    __device__ void setAgentNameSpace(CurveNamespaceHash agentname_hash) {
+    __device__ void setAgentNameSpace(Curve::NamespaceHash agentname_hash) {
         agent_func_name_hash = agentname_hash;
     }
 
@@ -99,7 +99,7 @@ class FLAMEGPU_DEVICE_API {
      * \brief
      * \param messagename_hash
      */
-    __device__ void setMessageInpNameSpace(CurveNamespaceHash messagename_hash) {
+    __device__ void setMessageInpNameSpace(Curve::NamespaceHash messagename_hash) {
         messagename_inp_hash = messagename_hash;
     }
 
@@ -107,7 +107,7 @@ class FLAMEGPU_DEVICE_API {
      * \brief
      * \param messagename_hash
      */
-    __device__ void setMessageOutpNameSpace(CurveNamespaceHash messagename_hash) {
+    __device__ void setMessageOutpNameSpace(Curve::NamespaceHash messagename_hash) {
         messagename_outp_hash = messagename_hash;
     }
 
@@ -118,9 +118,9 @@ class FLAMEGPU_DEVICE_API {
     const AgentRandom random;
 
  private:
-    CurveNamespaceHash agent_func_name_hash;
-    CurveNamespaceHash messagename_inp_hash;
-    CurveNamespaceHash messagename_outp_hash;
+    Curve::NamespaceHash agent_func_name_hash;
+    Curve::NamespaceHash messagename_inp_hash;
+    Curve::NamespaceHash messagename_outp_hash;
     MessageList messageList;
 
     unsigned int  messageListSize;
@@ -172,7 +172,7 @@ __device__ T FLAMEGPU_DEVICE_API::getVariable(const char(&variable_name)[N]) {
     unsigned int index =  (blockDim.x * blockIdx.x) + threadIdx.x;
 
     // get the value from curve
-    T value = curveGetVariable<T>(variable_name, agent_func_name_hash , index);
+    T value = Curve::getVariable<T>(variable_name, agent_func_name_hash , index);
 
     // return the variable from curve
     return value;
@@ -189,7 +189,7 @@ __device__ void FLAMEGPU_DEVICE_API::setVariable(const char(&variable_name)[N], 
     unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
 
     // set the variable using curve
-    curveSetVariable<T>(variable_name , agent_func_name_hash,  value, index);
+    Curve::setVariable<T>(variable_name , agent_func_name_hash,  value, index);
 }
 
 /**
@@ -203,7 +203,7 @@ __device__ T FLAMEGPU_DEVICE_API::getMessageVariable(const char(&variable_name)[
     unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
 
     // get the value from curve
-    T value = curveGetVariable<T>(variable_name, agent_func_name_hash + messagename_inp_hash, index);
+    T value = Curve::getVariable<T>(variable_name, agent_func_name_hash + messagename_inp_hash, index);
 
     // return the variable from curve
     return value;
@@ -221,7 +221,7 @@ __device__ void FLAMEGPU_DEVICE_API::setMessageVariable(const char(&variable_nam
     unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
 
     // set the variable using curve
-    curveSetVariable<T>(variable_name, agent_func_name_hash + messagename_outp_hash, value, index);
+    Curve::setVariable<T>(variable_name, agent_func_name_hash + messagename_outp_hash, value, index);
 }
 
 /**
@@ -236,7 +236,7 @@ __device__ void FLAMEGPU_DEVICE_API::addMessage(const char(&variable_name)[N], T
     // Todo: checking if the output message type is single or optional?  (d_message_type)
 
     // set the variable using curve
-    curveSetVariable<T>(variable_name, agent_func_name_hash + messagename_outp_hash, value, index);
+    Curve::setVariable<T>(variable_name, agent_func_name_hash + messagename_outp_hash, value, index);
 }
 
 /**

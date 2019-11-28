@@ -58,7 +58,7 @@ class CUDAAgentModel {
  private:
     const ModelDescription& model_description;
     CUDAAgentMap agent_map;
-    cuRVEInstance &curve;
+    Curve &curve;
 
     CUDAMessageMap message_map;
     /**

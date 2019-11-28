@@ -21,6 +21,7 @@
 class AgentPopulation;
 class AgentFunctionDescription;
 class MessageDescription;
+class Curve;
 
 class CUDAMessage {
  public:
@@ -60,6 +61,8 @@ class CUDAMessage {
     std::unique_ptr<CUDAMessageList> message_list;  // CUDAMessageMap message_list;
 
     unsigned int max_list_size;
+
+    Curve &curve;
 };
 
 #endif  // INCLUDE_FLAMEGPU_GPU_CUDAMESSAGE_H_
