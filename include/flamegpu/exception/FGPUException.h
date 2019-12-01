@@ -105,6 +105,18 @@ DERIVED_FGPUException(InvalidMapEntry, "Missing entry in type sizes map. Somethi
 
 /**
  * Defines a type of object to be thrown as exception.
+ * It reports errors that are due to invalid agent names
+ */
+DERIVED_FGPUException(InvalidAgentName, "Invalid agent name");
+
+/**
+ * Defines a type of object to be thrown as exception.
+ * It reports errors that are due to invalid message names
+ */
+DERIVED_FGPUException(InvalidMessageName, "Invalid message name");
+
+/**
+ * Defines a type of object to be thrown as exception.
  * It reports errors that are due to invalid agent memory variable type.
  */
 DERIVED_FGPUException(InvalidAgentVar, "Invalid agent memory variable");

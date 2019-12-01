@@ -1,118 +1,85 @@
-/**
- * @file AgentDescription.h
- * @author  Paul Richmond, Mozhgan Kabiri Chimeh
- * @date    Feb 2017
- * @brief
- *
- * \todo longer description
- */
-
 #ifndef INCLUDE_FLAMEGPU_MODEL_AGENTDESCRIPTION_H_
 #define INCLUDE_FLAMEGPU_MODEL_AGENTDESCRIPTION_H_
 
 #include <string>
 #include <map>
 #include <typeinfo>
-#include <utility>
 #include <memory>
+#include <vector>
 
-// include generic memory vector
-#include "flamegpu/pop/MemoryVector.h"
+#include "flamegpu/model/ModelDescription.h"
+class AgentFunctionDescription;
+class MessageDescription;
 
-// include class dependencies
-#include "flamegpu/model/AgentStateDescription.h"
-#include "flamegpu/model/AgentFunctionDescription.h"
+class AgentDescription : public std::enable_shared_from_this<AgentDescription> {
 
-// State map is a mapping between a state name (i.e. default) and a state description object reference
-/*! */
-typedef std::map<const std::string, const AgentStateDescription&> StateMap;
+    /**
+     * Only way to construct an AgentDescription
+     */
+    friend AgentDescription& ModelDescription::newAgent(const std::string &);
 
-/*! */
-typedef std::pair<const std::string, const AgentStateDescription&> StateMapPair;
+    /**
+     * Constructors
+     */
+    AgentDescription(const std::string &agent_name);
+    // Copy Construct
+    AgentDescription(const AgentDescription &other_agent);
+    // Move Construct
+    AgentDescription(AgentDescription &&other_agent);
+    // Copy Assign
+    AgentDescription& operator=(const AgentDescription &other_agent);
+    // Move Assign
+    AgentDescription& operator=(AgentDescription &&other_agent);
 
-/*! */
-typedef std::map<const std::string, const AgentFunctionDescription&> FunctionMap;
+    AgentDescription clone(const std::string &cloned_agent_name) const;
 
-/*! */
-typedef std::map<const std::string, const std::type_info&> MemoryMap;
-
-/*! */
-typedef std::pair<const std::string, const std::type_info&> MemoryMapPair;
-
-/*! Create a map with std::type_info for keys (indexes) and std::size_t values*/
-typedef std::map<const std::type_info*, std::size_t> TypeSizeMap;    // not something that the user every sees. This is an interval map only for tracking the size of data types.
-
-class AgentDescription {
  public:
     /**
-    *
-    */
-    explicit AgentDescription(std::string name);
-
-    virtual ~AgentDescription();
-
-    void setName(std::string name);
-
-    const std::string getName() const;
-
-    /*
-     * All agent models start initially by being defined as stateless. A stateless model has a single state called "default".
-     * If the addState function is called then the stateless flag should be set to false and the default state removed.
-     * Care should be taken if default is removed as this may invalidate some agent functions already added to the model that use the default state. Not clear yet if model validation should be done at the end or during model building.
-     * Inclined to think that validation should be done at the end and then the model set to read only.
+     * Typedefs
      */
-    void addState(const AgentStateDescription& state, bool is_initial_state = false);
+    typedef unsigned int size_type;
+    typedef std::map<const std::string, const std::type_info&> VariableMap;
+    typedef std::map<const std::string, AgentFunctionDescription> FunctionMap;
 
-    void setInitialState(const std::string initial_state);
-
-    void addAgentFunction(AgentFunctionDescription &function);
-
-    /*
-     *
+    /**
+     * Accessors
      */
-    template <typename T> void addAgentVariable(const std::string variable_name);
+    void newState(const std::string &state_name);
+    void setInitialState(const std::string &initial_state);
 
-    MemoryMap& getMemoryMap();  // TODO should be shared pointer
+    template <typename T>
+    void newVariable(const std::string &variable_name);
 
-    const MemoryMap& getMemoryMap() const;
+    AgentFunctionDescription &newFunction(const std::string &function_name);
+    AgentFunctionDescription &Function(const std::string &function_name);
+    AgentFunctionDescription &cloneFunction(const AgentFunctionDescription &);
 
-    const StateMap& getStateMap() const;
+    /**
+     * Const Accessors
+     */
+    std::string getName() const;
+    
+    const std::type_info& getVariableType(const std::string &variable_name) const;
+    size_t getVariableSize(const std::string &variable_name) const;
+    size_t getVariableSize(const std::string &variable_name) const;
+    size_type getVariablesCount() const;
+    const AgentFunctionDescription& getFunction(const std::string &function_name) const;
 
-    const FunctionMap& getFunctionMap() const;
+    const std::vector<std::string> &getStates() const;
+    const VariableMap &getVariables() const;
+    const FunctionMap& getFunctions() const;
 
-    size_t getAgentVariableSize(const std::string variable_name) const;
-
-    size_t getMemorySize() const;
-
-    unsigned int getNumberAgentVariables() const;
-
-    bool requiresAgentCreation() const;
-
-    const std::type_info& getVariableType(const std::string variable_name) const;
-
-    bool hasAgentFunction(const std::string function_name) const;
-
-    // StateMemoryMap getEmptyStateMemoryMap() const;
-
-    void initEmptyStateMemoryMap(StateMemoryMap&) const;
+    bool hasState(const std::string &state_name) const;
+    bool hasVariable(const std::string &variable_name) const;
+    bool hasFunction(const std::string &function_name) const;
 
  private:
     std::string name;
-    bool stateless;                                                // system does not use states (i.e. only has a default state)
-    std::string initial_state;
-    std::unique_ptr<AgentStateDescription> default_state;
 
-    StateMap states;
+    std::vector<std::string> states;
+    std::string initial_state = ModelDescription::DEFAULT_STATE;
+    VariableMap variables;
     FunctionMap functions;
-    MemoryMap memory;
-    TypeSizeMap sizes;
-    StateMemoryMap sm_map;                                    // used to hold a default empty vector
 };
-
-template <typename T> void AgentDescription::addAgentVariable(const std::string variable_name) {
-    memory.insert(MemoryMap::value_type(variable_name, typeid(T)));
-    sizes.insert(TypeSizeMap::value_type(&typeid(T), (unsigned int)sizeof(T)));
-    sm_map.insert(StateMemoryMap::value_type(variable_name, std::unique_ptr<GenericMemoryVector>(new MemoryVector<T>())));
-}
 
 #endif  // INCLUDE_FLAMEGPU_MODEL_AGENTDESCRIPTION_H_

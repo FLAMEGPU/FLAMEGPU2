@@ -1,89 +1,83 @@
- /**
- * @file AgentFunctionDescription.h
- * @authors Paul
- * @date 5 Mar 2014
- * @brief
- *
- * @see
- * @warning
- */
-
 #ifndef INCLUDE_FLAMEGPU_MODEL_AGENTFUNCTIONDESCRIPTION_H_
 #define INCLUDE_FLAMEGPU_MODEL_AGENTFUNCTIONDESCRIPTION_H_
 
 #include <string>
-#include <map>
 #include <memory>
 
-#include "flamegpu/model/AgentFunctionInput.h"
-#include "flamegpu/model/AgentFunctionOutput.h"
-
+#include "flamegpu/model/ModelDescription.h"
+#include "flamegpu/model/AgentDescription.h"
 // include the agent function syntax form the runtime api
-#include "flamegpu/runtime/flamegpu_device_api.h"
+// #include "flamegpu/runtime/flamegpu_device_api.h"
+typedef void FLAMEGPU_AGENT_FUNCTION_POINTER;
 
-class AgentDescription;
-
-typedef std::map<std::string, const AgentFunctionInput&> InputsMap;
-typedef std::map<std::string, const AgentFunctionOutput&> OutputsMap;
-// typedef std::map<const std::string, FLAMEGPU_AGENT_FUNCTION> FunctionPointerMap;  // @question: This is not required as each agent function will have only a single pointer
+class MessageDescription;
 
 class AgentFunctionDescription {
- public:
-    explicit AgentFunctionDescription(const std::string function_name);
+    friend class AgentDescription;
 
-    virtual ~AgentFunctionDescription();
+    /**
+     * Constructors
+     */
+    AgentFunctionDescription(const std::string &function_name, FLAMEGPU_AGENT_FUNCTION_POINTER *p_func);
+    // Copy Construct
+    AgentFunctionDescription(const AgentFunctionDescription &other_function);
+    // Move Construct
+    AgentFunctionDescription(AgentFunctionDescription &&other_function);
+    // Copy Assign
+    AgentFunctionDescription& operator=(const AgentFunctionDescription &other_function);
+    // Move Assign
+    AgentFunctionDescription& operator=(AgentFunctionDescription &&other_function);
 
-    const std::string getEndState() const;
-
-    void setEndState(const std::string _end_state);
-
-    const std::string getInitialState() const;
-
-    void setInitialState(const std::string _initial_state);
-
-    const std::string getName() const;
-
-    void setInput(const AgentFunctionInput &input);
-
-    void setOutput(const AgentFunctionOutput &output);
-
-    const InputsMap & getInput();
-    const OutputsMap & getOutput();
-
-    const std::string getInputMessageName() const;
-    const std::string getOutputMessageName() const;
-
-    // TODO
-    // sets the function pointer by adding to the FunctionPointerMap
-    void setFunction(FLAMEGPU_AGENT_FUNCTION_POINTER *p_func);
-
-    FLAMEGPU_AGENT_FUNCTION_POINTER* getFunction() const;
-
-    // TODO add agent output
-
-    void setParent(AgentDescription& agent);
-    const AgentDescription& getParent() const;
-
-    void setInputChild(AgentFunctionInput& input);
-    const AgentFunctionInput& getInputChild() const;
-
-    void setOutputChild(AgentFunctionOutput& output);
-    const AgentFunctionOutput& getOutputChild() const;
-
-    bool hasInputMessage() const;
-    bool hasOutputMessage() const;
+    AgentFunctionDescription clone(const std::string &cloned_function_name) const;
 
  public:
-    const std::string function_name;
-    std::string initial_state;
-    std::string end_state;
-    InputsMap inputs;
-    OutputsMap outputs;
-    FLAMEGPU_AGENT_FUNCTION_POINTER *func = nullptr;
-    // TODO Paul idea for parent objects
-    AgentDescription* parent = 0;
-    AgentFunctionInput* inputChild = 0;
-    AgentFunctionOutput* outputChild = 0;
+    /**
+     * Accessors
+     */
+    void setInitialState(const std::string &initial_state);
+    void setEndState(const std::string &end_state);
+    void setMessageInput(const std::string &message_name);
+    void setMessageInput(const MessageDescription &message);
+    void setMessageOutput(const std::string &message_name);
+    void setMessageOutput(const MessageDescription &message);
+    void setAgentOutput(const std::string &agent_name);
+    void setAgentOutput(const AgentDescription &agent);
+    void setAllowAgentDeath(const bool &has_death);
+    
+    MessageDescription &MessageInput();
+    MessageDescription &MessageOutput();
+    AgentDescription &AgentOutput();
+    bool &AllowAgentDeath();
+    
+    /**
+     * Const Accessors
+     */
+    std::string getName() const;
+    std::string getInitialState() const;
+    std::string getEndState() const;
+    const MessageDescription &getMessageInput() const;
+    const MessageDescription &getMessageOutput() const;
+    const AgentDescription &getAgentOutput() const;    
+    bool getHasAgentDeath() const;
+    
+    bool hasMessageInput() const;
+    bool hasMessageOutput() const;
+    bool hasAgentOutput() const;
+    
+ private:
+    std::string name;
+    
+    FLAMEGPU_AGENT_FUNCTION_POINTER *const func;
+    
+    std::string initial_state = ModelDescription::DEFAULT_STATE;
+    std::string end_state = ModelDescription::DEFAULT_STATE;
+    
+    std::shared_ptr<MessageDescription> message_input = nullptr;
+    std::shared_ptr<MessageDescription> message_output = nullptr;
+    
+    std::shared_ptr<AgentDescription> agent_output = nullptr;
+    
+    bool has_agent_death;
 };
 
 #endif  // INCLUDE_FLAMEGPU_MODEL_AGENTFUNCTIONDESCRIPTION_H_
