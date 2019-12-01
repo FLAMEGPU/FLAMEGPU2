@@ -44,37 +44,34 @@ FLAMEGPU_STEP_FUNCTION(Multi_ms2) {
 
 class MiniSim {
  public:
-    explicit MiniSim(const char *model_name = "model") :
-      model(model_name),
-      agent("agent"),
-      simulation(model),
-      population(nullptr) {
+    explicit MiniSim(const char *model_name = "model")
+        : model(model_name)
+        , agent(model.newAgent("agent"))
+        , population(nullptr)
+        , env(model.Environment()) {
         population = new AgentPopulation(agent, TEST_LEN);
-        simulation.setSimulationSteps(1);
-        model.setEnvironment(env);
-        simulation.addStepFunction(&DEFAULT_STEP);
+        model.addStepFunction(DEFAULT_STEP);
     }
     ~MiniSim() {
         delete population;
     }
     void run() {
-        model.addAgent(agent);
         // CudaModel must be declared here
         // As the initial call to constructor fixes the agent population
-        // This means if we haven't called model.addAgent(agent) first
+        // This means if we haven't called model.newAgent(agent) first
         CUDAAgentModel cuda_model(model);
+        cuda_model.setSimulationSteps(1);
         // This fails as agentMap is empty
-        cuda_model.setInitialPopulationData(*population);
-        ASSERT_NO_THROW(cuda_model.simulate(simulation));
+        cuda_model.setPopulationData(*population);
+        ASSERT_NO_THROW(cuda_model.simulate());
         // The negative of this, is that cuda_model is inaccessible within the test!
         // So copy across population data here
         ASSERT_NO_THROW(cuda_model.getPopulationData(*population));
     }
     ModelDescription model;
-    AgentDescription agent;
-    Simulation simulation;
+    AgentDescription &agent;
     AgentPopulation *population;
-    EnvironmentDescription env;
+    EnvironmentDescription &env;
 };
 /**
 * This defines a common fixture used as a base for all test cases in the file
@@ -103,7 +100,7 @@ TEST_F(EnvironmentManagerTest, Alignment) {
     ms->env.add<int64_t>("d", static_cast<int64_t>(INT64_MAX / 2));
     ms->env.add<int8_t>("e", 21);
     ms->env.add<float>("f", 13.0f);
-    ms->simulation.addStepFunction(&AlignTest);
+    ms->model.addStepFunction(AlignTest);
     ms->run();
 }
 
@@ -134,8 +131,8 @@ TEST(EnvironmentManagerTest2, MultipleModels) {
     ms2->env.add<double>("ms2_double", MS2_VAL);
     ms2->env.add<float>("ms1_float", static_cast<float>(MS2_VAL));
     ms2->env.add<double>("ms1_float2", MS2_VAL);
-    ms1->simulation.addStepFunction(&Multi_ms1);
-    ms2->simulation.addStepFunction(&Multi_ms2);
+    ms1->model.addStepFunction(Multi_ms1);
+    ms2->model.addStepFunction(Multi_ms2);
     EXPECT_NO_THROW(ms1->run());
     EXPECT_NO_THROW(ms2->run());
     delete ms1;
@@ -145,13 +142,12 @@ TEST(EnvironmentManagerTest2, MultipleModels) {
 // Free/Rehost model
 TEST(EnvironmentManagerTest2, RehostModel) {
     MiniSim *ms1 = new MiniSim();
-    ms1->model.addAgent(ms1->agent);
     ms1->env.add<float>("ms1_float", MS1_VAL);
     CUDAAgentModel *cuda_model1 = new CUDAAgentModel(ms1->model);
-    cuda_model1->setInitialPopulationData(*ms1->population);
-    EXPECT_NO_THROW(cuda_model1->simulate(ms1->simulation));
+    cuda_model1->setSimulationSteps(1);
+    cuda_model1->setPopulationData(*ms1->population);
+    EXPECT_NO_THROW(cuda_model1->simulate());
     MiniSim *ms2 = new MiniSim();
-    ms2->model.addAgent(ms2->agent);
     ms2->env.add<float>("ms1_float", MS1_VAL);
     {
         // Errors because ms1 CUDAAgentModel still alive
@@ -161,8 +157,9 @@ TEST(EnvironmentManagerTest2, RehostModel) {
     // Try again now ms1 has been deleted
     CUDAAgentModel *cuda_model2 = nullptr;
     EXPECT_NO_THROW(cuda_model2 = new CUDAAgentModel(ms2->model));
-    cuda_model2->setInitialPopulationData(*ms2->population);
-    EXPECT_NO_THROW(cuda_model2->simulate(ms2->simulation));
+    cuda_model2->setPopulationData(*ms2->population);
+    cuda_model2->setSimulationSteps(1);
+    EXPECT_NO_THROW(cuda_model2->simulate());
     delete cuda_model2;
     delete ms1;
     delete ms2;

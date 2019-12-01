@@ -76,11 +76,11 @@ int main(void) {
     ModelDescription flame_model("circles_model");
 
     // circle agent
-    AgentDescription circle_agent("circle");
-    circle_agent.addAgentVariable<float>("x");
-    circle_agent.addAgentVariable<float>("y");
-    circle_agent.addAgentVariable<float>("dx");
-    circle_agent.addAgentVariable<float>("dy");
+    AgentDescription &circle_agent = flame_model.newAgent("circle");
+    circle_agent.newVariable<float>("x");
+    circle_agent.newVariable<float>("y");
+    circle_agent.newVariable<float>("dx");
+    circle_agent.newVariable<float>("dy");
 
 
     // circle add states
@@ -89,35 +89,23 @@ int main(void) {
 
 
     // location message
-    MessageDescription location_message("location");
-    location_message.addVariable<float>("x");
-    location_message.addVariable<float>("y");
+    MessageDescription &location_message = flame_model.newMessage("location");
+    location_message.newVariable<float>("x");
+    location_message.newVariable<float>("y");
 
     // circle agent output_data function
     // Do not specify the state. As their are no states in the system it is assumed that this model is stateless.
-    AgentFunctionDescription output_data("output_data");
-    AgentFunctionOutput output_location("location");
-    output_data.setOutput(output_location);
+    AgentFunctionDescription &output_data = circle_agent.newFunction("output_data", output_func);
+    output_data.setMessageOutput(location_message);
     // output_data.setInitialState("state1");
-    output_data.setFunction(&output_func);
-    circle_agent.addAgentFunction(output_data);
 
     // circle agent input_data function
-    AgentFunctionDescription input_data("input_data");
-    AgentFunctionInput input_location("location");
-    input_data.setInput(input_location);
-    input_data.setFunction(&input_func);
-    circle_agent.addAgentFunction(input_data);
+    AgentFunctionDescription &input_data = circle_agent.newFunction("input_data", input_func);
+    input_data.setMessageInput(location_message);
 
 
     // circle agent move function
-    AgentFunctionDescription move("move");
-    move.setFunction(&move_func);
-    circle_agent.addAgentFunction(move);
-
-    // model
-    flame_model.addMessage(location_message);
-    flame_model.addAgent(circle_agent);
+    AgentFunctionDescription &move = circle_agent.newFunction("move", move_func);
 
     // TODO: At some point the model should be validated and then become read only. You should not be bale to add new agent variables once you have instances of the population for example.
     // flame_model.validate();
@@ -150,31 +138,18 @@ int main(void) {
     /* This is essentially the function layers from a model.xml */
     /* Currently this is specified by the user. In the future this could be generated automatically through dependency analysis like with FLAME HPC */
 
-    Simulation simulation(flame_model);
+    LayerDescription &output_layer = flame_model.newLayer("output_layer");  // in the original schema layers are not named
+    output_layer.addAgentFunction(output_data);
 
-    SimulationLayer output_layer(simulation, "output_layer");  // in the original schema layers are not named
-    output_layer.addAgentFunction("output_data");  // equivalent of layerfunction in FLAMEGPU
-    // output_layer.addAgentFunction("output_data",output_func);
-    // output_layer.addAgentFunction(output_data,output_func);
-    simulation.addSimulationLayer(output_layer);
-    // TODO: simulation.insertFunctionLayerAt(layer, int index) //Should inster at the layer position and move all other layer back
+    LayerDescription &input_layer = flame_model.newLayer("input_layer");
+    input_layer.addAgentFunction(input_data);
 
-    /*SimulationLayer input_layer(simulation, "input_layer");
-    input_layer.addAgentFunction("input_data");
-    input_layer.addAgentFunction("input_data",input_func);
-    input_layer.addAgentFunction(input_data,input_func);
-    simulation.addSimulationLayer(input_layer);
-
-    SimulationLayer move_layer(simulation, "move_layer");
-    move_layer.addAgentFunction("move");
-    move_layer.addAgentFunction("move",move_func); // example usage of func pointer
-    move_layer.addAgentFunction(move,move_func);
-    simulation.addSimulationLayer(move_layer);*/
+    LayerDescription &move_layer = flame_model.newLayer("input_layer");
+    move_layer.addAgentFunction(move);
 
     // TODO: simulation.getLayerPosition("layer name") - returns an int
     // Simulation.addFunctionToLayer(0,"lmove")
     // This would come from the program arguments. Would be argv[2] if this file had been generated from model.xml
-    simulation.setSimulationSteps(1);
 
 
     /* CUDA agent model */
@@ -182,13 +157,15 @@ int main(void) {
     /* Run the model */
     CUDAAgentModel cuda_model(flame_model);
 
-    cuda_model.setInitialPopulationData(population);
+    cuda_model.setSimulationSteps(1);
 
-    cuda_model.simulate(simulation);
+    cuda_model.setPopulationData(population);
+
+    cuda_model.simulate();
 
     // cuda_model.simulate(simulation);
 
-    cuda_model.step(simulation);
+    cuda_model.step();
 
     cuda_model.getPopulationData(population);
 

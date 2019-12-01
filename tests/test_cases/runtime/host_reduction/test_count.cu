@@ -33,7 +33,7 @@ FLAMEGPU_STEP_FUNCTION(step_countuint64_t) {
 }
 
 TEST_F(HostReductionTest, CountFloat) {
-    ms->simulation.addStepFunction(&step_countfloat);
+    ms->model.addStepFunction(step_countfloat);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_real_distribution <float> dist(FLT_MIN, FLT_MAX);
     std::array<float, TEST_LEN> in;
@@ -50,7 +50,7 @@ TEST_F(HostReductionTest, CountFloat) {
     EXPECT_EQ(uint32_t_out, std::count(in.begin(), in.end(), static_cast<float>(0)));
 }
 TEST_F(HostReductionTest, CountDouble) {
-    ms->simulation.addStepFunction(&step_countdouble);
+    ms->model.addStepFunction(step_countdouble);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_real_distribution <double> dist(DBL_MIN, DBL_MAX);
     std::array<double, TEST_LEN> in;
@@ -67,7 +67,7 @@ TEST_F(HostReductionTest, CountDouble) {
     EXPECT_EQ(uint32_t_out, std::count(in.begin(), in.end(), static_cast<double>(0)));
 }
 TEST_F(HostReductionTest, CountChar) {
-    ms->simulation.addStepFunction(&step_countchar);
+    ms->model.addStepFunction(step_countchar);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <int16_t> dist(CHAR_MIN, CHAR_MAX);
     std::array<char, TEST_LEN> in;
@@ -84,7 +84,7 @@ TEST_F(HostReductionTest, CountChar) {
     EXPECT_EQ(uint32_t_out, std::count(in.begin(), in.end(), static_cast<char>(0)));
 }
 TEST_F(HostReductionTest, CountUnsignedChar) {
-    ms->simulation.addStepFunction(&step_countuchar);
+    ms->model.addStepFunction(step_countuchar);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <uint16_t> dist(0, UCHAR_MAX);
     std::array<unsigned char, TEST_LEN> in;
@@ -101,7 +101,7 @@ TEST_F(HostReductionTest, CountUnsignedChar) {
     EXPECT_EQ(uint32_t_out, std::count(in.begin(), in.end(), static_cast<unsigned char>(0)));
 }
 TEST_F(HostReductionTest, CountInt16) {
-    ms->simulation.addStepFunction(&step_countint16_t);
+    ms->model.addStepFunction(step_countint16_t);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <int16_t> dist(INT16_MIN, INT16_MAX);
     std::array<int16_t, TEST_LEN> in;
@@ -118,7 +118,7 @@ TEST_F(HostReductionTest, CountInt16) {
     EXPECT_EQ(uint32_t_out, std::count(in.begin(), in.end(), static_cast<int16_t>(0)));
 }
 TEST_F(HostReductionTest, CountUnsignedInt16) {
-    ms->simulation.addStepFunction(&step_countuint16_t);
+    ms->model.addStepFunction(step_countuint16_t);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <uint16_t> dist(0, UINT16_MAX);
     std::array<uint16_t, TEST_LEN> in;
@@ -135,7 +135,7 @@ TEST_F(HostReductionTest, CountUnsignedInt16) {
     EXPECT_EQ(uint32_t_out, std::count(in.begin(), in.end(), static_cast<uint16_t>(0)));
 }
 TEST_F(HostReductionTest, CountInt32) {
-    ms->simulation.addStepFunction(&step_countint32_t);
+    ms->model.addStepFunction(step_countint32_t);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <int32_t> dist(INT32_MIN, INT32_MAX);
     std::array<int32_t, TEST_LEN> in;
@@ -152,7 +152,7 @@ TEST_F(HostReductionTest, CountInt32) {
     EXPECT_EQ(uint32_t_out, std::count(in.begin(), in.end(), static_cast<int32_t>(0)));
 }
 TEST_F(HostReductionTest, CountUnsignedInt32) {
-    ms->simulation.addStepFunction(&step_countuint32_t);
+    ms->model.addStepFunction(step_countuint32_t);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <uint32_t> dist(0, UINT32_MAX);
     std::array<uint32_t, TEST_LEN> in;
@@ -169,7 +169,7 @@ TEST_F(HostReductionTest, CountUnsignedInt32) {
     EXPECT_EQ(uint32_t_out, std::count(in.begin(), in.end(), static_cast<uint32_t>(0)));
 }
 TEST_F(HostReductionTest, CountInt64) {
-    ms->simulation.addStepFunction(&step_countint64_t);
+    ms->model.addStepFunction(step_countint64_t);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <int64_t> dist(INT64_MIN, INT64_MAX);
     std::array<int64_t, TEST_LEN> in;
@@ -186,7 +186,7 @@ TEST_F(HostReductionTest, CountInt64) {
     EXPECT_EQ(uint32_t_out, std::count(in.begin(), in.end(), static_cast<int64_t>(0)));
 }
 TEST_F(HostReductionTest, CountUnsignedInt64) {
-    ms->simulation.addStepFunction(&step_countuint64_t);
+    ms->model.addStepFunction(step_countuint64_t);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <uint64_t> dist(0, UINT64_MAX);
     std::array<uint64_t, TEST_LEN> in;

@@ -40,7 +40,7 @@ FLAMEGPU_STEP_FUNCTION(step_transformReduceuint64_t) {
 }
 
 TEST_F(HostReductionTest, CustomTransformReduceFloat) {
-    ms->simulation.addStepFunction(&step_transformReduceFloat);
+    ms->model.addStepFunction(step_transformReduceFloat);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_real_distribution <float> dist(FLT_MIN, FLT_MAX);
     std::array<float, TEST_LEN> in;
@@ -55,7 +55,7 @@ TEST_F(HostReductionTest, CustomTransformReduceFloat) {
     EXPECT_EQ(uint32_t_out, std::count(inTransform.begin(), inTransform.end(), static_cast<uint32_t>(1)));
 }
 TEST_F(HostReductionTest, CustomTransformReduceDouble) {
-    ms->simulation.addStepFunction(&step_transformReduceDouble);
+    ms->model.addStepFunction(step_transformReduceDouble);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_real_distribution <double> dist(DBL_MIN, DBL_MAX);
     std::array<double, TEST_LEN> in;
@@ -70,7 +70,7 @@ TEST_F(HostReductionTest, CustomTransformReduceDouble) {
     EXPECT_EQ(int32_t_out, std::count(inTransform.begin(), inTransform.end(), static_cast<int>(1)));
 }
 TEST_F(HostReductionTest, CustomTransformReduceChar) {
-    ms->simulation.addStepFunction(&step_transformReducechar);
+    ms->model.addStepFunction(step_transformReducechar);
     std::array<int, TEST_LEN> inTransform;
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <int16_t> dist(CHAR_MIN, CHAR_MAX);
@@ -89,7 +89,7 @@ TEST_F(HostReductionTest, CustomTransformReduceChar) {
     EXPECT_EQ(int32_t_out, std::count(inTransform.begin(), inTransform.end(), static_cast<int>(1)));
 }
 TEST_F(HostReductionTest, CustomTransformReduceUnsignedChar) {
-    ms->simulation.addStepFunction(&step_transformReduceuchar);
+    ms->model.addStepFunction(step_transformReduceuchar);
     std::array<int, TEST_LEN> inTransform;
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <uint16_t> dist(0, UCHAR_MAX);
@@ -104,7 +104,7 @@ TEST_F(HostReductionTest, CustomTransformReduceUnsignedChar) {
     EXPECT_EQ(int32_t_out, std::count(inTransform.begin(), inTransform.end(), static_cast<int>(1)));
 }
 TEST_F(HostReductionTest, CustomTransformReduceInt16) {
-    ms->simulation.addStepFunction(&step_transformReduceint16_t);
+    ms->model.addStepFunction(step_transformReduceint16_t);
     std::array<int, TEST_LEN> inTransform;
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <int16_t> dist(INT16_MIN, INT16_MAX);
@@ -119,7 +119,7 @@ TEST_F(HostReductionTest, CustomTransformReduceInt16) {
     EXPECT_EQ(int32_t_out, std::count(inTransform.begin(), inTransform.end(), static_cast<int>(1)));
 }
 TEST_F(HostReductionTest, CustomTransformReduceUnsignedInt16) {
-    ms->simulation.addStepFunction(&step_transformReduceuint16_t);
+    ms->model.addStepFunction(step_transformReduceuint16_t);
     std::array<int, TEST_LEN> inTransform;
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <uint16_t> dist(0, UINT16_MAX);
@@ -134,7 +134,7 @@ TEST_F(HostReductionTest, CustomTransformReduceUnsignedInt16) {
     EXPECT_EQ(int32_t_out, std::count(inTransform.begin(), inTransform.end(), static_cast<int>(1)));
 }
 TEST_F(HostReductionTest, CustomTransformReduceInt32) {
-    ms->simulation.addStepFunction(&step_transformReduceint32_t);
+    ms->model.addStepFunction(step_transformReduceint32_t);
     std::array<int, TEST_LEN> inTransform;
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <int32_t> dist(INT32_MIN, INT32_MAX);
@@ -149,7 +149,7 @@ TEST_F(HostReductionTest, CustomTransformReduceInt32) {
     EXPECT_EQ(int32_t_out, std::count(inTransform.begin(), inTransform.end(), static_cast<int>(1)));
 }
 TEST_F(HostReductionTest, CustomTransformReduceUnsignedInt32) {
-    ms->simulation.addStepFunction(&step_transformReduceuint32_t);
+    ms->model.addStepFunction(step_transformReduceuint32_t);
     std::array<int, TEST_LEN> inTransform;
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <uint32_t> dist(0, UINT32_MAX);
@@ -164,7 +164,7 @@ TEST_F(HostReductionTest, CustomTransformReduceUnsignedInt32) {
     EXPECT_EQ(int32_t_out, std::count(inTransform.begin(), inTransform.end(), static_cast<int>(1)));
 }
 TEST_F(HostReductionTest, CustomTransformReduceInt64) {
-    ms->simulation.addStepFunction(&step_transformReduceint64_t);
+    ms->model.addStepFunction(step_transformReduceint64_t);
     std::array<int, TEST_LEN> inTransform;
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <int64_t> dist(INT64_MIN, INT64_MAX);
@@ -179,7 +179,7 @@ TEST_F(HostReductionTest, CustomTransformReduceInt64) {
     EXPECT_EQ(int32_t_out, std::count(inTransform.begin(), inTransform.end(), static_cast<int>(1)));
 }
 TEST_F(HostReductionTest, CustomTransformReduceUnsignedInt64) {
-    ms->simulation.addStepFunction(&step_transformReduceuint64_t);
+    ms->model.addStepFunction(step_transformReduceuint64_t);
     std::array<int, TEST_LEN> inTransform;
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <uint64_t> dist(0, UINT64_MAX);

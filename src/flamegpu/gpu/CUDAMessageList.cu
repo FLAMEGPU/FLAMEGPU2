@@ -50,15 +50,15 @@ void CUDAMessageList::cleanupAllocatedData() {
 */
 void CUDAMessageList::allocateDeviceMessageList(CUDAMsgMap &memory_map) {
     // we use the  messages memory map to iterate the  message variables and do allocation within our GPU hash map
-    const VariableMap &mem = message.getMessageDescription().getVariableMap();
+    const auto &mem = message.getMessageDescription().variables;
 
     // for each variable allocate a device array and add to map
-    for (const VariableMapPair& mm : mem) {
+    for (const auto &mm : mem) {
         // get the variable name
         std::string var_name = mm.first;
 
         // get the variable size from  message description
-        size_t var_size = message.getMessageDescription().getMessageVariableSize(mm.first);
+        size_t var_size = mm.second.type_size;
 
         // do the device allocation
         void * d_ptr;
@@ -98,7 +98,7 @@ void CUDAMessageList::zeroDeviceMessageList(CUDAMsgMap& memory_map) {
     // for each device pointer in the cuda memory map set the values to 0
     for (const CUDAMsgMapPair& mm : memory_map) {
         // get the variable size from message description
-        size_t var_size = message.getMessageDescription().getMessageVariableSize(mm.first);
+        size_t var_size = message.getMessageDescription().variables.at(mm.first).type_size;
 
         // set the memory to zero
         gpuErrchk(cudaMemset(mm.second, 0, var_size*message.getMaximumListSize()));

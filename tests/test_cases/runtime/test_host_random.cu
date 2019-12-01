@@ -128,19 +128,19 @@ class MiniSim {
  public:
     MiniSim() :
       model("model"),
-      agent("agent"),
+      agent(model.newAgent("agent")),
       population(agent, AGENT_COUNT),
-      simulation(model) {
-        // agent.addAgentVariable<float>("float");
-        // agent.addAgentVariable<double>("double");
-        // agent.addAgentVariable<unsigned char>("unsigned_char");
-        // agent.addAgentVariable<char>("char");
-        // agent.addAgentVariable<uint16_t>("uint16_t");
-        // agent.addAgentVariable<int16_t>("int16_t");
-        // agent.addAgentVariable<unsigned int>("unsigned_int");
-        // agent.addAgentVariable<int>("int");
-        // agent.addAgentVariable<uint64_t>("uint64_t");
-        // agent.addAgentVariable<int64_t>("int64_t");
+      simulation(nullptr) {
+        // agent.newVariable<float>("float");
+        // agent.newVariable<double>("double");
+        // agent.newVariable<unsigned char>("unsigned_char");
+        // agent.newVariable<char>("char");
+        // agent.newVariable<uint16_t>("uint16_t");
+        // agent.newVariable<int16_t>("int16_t");
+        // agent.newVariable<unsigned int>("unsigned_int");
+        // agent.newVariable<int>("int");
+        // agent.newVariable<uint64_t>("uint64_t");
+        // agent.newVariable<int64_t>("int64_t");
 
         for (unsigned int i = 0; i < AGENT_COUNT; i++) {
             AgentInstance instance = population.getNextInstance();
@@ -155,27 +155,33 @@ class MiniSim {
             // instance.setVariable<uint64_t>("uint64_t", 0);
             // instance.setVariable<int64_t>("int64_t", 0);
         }
-        model.addAgent(agent);
-        simulation.setSimulationSteps(1);
     }
-    void run() {
+    ~MiniSim() {
+        if (simulation) delete simulation;
+    }
+    void run(int argc = 0, const char** argv = nullptr) {
+        if (!simulation) {
+            simulation = new CUDAAgentModel(model);
+            simulation->setSimulationSteps(1);
+            simulation->setPopulationData(population);
+        }
+        if (argc)
+            simulation->initialise(argc, argv);
         // CudaModel must be declared here
         // As the initial call to constructor fixes the agent population
-        // This means if we haven't called model.addAgent(agent) first
-        CUDAAgentModel cuda_model(model);
+        // This means if we haven't called model.newAgent(agent) first
         // This fails as agentMap is empty
-        cuda_model.setInitialPopulationData(population);
-        ASSERT_NO_THROW(cuda_model.simulate(simulation));
+        ASSERT_NO_THROW(simulation->simulate());
         // The negative of this, is that cuda_model is inaccessible within the test!
         // So copy across population data here
-        ASSERT_NO_THROW(cuda_model.getPopulationData(population));
+        ASSERT_NO_THROW(simulation->getPopulationData(population));
     }
 
     const unsigned int AGENT_COUNT = 5;
     ModelDescription model;
-    AgentDescription agent;
+    AgentDescription &agent;
     AgentPopulation population;
-    Simulation simulation;
+    CUDAAgentModel *simulation;
 };
 /**
  * This defines a common fixture used as a base for all test cases in the file
@@ -216,20 +222,19 @@ class HostRandomTest : public testing::Test {
 };
 
 // @note seeds 0 and 1 conflict with std::linear_congruential_engine, the default on GCC so using mt19937 to avoid this.
-const char *args_1[4] = { "process.exe", "input.xml", "-r", "0" };
-const char *args_2[4] = { "process.exe", "input.xml", "-r", "1" };
+const char *args_1[4] = { "process.exe", "", "-r", "0" };
+const char *args_2[4] = { "process.exe", "", "-r", "1" };
 
 }  // namespace
 
 
 TEST_F(HostRandomTest, UniformFloat) {
-    ms->simulation.addStepFunction(&step_uniform_float);
-    // Seed RNG
-    ms->simulation.checkArgs(4, args_1, _t_unused);
+    ms->model.addStepFunction(step_uniform_float);
     // Initially 0
     for (float&i : float_out)
         EXPECT_EQ(i, 0.0f);
-    ms->run();
+    // Seed RNG
+    ms->run(4, args_1);
     // Value has changed
     unsigned int diff = 0;
     for (float &i : float_out)
@@ -248,8 +253,7 @@ TEST_F(HostRandomTest, UniformFloat) {
     for (float&i : float_out)
         i = 0.0f;
     // Different Seed
-    ms->simulation.checkArgs(4, args_2, _t_unused);
-    ms->run();
+    ms->run(4, args_2);
     // Value has changed
     diff = 0;
     for (float &i : float_out)
@@ -265,8 +269,7 @@ TEST_F(HostRandomTest, UniformFloat) {
     for (float&i : float_out)
         i = 0.0f;
     // First Seed
-    ms->simulation.checkArgs(4, args_1, _t_unused);
-    ms->run();
+    ms->run(4, args_1);
     // Value has changed
     diff = 0;
     for (float &i : float_out)
@@ -278,13 +281,12 @@ TEST_F(HostRandomTest, UniformFloat) {
         EXPECT_EQ(float_out[i], _float_out[i]);
 }
 TEST_F(HostRandomTest, UniformDouble) {
-    ms->simulation.addStepFunction(&step_uniform_double);
-    // Seed RNG
-    ms->simulation.checkArgs(4, args_1, _t_unused);
+    ms->model.addStepFunction(step_uniform_double);
     // Initially 0
     for (double&i : double_out)
         EXPECT_EQ(i, 0.0);
-    ms->run();
+    // Seed RNG
+    ms->run(4, args_1);
     // Value has changed
     unsigned int diff = 0;
     for (double &i : double_out)
@@ -303,8 +305,7 @@ TEST_F(HostRandomTest, UniformDouble) {
     for (double&i : double_out)
         i = 0.0;
     // Different Seed
-    ms->simulation.checkArgs(4, args_2, _t_unused);
-    ms->run();
+    ms->run(4, args_2);
     // Value has changed
     diff = 0;
     for (double &i : double_out)
@@ -320,8 +321,7 @@ TEST_F(HostRandomTest, UniformDouble) {
     for (double&i : double_out)
         i = 0.0;
     // First Seed
-    ms->simulation.checkArgs(4, args_1, _t_unused);
-    ms->run();
+    ms->run(4, args_1);
     // Value has changed
     diff = 0;
     for (double &i : double_out)
@@ -334,13 +334,12 @@ TEST_F(HostRandomTest, UniformDouble) {
 }
 
 TEST_F(HostRandomTest, NormalFloat) {
-    ms->simulation.addStepFunction(&step_normal_float);
-    // Seed RNG
-    ms->simulation.checkArgs(4, args_1, _t_unused);
+    ms->model.addStepFunction(step_normal_float);
     // Initially 0
     for (float&i : float_out)
         EXPECT_EQ(i, 0.0f);
-    ms->run();
+    // Seed RNG
+    ms->run(4, args_1);
     // Value has changed
     unsigned int diff = 0;
     for (float &i : float_out)
@@ -359,8 +358,7 @@ TEST_F(HostRandomTest, NormalFloat) {
     for (float&i : float_out)
         i = 0.0f;
     // Different Seed
-    ms->simulation.checkArgs(4, args_2, _t_unused);
-    ms->run();
+    ms->run(4, args_2);
     // Value has changed
     diff = 0;
     for (float &i : float_out)
@@ -376,8 +374,7 @@ TEST_F(HostRandomTest, NormalFloat) {
     for (float&i : float_out)
         i = 0.0f;
     // First Seed
-    ms->simulation.checkArgs(4, args_1, _t_unused);
-    ms->run();
+    ms->run(4, args_1);
     // Value has changed
     diff = 0;
     for (float &i : float_out)
@@ -389,13 +386,12 @@ TEST_F(HostRandomTest, NormalFloat) {
         EXPECT_EQ(float_out[i], _float_out[i]);
 }
 TEST_F(HostRandomTest, NormalDouble) {
-    ms->simulation.addStepFunction(&step_normal_double);
-    // Seed RNG
-    ms->simulation.checkArgs(4, args_1, _t_unused);
+    ms->model.addStepFunction(step_normal_double);
     // Initially 0
     for (double&i : double_out)
         EXPECT_EQ(i, 0.0);
-    ms->run();
+    // Seed RNG
+    ms->run(4, args_1);
     // Value has changed
     unsigned int diff = 0;
     for (double &i : double_out)
@@ -414,8 +410,7 @@ TEST_F(HostRandomTest, NormalDouble) {
     for (double&i : double_out)
         i = 0.0;
     // Different Seed
-    ms->simulation.checkArgs(4, args_2, _t_unused);
-    ms->run();
+    ms->run(4, args_2);
     // Value has changed
     diff = 0;
     for (double &i : double_out)
@@ -431,8 +426,7 @@ TEST_F(HostRandomTest, NormalDouble) {
     for (double&i : double_out)
         i = 0.0;
     // First Seed
-    ms->simulation.checkArgs(4, args_1, _t_unused);
-    ms->run();
+    ms->run(4, args_1);
     // Value has changed
     diff = 0;
     for (double &i : double_out)
@@ -445,13 +439,12 @@ TEST_F(HostRandomTest, NormalDouble) {
 }
 
 TEST_F(HostRandomTest, LogNormalFloat) {
-    ms->simulation.addStepFunction(&step_logNormal_float);
-    // Seed RNG
-    ms->simulation.checkArgs(4, args_1, _t_unused);
+    ms->model.addStepFunction(step_logNormal_float);
     // Initially 0
     for (float &i : float_out)
         EXPECT_EQ(i, 0.0f);
-    ms->run();
+    // Seed RNG
+    ms->run(4, args_1);
     // Value has changed
     unsigned int diff = 0;
     for (float&i : float_out)
@@ -470,8 +463,7 @@ TEST_F(HostRandomTest, LogNormalFloat) {
     for (float&i : float_out)
         i = 0.0f;
     // Different Seed
-    ms->simulation.checkArgs(4, args_2, _t_unused);
-    ms->run();
+    ms->run(4, args_2);
     // Value has changed
     diff = 0;
     for (float &i : float_out)
@@ -487,8 +479,7 @@ TEST_F(HostRandomTest, LogNormalFloat) {
     for (float&i : float_out)
         i = 0.0f;
     // First Seed
-    ms->simulation.checkArgs(4, args_1, _t_unused);
-    ms->run();
+    ms->run(4, args_1);
     // Value has changed
     diff = 0;
     for (float &i : float_out)
@@ -500,13 +491,12 @@ TEST_F(HostRandomTest, LogNormalFloat) {
         EXPECT_EQ(float_out[i], _float_out[i]);
 }
 TEST_F(HostRandomTest, LogNormalDouble) {
-    ms->simulation.addStepFunction(&step_logNormal_double);
-    // Seed RNG
-    ms->simulation.checkArgs(4, args_1, _t_unused);
+    ms->model.addStepFunction(step_logNormal_double);
     // Initially 0
     for (double&i : double_out)
         EXPECT_EQ(i, 0.0);
-    ms->run();
+    // Seed RNG
+    ms->run(4, args_1);
     // Value has changed
     unsigned int diff = 0;
     for (double &i : double_out)
@@ -525,8 +515,7 @@ TEST_F(HostRandomTest, LogNormalDouble) {
     for (double&i : double_out)
         i = 0.0;
     // Different Seed
-    ms->simulation.checkArgs(4, args_2, _t_unused);
-    ms->run();
+    ms->run(4, args_2);
     // Value has changed
     diff = 0;
     for (double &i : double_out)
@@ -542,8 +531,7 @@ TEST_F(HostRandomTest, LogNormalDouble) {
     for (double&i : double_out)
         i = 0.0;
     // First Seed
-    ms->simulation.checkArgs(4, args_1, _t_unused);
-    ms->run();
+    ms->run(4, args_1);
     // Value has changed
     diff = 0;
     for (double &i : double_out)
@@ -556,13 +544,12 @@ TEST_F(HostRandomTest, LogNormalDouble) {
 }
 
 TEST_F(HostRandomTest, UniformUChar) {
-    ms->simulation.addStepFunction(&step_uniform_uchar);
-    // Seed RNG
-    ms->simulation.checkArgs(4, args_1, _t_unused);
+    ms->model.addStepFunction(step_uniform_uchar);
     // Initially 0
     for (unsigned char&i : unsigned_char_out)
         EXPECT_EQ(i, 0);
-    ms->run();
+    // Seed RNG
+    ms->run(4, args_1);
     // Value has changed
     unsigned int diff = 0;
     for (unsigned char &i : unsigned_char_out)
@@ -581,8 +568,7 @@ TEST_F(HostRandomTest, UniformUChar) {
     for (unsigned char&i : unsigned_char_out)
         i = 0;
     // Different Seed
-    ms->simulation.checkArgs(4, args_2, _t_unused);
-    ms->run();
+    ms->run(4, args_2);
     // Value has changed
     diff = 0;
     for (unsigned char &i : unsigned_char_out)
@@ -598,8 +584,7 @@ TEST_F(HostRandomTest, UniformUChar) {
     for (unsigned char&i : unsigned_char_out)
         i = 0;
     // First Seed
-    ms->simulation.checkArgs(4, args_1, _t_unused);
-    ms->run();
+    ms->run(4, args_1);
     // Value has changed
     diff = 0;
     for (unsigned char &i : unsigned_char_out)
@@ -611,13 +596,12 @@ TEST_F(HostRandomTest, UniformUChar) {
         EXPECT_EQ(unsigned_char_out[i], _unsigned_char_out[i]);
 }
 TEST_F(HostRandomTest, UniformChar) {
-    ms->simulation.addStepFunction(&step_uniform_char);
-    // Seed RNG
-    ms->simulation.checkArgs(4, args_1, _t_unused);
+    ms->model.addStepFunction(step_uniform_char);
     // Initially 0
     for (char&i : char_out)
         EXPECT_EQ(i, 0);
-    ms->run();
+    // Seed RNG
+    ms->run(4, args_1);
     // Value has changed
     unsigned int diff = 0;
     for (char&i : char_out)
@@ -636,8 +620,7 @@ TEST_F(HostRandomTest, UniformChar) {
     for (char&i : char_out)
         i = 0;
     // Different Seed
-    ms->simulation.checkArgs(4, args_2, _t_unused);
-    ms->run();
+    ms->run(4, args_2);
     // Value has changed
     diff = 0;
     for (char&i : char_out)
@@ -653,8 +636,7 @@ TEST_F(HostRandomTest, UniformChar) {
     for (char&i : char_out)
         i = 0;
     // First Seed
-    ms->simulation.checkArgs(4, args_1, _t_unused);
-    ms->run();
+    ms->run(4, args_1);
     // Value has changed
     diff = 0;
     for (char&i : char_out)
@@ -667,13 +649,12 @@ TEST_F(HostRandomTest, UniformChar) {
 }
 
 TEST_F(HostRandomTest, UniformUShort) {
-    ms->simulation.addStepFunction(&step_uniform_ushort);
-    // Seed RNG
-    ms->simulation.checkArgs(4, args_1, _t_unused);
+    ms->model.addStepFunction(step_uniform_ushort);
     // Initially 0
     for (uint16_t &i : unsigned_short_out)
         EXPECT_EQ(i, 0u);
-    ms->run();
+    // Seed RNG
+    ms->run(4, args_1);
     // Value has changed
     unsigned int diff = 0;
     for (uint16_t &i : unsigned_short_out)
@@ -692,8 +673,7 @@ TEST_F(HostRandomTest, UniformUShort) {
     for (uint16_t &i : unsigned_short_out)
         i = 0u;
     // Different Seed
-    ms->simulation.checkArgs(4, args_2, _t_unused);
-    ms->run();
+    ms->run(4, args_2);
     // Value has changed
     diff = 0;
     for (uint16_t &i : unsigned_short_out)
@@ -709,8 +689,7 @@ TEST_F(HostRandomTest, UniformUShort) {
     for (uint16_t &i : unsigned_short_out)
         i = 0;
     // First Seed
-    ms->simulation.checkArgs(4, args_1, _t_unused);
-    ms->run();
+    ms->run(4, args_1);
     // Value has changed
     diff = 0;
     for (uint16_t &i : unsigned_short_out)
@@ -721,13 +700,12 @@ TEST_F(HostRandomTest, UniformUShort) {
         EXPECT_EQ(unsigned_short_out[i], _unsigned_short_out[i]);
 }
 TEST_F(HostRandomTest, UniformShort) {
-    ms->simulation.addStepFunction(&step_uniform_short);
-    // Seed RNG
-    ms->simulation.checkArgs(4, args_1, _t_unused);
+    ms->model.addStepFunction(step_uniform_short);
     // Initially 0
     for (int16_t &i : short_out)
         EXPECT_EQ(i, 0);
-    ms->run();
+    // Seed RNG
+    ms->run(4, args_1);
     // Value has changed
     unsigned int diff = 0;
     for (int16_t &i : short_out)
@@ -746,8 +724,7 @@ TEST_F(HostRandomTest, UniformShort) {
     for (int16_t &i : short_out)
         i = 0;
     // Different Seed
-    ms->simulation.checkArgs(4, args_2, _t_unused);
-    ms->run();
+    ms->run(4, args_2);
     // Value has changed
     diff = 0;
     for (int16_t &i : short_out)
@@ -763,8 +740,7 @@ TEST_F(HostRandomTest, UniformShort) {
     for (int16_t &i : short_out)
         i = 0;
     // First Seed
-    ms->simulation.checkArgs(4, args_1, _t_unused);
-    ms->run();
+    ms->run(4, args_1);
     // Value has changed
     diff = 0;
     for (int16_t &i : short_out)
@@ -777,13 +753,12 @@ TEST_F(HostRandomTest, UniformShort) {
 }
 
 TEST_F(HostRandomTest, UniformUInt) {
-    ms->simulation.addStepFunction(&step_uniform_uint);
-    // Seed RNG
-    ms->simulation.checkArgs(4, args_1, _t_unused);
+    ms->model.addStepFunction(step_uniform_uint);
     // Initially 0
     for (unsigned int&i : unsigned_int_out)
         EXPECT_EQ(i, 0u);
-    ms->run();
+    // Seed RNG
+    ms->run(4, args_1);
     // Value has changed
     unsigned int diff = 0;
     for (unsigned int &i : unsigned_int_out)
@@ -802,8 +777,7 @@ TEST_F(HostRandomTest, UniformUInt) {
     for (unsigned int&i : unsigned_int_out)
         i = 0u;
     // Different Seed
-    ms->simulation.checkArgs(4, args_2, _t_unused);
-    ms->run();
+    ms->run(4, args_2);
     // Value has changed
     diff = 0;
     for (unsigned int &i : unsigned_int_out)
@@ -819,8 +793,7 @@ TEST_F(HostRandomTest, UniformUInt) {
     for (unsigned int&i : unsigned_int_out)
         i = 0u;
     // First Seed
-    ms->simulation.checkArgs(4, args_1, _t_unused);
-    ms->run();
+    ms->run(4, args_1);
     // Value has changed
     diff = 0;
     for (unsigned int &i : unsigned_int_out)
@@ -832,13 +805,12 @@ TEST_F(HostRandomTest, UniformUInt) {
         EXPECT_EQ(unsigned_int_out[i], _unsigned_int_out[i]);
 }
 TEST_F(HostRandomTest, UniformInt) {
-    ms->simulation.addStepFunction(&step_uniform_int);
-    // Seed RNG
-    ms->simulation.checkArgs(4, args_1, _t_unused);
+    ms->model.addStepFunction(step_uniform_int);
     // Initially 0
     for (int&i : int_out)
         EXPECT_EQ(i, 0);
-    ms->run();
+    // Seed RNG
+    ms->run(4, args_1);
     // Value has changed
     unsigned int diff = 0;
     for (int32_t &i : int_out)
@@ -857,8 +829,7 @@ TEST_F(HostRandomTest, UniformInt) {
     for (int&i : int_out)
         i = 0;
     // Different Seed
-    ms->simulation.checkArgs(4, args_2, _t_unused);
-    ms->run();
+    ms->run(4, args_2);
     // Value has changed
     diff = 0;
     for (int32_t &i : int_out)
@@ -874,8 +845,7 @@ TEST_F(HostRandomTest, UniformInt) {
     for (int&i : int_out)
         i = 0;
     // First Seed
-    ms->simulation.checkArgs(4, args_1, _t_unused);
-    ms->run();
+    ms->run(4, args_1);
     // Value has changed
     diff = 0;
     for (int32_t &i : int_out)
@@ -888,13 +858,12 @@ TEST_F(HostRandomTest, UniformInt) {
 }
 
 TEST_F(HostRandomTest, UniformULongLong) {
-    ms->simulation.addStepFunction(&step_uniform_ulonglong);
-    // Seed RNG
-    ms->simulation.checkArgs(4, args_1, _t_unused);
+    ms->model.addStepFunction(step_uniform_ulonglong);
     // Initially 0
     for (uint64_t &i : unsigned_longlong_out)
         EXPECT_EQ(i, 0llu);
-    ms->run();
+    // Seed RNG
+    ms->run(4, args_1);
     // Value has changed
     unsigned int diff = 0;
     for (uint64_t &i : unsigned_longlong_out)
@@ -913,8 +882,7 @@ TEST_F(HostRandomTest, UniformULongLong) {
     for (uint64_t &i : unsigned_longlong_out)
         i = 0llu;
     // Different Seed
-    ms->simulation.checkArgs(4, args_2, _t_unused);
-    ms->run();
+    ms->run(4, args_2);
     // Value has changed
     diff = 0;
     for (uint64_t &i : unsigned_longlong_out)
@@ -930,8 +898,7 @@ TEST_F(HostRandomTest, UniformULongLong) {
     for (uint64_t &i : unsigned_longlong_out)
         i = 0llu;
     // First Seed
-    ms->simulation.checkArgs(4, args_1, _t_unused);
-    ms->run();
+    ms->run(4, args_1);
     // Value has changed
     diff = 0;
     for (uint64_t &i : unsigned_longlong_out)
@@ -943,13 +910,12 @@ TEST_F(HostRandomTest, UniformULongLong) {
         EXPECT_EQ(unsigned_longlong_out[i], _unsigned_longlong_out[i]);
 }
 TEST_F(HostRandomTest, UniformLongLong) {
-    ms->simulation.addStepFunction(&step_uniform_longlong);
-    // Seed RNG
-    ms->simulation.checkArgs(4, args_1, _t_unused);
+    ms->model.addStepFunction(step_uniform_longlong);
     // Initially 0
     for (int64_t &i : longlong_out)
         EXPECT_EQ(i, 0ll);
-    ms->run();
+    // Seed RNG
+    ms->run(4, args_1);
     // Value has changed
     unsigned int diff = 0;
     for (int64_t &i : longlong_out)
@@ -968,8 +934,7 @@ TEST_F(HostRandomTest, UniformLongLong) {
     for (int64_t &i : longlong_out)
         i = 0ll;
     // Different Seed
-    ms->simulation.checkArgs(4, args_2, _t_unused);
-    ms->run();
+    ms->run(4, args_2);
     // Value has changed
     diff = 0;
     for (int64_t &i : longlong_out)
@@ -985,8 +950,7 @@ TEST_F(HostRandomTest, UniformLongLong) {
     for (int64_t &i : longlong_out)
         i = 0ll;
     // First Seed
-    ms->simulation.checkArgs(4, args_1, _t_unused);
-    ms->run();
+    ms->run(4, args_1);
     // Value has changed
     diff = 0;
     for (int64_t &i : longlong_out)
@@ -1002,7 +966,7 @@ TEST_F(HostRandomTest, UniformLongLong) {
  * Range tests
  */
 TEST_F(HostRandomTest, UniformFloatRange) {
-    ms->simulation.addStepFunction(&step_uniform_float);
+    ms->model.addStepFunction(step_uniform_float);
     ms->run();
     for (auto &i : float_out) {
         EXPECT_GE(i, 0.0f);
@@ -1010,7 +974,7 @@ TEST_F(HostRandomTest, UniformFloatRange) {
     }
 }
 TEST_F(HostRandomTest, UniformDoubleRange) {
-    ms->simulation.addStepFunction(&step_uniform_double);
+    ms->model.addStepFunction(step_uniform_double);
     ms->run();
     for (auto &i : double_out) {
         EXPECT_GE(i, 0.0f);
@@ -1019,7 +983,7 @@ TEST_F(HostRandomTest, UniformDoubleRange) {
 }
 
 TEST_F(HostRandomTest, UniformUCharRange) {
-    ms->simulation.addStepFunction(&step_uniform_uchar_range);
+    ms->model.addStepFunction(step_uniform_uchar_range);
     ms->run();
     for (auto &i : unsigned_char_out) {
         EXPECT_GE(i, static_cast<unsigned char>(UCHAR_MAX*0.25));
@@ -1027,7 +991,7 @@ TEST_F(HostRandomTest, UniformUCharRange) {
     }
 }
 TEST_F(HostRandomTest, UniformCharRange) {
-    ms->simulation.addStepFunction(&step_uniform_char_range);
+    ms->model.addStepFunction(step_uniform_char_range);
     ms->run();
     for (auto &i : unsigned_char_out) {
         EXPECT_GE(i, static_cast<char>(CHAR_MIN*0.5));
@@ -1036,7 +1000,7 @@ TEST_F(HostRandomTest, UniformCharRange) {
 }
 
 TEST_F(HostRandomTest, UniformUShortRange) {
-    ms->simulation.addStepFunction(&step_uniform_ushort_range);
+    ms->model.addStepFunction(step_uniform_ushort_range);
     ms->run();
     for (auto &i : unsigned_short_out) {
         EXPECT_GE(i, static_cast<uint16_t>(UINT16_MAX*0.25));
@@ -1044,7 +1008,7 @@ TEST_F(HostRandomTest, UniformUShortRange) {
     }
 }
 TEST_F(HostRandomTest, UniformShortRange) {
-    ms->simulation.addStepFunction(&step_uniform_short_range);
+    ms->model.addStepFunction(step_uniform_short_range);
     ms->run();
     for (auto &i : short_out) {
         EXPECT_GE(i, static_cast<int16_t>(INT16_MIN*0.5));
@@ -1053,7 +1017,7 @@ TEST_F(HostRandomTest, UniformShortRange) {
 }
 
 TEST_F(HostRandomTest, UniformUIntRange) {
-    ms->simulation.addStepFunction(&step_uniform_uint_range);
+    ms->model.addStepFunction(step_uniform_uint_range);
     ms->run();
     for (auto &i : unsigned_int_out) {
         EXPECT_GE(i, static_cast<unsigned int>(UINT_MAX*0.25));
@@ -1061,7 +1025,7 @@ TEST_F(HostRandomTest, UniformUIntRange) {
     }
 }
 TEST_F(HostRandomTest, UniformIntRange) {
-    ms->simulation.addStepFunction(&step_uniform_int_range);
+    ms->model.addStepFunction(step_uniform_int_range);
     ms->run();
     for (auto &i : int_out) {
         EXPECT_GE(i, static_cast<int>(INT_MIN*0.5));
@@ -1070,7 +1034,7 @@ TEST_F(HostRandomTest, UniformIntRange) {
 }
 
 TEST_F(HostRandomTest, UniformULongLongRange) {
-    ms->simulation.addStepFunction(&step_uniform_ulonglong_range);
+    ms->model.addStepFunction(step_uniform_ulonglong_range);
     ms->run();
     for (auto &i : unsigned_longlong_out) {
         EXPECT_GE(i, static_cast<uint64_t>(UINT64_MAX*0.25));
@@ -1078,7 +1042,7 @@ TEST_F(HostRandomTest, UniformULongLongRange) {
     }
 }
 TEST_F(HostRandomTest, UniformLongLongRange) {
-    ms->simulation.addStepFunction(&step_uniform_longlong_range);
+    ms->model.addStepFunction(step_uniform_longlong_range);
     ms->run();
     for (auto &i : longlong_out) {
         EXPECT_GE(i, static_cast<int64_t>(INT64_MIN >> 1));

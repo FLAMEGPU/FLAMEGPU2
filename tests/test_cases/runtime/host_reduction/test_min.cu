@@ -33,7 +33,7 @@ FLAMEGPU_STEP_FUNCTION(step_minint64_t) {
 }
 
 TEST_F(HostReductionTest, MinFloat) {
-    ms->simulation.addStepFunction(&step_minfloat);
+    ms->model.addStepFunction(step_minfloat);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_real_distribution <float> dist(FLT_MIN, FLT_MAX);
     std::array<float, TEST_LEN> in;
@@ -46,7 +46,7 @@ TEST_F(HostReductionTest, MinFloat) {
     EXPECT_EQ(float_out, *std::min_element(in.begin(), in.end()));
 }
 TEST_F(HostReductionTest, MinDouble) {
-    ms->simulation.addStepFunction(&step_mindouble);
+    ms->model.addStepFunction(step_mindouble);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_real_distribution <double> dist(DBL_MIN, DBL_MAX);
     std::array<double, TEST_LEN> in;
@@ -59,7 +59,7 @@ TEST_F(HostReductionTest, MinDouble) {
     EXPECT_EQ(double_out, *std::min_element(in.begin(), in.end()));
 }
 TEST_F(HostReductionTest, MinChar) {
-    ms->simulation.addStepFunction(&step_minchar);
+    ms->model.addStepFunction(step_minchar);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <int16_t> dist(CHAR_MIN, CHAR_MAX);
     std::array<char, TEST_LEN> in;
@@ -72,7 +72,7 @@ TEST_F(HostReductionTest, MinChar) {
     EXPECT_EQ(char_out, *std::min_element(in.begin(), in.end()));
 }
 TEST_F(HostReductionTest, MinUnsignedChar) {
-    ms->simulation.addStepFunction(&step_minuchar);
+    ms->model.addStepFunction(step_minuchar);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <uint16_t> dist(0, UCHAR_MAX);
     std::array<unsigned char, TEST_LEN> in;
@@ -85,7 +85,7 @@ TEST_F(HostReductionTest, MinUnsignedChar) {
     EXPECT_EQ(uchar_out, *std::min_element(in.begin(), in.end()));
 }
 TEST_F(HostReductionTest, MinInt16) {
-    ms->simulation.addStepFunction(&step_minint16_t);
+    ms->model.addStepFunction(step_minint16_t);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <int16_t> dist(INT16_MIN, INT16_MAX);
     std::array<int16_t, TEST_LEN> in;
@@ -98,7 +98,7 @@ TEST_F(HostReductionTest, MinInt16) {
     EXPECT_EQ(int16_t_out, *std::min_element(in.begin(), in.end()));
 }
 TEST_F(HostReductionTest, MinUnsignedInt16) {
-    ms->simulation.addStepFunction(&step_minuint16_t);
+    ms->model.addStepFunction(step_minuint16_t);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <uint16_t> dist(0, UINT16_MAX);
     std::array<uint16_t, TEST_LEN> in;
@@ -111,7 +111,7 @@ TEST_F(HostReductionTest, MinUnsignedInt16) {
     EXPECT_EQ(uint16_t_out, *std::min_element(in.begin(), in.end()));
 }
 TEST_F(HostReductionTest, MinInt32) {
-    ms->simulation.addStepFunction(&step_minint32_t);
+    ms->model.addStepFunction(step_minint32_t);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <int32_t> dist(INT32_MIN, INT32_MAX);
     std::array<int32_t, TEST_LEN> in;
@@ -124,7 +124,7 @@ TEST_F(HostReductionTest, MinInt32) {
     EXPECT_EQ(int32_t_out, *std::min_element(in.begin(), in.end()));
 }
 TEST_F(HostReductionTest, MinUnsignedInt32) {
-    ms->simulation.addStepFunction(&step_minuint32_t);
+    ms->model.addStepFunction(step_minuint32_t);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <uint32_t> dist(0, UINT32_MAX);
     std::array<uint32_t, TEST_LEN> in;
@@ -137,7 +137,7 @@ TEST_F(HostReductionTest, MinUnsignedInt32) {
     EXPECT_EQ(uint32_t_out, *std::min_element(in.begin(), in.end()));
 }
 TEST_F(HostReductionTest, MinInt64) {
-    ms->simulation.addStepFunction(&step_minint64_t);
+    ms->model.addStepFunction(step_minint64_t);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <int64_t> dist(INT64_MIN, INT64_MAX);
     std::array<int64_t, TEST_LEN> in;
@@ -150,7 +150,7 @@ TEST_F(HostReductionTest, MinInt64) {
     EXPECT_EQ(int64_t_out, *std::min_element(in.begin(), in.end()));
 }
 TEST_F(HostReductionTest, MinUnsignedInt64) {
-    ms->simulation.addStepFunction(&step_minuint64_t);
+    ms->model.addStepFunction(step_minuint64_t);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <uint64_t> dist(0, UINT64_MAX);
     std::array<uint64_t, TEST_LEN> in;

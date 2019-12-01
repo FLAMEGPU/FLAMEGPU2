@@ -20,7 +20,7 @@
 #include <functional>
 
 
-#include "flamegpu/gpu/CUDAAgent.h"
+#include "flamegpu/sim/AgentInterface.h"
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/runtime/flamegpu_host_api.h"
 #include "flamegpu/gpu/CUDAErrorChecking.h"
@@ -51,7 +51,7 @@ __device__ __forceinline__ OutT funcName ## _impl::unary_function<InT, OutT>::op
 
 class FLAMEGPU_HOST_AGENT_API {
  public:
-    FLAMEGPU_HOST_AGENT_API(FLAMEGPU_HOST_API &_api, const CUDAAgent &_agent, const std::string &_stateName = "default")
+    FLAMEGPU_HOST_AGENT_API(FLAMEGPU_HOST_API &_api, AgentInterface &_agent, const std::string &_stateName = "default")
         :api(_api),
         agent(_agent),
         hasState(true),
@@ -129,7 +129,7 @@ class FLAMEGPU_HOST_AGENT_API {
 
  private:
     FLAMEGPU_HOST_API &api;
-    const CUDAAgent &agent;
+    AgentInterface &agent;
     bool hasState;
     const std::string stateName;
 };
@@ -146,14 +146,13 @@ template<typename InT, typename OutT>
 OutT FLAMEGPU_HOST_AGENT_API::sum(const std::string &variable) const {
     static_assert(sizeof(InT) <= sizeof(OutT), "Template arg OutT should not be of a smaller size than InT");
     const auto &agentDesc = agent.getAgentDescription();
-    if (typeid(InT) != agentDesc.getVariableType(variable)) {
+    if (std::type_index(typeid(InT)) != agentDesc.description->getVariableType(variable)) {
         THROW InvalidVarType("Wrong variable type passed to FLAMEGPU_HOST_AGENT_API::sum(). "
             "This call expects '%s', but '%s' was requested.",
-            agentDesc.getVariableType(variable).name(), typeid(InT).name());
+            agentDesc.variables.at(variable).type.name(), typeid(InT).name());
     }
-    const auto &stateAgent = agent.getAgentStateList(stateName);
-    void *var_ptr = stateAgent->getAgentListVariablePointer(variable);
-    const auto agentCount = stateAgent->getCUDAStateListSize();
+    void *var_ptr = agent.getStateVariablePtr(stateName, variable);
+    const auto agentCount = agent.getStateSize(stateName);
     // Check if we need to resize cub storage
     FLAMEGPU_HOST_API::CUB_Config cc = { FLAMEGPU_HOST_API::SUM, typeid(OutT).hash_code() };
     if (api.tempStorageRequiresResize(cc, agentCount)) {
@@ -173,14 +172,13 @@ OutT FLAMEGPU_HOST_AGENT_API::sum(const std::string &variable) const {
 template<typename InT>
 InT FLAMEGPU_HOST_AGENT_API::min(const std::string &variable) const {
     const auto &agentDesc = agent.getAgentDescription();
-    if (typeid(InT) != agentDesc.getVariableType(variable)) {
+    if (std::type_index(typeid(InT)) != agentDesc.description->getVariableType(variable)) {
         THROW InvalidVarType("Wrong variable type passed to FLAMEGPU_HOST_AGENT_API::min(). "
             "This call expects '%s', but '%s' was requested.",
-            agentDesc.getVariableType(variable).name(), typeid(InT).name());
+            agentDesc.variables.at(variable).type.name(), typeid(InT).name());
     }
-    const auto &stateAgent = agent.getAgentStateList(stateName);
-    void *var_ptr = stateAgent->getAgentListVariablePointer(variable);
-    const auto agentCount = stateAgent->getCUDAStateListSize();
+    void *var_ptr = agent.getStateVariablePtr(stateName, variable);
+    const auto agentCount = agent.getStateSize(stateName);
     // Check if we need to resize cub storage
     FLAMEGPU_HOST_API::CUB_Config cc = { FLAMEGPU_HOST_API::MIN, typeid(InT).hash_code() };
     if (api.tempStorageRequiresResize(cc, agentCount)) {
@@ -201,14 +199,13 @@ InT FLAMEGPU_HOST_AGENT_API::min(const std::string &variable) const {
 template<typename InT>
 InT FLAMEGPU_HOST_AGENT_API::max(const std::string &variable) const {
     const auto &agentDesc = agent.getAgentDescription();
-    if (typeid(InT) != agentDesc.getVariableType(variable)) {
+    if (std::type_index(typeid(InT)) != agentDesc.description->getVariableType(variable)) {
         THROW InvalidVarType("Wrong variable type passed to FLAMEGPU_HOST_AGENT_API::max(). "
             "This call expects '%s', but '%s' was requested.",
-            agentDesc.getVariableType(variable).name(), typeid(InT).name());
+            agentDesc.variables.at(variable).type.name(), typeid(InT).name());
     }
-    const auto &stateAgent = agent.getAgentStateList(stateName);
-    void *var_ptr = stateAgent->getAgentListVariablePointer(variable);
-    const auto agentCount = stateAgent->getCUDAStateListSize();
+    void *var_ptr = agent.getStateVariablePtr(stateName, variable);
+    const auto agentCount = agent.getStateSize(stateName);
     // Check if we need to resize cub storage
     FLAMEGPU_HOST_API::CUB_Config cc = { FLAMEGPU_HOST_API::MAX, typeid(InT).hash_code() };
     if (api.tempStorageRequiresResize(cc, agentCount)) {
@@ -229,14 +226,13 @@ InT FLAMEGPU_HOST_AGENT_API::max(const std::string &variable) const {
 template<typename InT>
 unsigned int FLAMEGPU_HOST_AGENT_API::count(const std::string &variable, const InT &value) {
     const auto &agentDesc = agent.getAgentDescription();
-    if (typeid(InT) != agentDesc.getVariableType(variable)) {
+    if (std::type_index(typeid(InT)) != agentDesc.description->getVariableType(variable)) {
         THROW InvalidVarType("Wrong variable type passed to FLAMEGPU_HOST_AGENT_API::count(). "
             "This call expects '%s', but '%s' was requested.",
-            agentDesc.getVariableType(variable).name(), typeid(InT).name());
+            agentDesc.variables.at(variable).type.name(), typeid(InT).name());
     }
-    const auto &stateAgent = agent.getAgentStateList(stateName);
-    void *var_ptr = stateAgent->getAgentListVariablePointer(variable);
-    const auto agentCount = stateAgent->getCUDAStateListSize();
+    void *var_ptr = agent.getStateVariablePtr(stateName, variable);
+    const auto agentCount = agent.getStateSize(stateName);
     // Cast return from ptrdiff_t (int64_t) to (uint32_t)
     unsigned int rtn = static_cast<unsigned int>(thrust::count(thrust::device_ptr<InT>(reinterpret_cast<InT*>(var_ptr)), thrust::device_ptr<InT>(reinterpret_cast<InT*>(var_ptr) + agentCount), value));
     gpuErrchkLaunch();
@@ -253,14 +249,13 @@ std::vector<OutT> FLAMEGPU_HOST_AGENT_API::histogramEven(const std::string &vari
             std::to_string(lowerBound).c_str(), std::to_string(upperBound).c_str());
     }
     const auto &agentDesc = agent.getAgentDescription();
-    if (typeid(InT) != agentDesc.getVariableType(variable)) {
+    if (std::type_index(typeid(InT)) != agentDesc.description->getVariableType(variable)) {
         THROW InvalidVarType("Wrong variable type passed to FLAMEGPU_HOST_AGENT_API::histogramEven(). "
             "This call expects '%s', but '%s' was requested.",
-            agentDesc.getVariableType(variable).name(), typeid(InT).name());
+            agentDesc.variables.at(variable).type.name(), typeid(InT).name());
     }
-    const auto &stateAgent = agent.getAgentStateList(stateName);
-    void *var_ptr = stateAgent->getAgentListVariablePointer(variable);
-    const auto agentCount = stateAgent->getCUDAStateListSize();
+    void *var_ptr = agent.getStateVariablePtr(stateName, variable);
+    const auto agentCount = agent.getStateSize(stateName);
     // Check if we need to resize cub storage
     FLAMEGPU_HOST_API::CUB_Config cc = { FLAMEGPU_HOST_API::HISTOGRAM_EVEN, histogramBins * sizeof(OutT) };
     if (api.tempStorageRequiresResize(cc, agentCount)) {
@@ -283,14 +278,13 @@ std::vector<OutT> FLAMEGPU_HOST_AGENT_API::histogramEven(const std::string &vari
 template<typename InT, typename reductionOperatorT>
 InT FLAMEGPU_HOST_AGENT_API::reduce(const std::string &variable, reductionOperatorT /*reductionOperator*/, const InT &init) const {
     const auto &agentDesc = agent.getAgentDescription();
-    if (typeid(InT) != agentDesc.getVariableType(variable)) {
+    if (std::type_index(typeid(InT)) != agentDesc.description->getVariableType(variable)) {
         THROW InvalidVarType("Wrong variable type passed to FLAMEGPU_HOST_AGENT_API::reduce(). "
             "This call expects '%s', but '%s' was requested.",
-            agentDesc.getVariableType(variable).name(), typeid(InT).name());
+            agentDesc.variables.at(variable).type.name(), typeid(InT).name());
     }
-    const auto &stateAgent = agent.getAgentStateList(stateName);
-    void *var_ptr = stateAgent->getAgentListVariablePointer(variable);
-    const auto agentCount = stateAgent->getCUDAStateListSize();
+    void *var_ptr = agent.getStateVariablePtr(stateName, variable);
+    const auto agentCount = agent.getStateSize(stateName);
     // Check if we need to resize cub storage
     FLAMEGPU_HOST_API::CUB_Config cc = { FLAMEGPU_HOST_API::CUSTOM_REDUCE, typeid(InT).hash_code() };
     if (api.tempStorageRequiresResize(cc, agentCount)) {
@@ -313,14 +307,13 @@ InT FLAMEGPU_HOST_AGENT_API::reduce(const std::string &variable, reductionOperat
 template<typename InT, typename OutT, typename transformOperatorT, typename reductionOperatorT>
 OutT FLAMEGPU_HOST_AGENT_API::transformReduce(const std::string &variable, transformOperatorT /*transformOperator*/, reductionOperatorT /*reductionOperator*/, const OutT &init) const {
     const auto &agentDesc = agent.getAgentDescription();
-    if (typeid(InT) != agentDesc.getVariableType(variable)) {
+    if (std::type_index(typeid(InT)) != agentDesc.description->getVariableType(variable)) {
         THROW InvalidVarType("Wrong variable type passed to FLAMEGPU_HOST_AGENT_API::transformReduce(). "
             "This call expects '%s', but '%s' was requested.",
-            agentDesc.getVariableType(variable).name(), typeid(InT).name());
+            agentDesc.variables.at(variable).type.name(), typeid(InT).name());
     }
-    const auto &stateAgent = agent.getAgentStateList(stateName);
-    void *var_ptr = stateAgent->getAgentListVariablePointer(variable);
-    const auto agentCount = stateAgent->getCUDAStateListSize();
+    void *var_ptr = agent.getStateVariablePtr(stateName, variable);
+    const auto agentCount = agent.getStateSize(stateName);
     // auto a = is_1_0<InT, OutT>();
     // auto b = my_sum<OutT>();
     // <thrust::device_ptr<InT>, std::unary_function<InT, OutT>, OutT, std::binary_function<OutT, OutT, OutT>>

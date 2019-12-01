@@ -31,39 +31,36 @@ class MiniSim {
  public:
     MiniSim() :
         model("model"),
-        agent("agent"),
-        simulation(model),
+        agent(model.newAgent("agent")),
         population(nullptr) {
-        agent.addAgentVariable<float>("float");
-        agent.addAgentVariable<double>("double");
-        agent.addAgentVariable<char>("char");
-        agent.addAgentVariable<unsigned char>("uchar");
-        agent.addAgentVariable<uint16_t>("uint16_t");
-        agent.addAgentVariable<int16_t>("int16_t");
-        agent.addAgentVariable<uint32_t>("uint32_t");
-        agent.addAgentVariable<int32_t>("int32_t");
-        agent.addAgentVariable<uint64_t>("uint64_t");
-        agent.addAgentVariable<int64_t>("int64_t");
+        agent.newVariable<float>("float");
+        agent.newVariable<double>("double");
+        agent.newVariable<char>("char");
+        agent.newVariable<unsigned char>("uchar");
+        agent.newVariable<uint16_t>("uint16_t");
+        agent.newVariable<int16_t>("int16_t");
+        agent.newVariable<uint32_t>("uint32_t");
+        agent.newVariable<int32_t>("int32_t");
+        agent.newVariable<uint64_t>("uint64_t");
+        agent.newVariable<int64_t>("int64_t");
         population = new AgentPopulation(agent, TEST_LEN);
-        simulation.setSimulationSteps(1);
     }
     ~MiniSim() { delete population; }
     void run() {
-        model.addAgent(agent);
         // CudaModel must be declared here
         // As the initial call to constructor fixes the agent population
-        // This means if we haven't called model.addAgent(agent) first
+        // This means if we haven't called model.newAgent(agent) first
         CUDAAgentModel cuda_model(model);
+        cuda_model.setSimulationSteps(1);
         // This fails as agentMap is empty
-        cuda_model.setInitialPopulationData(*population);
-        ASSERT_NO_THROW(cuda_model.simulate(simulation));
+        cuda_model.setPopulationData(*population);
+        ASSERT_NO_THROW(cuda_model.simulate());
         // The negative of this, is that cuda_model is inaccessible within the test!
         // So copy across population data here
         ASSERT_NO_THROW(cuda_model.getPopulationData(*population));
     }
     ModelDescription model;
-    AgentDescription agent;
-    Simulation simulation;
+    AgentDescription &agent;
     AgentPopulation *population;
 };
 /**

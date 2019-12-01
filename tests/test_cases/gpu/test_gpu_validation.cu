@@ -30,12 +30,10 @@
 */
 TEST(GPUTest, GPUMemoryTest) {
     ModelDescription flame_model("circles_model");
-    AgentDescription circle_agent("circle");
+    AgentDescription &circle_agent = flame_model.newAgent("circle");
 
 
-    circle_agent.addAgentVariable<int>("id");
-
-    flame_model.addAgent(circle_agent);
+    circle_agent.newVariable<int>("id");
 
     AgentPopulation population(circle_agent, 100);
     for (int i = 0; i< 100; i++) {
@@ -44,7 +42,7 @@ TEST(GPUTest, GPUMemoryTest) {
     }
 
     CUDAAgentModel cuda_model(flame_model);
-    cuda_model.setInitialPopulationData(population);
+    cuda_model.setPopulationData(population);
 
     cuda_model.getPopulationData(population);
 
@@ -54,7 +52,7 @@ TEST(GPUTest, GPUMemoryTest) {
     for (int i = 0; i < 10; i++) {
         AgentInstance i1 = population.getInstanceAt(i, "default");
         // use AgentInstance equality operator
-        EXPECT_TRUE(i1.getVariable<int>("id") == i);
+        EXPECT_EQ(i1.getVariable<int>("id"), i);
     }
 }
 
@@ -72,17 +70,13 @@ TEST(GPUTest, GPUMemoryTest) {
 TEST(GPUTest, GPUSimulationTest) {
     // create  single FLAME GPU model and agent
     ModelDescription flame_model("circles_model");
-    AgentDescription circle_agent("circle");
+    AgentDescription &circle_agent = flame_model.newAgent("circle");
 
     // test requires only a  single agent variable
-    circle_agent.addAgentVariable<double>("x");
+    circle_agent.newVariable<double>("x");
 
 
-    AgentFunctionDescription add_data("add_data");
-    attach_add_func(add_data);
-    circle_agent.addAgentFunction(add_data);
-
-    flame_model.addAgent(circle_agent);
+    AgentFunctionDescription &add_data = attach_add_func(circle_agent);
 
     AgentPopulation population(circle_agent, 10);
     for (int i = 0; i< 10; i++) {
@@ -93,20 +87,17 @@ TEST(GPUTest, GPUSimulationTest) {
 
     GTEST_COUT << "Testing initial values .." << std::endl;
 
-    Simulation simulation(flame_model);
+    LayerDescription &add_layer = flame_model.newLayer("add_layer");
+    add_layer.addAgentFunction(add_data);
 
-    SimulationLayer add_layer(simulation, "add_layer");
-    add_layer.addAgentFunction("add_data");
-
-    simulation.addSimulationLayer(add_layer);
-
-    // simulation.setSimulationSteps(10);
 
     CUDAAgentModel cuda_model(flame_model);
+    const int STEPS = 5;
+    cuda_model.setSimulationSteps(STEPS);
 
-    cuda_model.setInitialPopulationData(population);
+    cuda_model.setPopulationData(population);
 
-    cuda_model.simulate(simulation);
+    cuda_model.simulate();
 
     GTEST_COUT << "Testing values copied back from device after simulating functions .." << std::endl;
 
@@ -117,7 +108,7 @@ TEST(GPUTest, GPUSimulationTest) {
     for (int i = 0; i < 10; i++) {
         AgentInstance i1 = population.getInstanceAt(i, "default");
         // use AgentInstance equality operator
-        EXPECT_TRUE(i1.getVariable<double>("x") == i + 2);
+        EXPECT_EQ(i1.getVariable<double>("x"), i + (2 * STEPS));
     }
 }
 
@@ -133,26 +124,16 @@ TEST(GPUTest, GPUSimulationTestMultiple) {
     /* Multi agent model */
     ModelDescription flame_model("circles_model");
 
-    AgentDescription circle1_agent("circle1");
-    circle1_agent.addAgentVariable<double>("x");
+    AgentDescription &circle1_agent = flame_model.newAgent("circle1");
+    circle1_agent.newVariable<double>("x");
 
-    AgentDescription circle2_agent("circle2");
-    circle2_agent.addAgentVariable<double>("x");
-    circle2_agent.addAgentVariable<double>("y");
+    AgentDescription &circle2_agent = flame_model.newAgent("circle2");
+    circle2_agent.newVariable<double>("x");
+    circle2_agent.newVariable<double>("y");
 
-    AgentFunctionDescription add_data("add_data");
+    AgentFunctionDescription &add_data = attach_add_func(circle1_agent);
+    AgentFunctionDescription &subtract_data = attach_subtract_func(circle2_agent);
 
-    attach_add_func(add_data);
-    circle1_agent.addAgentFunction(add_data);
-
-    AgentFunctionDescription subtract_data("subtract_data");
-
-    attach_subtract_func(subtract_data);
-    circle2_agent.addAgentFunction(subtract_data);
-
-
-    flame_model.addAgent(circle1_agent);
-    flame_model.addAgent(circle2_agent);
 
     #define SIZE 10
     AgentPopulation population1(circle1_agent, SIZE);
@@ -168,23 +149,20 @@ TEST(GPUTest, GPUSimulationTestMultiple) {
         instance.setVariable<double>("y", i);
     }
 
-    Simulation simulation(flame_model);
-
     // multiple functions per simulation layer (from different agents)
-    SimulationLayer concurrent_layer(simulation, "concurrent_layer");
-    concurrent_layer.addAgentFunction("add_data");
-    concurrent_layer.addAgentFunction("subtract_data");
-    simulation.addSimulationLayer(concurrent_layer);
+    LayerDescription &concurrent_layer = flame_model.newLayer("concurrent_layer");
+    concurrent_layer.addAgentFunction(add_data);
+    concurrent_layer.addAgentFunction(subtract_data);
 
-    simulation.setSimulationSteps(1);
 
     /* Run the model */
     CUDAAgentModel cuda_model(flame_model);
+    cuda_model.setSimulationSteps(1);
 
-    cuda_model.setInitialPopulationData(population1);
-    cuda_model.setInitialPopulationData(population2);
+    cuda_model.setPopulationData(population1);
+    cuda_model.setPopulationData(population2);
 
-    cuda_model.simulate(simulation);
+    cuda_model.simulate();
 
     cuda_model.getPopulationData(population1);
     cuda_model.getPopulationData(population2);
@@ -196,8 +174,8 @@ TEST(GPUTest, GPUSimulationTestMultiple) {
         AgentInstance i2 = population2.getInstanceAt(i, "default");
 
         // use AgentInstance equality operator
-        EXPECT_TRUE(i1.getVariable<double>("x") == i + 2);
-        EXPECT_TRUE(i2.getVariable<double>("y") == 0);
+        EXPECT_EQ(i1.getVariable<double>("x"), i + 2);
+        EXPECT_EQ(i2.getVariable<double>("y"), 0);
     }
 }
 

@@ -1,16 +1,17 @@
 #include "flamegpu/runtime/flamegpu_host_api.h"
-#include "flamegpu/gpu/CUDAAgentModel.h"
 #include "flamegpu/runtime/flamegpu_host_agent_api.h"
 #include "flamegpu/model/ModelDescription.h"
+#include "flamegpu/sim/Simulation.h"
 
-FLAMEGPU_HOST_API::FLAMEGPU_HOST_API(CUDAAgentModel &_agentModel)
-    : random(),
-    environment(_agentModel.getModelDescription().getName()),
-    agentModel(_agentModel),
-    d_cub_temp(nullptr),
-    d_cub_temp_size(0),
-    d_output_space(nullptr),
-    d_output_space_size(0) { }
+FLAMEGPU_HOST_API::FLAMEGPU_HOST_API(Simulation &_agentModel)
+    : random()
+    , environment(_agentModel.getModelDescription().name)
+    , agentModel(_agentModel)
+    , d_cub_temp(nullptr)
+    , d_cub_temp_size(0)
+    , d_output_space(nullptr)
+    , d_output_space_size(0) { }
+
 FLAMEGPU_HOST_API::~FLAMEGPU_HOST_API() {
     if (d_cub_temp) {
         gpuErrchk(cudaFree(d_cub_temp));
@@ -27,7 +28,7 @@ FLAMEGPU_HOST_API::~FLAMEGPU_HOST_API() {
 // }
 
 FLAMEGPU_HOST_AGENT_API FLAMEGPU_HOST_API::agent(const std::string &agent_name, const std::string &stateName) {
-    return FLAMEGPU_HOST_AGENT_API(*this, agentModel.getCUDAAgent(agent_name), stateName);
+    return FLAMEGPU_HOST_AGENT_API(*this, agentModel.getAgent(agent_name), stateName);
 }
 
 bool FLAMEGPU_HOST_API::tempStorageRequiresResize(const CUB_Config &cc, const unsigned int &items) {

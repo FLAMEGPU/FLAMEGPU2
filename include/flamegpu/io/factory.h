@@ -10,7 +10,10 @@
  * \todo longer description
  */
 
+#include <memory>
 #include <string>
+#include <unordered_map>
+
 #include "flamegpu/io/statereader.h"
 #include "flamegpu/io/statewriter.h"
 #include "flamegpu/io/xmlReader.h"
@@ -33,15 +36,15 @@ std::string getFileExt(const std::string& s) {
 */
 class ReaderFactory {
  public:
-    static StateReader *createReader(const ModelDescription &model, const char *input) {
+    static StateReader *createReader(const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &model_state, const char *input) {
         std::string extension = getFileExt(input);
 
         if (extension == "xml") {
-            return new xmlReader(model, input);
+            return new xmlReader(model_state, input);
         }
         /*
         if (extension == "bin") {
-            return new xmlReader(model, input);
+            return new xmlReader(model_state, input);
         }
         */
         return nullptr;
@@ -50,8 +53,8 @@ class ReaderFactory {
 
 class WriterFactory {
  public:
-    static StateWriter *createWriter(const ModelDescription &model, const char *input) {
-        return new xmlWriter(model, input);
+    static StateWriter *createWriter(const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &model_state, const char *input) {
+        return new xmlWriter(model_state, input);
     }
 };
 

@@ -10,7 +10,10 @@
  * \todo longer description
  */
 
+#include <memory>
 #include <string>
+#include <unordered_map>
+
 #include "flamegpu/model/ModelDescription.h"
 
 // Base class
@@ -19,7 +22,7 @@ class StateReader {
     // -----------------------------------------------------------------------
     //  Constructors and Destructor
     // -----------------------------------------------------------------------
-    StateReader(const ModelDescription &model, const char* input): model_description_(model), inputFile(std::string(input)) {}
+    StateReader(const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &_model_state, const char* input): model_state(_model_state), inputFile(std::string(input)) {}
     ~StateReader() {}
 
     // -----------------------------------------------------------------------
@@ -48,7 +51,7 @@ class StateReader {
 */
 
  protected:
-    ModelDescription model_description_;
+    const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &model_state;
     std::string inputFile;
 };
 

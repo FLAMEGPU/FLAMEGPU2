@@ -1,74 +1,97 @@
-
 #ifndef INCLUDE_FLAMEGPU_MODEL_MODELDESCRIPTION_H_
 #define INCLUDE_FLAMEGPU_MODEL_MODELDESCRIPTION_H_
 
-/**
- * @file ModelDescription.h
- * @author  Paul Richmond, Mozhgan Kabiri Chimeh
- * @date    Feb 2017
- * @brief
- *
- * \todo longer description
- */
-
-#include <string>
 #include <map>
 #include <memory>
-#include <vector>
-#include <typeinfo>
+#include <set>
+#include <string>
 
-// include class dependencies
-#include "flamegpu/model/AgentDescription.h"
-#include "flamegpu/model/MessageDescription.h"
-#include "flamegpu/pop/AgentPopulation.h"
-#include "flamegpu/model/EnvironmentDescription.h"
+#include "flamegpu/model/ModelData.h"
+#include "flamegpu/sim/Simulation.h"
 
-typedef std::map<const std::string, const AgentDescription&> AgentMap;
-typedef std::map<const std::string, const MessageDescription&> MessageMap;
-typedef std::map<const std::string, AgentPopulation&> PopulationMap;
+class AgentDescription;
+class MessageDescription;
+class LayerDescription;
+struct ModelData;
 
 class ModelDescription {
+    friend Simulation::Simulation(const ModelDescription& model);
+
  public:
-    explicit ModelDescription(const std::string model_name);
-
-    virtual ~ModelDescription();
-
-    const std::string getName() const;
-
-    void addAgent(const AgentDescription &agent);
-
-    void addMessage(const MessageDescription &message);
-
-    void addPopulation(AgentPopulation &population);
     /**
-     * Sets (or replaces) stored EnvironmentDescription
-     * @note Reference is stored, ensure you don't let the object go out of scope
-     * until CUDAAgentModel has been constructed
-     * @note This also means any changes made until then will be reflected
+     * Constructors
      */
-    void setEnvironment(EnvironmentDescription &envDesc);
+    explicit ModelDescription(const std::string &model_name);
+    // Copy Construct
+    ModelDescription(const ModelDescription &other_model);
+    // Move Construct
+    ModelDescription(ModelDescription &&other_model);
+    // Copy Assign
+    ModelDescription& operator=(const ModelDescription &other_model) = delete;
+    // Move Assign
+    ModelDescription& operator=(ModelDescription &&other_model) = delete;
 
-    const AgentDescription& getAgentDescription(const std::string agent_name) const;
-    const MessageDescription& getMessageDescription(const std::string message_name) const;
-    AgentPopulation& getAgentPopulation(const std::string agent_name) const;
+    /**
+     * Accessors
+     */    
+    AgentDescription& newAgent(const std::string &agent_name);
+    AgentDescription& Agent(const std::string &agent_name);
 
-    const AgentMap& getAgentMap() const;
+    MessageDescription& newMessage(const std::string &message_name);
+    MessageDescription& Message(const std::string &message_name);
 
-    const MessageMap& getMessageMap() const;
+    EnvironmentDescription& Environment();
 
-    // const PopulationMap& getPopulationMap() const;
+    LayerDescription& newLayer(const std::string &name = "");
+    LayerDescription& Layer(const std::string &name);
+    LayerDescription& Layer(const ModelData::size_type &layer_index);
 
-    bool hasEnvironment() const;
+    /**
+     * Adds an init function to the simulation
+     * Init functions execute once before the simulation begins
+     * @param func_p Pointer to the desired init function
+     */
+    void addInitFunction(FLAMEGPU_INIT_FUNCTION_POINTER func_p);
+    /**
+     * Adds a step function to the simulation
+     * Step functions execute once per step, after all layers have been executed, before exit conditions
+     * @param func_p Pointer to the desired step function
+     */
+    void addStepFunction(FLAMEGPU_STEP_FUNCTION_POINTER func_p);
+    /**
+     * Adds an exit function to the simulation
+     * Exit functions execute once after the simulation ends
+     * @param func_p Pointer to the desired exit function
+     */
+    void addExitFunction(FLAMEGPU_EXIT_FUNCTION_POINTER func_p);
+    /**
+     * Adds an exit condition function to the simulation
+     * Exit conditions execute once per step, after all layers and step functions have been executed
+     * If the condition returns false, the simulation exits early
+     * @param func_p Pointer to the desired exit condition function
+     */
+    void addExitCondition(FLAMEGPU_EXIT_CONDITION_POINTER func_p);
 
+    /**
+     * Const Accessors
+     */
+    std::string getName() const;
+
+    const AgentDescription& getAgent(const std::string &agent_name) const;
+    const MessageDescription& getMessage(const std::string &message_name) const;
     const EnvironmentDescription& getEnvironment() const;
+    const LayerDescription& getLayer(const std::string &name) const;
+    const LayerDescription& getLayer(const ModelData::size_type &layer_index) const;
+
+    bool hasAgent(const std::string &agent_name) const;
+    bool hasMessage(const std::string &message_name) const;
+    bool hasLayer(const std::string &name) const;
+    bool hasLayer(const ModelData::size_type &layer_index) const;
+
+    ModelData::size_type getLayerCount() const;
 
  private:
-    std::string name;
-    AgentMap agents;
-    MessageMap messages;
-    PopulationMap population;
-    EnvironmentDescription *environmentProperties;
-    // function map removed. This belongs to agents.
+     ModelData *const model;
 };
 
 #endif  // INCLUDE_FLAMEGPU_MODEL_MODELDESCRIPTION_H_
