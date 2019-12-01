@@ -27,25 +27,25 @@ class FLAMEGPU_DEVICE_API;  // Forward declaration (class defined below)
 enum FLAME_GPU_AGENT_STATUS { ALIVE, DEAD };
 
 /**
- * @brief FLAMEGPU agent function pointer definition, this runs on the device
- */
-typedef FLAME_GPU_AGENT_STATUS(*FLAMEGPU_AGENT_FUNCTION_POINTER)(FLAMEGPU_DEVICE_API *api);
-
-/**
  * Macro for defining agent transition functions with the correct input. Must always be a device function to be called by CUDA.
  *
- * FLAMEGPU_AGENT_FUNCTION(move_func) {
- *   int x = FLAMEGPU.getVariable<int>("x");
- *   FLAMEGPU.setVariable<int>("x", x*10);
- * return ALIVE;
+ * struct SomeAgentFunction {
+ *     __device__ __forceinline__ FLAME_GPU_AGENT_STATUS operator()(FLAMEGPU_DEVICE_API *FLAMEGPU) const {
+ *         // do something
+ *         return 0;
+ *     }
+ * };
  *}
  */
-// #define FLAMEGPU_AGENT_FUNCTION(funcName) __device__ FLAME_GPU_AGENT_STATUS funcName(FLAMEGPU_API* FLAMEGPU)
+#define FLAMEGPU_AGENT_FUNCTION(funcName)\
+struct funcName ## _impl {\
+    __device__ __forceinline__ FLAME_GPU_AGENT_STATUS operator()(FLAMEGPU_DEVICE_API *FLAMEGPU) const;\
+};\
+funcName ## _impl funcName;\
+__device__ __forceinline__ FLAME_GPU_AGENT_STATUS funcName ## _impl::operator()(FLAMEGPU_DEVICE_API *FLAMEGPU) const
 
-#define FLAMEGPU_AGENT_FUNCTION(funcName) \
-__device__ FLAME_GPU_AGENT_STATUS funcName ## _impl(FLAMEGPU_DEVICE_API* FLAMEGPU); \
-__device__ FLAMEGPU_AGENT_FUNCTION_POINTER funcName = funcName ## _impl;\
-__device__ FLAME_GPU_AGENT_STATUS funcName ## _impl(FLAMEGPU_DEVICE_API* FLAMEGPU)
+// Advanced macro for defining agent transition functions
+#define FLAMEGPU_AGENT_FUNC __device__ __forceinline__
 
 /** @brief    A flame gpu api class for the device runtime only
  *
@@ -54,7 +54,8 @@ __device__ FLAME_GPU_AGENT_STATUS funcName ## _impl(FLAMEGPU_DEVICE_API* FLAMEGP
  */
 class FLAMEGPU_DEVICE_API {
     // Friends have access to TID() & TS_ID()
-    friend __global__ void agent_function_wrapper(Curve::NamespaceHash, Curve::NamespaceHash, Curve::NamespaceHash, Curve::NamespaceHash, FLAMEGPU_AGENT_FUNCTION_POINTER, const int, const unsigned int, const unsigned int);
+    template<typename AgentFunction>
+    friend __global__ void agent_function_wrapper(Curve::NamespaceHash, Curve::NamespaceHash, Curve::NamespaceHash, Curve::NamespaceHash, const int, const unsigned int, const unsigned int);
 
  public:
     /**

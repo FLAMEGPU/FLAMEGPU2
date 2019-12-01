@@ -34,38 +34,31 @@ TEST(AgentRandomTest, AgentRandomCheck) {
     const unsigned int AGENT_COUNT = 5;
 
     ModelDescription model("random_model");
-    AgentDescription agent("agent");
+    AgentDescription &agent = model.newAgent("agent");
 
-    agent.addAgentVariable<float>("a");
-    agent.addAgentVariable<float>("b");
-    agent.addAgentVariable<float>("c");
+    agent.newVariable<float>("a");
+    agent.newVariable<float>("b");
+    agent.newVariable<float>("c");
 
-    AgentFunctionDescription do_random("do_random");
-    // do_random.setFunction(&random1);
-    attach_random1_func(&do_random);
-    agent.addAgentFunction(do_random);
+    AgentFunctionDescription &af = attach_random1_func(agent);
 
-    model.addAgent(agent);
-
-
+    AgentPopulation init_population(agent, AGENT_COUNT);
     AgentPopulation population(agent, AGENT_COUNT);
     for (unsigned int i = 0; i< AGENT_COUNT; i++) {
-        AgentInstance instance = population.getNextInstance("default");
+        AgentInstance instance = init_population.getNextInstance("default");
         instance.setVariable<float>("a", 0);
         instance.setVariable<float>("b", 0);
         instance.setVariable<float>("c", 0);
     }
 
-    Simulation simulation(model);
 
-    SimulationLayer layer(simulation, "layer");
-    layer.addAgentFunction("do_random");
-    simulation.addSimulationLayer(layer);
+    LayerDescription &layer = model.newLayer("layer");
+    layer.addAgentFunction(af);
 
     CUDAAgentModel cuda_model(model);
-    cuda_model.setInitialPopulationData(population);
-    const char *args_1[4] = { "process.exe", "input.xml", "-r", "0" };
-    const char *args_2[4] = { "process.exe", "input.xml", "-r", "1" };
+    cuda_model.setSimulationSteps(1);
+    const char *args_1[4] = { "process.exe", "", "-r", "0" };
+    const char *args_2[4] = { "process.exe", "", "-r", "1" };
     std::string _t_unused = std::string();
     std::vector<std::tuple<float, float, float>> results1, results2;
     {
@@ -75,9 +68,10 @@ TEST(AgentRandomTest, AgentRandomCheck) {
         * Does random number change each time it's called
         */
         // Seed random
-        simulation.checkArgs(4, args_1, _t_unused);
+        cuda_model.initialise(4, args_1);
+        cuda_model.setPopulationData(init_population);
 
-        cuda_model.simulate(simulation);
+        cuda_model.simulate();
 
         cuda_model.getPopulationData(population);
 
@@ -104,7 +98,7 @@ TEST(AgentRandomTest, AgentRandomCheck) {
             EXPECT_TRUE(b1 != c1);
             EXPECT_TRUE(a1 != c1);
         }
-        EXPECT_TRUE(results1.size() == AGENT_COUNT);
+        EXPECT_EQ(results1.size(), AGENT_COUNT);
     }
     {
         /**
@@ -112,9 +106,10 @@ TEST(AgentRandomTest, AgentRandomCheck) {
          * Different seed produces different random numbers
          */
         // Seed random
-        simulation.checkArgs(4, args_2, _t_unused);
+        cuda_model.initialise(4, args_2);
+        cuda_model.setPopulationData(init_population);
 
-        cuda_model.simulate(simulation);
+        cuda_model.simulate();
 
         cuda_model.getPopulationData(population);
 
@@ -130,7 +125,7 @@ TEST(AgentRandomTest, AgentRandomCheck) {
 
         for (unsigned int i = 0; i < results1.size(); ++i) {
             // Different seed produces different results
-            EXPECT_TRUE(results1[i] != results2[i]);
+            EXPECT_NE(results1[i], results2[i]);
         }
     }
     {
@@ -140,9 +135,10 @@ TEST(AgentRandomTest, AgentRandomCheck) {
         */
         results2.clear();
         // Seed random
-        simulation.checkArgs(4, args_1, _t_unused);
+        cuda_model.initialise(4, args_1);
+        cuda_model.setPopulationData(init_population);
 
-        cuda_model.simulate(simulation);
+        cuda_model.simulate();
 
         cuda_model.getPopulationData(population);
 
@@ -154,11 +150,11 @@ TEST(AgentRandomTest, AgentRandomCheck) {
                 instance.getVariable<float>("c")
             });
         }
-        EXPECT_TRUE(results2.size() == AGENT_COUNT);
+        EXPECT_EQ(results2.size(), AGENT_COUNT);
 
         for (unsigned int i = 0; i < results1.size(); ++i) {
-            // Same seed produces different results
-            EXPECT_TRUE(results1[i] == results2[i]);
+            // Same seed produces same results
+            EXPECT_EQ(results1[i], results2[i]);
         }
     }
 }
@@ -171,36 +167,32 @@ TEST(AgentRandomTest, AgentRandomFunctionsNoExcept) {
 
 
     ModelDescription model("random_model");
-    AgentDescription agent("agent");
+    AgentDescription &agent = model.newAgent("agent");
 
-    agent.addAgentVariable<float>("uniform_float");
-    agent.addAgentVariable<double>("uniform_double");
+    agent.newVariable<float>("uniform_float");
+    agent.newVariable<double>("uniform_double");
 
-    agent.addAgentVariable<float>("normal_float");
-    agent.addAgentVariable<double>("normal_double");
+    agent.newVariable<float>("normal_float");
+    agent.newVariable<double>("normal_double");
 
-    agent.addAgentVariable<float>("logNormal_float");
-    agent.addAgentVariable<double>("logNormal_double");
+    agent.newVariable<float>("logNormal_float");
+    agent.newVariable<double>("logNormal_double");
 
     // char
-    agent.addAgentVariable<char>("uniform_char");
-    agent.addAgentVariable<unsigned char>("uniform_u_char");
+    agent.newVariable<char>("uniform_char");
+    agent.newVariable<unsigned char>("uniform_u_char");
     // short
-    agent.addAgentVariable<int16_t>("uniform_short");
-    agent.addAgentVariable<uint16_t>("uniform_u_short");
+    agent.newVariable<int16_t>("uniform_short");
+    agent.newVariable<uint16_t>("uniform_u_short");
     // int
-    agent.addAgentVariable<int32_t>("uniform_int");
-    agent.addAgentVariable<uint32_t>("uniform_u_int");
+    agent.newVariable<int32_t>("uniform_int");
+    agent.newVariable<uint32_t>("uniform_u_int");
     // long long
-    agent.addAgentVariable<int64_t>("uniform_longlong");
-    agent.addAgentVariable<uint64_t>("uniform_u_longlong");
+    agent.newVariable<int64_t>("uniform_longlong");
+    agent.newVariable<uint64_t>("uniform_u_longlong");
 
-    AgentFunctionDescription do_random("do_random");
     // do_random.setFunction(&random1);
-    attach_random2_func(&do_random);
-    agent.addAgentFunction(do_random);
-
-    model.addAgent(agent);
+    AgentFunctionDescription &do_random = attach_random2_func(agent);
 
 
     AgentPopulation population(agent, AGENT_COUNT);
@@ -210,15 +202,14 @@ TEST(AgentRandomTest, AgentRandomFunctionsNoExcept) {
         // Don't bother initialising
     }
 
-    Simulation simulation(model);
 
-    SimulationLayer layer(simulation, "layer");
-    layer.addAgentFunction("do_random");
-    simulation.addSimulationLayer(layer);
+    LayerDescription &layer = model.newLayer("layer");
+    layer.addAgentFunction(do_random);
 
     CUDAAgentModel cuda_model(model);
-    cuda_model.setInitialPopulationData(population);
-    ASSERT_NO_THROW(cuda_model.simulate(simulation));
+    cuda_model.setSimulationSteps(1);
+    cuda_model.setPopulationData(population);
+    ASSERT_NO_THROW(cuda_model.simulate());
     // Success if we get this far without an exception being thrown.
 }
 

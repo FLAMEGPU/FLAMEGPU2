@@ -26,7 +26,7 @@ class RandomManager {
     /**
      * Handles seeding of random generation
      */
-    friend int Simulation::checkArgs(int, const char**, std::string &);
+    friend void Simulation::initialise(int, const char**);
     /**
      * Calls resize() during simulation execution to resize device random array
      */

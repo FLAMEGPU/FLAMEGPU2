@@ -25,7 +25,7 @@
 * CUDAMessage class
 * @brief allocates the hash table/list for message variables and copy the list to device
 */
-CUDAMessage::CUDAMessage(const MessageDescription& description)
+CUDAMessage::CUDAMessage(const MessageData& description)
     : message_description(description)
     , max_list_size(0)
     , curve(Curve::getInstance()) {
@@ -44,7 +44,7 @@ CUDAMessage::~CUDAMessage(void) {
 * @param none
 * @return MessageDescription object
 */
-const MessageDescription& CUDAMessage::getMessageDescription() const {
+const MessageData& CUDAMessage::getMessageDescription() const {
     return message_description;
 }
 
@@ -58,7 +58,7 @@ void CUDAMessage::setInitialMessageList() {  // used to be const AgentPopulation
     if (message_list) {
         THROW InvalidMessageData("Error: Initial message list for message '%s' already set, "
             "in CUDAMessage::setInitialMessageList()",
-            message_description.getName().c_str());
+            message_description.name.c_str());
     }
     /*
     unsigned int size = message_description.getMaximumMessageListCapacity();
@@ -72,7 +72,7 @@ void CUDAMessage::setInitialMessageList() {  // used to be const AgentPopulation
     }
     */
 
-    max_list_size = message_description.getMaximumMessageListCapacity();  // maxmimum message list, not the population
+    max_list_size = 1;  // message list starts 0 length, is scaled on the fly
 
     // allocate memory for each message list
     message_list = std::unique_ptr<CUDAMessageList>(new CUDAMessageList(*this));
@@ -104,30 +104,29 @@ void CUDAMessage::zeroAllMessageData() {
 /**
 @bug message_name is input or output, run some tests to see which one is correct
 */
-void CUDAMessage::mapRuntimeVariables(const AgentFunctionDescription& func) const {
+void CUDAMessage::mapRuntimeVariables(const AgentFunctionData& func) const {
     // check that the message list has been allocated
     if (!message_list) {
         THROW InvalidMessageData("Error: Initial message list for message '%s' has not been allocated, "
             "in CUDAMessage::mapRuntimeVariables()",
-            message_description.getName().c_str());
+            message_description.name.c_str());
     }
 
-    const std::string message_name = message_description.getName();
+    const std::string message_name = message_description.name;
 
     // loop through the message variables to map each variable name using cuRVE
-    for (VariableMapPair mmp : message_description.getVariableMap()) {
+    for (const auto &mmp : message_description.variables) {
         // get a device pointer for the message variable name
         void* d_ptr = message_list->getMessageListVariablePointer(mmp.first);
 
         // map using curve
         Curve::VariableHash var_hash = curve.variableRuntimeHash(mmp.first.c_str());
         Curve::VariableHash message_hash = curve.variableRuntimeHash(message_name.c_str());
-        Curve::VariableHash agent_hash = curve.variableRuntimeHash(func.getParent().getName().c_str());
-        Curve::VariableHash func_hash = curve.variableRuntimeHash(func.getName().c_str());
+        Curve::VariableHash agent_hash = curve.variableRuntimeHash(func.parent.lock()->name.c_str());
+        Curve::VariableHash func_hash = curve.variableRuntimeHash(func.name.c_str());
 
         // get the message variable size
-        size_t size;
-        size = message_description.getMessageVariableSize(mmp.first.c_str());
+        size_t size = mmp.second.type_size;
 
        // maximum population size
         unsigned int length = this->getMaximumListSize();  // check to see if it is equal to pop
@@ -136,18 +135,18 @@ void CUDAMessage::mapRuntimeVariables(const AgentFunctionDescription& func) cons
     }
 }
 
-void CUDAMessage::unmapRuntimeVariables(const AgentFunctionDescription& func) const {
-    const std::string message_name = message_description.getName();
+void CUDAMessage::unmapRuntimeVariables(const AgentFunctionData& func) const {
+    const std::string message_name = message_description.name;
     // loop through the message variables to map each variable name using cuRVE
-    for (VariableMapPair mmp : message_description.getVariableMap()) {
+    for (const auto &mmp : message_description.variables) {
         // get a device pointer for the message variable name
         // void* d_ptr = message_list->getMessageListVariablePointer(mmp.first);
 
         // unmap using curve
         Curve::VariableHash var_hash = curve.variableRuntimeHash(mmp.first.c_str());
         Curve::VariableHash message_hash = curve.variableRuntimeHash(message_name.c_str());
-        Curve::VariableHash agent_hash = curve.variableRuntimeHash(func.getParent().getName().c_str());
-        Curve::VariableHash func_hash = curve.variableRuntimeHash(func.getName().c_str());
+        Curve::VariableHash agent_hash = curve.variableRuntimeHash(func.parent.lock()->name.c_str());
+        Curve::VariableHash func_hash = curve.variableRuntimeHash(func.name.c_str());
 
         curve.unregisterVariableByHash(var_hash + agent_hash + func_hash + message_hash);
     }

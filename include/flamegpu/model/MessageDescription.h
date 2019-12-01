@@ -1,63 +1,69 @@
-
- /**
- * @file MessageDescription.h
- * @authors
- * @brief
- *
- * @see
- * @warning
- */
-
 #ifndef INCLUDE_FLAMEGPU_MODEL_MESSAGEDESCRIPTION_H_
 #define INCLUDE_FLAMEGPU_MODEL_MESSAGEDESCRIPTION_H_
 
-#include <utility>
 #include <string>
-#include <typeinfo>
-#include <map>
 
-#define DEFAULT_MESSAGE_BUFFER_SIZE 1024
+#include "flamegpu/model/ModelDescription.h"
 
-typedef std::map<const std::string, const std::type_info&> VariableMap;
+struct ModelData;
+struct MessageData;
 
-typedef std::pair<const std::string, const std::type_info&> VariableMapPair;
-
-typedef std::map<const std::type_info*, std::size_t> VarTypeSizeMap;    // to track size of data types
-
+/**
+ * Base-class, represents brute-force messages
+ * Can be extended by more advanced message descriptors
+ */
 class MessageDescription {
+    friend struct MessageData;
+
+    /**
+     * Constructors
+     */
+    MessageDescription(ModelData *const _model, MessageData *const data);
+    // Copy Construct
+    MessageDescription(const MessageDescription &other_message);
+    // Move Construct
+    MessageDescription(MessageDescription &&other_message) noexcept;
+    // Copy Assign
+    MessageDescription& operator=(const MessageDescription &other_message) = delete;
+    // Move Assign
+    MessageDescription& operator=(MessageDescription &&other_message) = delete;
+
  public:
-    explicit MessageDescription(const std::string message_name, unsigned int initial_size = DEFAULT_MESSAGE_BUFFER_SIZE);
+    /**
+     * Accessors
+     */
+    template<typename T, ModelData::size_type N = 1>
+    void newVariable(const std::string &variable_name);
 
-    virtual ~MessageDescription();
+    /**
+     * Const Accessors
+     */
+    std::string getName() const;
 
-    const std::string getName() const;
+    std::type_index getVariableType(const std::string &variable_name) const;
+    size_t getVariableSize(const std::string &variable_name) const;
+    ModelData::size_type getVariableLength(const std::string &variable_name) const;
+    ModelData::size_type getVariablesCount() const;
 
-    template <typename T> void addVariable(const std::string variable_name);
-
-    VariableMap& getVariableMap();
-
-    const VariableMap& getVariableMap() const;
-
-    size_t getMessageVariableSize(const std::string variable_name) const;
-
-    size_t getMemorySize() const;
-
-    unsigned int getNumberMessageVariables() const;
-
-    const std::type_info& getVariableType(const std::string variable_name) const;
-
-    unsigned int getMaximumMessageListCapacity() const;
+    bool hasVariable(const std::string &variable_name) const;
 
  private:
-    const std::string name;
-    VariableMap variables;
-    VarTypeSizeMap sizes;
-    unsigned int maximum_size;  // size is maximum buffer size for messages
+    ModelData *const model;
+    MessageData *const message;
 };
 
-template <typename T> void MessageDescription::addVariable(const std::string variable_name) {
-    variables.insert(variables.end(), VariableMap::value_type(variable_name, typeid(T)));
-    sizes.insert(VarTypeSizeMap::value_type(&typeid(T), (unsigned int)sizeof(T)));
+/**
+ * Template implementation
+ */
+template<typename T, ModelData::size_type N>
+void MessageDescription::newVariable(const std::string &variable_name) {
+    if (message->variables.find(variable_name) == message->variables.end()) {
+        message->variables.emplace(variable_name, ModelData::Variable(N, T()));
+        return;
+    }
+    THROW InvalidAgentVar("Message ('%s') already contains variable '%s', "
+        "in MessageDescription::newVariable().",
+        message->name.c_str(), variable_name.c_str());
 }
 
 #endif  // INCLUDE_FLAMEGPU_MODEL_MESSAGEDESCRIPTION_H_

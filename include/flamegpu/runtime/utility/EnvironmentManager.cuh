@@ -34,6 +34,7 @@ class EnvironmentManager {
      * Uses instance to initialise a models environment properties on the device
      */
     friend class CUDAAgentModel;
+    friend class CUDAAgentModel;
     /**
      * Uses instance to access env properties in host functions
      */

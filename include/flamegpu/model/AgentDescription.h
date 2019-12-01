@@ -1,118 +1,96 @@
-/**
- * @file AgentDescription.h
- * @author  Paul Richmond, Mozhgan Kabiri Chimeh
- * @date    Feb 2017
- * @brief
- *
- * \todo longer description
- */
-
 #ifndef INCLUDE_FLAMEGPU_MODEL_AGENTDESCRIPTION_H_
 #define INCLUDE_FLAMEGPU_MODEL_AGENTDESCRIPTION_H_
 
 #include <string>
 #include <map>
 #include <typeinfo>
-#include <utility>
 #include <memory>
+#include <vector>
+#include <set>
 
-// include generic memory vector
-#include "flamegpu/pop/MemoryVector.h"
-
-// include class dependencies
-#include "flamegpu/model/AgentStateDescription.h"
-#include "flamegpu/model/AgentFunctionDescription.h"
-
-// State map is a mapping between a state name (i.e. default) and a state description object reference
-/*! */
-typedef std::map<const std::string, const AgentStateDescription&> StateMap;
-
-/*! */
-typedef std::pair<const std::string, const AgentStateDescription&> StateMapPair;
-
-/*! */
-typedef std::map<const std::string, const AgentFunctionDescription&> FunctionMap;
-
-/*! */
-typedef std::map<const std::string, const std::type_info&> MemoryMap;
-
-/*! */
-typedef std::pair<const std::string, const std::type_info&> MemoryMapPair;
-
-/*! Create a map with std::type_info for keys (indexes) and std::size_t values*/
-typedef std::map<const std::type_info*, std::size_t> TypeSizeMap;    // not something that the user every sees. This is an interval map only for tracking the size of data types.
+#include "flamegpu/model/ModelDescription.h"
+#include "flamegpu/pop/AgentPopulation.h"
+class AgentFunctionDescription;
+class MessageDescription;
+struct ModelData;
+struct AgentData;
 
 class AgentDescription {
+    friend struct AgentData;
+    friend struct AgentFunctionData;
+    friend AgentPopulation::AgentPopulation(const AgentDescription &, unsigned int);
+
+    /**
+     * Only way to construct an AgentDescription
+     */
+    friend AgentDescription& ModelDescription::newAgent(const std::string &);
+
+    /**
+     * Constructors
+     */
+    AgentDescription(ModelData *const _model, AgentData *const data);
+    // Copy Construct
+    AgentDescription(const AgentDescription &other_agent);
+    // Move Construct
+    AgentDescription(AgentDescription &&other_agent) noexcept;
+    // Copy Assign
+    AgentDescription& operator=(const AgentDescription &other_agent) = delete;
+    // Move Assign
+    AgentDescription& operator=(AgentDescription &&other_agent) noexcept = delete;
+
  public:
     /**
-    *
-    */
-    explicit AgentDescription(std::string name);
-
-    virtual ~AgentDescription();
-
-    void setName(std::string name);
-
-    const std::string getName() const;
-
-    /*
-     * All agent models start initially by being defined as stateless. A stateless model has a single state called "default".
-     * If the addState function is called then the stateless flag should be set to false and the default state removed.
-     * Care should be taken if default is removed as this may invalidate some agent functions already added to the model that use the default state. Not clear yet if model validation should be done at the end or during model building.
-     * Inclined to think that validation should be done at the end and then the model set to read only.
+     * Accessors
      */
-    void addState(const AgentStateDescription& state, bool is_initial_state = false);
+    void newState(const std::string &state_name);
+    void setInitialState(const std::string &initial_state);
 
-    void setInitialState(const std::string initial_state);
+    template<typename AgentVariable, ModelData::size_type N = 1>
+    void newVariable(const std::string &variable_name);
 
-    void addAgentFunction(AgentFunctionDescription &function);
+    template<typename AgentFunction>
+    AgentFunctionDescription &newFunction(const std::string &function_name, AgentFunction a = AgentFunction());
+    AgentFunctionDescription &Function(const std::string &function_name);
 
-    /*
-     *
+    /**
+     * Const Accessors
      */
-    template <typename T> void addAgentVariable(const std::string variable_name);
+    std::string getName() const;
 
-    MemoryMap& getMemoryMap();  // TODO should be shared pointer
+    std::type_index getVariableType(const std::string &variable_name) const;
+    size_t getVariableSize(const std::string &variable_name) const;
+    ModelData::size_type getVariableLength(const std::string &variable_name) const;
+    ModelData::size_type getVariablesCount() const;
+    const AgentFunctionDescription& getFunction(const std::string &function_name) const;
 
-    const MemoryMap& getMemoryMap() const;
+    bool hasState(const std::string &state_name) const;
+    bool hasVariable(const std::string &variable_name) const;
+    bool hasFunction(const std::string &function_name) const;
+    bool isOutputOnDevice() const;
 
-    const StateMap& getStateMap() const;
-
-    const FunctionMap& getFunctionMap() const;
-
-    size_t getAgentVariableSize(const std::string variable_name) const;
-
-    size_t getMemorySize() const;
-
-    unsigned int getNumberAgentVariables() const;
-
-    bool requiresAgentCreation() const;
-
-    const std::type_info& getVariableType(const std::string variable_name) const;
-
-    bool hasAgentFunction(const std::string function_name) const;
-
-    // StateMemoryMap getEmptyStateMemoryMap() const;
-
-    void initEmptyStateMemoryMap(StateMemoryMap&) const;
+    const std::set<std::string> &getStates() const;
 
  private:
-    std::string name;
-    bool stateless;                                                // system does not use states (i.e. only has a default state)
-    std::string initial_state;
-    std::unique_ptr<AgentStateDescription> default_state;
-
-    StateMap states;
-    FunctionMap functions;
-    MemoryMap memory;
-    TypeSizeMap sizes;
-    StateMemoryMap sm_map;                                    // used to hold a default empty vector
+    ModelData *const model;
+    AgentData *const agent;
 };
 
-template <typename T> void AgentDescription::addAgentVariable(const std::string variable_name) {
-    memory.insert(MemoryMap::value_type(variable_name, typeid(T)));
-    sizes.insert(TypeSizeMap::value_type(&typeid(T), (unsigned int)sizeof(T)));
-    sm_map.insert(StateMemoryMap::value_type(variable_name, std::unique_ptr<GenericMemoryVector>(new MemoryVector<T>())));
+/**
+ * Template implementation
+ */
+template <typename T, ModelData::size_type N>
+void AgentDescription::newVariable(const std::string &variable_name) {
+    if (agent->variables.find(variable_name) == agent->variables.end()) {
+        agent->variables.emplace(variable_name, ModelData::Variable(N, T()));
+        return;
+    }
+    THROW InvalidAgentVar("Agent ('%s') already contains variable '%s', "
+        "in AgentDescription::newVariable().",
+        agent->name.c_str(), variable_name.c_str());
 }
+
+// Found in "flamegpu/model/AgentFunctionDescription.h"
+// template<typename AgentFunction>
+// AgentFunctionDescription &AgentDescription::newFunction(const std::string &function_name, AgentFunction)
 
 #endif  // INCLUDE_FLAMEGPU_MODEL_AGENTDESCRIPTION_H_

@@ -24,11 +24,10 @@ class MiniSim {
  public:
     MiniSim() :
         model("model"),
-        agent("agent"),
-        simulation(model),
-        population(nullptr) {
+        agent(model.newAgent("agent")),
+        population(nullptr),
+        ed(model.Environment()) {
         population = new AgentPopulation(agent, TEST_LEN);
-        simulation.setSimulationSteps(2);
         ed.add<float>("float_", static_cast<float>(TEST_VALUE));
         ed.add<double>("double_", static_cast<double>(TEST_VALUE));
         ed.add<int8_t>("int8_t_", static_cast<int8_t>(TEST_VALUE));
@@ -50,7 +49,6 @@ class MiniSim {
         ed.add<uint32_t, TEST_ARRAY_LEN>("uint32_t_a_", makeInit<uint32_t>());
         ed.add<int64_t, TEST_ARRAY_LEN>("int64_t_a_", makeInit<int64_t>());
         ed.add<uint64_t, TEST_ARRAY_LEN>("uint64_t_a_", makeInit<uint64_t>());
-        model.setEnvironment(ed);
     }
     ~MiniSim() { delete population;  }
     template <typename T>
@@ -60,24 +58,23 @@ class MiniSim {
             init[i] = static_cast<T>(i + 1 + offset);
         return init;
     }
-    void run() {
-        model.addAgent(agent);
+    void run(int steps = 2) {
         // CudaModel must be declared here
         // As the initial call to constructor fixes the agent population
-        // This means if we haven't called model.addAgent(agent) first
+        // This means if we haven't called model.newAgent(agent) first
         CUDAAgentModel cuda_model(model);
+        cuda_model.setSimulationSteps(steps);
         // This fails as agentMap is empty
-        cuda_model.setInitialPopulationData(*population);
-        ASSERT_NO_THROW(cuda_model.simulate(simulation));
+        cuda_model.setPopulationData(*population);
+        ASSERT_NO_THROW(cuda_model.simulate());
         // The negative of this, is that cuda_model is inaccessible within the test!
         // So copy across population data here
         ASSERT_NO_THROW(cuda_model.getPopulationData(*population));
     }
     ModelDescription model;
-    AgentDescription agent;
-    Simulation simulation;
+    AgentDescription &agent;
     AgentPopulation *population;
-    EnvironmentDescription ed;
+    EnvironmentDescription &ed;
 };
 
 FLAMEGPU_STEP_FUNCTION(add_get_set_float) {
@@ -1284,364 +1281,331 @@ class HostEnvironmentTest : public testing::Test {
 }  // namespace
 
 TEST_F(HostEnvironmentTest, AddGet_SetGetfloat) {
-    ms->simulation.addStepFunction(&add_get_set_float);
+    ms->model.addStepFunction(add_get_set_float);
     // Test Something
     ms->run();
 }
 TEST_F(HostEnvironmentTest, AddGet_SetGetdouble) {
-    ms->simulation.addStepFunction(&add_get_set_double);
+    ms->model.addStepFunction(add_get_set_double);
     // Test Something
     ms->run();
 }
 TEST_F(HostEnvironmentTest, AddGet_SetGetint8_t) {
-    ms->simulation.addStepFunction(&add_get_set_int8_t);
+    ms->model.addStepFunction(add_get_set_int8_t);
     // Test Something
     ms->run();
 }
 TEST_F(HostEnvironmentTest, AddGet_SetGetuint8_t) {
-    ms->simulation.addStepFunction(&add_get_set_uint8_t);
+    ms->model.addStepFunction(add_get_set_uint8_t);
     // Test Something
     ms->run();
 }
 TEST_F(HostEnvironmentTest, AddGet_SetGetint16_t) {
-    ms->simulation.addStepFunction(&add_get_set_int16_t);
+    ms->model.addStepFunction(add_get_set_int16_t);
     // Test Something
     ms->run();
 }
 TEST_F(HostEnvironmentTest, AddGet_SetGetuint16_t) {
-    ms->simulation.addStepFunction(&add_get_set_uint16_t);
+    ms->model.addStepFunction(add_get_set_uint16_t);
     // Test Something
     ms->run();
 }
 TEST_F(HostEnvironmentTest, AddGet_SetGetint32_t) {
-    ms->simulation.addStepFunction(&add_get_set_int32_t);
+    ms->model.addStepFunction(add_get_set_int32_t);
     // Test Something
     ms->run();
 }
 TEST_F(HostEnvironmentTest, AddGet_SetGetuint32_t) {
-    ms->simulation.addStepFunction(&add_get_set_uint32_t);
+    ms->model.addStepFunction(add_get_set_uint32_t);
     // Test Something
     ms->run();
 }
 TEST_F(HostEnvironmentTest, AddGet_SetGetint64_t) {
-    ms->simulation.addStepFunction(&add_get_set_int64_t);
+    ms->model.addStepFunction(add_get_set_int64_t);
     // Test Something
     ms->run();
 }
 TEST_F(HostEnvironmentTest, AddGet_SetGetuint64_t) {
-    ms->simulation.addStepFunction(&add_get_set_uint64_t);
+    ms->model.addStepFunction(add_get_set_uint64_t);
     // Test Something
     ms->run();
 }
 
 TEST_F(HostEnvironmentTest, AddGet_SetGetarray_float) {
-    ms->simulation.addStepFunction(&add_get_set_array_float);
+    ms->model.addStepFunction(add_get_set_array_float);
     // Test Something
     ms->run();
 }
 TEST_F(HostEnvironmentTest, AddGet_SetGetarray_double) {
-    ms->simulation.addStepFunction(&add_get_set_array_double);
+    ms->model.addStepFunction(add_get_set_array_double);
     // Test Something
     ms->run();
 }
 TEST_F(HostEnvironmentTest, AddGet_SetGetarray_int8_t) {
-    ms->simulation.addStepFunction(&add_get_set_array_int8_t);
+    ms->model.addStepFunction(add_get_set_array_int8_t);
     // Test Something
     ms->run();
 }
 TEST_F(HostEnvironmentTest, AddGet_SetGetarray_uint8_t) {
-    ms->simulation.addStepFunction(&add_get_set_array_uint8_t);
+    ms->model.addStepFunction(add_get_set_array_uint8_t);
     // Test Something
     ms->run();
 }
 TEST_F(HostEnvironmentTest, AddGet_SetGetarray_int16_t) {
-    ms->simulation.addStepFunction(&add_get_set_array_int16_t);
+    ms->model.addStepFunction(add_get_set_array_int16_t);
     // Test Something
     ms->run();
 }
 TEST_F(HostEnvironmentTest, AddGet_SetGetarray_uint16_t) {
-    ms->simulation.addStepFunction(&add_get_set_array_uint16_t);
+    ms->model.addStepFunction(add_get_set_array_uint16_t);
     // Test Something
     ms->run();
 }
 TEST_F(HostEnvironmentTest, AddGet_SetGetarray_int32_t) {
-    ms->simulation.addStepFunction(&add_get_set_array_int32_t);
+    ms->model.addStepFunction(add_get_set_array_int32_t);
     // Test Something
     ms->run();
 }
 TEST_F(HostEnvironmentTest, AddGet_SetGetarray_uint32_t) {
-    ms->simulation.addStepFunction(&add_get_set_array_uint32_t);
+    ms->model.addStepFunction(add_get_set_array_uint32_t);
     // Test Something
     ms->run();
 }
 TEST_F(HostEnvironmentTest, AddGet_SetGetarray_int64_t) {
-    ms->simulation.addStepFunction(&add_get_set_array_int64_t);
+    ms->model.addStepFunction(add_get_set_array_int64_t);
     // Test Something
     ms->run();
 }
 TEST_F(HostEnvironmentTest, AddGet_SetGetarray_uint64_t) {
-    ms->simulation.addStepFunction(&add_get_set_array_uint64_t);
+    ms->model.addStepFunction(add_get_set_array_uint64_t);
     // Test Something
     ms->run();
 }
 
 TEST_F(HostEnvironmentTest, AddGet_SetGetarray_element_float) {
-    ms->simulation.addStepFunction(&add_get_set_array_element_float);
+    ms->model.addStepFunction(add_get_set_array_element_float);
     // Test Something
     ms->run();
 }
 TEST_F(HostEnvironmentTest, AddGet_SetGetarray_element_double) {
-    ms->simulation.addStepFunction(&add_get_set_array_element_double);
+    ms->model.addStepFunction(add_get_set_array_element_double);
     // Test Something
     ms->run();
 }
 TEST_F(HostEnvironmentTest, AddGet_SetGetarray_element_int8_t) {
-    ms->simulation.addStepFunction(&add_get_set_array_element_int8_t);
+    ms->model.addStepFunction(add_get_set_array_element_int8_t);
     // Test Something
     ms->run();
 }
 TEST_F(HostEnvironmentTest, AddGet_SetGetarray_element_uint8_t) {
-    ms->simulation.addStepFunction(&add_get_set_array_element_uint8_t);
+    ms->model.addStepFunction(add_get_set_array_element_uint8_t);
     // Test Something
     ms->run();
 }
 TEST_F(HostEnvironmentTest, AddGet_SetGetarray_element_int16_t) {
-    ms->simulation.addStepFunction(&add_get_set_array_element_int16_t);
+    ms->model.addStepFunction(add_get_set_array_element_int16_t);
     // Test Something
     ms->run();
 }
 TEST_F(HostEnvironmentTest, AddGet_SetGetarray_element_uint16_t) {
-    ms->simulation.addStepFunction(&add_get_set_array_element_uint16_t);
+    ms->model.addStepFunction(add_get_set_array_element_uint16_t);
     // Test Something
     ms->run();
 }
 TEST_F(HostEnvironmentTest, AddGet_SetGetarray_element_int32_t) {
-    ms->simulation.addStepFunction(&add_get_set_array_element_int32_t);
+    ms->model.addStepFunction(add_get_set_array_element_int32_t);
     // Test Something
     ms->run();
 }
 TEST_F(HostEnvironmentTest, AddGet_SetGetarray_element_uint32_t) {
-    ms->simulation.addStepFunction(&add_get_set_array_element_uint32_t);
+    ms->model.addStepFunction(add_get_set_array_element_uint32_t);
     // Test Something
     ms->run();
 }
 TEST_F(HostEnvironmentTest, AddGet_SetGetarray_element_int64_t) {
-    ms->simulation.addStepFunction(&add_get_set_array_element_int64_t);
+    ms->model.addStepFunction(add_get_set_array_element_int64_t);
     // Test Something
     ms->run();
 }
 TEST_F(HostEnvironmentTest, AddGet_SetGetarray_element_uint64_t) {
-    ms->simulation.addStepFunction(&add_get_set_array_element_uint64_t);
+    ms->model.addStepFunction(add_get_set_array_element_uint64_t);
     // Test Something
     ms->run();
 }
 
 // ExceptionPropertyType_float
 TEST_F(HostEnvironmentTest, ExceptionPropertyType_float) {
-    ms->simulation.setSimulationSteps(1);
-    ms->simulation.addStepFunction(&ExceptionPropertyType_float);
+    ms->model.addStepFunction(ExceptionPropertyType_float);
     // Test Something
-    ms->run();
+    ms->run(1);
 }
 TEST_F(HostEnvironmentTest, ExceptionPropertyType_double) {
-    ms->simulation.setSimulationSteps(1);
-    ms->simulation.addStepFunction(&ExceptionPropertyType_double);
+    ms->model.addStepFunction(ExceptionPropertyType_double);
     // Test Something
-    ms->run();
+    ms->run(1);
 }
 TEST_F(HostEnvironmentTest, ExceptionPropertyType_int8_t) {
-    ms->simulation.setSimulationSteps(1);
-    ms->simulation.addStepFunction(&ExceptionPropertyType_int8_t);
+    ms->model.addStepFunction(ExceptionPropertyType_int8_t);
     // Test Something
-    ms->run();
+    ms->run(1);
 }
 TEST_F(HostEnvironmentTest, ExceptionPropertyType_uint8_t) {
-    ms->simulation.setSimulationSteps(1);
-    ms->simulation.addStepFunction(&ExceptionPropertyType_uint8_t);
+    ms->model.addStepFunction(ExceptionPropertyType_uint8_t);
     // Test Something
-    ms->run();
+    ms->run(1);
 }
 TEST_F(HostEnvironmentTest, ExceptionPropertyType_int16_t) {
-    ms->simulation.setSimulationSteps(1);
-    ms->simulation.addStepFunction(&ExceptionPropertyType_int16_t);
+    ms->model.addStepFunction(ExceptionPropertyType_int16_t);
     // Test Something
-    ms->run();
+    ms->run(1);
 }
 TEST_F(HostEnvironmentTest, ExceptionPropertyType_uint16_t) {
-    ms->simulation.setSimulationSteps(1);
-    ms->simulation.addStepFunction(&ExceptionPropertyType_uint16_t);
+    ms->model.addStepFunction(ExceptionPropertyType_uint16_t);
     // Test Something
-    ms->run();
+    ms->run(1);
 }
 TEST_F(HostEnvironmentTest, ExceptionPropertyType_int32_t) {
-    ms->simulation.setSimulationSteps(1);
-    ms->simulation.addStepFunction(&ExceptionPropertyType_int32_t);
+    ms->model.addStepFunction(ExceptionPropertyType_int32_t);
     // Test Something
-    ms->run();
+    ms->run(1);
 }
 TEST_F(HostEnvironmentTest, ExceptionPropertyType_uint32_t) {
-    ms->simulation.setSimulationSteps(1);
-    ms->simulation.addStepFunction(&ExceptionPropertyType_uint32_t);
+    ms->model.addStepFunction(ExceptionPropertyType_uint32_t);
     // Test Something
-    ms->run();
+    ms->run(1);
 }
 TEST_F(HostEnvironmentTest, ExceptionPropertyType_int64_t) {
-    ms->simulation.setSimulationSteps(1);
-    ms->simulation.addStepFunction(&ExceptionPropertyType_int64_t);
+    ms->model.addStepFunction(ExceptionPropertyType_int64_t);
     // Test Something
-    ms->run();
+    ms->run(1);
 }
 TEST_F(HostEnvironmentTest, ExceptionPropertyType_uint64_t) {
-    ms->simulation.setSimulationSteps(1);
-    ms->simulation.addStepFunction(&ExceptionPropertyType_uint64_t);
+    ms->model.addStepFunction(ExceptionPropertyType_uint64_t);
     // Test Something
-    ms->run();
+    ms->run(1);
 }
 
 // ExceptionPropertyLength_float
 TEST_F(HostEnvironmentTest, ExceptionPropertyLength_float) {
-    ms->simulation.setSimulationSteps(1);
-    ms->simulation.addStepFunction(&ExceptionPropertyLength_float);
+    ms->model.addStepFunction(ExceptionPropertyLength_float);
     // Test Something
-    ms->run();
+    ms->run(1);
 }
 TEST_F(HostEnvironmentTest, ExceptionPropertyLength_double) {
-    ms->simulation.setSimulationSteps(1);
-    ms->simulation.addStepFunction(&ExceptionPropertyLength_double);
+    ms->model.addStepFunction(ExceptionPropertyLength_double);
     // Test Something
-    ms->run();
+    ms->run(1);
 }
 TEST_F(HostEnvironmentTest, ExceptionPropertyLength_int8_t) {
-    ms->simulation.setSimulationSteps(1);
-    ms->simulation.addStepFunction(&ExceptionPropertyLength_int8_t);
+    ms->model.addStepFunction(ExceptionPropertyLength_int8_t);
     // Test Something
-    ms->run();
+    ms->run(1);
 }
 TEST_F(HostEnvironmentTest, ExceptionPropertyLength_uint8_t) {
-    ms->simulation.setSimulationSteps(1);
-    ms->simulation.addStepFunction(&ExceptionPropertyLength_uint8_t);
+    ms->model.addStepFunction(ExceptionPropertyLength_uint8_t);
     // Test Something
-    ms->run();
+    ms->run(1);
 }
 TEST_F(HostEnvironmentTest, ExceptionPropertyLength_int16_t) {
-    ms->simulation.setSimulationSteps(1);
-    ms->simulation.addStepFunction(&ExceptionPropertyLength_int16_t);
+    ms->model.addStepFunction(ExceptionPropertyLength_int16_t);
     // Test Something
-    ms->run();
+    ms->run(1);
 }
 TEST_F(HostEnvironmentTest, ExceptionPropertyLength_uint16_t) {
-    ms->simulation.setSimulationSteps(1);
-    ms->simulation.addStepFunction(&ExceptionPropertyLength_uint16_t);
+    ms->model.addStepFunction(ExceptionPropertyLength_uint16_t);
     // Test Something
-    ms->run();
+    ms->run(1);
 }
 TEST_F(HostEnvironmentTest, ExceptionPropertyLength_int32_t) {
-    ms->simulation.setSimulationSteps(1);
-    ms->simulation.addStepFunction(&ExceptionPropertyLength_int32_t);
+    ms->model.addStepFunction(ExceptionPropertyLength_int32_t);
     // Test Something
-    ms->run();
+    ms->run(1);
 }
 TEST_F(HostEnvironmentTest, ExceptionPropertyLength_uint32_t) {
-    ms->simulation.setSimulationSteps(1);
-    ms->simulation.addStepFunction(&ExceptionPropertyLength_uint32_t);
+    ms->model.addStepFunction(ExceptionPropertyLength_uint32_t);
     // Test Something
-    ms->run();
+    ms->run(1);
 }
 TEST_F(HostEnvironmentTest, ExceptionPropertyLength_int64_t) {
-    ms->simulation.setSimulationSteps(1);
-    ms->simulation.addStepFunction(&ExceptionPropertyLength_int64_t);
+    ms->model.addStepFunction(ExceptionPropertyLength_int64_t);
     // Test Something
-    ms->run();
+    ms->run(1);
 }
 TEST_F(HostEnvironmentTest, ExceptionPropertyLength_uint64_t) {
-    ms->simulation.setSimulationSteps(1);
-    ms->simulation.addStepFunction(&ExceptionPropertyLength_uint64_t);
+    ms->model.addStepFunction(ExceptionPropertyLength_uint64_t);
     // Test Something
-    ms->run();
+    ms->run(1);
 }
 
 // ExceptionPropertyRange_float
 TEST_F(HostEnvironmentTest, ExceptionPropertyRange_float) {
-    ms->simulation.setSimulationSteps(1);
-    ms->simulation.addStepFunction(&ExceptionPropertyRange_float);
+    ms->model.addStepFunction(ExceptionPropertyRange_float);
     // Test Something
-    ms->run();
+    ms->run(1);
 }
 TEST_F(HostEnvironmentTest, ExceptionPropertyRange_double) {
-    ms->simulation.setSimulationSteps(1);
-    ms->simulation.addStepFunction(&ExceptionPropertyRange_double);
+    ms->model.addStepFunction(ExceptionPropertyRange_double);
     // Test Something
-    ms->run();
+    ms->run(1);
 }
 TEST_F(HostEnvironmentTest, ExceptionPropertyRange_int8_t) {
-    ms->simulation.setSimulationSteps(1);
-    ms->simulation.addStepFunction(&ExceptionPropertyRange_int8_t);
+    ms->model.addStepFunction(ExceptionPropertyRange_int8_t);
     // Test Something
-    ms->run();
+    ms->run(1);
 }
 TEST_F(HostEnvironmentTest, ExceptionPropertyRange_uint8_t) {
-    ms->simulation.setSimulationSteps(1);
-    ms->simulation.addStepFunction(&ExceptionPropertyRange_uint8_t);
+    ms->model.addStepFunction(ExceptionPropertyRange_uint8_t);
     // Test Something
-    ms->run();
+    ms->run(1);
 }
 TEST_F(HostEnvironmentTest, ExceptionPropertyRange_int16_t) {
-    ms->simulation.setSimulationSteps(1);
-    ms->simulation.addStepFunction(&ExceptionPropertyRange_int16_t);
+    ms->model.addStepFunction(ExceptionPropertyRange_int16_t);
     // Test Something
-    ms->run();
+    ms->run(1);
 }
 TEST_F(HostEnvironmentTest, ExceptionPropertyRange_uint16_t) {
-    ms->simulation.setSimulationSteps(1);
-    ms->simulation.addStepFunction(&ExceptionPropertyRange_uint16_t);
+    ms->model.addStepFunction(ExceptionPropertyRange_uint16_t);
     // Test Something
-    ms->run();
+    ms->run(1);
 }
 TEST_F(HostEnvironmentTest, ExceptionPropertyRange_int32_t) {
-    ms->simulation.setSimulationSteps(1);
-    ms->simulation.addStepFunction(&ExceptionPropertyRange_int32_t);
+    ms->model.addStepFunction(ExceptionPropertyRange_int32_t);
     // Test Something
-    ms->run();
+    ms->run(1);
 }
 TEST_F(HostEnvironmentTest, ExceptionPropertyRange_uint32_t) {
-    ms->simulation.setSimulationSteps(1);
-    ms->simulation.addStepFunction(&ExceptionPropertyRange_uint32_t);
+    ms->model.addStepFunction(ExceptionPropertyRange_uint32_t);
     // Test Something
-    ms->run();
+    ms->run(1);
 }
 TEST_F(HostEnvironmentTest, ExceptionPropertyRange_int64_t) {
-    ms->simulation.setSimulationSteps(1);
-    ms->simulation.addStepFunction(&ExceptionPropertyRange_int64_t);
+    ms->model.addStepFunction(ExceptionPropertyRange_int64_t);
     // Test Something
-    ms->run();
+    ms->run(1);
 }
 TEST_F(HostEnvironmentTest, ExceptionPropertyRange_uint64_t) {
-    ms->simulation.setSimulationSteps(1);
-    ms->simulation.addStepFunction(&ExceptionPropertyRange_uint64_t);
+    ms->model.addStepFunction(ExceptionPropertyRange_uint64_t);
     // Test Something
-    ms->run();
+    ms->run(1);
 }
 
 // ExceptionPropertyDoesntExist
 TEST_F(HostEnvironmentTest, ExceptionPropertyDoesntExist) {
-    ms->simulation.setSimulationSteps(1);
-    ms->simulation.addStepFunction(&ExceptionPropertyDoesntExist);
+    ms->model.addStepFunction(ExceptionPropertyDoesntExist);
     // Test Something
-    ms->run();
+    ms->run(1);
 }
 
 // ExceptionPropertyReadOnly
 TEST_F(HostEnvironmentTest, ExceptionPropertyReadOnly) {
-    ms->simulation.setSimulationSteps(1);
-    ms->simulation.addStepFunction(&ExceptionPropertyReadOnly);
+    ms->model.addStepFunction(ExceptionPropertyReadOnly);
     // Test Something
-    ms->run();
+    ms->run(1);
 }
 
 // bool
 TEST_F(HostEnvironmentTest, BoolWorks) {
-    ms->simulation.setSimulationSteps(1);
-    ms->simulation.addStepFunction(&BoolWorks);
+    ms->model.addStepFunction(BoolWorks);
     // Test Something
-    ms->run();
+    ms->run(1);
 }

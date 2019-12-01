@@ -10,13 +10,17 @@
  * \todo longer description
  */
 
+#include <memory>
+#include <string>
+#include <unordered_map>
+
 #include "flamegpu/io/statereader.h"
 #include "flamegpu/model/ModelDescription.h"
 
 // Derived classes
 class xmlReader : public StateReader {
  public:
-    xmlReader(const ModelDescription &model, const char* input);
+    xmlReader(const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &model_state, const char* input);
     int parse();
 };
 

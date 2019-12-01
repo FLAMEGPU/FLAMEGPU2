@@ -10,7 +10,9 @@
  * \todo longer description
  */
 
+#include <memory>
 #include <string>
+#include <unordered_map>
 
 #include "flamegpu/exception/FGPUException.h"
 #include "flamegpu/model/ModelDescription.h"
@@ -21,7 +23,7 @@ class StateWriter {
     //  Constructors and Destructor
     // -----------------------------------------------------------------------
 
-    StateWriter(const ModelDescription &model, const char* output) : model_description_(model), outputFile(std::string(output)) {}
+    StateWriter(const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &_model_state, const char* output) : model_state(_model_state), outputFile(std::string(output)) {}
     ~StateWriter() {}
 
     // -----------------------------------------------------------------------
@@ -31,7 +33,7 @@ class StateWriter {
     virtual int writeStates() = 0;
 
  protected:
-    ModelDescription model_description_;
+    const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> model_state;
     std::string outputFile;
 };
 

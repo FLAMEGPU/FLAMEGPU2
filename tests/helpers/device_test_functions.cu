@@ -50,28 +50,28 @@ FLAMEGPU_AGENT_FUNCTION(stay_func) {
     return ALIVE;
 }
 
-void attach_add_func(AgentFunctionDescription& func) {
-    func.setFunction(&add_func);
+AgentFunctionDescription& attach_add_func(AgentDescription& agent) {
+    return agent.newFunction("add", add_func);
 }
 
-void attach_subtract_func(AgentFunctionDescription& func) {
-    func.setFunction(&subtract_func);
+AgentFunctionDescription& attach_subtract_func(AgentDescription& agent) {
+    return agent.newFunction("subtract", subtract_func);
 }
 
-void attach_input_func(AgentFunctionDescription& func) {
-    func.setFunction(&input_func);
+AgentFunctionDescription& attach_input_func(AgentDescription& agent) {
+    return agent.newFunction("input", input_func);
 }
 
-void attach_move_func(AgentFunctionDescription& func) {
-    func.setFunction(&move_func);
+AgentFunctionDescription& attach_move_func(AgentDescription& agent) {
+    return agent.newFunction("move", move_func);
 }
 
-void attach_stay_func(AgentFunctionDescription& func) {
-    func.setFunction(&stay_func);
+AgentFunctionDescription& attach_stay_func(AgentDescription& agent) {
+    return agent.newFunction("stay", stay_func);
 }
 
-void attach_output_func(AgentFunctionDescription& func) {
-    func.setFunction(&output_func);
+AgentFunctionDescription& attach_output_func(AgentDescription& agent) {
+    return agent.newFunction("output", output_func);
 }
 
 
@@ -86,8 +86,8 @@ FLAMEGPU_AGENT_FUNCTION(random1_func) {
 
     return ALIVE;
 }
-void attach_random1_func(AgentFunctionDescription *const func) {
-    func->setFunction(&random1_func);
+AgentFunctionDescription& attach_random1_func(AgentDescription& agent) {
+    return agent.newFunction("random1", random1_func);
 }
 FLAMEGPU_AGENT_FUNCTION(random2_func) {
     FLAMEGPU->setVariable<float>("uniform_float", FLAMEGPU->random.uniform<float>());
@@ -114,6 +114,6 @@ FLAMEGPU_AGENT_FUNCTION(random2_func) {
 
     return ALIVE;
 }
-void attach_random2_func(AgentFunctionDescription *const func) {
-    func->setFunction(&random2_func);
+AgentFunctionDescription& attach_random2_func(AgentDescription& agent) {
+    return agent.newFunction("random2", random2_func);
 }

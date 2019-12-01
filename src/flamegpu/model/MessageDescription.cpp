@@ -1,76 +1,62 @@
-/**
- * @file MessageDescription.cpp
- * @authors
- * @date
- * @brief
- *
- * @see
- * @warning
- */
-
 #include "flamegpu/model/MessageDescription.h"
-#include "flamegpu/exception/FGPUException.h"
+#include "flamegpu/model/AgentDescription.h"  // Used by Move-Assign
 
-MessageDescription::MessageDescription(const std::string message_name, unsigned int initial_size) : name(message_name), variables(), maximum_size(initial_size) { }
+/**
+ * Constructors
+ */
+MessageDescription::MessageDescription(ModelData *const _model, MessageData *const description)
+    : model(_model)
+    , message(description) { }
+// Copy Construct
+MessageDescription::MessageDescription(const MessageDescription &other_message)
+    : model(other_message.model)
+    , message(other_message.message) {
+    // TODO
+}
+// Move Construct
+MessageDescription::MessageDescription(MessageDescription &&other_message) noexcept
+    : model(move(other_message.model))
+    , message(other_message.message) { }
 
-MessageDescription::~MessageDescription() {}
 
-const std::string MessageDescription::getName() const {
-    return name;
+/**
+ * Const Accessors
+ */
+std::string MessageDescription::getName() const {
+    return message->name;
 }
 
-VariableMap& MessageDescription::getVariableMap() {
-    return variables;
-}
-
-const VariableMap& MessageDescription::getVariableMap() const {
-    return variables;
-}
-
-size_t MessageDescription::getMemorySize() const {
-    size_t size = 0;
-    for (VarTypeSizeMap::const_iterator it = sizes.begin(); it != sizes.end(); it++) {
-        size += it->second;
+std::type_index MessageDescription::getVariableType(const std::string &variable_name) const {
+    auto f = message->variables.find(variable_name);
+    if (f != message->variables.end()) {
+        return f->second.type;
     }
-    return size;
+    THROW InvalidMessageVar("Message ('%s') does not contain variable '%s', "
+        "in MessageDescription::getVariableType().",
+        message->name.c_str(), variable_name.c_str());
 }
-
-unsigned int MessageDescription::getNumberMessageVariables() const {
-    return static_cast<unsigned int>(variables.size());
-}
-
-size_t MessageDescription::getMessageVariableSize(const std::string variable_name) const {
-    // get the variable name type
-    VariableMap::const_iterator mm = variables.find(variable_name);
-    if (mm == variables.end()) {
-        THROW InvalidMessageVar("Message ('%s') variable '%s' was not found, "
-            "in MessageDescription::getMessageVariableSize().",
-            name.c_str(), variable_name.c_str());
+size_t MessageDescription::getVariableSize(const std::string &variable_name) const {
+    auto f = message->variables.find(variable_name);
+    if (f != message->variables.end()) {
+        return f->second.type_size;
     }
-    const std::type_info *t = &(mm->second);
-    // get the type size
-    VarTypeSizeMap::const_iterator tsm = sizes.find(t);
-    if (tsm == sizes.end()) {
-        THROW InvalidMapEntry("Message ('%s') variable '%s's size was not found in type sizes map, "
-            "in AgentDescription::getAgentVariableSize()",
-            name.c_str(), variable_name.c_str());
-    }
-    return tsm->second;
+    THROW InvalidMessageVar("Message ('%s') does not contain variable '%s', "
+        "in MessageDescription::getVariableSize().",
+        message->name.c_str(), variable_name.c_str());
 }
-
-const std::type_info& MessageDescription::getVariableType(const std::string variable_name) const {
-    VariableMap::const_iterator iter;
-    iter = variables.find(variable_name);
-
-    if (iter == variables.end()) {
-        THROW InvalidMessageVar("Message ('%s') variable '%s' was not found, "
-            "in MessageDescription::getVariableType().",
-            name.c_str(), variable_name.c_str());
+ModelData::size_type MessageDescription::getVariableLength(const std::string &variable_name) const {
+    auto f = message->variables.find(variable_name);
+    if (f != message->variables.end()) {
+        return f->second.elements;
     }
-
-    return iter->second;
+    THROW InvalidMessageVar("Message ('%s') does not contain variable '%s', "
+        "in MessageDescription::getVariableLength().",
+        message->name.c_str(), variable_name.c_str());
 }
-
-unsigned int MessageDescription::getMaximumMessageListCapacity() const {
-    return maximum_size;
+ModelData::size_type MessageDescription::getVariablesCount() const {
+    // Downcast, will never have more than UINT_MAX variables
+    return static_cast<ModelData::size_type>(message->variables.size());
+}
+bool MessageDescription::hasVariable(const std::string &variable_name) const {
+    return message->variables.find(variable_name) != message->variables.end();
 }

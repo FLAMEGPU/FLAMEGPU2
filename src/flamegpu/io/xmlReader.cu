@@ -18,7 +18,7 @@
 #define XMLCheckResult(a_eResult) if (a_eResult != tinyxml2::XML_SUCCESS) { printf("XMLCheckResult Error: %i\n", a_eResult); return a_eResult; }
 #endif
 
-xmlReader::xmlReader(const ModelDescription &model, const char* input) : StateReader(model, input) {}
+xmlReader::xmlReader(const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &model_state, const char* input) : StateReader(model_state, input) {}
 
 /**
 * \brief parses the xml file
@@ -50,10 +50,10 @@ int xmlReader::parse() {
         tinyxml2::XMLElement* pListElement = pElement->FirstChildElement("name");
         const char* agentName = pListElement->GetText();
 
-        const MemoryMap &m = model_description_.getAgentDescription(agentName).getMemoryMap();
-        AgentInstance instance = model_description_.getAgentPopulation(agentName).getNextInstance("default");
+        const auto &m = model_state.at(agentName)->getAgentDescription().variables;
+        AgentInstance instance = model_state.at(agentName)->getNextInstance("default");
 
-        for (MemoryMap::const_iterator iter = m.begin(); iter != m.end(); iter++) {
+        for (auto iter = m.begin(); iter != m.end(); ++iter) {
             float outFloat;
             double outDouble;
             int outInt;
@@ -63,21 +63,21 @@ int xmlReader::parse() {
             pListElement = pElement->FirstChildElement(variable_name.c_str());
             XMLCheckResult(errorId);
 
-            if (iter->second == typeid(float)) {
+            if (iter->second.type == std::type_index(typeid(float))) {
                 errorId = pListElement->QueryFloatText(&outFloat);
 
                 instance.setVariable<float>(variable_name, outFloat);
-            } else if (iter->second == typeid(double)) {
+            } else if (iter->second.type == std::type_index(typeid(double))) {
                 errorId = pListElement->QueryDoubleText(&outDouble);
                 XMLCheckResult(errorId);
 
                 instance.setVariable<double>(variable_name, outDouble);
-            } else if (iter->second == typeid(int)) {
+            } else if (iter->second.type == std::type_index(typeid(int))) {
                 errorId = pListElement->QueryIntText(&outInt);
                 XMLCheckResult(errorId);
 
                 instance.setVariable<int>(variable_name, outInt);
-            } else if (iter->second == typeid(bool)) {
+            } else if (iter->second.type == std::type_index(typeid(bool))) {
                 errorId = pListElement->QueryBoolText(&outBool);
                 XMLCheckResult(errorId);
 

@@ -23,11 +23,13 @@
 * CUDAAgentStateList class
 * @brief populates CUDA agent map
 */
-CUDAAgentStateList::CUDAAgentStateList(CUDAAgent& cuda_agent) : agent(cuda_agent) {
+CUDAAgentStateList::CUDAAgentStateList(CUDAAgent& cuda_agent)
+    : current_list_size(0)
+    , agent(cuda_agent) {
     // allocate state lists
     allocateDeviceAgentList(d_list);
     allocateDeviceAgentList(d_swap_list);
-    if (agent.getAgentDescription().requiresAgentCreation())
+    if (agent.getAgentDescription().isOutputOnDevice())
         allocateDeviceAgentList(d_new_list);
 }
 
@@ -43,7 +45,7 @@ void CUDAAgentStateList::cleanupAllocatedData() {
     // clean up
     releaseDeviceAgentList(d_list);
     releaseDeviceAgentList(d_swap_list);
-    if (agent.getAgentDescription().requiresAgentCreation()) {
+    if (agent.getAgentDescription().isOutputOnDevice()) {
         releaseDeviceAgentList(d_new_list);
     }
 }
@@ -55,15 +57,15 @@ void CUDAAgentStateList::cleanupAllocatedData() {
 */
 void CUDAAgentStateList::allocateDeviceAgentList(CUDAMemoryMap &memory_map) {
     // we use the agents memory map to iterate the agent variables and do allocation within our GPU hash map
-    const MemoryMap &mem = agent.getAgentDescription().getMemoryMap();
+    const auto &mem = agent.getAgentDescription().variables;
 
     // for each variable allocate a device array and add to map
-    for (const MemoryMapPair& mm : mem) {
+    for (const auto &mm : mem) {
         // get the variable name
         std::string var_name = mm.first;
 
         // get the variable size from agent description
-        size_t var_size = agent.getAgentDescription().getAgentVariableSize(mm.first);
+        size_t var_size = agent.getAgentDescription().variables.at(mm.first).type_size;
 
         // do the device allocation
         void * d_ptr;
@@ -103,7 +105,7 @@ void CUDAAgentStateList::zeroDeviceAgentList(CUDAMemoryMap& memory_map) {
     // for each device pointer in the cuda memory map set the values to 0
     for (const CUDAMemoryMapPair& mm : memory_map) {
         // get the variable size from agent description
-        size_t var_size = agent.getAgentDescription().getAgentVariableSize(mm.first);
+        size_t var_size = agent.getAgentDescription().variables.at(mm.first).type_size;
 
         // set the memory to zero
         gpuErrchk(cudaMemset(mm.second, 0, var_size*agent.getMaximumListSize()));
@@ -121,13 +123,13 @@ void CUDAAgentStateList::setAgentData(const AgentStateMemory &state_memory) {
     if (!state_memory.isSameDescription(agent.getAgentDescription())) {
         THROW InvalidCudaAgentDesc("Agent State memory has different description to CUDA Agent ('%s'), "
             "in CUDAAgentStateList::setAgentData().",
-            agent.getAgentDescription().getName().c_str());
+            agent.getAgentDescription().name.c_str());
     }
 
     // copy raw agent data to device pointers
     for (CUDAMemoryMapPair m : d_list) {
         // get the variable size from agent description
-        size_t var_size = agent.getAgentDescription().getAgentVariableSize(m.first);
+        size_t var_size = agent.getAgentDescription().variables.at(m.first).type_size;
 
         // get the vector
         const GenericMemoryVector &m_vec = state_memory.getReadOnlyMemoryVector(m.first);
@@ -148,13 +150,13 @@ void CUDAAgentStateList::getAgentData(AgentStateMemory &state_memory) {
     if (!state_memory.isSameDescription(agent.getAgentDescription())) {
         THROW InvalidCudaAgentDesc("Agent State memory has different description to CUDA Agent ('%s'), "
             "in CUDAAgentStateList::getAgentData().",
-            agent.getAgentDescription().getName().c_str());
+            agent.getAgentDescription().name.c_str());
     }
 
     // copy raw agent data to device pointers
     for (CUDAMemoryMapPair m : d_list) {
         // get the variable size from agent description
-        size_t var_size = agent.getAgentDescription().getAgentVariableSize(m.first);
+        size_t var_size = agent.getAgentDescription().variables.at(m.first).type_size;
 
         // get the vector
         GenericMemoryVector &m_vec = state_memory.getMemoryVector(m.first);
@@ -189,7 +191,7 @@ void* CUDAAgentStateList::getAgentListVariablePointer(std::string variable_name)
 void CUDAAgentStateList::zeroAgentData() {
     zeroDeviceAgentList(d_list);
     zeroDeviceAgentList(d_swap_list);
-    if (agent.getAgentDescription().requiresAgentCreation())
+    if (agent.getAgentDescription().isOutputOnDevice())
         zeroDeviceAgentList(d_new_list);
 }
 
