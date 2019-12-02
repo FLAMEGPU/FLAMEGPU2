@@ -15,19 +15,19 @@ ModelDescription::ModelDescription(const std::string &model_name)
     , environment() { }
 // Copy Construct
 ModelDescription::ModelDescription(const ModelDescription &other_model) {
-
+    // TODO
 }
 // Move Construct
 ModelDescription::ModelDescription(ModelDescription &&other_model) {
-
+    // TODO
 }
 // Copy Assign
 ModelDescription& ModelDescription::operator=(const ModelDescription &other_model) {
-
+    // TODO
 }
 // Move Assign
 ModelDescription& ModelDescription::operator=(ModelDescription &&other_model) {
-
+    // TODO
 }
 
 /**
@@ -53,7 +53,7 @@ AgentDescription& ModelDescription::Agent(const std::string &agent_name) {
         agent_name.c_str());
 }
 AgentDescription& ModelDescription::cloneAgent(const AgentDescription &agent) {
-
+    // TODO
 }
 
 MessageDescription& ModelDescription::newMessage(const std::string &message_name) {
@@ -76,14 +76,14 @@ MessageDescription& ModelDescription::Message(const std::string &message_name) {
         message_name.c_str());
 }
 MessageDescription& ModelDescription::cloneMessage(const MessageDescription &message) {
-
+    // TODO
 }
 
 EnvironmentDescription& ModelDescription::Environment() {
     return environment;
 }
 EnvironmentDescription& ModelDescription::cloneEnvironment(const EnvironmentDescription &environment) {
-
+    // TODO
 }
 
 /**
@@ -114,10 +114,10 @@ const EnvironmentDescription& ModelDescription::getEnvironment() const {
 }
 
 const ModelDescription::AgentMap& ModelDescription::getAgents() const {
-    
+    // TODO
 }
 const ModelDescription::MessageMap& ModelDescription::getMessages() const {
-
+    // TODO
 }
 
 bool ModelDescription::hasAgent(const std::string &agent_name) const {
@@ -128,5 +128,5 @@ bool ModelDescription::hasMessage(const std::string &message_name) const {
 }
 
 ModelDescription ModelDescription::clone(const std::string &cloned_model_name) const {
-
+    // TODO
 }

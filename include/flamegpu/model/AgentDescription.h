@@ -38,8 +38,8 @@ class AgentDescription : public std::enable_shared_from_this<AgentDescription> {
      * Typedefs
      */
     typedef unsigned int size_type;
-    typedef std::map<const std::string, const std::type_info&> VariableMap;
-    typedef std::map<const std::string, AgentFunctionDescription> FunctionMap;
+    typedef std::map<const std::string, std::tuple<std::type_index, size_t, unsigned int>> VariableMap;
+    typedef std::map<const std::string, std::shared_ptr<AgentFunctionDescription>> FunctionMap;
 
     /**
      * Accessors
@@ -47,25 +47,25 @@ class AgentDescription : public std::enable_shared_from_this<AgentDescription> {
     void newState(const std::string &state_name);
     void setInitialState(const std::string &initial_state);
 
-    template <typename T>
+    template<typename T, size_type N = 1>
     void newVariable(const std::string &variable_name);
 
     AgentFunctionDescription &newFunction(const std::string &function_name);
     AgentFunctionDescription &Function(const std::string &function_name);
-    AgentFunctionDescription &cloneFunction(const AgentFunctionDescription &);
+    AgentFunctionDescription &cloneFunction(const AgentFunctionDescription &function);
 
     /**
      * Const Accessors
      */
     std::string getName() const;
     
-    const std::type_info& getVariableType(const std::string &variable_name) const;
+    std::type_index getVariableType(const std::string &variable_name) const;
     size_t getVariableSize(const std::string &variable_name) const;
-    size_t getVariableSize(const std::string &variable_name) const;
+    size_t getVariableLength(const std::string &variable_name) const;
     size_type getVariablesCount() const;
     const AgentFunctionDescription& getFunction(const std::string &function_name) const;
 
-    const std::vector<std::string> &getStates() const;
+    const std::set<std::string> &getStates() const;
     const VariableMap &getVariables() const;
     const FunctionMap& getFunctions() const;
 
@@ -76,7 +76,7 @@ class AgentDescription : public std::enable_shared_from_this<AgentDescription> {
  private:
     std::string name;
 
-    std::vector<std::string> states;
+    std::set<std::string> states;
     std::string initial_state = ModelDescription::DEFAULT_STATE;
     VariableMap variables;
     FunctionMap functions;

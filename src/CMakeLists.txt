@@ -62,12 +62,9 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/exception/FGPUException.h
     ${FLAMEGPU_ROOT}/include/flamegpu/exception/FGPUStaticAssert.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/MessageDescription.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/model/AgentFunctionInput.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/model/AgentFunctionOutput.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/AgentFunctionDescription.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/EnvironmentDescription.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/AgentDescription.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/model/AgentStateDescription.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/ModelDescription.h
     ${FLAMEGPU_ROOT}/include/flamegpu/pop/AgentInstance.h
     ${FLAMEGPU_ROOT}/include/flamegpu/pop/AgentPopulation.h
@@ -96,19 +93,15 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/EnvironmentManager.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/HostEnvironment.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/HostRandom.cuh
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/RandomManager.cuh
-    
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/RandomManager.cuh    
 )
 SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/exception/FGPUException.cpp
-    ${FLAMEGPU_ROOT}/src/flamegpu/model/ModelDescription.cu
-    ${FLAMEGPU_ROOT}/src/flamegpu/model/AgentFunctionInput.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/model/ModelDescription.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/model/EnvironmentDescription.cu
-    ${FLAMEGPU_ROOT}/src/flamegpu/model/AgentDescription.cu
-    ${FLAMEGPU_ROOT}/src/flamegpu/model/AgentFunctionDescription.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/model/AgentDescription.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/model/AgentFunctionDescription.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/model/MessageDescription.cpp
-    ${FLAMEGPU_ROOT}/src/flamegpu/model/AgentFunctionOutput.cpp
-    ${FLAMEGPU_ROOT}/src/flamegpu/model/AgentStateDescription.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/pop/AgentPopulation.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/pop/AgentInstance.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/pop/AgentStateMemory.cu
