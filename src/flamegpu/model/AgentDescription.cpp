@@ -115,7 +115,7 @@ size_t AgentDescription::getVariableSize(const std::string &variable_name) const
         "in AgentDescription::getVariableSize().",
         name.c_str(), variable_name.c_str());
 }
-size_t AgentDescription::getVariableLength(const std::string &variable_name) const {
+AgentDescription::size_type AgentDescription::getVariableLength(const std::string &variable_name) const {
     auto f = variables.find(variable_name);
     if (f != variables.end()) {
         return std::get<2>(f->second);

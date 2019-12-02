@@ -61,7 +61,7 @@ class AgentDescription : public std::enable_shared_from_this<AgentDescription> {
     
     std::type_index getVariableType(const std::string &variable_name) const;
     size_t getVariableSize(const std::string &variable_name) const;
-    size_t getVariableLength(const std::string &variable_name) const;
+    size_type getVariableLength(const std::string &variable_name) const;
     size_type getVariablesCount() const;
     const AgentFunctionDescription& getFunction(const std::string &function_name) const;
 
