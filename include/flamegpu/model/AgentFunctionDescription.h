@@ -6,9 +6,7 @@
 
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/model/AgentDescription.h"
-// include the agent function syntax form the runtime api
-// #include "flamegpu/runtime/flamegpu_device_api.h"
-typedef void FLAMEGPU_AGENT_FUNCTION_POINTER;
+#include "flamegpu/runtime/AgentFunction.h"
 
 class MessageDescription;
 
@@ -18,7 +16,8 @@ class AgentFunctionDescription {
     /**
      * Constructors
      */
-    AgentFunctionDescription(const std::string &function_name, FLAMEGPU_AGENT_FUNCTION_POINTER *p_func);
+    template<typename AgentFunction>
+    AgentFunctionDescription(ModelDescription *const _model, const std::shared_ptr<AgentDescription> &parent_agent, const std::string &function_name, AgentFunction t = AgentFunction());
     // Copy Construct
     AgentFunctionDescription(const AgentFunctionDescription &other_function);
     // Move Construct
@@ -37,11 +36,11 @@ class AgentFunctionDescription {
     void setInitialState(const std::string &initial_state);
     void setEndState(const std::string &end_state);
     void setMessageInput(const std::string &message_name);
-    void setMessageInput(const MessageDescription &message);
+    void setMessageInput(MessageDescription &message);
     void setMessageOutput(const std::string &message_name);
-    void setMessageOutput(const MessageDescription &message);
+    void setMessageOutput(MessageDescription &message);
     void setAgentOutput(const std::string &agent_name);
-    void setAgentOutput(const AgentDescription &agent);
+    void setAgentOutput(AgentDescription &agent);
     void setAllowAgentDeath(const bool &has_death);
     
     MessageDescription &MessageInput();
@@ -67,17 +66,40 @@ class AgentFunctionDescription {
  private:
     std::string name;
     
-    FLAMEGPU_AGENT_FUNCTION_POINTER *const func;
+    AgentFunctionWrapper *const func;
     
     std::string initial_state = ModelDescription::DEFAULT_STATE;
     std::string end_state = ModelDescription::DEFAULT_STATE;
     
-    std::shared_ptr<MessageDescription> message_input = nullptr;
-    std::shared_ptr<MessageDescription> message_output = nullptr;
+    MessageDescription *message_input = nullptr;
+    MessageDescription *message_output = nullptr;
     
-    std::shared_ptr<AgentDescription> agent_output = nullptr;
-    
-    bool has_agent_death;
+    AgentDescription *agent_output = nullptr;
+
+    bool has_agent_death = false;
+
+    std::weak_ptr<AgentDescription> parent;
+    ModelDescription * const model;
 };
 
+/**
+ * Template implementation
+ */
+template<typename AgentFunction>
+AgentFunctionDescription::AgentFunctionDescription(ModelDescription *const _model, const std::shared_ptr<AgentDescription> &parent_agent, const std::string &function_name, AgentFunction)
+    : name(function_name), func(&agent_function_wrapper<AgentFunction>), parent(parent_agent), model(_model) {
+    // Force init initial_state, end_state to a valid state?
+}
+
+template<typename AgentFunction>
+AgentFunctionDescription &AgentDescription::newFunction(const std::string &function_name, AgentFunction) {
+    if (functions.find(function_name) == functions.end()) {
+        auto rtn = std::shared_ptr<AgentFunctionDescription>(new AgentFunctionDescription(this->model, this->shared_from_this(), AgentFunction()));
+        functions.emplace(function_name, rtn);
+        return *rtn;
+    }
+    THROW InvalidAgentFunc("Agent ('%s') already contains function '%s', "
+        "in AgentDescription::newFunction().",
+        name.c_str(), function_name.c_str());
+}
 #endif  // INCLUDE_FLAMEGPU_MODEL_AGENTFUNCTIONDESCRIPTION_H_

@@ -54,7 +54,8 @@ __device__ FLAME_GPU_AGENT_STATUS funcName ## _impl(FLAMEGPU_DEVICE_API* FLAMEGP
  */
 class FLAMEGPU_DEVICE_API {
     // Friends have access to TID() & TS_ID()
-    friend __global__ void agent_function_wrapper(Curve::NamespaceHash, Curve::NamespaceHash, Curve::NamespaceHash, Curve::NamespaceHash, FLAMEGPU_AGENT_FUNCTION_POINTER, const int, const unsigned int, const unsigned int);
+    template<typename AgentFunction>
+    friend __global__ void agent_function_wrapper(Curve::NamespaceHash, Curve::NamespaceHash, Curve::NamespaceHash, Curve::NamespaceHash, const int, const unsigned int, const unsigned int);
 
  public:
     /**

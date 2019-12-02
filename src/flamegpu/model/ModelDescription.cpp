@@ -24,10 +24,12 @@ ModelDescription::ModelDescription(ModelDescription &&other_model) {
 // Copy Assign
 ModelDescription& ModelDescription::operator=(const ModelDescription &other_model) {
     // TODO
+    return *this;
 }
 // Move Assign
 ModelDescription& ModelDescription::operator=(ModelDescription &&other_model) {
     // TODO
+    return *this;
 }
 
 /**
@@ -35,8 +37,7 @@ ModelDescription& ModelDescription::operator=(ModelDescription &&other_model) {
 */
 AgentDescription& ModelDescription::newAgent(const std::string &agent_name) {
     if(!hasAgent(agent_name)) {
-        auto rtn = std::make_shared<AgentDescription>(agent_name);
-        // auto rtn = std::shared_ptr<AgentDescription>(new AgentDescription(agent_name));
+        auto rtn = std::shared_ptr<AgentDescription>(new AgentDescription(this, agent_name));
         agents.emplace(agent_name, rtn);
         return *rtn;
     }
@@ -54,13 +55,13 @@ AgentDescription& ModelDescription::Agent(const std::string &agent_name) {
 }
 AgentDescription& ModelDescription::cloneAgent(const AgentDescription &agent) {
     // TODO
+    return *((*agents.begin()).second);
 }
 
 MessageDescription& ModelDescription::newMessage(const std::string &message_name) {
     if (!hasMessage(message_name)) {
-        auto rtn = std::make_shared<MessageDescription>(message_name);
-        // auto rtn = std::shared_ptr<MessageDescription>(new MessageDescription(agent_name));
-        agents.emplace(message_name, rtn);
+        auto rtn = std::shared_ptr<MessageDescription>(new MessageDescription(this, message_name));
+        messages.emplace(message_name, rtn);
         return *rtn;
     }
     THROW InvalidMessageName("Message with name '%s' already exists, "
@@ -77,13 +78,15 @@ MessageDescription& ModelDescription::Message(const std::string &message_name) {
 }
 MessageDescription& ModelDescription::cloneMessage(const MessageDescription &message) {
     // TODO
+    return *((*messages.begin()).second);
 }
 
 EnvironmentDescription& ModelDescription::Environment() {
     return environment;
 }
-EnvironmentDescription& ModelDescription::cloneEnvironment(const EnvironmentDescription &environment) {
+EnvironmentDescription& ModelDescription::cloneEnvironment(const EnvironmentDescription &env) {
     // TODO
+    return this->environment;
 }
 
 /**
@@ -114,10 +117,10 @@ const EnvironmentDescription& ModelDescription::getEnvironment() const {
 }
 
 const ModelDescription::AgentMap& ModelDescription::getAgents() const {
-    // TODO
+    return agents;
 }
 const ModelDescription::MessageMap& ModelDescription::getMessages() const {
-    // TODO
+    return messages;
 }
 
 bool ModelDescription::hasAgent(const std::string &agent_name) const {
@@ -129,4 +132,5 @@ bool ModelDescription::hasMessage(const std::string &message_name) const {
 
 ModelDescription ModelDescription::clone(const std::string &cloned_model_name) const {
     // TODO
+    return ModelDescription(cloned_model_name);
 }

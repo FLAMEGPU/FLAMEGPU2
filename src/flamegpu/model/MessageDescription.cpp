@@ -3,48 +3,37 @@
 /**
  * Constructors
  */
-MessageDescription::MessageDescription(const std::string &message_name)
-    : name(message_name) { }
+MessageDescription::MessageDescription(ModelDescription * const _model, const std::string &message_name)
+    : name(message_name), model(_model) { }
 // Copy Construct
-MessageDescription::MessageDescription(const MessageDescription &other_message) {
-
+MessageDescription::MessageDescription(const MessageDescription &other_message)
+    : model(other_message.model) {
+    // TODO
 }
 // Move Construct
-MessageDescription::MessageDescription(MessageDescription &&other_message) {
-
+MessageDescription::MessageDescription(MessageDescription &&other_message)
+    : model(other_message.model) {
+    // TODO
 }
 // Copy Assign
 MessageDescription& MessageDescription::operator=(const MessageDescription &other_message) {
-
+    // TODO
+    return *this;
 }
 // Move Assign
 MessageDescription& MessageDescription::operator=(MessageDescription &&other_message) {
-
+    // TODO
+    return *this;
 }
 
 MessageDescription MessageDescription::clone(const std::string &cloned_message_name) const {
-
+    // TODO
+    return MessageDescription(model, cloned_message_name);
 }
 
-
-
 /**
- * Accessors
+ * Const Accessors
  */
-template<typename T, MessageDescription::size_type N = 1>
-void MessageDescription::newVariable(const std::string &variable_name) {
-    if (variables.find(variable_name) == variables.end()) {
-        variables.emplace(variable_name, std::make_tuple(typeid(T), sizeof(T), N));
-        return;
-    }
-    THROW InvalidAgentVar("Message ('%s') already contains variable '%s', "
-        "in MessageDescription::newVariable().",
-        name.c_str(), variable_name.c_str());
-}
-
-/**
-* Const Accessors
-*/
 std::string MessageDescription::getName() const {
     return name;
 }
@@ -52,7 +41,7 @@ std::string MessageDescription::getName() const {
 std::type_index MessageDescription::getVariableType(const std::string &variable_name) const {
     auto f = variables.find(variable_name);
     if (f != variables.end()) {
-        return std::get<0>(f->second);
+        return f->second.type;
     }
     THROW InvalidAgentVar("Message ('%s') does not contain variable '%s', "
         "in MessageDescription::getVariableType().",
@@ -61,7 +50,7 @@ std::type_index MessageDescription::getVariableType(const std::string &variable_
 size_t MessageDescription::getVariableSize(const std::string &variable_name) const {
     auto f = variables.find(variable_name);
     if (f != variables.end()) {
-        return std::get<1>(f->second);
+        return f->second.type_size;
     }
     THROW InvalidAgentVar("Message ('%s') does not contain variable '%s', "
         "in MessageDescription::getVariableSize().",
@@ -70,17 +59,18 @@ size_t MessageDescription::getVariableSize(const std::string &variable_name) con
 MessageDescription::size_type MessageDescription::getVariableLength(const std::string &variable_name) const {
     auto f = variables.find(variable_name);
     if (f != variables.end()) {
-        return std::get<2>(f->second);
+        return f->second.elements;
     }
     THROW InvalidAgentVar("Message ('%s') does not contain variable '%s', "
         "in MessageDescription::getVariableLength().",
         name.c_str(), variable_name.c_str());
 }
 MessageDescription::size_type MessageDescription::getVariablesCount() const {
-    return variables.size();
+    // Downcast, will never have more than UINT_MAX variables
+    return static_cast<size_type>(variables.size());
 }
 const MessageDescription::VariableMap &MessageDescription::getVariables() const {
-
+    return variables;
 }
 bool MessageDescription::hasVariable(const std::string &variable_name) const {
     return variables.find(variable_name) != variables.end();

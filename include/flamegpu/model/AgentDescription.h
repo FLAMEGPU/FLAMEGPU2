@@ -21,7 +21,10 @@ class AgentDescription : public std::enable_shared_from_this<AgentDescription> {
     /**
      * Constructors
      */
-    AgentDescription(const std::string &agent_name);
+    /**
+     * @note Can't force ModelDescription shared, so this is passed instead
+     */
+    AgentDescription(ModelDescription * const parent, const std::string &agent_name);
     // Copy Construct
     AgentDescription(const AgentDescription &other_agent);
     // Move Construct
@@ -38,7 +41,16 @@ class AgentDescription : public std::enable_shared_from_this<AgentDescription> {
      * Typedefs
      */
     typedef unsigned int size_type;
-    typedef std::map<const std::string, std::tuple<std::type_index, size_t, unsigned int>> VariableMap;
+    struct Variable
+    {
+        template<typename T>
+        Variable(size_type _elements)
+            : type(typeid(T)), type_size(sizeof(T)), elements(elements) { }
+        const std::type_index type;
+        const size_t type_size;
+        const unsigned int elements;
+    };
+    typedef std::map<const std::string, Variable> VariableMap;
     typedef std::map<const std::string, std::shared_ptr<AgentFunctionDescription>> FunctionMap;
 
     /**
@@ -47,10 +59,11 @@ class AgentDescription : public std::enable_shared_from_this<AgentDescription> {
     void newState(const std::string &state_name);
     void setInitialState(const std::string &initial_state);
 
-    template<typename T, size_type N = 1>
+    template<typename AgentVariable, size_type N = 1>
     void newVariable(const std::string &variable_name);
 
-    AgentFunctionDescription &newFunction(const std::string &function_name);
+    template<typename AgentFunction>
+    AgentFunctionDescription &newFunction(const std::string &function_name, AgentFunction a = AgentFunction());
     AgentFunctionDescription &Function(const std::string &function_name);
     AgentFunctionDescription &cloneFunction(const AgentFunctionDescription &function);
 
@@ -65,21 +78,46 @@ class AgentDescription : public std::enable_shared_from_this<AgentDescription> {
     size_type getVariablesCount() const;
     const AgentFunctionDescription& getFunction(const std::string &function_name) const;
 
-    const std::set<std::string> &getStates() const;
-    const VariableMap &getVariables() const;
-    const FunctionMap& getFunctions() const;
-
     bool hasState(const std::string &state_name) const;
     bool hasVariable(const std::string &variable_name) const;
     bool hasFunction(const std::string &function_name) const;
 
  private:
+    /**
+     * Private, only accessible to CUDAAgentModel
+     */
+    const std::set<std::string> &getStates() const;
+    const VariableMap &getVariables() const;
+    const FunctionMap &getFunctions() const;
+
+    /**
+     * Member vars
+     */
     std::string name;
 
     std::set<std::string> states;
     std::string initial_state = ModelDescription::DEFAULT_STATE;
     VariableMap variables;
     FunctionMap functions;
+    ModelDescription * const model;
 };
+
+/**
+ * Template implementation
+ */
+template <typename T, AgentDescription::size_type N>
+void AgentDescription::newVariable(const std::string &variable_name) {
+    if (variables.find(variable_name) == variables.end()) {
+        variables.emplace(variable_name, Variable<T>(N));
+        return;
+    }
+    THROW InvalidAgentVar("Agent ('%s') already contains variable '%s', "
+        "in AgentDescription::newVariable().",
+        name.c_str(), variable_name.c_str());
+}
+
+// Found in "flamegpu/model/AgentFunctionDescription.h"
+// template<typename AgentFunction>
+// AgentFunctionDescription &AgentDescription::newFunction(const std::string &function_name, AgentFunction)
 
 #endif  // INCLUDE_FLAMEGPU_MODEL_AGENTDESCRIPTION_H_

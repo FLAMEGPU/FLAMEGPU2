@@ -105,6 +105,12 @@ DERIVED_FGPUException(InvalidMapEntry, "Missing entry in type sizes map. Somethi
 
 /**
  * Defines a type of object to be thrown as exception.
+ * It reports errors that are due to a weak ptr expiring unexpectedly
+ */
+DERIVED_FGPUException(InvalidParent, "Invalid parent");
+
+/**
+ * Defines a type of object to be thrown as exception.
  * It reports errors that are due to invalid agent names
  */
 DERIVED_FGPUException(InvalidAgentName, "Invalid agent name");
@@ -114,6 +120,18 @@ DERIVED_FGPUException(InvalidAgentName, "Invalid agent name");
  * It reports errors that are due to invalid message names
  */
 DERIVED_FGPUException(InvalidMessageName, "Invalid message name");
+
+/**
+ * Defines a type of object to be thrown as exception.
+ * It reports errors that are due to invalid agent
+ */
+DERIVED_FGPUException(InvalidAgent, "Invalid agent");
+
+/**
+ * Defines a type of object to be thrown as exception.
+ * It reports errors that are due to invalid message
+ */
+DERIVED_FGPUException(InvalidMessage, "Invalid message");
 
 /**
  * Defines a type of object to be thrown as exception.

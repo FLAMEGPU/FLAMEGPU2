@@ -11,15 +11,13 @@ class AgentDescription;
 class MessageDescription;
 
 class ModelDescription {
-    typedef std::map<const std::string,std::shared_ptr<MessageDescription>> SMessageMap;
-    typedef std::map<const std::string, std::shared_ptr<AgentDescription>> SAgentMap;
  public:
     static const std::string DEFAULT_STATE;  // "default"
     /**
      * Typedefs
      */
-    typedef std::map<const std::string, AgentDescription&> AgentMap;
-    typedef std::map<const std::string, MessageDescription&> MessageMap;
+    typedef std::map<const std::string, std::shared_ptr<MessageDescription>> MessageMap;
+    typedef std::map<const std::string, std::shared_ptr<AgentDescription>> AgentMap;
 
     /**
      * Constructors
@@ -57,19 +55,25 @@ class ModelDescription {
     const MessageDescription& getMessage(const std::string &message_name) const;
     const EnvironmentDescription& getEnvironment() const;
 
-    const AgentMap& getAgents() const;
-    const MessageMap& getMessages() const;
-
     bool hasAgent(const std::string &agent_name) const;
     bool hasMessage(const std::string &message_name) const;
 
     ModelDescription clone(const std::string &cloned_model_name) const;
 
  private:
+    /**
+     * Private, only accessible to CUDAAgentModel
+     */
+    const AgentMap& getAgents() const;
+    const MessageMap& getMessages() const;
+
+    /**
+     * Member vars
+     */
     const std::string name;
 
-    SAgentMap agents;
-    SMessageMap messages;
+    AgentMap agents;
+    MessageMap messages;
     EnvironmentDescription environment;
 };
 

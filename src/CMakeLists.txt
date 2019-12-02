@@ -81,7 +81,7 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/sim/SimulationLayer.h
     ${FLAMEGPU_ROOT}/include/flamegpu/sim/Simulation.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messagelist.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/agent_function.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/AgentFunction.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/flamegpu_api.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/flamegpu_device_api.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/flamegpu_host_api.h
@@ -112,7 +112,6 @@ SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/sim/SimulationLayer.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/sim/Simulation.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAAgentModel.cu
-    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/agent_function.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/cuRVE/curve.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/flamegpu_host_api.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/io/xmlReader.cu

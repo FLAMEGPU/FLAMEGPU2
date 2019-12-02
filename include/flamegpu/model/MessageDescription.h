@@ -18,7 +18,7 @@ class MessageDescription {
     /**
      * Constructors
      */
-    MessageDescription(const std::string &message_name);
+    MessageDescription(ModelDescription * const model, const std::string &message_name);
     // Copy Construct
     MessageDescription(const MessageDescription &other_message);
     // Move Construct
@@ -34,7 +34,16 @@ class MessageDescription {
      * Typedefs
      */
     typedef unsigned int size_type;
-    typedef std::map<const std::string, std::tuple<std::type_index, size_t, unsigned int>> VariableMap;
+    struct Variable
+    {
+        template<typename T>
+        Variable(size_type _elements)
+            : type(typeid(T)), type_size(sizeof(T)), elements(elements) { }
+        const std::type_index type;
+        const size_t type_size;
+        const  unsigned int elements;
+    };
+    typedef std::map<const std::string, Variable> VariableMap;
 
     /**
      * Accessors
@@ -59,6 +68,21 @@ class MessageDescription {
  private:
     std::string name;
     VariableMap variables;
+    ModelDescription * const model;
 };
+
+/**
+ * Template implementation
+ */
+template<typename T, MessageDescription::size_type N>
+void MessageDescription::newVariable(const std::string &variable_name) {
+    if (variables.find(variable_name) == variables.end()) {
+        variables.emplace(variable_name, Variable<T>(N));
+        return;
+    }
+    THROW InvalidAgentVar("Message ('%s') already contains variable '%s', "
+        "in MessageDescription::newVariable().",
+        name.c_str(), variable_name.c_str());
+}
 
 #endif  // INCLUDE_FLAMEGPU_MODEL_MESSAGEDESCRIPTION_H_
