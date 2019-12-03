@@ -13,7 +13,9 @@ if(CMAKE_CUDA_COMPILER STREQUAL NOTFOUND)
     #Not able to build code, so just make docs
     message("Suitable compilers for building code not found.\n" "Attempting generation of minimal documentation only project.")
     include(${FLAMEGPU_ROOT}/cmake/doxygen.cmake)
-    create_doxygen_target("${CMAKE_CURRENT_BINARY_DIR}")
+    if(${BUILD_API_DOCUMENTATION})
+        create_doxygen_target("${FLAMEGPU_ROOT}" "${CMAKE_CURRENT_BINARY_DIR}" "")
+    endif()
     return()
 endif()
 
@@ -28,11 +30,15 @@ include(${FLAMEGPU_ROOT}/cmake/doxygen.cmake)
 if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
     # If top level project
     SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib/${CMAKE_SYSTEM_NAME_LOWER}-x64/${CMAKE_BUILD_TYPE}/)
-    create_doxygen_target("${CMAKE_CURRENT_BINARY_DIR}")
+    if(${BUILD_API_DOCUMENTATION})
+        create_doxygen_target("${FLAMEGPU_ROOT}" "${CMAKE_CURRENT_BINARY_DIR}" "")
+    endif()
 else()
     # If called via add_subdirectory()
     SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../lib/${CMAKE_SYSTEM_NAME_LOWER}-x64/${CMAKE_BUILD_TYPE}/)
-    create_doxygen_target("${CMAKE_CURRENT_BINARY_DIR}/..")
+    if(${BUILD_API_DOCUMENTATION})
+        create_doxygen_target("${FLAMEGPU_ROOT}" "${CMAKE_CURRENT_BINARY_DIR}/.." "")
+    endif()
 endif()
 
 # Enable parallel compilation
