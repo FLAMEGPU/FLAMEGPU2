@@ -16,6 +16,7 @@
 #include "flamegpu/gpu/CUDAErrorChecking.h"
 
 #include "flamegpu/model/AgentDescription.h"
+#include "flamegpu/model/AgentFunctionDescription.h"
 #include "flamegpu/pop/AgentPopulation.h"
 #include "flamegpu/runtime/cuRVE/curve.h"
 
@@ -70,10 +71,10 @@ void CUDAAgent::setInitialPopulationData(const AgentPopulation& population) {
             agent_description.getName().c_str());
     }
     // create map of device state lists by traversing the state list
-    const StateMap& sm = agent_description.getStateMap();
-    for (const StateMapPair& s : sm) {
+    const std::set<std::string> &sm = agent_description.getStates();
+    for (const std::string &s : sm) {
         // allocate memory for each state list by creating a new Agent State List
-        state_map.insert(CUDAStateMap::value_type(s.first, std::unique_ptr<CUDAAgentStateList>( new CUDAAgentStateList(*this))));
+        state_map.insert(CUDAStateMap::value_type(s, std::unique_ptr<CUDAAgentStateList>( new CUDAAgentStateList(*this))));
     }
 
     /**set the population data*/
@@ -112,17 +113,17 @@ void CUDAAgent::setPopulationData(const AgentPopulation& population) {
     zeroAllStateVariableData();
 
     /**copy all population data to correct state map*/
-    const StateMap& sm = agent_description.getStateMap();
-    for (const StateMapPair& s : sm) {
+    const std::set<std::string> &sm = agent_description.getStates();
+    for (const std::string &s : sm) {
         // get an associated CUDA statemap pair
-        CUDAStateMap::iterator i = state_map.find(s.first);
+        CUDAStateMap::iterator i = state_map.find(s);
 
         /**check that the CUDAAgentStateList was found (should ALWAYS be the case)*/
         if (i == state_map.end()) {
             THROW InvalidMapEntry("Error: failed to find memory allocated for agent ('%s') state ('%s') "
                 "In CUDAAgent::setPopulationData() ",
                 "This should never happen!",
-                population.getAgentName().c_str(), s.first.c_str());
+                population.getAgentName().c_str(), s.c_str());
         }
         // copy the data from the population state memory to the state_maps CUDAAgentStateList
         i->second->setAgentData(population.getReadOnlyStateMemory(i->first));
@@ -153,17 +154,17 @@ void CUDAAgent::getPopulationData(AgentPopulation& population) {
             agent_description.getName().c_str());
     }
     /* copy all population from correct state maps */
-    const StateMap& sm = agent_description.getStateMap();
-    for (const StateMapPair& s : sm) {
+    const std::set<std::string> &sm = agent_description.getStates();
+    for (const std::string &s : sm) {
         // get an associated CUDA statemap pair
-        CUDAStateMap::iterator i = state_map.find(s.first);
+        CUDAStateMap::iterator i = state_map.find(s);
 
         /**check that the CUDAAgentStateList was found (should ALWAYS be the case)*/
         if (i == state_map.end()) {
             THROW InvalidMapEntry("Error: failed to find memory allocated for agent ('%s') state ('%s') "
                 "In CUDAAgent::setPopulationData() ",
                 "This should never happen!",
-                population.getAgentName().c_str(), s.first.c_str());
+                population.getAgentName().c_str(), s.c_str());
         }
         // copy the data from the population state memory to the state_maps CUDAAgentStateList
         i->second->getAgentData(population.getStateMemory(i->first));
@@ -204,19 +205,18 @@ void CUDAAgent::mapRuntimeVariables(const AgentFunctionDescription& func) const 
             agent_description.getName().c_str(), func.getInitialState().c_str());
     }
 
+    const Curve::VariableHash agent_hash = curve.variableRuntimeHash(agent_description.getName().c_str());
+    const Curve::VariableHash func_hash = curve.variableRuntimeHash(func.getName().c_str());
     // loop through the agents variables to map each variable name using cuRVE
-    for (MemoryMapPair mmp : agent_description.getMemoryMap()) {
+    for (const auto &mmp : agent_description.getVariables()) {
         // get a device pointer for the agent variable name
         void* d_ptr = sm->second->getAgentListVariablePointer(mmp.first);
 
         // map using curve
-        Curve::VariableHash var_hash = curve.variableRuntimeHash(mmp.first.c_str());
-        Curve::VariableHash agent_hash = curve.variableRuntimeHash(func.getParent().getName().c_str());
-        Curve::VariableHash func_hash = curve.variableRuntimeHash(func.getName().c_str());
+        const Curve::VariableHash var_hash = curve.variableRuntimeHash(mmp.first.c_str());
 
         // get the agent variable size
-        size_t size;
-        size = agent_description.getAgentVariableSize(mmp.first.c_str());
+        size_t size = agent_description.getVariableSize(mmp.first.c_str());
 
        // maximum population num
         unsigned int length = this->getMaximumListSize();
@@ -235,15 +235,15 @@ void CUDAAgent::unmapRuntimeVariables(const AgentFunctionDescription& func) cons
             agent_description.getName().c_str(), func.getInitialState().c_str());
     }
 
+    const Curve::VariableHash agent_hash = curve.variableRuntimeHash(agent_description.getName().c_str());
+    const Curve::VariableHash func_hash = curve.variableRuntimeHash(func.getName().c_str());
     // loop through the agents variables to map each variable name using cuRVE
-    for (MemoryMapPair mmp : agent_description.getMemoryMap()) {
+    for (const auto &mmp : agent_description.getVariables()) {
         // get a device pointer for the agent variable name
         // void* d_ptr = sm->second->getAgentListVariablePointer(mmp.first);
 
         // unmap using curve
-        Curve::VariableHash var_hash = curve.variableRuntimeHash(mmp.first.c_str());
-        Curve::VariableHash agent_hash = curve.variableRuntimeHash(func.getParent().getName().c_str());
-        Curve::VariableHash func_hash = curve.variableRuntimeHash(func.getName().c_str());
+        const Curve::VariableHash var_hash = curve.variableRuntimeHash(mmp.first.c_str());
 
         curve.unregisterVariableByHash(var_hash + agent_hash + func_hash);
     }

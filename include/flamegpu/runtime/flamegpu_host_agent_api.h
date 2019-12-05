@@ -146,7 +146,7 @@ template<typename InT, typename OutT>
 OutT FLAMEGPU_HOST_AGENT_API::sum(const std::string &variable) const {
     static_assert(sizeof(InT) <= sizeof(OutT), "Template arg OutT should not be of a smaller size than InT");
     const auto &agentDesc = agent.getAgentDescription();
-    if (typeid(InT) != agentDesc.getVariableType(variable)) {
+    if (std::type_index(typeid(InT)) != agentDesc.getVariableType(variable)) {
         THROW InvalidVarType("Wrong variable type passed to FLAMEGPU_HOST_AGENT_API::sum(). "
             "This call expects '%s', but '%s' was requested.",
             agentDesc.getVariableType(variable).name(), typeid(InT).name());
@@ -173,7 +173,7 @@ OutT FLAMEGPU_HOST_AGENT_API::sum(const std::string &variable) const {
 template<typename InT>
 InT FLAMEGPU_HOST_AGENT_API::min(const std::string &variable) const {
     const auto &agentDesc = agent.getAgentDescription();
-    if (typeid(InT) != agentDesc.getVariableType(variable)) {
+    if (std::type_index(typeid(InT)) != agentDesc.getVariableType(variable)) {
         THROW InvalidVarType("Wrong variable type passed to FLAMEGPU_HOST_AGENT_API::min(). "
             "This call expects '%s', but '%s' was requested.",
             agentDesc.getVariableType(variable).name(), typeid(InT).name());
@@ -201,7 +201,7 @@ InT FLAMEGPU_HOST_AGENT_API::min(const std::string &variable) const {
 template<typename InT>
 InT FLAMEGPU_HOST_AGENT_API::max(const std::string &variable) const {
     const auto &agentDesc = agent.getAgentDescription();
-    if (typeid(InT) != agentDesc.getVariableType(variable)) {
+    if (std::type_index(typeid(InT)) != agentDesc.getVariableType(variable)) {
         THROW InvalidVarType("Wrong variable type passed to FLAMEGPU_HOST_AGENT_API::max(). "
             "This call expects '%s', but '%s' was requested.",
             agentDesc.getVariableType(variable).name(), typeid(InT).name());
@@ -229,7 +229,7 @@ InT FLAMEGPU_HOST_AGENT_API::max(const std::string &variable) const {
 template<typename InT>
 unsigned int FLAMEGPU_HOST_AGENT_API::count(const std::string &variable, const InT &value) {
     const auto &agentDesc = agent.getAgentDescription();
-    if (typeid(InT) != agentDesc.getVariableType(variable)) {
+    if (std::type_index(typeid(InT)) != agentDesc.getVariableType(variable)) {
         THROW InvalidVarType("Wrong variable type passed to FLAMEGPU_HOST_AGENT_API::count(). "
             "This call expects '%s', but '%s' was requested.",
             agentDesc.getVariableType(variable).name(), typeid(InT).name());
@@ -253,7 +253,7 @@ std::vector<OutT> FLAMEGPU_HOST_AGENT_API::histogramEven(const std::string &vari
             std::to_string(lowerBound).c_str(), std::to_string(upperBound).c_str());
     }
     const auto &agentDesc = agent.getAgentDescription();
-    if (typeid(InT) != agentDesc.getVariableType(variable)) {
+    if (std::type_index(typeid(InT)) != agentDesc.getVariableType(variable)) {
         THROW InvalidVarType("Wrong variable type passed to FLAMEGPU_HOST_AGENT_API::histogramEven(). "
             "This call expects '%s', but '%s' was requested.",
             agentDesc.getVariableType(variable).name(), typeid(InT).name());
@@ -283,7 +283,7 @@ std::vector<OutT> FLAMEGPU_HOST_AGENT_API::histogramEven(const std::string &vari
 template<typename InT, typename reductionOperatorT>
 InT FLAMEGPU_HOST_AGENT_API::reduce(const std::string &variable, reductionOperatorT /*reductionOperator*/, const InT &init) const {
     const auto &agentDesc = agent.getAgentDescription();
-    if (typeid(InT) != agentDesc.getVariableType(variable)) {
+    if (std::type_index(typeid(InT)) != agentDesc.getVariableType(variable)) {
         THROW InvalidVarType("Wrong variable type passed to FLAMEGPU_HOST_AGENT_API::reduce(). "
             "This call expects '%s', but '%s' was requested.",
             agentDesc.getVariableType(variable).name(), typeid(InT).name());
@@ -313,7 +313,7 @@ InT FLAMEGPU_HOST_AGENT_API::reduce(const std::string &variable, reductionOperat
 template<typename InT, typename OutT, typename transformOperatorT, typename reductionOperatorT>
 OutT FLAMEGPU_HOST_AGENT_API::transformReduce(const std::string &variable, transformOperatorT /*transformOperator*/, reductionOperatorT /*reductionOperator*/, const OutT &init) const {
     const auto &agentDesc = agent.getAgentDescription();
-    if (typeid(InT) != agentDesc.getVariableType(variable)) {
+    if (std::type_index(typeid(InT)) != agentDesc.getVariableType(variable)) {
         THROW InvalidVarType("Wrong variable type passed to FLAMEGPU_HOST_AGENT_API::transformReduce(). "
             "This call expects '%s', but '%s' was requested.",
             agentDesc.getVariableType(variable).name(), typeid(InT).name());

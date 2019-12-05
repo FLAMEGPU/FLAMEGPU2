@@ -10,6 +10,7 @@
 
 #include <tinyxml2/tinyxml2.h>              // downloaded from https:// github.com/leethomason/tinyxml2, the list of xml parsers : http:// lars.ruoff.free.fr/xmlcpp/
 #include <flamegpu/exception/FGPUException.h>
+#include <flamegpu/model/AgentDescription.h>
 #include <flamegpu/pop/AgentPopulation.h>
 #include "flamegpu/io/xmlWriter.h"
 
@@ -34,10 +35,10 @@ int xmlWriter::writeStates() {
 
     int populationSize;
 
-    const AgentMap &am = model_description_.getAgentMap();
+    const auto &am = model_description_.getAgents();
 
     // for each agent types
-    for (AgentMap::const_iterator iter_am = am.begin(); iter_am != am.end(); iter_am++) {
+    for (auto iter_am = am.begin(); iter_am != am.end(); iter_am++) {
         const char* agentName = iter_am->first.c_str();
 
         populationSize = model_description_.getAgentPopulation(agentName).getStateMemory().getStateListSize();
@@ -51,21 +52,21 @@ int xmlWriter::writeStates() {
             pElement->InsertEndChild(pListElement);
 
             AgentInstance instance = model_description_.getAgentPopulation(agentName).getInstanceAt(i, "default");
-            const MemoryMap &mm = model_description_.getAgentDescription(agentName).getMemoryMap();
+            const auto &mm = model_description_.getAgent(agentName).getVariables();
 
             // for each variable
-            for (MemoryMap::const_iterator iter_mm = mm.begin(); iter_mm != mm.end(); iter_mm++) {
+            for (auto iter_mm = mm.begin(); iter_mm != mm.end(); iter_mm++) {
                 const std::string variable_name = iter_mm->first;
 
                 pListElement = doc.NewElement(variable_name.c_str());
 
-                if (iter_mm->second == typeid(float))
+                if (iter_mm->second == std::type_index(typeid(float)))
                     pListElement->SetText(instance.getVariable<float>(variable_name));
-                else if (iter_mm->second == typeid(double))
+                else if (iter_mm->second == std::type_index(typeid(double)))
                     pListElement->SetText(instance.getVariable<double>(variable_name));
-                else if (iter_mm->second == typeid(int))
+                else if (iter_mm->second == std::type_index(typeid(int)))
                     pListElement->SetText(instance.getVariable<int>(variable_name));
-                else if (iter_mm->second == typeid(bool))
+                else if (iter_mm->second == std::type_index(typeid(bool)))
                     pListElement->SetText(instance.getVariable<bool>(variable_name));
 
                 pElement->InsertEndChild(pListElement);

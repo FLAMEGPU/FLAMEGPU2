@@ -12,6 +12,7 @@ class AgentFunctionDescription;
 class MessageDescription;
 
 class AgentDescription : public std::enable_shared_from_this<AgentDescription> {
+    friend class MessageDescription; // I don't like this level of visibility, use common shared storage instead?
 
     /**
      * Only way to construct an AgentDescription
@@ -28,11 +29,11 @@ class AgentDescription : public std::enable_shared_from_this<AgentDescription> {
     // Copy Construct
     AgentDescription(const AgentDescription &other_agent);
     // Move Construct
-    AgentDescription(AgentDescription &&other_agent);
+    AgentDescription(AgentDescription &&other_agent) noexcept;
     // Copy Assign
     AgentDescription& operator=(const AgentDescription &other_agent);
     // Move Assign
-    AgentDescription& operator=(AgentDescription &&other_agent);
+    AgentDescription& operator=(AgentDescription &&other_agent) noexcept;
 
     AgentDescription clone(const std::string &cloned_agent_name) const;
 
@@ -43,8 +44,11 @@ class AgentDescription : public std::enable_shared_from_this<AgentDescription> {
     typedef unsigned int size_type;
     struct Variable
     {
+        /**
+         * Cannot explicitly specify template args of constructor, so we take redundant arg for implicit template
+         */
         template<typename T>
-        Variable(size_type _elements)
+        Variable(size_type _elements, T)
             : type(typeid(T)), type_size(sizeof(T)), elements(elements) { }
         const std::type_index type;
         const size_t type_size;
@@ -82,14 +86,11 @@ class AgentDescription : public std::enable_shared_from_this<AgentDescription> {
     bool hasVariable(const std::string &variable_name) const;
     bool hasFunction(const std::string &function_name) const;
 
- private:
-    /**
-     * Private, only accessible to CUDAAgentModel
-     */
     const std::set<std::string> &getStates() const;
     const VariableMap &getVariables() const;
     const FunctionMap &getFunctions() const;
 
+private:
     /**
      * Member vars
      */
@@ -108,7 +109,7 @@ class AgentDescription : public std::enable_shared_from_this<AgentDescription> {
 template <typename T, AgentDescription::size_type N>
 void AgentDescription::newVariable(const std::string &variable_name) {
     if (variables.find(variable_name) == variables.end()) {
-        variables.emplace(variable_name, Variable<T>(N));
+        variables.emplace(variable_name, Variable(N, T()));
         return;
     }
     THROW InvalidAgentVar("Agent ('%s') already contains variable '%s', "

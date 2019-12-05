@@ -57,7 +57,7 @@ const GenericMemoryVector& AgentStateMemory::getReadOnlyMemoryVector(const std::
     return *(iter->second);
 }
 
-const std::type_info& AgentStateMemory::getVariableType(std::string variable_name) {
+const std::type_index& AgentStateMemory::getVariableType(std::string variable_name) const {
     return population.getAgentDescription().getVariableType(variable_name);
 }
 
@@ -68,10 +68,9 @@ bool AgentStateMemory::isSameDescription(const AgentDescription& description) co
 void AgentStateMemory::resizeMemoryVectors(unsigned int s) {
     // all size checking is done by the population
 
-    MemoryMap::const_iterator iter;
-    const MemoryMap &m = population.getAgentDescription().getMemoryMap();
+    const AgentDescription::VariableMap &m = population.getAgentDescription().getVariables();
 
-    for (iter = m.begin(); iter != m.end(); iter++) {
+    for (auto iter = m.cbegin(); iter != m.cend(); ++iter) {
         const std::string variable_name = iter->first;
 
         GenericMemoryVector &v = getMemoryVector(variable_name);

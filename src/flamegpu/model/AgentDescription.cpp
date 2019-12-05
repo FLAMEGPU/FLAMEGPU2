@@ -16,7 +16,12 @@ AgentDescription::AgentDescription(const AgentDescription &other_agent)
 }
 // Move Construct
 AgentDescription::AgentDescription(AgentDescription &&other_agent)
-    : model(other_agent.model) {
+    : name(move(other_agent.name))
+    , states(move(other_agent.states))
+    , initial_state(move(other_agent.initial_state))
+    , variables(move(other_agent.variables))
+    , functions(move(other_agent.functions))
+    , model(other_agent.model) {
     // TODO
 }
 // Copy Assign

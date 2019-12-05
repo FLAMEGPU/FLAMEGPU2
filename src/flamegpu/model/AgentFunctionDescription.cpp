@@ -11,7 +11,16 @@ AgentFunctionDescription::AgentFunctionDescription(const AgentFunctionDescriptio
 }
 // Move Construct
 AgentFunctionDescription::AgentFunctionDescription(AgentFunctionDescription &&other_function)
-    : func(other_function.func), model(other_function.model) {
+    : name(move(other_function.name))
+    , func(other_function.func)
+    , initial_state(move(other_function.initial_state))
+    , end_state(move(other_function.end_state))
+    , message_input(other_function.message_input)
+    , message_output(other_function.message_output)
+    , agent_output(other_function.agent_output)
+    , has_agent_death(other_function.has_agent_death)
+    , parent(move(other_function.parent))
+    , model(other_function.model) {
     // TODO
 }
 // Copy Assign

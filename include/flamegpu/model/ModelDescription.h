@@ -11,6 +11,7 @@ class AgentDescription;
 class MessageDescription;
 
 class ModelDescription {
+    friend class MessageDescription; // I don't like this level of visibility, use common shared storage instead?
  public:
     static const std::string DEFAULT_STATE;  // "default"
     /**
@@ -60,13 +61,10 @@ class ModelDescription {
 
     ModelDescription clone(const std::string &cloned_model_name) const;
 
- private:
-    /**
-     * Private, only accessible to CUDAAgentModel
-     */
     const AgentMap& getAgents() const;
     const MessageMap& getMessages() const;
 
+ private:
     /**
      * Member vars
      */

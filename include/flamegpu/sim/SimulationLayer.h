@@ -9,6 +9,7 @@
 // #include "flamegpu/model/ModelDescription.h"
 // #include "flamegpu/model/AgentFunctionDescription.h"
 #include "flamegpu/runtime/flamegpu_host_api_macros.h"
+#include <memory>
 
 // forward declare dependencies from higher up hierarchy
 class Simulation;
@@ -17,7 +18,7 @@ class AgentFunctionDescription;
 
 class SimulationLayer {
  public:
-    typedef std::vector<std::reference_wrapper<const AgentFunctionDescription>> FunctionDescriptionVector;
+    typedef std::vector<std::shared_ptr<AgentFunctionDescription>> FunctionDescriptionVector;
     typedef std::set<FLAMEGPU_HOST_FUNCTION_POINTER> HostFunctionSet;
 
     explicit SimulationLayer(Simulation& sim, const std::string name = "none");

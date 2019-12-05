@@ -55,15 +55,15 @@ void CUDAAgentStateList::cleanupAllocatedData() {
 */
 void CUDAAgentStateList::allocateDeviceAgentList(CUDAMemoryMap &memory_map) {
     // we use the agents memory map to iterate the agent variables and do allocation within our GPU hash map
-    const MemoryMap &mem = agent.getAgentDescription().getMemoryMap();
+    const auto &mem = agent.getAgentDescription().getVariables();
 
     // for each variable allocate a device array and add to map
-    for (const MemoryMapPair& mm : mem) {
+    for (const auto &mm : mem) {
         // get the variable name
         std::string var_name = mm.first;
 
         // get the variable size from agent description
-        size_t var_size = agent.getAgentDescription().getAgentVariableSize(mm.first);
+        size_t var_size = agent.getAgentDescription().getVariableSize(mm.first);
 
         // do the device allocation
         void * d_ptr;
@@ -103,7 +103,7 @@ void CUDAAgentStateList::zeroDeviceAgentList(CUDAMemoryMap& memory_map) {
     // for each device pointer in the cuda memory map set the values to 0
     for (const CUDAMemoryMapPair& mm : memory_map) {
         // get the variable size from agent description
-        size_t var_size = agent.getAgentDescription().getAgentVariableSize(mm.first);
+        size_t var_size = agent.getAgentDescription().getVariableSize(mm.first);
 
         // set the memory to zero
         gpuErrchk(cudaMemset(mm.second, 0, var_size*agent.getMaximumListSize()));
@@ -127,7 +127,7 @@ void CUDAAgentStateList::setAgentData(const AgentStateMemory &state_memory) {
     // copy raw agent data to device pointers
     for (CUDAMemoryMapPair m : d_list) {
         // get the variable size from agent description
-        size_t var_size = agent.getAgentDescription().getAgentVariableSize(m.first);
+        size_t var_size = agent.getAgentDescription().getVariableSize(m.first);
 
         // get the vector
         const GenericMemoryVector &m_vec = state_memory.getReadOnlyMemoryVector(m.first);
@@ -154,7 +154,7 @@ void CUDAAgentStateList::getAgentData(AgentStateMemory &state_memory) {
     // copy raw agent data to device pointers
     for (CUDAMemoryMapPair m : d_list) {
         // get the variable size from agent description
-        size_t var_size = agent.getAgentDescription().getAgentVariableSize(m.first);
+        size_t var_size = agent.getAgentDescription().getVariableSize(m.first);
 
         // get the vector
         GenericMemoryVector &m_vec = state_memory.getMemoryVector(m.first);

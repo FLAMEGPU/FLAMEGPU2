@@ -11,6 +11,7 @@
 #include "flamegpu/sim/SimulationLayer.h"
 #include "flamegpu/sim/Simulation.h"
 #include "flamegpu/model/ModelDescription.h"
+#include "flamegpu/model/AgentDescription.h"
 
 SimulationLayer::SimulationLayer(Simulation& sim, const std::string name) : layer_name(name), simulation(sim) {
 }
@@ -46,15 +47,14 @@ SimulationLayer::~SimulationLayer(void) {
 */
 void SimulationLayer::addAgentFunction(const std::string name) {
     bool found = false;
-    AgentMap::const_iterator it;
-    const AgentMap& agents = simulation.getModelDescritpion().getAgentMap();
+    const auto &agents = simulation.getModelDescritpion().getAgents();
 
     // check agent function exists
-    for (it = agents.begin(); it != agents.end(); it++) {
-        if (it->second.hasAgentFunction(name)) {
+    for (auto it = agents.begin(); it != agents.end(); it++) {
+        if (it->second->hasFunction(name)) {
             // Search the function map for current agent to see if the agent function exists (it should do the above function has confirmed this)
-            const FunctionMap& funcs = it->second.getFunctionMap();
-            FunctionMap::const_iterator pos = funcs.find(name);
+            const auto &funcs = it->second->getFunctions();
+            auto pos = funcs.find(name);
             // If found then add function the AgentFunctionDescription to the function vector for this layer
             if (pos != funcs.end())
                 functions.push_back(pos->second);

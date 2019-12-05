@@ -22,7 +22,7 @@ class MessageDescription {
     // Copy Construct
     MessageDescription(const MessageDescription &other_message);
     // Move Construct
-    MessageDescription(MessageDescription &&other_message);
+    MessageDescription(MessageDescription &&other_message) noexcept;
     // Copy Assign
     MessageDescription& operator=(const MessageDescription &other_message);
     // Move Assign
@@ -36,8 +36,11 @@ class MessageDescription {
     typedef unsigned int size_type;
     struct Variable
     {
+        /**
+         * Cannot explicitly specify template args of constructor, so we take redundant arg for implicit template
+         */
         template<typename T>
-        Variable(size_type _elements)
+        Variable(size_type _elements, T)
             : type(typeid(T)), type_size(sizeof(T)), elements(elements) { }
         const std::type_index type;
         const size_t type_size;
@@ -77,7 +80,7 @@ class MessageDescription {
 template<typename T, MessageDescription::size_type N>
 void MessageDescription::newVariable(const std::string &variable_name) {
     if (variables.find(variable_name) == variables.end()) {
-        variables.emplace(variable_name, Variable<T>(N));
+        variables.emplace(variable_name, Variable(N, T()));
         return;
     }
     THROW InvalidAgentVar("Message ('%s') already contains variable '%s', "
