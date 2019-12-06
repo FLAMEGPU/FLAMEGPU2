@@ -16,8 +16,9 @@ class AgentFunctionDescription {
     /**
      * Constructors
      */
+    AgentFunctionDescription();
     template<typename AgentFunction>
-    AgentFunctionDescription(ModelDescription *const _model, const std::shared_ptr<AgentDescription> &parent_agent, const std::string &function_name, AgentFunction t = AgentFunction());
+    AgentFunctionDescription(const std::shared_ptr<AgentDescription> &parent_agent, const std::string &function_name, AgentFunction t = AgentFunction());
     // Copy Construct
     AgentFunctionDescription(const AgentFunctionDescription &other_function);
     // Move Construct

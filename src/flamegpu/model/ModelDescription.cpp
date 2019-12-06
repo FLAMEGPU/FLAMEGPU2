@@ -4,15 +4,11 @@
 #include "flamegpu/model/MessageDescription.h"
 #include "flamegpu/exception/FGPUException.h"
 
-
-const std::string ModelDescription::DEFAULT_STATE = "default";
-
 /**
 * Constructors
 */
 ModelDescription::ModelDescription(const std::string &model_name)
-    : name(model_name)
-    , environment() { }
+    : model(new ModelData(model_name)) { }
 // Copy Construct
 ModelDescription::ModelDescription(const ModelDescription &other_model) {
     // TODO

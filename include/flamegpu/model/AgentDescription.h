@@ -25,6 +25,7 @@ class AgentDescription : public std::enable_shared_from_this<AgentDescription> {
     /**
      * @note Can't force ModelDescription shared, so this is passed instead
      */
+    AgentDescription();
     AgentDescription(ModelDescription * const parent, const std::string &agent_name);
     // Copy Construct
     AgentDescription(const AgentDescription &other_agent);

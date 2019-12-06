@@ -18,6 +18,7 @@ class MessageDescription {
     /**
      * Constructors
      */
+    MessageDescription();
     MessageDescription(ModelDescription * const model, const std::string &message_name);
     // Copy Construct
     MessageDescription(const MessageDescription &other_message);

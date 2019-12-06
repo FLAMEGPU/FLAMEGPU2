@@ -5,24 +5,18 @@
 #include <map>
 #include <memory>
 
-#include "flamegpu/model/EnvironmentDescription.h"
+#include "flamegpu/model/ModelData.h"
 
 class AgentDescription;
 class MessageDescription;
 
 class ModelDescription {
-    friend class MessageDescription; // I don't like this level of visibility, use common shared storage instead?
- public:
-    static const std::string DEFAULT_STATE;  // "default"
-    /**
-     * Typedefs
-     */
-    typedef std::map<const std::string, std::shared_ptr<MessageDescription>> MessageMap;
-    typedef std::map<const std::string, std::shared_ptr<AgentDescription>> AgentMap;
 
+ public:
     /**
      * Constructors
      */
+    ModelDescription();
     ModelDescription(const std::string &model_name);
     // Copy Construct
     ModelDescription(const ModelDescription &other_model);
@@ -61,18 +55,8 @@ class ModelDescription {
 
     ModelDescription clone(const std::string &cloned_model_name) const;
 
-    const AgentMap& getAgents() const;
-    const MessageMap& getMessages() const;
-
  private:
-    /**
-     * Member vars
-     */
-    const std::string name;
-
-    AgentMap agents;
-    MessageMap messages;
-    EnvironmentDescription environment;
+     std::shared_ptr<ModelData> model;
 };
 
 #endif  // INCLUDE_FLAMEGPU_MODEL_MODELDESCRIPTION_H_

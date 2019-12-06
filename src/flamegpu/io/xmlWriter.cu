@@ -55,18 +55,18 @@ int xmlWriter::writeStates() {
             const auto &mm = model_description_.getAgent(agentName).getVariables();
 
             // for each variable
-            for (auto iter_mm = mm.begin(); iter_mm != mm.end(); iter_mm++) {
+            for (auto iter_mm = mm.begin(); iter_mm != mm.end(); ++iter_mm) {
                 const std::string variable_name = iter_mm->first;
 
                 pListElement = doc.NewElement(variable_name.c_str());
 
-                if (iter_mm->second == std::type_index(typeid(float)))
+                if (iter_mm->second.type == std::type_index(typeid(float)))
                     pListElement->SetText(instance.getVariable<float>(variable_name));
-                else if (iter_mm->second == std::type_index(typeid(double)))
+                else if (iter_mm->second.type == std::type_index(typeid(double)))
                     pListElement->SetText(instance.getVariable<double>(variable_name));
-                else if (iter_mm->second == std::type_index(typeid(int)))
+                else if (iter_mm->second.type == std::type_index(typeid(int)))
                     pListElement->SetText(instance.getVariable<int>(variable_name));
-                else if (iter_mm->second == std::type_index(typeid(bool)))
+                else if (iter_mm->second.type == std::type_index(typeid(bool)))
                     pListElement->SetText(instance.getVariable<bool>(variable_name));
 
                 pElement->InsertEndChild(pListElement);
