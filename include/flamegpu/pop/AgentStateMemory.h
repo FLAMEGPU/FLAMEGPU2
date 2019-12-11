@@ -19,8 +19,8 @@
 // include generic memory vectors
 #include "flamegpu/pop/MemoryVector.h"
 
+struct AgentData;
 class AgentPopulation;
-class AgentDescription;
 
 class AgentStateMemory {  // agent_list
  public:
@@ -35,7 +35,7 @@ class AgentStateMemory {  // agent_list
 
     const std::type_index& getVariableType(std::string variable_name) const;  // const
 
-    bool isSameDescription(const AgentDescription& description) const;
+    bool isSameDescription(const AgentData& description) const;
 
     void resizeMemoryVectors(unsigned int size);
 

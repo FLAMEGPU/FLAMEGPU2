@@ -1,107 +1,79 @@
-/**
-* @file Simulation.cpp
-* @authors Paul
-* @date
-* @brief
-*
-* @see
-* @warning
-*/
-
-#include <exception>
-#include <algorithm>
-#include <locale>
-
 #include "flamegpu/sim/Simulation.h"
-#include "flamegpu/model/ModelDescription.h"
-#include "flamegpu/io/statereader.h"
-#include "flamegpu/io/statewriter.h"
+#include "flamegpu/model/ModelData.h"
+#include "flamegpu/io/xmlWriter.h"
 #include "flamegpu/io/factory.h"
 #include "flamegpu/runtime/utility/RandomManager.cuh"
+#include "flamegpu/runtime/flamegpu_host_api.h"
+#include "flamegpu/pop/AgentPopulation.h"
 
-Simulation::Simulation(const ModelDescription& model) : layers(), model_description(model) {
-    simulation_steps = 1;
+Simulation::Simulation(const ModelDescription& _model)
+    : model(_model.model->clone())
+    , host_api(std::make_unique<FLAMEGPU_HOST_API>(*this))
+    , simulation_steps(0)
+    , has_seed(false)
+    , random_seed(0) {
 }
 
+void Simulation::initialise(int argc, const char** argv) {
+    // check input args
+    if (!checkArgs(argc, argv) && !xml_input_path.empty())
+        exit(0);
 
-Simulation::~Simulation(void) { }
+    if(has_seed)
+        RandomManager::getInstance().reseed(random_seed);
 
-const SimulationLayer::FunctionDescriptionVector& Simulation::getFunctionsAtLayer(const unsigned int &layer) const {
-    if (layer >= layers.size()) {
-        THROW InvalidMemoryCapacity("Function layer '%u' doesn't exists, "
-            "in Simulation::getHostFunctionsAtLayer()", layer);  // out of bound index
-    } else {
-        return layers.at(layer).get().getAgentFunctions();
+    // Build population vector
+    std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> pops;
+    for (auto &agent : model->agents) {
+        auto a = std::make_shared<AgentPopulation>(*agent.second->description);
+        pops.emplace(agent.first, a);
     }
-}
-const SimulationLayer::HostFunctionSet& Simulation::getHostFunctionsAtLayer(const unsigned int &layer) const {
-    if (layer >= layers.size()) {
-        THROW InvalidMemoryCapacity("Function layer '%u' doesn't exists, "
-            "in Simulation::getHostFunctionsAtLayer()", layer);  // out of bound index
-    } else {
-        return layers.at(layer).get().getHostFunctions();
+    StateReader *read__ = ReaderFactory::createReader(pops, xml_input_path.c_str());
+    read__->parse();
+    for (auto &agent : pops) {
+        setPopulationData(*agent.second);
     }
-}
-const Simulation::InitFunctionSet& Simulation::getInitFunctions() const {
-    return initFunctions;
-}
-const Simulation::StepFunctionSet& Simulation::getStepFunctions() const {
-    return stepFunctions;
-}
-const Simulation::ExitFunctionSet& Simulation::getExitFunctions() const {
-    return exitFunctions;
-}
-const Simulation::ExitConditionSet& Simulation::getExitConditions() const {
-    return exitConditions;
+
+    // Call any derived class init methods
+    initialise();
 }
 
-unsigned int Simulation::addSimulationLayer(SimulationLayer &layer) {
-    layers.push_back(layer);
-    return static_cast<unsigned int>(layers.size())-1;
-}
-
-void Simulation::addInitFunction(const FLAMEGPU_INIT_FUNCTION_POINTER *func_p) {
-    if (!initFunctions.insert(*func_p).second) {
-        THROW InvalidHostFunc("Attempted to add same init function twice,"
-            "in Simulation::addInitFunction()");
-    }
-}
-void Simulation::addStepFunction(const FLAMEGPU_STEP_FUNCTION_POINTER *func_p) {
-    if (!stepFunctions.insert(*func_p).second) {
-        THROW InvalidHostFunc("Attempted to add same step function twice,"
-            "in Simulation::addStepFunction()");
-    }
-}
-void Simulation::addExitFunction(const FLAMEGPU_EXIT_FUNCTION_POINTER *func_p) {
-    if (!exitFunctions.insert(*func_p).second) {
-        THROW InvalidHostFunc("Attempted to add same exit function twice,"
-            "in Simulation::addExitFunction()");
-    }
-}
-void Simulation::addExitCondition(const FLAMEGPU_EXIT_CONDITION_POINTER *func_p) {
-    if (!exitConditions.insert(*func_p).second) {
-        THROW InvalidHostFunc("Attempted to add same exit condition twice,"
-            "in Simulation::addExitCondition()");
-    }
-}
-
-void Simulation::setSimulationSteps(unsigned int steps) {
+void Simulation::setSimulationSteps(unsigned steps) {
     simulation_steps = steps;
 }
 
-unsigned int Simulation::getSimulationSteps() const {
+unsigned Simulation::getSimulationSteps() const {
     return simulation_steps;
 }
 
-unsigned int Simulation::getLayerCount() const {
-    return (unsigned int) layers.size();
+const ModelData& Simulation::getModelDescription() const {
+    return *model;
 }
 
-const ModelDescription& Simulation::getModelDescritpion() const {
-    return model_description;
+/*
+ * issues: only saves the last output, hardcoded, will be changed
+ */
+void Simulation::output(int /*argc*/, const char** /*argv*/) {
+    // check input args
+    // if (!checkArgs(argc, argv))
+    // exit(0);
+    const char* input = "finalIteration.xml";  // argv[2];
+
+    // Build population vector
+    std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> pops;
+    for(auto &agent:model->agents) {
+        auto a = std::make_shared<AgentPopulation>(*agent.second->description);
+        getPopulationData(*a);
+        pops.emplace(agent.first, a);
+    }
+
+    StateWriter *write__ = WriterFactory::createWriter(pops, input); // TODO (pair model format with its data?)
+    write__->writeStates();
 }
 
-int Simulation::checkArgs(int argc, const char** argv, std::string &xml_model_path) {
+int Simulation::checkArgs(int argc, const char** argv)
+{
+    has_seed = false;
     // These should really be in some kind of config struct
     // unsigned int device_id = 0;
     // unsigned int iterations = 0;
@@ -111,7 +83,7 @@ int Simulation::checkArgs(int argc, const char** argv, std::string &xml_model_pa
         printHelp(argv[0]);
         return false;
     }
-    xml_model_path = std::string(argv[1]);
+    xml_input_path = std::string(argv[1]);
 
     // Parse optional args
     int i = 2;
@@ -129,15 +101,15 @@ int Simulation::checkArgs(int argc, const char** argv, std::string &xml_model_pa
             // iterations = static_cast<int>(strtoul(argv[++i], nullptr, 0));
             continue;
         }
-        // -device <uint>, Uses the specified cuda device, defaults to 0
-        if (arg.compare("--device") == 0 || arg.compare("-d") == 0) {
-            // device_id = static_cast<unsigned int>(strtoul(argv[++i], nullptr, 0));
-            continue;
-        }
         // -random <uint>, Uses the specified random seed, defaults to clock
         if (arg.compare("--random") == 0 || arg.compare("-r") == 0) {
             // Reinitialise RandomManager state
-            RandomManager::getInstance().reseed(static_cast<unsigned int>(strtoul(argv[++i], nullptr, 0)));
+            has_seed = true;
+            random_seed = static_cast<unsigned int>(strtoul(argv[++i], nullptr, 0));
+            continue;
+        }
+        // Test this arg with the derived class
+        if (checkArgs_derived(argc-i, argv+i)) {
             continue;
         }
         fprintf(stderr, "Unexpected argument: %s\n", arg.c_str());
@@ -147,44 +119,11 @@ int Simulation::checkArgs(int argc, const char** argv, std::string &xml_model_pa
     return true;
 }
 
-void Simulation::printHelp(const char *executable) {
+void Simulation::printHelp(const char* executable) {
     printf("Usage: %s xml_input_file [-s steps] [-d device_id] [-r random_seed]\n", executable);
     printf("Optional Arguments:\n");
     const char *line_fmt = "%-18s %s\n";
     printf(line_fmt, "-s, --steps", "Number of simulation iterations");
-    printf(line_fmt, "-d, --device", "GPU index");
     printf(line_fmt, "-r, --random", "RandomManager seed");
-}
-
-/**
-* Initialise the simulation. Allocated host and device memory. Reads the initial agent configuration from XML.
-* @param input    XML file path for agent initial configuration
-*/
-void Simulation::initialise(int argc, const char** argv) {
-    // check input args
-    std::string xml_model_path;
-    if (!checkArgs(argc, argv, xml_model_path) && !xml_model_path.empty())
-        exit(0);
-
-    StateReader *read__ = ReaderFactory::createReader(model_description, xml_model_path.c_str());
-    read__->parse();
-}
-
-/*
-void Simulation::initialise(StateReader& read__) {
-    read__.parse();
-}
-*/
-
-/*
- * issues: only saves the last output, hardcoded, will be changed
- */
-void Simulation::output(int /*argc*/, const char** /*argv*/) {
-    // check input args
-    // if (!checkArgs(argc, argv))
-    // exit(0);
-    const char* input =  "finalIteration.xml";  // argv[2];
-
-    StateWriter *write__ = WriterFactory::createWriter(model_description, input);
-    write__->writeStates();
+    printHelp_derived();
 }

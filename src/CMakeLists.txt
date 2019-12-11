@@ -61,6 +61,7 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/io/factory.h
     ${FLAMEGPU_ROOT}/include/flamegpu/exception/FGPUException.h
     ${FLAMEGPU_ROOT}/include/flamegpu/exception/FGPUStaticAssert.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/model/LayerDescription.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/ModelData.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/MessageDescription.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/AgentFunctionDescription.h
@@ -79,7 +80,7 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAAgent.h
     ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAAgentStateList.h
     ${FLAMEGPU_ROOT}/include/flamegpu/flame_api.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/sim/SimulationLayer.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/sim/AgentInterface.h
     ${FLAMEGPU_ROOT}/include/flamegpu/sim/Simulation.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messagelist.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/AgentFunction.h
@@ -98,6 +99,7 @@ SET(SRC_INCLUDE
 )
 SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/exception/FGPUException.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/model/LayerDescription.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/model/ModelData.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/model/ModelDescription.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/model/EnvironmentDescription.cu
@@ -111,7 +113,6 @@ SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAAgentStateList.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAAgent.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAMessage.cu
-    ${FLAMEGPU_ROOT}/src/flamegpu/sim/SimulationLayer.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/sim/Simulation.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAAgentModel.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/cuRVE/curve.cu

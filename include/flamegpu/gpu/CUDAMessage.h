@@ -18,17 +18,17 @@
 
 // forward declare classes from other modules
 
+struct AgentFunctionData;
+struct MessageData;
 class AgentPopulation;
-class AgentFunctionDescription;
-class MessageDescription;
 class Curve;
 
 class CUDAMessage {
  public:
-    explicit CUDAMessage(const MessageDescription& description);
+    explicit CUDAMessage(const MessageData& description);
     virtual ~CUDAMessage(void);
 
-    const MessageDescription& getMessageDescription() const;
+    const MessageData& getMessageDescription() const;
     unsigned int getMaximumListSize() const;
 
     /**
@@ -36,7 +36,7 @@ class CUDAMessage {
      *
      * @param    func    The function.
      */
-    void mapRuntimeVariables(const AgentFunctionDescription& func) const;
+    void mapRuntimeVariables(const AgentFunctionData& func) const;
 
     /**
      * @brief    Uses the cuRVE runtime to unmap the variables used by the agent function to the cuRVE
@@ -44,7 +44,7 @@ class CUDAMessage {
      *
      * @param    func    The function.
      */
-    void unmapRuntimeVariables(const AgentFunctionDescription& func) const;
+    void unmapRuntimeVariables(const AgentFunctionData& func) const;
 
  protected:
     /**
@@ -56,7 +56,7 @@ class CUDAMessage {
     void zeroAllMessageData();
 
  private:
-    const MessageDescription& message_description;
+    const MessageData& message_description;
 
     std::unique_ptr<CUDAMessageList> message_list;  // CUDAMessageMap message_list;
 

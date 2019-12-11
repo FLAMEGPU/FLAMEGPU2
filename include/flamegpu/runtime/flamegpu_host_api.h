@@ -13,7 +13,7 @@
 #include "flamegpu/runtime/utility/HostEnvironment.cuh"
 #include "flamegpu/runtime/flamegpu_host_api_macros.h"
 
-class CUDAAgentModel;
+class Simulation;
 class FLAMEGPU_HOST_AGENT_API;
 
 /**
@@ -31,7 +31,7 @@ class FLAMEGPU_HOST_API {
      * Initailises pointers to 0
      * Stores reference of CUDAAgentModel
      */
-     explicit FLAMEGPU_HOST_API(CUDAAgentModel &_agentModel);
+     explicit FLAMEGPU_HOST_API(Simulation&_agentModel);
     /**
      * Frees held device memory
      */
@@ -81,7 +81,7 @@ class FLAMEGPU_HOST_API {
     void resizeTempStorage(const CUB_Config &cc, const unsigned int &items, const size_t &newSize);
     template<typename T>
     void resizeOutputSpace(const unsigned int &items = 1);
-    CUDAAgentModel &agentModel;
+    Simulation &agentModel;
     void *d_cub_temp;
     size_t d_cub_temp_size;
     void *d_output_space;

@@ -10,7 +10,11 @@
 
 // include all host API classes (top level header from each module)
 #include "flamegpu/model/ModelDescription.h"
+#include "flamegpu/model/AgentDescription.h"
+#include "flamegpu/model/AgentFunctionDescription.h"
+#include "flamegpu/model/MessageDescription.h"
 #include "flamegpu/model/EnvironmentDescription.h"
+#include "flamegpu/model/LayerDescription.h"
 #include "flamegpu/pop/AgentPopulation.h"
 #include "flamegpu/sim/Simulation.h"
 #include "flamegpu/gpu/CUDAAgentModel.h"

@@ -7,21 +7,19 @@
 /**
  * Constructors
  */
-AgentDescription::AgentDescription(ModelDescription * const _model, const std::string &agent_name)
-    : name(agent_name), model(_model) { }
+AgentDescription::AgentDescription(std::weak_ptr<ModelData> _model, AgentData *const description)
+    : model(_model)
+    , agent(description) { }
 // Copy Construct
 AgentDescription::AgentDescription(const AgentDescription &other_agent)
-    : model(other_agent.model) {
+    : model(other_agent.model)
+    , agent(other_agent.agent) {
     // TODO
 }
 // Move Construct
-AgentDescription::AgentDescription(AgentDescription &&other_agent)
-    : name(move(other_agent.name))
-    , states(move(other_agent.states))
-    , initial_state(move(other_agent.initial_state))
-    , variables(move(other_agent.variables))
-    , functions(move(other_agent.functions))
-    , model(other_agent.model) {
+AgentDescription::AgentDescription(AgentDescription &&other_agent) noexcept
+    : model(move(other_agent.model))
+    , agent(other_agent.agent) {
     // TODO
 }
 // Copy Assign
@@ -30,14 +28,14 @@ AgentDescription& AgentDescription::operator=(const AgentDescription &other_agen
     return *this;
 }
 // Move Assign
-AgentDescription& AgentDescription::operator=(AgentDescription &&other_agent) {
+AgentDescription& AgentDescription::operator=(AgentDescription &&other_agent) noexcept {
     // TODO
     return *this;
 }
 
 AgentDescription AgentDescription::clone(const std::string &cloned_agent_name) const {
     // TODO
-    return AgentDescription(model, cloned_agent_name);
+    return AgentDescription(model, agent);
 }
 
 
@@ -45,105 +43,102 @@ AgentDescription AgentDescription::clone(const std::string &cloned_agent_name) c
  * Accessors
  */
 void AgentDescription::newState(const std::string &state_name) {
-    if (states.find(state_name) == states.end()) {
-        states.insert(state_name);
+    if (agent->states.find(state_name) == agent->states.end()) {
+        agent->states.insert(state_name);
         // Special case, where default state has been replaced
-        if (states.size() == 1)
-            this->initial_state = state_name;
+        if (agent->states.size() == 1)
+            this->agent->initial_state = state_name;
         return;
     }
     THROW InvalidStateName("Agent ('%s') already contains state '%s', "
         "in AgentDescription::newState().",
-        name.c_str(), state_name.c_str());
+        agent->name.c_str(), state_name.c_str());
 }
 void AgentDescription::setInitialState(const std::string &init_state) {
-    if (states.find(init_state) != states.end()) {
-        this->initial_state = init_state;
+    if (agent->states.find(init_state) != agent->states.end()) {
+        this->agent->initial_state = init_state;
         return;
     }
     THROW InvalidStateName("Agent ('%s') does not contain state '%s', "
         "in AgentDescription::setInitialState().",
-        name.c_str(), init_state.c_str());
+        agent->name.c_str(), init_state.c_str());
 }
 
 AgentFunctionDescription &AgentDescription::Function(const std::string &function_name) {
-    auto f = functions.find(function_name);
-    if (f != functions.end()) {
-        return *f->second;
+    auto f = agent->functions.find(function_name);
+    if (f != agent->functions.end()) {
+        return *f->second->description;
     }
     THROW InvalidAgentFunc("Agent ('%s') does not contain function '%s', "
         "in AgentDescription::Function().",
-        name.c_str(), function_name.c_str());
+        agent->name.c_str(), function_name.c_str());
 }
 AgentFunctionDescription &AgentDescription::cloneFunction(const AgentFunctionDescription &function) {
     // TODO
-    return *((*functions.begin()).second);
+    return *((*agent->functions.begin()).second->description);
 }
 
 /**
  * Const Accessors
  */
 std::string AgentDescription::getName() const {
-    return name;
+    return agent->name;
 }
     
 std::type_index AgentDescription::getVariableType(const std::string &variable_name) const {
-    auto f = variables.find(variable_name);
-    if (f != variables.end()) {
+    auto f = agent->variables.find(variable_name);
+    if (f != agent->variables.end()) {
         return f->second.type;
     }
     THROW InvalidAgentVar("Agent ('%s') does not contain variable '%s', "
         "in AgentDescription::getVariableType().",
-        name.c_str(), variable_name.c_str());
+        agent->name.c_str(), variable_name.c_str());
 }
 size_t AgentDescription::getVariableSize(const std::string &variable_name) const {
-    auto f = variables.find(variable_name);
-    if (f != variables.end()) {
+    auto f = agent->variables.find(variable_name);
+    if (f != agent->variables.end()) {
         return f->second.type_size;
     }
     THROW InvalidAgentVar("Agent ('%s') does not contain variable '%s', "
         "in AgentDescription::getVariableSize().",
-        name.c_str(), variable_name.c_str());
+        agent->name.c_str(), variable_name.c_str());
 }
-AgentDescription::size_type AgentDescription::getVariableLength(const std::string &variable_name) const {
-    auto f = variables.find(variable_name);
-    if (f != variables.end()) {
+ModelData::size_type AgentDescription::getVariableLength(const std::string &variable_name) const {
+    auto f = agent->variables.find(variable_name);
+    if (f != agent->variables.end()) {
         return f->second.elements;
     }
     THROW InvalidAgentVar("Agent ('%s') does not contain variable '%s', "
         "in AgentDescription::getVariableLength().",
-        name.c_str(), variable_name.c_str());
+        agent->name.c_str(), variable_name.c_str());
 }
-AgentDescription::size_type AgentDescription::getVariablesCount() const {
+ModelData::size_type AgentDescription::getVariablesCount() const {
     // Downcast, will never have more than UINT_MAX VARS
-    return static_cast<size_type>(variables.size());
+    return static_cast<ModelData::size_type>(agent->variables.size());
 }
 const AgentFunctionDescription& AgentDescription::getFunction(const std::string &function_name) const {
-    auto f = functions.find(function_name);
-    if (f != functions.end()) {
-        return *f->second;
+    auto f = agent->functions.find(function_name);
+    if (f != agent->functions.end()) {
+        return *f->second->description;
     }
     THROW InvalidAgentFunc("Agent ('%s') does not contain function '%s', "
         "in AgentDescription::getFunction().",
-        name.c_str(), function_name.c_str());
+        agent->name.c_str(), function_name.c_str());
 }
 
 const std::set<std::string> &AgentDescription::getStates() const {
-    return states;
-}
-const AgentDescription::VariableMap &AgentDescription::getVariables() const {
-    return variables;
-}
-const AgentDescription::FunctionMap& AgentDescription::getFunctions() const {
-    return functions;
+    return agent->states;
 }
 
 bool AgentDescription::hasState(const std::string &state_name) const {
-    return states.find(state_name) != states.end();
+    return agent->states.find(state_name) != agent->states.end();
 }
 bool AgentDescription::hasVariable(const std::string &variable_name) const {
-    return variables.find(variable_name) != variables.end();
+    return agent->variables.find(variable_name) != agent->variables.end();
 }
 bool AgentDescription::hasFunction(const std::string &function_name) const {
-    return functions.find(function_name) != functions.end();
+    return agent->functions.find(function_name) != agent->functions.end();
+}
+bool AgentDescription::isOutputOnDevice() const {
+    return agent->isOutputOnDevice();
 }

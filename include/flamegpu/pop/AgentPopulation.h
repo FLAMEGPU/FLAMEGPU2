@@ -21,11 +21,12 @@
 
 // forward declarations
 class AgentDescription;
+struct AgentData;
 
-typedef std::map<const std::string, std::unique_ptr<AgentStateMemory>> AgentStatesMap;    // key is concat of agent and state name!
-typedef std::pair<const std::string, std::unique_ptr<AgentStateMemory>> AgentStatesMapPair;
 
 class AgentPopulation {
+    typedef std::map<std::string, std::unique_ptr<AgentStateMemory>> AgentStatesMap;    // key is concat of agent and state name!
+    typedef std::pair<std::string, std::unique_ptr<AgentStateMemory>> AgentStatesMapPair;
  public:
     static const unsigned int DEFAULT_POPULATION_SIZE;
     explicit AgentPopulation(const AgentDescription &agent_description, unsigned int initial_size = DEFAULT_POPULATION_SIZE);
@@ -42,9 +43,9 @@ class AgentPopulation {
 
     const AgentStateMemory& getReadOnlyStateMemory(const std::string agent_state = "default") const;
 
-    const std::string getAgentName() const;
+    std::string getAgentName() const;
 
-    const AgentDescription& getAgentDescription() const;
+    const AgentData& getAgentDescription() const;
 
     /* This is the maximum size of any single state list. */
     unsigned int getMaximumStateListCapacity() const;
@@ -52,7 +53,7 @@ class AgentPopulation {
     void setStateListCapacity(unsigned int);
 
  private:
-    const AgentDescription &agent;
+    const std::unique_ptr<const AgentData> agent;
     AgentStatesMap states_map;
     unsigned int maximum_size;  // size is maximum size for agents in any single state (same for all states of same agent type)
 };

@@ -63,76 +63,62 @@ FLAMEGPU_EXIT_CONDITION(exit_condition) {
 
 int main(void) {
     const unsigned int AGENT_COUNT = 1024;
-    ModelDescription flame_model("host_functions_example");
+    ModelDescription model("host_functions_example");
 
-    // {//agent
-        AgentDescription agent("agent");
-        agent.addAgentVariable<float>("x");
-        agent.addAgentVariable<int>("a");
-
-        // {// Device fn
-            AgentFunctionDescription deviceFn("device_function");
-            deviceFn.setFunction(&device_function);
-            agent.addAgentFunction(deviceFn);
-        // }
-
-        flame_model.addAgent(agent);
-
-        // Init pop
-        AgentPopulation population(agent, AGENT_COUNT);
-        for (unsigned int i = 0; i < AGENT_COUNT; i++) {
-            AgentInstance instance = population.getNextInstance();
-            instance.setVariable<float>("x", static_cast<float>(i));
-            instance.setVariable<int>("a", i % 2 == 0 ? 1 : 0);
-        }
-    // }
+    {// agent
+        AgentDescription &agent = model.newAgent("agent");
+        agent.newVariable<float>("x");
+        agent.newVariable<int>("a");
+        agent.newFunction("device_function", device_function);
+    }
 
     /**
      * GLOBALS
      */
-    EnvironmentDescription envProperties;
     {
+        EnvironmentDescription &envProperties = model.Environment();
         envProperties.add<float>("float", 12.0f);
         envProperties.add<int16_t>("int16_t", 0);
         envProperties.add<uint64_t, 3>("uint64_t", {11llu, 12llu, 13llu});
-        flame_model.setEnvironment(envProperties);
     }
-     /**
-      * Simulation
-      */
+    /**
+     * Control flow
+     */
+     
+     {// Attach init/step/exit functions and exit condition
+        model.addInitFunction(&init_function);
+        model.addStepFunction(&step_function);
+        model.addExitFunction(&exit_function);
+        model.addExitCondition(&exit_condition);
+     }
 
-    Simulation simulation(flame_model);
+     {
+        LayerDescription &devicefn_layer = model.newLayer("devicefn_layer");
+        devicefn_layer.addAgentFunction(device_function);
+     }
 
-    // Attach init/step/exit functions and exit condition
-    // {
-        simulation.addInitFunction(&init_function);
-        simulation.addStepFunction(&step_function);
-        simulation.addExitFunction(&exit_function);
-        simulation.addExitCondition(&exit_condition);
-        // Run until exit condition triggers
-        simulation.setSimulationSteps(0);
-    // }
+     {
+        LayerDescription &hostfn_layer = model.newLayer("hostfn_layer");
+        hostfn_layer.addHostFunction(host_function);
+     }
 
-    // {
-        SimulationLayer devicefn_layer(simulation, "devicefn_layer");
-        devicefn_layer.addAgentFunction("device_function");
-        simulation.addSimulationLayer(devicefn_layer);
-        // TODO: simulation.insertFunctionLayerAt(layer, int index) //Should insert at the layer position and move all other layer back
-    // }
-
-    // {
-        SimulationLayer hostfn_layer(simulation, "hostfn_layer");
-        hostfn_layer.addHostFunction(&host_function);
-        simulation.addSimulationLayer(hostfn_layer);
-    // }
-
+    /**
+     * Initialisation
+     */
+    AgentPopulation population(model.Agent("Agent"), AGENT_COUNT);
+    for (unsigned int i = 0; i < AGENT_COUNT; i++) {
+        AgentInstance instance = population.getNextInstance();
+        instance.setVariable<float>("x", static_cast<float>(i));
+        instance.setVariable<int>("a", i % 2 == 0 ? 1 : 0);
+    }
 
     /**
      * Execution
      */
-    CUDAAgentModel cuda_model(flame_model);
+    CUDAAgentModel cuda_model(model);
+    cuda_model.setSimulationSteps(0);
     cuda_model.setInitialPopulationData(population);
-    cuda_model.simulate(simulation);
+    cuda_model.simulate();
 
     cuda_model.getPopulationData(population);
 

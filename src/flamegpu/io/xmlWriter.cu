@@ -18,7 +18,7 @@
 #define XMLCheckResult(a_eResult) if (a_eResult != tinyxml2::XML_SUCCESS) { printf("XMLCheckResult Error: %i\n", a_eResult); return a_eResult; }
 #endif
 
-xmlWriter::xmlWriter(const ModelDescription &model, const char* output) : StateWriter(model, output) {}
+xmlWriter::xmlWriter(const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &model, const char* output) : StateWriter(model, output) {}
 
 int xmlWriter::writeStates() {
     tinyxml2::XMLDocument doc;
@@ -34,14 +34,12 @@ int xmlWriter::writeStates() {
     pRoot->InsertEndChild(pElement);
 
     int populationSize;
-
-    const auto &am = model_description_.getAgents();
-
+    
     // for each agent types
-    for (auto iter_am = am.begin(); iter_am != am.end(); iter_am++) {
-        const char* agentName = iter_am->first.c_str();
+    for (auto &agent:model_state) {
+        const char* agentName = agent.first.c_str();
 
-        populationSize = model_description_.getAgentPopulation(agentName).getStateMemory().getStateListSize();
+        populationSize = agent.second->getStateMemory().getStateListSize();
 
         // for each agent
         for (int i = 0; i < populationSize; i++) {
@@ -51,8 +49,8 @@ int xmlWriter::writeStates() {
             pListElement->SetText(agentName);
             pElement->InsertEndChild(pListElement);
 
-            AgentInstance instance = model_description_.getAgentPopulation(agentName).getInstanceAt(i, "default");
-            const auto &mm = model_description_.getAgent(agentName).getVariables();
+            AgentInstance instance = agent.second->getInstanceAt(i, "default");
+            const auto &mm = agent.second->getAgentDescription().variables;
 
             // for each variable
             for (auto iter_mm = mm.begin(); iter_mm != mm.end(); ++iter_mm) {

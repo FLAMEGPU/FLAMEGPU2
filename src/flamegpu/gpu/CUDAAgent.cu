@@ -24,7 +24,7 @@
 * CUDAAgent class
 * @brief allocates the hash table/list for agent variables and copy the list to device
 */
-CUDAAgent::CUDAAgent(const AgentDescription& description)
+CUDAAgent::CUDAAgent(const AgentData& description)
     : agent_description(description)
     , state_map()
     , max_list_size(0)
@@ -43,7 +43,7 @@ CUDAAgent::~CUDAAgent(void) {
 * @param none
 * @return AgentDescription object
 */
-const AgentDescription& CUDAAgent::getAgentDescription() const {
+const AgentData& CUDAAgent::getAgentDescription() const {
     return agent_description;
 }
 
@@ -68,10 +68,10 @@ void CUDAAgent::setInitialPopulationData(const AgentPopulation& population) {
             "to that which was used to initialise the CUDAAgent ('%s'). "
             "In CUDAAgent::setInitialPopulationData()",
             population.getAgentName().c_str(),
-            agent_description.getName().c_str());
+            agent_description.name.c_str());
     }
     // create map of device state lists by traversing the state list
-    const std::set<std::string> &sm = agent_description.getStates();
+    const std::set<std::string> &sm = agent_description.states;
     for (const std::string &s : sm) {
         // allocate memory for each state list by creating a new Agent State List
         state_map.insert(CUDAStateMap::value_type(s, std::unique_ptr<CUDAAgentStateList>( new CUDAAgentStateList(*this))));
@@ -101,19 +101,19 @@ void CUDAAgent::setPopulationData(const AgentPopulation& population) {
             population.getAgentName().c_str());
     }
     // Make sure population uses same agent description as was used to initialise the agent CUDAAgent
-    const std::string agent_name = agent_description.getName();
-    if (&(population.getAgentDescription()) != &agent_description) {
+    const std::string agent_name = agent_description.name;
+    if ((population.getAgentDescription()) != agent_description) {
         THROW InvalidPopulationData("Error: Initial Population has a different agent description ('%s') "
             "to that which was used to initialise the CUDAAgent ('%s'). "
             "In CUDAAgent::setPopulationData()",
             population.getAgentName().c_str(),
-            agent_description.getName().c_str());
+            agent_description.name.c_str());
     }
     /**set all population data to zero*/
     zeroAllStateVariableData();
 
     /**copy all population data to correct state map*/
-    const std::set<std::string> &sm = agent_description.getStates();
+    const std::set<std::string> &sm = agent_description.states;
     for (const std::string &s : sm) {
         // get an associated CUDA statemap pair
         CUDAStateMap::iterator i = state_map.find(s);
@@ -145,16 +145,16 @@ void CUDAAgent::getPopulationData(AgentPopulation& population) {
             population.getAgentName().c_str());
     }
     // Make sure population uses same agent description as was used to initialise the agent CUDAAgent
-    const std::string agent_name = agent_description.getName();
+    const std::string agent_name = agent_description.name;
     if (&(population.getAgentDescription()) != &agent_description) {
         THROW InvalidPopulationData("Error: Initial Population has a different agent description ('%s') "
             "to that which was used to initialise the CUDAAgent ('%s'). "
             "In CUDAAgent::setPopulationData()",
             population.getAgentName().c_str(),
-            agent_description.getName().c_str());
+            agent_description.name.c_str());
     }
     /* copy all population from correct state maps */
-    const std::set<std::string> &sm = agent_description.getStates();
+    const std::set<std::string> &sm = agent_description.states;
     for (const std::string &s : sm) {
         // get an associated CUDA statemap pair
         CUDAStateMap::iterator i = state_map.find(s);
@@ -195,20 +195,20 @@ void CUDAAgent::zeroAllStateVariableData() {
 }
 
 // this is done for all the variables for now.
-void CUDAAgent::mapRuntimeVariables(const AgentFunctionDescription& func) const {
+void CUDAAgent::mapRuntimeVariables(const AgentFunctionData& func) const {
     // check the cuda agent state map to find the correct state list for functions starting state
-    CUDAStateMap::const_iterator sm = state_map.find(func.getInitialState());
+    CUDAStateMap::const_iterator sm = state_map.find(func.initial_state);
 
     if (sm == state_map.end()) {
         THROW InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found "
             "in CUDAAgent::mapRuntimeVariables()",
-            agent_description.getName().c_str(), func.getInitialState().c_str());
+            agent_description.name.c_str(), func.initial_state.c_str());
     }
 
-    const Curve::VariableHash agent_hash = curve.variableRuntimeHash(agent_description.getName().c_str());
-    const Curve::VariableHash func_hash = curve.variableRuntimeHash(func.getName().c_str());
+    const Curve::VariableHash agent_hash = curve.variableRuntimeHash(agent_description.name.c_str());
+    const Curve::VariableHash func_hash = curve.variableRuntimeHash(func.name.c_str());
     // loop through the agents variables to map each variable name using cuRVE
-    for (const auto &mmp : agent_description.getVariables()) {
+    for (const auto &mmp : agent_description.variables) {
         // get a device pointer for the agent variable name
         void* d_ptr = sm->second->getAgentListVariablePointer(mmp.first);
 
@@ -216,7 +216,7 @@ void CUDAAgent::mapRuntimeVariables(const AgentFunctionDescription& func) const 
         const Curve::VariableHash var_hash = curve.variableRuntimeHash(mmp.first.c_str());
 
         // get the agent variable size
-        size_t size = agent_description.getVariableSize(mmp.first.c_str());
+        size_t size = mmp.second.type_size;
 
        // maximum population num
         unsigned int length = this->getMaximumListSize();
@@ -225,20 +225,20 @@ void CUDAAgent::mapRuntimeVariables(const AgentFunctionDescription& func) const 
     }
 }
 
-void CUDAAgent::unmapRuntimeVariables(const AgentFunctionDescription& func) const {
+void CUDAAgent::unmapRuntimeVariables(const AgentFunctionData& func) const {
     // check the cuda agent state map to find the correct state list for functions starting state
-    CUDAStateMap::const_iterator sm = state_map.find(func.getInitialState());
+    CUDAStateMap::const_iterator sm = state_map.find(func.initial_state);
 
     if (sm == state_map.end()) {
         THROW InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found "
             "in CUDAAgent::unmapRuntimeVariables()",
-            agent_description.getName().c_str(), func.getInitialState().c_str());
+            agent_description.name.c_str(), func.initial_state.c_str());
     }
 
-    const Curve::VariableHash agent_hash = curve.variableRuntimeHash(agent_description.getName().c_str());
-    const Curve::VariableHash func_hash = curve.variableRuntimeHash(func.getName().c_str());
+    const Curve::VariableHash agent_hash = curve.variableRuntimeHash(agent_description.name.c_str());
+    const Curve::VariableHash func_hash = curve.variableRuntimeHash(func.name.c_str());
     // loop through the agents variables to map each variable name using cuRVE
-    for (const auto &mmp : agent_description.getVariables()) {
+    for (const auto &mmp : agent_description.variables) {
         // get a device pointer for the agent variable name
         // void* d_ptr = sm->second->getAgentListVariablePointer(mmp.first);
 
@@ -257,7 +257,17 @@ const std::unique_ptr<CUDAAgentStateList> &CUDAAgent::getAgentStateList(const st
     if (sm == state_map.end()) {
         THROW InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found "
             "in CUDAAgent::getAgentStateList()",
-            agent_description.getName().c_str(), state_name.c_str());
+            agent_description.name.c_str(), state_name.c_str());
     }
     return sm->second;
+}
+
+void* CUDAAgent::getStateVariablePtr(const std::string& state_name, const std::string& variable_name) 
+{
+    return getAgentStateList(state_name)->getAgentListVariablePointer(variable_name);
+}
+
+ModelData::size_type CUDAAgent::getStateSize(const std::string& state_name) const
+{
+    return getAgentStateList(state_name)->getCUDAStateListSize();
 }

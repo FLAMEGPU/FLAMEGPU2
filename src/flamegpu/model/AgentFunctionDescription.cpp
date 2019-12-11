@@ -4,23 +4,20 @@
 /**
  * Constructors
  */
+
+AgentFunctionDescription::AgentFunctionDescription(std::weak_ptr<ModelData> _model, AgentFunctionData *const description)
+    : model(_model)
+    , function(description) { }
 // Copy Construct
 AgentFunctionDescription::AgentFunctionDescription(const AgentFunctionDescription &other_function)
-    : func(other_function.func), model(other_function.model) {
+    : model(other_function.model)
+    , function(other_function.function) {
     // TODO
 }
 // Move Construct
 AgentFunctionDescription::AgentFunctionDescription(AgentFunctionDescription &&other_function)
-    : name(move(other_function.name))
-    , func(other_function.func)
-    , initial_state(move(other_function.initial_state))
-    , end_state(move(other_function.end_state))
-    , message_input(other_function.message_input)
-    , message_output(other_function.message_output)
-    , agent_output(other_function.agent_output)
-    , has_agent_death(other_function.has_agent_death)
-    , parent(move(other_function.parent))
-    , model(other_function.model) {
+    : model(move(other_function.model))
+    , function(other_function.function) {
     // TODO
 }
 // Copy Assign
@@ -44,13 +41,13 @@ AgentFunctionDescription AgentFunctionDescription::clone(const std::string &clon
  * Accessors
  */
 void AgentFunctionDescription::setInitialState(const std::string &init_state) {
-    if(auto p = parent.lock()) {
-        if(p->hasState(initial_state)) {
-            this->initial_state = init_state;
+    if(auto p = function->parent.lock()) {
+        if(p->description->hasState(function->initial_state)) {
+            this->function->initial_state = init_state;
         } else {
             THROW InvalidStateName("Agent ('%s') does not contain state '%s', "
                 "in AgentFunctionDescription::setInitialState()\n",
-                p->getName().c_str(), init_state.c_str());
+                p->name.c_str(), init_state.c_str());
         }
     } else {
         THROW InvalidParent("Agent parent has expired, "
@@ -58,13 +55,13 @@ void AgentFunctionDescription::setInitialState(const std::string &init_state) {
     }
 }
 void AgentFunctionDescription::setEndState(const std::string &exit_state) {
-    if(auto p = parent.lock()) {
-        if(p->hasState(initial_state)) {
-            this->end_state = exit_state;
+    if(auto p = function->parent.lock()) {
+        if(p->description->hasState(function->initial_state)) {
+            this->function->end_state = exit_state;
         } else {
             THROW InvalidStateName("Agent ('%s') does not contain state '%s', "
                 "in AgentFunctionDescription::setEndState()\n",
-                p->getName().c_str(), exit_state.c_str());
+                p->name.c_str(), exit_state.c_str());
         }
     } else {
         THROW InvalidParent("Agent parent has expired, "
@@ -72,148 +69,192 @@ void AgentFunctionDescription::setEndState(const std::string &exit_state) {
     }
 }
 void AgentFunctionDescription::setMessageInput(const std::string &message_name) {
-    if (model->hasMessage(message_name)) {
-        this->message_input = &model->Message(message_name);
+    if (auto m = model.lock()) {
+        auto a = m->messages.find(message_name);
+        if (a != m->messages.end()) {
+            this->function->message_input = a->second;
+        } else {
+            THROW InvalidMessageName("Model ('%s') does not contain message '%s', "
+                "in AgentFunctionDescription::setMessageInput()\n",
+                m->name.c_str(), message_name.c_str());
+        }
     } else {
-        THROW InvalidMessageName("Model ('%s') does not contain message '%s', "
-            "in AgentFunctionDescription::setMessageInput()\n",
-            model->getName().c_str(), message_name.c_str());
+        THROW InvalidParent("Agent parent has expired, "
+            "in AgentFunctionDescription::setMessageInput()\n");
     }
 }
 void AgentFunctionDescription::setMessageInput(MessageDescription &message) {
-    if (model->hasMessage(message.getName())) {
-        if(&model->getMessage(message.getName())==&message) {
-            this->message_input = &message;
+    if (auto m = model.lock()) {
+        auto a = m->messages.find(message.getName());
+        if (a != m->messages.end()) {
+            if(a->second->description.get()==&message) {
+                this->function->message_input = a->second;
+            } else {
+                THROW InvalidMessage("Message '%s' is not from Model '%s', "
+                    "in AgentFunctionDescription::setMessageInput()\n",
+                    message.getName().c_str(), m->name.c_str());
+            }
         } else {
-            THROW InvalidMessage("Message '%s' is not from Model '%s', "
+            THROW InvalidMessageName("Model ('%s') does not contain message '%s', "
                 "in AgentFunctionDescription::setMessageInput()\n",
-                message.getName().c_str(), model->getName().c_str());
+                m->name.c_str(), message.getName().c_str());
         }
     } else {
-        THROW InvalidMessageName("Model ('%s') does not contain message '%s', "
-            "in AgentFunctionDescription::setMessageInput()\n",
-            model->getName().c_str(), message.getName().c_str());
+        THROW InvalidParent("Agent parent has expired, "
+            "in AgentFunctionDescription::setMessageInput()\n");
     }
 }
 void AgentFunctionDescription::setMessageOutput(const std::string &message_name) {
-    if (model->hasMessage(message_name)) {
-        this->message_output = &model->Message(message_name);
+    if (auto m = model.lock()) {
+        auto a = m->messages.find(message_name);
+        if (a != m->messages.end()) {
+            this->function->message_output = a->second;
+        } else {
+            THROW InvalidMessageName("Model ('%s') does not contain message '%s', "
+                "in AgentFunctionDescription::setMessageOutput()\n",
+                m->name.c_str(), message_name.c_str());
+        }
     } else {
-        THROW InvalidMessageName("Model ('%s') does not contain message '%s', "
-            "in AgentFunctionDescription::setMessageOutput()\n",
-            model->getName().c_str(), message_name.c_str());
+        THROW InvalidParent("Agent parent has expired, "
+            "in AgentFunctionDescription::setMessageOutput()\n");
     }
 }
 void AgentFunctionDescription::setMessageOutput(MessageDescription &message) {
-    if (model->hasMessage(message.getName())) {
-        if (&model->getMessage(message.getName()) == &message) {
-            this->message_output = &message;
+    if (auto m = model.lock()) {
+        auto a = m->messages.find(message.getName());
+        if (a != m->messages.end()) {
+            if (a->second->description.get() == &message) {
+                this->function->message_output = a->second;
+            }
+            else {
+                THROW InvalidMessage("Message '%s' is not from Model '%s', "
+                    "in AgentFunctionDescription::setMessageOutput()\n",
+                    message.getName().c_str(), m->name.c_str());
+            }
         }
         else {
-            THROW InvalidMessage("Message '%s' is not from Model '%s', "
+            THROW InvalidMessageName("Model ('%s') does not contain message '%s', "
                 "in AgentFunctionDescription::setMessageOutput()\n",
-                message.getName().c_str(), model->getName().c_str());
+                m->name.c_str(), message.getName().c_str());
         }
-    }
-    else {
-        THROW InvalidMessageName("Model ('%s') does not contain message '%s', "
-            "in AgentFunctionDescription::setMessageOutput()\n",
-            model->getName().c_str(), message.getName().c_str());
+    } else {
+        THROW InvalidParent("Agent parent has expired, "
+            "in AgentFunctionDescription::setMessageOutput()\n");
     }
 }
+void AgentFunctionDescription::setMessageOutputOptional(const bool &output_is_optional) {
+    this->function->message_output_optional = output_is_optional;
+}
 void AgentFunctionDescription::setAgentOutput(const std::string &agent_name) {
-    if (model->hasAgent(agent_name)) {
-        this->agent_output = &model->Agent(agent_name);
-    }
-    else {
-        THROW InvalidAgentName("Model ('%s') does not contain agent '%s', "
-            "in AgentFunctionDescription::setAgentOutput()\n",
-            model->getName().c_str(), agent_name.c_str());
+    if (auto m = model.lock()) {
+        auto a = m->agents.find(agent_name);
+        if (a != m->agents.end()) {
+            this->function->agent_output = a->second;
+            a->second->agent_outputs++;  // Mark inside agent that we are using it as an output
+        }
+        else {
+            THROW InvalidAgentName("Model ('%s') does not contain agent '%s', "
+                "in AgentFunctionDescription::setAgentOutput()\n",
+                m->name.c_str(), agent_name.c_str());
+        }
+    } else {
+        THROW InvalidParent("Agent parent has expired, "
+            "in AgentFunctionDescription::setAgentOutput()\n");
     }
 }
 void AgentFunctionDescription::setAgentOutput(AgentDescription &agent) {
-    if (model->hasAgent(agent.getName())) {
-        if (&model->getAgent(agent.getName()) == &agent) {
-            this->agent_output = &agent;
+    if (auto m = model.lock()) {
+        auto a = m->agents.find(agent.getName());
+        if (a != m->agents.end()) {
+            if (a->second->description.get() == &agent) {
+                this->function->agent_output = a->second;
+                a->second->agent_outputs++;  // Mark inside agent that we are using it as an output
+            }
+            else {
+                THROW InvalidMessage("Agent '%s' is not from Model '%s', "
+                    "in AgentFunctionDescription::setAgentOutput()\n",
+                    agent.getName().c_str(), m->name.c_str());
+            }
         }
         else {
-            THROW InvalidMessage("Agent '%s' is not from Model '%s', "
+            THROW InvalidMessageName("Model ('%s') does not contain agent '%s', "
                 "in AgentFunctionDescription::setAgentOutput()\n",
-                agent.getName().c_str(), model->getName().c_str());
+                m->name.c_str(), agent.getName().c_str());
         }
-    }
-    else {
-        THROW InvalidMessageName("Model ('%s') does not contain agent '%s', "
-            "in AgentFunctionDescription::setAgentOutput()\n",
-            model->getName().c_str(), agent.getName().c_str());
+    } else {
+        THROW InvalidParent("Agent parent has expired, "
+            "in AgentFunctionDescription::setAgentOutput()\n");
     }
 }
 void AgentFunctionDescription::setAllowAgentDeath(const bool &has_death) {
-    has_agent_death = has_death;
+    function->has_agent_death = has_death;
 }
     
 MessageDescription &AgentFunctionDescription::MessageInput() {
-    if (message_input)
-        return *message_input;
+    if (auto m = function->message_input.lock())
+        return *m->description;
     THROW OutOfBoundsException("Message input has not been set, "
         "in AgentFunctionDescription::MessageInput()\n");
 }
 MessageDescription &AgentFunctionDescription::MessageOutput() {
-    if(message_output)
-        return *message_output;
+    if(auto m = function->message_output.lock())
+        return *m->description;
     THROW OutOfBoundsException("Message output has not been set, "
         "in AgentFunctionDescription::MessageOutput()\n");
 }
 AgentDescription &AgentFunctionDescription::AgentOutput() {
-    if (agent_output)
-        return *agent_output;
+    if (auto a = function->agent_output.lock())
+        return *a->description;
     THROW OutOfBoundsException("Agent output has not been set, "
         "in AgentFunctionDescription::AgentOutput()\n");
 }
 bool &AgentFunctionDescription::AllowAgentDeath() {
-    return has_agent_death;
+    return function->has_agent_death;
 }
     
 /**
  * Const Accessors
  */
 std::string AgentFunctionDescription::getName() const {
-    return name;
+    return function->name;
 }
 std::string AgentFunctionDescription::getInitialState() const {
-    return initial_state;
+    return function->initial_state;
 }
 std::string AgentFunctionDescription::getEndState() const {
-    return end_state;
+    return function->end_state;
 }
 const MessageDescription &AgentFunctionDescription::getMessageInput() const {
-    if (message_input)
-        return *message_input;
+    if (auto m = function->message_input.lock())
+        return *m->description;
     THROW OutOfBoundsException("Message input has not been set, "
         "in AgentFunctionDescription::getMessageInput()\n");
 }
 const MessageDescription &AgentFunctionDescription::getMessageOutput() const {
-    if (message_output)
-        return *message_output;
+    if (auto m = function->message_output.lock())
+        return *m->description;
     THROW OutOfBoundsException("Message output has not been set, "
         "in AgentFunctionDescription::getMessageOutput()\n");
 }
+bool AgentFunctionDescription::getMessageOutputOptional() const {
+    return this->function->message_output_optional;
+}
 const AgentDescription &AgentFunctionDescription::getAgentOutput() const {
-    if (agent_output)
-        return *agent_output;
+    if (auto a = function->agent_output.lock())
+        return *a->description;
     THROW OutOfBoundsException("Agent output has not been set, "
         "in AgentFunctionDescription::getAgentOutput()\n");
 }
 bool AgentFunctionDescription::getHasAgentDeath() const {
-    return has_agent_death;
+    return function->has_agent_death;
 }
     
 bool AgentFunctionDescription::hasMessageInput() const {
-    return message_input != nullptr;
+    return function->message_input.lock() != nullptr;
 }
 bool AgentFunctionDescription::hasMessageOutput() const {
-    return message_output != nullptr;
+    return function->message_output.lock() != nullptr;
 }
 bool AgentFunctionDescription::hasAgentOutput() const {
-    return agent_output != nullptr;
+    return function->agent_output.lock() != nullptr;
 }

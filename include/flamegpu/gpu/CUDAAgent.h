@@ -18,11 +18,12 @@
 
 // include sub classes
 #include "flamegpu/gpu/CUDAAgentStateList.h"
+#include "flamegpu/sim/AgentInterface.h"
 
 // forward declare classes from other modules
-class AgentDescription;
+struct AgentData;
+struct AgentFunctionData;
 class AgentPopulation;
-class AgentFunctionDescription;
 class Curve;
 
 typedef std::map<const std::string, std::unique_ptr<CUDAAgentStateList>> CUDAStateMap;  // map of state name to CUDAAgentStateList which allocates memory on the device
@@ -33,12 +34,12 @@ typedef std::pair<const std::string, std::unique_ptr<CUDAAgentStateList>> CUDASt
  * will use this hash index to map variable names to unique pointers in GPU memory space. This is required so
  * that at runtime a variable name can be related to a unique array of data on the device. It works like a traditional hashmap however the same hashing is used for all states that an agent can be in (as agents have the same variables regardless of state).
  */
-class CUDAAgent {
+class CUDAAgent : public AgentInterface {
  public:
-    explicit CUDAAgent(const AgentDescription& description);
+    explicit CUDAAgent(const AgentData& description);
     virtual ~CUDAAgent(void);
 
-    const AgentDescription& getAgentDescription() const;
+    const AgentData& getAgentDescription() const override;
 
     /* Should be set initial population data and should only be called once as it does all the GPU device memory allocation */
     void setInitialPopulationData(const AgentPopulation& population);
@@ -52,7 +53,7 @@ class CUDAAgent {
 
     /** @brief Uses the cuRVE runtime to map the variables used by the agent function to the cuRVE library so that can be accessed by name within a n agent function
     */
-    void mapRuntimeVariables(const AgentFunctionDescription& func) const;
+    void mapRuntimeVariables(const AgentFunctionData& func) const;
 
     /**
      * @brief    Uses the cuRVE runtime to unmap the variables used by the agent function to the cuRVE
@@ -61,16 +62,19 @@ class CUDAAgent {
      * @param    func    The function.
      */
 
-    void unmapRuntimeVariables(const AgentFunctionDescription& func) const;
+    void unmapRuntimeVariables(const AgentFunctionData& func) const;
 
     const std::unique_ptr<CUDAAgentStateList> &getAgentStateList(const std::string &state_name) const;
+
+    void *getStateVariablePtr(const std::string &state_name, const std::string &variable_name) override;
+    ModelData::size_type getStateSize(const std::string &state_name) const override;
 
  protected:
     /** @brief    Zero all state variable data. */
     void zeroAllStateVariableData();
 
  private:
-    const AgentDescription& agent_description;
+    const AgentData& agent_description;
 
     CUDAStateMap state_map;
 

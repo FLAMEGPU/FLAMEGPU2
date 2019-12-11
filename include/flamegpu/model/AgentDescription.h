@@ -8,11 +8,16 @@
 #include <vector>
 
 #include "flamegpu/model/ModelDescription.h"
+#include "flamegpu/pop/AgentPopulation.h"
 class AgentFunctionDescription;
 class MessageDescription;
+struct ModelData;
+struct AgentData;
 
-class AgentDescription : public std::enable_shared_from_this<AgentDescription> {
-    friend class MessageDescription; // I don't like this level of visibility, use common shared storage instead?
+class AgentDescription {
+    friend struct AgentData;
+    friend struct AgentFunctionData;
+    friend AgentPopulation::AgentPopulation(const AgentDescription &, unsigned int);
 
     /**
      * Only way to construct an AgentDescription
@@ -22,11 +27,7 @@ class AgentDescription : public std::enable_shared_from_this<AgentDescription> {
     /**
      * Constructors
      */
-    /**
-     * @note Can't force ModelDescription shared, so this is passed instead
-     */
-    AgentDescription();
-    AgentDescription(ModelDescription * const parent, const std::string &agent_name);
+    AgentDescription(std::weak_ptr<ModelData> _model, AgentData *const data);
     // Copy Construct
     AgentDescription(const AgentDescription &other_agent);
     // Move Construct
@@ -40,31 +41,12 @@ class AgentDescription : public std::enable_shared_from_this<AgentDescription> {
 
  public:
     /**
-     * Typedefs
-     */
-    typedef unsigned int size_type;
-    struct Variable
-    {
-        /**
-         * Cannot explicitly specify template args of constructor, so we take redundant arg for implicit template
-         */
-        template<typename T>
-        Variable(size_type _elements, T)
-            : type(typeid(T)), type_size(sizeof(T)), elements(elements) { }
-        const std::type_index type;
-        const size_t type_size;
-        const unsigned int elements;
-    };
-    typedef std::map<const std::string, Variable> VariableMap;
-    typedef std::map<const std::string, std::shared_ptr<AgentFunctionDescription>> FunctionMap;
-
-    /**
      * Accessors
      */
     void newState(const std::string &state_name);
     void setInitialState(const std::string &initial_state);
 
-    template<typename AgentVariable, size_type N = 1>
+    template<typename AgentVariable, ModelData::size_type N = 1>
     void newVariable(const std::string &variable_name);
 
     template<typename AgentFunction>
@@ -79,43 +61,34 @@ class AgentDescription : public std::enable_shared_from_this<AgentDescription> {
     
     std::type_index getVariableType(const std::string &variable_name) const;
     size_t getVariableSize(const std::string &variable_name) const;
-    size_type getVariableLength(const std::string &variable_name) const;
-    size_type getVariablesCount() const;
+    ModelData::size_type getVariableLength(const std::string &variable_name) const;
+    ModelData::size_type getVariablesCount() const;
     const AgentFunctionDescription& getFunction(const std::string &function_name) const;
 
     bool hasState(const std::string &state_name) const;
     bool hasVariable(const std::string &variable_name) const;
     bool hasFunction(const std::string &function_name) const;
+    bool isOutputOnDevice() const;
 
     const std::set<std::string> &getStates() const;
-    const VariableMap &getVariables() const;
-    const FunctionMap &getFunctions() const;
 
 private:
-    /**
-     * Member vars
-     */
-    std::string name;
-
-    std::set<std::string> states;
-    std::string initial_state = ModelDescription::DEFAULT_STATE;
-    VariableMap variables;
-    FunctionMap functions;
-    ModelDescription * const model;
+    std::weak_ptr<ModelData> model;
+    AgentData *const agent;
 };
 
 /**
  * Template implementation
  */
-template <typename T, AgentDescription::size_type N>
+template <typename T, ModelData::size_type N>
 void AgentDescription::newVariable(const std::string &variable_name) {
-    if (variables.find(variable_name) == variables.end()) {
-        variables.emplace(variable_name, Variable(N, T()));
+    if (agent->variables.find(variable_name) == agent->variables.end()) {
+        agent->variables.emplace(variable_name, ModelData::Variable(N, T()));
         return;
     }
     THROW InvalidAgentVar("Agent ('%s') already contains variable '%s', "
         "in AgentDescription::newVariable().",
-        name.c_str(), variable_name.c_str());
+        agent->name.c_str(), variable_name.c_str());
 }
 
 // Found in "flamegpu/model/AgentFunctionDescription.h"

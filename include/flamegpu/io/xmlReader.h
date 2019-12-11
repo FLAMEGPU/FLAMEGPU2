@@ -16,7 +16,7 @@
 // Derived classes
 class xmlReader : public StateReader {
  public:
-    xmlReader(const ModelDescription &model, const char* input);
+    xmlReader(const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &model_state, const char* input);
     int parse();
 };
 
