@@ -26,12 +26,11 @@
 TEST(PopTest, PopulationNameCheck) {
     const int POPULATION_SIZE = 100;
     ModelDescription flame_model("circles_model");
-    AgentDescription circle_agent("circle");
+    AgentDescription &circle_agent = flame_model.newAgent("circle");
 
-    circle_agent.addAgentVariable<float>("x");
-    circle_agent.addAgentVariable<float>("y");
+    circle_agent.newVariable<float>("x");
+    circle_agent.newVariable<float>("y");
 
-    flame_model.addAgent(circle_agent);
     AgentPopulation population(circle_agent, POPULATION_SIZE);
     for (int i=0; i< POPULATION_SIZE; i++) {
         AgentInstance instance = population.getNextInstance("default");
@@ -56,13 +55,11 @@ TEST(PopTest, PopulationInstVarCheck1) {
     GTEST_COUT << "Testing Agent population Instance Variable .." << std::endl;
 
     ModelDescription flame_model("circles_model");
-    AgentDescription circle_agent("circle");
+    AgentDescription &circle_agent = flame_model.newAgent("circle");
 
-    circle_agent.addAgentVariable<float>("x");
-    circle_agent.addAgentVariable<float>("y");
-
-    flame_model.addAgent(circle_agent);
-
+    circle_agent.newVariable<float>("x");
+    circle_agent.newVariable<float>("y");
+    
     AgentPopulation population(circle_agent);
 
     AgentInstance instance = population.getNextInstance("default");
@@ -92,13 +89,11 @@ TEST(PopTest, PopulationInstVarCheck2) {
     GTEST_COUT << "Testing Agent population Instance Variable .." << std::endl;
 
     ModelDescription flame_model("circles_model");
-    AgentDescription circle_agent("circle");
+    AgentDescription &circle_agent = flame_model.newAgent("circle");
 
-    circle_agent.addAgentVariable<float>("x");
-    circle_agent.addAgentVariable<float>("y");
-
-    flame_model.addAgent(circle_agent);
-
+    circle_agent.newVariable<float>("x");
+    circle_agent.newVariable<float>("y");
+    
     AgentPopulation population(circle_agent);
 
     AgentInstance instance = population.getNextInstance("default");
@@ -120,13 +115,11 @@ TEST(PopTest, PopulationInstVarCheck3) {
     GTEST_COUT << "Testing Agent population Instance Variable .." << std::endl;
 
     ModelDescription flame_model("circles_model");
-    AgentDescription circle_agent("circle");
+    AgentDescription &circle_agent = flame_model.newAgent("circle");
 
-    circle_agent.addAgentVariable<float>("x");
-    circle_agent.addAgentVariable<float>("y");
-
-    flame_model.addAgent(circle_agent);
-
+    circle_agent.newVariable<float>("x");
+    circle_agent.newVariable<float>("y");
+    
     AgentPopulation population(circle_agent);
 
     AgentInstance instance = population.getNextInstance("default");
@@ -147,13 +140,11 @@ TEST(PopTest, PopulationSizeCheck) {
     GTEST_COUT << "Testing Agent population size set by default .." << std::endl;
 
     ModelDescription flame_model("circles_model");
-    AgentDescription circle_agent("circle");
+    AgentDescription &circle_agent = flame_model.newAgent("circle");
 
-    circle_agent.addAgentVariable<float>("x");
-    circle_agent.addAgentVariable<float>("y");
-
-    flame_model.addAgent(circle_agent);
-
+    circle_agent.newVariable<float>("x");
+    circle_agent.newVariable<float>("y");
+    
     AgentPopulation population(circle_agent);
 
     EXPECT_TRUE(population.getMaximumStateListCapacity() == AgentPopulation::DEFAULT_POPULATION_SIZE);
@@ -173,13 +164,11 @@ TEST(PopTest, PopulationAddMoreCapacity) {
     GTEST_COUT << "Testing changing the capacity.." << std::endl;
 
     ModelDescription flame_model("circles_model");
-    AgentDescription circle_agent("circle");
+    AgentDescription &circle_agent = flame_model.newAgent("circle");
 
-    circle_agent.addAgentVariable<float>("x");
-    circle_agent.addAgentVariable<float>("y");
-
-    flame_model.addAgent(circle_agent);
-
+    circle_agent.newVariable<float>("x");
+    circle_agent.newVariable<float>("y");
+    
     AgentPopulation population(circle_agent, 100);
     EXPECT_EQ(population.getMaximumStateListCapacity(), 100u);
 
@@ -201,13 +190,11 @@ TEST(PopTest, PopulationOverflowCapacity) {
     GTEST_COUT << "Testing overflowing the capacity of a state list.." << std::endl;
 
     ModelDescription flame_model("circles_model");
-    AgentDescription circle_agent("circle");
+    AgentDescription &circle_agent = flame_model.newAgent("circle");
 
-    circle_agent.addAgentVariable<float>("x");
-    circle_agent.addAgentVariable<float>("y");
-
-    flame_model.addAgent(circle_agent);
-
+    circle_agent.newVariable<float>("x");
+    circle_agent.newVariable<float>("y");
+    
     AgentPopulation population(circle_agent, 100);
     EXPECT_EQ(population.getMaximumStateListCapacity(), 100u);
 
@@ -235,16 +222,13 @@ TEST(PopTest, PopulationCheckGetInstanceBeyondSize) {
     GTEST_COUT << "Testing getting an instance beyond current size .." << std::endl;
 
     ModelDescription flame_model("circles_model");
-    AgentDescription circle_agent("circle");
+    AgentDescription &circle_agent = flame_model.newAgent("circle");
 
-    AgentStateDescription s1("default");
-    circle_agent.addState(s1);
+    circle_agent.newState("default");
 
-    circle_agent.addAgentVariable<float>("x");
-    circle_agent.addAgentVariable<float>("y");
-
-    flame_model.addAgent(circle_agent);
-
+    circle_agent.newVariable<float>("x");
+    circle_agent.newVariable<float>("y");
+    
     AgentPopulation population(circle_agent, 100);
 
     AgentInstance instance_s1 = population.getNextInstance("default");
@@ -263,16 +247,12 @@ TEST(PopTest, PopulationDataValuesMultipleStates) {
     GTEST_COUT << "Testing the population data with multiple states .." << std::endl;
 
     ModelDescription flame_model("circles_model");
-    AgentDescription circle_agent("circle");
-    AgentStateDescription s1("s1");
-    AgentStateDescription s2("s2");
-    circle_agent.addState(s1);
-    circle_agent.addState(s2);
+    AgentDescription &circle_agent = flame_model.newAgent("circle");
+    circle_agent.newState("s1");
+    circle_agent.newState("s2");
 
-    circle_agent.addAgentVariable<int>("id");
-
-    flame_model.addAgent(circle_agent);
-
+    circle_agent.newVariable<int>("id");
+    
     AgentPopulation population(circle_agent, 100);
 
     // add 100 instances (no problem)

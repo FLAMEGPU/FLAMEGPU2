@@ -24,7 +24,7 @@ class CUDAAgentModel : public Simulation {
  protected:
     bool checkArgs_derived(int argc, const char** argv) override;
     void printHelp_derived() override;
-    void initialise() override;
+    void _initialise() override;
  private:
     unsigned int device_id;
     CUDAAgentMap agent_map;

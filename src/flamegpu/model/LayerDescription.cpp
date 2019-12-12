@@ -54,3 +54,34 @@ void LayerDescription::addHostFunction(FLAMEGPU_HOST_FUNCTION_POINTER func_p) {
 ModelData::size_type LayerDescription::getIndex() const {
     return layer->index;
 }
+
+
+ModelData::size_type LayerDescription::getAgentFunctionCount() const {
+    return layer->agent_functions.size();
+}
+ModelData::size_type LayerDescription::getHostFunctionCount() const {
+    return layer->host_functions.size();
+}
+
+const AgentFunctionDescription &LayerDescription::getAgentFunction(unsigned int index) const {
+    if (index < layer->agent_functions.size()) {
+        auto it = layer->agent_functions.begin();
+        for (unsigned int i = 0; i < index; ++i)
+            ++it;
+        return *((*it)->description);
+    }
+    THROW OutOfBoundsException("Index %d is out of bounds (only %d items exist) "
+        "in LayerDescription.getAgentFunction()\n",
+    index, layer->agent_functions.size());
+}
+FLAMEGPU_HOST_FUNCTION_POINTER LayerDescription::getHostFunction(unsigned int index) const {
+    if (index < layer->host_functions.size()) {
+        auto it = layer->host_functions.begin();
+        for (unsigned int i = 0; i < index; ++i)
+            ++it;
+        return *it;
+    }
+    THROW OutOfBoundsException("Index %d is out of bounds (only %d items exist) "
+        "in LayerDescription.getHostFunction()\n",
+        index, layer->host_functions.size());
+}

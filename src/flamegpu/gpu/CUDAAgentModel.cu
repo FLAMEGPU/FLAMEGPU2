@@ -339,7 +339,7 @@ void CUDAAgentModel::printHelp_derived() {
     printf(line_fmt, "-d, --device", "GPU index");
 }
 
-void CUDAAgentModel::initialise() {
+void CUDAAgentModel::_initialise() {
     cudaError_t cudaStatus;
     int device_count;
 

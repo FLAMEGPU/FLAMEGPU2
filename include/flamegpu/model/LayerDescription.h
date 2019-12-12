@@ -36,8 +36,14 @@ class LayerDescription {
      */
      ModelData::size_type getIndex() const;
 
+     ModelData::size_type getAgentFunctionCount() const;
+     ModelData::size_type getHostFunctionCount() const;
+
+     const AgentFunctionDescription &getAgentFunction(unsigned int index) const;
+     FLAMEGPU_HOST_FUNCTION_POINTER getHostFunction(unsigned int index) const;
+
  private:
-     ModelData *const model;
+    ModelData *const model;
     LayerData *const layer;
 };
 

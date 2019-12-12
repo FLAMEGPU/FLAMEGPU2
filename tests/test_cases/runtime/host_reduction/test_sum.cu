@@ -39,7 +39,7 @@ FLAMEGPU_STEP_FUNCTION(step_sumint64_t) {
 }
 
 TEST_F(HostReductionTest, SumFloat) {
-    ms->simulation.addStepFunction(&step_sumfloat);
+    ms->model.addStepFunction(step_sumfloat);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_real_distribution <float> dist(FLT_MIN, FLT_MAX);
     std::array<float, TEST_LEN> in;
@@ -52,7 +52,7 @@ TEST_F(HostReductionTest, SumFloat) {
     EXPECT_EQ(float_out, std::accumulate(in.begin(), in.end(), 0.0f));
 }
 TEST_F(HostReductionTest, SumDouble) {
-    ms->simulation.addStepFunction(&step_sumdouble);
+    ms->model.addStepFunction(step_sumdouble);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_real_distribution <double> dist(DBL_MIN, DBL_MAX);
     std::array<double, TEST_LEN> in;
@@ -65,7 +65,7 @@ TEST_F(HostReductionTest, SumDouble) {
     EXPECT_EQ(double_out, std::accumulate(in.begin(), in.end(), 0.0));
 }
 TEST_F(HostReductionTest, SumChar) {
-    ms->simulation.addStepFunction(&step_sumchar);
+    ms->model.addStepFunction(step_sumchar);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <int16_t> dist(CHAR_MIN, CHAR_MAX);
     std::array<char, TEST_LEN> in;
@@ -83,7 +83,7 @@ TEST_F(HostReductionTest, SumChar) {
     EXPECT_EQ(int64_t_out, std::accumulate(in.begin(), in.end(), static_cast<int64_t>(0)));
 }
 TEST_F(HostReductionTest, SumUnsignedChar) {
-    ms->simulation.addStepFunction(&step_sumuchar);
+    ms->model.addStepFunction(step_sumuchar);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <uint16_t> dist(0, UCHAR_MAX);
     std::array<unsigned char, TEST_LEN> in;
@@ -97,7 +97,7 @@ TEST_F(HostReductionTest, SumUnsignedChar) {
     EXPECT_EQ(uint64_t_out, std::accumulate(in.begin(), in.end(), static_cast<uint64_t>(0)));
 }
 TEST_F(HostReductionTest, SumInt16) {
-    ms->simulation.addStepFunction(&step_sumint16_t);
+    ms->model.addStepFunction(step_sumint16_t);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <int16_t> dist(INT16_MIN, INT16_MAX);
     std::array<int16_t, TEST_LEN> in;
@@ -111,7 +111,7 @@ TEST_F(HostReductionTest, SumInt16) {
     EXPECT_EQ(int64_t_out, std::accumulate(in.begin(), in.end(), static_cast<int64_t>(0)));
 }
 TEST_F(HostReductionTest, SumUnsignedInt16) {
-    ms->simulation.addStepFunction(&step_sumuint16_t);
+    ms->model.addStepFunction(step_sumuint16_t);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <uint16_t> dist(0, UINT16_MAX);
     std::array<uint16_t, TEST_LEN> in;
@@ -125,7 +125,7 @@ TEST_F(HostReductionTest, SumUnsignedInt16) {
     EXPECT_EQ(uint64_t_out, std::accumulate(in.begin(), in.end(), static_cast<uint64_t>(0)));
 }
 TEST_F(HostReductionTest, SumInt32) {
-    ms->simulation.addStepFunction(&step_sumint32_t);
+    ms->model.addStepFunction(step_sumint32_t);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <int32_t> dist(INT32_MIN, INT32_MAX);
     std::array<int32_t, TEST_LEN> in;
@@ -139,7 +139,7 @@ TEST_F(HostReductionTest, SumInt32) {
     EXPECT_EQ(int64_t_out, std::accumulate(in.begin(), in.end(), static_cast<int64_t>(0)));
 }
 TEST_F(HostReductionTest, SumUnsignedInt32) {
-    ms->simulation.addStepFunction(&step_sumuint32_t);
+    ms->model.addStepFunction(step_sumuint32_t);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <uint32_t> dist(0, UINT32_MAX);
     std::array<uint32_t, TEST_LEN> in;
@@ -153,7 +153,7 @@ TEST_F(HostReductionTest, SumUnsignedInt32) {
     EXPECT_EQ(uint64_t_out, std::accumulate(in.begin(), in.end(), static_cast<uint64_t>(0)));
 }
 TEST_F(HostReductionTest, SumInt64) {
-    ms->simulation.addStepFunction(&step_sumint64_t);
+    ms->model.addStepFunction(step_sumint64_t);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <int64_t> dist(INT64_MIN, INT64_MAX);
     std::array<int64_t, TEST_LEN> in;
@@ -166,7 +166,7 @@ TEST_F(HostReductionTest, SumInt64) {
     EXPECT_EQ(int64_t_out, std::accumulate(in.begin(), in.end(), 0ll));
 }
 TEST_F(HostReductionTest, SumUnsignedInt64) {
-    ms->simulation.addStepFunction(&step_sumuint64_t);
+    ms->model.addStepFunction(step_sumuint64_t);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <uint64_t> dist(0, UINT64_MAX);
     std::array<uint64_t, TEST_LEN> in;

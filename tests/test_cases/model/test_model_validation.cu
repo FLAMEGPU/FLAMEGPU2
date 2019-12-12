@@ -20,6 +20,10 @@
 
 #include "flamegpu/flame_api.h"
 
+FLAMEGPU_AGENT_FUNCTION(sample_agentfn) {
+    // do nothing
+}
+
 /**
  * @brief      To verify the correctness of agent name and size.
  * To test the case separately, run: make run_BOOST_TEST TSuite=ModelDescTest/AgentCheck
@@ -28,10 +32,12 @@
 TEST(ModelDescTest, AgentCheck) {
     GTEST_COUT << "Testing Agent Name and Size .." << std::endl;
 
-    AgentDescription circle_agent("circle");
+    ModelDescription model("model");
+    AgentDescription &circle_agent = model.newAgent("circle");
 
     EXPECT_EQ(circle_agent.getName(), "circle");
-    EXPECT_EQ(circle_agent.getMemorySize(), 0llu);
+    // TODO: Disabled
+    // EXPECT_EQ(circle_agent.getMemorySize(), 0llu);
 }
 
 /**
@@ -41,26 +47,29 @@ TEST(ModelDescTest, AgentCheck) {
 */
 TEST(ModelDescTest, AgentVarCheck) {
     GTEST_COUT << "Testing Agent Variable Size, Type, and Number .." << std::endl;
-    AgentDescription circle_agent("circle");
-    circle_agent.addAgentVariable<float>("x");
+
+    ModelDescription model("model");
+    AgentDescription &circle_agent = model.newAgent("circle");
+
+    circle_agent.newVariable<float>("x");
 
    /**
      * @brief      Checks the number of agent variables
      * This is to validate the predicate value. The test should pass.
      */
-    EXPECT_EQ(circle_agent.getNumberAgentVariables(), 1u);
+    EXPECT_EQ(circle_agent.getVariablesCount(), 1u);
 
    /**
      * @brief      Checks the agent variable size
      * This is to validate the predicate value. The test should pass.
      */
-    EXPECT_EQ(circle_agent.getAgentVariableSize("x"), 4llu);
+    EXPECT_EQ(circle_agent.getVariableSize("x"), sizeof(float));
 
    /**
      * @brief      Checks the agent variable type
      * This is to validate the predicate value. The test should pass.
      */
-    EXPECT_EQ(circle_agent.getVariableType("x"), typeid(float));
+    EXPECT_EQ(circle_agent.getVariableType("x"), std::type_index(typeid(float)));
 
     /**
      * @brief      Checks if the agent variable exists
@@ -68,7 +77,7 @@ TEST(ModelDescTest, AgentVarCheck) {
      * statement and checks if it throws the exception or not. The second argument
      * is the expected exception.
      */
-    EXPECT_THROW(circle_agent.getAgentVariableSize("y"), InvalidAgentVar);  // expecting an error
+    EXPECT_THROW(circle_agent.getVariableSize("y"), InvalidAgentVar);  // expecting an error
 }
 
 
@@ -82,17 +91,12 @@ TEST(ModelDescTest, MessageFunctionCheck) {
 
     ModelDescription flame_model("circles_model");
 
-    AgentDescription circle_agent("circle");
+    AgentDescription &circle_agent = flame_model.newAgent("circle");
 
-    AgentFunctionDescription output_data("output_data");
-    circle_agent.addAgentFunction(output_data);
+    AgentFunctionDescription &output_data = circle_agent.newFunction("output_data", sample_agentfn);
 
-    AgentFunctionDescription move("move");
-    circle_agent.addAgentFunction(move);
-
-    flame_model.addAgent(circle_agent);
-
-
+    circle_agent.newFunction("move", sample_agentfn);
+    
    /**
      * @brief      Checks the name of agent function description
      * This is to validate the predicate value. The test should pass.
@@ -103,7 +107,7 @@ TEST(ModelDescTest, MessageFunctionCheck) {
      * @brief      Checks whether the agent function exists or not
      * This is to validate the predicate value. The test should pass.
      */
-    EXPECT_TRUE(circle_agent.hasAgentFunction("output_data"));
+    EXPECT_TRUE(circle_agent.hasFunction("output_data"));
 
    /**
      * @brief      Checks the name of the initial state
@@ -121,7 +125,7 @@ TEST(ModelDescTest, MessageFunctionCheck) {
      * @brief      Checks whether the agent function exists or not
      * This is to validate the predicate value. The test should pass.
      */
-    EXPECT_TRUE(flame_model.getAgentDescription("circle").hasAgentFunction("move"));
+    EXPECT_TRUE(flame_model.getAgent("circle").hasFunction("move"));
 
     /**
      * @brief      Checks if the agent description name exists
@@ -129,7 +133,7 @@ TEST(ModelDescTest, MessageFunctionCheck) {
      * statement and checks if it throws the exception or not. The second argument
      * is the expected exception.
      */
-    EXPECT_THROW(flame_model.getAgentDescription("error"), InvalidAgentVar);  // expecting an error
+    EXPECT_THROW(flame_model.getAgent("error"), InvalidAgentVar);  // expecting an error
 }
 
 #endif  // TESTS_TEST_CASES_MODEL_TEST_MODEL_VALIDATION_H_

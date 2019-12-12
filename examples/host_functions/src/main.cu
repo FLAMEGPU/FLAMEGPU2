@@ -86,10 +86,10 @@ int main(void) {
      */
      
      {// Attach init/step/exit functions and exit condition
-        model.addInitFunction(&init_function);
-        model.addStepFunction(&step_function);
-        model.addExitFunction(&exit_function);
-        model.addExitCondition(&exit_condition);
+        model.addInitFunction(init_function);
+        model.addStepFunction(step_function);
+        model.addExitFunction(exit_function);
+        model.addExitCondition(exit_condition);
      }
 
      {

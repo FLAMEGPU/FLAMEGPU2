@@ -52,26 +52,26 @@ class ModelDescription {
      * Init functions execute once before the simulation begins
      * @param func_p Pointer to the desired init function
      */
-    void addInitFunction(const FLAMEGPU_INIT_FUNCTION_POINTER *func_p);
+    void addInitFunction(FLAMEGPU_INIT_FUNCTION_POINTER func_p);
     /**
      * Adds a step function to the simulation
      * Step functions execute once per step, after all layers have been executed, before exit conditions
      * @param func_p Pointer to the desired step function
      */
-    void addStepFunction(const FLAMEGPU_STEP_FUNCTION_POINTER *func_p);
+    void addStepFunction(FLAMEGPU_STEP_FUNCTION_POINTER func_p);
     /**
      * Adds an exit function to the simulation
      * Exit functions execute once after the simulation ends
      * @param func_p Pointer to the desired exit function
      */
-    void addExitFunction(const FLAMEGPU_EXIT_FUNCTION_POINTER *func_p);
+    void addExitFunction(FLAMEGPU_EXIT_FUNCTION_POINTER func_p);
     /**
      * Adds an exit condition function to the simulation
      * Exit conditions execute once per step, after all layers and step functions have been executed
      * If the condition returns false, the simulation exits early
      * @param func_p Pointer to the desired exit condition function
      */
-    void addExitCondition(const FLAMEGPU_EXIT_CONDITION_POINTER *func_p);
+    void addExitCondition(FLAMEGPU_EXIT_CONDITION_POINTER func_p);
 
     /**
      * Const Accessors
@@ -88,6 +88,8 @@ class ModelDescription {
     bool hasMessage(const std::string &message_name) const;
     bool hasLayer(const std::string &name) const;
     bool hasLayer(const ModelData::size_type &layer_index) const;
+
+    ModelData::size_type getLayerCount() const;
 
     ModelDescription clone(const std::string &cloned_model_name) const;
 

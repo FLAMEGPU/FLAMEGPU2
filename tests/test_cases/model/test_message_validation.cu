@@ -21,6 +21,9 @@
 
 #include "flamegpu/flame_api.h"
 
+FLAMEGPU_AGENT_FUNCTION(sample_agentfn) {
+    // do nothing
+}
 /**
  * @brief      To verify the correctness of message name, size, and type.
  * To test the case separately, run: make run_BOOST_TEST TSuite=MessageTest/MessageCheck
@@ -28,8 +31,8 @@
 */
 TEST(MessageTest, MessageCheck) {
     GTEST_COUT << "Testing Message Name and Size, Type, and Number .." << std::endl;
-
-    MessageDescription location_message("location");
+    ModelDescription model("model");
+    MessageDescription &location_message = model.newMessage("location");
 
    /**
      * @brief      Checks the number of message name
@@ -41,41 +44,43 @@ TEST(MessageTest, MessageCheck) {
      * @brief      Checks the number of message memory size
      * This is to validate the predicate value. The test should pass.
      */
-    EXPECT_EQ(location_message.getMemorySize(), 0llu);
+    // TODO: DISABLED
+    // EXPECT_EQ(location_message.getMemorySize(), 0llu);
 
 
-    location_message.addVariable<float>("x");
-    location_message.addVariable<float>("y");
+    location_message.newVariable<float>("x");
+    location_message.newVariable<float>("y");
 
    /**
      * @brief      Checks the number of message variables
      * This is to validate the predicate value. The test should pass.
      */
-    EXPECT_EQ(location_message.getNumberMessageVariables(), 2u);
+    EXPECT_EQ(location_message.getVariablesCount(), 2u);
 
    /**
      * @brief      Checks the message variable size
      * This is to validate the predicate value. The test should pass.
      */
-    EXPECT_EQ(location_message.getMessageVariableSize("x"), 4llu);
+    EXPECT_EQ(location_message.getVariableSize("x"), sizeof(float));
 
    /**
      * @brief      Checks the message variable type
      * This is to validate the predicate value. The test should pass.
      */
-    EXPECT_EQ(location_message.getVariableType("x"), typeid(float));
+    EXPECT_EQ(location_message.getVariableType("x"), std::type_index(typeid(float)));
 
 
     /**
     * @brief      Checks the mapped message variables
     * @todo change the boost test message style to EXPECT_TRUE
     */
-    const VariableMap &mem = location_message.getVariableMap();
-    for (const VariableMapPair& mm : mem) {
-        // get the variable name
-        std::string var_name = mm.first;
-        GTEST_COUT << "variable names:" << var_name << std::endl;
-    }
+    // TODO: DISABLED
+    //const VariableMap &mem = location_message.getVariableMap();
+    //for (const VariableMapPair& mm : mem) {
+    //    // get the variable name
+    //    std::string var_name = mm.first;
+    //    GTEST_COUT << "variable names:" << var_name << std::endl;
+    //}
 
    /**
      * @brief      Checks if the message variable exists
@@ -83,7 +88,7 @@ TEST(MessageTest, MessageCheck) {
      * statement and checks if it throws the exception or not. The second argument
      * is the expected exception.
      */
-    EXPECT_THROW(location_message.getMessageVariableSize("z"), InvalidMessageVar);  // expecting an error
+    EXPECT_THROW(location_message.getVariableSize("z"), InvalidMessageVar);  // expecting an error
 }
 
 
@@ -97,19 +102,15 @@ TEST(MessageTest, MessageFunctionCheck) {
 
     ModelDescription flame_model("circles_model");
 
-    AgentDescription circle_agent("circle");
+    AgentDescription &circle_agent = flame_model.newAgent("circle");
 
-    MessageDescription location_message("location");
+    MessageDescription &location_message = flame_model.newMessage("location");
 
-    AgentFunctionDescription output_data("output_data");
-    AgentFunctionOutput output_location("location");
-    output_data.setOutput(output_location);
-    circle_agent.addAgentFunction(output_data);
+    AgentFunctionDescription &output_data = circle_agent.newFunction("output_data", sample_agentfn);
+    output_data.setMessageOutput(location_message);
 
-    AgentFunctionDescription move("move");
-    circle_agent.addAgentFunction(move);
+    AgentFunctionDescription &move = circle_agent.newFunction("move", sample_agentfn);
 
-    flame_model.addMessage(location_message);
 
 
    /**
@@ -122,21 +123,21 @@ TEST(MessageTest, MessageFunctionCheck) {
      * @brief      Checks whether the agent function reads an input message
      * This is to validate the predicate value. The test should pass.
      */
-    EXPECT_FALSE(output_data.hasInputMessage());
-    EXPECT_FALSE(move.hasInputMessage());
+    EXPECT_FALSE(output_data.hasMessageInput());
+    EXPECT_FALSE(move.hasMessageInput());
 
    /**
      * @brief      Checks whether the agent function outputs a message
      * This is to validate the predicate value. The test should pass.
      */
-    EXPECT_TRUE(output_data.hasOutputMessage());
-    EXPECT_FALSE(move.hasOutputMessage());
+    EXPECT_TRUE(output_data.hasMessageOutput());
+    EXPECT_FALSE(move.hasMessageOutput());
 
    /**
      * @brief      Checks the message name
      * This is to validate the predicate value. The test should pass.
      */
-    EXPECT_EQ(output_location.getMessageName(), "location");
+    EXPECT_EQ(location_message.getName(), "location");
 
 
     /**
@@ -145,7 +146,7 @@ TEST(MessageTest, MessageFunctionCheck) {
      * statement and checks if it throws the exception or not. The second argument
      * is the expected exception.
      */
-    EXPECT_THROW(flame_model.getMessageDescription("error"), InvalidMessageVar);  // expecting an error
+    EXPECT_THROW(flame_model.getMessage("error"), InvalidMessageVar);  // expecting an error
 }
 
 // TODO: Check that we can output (single) messages during simulation without error

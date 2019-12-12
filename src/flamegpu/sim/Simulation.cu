@@ -35,7 +35,7 @@ void Simulation::initialise(int argc, const char** argv) {
     }
 
     // Call any derived class init methods
-    initialise();
+    _initialise();
 }
 
 void Simulation::setSimulationSteps(unsigned steps) {

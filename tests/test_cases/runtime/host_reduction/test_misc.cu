@@ -67,49 +67,49 @@ FLAMEGPU_STEP_FUNCTION(step_countException) {
  * Bad Types
  */
 TEST_F(HostReductionTest, SumException) {
-    ms->simulation.addStepFunction(&step_sumException);
+    ms->model.addStepFunction(step_sumException);
     for (unsigned int i = 0; i < TEST_LEN; i++) {
         AgentInstance instance = ms->population->getNextInstance();
     }
     ms->run();
 }
 TEST_F(HostReductionTest, MinException) {
-    ms->simulation.addStepFunction(&step_minException);
+    ms->model.addStepFunction(step_minException);
     for (unsigned int i = 0; i < TEST_LEN; i++) {
         AgentInstance instance = ms->population->getNextInstance();
     }
     ms->run();
 }
 TEST_F(HostReductionTest, MaxException) {
-    ms->simulation.addStepFunction(&step_maxException);
+    ms->model.addStepFunction(step_maxException);
     for (unsigned int i = 0; i < TEST_LEN; i++) {
         AgentInstance instance = ms->population->getNextInstance();
     }
     ms->run();
 }
 TEST_F(HostReductionTest, CustomReductionException) {
-    ms->simulation.addStepFunction(&step_customReductionException);
+    ms->model.addStepFunction(step_customReductionException);
     for (unsigned int i = 0; i < TEST_LEN; i++) {
         AgentInstance instance = ms->population->getNextInstance();
     }
     ms->run();
 }
 TEST_F(HostReductionTest, HistogramEvenException) {
-    ms->simulation.addStepFunction(&step_histogramEvenException);
+    ms->model.addStepFunction(step_histogramEvenException);
     for (unsigned int i = 0; i < TEST_LEN; i++) {
         AgentInstance instance = ms->population->getNextInstance();
     }
     ms->run();
 }
 TEST_F(HostReductionTest, CustomTransformException) {
-    ms->simulation.addStepFunction(&step_transformReduceException);
+    ms->model.addStepFunction(step_transformReduceException);
     for (unsigned int i = 0; i < TEST_LEN; i++) {
         AgentInstance instance = ms->population->getNextInstance();
     }
     ms->run();
 }
 TEST_F(HostReductionTest, CountException) {
-    ms->simulation.addStepFunction(&step_countException);
+    ms->model.addStepFunction(step_countException);
     for (unsigned int i = 0; i < TEST_LEN; i++) {
         AgentInstance instance = ms->population->getNextInstance();
     }

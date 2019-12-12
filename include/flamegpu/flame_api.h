@@ -16,7 +16,8 @@
 #include "flamegpu/model/EnvironmentDescription.h"
 #include "flamegpu/model/LayerDescription.h"
 #include "flamegpu/pop/AgentPopulation.h"
-#include "flamegpu/sim/Simulation.h"
 #include "flamegpu/gpu/CUDAAgentModel.h"
+#include "flamegpu/runtime/flamegpu_host_api.h"
+#include "flamegpu/runtime/flamegpu_device_api.h"
 
 #endif  // INCLUDE_FLAMEGPU_FLAME_API_H_

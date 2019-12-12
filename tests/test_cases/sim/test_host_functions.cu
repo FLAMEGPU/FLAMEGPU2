@@ -61,33 +61,29 @@ class MiniSim {
  public:
     MiniSim() :
       model("model"),
-      agent("agent"),
+      agent(model.newAgent("agent")),
       population(agent, AGENT_COUNT),
-      simulation(model),
-      hostfn_layer(simulation, "hostfn_layer") {
-        simulation.addInitFunction(&init_function);
-        simulation.addStepFunction(&step_function);
-        simulation.addExitFunction(&exit_function);
-        simulation.addExitCondition(&exit_condition);
+      hostfn_layer(model.newLayer("hostfn_layer")) {
+        model.addInitFunction(init_function);
+        model.addStepFunction(step_function);
+        model.addExitFunction(exit_function);
+        model.addExitCondition(exit_condition);
 
-        hostfn_layer.addHostFunction(&host_function);
-        simulation.addSimulationLayer(hostfn_layer);
+        hostfn_layer.addHostFunction(host_function);
 
         for (unsigned int i = 0; i < AGENT_COUNT; i++) {
             AgentInstance instance = population.getNextInstance();
         }
-        model.addAgent(agent);
-        // Run until exit condition triggers
-        simulation.setSimulationSteps(0);
     }
-    void run() {
+    void run(unsigned int steps = 0) {
         // CudaModel must be declared here
         // As the initial call to constructor fixes the agent population
-        // This means if we haven't called model.addAgent(agent) first
+        // This means if we haven't called model.newAgent(agent) first
         CUDAAgentModel cuda_model(model);
+        cuda_model.setSimulationSteps(steps);
         // This fails as agentMap is empty
         cuda_model.setInitialPopulationData(population);
-        ASSERT_NO_THROW(cuda_model.simulate(simulation));
+        ASSERT_NO_THROW(cuda_model.simulate());
         // The negative of this, is that cuda_model is inaccessible within the test!
         // So copy across population data here
         ASSERT_NO_THROW(cuda_model.getPopulationData(population));
@@ -95,10 +91,9 @@ class MiniSim {
 
     const unsigned int AGENT_COUNT = 5;
     ModelDescription model;
-    AgentDescription agent;
+    AgentDescription &agent;
     AgentPopulation population;
-    Simulation simulation;
-    SimulationLayer hostfn_layer;
+    LayerDescription &hostfn_layer;
 };
 /**
 * This defines a common fixture used as a base for all test cases in the file
@@ -156,47 +151,42 @@ TEST_F(HostFunctionTest, ExitFuncCorrectOrder) {
  * Test Dual Host Function support
  */
 TEST_F(HostFunctionTest, InitFuncMultiple) {
-    ms->simulation.setSimulationSteps(1);
-    ms->simulation.addInitFunction(&init_function2);
+    ms->model.addInitFunction(init_function2);
     EXPECT_EQ(std::find(function_order.begin(), function_order.end(), Init), function_order.end());
     EXPECT_EQ(std::find(function_order.begin(), function_order.end(), Init2), function_order.end());
-    ms->run();
+    ms->run(1);
     EXPECT_NE(std::find(function_order.begin(), function_order.end(), Init), function_order.end());
     EXPECT_NE(std::find(function_order.begin(), function_order.end(), Init2), function_order.end());
 }
 TEST_F(HostFunctionTest, HostLayerFuncMultiple) {
-    ms->simulation.setSimulationSteps(1);
-    ms->hostfn_layer.addHostFunction(&host_function2);
+    ms->hostfn_layer.addHostFunction(host_function2);
     EXPECT_EQ(std::find(function_order.begin(), function_order.end(), HostLayer), function_order.end());
     EXPECT_EQ(std::find(function_order.begin(), function_order.end(), HostLayer2), function_order.end());
-    ms->run();
+    ms->run(1);
     EXPECT_NE(std::find(function_order.begin(), function_order.end(), HostLayer), function_order.end());
     EXPECT_NE(std::find(function_order.begin(), function_order.end(), HostLayer2), function_order.end());
 }
 TEST_F(HostFunctionTest, StepFuncMultiple) {
-    ms->simulation.setSimulationSteps(1);
-    ms->simulation.addStepFunction(&step_function2);
+    ms->model.addStepFunction(step_function2);
     EXPECT_EQ(std::find(function_order.begin(), function_order.end(), Step), function_order.end());
     EXPECT_EQ(std::find(function_order.begin(), function_order.end(), Step2), function_order.end());
-    ms->run();
+    ms->run(1);
     EXPECT_NE(std::find(function_order.begin(), function_order.end(), Step), function_order.end());
     EXPECT_NE(std::find(function_order.begin(), function_order.end(), Step2), function_order.end());
 }
 TEST_F(HostFunctionTest, ExitConditionMultiple) {
-    ms->simulation.setSimulationSteps(1);
-    ms->simulation.addExitCondition(&exit_condition2);
+    ms->model.addExitCondition(exit_condition2);
     EXPECT_EQ(std::find(function_order.begin(), function_order.end(), ExitCondition), function_order.end());
     EXPECT_EQ(std::find(function_order.begin(), function_order.end(), ExitCondition2), function_order.end());
-    ms->run();
+    ms->run(1);
     EXPECT_NE(std::find(function_order.begin(), function_order.end(), ExitCondition), function_order.end());
     EXPECT_NE(std::find(function_order.begin(), function_order.end(), ExitCondition2), function_order.end());
 }
 TEST_F(HostFunctionTest, ExitFuncMultiple) {
-    ms->simulation.setSimulationSteps(1);
-    ms->simulation.addExitFunction(&exit_function2);
+    ms->model.addExitFunction(exit_function2);
     EXPECT_EQ(std::find(function_order.begin(), function_order.end(), Exit), function_order.end());
     EXPECT_EQ(std::find(function_order.begin(), function_order.end(), Exit2), function_order.end());
-    ms->run();
+    ms->run(1);
     EXPECT_NE(std::find(function_order.begin(), function_order.end(), Exit), function_order.end());
     EXPECT_NE(std::find(function_order.begin(), function_order.end(), Exit2), function_order.end());
 }
@@ -205,50 +195,33 @@ TEST_F(HostFunctionTest, ExitFuncMultiple) {
  * Test Duplication Host Function exception thrown
  */
 TEST_F(HostFunctionTest, InitFuncDuplicateException) {
-    EXPECT_THROW(ms->simulation.addInitFunction(&init_function), InvalidHostFunc);
+    EXPECT_THROW(ms->model.addInitFunction(init_function), InvalidHostFunc);
 }
 TEST_F(HostFunctionTest, HostLayerFuncDuplicateException) {
-    EXPECT_THROW(ms->hostfn_layer.addHostFunction(&host_function), InvalidHostFunc);
+    EXPECT_THROW(ms->hostfn_layer.addHostFunction(host_function), InvalidHostFunc);
 }
 TEST_F(HostFunctionTest, StepFuncDuplicateException) {
-    EXPECT_THROW(ms->simulation.addStepFunction(&step_function), InvalidHostFunc);
+    EXPECT_THROW(ms->model.addStepFunction(step_function), InvalidHostFunc);
 }
 TEST_F(HostFunctionTest, ExitConditionDuplicateException) {
-    EXPECT_THROW(ms->simulation.addExitCondition(&exit_condition), InvalidHostFunc);
+    EXPECT_THROW(ms->model.addExitCondition(exit_condition), InvalidHostFunc);
 }
 TEST_F(HostFunctionTest, ExitFuncDuplicateException) {
-    EXPECT_THROW(ms->simulation.addExitFunction(&exit_function), InvalidHostFunc);
-}
-
-/**
- * Special case, layers can be added twice
- */
-TEST_F(HostFunctionTest, LayerDuplicateNoException) {
-    ms->simulation.setSimulationSteps(1);
-    EXPECT_EQ(std::count(function_order.begin(), function_order.end(), HostLayer), 0u);
-    ASSERT_NO_THROW(ms->run());
-    EXPECT_EQ(std::count(function_order.begin(), function_order.end(), HostLayer), 1u);
-    function_order.clear();
-    EXPECT_EQ(std::count(function_order.begin(), function_order.end(), HostLayer), 0u);
-    EXPECT_NO_THROW(ms->simulation.addSimulationLayer(ms->hostfn_layer));
-    ASSERT_NO_THROW(ms->run());
-    EXPECT_EQ(std::count(function_order.begin(), function_order.end(), HostLayer), 2u);
+    EXPECT_THROW(ms->model.addExitFunction(exit_function), InvalidHostFunc);
 }
 
 /**
  * Special case, host function can be added to multiple different layers
  */
 TEST_F(HostFunctionTest, HostLayerFuncDuplicateLayerNoException) {
-    ms->simulation.setSimulationSteps(1);
     EXPECT_EQ(std::count(function_order.begin(), function_order.end(), HostLayer), 0u);
-    ASSERT_NO_THROW(ms->run());
+    ASSERT_NO_THROW(ms->run(1));
     EXPECT_EQ(std::count(function_order.begin(), function_order.end(), HostLayer), 1u);
     function_order.clear();
     EXPECT_EQ(std::count(function_order.begin(), function_order.end(), HostLayer), 0u);
-    SimulationLayer hostfn_layer2(ms->simulation, "hostfn_layer2");
-    ASSERT_NO_THROW(hostfn_layer2.addHostFunction(&host_function));
-    ASSERT_NO_THROW(ms->simulation.addSimulationLayer(hostfn_layer2));
-    ASSERT_NO_THROW(ms->run());
+    LayerDescription &hostfn_layer2 = ms->model.newLayer("hostfn_layer2");
+    ASSERT_NO_THROW(hostfn_layer2.addHostFunction(host_function));
+    ASSERT_NO_THROW(ms->run(1));
     EXPECT_EQ(std::count(function_order.begin(), function_order.end(), HostLayer), 2u);
 }
 #endif  // TESTS_TEST_CASES_SIM_TEST_SIM_VALIDATION_H_

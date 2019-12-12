@@ -29,42 +29,28 @@
 */
 TEST(SimTest, SimulationFunctionCheck) {
     ModelDescription flame_model("circles_model");
-    AgentDescription circle_agent("circle");
+    AgentDescription &circle_agent = flame_model.newAgent("circle");
 
-    circle_agent.addAgentVariable<float>("x");
+    circle_agent.newVariable<float>("x");
 
-    AgentFunctionDescription output_data("output_data");
-    AgentFunctionOutput output_location("location");
+    AgentFunctionDescription &output_data = attach_output_func(circle_agent);
+    // AgentFunctionOutput output_location("location");
     // output_data.setOutput(output_location);
     // output_data.setFunction(&output_func);
-    attach_output_func(output_data);
-    circle_agent.addAgentFunction(output_data);
 
-    AgentFunctionDescription move("move");
-    // move.setFunction(&move_func);
-    attach_move_func(move);
-    circle_agent.addAgentFunction(move);
+    AgentFunctionDescription &move = attach_move_func(circle_agent);
 
-    AgentFunctionDescription stay("stay");
-    // stay.setFunction(&stay_func);
-    attach_stay_func(stay);
-    circle_agent.addAgentFunction(stay);
-
-    flame_model.addAgent(circle_agent);
-
-
+    AgentFunctionDescription &stay = attach_stay_func(circle_agent);
+    
     AgentPopulation population(circle_agent, 5);
 
     for (int i=0; i< 5; i++) {
         AgentInstance instance = population.getNextInstance("default");
         instance.setVariable<float>("x", i*0.1f);
     }
-
-    Simulation simulation(flame_model);
-
-    SimulationLayer output_layer(simulation, "output_layer");
-    output_layer.addAgentFunction("output_data");
-    simulation.addSimulationLayer(output_layer);
+    
+    LayerDescription &output_layer = flame_model.newLayer("output_layer");
+    output_layer.addAgentFunction(output_data);
 
     /**
      * @brief      Checks if the function name exists
@@ -73,12 +59,11 @@ TEST(SimTest, SimulationFunctionCheck) {
      * is the expected exception.
      * To test the case separately, run: make run_BOOST_TEST TSuite=SimTest/SimulationFunctionCheck
      */
-    EXPECT_THROW(output_layer.addAgentFunction("output_"), InvalidAgentFunc);  // expecting an error
+    EXPECT_THROW(output_layer.addAgentFunction(std::string("output_")), InvalidAgentFunc);  // expecting an error
 
-    SimulationLayer moveStay_layer(simulation, "move_layer");
-    moveStay_layer.addAgentFunction("move");
-    moveStay_layer.addAgentFunction("stay");
-    simulation.addSimulationLayer(moveStay_layer);
+    LayerDescription &moveStay_layer = flame_model.newLayer("move_layer");
+    moveStay_layer.addAgentFunction(move);
+    moveStay_layer.addAgentFunction(stay);
 
 
     GTEST_COUT << "Testing simulation of functions per layers .." << std::endl;
@@ -87,16 +72,17 @@ TEST(SimTest, SimulationFunctionCheck) {
      * @brief      Checks the number of function layers
      * This is to validate the predicate value. The test should pass.
      */
-    EXPECT_EQ(simulation.getLayerCount(), 2u);
+    EXPECT_EQ(flame_model.getLayerCount(), 2u);
 
     // for each each simulation layer
-    for (unsigned int i = 0; i < simulation.getLayerCount(); i++) {
-        const SimulationLayer::FunctionDescriptionVector& functions = simulation.getFunctionsAtLayer(i);
+    for (unsigned int i = 0; i < flame_model.getLayerCount(); ++i) {
+        const LayerDescription &layer = flame_model.getLayer(i);
+        const unsigned int functions = layer.getAgentFunctionCount();
 
         // for each function per simulation layer
-        for (AgentFunctionDescription func_des : functions) {
+        for (unsigned int j = 0; j < functions; ++j) {
             // check functions - printing function name only
-            GTEST_COUT << "Calling agent function "<< func_des.getName() << " at layer " << i << "!" << std::endl;
+            GTEST_COUT << "Calling agent function "<< layer.getAgentFunction(i).getName() << " at layer " << i << "!" << std::endl;
         }
     }
 
@@ -105,12 +91,12 @@ TEST(SimTest, SimulationFunctionCheck) {
 
     cuda_model.setInitialPopulationData(population);
 
-    cuda_model.simulate(simulation);
+    cuda_model.simulate();
 
     /**
      * @todo : may not need this below test
      */
-    EXPECT_EQ(simulation.getModelDescritpion().getName(), "circles_model");
+    EXPECT_EQ(flame_model.getName(), "circles_model");
 }
 
 #endif  // TESTS_TEST_CASES_SIM_TEST_SIM_VALIDATION_H_

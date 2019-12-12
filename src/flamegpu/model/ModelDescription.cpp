@@ -118,26 +118,26 @@ LayerDescription& ModelDescription::Layer(const std::string &name) {
         name.c_str());
 }
 
-void ModelDescription::addInitFunction(const FLAMEGPU_INIT_FUNCTION_POINTER *func_p) {
-    if (!model->initFunctions.insert(*func_p).second) {
+void ModelDescription::addInitFunction(FLAMEGPU_INIT_FUNCTION_POINTER func_p) {
+    if (!model->initFunctions.insert(func_p).second) {
         THROW InvalidHostFunc("Attempted to add same init function twice,"
             "in ModelDescription::addInitFunction()");
     }
 }
-void ModelDescription::addStepFunction(const FLAMEGPU_STEP_FUNCTION_POINTER *func_p) {
-    if (!model->stepFunctions.insert(*func_p).second) {
+void ModelDescription::addStepFunction(FLAMEGPU_STEP_FUNCTION_POINTER func_p) {
+    if (!model->stepFunctions.insert(func_p).second) {
         THROW InvalidHostFunc("Attempted to add same step function twice,"
             "in ModelDescription::addStepFunction()");
     }
 }
-void ModelDescription::addExitFunction(const FLAMEGPU_EXIT_FUNCTION_POINTER *func_p) {
-    if (!model->exitFunctions.insert(*func_p).second) {
+void ModelDescription::addExitFunction(FLAMEGPU_EXIT_FUNCTION_POINTER func_p) {
+    if (!model->exitFunctions.insert(func_p).second) {
         THROW InvalidHostFunc("Attempted to add same exit function twice,"
             "in ModelDescription::addExitFunction()");
     }
 }
-void ModelDescription::addExitCondition(const FLAMEGPU_EXIT_CONDITION_POINTER *func_p) {
-    if (!model->exitConditions.insert(*func_p).second) {
+void ModelDescription::addExitCondition(FLAMEGPU_EXIT_CONDITION_POINTER func_p) {
+    if (!model->exitConditions.insert(func_p).second) {
         THROW InvalidHostFunc("Attempted to add same exit condition twice,"
             "in ModelDescription::addExitCondition()");
     }
@@ -216,6 +216,12 @@ bool ModelDescription::hasLayer(const std::string &name) const {
 }
 bool ModelDescription::hasLayer(const ModelData::size_type &layer_index) const {
     return model->layers.size() < layer_index;
+}
+
+ModelData::size_type ModelDescription::getLayerCount() const
+{
+    // This down-cast is safe
+    return static_cast<ModelData::size_type>(model->layers.size());
 }
 
 ModelDescription ModelDescription::clone(const std::string &cloned_model_name) const {

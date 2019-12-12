@@ -32,7 +32,7 @@ class Simulation {
 
     virtual AgentInterface &getAgent(const std::string &name) = 0;
  protected:
-    virtual void initialise() = 0;
+    virtual void _initialise() = 0;
     virtual bool checkArgs_derived(int argc, const char** argv) = 0;
     virtual void printHelp_derived() = 0;
     const std::shared_ptr<const ModelData> model;

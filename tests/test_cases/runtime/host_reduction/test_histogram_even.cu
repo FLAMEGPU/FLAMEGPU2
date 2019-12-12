@@ -52,7 +52,7 @@ std::vector<OutT> histogramEven(const std::array<InT, TEST_LEN> &variables, cons
     return rtn;
 }
 TEST_F(HostReductionTest, HistogramEvenFloat) {
-    ms->simulation.addStepFunction(&step_histogramEvenfloat);
+    ms->model.addStepFunction(step_histogramEvenfloat);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_real_distribution <float> dist(0, 20);
     std::array<float, TEST_LEN> in;
@@ -68,7 +68,7 @@ TEST_F(HostReductionTest, HistogramEvenFloat) {
     }
 }
 TEST_F(HostReductionTest, HistogramEvenDouble) {
-    ms->simulation.addStepFunction(&step_histogramEvendouble);
+    ms->model.addStepFunction(step_histogramEvendouble);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_real_distribution <double> dist(0, 20);
     std::array<double, TEST_LEN> in;
@@ -84,7 +84,7 @@ TEST_F(HostReductionTest, HistogramEvenDouble) {
     }
 }
 TEST_F(HostReductionTest, HistogramEvenChar) {
-    ms->simulation.addStepFunction(&step_histogramEvenchar);
+    ms->model.addStepFunction(step_histogramEvenchar);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <int16_t> dist(0, 19);
     std::array<char, TEST_LEN> in;
@@ -104,7 +104,7 @@ TEST_F(HostReductionTest, HistogramEvenChar) {
     }
 }
 TEST_F(HostReductionTest, HistogramEvenUnsignedChar) {
-    ms->simulation.addStepFunction(&step_histogramEvenuchar);
+    ms->model.addStepFunction(step_histogramEvenuchar);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <uint16_t> dist(0, 19);
     std::array<unsigned char, TEST_LEN> in;
@@ -120,7 +120,7 @@ TEST_F(HostReductionTest, HistogramEvenUnsignedChar) {
     }
 }
 TEST_F(HostReductionTest, HistogramEvenInt16) {
-    ms->simulation.addStepFunction(&step_histogramEvenint16_t);
+    ms->model.addStepFunction(step_histogramEvenint16_t);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <int16_t> dist(0, 19);
     std::array<int16_t, TEST_LEN> in;
@@ -136,7 +136,7 @@ TEST_F(HostReductionTest, HistogramEvenInt16) {
     }
 }
 TEST_F(HostReductionTest, HistogramEvenUnsignedInt16) {
-    ms->simulation.addStepFunction(&step_histogramEvenuint16_t);
+    ms->model.addStepFunction(step_histogramEvenuint16_t);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <uint16_t> dist(0, 19);
     std::array<uint16_t, TEST_LEN> in;
@@ -152,7 +152,7 @@ TEST_F(HostReductionTest, HistogramEvenUnsignedInt16) {
     }
 }
 TEST_F(HostReductionTest, HistogramEvenInt32) {
-    ms->simulation.addStepFunction(&step_histogramEvenint32_t);
+    ms->model.addStepFunction(step_histogramEvenint32_t);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <int32_t> dist(0, 19);
     std::array<int32_t, TEST_LEN> in;
@@ -168,7 +168,7 @@ TEST_F(HostReductionTest, HistogramEvenInt32) {
     }
 }
 TEST_F(HostReductionTest, HistogramEvenUnsignedInt32) {
-    ms->simulation.addStepFunction(&step_histogramEvenuint32_t);
+    ms->model.addStepFunction(step_histogramEvenuint32_t);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <uint32_t> dist(0, 19);
     std::array<uint32_t, TEST_LEN> in;
@@ -184,7 +184,7 @@ TEST_F(HostReductionTest, HistogramEvenUnsignedInt32) {
     }
 }
 TEST_F(HostReductionTest, HistogramEvenInt64) {
-    ms->simulation.addStepFunction(&step_histogramEvenint64_t);
+    ms->model.addStepFunction(step_histogramEvenint64_t);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <int64_t> dist(0, 19);
     std::array<int64_t, TEST_LEN> in;
@@ -200,7 +200,7 @@ TEST_F(HostReductionTest, HistogramEvenInt64) {
     }
 }
 TEST_F(HostReductionTest, HistogramEvenUnsignedInt64) {
-    ms->simulation.addStepFunction(&step_histogramEvenuint64_t);
+    ms->model.addStepFunction(step_histogramEvenuint64_t);
     std::mt19937 rd;  // Seed does not matter
     std::uniform_int_distribution <uint64_t> dist(0, 19);
     std::array<uint64_t, TEST_LEN> in;

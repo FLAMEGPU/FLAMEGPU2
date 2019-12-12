@@ -60,7 +60,7 @@ class MessageDescription {
 template<typename T, ModelData::size_type N>
 void MessageDescription::newVariable(const std::string &variable_name) {
     if (message->variables.find(variable_name) == message->variables.end()) {
-        message->variables.emplace(variable_name, Variable(N, T()));
+        message->variables.emplace(variable_name, ModelData::Variable(N, T()));
         return;
     }
     THROW InvalidAgentVar("Message ('%s') already contains variable '%s', "
