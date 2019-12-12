@@ -18,10 +18,10 @@
 
 const unsigned int AgentPopulation::DEFAULT_POPULATION_SIZE = 10;  // 1024
 
-AgentPopulation::AgentPopulation(const AgentDescription &agent_description, unsigned int initial_size):
-    agent(std::make_unique<AgentData>(std::weak_ptr<ModelData>(), *agent_description.agent)),  // Set parent to nullptr, shouldn't need to refer upwards
-    states_map(),
-    maximum_size(initial_size) {
+AgentPopulation::AgentPopulation(const AgentDescription &agent_description, unsigned int initial_size)
+    : agent(std::unique_ptr<AgentData>(new AgentData(nullptr, *agent_description.agent)))  // Set parent to nullptr, shouldn't need to refer upwards
+    , states_map()
+    , maximum_size(initial_size) {
     // init the state maps
     // loop through states in agent description and create memory for each
     for (const auto &state : agent->states) {

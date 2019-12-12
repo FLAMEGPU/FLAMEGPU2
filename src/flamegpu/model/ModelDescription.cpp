@@ -11,7 +11,8 @@
 ModelDescription::ModelDescription(const std::string &model_name)
     : model(new ModelData(model_name)) { }
 // Copy Construct
-ModelDescription::ModelDescription(const ModelDescription &other_model) {
+ModelDescription::ModelDescription(const ModelDescription &other_model)
+    : model(other_model.model) {
     // TODO
 }
 // Move Construct

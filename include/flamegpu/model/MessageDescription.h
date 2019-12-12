@@ -18,7 +18,7 @@ class MessageDescription {
     /**
      * Constructors
      */
-    MessageDescription(std::weak_ptr<ModelData> _model, MessageData *const data);
+    MessageDescription(ModelData *const _model, MessageData *const data);
     // Copy Construct
     MessageDescription(const MessageDescription &other_message);
     // Move Construct
@@ -50,7 +50,7 @@ class MessageDescription {
     bool hasVariable(const std::string &variable_name) const;
 
  private:
-    std::weak_ptr<ModelData> model;
+    ModelData *const model;
     MessageData *const message;
 };
 

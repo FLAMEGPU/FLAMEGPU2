@@ -92,7 +92,7 @@ class ModelDescription {
     ModelDescription clone(const std::string &cloned_model_name) const;
 
  private:
-     std::shared_ptr<ModelData> model;
+     ModelData *const model;
 };
 
 #endif  // INCLUDE_FLAMEGPU_MODEL_MODELDESCRIPTION_H_

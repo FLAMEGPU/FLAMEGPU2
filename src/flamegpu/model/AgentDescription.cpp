@@ -7,7 +7,7 @@
 /**
  * Constructors
  */
-AgentDescription::AgentDescription(std::weak_ptr<ModelData> _model, AgentData *const description)
+AgentDescription::AgentDescription(ModelData *const _model, AgentData *const description)
     : model(_model)
     , agent(description) { }
 // Copy Construct

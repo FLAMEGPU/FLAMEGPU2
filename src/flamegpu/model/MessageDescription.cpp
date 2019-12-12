@@ -3,7 +3,7 @@
 /**
  * Constructors
  */
-MessageDescription::MessageDescription(std::weak_ptr<ModelData> _model, MessageData *const description)
+MessageDescription::MessageDescription(ModelData *const _model, MessageData *const description)
     : model(_model)
     , message(description) { }
 // Copy Construct

@@ -12,7 +12,7 @@ class LayerDescription {
     /**
     * Constructors
     */
-    LayerDescription(std::weak_ptr<ModelData> _model, LayerData *const data);
+    LayerDescription(ModelData *const _model, LayerData *const data);
     // Copy Construct
     LayerDescription(const LayerDescription &other_layer);
     // Move Construct
@@ -37,31 +37,27 @@ class LayerDescription {
      ModelData::size_type getIndex() const;
 
  private:
-    std::weak_ptr<ModelData> model;
+     ModelData *const model;
     LayerData *const layer;
 };
 
 
 template<typename AgentFunction>
-void LayerDescription::addAgentFunction(AgentFunction af) {
+void LayerDescription::addAgentFunction(AgentFunction /*af*/) {
     AgentFunctionWrapper * func_compare = &agent_function_wrapper<AgentFunction>;
     // Unsure if implicit template instantion leads to two unique function ptrs
     // Logic dictates that it should work (else compiler would complain duplicate symbols)
-    if (auto m = model.lock()) {
-        for (auto a : m->agents) {
-            for (auto f : a.second->functions) {
-                if (f.second->func == func_compare) {
-                    if (layer->agent_functions.emplace(f.second).second)
-                        return;
-                    THROW InvalidAgentFunc("Attempted to add same agent function to same layer twice, "
-                        "in LayerDescription::addAgentFunction()\n");
-                }
+    for (auto a : model->agents) {
+        for (auto f : a.second->functions) {
+            if (f.second->func == func_compare) {
+                if (layer->agent_functions.emplace(f.second).second)
+                    return;
+                THROW InvalidAgentFunc("Attempted to add same agent function to same layer twice, "
+                    "in LayerDescription::addAgentFunction()\n");
             }
         }
-        THROW InvalidAgentFunc("Agent function was not found, "
-            "in AgentFunctionDescription::addAgentFunction()\n");
     }
-    THROW InvalidParent("Agent parent has expired, "
+    THROW InvalidAgentFunc("Agent function was not found, "
         "in AgentFunctionDescription::addAgentFunction()\n");
 }
 

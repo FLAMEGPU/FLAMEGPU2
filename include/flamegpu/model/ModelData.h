@@ -33,7 +33,7 @@ struct ModelData : std::enable_shared_from_this<ModelData>{
          */
         template<typename T>
         Variable(size_type _elements, T)
-            : type(typeid(T)), type_size(sizeof(T)), elements(elements), memory_vector(new MemoryVector<T>()) { }
+            : type(typeid(T)), type_size(sizeof(T)), elements(_elements), memory_vector(new MemoryVector<T>()) { }
         const std::type_index type;
         const size_t type_size;
         const unsigned int elements;
@@ -66,14 +66,16 @@ struct ModelData : std::enable_shared_from_this<ModelData>{
 
     std::shared_ptr<ModelData> clone() const;
  protected:
-    /**
-     * This should only be called via clone();
-     */
+     /**
+      * This should only be called via clone();
+      */
     ModelData(const ModelData &other);
     ModelData(const std::string &model_name);
 };
 struct AgentData : std::enable_shared_from_this<AgentData> {
     friend class ModelDescription;
+    friend struct ModelData;
+    friend class AgentPopulation;
     typedef std::unordered_map<std::string, std::shared_ptr<AgentFunctionData>> FunctionMap;
 
     FunctionMap functions;
@@ -88,25 +90,27 @@ struct AgentData : std::enable_shared_from_this<AgentData> {
 
     bool operator==(const AgentData& rhs) const;
     bool operator!=(const AgentData& rhs) const;
-    AgentData(std::weak_ptr<ModelData> model, const AgentData &other);
     AgentData(const AgentData &other) = delete;
  protected:
-    AgentData(std::weak_ptr<ModelData> model, const std::string &agent_name);
+    AgentData(ModelData *const model, const AgentData &other);
+    AgentData(ModelData *const model, const std::string &agent_name);
 };
 struct MessageData {
     friend class ModelDescription;
+    friend class ModelData;
 
     ModelData::VariableMap variables;
     std::unique_ptr<MessageDescription> description;
     std::string name;
 
-    MessageData(std::weak_ptr<ModelData> model, const MessageData &other);
     MessageData(const MessageData &other) = delete;
  protected:
-    MessageData(std::weak_ptr<ModelData> model, const std::string &message_name);
+     MessageData(ModelData *const, const MessageData &other);
+    MessageData(ModelData *const, const std::string &message_name);
 };
 struct AgentFunctionData {
     friend class AgentDescription;
+    friend ModelData;
 
     AgentFunctionWrapper *func;
 
@@ -128,13 +132,14 @@ struct AgentFunctionData {
     bool operator==(const AgentFunctionData& rhs) const;
     bool operator!=(const AgentFunctionData& rhs) const;
 
-    AgentFunctionData(std::weak_ptr<ModelData> model, const AgentFunctionData &other);
     AgentFunctionData(const AgentFunctionData &other) = delete;
  protected:
+    AgentFunctionData(ModelData *const model, std::shared_ptr<AgentData> _parent, const AgentFunctionData &other);
     AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string &function_name, AgentFunctionWrapper *agent_function);
 };
 struct LayerData {
     friend class ModelDescription;
+    friend struct ModelData;
 
     std::set<std::shared_ptr<AgentFunctionData>> agent_functions;
     std::set<FLAMEGPU_HOST_FUNCTION_POINTER> host_functions;
@@ -144,10 +149,10 @@ struct LayerData {
 
     ModelData::size_type index;
 
-    LayerData(std::weak_ptr<ModelData> model, const LayerData &other);
     LayerData(const LayerData &other) = delete;
  protected:
-    LayerData(std::weak_ptr<ModelData> model, const std::string &name, const ModelData::size_type &index);
+     LayerData(ModelData *const model, const LayerData &other);
+    LayerData(ModelData *const model, const std::string &name, const ModelData::size_type &index);
 };
 
 

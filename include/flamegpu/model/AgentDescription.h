@@ -27,7 +27,7 @@ class AgentDescription {
     /**
      * Constructors
      */
-    AgentDescription(std::weak_ptr<ModelData> _model, AgentData *const data);
+    AgentDescription(ModelData *const _model, AgentData *const data);
     // Copy Construct
     AgentDescription(const AgentDescription &other_agent);
     // Move Construct
@@ -73,7 +73,7 @@ class AgentDescription {
     const std::set<std::string> &getStates() const;
 
 private:
-    std::weak_ptr<ModelData> model;
+    ModelData *const model;
     AgentData *const agent;
 };
 

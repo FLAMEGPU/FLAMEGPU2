@@ -14,14 +14,14 @@ ModelData::ModelData(const std::string &model_name)
     : environment(new EnvironmentDescription())
     , name(model_name) { }
 
-AgentData::AgentData(std::weak_ptr<ModelData> model, const std::string &agent_name)
+AgentData::AgentData(ModelData *const model, const std::string &agent_name)
     : agent_outputs(0)
     , description(new AgentDescription(model, this))
     , name(agent_name) {
     states.insert(ModelData::DEFAULT_STATE);
 }
 
-MessageData::MessageData(std::weak_ptr<ModelData> model, const std::string &message_name)
+MessageData::MessageData(ModelData *const model, const std::string &message_name)
     : description(new MessageDescription(model, this))
     , name(message_name) { }
 
@@ -35,7 +35,7 @@ AgentFunctionData::AgentFunctionData(std::shared_ptr<AgentData> _parent, const s
     , description(new AgentFunctionDescription(_parent->description->model, this))
     , name(function_name) { }
 
-LayerData::LayerData(std::weak_ptr<ModelData> model, const std::string &layer_name, const ModelData::size_type &layer_index)
+LayerData::LayerData(ModelData *const model, const std::string &layer_name, const ModelData::size_type &layer_index)
     : description(new LayerDescription(model, this))
     , name(name)
     , index(layer_index) { }
@@ -45,15 +45,8 @@ LayerData::LayerData(std::weak_ptr<ModelData> model, const std::string &layer_na
  * Copy Constructors
  */
 std::shared_ptr<ModelData> ModelData::clone() const {
-    // We can't make make_shared a friend function, to access non-public copy constructor
-    // But need to use it, so that shared_from_this can be used during copy construction
-    // First create shared with default constructor
-    // in-place call it's destructor
-    // in-place new, to reconstruct it using copy constructor.
-    std::shared_ptr<ModelData> rtn = std::shared_ptr<ModelData>(new ModelData(""));
-    rtn.get()->~ModelData();
-    new (rtn.get()) ModelData(*this);
-    return rtn;
+    // Arkwardly cant use shared from this inside constructor, so use raw pts instead
+    return std::shared_ptr<ModelData>(new ModelData(*this));
 }
 ModelData::ModelData(const ModelData &other)
     : initFunctions(other.initFunctions)
@@ -64,85 +57,82 @@ ModelData::ModelData(const ModelData &other)
     , name(other.name) {
     // Manually copy construct maps of shared ptr
     for (const auto m : other.messages) {
-        messages.emplace(m.first, std::shared_ptr<MessageData>(new MessageData(this->shared_from_this(), *m.second)));//Need to convert this to shared_ptr, how to force shared copy construct?
+        messages.emplace(m.first, std::shared_ptr<MessageData>(new MessageData(this, *m.second)));//Need to convert this to shared_ptr, how to force shared copy construct?
     }
     for (const auto a : other.agents) {
-        agents.emplace(a.first, std::shared_ptr<AgentData>(new AgentData(this->shared_from_this(), *a.second)));
+        auto b = std::shared_ptr<AgentData>(new AgentData(this, *a.second));
+        agents.emplace(a.first, b);
+        // Manually copy construct maps of shared ptr
+        for (const auto f : a.second->functions) {
+            b->functions.emplace(f.first, std::shared_ptr<AgentFunctionData>(new AgentFunctionData(this, b, *f.second)));
+        }
     }
     for (const auto m : other.layers) {
-        layers.push_back(std::shared_ptr<LayerData>(new LayerData(this->shared_from_this(), *m)));
+        layers.push_back(std::shared_ptr<LayerData>(new LayerData(this, *m)));
     }
 }
 
-AgentData::AgentData(std::weak_ptr<ModelData> model, const AgentData &other)
+AgentData::AgentData(ModelData *const model, const AgentData &other)
     : variables(other.variables)
     , states(other.states)
     , initial_state(other.initial_state)
     , agent_outputs(other.agent_outputs)
     , description(new AgentDescription(model, this)) 
     , name(other.name) {
-    // Manually copy construct maps of shared ptr
-    for (const auto f : other.functions) {
-        functions.emplace(f.first, std::shared_ptr<AgentFunctionData>(new AgentFunctionData(model, *f.second)));
-    }
 }
-MessageData::MessageData(std::weak_ptr<ModelData> model, const MessageData &other)
+MessageData::MessageData(ModelData *const model, const MessageData &other)
     : variables(other.variables)
     , description(new MessageDescription(model, this))
     , name(other.name) {
 
 }
-AgentFunctionData::AgentFunctionData(std::weak_ptr<ModelData> model, const AgentFunctionData &other)
+AgentFunctionData::AgentFunctionData(ModelData *const model, std::shared_ptr<AgentData> _parent, const AgentFunctionData &other)
     : func (other.func)
     , initial_state(other.initial_state)
     , end_state(other.end_state)
     , message_output_optional(other.message_output_optional)
     , has_agent_death(other.has_agent_death)
+    , parent(_parent)
     , description(new AgentFunctionDescription(model, this))
     , name(other.name) {
     // Manually perform lookup copies
-    if (auto m = model.lock()) {
-        if (auto a = other.message_input.lock()) {
-            auto _m = m->messages.find(a->name);
-            if (_m != m->messages.end()) {
-                message_input = _m->second;
-            }
+    if (auto a = other.message_input.lock()) {
+        auto _m = model->messages.find(a->name);
+        if (_m != model->messages.end()) {
+            message_input = _m->second;
         }
-        if (auto a = other.message_output.lock()) {
-            auto _m = m->messages.find(a->name);
-            if (_m != m->messages.end()) {
-                message_output = _m->second;
-            }
+    }
+    if (auto a = other.message_output.lock()) {
+        auto _m = model->messages.find(a->name);
+        if (_m != model->messages.end()) {
+            message_output = _m->second;
         }
-        if (auto a = other.agent_output.lock()) {
-            auto _a = m->agents.find(a->name);
-            if (_a != m->agents.end()) {
-                agent_output = _a->second;
-            }
-
+    }
+    if (auto a = other.agent_output.lock()) {
+        auto _a = model->agents.find(a->name);
+        if (_a != model->agents.end()) {
+            agent_output = _a->second;
         }
     }
 }
-LayerData::LayerData(std::weak_ptr<ModelData> model, const LayerData &other)
+LayerData::LayerData(ModelData *const model, const LayerData &other)
     : host_functions(other.host_functions)
     , description(new LayerDescription(model, this))
     , name(other.name)
     , index(other.index) {
     // Manually perform lookup copies
-    if (auto m = model.lock()) {
-        for (auto _f : other.agent_functions) {
-            for (auto a : m->agents) {
-                for (auto f : a.second->functions) {
-                    if (f.second->func == _f->func) {
-                        if (f.second->name == _f->name) {
-                            agent_functions.emplace(f.second);
-                            goto next_agent_fn;
-                        }
+    for (auto _f : other.agent_functions) {
+        for (auto a : model->agents) {
+            for (auto f : a.second->functions) {
+                if (f.second->func == _f->func) {
+                    if (f.second->name == _f->name) {
+                        agent_functions.emplace(f.second);
+                        goto next_agent_fn;
                     }
                 }
             }
-        next_agent_fn:;
         }
+    next_agent_fn:;
     }
 }
 

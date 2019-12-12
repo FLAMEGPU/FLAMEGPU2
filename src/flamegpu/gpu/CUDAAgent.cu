@@ -63,7 +63,7 @@ void CUDAAgent::setInitialPopulationData(const AgentPopulation& population) {
     max_list_size = population.getMaximumStateListCapacity();
 
     // Make sure population uses same agent description as was used to initialise the agent CUDAAgent
-    if (&(population.getAgentDescription()) != &agent_description) {
+    if (population.getAgentDescription() != agent_description) {
         THROW InvalidPopulationData("Error: Initial Population has a different agent description ('%s') "
             "to that which was used to initialise the CUDAAgent ('%s'). "
             "In CUDAAgent::setInitialPopulationData()",
@@ -146,7 +146,7 @@ void CUDAAgent::getPopulationData(AgentPopulation& population) {
     }
     // Make sure population uses same agent description as was used to initialise the agent CUDAAgent
     const std::string agent_name = agent_description.name;
-    if (&(population.getAgentDescription()) != &agent_description) {
+    if (population.getAgentDescription() != agent_description) {
         THROW InvalidPopulationData("Error: Initial Population has a different agent description ('%s') "
             "to that which was used to initialise the CUDAAgent ('%s'). "
             "In CUDAAgent::setPopulationData()",

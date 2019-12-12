@@ -64,7 +64,7 @@ const std::type_index& AgentStateMemory::getVariableType(std::string variable_na
 }
 
 bool AgentStateMemory::isSameDescription(const AgentData& description) const {
-    return (&description == &population.getAgentDescription());
+    return (description == population.getAgentDescription());
 }
 
 void AgentStateMemory::resizeMemoryVectors(unsigned int s) {

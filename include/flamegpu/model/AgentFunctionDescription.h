@@ -18,7 +18,7 @@ class AgentFunctionDescription {
     /**
      * Constructors
      */
-    AgentFunctionDescription(std::weak_ptr<ModelData> _model, AgentFunctionData *const data);
+    AgentFunctionDescription(ModelData *const model, AgentFunctionData *const data);
     // Copy Construct
     AgentFunctionDescription(const AgentFunctionDescription &other_function);
     // Move Construct
@@ -67,7 +67,7 @@ class AgentFunctionDescription {
     bool hasAgentOutput() const;
     
  private:
-    std::weak_ptr<ModelData> model;
+    ModelData *const model;
     AgentFunctionData *const function;
 };
 
