@@ -17,7 +17,9 @@ ModelData::ModelData(const std::string &model_name)
 AgentData::AgentData(std::weak_ptr<ModelData> model, const std::string &agent_name)
     : agent_outputs(0)
     , description(new AgentDescription(model, this))
-    , name(agent_name) { }
+    , name(agent_name) {
+    states.insert(ModelData::DEFAULT_STATE);
+}
 
 MessageData::MessageData(std::weak_ptr<ModelData> model, const std::string &message_name)
     : description(new MessageDescription(model, this))
@@ -43,7 +45,15 @@ LayerData::LayerData(std::weak_ptr<ModelData> model, const std::string &layer_na
  * Copy Constructors
  */
 std::shared_ptr<ModelData> ModelData::clone() const {
-    return std::shared_ptr<ModelData>(new ModelData(*this));
+    // We can't make make_shared a friend function, to access non-public copy constructor
+    // But need to use it, so that shared_from_this can be used during copy construction
+    // First create shared with default constructor
+    // in-place call it's destructor
+    // in-place new, to reconstruct it using copy constructor.
+    std::shared_ptr<ModelData> rtn = std::shared_ptr<ModelData>(new ModelData(""));
+    rtn.get()->~ModelData();
+    new (rtn.get()) ModelData(*this);
+    return rtn;
 }
 ModelData::ModelData(const ModelData &other)
     : initFunctions(other.initFunctions)

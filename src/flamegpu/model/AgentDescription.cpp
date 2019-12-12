@@ -44,10 +44,12 @@ AgentDescription AgentDescription::clone(const std::string &cloned_agent_name) c
  */
 void AgentDescription::newState(const std::string &state_name) {
     if (agent->states.find(state_name) == agent->states.end()) {
-        agent->states.insert(state_name);
         // Special case, where default state has been replaced
-        if (agent->states.size() == 1)
-            this->agent->initial_state = state_name;
+        if (agent->states.size() == 1 && (*agent->states.begin()) == ModelData::DEFAULT_STATE) {
+            agent->states.clear();
+            agent->initial_state = state_name;            
+        }
+        agent->states.insert(state_name);
         return;
     }
     THROW InvalidStateName("Agent ('%s') already contains state '%s', "

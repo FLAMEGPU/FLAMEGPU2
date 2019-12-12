@@ -105,7 +105,7 @@ int main(void) {
     /**
      * Initialisation
      */
-    AgentPopulation population(model.Agent("Agent"), AGENT_COUNT);
+    AgentPopulation population(model.Agent("agent"), AGENT_COUNT);
     for (unsigned int i = 0; i < AGENT_COUNT; i++) {
         AgentInstance instance = population.getNextInstance();
         instance.setVariable<float>("x", static_cast<float>(i));
