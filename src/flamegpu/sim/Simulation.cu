@@ -6,6 +6,8 @@
 #include "flamegpu/runtime/flamegpu_host_api.h"
 #include "flamegpu/pop/AgentPopulation.h"
 
+#include <algorithm>
+
 Simulation::Simulation(const ModelDescription& _model)
     : model(_model.model->clone())
     , host_api(std::make_unique<FLAMEGPU_HOST_API>(*this))

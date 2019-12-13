@@ -3,6 +3,7 @@
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/pop/AgentPopulation.h"
 #include "flamegpu/runtime/flamegpu_host_api.h"
+#include <algorithm>
 
 CUDAAgentModel::CUDAAgentModel(const ModelDescription& _model)
     : Simulation(_model)
