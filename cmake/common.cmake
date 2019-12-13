@@ -184,13 +184,13 @@ endif()
 # Use C++14 standard - std::make_unique is 14 not 11
 # Specify using C++14 standard
 if(NOT DEFINED CMAKE_CXX_STANDARD)
-    set(CMAKE_CXX_STANDARD 11)
+    set(CMAKE_CXX_STANDARD 14)
     set(CMAKE_CXX_STANDARD_REQUIRED true)
 endif()
 
 # Tell CUDA to use C++14 standard
 if(NOT DEFINED CMAKE_CUDA_STANDARD)
-    set(CMAKE_CUDA_STANDARD 11)
+    set(CMAKE_CUDA_STANDARD 14)
     set(CMAKE_CUDA_STANDARD_REQUIRED True)
 endif()
 
