@@ -57,7 +57,7 @@ std::type_index MessageDescription::getVariableType(const std::string &variable_
     if (f != message->variables.end()) {
         return f->second.type;
     }
-    THROW InvalidAgentVar("Message ('%s') does not contain variable '%s', "
+    THROW InvalidMessageVar("Message ('%s') does not contain variable '%s', "
         "in MessageDescription::getVariableType().",
         message->name.c_str(), variable_name.c_str());
 }
@@ -66,7 +66,7 @@ size_t MessageDescription::getVariableSize(const std::string &variable_name) con
     if (f != message->variables.end()) {
         return f->second.type_size;
     }
-    THROW InvalidAgentVar("Message ('%s') does not contain variable '%s', "
+    THROW InvalidMessageVar("Message ('%s') does not contain variable '%s', "
         "in MessageDescription::getVariableSize().",
         message->name.c_str(), variable_name.c_str());
 }
@@ -75,7 +75,7 @@ ModelData::size_type MessageDescription::getVariableLength(const std::string &va
     if (f != message->variables.end()) {
         return f->second.elements;
     }
-    THROW InvalidAgentVar("Message ('%s') does not contain variable '%s', "
+    THROW InvalidMessageVar("Message ('%s') does not contain variable '%s', "
         "in MessageDescription::getVariableLength().",
         message->name.c_str(), variable_name.c_str());
 }

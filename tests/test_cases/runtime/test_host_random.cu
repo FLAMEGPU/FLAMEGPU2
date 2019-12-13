@@ -222,8 +222,8 @@ class HostRandomTest : public testing::Test {
 };
 
 // @note seeds 0 and 1 conflict with std::linear_congruential_engine, the default on GCC so using mt19937 to avoid this.
-const char *args_1[4] = { "process.exe", "input.xml", "-r", "0" };
-const char *args_2[4] = { "process.exe", "input.xml", "-r", "1" };
+const char *args_1[4] = { "process.exe", "", "-r", "0" };
+const char *args_2[4] = { "process.exe", "", "-r", "1" };
 
 }  // namespace
 

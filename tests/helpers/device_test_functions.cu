@@ -51,15 +51,15 @@ FLAMEGPU_AGENT_FUNCTION(stay_func) {
 }
 
 AgentFunctionDescription& attach_add_func(AgentDescription& agent) {
-    return agent.newFunction("func", add_func);
+    return agent.newFunction("add", add_func);
 }
 
 AgentFunctionDescription& attach_subtract_func(AgentDescription& agent) {
-    return agent.newFunction("func", subtract_func);
+    return agent.newFunction("subtract", subtract_func);
 }
 
 AgentFunctionDescription& attach_input_func(AgentDescription& agent) {
-    return agent.newFunction("func", input_func);
+    return agent.newFunction("input", input_func);
 }
 
 AgentFunctionDescription& attach_move_func(AgentDescription& agent) {
@@ -87,7 +87,7 @@ FLAMEGPU_AGENT_FUNCTION(random1_func) {
     return ALIVE;
 }
 AgentFunctionDescription& attach_random1_func(AgentDescription& agent) {
-    return agent.newFunction("func", random1_func);
+    return agent.newFunction("random1", random1_func);
 }
 FLAMEGPU_AGENT_FUNCTION(random2_func) {
     FLAMEGPU->setVariable<float>("uniform_float", FLAMEGPU->random.uniform<float>());
@@ -115,5 +115,5 @@ FLAMEGPU_AGENT_FUNCTION(random2_func) {
     return ALIVE;
 }
 AgentFunctionDescription& attach_random2_func(AgentDescription& agent) {
-    return agent.newFunction("func", random2_func);
+    return agent.newFunction("random2", random2_func);
 }

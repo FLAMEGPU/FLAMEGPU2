@@ -52,7 +52,7 @@ TEST(GPUTest, GPUMemoryTest) {
     for (int i = 0; i < 10; i++) {
         AgentInstance i1 = population.getInstanceAt(i, "default");
         // use AgentInstance equality operator
-        EXPECT_TRUE(i1.getVariable<int>("id") == i);
+        EXPECT_EQ(i1.getVariable<int>("id"), i);
     }
 }
 
@@ -92,8 +92,8 @@ TEST(GPUTest, GPUSimulationTest) {
 
 
     CUDAAgentModel cuda_model(flame_model);
-    
-    cuda_model.setSimulationSteps(10);
+    const int STEPS = 5;
+    cuda_model.setSimulationSteps(STEPS);
 
     cuda_model.setPopulationData(population);
 
@@ -108,7 +108,7 @@ TEST(GPUTest, GPUSimulationTest) {
     for (int i = 0; i < 10; i++) {
         AgentInstance i1 = population.getInstanceAt(i, "default");
         // use AgentInstance equality operator
-        EXPECT_TRUE(i1.getVariable<double>("x") == i + 2);
+        EXPECT_EQ(i1.getVariable<double>("x"), i + (2 * STEPS));
     }
 }
 
@@ -174,8 +174,8 @@ TEST(GPUTest, GPUSimulationTestMultiple) {
         AgentInstance i2 = population2.getInstanceAt(i, "default");
 
         // use AgentInstance equality operator
-        EXPECT_TRUE(i1.getVariable<double>("x") == i + 2);
-        EXPECT_TRUE(i2.getVariable<double>("y") == 0);
+        EXPECT_EQ(i1.getVariable<double>("x"), i + 2);
+        EXPECT_EQ(i2.getVariable<double>("y"), 0);
     }
 }
 

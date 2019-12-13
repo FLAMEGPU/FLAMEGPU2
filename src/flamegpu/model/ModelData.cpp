@@ -17,7 +17,8 @@ ModelData::ModelData(const std::string &model_name)
 AgentData::AgentData(ModelData *const model, const std::string &agent_name)
     : agent_outputs(0)
     , description(new AgentDescription(model, this))
-    , name(agent_name) {
+    , name(agent_name)
+    , keepDefaultState(false) {
     states.insert(ModelData::DEFAULT_STATE);
 }
 
@@ -78,7 +79,8 @@ AgentData::AgentData(ModelData *const model, const AgentData &other)
     , initial_state(other.initial_state)
     , agent_outputs(other.agent_outputs)
     , description(new AgentDescription(model, this)) 
-    , name(other.name) {
+    , name(other.name) 
+    , keepDefaultState(other.keepDefaultState) {
 }
 MessageData::MessageData(ModelData *const model, const MessageData &other)
     : variables(other.variables)

@@ -44,17 +44,23 @@ AgentDescription AgentDescription::clone(const std::string &cloned_agent_name) c
  */
 void AgentDescription::newState(const std::string &state_name) {
     if (agent->states.find(state_name) == agent->states.end()) {
-        // Special case, where default state has been replaced
-        if (agent->states.size() == 1 && (*agent->states.begin()) == ModelData::DEFAULT_STATE) {
-            agent->states.clear();
-            agent->initial_state = state_name;            
+        if (!agent->keepDefaultState) {
+            // Special case, where default state has been replaced
+            if (agent->states.size() == 1 && (*agent->states.begin()) == ModelData::DEFAULT_STATE) {
+                agent->states.clear();
+                agent->initial_state = state_name;
+            }
+            agent->states.insert(state_name);
+            return;
         }
-        agent->states.insert(state_name);
-        return;
+    } else if(state_name == ModelData::DEFAULT_STATE) {
+        agent->keepDefaultState = true;
+        agent->states.insert(state_name);  // Re add incase it was dropped
+    } else {
+        THROW InvalidStateName("Agent ('%s') already contains state '%s', "
+            "in AgentDescription::newState().",
+            agent->name.c_str(), state_name.c_str());
     }
-    THROW InvalidStateName("Agent ('%s') already contains state '%s', "
-        "in AgentDescription::newState().",
-        agent->name.c_str(), state_name.c_str());
 }
 void AgentDescription::setInitialState(const std::string &init_state) {
     if (agent->states.find(init_state) != agent->states.end()) {

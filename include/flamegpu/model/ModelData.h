@@ -85,6 +85,7 @@ struct AgentData : std::enable_shared_from_this<AgentData> {
     unsigned int agent_outputs; // Number of functions that have agent output of this agent type
     std::shared_ptr<AgentDescription> description;
     std::string name;
+    bool keepDefaultState;
 
     bool isOutputOnDevice() const; // Convenience wrapper for agent_outputs
 
