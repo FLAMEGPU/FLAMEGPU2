@@ -42,9 +42,10 @@ TEST(AgentRandomTest, AgentRandomCheck) {
 
     AgentFunctionDescription &af = attach_random1_func(agent);
 
+    AgentPopulation init_population(agent, AGENT_COUNT);
     AgentPopulation population(agent, AGENT_COUNT);
     for (unsigned int i = 0; i< AGENT_COUNT; i++) {
-        AgentInstance instance = population.getNextInstance("default");
+        AgentInstance instance = init_population.getNextInstance("default");
         instance.setVariable<float>("a", 0);
         instance.setVariable<float>("b", 0);
         instance.setVariable<float>("c", 0);
@@ -55,9 +56,9 @@ TEST(AgentRandomTest, AgentRandomCheck) {
     layer.addAgentFunction(af);
 
     CUDAAgentModel cuda_model(model);
-    cuda_model.setInitialPopulationData(population);
-    const char *args_1[4] = { "process.exe", "input.xml", "-r", "0" };
-    const char *args_2[4] = { "process.exe", "input.xml", "-r", "1" };
+    cuda_model.setSimulationSteps(1);
+    const char *args_1[4] = { "process.exe", "", "-r", "0" };
+    const char *args_2[4] = { "process.exe", "", "-r", "1" };
     std::string _t_unused = std::string();
     std::vector<std::tuple<float, float, float>> results1, results2;
     {
@@ -68,6 +69,7 @@ TEST(AgentRandomTest, AgentRandomCheck) {
         */
         // Seed random
         cuda_model.initialise(4, args_1);
+        cuda_model.setPopulationData(init_population);
 
         cuda_model.simulate();
 
@@ -96,7 +98,7 @@ TEST(AgentRandomTest, AgentRandomCheck) {
             EXPECT_TRUE(b1 != c1);
             EXPECT_TRUE(a1 != c1);
         }
-        EXPECT_TRUE(results1.size() == AGENT_COUNT);
+        EXPECT_EQ(results1.size(), AGENT_COUNT);
     }
     {
         /**
@@ -105,6 +107,7 @@ TEST(AgentRandomTest, AgentRandomCheck) {
          */
         // Seed random
         cuda_model.initialise(4, args_2);
+        cuda_model.setPopulationData(init_population);
 
         cuda_model.simulate();
 
@@ -122,7 +125,7 @@ TEST(AgentRandomTest, AgentRandomCheck) {
 
         for (unsigned int i = 0; i < results1.size(); ++i) {
             // Different seed produces different results
-            EXPECT_TRUE(results1[i] != results2[i]);
+            EXPECT_NE(results1[i], results2[i]);
         }
     }
     {
@@ -133,6 +136,7 @@ TEST(AgentRandomTest, AgentRandomCheck) {
         results2.clear();
         // Seed random
         cuda_model.initialise(4, args_1);
+        cuda_model.setPopulationData(init_population);
 
         cuda_model.simulate();
 
@@ -146,11 +150,11 @@ TEST(AgentRandomTest, AgentRandomCheck) {
                 instance.getVariable<float>("c")
             });
         }
-        EXPECT_TRUE(results2.size() == AGENT_COUNT);
+        EXPECT_EQ(results2.size(), AGENT_COUNT);
 
         for (unsigned int i = 0; i < results1.size(); ++i) {
-            // Same seed produces different results
-            EXPECT_TRUE(results1[i] == results2[i]);
+            // Same seed produces same results
+            EXPECT_EQ(results1[i], results2[i]);
         }
     }
 }
@@ -203,7 +207,8 @@ TEST(AgentRandomTest, AgentRandomFunctionsNoExcept) {
     layer.addAgentFunction(do_random);
 
     CUDAAgentModel cuda_model(model);
-    cuda_model.setInitialPopulationData(population);
+    cuda_model.setSimulationSteps(1);
+    cuda_model.setPopulationData(population);
     ASSERT_NO_THROW(cuda_model.simulate());
     // Success if we get this far without an exception being thrown.
 }

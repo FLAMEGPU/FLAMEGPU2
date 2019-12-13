@@ -218,8 +218,8 @@ int main(int argc, const char* argv[]) {
     /* Run the model */
     CUDAAgentModel cuda_model(flame_model);
 
-    cuda_model.setInitialPopulationData(population1);
-    cuda_model.setInitialPopulationData(population2);
+    cuda_model.setPopulationData(population1);
+    cuda_model.setPopulationData(population2);
 
     // cuda_model.addSimulation(simulation);
 

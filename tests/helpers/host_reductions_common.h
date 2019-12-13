@@ -53,7 +53,7 @@ class MiniSim {
         CUDAAgentModel cuda_model(model);
         cuda_model.setSimulationSteps(1);
         // This fails as agentMap is empty
-        cuda_model.setInitialPopulationData(*population);
+        cuda_model.setPopulationData(*population);
         ASSERT_NO_THROW(cuda_model.simulate());
         // The negative of this, is that cuda_model is inaccessible within the test!
         // So copy across population data here

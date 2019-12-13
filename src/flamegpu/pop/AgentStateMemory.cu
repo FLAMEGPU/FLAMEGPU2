@@ -59,8 +59,14 @@ const GenericMemoryVector& AgentStateMemory::getReadOnlyMemoryVector(const std::
     return *(iter->second);
 }
 
-const std::type_index& AgentStateMemory::getVariableType(std::string variable_name) const {
-    return population.getAgentDescription().variables.at(variable_name).type;
+const std::type_index& AgentStateMemory::getVariableType(std::string variable_name) const {    
+    auto varIt = population.getAgentDescription().variables.find(variable_name);
+    if(varIt == population.getAgentDescription().variables.end()) {
+        THROW InvalidAgentVar("Agent ('%s') variable ('%s') was not found, "
+            "In AgentStateMemory::getVariableType()",
+            population.getAgentDescription().name.c_str(), variable_name.c_str());
+    }
+    return varIt->second.type;
 }
 
 bool AgentStateMemory::isSameDescription(const AgentData& description) const {

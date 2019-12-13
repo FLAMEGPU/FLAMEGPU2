@@ -20,8 +20,9 @@
 
 #include "flamegpu/flame_api.h"
 
-FLAMEGPU_AGENT_FUNCTION(sample_agentfn) {
+FLAMEGPU_AGENT_FUNCTION(sample_agentfn2) {
     // do nothing
+    return ALIVE;
 }
 
 /**
@@ -93,9 +94,9 @@ TEST(ModelDescTest, MessageFunctionCheck) {
 
     AgentDescription &circle_agent = flame_model.newAgent("circle");
 
-    AgentFunctionDescription &output_data = circle_agent.newFunction("output_data", sample_agentfn);
+    AgentFunctionDescription &output_data = circle_agent.newFunction("output_data", sample_agentfn2);
 
-    circle_agent.newFunction("move", sample_agentfn);
+    circle_agent.newFunction("move", sample_agentfn2);
     
    /**
      * @brief      Checks the name of agent function description

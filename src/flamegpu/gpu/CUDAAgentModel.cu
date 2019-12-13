@@ -243,20 +243,6 @@ void CUDAAgentModel::simulate() {
         exitFn(this->host_api.get());
 }
 
-void CUDAAgentModel::setInitialPopulationData(AgentPopulation& population) {
-    CUDAAgentMap::iterator it;
-    it = agent_map.find(population.getAgentName());
-
-    if (it == agent_map.end()) {
-        THROW InvalidCudaAgent("Error: Agent ('%s') was not found, "
-            "in CUDAAgentModel::setInitialPopulationData()",
-            population.getAgentName().c_str());
-    }
-
-    /*! create agent state lists */
-    it->second->setInitialPopulationData(population);
-}
-
 void CUDAAgentModel::setPopulationData(AgentPopulation& population) {
     CUDAAgentMap::iterator it;
     it = agent_map.find(population.getAgentName());

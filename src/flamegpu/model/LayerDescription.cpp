@@ -48,7 +48,10 @@ void LayerDescription::addAgentFunction(const std::string &name) {
         name.c_str());
 }
 void LayerDescription::addHostFunction(FLAMEGPU_HOST_FUNCTION_POINTER func_p) {
-    layer->host_functions.insert(func_p);
+    if(!layer->host_functions.insert(func_p).second) {
+        THROW InvalidHostFunc("HostFunction has already been added to LayerDescription,"
+            "in LayerDescription::addHostFunction().");
+    }
 }
 
 ModelData::size_type LayerDescription::getIndex() const {
@@ -57,10 +60,12 @@ ModelData::size_type LayerDescription::getIndex() const {
 
 
 ModelData::size_type LayerDescription::getAgentFunctionCount() const {
-    return layer->agent_functions.size();
+    // Safe down-cast
+    return static_cast<ModelData::size_type>(layer->agent_functions.size());
 }
 ModelData::size_type LayerDescription::getHostFunctionCount() const {
-    return layer->host_functions.size();
+    // Safe down-cast
+    return static_cast<ModelData::size_type>(layer->host_functions.size());
 }
 
 const AgentFunctionDescription &LayerDescription::getAgentFunction(unsigned int index) const {

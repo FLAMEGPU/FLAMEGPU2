@@ -23,6 +23,7 @@
 
 FLAMEGPU_AGENT_FUNCTION(sample_agentfn) {
     // do nothing
+    return ALIVE;
 }
 /**
  * @brief      To verify the correctness of message name, size, and type.

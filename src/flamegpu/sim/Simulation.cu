@@ -16,7 +16,7 @@ Simulation::Simulation(const ModelDescription& _model)
 
 void Simulation::initialise(int argc, const char** argv) {
     // check input args
-    if (!checkArgs(argc, argv) && !xml_input_path.empty())
+    if (!checkArgs(argc, argv))
         exit(0);
 
     if(has_seed)
@@ -28,10 +28,12 @@ void Simulation::initialise(int argc, const char** argv) {
         auto a = std::make_shared<AgentPopulation>(*agent.second->description);
         pops.emplace(agent.first, a);
     }
-    StateReader *read__ = ReaderFactory::createReader(pops, xml_input_path.c_str());
-    read__->parse();
-    for (auto &agent : pops) {
-        setPopulationData(*agent.second);
+    if(!xml_input_path.empty()) {
+        StateReader *read__ = ReaderFactory::createReader(pops, xml_input_path.c_str());
+        read__->parse();
+        for (auto &agent : pops) {
+            setPopulationData(*agent.second);
+        }
     }
 
     // Call any derived class init methods

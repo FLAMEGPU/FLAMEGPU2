@@ -37,7 +37,7 @@ AgentFunctionData::AgentFunctionData(std::shared_ptr<AgentData> _parent, const s
 
 LayerData::LayerData(ModelData *const model, const std::string &layer_name, const ModelData::size_type &layer_index)
     : description(new LayerDescription(model, this))
-    , name(name)
+    , name(layer_name)
     , index(layer_index) { }
 
 

@@ -62,7 +62,7 @@ class MiniSim {
         CUDAAgentModel cuda_model(model);
         cuda_model.setSimulationSteps(1);
         // This fails as agentMap is empty
-        cuda_model.setInitialPopulationData(*population);
+        cuda_model.setPopulationData(*population);
         ASSERT_NO_THROW(cuda_model.simulate());
         // The negative of this, is that cuda_model is inaccessible within the test!
         // So copy across population data here
@@ -142,13 +142,12 @@ TEST(EnvironmentManagerTest2, MultipleModels) {
 // Free/Rehost model
 TEST(EnvironmentManagerTest2, RehostModel) {
     MiniSim *ms1 = new MiniSim();
-    ms1->model.newAgent("agent");
     ms1->env.add<float>("ms1_float", MS1_VAL);
     CUDAAgentModel *cuda_model1 = new CUDAAgentModel(ms1->model);
-    cuda_model1->setInitialPopulationData(*ms1->population);
+    cuda_model1->setSimulationSteps(1);
+    cuda_model1->setPopulationData(*ms1->population);
     EXPECT_NO_THROW(cuda_model1->simulate());
     MiniSim *ms2 = new MiniSim();
-    ms2->model.newAgent("agent");
     ms2->env.add<float>("ms1_float", MS1_VAL);
     {
         // Errors because ms1 CUDAAgentModel still alive
@@ -158,7 +157,8 @@ TEST(EnvironmentManagerTest2, RehostModel) {
     // Try again now ms1 has been deleted
     CUDAAgentModel *cuda_model2 = nullptr;
     EXPECT_NO_THROW(cuda_model2 = new CUDAAgentModel(ms2->model));
-    cuda_model2->setInitialPopulationData(*ms2->population);
+    cuda_model2->setPopulationData(*ms2->population);
+    cuda_model2->setSimulationSteps(1);
     EXPECT_NO_THROW(cuda_model2->simulate());
     delete cuda_model2;
     delete ms1;

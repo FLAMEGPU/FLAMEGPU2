@@ -42,7 +42,7 @@ TEST(GPUTest, GPUMemoryTest) {
     }
 
     CUDAAgentModel cuda_model(flame_model);
-    cuda_model.setInitialPopulationData(population);
+    cuda_model.setPopulationData(population);
 
     cuda_model.getPopulationData(population);
 
@@ -90,11 +90,12 @@ TEST(GPUTest, GPUSimulationTest) {
     LayerDescription &add_layer = flame_model.newLayer("add_layer");
     add_layer.addAgentFunction(add_data);
 
-    // simulation.setSimulationSteps(10);
 
     CUDAAgentModel cuda_model(flame_model);
+    
+    cuda_model.setSimulationSteps(10);
 
-    cuda_model.setInitialPopulationData(population);
+    cuda_model.setPopulationData(population);
 
     cuda_model.simulate();
 
@@ -158,8 +159,8 @@ TEST(GPUTest, GPUSimulationTestMultiple) {
     CUDAAgentModel cuda_model(flame_model);
     cuda_model.setSimulationSteps(1);
 
-    cuda_model.setInitialPopulationData(population1);
-    cuda_model.setInitialPopulationData(population2);
+    cuda_model.setPopulationData(population1);
+    cuda_model.setPopulationData(population2);
 
     cuda_model.simulate();
 

@@ -23,7 +23,9 @@
 * CUDAAgentStateList class
 * @brief populates CUDA agent map
 */
-CUDAAgentStateList::CUDAAgentStateList(CUDAAgent& cuda_agent) : agent(cuda_agent) {
+CUDAAgentStateList::CUDAAgentStateList(CUDAAgent& cuda_agent) 
+    : current_list_size(0)
+    , agent(cuda_agent) {
     // allocate state lists
     allocateDeviceAgentList(d_list);
     allocateDeviceAgentList(d_swap_list);

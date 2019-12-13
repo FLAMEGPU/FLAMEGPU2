@@ -48,40 +48,6 @@ const AgentData& CUDAAgent::getAgentDescription() const {
 }
 
 /**
-* @brief Sets initial population data by allocating memory for each state list by creating a new agent state list
-* @param AgentPopulation object
-* @return none
-*/
-void CUDAAgent::setInitialPopulationData(const AgentPopulation& population) {
-    // check that the initial population data has not already been set
-    if (!state_map.empty()) {
-        THROW InvalidPopulationData("Error: Initial population data for agent '%s' already set. "
-            "In CUDAAgent::setInitialPopulationData()",
-            population.getAgentName().c_str());
-    }
-    // set the maximum population state size
-    max_list_size = population.getMaximumStateListCapacity();
-
-    // Make sure population uses same agent description as was used to initialise the agent CUDAAgent
-    if (population.getAgentDescription() != agent_description) {
-        THROW InvalidPopulationData("Error: Initial Population has a different agent description ('%s') "
-            "to that which was used to initialise the CUDAAgent ('%s'). "
-            "In CUDAAgent::setInitialPopulationData()",
-            population.getAgentName().c_str(),
-            agent_description.name.c_str());
-    }
-    // create map of device state lists by traversing the state list
-    const std::set<std::string> &sm = agent_description.states;
-    for (const std::string &s : sm) {
-        // allocate memory for each state list by creating a new Agent State List
-        state_map.insert(CUDAStateMap::value_type(s, std::unique_ptr<CUDAAgentStateList>( new CUDAAgentStateList(*this))));
-    }
-
-    /**set the population data*/
-    setPopulationData(population);
-}
-
-/**
 * @brief Sets the population data
 * @param AgentPopulation object
 * @return none
@@ -89,16 +55,11 @@ void CUDAAgent::setInitialPopulationData(const AgentPopulation& population) {
 void CUDAAgent::setPopulationData(const AgentPopulation& population) {
     // check that the gpu state lists have been initialised by a previous call to setInitialPopulationData
     if (state_map.empty()) {
-        THROW InvalidPopulationData("Error: Initial population data for agent '%s' not allocated. "
-            "Have you called setInitialPopulationData()? "
-            "In CUDAAgent::setPopulationData()",
-            population.getAgentName().c_str());
-    }
-    // check that the population maximums do not exceed the current maximum (as their will not be enough GPU memory to hold it)
-    if (population.getMaximumStateListCapacity() > max_list_size) {
-        THROW InvalidPopulationData("Error: Maximum population size for agent '%s' exceeds allocation. "
-            "In CUDAAgent::setPopulationData()",
-            population.getAgentName().c_str());
+        // create map of device state lists by traversing the state list
+        for (const std::string &s : agent_description.states) {
+            // allocate memory for each state list by creating a new Agent State List
+            state_map.insert(CUDAStateMap::value_type(s, std::unique_ptr<CUDAAgentStateList>(new CUDAAgentStateList(*this))));
+        }
     }
     // Make sure population uses same agent description as was used to initialise the agent CUDAAgent
     const std::string agent_name = agent_description.name;
@@ -108,6 +69,21 @@ void CUDAAgent::setPopulationData(const AgentPopulation& population) {
             "In CUDAAgent::setPopulationData()",
             population.getAgentName().c_str(),
             agent_description.name.c_str());
+    }
+    // check that the population maximums do not exceed the current maximum (as their will not be enough GPU memory to hold it)
+    if (population.getMaximumStateListCapacity() > max_list_size) {
+        // Resize the population exactly, setPopData is a whole population movement, no need for greedy resize
+        // Unlikely to add new agents during simulation
+
+        // Update capacity
+        max_list_size = population.getMaximumStateListCapacity();
+        // Drop old state_map
+        state_map.clear();
+        // Regen new state_map
+        for (const std::string &s : agent_description.states) {
+            // allocate memory for each state list by creating a new Agent State List
+            state_map.insert(CUDAStateMap::value_type(s, std::unique_ptr<CUDAAgentStateList>(new CUDAAgentStateList(*this))));
+        }
     }
     /**set all population data to zero*/
     zeroAllStateVariableData();
@@ -138,12 +114,6 @@ void CUDAAgent::getPopulationData(AgentPopulation& population) {
             "In CUDAAgent::setPopulationData()",
             population.getAgentName().c_str());
     }
-    // check that the population maximums do not exceed the current maximum (as their will not be enough GPU memory to hold it)
-    if (population.getMaximumStateListCapacity() < max_list_size) {
-        THROW InvalidPopulationData("Error: Maximum population size for agent '%s' exceeds allocation. "
-            "In CUDAAgent::getPopulationData()",
-            population.getAgentName().c_str());
-    }
     // Make sure population uses same agent description as was used to initialise the agent CUDAAgent
     const std::string agent_name = agent_description.name;
     if (population.getAgentDescription() != agent_description) {
@@ -165,6 +135,12 @@ void CUDAAgent::getPopulationData(AgentPopulation& population) {
                 "In CUDAAgent::setPopulationData() ",
                 "This should never happen!",
                 population.getAgentName().c_str(), s.c_str());
+        }
+        // check that the population maximums do not exceed the current maximum (as their will not be enough GPU memory to hold it)
+        if (population.getMaximumStateListCapacity() < i->second->getCUDAStateListSize()) {
+            THROW InvalidPopulationData("Error: Maximum population size for agent '%s' exceeds allocation. "
+                "In CUDAAgent::getPopulationData()",
+                population.getAgentName().c_str());
         }
         // copy the data from the population state memory to the state_maps CUDAAgentStateList
         i->second->getAgentData(population.getStateMemory(i->first));

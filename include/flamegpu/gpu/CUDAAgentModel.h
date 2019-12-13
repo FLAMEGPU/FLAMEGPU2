@@ -15,7 +15,6 @@ class CUDAAgentModel : public Simulation {
     ~CUDAAgentModel();
     bool step() override;
     void simulate() override;
-    void setInitialPopulationData(AgentPopulation& population) override;
     void setPopulationData(AgentPopulation& population) override;
     void getPopulationData(AgentPopulation& population) override;
     const CUDAAgent& getCUDAAgent(std::string agent_name) const;

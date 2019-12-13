@@ -26,7 +26,6 @@ class Simulation {
 
     void output(int argc, const char** argv);
 
-    virtual void setInitialPopulationData(AgentPopulation& population) = 0;
     virtual void setPopulationData(AgentPopulation& population) = 0;
     virtual void getPopulationData(AgentPopulation& population) = 0;
 

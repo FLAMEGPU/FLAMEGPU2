@@ -117,7 +117,7 @@ int main(void) {
      */
     CUDAAgentModel cuda_model(model);
     cuda_model.setSimulationSteps(0);
-    cuda_model.setInitialPopulationData(population);
+    cuda_model.setPopulationData(population);
     cuda_model.simulate();
 
     cuda_model.getPopulationData(population);

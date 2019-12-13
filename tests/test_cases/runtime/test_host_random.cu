@@ -163,7 +163,7 @@ class MiniSim {
         if (!simulation) {
             simulation = new CUDAAgentModel(model);
             simulation->setSimulationSteps(1);
-            simulation->setInitialPopulationData(population);
+            simulation->setPopulationData(population);
         }
         if(argc)
             simulation->initialise(argc, argv);

@@ -40,10 +40,7 @@ class CUDAAgent : public AgentInterface {
     virtual ~CUDAAgent(void);
 
     const AgentData& getAgentDescription() const override;
-
-    /* Should be set initial population data and should only be called once as it does all the GPU device memory allocation */
-    void setInitialPopulationData(const AgentPopulation& population);
-
+    
     /* Can be used to override the current population data without reallocating */
     void setPopulationData(const AgentPopulation& population);
 
