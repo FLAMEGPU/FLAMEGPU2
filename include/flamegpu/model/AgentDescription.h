@@ -34,11 +34,9 @@ class AgentDescription {
     // Move Construct
     AgentDescription(AgentDescription &&other_agent) noexcept;
     // Copy Assign
-    AgentDescription& operator=(const AgentDescription &other_agent);
+    AgentDescription& operator=(const AgentDescription &other_agent) = delete;
     // Move Assign
-    AgentDescription& operator=(AgentDescription &&other_agent) noexcept;
-
-    AgentDescription clone(const std::string &cloned_agent_name) const;
+    AgentDescription& operator=(AgentDescription &&other_agent) noexcept = delete;
 
  public:
     /**

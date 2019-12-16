@@ -20,9 +20,9 @@ class LayerDescription {
     // Move Construct
     LayerDescription(LayerDescription &&other_layer) noexcept;
     // Copy Assign
-    LayerDescription& operator=(const LayerDescription &other_layer);
+    LayerDescription& operator=(const LayerDescription &other_layer) = delete;
     // Move Assign
-    LayerDescription& operator=(LayerDescription &&other_layer) noexcept;
+    LayerDescription& operator=(LayerDescription &&other_layer) noexcept = delete;
 
  public:
     /**

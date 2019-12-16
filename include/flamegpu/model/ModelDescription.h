@@ -27,9 +27,9 @@ class ModelDescription {
     // Move Construct
     ModelDescription(ModelDescription &&other_model);
     // Copy Assign
-    ModelDescription& operator=(const ModelDescription &other_model);
+    ModelDescription& operator=(const ModelDescription &other_model) = delete;
     // Move Assign
-    ModelDescription& operator=(ModelDescription &&other_model);
+    ModelDescription& operator=(ModelDescription &&other_model) = delete;
 
     /**
      * Accessors

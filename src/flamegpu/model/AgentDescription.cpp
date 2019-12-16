@@ -22,22 +22,6 @@ AgentDescription::AgentDescription(AgentDescription &&other_agent) noexcept
     , agent(other_agent.agent) {
     // TODO
 }
-// Copy Assign
-AgentDescription& AgentDescription::operator=(const AgentDescription &other_agent) {
-    // TODO
-    return *this;
-}
-// Move Assign
-AgentDescription& AgentDescription::operator=(AgentDescription &&other_agent) noexcept {
-    // TODO
-    return *this;
-}
-
-AgentDescription AgentDescription::clone(const std::string &cloned_agent_name) const {
-    // TODO
-    return AgentDescription(model, agent);
-}
-
 
 /**
  * Accessors

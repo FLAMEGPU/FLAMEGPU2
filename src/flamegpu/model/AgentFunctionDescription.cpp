@@ -20,22 +20,6 @@ AgentFunctionDescription::AgentFunctionDescription(AgentFunctionDescription &&ot
     , function(other_function.function) {
     // TODO
 }
-// Copy Assign
-AgentFunctionDescription& AgentFunctionDescription::operator=(const AgentFunctionDescription &other_function) {
-    // TODO
-    return *this;
-}
-// Move Assign
-AgentFunctionDescription& AgentFunctionDescription::operator=(AgentFunctionDescription &&other_function) {
-    // TODO
-    return *this;
-}
-
-AgentFunctionDescription AgentFunctionDescription::clone(const std::string &cloned_function_name) const {
-    // TODO
-    return *this;
-}
-
 
 /**
  * Accessors

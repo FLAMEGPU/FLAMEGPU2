@@ -17,34 +17,7 @@ MessageDescription::MessageDescription(const MessageDescription &other_message)
 MessageDescription::MessageDescription(MessageDescription &&other_message) noexcept
     : model(move(other_message.model))
     , message(other_message.message) { }
-// Copy Assign
-MessageDescription& MessageDescription::operator=(const MessageDescription &other_message) {
-    // TODO
-    return *this;
-}
-// Move Assign
-MessageDescription& MessageDescription::operator=(MessageDescription &&other_message) {
-    // std::string old_name = this->message->name;
-    // this->message->name = move(other_message.message->name);
-    // this->message->variables = move(other_message.message->variables);
-    // if (old_name != this->message->name) {
-    //     // TODO: if name has changed, update references?
-    //     // Rename inside model
-    //     auto it = model->messages.find(old_name);
-    //     if(it != model->messages.end()) {
-    //         model->messages.emplace(this->message->name, it->second);
-    //         model->messages.erase(it);
-    //     } else {
-    //         // This should never happen
-    //     }
-    // }
-    return *this;
-}
 
-MessageDescription MessageDescription::clone(const std::string &cloned_message_name) const {
-    // TODO
-    return MessageDescription(model, message);
-}
 
 /**
  * Const Accessors

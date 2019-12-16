@@ -24,11 +24,9 @@ class MessageDescription {
     // Move Construct
     MessageDescription(MessageDescription &&other_message) noexcept;
     // Copy Assign
-    MessageDescription& operator=(const MessageDescription &other_message);
+    MessageDescription& operator=(const MessageDescription &other_message) = delete;
     // Move Assign
-    MessageDescription& operator=(MessageDescription &&other_message);
-
-    MessageDescription clone(const std::string &cloned_message_name) const;
+    MessageDescription& operator=(MessageDescription &&other_message) = delete;
 
  public:
     /**

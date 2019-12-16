@@ -16,16 +16,6 @@ LayerDescription::LayerDescription(LayerDescription &&other_layer) noexcept
     , layer(other_layer.layer) {
     // TODO
 }
-// Copy Assign
-LayerDescription& LayerDescription::operator=(const LayerDescription &other_layer) {
-    // TODO
-    return *this;
-}
-// Move Assign
-LayerDescription& LayerDescription::operator=(LayerDescription &&other_layer) noexcept {
-    // TODO
-    return *this;
-}
 
 
 void LayerDescription::addAgentFunction(const AgentFunctionDescription &afd) {

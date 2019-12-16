@@ -100,7 +100,7 @@ struct AgentData : std::enable_shared_from_this<AgentData> {
 };
 struct MessageData {
     friend class ModelDescription;
-    friend class ModelData;
+    friend struct ModelData;
 
     ModelData::VariableMap variables;
     std::unique_ptr<MessageDescription> description;

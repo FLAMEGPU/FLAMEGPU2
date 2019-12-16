@@ -20,16 +20,6 @@ ModelDescription::ModelDescription(ModelDescription &&other_model)
     : model(move(other_model.model)) {
     // TODO
 }
-// Copy Assign
-ModelDescription& ModelDescription::operator=(const ModelDescription &other_model) {
-    // TODO
-    return *this;
-}
-// Move Assign
-ModelDescription& ModelDescription::operator=(ModelDescription &&other_model) {
-    // TODO
-    return *this;
-}
 
 /**
 * Accessors
@@ -145,10 +135,6 @@ void ModelDescription::addExitCondition(FLAMEGPU_EXIT_CONDITION_POINTER func_p) 
 
 EnvironmentDescription& ModelDescription::Environment() {
     return *model->environment;
-}
-EnvironmentDescription& ModelDescription::cloneEnvironment(const EnvironmentDescription &env) {
-    // TODO
-    return *this->model->environment;
 }
 
 /**

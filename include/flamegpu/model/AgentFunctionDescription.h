@@ -24,11 +24,9 @@ class AgentFunctionDescription {
     // Move Construct
     AgentFunctionDescription(AgentFunctionDescription &&other_function);
     // Copy Assign
-    AgentFunctionDescription& operator=(const AgentFunctionDescription &other_function);
+    AgentFunctionDescription& operator=(const AgentFunctionDescription &other_function) = delete;
     // Move Assign
-    AgentFunctionDescription& operator=(AgentFunctionDescription &&other_function);
-
-    AgentFunctionDescription clone(const std::string &cloned_function_name) const;
+    AgentFunctionDescription& operator=(AgentFunctionDescription &&other_function) = delete;
 
  public:
     /**
