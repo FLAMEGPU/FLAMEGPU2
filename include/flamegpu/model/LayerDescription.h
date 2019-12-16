@@ -32,6 +32,7 @@ class LayerDescription {
     void addAgentFunction(AgentFunction a = AgentFunction());
     void addAgentFunction(const AgentFunctionDescription &afd);
     void addAgentFunction(const std::string &name);
+    void addAgentFunction(const char *name);
     void addHostFunction(FLAMEGPU_HOST_FUNCTION_POINTER func_p);
 
     /**
