@@ -1,8 +1,10 @@
 #ifndef INCLUDE_FLAMEGPU_MODEL_LAYERDESCRIPTION_H_
 #define INCLUDE_FLAMEGPU_MODEL_LAYERDESCRIPTION_H_
 
+#include <string>
+
 #include "flamegpu/model/ModelDescription.h"
-#include "AgentDescription.h"
+#include "flamegpu/model/AgentDescription.h"
 
 struct ModelData;
 struct LayerData;
@@ -21,6 +23,7 @@ class LayerDescription {
     LayerDescription& operator=(const LayerDescription &other_layer);
     // Move Assign
     LayerDescription& operator=(LayerDescription &&other_layer) noexcept;
+
  public:
     /**
      * Accessors
@@ -30,7 +33,7 @@ class LayerDescription {
     void addAgentFunction(const AgentFunctionDescription &afd);
     void addAgentFunction(const std::string &name);
     void addHostFunction(FLAMEGPU_HOST_FUNCTION_POINTER func_p);
-    
+
     /**
      * Const Accessors
      */

@@ -2,6 +2,7 @@
 #define INCLUDE_FLAMEGPU_MODEL_MODELDATA_H_
 
 #include <unordered_map>
+#include <list>
 #include <memory>
 #include <typeindex>
 #include <set>
@@ -24,7 +25,7 @@ struct AgentFunctionData;
 struct LayerData;
 
 struct ModelData : std::enable_shared_from_this<ModelData>{
-    static const std::string DEFAULT_STATE;  // "default"
+    static const char *DEFAULT_STATE;  // "default"
     friend class ModelDescription;
     typedef unsigned int size_type;
     struct Variable {
@@ -61,16 +62,17 @@ struct ModelData : std::enable_shared_from_this<ModelData>{
     StepFunctionSet stepFunctions;
     ExitFunctionSet exitFunctions;
     ExitConditionSet exitConditions;
-    std::unique_ptr<EnvironmentDescription> environment; // TODO: Move this to same Data:Description format
+    std::unique_ptr<EnvironmentDescription> environment;  // TODO: Move this to same Data:Description format
     std::string name;
 
     std::shared_ptr<ModelData> clone() const;
+
  protected:
      /**
       * This should only be called via clone();
       */
-    ModelData(const ModelData &other);
-    ModelData(const std::string &model_name);
+    explicit ModelData(const ModelData &other);
+    explicit ModelData(const std::string &model_name);
 };
 struct AgentData : std::enable_shared_from_this<AgentData> {
     friend class ModelDescription;
@@ -82,12 +84,12 @@ struct AgentData : std::enable_shared_from_this<AgentData> {
     ModelData::VariableMap variables;
     std::set<std::string> states;
     std::string initial_state;
-    unsigned int agent_outputs; // Number of functions that have agent output of this agent type
+    unsigned int agent_outputs;  // Number of functions that have agent output of this agent type
     std::shared_ptr<AgentDescription> description;
     std::string name;
     bool keepDefaultState;
 
-    bool isOutputOnDevice() const; // Convenience wrapper for agent_outputs
+    bool isOutputOnDevice() const;  // Convenience wrapper for agent_outputs
 
     bool operator==(const AgentData& rhs) const;
     bool operator!=(const AgentData& rhs) const;
@@ -123,7 +125,7 @@ struct AgentFunctionData {
     bool message_output_optional;
 
     std::weak_ptr<AgentData> agent_output;
-    
+
     bool has_agent_death = false;
 
     std::weak_ptr<AgentData> parent;
@@ -134,6 +136,7 @@ struct AgentFunctionData {
     bool operator!=(const AgentFunctionData& rhs) const;
 
     AgentFunctionData(const AgentFunctionData &other) = delete;
+
  protected:
     AgentFunctionData(ModelData *const model, std::shared_ptr<AgentData> _parent, const AgentFunctionData &other);
     AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string &function_name, AgentFunctionWrapper *agent_function);

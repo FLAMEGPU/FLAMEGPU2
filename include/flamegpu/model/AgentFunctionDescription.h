@@ -44,12 +44,12 @@ class AgentFunctionDescription {
     void setAgentOutput(const std::string &agent_name);
     void setAgentOutput(AgentDescription &agent);
     void setAllowAgentDeath(const bool &has_death);
-    
+
     MessageDescription &MessageInput();
     MessageDescription &MessageOutput();
     AgentDescription &AgentOutput();
     bool &AllowAgentDeath();
-    
+
     /**
      * Const Accessors
      */
@@ -59,13 +59,13 @@ class AgentFunctionDescription {
     const MessageDescription &getMessageInput() const;
     const MessageDescription &getMessageOutput() const;
     bool getMessageOutputOptional() const;
-    const AgentDescription &getAgentOutput() const;    
+    const AgentDescription &getAgentOutput() const;
     bool getHasAgentDeath() const;
-    
+
     bool hasMessageInput() const;
     bool hasMessageOutput() const;
     bool hasAgentOutput() const;
-    
+
  private:
     ModelData *const model;
     AgentFunctionData *const function;

@@ -97,7 +97,7 @@ TEST(ModelDescTest, MessageFunctionCheck) {
     AgentFunctionDescription &output_data = circle_agent.newFunction("output_data", sample_agentfn2);
 
     circle_agent.newFunction("move", sample_agentfn2);
-    
+
    /**
      * @brief      Checks the name of agent function description
      * This is to validate the predicate value. The test should pass.

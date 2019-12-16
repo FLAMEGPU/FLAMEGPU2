@@ -1,9 +1,11 @@
 #include "flamegpu/gpu/CUDAAgentModel.h"
+
+#include <algorithm>
+
 #include "flamegpu/model/ModelData.h"
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/pop/AgentPopulation.h"
 #include "flamegpu/runtime/flamegpu_host_api.h"
-#include <algorithm>
 
 CUDAAgentModel::CUDAAgentModel(const ModelDescription& _model)
     : Simulation(_model)
@@ -12,9 +14,8 @@ CUDAAgentModel::CUDAAgentModel(const ModelDescription& _model)
     , curve(Curve::getInstance())
     , message_map()
     , rng(RandomManager::getInstance()) {
-
     rng.increaseSimCounter();
-    
+
     // populate the CUDA agent map
     const auto &am = model->agents;
     // create new cuda agent and add to the map
@@ -75,7 +76,7 @@ bool CUDAAgentModel::step() {
         /*! for each func function - Loop through to do all mapping of agent and message variables */
         for (const std::shared_ptr<AgentFunctionData> &func_des : functions) {
             auto func_agent = func_des->parent.lock()->description;
-            if(!func_agent) {
+            if (!func_agent) {
                 THROW InvalidAgentFunc("Agent function refers to expired agent.");
             }
             const CUDAAgent& cuda_agent = getCUDAAgent(func_agent->getName());
@@ -284,8 +285,7 @@ const CUDAAgent& CUDAAgentModel::getCUDAAgent(std::string agent_name) const {
     return *(it->second);
 }
 
-AgentInterface& CUDAAgentModel::getAgent(const std::string& agent_name)
-{
+AgentInterface& CUDAAgentModel::getAgent(const std::string& agent_name) {
     auto it = agent_map.find(agent_name);
 
     if (it == agent_map.end()) {

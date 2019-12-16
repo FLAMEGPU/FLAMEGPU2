@@ -14,7 +14,7 @@ typedef void(AgentFunctionWrapper)(
     Curve::NamespaceHash messagename_outp_hash,
     const int popNo,
     const unsigned int messageList_size,
-    const unsigned int thread_in_layer_offset); // Can't put __global__ in a typedef
+    const unsigned int thread_in_layer_offset);  // Can't put __global__ in a typedef
 
 /**
  * Wrapper function for launching agent functions
@@ -62,8 +62,7 @@ __global__ void agent_function_wrapper(
         if (flag == 1) {
             // delete the agent
             printf("Agent DEAD!\n");
-        }
-        else {
+        } else {
             // printf("Agent ALIVE!\n");
         }
     }

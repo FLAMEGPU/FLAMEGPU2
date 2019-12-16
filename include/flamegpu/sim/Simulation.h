@@ -14,9 +14,9 @@ struct ModelData;
 class Simulation {
  public:
     virtual ~Simulation() = default;
-    Simulation(const ModelDescription& model);
+    explicit Simulation(const ModelDescription& model);
     void initialise(int argc, const char** argv);
-    
+
     virtual bool step() = 0;
     virtual void simulate() = 0;
 
@@ -30,6 +30,7 @@ class Simulation {
     virtual void getPopulationData(AgentPopulation& population) = 0;
 
     virtual AgentInterface &getAgent(const std::string &name) = 0;
+
  protected:
     virtual void _initialise() = 0;
     virtual bool checkArgs_derived(int argc, const char** argv) = 0;
@@ -47,7 +48,6 @@ class Simulation {
     std::string xml_input_path;
     bool has_seed;
     unsigned int random_seed;
-
 };
 
 #endif  // INCLUDE_FLAMEGPU_SIM_SIMULATION_H_

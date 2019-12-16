@@ -40,7 +40,7 @@ class CUDAAgent : public AgentInterface {
     virtual ~CUDAAgent(void);
 
     const AgentData& getAgentDescription() const override;
-    
+
     /* Can be used to override the current population data without reallocating */
     void setPopulationData(const AgentPopulation& population);
 

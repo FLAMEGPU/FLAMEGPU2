@@ -59,7 +59,7 @@ TEST(PopTest, PopulationInstVarCheck1) {
 
     circle_agent.newVariable<float>("x");
     circle_agent.newVariable<float>("y");
-    
+
     AgentPopulation population(circle_agent);
 
     AgentInstance instance = population.getNextInstance("default");
@@ -93,7 +93,7 @@ TEST(PopTest, PopulationInstVarCheck2) {
 
     circle_agent.newVariable<float>("x");
     circle_agent.newVariable<float>("y");
-    
+
     AgentPopulation population(circle_agent);
 
     AgentInstance instance = population.getNextInstance("default");
@@ -119,7 +119,7 @@ TEST(PopTest, PopulationInstVarCheck3) {
 
     circle_agent.newVariable<float>("x");
     circle_agent.newVariable<float>("y");
-    
+
     AgentPopulation population(circle_agent);
 
     AgentInstance instance = population.getNextInstance("default");
@@ -144,7 +144,7 @@ TEST(PopTest, PopulationSizeCheck) {
 
     circle_agent.newVariable<float>("x");
     circle_agent.newVariable<float>("y");
-    
+
     AgentPopulation population(circle_agent);
 
     EXPECT_TRUE(population.getMaximumStateListCapacity() == AgentPopulation::DEFAULT_POPULATION_SIZE);
@@ -168,7 +168,7 @@ TEST(PopTest, PopulationAddMoreCapacity) {
 
     circle_agent.newVariable<float>("x");
     circle_agent.newVariable<float>("y");
-    
+
     AgentPopulation population(circle_agent, 100);
     EXPECT_EQ(population.getMaximumStateListCapacity(), 100u);
 
@@ -194,7 +194,7 @@ TEST(PopTest, PopulationOverflowCapacity) {
 
     circle_agent.newVariable<float>("x");
     circle_agent.newVariable<float>("y");
-    
+
     AgentPopulation population(circle_agent, 100);
     EXPECT_EQ(population.getMaximumStateListCapacity(), 100u);
 
@@ -228,7 +228,7 @@ TEST(PopTest, PopulationCheckGetInstanceBeyondSize) {
 
     circle_agent.newVariable<float>("x");
     circle_agent.newVariable<float>("y");
-    
+
     AgentPopulation population(circle_agent, 100);
 
     AgentInstance instance_s1 = population.getNextInstance("default");
@@ -252,7 +252,7 @@ TEST(PopTest, PopulationDataValuesMultipleStates) {
     circle_agent.newState("s2");
 
     circle_agent.newVariable<int>("id");
-    
+
     AgentPopulation population(circle_agent, 100);
 
     // add 100 instances (no problem)

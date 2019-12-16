@@ -34,9 +34,9 @@ int xmlWriter::writeStates() {
     pRoot->InsertEndChild(pElement);
 
     int populationSize;
-    
+
     // for each agent types
-    for (auto &agent:model_state) {
+    for (auto &agent : model_state) {
         const char* agentName = agent.first.c_str();
 
         populationSize = agent.second->getStateMemory().getStateListSize();

@@ -238,12 +238,10 @@ const std::unique_ptr<CUDAAgentStateList> &CUDAAgent::getAgentStateList(const st
     return sm->second;
 }
 
-void* CUDAAgent::getStateVariablePtr(const std::string& state_name, const std::string& variable_name) 
-{
+void* CUDAAgent::getStateVariablePtr(const std::string& state_name, const std::string& variable_name) {
     return getAgentStateList(state_name)->getAgentListVariablePointer(variable_name);
 }
 
-ModelData::size_type CUDAAgent::getStateSize(const std::string& state_name) const
-{
+ModelData::size_type CUDAAgent::getStateSize(const std::string& state_name) const {
     return getAgentStateList(state_name)->getCUDAStateListSize();
 }

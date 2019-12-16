@@ -5,7 +5,7 @@
 #include "flamegpu/model/AgentFunctionDescription.h"
 #include "flamegpu/model/LayerDescription.h"
 
-const std::string ModelData::DEFAULT_STATE = "default";
+const char *ModelData::DEFAULT_STATE = "default";
 
 /**
  * Constructors
@@ -58,7 +58,7 @@ ModelData::ModelData(const ModelData &other)
     , name(other.name) {
     // Manually copy construct maps of shared ptr
     for (const auto m : other.messages) {
-        messages.emplace(m.first, std::shared_ptr<MessageData>(new MessageData(this, *m.second)));//Need to convert this to shared_ptr, how to force shared copy construct?
+        messages.emplace(m.first, std::shared_ptr<MessageData>(new MessageData(this, *m.second)));  // Need to convert this to shared_ptr, how to force shared copy construct?
     }
     for (const auto a : other.agents) {
         auto b = std::shared_ptr<AgentData>(new AgentData(this, *a.second));
@@ -78,18 +78,16 @@ AgentData::AgentData(ModelData *const model, const AgentData &other)
     , states(other.states)
     , initial_state(other.initial_state)
     , agent_outputs(other.agent_outputs)
-    , description(new AgentDescription(model, this)) 
-    , name(other.name) 
+    , description(new AgentDescription(model, this))
+    , name(other.name)
     , keepDefaultState(other.keepDefaultState) {
 }
 MessageData::MessageData(ModelData *const model, const MessageData &other)
     : variables(other.variables)
     , description(new MessageDescription(model, this))
-    , name(other.name) {
-
-}
+    , name(other.name) { }
 AgentFunctionData::AgentFunctionData(ModelData *const model, std::shared_ptr<AgentData> _parent, const AgentFunctionData &other)
-    : func (other.func)
+    : func(other.func)
     , initial_state(other.initial_state)
     , end_state(other.end_state)
     , message_output_optional(other.message_output_optional)
@@ -134,12 +132,11 @@ LayerData::LayerData(ModelData *const model, const LayerData &other)
                 }
             }
         }
-    next_agent_fn:;
+    next_agent_fn: {}
     }
 }
 
-bool AgentData::operator==(const AgentData& rhs) const
-{
+bool AgentData::operator==(const AgentData& rhs) const {
     if (name == rhs.name
         && initial_state == rhs.initial_state
         && states.size() == rhs.states.size()
@@ -155,7 +152,7 @@ bool AgentData::operator==(const AgentData& rhs) const
             }
         }
         {  // Compare variables
-            for(auto &v:variables) {
+            for (auto &v : variables) {
                 auto _v = rhs.variables.find(v.first);
                 if (_v == rhs.variables.end())
                     return false;
@@ -169,17 +166,14 @@ bool AgentData::operator==(const AgentData& rhs) const
     }
     return false;
 }
-bool AgentData::operator!=(const AgentData& rhs) const
-{
+bool AgentData::operator!=(const AgentData& rhs) const {
     return !operator==(rhs);
 }
-bool AgentFunctionData::operator==(const AgentFunctionData& rhs) const
-{
+bool AgentFunctionData::operator==(const AgentFunctionData& rhs) const {
     return (name == rhs.name)
-        && (func == rhs.func); // This is the only comparison that matters
+        && (func == rhs.func);  // This is the only comparison that matters
 }
-bool AgentFunctionData::operator!=(const AgentFunctionData& rhs) const
-{
+bool AgentFunctionData::operator!=(const AgentFunctionData& rhs) const {
     return !operator==(rhs);
 }
 

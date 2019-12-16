@@ -114,61 +114,54 @@ int main(int argc, const char* argv[]) {
     /* Multi agent model */
     ModelDescription flame_model("circles_model");
 
-    AgentDescription circle1_agent("circle1");
-    circle1_agent.addAgentVariable<float>("x");
-    circle1_agent.addAgentVariable<float>("y");
+    AgentDescription &circle1_agent = flame_model.newAgent("circle1");
+    circle1_agent.newVariable<float>("x");
+    circle1_agent.newVariable<float>("y");
 
-    AgentDescription circle2_agent("circle2");
-    circle2_agent.addAgentVariable<float>("x");
-    circle2_agent.addAgentVariable<float>("y");
+    AgentDescription &circle2_agent = flame_model.newAgent("circle2");
+    circle2_agent.newVariable<float>("x");
+    circle2_agent.newVariable<float>("y");
 
     // same name ?
-    MessageDescription location1_message("location1", SIZE);
-    location1_message.addVariable<float>("x");
-    location1_message.addVariable<float>("y");
+    MessageDescription &location1_message = flame_model.newMessage("location1");
+    location1_message.newVariable<float>("x");
+    location1_message.newVariable<float>("y");
     /*
-        MessageDescription location2_message("location2");
-        location2_message.addVariable<float>("x");
-        location2_message.addVariable<float>("y");
+        MessageDescription &location2_message = flame_model.newMessage("location2");
+        location2_message.newVariable<float>("x");
+        location2_message.newVariable<float>("y");
     */
 
-    AgentFunctionDescription output_data("output_data");
-    AgentFunctionOutput output_location("location1");
-    output_data.setOutput(output_location);
-    output_data.setFunction(&output_func);
-    circle1_agent.addAgentFunction(output_data);
+    AgentFunctionDescription &output_data = circle1_agent.newFunction("output_data", output_func);
+    output_data.setMessageOutput(location1_message);
 
-    AgentFunctionDescription input_data("input_data");
-    AgentFunctionInput input_location("location1");
-    input_data.setInput(input_location);
-    input_data.setFunction(&input_func);
-    circle2_agent.addAgentFunction(input_data);
+    AgentFunctionDescription &input_data = circle2_agent.newFunction("input_data", input_func);
+    input_data.setMessageInput(location1_message);
 
-    AgentFunctionDescription add_data("add_data");
-    // add_data.setInput(input_location);
-    add_data.setFunction(&add_func);
-    circle1_agent.addAgentFunction(add_data);
+    AgentFunctionDescription &add_data = circle1_agent.newFunction("add_data", add_func);
+    // add_data.setMessageOutput(location1_message);
 
-    AgentFunctionDescription subtract_data("subtract_data");
-    // subtract_data.setInput(input_location);
-    subtract_data.setFunction(&subtract_func);
-    circle2_agent.addAgentFunction(subtract_data);
+    AgentFunctionDescription &subtract_data = circle2_agent.newFunction("subtract_data", subtract_func);
+    // subtract_data.setMessageOutput(location1_message);
 
+    LayerDescription &output_layer = flame_model.newLayer("output_layer");
+    output_layer.addAgentFunction(output_data);
 
-    // model
-    flame_model.addMessage(location1_message);
-    flame_model.addAgent(circle1_agent);
+    LayerDescription &input_layer = flame_model.newLayer("input_layer");
+    input_layer.addAgentFunction(input_data);
 
-    // flame_model.addMessage(location2_message);
-    flame_model.addAgent(circle2_agent);
+    // multiple functions per simulation layer (from different agents)
+    LayerDescription &concurrent_layer = flame_model.newLayer("concurrent_layer");
+    concurrent_layer.addAgentFunction(add_data);
+    concurrent_layer.addAgentFunction(subtract_data);
 
-    Simulation simulation(flame_model);
-
+    CUDAAgentModel cuda_model(flame_model);
 #ifdef enable_read
         AgentPopulation population1(circle1_agent);
         AgentPopulation population2(circle2_agent);
-        flame_model.addPopulation(population1);
-        flame_model.addPopulation(population2);
+
+        cuda_model.setPopulationData(population1);
+        cuda_model.setPopulationData(population2);
 
         // If there is not enough arguments bail.
         if (argc < 2) {
@@ -176,8 +169,8 @@ int main(int argc, const char* argv[]) {
             return EXIT_FAILURE;
         }
 
-       simulation.initialise(argc, argv);  // argv[1]
-      // simulation.initialise(new StateReader(flame_model,argv[1]));
+        cuda_model.initialise(argc, argv);  // argv[1]
+      // cuda_model.initialise(new StateReader(flame_model,argv[1]));
 #else
         // 2)
         AgentPopulation population1(circle1_agent, SIZE);
@@ -194,41 +187,19 @@ int main(int argc, const char* argv[]) {
             instance.setVariable<float>("y", i*0.2f);
         }
 
-        flame_model.addPopulation(population1);
-        flame_model.addPopulation(population2);
+        cuda_model.setPopulationData(population1);
+        cuda_model.setPopulationData(population2);
 #endif
 
-
-    SimulationLayer output_layer(simulation, "output_layer");
-    output_layer.addAgentFunction("output_data");
-    simulation.addSimulationLayer(output_layer);
-
-    SimulationLayer input_layer(simulation, "input_layer");
-    input_layer.addAgentFunction("input_data");
-    simulation.addSimulationLayer(input_layer);
-
-    // multiple functions per simulation layer (from different agents)
-    SimulationLayer concurrent_layer(simulation, "concurrent_layer");
-    concurrent_layer.addAgentFunction("add_data");
-    concurrent_layer.addAgentFunction("subtract_data");
-    simulation.addSimulationLayer(concurrent_layer);
-
-    simulation.setSimulationSteps(1);  // steps>1 --> does not work for now
+    cuda_model.setSimulationSteps(1);  // steps>1 --> does not work for now
 
     /* Run the model */
-    CUDAAgentModel cuda_model(flame_model);
-
-    cuda_model.setPopulationData(population1);
-    cuda_model.setPopulationData(population2);
-
-    // cuda_model.addSimulation(simulation);
-
-    cuda_model.simulate(simulation);
+    cuda_model.simulate();
 
     cuda_model.getPopulationData(population1);
     cuda_model.getPopulationData(population2);
 
-    simulation.output(argc, argv);  // argv[1]
+    cuda_model.output(argc, argv);  // argv[1]
 
     return 0;
 }

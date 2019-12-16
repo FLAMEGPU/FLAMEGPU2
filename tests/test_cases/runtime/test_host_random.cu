@@ -165,7 +165,7 @@ class MiniSim {
             simulation->setSimulationSteps(1);
             simulation->setPopulationData(population);
         }
-        if(argc)
+        if (argc)
             simulation->initialise(argc, argv);
         // CudaModel must be declared here
         // As the initial call to constructor fixes the agent population

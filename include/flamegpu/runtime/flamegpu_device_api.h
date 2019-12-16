@@ -44,7 +44,7 @@ struct funcName ## _impl {\
 funcName ## _impl funcName;\
 __device__ __forceinline__ FLAME_GPU_AGENT_STATUS funcName ## _impl::operator()(FLAMEGPU_DEVICE_API *FLAMEGPU) const
 
- // Advanced macro for defining agent transition functions
+// Advanced macro for defining agent transition functions
 #define FLAMEGPU_AGENT_FUNC __device__ __forceinline__
 
 /** @brief    A flame gpu api class for the device runtime only

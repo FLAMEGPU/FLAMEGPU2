@@ -17,7 +17,7 @@
 
 AgentStateMemory::AgentStateMemory(const AgentPopulation &p, unsigned int initial_capacity) : population(p) {
     // state memory map is cloned from the agent description
-    for(auto &var:p.getAgentDescription().variables) {
+    for (auto &var : p.getAgentDescription().variables) {
         state_memory.emplace(var.first, std::unique_ptr<GenericMemoryVector>(var.second.memory_vector->clone()));
     }
 
@@ -59,9 +59,9 @@ const GenericMemoryVector& AgentStateMemory::getReadOnlyMemoryVector(const std::
     return *(iter->second);
 }
 
-const std::type_index& AgentStateMemory::getVariableType(std::string variable_name) const {    
+const std::type_index& AgentStateMemory::getVariableType(std::string variable_name) const {
     auto varIt = population.getAgentDescription().variables.find(variable_name);
-    if(varIt == population.getAgentDescription().variables.end()) {
+    if (varIt == population.getAgentDescription().variables.end()) {
         THROW InvalidAgentVar("Agent ('%s') variable ('%s') was not found, "
             "In AgentStateMemory::getVariableType()",
             population.getAgentDescription().name.c_str(), variable_name.c_str());

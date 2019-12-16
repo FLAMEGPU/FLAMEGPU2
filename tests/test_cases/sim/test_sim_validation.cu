@@ -41,14 +41,14 @@ TEST(SimTest, SimulationFunctionCheck) {
     AgentFunctionDescription &move = attach_move_func(circle_agent);
 
     AgentFunctionDescription &stay = attach_stay_func(circle_agent);
-    
+
     AgentPopulation population(circle_agent, 5);
 
     for (int i=0; i< 5; i++) {
         AgentInstance instance = population.getNextInstance("default");
         instance.setVariable<float>("x", i*0.1f);
     }
-    
+
     LayerDescription &output_layer = flame_model.newLayer("output_layer");
     output_layer.addAgentFunction(output_data);
 

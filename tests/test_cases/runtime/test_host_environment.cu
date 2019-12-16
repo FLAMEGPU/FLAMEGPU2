@@ -26,8 +26,7 @@ class MiniSim {
         model("model"),
         agent(model.newAgent("agent")),
         population(nullptr),
-        ed(model.Environment())
-    {
+        ed(model.Environment()) {
         population = new AgentPopulation(agent, TEST_LEN);
         ed.add<float>("float_", static_cast<float>(TEST_VALUE));
         ed.add<double>("double_", static_cast<double>(TEST_VALUE));

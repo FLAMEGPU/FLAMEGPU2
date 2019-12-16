@@ -27,6 +27,7 @@ struct AgentData;
 class AgentPopulation {
     typedef std::map<std::string, std::unique_ptr<AgentStateMemory>> AgentStatesMap;    // key is concat of agent and state name!
     typedef std::pair<std::string, std::unique_ptr<AgentStateMemory>> AgentStatesMapPair;
+
  public:
     static const unsigned int DEFAULT_POPULATION_SIZE;
     explicit AgentPopulation(const AgentDescription &agent_description, unsigned int initial_size = DEFAULT_POPULATION_SIZE);

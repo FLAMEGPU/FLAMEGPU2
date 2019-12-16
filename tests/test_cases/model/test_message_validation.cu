@@ -76,12 +76,12 @@ TEST(MessageTest, MessageCheck) {
     * @todo change the boost test message style to EXPECT_TRUE
     */
     // TODO: DISABLED
-    //const VariableMap &mem = location_message.getVariableMap();
-    //for (const VariableMapPair& mm : mem) {
-    //    // get the variable name
-    //    std::string var_name = mm.first;
-    //    GTEST_COUT << "variable names:" << var_name << std::endl;
-    //}
+    // const VariableMap &mem = location_message.getVariableMap();
+    // for (const VariableMapPair& mm : mem) {
+    //     // get the variable name
+    //     std::string var_name = mm.first;
+    //     GTEST_COUT << "variable names:" << var_name << std::endl;
+    // }
 
    /**
      * @brief      Checks if the message variable exists

@@ -53,7 +53,7 @@ void AgentDescription::newState(const std::string &state_name) {
             agent->states.insert(state_name);
             return;
         }
-    } else if(state_name == ModelData::DEFAULT_STATE) {
+    } else if (state_name == ModelData::DEFAULT_STATE) {
         agent->keepDefaultState = true;
         agent->states.insert(state_name);  // Re add incase it was dropped
     } else {
@@ -92,7 +92,7 @@ AgentFunctionDescription &AgentDescription::cloneFunction(const AgentFunctionDes
 std::string AgentDescription::getName() const {
     return agent->name;
 }
-    
+
 std::type_index AgentDescription::getVariableType(const std::string &variable_name) const {
     auto f = agent->variables.find(variable_name);
     if (f != agent->variables.end()) {

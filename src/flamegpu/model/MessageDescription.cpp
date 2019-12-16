@@ -1,5 +1,6 @@
 #include "flamegpu/model/MessageDescription.h"
-#include "flamegpu/model/AgentDescription.h" // Used by Move-Assign
+#include "flamegpu/model/AgentDescription.h"  // Used by Move-Assign
+
 /**
  * Constructors
  */
@@ -23,20 +24,20 @@ MessageDescription& MessageDescription::operator=(const MessageDescription &othe
 }
 // Move Assign
 MessageDescription& MessageDescription::operator=(MessageDescription &&other_message) {
-    //std::string old_name = this->message->name;
-    //this->message->name = move(other_message.message->name);
-    //this->message->variables = move(other_message.message->variables);
-    //if (old_name != this->message->name) {
-    //    // TODO: if name has changed, update references?
-    //    // Rename inside model
-    //    auto it = model->messages.find(old_name);
-    //    if(it != model->messages.end()) {
-    //        model->messages.emplace(this->message->name, it->second);
-    //        model->messages.erase(it);
-    //    } else {
-    //        // This should never happen
-    //    }
-    //}
+    // std::string old_name = this->message->name;
+    // this->message->name = move(other_message.message->name);
+    // this->message->variables = move(other_message.message->variables);
+    // if (old_name != this->message->name) {
+    //     // TODO: if name has changed, update references?
+    //     // Rename inside model
+    //     auto it = model->messages.find(old_name);
+    //     if(it != model->messages.end()) {
+    //         model->messages.emplace(this->message->name, it->second);
+    //         model->messages.erase(it);
+    //     } else {
+    //         // This should never happen
+    //     }
+    // }
     return *this;
 }
 

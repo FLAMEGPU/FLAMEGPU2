@@ -1,4 +1,7 @@
 #include "flamegpu/sim/Simulation.h"
+
+#include <algorithm>
+
 #include "flamegpu/model/ModelData.h"
 #include "flamegpu/io/xmlWriter.h"
 #include "flamegpu/io/factory.h"
@@ -6,7 +9,6 @@
 #include "flamegpu/runtime/flamegpu_host_api.h"
 #include "flamegpu/pop/AgentPopulation.h"
 
-#include <algorithm>
 
 Simulation::Simulation(const ModelDescription& _model)
     : model(_model.model->clone())
@@ -21,7 +23,7 @@ void Simulation::initialise(int argc, const char** argv) {
     if (!checkArgs(argc, argv))
         exit(0);
 
-    if(has_seed)
+    if (has_seed)
         RandomManager::getInstance().reseed(random_seed);
 
     // Build population vector
@@ -30,7 +32,7 @@ void Simulation::initialise(int argc, const char** argv) {
         auto a = std::make_shared<AgentPopulation>(*agent.second->description);
         pops.emplace(agent.first, a);
     }
-    if(!xml_input_path.empty()) {
+    if (!xml_input_path.empty()) {
         StateReader *read__ = ReaderFactory::createReader(pops, xml_input_path.c_str());
         read__->parse();
         for (auto &agent : pops) {
@@ -65,18 +67,17 @@ void Simulation::output(int /*argc*/, const char** /*argv*/) {
 
     // Build population vector
     std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> pops;
-    for(auto &agent:model->agents) {
+    for (auto &agent : model->agents) {
         auto a = std::make_shared<AgentPopulation>(*agent.second->description);
         getPopulationData(*a);
         pops.emplace(agent.first, a);
     }
 
-    StateWriter *write__ = WriterFactory::createWriter(pops, input); // TODO (pair model format with its data?)
+    StateWriter *write__ = WriterFactory::createWriter(pops, input);  // TODO (pair model format with its data?)
     write__->writeStates();
 }
 
-int Simulation::checkArgs(int argc, const char** argv)
-{
+int Simulation::checkArgs(int argc, const char** argv) {
     has_seed = false;
     // These should really be in some kind of config struct
     // unsigned int device_id = 0;

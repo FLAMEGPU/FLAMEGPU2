@@ -65,7 +65,7 @@ int main(void) {
     const unsigned int AGENT_COUNT = 1024;
     ModelDescription model("host_functions_example");
 
-    {// agent
+    {  // agent
         AgentDescription &agent = model.newAgent("agent");
         agent.newVariable<float>("x");
         agent.newVariable<int>("a");
@@ -83,9 +83,8 @@ int main(void) {
     }
     /**
      * Control flow
-     */
-     
-     {// Attach init/step/exit functions and exit condition
+     */     
+     {  // Attach init/step/exit functions and exit condition
         model.addInitFunction(init_function);
         model.addStepFunction(step_function);
         model.addExitFunction(exit_function);

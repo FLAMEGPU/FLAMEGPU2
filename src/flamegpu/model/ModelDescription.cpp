@@ -35,7 +35,7 @@ ModelDescription& ModelDescription::operator=(ModelDescription &&other_model) {
 * Accessors
 */
 AgentDescription& ModelDescription::newAgent(const std::string &agent_name) {
-    if(!hasAgent(agent_name)) {
+    if (!hasAgent(agent_name)) {
         auto rtn = std::shared_ptr<AgentData>(new AgentData(model, agent_name));
         model->agents.emplace(agent_name, rtn);
         return *rtn->description;
@@ -96,7 +96,7 @@ LayerDescription& ModelDescription::newLayer(const std::string &name) {
     return *rtn->description;
 }
 LayerDescription& ModelDescription::Layer(const ModelData::size_type &layer_index) {
-    if(model->layers.size()>layer_index) {
+    if (model->layers.size() > layer_index) {
         auto it = model->layers.begin();
         for (auto i = 0u; i < layer_index; ++i)
             ++it;
@@ -107,7 +107,7 @@ LayerDescription& ModelDescription::Layer(const ModelData::size_type &layer_inde
         layer_index);
 }
 LayerDescription& ModelDescription::Layer(const std::string &name) {
-    if (!name.empty()) { // Can't search for no name, multiple layers might be nameless
+    if (!name.empty()) {  // Can't search for no name, multiple layers might be nameless
             for (auto it = model->layers.begin(); it != model->layers.end(); ++it) {
                 if ((*it)->name == name)
                     return *(*it)->description;
@@ -178,7 +178,7 @@ const EnvironmentDescription& ModelDescription::getEnvironment() const {
     return *model->environment;
 }
 const LayerDescription& ModelDescription::getLayer(const std::string &name) const {
-    if (!name.empty()) { // Can't search for no name, multiple layers might be nameless
+    if (!name.empty()) {  // Can't search for no name, multiple layers might be nameless
         for (auto it = model->layers.begin(); it != model->layers.end(); ++it) {
             if ((*it)->name == name)
                 return *(*it)->description;
@@ -189,7 +189,7 @@ const LayerDescription& ModelDescription::getLayer(const std::string &name) cons
         name.c_str());
 }
 const LayerDescription& ModelDescription::getLayer(const ModelData::size_type &layer_index) const {
-    if (model->layers.size()>layer_index) {
+    if (model->layers.size() > layer_index) {
         auto it = model->layers.begin();
         for (auto i = 0u; i < layer_index; ++i)
             ++it;
@@ -206,7 +206,7 @@ bool ModelDescription::hasMessage(const std::string &message_name) const {
     return model->messages.find(message_name) != model->messages.end();
 }
 bool ModelDescription::hasLayer(const std::string &name) const {
-    if (!name.empty()) { // Can't search for no name, multiple layers might be nameless
+    if (!name.empty()) {  // Can't search for no name, multiple layers might be nameless
         for (auto it = model->layers.begin(); it != model->layers.end(); ++it) {
             if ((*it)->name == name)
                 return true;
@@ -218,8 +218,7 @@ bool ModelDescription::hasLayer(const ModelData::size_type &layer_index) const {
     return model->layers.size() < layer_index;
 }
 
-ModelData::size_type ModelDescription::getLayerCount() const
-{
+ModelData::size_type ModelDescription::getLayerCount() const {
     // This down-cast is safe
     return static_cast<ModelData::size_type>(model->layers.size());
 }

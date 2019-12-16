@@ -10,6 +10,10 @@
  * \todo longer description
  */
 
+#include <memory>
+#include <string>
+#include <unordered_map>
+
 #include "flamegpu/io/statereader.h"
 #include "flamegpu/model/ModelDescription.h"
 

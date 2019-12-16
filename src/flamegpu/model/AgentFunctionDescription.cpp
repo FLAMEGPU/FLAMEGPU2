@@ -41,8 +41,8 @@ AgentFunctionDescription AgentFunctionDescription::clone(const std::string &clon
  * Accessors
  */
 void AgentFunctionDescription::setInitialState(const std::string &init_state) {
-    if(auto p = function->parent.lock()) {
-        if(p->description->hasState(function->initial_state)) {
+    if (auto p = function->parent.lock()) {
+        if (p->description->hasState(function->initial_state)) {
             this->function->initial_state = init_state;
         } else {
             THROW InvalidStateName("Agent ('%s') does not contain state '%s', "
@@ -55,8 +55,8 @@ void AgentFunctionDescription::setInitialState(const std::string &init_state) {
     }
 }
 void AgentFunctionDescription::setEndState(const std::string &exit_state) {
-    if(auto p = function->parent.lock()) {
-        if(p->description->hasState(function->initial_state)) {
+    if (auto p = function->parent.lock()) {
+        if (p->description->hasState(function->initial_state)) {
             this->function->end_state = exit_state;
         } else {
             THROW InvalidStateName("Agent ('%s') does not contain state '%s', "
@@ -81,7 +81,7 @@ void AgentFunctionDescription::setMessageInput(const std::string &message_name) 
 void AgentFunctionDescription::setMessageInput(MessageDescription &message) {
     auto a = model->messages.find(message.getName());
     if (a != model->messages.end()) {
-        if(a->second->description.get()==&message) {
+        if (a->second->description.get() == &message) {
             this->function->message_input = a->second;
         } else {
             THROW InvalidMessage("Message '%s' is not from Model '%s', "
@@ -109,14 +109,12 @@ void AgentFunctionDescription::setMessageOutput(MessageDescription &message) {
     if (a != model->messages.end()) {
         if (a->second->description.get() == &message) {
             this->function->message_output = a->second;
-        }
-        else {
+        } else {
             THROW InvalidMessage("Message '%s' is not from Model '%s', "
                 "in AgentFunctionDescription::setMessageOutput()\n",
                 message.getName().c_str(), model->name.c_str());
         }
-    }
-    else {
+    } else {
         THROW InvalidMessageName("Model ('%s') does not contain message '%s', "
             "in AgentFunctionDescription::setMessageOutput()\n",
             model->name.c_str(), message.getName().c_str());
@@ -130,8 +128,7 @@ void AgentFunctionDescription::setAgentOutput(const std::string &agent_name) {
     if (a != model->agents.end()) {
         this->function->agent_output = a->second;
         a->second->agent_outputs++;  // Mark inside agent that we are using it as an output
-    }
-    else {
+    } else {
         THROW InvalidAgentName("Model ('%s') does not contain agent '%s', "
             "in AgentFunctionDescription::setAgentOutput()\n",
             model->name.c_str(), agent_name.c_str());
@@ -143,14 +140,12 @@ void AgentFunctionDescription::setAgentOutput(AgentDescription &agent) {
         if (a->second->description.get() == &agent) {
             this->function->agent_output = a->second;
             a->second->agent_outputs++;  // Mark inside agent that we are using it as an output
-        }
-        else {
+        } else {
             THROW InvalidMessage("Agent '%s' is not from Model '%s', "
                 "in AgentFunctionDescription::setAgentOutput()\n",
                 agent.getName().c_str(), model->name.c_str());
         }
-    }
-    else {
+    } else {
         THROW InvalidMessageName("Model ('%s') does not contain agent '%s', "
             "in AgentFunctionDescription::setAgentOutput()\n",
             model->name.c_str(), agent.getName().c_str());
@@ -159,7 +154,7 @@ void AgentFunctionDescription::setAgentOutput(AgentDescription &agent) {
 void AgentFunctionDescription::setAllowAgentDeath(const bool &has_death) {
     function->has_agent_death = has_death;
 }
-    
+
 MessageDescription &AgentFunctionDescription::MessageInput() {
     if (auto m = function->message_input.lock())
         return *m->description;
@@ -167,7 +162,7 @@ MessageDescription &AgentFunctionDescription::MessageInput() {
         "in AgentFunctionDescription::MessageInput()\n");
 }
 MessageDescription &AgentFunctionDescription::MessageOutput() {
-    if(auto m = function->message_output.lock())
+    if (auto m = function->message_output.lock())
         return *m->description;
     THROW OutOfBoundsException("Message output has not been set, "
         "in AgentFunctionDescription::MessageOutput()\n");
@@ -181,7 +176,7 @@ AgentDescription &AgentFunctionDescription::AgentOutput() {
 bool &AgentFunctionDescription::AllowAgentDeath() {
     return function->has_agent_death;
 }
-    
+
 /**
  * Const Accessors
  */
@@ -218,7 +213,7 @@ const AgentDescription &AgentFunctionDescription::getAgentOutput() const {
 bool AgentFunctionDescription::getHasAgentDeath() const {
     return function->has_agent_death;
 }
-    
+
 bool AgentFunctionDescription::hasMessageInput() const {
     return function->message_input.lock() != nullptr;
 }

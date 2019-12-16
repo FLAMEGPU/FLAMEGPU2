@@ -44,11 +44,11 @@ FLAMEGPU_STEP_FUNCTION(Multi_ms2) {
 
 class MiniSim {
  public:
-    explicit MiniSim(const char *model_name = "model") 
+    explicit MiniSim(const char *model_name = "model")
         : model(model_name)
         , agent(model.newAgent("agent"))
         , population(nullptr)
-        , env(model.Environment()){
+        , env(model.Environment()) {
         population = new AgentPopulation(agent, TEST_LEN);
         model.addStepFunction(DEFAULT_STEP);
     }

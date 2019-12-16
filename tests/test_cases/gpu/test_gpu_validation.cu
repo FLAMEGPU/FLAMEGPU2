@@ -34,7 +34,7 @@ TEST(GPUTest, GPUMemoryTest) {
 
 
     circle_agent.newVariable<int>("id");
-    
+
     AgentPopulation population(circle_agent, 100);
     for (int i = 0; i< 100; i++) {
         AgentInstance instance = population.getNextInstance("default");
@@ -86,7 +86,7 @@ TEST(GPUTest, GPUSimulationTest) {
     }
 
     GTEST_COUT << "Testing initial values .." << std::endl;
-    
+
     LayerDescription &add_layer = flame_model.newLayer("add_layer");
     add_layer.addAgentFunction(add_data);
 
@@ -134,7 +134,7 @@ TEST(GPUTest, GPUSimulationTestMultiple) {
     AgentFunctionDescription &add_data = attach_add_func(circle1_agent);
     AgentFunctionDescription &subtract_data = attach_subtract_func(circle2_agent);
 
-    
+
     #define SIZE 10
     AgentPopulation population1(circle1_agent, SIZE);
     for (int i = 0; i < SIZE; i++) {
@@ -148,7 +148,7 @@ TEST(GPUTest, GPUSimulationTestMultiple) {
         instance.setVariable<double>("x", i);
         instance.setVariable<double>("y", i);
     }
-    
+
     // multiple functions per simulation layer (from different agents)
     LayerDescription &concurrent_layer = flame_model.newLayer("concurrent_layer");
     concurrent_layer.addAgentFunction(add_data);

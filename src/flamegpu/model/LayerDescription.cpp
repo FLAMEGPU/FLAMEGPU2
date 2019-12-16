@@ -35,7 +35,7 @@ void LayerDescription::addAgentFunction(const std::string &name) {
     for (auto a : model->agents) {
         for (auto f : a.second->functions) {
             if (f.second->name == name) {
-                if(layer->agent_functions.insert(f.second).second)
+                if (layer->agent_functions.insert(f.second).second)
                     return;
                 THROW InvalidAgentFunc("Attempted to add agent function '%s' to same layer twice, "
                     "in LayerDescription::addAgentFunction()\n",
@@ -48,7 +48,7 @@ void LayerDescription::addAgentFunction(const std::string &name) {
         name.c_str());
 }
 void LayerDescription::addHostFunction(FLAMEGPU_HOST_FUNCTION_POINTER func_p) {
-    if(!layer->host_functions.insert(func_p).second) {
+    if (!layer->host_functions.insert(func_p).second) {
         THROW InvalidHostFunc("HostFunction has already been added to LayerDescription,"
             "in LayerDescription::addHostFunction().");
     }

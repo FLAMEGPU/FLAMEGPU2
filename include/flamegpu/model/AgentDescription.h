@@ -6,6 +6,7 @@
 #include <typeinfo>
 #include <memory>
 #include <vector>
+#include <set>
 
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/pop/AgentPopulation.h"
@@ -58,7 +59,7 @@ class AgentDescription {
      * Const Accessors
      */
     std::string getName() const;
-    
+
     std::type_index getVariableType(const std::string &variable_name) const;
     size_t getVariableSize(const std::string &variable_name) const;
     ModelData::size_type getVariableLength(const std::string &variable_name) const;
@@ -72,7 +73,7 @@ class AgentDescription {
 
     const std::set<std::string> &getStates() const;
 
-private:
+ private:
     ModelData *const model;
     AgentData *const agent;
 };

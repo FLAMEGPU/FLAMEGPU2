@@ -14,7 +14,7 @@ struct MessageData;
  */
 class MessageDescription {
     friend struct MessageData;
-    
+
     /**
      * Constructors
      */
@@ -29,8 +29,8 @@ class MessageDescription {
     MessageDescription& operator=(MessageDescription &&other_message);
 
     MessageDescription clone(const std::string &cloned_message_name) const;
- public:
 
+ public:
     /**
      * Accessors
      */
