@@ -36,14 +36,11 @@ class ModelDescription {
      */    
     AgentDescription& newAgent(const std::string &agent_name);
     AgentDescription& Agent(const std::string &agent_name);
-    AgentDescription& cloneAgent(const AgentDescription &agent);
 
     MessageDescription& newMessage(const std::string &message_name);
     MessageDescription& Message(const std::string &message_name);
-    MessageDescription& cloneMessage(const MessageDescription &message);
 
     EnvironmentDescription& Environment();
-    EnvironmentDescription& cloneEnvironment(const EnvironmentDescription &environment);
 
     LayerDescription& newLayer(const std::string &name = "");
     LayerDescription& Layer(const std::string &name);
@@ -92,8 +89,6 @@ class ModelDescription {
     bool hasLayer(const ModelData::size_type &layer_index) const;
 
     ModelData::size_type getLayerCount() const;
-
-    ModelDescription clone(const std::string &cloned_model_name) const;
 
  private:
      ModelData *const model;

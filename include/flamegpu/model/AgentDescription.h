@@ -51,7 +51,6 @@ class AgentDescription {
     template<typename AgentFunction>
     AgentFunctionDescription &newFunction(const std::string &function_name, AgentFunction a = AgentFunction());
     AgentFunctionDescription &Function(const std::string &function_name);
-    AgentFunctionDescription &cloneFunction(const AgentFunctionDescription &function);
 
     /**
      * Const Accessors

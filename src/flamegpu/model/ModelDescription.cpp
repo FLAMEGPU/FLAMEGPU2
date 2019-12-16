@@ -42,10 +42,6 @@ AgentDescription& ModelDescription::Agent(const std::string &agent_name) {
         "in ModelDescription::getAgent().",
         agent_name.c_str());
 }
-AgentDescription& ModelDescription::cloneAgent(const AgentDescription &agent) {
-    // TODO
-    return *((*model->agents.begin()).second->description);
-}
 
 MessageDescription& ModelDescription::newMessage(const std::string &message_name) {
     if (!hasMessage(message_name)) {
@@ -64,10 +60,6 @@ MessageDescription& ModelDescription::Message(const std::string &message_name) {
     THROW InvalidMessageName("Message ('%s') was not found, "
         "in ModelDescription::Message().",
         message_name.c_str());
-}
-MessageDescription& ModelDescription::cloneMessage(const MessageDescription &message) {
-    // TODO
-    return *((*model->messages.begin()).second->description);
 }
 
 LayerDescription& ModelDescription::newLayer(const std::string &name) {
@@ -207,9 +199,4 @@ bool ModelDescription::hasLayer(const ModelData::size_type &layer_index) const {
 ModelData::size_type ModelDescription::getLayerCount() const {
     // This down-cast is safe
     return static_cast<ModelData::size_type>(model->layers.size());
-}
-
-ModelDescription ModelDescription::clone(const std::string &cloned_model_name) const {
-    // TODO
-    return ModelDescription(cloned_model_name);
 }

@@ -65,10 +65,6 @@ AgentFunctionDescription &AgentDescription::Function(const std::string &function
         "in AgentDescription::Function().",
         agent->name.c_str(), function_name.c_str());
 }
-AgentFunctionDescription &AgentDescription::cloneFunction(const AgentFunctionDescription &function) {
-    // TODO
-    return *((*agent->functions.begin()).second->description);
-}
 
 /**
  * Const Accessors
