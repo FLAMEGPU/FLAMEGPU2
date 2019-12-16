@@ -37,6 +37,12 @@ void LayerDescription::addAgentFunction(const std::string &name) {
         "in AgentFunctionDescription::addAgentFunction()\n",
         name.c_str());
 }
+/**
+ * Template magic means that the implicit cast doesn't occur as normal
+ */
+void LayerDescription::addAgentFunction(const char *af) {
+    addAgentFunction(std::string(af));
+}
 void LayerDescription::addHostFunction(FLAMEGPU_HOST_FUNCTION_POINTER func_p) {
     if (!layer->host_functions.insert(func_p).second) {
         THROW InvalidHostFunc("HostFunction has already been added to LayerDescription,"
