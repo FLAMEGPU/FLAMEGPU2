@@ -84,23 +84,22 @@ int Simulation::checkArgs(int argc, const char** argv) {
     // unsigned int iterations = 0;
 
     // Required args
-    if (argc < 2) {
+    if (argc < 1) {
         printHelp(argv[0]);
         return false;
     }
-    xml_input_path = std::string(argv[1]);
 
     // Parse optional args
-    int i = 2;
+    int i = 1;
     for (; i < argc; i++) {
         // Get arg as lowercase
         std::string arg(argv[i]);
         std::transform(arg.begin(), arg.end(), arg.begin(), [](unsigned char c) { return std::use_facet< std::ctype<char>>(std::locale()).tolower(c); });
         // -in <string>, Specifies the input state file
-        /*if (arg.compare("--in") == 0 || arg.compare("-i") == 0) {
-            xml_model_path = std::string(argv[++i]);
+        if (arg.compare("--in") == 0 || arg.compare("-i") == 0) {
+            xml_input_path = std::string(argv[++i]);
             continue;
-        }*/
+        }
         // -steps <uint>, The number of steps to be executed
         if (arg.compare("--steps") == 0 || arg.compare("-s") == 0) {
             // iterations = static_cast<int>(strtoul(argv[++i], nullptr, 0));
@@ -125,9 +124,10 @@ int Simulation::checkArgs(int argc, const char** argv) {
 }
 
 void Simulation::printHelp(const char* executable) {
-    printf("Usage: %s xml_input_file [-s steps] [-d device_id] [-r random_seed]\n", executable);
+    printf("Usage: %s [-s steps] [-d device_id] [-r random_seed]\n", executable);
     printf("Optional Arguments:\n");
     const char *line_fmt = "%-18s %s\n";
+    printf(line_fmt, "-i, --in", "Initial state file (XML)");
     printf(line_fmt, "-s, --steps", "Number of simulation iterations");
     printf(line_fmt, "-r, --random", "RandomManager seed");
     printHelp_derived();

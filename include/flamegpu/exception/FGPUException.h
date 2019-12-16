@@ -283,4 +283,9 @@ DERIVED_FGPUException(CurveException, "Curve reported an error!");
  */
 DERIVED_FGPUException(OutOfBoundsException, "Index exceeds bounds of array!");
 
+/**
+ * Defines an exception for errors reported by TinyXML
+ */
+DERIVED_FGPUException(TinyXMLError, "TinyXML returned an error code!");
+
 #endif  // INCLUDE_FLAMEGPU_EXCEPTION_FGPUEXCEPTION_H_
