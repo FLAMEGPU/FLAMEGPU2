@@ -31,6 +31,9 @@ class ModelDescription {
     // Move Assign
     ModelDescription& operator=(ModelDescription &&other_model) = delete;
 
+    bool operator==(const ModelDescription& rhs) const;
+    bool operator!=(const ModelDescription& rhs) const;
+
     /**
      * Accessors
      */    
@@ -88,7 +91,9 @@ class ModelDescription {
     bool hasLayer(const std::string &name) const;
     bool hasLayer(const ModelData::size_type &layer_index) const;
 
-    ModelData::size_type getLayerCount() const;
+    ModelData::size_type getAgentsCount() const;
+    ModelData::size_type getMessagesCount() const;
+    ModelData::size_type getLayersCount() const;
 
  private:
      ModelData *const model;

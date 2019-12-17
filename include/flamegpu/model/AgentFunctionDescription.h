@@ -29,6 +29,9 @@ class AgentFunctionDescription {
     AgentFunctionDescription& operator=(AgentFunctionDescription &&other_function) = delete;
 
  public:
+     bool operator==(const AgentFunctionDescription& rhs) const;
+     bool operator!=(const AgentFunctionDescription& rhs) const;
+
     /**
      * Accessors
      */
@@ -63,6 +66,8 @@ class AgentFunctionDescription {
     bool hasMessageInput() const;
     bool hasMessageOutput() const;
     bool hasAgentOutput() const;
+
+    AgentFunctionWrapper *getFunctionPtr() const;
 
  private:
     ModelData *const model;

@@ -67,6 +67,9 @@ struct ModelData : std::enable_shared_from_this<ModelData>{
 
     std::shared_ptr<ModelData> clone() const;
 
+    bool operator==(const ModelData& rhs) const;
+    bool operator!=(const ModelData& rhs) const;
+
  protected:
      /**
       * This should only be called via clone();
@@ -93,8 +96,19 @@ struct AgentData : std::enable_shared_from_this<AgentData> {
 
     bool operator==(const AgentData& rhs) const;
     bool operator!=(const AgentData& rhs) const;
+
     AgentData(const AgentData &other) = delete;
+
+    /**
+     * Does not initialise description of returned AgentData
+     */
+    std::shared_ptr<const AgentData> clone() const;
+
  protected:
+    /**
+     * This is unsafe, should only be used internally, use clone() instead
+     * This does not setup functions map 
+     */
     AgentData(ModelData *const model, const AgentData &other);
     AgentData(ModelData *const model, const std::string &agent_name);
 };
@@ -106,14 +120,19 @@ struct MessageData {
     std::unique_ptr<MessageDescription> description;
     std::string name;
 
+    bool operator==(const MessageData& rhs) const;
+    bool operator!=(const MessageData& rhs) const;
+
     MessageData(const MessageData &other) = delete;
+
  protected:
-     MessageData(ModelData *const, const MessageData &other);
+    MessageData(ModelData *const, const MessageData &other);
     MessageData(ModelData *const, const std::string &message_name);
 };
 struct AgentFunctionData {
     friend class AgentDescription;
-    friend ModelData;
+    friend std::shared_ptr<const AgentData> AgentData::clone() const;
+    friend struct ModelData;
 
     AgentFunctionWrapper *func;
 
@@ -153,9 +172,13 @@ struct LayerData {
 
     ModelData::size_type index;
 
+    bool operator==(const LayerData& rhs) const;
+    bool operator!=(const LayerData& rhs) const;
+
     LayerData(const LayerData &other) = delete;
+
  protected:
-     LayerData(ModelData *const model, const LayerData &other);
+    LayerData(ModelData *const model, const LayerData &other);
     LayerData(ModelData *const model, const std::string &name, const ModelData::size_type &index);
 };
 

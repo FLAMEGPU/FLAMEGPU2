@@ -92,6 +92,11 @@ SET(TEST_CASE_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/model/test_environment_description.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/model/test_message_validation.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/model/test_model_validation.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/model/test_model.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/model/test_agent.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/model/test_message.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/model/test_agent_function.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/model/test_layer.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/pop/test_pop_validation.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/sim/test_sim_validation.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/sim/test_host_functions.cu

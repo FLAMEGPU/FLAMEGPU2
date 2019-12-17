@@ -21,6 +21,13 @@ AgentFunctionDescription::AgentFunctionDescription(AgentFunctionDescription &&ot
     // TODO
 }
 
+bool AgentFunctionDescription::operator==(const AgentFunctionDescription& rhs) const {
+    return *this->function == *rhs.function;  // Compare content is functionally the same
+}
+bool AgentFunctionDescription::operator!=(const AgentFunctionDescription& rhs) const {
+    return !(*this == rhs);
+}
+
 /**
  * Accessors
  */
@@ -108,6 +115,11 @@ void AgentFunctionDescription::setMessageOutputOptional(const bool &output_is_op
     this->function->message_output_optional = output_is_optional;
 }
 void AgentFunctionDescription::setAgentOutput(const std::string &agent_name) {
+    // Clear old value
+    if (auto b = this->function->agent_output.lock()) {
+        b->agent_outputs--;
+    }
+    // Set new
     auto a = model->agents.find(agent_name);
     if (a != model->agents.end()) {
         this->function->agent_output = a->second;
@@ -119,6 +131,11 @@ void AgentFunctionDescription::setAgentOutput(const std::string &agent_name) {
     }
 }
 void AgentFunctionDescription::setAgentOutput(AgentDescription &agent) {
+    // Clear old value
+    if (auto b = this->function->agent_output.lock()) {
+        b->agent_outputs--;
+    }
+    // Set new
     auto a = model->agents.find(agent.getName());
     if (a != model->agents.end()) {
         if (a->second->description.get() == &agent) {
@@ -206,4 +223,7 @@ bool AgentFunctionDescription::hasMessageOutput() const {
 }
 bool AgentFunctionDescription::hasAgentOutput() const {
     return function->agent_output.lock() != nullptr;
+}
+AgentFunctionWrapper *AgentFunctionDescription::getFunctionPtr() const {
+    return function->func;
 }

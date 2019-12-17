@@ -18,6 +18,12 @@ MessageDescription::MessageDescription(MessageDescription &&other_message) noexc
     : model(move(other_message.model))
     , message(other_message.message) { }
 
+bool MessageDescription::operator==(const MessageDescription& rhs) const {
+    return *this->message == *rhs.message;  // Compare content is functionally the same
+}
+bool MessageDescription::operator!=(const MessageDescription& rhs) const {
+    return !(*this == rhs);
+}
 
 /**
  * Const Accessors

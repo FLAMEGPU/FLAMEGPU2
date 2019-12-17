@@ -17,6 +17,12 @@ LayerDescription::LayerDescription(LayerDescription &&other_layer) noexcept
     // TODO
 }
 
+bool LayerDescription::operator==(const LayerDescription& rhs) const {
+    return *this->layer == *rhs.layer;  // Compare content is functionally the same
+}
+bool LayerDescription::operator!=(const LayerDescription& rhs) const {
+    return !(*this == rhs);
+}
 
 void LayerDescription::addAgentFunction(const AgentFunctionDescription &afd) {
     addAgentFunction(afd.getName());
@@ -50,16 +56,21 @@ void LayerDescription::addHostFunction(FLAMEGPU_HOST_FUNCTION_POINTER func_p) {
     }
 }
 
+
+std::string LayerDescription::getName() const {
+    return layer->name;
+}
+
 ModelData::size_type LayerDescription::getIndex() const {
     return layer->index;
 }
 
 
-ModelData::size_type LayerDescription::getAgentFunctionCount() const {
+ModelData::size_type LayerDescription::getAgentFunctionsCount() const {
     // Safe down-cast
     return static_cast<ModelData::size_type>(layer->agent_functions.size());
 }
-ModelData::size_type LayerDescription::getHostFunctionCount() const {
+ModelData::size_type LayerDescription::getHostFunctionsCount() const {
     // Safe down-cast
     return static_cast<ModelData::size_type>(layer->host_functions.size());
 }

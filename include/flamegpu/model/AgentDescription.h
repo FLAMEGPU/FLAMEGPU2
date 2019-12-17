@@ -39,6 +39,9 @@ class AgentDescription {
     AgentDescription& operator=(AgentDescription &&other_agent) noexcept = delete;
 
  public:
+     bool operator==(const AgentDescription& rhs) const;
+     bool operator!=(const AgentDescription& rhs) const;
+
     /**
      * Accessors
      */
@@ -57,11 +60,16 @@ class AgentDescription {
      */
     std::string getName() const;
 
+    ModelData::size_type getStatesCount() const;
+    std::string getInitialState() const;
     std::type_index getVariableType(const std::string &variable_name) const;
     size_t getVariableSize(const std::string &variable_name) const;
     ModelData::size_type getVariableLength(const std::string &variable_name) const;
     ModelData::size_type getVariablesCount() const;
     const AgentFunctionDescription& getFunction(const std::string &function_name) const;
+    ModelData::size_type getFunctionsCount() const;
+
+    ModelData::size_type getAgentOutputsCount() const;
 
     bool hasState(const std::string &state_name) const;
     bool hasVariable(const std::string &variable_name) const;

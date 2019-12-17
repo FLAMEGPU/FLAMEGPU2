@@ -29,6 +29,9 @@ class MessageDescription {
     MessageDescription& operator=(MessageDescription &&other_message) = delete;
 
  public:
+     bool operator==(const MessageDescription& rhs) const;
+     bool operator!=(const MessageDescription& rhs) const;
+
     /**
      * Accessors
      */

@@ -18,7 +18,8 @@ AgentData::AgentData(ModelData *const model, const std::string &agent_name)
     : agent_outputs(0)
     , description(new AgentDescription(model, this))
     , name(agent_name)
-    , keepDefaultState(false) {
+    , keepDefaultState(false)
+    , initial_state(ModelData::DEFAULT_STATE) {
     states.insert(ModelData::DEFAULT_STATE);
 }
 
@@ -73,18 +74,26 @@ ModelData::ModelData(const ModelData &other)
     }
 }
 
+std::shared_ptr<const AgentData> AgentData::clone() const {
+    std::shared_ptr<AgentData> b = std::shared_ptr<AgentData>(new AgentData(nullptr, *this));
+    // Manually copy construct maps of shared ptr
+    for (const auto f : functions) {
+        b->functions.emplace(f.first, std::shared_ptr<AgentFunctionData>(new AgentFunctionData(nullptr, b, *f.second)));
+    }
+    return b;
+}
 AgentData::AgentData(ModelData *const model, const AgentData &other)
     : variables(other.variables)
     , states(other.states)
     , initial_state(other.initial_state)
     , agent_outputs(other.agent_outputs)
-    , description(new AgentDescription(model, this))
+    , description(model ? new AgentDescription(model, this) : nullptr)
     , name(other.name)
     , keepDefaultState(other.keepDefaultState) {
 }
 MessageData::MessageData(ModelData *const model, const MessageData &other)
     : variables(other.variables)
-    , description(new MessageDescription(model, this))
+    , description(model ? new MessageDescription(model, this) : nullptr)
     , name(other.name) { }
 AgentFunctionData::AgentFunctionData(ModelData *const model, std::shared_ptr<AgentData> _parent, const AgentFunctionData &other)
     : func(other.func)
@@ -93,7 +102,7 @@ AgentFunctionData::AgentFunctionData(ModelData *const model, std::shared_ptr<Age
     , message_output_optional(other.message_output_optional)
     , has_agent_death(other.has_agent_death)
     , parent(_parent)
-    , description(new AgentFunctionDescription(model, this))
+    , description(model ? new AgentFunctionDescription(model, this) : nullptr)
     , name(other.name) {
     // Manually perform lookup copies
     if (auto a = other.message_input.lock()) {
@@ -117,7 +126,7 @@ AgentFunctionData::AgentFunctionData(ModelData *const model, std::shared_ptr<Age
 }
 LayerData::LayerData(ModelData *const model, const LayerData &other)
     : host_functions(other.host_functions)
-    , description(new LayerDescription(model, this))
+    , description(model ? new LayerDescription(model, this) : nullptr)
     , name(other.name)
     , index(other.index) {
     // Manually perform lookup copies
@@ -135,22 +144,115 @@ LayerData::LayerData(ModelData *const model, const LayerData &other)
     next_agent_fn: {}
     }
 }
-
+bool ModelData::operator==(const ModelData& rhs) const {
+    if (this == &rhs)  // They point to same object
+        return true;
+    if (name == rhs.name
+        && agents.size() == rhs.agents.size()
+        && messages.size() == rhs.messages.size()
+        && layers.size() == rhs.layers.size()
+        && initFunctions.size() == rhs.initFunctions.size()
+        && stepFunctions.size() == rhs.stepFunctions.size()
+        && exitFunctions.size() == rhs.exitFunctions.size()
+        && exitConditions.size() == rhs.exitConditions.size()
+        && *environment == *rhs.environment) {
+            {  // Compare agents (map)
+                for (auto &v : agents) {
+                    auto _v = rhs.agents.find(v.first);
+                    if (_v == rhs.agents.end())
+                        return false;
+                    if (*v.second != *_v->second)
+                        return false;
+                }
+            }
+            {  // Compare messages (map)
+                for (auto &v : messages) {
+                    auto _v = rhs.messages.find(v.first);
+                    if (_v == rhs.messages.end())
+                        return false;
+                    if (*v.second != *_v->second)
+                        return false;
+                }
+            }
+            {  // Compare layers (ordered list)
+                auto it1 = layers.begin();
+                auto it2 = rhs.layers.begin();
+                while (it1 != layers.end() && it2 != rhs.layers.end()) {
+                    if (*it1 != *it2)
+                        return false;
+                    ++it1;
+                    ++it2;
+                }
+            }
+            {  // Init fns (set)
+                if (initFunctions != rhs.initFunctions)
+                    return false;
+            }
+            {  // Step fns (set)
+                if (stepFunctions != rhs.stepFunctions)
+                    return false;
+            }
+            {  // Exit fns (set)
+                if (exitFunctions != rhs.exitFunctions)
+                    return false;
+            }
+            {  // Exit cdns (set)
+                if (exitConditions != rhs.exitConditions)
+                    return false;
+            }
+            return true;
+    }
+    return false;
+}
+bool ModelData::operator!=(const ModelData& rhs) const {
+    return !operator==(rhs);
+}
 bool AgentData::operator==(const AgentData& rhs) const {
+    if (this == &rhs)  // They point to same object
+        return true;
     if (name == rhs.name
         && initial_state == rhs.initial_state
-        && states.size() == rhs.states.size()
-        && variables.size() == rhs.variables.size()) {
-        {  // Compare state lists
-            auto it1 = states.begin();
-            auto it2 = rhs.states.begin();
-            while (it1 != states.end() && it2 != rhs.states.end()) {
-                if (*it1 != *it2)
+        && agent_outputs == rhs.agent_outputs
+        && keepDefaultState == rhs.keepDefaultState
+        && functions.size() == rhs.functions.size()
+        && variables.size() == rhs.variables.size()
+        && states.size() == rhs.states.size()) {
+        {  // Compare functions
+                for (auto &v : functions) {
+                    auto _v = rhs.functions.find(v.first);
+                    if (_v == rhs.functions.end())
+                        return false;
+                    if (v.second->operator==(*_v->second))
+                        return false;
+                }
+        }
+        {  // Compare variables
+            for (auto &v : variables) {
+                auto _v = rhs.variables.find(v.first);
+                if (_v == rhs.variables.end())
                     return false;
-                ++it1;
-                ++it2;
+                if (v.second.type_size != _v->second.type_size
+                    || v.second.type != _v->second.type
+                    || v.second.elements != _v->second.elements)
+                    return false;
             }
         }
+        {  // Compare state lists
+            if (states != rhs.states)
+                return false;
+        }
+        return true;
+    }
+    return false;
+}
+bool AgentData::operator!=(const AgentData& rhs) const {
+    return !operator==(rhs);
+}
+bool MessageData::operator==(const MessageData& rhs) const {
+    if (this == &rhs)  // They point to same object
+        return true;
+    if (name == rhs.name
+        && variables.size() == rhs.variables.size()) {
         {  // Compare variables
             for (auto &v : variables) {
                 auto _v = rhs.variables.find(v.first);
@@ -166,14 +268,94 @@ bool AgentData::operator==(const AgentData& rhs) const {
     }
     return false;
 }
-bool AgentData::operator!=(const AgentData& rhs) const {
+bool MessageData::operator!=(const MessageData& rhs) const {
     return !operator==(rhs);
 }
 bool AgentFunctionData::operator==(const AgentFunctionData& rhs) const {
-    return (name == rhs.name)
-        && (func == rhs.func);  // This is the only comparison that matters
+    if (this == &rhs)  // They point to same object
+        return true;
+    if ((name == rhs.name)
+        && (func == rhs.func)
+        && (initial_state == rhs.initial_state)
+        && (end_state == rhs.end_state)
+        && (message_output_optional == rhs.message_output_optional)
+        && (has_agent_death == rhs.has_agent_death)) {
+        // Test weak pointers
+            {  // message_input
+                auto a = message_input.lock();
+                auto b = rhs.message_input.lock();
+                if (a && b) {
+                    if (*a != *b)
+                        return false;
+                } else if ((a && !b) || (!a && !b)) {
+                    return false;
+                }
+            }
+            {  // message_output
+                auto a = message_output.lock();
+                auto b = rhs.message_output.lock();
+                if (a && b) {
+                    if (*a != *b)
+                        return false;
+                } else if ((a && !b) || (!a && !b)) {
+                    return false;
+                }
+            }
+            {  // agent_output
+                auto a = agent_output.lock();
+                auto b = rhs.agent_output.lock();
+                if (a && b) {  // Comparing agents here is unsafe, as agent might link back to this same function, so do a reduced comparison
+                    if (a->name != b->name
+                        || a->initial_state != b->initial_state
+                        || a->agent_outputs != b->agent_outputs
+                        || a->keepDefaultState != b->keepDefaultState
+                        || a->states.size() != b->states.size()
+                        || a->functions.size() != b->functions.size()
+                        || a->variables.size() != b->variables.size()
+                        || a->states != b->states)
+                        return false;
+                    {  // Compare agent variables
+                        for (auto &v : a->variables) {
+                            auto _v = b->variables.find(v.first);
+                            if (_v == b->variables.end())
+                                return false;
+                            if (v.second.type_size != _v->second.type_size
+                                || v.second.type != _v->second.type
+                                || v.second.elements != _v->second.elements)
+                                return false;
+                        }
+                    }
+                    {  // Compare agent functions (compare name only)
+                        for (auto &v : a->functions) {
+                            auto _v = b->functions.find(v.first);
+                            if (_v == b->functions.end())
+                                return false;
+                        }
+                    }
+                } else if ((a && !b) || (!a && !b)) {
+                    return false;
+                }
+            }
+            return true;
+    }
+    return false;
 }
 bool AgentFunctionData::operator!=(const AgentFunctionData& rhs) const {
+    return !operator==(rhs);
+}
+bool LayerData::operator==(const LayerData& rhs) const {
+    if (this == &rhs)  // They point to same object
+        return true;
+    if (name == rhs.name
+        && agent_functions.size() == rhs.agent_functions.size()
+        && host_functions.size() == rhs.host_functions.size()
+        && agent_functions == rhs.agent_functions
+        && host_functions == rhs.host_functions) {
+            return true;
+    }
+    return false;
+}
+bool LayerData::operator!=(const LayerData& rhs) const {
     return !operator==(rhs);
 }
 

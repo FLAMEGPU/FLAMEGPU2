@@ -25,6 +25,9 @@ class LayerDescription {
     LayerDescription& operator=(LayerDescription &&other_layer) noexcept = delete;
 
  public:
+    bool operator==(const LayerDescription& rhs) const;
+    bool operator!=(const LayerDescription& rhs) const;
+
     /**
      * Accessors
      */
@@ -38,10 +41,11 @@ class LayerDescription {
     /**
      * Const Accessors
      */
+    std::string getName() const;
      ModelData::size_type getIndex() const;
 
-     ModelData::size_type getAgentFunctionCount() const;
-     ModelData::size_type getHostFunctionCount() const;
+     ModelData::size_type getAgentFunctionsCount() const;
+     ModelData::size_type getHostFunctionsCount() const;
 
      const AgentFunctionDescription &getAgentFunction(unsigned int index) const;
      FLAMEGPU_HOST_FUNCTION_POINTER getHostFunction(unsigned int index) const;
