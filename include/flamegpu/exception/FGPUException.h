@@ -288,4 +288,9 @@ DERIVED_FGPUException(OutOfBoundsException, "Index exceeds bounds of array!");
  */
 DERIVED_FGPUException(TinyXMLError, "TinyXML returned an error code!");
 
+/**
+ * Defines an exception for errors when model components are mixed up
+ */
+DERIVED_FGPUException(DifferentModel, "Attempted to use member from a different model!");
+
 #endif  // INCLUDE_FLAMEGPU_EXCEPTION_FGPUEXCEPTION_H_

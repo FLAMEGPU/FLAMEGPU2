@@ -72,12 +72,12 @@ TEST(SimTest, SimulationFunctionCheck) {
      * @brief      Checks the number of function layers
      * This is to validate the predicate value. The test should pass.
      */
-    EXPECT_EQ(flame_model.getLayerCount(), 2u);
+    EXPECT_EQ(flame_model.getLayersCount(), 2u);
 
     // for each each simulation layer
-    for (unsigned int i = 0; i < flame_model.getLayerCount(); ++i) {
+    for (unsigned int i = 0; i < flame_model.getLayersCount(); ++i) {
         const LayerDescription &layer = flame_model.getLayer(i);
-        const unsigned int functions = layer.getAgentFunctionCount();
+        const unsigned int functions = layer.getAgentFunctionsCount();
 
         // for each function per simulation layer
         for (unsigned int j = 0; j < functions; ++j) {
