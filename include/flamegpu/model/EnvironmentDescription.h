@@ -93,8 +93,8 @@ class EnvironmentDescription {
      */
     EnvironmentDescription() = default;
 
-    bool EnvironmentDescription::operator==(const EnvironmentDescription& rhs) const;
-    bool EnvironmentDescription::operator!=(const EnvironmentDescription& rhs) const;
+    bool operator==(const EnvironmentDescription& rhs) const;
+    bool operator!=(const EnvironmentDescription& rhs) const;
     /**
      * Adds a new environment property
      * @param name name used for accessing the property
