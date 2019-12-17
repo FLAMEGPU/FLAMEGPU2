@@ -54,7 +54,7 @@ class AgentPopulation {
     void setStateListCapacity(unsigned int);
 
  private:
-    const std::unique_ptr<const AgentData> agent;
+    const std::shared_ptr<const AgentData> agent;
     AgentStatesMap states_map;
     unsigned int maximum_size;  // size is maximum size for agents in any single state (same for all states of same agent type)
 };

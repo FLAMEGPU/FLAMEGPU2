@@ -10,15 +10,12 @@
 */
 ModelDescription::ModelDescription(const std::string &model_name)
     : model(new ModelData(model_name)) { }
-// Copy Construct
-ModelDescription::ModelDescription(const ModelDescription &other_model)
-    : model(other_model.model) {
-    // TODO
+
+bool ModelDescription::operator==(const ModelDescription& rhs) const {
+    return *this->model == *rhs.model;  // Compare content is functionally the same
 }
-// Move Construct
-ModelDescription::ModelDescription(ModelDescription &&other_model)
-    : model(move(other_model.model)) {
-    // TODO
+bool ModelDescription::operator!=(const ModelDescription& rhs) const {
+    return !(*this == rhs);
 }
 
 /**
@@ -193,10 +190,18 @@ bool ModelDescription::hasLayer(const std::string &name) const {
     return false;
 }
 bool ModelDescription::hasLayer(const ModelData::size_type &layer_index) const {
-    return model->layers.size() < layer_index;
+    return layer_index < model->layers.size();
 }
 
-ModelData::size_type ModelDescription::getLayerCount() const {
+ModelData::size_type ModelDescription::getAgentsCount() const {
+    // This down-cast is safe
+    return static_cast<ModelData::size_type>(model->agents.size());
+}
+ModelData::size_type ModelDescription::getMessagesCount() const {
+    // This down-cast is safe
+    return static_cast<ModelData::size_type>(model->messages.size());
+}
+ModelData::size_type ModelDescription::getLayersCount() const {
     // This down-cast is safe
     return static_cast<ModelData::size_type>(model->layers.size());
 }

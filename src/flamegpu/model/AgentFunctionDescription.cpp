@@ -8,17 +8,12 @@
 AgentFunctionDescription::AgentFunctionDescription(ModelData *const _model, AgentFunctionData *const description)
     : model(_model)
     , function(description) { }
-// Copy Construct
-AgentFunctionDescription::AgentFunctionDescription(const AgentFunctionDescription &other_function)
-    : model(other_function.model)
-    , function(other_function.function) {
-    // TODO
+
+bool AgentFunctionDescription::operator==(const AgentFunctionDescription& rhs) const {
+    return *this->function == *rhs.function;  // Compare content is functionally the same
 }
-// Move Construct
-AgentFunctionDescription::AgentFunctionDescription(AgentFunctionDescription &&other_function)
-    : model(move(other_function.model))
-    , function(other_function.function) {
-    // TODO
+bool AgentFunctionDescription::operator!=(const AgentFunctionDescription& rhs) const {
+    return !(*this == rhs);
 }
 
 /**
@@ -26,7 +21,7 @@ AgentFunctionDescription::AgentFunctionDescription(AgentFunctionDescription &&ot
  */
 void AgentFunctionDescription::setInitialState(const std::string &init_state) {
     if (auto p = function->parent.lock()) {
-        if (p->description->hasState(function->initial_state)) {
+        if (p->description->hasState(init_state)) {
             this->function->initial_state = init_state;
         } else {
             THROW InvalidStateName("Agent ('%s') does not contain state '%s', "
@@ -40,7 +35,7 @@ void AgentFunctionDescription::setInitialState(const std::string &init_state) {
 }
 void AgentFunctionDescription::setEndState(const std::string &exit_state) {
     if (auto p = function->parent.lock()) {
-        if (p->description->hasState(function->initial_state)) {
+        if (p->description->hasState(exit_state)) {
             this->function->end_state = exit_state;
         } else {
             THROW InvalidStateName("Agent ('%s') does not contain state '%s', "
@@ -53,6 +48,14 @@ void AgentFunctionDescription::setEndState(const std::string &exit_state) {
     }
 }
 void AgentFunctionDescription::setMessageInput(const std::string &message_name) {
+    if (auto other = function->message_output.lock()) {
+        if (message_name == other->name) {
+            THROW InvalidMessageName("Message '%s' is already bound as message output in agent function %s, "
+                "the same message cannot be input and output by the same function, "
+                "in AgentFunctionDescription::setMessageInput()\n",
+                message_name.c_str(), function->name.c_str());
+        }
+    }
     auto a = model->messages.find(message_name);
     if (a != model->messages.end()) {
         this->function->message_input = a->second;
@@ -63,6 +66,18 @@ void AgentFunctionDescription::setMessageInput(const std::string &message_name) 
     }
 }
 void AgentFunctionDescription::setMessageInput(MessageDescription &message) {
+    if (message.model != function->description->model) {
+        THROW DifferentModel("Attempted to use agent description from a different model, "
+            "in AgentFunctionDescription::setAgentOutput()\n");
+    }
+    if (auto other = function->message_output.lock()) {
+        if (message.getName() == other->name) {
+            THROW InvalidMessageName("Message '%s' is already bound as message output in agent function %s, "
+                "the same message cannot be input and output by the same function, "
+                "in AgentFunctionDescription::setMessageInput()\n",
+                message.getName().c_str(), function->name.c_str());
+        }
+    }
     auto a = model->messages.find(message.getName());
     if (a != model->messages.end()) {
         if (a->second->description.get() == &message) {
@@ -79,6 +94,14 @@ void AgentFunctionDescription::setMessageInput(MessageDescription &message) {
     }
 }
 void AgentFunctionDescription::setMessageOutput(const std::string &message_name) {
+    if (auto other = function->message_input.lock()) {
+        if (message_name == other->name) {
+            THROW InvalidMessageName("Message '%s' is already bound as message input in agent function %s, "
+                "the same message cannot be input and output by the same function, "
+                "in AgentFunctionDescription::setMessageOutput()\n",
+                message_name.c_str(), function->name.c_str());
+        }
+    }
     auto a = model->messages.find(message_name);
     if (a != model->messages.end()) {
         this->function->message_output = a->second;
@@ -89,6 +112,18 @@ void AgentFunctionDescription::setMessageOutput(const std::string &message_name)
     }
 }
 void AgentFunctionDescription::setMessageOutput(MessageDescription &message) {
+    if (message.model != function->description->model) {
+        THROW DifferentModel("Attempted to use agent description from a different model, "
+            "in AgentFunctionDescription::setAgentOutput()\n");
+    }
+    if (auto other = function->message_input.lock()) {
+        if (message.getName() == other->name) {
+            THROW InvalidMessageName("Message '%s' is already bound as message input in agent function %s, "
+                "the same message cannot be input and output by the same function, "
+                "in AgentFunctionDescription::setMessageOutput()\n",
+                message.getName().c_str(), function->name.c_str());
+        }
+    }
     auto a = model->messages.find(message.getName());
     if (a != model->messages.end()) {
         if (a->second->description.get() == &message) {
@@ -108,6 +143,11 @@ void AgentFunctionDescription::setMessageOutputOptional(const bool &output_is_op
     this->function->message_output_optional = output_is_optional;
 }
 void AgentFunctionDescription::setAgentOutput(const std::string &agent_name) {
+    // Clear old value
+    if (auto b = this->function->agent_output.lock()) {
+        b->agent_outputs--;
+    }
+    // Set new
     auto a = model->agents.find(agent_name);
     if (a != model->agents.end()) {
         this->function->agent_output = a->second;
@@ -119,6 +159,15 @@ void AgentFunctionDescription::setAgentOutput(const std::string &agent_name) {
     }
 }
 void AgentFunctionDescription::setAgentOutput(AgentDescription &agent) {
+    if (agent.model != function->description->model) {
+        THROW DifferentModel("Attempted to use agent description from a different model, "
+            "in AgentFunctionDescription::setAgentOutput()\n");
+    }
+    // Clear old value
+    if (auto b = this->function->agent_output.lock()) {
+        b->agent_outputs--;
+    }
+    // Set new
     auto a = model->agents.find(agent.getName());
     if (a != model->agents.end()) {
         if (a->second->description.get() == &agent) {
@@ -157,6 +206,9 @@ AgentDescription &AgentFunctionDescription::AgentOutput() {
     THROW OutOfBoundsException("Agent output has not been set, "
         "in AgentFunctionDescription::AgentOutput()\n");
 }
+bool &AgentFunctionDescription::MessageOutputOptional() {
+    return function->message_output_optional;
+}
 bool &AgentFunctionDescription::AllowAgentDeath() {
     return function->has_agent_death;
 }
@@ -194,7 +246,7 @@ const AgentDescription &AgentFunctionDescription::getAgentOutput() const {
     THROW OutOfBoundsException("Agent output has not been set, "
         "in AgentFunctionDescription::getAgentOutput()\n");
 }
-bool AgentFunctionDescription::getHasAgentDeath() const {
+bool AgentFunctionDescription::getAllowAgentDeath() const {
     return function->has_agent_death;
 }
 
@@ -206,4 +258,7 @@ bool AgentFunctionDescription::hasMessageOutput() const {
 }
 bool AgentFunctionDescription::hasAgentOutput() const {
     return function->agent_output.lock() != nullptr;
+}
+AgentFunctionWrapper *AgentFunctionDescription::getFunctionPtr() const {
+    return function->func;
 }

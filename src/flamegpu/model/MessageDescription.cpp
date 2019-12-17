@@ -7,17 +7,13 @@
 MessageDescription::MessageDescription(ModelData *const _model, MessageData *const description)
     : model(_model)
     , message(description) { }
-// Copy Construct
-MessageDescription::MessageDescription(const MessageDescription &other_message)
-    : model(other_message.model)
-    , message(other_message.message) {
-    // TODO
-}
-// Move Construct
-MessageDescription::MessageDescription(MessageDescription &&other_message) noexcept
-    : model(move(other_message.model))
-    , message(other_message.message) { }
 
+bool MessageDescription::operator==(const MessageDescription& rhs) const {
+    return *this->message == *rhs.message;  // Compare content is functionally the same
+}
+bool MessageDescription::operator!=(const MessageDescription& rhs) const {
+    return !(*this == rhs);
+}
 
 /**
  * Const Accessors

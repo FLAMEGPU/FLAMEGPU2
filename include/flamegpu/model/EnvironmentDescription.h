@@ -92,6 +92,9 @@ class EnvironmentDescription {
      * Default destruction
      */
     EnvironmentDescription() = default;
+
+    bool operator==(const EnvironmentDescription& rhs) const;
+    bool operator!=(const EnvironmentDescription& rhs) const;
     /**
      * Adds a new environment property
      * @param name name used for accessing the property
