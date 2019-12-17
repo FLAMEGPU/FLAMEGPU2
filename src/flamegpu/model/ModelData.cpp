@@ -347,6 +347,7 @@ bool LayerData::operator==(const LayerData& rhs) const {
     if (this == &rhs)  // They point to same object
         return true;
     if (name == rhs.name
+        && index == rhs.index
         && agent_functions.size() == rhs.agent_functions.size()
         && host_functions.size() == rhs.host_functions.size()
         && agent_functions == rhs.agent_functions
