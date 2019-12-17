@@ -15,11 +15,11 @@ ModelData::ModelData(const std::string &model_name)
     , name(model_name) { }
 
 AgentData::AgentData(ModelData *const model, const std::string &agent_name)
-    : agent_outputs(0)
+    : initial_state(ModelData::DEFAULT_STATE)
+    , agent_outputs(0)
     , description(new AgentDescription(model, this))
     , name(agent_name)
-    , keepDefaultState(false)
-    , initial_state(ModelData::DEFAULT_STATE) {
+    , keepDefaultState(false) {
     states.insert(ModelData::DEFAULT_STATE);
 }
 
