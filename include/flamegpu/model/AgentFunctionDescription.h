@@ -49,6 +49,7 @@ class AgentFunctionDescription {
     MessageDescription &MessageInput();
     MessageDescription &MessageOutput();
     AgentDescription &AgentOutput();
+    bool &MessageOutputOptional();
     bool &AllowAgentDeath();
 
     /**
@@ -61,7 +62,7 @@ class AgentFunctionDescription {
     const MessageDescription &getMessageOutput() const;
     bool getMessageOutputOptional() const;
     const AgentDescription &getAgentOutput() const;
-    bool getHasAgentDeath() const;
+    bool getAllowAgentDeath() const;
 
     bool hasMessageInput() const;
     bool hasMessageOutput() const;

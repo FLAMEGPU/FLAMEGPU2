@@ -43,6 +43,12 @@ void AgentDescription::newState(const std::string &state_name) {
             if (agent->states.size() == 1 && (*agent->states.begin()) == ModelData::DEFAULT_STATE) {
                 agent->states.clear();
                 agent->initial_state = state_name;
+                // Update initial/end state on all functions
+                // As prev has been removed
+                for (auto &f : agent->functions) {
+                    f.second->initial_state = state_name;
+                    f.second->end_state = state_name;
+                }
             }
         }
         agent->states.insert(state_name);

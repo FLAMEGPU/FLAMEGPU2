@@ -17,9 +17,11 @@ const char *STATE_NAME2 = "State2";
 
 FLAMEGPU_AGENT_FUNCTION(agent_fn1) {
     // do nothing
+    return ALIVE;
 }
 FLAMEGPU_AGENT_FUNCTION(agent_fn2) {
     // do nothing
+    return ALIVE;
 }
 
 TEST(AgentDescriptionTest, functions) {

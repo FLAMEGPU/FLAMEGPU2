@@ -467,6 +467,4 @@ struct LayerData {
     LayerData(ModelData *const model, const std::string &name, const ModelData::size_type &index);
 };
 
-
-
 #endif  // INCLUDE_FLAMEGPU_MODEL_MODELDATA_H_

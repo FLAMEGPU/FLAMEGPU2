@@ -29,8 +29,8 @@ MessageData::MessageData(ModelData *const model, const std::string &message_name
 
 AgentFunctionData::AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string &function_name, AgentFunctionWrapper *agent_function)
     : func(agent_function)
-    , initial_state(ModelData::DEFAULT_STATE)
-    , end_state(ModelData::DEFAULT_STATE)
+    , initial_state(_parent->initial_state)
+    , end_state(_parent->initial_state)
     , message_output_optional(false)
     , has_agent_death(false)
     , parent(_parent)

@@ -33,7 +33,7 @@ bool AgentFunctionDescription::operator!=(const AgentFunctionDescription& rhs) c
  */
 void AgentFunctionDescription::setInitialState(const std::string &init_state) {
     if (auto p = function->parent.lock()) {
-        if (p->description->hasState(function->initial_state)) {
+        if (p->description->hasState(init_state)) {
             this->function->initial_state = init_state;
         } else {
             THROW InvalidStateName("Agent ('%s') does not contain state '%s', "
@@ -47,7 +47,7 @@ void AgentFunctionDescription::setInitialState(const std::string &init_state) {
 }
 void AgentFunctionDescription::setEndState(const std::string &exit_state) {
     if (auto p = function->parent.lock()) {
-        if (p->description->hasState(function->initial_state)) {
+        if (p->description->hasState(exit_state)) {
             this->function->end_state = exit_state;
         } else {
             THROW InvalidStateName("Agent ('%s') does not contain state '%s', "
@@ -174,6 +174,9 @@ AgentDescription &AgentFunctionDescription::AgentOutput() {
     THROW OutOfBoundsException("Agent output has not been set, "
         "in AgentFunctionDescription::AgentOutput()\n");
 }
+bool &AgentFunctionDescription::MessageOutputOptional() {
+    return function->message_output_optional;
+}
 bool &AgentFunctionDescription::AllowAgentDeath() {
     return function->has_agent_death;
 }
@@ -211,7 +214,7 @@ const AgentDescription &AgentFunctionDescription::getAgentOutput() const {
     THROW OutOfBoundsException("Agent output has not been set, "
         "in AgentFunctionDescription::getAgentOutput()\n");
 }
-bool AgentFunctionDescription::getHasAgentDeath() const {
+bool AgentFunctionDescription::getAllowAgentDeath() const {
     return function->has_agent_death;
 }
 
