@@ -23,13 +23,13 @@ class MessageDescription {
      */
     MessageDescription(ModelData *const _model, MessageData *const data);
     // Copy Construct
-    MessageDescription(const MessageDescription &other_message);
+    MessageDescription(const MessageDescription &other_message) = delete;
     // Move Construct
-    MessageDescription(MessageDescription &&other_message) noexcept;
+    MessageDescription(MessageDescription &&other_message) noexcept = delete;
     // Copy Assign
     MessageDescription& operator=(const MessageDescription &other_message) = delete;
     // Move Assign
-    MessageDescription& operator=(MessageDescription &&other_message) = delete;
+    MessageDescription& operator=(MessageDescription &&other_message) noexcept = delete;
 
  public:
      bool operator==(const MessageDescription& rhs) const;

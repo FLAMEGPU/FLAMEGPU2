@@ -4,18 +4,6 @@
 LayerDescription::LayerDescription(ModelData *const _model, LayerData *const data)
     : model(_model)
     , layer(data) { }
-// Copy Construct
-LayerDescription::LayerDescription(const LayerDescription &other_layer)
-    : model(other_layer.model)
-    , layer(other_layer.layer) {
-    // TODO
-}
-// Move Construct
-LayerDescription::LayerDescription(LayerDescription &&other_layer) noexcept
-    : model(move(other_layer.model))
-    , layer(other_layer.layer) {
-    // TODO
-}
 
 bool LayerDescription::operator==(const LayerDescription& rhs) const {
     return *this->layer == *rhs.layer;  // Compare content is functionally the same
@@ -25,7 +13,7 @@ bool LayerDescription::operator!=(const LayerDescription& rhs) const {
 }
 
 void LayerDescription::addAgentFunction(const AgentFunctionDescription &afd) {
-    if(afd.model == layer->description->model) {
+    if (afd.model == layer->description->model) {
         addAgentFunction(afd.getName());
         return;
     }

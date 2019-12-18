@@ -10,18 +10,7 @@
 AgentDescription::AgentDescription(ModelData *const _model, AgentData *const description)
     : model(_model)
     , agent(description) { }
-// Copy Construct
-AgentDescription::AgentDescription(const AgentDescription &other_agent)
-    : model(other_agent.model)
-    , agent(other_agent.agent) {
-    // TODO
-}
-// Move Construct
-AgentDescription::AgentDescription(AgentDescription &&other_agent) noexcept
-    : model(move(other_agent.model))
-    , agent(other_agent.agent) {
-    // TODO
-}
+
 
 bool AgentDescription::operator==(const AgentDescription& rhs) const {
     return *this->agent == *rhs.agent;  // Compare content is functionally the same

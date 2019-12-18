@@ -23,13 +23,13 @@ class ModelDescription {
      */
     explicit ModelDescription(const std::string &model_name);
     // Copy Construct
-    ModelDescription(const ModelDescription &other_model);
+    ModelDescription(const ModelDescription &other_model) = delete;
     // Move Construct
-    ModelDescription(ModelDescription &&other_model);
+    ModelDescription(ModelDescription &&other_model) noexcept = delete;
     // Copy Assign
     ModelDescription& operator=(const ModelDescription &other_model) = delete;
     // Move Assign
-    ModelDescription& operator=(ModelDescription &&other_model) = delete;
+    ModelDescription& operator=(ModelDescription &&other_model) noexcept = delete;
 
     bool operator==(const ModelDescription& rhs) const;
     bool operator!=(const ModelDescription& rhs) const;

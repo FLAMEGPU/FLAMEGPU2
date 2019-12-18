@@ -10,7 +10,6 @@
 
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/pop/AgentPopulation.h"
-//#include "flamegpu/model/AgentFunctionDescription.h"
 class AgentFunctionDescription;
 class MessageDescription;
 struct ModelData;
@@ -21,7 +20,6 @@ class AgentDescription {
     friend struct AgentFunctionData;
     friend AgentPopulation::AgentPopulation(const AgentDescription &, unsigned int);
     friend class AgentFunctionDescription;
-    //friend void AgentFunctionDescription::setAgentOutput(AgentDescription &);
 
     /**
      * Only way to construct an AgentDescription
@@ -33,9 +31,9 @@ class AgentDescription {
      */
     AgentDescription(ModelData *const _model, AgentData *const data);
     // Copy Construct
-    AgentDescription(const AgentDescription &other_agent);
+    AgentDescription(const AgentDescription &other_agent) = delete;
     // Move Construct
-    AgentDescription(AgentDescription &&other_agent) noexcept;
+    AgentDescription(AgentDescription &&other_agent) noexcept = delete;
     // Copy Assign
     AgentDescription& operator=(const AgentDescription &other_agent) = delete;
     // Move Assign

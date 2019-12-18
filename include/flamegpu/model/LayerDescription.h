@@ -16,9 +16,9 @@ class LayerDescription {
     */
     LayerDescription(ModelData *const _model, LayerData *const data);
     // Copy Construct
-    LayerDescription(const LayerDescription &other_layer);
+    LayerDescription(const LayerDescription &other_layer) = delete;
     // Move Construct
-    LayerDescription(LayerDescription &&other_layer) noexcept;
+    LayerDescription(LayerDescription &&other_layer) noexcept = delete;
     // Copy Assign
     LayerDescription& operator=(const LayerDescription &other_layer) = delete;
     // Move Assign

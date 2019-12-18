@@ -10,16 +10,6 @@
 */
 ModelDescription::ModelDescription(const std::string &model_name)
     : model(new ModelData(model_name)) { }
-// Copy Construct
-ModelDescription::ModelDescription(const ModelDescription &other_model)
-    : model(other_model.model) {
-    // TODO
-}
-// Move Construct
-ModelDescription::ModelDescription(ModelDescription &&other_model)
-    : model(move(other_model.model)) {
-    // TODO
-}
 
 bool ModelDescription::operator==(const ModelDescription& rhs) const {
     return *this->model == *rhs.model;  // Compare content is functionally the same

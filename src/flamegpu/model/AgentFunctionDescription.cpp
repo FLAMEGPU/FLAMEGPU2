@@ -8,18 +8,6 @@
 AgentFunctionDescription::AgentFunctionDescription(ModelData *const _model, AgentFunctionData *const description)
     : model(_model)
     , function(description) { }
-// Copy Construct
-AgentFunctionDescription::AgentFunctionDescription(const AgentFunctionDescription &other_function)
-    : model(other_function.model)
-    , function(other_function.function) {
-    // TODO
-}
-// Move Construct
-AgentFunctionDescription::AgentFunctionDescription(AgentFunctionDescription &&other_function)
-    : model(move(other_function.model))
-    , function(other_function.function) {
-    // TODO
-}
 
 bool AgentFunctionDescription::operator==(const AgentFunctionDescription& rhs) const {
     return *this->function == *rhs.function;  // Compare content is functionally the same

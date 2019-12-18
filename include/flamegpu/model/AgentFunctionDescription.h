@@ -21,13 +21,13 @@ class AgentFunctionDescription {
      */
     AgentFunctionDescription(ModelData *const model, AgentFunctionData *const data);
     // Copy Construct
-    AgentFunctionDescription(const AgentFunctionDescription &other_function);
+    AgentFunctionDescription(const AgentFunctionDescription &other_function) = delete;
     // Move Construct
-    AgentFunctionDescription(AgentFunctionDescription &&other_function);
+    AgentFunctionDescription(AgentFunctionDescription &&other_function) noexcept = delete;
     // Copy Assign
     AgentFunctionDescription& operator=(const AgentFunctionDescription &other_function) = delete;
     // Move Assign
-    AgentFunctionDescription& operator=(AgentFunctionDescription &&other_function) = delete;
+    AgentFunctionDescription& operator=(AgentFunctionDescription &&other_function) noexcept = delete;
 
  public:
      bool operator==(const AgentFunctionDescription& rhs) const;

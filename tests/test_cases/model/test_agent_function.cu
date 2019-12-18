@@ -195,7 +195,7 @@ TEST(LayerDescriptionTest, MessageInput_WrongModel) {
     MessageDescription &m1 = _m.newMessage(MESSAGE_NAME1);
     MessageDescription &m2 = _m2.newMessage(MESSAGE_NAME2);
     AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
-    
+
     EXPECT_THROW(f.setMessageInput(m2), DifferentModel);
     EXPECT_NO_THROW(f.setMessageInput(m1));
 }
