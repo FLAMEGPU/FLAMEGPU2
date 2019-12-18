@@ -4,6 +4,7 @@
 #include <string>
 
 #include "flamegpu/model/ModelDescription.h"
+#include "flamegpu/model/AgentFunctionDescription.h"
 
 struct ModelData;
 struct MessageData;
@@ -14,6 +15,8 @@ struct MessageData;
  */
 class MessageDescription {
     friend struct MessageData;
+    friend void AgentFunctionDescription::setMessageOutput(MessageDescription&);
+    friend void AgentFunctionDescription::setMessageInput(MessageDescription&);
 
     /**
      * Constructors

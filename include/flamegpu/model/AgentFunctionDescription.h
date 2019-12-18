@@ -7,6 +7,7 @@
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/runtime/AgentFunction.h"
+#include "flamegpu/model/LayerDescription.h"
 
 class MessageDescription;
 struct ModelData;
@@ -14,7 +15,7 @@ struct AgentFunctionData;
 
 class AgentFunctionDescription {
     friend struct AgentFunctionData;
-
+    friend void LayerDescription::addAgentFunction(const AgentFunctionDescription &);
     /**
      * Constructors
      */

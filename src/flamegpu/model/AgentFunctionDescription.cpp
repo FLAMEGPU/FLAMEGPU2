@@ -70,6 +70,10 @@ void AgentFunctionDescription::setMessageInput(const std::string &message_name) 
     }
 }
 void AgentFunctionDescription::setMessageInput(MessageDescription &message) {
+    if (message.model != function->description->model) {
+        THROW DifferentModel("Attempted to use agent description from a different model, "
+            "in AgentFunctionDescription::setAgentOutput()\n");
+    }
     auto a = model->messages.find(message.getName());
     if (a != model->messages.end()) {
         if (a->second->description.get() == &message) {
@@ -96,6 +100,10 @@ void AgentFunctionDescription::setMessageOutput(const std::string &message_name)
     }
 }
 void AgentFunctionDescription::setMessageOutput(MessageDescription &message) {
+    if (message.model != function->description->model) {
+        THROW DifferentModel("Attempted to use agent description from a different model, "
+            "in AgentFunctionDescription::setAgentOutput()\n");
+    }
     auto a = model->messages.find(message.getName());
     if (a != model->messages.end()) {
         if (a->second->description.get() == &message) {
@@ -131,6 +139,10 @@ void AgentFunctionDescription::setAgentOutput(const std::string &agent_name) {
     }
 }
 void AgentFunctionDescription::setAgentOutput(AgentDescription &agent) {
+    if (agent.model != function->description->model) {
+        THROW DifferentModel("Attempted to use agent description from a different model, "
+            "in AgentFunctionDescription::setAgentOutput()\n");
+    }
     // Clear old value
     if (auto b = this->function->agent_output.lock()) {
         b->agent_outputs--;

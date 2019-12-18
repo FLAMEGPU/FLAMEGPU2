@@ -25,7 +25,12 @@ bool LayerDescription::operator!=(const LayerDescription& rhs) const {
 }
 
 void LayerDescription::addAgentFunction(const AgentFunctionDescription &afd) {
-    addAgentFunction(afd.getName());
+    if(afd.model == layer->description->model) {
+        addAgentFunction(afd.getName());
+        return;
+    }
+    THROW DifferentModel("Attempted to add agent function description which is from a different model, "
+        "in LayerDescription::addAgentFunction()\n");
 }
 void LayerDescription::addAgentFunction(const std::string &name) {
     for (auto a : model->agents) {

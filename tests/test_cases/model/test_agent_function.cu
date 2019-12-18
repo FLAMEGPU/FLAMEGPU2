@@ -18,6 +18,7 @@ FLAMEGPU_AGENT_FUNCTION(agent_fn3) {
 }
 
 const char *MODEL_NAME = "Model";
+const char *WRONG_MODEL_NAME = "Model2";
 const char *AGENT_NAME = "Agent1";
 const char *AGENT_NAME2 = "Agent2";
 const char *AGENT_NAME3 = "Agent3";
@@ -187,4 +188,36 @@ TEST(AgentFunctionDescriptionTest, AllowAgentDeath) {
     EXPECT_FALSE(f.AllowAgentDeath());
 }
 
+TEST(LayerDescriptionTest, MessageInput_WrongModel) {
+    ModelDescription _m(MODEL_NAME);
+    ModelDescription _m2(WRONG_MODEL_NAME);
+    AgentDescription &a = _m.newAgent(AGENT_NAME);
+    MessageDescription &m1 = _m.newMessage(MESSAGE_NAME1);
+    MessageDescription &m2 = _m2.newMessage(MESSAGE_NAME2);
+    AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    
+    EXPECT_THROW(f.setMessageInput(m2), DifferentModel);
+    EXPECT_NO_THROW(f.setMessageInput(m1));
+}
+TEST(LayerDescriptionTest, MessageOutput_WrongModel) {
+    ModelDescription _m(MODEL_NAME);
+    ModelDescription _m2(WRONG_MODEL_NAME);
+    AgentDescription &a = _m.newAgent(AGENT_NAME);
+    MessageDescription &m1 = _m.newMessage(MESSAGE_NAME1);
+    MessageDescription &m2 = _m2.newMessage(MESSAGE_NAME2);
+    AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
+
+    EXPECT_THROW(f.setMessageOutput(m2), DifferentModel);
+    EXPECT_NO_THROW(f.setMessageOutput(m1));
+}
+TEST(LayerDescriptionTest, AgentOutput_WrongModel) {
+    ModelDescription _m(MODEL_NAME);
+    ModelDescription _m2(WRONG_MODEL_NAME);
+    AgentDescription &a = _m.newAgent(AGENT_NAME);
+    AgentDescription &a2 = _m2.newAgent(AGENT_NAME2);
+    AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
+
+    EXPECT_THROW(f.setAgentOutput(a2), DifferentModel);
+    EXPECT_NO_THROW(f.setAgentOutput(a));
+}
 }  // namespace test_agent_function

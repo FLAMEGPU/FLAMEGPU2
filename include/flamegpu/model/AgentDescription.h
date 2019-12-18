@@ -10,6 +10,7 @@
 
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/pop/AgentPopulation.h"
+//#include "flamegpu/model/AgentFunctionDescription.h"
 class AgentFunctionDescription;
 class MessageDescription;
 struct ModelData;
@@ -19,6 +20,8 @@ class AgentDescription {
     friend struct AgentData;
     friend struct AgentFunctionData;
     friend AgentPopulation::AgentPopulation(const AgentDescription &, unsigned int);
+    friend class AgentFunctionDescription;
+    //friend void AgentFunctionDescription::setAgentOutput(AgentDescription &);
 
     /**
      * Only way to construct an AgentDescription

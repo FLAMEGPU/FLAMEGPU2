@@ -34,6 +34,7 @@ const char *FUNCTION_NAME1 = "Function1";
 const char *FUNCTION_NAME2 = "Function2";
 const char *FUNCTION_NAME3 = "Function3";
 const char *FUNCTION_NAME4 = "Function4";
+const char *WRONG_MODEL_NAME = "Model2";
 
 TEST(LayerDescriptionTest, AgentFunction) {
     ModelDescription _m(MODEL_NAME);
@@ -87,4 +88,16 @@ TEST(LayerDescriptionTest, HostFunction) {
     EXPECT_THROW(l.addHostFunction(host_fn), InvalidHostFunc);
 }
 
+TEST(LayerDescriptionTest, AgentFunction_WrongModel) {
+    ModelDescription _m(MODEL_NAME);
+    ModelDescription _m2(WRONG_MODEL_NAME);
+    AgentDescription &a = _m.newAgent(AGENT_NAME);
+    AgentDescription &a2 = _m2.newAgent(AGENT_NAME);
+    AgentFunctionDescription &f1 = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    AgentFunctionDescription &f2 = a2.newFunction(FUNCTION_NAME1, agent_fn1);
+    LayerDescription &l = _m.newLayer(LAYER_NAME);
+
+    EXPECT_NO_THROW(l.addAgentFunction(f1));
+    EXPECT_THROW(l.addAgentFunction(f2), DifferentModel);
+}
 }  // namespace test_layer
