@@ -9,6 +9,7 @@ namespace test_message {
     const char *VARIABLE_NAME1 = "Var1";
     const char *VARIABLE_NAME2 = "Var2";
     const char *VARIABLE_NAME3 = "Var3";
+    const char *VARIABLE_NAME4 = "Var4";
 
 TEST(MessageDescriptionTest, variables) {
     ModelDescription _m(MODEL_NAME);
@@ -21,9 +22,9 @@ TEST(MessageDescriptionTest, variables) {
     m.newVariable<int16_t>(VARIABLE_NAME2);
     EXPECT_EQ(m.getVariablesCount(), 2u);
     // Cannot create variable with same name
-    EXPECT_THROW(m.newVariable<int64_t>(VARIABLE_NAME1), InvalidAgentVar);
+    EXPECT_THROW(m.newVariable<int64_t>(VARIABLE_NAME1), InvalidMessageVar);
     auto newVarArray3 = &MessageDescription::newVariable<int64_t, 3>;  // Use function ptr, can't do more than 1 template arg inside macro
-    EXPECT_THROW((m.*newVarArray3)(VARIABLE_NAME1), InvalidAgentVar);
+    EXPECT_THROW((m.*newVarArray3)(VARIABLE_NAME1), InvalidMessageVar);
     // Variable have the right name
     EXPECT_TRUE(m.hasVariable(VARIABLE_NAME1));
     EXPECT_TRUE(m.hasVariable(VARIABLE_NAME2));
@@ -48,9 +49,12 @@ TEST(MessageDescriptionTest, variables_array) {
     m.newVariable<int16_t, 56>(VARIABLE_NAME2);
     EXPECT_EQ(m.getVariablesCount(), 3u);
     // Cannot create variable with same name
-    EXPECT_THROW(m.newVariable<int64_t>(VARIABLE_NAME1), InvalidAgentVar);
+    EXPECT_THROW(m.newVariable<int64_t>(VARIABLE_NAME1), InvalidMessageVar);
     auto newVarArray3 = &MessageDescription::newVariable<int64_t, 3>;  // Use function ptr, can't do more than 1 template arg inside macro
-    EXPECT_THROW((m.*newVarArray3)(VARIABLE_NAME1), InvalidAgentVar);
+    EXPECT_THROW((m.*newVarArray3)(VARIABLE_NAME1), InvalidMessageVar);
+    // Cannot create array of length 0
+    auto newVarArray0 = &MessageDescription::newVariable<int64_t, 0>;  // Use function ptr, can't do more than 1 template arg inside macro
+    EXPECT_THROW((m.*newVarArray0)(VARIABLE_NAME4), InvalidMessageVar);
     // Variable have the right name
     EXPECT_TRUE(m.hasVariable(VARIABLE_NAME1));
     EXPECT_TRUE(m.hasVariable(VARIABLE_NAME2));

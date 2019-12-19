@@ -15,72 +15,202 @@ class MessageDescription;
 struct ModelData;
 struct AgentData;
 
+/**
+ * Within the model hierarchy, this class represents the definition of an agent for a FLAMEGPU model
+ * This class is used to configure external elements of agents, such as variables and functions
+ * @see AgentData The internal data store for this class
+ * @see ModelDescription::newAgent(const std::string&) For creating instances of this class
+ */
 class AgentDescription {
+    /**
+     * Data store class for this description, constructs instances of this class
+     */
     friend struct AgentData;
+    /**
+     * ?
+     */
     friend struct AgentFunctionData;
+    /**
+     * Agent population takes a clone of AgentData
+     */
     friend AgentPopulation::AgentPopulation(const AgentDescription &, unsigned int);
+    /**
+     * AgentFunctionData accesses member variable model
+     * to check that agent outputs are from the same model instance
+     */
     friend class AgentFunctionDescription;
-
     /**
      * Only way to construct an AgentDescription
      */
     friend AgentDescription& ModelDescription::newAgent(const std::string &);
 
     /**
-     * Constructors
+     * Constructor, this should only be called by AgentData
+     * @param _model Model at root of model hierarchy
+     * @param data Data store of this agent's data
      */
     AgentDescription(ModelData *const _model, AgentData *const data);
-    // Copy Construct
+    /**
+     * Default copy constructor, not implemented
+     */
     AgentDescription(const AgentDescription &other_agent) = delete;
-    // Move Construct
+    /**
+     * Default move constructor, not implemented
+     */
     AgentDescription(AgentDescription &&other_agent) noexcept = delete;
-    // Copy Assign
+    /**
+     * Default copy assignment, not implemented
+     */
     AgentDescription& operator=(const AgentDescription &other_agent) = delete;
-    // Move Assign
+    /**
+     * Default move assignment, not implemented
+     */
     AgentDescription& operator=(AgentDescription &&other_agent) noexcept = delete;
 
  public:
-     bool operator==(const AgentDescription& rhs) const;
-     bool operator!=(const AgentDescription& rhs) const;
+    /**
+     * Equality operator, checks whether AgentDescription hierarchies are functionally the same
+     * @returns True when agents are the same
+     * @note Instead compare pointers if you wish to check that they are the same instance
+     */
+    bool operator==(const AgentDescription& rhs) const;
+    /**
+     * Equality operator, checks whether AgentDescription hierarchies are functionally different
+     * @returns True when agents are not the same
+     * @note Instead compare pointers if you wish to check that they are not the same instance
+     */
+    bool operator!=(const AgentDescription& rhs) const;
 
     /**
-     * Accessors
+     * Adds a new state to the possible states this agent can enter
+     * State's only exist as strings and have no additional configuration
+     * @param state_name Name of the state
+     * @throws InvalidStateName If the agent already has a state with the same name
      */
     void newState(const std::string &state_name);
+    /**
+     * Sets the initial state which new agents begin in
+     * @param initial_state Name of the desired state
+     * @throws InvalidStateName If the named state is not found within the agent
+     */
     void setInitialState(const std::string &initial_state);
 
-    template<typename AgentVariable, ModelData::size_type N = 1>
+    /**
+     * Adds a new variable to the agent
+     * @param variable_name Name of the variable
+     * @tparam T Type of the agent variable, this must be an arithmetic type
+     * @tparam N The length of the variable array (1 if not an array, must be greater than 0)
+     * @throws InvalidAgentVar If a variable already exists within the agent with the same name
+     * @throws InvalidAgentVar If N is <= 0
+     */
+    template<typename T, ModelData::size_type N = 1>
     void newVariable(const std::string &variable_name);
 
+    /**
+     * Adds a new (device) function to the agent
+     * @param function_name Name of the functions
+     * @param a Instance of the agent function, used to implicitly set the template arg
+     * Should be declared using FLAMEGPU_AGENT_FUNCTION notation
+     * @tparam AgentFunction The agent function's containing struct type
+     * @return A mutable reference to the new AgentFunctionDescription
+     * @throws InvalidAgentFunc If a variable already exists within the agent with the same name
+     * @note The same agent function can be passed to the same agent twice
+     */
     template<typename AgentFunction>
     AgentFunctionDescription &newFunction(const std::string &function_name, AgentFunction a = AgentFunction());
+    /**
+     * Returns a mutable reference to the named agent function, which can be used to configure the function
+     * @param function_name Name used to refer to the desired agent function
+     * @return A mutable reference to the specified AgentFunctionDescription
+     * @throws InvalidAgentFunc If a functions with the name does not exist within the agent
+     * @see AgentDescription::getFunction(const std::string &) for the immutable version
+     */
     AgentFunctionDescription &Function(const std::string &function_name);
 
     /**
-     * Const Accessors
+     * @return The agent's name
      */
     std::string getName() const;
-
+    /**
+     * @return The number of possible states agents of this type can enter
+     */
     ModelData::size_type getStatesCount() const;
+    /**
+     * @return The state which newly created agents of this type begin in
+     */
     std::string getInitialState() const;
+    /**
+     * @param variable_name Name used to refer to the desired variable
+     * @return The type of the named variable
+     * @throws InvalidAgentVar If a variable with the name does not exist within the agent
+     */
     std::type_index getVariableType(const std::string &variable_name) const;
+    /**
+     * @param variable_name Name used to refer to the desired variable
+     * @return The size of the named variable's type
+     * @throws InvalidAgentVar If a variable with the name does not exist within the agent
+     */
     size_t getVariableSize(const std::string &variable_name) const;
+    /**
+     * @param variable_name Name used to refer to the desired variable
+     * @return The number of elements in the name variable (1 if it isn't an array)
+     * @throws InvalidAgentVar If a variable with the name does not exist within the agent
+     */
     ModelData::size_type getVariableLength(const std::string &variable_name) const;
+    /**
+     * The total number of variables within the agent
+     */
     ModelData::size_type getVariablesCount() const;
+    /**
+     * Returns an immutable reference to the named agent function
+     * @param function_name Name used to refer to the desired agent function
+     * @return An immutable reference to the specified AgentFunctionDescription
+     * @throws InvalidAgentFunc If a function with the name does not exist within the agent
+     * @see AgentDescription::Function(const std::string &) for the mutable version
+     */
     const AgentFunctionDescription& getFunction(const std::string &function_name) const;
+    /**
+     * The total number of functions within the agent
+     */
     ModelData::size_type getFunctionsCount() const;
-
+    /**
+     * The total number of agent functions, within the model hierarchy, which create new agents of this type
+     * @see AgentDescription::isOutputOnDevice()
+     */
     ModelData::size_type getAgentOutputsCount() const;
-
+    /**
+     * @param state_name Name of the state to check
+     * @return True when a state with the specified name exists within the agent
+     */
     bool hasState(const std::string &state_name) const;
+    /**
+     * @param variable_name Name of the variable to check
+     * @return True when a variable with the specified name exists within the agent
+     */
     bool hasVariable(const std::string &variable_name) const;
+    /**
+     * @param function_name Name of the function to check
+     * @return True when a function with the specified name exists within the agent
+     */
     bool hasFunction(const std::string &function_name) const;
+    /*
+     * @return True if any agent functions, with the model hierarchy, create new agents of this type
+     * @see AgentDescription::getAgentOutputsCount()
+     */
     bool isOutputOnDevice() const;
-
+    /*
+     * @return An immutable reference to the set of states agents of this type can enter
+     */
     const std::set<std::string> &getStates() const;
 
  private:
+    /**
+     * Root of the model hierarchy
+     */
     ModelData *const model;
+    /**
+     * The class which stores all of the agent's data.
+     */
     AgentData *const agent;
 };
 
@@ -89,6 +219,10 @@ class AgentDescription {
  */
 template <typename T, ModelData::size_type N>
 void AgentDescription::newVariable(const std::string &variable_name) {
+    if (N <= 0) {
+        THROW InvalidAgentVar("%u is not a valid agent variable array length, "
+            "in AgentDescription::newVariable().", N);
+    }
     if (agent->variables.find(variable_name) == agent->variables.end()) {
         agent->variables.emplace(variable_name, ModelData::Variable(N, T()));
         return;

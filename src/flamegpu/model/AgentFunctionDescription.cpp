@@ -48,6 +48,14 @@ void AgentFunctionDescription::setEndState(const std::string &exit_state) {
     }
 }
 void AgentFunctionDescription::setMessageInput(const std::string &message_name) {
+    if (auto other = function->message_output.lock()) {
+        if (message_name == other->name) {
+            THROW InvalidMessageName("Message '%s' is already bound as message output in agent function %s, "
+                "the same message cannot be input and output by the same function, "
+                "in AgentFunctionDescription::setMessageInput()\n",
+                message_name.c_str(), function->name.c_str());
+        }
+    }
     auto a = model->messages.find(message_name);
     if (a != model->messages.end()) {
         this->function->message_input = a->second;
@@ -61,6 +69,14 @@ void AgentFunctionDescription::setMessageInput(MessageDescription &message) {
     if (message.model != function->description->model) {
         THROW DifferentModel("Attempted to use agent description from a different model, "
             "in AgentFunctionDescription::setAgentOutput()\n");
+    }
+    if (auto other = function->message_output.lock()) {
+        if (message.getName() == other->name) {
+            THROW InvalidMessageName("Message '%s' is already bound as message output in agent function %s, "
+                "the same message cannot be input and output by the same function, "
+                "in AgentFunctionDescription::setMessageInput()\n",
+                message.getName().c_str(), function->name.c_str());
+        }
     }
     auto a = model->messages.find(message.getName());
     if (a != model->messages.end()) {
@@ -78,6 +94,14 @@ void AgentFunctionDescription::setMessageInput(MessageDescription &message) {
     }
 }
 void AgentFunctionDescription::setMessageOutput(const std::string &message_name) {
+    if (auto other = function->message_input.lock()) {
+        if (message_name == other->name) {
+            THROW InvalidMessageName("Message '%s' is already bound as message input in agent function %s, "
+                "the same message cannot be input and output by the same function, "
+                "in AgentFunctionDescription::setMessageOutput()\n",
+                message_name.c_str(), function->name.c_str());
+        }
+    }
     auto a = model->messages.find(message_name);
     if (a != model->messages.end()) {
         this->function->message_output = a->second;
@@ -91,6 +115,14 @@ void AgentFunctionDescription::setMessageOutput(MessageDescription &message) {
     if (message.model != function->description->model) {
         THROW DifferentModel("Attempted to use agent description from a different model, "
             "in AgentFunctionDescription::setAgentOutput()\n");
+    }
+    if (auto other = function->message_input.lock()) {
+        if (message.getName() == other->name) {
+            THROW InvalidMessageName("Message '%s' is already bound as message input in agent function %s, "
+                "the same message cannot be input and output by the same function, "
+                "in AgentFunctionDescription::setMessageOutput()\n",
+                message.getName().c_str(), function->name.c_str());
+        }
     }
     auto a = model->messages.find(message.getName());
     if (a != model->messages.end()) {

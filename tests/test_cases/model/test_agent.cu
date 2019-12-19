@@ -10,6 +10,7 @@ const char *AGENT_NAME2 = "Agent2";
 const char *VARIABLE_NAME1 = "Var1";
 const char *VARIABLE_NAME2 = "Var2";
 const char *VARIABLE_NAME3 = "Var3";
+const char *VARIABLE_NAME4 = "Var4";
 const char *FUNCTION_NAME1 = "Func1";
 const char *FUNCTION_NAME2 = "Func2";
 const char *STATE_NAME1 = "State1";
@@ -92,6 +93,9 @@ TEST(AgentDescriptionTest, variables_array) {
     EXPECT_THROW(a.newVariable<int64_t>(VARIABLE_NAME1), InvalidAgentVar);
     auto newVarArray3 = &AgentDescription::newVariable<int64_t>;  // Use function ptr, can't do more than 1 template arg inside macro
     EXPECT_THROW((a.*newVarArray3)(VARIABLE_NAME1), InvalidAgentVar);
+    // Cannot create array of length 0
+    auto newVarArray0 = &AgentDescription::newVariable<int64_t, 0>;  // Use function ptr, can't do more than 1 template arg inside macro
+    EXPECT_THROW((a.*newVarArray0)(VARIABLE_NAME4), InvalidAgentVar);
     // Variable have the right name
     EXPECT_TRUE(a.hasVariable(VARIABLE_NAME1));
     EXPECT_TRUE(a.hasVariable(VARIABLE_NAME2));

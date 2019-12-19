@@ -188,7 +188,7 @@ TEST(AgentFunctionDescriptionTest, AllowAgentDeath) {
     EXPECT_FALSE(f.AllowAgentDeath());
 }
 
-TEST(LayerDescriptionTest, MessageInput_WrongModel) {
+TEST(AgentFunctionDescriptionTest, MessageInput_WrongModel) {
     ModelDescription _m(MODEL_NAME);
     ModelDescription _m2(WRONG_MODEL_NAME);
     AgentDescription &a = _m.newAgent(AGENT_NAME);
@@ -199,7 +199,7 @@ TEST(LayerDescriptionTest, MessageInput_WrongModel) {
     EXPECT_THROW(f.setMessageInput(m2), DifferentModel);
     EXPECT_NO_THROW(f.setMessageInput(m1));
 }
-TEST(LayerDescriptionTest, MessageOutput_WrongModel) {
+TEST(AgentFunctionDescriptionTest, MessageOutput_WrongModel) {
     ModelDescription _m(MODEL_NAME);
     ModelDescription _m2(WRONG_MODEL_NAME);
     AgentDescription &a = _m.newAgent(AGENT_NAME);
@@ -210,7 +210,7 @@ TEST(LayerDescriptionTest, MessageOutput_WrongModel) {
     EXPECT_THROW(f.setMessageOutput(m2), DifferentModel);
     EXPECT_NO_THROW(f.setMessageOutput(m1));
 }
-TEST(LayerDescriptionTest, AgentOutput_WrongModel) {
+TEST(AgentFunctionDescriptionTest, AgentOutput_WrongModel) {
     ModelDescription _m(MODEL_NAME);
     ModelDescription _m2(WRONG_MODEL_NAME);
     AgentDescription &a = _m.newAgent(AGENT_NAME);
@@ -219,5 +219,27 @@ TEST(LayerDescriptionTest, AgentOutput_WrongModel) {
 
     EXPECT_THROW(f.setAgentOutput(a2), DifferentModel);
     EXPECT_NO_THROW(f.setAgentOutput(a));
+}
+TEST(AgentFunctionDescriptionTest, MessageInputOutput) {
+    ModelDescription _m(MODEL_NAME);
+    AgentDescription &a = _m.newAgent(AGENT_NAME);
+    MessageDescription &m = _m.newMessage(MESSAGE_NAME1);
+    MessageDescription &m2 = _m.newMessage(MESSAGE_NAME2);
+    AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    // Cannot bind same message to input and output
+    EXPECT_NO_THROW(f.setMessageInput(m));
+    EXPECT_THROW(f.setMessageOutput(m), InvalidMessageName);
+    EXPECT_NO_THROW(f.setMessageOutput(m2));
+}
+TEST(AgentFunctionDescriptionTest, MessageOutputInput) {
+    ModelDescription _m(MODEL_NAME);
+    AgentDescription &a = _m.newAgent(AGENT_NAME);
+    MessageDescription &m = _m.newMessage(MESSAGE_NAME1);
+    MessageDescription &m2 = _m.newMessage(MESSAGE_NAME2);
+    AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    // Cannot bind same message to output and input
+    EXPECT_NO_THROW(f.setMessageOutput(m));
+    EXPECT_THROW(f.setMessageInput(m), InvalidMessageName);
+    EXPECT_NO_THROW(f.setMessageInput(m2));
 }
 }  // namespace test_agent_function
