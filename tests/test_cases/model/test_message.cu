@@ -52,9 +52,9 @@ TEST(MessageDescriptionTest, variables_array) {
     EXPECT_THROW(m.newVariable<int64_t>(VARIABLE_NAME1), InvalidMessageVar);
     auto newVarArray3 = &MessageDescription::newVariable<int64_t, 3>;  // Use function ptr, can't do more than 1 template arg inside macro
     EXPECT_THROW((m.*newVarArray3)(VARIABLE_NAME1), InvalidMessageVar);
-    // Cannot create array of length 0
-    auto newVarArray0 = &MessageDescription::newVariable<int64_t, 0>;  // Use function ptr, can't do more than 1 template arg inside macro
-    EXPECT_THROW((m.*newVarArray0)(VARIABLE_NAME4), InvalidMessageVar);
+    // Cannot create array of length 0 (disabled, blocked at compilation with static_assert)
+    // auto newVarArray0 = &MessageDescription::newVariable<int64_t, 0>;  // Use function ptr, can't do more than 1 template arg inside macro
+    // EXPECT_THROW((m.*newVarArray0)(VARIABLE_NAME4), InvalidMessageVar);
     // Variable have the right name
     EXPECT_TRUE(m.hasVariable(VARIABLE_NAME1));
     EXPECT_TRUE(m.hasVariable(VARIABLE_NAME2));

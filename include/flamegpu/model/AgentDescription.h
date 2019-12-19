@@ -219,10 +219,8 @@ class AgentDescription {
  */
 template <typename T, ModelData::size_type N>
 void AgentDescription::newVariable(const std::string &variable_name) {
-    if (N <= 0) {
-        THROW InvalidAgentVar("%u is not a valid agent variable array length, "
-            "in AgentDescription::newVariable().", N);
-    }
+    // Array length 0 makes no sense
+    static_assert(N > 0, "A variable cannot have 0 elements.");
     if (agent->variables.find(variable_name) == agent->variables.end()) {
         agent->variables.emplace(variable_name, ModelData::Variable(N, T()));
         return;

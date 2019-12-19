@@ -93,9 +93,9 @@ TEST(AgentDescriptionTest, variables_array) {
     EXPECT_THROW(a.newVariable<int64_t>(VARIABLE_NAME1), InvalidAgentVar);
     auto newVarArray3 = &AgentDescription::newVariable<int64_t>;  // Use function ptr, can't do more than 1 template arg inside macro
     EXPECT_THROW((a.*newVarArray3)(VARIABLE_NAME1), InvalidAgentVar);
-    // Cannot create array of length 0
-    auto newVarArray0 = &AgentDescription::newVariable<int64_t, 0>;  // Use function ptr, can't do more than 1 template arg inside macro
-    EXPECT_THROW((a.*newVarArray0)(VARIABLE_NAME4), InvalidAgentVar);
+    // Cannot create array of length 0 (disabled, blocked at compilation with static_assert)
+    // auto newVarArray0 = &AgentDescription::newVariable<int64_t, 0>;  // Use function ptr, can't do more than 1 template arg inside macro
+    // EXPECT_THROW((a.*newVarArray0)(VARIABLE_NAME4), InvalidAgentVar);
     // Variable have the right name
     EXPECT_TRUE(a.hasVariable(VARIABLE_NAME1));
     EXPECT_TRUE(a.hasVariable(VARIABLE_NAME2));

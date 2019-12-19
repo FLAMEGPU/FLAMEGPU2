@@ -55,6 +55,7 @@ struct ModelData : std::enable_shared_from_this<ModelData>{
         template<typename T>
         Variable(size_type _elements, T)
             : type(typeid(T)), type_size(sizeof(T)), elements(_elements), memory_vector(new MemoryVector<T>()) {
+            assert(_elements > 0);  // This should be enforced with static_assert where Variable's are defined, see MessageDescription::newVariable()
             // Limited to Arithmetic types
             // Compound types would allow host pointers inside structs to be passed
             static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value,

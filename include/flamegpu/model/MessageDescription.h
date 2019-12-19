@@ -119,10 +119,8 @@ class MessageDescription {
  */
 template<typename T, ModelData::size_type N>
 void MessageDescription::newVariable(const std::string &variable_name) {
-    if (N <= 0) {
-        THROW InvalidMessageVar("%u is not a valid message variable array length, "
-            "in MessageDescription::newVariable().", N);
-    }
+    // Array length 0 makes no sense
+    static_assert(N > 0, "A variable cannot have 0 elements.");
     if (message->variables.find(variable_name) == message->variables.end()) {
         message->variables.emplace(variable_name, ModelData::Variable(N, T()));
         return;
