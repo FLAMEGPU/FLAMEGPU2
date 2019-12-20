@@ -29,9 +29,12 @@ class CUDAMessageList {
 
     void cleanupAllocatedData();
 
-    void* getMessageListVariablePointer(std::string variable_name);
+    void* getReadMessageListVariablePointer(std::string variable_name);
+    void* getWriteMessageListVariablePointer(std::string variable_name);
 
     void zeroMessageData();
+
+    virtual void swap();
 
  protected:
     void allocateDeviceMessageList(CUDAMsgMap &Message_list);
@@ -43,7 +46,6 @@ class CUDAMessageList {
  private:
     CUDAMsgMap d_list;
     CUDAMsgMap d_swap_list;  // may not need this later
-    CUDAMsgMap d_new_list;
 
     unsigned int current_list_size;  // ???
 

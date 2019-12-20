@@ -26,7 +26,6 @@ CUDAMessageList::CUDAMessageList(CUDAMessage& cuda_message) : message(cuda_messa
     // allocate message lists
     allocateDeviceMessageList(d_list);
     allocateDeviceMessageList(d_swap_list);
-    allocateDeviceMessageList(d_new_list);
 }
 
 /**
@@ -40,7 +39,6 @@ void CUDAMessageList::cleanupAllocatedData() {
     // clean up
     releaseDeviceMessageList(d_list);
     releaseDeviceMessageList(d_swap_list);
-    releaseDeviceMessageList(d_new_list);
 }
 
 /**
@@ -105,9 +103,18 @@ void CUDAMessageList::zeroDeviceMessageList(CUDAMsgMap& memory_map) {
     }
 }
 
-void* CUDAMessageList::getMessageListVariablePointer(std::string variable_name) {
+void* CUDAMessageList::getReadMessageListVariablePointer(std::string variable_name) {
     CUDAMsgMap::iterator mm = d_list.find(variable_name);
     if (mm == d_list.end()) {
+        // TODO: Error variable not found in message list
+        return 0;
+    }
+
+    return mm->second;
+}
+void* CUDAMessageList::getWriteMessageListVariablePointer(std::string variable_name) {
+    CUDAMsgMap::iterator mm = d_swap_list.find(variable_name);
+    if (mm == d_swap_list.end()) {
         // TODO: Error variable not found in message list
         return 0;
     }
@@ -118,6 +125,9 @@ void* CUDAMessageList::getMessageListVariablePointer(std::string variable_name) 
 void CUDAMessageList::zeroMessageData() {
     zeroDeviceMessageList(d_list);
     zeroDeviceMessageList(d_swap_list);
-    zeroDeviceMessageList(d_new_list);
 }
 
+
+void CUDAMessageList::swap() {
+    std::swap(d_list, d_swap_list);
+}

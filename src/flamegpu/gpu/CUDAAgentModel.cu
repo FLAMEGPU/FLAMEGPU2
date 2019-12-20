@@ -85,15 +85,19 @@ bool CUDAAgentModel::step() {
                 std::string inpMessage_name = im->name;
                 const CUDAMessage& cuda_message = getCUDAMessage(inpMessage_name);
                 printf("inp msg name: %s\n", inpMessage_name.c_str());
-                cuda_message.mapRuntimeVariables(*func_des);
+                cuda_message.mapReadRuntimeVariables(*func_des);
             }
 
             // check if a function has an output massage
             if (auto om = func_des->message_output.lock()) {
                 std::string outpMessage_name = om->name;
-                const CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
+                CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
+                // Resize message list if required
+                if (cuda_message.getMessageCount() < cuda_agent.getStateSize(func_des->initial_state)) {
+                    cuda_message.resize(cuda_agent.getStateSize(func_des->initial_state));
+                }
                 printf("outp msg name: %s\n", outpMessage_name.c_str());
-                cuda_message.mapRuntimeVariables(*func_des);
+                cuda_message.mapWriteRuntimeVariables(*func_des);
             }
 
 
@@ -123,14 +127,14 @@ bool CUDAAgentModel::step() {
 
             // check if a function has an output massage
             if (auto im = func_des->message_input.lock()) {
-                std::string inpMessage_name = func_des->name;
+                std::string inpMessage_name = im->name;
                 const CUDAMessage& cuda_message = getCUDAMessage(inpMessage_name);
                 // message_name = inpMessage_name;
 
                 // hash message name
                 message_name_inp_hash = curve.variableRuntimeHash(inpMessage_name.c_str());
 
-                messageList_Size = cuda_message.getMaximumListSize();
+                messageList_Size = cuda_message.getMessageCount();
             }
 
             // check if a function has an output massage
@@ -145,7 +149,7 @@ bool CUDAAgentModel::step() {
 
             const CUDAAgent& cuda_agent = getCUDAAgent(agent_name);
 
-            int state_list_size = cuda_agent.getMaximumListSize();
+            int state_list_size = cuda_agent.getStateSize(func_des->initial_state);
 
             int blockSize = 0;  // The launch configurator returned block size
             int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
@@ -163,6 +167,7 @@ bool CUDAAgentModel::step() {
             Curve::NamespaceHash funcname_hash = curve.variableRuntimeHash(func_name.c_str());
 
             (func_des->func)<<<gridSize, blockSize, 0, stream[j] >>>(modelname_hash, agentname_hash + funcname_hash, message_name_inp_hash, message_name_outp_hash, state_list_size, messageList_Size, totalThreads);
+            gpuErrchkLaunch();
             totalThreads += state_list_size;
             ++j;
         }
@@ -174,18 +179,19 @@ bool CUDAAgentModel::step() {
             }
             const CUDAAgent& cuda_agent = getCUDAAgent(func_agent->getName());
 
-            // check if a function has an output massage
+            // check if a function has an input message
             if (auto im = func_des->message_input.lock()) {
                 std::string inpMessage_name = im->name;
                 const CUDAMessage& cuda_message = getCUDAMessage(inpMessage_name);
                 cuda_message.unmapRuntimeVariables(*func_des);
             }
 
-            // check if a function has an output massage
+            // check if a function has an output message
             if (auto om = func_des->message_output.lock()) {
                 std::string outpMessage_name = om->name;
-                const CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
+                CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
                 cuda_message.unmapRuntimeVariables(*func_des);
+                cuda_message.swap();
             }
             // const CUDAMessage& cuda_inpMessage = getCUDAMessage(func_des.getInputChild.getMessageName());
             // const CUDAMessage& cuda_outpMessage = getCUDAMessage(func_des.getOutputChild.getMessageName());
@@ -272,7 +278,7 @@ void CUDAAgentModel::getPopulationData(AgentPopulation& population) {
     it->second->getPopulationData(population);
 }
 
-const CUDAAgent& CUDAAgentModel::getCUDAAgent(const std::string& agent_name) const {
+CUDAAgent& CUDAAgentModel::getCUDAAgent(const std::string& agent_name) const {
     CUDAAgentMap::const_iterator it;
     it = agent_map.find(agent_name);
 
@@ -295,7 +301,7 @@ AgentInterface& CUDAAgentModel::getAgent(const std::string& agent_name) {
     return *(it->second);
 }
 
-const CUDAMessage& CUDAAgentModel::getCUDAMessage(const std::string& message_name) const {
+CUDAMessage& CUDAAgentModel::getCUDAMessage(const std::string& message_name) const {
     CUDAMessageMap::const_iterator it;
     it = message_map.find(message_name);
 
