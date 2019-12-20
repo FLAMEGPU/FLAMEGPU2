@@ -16,9 +16,12 @@ Simulation::Simulation(const ModelDescription& _model)
 }
 
 void Simulation::initialise(int argc, const char** argv) {
+    config = Config();  // Reset to defaults
+    resetDerivedConfig();
     // check input args
-    if (!checkArgs(argc, argv))
-        exit(0);
+    if (argc)
+        if (!checkArgs(argc, argv))
+            exit(0);
     applyConfig();
 }
 
@@ -39,7 +42,7 @@ void Simulation::applyConfig() {
             }
         }
     }
-    // Call derrived class config stuff
+    // Call derived class config stuff
     applyConfig_derived();
 }
 
@@ -72,8 +75,6 @@ int Simulation::checkArgs(int argc, const char** argv) {
     // These should really be in some kind of config struct
     // unsigned int device_id = 0;
     // unsigned int iterations = 0;
-    config = Config();  // Reset to defaults
-    resetDerivedConfig();
     // Required args
     if (argc < 1) {
         printHelp(argv[0]);

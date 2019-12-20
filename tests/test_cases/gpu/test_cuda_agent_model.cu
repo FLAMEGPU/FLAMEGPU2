@@ -10,16 +10,22 @@ TEST(TestSimulation, ArgParse_inputfile_long) {
     CUDAAgentModel c(m);
     const char *argv[3] = { "prog.exe", "--in", "test" };
     EXPECT_EQ(c.getSimulationConfig().xml_input_file, "");
-    EXPECT_THROW(c.initialise(sizeof(argv)/sizeof(char*), argv), TinyXMLError);  // File doesn't exist
+    EXPECT_THROW(c.initialise(sizeof(argv)/sizeof(char*), argv), UnsupportedFileType);  // cant detect filetype
     EXPECT_EQ(c.getSimulationConfig().xml_input_file, argv[2]);
+    // Blank init resets value to default
+    c.initialise(0, nullptr);
+    EXPECT_EQ(c.getSimulationConfig().xml_input_file, "");
 }
 TEST(TestSimulation, ArgParse_inputfile_short) {
     ModelDescription m(MODEL_NAME);
     CUDAAgentModel c(m);
-    const char *argv[3] = { "prog.exe", "-i", "test" };
+    const char *argv[3] = { "prog.exe", "-i", "test.xml" };
     EXPECT_EQ(c.getSimulationConfig().xml_input_file, "");
-    EXPECT_THROW(c.initialise(sizeof(argv) / sizeof(char*), argv), TinyXMLError);  // File doesn't exist
+    EXPECT_THROW(c.initialise(sizeof(argv) / sizeof(char*), argv), InvalidInputFile);  // File doesn't exist
     EXPECT_EQ(c.getSimulationConfig().xml_input_file, argv[2]);
+    // Blank init resets value to default
+    c.initialise(0, nullptr);
+    EXPECT_EQ(c.getSimulationConfig().xml_input_file, "");
 }
 TEST(TestSimulation, ArgParse_steps_long) {
     ModelDescription m(MODEL_NAME);
@@ -28,6 +34,9 @@ TEST(TestSimulation, ArgParse_steps_long) {
     EXPECT_EQ(c.getSimulationConfig().steps, 0u);
     c.initialise(sizeof(argv) / sizeof(char*), argv);
     EXPECT_EQ(c.getSimulationConfig().steps, 12u);
+    // Blank init resets value to default
+    c.initialise(0, nullptr);
+    EXPECT_EQ(c.getSimulationConfig().steps, 0u);
 }
 TEST(TestSimulation, ArgParse_steps_short) {
     ModelDescription m(MODEL_NAME);
@@ -36,6 +45,9 @@ TEST(TestSimulation, ArgParse_steps_short) {
     EXPECT_EQ(c.getSimulationConfig().steps, 0u);
     c.initialise(sizeof(argv) / sizeof(char*), argv);
     EXPECT_EQ(c.getSimulationConfig().steps, 12u);
+    // Blank init resets value to default
+    c.initialise(0, nullptr);
+    EXPECT_EQ(c.getSimulationConfig().steps, 0u);
 }
 TEST(TestSimulation, ArgParse_randomseed_long) {
     ModelDescription m(MODEL_NAME);
@@ -44,6 +56,9 @@ TEST(TestSimulation, ArgParse_randomseed_long) {
     EXPECT_NE(c.getSimulationConfig().random_seed, 12u);
     c.initialise(sizeof(argv) / sizeof(char*), argv);
     EXPECT_EQ(c.getSimulationConfig().random_seed, 12u);
+    // Blank init resets value to default
+    c.initialise(0, nullptr);
+    EXPECT_NE(c.getSimulationConfig().random_seed, 12u);
 }
 TEST(TestSimulation, ArgParse_randomseed_short) {
     ModelDescription m(MODEL_NAME);
@@ -52,6 +67,9 @@ TEST(TestSimulation, ArgParse_randomseed_short) {
     EXPECT_NE(c.getSimulationConfig().random_seed, 12u);
     c.initialise(sizeof(argv) / sizeof(char*), argv);
     EXPECT_EQ(c.getSimulationConfig().random_seed, 12u);
+    // Blank init resets value to default
+    c.initialise(0, nullptr);
+    EXPECT_NE(c.getSimulationConfig().random_seed, 12u);
 }
 TEST(TestCUDAAgentModel, ArgParse_device_long) {
     ModelDescription m(MODEL_NAME);
@@ -60,6 +78,9 @@ TEST(TestCUDAAgentModel, ArgParse_device_long) {
     EXPECT_EQ(c.getCUDAConfig().device_id, 0);
     c.initialise(sizeof(argv) / sizeof(char*), argv);
     EXPECT_EQ(c.getCUDAConfig().device_id, 1);
+    // Blank init resets value to default
+    c.initialise(0, nullptr);
+    EXPECT_EQ(c.getCUDAConfig().device_id, 0);
 }
 TEST(TestCUDAAgentModel, ArgParse_device_short) {
     ModelDescription m(MODEL_NAME);
@@ -68,6 +89,9 @@ TEST(TestCUDAAgentModel, ArgParse_device_short) {
     EXPECT_EQ(c.getCUDAConfig().device_id, 0);
     c.initialise(sizeof(argv) / sizeof(char*), argv);
     EXPECT_EQ(c.getCUDAConfig().device_id, 1);
+    // Blank init resets value to default
+    c.initialise(0, nullptr);
+    EXPECT_EQ(c.getCUDAConfig().device_id, 0);
 }
 
 // Show that blank init resets the vals?

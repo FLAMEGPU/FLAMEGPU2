@@ -347,7 +347,7 @@ void CUDAAgentModel::applyConfig_derived() {
 }
 
 void CUDAAgentModel::resetDerivedConfig() {
-    config = Config();
+    this->config = CUDAAgentModel::Config();
 }
 
 
