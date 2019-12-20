@@ -162,7 +162,7 @@ class MiniSim {
     void run(int argc = 0, const char** argv = nullptr) {
         if (!simulation) {
             simulation = new CUDAAgentModel(model);
-            simulation->setSimulationSteps(1);
+            simulation->SimulationConfig().steps = 1;
             simulation->setPopulationData(population);
         }
         if (argc)
@@ -222,8 +222,8 @@ class HostRandomTest : public testing::Test {
 };
 
 // @note seeds 0 and 1 conflict with std::linear_congruential_engine, the default on GCC so using mt19937 to avoid this.
-const char *args_1[4] = { "process.exe", "-r", "0" };
-const char *args_2[4] = { "process.exe", "-r", "1" };
+const char *args_1[5] = { "process.exe", "-r", "0", "-s", "1" };
+const char *args_2[5] = { "process.exe", "-r", "1", "-s", "1" };
 
 }  // namespace
 
@@ -234,7 +234,7 @@ TEST_F(HostRandomTest, UniformFloat) {
     for (float&i : float_out)
         EXPECT_EQ(i, 0.0f);
     // Seed RNG
-    ms->run(3, args_1);
+    ms->run(5, args_1);
     // Value has changed
     unsigned int diff = 0;
     for (float &i : float_out)
@@ -253,7 +253,7 @@ TEST_F(HostRandomTest, UniformFloat) {
     for (float&i : float_out)
         i = 0.0f;
     // Different Seed
-    ms->run(3, args_2);
+    ms->run(5, args_2);
     // Value has changed
     diff = 0;
     for (float &i : float_out)
@@ -269,7 +269,7 @@ TEST_F(HostRandomTest, UniformFloat) {
     for (float&i : float_out)
         i = 0.0f;
     // First Seed
-    ms->run(3, args_1);
+    ms->run(5, args_1);
     // Value has changed
     diff = 0;
     for (float &i : float_out)
@@ -286,7 +286,7 @@ TEST_F(HostRandomTest, UniformDouble) {
     for (double&i : double_out)
         EXPECT_EQ(i, 0.0);
     // Seed RNG
-    ms->run(3, args_1);
+    ms->run(5, args_1);
     // Value has changed
     unsigned int diff = 0;
     for (double &i : double_out)
@@ -305,7 +305,7 @@ TEST_F(HostRandomTest, UniformDouble) {
     for (double&i : double_out)
         i = 0.0;
     // Different Seed
-    ms->run(3, args_2);
+    ms->run(5, args_2);
     // Value has changed
     diff = 0;
     for (double &i : double_out)
@@ -321,7 +321,7 @@ TEST_F(HostRandomTest, UniformDouble) {
     for (double&i : double_out)
         i = 0.0;
     // First Seed
-    ms->run(3, args_1);
+    ms->run(5, args_1);
     // Value has changed
     diff = 0;
     for (double &i : double_out)
@@ -339,7 +339,7 @@ TEST_F(HostRandomTest, NormalFloat) {
     for (float&i : float_out)
         EXPECT_EQ(i, 0.0f);
     // Seed RNG
-    ms->run(3, args_1);
+    ms->run(5, args_1);
     // Value has changed
     unsigned int diff = 0;
     for (float &i : float_out)
@@ -358,7 +358,7 @@ TEST_F(HostRandomTest, NormalFloat) {
     for (float&i : float_out)
         i = 0.0f;
     // Different Seed
-    ms->run(3, args_2);
+    ms->run(5, args_2);
     // Value has changed
     diff = 0;
     for (float &i : float_out)
@@ -374,7 +374,7 @@ TEST_F(HostRandomTest, NormalFloat) {
     for (float&i : float_out)
         i = 0.0f;
     // First Seed
-    ms->run(3, args_1);
+    ms->run(5, args_1);
     // Value has changed
     diff = 0;
     for (float &i : float_out)
@@ -391,7 +391,7 @@ TEST_F(HostRandomTest, NormalDouble) {
     for (double&i : double_out)
         EXPECT_EQ(i, 0.0);
     // Seed RNG
-    ms->run(3, args_1);
+    ms->run(5, args_1);
     // Value has changed
     unsigned int diff = 0;
     for (double &i : double_out)
@@ -410,7 +410,7 @@ TEST_F(HostRandomTest, NormalDouble) {
     for (double&i : double_out)
         i = 0.0;
     // Different Seed
-    ms->run(3, args_2);
+    ms->run(5, args_2);
     // Value has changed
     diff = 0;
     for (double &i : double_out)
@@ -426,7 +426,7 @@ TEST_F(HostRandomTest, NormalDouble) {
     for (double&i : double_out)
         i = 0.0;
     // First Seed
-    ms->run(3, args_1);
+    ms->run(5, args_1);
     // Value has changed
     diff = 0;
     for (double &i : double_out)
@@ -444,7 +444,7 @@ TEST_F(HostRandomTest, LogNormalFloat) {
     for (float &i : float_out)
         EXPECT_EQ(i, 0.0f);
     // Seed RNG
-    ms->run(3, args_1);
+    ms->run(5, args_1);
     // Value has changed
     unsigned int diff = 0;
     for (float&i : float_out)
@@ -463,7 +463,7 @@ TEST_F(HostRandomTest, LogNormalFloat) {
     for (float&i : float_out)
         i = 0.0f;
     // Different Seed
-    ms->run(3, args_2);
+    ms->run(5, args_2);
     // Value has changed
     diff = 0;
     for (float &i : float_out)
@@ -479,7 +479,7 @@ TEST_F(HostRandomTest, LogNormalFloat) {
     for (float&i : float_out)
         i = 0.0f;
     // First Seed
-    ms->run(3, args_1);
+    ms->run(5, args_1);
     // Value has changed
     diff = 0;
     for (float &i : float_out)
@@ -496,7 +496,7 @@ TEST_F(HostRandomTest, LogNormalDouble) {
     for (double&i : double_out)
         EXPECT_EQ(i, 0.0);
     // Seed RNG
-    ms->run(3, args_1);
+    ms->run(5, args_1);
     // Value has changed
     unsigned int diff = 0;
     for (double &i : double_out)
@@ -515,7 +515,7 @@ TEST_F(HostRandomTest, LogNormalDouble) {
     for (double&i : double_out)
         i = 0.0;
     // Different Seed
-    ms->run(3, args_2);
+    ms->run(5, args_2);
     // Value has changed
     diff = 0;
     for (double &i : double_out)
@@ -531,7 +531,7 @@ TEST_F(HostRandomTest, LogNormalDouble) {
     for (double&i : double_out)
         i = 0.0;
     // First Seed
-    ms->run(3, args_1);
+    ms->run(5, args_1);
     // Value has changed
     diff = 0;
     for (double &i : double_out)
@@ -549,7 +549,7 @@ TEST_F(HostRandomTest, UniformUChar) {
     for (unsigned char&i : unsigned_char_out)
         EXPECT_EQ(i, 0);
     // Seed RNG
-    ms->run(3, args_1);
+    ms->run(5, args_1);
     // Value has changed
     unsigned int diff = 0;
     for (unsigned char &i : unsigned_char_out)
@@ -568,7 +568,7 @@ TEST_F(HostRandomTest, UniformUChar) {
     for (unsigned char&i : unsigned_char_out)
         i = 0;
     // Different Seed
-    ms->run(3, args_2);
+    ms->run(5, args_2);
     // Value has changed
     diff = 0;
     for (unsigned char &i : unsigned_char_out)
@@ -584,7 +584,7 @@ TEST_F(HostRandomTest, UniformUChar) {
     for (unsigned char&i : unsigned_char_out)
         i = 0;
     // First Seed
-    ms->run(3, args_1);
+    ms->run(5, args_1);
     // Value has changed
     diff = 0;
     for (unsigned char &i : unsigned_char_out)
@@ -601,7 +601,7 @@ TEST_F(HostRandomTest, UniformChar) {
     for (char&i : char_out)
         EXPECT_EQ(i, 0);
     // Seed RNG
-    ms->run(3, args_1);
+    ms->run(5, args_1);
     // Value has changed
     unsigned int diff = 0;
     for (char&i : char_out)
@@ -620,7 +620,7 @@ TEST_F(HostRandomTest, UniformChar) {
     for (char&i : char_out)
         i = 0;
     // Different Seed
-    ms->run(3, args_2);
+    ms->run(5, args_2);
     // Value has changed
     diff = 0;
     for (char&i : char_out)
@@ -636,7 +636,7 @@ TEST_F(HostRandomTest, UniformChar) {
     for (char&i : char_out)
         i = 0;
     // First Seed
-    ms->run(3, args_1);
+    ms->run(5, args_1);
     // Value has changed
     diff = 0;
     for (char&i : char_out)
@@ -654,7 +654,7 @@ TEST_F(HostRandomTest, UniformUShort) {
     for (uint16_t &i : unsigned_short_out)
         EXPECT_EQ(i, 0u);
     // Seed RNG
-    ms->run(3, args_1);
+    ms->run(5, args_1);
     // Value has changed
     unsigned int diff = 0;
     for (uint16_t &i : unsigned_short_out)
@@ -673,7 +673,7 @@ TEST_F(HostRandomTest, UniformUShort) {
     for (uint16_t &i : unsigned_short_out)
         i = 0u;
     // Different Seed
-    ms->run(3, args_2);
+    ms->run(5, args_2);
     // Value has changed
     diff = 0;
     for (uint16_t &i : unsigned_short_out)
@@ -689,7 +689,7 @@ TEST_F(HostRandomTest, UniformUShort) {
     for (uint16_t &i : unsigned_short_out)
         i = 0;
     // First Seed
-    ms->run(3, args_1);
+    ms->run(5, args_1);
     // Value has changed
     diff = 0;
     for (uint16_t &i : unsigned_short_out)
@@ -705,7 +705,7 @@ TEST_F(HostRandomTest, UniformShort) {
     for (int16_t &i : short_out)
         EXPECT_EQ(i, 0);
     // Seed RNG
-    ms->run(3, args_1);
+    ms->run(5, args_1);
     // Value has changed
     unsigned int diff = 0;
     for (int16_t &i : short_out)
@@ -724,7 +724,7 @@ TEST_F(HostRandomTest, UniformShort) {
     for (int16_t &i : short_out)
         i = 0;
     // Different Seed
-    ms->run(3, args_2);
+    ms->run(5, args_2);
     // Value has changed
     diff = 0;
     for (int16_t &i : short_out)
@@ -740,7 +740,7 @@ TEST_F(HostRandomTest, UniformShort) {
     for (int16_t &i : short_out)
         i = 0;
     // First Seed
-    ms->run(3, args_1);
+    ms->run(5, args_1);
     // Value has changed
     diff = 0;
     for (int16_t &i : short_out)
@@ -758,7 +758,7 @@ TEST_F(HostRandomTest, UniformUInt) {
     for (unsigned int&i : unsigned_int_out)
         EXPECT_EQ(i, 0u);
     // Seed RNG
-    ms->run(3, args_1);
+    ms->run(5, args_1);
     // Value has changed
     unsigned int diff = 0;
     for (unsigned int &i : unsigned_int_out)
@@ -777,7 +777,7 @@ TEST_F(HostRandomTest, UniformUInt) {
     for (unsigned int&i : unsigned_int_out)
         i = 0u;
     // Different Seed
-    ms->run(3, args_2);
+    ms->run(5, args_2);
     // Value has changed
     diff = 0;
     for (unsigned int &i : unsigned_int_out)
@@ -793,7 +793,7 @@ TEST_F(HostRandomTest, UniformUInt) {
     for (unsigned int&i : unsigned_int_out)
         i = 0u;
     // First Seed
-    ms->run(3, args_1);
+    ms->run(5, args_1);
     // Value has changed
     diff = 0;
     for (unsigned int &i : unsigned_int_out)
@@ -810,7 +810,7 @@ TEST_F(HostRandomTest, UniformInt) {
     for (int&i : int_out)
         EXPECT_EQ(i, 0);
     // Seed RNG
-    ms->run(3, args_1);
+    ms->run(5, args_1);
     // Value has changed
     unsigned int diff = 0;
     for (int32_t &i : int_out)
@@ -829,7 +829,7 @@ TEST_F(HostRandomTest, UniformInt) {
     for (int&i : int_out)
         i = 0;
     // Different Seed
-    ms->run(3, args_2);
+    ms->run(5, args_2);
     // Value has changed
     diff = 0;
     for (int32_t &i : int_out)
@@ -845,7 +845,7 @@ TEST_F(HostRandomTest, UniformInt) {
     for (int&i : int_out)
         i = 0;
     // First Seed
-    ms->run(3, args_1);
+    ms->run(5, args_1);
     // Value has changed
     diff = 0;
     for (int32_t &i : int_out)
@@ -863,7 +863,7 @@ TEST_F(HostRandomTest, UniformULongLong) {
     for (uint64_t &i : unsigned_longlong_out)
         EXPECT_EQ(i, 0llu);
     // Seed RNG
-    ms->run(3, args_1);
+    ms->run(5, args_1);
     // Value has changed
     unsigned int diff = 0;
     for (uint64_t &i : unsigned_longlong_out)
@@ -882,7 +882,7 @@ TEST_F(HostRandomTest, UniformULongLong) {
     for (uint64_t &i : unsigned_longlong_out)
         i = 0llu;
     // Different Seed
-    ms->run(3, args_2);
+    ms->run(5, args_2);
     // Value has changed
     diff = 0;
     for (uint64_t &i : unsigned_longlong_out)
@@ -898,7 +898,7 @@ TEST_F(HostRandomTest, UniformULongLong) {
     for (uint64_t &i : unsigned_longlong_out)
         i = 0llu;
     // First Seed
-    ms->run(3, args_1);
+    ms->run(5, args_1);
     // Value has changed
     diff = 0;
     for (uint64_t &i : unsigned_longlong_out)
@@ -915,7 +915,7 @@ TEST_F(HostRandomTest, UniformLongLong) {
     for (int64_t &i : longlong_out)
         EXPECT_EQ(i, 0ll);
     // Seed RNG
-    ms->run(3, args_1);
+    ms->run(5, args_1);
     // Value has changed
     unsigned int diff = 0;
     for (int64_t &i : longlong_out)
@@ -934,7 +934,7 @@ TEST_F(HostRandomTest, UniformLongLong) {
     for (int64_t &i : longlong_out)
         i = 0ll;
     // Different Seed
-    ms->run(3, args_2);
+    ms->run(5, args_2);
     // Value has changed
     diff = 0;
     for (int64_t &i : longlong_out)
@@ -950,7 +950,7 @@ TEST_F(HostRandomTest, UniformLongLong) {
     for (int64_t &i : longlong_out)
         i = 0ll;
     // First Seed
-    ms->run(3, args_1);
+    ms->run(5, args_1);
     // Value has changed
     diff = 0;
     for (int64_t &i : longlong_out)

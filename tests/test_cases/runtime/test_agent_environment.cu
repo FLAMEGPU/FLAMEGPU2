@@ -145,7 +145,7 @@ class MiniSim {
         // As the initial call to constructor fixes the agent population
         // This means if we haven't called model.newAgent(agent) first
         CUDAAgentModel cuda_model(model);
-        cuda_model.setSimulationSteps(2);
+        cuda_model.SimulationConfig().steps = 2;
         // This fails as agentMap is empty
         cuda_model.setPopulationData(*population);
         ASSERT_NO_THROW(cuda_model.simulate());

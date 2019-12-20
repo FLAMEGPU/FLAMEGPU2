@@ -25,7 +25,7 @@ class AgentInstance {
 
     template <typename T> void setVariable(std::string variable_name, const T value);
 
-    template <typename T>  const T getVariable(std::string variable_name);
+    template <typename T>  T getVariable(std::string variable_name);
 
  private:
     const unsigned int index;
@@ -34,27 +34,26 @@ class AgentInstance {
 
 template <typename T> void AgentInstance::setVariable(std::string variable_name, const T value) {
     // todo check that the variable exists
-
     GenericMemoryVector& v = agent_state_memory.getMemoryVector(variable_name);
-
-    // get the vector of correct type
-    std::vector<T> &t_v = v.getVector<T>();
-    typename std::vector<T>::iterator it = t_v.begin() + index;
-
-    // do the insert
-    t_v.insert(it, value);
+    if (v.getType() != typeid(T)) {
+        THROW InvalidVarType("Wrong variable type passed to GenericMemoryVector::getVector(). "
+            "This agent data vector expects '%s', but '%s' was requested.",
+            v.getType().name(), typeid(T).name());
+    }
+    // do the replace
+    reinterpret_cast<T*>(v.getDataPtr())[index] = value;
 }
 
-template <typename T>  const T AgentInstance::getVariable(std::string variable_name) {
+template <typename T> T AgentInstance::getVariable(std::string variable_name) {
     // todo check that the variable exists
     GenericMemoryVector& v = agent_state_memory.getMemoryVector(variable_name);
-
-    // get the vector of correct type
-    std::vector<T> &t_v = v.getVector<T>();
-    // typename std::vector<T>::iterator it = t_v.begin() + index;
-
+    if (v.getType() != typeid(T)) {
+        THROW InvalidVarType("Wrong variable type passed to GenericMemoryVector::getVector(). "
+            "This agent data vector expects '%s', but '%s' was requested.",
+            v.getType().name(), typeid(T).name());
+    }
     // todo error handling around the cast to check for exceptions
-    return t_v.at(index);
+    return reinterpret_cast<const T*>(v.getReadOnlyDataPtr())[index];
 }
 
 #endif  // INCLUDE_FLAMEGPU_POP_AGENTINSTANCE_H_

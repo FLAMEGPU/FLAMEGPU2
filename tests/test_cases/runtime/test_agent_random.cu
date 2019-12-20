@@ -56,9 +56,9 @@ TEST(AgentRandomTest, AgentRandomCheck) {
     layer.addAgentFunction(af);
 
     CUDAAgentModel cuda_model(model);
-    cuda_model.setSimulationSteps(1);
-    const char *args_1[3] = { "process.exe", "-r", "0" };
-    const char *args_2[3] = { "process.exe", "-r", "1" };
+    cuda_model.SimulationConfig().steps = 1;
+    const char *args_1[5] = { "process.exe", "-r", "0", "-s", "1" };
+    const char *args_2[5] = { "process.exe", "-r", "1", "-s", "1" };
     std::string _t_unused = std::string();
     std::vector<std::tuple<float, float, float>> results1, results2;
     {
@@ -68,7 +68,7 @@ TEST(AgentRandomTest, AgentRandomCheck) {
         * Does random number change each time it's called
         */
         // Seed random
-        cuda_model.initialise(3, args_1);
+        cuda_model.initialise(5, args_1);
         cuda_model.setPopulationData(init_population);
 
         cuda_model.simulate();
@@ -106,7 +106,7 @@ TEST(AgentRandomTest, AgentRandomCheck) {
          * Different seed produces different random numbers
          */
         // Seed random
-        cuda_model.initialise(3, args_2);
+        cuda_model.initialise(5, args_2);
         cuda_model.setPopulationData(init_population);
 
         cuda_model.simulate();
@@ -135,7 +135,7 @@ TEST(AgentRandomTest, AgentRandomCheck) {
         */
         results2.clear();
         // Seed random
-        cuda_model.initialise(3, args_1);
+        cuda_model.initialise(5, args_1);
         cuda_model.setPopulationData(init_population);
 
         cuda_model.simulate();
@@ -207,7 +207,7 @@ TEST(AgentRandomTest, AgentRandomFunctionsNoExcept) {
     layer.addAgentFunction(do_random);
 
     CUDAAgentModel cuda_model(model);
-    cuda_model.setSimulationSteps(1);
+    cuda_model.SimulationConfig().steps = 1;
     cuda_model.setPopulationData(population);
     ASSERT_NO_THROW(cuda_model.simulate());
     // Success if we get this far without an exception being thrown.

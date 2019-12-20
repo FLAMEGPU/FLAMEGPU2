@@ -69,6 +69,7 @@ AgentInstance AgentPopulation::getInstanceAt(unsigned int index, const std::stri
             "in AgentPopulation::getInstanceAt().",
             index, agent->name.c_str(), agent_state.c_str());
     }
+
     // return new instance from state memory with index of current size (then increment)
     return AgentInstance(*sm->second, index);
 }
