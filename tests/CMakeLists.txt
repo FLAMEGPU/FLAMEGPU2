@@ -61,9 +61,6 @@ add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src
 # Name the project and set languages
 project(tests CUDA CXX)
 
-# Project requires GTest include
-include_directories(${GTEST_INCLUDE_DIRS})
-
 # Set the location of the ROOT flame gpu project relative to this CMakeList.txt
 get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/.. REALPATH)
 
@@ -89,6 +86,7 @@ endif()
 SET(TEST_CASE_SRC
     # ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_func_pointer.cu # Does not currently build
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/gpu/test_gpu_validation.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/gpu/test_cuda_agent_model.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/model/test_environment_description.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/model/test_message_validation.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/model/test_model_validation.cu
@@ -131,7 +129,9 @@ add_flamegpu_executable("${PROJECT_NAME}" "${ALL_SRC}" "${FLAMEGPU_ROOT}" "${PRO
 
 # Add the tests directory to the include path,
 target_include_directories("${PROJECT_NAME}" PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+# Add the targets we depend on (this does link and include)
 target_link_libraries("${PROJECT_NAME}" gtest)
+# target_link_libraries("${PROJECT_NAME}" gmock) # Currently unused
 
 # Put Within Tests filter
 CMAKE_SET_TARGET_FOLDER("${PROJECT_NAME}" "Tests")

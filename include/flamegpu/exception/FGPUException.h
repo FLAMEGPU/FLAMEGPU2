@@ -293,4 +293,9 @@ DERIVED_FGPUException(TinyXMLError, "TinyXML returned an error code!");
  */
 DERIVED_FGPUException(DifferentModel, "Attempted to use member from a different model!");
 
+/**
+ * Defines an exception for errors when the provided file type is not supported
+ */
+DERIVED_FGPUException(UnsupportedFileType, "Cannot handle file type.");
+
 #endif  // INCLUDE_FLAMEGPU_EXCEPTION_FGPUEXCEPTION_H_

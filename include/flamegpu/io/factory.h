@@ -47,7 +47,9 @@ class ReaderFactory {
             return new xmlReader(model_state, input);
         }
         */
-        return nullptr;
+        THROW UnsupportedFileType("File '%s' is not a type which can be read "
+            "by ReaderFactory::createReader().\n",
+            input);
     }
 };
 

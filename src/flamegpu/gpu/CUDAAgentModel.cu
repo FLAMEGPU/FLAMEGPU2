@@ -9,7 +9,6 @@
 
 CUDAAgentModel::CUDAAgentModel(const ModelDescription& _model)
     : Simulation(_model)
-    , device_id(0)
     , agent_map()
     , curve(Curve::getInstance())
     , message_map()
@@ -234,7 +233,7 @@ void CUDAAgentModel::simulate() {
     for (auto &initFn : model->initFunctions)
         initFn(this->host_api.get());
 
-    for (unsigned int i = 0; getSimulationSteps() == 0 ? true : i < getSimulationSteps(); i++) {
+    for (unsigned int i = 0; getSimulationConfig().steps == 0 ? true : i < getSimulationConfig().steps; i++) {
         // std::cout <<"step: " << i << std::endl;
         if (!step())
             break;
@@ -273,7 +272,7 @@ void CUDAAgentModel::getPopulationData(AgentPopulation& population) {
     it->second->getPopulationData(population);
 }
 
-const CUDAAgent& CUDAAgentModel::getCUDAAgent(std::string agent_name) const {
+const CUDAAgent& CUDAAgentModel::getCUDAAgent(const std::string& agent_name) const {
     CUDAAgentMap::const_iterator it;
     it = agent_map.find(agent_name);
 
@@ -296,7 +295,7 @@ AgentInterface& CUDAAgentModel::getAgent(const std::string& agent_name) {
     return *(it->second);
 }
 
-const CUDAMessage& CUDAAgentModel::getCUDAMessage(std::string message_name) const {
+const CUDAMessage& CUDAAgentModel::getCUDAMessage(const std::string& message_name) const {
     CUDAMessageMap::const_iterator it;
     it = message_map.find(message_name);
 
@@ -308,13 +307,13 @@ const CUDAMessage& CUDAAgentModel::getCUDAMessage(std::string message_name) cons
     return *(it->second);
 }
 
-bool CUDAAgentModel::checkArgs_derived(int argc, const char** argv) {
+bool CUDAAgentModel::checkArgs_derived(int argc, const char** argv, int &i) {
     // Get arg as lowercase
-    std::string arg(argv[0]);
+    std::string arg(argv[i]);
     std::transform(arg.begin(), arg.end(), arg.begin(), [](unsigned char c) { return std::use_facet< std::ctype<char>>(std::locale()).tolower(c); });
     // -device <uint>, Uses the specified cuda device, defaults to 0
-    if ((arg.compare("--device") == 0 || arg.compare("-d") == 0) && argc >= 2) {
-        device_id = static_cast<unsigned int>(strtoul(argv[1], nullptr, 0));
+    if ((arg.compare("--device") == 0 || arg.compare("-d") == 0) && argc > i+1) {
+        config.device_id = static_cast<unsigned int>(strtoul(argv[++i], nullptr, 0));
         return true;
     }
     return false;
@@ -326,7 +325,7 @@ void CUDAAgentModel::printHelp_derived() {
     printf(line_fmt, "-d, --device", "GPU index");
 }
 
-void CUDAAgentModel::_initialise() {
+void CUDAAgentModel::applyConfig_derived() {
     cudaError_t cudaStatus;
     int device_count;
 
@@ -341,8 +340,23 @@ void CUDAAgentModel::_initialise() {
     }
 
     // Select device
-    cudaStatus = cudaSetDevice(static_cast<int>(device_id));
-    if (cudaStatus != cudaSuccess) {
-        THROW InvalidCUDAdevice("Error setting CUDA device to '%d', only %d available!", device_id, device_count);
+    if (config.device_id >= device_count) {
+        THROW InvalidCUDAdevice("Error setting CUDA device to '%d', only %d available!", config.device_id, device_count);
     }
+    cudaStatus = cudaSetDevice(static_cast<int>(config.device_id));
+    if (cudaStatus != cudaSuccess) {
+        THROW InvalidCUDAdevice("Unknown error setting CUDA device to '%d'. (%d available)", config.device_id, device_count);
+    }
+}
+
+void CUDAAgentModel::resetDerivedConfig() {
+    this->config = CUDAAgentModel::Config();
+}
+
+
+CUDAAgentModel::Config &CUDAAgentModel::CUDAConfig() {
+    return config;
+}
+const CUDAAgentModel::Config &CUDAAgentModel::getCUDAConfig() const {
+    return config;
 }

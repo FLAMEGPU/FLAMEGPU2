@@ -191,7 +191,7 @@ int main(int argc, const char* argv[]) {
         cuda_model.setPopulationData(population2);
 #endif
 
-    cuda_model.setSimulationSteps(1);  // steps>1 --> does not work for now
+    cuda_model.SimulationConfig().steps = 1;  // steps>1 --> does not work for now
 
     /* Run the model */
     cuda_model.simulate();

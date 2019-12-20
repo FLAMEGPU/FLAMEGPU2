@@ -93,7 +93,7 @@ TEST(GPUTest, GPUSimulationTest) {
 
     CUDAAgentModel cuda_model(flame_model);
     const int STEPS = 5;
-    cuda_model.setSimulationSteps(STEPS);
+    cuda_model.SimulationConfig().steps = STEPS;
 
     cuda_model.setPopulationData(population);
 
@@ -157,7 +157,7 @@ TEST(GPUTest, GPUSimulationTestMultiple) {
 
     /* Run the model */
     CUDAAgentModel cuda_model(flame_model);
-    cuda_model.setSimulationSteps(1);
+    cuda_model.SimulationConfig().steps = 1;
 
     cuda_model.setPopulationData(population1);
     cuda_model.setPopulationData(population2);

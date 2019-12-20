@@ -18,6 +18,7 @@
 
 // include sub dependency AgentInstance which includes AgentStateMemory
 #include "flamegpu/pop/AgentInstance.h"
+#include "flamegpu/model/ModelData.h"
 
 // forward declarations
 class AgentDescription;
@@ -34,15 +35,15 @@ class AgentPopulation {
 
     virtual ~AgentPopulation();
 
-    AgentInstance getNextInstance(const std::string agent_state = "default");
+    AgentInstance getNextInstance(const std::string agent_state = ModelData::DEFAULT_STATE);
 
-    AgentInstance getInstanceAt(unsigned int index, const std::string agent_state = "default");
+    AgentInstance getInstanceAt(unsigned int index, const std::string agent_state = ModelData::DEFAULT_STATE);
 
-    AgentStateMemory& getStateMemory(const std::string agent_state = "default");
+    AgentStateMemory& getStateMemory(const std::string agent_state = ModelData::DEFAULT_STATE);
 
-    unsigned int getCurrentListSize(const std::string agent_state = "default");
+    unsigned int getCurrentListSize(const std::string agent_state = ModelData::DEFAULT_STATE);
 
-    const AgentStateMemory& getReadOnlyStateMemory(const std::string agent_state = "default") const;
+    const AgentStateMemory& getReadOnlyStateMemory(const std::string agent_state = ModelData::DEFAULT_STATE) const;
 
     std::string getAgentName() const;
 

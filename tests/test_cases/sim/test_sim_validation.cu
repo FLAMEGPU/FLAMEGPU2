@@ -88,7 +88,7 @@ TEST(SimTest, SimulationFunctionCheck) {
 
 
     CUDAAgentModel cuda_model(flame_model);
-    cuda_model.setSimulationSteps(1);
+    cuda_model.SimulationConfig().steps = 1;
     cuda_model.setPopulationData(population);
 
     cuda_model.simulate();

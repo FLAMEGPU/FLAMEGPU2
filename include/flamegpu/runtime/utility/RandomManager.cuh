@@ -26,7 +26,7 @@ class RandomManager {
     /**
      * Handles seeding of random generation
      */
-    friend void Simulation::initialise(int, const char**);
+    friend void Simulation::applyConfig();
     /**
      * Calls resize() during simulation execution to resize device random array
      */
