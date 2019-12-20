@@ -12,7 +12,7 @@ namespace test_cuda_agent_model {
     const char *LAYER_NAME = "Layer";
     const char VARIABLE_NAME[5] = "test";  // Have to define this in this form to use with compile time hash stuff
     __device__ const char dVARIABLE_NAME[5] = "test";  // Have to define this in this form to use with compile time hash stuff
-    const unsigned int AGENT_COUNT = 10;
+    const int AGENT_COUNT = 10;
     const int MULTIPLIER = 3;
     __device__ const int dMULTIPLIER = 3;
 TEST(TestSimulation, ArgParse_inputfile_long) {
@@ -123,7 +123,7 @@ TEST(TestCUDAAgentModel, SetGetPopulationData) {
     AgentDescription &a = m.newAgent(AGENT_NAME);
     m.newLayer(LAYER_NAME).addAgentFunction(a.newFunction(FUNCTION_NAME, SetGetFn));
     a.newVariable<int>(VARIABLE_NAME);
-    AgentPopulation pop(a, AGENT_COUNT);
+    AgentPopulation pop(a, (unsigned int)AGENT_COUNT);
     for (int _i = 0; _i < AGENT_COUNT; ++_i) {
         AgentInstance i = pop.getNextInstance();
         i.setVariable<int>(VARIABLE_NAME, _i);
@@ -154,7 +154,7 @@ TEST(TestCUDAAgentModel, SetGetPopulationData_InvalidCudaAgent) {
     ModelDescription m(MODEL_NAME);
     AgentDescription &a = m.newAgent(AGENT_NAME);
 
-    AgentPopulation pop(a2, AGENT_COUNT);
+    AgentPopulation pop(a2, (unsigned int)AGENT_COUNT);
 
     CUDAAgentModel c(m);
     EXPECT_THROW(c.setPopulationData(pop), InvalidCudaAgent);
@@ -165,7 +165,7 @@ TEST(TestCUDAAgentModel, GetAgent) {
     AgentDescription &a = m.newAgent(AGENT_NAME);
     m.newLayer(LAYER_NAME).addAgentFunction(a.newFunction(FUNCTION_NAME, SetGetFn));
     a.newVariable<int>(VARIABLE_NAME);
-    AgentPopulation pop(a, AGENT_COUNT);
+    AgentPopulation pop(a, (unsigned int)AGENT_COUNT);
     for (int _i = 0; _i < AGENT_COUNT; ++_i) {
         AgentInstance i = pop.getNextInstance();
         i.setVariable<int>(VARIABLE_NAME, _i);
