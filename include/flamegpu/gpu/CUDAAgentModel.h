@@ -16,26 +16,31 @@ class CUDAAgentModel : public Simulation {
     typedef std::map<std::string, std::unique_ptr<CUDAMessage>> CUDAMessageMap;
 
  public:
+    struct Config {
+         int device_id = 0;
+    };
     explicit CUDAAgentModel(const ModelDescription& model);
-    ~CUDAAgentModel();
+    virtual ~CUDAAgentModel();  // Virtual required by gmock
     bool step() override;
     void simulate() override;
     void setPopulationData(AgentPopulation& population) override;
     void getPopulationData(AgentPopulation& population) override;
-    const CUDAAgent& getCUDAAgent(std::string agent_name) const;
+    const CUDAAgent& getCUDAAgent(const std::string &agent_name) const;
     AgentInterface &getAgent(const std::string &name) override;
-    const CUDAMessage& getCUDAMessage(std::string message_name) const;
+    const CUDAMessage& getCUDAMessage(const std::string &message_name) const;
+    Config &CUDAConfig();
+    const Config &getCUDAConfig() const;
 
  protected:
-    bool checkArgs_derived(int argc, const char** argv) override;
+    void applyConfig_derived() override;
+    bool checkArgs_derived(int argc, const char** argv, int &i) override;
     void printHelp_derived() override;
-    void _initialise() override;
+    void resetDerivedConfig() override;
 
  private:
-    unsigned int device_id;
     CUDAAgentMap agent_map;
     Curve &curve;
-
+    Config config;
     CUDAMessageMap message_map;
     /**
     * Resizes device random array during step()

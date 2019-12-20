@@ -60,7 +60,7 @@ class MiniSim {
         // As the initial call to constructor fixes the agent population
         // This means if we haven't called model.newAgent(agent) first
         CUDAAgentModel cuda_model(model);
-        cuda_model.setSimulationSteps(1);
+        cuda_model.SimulationConfig().steps = 1;
         // This fails as agentMap is empty
         cuda_model.setPopulationData(*population);
         ASSERT_NO_THROW(cuda_model.simulate());
@@ -144,7 +144,7 @@ TEST(EnvironmentManagerTest2, RehostModel) {
     MiniSim *ms1 = new MiniSim();
     ms1->env.add<float>("ms1_float", MS1_VAL);
     CUDAAgentModel *cuda_model1 = new CUDAAgentModel(ms1->model);
-    cuda_model1->setSimulationSteps(1);
+    cuda_model1->SimulationConfig().steps = 1;
     cuda_model1->setPopulationData(*ms1->population);
     EXPECT_NO_THROW(cuda_model1->simulate());
     MiniSim *ms2 = new MiniSim();
@@ -158,7 +158,7 @@ TEST(EnvironmentManagerTest2, RehostModel) {
     CUDAAgentModel *cuda_model2 = nullptr;
     EXPECT_NO_THROW(cuda_model2 = new CUDAAgentModel(ms2->model));
     cuda_model2->setPopulationData(*ms2->population);
-    cuda_model2->setSimulationSteps(1);
+    cuda_model2->SimulationConfig().steps = 1;
     EXPECT_NO_THROW(cuda_model2->simulate());
     delete cuda_model2;
     delete ms1;

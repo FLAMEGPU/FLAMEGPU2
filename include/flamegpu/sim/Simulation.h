@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <string>
+#include <ctime>
 
 #include "flamegpu/sim/AgentInterface.h"
 
@@ -13,6 +14,13 @@ struct ModelData;
 
 class Simulation {
  public:
+    struct Config {
+        Config() : random_seed(static_cast<unsigned int>(time(nullptr))) {
+        }
+        std::string xml_input_file;
+        unsigned int random_seed;
+        unsigned int steps = 0;
+    };
     virtual ~Simulation() = default;
     explicit Simulation(const ModelDescription& model);
     void initialise(int argc, const char** argv);
@@ -20,8 +28,6 @@ class Simulation {
     virtual bool step() = 0;
     virtual void simulate() = 0;
 
-    void setSimulationSteps(unsigned int steps);
-    unsigned int getSimulationSteps() const;
     const ModelData& getModelDescription() const;
 
     void output(int argc, const char** argv);
@@ -31,23 +37,27 @@ class Simulation {
 
     virtual AgentInterface &getAgent(const std::string &name) = 0;
 
+    Config &SimulationConfig();
+    const Config &getSimulationConfig() const;
+
+    void applyConfig();
+
  protected:
-    virtual void _initialise() = 0;
-    virtual bool checkArgs_derived(int argc, const char** argv) = 0;
+    virtual void applyConfig_derived() = 0;
+    virtual bool checkArgs_derived(int argc, const char** argv, int &i) = 0;
     virtual void printHelp_derived() = 0;
+    virtual void resetDerivedConfig() = 0;
     const std::shared_ptr<const ModelData> model;
     /**
      * One instance of host api is used for entire model
      */
     std::unique_ptr<FLAMEGPU_HOST_API> host_api;
 
+    Config config;
+
  private:
-     void printHelp(const char *executable);
+    void printHelp(const char *executable);
     int checkArgs(int argc, const char** argv);
-    unsigned int simulation_steps;
-    std::string xml_input_path;
-    bool has_seed;
-    unsigned int random_seed;
 };
 
 #endif  // INCLUDE_FLAMEGPU_SIM_SIMULATION_H_

@@ -157,7 +157,7 @@ int main(void) {
     /* Run the model */
     CUDAAgentModel cuda_model(flame_model);
 
-    cuda_model.setSimulationSteps(1);
+    cuda_model.SimulationConfig().steps = 1;
 
     cuda_model.setPopulationData(population);
 
