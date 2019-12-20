@@ -27,19 +27,11 @@
 
 
 FLAMEGPU_AGENT_FUNCTION(output_func) {
-    printf("Hello from output_func\n");
-    float x = FLAMEGPU->getVariable<float>("x");
-    float y = FLAMEGPU->getVariable<float>("y");
+    FLAMEGPU->setVariable<float>("x", 10.0f);
+    FLAMEGPU->setVariable<float>("y", 11.0f);
 
-    printf("[get (x,y)]: x = %f, y = %f\n", x, y);
-
-    FLAMEGPU->setVariable<float>("x", x + 3);
-    x = FLAMEGPU->getVariable<float>("x");
-
-    printf("[set (x)]: x = %f, y = %f\n", x, y);
-
-    FLAMEGPU->addMessage<float>("x", x);
-    FLAMEGPU->addMessage<float>("y", y);
+    FLAMEGPU->addMessage<float>("x", 12.0f);
+    FLAMEGPU->addMessage<float>("y", 13.0f);
 
     return ALIVE;
 }
@@ -49,7 +41,7 @@ FLAMEGPU_AGENT_FUNCTION(input_func) {
     float x = FLAMEGPU->getVariable<float>("x");
     float y = FLAMEGPU->getVariable<float>("y");
 
-    // printf("[get (x,y)]: x = %f, y = %f\n", x, y);
+    printf("[get (x,y)]: x = %f, y = %f\n", x, y);
 
     FLAMEGPU->setVariable<float>("x", x + 2);
     x = FLAMEGPU->getVariable<float>("x");
@@ -76,6 +68,10 @@ FLAMEGPU_AGENT_FUNCTION(input_func) {
         float x1 = messageList.getVariable<float>(message, "x");
         float x2 = message.getVariable<float>("x");
         printf("(input func - for loop, get msg variable): x = %f %f %f\n", x0, x1, x2);
+        float y0 = messageList.getVariable<float>(iterator, "y");
+        float y1 = messageList.getVariable<float>(message, "y");
+        float y2 = message.getVariable<float>("y");
+        printf("(input func - for loop, get msg variable): y = %f %f %f\n", y0, y1, y2);
     }
 
     // 2) Second method: Range based for loop
@@ -83,6 +79,10 @@ FLAMEGPU_AGENT_FUNCTION(input_func) {
         float x0 = message.getVariable<float>("x");
         float x1 = messageList.getVariable<float>(message, "x");
         printf("(input func - for-range, get msg variables): x = %f %f \n", x0, x1);
+
+        float y0 = message.getVariable<float>("y");
+        float y1 = messageList.getVariable<float>(message, "y");
+        printf("(input func - for-range, get msg variables): y = %f %f \n", y0, y1);
     }
 
     return ALIVE;
