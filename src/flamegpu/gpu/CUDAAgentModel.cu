@@ -340,9 +340,12 @@ void CUDAAgentModel::applyConfig_derived() {
     }
 
     // Select device
+    if (config.device_id >= device_count) {
+        THROW InvalidCUDAdevice("Error setting CUDA device to '%d', only %d available!", config.device_id, device_count);
+    }
     cudaStatus = cudaSetDevice(static_cast<int>(config.device_id));
     if (cudaStatus != cudaSuccess) {
-        THROW InvalidCUDAdevice("Error setting CUDA device to '%d', only %d available!", config.device_id, device_count);
+        THROW InvalidCUDAdevice("Unknown error setting CUDA device to '%d'. (%d available)", config.device_id, device_count);
     }
 }
 
