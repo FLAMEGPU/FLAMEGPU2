@@ -25,9 +25,9 @@ class CUDAAgentModel : public Simulation {
     void simulate() override;
     void setPopulationData(AgentPopulation& population) override;
     void getPopulationData(AgentPopulation& population) override;
-    const CUDAAgent& getCUDAAgent(const std::string &agent_name) const;
+    CUDAAgent& getCUDAAgent(const std::string &agent_name) const;
     AgentInterface &getAgent(const std::string &name) override;
-    const CUDAMessage& getCUDAMessage(const std::string &message_name) const;
+    CUDAMessage& getCUDAMessage(const std::string &message_name) const;
     Config &CUDAConfig();
     const Config &getCUDAConfig() const;
 

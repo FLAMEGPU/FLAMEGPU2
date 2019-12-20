@@ -30,7 +30,7 @@ class CUDAMessage {
 
     const MessageData& getMessageDescription() const;
     unsigned int getMaximumListSize() const;
-
+    void resize(unsigned int newSize);
     /**
      * @brief Uses the cuRVE runtime to map the variables used by the agent function to the cuRVE library so that can be accessed by name within a n agent function
      *

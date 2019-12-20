@@ -53,6 +53,23 @@ const MessageData& CUDAMessage::getMessageDescription() const {
 * @param empty
 * @return none
 */
+
+void CUDAMessage::resize(unsigned int newSize) {
+    // Only grow currently
+    max_list_size = max_list_size < 2 ? 2 : max_list_size;
+    if (newSize > max_list_size) {
+        while (max_list_size < newSize) {
+            max_list_size *= 1.5;
+        }
+        // This drops old message data
+        message_list = std::unique_ptr<CUDAMessageList>(new CUDAMessageList(*this));
+
+//#ifdef _DEBUG
+        /**set the message list to zero*/
+        zeroAllMessageData();
+//#endif
+    }
+}
 void CUDAMessage::setInitialMessageList() {  // used to be const AgentPopulation& population
     // check that the message list has not already been set
     if (message_list) {
@@ -72,14 +89,7 @@ void CUDAMessage::setInitialMessageList() {  // used to be const AgentPopulation
     }
     */
 
-    max_list_size = 1;  // message list starts 0 length, is scaled on the fly
-
-    // allocate memory for each message list
-    message_list = std::unique_ptr<CUDAMessageList>(new CUDAMessageList(*this));
-    // message_list = std::make_unique<CUDAMessageList>(*this);  // you may replace *this with "new CUDAMessageList(*this)" , compile this with -std=c++14. Not possible with CUDA 8 under linux using cmake.
-
-    /**set the message list to zero*/
-    zeroAllMessageData();
+    resize(0);
 }
 
 /**
@@ -114,6 +124,9 @@ void CUDAMessage::mapRuntimeVariables(const AgentFunctionData& func) const {
 
     const std::string message_name = message_description.name;
 
+    const Curve::VariableHash message_hash = curve.variableRuntimeHash(message_name.c_str());
+    const Curve::VariableHash agent_hash = curve.variableRuntimeHash(func.parent.lock()->name.c_str());
+    const Curve::VariableHash func_hash = curve.variableRuntimeHash(func.name.c_str());
     // loop through the message variables to map each variable name using cuRVE
     for (const auto &mmp : message_description.variables) {
         // get a device pointer for the message variable name
@@ -121,9 +134,6 @@ void CUDAMessage::mapRuntimeVariables(const AgentFunctionData& func) const {
 
         // map using curve
         Curve::VariableHash var_hash = curve.variableRuntimeHash(mmp.first.c_str());
-        Curve::VariableHash message_hash = curve.variableRuntimeHash(message_name.c_str());
-        Curve::VariableHash agent_hash = curve.variableRuntimeHash(func.parent.lock()->name.c_str());
-        Curve::VariableHash func_hash = curve.variableRuntimeHash(func.name.c_str());
 
         // get the message variable size
         size_t size = mmp.second.type_size;
@@ -137,6 +147,10 @@ void CUDAMessage::mapRuntimeVariables(const AgentFunctionData& func) const {
 
 void CUDAMessage::unmapRuntimeVariables(const AgentFunctionData& func) const {
     const std::string message_name = message_description.name;
+
+    const Curve::VariableHash message_hash = curve.variableRuntimeHash(message_name.c_str());
+    const Curve::VariableHash agent_hash = curve.variableRuntimeHash(func.parent.lock()->name.c_str());
+    const Curve::VariableHash func_hash = curve.variableRuntimeHash(func.name.c_str());
     // loop through the message variables to map each variable name using cuRVE
     for (const auto &mmp : message_description.variables) {
         // get a device pointer for the message variable name
@@ -144,9 +158,6 @@ void CUDAMessage::unmapRuntimeVariables(const AgentFunctionData& func) const {
 
         // unmap using curve
         Curve::VariableHash var_hash = curve.variableRuntimeHash(mmp.first.c_str());
-        Curve::VariableHash message_hash = curve.variableRuntimeHash(message_name.c_str());
-        Curve::VariableHash agent_hash = curve.variableRuntimeHash(func.parent.lock()->name.c_str());
-        Curve::VariableHash func_hash = curve.variableRuntimeHash(func.name.c_str());
 
         curve.unregisterVariableByHash(var_hash + agent_hash + func_hash + message_hash);
     }

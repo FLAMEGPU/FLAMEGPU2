@@ -49,17 +49,17 @@ FLAMEGPU_AGENT_FUNCTION(input_func) {
     float x = FLAMEGPU->getVariable<float>("x");
     float y = FLAMEGPU->getVariable<float>("y");
 
-    printf("[get (x,y)]: x = %f, y = %f\n", x, y);
+    // printf("[get (x,y)]: x = %f, y = %f\n", x, y);
 
     FLAMEGPU->setVariable<float>("x", x + 2);
     x = FLAMEGPU->getVariable<float>("x");
 
-    printf("[set (x)]: x = %f, y = %f\n", x, y);
+   // printf("[set (x)]: x = %f, y = %f\n", x, y);
 
     // 0) not interested - need to remove.
-    float x1 = FLAMEGPU->getMessageVariable<float>("x");
-    float y1 = FLAMEGPU->getMessageVariable<float>("y");
-    printf("(input func - get msg): x = %f, y = %f\n", x1, y1);
+    //float x1 = FLAMEGPU->getMessageVariable<float>("x");
+    //float y1 = FLAMEGPU->getMessageVariable<float>("y");
+    //printf("(input func - get msg): x = %f, y = %f\n", x1, y1);
 
     MessageList messageList = FLAMEGPU->GetMessageIterator("location1");
 
@@ -156,6 +156,7 @@ int main(int argc, const char* argv[]) {
     concurrent_layer.addAgentFunction(subtract_data);
 
     CUDAAgentModel cuda_model(flame_model);
+#undef enable_read
 #ifdef enable_read
         AgentPopulation population1(circle1_agent);
         AgentPopulation population2(circle2_agent);
@@ -191,7 +192,7 @@ int main(int argc, const char* argv[]) {
         cuda_model.setPopulationData(population2);
 #endif
 
-    cuda_model.SimulationConfig().steps = 1;  // steps>1 --> does not work for now
+    cuda_model.SimulationConfig().steps = 2;  // steps>1 --> does not work for now
 
     /* Run the model */
     cuda_model.simulate();

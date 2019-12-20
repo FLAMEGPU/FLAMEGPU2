@@ -105,22 +105,25 @@ AgentFunctionData::AgentFunctionData(ModelData *const model, std::shared_ptr<Age
     , description(model ? new AgentFunctionDescription(model, this) : nullptr)
     , name(other.name) {
     // Manually perform lookup copies
-    if (auto a = other.message_input.lock()) {
-        auto _m = model->messages.find(a->name);
-        if (_m != model->messages.end()) {
-            message_input = _m->second;
+    if(model)
+    {
+        if (auto a = other.message_input.lock()) {
+            auto _m = model->messages.find(a->name);
+            if (_m != model->messages.end()) {
+                message_input = _m->second;
+            }
         }
-    }
-    if (auto a = other.message_output.lock()) {
-        auto _m = model->messages.find(a->name);
-        if (_m != model->messages.end()) {
-            message_output = _m->second;
+        if (auto a = other.message_output.lock()) {
+            auto _m = model->messages.find(a->name);
+            if (_m != model->messages.end()) {
+                message_output = _m->second;
+            }
         }
-    }
-    if (auto a = other.agent_output.lock()) {
-        auto _a = model->agents.find(a->name);
-        if (_a != model->agents.end()) {
-            agent_output = _a->second;
+        if (auto a = other.agent_output.lock()) {
+            auto _a = model->agents.find(a->name);
+            if (_a != model->agents.end()) {
+                agent_output = _a->second;
+            }
         }
     }
 }
