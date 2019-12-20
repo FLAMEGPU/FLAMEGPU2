@@ -27,19 +27,12 @@
 
 
 FLAMEGPU_AGENT_FUNCTION(output_func) {
-    printf("Hello from output_func\n");
-    float x = FLAMEGPU->getVariable<float>("x");
-    float y = FLAMEGPU->getVariable<float>("y");
+    const int s = FLAMEGPU->environment.get<int>("step");
+    FLAMEGPU->setVariable<float>("x", s + 10.0f);
+    FLAMEGPU->setVariable<float>("y", s + 11.0f);
 
-    printf("[get (x,y)]: x = %f, y = %f\n", x, y);
-
-    FLAMEGPU->setVariable<float>("x", x + 3);
-    x = FLAMEGPU->getVariable<float>("x");
-
-    printf("[set (x)]: x = %f, y = %f\n", x, y);
-
-    FLAMEGPU->addMessage<float>("x", x);
-    FLAMEGPU->addMessage<float>("y", y);
+    FLAMEGPU->addMessage<float>("x", s + 12.0f);
+    FLAMEGPU->addMessage<float>("y", s + (blockDim.x * blockIdx.x + threadIdx.x));
 
     return ALIVE;
 }
@@ -54,12 +47,12 @@ FLAMEGPU_AGENT_FUNCTION(input_func) {
     FLAMEGPU->setVariable<float>("x", x + 2);
     x = FLAMEGPU->getVariable<float>("x");
 
-    printf("[set (x)]: x = %f, y = %f\n", x, y);
+    // printf("[set (x)]: x = %f, y = %f\n", x, y);
 
     // 0) not interested - need to remove.
-    float x1 = FLAMEGPU->getMessageVariable<float>("x");
-    float y1 = FLAMEGPU->getMessageVariable<float>("y");
-    printf("(input func - get msg): x = %f, y = %f\n", x1, y1);
+    // float x1 = FLAMEGPU->getMessageVariable<float>("x");
+    // float y1 = FLAMEGPU->getMessageVariable<float>("y");
+    // printf("(input func - get msg): x = %f, y = %f\n", x1, y1);
 
     MessageList messageList = FLAMEGPU->GetMessageIterator("location1");
 
@@ -76,6 +69,10 @@ FLAMEGPU_AGENT_FUNCTION(input_func) {
         float x1 = messageList.getVariable<float>(message, "x");
         float x2 = message.getVariable<float>("x");
         printf("(input func - for loop, get msg variable): x = %f %f %f\n", x0, x1, x2);
+        float y0 = messageList.getVariable<float>(iterator, "y");
+        float y1 = messageList.getVariable<float>(message, "y");
+        float y2 = message.getVariable<float>("y");
+        printf("(input func - for loop, get msg variable): y = %f %f %f\n", y0, y1, y2);
     }
 
     // 2) Second method: Range based for loop
@@ -83,6 +80,10 @@ FLAMEGPU_AGENT_FUNCTION(input_func) {
         float x0 = message.getVariable<float>("x");
         float x1 = messageList.getVariable<float>(message, "x");
         printf("(input func - for-range, get msg variables): x = %f %f \n", x0, x1);
+
+        float y0 = message.getVariable<float>("y");
+        float y1 = messageList.getVariable<float>(message, "y");
+        printf("(input func - for-range, get msg variables): y = %f %f \n", y0, y1);
     }
 
     return ALIVE;
@@ -109,10 +110,16 @@ FLAMEGPU_AGENT_FUNCTION(subtract_func) {
     printf("y after set = %f\n", y);
     return ALIVE;
 }
+FLAMEGPU_HOST_FUNCTION(increment_step) {
+    int s = FLAMEGPU->environment.get<int>("step");
+    s++;
+    FLAMEGPU->environment.set<int>("step", s);
+}
 
 int main(int argc, const char* argv[]) {
     /* Multi agent model */
     ModelDescription flame_model("circles_model");
+    flame_model.Environment().add<int>("step", 0);
 
     AgentDescription &circle1_agent = flame_model.newAgent("circle1");
     circle1_agent.newVariable<float>("x");
@@ -154,8 +161,9 @@ int main(int argc, const char* argv[]) {
     LayerDescription &concurrent_layer = flame_model.newLayer("concurrent_layer");
     concurrent_layer.addAgentFunction(add_data);
     concurrent_layer.addAgentFunction(subtract_data);
-
+    flame_model.addStepFunction(increment_step);
     CUDAAgentModel cuda_model(flame_model);
+#undef enable_read
 #ifdef enable_read
         AgentPopulation population1(circle1_agent);
         AgentPopulation population2(circle2_agent);
@@ -191,7 +199,7 @@ int main(int argc, const char* argv[]) {
         cuda_model.setPopulationData(population2);
 #endif
 
-    cuda_model.SimulationConfig().steps = 1;  // steps>1 --> does not work for now
+    cuda_model.SimulationConfig().steps = 2;  // steps>1 --> does not work for now
 
     /* Run the model */
     cuda_model.simulate();
