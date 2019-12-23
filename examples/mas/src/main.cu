@@ -27,11 +27,12 @@
 
 
 FLAMEGPU_AGENT_FUNCTION(output_func) {
-    FLAMEGPU->setVariable<float>("x", 10.0f);
-    FLAMEGPU->setVariable<float>("y", 11.0f);
+    const int s = FLAMEGPU->environment.get<int>("step");
+    FLAMEGPU->setVariable<float>("x", s + 10.0f);
+    FLAMEGPU->setVariable<float>("y", s + 11.0f);
 
-    FLAMEGPU->addMessage<float>("x", 12.0f);
-    FLAMEGPU->addMessage<float>("y", 13.0f);
+    FLAMEGPU->addMessage<float>("x", s + 12.0f);
+    FLAMEGPU->addMessage<float>("y", s + (blockDim.x * blockIdx.x + threadIdx.x));
 
     return ALIVE;
 }
@@ -46,12 +47,12 @@ FLAMEGPU_AGENT_FUNCTION(input_func) {
     FLAMEGPU->setVariable<float>("x", x + 2);
     x = FLAMEGPU->getVariable<float>("x");
 
-   // printf("[set (x)]: x = %f, y = %f\n", x, y);
+    // printf("[set (x)]: x = %f, y = %f\n", x, y);
 
     // 0) not interested - need to remove.
-    //float x1 = FLAMEGPU->getMessageVariable<float>("x");
-    //float y1 = FLAMEGPU->getMessageVariable<float>("y");
-    //printf("(input func - get msg): x = %f, y = %f\n", x1, y1);
+    // float x1 = FLAMEGPU->getMessageVariable<float>("x");
+    // float y1 = FLAMEGPU->getMessageVariable<float>("y");
+    // printf("(input func - get msg): x = %f, y = %f\n", x1, y1);
 
     MessageList messageList = FLAMEGPU->GetMessageIterator("location1");
 
@@ -109,10 +110,16 @@ FLAMEGPU_AGENT_FUNCTION(subtract_func) {
     printf("y after set = %f\n", y);
     return ALIVE;
 }
+FLAMEGPU_HOST_FUNCTION(increment_step) {
+    int s = FLAMEGPU->environment.get<int>("step");
+    s++;
+    FLAMEGPU->environment.set<int>("step", s);
+}
 
 int main(int argc, const char* argv[]) {
     /* Multi agent model */
     ModelDescription flame_model("circles_model");
+    flame_model.Environment().add<int>("step", 0);
 
     AgentDescription &circle1_agent = flame_model.newAgent("circle1");
     circle1_agent.newVariable<float>("x");
@@ -154,7 +161,7 @@ int main(int argc, const char* argv[]) {
     LayerDescription &concurrent_layer = flame_model.newLayer("concurrent_layer");
     concurrent_layer.addAgentFunction(add_data);
     concurrent_layer.addAgentFunction(subtract_data);
-
+    flame_model.addStepFunction(increment_step);
     CUDAAgentModel cuda_model(flame_model);
 #undef enable_read
 #ifdef enable_read
