@@ -30,9 +30,11 @@ FLAMEGPU_AGENT_FUNCTION(output_func) {
     const int s = FLAMEGPU->environment.get<int>("step");
     FLAMEGPU->setVariable<float>("x", s + 10.0f);
     FLAMEGPU->setVariable<float>("y", s + 11.0f);
-
-    FLAMEGPU->addMessage<float>("x", s + 12.0f);
-    FLAMEGPU->addMessage<float>("y", s + (blockDim.x * blockIdx.x + threadIdx.x));
+    if ((blockDim.x * blockIdx.x + threadIdx.x) % 2 == 0) {
+        // Optional output, only from even thread ids
+        FLAMEGPU->addMessage<float>("x", s + 12.0f);
+        FLAMEGPU->addMessage<float>("y", s + (blockDim.x * blockIdx.x + threadIdx.x));
+    }
 
     return ALIVE;
 }
@@ -141,6 +143,7 @@ int main(int argc, const char* argv[]) {
 
     AgentFunctionDescription &output_data = circle1_agent.newFunction("output_data", output_func);
     output_data.setMessageOutput(location1_message);
+    output_data.setMessageOutputOptional(true);
 
     AgentFunctionDescription &input_data = circle2_agent.newFunction("input_data", input_func);
     input_data.setMessageInput(location1_message);

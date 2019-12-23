@@ -102,9 +102,18 @@ void AgentFunctionDescription::setMessageOutput(const std::string &message_name)
                 message_name.c_str(), function->name.c_str());
         }
     }
+    // Clear old value
+    if (this->function->message_output_optional) {
+        if (auto b = this->function->message_output.lock()) {
+            b->optional_outputs--;
+        }
+    }
     auto a = model->messages.find(message_name);
     if (a != model->messages.end()) {
         this->function->message_output = a->second;
+        if (this->function->message_output_optional) {
+            a->second->optional_outputs++;
+        }
     } else {
         THROW InvalidMessageName("Model ('%s') does not contain message '%s', "
             "in AgentFunctionDescription::setMessageOutput()\n",
@@ -124,10 +133,19 @@ void AgentFunctionDescription::setMessageOutput(MessageDescription &message) {
                 message.getName().c_str(), function->name.c_str());
         }
     }
+    // Clear old value
+    if (this->function->message_output_optional) {
+        if (auto b = this->function->message_output.lock()) {
+            b->optional_outputs--;
+        }
+    }
     auto a = model->messages.find(message.getName());
     if (a != model->messages.end()) {
         if (a->second->description.get() == &message) {
             this->function->message_output = a->second;
+            if (this->function->message_output_optional) {
+                a->second->optional_outputs++;
+            }
         } else {
             THROW InvalidMessage("Message '%s' is not from Model '%s', "
                 "in AgentFunctionDescription::setMessageOutput()\n",
@@ -140,7 +158,15 @@ void AgentFunctionDescription::setMessageOutput(MessageDescription &message) {
     }
 }
 void AgentFunctionDescription::setMessageOutputOptional(const bool &output_is_optional) {
-    this->function->message_output_optional = output_is_optional;
+    if (output_is_optional != this->function->message_output_optional) {
+        this->function->message_output_optional = output_is_optional;
+        if (auto b = this->function->message_output.lock()) {
+            if (output_is_optional)
+                b->optional_outputs++;
+            else
+                b->optional_outputs--;
+        }
+    }
 }
 void AgentFunctionDescription::setAgentOutput(const std::string &agent_name) {
     // Clear old value

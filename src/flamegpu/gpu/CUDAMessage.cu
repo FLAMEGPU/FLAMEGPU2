@@ -21,6 +21,53 @@
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/pop/AgentPopulation.h"
 
+#ifdef _MSC_VER
+#pragma warning(push, 3)
+#include <cub/cub.cuh>
+#pragma warning(pop)
+#else
+#include <cub/cub.cuh>
+#endif
+
+namespace flamegpu_internal {
+    __device__ unsigned int *ds_scan_flag;
+    /**
+     * Array to mark whether a message (in swap) has been written to
+     */
+    unsigned int *d_scan_flag = nullptr;
+    /**
+     * d_scan_flag is exclusive summed into this array if messages are optional
+     */
+    unsigned int *d_position = nullptr;
+    unsigned int scan_flag_len = 0;
+    void free_scan_flag() {
+        if (d_scan_flag) {
+            gpuErrchk(cudaFree(d_scan_flag));
+        }
+        if (d_position) {
+            gpuErrchk(cudaFree(d_position));
+        }
+    }
+    void resize_scan_flag(unsigned int count) {
+        if (count + 1 > scan_flag_len) {
+            free_scan_flag();
+            gpuErrchk(cudaMalloc(&d_scan_flag, (count + 1) * sizeof(unsigned int)));  // +1 so we can get the total from the scan
+            gpuErrchk(cudaMalloc(&d_position, (count + 1) * sizeof(unsigned int)));  // +1 so we can get the total from the scan
+            gpuErrchk(cudaMemcpyToSymbol(ds_scan_flag, &d_scan_flag, sizeof(unsigned int *)));
+            scan_flag_len = count + 1;
+        }
+    }
+    void zero_scan_flag() {
+        if (d_position) {
+            gpuErrchk(cudaMemset(d_position, 0, scan_flag_len * sizeof(unsigned int)));
+        }
+        if (d_scan_flag) {
+            gpuErrchk(cudaMemset(d_scan_flag, 0, scan_flag_len * sizeof(unsigned int)));
+        }
+    }
+}  // namespace flamegpu_internal
+
+
 /**
 * CUDAMessage class
 * @brief allocates the hash table/list for message variables and copy the list to device
@@ -29,6 +76,9 @@ CUDAMessage::CUDAMessage(const MessageData& description)
     : message_description(description)
     , message_count(0)
     , max_list_size(0)
+    , cub_temp_size_max_list_size(0)
+    , cub_temp_size(0)
+    , d_cub_temp(nullptr)
     , curve(Curve::getInstance()) {
     setInitialMessageList();
 }
@@ -64,13 +114,14 @@ void CUDAMessage::resize(unsigned int newSize) {
         }
         // This drops old message data
         message_list = std::unique_ptr<CUDAMessageList>(new CUDAMessageList(*this));
+        flamegpu_internal::resize_scan_flag(max_list_size);
 
 // #ifdef _DEBUG
         /**set the message list to zero*/
         zeroAllMessageData();
 // #endif
     }
-    message_count = newSize;  // Assume that messaging isn't optional currently
+    message_count = newSize;  // This will be reduced down after function call if optional
 }
 void CUDAMessage::setInitialMessageList() {  // used to be const AgentPopulation& population
     // check that the message list has not already been set
@@ -197,7 +248,53 @@ void CUDAMessage::unmapRuntimeVariables(const AgentFunctionData& func) const {
         curve.unregisterVariableByHash(var_hash + agent_hash + func_hash + message_hash);
     }
 }
-
+// __global__ void scatter_optional_messages(
+//     unsigned int * const __restrict__ d_scan_flag,
+//     unsigned int * const __restrict__ d_position,
+//     unsigned int message_count,
+//     T * const __restrict__ item,
+//     T * swap) {
+//     //global thread index
+//     int index = (blockIdx.x*blockDim.x) + threadIdx.x;
+//
+//     const int _scan_input = d_scan_flag[index];
+//
+//     //if optional message is to be written
+//     if (_scan_input == 1) {
+//         int output_index = d_position[index] - 1;
+//
+//         swap[output_index] = item[index];
+//     }
+// }
 void CUDAMessage::swap() {
-    message_list->swap();
+    if (message_description.optional_outputs > 0) {
+        if (message_count > cub_temp_size_max_list_size) {
+            if (d_cub_temp) {
+                gpuErrchk(cudaFree(d_cub_temp));
+            }
+            cub_temp_size = 0;
+            cub::DeviceScan::ExclusiveSum(
+                nullptr,
+                cub_temp_size,
+                flamegpu_internal::d_scan_flag,
+                flamegpu_internal::d_position,
+                max_list_size + 1);
+            gpuErrchk(cudaMalloc(&d_cub_temp, cub_temp_size));
+            cub_temp_size_max_list_size = max_list_size;
+        }
+        cub::DeviceScan::ExclusiveSum(
+            d_cub_temp,
+            cub_temp_size,
+            flamegpu_internal::d_scan_flag,
+            flamegpu_internal::d_position,
+            message_count + 1);
+        // Update count
+        gpuErrchk(cudaMemcpy(&message_count, flamegpu_internal::d_position+message_count, sizeof(unsigned int), cudaMemcpyDeviceToHost));
+        printf("%u optional messages!\n", message_count);
+        // Scatter
+        message_list->swap();  // TEMP
+
+    } else {
+        message_list->swap();
+    }
 }

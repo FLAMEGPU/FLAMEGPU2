@@ -47,6 +47,13 @@ __device__ __forceinline__ FLAME_GPU_AGENT_STATUS funcName ## _impl::operator()(
 // Advanced macro for defining agent transition functions
 #define FLAMEGPU_AGENT_FUNC __device__ __forceinline__
 
+namespace flamegpu_internal {
+    extern __device__ unsigned int *ds_scan_flag;
+    extern unsigned int *d_scan_flag;
+    extern unsigned int *d_position;
+    extern unsigned int scan_flag_len;
+}  // namespace flamegpu_internal
+
 /** @brief    A flame gpu api class for the device runtime only
  *
  * This class should only be used by the device and never created on the host. It is safe for each agent function to create a copy of this class on the device. Any singleton type
@@ -115,6 +122,9 @@ class FLAMEGPU_DEVICE_API {
     __device__ void setMessageOutpNameSpace(Curve::NamespaceHash messagename_hash) {
         messagename_outp_hash = messagename_hash;
     }
+    __device__ void setScanFlag(unsigned int *_scan_flag) {
+        scan_flag = _scan_flag;
+    }
 
     /**
     * Provides access to random functionality inside agent functions
@@ -132,6 +142,7 @@ class FLAMEGPU_DEVICE_API {
     unsigned int  messageListSize;
 
     unsigned int thread_in_layer_offset;
+    unsigned int *scan_flag;
     /**
      * Thread index
      */
@@ -243,6 +254,9 @@ __device__ void FLAMEGPU_DEVICE_API::addMessage(const char(&variable_name)[N], T
 
     // set the variable using curve
     Curve::setVariable<T>(variable_name, agent_func_name_hash + messagename_outp_hash, value, index);
+
+    // Set scan flag incase the message is optional
+    flamegpu_internal::ds_scan_flag[index] = 1;
 }
 
 /**

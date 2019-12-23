@@ -48,7 +48,7 @@ class CUDAMessage {
      */
     void unmapRuntimeVariables(const AgentFunctionData& func) const;
 
-    void swap();
+    virtual void swap();
 
  protected:
     /**
@@ -66,6 +66,10 @@ class CUDAMessage {
 
     unsigned int message_count;
     unsigned int max_list_size;
+
+    unsigned int cub_temp_size_max_list_size;
+    size_t cub_temp_size;
+    void * d_cub_temp;
 
     Curve &curve;
 };
