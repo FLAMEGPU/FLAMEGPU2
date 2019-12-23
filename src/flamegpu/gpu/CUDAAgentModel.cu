@@ -85,7 +85,7 @@ bool CUDAAgentModel::step() {
                 std::string inpMessage_name = im->name;
                 const CUDAMessage& cuda_message = getCUDAMessage(inpMessage_name);
                 printf("inp msg name: %s\n", inpMessage_name.c_str());
-                cuda_message.mapRuntimeVariables(*func_des);
+                cuda_message.mapReadRuntimeVariables(*func_des);
             }
 
             // check if a function has an output massage
@@ -97,7 +97,7 @@ bool CUDAAgentModel::step() {
                     cuda_message.resize(cuda_agent.getStateSize(func_des->initial_state));
                 }
                 printf("outp msg name: %s\n", outpMessage_name.c_str());
-                cuda_message.mapRuntimeVariables(*func_des);
+                cuda_message.mapWriteRuntimeVariables(*func_des);
             }
 
 
@@ -179,18 +179,19 @@ bool CUDAAgentModel::step() {
             }
             const CUDAAgent& cuda_agent = getCUDAAgent(func_agent->getName());
 
-            // check if a function has an output massage
+            // check if a function has an input message
             if (auto im = func_des->message_input.lock()) {
                 std::string inpMessage_name = im->name;
                 const CUDAMessage& cuda_message = getCUDAMessage(inpMessage_name);
                 cuda_message.unmapRuntimeVariables(*func_des);
             }
 
-            // check if a function has an output massage
+            // check if a function has an output message
             if (auto om = func_des->message_output.lock()) {
                 std::string outpMessage_name = om->name;
-                const CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
+                CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
                 cuda_message.unmapRuntimeVariables(*func_des);
+                cuda_message.swap();
             }
             // const CUDAMessage& cuda_inpMessage = getCUDAMessage(func_des.getInputChild.getMessageName());
             // const CUDAMessage& cuda_outpMessage = getCUDAMessage(func_des.getOutputChild.getMessageName());

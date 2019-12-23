@@ -37,7 +37,8 @@ class CUDAMessage {
      *
      * @param    func    The function.
      */
-    void mapRuntimeVariables(const AgentFunctionData& func) const;
+    void mapReadRuntimeVariables(const AgentFunctionData& func) const;
+    void mapWriteRuntimeVariables(const AgentFunctionData& func) const;
 
     /**
      * @brief    Uses the cuRVE runtime to unmap the variables used by the agent function to the cuRVE
@@ -46,6 +47,8 @@ class CUDAMessage {
      * @param    func    The function.
      */
     void unmapRuntimeVariables(const AgentFunctionData& func) const;
+
+    void swap();
 
  protected:
     /**
