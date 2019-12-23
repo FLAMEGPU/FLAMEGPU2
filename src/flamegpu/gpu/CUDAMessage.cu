@@ -59,7 +59,7 @@ void CUDAMessage::resize(unsigned int newSize) {
     max_list_size = max_list_size < 2 ? 2 : max_list_size;
     if (newSize > max_list_size) {
         while (max_list_size < newSize) {
-            max_list_size *= 1.5;
+            max_list_size = (unsigned int)((float)max_list_size * 1.5);
         }
         // This drops old message data
         message_list = std::unique_ptr<CUDAMessageList>(new CUDAMessageList(*this));
