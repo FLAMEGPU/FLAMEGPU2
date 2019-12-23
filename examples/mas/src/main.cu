@@ -18,7 +18,7 @@
 #include "flamegpu/flame_api.h"  // @todo rename flamegpu2.h or similar?
 
 #define SIZE 10  // default value for the pop and msg size
-#define enable_read 1
+#define enable_read 0
 
 /* must be compiled separately using FLAME GPU builder
  * This will generate object files for different architecture targets as well as ptx info for each agent function (registers, memory use etc.)
@@ -167,7 +167,7 @@ int main(int argc, const char* argv[]) {
     concurrent_layer.addAgentFunction(subtract_data);
     flame_model.addStepFunction(increment_step);
     CUDAAgentModel cuda_model(flame_model);
-#undef enable_read
+
 #ifdef enable_read
         AgentPopulation population1(circle1_agent);
         AgentPopulation population2(circle2_agent);
