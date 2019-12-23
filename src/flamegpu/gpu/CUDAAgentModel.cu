@@ -7,6 +7,11 @@
 #include "flamegpu/pop/AgentPopulation.h"
 #include "flamegpu/runtime/flamegpu_host_api.h"
 
+
+namespace flamegpu_internal {
+    void zero_scan_flag();
+}
+
 CUDAAgentModel::CUDAAgentModel(const ModelDescription& _model)
     : Simulation(_model)
     , agent_map()
@@ -93,11 +98,12 @@ bool CUDAAgentModel::step() {
                 std::string outpMessage_name = om->name;
                 CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
                 // Resize message list if required
-                if (cuda_message.getMessageCount() < cuda_agent.getStateSize(func_des->initial_state)) {
-                    cuda_message.resize(cuda_agent.getStateSize(func_des->initial_state));
-                }
+                cuda_message.resize(cuda_agent.getStateSize(func_des->initial_state));
                 printf("outp msg name: %s\n", outpMessage_name.c_str());
                 cuda_message.mapWriteRuntimeVariables(*func_des);
+                // Zero the scan flag that will be written to
+                if (func_des->message_output_optional)
+                    flamegpu_internal::zero_scan_flag();
             }
 
 

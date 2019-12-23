@@ -35,6 +35,7 @@ class CUDAMessageList {
     void zeroMessageData();
 
     virtual void swap();
+    virtual void scatter();
 
  protected:
     void allocateDeviceMessageList(CUDAMsgMap &Message_list);

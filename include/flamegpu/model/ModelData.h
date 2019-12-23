@@ -301,6 +301,11 @@ struct MessageData {
      */
     std::string name;
     /**
+     * The number of functions that have optional output of this message type
+     * This value is modified by AgentFunctionDescription
+     */
+    unsigned int optional_outputs;
+    /**
      * Equality operator, checks whether MessageData hierarchies are functionally the same
      * @returns True when messages are the same
      * @note Instead compare pointers if you wish to check that they are the same instance
