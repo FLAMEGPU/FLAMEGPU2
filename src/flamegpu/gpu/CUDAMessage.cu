@@ -31,6 +31,7 @@
 
 namespace flamegpu_internal {
     __device__ unsigned int *ds_scan_flag;
+    __device__ unsigned int *ds_position;
     /**
      * Array to mark whether a message (in swap) has been written to
      */
@@ -54,6 +55,7 @@ namespace flamegpu_internal {
             gpuErrchk(cudaMalloc(&d_scan_flag, (count + 1) * sizeof(unsigned int)));  // +1 so we can get the total from the scan
             gpuErrchk(cudaMalloc(&d_position, (count + 1) * sizeof(unsigned int)));  // +1 so we can get the total from the scan
             gpuErrchk(cudaMemcpyToSymbol(ds_scan_flag, &d_scan_flag, sizeof(unsigned int *)));
+            gpuErrchk(cudaMemcpyToSymbol(ds_position, &d_position, sizeof(unsigned int *)));
             scan_flag_len = count + 1;
         }
     }
@@ -248,24 +250,6 @@ void CUDAMessage::unmapRuntimeVariables(const AgentFunctionData& func) const {
         curve.unregisterVariableByHash(var_hash + agent_hash + func_hash + message_hash);
     }
 }
-// __global__ void scatter_optional_messages(
-//     unsigned int * const __restrict__ d_scan_flag,
-//     unsigned int * const __restrict__ d_position,
-//     unsigned int message_count,
-//     T * const __restrict__ item,
-//     T * swap) {
-//     //global thread index
-//     int index = (blockIdx.x*blockDim.x) + threadIdx.x;
-//
-//     const int _scan_input = d_scan_flag[index];
-//
-//     //if optional message is to be written
-//     if (_scan_input == 1) {
-//         int output_index = d_position[index] - 1;
-//
-//         swap[output_index] = item[index];
-//     }
-// }
 void CUDAMessage::swap() {
     if (message_description.optional_outputs > 0) {
         if (message_count > cub_temp_size_max_list_size) {
@@ -288,12 +272,10 @@ void CUDAMessage::swap() {
             flamegpu_internal::d_scan_flag,
             flamegpu_internal::d_position,
             message_count + 1);
-        // Update count
-        gpuErrchk(cudaMemcpy(&message_count, flamegpu_internal::d_position+message_count, sizeof(unsigned int), cudaMemcpyDeviceToHost));
-        printf("%u optional messages!\n", message_count);
         // Scatter
-        message_list->swap();  // TEMP
-
+        message_list->scatter();
+        // Update count (must come after scatter, scatter requires old count)
+        gpuErrchk(cudaMemcpy(&message_count, flamegpu_internal::d_position + message_count, sizeof(unsigned int), cudaMemcpyDeviceToHost));
     } else {
         message_list->swap();
     }
