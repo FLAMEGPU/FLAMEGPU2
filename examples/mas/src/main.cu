@@ -30,19 +30,22 @@ FLAMEGPU_AGENT_FUNCTION(output_func) {
     const int s = FLAMEGPU->environment.get<int>("step");
     FLAMEGPU->setVariable<float>("x", s + 10.0f);
     FLAMEGPU->setVariable<float>("y", s + 11.0f);
-
-    FLAMEGPU->addMessage<float>("x", s + 12.0f);
-    FLAMEGPU->addMessage<float>("y", s + (blockDim.x * blockIdx.x + threadIdx.x));
+    if ((blockDim.x * blockIdx.x + threadIdx.x) % 2 == s % 2) {
+        // Optional output, only from even thread ids
+        FLAMEGPU->addMessage<float>("x", s + 12.0f);
+        printf("outp: %d\n", s + (blockDim.x * blockIdx.x + threadIdx.x));
+        FLAMEGPU->addMessage<float>("y", s + (blockDim.x * blockIdx.x + threadIdx.x));
+    }
 
     return ALIVE;
 }
 
 FLAMEGPU_AGENT_FUNCTION(input_func) {
-    printf("Hello from input_func\n");
+    // printf("Hello from input_func\n");
     float x = FLAMEGPU->getVariable<float>("x");
     float y = FLAMEGPU->getVariable<float>("y");
 
-    printf("[get (x,y)]: x = %f, y = %f\n", x, y);
+    // printf("[get (x,y)]: x = %f, y = %f\n", x, y);
 
     FLAMEGPU->setVariable<float>("x", x + 2);
     x = FLAMEGPU->getVariable<float>("x");
@@ -79,11 +82,11 @@ FLAMEGPU_AGENT_FUNCTION(input_func) {
     for (auto &message : messageList) {
         float x0 = message.getVariable<float>("x");
         float x1 = messageList.getVariable<float>(message, "x");
-        printf("(input func - for-range, get msg variables): x = %f %f \n", x0, x1);
+        // printf("(input func - for-range, get msg variables): x = %f %f \n", x0, x1);
 
         float y0 = message.getVariable<float>("y");
         float y1 = messageList.getVariable<float>(message, "y");
-        printf("(input func - for-range, get msg variables): y = %f %f \n", y0, y1);
+        // printf("(input func - for-range, get msg variables): y = %f %f \n", y0, y1);
     }
 
     return ALIVE;
@@ -93,10 +96,10 @@ FLAMEGPU_AGENT_FUNCTION(add_func) {
     // printf("Hello from add_func\n");
     float x = FLAMEGPU->getVariable<float>("x");
     float y = FLAMEGPU->getVariable<float>("y");
-    printf("-y = %f, x = %f\n", y, x);
+    // printf("-y = %f, x = %f\n", y, x);
     FLAMEGPU->setVariable<float>("y", y + x);
     y = FLAMEGPU->getVariable<float>("y");
-    printf("-y after set = %f\n", y);
+    // printf("-y after set = %f\n", y);
     return ALIVE;
 }
 
@@ -104,10 +107,10 @@ FLAMEGPU_AGENT_FUNCTION(subtract_func) {
     // printf("Hello from subtract_func\n");
     float x = FLAMEGPU->getVariable<float>("x");
     float y = FLAMEGPU->getVariable<float>("y");
-    printf("y = %f, x = %f\n", y, x);
+    // printf("y = %f, x = %f\n", y, x);
     FLAMEGPU->setVariable<float>("y", x - y);
     y = FLAMEGPU->getVariable<float>("y");
-    printf("y after set = %f\n", y);
+    // printf("y after set = %f\n", y);
     return ALIVE;
 }
 FLAMEGPU_HOST_FUNCTION(increment_step) {
@@ -141,6 +144,7 @@ int main(int argc, const char* argv[]) {
 
     AgentFunctionDescription &output_data = circle1_agent.newFunction("output_data", output_func);
     output_data.setMessageOutput(location1_message);
+    output_data.setMessageOutputOptional(true);
 
     AgentFunctionDescription &input_data = circle2_agent.newFunction("input_data", input_func);
     input_data.setMessageInput(location1_message);
