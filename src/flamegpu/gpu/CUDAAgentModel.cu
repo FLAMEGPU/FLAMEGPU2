@@ -93,7 +93,7 @@ bool CUDAAgentModel::step() {
                 std::string outpMessage_name = om->name;
                 CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
                 // Resize message list if required
-                if (cuda_message.getMaximumListSize() < cuda_agent.getStateSize(func_des->initial_state)){
+                if (cuda_message.getMessageCount() < cuda_agent.getStateSize(func_des->initial_state)) {
                     cuda_message.resize(cuda_agent.getStateSize(func_des->initial_state));
                 }
                 printf("outp msg name: %s\n", outpMessage_name.c_str());
@@ -134,7 +134,7 @@ bool CUDAAgentModel::step() {
                 // hash message name
                 message_name_inp_hash = curve.variableRuntimeHash(inpMessage_name.c_str());
 
-                messageList_Size = cuda_message.getMaximumListSize();
+                messageList_Size = cuda_message.getMessageCount();
             }
 
             // check if a function has an output massage

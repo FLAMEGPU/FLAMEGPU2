@@ -105,8 +105,7 @@ AgentFunctionData::AgentFunctionData(ModelData *const model, std::shared_ptr<Age
     , description(model ? new AgentFunctionDescription(model, this) : nullptr)
     , name(other.name) {
     // Manually perform lookup copies
-    if(model)
-    {
+    if (model) {
         if (auto a = other.message_input.lock()) {
             auto _m = model->messages.find(a->name);
             if (_m != model->messages.end()) {

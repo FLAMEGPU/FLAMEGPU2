@@ -28,6 +28,7 @@
 CUDAMessage::CUDAMessage(const MessageData& description)
     : message_description(description)
     , max_list_size(0)
+    , message_count(0)
     , curve(Curve::getInstance()) {
     setInitialMessageList();
 }
@@ -59,16 +60,17 @@ void CUDAMessage::resize(unsigned int newSize) {
     max_list_size = max_list_size < 2 ? 2 : max_list_size;
     if (newSize > max_list_size) {
         while (max_list_size < newSize) {
-            max_list_size = (unsigned int)((float)max_list_size * 1.5);
+            max_list_size = static_cast<unsigned int>(max_list_size * 1.5);
         }
         // This drops old message data
         message_list = std::unique_ptr<CUDAMessageList>(new CUDAMessageList(*this));
 
-//#ifdef _DEBUG
+// #ifdef _DEBUG
         /**set the message list to zero*/
         zeroAllMessageData();
-//#endif
+// #endif
     }
+    message_count = newSize;  // Assume that messaging isn't optional currently
 }
 void CUDAMessage::setInitialMessageList() {  // used to be const AgentPopulation& population
     // check that the message list has not already been set
@@ -100,6 +102,9 @@ void CUDAMessage::setInitialMessageList() {  // used to be const AgentPopulation
 */
 unsigned int CUDAMessage::getMaximumListSize() const {
     return max_list_size;
+}
+unsigned int CUDAMessage::getMessageCount() const {
+    return message_count;
 }
 
 /**
