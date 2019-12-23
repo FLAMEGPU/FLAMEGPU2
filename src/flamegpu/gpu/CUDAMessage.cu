@@ -27,8 +27,8 @@
 */
 CUDAMessage::CUDAMessage(const MessageData& description)
     : message_description(description)
-    , max_list_size(0)
     , message_count(0)
+    , max_list_size(0)
     , curve(Curve::getInstance()) {
     setInitialMessageList();
 }
