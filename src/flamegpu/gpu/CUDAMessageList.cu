@@ -38,6 +38,7 @@ CUDAMessageList::CUDAMessageList(CUDAMessage& cuda_message) : message(cuda_messa
  * @brief Destroys the CUDAMessageList object
  */
 CUDAMessageList::~CUDAMessageList() {
+    cleanupAllocatedData();
 }
 
 void CUDAMessageList::cleanupAllocatedData() {

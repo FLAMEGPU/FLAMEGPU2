@@ -82,7 +82,7 @@ CUDAMessage::CUDAMessage(const MessageData& description)
     , cub_temp_size(0)
     , d_cub_temp(nullptr)
     , curve(Curve::getInstance()) {
-    setInitialMessageList();
+    resize(0);
 }
 
 /**
@@ -125,27 +125,7 @@ void CUDAMessage::resize(unsigned int newSize) {
     }
     message_count = newSize;  // This will be reduced down after function call if optional
 }
-void CUDAMessage::setInitialMessageList() {  // used to be const AgentPopulation& population
-    // check that the message list has not already been set
-    if (message_list) {
-        THROW InvalidMessageData("Error: Initial message list for message '%s' already set, "
-            "in CUDAMessage::setInitialMessageList()",
-            message_description.name.c_str());
-    }
-    /*
-    unsigned int size = message_description.getMaximumMessageListCapacity();
-    max_list_size = population.getMaximumStateListCapacity();
 
-    // set the maximum population state size
-    if (max_list_size > size) {
-        THROW InvalidMessageSize("Error: Initial message list size for message '%s', "
-            "in CUDAMessage::setInitialMessageList()",
-            message_description.getName().c_str());
-    }
-    */
-
-    resize(0);
-}
 
 /**
 * @brief Returns the maximum list size
