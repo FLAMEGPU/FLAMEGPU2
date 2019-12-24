@@ -1,7 +1,7 @@
-#include "gtest/gtest.h"
-
 #include <random>
-#include <chrono>
+#include <ctime>
+
+#include "gtest/gtest.h"
 
 #include "flamegpu/flame_api.h"
 #include "flamegpu/runtime/flamegpu_api.h"
@@ -22,7 +22,7 @@ FLAMEGPU_AGENT_FUNCTION(OutFunction) {
 }
 FLAMEGPU_AGENT_FUNCTION(OutFunction_Optional) {
     const int x = FLAMEGPU->getVariable<int>("x");
-    if(x) FLAMEGPU->addMessage("x", x);
+    if (x) FLAMEGPU->addMessage("x", x);
     return ALIVE;
 }
 FLAMEGPU_AGENT_FUNCTION(InFunction) {
@@ -70,7 +70,7 @@ TEST(TestMessage_BruteForce, Mandatory1) {
     AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, InFunction);
     fi.setMessageInput(msg);
 
-    std::default_random_engine rng(static_cast<unsigned int>(std::chrono::system_clock::now().time_since_epoch().count()));
+    std::default_random_engine rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
     AgentPopulation pop(a, (unsigned int)AGENT_COUNT);
     int sum = 0;
@@ -117,7 +117,7 @@ TEST(TestMessage_BruteForce, Mandatory2) {
     AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, InFunction2);
     fi.setMessageInput(msg);
 
-    std::default_random_engine rng(static_cast<unsigned int>(std::chrono::system_clock::now().time_since_epoch().count()));
+    std::default_random_engine rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
     AgentPopulation pop(a, (unsigned int)AGENT_COUNT);
     int sum = 0;
@@ -170,7 +170,7 @@ TEST(TestMessage_BruteForce, Optional1) {
     AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, InFunction);
     fi.setMessageInput(msg);
 
-    std::default_random_engine rng(static_cast<unsigned int>(std::chrono::system_clock::now().time_since_epoch().count()));
+    std::default_random_engine rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
     AgentPopulation pop(a, (unsigned int)AGENT_COUNT);
     int sum = 0;
@@ -217,7 +217,7 @@ TEST(TestMessage_BruteForce, Optional2) {
     AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, InFunction2);
     fi.setMessageInput(msg);
 
-    std::default_random_engine rng(static_cast<unsigned int>(std::chrono::system_clock::now().time_since_epoch().count()));
+    std::default_random_engine rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
     AgentPopulation pop(a, (unsigned int)AGENT_COUNT);
     int sum = 0;
