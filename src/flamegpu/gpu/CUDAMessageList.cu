@@ -148,7 +148,7 @@ __global__ void scatter_optional_messages(
     // if optional message is to be written
     if (flamegpu_internal::ds_scan_flag[index] == 1) {
         int output_index = flamegpu_internal::ds_position[index];
-        memcpy(out + (output_index * typeLen), in + (index* typeLen), typeLen);
+        memcpy(out + (output_index * typeLen), in + (index * typeLen), typeLen);
     }
 }
 void CUDAMessageList::scatter() {
