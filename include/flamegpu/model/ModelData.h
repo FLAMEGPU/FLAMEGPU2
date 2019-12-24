@@ -288,6 +288,8 @@ struct MessageData {
     friend class ModelDescription;
     friend struct ModelData;
 
+    virtual ~MessageData() = default;
+
     /**
      * Holds all of the message's variable definitions
      */
@@ -476,6 +478,46 @@ struct LayerData {
      * Normal constructor, only to be called by ModelDescription
      */
     LayerData(ModelData *const model, const std::string &name, const ModelData::size_type &index);
+};
+
+struct Spatial2DMessageData : MessageData {
+    friend class ModelDescription;
+    friend struct ModelData;
+    float radius;
+    float minX;
+    float minY;
+    float maxX;
+    float maxY;
+    virtual ~Spatial2DMessageData() = default;
+
+ protected:
+    /**
+     * Copy constructor
+     * This is unsafe, should only be used internally, use clone() instead
+     */
+     Spatial2DMessageData(ModelData *const, const Spatial2DMessageData &other);
+    /**
+     * Normal constructor, only to be called by ModelDescription
+     */
+     Spatial2DMessageData(ModelData *const, const std::string &message_name);
+};
+struct Spatial3DMessageData : Spatial2DMessageData {
+    friend class ModelDescription;
+    friend struct ModelData;
+    float minZ;
+    float maxZ;
+    virtual ~Spatial3DMessageData() = default;
+
+ protected:
+    /**
+     * Copy constructor
+     * This is unsafe, should only be used internally, use clone() instead
+     */
+     Spatial3DMessageData(ModelData *const, const Spatial3DMessageData &other);
+    /**
+     * Normal constructor, only to be called by ModelDescription
+     */
+     Spatial3DMessageData(ModelData *const, const std::string &message_name);
 };
 
 #endif  // INCLUDE_FLAMEGPU_MODEL_MODELDATA_H_

@@ -36,7 +36,7 @@ AgentDescription& ModelDescription::Agent(const std::string &agent_name) {
     if (rtn != model->agents.end())
         return *rtn->second->description;
     THROW InvalidAgentName("Agent ('%s') was not found, "
-        "in ModelDescription::getAgent().",
+        "in ModelDescription::Agent().",
         agent_name.c_str());
 }
 
@@ -47,7 +47,27 @@ MessageDescription& ModelDescription::newMessage(const std::string &message_name
         return *rtn->description;
     }
     THROW InvalidMessageName("Message with name '%s' already exists, "
-        "in ModelDescription::newAgent().",
+        "in ModelDescription::newMessage().",
+        message_name.c_str());
+}
+Spatial2DMessageDescription& ModelDescription::newSpatial2DMessage(const std::string &message_name) {
+    if (!hasMessage(message_name)) {
+        auto rtn = std::shared_ptr<Spatial2DMessageData>(new Spatial2DMessageData(model, message_name));
+        model->messages.emplace(message_name, rtn);
+        return *reinterpret_cast<Spatial2DMessageDescription*>(rtn->description.get());
+    }
+    THROW InvalidMessageName("Message with name '%s' already exists, "
+        "in ModelDescription::newSpatial2DMessage().",
+        message_name.c_str());
+}
+Spatial3DMessageDescription& ModelDescription::newSpatial3DMessage(const std::string &message_name) {
+    if (!hasMessage(message_name)) {
+        auto rtn = std::shared_ptr<Spatial3DMessageData>(new Spatial3DMessageData(model, message_name));
+        model->messages.emplace(message_name, rtn);
+        return *reinterpret_cast<Spatial3DMessageDescription*>(rtn->description.get());
+    }
+    THROW InvalidMessageName("Message with name '%s' already exists, "
+        "in ModelDescription::newSpatial2DMessage().",
         message_name.c_str());
 }
 MessageDescription& ModelDescription::Message(const std::string &message_name) {
@@ -56,6 +76,34 @@ MessageDescription& ModelDescription::Message(const std::string &message_name) {
         return *rtn->second->description;
     THROW InvalidMessageName("Message ('%s') was not found, "
         "in ModelDescription::Message().",
+        message_name.c_str());
+}
+Spatial2DMessageDescription& ModelDescription::Spatial2DMessage(const std::string &message_name) {
+    auto rtn = model->messages.find(message_name);
+    if (rtn != model->messages.end()) {
+        if (auto r = std::dynamic_pointer_cast<Spatial2DMessageData>(rtn->second)) {
+            return *reinterpret_cast<Spatial2DMessageDescription*>(r->description.get());
+        }
+        THROW InvalidMessageName("Message ('%s') is not of type Spatial2D, "
+            "in ModelDescription::Spatial2DMessage().",
+            message_name.c_str());
+    }
+    THROW InvalidMessageName("Message ('%s') was not found, "
+        "in ModelDescription::Spatial2DMessage().",
+        message_name.c_str());
+}
+Spatial3DMessageDescription& ModelDescription::Spatial3DMessage(const std::string &message_name) {
+    auto rtn = model->messages.find(message_name);
+    if (rtn != model->messages.end()) {
+        if (auto r = std::dynamic_pointer_cast<Spatial3DMessageData>(rtn->second)) {
+            return *reinterpret_cast<Spatial3DMessageDescription*>(r->description.get());
+        }
+        THROW InvalidMessageName("Message ('%s') is not of type Spatial3D, "
+            "in ModelDescription::Spatial3DMessage().",
+            message_name.c_str());
+    }
+    THROW InvalidMessageName("Message ('%s') was not found, "
+        "in ModelDescription::Spatial3DMessage().",
         message_name.c_str());
 }
 
@@ -149,6 +197,34 @@ const MessageDescription& ModelDescription::getMessage(const std::string &messag
         "in ModelDescription::getMessage().",
         message_name.c_str());
 }
+const Spatial2DMessageDescription& ModelDescription::getSpatial2DMessage(const std::string &message_name) const {
+    auto rtn = model->messages.find(message_name);
+    if (rtn != model->messages.end()) {
+        if (auto r = std::dynamic_pointer_cast<Spatial2DMessageData>(rtn->second)) {
+            return *reinterpret_cast<Spatial2DMessageDescription*>(r->description.get());
+        }
+        THROW InvalidMessageName("Message ('%s') is not of type Spatial2D, "
+            "in ModelDescription::getSpatial2DMessage().",
+            message_name.c_str());
+    }
+    THROW InvalidMessageName("Message ('%s') was not found, "
+        "in ModelDescription::getSpatial2DMessage().",
+        message_name.c_str());
+}
+const Spatial3DMessageDescription& ModelDescription::getSpatial3DMessage(const std::string &message_name) const {
+    auto rtn = model->messages.find(message_name);
+    if (rtn != model->messages.end()) {
+        if (auto r = std::dynamic_pointer_cast<Spatial3DMessageData>(rtn->second)) {
+            return *reinterpret_cast<Spatial3DMessageDescription*>(r->description.get());
+        }
+        THROW InvalidMessageName("Message ('%s') is not of type Spatial2D, "
+            "in ModelDescription::getSpatial3DMessage().",
+            message_name.c_str());
+    }
+    THROW InvalidMessageName("Message ('%s') was not found, "
+        "in ModelDescription::getSpatial3DMessage().",
+        message_name.c_str());
+}
 const EnvironmentDescription& ModelDescription::getEnvironment() const {
     return *model->environment;
 }
@@ -179,6 +255,22 @@ bool ModelDescription::hasAgent(const std::string &agent_name) const {
 }
 bool ModelDescription::hasMessage(const std::string &message_name) const {
     return model->messages.find(message_name) != model->messages.end();
+}
+bool ModelDescription::hasSpatial2DMessage(const std::string &message_name) const {
+    auto a = model->messages.find(message_name);
+    if (a != model->messages.end()) {
+        if (std::dynamic_pointer_cast<Spatial2DMessageData>(a->second))
+            return true;
+    }
+    return false;
+}
+bool ModelDescription::hasSpatial3DMessage(const std::string &message_name) const {
+    auto a = model->messages.find(message_name);
+    if (a != model->messages.end()) {
+        if (std::dynamic_pointer_cast<Spatial3DMessageData>(a->second))
+            return true;
+    }
+    return false;
 }
 bool ModelDescription::hasLayer(const std::string &name) const {
     if (!name.empty()) {  // Can't search for no name, multiple layers might be nameless
