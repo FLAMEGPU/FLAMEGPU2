@@ -42,6 +42,22 @@ LayerData::LayerData(ModelData *const model, const std::string &layer_name, cons
     , name(layer_name)
     , index(layer_index) { }
 
+Spatial2DMessageData::Spatial2DMessageData(ModelData *const model, const std::string &message_name)
+    : MessageData(model, message_name)
+    , radius(1.0f)
+    , minX(0.0f)
+    , minY(0.0f)
+    , maxX(0.0f)
+    , maxY(0.0f) {
+    description = std::unique_ptr<Spatial2DMessageDescription>(new Spatial2DMessageDescription(model, this));
+}
+
+Spatial3DMessageData::Spatial3DMessageData(ModelData *const model, const std::string &message_name)
+    : Spatial2DMessageData(model, message_name)
+    , minZ(0.0f)
+    , maxZ(0.0f) {
+    description = std::unique_ptr<MessageDescription>(new Spatial3DMessageDescription(model, this));
+}
 
 /**
  * Copy Constructors
@@ -145,6 +161,22 @@ LayerData::LayerData(ModelData *const model, const LayerData &other)
         }
     next_agent_fn: {}
     }
+}
+Spatial2DMessageData::Spatial2DMessageData(ModelData *const model, const Spatial2DMessageData &other)
+    : MessageData(model, other)
+    , radius(other.radius)
+    , minX(other.minX)
+    , minY(other.minY)
+    , maxX(other.maxX)
+    , maxY(other.maxY) {
+    description = std::unique_ptr<Spatial2DMessageDescription>(model ? new Spatial2DMessageDescription(model, this) : nullptr);
+}
+
+Spatial3DMessageData::Spatial3DMessageData(ModelData *const model, const Spatial3DMessageData &other)
+    : Spatial2DMessageData(model, other)
+    , minZ(other.minZ)
+    , maxZ(other.maxZ) {
+    description = std::unique_ptr<MessageDescription>(model ? new Spatial3DMessageDescription(model, this) : nullptr);
 }
 bool ModelData::operator==(const ModelData& rhs) const {
     if (this == &rhs)  // They point to same object
