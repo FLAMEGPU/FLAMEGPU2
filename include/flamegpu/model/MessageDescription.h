@@ -25,6 +25,7 @@ class MessageDescription {
     friend void AgentFunctionDescription::setMessageOutput(MessageDescription&);
     friend void AgentFunctionDescription::setMessageInput(MessageDescription&);
 
+ protected:
     /**
      * Constructors
      */
@@ -103,7 +104,7 @@ class MessageDescription {
      */
     bool hasVariable(const std::string &variable_name) const;
 
- private:
+ protected:
     /**
      * Root of the model hierarchy
      */
@@ -112,6 +113,91 @@ class MessageDescription {
      * The class which stores all of the message's data.
      */
     MessageData *const message;
+};
+
+class Spatial2DMessageDescription : public MessageDescription {
+    /**
+     * Data store class for this description, constructs instances of this class
+     */
+    friend struct Spatial2DMessageData;
+
+ protected:
+    /**
+     * Constructors
+     */
+    Spatial2DMessageDescription(ModelData *const _model, Spatial2DMessageData *const data);
+    /**
+     * Default copy constructor, not implemented
+     */
+    Spatial2DMessageDescription(const Spatial2DMessageDescription &other_message) = delete;
+    /**
+     * Default move constructor, not implemented
+     */
+    Spatial2DMessageDescription(Spatial2DMessageDescription &&other_message) noexcept = delete;
+    /**
+     * Default copy assignment, not implemented
+     */
+    Spatial2DMessageDescription& operator=(const Spatial2DMessageDescription &other_message) = delete;
+    /**
+     * Default move assignment, not implemented
+     */
+    Spatial2DMessageDescription& operator=(Spatial2DMessageDescription &&other_message) noexcept = delete;
+
+ public:
+    void setRadius(const float &r);
+    void setMinX(const float &x);
+    void setMinY(const float &y);
+    void setMaxX(const float &x);
+    void setMaxY(const float &y);
+
+    float &Radius();
+    float &MinX();
+    float &MinY();
+    float &MaxX();
+    float &MaxY();
+
+    float getRadius() const;
+    float getMinX() const;
+    float getMinY() const;
+    float getMaxX() const;
+    float getMaxY() const;
+};
+
+class Spatial3DMessageDescription : public Spatial2DMessageDescription {
+    /**
+     * Data store class for this description, constructs instances of this class
+     */
+    friend struct Spatial3DMessageData;
+
+ protected:
+    /**
+     * Constructors
+     */
+    Spatial3DMessageDescription(ModelData *const _model, Spatial3DMessageData *const data);
+    /**
+     * Default copy constructor, not implemented
+     */
+    Spatial3DMessageDescription(const Spatial3DMessageDescription &other_message) = delete;
+    /**
+     * Default move constructor, not implemented
+     */
+    Spatial3DMessageDescription(Spatial3DMessageDescription &&other_message) noexcept = delete;
+    /**
+     * Default copy assignment, not implemented
+     */
+    Spatial3DMessageDescription& operator=(const Spatial3DMessageDescription &other_message) = delete;
+    /**
+     * Default move assignment, not implemented
+     */
+    Spatial3DMessageDescription& operator=(Spatial3DMessageDescription &&other_message) noexcept = delete;
+
+ public:
+    void setMinZ(const float &z);
+    void setMaxZ(const float &z);
+    float &MinZ();
+    float &MaxZ();
+    float getMinZ() const;
+    float getMaxZ() const;
 };
 
 /**

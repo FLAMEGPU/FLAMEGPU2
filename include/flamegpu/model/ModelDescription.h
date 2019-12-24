@@ -11,6 +11,8 @@
 
 class AgentDescription;
 class MessageDescription;
+class Spatial2DMessageDescription;
+class Spatial3DMessageDescription;
 class LayerDescription;
 struct ModelData;
 
@@ -83,6 +85,8 @@ class ModelDescription {
      * @throws InvalidMessageName If a message with the same name already exists within the model description hierarchy
      */
     MessageDescription& newMessage(const std::string &message_name);
+    Spatial2DMessageDescription& newSpatial2DMessage(const std::string &message_name);
+    Spatial3DMessageDescription& newSpatial3DMessage(const std::string &message_name);
     /**
      * Returns a mutable reference to the named message, which can be used to configure the message
      * @param message_name Name used to refer to the desired message within the model description hierarchy
@@ -91,6 +95,8 @@ class ModelDescription {
      * @see ModelDescription::getMessage(const std::string &) for the immutable version
      */
     MessageDescription& Message(const std::string &message_name);
+    Spatial2DMessageDescription& Spatial2DMessage(const std::string &message_name);
+    Spatial3DMessageDescription& Spatial3DMessage(const std::string &message_name);
     /**
      * Returns a mutable reference to the environment description for the model description hierarchy
      * This can be used to configure environment properties
@@ -175,6 +181,8 @@ class ModelDescription {
      * @see ModelDescription::Message(const std::string &) for the mutable version
      */
     const MessageDescription& getMessage(const std::string &message_name) const;
+    const Spatial2DMessageDescription& getSpatial2DMessage(const std::string &message_name) const;
+    const Spatial3DMessageDescription& getSpatial3DMessage(const std::string &message_name) const;
     /**
      * Returns a mutable reference to the environment description for the model description hierarchy
      * This can be used to configure environment properties
@@ -210,6 +218,8 @@ class ModelDescription {
      * @return True when a message with the specified name exists within the model's hierarchy
      */
     bool hasMessage(const std::string &message_name) const;
+    bool hasSpatial2DMessage(const std::string &message_name) const;
+    bool hasSpatial3DMessage(const std::string &message_name) const;
     /**
      * @param name Name of the layer to check
      * @return True when a layer with the specified name exists within the model's hierarchy
