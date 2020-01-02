@@ -4,6 +4,7 @@
 
 #include "flamegpu/flame_api.h"
 #include "flamegpu/runtime/flamegpu_api.h"
+#include "flamegpu/io/factory.h"
 
 FLAMEGPU_AGENT_FUNCTION(output_message) {
     FLAMEGPU->addMessage<int>("id", FLAMEGPU->getVariable<float>("id"));
@@ -104,7 +105,7 @@ int main(int argc, const char ** argv) {
      * Initialisation
      */
     // Currently not init (should init from XML file)
-    // AgentPopulation population(model.Agent("agent"), AGENT_COUNT);
+    // AgentPopulation population(model.Agent("circle"), AGENT_COUNT);
     // for (unsigned int i = 0; i < AGENT_COUNT; i++) {
     //     AgentInstance instance = population.getNextInstance();
     //    instance.setVariable<float>("x", static_cast<float>(i));
@@ -118,6 +119,17 @@ int main(int argc, const char ** argv) {
     cuda_model.initialise(argc, argv);
     // cuda_model.setPopulationData(population);
     cuda_model.simulate();
+
+    /**
+     * Export Pop
+     */
+    // Based on Simulation::output() // That can't currently be called
+    std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> pops;    
+    auto a = std::make_shared<AgentPopulation>(model.getAgent("Circle"));  // Not sure if this workls, due to copy construction
+    cuda_model.getPopulationData(*a);
+    pops.emplace("Circle", a);
+    StateWriter *write__ = WriterFactory::createWriter(pops, "end.xml");  // TODO (pair model format with its data?)
+    write__->writeStates();
 
     getchar();
     return 0;
