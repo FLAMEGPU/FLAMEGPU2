@@ -21,7 +21,7 @@ void Simulation::initialise(int argc, const char** argv) {
     // check input args
     if (argc)
         if (!checkArgs(argc, argv))
-            exit(0);
+            exit(EXIT_FAILURE);
     applyConfig();
 }
 
