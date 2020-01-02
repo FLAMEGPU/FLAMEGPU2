@@ -5,121 +5,127 @@
 #include "flamegpu/flame_api.h"
 #include "flamegpu/runtime/flamegpu_api.h"
 
-FLAMEGPU_AGENT_FUNCTION(device_function) {
-    const float &prop_float = FLAMEGPU->environment.get<float>("float");
-    const int16_t &prop_int16 = FLAMEGPU->environment.get<int16_t>("int16_t");
-    const uint64_t &prop_uint64_0 = FLAMEGPU->environment.get<uint64_t>("uint64_t", 0);
-    const uint64_t &prop_uint64_1 = FLAMEGPU->environment.get<uint64_t>("uint64_t", 1);
-    const uint64_t &prop_uint64_2 = FLAMEGPU->environment.get<uint64_t>("uint64_t", 2);
-    if (blockIdx.x * blockDim.x + threadIdx.x == 0) {
-        printf("Agent Function[Thread 0]! Properties(Float: %g, int16: %hd, uint64[3]: {%llu, %llu, %llu})\n", prop_float, prop_int16, prop_uint64_0, prop_uint64_1, prop_uint64_2);
-    }
+FLAMEGPU_AGENT_FUNCTION(outputdata) {
+    FLAMEGPU->addMessage<int>("id", FLAMEGPU->getVariable<float>("id"));
+    FLAMEGPU->addMessage<float>("x", FLAMEGPU->getVariable<float>("x"));
+    FLAMEGPU->addMessage<float>("y", FLAMEGPU->getVariable<float>("y"));
+    FLAMEGPU->addMessage<float>("z", FLAMEGPU->getVariable<float>("z"));
     return ALIVE;
 }
-FLAMEGPU_INIT_FUNCTION(init_function) {
-    float min_x = FLAMEGPU->agent("agent").min<float>("x");
-    float max_x = FLAMEGPU->agent("agent").max<float>("x");
-    printf("Init Function! (Min: %g, Max: %g)\n", min_x, max_x);
-}
-FLAMEGPU_CUSTOM_REDUCTION(customSum, a, b) {
-    return a + b;
-}
-FLAMEGPU_CUSTOM_TRANSFORM(customTransform, a) {
-    return (a == 0 || a == 1) ? 1 : 0;
-}
-FLAMEGPU_STEP_FUNCTION(step_function) {
-    auto agent = FLAMEGPU->agent("agent");
-    int sum_a = agent.sum<int>("a");
-    int custom_sum_a = agent.reduce<int>("a", customSum, 0);
-    unsigned int count_a = agent.count<int>("a", 1);
-    unsigned int countif_a = agent.transformReduce<int, unsigned int>("a", customTransform, customSum, 0u);
-    printf("Step Function! (Sum: %d, CustomSum: %d, Count: %u, CustomCountIf: %u)\n", sum_a, custom_sum_a, count_a, countif_a);
-}
-FLAMEGPU_EXIT_FUNCTION(exit_function) {
-    float uniform_real = FLAMEGPU->random.uniform<float>();
-    int uniform_int = FLAMEGPU->random.uniform<int>(1, 10);
-    float normal = FLAMEGPU->random.normal<float>();
-    float logNormal = FLAMEGPU->random.logNormal<float>(1, 1);
-    printf("Exit Function! (%g, %i, %g, %g)\n",
-        uniform_real, uniform_int, normal, logNormal);
-}
-FLAMEGPU_HOST_FUNCTION(host_function) {
-    std::vector<unsigned int> hist_x = FLAMEGPU->agent("agent").histogramEven<float>("x", 8, -0.5, 1023.5);
-    printf("Host Function! (Hist: [%u, %u, %u, %u, %u, %u, %u, %u]\n",
-        hist_x[0], hist_x[1], hist_x[2], hist_x[3], hist_x[4], hist_x[5], hist_x[6], hist_x[7]);
-    FLAMEGPU->environment.set<int16_t>("int16_t", FLAMEGPU->environment.get<int16_t>("int16_t") + 1);
-}
-FLAMEGPU_EXIT_CONDITION(exit_condition) {
-    const float CHANCE = 0.15f;
-    float uniform_real = FLAMEGPU->random.uniform<float>();
-    printf("Exit Condition! (Rolled: %g)\n", uniform_real);
-    if (uniform_real < CHANCE) {
-        printf("Rolled number is less than %g, exiting!\n", CHANCE);
-        return EXIT;
+FLAMEGPU_AGENT_FUNCTION(inputdata) {
+    const int ID = FLAMEGPU->getVariable<int>("id");
+    const float kr = 0.1f; /* Stiffness variable for repulsion */
+    const float ka = 0.0f; /* Stiffness variable for attraction */
+    const float RADIUS = 2.0f;
+
+    float x1, y1, x2, y2, fx, fy;  // z1, z2, fz
+    float location_distance, separation_distance;
+    float k;
+    x1 = FLAMEGPU->getVariable<float>("x");
+    fx = 0.0;
+    y1 = FLAMEGPU->getVariable<float>("y");
+    fy = 0.0;
+    // z1 = FLAMEGPU->getVariable<float>("z");
+    // fz = 0.0;
+    for (auto &message : FLAMEGPU->GetMessageIterator("location")) {
+        if (message.getVariable<int>("id") != ID) {
+            x2 = message.getVariable<float>("x");
+            y2 = message.getVariable<float>("y");
+            // z2 = message.getVariable<float>("z");
+            // Deep (expensive) check
+            location_distance = sqrt((x1 - x2)*(x1 - x2) + (y1 - y2)*(y1 - y2));
+            separation_distance = (location_distance - RADIUS);
+            if (separation_distance < RADIUS) {
+                k = separation_distance > 0.0 ? ka : -kr;
+
+                fx += k*(separation_distance)*((x1 - x2) / RADIUS);
+                fy += k*(separation_distance)*((y1 - y2) / RADIUS);
+            }
+        }
     }
-    return CONTINUE;
+    FLAMEGPU->setVariable("fx", fx);
+    FLAMEGPU->setVariable("fy", fy);
+    // FLAMEGPU->setVariable("fz", fz);
+    return ALIVE;
+}
+FLAMEGPU_AGENT_FUNCTION(move) {
+    FLAMEGPU->setVariable<float>("x", FLAMEGPU->getVariable<float>("x") + FLAMEGPU->getVariable<float>("fx"));
+    FLAMEGPU->setVariable<float>("y", FLAMEGPU->getVariable<float>("y") + FLAMEGPU->getVariable<float>("fy"));
+    // FLAMEGPU->setVariable<float>("z", FLAMEGPU->getVariable<float>("z") + FLAMEGPU->getVariable<float>("fz"));
+    return ALIVE;
 }
 
-
-int main(void) {
+int main(int argc, const char ** argv) {
     const unsigned int AGENT_COUNT = 1024;
-    ModelDescription model("host_functions_example");
+    ModelDescription model("Circles_BruteForce_example");
 
-    {  // agent
-        AgentDescription &agent = model.newAgent("agent");
-        agent.newVariable<float>("x");
-        agent.newVariable<int>("a");
-        agent.newFunction("device_function", device_function);
+    {  // Location message
+        MessageDescription &message = model.newMessage("location");
+        message.newVariable<int>("id");
+        message.newVariable<float>("x");
+        message.newVariable<float>("y");
+        message.newVariable<float>("z");
     }
+    {  // Circle agent
+        AgentDescription &agent = model.newAgent("Circle");
+        agent.newVariable<float>("x");
+        agent.newVariable<float>("y");
+        agent.newVariable<float>("z");
+        agent.newVariable<float>("fx");
+        agent.newVariable<float>("fy");
+        // agent.newVariable<float>("fz");  // FGPU1 model is 2D, but has z component?
+        agent.newFunction("outputdata", outputdata).setMessageOutput("location");
+        agent.newFunction("inputdata", inputdata).setMessageInput("location");
+        agent.newFunction("move", move);
+    }
+
 
     /**
      * GLOBALS
      */
     {
-        EnvironmentDescription &envProperties = model.Environment();
-        envProperties.add<float>("float", 12.0f);
-        envProperties.add<int16_t>("int16_t", 0);
-        envProperties.add<uint64_t, 3>("uint64_t", {11llu, 12llu, 13llu});
+        // EnvironmentDescription &envProperties = model.Environment();
+        // Model has none
     }
+
     /**
      * Control flow
      */     
      {  // Attach init/step/exit functions and exit condition
-        model.addInitFunction(init_function);
-        model.addStepFunction(step_function);
-        model.addExitFunction(exit_function);
-        model.addExitCondition(exit_condition);
+        // Model has none
      }
 
-     {
-        LayerDescription &devicefn_layer = model.newLayer("devicefn_layer");
-        devicefn_layer.addAgentFunction(device_function);
+     {  // Layer #1
+        LayerDescription &layer = model.newLayer();
+        layer.addAgentFunction(outputdata);
      }
-
-     {
-        LayerDescription &hostfn_layer = model.newLayer("hostfn_layer");
-        hostfn_layer.addHostFunction(host_function);
+     {  // Layer #2
+         LayerDescription &layer = model.newLayer();
+         layer.addAgentFunction(inputdata);
+     }
+     {  // Layer #3
+         LayerDescription &layer = model.newLayer();
+         layer.addAgentFunction(move);
      }
 
     /**
      * Initialisation
      */
-    AgentPopulation population(model.Agent("agent"), AGENT_COUNT);
-    for (unsigned int i = 0; i < AGENT_COUNT; i++) {
-        AgentInstance instance = population.getNextInstance();
-        instance.setVariable<float>("x", static_cast<float>(i));
-        instance.setVariable<int>("a", i % 2 == 0 ? 1 : 0);
-    }
+    // Currently not init (should init from XML file)
+    // AgentPopulation population(model.Agent("agent"), AGENT_COUNT);
+    // for (unsigned int i = 0; i < AGENT_COUNT; i++) {
+    //     AgentInstance instance = population.getNextInstance();
+    //    instance.setVariable<float>("x", static_cast<float>(i));
+    //     instance.setVariable<int>("a", i % 2 == 0 ? 1 : 0);
+    // }
 
     /**
      * Execution
      */
     CUDAAgentModel cuda_model(model);
-    cuda_model.SimulationConfig().steps = 0;
-    cuda_model.setPopulationData(population);
+    cuda_model.initialise(argc, argv);
+    // cuda_model.setPopulationData(population);
     cuda_model.simulate();
-
-    cuda_model.getPopulationData(population);
 
     getchar();
     return 0;
