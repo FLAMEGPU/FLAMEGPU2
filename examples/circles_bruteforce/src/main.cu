@@ -68,6 +68,7 @@ int main(int argc, const char ** argv) {
     }
     {  // Circle agent
         AgentDescription &agent = model.newAgent("Circle");
+        agent.newVariable<int>("id");
         agent.newVariable<float>("x");
         agent.newVariable<float>("y");
         agent.newVariable<float>("z");
