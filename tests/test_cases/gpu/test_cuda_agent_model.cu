@@ -15,6 +15,10 @@ namespace test_cuda_agent_model {
     const int AGENT_COUNT = 10;
     const int MULTIPLIER = 3;
     __device__ const int dMULTIPLIER = 3;
+    int externalCounter = 0;
+FLAMEGPU_STEP_FUNCTION(IncrementCounter) {
+    externalCounter++;
+}
 TEST(TestSimulation, ArgParse_inputfile_long) {
     ModelDescription m(MODEL_NAME);
     CUDAAgentModel c(m);
@@ -189,6 +193,43 @@ TEST(TestCUDAAgentModel, GetAgent) {
         cudaMemcpy(&host, reinterpret_cast<int*>(agent.getStateVariablePtr(ModelData::DEFAULT_STATE, VARIABLE_NAME)) + _i, sizeof(int), cudaMemcpyDeviceToHost);
         EXPECT_EQ(host, _i * 2 * MULTIPLIER);
     }
+}
+
+TEST(TestCUDAAgentModel, Step) {
+    // Test that step does a single step
+    ModelDescription m(MODEL_NAME);
+    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentPopulation pop(a, (unsigned int)AGENT_COUNT);
+    m.addStepFunction(IncrementCounter);
+    CUDAAgentModel c(m);
+    c.setPopulationData(pop);
+    externalCounter = 0;
+    c.step();
+    EXPECT_EQ(externalCounter, 1);
+    externalCounter = 0;
+    for (unsigned int i = 0; i < 5; ++i) {
+        c.step();
+    }
+    EXPECT_EQ(externalCounter, 5);
+}
+TEST(TestSimulation, Simulate) {
+    // Simulation is abstract, so test via CUDAAgentModel
+    // Depends on CUDAAgentModel::step()
+    // Test that step does a single step
+    ModelDescription m(MODEL_NAME);
+    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentPopulation pop(a, (unsigned int)AGENT_COUNT);
+    m.addStepFunction(IncrementCounter);
+    CUDAAgentModel c(m);
+    c.setPopulationData(pop);
+    externalCounter = 0;
+    c.SimulationConfig().steps = 7;
+    c.simulate();
+    EXPECT_EQ(externalCounter, 7);
+    externalCounter = 0;
+    c.SimulationConfig().steps = 3;
+    c.simulate();
+    EXPECT_EQ(externalCounter, 3);
 }
 
 // Show that blank init resets the vals?
