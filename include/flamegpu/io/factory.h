@@ -20,7 +20,7 @@
 #include "flamegpu/io/xmlWriter.h"
 
 //  move later
-std::string getFileExt(const std::string& s) {
+inline std::string getFileExt(const std::string& s) {
     // Find the last position of '.' in given string
     size_t i = s.rfind('.', s.length());
     if (i != std::string::npos) {
