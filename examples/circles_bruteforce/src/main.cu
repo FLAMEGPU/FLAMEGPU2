@@ -56,7 +56,6 @@ FLAMEGPU_AGENT_FUNCTION(move) {
 }
 
 int main(int argc, const char ** argv) {
-    const unsigned int AGENT_COUNT = 1024;
     ModelDescription model("Circles_BruteForce_example");
 
     {  // Location message
