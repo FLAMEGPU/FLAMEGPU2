@@ -52,7 +52,13 @@ FLAMEGPU_AGENT_FUNCTION(move) {
     FLAMEGPU->setVariable<float>("x", x1 + fx);
     FLAMEGPU->setVariable<float>("y", y1 + fy);
     FLAMEGPU->setVariable<float>("z", z1 + fz);
+    FLAMEGPU->setVariable<float>("drift", sqrt(fx*fx + fy*fy + fz*fz));
     return ALIVE;
+}
+FLAMEGPU_STEP_FUNCTION(Validation) {
+    // This value should decline as the model moves towards a steady equlibrium state
+    float totalDrift = FLAMEGPU->agent("Circle").sum<float>("drift");
+    printf("Drift: %g\n", totalDrift);
 }
 
 int main(int argc, const char ** argv) {
@@ -71,6 +77,7 @@ int main(int argc, const char ** argv) {
         agent.newVariable<float>("x");
         agent.newVariable<float>("y");
         agent.newVariable<float>("z");
+        agent.newVariable<float>("drift");  // Store the distance moved here, for validation
         agent.newFunction("output_message", output_message).setMessageOutput("location");
         agent.newFunction("move", move).setMessageInput("location");
     }
@@ -89,7 +96,7 @@ int main(int argc, const char ** argv) {
      * Control flow
      */     
      {  // Attach init/step/exit functions and exit condition
-        // Model has none
+        model.addStepFunction(Validation);
      }
 
      {  // Layer #1
