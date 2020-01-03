@@ -89,7 +89,6 @@ bool CUDAAgentModel::step() {
             if (auto im = func_des->message_input.lock()) {
                 std::string inpMessage_name = im->name;
                 const CUDAMessage& cuda_message = getCUDAMessage(inpMessage_name);
-                printf("inp msg name: %s\n", inpMessage_name.c_str());
                 cuda_message.mapReadRuntimeVariables(*func_des);
             }
 
@@ -99,7 +98,6 @@ bool CUDAAgentModel::step() {
                 CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
                 // Resize message list if required
                 cuda_message.resize(cuda_agent.getStateSize(func_des->initial_state));
-                printf("outp msg name: %s\n", outpMessage_name.c_str());
                 cuda_message.mapWriteRuntimeVariables(*func_des);
                 // Zero the scan flag that will be written to
                 if (func_des->message_output_optional)
