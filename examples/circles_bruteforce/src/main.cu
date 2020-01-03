@@ -124,7 +124,7 @@ int main(int argc, const char ** argv) {
      * Export Pop
      */
     // Based on Simulation::output() // That can't currently be called
-    std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> pops;    
+    std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> pops;
     auto a = std::make_shared<AgentPopulation>(model.getAgent("Circle"));  // Not sure if this workls, due to copy construction
     cuda_model.getPopulationData(*a);
     pops.emplace("Circle", a);
