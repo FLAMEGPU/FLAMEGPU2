@@ -123,6 +123,10 @@ void CUDAAgent::getPopulationData(AgentPopulation& population) {
             population.getAgentName().c_str(),
             agent_description.name.c_str());
     }
+    // Resize population if it is too small
+    if (population.getMaximumStateListCapacity() < getMaximumListSize())
+        population.setStateListCapacity(getMaximumListSize());
+
     /* copy all population from correct state maps */
     const std::set<std::string> &sm = agent_description.states;
     for (const std::string &s : sm) {
@@ -138,6 +142,7 @@ void CUDAAgent::getPopulationData(AgentPopulation& population) {
         }
         // check that the population maximums do not exceed the current maximum (as their will not be enough GPU memory to hold it)
         if (population.getMaximumStateListCapacity() < i->second->getCUDAStateListSize()) {
+            // This should be redundant
             THROW InvalidPopulationData("Error: Maximum population size for agent '%s' exceeds allocation. "
                 "In CUDAAgent::getPopulationData()",
                 population.getAgentName().c_str());
