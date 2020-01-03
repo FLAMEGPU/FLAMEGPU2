@@ -34,4 +34,4 @@ set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"  PROPERTY VS_STARTUP_PROJEC
 
 # Set the default (visual studio) debugger configure_file
 set_target_properties("${PROJECT_NAME}" PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
-                                                   VS_DEBUGGER_COMMAND_ARGUMENTS "todo")
+                                                   VS_DEBUGGER_COMMAND_ARGUMENTS "-i 0.xml -s 200")
