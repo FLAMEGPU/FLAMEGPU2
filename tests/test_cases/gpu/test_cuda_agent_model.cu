@@ -204,13 +204,17 @@ TEST(TestCUDAAgentModel, Step) {
     CUDAAgentModel c(m);
     c.setPopulationData(pop);
     externalCounter = 0;
+    c.resetStepCounter();
     c.step();
     EXPECT_EQ(externalCounter, 1);
+    EXPECT_EQ(c.getStepCounter(), 1);
     externalCounter = 0;
+    c.resetStepCounter();
     for (unsigned int i = 0; i < 5; ++i) {
         c.step();
     }
     EXPECT_EQ(externalCounter, 5);
+    EXPECT_EQ(c.getStepCounter(), 5);
 }
 TEST(TestSimulation, Simulate) {
     // Simulation is abstract, so test via CUDAAgentModel
@@ -223,13 +227,17 @@ TEST(TestSimulation, Simulate) {
     CUDAAgentModel c(m);
     c.setPopulationData(pop);
     externalCounter = 0;
+    c.resetStepCounter();
     c.SimulationConfig().steps = 7;
     c.simulate();
     EXPECT_EQ(externalCounter, 7);
+    EXPECT_EQ(c.getStepCounter(), 7);
     externalCounter = 0;
+    c.resetStepCounter();
     c.SimulationConfig().steps = 3;
     c.simulate();
     EXPECT_EQ(externalCounter, 3);
+    EXPECT_EQ(c.getStepCounter(), 3);
 }
 
 // Show that blank init resets the vals?
