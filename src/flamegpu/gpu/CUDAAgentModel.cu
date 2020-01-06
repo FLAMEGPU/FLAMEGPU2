@@ -14,6 +14,7 @@ namespace flamegpu_internal {
 
 CUDAAgentModel::CUDAAgentModel(const ModelDescription& _model)
     : Simulation(_model)
+    , step_count(0)
     , agent_map()
     , curve(Curve::getInstance())
     , message_map()
@@ -47,6 +48,8 @@ CUDAAgentModel::~CUDAAgentModel() {
 }
 
 bool CUDAAgentModel::step() {
+    printf("Variables mapped at start: %d\n", Curve::getInstance().checkHowManyMappedItems());
+    step_count++;
     int nStreams = 1;
     std::string message_name;
     Curve::NamespaceHash message_name_inp_hash = 0;
@@ -208,7 +211,7 @@ bool CUDAAgentModel::step() {
         // TODO: Concurrency?
         for (auto &stepFn : (*lyr)->host_functions)
             stepFn(this->host_api.get());
-
+        printf("Variables mapped at end: %d\n", Curve::getInstance().checkHowManyMappedItems());
         // cudaDeviceSynchronize();
     }
     // stream deletion
@@ -361,6 +364,7 @@ void CUDAAgentModel::applyConfig_derived() {
 
 void CUDAAgentModel::resetDerivedConfig() {
     this->config = CUDAAgentModel::Config();
+    resetStepCounter();
 }
 
 
@@ -369,4 +373,11 @@ CUDAAgentModel::Config &CUDAAgentModel::CUDAConfig() {
 }
 const CUDAAgentModel::Config &CUDAAgentModel::getCUDAConfig() const {
     return config;
+}
+
+unsigned int CUDAAgentModel::getStepCounter() {
+    return step_count;
+}
+void CUDAAgentModel::resetStepCounter() {
+    step_count = 0;
 }

@@ -27,6 +27,8 @@ class Simulation {
 
     virtual bool step() = 0;
     virtual void simulate() = 0;
+    virtual unsigned int getStepCounter() = 0;
+    virtual void resetStepCounter() = 0;
 
     const ModelData& getModelDescription() const;
 

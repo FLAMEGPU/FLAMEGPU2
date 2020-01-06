@@ -271,3 +271,11 @@ __host__ void Curve::clearErrors() {
 
     gpuErrchk(cudaMemcpyToSymbol(curve_internal::d_curve_error, &curve_error_none, sizeof(DeviceError)));
 }
+
+__host__ unsigned int Curve::checkHowManyMappedItems() {
+    unsigned int rtn = 0;
+    for(unsigned int i = 0; i < MAX_VARIABLES; ++i)
+        if (h_hashes[i] != EMPTY_FLAG && h_hashes[i] != DELETED_FLAG)
+            rtn++;
+    return rtn;
+}
