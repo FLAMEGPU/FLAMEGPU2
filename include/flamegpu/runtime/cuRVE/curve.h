@@ -244,6 +244,8 @@ class Curve {
     static const int VARIABLE_DISABLED = 0;
     static const int VARIABLE_ENABLED = 1;
     static const int NAMESPACE_NONE = 0;
+    static const VariableHash EMPTY_FLAG = 0;
+    static const VariableHash DELETED_FLAG = 1;
 
  private:
     VariableHash h_hashes[MAX_VARIABLES];         // Host array of the hash values of registered variables
