@@ -71,7 +71,7 @@ __host__ Curve::Variable Curve::getVariableHandle(VariableHash variable_hash) {
     n = 0;
     i = (variable_hash) % MAX_VARIABLES;
 
-    while (h_hashes[i] != 0) {
+    while (h_hashes[i] != EMPTY_FLAG && h_hashes[i] != DELETED_FLAG) {
         if (h_hashes[i] == variable_hash) {
             return i;
         }
@@ -97,9 +97,11 @@ __host__ Curve::Variable Curve::registerVariableByHash(VariableHash variable_has
 
     n = 0;
     variable_hash += h_namespace;
+    assert(variable_hash != EMPTY_FLAG);
+    assert(variable_hash != DELETED_FLAG);
     i = (variable_hash) % MAX_VARIABLES;
 
-    while (h_hashes[i] != 0) {
+    while (h_hashes[i] != EMPTY_FLAG) {
         n += 1;
         if (n >= MAX_VARIABLES) {
             curve_internal::h_curve_error = ERROR_TOO_MANY_VARIABLES;
@@ -170,7 +172,7 @@ __host__ void Curve::unregisterVariableByHash(VariableHash variable_hash) {
     gpuErrchk(cudaGetSymbolAddress(reinterpret_cast<void **>(&_d_sizes), curve_internal::d_sizes));
 
     // clear hash location on host and copy hash to device
-    h_hashes[cv] = 0;
+    h_hashes[cv] = DELETED_FLAG;
     gpuErrchk(cudaMemcpy(&_d_hashes[cv], &h_hashes[cv], sizeof(unsigned int), cudaMemcpyHostToDevice));
 
     // set a host pointer to nullptr and copy to the device
