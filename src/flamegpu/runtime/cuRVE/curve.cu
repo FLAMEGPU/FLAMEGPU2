@@ -71,7 +71,7 @@ __host__ Curve::Variable Curve::getVariableHandle(VariableHash variable_hash) {
     n = 0;
     i = (variable_hash) % MAX_VARIABLES;
 
-    while (h_hashes[i] != EMPTY_FLAG && h_hashes[i] != DELETED_FLAG) {
+    while (h_hashes[i] != EMPTY_FLAG) {
         if (h_hashes[i] == variable_hash) {
             return i;
         }
@@ -101,7 +101,7 @@ __host__ Curve::Variable Curve::registerVariableByHash(VariableHash variable_has
     assert(variable_hash != DELETED_FLAG);
     i = (variable_hash) % MAX_VARIABLES;
 
-    while (h_hashes[i] != EMPTY_FLAG) {
+    while (h_hashes[i] != EMPTY_FLAG && h_hashes[i] != DELETED_FLAG) {
         n += 1;
         if (n >= MAX_VARIABLES) {
             curve_internal::h_curve_error = ERROR_TOO_MANY_VARIABLES;

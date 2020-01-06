@@ -240,7 +240,7 @@ void EnvironmentManager::defragment(DefragMap *mergeProperties) {
             const auto CURVE_RESULT = curve.registerVariableByHash(cvh, reinterpret_cast<void*>(const_cast<char*>(c_buffer + buffOffset)),
                 typeSize, i.second.elements);
             if (CURVE_RESULT == Curve::UNKNOWN_VARIABLE) {
-                THROW CurveException("curveRegisterVariableByHash() returned UNKNOWN_CURVE_VARIABLE"
+                THROW CurveException("curveRegisterVariableByHash() returned UNKNOWN_CURVE_VARIABLE, "
                     "in EnvironmentManager::add().");
             }
             // Increase buffer offset length that has been added
@@ -248,7 +248,7 @@ void EnvironmentManager::defragment(DefragMap *mergeProperties) {
         } else {
             // Ran out of constant cache space! (this can only trigger when a DefragMap is passed)
             // Arguably this check should be performed by init()
-            THROW OutOfMemory("Insufficient EnvProperty memory to create new properties,"
+            THROW OutOfMemory("Insufficient EnvProperty memory to create new properties, "
                 "in EnvironmentManager::defragment(DefragMap).");
         }
     }
