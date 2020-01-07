@@ -38,4 +38,4 @@ before_script:
   - PATH=${CUDA_HOME}/bin:${PATH}
 
 # Build steps
-script: "mkdir build && cd build && cmake .. -DBUILD_TESTS=ON -DWARNINGS_AS_ERRORS=ON && make all docs all_lint"
+script: "mkdir build && cd build && cmake .. -DBUILD_TESTS=ON -DWARNINGS_AS_ERRORS=ON && make -j`nproc` all_lint all docs "

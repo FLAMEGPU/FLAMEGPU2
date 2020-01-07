@@ -18,7 +18,7 @@ Doxyfile.docs
 docs/
 bin/
 obj/
-build/
+build*/
 
 # Editor configuration files/directories
 .vscode
