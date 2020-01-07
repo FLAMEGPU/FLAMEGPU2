@@ -63,6 +63,10 @@ if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_HOST_FUNCTIONS)
     add_subdirectory(examples/host_functions)
 endif()
 
+if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_CIRCLES_BRUTE_FORCE)
+    add_subdirectory(examples/circles_bruteforce)
+endif()
+
 # Add the tests directory (if required)
 if(BUILD_TESTS)
     add_subdirectory(tests)

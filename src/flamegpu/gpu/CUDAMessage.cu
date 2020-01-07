@@ -178,7 +178,6 @@ void CUDAMessage::mapReadRuntimeVariables(const AgentFunctionData& func) const {
 
        // maximum population size
         unsigned int length = this->getMessageCount();  // check to see if it is equal to pop
-
         curve.registerVariableByHash(var_hash + agent_hash + func_hash + message_hash, d_ptr, size, length);
     }
 }
@@ -208,7 +207,6 @@ void CUDAMessage::mapWriteRuntimeVariables(const AgentFunctionData& func) const 
 
         // maximum population size
         unsigned int length = this->getMessageCount();  // check to see if it is equal to pop
-
         curve.registerVariableByHash(var_hash + agent_hash + func_hash + message_hash, d_ptr, size, length);
     }
 }
@@ -226,7 +224,6 @@ void CUDAMessage::unmapRuntimeVariables(const AgentFunctionData& func) const {
 
         // unmap using curve
         Curve::VariableHash var_hash = curve.variableRuntimeHash(mmp.first.c_str());
-
         curve.unregisterVariableByHash(var_hash + agent_hash + func_hash + message_hash);
     }
 }

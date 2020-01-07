@@ -86,6 +86,14 @@ class CUDAAgentModel : public Simulation {
      */
     Config &CUDAConfig();
     /**
+     * Returns the number of times step() has been called since the simulation was last reset/init
+     */
+    unsigned int getStepCounter() override;
+    /**
+     * Manually resets the step counter
+     */
+    void resetStepCounter() override;
+    /**
      * @return An immutable reference to the cuda model specific configuration struct
      */
     const Config &getCUDAConfig() const;
@@ -115,6 +123,10 @@ class CUDAAgentModel : public Simulation {
     void resetDerivedConfig() override;
 
  private:
+    /**
+     * Number of times step() has been called since sim was last reset/init
+     */
+    unsigned int step_count;
     /**
      * Map of agent storage 
      */
