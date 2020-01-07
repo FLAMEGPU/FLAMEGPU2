@@ -132,7 +132,7 @@ int main(int argc, const char ** argv) {
         // Currently population has not been init, so generate an agent population on the fly
         const unsigned int AGENT_COUNT = 16384;
         std::default_random_engine rng;
-        std::uniform_real_distribution<float> dist(0.0, static_cast<int>(cbrt(AGENT_COUNT)));
+        std::uniform_real_distribution<float> dist(0.0f, static_cast<float>(floor(cbrt(AGENT_COUNT))));
         AgentPopulation population(model.Agent("Circle"), AGENT_COUNT);
         for (unsigned int i = 0; i < AGENT_COUNT; i++) {
             AgentInstance instance = population.getNextInstance();
