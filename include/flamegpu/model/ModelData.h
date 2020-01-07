@@ -325,6 +325,7 @@ struct MessageData {
     MessageData(const MessageData &other) = delete;
 
  protected:
+    virtual MessageData *clone(ModelData *const newParent);
     /**
      * Copy constructor
      * This is unsafe, should only be used internally, use clone() instead
@@ -491,6 +492,7 @@ struct Spatial2DMessageData : MessageData {
     virtual ~Spatial2DMessageData() = default;
 
  protected:
+    Spatial2DMessageData *clone(ModelData *const newParent) override;
     /**
      * Copy constructor
      * This is unsafe, should only be used internally, use clone() instead
@@ -508,7 +510,8 @@ struct Spatial3DMessageData : Spatial2DMessageData {
     float maxZ;
     virtual ~Spatial3DMessageData() = default;
 
- protected:
+ private:
+    Spatial3DMessageData *clone(ModelData *const newParent) override;
     /**
      * Copy constructor
      * This is unsafe, should only be used internally, use clone() instead
