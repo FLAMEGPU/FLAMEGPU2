@@ -23,7 +23,8 @@ class StateWriter {
     //  Constructors and Destructor
     // -----------------------------------------------------------------------
 
-    StateWriter(const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &_model_state, const char* output) : model_state(_model_state), outputFile(std::string(output)) {}
+    StateWriter(const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &_model_state, const unsigned int &_iterations, const char* output_file)
+        : model_state(_model_state), iterations(_iterations), outputFile(std::string(output_file)) {}
     ~StateWriter() {}
 
     // -----------------------------------------------------------------------
@@ -34,6 +35,7 @@ class StateWriter {
 
  protected:
     const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> model_state;
+    unsigned int iterations;
     std::string outputFile;
 };
 

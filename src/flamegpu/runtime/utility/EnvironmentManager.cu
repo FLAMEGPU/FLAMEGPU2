@@ -220,7 +220,23 @@ void EnvironmentManager::defragment(DefragMap *mergeProperties) {
             t_properties.emplace(i.first, EnvProp(buffOffset, i.second.length, i.second.isConst, i.second.elements, i.second.type));
             // Update cuRVE (There isn't an update, so unregister and reregister)  // TODO: curveGetVariableHandle()?
             Curve::VariableHash cvh = toHash(i.first);
-            curve.unregisterVariableByHash(cvh);
+            // Only unregister variable if it's already registered
+            if (!mergeProperties) {  // Merge properties are only provided on 1st init, when vars can't be unregistered
+                curve.unregisterVariableByHash(cvh);
+            } else {
+                // Can this var be found inside mergeProps
+                auto range = mergeProperties->equal_range(_i->first);
+                bool isFound = false;
+                for (auto w = range.first; w != range.second; ++w) {
+                    if (w->second.first == _i->second.first) {
+                        isFound = true;
+                        break;
+                    }
+                }
+                if (!isFound) {
+                    curve.unregisterVariableByHash(cvh);
+                }
+            }
             const auto CURVE_RESULT = curve.registerVariableByHash(cvh, reinterpret_cast<void*>(const_cast<char*>(c_buffer + buffOffset)),
                 typeSize, i.second.elements);
             if (CURVE_RESULT == Curve::UNKNOWN_VARIABLE) {
