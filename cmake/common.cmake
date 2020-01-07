@@ -72,7 +72,7 @@ if(SMS_COUNT EQUAL 0)
     if(CMAKE_CUDA_COMPILER_VERSION GREATER_EQUAL 5.0 )
         # list(APPEND SMS "30") # CUDA >= 5.0  # Skip kepler 1
         list(APPEND SMS "35") # CUDA >= 5.0 
-        list(APPEND SMS "37") # CUDA >= 5.0 
+        # list(APPEND SMS "37") # CUDA >= 5.0 # Skip K80s
     endif()
     # If the CUDA version is >= than 5.0, build for Maxwell V1 
     if(CMAKE_CUDA_COMPILER_VERSION GREATER_EQUAL 6.0 )
