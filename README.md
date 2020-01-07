@@ -119,6 +119,8 @@ The first time CMake is configured with `-DBUILD_TESTS=ON` an internet connectio
 Subsequent reconfigures will attempt to update this copy, but will continue if updating fails.
 Automatic updating of GoogleTest can be disabled by passing `-DBUILD_TESTS=OFF`.
 
+*Known Issues:* The tests do not build under the combination of Visual Studio 2015 and CUDA 9.0 or 9.1. Use CUDA 9.2 or newer if you require the tests.
+
 ##### Documentation
 
 If you wish to build the documentation, [doxygen](http://www.doxygen.nl/) must be available on your system.
