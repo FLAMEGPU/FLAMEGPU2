@@ -75,7 +75,7 @@ ModelData::ModelData(const ModelData &other)
     , name(other.name) {
     // Manually copy construct maps of shared ptr
     for (const auto m : other.messages) {
-        messages.emplace(m.first, std::shared_ptr<MessageData>(new MessageData(this, *m.second)));  // Need to convert this to shared_ptr, how to force shared copy construct?
+        messages.emplace(m.first, std::shared_ptr<MessageData>(m.second->clone(this)));  // Need to convert this to shared_ptr, how to force shared copy construct?
     }
     for (const auto a : other.agents) {
         auto b = std::shared_ptr<AgentData>(new AgentData(this, *a.second));
@@ -110,7 +110,8 @@ AgentData::AgentData(ModelData *const model, const AgentData &other)
 MessageData::MessageData(ModelData *const model, const MessageData &other)
     : variables(other.variables)
     , description(model ? new MessageDescription(model, this) : nullptr)
-    , name(other.name) { }
+    , name(other.name)
+    , optional_outputs(other.optional_outputs) { }
 AgentFunctionData::AgentFunctionData(ModelData *const model, std::shared_ptr<AgentData> _parent, const AgentFunctionData &other)
     : func(other.func)
     , initial_state(other.initial_state)
@@ -178,6 +179,17 @@ Spatial3DMessageData::Spatial3DMessageData(ModelData *const model, const Spatial
     , maxZ(other.maxZ) {
     description = std::unique_ptr<MessageDescription>(model ? new Spatial3DMessageDescription(model, this) : nullptr);
 }
+
+MessageData *MessageData::clone(ModelData *const newParent) {
+    return new MessageData(newParent, *this);
+}
+Spatial2DMessageData *Spatial2DMessageData::clone(ModelData *const newParent) {
+    return new Spatial2DMessageData(newParent, *this);
+}
+Spatial3DMessageData *Spatial3DMessageData::clone(ModelData *const newParent) {
+    return new Spatial3DMessageData(newParent, *this);
+}
+
 bool ModelData::operator==(const ModelData& rhs) const {
     if (this == &rhs)  // They point to same object
         return true;
