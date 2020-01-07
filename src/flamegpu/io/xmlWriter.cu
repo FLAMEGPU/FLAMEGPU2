@@ -53,7 +53,8 @@
 }
 #endif
 
-xmlWriter::xmlWriter(const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &model, const char* output) : StateWriter(model, output) {}
+xmlWriter::xmlWriter(const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &model, const unsigned int &iterations, const char* output_file)
+    : StateWriter(model, iterations, output_file) {}
 
 int xmlWriter::writeStates() {
     tinyxml2::XMLDocument doc;
@@ -62,7 +63,7 @@ int xmlWriter::writeStates() {
     doc.InsertFirstChild(pRoot);
 
     tinyxml2::XMLElement * pElement = doc.NewElement("itno");
-    pElement->SetText(1);  // get simulation step here - later
+    pElement->SetText(iterations);  // get simulation step here - later
     pRoot->InsertEndChild(pElement);
 
     pElement = doc.NewElement("environment");

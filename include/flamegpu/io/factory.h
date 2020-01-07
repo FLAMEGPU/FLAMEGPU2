@@ -20,7 +20,7 @@
 #include "flamegpu/io/xmlWriter.h"
 
 //  move later
-std::string getFileExt(const std::string& s) {
+inline std::string getFileExt(const std::string& s) {
     // Find the last position of '.' in given string
     size_t i = s.rfind('.', s.length());
     if (i != std::string::npos) {
@@ -55,9 +55,9 @@ class ReaderFactory {
 
 class WriterFactory {
  public:
-    static StateWriter *createWriter(const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &model_state, const char *input) {
-        return new xmlWriter(model_state, input);
-    }
+     static StateWriter *createWriter(const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &model_state, const unsigned int &iterations, const char *output_file) {
+         return new xmlWriter(model_state, iterations, output_file);
+     }
 };
 
 #endif  // INCLUDE_FLAMEGPU_IO_FACTORY_H_

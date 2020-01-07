@@ -21,7 +21,7 @@ void Simulation::initialise(int argc, const char** argv) {
     // check input args
     if (argc)
         if (!checkArgs(argc, argv))
-            exit(0);
+            exit(EXIT_FAILURE);
     applyConfig();
 }
 
@@ -68,7 +68,7 @@ void Simulation::output(int /*argc*/, const char** /*argv*/) {
         pops.emplace(agent.first, a);
     }
 
-    StateWriter *write__ = WriterFactory::createWriter(pops, input);  // TODO (pair model format with its data?)
+    StateWriter *write__ = WriterFactory::createWriter(pops, getStepCounter(), input);  // TODO (pair model format with its data?)
     write__->writeStates();
 }
 

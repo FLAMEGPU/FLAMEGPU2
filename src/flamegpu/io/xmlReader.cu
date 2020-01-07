@@ -80,6 +80,17 @@ int xmlReader::parse() {
     errorId = pElement->QueryIntText(&error);
     XMLCheckResult(errorId);
 
+    // Count how many of each agent are in the file
+    std::unordered_map<std::string, unsigned int> cts;
+    for (pElement = pRoot->FirstChildElement("xagent"); pElement != nullptr; pElement = pElement->NextSiblingElement("xagent")) {
+        cts[std::string(pElement->FirstChildElement("name")->GetText())]++;
+    }
+    // Resize state lists
+    for (auto &agt : cts) {
+        model_state.at(agt.first)->setStateListCapacity(agt.second);
+    }
+
+
     for (pElement = pRoot->FirstChildElement("xagent"); pElement != nullptr; pElement = pElement->NextSiblingElement("xagent")) {
         if (pElement == nullptr) {
             THROW TinyXMLError("TinyXML error: Error parsing element %s.", inputFile.c_str());
@@ -89,7 +100,7 @@ int xmlReader::parse() {
         const char* agentName = pListElement->GetText();
 
         const auto &m = model_state.at(agentName)->getAgentDescription().variables;
-        AgentInstance instance = model_state.at(agentName)->getNextInstance("default");
+        AgentInstance instance = model_state.at(agentName)->getNextInstance(ModelData::DEFAULT_STATE);
 
         for (auto iter = m.begin(); iter != m.end(); ++iter) {
             float outFloat;

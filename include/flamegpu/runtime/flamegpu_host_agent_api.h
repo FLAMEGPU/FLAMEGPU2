@@ -63,6 +63,10 @@ class FLAMEGPU_HOST_AGENT_API {
         stateName("") {
 
     }*/
+    /*
+     * Returns the number of agents in this state
+     */
+    unsigned int count();
     /**
      * Wraps cub::DeviceReduce::Sum()
      * @param variable The agent variable to perform the sum reduction across
@@ -133,6 +137,10 @@ class FLAMEGPU_HOST_AGENT_API {
     bool hasState;
     const std::string stateName;
 };
+
+inline unsigned FLAMEGPU_HOST_AGENT_API::count() {
+    return agent.getStateSize(stateName);
+}
 
 //
 // Implementation

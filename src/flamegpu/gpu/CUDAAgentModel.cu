@@ -14,6 +14,7 @@ namespace flamegpu_internal {
 
 CUDAAgentModel::CUDAAgentModel(const ModelDescription& _model)
     : Simulation(_model)
+    , step_count(0)
     , agent_map()
     , curve(Curve::getInstance())
     , message_map()
@@ -47,6 +48,7 @@ CUDAAgentModel::~CUDAAgentModel() {
 }
 
 bool CUDAAgentModel::step() {
+    step_count++;
     int nStreams = 1;
     std::string message_name;
     Curve::NamespaceHash message_name_inp_hash = 0;
@@ -89,7 +91,6 @@ bool CUDAAgentModel::step() {
             if (auto im = func_des->message_input.lock()) {
                 std::string inpMessage_name = im->name;
                 const CUDAMessage& cuda_message = getCUDAMessage(inpMessage_name);
-                printf("inp msg name: %s\n", inpMessage_name.c_str());
                 cuda_message.mapReadRuntimeVariables(*func_des);
             }
 
@@ -99,7 +100,6 @@ bool CUDAAgentModel::step() {
                 CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
                 // Resize message list if required
                 cuda_message.resize(cuda_agent.getStateSize(func_des->initial_state));
-                printf("outp msg name: %s\n", outpMessage_name.c_str());
                 cuda_message.mapWriteRuntimeVariables(*func_des);
                 // Zero the scan flag that will be written to
                 if (func_des->message_output_optional)
@@ -210,7 +210,6 @@ bool CUDAAgentModel::step() {
         // TODO: Concurrency?
         for (auto &stepFn : (*lyr)->host_functions)
             stepFn(this->host_api.get());
-
         // cudaDeviceSynchronize();
     }
     // stream deletion
@@ -363,6 +362,7 @@ void CUDAAgentModel::applyConfig_derived() {
 
 void CUDAAgentModel::resetDerivedConfig() {
     this->config = CUDAAgentModel::Config();
+    resetStepCounter();
 }
 
 
@@ -371,4 +371,11 @@ CUDAAgentModel::Config &CUDAAgentModel::CUDAConfig() {
 }
 const CUDAAgentModel::Config &CUDAAgentModel::getCUDAConfig() const {
     return config;
+}
+
+unsigned int CUDAAgentModel::getStepCounter() {
+    return step_count;
+}
+void CUDAAgentModel::resetStepCounter() {
+    step_count = 0;
 }
