@@ -70,10 +70,18 @@ void Spatial2DMessageDescription::setMinX(const float &x) {
 void Spatial2DMessageDescription::setMinY(const float &y) {
     reinterpret_cast<Spatial2DMessageData *>(message)->minY = y;
 }
+void Spatial2DMessageDescription::setMin(const float &x, const float &y) {
+    reinterpret_cast<Spatial2DMessageData *>(message)->minX = x;
+    reinterpret_cast<Spatial2DMessageData *>(message)->minY = y;
+}
 void Spatial2DMessageDescription::setMaxX(const float &x) {
     reinterpret_cast<Spatial2DMessageData *>(message)->maxX = x;
 }
 void Spatial2DMessageDescription::setMaxY(const float &y) {
+    reinterpret_cast<Spatial2DMessageData *>(message)->maxY = y;
+}
+void Spatial2DMessageDescription::setMax(const float &x, const float &y) {
+    reinterpret_cast<Spatial2DMessageData *>(message)->maxX = x;
     reinterpret_cast<Spatial2DMessageData *>(message)->maxY = y;
 }
 
@@ -116,7 +124,17 @@ Spatial3DMessageDescription::Spatial3DMessageDescription(ModelData *const _model
 void Spatial3DMessageDescription::setMinZ(const float &z) {
     reinterpret_cast<Spatial3DMessageData *>(message)->minZ = z;
 }
+void Spatial3DMessageDescription::setMin(const float &x, const float &y, const float &z) {
+    reinterpret_cast<Spatial3DMessageData *>(message)->minX = x;
+    reinterpret_cast<Spatial3DMessageData *>(message)->minY = y;
+    reinterpret_cast<Spatial3DMessageData *>(message)->minZ = z;
+}
 void Spatial3DMessageDescription::setMaxZ(const float &z) {
+    reinterpret_cast<Spatial3DMessageData *>(message)->maxZ = z;
+}
+void Spatial3DMessageDescription::setMax(const float &x, const float &y, const float &z) {
+    reinterpret_cast<Spatial3DMessageData *>(message)->maxX = x;
+    reinterpret_cast<Spatial3DMessageData *>(message)->maxY = y;
     reinterpret_cast<Spatial3DMessageData *>(message)->maxZ = z;
 }
 float &Spatial3DMessageDescription::MinZ() {

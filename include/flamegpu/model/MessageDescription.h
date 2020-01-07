@@ -147,8 +147,10 @@ class Spatial2DMessageDescription : public MessageDescription {
     void setRadius(const float &r);
     void setMinX(const float &x);
     void setMinY(const float &y);
+    void setMin(const float &x, const float &y);
     void setMaxX(const float &x);
     void setMaxY(const float &y);
+    void setMax(const float &x, const float &y);
 
     float &Radius();
     float &MinX();
@@ -163,7 +165,7 @@ class Spatial2DMessageDescription : public MessageDescription {
     float getMaxY() const;
 };
 
-class Spatial3DMessageDescription : public Spatial2DMessageDescription {
+class Spatial3DMessageDescription : protected Spatial2DMessageDescription {
     /**
      * Data store class for this description, constructs instances of this class
      */
@@ -192,11 +194,29 @@ class Spatial3DMessageDescription : public Spatial2DMessageDescription {
     Spatial3DMessageDescription& operator=(Spatial3DMessageDescription &&other_message) noexcept = delete;
 
  public:
+    using Spatial2DMessageDescription::setRadius;
+    using Spatial2DMessageDescription::setMinX;
+    using Spatial2DMessageDescription::setMinY;
     void setMinZ(const float &z);
+    void setMin(const float &x, const float &y, const float &z);
+    using Spatial2DMessageDescription::setMaxX;
+    using Spatial2DMessageDescription::setMaxY;
     void setMaxZ(const float &z);
+    void setMax(const float &x, const float &y, const float &z);
+
+    using Spatial2DMessageDescription::Radius;
+    using Spatial2DMessageDescription::MinX;
+    using Spatial2DMessageDescription::MinY;
     float &MinZ();
+    using Spatial2DMessageDescription::MaxX;
+    using Spatial2DMessageDescription::MaxY;
     float &MaxZ();
+    using Spatial2DMessageDescription::getRadius;
+    using Spatial2DMessageDescription::getMinX;
+    using Spatial2DMessageDescription::getMinY;
     float getMinZ() const;
+    using Spatial2DMessageDescription::getMaxX;
+    using Spatial2DMessageDescription::getMaxY;
     float getMaxZ() const;
 };
 
