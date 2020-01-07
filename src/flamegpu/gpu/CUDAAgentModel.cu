@@ -48,7 +48,6 @@ CUDAAgentModel::~CUDAAgentModel() {
 }
 
 bool CUDAAgentModel::step() {
-    printf("Variables mapped at start: %d\n", Curve::getInstance().checkHowManyMappedItems());
     step_count++;
     int nStreams = 1;
     std::string message_name;
@@ -211,7 +210,6 @@ bool CUDAAgentModel::step() {
         // TODO: Concurrency?
         for (auto &stepFn : (*lyr)->host_functions)
             stepFn(this->host_api.get());
-        printf("Variables mapped at end: %d\n", Curve::getInstance().checkHowManyMappedItems());
         // cudaDeviceSynchronize();
     }
     // stream deletion

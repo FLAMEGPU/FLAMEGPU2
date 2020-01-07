@@ -201,7 +201,6 @@ void CUDAAgent::mapRuntimeVariables(const AgentFunctionData& func) const {
 
        // maximum population num
         unsigned int length = this->getMaximumListSize();
-        printf("Mapping agent var '%s', hash '%u', ", mmp.first.c_str(), var_hash + agent_hash + func_hash);
         curve.registerVariableByHash(var_hash + agent_hash + func_hash, d_ptr, size, length);
     }
 }
@@ -225,7 +224,6 @@ void CUDAAgent::unmapRuntimeVariables(const AgentFunctionData& func) const {
 
         // unmap using curve
         const Curve::VariableHash var_hash = curve.variableRuntimeHash(mmp.first.c_str());
-        printf("UnMapping agent var '%s', hash '%u'----------\n", mmp.first.c_str(), var_hash + agent_hash + func_hash);
         curve.unregisterVariableByHash(var_hash + agent_hash + func_hash);
     }
 }

@@ -53,7 +53,7 @@
 }
 #endif
 
-xmlWriter::xmlWriter(const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &model, const unsigned int &iterations, const char* output_file) 
+xmlWriter::xmlWriter(const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &model, const unsigned int &iterations, const char* output_file)
     : StateWriter(model, iterations, output_file) {}
 
 int xmlWriter::writeStates() {

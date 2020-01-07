@@ -185,8 +185,6 @@ class FLAMEGPU_DEVICE_API {
  */
 template<typename T, unsigned int N>
 __device__ T FLAMEGPU_DEVICE_API::getVariable(const char(&variable_name)[N]) {
-   // if (blockIdx.x == 0 && threadIdx.x == 12)
-    //    printf("Get Agent Var '%s' ", variable_name);
     // simple indexing assumes index is the thread number (this may change later)
     unsigned int index =  (blockDim.x * blockIdx.x) + threadIdx.x;
 
@@ -204,8 +202,6 @@ __device__ T FLAMEGPU_DEVICE_API::getVariable(const char(&variable_name)[N]) {
  */
 template<typename T, unsigned int N>
 __device__ void FLAMEGPU_DEVICE_API::setVariable(const char(&variable_name)[N], T value) {
-    //if (blockIdx.x == 0 && threadIdx.x == 12)
-     //   printf("Set Agent Var '%s' ", variable_name);
     // simple indexing assumes index is the thread number (this may change later)
     unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
 
@@ -252,8 +248,6 @@ __device__ void FLAMEGPU_DEVICE_API::setMessageVariable(const char(&variable_nam
 */
 template<typename T, unsigned int N>
 __device__ void FLAMEGPU_DEVICE_API::addMessage(const char(&variable_name)[N], T value) {  // message name or variable name
-   // if (blockIdx.x == 0 && threadIdx.x == 12)
-    //    printf("Set Message Var '%s' ", variable_name);
     unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;  // + d_message_count;
 
     // Todo: checking if the output message type is single or optional?  (d_message_type)
