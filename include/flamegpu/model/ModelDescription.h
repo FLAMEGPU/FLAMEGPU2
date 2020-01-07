@@ -245,6 +245,17 @@ class ModelDescription {
     ModelData::size_type getLayersCount() const;
 
  private:
+     template<typename TDesc, typename TData>
+     TDesc& newMessage(const std::string &message_name);
+
+     template<typename TDesc, typename TData>
+     TDesc& Message(const std::string &message_name);
+
+     template<typename TDesc, typename TData>
+     const TDesc& getMessage(const std::string &message_name) const;
+
+     template<typename TData>
+     bool hasMessage(const std::string &message_name) const;
     /**
      * The class which stores all of the model hierarchies data.
      */
