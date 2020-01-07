@@ -128,7 +128,7 @@ int main(int argc, const char ** argv) {
      * Initialisation
      */
     cuda_model.initialise(argc, argv);
-    if(cuda_model.getSimulationConfig().xml_input_file.empty()) {
+    if (cuda_model.getSimulationConfig().xml_input_file.empty()) {
         // Currently population has not been init, so generate an agent population on the fly
         const unsigned int AGENT_COUNT = 16384;
         std::default_random_engine rng;
