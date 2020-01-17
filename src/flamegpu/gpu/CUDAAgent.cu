@@ -20,6 +20,14 @@
 #include "flamegpu/pop/AgentPopulation.h"
 #include "flamegpu/runtime/cuRVE/curve.h"
 
+#ifdef _MSC_VER
+#pragma warning(push, 3)
+#include <cub/cub.cuh>
+#pragma warning(pop)
+#else
+#include <cub/cub.cuh>
+#endif
+
 /**
 * CUDAAgent class
 * @brief allocates the hash table/list for agent variables and copy the list to device
@@ -47,6 +55,21 @@ const AgentData& CUDAAgent::getAgentDescription() const {
     return agent_description;
 }
 
+void CUDAAgent::resize(const unsigned int &newSize, const unsigned int &streamId) {
+    // Only grow currently
+    max_list_size = max_list_size < 2 ? 2 : max_list_size;
+    if (newSize > max_list_size) {
+        while (max_list_size < newSize) {
+            max_list_size = static_cast<unsigned int>(max_list_size * 1.5);
+        }
+        // Resize all items in the statemap
+        for (auto &state : state_map) {
+            state.second->resize();  // It auto pulls size from this->max_list_size
+        }
+    }
+    // Notify scan flag this it might need resizing
+    flamegpu_internal::CUDAScanCompaction::resizeAgents(max_list_size, streamId);
+}
 /**
 * @brief Sets the population data
 * @param AgentPopulation object
@@ -228,7 +251,36 @@ void CUDAAgent::unmapRuntimeVariables(const AgentFunctionData& func) const {
     }
 }
 
+void CUDAAgent::process_death(const AgentFunctionData& func, const unsigned int &streamId) {
+    if (func.has_agent_death) {  // Optionally process agent death
+        // check the cuda agent state map to find the correct state list for functions starting state
+        CUDAStateMap::const_iterator sm = state_map.find(func.initial_state);
 
+        unsigned int agent_count = sm->second->getCUDAStateListSize();
+        if (agent_count > flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].cub_temp_size_max_list_size) {
+            if (flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].hd_cub_temp) {
+                gpuErrchk(cudaFree(flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].hd_cub_temp));
+            }
+            flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].cub_temp_size = 0;
+            cub::DeviceScan::ExclusiveSum(
+                nullptr,
+                flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].cub_temp_size,
+                flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].d_ptrs.scan_flag,
+                flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].d_ptrs.position,
+                max_list_size + 1);
+            gpuErrchk(cudaMalloc(&flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].hd_cub_temp, flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].cub_temp_size));
+            flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].cub_temp_size_max_list_size = max_list_size;
+        }
+        cub::DeviceScan::ExclusiveSum(
+            flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].hd_cub_temp,
+            flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].cub_temp_size,
+            flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].d_ptrs.scan_flag,
+            flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].d_ptrs.position,
+            agent_count + 1);
+        // Scatter
+        sm->second->scatter(streamId);
+    }
+}
 const std::unique_ptr<CUDAAgentStateList> &CUDAAgent::getAgentStateList(const std::string &state_name) const {
     // check the cuda agent state map to find the correct state list for functions starting state
     CUDAStateMap::const_iterator sm = state_map.find(state_name);
