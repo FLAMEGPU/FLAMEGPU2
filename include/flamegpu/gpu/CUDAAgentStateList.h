@@ -41,6 +41,10 @@ class CUDAAgentStateList {
     void zeroAgentData();
 
     unsigned int getCUDAStateListSize() const;
+    /**
+     * Perform a compaction using d_agent_scan_flag and d_agent_position
+     */
+    void scatter();
 
  protected:
     /*

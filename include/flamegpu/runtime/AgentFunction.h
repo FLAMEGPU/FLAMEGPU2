@@ -7,6 +7,11 @@
 #include "flamegpu/runtime/cuRVE/curve.h"
 #include "flamegpu/runtime/flamegpu_device_api.h"
 
+namespace flamegpu_internal {
+    extern __device__ unsigned int *ds_agent_scan_flag;
+    extern __device__ unsigned int *ds_agent_position;
+}
+
 typedef void(AgentFunctionWrapper)(
     Curve::NamespaceHash model_name_hash,
     Curve::NamespaceHash agent_func_name_hash,
@@ -59,11 +64,10 @@ __global__ void agent_function_wrapper(
     // call the user specified device function
     {
         FLAME_GPU_AGENT_STATUS flag = AgentFunction()(api);
-        if (flag == 1) {
-            // delete the agent
-            printf("Agent DEAD!\n");
-        } else {
-            // printf("Agent ALIVE!\n");
+        if (flag == DEAD) {
+            // Always log dead agents (array should be memset to 0, so we don't bother confirming alive)
+            // (although scan flags will not be processed unless agent death has been requested in model definition)
+            flamegpu_internal::ds_agent_scan_flag[FLAMEGPU_DEVICE_API::TID()] = 1;
         }
     }
     // do something with the return value to set a flag for deletion

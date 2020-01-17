@@ -19,8 +19,8 @@
 #include "flamegpu/model/MessageDescription.h"
 
 namespace flamegpu_internal {
-    extern __device__ unsigned int *ds_scan_flag;
-    extern __device__ unsigned int *ds_position;
+    extern __device__ unsigned int *ds_msg_scan_flag;
+    extern __device__ unsigned int *ds_msg_position;
 }  // namespace flamegpu_internal
 
 /**
@@ -146,8 +146,8 @@ __global__ void scatter_optional_messages(
     int index = (blockIdx.x*blockDim.x) + threadIdx.x;
 
     // if optional message is to be written
-    if (flamegpu_internal::ds_scan_flag[index] == 1) {
-        int output_index = flamegpu_internal::ds_position[index];
+    if (flamegpu_internal::ds_msg_scan_flag[index] == 1) {
+        int output_index = flamegpu_internal::ds_msg_position[index];
         memcpy(out + (output_index * typeLen), in + (index * typeLen), typeLen);
     }
 }

@@ -48,10 +48,16 @@ __device__ __forceinline__ FLAME_GPU_AGENT_STATUS funcName ## _impl::operator()(
 #define FLAMEGPU_AGENT_FUNC __device__ __forceinline__
 
 namespace flamegpu_internal {
-    extern __device__ unsigned int *ds_scan_flag;
-    extern unsigned int *d_scan_flag;
-    extern unsigned int *d_position;
-    extern unsigned int scan_flag_len;
+    // These 4 vars are used with optional message handling
+    extern __device__ unsigned int *ds_msg_scan_flag;
+    extern unsigned int *d_msg_scan_flag;
+    extern unsigned int *d_msg_position;
+    extern unsigned int msg_scan_flag_len;
+    // These 4 vars are used with agent death handling
+    extern __device__ unsigned int *ds_agent_scan_flag;
+    extern unsigned int *d_agent_scan_flag;
+    extern unsigned int *d_agent_position;
+    extern unsigned int agent_scan_flag_len;
 }  // namespace flamegpu_internal
 
 /** @brief    A flame gpu api class for the device runtime only
@@ -256,7 +262,7 @@ __device__ void FLAMEGPU_DEVICE_API::addMessage(const char(&variable_name)[N], T
     Curve::setVariable<T>(variable_name, agent_func_name_hash + messagename_outp_hash, value, index);
 
     // Set scan flag incase the message is optional
-    flamegpu_internal::ds_scan_flag[index] = 1;
+    flamegpu_internal::ds_agent_scan_flag[index] = 1;
 }
 
 /**

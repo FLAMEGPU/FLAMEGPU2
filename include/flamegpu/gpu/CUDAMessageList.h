@@ -63,7 +63,7 @@ class CUDAMessageList {
      */
     virtual void swap();
     /**
-     * Perform a compaction using d_scan_flag and d_position
+     * Perform a compaction using d_msg_scan_flag and d_msg_position
      */
     virtual void scatter();
 

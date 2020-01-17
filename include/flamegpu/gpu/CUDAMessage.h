@@ -12,6 +12,7 @@
 #define INCLUDE_FLAMEGPU_GPU_CUDAMESSAGE_H_
 
 #include <memory>
+#include <utility>
 
 // include sub classes
 #include "flamegpu/gpu/CUDAMessageList.h"
@@ -77,7 +78,7 @@ class CUDAMessage {
     /**
      * Swaps the two internal maps within message_list
      */
-    virtual void swap();
+    virtual void swap(bool isOptional);
 
  protected:
     /** 

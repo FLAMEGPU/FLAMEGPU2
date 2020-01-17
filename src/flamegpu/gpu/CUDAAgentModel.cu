@@ -9,7 +9,8 @@
 
 
 namespace flamegpu_internal {
-    void zero_scan_flag();
+    void zero_msg_scan_flag();
+    void zero_agent_scan_flag();
 }
 
 CUDAAgentModel::CUDAAgentModel(const ModelDescription& _model)
@@ -103,7 +104,7 @@ bool CUDAAgentModel::step() {
                 cuda_message.mapWriteRuntimeVariables(*func_des);
                 // Zero the scan flag that will be written to
                 if (func_des->message_output_optional)
-                    flamegpu_internal::zero_scan_flag();
+                    flamegpu_internal::zero_msg_scan_flag();
             }
 
 
@@ -112,6 +113,9 @@ bool CUDAAgentModel::step() {
              */
             cuda_agent.mapRuntimeVariables(*func_des);
 
+            // Zero the scan flag that will be written to
+            if (func_des->has_agent_death)
+                flamegpu_internal::zero_agent_scan_flag();
 
             // Count total threads being launched
             totalThreads += cuda_agent.getMaximumListSize();
@@ -174,6 +178,7 @@ bool CUDAAgentModel::step() {
 
             (func_des->func)<<<gridSize, blockSize, 0, stream[j] >>>(modelname_hash, agentname_hash + funcname_hash, message_name_inp_hash, message_name_outp_hash, state_list_size, messageList_Size, totalThreads);
             gpuErrchkLaunch();
+
             totalThreads += state_list_size;
             ++j;
         }
@@ -183,7 +188,7 @@ bool CUDAAgentModel::step() {
             if (!func_agent) {
                 THROW InvalidAgentFunc("Agent function refers to expired agent.");
             }
-            const CUDAAgent& cuda_agent = getCUDAAgent(func_agent->getName());
+            CUDAAgent& cuda_agent = getCUDAAgent(func_agent->getName());
 
             // check if a function has an input message
             if (auto im = func_des->message_input.lock()) {
@@ -197,13 +202,16 @@ bool CUDAAgentModel::step() {
                 std::string outpMessage_name = om->name;
                 CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
                 cuda_message.unmapRuntimeVariables(*func_des);
-                cuda_message.swap();
+                cuda_message.swap(func_des->message_output_optional);
             }
             // const CUDAMessage& cuda_inpMessage = getCUDAMessage(func_des.getInputChild.getMessageName());
             // const CUDAMessage& cuda_outpMessage = getCUDAMessage(func_des.getOutputChild.getMessageName());
 
             // unmap the function variables
             cuda_agent.unmapRuntimeVariables(*func_des);
+
+            // Process agent death (has agent death check is handled by the method)
+            cuda_agent.process_death(*func_des);
         }
 
         // Execute all host functions attached to layer
