@@ -55,7 +55,7 @@ class CUDAMessage {
      * Updates message_count to equal newSize, internally reallocates buffer space if more space is required
      * @param newSize The number of messages that the buffer should be capable of storing
      */
-    void resize(unsigned int newSize);
+    void resize(unsigned int newSize, const unsigned int &streamId);
     /**
      * Uses the cuRVE runtime to map the variables used by the agent function to the cuRVE library so that can be accessed by name within a n agent function
      * The read runtime variables are to be used when reading messages
@@ -78,7 +78,7 @@ class CUDAMessage {
     /**
      * Swaps the two internal maps within message_list
      */
-    virtual void swap(bool isOptional);
+    virtual void swap(bool isOptional, const unsigned int &streamId);
 
  protected:
     /** 

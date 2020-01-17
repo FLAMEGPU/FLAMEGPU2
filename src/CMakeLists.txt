@@ -73,6 +73,7 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/pop/MemoryVector.h
     ${FLAMEGPU_ROOT}/include/flamegpu/pop/AgentStateMemory.h
     ${FLAMEGPU_ROOT}/include/flamegpu/defines.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAScanCompaction.h
     ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAErrorChecking.h
     ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAMessageList.h
     ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAAgentModel.h
@@ -109,6 +110,7 @@ SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/pop/AgentPopulation.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/pop/AgentInstance.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/pop/AgentStateMemory.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAScanCompaction.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAMessageList.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAAgentStateList.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAAgent.cu

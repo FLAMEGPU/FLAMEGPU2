@@ -66,7 +66,7 @@ class CUDAAgent : public AgentInterface {
     void *getStateVariablePtr(const std::string &state_name, const std::string &variable_name) override;
     ModelData::size_type getStateSize(const std::string &state_name) const override;
 
-    void process_death(const AgentFunctionData& func);
+    void process_death(const AgentFunctionData& func, const unsigned int &streamId);
 
  protected:
     /** @brief    Zero all state variable data. */

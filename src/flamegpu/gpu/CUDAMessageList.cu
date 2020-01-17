@@ -141,17 +141,18 @@ void CUDAMessageList::swap() {
 __global__ void scatter_optional_messages(
     size_t typeLen,
     char * const __restrict__ in,
-    char * out) {
+    char * out,
+    const unsigned int streamId) {
     // global thread index
     int index = (blockIdx.x*blockDim.x) + threadIdx.x;
 
     // if optional message is to be written
     if (flamegpu_internal::ds_msg_scan_flag[index] == 1) {
-        int output_index = flamegpu_internal::ds_msg_position[index];
+        int output_index = flamegpu_internal::CUDAScanCompaction::ds_message_configs[streamId].position[index];
         memcpy(out + (output_index * typeLen), in + (index * typeLen), typeLen);
     }
 }
-void CUDAMessageList::scatter() {
+void CUDAMessageList::scatter(const unsigned int &streamId) {
     int blockSize = 0;  // The launch configurator returned block size
     int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
     int gridSize = 0;  // The actual grid size needed, based on input size
@@ -165,7 +166,7 @@ void CUDAMessageList::scatter() {
         char *in_p = reinterpret_cast<char*>(d_swap_list.at(v.first));
         char *out_p = reinterpret_cast<char*>(d_list.at(v.first));
 
-        scatter_optional_messages << <gridSize, blockSize >> > (v.second.type_size, in_p, out_p);
+        scatter_optional_messages << <gridSize, blockSize >> > (v.second.type_size, in_p, out_p, streamId);
     }
     gpuErrchkLaunch();
 }

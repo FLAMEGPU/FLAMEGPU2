@@ -6,12 +6,7 @@
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/pop/AgentPopulation.h"
 #include "flamegpu/runtime/flamegpu_host_api.h"
-
-
-namespace flamegpu_internal {
-    void zero_msg_scan_flag();
-    void zero_agent_scan_flag();
-}
+#include "flamegpu/gpu/CUDAScanCompaction.h"
 
 CUDAAgentModel::CUDAAgentModel(const ModelDescription& _model)
     : Simulation(_model)
@@ -77,7 +72,7 @@ bool CUDAAgentModel::step() {
     for (auto lyr = model->layers.begin(); lyr != model->layers.end(); ++lyr) {
         const auto& functions = (*lyr)->agent_functions;
 
-        int j = 0;
+        int j = 0;  // Track stream id
         // Sum the total number of threads being launched in the layer
         unsigned int totalThreads = 0;
         /*! for each func function - Loop through to do all mapping of agent and message variables */
@@ -87,8 +82,9 @@ bool CUDAAgentModel::step() {
                 THROW InvalidAgentFunc("Agent function refers to expired agent.");
             }
             const CUDAAgent& cuda_agent = getCUDAAgent(func_agent->getName());
+            flamegpu_internal::CUDAScanCompaction::resizeAgents(cuda_agent.getStateSize(func_des->initial_state), j);
 
-            // check if a function has an input massage
+            // check if a function has an input message
             if (auto im = func_des->message_input.lock()) {
                 std::string inpMessage_name = im->name;
                 const CUDAMessage& cuda_message = getCUDAMessage(inpMessage_name);
@@ -100,11 +96,12 @@ bool CUDAAgentModel::step() {
                 std::string outpMessage_name = om->name;
                 CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
                 // Resize message list if required
-                cuda_message.resize(cuda_agent.getStateSize(func_des->initial_state));
+                cuda_message.resize(cuda_agent.getStateSize(func_des->initial_state), j);
                 cuda_message.mapWriteRuntimeVariables(*func_des);
+                flamegpu_internal::CUDAScanCompaction::resizeMessages(cuda_agent.getStateSize(func_des->initial_state), j);
                 // Zero the scan flag that will be written to
                 if (func_des->message_output_optional)
-                    flamegpu_internal::zero_msg_scan_flag();
+                    flamegpu_internal::CUDAScanCompaction::zeroMessages(0);  // Always default stream currently
             }
 
 
@@ -115,17 +112,18 @@ bool CUDAAgentModel::step() {
 
             // Zero the scan flag that will be written to
             if (func_des->has_agent_death)
-                flamegpu_internal::zero_agent_scan_flag();
+                flamegpu_internal::CUDAScanCompaction::zeroAgents(0);  // Always default stream currently
 
             // Count total threads being launched
             totalThreads += cuda_agent.getMaximumListSize();
+            ++j;
         }
 
         // Ensure RandomManager is the correct size to accomodate all threads to be launched
         rng.resize(totalThreads);
         // Total threads is now used to provide kernel launches an offset to thread-safe thread-index
         totalThreads = 0;
-
+        j = 0;
         //! for each func function - Loop through to launch all agent functions
         for (const std::shared_ptr<AgentFunctionData> &func_des : functions) {
             auto func_agent = func_des->parent.lock();
@@ -176,12 +174,14 @@ bool CUDAAgentModel::step() {
             // hash function name
             Curve::NamespaceHash funcname_hash = curve.variableRuntimeHash(func_name.c_str());
 
-            (func_des->func)<<<gridSize, blockSize, 0, stream[j] >>>(modelname_hash, agentname_hash + funcname_hash, message_name_inp_hash, message_name_outp_hash, state_list_size, messageList_Size, totalThreads);
+            (func_des->func)<<<gridSize, blockSize, 0, stream[j] >>>(modelname_hash, agentname_hash + funcname_hash, message_name_inp_hash, message_name_outp_hash, state_list_size, messageList_Size, totalThreads, j);
             gpuErrchkLaunch();
 
             totalThreads += state_list_size;
             ++j;
         }
+
+        j = 0;
         // for each func function - Loop through to un-map all agent and message variables
         for (const std::shared_ptr<AgentFunctionData> &func_des : functions) {
             auto func_agent = func_des->parent.lock()->description;
@@ -202,7 +202,7 @@ bool CUDAAgentModel::step() {
                 std::string outpMessage_name = om->name;
                 CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
                 cuda_message.unmapRuntimeVariables(*func_des);
-                cuda_message.swap(func_des->message_output_optional);
+                cuda_message.swap(func_des->message_output_optional, j);
             }
             // const CUDAMessage& cuda_inpMessage = getCUDAMessage(func_des.getInputChild.getMessageName());
             // const CUDAMessage& cuda_outpMessage = getCUDAMessage(func_des.getOutputChild.getMessageName());
@@ -211,7 +211,9 @@ bool CUDAAgentModel::step() {
             cuda_agent.unmapRuntimeVariables(*func_des);
 
             // Process agent death (has agent death check is handled by the method)
-            cuda_agent.process_death(*func_des);
+            cuda_agent.process_death(*func_des, j);
+
+            ++j;
         }
 
         // Execute all host functions attached to layer

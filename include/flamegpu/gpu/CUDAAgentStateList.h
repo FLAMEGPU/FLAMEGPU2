@@ -44,7 +44,7 @@ class CUDAAgentStateList {
     /**
      * Perform a compaction using d_agent_scan_flag and d_agent_position
      */
-    void scatter();
+    void scatter(const unsigned int &streamId);
 
  protected:
     /*

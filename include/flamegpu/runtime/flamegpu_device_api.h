@@ -18,6 +18,7 @@
 #include "flamegpu/runtime/messagelist.h"
 #include "flamegpu/runtime/utility/AgentRandom.cuh"
 #include "flamegpu/runtime/utility/DeviceEnvironment.cuh"
+#include "flamegpu/gpu/CUDAScanCompaction.h"
 
 // TODO: Some example code of the handle class and an example function
 // ! FLAMEGPU_API is a singleton class
@@ -47,19 +48,6 @@ __device__ __forceinline__ FLAME_GPU_AGENT_STATUS funcName ## _impl::operator()(
 // Advanced macro for defining agent transition functions
 #define FLAMEGPU_AGENT_FUNC __device__ __forceinline__
 
-namespace flamegpu_internal {
-    // These 4 vars are used with optional message handling
-    extern __device__ unsigned int *ds_msg_scan_flag;
-    extern unsigned int *d_msg_scan_flag;
-    extern unsigned int *d_msg_position;
-    extern unsigned int msg_scan_flag_len;
-    // These 4 vars are used with agent death handling
-    extern __device__ unsigned int *ds_agent_scan_flag;
-    extern unsigned int *d_agent_scan_flag;
-    extern unsigned int *d_agent_position;
-    extern unsigned int agent_scan_flag_len;
-}  // namespace flamegpu_internal
-
 /** @brief    A flame gpu api class for the device runtime only
  *
  * This class should only be used by the device and never created on the host. It is safe for each agent function to create a copy of this class on the device. Any singleton type
@@ -68,16 +56,17 @@ namespace flamegpu_internal {
 class FLAMEGPU_DEVICE_API {
     // Friends have access to TID() & TS_ID()
     template<typename AgentFunction>
-    friend __global__ void agent_function_wrapper(Curve::NamespaceHash, Curve::NamespaceHash, Curve::NamespaceHash, Curve::NamespaceHash, const int, const unsigned int, const unsigned int);
+    friend __global__ void agent_function_wrapper(Curve::NamespaceHash, Curve::NamespaceHash, Curve::NamespaceHash, Curve::NamespaceHash, const int, const unsigned int, const unsigned int, const unsigned int);
 
  public:
     /**
      * @param _thread_in_layer_offset This offset can be added to TID to give a thread-safe unique index for the thread
      */
-    __device__ FLAMEGPU_DEVICE_API(const unsigned int &_thread_in_layer_offset, const Curve::NamespaceHash &modelname_hash)
+    __device__ FLAMEGPU_DEVICE_API(const unsigned int &_thread_in_layer_offset, const Curve::NamespaceHash &modelname_hash, const Curve::NamespaceHash &_streamId)
         : random(AgentRandom(TID()+_thread_in_layer_offset)),
         environment(DeviceEnvironment(modelname_hash)),
-        thread_in_layer_offset(_thread_in_layer_offset) { }
+        thread_in_layer_offset(_thread_in_layer_offset),
+        streamId(_streamId) { }
 
     template<typename T, unsigned int N> __device__
     T getVariable(const char(&variable_name)[N]);
@@ -128,9 +117,6 @@ class FLAMEGPU_DEVICE_API {
     __device__ void setMessageOutpNameSpace(Curve::NamespaceHash messagename_hash) {
         messagename_outp_hash = messagename_hash;
     }
-    __device__ void setScanFlag(unsigned int *_scan_flag) {
-        scan_flag = _scan_flag;
-    }
 
     /**
     * Provides access to random functionality inside agent functions
@@ -148,7 +134,7 @@ class FLAMEGPU_DEVICE_API {
     unsigned int  messageListSize;
 
     unsigned int thread_in_layer_offset;
-    unsigned int *scan_flag;
+    unsigned int streamId;
     /**
      * Thread index
      */
@@ -262,7 +248,7 @@ __device__ void FLAMEGPU_DEVICE_API::addMessage(const char(&variable_name)[N], T
     Curve::setVariable<T>(variable_name, agent_func_name_hash + messagename_outp_hash, value, index);
 
     // Set scan flag incase the message is optional
-    flamegpu_internal::ds_agent_scan_flag[index] = 1;
+    flamegpu_internal::CUDAScanCompaction::ds_message_configs[streamId].scan_flag[TID()] = 1;
 }
 
 /**

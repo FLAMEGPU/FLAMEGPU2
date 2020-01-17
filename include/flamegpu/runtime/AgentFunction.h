@@ -6,11 +6,7 @@
 
 #include "flamegpu/runtime/cuRVE/curve.h"
 #include "flamegpu/runtime/flamegpu_device_api.h"
-
-namespace flamegpu_internal {
-    extern __device__ unsigned int *ds_agent_scan_flag;
-    extern __device__ unsigned int *ds_agent_position;
-}
+#include "flamegpu/gpu/CUDAScanCompaction.h"
 
 typedef void(AgentFunctionWrapper)(
     Curve::NamespaceHash model_name_hash,
@@ -19,7 +15,8 @@ typedef void(AgentFunctionWrapper)(
     Curve::NamespaceHash messagename_outp_hash,
     const int popNo,
     const unsigned int messageList_size,
-    const unsigned int thread_in_layer_offset);  // Can't put __global__ in a typedef
+    const unsigned int thread_in_layer_offset,
+    const unsigned int streamId);  // Can't put __global__ in a typedef
 
 /**
  * Wrapper function for launching agent functions
@@ -40,12 +37,13 @@ __global__ void agent_function_wrapper(
     Curve::NamespaceHash messagename_outp_hash,
     const int popNo,
     const unsigned int messageList_size,
-    const unsigned int thread_in_layer_offset) {
+    const unsigned int thread_in_layer_offset,
+    const unsigned int streamId) {
     // Must be terminated here, else AgentRandom has bounds issues inside FLAMEGPU_DEVICE_API constructor
     if (FLAMEGPU_DEVICE_API::TID() >= popNo)
         return;
     // create a new device FLAME_GPU instance
-    FLAMEGPU_DEVICE_API *api = new FLAMEGPU_DEVICE_API(thread_in_layer_offset, model_name_hash);
+    FLAMEGPU_DEVICE_API *api = new FLAMEGPU_DEVICE_API(thread_in_layer_offset, model_name_hash, streamId);
 
     api->setMessageListSize(messageList_size);
 
@@ -67,7 +65,7 @@ __global__ void agent_function_wrapper(
         if (flag == DEAD) {
             // Always log dead agents (array should be memset to 0, so we don't bother confirming alive)
             // (although scan flags will not be processed unless agent death has been requested in model definition)
-            flamegpu_internal::ds_agent_scan_flag[FLAMEGPU_DEVICE_API::TID()] = 1;
+            flamegpu_internal::CUDAScanCompaction::ds_actor_configs[streamId].scan_flag[FLAMEGPU_DEVICE_API::TID()] = 1;
         }
     }
     // do something with the return value to set a flag for deletion

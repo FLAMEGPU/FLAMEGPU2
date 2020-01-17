@@ -65,7 +65,7 @@ class CUDAMessageList {
     /**
      * Perform a compaction using d_msg_scan_flag and d_msg_position
      */
-    virtual void scatter();
+    virtual void scatter(const unsigned int &streamId);
 
  protected:
      /**

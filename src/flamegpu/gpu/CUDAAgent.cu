@@ -28,46 +28,6 @@
 #include <cub/cub.cuh>
 #endif
 
-namespace flamegpu_internal {
-    __device__ unsigned int *ds_agent_scan_flag;
-    __device__ unsigned int *ds_agent_position;
-    /**
-    * Array to mark whether a message (in swap) has been written to
-    */
-    unsigned int *d_agent_scan_flag = nullptr;
-    /**
-    * d_scan_flag is exclusive summed into this array if messages are optional
-    */
-    unsigned int *d_agent_position = nullptr;
-    unsigned int agent_scan_flag_len = 0;
-    void free_agent_scan_flag() {
-        if (d_agent_scan_flag) {
-            gpuErrchk(cudaFree(d_agent_scan_flag));
-        }
-        if (d_agent_position) {
-            gpuErrchk(cudaFree(d_agent_position));
-        }
-    }
-    void resize_agent_scan_flag(unsigned int count) {
-        if (count + 1 > agent_scan_flag_len) {
-            free_agent_scan_flag();
-            gpuErrchk(cudaMalloc(&d_agent_scan_flag, (count + 1) * sizeof(unsigned int)));  // +1 so we can get the total from the scan
-            gpuErrchk(cudaMalloc(&d_agent_position, (count + 1) * sizeof(unsigned int)));  // +1 so we can get the total from the scan
-            gpuErrchk(cudaMemcpyToSymbol(ds_agent_scan_flag, &d_agent_scan_flag, sizeof(unsigned int *)));
-            gpuErrchk(cudaMemcpyToSymbol(ds_agent_position, &d_agent_position, sizeof(unsigned int *)));
-            agent_scan_flag_len = count + 1;
-        }
-    }
-    void zero_agent_scan_flag() {
-        if (d_agent_position) {
-            gpuErrchk(cudaMemset(d_agent_position, 0, agent_scan_flag_len * sizeof(unsigned int)));
-        }
-        if (d_agent_scan_flag) {
-            gpuErrchk(cudaMemset(d_agent_scan_flag, 0, agent_scan_flag_len * sizeof(unsigned int)));
-        }
-    }
-}  // namespace flamegpu_internal
-
 /**
 * CUDAAgent class
 * @brief allocates the hash table/list for agent variables and copy the list to device
@@ -282,7 +242,7 @@ void CUDAAgent::unmapRuntimeVariables(const AgentFunctionData& func) const {
     }
 }
 
-void CUDAAgent::process_death(const AgentFunctionData& func) {
+void CUDAAgent::process_death(const AgentFunctionData& func, const unsigned int &streamId) {
     if (func.has_agent_death) {  // Optionally process agent death
         // check the cuda agent state map to find the correct state list for functions starting state
         CUDAStateMap::const_iterator sm = state_map.find(func.initial_state);
@@ -296,8 +256,8 @@ void CUDAAgent::process_death(const AgentFunctionData& func) {
             cub::DeviceScan::ExclusiveSum(
                 nullptr,
                 cub_temp_size,
-                flamegpu_internal::d_agent_scan_flag,
-                flamegpu_internal::d_agent_position,
+                flamegpu_internal::CUDAScanCompaction::hd_actor_configs[streamId].d_ptrs.scan_flag,
+                flamegpu_internal::CUDAScanCompaction::hd_actor_configs[streamId].d_ptrs.position,
                 max_list_size + 1);
             gpuErrchk(cudaMalloc(&d_cub_temp, cub_temp_size));
             cub_temp_size_max_list_size = max_list_size;
@@ -305,13 +265,14 @@ void CUDAAgent::process_death(const AgentFunctionData& func) {
         cub::DeviceScan::ExclusiveSum(
             d_cub_temp,
             cub_temp_size,
-            flamegpu_internal::d_agent_scan_flag,
-            flamegpu_internal::d_agent_position,
+            flamegpu_internal::CUDAScanCompaction::hd_actor_configs[streamId].d_ptrs.scan_flag,
+            flamegpu_internal::CUDAScanCompaction::hd_actor_configs[streamId].d_ptrs.position,
             agent_count + 1);
         // Scatter
-        sm->second->scatter();
+        sm->second->scatter(streamId);
         // Update count (must come after scatter, scatter requires old count)
-        gpuErrchk(cudaMemcpy(&agent_count, flamegpu_internal::d_agent_position + agent_count, sizeof(unsigned int), cudaMemcpyDeviceToHost));
+        gpuErrchk(cudaMemcpy(&agent_count, flamegpu_internal::CUDAScanCompaction::hd_actor_configs[streamId].d_ptrs.position + agent_count, sizeof(unsigned int), cudaMemcpyDeviceToHost));
+        // Need to notify state list that the number of (alive) agents contained has changed
         // sm->second->setCUDAStateListSize(agent_count);
     }
 }
