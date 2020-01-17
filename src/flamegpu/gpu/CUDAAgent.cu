@@ -36,9 +36,6 @@ CUDAAgent::CUDAAgent(const AgentData& description)
     : agent_description(description)
     , state_map()
     , max_list_size(0)
-    , cub_temp_size_max_list_size(0)
-    , cub_temp_size(0)
-    , d_cub_temp(nullptr)
     , curve(Curve::getInstance()) { }
 
 /**
@@ -46,9 +43,6 @@ CUDAAgent::CUDAAgent(const AgentData& description)
  * @brief Destroys the CUDAAgent object
  */
 CUDAAgent::~CUDAAgent(void) {
-    if (d_cub_temp) {
-        gpuErrchk(cudaFree(d_cub_temp));
-    }
 }
 
 
@@ -248,30 +242,30 @@ void CUDAAgent::process_death(const AgentFunctionData& func, const unsigned int 
         CUDAStateMap::const_iterator sm = state_map.find(func.initial_state);
 
         unsigned int agent_count = sm->second->getCUDAStateListSize();
-        if (agent_count > cub_temp_size_max_list_size) {
-            if (d_cub_temp) {
-                gpuErrchk(cudaFree(d_cub_temp));
+        if (agent_count > flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].cub_temp_size_max_list_size) {
+            if (flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].hd_cub_temp) {
+                gpuErrchk(cudaFree(flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].hd_cub_temp));
             }
-            cub_temp_size = 0;
+            flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].cub_temp_size = 0;
             cub::DeviceScan::ExclusiveSum(
                 nullptr,
-                cub_temp_size,
-                flamegpu_internal::CUDAScanCompaction::hd_actor_configs[streamId].d_ptrs.scan_flag,
-                flamegpu_internal::CUDAScanCompaction::hd_actor_configs[streamId].d_ptrs.position,
+                flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].cub_temp_size,
+                flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].d_ptrs.scan_flag,
+                flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].d_ptrs.position,
                 max_list_size + 1);
-            gpuErrchk(cudaMalloc(&d_cub_temp, cub_temp_size));
-            cub_temp_size_max_list_size = max_list_size;
+            gpuErrchk(cudaMalloc(&flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].hd_cub_temp, flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].cub_temp_size));
+            flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].cub_temp_size_max_list_size = max_list_size;
         }
         cub::DeviceScan::ExclusiveSum(
-            d_cub_temp,
-            cub_temp_size,
-            flamegpu_internal::CUDAScanCompaction::hd_actor_configs[streamId].d_ptrs.scan_flag,
-            flamegpu_internal::CUDAScanCompaction::hd_actor_configs[streamId].d_ptrs.position,
+            flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].hd_cub_temp,
+            flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].cub_temp_size,
+            flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].d_ptrs.scan_flag,
+            flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].d_ptrs.position,
             agent_count + 1);
         // Scatter
         sm->second->scatter(streamId);
         // Update count (must come after scatter, scatter requires old count)
-        gpuErrchk(cudaMemcpy(&agent_count, flamegpu_internal::CUDAScanCompaction::hd_actor_configs[streamId].d_ptrs.position + agent_count, sizeof(unsigned int), cudaMemcpyDeviceToHost));
+        gpuErrchk(cudaMemcpy(&agent_count, flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].d_ptrs.position + agent_count, sizeof(unsigned int), cudaMemcpyDeviceToHost));
         // Need to notify state list that the number of (alive) agents contained has changed
         // sm->second->setCUDAStateListSize(agent_count);
     }

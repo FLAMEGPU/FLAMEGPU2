@@ -78,18 +78,6 @@ class CUDAAgent : public AgentInterface {
     CUDAStateMap state_map;
 
     unsigned int max_list_size;  // The maximum length of the agent variable arrays based on the maximum population size passed to setPopulationData
-    /**
-     * The number of messages CUB temp has been allocated for
-     */
-    unsigned int cub_temp_size_max_list_size;
-    /**
-     * The size of current cub temp allocation
-     */
-    size_t cub_temp_size;
-    /**
-     * Pointer to cub memory
-     */
-    void * d_cub_temp;
 
     Curve &curve;
 };

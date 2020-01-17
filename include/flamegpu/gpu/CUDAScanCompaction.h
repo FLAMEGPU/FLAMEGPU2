@@ -7,6 +7,7 @@
 
 /**
  * PLEASE NOTE: This implementation currently assumes there is only one instance of CUDAAgentModel executing at once
+ * PLEASE NOTE: There is not currently a mechanism to release these (could trigger something via CUDAAgentModel destructor)
  */
 
 /**
@@ -27,9 +28,9 @@ struct CUDAScanCompactionConfig {
 
     CUDAScanCompactionPtrs d_ptrs;
 
-    void *cub_temp_storage = nullptr;
+    void *hd_cub_temp = nullptr;
     size_t cub_temp_size = 0;
-    unsigned int cub_temp_allocated_for_size = 0;
+    unsigned int cub_temp_size_max_list_size = 0;
 
     __host__ void free_scan_flag() {
         if (d_ptrs.scan_flag) {
@@ -62,11 +63,11 @@ namespace CUDAScanCompaction {
      * These will remain unallocated until used
      * They exist so that the correct array can be used with only the stream index known
      */
-    extern __device__ CUDAScanCompactionPtrs ds_actor_configs[MAX_STREAMS];
+    extern __device__ CUDAScanCompactionPtrs ds_agent_configs[MAX_STREAMS];
     /**
-     * Host mirror of ds_actor_configs
+     * Host mirror of ds_agent_configs
      */
-    extern CUDAScanCompactionConfig hd_actor_configs[MAX_STREAMS];
+    extern CUDAScanCompactionConfig hd_agent_configs[MAX_STREAMS];
     /**
      * These will remain unallocated until used
      * They exist so that the correct array can be used with only the stream index known
@@ -79,7 +80,7 @@ namespace CUDAScanCompaction {
 
     inline void resizeAgents(const unsigned int &newCount, const unsigned int &streamId) {
         assert(streamId < MAX_STREAMS);
-        hd_actor_configs[streamId].resize_scan_flag(newCount);
+        hd_agent_configs[streamId].resize_scan_flag(newCount);
     }
     inline void resizeMessages(const unsigned int &newCount, const unsigned int &streamId) {
         assert(streamId < MAX_STREAMS);
@@ -87,7 +88,7 @@ namespace CUDAScanCompaction {
     }
     inline void zeroAgents(const unsigned int &streamId) {
         assert(streamId < MAX_STREAMS);
-        hd_actor_configs[streamId].zero_scan_flag();
+        hd_agent_configs[streamId].zero_scan_flag();
     }
     inline void zeroMessages(const unsigned int &streamId) {
         assert(streamId < MAX_STREAMS);
@@ -103,10 +104,10 @@ __host__ inline void CUDAScanCompactionConfig::resize_scan_flag(const unsigned i
         gpuErrchk(cudaMalloc(&d_ptrs.scan_flag, (count + 1) * sizeof(unsigned int)));  // +1 so we can get the total from the scan
         gpuErrchk(cudaMalloc(&d_ptrs.position, (count + 1) * sizeof(unsigned int)));  // +1 so we can get the total from the scan
         // Blindly calculate our stream ID, based on the offset between 'this' and 'hd_stream_configs[0]'
-        ptrdiff_t actor_stream_id = std::distance(flamegpu_internal::CUDAScanCompaction::hd_actor_configs, this);
+        ptrdiff_t actor_stream_id = std::distance(flamegpu_internal::CUDAScanCompaction::hd_agent_configs, this);
         ptrdiff_t message_stream_id = std::distance(flamegpu_internal::CUDAScanCompaction::hd_message_configs, this);
         if (actor_stream_id >= 0  && actor_stream_id < flamegpu_internal::CUDAScanCompaction::MAX_STREAMS) {
-            gpuErrchk(cudaMemcpyToSymbol(flamegpu_internal::CUDAScanCompaction::ds_actor_configs, &this->d_ptrs, sizeof(CUDAScanCompactionPtrs), actor_stream_id * sizeof(CUDAScanCompactionPtrs)));
+            gpuErrchk(cudaMemcpyToSymbol(flamegpu_internal::CUDAScanCompaction::ds_agent_configs, &this->d_ptrs, sizeof(CUDAScanCompactionPtrs), actor_stream_id * sizeof(CUDAScanCompactionPtrs)));
         } else if (actor_stream_id >= 0 && actor_stream_id < flamegpu_internal::CUDAScanCompaction::MAX_STREAMS) {
             gpuErrchk(cudaMemcpyToSymbol(flamegpu_internal::CUDAScanCompaction::ds_message_configs, this, sizeof(CUDAScanCompactionConfig), message_stream_id * sizeof(CUDAScanCompactionConfig)));
         } else {

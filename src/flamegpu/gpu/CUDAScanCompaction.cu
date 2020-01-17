@@ -6,9 +6,9 @@ namespace CUDAScanCompaction {
      * These will remain unallocated until used
      * They exist so that the correct array can be used with only the stream index known
      */
-    __device__ CUDAScanCompactionPtrs ds_actor_configs[MAX_STREAMS];
+    __device__ CUDAScanCompactionPtrs ds_agent_configs[MAX_STREAMS];
     /**
-     * Host mirror of ds_actor_configs
+     * Host mirror of ds_agent_configs
      */
     CUDAScanCompactionConfig hd_actor_configs[MAX_STREAMS];
     /**

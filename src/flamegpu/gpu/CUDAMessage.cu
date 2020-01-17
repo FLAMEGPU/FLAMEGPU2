@@ -37,9 +37,6 @@ CUDAMessage::CUDAMessage(const MessageData& description)
     : message_description(description)
     , message_count(0)
     , max_list_size(0)
-    , cub_temp_size_max_list_size(0)
-    , cub_temp_size(0)
-    , d_cub_temp(nullptr)
     , curve(Curve::getInstance()) {
     // resize(0); // Think this call is redundant
 }
@@ -49,9 +46,6 @@ CUDAMessage::CUDAMessage(const MessageData& description)
  * @brief Destroys the CUDAMessage object
  */
 CUDAMessage::~CUDAMessage(void) {
-    if (d_cub_temp) {
-        gpuErrchk(cudaFree(d_cub_temp));
-    }
 }
 
 /**
@@ -191,23 +185,23 @@ void CUDAMessage::unmapRuntimeVariables(const AgentFunctionData& func) const {
 }
 void CUDAMessage::swap(bool isOptional, const unsigned int &streamId) {
     if (isOptional && message_description.optional_outputs > 0) {
-        if (message_count > cub_temp_size_max_list_size) {
-            if (d_cub_temp) {
-                gpuErrchk(cudaFree(d_cub_temp));
+        if (message_count > flamegpu_internal::CUDAScanCompaction::hd_message_configs[streamId].cub_temp_size_max_list_size) {
+            if (flamegpu_internal::CUDAScanCompaction::hd_message_configs[streamId].hd_cub_temp) {
+                gpuErrchk(cudaFree(flamegpu_internal::CUDAScanCompaction::hd_message_configs[streamId].hd_cub_temp));
             }
-            cub_temp_size = 0;
+            flamegpu_internal::CUDAScanCompaction::hd_message_configs[streamId].cub_temp_size = 0;
             cub::DeviceScan::ExclusiveSum(
                 nullptr,
-                cub_temp_size,
+                flamegpu_internal::CUDAScanCompaction::hd_message_configs[streamId].cub_temp_size,
                 flamegpu_internal::CUDAScanCompaction::hd_message_configs[streamId].d_ptrs.scan_flag,
                 flamegpu_internal::CUDAScanCompaction::hd_message_configs[streamId].d_ptrs.position,
                 max_list_size + 1);
-            gpuErrchk(cudaMalloc(&d_cub_temp, cub_temp_size));
-            cub_temp_size_max_list_size = max_list_size;
+            gpuErrchk(cudaMalloc(&flamegpu_internal::CUDAScanCompaction::hd_message_configs[streamId].hd_cub_temp, flamegpu_internal::CUDAScanCompaction::hd_message_configs[streamId].cub_temp_size));
+            flamegpu_internal::CUDAScanCompaction::hd_message_configs[streamId].cub_temp_size_max_list_size = max_list_size;
         }
         cub::DeviceScan::ExclusiveSum(
-            d_cub_temp,
-            cub_temp_size,
+            flamegpu_internal::CUDAScanCompaction::hd_message_configs[streamId].hd_cub_temp,
+            flamegpu_internal::CUDAScanCompaction::hd_message_configs[streamId].cub_temp_size,
             flamegpu_internal::CUDAScanCompaction::hd_message_configs[streamId].d_ptrs.scan_flag,
             flamegpu_internal::CUDAScanCompaction::hd_message_configs[streamId].d_ptrs.position,
             message_count + 1);
