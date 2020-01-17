@@ -104,6 +104,7 @@ TEST(TestMessage_BruteForce, Mandatory1) {
 /**
  * Ensures messages are correct on 2nd step
  */
+#include "flamegpu/gpu/CUDAScanCompaction.h"
 TEST(TestMessage_BruteForce, Mandatory2) {
     ModelDescription m(MODEL_NAME);
     MessageDescription &msg = m.newMessage(MESSAGE_NAME);

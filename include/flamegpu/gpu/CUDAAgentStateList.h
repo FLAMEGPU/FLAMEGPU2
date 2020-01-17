@@ -24,6 +24,10 @@ class AgentStateMemory;
 typedef std::map <std::string, void*> CUDAMemoryMap;        // map of pointers to gpu memory for each variable name
 typedef std::pair <std::string, void*> CUDAMemoryMapPair;
 
+/**
+ * Holds a the data for an agent of a single state
+ * CUDAAgent owns one of these per agent state
+ */
 class CUDAAgentStateList {
  public:
     explicit CUDAAgentStateList(CUDAAgent& cuda_agent);
@@ -31,6 +35,13 @@ class CUDAAgentStateList {
 
     // cant be done in destructor as it requires access to the parent CUDAAgent object
     void cleanupAllocatedData();
+
+    /**
+     * Resizes the internal memory, only retains existing data in non scratch buffers
+     * @note Size is taken from parent CUDAAgent::max_list_size
+     * @see resizeDeviceAgentList(CUDAMemoryMap &, bool)
+     */
+    void resize();
 
     void setAgentData(const AgentStateMemory &state_memory);
 
@@ -41,6 +52,10 @@ class CUDAAgentStateList {
     void zeroAgentData();
 
     unsigned int getCUDAStateListSize() const;
+    /**
+     * Perform a compaction using d_agent_scan_flag and d_agent_position
+     */
+    void scatter(const unsigned int &streamId);
 
  protected:
     /*
@@ -51,6 +66,13 @@ class CUDAAgentStateList {
     void releaseDeviceAgentList(CUDAMemoryMap &agent_list);
 
     void zeroDeviceAgentList(CUDAMemoryMap &agent_list);
+
+    /**
+     * Resizes the specified CUDAMemoryMap
+     * Only copies across old ddata if copyData is set to True
+     * @see resize()
+     */
+    void resizeDeviceAgentList(CUDAMemoryMap &agent_list, bool copyData);
 
  private:
     CUDAMemoryMap d_list;

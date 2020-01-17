@@ -16,6 +16,13 @@ namespace test_cuda_agent_model {
     const int MULTIPLIER = 3;
     __device__ const int dMULTIPLIER = 3;
     int externalCounter = 0;
+FLAMEGPU_AGENT_FUNCTION(DeathTestFunc) {
+    unsigned int x = FLAMEGPU->getVariable<unsigned int>("x");
+    // Agents with even value for 'x' die
+    if (x % 2 == 0)
+        return DEAD;
+    return ALIVE;
+}
 FLAMEGPU_STEP_FUNCTION(IncrementCounter) {
     externalCounter++;
 }
@@ -127,11 +134,11 @@ TEST(TestCUDAAgentModel, SetGetPopulationData) {
     AgentDescription &a = m.newAgent(AGENT_NAME);
     m.newLayer(LAYER_NAME).addAgentFunction(a.newFunction(FUNCTION_NAME, SetGetFn));
     a.newVariable<int>(VARIABLE_NAME);
-    AgentPopulation pop(a, (unsigned int)AGENT_COUNT);
+    AgentPopulation pop(a, static_cast<unsigned int>(AGENT_COUNT));
     for (int _i = 0; _i < AGENT_COUNT; ++_i) {
         AgentInstance i = pop.getNextInstance();
         i.setVariable<int>(VARIABLE_NAME, _i);
-        EXPECT_THROW(i.setVariable<float>(VARIABLE_NAME, _i), InvalidVarType);
+        EXPECT_THROW(i.setVariable<float>(VARIABLE_NAME, static_cast<float>(_i)), InvalidVarType);
     }
     CUDAAgentModel c(m);
     c.SimulationConfig().steps = 1;
@@ -156,9 +163,9 @@ TEST(TestCUDAAgentModel, SetGetPopulationData_InvalidCudaAgent) {
     ModelDescription m2(MODEL_NAME2);
     AgentDescription &a2 = m2.newAgent(AGENT_NAME2);
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    // AgentDescription &a = m.newAgent(AGENT_NAME);
 
-    AgentPopulation pop(a2, (unsigned int)AGENT_COUNT);
+    AgentPopulation pop(a2, static_cast<unsigned int>(AGENT_COUNT));
 
     CUDAAgentModel c(m);
     EXPECT_THROW(c.setPopulationData(pop), InvalidCudaAgent);
@@ -169,7 +176,7 @@ TEST(TestCUDAAgentModel, GetAgent) {
     AgentDescription &a = m.newAgent(AGENT_NAME);
     m.newLayer(LAYER_NAME).addAgentFunction(a.newFunction(FUNCTION_NAME, SetGetFn));
     a.newVariable<int>(VARIABLE_NAME);
-    AgentPopulation pop(a, (unsigned int)AGENT_COUNT);
+    AgentPopulation pop(a, static_cast<unsigned int>(AGENT_COUNT));
     for (int _i = 0; _i < AGENT_COUNT; ++_i) {
         AgentInstance i = pop.getNextInstance();
         i.setVariable<int>(VARIABLE_NAME, _i);
@@ -199,7 +206,7 @@ TEST(TestCUDAAgentModel, Step) {
     // Test that step does a single step
     ModelDescription m(MODEL_NAME);
     AgentDescription &a = m.newAgent(AGENT_NAME);
-    AgentPopulation pop(a, (unsigned int)AGENT_COUNT);
+    AgentPopulation pop(a, static_cast<unsigned int>(AGENT_COUNT));
     m.addStepFunction(IncrementCounter);
     CUDAAgentModel c(m);
     c.setPopulationData(pop);
@@ -207,14 +214,14 @@ TEST(TestCUDAAgentModel, Step) {
     c.resetStepCounter();
     c.step();
     EXPECT_EQ(externalCounter, 1);
-    EXPECT_EQ(c.getStepCounter(), 1);
+    EXPECT_EQ(c.getStepCounter(), 1u);
     externalCounter = 0;
     c.resetStepCounter();
     for (unsigned int i = 0; i < 5; ++i) {
         c.step();
     }
     EXPECT_EQ(externalCounter, 5);
-    EXPECT_EQ(c.getStepCounter(), 5);
+    EXPECT_EQ(c.getStepCounter(), 5u);
 }
 TEST(TestSimulation, Simulate) {
     // Simulation is abstract, so test via CUDAAgentModel
@@ -222,7 +229,7 @@ TEST(TestSimulation, Simulate) {
     // Test that step does a single step
     ModelDescription m(MODEL_NAME);
     AgentDescription &a = m.newAgent(AGENT_NAME);
-    AgentPopulation pop(a, (unsigned int)AGENT_COUNT);
+    AgentPopulation pop(a, static_cast<unsigned int>(AGENT_COUNT));
     m.addStepFunction(IncrementCounter);
     CUDAAgentModel c(m);
     c.setPopulationData(pop);
@@ -231,15 +238,46 @@ TEST(TestSimulation, Simulate) {
     c.SimulationConfig().steps = 7;
     c.simulate();
     EXPECT_EQ(externalCounter, 7);
-    EXPECT_EQ(c.getStepCounter(), 7);
+    EXPECT_EQ(c.getStepCounter(), 7u);
     externalCounter = 0;
     c.resetStepCounter();
     c.SimulationConfig().steps = 3;
     c.simulate();
     EXPECT_EQ(externalCounter, 3);
-    EXPECT_EQ(c.getStepCounter(), 3);
+    EXPECT_EQ(c.getStepCounter(), 3u);
 }
 
 // Show that blank init resets the vals?
+
+TEST(TestCUDAAgentModel, AgentDeath) {
+    std::default_random_engine generator;
+    std::uniform_int_distribution<unsigned int> distribution(0, 12);
+    // Test that step does a single step
+    ModelDescription m(MODEL_NAME);
+    AgentDescription &a = m.newAgent(AGENT_NAME);
+    a.newVariable<unsigned int>("x");
+    a.newFunction("DeathFunc", DeathTestFunc).setAllowAgentDeath(true);
+    m.newLayer().addAgentFunction(DeathTestFunc);
+    CUDAAgentModel c(m);
+    AgentPopulation pop(a, static_cast<unsigned int>(AGENT_COUNT));
+    std::vector<unsigned int> expected_output;
+    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+        auto p = pop.getNextInstance();
+        unsigned int rng = distribution(generator);
+        p.setVariable<unsigned int>("x", rng);
+        if (rng % 2 != 0)
+            expected_output.push_back(rng);
+    }
+    c.setPopulationData(pop);
+    c.SimulationConfig().steps = 1;
+    c.simulate();
+    c.getPopulationData(pop);
+    EXPECT_EQ(static_cast<size_t>(pop.getCurrentListSize()), expected_output.size());
+    for (unsigned int i = 0; i < pop.getCurrentListSize(); ++i) {
+        AgentInstance ai = pop.getInstanceAt(i);
+        // Check x is an expected value
+        EXPECT_EQ(expected_output[i], ai.getVariable<unsigned int>("x"));
+    }
+}
 
 }  // namespace test_cuda_agent_model
