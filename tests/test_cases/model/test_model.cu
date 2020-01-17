@@ -96,6 +96,6 @@ TEST(ModelDescriptionTest, Layer) {
     EXPECT_EQ(b, m.getLayer(test_model::AGENT_NAME2));
     EXPECT_EQ(a, m.getLayer(0));
     EXPECT_EQ(b, m.getLayer(1));
-    EXPECT_EQ(0, a.getIndex());
-    EXPECT_EQ(1, b.getIndex());
+    EXPECT_EQ(0u, a.getIndex());
+    EXPECT_EQ(1u, b.getIndex());
 }
