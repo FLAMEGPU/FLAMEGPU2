@@ -25,7 +25,7 @@
 class FLAMEGPU_DEVICE_API;  // Forward declaration (class defined below)
 
 // ! FLAMEGPU function return type
-enum FLAME_GPU_AGENT_STATUS { ALIVE, DEAD };
+enum FLAME_GPU_AGENT_STATUS { ALIVE = 1, DEAD = 0 };
 
 /**
  * Macro for defining agent transition functions with the correct input. Must always be a device function to be called by CUDA.

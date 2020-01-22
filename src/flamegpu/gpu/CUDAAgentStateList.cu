@@ -252,8 +252,8 @@ __global__ void scatter_living_agents(
     int index = (blockIdx.x*blockDim.x) + threadIdx.x;
 
     // if optional message is to be written
-    if (flamegpu_internal::CUDAScanCompaction::ds_message_configs[streamId].scan_flag[index] == 1) {
-        int output_index = flamegpu_internal::CUDAScanCompaction::ds_message_configs[streamId].position[index];
+    if (flamegpu_internal::CUDAScanCompaction::ds_agent_configs[streamId].scan_flag[index] == 1) {
+        int output_index = flamegpu_internal::CUDAScanCompaction::ds_agent_configs[streamId].position[index];
         memcpy(out + (output_index * typeLen), in + (index * typeLen), typeLen);
     }
 }
@@ -268,11 +268,13 @@ void CUDAAgentStateList::scatter(const unsigned int &streamId) {
     gridSize = (getCUDAStateListSize() + blockSize - 1) / blockSize;
     // for each variable, scatter from swap to regular
     for (const auto &v : agent.getAgentDescription().variables) {
-        char *in_p = reinterpret_cast<char*>(d_swap_list.at(v.first));
-        char *out_p = reinterpret_cast<char*>(d_list.at(v.first));
+        char *in_p = reinterpret_cast<char*>(d_list.at(v.first));
+        char *out_p = reinterpret_cast<char*>(d_swap_list.at(v.first));
 
         scatter_living_agents << <gridSize, blockSize >> > (v.second.type_size, in_p, out_p, streamId);
     }
+    // Swap
+    std::swap(d_list, d_swap_list);
     gpuErrchkLaunch();
     // Update count of live agents
     gpuErrchk(cudaMemcpy(&current_list_size, flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].d_ptrs.position + current_list_size, sizeof(unsigned int), cudaMemcpyDeviceToHost));

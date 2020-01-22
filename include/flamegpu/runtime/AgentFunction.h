@@ -62,11 +62,8 @@ __global__ void agent_function_wrapper(
     // call the user specified device function
     {
         FLAME_GPU_AGENT_STATUS flag = AgentFunction()(api);
-        if (flag == DEAD) {
-            // Always log dead agents (array should be memset to 0, so we don't bother confirming alive)
-            // (although scan flags will not be processed unless agent death has been requested in model definition)
-            flamegpu_internal::CUDAScanCompaction::ds_agent_configs[streamId].scan_flag[FLAMEGPU_DEVICE_API::TID()] = 1;
-        }
+        // (scan flags will not be processed unless agent death has been requested in model definition)
+        flamegpu_internal::CUDAScanCompaction::ds_agent_configs[streamId].scan_flag[FLAMEGPU_DEVICE_API::TID()] = flag;
     }
     // do something with the return value to set a flag for deletion
 
