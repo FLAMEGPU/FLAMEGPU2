@@ -24,6 +24,12 @@ struct CUDAScanCompactionPtrs {
     unsigned int *position = nullptr;
 };
 struct CUDAScanCompactionConfig {
+    CUDAScanCompactionConfig()
+        : scan_flag_len(0)
+        , hd_cub_temp(nullptr)
+        , cub_temp_size(0)
+        , cub_temp_size_max_list_size(0)
+    { }
     unsigned int scan_flag_len = 0;
 
     CUDAScanCompactionPtrs d_ptrs;
@@ -108,8 +114,8 @@ __host__ inline void CUDAScanCompactionConfig::resize_scan_flag(const unsigned i
         ptrdiff_t message_stream_id = std::distance(flamegpu_internal::CUDAScanCompaction::hd_message_configs, this);
         if (actor_stream_id >= 0  && actor_stream_id < flamegpu_internal::CUDAScanCompaction::MAX_STREAMS) {
             gpuErrchk(cudaMemcpyToSymbol(flamegpu_internal::CUDAScanCompaction::ds_agent_configs, &this->d_ptrs, sizeof(CUDAScanCompactionPtrs), actor_stream_id * sizeof(CUDAScanCompactionPtrs)));
-        } else if (actor_stream_id >= 0 && actor_stream_id < flamegpu_internal::CUDAScanCompaction::MAX_STREAMS) {
-            gpuErrchk(cudaMemcpyToSymbol(flamegpu_internal::CUDAScanCompaction::ds_message_configs, this, sizeof(CUDAScanCompactionConfig), message_stream_id * sizeof(CUDAScanCompactionConfig)));
+        } else if (message_stream_id >= 0 && message_stream_id < flamegpu_internal::CUDAScanCompaction::MAX_STREAMS) {
+            gpuErrchk(cudaMemcpyToSymbol(flamegpu_internal::CUDAScanCompaction::ds_message_configs, &this->d_ptrs, sizeof(CUDAScanCompactionConfig), message_stream_id * sizeof(CUDAScanCompactionConfig)));
         } else {
             assert(false);  // This is being called on one that isn't part of the array????
         }

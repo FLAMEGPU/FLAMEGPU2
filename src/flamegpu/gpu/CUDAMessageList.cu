@@ -17,11 +17,7 @@
 #include "flamegpu/gpu/CUDAErrorChecking.h"
 #include "flamegpu/pop/AgentStateMemory.h"
 #include "flamegpu/model/MessageDescription.h"
-
-namespace flamegpu_internal {
-    extern __device__ unsigned int *ds_msg_scan_flag;
-    extern __device__ unsigned int *ds_msg_position;
-}  // namespace flamegpu_internal
+#include "flamegpu/gpu/CUDAScanCompaction.h"
 
 /**
 * CUDAMessageList class
@@ -137,7 +133,6 @@ void CUDAMessageList::zeroMessageData() {
 void CUDAMessageList::swap() {
     std::swap(d_list, d_swap_list);
 }
-
 __global__ void scatter_optional_messages(
     size_t typeLen,
     char * const __restrict__ in,
@@ -147,7 +142,7 @@ __global__ void scatter_optional_messages(
     int index = (blockIdx.x*blockDim.x) + threadIdx.x;
 
     // if optional message is to be written
-    if (flamegpu_internal::ds_msg_scan_flag[index] == 1) {
+    if (flamegpu_internal::CUDAScanCompaction::ds_message_configs[streamId].scan_flag[index] == 1) {
         int output_index = flamegpu_internal::CUDAScanCompaction::ds_message_configs[streamId].position[index];
         memcpy(out + (output_index * typeLen), in + (index * typeLen), typeLen);
     }

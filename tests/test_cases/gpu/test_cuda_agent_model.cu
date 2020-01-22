@@ -127,11 +127,11 @@ TEST(TestCUDAAgentModel, SetGetPopulationData) {
     AgentDescription &a = m.newAgent(AGENT_NAME);
     m.newLayer(LAYER_NAME).addAgentFunction(a.newFunction(FUNCTION_NAME, SetGetFn));
     a.newVariable<int>(VARIABLE_NAME);
-    AgentPopulation pop(a, (unsigned int)AGENT_COUNT);
+    AgentPopulation pop(a, static_cast<unsigned int>(AGENT_COUNT));
     for (int _i = 0; _i < AGENT_COUNT; ++_i) {
         AgentInstance i = pop.getNextInstance();
         i.setVariable<int>(VARIABLE_NAME, _i);
-        EXPECT_THROW(i.setVariable<float>(VARIABLE_NAME, _i), InvalidVarType);
+        EXPECT_THROW(i.setVariable<float>(VARIABLE_NAME, static_cast<float>(_i)), InvalidVarType);
     }
     CUDAAgentModel c(m);
     c.SimulationConfig().steps = 1;
@@ -156,7 +156,7 @@ TEST(TestCUDAAgentModel, SetGetPopulationData_InvalidCudaAgent) {
     ModelDescription m2(MODEL_NAME2);
     AgentDescription &a2 = m2.newAgent(AGENT_NAME2);
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    // AgentDescription &a = m.newAgent(AGENT_NAME);
 
     AgentPopulation pop(a2, (unsigned int)AGENT_COUNT);
 
@@ -207,14 +207,14 @@ TEST(TestCUDAAgentModel, Step) {
     c.resetStepCounter();
     c.step();
     EXPECT_EQ(externalCounter, 1);
-    EXPECT_EQ(c.getStepCounter(), 1);
+    EXPECT_EQ(c.getStepCounter(), 1u);
     externalCounter = 0;
     c.resetStepCounter();
     for (unsigned int i = 0; i < 5; ++i) {
         c.step();
     }
     EXPECT_EQ(externalCounter, 5);
-    EXPECT_EQ(c.getStepCounter(), 5);
+    EXPECT_EQ(c.getStepCounter(), 5u);
 }
 TEST(TestSimulation, Simulate) {
     // Simulation is abstract, so test via CUDAAgentModel
@@ -231,13 +231,13 @@ TEST(TestSimulation, Simulate) {
     c.SimulationConfig().steps = 7;
     c.simulate();
     EXPECT_EQ(externalCounter, 7);
-    EXPECT_EQ(c.getStepCounter(), 7);
+    EXPECT_EQ(c.getStepCounter(), 7u);
     externalCounter = 0;
     c.resetStepCounter();
     c.SimulationConfig().steps = 3;
     c.simulate();
     EXPECT_EQ(externalCounter, 3);
-    EXPECT_EQ(c.getStepCounter(), 3);
+    EXPECT_EQ(c.getStepCounter(), 3u);
 }
 
 // Show that blank init resets the vals?

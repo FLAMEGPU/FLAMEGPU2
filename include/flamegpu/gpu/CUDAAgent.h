@@ -40,7 +40,14 @@ class CUDAAgent : public AgentInterface {
     virtual ~CUDAAgent(void);
 
     const AgentData& getAgentDescription() const override;
-
+    /**
+     * Resizes the internal CUDAAgentStateLists
+     * @param newSize The new minimum number of agents required, it may allocate more than requested here
+     * @param streamId Internally passed by CUDAAgentModel to identify which scan array to resize
+     * @note Currently it is not possible to reduce the allocated size
+     * @note Currently it is not possible for internal state lists for the same agent to have different sizes 
+     */
+    void resize(const unsigned int &newSize, const unsigned int &streamId);
     /* Can be used to override the current population data without reallocating */
     void setPopulationData(const AgentPopulation& population);
 

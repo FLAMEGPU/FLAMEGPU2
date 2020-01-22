@@ -55,6 +55,21 @@ const AgentData& CUDAAgent::getAgentDescription() const {
     return agent_description;
 }
 
+void CUDAAgent::resize(const unsigned int &newSize, const unsigned int &streamId) {
+    // Only grow currently
+    max_list_size = max_list_size < 2 ? 2 : max_list_size;
+    if (newSize > max_list_size) {
+        while (max_list_size < newSize) {
+            max_list_size = static_cast<unsigned int>(max_list_size * 1.5);
+        }
+        // Resize all items in the statemap
+        for (auto &state : state_map) {
+            state.second->resize();  // It auto pulls size from this->max_list_size
+        }
+    }
+    // Notify scan flag this it might need resizing
+    flamegpu_internal::CUDAScanCompaction::resizeAgents(max_list_size, streamId);
+}
 /**
 * @brief Sets the population data
 * @param AgentPopulation object
@@ -264,10 +279,6 @@ void CUDAAgent::process_death(const AgentFunctionData& func, const unsigned int 
             agent_count + 1);
         // Scatter
         sm->second->scatter(streamId);
-        // Update count (must come after scatter, scatter requires old count)
-        gpuErrchk(cudaMemcpy(&agent_count, flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].d_ptrs.position + agent_count, sizeof(unsigned int), cudaMemcpyDeviceToHost));
-        // Need to notify state list that the number of (alive) agents contained has changed
-        // sm->second->setCUDAStateListSize(agent_count);
     }
 }
 const std::unique_ptr<CUDAAgentStateList> &CUDAAgent::getAgentStateList(const std::string &state_name) const {

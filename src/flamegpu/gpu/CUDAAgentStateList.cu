@@ -19,11 +19,6 @@
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/pop/AgentPopulation.h"
 
-namespace flamegpu_internal {
-    extern __device__ unsigned int *ds_agent_scan_flag;
-    extern __device__ unsigned int *ds_agent_position;
-}  // namespace flamegpu_internal
-
 /**
 * CUDAAgentStateList class
 * @brief populates CUDA agent map
@@ -55,6 +50,49 @@ void CUDAAgentStateList::cleanupAllocatedData() {
     }
 }
 
+void CUDAAgentStateList::resize() {
+    resizeDeviceAgentList(d_list, true);
+    resizeDeviceAgentList(d_swap_list, false);
+    resizeDeviceAgentList(d_new_list, false);
+}
+void CUDAAgentStateList::resizeDeviceAgentList(CUDAMemoryMap &agent_list, bool copyData) {
+    const auto &mem = agent.getAgentDescription().variables;
+
+    // For each variable
+    for (const auto &mm : mem) {
+        const std::string var_name = mm.first;
+        const size_t &type_size = agent.getAgentDescription().variables.at(mm.first).type_size;
+        const size_t alloc_size = type_size * agent.getMaximumListSize();
+        {
+            // Allocate bigger new memory
+            void * old_ptr = agent_list.at(var_name);  // Exception thrown if map doesn't contain variables that it should
+            void * new_ptr = nullptr;
+#ifdef UNIFIED_GPU_MEMORY
+            // unified memory allocation
+            gpuErrchk(cudaMallocManaged(reinterpret_cast<void**>(&new_ptr), alloc_size))
+#else
+            // non unified memory allocation
+            gpuErrchk(cudaMalloc(reinterpret_cast<void**>(&new_ptr), alloc_size));
+#endif
+            if (copyData) {
+                const size_t active_len = current_list_size * type_size;
+                const size_t inactive_len = (agent.getMaximumListSize() - current_list_size) * type_size;
+                // Copy across old data
+                gpuErrchk(cudaMemcpy(new_ptr, old_ptr, active_len, cudaMemcpyDeviceToDevice));
+                // Zero remaining new data
+                gpuErrchk(cudaMemset(reinterpret_cast<char*>(new_ptr) + active_len, 0, inactive_len));
+            } else {
+                // Zero remaining new data
+                gpuErrchk(cudaMemset(new_ptr, 0, alloc_size));
+            }
+            // Release old data
+            gpuErrchk(cudaFree(old_ptr));
+            // Replace old data in class member vars
+            auto it = agent_list.find(var_name);  // No null check, call to .at() above will throw exception
+            it->second = new_ptr;
+        }
+    }
+}
 /**
 * @brief Allocates Device agent list
 * @param variable of type CUDAMemoryMap type
@@ -214,7 +252,7 @@ __global__ void scatter_living_agents(
     int index = (blockIdx.x*blockDim.x) + threadIdx.x;
 
     // if optional message is to be written
-    if (flamegpu_internal::ds_agent_scan_flag[index] == 1) {
+    if (flamegpu_internal::CUDAScanCompaction::ds_message_configs[streamId].scan_flag[index] == 1) {
         int output_index = flamegpu_internal::CUDAScanCompaction::ds_message_configs[streamId].position[index];
         memcpy(out + (output_index * typeLen), in + (index * typeLen), typeLen);
     }
@@ -225,7 +263,7 @@ void CUDAAgentStateList::scatter(const unsigned int &streamId) {
     int gridSize = 0;  // The actual grid size needed, based on input size
 
                        // calculate the grid block size for main agent function
-    cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, scatter_living_agents, 0, getCUDAStateListSize());
+    cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, scatter_living_agents, 0, current_list_size);
     //! Round up according to CUDAAgent state list size
     gridSize = (getCUDAStateListSize() + blockSize - 1) / blockSize;
     // for each variable, scatter from swap to regular
@@ -236,4 +274,7 @@ void CUDAAgentStateList::scatter(const unsigned int &streamId) {
         scatter_living_agents << <gridSize, blockSize >> > (v.second.type_size, in_p, out_p, streamId);
     }
     gpuErrchkLaunch();
+    // Update count of live agents
+    gpuErrchk(cudaMemcpy(&current_list_size, flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].d_ptrs.position + current_list_size, sizeof(unsigned int), cudaMemcpyDeviceToHost));
+    assert(current_list_size <= agent.getMaximumListSize());
 }
