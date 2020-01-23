@@ -18,6 +18,7 @@
 #include "flamegpu/pop/AgentStateMemory.h"
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/pop/AgentPopulation.h"
+#include "flamegpu/gpu/CUDAScatter.h"
 
 /**
 * CUDAAgentStateList class
@@ -258,25 +259,13 @@ __global__ void scatter_living_agents(
     }
 }
 void CUDAAgentStateList::scatter(const unsigned int &streamId) {
-    int blockSize = 0;  // The launch configurator returned block size
-    int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
-    int gridSize = 0;  // The actual grid size needed, based on input size
-
-                       // calculate the grid block size for main agent function
-    cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, scatter_living_agents, 0, current_list_size);
-    //! Round up according to CUDAAgent state list size
-    gridSize = (getCUDAStateListSize() + blockSize - 1) / blockSize;
-    // for each variable, scatter from swap to regular
-    for (const auto &v : agent.getAgentDescription().variables) {
-        char *in_p = reinterpret_cast<char*>(d_list.at(v.first));
-        char *out_p = reinterpret_cast<char*>(d_swap_list.at(v.first));
-
-        scatter_living_agents << <gridSize, blockSize >> > (v.second.type_size, in_p, out_p, streamId);
-    }
+    CUDAScatter &scatter = CUDAScatter::getInstance(streamId);
+    current_list_size = scatter.scatter(
+        CUDAScatter::Type::Agent,
+        agent.getAgentDescription().variables,
+        d_list, d_swap_list,
+        current_list_size);
     // Swap
     std::swap(d_list, d_swap_list);
-    gpuErrchkLaunch();
-    // Update count of live agents
-    gpuErrchk(cudaMemcpy(&current_list_size, flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].d_ptrs.position + current_list_size, sizeof(unsigned int), cudaMemcpyDeviceToHost));
     assert(current_list_size <= agent.getMaximumListSize());
 }
