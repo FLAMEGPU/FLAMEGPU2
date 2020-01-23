@@ -14,8 +14,10 @@ CUDAAgentModel::CUDAAgentModel(const ModelDescription& _model)
     , agent_map()
     , curve(Curve::getInstance())
     , message_map()
-    , rng(RandomManager::getInstance()) {
+    , rng(RandomManager::getInstance())
+    , scatter(CUDAScatter::getInstance(0)) {
     rng.increaseSimCounter();
+    scatter.increaseSimCounter();
 
     // populate the CUDA agent map
     const auto &am = model->agents;
@@ -38,6 +40,7 @@ CUDAAgentModel::CUDAAgentModel(const ModelDescription& _model)
 
 CUDAAgentModel::~CUDAAgentModel() {
     rng.decreaseSimCounter();
+    scatter.decreaseSimCounter();
     // unique pointers cleanup by automatically
     // Drop all constants from the constant cache linked to this model
     EnvironmentManager::getInstance().free(model->name);

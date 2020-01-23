@@ -18,6 +18,7 @@
 #include "flamegpu/pop/AgentStateMemory.h"
 #include "flamegpu/model/MessageDescription.h"
 #include "flamegpu/gpu/CUDAScanCompaction.h"
+#include "flamegpu/gpu/CUDAScatter.h"
 
 /**
 * CUDAMessageList class
@@ -133,35 +134,12 @@ void CUDAMessageList::zeroMessageData() {
 void CUDAMessageList::swap() {
     std::swap(d_list, d_swap_list);
 }
-__global__ void scatter_optional_messages(
-    size_t typeLen,
-    char * const __restrict__ in,
-    char * out,
-    const unsigned int streamId) {
-    // global thread index
-    int index = (blockIdx.x*blockDim.x) + threadIdx.x;
 
-    // if optional message is to be written
-    if (flamegpu_internal::CUDAScanCompaction::ds_message_configs[streamId].scan_flag[index] == 1) {
-        int output_index = flamegpu_internal::CUDAScanCompaction::ds_message_configs[streamId].position[index];
-        memcpy(out + (output_index * typeLen), in + (index * typeLen), typeLen);
-    }
-}
-void CUDAMessageList::scatter(const unsigned int &streamId) {
-    int blockSize = 0;  // The launch configurator returned block size
-    int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
-    int gridSize = 0;  // The actual grid size needed, based on input size
-
-                       // calculate the grid block size for main agent function
-    cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, scatter_optional_messages, 0, message.getMessageCount());
-    //! Round up according to CUDAAgent state list size
-    gridSize = (message.getMessageCount() + blockSize - 1) / blockSize;
-    // for each variable, scatter from swap to regular
-    for (const auto &v : message.getMessageDescription().variables) {
-        char *in_p = reinterpret_cast<char*>(d_swap_list.at(v.first));
-        char *out_p = reinterpret_cast<char*>(d_list.at(v.first));
-
-        scatter_optional_messages << <gridSize, blockSize >> > (v.second.type_size, in_p, out_p, streamId);
-    }
-    gpuErrchkLaunch();
+unsigned int CUDAMessageList::scatter(const unsigned int &streamId) {
+    CUDAScatter &scatter = CUDAScatter::getInstance(streamId);
+    return scatter.scatter(
+        CUDAScatter::Type::Message,
+        message.getMessageDescription().variables,
+        d_swap_list, d_list,
+        message.getMessageCount());
 }

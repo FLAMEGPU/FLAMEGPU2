@@ -80,6 +80,7 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAMessage.h
     ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAAgent.h
     ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAAgentStateList.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAScatter.h
     ${FLAMEGPU_ROOT}/include/flamegpu/flame_api.h
     ${FLAMEGPU_ROOT}/include/flamegpu/sim/AgentInterface.h
     ${FLAMEGPU_ROOT}/include/flamegpu/sim/Simulation.h
@@ -115,6 +116,7 @@ SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAAgentStateList.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAAgent.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAMessage.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAScatter.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/sim/Simulation.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAAgentModel.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/cuRVE/curve.cu
