@@ -206,9 +206,8 @@ void CUDAMessage::swap(bool isOptional, const unsigned int &streamId) {
             flamegpu_internal::CUDAScanCompaction::hd_message_configs[streamId].d_ptrs.position,
             message_count + 1);
         // Scatter
-        message_list->scatter(streamId);
-        // Update count (must come after scatter, scatter requires old count)
-        gpuErrchk(cudaMemcpy(&message_count, flamegpu_internal::CUDAScanCompaction::hd_message_configs[streamId].d_ptrs.position + message_count, sizeof(unsigned int), cudaMemcpyDeviceToHost));
+        // Update count
+        message_count = message_list->scatter(streamId);
     } else {
         message_list->swap();
     }

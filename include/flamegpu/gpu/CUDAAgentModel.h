@@ -10,6 +10,7 @@
 #include "flamegpu/gpu/CUDAAgent.h"
 #include "flamegpu/gpu/CUDAMessage.h"
 #include "flamegpu/runtime/utility/RandomManager.cuh"
+#include "CUDAScatter.h"
 
 /**
  * CUDA runner for Simulation interface
@@ -148,6 +149,10 @@ class CUDAAgentModel : public Simulation {
     * Resizes device random array during step()
     */
     RandomManager &rng;
+    /**
+     * Held here for tracking when to release cuda memory
+     */
+    CUDAScatter &scatter;
 };
 
 #endif  // INCLUDE_FLAMEGPU_GPU_CUDAAGENTMODEL_H_
