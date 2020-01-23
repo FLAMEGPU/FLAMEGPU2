@@ -35,6 +35,8 @@ namespace flamegpu_internal {
     RandomManager::size_type hd_random_size;
 }  // namespace flamegpu_internal
 
+unsigned int RandomManager::simulationInstances = 0;
+
 RandomManager::RandomManager() {
     reseed(static_cast<unsigned int>(seedFromTime() % UINT_MAX));
 }
