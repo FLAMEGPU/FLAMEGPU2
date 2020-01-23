@@ -138,15 +138,15 @@ class RandomManager {
     /**
      * Logs how many CUDAAgentModel objects exist, if this reaches 0, free is called
      */
-    unsigned int simulationInstances = 0;
+    static unsigned int simulationInstances;
     /**
      * Increases internal counter of CUDAAgentModel instances
      */
     void increaseSimCounter();
     /**
-    * Decreases internal counter of CUDAAgentModel instances
-    * If this reaches 0, free() is called
-    */
+     * Decreases internal counter of CUDAAgentModel instances
+     * If this reaches 0, free() is called
+     */
     void decreaseSimCounter();
 
  protected:
