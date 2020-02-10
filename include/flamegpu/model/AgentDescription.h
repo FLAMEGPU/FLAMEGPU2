@@ -116,8 +116,8 @@ class AgentDescription {
      * @throws InvalidAgentFunc If a variable already exists within the agent with the same name
      * @note The same agent function can be passed to the same agent twice
      */
-    template<typename AgentFunction>
-    AgentFunctionDescription &newFunction(const std::string &function_name, AgentFunction a = AgentFunction());
+    template<typename AgentFunction, typename MsgIn, typename MsgOut>
+    AgentFunctionDescription &newFunction(const std::string &function_name, AgentFunction a = AgentFunction(), MsgIn b = MsgIn(), MsgOut c = MsgOut());
     /**
      * Returns a mutable reference to the named agent function, which can be used to configure the function
      * @param function_name Name used to refer to the desired agent function

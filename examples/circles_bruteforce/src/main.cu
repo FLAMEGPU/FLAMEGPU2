@@ -3,18 +3,29 @@
 #include <cstdlib>
 #include <fstream>
 
+
 #include "flamegpu/flame_api.h"
 #include "flamegpu/runtime/flamegpu_api.h"
 #include "flamegpu/io/factory.h"
 
-FLAMEGPU_AGENT_FUNCTION(output_message) {
+class MsgNone
+{
+public:
+    MsgNone() {}
+    __device__ MsgNone(Curve::NamespaceHash msghash, unsigned int len)
+    {
+
+    }
+};
+
+FLAMEGPU_AGENT_FUNCTION(output_message, MsgNone, MsgNone) {
     FLAMEGPU->addMessage<int>("id", FLAMEGPU->getVariable<float>("id"));
     FLAMEGPU->addMessage<float>("x", FLAMEGPU->getVariable<float>("x"));
     FLAMEGPU->addMessage<float>("y", FLAMEGPU->getVariable<float>("y"));
     FLAMEGPU->addMessage<float>("z", FLAMEGPU->getVariable<float>("z"));
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(move) {
+FLAMEGPU_AGENT_FUNCTION(move, MsgNone, MsgNone) {
     const int ID = FLAMEGPU->getVariable<int>("id");
     const float REPULSE_FACTOR = FLAMEGPU->environment.get<float>("repulse");
     const float RADIUS = FLAMEGPU->environment.get<float>("radius");
@@ -89,8 +100,8 @@ int main(int argc, const char ** argv) {
         agent.newVariable<float>("y");
         agent.newVariable<float>("z");
         agent.newVariable<float>("drift");  // Store the distance moved here, for validation
-        agent.newFunction("output_message", output_message).setMessageOutput("location");
-        agent.newFunction("move", move).setMessageInput("location");
+        agent.newFunction("output_message", output_message, MsgNone(), MsgNone()).setMessageOutput("location");
+        agent.newFunction("move", move, MsgNone(), MsgNone()).setMessageInput("location");
     }
 
 
@@ -112,11 +123,11 @@ int main(int argc, const char ** argv) {
 
     {   // Layer #1
         LayerDescription &layer = model.newLayer();
-        layer.addAgentFunction(output_message);
+        layer.addAgentFunction(output_message, MsgNone(), MsgNone());
     }
     {   // Layer #2
         LayerDescription &layer = model.newLayer();
-        layer.addAgentFunction(move);
+        layer.addAgentFunction(move, MsgNone(), MsgNone());
     }
 
     /**
