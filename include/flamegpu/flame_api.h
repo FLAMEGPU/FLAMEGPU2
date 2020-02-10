@@ -12,11 +12,12 @@
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/model/AgentFunctionDescription.h"
-#include "flamegpu/model/MessageDescription.h"
 #include "flamegpu/model/EnvironmentDescription.h"
 #include "flamegpu/model/LayerDescription.h"
 #include "flamegpu/pop/AgentPopulation.h"
 #include "flamegpu/gpu/CUDAAgentModel.h"
 #include "flamegpu/runtime/flamegpu_api.h"
+#include "flamegpu/runtime/messaging.h"
+#include "flamegpu/runtime/AgentFunction_shim.h"
 
 #endif  // INCLUDE_FLAMEGPU_FLAME_API_H_

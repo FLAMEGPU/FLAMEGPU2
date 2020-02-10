@@ -44,9 +44,9 @@ TEST(ModelDescriptionTest, Message) {
     EXPECT_FALSE(m.hasMessage(test_model::AGENT_NAME1));
     EXPECT_FALSE(m.hasMessage(test_model::AGENT_NAME2));
     EXPECT_EQ(m.getMessagesCount(), 0u);
-    MessageDescription &a = m.newMessage(test_model::AGENT_NAME1);
+    MsgBruteForce::Description &a = m.newMessage(test_model::AGENT_NAME1);
     EXPECT_EQ(m.getMessagesCount(), 1u);
-    MessageDescription &b = m.newMessage(test_model::AGENT_NAME2);
+    MsgBruteForce::Description &b = m.newMessage(test_model::AGENT_NAME2);
     EXPECT_EQ(m.getMessagesCount(), 2u);
     // Cannot create message with same name
     EXPECT_THROW(m.newMessage(test_model::AGENT_NAME1), InvalidMessageName);

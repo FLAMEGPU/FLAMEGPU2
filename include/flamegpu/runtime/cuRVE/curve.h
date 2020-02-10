@@ -15,6 +15,7 @@
 #include <cuda_runtime.h>
 
 #include <cstring>
+#include <cstdio>
 #include <typeinfo>
 
 
@@ -397,7 +398,6 @@ __device__ __forceinline__ void* Curve::getVariablePtrByHash(const VariableHash 
         curve_internal::d_curve_error = DEVICE_ERROR_UNKNOWN_LENGTH;
         return nullptr;
     }
-
     // return a generic pointer to variable address for given offset (no bounds checking here!)
     return curve_internal::d_variables[cv] + offset;
 }

@@ -64,8 +64,19 @@ class CUDAMessageList {
     virtual void swap();
     /**
      * Perform a compaction using d_msg_scan_flag and d_msg_position
+     * @param newCount Number of new messages to be scattered
+     * @return Total number of messages now in list (includes old + new counts if appending)
      */
-    virtual unsigned int scatter(const unsigned int &streamId);
+    virtual unsigned int scatter(const unsigned int &newCount, const unsigned int &streamId, const bool &append);
+    /**
+     * Copy all message data from d_swap_list to d_list
+     * This ALWAYS performs and append to the existing message list count
+     * @param newCount Number of new messages to be scattered
+     * @return Total number of messages now in list (includes old + new counts)
+     */
+    virtual unsigned int scatterAll(const unsigned int &newCount, const unsigned int &streamId);
+    const CUDAMsgMap &getReadList() { return d_list; }
+    const CUDAMsgMap &getWriteList() { return d_swap_list; }
 
  protected:
      /**

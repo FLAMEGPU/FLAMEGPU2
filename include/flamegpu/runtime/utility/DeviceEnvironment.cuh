@@ -24,6 +24,7 @@ class DeviceEnvironment {
     /**
      * Constructs the object
      */
+    template<typename MsgIn, typename MsgOut>
     friend class FLAMEGPU_DEVICE_API;
     /**
      * Performs runtime validation that CURVE_NAMESPACE_HASH matches host value

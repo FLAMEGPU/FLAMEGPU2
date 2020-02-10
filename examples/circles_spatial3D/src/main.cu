@@ -8,16 +8,15 @@
 #include "flamegpu/runtime/flamegpu_api.h"
 #include "flamegpu/io/factory.h"
 
-
-
-FLAMEGPU_AGENT_FUNCTION(output_message, MsgNone, MsgBruteForce) {
+FLAMEGPU_AGENT_FUNCTION(output_message, MsgNone, MsgSpatial3D) {
     FLAMEGPU->message_out.setVariable<int>("id", FLAMEGPU->getVariable<int>("id"));
-    FLAMEGPU->message_out.setVariable<float>("x", FLAMEGPU->getVariable<float>("x"));
-    FLAMEGPU->message_out.setVariable<float>("y", FLAMEGPU->getVariable<float>("y"));
-    FLAMEGPU->message_out.setVariable<float>("z", FLAMEGPU->getVariable<float>("z"));
+    FLAMEGPU->message_out.setLocation(
+        FLAMEGPU->getVariable<float>("x"),
+        FLAMEGPU->getVariable<float>("y"),
+        FLAMEGPU->getVariable<float>("z"));
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(move, MsgBruteForce, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(move, MsgSpatial3D, MsgNone) {
     const int ID = FLAMEGPU->getVariable<int>("id");
     const float REPULSE_FACTOR = FLAMEGPU->environment.get<float>("repulse");
     const float RADIUS = FLAMEGPU->environment.get<float>("radius");
@@ -28,7 +27,7 @@ FLAMEGPU_AGENT_FUNCTION(move, MsgBruteForce, MsgNone) {
     const float y1 = FLAMEGPU->getVariable<float>("y");
     const float z1 = FLAMEGPU->getVariable<float>("z");
     int count = 0;
-    for (const auto &message : FLAMEGPU->message_in) {
+    for (const auto &message : FLAMEGPU->message_in(x1, y1, z1)) {
         if (message.getVariable<int>("id") != ID) {
             const float x2 = message.getVariable<float>("x");
             const float y2 = message.getVariable<float>("y");
@@ -76,14 +75,16 @@ FLAMEGPU_STEP_FUNCTION(Validation) {
 }
 void export_data(std::shared_ptr<AgentPopulation> pop, const char *filename);
 int main(int argc, const char ** argv) {
+    const unsigned int AGENT_COUNT = 16384;
     ModelDescription model("Circles_BruteForce_example");
 
     {   // Location message
-        MsgBruteForce::Description &message = model.newMessage("location");
+        MsgSpatial3D::Description &message = model.newMessage<MsgSpatial3D>("location");
         message.newVariable<int>("id");
-        message.newVariable<float>("x");
-        message.newVariable<float>("y");
-        message.newVariable<float>("z");
+        const float max_bound = static_cast<float>(floor(cbrt(AGENT_COUNT)));
+        message.setRadius(1.0f);
+        message.setMin(0, 0, 0);
+        message.setMax(max_bound, max_bound, max_bound);
     }
     {   // Circle agent
         AgentDescription &agent = model.newAgent("Circle");
@@ -133,7 +134,6 @@ int main(int argc, const char ** argv) {
     cuda_model.initialise(argc, argv);
     if (cuda_model.getSimulationConfig().xml_input_file.empty()) {
         // Currently population has not been init, so generate an agent population on the fly
-        const unsigned int AGENT_COUNT = 16384;
         std::default_random_engine rng;
         std::uniform_real_distribution<float> dist(0.0f, static_cast<float>(floor(cbrt(AGENT_COUNT))));
         AgentPopulation population(model.Agent("Circle"), AGENT_COUNT);
@@ -150,16 +150,16 @@ int main(int argc, const char ** argv) {
     /**
      * Execution
      */
-     // This mode of execution allows the PRIMAGE visualiser to be used (2020-01-07)
-     while (cuda_model.getStepCounter() < cuda_model.getSimulationConfig().steps && cuda_model.step()) {
+    // This mode of execution allows the PRIMAGE visualiser to be used (2020-01-07)
+    while (cuda_model.getStepCounter() < cuda_model.getSimulationConfig().steps && cuda_model.step()) {
         std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> pops;
         auto a = std::make_shared<AgentPopulation>(model.getAgent("Circle"));
         cuda_model.getPopulationData(*a);
         export_data(a, (std::to_string(cuda_model.getStepCounter()-1)+".bin").c_str());
-     }
+    }
 
     cuda_model.simulate();
-
+    getchar();
 
     /**
      * Export Pop

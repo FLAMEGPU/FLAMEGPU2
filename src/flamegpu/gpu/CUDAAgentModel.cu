@@ -55,7 +55,7 @@ bool CUDAAgentModel::step() {
     // hash model name
     const Curve::NamespaceHash modelname_hash = curve.variableRuntimeHash(model->name.c_str());
 
-    unsigned int messageList_Size = 0;
+    const void *d_messagelist_metadata = nullptr;
 
     // TODO: simulation.getMaxFunctionsPerLayer()
     for (auto lyr = model->layers.begin(); lyr != model->layers.end(); ++lyr) {
@@ -70,6 +70,10 @@ bool CUDAAgentModel::step() {
     for (int j = 0; j < nStreams; j++)
         gpuErrchk(cudaStreamCreate(&stream[j]));
 
+    // Reset message list flags
+    for (auto m =  message_map.begin(); m != message_map.end(); ++m) {
+        m->second->setTruncateMessageListFlag();
+    }
 
     /*! for each each sim layer, launch each agent function in its own stream */
     for (auto lyr = model->layers.begin(); lyr != model->layers.end(); ++lyr) {
@@ -90,7 +94,10 @@ bool CUDAAgentModel::step() {
             // check if a function has an input message
             if (auto im = func_des->message_input.lock()) {
                 std::string inpMessage_name = im->name;
-                const CUDAMessage& cuda_message = getCUDAMessage(inpMessage_name);
+                CUDAMessage& cuda_message = getCUDAMessage(inpMessage_name);
+                // Construct PBM here if required!!
+                cuda_message.buildIndex();
+                // Map variables after, as index building can swap arrays
                 cuda_message.mapReadRuntimeVariables(*func_des);
             }
 
@@ -99,12 +106,14 @@ bool CUDAAgentModel::step() {
                 std::string outpMessage_name = om->name;
                 CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
                 // Resize message list if required
-                cuda_message.resize(cuda_agent.getStateSize(func_des->initial_state), j);
-                cuda_message.mapWriteRuntimeVariables(*func_des);
-                flamegpu_internal::CUDAScanCompaction::resizeMessages(cuda_agent.getStateSize(func_des->initial_state), j);
+                const unsigned int existingMessages = cuda_message.getTruncateMessageListFlag() ? 0 : cuda_message.getMessageCount();
+                const unsigned int newMessages = cuda_agent.getStateSize(func_des->initial_state);
+                cuda_message.resize(existingMessages + newMessages, j);
+                cuda_message.mapWriteRuntimeVariables(*func_des, newMessages);
+                flamegpu_internal::CUDAScanCompaction::resizeMessages(newMessages, j);
                 // Zero the scan flag that will be written to
                 if (func_des->message_output_optional)
-                    flamegpu_internal::CUDAScanCompaction::zeroMessages(0);  // Always default stream currently
+                    flamegpu_internal::CUDAScanCompaction::zeroMessages(j);  // Always default stream currently
             }
 
 
@@ -145,7 +154,7 @@ bool CUDAAgentModel::step() {
                 // hash message name
                 message_name_inp_hash = curve.variableRuntimeHash(inpMessage_name.c_str());
 
-                messageList_Size = cuda_message.getMessageCount();
+                d_messagelist_metadata = cuda_message.getMetaDataDevicePtr();
             }
 
             // check if a function has an output massage
@@ -177,7 +186,7 @@ bool CUDAAgentModel::step() {
             // hash function name
             Curve::NamespaceHash funcname_hash = curve.variableRuntimeHash(func_name.c_str());
 
-            (func_des->func)<<<gridSize, blockSize, 0, stream[j] >>>(modelname_hash, agentname_hash + funcname_hash, message_name_inp_hash, message_name_outp_hash, state_list_size, messageList_Size, totalThreads, j);
+            (func_des->func)<<<gridSize, blockSize, 0, stream[j] >>>(modelname_hash, agentname_hash + funcname_hash, message_name_inp_hash, message_name_outp_hash, state_list_size, d_messagelist_metadata, totalThreads, j);
             gpuErrchkLaunch();
 
             totalThreads += state_list_size;
@@ -205,7 +214,9 @@ bool CUDAAgentModel::step() {
                 std::string outpMessage_name = om->name;
                 CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
                 cuda_message.unmapRuntimeVariables(*func_des);
-                cuda_message.swap(func_des->message_output_optional, j);
+                cuda_message.swap(func_des->message_output_optional, cuda_agent.getStateSize(func_des->initial_state), j);
+                cuda_message.clearTruncateMessageListFlag();
+                cuda_message.setPBMConstructionRequiredFlag();
             }
             // const CUDAMessage& cuda_inpMessage = getCUDAMessage(func_des.getInputChild.getMessageName());
             // const CUDAMessage& cuda_outpMessage = getCUDAMessage(func_des.getOutputChild.getMessageName());
