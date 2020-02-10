@@ -12,23 +12,27 @@
 #include "flamegpu/runtime/AgentFunction.h"
 #include "flamegpu/runtime/flamegpu_host_api_macros.h"  // Todo replace with std/cub style fns (see AgentFunction.h)
 #include "flamegpu/pop/MemoryVector.h"
+#include "flamegpu/runtime/messaging/BruteForce.h"
+#include "flamegpu/model/Variable.h"
 
 class EnvironmentDescription;
 class AgentDescription;
-class MessageDescription;
 class AgentFunctionDescription;
 class LayerDescription;
 
 struct AgentData;
-struct MessageData;
 struct AgentFunctionData;
 struct LayerData;
+
+class MsgSpecialisationHandler;
+class CUDAMessage;
 
 /**
  * This is the internal data store for ModelDescription
  * Users should only access that data stored within via an instance of ModelDescription
  */
 struct ModelData : std::enable_shared_from_this<ModelData>{
+    virtual ~ModelData();
     /**
      * Default state, all agents and agent functions begin in/with this state
      */
@@ -42,53 +46,6 @@ struct ModelData : std::enable_shared_from_this<ModelData>{
      */
     typedef unsigned int size_type;
     /**
-     * Common variable definition type
-     * Used internally by AgentData and MessageData
-     */
-    struct Variable {
-        /**
-         * Constructs a new variable
-         * @param _elements The number of elements, this will be 1 unless the variable is an array
-         * @tparam T The type of the variable, it's size and std::type_index are derived from this
-         * @note Cannot explicitly specify template args of constructor, so we take redundant arg for implicit template
-         */
-        template<typename T>
-        Variable(size_type _elements, T)
-            : type(typeid(T)), type_size(sizeof(T)), elements(_elements), memory_vector(new MemoryVector<T>()) {
-            assert(_elements > 0);  // This should be enforced with static_assert where Variable's are defined, see MessageDescription::newVariable()
-            // Limited to Arithmetic types
-            // Compound types would allow host pointers inside structs to be passed
-            static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value,
-                "Only arithmetic types can be used as environmental properties");
-        }
-        /**
-         * Unique identifier of the variables type as returned by std::type_index(typeid())
-         */
-        const std::type_index type;
-        /**
-         * Size of the type in bytes as returned by sizeof() (e.g. float == 4 bytes)
-         */
-        const size_t type_size;
-        /**
-         * The number of elements, this will be 1 unless the variable is an array
-         */
-        const unsigned int elements;
-        /**
-         * Holds the variables memory vector type so we can dynamically create them with clone()
-         */
-        const std::unique_ptr<GenericMemoryVector> memory_vector;
-        /**
-         * Copy constructor
-         */
-        Variable(const Variable &other)
-            :type(other.type), type_size(other.type_size), elements(other.elements), memory_vector(other.memory_vector->clone()) { }
-    };
-    /**
-     * Map of name:variable definition
-     * map<string, Variable>
-     */
-    typedef std::unordered_map<std::string, Variable> VariableMap;
-    /**
      * Map of name:agent definition
      * map<string, AgentData>
      */
@@ -97,7 +54,7 @@ struct ModelData : std::enable_shared_from_this<ModelData>{
      * Map of name:message definition
      * map<string, MessageData>
      */
-    typedef std::unordered_map<std::string, std::shared_ptr<MessageData>> MessageMap;
+    typedef std::unordered_map<std::string, std::shared_ptr<MsgBruteForce::Data>> MessageMap;
     /**
      * List of layer definitions
      * list<LayerData>
@@ -213,7 +170,7 @@ struct AgentData : std::enable_shared_from_this<AgentData> {
     /**
      * Holds all of the agent's variable definitions
      */
-    ModelData::VariableMap variables;
+    VariableMap variables;
     /**
      * Holds all of the agent's possible states
      */
@@ -281,63 +238,6 @@ struct AgentData : std::enable_shared_from_this<AgentData> {
 };
 
 /**
- * This is the internal data store for MessageDescription
- * Users should only access that data stored within via an instance of MessageDescription
- */
-struct MessageData {
-    friend class ModelDescription;
-    friend struct ModelData;
-
-    virtual ~MessageData() = default;
-
-    /**
-     * Holds all of the message's variable definitions
-     */
-    ModelData::VariableMap variables;
-    /**
-     * Description class which provides convenient accessors
-     */
-    std::unique_ptr<MessageDescription> description;
-    /**
-     * Name of the message, used to refer to the message in many functions
-     */
-    std::string name;
-    /**
-     * The number of functions that have optional output of this message type
-     * This value is modified by AgentFunctionDescription
-     */
-    unsigned int optional_outputs;
-    /**
-     * Equality operator, checks whether MessageData hierarchies are functionally the same
-     * @returns True when messages are the same
-     * @note Instead compare pointers if you wish to check that they are the same instance
-     */
-    bool operator==(const MessageData& rhs) const;
-    /**
-     * Equality operator, checks whether MessageData hierarchies are functionally different
-     * @returns True when messages are not the same
-     * @note Instead compare pointers if you wish to check that they are not the same instance
-     */
-    bool operator!=(const MessageData& rhs) const;
-    /**
-     * Default copy constructor, not implemented
-     */
-    MessageData(const MessageData &other) = delete;
-
- protected:
-    virtual MessageData *clone(ModelData *const newParent);
-    /**
-     * Copy constructor
-     * This is unsafe, should only be used internally, use clone() instead
-     */
-    MessageData(ModelData *const, const MessageData &other);
-    /**
-     * Normal constructor, only to be called by ModelDescription
-     */
-    MessageData(ModelData *const, const std::string &message_name);
-};
-
-/**
  * This is the internal data store for AgentFunctionDescription
  * Users should only access that data stored within via an instance of AgentFunctionDescription
  */
@@ -362,11 +262,11 @@ struct AgentFunctionData {
     /**
      * If set, this type of message is input to the function
      */
-    std::weak_ptr<MessageData> message_input;
+    std::weak_ptr<MsgBruteForce::Data> message_input;
     /**
      * If set, this type of message is output by the function
      */
-    std::weak_ptr<MessageData> message_output;
+    std::weak_ptr<MsgBruteForce::Data> message_output;
     /**
      * If set, message outputs from this function are optional
      */
@@ -408,6 +308,14 @@ struct AgentFunctionData {
      * Default copy constructor, not implemented
      */
     AgentFunctionData(const AgentFunctionData &other) = delete;
+    /**
+     * Input messaging type specified in FLAMEGPU_AGENT_FUNCTION
+     */
+    const std::type_index msg_in_type;
+    /**
+     * Output messaging  type specified in FLAMEGPU_AGENT_FUNCTION
+     */
+    const std::type_index msg_out_type;
 
  protected:
     /**
@@ -418,7 +326,7 @@ struct AgentFunctionData {
     /**
      * Normal constructor, only to be called by AgentDescription
      */
-    AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string &function_name, AgentFunctionWrapper *agent_function);
+    AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string &function_name, AgentFunctionWrapper *agent_function, const std::type_index &in_type, const std::type_index &out_type);
 };
 
 /**
@@ -481,46 +389,5 @@ struct LayerData {
     LayerData(ModelData *const model, const std::string &name, const ModelData::size_type &index);
 };
 
-struct Spatial2DMessageData : MessageData {
-    friend class ModelDescription;
-    friend struct ModelData;
-    float radius;
-    float minX;
-    float minY;
-    float maxX;
-    float maxY;
-    virtual ~Spatial2DMessageData() = default;
-
- protected:
-    Spatial2DMessageData *clone(ModelData *const newParent) override;
-    /**
-     * Copy constructor
-     * This is unsafe, should only be used internally, use clone() instead
-     */
-     Spatial2DMessageData(ModelData *const, const Spatial2DMessageData &other);
-    /**
-     * Normal constructor, only to be called by ModelDescription
-     */
-     Spatial2DMessageData(ModelData *const, const std::string &message_name);
-};
-struct Spatial3DMessageData : Spatial2DMessageData {
-    friend class ModelDescription;
-    friend struct ModelData;
-    float minZ;
-    float maxZ;
-    virtual ~Spatial3DMessageData() = default;
-
- private:
-    Spatial3DMessageData *clone(ModelData *const newParent) override;
-    /**
-     * Copy constructor
-     * This is unsafe, should only be used internally, use clone() instead
-     */
-     Spatial3DMessageData(ModelData *const, const Spatial3DMessageData &other);
-    /**
-     * Normal constructor, only to be called by ModelDescription
-     */
-     Spatial3DMessageData(ModelData *const, const std::string &message_name);
-};
 
 #endif  // INCLUDE_FLAMEGPU_MODEL_MODELDATA_H_

@@ -21,7 +21,7 @@
 
 #include "flamegpu/flame_api.h"
 
-FLAMEGPU_AGENT_FUNCTION(sample_agentfn) {
+FLAMEGPU_AGENT_FUNCTION(sample_agentfn, MsgNone, MsgBruteForce) {
     // do nothing
     return ALIVE;
 }
@@ -33,7 +33,7 @@ FLAMEGPU_AGENT_FUNCTION(sample_agentfn) {
 TEST(MessageTest, MessageCheck) {
     GTEST_COUT << "Testing Message Name and Size, Type, and Number .." << std::endl;
     ModelDescription model("model");
-    MessageDescription &location_message = model.newMessage("location");
+    MsgBruteForce::Description &location_message = model.newMessage("location");
 
    /**
      * @brief      Checks the number of message name
@@ -105,7 +105,7 @@ TEST(MessageTest, MessageFunctionCheck) {
 
     AgentDescription &circle_agent = flame_model.newAgent("circle");
 
-    MessageDescription &location_message = flame_model.newMessage("location");
+    MsgBruteForce::Description &location_message = flame_model.newMessage("location");
 
     AgentFunctionDescription &output_data = circle_agent.newFunction("output_data", sample_agentfn);
     output_data.setMessageOutput(location_message);
@@ -147,7 +147,7 @@ TEST(MessageTest, MessageFunctionCheck) {
      * statement and checks if it throws the exception or not. The second argument
      * is the expected exception.
      */
-    EXPECT_THROW(flame_model.getMessage("error"), InvalidMessageVar);  // expecting an error
+    EXPECT_THROW(flame_model.getMessage("error"), InvalidMessageName);  // expecting an error
 }
 
 // TODO: Check that we can output (single) messages during simulation without error

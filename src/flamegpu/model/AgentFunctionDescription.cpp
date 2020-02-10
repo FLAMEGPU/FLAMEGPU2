@@ -1,5 +1,4 @@
 #include "flamegpu/model/AgentFunctionDescription.h"
-#include "flamegpu/model/MessageDescription.h"
 
 /**
  * Constructors
@@ -58,14 +57,20 @@ void AgentFunctionDescription::setMessageInput(const std::string &message_name) 
     }
     auto a = model->messages.find(message_name);
     if (a != model->messages.end()) {
-        this->function->message_input = a->second;
+        if (this->function->msg_in_type == a->second->getType()) {
+            this->function->message_input = a->second;
+        } else {
+            THROW InvalidMessageType("Message ('%s') type '%s' does not match type '%s' applied to FLAMEGPU_AGENT_FUNCTION, "
+                "in AgentFunctionDescription::setMessageInput()\n",
+                message_name.c_str(), a->second->getType().name(), this->function->msg_in_type.name());
+        }
     } else {
         THROW InvalidMessageName("Model ('%s') does not contain message '%s', "
             "in AgentFunctionDescription::setMessageInput()\n",
             model->name.c_str(), message_name.c_str());
     }
 }
-void AgentFunctionDescription::setMessageInput(MessageDescription &message) {
+void AgentFunctionDescription::setMessageInput(MsgBruteForce::Description &message) {
     if (message.model != function->description->model) {
         THROW DifferentModel("Attempted to use agent description from a different model, "
             "in AgentFunctionDescription::setAgentOutput()\n");
@@ -81,7 +86,13 @@ void AgentFunctionDescription::setMessageInput(MessageDescription &message) {
     auto a = model->messages.find(message.getName());
     if (a != model->messages.end()) {
         if (a->second->description.get() == &message) {
-            this->function->message_input = a->second;
+            if (this->function->msg_in_type == a->second->getType()) {
+                this->function->message_input = a->second;
+            } else {
+                THROW InvalidMessageType("Message ('%s') type '%s' does not match type '%s' applied to FLAMEGPU_AGENT_FUNCTION, "
+                    "in AgentFunctionDescription::setMessageInput()\n",
+                    a->second->name.c_str(), a->second->getType().name(), this->function->msg_in_type.name());
+            }
         } else {
             THROW InvalidMessage("Message '%s' is not from Model '%s', "
                 "in AgentFunctionDescription::setMessageInput()\n",
@@ -110,9 +121,15 @@ void AgentFunctionDescription::setMessageOutput(const std::string &message_name)
     }
     auto a = model->messages.find(message_name);
     if (a != model->messages.end()) {
-        this->function->message_output = a->second;
-        if (this->function->message_output_optional) {
-            a->second->optional_outputs++;
+        if (this->function->msg_out_type == a->second->getType()) {
+            this->function->message_output = a->second;
+            if (this->function->message_output_optional) {
+                a->second->optional_outputs++;
+            }
+        } else {
+            THROW InvalidMessageType("Message ('%s') type '%s' does not match type '%s' applied to FLAMEGPU_AGENT_FUNCTION, "
+                "in AgentFunctionDescription::setMessageOutput()\n",
+                message_name.c_str(), a->second->getType().name(), this->function->msg_in_type.name());
         }
     } else {
         THROW InvalidMessageName("Model ('%s') does not contain message '%s', "
@@ -120,7 +137,7 @@ void AgentFunctionDescription::setMessageOutput(const std::string &message_name)
             model->name.c_str(), message_name.c_str());
     }
 }
-void AgentFunctionDescription::setMessageOutput(MessageDescription &message) {
+void AgentFunctionDescription::setMessageOutput(MsgBruteForce::Description &message) {
     if (message.model != function->description->model) {
         THROW DifferentModel("Attempted to use agent description from a different model, "
             "in AgentFunctionDescription::setAgentOutput()\n");
@@ -142,9 +159,15 @@ void AgentFunctionDescription::setMessageOutput(MessageDescription &message) {
     auto a = model->messages.find(message.getName());
     if (a != model->messages.end()) {
         if (a->second->description.get() == &message) {
-            this->function->message_output = a->second;
-            if (this->function->message_output_optional) {
-                a->second->optional_outputs++;
+            if (this->function->msg_out_type == a->second->getType()) {
+                this->function->message_output = a->second;
+                if (this->function->message_output_optional) {
+                    a->second->optional_outputs++;
+                }
+            } else {
+                THROW InvalidMessageType("Message ('%s') type '%s' does not match type '%s' applied to FLAMEGPU_AGENT_FUNCTION, "
+                    "in AgentFunctionDescription::setMessageOutput()\n",
+                    a->second->name.c_str(), a->second->getType().name(), this->function->msg_in_type.name());
             }
         } else {
             THROW InvalidMessage("Message '%s' is not from Model '%s', "
@@ -214,13 +237,13 @@ void AgentFunctionDescription::setAllowAgentDeath(const bool &has_death) {
     function->has_agent_death = has_death;
 }
 
-MessageDescription &AgentFunctionDescription::MessageInput() {
+MsgBruteForce::Description &AgentFunctionDescription::MessageInput() {
     if (auto m = function->message_input.lock())
         return *m->description;
     THROW OutOfBoundsException("Message input has not been set, "
         "in AgentFunctionDescription::MessageInput()\n");
 }
-MessageDescription &AgentFunctionDescription::MessageOutput() {
+MsgBruteForce::Description &AgentFunctionDescription::MessageOutput() {
     if (auto m = function->message_output.lock())
         return *m->description;
     THROW OutOfBoundsException("Message output has not been set, "
@@ -251,13 +274,13 @@ std::string AgentFunctionDescription::getInitialState() const {
 std::string AgentFunctionDescription::getEndState() const {
     return function->end_state;
 }
-const MessageDescription &AgentFunctionDescription::getMessageInput() const {
+const MsgBruteForce::Description &AgentFunctionDescription::getMessageInput() const {
     if (auto m = function->message_input.lock())
         return *m->description;
     THROW OutOfBoundsException("Message input has not been set, "
         "in AgentFunctionDescription::getMessageInput()\n");
 }
-const MessageDescription &AgentFunctionDescription::getMessageOutput() const {
+const MsgBruteForce::Description &AgentFunctionDescription::getMessageOutput() const {
     if (auto m = function->message_output.lock())
         return *m->description;
     THROW OutOfBoundsException("Message output has not been set, "

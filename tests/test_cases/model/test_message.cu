@@ -13,7 +13,7 @@ namespace test_message {
 
 TEST(MessageDescriptionTest, variables) {
     ModelDescription _m(MODEL_NAME);
-    MessageDescription &m = _m.newMessage(MESSAGE_NAME1);
+    MsgBruteForce::Description &m = _m.newMessage(MESSAGE_NAME1);
     EXPECT_FALSE(m.hasVariable(VARIABLE_NAME1));
     EXPECT_FALSE(m.hasVariable(VARIABLE_NAME2));
     EXPECT_EQ(m.getVariablesCount(), 0u);
@@ -23,7 +23,7 @@ TEST(MessageDescriptionTest, variables) {
     EXPECT_EQ(m.getVariablesCount(), 2u);
     // Cannot create variable with same name
     EXPECT_THROW(m.newVariable<int64_t>(VARIABLE_NAME1), InvalidMessageVar);
-    auto newVarArray3 = &MessageDescription::newVariable<int64_t, 3>;  // Use function ptr, can't do more than 1 template arg inside macro
+    auto newVarArray3 = &MsgBruteForce::Description::newVariable<int64_t, 3>;  // Use function ptr, can't do more than 1 template arg inside macro
     EXPECT_THROW((m.*newVarArray3)(VARIABLE_NAME1), InvalidMessageVar);
     // Variable have the right name
     EXPECT_TRUE(m.hasVariable(VARIABLE_NAME1));
@@ -38,7 +38,7 @@ TEST(MessageDescriptionTest, variables) {
 }
 TEST(MessageDescriptionTest, variables_array) {
     ModelDescription _m(MODEL_NAME);
-    MessageDescription &m = _m.newMessage(MESSAGE_NAME1);
+    MsgBruteForce::Description &m = _m.newMessage(MESSAGE_NAME1);
     EXPECT_FALSE(m.hasVariable(VARIABLE_NAME1));
     EXPECT_FALSE(m.hasVariable(VARIABLE_NAME2));
     EXPECT_EQ(m.getVariablesCount(), 0u);
@@ -50,7 +50,7 @@ TEST(MessageDescriptionTest, variables_array) {
     EXPECT_EQ(m.getVariablesCount(), 3u);
     // Cannot create variable with same name
     EXPECT_THROW(m.newVariable<int64_t>(VARIABLE_NAME1), InvalidMessageVar);
-    auto newVarArray3 = &MessageDescription::newVariable<int64_t, 3>;  // Use function ptr, can't do more than 1 template arg inside macro
+    auto newVarArray3 = &MsgBruteForce::Description::newVariable<int64_t, 3>;  // Use function ptr, can't do more than 1 template arg inside macro
     EXPECT_THROW((m.*newVarArray3)(VARIABLE_NAME1), InvalidMessageVar);
     // Cannot create array of length 0 (disabled, blocked at compilation with static_assert)
     // auto newVarArray0 = &MessageDescription::newVariable<int64_t, 0>;  // Use function ptr, can't do more than 1 template arg inside macro
@@ -65,6 +65,46 @@ TEST(MessageDescriptionTest, variables_array) {
     EXPECT_EQ(sizeof(int16_t), m.getVariableSize(VARIABLE_NAME2));
     EXPECT_EQ(std::type_index(typeid(float)), m.getVariableType(VARIABLE_NAME1));
     EXPECT_EQ(std::type_index(typeid(int16_t)), m.getVariableType(VARIABLE_NAME2));
+}
+
+FLAMEGPU_AGENT_FUNCTION(NoInput, MsgNone, MsgSpatial3D) {
+    return ALIVE;
+}
+FLAMEGPU_AGENT_FUNCTION(NoOutput, MsgSpatial2D, MsgNone) {
+    return ALIVE;
+}
+
+TEST(MessageDescriptionTest, CorrectMessageTypeBound1) {
+    ModelDescription m(MODEL_NAME);
+    AgentDescription &a = m.newAgent("foo");
+    AgentFunctionDescription &fo = a.newFunction("bar", NoInput);
+    LayerDescription &lo = m.newLayer("foo2");
+    lo.addAgentFunction(fo);
+    EXPECT_THROW(CUDAAgentModel c(m), InvalidMessageType);
+}
+TEST(MessageDescriptionTest, CorrectMessageTypeBound2) {
+    ModelDescription m(MODEL_NAME);
+    AgentDescription &a = m.newAgent("foo");
+    AgentFunctionDescription &fo = a.newFunction("bar", NoOutput);
+    LayerDescription &lo = m.newLayer("foo2");
+    lo.addAgentFunction(fo);
+    EXPECT_THROW(CUDAAgentModel c(m), InvalidMessageType);
+}
+TEST(MessageDescriptionTest, CorrectMessageTypeBound3) {
+    ModelDescription m(MODEL_NAME);
+    AgentDescription &a = m.newAgent("foo");
+    AgentFunctionDescription &fo = a.newFunction("bar", NoInput);
+    MsgBruteForce::Description &md = m.newMessage<MsgBruteForce>("foo2");
+    EXPECT_THROW(fo.setMessageOutput(md), InvalidMessageType);
+    EXPECT_THROW(fo.setMessageInput(md), InvalidMessageType);
+}
+TEST(MessageDescriptionTest, CorrectMessageTypeBound4) {
+    ModelDescription m(MODEL_NAME);
+    AgentDescription &a = m.newAgent("foo");
+    AgentFunctionDescription &fo = a.newFunction("bar", NoOutput);
+    MsgBruteForce::Description &md = m.newMessage<MsgBruteForce>("foo2");
+    EXPECT_THROW(fo.setMessageOutput(md), InvalidMessageType);
+    EXPECT_THROW(fo.setMessageInput(md), InvalidMessageType);
 }
 
 }  // namespace test_message

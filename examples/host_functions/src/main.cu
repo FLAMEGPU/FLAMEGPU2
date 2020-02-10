@@ -5,7 +5,7 @@
 #include "flamegpu/flame_api.h"
 #include "flamegpu/runtime/flamegpu_api.h"
 
-FLAMEGPU_AGENT_FUNCTION(device_function) {
+FLAMEGPU_AGENT_FUNCTION(device_function, MsgNone, MsgNone) {
     const float &prop_float = FLAMEGPU->environment.get<float>("float");
     const int16_t &prop_int16 = FLAMEGPU->environment.get<int16_t>("int16_t");
     const uint64_t &prop_uint64_0 = FLAMEGPU->environment.get<uint64_t>("uint64_t", 0);

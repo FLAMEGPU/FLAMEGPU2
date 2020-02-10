@@ -24,7 +24,7 @@
  */
 
 /*
-FLAMEGPU_AGENT_FUNCTION(output_func) {
+FLAMEGPU_AGENT_FUNCTION(output_func, MsgNone, MsgNone) {
     // printf("Hello from output_func\n");
 
     float x = FLAMEGPU->getVariable<float>("x");
@@ -36,7 +36,7 @@ FLAMEGPU_AGENT_FUNCTION(output_func) {
     return ALIVE;
 }
 */
-FLAMEGPU_AGENT_FUNCTION(output_func) {
+FLAMEGPU_AGENT_FUNCTION(output_func, MsgNone, MsgNone) {
 // some thoughts on how to use messages
     // FLAMEGPU->outputMessage<float>("location","x");
     // FLAMEGPU->outputMessage<float>("location","x",FLAMEGPU->getVariable<float>("x"));
@@ -51,7 +51,7 @@ FLAMEGPU_AGENT_FUNCTION(output_func) {
     return ALIVE;
 }
 
-FLAMEGPU_AGENT_FUNCTION(input_func) {
+FLAMEGPU_AGENT_FUNCTION(input_func, MsgNone, MsgNone) {
     float x = FLAMEGPU->getVariable<float>("x");
     // printf("x = %f\n", x);
     FLAMEGPU->setVariable<float>("x", x + 2);
@@ -60,11 +60,11 @@ FLAMEGPU_AGENT_FUNCTION(input_func) {
     return ALIVE;
 }
 
-FLAMEGPU_AGENT_FUNCTION(move_func) {
+FLAMEGPU_AGENT_FUNCTION(move_func, MsgNone, MsgNone) {
     return ALIVE;
 }
 
-FLAMEGPU_AGENT_FUNCTION(stay_func) {
+FLAMEGPU_AGENT_FUNCTION(stay_func, MsgNone, MsgNone) {
     return ALIVE;
 }
 
@@ -89,7 +89,7 @@ int main(void) {
 
 
     // location message
-    MessageDescription &location_message = flame_model.newMessage("location");
+    MsgBruteForce::Description &location_message = flame_model.newMessage("location");
     location_message.newVariable<float>("x");
     location_message.newVariable<float>("y");
 

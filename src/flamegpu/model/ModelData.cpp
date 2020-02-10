@@ -1,9 +1,9 @@
 #include "flamegpu/model/ModelData.h"
 #include "flamegpu/model/EnvironmentDescription.h"
 #include "flamegpu/model/AgentDescription.h"
-#include "flamegpu/model/MessageDescription.h"
 #include "flamegpu/model/AgentFunctionDescription.h"
 #include "flamegpu/model/LayerDescription.h"
+#include "flamegpu/runtime/messaging/BruteForce.h"
 
 const char *ModelData::DEFAULT_STATE = "default";
 
@@ -14,6 +14,8 @@ ModelData::ModelData(const std::string &model_name)
     : environment(new EnvironmentDescription())
     , name(model_name) { }
 
+ModelData::~ModelData() { }
+
 AgentData::AgentData(ModelData *const model, const std::string &agent_name)
     : initial_state(ModelData::DEFAULT_STATE)
     , agent_outputs(0)
@@ -23,11 +25,8 @@ AgentData::AgentData(ModelData *const model, const std::string &agent_name)
     states.insert(ModelData::DEFAULT_STATE);
 }
 
-MessageData::MessageData(ModelData *const model, const std::string &message_name)
-    : description(new MessageDescription(model, this))
-    , name(message_name) { }
 
-AgentFunctionData::AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string &function_name, AgentFunctionWrapper *agent_function)
+AgentFunctionData::AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string &function_name, AgentFunctionWrapper *agent_function, const std::type_index &in_type, const std::type_index &out_type)
     : func(agent_function)
     , initial_state(_parent->initial_state)
     , end_state(_parent->initial_state)
@@ -35,29 +34,14 @@ AgentFunctionData::AgentFunctionData(std::shared_ptr<AgentData> _parent, const s
     , has_agent_death(false)
     , parent(_parent)
     , description(new AgentFunctionDescription(_parent->description->model, this))
-    , name(function_name) { }
+    , name(function_name)
+    , msg_in_type(in_type)
+    , msg_out_type(out_type) { }
 
 LayerData::LayerData(ModelData *const model, const std::string &layer_name, const ModelData::size_type &layer_index)
     : description(new LayerDescription(model, this))
     , name(layer_name)
     , index(layer_index) { }
-
-Spatial2DMessageData::Spatial2DMessageData(ModelData *const model, const std::string &message_name)
-    : MessageData(model, message_name)
-    , radius(1.0f)
-    , minX(0.0f)
-    , minY(0.0f)
-    , maxX(0.0f)
-    , maxY(0.0f) {
-    description = std::unique_ptr<Spatial2DMessageDescription>(new Spatial2DMessageDescription(model, this));
-}
-
-Spatial3DMessageData::Spatial3DMessageData(ModelData *const model, const std::string &message_name)
-    : Spatial2DMessageData(model, message_name)
-    , minZ(0.0f)
-    , maxZ(0.0f) {
-    description = std::unique_ptr<MessageDescription>(new Spatial3DMessageDescription(model, this));
-}
 
 /**
  * Copy Constructors
@@ -75,7 +59,7 @@ ModelData::ModelData(const ModelData &other)
     , name(other.name) {
     // Manually copy construct maps of shared ptr
     for (const auto m : other.messages) {
-        messages.emplace(m.first, std::shared_ptr<MessageData>(m.second->clone(this)));  // Need to convert this to shared_ptr, how to force shared copy construct?
+        messages.emplace(m.first, std::shared_ptr<MsgBruteForce::Data>(m.second->clone(this)));  // Need to convert this to shared_ptr, how to force shared copy construct?
     }
     for (const auto a : other.agents) {
         auto b = std::shared_ptr<AgentData>(new AgentData(this, *a.second));
@@ -107,11 +91,6 @@ AgentData::AgentData(ModelData *const model, const AgentData &other)
     , name(other.name)
     , keepDefaultState(other.keepDefaultState) {
 }
-MessageData::MessageData(ModelData *const model, const MessageData &other)
-    : variables(other.variables)
-    , description(model ? new MessageDescription(model, this) : nullptr)
-    , name(other.name)
-    , optional_outputs(other.optional_outputs) { }
 AgentFunctionData::AgentFunctionData(ModelData *const model, std::shared_ptr<AgentData> _parent, const AgentFunctionData &other)
     : func(other.func)
     , initial_state(other.initial_state)
@@ -120,7 +99,9 @@ AgentFunctionData::AgentFunctionData(ModelData *const model, std::shared_ptr<Age
     , has_agent_death(other.has_agent_death)
     , parent(_parent)
     , description(model ? new AgentFunctionDescription(model, this) : nullptr)
-    , name(other.name) {
+    , name(other.name)
+    , msg_in_type(other.msg_in_type)
+    , msg_out_type(other.msg_out_type) {
     // Manually perform lookup copies
     if (model) {
         if (auto a = other.message_input.lock()) {
@@ -128,12 +109,16 @@ AgentFunctionData::AgentFunctionData(ModelData *const model, std::shared_ptr<Age
             if (_m != model->messages.end()) {
                 message_input = _m->second;
             }
+        } else if (other.msg_in_type != std::type_index(typeid(MsgNone))) {
+            THROW InvalidMessageType("Function '%s' is missing bound input message of type '%s'.", other.name.c_str(), other.msg_in_type.name());
         }
         if (auto a = other.message_output.lock()) {
             auto _m = model->messages.find(a->name);
             if (_m != model->messages.end()) {
                 message_output = _m->second;
             }
+        } else if (other.msg_out_type != std::type_index(typeid(MsgNone))) {
+            THROW InvalidMessageType("Function '%s' is missing bound output message of type '%s'.", other.name.c_str(), other.msg_out_type.name());
         }
         if (auto a = other.agent_output.lock()) {
             auto _a = model->agents.find(a->name);
@@ -163,32 +148,7 @@ LayerData::LayerData(ModelData *const model, const LayerData &other)
     next_agent_fn: {}
     }
 }
-Spatial2DMessageData::Spatial2DMessageData(ModelData *const model, const Spatial2DMessageData &other)
-    : MessageData(model, other)
-    , radius(other.radius)
-    , minX(other.minX)
-    , minY(other.minY)
-    , maxX(other.maxX)
-    , maxY(other.maxY) {
-    description = std::unique_ptr<Spatial2DMessageDescription>(model ? new Spatial2DMessageDescription(model, this) : nullptr);
-}
 
-Spatial3DMessageData::Spatial3DMessageData(ModelData *const model, const Spatial3DMessageData &other)
-    : Spatial2DMessageData(model, other)
-    , minZ(other.minZ)
-    , maxZ(other.maxZ) {
-    description = std::unique_ptr<MessageDescription>(model ? new Spatial3DMessageDescription(model, this) : nullptr);
-}
-
-MessageData *MessageData::clone(ModelData *const newParent) {
-    return new MessageData(newParent, *this);
-}
-Spatial2DMessageData *Spatial2DMessageData::clone(ModelData *const newParent) {
-    return new Spatial2DMessageData(newParent, *this);
-}
-Spatial3DMessageData *Spatial3DMessageData::clone(ModelData *const newParent) {
-    return new Spatial3DMessageData(newParent, *this);
-}
 
 bool ModelData::operator==(const ModelData& rhs) const {
     if (this == &rhs)  // They point to same object
@@ -292,29 +252,6 @@ bool AgentData::operator==(const AgentData& rhs) const {
     return false;
 }
 bool AgentData::operator!=(const AgentData& rhs) const {
-    return !operator==(rhs);
-}
-bool MessageData::operator==(const MessageData& rhs) const {
-    if (this == &rhs)  // They point to same object
-        return true;
-    if (name == rhs.name
-        && variables.size() == rhs.variables.size()) {
-        {  // Compare variables
-            for (auto &v : variables) {
-                auto _v = rhs.variables.find(v.first);
-                if (_v == rhs.variables.end())
-                    return false;
-                if (v.second.type_size != _v->second.type_size
-                    || v.second.type != _v->second.type
-                    || v.second.elements != _v->second.elements)
-                    return false;
-            }
-        }
-        return true;
-    }
-    return false;
-}
-bool MessageData::operator!=(const MessageData& rhs) const {
     return !operator==(rhs);
 }
 bool AgentFunctionData::operator==(const AgentFunctionData& rhs) const {

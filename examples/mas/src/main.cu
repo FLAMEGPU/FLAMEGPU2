@@ -26,21 +26,21 @@
  */
 
 
-FLAMEGPU_AGENT_FUNCTION(output_func) {
+FLAMEGPU_AGENT_FUNCTION(output_func, MsgNone, MsgBruteForce) {
     const int s = FLAMEGPU->environment.get<int>("step");
     FLAMEGPU->setVariable<float>("x", s + 10.0f);
     FLAMEGPU->setVariable<float>("y", s + 11.0f);
     if ((blockDim.x * blockIdx.x + threadIdx.x) % 2 == s % 2) {
         // Optional output, only from even thread ids
-        FLAMEGPU->addMessage<float>("x", s + 12.0f);
+        FLAMEGPU->message_out.setVariable<float>("x", s + 12.0f);
         printf("outp: %d\n", s + (blockDim.x * blockIdx.x + threadIdx.x));
-        FLAMEGPU->addMessage<float>("y", s + (blockDim.x * blockIdx.x + threadIdx.x));
+        FLAMEGPU->message_out.setVariable<float>("y", s + (blockDim.x * blockIdx.x + threadIdx.x));
     }
 
     return ALIVE;
 }
 
-FLAMEGPU_AGENT_FUNCTION(input_func) {
+FLAMEGPU_AGENT_FUNCTION(input_func, MsgBruteForce, MsgNone) {
     // printf("Hello from input_func\n");
     float x = FLAMEGPU->getVariable<float>("x");
     float y = FLAMEGPU->getVariable<float>("y");
@@ -57,42 +57,33 @@ FLAMEGPU_AGENT_FUNCTION(input_func) {
     // float y1 = FLAMEGPU->getMessageVariable<float>("y");
     // printf("(input func - get msg): x = %f, y = %f\n", x1, y1);
 
-    MessageList messageList = FLAMEGPU->GetMessageIterator("location1");
-
-
     // Multiple options for iterating messages
 
     // 1) First method: iterator loop.
     // for (MessageList::iterator iterator = messageList.begin(); iterator != messageList.end(); ++iterator)
-    for (auto iterator = messageList.begin(); iterator != messageList.end(); ++iterator) {
+    for (auto iterator = FLAMEGPU->message_in.begin(); iterator != FLAMEGPU->message_in.end(); ++iterator) {
         // De-reference the iterator to get to the message object
         auto message = *iterator;
 
-        float x0 = messageList.getVariable<float>(iterator, "x");
-        float x1 = messageList.getVariable<float>(message, "x");
-        float x2 = message.getVariable<float>("x");
-        printf("(input func - for loop, get msg variable): x = %f %f %f\n", x0, x1, x2);
-        float y0 = messageList.getVariable<float>(iterator, "y");
-        float y1 = messageList.getVariable<float>(message, "y");
-        float y2 = message.getVariable<float>("y");
-        printf("(input func - for loop, get msg variable): y = %f %f %f\n", y0, y1, y2);
+        float x0 = message.getVariable<float>("x");
+        printf("(input func - for loop, get msg variable): x = %f\n", x0);
+        float y0 = message.getVariable<float>("y");
+        printf("(input func - for loop, get msg variable): y = %f\n", y0);
     }
 
     // 2) Second method: Range based for loop
-    for (auto &message : messageList) {
+    for (auto &message : FLAMEGPU->message_in) {
         float x0 = message.getVariable<float>("x");
-        float x1 = messageList.getVariable<float>(message, "x");
-        // printf("(input func - for-range, get msg variables): x = %f %f \n", x0, x1);
+        // printf("(input func - for-range, get msg variables): x = %f \n", x0);
 
         float y0 = message.getVariable<float>("y");
-        float y1 = messageList.getVariable<float>(message, "y");
-        // printf("(input func - for-range, get msg variables): y = %f %f \n", y0, y1);
+        // printf("(input func - for-range, get msg variables): y = %f \n", y0);
     }
 
     return ALIVE;
 }
 
-FLAMEGPU_AGENT_FUNCTION(add_func) {
+FLAMEGPU_AGENT_FUNCTION(add_func, MsgNone, MsgNone) {
     // printf("Hello from add_func\n");
     float x = FLAMEGPU->getVariable<float>("x");
     float y = FLAMEGPU->getVariable<float>("y");
@@ -103,7 +94,7 @@ FLAMEGPU_AGENT_FUNCTION(add_func) {
     return ALIVE;
 }
 
-FLAMEGPU_AGENT_FUNCTION(subtract_func) {
+FLAMEGPU_AGENT_FUNCTION(subtract_func, MsgNone, MsgNone) {
     // printf("Hello from subtract_func\n");
     float x = FLAMEGPU->getVariable<float>("x");
     float y = FLAMEGPU->getVariable<float>("y");
@@ -133,7 +124,7 @@ int main(int argc, const char* argv[]) {
     circle2_agent.newVariable<float>("y");
 
     // same name ?
-    MessageDescription &location1_message = flame_model.newMessage("location1");
+    MsgBruteForce::Description &location1_message = flame_model.newMessage("location1");
     location1_message.newVariable<float>("x");
     location1_message.newVariable<float>("y");
     /*

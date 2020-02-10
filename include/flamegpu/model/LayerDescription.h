@@ -148,7 +148,7 @@ class LayerDescription {
 
 template<typename AgentFunction>
 void LayerDescription::addAgentFunction(AgentFunction /*af*/) {
-    AgentFunctionWrapper * func_compare = &agent_function_wrapper<AgentFunction>;
+    AgentFunctionWrapper * func_compare = AgentFunction::fnPtr();
     // Unsure if implicit template instantion leads to two unique function ptrs
     // Logic dictates that it should work (else compiler would complain duplicate symbols)
     for (auto a : model->agents) {

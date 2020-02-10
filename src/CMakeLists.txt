@@ -63,11 +63,11 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/exception/FGPUStaticAssert.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/LayerDescription.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/ModelData.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/model/MessageDescription.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/AgentFunctionDescription.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/EnvironmentDescription.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/AgentDescription.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/ModelDescription.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/model/Variable.h
     ${FLAMEGPU_ROOT}/include/flamegpu/pop/AgentInstance.h
     ${FLAMEGPU_ROOT}/include/flamegpu/pop/AgentPopulation.h
     ${FLAMEGPU_ROOT}/include/flamegpu/pop/MemoryVector.h
@@ -84,14 +84,19 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/flame_api.h
     ${FLAMEGPU_ROOT}/include/flamegpu/sim/AgentInterface.h
     ${FLAMEGPU_ROOT}/include/flamegpu/sim/Simulation.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messagelist.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/AgentFunction.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/AgentFunction_shim.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/flamegpu_api.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/flamegpu_device_api.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/flamegpu_host_api.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/flamegpu_host_api_macros.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/flamegpu_host_agent_api.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/cuRVE/curve.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/None.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/BruteForce.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Spatial2D.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Spatial3D.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/AgentRandom.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/DeviceEnvironment.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/EnvironmentManager.cuh
@@ -107,7 +112,6 @@ SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/model/EnvironmentDescription.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/model/AgentDescription.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/model/AgentFunctionDescription.cpp
-    ${FLAMEGPU_ROOT}/src/flamegpu/model/MessageDescription.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/pop/AgentPopulation.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/pop/AgentInstance.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/pop/AgentStateMemory.cu
@@ -120,7 +124,10 @@ SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/sim/Simulation.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAAgentModel.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/cuRVE/curve.cu
-    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/flamegpu_host_api.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/flamegpu_host_api.cu    
+    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/BruteForce.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/Spatial2D.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/Spatial3D.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/io/xmlReader.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/io/xmlWriter.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/utility/HostEnvironment.cu

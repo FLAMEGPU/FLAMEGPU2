@@ -3,8 +3,10 @@
 
 #include <map>
 #include <string>
+#include <array>
 
-#include "flamegpu/model/ModelData.h"
+#include "flamegpu/model/Variable.h"
+#include "flamegpu/gpu/CUDAScanCompaction.h"
 /**
  * Singleton class for performing generic scatters
  * This is used for optional messages, agent death, agent birth
@@ -28,12 +30,28 @@ class CUDAScatter {
     };
     unsigned int scatter(
         Type messageOrAgent,
-        const ModelData::VariableMap &vars,
+        const VariableMap &vars,
         const std::map<std::string, void*> &in,
         const std::map<std::string, void*> &out,
-        const unsigned int &itemCount);
+        const unsigned int &itemCount,
+        const unsigned int &out_index_offset = 0);
+    unsigned int scatterAll(
+        const VariableMap &vars,
+        const std::map<std::string, void*> &in,
+        const std::map<std::string, void*> &out,
+        const unsigned int &itemCount,
+        const unsigned int &out_index_offset = 0);
+    void pbm_reorder(
+        const VariableMap &vars,
+        const std::map<std::string, void*> &in,
+        const std::map<std::string, void*> &out,
+        const unsigned int &itemCount,
+        const unsigned int *d_bin_index,
+        const unsigned int *d_bin_sub_index,
+        const unsigned int *d_pbm);
 
  private:
+    // set by getInstance()
     unsigned int streamId;
     ScatterData *d_data;
     unsigned int data_len;

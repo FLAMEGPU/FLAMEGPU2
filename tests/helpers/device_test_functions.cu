@@ -1,6 +1,6 @@
 #include "helpers/device_test_functions.h"
 
-FLAMEGPU_AGENT_FUNCTION(add_func) {
+FLAMEGPU_AGENT_FUNCTION(add_func, MsgNone, MsgNone) {
     // should've returned error if the type was not correct. Needs type check
     double x = FLAMEGPU->getVariable<double>("x");
 
@@ -9,7 +9,7 @@ FLAMEGPU_AGENT_FUNCTION(add_func) {
     return ALIVE;
 }
 
-FLAMEGPU_AGENT_FUNCTION(subtract_func) {
+FLAMEGPU_AGENT_FUNCTION(subtract_func, MsgNone, MsgNone) {
     double x = FLAMEGPU->getVariable<double>("x");
     double y = FLAMEGPU->getVariable<double>("y");
 
@@ -18,7 +18,7 @@ FLAMEGPU_AGENT_FUNCTION(subtract_func) {
     return ALIVE;
 }
 
-FLAMEGPU_AGENT_FUNCTION(output_func) {
+FLAMEGPU_AGENT_FUNCTION(output_func, MsgNone, MsgNone) {
     float x = FLAMEGPU->getVariable<float>("x");
     FLAMEGPU->setVariable<float>("x", x + 2);
     x = FLAMEGPU->getVariable<float>("x");
@@ -26,7 +26,7 @@ FLAMEGPU_AGENT_FUNCTION(output_func) {
     return ALIVE;
 }
 
-// FLAMEGPU_AGENT_FUNCTION(move_func) {
+// FLAMEGPU_AGENT_FUNCTION(move_func, MsgNone, MsgNone) {
 //     float x = FLAMEGPU->getVariable<float>("x");
 //    FLAMEGPU->setVariable<float>("x", x + 2);
 //    x = FLAMEGPU->getVariable<float>("x");
@@ -38,15 +38,15 @@ FLAMEGPU_AGENT_FUNCTION(output_func) {
 //    return ALIVE;
 // }
 
-FLAMEGPU_AGENT_FUNCTION(input_func) {
+FLAMEGPU_AGENT_FUNCTION(input_func, MsgNone, MsgNone) {
     return ALIVE;
 }
 
-FLAMEGPU_AGENT_FUNCTION(move_func) {
+FLAMEGPU_AGENT_FUNCTION(move_func, MsgNone, MsgNone) {
     return ALIVE;
 }
 
-FLAMEGPU_AGENT_FUNCTION(stay_func) {
+FLAMEGPU_AGENT_FUNCTION(stay_func, MsgNone, MsgNone) {
     return ALIVE;
 }
 
@@ -79,7 +79,7 @@ AgentFunctionDescription& attach_output_func(AgentDescription& agent) {
  * test_actor_random.h
  */
 
-FLAMEGPU_AGENT_FUNCTION(random1_func) {
+FLAMEGPU_AGENT_FUNCTION(random1_func, MsgNone, MsgNone) {
     FLAMEGPU->setVariable<float>("a", FLAMEGPU->random.uniform<float>());
     FLAMEGPU->setVariable<float>("b", FLAMEGPU->random.uniform<float>());
     FLAMEGPU->setVariable<float>("c", FLAMEGPU->random.uniform<float>());
@@ -89,7 +89,7 @@ FLAMEGPU_AGENT_FUNCTION(random1_func) {
 AgentFunctionDescription& attach_random1_func(AgentDescription& agent) {
     return agent.newFunction("random1", random1_func);
 }
-FLAMEGPU_AGENT_FUNCTION(random2_func) {
+FLAMEGPU_AGENT_FUNCTION(random2_func, MsgNone, MsgNone) {
     FLAMEGPU->setVariable<float>("uniform_float", FLAMEGPU->random.uniform<float>());
     FLAMEGPU->setVariable<double>("uniform_double", FLAMEGPU->random.uniform<double>());
 

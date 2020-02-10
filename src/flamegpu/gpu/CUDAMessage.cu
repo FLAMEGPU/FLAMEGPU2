@@ -15,11 +15,12 @@
 #include "flamegpu/gpu/CUDAMessageList.h"
 #include "flamegpu/gpu/CUDAErrorChecking.h"
 
-#include "flamegpu/model/MessageDescription.h"
+#include "flamegpu/runtime/messaging/BruteForce.h"
 #include "flamegpu/model/AgentFunctionDescription.h"
 #include "flamegpu/runtime/cuRVE/curve.h"
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/pop/AgentPopulation.h"
+#include "flamegpu/runtime/messaging.h"
 
 #ifdef _MSC_VER
 #pragma warning(push, 3)
@@ -33,11 +34,14 @@
 * CUDAMessage class
 * @brief allocates the hash table/list for message variables and copy the list to device
 */
-CUDAMessage::CUDAMessage(const MessageData& description)
+CUDAMessage::CUDAMessage(const MsgBruteForce::Data& description)
     : message_description(description)
     , message_count(0)
     , max_list_size(0)
-    , curve(Curve::getInstance()) {
+    , curve(Curve::getInstance())
+    , truncate_messagelist_flag(true)
+    , pbm_construction_required(false)
+    , specialisation_handler(description.getSpecialisationHander(*this)) {
     // resize(0); // Think this call is redundant
 }
 
@@ -53,7 +57,7 @@ CUDAMessage::~CUDAMessage(void) {
 * @param none
 * @return MessageDescription object
 */
-const MessageData& CUDAMessage::getMessageDescription() const {
+const MsgBruteForce::Data& CUDAMessage::getMessageDescription() const {
     return message_description;
 }
 
@@ -79,7 +83,6 @@ void CUDAMessage::resize(unsigned int newSize, const unsigned int &streamId) {
         zeroAllMessageData();
 // #endif
     }
-    message_count = newSize;  // This will be reduced down after function call if optional
 }
 
 
@@ -137,7 +140,11 @@ void CUDAMessage::mapReadRuntimeVariables(const AgentFunctionData& func) const {
         curve.registerVariableByHash(var_hash + agent_hash + func_hash + message_hash, d_ptr, size, length);
     }
 }
-void CUDAMessage::mapWriteRuntimeVariables(const AgentFunctionData& func) const {
+
+void *CUDAMessage::getReadPtr(const std::string &var_name) {
+    return message_list->getReadMessageListVariablePointer(var_name);
+}
+void CUDAMessage::mapWriteRuntimeVariables(const AgentFunctionData& func, const unsigned int &writeLen) const {
     // check that the message list has been allocated
     if (!message_list) {
         THROW InvalidMessageData("Error: Initial message list for message '%s' has not been allocated, "
@@ -162,7 +169,7 @@ void CUDAMessage::mapWriteRuntimeVariables(const AgentFunctionData& func) const 
         size_t size = mmp.second.type_size;
 
         // maximum population size
-        unsigned int length = this->getMessageCount();  // check to see if it is equal to pop
+        unsigned int length = writeLen;  // check to see if it is equal to pop
         curve.registerVariableByHash(var_hash + agent_hash + func_hash + message_hash, d_ptr, size, length);
     }
 }
@@ -183,9 +190,9 @@ void CUDAMessage::unmapRuntimeVariables(const AgentFunctionData& func) const {
         curve.unregisterVariableByHash(var_hash + agent_hash + func_hash + message_hash);
     }
 }
-void CUDAMessage::swap(bool isOptional, const unsigned int &streamId) {
+void CUDAMessage::swap(bool isOptional, const unsigned int &newMsgCount, const unsigned int &streamId) {
     if (isOptional && message_description.optional_outputs > 0) {
-        if (message_count > flamegpu_internal::CUDAScanCompaction::hd_message_configs[streamId].cub_temp_size_max_list_size) {
+        if (newMsgCount > flamegpu_internal::CUDAScanCompaction::hd_message_configs[streamId].cub_temp_size_max_list_size) {
             if (flamegpu_internal::CUDAScanCompaction::hd_message_configs[streamId].hd_cub_temp) {
                 gpuErrchk(cudaFree(flamegpu_internal::CUDAScanCompaction::hd_message_configs[streamId].hd_cub_temp));
             }
@@ -204,11 +211,28 @@ void CUDAMessage::swap(bool isOptional, const unsigned int &streamId) {
             flamegpu_internal::CUDAScanCompaction::hd_message_configs[streamId].cub_temp_size,
             flamegpu_internal::CUDAScanCompaction::hd_message_configs[streamId].d_ptrs.scan_flag,
             flamegpu_internal::CUDAScanCompaction::hd_message_configs[streamId].d_ptrs.position,
-            message_count + 1);
+            newMsgCount + 1);
         // Scatter
         // Update count
-        message_count = message_list->scatter(streamId);
+        message_count = message_list->scatter(newMsgCount, streamId, !this->truncate_messagelist_flag);
     } else {
-        message_list->swap();
+        if (this->truncate_messagelist_flag || newMsgCount == 0) {  // newMsgCount == 0 is used by buildIndex() of spatial messaging.
+            message_count = newMsgCount;
+            message_list->swap();
+        } else {
+            assert(message_count + newMsgCount <= max_list_size);
+            // We're appending so use our scatter kernel
+            message_count = message_list->scatterAll(newMsgCount, streamId);
+        }
     }
+}
+
+void CUDAMessage::buildIndex() {
+    if (pbm_construction_required) {
+        specialisation_handler->buildIndex();
+        pbm_construction_required = false;
+    }
+}
+const void *CUDAMessage::getMetaDataDevicePtr() const {
+    return specialisation_handler->getMetaDataDevicePtr();
 }

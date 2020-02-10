@@ -8,8 +8,8 @@
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/runtime/AgentFunction.h"
 #include "flamegpu/model/LayerDescription.h"
+#include "flamegpu/runtime/messaging/BruteForce.h"
 
-class MessageDescription;
 struct ModelData;
 struct AgentFunctionData;
 
@@ -94,7 +94,7 @@ class AgentFunctionDescription {
      * @throws InvalidMessageName If the same message is already bound to the message output of this agent function
      * @see AgentFunctionDescription::setMessageInput(const std::string &)
      */
-    void setMessageInput(MessageDescription &message);
+    void setMessageInput(MsgBruteForce::Description &message);
     /**
      * Sets the message type that can be output during this agent function
      * This is optional, and only one type of message can be output per agent function
@@ -115,7 +115,7 @@ class AgentFunctionDescription {
      * @see AgentFunctionDescription::setMessageInput(const std::string &)
      * @see AgentFunctionDescription::setMessageOutputOptional(const bool &) To configure whether all agents must output messages
      */
-    void setMessageOutput(MessageDescription &message);
+    void setMessageOutput(MsgBruteForce::Description &message);
     /**
      * Configures whether message output from this agent function is optional
      * (e.g. whether all agents must output a message each time the function is called)
@@ -155,13 +155,13 @@ class AgentFunctionDescription {
      * @see AgentFunctionDescription::getMessageInput() for the immutable version
      * @throw OutOfBoundsException If the message input has not been set
      */
-    MessageDescription &MessageInput();
+    MsgBruteForce::Description &MessageInput();
     /**
      * @return An mutable reference to the message output of this agent function
      * @see AgentFunctionDescription::getMessageOutput() for the immutable version
      * @throw OutOfBoundsException If the message output has not been set
      */
-    MessageDescription &MessageOutput();
+    MsgBruteForce::Description &MessageOutput();
     /**
      * @return An mutable reference to the agent output of this agent function
      * @see AgentFunctionDescription::getAgentOutput() for the immutable version
@@ -198,13 +198,13 @@ class AgentFunctionDescription {
      * @see AgentFunctionDescription::MessageInput() for the mutable version
      * @throw OutOfBoundsException If the message input has not been set
      */
-    const MessageDescription &getMessageInput() const;
+    const MsgBruteForce::Description &getMessageInput() const;
     /**
      * @return An immutable reference to the message output of this agent function
      * @see AgentFunctionDescription::MessageOutput() for the mutable version
      * @throw OutOfBoundsException If the message output has not been set
      */
-    const MessageDescription &getMessageOutput() const;
+    const MsgBruteForce::Description &getMessageOutput() const;
     /**
      * @return True if message output from this agent function is optional
      */
@@ -256,8 +256,10 @@ class AgentFunctionDescription {
 template<typename AgentFunction>
 AgentFunctionDescription &AgentDescription::newFunction(const std::string &function_name, AgentFunction) {
     if (agent->functions.find(function_name) == agent->functions.end()) {
-        AgentFunctionWrapper *f = &agent_function_wrapper<AgentFunction>;
-        auto rtn = std::shared_ptr<AgentFunctionData>(new AgentFunctionData(this->agent->shared_from_this(), function_name, f));
+        AgentFunctionWrapper *f = AgentFunction::fnPtr();
+        std::type_index in_t = AgentFunction::inType();
+        std::type_index out_t = AgentFunction::outType();
+        auto rtn = std::shared_ptr<AgentFunctionData>(new AgentFunctionData(this->agent->shared_from_this(), function_name, f, in_t, out_t));
         agent->functions.emplace(function_name, rtn);
         return *rtn->description;
     }
