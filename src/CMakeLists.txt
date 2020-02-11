@@ -92,6 +92,9 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/flamegpu_host_api_macros.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/flamegpu_host_agent_api.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/cuRVE/curve.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/BruteForce.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Spatial2D.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/AgentRandom.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/DeviceEnvironment.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/EnvironmentManager.cuh

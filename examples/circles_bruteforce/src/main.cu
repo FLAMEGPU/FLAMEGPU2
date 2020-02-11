@@ -8,21 +8,13 @@
 #include "flamegpu/runtime/flamegpu_api.h"
 #include "flamegpu/io/factory.h"
 
-class MsgNone
-{
-public:
-    MsgNone() {}
-    __device__ MsgNone(Curve::NamespaceHash msghash, unsigned int len)
-    {
 
-    }
-};
 
 FLAMEGPU_AGENT_FUNCTION(output_message, MsgNone, MsgNone) {
-    FLAMEGPU->addMessage<int>("id", FLAMEGPU->getVariable<float>("id"));
-    FLAMEGPU->addMessage<float>("x", FLAMEGPU->getVariable<float>("x"));
-    FLAMEGPU->addMessage<float>("y", FLAMEGPU->getVariable<float>("y"));
-    FLAMEGPU->addMessage<float>("z", FLAMEGPU->getVariable<float>("z"));
+    //FLAMEGPU->addMessage<int>("id", FLAMEGPU->getVariable<float>("id"));
+    //FLAMEGPU->addMessage<float>("x", FLAMEGPU->getVariable<float>("x"));
+    //FLAMEGPU->addMessage<float>("y", FLAMEGPU->getVariable<float>("y"));
+    //FLAMEGPU->addMessage<float>("z", FLAMEGPU->getVariable<float>("z"));
     return ALIVE;
 }
 FLAMEGPU_AGENT_FUNCTION(move, MsgNone, MsgNone) {
@@ -36,28 +28,28 @@ FLAMEGPU_AGENT_FUNCTION(move, MsgNone, MsgNone) {
     const float y1 = FLAMEGPU->getVariable<float>("y");
     const float z1 = FLAMEGPU->getVariable<float>("z");
     int count = 0;
-    for (auto &message : FLAMEGPU->GetMessageIterator("location")) {
-        if (message.getVariable<int>("id") != ID) {
-            const float x2 = message.getVariable<float>("x");
-            const float y2 = message.getVariable<float>("y");
-            const float z2 = message.getVariable<float>("z");
-            float x21 = x2 - x1;
-            float y21 = y2 - y1;
-            float z21 = z2 - z1;
-            const float separation = cbrt(x21*x21 + y21*y21 + z21*z21);
-            if (separation < RADIUS && separation > 0.0f) {
-                float k = sinf((separation / RADIUS)*3.141*-2)*REPULSE_FACTOR;
-                // Normalise without recalculating separation
-                x21 /= separation;
-                y21 /= separation;
-                z21 /= separation;
-                fx += k * x21;
-                fy += k * y21;
-                fz += k * z21;
-                count++;
-            }
-        }
-    }
+    //for (auto &message : FLAMEGPU->GetMessageIterator("location")) {
+    //    if (message.getVariable<int>("id") != ID) {
+    //        const float x2 = message.getVariable<float>("x");
+    //        const float y2 = message.getVariable<float>("y");
+    //        const float z2 = message.getVariable<float>("z");
+    //        float x21 = x2 - x1;
+    //        float y21 = y2 - y1;
+    //        float z21 = z2 - z1;
+    //        const float separation = cbrt(x21*x21 + y21*y21 + z21*z21);
+    //        if (separation < RADIUS && separation > 0.0f) {
+    //            float k = sinf((separation / RADIUS)*3.141*-2)*REPULSE_FACTOR;
+    //            // Normalise without recalculating separation
+    //            x21 /= separation;
+    //            y21 /= separation;
+    //            z21 /= separation;
+    //            fx += k * x21;
+    //            fy += k * y21;
+    //            fz += k * z21;
+    //            count++;
+    //        }
+    //    }
+    //}
     fx /= count > 0 ? count : 1;
     fy /= count > 0 ? count : 1;
     fz /= count > 0 ? count : 1;
