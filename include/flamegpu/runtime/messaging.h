@@ -23,7 +23,7 @@ public:
     {
     public:
         Out() {}
-        __device__ Out(Curve::NamespaceHash, Curve::NamespaceHash)
+        __device__ Out(Curve::NamespaceHash, Curve::NamespaceHash, unsigned int)
         {
 
         }

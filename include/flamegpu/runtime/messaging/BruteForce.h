@@ -68,6 +68,20 @@ public:
         __host__ __device__ bool operator!=(const iterator& rhs) { return  _message != rhs._message; }
         __host__ __device__ MsgBruteForce::Message& operator*() { return _message; }
     };
+
+    class Out {
+     public:
+        __device__ Out(Curve::NamespaceHash agentfn_hash, Curve::NamespaceHash msg_hash, unsigned int _streamId)
+            : combined_hash(agentfn_hash + msg_hash)
+            , streamId(_streamId)
+        { }
+        template<typename T, unsigned int N>
+        __device__ void setVariable(const char(&variable_name)[N], T value) const;
+     private:
+        //agent_function + msg_hash
+        Curve::NamespaceHash combined_hash;
+        unsigned int streamId;
+    };
 };
 template<typename T, unsigned int N>
 __device__ T MsgBruteForce::Message::getVariable(const char(&variable_name)[N]) const {
@@ -81,6 +95,24 @@ __device__ T MsgBruteForce::Message::getVariable(const char(&variable_name)[N]) 
         // @todo - Improved error handling of out of bounds message access? Return a default value or assert?
         return static_cast<T>(0);
     }
+}
+
+/**
+* \brief adds a message
+* \param variable_name Name of message variable to set
+* \param value Value to set it to
+*/
+template<typename T, unsigned int N>
+__device__ void MsgBruteForce::Out::setVariable(const char(&variable_name)[N], T value) const {  // message name or variable name
+    unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;  // + d_message_count;
+
+    // Todo: checking if the output message type is single or optional?  (d_message_type)
+
+    // set the variable using curve
+    Curve::setVariable<T>(variable_name, combined_hash, value, index);
+
+    // Set scan flag incase the message is optional
+    flamegpu_internal::CUDAScanCompaction::ds_message_configs[streamId].scan_flag[index] = 1;
 }
 
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_BRUTEFORCE_H_

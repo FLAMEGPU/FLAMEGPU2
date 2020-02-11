@@ -25,7 +25,7 @@ typedef void(AgentFunctionWrapper)(
  * @param agent_func_name_hash
  * @param messagename_inp_hash
  * @param popNo
- * @param messageList_size
+ * @param messageIn_size
  * @param thread_in_layer_offset Add this value to TID to calculate a thread-safe TID (TS_ID), used by ActorRandom for accessing curand array in a thread-safe manner
  * @tparam AgentFunction The modeller defined agent function
  * @tparam MsgIn Message handler for messageinput
@@ -45,7 +45,7 @@ __global__ void agent_function_wrapper(
     if (FLAMEGPU_DEVICE_API<MsgIn, MsgOut>::TID() >= popNo)
         return;
     // create a new device FLAME_GPU instance
-    FLAMEGPU_DEVICE_API<MsgIn, MsgOut> *api = new FLAMEGPU_DEVICE_API<MsgIn, MsgOut>(thread_in_layer_offset, model_name_hash, streamId, MsgIn::In(agent_func_name_hash, messagename_inp_hash, messageIn_size), MsgOut::Out(agent_func_name_hash, messagename_outp_hash));
+    FLAMEGPU_DEVICE_API<MsgIn, MsgOut> *api = new FLAMEGPU_DEVICE_API<MsgIn, MsgOut>(thread_in_layer_offset, model_name_hash, streamId, MsgIn::In(agent_func_name_hash, messagename_inp_hash, messageIn_size), MsgOut::Out(agent_func_name_hash, messagename_outp_hash, streamId));
 
     // ! set namespace for agent name
     api->setAgentNameSpace(agent_func_name_hash);

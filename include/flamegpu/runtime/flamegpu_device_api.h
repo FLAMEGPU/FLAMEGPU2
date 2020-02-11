@@ -72,13 +72,14 @@ class FLAMEGPU_DEVICE_API {
     /**
      * @param _thread_in_layer_offset This offset can be added to TID to give a thread-safe unique index for the thread
      */
-    __device__ FLAMEGPU_DEVICE_API(const unsigned int &_thread_in_layer_offset, const Curve::NamespaceHash &modelname_hash, const Curve::NamespaceHash &_streamId, typename MsgIn::In &&msg_in, typename MsgOut::Out &&msg_out)
+    __device__ FLAMEGPU_DEVICE_API(const unsigned int &_thread_in_layer_offset, const Curve::NamespaceHash &modelname_hash, const unsigned int &_streamId, typename MsgIn::In &&msg_in, typename MsgOut::Out &&msg_out)
         : random(AgentRandom(TID()+_thread_in_layer_offset))
         , environment(DeviceEnvironment(modelname_hash))
         , message_in(msg_in)
         , message_out(msg_out)
         , thread_in_layer_offset(_thread_in_layer_offset)
-        , streamId(_streamId) { }
+        , streamId(_streamId)
+    { }
 
     template<typename T, unsigned int N> __device__
     T getVariable(const char(&variable_name)[N]);
@@ -113,10 +114,10 @@ class FLAMEGPU_DEVICE_API {
     const AgentRandom random;
     const DeviceEnvironment environment;
     const typename MsgIn::In message_in;
+    const typename MsgOut::Out message_out;
 
  private:
     Curve::NamespaceHash agent_func_name_hash;
-    typename MsgOut::Out message_out;
     
     unsigned int thread_in_layer_offset;
     unsigned int streamId;

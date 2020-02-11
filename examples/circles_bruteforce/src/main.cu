@@ -10,11 +10,11 @@
 
 
 
-FLAMEGPU_AGENT_FUNCTION(output_message, MsgNone, MsgNone) {
-    //FLAMEGPU->addMessage<int>("id", FLAMEGPU->getVariable<float>("id"));
-    //FLAMEGPU->addMessage<float>("x", FLAMEGPU->getVariable<float>("x"));
-    //FLAMEGPU->addMessage<float>("y", FLAMEGPU->getVariable<float>("y"));
-    //FLAMEGPU->addMessage<float>("z", FLAMEGPU->getVariable<float>("z"));
+FLAMEGPU_AGENT_FUNCTION(output_message, MsgNone, MsgBruteForce) {
+    FLAMEGPU->message_out.setVariable<int>("id", FLAMEGPU->getVariable<float>("id"));
+    FLAMEGPU->message_out.setVariable<float>("x", FLAMEGPU->getVariable<float>("x"));
+    FLAMEGPU->message_out.setVariable<float>("y", FLAMEGPU->getVariable<float>("y"));
+    FLAMEGPU->message_out.setVariable<float>("z", FLAMEGPU->getVariable<float>("z"));
     return ALIVE;
 }
 FLAMEGPU_AGENT_FUNCTION(move, MsgBruteForce, MsgNone) {
@@ -92,7 +92,7 @@ int main(int argc, const char ** argv) {
         agent.newVariable<float>("y");
         agent.newVariable<float>("z");
         agent.newVariable<float>("drift");  // Store the distance moved here, for validation
-        agent.newFunction("output_message", output_message, MsgNone(), MsgNone()).setMessageOutput("location");
+        agent.newFunction("output_message", output_message, MsgNone(), MsgBruteForce()).setMessageOutput("location");
         agent.newFunction("move", move, MsgBruteForce(), MsgNone()).setMessageInput("location");
     }
 
@@ -115,7 +115,7 @@ int main(int argc, const char ** argv) {
 
     {   // Layer #1
         LayerDescription &layer = model.newLayer();
-        layer.addAgentFunction(output_message, MsgNone(), MsgNone());
+        layer.addAgentFunction(output_message, MsgNone(), MsgBruteForce());
     }
     {   // Layer #2
         LayerDescription &layer = model.newLayer();
