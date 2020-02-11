@@ -2,7 +2,7 @@
 #define INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_H_
 
 #include "flamegpu/runtime/messaging/BruteForce.h"
-#include "flamegpu/runtime/messaging/Spatial2D.h"
+#include "flamegpu/runtime/messaging/Spatial3D.h"
 
 /**
  * This empty class is used when messaging is not enabled for an agent function
