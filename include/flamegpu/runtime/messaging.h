@@ -10,10 +10,23 @@
 class MsgNone
 {
 public:
-    MsgNone() {}
-    __device__ MsgNone(Curve::NamespaceHash agentfn_hash, Curve::NamespaceHash msg_hash, unsigned int len)
+    class In
     {
+    public:
+        In() {}
+        __device__ In(Curve::NamespaceHash, Curve::NamespaceHash, unsigned int)
+        {
 
-    }
+        }
+    };
+    class Out
+    {
+    public:
+        Out() {}
+        __device__ Out(Curve::NamespaceHash, Curve::NamespaceHash)
+        {
+
+        }
+    };
 };
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_H_
