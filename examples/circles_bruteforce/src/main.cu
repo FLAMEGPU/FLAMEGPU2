@@ -72,7 +72,7 @@ FLAMEGPU_STEP_FUNCTION(Validation) {
         driftIncreased++;
     prevTotalDrift = totalDrift;
     // printf("Avg Drift: %g\n", totalDrift / FLAMEGPU->agent("Circle").count());
-    printf("%.2f Drift correct\n", 100 * driftDropped / static_cast<float>(driftDropped + driftIncreased));
+    printf("%.2f%% Drift correct\n", 100 * driftDropped / static_cast<float>(driftDropped + driftIncreased));
 }
 void export_data(std::shared_ptr<AgentPopulation> pop, const char *filename);
 int main(int argc, const char ** argv) {
@@ -150,13 +150,13 @@ int main(int argc, const char ** argv) {
     /**
      * Execution
      */
-    // This mode of execution allows the PRIMAGE visualiser to be used (2020-01-07)
-    // while (cuda_model.getStepCounter() < cuda_model.getSimulationConfig().steps && cuda_model.step()) {
-    //    std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> pops;
-    //    auto a = std::make_shared<AgentPopulation>(model.getAgent("Circle"));
-    //    cuda_model.getPopulationData(*a);
-    //    export_data(a, (std::to_string(cuda_model.getStepCounter()-1)+".bin").c_str());
-    // }
+     //This mode of execution allows the PRIMAGE visualiser to be used (2020-01-07)
+     while (cuda_model.getStepCounter() < cuda_model.getSimulationConfig().steps && cuda_model.step()) {
+        std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> pops;
+        auto a = std::make_shared<AgentPopulation>(model.getAgent("Circle"));
+        cuda_model.getPopulationData(*a);
+        export_data(a, (std::to_string(cuda_model.getStepCounter()-1)+".bin").c_str());
+     }
 
     cuda_model.simulate();
 
@@ -172,7 +172,7 @@ int main(int argc, const char ** argv) {
     pops.emplace("Circle", a);
     StateWriter *write__ = WriterFactory::createWriter(pops, cuda_model.getStepCounter(), "end.xml");
     write__->writeStates();
-    // export_data(a, "test.bin");
+    //export_data(a, "test.bin");
     getchar();
     return 0;
 }
