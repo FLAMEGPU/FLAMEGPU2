@@ -10,14 +10,15 @@
 
 
 
-FLAMEGPU_AGENT_FUNCTION(output_message, MsgNone, MsgBruteForce) {
+FLAMEGPU_AGENT_FUNCTION(output_message, MsgNone, MsgSpatial3D) {
     FLAMEGPU->message_out.setVariable<int>("id", FLAMEGPU->getVariable<float>("id"));
-    FLAMEGPU->message_out.setVariable<float>("x", FLAMEGPU->getVariable<float>("x"));
-    FLAMEGPU->message_out.setVariable<float>("y", FLAMEGPU->getVariable<float>("y"));
-    FLAMEGPU->message_out.setVariable<float>("z", FLAMEGPU->getVariable<float>("z"));
+    FLAMEGPU->message_out.setLocation(
+        FLAMEGPU->getVariable<float>("x"), 
+        FLAMEGPU->getVariable<float>("y"),
+        FLAMEGPU->getVariable<float>("z"));
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(move, MsgBruteForce, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(move, MsgSpatial3D, MsgNone) {
     const int ID = FLAMEGPU->getVariable<int>("id");
     const float REPULSE_FACTOR = FLAMEGPU->environment.get<float>("repulse");
     const float RADIUS = FLAMEGPU->environment.get<float>("radius");
@@ -92,8 +93,8 @@ int main(int argc, const char ** argv) {
         agent.newVariable<float>("y");
         agent.newVariable<float>("z");
         agent.newVariable<float>("drift");  // Store the distance moved here, for validation
-        agent.newFunction("output_message", output_message, MsgNone(), MsgBruteForce()).setMessageOutput("location");
-        agent.newFunction("move", move, MsgBruteForce(), MsgNone()).setMessageInput("location");
+        agent.newFunction("output_message", output_message, MsgNone(), MsgSpatial3D()).setMessageOutput("location");
+        agent.newFunction("move", move, MsgSpatial3D(), MsgNone()).setMessageInput("location");
     }
 
 
@@ -115,11 +116,11 @@ int main(int argc, const char ** argv) {
 
     {   // Layer #1
         LayerDescription &layer = model.newLayer();
-        layer.addAgentFunction(output_message, MsgNone(), MsgBruteForce());
+        layer.addAgentFunction(output_message, MsgNone(), MsgSpatial3D());
     }
     {   // Layer #2
         LayerDescription &layer = model.newLayer();
-        layer.addAgentFunction(move, MsgBruteForce(), MsgNone());
+        layer.addAgentFunction(move, MsgSpatial3D(), MsgNone());
     }
 
     /**

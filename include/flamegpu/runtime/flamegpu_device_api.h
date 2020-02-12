@@ -18,7 +18,6 @@
 #include "flamegpu/runtime/utility/AgentRandom.cuh"
 #include "flamegpu/runtime/utility/DeviceEnvironment.cuh"
 #include "flamegpu/gpu/CUDAScanCompaction.h"
-#include "flamegpu/runtime/messaging.h"
 
 // TODO: Some example code of the handle class and an example function
 // ! FLAMEGPU_API is a singleton class

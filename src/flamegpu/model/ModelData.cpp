@@ -50,6 +50,8 @@ Spatial2DMessageData::Spatial2DMessageData(ModelData *const model, const std::st
     , maxX(0.0f)
     , maxY(0.0f) {
     description = std::unique_ptr<Spatial2DMessageDescription>(new Spatial2DMessageDescription(model, this));
+    description->newVariable<float>("x");
+    description->newVariable<float>("y");
 }
 
 Spatial3DMessageData::Spatial3DMessageData(ModelData *const model, const std::string &message_name)
@@ -57,6 +59,7 @@ Spatial3DMessageData::Spatial3DMessageData(ModelData *const model, const std::st
     , minZ(0.0f)
     , maxZ(0.0f) {
     description = std::unique_ptr<MessageDescription>(new Spatial3DMessageDescription(model, this));
+    description->newVariable<float>("z");
 }
 
 /**

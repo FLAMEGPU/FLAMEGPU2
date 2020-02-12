@@ -32,8 +32,17 @@ class CUDAScatter {
         const std::map<std::string, void*> &in,
         const std::map<std::string, void*> &out,
         const unsigned int &itemCount);
+    void pbm_reorder(
+        const ModelData::VariableMap &vars,
+        const std::map<std::string, void*> &in,
+        const std::map<std::string, void*> &out,
+        const unsigned int &itemCount,
+        const unsigned int *d_bin_index,
+        const unsigned int *d_bin_sub_index,
+        const unsigned int *d_pbm);
 
  private:
+    // set by getInstance()
     unsigned int streamId;
     ScatterData *d_data;
     unsigned int data_len;

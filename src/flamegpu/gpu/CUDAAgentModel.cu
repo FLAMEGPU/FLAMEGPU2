@@ -70,6 +70,11 @@ bool CUDAAgentModel::step() {
     for (int j = 0; j < nStreams; j++)
         gpuErrchk(cudaStreamCreate(&stream[j]));
 
+    // Reset message list flags
+    for(auto m =  message_map.begin();m!=message_map.end();++m)
+    {
+        m->second->setTruncateMessageListFlag();
+    }
 
     /*! for each each sim layer, launch each agent function in its own stream */
     for (auto lyr = model->layers.begin(); lyr != model->layers.end(); ++lyr) {
@@ -90,8 +95,12 @@ bool CUDAAgentModel::step() {
             // check if a function has an input message
             if (auto im = func_des->message_input.lock()) {
                 std::string inpMessage_name = im->name;
-                const CUDAMessage& cuda_message = getCUDAMessage(inpMessage_name);
+                CUDAMessage& cuda_message = getCUDAMessage(inpMessage_name);
                 cuda_message.mapReadRuntimeVariables(*func_des);
+
+                //Construct PBM here if required!!
+
+                cuda_message.clearPBMConstructionRequiredFlag();
             }
 
             // check if a function has an output massage
@@ -206,6 +215,8 @@ bool CUDAAgentModel::step() {
                 CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
                 cuda_message.unmapRuntimeVariables(*func_des);
                 cuda_message.swap(func_des->message_output_optional, j);
+                cuda_message.clearTruncateMessageListFlag();
+                cuda_message.setPBMConstructionRequiredFlag();
             }
             // const CUDAMessage& cuda_inpMessage = getCUDAMessage(func_des.getInputChild.getMessageName());
             // const CUDAMessage& cuda_outpMessage = getCUDAMessage(func_des.getOutputChild.getMessageName());

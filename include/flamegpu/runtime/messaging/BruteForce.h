@@ -82,6 +82,15 @@ public:
         Curve::NamespaceHash combined_hash;
         unsigned int streamId;
     };
+
+    // Blank handler, brute force requires no index or special allocations
+    template<typename SimSpecialisationMsg>
+    class CUDAModelHandler : public MsgSpecialisationHandler<SimSpecialisationMsg> {
+    public:
+        CUDAModelHandler(CUDAMessage &a)
+            : MsgSpecialisationHandler(a)
+        { }
+    };
 };
 template<typename T, unsigned int N>
 __device__ T MsgBruteForce::Message::getVariable(const char(&variable_name)[N]) const {

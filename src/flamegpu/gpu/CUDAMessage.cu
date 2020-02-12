@@ -37,7 +37,9 @@ CUDAMessage::CUDAMessage(const MessageData& description)
     : message_description(description)
     , message_count(0)
     , max_list_size(0)
-    , curve(Curve::getInstance()) {
+    , curve(Curve::getInstance())
+    , truncate_messagelist_flag(true)
+    , pbm_construction_required(false) {
     // resize(0); // Think this call is redundant
 }
 
@@ -136,6 +138,11 @@ void CUDAMessage::mapReadRuntimeVariables(const AgentFunctionData& func) const {
         unsigned int length = this->getMessageCount();  // check to see if it is equal to pop
         curve.registerVariableByHash(var_hash + agent_hash + func_hash + message_hash, d_ptr, size, length);
     }
+}
+
+void *CUDAMessage::getReadPtr(const std::string &var_name)
+{
+    return message_list->getReadMessageListVariablePointer(var_name);
 }
 void CUDAMessage::mapWriteRuntimeVariables(const AgentFunctionData& func) const {
     // check that the message list has been allocated

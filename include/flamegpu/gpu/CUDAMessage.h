@@ -75,11 +75,17 @@ class CUDAMessage {
      * @param func The agent function, this is used for the cuRVE hash mapping
      */
     void unmapRuntimeVariables(const AgentFunctionData& func) const;
+    void *getReadPtr(const std::string &var_name);
+    const CUDAMsgMap &getReadList() { return message_list->getReadList(); }
+    const CUDAMsgMap &getWriteList() { return message_list->getWriteList(); }
     /**
      * Swaps the two internal maps within message_list
      */
     virtual void swap(bool isOptional, const unsigned int &streamId);
-
+    void setTruncateMessageListFlag() { truncate_messagelist_flag = true; }
+    void clearTruncateMessageListFlag() { truncate_messagelist_flag = false; }
+    void setPBMConstructionRequiredFlag() { pbm_construction_required = true; }
+    void clearPBMConstructionRequiredFlag() { pbm_construction_required = false; }
  protected:
     /** 
      * Zero all message variable data.
@@ -109,6 +115,26 @@ class CUDAMessage {
      * Reference to curve instance used internally
      */
     Curve &curve;
+    /**
+     * When this flag is set to True before message output, 
+     * message output truncates the messagelist rather than appending
+     * 
+     * Set to True at start of each step
+     * Set to False after first message output
+     * @note Flag is currently updated in correct places, however I don't think it's used by message output
+     */
+    bool truncate_messagelist_flag;
+    /**
+     * When this flag is set to True before message input,
+     * PBM is constructed
+     * This behaviour is likely surplus for messaging types,
+     * but the flag can be maintained
+     *
+     * Set to True each time the message list is updated
+     * Set to False before messages are read
+     * @note Flag is currently updated in correct places, however I don't think it's used by message output
+     */
+    bool pbm_construction_required;
 };
 
 #endif  // INCLUDE_FLAMEGPU_GPU_CUDAMESSAGE_H_
