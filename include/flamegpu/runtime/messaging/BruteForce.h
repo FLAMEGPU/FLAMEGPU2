@@ -9,7 +9,9 @@ class MsgBruteForce
 public:
     class Message;   // Forward declare inner classes
     class iterator;  // Forward declare inner classes
-                     // Unused, just required for some lazy template initialising
+    struct MetaData {
+        unsigned int length;
+    };
     /**
     * This class is returned to user by Device API
     * It gives access to message iterators
@@ -18,9 +20,9 @@ public:
     {
         friend class MsgBruteForce::Message;
     public:
-        __device__ In(Curve::NamespaceHash agentfn_hash, Curve::NamespaceHash msg_hash, unsigned int _len)
+        __device__ In(Curve::NamespaceHash agentfn_hash, Curve::NamespaceHash msg_hash, const void *metadata)
             : combined_hash(agentfn_hash + msg_hash)
-            , len(_len)
+            , len(reinterpret_cast<const MetaData*>(metadata)->length)
         { }
         // Something to access messages (probably iterator rather than get var
         /*! Returns the number of elements in the message list.
@@ -88,8 +90,21 @@ public:
     class CUDAModelHandler : public MsgSpecialisationHandler<SimSpecialisationMsg> {
     public:
         CUDAModelHandler(CUDAMessage &a)
-            : MsgSpecialisationHandler(a)
-        { }
+            : MsgSpecialisationHandler(a) {
+            gpuErrchk(cudaMalloc(&d_metadata, sizeof(MetaData)));
+        }
+        ~CUDAModelHandler() {
+            gpuErrchk(cudaFree(d_metadata));
+        }
+
+        void buildIndex() override {
+            hd_metadata.length = sim_message.getMessageCount();
+            gpuErrchk(cudaMemcpy(d_metadata, &hd_metadata, sizeof(MetaData), cudaMemcpyHostToDevice));
+        }
+        const void *getMetaDataDevicePtr() const override { return d_metadata; }
+    private:
+        MetaData hd_metadata;
+        MetaData *d_metadata;
     };
 };
 template<typename T, unsigned int N>

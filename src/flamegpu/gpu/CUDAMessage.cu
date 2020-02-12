@@ -20,6 +20,7 @@
 #include "flamegpu/runtime/cuRVE/curve.h"
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/pop/AgentPopulation.h"
+#include "flamegpu/runtime/messaging.h"
 
 #ifdef _MSC_VER
 #pragma warning(push, 3)
@@ -39,7 +40,8 @@ CUDAMessage::CUDAMessage(const MessageData& description)
     , max_list_size(0)
     , curve(Curve::getInstance())
     , truncate_messagelist_flag(true)
-    , pbm_construction_required(false) {
+    , pbm_construction_required(false)
+    , specialisation_handler(description.getSpecialisationHander(*this)){
     // resize(0); // Think this call is redundant
 }
 
@@ -218,4 +220,14 @@ void CUDAMessage::swap(bool isOptional, const unsigned int &streamId) {
     } else {
         message_list->swap();
     }
+}
+
+void CUDAMessage::buildIndex() {
+    if(pbm_construction_required) {
+        specialisation_handler->buildIndex();
+        pbm_construction_required = false;
+    }
+}
+const void *CUDAMessage::getMetaDataDevicePtr() const {
+    return specialisation_handler->getMetaDataDevicePtr();
 }

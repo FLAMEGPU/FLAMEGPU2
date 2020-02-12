@@ -14,7 +14,7 @@ typedef void(AgentFunctionWrapper)(
     Curve::NamespaceHash messagename_inp_hash,
     Curve::NamespaceHash messagename_outp_hash,
     const int popNo,
-    const unsigned int messageList_size,
+    const void *messagelist_metadata,
     const unsigned int thread_in_layer_offset,
     const unsigned int streamId);  // Can't put __global__ in a typedef
 
@@ -38,14 +38,14 @@ __global__ void agent_function_wrapper(
     Curve::NamespaceHash messagename_inp_hash,
     Curve::NamespaceHash messagename_outp_hash,
     const int popNo,
-    const unsigned int messageIn_size,
+    const void *messagelist_metadata,
     const unsigned int thread_in_layer_offset,
     const unsigned int streamId) {
     // Must be terminated here, else AgentRandom has bounds issues inside FLAMEGPU_DEVICE_API constructor
     if (FLAMEGPU_DEVICE_API<MsgIn, MsgOut>::TID() >= popNo)
         return;
     // create a new device FLAME_GPU instance
-    FLAMEGPU_DEVICE_API<MsgIn, MsgOut> *api = new FLAMEGPU_DEVICE_API<MsgIn, MsgOut>(thread_in_layer_offset, model_name_hash, streamId, MsgIn::In(agent_func_name_hash, messagename_inp_hash, messageIn_size), MsgOut::Out(agent_func_name_hash, messagename_outp_hash, streamId));
+    FLAMEGPU_DEVICE_API<MsgIn, MsgOut> *api = new FLAMEGPU_DEVICE_API<MsgIn, MsgOut>(thread_in_layer_offset, model_name_hash, streamId, MsgIn::In(agent_func_name_hash, messagename_inp_hash, messagelist_metadata), MsgOut::Out(agent_func_name_hash, messagename_outp_hash, streamId));
 
     // ! set namespace for agent name
     api->setAgentNameSpace(agent_func_name_hash);

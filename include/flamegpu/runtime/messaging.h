@@ -15,6 +15,7 @@ public:
     { }
     virtual ~MsgSpecialisationHandler() { }
     virtual void buildIndex() { }
+    virtual const void *getMetaDataDevicePtr() const { return nullptr; }
 protected:
     SimSpecialisationMsg &sim_message;
 };
@@ -29,7 +30,7 @@ public:
     {
     public:
         In() {}
-        __device__ In(Curve::NamespaceHash, Curve::NamespaceHash, unsigned int)
+        __device__ In(Curve::NamespaceHash /*agent fn hash*/, Curve::NamespaceHash /*message name hash*/, const void * /*metadata*/)
         {
 
         }
@@ -38,7 +39,7 @@ public:
     {
     public:
         Out() {}
-        __device__ Out(Curve::NamespaceHash, Curve::NamespaceHash, unsigned int)
+        __device__ Out(Curve::NamespaceHash /*agent fn hash*/, Curve::NamespaceHash /*message name hash*/, unsigned int /*streamid*/)
         {
 
         }

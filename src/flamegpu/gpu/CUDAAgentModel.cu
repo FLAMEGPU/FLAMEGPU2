@@ -55,7 +55,7 @@ bool CUDAAgentModel::step() {
     // hash model name
     const Curve::NamespaceHash modelname_hash = curve.variableRuntimeHash(model->name.c_str());
 
-    unsigned int messageList_Size = 0;
+    const void *d_messagelist_metadata = nullptr;
 
     // TODO: simulation.getMaxFunctionsPerLayer()
     for (auto lyr = model->layers.begin(); lyr != model->layers.end(); ++lyr) {
@@ -99,8 +99,7 @@ bool CUDAAgentModel::step() {
                 cuda_message.mapReadRuntimeVariables(*func_des);
 
                 //Construct PBM here if required!!
-
-                cuda_message.clearPBMConstructionRequiredFlag();
+                cuda_message.buildIndex();
             }
 
             // check if a function has an output massage
@@ -154,7 +153,7 @@ bool CUDAAgentModel::step() {
                 // hash message name
                 message_name_inp_hash = curve.variableRuntimeHash(inpMessage_name.c_str());
 
-                messageList_Size = cuda_message.getMessageCount();
+                d_messagelist_metadata = cuda_message.getMetaDataDevicePtr();
             }
 
             // check if a function has an output massage
@@ -186,7 +185,7 @@ bool CUDAAgentModel::step() {
             // hash function name
             Curve::NamespaceHash funcname_hash = curve.variableRuntimeHash(func_name.c_str());
 
-            (func_des->func)<<<gridSize, blockSize, 0, stream[j] >>>(modelname_hash, agentname_hash + funcname_hash, message_name_inp_hash, message_name_outp_hash, state_list_size, messageList_Size, totalThreads, j);
+            (func_des->func)<<<gridSize, blockSize, 0, stream[j] >>>(modelname_hash, agentname_hash + funcname_hash, message_name_inp_hash, message_name_outp_hash, state_list_size, d_messagelist_metadata, totalThreads, j);
             gpuErrchkLaunch();
 
             totalThreads += state_list_size;

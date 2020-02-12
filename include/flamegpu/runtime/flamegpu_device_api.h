@@ -63,7 +63,7 @@ class FLAMEGPU_DEVICE_API {
         Curve::NamespaceHash, 
         Curve::NamespaceHash, 
         const int, 
-        const unsigned int, 
+        const void *messagelist_metadata,
         const unsigned int, 
         const unsigned int);
 

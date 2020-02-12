@@ -24,6 +24,10 @@ struct MessageData;
 struct AgentFunctionData;
 struct LayerData;
 
+template<typename SimMessage>
+class MsgSpecialisationHandler;
+class CUDAMessage;
+
 /**
  * This is the internal data store for ModelDescription
  * Users should only access that data stored within via an instance of ModelDescription
@@ -324,6 +328,7 @@ struct MessageData {
      */
     MessageData(const MessageData &other) = delete;
 
+    virtual std::unique_ptr<MsgSpecialisationHandler<CUDAMessage>> getSpecialisationHander(CUDAMessage &owner) const;
  protected:
     virtual MessageData *clone(ModelData *const newParent);
     /**
@@ -509,6 +514,8 @@ struct Spatial3DMessageData : Spatial2DMessageData {
     float minZ;
     float maxZ;
     virtual ~Spatial3DMessageData() = default;
+       
+    std::unique_ptr<MsgSpecialisationHandler<CUDAMessage>> getSpecialisationHander(CUDAMessage &owner) const override;
 
  private:
     Spatial3DMessageData *clone(ModelData *const newParent) override;

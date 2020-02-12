@@ -106,6 +106,7 @@ SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/exception/FGPUException.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/model/LayerDescription.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/model/ModelData.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/model/ModelData.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/model/ModelDescription.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/model/EnvironmentDescription.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/model/AgentDescription.cpp
@@ -123,7 +124,8 @@ SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/sim/Simulation.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAAgentModel.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/cuRVE/curve.cu
-    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/flamegpu_host_api.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/flamegpu_host_api.cu    
+    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/Spatial3D.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/io/xmlReader.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/io/xmlWriter.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/utility/HostEnvironment.cu

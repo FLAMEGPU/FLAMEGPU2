@@ -23,7 +23,8 @@ struct AgentFunctionData;
 struct MessageData;
 class AgentPopulation;
 class Curve;
-
+template<typename SimSpecialisationMsg>
+class MsgSpecialisationHandler;
 /**
  * This class is CUDAAgentModel's internal handler for message functionality
  */
@@ -86,6 +87,8 @@ class CUDAMessage {
     void clearTruncateMessageListFlag() { truncate_messagelist_flag = false; }
     void setPBMConstructionRequiredFlag() { pbm_construction_required = true; }
     void clearPBMConstructionRequiredFlag() { pbm_construction_required = false; }
+    void buildIndex();
+    const void *getMetaDataDevicePtr() const;
  protected:
     /** 
      * Zero all message variable data.
@@ -132,9 +135,9 @@ class CUDAMessage {
      *
      * Set to True each time the message list is updated
      * Set to False before messages are read
-     * @note Flag is currently updated in correct places, however I don't think it's used by message output
      */
     bool pbm_construction_required;
+    std::unique_ptr<MsgSpecialisationHandler<CUDAMessage>> specialisation_handler;
 };
 
 #endif  // INCLUDE_FLAMEGPU_GPU_CUDAMESSAGE_H_
