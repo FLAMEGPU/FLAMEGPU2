@@ -29,7 +29,7 @@ FLAMEGPU_AGENT_FUNCTION(move, MsgSpatial3D, MsgNone) {
     const float y1 = FLAMEGPU->getVariable<float>("y");
     const float z1 = FLAMEGPU->getVariable<float>("z");
     int count = 0;
-    for (const auto &message : FLAMEGPU->message_in) {
+    for (const auto &message : FLAMEGPU->message_in(x1, y1, z1)) {
         if (message.getVariable<int>("id") != ID) {
             const float x2 = message.getVariable<float>("x");
             const float y2 = message.getVariable<float>("y");

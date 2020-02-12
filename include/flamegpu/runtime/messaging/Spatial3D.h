@@ -9,6 +9,12 @@
 
 #include "flamegpu/runtime/cuRVE/curve.h"
 
+namespace {
+    struct GridPos3D {
+        unsigned int x, y, z;
+    };
+}  // namespace
+
 class MsgSpatial3D
 {
     typedef unsigned int size_type;
@@ -30,57 +36,89 @@ public:
      */
     class In
     {
-        friend class MsgSpatial3D::Message;
     public:
+        class Filter {
+            friend class MsgSpatial3D::Message;
+        public:    
+            // Inner class representing an individual message
+            class Message {
+            private:
+                const Filter &_parent;
+                int relative_cell[2] = { -2, 1 };
+                int cell_index_max = 0;
+                int cell_index = 0;
+
+            public:
+                __device__ Message(const Filter &parent, const int &relative_cell_y, const int &relative_cell_z, const int &_cell_index_max, const int &_cell_index)
+                    : _parent(parent)
+                    , cell_index_max(_cell_index_max)
+                    , cell_index(_cell_index)
+                {
+                    relative_cell[0] = relative_cell_y;
+                    relative_cell[1] = relative_cell_z;
+                }
+                __host__ __device__ bool operator==(const Message& rhs) const { 
+                    return this->relative_cell[0] == rhs.relative_cell[0]
+                        && this->relative_cell[1] == rhs.relative_cell[1]
+                        && this->cell_index_max == rhs.cell_index_max
+                        && this->cell_index == rhs.cell_index;
+                }
+                __host__ __device__ bool operator!=(const Message& rhs) const { return  ! (*this == rhs); }
+                __host__ __device__ Message& operator++();
+                __host__ __device__ void nextStrip() {
+                    if (relative_cell[1] >= 1)
+                    {
+                        relative_cell[1] = -1;
+                        relative_cell[0]++;
+                    }
+                }
+                template<typename T, size_type N>
+                __device__ T getVariable(const char(&variable_name)[N]) const;
+            };
+            // message list iterator inner class.
+            class iterator : public std::iterator <std::random_access_iterator_tag, void, void, void, void> {
+            private:
+                Message _message;
+            public:
+                __host__ __device__ iterator(const Filter &parent, const int &relative_cell_y, const int &relative_cell_z, const int &_cell_index_max, const int &_cell_index)
+                    : _message(parent, relative_cell_y, relative_cell_z, _cell_index_max, _cell_index)
+                {
+                    // Increment to find first message
+                    ++_message;
+                }
+                __host__ __device__ iterator& operator++() { ++_message;  return *this; }
+                __host__ __device__ iterator operator++(int) { iterator tmp(*this); operator++(); return tmp; }
+                __host__ __device__ bool operator==(const iterator& rhs) { return  _message == rhs._message; }
+                __host__ __device__ bool operator!=(const iterator& rhs) { return  _message != rhs._message; }
+                __host__ __device__ Message& operator*() { return _message; }
+            };
+            __host__ __device__ Filter(const MetaData *_metadata, const Curve::NamespaceHash &combined_hash, const float &x, const float &y, const float &z);
+            inline __host__ __device__ iterator begin(void) const {
+                return iterator(*this, -2, 1, 1, 0);
+            }
+            inline __host__ __device__ iterator end(void) const {
+                return iterator(*this, 1, -1, 1, 0);
+            }
+        private:
+            float loc[3];
+            GridPos3D cell;
+            const MetaData *metadata;
+            Curve::NamespaceHash combined_hash;
+        };
         __device__ In(Curve::NamespaceHash agentfn_hash, Curve::NamespaceHash msg_hash, const void *_metadata)
             : combined_hash(agentfn_hash + msg_hash)
             , metadata(reinterpret_cast<const MetaData*>(_metadata))
         { }
-        // Something to access messages (probably iterator rather than get var
-        /*! Returns the number of elements in the message list.
-        */
-        inline __host__ __device__ size_type size(void) const {
-            return 0;  // TODO
-        }
-
-        inline __host__ __device__ iterator begin(void) const {  // const
-            return iterator(*this, 0);  // TODO
-        }
-        inline __host__ __device__ iterator end(void) const {  // const
-            //If there can be many begin, each with diff end, we need a middle layer to host the iterator/s
-            return iterator(*this, 0);  // TODO
+        /**
+         * Returns a Filter object which provides access to message iterator
+         */
+        inline __host__ __device__ Filter operator() (const float &x, const float &y, const float &z) const {
+            return Filter(metadata, combined_hash, x, y, z);
         }
     private:
         //agent_function + msg_hash
         Curve::NamespaceHash combined_hash;
         const MetaData *metadata;
-    };
-    // Inner class representing an individual message
-    class Message {
-    private:
-        const In &_parent;
-        size_type index;
-    public:
-        __device__ Message(const In &parent) : _parent(parent), index(0) {}
-        __device__ Message(const In &parent, size_type index) : _parent(parent), index(index) {}
-        __host__ __device__ bool operator==(const Message& rhs) { return  this->getIndex() == rhs.getIndex(); }
-        __host__ __device__ bool operator!=(const Message& rhs) { return  this->getIndex() != rhs.getIndex(); }
-        __host__ __device__ Message& operator++() { ++index;  return *this; }
-        __host__ __device__ size_type getIndex() const { return this->index; }
-        template<typename T, size_type N>
-        __device__ T getVariable(const char(&variable_name)[N]) const;
-    };
-    // message list iterator inner class.
-    class iterator : public std::iterator <std::random_access_iterator_tag, void, void, void, void> {
-    private:
-        Message _message;
-    public:
-        __host__ __device__ iterator(const In &parent, size_type index) : _message(parent, index) {}
-        __host__ __device__ iterator& operator++() { ++_message;  return *this; }
-        __host__ __device__ iterator operator++(int) { iterator tmp(*this); operator++(); return tmp; }
-        __host__ __device__ bool operator==(const iterator& rhs) { return  _message == rhs._message; }
-        __host__ __device__ bool operator!=(const iterator& rhs) { return  _message != rhs._message; }
-        __host__ __device__ Message& operator*() { return _message; }
     };
 
     class Out {
@@ -160,19 +198,16 @@ public:
 #endif
 
 template<typename T, unsigned int N>
-__device__ T MsgSpatial3D::Message::getVariable(const char(&variable_name)[N]) const {
+__device__ T MsgSpatial3D::In::Filter::Message::getVariable(const char(&variable_name)[N]) const {
     //// Ensure that the message is within bounds.
-    //if (index < this->_parent.len) {
-    //    // get the value from curve using the stored hashes and message index.
-    //    T value = Curve::getVariable<T>(variable_name, this->_parent.combined_hash, index);
-    //    return value;
-    //}
-    //else {
-    //    // @todo - Improved error handling of out of bounds message access? Return a default value or assert?
-    //    return static_cast<T>(0);
-    //}
-    //TODO
-    return static_cast<T>(0);
+    if (relative_cell[0] < 2) {
+        // get the value from curve using the stored hashes and message index.
+        T value = Curve::getVariable<T>(variable_name, this->_parent.combined_hash, cell_index);
+        return value;
+    } else {
+        // @todo - Improved error handling of out of bounds message access? Return a default value or assert?
+        return static_cast<T>(0);
+    }
 }
 
 /**
@@ -193,11 +228,7 @@ __device__ void MsgSpatial3D::Out::setVariable(const char(&variable_name)[N], T 
 }
 
 namespace {
-    struct GridPos3D
-    {
-        unsigned int x, y, z;
-    };
-    __device__ __forceinline__ GridPos3D getGridPosition(const MsgSpatial3D::MetaData *md, float x, float y, float z)
+    __host__ __device__ __forceinline__ GridPos3D getGridPosition(const MsgSpatial3D::MetaData *md, float x, float y, float z)
     {
         //Clamp each grid coord to 0<=x<dim
         unsigned int gridPos[3] = {
@@ -212,7 +243,7 @@ namespace {
         };
         return rtn;
     }
-    __device__ __forceinline__ unsigned int getHash3D(const MsgSpatial3D::MetaData *md, const GridPos3D &xyz)
+    __host__ __device__ __forceinline__ unsigned int getHash3D(const MsgSpatial3D::MetaData *md, const GridPos3D &xyz)
     {
         //Bound gridPos to gridDimensions
         unsigned int gridPos[3] = {
