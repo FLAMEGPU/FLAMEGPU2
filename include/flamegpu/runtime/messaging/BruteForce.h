@@ -1,6 +1,9 @@
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_BRUTEFORCE_H_
 #define INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_BRUTEFORCE_H_
 
+#include "flamegpu/runtime/messaging.h"
+#include "flamegpu/gpu/CUDAMessage.h"
+
 #include "flamegpu/runtime/cuRVE/curve.h"
 
 class MsgBruteForce {
@@ -94,15 +97,16 @@ class MsgBruteForce {
     class CUDAModelHandler : public MsgSpecialisationHandler<SimSpecialisationMsg> {
      public:
         explicit CUDAModelHandler(CUDAMessage &a)
-            : MsgSpecialisationHandler(a) {
-            gpuErrchk(cudaMalloc(&d_metadata, sizeof(MetaData)));
+            : MsgSpecialisationHandler<SimSpecialisationMsg>(a)
+        {
+             gpuErrchk(cudaMalloc(&d_metadata, sizeof(MetaData)));
         }
         ~CUDAModelHandler() {
             gpuErrchk(cudaFree(d_metadata));
         }
 
         void buildIndex() override {
-            hd_metadata.length = sim_message.getMessageCount();
+            hd_metadata.length = this->sim_message.getMessageCount();
             gpuErrchk(cudaMemcpy(d_metadata, &hd_metadata, sizeof(MetaData), cudaMemcpyHostToDevice));
         }
         const void *getMetaDataDevicePtr() const override { return d_metadata; }

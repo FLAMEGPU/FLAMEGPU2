@@ -140,23 +140,29 @@ class MsgSpatial3D {
     template<typename SimSpecialisationMsg>
     class CUDAModelHandler : public MsgSpecialisationHandler<SimSpecialisationMsg> {
      public:
-        explicit CUDAModelHandler(CUDAMessage &a)
-            : MsgSpecialisationHandler(a) {
-            const Spatial3DMessageData &d = (const Spatial3DMessageData&)a.getMessageDescription();
-            hd_data.radius = d.radius;
-            hd_data.min[0] = d.minX; hd_data.min[1] = d.minY; hd_data.min[2] = d.minZ;
-            hd_data.max[0] = d.maxX; hd_data.max[1] = d.maxY; hd_data.max[2] = d.maxZ;
-            binCount = 1;
-            for (unsigned int axis = 0; axis < 3; ++axis) {
-                hd_data.environmentWidth[axis] = hd_data.max[axis] - hd_data.min[axis];
-                hd_data.gridDim[axis] = static_cast<unsigned int>(ceil(hd_data.environmentWidth[axis] / static_cast<float>(hd_data.radius)));
-                binCount *= hd_data.gridDim[axis];
-            }
-            gpuErrchk(cudaMalloc(&d_histogram, (binCount + 1) * sizeof(unsigned int)));
-            gpuErrchk(cudaMalloc(&hd_data.PBM, (binCount + 1) * sizeof(unsigned int)));
-            gpuErrchk(cudaMalloc(&d_data, sizeof(MetaData)));
-            gpuErrchk(cudaMemcpy(d_data, &hd_data, sizeof(MetaData), cudaMemcpyHostToDevice));
-            resizeCubTemp();
+         explicit CUDAModelHandler(CUDAMessage &a)
+             : MsgSpecialisationHandler<SimSpecialisationMsg>(a)
+         {
+             const Spatial3DMessageData &d = (const Spatial3DMessageData &)a.getMessageDescription();
+             hd_data.radius = d.radius;
+             hd_data.min[0] = d.minX;
+             hd_data.min[1] = d.minY;
+             hd_data.min[2] = d.minZ;
+             hd_data.max[0] = d.maxX;
+             hd_data.max[1] = d.maxY;
+             hd_data.max[2] = d.maxZ;
+             binCount = 1;
+             for (unsigned int axis = 0; axis < 3; ++axis)
+             {
+                 hd_data.environmentWidth[axis] = hd_data.max[axis] - hd_data.min[axis];
+                 hd_data.gridDim[axis] = static_cast<unsigned int>(ceil(hd_data.environmentWidth[axis] / static_cast<float>(hd_data.radius)));
+                 binCount *= hd_data.gridDim[axis];
+             }
+             gpuErrchk(cudaMalloc(&d_histogram, (binCount + 1) * sizeof(unsigned int)));
+             gpuErrchk(cudaMalloc(&hd_data.PBM, (binCount + 1) * sizeof(unsigned int)));
+             gpuErrchk(cudaMalloc(&d_data, sizeof(MetaData)));
+             gpuErrchk(cudaMemcpy(d_data, &hd_data, sizeof(MetaData), cudaMemcpyHostToDevice));
+             resizeCubTemp();
         }
         ~CUDAModelHandler() override {
             d_CUB_temp_storage_bytes = 0;
@@ -282,8 +288,8 @@ namespace {
 
 template <typename SimSpecialisationMsg>
 void MsgSpatial3D::CUDAModelHandler<SimSpecialisationMsg>::buildIndex() {
-    const unsigned int MESSAGE_COUNT = sim_message.getMessageCount();
-    resizeKeysVals(sim_message.getMaximumListSize());  // Resize based on allocated amount rather than message count
+    const unsigned int MESSAGE_COUNT = this->sim_message.getMessageCount();
+    resizeKeysVals(this->sim_message.getMaximumListSize());  // Resize based on allocated amount rather than message count
     {  // Build atomic histogram
         gpuErrchk(cudaMemset(d_histogram, 0x00000000, (binCount + 1) * sizeof(unsigned int)));
         int blockSize;  // The launch configurator returned block size
@@ -291,9 +297,9 @@ void MsgSpatial3D::CUDAModelHandler<SimSpecialisationMsg>::buildIndex() {
         // Round up according to array size
         int gridSize = (MESSAGE_COUNT + blockSize - 1) / blockSize;
         atomicHistogram3D << <gridSize, blockSize >> >(d_data, d_keys, d_vals, d_histogram, MESSAGE_COUNT,
-            reinterpret_cast<float*>(sim_message.getReadPtr("x")),
-            reinterpret_cast<float*>(sim_message.getReadPtr("y")),
-            reinterpret_cast<float*>(sim_message.getReadPtr("z")));
+            reinterpret_cast<float*>(this->sim_message.getReadPtr("x")),
+            reinterpret_cast<float*>(this->sim_message.getReadPtr("y")),
+            reinterpret_cast<float*>(this->sim_message.getReadPtr("z")));
         gpuErrchk(cudaDeviceSynchronize());
     }
     {  // Scan (sum), to finalise PBM
@@ -302,8 +308,8 @@ void MsgSpatial3D::CUDAModelHandler<SimSpecialisationMsg>::buildIndex() {
     {  // Reorder messages
         // Copy messages from d_messages to d_messages_swap, in hash order
         auto &cs = CUDAScatter::getInstance(0);  // Choose proper stream_id in future!
-        cs.pbm_reorder(sim_message.getMessageDescription().variables, sim_message.getReadList(), sim_message.getWriteList(), MESSAGE_COUNT, d_keys, d_vals, hd_data.PBM);
-        sim_message.swap(false, 0);  // Stream id is unused here
+        cs.pbm_reorder(this->sim_message.getMessageDescription().variables, this->sim_message.getReadList(), this->sim_message.getWriteList(), MESSAGE_COUNT, d_keys, d_vals, hd_data.PBM);
+        this->sim_message.swap(false, 0);  // Stream id is unused here
     }
     {  // Fill PBM and Message Texture Buffers
         // gpuErrchk(cudaBindTexture(nullptr, d_texMessages, d_agents, sizeof(glm::vec4) * MESSAGE_COUNT));
