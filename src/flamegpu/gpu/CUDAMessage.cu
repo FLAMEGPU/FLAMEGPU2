@@ -41,7 +41,7 @@ CUDAMessage::CUDAMessage(const MessageData& description)
     , curve(Curve::getInstance())
     , truncate_messagelist_flag(true)
     , pbm_construction_required(false)
-    , specialisation_handler(description.getSpecialisationHander(*this)){
+    , specialisation_handler(description.getSpecialisationHander(*this)) {
     // resize(0); // Think this call is redundant
 }
 
@@ -142,8 +142,7 @@ void CUDAMessage::mapReadRuntimeVariables(const AgentFunctionData& func) const {
     }
 }
 
-void *CUDAMessage::getReadPtr(const std::string &var_name)
-{
+void *CUDAMessage::getReadPtr(const std::string &var_name) {
     return message_list->getReadMessageListVariablePointer(var_name);
 }
 void CUDAMessage::mapWriteRuntimeVariables(const AgentFunctionData& func) const {
@@ -223,7 +222,7 @@ void CUDAMessage::swap(bool isOptional, const unsigned int &streamId) {
 }
 
 void CUDAMessage::buildIndex() {
-    if(pbm_construction_required) {
+    if (pbm_construction_required) {
         specialisation_handler->buildIndex();
         pbm_construction_required = false;
     }

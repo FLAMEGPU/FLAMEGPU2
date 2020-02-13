@@ -329,6 +329,7 @@ struct MessageData {
     MessageData(const MessageData &other) = delete;
 
     virtual std::unique_ptr<MsgSpecialisationHandler<CUDAMessage>> getSpecialisationHander(CUDAMessage &owner) const;
+
  protected:
     virtual MessageData *clone(ModelData *const newParent);
     /**
@@ -514,7 +515,7 @@ struct Spatial3DMessageData : Spatial2DMessageData {
     float minZ;
     float maxZ;
     virtual ~Spatial3DMessageData() = default;
-       
+
     std::unique_ptr<MsgSpecialisationHandler<CUDAMessage>> getSpecialisationHander(CUDAMessage &owner) const override;
 
  private:

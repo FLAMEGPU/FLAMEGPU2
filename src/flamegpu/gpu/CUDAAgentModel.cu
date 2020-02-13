@@ -71,8 +71,7 @@ bool CUDAAgentModel::step() {
         gpuErrchk(cudaStreamCreate(&stream[j]));
 
     // Reset message list flags
-    for(auto m =  message_map.begin();m!=message_map.end();++m)
-    {
+    for (auto m =  message_map.begin(); m != message_map.end(); ++m) {
         m->second->setTruncateMessageListFlag();
     }
 

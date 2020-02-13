@@ -20,8 +20,7 @@ __device__ MsgSpatial3D::In::Filter::Filter(const MetaData* _metadata, const Cur
     loc[2] = z;
     cell = Spatial3D::getGridPosition(_metadata, x, y, z);
 }
-__device__ MsgSpatial3D::In::Filter::Message& MsgSpatial3D::In::Filter::Message::operator++()
-{
+__device__ MsgSpatial3D::In::Filter::Message& MsgSpatial3D::In::Filter::Message::operator++() {
     cell_index++;
     bool move_strip = cell_index >= cell_index_max;
     while (move_strip) {
@@ -33,9 +32,7 @@ __device__ MsgSpatial3D::In::Filter::Message& MsgSpatial3D::In::Filter::Message:
             // Lookup start and end indicies from PBM
             cell_index = _parent.metadata->PBM[start_hash];
             cell_index_max = _parent.metadata->PBM[end_hash + 1];
-        }
-        else
-        {
+        } else {
             cell_index = 0;
             cell_index_max = 1;
         }

@@ -3,10 +3,10 @@
 
 #include "flamegpu/runtime/cuRVE/curve.h"
 
-class MsgBruteForce
-{
+class MsgBruteForce {
     typedef unsigned int size_type;
-public:
+
+ public:
     class Message;   // Forward declare inner classes
     class iterator;  // Forward declare inner classes
     struct MetaData {
@@ -16,10 +16,10 @@ public:
     * This class is returned to user by Device API
     * It gives access to message iterators
     */
-    class In
-    {
+    class In {
         friend class MsgBruteForce::Message;
-    public:
+
+     public:
         __device__ In(Curve::NamespaceHash agentfn_hash, Curve::NamespaceHash msg_hash, const void *metadata)
             : combined_hash(agentfn_hash + msg_hash)
             , len(reinterpret_cast<const MetaData*>(metadata)->length)
@@ -35,20 +35,22 @@ public:
             return iterator(*this, 0);
         }
         inline __host__ __device__ iterator end(void) const  {  // const
-                                                         //If there can be many begin, each with diff end, we need a middle layer to host the iterator/s
+            // If there can be many begin, each with diff end, we need a middle layer to host the iterator/s
             return iterator(*this, len);
         }
-    private:
-        //agent_function + msg_hash
+
+     private:
+        // agent_function + msg_hash
         Curve::NamespaceHash combined_hash;
         size_type len;
     };
     // Inner class representing an individual message
     class Message {
-    private:
+     private:
         const MsgBruteForce::In &_parent;
         size_type index;
-    public:
+
+     public:
         __device__ Message(const MsgBruteForce::In &parent) : _parent(parent), index(0) {}
         __device__ Message(const MsgBruteForce::In &parent, size_type index) : _parent(parent), index(index) {}
         __host__ __device__ bool operator==(const Message& rhs) { return  this->getIndex() == rhs.getIndex(); }
@@ -60,9 +62,10 @@ public:
     };
     // message list iterator inner class.
     class iterator : public std::iterator <std::random_access_iterator_tag, void, void, void, void> {
-    private:
+     private:
         MsgBruteForce::Message _message;
-    public:
+
+     public:
         __host__ __device__ iterator(const MsgBruteForce::In &parent, size_type index) : _message(parent, index) {}
         __host__ __device__ iterator& operator++() { ++_message;  return *this; }
         __host__ __device__ iterator operator++(int) { iterator tmp(*this); operator++(); return tmp; }
@@ -79,8 +82,9 @@ public:
         { }
         template<typename T, unsigned int N>
         __device__ void setVariable(const char(&variable_name)[N], T value) const;
+
      private:
-        //agent_function + msg_hash
+        // agent_function + msg_hash
         Curve::NamespaceHash combined_hash;
         unsigned int streamId;
     };
@@ -88,8 +92,8 @@ public:
     // Blank handler, brute force requires no index or special allocations
     template<typename SimSpecialisationMsg>
     class CUDAModelHandler : public MsgSpecialisationHandler<SimSpecialisationMsg> {
-    public:
-        CUDAModelHandler(CUDAMessage &a)
+     public:
+        explicit CUDAModelHandler(CUDAMessage &a)
             : MsgSpecialisationHandler(a) {
             gpuErrchk(cudaMalloc(&d_metadata, sizeof(MetaData)));
         }
@@ -102,7 +106,8 @@ public:
             gpuErrchk(cudaMemcpy(d_metadata, &hd_metadata, sizeof(MetaData), cudaMemcpyHostToDevice));
         }
         const void *getMetaDataDevicePtr() const override { return d_metadata; }
-    private:
+
+     private:
         MetaData hd_metadata;
         MetaData *d_metadata;
     };
@@ -114,8 +119,7 @@ __device__ T MsgBruteForce::Message::getVariable(const char(&variable_name)[N]) 
         // get the value from curve using the stored hashes and message index.
         T value = Curve::getVariable<T>(variable_name, this->_parent.combined_hash, index);
         return value;
-    }
-    else {
+    } else {
         // @todo - Improved error handling of out of bounds message access? Return a default value or assert?
         return static_cast<T>(0);
     }

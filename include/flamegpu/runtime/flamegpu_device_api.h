@@ -58,13 +58,13 @@ class FLAMEGPU_DEVICE_API {
     // Friends have access to TID() & TS_ID()
     template<typename AgentFunction, typename MsgIn, typename MsgOut>
     friend __global__ void agent_function_wrapper(
-        Curve::NamespaceHash, 
-        Curve::NamespaceHash, 
-        Curve::NamespaceHash, 
-        Curve::NamespaceHash, 
-        const int, 
+        Curve::NamespaceHash,
+        Curve::NamespaceHash,
+        Curve::NamespaceHash,
+        Curve::NamespaceHash,
+        const int,
         const void *messagelist_metadata,
-        const unsigned int, 
+        const unsigned int,
         const unsigned int);
 
  public:
@@ -117,7 +117,7 @@ class FLAMEGPU_DEVICE_API {
 
  private:
     Curve::NamespaceHash agent_func_name_hash;
-    
+
     unsigned int thread_in_layer_offset;
     unsigned int streamId;
     /**
@@ -188,59 +188,5 @@ __device__ void FLAMEGPU_DEVICE_API<MsgIn, MsgOut>::setVariable(const char(&vari
     // set the variable using curve
     Curve::setVariable<T>(variable_name , agent_func_name_hash,  value, index);
 }
-
-///**
-//* \brief Gets the value of a message variable
-//* \param variable_name Name of memory variable to retrieve
-//* \todo check the hashing
-//*/
-//template<typename MsgIn, typename MsgOut>
-//template<typename T, unsigned int N>
-//__device__ T FLAMEGPU_DEVICE_API<MsgIn, MsgOut>::getMessageVariable(const char(&variable_name)[N]) {
-//    // simple indexing assumes index is the thread number (this may change later)
-//    unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
-//
-//    // get the value from curve
-//    T value = Curve::getVariable<T>(variable_name, agent_func_name_hash + messagename_inp_hash, index);
-//
-//    // return the variable from curve
-//    return value;
-//}
-//
-///**
-//* \brief Sets the value of a message variable
-//* \param variable_name Name of memory variable to set
-//* \param value Value to set it to
-//* \todo check the hashing
-//*/
-//template<typename MsgIn, typename MsgOut>
-//template<typename T, unsigned int N>
-//__device__ void FLAMEGPU_DEVICE_API<MsgIn, MsgOut>::setMessageVariable(const char(&variable_name)[N], T value) {
-//    // simple indexing assumes index is the thread number (this may change later)
-//    unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
-//
-//    // set the variable using curve
-//    Curve::setVariable<T>(variable_name, agent_func_name_hash + messagename_outp_hash, value, index);
-//}
-//
-///**
-//* \brief adds a message
-//* \param variable_name Name of message variable to set
-//* \param value Value to set it to
-//*/
-//template<typename MsgIn, typename MsgOut>
-//template<typename T, unsigned int N>
-//__device__ void FLAMEGPU_DEVICE_API<MsgIn, MsgOut>::addMessage(const char(&variable_name)[N], T value) {  // message name or variable name
-//    unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;  // + d_message_count;
-//
-//    // Todo: checking if the output message type is single or optional?  (d_message_type)
-//
-//    // set the variable using curve
-//    Curve::setVariable<T>(variable_name, agent_func_name_hash + messagename_outp_hash, value, index);
-//
-//    // Set scan flag incase the message is optional
-//    flamegpu_internal::CUDAScanCompaction::ds_message_configs[streamId].scan_flag[TID()] = 1;
-//}
-
 
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_FLAMEGPU_DEVICE_API_H_

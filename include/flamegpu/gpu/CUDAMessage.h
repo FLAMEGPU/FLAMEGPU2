@@ -13,6 +13,7 @@
 
 #include <memory>
 #include <utility>
+#include <string>
 
 // include sub classes
 #include "flamegpu/gpu/CUDAMessageList.h"
@@ -89,6 +90,7 @@ class CUDAMessage {
     void clearPBMConstructionRequiredFlag() { pbm_construction_required = false; }
     void buildIndex();
     const void *getMetaDataDevicePtr() const;
+
  protected:
     /** 
      * Zero all message variable data.

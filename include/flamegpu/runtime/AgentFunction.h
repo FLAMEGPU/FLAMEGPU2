@@ -45,7 +45,12 @@ __global__ void agent_function_wrapper(
     if (FLAMEGPU_DEVICE_API<MsgIn, MsgOut>::TID() >= popNo)
         return;
     // create a new device FLAME_GPU instance
-    FLAMEGPU_DEVICE_API<MsgIn, MsgOut> *api = new FLAMEGPU_DEVICE_API<MsgIn, MsgOut>(thread_in_layer_offset, model_name_hash, streamId, MsgIn::In(agent_func_name_hash, messagename_inp_hash, messagelist_metadata), MsgOut::Out(agent_func_name_hash, messagename_outp_hash, streamId));
+    FLAMEGPU_DEVICE_API<MsgIn, MsgOut> *api = new FLAMEGPU_DEVICE_API<MsgIn, MsgOut>(
+        thread_in_layer_offset,
+        model_name_hash,
+        streamId,
+        MsgIn::In(agent_func_name_hash, messagename_inp_hash, messagelist_metadata),
+        MsgOut::Out(agent_func_name_hash, messagename_outp_hash, streamId));
 
     // ! set namespace for agent name
     api->setAgentNameSpace(agent_func_name_hash);

@@ -13,7 +13,7 @@
 FLAMEGPU_AGENT_FUNCTION(output_message, MsgNone, MsgSpatial3D) {
     FLAMEGPU->message_out.setVariable<int>("id", FLAMEGPU->getVariable<int>("id"));
     FLAMEGPU->message_out.setLocation(
-        FLAMEGPU->getVariable<float>("x"), 
+        FLAMEGPU->getVariable<float>("x"),
         FLAMEGPU->getVariable<float>("y"),
         FLAMEGPU->getVariable<float>("z"));
     return ALIVE;
@@ -83,14 +83,10 @@ int main(int argc, const char ** argv) {
     {   // Location message
         Spatial3DMessageDescription &message = model.newSpatial3DMessage("location");
         message.newVariable<int>("id");
-        //message.newVariable<float>("x");
-        //message.newVariable<float>("y");
-        //message.newVariable<float>("z");
         const float max_bound = static_cast<float>(floor(cbrt(AGENT_COUNT)));
         message.setRadius(1.0f);
         message.setMin(0, 0, 0);
         message.setMax(max_bound, max_bound, max_bound);
-
     }
     {   // Circle agent
         AgentDescription &agent = model.newAgent("Circle");
@@ -156,7 +152,7 @@ int main(int argc, const char ** argv) {
     /**
      * Execution
      */
-     //This mode of execution allows the PRIMAGE visualiser to be used (2020-01-07)
+    // This mode of execution allows the PRIMAGE visualiser to be used (2020-01-07)
     while (cuda_model.getStepCounter() < cuda_model.getSimulationConfig().steps && cuda_model.step()) {
         std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> pops;
         auto a = std::make_shared<AgentPopulation>(model.getAgent("Circle"));
@@ -178,7 +174,7 @@ int main(int argc, const char ** argv) {
     pops.emplace("Circle", a);
     StateWriter *write__ = WriterFactory::createWriter(pops, cuda_model.getStepCounter(), "end.xml");
     write__->writeStates();
-    //export_data(a, "test.bin");
+    // export_data(a, "test.bin");
     getchar();
     return 0;
 }
