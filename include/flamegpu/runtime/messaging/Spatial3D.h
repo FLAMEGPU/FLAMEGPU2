@@ -227,7 +227,7 @@ __device__ void MsgSpatial3D::Out::setVariable(const char(&variable_name)[N], T 
     //flamegpu_internal::CUDAScanCompaction::ds_message_configs[streamId].scan_flag[index] = 1;
 }
 
-namespace {
+namespace Spatial3D {
     __host__ __device__ __forceinline__ GridPos3D getGridPosition(const MsgSpatial3D::MetaData *md, float x, float y, float z)
     {
         //Clamp each grid coord to 0<=x<dim
@@ -243,7 +243,7 @@ namespace {
         };
         return rtn;
     }
-    __host__ __device__ __forceinline__ unsigned int getHash3D(const MsgSpatial3D::MetaData *md, const GridPos3D &xyz)
+    __host__ __device__ __forceinline__ unsigned int getHash(const MsgSpatial3D::MetaData *md, const GridPos3D &xyz)
     {
         //Bound gridPos to gridDimensions
         unsigned int gridPos[3] = {
@@ -257,6 +257,8 @@ namespace {
             (gridPos[1] * md->gridDim[0]) +					 //y
             gridPos[0]);                                     //x
     }
+}
+namespace {
     __global__ void atomicHistogram3D(
         const MsgSpatial3D::MetaData *md,
         unsigned int* bin_index,
@@ -271,8 +273,8 @@ namespace {
         //Kill excess threads
         if (index >= message_count) return;
 
-        GridPos3D gridPos = getGridPosition(md, x[index], y[index], z[index]);
-        unsigned int hash = getHash3D(md, gridPos);
+        GridPos3D gridPos = Spatial3D::getGridPosition(md, x[index], y[index], z[index]);
+        unsigned int hash = Spatial3D::getHash(md, gridPos);
         bin_index[index] = hash;
         unsigned int bin_idx = atomicInc((unsigned int*)&pbm_counts[hash], 0xFFFFFFFF);
         bin_sub_index[index] = bin_idx;
@@ -289,7 +291,7 @@ void MsgSpatial3D::CUDAModelHandler<SimSpecialisationMsg>::buildIndex() {
         gpuErrchk(cudaOccupancyMaxActiveBlocksPerMultiprocessor(&blockSize, atomicHistogram3D, 32, 0));//Randomly 32
         // Round up according to array size
         int gridSize = (MESSAGE_COUNT + blockSize - 1) / blockSize;
-        atomicHistogram3D << <gridSize, blockSize >> >(d_data, d_keys, d_vals, d_histogram, MESSAGE_COUNT, 
+        atomicHistogram3D << <gridSize, blockSize >> >(d_data, d_keys, d_vals, d_histogram, MESSAGE_COUNT,
             (float*)sim_message.getReadPtr("x"),
             (float*)sim_message.getReadPtr("y"),
             (float*)sim_message.getReadPtr("z"));
