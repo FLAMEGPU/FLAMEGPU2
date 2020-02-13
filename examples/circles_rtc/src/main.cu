@@ -7,6 +7,23 @@
 #include "flamegpu/runtime/flamegpu_api.h"
 #include "flamegpu/io/factory.h"
 
+const char* test_simple_func = " \n\
+		extern \"C\" __global__ \n\
+		void simple_test() \n\
+		{ \n\
+			size_t tid = blockIdx.x * blockDim.x + threadIdx.x; \n\
+			printf(\"test from tid\", tid) \n\
+			} \n\
+		} \n";
+
+
+
+const char* test_func = "\
+		FLAMEGPU_AGENT_FUNCTION(output_message) { \
+			printf(\"test\"); \
+			return ALIVE; \
+		}";
+
 FLAMEGPU_AGENT_FUNCTION(output_message) {
     FLAMEGPU->addMessage<int>("id", FLAMEGPU->getVariable<float>("id"));
     FLAMEGPU->addMessage<float>("x", FLAMEGPU->getVariable<float>("x"));
@@ -89,6 +106,7 @@ int main(int argc, const char ** argv) {
         agent.newVariable<float>("y");
         agent.newVariable<float>("z");
         agent.newVariable<float>("drift");  // Store the distance moved here, for validation
+		agent.newRTFunction("test_rt_func", test_simple_func); //TEMP
         agent.newFunction("output_message", output_message).setMessageOutput("location");
         agent.newFunction("move", move).setMessageInput("location");
     }
@@ -109,6 +127,11 @@ int main(int argc, const char ** argv) {
     {   // Attach init/step/exit functions and exit condition
         model.addStepFunction(Validation);
     }
+
+	{   // Layer #1
+		LayerDescription& layer = model.newLayer();
+		layer.addAgentFunction("test_rt_func");
+	}
 
     {   // Layer #1
         LayerDescription &layer = model.newLayer();

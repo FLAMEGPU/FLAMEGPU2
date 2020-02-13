@@ -196,6 +196,12 @@ DERIVED_FGPUException(InvalidAgentFunc, "Unknown agent function");
 
 /**
  * Defines a type of object to be thrown as exception.
+ * It reports errors that are due to runtime compilation errors of a runtime specified agent function.
+ */
+DERIVED_FGPUException(RTAgentFuncCompilationError, "Runtime agent function compilation error. See console log.");
+
+/**
+ * Defines a type of object to be thrown as exception.
  * It reports errors that are due to invalid function layer index.
  */
 DERIVED_FGPUException(InvalidFuncLayerIndx, "Agent function layer index out of bounds!");

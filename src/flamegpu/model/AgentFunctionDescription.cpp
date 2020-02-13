@@ -5,6 +5,10 @@
  * Constructors
  */
 
+#include <nvrtc.h>
+#include <cuda.h>
+#include <iostream>
+
 AgentFunctionDescription::AgentFunctionDescription(ModelData *const _model, AgentFunctionData *const description)
     : model(_model)
     , function(description) { }
@@ -287,4 +291,92 @@ bool AgentFunctionDescription::hasAgentOutput() const {
 }
 AgentFunctionWrapper *AgentFunctionDescription::getFunctionPtr() const {
     return function->func;
+}
+
+// TODO: Ditch the helper macros
+#define NVRTC_SAFE_CALL(x) \
+ do { \
+	 nvrtcResult result = x; \
+	 if (result != NVRTC_SUCCESS) { \
+		 std::cerr << "\nerror: " #x " failed with error " \
+		 << nvrtcGetErrorString(result) << '\n'; \
+		 exit(1); \
+	 } \
+ } while(0)
+
+#define CUDA_SAFE_CALL(x) \
+ do { \
+	 CUresult result = x; \
+	 if (result != CUDA_SUCCESS) { \
+		 const char *msg; \
+		 cuGetErrorName(result, &msg); \
+		 std::cerr << "\nerror: " #x " failed with error " \
+		 << msg << '\n'; \
+		 exit(1); \
+	 } \
+ } while(0)
+
+
+AgentFunctionDescription& AgentDescription::newRTFunction(const std::string& function_name, const char* func_src) {
+	if (agent->functions.find(function_name) == agent->functions.end()) {
+
+		nvrtcProgram prog;
+		NVRTC_SAFE_CALL(
+			nvrtcCreateProgram(&prog, // prog
+				func_src, // buffer
+				"rt_functions.cu", // name
+				0, // numHeaders
+				NULL, // headers
+				NULL)); // includeNames
+				
+		const char* opts[] = { "--gpu-architecture=compute_75" };
+		nvrtcResult compileResult = nvrtcCompileProgram(prog, // prog
+			1, // numOptions
+			opts); // options
+			
+
+
+		if (compileResult != NVRTC_SUCCESS) {
+
+			// Obtain compilation log from the program.
+			size_t logSize;
+			NVRTC_SAFE_CALL(nvrtcGetProgramLogSize(prog, &logSize));
+			char* log = new char[logSize];
+			NVRTC_SAFE_CALL(nvrtcGetProgramLog(prog, log));
+			std::cout << log << '\n';
+			delete[] log;
+
+			THROW RTAgentFuncCompilationError("Runtime Agent function had compilation errors, "
+				"in AgentDescription::newRTFunction()\n");
+		}
+
+		// Obtain PTX from the program.
+		size_t ptxSize;
+		NVRTC_SAFE_CALL(nvrtcGetPTXSize(prog, &ptxSize));
+		char* ptx = new char[ptxSize];
+		NVRTC_SAFE_CALL(nvrtcGetPTX(prog, ptx));
+
+		// Destroy the program.
+		NVRTC_SAFE_CALL(nvrtcDestroyProgram(&prog));
+
+		// Load the generated PTX and get a handle to the agent wrapper kernel.
+		CUdevice cuDevice;
+		CUcontext context;
+		CUmodule module;
+		CUfunction kernel;
+		//TODO: No mixing of compiletime and runtime functions
+		//TODO: configuration must specify device id
+		CUDA_SAFE_CALL(cuInit(0));
+		CUDA_SAFE_CALL(cuDeviceGet(&cuDevice, 0));
+		CUDA_SAFE_CALL(cuCtxCreate(&context, 0, cuDevice));
+		CUDA_SAFE_CALL(cuModuleLoadDataEx(&module, ptx, 0, 0, 0));
+		CUDA_SAFE_CALL(cuModuleGetFunction(&kernel, module, "simple_test"));	//TODO: This is assuming a simple kernel that does nothing and has no headers or wrapper
+
+		auto rtn = std::shared_ptr<AgentFunctionData>(new AgentFunctionData(this->agent->shared_from_this(), function_name, kernel));
+		agent->functions.emplace(function_name, rtn);
+		return *rtn->description;
+	}
+	THROW InvalidAgentFunc("Agent ('%s') already contains function '%s', "
+		"in AgentDescription::newFunction().",
+		agent->name.c_str(), function_name.c_str());
 }

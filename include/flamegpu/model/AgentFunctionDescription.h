@@ -265,4 +265,6 @@ AgentFunctionDescription &AgentDescription::newFunction(const std::string &funct
         "in AgentDescription::newFunction().",
         agent->name.c_str(), function_name.c_str());
 }
+
+
 #endif  // INCLUDE_FLAMEGPU_MODEL_AGENTFUNCTIONDESCRIPTION_H_

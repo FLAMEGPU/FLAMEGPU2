@@ -118,6 +118,18 @@ class AgentDescription {
      */
     template<typename AgentFunction>
     AgentFunctionDescription &newFunction(const std::string &function_name, AgentFunction a = AgentFunction());
+
+	/**
+	 * Adds a new runtime (device) function to the agent
+	 * @param function_name Name of the functions
+	 * @param string representation of an agent function
+	 * Should be declared using FLAMEGPU_AGENT_FUNCTION notation
+	 * @return A mutable reference to the new AgentFunctionDescription
+	 * @throws InvalidAgentFunc If a variable already exists within the agent with the same name
+	 * @note The same agent function can be passed to the same agent twice
+	 */
+	AgentFunctionDescription& newRTFunction(const std::string& function_name, const char* func_src);
+
     /**
      * Returns a mutable reference to the named agent function, which can be used to configure the function
      * @param function_name Name used to refer to the desired agent function

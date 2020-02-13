@@ -7,6 +7,7 @@
 #include <typeindex>
 #include <set>
 #include <string>
+#include <cuda.h> //CUDA include required for runtime compilation
 
 #include "flamegpu/model/EnvironmentDescription.h"
 #include "flamegpu/runtime/AgentFunction.h"
@@ -340,6 +341,7 @@ struct MessageData {
 /**
  * This is the internal data store for AgentFunctionDescription
  * Users should only access that data stored within via an instance of AgentFunctionDescription
+ * The actual user defined agent function is always accessed via a wrapper. Either in func if the agent function is described at compile time or in func_addr if agent function is described at runtime.
  */
 struct AgentFunctionData {
     friend class AgentDescription;
@@ -351,6 +353,12 @@ struct AgentFunctionData {
      * @see void agent_function_wrapper(Curve::NamespaceHash, Curve::NamespaceHash, Curve::NamespaceHash, Curve::NamespaceHash, const int, const unsigned int, const unsigned int)
      */
     AgentFunctionWrapper *func;
+
+	/**
+	 * The address of a NVRTI function to which represents runtime agent function wrapper for the user defined function
+	 */
+	CUfunction func_addr;
+
     /**
      * Agent's must be in this state to execute this function
      */
@@ -419,6 +427,11 @@ struct AgentFunctionData {
      * Normal constructor, only to be called by AgentDescription
      */
     AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string &function_name, AgentFunctionWrapper *agent_function);
+
+	/**
+	 * Normal constructor for runtime function, only to be called by AgentDescription
+	 */
+	AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string& function_name, CUfunction func_addr);
 };
 
 /**
