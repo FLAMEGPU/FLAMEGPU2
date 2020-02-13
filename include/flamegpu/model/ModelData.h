@@ -33,6 +33,8 @@ class CUDAMessage;
  * Users should only access that data stored within via an instance of ModelDescription
  */
 struct ModelData : std::enable_shared_from_this<ModelData>{
+
+    virtual ~ModelData();
     /**
      * Default state, all agents and agent functions begin in/with this state
      */
@@ -291,8 +293,8 @@ struct AgentData : std::enable_shared_from_this<AgentData> {
 struct MessageData {
     friend class ModelDescription;
     friend struct ModelData;
-
-    virtual ~MessageData() = default;
+    
+    virtual ~MessageData();
 
     /**
      * Holds all of the message's variable definitions

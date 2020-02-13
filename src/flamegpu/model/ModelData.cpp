@@ -14,6 +14,8 @@ ModelData::ModelData(const std::string &model_name)
     : environment(new EnvironmentDescription())
     , name(model_name) { }
 
+ModelData::~ModelData(){ }
+
 AgentData::AgentData(ModelData *const model, const std::string &agent_name)
     : initial_state(ModelData::DEFAULT_STATE)
     , agent_outputs(0)
@@ -26,6 +28,8 @@ AgentData::AgentData(ModelData *const model, const std::string &agent_name)
 MessageData::MessageData(ModelData *const model, const std::string &message_name)
     : description(new MessageDescription(model, this))
     , name(message_name) { }
+
+MessageData::~MessageData() {}
 
 AgentFunctionData::AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string &function_name, AgentFunctionWrapper *agent_function)
     : func(agent_function)

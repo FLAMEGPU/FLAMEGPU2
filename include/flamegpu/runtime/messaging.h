@@ -41,7 +41,7 @@ class MsgNone {
     class CUDAModelHandler : public MsgSpecialisationHandler<SimSpecialisationMsg> {
      public:
         explicit CUDAModelHandler(CUDAMessage &a)
-            : MsgSpecialisationHandler(a)
+            : MsgSpecialisationHandler<SimSpecialisationMsg>(a)
         { }
     };
 };

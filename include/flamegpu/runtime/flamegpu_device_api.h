@@ -56,7 +56,7 @@ __device__ __forceinline__ FLAME_GPU_AGENT_STATUS funcName ## _impl::operator()(
 template<typename MsgIn, typename MsgOut>
 class FLAMEGPU_DEVICE_API {
     // Friends have access to TID() & TS_ID()
-    template<typename AgentFunction, typename MsgIn, typename MsgOut>
+    template<typename AgentFunction, typename _MsgIn, typename _MsgOut>
     friend __global__ void agent_function_wrapper(
         Curve::NamespaceHash,
         Curve::NamespaceHash,
