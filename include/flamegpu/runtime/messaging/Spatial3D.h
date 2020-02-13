@@ -293,7 +293,7 @@ void MsgSpatial3D::CUDAModelHandler<SimSpecialisationMsg>::buildIndex() {
         atomicHistogram3D << <gridSize, blockSize >> >(d_data, d_keys, d_vals, d_histogram, MESSAGE_COUNT,
             reinterpret_cast<float*>(sim_message.getReadPtr("x")),
             reinterpret_cast<float*>(sim_message.getReadPtr("y")),
-            reinterpret_cast<float*>(sim_message.getReadPtr("z"));
+            reinterpret_cast<float*>(sim_message.getReadPtr("z")));
         gpuErrchk(cudaDeviceSynchronize());
     }
     {  // Scan (sum), to finalise PBM
