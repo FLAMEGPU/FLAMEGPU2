@@ -11,7 +11,7 @@
 
 
 FLAMEGPU_AGENT_FUNCTION(output_message, MsgNone, MsgBruteForce) {
-    FLAMEGPU->message_out.setVariable<int>("id", FLAMEGPU->getVariable<float>("id"));
+    FLAMEGPU->message_out.setVariable<int>("id", FLAMEGPU->getVariable<int>("id"));
     FLAMEGPU->message_out.setVariable<float>("x", FLAMEGPU->getVariable<float>("x"));
     FLAMEGPU->message_out.setVariable<float>("y", FLAMEGPU->getVariable<float>("y"));
     FLAMEGPU->message_out.setVariable<float>("z", FLAMEGPU->getVariable<float>("z"));

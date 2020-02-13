@@ -147,6 +147,7 @@ void CUDAScatter::pbm_reorder(
     }
     resize(static_cast<unsigned int>(sd.size()));
     // Important that sd.size() is still used here, incase allocated len (data_len) is bigger
+    gpuErrchk(cudaMemcpy(d_data, sd.data(), sizeof(ScatterData) * sd.size(), cudaMemcpyHostToDevice));
     pbm_reorder_generic <<<gridSize, blockSize>>> (
             itemCount,
             d_bin_index,

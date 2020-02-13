@@ -1,6 +1,6 @@
 #include "flamegpu/runtime/messaging/Spatial3D.h"
 
-void MsgSpatial3D::Out::setLocation(const float &x, const float &y, const float &z) const {
+__device__ void MsgSpatial3D::Out::setLocation(const float &x, const float &y, const float &z) const {
     unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;  // + d_message_count;
 
     // set the variables using curve
@@ -20,7 +20,7 @@ __device__ MsgSpatial3D::In::Filter::Filter(const MetaData* _metadata, const Cur
     loc[2] = z;
     cell = Spatial3D::getGridPosition(_metadata, x, y, z);
 }
-MsgSpatial3D::In::Filter::Message& MsgSpatial3D::In::Filter::Message::operator++()
+__device__ MsgSpatial3D::In::Filter::Message& MsgSpatial3D::In::Filter::Message::operator++()
 {
     cell_index++;
     bool move_strip = cell_index >= cell_index_max;
@@ -28,8 +28,8 @@ MsgSpatial3D::In::Filter::Message& MsgSpatial3D::In::Filter::Message::operator++
         nextStrip();
         if (relative_cell[0] < 2) {
             // Calculate the strips start and end hash
-            unsigned int start_hash = Spatial3D::getHash(_parent.metadata, { _parent.cell.x - 1, _parent.cell.y + relative_cell[0], _parent.cell.x + relative_cell[1] });
-            unsigned int end_hash = Spatial3D::getHash(_parent.metadata, { _parent.cell.x + 1, _parent.cell.y + relative_cell[0], _parent.cell.x + relative_cell[1] });
+            unsigned int start_hash = Spatial3D::getHash(_parent.metadata, { _parent.cell.x - 1, _parent.cell.y + relative_cell[0], _parent.cell.z + relative_cell[1] });
+            unsigned int end_hash = Spatial3D::getHash(_parent.metadata, { _parent.cell.x + 1, _parent.cell.y + relative_cell[0], _parent.cell.z + relative_cell[1] });
             // Lookup start and end indicies from PBM
             cell_index = _parent.metadata->PBM[start_hash];
             cell_index_max = _parent.metadata->PBM[end_hash + 1];

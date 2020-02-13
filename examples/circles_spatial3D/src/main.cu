@@ -11,7 +11,7 @@
 
 
 FLAMEGPU_AGENT_FUNCTION(output_message, MsgNone, MsgSpatial3D) {
-    FLAMEGPU->message_out.setVariable<int>("id", FLAMEGPU->getVariable<float>("id"));
+    FLAMEGPU->message_out.setVariable<int>("id", FLAMEGPU->getVariable<int>("id"));
     FLAMEGPU->message_out.setLocation(
         FLAMEGPU->getVariable<float>("x"), 
         FLAMEGPU->getVariable<float>("y"),
@@ -157,12 +157,12 @@ int main(int argc, const char ** argv) {
      * Execution
      */
      //This mode of execution allows the PRIMAGE visualiser to be used (2020-01-07)
-     while (cuda_model.getStepCounter() < cuda_model.getSimulationConfig().steps && cuda_model.step()) {
+    while (cuda_model.getStepCounter() < cuda_model.getSimulationConfig().steps && cuda_model.step()) {
         std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> pops;
         auto a = std::make_shared<AgentPopulation>(model.getAgent("Circle"));
         cuda_model.getPopulationData(*a);
         export_data(a, (std::to_string(cuda_model.getStepCounter()-1)+".bin").c_str());
-     }
+    }
 
     cuda_model.simulate();
     getchar();

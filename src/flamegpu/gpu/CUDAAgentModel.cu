@@ -96,10 +96,10 @@ bool CUDAAgentModel::step() {
             if (auto im = func_des->message_input.lock()) {
                 std::string inpMessage_name = im->name;
                 CUDAMessage& cuda_message = getCUDAMessage(inpMessage_name);
-                cuda_message.mapReadRuntimeVariables(*func_des);
-
-                //Construct PBM here if required!!
+                // Construct PBM here if required!!
                 cuda_message.buildIndex();
+                // Map variables after, as index building can swap arrays
+                cuda_message.mapReadRuntimeVariables(*func_des);
             }
 
             // check if a function has an output massage

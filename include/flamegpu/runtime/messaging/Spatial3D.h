@@ -11,7 +11,7 @@
 
 namespace {
     struct GridPos3D {
-        unsigned int x, y, z;
+        int x, y, z;
     };
 }  // namespace
 
@@ -57,19 +57,20 @@ public:
                     relative_cell[0] = relative_cell_y;
                     relative_cell[1] = relative_cell_z;
                 }
-                __host__ __device__ bool operator==(const Message& rhs) const { 
+                __device__ bool operator==(const Message& rhs) const { 
                     return this->relative_cell[0] == rhs.relative_cell[0]
                         && this->relative_cell[1] == rhs.relative_cell[1]
                         && this->cell_index_max == rhs.cell_index_max
                         && this->cell_index == rhs.cell_index;
                 }
-                __host__ __device__ bool operator!=(const Message& rhs) const { return  ! (*this == rhs); }
-                __host__ __device__ Message& operator++();
-                __host__ __device__ void nextStrip() {
-                    if (relative_cell[1] >= 1)
-                    {
+                __device__ bool operator!=(const Message& rhs) const { return  ! (*this == rhs); }
+                __device__ Message& operator++();
+                __device__ void nextStrip() {
+                    if (relative_cell[1] >= 1) {
                         relative_cell[1] = -1;
                         relative_cell[0]++;
+                    } else {
+                        relative_cell[1]++;
                     }
                 }
                 template<typename T, size_type N>
@@ -80,24 +81,24 @@ public:
             private:
                 Message _message;
             public:
-                __host__ __device__ iterator(const Filter &parent, const int &relative_cell_y, const int &relative_cell_z, const int &_cell_index_max, const int &_cell_index)
+                __device__ iterator(const Filter &parent, const int &relative_cell_y, const int &relative_cell_z, const int &_cell_index_max, const int &_cell_index)
                     : _message(parent, relative_cell_y, relative_cell_z, _cell_index_max, _cell_index)
                 {
                     // Increment to find first message
                     ++_message;
                 }
-                __host__ __device__ iterator& operator++() { ++_message;  return *this; }
-                __host__ __device__ iterator operator++(int) { iterator tmp(*this); operator++(); return tmp; }
-                __host__ __device__ bool operator==(const iterator& rhs) { return  _message == rhs._message; }
-                __host__ __device__ bool operator!=(const iterator& rhs) { return  _message != rhs._message; }
-                __host__ __device__ Message& operator*() { return _message; }
+                __device__ iterator& operator++() { ++_message;  return *this; }
+                __device__ iterator operator++(int) { iterator tmp(*this); operator++(); return tmp; }
+                __device__ bool operator==(const iterator& rhs) { return  _message == rhs._message; }
+                __device__ bool operator!=(const iterator& rhs) { return  _message != rhs._message; }
+                __device__ Message& operator*() { return _message; }
             };
-            __host__ __device__ Filter(const MetaData *_metadata, const Curve::NamespaceHash &combined_hash, const float &x, const float &y, const float &z);
-            inline __host__ __device__ iterator begin(void) const {
+            __device__ Filter(const MetaData *_metadata, const Curve::NamespaceHash &combined_hash, const float &x, const float &y, const float &z);
+            inline __device__ iterator begin(void) const {
                 return iterator(*this, -2, 1, 1, 0);
             }
-            inline __host__ __device__ iterator end(void) const {
-                return iterator(*this, 1, -1, 1, 0);
+            inline __device__ iterator end(void) const {
+                return iterator(*this, 1, 0, 1, 0);
             }
         private:
             float loc[3];
@@ -112,7 +113,7 @@ public:
         /**
          * Returns a Filter object which provides access to message iterator
          */
-        inline __host__ __device__ Filter operator() (const float &x, const float &y, const float &z) const {
+        inline __device__ Filter operator() (const float &x, const float &y, const float &z) const {
             return Filter(metadata, combined_hash, x, y, z);
         }
     private:
@@ -228,28 +229,28 @@ __device__ void MsgSpatial3D::Out::setVariable(const char(&variable_name)[N], T 
 }
 
 namespace Spatial3D {
-    __host__ __device__ __forceinline__ GridPos3D getGridPosition(const MsgSpatial3D::MetaData *md, float x, float y, float z)
+    __device__ __forceinline__ GridPos3D getGridPosition(const MsgSpatial3D::MetaData *md, float x, float y, float z)
     {
         //Clamp each grid coord to 0<=x<dim
-        unsigned int gridPos[3];// = {
-        gridPos[0] = (unsigned int)floor((x / md->environmentWidth[0])*md->gridDim[0]);
-        gridPos[1] = (unsigned int)floor((y / md->environmentWidth[1])*md->gridDim[1]);
-        gridPos[2] = (unsigned int)floor((z / md->environmentWidth[2])*md->gridDim[2]);
-        //};
+        int gridPos[3] = {
+            (int)floor((x / md->environmentWidth[0])*md->gridDim[0]),
+            (int)floor((y / md->environmentWidth[1])*md->gridDim[1]),
+            (int)floor((z / md->environmentWidth[2])*md->gridDim[2])
+        };
         GridPos3D rtn = {
-            gridPos[0] > md->gridDim[0] - 1 ? md->gridDim[0] - 1 : gridPos[0],
-            gridPos[1] > md->gridDim[1] - 1 ? md->gridDim[1] - 1 : gridPos[1],
-            gridPos[2] > md->gridDim[2] - 1 ? md->gridDim[2] - 1 : gridPos[2]
+            gridPos[0] < 0 ? 0 : (gridPos[0] > md->gridDim[0] - 1 ? (int)(md->gridDim[0] - 1) : gridPos[0]),
+            gridPos[1] < 0 ? 0 : (gridPos[1] > md->gridDim[1] - 1 ? (int)(md->gridDim[1] - 1) : gridPos[1]),
+            gridPos[2] < 0 ? 0 : (gridPos[2] > md->gridDim[2] - 1 ? (int)(md->gridDim[2] - 1) : gridPos[2])
         };
         return rtn;
     }
-    __host__ __device__ __forceinline__ unsigned int getHash(const MsgSpatial3D::MetaData *md, const GridPos3D &xyz)
+    __device__ __forceinline__ unsigned int getHash(const MsgSpatial3D::MetaData *md, const GridPos3D &xyz)
     {
         //Bound gridPos to gridDimensions
         unsigned int gridPos[3] = {
-            xyz.x > md->gridDim[0] - 1 ? md->gridDim[0] - 1 : xyz.x,
-            xyz.y > md->gridDim[1] - 1 ? md->gridDim[1] - 1 : xyz.y,
-            xyz.z > md->gridDim[2] - 1 ? md->gridDim[2] - 1 : xyz.z
+            xyz.x < 0 ? 0 : (xyz.x > md->gridDim[0] - 1 ? md->gridDim[0] - 1 : xyz.x),
+            xyz.y < 0 ? 0 : (xyz.y > md->gridDim[1] - 1 ? md->gridDim[1] - 1 : xyz.y),
+            xyz.z < 0 ? 0 : (xyz.z > md->gridDim[2] - 1 ? md->gridDim[2] - 1 : xyz.z)
         };
         //Compute hash (effectivley an index for to a bin within the partitioning grid in this case)
         return (unsigned int)(
