@@ -77,14 +77,20 @@ FLAMEGPU_STEP_FUNCTION(Validation) {
 }
 void export_data(std::shared_ptr<AgentPopulation> pop, const char *filename);
 int main(int argc, const char ** argv) {
+    const unsigned int AGENT_COUNT = 16384;
     ModelDescription model("Circles_BruteForce_example");
 
     {   // Location message
-        MessageDescription &message = model.newMessage("location");
+        Spatial3DMessageDescription &message = model.newSpatial3DMessage("location");
         message.newVariable<int>("id");
-        message.newVariable<float>("x");
-        message.newVariable<float>("y");
-        message.newVariable<float>("z");
+        //message.newVariable<float>("x");
+        //message.newVariable<float>("y");
+        //message.newVariable<float>("z");
+        const float max_bound = static_cast<float>(floor(cbrt(AGENT_COUNT)));
+        message.setRadius(1.0f);
+        message.setMin(0, 0, 0);
+        message.setMax(max_bound, max_bound, max_bound);
+
     }
     {   // Circle agent
         AgentDescription &agent = model.newAgent("Circle");
@@ -134,7 +140,6 @@ int main(int argc, const char ** argv) {
     cuda_model.initialise(argc, argv);
     if (cuda_model.getSimulationConfig().xml_input_file.empty()) {
         // Currently population has not been init, so generate an agent population on the fly
-        const unsigned int AGENT_COUNT = 16384;
         std::default_random_engine rng;
         std::uniform_real_distribution<float> dist(0.0f, static_cast<float>(floor(cbrt(AGENT_COUNT))));
         AgentPopulation population(model.Agent("Circle"), AGENT_COUNT);
@@ -160,7 +165,7 @@ int main(int argc, const char ** argv) {
      }
 
     cuda_model.simulate();
-
+    getchar();
 
     /**
      * Export Pop

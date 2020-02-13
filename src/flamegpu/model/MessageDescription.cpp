@@ -119,8 +119,17 @@ float Spatial2DMessageDescription::getMaxY() const {
 
 
 Spatial3DMessageDescription::Spatial3DMessageDescription(ModelData *const _model, Spatial3DMessageData *const data)
-    : Spatial2DMessageDescription(_model, data) { }
+    : MessageDescription(_model, data) { }
 
+void Spatial3DMessageDescription::setRadius(const float &r) {
+    reinterpret_cast<Spatial3DMessageData *>(message)->radius = r;
+}
+void Spatial3DMessageDescription::setMinX(const float &x) {
+    reinterpret_cast<Spatial3DMessageData *>(message)->minX = x;
+}
+void Spatial3DMessageDescription::setMinY(const float &y) {
+    reinterpret_cast<Spatial3DMessageData *>(message)->minY = y;
+}
 void Spatial3DMessageDescription::setMinZ(const float &z) {
     reinterpret_cast<Spatial3DMessageData *>(message)->minZ = z;
 }
@@ -128,6 +137,12 @@ void Spatial3DMessageDescription::setMin(const float &x, const float &y, const f
     reinterpret_cast<Spatial3DMessageData *>(message)->minX = x;
     reinterpret_cast<Spatial3DMessageData *>(message)->minY = y;
     reinterpret_cast<Spatial3DMessageData *>(message)->minZ = z;
+}
+void Spatial3DMessageDescription::setMaxX(const float &x) {
+    reinterpret_cast<Spatial3DMessageData *>(message)->maxX = x;
+}
+void Spatial3DMessageDescription::setMaxY(const float &y) {
+    reinterpret_cast<Spatial3DMessageData *>(message)->maxY = y;
 }
 void Spatial3DMessageDescription::setMaxZ(const float &z) {
     reinterpret_cast<Spatial3DMessageData *>(message)->maxZ = z;
@@ -137,14 +152,46 @@ void Spatial3DMessageDescription::setMax(const float &x, const float &y, const f
     reinterpret_cast<Spatial3DMessageData *>(message)->maxY = y;
     reinterpret_cast<Spatial3DMessageData *>(message)->maxZ = z;
 }
+
+float &Spatial3DMessageDescription::Radius() {
+    return reinterpret_cast<Spatial3DMessageData *>(message)->radius;
+}
+float &Spatial3DMessageDescription::MinX() {
+    return reinterpret_cast<Spatial3DMessageData *>(message)->minX;
+}
+float &Spatial3DMessageDescription::MinY() {
+    return reinterpret_cast<Spatial3DMessageData *>(message)->minY;
+}
 float &Spatial3DMessageDescription::MinZ() {
     return reinterpret_cast<Spatial3DMessageData *>(message)->minZ;
+}
+float &Spatial3DMessageDescription::MaxX() {
+    return reinterpret_cast<Spatial3DMessageData *>(message)->maxX;
+}
+float &Spatial3DMessageDescription::MaxY() {
+    return reinterpret_cast<Spatial3DMessageData *>(message)->maxY;
 }
 float &Spatial3DMessageDescription::MaxZ() {
     return reinterpret_cast<Spatial3DMessageData *>(message)->maxZ;
 }
+
+float Spatial3DMessageDescription::getRadius() const {
+    return reinterpret_cast<Spatial3DMessageData *>(message)->radius;
+}
+float Spatial3DMessageDescription::getMinX() const {
+    return reinterpret_cast<Spatial3DMessageData *>(message)->minX;
+}
+float Spatial3DMessageDescription::getMinY() const {
+    return reinterpret_cast<Spatial3DMessageData *>(message)->minY;
+}
 float Spatial3DMessageDescription::getMinZ() const {
     return reinterpret_cast<Spatial3DMessageData *>(message)->minZ;
+}
+float Spatial3DMessageDescription::getMaxX() const {
+    return reinterpret_cast<Spatial3DMessageData *>(message)->maxX;
+}
+float Spatial3DMessageDescription::getMaxY() const {
+    return reinterpret_cast<Spatial3DMessageData *>(message)->maxY;
 }
 float Spatial3DMessageDescription::getMaxZ() const {
     return reinterpret_cast<Spatial3DMessageData *>(message)->maxZ;

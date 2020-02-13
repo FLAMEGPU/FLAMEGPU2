@@ -231,11 +231,11 @@ namespace Spatial3D {
     __host__ __device__ __forceinline__ GridPos3D getGridPosition(const MsgSpatial3D::MetaData *md, float x, float y, float z)
     {
         //Clamp each grid coord to 0<=x<dim
-        unsigned int gridPos[3] = {
-            (unsigned int)floor((x / md->environmentWidth[0])*md->gridDim[0]),
-            (unsigned int)floor((y / md->environmentWidth[0])*md->gridDim[0]),
-            (unsigned int)floor((z / md->environmentWidth[0])*md->gridDim[0])
-        };
+        unsigned int gridPos[3];// = {
+        gridPos[0] = (unsigned int)floor((x / md->environmentWidth[0])*md->gridDim[0]);
+        gridPos[1] = (unsigned int)floor((y / md->environmentWidth[1])*md->gridDim[1]);
+        gridPos[2] = (unsigned int)floor((z / md->environmentWidth[2])*md->gridDim[2]);
+        //};
         GridPos3D rtn = {
             gridPos[0] > md->gridDim[0] - 1 ? md->gridDim[0] - 1 : gridPos[0],
             gridPos[1] > md->gridDim[1] - 1 ? md->gridDim[1] - 1 : gridPos[1],
