@@ -67,6 +67,10 @@ if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_CIRCLES_BRUTE_FORCE)
     add_subdirectory(examples/circles_bruteforce)
 endif()
 
+if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_CIRCLES_RTC)
+    add_subdirectory(examples/circles_rtc)
+endif()
+
 # Add the tests directory (if required)
 if(BUILD_TESTS)
     add_subdirectory(tests)
