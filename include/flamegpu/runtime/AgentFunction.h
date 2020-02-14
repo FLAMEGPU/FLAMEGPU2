@@ -28,7 +28,7 @@ typedef void(AgentFunctionWrapper)(
  * @param agent_func_name_hash
  * @param messagename_inp_hash
  * @param popNo
- * @param messageIn_size
+ * @param messagelist_metadata Pointer to the MsgIn metadata struct, it is interpreted by MsgIn
  * @param thread_in_layer_offset Add this value to TID to calculate a thread-safe TID (TS_ID), used by ActorRandom for accessing curand array in a thread-safe manner
  * @tparam AgentFunction The modeller defined agent function
  * @tparam MsgIn Message handler for messageinput

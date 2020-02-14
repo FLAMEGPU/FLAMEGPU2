@@ -123,6 +123,12 @@ DERIVED_FGPUException(InvalidMessageName, "Invalid message name");
 
 /**
  * Defines a type of object to be thrown as exception.
+ * It reports errors that are due to message types misaligning
+ */
+DERIVED_FGPUException(InvalidMessageType, "Invalid message type");
+
+/**
+ * Defines a type of object to be thrown as exception.
  * It reports errors that are due to invalid agent
  */
 DERIVED_FGPUException(InvalidAgent, "Invalid agent");

@@ -332,6 +332,12 @@ struct MessageData {
 
     virtual std::unique_ptr<MsgSpecialisationHandler<CUDAMessage>> getSpecialisationHander(CUDAMessage &owner) const;
 
+    /**
+     * Used internally to validate that the corresponding Msg type is attached via the agent function shim.
+     * @return The std::type_index of the Msg type which must be used.
+     */
+    virtual std::type_index getType() const;
+
  protected:
     virtual MessageData *clone(ModelData *const newParent);
     /**
@@ -416,6 +422,14 @@ struct AgentFunctionData {
      * Default copy constructor, not implemented
      */
     AgentFunctionData(const AgentFunctionData &other) = delete;
+    /**
+     * Input messaging type specified in FLAMEGPU_AGENT_FUNCTION
+     */
+    const std::type_index msg_in_type;
+    /**
+     * Output messaging  type specified in FLAMEGPU_AGENT_FUNCTION
+     */
+    const std::type_index msg_out_type;
 
  protected:
     /**
@@ -426,7 +440,7 @@ struct AgentFunctionData {
     /**
      * Normal constructor, only to be called by AgentDescription
      */
-    AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string &function_name, AgentFunctionWrapper *agent_function);
+    AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string &function_name, AgentFunctionWrapper *agent_function, const std::type_index &in_type, const std::type_index &out_type);
 };
 
 /**
@@ -499,6 +513,12 @@ struct Spatial2DMessageData : MessageData {
     float maxY;
     virtual ~Spatial2DMessageData() = default;
 
+    /**
+     * Used internally to validate that the corresponding Msg type is attached via the agent function shim.
+     * @return The std::type_index of the Msg type which must be used.
+     */
+    std::type_index getType() const override;
+
  protected:
     Spatial2DMessageData *clone(ModelData *const newParent) override;
     /**
@@ -511,6 +531,7 @@ struct Spatial2DMessageData : MessageData {
      */
      Spatial2DMessageData(ModelData *const, const std::string &message_name);
 };
+
 struct Spatial3DMessageData : Spatial2DMessageData {
     friend class ModelDescription;
     friend struct ModelData;
@@ -520,7 +541,13 @@ struct Spatial3DMessageData : Spatial2DMessageData {
 
     std::unique_ptr<MsgSpecialisationHandler<CUDAMessage>> getSpecialisationHander(CUDAMessage &owner) const override;
 
- private:
+    /**
+     * Used internally to validate that the corresponding Msg type is attached via the agent function shim.
+     * @return The std::type_index of the Msg type which must be used.
+     */
+    std::type_index getType() const override;
+
+protected:
     Spatial3DMessageData *clone(ModelData *const newParent) override;
     /**
      * Copy constructor

@@ -115,11 +115,11 @@ int main(int argc, const char ** argv) {
 
     {   // Layer #1
         LayerDescription &layer = model.newLayer();
-        layer.addAgentFunction(output_message, MsgNone(), MsgBruteForce());
+        layer.addAgentFunction(output_message);
     }
     {   // Layer #2
         LayerDescription &layer = model.newLayer();
-        layer.addAgentFunction(move, MsgBruteForce(), MsgNone());
+        layer.addAgentFunction(move);
     }
 
     /**

@@ -31,7 +31,7 @@ MessageData::MessageData(ModelData *const model, const std::string &message_name
 
 MessageData::~MessageData() {}
 
-AgentFunctionData::AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string &function_name, AgentFunctionWrapper *agent_function)
+AgentFunctionData::AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string &function_name, AgentFunctionWrapper *agent_function, const std::type_index &in_type, const std::type_index &out_type)
     : func(agent_function)
     , initial_state(_parent->initial_state)
     , end_state(_parent->initial_state)
@@ -39,7 +39,9 @@ AgentFunctionData::AgentFunctionData(std::shared_ptr<AgentData> _parent, const s
     , has_agent_death(false)
     , parent(_parent)
     , description(new AgentFunctionDescription(_parent->description->model, this))
-    , name(function_name) { }
+    , name(function_name)
+    , msg_in_type(in_type)
+    , msg_out_type(out_type) { }
 
 LayerData::LayerData(ModelData *const model, const std::string &layer_name, const ModelData::size_type &layer_index)
     : description(new LayerDescription(model, this))
@@ -127,7 +129,9 @@ AgentFunctionData::AgentFunctionData(ModelData *const model, std::shared_ptr<Age
     , has_agent_death(other.has_agent_death)
     , parent(_parent)
     , description(model ? new AgentFunctionDescription(model, this) : nullptr)
-    , name(other.name) {
+    , name(other.name)
+    , msg_in_type(other.msg_in_type)
+    , msg_out_type(other.msg_out_type) {
     // Manually perform lookup copies
     if (model) {
         if (auto a = other.message_input.lock()) {

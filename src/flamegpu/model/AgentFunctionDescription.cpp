@@ -58,7 +58,14 @@ void AgentFunctionDescription::setMessageInput(const std::string &message_name) 
     }
     auto a = model->messages.find(message_name);
     if (a != model->messages.end()) {
-        this->function->message_input = a->second;
+        if (this->function->msg_in_type == a->second->getType()) {
+            this->function->message_input = a->second;
+        }
+        else {
+            THROW InvalidMessageType("Message ('%s') type '%s' does not match type '%s' applied to FLAMEGPU_AGENT_FUNCTION, "
+                "in AgentFunctionDescription::setMessageInput()\n",
+                message_name.c_str(), a->second->getType().name(), this->function->msg_in_type.name());
+        }
     } else {
         THROW InvalidMessageName("Model ('%s') does not contain message '%s', "
             "in AgentFunctionDescription::setMessageInput()\n",
@@ -81,7 +88,14 @@ void AgentFunctionDescription::setMessageInput(MessageDescription &message) {
     auto a = model->messages.find(message.getName());
     if (a != model->messages.end()) {
         if (a->second->description.get() == &message) {
-            this->function->message_input = a->second;
+            if (this->function->msg_in_type == a->second->getType()) {
+                this->function->message_input = a->second;
+            }
+            else {
+                THROW InvalidMessageType("Message ('%s') type '%s' does not match type '%s' applied to FLAMEGPU_AGENT_FUNCTION, "
+                    "in AgentFunctionDescription::setMessageInput()\n",
+                    a->second->name.c_str(), a->second->getType().name(), this->function->msg_in_type.name());
+            }
         } else {
             THROW InvalidMessage("Message '%s' is not from Model '%s', "
                 "in AgentFunctionDescription::setMessageInput()\n",
@@ -110,9 +124,15 @@ void AgentFunctionDescription::setMessageOutput(const std::string &message_name)
     }
     auto a = model->messages.find(message_name);
     if (a != model->messages.end()) {
-        this->function->message_output = a->second;
-        if (this->function->message_output_optional) {
-            a->second->optional_outputs++;
+        if (this->function->msg_out_type == a->second->getType()) {
+            this->function->message_output = a->second;
+            if (this->function->message_output_optional) {
+                a->second->optional_outputs++;
+            }
+        } else {
+            THROW InvalidMessageType("Message ('%s') type '%s' does not match type '%s' applied to FLAMEGPU_AGENT_FUNCTION, "
+                "in AgentFunctionDescription::setMessageOutput()\n",
+                message_name.c_str(), a->second->getType().name(), this->function->msg_in_type.name());
         }
     } else {
         THROW InvalidMessageName("Model ('%s') does not contain message '%s', "
@@ -142,9 +162,15 @@ void AgentFunctionDescription::setMessageOutput(MessageDescription &message) {
     auto a = model->messages.find(message.getName());
     if (a != model->messages.end()) {
         if (a->second->description.get() == &message) {
-            this->function->message_output = a->second;
-            if (this->function->message_output_optional) {
-                a->second->optional_outputs++;
+            if (this->function->msg_out_type == a->second->getType()) {
+                this->function->message_output = a->second;
+                if (this->function->message_output_optional) {
+                    a->second->optional_outputs++;
+                }
+            } else {
+                THROW InvalidMessageType("Message ('%s') type '%s' does not match type '%s' applied to FLAMEGPU_AGENT_FUNCTION, "
+                    "in AgentFunctionDescription::setMessageOutput()\n",
+                    a->second->name.c_str(), a->second->getType().name(), this->function->msg_in_type.name());
             }
         } else {
             THROW InvalidMessage("Message '%s' is not from Model '%s', "
