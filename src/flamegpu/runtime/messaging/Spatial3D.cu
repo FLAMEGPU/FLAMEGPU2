@@ -130,7 +130,7 @@ void MsgSpatial3D::CUDAModelHandler::buildIndex() {
 }
 
 void MsgSpatial3D::CUDAModelHandler::resizeCubTemp() {
-    size_t bytesCheck;
+    size_t bytesCheck = 0;
     cub::DeviceScan::ExclusiveSum(nullptr, bytesCheck, hd_data.PBM, d_histogram, binCount + 1);
     if (bytesCheck > d_CUB_temp_storage_bytes) {
         if (d_CUB_temp_storage) {
