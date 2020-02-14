@@ -49,8 +49,12 @@ TEST(AgentDescriptionTest, functions) {
     EXPECT_EQ(f2, a.Function(FUNCTION_NAME2));
     EXPECT_EQ(f1.getName(), FUNCTION_NAME1);
     EXPECT_EQ(f2.getName(), FUNCTION_NAME2);
-    EXPECT_EQ(f1.getFunctionPtr(), &agent_function_wrapper<agent_fn1_impl>);
-    EXPECT_EQ(f2.getFunctionPtr(), &agent_function_wrapper<agent_fn2_impl>);
+    {
+        AgentFunctionWrapper *_a = &agent_function_wrapper<agent_fn1_impl, MsgNone, MsgNone>;
+        EXPECT_EQ(f1.getFunctionPtr(), _a);
+        AgentFunctionWrapper *_b = &agent_function_wrapper<agent_fn2_impl, MsgNone, MsgNone>;
+        EXPECT_EQ(f2.getFunctionPtr(), _b);
+    }
 }
 TEST(AgentDescriptionTest, variables) {
     ModelDescription m(MODEL_NAME);
