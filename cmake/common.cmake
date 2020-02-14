@@ -1,4 +1,7 @@
 message(STATUS "-----Configuring Project: ${PROJECT_NAME}-----")
+# Add custom modules directory
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/modules/ ${CMAKE_MODULE_PATH})
+
 # Common rules for other cmake files
 # Make available lowercase 'linux'/'windows' vars (used for build dirs)
 STRING(TOLOWER "${CMAKE_SYSTEM_NAME}" CMAKE_SYSTEM_NAME_LOWER)
@@ -52,20 +55,35 @@ MARK_AS_ADVANCED(
     CMAKE_EXE_LINKER_FLAGS_PROFILE
     CMAKE_SHARED_LINKER_FLAGS_PROFILE )
 
-# Declare variable to track extra link libraries
-set(FLAMEGPU_LINK_LIBRARIES)
-
-# If using profile build, imply NVTX
-if(CMAKE_BUILD_TYPE MATCHES "Profile")
+    
+    # If using profile build, imply NVTX
+    if(CMAKE_BUILD_TYPE MATCHES "Profile")
     SET(NVTX "ON")
-endif()
-
+    endif()
+    
+    
+# Declare variables to track extra include dirs / link dirs / link libraries
+set(FLAMEGPU_DEPENDENCY_INCLUDE_DIRECTORIES)
+set(FLAMEGPU_DEPENDENCY_LINK_DIRECTORIES)
+set(FLAMEGPU_DEPENDENCY_LINK_LIBRARIES)
 
 # If NVTX is enabled, find the library and update variables accordingly.
 if(NVTX)
-    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -DNVTX")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNVTX")
-    set(FLAMEGPU_LINK_LIBRARIES ${FLAMEGPU_LINK_LIBRARIES} nvToolsExt)
+    # Find the nvtx library using custom cmake module
+    find_package(NVTX QUIET)
+    # If it was found, use it.
+    if(NVTX_FOUND)
+        message("found nvtx ${NVTX_INCLUDE_DIRS} ${NVTX_LIBRARIES}")
+        set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -DNVTX")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNVTX")
+        set(FLAMEGPU_DEPENDENCY_INCLUDE_DIRECTORIES ${FLAMEGPU_INCLUDE_DIRECTORIES} ${NVTX_INCLUDE_DIRS})
+        set(FLAMEGPU_LINK_DIRECTORIES ${FLAMEGPU_DEPENDENCY_LINK_LIBRARIES} ${NVTX_LIBRARIES})
+        set(FLAMEGPU_DEPENDENCY_LINK_LIBRARIES ${FLAMEGPU_DEPENDENCY_LINK_LIBRARIES} nvToolsExt)
+    else()
+        # If not found, disable.
+        message("NVTX Not found, Setting NVTX=OFF")
+        SET(NVTX "OFF")    
+    endif()
 endif(NVTX)
 
 # Require a minimum cuda version
@@ -270,6 +288,7 @@ function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
     target_include_directories(${NAME} SYSTEM PRIVATE ${FLAMEGPU_ROOT}/externals)
 # ../include required for cmake > 3.12 which ignores this otheriwse.
     target_include_directories(${NAME}  SYSTEM PRIVATE "${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}/../include")    
+    target_include_directories(${NAME} SYSTEM PRIVATE ${FLAMEGPU_IN_DEPENDENCYCLUDE_DIRECTORIES})
     target_include_directories(${NAME} PRIVATE ${FLAMEGPU_ROOT}/include)
 
     # Enable RDC for the target
@@ -324,11 +343,13 @@ function(add_flamegpu_library NAME SRC FLAMEGPU_ROOT)
     target_include_directories(${NAME}  SYSTEM PRIVATE ${FLAMEGPU_ROOT}/externals)
     # ../include required for cmake > 3.12 which ignores this otheriwse.
     target_include_directories(${NAME}  SYSTEM PRIVATE "${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}/../include")
+    target_include_directories(${NAME}  SYSTEM PRIVATE ${FLAMEGPU_IN_DEPENDENCYCLUDE_DIRECTORIES})
     target_include_directories(${NAME}  PRIVATE ${FLAMEGPU_ROOT}/include)
     target_include_directories(${NAME}  PRIVATE ${FLAMEGPU_ROOT}/src) #private headers
 
-    # Add linker targets
-    target_link_libraries(${NAME} ${FLAMEGPU_LINK_LIBRARIES})
+    # Add extra linker targets
+    target_link_directories(${NAME} PRIVATE ${FLAMEGPU_DEPENDENCY_LINK_DIRECTORIES})
+    target_link_libraries(${NAME} ${FLAMEGPU_DEPENDENCY_LINK_LIBRARIES})
 
     # Flag the new linter target and the files to be linted.
     new_linter_target(${NAME} "${SRC}")
