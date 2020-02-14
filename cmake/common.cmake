@@ -73,7 +73,6 @@ if(NVTX)
     find_package(NVTX QUIET)
     # If it was found, use it.
     if(NVTX_FOUND)
-        message("found nvtx ${NVTX_INCLUDE_DIRS} ${NVTX_LIBRARIES}")
         set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -DNVTX")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNVTX")
         set(FLAMEGPU_DEPENDENCY_INCLUDE_DIRECTORIES ${FLAMEGPU_INCLUDE_DIRECTORIES} ${NVTX_INCLUDE_DIRS})
