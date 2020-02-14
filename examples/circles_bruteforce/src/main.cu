@@ -7,6 +7,7 @@
 #include "flamegpu/flame_api.h"
 #include "flamegpu/runtime/flamegpu_api.h"
 #include "flamegpu/io/factory.h"
+#include "flamegpu/util/nvtx.h"
 
 
 
@@ -76,6 +77,7 @@ FLAMEGPU_STEP_FUNCTION(Validation) {
 }
 void export_data(std::shared_ptr<AgentPopulation> pop, const char *filename);
 int main(int argc, const char ** argv) {
+    NVTX_RANGE("main");
     ModelDescription model("Circles_BruteForce_example");
 
     {   // Location message

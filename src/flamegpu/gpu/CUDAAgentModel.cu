@@ -1,12 +1,14 @@
 #include "flamegpu/gpu/CUDAAgentModel.h"
 
 #include <algorithm>
+#include <string>
 
 #include "flamegpu/model/ModelData.h"
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/pop/AgentPopulation.h"
 #include "flamegpu/runtime/flamegpu_host_api.h"
 #include "flamegpu/gpu/CUDAScanCompaction.h"
+#include "flamegpu/util/nvtx.h"
 
 CUDAAgentModel::CUDAAgentModel(const ModelDescription& _model)
     : Simulation(_model)
@@ -47,6 +49,7 @@ CUDAAgentModel::~CUDAAgentModel() {
 }
 
 bool CUDAAgentModel::step() {
+    NVTX_RANGE(std::string("CUDAAgentModel::step " + std::to_string(step_count)).c_str());
     step_count++;
     int nStreams = 1;
     std::string message_name;
@@ -64,11 +67,13 @@ bool CUDAAgentModel::step() {
     }
 
     /*!  Stream creations */
+    NVTX_PUSH("CreateStreams");
     cudaStream_t *stream = new cudaStream_t[nStreams];
 
     /*!  Stream initialisation */
     for (int j = 0; j < nStreams; j++)
         gpuErrchk(cudaStreamCreate(&stream[j]));
+    NVTX_POP();
 
     // Reset message list flags
     for (auto m =  message_map.begin(); m != message_map.end(); ++m) {
@@ -76,13 +81,16 @@ bool CUDAAgentModel::step() {
     }
 
     /*! for each each sim layer, launch each agent function in its own stream */
+    unsigned int lyr_idx = 0;
     for (auto lyr = model->layers.begin(); lyr != model->layers.end(); ++lyr) {
+        NVTX_RANGE(std::string("StepLayer " + std::to_string(lyr_idx)).c_str());
         const auto& functions = (*lyr)->agent_functions;
 
         int j = 0;  // Track stream id
         // Sum the total number of threads being launched in the layer
         unsigned int totalThreads = 0;
         /*! for each func function - Loop through to do all mapping of agent and message variables */
+        NVTX_PUSH("CUDAAgentModel::step::MapLayer");
         for (const std::shared_ptr<AgentFunctionData> &func_des : functions) {
             auto func_agent = func_des->parent.lock()->description;
             if (!func_agent) {
@@ -130,9 +138,12 @@ bool CUDAAgentModel::step() {
             totalThreads += cuda_agent.getMaximumListSize();
             ++j;
         }
+        NVTX_POP();
 
         // Ensure RandomManager is the correct size to accomodate all threads to be launched
+        NVTX_PUSH("RandomManager::resize");
         rng.resize(totalThreads);
+        NVTX_POP();
         // Total threads is now used to provide kernel launches an offset to thread-safe thread-index
         totalThreads = 0;
         j = 0;
@@ -144,6 +155,7 @@ bool CUDAAgentModel::step() {
             }
             std::string agent_name = func_agent->name;
             std::string func_name = func_des->name;
+            NVTX_RANGE(std::string(agent_name + "::" + func_name).c_str());
 
             // check if a function has an output massage
             if (auto im = func_des->message_input.lock()) {
@@ -186,14 +198,18 @@ bool CUDAAgentModel::step() {
             // hash function name
             Curve::NamespaceHash funcname_hash = curve.variableRuntimeHash(func_name.c_str());
 
+            NVTX_PUSH("CUDAAgentModel::step::Kernel");
             (func_des->func)<<<gridSize, blockSize, 0, stream[j] >>>(modelname_hash, agentname_hash + funcname_hash, message_name_inp_hash, message_name_outp_hash, state_list_size, d_messagelist_metadata, totalThreads, j);
             gpuErrchkLaunch();
+            NVTX_POP();
 
             totalThreads += state_list_size;
             ++j;
+            ++lyr_idx;
         }
 
         j = 0;
+        NVTX_PUSH("CUDAAgentModel::step::UnmapLayer");
         // for each func function - Loop through to un-map all agent and message variables
         for (const std::shared_ptr<AgentFunctionData> &func_des : functions) {
             auto func_agent = func_des->parent.lock()->description;
@@ -229,23 +245,30 @@ bool CUDAAgentModel::step() {
 
             ++j;
         }
+        NVTX_POP();
 
         // Execute all host functions attached to layer
         // TODO: Concurrency?
-        for (auto &stepFn : (*lyr)->host_functions)
+        NVTX_PUSH("CUDAAgentModel::step::HostFunctions");
+        for (auto &stepFn : (*lyr)->host_functions) {
             stepFn(this->host_api.get());
+        }
+        NVTX_POP();
         // cudaDeviceSynchronize();
     }
     // stream deletion
+    NVTX_PUSH("CUDAAgentModel::step::deleteStreams");
     for (int j = 0; j < nStreams; ++j)
         gpuErrchk(cudaStreamDestroy(stream[j]));
     delete[] stream;
+    NVTX_POP();
 
 
     // Execute step functions
+    NVTX_PUSH("CUDAAgentModel::step::StepFunctions");
     for (auto &stepFn : model->stepFunctions)
         stepFn(this->host_api.get());
-
+    NVTX_POP();
 
     // Execute exit conditions
     for (auto &exitCdns : model->exitConditions)

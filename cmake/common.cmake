@@ -52,6 +52,22 @@ MARK_AS_ADVANCED(
     CMAKE_EXE_LINKER_FLAGS_PROFILE
     CMAKE_SHARED_LINKER_FLAGS_PROFILE )
 
+# Declare variable to track extra link libraries
+set(FLAMEGPU_LINK_LIBRARIES)
+
+# If using profile build, imply NVTX
+if(CMAKE_BUILD_TYPE MATCHES "Profile")
+    SET(NVTX "ON")
+endif()
+
+
+# If NVTX is enabled, find the library and update variables accordingly.
+if(NVTX)
+    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -DNVTX")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNVTX")
+    set(FLAMEGPU_LINK_LIBRARIES ${FLAMEGPU_LINK_LIBRARIES} nvToolsExt)
+endif(NVTX)
+
 # Require a minimum cuda version
 if(CMAKE_CUDA_COMPILER_VERSION VERSION_LESS 7.0)
     message(FATAL_ERROR "CUDA version must be at least 7.0")
@@ -310,6 +326,9 @@ function(add_flamegpu_library NAME SRC FLAMEGPU_ROOT)
     target_include_directories(${NAME}  SYSTEM PRIVATE "${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}/../include")
     target_include_directories(${NAME}  PRIVATE ${FLAMEGPU_ROOT}/include)
     target_include_directories(${NAME}  PRIVATE ${FLAMEGPU_ROOT}/src) #private headers
+
+    # Add linker targets
+    target_link_libraries(${NAME} ${FLAMEGPU_LINK_LIBRARIES})
 
     # Flag the new linter target and the files to be linted.
     new_linter_target(${NAME} "${SRC}")

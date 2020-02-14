@@ -161,6 +161,13 @@ make -j8
 
 Pass `-DSMS=` to reset to the default.
 
+##### NVTX Markers
+
+[NVTX markers](https://docs.nvidia.com/cuda/profiler-users-guide/index.html#nvtx) can be enabled to improve the profiling experience, using the `NVTX` Cmake option. 
+
+I.e. `-DNVTX=ON` will enable NVTX markers and allow custom markers to be included. This is implied by the `Profile` build configuration. 
+See `include/util/nvtx.h` and the associated documentation for how to apply custom markers.
+
 ### Running FLAME GPU 2
 Examples for FLAME GPU 2 build to `<cmake_build_path>/bin/<operating_system>-x64/<Debug|Release|Profile>/`, and can be executed from that directory via command line.
 
