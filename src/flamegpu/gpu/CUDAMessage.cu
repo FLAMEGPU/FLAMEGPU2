@@ -215,7 +215,7 @@ void CUDAMessage::swap(bool isOptional, const unsigned int &streamId) {
             message_count + 1);
         // Scatter
         // Update count
-        message_count = message_list->scatter(streamId);
+        message_count = message_list->scatter(streamId, false);
     } else {
         message_list->swap();
     }
