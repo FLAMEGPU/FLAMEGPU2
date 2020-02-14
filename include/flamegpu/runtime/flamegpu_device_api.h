@@ -19,35 +19,6 @@
 #include "flamegpu/runtime/utility/DeviceEnvironment.cuh"
 #include "flamegpu/gpu/CUDAScanCompaction.h"
 
-// TODO: Some example code of the handle class and an example function
-// ! FLAMEGPU_API is a singleton class
-template<typename MsgIn, typename MsgOut>
-class FLAMEGPU_DEVICE_API;  // Forward declaration (class defined below)
-
-// ! FLAMEGPU function return type
-enum FLAME_GPU_AGENT_STATUS { ALIVE = 1, DEAD = 0 };
-
-/**
- * Macro for defining agent transition functions with the correct input. Must always be a device function to be called by CUDA.
- *
- * struct SomeAgentFunction {
- *     __device__ __forceinline__ FLAME_GPU_AGENT_STATUS operator()(FLAMEGPU_DEVICE_API *FLAMEGPU) const {
- *         // do something
- *         return 0;
- *     }
- * };
- *}
- */
-#define FLAMEGPU_AGENT_FUNCTION(funcName, msg_in, msg_out)\
-struct funcName ## _impl {\
-    __device__ __forceinline__ FLAME_GPU_AGENT_STATUS operator()(FLAMEGPU_DEVICE_API<msg_in, msg_out> *FLAMEGPU) const;\
-};\
-funcName ## _impl funcName;\
-__device__ __forceinline__ FLAME_GPU_AGENT_STATUS funcName ## _impl::operator()(FLAMEGPU_DEVICE_API<msg_in, msg_out> *FLAMEGPU) const
-
-// Advanced macro for defining agent transition functions
-#define FLAMEGPU_AGENT_FUNC __device__ __forceinline__
-
 /** @brief    A flame gpu api class for the device runtime only
  *
  * This class should only be used by the device and never created on the host. It is safe for each agent function to create a copy of this class on the device. Any singleton type

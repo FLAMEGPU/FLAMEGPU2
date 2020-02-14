@@ -19,5 +19,6 @@
 #include "flamegpu/gpu/CUDAAgentModel.h"
 #include "flamegpu/runtime/flamegpu_api.h"
 #include "flamegpu/runtime/messaging.h"
+#include "flamegpu/runtime/AgentFunction_shim.h"
 
 #endif  // INCLUDE_FLAMEGPU_FLAME_API_H_

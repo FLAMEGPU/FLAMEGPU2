@@ -253,10 +253,10 @@ class AgentFunctionDescription {
     AgentFunctionData *const function;
 };
 
-template<typename AgentFunction, typename MsgIn, typename MsgOut>
-AgentFunctionDescription &AgentDescription::newFunction(const std::string &function_name, AgentFunction, MsgIn, MsgOut) {
+template<typename AgentFunction>
+AgentFunctionDescription &AgentDescription::newFunction(const std::string &function_name, AgentFunction) {
     if (agent->functions.find(function_name) == agent->functions.end()) {
-        AgentFunctionWrapper *f = &agent_function_wrapper<AgentFunction, MsgIn, MsgOut>;
+        AgentFunctionWrapper *f = AgentFunction::fnPtr();
         auto rtn = std::shared_ptr<AgentFunctionData>(new AgentFunctionData(this->agent->shared_from_this(), function_name, f));
         agent->functions.emplace(function_name, rtn);
         return *rtn->description;

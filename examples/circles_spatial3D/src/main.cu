@@ -8,8 +8,6 @@
 #include "flamegpu/runtime/flamegpu_api.h"
 #include "flamegpu/io/factory.h"
 
-
-
 FLAMEGPU_AGENT_FUNCTION(output_message, MsgNone, MsgSpatial3D) {
     FLAMEGPU->message_out.setVariable<int>("id", FLAMEGPU->getVariable<int>("id"));
     FLAMEGPU->message_out.setLocation(
@@ -95,8 +93,8 @@ int main(int argc, const char ** argv) {
         agent.newVariable<float>("y");
         agent.newVariable<float>("z");
         agent.newVariable<float>("drift");  // Store the distance moved here, for validation
-        agent.newFunction("output_message", output_message, MsgNone(), MsgSpatial3D()).setMessageOutput("location");
-        agent.newFunction("move", move, MsgSpatial3D(), MsgNone()).setMessageInput("location");
+        agent.newFunction("output_message", output_message).setMessageOutput("location");
+        agent.newFunction("move", move).setMessageInput("location");
     }
 
 
@@ -118,11 +116,11 @@ int main(int argc, const char ** argv) {
 
     {   // Layer #1
         LayerDescription &layer = model.newLayer();
-        layer.addAgentFunction(output_message, MsgNone(), MsgSpatial3D());
+        layer.addAgentFunction(output_message);
     }
     {   // Layer #2
         LayerDescription &layer = model.newLayer();
-        layer.addAgentFunction(move, MsgSpatial3D(), MsgNone());
+        layer.addAgentFunction(move);
     }
 
     /**

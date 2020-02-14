@@ -64,8 +64,8 @@ class LayerDescription {
      * @note The agent function must first be added to an Agent
      * @see AgentDescription::newFunction(const std::string &, AgentFunction)
      */
-    template<typename AgentFunction, typename MsgIn, typename MsgOut>
-    void addAgentFunction(AgentFunction af = AgentFunction(), MsgIn mi = MsgIn(), MsgOut = MsgOut());
+    template<typename AgentFunction>
+    void addAgentFunction(AgentFunction af = AgentFunction());
     /**
      * Adds an agent function to this layer
      * The agent function will be called during this stage of model execution
@@ -146,9 +146,9 @@ class LayerDescription {
 };
 
 
-template<typename AgentFunction, typename MsgIn, typename MsgOut>
-void LayerDescription::addAgentFunction(AgentFunction /*af*/, MsgIn /*mi*/, MsgOut /*mo*/) {
-    AgentFunctionWrapper * func_compare = &agent_function_wrapper<AgentFunction, MsgIn, MsgOut>;
+template<typename AgentFunction>
+void LayerDescription::addAgentFunction(AgentFunction /*af*/) {
+    AgentFunctionWrapper * func_compare = AgentFunction::fnPtr();
     // Unsure if implicit template instantion leads to two unique function ptrs
     // Logic dictates that it should work (else compiler would complain duplicate symbols)
     for (auto a : model->agents) {

@@ -92,8 +92,8 @@ int main(int argc, const char ** argv) {
         agent.newVariable<float>("y");
         agent.newVariable<float>("z");
         agent.newVariable<float>("drift");  // Store the distance moved here, for validation
-        agent.newFunction("output_message", output_message, MsgNone(), MsgBruteForce()).setMessageOutput("location");
-        agent.newFunction("move", move, MsgBruteForce(), MsgNone()).setMessageInput("location");
+        agent.newFunction("output_message", output_message).setMessageOutput("location");
+        agent.newFunction("move", move).setMessageInput("location");
     }
 
 
