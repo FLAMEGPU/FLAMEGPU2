@@ -16,11 +16,11 @@ const char *FUNCTION_NAME2 = "Func2";
 const char *STATE_NAME1 = "State1";
 const char *STATE_NAME2 = "State2";
 
-FLAMEGPU_AGENT_FUNCTION(agent_fn1) {
+FLAMEGPU_AGENT_FUNCTION(agent_fn1, MsgNone, MsgNone) {
     // do nothing
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(agent_fn2) {
+FLAMEGPU_AGENT_FUNCTION(agent_fn2, MsgNone, MsgNone) {
     // do nothing
     return ALIVE;
 }

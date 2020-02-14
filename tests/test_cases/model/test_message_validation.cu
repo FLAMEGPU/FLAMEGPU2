@@ -21,7 +21,7 @@
 
 #include "flamegpu/flame_api.h"
 
-FLAMEGPU_AGENT_FUNCTION(sample_agentfn) {
+FLAMEGPU_AGENT_FUNCTION(sample_agentfn, MsgNone, MsgNone) {
     // do nothing
     return ALIVE;
 }

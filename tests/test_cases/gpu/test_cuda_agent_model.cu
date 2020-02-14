@@ -16,7 +16,7 @@ namespace test_cuda_agent_model {
     const int MULTIPLIER = 3;
     __device__ const int dMULTIPLIER = 3;
     int externalCounter = 0;
-FLAMEGPU_AGENT_FUNCTION(DeathTestFunc) {
+FLAMEGPU_AGENT_FUNCTION(DeathTestFunc, MsgNone, MsgNone) {
     unsigned int x = FLAMEGPU->getVariable<unsigned int>("x");
     // Agents with even value for 'x' die
     if (x % 2 == 0)
@@ -124,7 +124,7 @@ TEST(TestCUDAAgentModel, ArgParse_device_short) {
     EXPECT_EQ(c.getCUDAConfig().device_id, 0);
     ASSERT_EQ(cudaGetLastError(), cudaSuccess);
 }
-FLAMEGPU_AGENT_FUNCTION(SetGetFn) {
+FLAMEGPU_AGENT_FUNCTION(SetGetFn, MsgNone, MsgNone) {
     int i = FLAMEGPU->getVariable<int>(dVARIABLE_NAME);
     FLAMEGPU->setVariable<int>(dVARIABLE_NAME, i * dMULTIPLIER);
     return ALIVE;

@@ -16,19 +16,19 @@ namespace test_message_brute_force {
     const char *OUT_LAYER_NAME = "OutLayer";
     const unsigned int AGENT_COUNT = 128;
 
-FLAMEGPU_AGENT_FUNCTION(OutFunction) {
-    FLAMEGPU->addMessage("x", FLAMEGPU->getVariable<int>("x"));
+FLAMEGPU_AGENT_FUNCTION(OutFunction, MsgNone, MsgBruteForce) {
+    FLAMEGPU->message_out.setVariable("x", FLAMEGPU->getVariable<int>("x"));
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(OutFunction_Optional) {
+FLAMEGPU_AGENT_FUNCTION(OutFunction_Optional, MsgNone, MsgBruteForce) {
     const int x = FLAMEGPU->getVariable<int>("x");
-    if (x) FLAMEGPU->addMessage("x", x);
+    if (x) FLAMEGPU->message_out.setVariable("x", x);
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(InFunction) {
+FLAMEGPU_AGENT_FUNCTION(InFunction, MsgBruteForce, MsgNone) {
     int sum = FLAMEGPU->getVariable<int>("sum");
     int product = FLAMEGPU->getVariable<int>("product");
-    for (auto &message : FLAMEGPU->GetMessageIterator("Message")) {
+    for (auto &message : FLAMEGPU->message_in) {
         const int x = message.getVariable<int>("x");
         sum += x;
         product *= x;
@@ -38,10 +38,10 @@ FLAMEGPU_AGENT_FUNCTION(InFunction) {
     FLAMEGPU->setVariable<int>("product", product);
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(InFunction2) {
+FLAMEGPU_AGENT_FUNCTION(InFunction2, MsgBruteForce, MsgNone) {
     int sum = FLAMEGPU->getVariable<int>("sum");
     int product = FLAMEGPU->getVariable<int>("product");
-    for (auto &message : FLAMEGPU->GetMessageIterator("Message")) {
+    for (auto &message : FLAMEGPU->message_in) {
         const int x = message.getVariable<int>("x");
         sum += x;
         product *= x;

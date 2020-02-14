@@ -4,15 +4,15 @@
 #include "flamegpu/runtime/flamegpu_api.h"
 
 namespace test_agent_function {
-FLAMEGPU_AGENT_FUNCTION(agent_fn1) {
+FLAMEGPU_AGENT_FUNCTION(agent_fn1, MsgNone, MsgNone) {
     // do nothing
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(agent_fn2) {
+FLAMEGPU_AGENT_FUNCTION(agent_fn2, MsgNone, MsgNone) {
     // do nothing
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(agent_fn3) {
+FLAMEGPU_AGENT_FUNCTION(agent_fn3, MsgNone, MsgNone) {
     // do nothing
     return ALIVE;
 }
