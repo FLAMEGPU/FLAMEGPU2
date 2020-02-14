@@ -150,7 +150,7 @@ int main(int argc, const char ** argv) {
     /**
      * Execution
      */
-     //This mode of execution allows the PRIMAGE visualiser to be used (2020-01-07)
+     // This mode of execution allows the PRIMAGE visualiser to be used (2020-01-07)
      while (cuda_model.getStepCounter() < cuda_model.getSimulationConfig().steps && cuda_model.step()) {
         std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> pops;
         auto a = std::make_shared<AgentPopulation>(model.getAgent("Circle"));

@@ -24,7 +24,6 @@ struct MessageData;
 struct AgentFunctionData;
 struct LayerData;
 
-template<typename SimMessage>
 class MsgSpecialisationHandler;
 class CUDAMessage;
 
@@ -33,7 +32,6 @@ class CUDAMessage;
  * Users should only access that data stored within via an instance of ModelDescription
  */
 struct ModelData : std::enable_shared_from_this<ModelData>{
-
     virtual ~ModelData();
     /**
      * Default state, all agents and agent functions begin in/with this state
@@ -293,7 +291,7 @@ struct AgentData : std::enable_shared_from_this<AgentData> {
 struct MessageData {
     friend class ModelDescription;
     friend struct ModelData;
-    
+
     virtual ~MessageData();
 
     /**
@@ -330,7 +328,7 @@ struct MessageData {
      */
     MessageData(const MessageData &other) = delete;
 
-    virtual std::unique_ptr<MsgSpecialisationHandler<CUDAMessage>> getSpecialisationHander(CUDAMessage &owner) const;
+    virtual std::unique_ptr<MsgSpecialisationHandler> getSpecialisationHander(CUDAMessage &owner) const;
 
     /**
      * Used internally to validate that the corresponding Msg type is attached via the agent function shim.
@@ -539,7 +537,7 @@ struct Spatial3DMessageData : Spatial2DMessageData {
     float maxZ;
     virtual ~Spatial3DMessageData() = default;
 
-    std::unique_ptr<MsgSpecialisationHandler<CUDAMessage>> getSpecialisationHander(CUDAMessage &owner) const override;
+    std::unique_ptr<MsgSpecialisationHandler> getSpecialisationHander(CUDAMessage &owner) const override;
 
     /**
      * Used internally to validate that the corresponding Msg type is attached via the agent function shim.
@@ -547,7 +545,7 @@ struct Spatial3DMessageData : Spatial2DMessageData {
      */
     std::type_index getType() const override;
 
-protected:
+ protected:
     Spatial3DMessageData *clone(ModelData *const newParent) override;
     /**
      * Copy constructor

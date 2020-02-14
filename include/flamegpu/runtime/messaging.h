@@ -13,14 +13,11 @@ class CUDAMessage;
 /**
  * Interface for message specialisation
  * A derived implementation of this is required for each combination of message type (e.g. MsgBruteForce) and simulation type (e.g. CUDAAgentModel)
- * @tparam SimSpecialisationMsg The simulation type (e.g. CUDAAgentModel)
+ * @note It is recommended that derrived classes require an object that provides access to the model specialisation's representation of messages (e.g. CUDAMessage)
  */
-template<typename SimSpecialisationMsg>
 class MsgSpecialisationHandler {
  public:
-    explicit MsgSpecialisationHandler(SimSpecialisationMsg &_sim_message)
-        : sim_message(_sim_message)
-    { }
+    MsgSpecialisationHandler() { }
     /**
      * Destructor, should free any allocated memory in derived classes
      */
@@ -35,12 +32,6 @@ class MsgSpecialisationHandler {
      * (For CUDAAgentModel this is a device pointer)
      */
     virtual const void *getMetaDataDevicePtr() const { return nullptr; }
-
- protected:
-    /**
-     * Provides access to the model specialisation's representation of messages (e.g. CUDAMessage)
-     */
-    SimSpecialisationMsg &sim_message;
 };
 
 /**
@@ -85,17 +76,20 @@ class MsgNone {
      * Provides specialisation behaviour for messages between agent functions
      * e.g. allocates/initialises additional data structure memory, sorts messages and builds an index
      * Created and owned by CUDAMessage
-     * @tparam SimSpecialisationMsg Always CUDAMessage
      */
-    template<typename SimSpecialisationMsg>
-    class CUDAModelHandler : public MsgSpecialisationHandler<SimSpecialisationMsg> {
+    class CUDAModelHandler : public MsgSpecialisationHandler {
      public:
         /**
          * Constructur
          */
         explicit CUDAModelHandler(CUDAMessage &a)
-            : MsgSpecialisationHandler<SimSpecialisationMsg>(a)
+            : MsgSpecialisationHandler()
+            , sim_message(a)
         { }
+        /**
+         * Owning CUDAMessage
+         */
+        CUDAMessage &sim_message;
     };
 };
 

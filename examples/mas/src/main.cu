@@ -56,7 +56,7 @@ FLAMEGPU_AGENT_FUNCTION(input_func, MsgBruteForce, MsgNone) {
     // float x1 = FLAMEGPU->getMessageVariable<float>("x");
     // float y1 = FLAMEGPU->getMessageVariable<float>("y");
     // printf("(input func - get msg): x = %f, y = %f\n", x1, y1);
-    
+
     // Multiple options for iterating messages
 
     // 1) First method: iterator loop.

@@ -60,8 +60,7 @@ void AgentFunctionDescription::setMessageInput(const std::string &message_name) 
     if (a != model->messages.end()) {
         if (this->function->msg_in_type == a->second->getType()) {
             this->function->message_input = a->second;
-        }
-        else {
+        } else {
             THROW InvalidMessageType("Message ('%s') type '%s' does not match type '%s' applied to FLAMEGPU_AGENT_FUNCTION, "
                 "in AgentFunctionDescription::setMessageInput()\n",
                 message_name.c_str(), a->second->getType().name(), this->function->msg_in_type.name());
@@ -90,8 +89,7 @@ void AgentFunctionDescription::setMessageInput(MessageDescription &message) {
         if (a->second->description.get() == &message) {
             if (this->function->msg_in_type == a->second->getType()) {
                 this->function->message_input = a->second;
-            }
-            else {
+            } else {
                 THROW InvalidMessageType("Message ('%s') type '%s' does not match type '%s' applied to FLAMEGPU_AGENT_FUNCTION, "
                     "in AgentFunctionDescription::setMessageInput()\n",
                     a->second->name.c_str(), a->second->getType().name(), this->function->msg_in_type.name());

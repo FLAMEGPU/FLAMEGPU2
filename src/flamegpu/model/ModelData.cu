@@ -1,11 +1,11 @@
 #include "flamegpu/model/ModelData.h"
 #include "flamegpu/runtime/messaging.h"
 
-std::unique_ptr<MsgSpecialisationHandler<CUDAMessage>> MessageData::getSpecialisationHander(CUDAMessage &owner) const {
-    return std::unique_ptr<MsgSpecialisationHandler<CUDAMessage>>(new MsgBruteForce::CUDAModelHandler<CUDAMessage>(owner));
+std::unique_ptr<MsgSpecialisationHandler> MessageData::getSpecialisationHander(CUDAMessage &owner) const {
+    return std::unique_ptr<MsgSpecialisationHandler>(new MsgBruteForce::CUDAModelHandler(owner));
 }
-std::unique_ptr<MsgSpecialisationHandler<CUDAMessage>> Spatial3DMessageData::getSpecialisationHander(CUDAMessage &owner) const {
-    return std::unique_ptr<MsgSpecialisationHandler<CUDAMessage>>(new MsgSpatial3D::CUDAModelHandler<CUDAMessage>(owner));
+std::unique_ptr<MsgSpecialisationHandler> Spatial3DMessageData::getSpecialisationHander(CUDAMessage &owner) const {
+    return std::unique_ptr<MsgSpecialisationHandler>(new MsgSpatial3D::CUDAModelHandler(owner));
 }
 
 // Used for the MessageData::getType() type and derived methods

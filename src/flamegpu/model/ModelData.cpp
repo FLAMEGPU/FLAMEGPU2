@@ -14,7 +14,7 @@ ModelData::ModelData(const std::string &model_name)
     : environment(new EnvironmentDescription())
     , name(model_name) { }
 
-ModelData::~ModelData(){ }
+ModelData::~ModelData() { }
 
 AgentData::AgentData(ModelData *const model, const std::string &agent_name)
     : initial_state(ModelData::DEFAULT_STATE)

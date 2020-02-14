@@ -218,8 +218,7 @@ class MsgBruteForce {
      * Blank handler, brute force requires no index or special allocations
      * Only stores the length on device
      */
-    template<typename SimSpecialisationMsg>
-    class CUDAModelHandler : public MsgSpecialisationHandler<SimSpecialisationMsg> {
+    class CUDAModelHandler : public MsgSpecialisationHandler {
      public:
         /**
          * Constructor
@@ -227,8 +226,8 @@ class MsgBruteForce {
          * @param a Parent CUDAMessage, used to access message settings, data ptrs etc
          */
         explicit CUDAModelHandler(CUDAMessage &a)
-            : MsgSpecialisationHandler<SimSpecialisationMsg>(a)
-        {
+            : MsgSpecialisationHandler()
+            , sim_message(a) {
              gpuErrchk(cudaMalloc(&d_metadata, sizeof(MetaData)));
         }
         ~CUDAModelHandler() {
@@ -239,7 +238,7 @@ class MsgBruteForce {
          */
         void buildIndex() override {
             unsigned int newLength = this->sim_message.getMessageCount();
-            if(newLength != hd_metadata.length) {
+            if (newLength != hd_metadata.length) {
                 hd_metadata.length = newLength;
                 gpuErrchk(cudaMemcpy(d_metadata, &hd_metadata, sizeof(MetaData), cudaMemcpyHostToDevice));
             }
@@ -258,6 +257,10 @@ class MsgBruteForce {
          * Pointer to device copy of metadata struct (message list length)
          */
         MetaData *d_metadata;
+        /**
+         * Owning CUDAMessage, provides access to message storage etc
+         */
+        CUDAMessage &sim_message;
     };
 };
 template<typename T, unsigned int N>

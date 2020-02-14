@@ -9,16 +9,6 @@
 
 #include "flamegpu/runtime/cuRVE/curve.h"
 
-namespace {
-/**
- * Basic class to group 3 dimensional bin coordinates
- * Would use glm::ivec3, but project does not currently have glm
- */
-struct GridPos3D {
-    int x, y, z;
-};
-}  // namespace
-
 /**
  * 3D Continuous spatial messaging functionality
  *
@@ -36,6 +26,13 @@ class MsgSpatial3D {
  public:
     class Message;   // Forward declare inner classes
     class iterator;  // Forward declare inner classes
+    /**
+     * Basic class to group 3 dimensional bin coordinates
+     * Would use glm::ivec3, but project does not currently have glm
+     */
+    struct GridPos3D {
+        int x, y, z;
+    };
     /**
      * MetaData required by spatial partitioning during message reads
      */
@@ -175,6 +172,7 @@ class MsgSpatial3D {
                  * The message returned to the user
                  */
                 Message _message;
+
              public:
                 /**
                  * Constructor
@@ -335,8 +333,7 @@ class MsgSpatial3D {
      * CUDA host side handler of spatial messages
      * Allocates memory for and constructs PBM
      */
-    template<typename SimSpecialisationMsg>
-    class CUDAModelHandler : public MsgSpecialisationHandler<SimSpecialisationMsg> {
+    class CUDAModelHandler : public MsgSpecialisationHandler {
      public:
         /**
          * Constructor
@@ -346,8 +343,8 @@ class MsgSpatial3D {
          * @param a Parent CUDAMessage, used to access message settings, data ptrs etc
          */
         explicit CUDAModelHandler(CUDAMessage &a)
-             : MsgSpecialisationHandler<SimSpecialisationMsg>(a)
-        {
+         : MsgSpecialisationHandler()
+         , sim_message(a) {
              const Spatial3DMessageData &d = (const Spatial3DMessageData &)a.getMessageDescription();
              hd_data.radius = d.radius;
              hd_data.min[0] = d.minX;
@@ -357,8 +354,7 @@ class MsgSpatial3D {
              hd_data.max[1] = d.maxY;
              hd_data.max[2] = d.maxZ;
              binCount = 1;
-             for (unsigned int axis = 0; axis < 3; ++axis)
-             {
+             for (unsigned int axis = 0; axis < 3; ++axis) {
                  hd_data.environmentWidth[axis] = hd_data.max[axis] - hd_data.min[axis];
                  hd_data.gridDim[axis] = static_cast<unsigned int>(ceil(hd_data.environmentWidth[axis] / static_cast<float>(hd_data.radius)));
                  binCount *= hd_data.gridDim[axis];
@@ -441,18 +437,14 @@ class MsgSpatial3D {
          * Pointer to device copy of metadata struct
          */
         MetaData *d_data = nullptr;
+        /**
+         * Owning CUDAMessage, provides access to message storage etc
+         */
+        CUDAMessage &sim_message;
     };
 };
-#ifdef __CUDACC__
-#include "flamegpu/gpu/CUDAScatter.h"
-#ifdef _MSC_VER
-#pragma warning(push, 3)
-#include <cub/cub.cuh>
-#pragma warning(pop)
-#else
-#include <cub/cub.cuh>
-#endif
 
+#ifdef __CUDACC__
 template<typename T, unsigned int N>
 __device__ T MsgSpatial3D::In::Filter::Message::getVariable(const char(&variable_name)[N]) const {
     //// Ensure that the message is within bounds.
@@ -482,112 +474,6 @@ __device__ void MsgSpatial3D::Out::setVariable(const char(&variable_name)[N], T 
     // Set scan flag incase the message is optional
     flamegpu_internal::CUDAScanCompaction::ds_message_configs[streamId].scan_flag[index] = 1;
 }
-
-namespace Spatial3D {
-    __device__ __forceinline__ GridPos3D getGridPosition(const MsgSpatial3D::MetaData *md, float x, float y, float z) {
-        // Clamp each grid coord to 0<=x<dim
-        int gridPos[3] = {
-            static_cast<int>(floor((x / md->environmentWidth[0])*md->gridDim[0])),
-            static_cast<int>(floor((y / md->environmentWidth[1])*md->gridDim[1])),
-            static_cast<int>(floor((z / md->environmentWidth[2])*md->gridDim[2]))
-        };
-        GridPos3D rtn = {
-            gridPos[0] < 0 ? 0 : (gridPos[0] > md->gridDim[0] - 1 ? static_cast<int>(md->gridDim[0] - 1) : gridPos[0]),
-            gridPos[1] < 0 ? 0 : (gridPos[1] > md->gridDim[1] - 1 ? static_cast<int>(md->gridDim[1] - 1) : gridPos[1]),
-            gridPos[2] < 0 ? 0 : (gridPos[2] > md->gridDim[2] - 1 ? static_cast<int>(md->gridDim[2] - 1) : gridPos[2])
-        };
-        return rtn;
-    }
-    __device__ __forceinline__ unsigned int getHash(const MsgSpatial3D::MetaData *md, const GridPos3D &xyz) {
-        // Bound gridPos to gridDimensions
-        unsigned int gridPos[3] = {
-            xyz.x < 0 ? 0 : (xyz.x > md->gridDim[0] - 1 ? md->gridDim[0] - 1 : xyz.x),
-            xyz.y < 0 ? 0 : (xyz.y > md->gridDim[1] - 1 ? md->gridDim[1] - 1 : xyz.y),
-            xyz.z < 0 ? 0 : (xyz.z > md->gridDim[2] - 1 ? md->gridDim[2] - 1 : xyz.z)
-        };
-        // Compute hash (effectivley an index for to a bin within the partitioning grid in this case)
-        return (unsigned int)(
-            (gridPos[2] * md->gridDim[0] * md->gridDim[1]) +   // z
-            (gridPos[1] * md->gridDim[0]) +                    // y
-             gridPos[0]);                                      // x
-    }
-}  // namespace Spatial3D
-namespace {
-    __global__ void atomicHistogram3D(
-        const MsgSpatial3D::MetaData *md,
-        unsigned int* bin_index,
-        unsigned int* bin_sub_index,
-        unsigned int *pbm_counts,
-        unsigned int message_count,
-        const float * __restrict__ x,
-        const float * __restrict__ y,
-        const float * __restrict__ z) {
-        unsigned int index = (blockIdx.x * blockDim.x) + threadIdx.x;
-        // Kill excess threads
-        if (index >= message_count) return;
-
-        GridPos3D gridPos = Spatial3D::getGridPosition(md, x[index], y[index], z[index]);
-        unsigned int hash = Spatial3D::getHash(md, gridPos);
-        bin_index[index] = hash;
-        unsigned int bin_idx = atomicInc((unsigned int*)&pbm_counts[hash], 0xFFFFFFFF);
-        bin_sub_index[index] = bin_idx;
-    }
-}  // namespace
-
-template <typename SimSpecialisationMsg>
-void MsgSpatial3D::CUDAModelHandler<SimSpecialisationMsg>::buildIndex() {
-    const unsigned int MESSAGE_COUNT = this->sim_message.getMessageCount();
-    resizeKeysVals(this->sim_message.getMaximumListSize());  // Resize based on allocated amount rather than message count
-    {  // Build atomic histogram
-        gpuErrchk(cudaMemset(d_histogram, 0x00000000, (binCount + 1) * sizeof(unsigned int)));
-        int blockSize;  // The launch configurator returned block size
-        gpuErrchk(cudaOccupancyMaxActiveBlocksPerMultiprocessor(&blockSize, atomicHistogram3D, 32, 0));  // Randomly 32
-        // Round up according to array size
-        int gridSize = (MESSAGE_COUNT + blockSize - 1) / blockSize;
-        atomicHistogram3D << <gridSize, blockSize >> >(d_data, d_keys, d_vals, d_histogram, MESSAGE_COUNT,
-            reinterpret_cast<float*>(this->sim_message.getReadPtr("x")),
-            reinterpret_cast<float*>(this->sim_message.getReadPtr("y")),
-            reinterpret_cast<float*>(this->sim_message.getReadPtr("z")));
-        gpuErrchk(cudaDeviceSynchronize());
-    }
-    {  // Scan (sum), to finalise PBM
-        cub::DeviceScan::ExclusiveSum(d_CUB_temp_storage, d_CUB_temp_storage_bytes, d_histogram, hd_data.PBM, binCount + 1);
-    }
-    {  // Reorder messages
-        // Copy messages from d_messages to d_messages_swap, in hash order
-        auto &cs = CUDAScatter::getInstance(0);  // Choose proper stream_id in future!
-        cs.pbm_reorder(this->sim_message.getMessageDescription().variables, this->sim_message.getReadList(), this->sim_message.getWriteList(), MESSAGE_COUNT, d_keys, d_vals, hd_data.PBM);
-        this->sim_message.swap(false, 0);  // Stream id is unused here
-    }
-    {  // Fill PBM and Message Texture Buffers
-        // gpuErrchk(cudaBindTexture(nullptr, d_texMessages, d_agents, sizeof(glm::vec4) * MESSAGE_COUNT));
-        // gpuErrchk(cudaBindTexture(nullptr, d_texPBM, d_PBM, sizeof(unsigned int) * (binCount + 1)));
-    }
-}
-template <typename SimSpecialisationMsg>
-void MsgSpatial3D::CUDAModelHandler<SimSpecialisationMsg>::resizeCubTemp() {
-    size_t bytesCheck;
-    cub::DeviceScan::ExclusiveSum(nullptr, bytesCheck, hd_data.PBM, d_histogram, binCount + 1);
-    if (bytesCheck > d_CUB_temp_storage_bytes) {
-        if (d_CUB_temp_storage) {
-            gpuErrchk(cudaFree(d_CUB_temp_storage));
-        }
-        d_CUB_temp_storage_bytes = bytesCheck;
-        gpuErrchk(cudaMalloc(&d_CUB_temp_storage, d_CUB_temp_storage_bytes));
-    }
-}
-template <typename SimSpecialisationMsg>
-void MsgSpatial3D::CUDAModelHandler<SimSpecialisationMsg>::resizeKeysVals(const unsigned int &newSize) {
-    size_t bytesCheck = newSize * sizeof(unsigned int);
-    if (bytesCheck > d_keys_vals_storage_bytes) {
-        if (d_keys) {
-            gpuErrchk(cudaFree(d_keys));
-            gpuErrchk(cudaFree(d_vals));
-        }
-        d_keys_vals_storage_bytes = bytesCheck;
-        gpuErrchk(cudaMalloc(&d_keys, d_keys_vals_storage_bytes));
-        gpuErrchk(cudaMalloc(&d_vals, d_keys_vals_storage_bytes));
-    }
-}
 #endif  // __CUDACC__
+
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_SPATIAL3D_H_

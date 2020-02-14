@@ -24,7 +24,6 @@ struct AgentFunctionData;
 struct MessageData;
 class AgentPopulation;
 class Curve;
-template<typename SimSpecialisationMsg>
 class MsgSpecialisationHandler;
 /**
  * This class is CUDAAgentModel's internal handler for message functionality
@@ -139,7 +138,7 @@ class CUDAMessage {
      * Set to False before messages are read
      */
     bool pbm_construction_required;
-    std::unique_ptr<MsgSpecialisationHandler<CUDAMessage>> specialisation_handler;
+    std::unique_ptr<MsgSpecialisationHandler> specialisation_handler;
 };
 
 #endif  // INCLUDE_FLAMEGPU_GPU_CUDAMESSAGE_H_
