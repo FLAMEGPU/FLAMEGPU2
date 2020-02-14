@@ -6,96 +6,226 @@
 
 #include "flamegpu/runtime/cuRVE/curve.h"
 
+/**
+ * Brute force messaging functionality
+ *
+ * Every agent accesses all messages
+ * This technique is expensive, and other techniques are preferable if operating with more than 1000 messages.
+ */
 class MsgBruteForce {
-    typedef unsigned int size_type;
+    /**
+     * Common size type
+     */
+    typedef MsgNone::size_type size_type;
 
  public:
     class Message;   // Forward declare inner classes
     class iterator;  // Forward declare inner classes
+    /**
+     * MetaData required by brute force during message reads
+     */
     struct MetaData {
         unsigned int length;
     };
     /**
-    * This class is returned to user by Device API
-    * It gives access to message iterators
-    */
+     * This class is accessible via FLAMEGPU_DEVICE_API.message_in if MsgBruteForce is specified in FLAMEGPU_AGENT_FUNCTION
+     * It gives access to functionality for reading brute force messages
+     */
     class In {
+        /**
+         * Message has full access to In, they are treated as the same class so share everything
+         * Reduces/memory data duplication
+         */
         friend class MsgBruteForce::Message;
 
      public:
+        /**
+         * Constructer
+         * Initialises member variables
+         * @param agentfn_hash Added to msg_hash to produce combined_hash
+         * @param msg_hash Added to agentfn_hash to produce combined_hash
+         * @param metadata Reinterpreted as type MsgBruteForce::MetaData to extract length
+         */
         __device__ In(Curve::NamespaceHash agentfn_hash, Curve::NamespaceHash msg_hash, const void *metadata)
             : combined_hash(agentfn_hash + msg_hash)
             , len(reinterpret_cast<const MetaData*>(metadata)->length)
         { }
-        // Something to access messages (probably iterator rather than get var
-        /*! Returns the number of elements in the message list.
-        */
-        inline __host__ __device__ size_type size(void) const {
+        /**
+         * Returns the number of elements in the message list.
+         */
+        __device__ size_type size(void) const {
             return len;
         }
-
-        inline __host__ __device__ iterator begin(void) const {  // const
+        /**
+          * Returns an iterator to the start of the message list
+          */
+        __device__ iterator begin(void) const {  // const
             return iterator(*this, 0);
         }
-        inline __host__ __device__ iterator end(void) const  {  // const
+        /**
+         * Returns an iterator to the position beyond the end of the message list
+         */
+        __device__ iterator end(void) const  {  // const
             // If there can be many begin, each with diff end, we need a middle layer to host the iterator/s
             return iterator(*this, len);
         }
 
      private:
-        // agent_function + msg_hash
+         /**
+          * CURVE hash for accessing message data
+          * agent function hash + message hash
+          */
         Curve::NamespaceHash combined_hash;
+        /**
+         * Total number of messages in the message list
+         */
         size_type len;
     };
-    // Inner class representing an individual message
+    /**
+     * Provides access to a specific message
+     * Returned by the iterator
+     * @see In::iterator
+     */
     class Message {
-     private:
+         /**
+          * Paired In class which created the iterator
+          */
         const MsgBruteForce::In &_parent;
+        /**
+         * Position within the message list
+         */
         size_type index;
 
      public:
+        /**
+         * Constructs a message and directly initialises all of it's member variables
+         * index is always init to 0
+         * @note See member variable documentation for their purposes
+         */
         __device__ Message(const MsgBruteForce::In &parent) : _parent(parent), index(0) {}
+        /**
+         * Alternate constructor, allows index to be manually set
+         * @note I think this is unused
+         */
         __device__ Message(const MsgBruteForce::In &parent, size_type index) : _parent(parent), index(index) {}
-        __host__ __device__ bool operator==(const Message& rhs) { return  this->getIndex() == rhs.getIndex(); }
-        __host__ __device__ bool operator!=(const Message& rhs) { return  this->getIndex() != rhs.getIndex(); }
+        /**
+         * Equality operator
+         * Compares all internal member vars for equality
+         * @note Does not compare _parent
+         */
+        __host__ __device__ bool operator==(const Message& rhs) const { return  this->getIndex() == rhs.getIndex(); }
+        /**
+         * Inequality operator
+         * Returns inverse of equality operator
+         * @see operator==(const Message&)
+         */
+        __host__ __device__ bool operator!=(const Message& rhs) const { return  this->getIndex() != rhs.getIndex(); }
+        /**
+         * Updates the message to return variables from the next message in the message list
+         * @return Returns itself
+         */
         __host__ __device__ Message& operator++() { ++index;  return *this; }
+        /**
+         * Returns the index of the message within the full message list
+         */
         __host__ __device__ size_type getIndex() const { return this->index; }
+        /**
+         * Returns the value for the current message attached to the named variable
+         * @param variable_name Name of the variable
+         * @tparam T type of the variable
+         * @tparam N Length of variable name (this should be implicit if a string literal is passed to variable name)
+         * @return The specified variable, else 0x0 if an error occurs
+         */
         template<typename T, size_type N>
         __device__ T getVariable(const char(&variable_name)[N]) const;
     };
-    // message list iterator inner class.
+    /**
+    * Stock iterator for iterating MsgBruteForce::In::Message objects
+    */
     class iterator : public std::iterator <std::random_access_iterator_tag, void, void, void, void> {
-     private:
-        MsgBruteForce::Message _message;
+        /**
+         * The message returned to the user
+         */
+        Message _message;
 
      public:
-        __host__ __device__ iterator(const MsgBruteForce::In &parent, size_type index) : _message(parent, index) {}
-        __host__ __device__ iterator& operator++() { ++_message;  return *this; }
-        __host__ __device__ iterator operator++(int) { iterator tmp(*this); operator++(); return tmp; }
-        __host__ __device__ bool operator==(const iterator& rhs) { return  _message == rhs._message; }
-        __host__ __device__ bool operator!=(const iterator& rhs) { return  _message != rhs._message; }
-        __host__ __device__ MsgBruteForce::Message& operator*() { return _message; }
+        /**
+         * Constructor
+         * This iterator is constructed by MsgBruteForce::begin()
+         * @see MsgBruteForce::begin()
+         */
+        __device__ iterator(const In &parent, size_type index) : _message(parent, index) {}
+        /**
+         * Moves to the next message
+         */
+        __device__ iterator& operator++() { ++_message;  return *this; }
+        /**
+         * Equality operator
+         * Compares message
+         */
+        __device__ bool operator==(const iterator& rhs) const { return  _message == rhs._message; }
+        /**
+         * Inequality operator
+         * Compares message
+         */
+        __device__ bool operator!=(const iterator& rhs) const { return  _message != rhs._message; }
+        /**
+         * Dereferences the iterator to return the message object, for accessing variables
+         */
+        __device__ Message& operator*() { return _message; }
     };
 
+    /**
+     * This class is accessible via FLAMEGPU_DEVICE_API.message_out if MsgBruteForce is specified in FLAMEGPU_AGENT_FUNCTION
+     * It gives access to functionality for outputting brute force messages
+     */
     class Out {
      public:
+        /**
+         * Constructer
+         * Initialises member variables
+         * @param agentfn_hash Added to msg_hash to produce combined_hash
+         * @param msg_hash Added to agentfn_hash to produce combined_hash
+         * @param _streamId Stream index, used for optional message output flag array
+         */
         __device__ Out(Curve::NamespaceHash agentfn_hash, Curve::NamespaceHash msg_hash, unsigned int _streamId)
             : combined_hash(agentfn_hash + msg_hash)
             , streamId(_streamId)
         { }
+        /**
+         * Sets the specified variable for this agents message
+         * @param variable_name Name of the variable
+         * @tparam T type of the variable
+         * @tparam N Length of variable name (this should be implicit if a string literal is passed to variable name)
+         * @return The specified variable, else 0x0 if an error occurs
+         */
         template<typename T, unsigned int N>
         __device__ void setVariable(const char(&variable_name)[N], T value) const;
 
      private:
-        // agent_function + msg_hash
+        /**
+         * CURVE hash for accessing message data
+         * agentfn_hash + msg_hash
+         */
         Curve::NamespaceHash combined_hash;
+        /**
+         * Stream index used for setting optional message output flag
+         */
         unsigned int streamId;
     };
 
-    // Blank handler, brute force requires no index or special allocations
+    /**
+     * Blank handler, brute force requires no index or special allocations
+     * Only stores the length on device
+     */
     template<typename SimSpecialisationMsg>
     class CUDAModelHandler : public MsgSpecialisationHandler<SimSpecialisationMsg> {
      public:
+        /**
+         * Constructor
+         * Allocates memory on device for message list length
+         * @param a Parent CUDAMessage, used to access message settings, data ptrs etc
+         */
         explicit CUDAModelHandler(CUDAMessage &a)
             : MsgSpecialisationHandler<SimSpecialisationMsg>(a)
         {
@@ -104,15 +234,29 @@ class MsgBruteForce {
         ~CUDAModelHandler() {
             gpuErrchk(cudaFree(d_metadata));
         }
-
+        /**
+         * Updates the length of the messagelist stored on device
+         */
         void buildIndex() override {
-            hd_metadata.length = this->sim_message.getMessageCount();
-            gpuErrchk(cudaMemcpy(d_metadata, &hd_metadata, sizeof(MetaData), cudaMemcpyHostToDevice));
+            unsigned int newLength = this->sim_message.getMessageCount();
+            if(newLength != hd_metadata.length) {
+                hd_metadata.length = newLength;
+                gpuErrchk(cudaMemcpy(d_metadata, &hd_metadata, sizeof(MetaData), cudaMemcpyHostToDevice));
+            }
         }
+        /**
+         * Returns a pointer to the metadata struct, this is required for reading the message data
+         */
         const void *getMetaDataDevicePtr() const override { return d_metadata; }
 
      private:
+        /**
+         * Host copy of metadata struct (message list length)
+         */
         MetaData hd_metadata;
+        /**
+         * Pointer to device copy of metadata struct (message list length)
+         */
         MetaData *d_metadata;
     };
 };

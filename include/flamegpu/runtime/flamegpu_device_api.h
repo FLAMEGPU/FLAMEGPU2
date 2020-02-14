@@ -21,8 +21,12 @@
 
 /** @brief    A flame gpu api class for the device runtime only
  *
+ * This class provides access to model variables/state inside agent functions
+ *
  * This class should only be used by the device and never created on the host. It is safe for each agent function to create a copy of this class on the device. Any singleton type
  * behaviour is handled by the curveInstance class. This will ensure that initialisation of the curve (C) library is done only once.
+ * @tparam MsgIn Input message type (the form found in flamegpu/runtime/messaging.h, MsgNone etc)
+ * @tparam MsgOut Output message type (the form found in flamegpu/runtime/messaging.h, MsgNone etc)
  */
 template<typename MsgIn, typename MsgOut>
 class FLAMEGPU_DEVICE_API {
@@ -41,6 +45,10 @@ class FLAMEGPU_DEVICE_API {
  public:
     /**
      * @param _thread_in_layer_offset This offset can be added to TID to give a thread-safe unique index for the thread
+     * @param modelname_hash CURVE hash of the model's name
+     * @param _streamId Index used for accessing global members in a stream safe manner
+     * @param msg_in Input message handler
+     * @param msg_out Output message handler
      */
     __device__ FLAMEGPU_DEVICE_API(const unsigned int &_thread_in_layer_offset, const Curve::NamespaceHash &modelname_hash, const unsigned int &_streamId, typename MsgIn::In &&msg_in, typename MsgOut::Out &&msg_out)
         : random(AgentRandom(TID()+_thread_in_layer_offset))
@@ -57,18 +65,6 @@ class FLAMEGPU_DEVICE_API {
     template<typename T, unsigned int N> __device__
     void setVariable(const char(&variable_name)[N], T value);
 
-    /*template<typename T, unsigned int N> __device__
-        T getMessageVariable(const char(&variable_name)[N]);
-
-    template<typename T, unsigned int N> __device__
-        void setMessageVariable(const char(&variable_name)[N], T value);
-
-    template<typename T, unsigned int N> __device__
-        void addMessage(const char(&variable_name)[N], T value);
-
-    template<unsigned int N> __device__
-        MessageList GetMessageIterator(const char(&message_name)[N]);*/
-
     /**
      * \brief
      * \param agentname_hash
@@ -82,8 +78,17 @@ class FLAMEGPU_DEVICE_API {
     * @note random state isn't stored within the object, so it can be const
     */
     const AgentRandom random;
+    /**
+     * Provides access to environment variables inside agent functions
+     */
     const DeviceEnvironment environment;
+    /**
+     * Provides access to message read functionality inside agent functions
+     */
     const typename MsgIn::In message_in;
+    /**
+     * Provides access to message write functionality inside agent functions
+     */
     const typename MsgOut::Out message_out;
 
  private:

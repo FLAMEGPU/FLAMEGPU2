@@ -172,7 +172,7 @@ int main(int argc, const char ** argv) {
     pops.emplace("Circle", a);
     StateWriter *write__ = WriterFactory::createWriter(pops, cuda_model.getStepCounter(), "end.xml");
     write__->writeStates();
-    //export_data(a, "test.bin");
+    // export_data(a, "test.bin");
     getchar();
     return 0;
 }

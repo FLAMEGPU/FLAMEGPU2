@@ -24,15 +24,16 @@ typedef void(AgentFunctionWrapper)(
 /**
  * Wrapper function for launching agent functions
  * Initialises FLAMEGPU_API instance
- * @param model_name_hash Required by DeviceEnvironment
- * @param agent_func_name_hash
- * @param messagename_inp_hash
- * @param popNo
+ * @param model_name_hash CURVE hash of the model's name
+ * @param agent_func_name_hash CURVE hash of the agent function's name
+ * @param messagename_inp_hash CURVE hash of the input message's name
+ * @param messagename_outp_hash CURVE hash of the output message's name
+ * @param popNo Total number of agents exeucting the function (number of threads launched)
  * @param messagelist_metadata Pointer to the MsgIn metadata struct, it is interpreted by MsgIn
  * @param thread_in_layer_offset Add this value to TID to calculate a thread-safe TID (TS_ID), used by ActorRandom for accessing curand array in a thread-safe manner
- * @tparam AgentFunction The modeller defined agent function
- * @tparam MsgIn Message handler for messageinput
- * @tparam MsgOut Message handler for messageoutput
+ * @tparam AgentFunction The modeller defined agent function (defined as FLAMEGPU_AGENT_FUNCTION in model code)
+ * @tparam MsgIn Message handler for input messages (e.g. MsgNone, MsgBruteForce, MsgSpatial3D)
+ * @tparam MsgOut Message handler for output messages (e.g. MsgNone, MsgBruteForce, MsgSpatial3D)
  */
 template<typename AgentFunction, typename MsgIn, typename MsgOut>
 __global__ void agent_function_wrapper(

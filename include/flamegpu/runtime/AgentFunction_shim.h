@@ -3,11 +3,8 @@
 
 #include "flamegpu/runtime/AgentFunction.h"
 
-// TODO: Some example code of the handle class and an example function
-// ! FLAMEGPU_API is a singleton class
 template<typename MsgIn, typename MsgOut>
 class FLAMEGPU_DEVICE_API;  // Forward declaration (class defined below)
-
 
 /**
  * Macro for defining agent transition functions with the correct input. Must always be a device function to be called by CUDA.
@@ -37,7 +34,5 @@ struct funcName ## _impl {\
 funcName ## _impl funcName;\
 __device__ __forceinline__ FLAME_GPU_AGENT_STATUS funcName ## _impl::operator()(FLAMEGPU_DEVICE_API<msg_in, msg_out> *FLAMEGPU) const
 
-// Advanced macro for defining agent transition functions
-#define FLAMEGPU_AGENT_FUNC __device__ __forceinline__
 
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_AGENTFUNCTIONSHIM_H_

@@ -65,7 +65,7 @@ class LayerDescription {
      * @see AgentDescription::newFunction(const std::string &, AgentFunction)
      */
     template<typename AgentFunction>
-    void addAgentFunction(AgentFunction af = AgentFunction());
+    void addAgentFunction(AgentFunction a = AgentFunction());
     /**
      * Adds an agent function to this layer
      * The agent function will be called during this stage of model execution
