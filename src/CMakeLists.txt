@@ -84,7 +84,6 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/flame_api.h
     ${FLAMEGPU_ROOT}/include/flamegpu/sim/AgentInterface.h
     ${FLAMEGPU_ROOT}/include/flamegpu/sim/Simulation.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messagelist.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/AgentFunction.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/AgentFunction_shim.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/flamegpu_api.h
