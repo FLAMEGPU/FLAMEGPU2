@@ -51,11 +51,11 @@ LayerData::LayerData(ModelData *const model, const std::string &layer_name, cons
 
 Spatial2DMessageData::Spatial2DMessageData(ModelData *const model, const std::string &message_name)
     : MessageData(model, message_name)
-    , radius(1.0f)
-    , minX(0.0f)
-    , minY(0.0f)
-    , maxX(0.0f)
-    , maxY(0.0f) {
+    , radius(NAN)
+    , minX(NAN)
+    , minY(NAN)
+    , maxX(NAN)
+    , maxY(NAN) {
     description = std::unique_ptr<Spatial2DMessageDescription>(new Spatial2DMessageDescription(model, this));
     description->newVariable<float>("x");
     description->newVariable<float>("y");
@@ -63,8 +63,8 @@ Spatial2DMessageData::Spatial2DMessageData(ModelData *const model, const std::st
 
 Spatial3DMessageData::Spatial3DMessageData(ModelData *const model, const std::string &message_name)
     : Spatial2DMessageData(model, message_name)
-    , minZ(0.0f)
-    , maxZ(0.0f) {
+    , minZ(NAN)
+    , maxZ(NAN) {
     description = std::unique_ptr<MessageDescription>(new Spatial3DMessageDescription(model, this));
     description->newVariable<float>("z");
 }
@@ -183,6 +183,21 @@ Spatial2DMessageData::Spatial2DMessageData(ModelData *const model, const Spatial
     , maxX(other.maxX)
     , maxY(other.maxY) {
     description = std::unique_ptr<Spatial2DMessageDescription>(model ? new Spatial2DMessageDescription(model, this) : nullptr);
+    if (isnan(radius)) {
+        THROW InvalidMessage("Radius has not been set in spatial message '%s'\n", other.name.c_str());
+    }
+    if (isnan(minX)) {
+        THROW InvalidMessage("Environment minimum x bound has not been set in spatial message '%s'\n", other.name.c_str());
+    }
+    if (isnan(minY)) {
+        THROW InvalidMessage("Environment minimum y bound has not been set in spatial message '%s'\n", other.name.c_str());
+    }
+    if (isnan(maxX)) {
+        THROW InvalidMessage("Environment maximum x bound has not been set in spatial message '%s'\n", other.name.c_str());
+    }
+    if (isnan(maxY)) {
+        THROW InvalidMessage("Environment maximum y bound has not been set in spatial message '%s'\n", other.name.c_str());
+    }
 }
 
 Spatial3DMessageData::Spatial3DMessageData(ModelData *const model, const Spatial3DMessageData &other)
@@ -190,6 +205,12 @@ Spatial3DMessageData::Spatial3DMessageData(ModelData *const model, const Spatial
     , minZ(other.minZ)
     , maxZ(other.maxZ) {
     description = std::unique_ptr<MessageDescription>(model ? new Spatial3DMessageDescription(model, this) : nullptr);
+    if (isnan(minZ)) {
+        THROW InvalidMessage("Environment minimum z bound has not been set in spatial message '%s'\n", other.name.c_str());
+    }
+    if (isnan(maxZ)) {
+        THROW InvalidMessage("Environment maximum z bound has not been set in spatial message '%s'\n", other.name.c_str());
+    }
 }
 
 MessageData *MessageData::clone(ModelData *const newParent) {

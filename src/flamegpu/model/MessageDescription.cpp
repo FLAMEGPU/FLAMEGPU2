@@ -62,25 +62,60 @@ Spatial2DMessageDescription::Spatial2DMessageDescription(ModelData *const _model
     : MessageDescription(_model, data) { }
 
 void Spatial2DMessageDescription::setRadius(const float &r) {
+    if (r <= 0) {
+        THROW InvalidArgument("Spatial messaging radius must be a positive value, %f is not valid.", r);
+    }
     reinterpret_cast<Spatial2DMessageData *>(message)->radius = r;
 }
 void Spatial2DMessageDescription::setMinX(const float &x) {
+    if (!isnan(reinterpret_cast<Spatial2DMessageData *>(message)->maxX) &&
+        x >= reinterpret_cast<Spatial2DMessageData *>(message)->maxX) {
+        THROW InvalidArgument("Spatial messaging minimum bound must be lower than max bound, %f !< %f", x, reinterpret_cast<Spatial2DMessageData *>(message)->maxX);
+    }
     reinterpret_cast<Spatial2DMessageData *>(message)->minX = x;
 }
 void Spatial2DMessageDescription::setMinY(const float &y) {
+    if (!isnan(reinterpret_cast<Spatial2DMessageData *>(message)->maxY) &&
+        y >= reinterpret_cast<Spatial2DMessageData *>(message)->maxY) {
+        THROW InvalidArgument("Spatial messaging minimum bound must be lower than max bound, %f !< %f", y, reinterpret_cast<Spatial2DMessageData *>(message)->maxY);
+    }
     reinterpret_cast<Spatial2DMessageData *>(message)->minY = y;
 }
 void Spatial2DMessageDescription::setMin(const float &x, const float &y) {
+    if (!isnan(reinterpret_cast<Spatial2DMessageData *>(message)->maxX) &&
+        x >= reinterpret_cast<Spatial2DMessageData *>(message)->maxX) {
+        THROW InvalidArgument("Spatial messaging minimum bound must be lower than max bound, %f !< %f", x, reinterpret_cast<Spatial2DMessageData *>(message)->maxX);
+    }
+    if (!isnan(reinterpret_cast<Spatial2DMessageData *>(message)->maxY) &&
+        y >= reinterpret_cast<Spatial2DMessageData *>(message)->maxY) {
+        THROW InvalidArgument("Spatial messaging minimum bound must be lower than max bound, %f !< %f", y, reinterpret_cast<Spatial2DMessageData *>(message)->maxY);
+    }
     reinterpret_cast<Spatial2DMessageData *>(message)->minX = x;
     reinterpret_cast<Spatial2DMessageData *>(message)->minY = y;
 }
 void Spatial2DMessageDescription::setMaxX(const float &x) {
+    if (!isnan(reinterpret_cast<Spatial2DMessageData *>(message)->minX) &&
+        x <= reinterpret_cast<Spatial2DMessageData *>(message)->minX) {
+        THROW InvalidArgument("Spatial messaging max x bound must be greater than min bound, %f !> %f", x, reinterpret_cast<Spatial2DMessageData *>(message)->minX);
+    }
     reinterpret_cast<Spatial2DMessageData *>(message)->maxX = x;
 }
 void Spatial2DMessageDescription::setMaxY(const float &y) {
+    if (!isnan(reinterpret_cast<Spatial2DMessageData *>(message)->minY) &&
+        y <= reinterpret_cast<Spatial2DMessageData *>(message)->minY) {
+        THROW InvalidArgument("Spatial messaging max y bound must be greater than min bound, %f !> %f", y, reinterpret_cast<Spatial2DMessageData *>(message)->minY);
+    }
     reinterpret_cast<Spatial2DMessageData *>(message)->maxY = y;
 }
 void Spatial2DMessageDescription::setMax(const float &x, const float &y) {
+    if (!isnan(reinterpret_cast<Spatial2DMessageData *>(message)->minX) &&
+        x <= reinterpret_cast<Spatial2DMessageData *>(message)->minX) {
+        THROW InvalidArgument("Spatial messaging max x bound must be greater than min bound, %f !> %f", x, reinterpret_cast<Spatial2DMessageData *>(message)->minX);
+    }
+    if (!isnan(reinterpret_cast<Spatial2DMessageData *>(message)->minY) &&
+        y <= reinterpret_cast<Spatial2DMessageData *>(message)->minY) {
+        THROW InvalidArgument("Spatial messaging max y bound must be greater than min bound, %f !> %f", y, reinterpret_cast<Spatial2DMessageData *>(message)->minY);
+    }
     reinterpret_cast<Spatial2DMessageData *>(message)->maxX = x;
     reinterpret_cast<Spatial2DMessageData *>(message)->maxY = y;
 }
@@ -122,32 +157,83 @@ Spatial3DMessageDescription::Spatial3DMessageDescription(ModelData *const _model
     : MessageDescription(_model, data) { }
 
 void Spatial3DMessageDescription::setRadius(const float &r) {
+    if (r <= 0) {
+        THROW InvalidArgument("Spatial messaging radius must be a positive value, %f is not valid.", r);
+    }
     reinterpret_cast<Spatial3DMessageData *>(message)->radius = r;
 }
 void Spatial3DMessageDescription::setMinX(const float &x) {
+    if (!isnan(reinterpret_cast<Spatial3DMessageData *>(message)->maxX) &&
+        x >= reinterpret_cast<Spatial3DMessageData *>(message)->maxX) {
+        THROW InvalidArgument("Spatial messaging min x bound must be lower than max bound, %f !< %f", x, reinterpret_cast<Spatial3DMessageData *>(message)->maxX);
+    }
     reinterpret_cast<Spatial3DMessageData *>(message)->minX = x;
 }
 void Spatial3DMessageDescription::setMinY(const float &y) {
+    if (!isnan(reinterpret_cast<Spatial3DMessageData *>(message)->maxY) &&
+        y >= reinterpret_cast<Spatial3DMessageData *>(message)->maxY) {
+        THROW InvalidArgument("Spatial messaging min bound must be lower than max bound, %f !< %f", y, reinterpret_cast<Spatial3DMessageData *>(message)->maxY);
+    }
     reinterpret_cast<Spatial3DMessageData *>(message)->minY = y;
 }
 void Spatial3DMessageDescription::setMinZ(const float &z) {
+    if (!isnan(reinterpret_cast<Spatial3DMessageData *>(message)->maxZ) &&
+        z >= reinterpret_cast<Spatial3DMessageData *>(message)->maxZ) {
+        THROW InvalidArgument("Spatial messaging min z bound must be lower than max bound, %f !< %f", z, reinterpret_cast<Spatial3DMessageData *>(message)->maxZ);
+    }
     reinterpret_cast<Spatial3DMessageData *>(message)->minZ = z;
 }
 void Spatial3DMessageDescription::setMin(const float &x, const float &y, const float &z) {
+    if (!isnan(reinterpret_cast<Spatial3DMessageData *>(message)->maxX) &&
+        x >= reinterpret_cast<Spatial3DMessageData *>(message)->maxX) {
+        THROW InvalidArgument("Spatial messaging min x bound must be lower than max bound, %f !< %f", x, reinterpret_cast<Spatial3DMessageData *>(message)->maxX);
+    }
+    if (!isnan(reinterpret_cast<Spatial3DMessageData *>(message)->maxY) &&
+        y >= reinterpret_cast<Spatial3DMessageData *>(message)->maxY) {
+        THROW InvalidArgument("Spatial messaging min y bound must be lower than max bound, %f !< %f", y, reinterpret_cast<Spatial3DMessageData *>(message)->maxY);
+    }
+    if (!isnan(reinterpret_cast<Spatial3DMessageData *>(message)->maxZ) &&
+        z >= reinterpret_cast<Spatial3DMessageData *>(message)->maxZ) {
+        THROW InvalidArgument("Spatial messaging min z bound must be lower than max bound, %f !< %f", z, reinterpret_cast<Spatial3DMessageData *>(message)->maxZ);
+    }
     reinterpret_cast<Spatial3DMessageData *>(message)->minX = x;
     reinterpret_cast<Spatial3DMessageData *>(message)->minY = y;
     reinterpret_cast<Spatial3DMessageData *>(message)->minZ = z;
 }
 void Spatial3DMessageDescription::setMaxX(const float &x) {
+    if (!isnan(reinterpret_cast<Spatial3DMessageData *>(message)->minX) &&
+        x <= reinterpret_cast<Spatial3DMessageData *>(message)->minX) {
+        THROW InvalidArgument("Spatial messaging max x bound must be greater than min bound, %f !> %f", x, reinterpret_cast<Spatial3DMessageData *>(message)->minX);
+    }
     reinterpret_cast<Spatial3DMessageData *>(message)->maxX = x;
 }
 void Spatial3DMessageDescription::setMaxY(const float &y) {
+    if (!isnan(reinterpret_cast<Spatial3DMessageData *>(message)->minY) &&
+        y <= reinterpret_cast<Spatial3DMessageData *>(message)->minY) {
+        THROW InvalidArgument("Spatial messaging max y bound must be greater than min bound, %f !> %f", y, reinterpret_cast<Spatial3DMessageData *>(message)->minY);
+    }
     reinterpret_cast<Spatial3DMessageData *>(message)->maxY = y;
 }
 void Spatial3DMessageDescription::setMaxZ(const float &z) {
+    if (!isnan(reinterpret_cast<Spatial3DMessageData *>(message)->minZ) &&
+        z <= reinterpret_cast<Spatial3DMessageData *>(message)->minZ) {
+        THROW InvalidArgument("Spatial messaging max z bound must be greater than min bound, %f !> %f", z, reinterpret_cast<Spatial3DMessageData *>(message)->minZ);
+    }
     reinterpret_cast<Spatial3DMessageData *>(message)->maxZ = z;
 }
 void Spatial3DMessageDescription::setMax(const float &x, const float &y, const float &z) {
+    if (!isnan(reinterpret_cast<Spatial3DMessageData *>(message)->minX) &&
+        x <= reinterpret_cast<Spatial3DMessageData *>(message)->minX) {
+        THROW InvalidArgument("Spatial messaging max x bound must be greater than min bound, %f !> %f", x, reinterpret_cast<Spatial3DMessageData *>(message)->minX);
+    }
+    if (!isnan(reinterpret_cast<Spatial3DMessageData *>(message)->minY) &&
+        y <= reinterpret_cast<Spatial3DMessageData *>(message)->minY) {
+        THROW InvalidArgument("Spatial messaging max y bound must be greater than min bound, %f !> %f", y, reinterpret_cast<Spatial3DMessageData *>(message)->minY);
+    }
+    if (!isnan(reinterpret_cast<Spatial3DMessageData *>(message)->minZ) &&
+        z <= reinterpret_cast<Spatial3DMessageData *>(message)->minZ) {
+        THROW InvalidArgument("Spatial messaging max z bound must be greater than min bound, %f !> %f", z, reinterpret_cast<Spatial3DMessageData *>(message)->minZ);
+    }
     reinterpret_cast<Spatial3DMessageData *>(message)->maxX = x;
     reinterpret_cast<Spatial3DMessageData *>(message)->maxY = y;
     reinterpret_cast<Spatial3DMessageData *>(message)->maxZ = z;
