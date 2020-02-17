@@ -27,7 +27,8 @@ AgentData::AgentData(ModelData *const model, const std::string &agent_name)
 
 MessageData::MessageData(ModelData *const model, const std::string &message_name)
     : description(new MessageDescription(model, this))
-    , name(message_name) { }
+    , name(message_name)
+    , optional_outputs(0) { }
 
 MessageData::~MessageData() {}
 

@@ -111,7 +111,7 @@ bool CUDAAgentModel::step() {
                 flamegpu_internal::CUDAScanCompaction::resizeMessages(cuda_agent.getStateSize(func_des->initial_state), j);
                 // Zero the scan flag that will be written to
                 if (func_des->message_output_optional)
-                    flamegpu_internal::CUDAScanCompaction::zeroMessages(0);  // Always default stream currently
+                    flamegpu_internal::CUDAScanCompaction::zeroMessages(j);  // Always default stream currently
             }
 
 
