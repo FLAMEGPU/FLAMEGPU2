@@ -4,7 +4,7 @@
 #include "flamegpu/runtime/flamegpu_api.h"
 
 namespace test_agent_function {
-FLAMEGPU_AGENT_FUNCTION(agent_fn1, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(agent_fn1, MsgBruteForce, MsgBruteForce) {
     // do nothing
     return ALIVE;
 }
