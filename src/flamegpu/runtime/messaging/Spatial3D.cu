@@ -17,18 +17,18 @@ __device__ __forceinline__ MsgSpatial3D::GridPos3D getGridPosition(const MsgSpat
         static_cast<int>(floor((z / md->environmentWidth[2])*md->gridDim[2]))
     };
     MsgSpatial3D::GridPos3D rtn = {
-        gridPos[0] < 0 ? 0 : (gridPos[0] > md->gridDim[0] - 1 ? static_cast<int>(md->gridDim[0] - 1) : gridPos[0]),
-        gridPos[1] < 0 ? 0 : (gridPos[1] > md->gridDim[1] - 1 ? static_cast<int>(md->gridDim[1] - 1) : gridPos[1]),
-        gridPos[2] < 0 ? 0 : (gridPos[2] > md->gridDim[2] - 1 ? static_cast<int>(md->gridDim[2] - 1) : gridPos[2])
+        gridPos[0] < 0 ? 0 : (gridPos[0] >= md->gridDim[0] ? static_cast<int>(md->gridDim[0] - 1) : gridPos[0]),
+        gridPos[1] < 0 ? 0 : (gridPos[1] >= md->gridDim[1] ? static_cast<int>(md->gridDim[1] - 1) : gridPos[1]),
+        gridPos[2] < 0 ? 0 : (gridPos[2] >= md->gridDim[2] ? static_cast<int>(md->gridDim[2] - 1) : gridPos[2])
     };
     return rtn;
 }
 __device__ __forceinline__ unsigned int getHash(const MsgSpatial3D::MetaData *md, const MsgSpatial3D::GridPos3D &xyz) {
     // Bound gridPos to gridDimensions
     unsigned int gridPos[3] = {
-        xyz.x < 0 ? 0 : (xyz.x > md->gridDim[0] - 1 ? md->gridDim[0] - 1 : xyz.x),
-        xyz.y < 0 ? 0 : (xyz.y > md->gridDim[1] - 1 ? md->gridDim[1] - 1 : xyz.y),
-        xyz.z < 0 ? 0 : (xyz.z > md->gridDim[2] - 1 ? md->gridDim[2] - 1 : xyz.z)
+        xyz.x < 0 ? 0 : (xyz.x >= md->gridDim[0] - 1 ? md->gridDim[0] - 1 : xyz.x), // Only x should ever be out of bounds here
+        xyz.y,  // xyz.y < 0 ? 0 : (xyz.y >= md->gridDim[1] - 1 ? md->gridDim[1] - 1 : xyz.y),
+        xyz.z,  // xyz.z < 0 ? 0 : (xyz.z >= md->gridDim[2] - 1 ? md->gridDim[2] - 1 : xyz.z)
     };
     // Compute hash (effectivley an index for to a bin within the partitioning grid in this case)
     return (unsigned int)(
@@ -62,16 +62,25 @@ __device__ MsgSpatial3D::In::Filter::Message& MsgSpatial3D::In::Filter::Message:
     bool move_strip = cell_index >= cell_index_max;
     while (move_strip) {
         nextStrip();
+        cell_index = 0;
+        cell_index_max = 1;
         if (relative_cell[0] < 2) {
             // Calculate the strips start and end hash
-            unsigned int start_hash = getHash(_parent.metadata, { _parent.cell.x - 1, _parent.cell.y + relative_cell[0], _parent.cell.z + relative_cell[1] });
-            unsigned int end_hash = getHash(_parent.metadata, { _parent.cell.x + 1, _parent.cell.y + relative_cell[0], _parent.cell.z + relative_cell[1] });
-            // Lookup start and end indicies from PBM
-            cell_index = _parent.metadata->PBM[start_hash];
-            cell_index_max = _parent.metadata->PBM[end_hash + 1];
-        } else {
-            cell_index = 0;
-            cell_index_max = 1;
+            int absolute_cell[2] = { _parent.cell.y + relative_cell[0], _parent.cell.z + relative_cell[1] };
+            // Skip the strip if it is completely out of bounds
+            if(absolute_cell[0] >= 0 && absolute_cell[1] >= 0 && absolute_cell[0] < _parent.metadata->gridDim[1] && absolute_cell[1] < _parent.metadata->gridDim[2]) {
+                unsigned int start_hash = getHash(_parent.metadata, { _parent.cell.x - 1, absolute_cell[0], absolute_cell[1] });
+                unsigned int end_hash = getHash(_parent.metadata, { _parent.cell.x + 1, absolute_cell[0], absolute_cell[1] });
+                // Lookup start and end indicies from PBM
+                cell_index = _parent.metadata->PBM[start_hash];
+                cell_index_max = _parent.metadata->PBM[end_hash + 1];
+            } 
+            else
+            {
+                // Goto next strip
+                // Don't update move_strip
+                continue;
+            }
         }
         move_strip = cell_index >= cell_index_max;
     }

@@ -216,6 +216,7 @@ class MsgSpatial3D {
              * Returns an iterator to the start of the message list subset about the search origin
              */
             inline __device__ iterator begin(void) const {
+                // Bin before initial bin, as the constructor calls increment operator
                 return iterator(*this, -2, 1, 1, 0);
             }
             /**
@@ -223,7 +224,8 @@ class MsgSpatial3D {
              * @note This iterator is the same for all message list subsets
              */
             inline __device__ iterator end(void) const {
-                return iterator(*this, 1, 0, 1, 0);
+                // Final bin, as the constructor calls increment operator
+                return iterator(*this, 1, 1, 1, 0);
             }
 
          private:
@@ -356,7 +358,7 @@ class MsgSpatial3D {
              binCount = 1;
              for (unsigned int axis = 0; axis < 3; ++axis) {
                  hd_data.environmentWidth[axis] = hd_data.max[axis] - hd_data.min[axis];
-                 hd_data.gridDim[axis] = static_cast<unsigned int>(ceil(hd_data.environmentWidth[axis] / static_cast<float>(hd_data.radius)));
+                 hd_data.gridDim[axis] = static_cast<unsigned int>(ceil(hd_data.environmentWidth[axis] / hd_data.radius));
                  binCount *= hd_data.gridDim[axis];
              }
              gpuErrchk(cudaMalloc(&d_histogram, (binCount + 1) * sizeof(unsigned int)));
