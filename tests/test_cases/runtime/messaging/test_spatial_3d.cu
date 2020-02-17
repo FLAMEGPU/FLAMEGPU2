@@ -20,7 +20,7 @@ FLAMEGPU_AGENT_FUNCTION(out_mandatory, MsgNone, MsgSpatial3D) {
     return ALIVE;
 }
 FLAMEGPU_AGENT_FUNCTION(out_optional, MsgNone, MsgSpatial3D) {
-    if(FLAMEGPU->getVariable<int>("do_output")) {
+    if (FLAMEGPU->getVariable<int>("do_output")) {
         FLAMEGPU->message_out.setVariable<int>("id", FLAMEGPU->getVariable<int>("id"));
         FLAMEGPU->message_out.setLocation(
             FLAMEGPU->getVariable<float>("x"),
@@ -66,7 +66,7 @@ TEST(Spatial3DMsgTest, Mandatory) {
         message.setMin(0, 0, 0);
         message.setMax(5, 5, 5);
         message.setRadius(1);
-        //5x5x5 bins, total 125
+        // 5x5x5 bins, total 125
         message.newVariable<int>("id");  // unused by current test
     }
     {   // Circle agent
@@ -75,7 +75,7 @@ TEST(Spatial3DMsgTest, Mandatory) {
         agent.newVariable<float>("x");
         agent.newVariable<float>("y");
         agent.newVariable<float>("z");
-        agent.newVariable<unsigned int>("myBin"); // This will be presumed bin index of the agent, might not use this
+        agent.newVariable<unsigned int>("myBin");  // This will be presumed bin index of the agent, might not use this
         agent.newVariable<unsigned int>("count");  // Store the distance moved here, for validation
         agent.newFunction("out", out_mandatory).setMessageOutput("location");
         agent.newFunction("in", in).setMessageInput("location");
@@ -144,14 +144,14 @@ TEST(Spatial3DMsgTest, Mandatory) {
                 unsigned int count_sum = 0;
                 for (int x2 = -1; x2 <= 1; x2++) {
                     int bin_pos2[3] = {
-                        (int)bin_pos1[0] + x2,
+                        static_cast<int>(bin_pos1[0]) + x2,
                         0,
                         0
                     };
                     for (int y2 = -1; y2 <= 1; y2++) {
-                        bin_pos2[1] = (int)bin_pos1[1] + y2;
+                        bin_pos2[1] = static_cast<int>(bin_pos1[1]) + y2;
                         for (int z2 = -1; z2 <= 1; z2++) {
-                            bin_pos2[2] = (int)bin_pos1[2] + z2;
+                            bin_pos2[2] = static_cast<int>(bin_pos1[2]) + z2;
                             // Ensure bin is in bounds
                             if (
                                 bin_pos2[0] >= 0 &&
@@ -204,7 +204,7 @@ TEST(Spatial3DMsgTest, Optional) {
         message.setMin(0, 0, 0);
         message.setMax(5, 5, 5);
         message.setRadius(1);
-        //5x5x5 bins, total 125
+        // 5x5x5 bins, total 125
         message.newVariable<int>("id");  // unused by current test
     }
     {   // Circle agent
@@ -214,7 +214,7 @@ TEST(Spatial3DMsgTest, Optional) {
         agent.newVariable<float>("y");
         agent.newVariable<float>("z");
         agent.newVariable<int>("do_output");  // NEW!
-        agent.newVariable<unsigned int>("myBin"); // This will be presumed bin index of the agent, might not use this
+        agent.newVariable<unsigned int>("myBin");  // This will be presumed bin index of the agent, might not use this
         agent.newVariable<unsigned int>("count");  // Store the distance moved here, for validation
         auto &af = agent.newFunction("out", out_optional);  // NEW!
         af.setMessageOutput("location");
@@ -286,17 +286,17 @@ TEST(Spatial3DMsgTest, Optional) {
                     bin_pos1[0];
                 // Count our neighbours
                 unsigned int count_sum = 0;
-                unsigned int count_sum_optional = 0; // NEW!
+                unsigned int count_sum_optional = 0;  // NEW!
                 for (int x2 = -1; x2 <= 1; x2++) {
                     int bin_pos2[3] = {
-                        (int)bin_pos1[0] + x2,
+                        static_cast<int>(bin_pos1[0]) + x2,
                         0,
                         0
                     };
                     for (int y2 = -1; y2 <= 1; y2++) {
-                        bin_pos2[1] = (int)bin_pos1[1] + y2;
+                        bin_pos2[1] = static_cast<int>(bin_pos1[1]) + y2;
                         for (int z2 = -1; z2 <= 1; z2++) {
-                            bin_pos2[2] = (int)bin_pos1[2] + z2;
+                            bin_pos2[2] = static_cast<int>(bin_pos1[2]) + z2;
                             // Ensure bin is in bounds
                             if (
                                 bin_pos2[0] >= 0 &&
@@ -311,13 +311,13 @@ TEST(Spatial3DMsgTest, Optional) {
                                     bin_pos2[1] * 5 +
                                     bin_pos2[0];
                                 count_sum += bin_counts[bin_index2];
-                                count_sum_optional += bin_counts_optional[bin_index2]; // NEW!
+                                count_sum_optional += bin_counts_optional[bin_index2];  // NEW!
                             }
                         }
                     }
                 }
                 bin_results.emplace(bin_index1, count_sum);
-                bin_results_optional.emplace(bin_index1, count_sum_optional); // NEW!
+                bin_results_optional.emplace(bin_index1, count_sum_optional);  // NEW!
             }
         }
     }
@@ -333,6 +333,6 @@ TEST(Spatial3DMsgTest, Optional) {
         AgentInstance ai = population.getInstanceAt(i);
         unsigned int myBin = ai.getVariable<unsigned int>("myBin");
         unsigned int myResult = ai.getVariable<unsigned int>("count");
-        EXPECT_EQ(myResult, bin_results_optional.at(myBin)); // NEW!
+        EXPECT_EQ(myResult, bin_results_optional.at(myBin));  // NEW!
     }
 }

@@ -26,7 +26,7 @@ __device__ __forceinline__ MsgSpatial3D::GridPos3D getGridPosition(const MsgSpat
 __device__ __forceinline__ unsigned int getHash(const MsgSpatial3D::MetaData *md, const MsgSpatial3D::GridPos3D &xyz) {
     // Bound gridPos to gridDimensions
     unsigned int gridPos[3] = {
-        xyz.x < 0 ? 0 : (xyz.x >= md->gridDim[0] - 1 ? md->gridDim[0] - 1 : xyz.x), // Only x should ever be out of bounds here
+        xyz.x < 0 ? 0 : (xyz.x >= md->gridDim[0] - 1 ? md->gridDim[0] - 1 : xyz.x),  // Only x should ever be out of bounds here
         xyz.y,  // xyz.y < 0 ? 0 : (xyz.y >= md->gridDim[1] - 1 ? md->gridDim[1] - 1 : xyz.y),
         xyz.z,  // xyz.z < 0 ? 0 : (xyz.z >= md->gridDim[2] - 1 ? md->gridDim[2] - 1 : xyz.z)
     };
@@ -68,15 +68,13 @@ __device__ MsgSpatial3D::In::Filter::Message& MsgSpatial3D::In::Filter::Message:
             // Calculate the strips start and end hash
             int absolute_cell[2] = { _parent.cell.y + relative_cell[0], _parent.cell.z + relative_cell[1] };
             // Skip the strip if it is completely out of bounds
-            if(absolute_cell[0] >= 0 && absolute_cell[1] >= 0 && absolute_cell[0] < _parent.metadata->gridDim[1] && absolute_cell[1] < _parent.metadata->gridDim[2]) {
+            if (absolute_cell[0] >= 0 && absolute_cell[1] >= 0 && absolute_cell[0] < _parent.metadata->gridDim[1] && absolute_cell[1] < _parent.metadata->gridDim[2]) {
                 unsigned int start_hash = getHash(_parent.metadata, { _parent.cell.x - 1, absolute_cell[0], absolute_cell[1] });
                 unsigned int end_hash = getHash(_parent.metadata, { _parent.cell.x + 1, absolute_cell[0], absolute_cell[1] });
                 // Lookup start and end indicies from PBM
                 cell_index = _parent.metadata->PBM[start_hash];
                 cell_index_max = _parent.metadata->PBM[end_hash + 1];
-            } 
-            else
-            {
+            } else {
                 // Goto next strip
                 // Don't update move_strip
                 continue;
