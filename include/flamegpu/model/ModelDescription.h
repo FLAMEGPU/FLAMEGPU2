@@ -254,7 +254,7 @@ class ModelDescription {
     bool hasMessage(const std::string &message_name) const {
         auto a = model->messages.find(message_name);
         if (a != model->messages.end()) {
-            if (std::dynamic_pointer_cast<MsgType::Data>(a->second))
+            if (std::dynamic_pointer_cast<typename MsgType::Data>(a->second))
                 return true;
         }
         return false;
