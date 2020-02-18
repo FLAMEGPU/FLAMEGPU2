@@ -11,62 +11,56 @@
 #include "flamegpu/runtime/flamegpu_api.h"
 
 
-FLAMEGPU_AGENT_FUNCTION(out_mandatory3D, MsgNone, MsgSpatial3D) {
+FLAMEGPU_AGENT_FUNCTION(out_mandatory2D, MsgNone, MsgSpatial2D) {
     FLAMEGPU->message_out.setVariable<int>("id", FLAMEGPU->getVariable<int>("id"));
     FLAMEGPU->message_out.setLocation(
         FLAMEGPU->getVariable<float>("x"),
-        FLAMEGPU->getVariable<float>("y"),
-        FLAMEGPU->getVariable<float>("z"));
+        FLAMEGPU->getVariable<float>("y"));
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(out_optional3D, MsgNone, MsgSpatial3D) {
+FLAMEGPU_AGENT_FUNCTION(out_optional2D, MsgNone, MsgSpatial2D) {
     if (FLAMEGPU->getVariable<int>("do_output")) {
         FLAMEGPU->message_out.setVariable<int>("id", FLAMEGPU->getVariable<int>("id"));
         FLAMEGPU->message_out.setLocation(
             FLAMEGPU->getVariable<float>("x"),
-            FLAMEGPU->getVariable<float>("y"),
-            FLAMEGPU->getVariable<float>("z"));
+            FLAMEGPU->getVariable<float>("y"));
     }
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(in3D, MsgSpatial3D, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(in2D, MsgSpatial2D, MsgNone) {
     const float x1 = FLAMEGPU->getVariable<float>("x");
     const float y1 = FLAMEGPU->getVariable<float>("y");
-    const float z1 = FLAMEGPU->getVariable<float>("z");
     unsigned int count = 0;
     // unsigned int myBin[3] = {
     //     static_cast<unsigned int>(x1),
-    //     static_cast<unsigned int>(y1),
-    //     static_cast<unsigned int>(z1)
+    //     static_cast<unsigned int>(y1)
     // };
     // const unsigned int bin_index =
-    //     myBin[2] * 5 * 5 +
-    //     myBin[1] * 5 +
+    //     myBin[1] * 11 +
     //     myBin[0];
     // Count how many messages we recieved (including our own)
     // This is all those which fall within the 3x3x3 Moore neighbourhood
     // Not our search radius
-    for (const auto &message : FLAMEGPU->message_in(x1, y1, z1)) {
-        // unsigned int msgBin[3] = {
+    for (const auto &message : FLAMEGPU->message_in(x1, y1)) {
+        // unsigned int msgBin[2] = {
         //     static_cast<unsigned int>(message.getVariable<float>("x")),
-        //     static_cast<unsigned int>(message.getVariable<float>("y")),
-        //     static_cast<unsigned int>(message.getVariable<float>("z"))
+        //     static_cast<unsigned int>(message.getVariable<float>("y"))
         // };
         count++;
     }
     FLAMEGPU->setVariable<unsigned int>("count", count);
     return ALIVE;
 }
-TEST(Spatial3DMsgTest, Mandatory) {
+TEST(Spatial2DMsgTest, Mandatory) {
     std::unordered_map<int, unsigned int> bin_counts;
     // Construct model
     ModelDescription model("Spatial3DMsgTestModel");
     {   // Location message
-        MsgSpatial3D::Description &message = model.newMessage<MsgSpatial3D>("location");
-        message.setMin(0, 0, 0);
-        message.setMax(5, 5, 5);
+        MsgSpatial2D::Description &message = model.newMessage<MsgSpatial2D>("location");
+        message.setMin(0, 0);
+        message.setMax(11, 11);
         message.setRadius(1);
-        // 5x5x5 bins, total 125
+        // 11x11 bins, total 121
         message.newVariable<int>("id");  // unused by current test
     }
     {   // Circle agent
@@ -74,19 +68,18 @@ TEST(Spatial3DMsgTest, Mandatory) {
         agent.newVariable<int>("id");
         agent.newVariable<float>("x");
         agent.newVariable<float>("y");
-        agent.newVariable<float>("z");
         agent.newVariable<unsigned int>("myBin");  // This will be presumed bin index of the agent, might not use this
         agent.newVariable<unsigned int>("count");  // Store the distance moved here, for validation
-        agent.newFunction("out", out_mandatory3D).setMessageOutput("location");
-        agent.newFunction("in", in3D).setMessageInput("location");
+        agent.newFunction("out", out_mandatory2D).setMessageOutput("location");
+        agent.newFunction("in", in2D).setMessageInput("location");
     }
     {   // Layer #1
         LayerDescription &layer = model.newLayer();
-        layer.addAgentFunction(out_mandatory3D);
+        layer.addAgentFunction(out_mandatory2D);
     }
     {   // Layer #2
         LayerDescription &layer = model.newLayer();
-        layer.addAgentFunction(in3D);
+        layer.addAgentFunction(in2D);
     }
     CUDAAgentModel cuda_model(model);
 
@@ -96,23 +89,20 @@ TEST(Spatial3DMsgTest, Mandatory) {
     {
         // Currently population has not been init, so generate an agent population on the fly
         std::default_random_engine rng;
-        std::uniform_real_distribution<float> dist(0.0f, 5.0f);
+        std::uniform_real_distribution<float> dist(0.0f, 11.0f);
         for (unsigned int i = 0; i < AGENT_COUNT; i++) {
             AgentInstance instance = population.getNextInstance();
             instance.setVariable<int>("id", i);
             float pos[3] = { dist(rng), dist(rng), dist(rng) };
             instance.setVariable<float>("x", pos[0]);
             instance.setVariable<float>("y", pos[1]);
-            instance.setVariable<float>("z", pos[2]);
             // Solve the bin index
-            const unsigned int bin_pos[3] = {
+            const unsigned int bin_pos[2] = {
                 (unsigned int)(pos[0] / 1),
-                (unsigned int)(pos[1] / 1),
-                (unsigned int)(pos[2] / 1)
+                (unsigned int)(pos[1] / 1)
             };
             const unsigned int bin_index =
-                bin_pos[2] * 5 * 5 +
-                bin_pos[1] * 5 +
+                bin_pos[1] * 11 +
                 bin_pos[0];
             instance.setVariable<unsigned int>("myBin", bin_index);
             // Create it if it doesn't already exist
@@ -127,52 +117,41 @@ TEST(Spatial3DMsgTest, Mandatory) {
     // Generate results expectation
     std::unordered_map<int, unsigned int> bin_results;
     // Iterate host bin
-    for (unsigned int x1 = 0; x1 < 5; x1++) {
-        for (unsigned int y1 = 0; y1 < 5; y1++) {
-            for (unsigned int z1 = 0; z1 < 5; z1++) {
-                // Solve the bin index
-                const unsigned int bin_pos1[3] = {
-                    x1,
-                    y1,
-                    z1
+    for (unsigned int x1 = 0; x1 < 11; x1++) {
+        for (unsigned int y1 = 0; y1 < 11; y1++) {
+            // Solve the bin index
+            const unsigned int bin_pos1[3] = {
+                x1,
+                y1
+            };
+            const unsigned int bin_index1 =
+                bin_pos1[1] * 11 +
+                bin_pos1[0];
+            // Count our neighbours
+            unsigned int count_sum = 0;
+            for (int x2 = -1; x2 <= 1; x2++) {
+                int bin_pos2[2] = {
+                    static_cast<int>(bin_pos1[0]) + x2,
+                    0
                 };
-                const unsigned int bin_index1 =
-                    bin_pos1[2] * 5 * 5 +
-                    bin_pos1[1] * 5 +
-                    bin_pos1[0];
-                // Count our neighbours
-                unsigned int count_sum = 0;
-                for (int x2 = -1; x2 <= 1; x2++) {
-                    int bin_pos2[3] = {
-                        static_cast<int>(bin_pos1[0]) + x2,
-                        0,
-                        0
-                    };
-                    for (int y2 = -1; y2 <= 1; y2++) {
-                        bin_pos2[1] = static_cast<int>(bin_pos1[1]) + y2;
-                        for (int z2 = -1; z2 <= 1; z2++) {
-                            bin_pos2[2] = static_cast<int>(bin_pos1[2]) + z2;
-                            // Ensure bin is in bounds
-                            if (
-                                bin_pos2[0] >= 0 &&
-                                bin_pos2[1] >= 0 &&
-                                bin_pos2[2] >= 0 &&
-                                bin_pos2[0] < 5 &&
-                                bin_pos2[1] < 5 &&
-                                bin_pos2[2] < 5
-                                ) {
-                                const unsigned int bin_index2 =
-                                    bin_pos2[2] * 5 * 5 +
-                                    bin_pos2[1] * 5 +
-                                    bin_pos2[0];
-                                count_sum += bin_counts[bin_index2];
-                            }
-                        }
+                for (int y2 = -1; y2 <= 1; y2++) {
+                    bin_pos2[1] = static_cast<int>(bin_pos1[1]) + y2;
+                    // Ensure bin is in bounds
+                    if (
+                        bin_pos2[0] >= 0 &&
+                        bin_pos2[1] >= 0 &&
+                        bin_pos2[0] < 11 &&
+                        bin_pos2[1] < 11
+                        ) {
+                        const unsigned int bin_index2 =
+                            bin_pos2[1] * 11 +
+                            bin_pos2[0];
+                        count_sum += bin_counts[bin_index2];
                     }
                 }
-                bin_results.emplace(bin_index1, count_sum);
             }
-        }
+            bin_results.emplace(bin_index1, count_sum);
+         }
     }
 
     // Execute a single step of the model
@@ -190,7 +169,7 @@ TEST(Spatial3DMsgTest, Mandatory) {
     }
 }
 
-TEST(Spatial3DMsgTest, Optional) {
+TEST(Spatial2DMsgTest, Optional) {
     /**
      * This test is same as Mandatory, however extra flag has been added to block certain agents from outputting messages
      * Look for NEW!
@@ -200,11 +179,11 @@ TEST(Spatial3DMsgTest, Optional) {
     // Construct model
     ModelDescription model("Spatial3DMsgTestModel");
     {   // Location message
-        MsgSpatial3D::Description &message = model.newMessage<MsgSpatial3D>("location");
-        message.setMin(0, 0, 0);
-        message.setMax(5, 5, 5);
+        MsgSpatial2D::Description &message = model.newMessage<MsgSpatial2D>("location");
+        message.setMin(0, 0);
+        message.setMax(11, 11);
         message.setRadius(1);
-        // 5x5x5 bins, total 125
+        // 11x11 bins, total 121
         message.newVariable<int>("id");  // unused by current test
     }
     {   // Circle agent
@@ -212,22 +191,21 @@ TEST(Spatial3DMsgTest, Optional) {
         agent.newVariable<int>("id");
         agent.newVariable<float>("x");
         agent.newVariable<float>("y");
-        agent.newVariable<float>("z");
         agent.newVariable<int>("do_output");  // NEW!
         agent.newVariable<unsigned int>("myBin");  // This will be presumed bin index of the agent, might not use this
         agent.newVariable<unsigned int>("count");  // Store the distance moved here, for validation
-        auto &af = agent.newFunction("out", out_optional3D);  // NEW!
+        auto &af = agent.newFunction("out", out_optional2D);  // NEW!
         af.setMessageOutput("location");
         af.setMessageOutputOptional(true);  // NEW!
-        agent.newFunction("in", in3D).setMessageInput("location");
+        agent.newFunction("in", in2D).setMessageInput("location");
     }
     {   // Layer #1
         LayerDescription &layer = model.newLayer();
-        layer.addAgentFunction(out_optional3D);  // NEW!
+        layer.addAgentFunction(out_optional2D);  // NEW!
     }
     {   // Layer #2
         LayerDescription &layer = model.newLayer();
-        layer.addAgentFunction(in3D);
+        layer.addAgentFunction(in2D);
     }
     CUDAAgentModel cuda_model(model);
 
@@ -237,25 +215,23 @@ TEST(Spatial3DMsgTest, Optional) {
     {
         // Currently population has not been init, so generate an agent population on the fly
         std::default_random_engine rng;
-        std::uniform_real_distribution<float> dist(0.0f, 5.0f);
+        std::uniform_real_distribution<float> dist(0.0f, 11.0f);
+        std::uniform_real_distribution<float> dist5(0.0f, 5.0f);
         for (unsigned int i = 0; i < AGENT_COUNT; i++) {
             AgentInstance instance = population.getNextInstance();
             instance.setVariable<int>("id", i);
             float pos[3] = { dist(rng), dist(rng), dist(rng) };
-            int do_output = dist(rng) < 4 ? 1 : 0;  // 80% chance of output  // NEW!
+            int do_output = dist5(rng) < 4 ? 1 : 0;  // 80% chance of output  // NEW!
             instance.setVariable<float>("x", pos[0]);
             instance.setVariable<float>("y", pos[1]);
-            instance.setVariable<float>("z", pos[2]);
             instance.setVariable<int>("do_output", do_output);  // NEW!
             // Solve the bin index
-            const unsigned int bin_pos[3] = {
+            const unsigned int bin_pos[2] = {
                 (unsigned int)(pos[0] / 1),
-                (unsigned int)(pos[1] / 1),
-                (unsigned int)(pos[2] / 1)
+                (unsigned int)(pos[1] / 1)
             };
             const unsigned int bin_index =
-                bin_pos[2] * 5 * 5 +
-                bin_pos[1] * 5 +
+                bin_pos[1] * 11 +
                 bin_pos[0];
             instance.setVariable<unsigned int>("myBin", bin_index);
             // Create it if it doesn't already exist
@@ -271,54 +247,43 @@ TEST(Spatial3DMsgTest, Optional) {
     std::unordered_map<int, unsigned int> bin_results;
     std::unordered_map<int, unsigned int> bin_results_optional;
     // Iterate host bin
-    for (unsigned int x1 = 0; x1 < 5; x1++) {
-        for (unsigned int y1 = 0; y1 < 5; y1++) {
-            for (unsigned int z1 = 0; z1 < 5; z1++) {
-                // Solve the bin index
-                const unsigned int bin_pos1[3] = {
-                    x1,
-                    y1,
-                    z1
+    for (unsigned int x1 = 0; x1 < 11; x1++) {
+        for (unsigned int y1 = 0; y1 < 11; y1++) {
+            // Solve the bin index
+            const unsigned int bin_pos1[3] = {
+                x1,
+                y1
+            };
+            const unsigned int bin_index1 =
+                bin_pos1[1] * 11 +
+                bin_pos1[0];
+            // Count our neighbours
+            unsigned int count_sum = 0;
+            unsigned int count_sum_optional = 0;  // NEW!
+            for (int x2 = -1; x2 <= 1; x2++) {
+                int bin_pos2[2] = {
+                    static_cast<int>(bin_pos1[0]) + x2,
+                    0
                 };
-                const unsigned int bin_index1 =
-                    bin_pos1[2] * 5 * 5 +
-                    bin_pos1[1] * 5 +
-                    bin_pos1[0];
-                // Count our neighbours
-                unsigned int count_sum = 0;
-                unsigned int count_sum_optional = 0;  // NEW!
-                for (int x2 = -1; x2 <= 1; x2++) {
-                    int bin_pos2[3] = {
-                        static_cast<int>(bin_pos1[0]) + x2,
-                        0,
-                        0
-                    };
-                    for (int y2 = -1; y2 <= 1; y2++) {
-                        bin_pos2[1] = static_cast<int>(bin_pos1[1]) + y2;
-                        for (int z2 = -1; z2 <= 1; z2++) {
-                            bin_pos2[2] = static_cast<int>(bin_pos1[2]) + z2;
-                            // Ensure bin is in bounds
-                            if (
-                                bin_pos2[0] >= 0 &&
-                                bin_pos2[1] >= 0 &&
-                                bin_pos2[2] >= 0 &&
-                                bin_pos2[0] < 5 &&
-                                bin_pos2[1] < 5 &&
-                                bin_pos2[2] < 5
-                                ) {
-                                const unsigned int bin_index2 =
-                                    bin_pos2[2] * 5 * 5 +
-                                    bin_pos2[1] * 5 +
-                                    bin_pos2[0];
-                                count_sum += bin_counts[bin_index2];
-                                count_sum_optional += bin_counts_optional[bin_index2];  // NEW!
-                            }
-                        }
+                for (int y2 = -1; y2 <= 1; y2++) {
+                    bin_pos2[1] = static_cast<int>(bin_pos1[1]) + y2;
+                    // Ensure bin is in bounds
+                    if (
+                        bin_pos2[0] >= 0 &&
+                        bin_pos2[1] >= 0 &&
+                        bin_pos2[0] < 11 &&
+                        bin_pos2[1] < 11
+                        ) {
+                        const unsigned int bin_index2 =
+                            bin_pos2[1] * 11 +
+                            bin_pos2[0];
+                        count_sum += bin_counts[bin_index2];
+                        count_sum_optional += bin_counts_optional[bin_index2];  // NEW!
                     }
                 }
-                bin_results.emplace(bin_index1, count_sum);
-                bin_results_optional.emplace(bin_index1, count_sum_optional);  // NEW!
             }
+            bin_results.emplace(bin_index1, count_sum);
+            bin_results_optional.emplace(bin_index1, count_sum_optional);  // NEW!
         }
     }
 

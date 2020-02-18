@@ -46,7 +46,41 @@ __device__ void MsgSpatial2D::Out::setLocation(const float &x, const float &y) c
     flamegpu_internal::CUDAScanCompaction::ds_message_configs[streamId].scan_flag[index] = 1;
 }
 
-// TODO In fns
+__device__ MsgSpatial2D::In::Filter::Filter(const MetaData* _metadata, const Curve::NamespaceHash &_combined_hash, const float& x, const float& y)
+    : metadata(_metadata)
+    , combined_hash(_combined_hash) {
+    loc[0] = x;
+    loc[1] = y;
+    cell = getGridPosition2D(_metadata, x, y);
+}
+__device__ MsgSpatial2D::In::Filter::Message& MsgSpatial2D::In::Filter::Message::operator++() {
+    cell_index++;
+    bool move_strip = cell_index >= cell_index_max;
+    while (move_strip) {
+        nextStrip();
+        cell_index = 0;
+        cell_index_max = 1;
+        if (relative_cell < 2) {
+            // Calculate the strips start and end hash
+            int absolute_cell_y = _parent.cell.y + relative_cell;
+            // Skip the strip if it is completely out of bounds
+            if (absolute_cell_y >= 0 && absolute_cell_y < _parent.metadata->gridDim[1]) {
+                unsigned int start_hash = getHash2D(_parent.metadata, { _parent.cell.x - 1, absolute_cell_y });
+                unsigned int end_hash = getHash2D(_parent.metadata, { _parent.cell.x + 1, absolute_cell_y });
+                // Lookup start and end indicies from PBM
+                cell_index = _parent.metadata->PBM[start_hash];
+                cell_index_max = _parent.metadata->PBM[end_hash + 1];
+            } else {
+                // Goto next strip
+                // Don't update move_strip
+                continue;
+            }
+        }
+        move_strip = cell_index >= cell_index_max;
+    }
+    return *this;
+}
+
 
 MsgSpatial2D::CUDAModelHandler::CUDAModelHandler(CUDAMessage &a)
     : MsgSpecialisationHandler()
