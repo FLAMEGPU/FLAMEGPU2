@@ -79,7 +79,7 @@ int main(int argc, const char ** argv) {
     ModelDescription model("Circles_BruteForce_example");
 
     {   // Location message
-        MessageDescription &message = model.newMessage("location");
+        MsgBruteForce::Description &message = model.newMessage("location");
         message.newVariable<int>("id");
         message.newVariable<float>("x");
         message.newVariable<float>("y");

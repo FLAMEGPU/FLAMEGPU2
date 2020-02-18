@@ -15,6 +15,7 @@
 #include <cuda_runtime.h>
 
 #include <cstring>
+#include <cstdio>
 #include <typeinfo>
 
 

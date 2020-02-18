@@ -8,11 +8,9 @@
 
 #include "flamegpu/model/ModelData.h"
 #include "flamegpu/sim/Simulation.h"
+#include "flamegpu/runtime/messaging/BruteForce.h"
 
 class AgentDescription;
-class MessageDescription;
-class Spatial2DMessageDescription;
-class Spatial3DMessageDescription;
 class LayerDescription;
 struct ModelData;
 
@@ -84,9 +82,18 @@ class ModelDescription {
      * @return A mutable reference to the new MessageDescription
      * @throws InvalidMessageName If a message with the same name already exists within the model description hierarchy
      */
-    MessageDescription& newMessage(const std::string &message_name);
-    Spatial2DMessageDescription& newSpatial2DMessage(const std::string &message_name);
-    Spatial3DMessageDescription& newSpatial3DMessage(const std::string &message_name);
+    template<typename MsgType>
+    typename MsgType::Description& newMessage(const std::string &message_name) {
+        if (!hasMessage<MsgType>(message_name)) {
+            auto rtn = std::shared_ptr<typename MsgType::Data>(new typename MsgType::Data(model, message_name));
+            model->messages.emplace(message_name, rtn);
+            return *reinterpret_cast<typename MsgType::Description*>(rtn->description.get());
+        }
+        THROW InvalidMessageName("Message with name '%s' already exists, "
+            "in ModelDescription::newMessage().",
+            message_name.c_str());
+    }
+    MsgBruteForce::Description& newMessage(const std::string &message_name);
     /**
      * Returns a mutable reference to the named message, which can be used to configure the message
      * @param message_name Name used to refer to the desired message within the model description hierarchy
@@ -94,9 +101,22 @@ class ModelDescription {
      * @throws InvalidMessageName If a message with the name does not exist within the model description hierarchy
      * @see ModelDescription::getMessage(const std::string &) for the immutable version
      */
-    MessageDescription& Message(const std::string &message_name);
-    Spatial2DMessageDescription& Spatial2DMessage(const std::string &message_name);
-    Spatial3DMessageDescription& Spatial3DMessage(const std::string &message_name);
+    template<typename MsgType>
+    typename MsgType::Description& Message(const std::string &message_name) {
+        auto rtn = model->messages.find(message_name);
+        if (rtn != model->messages.end()) {
+            if (auto r = std::dynamic_pointer_cast<typename MsgType::Data>(rtn->second)) {
+                return *reinterpret_cast<typename MsgType::Description*>(r->description.get());
+            }
+            THROW InvalidMessageName("Message ('%s') is not of correct type, "
+                "in ModelDescription::Message().",
+                message_name.c_str());
+        }
+        THROW InvalidMessageName("Message ('%s') was not found, "
+            "in ModelDescription::Message().",
+            message_name.c_str());
+    }
+    MsgBruteForce::Description& Message(const std::string &message_name);
     /**
      * Returns a mutable reference to the environment description for the model description hierarchy
      * This can be used to configure environment properties
@@ -180,9 +200,22 @@ class ModelDescription {
      * @throws InvalidMessageName If a message with the name does not exist within the model description hierarchy
      * @see ModelDescription::Message(const std::string &) for the mutable version
      */
-    const MessageDescription& getMessage(const std::string &message_name) const;
-    const Spatial2DMessageDescription& getSpatial2DMessage(const std::string &message_name) const;
-    const Spatial3DMessageDescription& getSpatial3DMessage(const std::string &message_name) const;
+    template<typename MsgType>
+    const typename MsgType::Description& getMessage(const std::string &message_name) const {
+        auto rtn = model->messages.find(message_name);
+        if (rtn != model->messages.end()) {
+            if (auto r = std::dynamic_pointer_cast<typename MsgType::Data>(rtn->second)) {
+                return *reinterpret_cast<typename MsgType::Description*>(r->description.get());
+            }
+            THROW InvalidMessageName("Message ('%s') is not of correct type, "
+                "in ModelDescription::getMessage().",
+                message_name.c_str());
+        }
+        THROW InvalidMessageName("Message ('%s') was not found, "
+            "in ModelDescription::getMessage().",
+            message_name.c_str());
+    }
+    const MsgBruteForce::Description& getMessage(const std::string &message_name) const;
     /**
      * Returns a mutable reference to the environment description for the model description hierarchy
      * This can be used to configure environment properties
@@ -217,9 +250,16 @@ class ModelDescription {
      * @param message_name Name of the message to check
      * @return True when a message with the specified name exists within the model's hierarchy
      */
+    template<typename MsgType>
+    bool hasMessage(const std::string &message_name) const {
+        auto a = model->messages.find(message_name);
+        if (a != model->messages.end()) {
+            if (std::dynamic_pointer_cast<MsgType::Data>(a->second))
+                return true;
+        }
+        return false;
+    }
     bool hasMessage(const std::string &message_name) const;
-    bool hasSpatial2DMessage(const std::string &message_name) const;
-    bool hasSpatial3DMessage(const std::string &message_name) const;
     /**
      * @param name Name of the layer to check
      * @return True when a layer with the specified name exists within the model's hierarchy
@@ -245,17 +285,6 @@ class ModelDescription {
     ModelData::size_type getLayersCount() const;
 
  private:
-     template<typename TDesc, typename TData>
-     TDesc& newMessage(const std::string &message_name);
-
-     template<typename TDesc, typename TData>
-     TDesc& Message(const std::string &message_name);
-
-     template<typename TDesc, typename TData>
-     const TDesc& getMessage(const std::string &message_name) const;
-
-     template<typename TData>
-     bool hasMessage(const std::string &message_name) const;
     /**
      * The class which stores all of the model hierarchies data.
      */

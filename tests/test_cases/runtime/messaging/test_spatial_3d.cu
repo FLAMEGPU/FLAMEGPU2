@@ -62,7 +62,7 @@ TEST(Spatial3DMsgTest, Mandatory) {
     // Construct model
     ModelDescription model("Spatial3DMsgTestModel");
     {   // Location message
-        Spatial3DMessageDescription &message = model.newSpatial3DMessage("location");
+        MsgSpatial3D::Description &message = model.newMessage<MsgSpatial3D>("location");
         message.setMin(0, 0, 0);
         message.setMax(5, 5, 5);
         message.setRadius(1);
@@ -200,7 +200,7 @@ TEST(Spatial3DMsgTest, Optional) {
     // Construct model
     ModelDescription model("Spatial3DMsgTestModel");
     {   // Location message
-        Spatial3DMessageDescription &message = model.newSpatial3DMessage("location");
+        MsgSpatial3D::Description &message = model.newMessage<MsgSpatial3D>("location");
         message.setMin(0, 0, 0);
         message.setMax(5, 5, 5);
         message.setRadius(1);

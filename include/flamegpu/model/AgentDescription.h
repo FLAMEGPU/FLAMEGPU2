@@ -8,10 +8,10 @@
 #include <vector>
 #include <set>
 
+#include "flamegpu/model/Variable.h"
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/pop/AgentPopulation.h"
 class AgentFunctionDescription;
-class MessageDescription;
 struct ModelData;
 struct AgentData;
 
@@ -222,7 +222,7 @@ void AgentDescription::newVariable(const std::string &variable_name) {
     // Array length 0 makes no sense
     static_assert(N > 0, "A variable cannot have 0 elements.");
     if (agent->variables.find(variable_name) == agent->variables.end()) {
-        agent->variables.emplace(variable_name, ModelData::Variable(N, T()));
+        agent->variables.emplace(variable_name, Variable(N, T()));
         return;
     }
     THROW InvalidAgentVar("Agent ('%s') already contains variable '%s', "

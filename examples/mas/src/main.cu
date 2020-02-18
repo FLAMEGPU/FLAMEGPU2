@@ -124,7 +124,7 @@ int main(int argc, const char* argv[]) {
     circle2_agent.newVariable<float>("y");
 
     // same name ?
-    MessageDescription &location1_message = flame_model.newMessage("location1");
+    MsgBruteForce::Description &location1_message = flame_model.newMessage("location1");
     location1_message.newVariable<float>("x");
     location1_message.newVariable<float>("y");
     /*

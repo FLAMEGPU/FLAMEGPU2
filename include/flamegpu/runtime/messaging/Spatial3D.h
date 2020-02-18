@@ -1,13 +1,15 @@
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_SPATIAL3D_H_
 #define INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_SPATIAL3D_H_
 
-#include <algorithm>
+#include <memory>
+#include <string>
 
-#include "flamegpu/model/ModelData.h"
-#include "flamegpu/runtime/messaging.h"
 #include "flamegpu/gpu/CUDAMessage.h"
-
+#include "flamegpu/runtime/messaging/None.h"
+#include "flamegpu/runtime/messaging/BruteForce.h"
+#include "flamegpu/runtime/messaging/Spatial2D.h"
 #include "flamegpu/runtime/cuRVE/curve.h"
+
 
 /**
  * 3D Continuous spatial messaging functionality
@@ -24,8 +26,10 @@ class MsgSpatial3D {
     typedef MsgNone::size_type size_type;
 
  public:
-    class Message;   // Forward declare inner classes
-    class iterator;  // Forward declare inner classes
+    class Message;      // Forward declare inner classes
+    class iterator;     // Forward declare inner classes
+    struct Data;        // Forward declare inner classes
+    class Description;  // Forward declare inner classes
     /**
      * Basic class to group 3 dimensional bin coordinates
      * Would use glm::ivec3, but project does not currently have glm
@@ -347,7 +351,7 @@ class MsgSpatial3D {
         explicit CUDAModelHandler(CUDAMessage &a)
          : MsgSpecialisationHandler()
          , sim_message(a) {
-             const Spatial3DMessageData &d = (const Spatial3DMessageData &)a.getMessageDescription();
+             const Data &d = (const Data &)a.getMessageDescription();
              hd_data.radius = d.radius;
              hd_data.min[0] = d.minX;
              hd_data.min[1] = d.minY;
@@ -443,6 +447,89 @@ class MsgSpatial3D {
          * Owning CUDAMessage, provides access to message storage etc
          */
         CUDAMessage &sim_message;
+    };
+
+    struct Data : public MsgSpatial2D::Data {
+        friend class ModelDescription;
+        friend struct ModelData;
+        float minZ;
+        float maxZ;
+        virtual ~Data() = default;
+
+        std::unique_ptr<MsgSpecialisationHandler> getSpecialisationHander(CUDAMessage &owner) const override;
+
+        /**
+        * Used internally to validate that the corresponding Msg type is attached via the agent function shim.
+        * @return The std::type_index of the Msg type which must be used.
+        */
+        std::type_index getType() const override;
+
+     protected:
+        Data *clone(ModelData *const newParent) override;
+        /**
+        * Copy constructor
+        * This is unsafe, should only be used internally, use clone() instead
+        */
+        Data(ModelData *const, const Data &other);
+        /**
+        * Normal constructor, only to be called by ModelDescription
+        */
+        Data(ModelData *const, const std::string &message_name);
+    };
+
+    class Description : public MsgBruteForce::Description {
+        /**
+        * Data store class for this description, constructs instances of this class
+        */
+        friend struct Data;
+
+     protected:
+        /**
+        * Constructors
+        */
+        Description(ModelData *const _model, Data *const data);
+        /**
+        * Default copy constructor, not implemented
+        */
+        Description(const Description &other_message) = delete;
+        /**
+        * Default move constructor, not implemented
+        */
+        Description(Description &&other_message) noexcept = delete;
+        /**
+        * Default copy assignment, not implemented
+        */
+        Description& operator=(const Description &other_message) = delete;
+        /**
+        * Default move assignment, not implemented
+        */
+        Description& operator=(Description &&other_message) noexcept = delete;
+
+     public:
+        void setRadius(const float &r);
+        void setMinX(const float &x);
+        void setMinY(const float &y);
+        void setMinZ(const float &z);
+        void setMin(const float &x, const float &y, const float &z);
+        void setMaxX(const float &x);
+        void setMaxY(const float &y);
+        void setMaxZ(const float &z);
+        void setMax(const float &x, const float &y, const float &z);
+
+        float &Radius();
+        float &MinX();
+        float &MinY();
+        float &MinZ();
+        float &MaxX();
+        float &MaxY();
+        float &MaxZ();
+        float getRadius() const;
+        float getMinX() const;
+        float getMinY() const;
+        float getMinZ() const;
+        float getMaxX() const;
+        float getMaxY() const;
+        float getMaxZ() const;
     };
 };
 

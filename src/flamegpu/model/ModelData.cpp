@@ -1,9 +1,9 @@
 #include "flamegpu/model/ModelData.h"
 #include "flamegpu/model/EnvironmentDescription.h"
 #include "flamegpu/model/AgentDescription.h"
-#include "flamegpu/model/MessageDescription.h"
 #include "flamegpu/model/AgentFunctionDescription.h"
 #include "flamegpu/model/LayerDescription.h"
+#include "flamegpu/runtime/messaging/BruteForce.h"
 
 const char *ModelData::DEFAULT_STATE = "default";
 
@@ -25,12 +25,6 @@ AgentData::AgentData(ModelData *const model, const std::string &agent_name)
     states.insert(ModelData::DEFAULT_STATE);
 }
 
-MessageData::MessageData(ModelData *const model, const std::string &message_name)
-    : description(new MessageDescription(model, this))
-    , name(message_name)
-    , optional_outputs(0) { }
-
-MessageData::~MessageData() {}
 
 AgentFunctionData::AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string &function_name, AgentFunctionWrapper *agent_function, const std::type_index &in_type, const std::type_index &out_type)
     : func(agent_function)
@@ -49,26 +43,6 @@ LayerData::LayerData(ModelData *const model, const std::string &layer_name, cons
     , name(layer_name)
     , index(layer_index) { }
 
-Spatial2DMessageData::Spatial2DMessageData(ModelData *const model, const std::string &message_name)
-    : MessageData(model, message_name)
-    , radius(NAN)
-    , minX(NAN)
-    , minY(NAN)
-    , maxX(NAN)
-    , maxY(NAN) {
-    description = std::unique_ptr<Spatial2DMessageDescription>(new Spatial2DMessageDescription(model, this));
-    description->newVariable<float>("x");
-    description->newVariable<float>("y");
-}
-
-Spatial3DMessageData::Spatial3DMessageData(ModelData *const model, const std::string &message_name)
-    : Spatial2DMessageData(model, message_name)
-    , minZ(NAN)
-    , maxZ(NAN) {
-    description = std::unique_ptr<MessageDescription>(new Spatial3DMessageDescription(model, this));
-    description->newVariable<float>("z");
-}
-
 /**
  * Copy Constructors
  */
@@ -85,7 +59,7 @@ ModelData::ModelData(const ModelData &other)
     , name(other.name) {
     // Manually copy construct maps of shared ptr
     for (const auto m : other.messages) {
-        messages.emplace(m.first, std::shared_ptr<MessageData>(m.second->clone(this)));  // Need to convert this to shared_ptr, how to force shared copy construct?
+        messages.emplace(m.first, std::shared_ptr<MsgBruteForce::Data>(m.second->clone(this)));  // Need to convert this to shared_ptr, how to force shared copy construct?
     }
     for (const auto a : other.agents) {
         auto b = std::shared_ptr<AgentData>(new AgentData(this, *a.second));
@@ -117,11 +91,6 @@ AgentData::AgentData(ModelData *const model, const AgentData &other)
     , name(other.name)
     , keepDefaultState(other.keepDefaultState) {
 }
-MessageData::MessageData(ModelData *const model, const MessageData &other)
-    : variables(other.variables)
-    , description(model ? new MessageDescription(model, this) : nullptr)
-    , name(other.name)
-    , optional_outputs(other.optional_outputs) { }
 AgentFunctionData::AgentFunctionData(ModelData *const model, std::shared_ptr<AgentData> _parent, const AgentFunctionData &other)
     : func(other.func)
     , initial_state(other.initial_state)
@@ -175,53 +144,7 @@ LayerData::LayerData(ModelData *const model, const LayerData &other)
     next_agent_fn: {}
     }
 }
-Spatial2DMessageData::Spatial2DMessageData(ModelData *const model, const Spatial2DMessageData &other)
-    : MessageData(model, other)
-    , radius(other.radius)
-    , minX(other.minX)
-    , minY(other.minY)
-    , maxX(other.maxX)
-    , maxY(other.maxY) {
-    description = std::unique_ptr<Spatial2DMessageDescription>(model ? new Spatial2DMessageDescription(model, this) : nullptr);
-    if (isnan(radius)) {
-        THROW InvalidMessage("Radius has not been set in spatial message '%s'\n", other.name.c_str());
-    }
-    if (isnan(minX)) {
-        THROW InvalidMessage("Environment minimum x bound has not been set in spatial message '%s'\n", other.name.c_str());
-    }
-    if (isnan(minY)) {
-        THROW InvalidMessage("Environment minimum y bound has not been set in spatial message '%s'\n", other.name.c_str());
-    }
-    if (isnan(maxX)) {
-        THROW InvalidMessage("Environment maximum x bound has not been set in spatial message '%s'\n", other.name.c_str());
-    }
-    if (isnan(maxY)) {
-        THROW InvalidMessage("Environment maximum y bound has not been set in spatial message '%s'\n", other.name.c_str());
-    }
-}
 
-Spatial3DMessageData::Spatial3DMessageData(ModelData *const model, const Spatial3DMessageData &other)
-    : Spatial2DMessageData(model, other)
-    , minZ(other.minZ)
-    , maxZ(other.maxZ) {
-    description = std::unique_ptr<MessageDescription>(model ? new Spatial3DMessageDescription(model, this) : nullptr);
-    if (isnan(minZ)) {
-        THROW InvalidMessage("Environment minimum z bound has not been set in spatial message '%s'\n", other.name.c_str());
-    }
-    if (isnan(maxZ)) {
-        THROW InvalidMessage("Environment maximum z bound has not been set in spatial message '%s'\n", other.name.c_str());
-    }
-}
-
-MessageData *MessageData::clone(ModelData *const newParent) {
-    return new MessageData(newParent, *this);
-}
-Spatial2DMessageData *Spatial2DMessageData::clone(ModelData *const newParent) {
-    return new Spatial2DMessageData(newParent, *this);
-}
-Spatial3DMessageData *Spatial3DMessageData::clone(ModelData *const newParent) {
-    return new Spatial3DMessageData(newParent, *this);
-}
 
 bool ModelData::operator==(const ModelData& rhs) const {
     if (this == &rhs)  // They point to same object
@@ -325,29 +248,6 @@ bool AgentData::operator==(const AgentData& rhs) const {
     return false;
 }
 bool AgentData::operator!=(const AgentData& rhs) const {
-    return !operator==(rhs);
-}
-bool MessageData::operator==(const MessageData& rhs) const {
-    if (this == &rhs)  // They point to same object
-        return true;
-    if (name == rhs.name
-        && variables.size() == rhs.variables.size()) {
-        {  // Compare variables
-            for (auto &v : variables) {
-                auto _v = rhs.variables.find(v.first);
-                if (_v == rhs.variables.end())
-                    return false;
-                if (v.second.type_size != _v->second.type_size
-                    || v.second.type != _v->second.type
-                    || v.second.elements != _v->second.elements)
-                    return false;
-            }
-        }
-        return true;
-    }
-    return false;
-}
-bool MessageData::operator!=(const MessageData& rhs) const {
     return !operator==(rhs);
 }
 bool AgentFunctionData::operator==(const AgentFunctionData& rhs) const {

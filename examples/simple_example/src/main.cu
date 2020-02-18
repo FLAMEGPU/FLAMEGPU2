@@ -89,7 +89,7 @@ int main(void) {
 
 
     // location message
-    MessageDescription &location_message = flame_model.newMessage("location");
+    MsgBruteForce::Description &location_message = flame_model.newMessage("location");
     location_message.newVariable<float>("x");
     location_message.newVariable<float>("y");
 

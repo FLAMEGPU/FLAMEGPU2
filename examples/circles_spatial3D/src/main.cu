@@ -79,7 +79,7 @@ int main(int argc, const char ** argv) {
     ModelDescription model("Circles_BruteForce_example");
 
     {   // Location message
-        Spatial3DMessageDescription &message = model.newSpatial3DMessage("location");
+        MsgSpatial3D::Description &message = model.newMessage<MsgSpatial3D>("location");
         message.newVariable<int>("id");
         const float max_bound = static_cast<float>(floor(cbrt(AGENT_COUNT)));
         message.setRadius(1.0f);

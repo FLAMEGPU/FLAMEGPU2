@@ -15,7 +15,7 @@
 #include "flamegpu/gpu/CUDAMessageList.h"
 #include "flamegpu/gpu/CUDAErrorChecking.h"
 
-#include "flamegpu/model/MessageDescription.h"
+#include "flamegpu/runtime/messaging/BruteForce.h"
 #include "flamegpu/model/AgentFunctionDescription.h"
 #include "flamegpu/runtime/cuRVE/curve.h"
 #include "flamegpu/model/AgentDescription.h"
@@ -34,7 +34,7 @@
 * CUDAMessage class
 * @brief allocates the hash table/list for message variables and copy the list to device
 */
-CUDAMessage::CUDAMessage(const MessageData& description)
+CUDAMessage::CUDAMessage(const MsgBruteForce::Data& description)
     : message_description(description)
     , message_count(0)
     , max_list_size(0)
@@ -57,7 +57,7 @@ CUDAMessage::~CUDAMessage(void) {
 * @param none
 * @return MessageDescription object
 */
-const MessageData& CUDAMessage::getMessageDescription() const {
+const MsgBruteForce::Data& CUDAMessage::getMessageDescription() const {
     return message_description;
 }
 

@@ -1,7 +1,6 @@
 #include "flamegpu/model/AgentDescription.h"
 
 #include "flamegpu/model/AgentFunctionDescription.h"
-#include "flamegpu/model/MessageDescription.h"
 #include "flamegpu/exception/FGPUException.h"
 
 /**

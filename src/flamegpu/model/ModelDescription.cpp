@@ -1,9 +1,9 @@
 #include "flamegpu/model/ModelDescription.h"
 
 #include "flamegpu/model/AgentDescription.h"
-#include "flamegpu/model/MessageDescription.h"
 #include "flamegpu/model/LayerDescription.h"
 #include "flamegpu/exception/FGPUException.h"
+#include "flamegpu/runtime/messaging/BruteForce.h"
 
 /**
 * Constructors
@@ -40,62 +40,11 @@ AgentDescription& ModelDescription::Agent(const std::string &agent_name) {
         agent_name.c_str());
 }
 
-MessageDescription& ModelDescription::newMessage(const std::string &message_name) {
-    if (!hasMessage(message_name)) {
-        auto rtn = std::shared_ptr<MessageData>(new MessageData(model, message_name));
-        model->messages.emplace(message_name, rtn);
-        return *rtn->description;
-    }
-    THROW InvalidMessageName("Message with name '%s' already exists, "
-        "in ModelDescription::newMessage().",
-        message_name.c_str());
+MsgBruteForce::Description& ModelDescription::newMessage(const std::string &message_name) {
+    return newMessage<MsgBruteForce>(message_name);
 }
-template<typename TDesc, typename TData>
-TDesc& ModelDescription::newMessage(const std::string &message_name) {
-    if (!hasMessage(message_name)) {
-        auto rtn = std::shared_ptr<TData>(new TData(model, message_name));
-        model->messages.emplace(message_name, rtn);
-        return *reinterpret_cast<TDesc*>(rtn->description.get());
-    }
-    THROW InvalidMessageName("Message with name '%s' already exists, "
-        "in ModelDescription::newMessage().",
-        message_name.c_str());
-}
-Spatial2DMessageDescription& ModelDescription::newSpatial2DMessage(const std::string &message_name) {
-    return newMessage<Spatial2DMessageDescription, Spatial2DMessageData>(message_name);
-}
-Spatial3DMessageDescription& ModelDescription::newSpatial3DMessage(const std::string &message_name) {
-    return newMessage<Spatial3DMessageDescription, Spatial3DMessageData>(message_name);
-}
-MessageDescription& ModelDescription::Message(const std::string &message_name) {
-    auto rtn = model->messages.find(message_name);
-    if (rtn != model->messages.end())
-        return *rtn->second->description;
-    THROW InvalidMessageName("Message ('%s') was not found, "
-        "in ModelDescription::Message().",
-        message_name.c_str());
-}
-
-template<typename TDesc, typename TData>
-TDesc& ModelDescription::Message(const std::string &message_name) {
-    auto rtn = model->messages.find(message_name);
-    if (rtn != model->messages.end()) {
-        if (auto r = std::dynamic_pointer_cast<TData>(rtn->second)) {
-            return *reinterpret_cast<TDesc*>(r->description.get());
-        }
-        THROW InvalidMessageName("Message ('%s') is not of correct type, "
-            "in ModelDescription::Message().",
-            message_name.c_str());
-    }
-    THROW InvalidMessageName("Message ('%s') was not found, "
-        "in ModelDescription::Message().",
-        message_name.c_str());
-}
-Spatial2DMessageDescription& ModelDescription::Spatial2DMessage(const std::string &message_name) {
-    return Message<Spatial2DMessageDescription, Spatial2DMessageData>(message_name);
-}
-Spatial3DMessageDescription& ModelDescription::Spatial3DMessage(const std::string &message_name) {
-    return Message<Spatial3DMessageDescription, Spatial3DMessageData>(message_name);
+MsgBruteForce::Description& ModelDescription::Message(const std::string &message_name) {
+    return Message<MsgBruteForce>(message_name);
 }
 
 LayerDescription& ModelDescription::newLayer(const std::string &name) {
@@ -180,47 +129,8 @@ const AgentDescription& ModelDescription::getAgent(const std::string &agent_name
         "in ModelDescription::getAgent().",
         agent_name.c_str());
 }
-const MessageDescription& ModelDescription::getMessage(const std::string &message_name) const {
-    auto rtn = model->messages.find(message_name);
-    if (rtn != model->messages.end())
-        return *rtn->second->description;
-    THROW InvalidMessageVar("Message ('%s') was not found, "
-        "in ModelDescription::getMessage().",
-        message_name.c_str());
-}
-
-template<typename TDesc, typename TData>
-const TDesc& ModelDescription::getMessage(const std::string &message_name) const {
-    auto rtn = model->messages.find(message_name);
-    if (rtn != model->messages.end()) {
-        if (auto r = std::dynamic_pointer_cast<TData>(rtn->second)) {
-            return *reinterpret_cast<TDesc*>(r->description.get());
-        }
-        THROW InvalidMessageName("Message ('%s') is not of correct type, "
-            "in ModelDescription::getMessage().",
-            message_name.c_str());
-    }
-    THROW InvalidMessageName("Message ('%s') was not found, "
-        "in ModelDescription::getMessage().",
-        message_name.c_str());
-}
-
-const Spatial2DMessageDescription& ModelDescription::getSpatial2DMessage(const std::string &message_name) const {
-    return getMessage<Spatial2DMessageDescription, Spatial2DMessageData>(message_name);
-}
-const Spatial3DMessageDescription& ModelDescription::getSpatial3DMessage(const std::string &message_name) const {
-    auto rtn = model->messages.find(message_name);
-    if (rtn != model->messages.end()) {
-        if (auto r = std::dynamic_pointer_cast<Spatial3DMessageData>(rtn->second)) {
-            return *reinterpret_cast<Spatial3DMessageDescription*>(r->description.get());
-        }
-        THROW InvalidMessageName("Message ('%s') is not of type Spatial2D, "
-            "in ModelDescription::getSpatial3DMessage().",
-            message_name.c_str());
-    }
-    THROW InvalidMessageName("Message ('%s') was not found, "
-        "in ModelDescription::getSpatial3DMessage().",
-        message_name.c_str());
+const MsgBruteForce::Description& ModelDescription::getMessage(const std::string &message_name) const {
+    return getMessage<MsgBruteForce>(message_name);
 }
 const EnvironmentDescription& ModelDescription::getEnvironment() const {
     return *model->environment;
@@ -252,21 +162,6 @@ bool ModelDescription::hasAgent(const std::string &agent_name) const {
 }
 bool ModelDescription::hasMessage(const std::string &message_name) const {
     return model->messages.find(message_name) != model->messages.end();
-}
-template<typename TData>
-bool ModelDescription::hasMessage(const std::string &message_name) const {
-    auto a = model->messages.find(message_name);
-    if (a != model->messages.end()) {
-        if (std::dynamic_pointer_cast<TData>(a->second))
-            return true;
-    }
-    return false;
-}
-bool ModelDescription::hasSpatial2DMessage(const std::string &message_name) const {
-    return hasMessage<Spatial2DMessageData>(message_name);
-}
-bool ModelDescription::hasSpatial3DMessage(const std::string &message_name) const {
-    return hasMessage<Spatial3DMessageData>(message_name);
 }
 bool ModelDescription::hasLayer(const std::string &name) const {
     if (!name.empty()) {  // Can't search for no name, multiple layers might be nameless

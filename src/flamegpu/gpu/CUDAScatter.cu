@@ -56,7 +56,7 @@ __global__ void scatter_generic(
 
 unsigned int CUDAScatter::scatter(
     Type messageOrAgent,
-    const ModelData::VariableMap &vars,
+    const VariableMap &vars,
     const std::map<std::string, void*> &in,
     const std::map<std::string, void*> &out,
     const unsigned int &itemCount) {
@@ -123,7 +123,7 @@ __global__ void pbm_reorder_generic(
 }
 
 void CUDAScatter::pbm_reorder(
-    const ModelData::VariableMap &vars,
+    const VariableMap &vars,
     const std::map<std::string, void*> &in,
     const std::map<std::string, void*> &out,
     const unsigned int &itemCount,

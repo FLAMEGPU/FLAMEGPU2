@@ -59,7 +59,7 @@ FLAMEGPU_AGENT_FUNCTION(InFunction2, MsgBruteForce, MsgNone) {
  */
 TEST(TestMessage_BruteForce, Mandatory1) {
     ModelDescription m(MODEL_NAME);
-    MessageDescription &msg = m.newMessage(MESSAGE_NAME);
+    MsgBruteForce::Description &msg = m.newMessage(MESSAGE_NAME);
     msg.newVariable<int>("x");
     AgentDescription &a = m.newAgent(AGENT_NAME);
     a.newVariable<int>("x");
@@ -107,7 +107,7 @@ TEST(TestMessage_BruteForce, Mandatory1) {
 #include "flamegpu/gpu/CUDAScanCompaction.h"
 TEST(TestMessage_BruteForce, Mandatory2) {
     ModelDescription m(MODEL_NAME);
-    MessageDescription &msg = m.newMessage(MESSAGE_NAME);
+    MsgBruteForce::Description &msg = m.newMessage(MESSAGE_NAME);
     msg.newVariable<int>("x");
     AgentDescription &a = m.newAgent(AGENT_NAME);
     a.newVariable<int>("x");
@@ -159,7 +159,7 @@ TEST(TestMessage_BruteForce, Mandatory2) {
  */
 TEST(TestMessage_BruteForce, Optional1) {
     ModelDescription m(MODEL_NAME);
-    MessageDescription &msg = m.newMessage(MESSAGE_NAME);
+    MsgBruteForce::Description &msg = m.newMessage(MESSAGE_NAME);
     msg.newVariable<int>("x");
     AgentDescription &a = m.newAgent(AGENT_NAME);
     a.newVariable<int>("x");
@@ -206,7 +206,7 @@ TEST(TestMessage_BruteForce, Optional1) {
 }
 TEST(TestMessage_BruteForce, Optional2) {
     ModelDescription m(MODEL_NAME);
-    MessageDescription &msg = m.newMessage(MESSAGE_NAME);
+    MsgBruteForce::Description &msg = m.newMessage(MESSAGE_NAME);
     msg.newVariable<int>("x");
     AgentDescription &a = m.newAgent(AGENT_NAME);
     a.newVariable<int>("x");

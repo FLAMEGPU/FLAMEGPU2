@@ -33,7 +33,7 @@ FLAMEGPU_AGENT_FUNCTION(sample_agentfn, MsgNone, MsgBruteForce) {
 TEST(MessageTest, MessageCheck) {
     GTEST_COUT << "Testing Message Name and Size, Type, and Number .." << std::endl;
     ModelDescription model("model");
-    MessageDescription &location_message = model.newMessage("location");
+    MsgBruteForce::Description &location_message = model.newMessage("location");
 
    /**
      * @brief      Checks the number of message name
@@ -105,7 +105,7 @@ TEST(MessageTest, MessageFunctionCheck) {
 
     AgentDescription &circle_agent = flame_model.newAgent("circle");
 
-    MessageDescription &location_message = flame_model.newMessage("location");
+    MsgBruteForce::Description &location_message = flame_model.newMessage("location");
 
     AgentFunctionDescription &output_data = circle_agent.newFunction("output_data", sample_agentfn);
     output_data.setMessageOutput(location_message);

@@ -12,7 +12,6 @@
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/model/AgentFunctionDescription.h"
-#include "flamegpu/model/MessageDescription.h"
 #include "flamegpu/model/EnvironmentDescription.h"
 #include "flamegpu/model/LayerDescription.h"
 #include "flamegpu/pop/AgentPopulation.h"

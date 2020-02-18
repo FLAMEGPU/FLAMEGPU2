@@ -17,6 +17,7 @@
 
 // include sub classes
 #include "flamegpu/gpu/CUDAMessageList.h"
+#include "flamegpu/runtime/messaging/BruteForce.h"
 
 // forward declare classes from other modules
 
@@ -35,7 +36,7 @@ class CUDAMessage {
       * Allocates enough memory for each variable within the provided MessageData
       * @param description The message to represent
       */
-    explicit CUDAMessage(const MessageData& description);
+    explicit CUDAMessage(const MsgBruteForce::Data& description);
     /**
      * Destructor, releases CUDA memory
      */
@@ -43,7 +44,7 @@ class CUDAMessage {
     /**
      * Return an immutable reference to the message description represented by the CUDAMessage instance
      */
-    const MessageData& getMessageDescription() const;
+    const MsgBruteForce::Data& getMessageDescription() const;
     /**
      * @return The currently allocated length of the message array (in the number of messages)
      */
@@ -100,7 +101,7 @@ class CUDAMessage {
      /**
       * Holds the definition of the message type represented by this CUDAMessage
       */
-    const MessageData& message_description;
+    const MsgBruteForce::Data& message_description;
     /**
      * Holds/Manages the cuda memory for each of the message variables
      */

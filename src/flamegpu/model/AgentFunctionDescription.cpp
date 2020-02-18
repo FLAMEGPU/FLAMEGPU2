@@ -1,5 +1,4 @@
 #include "flamegpu/model/AgentFunctionDescription.h"
-#include "flamegpu/model/MessageDescription.h"
 
 /**
  * Constructors
@@ -71,7 +70,7 @@ void AgentFunctionDescription::setMessageInput(const std::string &message_name) 
             model->name.c_str(), message_name.c_str());
     }
 }
-void AgentFunctionDescription::setMessageInput(MessageDescription &message) {
+void AgentFunctionDescription::setMessageInput(MsgBruteForce::Description &message) {
     if (message.model != function->description->model) {
         THROW DifferentModel("Attempted to use agent description from a different model, "
             "in AgentFunctionDescription::setAgentOutput()\n");
@@ -138,7 +137,7 @@ void AgentFunctionDescription::setMessageOutput(const std::string &message_name)
             model->name.c_str(), message_name.c_str());
     }
 }
-void AgentFunctionDescription::setMessageOutput(MessageDescription &message) {
+void AgentFunctionDescription::setMessageOutput(MsgBruteForce::Description &message) {
     if (message.model != function->description->model) {
         THROW DifferentModel("Attempted to use agent description from a different model, "
             "in AgentFunctionDescription::setAgentOutput()\n");
@@ -238,13 +237,13 @@ void AgentFunctionDescription::setAllowAgentDeath(const bool &has_death) {
     function->has_agent_death = has_death;
 }
 
-MessageDescription &AgentFunctionDescription::MessageInput() {
+MsgBruteForce::Description &AgentFunctionDescription::MessageInput() {
     if (auto m = function->message_input.lock())
         return *m->description;
     THROW OutOfBoundsException("Message input has not been set, "
         "in AgentFunctionDescription::MessageInput()\n");
 }
-MessageDescription &AgentFunctionDescription::MessageOutput() {
+MsgBruteForce::Description &AgentFunctionDescription::MessageOutput() {
     if (auto m = function->message_output.lock())
         return *m->description;
     THROW OutOfBoundsException("Message output has not been set, "
@@ -275,13 +274,13 @@ std::string AgentFunctionDescription::getInitialState() const {
 std::string AgentFunctionDescription::getEndState() const {
     return function->end_state;
 }
-const MessageDescription &AgentFunctionDescription::getMessageInput() const {
+const MsgBruteForce::Description &AgentFunctionDescription::getMessageInput() const {
     if (auto m = function->message_input.lock())
         return *m->description;
     THROW OutOfBoundsException("Message input has not been set, "
         "in AgentFunctionDescription::getMessageInput()\n");
 }
-const MessageDescription &AgentFunctionDescription::getMessageOutput() const {
+const MsgBruteForce::Description &AgentFunctionDescription::getMessageOutput() const {
     if (auto m = function->message_output.lock())
         return *m->description;
     THROW OutOfBoundsException("Message output has not been set, "

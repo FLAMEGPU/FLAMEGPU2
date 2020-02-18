@@ -9,7 +9,7 @@
 #include <cub/cub.cuh>
 #endif
 
-__device__ __forceinline__ MsgSpatial3D::GridPos3D getGridPosition(const MsgSpatial3D::MetaData *md, float x, float y, float z) {
+__device__ __forceinline__ MsgSpatial3D::GridPos3D getGridPosition3D(const MsgSpatial3D::MetaData *md, float x, float y, float z) {
     // Clamp each grid coord to 0<=x<dim
     int gridPos[3] = {
         static_cast<int>(floor((x / md->environmentWidth[0])*md->gridDim[0])),
@@ -23,12 +23,12 @@ __device__ __forceinline__ MsgSpatial3D::GridPos3D getGridPosition(const MsgSpat
     };
     return rtn;
 }
-__device__ __forceinline__ unsigned int getHash(const MsgSpatial3D::MetaData *md, const MsgSpatial3D::GridPos3D &xyz) {
+__device__ __forceinline__ unsigned int getHash3D(const MsgSpatial3D::MetaData *md, const MsgSpatial3D::GridPos3D &xyz) {
     // Bound gridPos to gridDimensions
     unsigned int gridPos[3] = {
-        xyz.x < 0 ? 0 : (xyz.x >= md->gridDim[0] - 1 ? md->gridDim[0] - 1 : xyz.x),  // Only x should ever be out of bounds here
-        xyz.y,  // xyz.y < 0 ? 0 : (xyz.y >= md->gridDim[1] - 1 ? md->gridDim[1] - 1 : xyz.y),
-        xyz.z,  // xyz.z < 0 ? 0 : (xyz.z >= md->gridDim[2] - 1 ? md->gridDim[2] - 1 : xyz.z)
+        (unsigned int)(xyz.x < 0 ? 0 : (xyz.x >= md->gridDim[0] - 1 ? md->gridDim[0] - 1 : xyz.x)),  // Only x should ever be out of bounds here
+        (unsigned int) xyz.y,  // xyz.y < 0 ? 0 : (xyz.y >= md->gridDim[1] - 1 ? md->gridDim[1] - 1 : xyz.y),
+        (unsigned int) xyz.z,  // xyz.z < 0 ? 0 : (xyz.z >= md->gridDim[2] - 1 ? md->gridDim[2] - 1 : xyz.z)
     };
     // Compute hash (effectivley an index for to a bin within the partitioning grid in this case)
     return (unsigned int)(
@@ -55,7 +55,7 @@ __device__ MsgSpatial3D::In::Filter::Filter(const MetaData* _metadata, const Cur
     loc[0] = x;
     loc[1] = y;
     loc[2] = z;
-    cell = getGridPosition(_metadata, x, y, z);
+    cell = getGridPosition3D(_metadata, x, y, z);
 }
 __device__ MsgSpatial3D::In::Filter::Message& MsgSpatial3D::In::Filter::Message::operator++() {
     cell_index++;
@@ -69,8 +69,8 @@ __device__ MsgSpatial3D::In::Filter::Message& MsgSpatial3D::In::Filter::Message:
             int absolute_cell[2] = { _parent.cell.y + relative_cell[0], _parent.cell.z + relative_cell[1] };
             // Skip the strip if it is completely out of bounds
             if (absolute_cell[0] >= 0 && absolute_cell[1] >= 0 && absolute_cell[0] < _parent.metadata->gridDim[1] && absolute_cell[1] < _parent.metadata->gridDim[2]) {
-                unsigned int start_hash = getHash(_parent.metadata, { _parent.cell.x - 1, absolute_cell[0], absolute_cell[1] });
-                unsigned int end_hash = getHash(_parent.metadata, { _parent.cell.x + 1, absolute_cell[0], absolute_cell[1] });
+                unsigned int start_hash = getHash3D(_parent.metadata, { _parent.cell.x - 1, absolute_cell[0], absolute_cell[1] });
+                unsigned int end_hash = getHash3D(_parent.metadata, { _parent.cell.x + 1, absolute_cell[0], absolute_cell[1] });
                 // Lookup start and end indicies from PBM
                 cell_index = _parent.metadata->PBM[start_hash];
                 cell_index_max = _parent.metadata->PBM[end_hash + 1];
@@ -99,8 +99,8 @@ __global__ void atomicHistogram3D(
     // Kill excess threads
     if (index >= message_count) return;
 
-    MsgSpatial3D::GridPos3D gridPos = getGridPosition(md, x[index], y[index], z[index]);
-    unsigned int hash = getHash(md, gridPos);
+    MsgSpatial3D::GridPos3D gridPos = getGridPosition3D(md, x[index], y[index], z[index]);
+    unsigned int hash = getHash3D(md, gridPos);
     bin_index[index] = hash;
     unsigned int bin_idx = atomicInc((unsigned int*)&pbm_counts[hash], 0xFFFFFFFF);
     bin_sub_index[index] = bin_idx;
@@ -159,4 +159,161 @@ void MsgSpatial3D::CUDAModelHandler::resizeKeysVals(const unsigned int &newSize)
         gpuErrchk(cudaMalloc(&d_keys, d_keys_vals_storage_bytes));
         gpuErrchk(cudaMalloc(&d_vals, d_keys_vals_storage_bytes));
     }
+}
+
+MsgSpatial3D::Data::Data(ModelData *const model, const std::string &message_name)
+    : MsgSpatial2D::Data(model, message_name)
+    , minZ(NAN)
+    , maxZ(NAN) {
+    description = std::unique_ptr<Description>(new Description(model, this));
+    description->newVariable<float>("z");
+}
+MsgSpatial3D::Data::Data(ModelData *const model, const Data &other)
+    : MsgSpatial2D::Data(model, other)
+    , minZ(other.minZ)
+    , maxZ(other.maxZ) {
+    description = std::unique_ptr<Description>(model ? new Description(model, this) : nullptr);
+    if (isnan(minZ)) {
+        THROW InvalidMessage("Environment minimum z bound has not been set in spatial message '%s'\n", other.name.c_str());
+    }
+    if (isnan(maxZ)) {
+        THROW InvalidMessage("Environment maximum z bound has not been set in spatial message '%s'\n", other.name.c_str());
+    }
+}
+MsgSpatial3D::Data *MsgSpatial3D::Data::clone(ModelData *const newParent) {
+    return new Data(newParent, *this);
+}
+std::unique_ptr<MsgSpecialisationHandler> MsgSpatial3D::Data::getSpecialisationHander(CUDAMessage &owner) const {
+    return std::unique_ptr<MsgSpecialisationHandler>(new CUDAModelHandler(owner));
+}
+std::type_index MsgSpatial3D::Data::getType() const { return std::type_index(typeid(MsgSpatial3D)); }
+
+MsgSpatial3D::Description::Description(ModelData *const _model, Data *const data)
+    : MsgBruteForce::Description(_model, data) { }
+
+void MsgSpatial3D::Description::setRadius(const float &r) {
+    if (r <= 0) {
+        THROW InvalidArgument("Spatial messaging radius must be a positive value, %f is not valid.", r);
+    }
+    reinterpret_cast<Data *>(message)->radius = r;
+}
+void MsgSpatial3D::Description::setMinX(const float &x) {
+    if (!isnan(reinterpret_cast<Data *>(message)->maxX) &&
+        x >= reinterpret_cast<Data *>(message)->maxX) {
+        THROW InvalidArgument("Spatial messaging min x bound must be lower than max bound, %f !< %f", x, reinterpret_cast<Data *>(message)->maxX);
+    }
+    reinterpret_cast<Data *>(message)->minX = x;
+}
+void MsgSpatial3D::Description::setMinY(const float &y) {
+    if (!isnan(reinterpret_cast<Data *>(message)->maxY) &&
+        y >= reinterpret_cast<Data *>(message)->maxY) {
+        THROW InvalidArgument("Spatial messaging min bound must be lower than max bound, %f !< %f", y, reinterpret_cast<Data *>(message)->maxY);
+    }
+    reinterpret_cast<Data *>(message)->minY = y;
+}
+void MsgSpatial3D::Description::setMinZ(const float &z) {
+    if (!isnan(reinterpret_cast<Data *>(message)->maxZ) &&
+        z >= reinterpret_cast<Data *>(message)->maxZ) {
+        THROW InvalidArgument("Spatial messaging min z bound must be lower than max bound, %f !< %f", z, reinterpret_cast<Data *>(message)->maxZ);
+    }
+    reinterpret_cast<Data *>(message)->minZ = z;
+}
+void MsgSpatial3D::Description::setMin(const float &x, const float &y, const float &z) {
+    if (!isnan(reinterpret_cast<Data *>(message)->maxX) &&
+        x >= reinterpret_cast<Data *>(message)->maxX) {
+        THROW InvalidArgument("Spatial messaging min x bound must be lower than max bound, %f !< %f", x, reinterpret_cast<Data *>(message)->maxX);
+    }
+    if (!isnan(reinterpret_cast<Data *>(message)->maxY) &&
+        y >= reinterpret_cast<Data *>(message)->maxY) {
+        THROW InvalidArgument("Spatial messaging min y bound must be lower than max bound, %f !< %f", y, reinterpret_cast<Data *>(message)->maxY);
+    }
+    if (!isnan(reinterpret_cast<Data *>(message)->maxZ) &&
+        z >= reinterpret_cast<Data *>(message)->maxZ) {
+        THROW InvalidArgument("Spatial messaging min z bound must be lower than max bound, %f !< %f", z, reinterpret_cast<Data *>(message)->maxZ);
+    }
+    reinterpret_cast<Data *>(message)->minX = x;
+    reinterpret_cast<Data *>(message)->minY = y;
+    reinterpret_cast<Data *>(message)->minZ = z;
+}
+void MsgSpatial3D::Description::setMaxX(const float &x) {
+    if (!isnan(reinterpret_cast<Data *>(message)->minX) &&
+        x <= reinterpret_cast<Data *>(message)->minX) {
+        THROW InvalidArgument("Spatial messaging max x bound must be greater than min bound, %f !> %f", x, reinterpret_cast<Data *>(message)->minX);
+    }
+    reinterpret_cast<Data *>(message)->maxX = x;
+}
+void MsgSpatial3D::Description::setMaxY(const float &y) {
+    if (!isnan(reinterpret_cast<Data *>(message)->minY) &&
+        y <= reinterpret_cast<Data *>(message)->minY) {
+        THROW InvalidArgument("Spatial messaging max y bound must be greater than min bound, %f !> %f", y, reinterpret_cast<Data *>(message)->minY);
+    }
+    reinterpret_cast<Data *>(message)->maxY = y;
+}
+void MsgSpatial3D::Description::setMaxZ(const float &z) {
+    if (!isnan(reinterpret_cast<Data *>(message)->minZ) &&
+        z <= reinterpret_cast<Data *>(message)->minZ) {
+        THROW InvalidArgument("Spatial messaging max z bound must be greater than min bound, %f !> %f", z, reinterpret_cast<Data *>(message)->minZ);
+    }
+    reinterpret_cast<Data *>(message)->maxZ = z;
+}
+void MsgSpatial3D::Description::setMax(const float &x, const float &y, const float &z) {
+    if (!isnan(reinterpret_cast<Data *>(message)->minX) &&
+        x <= reinterpret_cast<Data *>(message)->minX) {
+        THROW InvalidArgument("Spatial messaging max x bound must be greater than min bound, %f !> %f", x, reinterpret_cast<Data *>(message)->minX);
+    }
+    if (!isnan(reinterpret_cast<Data *>(message)->minY) &&
+        y <= reinterpret_cast<Data *>(message)->minY) {
+        THROW InvalidArgument("Spatial messaging max y bound must be greater than min bound, %f !> %f", y, reinterpret_cast<Data *>(message)->minY);
+    }
+    if (!isnan(reinterpret_cast<Data *>(message)->minZ) &&
+        z <= reinterpret_cast<Data *>(message)->minZ) {
+        THROW InvalidArgument("Spatial messaging max z bound must be greater than min bound, %f !> %f", z, reinterpret_cast<Data *>(message)->minZ);
+    }
+    reinterpret_cast<Data *>(message)->maxX = x;
+    reinterpret_cast<Data *>(message)->maxY = y;
+    reinterpret_cast<Data *>(message)->maxZ = z;
+}
+
+float &MsgSpatial3D::Description::Radius() {
+    return reinterpret_cast<Data *>(message)->radius;
+}
+float &MsgSpatial3D::Description::MinX() {
+    return reinterpret_cast<Data *>(message)->minX;
+}
+float &MsgSpatial3D::Description::MinY() {
+    return reinterpret_cast<Data *>(message)->minY;
+}
+float &MsgSpatial3D::Description::MinZ() {
+    return reinterpret_cast<Data *>(message)->minZ;
+}
+float &MsgSpatial3D::Description::MaxX() {
+    return reinterpret_cast<Data *>(message)->maxX;
+}
+float &MsgSpatial3D::Description::MaxY() {
+    return reinterpret_cast<Data *>(message)->maxY;
+}
+float &MsgSpatial3D::Description::MaxZ() {
+    return reinterpret_cast<Data *>(message)->maxZ;
+}
+
+float MsgSpatial3D::Description::getRadius() const {
+    return reinterpret_cast<Data *>(message)->radius;
+}
+float MsgSpatial3D::Description::getMinX() const {
+    return reinterpret_cast<Data *>(message)->minX;
+}
+float MsgSpatial3D::Description::getMinY() const {
+    return reinterpret_cast<Data *>(message)->minY;
+}
+float MsgSpatial3D::Description::getMinZ() const {
+    return reinterpret_cast<Data *>(message)->minZ;
+}
+float MsgSpatial3D::Description::getMaxX() const {
+    return reinterpret_cast<Data *>(message)->maxX;
+}
+float MsgSpatial3D::Description::getMaxY() const {
+    return reinterpret_cast<Data *>(message)->maxY;
+}
+float MsgSpatial3D::Description::getMaxZ() const {
+    return reinterpret_cast<Data *>(message)->maxZ;
 }
