@@ -149,4 +149,4 @@ namespace test_message_AppendTruncate {
             ASSERT_EQ(ai.getVariable<unsigned int>("count"), 2 * AGENT_COUNT);
         }
     }
-}
+}  // namespace test_message_AppendTruncate

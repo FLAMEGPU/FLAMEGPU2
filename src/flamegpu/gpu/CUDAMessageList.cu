@@ -24,10 +24,24 @@
 * CUDAMessageList class
 * @brief populates CUDA message map
 */
-CUDAMessageList::CUDAMessageList(CUDAMessage& cuda_message) : message(cuda_message) {
+CUDAMessageList::CUDAMessageList(CUDAMessage& cuda_message)
+    : message(cuda_message) {
     // allocate message lists
     allocateDeviceMessageList(d_list);
     allocateDeviceMessageList(d_swap_list);
+    try {  // On first run, will nullptr error
+        auto &cs = CUDAScatter::getInstance(0);  // Probably need to actually use stream here
+        {
+            auto &a = cuda_message.getReadList();
+            auto &_a = d_list;
+            cs.scatterAll(message.getMessageDescription().variables, a, _a, message.getMessageCount(), 0);
+        }
+        {  // Is copying writelist redundant?
+            auto &a = cuda_message.getWriteList();
+            auto &_a = d_swap_list;
+            cs.scatterAll(message.getMessageDescription().variables, a, _a, message.getMessageCount(), 0);
+        }
+    } catch(...) { }
 }
 
 /**
@@ -137,8 +151,7 @@ void CUDAMessageList::swap() {
 
 unsigned int CUDAMessageList::scatter(const unsigned int &newCount, const unsigned int &streamId, const bool &append) {
     CUDAScatter &scatter = CUDAScatter::getInstance(streamId);
-    if(append)
-    {
+    if (append) {
         unsigned int oldCount = message.getMessageCount();
         return oldCount + scatter.scatter(
             CUDAScatter::Type::Message,

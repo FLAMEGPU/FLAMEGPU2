@@ -216,12 +216,12 @@ void CUDAMessage::swap(bool isOptional, const unsigned int &newMsgCount, const u
         // Update count
         message_count = message_list->scatter(newMsgCount, streamId, !this->truncate_messagelist_flag);
     } else {
-        if(this->truncate_messagelist_flag || newMsgCount == 0) {  // newMsgCount == 0 is used by buildIndex() of spatial messaging.
+        if (this->truncate_messagelist_flag || newMsgCount == 0) {  // newMsgCount == 0 is used by buildIndex() of spatial messaging.
             message_count = newMsgCount;
             message_list->swap();
         } else {
             assert(message_count + newMsgCount <= max_list_size);
-            //We're appending so use our scatter kernel
+            // We're appending so use our scatter kernel
             message_count = message_list->scatterAll(newMsgCount, streamId);
         }
     }
