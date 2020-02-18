@@ -54,6 +54,20 @@ __global__ void scatter_generic(
         }
     }
 }
+__global__ void scatter_all_generic(
+    unsigned int threadCount,
+    CUDAScatter::ScatterData *scatter_data,
+    const unsigned int scatter_len,
+    const unsigned int &out_index_offset = 0) {
+    // global thread index
+    int index = (blockIdx.x*blockDim.x) + threadIdx.x;
+
+    if (index >= threadCount) return;
+
+    for (unsigned int i = 0; i < scatter_len; ++i) {
+        memcpy(scatter_data[i].out + ((out_index_offset + index) * scatter_data[i].typeLen), scatter_data[i].in + (index * scatter_data[i].typeLen), scatter_data[i].typeLen);
+    }
+}
 
 unsigned int CUDAScatter::scatter(
     Type messageOrAgent,
@@ -104,6 +118,39 @@ unsigned int CUDAScatter::scatter(
         gpuErrchk(cudaMemcpy(&rtn, flamegpu_internal::CUDAScanCompaction::hd_message_configs[streamId].d_ptrs.position + itemCount, sizeof(unsigned int), cudaMemcpyDeviceToHost));
     }
         return rtn;
+}
+
+unsigned int CUDAScatter::scatterAll(
+    const VariableMap &vars,
+    const std::map<std::string, void*> &in,
+    const std::map<std::string, void*> &out,
+    const unsigned int &itemCount,
+    const unsigned int &out_index_offset) {
+    int blockSize = 0;  // The launch configurator returned block size
+    int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
+    int gridSize = 0;  // The actual grid size needed, based on input size
+
+                       // calculate the grid block size for main agent function
+    cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, scatter_generic, 0, itemCount);
+    //! Round up according to CUDAAgent state list size
+    gridSize = (itemCount + blockSize - 1) / blockSize;
+    // for each variable, scatter from swap to regular
+    std::vector<ScatterData> sd;
+    for (const auto &v : vars) {
+        char *in_p = reinterpret_cast<char*>(in.at(v.first));
+        char *out_p = reinterpret_cast<char*>(out.at(v.first));
+        sd.push_back({ v.second.type_size, in_p, out_p });
+    }
+    resize(static_cast<unsigned int>(sd.size()));
+    // Important that sd.size() is still used here, incase allocated len (data_len) is bigger
+    gpuErrchk(cudaMemcpy(d_data, sd.data(), sizeof(ScatterData) * sd.size(), cudaMemcpyHostToDevice));
+    scatter_all_generic << <gridSize, blockSize >> > (
+        itemCount,
+        d_data, static_cast<unsigned int>(sd.size()),
+        out_index_offset);
+    gpuErrchkLaunch();
+    // Update count of live agents
+    return itemCount;
 }
 
 __global__ void pbm_reorder_generic(

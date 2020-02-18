@@ -212,7 +212,7 @@ bool CUDAAgentModel::step() {
                 std::string outpMessage_name = om->name;
                 CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
                 cuda_message.unmapRuntimeVariables(*func_des);
-                cuda_message.swap(func_des->message_output_optional, j);
+                cuda_message.swap(func_des->message_output_optional, cuda_agent.getStateSize(func_des->initial_state), j);
                 cuda_message.clearTruncateMessageListFlag();
                 cuda_message.setPBMConstructionRequiredFlag();
             }

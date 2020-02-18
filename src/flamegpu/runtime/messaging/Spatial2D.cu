@@ -155,7 +155,7 @@ void MsgSpatial2D::CUDAModelHandler::buildIndex() {
        // Copy messages from d_messages to d_messages_swap, in hash order
         auto &cs = CUDAScatter::getInstance(0);  // Choose proper stream_id in future!
         cs.pbm_reorder(this->sim_message.getMessageDescription().variables, this->sim_message.getReadList(), this->sim_message.getWriteList(), MESSAGE_COUNT, d_keys, d_vals, hd_data.PBM);
-        this->sim_message.swap(false, 0);  // Stream id is unused here
+        this->sim_message.swap(false, 0, 0);  // Stream id is unused here
     }
     {  // Fill PBM and Message Texture Buffers
        // gpuErrchk(cudaBindTexture(nullptr, d_texMessages, d_agents, sizeof(glm::vec4) * MESSAGE_COUNT));

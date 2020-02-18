@@ -35,6 +35,12 @@ class CUDAScatter {
         const std::map<std::string, void*> &out,
         const unsigned int &itemCount,
         const unsigned int &out_index_offset = 0);
+    unsigned int scatterAll(
+        const VariableMap &vars,
+        const std::map<std::string, void*> &in,
+        const std::map<std::string, void*> &out,
+        const unsigned int &itemCount,
+        const unsigned int &out_index_offset = 0);
     void pbm_reorder(
         const VariableMap &vars,
         const std::map<std::string, void*> &in,

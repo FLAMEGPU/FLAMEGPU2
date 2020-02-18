@@ -83,7 +83,6 @@ void CUDAMessage::resize(unsigned int newSize, const unsigned int &streamId) {
         zeroAllMessageData();
 // #endif
     }
-    message_count = newSize;  // This will be reduced down after function call if optional
 }
 
 
@@ -191,9 +190,9 @@ void CUDAMessage::unmapRuntimeVariables(const AgentFunctionData& func) const {
         curve.unregisterVariableByHash(var_hash + agent_hash + func_hash + message_hash);
     }
 }
-void CUDAMessage::swap(bool isOptional, const unsigned int &streamId) {
+void CUDAMessage::swap(bool isOptional, const unsigned int &newMsgCount, const unsigned int &streamId) {
     if (isOptional && message_description.optional_outputs > 0) {
-        if (message_count > flamegpu_internal::CUDAScanCompaction::hd_message_configs[streamId].cub_temp_size_max_list_size) {
+        if (newMsgCount > flamegpu_internal::CUDAScanCompaction::hd_message_configs[streamId].cub_temp_size_max_list_size) {
             if (flamegpu_internal::CUDAScanCompaction::hd_message_configs[streamId].hd_cub_temp) {
                 gpuErrchk(cudaFree(flamegpu_internal::CUDAScanCompaction::hd_message_configs[streamId].hd_cub_temp));
             }
@@ -212,12 +211,18 @@ void CUDAMessage::swap(bool isOptional, const unsigned int &streamId) {
             flamegpu_internal::CUDAScanCompaction::hd_message_configs[streamId].cub_temp_size,
             flamegpu_internal::CUDAScanCompaction::hd_message_configs[streamId].d_ptrs.scan_flag,
             flamegpu_internal::CUDAScanCompaction::hd_message_configs[streamId].d_ptrs.position,
-            message_count + 1);
+            newMsgCount + 1);
         // Scatter
         // Update count
-        message_count = message_list->scatter(streamId, false);
+        message_count = message_list->scatter(newMsgCount, streamId, !this->truncate_messagelist_flag);
     } else {
-        message_list->swap();
+        if(this->truncate_messagelist_flag) {
+            message_count = newMsgCount;
+            message_list->swap();
+        } else {
+            //We're appending so use our scatter kernel
+            message_list->scatterAll(newMsgCount, streamId);
+        }
     }
 }
 

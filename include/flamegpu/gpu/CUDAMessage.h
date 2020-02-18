@@ -82,8 +82,11 @@ class CUDAMessage {
     const CUDAMsgMap &getWriteList() { return message_list->getWriteList(); }
     /**
      * Swaps the two internal maps within message_list
+     * @param isOptional If optional newMsgCount will be reduced based on scan_flag[streamId]
+     * @param newMsgCount The number of output messages (including optional messages which were not output)
+     * @param streamId Index of stream specific structures used
      */
-    virtual void swap(bool isOptional, const unsigned int &streamId);
+    virtual void swap(bool isOptional, const unsigned int &newMsgCount, const unsigned int &streamId);
     void setTruncateMessageListFlag() { truncate_messagelist_flag = true; }
     void clearTruncateMessageListFlag() { truncate_messagelist_flag = false; }
     void setPBMConstructionRequiredFlag() { pbm_construction_required = true; }

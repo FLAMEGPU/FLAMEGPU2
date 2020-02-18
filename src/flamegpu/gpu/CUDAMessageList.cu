@@ -135,23 +135,32 @@ void CUDAMessageList::swap() {
     std::swap(d_list, d_swap_list);
 }
 
-unsigned int CUDAMessageList::scatter(const unsigned int &streamId, const bool &append) {
+unsigned int CUDAMessageList::scatter(const unsigned int &newCount, const unsigned int &streamId, const bool &append) {
     CUDAScatter &scatter = CUDAScatter::getInstance(streamId);
     if(append)
     {
-#error messagecount is overwritten before output, we need to recover old count!
-        unsigned int oldCount = ?;
+        unsigned int oldCount = message.getMessageCount();
         return oldCount + scatter.scatter(
             CUDAScatter::Type::Message,
             message.getMessageDescription().variables,
             d_swap_list, d_list,
-            message.getMessageCount(),
+            newCount,
             oldCount);
     } else {
         return scatter.scatter(
             CUDAScatter::Type::Message,
             message.getMessageDescription().variables,
             d_swap_list, d_list,
-            message.getMessageCount());
+            newCount,
+            0);
     }
+}
+unsigned int CUDAMessageList::scatterAll(const unsigned int &newCount, const unsigned int &streamId) {
+    CUDAScatter &scatter = CUDAScatter::getInstance(streamId);
+    unsigned int oldCount = message.getMessageCount();
+    return oldCount + scatter.scatterAll(
+        message.getMessageDescription().variables,
+        d_swap_list, d_list,
+        newCount,
+        oldCount);
 }
