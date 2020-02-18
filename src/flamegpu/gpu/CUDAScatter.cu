@@ -40,7 +40,7 @@ __global__ void scatter_generic(
     unsigned int *position,
     CUDAScatter::ScatterData *scatter_data,
     const unsigned int scatter_len,
-    const unsigned int &out_index_offset = 0) {
+    const unsigned int out_index_offset = 0) {
     // global thread index
     int index = (blockIdx.x*blockDim.x) + threadIdx.x;
 
@@ -58,12 +58,11 @@ __global__ void scatter_all_generic(
     unsigned int threadCount,
     CUDAScatter::ScatterData *scatter_data,
     const unsigned int scatter_len,
-    const unsigned int &out_index_offset = 0) {
+    const unsigned int out_index_offset = 0) {
     // global thread index
     int index = (blockIdx.x*blockDim.x) + threadIdx.x;
 
     if (index >= threadCount) return;
-
     for (unsigned int i = 0; i < scatter_len; ++i) {
         memcpy(scatter_data[i].out + ((out_index_offset + index) * scatter_data[i].typeLen), scatter_data[i].in + (index * scatter_data[i].typeLen), scatter_data[i].typeLen);
     }

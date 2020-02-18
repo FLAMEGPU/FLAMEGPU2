@@ -106,9 +106,11 @@ bool CUDAAgentModel::step() {
                 std::string outpMessage_name = om->name;
                 CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
                 // Resize message list if required
-                cuda_message.resize(cuda_agent.getStateSize(func_des->initial_state), j);
-                cuda_message.mapWriteRuntimeVariables(*func_des);
-                flamegpu_internal::CUDAScanCompaction::resizeMessages(cuda_agent.getStateSize(func_des->initial_state), j);
+                const unsigned int existingMessages = cuda_message.getTruncateMessageListFlag() ? 0 : cuda_message.getMessageCount();
+                const unsigned int newMessages = cuda_agent.getStateSize(func_des->initial_state);
+                cuda_message.resize(existingMessages + newMessages, j);
+                cuda_message.mapWriteRuntimeVariables(*func_des, newMessages);
+                flamegpu_internal::CUDAScanCompaction::resizeMessages(newMessages, j);
                 // Zero the scan flag that will be written to
                 if (func_des->message_output_optional)
                     flamegpu_internal::CUDAScanCompaction::zeroMessages(j);  // Always default stream currently

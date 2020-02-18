@@ -147,7 +147,7 @@ TEST(MessageTest, MessageFunctionCheck) {
      * statement and checks if it throws the exception or not. The second argument
      * is the expected exception.
      */
-    EXPECT_THROW(flame_model.getMessage("error"), InvalidMessageVar);  // expecting an error
+    EXPECT_THROW(flame_model.getMessage("error"), InvalidMessageName);  // expecting an error
 }
 
 // TODO: Check that we can output (single) messages during simulation without error

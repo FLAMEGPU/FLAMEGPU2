@@ -26,7 +26,7 @@ namespace test_message_AppendTruncate {
         for (auto &message : FLAMEGPU->message_in) {
             count++;
         }
-        FLAMEGPU->setVariable<int>("count", count);
+        FLAMEGPU->setVariable<unsigned int>("count", count);
         return ALIVE;
     }
 
@@ -39,7 +39,7 @@ namespace test_message_AppendTruncate {
         MsgBruteForce::Description &msg = m.newMessage(MESSAGE_NAME);
         msg.newVariable<int>("x");
         AgentDescription &a = m.newAgent(AGENT_NAME);
-        a.newVariable<int>("count");
+        a.newVariable<unsigned int>("count");
         AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, Out_AppendTruncate);
         fo.setMessageOutput(msg);
         AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, In_AppendTruncate);
@@ -48,7 +48,7 @@ namespace test_message_AppendTruncate {
         AgentPopulation pop(a, (unsigned int)AGENT_COUNT);
         for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
             AgentInstance ai = pop.getNextInstance();
-            ai.setVariable<int>("count", 0);
+            ai.setVariable<unsigned int>("count", 0);
         }
         LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
         lo.addAgentFunction(fo);
@@ -61,14 +61,14 @@ namespace test_message_AppendTruncate {
         // Validate each agent has same result
         for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
             AgentInstance ai = pop.getInstanceAt(i);
-            ASSERT_EQ(ai.getVariable<int>("count"), AGENT_COUNT);
+            ASSERT_EQ(ai.getVariable<unsigned int>("count"), AGENT_COUNT);
         }
         c.step();
         c.getPopulationData(pop);
         // Validate each agent has same result
         for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
             AgentInstance ai = pop.getInstanceAt(i);
-            ASSERT_EQ(ai.getVariable<int>("count"), AGENT_COUNT);
+            ASSERT_EQ(ai.getVariable<unsigned int>("count"), AGENT_COUNT);
         }
     }
     TEST(TestMessage_AppendTruncate, Append) {
@@ -76,7 +76,7 @@ namespace test_message_AppendTruncate {
         MsgBruteForce::Description &msg = m.newMessage(MESSAGE_NAME);
         msg.newVariable<int>("x");
         AgentDescription &a = m.newAgent(AGENT_NAME);
-        a.newVariable<int>("count");
+        a.newVariable<unsigned int>("count");
         AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, Out_AppendTruncate);
         fo.setMessageOutput(msg);
         AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, In_AppendTruncate);
@@ -85,7 +85,7 @@ namespace test_message_AppendTruncate {
         AgentPopulation pop(a, (unsigned int)AGENT_COUNT);
         for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
             AgentInstance ai = pop.getNextInstance();
-            ai.setVariable<int>("count", 0);
+            ai.setVariable<unsigned int>("count", 0);
         }
         LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
         lo.addAgentFunction(fo);
@@ -100,14 +100,14 @@ namespace test_message_AppendTruncate {
         // Validate each agent has same result
         for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
             AgentInstance ai = pop.getInstanceAt(i);
-            ASSERT_EQ(ai.getVariable<int>("count"), 2 * AGENT_COUNT);
+            ASSERT_EQ(ai.getVariable<unsigned int>("count"), 2 * AGENT_COUNT);
         }
         c.step();
         c.getPopulationData(pop);
         // Validate each agent has same result
         for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
             AgentInstance ai = pop.getInstanceAt(i);
-            ASSERT_EQ(ai.getVariable<int>("count"), 2 * AGENT_COUNT);
+            ASSERT_EQ(ai.getVariable<unsigned int>("count"), 2 * AGENT_COUNT);
         }
     }
     TEST(TestMessage_AppendTruncate, Append_AcrossTop) {
@@ -115,7 +115,7 @@ namespace test_message_AppendTruncate {
         MsgBruteForce::Description &msg = m.newMessage(MESSAGE_NAME);
         msg.newVariable<int>("x");
         AgentDescription &a = m.newAgent(AGENT_NAME);
-        a.newVariable<int>("count");
+        a.newVariable<unsigned int>("count");
         AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, Out_AppendTruncate);
         fo.setMessageOutput(msg);
         AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, In_AppendTruncate);
@@ -124,7 +124,7 @@ namespace test_message_AppendTruncate {
         AgentPopulation pop(a, (unsigned int)AGENT_COUNT);
         for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
             AgentInstance ai = pop.getNextInstance();
-            ai.setVariable<int>("count", 0);
+            ai.setVariable<unsigned int>("count", 0);
         }
         LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
         lo.addAgentFunction(fo);
@@ -139,14 +139,14 @@ namespace test_message_AppendTruncate {
         // Validate each agent has same result
         for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
             AgentInstance ai = pop.getInstanceAt(i);
-            ASSERT_EQ(ai.getVariable<int>("count"), AGENT_COUNT);
+            ASSERT_EQ(ai.getVariable<unsigned int>("count"), AGENT_COUNT);
         }
         c.step();
         c.getPopulationData(pop);
         // Validate each agent has same result
         for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
             AgentInstance ai = pop.getInstanceAt(i);
-            ASSERT_EQ(ai.getVariable<int>("count"), 2 * AGENT_COUNT);
+            ASSERT_EQ(ai.getVariable<unsigned int>("count"), 2 * AGENT_COUNT);
         }
     }
 }

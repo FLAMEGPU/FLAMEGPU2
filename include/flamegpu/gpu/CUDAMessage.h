@@ -68,9 +68,10 @@ class CUDAMessage {
      * Uses the cuRVE runtime to map the variables used by the agent function to the cuRVE library so that can be accessed by name within a n agent function
      * The write runtime variables are to be used when creating messages, as they are output to swap space
      * @param func The agent function, this is used for the cuRVE hash mapping
+     * @param writeLen The number of messages to be output, as the length isn't updated till after ouput
      * @note swap() or scatter() should be called after the agent function has written messages
      */
-    void mapWriteRuntimeVariables(const AgentFunctionData& func) const;
+    void mapWriteRuntimeVariables(const AgentFunctionData& func, const unsigned int &writeLen) const;
     /**
      * Uses the cuRVE runtime to unmap the variables used by the agent function to the cuRVE
      * library so that they are unavailable to be accessed by name within an agent function.
@@ -87,8 +88,10 @@ class CUDAMessage {
      * @param streamId Index of stream specific structures used
      */
     virtual void swap(bool isOptional, const unsigned int &newMsgCount, const unsigned int &streamId);
+    bool getTruncateMessageListFlag() const { return truncate_messagelist_flag; }
     void setTruncateMessageListFlag() { truncate_messagelist_flag = true; }
     void clearTruncateMessageListFlag() { truncate_messagelist_flag = false; }
+    bool getPBMConstructionRequiredFlag() const  { return pbm_construction_required; }
     void setPBMConstructionRequiredFlag() { pbm_construction_required = true; }
     void clearPBMConstructionRequiredFlag() { pbm_construction_required = false; }
     void buildIndex();

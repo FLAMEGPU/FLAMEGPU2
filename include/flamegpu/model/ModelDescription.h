@@ -207,7 +207,7 @@ class ModelDescription {
             if (auto r = std::dynamic_pointer_cast<typename MsgType::Data>(rtn->second)) {
                 return *reinterpret_cast<typename MsgType::Description*>(r->description.get());
             }
-            THROW InvalidMessageName("Message ('%s') is not of correct type, "
+            THROW InvalidMessageType("Message ('%s') is not of correct type, "
                 "in ModelDescription::getMessage().",
                 message_name.c_str());
         }

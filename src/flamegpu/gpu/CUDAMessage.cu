@@ -144,7 +144,7 @@ void CUDAMessage::mapReadRuntimeVariables(const AgentFunctionData& func) const {
 void *CUDAMessage::getReadPtr(const std::string &var_name) {
     return message_list->getReadMessageListVariablePointer(var_name);
 }
-void CUDAMessage::mapWriteRuntimeVariables(const AgentFunctionData& func) const {
+void CUDAMessage::mapWriteRuntimeVariables(const AgentFunctionData& func, const unsigned int &writeLen) const {
     // check that the message list has been allocated
     if (!message_list) {
         THROW InvalidMessageData("Error: Initial message list for message '%s' has not been allocated, "
@@ -169,7 +169,7 @@ void CUDAMessage::mapWriteRuntimeVariables(const AgentFunctionData& func) const 
         size_t size = mmp.second.type_size;
 
         // maximum population size
-        unsigned int length = this->getMessageCount();  // check to see if it is equal to pop
+        unsigned int length = writeLen;  // check to see if it is equal to pop
         curve.registerVariableByHash(var_hash + agent_hash + func_hash + message_hash, d_ptr, size, length);
     }
 }
@@ -216,12 +216,13 @@ void CUDAMessage::swap(bool isOptional, const unsigned int &newMsgCount, const u
         // Update count
         message_count = message_list->scatter(newMsgCount, streamId, !this->truncate_messagelist_flag);
     } else {
-        if(this->truncate_messagelist_flag) {
+        if(this->truncate_messagelist_flag || newMsgCount == 0) {  // newMsgCount == 0 is used by buildIndex() of spatial messaging.
             message_count = newMsgCount;
             message_list->swap();
         } else {
+            assert(message_count + newMsgCount <= max_list_size);
             //We're appending so use our scatter kernel
-            message_list->scatterAll(newMsgCount, streamId);
+            message_count = message_list->scatterAll(newMsgCount, streamId);
         }
     }
 }
