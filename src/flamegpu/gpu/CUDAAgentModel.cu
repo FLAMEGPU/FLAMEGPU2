@@ -95,11 +95,11 @@ bool CUDAAgentModel::step() {
         /*! for each func function - Loop through to do all mapping of agent and message variables */
         NVTX_PUSH("CUDAAgentModel::step::MapLayer");
         for (const std::shared_ptr<AgentFunctionData> &func_des : functions) {
-            auto func_agent = func_des->parent.lock()->description;
+            auto func_agent = func_des->parent.lock();
             if (!func_agent) {
                 THROW InvalidAgentFunc("Agent function refers to expired agent.");
             }
-            const CUDAAgent& cuda_agent = getCUDAAgent(func_agent->getName());
+            const CUDAAgent& cuda_agent = getCUDAAgent(func_agent->name);
             flamegpu_internal::CUDAScanCompaction::resizeAgents(cuda_agent.getStateSize(func_des->initial_state), j);
 
             // check if a function has an input message
@@ -112,7 +112,7 @@ bool CUDAAgentModel::step() {
                 cuda_message.mapReadRuntimeVariables(*func_des);
             }
 
-            // check if a function has an output massage
+            // check if a function has an output message
             if (auto om = func_des->message_output.lock()) {
                 std::string outpMessage_name = om->name;
                 CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
@@ -131,7 +131,7 @@ bool CUDAAgentModel::step() {
             /**
              * Configure runtime access of the functions variables within the FLAME_API object
              */
-            cuda_agent.mapRuntimeVariables(*func_des);
+            cuda_agent.mapRuntimeVariables(*func_des, func_des->initial_state);
 
             // Zero the scan flag that will be written to
             if (func_des->has_agent_death)
@@ -183,6 +183,8 @@ bool CUDAAgentModel::step() {
             const CUDAAgent& cuda_agent = getCUDAAgent(agent_name);
 
             int state_list_size = cuda_agent.getStateSize(func_des->initial_state);
+            if (state_list_size == 0)
+                continue;
 
             int blockSize = 0;  // The launch configurator returned block size
             int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
@@ -210,11 +212,11 @@ bool CUDAAgentModel::step() {
         NVTX_PUSH("CUDAAgentModel::step::UnmapLayer");
         // for each func function - Loop through to un-map all agent and message variables
         for (const std::shared_ptr<AgentFunctionData> &func_des : functions) {
-            auto func_agent = func_des->parent.lock()->description;
+            auto func_agent = func_des->parent.lock();
             if (!func_agent) {
                 THROW InvalidAgentFunc("Agent function refers to expired agent.");
             }
-            CUDAAgent& cuda_agent = getCUDAAgent(func_agent->getName());
+            CUDAAgent& cuda_agent = getCUDAAgent(func_agent->name);
 
             // check if a function has an input message
             if (auto im = func_des->message_input.lock()) {
@@ -240,6 +242,9 @@ bool CUDAAgentModel::step() {
 
             // Process agent death (has agent death check is handled by the method)
             cuda_agent.process_death(*func_des, j);
+
+            // Process agent state transition (Longer term merge this with process death?)
+            cuda_agent.transition_state(func_des->initial_state, func_des->end_state, j);
 
             ++j;
         }

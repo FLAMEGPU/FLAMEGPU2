@@ -19,6 +19,7 @@
 #include "flamegpu/model/AgentFunctionDescription.h"
 #include "flamegpu/pop/AgentPopulation.h"
 #include "flamegpu/runtime/cuRVE/curve.h"
+#include "flamegpu/gpu/CUDAScatter.h"
 
 #ifdef _MSC_VER
 #pragma warning(push, 3)
@@ -198,9 +199,9 @@ void CUDAAgent::zeroAllStateVariableData() {
 }
 
 // this is done for all the variables for now.
-void CUDAAgent::mapRuntimeVariables(const AgentFunctionData& func) const {
+void CUDAAgent::mapRuntimeVariables(const AgentFunctionData& func, const std::string &state) const {
     // check the cuda agent state map to find the correct state list for functions starting state
-    CUDAStateMap::const_iterator sm = state_map.find(func.initial_state);
+    CUDAStateMap::const_iterator sm = state_map.find(state);
 
     if (sm == state_map.end()) {
         THROW InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found "
@@ -298,4 +299,32 @@ void* CUDAAgent::getStateVariablePtr(const std::string& state_name, const std::s
 
 ModelData::size_type CUDAAgent::getStateSize(const std::string& state_name) const {
     return getAgentStateList(state_name)->getCUDAStateListSize();
+}
+
+void CUDAAgent::transition_state(const std::string &_src, const std::string &_dest, const unsigned int &streamId) {
+    if (_src != _dest) {
+        CUDAStateMap::const_iterator src = state_map.find(_src);
+        CUDAStateMap::const_iterator dest = state_map.find(_dest);
+        if (src == state_map.end()) {
+            THROW InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found "
+                "in CUDAAgent::transition_state()",
+                agent_description.name.c_str(), _src.c_str());
+        }
+        if (dest == state_map.end()) {
+            THROW InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found "
+                "in CUDAAgent::transition_state()",
+                agent_description.name.c_str(), _dest.c_str());
+        }
+        // If src list is empty we can skip
+        if (src->second->getCUDAStateListSize() == 0)
+            return;
+        // If dest list is empty, we can swap the lists (AS WE ARE CURRENTLY NOT HANDING AGENT FUNCTION CONDITIONS)
+        if (dest->second->getCUDAStateListSize() == 0) {
+            swap(state_map.at(_src), state_map.at(_dest));  // Not 100% certain this will work
+            assert(state_map.find(_src)->second->getCUDAStateListSize() == 0);
+        } else {  // Otherwise we must perform a scatter all operation
+            auto &cs = CUDAScatter::getInstance(streamId);
+            cs.scatterAll(agent_description.variables, src->second->getReadList(), dest->second->getReadList(), src->second->getCUDAStateListSize(), dest->second->getCUDAStateListSize());
+        }
+    }
 }

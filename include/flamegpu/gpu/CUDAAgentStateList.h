@@ -57,6 +57,10 @@ class CUDAAgentStateList {
      */
     void scatter(const unsigned int &streamId);
 
+    const CUDAMemoryMap &getReadList() { return d_list; }
+    const CUDAMemoryMap &getWriteList() { return d_swap_list; }
+    const CUDAMemoryMap &getNewList() { return d_new_list; }
+
  protected:
     /*
      * The purpose of this function is to allocate on the device a block of memory for each variable. These vectors are stored within a hash list using the cuRVE technique so that the location of the vectors can be quickly determined at runtime by FLAME GPU functions.
