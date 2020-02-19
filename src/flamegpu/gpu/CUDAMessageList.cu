@@ -29,7 +29,7 @@ CUDAMessageList::CUDAMessageList(CUDAMessage& cuda_message)
     // allocate message lists
     allocateDeviceMessageList(d_list);
     allocateDeviceMessageList(d_swap_list);
-    try {  // On first run, will nullptr error
+    if (message.getMessageCount() != 0) {
         auto &cs = CUDAScatter::getInstance(0);  // Probably need to actually use stream here
         {
             auto &a = cuda_message.getReadList();
@@ -41,7 +41,7 @@ CUDAMessageList::CUDAMessageList(CUDAMessage& cuda_message)
             auto &_a = d_swap_list;
             cs.scatterAll(message.getMessageDescription().variables, a, _a, message.getMessageCount(), 0);
         }
-    } catch(...) { }
+    }
 }
 
 /**
