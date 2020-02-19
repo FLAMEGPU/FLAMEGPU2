@@ -21,7 +21,8 @@ namespace test_message_AppendTruncate {
     FLAMEGPU_AGENT_FUNCTION(Out_AppendTruncate, MsgNone, MsgBruteForce) {
         FLAMEGPU->message_out.setVariable("x", 0);
         return ALIVE;
-    }    FLAMEGPU_AGENT_FUNCTION(Out_AppendTruncate2, MsgNone, MsgBruteForce) {
+    }
+    FLAMEGPU_AGENT_FUNCTION(Out_AppendTruncate2, MsgNone, MsgBruteForce) {
         FLAMEGPU->message_out.setVariable("x", 1);
         return ALIVE;
     }
@@ -45,6 +46,21 @@ namespace test_message_AppendTruncate {
         }
         FLAMEGPU->setVariable<unsigned int>("count0", count0);
         FLAMEGPU->setVariable<unsigned int>("count1", count1);
+        return ALIVE;
+    }
+    FLAMEGPU_AGENT_FUNCTION(OptionalOut_AppendTruncate, MsgNone, MsgBruteForce) {
+        if (FLAMEGPU->getVariable<unsigned int>("do_out") > 0) {
+            FLAMEGPU->message_out.setVariable("x", 0);
+            FLAMEGPU->setVariable<unsigned int>("do_out", 0);
+        } else {
+            FLAMEGPU->setVariable<unsigned int>("do_out", 1);
+        }
+        return ALIVE;
+    }
+    FLAMEGPU_AGENT_FUNCTION(OptionalOut_AppendTruncate2, MsgNone, MsgBruteForce) {
+        if (FLAMEGPU->getVariable<unsigned int>("do_out") > 0) {
+            FLAMEGPU->message_out.setVariable("x", 1);
+        }
         return ALIVE;
     }
 
@@ -132,6 +148,109 @@ namespace test_message_AppendTruncate {
             AgentInstance ai = pop.getInstanceAt(i);
             ASSERT_EQ(ai.getVariable<unsigned int>("count0"), AGENT_COUNT);
             ASSERT_EQ(ai.getVariable<unsigned int>("count1"), AGENT_COUNT);
+        }
+    }
+    TEST(TestMessage_AppendTruncate, OptionalTruncate) {
+        ModelDescription m(MODEL_NAME);
+        MsgBruteForce::Description &msg = m.newMessage(MESSAGE_NAME);
+        msg.newVariable<int>("x");
+        AgentDescription &a = m.newAgent(AGENT_NAME);
+        a.newVariable<unsigned int>("count");
+        a.newVariable<unsigned int>("do_out");
+        AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, OptionalOut_AppendTruncate);
+        fo.setMessageOutputOptional(true);
+        fo.setMessageOutput(msg);
+        AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, In_AppendTruncate);
+        fi.setMessageInput(msg);
+        std::default_random_engine rng;
+        std::uniform_real_distribution<double> dist(0.0, 1.0);
+        unsigned int result_count = 0;
+        AgentPopulation pop(a, (unsigned int)AGENT_COUNT);
+        for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+            AgentInstance ai = pop.getNextInstance();
+            if (dist(rng) < 0.7) {  // 70% chance of outputting
+                ai.setVariable<unsigned int>("do_out", 1);
+                result_count++;
+            } else {
+                ai.setVariable<unsigned int>("do_out", 0);
+            }
+            ai.setVariable<unsigned int>("count", 0);
+        }
+        LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+        lo.addAgentFunction(fo);
+        LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+        li.addAgentFunction(fi);
+        CUDAAgentModel c(m);
+        c.setPopulationData(pop);
+        c.step();
+        c.getPopulationData(pop);
+        // Validate each agent has same result
+        for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+            AgentInstance ai = pop.getInstanceAt(i);
+            ASSERT_EQ(ai.getVariable<unsigned int>("count"), result_count);
+        }
+        c.step();
+        c.getPopulationData(pop);
+        // Validate each agent has same result
+        for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+            AgentInstance ai = pop.getInstanceAt(i);
+            ASSERT_EQ(ai.getVariable<unsigned int>("count"), AGENT_COUNT - result_count);
+        }
+    }
+    TEST(TestMessage_AppendTruncate, OptionalAppend_KeepData) {
+        ModelDescription m(MODEL_NAME);
+        MsgBruteForce::Description &msg = m.newMessage(MESSAGE_NAME);
+        msg.newVariable<int>("x");
+        AgentDescription &a = m.newAgent(AGENT_NAME);
+        a.newVariable<unsigned int>("count0");
+        a.newVariable<unsigned int>("count1");
+        a.newVariable<unsigned int>("do_out");
+        AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, OptionalOut_AppendTruncate);
+        fo.setMessageOutputOptional(true);
+        fo.setMessageOutput(msg);
+        AgentFunctionDescription &fo2 = a.newFunction(OUT_FUNCTION_NAME2, OptionalOut_AppendTruncate2);
+        fo2.setMessageOutputOptional(true);
+        fo2.setMessageOutput(msg);
+        AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, In_AppendTruncate2);
+        fi.setMessageInput(msg);
+        std::default_random_engine rng;
+        std::uniform_real_distribution<double> dist(0.0, 1.0);
+        unsigned int result_count = 0;
+        AgentPopulation pop(a, (unsigned int)AGENT_COUNT);
+        for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+            AgentInstance ai = pop.getNextInstance();
+            if (dist(rng) < 0.7) {  // 70% chance of outputting
+                ai.setVariable<unsigned int>("do_out", 1);
+                result_count++;
+            } else {
+                ai.setVariable<unsigned int>("do_out", 0);
+            }
+            ai.setVariable<unsigned int>("count0", 0);
+            ai.setVariable<unsigned int>("count1", 0);
+        }
+        LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+        lo.addAgentFunction(fo);
+        LayerDescription &lo2 = m.newLayer(OUT_LAYER2_NAME);
+        lo2.addAgentFunction(fo2);
+        LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+        li.addAgentFunction(fi);
+        CUDAAgentModel c(m);
+        c.setPopulationData(pop);
+        c.step();
+        c.getPopulationData(pop);
+        // Validate each agent has same result
+        for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+            AgentInstance ai = pop.getInstanceAt(i);
+            ASSERT_EQ(ai.getVariable<unsigned int>("count0"), result_count);
+            ASSERT_EQ(ai.getVariable<unsigned int>("count1"), AGENT_COUNT - result_count);
+        }
+        c.step();
+        c.getPopulationData(pop);
+        // Validate each agent has same result
+        for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+            AgentInstance ai = pop.getInstanceAt(i);
+            ASSERT_EQ(ai.getVariable<unsigned int>("count0"), AGENT_COUNT - result_count);
+            ASSERT_EQ(ai.getVariable<unsigned int>("count1"), result_count);
         }
     }
 }  // namespace test_message_AppendTruncate
