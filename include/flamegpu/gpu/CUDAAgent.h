@@ -57,7 +57,7 @@ class CUDAAgent : public AgentInterface {
 
     /** @brief Uses the cuRVE runtime to map the variables used by the agent function to the cuRVE library so that can be accessed by name within a n agent function
     */
-    void mapRuntimeVariables(const AgentFunctionData& func) const;
+    void mapRuntimeVariables(const AgentFunctionData& func, const std::string &state) const;
 
     /**
      * @brief    Uses the cuRVE runtime to unmap the variables used by the agent function to the cuRVE
@@ -74,6 +74,8 @@ class CUDAAgent : public AgentInterface {
     ModelData::size_type getStateSize(const std::string &state_name) const override;
 
     void process_death(const AgentFunctionData& func, const unsigned int &streamId);
+
+    void transition_state(const std::string &src, const std::string &dest, const unsigned int &streamId);
 
  protected:
     /** @brief    Zero all state variable data. */
