@@ -99,7 +99,7 @@ namespace test_message_AppendTruncate {
         AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, Out_AppendTruncate);
         fo.setMessageOutput(msg);
         AgentFunctionDescription &fo2 = a.newFunction(OUT_FUNCTION_NAME2, Out_AppendTruncate2);
-        fo.setMessageOutput(msg);
+        fo2.setMessageOutput(msg);
         AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, In_AppendTruncate2);
         fi.setMessageInput(msg);
 
