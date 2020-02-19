@@ -364,11 +364,14 @@ AgentFunctionDescription& AgentDescription::newRTFunction(const std::string& fun
 		CUcontext context;
 		CUmodule module;
 		CUfunction kernel;
+
+		cudaFree(0); // create runtime context if does not already exist
 		//TODO: No mixing of compiletime and runtime functions
 		//TODO: configuration must specify device id
 		CUDA_SAFE_CALL(cuInit(0));
 		CUDA_SAFE_CALL(cuDeviceGet(&cuDevice, 0));
-		CUDA_SAFE_CALL(cuCtxCreate(&context, 0, cuDevice));
+		//CUDA_SAFE_CALL(cuCtxCreate(&context, 0, cuDevice));
+		CUDA_SAFE_CALL(cuDevicePrimaryCtxRetain(&context, cuDevice));	//get context from runtime api
 		CUDA_SAFE_CALL(cuModuleLoadDataEx(&module, ptx, 0, 0, 0));
 		CUDA_SAFE_CALL(cuModuleGetFunction(&kernel, module, "simple_test"));	//TODO: This is assuming a simple kernel that does nothing and has no headers or wrapper
 

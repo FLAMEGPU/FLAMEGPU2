@@ -126,6 +126,7 @@ MessageData::MessageData(ModelData *const model, const MessageData &other)
     , optional_outputs(other.optional_outputs) { }
 AgentFunctionData::AgentFunctionData(ModelData *const model, std::shared_ptr<AgentData> _parent, const AgentFunctionData &other)
     : func(other.func)
+	, func_addr(other.func_addr)
     , initial_state(other.initial_state)
     , end_state(other.end_state)
     , message_output_optional(other.message_output_optional)

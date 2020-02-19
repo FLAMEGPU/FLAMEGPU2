@@ -12,8 +12,7 @@ const char* test_simple_func = " \n\
 		void simple_test() \n\
 		{ \n\
 			size_t tid = blockIdx.x * blockDim.x + threadIdx.x; \n\
-			printf(\"test from tid\", tid) \n\
-			} \n\
+			printf(\"test from tid\", tid); \n\
 		} \n";
 
 
@@ -91,6 +90,7 @@ FLAMEGPU_STEP_FUNCTION(Validation) {
 void export_data(std::shared_ptr<AgentPopulation> pop, const char *filename);
 int main(int argc, const char ** argv) {
     ModelDescription model("Circles_BruteForce_example");
+
 
     {   // Location message
         MessageDescription &message = model.newMessage("location");

@@ -161,33 +161,36 @@ totalThreads += cuda_agent.getMaximumListSize();
 			}
 
 			const CUDAAgent& cuda_agent = getCUDAAgent(agent_name);
-
 			int state_list_size = cuda_agent.getStateSize(func_des->initial_state);
 
-			int blockSize = 0;  // The launch configurator returned block size
-			int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
-			int gridSize = 0;  // The actual grid size needed, based on input size
-
-			// calculate the grid block size for main agent function
-			cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, func_des->func, 0, state_list_size);
-
-			//! Round up according to CUDAAgent state list size
-			gridSize = (state_list_size + blockSize - 1) / blockSize;
-
-			// hash agent name
-			Curve::NamespaceHash agentname_hash = curve.variableRuntimeHash(agent_name.c_str());
-			// hash function name
-			Curve::NamespaceHash funcname_hash = curve.variableRuntimeHash(func_name.c_str());
 
 			//if compile time func defined
 			if (func_des->func) {
+
+
+				int blockSize = 0;  // The launch configurator returned block size
+				int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
+				int gridSize = 0;  // The actual grid size needed, based on input size
+
+				// calculate the grid block size for main agent function
+				cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, func_des->func, 0, state_list_size);
+
+				//! Round up according to CUDAAgent state list size
+				gridSize = (state_list_size + blockSize - 1) / blockSize;
+
+				// hash agent name
+				Curve::NamespaceHash agentname_hash = curve.variableRuntimeHash(agent_name.c_str());
+				// hash function name
+				Curve::NamespaceHash funcname_hash = curve.variableRuntimeHash(func_name.c_str());
+
 				(func_des->func) << <gridSize, blockSize, 0, stream[j] >> > (modelname_hash, agentname_hash + funcname_hash, message_name_inp_hash, message_name_outp_hash, state_list_size, messageList_Size, totalThreads, j);
 				gpuErrchkLaunch();
 			}
 			//else if runtime function defined
 			else if (func_des->func_addr){
 				//TODO: RTI invokation of agent function
-				void* args[];
+				//void* args[] = 0;
+				//void** args = 0;
 				unsigned int num_blocks = 1;
 				unsigned int num_threads = 1;
 
@@ -196,7 +199,7 @@ totalThreads += cuda_agent.getMaximumListSize();
 						num_blocks, 1, 1, // grid dim
 						num_threads, 1, 1, // block dim
 						0, 0, // shared mem and stream
-						args, 0); // arguments
+						0, 0); // args, 0); //args
 				
 				if (launch_result != CUDA_SUCCESS) {
 					const char* msg; 						
