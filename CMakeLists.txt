@@ -33,6 +33,9 @@ option(BUILD_EXAMPLE_SIMPLE_EXAMPLE "Enable building examples/simple_example" OF
 # Option to enable/disable tests.
 option(BUILD_TESTS "Enable building tests" OFF)
 
+# Option to enable/disable NVTX markers for improved profiling
+option(NVTX "Enable NVTX markers for improved profiling (if aviailable). Implied by profile builds" OFF)
+
 # Define a function to add a lint target.
 find_file(CPPLINT NAMES cpplint cpplint.exe)
 if(CPPLINT)
