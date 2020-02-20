@@ -17,7 +17,8 @@ CUDAAgentModel::CUDAAgentModel(const ModelDescription& _model)
     , curve(Curve::getInstance())
     , message_map()
     , rng(RandomManager::getInstance())
-    , scatter(CUDAScatter::getInstance(0)) {
+    , scatter(CUDAScatter::getInstance(0))
+    , streams(std::vector<cudaStream_t>()) {
     rng.increaseSimCounter();
     scatter.increaseSimCounter();
 
@@ -51,7 +52,7 @@ CUDAAgentModel::~CUDAAgentModel() {
 bool CUDAAgentModel::step() {
     NVTX_RANGE(std::string("CUDAAgentModel::step " + std::to_string(step_count)).c_str());
     step_count++;
-    int nStreams = 1;
+    unsigned int nStreams = 1;
     std::string message_name;
     Curve::NamespaceHash message_name_inp_hash = 0;
     Curve::NamespaceHash message_name_outp_hash = 0;
@@ -62,17 +63,18 @@ bool CUDAAgentModel::step() {
 
     // TODO: simulation.getMaxFunctionsPerLayer()
     for (auto lyr = model->layers.begin(); lyr != model->layers.end(); ++lyr) {
-        int temp = static_cast<int>((*lyr)->agent_functions.size());
+        unsigned int temp = static_cast<unsigned int>((*lyr)->agent_functions.size());
         nStreams = std::max(nStreams, temp);
     }
 
     /*!  Stream creations */
-    NVTX_PUSH("CreateStreams");
-    cudaStream_t *stream = new cudaStream_t[nStreams];
-
-    /*!  Stream initialisation */
-    for (int j = 0; j < nStreams; j++)
-        gpuErrchk(cudaStreamCreate(&stream[j]));
+    NVTX_PUSH("CUDAAgentModel::CreateStreams");
+    // Ensure there are enough streams to execute the layer.
+    while (streams.size() < nStreams) {
+        cudaStream_t stream;
+        gpuErrchk(cudaStreamCreate(&stream));
+        streams.push_back(stream);
+    }
     NVTX_POP();
 
     // Reset message list flags
@@ -199,7 +201,7 @@ bool CUDAAgentModel::step() {
             Curve::NamespaceHash funcname_hash = curve.variableRuntimeHash(func_name.c_str());
 
             NVTX_PUSH("CUDAAgentModel::step::Kernel");
-            (func_des->func)<<<gridSize, blockSize, 0, stream[j] >>>(modelname_hash, agentname_hash + funcname_hash, message_name_inp_hash, message_name_outp_hash, state_list_size, d_messagelist_metadata, totalThreads, j);
+            (func_des->func)<<<gridSize, blockSize, 0, streams.at(j) >>>(modelname_hash, agentname_hash + funcname_hash, message_name_inp_hash, message_name_outp_hash, state_list_size, d_messagelist_metadata, totalThreads, j);
             gpuErrchkLaunch();
             NVTX_POP();
 
@@ -256,13 +258,6 @@ bool CUDAAgentModel::step() {
         NVTX_POP();
         // cudaDeviceSynchronize();
     }
-    // stream deletion
-    NVTX_PUSH("CUDAAgentModel::step::deleteStreams");
-    for (int j = 0; j < nStreams; ++j)
-        gpuErrchk(cudaStreamDestroy(stream[j]));
-    delete[] stream;
-    NVTX_POP();
-
 
     // Execute step functions
     NVTX_PUSH("CUDAAgentModel::step::StepFunctions");
@@ -300,6 +295,14 @@ void CUDAAgentModel::simulate() {
     // Execute exit functions
     for (auto &exitFn : model->exitFunctions)
         exitFn(this->host_api.get());
+
+    // Destroy streams.
+    NVTX_PUSH("CUDAAgentModel::step::destroyStreams");
+    for (auto stream : streams) {
+        gpuErrchk(cudaStreamDestroy(stream));
+    }
+    streams.clear();
+    NVTX_POP();
 }
 
 void CUDAAgentModel::setPopulationData(AgentPopulation& population) {
