@@ -8,6 +8,8 @@
 #include <nvrtc.h>
 #include <cuda.h>
 #include <iostream>
+#include <string>
+#include "jitify/jitify.hpp"
 
 AgentFunctionDescription::AgentFunctionDescription(ModelData *const _model, AgentFunctionData *const description)
     : model(_model)
@@ -320,6 +322,18 @@ AgentFunctionWrapper *AgentFunctionDescription::getFunctionPtr() const {
 AgentFunctionDescription& AgentDescription::newRTFunction(const std::string& function_name, const char* func_src) {
     if (agent->functions.find(function_name) == agent->functions.end()) {
 
+
+        // get header location
+        const char* env_inc_fgp2 = std::getenv("FLAMEGPU2_INC_DIR");
+        if (!env_inc_fgp2)
+            std::cout << "FLAMEGPU2_INC_DIR environment varibale does not exist!" << '\n';
+
+        //append path of runtime include dir
+        std::string dev_api_path = env_inc_fgp2;
+        dev_api_path += "\\runtime";
+        std::cout << "flamegpu_dev_api.h location is " << dev_api_path << '\n';
+
+
         nvrtcProgram prog;
         NVRTC_SAFE_CALL(
             nvrtcCreateProgram(&prog, // prog
@@ -329,9 +343,9 @@ AgentFunctionDescription& AgentDescription::newRTFunction(const std::string& fun
                 NULL, // headers
                 NULL)); // includeNames
                 
-        const char* opts[] = { "--gpu-architecture=compute_75" };
+        const char* opts[] = { "--gpu-architecture=compute_75", "-I", dev_api_path.c_str() };
         nvrtcResult compileResult = nvrtcCompileProgram(prog, // prog
-            1, // numOptions
+            3, // numOptions
             opts); // options
             
 

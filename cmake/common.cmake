@@ -1,4 +1,7 @@
 message(STATUS "-----Configuring Project: ${PROJECT_NAME}-----")
+# Add custom modules directory
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/modules/ ${CMAKE_MODULE_PATH})
+
 # Common rules for other cmake files
 # Make available lowercase 'linux'/'windows' vars (used for build dirs)
 STRING(TOLOWER "${CMAKE_SYSTEM_NAME}" CMAKE_SYSTEM_NAME_LOWER)
@@ -51,6 +54,24 @@ MARK_AS_ADVANCED(
     CMAKE_C_FLAGS_PROFILE
     CMAKE_EXE_LINKER_FLAGS_PROFILE
     CMAKE_SHARED_LINKER_FLAGS_PROFILE )
+
+# Declare variables to track extra include dirs / link dirs / link libraries
+set(FLAMEGPU_DEPENDENCY_INCLUDE_DIRECTORIES)
+set(FLAMEGPU_DEPENDENCY_LINK_LIBRARIES)
+
+
+# NVRTC.lib/CUDA.lib
+
+find_package(NVRTC REQUIRED QUIET)
+if(NVRTC_FOUND)
+    set(FLAMEGPU_DEPENDENCY_INCLUDE_DIRECTORIES ${FLAMEGPU_DEPENDENCY_INCLUDE_DIRECTORIES} ${NVRTC_INCLUDE_DIRS})
+    set(FLAMEGPU_DEPENDENCY_LINK_LIBRARIES ${FLAMEGPU_DEPENDENCY_LINK_LIBRARIES} ${NVRTC_LIBRARIES})
+    # Also add the driver api
+    set(FLAMEGPU_DEPENDENCY_LINK_LIBRARIES ${FLAMEGPU_DEPENDENCY_LINK_LIBRARIES} cuda)
+else()
+    message("nvrtc not found @todo gracefully handle this")
+endif()
+
 
 # Require a minimum cuda version
 if(CMAKE_CUDA_COMPILER_VERSION VERSION_LESS 7.0)
@@ -253,8 +274,12 @@ function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
     # Add include directories
     target_include_directories(${NAME} SYSTEM PRIVATE ${FLAMEGPU_ROOT}/externals)
 # ../include required for cmake > 3.12 which ignores this otheriwse.
-    target_include_directories(${NAME}  SYSTEM PRIVATE "${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}/../include")    
+    target_include_directories(${NAME}  SYSTEM PRIVATE "${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}/../include") 
+	target_include_directories(${NAME} SYSTEM PRIVATE ${FLAMEGPU_DEPENDENCY_INCLUDE_DIRECTORIES})	
     target_include_directories(${NAME} PRIVATE ${FLAMEGPU_ROOT}/include)
+	
+	# Add extra linker targets
+    target_link_libraries(${NAME} ${FLAMEGPU_DEPENDENCY_LINK_LIBRARIES})
 
     # Enable RDC for the target
     set_property(TARGET ${NAME} PROPERTY CUDA_SEPARABLE_COMPILATION ON)
@@ -308,8 +333,12 @@ function(add_flamegpu_library NAME SRC FLAMEGPU_ROOT)
     target_include_directories(${NAME}  SYSTEM PRIVATE ${FLAMEGPU_ROOT}/externals)
     # ../include required for cmake > 3.12 which ignores this otheriwse.
     target_include_directories(${NAME}  SYSTEM PRIVATE "${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}/../include")
+	target_include_directories(${NAME}  SYSTEM PRIVATE ${FLAMEGPU_DEPENDENCY_INCLUDE_DIRECTORIES})
     target_include_directories(${NAME}  PRIVATE ${FLAMEGPU_ROOT}/include)
     target_include_directories(${NAME}  PRIVATE ${FLAMEGPU_ROOT}/src) #private headers
+	
+	# Add extra linker targets
+    target_link_libraries(${NAME} ${FLAMEGPU_DEPENDENCY_LINK_LIBRARIES})
 
     # Flag the new linter target and the files to be linted.
     new_linter_target(${NAME} "${SRC}")

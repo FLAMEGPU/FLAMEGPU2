@@ -17,10 +17,11 @@ const char* test_simple_func = " \n\
 
 
 
-const char* test_func = "\
-        FLAMEGPU_AGENT_FUNCTION(output_message) { \
-            printf(\"test\"); \
-            return ALIVE; \
+const char* test_agent_func = "\
+        #include \"flamegpu_device_api.h\"\n\
+        FLAMEGPU_AGENT_FUNCTION(test_agent_func) { \n\
+            printf(\"test\"); \n\
+            return ALIVE; \n\
         }";
 
 FLAMEGPU_AGENT_FUNCTION(output_message) {
@@ -106,7 +107,12 @@ int main(int argc, const char ** argv) {
         agent.newVariable<float>("y");
         agent.newVariable<float>("z");
         agent.newVariable<float>("drift");  // Store the distance moved here, for validation
+        
+        // TEMP work on runtime functions
         agent.newRTFunction("test_rt_func", test_simple_func); //TEMP
+       // agent.newRTFunction("test_rtagent_func", test_agent_func); //TEMP
+
+
         agent.newFunction("output_message", output_message).setMessageOutput("location");
         agent.newFunction("move", move).setMessageInput("location");
     }
@@ -128,9 +134,10 @@ int main(int argc, const char ** argv) {
         model.addStepFunction(Validation);
     }
 
-    {   // Layer #1
+    {   // Layer #0
         LayerDescription& layer = model.newLayer();
         layer.addAgentFunction("test_rt_func");
+        //layer.addAgentFunction("test_rtagent_func");
     }
 
     {   // Layer #1
