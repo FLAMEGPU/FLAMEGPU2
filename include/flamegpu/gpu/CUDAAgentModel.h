@@ -134,11 +134,6 @@ class CUDAAgentModel : public Simulation {
      */
     CUDAAgentMap agent_map;
     /**
-     * Curve instance used for variable mapping
-     * @todo Is this necessary? CUDAAgent/CUDAMessage have their own copy
-     */
-    Curve &curve;
-    /**
      * Internal model config
      */
     Config config;
@@ -147,17 +142,42 @@ class CUDAAgentModel : public Simulation {
      */
     CUDAMessageMap message_map;
     /**
-    * Resizes device random array during step()
-    */
-    RandomManager &rng;
-    /**
-     * Held here for tracking when to release cuda memory
-     */
-    CUDAScatter &scatter;
-    /**
      * Streams created within this cuda context for executing functions within layers in parallel
      */
     std::vector<cudaStream_t> streams;
+
+    /**
+     * Struct containing references to the various singletons which may include CUDA code, and therefore can only be initialsed after the deferred arg parsing is completed.
+     */
+    struct Singletons {
+      /**
+       * Curve instance used for variable mapping
+       * @todo Is this necessary? CUDAAgent/CUDAMessage have their own copy
+       */
+      Curve &curve;
+      /**
+       * Resizes device random array during step()
+       */
+      RandomManager &rng;
+      /**
+       * Held here for tracking when to release cuda memory
+       */
+      CUDAScatter &scatter;
+      /**
+       * Held here for tracking when to release cuda memory
+       */
+      EnvironmentManager &environment;
+      Singletons(Curve &curve, RandomManager &rng, CUDAScatter &scatter, EnvironmentManager &environment) : curve(curve), rng(rng), scatter(scatter), environment(environment) {}
+    } * singletons;
+    /**
+     * Flag indicating that the model has been initialsed
+     */
+    bool singletonsInitialised;
+
+    /**
+     * Initialise the instances singletons.
+     */
+    void initialiseSingletons();
 };
 
 #endif  // INCLUDE_FLAMEGPU_GPU_CUDAAGENTMODEL_H_

@@ -334,6 +334,15 @@ class MsgSpatial2D {
          */
         void buildIndex() override;
         /**
+         * Allocates memory for the constructed index.
+         * The memory allocation is checked by build index.
+         */
+        void allocateMetaDataDevicePtr() override;
+        /**
+         * Releases memory for the constructed index.
+         */
+        void freeMetaDataDevicePtr() override;
+        /**
          * Returns a pointer to the metadata struct, this is required for reading the message data
          */
         const void *getMetaDataDevicePtr() const override { return d_data; }

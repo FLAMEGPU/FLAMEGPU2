@@ -123,10 +123,6 @@ class CUDAMessage {
      */
     unsigned int max_list_size;
     /**
-     * Reference to curve instance used internally
-     */
-    Curve &curve;
-    /**
      * When this flag is set to True before message output, 
      * message output truncates the messagelist rather than appending
      * 

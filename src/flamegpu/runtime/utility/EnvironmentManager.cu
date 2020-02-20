@@ -25,25 +25,16 @@ namespace flamegpu_internal {
 const char EnvironmentManager::CURVE_NAMESPACE_STRING[23] = "ENVIRONMENT_PROPERTIES";
 
 EnvironmentManager::EnvironmentManager() :
-    curve(Curve::getInstance()),
-    CURVE_NAMESPACE_HASH(curve.variableRuntimeHash(CURVE_NAMESPACE_STRING)),
+    CURVE_NAMESPACE_HASH(Curve::getInstance().variableRuntimeHash(CURVE_NAMESPACE_STRING)),
     nextFree(0),
     m_freeSpace(EnvironmentManager::MAX_BUFFER_SIZE),
-    freeFragments() {
-    {
-        void *t_c_buffer = nullptr;
-        gpuErrchk(cudaGetSymbolAddress(&t_c_buffer, flamegpu_internal::c_envPropBuffer));
-        c_buffer = reinterpret_cast<char*>(t_c_buffer);
-        // printf("Env Prop Constant Cache Buffer: %p - %p\n", c_buffer, c_buffer + MAX_BUFFER_SIZE);
-        assert(CURVE_NAMESPACE_HASH == DeviceEnvironment::CURVE_NAMESPACE_HASH());  // Host and Device namespace const's do not match
-        // Setup device-side error pattern
-        const uint64_t h_errorPattern = DeviceEnvironment::ERROR_PATTERN();
-        gpuErrchk(cudaMemcpyToSymbol(flamegpu_internal::c_deviceEnvErrorPattern, reinterpret_cast<const void*>(&h_errorPattern), sizeof(uint64_t), 0, cudaMemcpyHostToDevice));
-    }
-}
+    freeFragments(),
+    deviceInitialised(false) { }
 
 
 void EnvironmentManager::init(const std::string &model_name, const EnvironmentDescription &desc) {
+    // Initialise device portions of Environment manager
+    initialiseDevice();
     // Error if reinit
     for (auto &&i : properties) {
         if (i.first.first == model_name) {
@@ -72,20 +63,33 @@ void EnvironmentManager::init(const std::string &model_name, const EnvironmentDe
     // Defragment to rebuild it properly
     defragment(&orderedProperties);
 }
+
+void EnvironmentManager::initialiseDevice() {
+    if (!deviceInitialised) {
+        void *t_c_buffer = nullptr;
+        gpuErrchk(cudaGetSymbolAddress(&t_c_buffer, flamegpu_internal::c_envPropBuffer));
+        c_buffer = reinterpret_cast<char*>(t_c_buffer);
+        // printf("Env Prop Constant Cache Buffer: %p - %p\n", c_buffer, c_buffer + MAX_BUFFER_SIZE);
+        assert(CURVE_NAMESPACE_HASH == DeviceEnvironment::CURVE_NAMESPACE_HASH());  // Host and Device namespace const's do not match
+        // Setup device-side error pattern
+        const uint64_t h_errorPattern = DeviceEnvironment::ERROR_PATTERN();
+        gpuErrchk(cudaMemcpyToSymbol(flamegpu_internal::c_deviceEnvErrorPattern, reinterpret_cast<const void*>(&h_errorPattern), sizeof(uint64_t), 0, cudaMemcpyHostToDevice));
+    }
+}
 void EnvironmentManager::free(const std::string &model_name) {
-    curve.setNamespaceByHash(CURVE_NAMESPACE_HASH);
+    Curve::getInstance().setNamespaceByHash(CURVE_NAMESPACE_HASH);
     for (auto &&i = properties.begin(); i != properties.end();) {
         if (i->first.first == model_name) {
             // Release from CURVE
             Curve::VariableHash cvh = toHash(i->first);
-            curve.unregisterVariableByHash(cvh);
+            Curve::getInstance().unregisterVariableByHash(cvh);
             // Drop from properties map
             i = properties.erase(i);
         } else {
             ++i;
         }
     }
-    curve.setDefaultNamespace();
+    Curve::getInstance().setDefaultNamespace();
     // Defragment to clear up all the buffer items we didn't handle here
     defragment();
 }
@@ -98,8 +102,8 @@ EnvironmentManager::NamePair EnvironmentManager::toName(const std::string &model
  * @note Not static, because eventually we might need to use curve singleton
  */
 Curve::VariableHash EnvironmentManager::toHash(const NamePair &name) const {
-    Curve::VariableHash model_cvh = curve.variableRuntimeHash(name.first.c_str());
-    Curve::VariableHash var_cvh = curve.variableRuntimeHash(name.second.c_str());
+    Curve::VariableHash model_cvh = Curve::getInstance().variableRuntimeHash(name.first.c_str());
+    Curve::VariableHash var_cvh = Curve::getInstance().variableRuntimeHash(name.second.c_str());
     return model_cvh + var_cvh;
 }
 
@@ -173,14 +177,14 @@ void EnvironmentManager::add(const NamePair &name, const char *ptr, const size_t
     memcpy(hc_buffer + buffOffset, ptr, length);
     gpuErrchk(cudaMemcpy(reinterpret_cast<void*>(const_cast<char*>(c_buffer + buffOffset)), reinterpret_cast<void*>(hc_buffer + buffOffset), length, cudaMemcpyHostToDevice));
     // Register in cuRVE
-    curve.setNamespaceByHash(CURVE_NAMESPACE_HASH);
+    Curve::getInstance().setNamespaceByHash(CURVE_NAMESPACE_HASH);
     Curve::VariableHash cvh = toHash(name);
-    const auto CURVE_RESULT = curve.registerVariableByHash(cvh, reinterpret_cast<void*>(const_cast<char*>(c_buffer + buffOffset)), typeSize, elements);
+    const auto CURVE_RESULT = Curve::getInstance().registerVariableByHash(cvh, reinterpret_cast<void*>(const_cast<char*>(c_buffer + buffOffset)), typeSize, elements);
     if (CURVE_RESULT == Curve::UNKNOWN_VARIABLE) {
         THROW CurveException("curveRegisterVariableByHash() returned UNKNOWN_CURVE_VARIABLE"
             "in EnvironmentManager::add().");
     }
-    curve.setDefaultNamespace();
+    Curve::getInstance().setDefaultNamespace();
 }
 
 void EnvironmentManager::defragment(DefragMap *mergeProperties) {
@@ -201,7 +205,7 @@ void EnvironmentManager::defragment(DefragMap *mergeProperties) {
     std::unordered_map<NamePair, EnvProp, NamePairHash> t_properties;
     char t_buffer[MAX_BUFFER_SIZE];
     ptrdiff_t buffOffset = 0;
-    curve.setNamespaceByHash(CURVE_NAMESPACE_HASH);
+    Curve::getInstance().setNamespaceByHash(CURVE_NAMESPACE_HASH);
     // Iterate largest vars first
     for (auto _i = orderedProperties.rbegin(); _i != orderedProperties.rend(); ++_i) {
         size_t typeSize = _i->first;
@@ -222,7 +226,7 @@ void EnvironmentManager::defragment(DefragMap *mergeProperties) {
             Curve::VariableHash cvh = toHash(i.first);
             // Only unregister variable if it's already registered
             if (!mergeProperties) {  // Merge properties are only provided on 1st init, when vars can't be unregistered
-                curve.unregisterVariableByHash(cvh);
+                Curve::getInstance().unregisterVariableByHash(cvh);
             } else {
                 // Can this var be found inside mergeProps
                 auto range = mergeProperties->equal_range(_i->first);
@@ -234,10 +238,10 @@ void EnvironmentManager::defragment(DefragMap *mergeProperties) {
                     }
                 }
                 if (!isFound) {
-                    curve.unregisterVariableByHash(cvh);
+                    Curve::getInstance().unregisterVariableByHash(cvh);
                 }
             }
-            const auto CURVE_RESULT = curve.registerVariableByHash(cvh, reinterpret_cast<void*>(const_cast<char*>(c_buffer + buffOffset)),
+            const auto CURVE_RESULT = Curve::getInstance().registerVariableByHash(cvh, reinterpret_cast<void*>(const_cast<char*>(c_buffer + buffOffset)),
                 typeSize, i.second.elements);
             if (CURVE_RESULT == Curve::UNKNOWN_VARIABLE) {
                 THROW CurveException("curveRegisterVariableByHash() returned UNKNOWN_CURVE_VARIABLE, "
@@ -252,7 +256,7 @@ void EnvironmentManager::defragment(DefragMap *mergeProperties) {
                 "in EnvironmentManager::defragment(DefragMap).");
         }
     }
-    curve.setDefaultNamespace();
+    Curve::getInstance().setDefaultNamespace();
     // Replace stored properties with temp
     std::swap(properties, t_properties);
     // Replace buffer on host

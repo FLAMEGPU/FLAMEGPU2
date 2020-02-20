@@ -255,6 +255,15 @@ class Curve {
     int    h_states[MAX_VARIABLES];               // Host array of the states of registered variables
     size_t h_sizes[MAX_VARIABLES];                // Host array of the sizes of registered variable types (Note: RTTI not supported in CUDA so this is the best we can do for now)
     unsigned int h_lengths[MAX_VARIABLES];        // Host array of the length of registered variables (i.e: vector length)
+    bool deviceInitialised;                       // Flag indicating that curve has/hasn't been initialised yet on a device.
+
+    /**
+     * Initialises cuRVE on the currently active device.
+     * 
+     * @note - not yet aware if the device has been reset.
+     * @todo - Need to add a device-side check for initialisation.
+     */
+    void initialiseDevice();
 
  protected:
     /** @brief    Default constructor.

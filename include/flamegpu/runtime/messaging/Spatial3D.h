@@ -9,7 +9,7 @@
 #include "flamegpu/runtime/messaging/BruteForce.h"
 #include "flamegpu/runtime/messaging/Spatial2D.h"
 #include "flamegpu/runtime/cuRVE/curve.h"
-
+#include "flamegpu/util/nvtx.h"
 
 /**
  * 3D Continuous spatial messaging functionality
@@ -338,47 +338,42 @@ class MsgSpatial3D {
         explicit CUDAModelHandler(CUDAMessage &a)
          : MsgSpecialisationHandler()
          , sim_message(a) {
-             const Data &d = (const Data &)a.getMessageDescription();
-             hd_data.radius = d.radius;
-             hd_data.min[0] = d.minX;
-             hd_data.min[1] = d.minY;
-             hd_data.min[2] = d.minZ;
-             hd_data.max[0] = d.maxX;
-             hd_data.max[1] = d.maxY;
-             hd_data.max[2] = d.maxZ;
-             binCount = 1;
-             for (unsigned int axis = 0; axis < 3; ++axis) {
-                 hd_data.environmentWidth[axis] = hd_data.max[axis] - hd_data.min[axis];
-                 hd_data.gridDim[axis] = static_cast<unsigned int>(ceil(hd_data.environmentWidth[axis] / hd_data.radius));
-                 binCount *= hd_data.gridDim[axis];
-             }
-             gpuErrchk(cudaMalloc(&d_histogram, (binCount + 1) * sizeof(unsigned int)));
-             gpuErrchk(cudaMalloc(&hd_data.PBM, (binCount + 1) * sizeof(unsigned int)));
-             gpuErrchk(cudaMalloc(&d_data, sizeof(MetaData)));
-             gpuErrchk(cudaMemcpy(d_data, &hd_data, sizeof(MetaData), cudaMemcpyHostToDevice));
-             resizeCubTemp();
+            NVTX_RANGE("Spatial3D::CUDAModelHandler");
+            const Data &d = (const Data &)a.getMessageDescription();
+            hd_data.radius = d.radius;
+            hd_data.min[0] = d.minX;
+            hd_data.min[1] = d.minY;
+            hd_data.min[2] = d.minZ;
+            hd_data.max[0] = d.maxX;
+            hd_data.max[1] = d.maxY;
+            hd_data.max[2] = d.maxZ;
+            binCount = 1;
+            for (unsigned int axis = 0; axis < 3; ++axis) {
+                hd_data.environmentWidth[axis] = hd_data.max[axis] - hd_data.min[axis];
+                hd_data.gridDim[axis] = static_cast<unsigned int>(ceil(hd_data.environmentWidth[axis] / hd_data.radius));
+                binCount *= hd_data.gridDim[axis];
+            }
+            // Device allocation occurs in allocateMetaDataDevicePtr rather than the constructor.
         }
         /**
          * Destructor
          * Frees all alocated memory
          */
-        ~CUDAModelHandler() override {
-            d_CUB_temp_storage_bytes = 0;
-            gpuErrchk(cudaFree(d_CUB_temp_storage));
-            gpuErrchk(cudaFree(d_histogram));
-            gpuErrchk(cudaFree(hd_data.PBM));
-            gpuErrchk(cudaFree(d_data));
-            if (d_keys) {
-                d_keys_vals_storage_bytes = 0;
-                gpuErrchk(cudaFree(d_keys));
-                gpuErrchk(cudaFree(d_vals));
-            }
-        }
+        ~CUDAModelHandler() override { }
         /**
          * Reconstructs the partition boundary matrix
          * This should be called before reading newly output messages
          */
         void buildIndex() override;
+        /**
+         * Allocates memory for the constructed index.
+         * The memory allocation is checked by build index.
+         */
+        void allocateMetaDataDevicePtr() override;
+        /**
+         * Releases memory for the constructed index.
+         */
+        void freeMetaDataDevicePtr() override;
         /**
          * Returns a pointer to the metadata struct, this is required for reading the message data
          */

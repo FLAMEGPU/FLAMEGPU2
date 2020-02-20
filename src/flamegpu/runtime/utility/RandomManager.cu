@@ -37,11 +37,12 @@ namespace flamegpu_internal {
 
 unsigned int RandomManager::simulationInstances = 0;
 
-RandomManager::RandomManager() {
+RandomManager::RandomManager() :
+    deviceInitialised(false) {
     reseed(static_cast<unsigned int>(seedFromTime() % UINT_MAX));
 }
 RandomManager::~RandomManager() {
-    free();
+    // free(); // @todo call free/freeDevice not in the constructor! instead just log that?
 }
 /**
  * Member fns
@@ -49,31 +50,59 @@ RandomManager::~RandomManager() {
 uint64_t RandomManager::seedFromTime() {
     return static_cast<uint64_t>(time(nullptr));
 }
-void RandomManager::reseed(const unsigned int &seed) {
-    RandomManager::mSeed = seed;
+
+void RandomManager::reseedHost() {
+    freeHost();
     host_rng = std::mt19937();
-    free();  // This seeds host_rng
+    // Reset host random generator/s
+    host_rng.seed(mSeed);
 }
-void RandomManager::free() {
-    // Clear size
-    length = 0;
-    flamegpu_internal::hd_random_size = 0;
-    gpuErrchk(cudaMemcpyToSymbol(flamegpu_internal::d_random_size, &flamegpu_internal::hd_random_size, sizeof(RandomManager::size_type)));
-    // Release old
-    if (flamegpu_internal::hd_random_state) {
-        gpuErrchk(cudaFree(flamegpu_internal::hd_random_state));
-    }
-    // Update pointers
-    flamegpu_internal::hd_random_state = nullptr;
-    gpuErrchk(cudaMemcpyToSymbol(flamegpu_internal::d_random_state, &flamegpu_internal::hd_random_state, sizeof(curandState*)))
+
+void RandomManager::reseedDevice() {
+    freeDevice();
+    // curand is initialised on access if length does not match. This would need a second device lenght?
+}
+
+void RandomManager::reseed(const unsigned int &seed) {
+    // Set the instance's seed to the new value
+    RandomManager::mSeed = seed;
+
+    // Apply the new seed to the host
+    reseedHost();
+    // Apply the new seed to the device.
+    reseedDevice();
+}
+
+void RandomManager::freeHost() {
     // Release host_max
     if (h_max_random_state) {
-        ::free(h_max_random_state);
+        std::free(h_max_random_state);
         h_max_random_state = nullptr;
     }
     h_max_random_size = 0;
-    // Reset host random generator/s
-    host_rng.seed(mSeed);
+}
+
+void RandomManager::freeDevice() {
+    // Clear size - length is just for the device portion?
+    length = 0;
+
+    if (deviceInitialised) {
+        // Set the device's internal size to 0.
+        flamegpu_internal::hd_random_size = 0;
+        gpuErrchk(cudaMemcpyToSymbol(flamegpu_internal::d_random_size, &flamegpu_internal::hd_random_size, sizeof(RandomManager::size_type)));
+        // Release old random states on the deivce and update pointers.
+        if (flamegpu_internal::hd_random_state) {
+            gpuErrchk(cudaFree(flamegpu_internal::hd_random_state));
+        }
+        flamegpu_internal::hd_random_state = nullptr;
+        gpuErrchk(cudaMemcpyToSymbol(flamegpu_internal::d_random_state, &flamegpu_internal::hd_random_state, sizeof(curandState*)))
+    }
+}
+
+void RandomManager::free() {
+    // Free the host and device.
+    freeHost();
+    freeDevice();
 }
 
 bool RandomManager::resize(const size_type &_length) {
@@ -105,6 +134,8 @@ __global__ void init_curand(unsigned int threadCount, uint64_t seed, RandomManag
         curand_init(seed, offset + id, 0, &flamegpu_internal::d_random_state[offset + id]);
 }
 void RandomManager::resizeDeviceArray(const size_type &_length) {
+    // Mark that the device hsa now been initialised.
+    deviceInitialised = true;
     if (_length > length) {
         // Growing array
         curandState *t_hd_random_state = nullptr;

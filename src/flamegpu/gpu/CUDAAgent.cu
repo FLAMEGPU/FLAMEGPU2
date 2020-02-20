@@ -35,8 +35,7 @@
 CUDAAgent::CUDAAgent(const AgentData& description)
     : agent_description(description)
     , state_map()
-    , max_list_size(0)
-    , curve(Curve::getInstance()) { }
+    , max_list_size(0) { }
 
 /**
  * A destructor.
@@ -209,22 +208,22 @@ void CUDAAgent::mapRuntimeVariables(const AgentFunctionData& func) const {
             agent_description.name.c_str(), func.initial_state.c_str());
     }
 
-    const Curve::VariableHash agent_hash = curve.variableRuntimeHash(agent_description.name.c_str());
-    const Curve::VariableHash func_hash = curve.variableRuntimeHash(func.name.c_str());
+    const Curve::VariableHash agent_hash = Curve::getInstance().variableRuntimeHash(agent_description.name.c_str());
+    const Curve::VariableHash func_hash = Curve::getInstance().variableRuntimeHash(func.name.c_str());
     // loop through the agents variables to map each variable name using cuRVE
     for (const auto &mmp : agent_description.variables) {
         // get a device pointer for the agent variable name
         void* d_ptr = sm->second->getAgentListVariablePointer(mmp.first);
 
         // map using curve
-        const Curve::VariableHash var_hash = curve.variableRuntimeHash(mmp.first.c_str());
+        const Curve::VariableHash var_hash = Curve::getInstance().variableRuntimeHash(mmp.first.c_str());
 
         // get the agent variable size
         size_t size = mmp.second.type_size;
 
        // maximum population num
         unsigned int length = this->getMaximumListSize();
-        curve.registerVariableByHash(var_hash + agent_hash + func_hash, d_ptr, size, length);
+        Curve::getInstance().registerVariableByHash(var_hash + agent_hash + func_hash, d_ptr, size, length);
     }
 }
 
@@ -238,16 +237,16 @@ void CUDAAgent::unmapRuntimeVariables(const AgentFunctionData& func) const {
             agent_description.name.c_str(), func.initial_state.c_str());
     }
 
-    const Curve::VariableHash agent_hash = curve.variableRuntimeHash(agent_description.name.c_str());
-    const Curve::VariableHash func_hash = curve.variableRuntimeHash(func.name.c_str());
+    const Curve::VariableHash agent_hash = Curve::getInstance().variableRuntimeHash(agent_description.name.c_str());
+    const Curve::VariableHash func_hash = Curve::getInstance().variableRuntimeHash(func.name.c_str());
     // loop through the agents variables to map each variable name using cuRVE
     for (const auto &mmp : agent_description.variables) {
         // get a device pointer for the agent variable name
         // void* d_ptr = sm->second->getAgentListVariablePointer(mmp.first);
 
         // unmap using curve
-        const Curve::VariableHash var_hash = curve.variableRuntimeHash(mmp.first.c_str());
-        curve.unregisterVariableByHash(var_hash + agent_hash + func_hash);
+        const Curve::VariableHash var_hash = Curve::getInstance().variableRuntimeHash(mmp.first.c_str());
+        Curve::getInstance().unregisterVariableByHash(var_hash + agent_hash + func_hash);
     }
 }
 
