@@ -405,6 +405,10 @@ void CUDAAgentModel::applyConfig_derived() {
     if (cudaStatus != cudaSuccess) {
         THROW InvalidCUDAdevice("Unknown error setting CUDA device to '%d'. (%d available)", config.device_id, device_count);
     }
+    // Call cudaFree to iniitalise the context early
+    NVTX_PUSH("CUDA initialisation");
+    gpuErrchk(cudaFree(0));
+    NVTX_POP();
 }
 
 void CUDAAgentModel::resetDerivedConfig() {
