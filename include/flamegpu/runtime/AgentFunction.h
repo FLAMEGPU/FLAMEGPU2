@@ -25,7 +25,7 @@ typedef void(AgentFunctionWrapper)(
  * Wrapper function for launching agent functions
  * Initialises FLAMEGPU_API instance
  * @param model_name_hash CURVE hash of the model's name
- * @param agent_func_name_hash CURVE hash of the agent function's name
+ * @param agent_func_name_hash CURVE hash of the agent + function's names
  * @param messagename_inp_hash CURVE hash of the input message's name
  * @param messagename_outp_hash CURVE hash of the output message's name
  * @param popNo Total number of agents exeucting the function (number of threads launched)
@@ -52,14 +52,10 @@ __global__ void agent_function_wrapper(
     FLAMEGPU_DEVICE_API<MsgIn, MsgOut> *api = new FLAMEGPU_DEVICE_API<MsgIn, MsgOut>(
         thread_in_layer_offset,
         model_name_hash,
+        agent_func_name_hash,
         streamId,
         MsgIn::In(agent_func_name_hash, messagename_inp_hash, messagelist_metadata),
         MsgOut::Out(agent_func_name_hash, messagename_outp_hash, streamId));
-
-    // ! set namespace for agent name
-    api->setAgentNameSpace(agent_func_name_hash);
-
-    // printf("hello from wrapper %d %u\n",threadIdx.x,agentname_hash);
 
     // call the user specified device function
     {

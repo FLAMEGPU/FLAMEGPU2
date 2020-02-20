@@ -34,9 +34,10 @@ void CUDAScatter::resize(const unsigned int &newLen) {
     }
 }
 
+template <typename T>
 __global__ void scatter_generic(
     unsigned int threadCount,
-    unsigned int *scan_flag,
+    T scan_flag,
     unsigned int *position,
     CUDAScatter::ScatterData *scatter_data,
     const unsigned int scatter_len,
@@ -74,13 +75,13 @@ unsigned int CUDAScatter::scatter(
     const std::map<std::string, void*> &in,
     const std::map<std::string, void*> &out,
     const unsigned int &itemCount,
-    const unsigned int &out_index_offset) {
+    const unsigned int &out_index_offset,
+    const bool &invert_scan_flag) {
     int blockSize = 0;  // The launch configurator returned block size
     int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
     int gridSize = 0;  // The actual grid size needed, based on input size
-
     // calculate the grid block size for main agent function
-    cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, scatter_generic, 0, itemCount);
+    cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, scatter_generic<unsigned int*>, 0, itemCount);
     //! Round up according to CUDAAgent state list size
     gridSize = (itemCount + blockSize - 1) / blockSize;
     // for each variable, scatter from swap to regular
@@ -93,20 +94,38 @@ unsigned int CUDAScatter::scatter(
     resize(static_cast<unsigned int>(sd.size()));
     // Important that sd.size() is still used here, incase allocated len (data_len) is bigger
     gpuErrchk(cudaMemcpy(d_data, sd.data(), sizeof(ScatterData) * sd.size(), cudaMemcpyHostToDevice));
-    if (messageOrAgent == Agent) {
-        scatter_generic <<<gridSize, blockSize>>> (
-            itemCount,
-            flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].d_ptrs.scan_flag,
-            flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].d_ptrs.position,
-            d_data, static_cast<unsigned int>(sd.size()),
-            out_index_offset);
-    } else if (messageOrAgent == Message) {
-        scatter_generic <<<gridSize, blockSize>>> (
-            itemCount,
-            flamegpu_internal::CUDAScanCompaction::hd_message_configs[streamId].d_ptrs.scan_flag,
-            flamegpu_internal::CUDAScanCompaction::hd_message_configs[streamId].d_ptrs.position,
-            d_data, static_cast<unsigned int>(sd.size()),
-            out_index_offset);
+    if (invert_scan_flag) {
+        if (messageOrAgent == Agent) {
+            scatter_generic <<<gridSize, blockSize>>> (
+                itemCount,
+                InversionIterator(flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].d_ptrs.scan_flag),
+                flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].d_ptrs.position,
+                d_data, static_cast<unsigned int>(sd.size()),
+                out_index_offset);
+        } else if (messageOrAgent == Message) {
+            scatter_generic <<<gridSize, blockSize>>> (
+                itemCount,
+                InversionIterator(flamegpu_internal::CUDAScanCompaction::hd_message_configs[streamId].d_ptrs.scan_flag),
+                flamegpu_internal::CUDAScanCompaction::hd_message_configs[streamId].d_ptrs.position,
+                d_data, static_cast<unsigned int>(sd.size()),
+                out_index_offset);
+        }
+    } else {
+        if (messageOrAgent == Agent) {
+            scatter_generic <<<gridSize, blockSize>>> (
+                itemCount,
+                flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].d_ptrs.scan_flag,
+                flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].d_ptrs.position,
+                d_data, static_cast<unsigned int>(sd.size()),
+                out_index_offset);
+        } else if (messageOrAgent == Message) {
+            scatter_generic <<<gridSize, blockSize>>> (
+                itemCount,
+                flamegpu_internal::CUDAScanCompaction::hd_message_configs[streamId].d_ptrs.scan_flag,
+                flamegpu_internal::CUDAScanCompaction::hd_message_configs[streamId].d_ptrs.position,
+                d_data, static_cast<unsigned int>(sd.size()),
+                out_index_offset);
+        }
     }
     gpuErrchkLaunch();
     // Update count of live agents
@@ -130,7 +149,7 @@ unsigned int CUDAScatter::scatterAll(
     int gridSize = 0;  // The actual grid size needed, based on input size
 
                        // calculate the grid block size for main agent function
-    cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, scatter_generic, 0, itemCount);
+    cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, scatter_all_generic, 0, itemCount);
     //! Round up according to CUDAAgent state list size
     gridSize = (itemCount + blockSize - 1) / blockSize;
     // for each variable, scatter from swap to regular
@@ -185,7 +204,7 @@ void CUDAScatter::pbm_reorder(
     int gridSize = 0;  // The actual grid size needed, based on input size
 
                        // calculate the grid block size for main agent function
-    cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, scatter_generic, 0, itemCount);
+    cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, pbm_reorder_generic, 0, itemCount);
     //! Round up according to CUDAAgent state list size
     gridSize = (itemCount + blockSize - 1) / blockSize;
     // for each variable, scatter from swap to regular

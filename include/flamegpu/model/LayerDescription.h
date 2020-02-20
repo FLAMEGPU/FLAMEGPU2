@@ -149,11 +149,29 @@ class LayerDescription {
 template<typename AgentFunction>
 void LayerDescription::addAgentFunction(AgentFunction /*af*/) {
     AgentFunctionWrapper * func_compare = AgentFunction::fnPtr();
-    // Unsure if implicit template instantion leads to two unique function ptrs
-    // Logic dictates that it should work (else compiler would complain duplicate symbols)
+    // Find the matching agent function in model hierarchy
     for (auto a : model->agents) {
         for (auto f : a.second->functions) {
             if (f.second->func == func_compare) {
+                // Check that layer does not already contain function with same agent + states
+                for (const auto &b : layer->agent_functions) {
+                    if (auto parent = b->parent.lock()) {
+                        // If agent matches
+                        if (parent->name == a.second->name) {
+                            // If they share a state
+                            if (b->initial_state == f.second->initial_state ||
+                                b->initial_state == f.second->end_state ||
+                                b->end_state == f.second->initial_state ||
+                                b->end_state == f.second->end_state) {
+                                THROW InvalidAgentFunc("Agent functions '%s' cannot be added to this layer as agent function '%s' "
+                                    "within the layer shares an input or output state, this is not permitted, "
+                                    "in LayerDescription::addAgentFunction()\n",
+                                    f.second->name.c_str(), b->name.c_str());
+                            }
+                        }
+                    }
+                }
+                // Add it and check it succeeded
                 if (layer->agent_functions.emplace(f.second).second)
                     return;
                 THROW InvalidAgentFunc("Attempted to add same agent function to same layer twice, "
@@ -162,7 +180,7 @@ void LayerDescription::addAgentFunction(AgentFunction /*af*/) {
         }
     }
     THROW InvalidAgentFunc("Agent function was not found, "
-        "in AgentFunctionDescription::addAgentFunction()\n");
+        "in LayerDescription::addAgentFunction()\n");
 }
 
 #endif  // INCLUDE_FLAMEGPU_MODEL_LAYERDESCRIPTION_H_

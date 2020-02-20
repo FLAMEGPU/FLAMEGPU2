@@ -252,12 +252,13 @@ void CUDAAgent::unmapRuntimeVariables(const AgentFunctionData& func) const {
     }
 }
 
-void CUDAAgent::process_death(const AgentFunctionData& func, const unsigned int &streamId) {
+void CUDAAgent::processDeath(const AgentFunctionData& func, const unsigned int &streamId) {
     if (func.has_agent_death) {  // Optionally process agent death
         // check the cuda agent state map to find the correct state list for functions starting state
         CUDAStateMap::const_iterator sm = state_map.find(func.initial_state);
 
         unsigned int agent_count = sm->second->getCUDAStateListSize();
+        // Resize cub (if required)
         if (agent_count > flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].cub_temp_size_max_list_size) {
             if (flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].hd_cub_temp) {
                 gpuErrchk(cudaFree(flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].hd_cub_temp));
@@ -302,7 +303,61 @@ ModelData::size_type CUDAAgent::getStateSize(const std::string& state_name) cons
     return getAgentStateList(state_name)->getCUDAStateListSize();
 }
 
-void CUDAAgent::transition_state(const std::string &_src, const std::string &_dest, const unsigned int &streamId) {
+void CUDAAgent::processFunctionCondition(const AgentFunctionData& func, const unsigned int &streamId) {
+    if (func.condition) {  // Optionally process agent death
+        // check the cuda agent state map to find the correct state list for functions starting state
+        CUDAStateMap::const_iterator sm = state_map.find(func.initial_state);
+
+        unsigned int agent_count = sm->second->getCUDAStateListSize();
+        // Resize cub (if required)
+        if (agent_count > flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].cub_temp_size_max_list_size) {
+            if (flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].hd_cub_temp) {
+                gpuErrchk(cudaFree(flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].hd_cub_temp));
+            }
+            flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].cub_temp_size = 0;
+            cub::DeviceScan::ExclusiveSum(
+                nullptr,
+                flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].cub_temp_size,
+                flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].d_ptrs.scan_flag,
+                flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].d_ptrs.position,
+                max_list_size + 1);
+            gpuErrchk(cudaMalloc(&flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].hd_cub_temp, flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].cub_temp_size));
+            flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].cub_temp_size_max_list_size = max_list_size;
+        }
+        // Perform scan
+        cub::DeviceScan::ExclusiveSum(
+            flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].hd_cub_temp,
+            flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].cub_temp_size,
+            flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].d_ptrs.scan_flag,
+            flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].d_ptrs.position,
+            agent_count + 1);
+        gpuErrchkLaunch();
+        // Use scan results to sort false agents into start of list (and don't swap buffers)
+        const unsigned int conditionFailCount = sm->second->scatter(streamId, 0, CUDAAgentStateList::FunctionCondition);
+        // Invert scan
+        CUDAScatter::InversionIterator ii = CUDAScatter::InversionIterator(flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].d_ptrs.scan_flag);
+        cudaMemset(flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].d_ptrs.position, 0, sizeof(unsigned int)*(agent_count + 1));
+        cub::DeviceScan::ExclusiveSum(
+            flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].hd_cub_temp,
+            flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].cub_temp_size,
+            ii,
+            flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].d_ptrs.position,
+            agent_count + 1);
+        gpuErrchkLaunch();
+        // Use inverted scan results to sort true agents into end of list (and swap buffers)
+        const unsigned int conditionpassCount = sm->second->scatter(streamId, conditionFailCount, CUDAAgentStateList::FunctionCondition2);
+        assert(agent_count == conditionpassCount + conditionFailCount);
+        // Set agent function condition state
+        sm->second->setConditionState(conditionFailCount);
+    }
+}
+void CUDAAgent::clearFunctionConditionState(const std::string &state) {
+        // check the cuda agent state map to find the correct state list for functions starting state
+        CUDAStateMap::const_iterator sm = state_map.find(state);
+        sm->second->setConditionState(0);
+}
+
+void CUDAAgent::transitionState(const std::string &_src, const std::string &_dest, const unsigned int &streamId) {
     if (_src != _dest) {
         CUDAStateMap::const_iterator src = state_map.find(_src);
         CUDAStateMap::const_iterator dest = state_map.find(_dest);
@@ -317,15 +372,18 @@ void CUDAAgent::transition_state(const std::string &_src, const std::string &_de
                 agent_description.name.c_str(), _dest.c_str());
         }
         // If src list is empty we can skip
-        if (src->second->getCUDAStateListSize() == 0)
+        if (src->second->getCUDATrueStateListSize() == 0)
             return;
-        // If dest list is empty, we can swap the lists (AS WE ARE CURRENTLY NOT HANDING AGENT FUNCTION CONDITIONS)
-        if (dest->second->getCUDAStateListSize() == 0) {
-            swap(state_map.at(_src), state_map.at(_dest));  // Not 100% certain this will work
+        // If dest list is empty and we are not in an gent function condition, we can swap the lists
+        if (dest->second->getCUDATrueStateListSize() == 0 && src->second->getCUDAStateListSize() == src->second->getCUDATrueStateListSize()) {
+            swap(state_map.at(_src), state_map.at(_dest));
             assert(state_map.find(_src)->second->getCUDAStateListSize() == 0);
         } else {  // Otherwise we must perform a scatter all operation
             auto &cs = CUDAScatter::getInstance(streamId);
             cs.scatterAll(agent_description.variables, src->second->getReadList(), dest->second->getReadList(), src->second->getCUDAStateListSize(), dest->second->getCUDAStateListSize());
+            // Update list sizes
+            dest->second->setCUDAStateListSize(dest->second->getCUDAStateListSize() + src->second->getCUDAStateListSize());
+            src->second->setCUDAStateListSize(0);
         }
     }
 }

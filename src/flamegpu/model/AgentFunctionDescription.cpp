@@ -21,6 +21,35 @@ bool AgentFunctionDescription::operator!=(const AgentFunctionDescription& rhs) c
 void AgentFunctionDescription::setInitialState(const std::string &init_state) {
     if (auto p = function->parent.lock()) {
         if (p->description->hasState(init_state)) {
+            // Check if this agent function is already in a layer
+            for (const auto &l : model->layers) {
+                for (const auto &f : l->agent_functions) {
+                    // Agent fn is in layer
+                    if (f->name == this->function->name) {
+                        // search all functions in that layer
+                        for (const auto &f2 : l->agent_functions) {
+                            if (const auto &a2 = f2->parent.lock()) {
+                                if (const auto &a1 = this->function->parent.lock()) {
+                                    // Same agent
+                                    if (a2->name == a1->name) {
+                                        // Skip ourself
+                                        if (f2->name == this->function->name)
+                                            continue;
+                                        if (f2->initial_state == init_state ||
+                                            f2->end_state == init_state) {
+                                            THROW InvalidAgentFunc("Agent functions's '%s' and '%s', within the same layer "
+                                                "cannot share any input or output states, this is not permitted, "
+                                                "in AgentFunctionDescription::setInitialState()\n",
+                                                f2->name.c_str(), this->function->name.c_str());
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            // Checks passed, make change
             this->function->initial_state = init_state;
         } else {
             THROW InvalidStateName("Agent ('%s') does not contain state '%s', "
@@ -35,6 +64,35 @@ void AgentFunctionDescription::setInitialState(const std::string &init_state) {
 void AgentFunctionDescription::setEndState(const std::string &exit_state) {
     if (auto p = function->parent.lock()) {
         if (p->description->hasState(exit_state)) {
+            // Check if this agent function is already in a layer
+            for (const auto &l : model->layers) {
+                for (const auto &f : l->agent_functions) {
+                    // Agent fn is in layer
+                    if (f->name == this->function->name) {
+                        // search all functions in that layer
+                        for (const auto &f2 : l->agent_functions) {
+                            if (const auto &a2 = f2->parent.lock()) {
+                                if (const auto &a1 = this->function->parent.lock()) {
+                                    // Same agent
+                                    if (a2->name == a1->name) {
+                                        // Skip ourself
+                                        if (f2->name == this->function->name)
+                                            continue;
+                                        if (f2->initial_state == exit_state ||
+                                            f2->end_state == exit_state) {
+                                            THROW InvalidAgentFunc("Agent functions's '%s' and '%s', within the same layer "
+                                                "cannot share any input or output states, this is not permitted, "
+                                                "in AgentFunctionDescription::setEndState()\n",
+                                                f2->name.c_str(), this->function->name.c_str());
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            // Checks passed, make change
             this->function->end_state = exit_state;
         } else {
             THROW InvalidStateName("Agent ('%s') does not contain state '%s', "
@@ -308,6 +366,13 @@ bool AgentFunctionDescription::hasMessageOutput() const {
 bool AgentFunctionDescription::hasAgentOutput() const {
     return function->agent_output.lock() != nullptr;
 }
+bool AgentFunctionDescription::hasFunctionCondition() const {
+    return function->condition != nullptr;
+}
 AgentFunctionWrapper *AgentFunctionDescription::getFunctionPtr() const {
     return function->func;
 }
+AgentFunctionConditionWrapper *AgentFunctionDescription::getConditionPtr() const {
+    return function->condition;
+}
+

@@ -33,6 +33,7 @@ const char *FUNCTION_NAME3 = "Function3";
 const char *STATE_NAME = "State1";
 const char *NEW_STATE_NAME = "State2";
 const char *WRONG_STATE_NAME = "State3";
+const char *OTHER_STATE_NAME = "State4";
 
 TEST(AgentFunctionDescriptionTest, InitialState) {
     ModelDescription _m(MODEL_NAME);
@@ -242,4 +243,27 @@ TEST(AgentFunctionDescriptionTest, MessageOutputInput) {
     EXPECT_THROW(f.setMessageInput(m), InvalidMessageName);
     EXPECT_NO_THROW(f.setMessageInput(m2));
 }
+TEST(AgentFunctionDescriptionTest, SameAgentAndStateInLayer) {
+    ModelDescription _m(MODEL_NAME);
+    AgentDescription &a = _m.newAgent(AGENT_NAME);
+    a.newState(STATE_NAME);
+    a.newState(NEW_STATE_NAME);
+    a.newState(WRONG_STATE_NAME);
+    a.newState(OTHER_STATE_NAME);
+    AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn2);
+    f.setInitialState(STATE_NAME);
+    f.setEndState(NEW_STATE_NAME);
+    AgentFunctionDescription &f2 = a.newFunction(FUNCTION_NAME2, agent_fn3);
+    f2.setInitialState(WRONG_STATE_NAME);
+    f2.setEndState(OTHER_STATE_NAME);
+    LayerDescription &l = _m.newLayer();
+    // start matches end state
+    EXPECT_NO_THROW(l.addAgentFunction(agent_fn2));
+    EXPECT_NO_THROW(l.addAgentFunction(agent_fn3));
+    EXPECT_THROW(f2.setInitialState(STATE_NAME), InvalidAgentFunc);
+    EXPECT_THROW(f2.setInitialState(NEW_STATE_NAME), InvalidAgentFunc);
+    EXPECT_THROW(f2.setEndState(STATE_NAME), InvalidAgentFunc);
+    EXPECT_THROW(f2.setEndState(NEW_STATE_NAME), InvalidAgentFunc);
+}
+
 }  // namespace test_agent_function

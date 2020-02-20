@@ -88,9 +88,99 @@ bool CUDAAgentModel::step() {
         NVTX_RANGE(std::string("StepLayer " + std::to_string(lyr_idx)).c_str());
         const auto& functions = (*lyr)->agent_functions;
 
-        int j = 0;  // Track stream id
+        // Track stream id
+        int j = 0;
         // Sum the total number of threads being launched in the layer
         unsigned int totalThreads = 0;
+        /*! for each function apply any agent function conditions*/
+        {
+            // Map agent memory
+            for (const std::shared_ptr<AgentFunctionData> &func_des : functions) {
+                if (func_des->condition) {
+                    auto func_agent = func_des->parent.lock();
+                    const CUDAAgent& cuda_agent = getCUDAAgent(func_agent->name);
+                    flamegpu_internal::CUDAScanCompaction::resizeAgents(cuda_agent.getStateSize(func_des->initial_state), j);
+
+                    // Configure runtime access of the functions variables within the FLAME_API object
+                    cuda_agent.mapRuntimeVariables(*func_des, func_des->initial_state);
+
+                    // Zero the scan flag that will be written to
+                    flamegpu_internal::CUDAScanCompaction::zeroAgents(j);
+
+                    totalThreads += cuda_agent.getStateSize(func_des->initial_state);
+                }
+            }
+
+            // Ensure RandomManager is the correct size to accomodate all threads to be launched
+            rng.resize(totalThreads);
+            // Track stream id
+            j = 0;
+            // Sum the total number of threads being launched in the layer
+            totalThreads = 0;
+            // Launch kernel
+            for (const std::shared_ptr<AgentFunctionData> &func_des : functions) {
+                if (func_des->condition) {
+                    auto func_agent = func_des->parent.lock();
+                    if (!func_agent) {
+                        THROW InvalidAgentFunc("Agent function condition refers to expired agent.");
+                    }
+                    std::string agent_name = func_agent->name;
+                    std::string func_name = func_des->name;
+
+                    const CUDAAgent& cuda_agent = getCUDAAgent(agent_name);
+
+                    int state_list_size = cuda_agent.getStateSize(func_des->initial_state);
+                    if (state_list_size == 0)
+                        continue;
+
+                    int blockSize = 0;  // The launch configurator returned block size
+                    int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
+                    int gridSize = 0;  // The actual grid size needed, based on input size
+
+                                       // calculate the grid block size for main agent function
+                    cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, func_des->func, 0, state_list_size);
+
+                    //! Round up according to CUDAAgent state list size
+                    gridSize = (state_list_size + blockSize - 1) / blockSize;
+
+                    // hash agent name
+                    Curve::NamespaceHash agentname_hash = curve.variableRuntimeHash(agent_name.c_str());
+                    // hash function name
+                    Curve::NamespaceHash funcname_hash = curve.variableRuntimeHash(func_name.c_str());
+
+                    (func_des->condition) <<<gridSize, blockSize, 0, streams.at(j) >>>(modelname_hash, agentname_hash + funcname_hash, state_list_size, totalThreads, j);
+                    gpuErrchkLaunch();
+
+                    totalThreads += state_list_size;
+                    ++j;
+                }
+            }
+
+            // Track stream id
+            j = 0;
+            // Unmap agent memory, apply condition
+            for (const std::shared_ptr<AgentFunctionData> &func_des : functions) {
+                if (func_des->condition) {
+                    auto func_agent = func_des->parent.lock();
+                    if (!func_agent) {
+                        THROW InvalidAgentFunc("Agent function condition refers to expired agent.");
+                    }
+                    CUDAAgent& cuda_agent = getCUDAAgent(func_agent->name);
+
+                    // unmap the function variables
+                    cuda_agent.unmapRuntimeVariables(*func_des);
+
+                    // Process agent function condition
+                    cuda_agent.processFunctionCondition(*func_des, j);
+
+                    ++j;
+                }
+            }
+        }
+
+        j = 0;
+        // Sum the total number of threads being launched in the layer
+        totalThreads = 0;
         /*! for each func function - Loop through to do all mapping of agent and message variables */
         NVTX_PUSH("CUDAAgentModel::step::MapLayer");
         for (const std::shared_ptr<AgentFunctionData> &func_des : functions) {
@@ -123,7 +213,7 @@ bool CUDAAgentModel::step() {
                 flamegpu_internal::CUDAScanCompaction::resizeMessages(newMessages, j);
                 // Zero the scan flag that will be written to
                 if (func_des->message_output_optional)
-                    flamegpu_internal::CUDAScanCompaction::zeroMessages(j);  // Always default stream currently
+                    flamegpu_internal::CUDAScanCompaction::zeroMessages(j);
             }
 
 
@@ -134,10 +224,10 @@ bool CUDAAgentModel::step() {
 
             // Zero the scan flag that will be written to
             if (func_des->has_agent_death)
-                flamegpu_internal::CUDAScanCompaction::zeroAgents(0);  // Always default stream currently
+                flamegpu_internal::CUDAScanCompaction::zeroAgents(j);
 
             // Count total threads being launched
-            totalThreads += cuda_agent.getMaximumListSize();
+            totalThreads += cuda_agent.getStateSize(func_des->initial_state);
             ++j;
         }
         NVTX_POP();
@@ -245,10 +335,13 @@ bool CUDAAgentModel::step() {
             cuda_agent.unmapRuntimeVariables(*func_des);
 
             // Process agent death (has agent death check is handled by the method)
-            cuda_agent.process_death(*func_des, j);
+            cuda_agent.processDeath(*func_des, j);
 
             // Process agent state transition (Longer term merge this with process death?)
-            cuda_agent.transition_state(func_des->initial_state, func_des->end_state, j);
+            cuda_agent.transitionState(func_des->initial_state, func_des->end_state, j);
+
+            // Process agent function condition
+            cuda_agent.clearFunctionConditionState(func_des->initial_state);
 
             ++j;
         }

@@ -10,6 +10,7 @@
 
 #include "flamegpu/model/EnvironmentDescription.h"
 #include "flamegpu/runtime/AgentFunction.h"
+#include "flamegpu/runtime/AgentFunctionCondition.h"
 #include "flamegpu/runtime/flamegpu_host_api_macros.h"  // Todo replace with std/cub style fns (see AgentFunction.h)
 #include "flamegpu/pop/MemoryVector.h"
 #include "flamegpu/runtime/messaging/BruteForce.h"
@@ -248,7 +249,7 @@ struct AgentFunctionData {
 
     /**
      * The cuda kernel entry point for executing the agent function
-     * @see void agent_function_wrapper(Curve::NamespaceHash, Curve::NamespaceHash, Curve::NamespaceHash, Curve::NamespaceHash, const int, const unsigned int, const unsigned int)
+     * @see void agent_function_wrapper(Curve::NamespaceHash, Curve::NamespaceHash, Curve::NamespaceHash, Curve::NamespaceHash, const int, const void *, const unsigned int, const unsigned int)
      */
     AgentFunctionWrapper *func;
     /**
@@ -280,6 +281,11 @@ struct AgentFunctionData {
      * Enabling this tells FLAMEGPU to sort agents to remove those which have died from the population
      */
     bool has_agent_death = false;
+    /**
+     * The cuda kernel entry point for executing the agent function condition
+     * @see void agent_function_condition_wrapper(Curve::NamespaceHash, Curve::NamespaceHash, const int, const unsigned int, const unsigned int)
+     */
+    AgentFunctionConditionWrapper *condition;
     /**
      * The agent which this function is a member of
      */

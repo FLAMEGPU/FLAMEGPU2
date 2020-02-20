@@ -25,13 +25,19 @@
 * @brief populates CUDA agent map
 */
 CUDAAgentStateList::CUDAAgentStateList(CUDAAgent& cuda_agent)
-    : current_list_size(0)
+    : condition_state(0)
+    , current_list_size(0)
     , agent(cuda_agent) {
     // allocate state lists
     allocateDeviceAgentList(d_list);
     allocateDeviceAgentList(d_swap_list);
     if (agent.getAgentDescription().isOutputOnDevice())
         allocateDeviceAgentList(d_new_list);
+    // Init condition state lists
+    for (const auto &c : d_list)
+        condition_d_list.emplace(c);
+    for (const auto &c : d_swap_list)
+        condition_d_swap_list.emplace(c);
 }
 
 /**
@@ -49,12 +55,15 @@ void CUDAAgentStateList::cleanupAllocatedData() {
     if (agent.getAgentDescription().isOutputOnDevice()) {
         releaseDeviceAgentList(d_new_list);
     }
+    condition_d_list.clear();
+    condition_d_swap_list.clear();
 }
 
 void CUDAAgentStateList::resize() {
     resizeDeviceAgentList(d_list, true);
     resizeDeviceAgentList(d_swap_list, false);
     resizeDeviceAgentList(d_new_list, false);
+    setConditionState(condition_state);  // Update pointers in condition state list
 }
 void CUDAAgentStateList::resizeDeviceAgentList(CUDAMemoryMap &agent_list, bool copyData) {
     const auto &mem = agent.getAgentDescription().variables;
@@ -170,6 +179,9 @@ void CUDAAgentStateList::setAgentData(const AgentStateMemory &state_memory) {
             agent.getAgentDescription().name.c_str());
     }
 
+    // set the current list size
+    current_list_size = state_memory.getStateListSize();
+
     // copy raw agent data to device pointers
     for (CUDAMemoryMapPair m : d_list) {
         // get the variable size from agent description
@@ -181,12 +193,12 @@ void CUDAAgentStateList::setAgentData(const AgentStateMemory &state_memory) {
         // get pointer to vector data
         const void * v_data = m_vec.getReadOnlyDataPtr();
 
-        // set the current list size
-        current_list_size = state_memory.getStateListSize();
-
         // copy the host data to the GPU
         gpuErrchk(cudaMemcpy(m.second, v_data, var_size*current_list_size, cudaMemcpyHostToDevice));
     }
+
+    // Update condition state lists
+    setConditionState(0);
 }
 
 void CUDAAgentStateList::getAgentData(AgentStateMemory &state_memory) {
@@ -223,10 +235,10 @@ void CUDAAgentStateList::getAgentData(AgentStateMemory &state_memory) {
 }
 
 void* CUDAAgentStateList::getAgentListVariablePointer(std::string variable_name) const {
-    CUDAMemoryMap::const_iterator mm = d_list.find(variable_name);
-    if (mm == d_list.end()) {
+    CUDAMemoryMap::const_iterator mm = condition_d_list.find(variable_name);
+    if (mm == condition_d_list.end()) {
         // TODO: Error variable not found in agent state list
-        return 0;
+        return nullptr;
     }
 
     return mm->second;
@@ -241,7 +253,13 @@ void CUDAAgentStateList::zeroAgentData() {
 
 // the actual number of agents in this state
 unsigned int CUDAAgentStateList::getCUDAStateListSize() const {
+    return current_list_size - condition_state;
+}
+unsigned int CUDAAgentStateList::getCUDATrueStateListSize() const {
     return current_list_size;
+}
+void CUDAAgentStateList::setCUDAStateListSize(const unsigned int &newCount) {
+    current_list_size = condition_state + newCount;
 }
 
 __global__ void scatter_living_agents(
@@ -258,14 +276,35 @@ __global__ void scatter_living_agents(
         memcpy(out + (output_index * typeLen), in + (index * typeLen), typeLen);
     }
 }
-void CUDAAgentStateList::scatter(const unsigned int &streamId) {
+unsigned int CUDAAgentStateList::scatter(const unsigned int &streamId, const unsigned int out_offset, const ScatterMode &mode) {
     CUDAScatter &scatter = CUDAScatter::getInstance(streamId);
-    current_list_size = scatter.scatter(
+    const unsigned int living_agents = scatter.scatter(
         CUDAScatter::Type::Agent,
         agent.getAgentDescription().variables,
-        d_list, d_swap_list,
-        current_list_size);
+        condition_d_list, condition_d_swap_list,
+        current_list_size, out_offset, mode == FunctionCondition2);
     // Swap
-    std::swap(d_list, d_swap_list);
-    assert(current_list_size <= agent.getMaximumListSize());
+    assert(living_agents <= agent.getMaximumListSize());
+    if (mode == Death) {
+        std::swap(d_list, d_swap_list);
+        std::swap(condition_d_list, condition_d_swap_list);
+        current_list_size = living_agents;
+    } else if (mode == FunctionCondition2) {
+        std::swap(d_list, d_swap_list);
+        std::swap(condition_d_list, condition_d_swap_list);
+    }
+    return living_agents;
+}
+
+
+void CUDAAgentStateList::setConditionState(const unsigned int &disabledAgentCt) {
+    assert(disabledAgentCt <= current_list_size);
+    condition_state = disabledAgentCt;
+    // update condition_d_list and condition_d_swap_list
+    const auto &mem = agent.getAgentDescription().variables;
+    // for each variable allocate a device array and add to map
+    for (const auto &mm : mem) {
+        condition_d_list.at(mm.first) = reinterpret_cast<char*>(d_list.at(mm.first)) + (disabledAgentCt * mm.second.type_size);
+        condition_d_swap_list.at(mm.first) = reinterpret_cast<char*>(d_swap_list.at(mm.first)) + (disabledAgentCt * mm.second.type_size);
+    }
 }

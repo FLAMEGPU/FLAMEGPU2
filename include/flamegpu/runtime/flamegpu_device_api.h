@@ -19,6 +19,75 @@
 #include "flamegpu/runtime/utility/DeviceEnvironment.cuh"
 #include "flamegpu/gpu/CUDAScanCompaction.h"
 
+class FLAMEGPU_READ_ONLY_DEVICE_API {
+    // Friends have access to TID() & TS_ID()
+    template<typename AgentFunctionCondition>
+    friend __global__ void agent_function_condition_wrapper(
+        Curve::NamespaceHash,
+        Curve::NamespaceHash,
+        const int,
+        const unsigned int,
+        const unsigned int);
+
+ public:
+    /**
+     * @param _thread_in_layer_offset This offset can be added to TID to give a thread-safe unique index for the thread
+     * @param modelname_hash CURVE hash of the model's name
+     * @param _streamId Index used for accessing global members in a stream safe manner
+    */
+    __device__ FLAMEGPU_READ_ONLY_DEVICE_API(const unsigned int &_thread_in_layer_offset, const Curve::NamespaceHash &modelname_hash, const Curve::NamespaceHash &agentfuncname_hash, const unsigned int &_streamId)
+        : random(AgentRandom(TID() + _thread_in_layer_offset))
+        , environment(DeviceEnvironment(modelname_hash))
+        , agent_func_name_hash(agentfuncname_hash)
+        , thread_in_layer_offset(_thread_in_layer_offset)
+        , streamId(_streamId)
+    { }
+
+    template<typename T, unsigned int N> __device__
+        T getVariable(const char(&variable_name)[N]);
+
+    /**
+     * Provides access to random functionality inside agent functions
+     * @note random state isn't stored within the object, so it can be const
+     */
+    const AgentRandom random;
+    /**
+     * Provides access to environment variables inside agent functions
+     */
+    const DeviceEnvironment environment;
+
+ protected:
+    Curve::NamespaceHash agent_func_name_hash;
+
+    unsigned int thread_in_layer_offset;
+    unsigned int streamId;
+    /**
+     * Thread index
+     */
+    __forceinline__ __device__ static unsigned int TID() {
+        /*
+        // 3D version
+        auto blockId = blockIdx.x + blockIdx.y * gridDim.x
+        + gridDim.x * gridDim.y * blockIdx.z;
+        auto threadId = blockId * (blockDim.x * blockDim.y * blockDim.z)
+        + (threadIdx.z * (blockDim.x * blockDim.y))
+        + (threadIdx.y * blockDim.x)
+        + threadIdx.x;
+        return threadId;*/
+        assert(blockDim.y == 1);
+        assert(blockDim.z == 1);
+        assert(gridDim.y == 1);
+        assert(gridDim.z == 1);
+        return blockIdx.x * blockDim.x + threadIdx.x;
+    }
+    /**
+    * Thread-safe index
+    */
+    __forceinline__ __device__ unsigned int TS_ID() const {
+        return thread_in_layer_offset + TID();
+    }
+};
+
 /** @brief    A flame gpu api class for the device runtime only
  *
  * This class provides access to model variables/state inside agent functions
@@ -29,7 +98,7 @@
  * @tparam MsgOut Output message type (the form found in flamegpu/runtime/messaging.h, MsgNone etc)
  */
 template<typename MsgIn, typename MsgOut>
-class FLAMEGPU_DEVICE_API {
+class FLAMEGPU_DEVICE_API : public FLAMEGPU_READ_ONLY_DEVICE_API{
     // Friends have access to TID() & TS_ID()
     template<typename AgentFunction, typename _MsgIn, typename _MsgOut>
     friend __global__ void agent_function_wrapper(
@@ -46,42 +115,26 @@ class FLAMEGPU_DEVICE_API {
     /**
      * @param _thread_in_layer_offset This offset can be added to TID to give a thread-safe unique index for the thread
      * @param modelname_hash CURVE hash of the model's name
+     * @param agentfuncname_hash Combined CURVE hashes of agent name and func name
      * @param _streamId Index used for accessing global members in a stream safe manner
      * @param msg_in Input message handler
      * @param msg_out Output message handler
      */
-    __device__ FLAMEGPU_DEVICE_API(const unsigned int &_thread_in_layer_offset, const Curve::NamespaceHash &modelname_hash, const unsigned int &_streamId, typename MsgIn::In &&msg_in, typename MsgOut::Out &&msg_out)
-        : random(AgentRandom(TID()+_thread_in_layer_offset))
-        , environment(DeviceEnvironment(modelname_hash))
+    __device__ FLAMEGPU_DEVICE_API(
+        const unsigned int &_thread_in_layer_offset,
+        const Curve::NamespaceHash &modelname_hash,
+        const Curve::NamespaceHash &agentfuncname_hash,
+        const unsigned int &_streamId,
+        typename MsgIn::In &&msg_in,
+        typename MsgOut::Out &&msg_out)
+        : FLAMEGPU_READ_ONLY_DEVICE_API(_thread_in_layer_offset, modelname_hash, agentfuncname_hash, _streamId)
         , message_in(msg_in)
         , message_out(msg_out)
-        , thread_in_layer_offset(_thread_in_layer_offset)
-        , streamId(_streamId)
     { }
-
-    template<typename T, unsigned int N> __device__
-    T getVariable(const char(&variable_name)[N]);
 
     template<typename T, unsigned int N> __device__
     void setVariable(const char(&variable_name)[N], T value);
 
-    /**
-     * \brief
-     * \param agentname_hash
-     */
-    __device__ void setAgentNameSpace(Curve::NamespaceHash agentname_hash) {
-        agent_func_name_hash = agentname_hash;
-    }
-
-    /**
-    * Provides access to random functionality inside agent functions
-    * @note random state isn't stored within the object, so it can be const
-    */
-    const AgentRandom random;
-    /**
-     * Provides access to environment variables inside agent functions
-     */
-    const DeviceEnvironment environment;
     /**
      * Provides access to message read functionality inside agent functions
      */
@@ -90,37 +143,6 @@ class FLAMEGPU_DEVICE_API {
      * Provides access to message write functionality inside agent functions
      */
     const typename MsgOut::Out message_out;
-
- private:
-    Curve::NamespaceHash agent_func_name_hash;
-
-    unsigned int thread_in_layer_offset;
-    unsigned int streamId;
-    /**
-     * Thread index
-     */
-    __forceinline__ __device__ static unsigned int TID() {
-        /*
-        // 3D version
-        auto blockId = blockIdx.x + blockIdx.y * gridDim.x
-            + gridDim.x * gridDim.y * blockIdx.z;
-        auto threadId = blockId * (blockDim.x * blockDim.y * blockDim.z)
-            + (threadIdx.z * (blockDim.x * blockDim.y))
-            + (threadIdx.y * blockDim.x)
-            + threadIdx.x;
-        return threadId;*/
-        assert(blockDim.y == 1);
-        assert(blockDim.z == 1);
-        assert(gridDim.y == 1);
-        assert(gridDim.z == 1);
-        return blockIdx.x * blockDim.x +threadIdx.x;
-    }
-    /**
-     * Thread-safe index
-     */
-    __forceinline__ __device__ unsigned int TS_ID() const {
-        return thread_in_layer_offset + TID();
-    }
 };
 
 
@@ -137,9 +159,8 @@ class FLAMEGPU_DEVICE_API {
  * \brief Gets an agent memory value
  * \param variable_name Name of memory variable to retrieve
  */
-template<typename MsgIn, typename MsgOut>
 template<typename T, unsigned int N>
-__device__ T FLAMEGPU_DEVICE_API<MsgIn, MsgOut>::getVariable(const char(&variable_name)[N]) {
+__device__ T FLAMEGPU_READ_ONLY_DEVICE_API::getVariable(const char(&variable_name)[N]) {
     // simple indexing assumes index is the thread number (this may change later)
     unsigned int index =  (blockDim.x * blockIdx.x) + threadIdx.x;
 

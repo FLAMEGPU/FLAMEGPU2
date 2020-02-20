@@ -22,25 +22,88 @@ class CUDAScatter {
     friend class CUDAAgentModel;
 
  public:
+    /**
+     * This utility class provides a wrapper for `unsigned int *`
+     * When the iterator is dereferenced the pointed to unsigned int is evaluated
+     * using invert()
+     * This is useful when trying to partition and sort a dataset using only scatter and scan
+     */
+     struct InversionIterator {
+         using difference_type = unsigned int;
+         using value_type = unsigned int;
+         using pointer = unsigned int*;
+         using reference = unsigned int&;
+         using iterator_category = std::random_access_iterator_tag;
+         __host__ __device__ explicit InversionIterator(unsigned int *_p) : p(_p) { }
+
+         __device__ InversionIterator &operator=(const InversionIterator&other) { p = other.p; return *this; }
+         __device__ InversionIterator operator++ (int a) { p += a;  return *this; }
+         __device__ InversionIterator operator++ () { p++;  return *this; }
+         __device__ unsigned int operator *() { return invert(*p); }
+         __device__ InversionIterator operator+(const int &b) const { return InversionIterator(p + b); }
+         __device__ unsigned int operator[](int b) const { return  invert(p[b]); }
+      private:
+         __device__ unsigned int invert(unsigned int c) const { return c == 0 ? 1 : 0; }
+         unsigned int *p;
+     };
+    /**
+     * Flag used to decide which scan_flag array should be used
+     */
     enum Type {Agent, Message};
+    /**
+     * As we scatter per variable, this structure holds all the data required for a single variable
+     */
     struct ScatterData {
         size_t typeLen;
         char *const in;
         char *out;
     };
+    /**
+     * scatter from in to out
+     * flamegpu_internal::CUDAScanCompaction::scan_flag is used to decide who should be scattered
+     * flamegpu_internal::CUDAScanCompaction::position is used to decide where to scatter to
+     * @param messageOrAgent Flag of whether message or agent flamegpu_internal::CUDAScanCompaction arrays should be used
+     * @param vars Variable description map from ModelData hierarchy
+     * @param in Input variable name:ptr map
+     * @paramn out Output variable name:ptr map
+     * @param itemCount Total number of items in input array to consider
+     * @param out_index_offset The offset to be applied to the ouput index (e.g. if out already contains data)
+     * @parma invert_scan_flag If true, agents with scan_flag set to 0 will be moved instead
+     */
     unsigned int scatter(
         Type messageOrAgent,
         const VariableMap &vars,
         const std::map<std::string, void*> &in,
         const std::map<std::string, void*> &out,
         const unsigned int &itemCount,
-        const unsigned int &out_index_offset = 0);
+        const unsigned int &out_index_offset = 0,
+        const bool &invert_scan_flag = false);
+    /**
+     * scatter all data from in to out
+     * flamegpu_internal::CUDAScanCompaction::scan_flag/position are not used
+     * @param vars Variable description map from ModelData hierarchy
+     * @param in Input variable name:ptr map
+     * @paramn out Output variable name:ptr map
+     * @param itemCount Total number of items in input array to consider
+     * @param out_index_offset The offset to be applied to the ouput index (e.g. if out already contains data)
+     */
     unsigned int scatterAll(
         const VariableMap &vars,
         const std::map<std::string, void*> &in,
         const std::map<std::string, void*> &out,
         const unsigned int &itemCount,
         const unsigned int &out_index_offset = 0);
+    /**
+     * This scatter is used for reordering messages based on PBM components
+     * Used by spatial messaging.
+     * @param vars Variable description map from ModelData hierarchy
+     * @param in Input variable name:ptr map
+     * @paramn out Output variable name:ptr map
+     * @param itemCount Total number of items in input array to consider
+     * @param d_bin_index This idenitifies which bin each index should be sorted to
+     * @param d_bin_sub_index This indentifies where within it's bin, an index should be sorted to
+     * @param d_pbm This is the PBM, it identifies at which index a bin's storage begins
+     */
     void pbm_reorder(
         const VariableMap &vars,
         const std::map<std::string, void*> &in,
