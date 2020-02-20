@@ -354,10 +354,10 @@ struct AgentFunctionData {
      */
     AgentFunctionWrapper *func;
 
-	/**
-	 * The address of a NVRTI function to which represents runtime agent function wrapper for the user defined function
-	 */
-	CUfunction func_addr;
+    /**
+     * The address of a NVRTI function to which represents runtime agent function wrapper for the user defined function
+     */
+    CUfunction func_addr;
 
     /**
      * Agent's must be in this state to execute this function
@@ -428,10 +428,10 @@ struct AgentFunctionData {
      */
     AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string &function_name, AgentFunctionWrapper *agent_function);
 
-	/**
-	 * Normal constructor for runtime function, only to be called by AgentDescription
-	 */
-	AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string& function_name, CUfunction func_addr);
+    /**
+     * Normal constructor for runtime function, only to be called by AgentDescription
+     */
+    AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string& function_name, CUfunction func_addr);
 };
 
 /**

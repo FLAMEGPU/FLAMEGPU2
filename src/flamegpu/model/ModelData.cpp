@@ -29,7 +29,7 @@ MessageData::MessageData(ModelData *const model, const std::string &message_name
 
 AgentFunctionData::AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string &function_name, AgentFunctionWrapper *agent_function)
     : func(agent_function)
-	, func_addr(nullptr)
+    , func_addr(nullptr)
     , initial_state(_parent->initial_state)
     , end_state(_parent->initial_state)
     , message_output_optional(false)
@@ -39,15 +39,15 @@ AgentFunctionData::AgentFunctionData(std::shared_ptr<AgentData> _parent, const s
     , name(function_name) { }
 
 AgentFunctionData::AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string& function_name, CUfunction func_addr)
-	: func(nullptr)
-	, func_addr(func_addr)
-	, initial_state(_parent->initial_state)
-	, end_state(_parent->initial_state)
-	, message_output_optional(false)
-	, has_agent_death(false)
-	, parent(_parent)
-	, description(new AgentFunctionDescription(_parent->description->model, this))
-	, name(function_name) { }
+    : func(nullptr)
+    , func_addr(func_addr)
+    , initial_state(_parent->initial_state)
+    , end_state(_parent->initial_state)
+    , message_output_optional(false)
+    , has_agent_death(false)
+    , parent(_parent)
+    , description(new AgentFunctionDescription(_parent->description->model, this))
+    , name(function_name) { }
 
 LayerData::LayerData(ModelData *const model, const std::string &layer_name, const ModelData::size_type &layer_index)
     : description(new LayerDescription(model, this))
@@ -126,7 +126,7 @@ MessageData::MessageData(ModelData *const model, const MessageData &other)
     , optional_outputs(other.optional_outputs) { }
 AgentFunctionData::AgentFunctionData(ModelData *const model, std::shared_ptr<AgentData> _parent, const AgentFunctionData &other)
     : func(other.func)
-	, func_addr(other.func_addr)
+    , func_addr(other.func_addr)
     , initial_state(other.initial_state)
     , end_state(other.end_state)
     , message_output_optional(other.message_output_optional)

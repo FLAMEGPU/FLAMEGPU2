@@ -84,29 +84,29 @@ bool CUDAAgentModel::step() {
         for (const std::shared_ptr<AgentFunctionData> &func_des : functions) {
             auto func_agent = func_des->parent.lock()->description;
 if (!func_agent) {
-	THROW InvalidAgentFunc("Agent function refers to expired agent.");
+    THROW InvalidAgentFunc("Agent function refers to expired agent.");
 }
 const CUDAAgent& cuda_agent = getCUDAAgent(func_agent->getName());
 flamegpu_internal::CUDAScanCompaction::resizeAgents(cuda_agent.getStateSize(func_des->initial_state), j);
 
 // check if a function has an input message
 if (auto im = func_des->message_input.lock()) {
-	std::string inpMessage_name = im->name;
-	const CUDAMessage& cuda_message = getCUDAMessage(inpMessage_name);
-	cuda_message.mapReadRuntimeVariables(*func_des);
+    std::string inpMessage_name = im->name;
+    const CUDAMessage& cuda_message = getCUDAMessage(inpMessage_name);
+    cuda_message.mapReadRuntimeVariables(*func_des);
 }
 
 // check if a function has an output massage
 if (auto om = func_des->message_output.lock()) {
-	std::string outpMessage_name = om->name;
-	CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
-	// Resize message list if required
-	cuda_message.resize(cuda_agent.getStateSize(func_des->initial_state), j);
-	cuda_message.mapWriteRuntimeVariables(*func_des);
-	flamegpu_internal::CUDAScanCompaction::resizeMessages(cuda_agent.getStateSize(func_des->initial_state), j);
-	// Zero the scan flag that will be written to
-	if (func_des->message_output_optional)
-		flamegpu_internal::CUDAScanCompaction::zeroMessages(0);  // Always default stream currently
+    std::string outpMessage_name = om->name;
+    CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
+    // Resize message list if required
+    cuda_message.resize(cuda_agent.getStateSize(func_des->initial_state), j);
+    cuda_message.mapWriteRuntimeVariables(*func_des);
+    flamegpu_internal::CUDAScanCompaction::resizeMessages(cuda_agent.getStateSize(func_des->initial_state), j);
+    // Zero the scan flag that will be written to
+    if (func_des->message_output_optional)
+        flamegpu_internal::CUDAScanCompaction::zeroMessages(0);  // Always default stream currently
 }
 
 
@@ -122,100 +122,100 @@ flamegpu_internal::CUDAScanCompaction::zeroAgents(0);  // Always default stream 
 // Count total threads being launched
 totalThreads += cuda_agent.getMaximumListSize();
 ++j;
-		}
+        }
 
-		// Ensure RandomManager is the correct size to accomodate all threads to be launched
-		rng.resize(totalThreads);
-		// Total threads is now used to provide kernel launches an offset to thread-safe thread-index
-		totalThreads = 0;
-		j = 0;
-		//! for each func function - Loop through to launch all agent functions
-		for (const std::shared_ptr<AgentFunctionData>& func_des : functions) {
-			auto func_agent = func_des->parent.lock();
-			if (!func_agent) {
-				THROW InvalidAgentFunc("Agent function refers to expired agent.");
-			}
-			std::string agent_name = func_agent->name;
-			std::string func_name = func_des->name;
+        // Ensure RandomManager is the correct size to accomodate all threads to be launched
+        rng.resize(totalThreads);
+        // Total threads is now used to provide kernel launches an offset to thread-safe thread-index
+        totalThreads = 0;
+        j = 0;
+        //! for each func function - Loop through to launch all agent functions
+        for (const std::shared_ptr<AgentFunctionData>& func_des : functions) {
+            auto func_agent = func_des->parent.lock();
+            if (!func_agent) {
+                THROW InvalidAgentFunc("Agent function refers to expired agent.");
+            }
+            std::string agent_name = func_agent->name;
+            std::string func_name = func_des->name;
 
-			// check if a function has an output massage
-			if (auto im = func_des->message_input.lock()) {
-				std::string inpMessage_name = im->name;
-				const CUDAMessage& cuda_message = getCUDAMessage(inpMessage_name);
-				// message_name = inpMessage_name;
+            // check if a function has an output massage
+            if (auto im = func_des->message_input.lock()) {
+                std::string inpMessage_name = im->name;
+                const CUDAMessage& cuda_message = getCUDAMessage(inpMessage_name);
+                // message_name = inpMessage_name;
 
-				// hash message name
-				message_name_inp_hash = curve.variableRuntimeHash(inpMessage_name.c_str());
+                // hash message name
+                message_name_inp_hash = curve.variableRuntimeHash(inpMessage_name.c_str());
 
-				messageList_Size = cuda_message.getMessageCount();
-			}
+                messageList_Size = cuda_message.getMessageCount();
+            }
 
-			// check if a function has an output massage
-			if (auto om = func_des->message_output.lock()) {
-				std::string outpMessage_name = om->name;
-				// const CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
-				// message_name = outpMessage_name;
+            // check if a function has an output massage
+            if (auto om = func_des->message_output.lock()) {
+                std::string outpMessage_name = om->name;
+                // const CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
+                // message_name = outpMessage_name;
 
-				// hash message name
-				message_name_outp_hash = curve.variableRuntimeHash(outpMessage_name.c_str());
-			}
+                // hash message name
+                message_name_outp_hash = curve.variableRuntimeHash(outpMessage_name.c_str());
+            }
 
-			const CUDAAgent& cuda_agent = getCUDAAgent(agent_name);
-			int state_list_size = cuda_agent.getStateSize(func_des->initial_state);
-
-
-			//if compile time func defined
-			if (func_des->func) {
+            const CUDAAgent& cuda_agent = getCUDAAgent(agent_name);
+            int state_list_size = cuda_agent.getStateSize(func_des->initial_state);
 
 
-				int blockSize = 0;  // The launch configurator returned block size
-				int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
-				int gridSize = 0;  // The actual grid size needed, based on input size
+            //if compile time func defined
+            if (func_des->func) {
 
-				// calculate the grid block size for main agent function
-				cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, func_des->func, 0, state_list_size);
 
-				//! Round up according to CUDAAgent state list size
-				gridSize = (state_list_size + blockSize - 1) / blockSize;
+                int blockSize = 0;  // The launch configurator returned block size
+                int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
+                int gridSize = 0;  // The actual grid size needed, based on input size
 
-				// hash agent name
-				Curve::NamespaceHash agentname_hash = curve.variableRuntimeHash(agent_name.c_str());
-				// hash function name
-				Curve::NamespaceHash funcname_hash = curve.variableRuntimeHash(func_name.c_str());
+                // calculate the grid block size for main agent function
+                cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, func_des->func, 0, state_list_size);
 
-				(func_des->func) << <gridSize, blockSize, 0, stream[j] >> > (modelname_hash, agentname_hash + funcname_hash, message_name_inp_hash, message_name_outp_hash, state_list_size, messageList_Size, totalThreads, j);
-				gpuErrchkLaunch();
-			}
-			//else if runtime function defined
-			else if (func_des->func_addr){
-				//TODO: RTI invokation of agent function
-				//void* args[] = 0;
-				//void** args = 0;
-				unsigned int num_blocks = 1;
-				unsigned int num_threads = 1;
+                //! Round up according to CUDAAgent state list size
+                gridSize = (state_list_size + blockSize - 1) / blockSize;
 
-				//Use driver API to launch runtime function
-				CUresult launch_result = cuLaunchKernel(func_des->func_addr,
-						num_blocks, 1, 1, // grid dim
-						num_threads, 1, 1, // block dim
-						0, 0, // shared mem and stream
-						0, 0); // args, 0); //args
-				
-				if (launch_result != CUDA_SUCCESS) {
-					const char* msg; 						
-					cuGetErrorName(launch_result, &msg);
-					std::cerr << "\nerror: cuLaunchKernel failed with error " << msg << '\n';
-					
-					THROW InvalidAgentFunc("Runtime agent function launch was miserable failure!");
-				}
+                // hash agent name
+                Curve::NamespaceHash agentname_hash = curve.variableRuntimeHash(agent_name.c_str());
+                // hash function name
+                Curve::NamespaceHash funcname_hash = curve.variableRuntimeHash(func_name.c_str());
 
-				//TODO: Remove temp sync
-				cuCtxSynchronize();
+                (func_des->func) << <gridSize, blockSize, 0, stream[j] >> > (modelname_hash, agentname_hash + funcname_hash, message_name_inp_hash, message_name_outp_hash, state_list_size, messageList_Size, totalThreads, j);
+                gpuErrchkLaunch();
+            }
+            //else if runtime function defined
+            else if (func_des->func_addr){
+                //TODO: RTI invokation of agent function
+                //void* args[] = 0;
+                //void** args = 0;
+                unsigned int num_blocks = 1;
+                unsigned int num_threads = 1;
 
-			}
-			else {
-				THROW InvalidAgentFunc("No referecne to an agent function exists");
-			}
+                //Use driver API to launch runtime function
+                CUresult launch_result = cuLaunchKernel(func_des->func_addr,
+                        num_blocks, 1, 1, // grid dim
+                        num_threads, 1, 1, // block dim
+                        0, 0, // shared mem and stream
+                        0, 0); // args, 0); //args
+                
+                if (launch_result != CUDA_SUCCESS) {
+                    const char* msg;                         
+                    cuGetErrorName(launch_result, &msg);
+                    std::cerr << "\nerror: cuLaunchKernel failed with error " << msg << '\n';
+                    
+                    THROW InvalidAgentFunc("Runtime agent function launch was miserable failure!");
+                }
+
+                //TODO: Remove temp sync
+                cuCtxSynchronize();
+
+            }
+            else {
+                THROW InvalidAgentFunc("No referecne to an agent function exists");
+            }
 
             totalThreads += state_list_size;
             ++j;
