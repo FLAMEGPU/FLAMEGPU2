@@ -11,6 +11,7 @@ class CUDAMessage;
  * Interface for message specialisation
  * A derived implementation of this is required for each combination of message type (e.g. MsgBruteForce) and simulation type (e.g. CUDAAgentModel)
  * @note It is recommended that derrived classes require an object that provides access to the model specialisation's representation of messages (e.g. CUDAMessage)
+ * @note: this is slightly CUDA aware. Future abstraction DevicePtr should be in a CUDANone message or similar.
  */
 class MsgSpecialisationHandler {
  public:
@@ -25,8 +26,18 @@ class MsgSpecialisationHandler {
      */
     virtual void buildIndex() { }
     /**
+     * Allocates memory for the constructed index.
+     * The memory allocation is checked by build index.
+     */
+    virtual void allocateMetaDataDevicePtr() { }
+    /**
+     * Releases memory for the constructed index.
+     */
+    virtual void freeMetaDataDevicePtr() { }
+    /**
      * Returns a pointer to metadata for message access during agent functions
      * (For CUDAAgentModel this is a device pointer)
+     * @note: this is slightly CUDA aware. Future abstraction this should be base CUDANone or similar.
      */
     virtual const void *getMetaDataDevicePtr() const { return nullptr; }
 };

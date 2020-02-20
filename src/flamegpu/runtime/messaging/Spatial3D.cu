@@ -106,6 +106,37 @@ __global__ void atomicHistogram3D(
     bin_sub_index[index] = bin_idx;
 }
 
+void MsgSpatial3D::CUDAModelHandler::allocateMetaDataDevicePtr() {
+    if (d_data == nullptr) {
+        gpuErrchk(cudaMalloc(&d_histogram, (binCount + 1) * sizeof(unsigned int)));
+        gpuErrchk(cudaMalloc(&hd_data.PBM, (binCount + 1) * sizeof(unsigned int)));
+        gpuErrchk(cudaMalloc(&d_data, sizeof(MetaData)));
+        gpuErrchk(cudaMemcpy(d_data, &hd_data, sizeof(MetaData), cudaMemcpyHostToDevice));
+        resizeCubTemp();
+    }
+}
+
+void MsgSpatial3D::CUDAModelHandler::freeMetaDataDevicePtr() {
+    if (d_data != nullptr) {
+        d_CUB_temp_storage_bytes = 0;
+        gpuErrchk(cudaFree(d_CUB_temp_storage));
+        gpuErrchk(cudaFree(d_histogram));
+        gpuErrchk(cudaFree(hd_data.PBM));
+        gpuErrchk(cudaFree(d_data));
+        d_CUB_temp_storage = nullptr;
+        d_histogram = nullptr;
+        hd_data.PBM = nullptr;
+        d_data = nullptr;
+        if (d_keys) {
+            d_keys_vals_storage_bytes = 0;
+            gpuErrchk(cudaFree(d_keys));
+            gpuErrchk(cudaFree(d_vals));
+            d_keys = nullptr;
+            d_vals = nullptr;
+        }
+    }
+}
+
 void MsgSpatial3D::CUDAModelHandler::buildIndex() {
     const unsigned int MESSAGE_COUNT = this->sim_message.getMessageCount();
     resizeKeysVals(this->sim_message.getMaximumListSize());  // Resize based on allocated amount rather than message count

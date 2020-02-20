@@ -17,40 +17,45 @@ namespace curve_internal {
 }  // namespace curve_internal
 
 /* header implementations */
-__host__ Curve::Curve() {
-    unsigned int *_d_hashes;
-    char** _d_variables;
-    int* _d_states;
-    unsigned int* _d_lengths;
-    size_t* _d_sizes;
+__host__ Curve::Curve() :
+    deviceInitialised(false) {
+    // Initialise some host variables.
+    curve_internal::h_curve_error  = ERROR_NO_ERRORS;
+}
 
-    // namespace
-    h_namespace = NAMESPACE_NONE;
-    gpuErrchk(cudaMemcpyToSymbol(curve_internal::d_namespace, &h_namespace, sizeof(unsigned int)));
+__host__ void Curve::initialiseDevice() {
+    if (!deviceInitialised) {
+        unsigned int *_d_hashes;
+        char** _d_variables;
+        int* _d_states;
+        unsigned int* _d_lengths;
+        size_t* _d_sizes;
 
-    // get a host pointer to d_hashes and d_variables
-    gpuErrchk(cudaGetSymbolAddress(reinterpret_cast<void **>(&_d_hashes), curve_internal::d_hashes));
-    gpuErrchk(cudaGetSymbolAddress(reinterpret_cast<void **>(&_d_variables), curve_internal::d_variables));
-    gpuErrchk(cudaGetSymbolAddress(reinterpret_cast<void **>(&_d_states), curve_internal::d_states));
-    gpuErrchk(cudaGetSymbolAddress(reinterpret_cast<void **>(&_d_lengths), curve_internal::d_lengths));
-    gpuErrchk(cudaGetSymbolAddress(reinterpret_cast<void **>(&_d_sizes), curve_internal::d_sizes));
+        // namespace
+        h_namespace = NAMESPACE_NONE;
+        gpuErrchk(cudaMemcpyToSymbol(curve_internal::d_namespace, &h_namespace, sizeof(unsigned int)));
 
-    // set values of hash table to 0 on host and device
-    memset(h_hashes, 0, sizeof(unsigned int)*MAX_VARIABLES);
-    memset(h_lengths, 0, sizeof(unsigned int)*MAX_VARIABLES);
-    memset(h_states, 0, sizeof(int)*MAX_VARIABLES);
-    memset(h_sizes, 0, sizeof(size_t)*MAX_VARIABLES);
+        // get a host pointer to d_hashes and d_variables
+        gpuErrchk(cudaGetSymbolAddress(reinterpret_cast<void **>(&_d_hashes), curve_internal::d_hashes));
+        gpuErrchk(cudaGetSymbolAddress(reinterpret_cast<void **>(&_d_variables), curve_internal::d_variables));
+        gpuErrchk(cudaGetSymbolAddress(reinterpret_cast<void **>(&_d_states), curve_internal::d_states));
+        gpuErrchk(cudaGetSymbolAddress(reinterpret_cast<void **>(&_d_lengths), curve_internal::d_lengths));
+        gpuErrchk(cudaGetSymbolAddress(reinterpret_cast<void **>(&_d_sizes), curve_internal::d_sizes));
 
-    // initialise data to 0 on device
-    gpuErrchk(cudaMemset(_d_hashes, 0, sizeof(unsigned int)*MAX_VARIABLES));
-    gpuErrchk(cudaMemset(_d_variables, 0, sizeof(void*)*MAX_VARIABLES));
-    gpuErrchk(cudaMemset(_d_states, VARIABLE_DISABLED, sizeof(int)*MAX_VARIABLES));
-    gpuErrchk(cudaMemset(_d_lengths, 0, sizeof(unsigned int)*MAX_VARIABLES));
-    gpuErrchk(cudaMemset(_d_sizes, 0, sizeof(size_t)*MAX_VARIABLES));
+        // set values of hash table to 0 on host and device
+        memset(h_hashes, 0, sizeof(unsigned int)*MAX_VARIABLES);
+        memset(h_lengths, 0, sizeof(unsigned int)*MAX_VARIABLES);
+        memset(h_states, 0, sizeof(int)*MAX_VARIABLES);
+        memset(h_sizes, 0, sizeof(size_t)*MAX_VARIABLES);
 
-    // memset the h and d types array
-
-    clearErrors();
+        // initialise data to 0 on device
+        gpuErrchk(cudaMemset(_d_hashes, 0, sizeof(unsigned int)*MAX_VARIABLES));
+        gpuErrchk(cudaMemset(_d_variables, 0, sizeof(void*)*MAX_VARIABLES));
+        gpuErrchk(cudaMemset(_d_states, VARIABLE_DISABLED, sizeof(int)*MAX_VARIABLES));
+        gpuErrchk(cudaMemset(_d_lengths, 0, sizeof(unsigned int)*MAX_VARIABLES));
+        gpuErrchk(cudaMemset(_d_sizes, 0, sizeof(size_t)*MAX_VARIABLES));
+    }
+    deviceInitialised = true;
 }
 
 __host__ Curve::VariableHash Curve::variableRuntimeHash(const char* str) {
@@ -88,6 +93,9 @@ __host__ Curve::Variable Curve::getVariableHandle(VariableHash variable_hash) {
 }
 
 __host__ Curve::Variable Curve::registerVariableByHash(VariableHash variable_hash, void * d_ptr, size_t size, unsigned int length) {
+    // Initialise the device (if required)
+    initialiseDevice();
+
     unsigned int i, n;
     unsigned int *_d_hashes;
     void** _d_variables;
@@ -147,6 +155,9 @@ __host__ Curve::Variable Curve::registerVariableByHash(VariableHash variable_has
  * TODO: Does un-registering imply that other variable with collisions will no longer be found. I.e. do you need to re-register all other variable when one is removed.
  */
 __host__ void Curve::unregisterVariableByHash(VariableHash variable_hash) {
+    // Initialise the device (if required)
+    initialiseDevice();
+
     unsigned int *_d_hashes;
     void** _d_variables;
     int* _d_states;
@@ -193,6 +204,9 @@ __host__ void Curve::unregisterVariableByHash(VariableHash variable_hash) {
 }
 
 __host__ void Curve::disableVariableByHash(VariableHash variable_hash) {
+    // Initialise the device (if required)
+    initialiseDevice();
+
     Variable cv = getVariableHandle(variable_hash);
     int* _d_states;
 
@@ -207,6 +221,9 @@ __host__ void Curve::disableVariableByHash(VariableHash variable_hash) {
     gpuErrchk(cudaMemcpy(&_d_states[cv], &h_states[cv], sizeof(int), cudaMemcpyHostToDevice));
 }
 __host__ void Curve::enableVariableByHash(VariableHash variable_hash) {
+    // Initialise the device (if required)
+    initialiseDevice();
+
     Variable cv = getVariableHandle(variable_hash);
     int* _d_states;
 
@@ -221,11 +238,17 @@ __host__ void Curve::enableVariableByHash(VariableHash variable_hash) {
     gpuErrchk(cudaMemcpy(&_d_states[cv], &h_states[cv], sizeof(int), cudaMemcpyHostToDevice));
 }
 __host__ void Curve::setNamespaceByHash(NamespaceHash namespace_hash) {
+    // Initialise the device (if required)
+    initialiseDevice();
+
     h_namespace = namespace_hash;
     gpuErrchk(cudaMemcpyToSymbol(curve_internal::d_namespace, &h_namespace, sizeof(unsigned int)));
 }
 
 __host__ void Curve::setDefaultNamespace() {
+    // Initialise the device (if required)
+    initialiseDevice();
+
     h_namespace = NAMESPACE_NONE;
     gpuErrchk(cudaMemcpyToSymbol(curve_internal::d_namespace, &h_namespace, sizeof(unsigned int)));
 }
@@ -238,6 +261,9 @@ void __host__ Curve::printLastHostError(const char* file, const char* function, 
 }
 
 void __host__ Curve::printErrors(const char* file, const char* function, const int line) {
+    // Initialise the device (if required)
+    initialiseDevice();
+
     DeviceError d_curve_error_local;
 
     printLastHostError(file, function, line);
@@ -264,6 +290,9 @@ __host__ Curve::HostError Curve::getLastHostError() {
     return curve_internal::h_curve_error;
 }
 __host__ void Curve::clearErrors() {
+    // Initialise the device (if required)
+    initialiseDevice();
+
     DeviceError curve_error_none;
 
     curve_error_none = DEVICE_ERROR_NO_ERRORS;

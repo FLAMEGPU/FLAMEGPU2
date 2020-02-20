@@ -14,14 +14,10 @@ CUDAAgentModel::CUDAAgentModel(const ModelDescription& _model)
     : Simulation(_model)
     , step_count(0)
     , agent_map()
-    , curve(Curve::getInstance())
     , message_map()
-    , rng(RandomManager::getInstance())
-    , scatter(CUDAScatter::getInstance(0))
-    , streams(std::vector<cudaStream_t>()) {
-    rng.increaseSimCounter();
-    scatter.increaseSimCounter();
-
+    , streams(std::vector<cudaStream_t>())
+    , singletons(nullptr)
+    , singletonsInitialised(false) {
     // populate the CUDA agent map
     const auto &am = model->agents;
     // create new cuda agent and add to the map
@@ -35,29 +31,36 @@ CUDAAgentModel::CUDAAgentModel(const ModelDescription& _model)
     for (auto it_m = mm.cbegin(); it_m != mm.cend(); ++it_m) {
         message_map.emplace(it_m->first, std::make_unique<CUDAMessage>(*it_m->second));
     }
-    // Populate the environment properties in constant Cache
-    {
-        EnvironmentManager::getInstance().init(model->name, *model->environment);
-    }
 }
 
 CUDAAgentModel::~CUDAAgentModel() {
-    rng.decreaseSimCounter();
-    scatter.decreaseSimCounter();
-    // unique pointers cleanup by automatically
-    // Drop all constants from the constant cache linked to this model
-    EnvironmentManager::getInstance().free(model->name);
+    // De-initialise, freeing singletons?
+    // @todo - this is unsafe in a destrcutor as it may invoke cuda commands.
+    if (singletonsInitialised) {
+        singletons->rng.decreaseSimCounter();
+        singletons->scatter.decreaseSimCounter();
+        // unique pointers cleanup by automatically
+        // Drop all constants from the constant cache linked to this model
+        singletons->environment.free(model->name);
+
+        delete singletons;
+        singletons = nullptr;
+    }
 }
 
 bool CUDAAgentModel::step() {
     NVTX_RANGE(std::string("CUDAAgentModel::step " + std::to_string(step_count)).c_str());
+
+    // Ensure singletons have been initialised
+    initialiseSingletons();
+
     step_count++;
     unsigned int nStreams = 1;
     std::string message_name;
     Curve::NamespaceHash message_name_inp_hash = 0;
     Curve::NamespaceHash message_name_outp_hash = 0;
     // hash model name
-    const Curve::NamespaceHash modelname_hash = curve.variableRuntimeHash(model->name.c_str());
+    const Curve::NamespaceHash modelname_hash = singletons->curve.variableRuntimeHash(model->name.c_str());
 
     const void *d_messagelist_metadata = nullptr;
 
@@ -68,14 +71,12 @@ bool CUDAAgentModel::step() {
     }
 
     /*!  Stream creations */
-    NVTX_PUSH("CUDAAgentModel::CreateStreams");
     // Ensure there are enough streams to execute the layer.
     while (streams.size() < nStreams) {
         cudaStream_t stream;
         gpuErrchk(cudaStreamCreate(&stream));
         streams.push_back(stream);
     }
-    NVTX_POP();
 
     // Reset message list flags
     for (auto m =  message_map.begin(); m != message_map.end(); ++m) {
@@ -143,9 +144,7 @@ bool CUDAAgentModel::step() {
         NVTX_POP();
 
         // Ensure RandomManager is the correct size to accomodate all threads to be launched
-        NVTX_PUSH("RandomManager::resize");
-        rng.resize(totalThreads);
-        NVTX_POP();
+        singletons->rng.resize(totalThreads);
         // Total threads is now used to provide kernel launches an offset to thread-safe thread-index
         totalThreads = 0;
         j = 0;
@@ -166,7 +165,7 @@ bool CUDAAgentModel::step() {
                 // message_name = inpMessage_name;
 
                 // hash message name
-                message_name_inp_hash = curve.variableRuntimeHash(inpMessage_name.c_str());
+                message_name_inp_hash = singletons->curve.variableRuntimeHash(inpMessage_name.c_str());
 
                 d_messagelist_metadata = cuda_message.getMetaDataDevicePtr();
             }
@@ -178,7 +177,7 @@ bool CUDAAgentModel::step() {
                 // message_name = outpMessage_name;
 
                 // hash message name
-                message_name_outp_hash =  curve.variableRuntimeHash(outpMessage_name.c_str());
+                message_name_outp_hash =  singletons->curve.variableRuntimeHash(outpMessage_name.c_str());
             }
 
             const CUDAAgent& cuda_agent = getCUDAAgent(agent_name);
@@ -196,15 +195,12 @@ bool CUDAAgentModel::step() {
             gridSize = (state_list_size + blockSize - 1) / blockSize;
 
             // hash agent name
-            Curve::NamespaceHash agentname_hash = curve.variableRuntimeHash(agent_name.c_str());
+            Curve::NamespaceHash agentname_hash = singletons->curve.variableRuntimeHash(agent_name.c_str());
             // hash function name
-            Curve::NamespaceHash funcname_hash = curve.variableRuntimeHash(func_name.c_str());
+            Curve::NamespaceHash funcname_hash = singletons->curve.variableRuntimeHash(func_name.c_str());
 
-            NVTX_PUSH("CUDAAgentModel::step::Kernel");
             (func_des->func)<<<gridSize, blockSize, 0, streams.at(j) >>>(modelname_hash, agentname_hash + funcname_hash, message_name_inp_hash, message_name_outp_hash, state_list_size, d_messagelist_metadata, totalThreads, j);
             gpuErrchkLaunch();
-            NVTX_POP();
-
             totalThreads += state_list_size;
             ++j;
             ++lyr_idx;
@@ -260,10 +256,8 @@ bool CUDAAgentModel::step() {
     }
 
     // Execute step functions
-    NVTX_PUSH("CUDAAgentModel::step::StepFunctions");
     for (auto &stepFn : model->stepFunctions)
         stepFn(this->host_api.get());
-    NVTX_POP();
 
     // Execute exit conditions
     for (auto &exitCdns : model->exitConditions)
@@ -276,6 +270,10 @@ void CUDAAgentModel::simulate() {
     if (agent_map.size() == 0) {
         THROW InvalidCudaAgentMapSize("Simulation has no agents, in CUDAAgentModel::simulate().");  // recheck if this is really required
     }
+
+    // Ensure singletons have been initialised
+    initialiseSingletons();
+
     // CUDAAgentMap::iterator it;
 
     // check any CUDAAgents with population size == 0
@@ -306,6 +304,9 @@ void CUDAAgentModel::simulate() {
 }
 
 void CUDAAgentModel::setPopulationData(AgentPopulation& population) {
+    // Ensure singletons have been initialised
+    initialiseSingletons();
+
     CUDAAgentMap::iterator it;
     it = agent_map.find(population.getAgentName());
 
@@ -320,6 +321,9 @@ void CUDAAgentModel::setPopulationData(AgentPopulation& population) {
 }
 
 void CUDAAgentModel::getPopulationData(AgentPopulation& population) {
+    // Ensure singletons have been initialised
+    initialiseSingletons();
+
     CUDAAgentMap::iterator it;
     it = agent_map.find(population.getAgentName());
 
@@ -346,6 +350,9 @@ CUDAAgent& CUDAAgentModel::getCUDAAgent(const std::string& agent_name) const {
 }
 
 AgentInterface& CUDAAgentModel::getAgent(const std::string& agent_name) {
+    // Ensure singletons have been initialised
+    initialiseSingletons();
+
     auto it = agent_map.find(agent_name);
 
     if (it == agent_map.end()) {
@@ -404,14 +411,41 @@ void CUDAAgentModel::applyConfig_derived() {
     if (config.device_id >= device_count) {
         THROW InvalidCUDAdevice("Error setting CUDA device to '%d', only %d available!", config.device_id, device_count);
     }
+     NVTX_PUSH("cudaSetDevice");
     cudaStatus = cudaSetDevice(static_cast<int>(config.device_id));
     if (cudaStatus != cudaSuccess) {
         THROW InvalidCUDAdevice("Unknown error setting CUDA device to '%d'. (%d available)", config.device_id, device_count);
     }
+    NVTX_POP();
     // Call cudaFree to iniitalise the context early
-    NVTX_PUSH("CUDA initialisation");
+    NVTX_PUSH("Init Cuda Context");
     gpuErrchk(cudaFree(0));
     NVTX_POP();
+
+    // Initialise singletons once a device has been selected.
+    // @todo - if this has already been called, before the device was selected an error should occur.
+    initialiseSingletons();
+}
+
+void CUDAAgentModel::initialiseSingletons() {
+    // Only do this once.
+    if (!singletonsInitialised) {
+        // Get references to all required singleton and store in the instance.
+        singletons = new Singletons(
+            Curve::getInstance(),
+            RandomManager::getInstance(),
+            CUDAScatter::getInstance(0),
+            EnvironmentManager::getInstance());
+
+        // Increase counters within some singletons.
+        singletons->rng.increaseSimCounter();
+        singletons->scatter.increaseSimCounter();
+
+        // Populate the environment properties in constant Cache
+        singletons->environment.init(model->name, *model->environment);
+
+        singletonsInitialised = true;
+    }
 }
 
 void CUDAAgentModel::resetDerivedConfig() {

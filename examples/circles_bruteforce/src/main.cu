@@ -78,6 +78,7 @@ FLAMEGPU_STEP_FUNCTION(Validation) {
 void export_data(std::shared_ptr<AgentPopulation> pop, const char *filename);
 int main(int argc, const char ** argv) {
     NVTX_RANGE("main");
+    NVTX_PUSH("ModelDescription");
     ModelDescription model("Circles_BruteForce_example");
 
     {   // Location message
@@ -124,10 +125,14 @@ int main(int argc, const char ** argv) {
         layer.addAgentFunction(move);
     }
 
+    NVTX_POP();
+
     /**
      * Create Model Runner
      */
+    NVTX_PUSH("CUDAAgentModel creation");
     CUDAAgentModel cuda_model(model);
+    NVTX_POP();
 
     /**
      * Initialisation
@@ -175,7 +180,7 @@ int main(int argc, const char ** argv) {
     StateWriter *write__ = WriterFactory::createWriter(pops, cuda_model.getStepCounter(), "end.xml");
     write__->writeStates();
     // export_data(a, "test.bin");
-    getchar();
+    // getchar();
     return 0;
 }
 

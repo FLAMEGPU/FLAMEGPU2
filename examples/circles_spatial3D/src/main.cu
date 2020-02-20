@@ -159,7 +159,7 @@ int main(int argc, const char ** argv) {
     }
 
     cuda_model.simulate();
-    getchar();
+    // getchar();
 
     /**
      * Export Pop
@@ -173,7 +173,7 @@ int main(int argc, const char ** argv) {
     StateWriter *write__ = WriterFactory::createWriter(pops, cuda_model.getStepCounter(), "end.xml");
     write__->writeStates();
     // export_data(a, "test.bin");
-    getchar();
+    // getchar();
     return 0;
 }
 

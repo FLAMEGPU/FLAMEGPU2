@@ -3,6 +3,7 @@
 
 #include "flamegpu/gpu/CUDAMessage.h"
 #include "flamegpu/gpu/CUDAScatter.h"
+#include "flamegpu/util/nvtx.h"
 #ifdef _MSC_VER
 #pragma warning(push, 3)
 #include <cub/cub.cuh>
@@ -85,6 +86,7 @@ __device__ MsgSpatial2D::In::Filter::Message& MsgSpatial2D::In::Filter::Message:
 MsgSpatial2D::CUDAModelHandler::CUDAModelHandler(CUDAMessage &a)
     : MsgSpecialisationHandler()
     , sim_message(a) {
+    NVTX_RANGE("MsgSpatial2D::CUDAModelHandler::CUDAModelHandler");
     const Data &d = (const Data &)a.getMessageDescription();
     hd_data.radius = d.radius;
     hd_data.min[0] = d.minX;
@@ -97,24 +99,8 @@ MsgSpatial2D::CUDAModelHandler::CUDAModelHandler(CUDAMessage &a)
         hd_data.gridDim[axis] = static_cast<unsigned int>(ceil(hd_data.environmentWidth[axis] / hd_data.radius));
         binCount *= hd_data.gridDim[axis];
     }
-    gpuErrchk(cudaMalloc(&d_histogram, (binCount + 1) * sizeof(unsigned int)));
-    gpuErrchk(cudaMalloc(&hd_data.PBM, (binCount + 1) * sizeof(unsigned int)));
-    gpuErrchk(cudaMalloc(&d_data, sizeof(MetaData)));
-    gpuErrchk(cudaMemcpy(d_data, &hd_data, sizeof(MetaData), cudaMemcpyHostToDevice));
-    resizeCubTemp();
 }
-MsgSpatial2D::CUDAModelHandler::~CUDAModelHandler() {
-    d_CUB_temp_storage_bytes = 0;
-    gpuErrchk(cudaFree(d_CUB_temp_storage));
-    gpuErrchk(cudaFree(d_histogram));
-    gpuErrchk(cudaFree(hd_data.PBM));
-    gpuErrchk(cudaFree(d_data));
-    if (d_keys) {
-        d_keys_vals_storage_bytes = 0;
-        gpuErrchk(cudaFree(d_keys));
-        gpuErrchk(cudaFree(d_vals));
-    }
-}
+MsgSpatial2D::CUDAModelHandler::~CUDAModelHandler() { }
 __global__ void atomicHistogram2D(
     const MsgSpatial2D::MetaData *md,
     unsigned int* bin_index,
@@ -132,6 +118,37 @@ __global__ void atomicHistogram2D(
     bin_index[index] = hash;
     unsigned int bin_idx = atomicInc((unsigned int*)&pbm_counts[hash], 0xFFFFFFFF);
     bin_sub_index[index] = bin_idx;
+}
+
+void MsgSpatial2D::CUDAModelHandler::allocateMetaDataDevicePtr() {
+    if (d_data == nullptr) {
+        gpuErrchk(cudaMalloc(&d_histogram, (binCount + 1) * sizeof(unsigned int)));
+        gpuErrchk(cudaMalloc(&hd_data.PBM, (binCount + 1) * sizeof(unsigned int)));
+        gpuErrchk(cudaMalloc(&d_data, sizeof(MetaData)));
+        gpuErrchk(cudaMemcpy(d_data, &hd_data, sizeof(MetaData), cudaMemcpyHostToDevice));
+        resizeCubTemp();
+    }
+}
+
+void MsgSpatial2D::CUDAModelHandler::freeMetaDataDevicePtr() {
+    if (d_data != nullptr) {
+        d_CUB_temp_storage_bytes = 0;
+        gpuErrchk(cudaFree(d_CUB_temp_storage));
+        gpuErrchk(cudaFree(d_histogram));
+        gpuErrchk(cudaFree(hd_data.PBM));
+        gpuErrchk(cudaFree(d_data));
+        d_CUB_temp_storage = nullptr;
+        d_histogram = nullptr;
+        hd_data.PBM = nullptr;
+        d_data = nullptr;
+        if (d_keys) {
+            d_keys_vals_storage_bytes = 0;
+            gpuErrchk(cudaFree(d_keys));
+            gpuErrchk(cudaFree(d_vals));
+            d_keys = nullptr;
+            d_vals = nullptr;
+        }
+    }
 }
 
 void MsgSpatial2D::CUDAModelHandler::buildIndex() {

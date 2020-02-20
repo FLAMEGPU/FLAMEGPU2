@@ -8,14 +8,15 @@
 #include "flamegpu/runtime/utility/RandomManager.cuh"
 #include "flamegpu/runtime/flamegpu_host_api.h"
 #include "flamegpu/pop/AgentPopulation.h"
+#include "flamegpu/util/nvtx.h"
 
 
 Simulation::Simulation(const ModelDescription& _model)
     : model(_model.model->clone())
-    , host_api(std::make_unique<FLAMEGPU_HOST_API>(*this)) {
-}
+    , host_api(std::make_unique<FLAMEGPU_HOST_API>(*this)) { }
 
 void Simulation::initialise(int argc, const char** argv) {
+    NVTX_RANGE("Simulation::initialise");
     config = Config();  // Reset to defaults
     resetDerivedConfig();
     // check input args

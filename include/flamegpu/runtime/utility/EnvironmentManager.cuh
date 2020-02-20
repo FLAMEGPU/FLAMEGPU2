@@ -50,10 +50,6 @@ class EnvironmentManager {
                 (std::hash<std::string>()(k.second) << 1);
         }
     };
-    /**
-     * Create an instance of curve to ensure it's initialised
-     */
-    Curve &curve;
 
  public:
     /**
@@ -487,6 +483,15 @@ class EnvironmentManager {
      * Host copy of data related to each stored property
      */
     std::unordered_map<NamePair, EnvProp, NamePairHash> properties;
+
+    /**
+     * Flag indicating that curve has/hasn't been initialised yet on a device.
+     */
+    bool deviceInitialised;
+    /**
+     * Function to initialise device-side portions of the environment manager
+     */
+    void initialiseDevice();
     /**
      * Remainder of class is singleton pattern
      */
@@ -737,10 +742,10 @@ void EnvironmentManager::remove(const NamePair &name) {
     }
     auto i = properties.at(name);
     // Unregister in cuRVE
-    curve.setNamespaceByHash(CURVE_NAMESPACE_HASH);
+    Curve::getInstance().setNamespaceByHash(CURVE_NAMESPACE_HASH);
     Curve::VariableHash cvh = toHash(name);
-    curve.unregisterVariableByHash(cvh);
-    curve.setDefaultNamespace();
+    Curve::getInstance().unregisterVariableByHash(cvh);
+    Curve::getInstance().setDefaultNamespace();
     // Update free space
     // Cast is safe, length would need to be gigabytes, we only have 64KB constant cache
     if (i.offset + static_cast<uint32_t>(i.length) == nextFree) {

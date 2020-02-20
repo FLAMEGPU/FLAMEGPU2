@@ -12,6 +12,7 @@
 #include "flamegpu/runtime/cuRVE/curve.h"
 #include "flamegpu/gpu/CUDAErrorChecking.h"
 #include "flamegpu/gpu/CUDAScanCompaction.h"
+#include "flamegpu/util/nvtx.h"
 
 
 struct ModelData;
@@ -239,16 +240,27 @@ class MsgBruteForce {
          */
         explicit CUDAModelHandler(CUDAMessage &a)
             : MsgSpecialisationHandler()
-            , sim_message(a) {
-             gpuErrchk(cudaMalloc(&d_metadata, sizeof(MetaData)));
-        }
-        ~CUDAModelHandler() {
-            gpuErrchk(cudaFree(d_metadata));
-        }
+            , d_metadata(nullptr)
+            , sim_message(a) { }
+
+        /** 
+         * Destructor.
+         * Should free any local host memory (device memory cannot be freed in destructors)
+         */
+        ~CUDAModelHandler() { }
         /**
          * Updates the length of the messagelist stored on device
          */
         void buildIndex() override;
+        /**
+         * Allocates memory for the constructed index.
+         * The memory allocation is checked by build index.
+         */
+        void allocateMetaDataDevicePtr() override;
+        /**
+         * Releases memory for the constructed index.
+         */
+        void freeMetaDataDevicePtr() override;
         /**
          * Returns a pointer to the metadata struct, this is required for reading the message data
          */

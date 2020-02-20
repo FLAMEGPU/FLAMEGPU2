@@ -2,6 +2,7 @@
 #include "flamegpu/runtime/flamegpu_host_agent_api.h"
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/sim/Simulation.h"
+#include "flamegpu/util/nvtx.h"
 
 FLAMEGPU_HOST_API::FLAMEGPU_HOST_API(Simulation &_agentModel)
     : random()
@@ -13,6 +14,7 @@ FLAMEGPU_HOST_API::FLAMEGPU_HOST_API(Simulation &_agentModel)
     , d_output_space_size(0) { }
 
 FLAMEGPU_HOST_API::~FLAMEGPU_HOST_API() {
+    // @todo - cuda is not allowed in destructor
     if (d_cub_temp) {
         gpuErrchk(cudaFree(d_cub_temp));
         d_cub_temp_size = 0;
@@ -40,6 +42,7 @@ bool FLAMEGPU_HOST_API::tempStorageRequiresResize(const CUB_Config &cc, const un
     return true;
 }
 void FLAMEGPU_HOST_API::resizeTempStorage(const CUB_Config &cc, const unsigned int &items, const size_t &newSize) {
+    NVTX_RANGE("FLAMEGPU_HOST_API::resizeTempStorage");
     if (newSize > d_cub_temp_size) {
         if (d_cub_temp) {
             gpuErrchk(cudaFree(d_cub_temp));

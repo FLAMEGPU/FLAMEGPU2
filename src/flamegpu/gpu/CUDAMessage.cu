@@ -38,7 +38,6 @@ CUDAMessage::CUDAMessage(const MsgBruteForce::Data& description)
     : message_description(description)
     , message_count(0)
     , max_list_size(0)
-    , curve(Curve::getInstance())
     , truncate_messagelist_flag(true)
     , pbm_construction_required(false)
     , specialisation_handler(description.getSpecialisationHander(*this)) {
@@ -50,6 +49,8 @@ CUDAMessage::CUDAMessage(const MsgBruteForce::Data& description)
  * @brief Destroys the CUDAMessage object
  */
 CUDAMessage::~CUDAMessage(void) {
+    // @todo - this should not be done in a destructor, rather an explicit cleanup method.
+    specialisation_handler->freeMetaDataDevicePtr();
 }
 
 /**
@@ -121,23 +122,23 @@ void CUDAMessage::mapReadRuntimeVariables(const AgentFunctionData& func) const {
 
     const std::string message_name = message_description.name;
 
-    const Curve::VariableHash message_hash = curve.variableRuntimeHash(message_name.c_str());
-    const Curve::VariableHash agent_hash = curve.variableRuntimeHash(func.parent.lock()->name.c_str());
-    const Curve::VariableHash func_hash = curve.variableRuntimeHash(func.name.c_str());
+    const Curve::VariableHash message_hash = Curve::getInstance().variableRuntimeHash(message_name.c_str());
+    const Curve::VariableHash agent_hash = Curve::getInstance().variableRuntimeHash(func.parent.lock()->name.c_str());
+    const Curve::VariableHash func_hash = Curve::getInstance().variableRuntimeHash(func.name.c_str());
     // loop through the message variables to map each variable name using cuRVE
     for (const auto &mmp : message_description.variables) {
         // get a device pointer for the message variable name
         void* d_ptr = message_list->getReadMessageListVariablePointer(mmp.first);
 
         // map using curve
-        Curve::VariableHash var_hash = curve.variableRuntimeHash(mmp.first.c_str());
+        Curve::VariableHash var_hash = Curve::getInstance().variableRuntimeHash(mmp.first.c_str());
 
         // get the message variable size
         size_t size = mmp.second.type_size;
 
        // maximum population size
         unsigned int length = this->getMessageCount();  // check to see if it is equal to pop
-        curve.registerVariableByHash(var_hash + agent_hash + func_hash + message_hash, d_ptr, size, length);
+        Curve::getInstance().registerVariableByHash(var_hash + agent_hash + func_hash + message_hash, d_ptr, size, length);
     }
 }
 
@@ -154,40 +155,40 @@ void CUDAMessage::mapWriteRuntimeVariables(const AgentFunctionData& func, const 
 
     const std::string message_name = message_description.name;
 
-    const Curve::VariableHash message_hash = curve.variableRuntimeHash(message_name.c_str());
-    const Curve::VariableHash agent_hash = curve.variableRuntimeHash(func.parent.lock()->name.c_str());
-    const Curve::VariableHash func_hash = curve.variableRuntimeHash(func.name.c_str());
+    const Curve::VariableHash message_hash = Curve::getInstance().variableRuntimeHash(message_name.c_str());
+    const Curve::VariableHash agent_hash = Curve::getInstance().variableRuntimeHash(func.parent.lock()->name.c_str());
+    const Curve::VariableHash func_hash = Curve::getInstance().variableRuntimeHash(func.name.c_str());
     // loop through the message variables to map each variable name using cuRVE
     for (const auto &mmp : message_description.variables) {
         // get a device pointer for the message variable name
         void* d_ptr = message_list->getWriteMessageListVariablePointer(mmp.first);
 
         // map using curve
-        Curve::VariableHash var_hash = curve.variableRuntimeHash(mmp.first.c_str());
+        Curve::VariableHash var_hash = Curve::getInstance().variableRuntimeHash(mmp.first.c_str());
 
         // get the message variable size
         size_t size = mmp.second.type_size;
 
         // maximum population size
         unsigned int length = writeLen;  // check to see if it is equal to pop
-        curve.registerVariableByHash(var_hash + agent_hash + func_hash + message_hash, d_ptr, size, length);
+        Curve::getInstance().registerVariableByHash(var_hash + agent_hash + func_hash + message_hash, d_ptr, size, length);
     }
 }
 
 void CUDAMessage::unmapRuntimeVariables(const AgentFunctionData& func) const {
     const std::string message_name = message_description.name;
 
-    const Curve::VariableHash message_hash = curve.variableRuntimeHash(message_name.c_str());
-    const Curve::VariableHash agent_hash = curve.variableRuntimeHash(func.parent.lock()->name.c_str());
-    const Curve::VariableHash func_hash = curve.variableRuntimeHash(func.name.c_str());
+    const Curve::VariableHash message_hash = Curve::getInstance().variableRuntimeHash(message_name.c_str());
+    const Curve::VariableHash agent_hash = Curve::getInstance().variableRuntimeHash(func.parent.lock()->name.c_str());
+    const Curve::VariableHash func_hash = Curve::getInstance().variableRuntimeHash(func.name.c_str());
     // loop through the message variables to map each variable name using cuRVE
     for (const auto &mmp : message_description.variables) {
         // get a device pointer for the message variable name
         // void* d_ptr = message_list->getMessageListVariablePointer(mmp.first);
 
         // unmap using curve
-        Curve::VariableHash var_hash = curve.variableRuntimeHash(mmp.first.c_str());
-        curve.unregisterVariableByHash(var_hash + agent_hash + func_hash + message_hash);
+        Curve::VariableHash var_hash = Curve::getInstance().variableRuntimeHash(mmp.first.c_str());
+        Curve::getInstance().unregisterVariableByHash(var_hash + agent_hash + func_hash + message_hash);
     }
 }
 void CUDAMessage::swap(bool isOptional, const unsigned int &newMsgCount, const unsigned int &streamId) {
@@ -228,6 +229,9 @@ void CUDAMessage::swap(bool isOptional, const unsigned int &newMsgCount, const u
 }
 
 void CUDAMessage::buildIndex() {
+    // Allocate the metadata if required.
+    specialisation_handler->allocateMetaDataDevicePtr();
+    // Build the index if required.
     if (pbm_construction_required) {
         specialisation_handler->buildIndex();
         pbm_construction_required = false;

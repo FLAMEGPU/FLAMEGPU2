@@ -123,11 +123,37 @@ class RandomManager {
      * @note - std::default_random_engine is platform (compiler) specific. GCC (7.4) defaults to a linear_congruential_engine, which returns the same sequence for seeds 0 and 1. mt19937 is the default in MSVC and generally seems more sane.
      */
     std::mt19937 host_rng;
+
+    /**
+     * Flag indicating that the device memory has been initialised, and therefore might need resetting
+     */
+    bool deviceInitialised;
     /**
      * Acts as destructor
      * @note Safe to call multiple times
      */
     void free();
+
+    /**
+     * Destroys host stuff 
+     */
+    void freeHost();
+    /**
+     * Destroys device memory / resets the curand states
+     * @note includes cuda commands so not safe from c++ destructor
+     */
+    void freeDevice();
+
+    /**
+     * Reinitialises host RNG from the current seed.
+     */
+    void reseedHost();
+
+    /**
+     * Reinitialises device RNG from the current seed.
+     * @note includes cuda commands.
+     */
+    void reseedDevice();
     /**
      * Remainder of class is singleton pattern
      */
