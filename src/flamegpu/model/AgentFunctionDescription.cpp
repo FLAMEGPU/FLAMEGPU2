@@ -333,64 +333,67 @@ AgentFunctionDescription& AgentDescription::newRTFunction(const std::string& fun
         dev_api_path += "\\runtime";
         std::cout << "flamegpu_dev_api.h location is " << dev_api_path << '\n';
 
+        static jitify::JitCache kernel_cache;
+        //jitify::Program program = kernel_cache.program(func_src);
+        auto program = std::make_shared<jitify::Program>(kernel_cache, func_src);
+        //
+        //nvrtcProgram prog;
+        //NVRTC_SAFE_CALL(
+        //    nvrtcCreateProgram(&prog, // prog
+        //        func_src, // buffer
+        //        "rt_functions.cu", // name
+        //        0, // numHeaders
+        //        NULL, // headers
+        //        NULL)); // includeNames
 
-        nvrtcProgram prog;
-        NVRTC_SAFE_CALL(
-            nvrtcCreateProgram(&prog, // prog
-                func_src, // buffer
-                "rt_functions.cu", // name
-                0, // numHeaders
-                NULL, // headers
-                NULL)); // includeNames
-                
-        const char* opts[] = { "--gpu-architecture=compute_75", "-I", dev_api_path.c_str() };
-        nvrtcResult compileResult = nvrtcCompileProgram(prog, // prog
-            3, // numOptions
-            opts); // options
-            
+        //const char* opts[] = { "--gpu-architecture=compute_75", "-I", dev_api_path.c_str() };
+        //nvrtcResult compileResult = nvrtcCompileProgram(prog, // prog
+        //    3, // numOptions
+        //    opts); // options
 
 
-        if (compileResult != NVRTC_SUCCESS) {
 
-            // Obtain compilation log from the program.
-            size_t logSize;
-            NVRTC_SAFE_CALL(nvrtcGetProgramLogSize(prog, &logSize));
-            char* log = new char[logSize];
-            NVRTC_SAFE_CALL(nvrtcGetProgramLog(prog, log));
-            std::cout << log << '\n';
-            delete[] log;
+        //if (compileResult != NVRTC_SUCCESS) {
 
-            THROW RTAgentFuncCompilationError("Runtime Agent function had compilation errors, "
-                "in AgentDescription::newRTFunction()\n");
-        }
+        //    // Obtain compilation log from the program.
+        //    size_t logSize;
+        //    NVRTC_SAFE_CALL(nvrtcGetProgramLogSize(prog, &logSize));
+        //    char* log = new char[logSize];
+        //    NVRTC_SAFE_CALL(nvrtcGetProgramLog(prog, log));
+        //    std::cout << log << '\n';
+        //    delete[] log;
 
-        // Obtain PTX from the program.
-        size_t ptxSize;
-        NVRTC_SAFE_CALL(nvrtcGetPTXSize(prog, &ptxSize));
-        char* ptx = new char[ptxSize];
-        NVRTC_SAFE_CALL(nvrtcGetPTX(prog, ptx));
+        //    THROW RTAgentFuncCompilationError("Runtime Agent function had compilation errors, "
+        //        "in AgentDescription::newRTFunction()\n");
+        //}
 
-        // Destroy the program.
-        NVRTC_SAFE_CALL(nvrtcDestroyProgram(&prog));
+        //// Obtain PTX from the program.
+        //size_t ptxSize;
+        //NVRTC_SAFE_CALL(nvrtcGetPTXSize(prog, &ptxSize));
+        //char* ptx = new char[ptxSize];
+        //NVRTC_SAFE_CALL(nvrtcGetPTX(prog, ptx));
 
-        // Load the generated PTX and get a handle to the agent wrapper kernel.
-        CUdevice cuDevice;
-        CUcontext context;
-        CUmodule module;
-        CUfunction kernel;
+        //// Destroy the program.
+        //NVRTC_SAFE_CALL(nvrtcDestroyProgram(&prog));
 
-        cudaFree(0); // create runtime context if does not already exist
-        //TODO: No mixing of compiletime and runtime functions
-        //TODO: configuration must specify device id
-        CUDA_SAFE_CALL(cuInit(0));
-        
-        CUDA_SAFE_CALL(cuDeviceGet(&cuDevice, 0));
-        //CUDA_SAFE_CALL(cuCtxCreate(&context, 0, cuDevice));
-        CUDA_SAFE_CALL(cuDevicePrimaryCtxRetain(&context, cuDevice));    //get context from runtime api
-        CUDA_SAFE_CALL(cuModuleLoadDataEx(&module, ptx, 0, 0, 0));
-        CUDA_SAFE_CALL(cuModuleGetFunction(&kernel, module, "simple_test"));    //TODO: This is assuming a simple kernel that does nothing and has no headers or wrapper
+        //// Load the generated PTX and get a handle to the agent wrapper kernel.
+        //CUdevice cuDevice;
+        //CUcontext context;
+        //CUmodule module;
+        //CUfunction kernel;
 
-        auto rtn = std::shared_ptr<AgentFunctionData>(new AgentFunctionData(this->agent->shared_from_this(), function_name, kernel));
+        //cudaFree(0); // create runtime context if does not already exist
+        ////TODO: No mixing of compiletime and runtime functions
+        ////TODO: configuration must specify device id
+        //CUDA_SAFE_CALL(cuInit(0));
+
+        //CUDA_SAFE_CALL(cuDeviceGet(&cuDevice, 0));
+        ////CUDA_SAFE_CALL(cuCtxCreate(&context, 0, cuDevice));
+        //CUDA_SAFE_CALL(cuDevicePrimaryCtxRetain(&context, cuDevice));    //get context from runtime api
+        //CUDA_SAFE_CALL(cuModuleLoadDataEx(&module, ptx, 0, 0, 0));
+        //CUDA_SAFE_CALL(cuModuleGetFunction(&kernel, module, "simple_test"));    //TODO: This is assuming a simple kernel that does nothing and has no headers or wrapper
+
+        auto rtn = std::shared_ptr<AgentFunctionData>(new AgentFunctionData(this->agent->shared_from_this(), function_name, program));
         agent->functions.emplace(function_name, rtn);
         return *rtn->description;
     }

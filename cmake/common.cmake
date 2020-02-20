@@ -78,6 +78,12 @@ if(CMAKE_CUDA_COMPILER_VERSION VERSION_LESS 7.0)
     message(FATAL_ERROR "CUDA version must be at least 7.0")
 endif()
 
+# dlfcn (only for windows)
+if (WIN32)
+  find_package(dlfcn-win32 REQUIRED)
+  set(FLAMEGPU_DEPENDENCY_LINK_LIBRARIES ${FLAMEGPU_DEPENDENCY_LINK_LIBRARIES} dlfcn-win32::dl)
+endif ()
+
 
 # Set Gencode arguments based on cuda version, if not passed in as an argument
 # If a list of SMs not passed from the command line, use the defaults

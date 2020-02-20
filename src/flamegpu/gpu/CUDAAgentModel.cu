@@ -187,30 +187,37 @@ totalThreads += cuda_agent.getMaximumListSize();
                 gpuErrchkLaunch();
             }
             //else if runtime function defined
-            else if (func_des->func_addr){
+            else if (func_des->rtc_program){
                 //TODO: RTI invokation of agent function
                 //void* args[] = 0;
                 //void** args = 0;
-                unsigned int num_blocks = 1;
-                unsigned int num_threads = 1;
+                //unsigned int num_blocks = 1;
+                //unsigned int num_threads = 1;
 
-                //Use driver API to launch runtime function
-                CUresult launch_result = cuLaunchKernel(func_des->func_addr,
-                        num_blocks, 1, 1, // grid dim
-                        num_threads, 1, 1, // block dim
-                        0, 0, // shared mem and stream
-                        0, 0); // args, 0); //args
-                
-                if (launch_result != CUDA_SUCCESS) {
-                    const char* msg;                         
-                    cuGetErrorName(launch_result, &msg);
-                    std::cerr << "\nerror: cuLaunchKernel failed with error " << msg << '\n';
-                    
-                    THROW InvalidAgentFunc("Runtime agent function launch was miserable failure!");
-                }
+                ////Use driver API to launch runtime function
+                //CUresult launch_result = cuLaunchKernel(func_des->func_addr,
+                //        num_blocks, 1, 1, // grid dim
+                //        num_threads, 1, 1, // block dim
+                //        0, 0, // shared mem and stream
+                //        0, 0); // args, 0); //args
+                //
+                //if (launch_result != CUDA_SUCCESS) {
+                //    const char* msg;                         
+                //    cuGetErrorName(launch_result, &msg);
+                //    std::cerr << "\nerror: cuLaunchKernel failed with error " << msg << '\n';
+                //    
+                //    THROW InvalidAgentFunc("Runtime agent function launch was miserable failure!");
+                //}
 
-                //TODO: Remove temp sync
-                cuCtxSynchronize();
+                ////TODO: Remove temp sync
+                //cuCtxSynchronize();
+                dim3 grid(1);
+                dim3 block(1);
+                using jitify::reflection::type_of;
+                func_des->rtc_program->kernel("simple_test")
+                    .instantiate()
+                    .configure(grid, block)
+                    .launch();
 
             }
             else {

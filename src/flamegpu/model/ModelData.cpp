@@ -29,7 +29,7 @@ MessageData::MessageData(ModelData *const model, const std::string &message_name
 
 AgentFunctionData::AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string &function_name, AgentFunctionWrapper *agent_function)
     : func(agent_function)
-    , func_addr(nullptr)
+    , rtc_program(nullptr)
     , initial_state(_parent->initial_state)
     , end_state(_parent->initial_state)
     , message_output_optional(false)
@@ -38,9 +38,9 @@ AgentFunctionData::AgentFunctionData(std::shared_ptr<AgentData> _parent, const s
     , description(new AgentFunctionDescription(_parent->description->model, this))
     , name(function_name) { }
 
-AgentFunctionData::AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string& function_name, CUfunction func_addr)
+AgentFunctionData::AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string& function_name, std::shared_ptr<jitify::Program> rtc_program)
     : func(nullptr)
-    , func_addr(func_addr)
+    , rtc_program(rtc_program)
     , initial_state(_parent->initial_state)
     , end_state(_parent->initial_state)
     , message_output_optional(false)
@@ -126,7 +126,7 @@ MessageData::MessageData(ModelData *const model, const MessageData &other)
     , optional_outputs(other.optional_outputs) { }
 AgentFunctionData::AgentFunctionData(ModelData *const model, std::shared_ptr<AgentData> _parent, const AgentFunctionData &other)
     : func(other.func)
-    , func_addr(other.func_addr)
+    , rtc_program(other.rtc_program)
     , initial_state(other.initial_state)
     , end_state(other.end_state)
     , message_output_optional(other.message_output_optional)

@@ -8,6 +8,7 @@
 #include <set>
 #include <string>
 #include <cuda.h> //CUDA include required for runtime compilation
+#include "jitify/jitify.hpp"
 
 #include "flamegpu/model/EnvironmentDescription.h"
 #include "flamegpu/runtime/AgentFunction.h"
@@ -357,7 +358,7 @@ struct AgentFunctionData {
     /**
      * The address of a NVRTI function to which represents runtime agent function wrapper for the user defined function
      */
-    CUfunction func_addr;
+    std::shared_ptr<jitify::Program> rtc_program;
 
     /**
      * Agent's must be in this state to execute this function
@@ -431,7 +432,7 @@ struct AgentFunctionData {
     /**
      * Normal constructor for runtime function, only to be called by AgentDescription
      */
-    AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string& function_name, CUfunction func_addr);
+    AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string& function_name, std::shared_ptr<jitify::Program> rtc_program);
 };
 
 /**
