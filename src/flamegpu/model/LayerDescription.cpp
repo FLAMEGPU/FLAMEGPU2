@@ -21,9 +21,28 @@ void LayerDescription::addAgentFunction(const AgentFunctionDescription &afd) {
         "in LayerDescription::addAgentFunction()\n");
 }
 void LayerDescription::addAgentFunction(const std::string &name) {
+    // Locate the matching agent function in the model hierarchy
     for (auto a : model->agents) {
         for (auto f : a.second->functions) {
             if (f.second->name == name) {
+                // Check that layer does not already contain function with same agent + states
+                for (const auto &b : layer->agent_functions) {
+                    if (auto parent = b->parent.lock()) {
+                        // If agent matches
+                        if (parent->name == a.second->name) {
+                            // If they share a state
+                            if (b->initial_state == f.second->initial_state ||
+                                b->initial_state == f.second->end_state ||
+                                b->end_state == f.second->initial_state ||
+                                b->end_state == f.second->end_state) {
+                                THROW InvalidAgentFunc("Agent functions '%s' cannot be added to this layer as agent function '%s' "
+                                    "within the layer shares an input or output state, this is not permitted, "
+                                    "in LayerDescription::addAgentFunction()\n",
+                                    f.second->name.c_str(), b->name.c_str());
+                            }
+                        }
+                    }
+                }
                 if (layer->agent_functions.insert(f.second).second)
                     return;
                 THROW InvalidAgentFunc("Attempted to add agent function '%s' to same layer twice, "
@@ -33,7 +52,7 @@ void LayerDescription::addAgentFunction(const std::string &name) {
         }
     }
     THROW InvalidAgentFunc("Agent function '%s' was not found, "
-        "in AgentFunctionDescription::addAgentFunction()\n",
+        "in LayerDescription::addAgentFunction()\n",
         name.c_str());
 }
 /**

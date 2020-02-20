@@ -7,6 +7,7 @@
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/runtime/AgentFunction.h"
+#include "flamegpu/runtime/AgentFunctionCondition.h"
 #include "flamegpu/model/LayerDescription.h"
 #include "flamegpu/runtime/messaging/BruteForce.h"
 
@@ -151,6 +152,15 @@ class AgentFunctionDescription {
      */
     void setAllowAgentDeath(const bool &has_death);
     /**
+     * Sets the function condition for the agent function
+     * This is an FLAMEGPU_AGENT_FUNCTION_CONDITION which returns a boolean value (true or false)
+     * Only agents which return true perform the attached FLAMEGPU_AGENT_FUNCTION
+     * and transition from the initial to end state
+     * 
+     */
+    template<typename AgentFunctionCondition>
+    void setFunctionCondition(AgentFunctionCondition);
+    /**
      * @return A mutable reference to the message input of this agent function
      * @see AgentFunctionDescription::getMessageInput() for the immutable version
      * @throw OutOfBoundsException If the message input has not been set
@@ -238,9 +248,18 @@ class AgentFunctionDescription {
      */
     bool hasAgentOutput() const;
     /**
+     * @return True if setFunctionCondition() has been called successfully
+     * @see AgentFunctionDescription::setFunctionCondition(AgentFunctionCondition)
+     */
+    bool hasFunctionCondition() const;
+    /**
      * @return The cuda kernel entry point for executing the agent function
      */
     AgentFunctionWrapper *getFunctionPtr() const;
+    /**
+     * @return The cuda kernel entry point for executing the agent function condition
+     */
+    AgentFunctionConditionWrapper *getConditionPtr() const;
 
  private:
     /**
@@ -266,5 +285,11 @@ AgentFunctionDescription &AgentDescription::newFunction(const std::string &funct
     THROW InvalidAgentFunc("Agent ('%s') already contains function '%s', "
         "in AgentDescription::newFunction().",
         agent->name.c_str(), function_name.c_str());
+}
+
+
+template<typename AgentFunctionCondition>
+void AgentFunctionDescription::setFunctionCondition(AgentFunctionCondition) {
+    function->condition = AgentFunctionCondition::fnPtr();
 }
 #endif  // INCLUDE_FLAMEGPU_MODEL_AGENTFUNCTIONDESCRIPTION_H_

@@ -72,10 +72,36 @@ class CUDAAgent : public AgentInterface {
 
     void *getStateVariablePtr(const std::string &state_name, const std::string &variable_name) override;
     ModelData::size_type getStateSize(const std::string &state_name) const override;
-
-    void process_death(const AgentFunctionData& func, const unsigned int &streamId);
-
-    void transition_state(const std::string &src, const std::string &dest, const unsigned int &streamId);
+    /**
+     * Uses the agent scan flag for the named stream to sort agents and
+     * reduce agent count so that agents which have reported death are removed
+     *
+     * @param func Agent function being actioned
+     * @param streamId The scan_flag stream to use
+     */
+    void processDeath(const AgentFunctionData& func, const unsigned int &streamId);
+    /**
+     * Uses the agent scan flag for the named stream to sort agents and 
+     * set the agent function condition state for the function's initial state
+     * 
+     * Agents are sorted so that those which failed the condition are moved to the start of the list
+     * and those which failed the condition are move to the end of the list
+     * @param func Agent function being actioned
+     * @param streamId The scan_flag stream to use
+     */
+    void processFunctionCondition(const AgentFunctionData& func, const unsigned int &streamId);
+    /**
+     * Clears the agent function condition state values for the provided agent state
+     * @param state The agent state to action
+     */
+    void clearFunctionConditionState(const std::string &state);
+    /**
+     * Transitions agents from src state to dest state, appending the existing destiation state list
+     * @param src Source state
+     * @dest dest Destination state
+     * @param streamId The stream being used
+     */
+    void transitionState(const std::string &src, const std::string &dest, const unsigned int &streamId);
 
  protected:
     /** @brief    Zero all state variable data. */
