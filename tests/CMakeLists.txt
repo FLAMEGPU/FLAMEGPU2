@@ -116,6 +116,9 @@ SET(TEST_CASE_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/messaging/test_brute_force.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/messaging/test_append_truncate.cu
 )
+SET(DEV_TEST_CASE_SRC
+
+)
 SET(OTHER_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/helpers/device_test_functions.h
     ${CMAKE_CURRENT_SOURCE_DIR}/helpers/device_test_functions.cu
@@ -126,6 +129,10 @@ SET(OTHER_SRC
 SET(ALL_SRC
     ${TEST_CASE_SRC}
     ${OTHER_SRC}
+)
+SET(DEV_ALL_SRC
+    ${DEV_TEST_CASE_SRC}
+    ${CMAKE_CURRENT_SOURCE_DIR}/helpers/main.cu
 )
 
 # Add the executable and set required flags for the target
@@ -143,3 +150,28 @@ CMAKE_SET_TARGET_FOLDER("gtest" "Tests/Dependencies")
 
 # Also set as startup project (if top level project)
 set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"  PROPERTY VS_STARTUP_PROJECT "${PROJECT_NAME}")
+
+option(TEST_DEV_MODE "Create a mini project for fast building of tests during development" OFF)
+if(TEST_DEV_MODE)
+    # DEVELOPMENT TESTING THING (Compact repeated version of above)
+    project(tests_dev CUDA CXX)
+    # Set the location of the ROOT flame gpu project relative to this CMakeList.txt
+    get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/.. REALPATH)
+    # Include common rules.
+    include(${FLAMEGPU_ROOT}/cmake/common.cmake)
+    # Define output location of binary files
+    SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../bin/${CMAKE_SYSTEM_NAME_LOWER}-x64/${CMAKE_BUILD_TYPE}/)
+    # Enable parallel compilation
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP")
+    endif()
+    # Add the executable and set required flags for the target
+    add_flamegpu_executable("${PROJECT_NAME}" "${DEV_ALL_SRC}" "${FLAMEGPU_ROOT}" "${PROJECT_BINARY_DIR}" FALSE)
+    # Add the tests directory to the include path,
+    target_include_directories("${PROJECT_NAME}" PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+    # Add the targets we depend on (this does link and include)
+    target_link_libraries("${PROJECT_NAME}" gtest)
+    # target_link_libraries("${PROJECT_NAME}" gmock) # Currently unused
+    CMAKE_SET_TARGET_FOLDER("${PROJECT_NAME}" "Tests")
+endif()
