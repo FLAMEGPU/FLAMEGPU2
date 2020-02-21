@@ -3,6 +3,7 @@
 
 #include <map>
 #include <memory>
+#include <vector>
 #include <string>
 
 #include "flamegpu/sim/Simulation.h"
@@ -153,6 +154,10 @@ class CUDAAgentModel : public Simulation {
      * Held here for tracking when to release cuda memory
      */
     CUDAScatter &scatter;
+    /**
+     * Streams created within this cuda context for executing functions within layers in parallel
+     */
+    std::vector<cudaStream_t> streams;
 };
 
 #endif  // INCLUDE_FLAMEGPU_GPU_CUDAAGENTMODEL_H_
