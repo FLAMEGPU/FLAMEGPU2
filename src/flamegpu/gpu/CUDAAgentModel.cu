@@ -1,8 +1,8 @@
 #include "flamegpu/gpu/CUDAAgentModel.h"
 
+#include <nvrtc.h>
 #include <algorithm>
 #include <iostream>
-#include <nvrtc.h>
 
 #include "flamegpu/model/ModelData.h"
 #include "flamegpu/model/AgentDescription.h"
@@ -164,18 +164,16 @@ totalThreads += cuda_agent.getMaximumListSize();
             int state_list_size = cuda_agent.getStateSize(func_des->initial_state);
 
 
-            //if compile time func defined
+            // if compile time func defined
             if (func_des->func) {
-
-
-                int blockSize = 0;  // The launch configurator returned block size
-                int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
-                int gridSize = 0;  // The actual grid size needed, based on input size
+                int blockSize = 0;      // The launch configurator returned block size
+                int minGridSize = 0;    // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
+                int gridSize = 0;       // The actual grid size needed, based on input size
 
                 // calculate the grid block size for main agent function
                 cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, func_des->func, 0, state_list_size);
 
-                //! Round up according to CUDAAgent state list size
+                // Round up according to CUDAAgent state list size
                 gridSize = (state_list_size + blockSize - 1) / blockSize;
 
                 // hash agent name
@@ -185,32 +183,8 @@ totalThreads += cuda_agent.getMaximumListSize();
 
                 (func_des->func) << <gridSize, blockSize, 0, stream[j] >> > (modelname_hash, agentname_hash + funcname_hash, message_name_inp_hash, message_name_outp_hash, state_list_size, messageList_Size, totalThreads, j);
                 gpuErrchkLaunch();
-            }
-            //else if runtime function defined
-            else if (func_des->rtc_program){
-                //TODO: RTI invokation of agent function
-                //void* args[] = 0;
-                //void** args = 0;
-                //unsigned int num_blocks = 1;
-                //unsigned int num_threads = 1;
-
-                ////Use driver API to launch runtime function
-                //CUresult launch_result = cuLaunchKernel(func_des->func_addr,
-                //        num_blocks, 1, 1, // grid dim
-                //        num_threads, 1, 1, // block dim
-                //        0, 0, // shared mem and stream
-                //        0, 0); // args, 0); //args
-                //
-                //if (launch_result != CUDA_SUCCESS) {
-                //    const char* msg;                         
-                //    cuGetErrorName(launch_result, &msg);
-                //    std::cerr << "\nerror: cuLaunchKernel failed with error " << msg << '\n';
-                //    
-                //    THROW InvalidAgentFunc("Runtime agent function launch was miserable failure!");
-                //}
-
-                ////TODO: Remove temp sync
-                //cuCtxSynchronize();
+            } else if (func_des->rtc_program) {    // else if runtime function defined
+                // TODO: RTI invokation of agent function
                 dim3 grid(1);
                 dim3 block(1);
                 using jitify::reflection::type_of;
@@ -218,9 +192,7 @@ totalThreads += cuda_agent.getMaximumListSize();
                     .instantiate()
                     .configure(grid, block)
                     .launch();
-
-            }
-            else {
+            } else {
                 THROW InvalidAgentFunc("No referecne to an agent function exists");
             }
 

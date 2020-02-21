@@ -1,5 +1,4 @@
 #include "flamegpu/model/AgentFunctionDescription.h"
-#include "flamegpu/model/MessageDescription.h"
 
 /**
  * Constructors
@@ -9,7 +8,11 @@
 #include <cuda.h>
 #include <iostream>
 #include <string>
+
+#include "flamegpu/model/MessageDescription.h"
 #include "jitify/jitify.hpp"
+
+
 
 AgentFunctionDescription::AgentFunctionDescription(ModelData *const _model, AgentFunctionData *const description)
     : model(_model)
@@ -295,34 +298,9 @@ AgentFunctionWrapper *AgentFunctionDescription::getFunctionPtr() const {
     return function->func;
 }
 
-// TODO: Ditch the helper macros
-#define NVRTC_SAFE_CALL(x) \
- do { \
-     nvrtcResult result = x; \
-     if (result != NVRTC_SUCCESS) { \
-         std::cerr << "\nerror: " #x " failed with error " \
-         << nvrtcGetErrorString(result) << '\n'; \
-         exit(1); \
-     } \
- } while(0)
-
-#define CUDA_SAFE_CALL(x) \
- do { \
-     CUresult result = x; \
-     if (result != CUDA_SUCCESS) { \
-         const char *msg; \
-         cuGetErrorName(result, &msg); \
-         std::cerr << "\nerror: " #x " failed with error " \
-         << msg << '\n'; \
-         exit(1); \
-     } \
- } while(0)
-
 
 AgentFunctionDescription& AgentDescription::newRTFunction(const std::string& function_name, const char* func_src) {
     if (agent->functions.find(function_name) == agent->functions.end()) {
-
-
         // get header location for fgpu
         const char* env_inc_fgp2 = std::getenv("FLAMEGPU2_INC_DIR");
         if (!env_inc_fgp2)
@@ -332,80 +310,25 @@ AgentFunctionDescription& AgentDescription::newRTFunction(const std::string& fun
         if (!env_inc_fgp2)
             std::cout << "FLAMEGPU2_INC_DIR environment varibale does not exist!" << '\n';
 
-        //include director for flamegu (cant use quotes not sure why)
+        // include director for flamegpu (cant use quotes not sure why)
         std::vector<std::string> options;
-        //fpgu incude
+        // fpgu incude
         std::string include_fgpu;
         include_fgpu = "-I" + std::string(env_inc_fgp2);
         options.push_back(include_fgpu);
         std::cout << "fgpu include option is " << include_fgpu << '\n';
-        //cuda path
+        // cuda path
         std::string include_cuda;
         include_cuda = "-I" + std::string(env_cuda_path) + "\\include";
         std::cout << "cuda include option is " << include_cuda << '\n';
         options.push_back(include_cuda);
 
 
-        //jitify to create program (with comilation settings)
+        // jitify to create program (with comilation settings)
         static jitify::JitCache kernel_cache;
         auto program = std::make_shared<jitify::Program>(kernel_cache, func_src, 0, options);
-        //
-        //nvrtcProgram prog;
-        //NVRTC_SAFE_CALL(
-        //    nvrtcCreateProgram(&prog, // prog
-        //        func_src, // buffer
-        //        "rt_functions.cu", // name
-        //        0, // numHeaders
-        //        NULL, // headers
-        //        NULL)); // includeNames
 
-        //const char* opts[] = { "--gpu-architecture=compute_75", "-I", dev_api_path.c_str() };
-        //nvrtcResult compileResult = nvrtcCompileProgram(prog, // prog
-        //    3, // numOptions
-        //    opts); // options
-
-
-
-        //if (compileResult != NVRTC_SUCCESS) {
-
-        //    // Obtain compilation log from the program.
-        //    size_t logSize;
-        //    NVRTC_SAFE_CALL(nvrtcGetProgramLogSize(prog, &logSize));
-        //    char* log = new char[logSize];
-        //    NVRTC_SAFE_CALL(nvrtcGetProgramLog(prog, log));
-        //    std::cout << log << '\n';
-        //    delete[] log;
-
-        //    THROW RTAgentFuncCompilationError("Runtime Agent function had compilation errors, "
-        //        "in AgentDescription::newRTFunction()\n");
-        //}
-
-        //// Obtain PTX from the program.
-        //size_t ptxSize;
-        //NVRTC_SAFE_CALL(nvrtcGetPTXSize(prog, &ptxSize));
-        //char* ptx = new char[ptxSize];
-        //NVRTC_SAFE_CALL(nvrtcGetPTX(prog, ptx));
-
-        //// Destroy the program.
-        //NVRTC_SAFE_CALL(nvrtcDestroyProgram(&prog));
-
-        //// Load the generated PTX and get a handle to the agent wrapper kernel.
-        //CUdevice cuDevice;
-        //CUcontext context;
-        //CUmodule module;
-        //CUfunction kernel;
-
-        //cudaFree(0); // create runtime context if does not already exist
-        ////TODO: No mixing of compiletime and runtime functions
-        ////TODO: configuration must specify device id
-        //CUDA_SAFE_CALL(cuInit(0));
-
-        //CUDA_SAFE_CALL(cuDeviceGet(&cuDevice, 0));
-        ////CUDA_SAFE_CALL(cuCtxCreate(&context, 0, cuDevice));
-        //CUDA_SAFE_CALL(cuDevicePrimaryCtxRetain(&context, cuDevice));    //get context from runtime api
-        //CUDA_SAFE_CALL(cuModuleLoadDataEx(&module, ptx, 0, 0, 0));
-        //CUDA_SAFE_CALL(cuModuleGetFunction(&kernel, module, "simple_test"));    //TODO: This is assuming a simple kernel that does nothing and has no headers or wrapper
-
+        // jitify launch program
         auto rtn = std::shared_ptr<AgentFunctionData>(new AgentFunctionData(this->agent->shared_from_this(), function_name, program));
         agent->functions.emplace(function_name, rtn);
         return *rtn->description;

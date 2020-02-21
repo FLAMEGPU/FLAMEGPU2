@@ -7,23 +7,24 @@
 #include "flamegpu/runtime/flamegpu_api.h"
 #include "flamegpu/io/factory.h"
 
-const char* test_simple_func = "my_program \n\
-        #include \"flamegpu/runtime/flamegpu_device_api.h\"\n\
-        extern \"C\" __global__ \n\
-        void simple_test() \n\
-        { \n\
-            size_t tid = blockIdx.x * blockDim.x + threadIdx.x; \n\
-            printf(\"test from tid\", tid); \n\
-        } \n";
+// C++11 raw string using ### as deliminator
+const char* test_simple_func = R"###(my_program
+        #include "flamegpu/runtime/flamegpu_device_api.h"
+        extern \"C\" __global__ 
+        void simple_test() 
+        {
+            size_t tid = blockIdx.x * blockDim.x + threadIdx.x;
+            printf("test from tid", tid);
+        })###";
 
 
 
-const char* test_agent_func = "\
-        #include \"flamegpu_device_api.h\"\n\
-        FLAMEGPU_AGENT_FUNCTION(test_agent_func) { \n\
-            printf(\"test\"); \n\
-            return ALIVE; \n\
-        }";
+const char* test_agent_func = R"###(my_program
+        #include \"flamegpu_device_api.h\"
+        FLAMEGPU_AGENT_FUNCTION(test_agent_func) {
+            printf(\"test\");
+            return ALIVE;
+        })###";
 
 FLAMEGPU_AGENT_FUNCTION(output_message) {
     FLAMEGPU->addMessage<int>("id", FLAMEGPU->getVariable<float>("id"));
@@ -108,10 +109,10 @@ int main(int argc, const char ** argv) {
         agent.newVariable<float>("y");
         agent.newVariable<float>("z");
         agent.newVariable<float>("drift");  // Store the distance moved here, for validation
-        
+
         // TEMP work on runtime functions
-        agent.newRTFunction("test_rt_func", test_simple_func); //TEMP
-       // agent.newRTFunction("test_rtagent_func", test_agent_func); //TEMP
+        agent.newRTFunction("test_rt_func", test_simple_func);  // TEMP
+        // agent.newRTFunction("test_rtagent_func", test_agent_func); //  TEMP
 
 
         agent.newFunction("output_message", output_message).setMessageOutput("location");
@@ -138,7 +139,7 @@ int main(int argc, const char ** argv) {
     {   // Layer #0
         LayerDescription& layer = model.newLayer();
         layer.addAgentFunction("test_rt_func");
-        //layer.addAgentFunction("test_rtagent_func");
+        //  layer.addAgentFunction("test_rtagent_func");
     }
 
     {   // Layer #1

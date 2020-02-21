@@ -1,19 +1,23 @@
 #ifndef INCLUDE_FLAMEGPU_MODEL_MODELDATA_H_
 #define INCLUDE_FLAMEGPU_MODEL_MODELDATA_H_
 
+#include <cuda.h>  // CUDA include required for runtime compilation
 #include <unordered_map>
 #include <list>
 #include <memory>
 #include <typeindex>
 #include <set>
 #include <string>
-#include <cuda.h> //CUDA include required for runtime compilation
-#include "jitify/jitify.hpp"
+
 
 #include "flamegpu/model/EnvironmentDescription.h"
 #include "flamegpu/runtime/AgentFunction.h"
 #include "flamegpu/runtime/flamegpu_host_api_macros.h"  // Todo replace with std/cub style fns (see AgentFunction.h)
 #include "flamegpu/pop/MemoryVector.h"
+#include "jitify/jitify.hpp"
+
+
+
 
 class EnvironmentDescription;
 class AgentDescription;
