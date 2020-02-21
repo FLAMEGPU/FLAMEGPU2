@@ -323,19 +323,32 @@ AgentFunctionDescription& AgentDescription::newRTFunction(const std::string& fun
     if (agent->functions.find(function_name) == agent->functions.end()) {
 
 
-        // get header location
+        // get header location for fgpu
         const char* env_inc_fgp2 = std::getenv("FLAMEGPU2_INC_DIR");
         if (!env_inc_fgp2)
             std::cout << "FLAMEGPU2_INC_DIR environment varibale does not exist!" << '\n';
 
-        //append path of runtime include dir
-        std::string dev_api_path = env_inc_fgp2;
-        dev_api_path += "\\runtime";
-        std::cout << "flamegpu_dev_api.h location is " << dev_api_path << '\n';
+        const char* env_cuda_path = std::getenv("CUDA_PATH");
+        if (!env_inc_fgp2)
+            std::cout << "FLAMEGPU2_INC_DIR environment varibale does not exist!" << '\n';
 
+        //include director for flamegu (cant use quotes not sure why)
+        std::vector<std::string> options;
+        //fpgu incude
+        std::string include_fgpu;
+        include_fgpu = "-I" + std::string(env_inc_fgp2);
+        options.push_back(include_fgpu);
+        std::cout << "fgpu include option is " << include_fgpu << '\n';
+        //cuda path
+        std::string include_cuda;
+        include_cuda = "-I" + std::string(env_cuda_path) + "\\include";
+        std::cout << "cuda include option is " << include_cuda << '\n';
+        options.push_back(include_cuda);
+
+
+        //jitify to create program (with comilation settings)
         static jitify::JitCache kernel_cache;
-        //jitify::Program program = kernel_cache.program(func_src);
-        auto program = std::make_shared<jitify::Program>(kernel_cache, func_src);
+        auto program = std::make_shared<jitify::Program>(kernel_cache, func_src, 0, options);
         //
         //nvrtcProgram prog;
         //NVRTC_SAFE_CALL(

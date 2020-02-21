@@ -128,6 +128,11 @@ SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/utility/RandomManager.cu
 )
 
+# If windows then need to set NOMINMAX for jitify to compilers
+if (WIN32)
+	add_compile_definitions(NOMINMAX)
+endif ()
+
 SET(ALL_SRC
     ${SRC_EXTERNALS}
     ${SRC_INCLUDE}

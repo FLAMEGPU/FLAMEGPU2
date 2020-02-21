@@ -7,7 +7,8 @@
 #include "flamegpu/runtime/flamegpu_api.h"
 #include "flamegpu/io/factory.h"
 
-const char* test_simple_func = " \n\
+const char* test_simple_func = "my_program \n\
+        #include \"flamegpu/runtime/flamegpu_device_api.h\"\n\
         extern \"C\" __global__ \n\
         void simple_test() \n\
         { \n\
