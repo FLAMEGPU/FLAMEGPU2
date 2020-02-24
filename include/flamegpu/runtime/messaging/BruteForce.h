@@ -481,7 +481,7 @@ __device__ void MsgBruteForce::Out::setVariable(const char(&variable_name)[N], T
     Curve::setVariable<T>(variable_name, combined_hash, value, index);
 
     // Set scan flag incase the message is optional
-    flamegpu_internal::CUDAScanCompaction::ds_message_configs[streamId].scan_flag[index] = 1;
+    flamegpu_internal::CUDAScanCompaction::ds_configs[flamegpu_internal::CUDAScanCompaction::MESSAGE_OUTPUT][streamId].scan_flag[index] = 1;
 }
 
 /**

@@ -16,6 +16,7 @@ typedef void(AgentFunctionWrapper)(
     Curve::NamespaceHash agent_func_name_hash,
     Curve::NamespaceHash messagename_inp_hash,
     Curve::NamespaceHash messagename_outp_hash,
+    Curve::NamespaceHash agent_output_hash,
     const int popNo,
     const void *messagelist_metadata,
     const unsigned int thread_in_layer_offset,
@@ -28,6 +29,7 @@ typedef void(AgentFunctionWrapper)(
  * @param agent_func_name_hash CURVE hash of the agent + function's names
  * @param messagename_inp_hash CURVE hash of the input message's name
  * @param messagename_outp_hash CURVE hash of the output message's name
+ * @param agent_output_hash CURVE hash of "_agent_birth" or 0 if agent birth not present
  * @param popNo Total number of agents exeucting the function (number of threads launched)
  * @param messagelist_metadata Pointer to the MsgIn metadata struct, it is interpreted by MsgIn
  * @param thread_in_layer_offset Add this value to TID to calculate a thread-safe TID (TS_ID), used by ActorRandom for accessing curand array in a thread-safe manner
@@ -41,6 +43,7 @@ __global__ void agent_function_wrapper(
     Curve::NamespaceHash agent_func_name_hash,
     Curve::NamespaceHash messagename_inp_hash,
     Curve::NamespaceHash messagename_outp_hash,
+    Curve::NamespaceHash agent_output_hash,
     const int popNo,
     const void *messagelist_metadata,
     const unsigned int thread_in_layer_offset,
@@ -53,6 +56,7 @@ __global__ void agent_function_wrapper(
         thread_in_layer_offset,
         model_name_hash,
         agent_func_name_hash,
+        agent_output_hash,
         streamId,
         MsgIn::In(agent_func_name_hash, messagename_inp_hash, messagelist_metadata),
         MsgOut::Out(agent_func_name_hash, messagename_outp_hash, streamId));
@@ -61,7 +65,7 @@ __global__ void agent_function_wrapper(
     {
         FLAME_GPU_AGENT_STATUS flag = AgentFunction()(api);
         // (scan flags will not be processed unless agent death has been requested in model definition)
-        flamegpu_internal::CUDAScanCompaction::ds_agent_configs[streamId].scan_flag[FLAMEGPU_DEVICE_API<MsgIn, MsgOut>::TID()] = flag;
+        flamegpu_internal::CUDAScanCompaction::ds_configs[flamegpu_internal::CUDAScanCompaction::AGENT_DEATH][streamId].scan_flag[FLAMEGPU_DEVICE_API<MsgIn, MsgOut>::TID()] = flag;
     }
     // do something with the return value to set a flag for deletion
 

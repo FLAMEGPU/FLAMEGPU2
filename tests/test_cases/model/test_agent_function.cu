@@ -173,6 +173,33 @@ TEST(AgentFunctionDescriptionTest, AgentOutput) {
     // Returns the expected value
     EXPECT_EQ(f.getAgentOutput(), a2);
 }
+TEST(AgentFunctionDescriptionTest, AgentOutputState) {
+    ModelDescription _m(MODEL_NAME);
+    AgentDescription &a = _m.newAgent(AGENT_NAME);
+    AgentDescription &a2 = _m.newAgent(AGENT_NAME2);
+    AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    // Can't set it to a state that doesn't exist
+    EXPECT_THROW(f.setAgentOutput(a, "wrong"), InvalidStateName);
+    a.newState("a");
+    a.newState("b");
+    a2.newState("c");
+    EXPECT_THROW(f.setAgentOutput(a, "c"), InvalidStateName);
+    // Can set it to a valid state though
+    EXPECT_NO_THROW(f.setAgentOutput(a, "a"));
+    // Can't set it to default if default not a state
+    EXPECT_THROW(f.setAgentOutput(a), InvalidStateName);
+    // Returns the expected value
+    EXPECT_EQ(f.getAgentOutputState(), "a");
+    // Can be updated
+    f.setAgentOutput(a, "b");
+    EXPECT_TRUE(f.hasAgentOutput());
+    // Returns the expected value
+    EXPECT_EQ(f.getAgentOutputState(), "b");
+    // Can be updated different agent
+    f.setAgentOutput(a2, "c");
+    // Returns the expected value
+    EXPECT_EQ(f.getAgentOutputState(), "c");
+}
 TEST(AgentFunctionDescriptionTest, AllowAgentDeath) {
     ModelDescription _m(MODEL_NAME);
     AgentDescription &a = _m.newAgent(AGENT_NAME);

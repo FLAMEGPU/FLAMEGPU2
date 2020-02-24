@@ -129,19 +129,21 @@ class AgentFunctionDescription {
      * Sets the agent type that can be output during this agent function
      * This is optional, and only one type of agent can be output per agent function
      * @param agent_name Name of the agent type to be output
+     * @param state The stage agents should be created in
      * @throws InvalidAgentName If an agent with the same name is not found within the model's hierarchy
      * @see AgentFunctionDescription::setAgentOutput(AgentDescription &)
      */
-    void setAgentOutput(const std::string &agent_name);
+    void setAgentOutput(const std::string &agent_name, const std::string state = ModelData::DEFAULT_STATE);
     /**
      * Sets the agent type that can be output during this agent function
      * This is optional, and only one type of agent can be output per agent function
      * @param agent Type of agent to be output
+     * @param state The stage agents should be created in
      * @throws DifferentModel If the agent is not from this model hierarchy
      * @throws InvalidAgentName If a agent with the same name is not found within the model's hierarchy
      * @see AgentFunctionDescription::setAgentOutput(AgentDescription &)
      */
-    void setAgentOutput(AgentDescription &agent);
+    void setAgentOutput(AgentDescription &agent, const std::string state = ModelData::DEFAULT_STATE);
     /**
      * Configures whether agents can die during execution of this function
      * (e.g. by returning FLAME_GPU_AGENT_STATUS::DEAD from the agent function)
@@ -172,12 +174,6 @@ class AgentFunctionDescription {
      * @throw OutOfBoundsException If the message output has not been set
      */
     MsgBruteForce::Description &MessageOutput();
-    /**
-     * @return An mutable reference to the agent output of this agent function
-     * @see AgentFunctionDescription::getAgentOutput() for the immutable version
-     * @throw OutOfBoundsException If the agent output has not been set
-     */
-    AgentDescription &AgentOutput();
     /**
      * @return A mutable reference to the message output optional configuration flag
      * @see AgentFunctionDescription::getAgentOutputOptional()
@@ -221,10 +217,14 @@ class AgentFunctionDescription {
     bool getMessageOutputOptional() const;
     /**
      * @return An immutable reference to the agent output of this agent function
-     * @see AgentFunctionDescription::AgentOutput() for the mutable version
      * @throw OutOfBoundsException If the agent output has not been set
      */
     const AgentDescription &getAgentOutput() const;
+    /**
+     * @return The state output agents will be output in
+     * @throw OutOfBoundsException If the agent output has not been set
+     */
+    std::string getAgentOutputState() const;
     /**
      * @return True if this agent function can kill agents
      */

@@ -40,15 +40,33 @@ class CUDAAgentStateList {
     /**
      * Resizes the internal memory, only retains existing data in non scratch buffers
      * @note Size is taken from parent CUDAAgent::max_list_size
-     * @see resizeDeviceAgentList(CUDAMemoryMap &, bool)
+     * @note Does not resize new list
+     * @see resizeDeviceAgentList(CUDAMemoryMap &, const unsigned int &, bool)
      */
     void resize();
+    /**
+     * Resizes the internal newList
+     * @param newSize Number of agents to support (probably agent.getMaximumListSize())
+     * @see resizeDeviceAgentList(CUDAMemoryMap &, const unsigned int &, bool)
+     */
+    void resizeNewList(const unsigned int &newSize);
 
     void setAgentData(const AgentStateMemory &state_memory);
 
     void getAgentData(AgentStateMemory &state_memory);
 
+    /**
+     * Returns pointer to variable from d_list
+     * @param variable_name Name of the variable to return
+     * @return nullptr is variable not found
+     */
     void* getAgentListVariablePointer(std::string variable_name) const;
+    /**
+     * Returns pointer to variable from d_new_list
+     * @param variable_name Name of the variable to return
+     * @return nullptr is variable not found
+     */
+    void* getAgentNewListVariablePointer(std::string variable_name) const;
 
     void zeroAgentData();
     /**
@@ -80,12 +98,22 @@ class CUDAAgentStateList {
     const CUDAMemoryMap &getNewList() { return d_new_list; }
 
     void setConditionState(const unsigned int &disabledAgentCt);
+    /**
+     * Scatters agents from d_list_new to d_list
+     * @param newSize The max possible number of new agents
+     * @param streamId Stream index for stream safe operations
+     */
+    void scatterNew(const unsigned int &newSize, const unsigned int &streamId);
 
  protected:
     /*
-     * The purpose of this function is to allocate on the device a block of memory for each variable. These vectors are stored within a hash list using the cuRVE technique so that the location of the vectors can be quickly determined at runtime by FLAME GPU functions.
+     * The purpose of this function is to allocate on the device a block of memory for each variable. 
+     * These vectors are stored within a hash list using the cuRVE technique so that the location of the vectors can be quickly determined at runtime by FLAME GPU functions.
+     * 
+     * @param agent_list The agent list to allocate memory within (d_list, d_swap_list, d_new_list)
+     * @param allocSize The number of agents that the list needs to be able to hold (probably agent.getMaximumListSize())
      */
-    void allocateDeviceAgentList(CUDAMemoryMap &agent_list);
+    void allocateDeviceAgentList(CUDAMemoryMap &agent_list, const unsigned int &allocSize);
 
     void releaseDeviceAgentList(CUDAMemoryMap &agent_list);
 
@@ -96,7 +124,7 @@ class CUDAAgentStateList {
      * Only copies across old ddata if copyData is set to True
      * @see resize()
      */
-    void resizeDeviceAgentList(CUDAMemoryMap &agent_list, bool copyData);
+    void resizeDeviceAgentList(CUDAMemoryMap &agent_list, const unsigned int &newSize, bool copyData);
 
  private:
     /**
@@ -124,8 +152,13 @@ class CUDAAgentStateList {
      */
     CUDAMemoryMap d_new_list;
     /**
+     * The number of agents that can fit in d_new_list
+     */
+    unsigned int d_new_list_alloc_size;
+    /**
      * The total number of alive agents in this state
      * This includes temporarily 'disabled' agents (agent function conditions)
+     * Not the size of memory allocated, that is agent.getMaximumListSize()
      */
     unsigned int current_list_size;
 
