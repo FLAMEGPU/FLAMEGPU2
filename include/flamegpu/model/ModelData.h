@@ -277,6 +277,10 @@ struct AgentFunctionData {
      */
     std::weak_ptr<AgentData> agent_output;
     /**
+     * If set, this is the agent type which is output by the function
+     */
+    std::string agent_output_state;
+    /**
      * This must be marked to true if the agent function can return DEAD
      * Enabling this tells FLAMEGPU to sort agents to remove those which have died from the population
      */

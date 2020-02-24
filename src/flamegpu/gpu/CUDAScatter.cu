@@ -95,47 +95,25 @@ unsigned int CUDAScatter::scatter(
     // Important that sd.size() is still used here, incase allocated len (data_len) is bigger
     gpuErrchk(cudaMemcpy(d_data, sd.data(), sizeof(ScatterData) * sd.size(), cudaMemcpyHostToDevice));
     if (invert_scan_flag) {
-        if (messageOrAgent == Agent) {
-            scatter_generic <<<gridSize, blockSize>>> (
-                itemCount,
-                InversionIterator(flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].d_ptrs.scan_flag),
-                flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].d_ptrs.position,
-                d_data, static_cast<unsigned int>(sd.size()),
-                out_index_offset);
-        } else if (messageOrAgent == Message) {
-            scatter_generic <<<gridSize, blockSize>>> (
-                itemCount,
-                InversionIterator(flamegpu_internal::CUDAScanCompaction::hd_message_configs[streamId].d_ptrs.scan_flag),
-                flamegpu_internal::CUDAScanCompaction::hd_message_configs[streamId].d_ptrs.position,
-                d_data, static_cast<unsigned int>(sd.size()),
-                out_index_offset);
-        }
+        scatter_generic << <gridSize, blockSize >> > (
+            itemCount,
+            InversionIterator(flamegpu_internal::CUDAScanCompaction::hd_configs[messageOrAgent][streamId].d_ptrs.scan_flag),
+            flamegpu_internal::CUDAScanCompaction::hd_configs[messageOrAgent][streamId].d_ptrs.position,
+            d_data, static_cast<unsigned int>(sd.size()),
+            out_index_offset);
     } else {
-        if (messageOrAgent == Agent) {
-            scatter_generic <<<gridSize, blockSize>>> (
-                itemCount,
-                flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].d_ptrs.scan_flag,
-                flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].d_ptrs.position,
-                d_data, static_cast<unsigned int>(sd.size()),
-                out_index_offset);
-        } else if (messageOrAgent == Message) {
-            scatter_generic <<<gridSize, blockSize>>> (
-                itemCount,
-                flamegpu_internal::CUDAScanCompaction::hd_message_configs[streamId].d_ptrs.scan_flag,
-                flamegpu_internal::CUDAScanCompaction::hd_message_configs[streamId].d_ptrs.position,
-                d_data, static_cast<unsigned int>(sd.size()),
-                out_index_offset);
-        }
+        scatter_generic << <gridSize, blockSize >> > (
+            itemCount,
+            flamegpu_internal::CUDAScanCompaction::hd_configs[messageOrAgent][streamId].d_ptrs.scan_flag,
+            flamegpu_internal::CUDAScanCompaction::hd_configs[messageOrAgent][streamId].d_ptrs.position,
+            d_data, static_cast<unsigned int>(sd.size()),
+            out_index_offset);
     }
     gpuErrchkLaunch();
     // Update count of live agents
     unsigned int rtn = 0;
-    if (messageOrAgent == Agent) {
-        gpuErrchk(cudaMemcpy(&rtn, flamegpu_internal::CUDAScanCompaction::hd_agent_configs[streamId].d_ptrs.position + itemCount, sizeof(unsigned int), cudaMemcpyDeviceToHost));
-    } else if (messageOrAgent == Message) {
-        gpuErrchk(cudaMemcpy(&rtn, flamegpu_internal::CUDAScanCompaction::hd_message_configs[streamId].d_ptrs.position + itemCount, sizeof(unsigned int), cudaMemcpyDeviceToHost));
-    }
-        return rtn;
+    gpuErrchk(cudaMemcpy(&rtn, flamegpu_internal::CUDAScanCompaction::hd_configs[messageOrAgent][streamId].d_ptrs.position + itemCount, sizeof(unsigned int), cudaMemcpyDeviceToHost));
+    return rtn;
 }
 
 unsigned int CUDAScatter::scatterAll(

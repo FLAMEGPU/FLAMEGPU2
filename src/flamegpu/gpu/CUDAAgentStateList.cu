@@ -26,18 +26,19 @@
 */
 CUDAAgentStateList::CUDAAgentStateList(CUDAAgent& cuda_agent)
     : condition_state(0)
+    , d_new_list_alloc_size(0)
     , current_list_size(0)
     , agent(cuda_agent) {
     // allocate state lists
-    allocateDeviceAgentList(d_list);
-    allocateDeviceAgentList(d_swap_list);
-    if (agent.getAgentDescription().isOutputOnDevice())
-        allocateDeviceAgentList(d_new_list);
-    // Init condition state lists
-    for (const auto &c : d_list)
-        condition_d_list.emplace(c);
-    for (const auto &c : d_swap_list)
-        condition_d_swap_list.emplace(c);
+    if (agent.getMaximumListSize()) {
+        allocateDeviceAgentList(d_list, agent.getMaximumListSize());
+        allocateDeviceAgentList(d_swap_list, agent.getMaximumListSize());
+        // Init condition state lists
+        for (const auto &c : d_list)
+            condition_d_list.emplace(c);
+        for (const auto &c : d_swap_list)
+            condition_d_swap_list.emplace(c);
+    }
 }
 
 /**
@@ -52,30 +53,53 @@ void CUDAAgentStateList::cleanupAllocatedData() {
     // clean up
     releaseDeviceAgentList(d_list);
     releaseDeviceAgentList(d_swap_list);
-    if (agent.getAgentDescription().isOutputOnDevice()) {
+    if (d_new_list_alloc_size) {
         releaseDeviceAgentList(d_new_list);
+        d_new_list_alloc_size = 0;
     }
     condition_d_list.clear();
     condition_d_swap_list.clear();
 }
 
 void CUDAAgentStateList::resize() {
-    resizeDeviceAgentList(d_list, true);
-    resizeDeviceAgentList(d_swap_list, false);
-    resizeDeviceAgentList(d_new_list, false);
+    resizeDeviceAgentList(d_list, agent.getMaximumListSize(), true);
+    resizeDeviceAgentList(d_swap_list, agent.getMaximumListSize(), false);
+    if (!condition_d_list.size()) {
+        // Init condition state lists (late, as size was 0 at constructor)
+        for (const auto &c : d_list)
+            condition_d_list.emplace(c);
+        for (const auto &c : d_swap_list)
+            condition_d_swap_list.emplace(c);
+    }
     setConditionState(condition_state);  // Update pointers in condition state list
 }
-void CUDAAgentStateList::resizeDeviceAgentList(CUDAMemoryMap &agent_list, bool copyData) {
+void CUDAAgentStateList::resizeNewList(const unsigned int &newSize) {
+    // Check new size is bigger
+    if (newSize <= d_new_list_alloc_size)
+        return;
+    // Grow size till bigger
+    unsigned int allocSize = d_new_list_alloc_size ? d_new_list_alloc_size : 2;
+    while (allocSize < newSize) {
+        allocSize = static_cast<unsigned int>(allocSize * 1.5);
+    }
+    // If size is 0, allocate
+    if (d_new_list_alloc_size == 0) {
+        allocateDeviceAgentList(d_new_list, allocSize);
+    } else {
+        resizeDeviceAgentList(d_new_list, allocSize, false);
+    }
+    d_new_list_alloc_size = allocSize;
+}
+void CUDAAgentStateList::resizeDeviceAgentList(CUDAMemoryMap &agent_list, const unsigned int &newSize, bool copyData) {
     const auto &mem = agent.getAgentDescription().variables;
 
     // For each variable
     for (const auto &mm : mem) {
         const std::string var_name = mm.first;
         const size_t &type_size = agent.getAgentDescription().variables.at(mm.first).type_size;
-        const size_t alloc_size = type_size * agent.getMaximumListSize();
+        const size_t alloc_size = type_size * newSize;
         {
             // Allocate bigger new memory
-            void * old_ptr = agent_list.at(var_name);  // Exception thrown if map doesn't contain variables that it should
             void * new_ptr = nullptr;
 #ifdef UNIFIED_GPU_MEMORY
             // unified memory allocation
@@ -84,22 +108,30 @@ void CUDAAgentStateList::resizeDeviceAgentList(CUDAMemoryMap &agent_list, bool c
             // non unified memory allocation
             gpuErrchk(cudaMalloc(reinterpret_cast<void**>(&new_ptr), alloc_size));
 #endif
-            if (copyData) {
-                const size_t active_len = current_list_size * type_size;
-                const size_t inactive_len = (agent.getMaximumListSize() - current_list_size) * type_size;
-                // Copy across old data
-                gpuErrchk(cudaMemcpy(new_ptr, old_ptr, active_len, cudaMemcpyDeviceToDevice));
-                // Zero remaining new data
-                gpuErrchk(cudaMemset(reinterpret_cast<char*>(new_ptr) + active_len, 0, inactive_len));
+            auto it = agent_list.find(var_name);
+            if (it != agent_list.end()) {
+                void *old_ptr = it->second;
+                if (copyData) {
+                    const size_t active_len = current_list_size * type_size;
+                    const size_t inactive_len = (agent.getMaximumListSize() - current_list_size) * type_size;
+                    // Copy across old data
+                    gpuErrchk(cudaMemcpy(new_ptr, old_ptr, active_len, cudaMemcpyDeviceToDevice));
+                    // Zero remaining new data
+                    gpuErrchk(cudaMemset(reinterpret_cast<char*>(new_ptr) + active_len, 0, inactive_len));
+                } else {
+                    // Zero remaining new data
+                    gpuErrchk(cudaMemset(new_ptr, 0, alloc_size));
+                }
+                // Release old data
+                gpuErrchk(cudaFree(old_ptr));
+                // Replace old data in class member vars
+                it->second = new_ptr;
             } else {
+                // If agent list is yet to be allocated just add it straight in
+                agent_list.emplace(var_name, new_ptr);
                 // Zero remaining new data
                 gpuErrchk(cudaMemset(new_ptr, 0, alloc_size));
             }
-            // Release old data
-            gpuErrchk(cudaFree(old_ptr));
-            // Replace old data in class member vars
-            auto it = agent_list.find(var_name);  // No null check, call to .at() above will throw exception
-            it->second = new_ptr;
         }
     }
 }
@@ -108,7 +140,7 @@ void CUDAAgentStateList::resizeDeviceAgentList(CUDAMemoryMap &agent_list, bool c
 * @param variable of type CUDAMemoryMap type
 * @return none
 */
-void CUDAAgentStateList::allocateDeviceAgentList(CUDAMemoryMap &memory_map) {
+void CUDAAgentStateList::allocateDeviceAgentList(CUDAMemoryMap &memory_map, const unsigned int &allocSize) {
     // we use the agents memory map to iterate the agent variables and do allocation within our GPU hash map
     const auto &mem = agent.getAgentDescription().variables;
 
@@ -125,10 +157,10 @@ void CUDAAgentStateList::allocateDeviceAgentList(CUDAMemoryMap &memory_map) {
 
 #ifdef UNIFIED_GPU_MEMORY
         // unified memory allocation
-        gpuErrchk(cudaMallocManaged(reinterpret_cast<void**>(&d_ptr), var_size * agent.getMaximumListSize()))
+        gpuErrchk(cudaMallocManaged(reinterpret_cast<void**>(&d_ptr), var_size * allocSize))
 #else
         // non unified memory allocation
-        gpuErrchk(cudaMalloc(reinterpret_cast<void**>(&d_ptr), var_size * agent.getMaximumListSize()));
+        gpuErrchk(cudaMalloc(reinterpret_cast<void**>(&d_ptr), var_size * allocSize));
 #endif
 
         // store the pointer in the map
@@ -243,6 +275,15 @@ void* CUDAAgentStateList::getAgentListVariablePointer(std::string variable_name)
 
     return mm->second;
 }
+void* CUDAAgentStateList::getAgentNewListVariablePointer(std::string variable_name) const {
+    CUDAMemoryMap::const_iterator mm = d_new_list.find(variable_name);
+    if (mm == d_new_list.end()) {
+        // TODO: Error variable not found in agent state list
+        return nullptr;
+    }
+
+    return mm->second;
+}
 
 void CUDAAgentStateList::zeroAgentData() {
     zeroDeviceAgentList(d_list);
@@ -271,15 +312,15 @@ __global__ void scatter_living_agents(
     int index = (blockIdx.x*blockDim.x) + threadIdx.x;
 
     // if optional message is to be written
-    if (flamegpu_internal::CUDAScanCompaction::ds_agent_configs[streamId].scan_flag[index] == 1) {
-        int output_index = flamegpu_internal::CUDAScanCompaction::ds_agent_configs[streamId].position[index];
+    if (flamegpu_internal::CUDAScanCompaction::ds_configs[flamegpu_internal::CUDAScanCompaction::Type::AGENT_DEATH][streamId].scan_flag[index] == 1) {
+        int output_index = flamegpu_internal::CUDAScanCompaction::ds_configs[flamegpu_internal::CUDAScanCompaction::Type::AGENT_DEATH][streamId].position[index];
         memcpy(out + (output_index * typeLen), in + (index * typeLen), typeLen);
     }
 }
 unsigned int CUDAAgentStateList::scatter(const unsigned int &streamId, const unsigned int out_offset, const ScatterMode &mode) {
     CUDAScatter &scatter = CUDAScatter::getInstance(streamId);
     const unsigned int living_agents = scatter.scatter(
-        CUDAScatter::Type::Agent,
+        CUDAScatter::Type::AgentDeath,
         agent.getAgentDescription().variables,
         condition_d_list, condition_d_swap_list,
         current_list_size, out_offset, mode == FunctionCondition2);
@@ -307,4 +348,13 @@ void CUDAAgentStateList::setConditionState(const unsigned int &disabledAgentCt) 
         condition_d_list.at(mm.first) = reinterpret_cast<char*>(d_list.at(mm.first)) + (disabledAgentCt * mm.second.type_size);
         condition_d_swap_list.at(mm.first) = reinterpret_cast<char*>(d_swap_list.at(mm.first)) + (disabledAgentCt * mm.second.type_size);
     }
+}
+
+void CUDAAgentStateList::scatterNew(const unsigned int &newSize, const unsigned int &streamId) {
+    CUDAScatter &scatter = CUDAScatter::getInstance(streamId);
+    current_list_size += scatter.scatter(
+        CUDAScatter::Type::AgentBirth,
+        agent.getAgentDescription().variables,
+        d_new_list, d_list,
+        newSize, current_list_size);
 }

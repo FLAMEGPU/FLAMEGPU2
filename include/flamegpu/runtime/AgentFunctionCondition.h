@@ -48,7 +48,7 @@ __global__ void agent_function_condition_wrapper(
         // Negate the return value, we want false at the start of the scattered array
         bool conditionResult = !(AgentFunctionCondition()(api));
         // (scan flags will be processed to filter agents
-        flamegpu_internal::CUDAScanCompaction::ds_agent_configs[streamId].scan_flag[FLAMEGPU_READ_ONLY_DEVICE_API::TID()] = conditionResult;
+        flamegpu_internal::CUDAScanCompaction::ds_configs[flamegpu_internal::CUDAScanCompaction::AGENT_DEATH][streamId].scan_flag[FLAMEGPU_READ_ONLY_DEVICE_API::TID()] = conditionResult;
     }
 
     delete api;

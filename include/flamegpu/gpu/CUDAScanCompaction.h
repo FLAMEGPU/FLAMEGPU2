@@ -61,6 +61,18 @@ typedef CUDAScanCompactionConfig CUDASCConfig;  // Shorthand
 
 namespace flamegpu_internal {
 namespace CUDAScanCompaction {
+    /**
+     * Try and be a bit more dynamic by using 2d array here
+     */
+    enum Type : unsigned int {
+        MESSAGE_OUTPUT = 0,
+        AGENT_DEATH = 1,
+        AGENT_OUTPUT = 2
+    };
+    /**
+    * Number of valid values in Type
+    */
+    static const unsigned int MAX_TYPES = 3;
     /** 
      * As of Compute Cability 7.5; 128 is the max concurrent streams
      */
@@ -69,36 +81,21 @@ namespace CUDAScanCompaction {
      * These will remain unallocated until used
      * They exist so that the correct array can be used with only the stream index known
      */
-    extern __device__ CUDAScanCompactionPtrs ds_agent_configs[MAX_STREAMS];
+    extern __device__ CUDAScanCompactionPtrs ds_configs[MAX_TYPES][MAX_STREAMS];
     /**
-     * Host mirror of ds_agent_configs
+     * Host mirror of ds_configs
      */
-    extern CUDAScanCompactionConfig hd_agent_configs[MAX_STREAMS];
-    /**
-     * These will remain unallocated until used
-     * They exist so that the correct array can be used with only the stream index known
-     */
-    extern __device__ CUDAScanCompactionPtrs ds_message_configs[MAX_STREAMS];
-    /**
-     * Host mirror of ds_message_configs
-     */
-    extern CUDAScanCompactionConfig hd_message_configs[MAX_STREAMS];
+    extern CUDAScanCompactionConfig hd_configs[MAX_TYPES][MAX_STREAMS];
 
-    inline void resizeAgents(const unsigned int &newCount, const unsigned int &streamId) {
+    inline void resize(const unsigned int &newCount, const Type &type, const unsigned int &streamId) {
         assert(streamId < MAX_STREAMS);
-        hd_agent_configs[streamId].resize_scan_flag(newCount);
+        assert(type < MAX_TYPES);
+        hd_configs[type][streamId].resize_scan_flag(newCount);
     }
-    inline void resizeMessages(const unsigned int &newCount, const unsigned int &streamId) {
+    inline void zero(const Type &type, const unsigned int &streamId) {
         assert(streamId < MAX_STREAMS);
-        hd_message_configs[streamId].resize_scan_flag(newCount);
-    }
-    inline void zeroAgents(const unsigned int &streamId) {
-        assert(streamId < MAX_STREAMS);
-        hd_agent_configs[streamId].zero_scan_flag();
-    }
-    inline void zeroMessages(const unsigned int &streamId) {
-        assert(streamId < MAX_STREAMS);
-        hd_message_configs[streamId].zero_scan_flag();
+        assert(type < MAX_TYPES);
+        hd_configs[type][streamId].zero_scan_flag();
     }
 }  // namespace CUDAScanCompaction
 }  // namespace flamegpu_internal
@@ -109,16 +106,9 @@ __host__ inline void CUDAScanCompactionConfig::resize_scan_flag(const unsigned i
         free_scan_flag();
         gpuErrchk(cudaMalloc(&d_ptrs.scan_flag, (count + 1) * sizeof(unsigned int)));  // +1 so we can get the total from the scan
         gpuErrchk(cudaMalloc(&d_ptrs.position, (count + 1) * sizeof(unsigned int)));  // +1 so we can get the total from the scan
-        // Blindly calculate our stream ID, based on the offset between 'this' and 'hd_stream_configs[0]'
-        ptrdiff_t actor_stream_id = std::distance(flamegpu_internal::CUDAScanCompaction::hd_agent_configs, this);
-        ptrdiff_t message_stream_id = std::distance(flamegpu_internal::CUDAScanCompaction::hd_message_configs, this);
-        if (actor_stream_id >= 0  && actor_stream_id < flamegpu_internal::CUDAScanCompaction::MAX_STREAMS) {
-            gpuErrchk(cudaMemcpyToSymbol(flamegpu_internal::CUDAScanCompaction::ds_agent_configs, &this->d_ptrs, sizeof(CUDAScanCompactionPtrs), actor_stream_id * sizeof(CUDAScanCompactionPtrs)));
-        } else if (message_stream_id >= 0 && message_stream_id < flamegpu_internal::CUDAScanCompaction::MAX_STREAMS) {
-            gpuErrchk(cudaMemcpyToSymbol(flamegpu_internal::CUDAScanCompaction::ds_message_configs, &this->d_ptrs, sizeof(CUDAScanCompactionConfig), message_stream_id * sizeof(CUDAScanCompactionConfig)));
-        } else {
-            assert(false);  // This is being called on one that isn't part of the array????
-        }
+        // Calculate offset of this object from start of array, then divide by size of this object, and multiply by size of device object
+        ptrdiff_t output_dist = (std::distance(reinterpret_cast<char*>(flamegpu_internal::CUDAScanCompaction::hd_configs), reinterpret_cast<char*>(this)) / sizeof(CUDAScanCompactionConfig)) * sizeof(CUDAScanCompactionPtrs);
+        gpuErrchk(cudaMemcpyToSymbol(flamegpu_internal::CUDAScanCompaction::ds_configs, &this->d_ptrs, sizeof(CUDAScanCompactionPtrs), output_dist));
         scan_flag_len = count + 1;
     }
 }

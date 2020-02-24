@@ -46,7 +46,7 @@ __device__ void MsgSpatial3D::Out::setLocation(const float &x, const float &y, c
     Curve::setVariable<float>("z", combined_hash, z, index);
 
     // Set scan flag incase the message is optional
-    flamegpu_internal::CUDAScanCompaction::ds_message_configs[streamId].scan_flag[index] = 1;
+    flamegpu_internal::CUDAScanCompaction::ds_configs[flamegpu_internal::CUDAScanCompaction::Type::MESSAGE_OUTPUT][streamId].scan_flag[index] = 1;
 }
 
 __device__ MsgSpatial3D::In::Filter::Filter(const MetaData* _metadata, const Curve::NamespaceHash &_combined_hash, const float& x, const float& y, const float& z)

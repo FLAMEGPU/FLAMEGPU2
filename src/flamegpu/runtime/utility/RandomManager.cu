@@ -162,7 +162,7 @@ void RandomManager::resizeDeviceArray(const size_type &_length) {
         if (_length > length) {
             // Init remainder[     **]
             unsigned int initThreads = 512;
-            unsigned int initBlocks = (_length - length / initThreads) + 1;
+            unsigned int initBlocks = ((_length - length) / initThreads) + 1;
             init_curand<<<initBlocks, initThreads>>>(_length - length, mSeed, length);  // This could be async with above memcpy?
             gpuErrchkLaunch();
         }

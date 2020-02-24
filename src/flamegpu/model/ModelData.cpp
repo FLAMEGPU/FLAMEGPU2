@@ -97,6 +97,7 @@ AgentFunctionData::AgentFunctionData(ModelData *const model, std::shared_ptr<Age
     , initial_state(other.initial_state)
     , end_state(other.end_state)
     , message_output_optional(other.message_output_optional)
+    , agent_output_state(other.agent_output_state)
     , has_agent_death(other.has_agent_death)
     , condition(other.condition)
     , parent(_parent)

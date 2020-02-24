@@ -100,13 +100,13 @@ bool CUDAAgentModel::step() {
                 if (func_des->condition) {
                     auto func_agent = func_des->parent.lock();
                     const CUDAAgent& cuda_agent = getCUDAAgent(func_agent->name);
-                    flamegpu_internal::CUDAScanCompaction::resizeAgents(cuda_agent.getStateSize(func_des->initial_state), j);
+                    flamegpu_internal::CUDAScanCompaction::resize(cuda_agent.getStateSize(func_des->initial_state), flamegpu_internal::CUDAScanCompaction::AGENT_DEATH, j);
 
                     // Configure runtime access of the functions variables within the FLAME_API object
                     cuda_agent.mapRuntimeVariables(*func_des, func_des->initial_state);
 
                     // Zero the scan flag that will be written to
-                    flamegpu_internal::CUDAScanCompaction::zeroAgents(j);
+                    flamegpu_internal::CUDAScanCompaction::zero(flamegpu_internal::CUDAScanCompaction::AGENT_DEATH, j);
 
                     totalThreads += cuda_agent.getStateSize(func_des->initial_state);
                 }
@@ -190,7 +190,8 @@ bool CUDAAgentModel::step() {
                 THROW InvalidAgentFunc("Agent function refers to expired agent.");
             }
             const CUDAAgent& cuda_agent = getCUDAAgent(func_agent->name);
-            flamegpu_internal::CUDAScanCompaction::resizeAgents(cuda_agent.getStateSize(func_des->initial_state), j);
+            const unsigned int STATE_SIZE = cuda_agent.getStateSize(func_des->initial_state);
+            flamegpu_internal::CUDAScanCompaction::resize(STATE_SIZE, flamegpu_internal::CUDAScanCompaction::AGENT_DEATH, j);
 
             // check if a function has an input message
             if (auto im = func_des->message_input.lock()) {
@@ -208,13 +209,25 @@ bool CUDAAgentModel::step() {
                 CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
                 // Resize message list if required
                 const unsigned int existingMessages = cuda_message.getTruncateMessageListFlag() ? 0 : cuda_message.getMessageCount();
-                const unsigned int newMessages = cuda_agent.getStateSize(func_des->initial_state);
-                cuda_message.resize(existingMessages + newMessages, j);
-                cuda_message.mapWriteRuntimeVariables(*func_des, newMessages);
-                flamegpu_internal::CUDAScanCompaction::resizeMessages(newMessages, j);
+                cuda_message.resize(existingMessages + STATE_SIZE, j);
+                cuda_message.mapWriteRuntimeVariables(*func_des, STATE_SIZE);
+                flamegpu_internal::CUDAScanCompaction::resize(STATE_SIZE, flamegpu_internal::CUDAScanCompaction::MESSAGE_OUTPUT, j);
                 // Zero the scan flag that will be written to
                 if (func_des->message_output_optional)
-                    flamegpu_internal::CUDAScanCompaction::zeroMessages(j);
+                    flamegpu_internal::CUDAScanCompaction::zero(flamegpu_internal::CUDAScanCompaction::MESSAGE_OUTPUT, j);
+            }
+
+            // check if a function has an output agent
+            if (auto oa = func_des->agent_output.lock()) {
+                // This will act as a reserve word
+                // which is added to variable hashes for agent creation on device
+                CUDAAgent& output_agent = getCUDAAgent(oa->name);
+                // Ensure we have enough memory (this resizes the scan flag too)
+                output_agent.resizeNew(*func_des, STATE_SIZE, j);
+                // Ensure the scan flag is zeroed
+                flamegpu_internal::CUDAScanCompaction::zero(flamegpu_internal::CUDAScanCompaction::AGENT_OUTPUT, j);
+                // Map vars with curve
+                output_agent.mapNewRuntimeVariables(*func_des, STATE_SIZE);
             }
 
 
@@ -225,7 +238,7 @@ bool CUDAAgentModel::step() {
 
             // Zero the scan flag that will be written to
             if (func_des->has_agent_death)
-                flamegpu_internal::CUDAScanCompaction::zeroAgents(j);
+                flamegpu_internal::CUDAScanCompaction::zero(flamegpu_internal::CUDAScanCompaction::AGENT_DEATH, j);
 
             // Count total threads being launched
             totalThreads += cuda_agent.getStateSize(func_des->initial_state);
@@ -246,7 +259,7 @@ bool CUDAAgentModel::step() {
             std::string func_name = func_des->name;
             NVTX_RANGE(std::string(agent_name + "::" + func_name).c_str());
 
-            // check if a function has an output massage
+            // check if a function has an input message
             if (auto im = func_des->message_input.lock()) {
                 std::string inpMessage_name = im->name;
                 const CUDAMessage& cuda_message = getCUDAMessage(inpMessage_name);
@@ -258,7 +271,7 @@ bool CUDAAgentModel::step() {
                 d_messagelist_metadata = cuda_message.getMetaDataDevicePtr();
             }
 
-            // check if a function has an output massage
+            // check if a function has an output message
             if (auto om = func_des->message_output.lock()) {
                 std::string outpMessage_name = om->name;
                 // const CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
@@ -288,8 +301,19 @@ bool CUDAAgentModel::step() {
             Curve::NamespaceHash agentname_hash = singletons->curve.variableRuntimeHash(agent_name.c_str());
             // hash function name
             Curve::NamespaceHash funcname_hash = singletons->curve.variableRuntimeHash(func_name.c_str());
+            Curve::NamespaceHash agentoutput_hash = func_des->agent_output.lock()? singletons->curve.variableRuntimeHash("_agent_birth") + funcname_hash:0;
 
-            (func_des->func)<<<gridSize, blockSize, 0, streams.at(j) >>>(modelname_hash, agentname_hash + funcname_hash, message_name_inp_hash, message_name_outp_hash, state_list_size, d_messagelist_metadata, totalThreads, j);
+            NVTX_PUSH("CUDAAgentModel::step::Kernel");
+            (func_des->func)<<<gridSize, blockSize, 0, streams.at(j) >>>(
+                modelname_hash,
+                agentname_hash + funcname_hash,
+                message_name_inp_hash,
+                message_name_outp_hash,
+                agentoutput_hash,
+                state_list_size,
+                d_messagelist_metadata,
+                totalThreads,
+                j);
             gpuErrchkLaunch();
             totalThreads += state_list_size;
             ++j;
@@ -322,14 +346,25 @@ bool CUDAAgentModel::step() {
                 cuda_message.clearTruncateMessageListFlag();
                 cuda_message.setPBMConstructionRequiredFlag();
             }
-            // const CUDAMessage& cuda_inpMessage = getCUDAMessage(func_des.getInputChild.getMessageName());
-            // const CUDAMessage& cuda_outpMessage = getCUDAMessage(func_des.getOutputChild.getMessageName());
+
+            // Process agent death (has agent death check is handled by the method)
+            // This MUST occur before agent_output, as if agent_output triggers resize then scan_flag for death will be purged
+            const unsigned int PRE_DEATH_STATE_SIZE = cuda_agent.getStateSize(func_des->initial_state);
+            cuda_agent.processDeath(*func_des, j);
+
+            // check if a function has an output agent
+            if (auto oa = func_des->agent_output.lock()) {
+                // This will act as a reserve word
+                // which is added to variable hashes for agent creation on device
+                CUDAAgent& output_agent = getCUDAAgent(oa->name);
+                // Scatter the agent birth
+                output_agent.scatterNew(func_des->agent_output_state, PRE_DEATH_STATE_SIZE, j);
+                // unmap vars with curve
+                output_agent.unmapNewRuntimeVariables(*func_des);
+            }
 
             // unmap the function variables
             cuda_agent.unmapRuntimeVariables(*func_des);
-
-            // Process agent death (has agent death check is handled by the method)
-            cuda_agent.processDeath(*func_des, j);
 
             // Process agent state transition (Longer term merge this with process death?)
             cuda_agent.transitionState(func_des->initial_state, func_des->end_state, j);

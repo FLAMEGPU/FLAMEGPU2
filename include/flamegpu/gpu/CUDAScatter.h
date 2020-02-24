@@ -48,8 +48,9 @@ class CUDAScatter {
      };
     /**
      * Flag used to decide which scan_flag array should be used
+     * @see flamegpu_internal::CUDAScanCompaction::type
      */
-    enum Type {Agent, Message};
+    enum Type { Message, AgentDeath, AgentBirth};
     /**
      * As we scatter per variable, this structure holds all the data required for a single variable
      */

@@ -249,37 +249,52 @@ void AgentFunctionDescription::setMessageOutputOptional(const bool &output_is_op
         }
     }
 }
-void AgentFunctionDescription::setAgentOutput(const std::string &agent_name) {
-    // Clear old value
-    if (auto b = this->function->agent_output.lock()) {
-        b->agent_outputs--;
-    }
+void AgentFunctionDescription::setAgentOutput(const std::string &agent_name, const std::string state) {
     // Set new
     auto a = model->agents.find(agent_name);
     if (a != model->agents.end()) {
-        this->function->agent_output = a->second;
-        a->second->agent_outputs++;  // Mark inside agent that we are using it as an output
+        // Check agent state is valid
+        if (a->second->states.find(state)!= a->second->states.end()) {    // Clear old value
+            if (auto b = this->function->agent_output.lock()) {
+                b->agent_outputs--;
+            }
+            this->function->agent_output = a->second;
+            this->function->agent_output_state = state;
+            a->second->agent_outputs++;  // Mark inside agent that we are using it as an output
+        } else {
+            THROW InvalidStateName("Agent ('%s') does not contain state '%s', "
+                "in AgentFunctionDescription::setAgentOutput()\n",
+                agent_name.c_str(), state.c_str());
+        }
     } else {
         THROW InvalidAgentName("Model ('%s') does not contain agent '%s', "
             "in AgentFunctionDescription::setAgentOutput()\n",
             model->name.c_str(), agent_name.c_str());
     }
 }
-void AgentFunctionDescription::setAgentOutput(AgentDescription &agent) {
+void AgentFunctionDescription::setAgentOutput(AgentDescription &agent, const std::string state) {
     if (agent.model != function->description->model) {
         THROW DifferentModel("Attempted to use agent description from a different model, "
             "in AgentFunctionDescription::setAgentOutput()\n");
-    }
-    // Clear old value
-    if (auto b = this->function->agent_output.lock()) {
-        b->agent_outputs--;
     }
     // Set new
     auto a = model->agents.find(agent.getName());
     if (a != model->agents.end()) {
         if (a->second->description.get() == &agent) {
-            this->function->agent_output = a->second;
-            a->second->agent_outputs++;  // Mark inside agent that we are using it as an output
+            // Check agent state is valid
+            if (a->second->states.find(state) != a->second->states.end()) {
+                // Clear old value
+                if (auto b = this->function->agent_output.lock()) {
+                    b->agent_outputs--;
+                }
+                this->function->agent_output = a->second;
+                this->function->agent_output_state = state;
+                a->second->agent_outputs++;  // Mark inside agent that we are using it as an output
+            } else {
+                THROW InvalidStateName("Agent ('%s') does not contain state '%s', "
+                    "in AgentFunctionDescription::setAgentOutput()\n",
+                    agent.getName().c_str(), state.c_str());
+            }
         } else {
             THROW InvalidMessage("Agent '%s' is not from Model '%s', "
                 "in AgentFunctionDescription::setAgentOutput()\n",
@@ -306,12 +321,6 @@ MsgBruteForce::Description &AgentFunctionDescription::MessageOutput() {
         return *m->description;
     THROW OutOfBoundsException("Message output has not been set, "
         "in AgentFunctionDescription::MessageOutput()\n");
-}
-AgentDescription &AgentFunctionDescription::AgentOutput() {
-    if (auto a = function->agent_output.lock())
-        return *a->description;
-    THROW OutOfBoundsException("Agent output has not been set, "
-        "in AgentFunctionDescription::AgentOutput()\n");
 }
 bool &AgentFunctionDescription::MessageOutputOptional() {
     return function->message_output_optional;
@@ -352,6 +361,12 @@ const AgentDescription &AgentFunctionDescription::getAgentOutput() const {
         return *a->description;
     THROW OutOfBoundsException("Agent output has not been set, "
         "in AgentFunctionDescription::getAgentOutput()\n");
+}
+std::string AgentFunctionDescription::getAgentOutputState() const {
+    if (auto a = function->agent_output.lock())
+        return function->agent_output_state;
+    THROW OutOfBoundsException("Agent output has not been set, "
+        "in AgentFunctionDescription::getAgentOutputState()\n");
 }
 bool AgentFunctionDescription::getAllowAgentDeath() const {
     return function->has_agent_death;

@@ -103,6 +103,37 @@ class CUDAAgent : public AgentInterface {
      */
     void transitionState(const std::string &src, const std::string &dest, const unsigned int &streamId);
 
+    /**
+     * Maps variables within initial_state->new CUDAAgentStateList
+     * They are mapped to "_agent_birth"_hash + func_hash + var_hash
+     * @param func The agent function which will use the mapped variables
+     * @param maxLen The maximum length set within curve
+     */
+    void mapNewRuntimeVariables(const AgentFunctionData& func, const unsigned int &maxLen) const;
+    /**
+    * Unmapaps variables within initial_state->new CUDAAgentStateList, freeing up space in CURVE hash table
+    * They are mapped to "_agent_birth"_hash + func_hash + var_hash
+    * @param func The agent function which used the mapped variables
+    */
+    void unmapNewRuntimeVariables(const AgentFunctionData& func) const;
+    /**
+     * Resize the new agent variable state list to the required length
+     * This is useful because an agent function attached to a larget agent pop, might output agents of a smaller agent pop
+     * Hence is should scale independently of other lists
+     * @param func The agent function performing the agent birth
+     * @param newSize The new minimum number of agents to be stored in the new list
+     * @oaram streamId The stream index for handling any stream safe stuff
+     */
+    void resizeNew(const AgentFunctionData& func, const unsigned int &newSize, const unsigned int &streamId);
+    /**
+     * Scatters agents from d_list_new to d_list
+     * @param state The CUDAAgentStateList to perform scatter on
+     * @param newSize The max possible number of new agents
+     * @param streamId Stream index for stream safe operations
+     * @note This may resize death scan flag, which will lose it's data, hence always processDeath first
+     */
+    void scatterNew(const std::string state, const unsigned int &newSize, const unsigned int &streamId);
+
  protected:
     /** @brief    Zero all state variable data. */
     void zeroAllStateVariableData();
