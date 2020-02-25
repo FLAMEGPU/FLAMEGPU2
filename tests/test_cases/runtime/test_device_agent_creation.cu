@@ -1,5 +1,5 @@
 /**
-* Tests of features on device api
+* Tests of features of device agent creation
 *
 * Tests cover:
 * > agent output same/different agent, mandatory/optional, same/different state, with/without death
@@ -14,7 +14,7 @@
 #include "flamegpu/runtime/flamegpu_api.h"
 
 
-namespace test_device_api {
+namespace test_device_agent_creation {
 FLAMEGPU_AGENT_FUNCTION(MandatoryOutput, MsgNone, MsgNone) {
     FLAMEGPU->agent_out.setVariable<float>("x", 12.0f);
     return ALIVE;
@@ -35,7 +35,7 @@ FLAMEGPU_AGENT_FUNCTION(OptionalOutputWithDeath, MsgNone, MsgNone) {
         return DEAD;
     return ALIVE;
 }
-TEST(DeviceAgentBirthTest, Mandatory_Output_SameState) {
+TEST(DeviceAgentCreationTest, Mandatory_Output_SameState) {
     // Define model
     ModelDescription model("Spatial3DMsgTestModel");
     AgentDescription &agent = model.newAgent("agent");
@@ -73,7 +73,7 @@ TEST(DeviceAgentBirthTest, Mandatory_Output_SameState) {
     EXPECT_EQ(is_1, AGENT_COUNT);
     EXPECT_EQ(is_12, AGENT_COUNT);
 }
-TEST(DeviceAgentBirthTest, Optional_Output_SameState) {
+TEST(DeviceAgentCreationTest, Optional_Output_SameState) {
     // Define model
     ModelDescription model("Spatial3DMsgTestModel");
     AgentDescription &agent = model.newAgent("agent");
@@ -111,7 +111,7 @@ TEST(DeviceAgentBirthTest, Optional_Output_SameState) {
     EXPECT_EQ(is_1, AGENT_COUNT);
     EXPECT_EQ(is_12, AGENT_COUNT/2);
 }
-TEST(DeviceAgentBirthTest, Mandatory_Output_DifferentState) {
+TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentState) {
     // Define model
     ModelDescription model("Spatial3DMsgTestModel");
     AgentDescription &agent = model.newAgent("agent");
@@ -150,7 +150,7 @@ TEST(DeviceAgentBirthTest, Mandatory_Output_DifferentState) {
         EXPECT_EQ(ai.getVariable<float>("x"), 12.0f);
     }
 }
-TEST(DeviceAgentBirthTest, Optional_Output_DifferentState) {
+TEST(DeviceAgentCreationTest, Optional_Output_DifferentState) {
     // Define model
     ModelDescription model("Spatial3DMsgTestModel");
     AgentDescription &agent = model.newAgent("agent");
@@ -189,7 +189,7 @@ TEST(DeviceAgentBirthTest, Optional_Output_DifferentState) {
         EXPECT_EQ(ai.getVariable<float>("x"), 12.0f);
     }
 }
-TEST(DeviceAgentBirthTest, Mandatory_Output_SameState_WithDeath) {
+TEST(DeviceAgentCreationTest, Mandatory_Output_SameState_WithDeath) {
     // Define model
     ModelDescription model("Spatial3DMsgTestModel");
     AgentDescription &agent = model.newAgent("agent");
@@ -228,7 +228,7 @@ TEST(DeviceAgentBirthTest, Mandatory_Output_SameState_WithDeath) {
     EXPECT_EQ(is_1, 0u);
     EXPECT_EQ(is_12, AGENT_COUNT);
 }
-TEST(DeviceAgentBirthTest, Optional_Output_SameState_WithDeath) {
+TEST(DeviceAgentCreationTest, Optional_Output_SameState_WithDeath) {
     // Define model
     ModelDescription model("Spatial3DMsgTestModel");
     AgentDescription &agent = model.newAgent("agent");
@@ -267,7 +267,7 @@ TEST(DeviceAgentBirthTest, Optional_Output_SameState_WithDeath) {
     EXPECT_EQ(is_1, AGENT_COUNT / 2);
     EXPECT_EQ(is_12, AGENT_COUNT / 2);
 }
-TEST(DeviceAgentBirthTest, Mandatory_Output_DifferentState_WithDeath) {
+TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentState_WithDeath) {
     // Define model
     ModelDescription model("Spatial3DMsgTestModel");
     AgentDescription &agent = model.newAgent("agent");
@@ -303,7 +303,7 @@ TEST(DeviceAgentBirthTest, Mandatory_Output_DifferentState_WithDeath) {
         EXPECT_EQ(ai.getVariable<float>("x"), 12.0f);
     }
 }
-TEST(DeviceAgentBirthTest, Optional_Output_DifferentState_WithDeath) {
+TEST(DeviceAgentCreationTest, Optional_Output_DifferentState_WithDeath) {
     // Define model
     ModelDescription model("Spatial3DMsgTestModel");
     AgentDescription &agent = model.newAgent("agent");
@@ -343,7 +343,7 @@ TEST(DeviceAgentBirthTest, Optional_Output_DifferentState_WithDeath) {
         EXPECT_EQ(ai.getVariable<float>("x"), 12.0f);
     }
 }
-TEST(DeviceAgentBirthTest, Mandatory_Output_DifferentAgent) {
+TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentAgent) {
     // Define model
     ModelDescription model("Spatial3DMsgTestModel");
     AgentDescription &agent = model.newAgent("agent");
@@ -384,7 +384,7 @@ TEST(DeviceAgentBirthTest, Mandatory_Output_DifferentAgent) {
         EXPECT_EQ(ai.getVariable<float>("x"), 12.0f);
     }
 }
-TEST(DeviceAgentBirthTest, Optional_Output_DifferentAgent) {
+TEST(DeviceAgentCreationTest, Optional_Output_DifferentAgent) {
     // Define model
     ModelDescription model("Spatial3DMsgTestModel");
     AgentDescription &agent = model.newAgent("agent");
@@ -425,7 +425,10 @@ TEST(DeviceAgentBirthTest, Optional_Output_DifferentAgent) {
         EXPECT_EQ(ai.getVariable<float>("x"), 12.0f);
     }
 }
-TEST(DeviceAgentBirthTest, Mandatory_Output_DifferentAgent_WithDeath) {
+TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentAgent_WithDeath) {
+    // 1024 initial agents (type 'agent2') with value 1
+    // every agent outputs a new agent  (type 'agent') with value 12, and then dies
+
     // Define model
     ModelDescription model("Spatial3DMsgTestModel");
     AgentDescription &agent = model.newAgent("agent");
@@ -458,12 +461,21 @@ TEST(DeviceAgentBirthTest, Mandatory_Output_DifferentAgent_WithDeath) {
     // Validate each agent has same result
     EXPECT_EQ(population.getCurrentListSize(), 0u);
     EXPECT_EQ(newPopulation.getCurrentListSize("b"), AGENT_COUNT);
+    unsigned int is_1 = 0;
+    unsigned int is_12 = 0;
     for (unsigned int i = 0; i < newPopulation.getCurrentListSize("b"); ++i) {
         AgentInstance ai = newPopulation.getInstanceAt(i, "b");
-        EXPECT_EQ(ai.getVariable<float>("x"), 12.0f);
+        float val = ai.getVariable<float>("x");
+        if (val == 1.0f)
+            is_1++;
+        else if (val == 12.0f)
+            is_12++;
+        // EXPECT_EQ(ai.getVariable<float>("x"), 12.0f);
     }
+    EXPECT_EQ(is_1, 0u);
+    EXPECT_EQ(is_12, AGENT_COUNT);
 }
-TEST(DeviceAgentBirthTest, Optional_Output_DifferentAgent_WithDeath) {
+TEST(DeviceAgentCreationTest, Optional_Output_DifferentAgent_WithDeath) {
     // Define model
     ModelDescription model("Spatial3DMsgTestModel");
     AgentDescription &agent = model.newAgent("agent");
@@ -507,4 +519,4 @@ TEST(DeviceAgentBirthTest, Optional_Output_DifferentAgent_WithDeath) {
         EXPECT_EQ(ai.getVariable<float>("x"), 12.0f);
     }
 }
-}  // namespace test_device_api
+}  // namespace test_device_agent_creation

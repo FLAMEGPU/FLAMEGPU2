@@ -120,7 +120,7 @@ TEST(LayerDescriptionTest, AgentFunction_WrongModel) {
 TEST(LayerDescriptionTest, SameAgentAndState1) {
     ModelDescription _m(MODEL_NAME);
     AgentDescription &a = _m.newAgent(AGENT_NAME);
-    AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn2);
+    a.newFunction(FUNCTION_NAME1, agent_fn2);
     AgentFunctionDescription &f2 = a.newFunction(FUNCTION_NAME2, agent_fn3);
     LayerDescription &l = _m.newLayer();
     // Both have agent in default state

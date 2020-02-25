@@ -131,6 +131,7 @@ class AgentFunctionDescription {
      * @param agent_name Name of the agent type to be output
      * @param state The stage agents should be created in
      * @throws InvalidAgentName If an agent with the same name is not found within the model's hierarchy
+     * @throws InvalidStateName If the named agent does not contain the named state
      * @see AgentFunctionDescription::setAgentOutput(AgentDescription &)
      */
     void setAgentOutput(const std::string &agent_name, const std::string state = ModelData::DEFAULT_STATE);
@@ -140,7 +141,8 @@ class AgentFunctionDescription {
      * @param agent Type of agent to be output
      * @param state The stage agents should be created in
      * @throws DifferentModel If the agent is not from this model hierarchy
-     * @throws InvalidAgentName If a agent with the same name is not found within the model's hierarchy
+     * @throws InvalidAgentName If an agent with the same name is not found within the model's hierarchy
+     * @throws InvalidStateName If the named agent does not contain the named state
      * @see AgentFunctionDescription::setAgentOutput(AgentDescription &)
      */
     void setAgentOutput(AgentDescription &agent, const std::string state = ModelData::DEFAULT_STATE);

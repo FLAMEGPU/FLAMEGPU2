@@ -17,7 +17,10 @@ CUDAAgentModel::CUDAAgentModel(const ModelDescription& _model)
     , message_map()
     , streams(std::vector<cudaStream_t>())
     , singletons(nullptr)
-    , singletonsInitialised(false) {
+    , singletonsInitialised(false)
+    , host_api(std::make_unique<FLAMEGPU_HOST_API>(*this, agentOffsets, agentData)) {
+    initOffsetsAndMap();
+
     // populate the CUDA agent map
     const auto &am = model->agents;
     // create new cuda agent and add to the map
@@ -382,18 +385,30 @@ bool CUDAAgentModel::step() {
         for (auto &stepFn : (*lyr)->host_functions) {
             stepFn(this->host_api.get());
         }
+        // If we have host layer functions, we might have host agent creation
+        if ((*lyr)->host_functions.size())
+            processHostAgentCreation();
         NVTX_POP();
+
         // cudaDeviceSynchronize();
     }
 
     // Execute step functions
     for (auto &stepFn : model->stepFunctions)
         stepFn(this->host_api.get());
+    // If we have step functions, we might have host agent creation
+    if (model->stepFunctions.size())
+        processHostAgentCreation();
+    NVTX_POP();
 
     // Execute exit conditions
     for (auto &exitCdns : model->exitConditions)
         if (exitCdns(this->host_api.get()) == EXIT)
             return false;
+    // If we have exit conditions functions, we might have host agent creation
+    if (model->exitConditions.size())
+        processHostAgentCreation();
+
     return true;
 }
 
@@ -414,6 +429,9 @@ void CUDAAgentModel::simulate() {
     // Execute init functions
     for (auto &initFn : model->initFunctions)
         initFn(this->host_api.get());
+    // Check if host agent creation was used in init functions
+    if (model->initFunctions.size())
+        processHostAgentCreation();
 
     for (unsigned int i = 0; getSimulationConfig().steps == 0 ? true : i < getSimulationConfig().steps; i++) {
         // std::cout <<"step: " << i << std::endl;
@@ -597,4 +615,72 @@ unsigned int CUDAAgentModel::getStepCounter() {
 }
 void CUDAAgentModel::resetStepCounter() {
     step_count = 0;
+}
+
+void CUDAAgentModel::initOffsetsAndMap() {
+    const auto &md = getModelDescription();
+    // Build offsets
+    agentOffsets.clear();
+    for (const auto &agent : md.agents) {
+        agentOffsets.emplace(agent.first, VarOffsetStruct(agent.second->variables));
+    }
+    // Build data
+    agentData.clear();
+    for (const auto &agent : md.agents) {
+        AgentDataBufferStateMap agent_states;
+        for (const auto&state : agent.second->states)
+            agent_states.emplace(state, AgentDataBuffer());
+        agentData.emplace(agent.first, agent_states);
+    }
+}
+
+void CUDAAgentModel::processHostAgentCreation() {
+    size_t t_bufflen = 0;
+    char *t_buff = nullptr;
+    char *dt_buff = nullptr;
+    // For each agent type
+    for (auto &agent : agentData) {
+        // We need size of agent
+        const VarOffsetStruct &offsets = agentOffsets.at(agent.first);
+        // For each state within the agent
+        for (auto &state : agent.second) {
+            // If the buffer has data
+            if (state.second.size()) {
+                size_t size_req = offsets.totalSize * state.second.size();
+                {  // Ensure we have enough temp memory
+                    if (size_req > t_bufflen) {
+                        if (t_buff) {
+                            free(t_buff);
+                            gpuErrchk(cudaFree(dt_buff));
+                        }
+                        t_buff = reinterpret_cast<char*>(malloc(size_req));
+                        gpuErrchk(cudaMalloc(&dt_buff, size_req));
+                        t_bufflen = size_req;
+                    }
+                }
+                // Copy buffer memory into a single block
+                for (unsigned int i = 0; i < state.second.size(); ++i) {
+                    memcpy(t_buff + (i*offsets.totalSize), state.second[i].data, offsets.totalSize);
+                }
+                // Copy t_buff to device
+                gpuErrchk(cudaMemcpy(dt_buff, t_buff, size_req, cudaMemcpyHostToDevice));
+
+                // Resize agent list if required
+                const unsigned int current_state_size = agent_map.at(agent.first)->getStateSize(state.first);
+                const unsigned int current_max_state_size = agent_map.at(agent.first)->getMaximumListSize();
+                if (current_state_size + state.second.size() > current_max_state_size) {
+                    agent_map.at(agent.first)->resize(static_cast<unsigned int>(state.second.size()) + current_state_size, 0);  // StreamId Doesn't matter
+                }
+                // Scatter to device
+                agent_map.at(agent.first)->getAgentStateList(state.first)->scatterHostCreation(static_cast<unsigned int>(state.second.size()), dt_buff, offsets);
+                // Clear buffer
+                state.second.clear();
+            }
+        }
+    }
+    // Release temp memory
+    if (t_buff) {
+        free(t_buff);
+        gpuErrchk(cudaFree(dt_buff));
+    }
 }

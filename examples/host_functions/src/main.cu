@@ -5,6 +5,8 @@
 #include "flamegpu/flame_api.h"
 #include "flamegpu/runtime/flamegpu_api.h"
 
+const unsigned int AGENT_COUNT = 1024;
+
 FLAMEGPU_AGENT_FUNCTION(device_function, MsgNone, MsgNone) {
     const float &prop_float = FLAMEGPU->environment.get<float>("float");
     const int16_t &prop_int16 = FLAMEGPU->environment.get<int16_t>("int16_t");
@@ -19,7 +21,13 @@ FLAMEGPU_AGENT_FUNCTION(device_function, MsgNone, MsgNone) {
 FLAMEGPU_INIT_FUNCTION(init_function) {
     float min_x = FLAMEGPU->agent("agent").min<float>("x");
     float max_x = FLAMEGPU->agent("agent").max<float>("x");
-    printf("Init Function! (Min: %g, Max: %g)\n", min_x, max_x);
+    printf("Init Function! (AgentCount: %u, Min: %g, Max: %g)\n", FLAMEGPU->agent("agent").count(), min_x, max_x);
+    for (unsigned int i = AGENT_COUNT / 2; i < AGENT_COUNT; i++) {
+        FLAMEGPU_HOST_NEW_AGENT_API instance = FLAMEGPU->newAgent("agent");
+        instance.setVariable<float>("x", static_cast<float>(i));
+        instance.setVariable<int>("a", i % 2 == 0 ? 1 : 0);
+    }
+    printf("Init Function! Created %u more agents\n", AGENT_COUNT / 2);
 }
 FLAMEGPU_CUSTOM_REDUCTION(customSum, a, b) {
     return a + b;
@@ -33,7 +41,7 @@ FLAMEGPU_STEP_FUNCTION(step_function) {
     int custom_sum_a = agent.reduce<int>("a", customSum, 0);
     unsigned int count_a = agent.count<int>("a", 1);
     unsigned int countif_a = agent.transformReduce<int, unsigned int>("a", customTransform, customSum, 0u);
-    printf("Step Function! (Sum: %d, CustomSum: %d, Count: %u, CustomCountIf: %u)\n", sum_a, custom_sum_a, count_a, countif_a);
+    printf("Step Function! (AgentCount: %u, Sum: %d, CustomSum: %d, Count: %u, CustomCountIf: %u)\n", agent.count(), sum_a, custom_sum_a, count_a, countif_a);
 }
 FLAMEGPU_EXIT_FUNCTION(exit_function) {
     float uniform_real = FLAMEGPU->random.uniform<float>();
@@ -62,7 +70,6 @@ FLAMEGPU_EXIT_CONDITION(exit_condition) {
 
 
 int main(void) {
-    const unsigned int AGENT_COUNT = 1024;
     ModelDescription model("host_functions_example");
 
     {  // agent
@@ -104,8 +111,8 @@ int main(void) {
     /**
      * Initialisation
      */
-    AgentPopulation population(model.Agent("agent"), AGENT_COUNT);
-    for (unsigned int i = 0; i < AGENT_COUNT; i++) {
+    AgentPopulation population(model.Agent("agent"), AGENT_COUNT/2);
+    for (unsigned int i = 0; i < AGENT_COUNT/2; i++) {
         AgentInstance instance = population.getNextInstance();
         instance.setVariable<float>("x", static_cast<float>(i));
         instance.setVariable<int>("a", i % 2 == 0 ? 1 : 0);

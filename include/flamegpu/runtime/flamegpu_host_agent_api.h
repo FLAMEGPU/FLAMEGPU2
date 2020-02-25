@@ -49,15 +49,15 @@ funcName ## _impl funcName;\
 template<typename InT, typename OutT>\
 __device__ __forceinline__ OutT funcName ## _impl::unary_function<InT, OutT>::operator()(const InT &a) const
 
-class FLAMEGPU_HOST_AGENT_API {
+class HostAgentInstance {
  public:
-    FLAMEGPU_HOST_AGENT_API(FLAMEGPU_HOST_API &_api, AgentInterface &_agent, const std::string &_stateName = "default")
+    HostAgentInstance(FLAMEGPU_HOST_API &_api, AgentInterface &_agent, const std::string &_stateName = "default")
         :api(_api),
         agent(_agent),
         hasState(true),
         stateName(_stateName) {
     }
-    /*FLAMEGPU_HOST_AGENT_API(const CUDAAgent &_agent)
+    /*HostAgentInstance(const CUDAAgent &_agent)
         :agent(_agent),
         hasState(false),
         stateName("") {
@@ -138,7 +138,7 @@ class FLAMEGPU_HOST_AGENT_API {
     const std::string stateName;
 };
 
-inline unsigned FLAMEGPU_HOST_AGENT_API::count() {
+inline unsigned HostAgentInstance::count() {
     return agent.getStateSize(stateName);
 }
 
@@ -147,15 +147,15 @@ inline unsigned FLAMEGPU_HOST_AGENT_API::count() {
 //
 
 template<typename InT>
-InT FLAMEGPU_HOST_AGENT_API::sum(const std::string &variable) const {
+InT HostAgentInstance::sum(const std::string &variable) const {
     return sum<InT, InT>(variable);
 }
 template<typename InT, typename OutT>
-OutT FLAMEGPU_HOST_AGENT_API::sum(const std::string &variable) const {
+OutT HostAgentInstance::sum(const std::string &variable) const {
     static_assert(sizeof(InT) <= sizeof(OutT), "Template arg OutT should not be of a smaller size than InT");
     const auto &agentDesc = agent.getAgentDescription();
     if (std::type_index(typeid(InT)) != agentDesc.description->getVariableType(variable)) {
-        THROW InvalidVarType("Wrong variable type passed to FLAMEGPU_HOST_AGENT_API::sum(). "
+        THROW InvalidVarType("Wrong variable type passed to HostAgentInstance::sum(). "
             "This call expects '%s', but '%s' was requested.",
             agentDesc.variables.at(variable).type.name(), typeid(InT).name());
     }
@@ -178,10 +178,10 @@ OutT FLAMEGPU_HOST_AGENT_API::sum(const std::string &variable) const {
     return rtn;
 }
 template<typename InT>
-InT FLAMEGPU_HOST_AGENT_API::min(const std::string &variable) const {
+InT HostAgentInstance::min(const std::string &variable) const {
     const auto &agentDesc = agent.getAgentDescription();
     if (std::type_index(typeid(InT)) != agentDesc.description->getVariableType(variable)) {
-        THROW InvalidVarType("Wrong variable type passed to FLAMEGPU_HOST_AGENT_API::min(). "
+        THROW InvalidVarType("Wrong variable type passed to HostAgentInstance::min(). "
             "This call expects '%s', but '%s' was requested.",
             agentDesc.variables.at(variable).type.name(), typeid(InT).name());
     }
@@ -205,10 +205,10 @@ InT FLAMEGPU_HOST_AGENT_API::min(const std::string &variable) const {
     return rtn;
 }
 template<typename InT>
-InT FLAMEGPU_HOST_AGENT_API::max(const std::string &variable) const {
+InT HostAgentInstance::max(const std::string &variable) const {
     const auto &agentDesc = agent.getAgentDescription();
     if (std::type_index(typeid(InT)) != agentDesc.description->getVariableType(variable)) {
-        THROW InvalidVarType("Wrong variable type passed to FLAMEGPU_HOST_AGENT_API::max(). "
+        THROW InvalidVarType("Wrong variable type passed to HostAgentInstance::max(). "
             "This call expects '%s', but '%s' was requested.",
             agentDesc.variables.at(variable).type.name(), typeid(InT).name());
     }
@@ -232,10 +232,10 @@ InT FLAMEGPU_HOST_AGENT_API::max(const std::string &variable) const {
     return rtn;
 }
 template<typename InT>
-unsigned int FLAMEGPU_HOST_AGENT_API::count(const std::string &variable, const InT &value) {
+unsigned int HostAgentInstance::count(const std::string &variable, const InT &value) {
     const auto &agentDesc = agent.getAgentDescription();
     if (std::type_index(typeid(InT)) != agentDesc.description->getVariableType(variable)) {
-        THROW InvalidVarType("Wrong variable type passed to FLAMEGPU_HOST_AGENT_API::count(). "
+        THROW InvalidVarType("Wrong variable type passed to HostAgentInstance::count(). "
             "This call expects '%s', but '%s' was requested.",
             agentDesc.variables.at(variable).type.name(), typeid(InT).name());
     }
@@ -247,18 +247,18 @@ unsigned int FLAMEGPU_HOST_AGENT_API::count(const std::string &variable, const I
     return rtn;
 }
 template<typename InT>
-std::vector<unsigned int> FLAMEGPU_HOST_AGENT_API::histogramEven(const std::string &variable, const unsigned int &histogramBins, const InT &lowerBound, const InT &upperBound) const {
+std::vector<unsigned int> HostAgentInstance::histogramEven(const std::string &variable, const unsigned int &histogramBins, const InT &lowerBound, const InT &upperBound) const {
     return histogramEven<InT, unsigned int>(variable, histogramBins, lowerBound, upperBound);
 }
 template<typename InT, typename OutT>
-std::vector<OutT> FLAMEGPU_HOST_AGENT_API::histogramEven(const std::string &variable, const unsigned int &histogramBins, const InT &lowerBound, const InT &upperBound) const {
+std::vector<OutT> HostAgentInstance::histogramEven(const std::string &variable, const unsigned int &histogramBins, const InT &lowerBound, const InT &upperBound) const {
     if (lowerBound >= upperBound) {
-        THROW InvalidArgument("lowerBound (%s) must be lower than < upperBound (%s) in FLAMEGPU_HOST_AGENT_API::histogramEven().",
+        THROW InvalidArgument("lowerBound (%s) must be lower than < upperBound (%s) in HostAgentInstance::histogramEven().",
             std::to_string(lowerBound).c_str(), std::to_string(upperBound).c_str());
     }
     const auto &agentDesc = agent.getAgentDescription();
     if (std::type_index(typeid(InT)) != agentDesc.description->getVariableType(variable)) {
-        THROW InvalidVarType("Wrong variable type passed to FLAMEGPU_HOST_AGENT_API::histogramEven(). "
+        THROW InvalidVarType("Wrong variable type passed to HostAgentInstance::histogramEven(). "
             "This call expects '%s', but '%s' was requested.",
             agentDesc.variables.at(variable).type.name(), typeid(InT).name());
     }
@@ -284,10 +284,10 @@ std::vector<OutT> FLAMEGPU_HOST_AGENT_API::histogramEven(const std::string &vari
     return rtn;
 }
 template<typename InT, typename reductionOperatorT>
-InT FLAMEGPU_HOST_AGENT_API::reduce(const std::string &variable, reductionOperatorT /*reductionOperator*/, const InT &init) const {
+InT HostAgentInstance::reduce(const std::string &variable, reductionOperatorT /*reductionOperator*/, const InT &init) const {
     const auto &agentDesc = agent.getAgentDescription();
     if (std::type_index(typeid(InT)) != agentDesc.description->getVariableType(variable)) {
-        THROW InvalidVarType("Wrong variable type passed to FLAMEGPU_HOST_AGENT_API::reduce(). "
+        THROW InvalidVarType("Wrong variable type passed to HostAgentInstance::reduce(). "
             "This call expects '%s', but '%s' was requested.",
             agentDesc.variables.at(variable).type.name(), typeid(InT).name());
     }
@@ -313,10 +313,10 @@ InT FLAMEGPU_HOST_AGENT_API::reduce(const std::string &variable, reductionOperat
     return rtn;
 }
 template<typename InT, typename OutT, typename transformOperatorT, typename reductionOperatorT>
-OutT FLAMEGPU_HOST_AGENT_API::transformReduce(const std::string &variable, transformOperatorT /*transformOperator*/, reductionOperatorT /*reductionOperator*/, const OutT &init) const {
+OutT HostAgentInstance::transformReduce(const std::string &variable, transformOperatorT /*transformOperator*/, reductionOperatorT /*reductionOperator*/, const OutT &init) const {
     const auto &agentDesc = agent.getAgentDescription();
     if (std::type_index(typeid(InT)) != agentDesc.description->getVariableType(variable)) {
-        THROW InvalidVarType("Wrong variable type passed to FLAMEGPU_HOST_AGENT_API::transformReduce(). "
+        THROW InvalidVarType("Wrong variable type passed to HostAgentInstance::transformReduce(). "
             "This call expects '%s', but '%s' was requested.",
             agentDesc.variables.at(variable).type.name(), typeid(InT).name());
     }

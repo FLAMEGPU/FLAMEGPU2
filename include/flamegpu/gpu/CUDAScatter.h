@@ -7,6 +7,8 @@
 
 #include "flamegpu/model/Variable.h"
 #include "flamegpu/gpu/CUDAScanCompaction.h"
+struct VarOffsetStruct;
+
 /**
  * Singleton class for performing generic scatters
  * This is used for optional messages, agent death, agent birth
@@ -113,6 +115,13 @@ class CUDAScatter {
         const unsigned int *d_bin_index,
         const unsigned int *d_bin_sub_index,
         const unsigned int *d_pbm);
+    void scatterNewAgents(
+        const VariableMap &vars,
+        const std::map<std::string, void*> &out,
+        void *in_buff,
+        const VarOffsetStruct &inOffsetData,
+        const unsigned int &inCount,
+        const unsigned int outIndexOffset);
 
  private:
     // set by getInstance()

@@ -19,6 +19,7 @@
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/pop/AgentPopulation.h"
 #include "flamegpu/gpu/CUDAScatter.h"
+#include "flamegpu/runtime/flamegpu_host_new_agent_api.h"
 
 /**
 * CUDAAgentStateList class
@@ -357,4 +358,21 @@ void CUDAAgentStateList::scatterNew(const unsigned int &newSize, const unsigned 
         agent.getAgentDescription().variables,
         d_new_list, d_list,
         newSize, current_list_size);
+}
+void CUDAAgentStateList::scatterHostCreation(const unsigned int &newSize, char *const d_inBuff, const VarOffsetStruct &offsets) {
+    CUDAScatter &cs = CUDAScatter::getInstance(0);  // No plans to make this async yet
+    // Resize agent list if required
+    if (current_list_size + newSize > agent.getMaximumListSize()) {
+        agent.resize(current_list_size + newSize, 0);  // StreamId Doesn't matter
+    }
+    // Scatter to device
+    cs.scatterNewAgents(
+        agent.getAgentDescription().variables,
+        d_list,
+        d_inBuff,
+        offsets,
+        newSize,
+        current_list_size);
+    // Update size of state is list
+    current_list_size += newSize;
 }

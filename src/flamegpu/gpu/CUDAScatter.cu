@@ -6,6 +6,7 @@
 
 #include "flamegpu/gpu/CUDAErrorChecking.h"
 #include "flamegpu/gpu/CUDAScanCompaction.h"
+#include "flamegpu/runtime/flamegpu_host_new_agent_api.h"
 
 unsigned int CUDAScatter::simulationInstances = 0;
 
@@ -204,7 +205,70 @@ void CUDAScatter::pbm_reorder(
     gpuErrchkLaunch();
 }
 
+/**
+ * Scatter kernel for host agent creation
+ * Input data is stored in AoS, and translated to SoA for device
+ * @param threadCount Total number of threads required
+ * @param agent_size The total size of an agent's variables in memory, for stepping through input array
+ * @param scatter_data Scatter data array location in memory
+ * @param scatter_len Length of scatter data array
+ * @parma out_index_offset The number of agents already in the output array (so that they are not overwritten)
+ */
+__global__ void scatter_new_agents(
+    unsigned int threadCount,
+    const unsigned int agent_size,
+    CUDAScatter::ScatterData *scatter_data,
+    const unsigned int scatter_len,
+    const unsigned int out_index_offset) {
+    // global thread index
+    int index = (blockIdx.x*blockDim.x) + threadIdx.x;
 
+    if (index >= threadCount) return;
+
+    // Which variable are we outputting
+    const unsigned int var_out = index % scatter_len;
+    const unsigned int agent_index = index / scatter_len;
+
+    // if optional message is to be written
+    char * const in_ptr = scatter_data[var_out].in + (agent_index * agent_size);
+    char * const out_ptr = scatter_data[var_out].out + ((out_index_offset + agent_index) * scatter_data[var_out].typeLen);
+    memcpy(out_ptr, in_ptr, scatter_data[var_out].typeLen);
+}
+void CUDAScatter::scatterNewAgents(
+    const VariableMap &vars,
+    const std::map<std::string, void*> &out,
+    void *d_in_buff,
+    const VarOffsetStruct &inOffsetData,
+    const unsigned int &inCount,
+    const unsigned int outIndexOffset) {
+    // 1 thread per agent variable
+    const unsigned int threadCount = static_cast<unsigned int>(inOffsetData.vars.size()) * inCount;
+    int blockSize = 0;  // The launch configurator returned block size
+    int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
+    int gridSize = 0;  // The actual grid size needed, based on input size
+
+    // calculate the grid block size for main agent function
+    cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, scatter_new_agents, 0, threadCount);
+    //! Round up according to CUDAAgent state list size
+    gridSize = (threadCount + blockSize - 1) / blockSize;
+    // for each variable, scatter from swap to regular
+    std::vector<ScatterData> sd;
+    for (const auto &v : vars) {
+        // In this case, in is the location of first variable, but we step by inOffsetData.totalSize
+        char *in_p = reinterpret_cast<char*>(d_in_buff) + inOffsetData.vars.at(v.first).offset;
+        char *out_p = reinterpret_cast<char*>(out.at(v.first));
+        sd.push_back({ v.second.type_size, in_p, out_p });
+    }
+    resize(static_cast<unsigned int>(sd.size()));
+    // Important that sd.size() is still used here, incase allocated len (data_len) is bigger
+    gpuErrchk(cudaMemcpy(d_data, sd.data(), sizeof(ScatterData) * sd.size(), cudaMemcpyHostToDevice));
+    scatter_new_agents << <gridSize, blockSize >> > (
+        threadCount,
+        static_cast<unsigned int>(inOffsetData.totalSize),
+        d_data, static_cast<unsigned int>(sd.size()),
+        outIndexOffset);
+    gpuErrchkLaunch();
+}
 void CUDAScatter::increaseSimCounter() {
     simulationInstances++;
 }
