@@ -50,10 +50,6 @@ class Simulation {
     virtual void printHelp_derived() = 0;
     virtual void resetDerivedConfig() = 0;
     const std::shared_ptr<const ModelData> model;
-    /**
-     * One instance of host api is used for entire model
-     */
-    std::unique_ptr<FLAMEGPU_HOST_API> host_api;
 
     Config config;
 

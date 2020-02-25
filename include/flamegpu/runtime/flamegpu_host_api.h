@@ -7,14 +7,16 @@
 #include <utility>
 #include <functional>
 #include <unordered_map>
+#include <vector>
 
 #include "flamegpu/gpu/CUDAErrorChecking.h"
 #include "flamegpu/runtime/utility/HostRandom.cuh"
 #include "flamegpu/runtime/utility/HostEnvironment.cuh"
 #include "flamegpu/runtime/flamegpu_host_api_macros.h"
+#include "flamegpu/runtime/flamegpu_host_new_agent_api.h"
 
-class Simulation;
-class FLAMEGPU_HOST_AGENT_API;
+class CUDAAgentModel;
+class HostAgentInstance;
 
 /**
  * @brief    A flame gpu api class for use by host functions only
@@ -25,25 +27,45 @@ class FLAMEGPU_HOST_API {
      * Requires internal access for resizeTempStorage()
      * @todo Could move this behaviour to a seperate singleton class 
      */
-    friend class FLAMEGPU_HOST_AGENT_API;
+    friend class HostAgentInstance;
+    // Typedefs repeated from CUDAAgentModel
+    typedef std::vector<NewAgentStorage> AgentDataBuffer;
+    typedef std::unordered_map<std::string, AgentDataBuffer> AgentDataBufferStateMap;
+    typedef std::unordered_map<std::string, VarOffsetStruct> AgentOffsetMap;
+    typedef std::unordered_map<std::string, AgentDataBufferStateMap> AgentDataMap;
+
  public:
     /**
      * Initailises pointers to 0
      * Stores reference of CUDAAgentModel
      */
-     explicit FLAMEGPU_HOST_API(Simulation&_agentModel);
+     explicit FLAMEGPU_HOST_API(CUDAAgentModel&_agentModel,
+         const AgentOffsetMap &agentOffsets,
+         AgentDataMap &agentData);
     /**
      * Frees held device memory
      */
      ~FLAMEGPU_HOST_API();
     /**
-     * TODO: Returns methods that work on all agents of a certain type
-     */
-    // FLAMEGPU_HOST_AGENT_API agent(const std::string &agent_name);
-    /**
      * Returns methods that work on all agents of a certain type currently in a given state
      */
-    FLAMEGPU_HOST_AGENT_API agent(const std::string &agent_name, const std::string &stateName = "default");
+    HostAgentInstance agent(const std::string &agent_name, const std::string &stateName = ModelData::DEFAULT_STATE);
+    /**
+     * Creates a new agent of the named type and returns an object for configuring it's member variables
+     * The agent is created in their initial state as defined in model description hierarchy
+     * @param agent_name Name of the agent type to be created
+     * @throws InvalidAgentName If an agent with the provided name does not exist withint he model description hierarchy
+     */
+    FLAMEGPU_HOST_NEW_AGENT_API newAgent(const std::string &agent_name);
+    /**
+     * Creates a new agent of the named type and returns an object for configuring it's member variables
+     * The agent is created in their initial state as defined in model description hierarchy
+     * @param agent_name Name of the agent type to be created
+     * @param state Name of the state the agent should be created in
+     * @throws InvalidAgentName If an agent with the provided name does not exist withint he model description hierarchy
+     * @throws InvalidStateName If state name does not apply to named agent
+     */
+    FLAMEGPU_HOST_NEW_AGENT_API newAgent(const std::string &agent_name, const std::string &state);
     /**
      * Host API access to seeded random number generation
      */
@@ -81,11 +103,22 @@ class FLAMEGPU_HOST_API {
     void resizeTempStorage(const CUB_Config &cc, const unsigned int &items, const size_t &newSize);
     template<typename T>
     void resizeOutputSpace(const unsigned int &items = 1);
-    Simulation &agentModel;
+    CUDAAgentModel &agentModel;
     void *d_cub_temp;
     size_t d_cub_temp_size;
     void *d_output_space;
     size_t d_output_space_size;
+    /*
+     * Owned by CUDAAgentModel, this provides memory offsets for agent variables
+     * Used for host agent creationg
+     */
+    const AgentOffsetMap &agentOffsets;
+    /*
+     * Owned by CUDAAgentModel, this provides storage for new agents
+     * Used for host agent creation, this should be emptied end of each step 
+     * when new agents are copied to device.
+     */
+    AgentDataMap &agentData;
 };
 
 template<typename T>

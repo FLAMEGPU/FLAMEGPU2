@@ -99,8 +99,10 @@ SET(TEST_CASE_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/sim/test_host_functions.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_agent_environment.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_agent_function_conditions.cu    
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_agent_random.cu    
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_agent_random.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_agent_state_transition.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_host_agent_creation.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_device_agent_creation.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_environment_manager.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_host_environment.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_host_random.cu
@@ -116,7 +118,6 @@ SET(TEST_CASE_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/messaging/test_spatial_3d.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/messaging/test_brute_force.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/messaging/test_append_truncate.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_device_api.cu
 )
 SET(DEV_TEST_CASE_SRC
 

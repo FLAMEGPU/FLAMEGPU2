@@ -5,6 +5,7 @@
 #include <memory>
 #include <vector>
 #include <string>
+#include <unordered_map>
 
 #include "flamegpu/sim/Simulation.h"
 
@@ -12,6 +13,7 @@
 #include "flamegpu/gpu/CUDAMessage.h"
 #include "flamegpu/runtime/utility/RandomManager.cuh"
 #include "CUDAScatter.h"
+#include "flamegpu/runtime/flamegpu_host_new_agent_api.h"
 
 /**
  * CUDA runner for Simulation interface
@@ -178,6 +180,34 @@ class CUDAAgentModel : public Simulation {
      * Initialise the instances singletons.
      */
     void initialiseSingletons();
+    /**
+     * One instance of host api is used for entire model
+     */
+    std::unique_ptr<FLAMEGPU_HOST_API> host_api;
+    /**
+     * Adds any agents stored in agentData to the device
+     * Clears agent storage in agentData
+     * @note called at the end of step() and after all init/hostLayer functions and exit conditions have finished
+     */
+    void processHostAgentCreation();
+
+ public:
+    typedef std::vector<NewAgentStorage> AgentDataBuffer;
+    typedef std::unordered_map<std::string, AgentDataBuffer> AgentDataBufferStateMap;
+    typedef std::unordered_map<std::string, VarOffsetStruct> AgentOffsetMap;
+    typedef std::unordered_map<std::string, AgentDataBufferStateMap> AgentDataMap;
+
+ private:
+    /**
+     * Provides the offset data for variable storage
+     * Used by host agent creation
+     */
+    AgentOffsetMap agentOffsets;
+    /**
+     * Storage used by host agent creation before copying data to device at end of each step()
+     */
+    AgentDataMap agentData;
+    void initOffsetsAndMap();
 };
 
 #endif  // INCLUDE_FLAMEGPU_GPU_CUDAAGENTMODEL_H_

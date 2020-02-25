@@ -16,6 +16,7 @@
 #include <map>
 #include <utility>
 
+struct VarOffsetStruct;
 class CUDAAgent;
 class AgentStateMemory;
 
@@ -100,10 +101,17 @@ class CUDAAgentStateList {
     void setConditionState(const unsigned int &disabledAgentCt);
     /**
      * Scatters agents from d_list_new to d_list
+     * Used for device agent creation
      * @param newSize The max possible number of new agents
      * @param streamId Stream index for stream safe operations
      */
     void scatterNew(const unsigned int &newSize, const unsigned int &streamId);
+    /**
+     * Scatters agents from AoS to d_list SoA
+     * Used by host agent creation
+     * @param newSize The number of new agents to be copied to d_list
+     */
+    void scatterHostCreation(const unsigned int &newSize, char *const d_inBuff, const VarOffsetStruct &offsets);
 
  protected:
     /*
