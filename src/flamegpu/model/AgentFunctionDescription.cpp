@@ -328,10 +328,10 @@ AgentFunctionDescription& AgentDescription::newRTFunction(const std::string& fun
         std::cout << "fgpu include option is " << include_fgpu << '\n';
 
         // cuda path
-        std::string include_cuda;
-        include_cuda = "-I" + std::string(env_cuda_path) + "\\include";
-        std::cout << "cuda include option is " << include_cuda << '\n';
-        options.push_back(include_cuda);
+        //std::string include_cuda;
+        //include_cuda = "-I" + std::string(env_cuda_path) + "\\include";
+        //std::cout << "cuda include option is " << include_cuda << '\n';
+        //options.push_back(include_cuda);
 
         //x64
         //options.push_back("--machine 64");
