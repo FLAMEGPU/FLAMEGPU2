@@ -10,10 +10,10 @@
  * \todo longer description
  */
 
-#include <iterator>
-#include "flamegpu/gpu/CUDAErrorChecking.h"            // required for CUDA error handling functions
+//#include <iterator>
+//#include "flamegpu/gpu/CUDAErrorChecking.h"            // required for CUDA error handling functions
 #include "cuRVE/curve.h"  // @todo migrate
-#include "flamegpu/exception/FGPUException.h"
+//#include "flamegpu/exception/FGPUException.h"
 
 // TODO: Some example code of the handle class and an example function
 
@@ -43,7 +43,8 @@ class MessageList  {
     };
 
     // message list iterator inner class.
-    class iterator : public std::iterator <std::random_access_iterator_tag, void, void, void, void> {
+    class iterator {
+    //class iterator : public std::iterator <std::random_access_iterator_tag, void, void, void, void> {
      private:
         MessageList::Message _message;
      public:

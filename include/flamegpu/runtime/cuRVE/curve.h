@@ -12,7 +12,7 @@
  * \todo Requires vector length table for each variable (or namespace) which is registered. For now no safe checking of vector length is done.
  */
 
-#include <cuda_runtime.h>
+//#include <cuda_runtime.h>
 
 #include <cstring>
 #include <typeinfo>
@@ -272,10 +272,7 @@ class Curve {
      *
      * @return    A new instance if this is the first request for an instance otherwise an existing instance.
      */
-    static Curve& getInstance() {
-        static Curve c;
-        return c;
-    }
+     static Curve& getInstance();
 };
 
 

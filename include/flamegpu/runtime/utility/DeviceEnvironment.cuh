@@ -1,12 +1,13 @@
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_UTILITY_DEVICEENVIRONMENT_CUH_
 #define INCLUDE_FLAMEGPU_RUNTIME_UTILITY_DEVICEENVIRONMENT_CUH_
 
-#include <cuda_runtime.h>
+//#include <cuda_runtime.h>
 
 #include <string>
 #include <cassert>
+#include <cstdint>
 
-#include "flamegpu/runtime/utility/HostEnvironment.cuh"
+//#include "flamegpu/runtime/utility/HostEnvironment.cuh"
 
 namespace flamegpu_internal {
     /**
@@ -65,7 +66,7 @@ class DeviceEnvironment {
      * @tparam N Length of variable name, this should always be implicit if passing a string literal
      */
     template<typename T, unsigned int N>
-    __device__ __forceinline__ const T &get(const char(&name)[N], const EnvironmentManager::size_type &index) const;
+    __device__ __forceinline__ const T &get(const char(&name)[N], const unsigned int &index) const;
     /**
      * Returns whether the named env property exists
      * @param name name used for accessing the property, this value should be a string literal e.g. "foobar"
@@ -94,7 +95,7 @@ __device__ __forceinline__ const T &DeviceEnvironment::get(const char(&name)[N])
     }
 }
 template<typename T, unsigned int N>
-__device__ __forceinline__ const T &DeviceEnvironment::get(const char(&name)[N], const EnvironmentManager::size_type &index) const {
+__device__ __forceinline__ const T &DeviceEnvironment::get(const char(&name)[N], const unsigned int&index) const {
     Curve::VariableHash cvh = CURVE_NAMESPACE_HASH() + modelname_hash + Curve::variableHash(name);
     // Error checking is internal to Curve::getVariablePtrByHash, returns nullptr on fail
     size_t offset = index * sizeof(T);

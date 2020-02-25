@@ -278,4 +278,10 @@ __host__ unsigned int Curve::checkHowManyMappedItems() {
         if (h_hashes[i] != EMPTY_FLAG && h_hashes[i] != DELETED_FLAG)
             rtn++;
     return rtn;
+
+}
+
+Curve& Curve::getInstance() {
+    static Curve c;
+    return c;
 }

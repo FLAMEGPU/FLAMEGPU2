@@ -10,7 +10,15 @@
 #include <string>
 
 #include "flamegpu/model/MessageDescription.h"
+
+#ifdef _MSC_VER
+#pragma warning(push, 2)
 #include "jitify/jitify.hpp"
+#pragma warning(pop)
+#else
+#include "jitify/jitify.hpp"
+#endif
+
 
 
 
@@ -312,17 +320,21 @@ AgentFunctionDescription& AgentDescription::newRTFunction(const std::string& fun
 
         // include director for flamegpu (cant use quotes not sure why)
         std::vector<std::string> options;
+
         // fpgu incude
         std::string include_fgpu;
         include_fgpu = "-I" + std::string(env_inc_fgp2);
         options.push_back(include_fgpu);
         std::cout << "fgpu include option is " << include_fgpu << '\n';
+
         // cuda path
         std::string include_cuda;
         include_cuda = "-I" + std::string(env_cuda_path) + "\\include";
         std::cout << "cuda include option is " << include_cuda << '\n';
         options.push_back(include_cuda);
 
+        //x64
+        //options.push_back("--machine 64");
 
         // jitify to create program (with comilation settings)
         static jitify::JitCache kernel_cache;

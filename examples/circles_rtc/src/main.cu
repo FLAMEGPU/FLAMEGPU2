@@ -10,7 +10,8 @@
 // C++11 raw string using ### as deliminator
 const char* test_simple_func = R"###(my_program
         #include "flamegpu/runtime/flamegpu_device_api.h"
-        extern \"C\" __global__ 
+        //#include <curand_kernel.h>
+        extern "C" __global__ 
         void simple_test() 
         {
             size_t tid = blockIdx.x * blockDim.x + threadIdx.x;

@@ -14,7 +14,13 @@
 #include "flamegpu/runtime/AgentFunction.h"
 #include "flamegpu/runtime/flamegpu_host_api_macros.h"  // Todo replace with std/cub style fns (see AgentFunction.h)
 #include "flamegpu/pop/MemoryVector.h"
+#ifdef _MSC_VER
+#pragma warning(push, 2)
 #include "jitify/jitify.hpp"
+#pragma warning(pop)
+#else
+#include "jitify/jitify.hpp"
+#endif
 
 
 
