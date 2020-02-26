@@ -27,6 +27,11 @@ class AgentStateMemory {  // agent_list
     explicit AgentStateMemory(const AgentPopulation &population, unsigned int initial_capacity = 0);
     virtual ~AgentStateMemory() {}
 
+    /**
+     * Increments 'current_size' (the number of agents, independent of the allocated memory size)
+     * Initialises the new agent with default values
+     * @return The new index of the new agent
+     */
     unsigned int incrementSize();
 
     GenericMemoryVector& getMemoryVector(const std::string variable_name);

@@ -215,7 +215,7 @@ void CUDAScatter::pbm_reorder(
  * @parma out_index_offset The number of agents already in the output array (so that they are not overwritten)
  */
 __global__ void scatter_new_agents(
-    unsigned int threadCount,
+    const unsigned int threadCount,
     const unsigned int agent_size,
     CUDAScatter::ScatterData *scatter_data,
     const unsigned int scatter_len,
@@ -266,6 +266,81 @@ void CUDAScatter::scatterNewAgents(
         threadCount,
         static_cast<unsigned int>(inOffsetData.totalSize),
         d_data, static_cast<unsigned int>(sd.size()),
+        outIndexOffset);
+    gpuErrchkLaunch();
+}
+/**
+* Broadcast kernel for initialising agent variables to default on device
+* Input data is stored pointed directly do by scatter_data and translated to SoA for device
+* @param threadCount Total number of threads required
+* @param scatter_data Scatter data array location in memory
+* @param scatter_len Length of scatter data array
+* @parma out_index_offset The number of agents already in the output array (so that they are not overwritten)
+*/
+__global__ void broadcastInitKernel(
+    const unsigned int threadCount,
+    CUDAScatter::ScatterData *scatter_data,
+    const unsigned int scatter_len,
+    const unsigned int out_index_offset) {
+    // global thread index
+    int index = (blockIdx.x*blockDim.x) + threadIdx.x;
+
+    if (index >= threadCount) return;
+
+    // Which variable are we outputting
+    const unsigned int var_out = index % scatter_len;
+    const unsigned int agent_index = index / scatter_len;
+    const unsigned int type_len = scatter_data[var_out].typeLen;
+    // if optional message is to be written
+    char * const in_ptr = scatter_data[var_out].in;
+    char * const out_ptr = scatter_data[var_out].out + ((out_index_offset + agent_index) * type_len);
+    memcpy(out_ptr, in_ptr, type_len);
+}
+void CUDAScatter::broadcastInit(
+    const VariableMap &vars,
+    const std::map<std::string, void*> &out,
+    const unsigned int &inCount,
+    const unsigned int outIndexOffset) {
+    // 1 thread per agent variable
+    const unsigned int threadCount = static_cast<unsigned int>(vars.size()) * inCount;
+    int blockSize = 0;  // The launch configurator returned block size
+    int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
+    int gridSize = 0;  // The actual grid size needed, based on input size
+
+    // calculate the grid block size for main agent function
+    cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, broadcastInitKernel, 0, threadCount);
+    //! Round up according to CUDAAgent state list size
+    gridSize = (threadCount + blockSize - 1) / blockSize;
+    // Calculate memory usage (crudely in multiples of ScatterData)
+    std::vector<ScatterData> sd;
+    ptrdiff_t offset = 0;
+    for (const auto &v : vars) {
+        offset += v.second.type_size;
+    }
+    resize(static_cast<unsigned int>(vars.size() + (offset /sizeof(ScatterData)) + sizeof(ScatterData)));
+    // Build scatter data structure
+    offset = 0;
+    for (const auto &v : vars) {
+        // In this case, in is the location of first variable, but we step by inOffsetData.totalSize
+        char *in_p = reinterpret_cast<char*>(d_data) + offset;
+        offset += v.second.type_size;
+        char *out_p = reinterpret_cast<char*>(out.at(v.first));
+        sd.push_back({ v.second.type_size, in_p, out_p });
+    }
+    // Build init data
+    char *default_data = reinterpret_cast<char*>(malloc(offset));
+    offset = 0;
+    for (const auto &v : vars) {
+        memcpy(default_data + offset, v.second.default_value, v.second.type_size);
+        offset += v.second.type_size;
+    }
+    // Important that sd.size() is still used here, incase allocated len (data_len) is bigger
+    gpuErrchk(cudaMemcpy(d_data, default_data, offset, cudaMemcpyHostToDevice));
+    gpuErrchk(cudaMemcpy(d_data + offset, sd.data(), sizeof(ScatterData) * sd.size(), cudaMemcpyHostToDevice));
+    ::free(default_data);
+    broadcastInitKernel <<<gridSize, blockSize>>> (
+        threadCount,
+        d_data + offset, static_cast<unsigned int>(sd.size()),
         outIndexOffset);
     gpuErrchkLaunch();
 }

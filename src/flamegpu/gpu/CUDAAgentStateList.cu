@@ -359,6 +359,13 @@ void CUDAAgentStateList::scatterNew(const unsigned int &newSize, const unsigned 
         d_new_list, d_list,
         newSize, current_list_size);
 }
+void CUDAAgentStateList::initNew(const unsigned int &newSize, const unsigned int &streamId) {
+    CUDAScatter &scatter = CUDAScatter::getInstance(streamId);
+    scatter.broadcastInit(
+        agent.getAgentDescription().variables,
+        d_new_list,
+        newSize, 0);
+}
 void CUDAAgentStateList::scatterHostCreation(const unsigned int &newSize, char *const d_inBuff, const VarOffsetStruct &offsets) {
     CUDAScatter &cs = CUDAScatter::getInstance(0);  // No plans to make this async yet
     // Resize agent list if required

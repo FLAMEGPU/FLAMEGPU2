@@ -112,6 +112,12 @@ class CUDAAgentStateList {
      * @param newSize The number of new agents to be copied to d_list
      */
     void scatterHostCreation(const unsigned int &newSize, char *const d_inBuff, const VarOffsetStruct &offsets);
+    /**
+     * Initialises newSize agents in d_new_list with their default variable values
+     * @param newSize The max possible number of new agents
+     * @param streamId Stream index for stream safe operations
+     */
+    void initNew(const unsigned int &newSize, const unsigned int &streamId);
 
  protected:
     /*

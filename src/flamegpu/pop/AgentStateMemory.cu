@@ -30,6 +30,17 @@ AgentStateMemory::AgentStateMemory(const AgentPopulation &p, unsigned int initia
 }
 
 unsigned int AgentStateMemory::incrementSize() {
+    if (current_size < getPopulationCapacity()) {
+        // Init new agent with default values
+        for (auto &var : population.getAgentDescription().variables) {
+            auto &var_mem = state_memory.at(var.first);
+            char *data_ptr = reinterpret_cast<char*>(var_mem->getDataPtr());
+            // Increment pointer to required index
+            data_ptr += current_size * var.second.type_size;
+            // Copy in default
+            memcpy(data_ptr, var.second.default_value, var.second.type_size);
+        }
+    }
     // add one to current size (returns old size)
     return current_size++;
 }

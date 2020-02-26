@@ -98,13 +98,16 @@ class AgentDescription {
     /**
      * Adds a new variable to the agent
      * @param variable_name Name of the variable
+     * @param default_value Default value of variable for new agents if unset, defaults to 0
      * @tparam T Type of the agent variable, this must be an arithmetic type
      * @tparam N The length of the variable array (1 if not an array, must be greater than 0)
      * @throws InvalidAgentVar If a variable already exists within the agent with the same name
      * @throws InvalidAgentVar If N is <= 0
      */
     template<typename T, ModelData::size_type N = 1>
-    void newVariable(const std::string &variable_name);
+    void newVariable(const std::string &variable_name, const std::array<T, N> &default_value = {});
+    template<typename T>
+    void newVariable(const std::string &variable_name, const T&default_value);
 
     /**
      * Adds a new (device) function to the agent
@@ -218,16 +221,20 @@ class AgentDescription {
  * Template implementation
  */
 template <typename T, ModelData::size_type N>
-void AgentDescription::newVariable(const std::string &variable_name) {
+void AgentDescription::newVariable(const std::string &variable_name, const std::array<T, N> &default_value) {
     // Array length 0 makes no sense
     static_assert(N > 0, "A variable cannot have 0 elements.");
     if (agent->variables.find(variable_name) == agent->variables.end()) {
-        agent->variables.emplace(variable_name, Variable(N, T()));
+        agent->variables.emplace(variable_name, Variable(default_value));
         return;
     }
     THROW InvalidAgentVar("Agent ('%s') already contains variable '%s', "
         "in AgentDescription::newVariable().",
         agent->name.c_str(), variable_name.c_str());
+}
+template <typename T>
+void AgentDescription::newVariable(const std::string &variable_name, const T &default_value) {
+    newVariable<T, 1>(variable_name, { default_value });
 }
 
 // Found in "flamegpu/model/AgentFunctionDescription.h"
