@@ -5,7 +5,7 @@
 #include <string>
 
 /**
-* This struct holds a map of how memory for a compact represnetation of some unknown vars needs to look
+* This struct holds a map of how memory for a compact representation of some unknown vars needs to look
 */
 struct VarOffsetStruct {
     struct OffsetLen {
@@ -19,8 +19,27 @@ struct VarOffsetStruct {
     };
     std::unordered_map<std::string, OffsetLen> vars;
     const size_t totalSize;
+    char *const default_data;
     explicit VarOffsetStruct(const VariableMap &vmap)
-        : totalSize(buildVars(vmap)) { }
+        : totalSize(buildVars(vmap))
+        , default_data(reinterpret_cast<char*>(malloc(totalSize))) {
+        // Fill default_data with default struct
+        memset(default_data, 0, totalSize);
+        for (const auto &a : vmap) {
+            const auto &b = vars.at(a.first);
+            if (a.second.default_value)
+                memcpy(default_data + b.offset, a.second.default_value, b.len);
+        }
+    }
+    explicit VarOffsetStruct(const VarOffsetStruct &other)
+        : vars(other.vars)
+        , totalSize(other.totalSize)
+        , default_data(reinterpret_cast<char*>(malloc(totalSize))) {
+        memcpy(default_data, other.default_data, totalSize);
+    }
+    ~VarOffsetStruct() {
+        free(default_data);
+    }
 
  private:
     size_t buildVars(const VariableMap &vmap) {
@@ -38,7 +57,9 @@ struct VarOffsetStruct {
 struct NewAgentStorage {
     explicit NewAgentStorage(const VarOffsetStruct &v)
         : data(reinterpret_cast<char*>(malloc(v.totalSize)))
-        , offsets(v) { }
+        , offsets(v) {
+        memcpy(data, offsets.default_data, offsets.totalSize);
+    }
     NewAgentStorage(const NewAgentStorage &other)
         : data(reinterpret_cast<char*>(malloc(other.offsets.totalSize)))
         , offsets(other.offsets) {

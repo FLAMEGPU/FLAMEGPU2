@@ -62,7 +62,8 @@ class CUDAScatter {
         char *out;
     };
     /**
-     * scatter from in to out
+     * Scatters agents from SoA to SoA according to d_position flag
+     * Used for device agent creation and agent death
      * flamegpu_internal::CUDAScanCompaction::scan_flag is used to decide who should be scattered
      * flamegpu_internal::CUDAScanCompaction::position is used to decide where to scatter to
      * @param messageOrAgent Flag of whether message or agent flamegpu_internal::CUDAScanCompaction arrays should be used
@@ -82,7 +83,7 @@ class CUDAScatter {
         const unsigned int &out_index_offset = 0,
         const bool &invert_scan_flag = false);
     /**
-     * scatter all data from in to out
+     * Scatters a contigous block from SoA to SoA
      * flamegpu_internal::CUDAScanCompaction::scan_flag/position are not used
      * @param vars Variable description map from ModelData hierarchy
      * @param in Input variable name:ptr map
@@ -97,7 +98,8 @@ class CUDAScatter {
         const unsigned int &itemCount,
         const unsigned int &out_index_offset = 0);
     /**
-     * This scatter is used for reordering messages based on PBM components
+     * Used for reordering messages from SoA to SoA
+     * Position information is taken using PBM data, rather than d_position
      * Used by spatial messaging.
      * @param vars Variable description map from ModelData hierarchy
      * @param in Input variable name:ptr map
@@ -115,11 +117,24 @@ class CUDAScatter {
         const unsigned int *d_bin_index,
         const unsigned int *d_bin_sub_index,
         const unsigned int *d_pbm);
+    /**
+     * Scatters agents from AoS to SoA
+     * Used by host agent creation
+     */
     void scatterNewAgents(
         const VariableMap &vars,
         const std::map<std::string, void*> &out,
         void *in_buff,
         const VarOffsetStruct &inOffsetData,
+        const unsigned int &inCount,
+        const unsigned int outIndexOffset);
+    /**
+     * Broadcasts a single value  for each variable to a contiguous block in SoA
+     * Used priot to device agent creation
+     */
+    void broadcastInit(
+        const VariableMap &vars,
+        const std::map<std::string, void*> &out,
         const unsigned int &inCount,
         const unsigned int outIndexOffset);
 

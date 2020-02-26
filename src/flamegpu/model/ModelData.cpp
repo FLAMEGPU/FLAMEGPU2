@@ -62,9 +62,14 @@ ModelData::ModelData(const ModelData &other)
     for (const auto m : other.messages) {
         messages.emplace(m.first, std::shared_ptr<MsgBruteForce::Data>(m.second->clone(this)));  // Need to convert this to shared_ptr, how to force shared copy construct?
     }
+    // Copy all agents first
     for (const auto a : other.agents) {
         auto b = std::shared_ptr<AgentData>(new AgentData(this, *a.second));
         agents.emplace(a.first, b);
+    }
+    // Copy agent functions per agent, after all agents have been implemented.
+    for (const auto a : other.agents) {
+        auto b = agents.find(a.first)->second;
         // Manually copy construct maps of shared ptr
         for (const auto f : a.second->functions) {
             b->functions.emplace(f.first, std::shared_ptr<AgentFunctionData>(new AgentFunctionData(this, b, *f.second)));
@@ -90,8 +95,7 @@ AgentData::AgentData(ModelData *const model, const AgentData &other)
     , agent_outputs(other.agent_outputs)
     , description(model ? new AgentDescription(model, this) : nullptr)
     , name(other.name)
-    , keepDefaultState(other.keepDefaultState) {
-}
+    , keepDefaultState(other.keepDefaultState) { }
 AgentFunctionData::AgentFunctionData(ModelData *const model, std::shared_ptr<AgentData> _parent, const AgentFunctionData &other)
     : func(other.func)
     , initial_state(other.initial_state)

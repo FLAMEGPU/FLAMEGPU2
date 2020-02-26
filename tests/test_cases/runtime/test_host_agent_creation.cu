@@ -4,6 +4,7 @@
 * Tests cover:
 * > agent output from init/step/host-layer/exit condition
 * > agent output to empty/existing pop, multiple states/agents
+* > host function birthed agents have default values set
 */
 
 #include "gtest/gtest.h"
@@ -18,7 +19,8 @@ const unsigned int NEW_AGENT_COUNT = 512;
 FLAMEGPU_STEP_FUNCTION(BasicOutput) {
     for (unsigned int i = 0; i < NEW_AGENT_COUNT; ++i)
         FLAMEGPU->newAgent("agent").setVariable<float>("x", 1.0f);
-}FLAMEGPU_EXIT_CONDITION(BasicOutputCdn) {
+}
+FLAMEGPU_EXIT_CONDITION(BasicOutputCdn) {
     for (unsigned int i = 0; i < NEW_AGENT_COUNT; ++i)
         FLAMEGPU->newAgent("agent").setVariable<float>("x", 1.0f);
     return CONTINUE;  // New agents wont be created if EXIT is passed
@@ -33,7 +35,12 @@ FLAMEGPU_STEP_FUNCTION(OutputMultiAgent) {
         FLAMEGPU->newAgent("agent2").setVariable<float>("y", 2.0f);
     }
 }
-
+FLAMEGPU_STEP_FUNCTION(BadVarName) {
+    FLAMEGPU->newAgent("agent").setVariable<float>("nope", 1.0f);
+}
+FLAMEGPU_STEP_FUNCTION(BadVarType) {
+    FLAMEGPU->newAgent("agent").setVariable<int64_t>("x", 1.0f);
+}
 TEST(HostAgentCreationTest, FromInit) {
     // Define model
     ModelDescription model("TestModel");
@@ -283,4 +290,54 @@ TEST(HostAgentCreationTest, FromStepMultiAgent) {
         EXPECT_EQ(2.0f, ai.getVariable<float>("y"));
     }
 }
+TEST(HostAgentCreationTest, DefaultVariableValue) {
+    // Define model
+    ModelDescription model("TestModel");
+    AgentDescription &agent = model.newAgent("agent");
+    agent.newVariable<float>("x");
+    agent.newVariable<float>("default", 15.0f);
+    model.addStepFunction(BasicOutput);
+    // Init agent pop
+    CUDAAgentModel cuda_model(model);
+    // Execute model
+    cuda_model.SimulationConfig().steps = 1;
+    cuda_model.applyConfig();
+    cuda_model.simulate();
+    // Test output
+    AgentPopulation population(model.Agent("agent"), NEW_AGENT_COUNT);
+    cuda_model.getPopulationData(population);
+    // Validate each agent has same result
+    EXPECT_EQ(population.getCurrentListSize(),  NEW_AGENT_COUNT);
+    unsigned int is_15 = 0;
+    for (unsigned int i = 0; i < population.getCurrentListSize(); ++i) {
+        AgentInstance ai = population.getInstanceAt(i);
+        float val = ai.getVariable<float>("default");
+        if (val == 15.0f)
+            is_15++;
+    }
+    EXPECT_EQ(is_15, NEW_AGENT_COUNT);
+}
+TEST(HostAgentCreationTest, BadVarName) {
+    // Define model
+    ModelDescription model("TestModel");
+    AgentDescription &agent = model.newAgent("agent");
+    agent.newVariable<float>("x");
+    model.addStepFunction(BadVarName);
+    // Init agent pop
+    CUDAAgentModel cuda_model(model);
+    // Execute model
+    EXPECT_THROW(cuda_model.step(), InvalidAgentVar);
+}
+TEST(HostAgentCreationTest, BadVarType) {
+    // Define model
+    ModelDescription model("TestModel");
+    AgentDescription &agent = model.newAgent("agent");
+    agent.newVariable<float>("x");
+    model.addStepFunction(BadVarType);
+    // Init agent pop
+    CUDAAgentModel cuda_model(model);
+    // Execute model
+    EXPECT_THROW(cuda_model.step(), InvalidVarType);
+}
+
 }  // namespace test_host_agent_creation

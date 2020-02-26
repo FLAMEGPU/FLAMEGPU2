@@ -447,6 +447,8 @@ void CUDAAgent::resizeNew(const AgentFunctionData& func, const unsigned int &new
                 "in CUDAAgent::resizeNew()\n",
                 agent_description.name.c_str(), func.agent_output_state.c_str());
         }
+        // Fill new list with default values
+        sm->second->initNew(newSize, streamId);
         // Notify scan flag that it might need resizing
         // We need a 3rd array, because a function might combine agent birth, agent death and message output
         flamegpu_internal::CUDAScanCompaction::resize(newSize, flamegpu_internal::CUDAScanCompaction::AGENT_OUTPUT, streamId);

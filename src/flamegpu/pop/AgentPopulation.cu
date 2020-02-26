@@ -42,7 +42,6 @@ AgentInstance AgentPopulation::getNextInstance(const std::string agent_state) {
             agent->name.c_str(), agent_state.c_str());
     }
 
-
     // increment size gives old size
     unsigned int index = sm->second->incrementSize();
     if (index >= getMaximumStateListCapacity()) {
