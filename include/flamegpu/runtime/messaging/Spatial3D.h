@@ -276,6 +276,13 @@ class MsgSpatial3D {
             return Filter(metadata, combined_hash, x, y, z);
         }
 
+        /**
+         * Returns the search radius of the message list defined in the model description
+         */
+        __forceinline__ __device__ float radius() const {
+            return metadata->radius;
+        }
+
      private:
         /**
          * CURVE hash for accessing message data
