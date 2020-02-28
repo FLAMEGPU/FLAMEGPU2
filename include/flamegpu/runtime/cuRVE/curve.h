@@ -276,6 +276,7 @@ class Curve {
 };
 
 
+
 namespace curve_internal {
     extern __constant__ Curve::NamespaceHash d_namespace;
     extern __constant__ Curve::VariableHash d_hashes[Curve::MAX_VARIABLES];   // Device array of the hash values of registered variables

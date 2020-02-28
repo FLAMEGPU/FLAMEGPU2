@@ -163,6 +163,12 @@ totalThreads += cuda_agent.getMaximumListSize();
             const CUDAAgent& cuda_agent = getCUDAAgent(agent_name);
             int state_list_size = cuda_agent.getStateSize(func_des->initial_state);
 
+            // hash agent name
+            Curve::NamespaceHash agentname_hash = curve.variableRuntimeHash(agent_name.c_str());
+            // hash function name
+            Curve::NamespaceHash funcname_hash = curve.variableRuntimeHash(func_name.c_str());
+
+
 
             // if compile time func defined
             if (func_des->func) {
@@ -176,11 +182,7 @@ totalThreads += cuda_agent.getMaximumListSize();
                 // Round up according to CUDAAgent state list size
                 gridSize = (state_list_size + blockSize - 1) / blockSize;
 
-                // hash agent name
-                Curve::NamespaceHash agentname_hash = curve.variableRuntimeHash(agent_name.c_str());
-                // hash function name
-                Curve::NamespaceHash funcname_hash = curve.variableRuntimeHash(func_name.c_str());
-
+                
                 (func_des->func) << <gridSize, blockSize, 0, stream[j] >> > (modelname_hash, agentname_hash + funcname_hash, message_name_inp_hash, message_name_outp_hash, state_list_size, messageList_Size, totalThreads, j);
                 gpuErrchkLaunch();
             } else if (func_des->rtc_program) {    // else if runtime function defined
@@ -188,10 +190,16 @@ totalThreads += cuda_agent.getMaximumListSize();
                 dim3 grid(1);
                 dim3 block(1);
                 using jitify::reflection::type_of;
-                func_des->rtc_program->kernel("simple_test")
-                    .instantiate()
-                    .configure(grid, block)
-                    .launch();
+
+                //get the device function pointer
+                auto* d_agent_func_pointer = cuDeviceGet("function_name");
+
+                // instanciate and launch
+                auto instance = func_des->rtc_program->kernel("agent_rti_function_wrapper")
+                        .instantiate();
+                instance.configure(grid, block)
+                        .launch();
+                    // .launch(modelname_hash, agentname_hash + funcname_hash, message_name_inp_hash, message_name_outp_hash, state_list_size, messageList_Size, totalThreads, j);
             } else {
                 THROW InvalidAgentFunc("No referecne to an agent function exists");
             }

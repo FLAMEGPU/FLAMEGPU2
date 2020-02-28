@@ -315,8 +315,8 @@ AgentFunctionDescription& AgentDescription::newRTFunction(const std::string& fun
             std::cout << "FLAMEGPU2_INC_DIR environment varibale does not exist!" << '\n';
 
         const char* env_cuda_path = std::getenv("CUDA_PATH");
-        if (!env_inc_fgp2)
-            std::cout << "FLAMEGPU2_INC_DIR environment varibale does not exist!" << '\n';
+        if (!env_cuda_path)
+            std::cout << "CUDA_PATH environment varibale does not exist!" << '\n';
 
         // include director for flamegpu (cant use quotes not sure why)
         std::vector<std::string> options;
@@ -328,13 +328,10 @@ AgentFunctionDescription& AgentDescription::newRTFunction(const std::string& fun
         std::cout << "fgpu include option is " << include_fgpu << '\n';
 
         // cuda path
-        //std::string include_cuda;
-        //include_cuda = "-I" + std::string(env_cuda_path) + "\\include";
-        //std::cout << "cuda include option is " << include_cuda << '\n';
-        //options.push_back(include_cuda);
-
-        //x64
-        //options.push_back("--machine 64");
+        std::string include_cuda;
+        include_cuda = "-I" + std::string(env_cuda_path) + "\\include";
+        std::cout << "cuda include option is " << include_cuda << '\n';
+        options.push_back(include_cuda);
 
         // jitify to create program (with comilation settings)
         static jitify::JitCache kernel_cache;

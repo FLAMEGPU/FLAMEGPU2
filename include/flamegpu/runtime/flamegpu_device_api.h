@@ -20,9 +20,10 @@
 #include "flamegpu/runtime/cuRVE/curve.h"                // maybe need to move some curve tuff to .cu file
 //#include "flamegpu/exception/FGPUException.h"
 #include "flamegpu/runtime/messagelist.h"
-//#include "flamegpu/runtime/utility/AgentRandom.cuh"
+#include "flamegpu/runtime/utility/AgentRandom.cuh"
 #include "flamegpu/runtime/utility/DeviceEnvironment.cuh"
 #include "flamegpu/gpu/CUDAScanCompaction.h"
+#include "flamegpu/runtime/AgentFunction.h"
 
 // TODO: Some example code of the handle class and an example function
 // ! FLAMEGPU_API is a singleton class
@@ -47,6 +48,7 @@ struct funcName ## _impl {\
     __device__ __forceinline__ FLAME_GPU_AGENT_STATUS operator()(FLAMEGPU_DEVICE_API *FLAMEGPU) const;\
 };\
 funcName ## _impl funcName;\
+AgentFunctionWrapper *dev_func_pointer ## funcName = &agent_function_wrapper<funcName ## _impl>;\
 __device__ __forceinline__ FLAME_GPU_AGENT_STATUS funcName ## _impl::operator()(FLAMEGPU_DEVICE_API *FLAMEGPU) const
 
 // Advanced macro for defining agent transition functions
@@ -67,8 +69,8 @@ class FLAMEGPU_DEVICE_API {
      * @param _thread_in_layer_offset This offset can be added to TID to give a thread-safe unique index for the thread
      */
     __device__ FLAMEGPU_DEVICE_API(const unsigned int &_thread_in_layer_offset, const Curve::NamespaceHash &modelname_hash, const Curve::NamespaceHash &_streamId)
-       // : random(AgentRandom(TID()+_thread_in_layer_offset)),
-        : environment(DeviceEnvironment(modelname_hash)),
+        : random(AgentRandom(TID()+_thread_in_layer_offset)),
+        environment(DeviceEnvironment(modelname_hash)),
         thread_in_layer_offset(_thread_in_layer_offset),
         streamId(_streamId) { }
 
@@ -126,7 +128,7 @@ class FLAMEGPU_DEVICE_API {
     * Provides access to random functionality inside agent functions
     * @note random state isn't stored within the object, so it can be const
     */
-    //const AgentRandom random;
+    const AgentRandom random;
     const DeviceEnvironment environment;
 
  private:
