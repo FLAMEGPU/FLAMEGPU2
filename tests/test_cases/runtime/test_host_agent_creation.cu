@@ -5,6 +5,8 @@
 * > agent output from init/step/host-layer/exit condition
 * > agent output to empty/existing pop, multiple states/agents
 * > host function birthed agents have default values set
+* > Exception thrown if setting/getting wrong variable name/type
+* > getVariable() works
 */
 
 #include "gtest/gtest.h"
@@ -39,7 +41,19 @@ FLAMEGPU_STEP_FUNCTION(BadVarName) {
     FLAMEGPU->newAgent("agent").setVariable<float>("nope", 1.0f);
 }
 FLAMEGPU_STEP_FUNCTION(BadVarType) {
-    FLAMEGPU->newAgent("agent").setVariable<int64_t>("x", 1.0f);
+    FLAMEGPU->newAgent("agent").setVariable<int64_t>("x", static_cast<int64_t>(1.0f));
+}
+FLAMEGPU_STEP_FUNCTION(Getter) {
+    for (unsigned int i = 0; i < NEW_AGENT_COUNT; ++i) {
+        auto newAgt = FLAMEGPU->newAgent("agent");
+        newAgt.setVariable<float>("x", newAgt.getVariable<float>("default"));
+    }
+}
+FLAMEGPU_STEP_FUNCTION(GetBadVarName) {
+    FLAMEGPU->newAgent("agent").getVariable<float>("nope");
+}
+FLAMEGPU_STEP_FUNCTION(GetBadVarType) {
+    FLAMEGPU->newAgent("agent").getVariable<int64_t>("x");
 }
 TEST(HostAgentCreationTest, FromInit) {
     // Define model
@@ -339,5 +353,54 @@ TEST(HostAgentCreationTest, BadVarType) {
     // Execute model
     EXPECT_THROW(cuda_model.step(), InvalidVarType);
 }
-
+TEST(HostAgentCreationTest, GetterWorks) {
+    // Define model
+    ModelDescription model("TestModel");
+    AgentDescription &agent = model.newAgent("agent");
+    agent.newVariable<float>("x");
+    agent.newVariable<float>("default", 15.0f);
+    model.addStepFunction(Getter);
+    // Init agent pop
+    CUDAAgentModel cuda_model(model);
+    // Execute model
+    cuda_model.SimulationConfig().steps = 1;
+    cuda_model.applyConfig();
+    cuda_model.simulate();
+    // Test output
+    AgentPopulation population(model.Agent("agent"), NEW_AGENT_COUNT);
+    cuda_model.getPopulationData(population);
+    // Validate each agent has same result
+    EXPECT_EQ(population.getCurrentListSize(), NEW_AGENT_COUNT);
+    unsigned int is_15 = 0;
+    for (unsigned int i = 0; i < population.getCurrentListSize(); ++i) {
+        AgentInstance ai = population.getInstanceAt(i);
+        float val = ai.getVariable<float>("x");
+        if (val == 15.0f)
+            is_15++;
+    }
+    // Every host created agent has had their default loaded from "default" and stored in "x"
+    EXPECT_EQ(is_15, NEW_AGENT_COUNT);
+}
+TEST(HostAgentCreationTest, GetterBadVarName) {
+    // Define model
+    ModelDescription model("TestModel");
+    AgentDescription &agent = model.newAgent("agent");
+    agent.newVariable<float>("x");
+    model.addStepFunction(GetBadVarName);
+    // Init agent pop
+    CUDAAgentModel cuda_model(model);
+    // Execute model
+    EXPECT_THROW(cuda_model.step(), InvalidAgentVar);
+}
+TEST(HostAgentCreationTest, GetterBadVarType) {
+    // Define model
+    ModelDescription model("TestModel");
+    AgentDescription &agent = model.newAgent("agent");
+    agent.newVariable<float>("x");
+    model.addStepFunction(GetBadVarType);
+    // Init agent pop
+    CUDAAgentModel cuda_model(model);
+    // Execute model
+    EXPECT_THROW(cuda_model.step(), InvalidVarType);
+}
 }  // namespace test_host_agent_creation
