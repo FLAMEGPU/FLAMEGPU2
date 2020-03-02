@@ -18,6 +18,7 @@
 
 // include generic memory vectors
 #include "flamegpu/pop/MemoryVector.h"
+#include "flamegpu/model/Variable.h"
 
 struct AgentData;
 class AgentPopulation;
@@ -34,11 +35,11 @@ class AgentStateMemory {  // agent_list
      */
     unsigned int incrementSize();
 
-    GenericMemoryVector& getMemoryVector(const std::string variable_name);
+    GenericMemoryVector& getMemoryVector(const std::string &variable_name);
 
-    const GenericMemoryVector& getReadOnlyMemoryVector(const std::string variable_name) const;
+    const GenericMemoryVector& getReadOnlyMemoryVector(const std::string &variable_name) const;
 
-    const std::type_index& getVariableType(std::string variable_name) const;  // const
+    const std::type_index& getVariableType(const std::string &variable_name) const;  // const
 
     bool isSameDescription(const AgentData& description) const;
 
@@ -51,6 +52,8 @@ class AgentStateMemory {  // agent_list
     unsigned int getStateListSize() const;
 
     void overrideStateListSize(unsigned int size);
+
+    const Variable &getVariableDescription(const std::string &variable_name);
 
  protected:
     const AgentPopulation &population;

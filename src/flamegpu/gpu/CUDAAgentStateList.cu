@@ -97,7 +97,8 @@ void CUDAAgentStateList::resizeDeviceAgentList(CUDAMemoryMap &agent_list, const 
     // For each variable
     for (const auto &mm : mem) {
         const std::string var_name = mm.first;
-        const size_t &type_size = agent.getAgentDescription().variables.at(mm.first).type_size;
+        const auto &var = agent.getAgentDescription().variables.at(mm.first);
+        const size_t &type_size = var.type_size * var.elements;
         const size_t alloc_size = type_size * newSize;
         {
             // Allocate bigger new memory
@@ -151,17 +152,19 @@ void CUDAAgentStateList::allocateDeviceAgentList(CUDAMemoryMap &memory_map, cons
         std::string var_name = mm.first;
 
         // get the variable size from agent description
-        size_t var_size = agent.getAgentDescription().variables.at(mm.first).type_size;
+        const auto &var = agent.getAgentDescription().variables.at(mm.first);
+        size_t var_size = var.type_size;
+        unsigned int  var_elements = var.elements;
 
         // do the device allocation
         void * d_ptr;
 
 #ifdef UNIFIED_GPU_MEMORY
         // unified memory allocation
-        gpuErrchk(cudaMallocManaged(reinterpret_cast<void**>(&d_ptr), var_size * allocSize))
+        gpuErrchk(cudaMallocManaged(reinterpret_cast<void**>(&d_ptr), var_elements * var_size * allocSize))
 #else
         // non unified memory allocation
-        gpuErrchk(cudaMalloc(reinterpret_cast<void**>(&d_ptr), var_size * allocSize));
+        gpuErrchk(cudaMalloc(reinterpret_cast<void**>(&d_ptr), var_elements * var_size * allocSize));
 #endif
 
         // store the pointer in the map
@@ -191,10 +194,12 @@ void CUDAAgentStateList::zeroDeviceAgentList(CUDAMemoryMap& memory_map) {
     // for each device pointer in the cuda memory map set the values to 0
     for (const CUDAMemoryMapPair& mm : memory_map) {
         // get the variable size from agent description
-        size_t var_size = agent.getAgentDescription().variables.at(mm.first).type_size;
+        const auto &var = agent.getAgentDescription().variables.at(mm.first);
+        size_t var_size = var.type_size;
+        unsigned int  var_elements = var.elements;
 
         // set the memory to zero
-        gpuErrchk(cudaMemset(mm.second, 0, var_size*agent.getMaximumListSize()));
+        gpuErrchk(cudaMemset(mm.second, 0, var_elements * var_size * agent.getMaximumListSize()));
     }
 }
 
@@ -218,7 +223,9 @@ void CUDAAgentStateList::setAgentData(const AgentStateMemory &state_memory) {
     // copy raw agent data to device pointers
     for (CUDAMemoryMapPair m : d_list) {
         // get the variable size from agent description
-        size_t var_size = agent.getAgentDescription().variables.at(m.first).type_size;
+        const auto &var = agent.getAgentDescription().variables.at(m.first);
+        size_t var_size = var.type_size;
+        unsigned int  var_elements = var.elements;
 
         // get the vector
         const GenericMemoryVector &m_vec = state_memory.getReadOnlyMemoryVector(m.first);
@@ -227,7 +234,7 @@ void CUDAAgentStateList::setAgentData(const AgentStateMemory &state_memory) {
         const void * v_data = m_vec.getReadOnlyDataPtr();
 
         // copy the host data to the GPU
-        gpuErrchk(cudaMemcpy(m.second, v_data, var_size*current_list_size, cudaMemcpyHostToDevice));
+        gpuErrchk(cudaMemcpy(m.second, v_data, var_elements * var_size * current_list_size, cudaMemcpyHostToDevice));
     }
 
     // Update condition state lists
@@ -245,7 +252,9 @@ void CUDAAgentStateList::getAgentData(AgentStateMemory &state_memory) {
     // copy raw agent data to device pointers
     for (CUDAMemoryMapPair m : d_list) {
         // get the variable size from agent description
-        size_t var_size = agent.getAgentDescription().variables.at(m.first).type_size;
+        const auto &var = agent.getAgentDescription().variables.at(m.first);
+        size_t var_size = var.type_size;
+        unsigned int  var_elements = var.elements;
 
         // get the vector
         GenericMemoryVector &m_vec = state_memory.getMemoryVector(m.first);
@@ -259,24 +268,26 @@ void CUDAAgentStateList::getAgentData(AgentStateMemory &state_memory) {
                 "in CUDAAgentStateList::getAgentData()",
                 current_list_size, state_memory.getPopulationCapacity());
         }
+        gpuErrchkLaunch();
         // copy the GPU data to host
-        gpuErrchk(cudaMemcpy(v_data, m.second, var_size*current_list_size, cudaMemcpyDeviceToHost));
+        gpuErrchk(cudaMemcpy(v_data, m.second, var_elements * var_size * current_list_size, cudaMemcpyDeviceToHost));
 
         // set the new state list size
         state_memory.overrideStateListSize(current_list_size);
     }
 }
 
-void* CUDAAgentStateList::getAgentListVariablePointer(std::string variable_name) const {
+void* CUDAAgentStateList::getAgentListVariablePointer(const std::string &variable_name) const {
     CUDAMemoryMap::const_iterator mm = condition_d_list.find(variable_name);
     if (mm == condition_d_list.end()) {
-        // TODO: Error variable not found in agent state list
-        return nullptr;
+        THROW InvalidAgentVar("Variable '%s' was not found in Agent '%s', "
+            "in CUDAAgentStateList::getAgentListVariablePointer()\n",
+            variable_name.c_str(), agent.getAgentDescription().name.c_str());
     }
 
     return mm->second;
 }
-void* CUDAAgentStateList::getAgentNewListVariablePointer(std::string variable_name) const {
+void* CUDAAgentStateList::getAgentNewListVariablePointer(const std::string &variable_name) const {
     CUDAMemoryMap::const_iterator mm = d_new_list.find(variable_name);
     if (mm == d_new_list.end()) {
         // TODO: Error variable not found in agent state list
@@ -346,8 +357,8 @@ void CUDAAgentStateList::setConditionState(const unsigned int &disabledAgentCt) 
     const auto &mem = agent.getAgentDescription().variables;
     // for each variable allocate a device array and add to map
     for (const auto &mm : mem) {
-        condition_d_list.at(mm.first) = reinterpret_cast<char*>(d_list.at(mm.first)) + (disabledAgentCt * mm.second.type_size);
-        condition_d_swap_list.at(mm.first) = reinterpret_cast<char*>(d_swap_list.at(mm.first)) + (disabledAgentCt * mm.second.type_size);
+        condition_d_list.at(mm.first) = reinterpret_cast<char*>(d_list.at(mm.first)) + (disabledAgentCt * mm.second.type_size * mm.second.elements);
+        condition_d_swap_list.at(mm.first) = reinterpret_cast<char*>(d_swap_list.at(mm.first)) + (disabledAgentCt * mm.second.type_size * mm.second.elements);
     }
 }
 

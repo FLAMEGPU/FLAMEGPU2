@@ -70,25 +70,41 @@ class HostAgentInstance {
     /**
      * Wraps cub::DeviceReduce::Sum()
      * @param variable The agent variable to perform the sum reduction across
+     * @tParam InT The type of the variable as specified in the model description hierarchy
+     * @throws UnsupportedVarType Array variables are not supported
+     * @throws InvalidAgentVar If the agent does not contain a variable of the same name
+     * @throws InvalidVarType If the passed variable type does not match that specified in the model description hierarchy
      */
     template<typename InT>
     InT sum(const std::string &variable) const;
     /**
      * Wraps cub::DeviceReduce::Sum()
      * @param variable The agent variable to perform the sum reduction across
-     * @note The template arg, 'OutT' can be used if the sum is expected to exceed the representation of the type being summed
+     * @tparam OutT The template arg, 'OutT' can be used if the sum is expected to exceed the representation of the type being summed
+     * @tParam InT The type of the variable as specified in the model description hierarchy
+     * @throws UnsupportedVarType Array variables are not supported
+     * @throws InvalidAgentVar If the agent does not contain a variable of the same name
+     * @throws InvalidVarType If the passed variable type does not match that specified in the model description hierarchy
      */
     template<typename InT, typename OutT>
     OutT sum(const std::string &variable) const;
     /**
      * Wraps cub::DeviceReduce::Min()
      * @param variable The agent variable to perform the min reduction across
+     * @tParam InT The type of the variable as specified in the model description hierarchy
+     * @throws UnsupportedVarType Array variables are not supported
+     * @throws InvalidAgentVar If the agent does not contain a variable of the same name
+     * @throws InvalidVarType If the passed variable type does not match that specified in the model description hierarchy
      */
     template<typename InT>
     InT min(const std::string &variable) const;
     /**
      * Wraps cub::DeviceReduce::Max()
      * @param variable The agent variable to perform the max reduction across
+     * @tParam InT The type of the variable as specified in the model description hierarchy
+     * @throws UnsupportedVarType Array variables are not supported
+     * @throws InvalidAgentVar If the agent does not contain a variable of the same name
+     * @throws InvalidVarType If the passed variable type does not match that specified in the model description hierarchy
      */
     template<typename InT>
     InT max(const std::string &variable) const;
@@ -96,6 +112,10 @@ class HostAgentInstance {
      * Wraps thrust::count(), to count the number of occurences of the provided value
      * @param variable The agent variable to perform the count reduction across
      * @param value The value to count occurences of
+     * @tParam InT The type of the variable as specified in the model description hierarchy
+     * @throws UnsupportedVarType Array variables are not supported
+     * @throws InvalidAgentVar If the agent does not contain a variable of the same name
+     * @throws InvalidVarType If the passed variable type does not match that specified in the model description hierarchy
      */
     template<typename InT>
     unsigned int count(const std::string &variable, const InT &value);
@@ -106,6 +126,10 @@ class HostAgentInstance {
      * @param lowerBound The (inclusive) lower sample value boundary of lowest bin
      * @param upperBound The (exclusive) upper sample value boundary of upper bin
      * @note 2nd template arg can be used if calculation requires higher bit type to avoid overflow
+     * @tParam InT The type of the variable as specified in the model description hierarchy
+     * @throws UnsupportedVarType Array variables are not supported
+     * @throws InvalidAgentVar If the agent does not contain a variable of the same name
+     * @throws InvalidVarType If the passed variable type does not match that specified in the model description hierarchy
      */
     template<typename InT>
     std::vector<unsigned int> histogramEven(const std::string &variable, const unsigned int &histogramBins, const InT &lowerBound, const InT &upperBound) const;
@@ -116,6 +140,10 @@ class HostAgentInstance {
      * @param variable The agent variable to perform the reduction across
      * @param reductionOperator The custom reduction function
      * @param init Initial value of the reduction
+     * @tParam InT The type of the variable as specified in the model description hierarchy
+     * @throws UnsupportedVarType Array variables are not supported
+     * @throws InvalidAgentVar If the agent does not contain a variable of the same name
+     * @throws InvalidVarType If the passed variable type does not match that specified in the model description hierarchy
      */
     template<typename InT, typename reductionOperatorT>
     InT reduce(const std::string &variable, reductionOperatorT reductionOperator, const InT &init) const;
@@ -125,11 +153,15 @@ class HostAgentInstance {
      * @param transformOperator The custom unary transform function
      * @param reductionOperator The custom binary reduction function
      * @param init Initial value of the reduction
+     * @tParam InT The type of the variable as specified in the model description hierarchy
+     * @throws UnsupportedVarType Array variables are not supported
+     * @throws InvalidAgentVar If the agent does not contain a variable of the same name
+     * @throws InvalidVarType If the passed variable type does not match that specified in the model description hierarchy
      */
-    // template<typename InT, typename OutT, typename transformOperatorT, typename reductionOperatorT>
-    // OutT transformReduce(const std::string &variable, std::unary_function<OutT, OutT> transformOperator, std::binary_function<OutT, OutT, OutT>, const OutT &init) const;
     template<typename InT, typename OutT, typename transformOperatorT, typename reductionOperatorT>
     OutT transformReduce(const std::string &variable, transformOperatorT transformOperator, reductionOperatorT reductionOperator, const OutT &init) const;
+    // template<typename InT, typename OutT, typename transformOperatorT, typename reductionOperatorT>
+    // OutT transformReduce(const std::string &variable, std::unary_function<OutT, OutT> transformOperator, std::binary_function<OutT, OutT, OutT>, const OutT &init) const;
 
  private:
     FLAMEGPU_HOST_API &api;
@@ -154,7 +186,12 @@ template<typename InT, typename OutT>
 OutT HostAgentInstance::sum(const std::string &variable) const {
     static_assert(sizeof(InT) <= sizeof(OutT), "Template arg OutT should not be of a smaller size than InT");
     const auto &agentDesc = agent.getAgentDescription();
-    if (std::type_index(typeid(InT)) != agentDesc.description->getVariableType(variable)) {
+
+    std::type_index typ = agentDesc.description->getVariableType(variable);  // This will throw name exception
+    if (agentDesc.variables.at(variable).elements != 1) {
+        THROW UnsupportedVarType("FLAMEGPU_HOST_AGENT_API::sum() does not support agent array variables.");
+    }
+    if (std::type_index(typeid(InT)) != typ) {
         THROW InvalidVarType("Wrong variable type passed to HostAgentInstance::sum(). "
             "This call expects '%s', but '%s' was requested.",
             agentDesc.variables.at(variable).type.name(), typeid(InT).name());
@@ -180,7 +217,11 @@ OutT HostAgentInstance::sum(const std::string &variable) const {
 template<typename InT>
 InT HostAgentInstance::min(const std::string &variable) const {
     const auto &agentDesc = agent.getAgentDescription();
-    if (std::type_index(typeid(InT)) != agentDesc.description->getVariableType(variable)) {
+    const std::type_index typ = agentDesc.description->getVariableType(variable);  // This will throw name exception
+    if (agentDesc.variables.at(variable).elements != 1) {
+        THROW UnsupportedVarType("FLAMEGPU_HOST_AGENT_API::sum() does not support agent array variables.");
+    }
+    if (std::type_index(typeid(InT)) != typ) {
         THROW InvalidVarType("Wrong variable type passed to HostAgentInstance::min(). "
             "This call expects '%s', but '%s' was requested.",
             agentDesc.variables.at(variable).type.name(), typeid(InT).name());
@@ -207,8 +248,12 @@ InT HostAgentInstance::min(const std::string &variable) const {
 template<typename InT>
 InT HostAgentInstance::max(const std::string &variable) const {
     const auto &agentDesc = agent.getAgentDescription();
-    if (std::type_index(typeid(InT)) != agentDesc.description->getVariableType(variable)) {
-        THROW InvalidVarType("Wrong variable type passed to HostAgentInstance::max(). "
+    const std::type_index typ = agentDesc.description->getVariableType(variable);  // This will throw name exception
+    if (agentDesc.variables.at(variable).elements != 1) {
+        THROW UnsupportedVarType("HostAgentInstance::sum() does not support agent array variables.");
+    }
+    if (std::type_index(typeid(InT)) != typ) {
+        THROW InvalidVarType("Wrong variable type passed to FLAMEGPU_HOST_AGENT_API::max(). "
             "This call expects '%s', but '%s' was requested.",
             agentDesc.variables.at(variable).type.name(), typeid(InT).name());
     }
@@ -234,8 +279,12 @@ InT HostAgentInstance::max(const std::string &variable) const {
 template<typename InT>
 unsigned int HostAgentInstance::count(const std::string &variable, const InT &value) {
     const auto &agentDesc = agent.getAgentDescription();
-    if (std::type_index(typeid(InT)) != agentDesc.description->getVariableType(variable)) {
-        THROW InvalidVarType("Wrong variable type passed to HostAgentInstance::count(). "
+    const std::type_index typ = agentDesc.description->getVariableType(variable);  // This will throw name exception
+    if (agentDesc.variables.at(variable).elements != 1) {
+        THROW UnsupportedVarType("HostAgentInstance::sum() does not support agent array variables.");
+    }
+    if (std::type_index(typeid(InT)) != typ) {
+        THROW InvalidVarType("Wrong variable type passed to FLAMEGPU_HOST_AGENT_API::count(). "
             "This call expects '%s', but '%s' was requested.",
             agentDesc.variables.at(variable).type.name(), typeid(InT).name());
     }
@@ -257,8 +306,12 @@ std::vector<OutT> HostAgentInstance::histogramEven(const std::string &variable, 
             std::to_string(lowerBound).c_str(), std::to_string(upperBound).c_str());
     }
     const auto &agentDesc = agent.getAgentDescription();
-    if (std::type_index(typeid(InT)) != agentDesc.description->getVariableType(variable)) {
-        THROW InvalidVarType("Wrong variable type passed to HostAgentInstance::histogramEven(). "
+    const std::type_index typ = agentDesc.description->getVariableType(variable);  // This will throw name exception
+    if (agentDesc.variables.at(variable).elements != 1) {
+        THROW UnsupportedVarType("HostAgentInstance::sum() does not support agent array variables.");
+    }
+    if (std::type_index(typeid(InT)) != typ) {
+        THROW InvalidVarType("Wrong variable type passed to FLAMEGPU_HOST_AGENT_API::histogramEven(). "
             "This call expects '%s', but '%s' was requested.",
             agentDesc.variables.at(variable).type.name(), typeid(InT).name());
     }
@@ -286,8 +339,12 @@ std::vector<OutT> HostAgentInstance::histogramEven(const std::string &variable, 
 template<typename InT, typename reductionOperatorT>
 InT HostAgentInstance::reduce(const std::string &variable, reductionOperatorT /*reductionOperator*/, const InT &init) const {
     const auto &agentDesc = agent.getAgentDescription();
-    if (std::type_index(typeid(InT)) != agentDesc.description->getVariableType(variable)) {
-        THROW InvalidVarType("Wrong variable type passed to HostAgentInstance::reduce(). "
+    const std::type_index typ = agentDesc.description->getVariableType(variable);  // This will throw name exception
+    if (agentDesc.variables.at(variable).elements != 1) {
+        THROW UnsupportedVarType("HostAgentInstance::sum() does not support agent array variables.");
+    }
+    if (std::type_index(typeid(InT)) != typ) {
+        THROW InvalidVarType("Wrong variable type passed to FLAMEGPU_HOST_AGENT_API::reduce(). "
             "This call expects '%s', but '%s' was requested.",
             agentDesc.variables.at(variable).type.name(), typeid(InT).name());
     }
@@ -315,7 +372,11 @@ InT HostAgentInstance::reduce(const std::string &variable, reductionOperatorT /*
 template<typename InT, typename OutT, typename transformOperatorT, typename reductionOperatorT>
 OutT HostAgentInstance::transformReduce(const std::string &variable, transformOperatorT /*transformOperator*/, reductionOperatorT /*reductionOperator*/, const OutT &init) const {
     const auto &agentDesc = agent.getAgentDescription();
-    if (std::type_index(typeid(InT)) != agentDesc.description->getVariableType(variable)) {
+    const std::type_index typ = agentDesc.description->getVariableType(variable);  // This will throw name exception
+    if (agentDesc.variables.at(variable).elements != 1) {
+        THROW UnsupportedVarType("FLAMEGPU_HOST_AGENT_API::sum() does not support agent array variables.");
+    }
+    if (std::type_index(typeid(InT)) != typ) {
         THROW InvalidVarType("Wrong variable type passed to HostAgentInstance::transformReduce(). "
             "This call expects '%s', but '%s' was requested.",
             agentDesc.variables.at(variable).type.name(), typeid(InT).name());

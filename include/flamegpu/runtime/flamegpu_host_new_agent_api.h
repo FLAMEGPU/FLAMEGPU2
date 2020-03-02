@@ -82,7 +82,65 @@ struct NewAgentStorage {
                 "in NewAgentStorage.setVariable()\n",
                 var_name.c_str(), var->second.type.name(), t_type.name());
         }
+        if (var->second.len != sizeof(T)) {
+            THROW InvalidAgentVar("This method is not suitable for agent array variables, "
+                " variable '%s' was passed, "
+                "in NewAgentStorage::setVariable().",
+                var_name.c_str());
+        }
         memcpy(data + var->second.offset, &val, var->second.len);
+    }
+    template<typename T, unsigned int N>
+    void setVariable(const std::string &var_name, const std::array<T, N> &val) {
+        const auto &var = offsets.vars.find(var_name);
+        if (var == offsets.vars.end()) {
+            THROW InvalidAgentVar("Variable '%s' not found, "
+                "in NewAgentStorage.setVariable()\n",
+                var_name.c_str());
+        }
+        // if (var.second.len == 1 || N == 1) {
+        //     THROW InvalidAgentVar("Agent variable '%s' in not an array variable, "
+        //         "in NewAgentStorage::setVariable().",
+        //         var_name.c_str());
+        // }
+        const auto t_type = std::type_index(typeid(T));
+        if (var->second.type != std::type_index(typeid(T))) {
+            THROW InvalidVarType("Variable '%s' has type '%s, incorrect  type '%s' was requested, "
+                "in NewAgentStorage.setVariable()\n",
+                var_name.c_str(), var->second.type.name(), t_type.name());
+        }
+        if (var->second.len != sizeof(T) * N) {
+            THROW InvalidVarArrayLen("Variable '%s' is an array with %u elements, incorrect array of length %u was provided, "
+                "in NewAgentStorage.setVariable()\n",
+                var_name.c_str(), var->second.len / sizeof(T), N);
+        }
+        memcpy(data + var->second.offset, &val, var->second.len);
+    }
+    template<typename T>
+    void setVariable(const std::string &var_name, const unsigned int &index, const T &val) {
+        const auto &var = offsets.vars.find(var_name);
+        if (var == offsets.vars.end()) {
+            THROW InvalidAgentVar("Variable '%s' not found, "
+                "in NewAgentStorage.setVariable()\n",
+                var_name.c_str());
+        }
+        // if (var.second.len == 1) {
+        //     THROW InvalidAgentVar("Agent variable '%s' in not an array variable, "
+        //         "in NewAgentStorage::setVariable().",
+        //         var_name.c_str());
+        // }
+        const auto t_type = std::type_index(typeid(T));
+        if (var->second.type != std::type_index(typeid(T))) {
+            THROW InvalidVarType("Variable '%s' has type '%s, incorrect  type '%s' was requested, "
+                "in NewAgentStorage.setVariable()\n",
+                var_name.c_str(), var->second.type.name(), t_type.name());
+        }
+        if (var->second.len < sizeof(T) * (index + 1)) {
+            THROW OutOfRangeVarArray("Variable '%s' is an array with %u elements, index %u is out of range, "
+                "in NewAgentStorage.setVariable()\n",
+                var_name.c_str(), var->second.len / sizeof(T), index);
+        }
+        memcpy(data + var->second.offset + (index * sizeof(T)), &val, sizeof(T));
     }
     template<typename T>
     T getVariable(const std::string &var_name) const {
@@ -98,7 +156,67 @@ struct NewAgentStorage {
                 "in NewAgentStorage.getVariable()\n",
                 var_name.c_str(), var->second.type.name(), t_type.name());
         }
+        if (var->second.len != sizeof(T)) {
+            THROW InvalidAgentVar("This method is not suitable for agent array variables, "
+                " variable '%s' was passed, "
+                "in NewAgentStorage::getVariable().",
+                var_name.c_str());
+        }
         return *reinterpret_cast<T*>(data + var->second.offset);
+    }
+    template<typename T, unsigned int N>
+    std::array<T, N> getVariable(const std::string &var_name) {
+        const auto &var = offsets.vars.find(var_name);
+        if (var == offsets.vars.end()) {
+            THROW InvalidAgentVar("Variable '%s' not found, "
+                "in NewAgentStorage.getVariable()\n",
+                var_name.c_str());
+        }
+        // if (var.second.len == 1 || N == 1) {
+        //     THROW InvalidAgentVar("Agent variable '%s' in not an array variable, "
+        //         "in NewAgentStorage::getVariable().",
+        //         var_name.c_str());
+        // }
+        const auto t_type = std::type_index(typeid(T));
+        if (var->second.type != std::type_index(typeid(T))) {
+            THROW InvalidVarType("Variable '%s' has type '%s, incorrect  type '%s' was requested, "
+                "in NewAgentStorage.getVariable()\n",
+                var_name.c_str(), var->second.type.name(), t_type.name());
+        }
+        if (var->second.len != sizeof(T) * N) {
+            THROW InvalidVarArrayLen("Variable '%s' is an array with %u elements, incorrect array of length %u was provided, "
+                "in NewAgentStorage.getVariable()\n",
+                var_name.c_str(), var->second.len / sizeof(T), N);
+        }
+        std::array<T, N> rtn;
+        memcpy(rtn.data(), data + var->second.offset, var->second.len);
+        return rtn;
+    }
+    template<typename T>
+    T getVariable(const std::string &var_name, const unsigned int &index) {
+        const auto &var = offsets.vars.find(var_name);
+        if (var == offsets.vars.end()) {
+            THROW InvalidAgentVar("Variable '%s' not found, "
+                "in NewAgentStorage.getVariable()\n",
+                var_name.c_str());
+        }
+        // if (var.second.len == 1) {
+        //     THROW InvalidAgentVar("Agent variable '%s' in not an array variable, "
+        //         "in NewAgentStorage::getVariable().",
+        //         var_name.c_str());
+        // }
+        const auto t_type = std::type_index(typeid(T));
+        if (var->second.type != std::type_index(typeid(T))) {
+            THROW InvalidVarType("Variable '%s' has type '%s, incorrect  type '%s' was requested, "
+                "in NewAgentStorage.getVariable()\n",
+                var_name.c_str(), var->second.type.name(), t_type.name());
+        }
+        if (var->second.len < sizeof(T) * (index + 1)) {
+            THROW OutOfRangeVarArray("Variable '%s' is an array with %u elements, index %u is out of range, "
+                "in NewAgentStorage.getVariable()\n",
+                var_name.c_str(), var->second.len / sizeof(T), index);
+        }
+        return *reinterpret_cast<T*>(data + var->second.offset + (index * sizeof(T)));
     }
     /**
      * Used by CUDAAgentModel::processHostAgentCreation() which needs raw access to the data buffer
@@ -141,12 +259,28 @@ class FLAMEGPU_HOST_NEW_AGENT_API {
     void setVariable(const std::string &var_name, const T &val) {
         s->setVariable<T>(var_name, val);
     }
+    template<typename T, unsigned int N>
+    void setVariable(const std::string &var_name, const std::array<T, N> &val) {
+        s->setVariable<T, N>(var_name, val);
+    }
+    template<typename T>
+    void setVariable(const std::string &var_name, const unsigned int &index, const T &val) {
+        s->setVariable<T>(var_name, index, val);
+    }
     /**
      * Returns a varaiable within the new agent
      */
     template<typename T>
     T getVariable(const std::string &var_name) const {
         return s->getVariable<T>(var_name);
+    }
+    template<typename T, unsigned int N>
+    std::array<T, N> getVariable(const std::string &var_name) {
+        return s->getVariable<T, N>(var_name);
+    }
+    template<typename T>
+    T getVariable(const std::string &var_name, const unsigned int &index) {
+        return s->getVariable<T>(var_name, index);
     }
 
  private:

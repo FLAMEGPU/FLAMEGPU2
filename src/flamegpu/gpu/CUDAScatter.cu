@@ -92,7 +92,7 @@ unsigned int CUDAScatter::scatter(
     for (const auto &v : vars) {
         char *in_p = reinterpret_cast<char*>(in.at(v.first));
         char *out_p = reinterpret_cast<char*>(out.at(v.first));
-        sd.push_back({ v.second.type_size, in_p, out_p });
+        sd.push_back({ v.second.type_size * v.second.elements, in_p, out_p });
     }
     resize(static_cast<unsigned int>(sd.size()));
     // Important that sd.size() is still used here, incase allocated len (data_len) is bigger
@@ -125,6 +125,8 @@ unsigned int CUDAScatter::scatterAll(
     const std::map<std::string, void*> &out,
     const unsigned int &itemCount,
     const unsigned int &out_index_offset) {
+    if (!itemCount)
+        return itemCount;  // No work to do
     int blockSize = 0;  // The launch configurator returned block size
     int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
     int gridSize = 0;  // The actual grid size needed, based on input size
@@ -138,7 +140,7 @@ unsigned int CUDAScatter::scatterAll(
     for (const auto &v : vars) {
         char *in_p = reinterpret_cast<char*>(in.at(v.first));
         char *out_p = reinterpret_cast<char*>(out.at(v.first));
-        sd.push_back({ v.second.type_size, in_p, out_p });
+        sd.push_back({ v.second.type_size * v.second.elements, in_p, out_p });
     }
     resize(static_cast<unsigned int>(sd.size()));
     // Important that sd.size() is still used here, incase allocated len (data_len) is bigger
@@ -193,7 +195,7 @@ void CUDAScatter::pbm_reorder(
     for (const auto &v : vars) {
         char *in_p = reinterpret_cast<char*>(in.at(v.first));
         char *out_p = reinterpret_cast<char*>(out.at(v.first));
-        sd.push_back({ v.second.type_size, in_p, out_p });
+        sd.push_back({ v.second.type_size * v.second.elements, in_p, out_p });
     }
     resize(static_cast<unsigned int>(sd.size()));
     // Important that sd.size() is still used here, incase allocated len (data_len) is bigger
@@ -259,7 +261,7 @@ void CUDAScatter::scatterNewAgents(
         // In this case, in is the location of first variable, but we step by inOffsetData.totalSize
         char *in_p = reinterpret_cast<char*>(d_in_buff) + inOffsetData.vars.at(v.first).offset;
         char *out_p = reinterpret_cast<char*>(out.at(v.first));
-        sd.push_back({ v.second.type_size, in_p, out_p });
+        sd.push_back({ v.second.type_size * v.second.elements, in_p, out_p });
     }
     resize(static_cast<unsigned int>(sd.size()));
     // Important that sd.size() is still used here, incase allocated len (data_len) is bigger
@@ -317,7 +319,7 @@ void CUDAScatter::broadcastInit(
     std::vector<ScatterData> sd;
     ptrdiff_t offset = 0;
     for (const auto &v : vars) {
-        offset += v.second.type_size;
+        offset += v.second.type_size * v.second.elements;
     }
     resize(static_cast<unsigned int>(vars.size() + (offset /sizeof(ScatterData)) + sizeof(ScatterData)));
     // Build scatter data structure
@@ -325,16 +327,16 @@ void CUDAScatter::broadcastInit(
     for (const auto &v : vars) {
         // In this case, in is the location of first variable, but we step by inOffsetData.totalSize
         char *in_p = reinterpret_cast<char*>(d_data) + offset;
-        offset += v.second.type_size;
+        offset += v.second.type_size * v.second.elements;
         char *out_p = reinterpret_cast<char*>(out.at(v.first));
-        sd.push_back({ v.second.type_size, in_p, out_p });
+        sd.push_back({ v.second.type_size * v.second.elements, in_p, out_p });
     }
     // Build init data
     char *default_data = reinterpret_cast<char*>(malloc(offset));
     offset = 0;
     for (const auto &v : vars) {
-        memcpy(default_data + offset, v.second.default_value, v.second.type_size);
-        offset += v.second.type_size;
+        memcpy(default_data + offset, v.second.default_value, v.second.type_size * v.second.elements);
+        offset += v.second.type_size * v.second.elements;
     }
     // Important that sd.size() is still used here, incase allocated len (data_len) is bigger
     gpuErrchk(cudaMemcpy(d_data, default_data, offset, cudaMemcpyHostToDevice));
