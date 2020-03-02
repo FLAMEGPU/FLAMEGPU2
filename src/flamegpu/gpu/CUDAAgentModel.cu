@@ -113,7 +113,7 @@ bool CUDAAgentModel::step() {
             }
 
             // Ensure RandomManager is the correct size to accomodate all threads to be launched
-            rng.resize(totalThreads);
+            singletons->rng.resize(totalThreads);
             // Track stream id
             j = 0;
             // Sum the total number of threads being launched in the layer
@@ -145,9 +145,9 @@ bool CUDAAgentModel::step() {
                     gridSize = (state_list_size + blockSize - 1) / blockSize;
 
                     // hash agent name
-                    Curve::NamespaceHash agentname_hash = curve.variableRuntimeHash(agent_name.c_str());
+                    Curve::NamespaceHash agentname_hash = singletons->curve.variableRuntimeHash(agent_name.c_str());
                     // hash function name
-                    Curve::NamespaceHash funcname_hash = curve.variableRuntimeHash(func_name.c_str());
+                    Curve::NamespaceHash funcname_hash = singletons->curve.variableRuntimeHash(func_name.c_str());
 
                     (func_des->condition) <<<gridSize, blockSize, 0, streams.at(j) >>>(modelname_hash, agentname_hash + funcname_hash, state_list_size, totalThreads, j);
                     gpuErrchkLaunch();
@@ -233,8 +233,6 @@ bool CUDAAgentModel::step() {
         }
         NVTX_POP();
 
-        // Ensure RandomManager is the correct size to accomodate all threads to be launched
-        singletons->rng.resize(totalThreads);
         // Total threads is now used to provide kernel launches an offset to thread-safe thread-index
         totalThreads = 0;
         j = 0;
