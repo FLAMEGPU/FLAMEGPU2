@@ -1096,4 +1096,124 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentState_WithDeath_WithAgent
         EXPECT_EQ(ai.getVariable<float>("x") - ai.getVariable<unsigned int>("id"), 12.0f);
     }
 }
+
+// Agent arrays
+const unsigned int AGENT_COUNT = 1024;
+FLAMEGPU_AGENT_FUNCTION(ArrayVarDeviceBirth, MsgNone, MsgNone) {
+    unsigned int i = FLAMEGPU->getVariable<unsigned int>("id") * 3;
+    FLAMEGPU->agent_out.setVariable<unsigned int>("id", i);
+    FLAMEGPU->agent_out.setVariable<int, 4>("array_var", 0, 3 + i);
+    FLAMEGPU->agent_out.setVariable<int, 4>("array_var", 1, 5 + i);
+    FLAMEGPU->agent_out.setVariable<int, 4>("array_var", 2, 9 + i);
+    FLAMEGPU->agent_out.setVariable<int, 4>("array_var", 3, 17 + i);
+    FLAMEGPU->agent_out.setVariable<float>("y", 14.0f + i);
+    return DEAD;
+}
+FLAMEGPU_AGENT_FUNCTION(ArrayVarDeviceBirth_DefaultWorks, MsgNone, MsgNone) {
+    unsigned int i = FLAMEGPU->getVariable<unsigned int>("id") * 3;
+    FLAMEGPU->agent_out.setVariable<unsigned int>("id", i);
+    return DEAD;
+}
+FLAMEGPU_AGENT_FUNCTION(ArrayVarDeviceBirth_ArrayUnsuitable, MsgNone, MsgNone) {
+    FLAMEGPU->agent_out.setVariable<int>("array_var", 0);
+    return DEAD;
+}
+
+TEST(DeviceAgentCreationTest, DeviceAgentBirth_ArraySet) {
+    const std::array<int, 4> TEST_REFERENCE = { 3, 5, 9, 17 };
+    ModelDescription model("model");
+    AgentDescription &agent = model.newAgent("agent_name");
+    agent.newVariable<unsigned int>("id", UINT_MAX);
+    agent.newVariable<int, 4>("array_var");
+    agent.newVariable<float>("y");
+    auto &fn = agent.newFunction("out", ArrayVarDeviceBirth);
+    fn.setAllowAgentDeath(true);
+    fn.setAgentOutput(agent);
+    model.newLayer().addAgentFunction(fn);
+    // Run the init function
+    AgentPopulation population(agent, AGENT_COUNT);
+    for (unsigned int i = 0; i < AGENT_COUNT; i++) {
+        auto in = population.getNextInstance();
+        in.setVariable<unsigned int>("id", i);
+    }
+    CUDAAgentModel sim(model);
+    sim.setPopulationData(population);
+    sim.step();
+    sim.getPopulationData(population);
+    // Check data is correct
+    EXPECT_EQ(population.getCurrentListSize(), AGENT_COUNT);
+    for (unsigned int i = 0; i < population.getCurrentListSize(); i++) {
+        AgentInstance instance = population.getInstanceAt(i);
+        const unsigned int j = instance.getVariable<unsigned int>("id");
+        // Check array sets are correct
+        auto array1 = instance.getVariable<int, 4>("array_var");
+        for (unsigned int k = 0; k < 4; ++k) {
+            array1[k] -= j;
+        }
+        EXPECT_EQ(j % 3, 0u);
+        EXPECT_EQ(array1, TEST_REFERENCE);
+        EXPECT_EQ(instance.getVariable<float>("y"), 14.0f + j);
+    }
+}
+TEST(DeviceAgentCreationTest, DeviceAgentBirth_DefaultWorks) {
+    const std::array<int, 4> TEST_REFERENCE = { 3, 5, 9, 17 };
+    ModelDescription model("model");
+    AgentDescription &agent = model.newAgent("agent_name");
+    agent.newVariable<unsigned int>("id", UINT_MAX);
+    agent.newVariable<int, 4>("array_var", TEST_REFERENCE);
+    agent.newVariable<float>("y", 14.0f);
+    auto &fn = agent.newFunction("out", ArrayVarDeviceBirth_DefaultWorks);
+    fn.setAllowAgentDeath(true);
+    fn.setAgentOutput(agent);
+    model.newLayer().addAgentFunction(fn);
+    // Run the init function
+    AgentPopulation population(agent, AGENT_COUNT);
+    for (unsigned int i = 0; i < AGENT_COUNT; i++) {
+        auto in = population.getNextInstance();
+        in.setVariable<unsigned int>("id", i);
+    }
+    CUDAAgentModel sim(model);
+    sim.setPopulationData(population);
+    sim.step();
+    sim.getPopulationData(population);
+    // Check data is correct
+    EXPECT_EQ(population.getCurrentListSize(), AGENT_COUNT);
+    for (unsigned int i = 0; i < population.getCurrentListSize(); i++) {
+        AgentInstance instance = population.getInstanceAt(i);
+        const unsigned int j = instance.getVariable<unsigned int>("id");
+        // Check array sets are correct
+        auto array1 = instance.getVariable<int, 4>("array_var");
+        EXPECT_EQ(j % 3, 0u);
+        EXPECT_EQ(array1, TEST_REFERENCE);
+        EXPECT_EQ(instance.getVariable<float>("y"), 14.0f);
+    }
+}
+TEST(DeviceAgentCreationTest, DeviceAgentBirth_ArrayUnsuitable) {
+    // Curve will error, however agent creation will go through, agent will have default value
+    const std::array<int, 4> TEST_REFERENCE = { 3, 5, 9, 17 };
+    ModelDescription model("model");
+    AgentDescription &agent = model.newAgent("agent_name");
+    agent.newVariable<int, 4>("array_var", TEST_REFERENCE);
+    auto &fn = agent.newFunction("out", ArrayVarDeviceBirth_ArrayUnsuitable);
+    fn.setAllowAgentDeath(true);
+    fn.setAgentOutput(agent);
+    model.newLayer().addAgentFunction(fn);
+    // Run the init function
+    AgentPopulation population(agent, AGENT_COUNT);
+    for (unsigned int i = 0; i < AGENT_COUNT; i++) {
+        auto in = population.getNextInstance();
+    }
+    CUDAAgentModel sim(model);
+    sim.setPopulationData(population);
+    sim.step();
+    sim.getPopulationData(population);
+    // Check data is correct
+    EXPECT_EQ(population.getCurrentListSize(), AGENT_COUNT);
+    for (unsigned int i = 0; i < population.getCurrentListSize(); i++) {
+        AgentInstance instance = population.getInstanceAt(i);
+        // Check array sets are correct
+        auto array1 = instance.getVariable<int, 4>("array_var");
+        EXPECT_EQ(array1, TEST_REFERENCE);
+    }
+}
 }  // namespace test_device_agent_creation

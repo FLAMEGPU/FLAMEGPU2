@@ -217,6 +217,7 @@ void CUDAAgent::mapRuntimeVariables(const AgentFunctionData& func, const std::st
 
     const Curve::VariableHash agent_hash = Curve::getInstance().variableRuntimeHash(agent_description.name.c_str());
     const Curve::VariableHash func_hash = Curve::getInstance().variableRuntimeHash(func.name.c_str());
+    const unsigned int agent_count = this->getStateSize(func.initial_state);
     // loop through the agents variables to map each variable name using cuRVE
     for (const auto &mmp : agent_description.variables) {
         // get a device pointer for the agent variable name
@@ -226,11 +227,10 @@ void CUDAAgent::mapRuntimeVariables(const AgentFunctionData& func, const std::st
         const Curve::VariableHash var_hash = Curve::getInstance().variableRuntimeHash(mmp.first.c_str());
 
         // get the agent variable size
-        size_t size = mmp.second.type_size;
+        const size_t type_size = mmp.second.type_size * mmp.second.elements;
 
        // maximum population num
-        unsigned int length = this->getMaximumListSize();
-        Curve::getInstance().registerVariableByHash(var_hash + agent_hash + func_hash, d_ptr, size, length);
+        Curve::getInstance().registerVariableByHash(var_hash + agent_hash + func_hash, d_ptr, type_size, agent_count);
     }
 }
 
@@ -416,10 +416,10 @@ void CUDAAgent::mapNewRuntimeVariables(const AgentFunctionData& func, const unsi
         const Curve::VariableHash var_hash = Curve::getInstance().variableRuntimeHash(mmp.first.c_str());
 
         // get the agent variable size
-        size_t size = mmp.second.type_size;
+        size_t type_size = mmp.second.type_size * mmp.second.elements;
 
         // maximum population num
-        Curve::getInstance().registerVariableByHash(var_hash + _agent_birth_hash + func_hash, d_ptr, size, maxLen);
+        Curve::getInstance().registerVariableByHash(var_hash + _agent_birth_hash + func_hash, d_ptr, type_size, maxLen);
     }
 }
 

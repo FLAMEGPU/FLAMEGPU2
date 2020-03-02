@@ -18,9 +18,12 @@
 
 class GenericMemoryVector{
  public:
+    /**
+     * Acts as a multiplier
+     */
     virtual ~GenericMemoryVector() { ; }
 
-    virtual const std::type_info& getType() = 0;
+    virtual const std::type_index& getType() const = 0;
 
     virtual void* getDataPtr() = 0;
 
@@ -31,33 +34,34 @@ class GenericMemoryVector{
     virtual GenericMemoryVector* clone() const = 0;
 
     virtual void resize(unsigned int) = 0;
-
-    template <typename T> std::vector<T>& getVector();
-
-    template <typename T> std::vector<T> getVectorIteratorAt(unsigned int i);
 };
 
 template <typename T>
 class MemoryVector : public GenericMemoryVector {
  public:
-    MemoryVector() : GenericMemoryVector(), type(typeid(T)) {
-        default_value = T();
-    }
+    /**
+     * Memory vector is an array of variables
+     * @param _sub_length the length of the array within a variable, most variables will be 1 (a lone variable)
+     */
+    explicit MemoryVector(unsigned int _sub_length = 1)
+    : GenericMemoryVector()
+    , sub_length(_sub_length)
+    , type(typeid(T)) { }
 
     virtual ~MemoryVector() { ; }
 
-    virtual const std::type_info& getType() {
+    const std::type_index& getType() const override {
         return type;
     }
 
-    virtual void* getDataPtr() {
+    void* getDataPtr() override {
         if (vec.empty())
             return nullptr;
         else
             return &(vec.front());
     }
 
-    virtual const void* getReadOnlyDataPtr() const {
+    const void* getReadOnlyDataPtr() const override {
         if (vec.empty())
             return nullptr;
         else
@@ -69,36 +73,21 @@ class MemoryVector : public GenericMemoryVector {
     }
 
     virtual MemoryVector<T>* clone() const {
-        return (new MemoryVector<T>());
+        return (new MemoryVector<T>(sub_length));
     }
 
-    virtual void resize(unsigned int s) {
-        vec.resize(s);
+    void resize(unsigned int s) override {
+        vec.resize(s * sub_length);
     }
 
  protected:
+    /**
+     * Multiplies with size to allocate enough memory
+     */
+    const unsigned int sub_length;
     std::vector<T> vec;
-    T default_value;
-    const std::type_info& type;
+    const std::type_index type;
 };
-
-template <typename T> std::vector<T>& GenericMemoryVector::getVector() {
-    if (getType() != typeid(T)) {
-        THROW InvalidVarType("Wrong variable type passed to GenericMemoryVector::getVector(). "
-            "This agent data vector expects '%s', but '%s' was requested.",
-            getType().name(), typeid(T).name());
-    }
-    // must cast the vector as the correct type
-    std::vector<T> *t_v = static_cast<std::vector<T>*>(getVectorPtr());
-    // return reference
-    return *t_v;
-}
-
-template <typename T> std::vector<T> GenericMemoryVector::getVectorIteratorAt(unsigned int i) {
-    // return an iterator at correct position
-    std::vector<T>& v = getVector<T>();
-    return (v.begin() + i);
-}
 
 // use this to store default values for a population, must be here to register the correct types at compile time
 /*! Create a map with std::strings for keys (indexes) and GenericAgentMemoryVector object. A smart pointer has been used to automaticaly manage the object*/

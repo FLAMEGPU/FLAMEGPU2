@@ -115,4 +115,184 @@ TEST_F(HostReductionTest, CountException) {
     }
     ms->run();
 }
+
+    FLAMEGPU_STEP_FUNCTION(ArrayVarNotSupported_sum1) {
+    FLAMEGPU->agent("agent_name").sum<int>("array_var");
+}
+FLAMEGPU_STEP_FUNCTION(ArrayVarNotSupported_sum2) {
+    FLAMEGPU->agent("agent_name").sum<int, int>("array_var");
+}
+FLAMEGPU_STEP_FUNCTION(ArrayVarNotSupported_min) {
+    FLAMEGPU->agent("agent_name").min<int>("array_var");
+}
+FLAMEGPU_STEP_FUNCTION(ArrayVarNotSupported_max) {
+    FLAMEGPU->agent("agent_name").max<int>("array_var");
+}
+FLAMEGPU_STEP_FUNCTION(ArrayVarNotSupported_count) {
+    FLAMEGPU->agent("agent_name").count<int>("array_var", 0);
+}
+FLAMEGPU_STEP_FUNCTION(ArrayVarNotSupported_hist1) {
+    FLAMEGPU->agent("agent_name").histogramEven<int>("array_var", 10, 0, 9);
+}
+FLAMEGPU_STEP_FUNCTION(ArrayVarNotSupported_hist2) {
+    FLAMEGPU->agent("agent_name").histogramEven<int, int>("array_var", 10, 0, 9);
+}
+FLAMEGPU_CUSTOM_REDUCTION(SampleReduction, a, b) {
+        return a + b;
+}
+FLAMEGPU_STEP_FUNCTION(ArrayVarNotSupported_reduce) {
+    FLAMEGPU->agent("agent_name").reduce<int>("array_var", SampleReduction, 0);
+}
+FLAMEGPU_CUSTOM_TRANSFORM(SampleTransform, a) {
+    return a + 1;
+}
+FLAMEGPU_STEP_FUNCTION(ArrayVarNotSupported_transformReduce) {
+    FLAMEGPU->agent("agent_name").transformReduce<int>("array_var", SampleTransform, SampleReduction, 0);
+}
+// Array variables
+const unsigned int AGENT_COUNT = 1024;
+TEST(HostMiscTest, ArrayVarNotSupported_sum1) {
+    ModelDescription model("model");
+    AgentDescription &agent = model.newAgent("agent_name");
+    agent.newVariable<int, 4>("array_var");
+    AgentPopulation init_population(agent, AGENT_COUNT);
+    for (int i = 0; i< static_cast<int>(AGENT_COUNT); i++) {
+        AgentInstance instance = init_population.getNextInstance("default");
+    }
+    // Add the function to be tested
+    model.addStepFunction(ArrayVarNotSupported_sum1);
+    // Setup Model
+    CUDAAgentModel cuda_model(model);
+    cuda_model.setPopulationData(init_population);
+    // Run 1 step to ensure data is pushed to device
+    EXPECT_THROW(cuda_model.step(), UnsupportedVarType);
+}
+TEST(HostMiscTest, ArrayVarNotSupported_sum2) {
+    ModelDescription model("model");
+    AgentDescription &agent = model.newAgent("agent_name");
+    agent.newVariable<int, 4>("array_var");
+    AgentPopulation init_population(agent, AGENT_COUNT);
+    for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
+        AgentInstance instance = init_population.getNextInstance("default");
+    }
+    // Add the function to be tested
+    model.addStepFunction(ArrayVarNotSupported_sum2);
+    // Setup Model
+    CUDAAgentModel cuda_model(model);
+    cuda_model.setPopulationData(init_population);
+    // Run 1 step to ensure data is pushed to device
+    EXPECT_THROW(cuda_model.step(), UnsupportedVarType);
+}
+TEST(HostMiscTest, ArrayVarNotSupported_min) {
+    ModelDescription model("model");
+    AgentDescription &agent = model.newAgent("agent_name");
+    agent.newVariable<int, 4>("array_var");
+    AgentPopulation init_population(agent, AGENT_COUNT);
+    for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
+        AgentInstance instance = init_population.getNextInstance("default");
+    }
+    // Add the function to be tested
+    model.addStepFunction(ArrayVarNotSupported_min);
+    // Setup Model
+    CUDAAgentModel cuda_model(model);
+    cuda_model.setPopulationData(init_population);
+    // Run 1 step to ensure data is pushed to device
+    EXPECT_THROW(cuda_model.step(), UnsupportedVarType);
+}
+TEST(HostMiscTest, ArrayVarNotSupported_max) {
+    ModelDescription model("model");
+    AgentDescription &agent = model.newAgent("agent_name");
+    agent.newVariable<int, 4>("array_var");
+    AgentPopulation init_population(agent, AGENT_COUNT);
+    for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
+        AgentInstance instance = init_population.getNextInstance("default");
+    }
+    // Add the function to be tested
+    model.addStepFunction(ArrayVarNotSupported_max);
+    // Setup Model
+    CUDAAgentModel cuda_model(model);
+    cuda_model.setPopulationData(init_population);
+    // Run 1 step to ensure data is pushed to device
+    EXPECT_THROW(cuda_model.step(), UnsupportedVarType);
+}
+TEST(HostMiscTest, ArrayVarNotSupported_count) {
+    ModelDescription model("model");
+    AgentDescription &agent = model.newAgent("agent_name");
+    agent.newVariable<int, 4>("array_var");
+    AgentPopulation init_population(agent, AGENT_COUNT);
+    for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
+        AgentInstance instance = init_population.getNextInstance("default");
+    }
+    // Add the function to be tested
+    model.addStepFunction(ArrayVarNotSupported_count);
+    // Setup Model
+    CUDAAgentModel cuda_model(model);
+    cuda_model.setPopulationData(init_population);
+    // Run 1 step to ensure data is pushed to device
+    EXPECT_THROW(cuda_model.step(), UnsupportedVarType);
+}
+TEST(HostMiscTest, ArrayVarNotSupported_hist1) {
+    ModelDescription model("model");
+    AgentDescription &agent = model.newAgent("agent_name");
+    agent.newVariable<int, 4>("array_var");
+    AgentPopulation init_population(agent, AGENT_COUNT);
+    for (int i = 0; i< static_cast<int>(AGENT_COUNT); i++) {
+        AgentInstance instance = init_population.getNextInstance("default");
+    }
+    // Add the function to be tested
+    model.addStepFunction(ArrayVarNotSupported_hist1);
+    // Setup Model
+    CUDAAgentModel cuda_model(model);
+    cuda_model.setPopulationData(init_population);
+    // Run 1 step to ensure data is pushed to device
+    EXPECT_THROW(cuda_model.step(), UnsupportedVarType);
+}
+TEST(HostMiscTest, ArrayVarNotSupported_hist2) {
+    ModelDescription model("model");
+    AgentDescription &agent = model.newAgent("agent_name");
+    agent.newVariable<int, 4>("array_var");
+    AgentPopulation init_population(agent, AGENT_COUNT);
+    for (int i = 0; i< static_cast<int>(AGENT_COUNT); i++) {
+        AgentInstance instance = init_population.getNextInstance("default");
+    }
+    // Add the function to be tested
+    model.addStepFunction(ArrayVarNotSupported_hist2);
+    // Setup Model
+    CUDAAgentModel cuda_model(model);
+    cuda_model.setPopulationData(init_population);
+    // Run 1 step to ensure data is pushed to device
+    EXPECT_THROW(cuda_model.step(), UnsupportedVarType);
+}
+TEST(HostMiscTest, ArrayVarNotSupported_reduce) {
+    ModelDescription model("model");
+    AgentDescription &agent = model.newAgent("agent_name");
+    agent.newVariable<int, 4>("array_var");
+    AgentPopulation init_population(agent, AGENT_COUNT);
+    for (int i = 0; i< static_cast<int>(AGENT_COUNT); i++) {
+        AgentInstance instance = init_population.getNextInstance("default");
+    }
+    // Add the function to be tested
+    model.addStepFunction(ArrayVarNotSupported_reduce);
+    // Setup Model
+    CUDAAgentModel cuda_model(model);
+    cuda_model.setPopulationData(init_population);
+    // Run 1 step to ensure data is pushed to device
+    EXPECT_THROW(cuda_model.step(), UnsupportedVarType);
+}
+TEST(HostMiscTest, ArrayVarNotSupported_transformReduce) {
+    ModelDescription model("model");
+    AgentDescription &agent = model.newAgent("agent_name");
+    agent.newVariable<int, 4>("array_var");
+    AgentPopulation init_population(agent, AGENT_COUNT);
+    for (int i = 0; i< static_cast<int>(AGENT_COUNT); i++) {
+        AgentInstance instance = init_population.getNextInstance("default");
+    }
+    // Add the function to be tested
+    model.addStepFunction(ArrayVarNotSupported_transformReduce);
+    // Setup Model
+    CUDAAgentModel cuda_model(model);
+    cuda_model.setPopulationData(init_population);
+    // Run 1 step to ensure data is pushed to device
+    EXPECT_THROW(cuda_model.step(), UnsupportedVarType);
+}
 }  // namespace test_host_reductions

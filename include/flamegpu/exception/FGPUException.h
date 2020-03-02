@@ -93,6 +93,13 @@ DERIVED_FGPUException(InvalidVarType, "Bad variable type in agent instance set/g
 
 /**
  * Defines a type of object to be thrown as exception.
+ * It reports errors that are due to unsupported variable types
+ * This primarily occurs for agent array variables with host agent reductions
+ */
+DERIVED_FGPUException(UnsupportedVarType, "Variables of this type are not supported by function");
+
+/**
+ * Defines a type of object to be thrown as exception.
  * It reports errors that are due to invalid agent state name.
  */
 DERIVED_FGPUException(InvalidStateName, "Invalid agent state name");
@@ -144,6 +151,17 @@ DERIVED_FGPUException(InvalidMessage, "Invalid message");
  * It reports errors that are due to invalid agent memory variable type.
  */
 DERIVED_FGPUException(InvalidAgentVar, "Invalid agent memory variable");
+
+/**
+* Defines a type of object to be thrown as exception.
+* It reports errors that are due to length mismatch of array variables.
+*/
+DERIVED_FGPUException(InvalidVarArrayLen, "Length of array variable does not match");
+/**
+* Defines a type of object to be thrown as exception.
+* It reports errors that are due to accessing outside of the bounds of an array variable
+*/
+DERIVED_FGPUException(OutOfRangeVarArray, "Index is out of range of the array variable");
 
 /**
  * Defines a type of object to be thrown as exception.

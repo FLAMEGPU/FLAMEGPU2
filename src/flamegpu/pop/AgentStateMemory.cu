@@ -36,16 +36,16 @@ unsigned int AgentStateMemory::incrementSize() {
             auto &var_mem = state_memory.at(var.first);
             char *data_ptr = reinterpret_cast<char*>(var_mem->getDataPtr());
             // Increment pointer to required index
-            data_ptr += current_size * var.second.type_size;
+            data_ptr += current_size * var.second.type_size * var.second.elements;
             // Copy in default
-            memcpy(data_ptr, var.second.default_value, var.second.type_size);
+            memcpy(data_ptr, var.second.default_value, var.second.type_size * var.second.elements);
         }
     }
     // add one to current size (returns old size)
     return current_size++;
 }
 
-GenericMemoryVector& AgentStateMemory::getMemoryVector(const std::string variable_name) {
+GenericMemoryVector& AgentStateMemory::getMemoryVector(const std::string &variable_name) {
     StateMemoryMap::iterator iter;
     iter = state_memory.find(variable_name);
 
@@ -57,7 +57,7 @@ GenericMemoryVector& AgentStateMemory::getMemoryVector(const std::string variabl
     return *(iter->second);
 }
 
-const GenericMemoryVector& AgentStateMemory::getReadOnlyMemoryVector(const std::string variable_name) const {
+const GenericMemoryVector& AgentStateMemory::getReadOnlyMemoryVector(const std::string &variable_name) const {
     StateMemoryMap::const_iterator iter;
     iter = state_memory.find(variable_name);
 
@@ -70,7 +70,7 @@ const GenericMemoryVector& AgentStateMemory::getReadOnlyMemoryVector(const std::
     return *(iter->second);
 }
 
-const std::type_index& AgentStateMemory::getVariableType(std::string variable_name) const {
+const std::type_index& AgentStateMemory::getVariableType(const std::string &variable_name) const {
     auto varIt = population.getAgentDescription().variables.find(variable_name);
     if (varIt == population.getAgentDescription().variables.end()) {
         THROW InvalidAgentVar("Agent ('%s') variable ('%s') was not found, "
@@ -107,4 +107,14 @@ unsigned int AgentStateMemory::getStateListSize() const {
 
 void AgentStateMemory::overrideStateListSize(unsigned int size) {
     current_size = size;
+}
+
+const Variable& AgentStateMemory::getVariableDescription(const std::string &variable_name) {
+    auto varIt = population.getAgentDescription().variables.find(variable_name);
+    if (varIt == population.getAgentDescription().variables.end()) {
+        THROW InvalidAgentVar("Agent ('%s') variable ('%s') was not found, "
+            "In AgentStateMemory::getVariableDescription()",
+            population.getAgentDescription().name.c_str(), variable_name.c_str());
+    }
+    return varIt->second;
 }

@@ -28,19 +28,35 @@ namespace test_agent_state_transitions {
     const char *LAYER_NAME2 = "Layer2";
 FLAMEGPU_AGENT_FUNCTION(AgentGood, MsgNone, MsgNone) {
     FLAMEGPU->setVariable("x", 11);
+    FLAMEGPU->setVariable<int, 4>("y", 0, 23);
+    FLAMEGPU->setVariable<int, 4>("y", 1, 24);
+    FLAMEGPU->setVariable<int, 4>("y", 2, 25);
+    FLAMEGPU->setVariable<int, 4>("y", 3, 26);
     return ALIVE;
 }
 FLAMEGPU_AGENT_FUNCTION(AgentBad, MsgNone, MsgNone) {
     FLAMEGPU->setVariable("x", 13);
+    FLAMEGPU->setVariable<int, 4>("y", 0, 3);
+    FLAMEGPU->setVariable<int, 4>("y", 1, 4);
+    FLAMEGPU->setVariable<int, 4>("y", 2, 5);
+    FLAMEGPU->setVariable<int, 4>("y", 3, 6);
     return ALIVE;
 }
 FLAMEGPU_AGENT_FUNCTION(AgentDecrement, MsgNone, MsgNone) {
     unsigned int x = FLAMEGPU->getVariable<unsigned int>("x");
     FLAMEGPU->setVariable("x", x == 0 ? 0 : x - 1);
+    FLAMEGPU->setVariable<int, 4>("z", 0, 23);
+    FLAMEGPU->setVariable<int, 4>("z", 1, 24);
+    FLAMEGPU->setVariable<int, 4>("z", 2, 25);
+    FLAMEGPU->setVariable<int, 4>("z", 3, 26);
     return ALIVE;
 }
 FLAMEGPU_AGENT_FUNCTION(AgentNull, MsgNone, MsgNone) {
     FLAMEGPU->setVariable("x", UINT_MAX);
+    FLAMEGPU->setVariable<int, 4>("z", 0, 3);
+    FLAMEGPU->setVariable<int, 4>("z", 1, 4);
+    FLAMEGPU->setVariable<int, 4>("z", 2, 5);
+    FLAMEGPU->setVariable<int, 4>("z", 3, 6);
     return ALIVE;
 }
 FLAMEGPU_AGENT_FUNCTION_CONDITION(Zero_X) {
@@ -48,12 +64,15 @@ FLAMEGPU_AGENT_FUNCTION_CONDITION(Zero_X) {
     return FLAMEGPU->getVariable<unsigned int>("x") == 0;
 }
 TEST(TestAgentStateTransitions, Src_0_Dest_10) {
+    const std::array<int, 4> ARRAY_REFERENCE = { 13, 14, 15, 16 };
+    const std::array<int, 4> ARRAY_REFERENCE2 = { 23, 24, 25, 26 };
     ModelDescription m(MODEL_NAME);
     AgentDescription &a = m.newAgent(AGENT_NAME);
     a.newState(START_STATE);
     a.newState(END_STATE);
     a.setInitialState(START_STATE);
     a.newVariable<int>("x");
+    a.newVariable<int, 4>("y");
     AgentFunctionDescription &af1 = a.newFunction(FUNCTION_NAME1, AgentGood);
     af1.setInitialState(START_STATE);
     af1.setEndState(END_STATE);
@@ -63,6 +82,7 @@ TEST(TestAgentStateTransitions, Src_0_Dest_10) {
     for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
         AgentInstance ai = pop.getNextInstance(START_STATE);
         ai.setVariable<int>("x", 12);
+        ai.setVariable<int, 4>("y", ARRAY_REFERENCE);
     }
     CUDAAgentModel c(m);
     c.setPopulationData(pop);
@@ -74,6 +94,8 @@ TEST(TestAgentStateTransitions, Src_0_Dest_10) {
     for (unsigned int i = 0; i < pop.getCurrentListSize(END_STATE); ++i) {
         AgentInstance ai = pop.getInstanceAt(i, END_STATE);
         ASSERT_EQ(ai.getVariable<int>("x"), 11);
+        auto test = ai.getVariable<int, 4>("y");
+        ASSERT_EQ(test, ARRAY_REFERENCE2);
     }
     // Step 2, no agents in start state, nothing changes
     c.step();
@@ -83,9 +105,14 @@ TEST(TestAgentStateTransitions, Src_0_Dest_10) {
     for (unsigned int i = 0; i < pop.getCurrentListSize(END_STATE); ++i) {
         AgentInstance ai = pop.getInstanceAt(i, END_STATE);
         ASSERT_EQ(ai.getVariable<int>("x"), 11);
+        auto test = ai.getVariable<int, 4>("y");
+        ASSERT_EQ(test, ARRAY_REFERENCE2);
     }
 }
 TEST(TestAgentStateTransitions, Src_10_Dest_0) {
+    const std::array<int, 4> ARRAY_REFERENCE = { 13, 14, 15, 16 };
+    const std::array<int, 4> ARRAY_REFERENCE2 = { 23, 24, 25, 26 };
+    const std::array<int, 4> ARRAY_REFERENCE3 = { 3, 4, 5, 6 };
     ModelDescription m(MODEL_NAME);
     AgentDescription &a = m.newAgent(AGENT_NAME);
     a.newState(START_STATE);
@@ -93,6 +120,7 @@ TEST(TestAgentStateTransitions, Src_10_Dest_0) {
     a.newState(END_STATE2);
     a.setInitialState(START_STATE);
     a.newVariable<int>("x");
+    a.newVariable<int, 4>("y");
     AgentFunctionDescription &af1 = a.newFunction(FUNCTION_NAME1, AgentGood);
     af1.setInitialState(START_STATE);
     af1.setEndState(END_STATE);
@@ -107,6 +135,7 @@ TEST(TestAgentStateTransitions, Src_10_Dest_0) {
     for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
         AgentInstance ai = pop.getNextInstance(START_STATE);
         ai.setVariable<int>("x", 12);
+        ai.setVariable<int, 4>("y", ARRAY_REFERENCE);
     }
     CUDAAgentModel c(m);
     c.setPopulationData(pop);
@@ -119,6 +148,8 @@ TEST(TestAgentStateTransitions, Src_10_Dest_0) {
     for (unsigned int i = 0; i < pop.getCurrentListSize(END_STATE); ++i) {
         AgentInstance ai = pop.getInstanceAt(i, END_STATE);
         ASSERT_EQ(ai.getVariable<int>("x"), 11);
+        auto test = ai.getVariable<int, 4>("y");
+        ASSERT_EQ(test, ARRAY_REFERENCE2);
     }
     // Step 2, all agents go from End->End2 state, and value become 13
     c.step();
@@ -129,9 +160,14 @@ TEST(TestAgentStateTransitions, Src_10_Dest_0) {
     for (unsigned int i = 0; i < pop.getCurrentListSize(END_STATE2); ++i) {
         AgentInstance ai = pop.getInstanceAt(i, END_STATE2);
         ASSERT_EQ(ai.getVariable<int>("x"), 13);
+        auto test = ai.getVariable<int, 4>("y");
+        ASSERT_EQ(test, ARRAY_REFERENCE3);
     }
 }
 TEST(TestAgentStateTransitions, Src_10_Dest_10) {
+    const std::array<int, 4> ARRAY_REFERENCE = { 13, 14, 15, 16 };
+    const std::array<int, 4> ARRAY_REFERENCE2 = { 23, 24, 25, 26 };
+    const std::array<int, 4> ARRAY_REFERENCE3 = { 3, 4, 5, 6 };
     // Init agents with two vars x and y
     // 3 round, 10 agents per round, with x and y value all set to 1 * round no
     // Each round 10 agents move from start to end state
@@ -143,6 +179,7 @@ TEST(TestAgentStateTransitions, Src_10_Dest_10) {
     a.setInitialState(START_STATE);
     a.newVariable<unsigned int>("x");
     a.newVariable<unsigned int>("y");
+    a.newVariable<int, 4>("z");
     AgentFunctionDescription &af1 = a.newFunction(FUNCTION_NAME1, AgentDecrement);
     af1.setInitialState(START_STATE);
     af1.setEndState(START_STATE);
@@ -163,6 +200,7 @@ TEST(TestAgentStateTransitions, Src_10_Dest_10) {
         unsigned int val = 1 + (i % ROUNDS);  // 1, 2, 3, 1, 2, 3 etc
         ai.setVariable<unsigned int>("x", val);
         ai.setVariable<unsigned int>("y", val);
+        ai.setVariable<int, 4>("z", ARRAY_REFERENCE);
     }
     CUDAAgentModel c(m);
     c.setPopulationData(pop);
@@ -181,6 +219,8 @@ TEST(TestAgentStateTransitions, Src_10_Dest_10) {
             AgentInstance ai = pop.getInstanceAt(j, START_STATE);
             unsigned int y = ai.getVariable<unsigned int>("y");
             out[y]++;
+            auto test = ai.getVariable<int, 4>("z");
+            ASSERT_EQ(test, ARRAY_REFERENCE2);
         }
         // printf("Start hist: [%u, %u, %u, %u]\n", out[0], out[1], out[2], out[3]);
         EXPECT_EQ(out[0], 0u);
@@ -196,6 +236,8 @@ TEST(TestAgentStateTransitions, Src_10_Dest_10) {
             AgentInstance ai = pop.getInstanceAt(j, END_STATE);
             unsigned int y = ai.getVariable<unsigned int>("y");
             out[y]++;
+            auto test = ai.getVariable<int, 4>("z");
+            ASSERT_EQ(test, ARRAY_REFERENCE3);
         }
         // printf("End hist: [%u, %u, %u, %u]\n", out[0], out[1], out[2], out[3]);
         for (unsigned int j = 1; j < i + 1; j++) {

@@ -43,7 +43,9 @@ class FLAMEGPU_READ_ONLY_DEVICE_API {
         , streamId(_streamId) { }
 
     template<typename T, unsigned int N> __device__
-        T getVariable(const char(&variable_name)[N]);
+    T getVariable(const char(&variable_name)[N]);
+    template<typename T, unsigned int N, unsigned int M> __device__
+    T getVariable(const char(&variable_name)[M], const unsigned int &index);
 
     /**
      * Provides access to random functionality inside agent functions
@@ -117,8 +119,31 @@ class FLAMEGPU_DEVICE_API : public FLAMEGPU_READ_ONLY_DEVICE_API{
          __device__ AgentOut(const Curve::NamespaceHash &aoh, const unsigned int &_streamId)
              : agent_output_hash(aoh)
              , streamId(_streamId) { }
-         template<typename T, unsigned int N> __device__
-             __device__ void setVariable(const char(&variable_name)[N], T value) const;
+         /**
+          * Sets a variable in a new agent to be output after the agent function has completed
+          * @param variable_name The name of the variable
+          * @param value The value to set the variable
+          * @tparam T The type of the variable, as set within the model description hierarchy
+          * @tparam N Variable name length, this should be ignored as it is implicitly set
+          * @note Any agent variables not set will remain as their default values
+          * @note Atleast one AgentOut::setVariable() method must be called to trigger an agent output
+          */
+         template<typename T, unsigned int N>
+         __device__ void setVariable(const char(&variable_name)[N], T value) const;
+         /**
+          * Sets an element of an array variable in a new agent to be output after the agent function has completed
+          * @param variable_name The name of the array variable
+          * @param index The index to set within the array variable
+          * @param value The value to set the element of the array velement
+          * @tparam T The type of the variable, as set within the model description hierarchy
+          * @tparam N The length of the array variable, as set within the model description hierarchy
+          * @tparam M Variable name length, this should be ignored as it is implicitly set
+          * @note Any agent variables not set will remain as their default values
+          * @note Atleast one AgentOut::setVariable() method must be called to trigger an agent output
+          */
+         template<typename T, unsigned int N, unsigned int M>
+         __device__ void setVariable(const char(&variable_name)[M], const unsigned int &index, T value) const;
+
       private:
          const Curve::NamespaceHash agent_output_hash;
          const unsigned int streamId;
@@ -144,9 +169,26 @@ class FLAMEGPU_DEVICE_API : public FLAMEGPU_READ_ONLY_DEVICE_API{
         , message_out(msg_out)
         , agent_out(AgentOut(_agent_output_hash, _streamId))
     { }
-
-    template<typename T, unsigned int N> __device__
-    void setVariable(const char(&variable_name)[N], T value);
+    /**
+     * Sets a variable within the currently executing agent
+     * @param variable_name The name of the variable
+     * @param value The value to set the variable
+     * @tparam T The type of the variable, as set within the model description hierarchy
+     * @tparam N Variable name length, this should be ignored as it is implicitly set
+     */
+    template<typename T, unsigned int N>
+    __device__ void setVariable(const char(&variable_name)[N], T value);
+    /**
+     * Sets an element of an array variable within the currently executing agent
+     * @param variable_name The name of the array variable
+     * @param index The index to set within the array variable
+     * @param value The value to set the element of the array velement
+     * @tparam T The type of the variable, as set within the model description hierarchy
+     * @tparam N The length of the array variable, as set within the model description hierarchy
+     * @tparam M Variable name length, this should be ignored as it is implicitly set
+     */
+    template<typename T, unsigned int N, unsigned int M>
+    __device__ void setVariable(const char(&variable_name)[M], const unsigned int &index, const T &value);
 
     /**
      * Provides access to message read functionality inside agent functions
@@ -198,9 +240,38 @@ template<typename T, unsigned int N>
 __device__ void FLAMEGPU_DEVICE_API<MsgIn, MsgOut>::setVariable(const char(&variable_name)[N], T value) {
     // simple indexing assumes index is the thread number (this may change later)
     unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
+    // set the variable using curve
+    Curve::setVariable<T>(variable_name, agent_func_name_hash,  value, index);
+}
+/**
+ * \brief Gets an agent memory value
+ * \param variable_name Name of memory variable to retrieve
+ */
+template<typename T, unsigned int N, unsigned int M>
+__device__ T FLAMEGPU_READ_ONLY_DEVICE_API::getVariable(const char(&variable_name)[M], const unsigned int &array_index) {
+    // simple indexing assumes index is the thread number (this may change later)
+    unsigned int index =  (blockDim.x * blockIdx.x) + threadIdx.x;
+
+    // get the value from curve
+    T value = Curve::getArrayVariable<T, N>(variable_name, agent_func_name_hash , index, array_index);
+
+    // return the variable from curve
+    return value;
+}
+
+/**
+ * \brief Sets an agent memory value
+ * \param variable_name Name of memory variable to set
+ * \param value Value to set it to
+ */
+template<typename MsgIn, typename MsgOut>
+template<typename T, unsigned int N, unsigned int M>
+__device__ void FLAMEGPU_DEVICE_API<MsgIn, MsgOut>::setVariable(const char(&variable_name)[M], const unsigned int &array_index, const T &value) {
+    // simple indexing assumes index is the thread number (this may change later)
+    unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
 
     // set the variable using curve
-    Curve::setVariable<T>(variable_name , agent_func_name_hash,  value, index);
+    Curve::setArrayVariable<T, N>(variable_name , agent_func_name_hash,  value, index, array_index);
 }
 
 template<typename MsgIn, typename MsgOut>
@@ -217,5 +288,18 @@ __device__ void FLAMEGPU_DEVICE_API<MsgIn, MsgOut>::AgentOut::setVariable(const 
         flamegpu_internal::CUDAScanCompaction::ds_configs[flamegpu_internal::CUDAScanCompaction::Type::AGENT_OUTPUT][streamId].scan_flag[index] = 1;
     }
 }
+template<typename MsgIn, typename MsgOut>
+template<typename T, unsigned int N, unsigned int M>
+__device__ void FLAMEGPU_DEVICE_API<MsgIn, MsgOut>::AgentOut::setVariable(const char(&variable_name)[M], const unsigned int &array_index, T value) const {
+    if (agent_output_hash) {
+        // simple indexing assumes index is the thread number (this may change later)
+        unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
 
+        // set the variable using curve
+        Curve::setArrayVariable<T, N>(variable_name, agent_output_hash, value, index, array_index);
+
+        // Mark scan flag
+        flamegpu_internal::CUDAScanCompaction::ds_configs[flamegpu_internal::CUDAScanCompaction::Type::AGENT_OUTPUT][streamId].scan_flag[index] = 1;
+    }
+}
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_FLAMEGPU_DEVICE_API_H_

@@ -357,7 +357,6 @@ bool CUDAAgentModel::step() {
 
             // Process agent state transition (Longer term merge this with process death?)
             cuda_agent.transitionState(func_des->initial_state, func_des->end_state, j);
-
             // Process agent function condition
             cuda_agent.clearFunctionConditionState(func_des->initial_state);
 

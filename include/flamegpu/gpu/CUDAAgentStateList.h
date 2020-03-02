@@ -61,13 +61,13 @@ class CUDAAgentStateList {
      * @param variable_name Name of the variable to return
      * @return nullptr is variable not found
      */
-    void* getAgentListVariablePointer(std::string variable_name) const;
+    void* getAgentListVariablePointer(const std::string &variable_name) const;
     /**
      * Returns pointer to variable from d_new_list
      * @param variable_name Name of the variable to return
      * @return nullptr is variable not found
      */
-    void* getAgentNewListVariablePointer(std::string variable_name) const;
+    void* getAgentNewListVariablePointer(const std::string &variable_name) const;
 
     void zeroAgentData();
     /**

@@ -27,7 +27,7 @@ struct Variable {
         : type(typeid(T))
         , type_size(sizeof(T))
         , elements(_elements)
-        , memory_vector(new MemoryVector<T>())
+        , memory_vector(new MemoryVector<T>(_elements))
         , default_value(nullptr) {
         assert(_elements > 0);  // This should be enforced with static_assert where Variable's are defined, see MessageDescription::newVariable()
         // Limited to Arithmetic types
@@ -40,7 +40,7 @@ struct Variable {
         : type(typeid(T))
         , type_size(sizeof(T))
         , elements(N)
-        , memory_vector(new MemoryVector<T>())
+        , memory_vector(new MemoryVector<T>(N))
         , default_value(malloc(sizeof(T) * N)) {
         assert(N > 0);  // This should be enforced with static_assert where Variable's are defined, see MessageDescription::newVariable()
         // Limited to Arithmetic types
