@@ -17,23 +17,33 @@
 
 namespace test_device_agent_creation {
 FLAMEGPU_AGENT_FUNCTION(MandatoryOutput, MsgNone, MsgNone) {
-    FLAMEGPU->agent_out.setVariable<float>("x", 12.0f);
+    unsigned int id = FLAMEGPU->getVariable<unsigned int>("id") + 1;
+    FLAMEGPU->agent_out.setVariable<float>("x", id + 12.0f);
+    FLAMEGPU->agent_out.setVariable<unsigned int>("id", id);
     return ALIVE;
 }
 FLAMEGPU_AGENT_FUNCTION(OptionalOutput, MsgNone, MsgNone) {
-    if (threadIdx.x % 2 == 0)
-        FLAMEGPU->agent_out.setVariable<float>("x", 12.0f);
+    unsigned int id = FLAMEGPU->getVariable<unsigned int>("id") + 1;
+    if (threadIdx.x % 2 == 0) {
+        FLAMEGPU->agent_out.setVariable<float>("x", id + 12.0f);
+        FLAMEGPU->agent_out.setVariable<unsigned int>("id", id);
+    }
     return ALIVE;
 }
 FLAMEGPU_AGENT_FUNCTION(MandatoryOutputWithDeath, MsgNone, MsgNone) {
-    FLAMEGPU->agent_out.setVariable<float>("x", 12.0f);
+    unsigned int id = FLAMEGPU->getVariable<unsigned int>("id") + 1;
+    FLAMEGPU->agent_out.setVariable<float>("x", id + 12.0f);
+    FLAMEGPU->agent_out.setVariable<unsigned int>("id", id);
     return DEAD;
 }
 FLAMEGPU_AGENT_FUNCTION(OptionalOutputWithDeath, MsgNone, MsgNone) {
-    if (threadIdx.x % 2 == 0)
-        FLAMEGPU->agent_out.setVariable<float>("x", 12.0f);
-    else
+    unsigned int id = FLAMEGPU->getVariable<unsigned int>("id") + 1;
+    if (threadIdx.x % 2 == 0) {
+        FLAMEGPU->agent_out.setVariable<float>("x", id + 12.0f);
+        FLAMEGPU->agent_out.setVariable<unsigned int>("id", id);
+    } else {
         return DEAD;
+    }
     return ALIVE;
 }
 TEST(DeviceAgentCreationTest, Mandatory_Output_SameState) {
@@ -41,6 +51,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_SameState) {
     ModelDescription model("Spatial3DMsgTestModel");
     AgentDescription &agent = model.newAgent("agent");
     agent.newVariable<float>("x");
+    agent.newVariable<unsigned int>("id");
     AgentFunctionDescription &function = agent.newFunction("output", MandatoryOutput);
     function.setAgentOutput(agent);
     LayerDescription &layer1 = model.newLayer();
@@ -52,7 +63,8 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_SameState) {
     // Initialise agents
     for (unsigned int i = 0; i < AGENT_COUNT; i++) {
         AgentInstance instance = population.getNextInstance();
-        instance.setVariable<float>("x", 1.0f);
+        instance.setVariable<float>("x", i + 1.0f);
+        instance.setVariable<unsigned int>("id", i);
     }
     cuda_model.setPopulationData(population);
     // Execute model
@@ -65,7 +77,8 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_SameState) {
     unsigned int is_12 = 0;
     for (unsigned int i = 0; i < population.getCurrentListSize(); ++i) {
         AgentInstance ai = population.getInstanceAt(i);
-        float val = ai.getVariable<float>("x");
+        const unsigned int id = ai.getVariable<unsigned int>("id");
+        const float val = ai.getVariable<float>("x") - id;
         if (val == 1.0f)
             is_1++;
         else if (val == 12.0f)
@@ -79,6 +92,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_SameState) {
     ModelDescription model("Spatial3DMsgTestModel");
     AgentDescription &agent = model.newAgent("agent");
     agent.newVariable<float>("x");
+    agent.newVariable<unsigned int>("id");
     AgentFunctionDescription &function = agent.newFunction("output", OptionalOutput);
     function.setAgentOutput(agent);
     LayerDescription &layer1 = model.newLayer();
@@ -90,7 +104,8 @@ TEST(DeviceAgentCreationTest, Optional_Output_SameState) {
     // Initialise agents
     for (unsigned int i = 0; i < AGENT_COUNT; i++) {
         AgentInstance instance = population.getNextInstance();
-        instance.setVariable<float>("x", 1.0f);
+        instance.setVariable<float>("x", i + 1.0f);
+        instance.setVariable<unsigned int>("id", i);
     }
     cuda_model.setPopulationData(population);
     // Execute model
@@ -103,7 +118,8 @@ TEST(DeviceAgentCreationTest, Optional_Output_SameState) {
     unsigned int is_12 = 0;
     for (unsigned int i = 0; i < population.getCurrentListSize(); ++i) {
         AgentInstance ai = population.getInstanceAt(i);
-        float val = ai.getVariable<float>("x");
+        const unsigned int id = ai.getVariable<unsigned int>("id");
+        const float val = ai.getVariable<float>("x") - id;
         if (val == 1.0f)
             is_1++;
         else if (val == 12.0f)
@@ -119,6 +135,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentState) {
     agent.newState("a");
     agent.newState("b");
     agent.newVariable<float>("x");
+    agent.newVariable<unsigned int>("id");
     AgentFunctionDescription &function = agent.newFunction("output", MandatoryOutput);
     function.setInitialState("a");
     function.setEndState("a");
@@ -132,7 +149,8 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentState) {
     // Initialise agents
     for (unsigned int i = 0; i < AGENT_COUNT; i++) {
         AgentInstance instance = population.getNextInstance("a");
-        instance.setVariable<float>("x", 1.0f);
+        instance.setVariable<float>("x", i + 1.0f);
+        instance.setVariable<unsigned int>("id", i);
     }
     cuda_model.setPopulationData(population);
     // Execute model
@@ -144,11 +162,11 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentState) {
     EXPECT_EQ(population.getCurrentListSize("b"), AGENT_COUNT);
     for (unsigned int i = 0; i < population.getCurrentListSize("a"); ++i) {
         AgentInstance ai = population.getInstanceAt(i, "a");
-        EXPECT_EQ(ai.getVariable<float>("x"), 1.0f);
+        EXPECT_EQ(ai.getVariable<float>("x") - ai.getVariable<unsigned int>("id"), 1.0f);
     }
     for (unsigned int i = 0; i < population.getCurrentListSize("b"); ++i) {
         AgentInstance ai = population.getInstanceAt(i, "b");
-        EXPECT_EQ(ai.getVariable<float>("x"), 12.0f);
+        EXPECT_EQ(ai.getVariable<float>("x") - ai.getVariable<unsigned int>("id"), 12.0f);
     }
 }
 TEST(DeviceAgentCreationTest, Optional_Output_DifferentState) {
@@ -158,6 +176,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentState) {
     agent.newState("a");
     agent.newState("b");
     agent.newVariable<float>("x");
+    agent.newVariable<unsigned int>("id");
     AgentFunctionDescription &function = agent.newFunction("output", OptionalOutput);
     function.setInitialState("a");
     function.setEndState("a");
@@ -171,7 +190,8 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentState) {
     // Initialise agents
     for (unsigned int i = 0; i < AGENT_COUNT; i++) {
         AgentInstance instance = population.getNextInstance("a");
-        instance.setVariable<float>("x", 1.0f);
+        instance.setVariable<float>("x", i + 1.0f);
+        instance.setVariable<unsigned int>("id", i);
     }
     cuda_model.setPopulationData(population);
     // Execute model
@@ -183,11 +203,11 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentState) {
     EXPECT_EQ(population.getCurrentListSize("b"), AGENT_COUNT / 2);
     for (unsigned int i = 0; i < population.getCurrentListSize("a"); ++i) {
         AgentInstance ai = population.getInstanceAt(i, "a");
-        EXPECT_EQ(ai.getVariable<float>("x"), 1.0f);
+        EXPECT_EQ(ai.getVariable<float>("x") - ai.getVariable<unsigned int>("id"), 1.0f);
     }
     for (unsigned int i = 0; i < population.getCurrentListSize("b"); ++i) {
         AgentInstance ai = population.getInstanceAt(i, "b");
-        EXPECT_EQ(ai.getVariable<float>("x"), 12.0f);
+        EXPECT_EQ(ai.getVariable<float>("x") - ai.getVariable<unsigned int>("id"), 12.0f);
     }
 }
 TEST(DeviceAgentCreationTest, Mandatory_Output_SameState_WithDeath) {
@@ -195,6 +215,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_SameState_WithDeath) {
     ModelDescription model("Spatial3DMsgTestModel");
     AgentDescription &agent = model.newAgent("agent");
     agent.newVariable<float>("x");
+    agent.newVariable<unsigned int>("id");
     AgentFunctionDescription &function = agent.newFunction("output", MandatoryOutputWithDeath);
     function.setAgentOutput(agent);
     function.setAllowAgentDeath(true);
@@ -207,7 +228,8 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_SameState_WithDeath) {
     // Initialise agents
     for (unsigned int i = 0; i < AGENT_COUNT; i++) {
         AgentInstance instance = population.getNextInstance();
-        instance.setVariable<float>("x", 1.0f);
+        instance.setVariable<float>("x", i + 1.0f);
+        instance.setVariable<unsigned int>("id", i);
     }
     cuda_model.setPopulationData(population);
     // Execute model
@@ -220,7 +242,8 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_SameState_WithDeath) {
     unsigned int is_12 = 0;
     for (unsigned int i = 0; i < population.getCurrentListSize(); ++i) {
         AgentInstance ai = population.getInstanceAt(i);
-        float val = ai.getVariable<float>("x");
+        const unsigned int id = ai.getVariable<unsigned int>("id");
+        const float val = ai.getVariable<float>("x") - id;
         if (val == 1.0f)
             is_1++;
         else if (val == 12.0f)
@@ -234,6 +257,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_SameState_WithDeath) {
     ModelDescription model("Spatial3DMsgTestModel");
     AgentDescription &agent = model.newAgent("agent");
     agent.newVariable<float>("x");
+    agent.newVariable<unsigned int>("id");
     AgentFunctionDescription &function = agent.newFunction("output", OptionalOutputWithDeath);
     function.setAgentOutput(agent);
     function.setAllowAgentDeath(true);
@@ -246,7 +270,8 @@ TEST(DeviceAgentCreationTest, Optional_Output_SameState_WithDeath) {
     // Initialise agents
     for (unsigned int i = 0; i < AGENT_COUNT; i++) {
         AgentInstance instance = population.getNextInstance();
-        instance.setVariable<float>("x", 1.0f);
+        instance.setVariable<float>("x", i + 1.0f);
+        instance.setVariable<unsigned int>("id", i);
     }
     cuda_model.setPopulationData(population);
     // Execute model
@@ -259,7 +284,8 @@ TEST(DeviceAgentCreationTest, Optional_Output_SameState_WithDeath) {
     unsigned int is_12 = 0;
     for (unsigned int i = 0; i < population.getCurrentListSize(); ++i) {
         AgentInstance ai = population.getInstanceAt(i);
-        float val = ai.getVariable<float>("x");
+        const unsigned int id = ai.getVariable<unsigned int>("id");
+        const float val = ai.getVariable<float>("x") - id;
         if (val == 1.0f)
             is_1++;
         else if (val == 12.0f)
@@ -275,6 +301,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentState_WithDeath) {
     agent.newState("a");
     agent.newState("b");
     agent.newVariable<float>("x");
+    agent.newVariable<unsigned int>("id");
     AgentFunctionDescription &function = agent.newFunction("output", MandatoryOutputWithDeath);
     function.setInitialState("a");
     function.setEndState("a");
@@ -289,7 +316,8 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentState_WithDeath) {
     // Initialise agents
     for (unsigned int i = 0; i < AGENT_COUNT; i++) {
         AgentInstance instance = population.getNextInstance("a");
-        instance.setVariable<float>("x", 1.0f);
+        instance.setVariable<float>("x", i + 1.0f);
+        instance.setVariable<unsigned int>("id", i);
     }
     cuda_model.setPopulationData(population);
     // Execute model
@@ -301,7 +329,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentState_WithDeath) {
     EXPECT_EQ(population.getCurrentListSize("b"), AGENT_COUNT);
     for (unsigned int i = 0; i < population.getCurrentListSize("b"); ++i) {
         AgentInstance ai = population.getInstanceAt(i, "b");
-        EXPECT_EQ(ai.getVariable<float>("x"), 12.0f);
+        EXPECT_EQ(ai.getVariable<float>("x") - ai.getVariable<unsigned int>("id"), 12.0f);
     }
 }
 TEST(DeviceAgentCreationTest, Optional_Output_DifferentState_WithDeath) {
@@ -311,6 +339,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentState_WithDeath) {
     agent.newState("a");
     agent.newState("b");
     agent.newVariable<float>("x");
+    agent.newVariable<unsigned int>("id");
     AgentFunctionDescription &function = agent.newFunction("output", OptionalOutputWithDeath);
     function.setInitialState("a");
     function.setEndState("a");
@@ -325,7 +354,8 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentState_WithDeath) {
     // Initialise agents
     for (unsigned int i = 0; i < AGENT_COUNT; i++) {
         AgentInstance instance = population.getNextInstance("a");
-        instance.setVariable<float>("x", 1.0f);
+        instance.setVariable<float>("x", i + 1.0f);
+        instance.setVariable<unsigned int>("id", i);
     }
     cuda_model.setPopulationData(population);
     // Execute model
@@ -337,13 +367,14 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentState_WithDeath) {
     EXPECT_EQ(population.getCurrentListSize("b"), AGENT_COUNT / 2);
     for (unsigned int i = 0; i < population.getCurrentListSize("a"); ++i) {
         AgentInstance ai = population.getInstanceAt(i, "a");
-        EXPECT_EQ(ai.getVariable<float>("x"), 1.0f);
+        EXPECT_EQ(ai.getVariable<float>("x") - ai.getVariable<unsigned int>("id"), 1.0f);
     }
     for (unsigned int i = 0; i < population.getCurrentListSize("b"); ++i) {
         AgentInstance ai = population.getInstanceAt(i, "b");
-        EXPECT_EQ(ai.getVariable<float>("x"), 12.0f);
+        EXPECT_EQ(ai.getVariable<float>("x") - ai.getVariable<unsigned int>("id"), 12.0f);
     }
 }
+    // Tests beyond here all also check id % 2 or id % 4
 TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentAgent) {
     // Define model
     ModelDescription model("Spatial3DMsgTestModel");
@@ -352,7 +383,9 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentAgent) {
     agent.newState("a");
     agent.newState("b");
     agent.newVariable<float>("x");
+    agent.newVariable<unsigned int>("id");
     agent2.newVariable<float>("x");
+    agent2.newVariable<unsigned int>("id");
     AgentFunctionDescription &function = agent2.newFunction("output", MandatoryOutput);
     function.setAgentOutput(agent, "b");
     LayerDescription &layer1 = model.newLayer();
@@ -364,7 +397,8 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentAgent) {
     // Initialise agents
     for (unsigned int i = 0; i < AGENT_COUNT; i++) {
         AgentInstance instance = population.getNextInstance();
-        instance.setVariable<float>("x", 1.0f);
+        instance.setVariable<float>("x", i + 1.0f);
+        instance.setVariable<unsigned int>("id", i);
     }
     cuda_model.setPopulationData(population);
     // Execute model
@@ -376,14 +410,32 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentAgent) {
     // Validate each agent has same result
     EXPECT_EQ(population.getCurrentListSize(), AGENT_COUNT);
     EXPECT_EQ(newPopulation.getCurrentListSize("b"), AGENT_COUNT);
+    unsigned int is_1_mod2_0 = 0;
+    unsigned int is_1_mod2_1 = 0;
     for (unsigned int i = 0; i < population.getCurrentListSize(); ++i) {
         AgentInstance ai = population.getInstanceAt(i);
-        EXPECT_EQ(ai.getVariable<float>("x"), 1.0f);
+        EXPECT_EQ(ai.getVariable<float>("x") - ai.getVariable<unsigned int>("id"), 1.0f);
+        if (ai.getVariable<unsigned int>("id") % 2 == 0) {
+            is_1_mod2_0++;
+        } else {
+            is_1_mod2_1++;
+        }
     }
+    EXPECT_EQ(is_1_mod2_0, AGENT_COUNT / 2);
+    EXPECT_EQ(is_1_mod2_1, AGENT_COUNT / 2);
+    unsigned int is_12_mod2_0 = 0;
+    unsigned int is_12_mod2_1 = 0;
     for (unsigned int i = 0; i < newPopulation.getCurrentListSize("b"); ++i) {
         AgentInstance ai = newPopulation.getInstanceAt(i, "b");
-        EXPECT_EQ(ai.getVariable<float>("x"), 12.0f);
+        EXPECT_EQ(ai.getVariable<float>("x") - ai.getVariable<unsigned int>("id"), 12.0f);
+        if (ai.getVariable<unsigned int>("id") % 2 == 0) {
+            is_12_mod2_0++;
+        } else {
+            is_12_mod2_1++;
+        }
     }
+    EXPECT_EQ(is_12_mod2_0, AGENT_COUNT / 2);
+    EXPECT_EQ(is_12_mod2_1, AGENT_COUNT / 2);
 }
 TEST(DeviceAgentCreationTest, Optional_Output_DifferentAgent) {
     // Define model
@@ -393,7 +445,9 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentAgent) {
     agent.newState("a");
     agent.newState("b");
     agent.newVariable<float>("x");
+    agent.newVariable<unsigned int>("id");
     agent2.newVariable<float>("x");
+    agent2.newVariable<unsigned int>("id");
     AgentFunctionDescription &function = agent2.newFunction("output", OptionalOutput);
     function.setAgentOutput(agent, "b");
     LayerDescription &layer1 = model.newLayer();
@@ -405,7 +459,8 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentAgent) {
     // Initialise agents
     for (unsigned int i = 0; i < AGENT_COUNT; i++) {
         AgentInstance instance = population.getNextInstance();
-        instance.setVariable<float>("x", 1.0f);
+        instance.setVariable<float>("x", i + 1.0f);
+        instance.setVariable<unsigned int>("id", i);
     }
     cuda_model.setPopulationData(population);
     // Execute model
@@ -417,13 +472,23 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentAgent) {
     // Validate each agent has same result
     EXPECT_EQ(population.getCurrentListSize(), AGENT_COUNT);
     EXPECT_EQ(newPopulation.getCurrentListSize("b"), AGENT_COUNT / 2);
+    unsigned int is_1_mod2_0 = 0;
+    unsigned int is_1_mod2_1 = 0;
     for (unsigned int i = 0; i < population.getCurrentListSize(); ++i) {
         AgentInstance ai = population.getInstanceAt(i);
-        EXPECT_EQ(ai.getVariable<float>("x"), 1.0f);
+        EXPECT_EQ(ai.getVariable<float>("x") - ai.getVariable<unsigned int>("id"), 1.0f);
+        if (ai.getVariable<unsigned int>("id") % 2 == 0) {
+            is_1_mod2_0++;
+        } else {
+            is_1_mod2_1++;
+        }
     }
+    EXPECT_EQ(is_1_mod2_0, AGENT_COUNT / 2);
+    EXPECT_EQ(is_1_mod2_1, AGENT_COUNT / 2);
     for (unsigned int i = 0; i < newPopulation.getCurrentListSize("b"); ++i) {
         AgentInstance ai = newPopulation.getInstanceAt(i, "b");
-        EXPECT_EQ(ai.getVariable<float>("x"), 12.0f);
+        EXPECT_EQ(ai.getVariable<float>("x") - ai.getVariable<unsigned int>("id"), 12.0f);
+        EXPECT_EQ(ai.getVariable<unsigned int>("id") % 2, 1u);
     }
 }
 TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentAgent_WithDeath) {
@@ -437,7 +502,9 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentAgent_WithDeath) {
     agent.newState("a");
     agent.newState("b");
     agent.newVariable<float>("x");
+    agent.newVariable<unsigned int>("id");
     agent2.newVariable<float>("x");
+    agent2.newVariable<unsigned int>("id");
     AgentFunctionDescription &function = agent2.newFunction("output", MandatoryOutputWithDeath);
     function.setAgentOutput(agent, "b");
     function.setAllowAgentDeath(true);
@@ -450,7 +517,8 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentAgent_WithDeath) {
     // Initialise agents
     for (unsigned int i = 0; i < AGENT_COUNT; i++) {
         AgentInstance instance = population.getNextInstance();
-        instance.setVariable<float>("x", 1.0f);
+        instance.setVariable<float>("x", i + 1.0f);
+        instance.setVariable<unsigned int>("id", i);
     }
     cuda_model.setPopulationData(population);
     // Execute model
@@ -464,17 +532,27 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentAgent_WithDeath) {
     EXPECT_EQ(newPopulation.getCurrentListSize("b"), AGENT_COUNT);
     unsigned int is_1 = 0;
     unsigned int is_12 = 0;
+    unsigned int is_12_mod2_0 = 0;
+    unsigned int is_12_mod2_1 = 0;
     for (unsigned int i = 0; i < newPopulation.getCurrentListSize("b"); ++i) {
         AgentInstance ai = newPopulation.getInstanceAt(i, "b");
-        float val = ai.getVariable<float>("x");
-        if (val == 1.0f)
+        const unsigned int id = ai.getVariable<unsigned int>("id");
+        const float val = ai.getVariable<float>("x") - id;
+        if (val == 1.0f) {
             is_1++;
-        else if (val == 12.0f)
+       } else if (val == 12.0f) {
             is_12++;
-        // EXPECT_EQ(ai.getVariable<float>("x"), 12.0f);
+            if (ai.getVariable<unsigned int>("id") % 2 == 0) {
+                is_12_mod2_0++;
+            } else {
+                is_12_mod2_1++;
+            }
+       }
     }
     EXPECT_EQ(is_1, 0u);
     EXPECT_EQ(is_12, AGENT_COUNT);
+    EXPECT_EQ(is_12_mod2_0, AGENT_COUNT / 2);
+    EXPECT_EQ(is_12_mod2_1, AGENT_COUNT / 2);
 }
 TEST(DeviceAgentCreationTest, Optional_Output_DifferentAgent_WithDeath) {
     // Define model
@@ -484,7 +562,9 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentAgent_WithDeath) {
     agent.newState("a");
     agent.newState("b");
     agent.newVariable<float>("x");
+    agent.newVariable<unsigned int>("id");
     agent2.newVariable<float>("x");
+    agent2.newVariable<unsigned int>("id");
     AgentFunctionDescription &function = agent2.newFunction("output", OptionalOutputWithDeath);
     function.setAgentOutput(agent, "b");
     function.setAllowAgentDeath(true);
@@ -497,7 +577,8 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentAgent_WithDeath) {
     // Initialise agents
     for (unsigned int i = 0; i < AGENT_COUNT; i++) {
         AgentInstance instance = population.getNextInstance();
-        instance.setVariable<float>("x", 1.0f);
+        instance.setVariable<float>("x", i + 1.0f);
+        instance.setVariable<unsigned int>("id", i);
     }
     cuda_model.setPopulationData(population);
     // Execute model
@@ -513,11 +594,13 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentAgent_WithDeath) {
     EXPECT_EQ(newPopulation.getCurrentListSize("b"), AGENT_COUNT / 2);
     for (unsigned int i = 0; i < population.getCurrentListSize(); ++i) {
         AgentInstance ai = population.getInstanceAt(i);
-        EXPECT_EQ(ai.getVariable<float>("x"), 1.0f);
+        EXPECT_EQ(ai.getVariable<unsigned int>("id") % 2, 0u);
+        EXPECT_EQ(ai.getVariable<float>("x") - ai.getVariable<unsigned int>("id"), 1.0f);
     }
     for (unsigned int i = 0; i < newPopulation.getCurrentListSize("b"); ++i) {
         AgentInstance ai = newPopulation.getInstanceAt(i, "b");
-        EXPECT_EQ(ai.getVariable<float>("x"), 12.0f);
+        EXPECT_EQ(ai.getVariable<unsigned int>("id") % 2, 1u);
+        EXPECT_EQ(ai.getVariable<float>("x") - ai.getVariable<unsigned int>("id"), 12.0f);
     }
 }
 TEST(DeviceAgentCreationTest, DefaultVariableValue) {
@@ -527,7 +610,9 @@ TEST(DeviceAgentCreationTest, DefaultVariableValue) {
     AgentDescription &agent2 = model.newAgent("agent2");
     agent.newVariable<float>("x");
     agent.newVariable<float>("default", 15.0f);
+    agent.newVariable<unsigned int>("id");
     agent2.newVariable<float>("x");
+    agent2.newVariable<unsigned int>("id");
     AgentFunctionDescription &function = agent2.newFunction("output", MandatoryOutput);
     function.setAgentOutput(agent);
     LayerDescription &layer1 = model.newLayer();
@@ -539,7 +624,8 @@ TEST(DeviceAgentCreationTest, DefaultVariableValue) {
     // Initialise agents
     for (unsigned int i = 0; i < AGENT_COUNT; i++) {
         AgentInstance instance = population.getNextInstance();
-        instance.setVariable<float>("x", 1.0f);
+        instance.setVariable<float>("x", i + 1.0f);
+        instance.setVariable<unsigned int>("id", i);
     }
     cuda_model.setPopulationData(population);
     // Execute model
@@ -551,11 +637,463 @@ TEST(DeviceAgentCreationTest, DefaultVariableValue) {
     // Validate each new agent has default value
     EXPECT_EQ(newPopulation.getCurrentListSize(), AGENT_COUNT);
     unsigned int is_15 = 0;
+    unsigned int is_12_mod2_1 = 0;
+    unsigned int is_12_mod2_3 = 0;
     for (unsigned int i = 0; i < newPopulation.getCurrentListSize(); ++i) {
         AgentInstance ai = newPopulation.getInstanceAt(i);
-        if (ai.getVariable<float>("default") == 15.0f)
+        if (ai.getVariable<float>("default") == 15.0f) {
             is_15++;
+            if (ai.getVariable<unsigned int>("id") % 4 == 1) {
+                is_12_mod2_1++;
+            } else if (ai.getVariable<unsigned int>("id") % 4 == 3) {
+                is_12_mod2_3++;
+            }
+        }
     }
     EXPECT_EQ(is_15, AGENT_COUNT);
+    EXPECT_EQ(is_12_mod2_1, AGENT_COUNT / 4);
+    EXPECT_EQ(is_12_mod2_3, AGENT_COUNT / 4);
+}
+FLAMEGPU_AGENT_FUNCTION_CONDITION(EvenThreadsOnlyCdn) {
+    return threadIdx.x % 2 == 0;
+}
+TEST(DeviceAgentCreationTest, Mandatory_Output_SameState_WithAgentFunctionCondition) {
+    // Define model
+    ModelDescription model("Spatial3DMsgTestModel");
+    AgentDescription &agent = model.newAgent("agent");
+    agent.newState("a");
+    agent.newState("b");
+    agent.newVariable<float>("x");
+    agent.newVariable<unsigned int>("id");
+    AgentFunctionDescription &function = agent.newFunction("output", MandatoryOutput);
+    function.setFunctionCondition(EvenThreadsOnlyCdn);
+    function.setInitialState("a");
+    function.setEndState("b");
+    function.setAgentOutput(agent, "b");
+    LayerDescription &layer1 = model.newLayer();
+    layer1.addAgentFunction(function);
+    // Init agent pop
+    CUDAAgentModel cuda_model(model);
+    const unsigned int AGENT_COUNT = 1024;
+    AgentPopulation population(model.Agent("agent"), AGENT_COUNT);
+    // Initialise agents
+    for (unsigned int i = 0; i < AGENT_COUNT; i++) {
+        AgentInstance instance = population.getNextInstance("a");
+        instance.setVariable<float>("x", i + 1.0f);
+        instance.setVariable<unsigned int>("id", i);
+    }
+    cuda_model.setPopulationData(population);
+    // Execute model
+    cuda_model.step();
+    // Test output
+    cuda_model.getPopulationData(population);
+    // Validate each agent has same result
+    EXPECT_EQ(population.getCurrentListSize("a"), AGENT_COUNT / 2);
+    EXPECT_EQ(population.getCurrentListSize("b"), AGENT_COUNT);
+    for (unsigned int i = 0; i < population.getCurrentListSize("a"); ++i) {
+        AgentInstance ai = population.getInstanceAt(i, "a");
+        EXPECT_EQ(ai.getVariable<float>("x") - ai.getVariable<unsigned int>("id"), 1.0f);
+        ASSERT_EQ(ai.getVariable<unsigned int>("id") % 2, 1u);
+    }
+    unsigned int is_1 = 0;
+    unsigned int is_12 = 0;
+    unsigned int is_12_mod2_1 = 0;
+    unsigned int is_12_mod2_3 = 0;
+    for (unsigned int i = 0; i < population.getCurrentListSize("b"); ++i) {
+        AgentInstance ai = population.getInstanceAt(i, "b");
+        if (ai.getVariable<float>("x") - ai.getVariable<unsigned int>("id") == 12.0f) {
+            is_12++;
+            if (ai.getVariable<unsigned int>("id") % 4 == 1) {
+                is_12_mod2_1++;
+            } else if (ai.getVariable<unsigned int>("id") % 4 == 3) {
+                is_12_mod2_3++;
+            }
+        } else if (ai.getVariable<float>("x") - ai.getVariable<unsigned int>("id") == 1.0f) {
+            is_1++;
+            ASSERT_EQ(ai.getVariable<unsigned int>("id") % 2, 0u);
+        }
+    }
+    EXPECT_EQ(is_1, AGENT_COUNT / 2);
+    EXPECT_EQ(is_12, AGENT_COUNT / 2);
+    EXPECT_EQ(is_12_mod2_1, AGENT_COUNT / 4);
+    EXPECT_EQ(is_12_mod2_3, AGENT_COUNT / 4);
+}
+TEST(DeviceAgentCreationTest, Optional_Output_SameState_WithAgentFunctionCondition) {
+    // Define model
+    ModelDescription model("Spatial3DMsgTestModel");
+    AgentDescription &agent = model.newAgent("agent");
+    agent.newState("a");
+    agent.newState("b");
+    agent.newVariable<float>("x");
+    agent.newVariable<unsigned int>("id");
+    AgentFunctionDescription &function = agent.newFunction("output", OptionalOutput);
+    function.setFunctionCondition(EvenThreadsOnlyCdn);
+    function.setInitialState("a");
+    function.setEndState("b");
+    function.setAgentOutput(agent, "b");
+    LayerDescription &layer1 = model.newLayer();
+    layer1.addAgentFunction(function);
+    // Init agent pop
+    CUDAAgentModel cuda_model(model);
+    const unsigned int AGENT_COUNT = 1024;
+    AgentPopulation population(model.Agent("agent"), AGENT_COUNT);
+    // Initialise agents
+    for (unsigned int i = 0; i < AGENT_COUNT; i++) {
+        AgentInstance instance = population.getNextInstance("a");
+        instance.setVariable<float>("x", i + 1.0f);
+        instance.setVariable<unsigned int>("id", i);
+    }
+    cuda_model.setPopulationData(population);
+    // Execute model
+    cuda_model.step();
+    // Test output
+    cuda_model.getPopulationData(population);
+    // Validate each agent has same result
+    EXPECT_EQ(population.getCurrentListSize("a"), AGENT_COUNT / 2);
+    EXPECT_EQ(population.getCurrentListSize("b"), AGENT_COUNT / 2 + AGENT_COUNT / 4);
+    unsigned int is_1 = 0;
+    for (unsigned int i = 0; i < population.getCurrentListSize("a"); ++i) {
+        AgentInstance ai = population.getInstanceAt(i, "a");
+        if (ai.getVariable<float>("x") - ai.getVariable<unsigned int>("id"), 1.0f) {
+            is_1++;
+            ASSERT_EQ(ai.getVariable<unsigned int>("id") % 2, 1u);
+        }
+    }
+    EXPECT_EQ(is_1, population.getCurrentListSize("a"));
+    is_1 = 0;
+    unsigned int is_12 = 0;
+    for (unsigned int i = 0; i < population.getCurrentListSize("b"); ++i) {
+        AgentInstance ai = population.getInstanceAt(i, "b");
+        if (ai.getVariable<float>("x") - ai.getVariable<unsigned int>("id") == 12.0f) {
+            is_12++;
+            ASSERT_EQ(ai.getVariable<unsigned int>("id") % 4, 1u);
+        } else if (ai.getVariable<float>("x") - ai.getVariable<unsigned int>("id") == 1.0f) {
+            is_1++;
+            ASSERT_EQ(ai.getVariable<unsigned int>("id") % 2, 0u);
+        }
+    }
+    EXPECT_EQ(is_12, AGENT_COUNT / 4);
+    EXPECT_EQ(is_1, AGENT_COUNT / 2);
+}
+TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentState_WithAgentFunctionCondition) {
+    // Define model
+    ModelDescription model("Spatial3DMsgTestModel");
+    AgentDescription &agent = model.newAgent("agent");
+    agent.newState("a");
+    agent.newState("b");
+    agent.newState("c");
+    agent.newVariable<float>("x");
+    agent.newVariable<unsigned int>("id");
+    AgentFunctionDescription &function = agent.newFunction("output", MandatoryOutput);
+    function.setFunctionCondition(EvenThreadsOnlyCdn);
+    function.setInitialState("a");
+    function.setEndState("c");
+    function.setAgentOutput(agent, "b");
+    LayerDescription &layer1 = model.newLayer();
+    layer1.addAgentFunction(function);
+    // Init agent pop
+    CUDAAgentModel cuda_model(model);
+    const unsigned int AGENT_COUNT = 1024;
+    AgentPopulation population(model.Agent("agent"), AGENT_COUNT);
+    // Initialise agents
+    for (unsigned int i = 0; i < AGENT_COUNT; i++) {
+        AgentInstance instance = population.getNextInstance("a");
+        instance.setVariable<float>("x", i + 1.0f);
+        instance.setVariable<unsigned int>("id", i);
+    }
+    cuda_model.setPopulationData(population);
+    // Execute model
+    cuda_model.step();
+    // Test output
+    cuda_model.getPopulationData(population);
+    // Validate each agent has same result
+    EXPECT_EQ(population.getCurrentListSize("a"), AGENT_COUNT / 2);
+    EXPECT_EQ(population.getCurrentListSize("b"), AGENT_COUNT / 2);
+    EXPECT_EQ(population.getCurrentListSize("c"), AGENT_COUNT / 2);
+    for (unsigned int i = 0; i < population.getCurrentListSize("a"); ++i) {
+        AgentInstance ai = population.getInstanceAt(i, "a");
+        EXPECT_EQ(ai.getVariable<float>("x") - ai.getVariable<unsigned int>("id"), 1.0f);
+        ASSERT_EQ(ai.getVariable<unsigned int>("id") % 2, 1u);
+    }
+    unsigned int is_12_mod2_1 = 0;
+    unsigned int is_12_mod2_3 = 0;
+    for (unsigned int i = 0; i < population.getCurrentListSize("b"); ++i) {
+        AgentInstance ai = population.getInstanceAt(i, "b");
+        EXPECT_EQ(ai.getVariable<float>("x") - ai.getVariable<unsigned int>("id"), 12.0f);
+        if (ai.getVariable<unsigned int>("id") % 4 == 1) {
+            is_12_mod2_1++;
+        } else if (ai.getVariable<unsigned int>("id") % 4 == 3) {
+            is_12_mod2_3++;
+        }
+    }
+    EXPECT_EQ(is_12_mod2_1, AGENT_COUNT / 4);
+    EXPECT_EQ(is_12_mod2_3, AGENT_COUNT / 4);
+    for (unsigned int i = 0; i < population.getCurrentListSize("c"); ++i) {
+        AgentInstance ai = population.getInstanceAt(i, "c");
+        EXPECT_EQ(ai.getVariable<float>("x") - ai.getVariable<unsigned int>("id"), 1.0f);
+        ASSERT_EQ(ai.getVariable<unsigned int>("id") % 2, 0u);
+    }
+}
+TEST(DeviceAgentCreationTest, Optional_Output_DifferentState_WithAgentFunctionCondition) {
+    // Define model
+    ModelDescription model("Spatial3DMsgTestModel");
+    AgentDescription &agent = model.newAgent("agent");
+    agent.newState("a");
+    agent.newState("b");
+    agent.newState("c");
+    agent.newVariable<float>("x");
+    agent.newVariable<unsigned int>("id");
+    AgentFunctionDescription &function = agent.newFunction("output", OptionalOutput);
+    function.setFunctionCondition(EvenThreadsOnlyCdn);
+    function.setInitialState("a");
+    function.setEndState("c");
+    function.setAgentOutput(agent, "b");
+    LayerDescription &layer1 = model.newLayer();
+    layer1.addAgentFunction(function);
+    // Init agent pop
+    CUDAAgentModel cuda_model(model);
+    const unsigned int AGENT_COUNT = 1024;
+    AgentPopulation population(model.Agent("agent"), AGENT_COUNT);
+    // Initialise agents
+    for (unsigned int i = 0; i < AGENT_COUNT; i++) {
+        AgentInstance instance = population.getNextInstance("a");
+        instance.setVariable<float>("x", i + 1.0f);
+        instance.setVariable<unsigned int>("id", i);
+    }
+    cuda_model.setPopulationData(population);
+    // Execute model
+    cuda_model.step();
+    // Test output
+    cuda_model.getPopulationData(population);
+    // Validate each agent has same result
+    EXPECT_EQ(population.getCurrentListSize("a"), AGENT_COUNT / 2);
+    EXPECT_EQ(population.getCurrentListSize("b"), AGENT_COUNT / 4);
+    EXPECT_EQ(population.getCurrentListSize("c"), AGENT_COUNT / 2);
+    for (unsigned int i = 0; i < population.getCurrentListSize("a"); ++i) {
+        AgentInstance ai = population.getInstanceAt(i, "a");
+        EXPECT_EQ(ai.getVariable<float>("x") - ai.getVariable<unsigned int>("id"), 1.0f);
+        ASSERT_EQ(ai.getVariable<unsigned int>("id") % 2, 1u);
+    }
+    for (unsigned int i = 0; i < population.getCurrentListSize("b"); ++i) {
+        AgentInstance ai = population.getInstanceAt(i, "b");
+        EXPECT_EQ(ai.getVariable<float>("x") - ai.getVariable<unsigned int>("id"), 12.0f);
+        ASSERT_EQ(ai.getVariable<unsigned int>("id") % 4, 1u);
+    }
+    for (unsigned int i = 0; i < population.getCurrentListSize("c"); ++i) {
+        AgentInstance ai = population.getInstanceAt(i, "c");
+        EXPECT_EQ(ai.getVariable<float>("x") - ai.getVariable<unsigned int>("id"), 1.0f);
+        ASSERT_EQ(ai.getVariable<unsigned int>("id") % 2, 0u);
+    }
+}
+TEST(DeviceAgentCreationTest, Mandatory_Output_SameState_WithDeath_WithAgentFunctionCondition) {
+    // Define model
+    ModelDescription model("Spatial3DMsgTestModel");
+    AgentDescription &agent = model.newAgent("agent");
+    agent.newVariable<float>("x");
+    agent.newVariable<unsigned int>("id");
+    AgentFunctionDescription &function = agent.newFunction("output", MandatoryOutputWithDeath);
+    function.setFunctionCondition(EvenThreadsOnlyCdn);
+    function.setAgentOutput(agent);
+    function.setAllowAgentDeath(true);
+    LayerDescription &layer1 = model.newLayer();
+    layer1.addAgentFunction(function);
+    // Init agent pop
+    CUDAAgentModel cuda_model(model);
+    const unsigned int AGENT_COUNT = 1024;
+    AgentPopulation population(model.Agent("agent"), AGENT_COUNT);
+    // Initialise agents
+    for (unsigned int i = 0; i < AGENT_COUNT; i++) {
+        AgentInstance instance = population.getNextInstance();
+        instance.setVariable<float>("x", i + 1.0f);
+        instance.setVariable<unsigned int>("id", i);
+    }
+    cuda_model.setPopulationData(population);
+    // Execute model
+    cuda_model.step();
+    // Test output
+    cuda_model.getPopulationData(population);
+    // Validate each agent has same result
+    // 50% original agents output new agent and died, 50% original agents lived on disabled
+    EXPECT_EQ(population.getCurrentListSize(), AGENT_COUNT);
+    unsigned int is_1 = 0;
+    unsigned int is_12 = 0;
+    unsigned int is_12_mod2_1 = 0;
+    unsigned int is_12_mod2_3 = 0;
+    for (unsigned int i = 0; i < population.getCurrentListSize(); ++i) {
+        AgentInstance ai = population.getInstanceAt(i);
+        float val = ai.getVariable<float>("x") - ai.getVariable<unsigned int>("id");
+        if (val == 1.0f) {
+            is_1++;
+            ASSERT_EQ(ai.getVariable<unsigned int>("id") % 2, 1u);
+        } else if (val == 12.0f) {
+            is_12++;
+            if (ai.getVariable<unsigned int>("id") % 4 == 1) {
+                is_12_mod2_1++;
+            } else if (ai.getVariable<unsigned int>("id") % 4 == 3) {
+                is_12_mod2_3++;
+            }
+        }
+    }
+    EXPECT_EQ(is_1, AGENT_COUNT / 2);
+    EXPECT_EQ(is_12, AGENT_COUNT / 2);
+    EXPECT_EQ(is_12_mod2_1, AGENT_COUNT / 4);
+    EXPECT_EQ(is_12_mod2_3, AGENT_COUNT / 4);
+}
+TEST(DeviceAgentCreationTest, Optional_Output_SameState_WithDeath_WithAgentFunctionCondition) {
+    // Define model
+    ModelDescription model("Spatial3DMsgTestModel");
+    AgentDescription &agent = model.newAgent("agent");
+    agent.newVariable<float>("x");
+    agent.newVariable<unsigned int>("id");
+    AgentFunctionDescription &function = agent.newFunction("output", OptionalOutputWithDeath);
+    function.setFunctionCondition(EvenThreadsOnlyCdn);
+    function.setAgentOutput(agent);
+    function.setAllowAgentDeath(true);
+    LayerDescription &layer1 = model.newLayer();
+    layer1.addAgentFunction(function);
+    // Init agent pop
+    CUDAAgentModel cuda_model(model);
+    const unsigned int AGENT_COUNT = 1024;
+    AgentPopulation population(model.Agent("agent"), AGENT_COUNT);
+    // Initialise agents
+    for (unsigned int i = 0; i < AGENT_COUNT; i++) {
+        AgentInstance instance = population.getNextInstance();
+        instance.setVariable<float>("x", i + 1.0f);
+        instance.setVariable<unsigned int>("id", i);
+    }
+    cuda_model.setPopulationData(population);
+    // Execute model
+    cuda_model.step();
+    // Test output
+    cuda_model.getPopulationData(population);
+    // Validate each agent has same result
+    // 50 % original agents did not execute so lived on = AGENT_COUNT / 2
+    // 25 % original agents executed, output new agent and died
+    EXPECT_EQ(population.getCurrentListSize(), AGENT_COUNT);
+    unsigned int is_1 = 0;
+    unsigned int is_12 = 0;
+    unsigned int is_1_mod2_0 = 0;
+    unsigned int is_1_mod2_1 = 0;
+    for (unsigned int i = 0; i < population.getCurrentListSize(); ++i) {
+        AgentInstance ai = population.getInstanceAt(i);
+        float val = ai.getVariable<float>("x") - ai.getVariable<unsigned int>("id");
+        if (val == 1.0f) {
+            is_1++;
+            if (ai.getVariable<unsigned int>("id") % 2 == 0) {
+                is_1_mod2_0++;
+            } else {
+                is_1_mod2_1++;
+            }
+        } else if (val == 12.0f) {
+            is_12++;
+            ASSERT_EQ(ai.getVariable<unsigned int>("id") % 4, 1u);
+        } else {
+            printf("i:%u, x:%f, id:%u\n", i, ai.getVariable<float>("x"), ai.getVariable<unsigned int>("id"));
+        }
+    }
+    EXPECT_EQ(is_1, AGENT_COUNT / 2 + AGENT_COUNT / 4);
+    EXPECT_EQ(is_1_mod2_0, AGENT_COUNT / 4);
+    EXPECT_EQ(is_1_mod2_1, AGENT_COUNT / 2);
+    EXPECT_EQ(is_12, AGENT_COUNT / 4);
+}
+TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentState_WithDeath_WithAgentFunctionCondition) {
+    // Define model
+    ModelDescription model("Spatial3DMsgTestModel");
+    AgentDescription &agent = model.newAgent("agent");
+    agent.newState("a");
+    agent.newState("b");
+    agent.newVariable<float>("x");
+    agent.newVariable<unsigned int>("id");
+    AgentFunctionDescription &function = agent.newFunction("output", MandatoryOutputWithDeath);
+    function.setFunctionCondition(EvenThreadsOnlyCdn);
+    function.setInitialState("a");
+    function.setEndState("a");
+    function.setAgentOutput(agent, "b");
+    function.setAllowAgentDeath(true);
+    LayerDescription &layer1 = model.newLayer();
+    layer1.addAgentFunction(function);
+    // Init agent pop
+    CUDAAgentModel cuda_model(model);
+    const unsigned int AGENT_COUNT = 1024;
+    AgentPopulation population(model.Agent("agent"), AGENT_COUNT);
+    // Initialise agents
+    for (unsigned int i = 0; i < AGENT_COUNT; i++) {
+        AgentInstance instance = population.getNextInstance("a");
+        instance.setVariable<float>("x", i + 1.0f);
+        instance.setVariable<unsigned int>("id", i);
+    }
+    cuda_model.setPopulationData(population);
+    // Execute model
+    cuda_model.step();
+    // Test output
+    cuda_model.getPopulationData(population);
+    // Validate each agent has same result
+    EXPECT_EQ(population.getCurrentListSize("a"), AGENT_COUNT / 2);
+    EXPECT_EQ(population.getCurrentListSize("b"), AGENT_COUNT / 2);
+    for (unsigned int i = 0; i < population.getCurrentListSize("a"); ++i) {
+        AgentInstance ai = population.getInstanceAt(i, "a");
+        ASSERT_EQ(ai.getVariable<unsigned int>("id") % 2, 1u);
+        EXPECT_EQ(ai.getVariable<float>("x") - ai.getVariable<unsigned int>("id"), 1.0f);
+    }
+    for (unsigned int i = 0; i < population.getCurrentListSize("b"); ++i) {
+        AgentInstance ai = population.getInstanceAt(i, "b");
+        ASSERT_EQ(ai.getVariable<unsigned int>("id") % 2, 1u);
+        EXPECT_EQ(ai.getVariable<float>("x") - ai.getVariable<unsigned int>("id"), 12.0f);
+    }
+}
+TEST(DeviceAgentCreationTest, Optional_Output_DifferentState_WithDeath_WithAgentFunctionCondition) {
+    // Define model
+    ModelDescription model("Spatial3DMsgTestModel");
+    AgentDescription &agent = model.newAgent("agent");
+    agent.newState("a");
+    agent.newState("b");
+    agent.newVariable<float>("x");
+    agent.newVariable<unsigned int>("id");
+    AgentFunctionDescription &function = agent.newFunction("output", OptionalOutputWithDeath);
+    function.setFunctionCondition(EvenThreadsOnlyCdn);
+    function.setInitialState("a");
+    function.setEndState("a");
+    function.setAgentOutput(agent, "b");
+    function.setAllowAgentDeath(true);
+    LayerDescription &layer1 = model.newLayer();
+    layer1.addAgentFunction(function);
+    // Init agent pop
+    CUDAAgentModel cuda_model(model);
+    const unsigned int AGENT_COUNT = 1024;
+    AgentPopulation population(model.Agent("agent"), AGENT_COUNT);
+    // Initialise agents
+    for (unsigned int i = 0; i < AGENT_COUNT; i++) {
+        AgentInstance instance = population.getNextInstance("a");
+        instance.setVariable<float>("x", i + 1.0f);
+        instance.setVariable<unsigned int>("id", i);
+    }
+    cuda_model.setPopulationData(population);
+    // Execute model
+    cuda_model.step();
+    // Test output
+    cuda_model.getPopulationData(population);
+    // Validate each agent has same result
+    EXPECT_EQ(population.getCurrentListSize("a"), AGENT_COUNT / 2 + AGENT_COUNT / 4);
+    EXPECT_EQ(population.getCurrentListSize("b"), AGENT_COUNT / 4);
+    unsigned int is_1_mod2_0 = 0;
+    unsigned int is_1_mod2_1 = 0;
+    for (unsigned int i = 0; i < population.getCurrentListSize("a"); ++i) {
+        AgentInstance ai = population.getInstanceAt(i, "a");
+        if (ai.getVariable<unsigned int>("id") % 2 == 0) {
+            is_1_mod2_0++;
+        } else {
+            is_1_mod2_1++;
+        }
+        EXPECT_EQ(ai.getVariable<float>("x") - ai.getVariable<unsigned int>("id"), 1.0f);
+        if (ai.getVariable<float>("x") - ai.getVariable<unsigned int>("id") != 1.0f)
+            printf("i:%u, x:%f, id:%u\n", i, ai.getVariable<float>("x"), ai.getVariable<unsigned int>("id"));
+    }
+    EXPECT_EQ(is_1_mod2_0, AGENT_COUNT / 4);
+    EXPECT_EQ(is_1_mod2_1, AGENT_COUNT / 2);
+    for (unsigned int i = 0; i < population.getCurrentListSize("b"); ++i) {
+        AgentInstance ai = population.getInstanceAt(i, "b");
+        EXPECT_EQ(ai.getVariable<unsigned int>("id") % 4, 1u);
+        EXPECT_EQ(ai.getVariable<float>("x") - ai.getVariable<unsigned int>("id"), 12.0f);
+    }
 }
 }  // namespace test_device_agent_creation
