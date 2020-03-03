@@ -355,6 +355,12 @@ bool CUDAAgentModel::step() {
             const unsigned int PRE_DEATH_STATE_SIZE = cuda_agent.getStateSize(func_des->initial_state);
             cuda_agent.processDeath(*func_des, j);
 
+            // Process agent state transition (Longer term merge this with process death?)
+            cuda_agent.transitionState(func_des->initial_state, func_des->end_state, j);
+
+            // Process agent function condition
+            cuda_agent.clearFunctionConditionState(func_des->initial_state);
+
             // check if a function has an output agent
             if (auto oa = func_des->agent_output.lock()) {
                 // This will act as a reserve word
@@ -368,12 +374,6 @@ bool CUDAAgentModel::step() {
 
             // unmap the function variables
             cuda_agent.unmapRuntimeVariables(*func_des);
-
-            // Process agent state transition (Longer term merge this with process death?)
-            cuda_agent.transitionState(func_des->initial_state, func_des->end_state, j);
-
-            // Process agent function condition
-            cuda_agent.clearFunctionConditionState(func_des->initial_state);
 
             ++j;
         }

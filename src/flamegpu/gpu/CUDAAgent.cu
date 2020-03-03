@@ -285,8 +285,9 @@ void CUDAAgent::processDeath(const AgentFunctionData& func, const unsigned int &
             flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::AGENT_DEATH][streamId].d_ptrs.scan_flag,
             flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::AGENT_DEATH][streamId].d_ptrs.position,
             agent_count + 1);
+
         // Scatter
-        sm->second->scatter(streamId);
+        sm->second->scatter(streamId, CUDAAgentStateList::ScatterMode::Death);
     }
 }
 const std::unique_ptr<CUDAAgentStateList> &CUDAAgent::getAgentStateList(const std::string &state_name) const {

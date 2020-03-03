@@ -73,6 +73,7 @@ class CUDAScatter {
      * @param itemCount Total number of items in input array to consider
      * @param out_index_offset The offset to be applied to the ouput index (e.g. if out already contains data)
      * @parma invert_scan_flag If true, agents with scan_flag set to 0 will be moved instead
+     * @parma scatter_all_count The number of agents at the start of in to be copied, ones after this use scanflag
      */
     unsigned int scatter(
         Type messageOrAgent,
@@ -81,7 +82,8 @@ class CUDAScatter {
         const std::map<std::string, void*> &out,
         const unsigned int &itemCount,
         const unsigned int &out_index_offset = 0,
-        const bool &invert_scan_flag = false);
+        const bool &invert_scan_flag = false,
+        const unsigned int &scatter_all_count = 0);
     /**
      * Scatters a contigous block from SoA to SoA
      * flamegpu_internal::CUDAScanCompaction::scan_flag/position are not used

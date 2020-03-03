@@ -323,8 +323,8 @@ unsigned int CUDAAgentStateList::scatter(const unsigned int &streamId, const uns
     const unsigned int living_agents = scatter.scatter(
         CUDAScatter::Type::AgentDeath,
         agent.getAgentDescription().variables,
-        condition_d_list, condition_d_swap_list,
-        current_list_size, out_offset, mode == FunctionCondition2);
+        d_list, d_swap_list,
+        current_list_size, out_offset, mode == FunctionCondition2, condition_state);
     // Swap
     assert(living_agents <= agent.getMaximumListSize());
     if (mode == Death) {
