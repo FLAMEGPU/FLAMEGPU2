@@ -1,3 +1,4 @@
+#include <chrono>
 #include "gtest/gtest.h"
 
 #include "flamegpu/flame_api.h"
@@ -25,6 +26,67 @@ FLAMEGPU_AGENT_FUNCTION(DeathTestFunc, MsgNone, MsgNone) {
 }
 FLAMEGPU_STEP_FUNCTION(IncrementCounter) {
     externalCounter++;
+}
+/* Test that CUDAAgentModel::applyConfig_derived() is invoked prior to any cuda call which will invoke the CUDA
+Alternative is to use the driver API, call CuCtxGetCurrent(CuContext* pctx) immediatebly before applyConfig, and if pctx is the nullptr then the context had not yet been initialised?
+@note - this test is somewhat unreliable, as other tests may have already ran to create the context?
+*/
+TEST(TestCUDAAgentModel, ApplyConfigDerivedContextCreation) {
+    // Set a threshold value, which is large enough to account for context creation
+    // Experimentally cudaFree(0); takes ~2us (nsys) without context creation,
+    // while cudaFree(0) including context creation takes ~150ms in my linux system.
+    // This test is a little fluffy.
+    const double CONTEXT_CREATION_ATLEAST_SECONDS = 0.100;  // atleast 100ms?
+    // Reset the CUDADevice, killing any exisitng contexts from other tests. If this doesn't work it's fatal.
+    // ASSERT_EQ(cudaSuccess, cudaDeviceReset());
+    // Create a very simple model to enable creation of a CudaAgentModel
+    ModelDescription m("model");
+    AgentDescription &a = m.newAgent("agent");
+    // Create a CUDAAgentModel, and set configuration properties
+    CUDAAgentModel c(m);
+    // Set the device ID
+    c.CUDAConfig().device_id = 0;
+    // c.CUDAConfig().device_id = 1;
+    c.SimulationConfig().steps = 1;
+    // Time how long applyconfig takes, which should invoke cudaFree (and a few other bits unfortunately.)
+    EXPECT_NO_THROW({
+        auto t0 = std::chrono::high_resolution_clock::now();
+        c.applyConfig();
+        auto t1 = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
+        // The test fails applyconfig was too fast.
+        EXPECT_GE(time_span.count(), CONTEXT_CREATION_ATLEAST_SECONDS);
+    });
+    // Run the simulation.
+    c.simulate();
+    ASSERT_EQ(cudaSuccess, cudaDeviceReset());
+}
+// Test that the CUDAAgentModel applyConfig_derived works for multiple GPU device_id values (if available)
+TEST(TestCUDAAgentModel, AllDeviceIdValues) {
+    // Get the number of devices
+    int device_count = 1;
+    if (cudaSuccess != cudaGetDeviceCount(&device_count) || device_count <= 0) {
+        // Skip the test, if no CUDA or GPUs.
+        return;
+    }
+    // Initialise and run a simple model on each device in the system. This test is pointless on single GPU machines.
+    for (int i = 0; i < device_count; i++) {
+        ModelDescription m(MODEL_NAME);
+        AgentDescription &a = m.newAgent(AGENT_NAME);
+        CUDAAgentModel c(m);
+        // Set the device ID
+        c.CUDAConfig().device_id = i;
+        c.SimulationConfig().steps = 1;
+        //  Apply the config (and therefore set the device.)
+        EXPECT_NO_THROW({
+            c.applyConfig();
+        });
+        // Run the simulation.
+        c.simulate();
+
+        // Reset the device to destroy the context.
+        cudaDeviceReset();
+    }
 }
 TEST(TestSimulation, ArgParse_inputfile_long) {
     ModelDescription m(MODEL_NAME);
