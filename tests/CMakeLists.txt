@@ -128,6 +128,8 @@ SET(OTHER_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/helpers/device_test_functions.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/helpers/host_reductions_common.h
     ${CMAKE_CURRENT_SOURCE_DIR}/helpers/host_reductions_common.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/helpers/device_initialisation.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/helpers/device_initialisation.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/helpers/main.cu
 )
 SET(ALL_SRC
@@ -136,7 +138,7 @@ SET(ALL_SRC
 )
 SET(DEV_ALL_SRC
     ${DEV_TEST_CASE_SRC}
-    ${CMAKE_CURRENT_SOURCE_DIR}/helpers/main.cu
+    ${OTHER_SRC}
 )
 
 # Add the executable and set required flags for the target
