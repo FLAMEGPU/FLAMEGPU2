@@ -54,6 +54,12 @@ class CUDAMessage {
      */
     unsigned int getMessageCount() const;
     /**
+     * Manually update the message count
+     * @note This should be used cautiously
+     * @note Required by array message types
+     */
+    void setMessageCount(const unsigned int &_message_count);
+    /**
      * Updates message_count to equal newSize, internally reallocates buffer space if more space is required
      * @param newSize The number of messages that the buffer should be capable of storing
      */

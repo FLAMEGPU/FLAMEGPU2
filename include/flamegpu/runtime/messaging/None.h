@@ -77,7 +77,7 @@ class MsgNone {
          * Requires CURVE hashes for agent function and message name to retrieve variable memory locations
          * Takes a device pointer to a struct for metadata related to accessing the messages (e.g. an index data structure)
          */
-        __device__ Out(Curve::NamespaceHash /*agent fn hash*/, Curve::NamespaceHash /*message name hash*/, unsigned int /*streamid*/){
+        __device__ Out(Curve::NamespaceHash /*agent fn hash*/, Curve::NamespaceHash /*message name hash*/, const void * /*metadata*/, unsigned int /*streamid*/){
         }
     };
     /**

@@ -201,7 +201,7 @@ class MsgBruteForce {
          * @param msg_hash Added to agentfn_hash to produce combined_hash
          * @param _streamId Stream index, used for optional message output flag array
          */
-        __device__ Out(Curve::NamespaceHash agentfn_hash, Curve::NamespaceHash msg_hash, unsigned int _streamId)
+        __device__ Out(Curve::NamespaceHash agentfn_hash, Curve::NamespaceHash msg_hash, const void *, unsigned int _streamId)
             : combined_hash(agentfn_hash + msg_hash)
             , streamId(_streamId)
         { }
@@ -403,11 +403,9 @@ class MsgBruteForce {
          * Adds a new variable to the message
          * @param variable_name Name of the variable
          * @tparam T Type of the message variable, this must be an arithmetic type
-         * @tparam N The length of the variable array (1 if not an array, must be greater than 0)
-         * @throws InvalidAgentVar If a variable already exists within the message with the same name
-         * @throws InvalidAgentVar If N is <= 0
+         * @throws InvalidMessageVar If a variable already exists within the message with the same name
          */
-        template<typename T, size_type N = 1>
+        template<typename T>
         void newVariable(const std::string &variable_name);
 
         /**
@@ -426,12 +424,6 @@ class MsgBruteForce {
          * @throws InvalidAgentVar If a variable with the name does not exist within the message
          */
         size_t getVariableSize(const std::string &variable_name) const;
-        /**
-         * @param variable_name Name used to refer to the desired variable
-         * @return The number of elements in the name variable (1 if it isn't an array)
-         * @throws InvalidAgentVar If a variable with the name does not exist within the message
-         */
-        size_type getVariableLength(const std::string &variable_name) const;
         /**
          * @return The total number of variables within the message
          */
@@ -487,12 +479,10 @@ __device__ void MsgBruteForce::Out::setVariable(const char(&variable_name)[N], T
 /**
  * Template implementation
  */
-template<typename T, MsgBruteForce::size_type N>
+template<typename T>
 void MsgBruteForce::Description::newVariable(const std::string &variable_name) {
-    // Array length 0 makes no sense
-    static_assert(N > 0, "A variable cannot have 0 elements.");
     if (message->variables.find(variable_name) == message->variables.end()) {
-        message->variables.emplace(variable_name, Variable(N, T()));
+        message->variables.emplace(variable_name, Variable(1, T()));
         return;
     }
     THROW InvalidMessageVar("Message ('%s') already contains variable '%s', "

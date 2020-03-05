@@ -30,6 +30,7 @@ option(BUILD_ALL_EXAMPLES "Enable building examples" ON)
 
 # Options to enable building individual examples, if BUILD_ALL_EXAMPLES is off.
 option(BUILD_EXAMPLE_HOST_FUNCTIONS "Enable building examples/host_functions" OFF)
+option(BUILD_EXAMPLE_GAME_OF_LIFE "Enable building examples/game_of_life" OFF)
 option(BUILD_EXAMPLE_CIRCLES_BRUTE_FORCE "Enable building examples/circles_brute_force" OFF)
 option(BUILD_EXAMPLE_CIRCLES_SPATIAL_3D "Enable building examples/circles_spatial_3d" OFF)
 
@@ -38,7 +39,7 @@ option(BUILD_EXAMPLE_CIRCLES_SPATIAL_3D "Enable building examples/circles_spatia
 option(BUILD_TESTS "Enable building tests" OFF)
 
 # Option to enable/disable NVTX markers for improved profiling
-option(NVTX "Enable NVTX markers for improved profiling (if aviailable). Implied by profile builds" OFF)
+option(NVTX "Enable NVTX markers for improved profiling (if available). Implied by profile builds" OFF)
 
 # Define a function to add a lint target.
 find_file(CPPLINT NAMES cpplint cpplint.exe)
@@ -60,6 +61,10 @@ endif()
 # Add each example
 if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_HOST_FUNCTIONS)
     add_subdirectory(examples/host_functions)
+endif()
+
+if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_GAME_OF_LIFE)
+    add_subdirectory(examples/game_of_life)
 endif()
 
 if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_CIRCLES_BRUTE_FORCE)

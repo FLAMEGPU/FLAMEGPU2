@@ -312,22 +312,6 @@ void MsgSpatial2D::Description::setMax(const float &x, const float &y) {
     reinterpret_cast<Data *>(message)->maxY = y;
 }
 
-float &MsgSpatial2D::Description::Radius() {
-    return reinterpret_cast<Data *>(message)->radius;
-}
-float &MsgSpatial2D::Description::MinX() {
-    return reinterpret_cast<Data *>(message)->minX;
-}
-float &MsgSpatial2D::Description::MinY() {
-    return reinterpret_cast<Data *>(message)->minY;
-}
-float &MsgSpatial2D::Description::MaxX() {
-    return reinterpret_cast<Data *>(message)->maxX;
-}
-float &MsgSpatial2D::Description::MaxY() {
-    return reinterpret_cast<Data *>(message)->maxY;
-}
-
 float MsgSpatial2D::Description::getRadius() const {
     return reinterpret_cast<Data *>(message)->radius;
 }

@@ -109,7 +109,8 @@ class FLAMEGPU_DEVICE_API : public FLAMEGPU_READ_ONLY_DEVICE_API{
         Curve::NamespaceHash,
         Curve::NamespaceHash,
         const int,
-        const void *messagelist_metadata,
+        const void *,
+        const void *,
         const unsigned int,
         const unsigned int);
 

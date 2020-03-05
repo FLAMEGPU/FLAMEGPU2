@@ -71,8 +71,6 @@ bool CUDAAgentModel::step() {
     // hash model name
     const Curve::NamespaceHash modelname_hash = singletons->curve.variableRuntimeHash(model->name.c_str());
 
-    const void *d_messagelist_metadata = nullptr;
-
     // TODO: simulation.getMaxFunctionsPerLayer()
     for (auto lyr = model->layers.begin(); lyr != model->layers.end(); ++lyr) {
         unsigned int temp = static_cast<unsigned int>((*lyr)->agent_functions.size());
@@ -266,6 +264,8 @@ bool CUDAAgentModel::step() {
             if (!func_agent) {
                 THROW InvalidAgentFunc("Agent function refers to expired agent.");
             }
+            const void *d_in_messagelist_metadata = nullptr;
+            const void *d_out_messagelist_metadata = nullptr;
             std::string agent_name = func_agent->name;
             std::string func_name = func_des->name;
             NVTX_RANGE(std::string(agent_name + "::" + func_name).c_str());
@@ -274,22 +274,21 @@ bool CUDAAgentModel::step() {
             if (auto im = func_des->message_input.lock()) {
                 std::string inpMessage_name = im->name;
                 const CUDAMessage& cuda_message = getCUDAMessage(inpMessage_name);
-                // message_name = inpMessage_name;
 
                 // hash message name
                 message_name_inp_hash = singletons->curve.variableRuntimeHash(inpMessage_name.c_str());
 
-                d_messagelist_metadata = cuda_message.getMetaDataDevicePtr();
+                d_in_messagelist_metadata = cuda_message.getMetaDataDevicePtr();
             }
 
             // check if a function has an output message
             if (auto om = func_des->message_output.lock()) {
                 std::string outpMessage_name = om->name;
-                // const CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
-                // message_name = outpMessage_name;
+                const CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
 
                 // hash message name
                 message_name_outp_hash =  singletons->curve.variableRuntimeHash(outpMessage_name.c_str());
+                d_out_messagelist_metadata = cuda_message.getMetaDataDevicePtr();
             }
 
             const CUDAAgent& cuda_agent = getCUDAAgent(agent_name);
@@ -322,7 +321,8 @@ bool CUDAAgentModel::step() {
                 message_name_outp_hash,
                 agentoutput_hash,
                 state_list_size,
-                d_messagelist_metadata,
+                d_in_messagelist_metadata,
+                d_out_messagelist_metadata,
                 totalThreads,
                 j);
             gpuErrchkLaunch();

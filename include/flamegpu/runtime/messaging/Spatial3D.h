@@ -191,8 +191,18 @@ class MsgSpatial3D {
                 }
                 /**
                  * Moves to the next message
+                 * (Prefix increment operator)
                  */
                 __device__ iterator& operator++() { ++_message;  return *this; }
+                /**
+                 * Moves to the next message
+                 * (Postfix increment operator, returns value prior to increment)
+                 */
+                __device__ iterator operator++(int) {
+                    iterator temp = *this;
+                    ++*this;
+                    return temp;
+                }
                 /**
                  * Equality operator
                  * Compares message
@@ -207,6 +217,10 @@ class MsgSpatial3D {
                  * Dereferences the iterator to return the message object, for accessing variables
                  */
                 __device__ Message& operator*() { return _message; }
+                /**
+                 * Dereferences the iterator to return the message object, for accessing variables
+                 */
+                __device__ Message* operator->() { return &_message; }
             };
             /**
              * Constructor, takes the search parameters requried
@@ -309,8 +323,8 @@ class MsgSpatial3D {
          * @param msg_hash Added to agentfn_hash to produce combined_hash
          * @param _streamId Stream index, used for optional message output flag array
          */
-        __device__ Out(Curve::NamespaceHash agentfn_hash, Curve::NamespaceHash msg_hash, unsigned int _streamId)
-            : MsgBruteForce::Out(agentfn_hash, msg_hash, _streamId)
+        __device__ Out(Curve::NamespaceHash agentfn_hash, Curve::NamespaceHash msg_hash, const void *, unsigned int _streamId)
+            : MsgBruteForce::Out(agentfn_hash, msg_hash, nullptr, _streamId)
         { }
         /**
          * Sets the location for this agents message
@@ -506,13 +520,6 @@ class MsgSpatial3D {
         void setMaxZ(const float &z);
         void setMax(const float &x, const float &y, const float &z);
 
-        float &Radius();
-        float &MinX();
-        float &MinY();
-        float &MinZ();
-        float &MaxX();
-        float &MaxY();
-        float &MaxZ();
         float getRadius() const;
         float getMinX() const;
         float getMinY() const;

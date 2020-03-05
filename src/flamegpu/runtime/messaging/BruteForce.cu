@@ -107,15 +107,6 @@ size_t MsgBruteForce::Description::getVariableSize(const std::string &variable_n
         "in MessageDescription::getVariableSize().",
         message->name.c_str(), variable_name.c_str());
 }
-ModelData::size_type MsgBruteForce::Description::getVariableLength(const std::string &variable_name) const {
-    auto f = message->variables.find(variable_name);
-    if (f != message->variables.end()) {
-        return f->second.elements;
-    }
-    THROW InvalidMessageVar("Message ('%s') does not contain variable '%s', "
-        "in MessageDescription::getVariableLength().",
-        message->name.c_str(), variable_name.c_str());
-}
 ModelData::size_type MsgBruteForce::Description::getVariablesCount() const {
     // Downcast, will never have more than UINT_MAX variables
     return static_cast<ModelData::size_type>(message->variables.size());
