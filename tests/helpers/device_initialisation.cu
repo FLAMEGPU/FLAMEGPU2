@@ -19,7 +19,6 @@ Alternative is to use the driver API, call CuCtxGetCurrent(CuContext* pctx) imme
 @note - This needs to be called first, and only once.
 */
 void timeCUDAAgentModelContextCreationTest() {
-    printf("timeCUDAAgentModelContextCreationTest\n");
     // Create a very simple model to enable creation of a CudaAgentModel
     ModelDescription m("model");
     m.newAgent("agent");

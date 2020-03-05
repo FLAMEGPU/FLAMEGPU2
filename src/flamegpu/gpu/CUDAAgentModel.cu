@@ -9,6 +9,7 @@
 #include "flamegpu/runtime/flamegpu_host_api.h"
 #include "flamegpu/gpu/CUDAScanCompaction.h"
 #include "flamegpu/util/nvtx.h"
+#include "flamegpu/util/compute_capability.cuh"
 
 CUDAAgentModel::CUDAAgentModel(const ModelDescription& _model)
     : Simulation(_model)
@@ -559,7 +560,15 @@ void CUDAAgentModel::applyConfig_derived() {
     if (config.device_id >= device_count) {
         THROW InvalidCUDAdevice("Error setting CUDA device to '%d', only %d available!", config.device_id, device_count);
     }
-     NVTX_PUSH("cudaSetDevice");
+
+    // Check the compute capability of the device, throw an exception if not valid for the executable.
+    if (!util::compute_capability::checkComputeCapability(static_cast<int>(config.device_id))) {
+        int min_cc = util::compute_capability::minimumCompiledComputeCapability();
+        int cc = util::compute_capability::getComputeCapability(static_cast<int>(config.device_id));
+        THROW InvalidCUDAComputeCapability("Error application compiled for CUDA Compute Capability %d and above. Device %u is compute capability %d. Rebuild for SM_%d.", min_cc, config.device_id, cc, cc);
+    }
+
+    NVTX_PUSH("cudaSetDevice");
     cudaStatus = cudaSetDevice(static_cast<int>(config.device_id));
     if (cudaStatus != cudaSuccess) {
         THROW InvalidCUDAdevice("Unknown error setting CUDA device to '%d'. (%d available)", config.device_id, device_count);
@@ -587,6 +596,13 @@ namespace {
 void CUDAAgentModel::initialiseSingletons() {
     // Only do this once.
     if (!singletonsInitialised) {
+        // If the device has not been specified, also check the compute capability is OK
+        // Check the compute capability of the device, throw an exception if not valid for the executable.
+        if (!util::compute_capability::checkComputeCapability(static_cast<int>(config.device_id))) {
+            int min_cc = util::compute_capability::minimumCompiledComputeCapability();
+            int cc = util::compute_capability::getComputeCapability(static_cast<int>(config.device_id));
+            THROW InvalidCUDAComputeCapability("Error application compiled for CUDA Compute Capability %d and above. Device %u is compute capability %d. Rebuild for SM_%d.", min_cc, config.device_id, cc, cc);
+        }
         // Check if device has been reset
         unsigned int DEVICE_HAS_RESET_CHECK = 0;
         cudaMemcpyFromSymbol(&DEVICE_HAS_RESET_CHECK, DEVICE_HAS_RESET, sizeof(unsigned int));

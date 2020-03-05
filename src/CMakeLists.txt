@@ -107,6 +107,7 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/HostRandom.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/RandomManager.cuh    
     ${FLAMEGPU_ROOT}/include/flamegpu/util/nvtx.h    
+    ${FLAMEGPU_ROOT}/include/flamegpu/util/compute_capability.cuh    
 )
 SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/exception/FGPUException.cpp
@@ -137,6 +138,7 @@ SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/utility/HostEnvironment.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/utility/EnvironmentManager.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/utility/RandomManager.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/util/compute_capability.cu
 )
 
 SET(ALL_SRC

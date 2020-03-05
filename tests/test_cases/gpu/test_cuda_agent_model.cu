@@ -2,6 +2,7 @@
 
 #include "flamegpu/flame_api.h"
 #include "flamegpu/runtime/flamegpu_api.h"
+#include "flamegpu/util/compute_capability.cuh"
 #include "helpers/device_initialisation.h"
 
 namespace test_cuda_agent_model {
@@ -42,27 +43,32 @@ TEST(TestCUDAAgentModel, AllDeviceIdValues) {
         // Skip the test, if no CUDA or GPUs.
         return;
     }
-    // Initialise and run a simple model on each device in the system. This test is pointless on single GPU machines.
     for (int i = 0; i < device_count; i++) {
+        // Check if the specified device is allowed to run the tests to determine if the test should throw or not. This is system dependent so must be dynamic.
+        bool shouldThrowCCException = !util::compute_capability::checkComputeCapability(i);
+        // Initialise and run a simple model on each device in the system. This test is pointless on single GPU machines.
         ModelDescription m(MODEL_NAME);
         AgentDescription &a = m.newAgent(AGENT_NAME);
-        {  // Scope to dealloc CUDAAgentModel before cudaDeviceReset()
+        // Scoping
+        {
             CUDAAgentModel c(m);
             // Set the device ID
             c.CUDAConfig().device_id = i;
             c.SimulationConfig().steps = 1;
             //  Apply the config (and therefore set the device.)
-            EXPECT_NO_THROW({
-                c.applyConfig();
-            });
-            // Run the simulation.
-            c.simulate();
+            if (shouldThrowCCException) {
+                // Should throw InvalidCUDAComputeCapability if bad compute capability.
+                EXPECT_THROW(c.applyConfig(), InvalidCUDAComputeCapability);
+                EXPECT_THROW(c.simulate(), InvalidCUDAComputeCapability);
+            } else {
+                // Should not get any excpetions if CC is valid.
+                EXPECT_NO_THROW(c.applyConfig());
+                EXPECT_NO_THROW(c.simulate());
+            }
         }
-        // Reset the device to destroy the context.
-        cudaDeviceReset();
     }
     // Return to prior state for remaining tests.
-    cudaSetDevice(0);
+    ASSERT_EQ(cudaSuccess, cudaSetDevice(0));
 }
 TEST(TestSimulation, ArgParse_inputfile_long) {
     ModelDescription m(MODEL_NAME);

@@ -146,6 +146,13 @@ foreach(SM IN LISTS SMS)
     set(GENCODES "${GENCODES} -gencode arch=compute_${SM},code=sm_${SM}")
 endforeach()
 
+# Get the minimum device architecture to pass through to nvcc to enable graceful failure prior to cuda execution.
+list(GET SMS 0 MIN_ARCH)
+# Pass this to the compiler(s)
+SET(CMAKE_CC_FLAGS "${CMAKE_C_FLAGS} -DMIN_ARCH=${MIN_ARCH}")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMIN_ARCH=${MIN_ARCH}")
+SET(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -DMIN_ARCH=${MIN_ARCH}")
+
 # Using the last element of the list, append the additional gencode argument
 list(GET SMS -1 LAST_SM)
 set(GENCODES "${GENCODES} -gencode arch=compute_${LAST_SM},code=compute_${LAST_SM}")
