@@ -44,6 +44,10 @@ RandomManager::RandomManager() :
 RandomManager::~RandomManager() {
     // free(); // @todo call free/freeDevice not in the constructor! instead just log that?
 }
+void RandomManager::purge() {
+    flamegpu_internal::hd_random_size = 0;
+    flamegpu_internal::hd_random_state = nullptr;
+}
 /**
  * Member fns
  */
@@ -126,6 +130,8 @@ bool RandomManager::resize(const size_type &_length) {
     t_length = std::max<size_type>(t_length, RandomManager::min_length);
     if (t_length != length)
         resizeDeviceArray(t_length);
+    else if (length != flamegpu_internal::hd_random_size)
+        resizeDeviceArray(length);
     return t_length != length;
 }
 __global__ void init_curand(unsigned int threadCount, uint64_t seed, RandomManager::size_type offset) {
@@ -136,7 +142,7 @@ __global__ void init_curand(unsigned int threadCount, uint64_t seed, RandomManag
 void RandomManager::resizeDeviceArray(const size_type &_length) {
     // Mark that the device hsa now been initialised.
     deviceInitialised = true;
-    if (_length > length) {
+    if (_length > h_max_random_size) {
         // Growing array
         curandState *t_hd_random_state = nullptr;
         // Allocate new mem to t_hd

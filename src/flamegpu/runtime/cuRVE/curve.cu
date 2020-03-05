@@ -22,7 +22,11 @@ __host__ Curve::Curve() :
     // Initialise some host variables.
     curve_internal::h_curve_error  = ERROR_NO_ERRORS;
 }
-
+__host__ void Curve::purge() {
+    deviceInitialised = false;
+    curve_internal::h_curve_error = ERROR_NO_ERRORS;
+    initialiseDevice();
+}
 __host__ void Curve::initialiseDevice() {
     if (!deviceInitialised) {
         unsigned int *_d_hashes;

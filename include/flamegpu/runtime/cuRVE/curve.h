@@ -303,6 +303,16 @@ class Curve {
      * @todo - Need to add a device-side check for initialisation.
      */
     void initialiseDevice();
+    /**
+     * Has access to call purge
+     */
+    friend class CUDAAgentModel;
+    /**
+     * Wipes out host mirrors of device memory
+     * Only really to be used after calls to cudaDeviceReset()
+     * @note Only currently used after some tests
+     */
+    __host__ void purge();
 
  protected:
     /** @brief    Default constructor.

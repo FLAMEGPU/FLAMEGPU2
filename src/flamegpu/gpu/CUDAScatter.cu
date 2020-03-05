@@ -25,6 +25,11 @@ void CUDAScatter::free() {
     data_len = 0;
 }
 
+void CUDAScatter::purge() {
+    d_data = nullptr;
+    data_len = 0;
+}
+
 void CUDAScatter::resize(const unsigned int &newLen) {
     if (newLen > data_len) {
         if (d_data) {

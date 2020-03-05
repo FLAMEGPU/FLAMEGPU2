@@ -575,9 +575,32 @@ void CUDAAgentModel::applyConfig_derived() {
     initialiseSingletons();
 }
 
+/**
+ * These values are ony used by CUDAAgentModel::initialiseSingletons()
+ * Can't put a __device__ symbol method static
+ */
+namespace {
+    __device__ unsigned int DEVICE_HAS_RESET = 0xDEADBEEF;
+    const unsigned int DEVICE_HAS_RESET_FLAG = 0xDEADBEEF;
+}  // namespace
+
 void CUDAAgentModel::initialiseSingletons() {
     // Only do this once.
     if (!singletonsInitialised) {
+        // Check if device has been reset
+        unsigned int DEVICE_HAS_RESET_CHECK = 0;
+        cudaMemcpyFromSymbol(&DEVICE_HAS_RESET_CHECK, DEVICE_HAS_RESET, sizeof(unsigned int));
+        if (DEVICE_HAS_RESET_CHECK == DEVICE_HAS_RESET_FLAG) {
+            // Device has been reset, purge host mirrors of static objects/singletons
+            Curve::getInstance().purge();
+            RandomManager::getInstance().purge();
+            flamegpu_internal::CUDAScanCompaction::purge();
+            CUDAScatter::getInstance(UINT_MAX);
+            EnvironmentManager::getInstance().purge();
+            // Reset flag
+            DEVICE_HAS_RESET_CHECK = 0;  // Any value that doesnt match DEVICE_HAS_RESET_FLAG
+            cudaMemcpyToSymbol(DEVICE_HAS_RESET, &DEVICE_HAS_RESET_CHECK, sizeof(unsigned int));
+        }
         // Get references to all required singleton and store in the instance.
         singletons = new Singletons(
             Curve::getInstance(),

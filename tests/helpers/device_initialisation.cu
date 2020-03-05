@@ -22,7 +22,7 @@ void timeCUDAAgentModelContextCreationTest() {
     printf("timeCUDAAgentModelContextCreationTest\n");
     // Create a very simple model to enable creation of a CudaAgentModel
     ModelDescription m("model");
-    AgentDescription &a = m.newAgent("agent");
+    m.newAgent("agent");
     CUDAAgentModel c(m);
     c.CUDAConfig().device_id = 0;
     c.SimulationConfig().steps = 1;

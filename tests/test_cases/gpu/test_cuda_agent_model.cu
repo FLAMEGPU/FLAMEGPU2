@@ -46,20 +46,23 @@ TEST(TestCUDAAgentModel, AllDeviceIdValues) {
     for (int i = 0; i < device_count; i++) {
         ModelDescription m(MODEL_NAME);
         AgentDescription &a = m.newAgent(AGENT_NAME);
-        CUDAAgentModel c(m);
-        // Set the device ID
-        c.CUDAConfig().device_id = i;
-        c.SimulationConfig().steps = 1;
-        //  Apply the config (and therefore set the device.)
-        EXPECT_NO_THROW({
-            c.applyConfig();
-        });
-        // Run the simulation.
-        c.simulate();
-
+        {  // Scope to dealloc CUDAAgentModel before cudaDeviceReset()
+            CUDAAgentModel c(m);
+            // Set the device ID
+            c.CUDAConfig().device_id = i;
+            c.SimulationConfig().steps = 1;
+            //  Apply the config (and therefore set the device.)
+            EXPECT_NO_THROW({
+                c.applyConfig();
+            });
+            // Run the simulation.
+            c.simulate();
+        }
         // Reset the device to destroy the context.
         cudaDeviceReset();
     }
+    // Return to prior state for remaining tests.
+    cudaSetDevice(0);
 }
 TEST(TestSimulation, ArgParse_inputfile_long) {
     ModelDescription m(MODEL_NAME);

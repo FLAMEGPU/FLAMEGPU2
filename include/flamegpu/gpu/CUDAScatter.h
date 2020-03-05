@@ -170,6 +170,12 @@ class CUDAScatter {
      * If this reaches 0, free() is called on all instances
      */
     void decreaseSimCounter();
+    /**
+     * Wipes out host mirrors of device memory
+     * Only really to be used after calls to cudaDeviceReset()
+     * @note Only currently used after some tests
+     */
+    void purge();
 
  protected:
     /**
@@ -184,6 +190,13 @@ class CUDAScatter {
     static CUDAScatter& getInstance(unsigned int streamId) {
         // Guaranteed to be destroyed.
         static std::array<CUDAScatter, flamegpu_internal::CUDAScanCompaction::MAX_STREAMS> instance;
+        // Purge code
+        if (streamId == UINT_MAX) {
+            for (unsigned int i = 0; i < flamegpu_internal::CUDAScanCompaction::MAX_STREAMS; ++i) {
+                instance[i].purge();
+            }
+            return instance[0];
+        }
         // Basic err check
         assert(streamId < flamegpu_internal::CUDAScanCompaction::MAX_STREAMS);
         instance[streamId].streamId = streamId;
