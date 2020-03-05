@@ -97,6 +97,14 @@ namespace CUDAScanCompaction {
         assert(type < MAX_TYPES);
         hd_configs[type][streamId].zero_scan_flag();
     }
+    /**
+     * Wipes out host mirrors of device memory
+     * Only really to be used after calls to cudaDeviceReset()
+     * @note Only currently used after some tests
+     */
+    inline void purge() {
+        memset(hd_configs, 0, sizeof(hd_configs));
+    }
 }  // namespace CUDAScanCompaction
 }  // namespace flamegpu_internal
 

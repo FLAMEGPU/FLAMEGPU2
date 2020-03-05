@@ -496,6 +496,12 @@ class EnvironmentManager {
      * Remainder of class is singleton pattern
      */
     EnvironmentManager();
+    /**
+     * Wipes out host mirrors of device memory
+     * Only really to be used after calls to cudaDeviceReset()
+     * @note Only currently used after some tests
+     */
+    void purge();
 
  protected:
     /**

@@ -31,6 +31,12 @@ EnvironmentManager::EnvironmentManager() :
     freeFragments(),
     deviceInitialised(false) { }
 
+void EnvironmentManager::purge() {
+    deviceInitialised = false;
+    freeFragments.clear();
+    m_freeSpace = EnvironmentManager::MAX_BUFFER_SIZE;
+    nextFree = 0;
+}
 
 void EnvironmentManager::init(const std::string &model_name, const EnvironmentDescription &desc) {
     // Initialise device portions of Environment manager

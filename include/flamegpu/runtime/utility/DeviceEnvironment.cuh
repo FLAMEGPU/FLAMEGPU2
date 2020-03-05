@@ -82,6 +82,7 @@ class DeviceEnvironment {
 template<typename T, unsigned int N>
 __device__ __forceinline__ const T &DeviceEnvironment::get(const char(&name)[N]) const {
     Curve::VariableHash cvh = CURVE_NAMESPACE_HASH() + modelname_hash + Curve::variableHash(name);
+
     // Error checking is internal to Curve::getVariablePtrByHash, returns nullptr on fail
     // get a pointer to the specific variable by offsetting by the provided index
     T *value_ptr = reinterpret_cast<T*>(Curve::getVariablePtrByHash(cvh, 0));
