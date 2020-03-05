@@ -120,6 +120,7 @@ SET(TEST_CASE_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/messaging/test_spatial_3d.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/messaging/test_brute_force.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/messaging/test_append_truncate.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/util/test_compute_capability.cu
 )
 SET(DEV_TEST_CASE_SRC
 )

@@ -250,6 +250,12 @@ DERIVED_FGPUException(InvalidCUDAdevice, "Invalid CUDA Device");
 
 /**
  * Defines a type of object to be thrown as exception.
+ * It reports errors that are due to CUDA device.
+ */
+DERIVED_FGPUException(InvalidCUDAComputeCapability, "Invalid CUDA Device Compute Capability");
+
+/**
+ * Defines a type of object to be thrown as exception.
  * It reports errors that are due adding an init/step/exit function/condition to a simulation multiply
  */
 DERIVED_FGPUException(InvalidHostFunc, "Invalid Host Function");
