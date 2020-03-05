@@ -30,6 +30,8 @@ option(BUILD_ALL_EXAMPLES "Enable building examples" ON)
 option(BUILD_EXAMPLE_MAS "Enable building examples/mas" OFF)
 # Option to explicitly build the simple_example example. Defaults to off.
 option(BUILD_EXAMPLE_SIMPLE_EXAMPLE "Enable building examples/simple_example" OFF)
+# Option to explicitly build the rtc_example (Runtime Compilation) example. Defaults to off.
+option(BUILD_EXAMPLE_RTC_EXAMPLE "Enable building examples/rtc_example" OFF)
 # Option to enable/disable tests.
 option(BUILD_TESTS "Enable building tests" OFF)
 
@@ -60,6 +62,10 @@ endif()
 
 if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_SIMPLE_EXAMPLE)
     add_subdirectory(examples/simple_example)
+endif()
+
+if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_RTC_EXAMPLE)
+    add_subdirectory(examples/rtc_example)
 endif()
 
 if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_HOST_FUNCTIONS)

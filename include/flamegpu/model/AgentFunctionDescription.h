@@ -278,8 +278,8 @@ template<typename AgentFunction>
 AgentFunctionDescription &AgentDescription::newFunction(const std::string &function_name, AgentFunction) {
     if (agent->functions.find(function_name) == agent->functions.end()) {
         AgentFunctionWrapper *f = AgentFunction::fnPtr();
-        std::type_index in_t = AgentFunction::inType();
-        std::type_index out_t = AgentFunction::outType();
+        std::string in_t = AgentFunction::inType().name();
+        std::string out_t = AgentFunction::outType().name();
         auto rtn = std::shared_ptr<AgentFunctionData>(new AgentFunctionData(this->agent->shared_from_this(), function_name, f, in_t, out_t));
         agent->functions.emplace(function_name, rtn);
         return *rtn->description;

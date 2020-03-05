@@ -26,8 +26,25 @@ AgentData::AgentData(ModelData *const model, const std::string &agent_name)
 }
 
 
-AgentFunctionData::AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string &function_name, AgentFunctionWrapper *agent_function, const std::type_index &in_type, const std::type_index &out_type)
+AgentFunctionData::AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string &function_name, AgentFunctionWrapper *agent_function, const std::string &in_type, const std::string &out_type)
     : func(agent_function)
+    , rtc_instantiation(0)
+    , rtc_source("")
+    , initial_state(_parent->initial_state)
+    , end_state(_parent->initial_state)
+    , message_output_optional(false)
+    , has_agent_death(false)
+    , condition(nullptr)
+    , parent(_parent)
+    , description(new AgentFunctionDescription(_parent->description->model, this))
+    , name(function_name)
+    , msg_in_type(in_type)
+    , msg_out_type(out_type) { }
+
+AgentFunctionData::AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string& function_name, const std::string &rtc_function_src, const std::string &in_type, const std::string &out_type)
+    : func(0)
+    , rtc_instantiation(0)
+    , rtc_source(rtc_function_src)
     , initial_state(_parent->initial_state)
     , end_state(_parent->initial_state)
     , message_output_optional(false)
@@ -116,16 +133,16 @@ AgentFunctionData::AgentFunctionData(ModelData *const model, std::shared_ptr<Age
             if (_m != model->messages.end()) {
                 message_input = _m->second;
             }
-        } else if (other.msg_in_type != std::type_index(typeid(MsgNone))) {
-            THROW InvalidMessageType("Function '%s' is missing bound input message of type '%s'.", other.name.c_str(), other.msg_in_type.name());
+        } else if (other.msg_in_type != std::type_index(typeid(MsgNone)).name()) {
+            THROW InvalidMessageType("Function '%s' is missing bound input message of type '%s'.", other.name.c_str(), other.msg_in_type.c_str());
         }
         if (auto a = other.message_output.lock()) {
             auto _m = model->messages.find(a->name);
             if (_m != model->messages.end()) {
                 message_output = _m->second;
             }
-        } else if (other.msg_out_type != std::type_index(typeid(MsgNone))) {
-            THROW InvalidMessageType("Function '%s' is missing bound output message of type '%s'.", other.name.c_str(), other.msg_out_type.name());
+        } else if (other.msg_out_type != std::type_index(typeid(MsgNone)).name()) {
+            THROW InvalidMessageType("Function '%s' is missing bound output message of type '%s'.", other.name.c_str(), other.msg_out_type.c_str());
         }
         if (auto a = other.agent_output.lock()) {
             auto _a = model->agents.find(a->name);
