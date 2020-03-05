@@ -33,30 +33,37 @@ FLAMEGPU_AGENT_FUNCTION(in2D, MsgSpatial2D, MsgNone) {
     const float x1 = FLAMEGPU->getVariable<float>("x");
     const float y1 = FLAMEGPU->getVariable<float>("y");
     unsigned int count = 0;
-    // unsigned int myBin[3] = {
-    //     static_cast<unsigned int>(x1),
-    //     static_cast<unsigned int>(y1)
-    // };
-    // const unsigned int bin_index =
-    //     myBin[1] * 11 +
-    //     myBin[0];
+    unsigned int badCount = 0;
+     unsigned int myBin[2] = {
+         static_cast<unsigned int>(x1),
+         static_cast<unsigned int>(y1)
+     };
     // Count how many messages we recieved (including our own)
     // This is all those which fall within the 3x3x3 Moore neighbourhood
     // Not our search radius
     for (const auto &message : FLAMEGPU->message_in(x1, y1)) {
-        // unsigned int msgBin[2] = {
-        //     static_cast<unsigned int>(message.getVariable<float>("x")),
-        //     static_cast<unsigned int>(message.getVariable<float>("y"))
-        // };
+         unsigned int msgBin[2] = {
+             static_cast<unsigned int>(message.getVariable<float>("x")),
+             static_cast<unsigned int>(message.getVariable<float>("y"))
+         };
+         bool isBad = false;
+         for (unsigned int i = 0; i < 2; ++i) {  // Iterate axis
+             int binDiff = myBin[i] - msgBin[i];
+             if (binDiff > 1 || binDiff < -1) {
+                 isBad = true;
+             }
+         }
         count++;
+        badCount = isBad ? badCount + 1 : badCount;
     }
     FLAMEGPU->setVariable<unsigned int>("count", count);
+    FLAMEGPU->setVariable<unsigned int>("badCount", badCount);
     return ALIVE;
 }
 TEST(Spatial2DMsgTest, Mandatory) {
     std::unordered_map<int, unsigned int> bin_counts;
     // Construct model
-    ModelDescription model("Spatial3DMsgTestModel");
+    ModelDescription model("Spatial2DMsgTestModel");
     {   // Location message
         MsgSpatial2D::Description &message = model.newMessage<MsgSpatial2D>("location");
         message.setMin(0, 0);
@@ -72,6 +79,7 @@ TEST(Spatial2DMsgTest, Mandatory) {
         agent.newVariable<float>("y");
         agent.newVariable<unsigned int>("myBin");  // This will be presumed bin index of the agent, might not use this
         agent.newVariable<unsigned int>("count");  // Store the distance moved here, for validation
+        agent.newVariable<unsigned int>("badCount");  // Store how many messages are out of range
         agent.newFunction("out", out_mandatory2D).setMessageOutput("location");
         agent.newFunction("in", in2D).setMessageInput("location");
     }
@@ -85,7 +93,7 @@ TEST(Spatial2DMsgTest, Mandatory) {
     }
     CUDAAgentModel cuda_model(model);
 
-    const int AGENT_COUNT = 1024;
+    const int AGENT_COUNT = 2049;
     AgentPopulation population(model.Agent("agent"), AGENT_COUNT);
     // Initialise agents (TODO)
     {
@@ -163,12 +171,16 @@ TEST(Spatial2DMsgTest, Mandatory) {
 
     cuda_model.getPopulationData(population);
     // Validate each agent has same result
+    unsigned int badCountWrong = 0;
     for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
         AgentInstance ai = population.getInstanceAt(i);
         unsigned int myBin = ai.getVariable<unsigned int>("myBin");
         unsigned int myResult = ai.getVariable<unsigned int>("count");
         EXPECT_EQ(myResult, bin_results.at(myBin));
+        if (ai.getVariable<unsigned int>("badCount"))
+            badCountWrong++;
     }
+    EXPECT_EQ(badCountWrong, 0u);
 }
 
 TEST(Spatial2DMsgTest, Optional) {
@@ -179,7 +191,7 @@ TEST(Spatial2DMsgTest, Optional) {
     std::unordered_map<int, unsigned int> bin_counts;
     std::unordered_map<int, unsigned int> bin_counts_optional;
     // Construct model
-    ModelDescription model("Spatial3DMsgTestModel");
+    ModelDescription model("Spatial2DMsgTestModel");
     {   // Location message
         MsgSpatial2D::Description &message = model.newMessage<MsgSpatial2D>("location");
         message.setMin(0, 0);
@@ -196,6 +208,7 @@ TEST(Spatial2DMsgTest, Optional) {
         agent.newVariable<int>("do_output");  // NEW!
         agent.newVariable<unsigned int>("myBin");  // This will be presumed bin index of the agent, might not use this
         agent.newVariable<unsigned int>("count");  // Store the distance moved here, for validation
+        agent.newVariable<unsigned int>("badCount");  // Store how many messages are out of range
         auto &af = agent.newFunction("out", out_optional2D);  // NEW!
         af.setMessageOutput("location");
         af.setMessageOutputOptional(true);  // NEW!
@@ -211,7 +224,7 @@ TEST(Spatial2DMsgTest, Optional) {
     }
     CUDAAgentModel cuda_model(model);
 
-    const int AGENT_COUNT = 1024;
+    const int AGENT_COUNT = 2049;
     AgentPopulation population(model.Agent("agent"), AGENT_COUNT);
     // Initialise agents (TODO)
     {
@@ -296,12 +309,52 @@ TEST(Spatial2DMsgTest, Optional) {
 
     cuda_model.getPopulationData(population);
     // Validate each agent has same result
+    unsigned int badCountWrong = 0;
     for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
         AgentInstance ai = population.getInstanceAt(i);
         unsigned int myBin = ai.getVariable<unsigned int>("myBin");
         unsigned int myResult = ai.getVariable<unsigned int>("count");
+        if (ai.getVariable<unsigned int>("badCount"))
+            badCountWrong++;
         EXPECT_EQ(myResult, bin_results_optional.at(myBin));  // NEW!
     }
+    EXPECT_EQ(badCountWrong, 0u);
+}
+TEST(Spatial2DMsgTest, BadRadius) {
+    ModelDescription model("Spatial2DMsgTestModel");
+    MsgSpatial2D::Description &message = model.newMessage<MsgSpatial2D>("location");
+    EXPECT_THROW(message.setRadius(0), InvalidArgument);
+    EXPECT_THROW(message.setRadius(-10), InvalidArgument);
+}
+TEST(Spatial2DMsgTest, BadMin) {
+    ModelDescription model("Spatial2DMsgTestModel");
+    MsgSpatial2D::Description &message = model.newMessage<MsgSpatial2D>("location");
+    message.setMax(5, 5);
+    EXPECT_THROW(message.setMin(5, 0), InvalidArgument);
+    EXPECT_THROW(message.setMin(0, 5), InvalidArgument);
+    EXPECT_THROW(message.setMin(6, 0), InvalidArgument);
+    EXPECT_THROW(message.setMin(0, 6), InvalidArgument);
+}
+TEST(Spatial2DMsgTest, BadMax) {
+    ModelDescription model("Spatial2DMsgTestModel");
+    MsgSpatial2D::Description &message = model.newMessage<MsgSpatial2D>("location");
+    message.setMin(5, 5);
+    EXPECT_THROW(message.setMax(5, 0), InvalidArgument);
+    EXPECT_THROW(message.setMax(0, 5), InvalidArgument);
+    EXPECT_THROW(message.setMax(4, 0), InvalidArgument);
+    EXPECT_THROW(message.setMax(0, 4), InvalidArgument);
+}
+TEST(Spatial2DMsgTest, UnsetMax) {
+    ModelDescription model("Spatial2DMsgTestModel");
+    MsgSpatial2D::Description &message = model.newMessage<MsgSpatial2D>("location");
+    message.setMin(5, 5);
+    EXPECT_THROW(CUDAAgentModel m(model), InvalidMessage);
+}
+TEST(Spatial2DMsgTest, UnsetMin) {
+    ModelDescription model("Spatial2DMsgTestModel");
+    MsgSpatial2D::Description &message = model.newMessage<MsgSpatial2D>("location");
+    message.setMin(5, 5);
+    EXPECT_THROW(CUDAAgentModel m(model), InvalidMessage);
 }
 
 }  // namespace test_message_spatial2d

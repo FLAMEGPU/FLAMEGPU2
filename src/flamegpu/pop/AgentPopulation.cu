@@ -87,8 +87,16 @@ AgentStateMemory& AgentPopulation::getStateMemory(const std::string agent_state)
 }
 
 /* this is the current size */
-unsigned int AgentPopulation::getCurrentListSize(const std::string agent_state) {
-    return getStateMemory(agent_state).getStateListSize();
+unsigned int AgentPopulation::getCurrentListSize(const std::string agent_state) const {
+    // check if the state map exists
+    AgentStatesMap::const_iterator iter = states_map.find(agent_state);
+
+    if (iter == states_map.end()) {
+        THROW InvalidStateName("Agent ('%s') state name ('%s') was not found, "
+            "in AgentPopulation::getCurrentListSize().",
+            agent->name.c_str(), agent_state.c_str());
+    }
+    return iter->second->getStateListSize();
 }
 
 const AgentStateMemory& AgentPopulation::getReadOnlyStateMemory(const std::string agent_state) const {

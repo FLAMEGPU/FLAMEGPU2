@@ -328,4 +328,9 @@ DERIVED_FGPUException(DifferentModel, "Attempted to use member from a different 
  */
 DERIVED_FGPUException(UnsupportedFileType, "Cannot handle file type.");
 
+/**
+ * Defines an exception for errors when two agents try to output an array message to the same index
+ */
+DERIVED_FGPUException(ArrayMessageWriteConflict, "Two messages attempted to write to the same index");
+
 #endif  // INCLUDE_FLAMEGPU_EXCEPTION_FGPUEXCEPTION_H_

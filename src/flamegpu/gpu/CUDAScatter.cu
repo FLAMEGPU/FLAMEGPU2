@@ -8,6 +8,14 @@
 #include "flamegpu/gpu/CUDAScanCompaction.h"
 #include "flamegpu/runtime/flamegpu_host_new_agent_api.h"
 
+#ifdef _MSC_VER
+#pragma warning(push, 3)
+#include <cub/cub.cuh>
+#pragma warning(pop)
+#else
+#include <cub/cub.cuh>
+#endif
+
 unsigned int CUDAScatter::simulationInstances = 0;
 
 CUDAScatter::CUDAScatter()
@@ -352,6 +360,85 @@ void CUDAScatter::broadcastInit(
         d_data + offset, static_cast<unsigned int>(sd.size()),
         outIndexOffset);
     gpuErrchkLaunch();
+}
+
+__global__ void reorder_array_messages(
+    const unsigned int threadCount,
+    const unsigned int array_length,
+    const unsigned int *d_position,
+    unsigned int *d_write_flag,
+    CUDAScatter::ScatterData *scatter_data,
+    const unsigned int scatter_len
+) {
+    // global thread index
+    int index = (blockIdx.x*blockDim.x) + threadIdx.x;
+
+    if (index >= threadCount) return;
+
+    const unsigned int output_index = d_position[index];
+    assert(output_index < array_length);  // This or fail silently
+
+    for (unsigned int i = 0; i < scatter_len; ++i) {
+        memcpy(scatter_data[i].out + (output_index * scatter_data[i].typeLen), scatter_data[i].in + (index * scatter_data[i].typeLen), scatter_data[i].typeLen);
+    }
+    // Set err check flag
+    atomicInc(d_write_flag + output_index, UINT_MAX);
+}
+void CUDAScatter::arrayMessageReorder(
+    const VariableMap &vars,
+    const std::map<std::string, void*> &in,
+    const std::map<std::string, void*> &out,
+    const unsigned int &itemCount,
+    const unsigned int &array_length,
+    unsigned int *d_write_flag) {
+    if (itemCount > array_length) {
+        THROW ArrayMessageWriteConflict("Too many messages output for array message structure (%u > %u).\n", itemCount, array_length);
+    }
+    int blockSize = 0;  // The launch configurator returned block size
+    int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
+    int gridSize = 0;  // The actual grid size needed, based on input size
+                       // calculate the grid block size for main agent function
+    cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, reorder_array_messages, 0, itemCount);
+    //! Round up according to CUDAAgent state list size
+    gridSize = (itemCount + blockSize - 1) / blockSize;
+    unsigned int *d_position = nullptr;
+    // Build AoS -> AoS list
+    std::vector<ScatterData> sd;
+    for (const auto &v : vars) {
+        if (v.first != "___INDEX") {
+            char *in_p = reinterpret_cast<char*>(in.at(v.first));
+            char *out_p = reinterpret_cast<char*>(out.at(v.first));
+            sd.push_back({ v.second.type_size * v.second.elements, in_p, out_p });
+        } else {  // Special case, log index var
+            d_position = reinterpret_cast<unsigned int*>(in.at(v.first));
+            d_write_flag = d_write_flag ? d_write_flag : reinterpret_cast<unsigned int*>(out.at(v.first));
+        }
+    }
+    assert(d_position);  // Not an array message, lacking ___INDEX var
+    resize(static_cast<unsigned int>(sd.size()));
+    // Important that sd.size() is still used here, incase allocated len (data_len) is bigger
+    gpuErrchk(cudaMemcpy(d_data, sd.data(), sizeof(ScatterData) * sd.size(), cudaMemcpyHostToDevice));
+    reorder_array_messages << <gridSize, blockSize >> > (
+        itemCount, array_length,
+        d_position, d_write_flag,
+        d_data, static_cast<unsigned int>(sd.size()));
+    gpuErrchkLaunch();
+    // Check d_write_flag for dupes
+    size_t t_data_len = data_len;
+    cub::DeviceReduce::Max(d_data, t_data_len, d_write_flag, d_position, array_length);
+    unsigned int maxBinSize = 0;
+    gpuErrchk(cudaMemcpy(&maxBinSize, d_position, sizeof(unsigned int), cudaMemcpyDeviceToHost));
+    if (maxBinSize > 1) {
+        // Too many messages for single element of array
+        // Report bad ones
+        unsigned int *hd_write_flag = (unsigned int *)malloc(sizeof(unsigned int) * array_length);
+        gpuErrchk(cudaMemcpy(hd_write_flag, d_write_flag, sizeof(unsigned int)* array_length, cudaMemcpyDeviceToHost));
+        for (unsigned int i = 0; i < array_length; ++i) {
+            if (hd_write_flag[i] > 1)
+                fprintf(stderr, "Array messagelist contains %u messages at index %u!\n", hd_write_flag[i], i);
+        }
+        THROW ArrayMessageWriteConflict("Multiple threads output array messages to the same index, see stderr.\n");
+    }
 }
 void CUDAScatter::increaseSimCounter() {
     simulationInstances++;

@@ -71,6 +71,7 @@ class CUDAMessageList {
     /**
      * Copy all message data from d_swap_list to d_list
      * This ALWAYS performs and append to the existing message list count
+     * Used by swap() when appending messagelists
      * @param newCount Number of new messages to be scattered
      * @return Total number of messages now in list (includes old + new counts)
      */

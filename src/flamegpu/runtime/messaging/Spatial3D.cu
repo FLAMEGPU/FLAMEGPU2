@@ -305,28 +305,6 @@ void MsgSpatial3D::Description::setMax(const float &x, const float &y, const flo
     reinterpret_cast<Data *>(message)->maxZ = z;
 }
 
-float &MsgSpatial3D::Description::Radius() {
-    return reinterpret_cast<Data *>(message)->radius;
-}
-float &MsgSpatial3D::Description::MinX() {
-    return reinterpret_cast<Data *>(message)->minX;
-}
-float &MsgSpatial3D::Description::MinY() {
-    return reinterpret_cast<Data *>(message)->minY;
-}
-float &MsgSpatial3D::Description::MinZ() {
-    return reinterpret_cast<Data *>(message)->minZ;
-}
-float &MsgSpatial3D::Description::MaxX() {
-    return reinterpret_cast<Data *>(message)->maxX;
-}
-float &MsgSpatial3D::Description::MaxY() {
-    return reinterpret_cast<Data *>(message)->maxY;
-}
-float &MsgSpatial3D::Description::MaxZ() {
-    return reinterpret_cast<Data *>(message)->maxZ;
-}
-
 float MsgSpatial3D::Description::getRadius() const {
     return reinterpret_cast<Data *>(message)->radius;
 }

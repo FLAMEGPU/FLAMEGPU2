@@ -100,6 +100,9 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/BruteForce.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Spatial2D.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Spatial3D.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Array.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Array2D.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Array3D.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/AgentRandom.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/DeviceEnvironment.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/EnvironmentManager.cuh
@@ -133,6 +136,9 @@ SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/BruteForce.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/Spatial2D.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/Spatial3D.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/Array.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/Array2D.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/Array3D.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/io/xmlReader.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/io/xmlWriter.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/utility/HostEnvironment.cu

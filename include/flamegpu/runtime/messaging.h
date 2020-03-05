@@ -10,6 +10,9 @@
 #include "flamegpu/runtime/messaging/BruteForce.h"
 #include "flamegpu/runtime/messaging/Spatial2D.h"
 #include "flamegpu/runtime/messaging/Spatial3D.h"
+#include "flamegpu/runtime/messaging/Array.h"
+#include "flamegpu/runtime/messaging/Array2D.h"
+#include "flamegpu/runtime/messaging/Array3D.h"
 
 /**
  * ######################################################
@@ -42,7 +45,8 @@
  *  It is required to have the correct constructor format, and to inherit from MsgSpecialisationHandler.
  *  
  *  The method buildIndex() is called the first time messages are read after message output. This
- *  is useful if your messaging type required a special index (e.g. Spatial messaging PBM).
+ *  is useful if your messaging type required a special index (e.g. Spatial messaging PBM). Read list 
+ *  (d_list) must contain the sorted message data on exit from the method.
  *  
  *  The method getMetaDataDevicePtr() returns a pointer to a structure on the device that is required for
  *  message input. This pointer is then passed to the constructor of In. This is useful if your messaging

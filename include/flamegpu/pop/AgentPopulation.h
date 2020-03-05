@@ -41,7 +41,7 @@ class AgentPopulation {
 
     AgentStateMemory& getStateMemory(const std::string agent_state = ModelData::DEFAULT_STATE);
 
-    unsigned int getCurrentListSize(const std::string agent_state = ModelData::DEFAULT_STATE);
+    unsigned int getCurrentListSize(const std::string agent_state = ModelData::DEFAULT_STATE) const;
 
     const AgentStateMemory& getReadOnlyStateMemory(const std::string agent_state = ModelData::DEFAULT_STATE) const;
 

@@ -99,6 +99,12 @@ unsigned int CUDAMessage::getMaximumListSize() const {
 unsigned int CUDAMessage::getMessageCount() const {
     return message_count;
 }
+void CUDAMessage::setMessageCount(const unsigned int &_message_count) {
+    if (_message_count > max_list_size) {
+        THROW OutOfBoundsException("message count exceeds allocated message list size (%u > %u) in CUDAMessage::setMessageCount().", _message_count, max_list_size);
+    }
+    message_count = _message_count;
+}
 
 /**
 * @brief Sets all message variable data to zero
@@ -173,6 +179,9 @@ void CUDAMessage::mapWriteRuntimeVariables(const AgentFunctionData& func, const 
         unsigned int length = writeLen;  // check to see if it is equal to pop
         Curve::getInstance().registerVariableByHash(var_hash + agent_hash + func_hash + message_hash, d_ptr, size, length);
     }
+
+    // Allocate the metadata if required.
+    specialisation_handler->allocateMetaDataDevicePtr();
 }
 
 void CUDAMessage::unmapRuntimeVariables(const AgentFunctionData& func) const {
@@ -218,7 +227,7 @@ void CUDAMessage::swap(bool isOptional, const unsigned int &newMsgCount, const u
         // Update count
         message_count = message_list->scatter(newMsgCount, streamId, !this->truncate_messagelist_flag);
     } else {
-        if (this->truncate_messagelist_flag || newMsgCount == 0) {  // newMsgCount == 0 is used by buildIndex() of spatial messaging.
+        if (this->truncate_messagelist_flag) {
             message_count = newMsgCount;
             message_list->swap();
         } else {
@@ -233,8 +242,6 @@ void CUDAMessage::swap() {
 }
 
 void CUDAMessage::buildIndex() {
-    // Allocate the metadata if required.
-    specialisation_handler->allocateMetaDataDevicePtr();
     // Build the index if required.
     if (pbm_construction_required) {
         specialisation_handler->buildIndex();

@@ -92,6 +92,7 @@ class CUDAScatter {
      * @paramn out Output variable name:ptr map
      * @param itemCount Total number of items in input array to consider
      * @param out_index_offset The offset to be applied to the ouput index (e.g. if out already contains data)
+     * @note If calling scatter() with itemCount == scatter_all_count works the same
      */
     unsigned int scatterAll(
         const VariableMap &vars,
@@ -122,23 +123,46 @@ class CUDAScatter {
     /**
      * Scatters agents from AoS to SoA
      * Used by host agent creation
+     * @param vars Variable description map from ModelData hierarchy
+     * @param out Output variable name:ptr map
+     * @param in_buff AoS buffer of variable data, with structs packed according to inOffsetData
+     * @param inOffsetData Packing information for in_buff structs
+     * @param itemCount Total number of items in input array to consider
+     * @param out_index_offset The offset to be applied to the ouput index (e.g. if out already contains data)
      */
     void scatterNewAgents(
         const VariableMap &vars,
         const std::map<std::string, void*> &out,
         void *in_buff,
         const VarOffsetStruct &inOffsetData,
-        const unsigned int &inCount,
-        const unsigned int outIndexOffset);
+        const unsigned int &itemCount,
+        const unsigned int out_index_offset);
     /**
-     * Broadcasts a single value  for each variable to a contiguous block in SoA
-     * Used priot to device agent creation
+     * Broadcasts a single value for each variable to a contiguous block in SoA
+     * Used prior to device agent creation
+     * @param vars Variable description map from ModelData hierarchy
+     * @param out Output variable name:ptr map
+     * @param itemCount Total number of items in input array to consider
+     * @param out_index_offset The offset to be applied to the ouput index (e.g. if out already contains data)
      */
     void broadcastInit(
         const VariableMap &vars,
         const std::map<std::string, void*> &out,
-        const unsigned int &inCount,
-        const unsigned int outIndexOffset);
+        const unsigned int &itemCount,
+        const unsigned int out_index_offset);
+    /**
+     * Used to reorder array messages based on __INDEX variable, that variable is not sorted
+     * Also throws exception if any indexes are repeated
+     * @param array_length Length of the array messages are to be stored in (max index + 1)
+     * @param d_write_flag Device pointer to array for tracking how many messages output to each bin, caller responsibiltiy to ensure it is array_length or longer
+     */
+    void arrayMessageReorder(
+        const VariableMap &vars,
+        const std::map<std::string, void*> &in,
+        const std::map<std::string, void*> &out,
+        const unsigned int &itemCount,
+        const unsigned int &array_length,
+        unsigned int *d_write_flag = nullptr);
 
  private:
     // set by getInstance()
