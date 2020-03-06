@@ -26,8 +26,6 @@ endif()
 option(BUILD_FLAMEGPU2 "Enable building FLAMEGPU2 library" ON)
 # Option to enable building all examples
 option(BUILD_ALL_EXAMPLES "Enable building examples" ON)
-# Option to explicitly build the simple_example example. Defaults to off.
-option(BUILD_EXAMPLE_SIMPLE_EXAMPLE "Enable building examples/simple_example" OFF)
 # Option to enable/disable tests.
 option(BUILD_TESTS "Enable building tests" OFF)
 
@@ -52,10 +50,6 @@ if(BUILD_FLAMEGPU2)
 endif()
 
 # Add each example
-if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_SIMPLE_EXAMPLE)
-    add_subdirectory(examples/simple_example)
-endif()
-
 if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_HOST_FUNCTIONS)
     add_subdirectory(examples/host_functions)
 endif()
