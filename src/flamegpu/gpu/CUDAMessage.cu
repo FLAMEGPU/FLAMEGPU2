@@ -228,6 +228,9 @@ void CUDAMessage::swap(bool isOptional, const unsigned int &newMsgCount, const u
         }
     }
 }
+void CUDAMessage::swap() {
+    message_list->swap();
+}
 
 void CUDAMessage::buildIndex() {
     // Allocate the metadata if required.
