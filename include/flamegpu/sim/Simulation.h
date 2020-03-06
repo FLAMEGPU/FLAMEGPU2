@@ -20,6 +20,7 @@ class Simulation {
         std::string xml_input_file;
         unsigned int random_seed;
         unsigned int steps = 0;
+        bool verbose = false;
     };
     virtual ~Simulation() = default;
     explicit Simulation(const ModelDescription& model);
