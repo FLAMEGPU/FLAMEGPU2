@@ -105,8 +105,17 @@ int Simulation::checkArgs(int argc, const char** argv) {
         }
         // -v/--verbose, Verbose FLAME GPU output.
         if (arg.compare("--verbose") == 0 || arg.compare("-v") == 0) {
-            // Reinitialise RandomManager state
             config.verbose = true;
+            continue;
+        }
+        // -t/--timing, Output timing information to stdout
+        if (arg.compare("--timing") == 0 || arg.compare("-t") == 0) {
+            config.timing = true;
+            continue;
+        }
+        // -no-timing, do not output timing values..
+        if (arg.compare("--no-timing") == 0) {
+            config.timing = false;
             continue;
         }
         // Test this arg with the derived class
@@ -128,6 +137,8 @@ void Simulation::printHelp(const char* executable) {
     printf(line_fmt, "-s, --steps <steps>", "Number of simulation iterations");
     printf(line_fmt, "-r, --random <seed>", "RandomManager seed");
     printf(line_fmt, "-v, --verbose", "Verbose FLAME GPU output");
+    printf(line_fmt, "-t, --timing", "Output timing information to stdout");
+    printf(line_fmt, "    --no-timing", "Do not output timing information to stdout");
     printHelp_derived();
 }
 
