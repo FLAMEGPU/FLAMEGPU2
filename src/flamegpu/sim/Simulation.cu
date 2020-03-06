@@ -103,6 +103,12 @@ int Simulation::checkArgs(int argc, const char** argv) {
             config.random_seed = static_cast<unsigned int>(strtoul(argv[++i], nullptr, 0));
             continue;
         }
+        // -v/--verbose, Verbose FLAME GPU output.
+        if (arg.compare("--verbose") == 0 || arg.compare("-v") == 0) {
+            // Reinitialise RandomManager state
+            config.verbose = true;
+            continue;
+        }
         // Test this arg with the derived class
         if (checkArgs_derived(argc, argv, i)) {
             continue;
@@ -118,9 +124,10 @@ void Simulation::printHelp(const char* executable) {
     printf("Usage: %s [-s steps] [-d device_id] [-r random_seed]\n", executable);
     printf("Optional Arguments:\n");
     const char *line_fmt = "%-18s %s\n";
-    printf(line_fmt, "-i, --in", "Initial state file (XML)");
-    printf(line_fmt, "-s, --steps", "Number of simulation iterations");
-    printf(line_fmt, "-r, --random", "RandomManager seed");
+    printf(line_fmt, "-i, --in <file.xml>", "Initial state file (XML)");
+    printf(line_fmt, "-s, --steps <steps>", "Number of simulation iterations");
+    printf(line_fmt, "-r, --random <seed>", "RandomManager seed");
+    printf(line_fmt, "-v, --verbose", "Verbose FLAME GPU output");
     printHelp_derived();
 }
 

@@ -58,6 +58,11 @@ bool CUDAAgentModel::step() {
     // Ensure singletons have been initialised
     initialiseSingletons();
 
+    // If verbose, print the step number.
+    if (getSimulationConfig().verbose) {
+        fprintf(stdout, "Processing Simulation Step %u\n", step_count);
+    }
+
     step_count++;
     unsigned int nStreams = 1;
     std::string message_name;
