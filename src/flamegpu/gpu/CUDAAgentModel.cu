@@ -250,6 +250,8 @@ bool CUDAAgentModel::step() {
         }
         NVTX_POP();
 
+        // Ensure RandomManager is the correct size to accomodate all threads to be launched
+        singletons->rng.resize(totalThreads);
         // Total threads is now used to provide kernel launches an offset to thread-safe thread-index
         totalThreads = 0;
         j = 0;
