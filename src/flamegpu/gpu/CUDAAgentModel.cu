@@ -427,6 +427,16 @@ void CUDAAgentModel::simulate() {
     // Ensure singletons have been initialised
     initialiseSingletons();
 
+    // If timing is required, create cude events and record the start.
+    cudaEvent_t simulateStartEvent = NULL;
+    cudaEvent_t simulateEndEvent = NULL;
+    if (getSimulationConfig().timing) {
+        gpuErrchk(cudaEventCreate(&simulateStartEvent));
+        gpuErrchk(cudaEventCreate(&simulateEndEvent));
+        // Record the start event.
+        gpuErrchk(cudaEventRecord(simulateStartEvent));
+    }
+
     // CUDAAgentMap::iterator it;
 
     // check any CUDAAgents with population size == 0
@@ -449,6 +459,23 @@ void CUDAAgentModel::simulate() {
     // Execute exit functions
     for (auto &exitFn : model->exitFunctions)
         exitFn(this->host_api.get());
+
+    // If timing is enabled, capture the stop record, output the time and delete the events.
+    if (getSimulationConfig().timing) {
+        // Record the end event.
+        gpuErrchk(cudaEventRecord(simulateEndEvent));
+        // Syncrhonize the stop event
+        gpuErrchk(cudaEventSynchronize(simulateEndEvent));
+        float milliseconds = 0.;
+        cudaEventElapsedTime(&milliseconds, simulateStartEvent, simulateEndEvent);
+        // Resolution is 0.5 microseconds, so print to 1 us.
+        fprintf(stdout, "Total Processing time: %.3f ms\n", milliseconds);
+
+        gpuErrchk(cudaEventDestroy(simulateStartEvent));
+        gpuErrchk(cudaEventDestroy(simulateEndEvent));
+        simulateStartEvent = NULL;
+        simulateEndEvent = NULL;
+    }
 
     // Destroy streams.
     NVTX_PUSH("CUDAAgentModel::step::destroyStreams");

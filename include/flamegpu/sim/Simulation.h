@@ -21,6 +21,7 @@ class Simulation {
         unsigned int random_seed;
         unsigned int steps = 0;
         bool verbose = false;
+        bool timing = false;
     };
     virtual ~Simulation() = default;
     explicit Simulation(const ModelDescription& model);
