@@ -23,19 +23,20 @@
  * http://stackoverflow.com/questions/12388207/interpreting-output-of-ptxas-options-v
  */
 
-/*
-FLAMEGPU_AGENT_FUNCTION(output_func, MsgNone, MsgNone) {
-    // printf("Hello from output_func\n");
+const char* rtc_test_func_str = R"###(
+FLAMEGPU_AGENT_FUNCTION(rtc_test_func, MsgNone, MsgNone) {
+    printf("Hello from rtc_test_func\n");
 
-    float x = FLAMEGPU->getVariable<float>("x");
+    //float x = FLAMEGPU->getVariable<float>("x");
     // printf("x = %f\n", x);
-    FLAMEGPU->setVariable<float>("x", x + 2);
-    x = FLAMEGPU->getVariable<float>("x");
+    //FLAMEGPU->setVariable<float>("x", x + 2);
+    //x = FLAMEGPU->getVariable<float>("x");
     // printf("x after set = %f\n", x);
 
     return ALIVE;
 }
-*/
+)###";
+
 FLAMEGPU_AGENT_FUNCTION(output_func, MsgNone, MsgNone) {
 // some thoughts on how to use messages
     // FLAMEGPU->outputMessage<float>("location","x");
@@ -96,16 +97,19 @@ int main(void) {
     // circle agent output_data function
     // Do not specify the state. As their are no states in the system it is assumed that this model is stateless.
     AgentFunctionDescription &output_data = circle_agent.newFunction("output_data", output_func);
-    output_data.setMessageOutput(location_message);
+    //output_data.setMessageOutput(location_message);
     // output_data.setInitialState("state1");
 
     // circle agent input_data function
     AgentFunctionDescription &input_data = circle_agent.newFunction("input_data", input_func);
-    input_data.setMessageInput(location_message);
+    //input_data.setMessageInput(location_message);
 
 
     // circle agent move function
     AgentFunctionDescription &move = circle_agent.newFunction("move", move_func);
+
+
+    AgentFunctionDescription& rtcfunc = circle_agent.newRTCFunction("rtc_test_func", rtc_test_func_str);
 
     // TODO: At some point the model should be validated and then become read only. You should not be bale to add new agent variables once you have instances of the population for example.
     // flame_model.validate();
@@ -138,14 +142,17 @@ int main(void) {
     /* This is essentially the function layers from a model.xml */
     /* Currently this is specified by the user. In the future this could be generated automatically through dependency analysis like with FLAME HPC */
 
-    LayerDescription &output_layer = flame_model.newLayer("output_layer");  // in the original schema layers are not named
-    output_layer.addAgentFunction(output_data);
+    LayerDescription& rtc_layer = flame_model.newLayer("rtc_layer"); 
+    rtc_layer.addAgentFunction(rtcfunc);
 
-    LayerDescription &input_layer = flame_model.newLayer("input_layer");
-    input_layer.addAgentFunction(input_data);
+    //LayerDescription &output_layer = flame_model.newLayer("output_layer");  // in the original schema layers are not named
+    //output_layer.addAgentFunction(output_data);
 
-    LayerDescription &move_layer = flame_model.newLayer("input_layer");
-    move_layer.addAgentFunction(move);
+    //LayerDescription &input_layer = flame_model.newLayer("input_layer");
+    //input_layer.addAgentFunction(input_data);
+
+    //LayerDescription &move_layer = flame_model.newLayer("input_layer");
+    //move_layer.addAgentFunction(move);
 
     // TODO: simulation.getLayerPosition("layer name") - returns an int
     // Simulation.addFunctionToLayer(0,"lmove")
