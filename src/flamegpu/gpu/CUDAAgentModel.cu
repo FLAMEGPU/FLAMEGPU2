@@ -25,8 +25,19 @@ CUDAAgentModel::CUDAAgentModel(const ModelDescription& _model)
     const auto &am = model->agents;
     // create new cuda agent and add to the map
     for (auto it = am.cbegin(); it != am.cend(); ++it) {
-        agent_map.emplace(it->first, std::make_unique<CUDAAgent>(*it->second));
-    }  // insert into map using value_type
+        // insert into map using value_type and store a referecne to the map pair (returned by emplace as first element)
+        auto a_it = agent_map.emplace(it->first, std::make_unique<CUDAAgent>(*it->second)).first;
+
+        // runtime compile any runtime specified agent functions
+        const auto& mf = it->second->functions;
+        for (auto it_f = mf.cbegin(); it_f != mf.cend(); ++it_f) {
+            // check rtc source to see if this is a RTC function
+            if (!it_f->second->rtc_source.empty()) {
+                // create CUDA agent RTC function by calling addInstantitateRTCFunction on CUDAAgent with AgentFunctionData
+                a_it->second->addInstantitateRTCFunction(*it_f->second);
+            }
+        }
+    }
 
     // populate the CUDA message map
     const auto &mm = model->messages;

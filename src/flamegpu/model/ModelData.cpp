@@ -28,7 +28,6 @@ AgentData::AgentData(ModelData *const model, const std::string &agent_name)
 
 AgentFunctionData::AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string &function_name, AgentFunctionWrapper *agent_function, const std::string &in_type, const std::string &out_type)
     : func(agent_function)
-    , rtc_instantiation(0)
     , rtc_source("")
     , initial_state(_parent->initial_state)
     , end_state(_parent->initial_state)
@@ -43,7 +42,6 @@ AgentFunctionData::AgentFunctionData(std::shared_ptr<AgentData> _parent, const s
 
 AgentFunctionData::AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string& function_name, const std::string &rtc_function_src, const std::string &in_type, const std::string &out_type)
     : func(0)
-    , rtc_instantiation(0)
     , rtc_source(rtc_function_src)
     , initial_state(_parent->initial_state)
     , end_state(_parent->initial_state)

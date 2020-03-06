@@ -16,15 +16,6 @@
 #include "flamegpu/runtime/messaging/BruteForce.h"
 #include "flamegpu/model/Variable.h"
 
-
-#ifdef _MSC_VER
-#pragma warning(push, 2)
-#include "jitify/jitify.hpp"
-#pragma warning(pop)
-#else
-#include "jitify/jitify.hpp"
-#endif
-
 class EnvironmentDescription;
 class AgentDescription;
 class AgentFunctionDescription;
@@ -261,10 +252,6 @@ struct AgentFunctionData {
      * @see void agent_function_wrapper(Curve::NamespaceHash, Curve::NamespaceHash, Curve::NamespaceHash, Curve::NamespaceHash, const int, const void *, const unsigned int, const unsigned int)
      */
     AgentFunctionWrapper *func;
-    /**
-     * The jitify compiled kernel for a runtime compiled agent function
-     */
-    std::shared_ptr<jitify::KernelInstantiation> rtc_instantiation;
     /**
      * The string representing the RTC defined agent function
      */

@@ -262,6 +262,10 @@ class AgentFunctionDescription {
      * @return The cuda kernel entry point for executing the agent function condition
      */
     AgentFunctionConditionWrapper *getConditionPtr() const;
+    /**
+     * @return True if the function is a runtime time specified function
+     */
+    bool isRTC() const;
 
  private:
     /**

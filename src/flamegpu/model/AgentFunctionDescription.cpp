@@ -405,6 +405,10 @@ AgentFunctionConditionWrapper *AgentFunctionDescription::getConditionPtr() const
     return function->condition;
 }
 
+bool AgentFunctionDescription::isRTC() const {
+    return !function->rtc_source.empty();
+}
+
 AgentFunctionDescription& AgentDescription::newRTCFunction(const std::string& function_name, const char* func_src) {
     if (agent->functions.find(function_name) == agent->functions.end()) {   
         //append jitify program string and include

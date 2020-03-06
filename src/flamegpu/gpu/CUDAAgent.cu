@@ -29,6 +29,7 @@
 #include <cub/cub.cuh>
 #endif
 
+
 /**
 * CUDAAgent class
 * @brief allocates the hash table/list for agent variables and copy the list to device
@@ -492,4 +493,8 @@ void CUDAAgent::scatterNew(const std::string state, const unsigned int &newSize,
     // Scatter
     if (newSize)
         sm->second->scatterNew(newSize, streamId);
+}
+
+void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func) {
+    // Todo: add to rtc_func_map after instanciating from source
 }
