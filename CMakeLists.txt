@@ -24,8 +24,16 @@ endif()
 
 # Option to enable/disable building the static library
 option(BUILD_FLAMEGPU2 "Enable building FLAMEGPU2 library" ON)
+
 # Option to enable building all examples
 option(BUILD_ALL_EXAMPLES "Enable building examples" ON)
+
+# Options to enable building individual examples, if BUILD_ALL_EXAMPLES is off.
+option(BUILD_EXAMPLE_HOST_FUNCTIONS "Enable building examples/host_functions" OFF)
+option(BUILD_EXAMPLE_CIRCLES_BRUTE_FORCE "Enable building examples/circles_brute_force" OFF)
+option(BUILD_EXAMPLE_CIRCLES_SPATIAL_3D "Enable building examples/circles_spatial_3d" OFF)
+
+
 # Option to enable/disable tests.
 option(BUILD_TESTS "Enable building tests" OFF)
 
