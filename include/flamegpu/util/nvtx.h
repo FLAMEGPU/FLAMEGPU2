@@ -36,8 +36,8 @@ const uint32_t colourCount = sizeof(palette) / sizeof(uint32_t);
  * @note The number of pushes must match the number of pops.
  * @see NVTX_PUSH to use with minimal performance impact
  */
-inline void push(const char * label) {
 #if defined(NVTX)
+inline void push(const char * label) {
     // Static variable to track the next colour to be used with auto rotation.
     static uint32_t nextColourIdx = 0;
 
@@ -61,8 +61,11 @@ inline void push(const char * label) {
 
     // Increment the counter tracking the next colour to use.
     nextColourIdx = colourIdx + 1;
-#endif
 }
+#else
+inline void push(const char *) {
+}
+#endif
 
 /**
  * Method to pop an NVTX marker for improved profiling, if NVTX is defined.
