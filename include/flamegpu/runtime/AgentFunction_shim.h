@@ -51,4 +51,9 @@ __device__ __forceinline__ FLAME_GPU_AGENT_STATUS funcName ## _impl::operator()(
  */
 #define FLAMEGPU_DEVICE_FUNCTION __device__ __forceinline__
 
+/**
+ * Macro so users can define their own host functions, to support host device functions.
+ */
+#define FLAMEGPU_HOST_DEVICE_FUNCTION __host__ FLAMEGPU_DEVICE_FUNCTION
+
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_AGENTFUNCTION_SHIM_H_
