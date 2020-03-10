@@ -146,10 +146,12 @@ class CUDAAgent : public AgentInterface {
      */
     void scatterNew(const std::string state, const unsigned int &newSize, const unsigned int &streamId);
     /**
-     * Instatiates a RTC Agent function from agent function data description containing the agent function source
+     * Instatiates a RTC Agent function from agent function data description containing the agent function source.
+     * Uses Jitify to create an instantiation of the program. Any compilation errors in the user provided agent function will be reported here.
      * @param state The CUDAAgentStateList to perform scatter on
      * @param newSize The max possible number of new agents
      * @param streamId Stream index for stream safe operations
+     * @throw InvalidAgentFunc thrown if the user supplied agent function has compilation errors
      * @note This may resize death scan flag, which will lose it's data, hence always processDeath first
      */
     void addInstantitateRTCFunction(const AgentFunctionData& func);

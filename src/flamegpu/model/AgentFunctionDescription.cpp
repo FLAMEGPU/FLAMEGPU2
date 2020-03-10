@@ -419,8 +419,8 @@ AgentFunctionDescription& AgentDescription::newRTCFunction(const std::string& fu
         if (std::regex_search(func_src_str, match, rgx)) {
             if (match.size() == 4) {
                 std::string code_func_name = match[1];  // not yet clear if this is required
-                std::string in_type_name = match[2];
-                std::string out_type_name = match[3];
+                std::string in_type_name = std::string("class ").append(match[2]);      // for comparison with typeid name the full type string is required so class is prepended
+                std::string out_type_name = std::string("class ").append(match[3]);     // for comparison with typeid name the full type string is required so class is prepended
                 // set the runtime agent function source in agent function data
                 auto rtn = std::shared_ptr<AgentFunctionData>(new AgentFunctionData(this->agent->shared_from_this(), function_name, func_src_str, in_type_name, out_type_name));
                 agent->functions.emplace(function_name, rtn);

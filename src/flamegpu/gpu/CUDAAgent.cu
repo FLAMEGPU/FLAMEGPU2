@@ -496,5 +496,36 @@ void CUDAAgent::scatterNew(const std::string state, const unsigned int &newSize,
 }
 
 void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func) {
-    // Todo: add to rtc_func_map after instanciating from source
+    // get header location for fgpu
+    const char* env_inc_fgp2 = std::getenv("FLAMEGPU2_INC_DIR");
+    if (!env_inc_fgp2)
+        THROW InvalidAgentFunc("Error compiling runtime agent function ('%s'): FLAMEGPU2_INC_DIR environment variable does not exist, "
+            "in CUDAAgent::addInstantitateRTCFunction().",
+            func.name);
+
+    // get the cuda path
+    const char* env_cuda_path = std::getenv("CUDA_PATH");
+    if (!env_cuda_path)
+        THROW InvalidAgentFunc("Error compiling runtime agent function ('%s'): CUDA_PATH environment variable does not exist, "
+            "in CUDAAgent::addInstantitateRTCFunction().",
+            func.name);
+
+    // vector of compiler options for jitify
+    std::vector<std::string> options;
+
+    // fpgu incude
+    std::string include_fgpu;
+    include_fgpu = "-I" + std::string(env_inc_fgp2);
+    options.push_back(include_fgpu);
+    std::cout << "fgpu include option is " << include_fgpu << '\n';     // DEBUG
+
+    // cuda path
+    std::string include_cuda;
+    include_cuda = "-I" + std::string(env_cuda_path) + "\\include";
+    options.push_back(include_cuda);
+    std::cout << "cuda include option is " << include_cuda << '\n';     // DEBUG
+
+    // jitify to create program (with compilation settings)
+    static jitify::JitCache kernel_cache;
+    auto program = std::make_shared<jitify::Program>(kernel_cache, func.rtc_source, 0, options);
 }

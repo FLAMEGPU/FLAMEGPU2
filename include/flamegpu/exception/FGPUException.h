@@ -4,6 +4,7 @@
 #include <string>
 #include <exception>
 #include <cstdarg>
+#include <cstdio>
 
 /**
  * If this macro is used instead of 'throw', FGPUException will 
@@ -38,7 +39,7 @@ class FGPUException : public std::exception {
     /**
      * Parses va_list to a string using vsnprintf
      */
-     static std::string parseArgs(const char * format, va_list argp);
+    static std::string parseArgs(const char * format, va_list argp);
     std::string err_message;
 
  private:
@@ -48,7 +49,21 @@ class FGPUException : public std::exception {
 
 /**
  * Macro for generating common class body for derived classes of FGPUException
+ * _DEBUG builds will print the error to stderr
  */
+#ifdef _DEBUG
+#define DERIVED_FGPUException(name, default_msg)\
+class name : public FGPUException {\
+ public:\
+    explicit name(const char *format = default_msg, ...) {\
+        va_list argp;\
+        va_start(argp, format);\
+        err_message += parseArgs(format, argp);\
+        va_end(argp);\
+        fprintf(stderr, err_message.c_str()); \
+    }\
+}
+#else
 #define DERIVED_FGPUException(name, default_msg)\
 class name : public FGPUException {\
  public:\
@@ -59,6 +74,9 @@ class name : public FGPUException {\
         va_end(argp);\
     }\
 }
+#endif
+
+
 
 /////////////////////
 // Derived Classes //

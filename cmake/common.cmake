@@ -66,6 +66,19 @@ MARK_AS_ADVANCED(
 set(FLAMEGPU_DEPENDENCY_INCLUDE_DIRECTORIES)
 set(FLAMEGPU_DEPENDENCY_LINK_LIBRARIES)
 
+# NVRTC.lib/CUDA.lib
+
+find_package(NVRTC REQUIRED QUIET)
+if(NVRTC_FOUND)
+    set(FLAMEGPU_DEPENDENCY_INCLUDE_DIRECTORIES ${FLAMEGPU_DEPENDENCY_INCLUDE_DIRECTORIES} ${NVRTC_INCLUDE_DIRS})
+    set(FLAMEGPU_DEPENDENCY_LINK_LIBRARIES ${FLAMEGPU_DEPENDENCY_LINK_LIBRARIES} ${NVRTC_LIBRARIES})
+    # Also add the driver api
+    set(FLAMEGPU_DEPENDENCY_LINK_LIBRARIES ${FLAMEGPU_DEPENDENCY_LINK_LIBRARIES} cuda)
+else()
+    message("nvrtc not found @todo gracefully handle this")
+endif()
+
+
 # If NVTX is enabled, find the library and update variables accordingly.
 if(NVTX)
     # Find the nvtx library using custom cmake module
