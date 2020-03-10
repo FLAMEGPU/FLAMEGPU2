@@ -129,21 +129,22 @@ AgentFunctionData::AgentFunctionData(ModelData *const model, std::shared_ptr<Age
     , msg_out_type(other.msg_out_type) {
     // Manually perform lookup copies
     if (model) {
+        std::cout << "Demangled name: " << demangle(std::type_index(typeid(MsgNone)).name()) << "\n";
         if (auto a = other.message_input.lock()) {
             auto _m = model->messages.find(a->name);
             if (_m != model->messages.end()) {
                 message_input = _m->second;
             }
-        } else if (other.msg_in_type != std::type_index(typeid(MsgNone)).name()) {
-            THROW InvalidMessageType("Function '%s' is missing bound input message of type '%s'.", other.name.c_str(), other.msg_in_type.c_str());
+        } else if (other.msg_in_type != demangle(std::type_index(typeid(MsgNone)).name())) {
+            THROW InvalidMessageType("Function '%s' is missing bound input message of type '%s', type provided was '%s'.", other.name.c_str(), other.msg_in_type.c_str(), demangle(std::type_index(typeid(MsgNone)).name()).c_str());
         }
         if (auto a = other.message_output.lock()) {
             auto _m = model->messages.find(a->name);
             if (_m != model->messages.end()) {
                 message_output = _m->second;
             }
-        } else if (other.msg_out_type != std::type_index(typeid(MsgNone)).name()) {
-            THROW InvalidMessageType("Function '%s' is missing bound output message of type '%s'.", other.name.c_str(), other.msg_out_type.c_str());
+        } else if (other.msg_out_type != demangle(std::type_index(typeid(MsgNone)).name())) {
+            THROW InvalidMessageType("Function '%s' is missing bound output message of type '%s'.", other.name.c_str(), other.msg_out_type.c_str(), demangle(std::type_index(typeid(MsgNone)).name()).c_str());
         }
         if (auto a = other.agent_output.lock()) {
             auto _a = model->agents.find(a->name);

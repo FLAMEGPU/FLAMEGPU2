@@ -11,6 +11,14 @@
 #include "flamegpu/model/LayerDescription.h"
 #include "flamegpu/runtime/messaging/BruteForce.h"
 
+#ifdef _MSC_VER
+#pragma warning(push, 2)
+#include "jitify/jitify.hpp"
+#pragma warning(pop)
+#else
+#include "jitify/jitify.hpp"
+#endif
+
 struct ModelData;
 struct AgentFunctionData;
 
@@ -278,12 +286,16 @@ class AgentFunctionDescription {
     AgentFunctionData *const function;
 };
 
+inline std::string demangle(const char* verbose_name) {
+    return jitify::reflection::detail::demangle(verbose_name);
+}
+
 template<typename AgentFunction>
 AgentFunctionDescription &AgentDescription::newFunction(const std::string &function_name, AgentFunction) {
     if (agent->functions.find(function_name) == agent->functions.end()) {
         AgentFunctionWrapper *f = AgentFunction::fnPtr();
-        std::string in_t = AgentFunction::inType().name();
-        std::string out_t = AgentFunction::outType().name();
+        std::string in_t = demangle(AgentFunction::inType().name());      // demangle name using handy jitify function
+        std::string out_t = demangle(AgentFunction::outType().name());
         auto rtn = std::shared_ptr<AgentFunctionData>(new AgentFunctionData(this->agent->shared_from_this(), function_name, f, in_t, out_t));
         agent->functions.emplace(function_name, rtn);
         return *rtn->description;
@@ -292,7 +304,6 @@ AgentFunctionDescription &AgentDescription::newFunction(const std::string &funct
         "in AgentDescription::newFunction().",
         agent->name.c_str(), function_name.c_str());
 }
-
 
 template<typename AgentFunctionCondition>
 void AgentFunctionDescription::setFunctionCondition(AgentFunctionCondition) {
