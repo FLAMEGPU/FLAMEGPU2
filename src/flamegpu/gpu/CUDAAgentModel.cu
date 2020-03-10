@@ -142,8 +142,8 @@ bool CUDAAgentModel::step() {
                     int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
                     int gridSize = 0;  // The actual grid size needed, based on input size
 
-                                       // calculate the grid block size for main agent function
-                    cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, func_des->func, 0, state_list_size);
+                    // calculate the grid block size for main agent function
+                    gpuErrchk(cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, func_des->func, 0, state_list_size));
 
                     //! Round up according to CUDAAgent state list size
                     gridSize = (state_list_size + blockSize - 1) / blockSize;
@@ -298,7 +298,7 @@ bool CUDAAgentModel::step() {
             int gridSize = 0;  // The actual grid size needed, based on input size
 
             // calculate the grid block size for main agent function
-            cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, func_des->func, 0, state_list_size);
+            gpuErrchk(cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, func_des->func, 0, state_list_size));
 
             //! Round up according to CUDAAgent state list size
             gridSize = (state_list_size + blockSize - 1) / blockSize;
