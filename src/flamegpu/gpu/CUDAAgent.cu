@@ -498,17 +498,19 @@ void CUDAAgent::scatterNew(const std::string state, const unsigned int &newSize,
 void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func) {
     // get header location for fgpu
     const char* env_inc_fgp2 = std::getenv("FLAMEGPU2_INC_DIR");
-    if (!env_inc_fgp2)
+    if (!env_inc_fgp2) {
         THROW InvalidAgentFunc("Error compiling runtime agent function ('%s'): FLAMEGPU2_INC_DIR environment variable does not exist, "
             "in CUDAAgent::addInstantitateRTCFunction().",
-            func.name);
+            func.name.c_str());
+    }
 
     // get the cuda path
     const char* env_cuda_path = std::getenv("CUDA_PATH");
-    if (!env_cuda_path)
+    if (!env_cuda_path) {
         THROW InvalidAgentFunc("Error compiling runtime agent function ('%s'): CUDA_PATH environment variable does not exist, "
             "in CUDAAgent::addInstantitateRTCFunction().",
-            func.name);
+            func.name.c_str());
+    }
 
     // vector of compiler options for jitify
     std::vector<std::string> options;
@@ -526,6 +528,21 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func) {
     std::cout << "cuda include option is " << include_cuda << '\n';     // DEBUG
 
     // jitify to create program (with compilation settings)
-    static jitify::JitCache kernel_cache;
-    auto program = std::make_shared<jitify::Program>(kernel_cache, func.rtc_source, 0, options);
+    //try {
+        static jitify::JitCache kernel_cache;
+        auto program = kernel_cache.program(func.rtc_source, 0, options);
+
+        //create jifity instance
+        auto kernel = program.kernel("agent_function_wrapper");
+
+        // add kernal instance to map
+        rtc_func_map.insert(CUDARTCFuncMap::value_type(func.name, std::unique_ptr<jitify::KernelInstantiation>(new jitify::KernelInstantiation(kernel, { "test_agent_func_impl" }))));
+
+    //}
+    //catch (std::exception e) {
+    //    std::cerr << "It went wrong: " << e.what() << std::endl;
+    //}
+    
+
+
 }

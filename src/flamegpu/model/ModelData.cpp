@@ -114,8 +114,10 @@ AgentData::AgentData(ModelData *const model, const AgentData &other)
     , description(model ? new AgentDescription(model, this) : nullptr)
     , name(other.name)
     , keepDefaultState(other.keepDefaultState) { }
+
 AgentFunctionData::AgentFunctionData(ModelData *const model, std::shared_ptr<AgentData> _parent, const AgentFunctionData &other)
     : func(other.func)
+    , rtc_source(other.rtc_source)
     , initial_state(other.initial_state)
     , end_state(other.end_state)
     , message_output_optional(other.message_output_optional)
@@ -129,7 +131,6 @@ AgentFunctionData::AgentFunctionData(ModelData *const model, std::shared_ptr<Age
     , msg_out_type(other.msg_out_type) {
     // Manually perform lookup copies
     if (model) {
-        std::cout << "Demangled name: " << demangle(std::type_index(typeid(MsgNone)).name()) << "\n";
         if (auto a = other.message_input.lock()) {
             auto _m = model->messages.find(a->name);
             if (_m != model->messages.end()) {
@@ -154,6 +155,7 @@ AgentFunctionData::AgentFunctionData(ModelData *const model, std::shared_ptr<Age
         }
     }
 }
+
 LayerData::LayerData(ModelData *const model, const LayerData &other)
     : host_functions(other.host_functions)
     , description(model ? new LayerDescription(model, this) : nullptr)

@@ -25,7 +25,7 @@
 
 const char* rtc_test_func_str = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_test_func, MsgNone, MsgNone) {
-    printf("Hello from rtc_test_func\n");
+    printf("Hello from rtc_test_func\n");error
 
     //float x = FLAMEGPU->getVariable<float>("x");
     // printf("x = %f\n", x);
@@ -70,7 +70,7 @@ FLAMEGPU_AGENT_FUNCTION(stay_func, MsgNone, MsgNone) {
 }
 
 
-int main(void) {
+int main(int argc, const char* argv[]) {
     /* MODEL */
     /* The model is the description of the actual model that is equivalent to that described by model.xml*/
     /* Nothing with GPUs it is only about building the model description in memory */
@@ -163,6 +163,8 @@ int main(void) {
     /* Instantiate the model with a set of data (agents) on the device */
     /* Run the model */
     CUDAAgentModel cuda_model(flame_model);
+
+    cuda_model.initialise(argc, argv);
 
     cuda_model.SimulationConfig().steps = 1;
 

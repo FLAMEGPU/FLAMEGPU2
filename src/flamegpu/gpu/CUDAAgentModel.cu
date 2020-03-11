@@ -25,18 +25,8 @@ CUDAAgentModel::CUDAAgentModel(const ModelDescription& _model)
     const auto &am = model->agents;
     // create new cuda agent and add to the map
     for (auto it = am.cbegin(); it != am.cend(); ++it) {
-        // insert into map using value_type and store a referecne to the map pair (returned by emplace as first element)
-        auto a_it = agent_map.emplace(it->first, std::make_unique<CUDAAgent>(*it->second)).first;
-
-        // runtime compile any runtime specified agent functions
-        const auto& mf = it->second->functions;
-        for (auto it_f = mf.cbegin(); it_f != mf.cend(); ++it_f) {
-            // check rtc source to see if this is a RTC function
-            if (!it_f->second->rtc_source.empty()) {
-                // create CUDA agent RTC function by calling addInstantitateRTCFunction on CUDAAgent with AgentFunctionData
-                a_it->second->addInstantitateRTCFunction(*it_f->second);
-            }
-        }
+        // insert into map using value_type and store a referecne to the map pair
+        agent_map.emplace(it->first, std::make_unique<CUDAAgent>(*it->second)).first;
     }
 
     // populate the CUDA message map
@@ -602,6 +592,22 @@ void CUDAAgentModel::initialiseSingletons() {
 
         // Populate the environment properties in constant Cache
         singletons->environment.init(model->name, *model->environment);
+
+        // Build any RTC functions
+        // populate the CUDA agent map
+        const auto& am = model->agents;
+        // create new cuda agent and add to the map
+        for (auto it = am.cbegin(); it != am.cend(); ++it) {
+            auto a_it = agent_map.find(it->first);
+            const auto& mf = it->second->functions;
+            for (auto it_f = mf.cbegin(); it_f != mf.cend(); ++it_f) {
+                // check rtc source to see if this is a RTC function
+                if (!it_f->second->rtc_source.empty()) {
+                    // create CUDA agent RTC function by calling addInstantitateRTCFunction on CUDAAgent with AgentFunctionData
+                    a_it->second->addInstantitateRTCFunction(*it_f->second);
+                }
+            }
+        }
 
         singletonsInitialised = true;
     }
