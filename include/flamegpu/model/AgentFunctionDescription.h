@@ -287,7 +287,12 @@ class AgentFunctionDescription {
 };
 
 inline std::string demangle(const char* verbose_name) {
-    return jitify::reflection::detail::demangle(verbose_name);
+    std::string s = jitify::reflection::detail::demangle(verbose_name);
+    // Lambda function for trimming whitesapce as jitify demangle does not remove this
+    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
+        return !std::isspace(ch);
+        }));
+    return s;
 }
 
 template<typename AgentFunction>
