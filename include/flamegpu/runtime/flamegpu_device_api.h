@@ -12,12 +12,14 @@
 
 #include <cassert>
 
-#include "flamegpu/gpu/CUDAErrorChecking.h"            // required for CUDA error handling functions
+//#include "flamegpu/gpu/CUDAErrorChecking.h"            // required for CUDA error handling functions
 #include "flamegpu/runtime/cuRVE/curve.h"
-#include "flamegpu/exception/FGPUException.h"
+//#include "flamegpu/exception/FGPUException.h"
 #include "flamegpu/runtime/utility/AgentRandom.cuh"
 #include "flamegpu/runtime/utility/DeviceEnvironment.cuh"
 #include "flamegpu/gpu/CUDAScanCompaction.h"
+#include "flamegpu/runtime/AgentFunction_shim.h"
+
 
 class FLAMEGPU_READ_ONLY_DEVICE_API {
     // Friends have access to TID() & TS_ID()

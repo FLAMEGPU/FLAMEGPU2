@@ -1,7 +1,11 @@
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_AGENTFUNCTION_SHIM_H_
 #define INCLUDE_FLAMEGPU_RUNTIME_AGENTFUNCTION_SHIM_H_
 
-#include "flamegpu/runtime/AgentFunction.h"
+//#include "flamegpu/runtime/AgentFunction.h"
+
+
+// ! FLAMEGPU function return type
+enum FLAME_GPU_AGENT_STATUS { ALIVE = 1, DEAD = 0 };
 
 template<typename MsgIn, typename MsgOut>
 class FLAMEGPU_DEVICE_API;

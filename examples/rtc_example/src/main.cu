@@ -25,7 +25,7 @@
 
 const char* rtc_test_func_str = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_test_func, MsgNone, MsgNone) {
-    printf("Hello from rtc_test_func\n");error
+    printf("Hello from rtc_test_func\n");
 
     //float x = FLAMEGPU->getVariable<float>("x");
     // printf("x = %f\n", x);

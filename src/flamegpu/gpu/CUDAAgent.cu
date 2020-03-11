@@ -523,25 +523,25 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func) {
 
     // cuda path
     std::string include_cuda;
-    include_cuda = "-I" + std::string(env_cuda_path) + "\\include";
+    include_cuda = "-I" + std::string(env_cuda_path) + "/include";
     options.push_back(include_cuda);
     std::cout << "cuda include option is " << include_cuda << '\n';     // DEBUG
 
     // jitify to create program (with compilation settings)
-    //try {
+    try {
         static jitify::JitCache kernel_cache;
         auto program = kernel_cache.program(func.rtc_source, 0, options);
-
         //create jifity instance
         auto kernel = program.kernel("agent_function_wrapper");
-
         // add kernal instance to map
         rtc_func_map.insert(CUDARTCFuncMap::value_type(func.name, std::unique_ptr<jitify::KernelInstantiation>(new jitify::KernelInstantiation(kernel, { "test_agent_func_impl" }))));
-
-    //}
-    //catch (std::exception e) {
-    //    std::cerr << "It went wrong: " << e.what() << std::endl;
-    //}
+    }
+    catch (std::runtime_error e) {
+        // jitify does not have a method for getting compile logs so rely on JITIFY_PRINT_LOG defined in cmake
+        THROW InvalidAgentFunc("Error compiling runtime agent function ('%s'): function had compilation errors (see std::cout), "
+            "in CUDAAgent::addInstantitateRTCFunction().",
+            func.name.c_str());
+    }
     
 
 

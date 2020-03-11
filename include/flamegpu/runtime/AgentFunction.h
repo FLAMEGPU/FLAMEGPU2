@@ -8,9 +8,6 @@
 #include "flamegpu/runtime/flamegpu_device_api.h"
 #include "flamegpu/gpu/CUDAScanCompaction.h"
 
-// ! FLAMEGPU function return type
-enum FLAME_GPU_AGENT_STATUS { ALIVE = 1, DEAD = 0 };
-
 typedef void(AgentFunctionWrapper)(
     Curve::NamespaceHash model_name_hash,
     Curve::NamespaceHash agent_func_name_hash,
