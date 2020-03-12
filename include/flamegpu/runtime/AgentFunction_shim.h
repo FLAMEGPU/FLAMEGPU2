@@ -4,8 +4,6 @@
 //#include "flamegpu/runtime/AgentFunction.h"
 
 
-// ! FLAMEGPU function return type
-enum FLAME_GPU_AGENT_STATUS { ALIVE = 1, DEAD = 0 };
 
 template<typename MsgIn, typename MsgOut>
 class FLAMEGPU_DEVICE_API;

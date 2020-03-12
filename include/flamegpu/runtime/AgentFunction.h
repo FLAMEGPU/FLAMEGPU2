@@ -5,8 +5,13 @@
 #include <device_launch_parameters.h>
 
 #include "flamegpu/runtime/cuRVE/curve.h"
-#include "flamegpu/runtime/flamegpu_device_api.h"
+#include "flamegpu/runtime/AgentFunction_shim.h"
 #include "flamegpu/gpu/CUDAScanCompaction.h"
+
+
+// ! FLAMEGPU function return type
+enum FLAME_GPU_AGENT_STATUS { ALIVE = 1, DEAD = 0 };
+
 
 typedef void(AgentFunctionWrapper)(
     Curve::NamespaceHash model_name_hash,

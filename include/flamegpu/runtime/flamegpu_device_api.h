@@ -18,7 +18,8 @@
 #include "flamegpu/runtime/utility/AgentRandom.cuh"
 #include "flamegpu/runtime/utility/DeviceEnvironment.cuh"
 #include "flamegpu/gpu/CUDAScanCompaction.h"
-#include "flamegpu/runtime/AgentFunction_shim.h"
+#include "flamegpu/runtime/AgentFunction.h"
+#include "flamegpu/runtime/messaging.h"
 
 
 class FLAMEGPU_READ_ONLY_DEVICE_API {

@@ -406,6 +406,7 @@ AgentFunctionDescription& AgentDescription::newRTCFunction(const std::string& fu
     if (agent->functions.find(function_name) == agent->functions.end()) {   
         //append jitify program string and include
         std::string func_src_str = std::string(function_name + "_program\n").append("#include \"flamegpu/runtime/flamegpu_device_api.h\"\n").append(func_src);
+        //std::string func_src_str = std::string(function_name + "_program\n").append("#include \"flamegpu/runtime/AgentFunction.h\"\n").append(func_src);
         // Use Regex to get agent function name, and input/output message type
         std::regex rgx(R"###(.*FLAMEGPU_AGENT_FUNCTION\([ \t]*(\w+),[ \t]*(\w+),[ \t]*(\w+)[ \t]*\))###");
         std::smatch match;
