@@ -257,6 +257,10 @@ struct AgentFunctionData {
      */
     std::string rtc_source;
     /**
+     * The string representing the RTC defined agent function name
+     */
+    std::string rtc_func_name;
+    /**
      * Agent's must be in this state to execute this function
      */
     std::string initial_state;
@@ -344,7 +348,7 @@ struct AgentFunctionData {
     /**
      * Normal constructor for RTC function, only to be called by AgentDescription
      */
-    AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string& function_name, const std::string &rtc_function_src, const std::string &in_type, const std::string &out_type);
+    AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string& function_name, const std::string &rtc_function_src, const std::string &in_type, const std::string& out_type, const std::string& code_func_name);
 };
 
 /**

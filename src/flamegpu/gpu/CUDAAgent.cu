@@ -537,10 +537,12 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func) {
     try {
         static jitify::JitCache kernel_cache;
         auto program = kernel_cache.program(func.rtc_source, 0, options);
-        //create jifity instance
+        // create jifity instance
         auto kernel = program.kernel("agent_function_wrapper");
+        // create string for agent function implementation
+        std::string func_impl = std::string(func.rtc_func_name).append("_impl");
         // add kernal instance to map
-        rtc_func_map.insert(CUDARTCFuncMap::value_type(func.name, std::unique_ptr<jitify::KernelInstantiation>(new jitify::KernelInstantiation(kernel, { "test_agent_func_impl" }))));
+        rtc_func_map.insert(CUDARTCFuncMap::value_type(func.name, std::unique_ptr<jitify::KernelInstantiation>(new jitify::KernelInstantiation(kernel, { func_impl.c_str(), func.msg_in_type.c_str(), func.msg_out_type.c_str() }))));
     }
     catch (std::runtime_error e) {
         // jitify does not have a method for getting compile logs so rely on JITIFY_PRINT_LOG defined in cmake

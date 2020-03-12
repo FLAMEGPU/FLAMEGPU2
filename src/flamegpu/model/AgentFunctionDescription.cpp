@@ -416,7 +416,7 @@ AgentFunctionDescription& AgentDescription::newRTCFunction(const std::string& fu
                 std::string in_type_name = match[2];
                 std::string out_type_name = match[3];
                 // set the runtime agent function source in agent function data
-                auto rtn = std::shared_ptr<AgentFunctionData>(new AgentFunctionData(this->agent->shared_from_this(), function_name, func_src_str, in_type_name, out_type_name));
+                auto rtn = std::shared_ptr<AgentFunctionData>(new AgentFunctionData(this->agent->shared_from_this(), function_name, func_src_str, in_type_name, out_type_name, code_func_name));
                 agent->functions.emplace(function_name, rtn);
                 return *rtn->description;
             }
