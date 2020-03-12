@@ -16,7 +16,6 @@
 
 #include <cstring>
 #include <cstdio>
-#include <typeinfo>
 
 
 /** @brief    A cuRVE instance.
@@ -316,6 +315,7 @@ class Curve {
     ~Curve() {}
 
  public:
+#ifndef __CUDACC_RTC__
     /**
      * @brief    Gets the instance.
      *
@@ -325,6 +325,7 @@ class Curve {
         static Curve c;
         return c;
     }
+#endif
 };
 
 

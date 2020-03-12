@@ -1,18 +1,21 @@
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_BRUTEFORCE_H_
 #define INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_BRUTEFORCE_H_
 
+#ifndef __CUDACC_RTC__
 #include <typeindex>
 #include <memory>
 #include <unordered_map>
 #include <string>
 
-#include "flamegpu/runtime/messaging/None.h"
-#include "flamegpu/model/Variable.h"
 
-#include "flamegpu/runtime/cuRVE/curve.h"
+#include "flamegpu/model/Variable.h"
 #include "flamegpu/gpu/CUDAErrorChecking.h"
 #include "flamegpu/gpu/CUDAScanCompaction.h"
 #include "flamegpu/util/nvtx.h"
+#include "flamegpu/runtime/cuRVE/curve.h"
+#endif  // __CUDACC_RTC__
+#include "flamegpu/runtime/messaging/None.h"
+
 
 
 struct ModelData;
@@ -155,7 +158,7 @@ class MsgBruteForce {
     /**
     * Stock iterator for iterating MsgBruteForce::In::Message objects
     */
-    class iterator : public std::iterator <std::random_access_iterator_tag, void, void, void, void> {
+    class iterator{// : public std::iterator <std::random_access_iterator_tag, void, void, void, void> {
         /**
          * The message returned to the user
          */
@@ -226,7 +229,7 @@ class MsgBruteForce {
          */
         unsigned int streamId;
     };
-
+#ifndef __CUDACC_RTC__
     /**
      * Blank handler, brute force requires no index or special allocations
      * Only stores the length on device
@@ -452,6 +455,7 @@ class MsgBruteForce {
          */
         Data *const message;
     };
+#endif  // __CUDACC_RTC__
 };
 template<typename T, unsigned int N>
 __device__ T MsgBruteForce::Message::getVariable(const char(&variable_name)[N]) const {
@@ -483,7 +487,7 @@ __device__ void MsgBruteForce::Out::setVariable(const char(&variable_name)[N], T
     // Set scan flag incase the message is optional
     flamegpu_internal::CUDAScanCompaction::ds_configs[flamegpu_internal::CUDAScanCompaction::MESSAGE_OUTPUT][streamId].scan_flag[index] = 1;
 }
-
+#ifndef __CUDACC_RTC__
 /**
  * Template implementation
  */
@@ -500,4 +504,5 @@ void MsgBruteForce::Description::newVariable(const std::string &variable_name) {
         message->name.c_str(), variable_name.c_str());
 }
 
+#endif  // __CUDACC_RTC__
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_BRUTEFORCE_H_
