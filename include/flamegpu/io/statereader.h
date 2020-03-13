@@ -22,7 +22,10 @@ class StateReader {
     // -----------------------------------------------------------------------
     //  Constructors and Destructor
     // -----------------------------------------------------------------------
-    StateReader(const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &_model_state, const char* input): model_state(_model_state), inputFile(std::string(input)) {}
+    StateReader(const std::string &_model_name, const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &_model_state, const std::string &input)
+    : model_state(_model_state)
+    , inputFile(input)
+    , model_name(_model_name) {}
     ~StateReader() {}
 
     // -----------------------------------------------------------------------
@@ -53,6 +56,7 @@ class StateReader {
  protected:
     const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &model_state;
     std::string inputFile;
+    const std::string model_name;
 };
 
 #endif  // INCLUDE_FLAMEGPU_IO_STATEREADER_H_

@@ -34,7 +34,7 @@ class Simulation {
 
     const ModelData& getModelDescription() const;
 
-    void output(int argc, const char** argv);
+    void exportData(const std::string &path);
 
     virtual void setPopulationData(AgentPopulation& population) = 0;
     virtual void getPopulationData(AgentPopulation& population) = 0;

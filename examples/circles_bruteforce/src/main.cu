@@ -171,15 +171,8 @@ int main(int argc, const char ** argv) {
     /**
      * Export Pop
      */
-    // cuda_model.output();
-    // Based on Simulation::output() // That can't currently be called
-    std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> pops;
-    auto a = std::make_shared<AgentPopulation>(model.getAgent("Circle"));
-    cuda_model.getPopulationData(*a);
-    pops.emplace("Circle", a);
-    StateWriter *write__ = WriterFactory::createWriter(pops, cuda_model.getStepCounter(), "end.xml");
-    write__->writeStates();
-    // export_data(a, "test.bin");
+    cuda_model.exportData("end.xml");
+
     // getchar();
     return 0;
 }

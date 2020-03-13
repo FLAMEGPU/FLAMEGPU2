@@ -28,9 +28,9 @@ class AgentInstance {
     template <typename T, unsigned int N>  void setVariable(const std::string &variable_name, const std::array<T, N> &value);
     template <typename T> void setVariable(const std::string &variable_name, const unsigned int &index, const T &value);
 
-    template <typename T>  T getVariable(const std::string &variable_name);
-    template <typename T, unsigned int N>  std::array<T, N> getVariable(const std::string &variable_name);
-    template <typename T>  T getVariable(const std::string &variable_name, const unsigned int &index);
+    template <typename T>  T getVariable(const std::string &variable_name) const;
+    template <typename T, unsigned int N>  std::array<T, N> getVariable(const std::string &variable_name) const;
+    template <typename T>  T getVariable(const std::string &variable_name, const unsigned int &index) const;
 
  private:
     const unsigned int index;
@@ -101,7 +101,7 @@ void AgentInstance::setVariable(const std::string &variable_name, const unsigned
 }
 
 template <typename T>
-T AgentInstance::getVariable(const std::string &variable_name) {
+T AgentInstance::getVariable(const std::string &variable_name) const {
     // todo check that the variable exists
     GenericMemoryVector& v = agent_state_memory.getMemoryVector(variable_name);
     const Variable &v_desc = agent_state_memory.getVariableDescription(variable_name);
@@ -120,7 +120,7 @@ T AgentInstance::getVariable(const std::string &variable_name) {
     return reinterpret_cast<const T*>(v.getReadOnlyDataPtr())[index];
 }
 template <typename T, unsigned int N>
-std::array<T, N> AgentInstance::getVariable(const std::string &variable_name) {
+std::array<T, N> AgentInstance::getVariable(const std::string &variable_name) const {
     // todo check that the variable exists
     GenericMemoryVector& v = agent_state_memory.getMemoryVector(variable_name);
     const Variable &v_desc = agent_state_memory.getVariableDescription(variable_name);
@@ -144,7 +144,7 @@ std::array<T, N> AgentInstance::getVariable(const std::string &variable_name) {
     return std::move(rtn);  // I think std::move will transfer the std::array rather than duplicating it
 }
 template <typename T>
-T AgentInstance::getVariable(const std::string &variable_name, const unsigned int &array_index) {
+T AgentInstance::getVariable(const std::string &variable_name, const unsigned int &array_index) const {
     // todo check that the variable exists
     GenericMemoryVector& v = agent_state_memory.getMemoryVector(variable_name);
     const Variable &v_desc = agent_state_memory.getVariableDescription(variable_name);

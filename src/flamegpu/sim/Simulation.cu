@@ -36,7 +36,7 @@ void Simulation::applyConfig() {
         pops.emplace(agent.first, a);
     }
     if (!config.xml_input_file.empty()) {
-        StateReader *read__ = ReaderFactory::createReader(pops, config.xml_input_file.c_str());
+        StateReader *read__ = ReaderFactory::createReader(model->name, pops, config.xml_input_file.c_str());
         if (read__) {
             read__->parse();
             for (auto &agent : pops) {
@@ -53,12 +53,7 @@ const ModelData& Simulation::getModelDescription() const {
 /*
  * issues: only saves the last output, hardcoded, will be changed
  */
-void Simulation::output(int /*argc*/, const char** /*argv*/) {
-    // check input args
-    // if (!checkArgs(argc, argv))
-    // exit(0);
-    const char* input = "finalIteration.xml";  // argv[2];
-
+void Simulation::exportData(const std::string &path) {
     // Build population vector
     std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> pops;
     for (auto &agent : model->agents) {
@@ -67,7 +62,7 @@ void Simulation::output(int /*argc*/, const char** /*argv*/) {
         pops.emplace(agent.first, a);
     }
 
-    StateWriter *write__ = WriterFactory::createWriter(pops, getStepCounter(), input);  // TODO (pair model format with its data?)
+    StateWriter *write__ = WriterFactory::createWriter(model->name, pops, getStepCounter(), path);
     write__->writeStates();
 }
 
