@@ -42,6 +42,11 @@ class EnvironmentManager {
      * Accesses pointer to hc_buffer
      */
     friend class DefragProp;
+    /**
+     * Accesses properties to find all of a model's vars
+     */
+    friend class xmlWriter;
+    friend class xmlReader;
 
     typedef std::pair<std::string, std::string> NamePair;
     struct NamePairHash {
@@ -434,6 +439,15 @@ class EnvironmentManager {
      * Also ensure the device constexpr version matches
      */
     const Curve::NamespaceHash CURVE_NAMESPACE_HASH;
+    /**
+     * Returns read-only access to the properties map
+     */
+    const std::unordered_map<NamePair, EnvProp, NamePairHash> &getPropertiesMap() const {
+        return properties;
+    }
+    const void * getHostBuffer() const {
+        return hc_buffer;
+    }
 
  private:
     /**

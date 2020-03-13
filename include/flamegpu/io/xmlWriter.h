@@ -20,7 +20,7 @@
 // Derived classes
 class xmlWriter : public StateWriter {
  public:
-    xmlWriter(const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &model_state, const unsigned int &iterations, const char* output_file);
+    xmlWriter(const std::string &model_name, const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &model_state, const unsigned int &iterations, const std::string &output_file);
     int writeStates();
 };
 

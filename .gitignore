@@ -1,3 +1,7 @@
+# Model output files
+*.xml
+*.bin
+
 # GoogleTest directories (handled by CMake)
 googletest-build/
 googletest-download/

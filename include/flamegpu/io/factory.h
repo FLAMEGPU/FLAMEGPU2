@@ -36,11 +36,11 @@ inline std::string getFileExt(const std::string& s) {
 */
 class ReaderFactory {
  public:
-    static StateReader *createReader(const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &model_state, const char *input) {
+    static StateReader *createReader(const std::string &model_name, const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &model_state, const std::string &input) {
         std::string extension = getFileExt(input);
 
         if (extension == "xml") {
-            return new xmlReader(model_state, input);
+            return new xmlReader(model_name, model_state, input);
         }
         /*
         if (extension == "bin") {
@@ -49,14 +49,14 @@ class ReaderFactory {
         */
         THROW UnsupportedFileType("File '%s' is not a type which can be read "
             "by ReaderFactory::createReader().\n",
-            input);
+            input.c_str());
     }
 };
 
 class WriterFactory {
  public:
-     static StateWriter *createWriter(const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &model_state, const unsigned int &iterations, const char *output_file) {
-         return new xmlWriter(model_state, iterations, output_file);
+     static StateWriter *createWriter(const std::string &model_name, const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &model_state, const unsigned int &iterations, const std::string &output_file) {
+         return new xmlWriter(model_name, model_state, iterations, output_file);
      }
 };
 
