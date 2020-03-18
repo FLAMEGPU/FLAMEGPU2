@@ -15,6 +15,7 @@
 #include <vector>
 #include <map>
 #include <utility>
+#include <atomic>
 
 struct VarOffsetStruct;
 class CUDAAgent;
@@ -175,7 +176,6 @@ class CUDAAgentStateList {
      * Not the size of memory allocated, that is agent.getMaximumListSize()
      */
     unsigned int current_list_size;
-
     CUDAAgent& agent;
 };
 

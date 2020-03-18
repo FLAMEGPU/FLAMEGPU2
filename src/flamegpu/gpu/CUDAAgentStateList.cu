@@ -219,7 +219,6 @@ void CUDAAgentStateList::setAgentData(const AgentStateMemory &state_memory) {
 
     // set the current list size
     current_list_size = state_memory.getStateListSize();
-
     // copy raw agent data to device pointers
     for (CUDAMemoryMapPair m : d_list) {
         // get the variable size from agent description

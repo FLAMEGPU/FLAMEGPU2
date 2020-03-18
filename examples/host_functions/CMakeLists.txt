@@ -26,6 +26,9 @@ SET(ALL_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cu
 )
 
+# Option to enable/disable building the static library
+# option(VISUALISATION "Enable visualisation support" OFF) # This example is unlikely to have a visualisation
+
 # Add the executable and set required flags for the target
 add_flamegpu_executable("${PROJECT_NAME}" "${ALL_SRC}" "${FLAMEGPU_ROOT}" "${PROJECT_BINARY_DIR}" TRUE)
 

@@ -104,6 +104,21 @@ mkdir -p build && cd build
 cmake ..
 ```
 
+##### Visualisation
+
+By default FGPU2 will not build visualisations, however this can be enabled with the cmake option `-DVISUALISATION=ON`. This also introduces the `VISUALISATION` preprocessor macro to all projects, so that optional visualisation code can be enabled.
+
+On Windows this will then automatically download the visualisation repository and all dependencies, as such the initial CMake configuration after enabling visualisation may take longer than expected. 
+On Linux you may need to install additional packages, refer to the CMake configure output for clarification of which packages are missing from your system.
+
+**Visualisation Dependencies:**
+* [SDL](https://www.libsdl.org/)
+* [GLM](http://glm.g-truc.net/) *(consistent C++/GLSL vector maths functionality)*
+* [GLEW](http://glew.sourceforge.net/) *(GL extension loader)*
+* [FreeType](http://www.freetype.org/)  *(font loading)*
+
+The visualisation codebase can be found at [this location](https://github.com/FLAMEGPU/FLAMEGPU2_visualiser) and is a fork of [sdl_exp](https://github.com/Robadob/sdl_exp).
+
 ##### Testing
 
 
