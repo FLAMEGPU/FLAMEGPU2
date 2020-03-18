@@ -10,6 +10,7 @@
 #include "flamegpu/gpu/CUDAScanCompaction.h"
 #include "flamegpu/util/nvtx.h"
 #include "flamegpu/util/compute_capability.cuh"
+#include "flamegpu/util/SignalHandlers.h"
 
 CUDAAgentModel::CUDAAgentModel(const ModelDescription& _model)
     : Simulation(_model)
@@ -22,6 +23,8 @@ CUDAAgentModel::CUDAAgentModel(const ModelDescription& _model)
     , host_api(std::make_unique<FLAMEGPU_HOST_API>(*this, agentOffsets, agentData)) {
     initOffsetsAndMap();
 
+    // Register the signal handler.
+    SignalHandlers::registerSignalHandlers();
     // populate the CUDA agent map
     const auto &am = model->agents;
     // create new cuda agent and add to the map
@@ -409,13 +412,30 @@ bool CUDAAgentModel::step() {
     NVTX_POP();
 
     // Execute exit conditions
+    NVTX_PUSH("CUDAAgentModel::step::ExitConditions");
     for (auto &exitCdns : model->exitConditions)
-        if (exitCdns(this->host_api.get()) == EXIT)
+        if (exitCdns(this->host_api.get()) == EXIT) {
+#ifdef VISUALISATION
+            if (visualisation) {
+                NVTX_PUSH("CUDAAgentModel::step::ExitConditions::UpdateVisualisation");
+                visualisation->updateBuffers();
+                NVTX_POP();
+            }
+#endif
             return false;
+        }
     // If we have exit conditions functions, we might have host agent creation
     if (model->exitConditions.size())
         processHostAgentCreation();
+    NVTX_POP();
 
+#ifdef VISUALISATION
+        if (visualisation) {
+            NVTX_PUSH("CUDAAgentModel::step::UpdateVisualisation");
+            visualisation->updateBuffers();
+            NVTX_POP();
+        }
+#endif
     return true;
 }
 
@@ -428,8 +448,8 @@ void CUDAAgentModel::simulate() {
     initialiseSingletons();
 
     // If timing is required, create cude events and record the start.
-    cudaEvent_t simulateStartEvent = NULL;
-    cudaEvent_t simulateEndEvent = NULL;
+    cudaEvent_t simulateStartEvent = nullptr;
+    cudaEvent_t simulateEndEvent = nullptr;
     if (getSimulationConfig().timing) {
         gpuErrchk(cudaEventCreate(&simulateStartEvent));
         gpuErrchk(cudaEventCreate(&simulateEndEvent));
@@ -450,15 +470,35 @@ void CUDAAgentModel::simulate() {
     if (model->initFunctions.size())
         processHostAgentCreation();
 
+#ifdef VISUALISATION
+    if (visualisation) {
+        visualisation->updateBuffers();
+    }
+#endif
+
     for (unsigned int i = 0; getSimulationConfig().steps == 0 ? true : i < getSimulationConfig().steps; i++) {
         // std::cout <<"step: " << i << std::endl;
         if (!step())
             break;
+#ifdef VISUALISATION
+        // Special case, if steps == 0 and visualisation has been closed
+        if (getSimulationConfig().steps == 0 &&
+            visualisation && !visualisation->isRunning()) {
+            visualisation->join();  // Vis exists in separate thread, make sure it has actually exited
+            break;
+        }
+#endif
     }
 
     // Execute exit functions
     for (auto &exitFn : model->exitFunctions)
         exitFn(this->host_api.get());
+
+#ifdef VISUALISATION
+    if (visualisation) {
+        visualisation->updateBuffers();
+    }
+#endif
 
     // If timing is enabled, capture the stop record, output the time and delete the events.
     if (getSimulationConfig().timing) {
@@ -473,8 +513,8 @@ void CUDAAgentModel::simulate() {
 
         gpuErrchk(cudaEventDestroy(simulateStartEvent));
         gpuErrchk(cudaEventDestroy(simulateEndEvent));
-        simulateStartEvent = NULL;
-        simulateEndEvent = NULL;
+        simulateStartEvent = nullptr;
+        simulateEndEvent = nullptr;
     }
 
     // Destroy streams.
@@ -501,6 +541,12 @@ void CUDAAgentModel::setPopulationData(AgentPopulation& population) {
 
     /*! create agent state lists */
     it->second->setPopulationData(population);
+
+#ifdef VISUALISATION
+    if (visualisation) {
+        visualisation->updateBuffers();
+    }
+#endif
 }
 
 void CUDAAgentModel::getPopulationData(AgentPopulation& population) {
@@ -608,7 +654,7 @@ void CUDAAgentModel::applyConfig_derived() {
         THROW InvalidCUDAdevice("Unknown error setting CUDA device to '%d'. (%d available)", config.device_id, device_count);
     }
     NVTX_POP();
-    // Call cudaFree to iniitalise the context early
+    // Call cudaFree to initialise the context early
     NVTX_PUSH("Init Cuda Context");
     gpuErrchk(cudaFree(0));
     NVTX_POP();
@@ -681,6 +727,13 @@ CUDAAgentModel::Config &CUDAAgentModel::CUDAConfig() {
 const CUDAAgentModel::Config &CUDAAgentModel::getCUDAConfig() const {
     return config;
 }
+#ifdef VISUALISATION
+ModelVis &CUDAAgentModel::getVisualisation() {
+    if (!visualisation)
+        visualisation = std::make_unique<ModelVis>(*this);
+    return *visualisation.get();
+}
+#endif
 
 unsigned int CUDAAgentModel::getStepCounter() {
     return step_count;

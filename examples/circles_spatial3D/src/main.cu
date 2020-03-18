@@ -7,6 +7,7 @@
 #include "flamegpu/flame_api.h"
 #include "flamegpu/runtime/flamegpu_api.h"
 #include "flamegpu/io/factory.h"
+#include "flamegpu/visualiser/ModelVis.h"
 
 FLAMEGPU_AGENT_FUNCTION(output_message, MsgNone, MsgSpatial3D) {
     FLAMEGPU->message_out.setVariable<int>("id", FLAMEGPU->getVariable<int>("id"));
@@ -127,6 +128,19 @@ int main(int argc, const char ** argv) {
     CUDAAgentModel cuda_model(model);
 
     /**
+     * Create visualisation
+     */
+#ifdef VISUALISATION
+    ModelVis &m_vis = cuda_model.getVisualisation();
+    {
+        auto &circ_agt = m_vis.addAgent("Circle");
+        // Position vars are named x, y, z; so they are used by default
+        circ_agt.setModel(Stock::Models::ICOSPHERE);
+        // circ_agt.setModelScale(1/20.0f);  // Not worth using till we can affect camera position/speed
+    }
+    m_vis.activate();
+#endif
+    /**
      * Initialisation
      */
     cuda_model.initialise(argc, argv);
@@ -148,38 +162,15 @@ int main(int argc, const char ** argv) {
     /**
      * Execution
      */
-    // This mode of execution allows the PRIMAGE visualiser to be used (2020-01-07)
-    // while (cuda_model.getStepCounter() < cuda_model.getSimulationConfig().steps && cuda_model.step()) {
-    //     std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> pops;
-    //     auto a = std::make_shared<AgentPopulation>(model.getAgent("Circle"));
-    //     cuda_model.getPopulationData(*a);
-    //     export_data(a, (std::to_string(cuda_model.getStepCounter()-1)+".bin").c_str());
-    // }
-
     cuda_model.simulate();
-    // getchar();
 
     /**
      * Export Pop
      */
     cuda_model.exportData("end.xml");
 
-    // getchar();
+#ifdef VISUALISATION
+    m_vis.join();
+#endif
     return 0;
-}
-
-void export_data(std::shared_ptr<AgentPopulation> pop, const char *filename) {
-    // Basic binary export function, so that I can use the visualiser i made for kenneths model
-    std::ofstream ofs;
-    ofs.open(filename, std::ofstream::out | std::ofstream::trunc | std::ofstream::binary);
-    if (ofs.is_open()) {
-        float garbage[6];  // Need to begin with 6 floats, doesn't matter what they are
-        // Write data
-        ofs.write(reinterpret_cast<const char*>(garbage), sizeof(float)*6);
-        ofs.write(reinterpret_cast<const char*>(pop->getReadOnlyStateMemory().getReadOnlyMemoryVector("x").getReadOnlyDataPtr()), sizeof(float)*pop->getCurrentListSize());
-        ofs.write(reinterpret_cast<const char*>(pop->getReadOnlyStateMemory().getReadOnlyMemoryVector("y").getReadOnlyDataPtr()), sizeof(float)*pop->getCurrentListSize());
-        ofs.write(reinterpret_cast<const char*>(pop->getReadOnlyStateMemory().getReadOnlyMemoryVector("z").getReadOnlyDataPtr()), sizeof(float)*pop->getCurrentListSize());
-        ofs.write(reinterpret_cast<const char*>(pop->getReadOnlyStateMemory().getReadOnlyMemoryVector("drift").getReadOnlyDataPtr()), sizeof(float)*pop->getCurrentListSize());
-        ofs.close();
-    }
 }

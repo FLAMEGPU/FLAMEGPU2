@@ -34,6 +34,8 @@ option(BUILD_EXAMPLE_GAME_OF_LIFE "Enable building examples/game_of_life" OFF)
 option(BUILD_EXAMPLE_CIRCLES_BRUTE_FORCE "Enable building examples/circles_brute_force" OFF)
 option(BUILD_EXAMPLE_CIRCLES_SPATIAL_3D "Enable building examples/circles_spatial_3d" OFF)
 
+# Option to enable/disable building the static library
+option(VISUALISATION "Enable visualisation support" OFF)
 
 # Option to enable/disable tests.
 option(BUILD_TESTS "Enable building tests" OFF)

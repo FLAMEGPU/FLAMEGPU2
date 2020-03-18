@@ -338,5 +338,9 @@ DERIVED_FGPUException(UnsupportedFileType, "Cannot handle file type.");
  * Defines an exception for errors when two agents try to output an array message to the same index
  */
 DERIVED_FGPUException(ArrayMessageWriteConflict, "Two messages attempted to write to the same index");
+/**
+ * Defines an exception for errors relted to visualisation
+ */
+DERIVED_FGPUException(VisualisationException, "An exception prevented the visualisation from working.");
 
 #endif  // INCLUDE_FLAMEGPU_EXCEPTION_FGPUEXCEPTION_H_

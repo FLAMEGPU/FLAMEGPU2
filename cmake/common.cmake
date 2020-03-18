@@ -197,6 +197,10 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /W4")
     # Also suppress some unwanted W4 warnings
+    # decorated name length exceeded, name was truncated
+    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler /wd4503")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4503")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4503")
     # 'function' : unreferenced local function has been removed
     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler /wd4505")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4505")
@@ -294,7 +298,7 @@ function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
 
     # Define which source files are required for the target executable
     add_executable(${NAME} ${SRC})
-
+    
     # Add include directories
     target_include_directories(${NAME} ${INCLUDE_SYSTEM_FLAG} PRIVATE ${FLAMEGPU_ROOT}/externals)
     # Add the cuda include directory as a system include to allow user-provided thrust. ../include trickery for cmake >= 3.12
@@ -311,6 +315,33 @@ function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
     # Link against the flamegpu2 static library target.
     if (TARGET flamegpu2)
         target_link_libraries(${NAME} flamegpu2)
+    endif()
+    
+    # Activate visualisation if requested
+    if (VISUALISATION)
+        target_include_directories(${NAME} PRIVATE ${VISUALISATION_ROOT}/include)
+        # Copy DLLs
+        if(WIN32)
+            # sdl
+            set(SDL2_DIR ${VISUALISATION_BUILD}/sdl2)
+            mark_as_advanced(FORCE SDL2_DIR)
+            find_package(SDL2 REQUIRED)   
+            add_custom_command(TARGET "${PROJECT_NAME}" POST_BUILD        # Adds a post-build event to MyTest
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different             # which executes "cmake - E copy_if_different..."
+                    "${SDL2_RUNTIME_LIBRARIES}"                           # <--this is in-file
+                    $<TARGET_FILE_DIR:${NAME}>)                           # <--this is out-file path
+            # glew
+            set(GLEW_DIR ${VISUALISATION_BUILD}/glew)
+            mark_as_advanced(FORCE GLEW_DIR)
+            find_package(GLEW REQUIRED)   
+            add_custom_command(TARGET "${PROJECT_NAME}" POST_BUILD        # Adds a post-build event to MyTest
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different             # which executes "cmake - E copy_if_different..."
+                    "${GLEW_RUNTIME_LIBRARIES}"                           # <--this is in-file
+                    $<TARGET_FILE_DIR:${NAME}>)                           # <--this is out-file path
+        endif()
+        # fgpu2 lib will add this dependency
+        # target_link_libraries(${NAME} flamegpu2_visualiser)
+        add_compile_definitions(VISUALISATION)
     endif()
 
     # Flag the new linter target and the files to be linted.
@@ -349,6 +380,16 @@ endfunction()
 function(add_flamegpu_library NAME SRC FLAMEGPU_ROOT)
     # Define which source files are required for the target executable
     add_library(${NAME} STATIC ${SRC})
+    
+    # Activate visualisation if requested
+    if (VISUALISATION)
+        target_include_directories(${NAME} PRIVATE ${VISUALISATION_ROOT}/include)
+        target_link_libraries(${NAME} flamegpu2_visualiser)
+        CMAKE_SET_TARGET_FOLDER(flamegpu2_visualiser "FLAMEGPU")
+        add_compile_definitions(VISUALISATION)
+        # set(SDL2_DIR ${VISUALISATION_BUILD}/sdl2)
+        # find_package(SDL2 REQUIRED)   
+    endif()
 
     # Enable RDC
     set_property(TARGET ${NAME}  PROPERTY CUDA_SEPARABLE_COMPILATION ON)

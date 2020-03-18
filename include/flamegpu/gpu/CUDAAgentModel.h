@@ -14,6 +14,7 @@
 #include "flamegpu/runtime/utility/RandomManager.cuh"
 #include "CUDAScatter.h"
 #include "flamegpu/runtime/flamegpu_host_new_agent_api.h"
+#include "flamegpu/visualiser/ModelVis.h"
 
 /**
  * CUDA runner for Simulation interface
@@ -101,6 +102,9 @@ class CUDAAgentModel : public Simulation {
      * @return An immutable reference to the cuda model specific configuration struct
      */
     const Config &getCUDAConfig() const;
+#ifdef VISUALISATION
+    ModelVis &getVisualisation();
+#endif
 
  protected:
      /**
@@ -208,6 +212,12 @@ class CUDAAgentModel : public Simulation {
      */
     AgentDataMap agentData;
     void initOffsetsAndMap();
+#ifdef VISUALISATION
+    /**
+     * Empty if getVisualisation() hasn't been called
+     */
+    std::unique_ptr<ModelVis> visualisation;
+#endif
 };
 
 #endif  // INCLUDE_FLAMEGPU_GPU_CUDAAGENTMODEL_H_

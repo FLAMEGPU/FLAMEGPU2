@@ -26,6 +26,11 @@ project(flamegpu2 CUDA CXX)
 include(${FLAMEGPU_ROOT}/cmake/common.cmake)
 include(${FLAMEGPU_ROOT}/cmake/doxygen.cmake)
 
+if(VISUALISATION)
+  include(${FLAMEGPU_ROOT}/cmake/visualiser/download.cmake)
+  download_visualiser()
+endif()
+
 # Define output location of static library
 if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
     # If top level project
@@ -111,6 +116,7 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/RandomManager.cuh    
     ${FLAMEGPU_ROOT}/include/flamegpu/util/nvtx.h    
     ${FLAMEGPU_ROOT}/include/flamegpu/util/compute_capability.cuh    
+    ${FLAMEGPU_ROOT}/include/flamegpu/util/SignalHandlers.h    
 )
 SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/exception/FGPUException.cpp
@@ -146,7 +152,20 @@ SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/utility/RandomManager.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/util/compute_capability.cu
 )
-
+if (VISUALISATION)
+    SET(SRC_INCLUDE
+        ${SRC_INCLUDE}
+        ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/ModelVis.h
+        ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/AgentVis.h
+        ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/AgentStateVis.h
+    )
+    SET(SRC_FLAMEGPU2
+        ${SRC_FLAMEGPU2}
+        ${FLAMEGPU_ROOT}/src/flamegpu/visualiser/ModelVis.cpp    
+        ${FLAMEGPU_ROOT}/src/flamegpu/visualiser/AgentVis.cpp     
+        ${FLAMEGPU_ROOT}/src/flamegpu/visualiser/AgentStateVis.cpp
+    )
+endif()
 SET(ALL_SRC
     ${SRC_EXTERNALS}
     ${SRC_INCLUDE}
