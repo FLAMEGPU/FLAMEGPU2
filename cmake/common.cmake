@@ -14,6 +14,13 @@ option(WARNINGS_AS_ERRORS "Promote compilation warnings to errors" OFF)
 option(CMAKE_USE_FOLDERS "Enable folder grouping of projects in IDEs." ON)
 mark_as_advanced(CMAKE_USE_FOLDERS)
 
+
+# Cmake 3.16 has an issue with the order of CUDA includes when using SYSTEM for user-provided thrust. Avoid this by not using SYSTEM for cmake 3.16
+set(INCLUDE_SYSTEM_FLAG SYSTEM)
+if(${CMAKE_VERSION} VERSION_GREATER "3.16" AND ${CMAKE_VERSION} VERSION_LESS "3.17") 
+    set(INCLUDE_SYSTEM_FLAG "")
+endif()
+
 # Set a default build type if not passed
 get_property(GENERATOR_IS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 if(${GENERATOR_IS_MULTI_CONFIG})
@@ -289,10 +296,10 @@ function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
     add_executable(${NAME} ${SRC})
 
     # Add include directories
-    target_include_directories(${NAME} SYSTEM PRIVATE ${FLAMEGPU_ROOT}/externals)
-# ../include required for cmake > 3.12 which ignores this otheriwse.
-    target_include_directories(${NAME}  SYSTEM PRIVATE "${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}/../include")    
-    target_include_directories(${NAME} SYSTEM PRIVATE ${FLAMEGPU_DEPENDENCY_INCLUDE_DIRECTORIES})
+    target_include_directories(${NAME} ${INCLUDE_SYSTEM_FLAG} PRIVATE ${FLAMEGPU_ROOT}/externals)
+    # Add the cuda include directory as a system include to allow user-provided thrust. ../include trickery for cmake >= 3.12
+    target_include_directories(${NAME} ${INCLUDE_SYSTEM_FLAG} PRIVATE "${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}/../include")    
+    target_include_directories(${NAME} ${INCLUDE_SYSTEM_FLAG} PRIVATE ${FLAMEGPU_DEPENDENCY_INCLUDE_DIRECTORIES})
     target_include_directories(${NAME} PRIVATE ${FLAMEGPU_ROOT}/include)
 
     # Add extra linker targets
@@ -347,10 +354,10 @@ function(add_flamegpu_library NAME SRC FLAMEGPU_ROOT)
     set_property(TARGET ${NAME}  PROPERTY CUDA_SEPARABLE_COMPILATION ON)
 
     # Define include dirs
-    target_include_directories(${NAME}  SYSTEM PRIVATE ${FLAMEGPU_ROOT}/externals)
-    # ../include required for cmake > 3.12 which ignores this otheriwse.
-    target_include_directories(${NAME}  SYSTEM PRIVATE "${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}/../include")
-    target_include_directories(${NAME}  SYSTEM PRIVATE ${FLAMEGPU_DEPENDENCY_INCLUDE_DIRECTORIES})
+    target_include_directories(${NAME} ${INCLUDE_SYSTEM_FLAG} PRIVATE ${FLAMEGPU_ROOT}/externals)
+    # Add the cuda include directory as a system include to allow user-provided thrust. ../include trickerty for cmake >= 3.12
+    target_include_directories(${NAME}  ${INCLUDE_SYSTEM_FLAG} PRIVATE "${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}/../include")
+    target_include_directories(${NAME}  ${INCLUDE_SYSTEM_FLAG} PRIVATE ${FLAMEGPU_DEPENDENCY_INCLUDE_DIRECTORIES})
     target_include_directories(${NAME}  PRIVATE ${FLAMEGPU_ROOT}/include)
     target_include_directories(${NAME}  PRIVATE ${FLAMEGPU_ROOT}/src) #private headers
 
