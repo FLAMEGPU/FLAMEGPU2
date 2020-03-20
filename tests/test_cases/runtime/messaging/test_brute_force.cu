@@ -262,4 +262,10 @@ TEST(TestMessage_BruteForce, Optional2) {
     }
 }
 
+TEST(TestMessage_BruteForce, reserved_name) {
+    ModelDescription m(MODEL_NAME);
+    MsgBruteForce::Description &msg = m.newMessage(MESSAGE_NAME);
+    EXPECT_THROW(msg.newVariable<int>("_"), ReservedName);
+}
+
 }  // namespace test_message_brute_force

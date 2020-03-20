@@ -300,9 +300,14 @@ TEST(TestMessage_Array, ArrayLenZeroException) {
 }
 TEST(TestMessage_Array, UnsetLength) {
     ModelDescription model(MODEL_NAME);
-    MsgArray::Description &message = model.newMessage<MsgArray>(MESSAGE_NAME);
+    model.newMessage<MsgArray>(MESSAGE_NAME);
     // message.setLength(5);  // Intentionally commented out
     EXPECT_THROW(CUDAAgentModel m(model), InvalidMessage);
+}
+TEST(TestMessage_Array, reserved_name) {
+    ModelDescription model(MODEL_NAME);
+    MsgArray::Description &message = model.newMessage<MsgArray>(MESSAGE_NAME);
+    EXPECT_THROW(message.newVariable<int>("_"), ReservedName);
 }
 
 }  // namespace test_message_array
