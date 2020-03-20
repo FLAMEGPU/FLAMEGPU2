@@ -108,7 +108,7 @@ MsgArray::Data::Data(ModelData *const model, const std::string &message_name)
     : MsgBruteForce::Data(model, message_name)
     , length(0) {
     description = std::unique_ptr<MsgArray::Description>(new MsgArray::Description(model, this));
-    description->newVariable<size_type>("___INDEX");
+    variables.emplace("___INDEX", Variable(1, size_type()));
 }
 MsgArray::Data::Data(ModelData *const model, const Data &other)
     : MsgBruteForce::Data(model, other)

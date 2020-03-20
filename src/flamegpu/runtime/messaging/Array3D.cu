@@ -135,7 +135,7 @@ MsgArray3D::Data::Data(ModelData *const model, const std::string &message_name)
     : MsgBruteForce::Data(model, message_name)
     , dimensions({0, 0, 0}) {
     description = std::unique_ptr<MsgArray3D::Description>(new MsgArray3D::Description(model, this));
-    description->newVariable<size_type>("___INDEX");
+    variables.emplace("___INDEX", Variable(1, size_type()));
 }
 MsgArray3D::Data::Data(ModelData *const model, const Data &other)
     : MsgBruteForce::Data(model, other)
