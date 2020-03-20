@@ -222,6 +222,10 @@ class AgentDescription {
  */
 template <typename T, ModelData::size_type N>
 void AgentDescription::newVariable(const std::string &variable_name, const std::array<T, N> &default_value) {
+    if (!variable_name.empty() && variable_name[0] == '_') {
+        THROW ReservedName("Agent variable names cannot begin with '_', this is reserved for internal usage, "
+            "in AgentDescription::newVariable().");
+    }
     std::string lower_variable_name = variable_name;
     for (auto& c : lower_variable_name)
         c = static_cast<char>(tolower(c));

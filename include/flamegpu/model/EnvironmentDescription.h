@@ -222,6 +222,10 @@ class EnvironmentDescription {
  */
 template<typename T>
 void EnvironmentDescription::add(const std::string &name, const T &value, const bool &isConst) {
+    if (!name.empty() && name[0] == '_') {
+        THROW ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
+            "in EnvironmentDescription::add().");
+    }
     // Limited to Arithmetic types
     // Compound types would allow host pointers inside structs to be passed
     static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value,
@@ -235,6 +239,10 @@ void EnvironmentDescription::add(const std::string &name, const T &value, const 
 }
 template<typename T, EnvironmentManager::size_type N>
 void EnvironmentDescription::add(const std::string &name, const std::array<T, N> &value, const bool &isConst) {
+    if (!name.empty() && name[0] == '_') {
+        THROW ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
+            "in EnvironmentDescription::add().");
+    }
     // Limited to Arithmetic types
     // Compound types would allow host pointers inside structs to be passed
     static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value,
@@ -327,6 +335,10 @@ T EnvironmentDescription::get(const std::string &name, const EnvironmentManager:
  */
 template<typename T>
 T EnvironmentDescription::set(const std::string &name, const T &value) {
+    if (!name.empty() && name[0] == '_') {
+        THROW ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
+            "in EnvironmentDescription::set().");
+    }
     // Limited to Arithmetic types
     // Compound types would allow host pointers inside structs to be passed
     static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value,
@@ -350,6 +362,10 @@ T EnvironmentDescription::set(const std::string &name, const T &value) {
 }
 template<typename T, EnvironmentManager::size_type N>
 std::array<T, N> EnvironmentDescription::set(const std::string &name, const std::array<T, N> &value) {
+    if (!name.empty() && name[0] == '_') {
+        THROW ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
+            "in EnvironmentDescription::set().");
+    }
     // Limited to Arithmetic types
     // Compound types would allow host pointers inside structs to be passed
     static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value,
@@ -379,6 +395,10 @@ std::array<T, N> EnvironmentDescription::set(const std::string &name, const std:
 }
 template<typename T>
 T EnvironmentDescription::set(const std::string &name, const EnvironmentManager::size_type &index, const T &value) {
+    if (!name.empty() && name[0] == '_') {
+        THROW ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
+            "in EnvironmentDescription::set().");
+    }
     // Limited to Arithmetic types
     // Compound types would allow host pointers inside structs to be passed
     static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value,
@@ -411,6 +431,10 @@ T EnvironmentDescription::set(const std::string &name, const EnvironmentManager:
  */
 template<typename T>
 void EnvironmentDescription::remove(const std::string &name) {
+    if (!name.empty() && name[0] == '_') {
+        THROW ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
+            "in EnvironmentDescription::remove().");
+    }
     // Limited to Arithmetic types
     // Compound types would allow host pointers inside structs to be passed
     static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value,

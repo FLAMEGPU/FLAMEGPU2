@@ -36,6 +36,10 @@ void EnvironmentDescription::add(const std::string &name, const char *ptr, const
 }
 
 void EnvironmentDescription::setConst(const std::string &name, const bool &isConst) {
+    if (!name.empty() && name[0] == '_') {
+        THROW ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
+            "in EnvironmentDescription::setConst().");
+    }
     for (auto &i : properties) {
         if (i.first == name) {
             i.second.isConst = isConst;
