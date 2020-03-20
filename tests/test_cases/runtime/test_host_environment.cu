@@ -1609,3 +1609,41 @@ TEST_F(HostEnvironmentTest, BoolWorks) {
     // Test Something
     ms->run(1);
 }
+
+
+FLAMEGPU_STEP_FUNCTION(reserved_name_add_step) {
+    FLAMEGPU->environment.add<int>("_", 1);
+}
+FLAMEGPU_STEP_FUNCTION(reserved_name_add_array_step) {
+    FLAMEGPU->environment.add<int, 2>("_", {1, 2});
+}
+FLAMEGPU_STEP_FUNCTION(reserved_name_set_step) {
+    FLAMEGPU->environment.set<int>("_", 1);
+}
+FLAMEGPU_STEP_FUNCTION(reserved_name_set_array_step) {
+    FLAMEGPU->environment.set<int, 2>("_", { 1, 2 });
+}
+TEST_F(HostEnvironmentTest, reserved_name_add) {
+    ModelDescription model("model");
+    model.addStepFunction(reserved_name_add_step);
+    CUDAAgentModel sim(model);
+    EXPECT_THROW(sim.step(), ReservedName);
+}
+TEST_F(HostEnvironmentTest, reserved_name_add_array) {
+    ModelDescription model("model");
+    model.addStepFunction(reserved_name_add_array_step);
+    CUDAAgentModel sim(model);
+    EXPECT_THROW(sim.step(), ReservedName);
+}
+TEST_F(HostEnvironmentTest, reserved_name_set) {
+    ModelDescription model("model");
+    model.addStepFunction(reserved_name_set_step);
+    CUDAAgentModel sim(model);
+    EXPECT_THROW(sim.step(), ReservedName);
+}
+TEST_F(HostEnvironmentTest, reserved_name_set_array) {
+    ModelDescription model("model");
+    model.addStepFunction(reserved_name_set_array_step);
+    CUDAAgentModel sim(model);
+    EXPECT_THROW(sim.step(), ReservedName);
+}

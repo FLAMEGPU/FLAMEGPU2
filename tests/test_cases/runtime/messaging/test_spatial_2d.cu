@@ -356,5 +356,10 @@ TEST(Spatial2DMsgTest, UnsetMin) {
     message.setMin(5, 5);
     EXPECT_THROW(CUDAAgentModel m(model), InvalidMessage);
 }
+TEST(Spatial2DMsgTest, reserved_name) {
+    ModelDescription model("Spatial2DMsgTestModel");
+    MsgSpatial2D::Description &message = model.newMessage<MsgSpatial2D>("location");
+    EXPECT_THROW(message.newVariable<int>("_"), ReservedName);
+}
 
 }  // namespace test_message_spatial2d

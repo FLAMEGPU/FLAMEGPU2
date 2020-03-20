@@ -342,9 +342,14 @@ TEST(TestMessage_Array3D, ArrayLenZeroException) {
 }
 TEST(TestMessage_Array3D, UnsetDimensions) {
     ModelDescription model(MODEL_NAME);
-    MsgArray3D::Description &message = model.newMessage<MsgArray3D>(MESSAGE_NAME);
+    model.newMessage<MsgArray3D>(MESSAGE_NAME);
     // message.setDimensions(5, 5, 5);  // Intentionally commented out
     EXPECT_THROW(CUDAAgentModel m(model), InvalidMessage);
+}
+TEST(TestMessage_Array3D, reserved_name) {
+    ModelDescription model(MODEL_NAME);
+    MsgArray3D::Description &message = model.newMessage<MsgArray3D>(MESSAGE_NAME);
+    EXPECT_THROW(message.newVariable<int>("_"), ReservedName);
 }
 
 }  // namespace test_message_array_3d

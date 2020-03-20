@@ -394,4 +394,9 @@ TEST(Spatial3DMsgTest, UnsetMin) {
     message.setMin(5, 5, 5);
     EXPECT_THROW(CUDAAgentModel m(model), InvalidMessage);
 }
+TEST(Spatial3DMsgTest, reserved_name) {
+    ModelDescription model("Spatial3DMsgTestModel");
+    MsgSpatial3D::Description &message = model.newMessage<MsgSpatial3D>("location");
+    EXPECT_THROW(message.newVariable<int>("_"), ReservedName);
+}
 }  // namespace test_message_spatial3d

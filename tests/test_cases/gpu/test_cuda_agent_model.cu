@@ -48,7 +48,7 @@ TEST(TestCUDAAgentModel, AllDeviceIdValues) {
         bool shouldThrowCCException = !util::compute_capability::checkComputeCapability(i);
         // Initialise and run a simple model on each device in the system. This test is pointless on single GPU machines.
         ModelDescription m(MODEL_NAME);
-        AgentDescription &a = m.newAgent(AGENT_NAME);
+        m.newAgent(AGENT_NAME);
         // Scoping
         {
             CUDAAgentModel c(m);
