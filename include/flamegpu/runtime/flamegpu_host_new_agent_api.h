@@ -257,14 +257,26 @@ class FLAMEGPU_HOST_NEW_AGENT_API {
      */
     template<typename T>
     void setVariable(const std::string &var_name, const T &val) {
+        if (!var_name.empty() && var_name[0] == '_') {
+            THROW ReservedName("Agent variable names cannot begin with '_', this is reserved for internal usage, "
+                "in FLAMEGPU_HOST_NEW_AGENT_API::setVariable().");
+        }
         s->setVariable<T>(var_name, val);
     }
     template<typename T, unsigned int N>
     void setVariable(const std::string &var_name, const std::array<T, N> &val) {
+        if (!var_name.empty() && var_name[0] == '_') {
+            THROW ReservedName("Agent variable names cannot begin with '_', this is reserved for internal usage, "
+                "in FLAMEGPU_HOST_NEW_AGENT_API::setVariable().");
+        }
         s->setVariable<T, N>(var_name, val);
     }
     template<typename T>
     void setVariable(const std::string &var_name, const unsigned int &index, const T &val) {
+        if (!var_name.empty() && var_name[0] == '_') {
+            THROW ReservedName("Agent variable names cannot begin with '_', this is reserved for internal usage, "
+                "in FLAMEGPU_HOST_NEW_AGENT_API::setVariable().");
+        }
         s->setVariable<T>(var_name, index, val);
     }
     /**

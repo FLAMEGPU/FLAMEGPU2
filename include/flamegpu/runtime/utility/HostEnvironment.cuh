@@ -139,10 +139,18 @@ class HostEnvironment {
  */
 template<typename T>
 void HostEnvironment::add(const std::string &name, const T &value, const bool &isConst) const {
+    if (!name.empty() && name[0] == '_') {
+        THROW ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
+            "in HostEnvironment::add().");
+    }
     env_mgr.add<T>({ model_name, name }, value, isConst);
 }
 template<typename T, EnvironmentManager::size_type N>
 void HostEnvironment::add(const std::string &name, const std::array<T, N> &value, const bool &isConst) const {
+    if (!name.empty() && name[0] == '_') {
+        THROW ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
+            "in HostEnvironment::add().");
+    }
     env_mgr.add<T, N>({ model_name, name }, value, isConst);
 }
 
@@ -151,14 +159,26 @@ void HostEnvironment::add(const std::string &name, const std::array<T, N> &value
  */
 template<typename T>
 T HostEnvironment::set(const std::string &name, const T &value) const {
+    if (!name.empty() && name[0] == '_') {
+        THROW ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
+            "in HostEnvironment::set().");
+    }
     return env_mgr.set<T>({ model_name, name }, value);
 }
 template<typename T, EnvironmentManager::size_type N>
 std::array<T, N> HostEnvironment::set(const std::string &name, const std::array<T, N> &value) const {
+    if (!name.empty() && name[0] == '_') {
+        THROW ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
+            "in HostEnvironment::set().");
+    }
     return env_mgr.set<T, N>({ model_name, name }, value);
 }
 template<typename T>
 T HostEnvironment::set(const std::string &name, const EnvironmentManager::size_type &index, const T &value) const {
+    if (!name.empty() && name[0] == '_') {
+        THROW ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
+            "in HostEnvironment::set().");
+    }
     return env_mgr.set<T>({ model_name, name }, index, value);
 }
 

@@ -123,7 +123,7 @@ MsgArray2D::Data::Data(ModelData *const model, const std::string &message_name)
     : MsgBruteForce::Data(model, message_name)
     , dimensions({ 0, 0 }) {
     description = std::unique_ptr<MsgArray2D::Description>(new MsgArray2D::Description(model, this));
-    description->newVariable<size_type>("___INDEX");
+    variables.emplace("___INDEX", Variable(1, size_type()));
 }
 MsgArray2D::Data::Data(ModelData *const model, const Data &other)
     : MsgBruteForce::Data(model, other)

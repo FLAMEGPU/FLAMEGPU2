@@ -555,6 +555,9 @@ __device__ T MsgArray2D::In::Filter::Message::getVariable(const char(&variable_n
 
 template<typename T, unsigned int N>
 __device__ void MsgArray2D::Out::setVariable(const char(&variable_name)[N], T value) const {  // message name or variable name
+    if (variable_name[0] == '_') {
+        return;  // Fail silently
+    }
     unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
 
     // set the variable using curve

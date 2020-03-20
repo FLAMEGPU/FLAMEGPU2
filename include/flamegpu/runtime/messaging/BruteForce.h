@@ -465,6 +465,9 @@ __device__ T MsgBruteForce::Message::getVariable(const char(&variable_name)[N]) 
 */
 template<typename T, unsigned int N>
 __device__ void MsgBruteForce::Out::setVariable(const char(&variable_name)[N], T value) const {  // message name or variable name
+    if (variable_name[0] == '_') {
+        return;  // Fail silently
+    }
     unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;  // + d_message_count;
 
     // Todo: checking if the output message type is single or optional?  (d_message_type)
@@ -481,6 +484,10 @@ __device__ void MsgBruteForce::Out::setVariable(const char(&variable_name)[N], T
  */
 template<typename T>
 void MsgBruteForce::Description::newVariable(const std::string &variable_name) {
+    if (!variable_name.empty() && variable_name[0] == '_') {
+        THROW ReservedName("Message variable names cannot begin with '_', this is reserved for internal usage, "
+            "in MsgBruteForce::Description::newVariable().");
+    }
     if (message->variables.find(variable_name) == message->variables.end()) {
         message->variables.emplace(variable_name, Variable(1, T()));
         return;
