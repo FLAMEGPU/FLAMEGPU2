@@ -222,6 +222,13 @@ class AgentDescription {
  */
 template <typename T, ModelData::size_type N>
 void AgentDescription::newVariable(const std::string &variable_name, const std::array<T, N> &default_value) {
+    std::string lower_variable_name = variable_name;
+    for (auto& c : lower_variable_name)
+        c = static_cast<char>(tolower(c));
+    if (lower_variable_name == "name" || lower_variable_name == "state") {
+        THROW ReservedName("Agent variables cannot be named 'name' or 'state', these are reserved for backwards compatibility reasons, "
+            "in AgentDescription::newVariable().");
+    }
     // Array length 0 makes no sense
     static_assert(N > 0, "A variable cannot have 0 elements.");
     if (agent->variables.find(variable_name) == agent->variables.end()) {

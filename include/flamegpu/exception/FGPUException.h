@@ -73,6 +73,12 @@ DERIVED_FGPUException(CUDAError, "CUDA returned an error code!");
 
 /**
  * Defines a type of object to be thrown as exception.
+ * It reports errors that are due to unsuitable variable names
+ */
+DERIVED_FGPUException(ReservedName, "Variable names cannot begin with the character '_'.");
+
+/**
+ * Defines a type of object to be thrown as exception.
  * It reports errors that are due to invalid input file.
  *  where the input file does not exist or cannot be read by the program.
  */

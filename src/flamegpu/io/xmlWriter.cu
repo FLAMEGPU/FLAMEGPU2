@@ -59,7 +59,7 @@ xmlWriter::xmlWriter(const std::string &model_name, const std::unordered_map<std
 int xmlWriter::writeStates() {
     tinyxml2::XMLDocument doc;
 
-    tinyxml2::XMLNode * pRoot = doc.NewElement("fgpu2");
+    tinyxml2::XMLNode * pRoot = doc.NewElement("states");
     doc.InsertFirstChild(pRoot);
 
     tinyxml2::XMLElement * pElement = doc.NewElement("itno");
@@ -116,29 +116,25 @@ int xmlWriter::writeStates() {
 
     // for each agent types
     for (auto &agent : model_state) {
-        // Create xagent block for agent
-        tinyxml2::XMLElement * pXagentElement = doc.NewElement("xagent");
-        // Add agent's name to block
-        tinyxml2::XMLElement * pXagentNameElement = doc.NewElement("name");
-        pXagentNameElement->SetText(agent.first.c_str());
-        pXagentElement->InsertEndChild(pXagentNameElement);
-
         // For each agent state
         for (auto &state : agent.second->getAgentDescription().states) {
             populationSize = agent.second->getStateMemory(state).getStateListSize();
             if (populationSize) {
-                // Create state block for agent
-                tinyxml2::XMLElement * pStateElement = doc.NewElement("state");
-                // Add state's name to block
-                tinyxml2::XMLElement * pStateNameElement = doc.NewElement("name");
-                pStateNameElement->SetText(state.c_str());
-                pStateElement->InsertEndChild(pStateNameElement);
                 for (unsigned int i = 0; i < populationSize; ++i) {
                     // Create vars block
-                    tinyxml2::XMLElement * pVarsElement = doc.NewElement("vars");
+                    tinyxml2::XMLElement * pXagentElement = doc.NewElement("xagent");
 
                     AgentInstance instance = agent.second->getInstanceAt(i, state);
                     const auto &mm = agent.second->getAgentDescription().variables;
+
+                    // Add agent's name to block
+                    tinyxml2::XMLElement * pXagentNameElement = doc.NewElement("name");
+                    pXagentNameElement->SetText(agent.first.c_str());
+                    pXagentElement->InsertEndChild(pXagentNameElement);
+                    // Add state's name to block
+                    tinyxml2::XMLElement * pStateNameElement = doc.NewElement("state");
+                    pStateNameElement->SetText(state.c_str());
+                    pXagentElement->InsertEndChild(pStateNameElement);
 
                     // for each variable
                     for (auto iter_mm = mm.begin(); iter_mm != mm.end(); ++iter_mm) {
@@ -180,17 +176,13 @@ int xmlWriter::writeStates() {
                                 ss << ",";
                         }
                         pListElement->SetText(ss.str().c_str());
-                        pVarsElement->InsertEndChild(pListElement);
+                        pXagentElement->InsertEndChild(pListElement);
                     }
-                    // Adds vars block to state block
-                    pStateElement->InsertEndChild(pVarsElement);
+                    // Insert xagent block into doc root
+                    pRoot->InsertEndChild(pXagentElement);
                 }
-                // Add state block to agent block
-                pXagentElement->InsertEndChild(pStateElement);
             }  // if state has agents
         }
-        // Insert xagent block into doc root
-        pRoot->InsertEndChild(pXagentElement);
     }
 
     tinyxml2::XMLError errorId = doc.SaveFile(outputFile.c_str());
