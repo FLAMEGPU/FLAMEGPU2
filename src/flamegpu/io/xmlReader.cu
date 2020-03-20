@@ -135,78 +135,74 @@ int xmlReader::parse() {
     // Count how many of each agent are in the file and resize state lists
     std::unordered_map<std::string, unsigned int> cts;
     for (pElement = pRoot->FirstChildElement("xagent"); pElement != nullptr; pElement = pElement->NextSiblingElement("xagent")) {
-        unsigned int max = 0;
-        for (auto pStateElement = pElement->FirstChildElement("state"); pStateElement != nullptr; pStateElement = pStateElement->NextSiblingElement("state")) {
-            unsigned int count = 0;
-            for (auto pVarsElement = pStateElement->FirstChildElement("vars"); pVarsElement != nullptr; pVarsElement = pVarsElement->NextSiblingElement("vars")) {
-                count++;
-            }
-            max = max > count ? max : count;
-        }
-        if (max > AgentPopulation::DEFAULT_POPULATION_SIZE) {
-            model_state.at(std::string(pElement->FirstChildElement("name")->GetText()))->setStateListCapacity(max);
-        }
+        cts[std::string(pElement->FirstChildElement("name")->GetText())]++;
+    }
+    // Resize state lists
+    for (auto &agt : cts) {
+        if (agt.second > AgentPopulation::DEFAULT_POPULATION_SIZE)
+            model_state.at(agt.first)->setStateListCapacity(agt.second);
     }
 
     // Read in agent data
     for (pElement = pRoot->FirstChildElement("xagent"); pElement != nullptr; pElement = pElement->NextSiblingElement("xagent")) {
         // Find agent name
-        tinyxml2::XMLElement* pListElement = pElement->FirstChildElement("name");
-        const char* agentName = pListElement->GetText();
-        const auto &agentModel = model_state.at(agentName)->getAgentDescription().variables;
+        tinyxml2::XMLElement* pNameElement = pElement->FirstChildElement("name");
+        const char* agentName = pNameElement->GetText();
+        // Find agent state, use initial state if not set (means its old fgpu1 input file)
+        tinyxml2::XMLElement* pStateElement = pElement->FirstChildElement("state");
+        const char* agentState = pStateElement ? pStateElement->GetText() : model_state.at(agentName)->getAgentDescription().initial_state.c_str();
+        const auto &agentVariables = model_state.at(agentName)->getAgentDescription().variables;
+        // Create instace to store variable data in
+        AgentInstance instance = model_state.at(agentName)->getNextInstance(agentState);
         bool hasWarnedElements = false;
-        // Find state block
-        for (auto pStateElement = pElement->FirstChildElement("state"); pStateElement != nullptr; pStateElement = pStateElement->NextSiblingElement("state")) {
-            // Find state name
-            tinyxml2::XMLElement* pStateNameElement = pStateElement->FirstChildElement("name");
-            const char* stateName = pStateNameElement->GetText();
-            // Find vars block
-            for (auto pVarsElement = pStateElement->FirstChildElement("vars"); pVarsElement != nullptr; pVarsElement = pVarsElement->NextSiblingElement("vars")) {
-                // Create new agent
-                AgentInstance instance = model_state.at(agentName)->getNextInstance(stateName);
-                // Iterate xml vars
-                for (auto iter = agentModel.begin(); iter != agentModel.end(); ++iter) {
-                    const std::string variable_name = iter->first;
-
-                    tinyxml2::XMLElement* pVarElement = pVarsElement->FirstChildElement(variable_name.c_str());
-                    const auto &var_data = agentModel.at(variable_name);
-                    // Put string for the variable into a string stream
-                    std::stringstream ss(pVarElement->GetText());
-                    std::string token;
-                    // Iterate elements of the stringstream
-                    unsigned int el = 0;
-                    while (getline(ss, token, ',')) {
-                        if (var_data.type == std::type_index(typeid(float))) {
-                            instance.setVariable<float>(variable_name, el++, stof(token));
-                        } else if (var_data.type == std::type_index(typeid(double))) {
-                            instance.setVariable<double>(variable_name, el++, stod(token));
-                        } else if (var_data.type == std::type_index(typeid(int64_t))) {
-                            instance.setVariable<int64_t>(variable_name, el++, stoll(token));
-                        } else if (var_data.type == std::type_index(typeid(uint64_t))) {
-                            instance.setVariable<uint64_t>(variable_name, el++, stoull(token));
-                        } else if (var_data.type == std::type_index(typeid(int32_t))) {
-                            instance.setVariable<int32_t>(variable_name, el++, static_cast<int32_t>(stoll(token)));
-                        } else if (var_data.type == std::type_index(typeid(uint32_t))) {
-                            instance.setVariable<uint32_t>(variable_name, el++, static_cast<uint32_t>(stoull(token)));
-                        } else if (var_data.type == std::type_index(typeid(int16_t))) {
-                            instance.setVariable<int16_t>(variable_name, el++, static_cast<int16_t>(stoll(token)));
-                        } else if (var_data.type == std::type_index(typeid(uint16_t))) {
-                            instance.setVariable<uint16_t>(variable_name, el++, static_cast<uint16_t>(stoull(token)));
-                        } else if (var_data.type == std::type_index(typeid(int8_t))) {
-                            instance.setVariable<int8_t>(variable_name, el++, static_cast<int8_t>(stoll(token)));
-                        } else if (var_data.type == std::type_index(typeid(uint8_t))) {
-                            instance.setVariable<uint8_t>(variable_name, el++, static_cast<uint8_t>(stoull(token)));
-                        } else {
-                            THROW TinyXMLError("Agent '%s' contains variable '%s' of unsupported type '%s', "
-                                "in xmlReader::parse()\n", agentName, variable_name.c_str(), var_data.type.name());
-                        }
-                    }
-                    if (el != var_data.elements && !hasWarnedElements) {
-                        fprintf(stderr, "Warning: Agent '%s' variable '%s' expects '%u' elements, input file '%s' contains '%u' elements.\n",
-                            agentName, variable_name.c_str(), var_data.elements, inputFile.c_str(), el);
-                        hasWarnedElements = true;
+        bool hasWarnedMissingVar = false;
+        // Iterate agent variables
+        for (auto iter = agentVariables.begin(); iter != agentVariables.end(); ++iter) {
+            const std::string variable_name = iter->first;
+            const auto &var_data = iter->second;
+            tinyxml2::XMLElement* pVarElement = pElement->FirstChildElement(variable_name.c_str());
+            if (pVarElement) {
+                // Put string for the variable into a string stream
+                std::stringstream ss(pVarElement->GetText());
+                std::string token;
+                // Iterate elements of the stringstream
+                unsigned int el = 0;
+                while (getline(ss, token, ',')) {
+                    if (var_data.type == std::type_index(typeid(float))) {
+                        instance.setVariable<float>(variable_name, el++, stof(token));
+                    } else if (var_data.type == std::type_index(typeid(double))) {
+                        instance.setVariable<double>(variable_name, el++, stod(token));
+                    } else if (var_data.type == std::type_index(typeid(int64_t))) {
+                        instance.setVariable<int64_t>(variable_name, el++, stoll(token));
+                    } else if (var_data.type == std::type_index(typeid(uint64_t))) {
+                        instance.setVariable<uint64_t>(variable_name, el++, stoull(token));
+                    } else if (var_data.type == std::type_index(typeid(int32_t))) {
+                        instance.setVariable<int32_t>(variable_name, el++, static_cast<int32_t>(stoll(token)));
+                    } else if (var_data.type == std::type_index(typeid(uint32_t))) {
+                        instance.setVariable<uint32_t>(variable_name, el++, static_cast<uint32_t>(stoull(token)));
+                    } else if (var_data.type == std::type_index(typeid(int16_t))) {
+                        instance.setVariable<int16_t>(variable_name, el++, static_cast<int16_t>(stoll(token)));
+                    } else if (var_data.type == std::type_index(typeid(uint16_t))) {
+                        instance.setVariable<uint16_t>(variable_name, el++, static_cast<uint16_t>(stoull(token)));
+                    } else if (var_data.type == std::type_index(typeid(int8_t))) {
+                        instance.setVariable<int8_t>(variable_name, el++, static_cast<int8_t>(stoll(token)));
+                    } else if (var_data.type == std::type_index(typeid(uint8_t))) {
+                        instance.setVariable<uint8_t>(variable_name, el++, static_cast<uint8_t>(stoull(token)));
+                    } else {
+                        THROW TinyXMLError("Agent '%s' contains variable '%s' of unsupported type '%s', "
+                            "in xmlReader::parse()\n", agentName, variable_name.c_str(), var_data.type.name());
                     }
                 }
+                // Warn if var is wrong length
+                if (el != var_data.elements && !hasWarnedElements) {
+                    fprintf(stderr, "Warning: Agent '%s' variable '%s' expects '%u' elements, input file '%s' contains '%u' elements.\n",
+                        agentName, variable_name.c_str(), var_data.elements, inputFile.c_str(), el);
+                    hasWarnedElements = true;
+                }
+            } else if (!hasWarnedMissingVar) {
+                fprintf(stderr, "Warning: Agent '%s' variable '%s' is missing from, input file '%s'.\n",
+                    agentName, variable_name.c_str(), inputFile.c_str());
+                hasWarnedMissingVar = true;
             }
         }
     }

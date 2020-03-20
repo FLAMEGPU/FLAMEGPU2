@@ -127,7 +127,6 @@ SET(TEST_CASE_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/util/test_compute_capability.cu
 )
 SET(DEV_TEST_CASE_SRC
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/io/test_xml_io.cu
 )
 SET(OTHER_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/helpers/device_test_functions.h
