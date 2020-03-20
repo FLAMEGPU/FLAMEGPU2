@@ -356,3 +356,14 @@ TEST(EnvironmentDescriptionTest, ExceptionPropertyDoesntExist) {
     EXPECT_THROW(ed.get<float>("a", 1), InvalidEnvProperty);
     EXPECT_THROW(ed.remove<float>("a"), InvalidEnvProperty);
 }
+
+TEST(EnvironmentDescriptionTest, reserved_name) {
+    EnvironmentDescription ed;
+    EXPECT_THROW(ed.add<int>("_", 1), ReservedName);
+    EXPECT_THROW(ed.set<int>("_", 1), ReservedName);
+    EXPECT_THROW(ed.setConst("_", true), ReservedName);
+    auto add = &EnvironmentDescription::add<int, 2>;
+    auto set = &EnvironmentDescription::set<int, 2>;
+    EXPECT_THROW((ed.*add)("_", { 1, 2 }, false), ReservedName);
+    EXPECT_THROW((ed.*set)("_", { 1, 2 }), ReservedName);
+}

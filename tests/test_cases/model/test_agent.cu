@@ -173,5 +173,20 @@ TEST(AgentDescriptionTest, agent_outputs) {
     f2.setAgentOutput(b);
     EXPECT_EQ(a.getAgentOutputsCount(), 1u);
 }
+TEST(AgentDescriptionTest, reserved_name) {
+    ModelDescription m(MODEL_NAME);
+    AgentDescription &a = m.newAgent(AGENT_NAME1);
+    EXPECT_THROW(a.newVariable<int>("_"), ReservedName);
+    EXPECT_THROW(a.newVariable<int>("name"), ReservedName);
+    EXPECT_THROW(a.newVariable<int>("state"), ReservedName);
+    EXPECT_THROW(a.newVariable<int>("nAme"), ReservedName);
+    EXPECT_THROW(a.newVariable<int>("sTate"), ReservedName);
+    auto array_version = &AgentDescription::newVariable<int, 3>;
+    EXPECT_THROW((a.*array_version)("_", {}), ReservedName);
+    EXPECT_THROW((a.*array_version)("name", {}), ReservedName);
+    EXPECT_THROW((a.*array_version)("state", {}), ReservedName);
+    EXPECT_THROW((a.*array_version)("nAme", {}), ReservedName);
+    EXPECT_THROW((a.*array_version)("sTate", {}), ReservedName);
+}
 
 }  // namespace test_agent

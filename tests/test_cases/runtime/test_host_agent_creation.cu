@@ -650,4 +650,25 @@ TEST(HostAgentCreationTest, HostAgentBirth_ArrayNotSuitableGet) {
     CUDAAgentModel sim(model);
     EXPECT_THROW(sim.step(), InvalidAgentVar);
 }
+FLAMEGPU_STEP_FUNCTION(reserved_name_step) {
+    FLAMEGPU->newAgent("agent_name").setVariable<int>("_", 0);
+}
+FLAMEGPU_STEP_FUNCTION(reserved_name_step_array) {
+    FLAMEGPU->newAgent("agent_name").setVariable<int, 3>("_", {});
+}
+TEST(HostAgentCreationTest, reserved_name) {
+    ModelDescription model("model");
+    model.newAgent("agent_name");
+    // Run the init function
+    model.addStepFunction(reserved_name_step);
+    CUDAAgentModel sim(model);
+    EXPECT_THROW(sim.step(), ReservedName);
+}
+TEST(HostAgentCreationTest, reserved_name_array) {
+    ModelDescription model("model");
+    model.newAgent("agent_name");
+    model.addStepFunction(reserved_name_step_array);
+    CUDAAgentModel sim(model);
+    EXPECT_THROW(sim.step(), ReservedName);
+}
 }  // namespace test_host_agent_creation
