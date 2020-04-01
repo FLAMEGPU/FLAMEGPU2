@@ -197,6 +197,18 @@ bool CUDAAgentModel::step() {
             const unsigned int STATE_SIZE = cuda_agent.getStateSize(func_des->initial_state);
             flamegpu_internal::CUDAScanCompaction::resize(STATE_SIZE, flamegpu_internal::CUDAScanCompaction::AGENT_DEATH, j);
 
+            // For runtime functions set the device symbol address for device scan 
+            if (!func_des->rtc_func_name.empty()) {
+                // get rtc instantiation
+                const jitify::KernelInstantiation& instance = cuda_agent.getRTCInstantiation(func_des->rtc_func_name);
+                // get symbol for runtime device scan configs
+                CUdeviceptr ds_configs = instance.get_global_ptr("flamegpu_internal::CUDAScanCompaction::ds_configs");
+                // calculate offset of CUDAScanCompactionPtrs for AGENT_DEATH in stream j
+                ptrdiff_t offset = sizeof(CUDAScanCompactionPtrs)*(flamegpu_internal::CUDAScanCompaction::AGENT_DEATH* flamegpu_internal::CUDAScanCompaction::MAX_STREAMS + j);
+                // copy pointer values for scan_flags and position to run time device symbol
+                gpuErrchkDriverAPI(cuMemcpyHtoD(ds_configs + offset, (const void*)&flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::AGENT_DEATH][j].d_ptrs, sizeof(CUDAScanCompactionPtrs)));
+            }
+
             // check if a function has an input message
             if (auto im = func_des->message_input.lock()) {
                 std::string inpMessage_name = im->name;
@@ -291,34 +303,61 @@ bool CUDAAgentModel::step() {
             if (state_list_size == 0)
                 continue;
 
-            int blockSize = 0;  // The launch configurator returned block size
-            int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
-            int gridSize = 0;  // The actual grid size needed, based on input size
-
-            // calculate the grid block size for main agent function
-            cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, func_des->func, 0, state_list_size);
-
-            //! Round up according to CUDAAgent state list size
-            gridSize = (state_list_size + blockSize - 1) / blockSize;
-
-            // hash agent name
+            // curve hash values
             Curve::NamespaceHash agentname_hash = singletons->curve.variableRuntimeHash(agent_name.c_str());
-            // hash function name
             Curve::NamespaceHash funcname_hash = singletons->curve.variableRuntimeHash(func_name.c_str());
-            Curve::NamespaceHash agentoutput_hash = func_des->agent_output.lock()? singletons->curve.variableRuntimeHash("_agent_birth") + funcname_hash:0;
+            Curve::NamespaceHash agentoutput_hash = func_des->agent_output.lock() ? singletons->curve.variableRuntimeHash("_agent_birth") + funcname_hash : 0;
+            Curve::NamespaceHash agent_func_name_hash = agentname_hash + funcname_hash;
 
-            NVTX_PUSH("CUDAAgentModel::step::Kernel");
-            (func_des->func)<<<gridSize, blockSize, 0, streams.at(j) >>>(
-                modelname_hash,
-                agentname_hash + funcname_hash,
-                message_name_inp_hash,
-                message_name_outp_hash,
-                agentoutput_hash,
-                state_list_size,
-                d_messagelist_metadata,
-                totalThreads,
-                j);
-            gpuErrchkLaunch();
+            if (func_des->func) {   // compile time specified agent function launch
+                int blockSize = 0;  // The launch configurator returned block size
+                int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
+                int gridSize = 0;  // The actual grid size needed, based on input size
+
+                // calculate the grid block size for main agent function
+                cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, func_des->func, 0, state_list_size);
+
+                //! Round up according to CUDAAgent state list size
+                gridSize = (state_list_size + blockSize - 1) / blockSize;
+
+
+                NVTX_PUSH("CUDAAgentModel::step::Kernel");
+                (func_des->func) << <gridSize, blockSize, 0, streams.at(j) >> > (
+                    modelname_hash,
+                    agent_func_name_hash,
+                    message_name_inp_hash,
+                    message_name_outp_hash,
+                    agentoutput_hash,
+                    state_list_size,
+                    d_messagelist_metadata,
+                    totalThreads,
+                    j);
+                gpuErrchkLaunch();
+            }
+            else {      // assume this is a runtime specied agent function
+                dim3 grid(1);
+                dim3 block(1);
+                // get instantiation
+                const jitify::KernelInstantiation&  instance = cuda_agent.getRTCInstantiation(func_name);
+                // launch the kernel
+                CUresult a = instance.configure(grid, block).launch({ 
+                        (void*)&modelname_hash,
+                        (void*)&agent_func_name_hash,
+                        (void*)&message_name_inp_hash,
+                        (void*)&message_name_outp_hash,
+                        (void*)&agentoutput_hash,
+                        (void*)&state_list_size,
+                        (void*)&d_messagelist_metadata,
+                        (void*)&totalThreads,
+                        (void*)&j });
+                if (a != CUresult::CUDA_SUCCESS) {
+                    const char* err_str = nullptr;
+                    cuGetErrorString(a, &err_str);
+                    THROW InvalidAgentFunc("There was a problem launching the runtime agent function '%s': %s", func_name.c_str(), err_str);
+                }
+                cudaDeviceSynchronize();
+                gpuErrchkLaunch();
+            }
             totalThreads += state_list_size;
             ++j;
             ++lyr_idx;

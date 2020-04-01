@@ -190,7 +190,11 @@ class CUDAAgentModel : public Simulation {
      * @note called at the end of step() and after all init/hostLayer functions and exit conditions have finished
      */
     void processHostAgentCreation();
-
+    /**
+     * Runs a specific agent function
+     * @param func_des the agent function to execute
+     */
+ 
  public:
     typedef std::vector<NewAgentStorage> AgentDataBuffer;
     typedef std::unordered_map<std::string, AgentDataBuffer> AgentDataBufferStateMap;

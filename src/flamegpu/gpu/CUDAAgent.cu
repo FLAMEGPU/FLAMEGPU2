@@ -550,7 +550,15 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func) {
             "in CUDAAgent::addInstantitateRTCFunction().",
             func.name.c_str());
     }
-    
+}
 
+const jitify::KernelInstantiation& CUDAAgent::getRTCInstantiation(const std::string &function_name) const {
+    CUDARTCFuncMap::const_iterator mm = rtc_func_map.find(function_name);
+    if (mm == rtc_func_map.end()) {
+        THROW InvalidAgentFunc("Function name '%s' is not a runtime compiled agent function , "
+            "in CUDAAgent::getRTCInstantiation()\n",
+            function_name.c_str());
+    }
 
+    return *mm->second;
 }

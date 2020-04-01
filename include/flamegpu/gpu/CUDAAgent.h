@@ -155,6 +155,12 @@ class CUDAAgent : public AgentInterface {
      * @note This may resize death scan flag, which will lose it's data, hence always processDeath first
      */
     void addInstantitateRTCFunction(const AgentFunctionData& func);
+    /**
+     * Returns the jitify kernel instantiation of of the agent function.
+     * Will throw an InvalidAgentFunc excpetion if the function name does not have a valid instantiation
+     * @param function_name the name of the RTC agent function
+     */
+    const jitify::KernelInstantiation& getRTCInstantiation(const std::string &function_name) const;
 
  protected:
     /** @brief    Zero all state variable data. */
