@@ -101,12 +101,12 @@ int main(int argc, const char* argv[]) {
     // output_data.setInitialState("state1");
 
     // circle agent input_data function
-    AgentFunctionDescription &input_data = circle_agent.newFunction("input_data", input_func);
+    //AgentFunctionDescription &input_data = circle_agent.newFunction("input_data", input_func);
     //input_data.setMessageInput(location_message);
 
 
     // circle agent move function
-    AgentFunctionDescription &move = circle_agent.newFunction("move", move_func);
+    //AgentFunctionDescription &move = circle_agent.newFunction("move", move_func);
 
 
     AgentFunctionDescription& rtcfunc = circle_agent.newRTCFunction("rtc_test_func", rtc_test_func_str);

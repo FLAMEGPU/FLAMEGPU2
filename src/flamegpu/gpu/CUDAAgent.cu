@@ -514,6 +514,7 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func) {
 
     // vector of compiler options for jitify
     std::vector<std::string> options;
+    std::vector<std::string> headers;
 
     // fpgu incude
     std::string include_fgpu;
@@ -527,16 +528,96 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func) {
     options.push_back(include_cuda);
     std::cout << "cuda include option is " << include_cuda << '\n';     // TODO: Remove DEBUG
 
+    // add __CUDACC_RTC__ symbol
+    std::string rtc_symbol;
+    rtc_symbol = "-D__CUDACC_RTC__";
+    options.push_back(rtc_symbol);
+    std::cout << "RTC pre-processor symbol is " << rtc_symbol << '\n';     // TODO: Remove DEBUG
+
     // rdc
     std::string rdc;
     rdc = "-rdc=true";
     options.push_back(rdc);
     std::cout << "rdc option is " << rdc << '\n';                       // TODO: Remove DEBUG
 
+    // curve rtc header
+    std::string cure_rtc_h;
+    cure_rtc_h = R"###(curve_rtc.h
+        #ifndef INCLUDE_FLAMEGPU_RUNTIME_CURVE_CURVE_RTC_H_
+        #define INCLUDE_FLAMEGPU_RUNTIME_CURVE_CURVE_RTC_H_
+
+        /**
+         * Dynamically generated version of Curve specific to agent function
+         */
+
+        class Curve {
+         public:
+            static const int UNKNOWN_VARIABLE = -1;
+
+            typedef int                      Variable;
+            typedef unsigned int             VariableHash;
+            typedef unsigned int             NamespaceHash;
+
+            enum DeviceError {
+                DEVICE_ERROR_NO_ERRORS,
+                DEVICE_ERROR_UNKNOWN_VARIABLE,
+                DEVICE_ERROR_VARIABLE_DISABLED,
+                DEVICE_ERROR_UNKNOWN_TYPE,
+                DEVICE_ERROR_UNKNOWN_LENGTH
+            };
+
+            enum HostError {
+                ERROR_NO_ERRORS,
+                ERROR_UNKNOWN_VARIABLE,
+                ERROR_TOO_MANY_VARIABLES
+            };
+
+            template <typename T, unsigned int N>
+            __device__ __forceinline__ static T getVariable(const char(&variableName)[N], VariableHash namespace_hash, unsigned int index);
+
+            template <typename T, unsigned int N, unsigned int M>
+            __device__ __forceinline__ static T getArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, unsigned int variable_index, unsigned int array_index);
+    
+
+            template <typename T, unsigned int N>
+            __device__ __forceinline__ static void setVariable(const char(&variableName)[N], VariableHash namespace_hash, T variable, unsigned int index);
+
+            template <typename T, unsigned int N, unsigned int M>
+            __device__ __forceinline__ static void setArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, T variable, unsigned int variable_index, unsigned int array_index);
+
+        };
+
+        template <typename T, unsigned int N>
+        __device__ __forceinline__ T Curve::getVariable(const char (&variableName)[N], VariableHash namespace_hash, unsigned int index) {
+
+            return 0;
+        }
+
+        template <typename T, unsigned int N, unsigned int M>
+        __device__ __forceinline__ T Curve::getArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, unsigned int agent_index, unsigned int array_index) {
+
+            return 0;
+        }
+
+        template <typename T, unsigned int N>
+        __device__ __forceinline__ void Curve::setVariable(const char(&variableName)[N], VariableHash namespace_hash, T variable, unsigned int index) {
+    
+        }
+
+        template <typename T, unsigned int N, unsigned int M>
+        __device__ __forceinline__ void Curve::setArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, T variable, unsigned int agent_index, unsigned int array_index) {
+    
+        }
+
+        #endif  // INCLUDE_FLAMEGPU_RUNTIME_CURVE_CURVE_RTC_H_
+    )###";
+    headers.push_back(cure_rtc_h);
+
+
     // jitify to create program (with compilation settings)
     try {
         static jitify::JitCache kernel_cache;
-        auto program = kernel_cache.program(func.rtc_source, 0, options);
+        auto program = kernel_cache.program(func.rtc_source, headers, options);
         // create jifity instance
         auto kernel = program.kernel("agent_function_wrapper");
         // create string for agent function implementation

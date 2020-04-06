@@ -197,8 +197,9 @@ bool CUDAAgentModel::step() {
             const unsigned int STATE_SIZE = cuda_agent.getStateSize(func_des->initial_state);
             flamegpu_internal::CUDAScanCompaction::resize(STATE_SIZE, flamegpu_internal::CUDAScanCompaction::AGENT_DEATH, j);
 
-            // For runtime functions set the device symbol address for device scan 
+            // Map address of runtime ds_configs to runtime function (as device sysmbols are not shared with runtime context)
             if (!func_des->rtc_func_name.empty()) {
+                // For runtime functions set the device symbol address for device scan 
                 // get rtc instantiation
                 const jitify::KernelInstantiation& instance = cuda_agent.getRTCInstantiation(func_des->rtc_func_name);
                 // get symbol for runtime device scan configs
@@ -250,7 +251,12 @@ bool CUDAAgentModel::step() {
             /**
              * Configure runtime access of the functions variables within the FLAME_API object
              */
-            cuda_agent.mapRuntimeVariables(*func_des, func_des->initial_state);
+            if (!func_des->rtc_func_name.empty()) {
+                // TODO: nothing todo this should be handles by dynamic header included in jitify
+            }
+            else {
+                cuda_agent.mapRuntimeVariables(*func_des, func_des->initial_state);
+            }
 
             // Zero the scan flag that will be written to
             if (func_des->has_agent_death)

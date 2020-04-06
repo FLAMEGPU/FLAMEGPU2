@@ -13,7 +13,11 @@
 #include <cassert>
 
 //#include "flamegpu/gpu/CUDAErrorChecking.h"            // required for CUDA error handling functions
+#ifndef __CUDACC_RTC__
 #include "flamegpu/runtime/cuRVE/curve.h"
+#else
+#include "curve_rtc.h"
+#endif // !_RTC
 //#include "flamegpu/exception/FGPUException.h"
 #include "flamegpu/runtime/utility/AgentRandom.cuh"
 #include "flamegpu/runtime/utility/DeviceEnvironment.cuh"
