@@ -252,7 +252,19 @@ bool CUDAAgentModel::step() {
              * Configure runtime access of the functions variables within the FLAME_API object
              */
             if (!func_des->rtc_func_name.empty()) {
-                // TODO: nothing todo this should be handles by dynamic header included in jitify
+                // get cuda agent state map
+                CUDAAgentStateList& state_list = cuda_agent.getAgentStateList(func_des->initial_state);
+                // set curve rtc device ptrs for each agent variable
+                for (const auto& mmp : func_agent->variables) {
+                    // get the rtc varibale ptr
+                    const jitify::KernelInstantiation& instance = cuda_agent.getRTCInstantiation(func_des->rtc_func_name);
+                    std::string d_var_ptr_name = "curve_rtc_ptr_" + mmp.first;
+                    CUdeviceptr d_var_ptr = instance.get_global_ptr(d_var_ptr_name.c_str());
+                    //get runtime ptr
+                    void* runtime_ptr = state_list.getAgentListVariablePointer(mmp.first);
+                    // copy runtime ptr to rtc ptr
+                    gpuErrchkDriverAPI(cuMemcpyHtoD(d_var_ptr, &runtime_ptr, sizeof(void*)));
+                }
             }
             else {
                 cuda_agent.mapRuntimeVariables(*func_des, func_des->initial_state);
@@ -733,7 +745,7 @@ void CUDAAgentModel::processHostAgentCreation() {
                     agent_map.at(agent.first)->resize(static_cast<unsigned int>(state.second.size()) + current_state_size, 0);  // StreamId Doesn't matter
                 }
                 // Scatter to device
-                agent_map.at(agent.first)->getAgentStateList(state.first)->scatterHostCreation(static_cast<unsigned int>(state.second.size()), dt_buff, offsets);
+                agent_map.at(agent.first)->getAgentStateList(state.first).scatterHostCreation(static_cast<unsigned int>(state.second.size()), dt_buff, offsets);
                 // Clear buffer
                 state.second.clear();
             }

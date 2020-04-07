@@ -19,6 +19,7 @@
 #include "flamegpu/model/AgentFunctionDescription.h"
 #include "flamegpu/pop/AgentPopulation.h"
 #include "flamegpu/runtime/cuRVE/curve.h"
+#include "flamegpu/runtime/cuRVE/curve_rtc.h"
 #include "flamegpu/gpu/CUDAScatter.h"
 
 #ifdef _MSC_VER
@@ -291,7 +292,7 @@ void CUDAAgent::processDeath(const AgentFunctionData& func, const unsigned int &
         sm->second->scatter(streamId, CUDAAgentStateList::ScatterMode::Death);
     }
 }
-const std::unique_ptr<CUDAAgentStateList> &CUDAAgent::getAgentStateList(const std::string &state_name) const {
+CUDAAgentStateList& CUDAAgent::getAgentStateList(const std::string &state_name) const {
     // check the cuda agent state map to find the correct state list for functions starting state
     CUDAStateMap::const_iterator sm = state_map.find(state_name);
 
@@ -300,15 +301,15 @@ const std::unique_ptr<CUDAAgentStateList> &CUDAAgent::getAgentStateList(const st
             "in CUDAAgent::getAgentStateList()",
             agent_description.name.c_str(), state_name.c_str());
     }
-    return sm->second;
+    return *sm->second;
 }
 
 void* CUDAAgent::getStateVariablePtr(const std::string& state_name, const std::string& variable_name) {
-    return getAgentStateList(state_name)->getAgentListVariablePointer(variable_name);
+    return getAgentStateList(state_name).getAgentListVariablePointer(variable_name);
 }
 
 ModelData::size_type CUDAAgent::getStateSize(const std::string& state_name) const {
-    return getAgentStateList(state_name)->getCUDAStateListSize();
+    return getAgentStateList(state_name).getCUDAStateListSize();
 }
 
 void CUDAAgent::processFunctionCondition(const AgentFunctionData& func, const unsigned int &streamId) {
@@ -541,77 +542,15 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func) {
     std::cout << "rdc option is " << rdc << '\n';                       // TODO: Remove DEBUG
 
     // curve rtc header
-    std::string cure_rtc_h;
-    cure_rtc_h = R"###(curve_rtc.h
-        #ifndef INCLUDE_FLAMEGPU_RUNTIME_CURVE_CURVE_RTC_H_
-        #define INCLUDE_FLAMEGPU_RUNTIME_CURVE_CURVE_RTC_H_
+    CurveRTCHost curve_header;
+    // set agent function variables in rtc curve
 
-        /**
-         * Dynamically generated version of Curve specific to agent function
-         */
+    for (const auto& mmp : func.parent.lock()->variables) {
 
-        class Curve {
-         public:
-            static const int UNKNOWN_VARIABLE = -1;
-
-            typedef int                      Variable;
-            typedef unsigned int             VariableHash;
-            typedef unsigned int             NamespaceHash;
-
-            enum DeviceError {
-                DEVICE_ERROR_NO_ERRORS,
-                DEVICE_ERROR_UNKNOWN_VARIABLE,
-                DEVICE_ERROR_VARIABLE_DISABLED,
-                DEVICE_ERROR_UNKNOWN_TYPE,
-                DEVICE_ERROR_UNKNOWN_LENGTH
-            };
-
-            enum HostError {
-                ERROR_NO_ERRORS,
-                ERROR_UNKNOWN_VARIABLE,
-                ERROR_TOO_MANY_VARIABLES
-            };
-
-            template <typename T, unsigned int N>
-            __device__ __forceinline__ static T getVariable(const char(&variableName)[N], VariableHash namespace_hash, unsigned int index);
-
-            template <typename T, unsigned int N, unsigned int M>
-            __device__ __forceinline__ static T getArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, unsigned int variable_index, unsigned int array_index);
+        curve_header.registerVariable(mmp.first.c_str(), mmp.second.type.name());
+    }
     
-
-            template <typename T, unsigned int N>
-            __device__ __forceinline__ static void setVariable(const char(&variableName)[N], VariableHash namespace_hash, T variable, unsigned int index);
-
-            template <typename T, unsigned int N, unsigned int M>
-            __device__ __forceinline__ static void setArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, T variable, unsigned int variable_index, unsigned int array_index);
-
-        };
-
-        template <typename T, unsigned int N>
-        __device__ __forceinline__ T Curve::getVariable(const char (&variableName)[N], VariableHash namespace_hash, unsigned int index) {
-
-            return 0;
-        }
-
-        template <typename T, unsigned int N, unsigned int M>
-        __device__ __forceinline__ T Curve::getArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, unsigned int agent_index, unsigned int array_index) {
-
-            return 0;
-        }
-
-        template <typename T, unsigned int N>
-        __device__ __forceinline__ void Curve::setVariable(const char(&variableName)[N], VariableHash namespace_hash, T variable, unsigned int index) {
-    
-        }
-
-        template <typename T, unsigned int N, unsigned int M>
-        __device__ __forceinline__ void Curve::setArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, T variable, unsigned int agent_index, unsigned int array_index) {
-    
-        }
-
-        #endif  // INCLUDE_FLAMEGPU_RUNTIME_CURVE_CURVE_RTC_H_
-    )###";
-    headers.push_back(cure_rtc_h);
+    headers.push_back(curve_header.getDynamicHeader());
 
 
     // jitify to create program (with compilation settings)

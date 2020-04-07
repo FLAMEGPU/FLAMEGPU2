@@ -80,7 +80,7 @@ class CUDAAgent : public AgentInterface {
 
     void unmapRuntimeVariables(const AgentFunctionData& func) const;
 
-    const std::unique_ptr<CUDAAgentStateList> &getAgentStateList(const std::string &state_name) const;
+    CUDAAgentStateList& getAgentStateList(const std::string &state_name) const;
 
     void *getStateVariablePtr(const std::string &state_name, const std::string &variable_name) override;
     ModelData::size_type getStateSize(const std::string &state_name) const override;

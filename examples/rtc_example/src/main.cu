@@ -27,8 +27,8 @@ const char* rtc_test_func_str = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_test_func, MsgNone, MsgNone) {
     printf("Hello from rtc_test_func\n");
 
-    //float x = FLAMEGPU->getVariable<float>("x");
-    // printf("x = %f\n", x);
+    float x = FLAMEGPU->getVariable<float>("x");
+    printf("x = %f\n", x);
     //FLAMEGPU->setVariable<float>("x", x + 2);
     //x = FLAMEGPU->getVariable<float>("x");
     // printf("x after set = %f\n", x);
@@ -125,8 +125,8 @@ int main(int argc, const char* argv[]) {
     // TODO: Set maximum population size if known in advance
     for (int i=0; i < 10; i++) {
         AgentInstance instance = population.getNextInstance("default");
-        instance.setVariable<float>("x", i*0.1f);
-        instance.setVariable<float>("y", i*0.1f);
+        instance.setVariable<float>("x", i*0.1f +2.0);
+        instance.setVariable<float>("y", i*0.1f + 2.0);
         instance.setVariable<float>("dx", 0);
         instance.setVariable<float>("dy", 0);
 
@@ -174,7 +174,7 @@ int main(int argc, const char* argv[]) {
 
     // cuda_model.simulate(simulation);
 
-    cuda_model.step();
+    //cuda_model.step();
 
     cuda_model.getPopulationData(population);
 

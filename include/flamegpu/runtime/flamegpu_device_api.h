@@ -16,7 +16,7 @@
 #ifndef __CUDACC_RTC__
 #include "flamegpu/runtime/cuRVE/curve.h"
 #else
-#include "curve_rtc.h"
+#include "curve_rtc_dynamic.h"
 #endif // !_RTC
 //#include "flamegpu/exception/FGPUException.h"
 #include "flamegpu/runtime/utility/AgentRandom.cuh"
