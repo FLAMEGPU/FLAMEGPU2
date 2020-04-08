@@ -121,7 +121,6 @@ The visualisation codebase can be found at [this location](https://github.com/FL
 
 ##### Testing
 
-
 The test suite can be built from the root directory using `-DBUILD_TESTS=ON`:
 
 ```
