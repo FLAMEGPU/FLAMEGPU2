@@ -1,6 +1,5 @@
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_SPATIAL2D_H_
 #define INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_SPATIAL2D_H_
-#include <iterator>
 #ifndef __CUDACC_RTC__
 #include <memory>
 #include <string>
@@ -164,7 +163,7 @@ class MsgSpatial2D {
             /**
              * Stock iterator for iterating MsgSpatial3D::In::Filter::Message objects
              */
-            class iterator : public std::iterator <std::random_access_iterator_tag, void, void, void, void> {
+            class iterator {  // class iterator : public std::iterator <std::random_access_iterator_tag, void, void, void, void> {
                 /**
                  * The message returned to the user
                  */
