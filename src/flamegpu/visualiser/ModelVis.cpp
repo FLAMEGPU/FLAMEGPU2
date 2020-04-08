@@ -82,7 +82,7 @@ void ModelVis::updateBuffers() {
         for (auto &a : agents) {
             a.second.requestBufferResizes(visualiser);
         }
-        // wait for lock visualiser (its probably executing render loop in separate thread)
+        // wait for lock visualiser (its probably executing render loop in separate thread) This might not be 100% safe. RequestResize might need extra thread safety.
         visualiser->lockMutex();
         for (auto &a : agents) {
             a.second.updateBuffers(visualiser);
