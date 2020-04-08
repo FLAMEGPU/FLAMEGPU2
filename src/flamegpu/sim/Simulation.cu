@@ -84,16 +84,28 @@ int Simulation::checkArgs(int argc, const char** argv) {
         std::transform(arg.begin(), arg.end(), arg.begin(), [](unsigned char c) { return std::use_facet< std::ctype<char>>(std::locale()).tolower(c); });
         // -in <string>, Specifies the input state file
         if (arg.compare("--in") == 0 || arg.compare("-i") == 0) {
+            if (i + 1 >= argc) {
+                fprintf(stderr, "%s requires a trailing argument\n", arg.c_str());
+                return false;
+            }
             config.xml_input_file = std::string(argv[++i]);
             continue;
         }
         // -steps <uint>, The number of steps to be executed
         if (arg.compare("--steps") == 0 || arg.compare("-s") == 0) {
+            if (i + 1 >= argc) {
+                fprintf(stderr, "%s requires a trailing argument\n", arg.c_str());
+                return false;
+            }
             config.steps = static_cast<int>(strtoul(argv[++i], nullptr, 0));
             continue;
         }
         // -random <uint>, Uses the specified random seed, defaults to clock
         if (arg.compare("--random") == 0 || arg.compare("-r") == 0) {
+            if (i + 1 >= argc) {
+                fprintf(stderr, "%s requires a trailing argument\n", arg.c_str());
+                return false;
+            }
             // Reinitialise RandomManager state
             config.random_seed = static_cast<unsigned int>(strtoul(argv[++i], nullptr, 0));
             continue;
