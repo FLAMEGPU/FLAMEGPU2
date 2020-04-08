@@ -12,7 +12,7 @@
  * \todo Requires vector length table for each variable (or namespace) which is registered. For now no safe checking of vector length is done.
  */
 
-//#include <cuda_runtime.h>
+// #include <cuda_runtime.h>
 
 #include <cstring>
 #include <cstdio>

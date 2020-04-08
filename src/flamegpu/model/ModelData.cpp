@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "flamegpu/model/ModelData.h"
 #include "flamegpu/model/EnvironmentDescription.h"
 #include "flamegpu/model/AgentDescription.h"
@@ -5,8 +7,6 @@
 #include "flamegpu/model/LayerDescription.h"
 #include "flamegpu/runtime/messaging/BruteForce.h"
 
-
-#include <iostream>
 
 const char *ModelData::DEFAULT_STATE = "default";
 

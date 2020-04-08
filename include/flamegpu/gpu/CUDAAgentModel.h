@@ -194,7 +194,7 @@ class CUDAAgentModel : public Simulation {
      * Runs a specific agent function
      * @param func_des the agent function to execute
      */
- 
+
  public:
     typedef std::vector<NewAgentStorage> AgentDataBuffer;
     typedef std::unordered_map<std::string, AgentDataBuffer> AgentDataBufferStateMap;

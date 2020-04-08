@@ -8,8 +8,8 @@
 
 #include "flamegpu/runtime/messaging/None.h"
 #include "flamegpu/runtime/messaging/BruteForce.h"
-//#include "flamegpu/runtime/messaging/Spatial2D.h"
-//#include "flamegpu/runtime/messaging/Spatial3D.h"
+// #include "flamegpu/runtime/messaging/Spatial2D.h"
+// #include "flamegpu/runtime/messaging/Spatial3D.h"
 
 /**
  * ######################################################

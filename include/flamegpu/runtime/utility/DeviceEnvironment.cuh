@@ -1,12 +1,12 @@
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_UTILITY_DEVICEENVIRONMENT_CUH_
 #define INCLUDE_FLAMEGPU_RUNTIME_UTILITY_DEVICEENVIRONMENT_CUH_
 
-//#include <cuda_runtime.h>
+// #include <cuda_runtime.h>
 
 #include <string>
 #include <cassert>
 
-//#include "flamegpu/runtime/utility/HostEnvironment.cuh"
+// #include "flamegpu/runtime/utility/HostEnvironment.cuh"
 
 namespace flamegpu_internal {
     /**

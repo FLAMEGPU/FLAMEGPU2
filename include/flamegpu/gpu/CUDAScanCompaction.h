@@ -1,9 +1,9 @@
 #ifndef INCLUDE_FLAMEGPU_GPU_CUDASCANCOMPACTION_H_
 #define INCLUDE_FLAMEGPU_GPU_CUDASCANCOMPACTION_H_
 
-//#include <cuda_runtime.h>
-//#include "CUDAErrorChecking.h"
-//#include <cassert>
+// #include <cuda_runtime.h>
+// #include "CUDAErrorChecking.h"
+// #include <cassert>
 
 /**
  * PLEASE NOTE: This implementation currently assumes there is only one instance of CUDAAgentModel executing at once

@@ -97,16 +97,16 @@ int main(int argc, const char* argv[]) {
     // circle agent output_data function
     // Do not specify the state. As their are no states in the system it is assumed that this model is stateless.
     AgentFunctionDescription &output_data = circle_agent.newFunction("output_data", output_func);
-    //output_data.setMessageOutput(location_message);
+    // output_data.setMessageOutput(location_message);
     // output_data.setInitialState("state1");
 
     // circle agent input_data function
-    //AgentFunctionDescription &input_data = circle_agent.newFunction("input_data", input_func);
-    //input_data.setMessageInput(location_message);
+    // AgentFunctionDescription &input_data = circle_agent.newFunction("input_data", input_func);
+    // input_data.setMessageInput(location_message);
 
 
     // circle agent move function
-    //AgentFunctionDescription &move = circle_agent.newFunction("move", move_func);
+    // AgentFunctionDescription &move = circle_agent.newFunction("move", move_func);
 
 
     AgentFunctionDescription& rtcfunc = circle_agent.newRTCFunction("rtc_test_func", rtc_test_func_str);
@@ -125,8 +125,8 @@ int main(int argc, const char* argv[]) {
     // TODO: Set maximum population size if known in advance
     for (int i=0; i < 10; i++) {
         AgentInstance instance = population.getNextInstance("default");
-        instance.setVariable<float>("x", i*0.1f +2.0);
-        instance.setVariable<float>("y", i*0.1f + 2.0);
+        instance.setVariable<float>("x", i*0.1f);
+        instance.setVariable<float>("y", i*0.1f);
         instance.setVariable<float>("dx", 0);
         instance.setVariable<float>("dy", 0);
 
@@ -142,17 +142,17 @@ int main(int argc, const char* argv[]) {
     /* This is essentially the function layers from a model.xml */
     /* Currently this is specified by the user. In the future this could be generated automatically through dependency analysis like with FLAME HPC */
 
-    LayerDescription& rtc_layer = flame_model.newLayer("rtc_layer"); 
+    LayerDescription& rtc_layer = flame_model.newLayer("rtc_layer");
     rtc_layer.addAgentFunction(rtcfunc);
 
-    //LayerDescription &output_layer = flame_model.newLayer("output_layer");  // in the original schema layers are not named
-    //output_layer.addAgentFunction(output_data);
+    // LayerDescription &output_layer = flame_model.newLayer("output_layer");  // in the original schema layers are not named
+    // output_layer.addAgentFunction(output_data);
 
-    //LayerDescription &input_layer = flame_model.newLayer("input_layer");
-    //input_layer.addAgentFunction(input_data);
+    // LayerDescription &input_layer = flame_model.newLayer("input_layer");
+    // input_layer.addAgentFunction(input_data);
 
-    //LayerDescription &move_layer = flame_model.newLayer("input_layer");
-    //move_layer.addAgentFunction(move);
+    // LayerDescription &move_layer = flame_model.newLayer("input_layer");
+    // move_layer.addAgentFunction(move);
 
     // TODO: simulation.getLayerPosition("layer name") - returns an int
     // Simulation.addFunctionToLayer(0,"lmove")
@@ -174,7 +174,7 @@ int main(int argc, const char* argv[]) {
 
     // cuda_model.simulate(simulation);
 
-    //cuda_model.step();
+    // cuda_model.step();
 
     cuda_model.getPopulationData(population);
 
@@ -200,6 +200,6 @@ int main(int argc, const char* argv[]) {
 
 
 
-    //  system("pause");
+    // system("pause");
     return 0;
 }

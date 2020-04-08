@@ -3,7 +3,7 @@
 
 #ifndef __CUDACC_RTC__
 #include "flamegpu/runtime/cuRVE/curve.h"
-#endif // __CUDACC_RTC__
+#endif  // __CUDACC_RTC__
 
 /**
  * Forward declaration, used for CUDASpecialisationHandler

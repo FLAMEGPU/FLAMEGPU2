@@ -69,7 +69,7 @@ __forceinline__ __device__ AgentRandom::AgentRandom(const unsigned int _TS_ID) :
     // Check once per agent per kernel
     // as opposed to every time rng is called
     // assert(TS_ID < flamegpu_internal::d_random_size);
-    // TODO: device safe assert 
+    // TODO: device safe assert
 }
 /**
  * All templates are specialised

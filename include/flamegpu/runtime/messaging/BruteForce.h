@@ -158,7 +158,7 @@ class MsgBruteForce {
     /**
     * Stock iterator for iterating MsgBruteForce::In::Message objects
     */
-    class iterator{// : public std::iterator <std::random_access_iterator_tag, void, void, void, void> {
+    class iterator{  // : public std::iterator <std::random_access_iterator_tag, void, void, void, void> {
         /**
          * The message returned to the user
          */

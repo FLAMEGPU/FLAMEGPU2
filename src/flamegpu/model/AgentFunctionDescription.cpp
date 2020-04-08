@@ -403,10 +403,9 @@ bool AgentFunctionDescription::isRTC() const {
 }
 
 AgentFunctionDescription& AgentDescription::newRTCFunction(const std::string& function_name, const char* func_src) {
-    if (agent->functions.find(function_name) == agent->functions.end()) {   
-        //append jitify program string and include
+    if (agent->functions.find(function_name) == agent->functions.end()) {
+        // append jitify program string and include
         std::string func_src_str = std::string(function_name + "_program\n").append("#include \"flamegpu/runtime/flamegpu_device_api.h\"\n").append(func_src);
-        //std::string func_src_str = std::string(function_name + "_program\n").append("#include \"flamegpu/runtime/AgentFunction.h\"\n").append(func_src);
         // Use Regex to get agent function name, and input/output message type
         std::regex rgx(R"###(.*FLAMEGPU_AGENT_FUNCTION\([ \t]*(\w+),[ \t]*(\w+),[ \t]*(\w+)[ \t]*\))###");
         std::smatch match;
@@ -419,14 +418,12 @@ AgentFunctionDescription& AgentDescription::newRTCFunction(const std::string& fu
                 auto rtn = std::shared_ptr<AgentFunctionData>(new AgentFunctionData(this->agent->shared_from_this(), function_name, func_src_str, in_type_name, out_type_name, code_func_name));
                 agent->functions.emplace(function_name, rtn);
                 return *rtn->description;
-            }
-            else {
+            } else {
                 THROW InvalidAgentFunc("Runtime agent function('%s') is missing FLAMEGPU_AGENT_FUNCTION arguments e.g. (func_name, message_input_type, message_output_type), "
                     "in AgentDescription::newRTCFunction().",
                     agent->name.c_str());
             }
-        }
-        else {
+        } else {
             THROW InvalidAgentFunc("Runtime agent function('%s') is missing FLAMEGPU_AGENT_FUNCTION, "
                 "in AgentDescription::newRTCFunction().",
                 agent->name.c_str());

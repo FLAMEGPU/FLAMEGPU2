@@ -1,6 +1,8 @@
+#include <cassert>
+
 #include "flamegpu/gpu/CUDAScanCompaction.h"
 #include "flamegpu/gpu/CUDAErrorChecking.h"
-#include <cassert>
+
 
 namespace flamegpu_internal {
 namespace CUDAScanCompaction {

@@ -3,7 +3,7 @@
 #include "flamegpu/runtime/cuRVE/curve_rtc.h"
 
 
-const std::string CurveRTCHost::curve_rtc_dynamic_h_template = R"###(curve_rtc_dynamic.h
+const char* CurveRTCHost::curve_rtc_dynamic_h_template = R"###(curve_rtc_dynamic.h
 #ifndef CURVE_RTC_DYNAMIC_H_
 #define CURVE_RTC_DYNAMIC_H_
 
@@ -98,8 +98,7 @@ __device__ __forceinline__ void Curve::setArrayVariable(const char(&name)[M], Va
 )###";
 
 
-CurveRTCHost::CurveRTCHost() : header(CurveRTCHost::curve_rtc_dynamic_h_template){
-
+CurveRTCHost::CurveRTCHost() : header(CurveRTCHost::curve_rtc_dynamic_h_template) {
 }
 
 
@@ -113,19 +112,16 @@ void CurveRTCHost::unregisterVariable(const char* variableName) {
 }
 
 std::string CurveRTCHost::getDynamicHeader() {
-
     // generate dynamic variables ($DYNAMIC_AGENT_VARIBALES)
     std::stringstream variables;
-    for (std::pair<std::string, std::string> element : RTCVariables)
-    {
+    for (std::pair<std::string, std::string> element : RTCVariables) {
         variables << "__device__ " << element.second << "* " << "curve_rtc_ptr_" << element.first << ";\n";
     }
     setHeaderPlaceholder("$DYNAMIC_AGENT_VARIBALES", variables.str());
 
     // generate getVariable func implementation ($DYNAMIC_GETVARIABLE_IMPL)
     std::stringstream getVariableImpl;
-    for (std::pair<std::string, std::string> element : RTCVariables)
-    {
+    for (std::pair<std::string, std::string> element : RTCVariables) {
         getVariableImpl << "    if (strings_equal(name, \"" << element.first << "\"))\n";
         getVariableImpl << "        return (T) " << "curve_rtc_ptr_" << element.first << "[index];\n";
     }
