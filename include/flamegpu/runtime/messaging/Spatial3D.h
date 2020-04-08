@@ -1,15 +1,18 @@
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_SPATIAL3D_H_
 #define INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_SPATIAL3D_H_
 
+#ifndef __CUDACC_RTC__
 #include <memory>
 #include <string>
 
 #include "flamegpu/gpu/CUDAMessage.h"
+#include "flamegpu/runtime/cuRVE/curve.h"
+#include "flamegpu/util/nvtx.h"
+#endif  // __CUDACC_RTC__
+
 #include "flamegpu/runtime/messaging/None.h"
 #include "flamegpu/runtime/messaging/BruteForce.h"
 #include "flamegpu/runtime/messaging/Spatial2D.h"
-#include "flamegpu/runtime/cuRVE/curve.h"
-#include "flamegpu/util/nvtx.h"
 
 /**
  * 3D Continuous spatial messaging functionality

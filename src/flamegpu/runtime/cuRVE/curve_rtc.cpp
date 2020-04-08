@@ -3,7 +3,7 @@
 #include "flamegpu/runtime/cuRVE/curve_rtc.h"
 
 
-const char* CurveRTCHost::curve_rtc_dynamic_h_template = R"###(curve_rtc_dynamic.h
+const char* CurveRTCHost::curve_rtc_dynamic_h_template = R"###(dynamic/curve_rtc_dynamic.h
 #ifndef CURVE_RTC_DYNAMIC_H_
 #define CURVE_RTC_DYNAMIC_H_
 
