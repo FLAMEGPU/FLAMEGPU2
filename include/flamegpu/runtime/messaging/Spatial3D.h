@@ -175,7 +175,7 @@ class MsgSpatial3D {
             /**
              * Stock iterator for iterating MsgSpatial3D::In::Filter::Message objects
              */
-            class iterator : public std::iterator <std::random_access_iterator_tag, void, void, void, void> {
+            class iterator {  // class iterator : public std::iterator <std::random_access_iterator_tag, void, void, void, void> {
                 /**
                  * The message returned to the user
                  */
@@ -324,7 +324,7 @@ class MsgSpatial3D {
          */
         __device__ void setLocation(const float &x, const float &y, const float &z) const;
     };
-
+#ifndef __CUDACC_RTC__
     /**
      * CUDA host side handler of spatial messages
      * Allocates memory for and constructs PBM
@@ -524,9 +524,10 @@ class MsgSpatial3D {
         float getMaxY() const;
         float getMaxZ() const;
     };
+#endif  // __CUDACC_RTC__
 };
 
-#ifdef __CUDACC__
+
 template<typename T, unsigned int N>
 __device__ T MsgSpatial3D::In::Filter::Message::getVariable(const char(&variable_name)[N]) const {
     //// Ensure that the message is within bounds.
@@ -539,6 +540,6 @@ __device__ T MsgSpatial3D::In::Filter::Message::getVariable(const char(&variable
         return static_cast<T>(0);
     }
 }
-#endif  // __CUDACC__
+
 
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_SPATIAL3D_H_

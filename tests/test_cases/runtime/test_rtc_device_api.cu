@@ -23,7 +23,7 @@ TEST(DeviceRTCAPITest, AgentFunction_empty) {
     AgentPopulation init_population(agent, AGENT_COUNT);
     for (int i = 0; i< static_cast<int>(AGENT_COUNT); i++) {
         AgentInstance instance = init_population.getNextInstance("default");
-        instance.setVariable<float>("x", (float)i);
+        instance.setVariable<float>("x", i);
     }
     // Setup Model
     CUDAAgentModel cuda_model(model);
@@ -32,4 +32,4 @@ TEST(DeviceRTCAPITest, AgentFunction_empty) {
     cuda_model.step();
 }
 
-}  // namespace test_device_api
+}  // namespace test_rtc_device_api
