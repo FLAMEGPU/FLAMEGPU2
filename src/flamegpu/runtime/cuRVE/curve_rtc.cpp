@@ -1,6 +1,7 @@
 #include <sstream>
 
 #include "flamegpu/runtime/cuRVE/curve_rtc.h"
+#include "flamegpu/exception/FGPUException.h"
 
 
 const char* CurveRTCHost::curve_rtc_dynamic_h_template = R"###(dynamic/curve_rtc_dynamic.h
@@ -80,18 +81,17 @@ $DYNAMIC_GETVARIABLE_IMPL
 
 template <typename T, unsigned int N, unsigned int M>
 __device__ __forceinline__ T Curve::getArrayVariable(const char(&name)[M], VariableHash namespace_hash, unsigned int index, unsigned int array_index) {
-
-    return 0;
+$DYNAMIC_GETARRAYVARIABLE_IMPL
 }
 
 template <typename T, unsigned int N>
 __device__ __forceinline__ void Curve::setVariable(const char(&name)[N], VariableHash namespace_hash, T variable, unsigned int index) {
-    
+$DYNAMIC_SETVARIABLE_IMPL
 }
 
 template <typename T, unsigned int N, unsigned int M>
-__device__ __forceinline__ void Curve::setArrayVariable(const char(&name)[M], VariableHash namespace_hash, T variable, unsigned int agent_index, unsigned int array_index) {
-    
+__device__ __forceinline__ void Curve::setArrayVariable(const char(&name)[M], VariableHash namespace_hash, T variable, unsigned int index, unsigned int array_index) {
+$DYNAMIC_SETARRAYVARIABLE_IMPL    
 }
 
 #endif  // CURVE_RTC_DYNAMIC_H_
@@ -129,11 +129,43 @@ std::string CurveRTCHost::getDynamicHeader() {
     getVariableImpl << "        return 0;\n";
     setHeaderPlaceholder("$DYNAMIC_GETVARIABLE_IMPL", getVariableImpl.str());
 
+    // generate setVariable func implementation ($DYNAMIC_SETTVARIABLE_IMPL)
+    std::stringstream setVariableImpl;
+    for (std::pair<std::string, std::string> element : RTCVariables) {
+        setVariableImpl << "    if (strings_equal(name, \"" << element.first << "\"))\n";
+        setVariableImpl << "        curve_rtc_ptr_" << element.first << "[index] = (T) variable;\n";
+    }
+    setHeaderPlaceholder("$DYNAMIC_SETVARIABLE_IMPL", setVariableImpl.str());
+
+    // generate getArrayVariable func implementation ($DYNAMIC_GETARRAYVARIABLE_IMPL)
+    std::stringstream getArrayVariableImpl;
+    getArrayVariableImpl << "    const size_t i = (index * N) + array_index;\n";
+    for (std::pair<std::string, std::string> element : RTCVariables) {
+        getArrayVariableImpl << "    if (strings_equal(name, \"" << element.first << "\"))\n";
+        getArrayVariableImpl << "        return (T) " << "curve_rtc_ptr_" << element.first << "[i];\n";
+    }
+    getArrayVariableImpl << "    else\n";
+    getArrayVariableImpl << "        return 0;\n";
+    setHeaderPlaceholder("$DYNAMIC_GETARRAYVARIABLE_IMPL", getArrayVariableImpl.str());
+
+    // generate setArrayVariable func implementation ($DYNAMIC_SETARRAYVARIABLE_IMPL)
+    std::stringstream setArrayVariableImpl;
+    setArrayVariableImpl << "    const size_t i = (index * N) + array_index;\n";
+    for (std::pair<std::string, std::string> element : RTCVariables) {
+        setArrayVariableImpl << "    if (strings_equal(name, \"" << element.first << "\"))\n";
+        setArrayVariableImpl << "        curve_rtc_ptr_" << element.first << "[i] = (T) variable;\n";
+    }
+    setHeaderPlaceholder("$DYNAMIC_SETARRAYVARIABLE_IMPL", setArrayVariableImpl.str());
+
     return header;
 }
 
 void CurveRTCHost::setHeaderPlaceholder(std::string placeholder, std::string dst) {
     // replace placeholder with dynamically generated variables string
     size_t pos = header.find(placeholder);
-    header.replace(pos, placeholder.length(), dst);
+    if (pos != std::string::npos) {
+        header.replace(pos, placeholder.length(), dst);
+    } else {
+        THROW UnknownInternalError("String (%s) not found when creating dynamic version of curve for RTC: in CurveRTCHost::setHeaderPlaceholder", placeholder.c_str());
+    }
 }

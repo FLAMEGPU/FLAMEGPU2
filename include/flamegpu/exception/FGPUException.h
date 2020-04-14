@@ -339,5 +339,9 @@ DERIVED_FGPUException(DifferentModel, "Attempted to use member from a different 
  * Defines an exception for errors when the provided file type is not supported
  */
 DERIVED_FGPUException(UnsupportedFileType, "Cannot handle file type.");
+/**
+ * Defines an exception for internal errors which should only occur during development
+ */
+DERIVED_FGPUException(UnknownInternalError, "An unknown error occured within FLAME GPU lib.");
 
 #endif  // INCLUDE_FLAMEGPU_EXCEPTION_FGPUEXCEPTION_H_
