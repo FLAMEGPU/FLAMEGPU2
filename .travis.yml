@@ -30,12 +30,14 @@ install:
  - chmod +x ./scripts/travis_install.sh
  - sudo -E ./scripts/travis_install.sh
  
-# Add nvcc to path
+# Add nvcc to path, prep to use manually installed cmake, decide on cuda architectures
 before_script: 
   - PATH=~/.local/bin:${PATH}
   - CUDA_HOME=/usr/local/cuda-${CUDA_SHORT}
   - LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${LD_LIBRARY_PATH}
   - PATH=${CUDA_HOME}/bin:${PATH}
+  - CMAKE_CMD=/usr/bin/cmake
+  - CUDA_ARCH="35;75"
 
 # Build steps
-script: "mkdir build && cd build && cmake .. -DBUILD_TESTS=ON -DWARNINGS_AS_ERRORS=ON && make -j`nproc` all_lint all docs "
+script: "mkdir build && cd build && ${CMAKE_CMD} .. -DBUILD_TESTS=ON -DWARNINGS_AS_ERRORS=ON -DSMS=${CUDA_ARCH} && make -j`nproc` all_lint all docs "
