@@ -77,13 +77,16 @@ void ModelVis::join() {
 bool ModelVis::isRunning() const {
     return visualiser ? visualiser->isRunning() : false;
 }
-void ModelVis::updateBuffers() {
+void ModelVis::updateBuffers(const unsigned int &sc) {
     if (visualiser) {
         for (auto &a : agents) {
             a.second.requestBufferResizes(visualiser);
         }
         // wait for lock visualiser (its probably executing render loop in separate thread) This might not be 100% safe. RequestResize might need extra thread safety.
         visualiser->lockMutex();
+        if (sc != UINT_MAX) {
+            visualiser->setStepCount(sc);
+        }
         for (auto &a : agents) {
             a.second.updateBuffers(visualiser);
         }
@@ -134,4 +137,8 @@ void ModelVis::setCameraSpeed(const float &speed, const float &shiftMultiplier) 
 void ModelVis::setViewClips(const float &nearClip, const float &farClip) {
     modelCfg.nearFarClip[0] = nearClip;
     modelCfg.nearFarClip[1] = farClip;
+}
+
+void ModelVis::setStepVisible(const bool& showStep) {
+    modelCfg.stepVisible = showStep;
 }

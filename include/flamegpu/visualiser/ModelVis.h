@@ -65,6 +65,7 @@ class ModelVis {
 	 * @param showFPS True if the FPS should be shown
 	 * @note The visualisation executes in an independent thread to the simulation,
 	 * so the FPS does not correspond to the speed of the simulation's execution
+	 * @see setFPSColor(const float &, const float &, const float &)
 	 */
     void setFPSVisible(const bool& showFPS);
 	/**
@@ -76,16 +77,45 @@ class ModelVis {
      * @param blue Blue color value 0.0f-1.0f
 	 */
     void setFPSColor(const float& red, const float& green, const float& blue);
-
+    /**
+     * The location at which the camera of the visualisation 'camera' begins
+     * This value defaults to (1.5, 1.5, 1.5)
+     * @param x The x coordinate
+     * @param y The y coordinate
+     * @param z The z coordinate
+     */
     void setInitialCameraLocation(const float &x, const float &y, const float &z);
+    /**
+     * The location at which the camera of the visualisation initially looks towards
+     * This is used with the camera location to derive the direction
+     * This value defaults to (0,0,0)
+     * @param x The x coordinate
+     * @param y The y coordinate
+     * @param z The z coordinate
+     */
     void setInitialCameraTarget(const float &x, const float &y, const float &z);
+    /**
+     * The speed of camera movement, in units travelled per millisecond
+     * This value defaults to (0.05, 5.0)
+     * @param speed The camera speed
+     * @param shiftMultiplier The multiplier applied to the speed when shift is pressed
+     */
     void setCameraSpeed(const float &speed, const float &shiftMultiplier = 5.0f);
+
     /**
      * Sets the near and far clipping planes of the view frustum
+     * This value defaults to (0.05 5000.0)
      * @note This is for advanced configuration of the visualisation and the default values likely suffice
      */
     void setViewClips(const float &nearClip, const float &farClip);
-
+    /**
+	 * Sets the Step count overlay as visible or not
+	 * This value defaults to true
+	 * @param showStep True if the count should be shown
+	 * @note This uses the FPSColor
+	 * @see setFPSColor(const float &, const float &, const float &)
+	 */
+    void setStepVisible(const bool& showStep);
     /**
      * Sets the visualisation running in a background thread
      */
@@ -107,8 +137,9 @@ class ModelVis {
     bool isRunning() const;
     /**
      * Updates all agent renders from corresponding
+     * @param sc Step count, the step count value shown in visualisation HUD
      */
-    void updateBuffers();
+    void updateBuffers(const unsigned int &sc = UINT_MAX);
 
  private:
     ModelConfig modelCfg;
