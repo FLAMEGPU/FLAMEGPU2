@@ -77,6 +77,14 @@ class ModelVis {
 	 */
     void setFPSColor(const float& red, const float& green, const float& blue);
 
+    void setInitialCameraLocation(const float &x, const float &y, const float &z);
+    void setInitialCameraTarget(const float &x, const float &y, const float &z);
+    void setCameraSpeed(const float &speed, const float &shiftMultiplier = 5.0f);
+    /**
+     * Sets the near and far clipping planes of the view frustum
+     * @note This is for advanced configuration of the visualisation and the default values likely suffice
+     */
+    void setViewClips(const float &nearClip, const float &farClip);
 
     /**
      * Sets the visualisation running in a background thread

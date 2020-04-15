@@ -74,18 +74,17 @@ FLAMEGPU_STEP_FUNCTION(Validation) {
     // printf("Avg Drift: %g\n", totalDrift / FLAMEGPU->agent("Circle").count());
     printf("%.2f%% Drift correct\n", 100 * driftDropped / static_cast<float>(driftDropped + driftIncreased));
 }
-void export_data(std::shared_ptr<AgentPopulation> pop, const char *filename);
 int main(int argc, const char ** argv) {
-    const unsigned int AGENT_COUNT = 16384;
     ModelDescription model("Circles_BruteForce_example");
 
+    const unsigned int AGENT_COUNT = 16384;
+    const float ENV_MAX = static_cast<float>(floor(cbrt(AGENT_COUNT)));
     {   // Location message
         MsgSpatial3D::Description &message = model.newMessage<MsgSpatial3D>("location");
         message.newVariable<int>("id");
-        const float max_bound = static_cast<float>(floor(cbrt(AGENT_COUNT)));
-        message.setRadius(1.0f);
+        message.setRadius(2.0f);
         message.setMin(0, 0, 0);
-        message.setMax(max_bound, max_bound, max_bound);
+        message.setMax(ENV_MAX, ENV_MAX, ENV_MAX);
     }
     {   // Circle agent
         AgentDescription &agent = model.newAgent("Circle");
@@ -133,10 +132,13 @@ int main(int argc, const char ** argv) {
 #ifdef VISUALISATION
     ModelVis &m_vis = cuda_model.getVisualisation();
     {
+        const float INIT_CAM = ENV_MAX * 1.25F;
+        m_vis.setInitialCameraLocation(INIT_CAM, INIT_CAM, INIT_CAM);
+        m_vis.setCameraSpeed(0.02f);
         auto &circ_agt = m_vis.addAgent("Circle");
         // Position vars are named x, y, z; so they are used by default
         circ_agt.setModel(Stock::Models::ICOSPHERE);
-        // circ_agt.setModelScale(1/20.0f);  // Not worth using till we can affect camera position/speed
+        circ_agt.setModelScale(1/10.0f);
     }
     m_vis.activate();
 #endif
@@ -147,7 +149,7 @@ int main(int argc, const char ** argv) {
     if (cuda_model.getSimulationConfig().xml_input_file.empty()) {
         // Currently population has not been init, so generate an agent population on the fly
         std::default_random_engine rng;
-        std::uniform_real_distribution<float> dist(0.0f, static_cast<float>(floor(cbrt(AGENT_COUNT))));
+        std::uniform_real_distribution<float> dist(0.0f, ENV_MAX);
         AgentPopulation population(model.Agent("Circle"), AGENT_COUNT);
         for (unsigned int i = 0; i < AGENT_COUNT; i++) {
             AgentInstance instance = population.getNextInstance();
