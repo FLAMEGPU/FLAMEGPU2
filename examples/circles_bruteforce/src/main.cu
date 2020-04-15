@@ -75,12 +75,13 @@ FLAMEGPU_STEP_FUNCTION(Validation) {
     // printf("Avg Drift: %g\n", totalDrift / FLAMEGPU->agent("Circle").count());
     printf("%.2f%% Drift correct\n", 100 * driftDropped / static_cast<float>(driftDropped + driftIncreased));
 }
-void export_data(std::shared_ptr<AgentPopulation> pop, const char *filename);
 int main(int argc, const char ** argv) {
     NVTX_RANGE("main");
     NVTX_PUSH("ModelDescription");
     ModelDescription model("Circles_BruteForce_example");
 
+    const unsigned int AGENT_COUNT = 16384;
+    const float ENV_MAX = static_cast<float>(floor(cbrt(AGENT_COUNT)));
     {   // Location message
         MsgBruteForce::Description &message = model.newMessage("location");
         message.newVariable<int>("id");
@@ -106,7 +107,7 @@ int main(int argc, const char ** argv) {
     {
         EnvironmentDescription &env = model.Environment();
         env.add("repulse", 0.05f);
-        env.add("radius", 1.0f);
+        env.add("radius", 2.0f);
     }
 
     /**
@@ -140,8 +141,13 @@ int main(int argc, const char ** argv) {
 #ifdef VISUALISATION
     ModelVis &m_vis = cuda_model.getVisualisation();
     {
-        m_vis.addAgent("Circle");
+        const float INIT_CAM = ENV_MAX * 1.25F;
+        m_vis.setInitialCameraLocation(INIT_CAM, INIT_CAM, INIT_CAM);
+        m_vis.setCameraSpeed(0.02f);
+        auto &circ_agt = m_vis.addAgent("Circle");
         // Position vars are named x, y, z; so they are used by default
+        circ_agt.setModel(Stock::Models::ICOSPHERE);
+        circ_agt.setModelScale(1/10.0f);
     }
     m_vis.activate();
 #endif
@@ -152,9 +158,8 @@ int main(int argc, const char ** argv) {
     cuda_model.initialise(argc, argv);
     if (cuda_model.getSimulationConfig().xml_input_file.empty()) {
         // Currently population has not been init, so generate an agent population on the fly
-        const unsigned int AGENT_COUNT = 16384;
         std::default_random_engine rng;
-        std::uniform_real_distribution<float> dist(0.0f, static_cast<float>(floor(cbrt(AGENT_COUNT))));
+        std::uniform_real_distribution<float> dist(0.0f, ENV_MAX);
         AgentPopulation population(model.Agent("Circle"), AGENT_COUNT);
         for (unsigned int i = 0; i < AGENT_COUNT; i++) {
             AgentInstance instance = population.getNextInstance();

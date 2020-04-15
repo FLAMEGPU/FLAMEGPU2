@@ -115,3 +115,23 @@ void ModelVis::setFPSColor(const float& red, const float& green, const float& bl
     modelCfg.fpsColor[1] = green;
     modelCfg.fpsColor[2] = blue;
 }
+
+
+void ModelVis::setInitialCameraLocation(const float &x, const float &y, const float &z) {
+    modelCfg.cameraLocation[0] = x;
+    modelCfg.cameraLocation[1] = y;
+    modelCfg.cameraLocation[2] = z;
+}
+void ModelVis::setInitialCameraTarget(const float &x, const float &y, const float &z) {
+    modelCfg.cameraTarget[0] = x;
+    modelCfg.cameraTarget[1] = y;
+    modelCfg.cameraTarget[2] = z;
+}
+void ModelVis::setCameraSpeed(const float &speed, const float &shiftMultiplier) {
+    modelCfg.cameraSpeed[0] = speed;
+    modelCfg.cameraSpeed[1] = shiftMultiplier;
+}
+void ModelVis::setViewClips(const float &nearClip, const float &farClip) {
+    modelCfg.nearFarClip[0] = nearClip;
+    modelCfg.nearFarClip[1] = farClip;
+}
