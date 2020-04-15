@@ -16,9 +16,9 @@ class CurveRTCHost {
  public:
     CurveRTCHost();
 
-    void registerVariable(const char* variableName, const char* type);
+    void registerVariable(const char* variableName, unsigned int namespace_hash, const char* type);
 
-    void unregisterVariable(const char* variableName);
+    void unregisterVariable(const char* variableName, unsigned int namespace_hash);
 
     std::string getDynamicHeader();
 
@@ -28,6 +28,6 @@ class CurveRTCHost {
  private:
     std::string header;
     static const char* curve_rtc_dynamic_h_template;
-    std::unordered_map<std::string, std::string> RTCVariables;
+    std::unordered_map<unsigned int, std::unordered_map<std::string, std::string>> RTCVariables;     // <namespace, <name, type>>
 };
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_CURVE_CURVE_RTC_H_

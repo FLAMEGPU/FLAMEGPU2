@@ -543,9 +543,14 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func) {
 
     // curve rtc header
     CurveRTCHost curve_header;
+    // agent function hash
+    Curve::NamespaceHash agentname_hash = Curve::getInstance().variableRuntimeHash(this->getAgentDescription().name.c_str());
+    Curve::NamespaceHash funcname_hash = Curve::getInstance().variableRuntimeHash(func.name.c_str());
+    Curve::NamespaceHash agent_func_name_hash = agentname_hash + funcname_hash;
+
     // set agent function variables in rtc curve
     for (const auto& mmp : func.parent.lock()->variables) {
-        curve_header.registerVariable(mmp.first.c_str(), mmp.second.type.name());
+        curve_header.registerVariable(mmp.first.c_str(), agent_func_name_hash, mmp.second.type.name());
     }
     headers.push_back(curve_header.getDynamicHeader());
 

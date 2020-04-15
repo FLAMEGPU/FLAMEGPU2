@@ -193,6 +193,11 @@ bool CUDAAgentModel::step() {
             if (!func_agent) {
                 THROW InvalidAgentFunc("Agent function refers to expired agent.");
             }
+            // create hashes for agent_func_name
+            Curve::NamespaceHash agentname_hash = Curve::getInstance().variableRuntimeHash(func_agent->name.c_str());
+            Curve::NamespaceHash funcname_hash = Curve::getInstance().variableRuntimeHash(func_des->name.c_str());
+            Curve::NamespaceHash agent_func_name_hash = agentname_hash + funcname_hash;
+
             const CUDAAgent& cuda_agent = getCUDAAgent(func_agent->name);
             const unsigned int STATE_SIZE = cuda_agent.getStateSize(func_des->initial_state);
             flamegpu_internal::CUDAScanCompaction::resize(STATE_SIZE, flamegpu_internal::CUDAScanCompaction::AGENT_DEATH, j);
@@ -258,8 +263,9 @@ bool CUDAAgentModel::step() {
                 for (const auto& mmp : func_agent->variables) {
                     // get the rtc varibale ptr
                     const jitify::KernelInstantiation& instance = cuda_agent.getRTCInstantiation(func_des->rtc_func_name);
-                    std::string d_var_ptr_name = "curve_rtc_ptr_" + mmp.first;
-                    CUdeviceptr d_var_ptr = instance.get_global_ptr(d_var_ptr_name.c_str());
+                    std::stringstream d_var_ptr_name;
+                    d_var_ptr_name << "curve_rtc_ptr_" << agent_func_name_hash << "_" << mmp.first;
+                    CUdeviceptr d_var_ptr = instance.get_global_ptr(d_var_ptr_name.str().c_str());
                     // get runtime ptr
                     void* runtime_ptr = state_list.getAgentListVariablePointer(mmp.first);
                     // copy runtime ptr to rtc ptr
