@@ -13,6 +13,7 @@
 #    NVRTC_LIBRARIES
 
 # CMake Native CUDA support doesn't provide the raw directory, only include
+# Note that CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES and CMAKE_CUDA_IMPLICIT_LINK_DIRECTORIES are not set for visual studio generators for CMAKE < 3.17, so this relies on searching the users PATH.
 
 # Attempt to find nvToolsExt.h containing directory
 find_path(NVRTC_INCLUDE_DIRS
