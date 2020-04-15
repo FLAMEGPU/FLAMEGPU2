@@ -34,6 +34,8 @@ install:
   - ps: restart-computer -f
   - ps: sleep 5
   - ps: Write-Output 'Reboot complete'
+  - ps: Write-Host "PATH=$env:PATH"
+  - ps: Write-Host "$($env:PATH)"
 
 # Before build use cmake
 before_build:
