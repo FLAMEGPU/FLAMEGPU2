@@ -56,6 +56,7 @@ CUDAAgentModel::~CUDAAgentModel() {
 }
 
 bool CUDAAgentModel::step() {
+    step_count++;
     NVTX_RANGE(std::string("CUDAAgentModel::step " + std::to_string(step_count)).c_str());
 
     // Ensure singletons have been initialised
@@ -66,7 +67,6 @@ bool CUDAAgentModel::step() {
         fprintf(stdout, "Processing Simulation Step %u\n", step_count);
     }
 
-    step_count++;
     unsigned int nStreams = 1;
     std::string message_name;
     Curve::NamespaceHash message_name_inp_hash = 0;
@@ -418,7 +418,7 @@ bool CUDAAgentModel::step() {
 #ifdef VISUALISATION
             if (visualisation) {
                 NVTX_PUSH("CUDAAgentModel::step::ExitConditions::UpdateVisualisation");
-                visualisation->updateBuffers();
+                visualisation->updateBuffers(step_count);
                 NVTX_POP();
             }
 #endif
@@ -432,7 +432,7 @@ bool CUDAAgentModel::step() {
 #ifdef VISUALISATION
         if (visualisation) {
             NVTX_PUSH("CUDAAgentModel::step::UpdateVisualisation");
-            visualisation->updateBuffers();
+            visualisation->updateBuffers(step_count);
             NVTX_POP();
         }
 #endif
