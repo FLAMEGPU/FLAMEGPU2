@@ -158,12 +158,14 @@ if (VISUALISATION)
         ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/ModelVis.h
         ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/AgentVis.h
         ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/AgentStateVis.h
+        ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/StaticModelVis.h
     )
     SET(SRC_FLAMEGPU2
         ${SRC_FLAMEGPU2}
         ${FLAMEGPU_ROOT}/src/flamegpu/visualiser/ModelVis.cpp    
         ${FLAMEGPU_ROOT}/src/flamegpu/visualiser/AgentVis.cpp     
         ${FLAMEGPU_ROOT}/src/flamegpu/visualiser/AgentStateVis.cpp
+        ${FLAMEGPU_ROOT}/src/flamegpu/visualiser/StaticModelVis.cpp
     )
 endif()
 SET(ALL_SRC
