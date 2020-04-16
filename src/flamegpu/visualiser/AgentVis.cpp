@@ -112,10 +112,14 @@ void AgentVis::setModel(const std::string &modelPath, const std::string &texture
 }
 void AgentVis::setModel(const Stock::Models::Model &model) {
     AgentStateConfig::setString(&defaultConfig.model_path, model.modelPath);
-    // Apply to all states which haven't had the setting overriden
+    if (model.texturePath && model.texturePath[0] != '\0')
+        AgentStateConfig::setString(&defaultConfig.model_texture, model.texturePath);
+    // Apply to all states which haven't had the setting overridden
     for (auto &s : states) {
         if (!s.second.configFlags.model_path) {
             AgentStateConfig::setString(&s.second.config.model_path, model.modelPath);
+            if (model.texturePath && model.texturePath[0] != '\0')
+                AgentStateConfig::setString(&s.second.config.model_texture, model.texturePath);
         }
     }
 }

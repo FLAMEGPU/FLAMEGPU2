@@ -142,3 +142,15 @@ void ModelVis::setViewClips(const float &nearClip, const float &farClip) {
 void ModelVis::setStepVisible(const bool& showStep) {
     modelCfg.stepVisible = showStep;
 }
+
+StaticModelVis ModelVis::addStaticModel(const std::string &modelPath, const std::string &texturePath) {
+    // Create ModelConfig::StaticModel
+    ModelConfig::StaticModel m;
+    // set modelPath, texturePath
+    m.path = modelPath;
+    m.texture = texturePath;
+    // add to ModelConfig.staticModels
+    modelCfg.staticModels.push_back(m);
+    // Create return type
+    return StaticModelVis(modelCfg.staticModels.back());
+}
