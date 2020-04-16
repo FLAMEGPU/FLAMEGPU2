@@ -49,7 +49,7 @@ void ModelVis::activate() {
         visualiser = std::make_unique<FLAMEGPU_Visualisation>(modelCfg);  // Window resolution
         for (auto &agent : agents) {
             // If x and y aren't set, throw exception
-            if (agent.second.x_var == "" || agent.second.y_var == "") {
+            if (agent.second.x_var.empty() || agent.second.y_var.empty()) {
                 THROW VisualisationException("Agent '%s' has not had x and y variables set, "
                     "in ModelVis::activate()\n",
                     agent.second.agentData.name.c_str());
@@ -145,10 +145,10 @@ void ModelVis::setStepVisible(const bool& showStep) {
 
 StaticModelVis ModelVis::addStaticModel(const std::string &modelPath, const std::string &texturePath) {
     // Create ModelConfig::StaticModel
-    ModelConfig::StaticModel m;
+    auto m = std::make_shared<ModelConfig::StaticModel>();
     // set modelPath, texturePath
-    m.path = modelPath;
-    m.texture = texturePath;
+    m->path = modelPath;
+    m->texture = texturePath;
     // add to ModelConfig.staticModels
     modelCfg.staticModels.push_back(m);
     // Create return type

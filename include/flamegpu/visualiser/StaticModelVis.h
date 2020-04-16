@@ -1,5 +1,7 @@
 #ifndef INCLUDE_FLAMEGPU_VISUALISER_STATICMODELVIS_H_
 #define INCLUDE_FLAMEGPU_VISUALISER_STATICMODELVIS_H_
+#include <memory>
+
 #include "config/ModelConfig.h"
 
 class StaticModelVis {
@@ -7,7 +9,7 @@ class StaticModelVis {
     /**
      * Reference which this interface manages
      */
-    explicit StaticModelVis(ModelConfig::StaticModel &_m);
+    explicit StaticModelVis(std::shared_ptr<ModelConfig::StaticModel> _m);
     /**
      * Scale each dimension of the model to the corresponding world scales
      * @param xLen World scale of the model's on the x axis
@@ -41,7 +43,7 @@ class StaticModelVis {
     void setModelRotation(float x, float y, float z, float radians);
 
  private:
-    ModelConfig::StaticModel &m;
+    std::shared_ptr<ModelConfig::StaticModel> m;
 };
 
 #endif  // INCLUDE_FLAMEGPU_VISUALISER_STATICMODELVIS_H_
