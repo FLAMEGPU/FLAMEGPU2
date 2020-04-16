@@ -26,10 +26,15 @@ class AgentStateVis {
 
     /**
      * Use a model from file
+     * @param modelPath File path of model
+     * @param texturePath Optional path to a texture for the model
+     * @note Model must be .obj format
      */
-    void setModel(const std::string &modelPath);
+    void setModel(const std::string &modelPath, const std::string &texturePath = "");
     /**
      * Use a stock model
+     * @param model Model from internal resources
+     * @see Stock::Models::Model
      */
     void setModel(const Stock::Models::Model &model);
     /**

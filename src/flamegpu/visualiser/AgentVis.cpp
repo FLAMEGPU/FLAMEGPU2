@@ -97,12 +97,16 @@ void AgentVis::updateBuffers(std::unique_ptr<FLAMEGPU_Visualisation> &vis) {
     // TODO Tertiary buffers? (e.g. color, direction[xyz])
 }
 
-void AgentVis::setModel(const std::string &modelPath) {
+void AgentVis::setModel(const std::string &modelPath, const std::string &texturePath) {
     AgentStateConfig::setString(&defaultConfig.model_path, modelPath);
+    if (!texturePath.empty())
+        AgentStateConfig::setString(&defaultConfig.model_texture, texturePath);
     // Apply to all states which haven't had the setting overriden
     for (auto &s : states) {
         if (!s.second.configFlags.model_path) {
             AgentStateConfig::setString(&s.second.config.model_path, modelPath);
+            if (!texturePath.empty())
+                AgentStateConfig::setString(&s.second.config.model_texture, texturePath);
         }
     }
 }

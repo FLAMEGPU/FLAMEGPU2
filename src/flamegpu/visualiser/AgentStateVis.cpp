@@ -10,8 +10,10 @@ AgentStateVis::AgentStateVis(const AgentVis &_parent, const std::string &_state_
     , config(_parent.defaultConfig) { }
 
 
-void AgentStateVis::setModel(const std::string &modelPath) {
+void AgentStateVis::setModel(const std::string &modelPath, const std::string &texturePath) {
     AgentStateConfig::setString(&config.model_path, modelPath);
+    if (!texturePath.empty())
+        AgentStateConfig::setString(&config.model_texture, texturePath);
     configFlags.model_path = 1;
 }
 void AgentStateVis::setModel(const Stock::Models::Model &model) {
