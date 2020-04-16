@@ -42,7 +42,7 @@ class AgentVis {
     /**
      * Use a model from file
      */
-    void setModel(const std::string &modelPath);
+    void setModel(const std::string &modelPath, const std::string &texturePath = "");
     /**
      * Use a stock model
      */
