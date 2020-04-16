@@ -121,8 +121,6 @@ class ModelVis {
      * Adds a static model to the visualisation
      * @param modelPath Path of the model on disk
      * @param texturePath Optional path to a texture fore the model on disk
-     * @note This is unsafe, possible the referenced internal struct will be moved if data structure resizes,
-     * making the reference invalid. Solution would be to internally switch to a smart pointer
      */
     StaticModelVis addStaticModel(const std::string &modelPath, const std::string &texturePath = "");
 
