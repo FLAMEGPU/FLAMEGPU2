@@ -38,7 +38,14 @@ class LineVis {
     void addVertex(float x, float y, float z = 0.0f);
 
  private:
+    /**
+     * The color used for any new vertices
+     * @see setColor(float, float, float, float)
+     */
     float currentColor[4];
+    /**
+     * The line data which this class acts as an interface for managing
+     */
     std::shared_ptr<LineConfig> l;
 };
 

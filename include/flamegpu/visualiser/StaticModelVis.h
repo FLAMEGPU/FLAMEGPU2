@@ -4,10 +4,15 @@
 
 #include "config/ModelConfig.h"
 
+/**
+ * This class serves as an interface for managing an instance of ModelConfig::StaticModel
+ */
 class StaticModelVis {
  public:
     /**
-     * Reference which this interface manages
+     * @param _m Reference which this interface manages
+     * @note This should only be constructed by ModelVis
+     * @see ModelVis::addStaticModel(const std::string &, const std::string &)
      */
     explicit StaticModelVis(std::shared_ptr<ModelConfig::StaticModel> _m);
     /**
@@ -43,6 +48,9 @@ class StaticModelVis {
     void setModelRotation(float x, float y, float z, float radians);
 
  private:
+    /**
+     * The static model data which this class acts as an interface for managing
+     */
     std::shared_ptr<ModelConfig::StaticModel> m;
 };
 

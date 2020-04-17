@@ -24,27 +24,60 @@ class AgentVis {
     friend class ModelVis;
     friend class AgentStateVis;
  public:
+    /**
+     * @param agent The CUDAAgent this class is configuring the visualisation for
+     */
     explicit AgentVis(CUDAAgent &agent);
     /**
      * Returns the configuration handler for the named state
      */
     AgentStateVis &State(const std::string &state_name);
 
+    /**
+     * Set the name of the variable representing the agents x location
+     * @param var_name Name of the agent variable
+     * @note unnecessary if the variable is "x"
+     */
     void setXVariable(const std::string &var_name);
+    /**
+     * Set the name of the variable representing the agents y location
+     * @param var_name Name of the agent variable
+     * @note unnecessary if the variable is "y"
+     */
     void setYVariable(const std::string &var_name);
+    /**
+     * Set the name of the variable representing the agents z location
+     * @param var_name Name of the agent variable
+     * @note unnecessary if the variable is "z", or the model is 2D
+     */
     void setZVariable(const std::string &var_name);
+    /**
+     * Clears the agent's z variable binding
+     * @see setZVariable(const std::string &)
+     */
     void clearZVariables();
-
+    /**
+     * Returns the variable used for the agent's location's x coordinate
+     */
     std::string getXVariable() const;
+    /**
+     * Returns the variable used for the agent's location's y coordinate
+     */
     std::string getYVariable() const;
+    /**
+     * Returns the variable used for the agent's location's z coordinate
+     */
     std::string getZVariable() const;
 
     /**
      * Use a model from file
+     * @param modelPath The path to the model's file (must be .obj)
+     * @param texturePath Optional path to the texture used by the model
      */
     void setModel(const std::string &modelPath, const std::string &texturePath = "");
     /**
      * Use a stock model
+     * @param model Model from the libraries internal resources
      */
     void setModel(const Stock::Models::Model &model);
     /**
@@ -75,15 +108,40 @@ class AgentVis {
      */
     void initBindings(std::unique_ptr<FLAMEGPU_Visualisation> &vis);
     /**
-     * Update agent count and data within visualiation buffers for each agent state
+     * This requests that the visualisation resizes buffers
+     * @param vis The affected visualisation
+     * Used when agent population has grown
      */
     void requestBufferResizes(std::unique_ptr<FLAMEGPU_Visualisation> &vis);
+    /**
+     * This passes the correct device pointers to the visualisation and forces it to update the data used for rendering
+     * @param vis The affected visualisation
+     * @note This should only be called when visualisation muted is held
+     */
     void updateBuffers(std::unique_ptr<FLAMEGPU_Visualisation> &vis);
+    /**
+     * This is the default configuration options for states of this agent
+     * These values will be used for any state configuration options which have not been set independently
+     */
     AgentStateConfig defaultConfig;
+    /**
+     * Map of configurations for individual agent states
+     */
     std::unordered_map<std::string, AgentStateVis> states;
+    /**
+     * CUDAAgent being rendered
+     */
     CUDAAgent &agent;
+    /**
+     * Agent description hierarchy being rendered
+     */
     const AgentData &agentData;
-
+    /**
+     * Names of the agent variables holding the agent's location
+     * @see setXVariable(const std::string &)
+     * @see setYVariable(const std::string &)
+     * @see setZVariable(const std::string &)
+     */
     std::string x_var, y_var, z_var;
 };
 

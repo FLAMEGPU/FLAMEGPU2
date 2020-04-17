@@ -12,9 +12,13 @@ class AgentVis;
 /**
  * This provides an interface for managing the render options for all agents within a specific state
  * Options default to values set within their parent
+ * Even if the default is changed after the agent state is constructed
  * TODO: Block everything non-const from being called whilst VIS is active
  */
 class AgentStateVis {
+    /**
+     * Parent has friend access
+     */
     friend class AgentVis;
  public:
     /**
@@ -53,10 +57,21 @@ class AgentStateVis {
     void setModelScale(float maxLen);
 
  private:
+    /**
+     * The parent visualisation options, these hold the default configuration
+     */
     const AgentVis &parent;
+    /**
+     * Name of the state from agent description hierarchy
+     */
     const std::string state_name;
-
+    /**
+     * Holds the config used to render agents in this state
+     */
     AgentStateConfig config;
+    /**
+     * Holds a boolean for each option (or group of options), to decide whether they should be updated if the default is changed
+     */
     AgentStateConfigFlags configFlags;
 };
 
