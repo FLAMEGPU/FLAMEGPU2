@@ -2,8 +2,8 @@
 
 #include "flamegpu/exception/FGPUException.h"
 
-StaticModelVis::StaticModelVis(std::shared_ptr<ModelConfig::StaticModel>_m)
-: m(_m) { }
+StaticModelVis::StaticModelVis(std::shared_ptr<ModelConfig::StaticModel> _m)
+    : m(std::move(_m)) { }
 
 void StaticModelVis::setModelScale(float xLen, float yLen, float zLen) {
     if (xLen <= 0 || yLen <= 0 || zLen <= 0) {

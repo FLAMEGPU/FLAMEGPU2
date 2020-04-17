@@ -1,5 +1,6 @@
 #ifndef INCLUDE_FLAMEGPU_VISUALISER_MODELVIS_H_
 #define INCLUDE_FLAMEGPU_VISUALISER_MODELVIS_H_
+#include "LineVis.h"
 #ifdef VISUALISATION
 
 #include <string>
@@ -123,7 +124,22 @@ class ModelVis {
      * @param texturePath Optional path to a texture fore the model on disk
      */
     StaticModelVis addStaticModel(const std::string &modelPath, const std::string &texturePath = "");
-
+    /**
+     * Create a new sketch constructed from individual line segments to the visualisation
+     * @param r Initial color's red component
+     * @param g Initial color's green component
+     * @param b Initial color's blue component
+     * @param a Initial color's alpha component
+     */
+    LineVis newLineSketch(float r, float g, float b, float a = 1.0f);
+    /**
+     * Create a new sketch constructed from a single line of connected vertices to the visualisation
+     * @param r Initial color's red component
+     * @param g Initial color's green component
+     * @param b Initial color's blue component
+     * @param a Initial color's alpha component
+     */
+    LineVis newPolylineSketch(float r, float g, float b, float a = 1.0f);
     /**
      * Sets the visualisation running in a background thread
      */

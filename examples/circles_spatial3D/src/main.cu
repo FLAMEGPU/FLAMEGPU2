@@ -79,10 +79,11 @@ int main(int argc, const char ** argv) {
 
     const unsigned int AGENT_COUNT = 16384;
     const float ENV_MAX = static_cast<float>(floor(cbrt(AGENT_COUNT)));
+    const float RADIUS = 2.0f;
     {   // Location message
         MsgSpatial3D::Description &message = model.newMessage<MsgSpatial3D>("location");
         message.newVariable<int>("id");
-        message.setRadius(2.0f);
+        message.setRadius(RADIUS);
         message.setMin(0, 0, 0);
         message.setMax(ENV_MAX, ENV_MAX, ENV_MAX);
     }
@@ -138,7 +139,35 @@ int main(int argc, const char ** argv) {
         auto &circ_agt = m_vis.addAgent("Circle");
         // Position vars are named x, y, z; so they are used by default
         circ_agt.setModel(Stock::Models::ICOSPHERE);
-        circ_agt.setModelScale(1/10.0f);
+        circ_agt.setModelScale(1/10.0f);        
+        // Render the Subdivision of spatial messaging
+        {
+            const float ENV_MIN = 0;
+            const int DIM = static_cast<int>(ceil((ENV_MAX - ENV_MIN) / RADIUS));  // Spatial partitioning scales up to fit none exact environments
+            const float DIM_MAX = DIM * RADIUS;
+            auto pen = m_vis.newLineSketch(1, 1, 1, 0.2f);  // white
+            // X lines
+            for (int y = 0; y <= DIM; y++) {
+                for (int z = 0; z <= DIM; z++) {
+                    pen.addVertex(ENV_MIN, y * RADIUS, z * RADIUS);
+                    pen.addVertex(DIM_MAX, y * RADIUS, z * RADIUS);
+                }
+            }
+            // Y axis
+            for (int x = 0; x <= DIM; x++) {
+                for (int z = 0; z <= DIM; z++) {
+                    pen.addVertex(x * RADIUS, ENV_MIN, z * RADIUS);
+                    pen.addVertex(x * RADIUS, DIM_MAX, z * RADIUS);
+                }
+            }
+            // Z axis
+            for (int x = 0; x <= DIM; x++) {
+                for (int y = 0; y <= DIM; y++) {
+                    pen.addVertex(x * RADIUS, y * RADIUS, ENV_MIN);
+                    pen.addVertex(x * RADIUS, y * RADIUS, DIM_MAX);
+                }
+            }
+        }
     }
     m_vis.activate();
 #endif
