@@ -103,6 +103,9 @@ class CUDAAgentModel : public Simulation {
      */
     const Config &getCUDAConfig() const;
 #ifdef VISUALISATION
+    /**
+     * Creates (on first call) and returns the visualisation configuration options for this model instance
+     */
     ModelVis &getVisualisation();
 #endif
 

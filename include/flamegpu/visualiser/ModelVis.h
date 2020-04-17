@@ -166,11 +166,25 @@ class ModelVis {
     void updateBuffers(const unsigned int &sc = UINT_MAX);
 
  private:
+    /**
+     * Main struct of visualisation configuration options for the model
+     */
     ModelConfig modelCfg;
+    /**
+     * Per agent, visualisation configuration options
+     */
     std::unordered_map<std::string, AgentVis> agents;
+    /**
+     * Reference back to the model to be visualised
+     */
     const CUDAAgentModel &model;
+    /**
+     * Reference back to the model description hierarchy to be visualised
+     */
     const ModelData &modelData;
-
+    /**
+     * Pointer to the visualisation
+     */
     std::unique_ptr<FLAMEGPU_Visualisation> visualiser;
 };
 
