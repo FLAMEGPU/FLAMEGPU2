@@ -120,8 +120,7 @@ void CurveRTCHost::unregisterVariable(const char* variableName, unsigned int nam
     auto i = RTCVariables.find(namespace_hash);
     if (i != RTCVariables.end()) {
         i->second.erase(variableName);
-    }
-    else {
+    } else {
         THROW UnknownInternalError("Namespace hash (%d) not found when removing variable: in CurveRTCHost::unregisterVariable", namespace_hash);
     }
 }
@@ -146,7 +145,7 @@ std::string CurveRTCHost::getDynamicHeader() {
         for (std::pair<std::string, std::string> element : key_pair.second) {
             getVariableImpl << "            if (strings_equal(name, \"" << element.first << "\"))\n";
             getVariableImpl << "                return (T) " << "curve_rtc_ptr_" << namespace_hash << "_" << element.first << "[index];\n";
-        }    
+        }
         getVariableImpl <<     "            else\n";
         getVariableImpl <<     "                return 0;\n";
     }
