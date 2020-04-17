@@ -229,7 +229,7 @@ void CUDAScatter::pbm_reorder(
  * @param agent_size The total size of an agent's variables in memory, for stepping through input array
  * @param scatter_data Scatter data array location in memory
  * @param scatter_len Length of scatter data array
- * @parma out_index_offset The number of agents already in the output array (so that they are not overwritten)
+ * @param out_index_offset The number of agents already in the output array (so that they are not overwritten)
  */
 __global__ void scatter_new_agents(
     const unsigned int threadCount,
@@ -292,7 +292,7 @@ void CUDAScatter::scatterNewAgents(
 * @param threadCount Total number of threads required
 * @param scatter_data Scatter data array location in memory
 * @param scatter_len Length of scatter data array
-* @parma out_index_offset The number of agents already in the output array (so that they are not overwritten)
+* @param out_index_offset The number of agents already in the output array (so that they are not overwritten)
 */
 __global__ void broadcastInitKernel(
     const unsigned int threadCount,

@@ -154,3 +154,14 @@ StaticModelVis ModelVis::addStaticModel(const std::string &modelPath, const std:
     // Create return type
     return StaticModelVis(modelCfg.staticModels.back());
 }
+
+LineVis ModelVis::newLineSketch(float r, float g, float b, float a) {
+    auto m = std::make_shared<LineConfig>(LineConfig::Type::Lines);
+    modelCfg.lines.push_back(m);
+    return LineVis(m, r, g, b, a);
+}
+LineVis ModelVis::newPolylineSketch(float r, float g, float b, float a) {
+    auto m = std::make_shared<LineConfig>(LineConfig::Type::Polyline);
+    modelCfg.lines.push_back(m);
+    return LineVis(m, r, g, b, a);
+}
