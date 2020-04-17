@@ -139,7 +139,7 @@ int main(int argc, const char ** argv) {
         auto &circ_agt = m_vis.addAgent("Circle");
         // Position vars are named x, y, z; so they are used by default
         circ_agt.setModel(Stock::Models::ICOSPHERE);
-        circ_agt.setModelScale(1/10.0f);        
+        circ_agt.setModelScale(1/10.0f);
         // Render the Subdivision of spatial messaging
         {
             const float ENV_MIN = 0;
