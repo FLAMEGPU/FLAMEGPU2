@@ -5,7 +5,7 @@ project(visualiser-download NONE)
 include(ExternalProject)
 ExternalProject_Add(visualiser
     GIT_REPOSITORY    https://github.com/FLAMEGPU/FLAMEGPU2_visualiser.git
-    GIT_TAG           initial_interface
+    GIT_TAG           master
     SOURCE_DIR        "${CMAKE_CURRENT_BINARY_DIR}/visualiser/src"
     BINARY_DIR        "${CMAKE_CURRENT_BINARY_DIR}/visualiser/build"
     CONFIGURE_COMMAND ""
