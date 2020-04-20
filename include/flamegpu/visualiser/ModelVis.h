@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include <thread>
 #include <memory>
+#include <climits>
 #include "flamegpu/visualiser/AgentVis.h"
 #include "flamegpu/visualiser/StaticModelVis.h"
 #include "FLAMEGPU_Visualisation.h"
