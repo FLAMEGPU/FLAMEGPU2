@@ -54,6 +54,11 @@ EnvironmentDescription& ModelDescription::Environment() {
 
 SubModelDescription& ModelDescription::newSubModel(const std::string &submodel_name, const ModelDescription &submodel_description) {
     if (!hasSubModel(submodel_name)) {
+        if (submodel_description.model->exitConditions.empty()) {
+            THROW InvalidSubModel("Model '%s' does not contain any exit conditions, SubModels must exit of their own accord, "
+                "in ModelDescription::newSubModel().",
+                submodel_name.c_str());
+        }
         auto rtn = std::shared_ptr<SubModelData>(new SubModelData(model, submodel_description.model->clone()));
         model->submodels.emplace(submodel_name, rtn);
         return *rtn->description;
