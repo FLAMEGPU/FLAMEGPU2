@@ -118,11 +118,12 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/HostEnvironment.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/HostRandom.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/RandomManager.cuh    
-    ${FLAMEGPU_ROOT}/include/flamegpu/util/nvtx.h    
-    ${FLAMEGPU_ROOT}/include/flamegpu/util/compute_capability.cuh
+    ${FLAMEGPU_ROOT}/include/flamegpu/util/nvtx.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/SignalHandlers.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/model/SubModelMapping.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/util/compute_capability.cuh
+    ${FLAMEGPU_ROOT}/include/flamegpu/model/SubModelData.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/SubModelDescription.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/model/SubAgentDescription.h
 )
 SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/exception/FGPUException.cpp
@@ -161,6 +162,9 @@ SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/utility/EnvironmentManager.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/utility/RandomManager.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/util/compute_capability.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/model/SubModelData.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/model/SubModelDescription.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/model/SubAgentDescription.cpp
 )
 if (VISUALISATION)
     SET(SRC_INCLUDE

@@ -45,7 +45,7 @@ bool AgentData::operator==(const AgentData &rhs) const {
                 auto _v = rhs.functions.find(v.first);
                 if (_v == rhs.functions.end())
                     return false;
-                if (v.second->operator==(*_v->second))
+                if (*v.second != *_v->second)
                     return false;
             }
         }

@@ -7,6 +7,7 @@
 #include "flamegpu/model/AgentFunctionDescription.h"
 #include "flamegpu/model/AgentFunctionData.h"
 #include "flamegpu/model/LayerData.h"
+#include "flamegpu/model/SubModelData.h"
 
 const char *ModelData::DEFAULT_STATE = "default";
 
@@ -32,23 +33,29 @@ ModelData::ModelData(const ModelData &other)
     , environment(new EnvironmentDescription(*other.environment))
     , name(other.name) {
     // Manually copy construct maps of shared ptr
-    for (const auto m : other.messages) {
+    for (const auto &m : other.messages) {
         messages.emplace(m.first, std::shared_ptr<MsgBruteForce::Data>(m.second->clone(this)));  // Need to convert this to shared_ptr, how to force shared copy construct?
     }
     // Copy all agents first
-    for (const auto a : other.agents) {
+    for (const auto &a : other.agents) {
         auto b = std::shared_ptr<AgentData>(new AgentData(this, *a.second));
         agents.emplace(a.first, b);
     }
     // Copy agent functions per agent, after all agents have been implemented.
-    for (const auto a : other.agents) {
+    for (const auto &a : other.agents) {
         auto b = agents.find(a.first)->second;
         // Manually copy construct maps of shared ptr
         for (const auto f : a.second->functions) {
             b->functions.emplace(f.first, std::shared_ptr<AgentFunctionData>(new AgentFunctionData(this, b, *f.second)));
         }
     }
-    for (const auto m : other.layers) {
+    // Copy submodels
+    for (const auto &a : other.submodels) {
+        auto b = std::shared_ptr<SubModelData>(new SubModelData(this, *a.second));
+        submodels.emplace(a.first, b);
+    }
+
+    for (const auto &m : other.layers) {
         layers.push_back(std::shared_ptr<LayerData>(new LayerData(this, *m)));
     }
 }
@@ -59,6 +66,7 @@ bool ModelData::operator==(const ModelData& rhs) const {
     if (name == rhs.name
         && agents.size() == rhs.agents.size()
         && messages.size() == rhs.messages.size()
+        && submodels.size() == rhs.submodels.size()
         && layers.size() == rhs.layers.size()
         && initFunctions.size() == rhs.initFunctions.size()
         && stepFunctions.size() == rhs.stepFunctions.size()
@@ -78,6 +86,15 @@ bool ModelData::operator==(const ModelData& rhs) const {
                 for (auto &v : messages) {
                     auto _v = rhs.messages.find(v.first);
                     if (_v == rhs.messages.end())
+                        return false;
+                    if (*v.second != *_v->second)
+                        return false;
+                }
+            }
+            {  // Compare submodels (map)
+                for (auto &v : submodels) {
+                    auto _v = rhs.submodels.find(v.first);
+                    if (_v == rhs.submodels.end())
                         return false;
                     if (*v.second != *_v->second)
                         return false;
@@ -117,3 +134,4 @@ bool ModelData::operator==(const ModelData& rhs) const {
 bool ModelData::operator!=(const ModelData& rhs) const {
     return !operator==(rhs);
 }
+

@@ -207,6 +207,17 @@ DERIVED_FGPUException(InvalidMessageSize, "Invalid Message List size");
 
 /**
  * Defines a type of object to be thrown as exception.
+ * It reports errors that are due to invalid sub models
+ */
+DERIVED_FGPUException(InvalidSubModel, "Invalid SubModel");
+/**
+ * Defines a type of object to be thrown as exception.
+ * It reports errors that are due to sub model name already being in use
+ */
+DERIVED_FGPUException(InvalidSubModelName, "Invalid SubModel Name, already in use");
+
+/**
+ * Defines a type of object to be thrown as exception.
  * It reports errors that are due to invalid CUDA agent variable.
  */
 DERIVED_FGPUException(InvalidCudaAgent, "CUDA agent not found. This should not happen");

@@ -9,12 +9,14 @@
 #include <string>
 
 #include "flamegpu/model/EnvironmentDescription.h"
-#include "flamegpu/runtime/flamegpu_host_api_macros.h"  // Todo replace with std/cub style fns (see AgentFunction.h)
+#include "flamegpu/runtime/flamegpu_host_api_macros.h"
 #include "flamegpu/runtime/messaging/BruteForce.h"
+// #include "flamegpu/model/SubModelData.h"
 
 class EnvironmentDescription;
 struct AgentData;
 struct LayerData;
+struct SubModelData;
 
 /**
  * This is the internal data store for ModelDescription
@@ -44,6 +46,11 @@ struct ModelData : std::enable_shared_from_this<ModelData>{
      * map<string, MessageData>
      */
     typedef std::unordered_map<std::string, std::shared_ptr<MsgBruteForce::Data>> MessageMap;
+    /**
+     * Map of name:message definition
+     * map<string, MessageData>
+     */
+    typedef std::unordered_map<std::string, std::shared_ptr<SubModelData>> SubModelMap;
     /**
      * List of layer definitions
      * list<LayerData>
@@ -78,6 +85,10 @@ struct ModelData : std::enable_shared_from_this<ModelData>{
      * Holds all of the model's message definitions
      */
     MessageMap messages;
+    /**
+     * Holds all of the model's sub models
+     */
+    SubModelMap submodels;
     /**
      * Holds all of the model's layer definitions
      */

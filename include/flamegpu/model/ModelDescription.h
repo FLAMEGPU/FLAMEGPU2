@@ -12,6 +12,8 @@
 
 class AgentDescription;
 class LayerDescription;
+class SubModelDescription;
+struct ModelData;
 
 /**
  * This class represents the hierarchy of components for a FLAMEGPU model
@@ -122,6 +124,18 @@ class ModelDescription {
      * @see ModelDescription::getEnvironment() for the immutable version
      */
     EnvironmentDescription& Environment();
+    /**
+     * Add a submodel to the Model Description hierarchy
+     * The return value can be used to map agent variables
+     * @param submodel_name The name used to refer to the submodel (e.g. when adding it to the layer)
+     * @param submodel_description The actual definition of the submodel
+     */
+    SubModelDescription &newSubModel(const std::string &submodel_name, const ModelDescription &submodel_description);
+    /**
+     * Returns the named submodel
+     * @throws InvalidSubModel If a submodel with that name has not been added
+     */
+    SubModelDescription &SubModel(const std::string &submodel_name);
 
     /**
      * Creates a new layer with the specified name
@@ -216,6 +230,14 @@ class ModelDescription {
     }
     const MsgBruteForce::Description& getMessage(const std::string &message_name) const;
     /**
+     * Returns an immutable reference to the specified agent, which can be used to view the agent's configuration
+     * @param agent_name Name which can be used to the refer to the desired agent within the model description hierarchy
+     * @return An immutable reference to the specified AgentDescription
+     * @throws InvalidSubModelName If an agent with the name does not exist within the model description hierarchy
+     * @see ModelDescription::Agent(const std::string &) for the mutable version
+     */
+    const SubModelDescription& getSubModel(const std::string &submodel_name) const;
+    /**
      * Returns a mutable reference to the environment description for the model description hierarchy
      * This can be used to configure environment properties
      * @see ModelDescription::Environment() for the mutable version
@@ -269,6 +291,11 @@ class ModelDescription {
      * @return True when a layer with the specified index exists within the model's hierarchy
      */
     bool hasLayer(const ModelData::size_type &layer_index) const;
+    /**
+     * @param submodel_name Name of the submodel to check
+     * @return True when a submodel with the specified name exists within the model's hierarchy
+     */
+    bool hasSubModel(const std::string &submodel_name) const;
 
     /**
      * @return The number of agents within the model's hierarchy

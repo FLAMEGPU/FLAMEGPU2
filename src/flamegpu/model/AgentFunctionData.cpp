@@ -103,7 +103,7 @@ bool AgentFunctionData::operator==(const AgentFunctionData &rhs) const {
             if (a && b) {
                 if (*a != *b)
                     return false;
-            } else if ((a && !b) || (!a && !b)) {
+            } else if ((a && !b) || (!a && b)) {
                 return false;
             }
         }
@@ -113,7 +113,7 @@ bool AgentFunctionData::operator==(const AgentFunctionData &rhs) const {
             if (a && b) {
                 if (*a != *b)
                     return false;
-            } else if ((a && !b) || (!a && !b)) {
+            } else if ((a && !b) || (!a && b)) {
                 return false;
             }
         }
@@ -146,7 +146,7 @@ bool AgentFunctionData::operator==(const AgentFunctionData &rhs) const {
                             return false;
                     }
                 }
-            } else if ((a && !b) || (!a && !b)) {
+            } else if ((a && !b) || (!a && b)) {
                 return false;
             }
         }
