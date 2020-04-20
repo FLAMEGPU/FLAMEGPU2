@@ -18,7 +18,6 @@ class SubModelDescription {
      * Constructor, this should only be called by AgentData
      * @param _model Model at root of model hierarchy
      * @param _submodel Model at root of submodel hierarchy
-     * @param data Data store of this subagent's data
      */
     SubModelDescription(const ModelData *const _model, SubModelData *const _submodel);
     /**
@@ -49,6 +48,8 @@ class SubModelDescription {
      * @param sub_agent_name Name of the agent in the submodel (must be unique, 1 bind per subagent)
      * @param master_agent_name Name of the agent in the parent/host/master model
      * @param auto_map_vars Whether to automatically map matching variables of the two agents
+     * @throws InvalidAgentName If the sub agent or master agent name does not map to a valid agent
+     * @throws InvalidAgentName If the sub agent or master agent has already been bound
      */
     SubAgentDescription &bindAgent(const std::string &sub_agent_name, const std::string &master_agent_name, bool auto_map_vars = false);
 

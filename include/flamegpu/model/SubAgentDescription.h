@@ -42,8 +42,12 @@ class SubAgentDescription {
  public:
     /**
      * Links the named variables between the master and sub agent
+     * These variables must have the same type and number of elements (1 unless they're an array variable)
      * @param sub_variable_name Name of the variable in the sub models agent
      * @param master_variable_name Name of the variable in the master models agent
+     * @throws InvalidParent If the sub agent or master agent weak_ptrs have expired (this should never happen)
+     * @throws InvalidAgentVar If the named variable does not exist within the bound sub or master agent
+     * @throws InvalidAgentVar If there is a mismatch between the variables types or number of elements
      */
     void mapVariable(const std::string &sub_variable_name, const std::string &master_variable_name);
 

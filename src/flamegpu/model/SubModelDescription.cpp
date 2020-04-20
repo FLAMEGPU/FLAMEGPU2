@@ -29,6 +29,14 @@ SubAgentDescription &SubModelDescription::bindAgent(const std::string &sub_agent
                 "in SubModelDescription::bindAgent()\n", data->submodel->name.c_str(), sub_agent_name.c_str(), master_agent_ptr ? master_agent_ptr->name.c_str() : "?");
         }
     }
+    // Master agent has not been bound yet
+    for (auto &a : data->subagents) {
+        const auto master_agent_ptr = a.second->masterAgent.lock();
+        if (master_agent_ptr && master_agent_ptr->name == master_agent_name) {
+            THROW InvalidAgentName("Master Agent '%s' has already been bound to Sub agent '%s', "
+                "in SubModelDescription::bindAgent()\n", master_agent_name.c_str(), a.first.c_str());
+        }
+    }
     // Create SubAgent
     auto rtn = std::shared_ptr<SubAgentData>(new SubAgentData(model, data->shared_from_this(), subagent->second, masteragent->second));
     data->subagents.emplace(sub_agent_name, rtn);
