@@ -54,12 +54,13 @@ class SubModelDescription {
      * @param sub_agent_name Name of the agent in the submodel (must be unique, 1 bind per subagent)
      * @param master_agent_name Name of the agent in the parent/host/master model
      * @param auto_map_vars Whether to automatically map matching variables of the two agents
+     * @param auto_map_states Whether to automatically map matching states of the two agents
      * @throws InvalidSubAgentName If the sub agent name does not map to a valid agent
      * @throws InvalidAgentName If the  master agent has already been bound
      * @throws InvalidSubAgentName If the sub agent name does not map to a valid agent
      * @throws InvalidAgentName If the master agent has already been bound
      */
-    SubAgentDescription &bindAgent(const std::string &sub_agent_name, const std::string &master_agent_name, bool auto_map_vars = false);
+    SubAgentDescription &bindAgent(const std::string &sub_agent_name, const std::string &master_agent_name, bool auto_map_vars = false, bool auto_map_states = true);
     /**
      * Returns a mutable reference to the named SubAgent description if it has already been bound to a master agent
      * @param sub_agent_name Name of the sub agent, who's description to return

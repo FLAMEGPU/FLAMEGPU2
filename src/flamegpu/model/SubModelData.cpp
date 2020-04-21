@@ -47,12 +47,23 @@ bool SubAgentData::operator==(const SubAgentData &rhs) const {
     if (this == &rhs)  // They point to same object
         return true;
     // Compare members
-    if (variables.size() == rhs.variables.size()) {
-        // Compare subagents map
+    if (variables.size() == rhs.variables.size()
+        && states.size() == rhs.states.size()) {
+        // Compare variables map
         for (auto &v : variables) {
             auto _v = rhs.variables.find(v.first);
             // Find failed, key mismatch
             if (_v == rhs.variables.end())
+                return false;
+            // Val mismatch
+            if (v.second != _v->second)
+                return false;
+        }
+        // Compare states map
+        for (auto &v : states) {
+            auto _v = rhs.states.find(v.first);
+            // Find failed, key mismatch
+            if (_v == rhs.states.end())
                 return false;
             // Val mismatch
             if (v.second != _v->second)
@@ -76,6 +87,7 @@ SubAgentData::SubAgentData(const ModelData *model, const std::shared_ptr<SubMode
     , parent(_parent)
     , description(model ? new SubAgentDescription(model, this) : nullptr) {
     variables.insert(other.variables.begin(), other.variables.end());
+    states.insert(other.states.begin(), other.states.end());
 }
 
 SubAgentData::SubAgentData(const ModelData *model, const std::shared_ptr<SubModelData> &_parent, const std::shared_ptr<AgentData> &_subAgent, const std::shared_ptr<AgentData> &_masterAgent)

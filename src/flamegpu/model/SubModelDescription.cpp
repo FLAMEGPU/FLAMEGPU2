@@ -7,7 +7,7 @@ SubModelDescription::SubModelDescription(const ModelData *const _model, SubModel
     : model(_model)
     , data(_data) { }
 
-SubAgentDescription &SubModelDescription::bindAgent(const std::string &sub_agent_name, const std::string &master_agent_name, bool auto_map_vars) {
+SubAgentDescription &SubModelDescription::bindAgent(const std::string &sub_agent_name, const std::string &master_agent_name, bool auto_map_vars, bool auto_map_states) {
     // Sub agent exists
     const auto subagent = data->submodel->agents.find(sub_agent_name);
     if (subagent == data->submodel->agents.end()) {
@@ -52,6 +52,17 @@ SubAgentDescription &SubModelDescription::bindAgent(const std::string &sub_agent
                     // Variables match, create mapping
                     rtn->variables.emplace(sub_var.first, master_var->first);  // Doesn't actually matter, both strings are equal
                 }
+            }
+        }
+    }
+    // If auto_map, map any matching states
+    if (auto_map_states) {
+        for (auto &sub_var : subagent->second->states) {
+            auto master_var = masteragent->second->states.find(sub_var);
+            // If there exists states with same name in both agents
+            if (master_var != masteragent->second->states.end()) {
+                // States match, create mapping
+                rtn->states.emplace(sub_var, *master_var);  // Doesn't actually matter, both strings are equal
             }
         }
     }

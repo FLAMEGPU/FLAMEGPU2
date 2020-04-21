@@ -177,6 +177,12 @@ DERIVED_FGPUException(InvalidMessage, "Invalid message");
 DERIVED_FGPUException(InvalidAgentVar, "Invalid agent memory variable");
 
 /**
+ * Defines a type of object to be thrown as exception.
+ * It reports errors that are due to invalid agent state names.
+ */
+DERIVED_FGPUException(InvalidAgentState, "Invalid agent state");
+
+/**
 * Defines a type of object to be thrown as exception.
 * It reports errors that are due to length mismatch of array variables.
 */

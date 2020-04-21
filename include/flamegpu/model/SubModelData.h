@@ -103,14 +103,18 @@ struct SubAgentData : std::enable_shared_from_this<SubAgentData> {
      */
     std::weak_ptr<AgentData> masterAgent;
     /**
-     * Map of submodel variable name:parent model variable name
+     * Map of submodel item name:parent model item name
      * map<string, string>
      */
-    typedef std::unordered_map<std::string, std::string> VariableMap;
+    typedef std::unordered_map<std::string, std::string> Mapping;
     /**
      * Holds all of the model's variable mappings
      */
-    VariableMap variables;
+    Mapping variables;
+    /**
+     * Holds all of the model's state mappings
+     */
+    Mapping states;
     /**
      * The agent which this function is a member of
      */
