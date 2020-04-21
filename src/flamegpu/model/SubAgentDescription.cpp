@@ -52,3 +52,10 @@ void SubAgentDescription::mapVariable(const std::string &sub_variable_name, cons
     // Variables match, create mapping
     data->variables.emplace(subVar->first, masterVar->first);
 }
+std::string SubAgentDescription::getVariableMapping(const std::string &sub_variable_name) {
+    const auto v = data->variables.find(sub_variable_name);
+    if (v != data->variables.end())
+        return v->second;
+    THROW InvalidAgentVar("Sub agent var '%s', either does not exist or has not been mapped yet, "
+        "in SubAgentDescription::getVariableMapping()\n", sub_variable_name.c_str());
+}

@@ -11,7 +11,7 @@ SubAgentDescription &SubModelDescription::bindAgent(const std::string &sub_agent
     // Sub agent exists
     const auto subagent = data->submodel->agents.find(sub_agent_name);
     if (subagent == data->submodel->agents.end()) {
-        THROW InvalidAgentName("SubModel '%s' does not contain Agent '%s', "
+        THROW InvalidSubAgentName("SubModel '%s' does not contain Agent '%s', "
             "in SubModelDescription::bindAgent()\n", data->submodel->name.c_str(), sub_agent_name.c_str());
     }
     // Master agent exists
@@ -25,7 +25,7 @@ SubAgentDescription &SubModelDescription::bindAgent(const std::string &sub_agent
         const auto subagent_bind = data->subagents.find(sub_agent_name);
         if (subagent_bind != data->subagents.end()) {
             auto master_agent_ptr = subagent_bind->second->masterAgent.lock();
-            THROW InvalidAgentName("SubModel '%s's Agent '%s' has already been bound to Master agent '%s', "
+            THROW InvalidSubAgentName("SubModel '%s's Agent '%s' has already been bound to Master agent '%s', "
                 "in SubModelDescription::bindAgent()\n", data->submodel->name.c_str(), sub_agent_name.c_str(), master_agent_ptr ? master_agent_ptr->name.c_str() : "?");
         }
     }
@@ -57,4 +57,21 @@ SubAgentDescription &SubModelDescription::bindAgent(const std::string &sub_agent
     }
     // return SubAgentDescription
     return *rtn->description;
+}
+
+SubAgentDescription &SubModelDescription::SubAgent(const std::string &sub_agent_name) {
+    const auto rtn = data->subagents.find(sub_agent_name);
+    if (rtn != data->subagents.end())
+        return *rtn->second->description;
+    THROW InvalidSubAgentName("SubAgent ('%s') either does not exist, or has not been bound yet, "
+        "in SubModelDescription::SubAgent().",
+        sub_agent_name.c_str());
+}
+const SubAgentDescription &SubModelDescription::getSubAgent(const std::string &sub_agent_name) const {
+    const auto rtn = data->subagents.find(sub_agent_name);
+    if (rtn != data->subagents.end())
+        return *rtn->second->description;
+    THROW InvalidSubAgentName("SubAgent ('%s')  either does not exist, or has not been bound yet, "
+        "in SubModelDescription::getSubAgent().",
+        sub_agent_name.c_str());
 }

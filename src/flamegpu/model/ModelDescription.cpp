@@ -71,7 +71,7 @@ SubModelDescription &ModelDescription::SubModel(const std::string &submodel_name
     auto rtn = model->submodels.find(submodel_name);
     if (rtn != model->submodels.end())
         return *rtn->second->description;
-    THROW InvalidSubModel("SubModel ('%s') was not found, "
+    THROW InvalidSubModelName("SubModel ('%s') was not found, "
         "in ModelDescription::SubModel().",
         submodel_name.c_str());
 }
@@ -104,10 +104,10 @@ LayerDescription& ModelDescription::Layer(const ModelData::size_type &layer_inde
 }
 LayerDescription& ModelDescription::Layer(const std::string &name) {
     if (!name.empty()) {  // Can't search for no name, multiple layers might be nameless
-            for (auto &layer : model->layers) {
-                if (layer->name == name)
-                    return *layer->description;
-            }
+        for (auto &layer : model->layers) {
+            if (layer->name == name)
+                return *layer->description;
+        }
     }
     THROW InvalidFuncLayerIndx("Layer '%s' was not found, "
         "in ModelDescription::Layer().",

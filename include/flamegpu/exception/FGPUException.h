@@ -215,6 +215,16 @@ DERIVED_FGPUException(InvalidSubModel, "Invalid SubModel");
  * It reports errors that are due to sub model name already being in use
  */
 DERIVED_FGPUException(InvalidSubModelName, "Invalid SubModel Name, already in use");
+/**
+ * Defines a type of object to be thrown as exception.
+ * It reports errors that are due to sub agent name not being recognised
+ */
+DERIVED_FGPUException(InvalidSubAgentName, "SubAgent name was not recognised");
+/**
+ * Defines a type of object to be thrown as exception.
+ * It reports errors when a user adds an unsupported combination of items to a layer
+ */
+DERIVED_FGPUException(InvalidLayerMember, "Layer configuration unsupported");
 
 /**
  * Defines a type of object to be thrown as exception.

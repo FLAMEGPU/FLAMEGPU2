@@ -132,8 +132,11 @@ class ModelDescription {
      */
     SubModelDescription &newSubModel(const std::string &submodel_name, const ModelDescription &submodel_description);
     /**
-     * Returns the named submodel
-     * @throws InvalidSubModel If a submodel with that name has not been added
+     * Returns a mutable reference to the named submodel
+     * @param submodel_name Name which can be used to the refer to the desired submodel within the model description hierarchy
+     * @return A mutable reference to the specified SubModelDescription
+     * @throws InvalidSubModelName If a submodel with the name does not exist within the model description hierarchy
+     * @see ModelDescription::getSubModel(const std::string &) for the immutable version
      */
     SubModelDescription &SubModel(const std::string &submodel_name);
 
@@ -230,11 +233,11 @@ class ModelDescription {
     }
     const MsgBruteForce::Description& getMessage(const std::string &message_name) const;
     /**
-     * Returns an immutable reference to the specified agent, which can be used to view the agent's configuration
-     * @param agent_name Name which can be used to the refer to the desired agent within the model description hierarchy
-     * @return An immutable reference to the specified AgentDescription
-     * @throws InvalidSubModelName If an agent with the name does not exist within the model description hierarchy
-     * @see ModelDescription::Agent(const std::string &) for the mutable version
+     * Returns an immutable reference to the specified submodel, which can be used to view the submodel's configuration
+     * @param submodel_name Name which can be used to the refer to the desired submodel within the model description hierarchy
+     * @return An immutable reference to the specified SubModelDescription
+     * @throws InvalidSubModelName If a submodel with the name does not exist within the model description hierarchy
+     * @see ModelDescription::SubModel(const std::string &) for the mutable version
      */
     const SubModelDescription& getSubModel(const std::string &submodel_name) const;
     /**

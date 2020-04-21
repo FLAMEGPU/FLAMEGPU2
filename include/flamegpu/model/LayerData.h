@@ -30,6 +30,11 @@ struct LayerData {
      */
     std::set<FLAMEGPU_HOST_FUNCTION_POINTER> host_functions;
     /**
+     * SubModel
+     * (If present, layer can hold no host_functions or agent_functions)
+     */
+    std::shared_ptr<SubModelData> sub_model;
+    /**
      * Description class which provides convenient accessors
      */
     std::unique_ptr<LayerDescription> description;

@@ -62,6 +62,7 @@ class LayerDescription {
      * @tparam AgentFunction Struct containing agent function definition
      * @throw InvalidAgentFunc If the agent function does not exist within the model hierarchy
      * @throw InvalidAgentFunc If the agent function has already been added to the layer
+     * @throw InvalidLayerMember If the layer already contains a SubModel
      * @note The agent function must first be added to an Agent
      * @see AgentDescription::newFunction(const std::string &, AgentFunction)
      */
@@ -73,6 +74,7 @@ class LayerDescription {
      * @param afd Agent function description to execute during this layer
      * @throw InvalidAgentFunc If the agent function does not exist within the model hierarchy
      * @throw InvalidAgentFunc If the agent function has already been added to the layer
+     * @throw InvalidLayerMember If the layer already contains a SubModel
      */
     void addAgentFunction(const AgentFunctionDescription &afd);
     /**
@@ -81,6 +83,7 @@ class LayerDescription {
      * @param name Name of the agent function description to execute during this layer
      * @throw InvalidAgentFunc If the agent function does not exist within the model hierarchy
      * @throw InvalidAgentFunc If the agent function has already been added to the layer
+     * @throw InvalidLayerMember If the layer already contains a SubModel
      */
     void addAgentFunction(const std::string &name);
     /**
@@ -89,6 +92,7 @@ class LayerDescription {
      * @param name Name of the agent function description to execute during this layer
      * @throw InvalidAgentFunc If the agent function does not exist within the model hierarchy
      * @throw InvalidAgentFunc If the agent function has already been added to the layer
+     * @throw InvalidLayerMember If the layer already contains a SubModel
      * @note This version exists because the template overload was preventing implicit cast to std::string
      */
     void addAgentFunction(const char *name);
@@ -97,9 +101,26 @@ class LayerDescription {
      * The host function will be called during this stage of model execution
      * @param func_p Function pointer to the host function declared using FLAMEGPU_HOST_FUNCTION notation
      * @throw InvalidHostFunc If the function has already been added to the layer
+     * @throw InvalidLayerMember If the layer already contains a SubModel
      * @note This version exists because the template overload was preventing implicit cast to std::string
      */
     void addHostFunction(FLAMEGPU_HOST_FUNCTION_POINTER func_p);
+    /**
+     * Adds a submodel to a layer
+     * If layer contains a submodel, it may contain nothing else
+     * @param name Name of the submodel (passed to ModelDescription::newSubModel() was called)
+     * @throw InvalidLayerMember If the layer already contains any agent functions or host functions
+     * @see addSubModel(const SubModelDescription &)
+     */
+    void addSubModel(const std::string &name);
+    /**
+     * Adds a submodel to a layer
+     * If layer contains a submodel, it may contain nothing else
+     * @param submodel SubModel description of the layer to be bound
+     * @throw InvalidLayerMember If the layer already contains any agent functions or host functions
+     * @see addSubModel(const std::string &)
+     */
+    void addSubModel(const SubModelDescription &submodel);
 
     /**
      * @return The layer's name
