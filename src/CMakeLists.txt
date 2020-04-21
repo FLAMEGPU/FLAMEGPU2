@@ -124,6 +124,8 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/model/SubModelData.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/SubModelDescription.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/SubAgentDescription.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDASubAgent.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDASubAgentStateList.h
 )
 SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/exception/FGPUException.cpp
@@ -165,6 +167,8 @@ SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/model/SubModelData.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/model/SubModelDescription.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/model/SubAgentDescription.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDASubAgent.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDASubAgentStateList.cu
 )
 if (VISUALISATION)
     SET(SRC_INCLUDE

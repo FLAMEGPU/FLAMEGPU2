@@ -6,9 +6,11 @@
 #include "flamegpu/model/AgentFunctionData.h"
 #include "flamegpu/model/LayerData.h"
 #include "flamegpu/model/AgentDescription.h"
+#include "flamegpu/model/SubModelData.h"
 #include "flamegpu/pop/AgentPopulation.h"
 #include "flamegpu/runtime/flamegpu_host_api.h"
 #include "flamegpu/gpu/CUDAScanCompaction.h"
+#include "flamegpu/gpu/CUDASubAgent.h"
 #include "flamegpu/util/nvtx.h"
 #include "flamegpu/util/compute_capability.cuh"
 #include "flamegpu/util/SignalHandlers.h"
@@ -41,6 +43,55 @@ CUDAAgentModel::CUDAAgentModel(const ModelDescription& _model)
     // create new cuda message and add to the map
     for (auto it_m = mm.cbegin(); it_m != mm.cend(); ++it_m) {
         message_map.emplace(it_m->first, std::make_unique<CUDAMessage>(*it_m->second, *this));
+    }
+
+    // populate the CUDA submodel map
+    const auto &smm = model->submodels;
+    // create new cuda message and add to the map
+    for (auto it_sm = smm.cbegin(); it_sm != smm.cend(); ++it_sm) {
+        submodel_map.emplace(it_sm->first, std::unique_ptr<CUDAAgentModel>(new CUDAAgentModel(it_sm->second, this)));
+    }
+}
+CUDAAgentModel::CUDAAgentModel(const std::shared_ptr<SubModelData> &submodel_desc, CUDAAgentModel *master_model)
+    : Simulation(submodel_desc->submodel)
+    , step_count(0)
+    , agent_map()
+    , message_map()
+    , streams(std::vector<cudaStream_t>())
+    , singletons(nullptr)
+    , singletonsInitialised(false)
+    , host_api(std::make_unique<FLAMEGPU_HOST_API>(*this, agentOffsets, agentData)) {
+    initOffsetsAndMap();
+
+    // populate the CUDA agent map (With SubAgents!)
+    const auto &am = model->agents;
+    // create new cuda agent and add to the map
+    for (auto it = am.cbegin(); it != am.cend(); ++it) {
+        // Locate the mapping
+        std::shared_ptr<SubAgentData> &mapping = submodel_desc->subagents.at(it->second->name);
+        // Locate the master agent
+        std::shared_ptr<AgentData> masterAgentDesc = mapping->masterAgent.lock();
+        if (!masterAgentDesc) {
+            THROW InvalidParent("Master agent description has expired, in CUDAAgentModel SubModel constructor.\n");
+        }
+        std::unique_ptr<CUDAAgent> &masterAgent = master_model->agent_map.at(masterAgentDesc->name);
+        agent_map.emplace(it->first, std::make_unique<CUDASubAgent>(*it->second, *this, masterAgent, mapping));
+    }  // insert into map using value_type
+
+    // populate the CUDA message map (Sub Messages not currently supported)
+    const auto &mm = model->messages;
+    // create new cuda message and add to the map
+    for (auto it_m = mm.cbegin(); it_m != mm.cend(); ++it_m) {
+        message_map.emplace(it_m->first, std::make_unique<CUDAMessage>(*it_m->second, *this));
+    }
+
+    // Sub environment????
+
+    // populate the CUDA submodel map
+    const auto &smm = model->submodels;
+    // create new cuda message and add to the map
+    for (auto it_sm = smm.cbegin(); it_sm != smm.cend(); ++it_sm) {
+        submodel_map.emplace(it_sm->first, std::unique_ptr<CUDAAgentModel>(new CUDAAgentModel(it_sm->second, this)));
     }
 }
 
@@ -901,7 +952,7 @@ void CUDAAgentModel::processHostAgentCreation() {
                     agent_map.at(agent.first)->resize(static_cast<unsigned int>(state.second.size()) + current_state_size, 0);  // StreamId Doesn't matter
                 }
                 // Scatter to device
-                agent_map.at(agent.first)->getAgentStateList(state.first).scatterHostCreation(static_cast<unsigned int>(state.second.size()), dt_buff, offsets);
+                agent_map.at(agent.first)->getAgentStateList(state.first)->scatterHostCreation(static_cast<unsigned int>(state.second.size()), dt_buff, offsets);
                 // Clear buffer
                 state.second.clear();
             }

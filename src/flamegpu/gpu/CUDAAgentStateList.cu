@@ -12,13 +12,15 @@
 #include <device_launch_parameters.h>
 
 #include "flamegpu/gpu/CUDAAgentStateList.h"
+#include "flamegpu/gpu/CUDASubAgentStateList.h"
 
 #include "flamegpu/gpu/CUDAAgent.h"
 #include "flamegpu/gpu/CUDAErrorChecking.h"
 #include "flamegpu/pop/AgentStateMemory.h"
 #include "flamegpu/model/AgentDescription.h"
-#include "flamegpu/pop/AgentPopulation.h"
+#include "flamegpu/model/SubModelData.h"
 #include "flamegpu/gpu/CUDAScatter.h"
+#include "flamegpu/gpu/CUDASubAgent.h"
 #include "flamegpu/runtime/flamegpu_host_new_agent_api.h"
 
 /**
@@ -32,14 +34,22 @@ CUDAAgentStateList::CUDAAgentStateList(CUDAAgent& cuda_agent)
     , agent(cuda_agent) {
     // allocate state lists
     if (agent.getMaximumListSize()) {
-        allocateDeviceAgentList(d_list, agent.getMaximumListSize());
-        allocateDeviceAgentList(d_swap_list, agent.getMaximumListSize());
+        // Virtual fn inside constructor is always resolved this way
+        CUDAAgentStateList::allocateDeviceAgentList(d_list, agent.getMaximumListSize());
+        CUDAAgentStateList::allocateDeviceAgentList(d_swap_list, agent.getMaximumListSize());
         // Init condition state lists
         for (const auto &c : d_list)
             condition_d_list.emplace(c);
         for (const auto &c : d_swap_list)
             condition_d_swap_list.emplace(c);
     }
+}
+CUDAAgentStateList::CUDAAgentStateList(CUDASubAgent& cuda_agent)
+    : condition_state(0)
+    , d_new_list_alloc_size(0)
+    , current_list_size(0)
+    , agent(cuda_agent) {
+    // Don't attempt to init, leave that to subclass
 }
 
 /**
@@ -153,8 +163,8 @@ void CUDAAgentStateList::allocateDeviceAgentList(CUDAMemoryMap &memory_map, cons
 
         // get the variable size from agent description
         const auto &var = agent.getAgentDescription().variables.at(mm.first);
-        size_t var_size = var.type_size;
-        unsigned int  var_elements = var.elements;
+        const size_t var_size = var.type_size;
+        const unsigned int  var_elements = var.elements;
 
         // do the device allocation
         void * d_ptr;
@@ -375,6 +385,21 @@ void CUDAAgentStateList::initNew(const unsigned int &newSize, const unsigned int
         agent.getAgentDescription().variables,
         d_new_list,
         newSize, 0);
+}
+void CUDAAgentStateList::setDependentList(CUDASubAgentStateList *d, const std::shared_ptr<const SubAgentData> &mapping) {
+    if (dependent_state || dependent_mapping) {
+        THROW InvalidOperation("CUDAAgentStateList may only have it's dependent set once, in CUDAAgentStateList::setDependentList()\n");
+    }
+    dependent_state = d;
+    dependent_mapping = mapping;
+    // Initialise mapped lists
+    if (agent.getMaximumListSize()) {
+        for (auto &vm : dependent_mapping->variables) {
+            const std::string &sub_var_name = vm.first;
+            const std::string &master_var_name = vm.second;
+            d->setLists(sub_var_name, d_list.at(master_var_name), d_swap_list.at(master_var_name), nullptr);
+        }
+    }
 }
 void CUDAAgentStateList::scatterHostCreation(const unsigned int &newSize, char *const d_inBuff, const VarOffsetStruct &offsets) {
     CUDAScatter &cs = CUDAScatter::getInstance(0);  // No plans to make this async yet

@@ -1,7 +1,5 @@
 #ifndef INCLUDE_FLAMEGPU_GPU_CUDAAGENTMODEL_H_
 #define INCLUDE_FLAMEGPU_GPU_CUDAAGENTMODEL_H_
-
-#include <map>
 #include <memory>
 #include <vector>
 #include <string>
@@ -11,8 +9,8 @@
 
 #include "flamegpu/gpu/CUDAAgent.h"
 #include "flamegpu/gpu/CUDAMessage.h"
+#include "flamegpu/gpu/CUDAScatter.h"
 #include "flamegpu/runtime/utility/RandomManager.cuh"
-#include "CUDAScatter.h"
 #include "flamegpu/runtime/flamegpu_host_new_agent_api.h"
 #include "flamegpu/visualiser/ModelVis.h"
 
@@ -26,12 +24,17 @@ class CUDAAgentModel : public Simulation {
      * Map of a number of CUDA agents by name.
      * The CUDA agents are responsible for allocating and managing all the device memory
      */
-    typedef std::map<std::string, std::unique_ptr<CUDAAgent>> CUDAAgentMap;
+    typedef std::unordered_map<std::string, std::unique_ptr<CUDAAgent>> CUDAAgentMap;
     /**
      * Map of a number of CUDA messages by name.
      * The CUDA messages are responsible for allocating and managing all the device memory
      */
-    typedef std::map<std::string, std::unique_ptr<CUDAMessage>> CUDAMessageMap;
+    typedef std::unordered_map<std::string, std::unique_ptr<CUDAMessage>> CUDAMessageMap;
+    /**
+     * Map of a number of CUDA sub models by name.
+     * The CUDA submodels are responsible for allocating and managing all the device memory of non mapped agent vars
+     */
+    typedef std::unordered_map<std::string, std::unique_ptr<CUDAAgentModel>> CUDASubModelMap;
 
  public:
      /**
@@ -50,6 +53,18 @@ class CUDAAgentModel : public Simulation {
      * @param model The model description to initialise the runner to execute
      */
     explicit CUDAAgentModel(const ModelDescription& model);
+
+ private:
+    /**
+     * Private constructor, used to initialise submodels
+     * Allocates CUDASubAgents, and handles mappings
+     * @param submodel_desc The submodel description of the submodel (this should be from the already cloned model hierarchy)
+     * @param master_model The CUDAAgentModel of the master model
+     * @todo Move common components (init list and initOffsetsAndMap()) into a common/shared constructor
+     */
+    CUDAAgentModel(const std::shared_ptr<SubModelData>& submodel_desc, CUDAAgentModel *master_model);
+
+ public:
     /**
      * Inverse operation of contructor
      */
@@ -181,6 +196,10 @@ class CUDAAgentModel : public Simulation {
      * Map of message storage 
      */
     CUDAMessageMap message_map;
+    /**
+     * Map of submodel storage
+     */
+    CUDASubModelMap submodel_map;
     /**
      * Streams created within this cuda context for executing functions within layers in parallel
      */

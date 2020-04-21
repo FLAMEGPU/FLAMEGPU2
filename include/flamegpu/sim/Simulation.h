@@ -24,7 +24,15 @@ class Simulation {
         bool timing = false;
     };
     virtual ~Simulation() = default;
+    /**
+     * This constructor takes a clone of the ModelData hierarchy
+     */
     explicit Simulation(const ModelDescription& model);
+    /**
+     * This constructor uses the provided ModelData hierarchy
+     * (should only be used with a cloned version, e.g. submodels)
+     */
+    explicit Simulation(const std::shared_ptr<ModelData>& model);
     void initialise(int argc, const char** argv);
 
     virtual bool step() = 0;

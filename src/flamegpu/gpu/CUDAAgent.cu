@@ -44,7 +44,7 @@ CUDAAgent::CUDAAgent(const AgentData& description, const CUDAAgentModel& cuda_mo
     // Regen new empty state_map
     for (const std::string &s : agent_description.states) {
         // allocate memory for each state list by creating a new Agent State List
-        state_map.insert(CUDAStateMap::value_type(s, std::unique_ptr<CUDAAgentStateList>(new CUDAAgentStateList(*this))));
+        state_map.insert(CUDAStateMap::value_type(s, std::make_shared<CUDAAgentStateList>(*this)));
     }
 }
 
@@ -319,7 +319,8 @@ void CUDAAgent::processDeath(const AgentFunctionData& func, const unsigned int &
         sm->second->scatter(streamId, CUDAAgentStateList::ScatterMode::Death);
     }
 }
-CUDAAgentStateList& CUDAAgent::getAgentStateList(const std::string &state_name) const {
+
+const std::shared_ptr<CUDAAgentStateList> &CUDAAgent::getAgentStateList(const std::string &state_name) const {
     // check the cuda agent state map to find the correct state list for functions starting state
     CUDAStateMap::const_iterator sm = state_map.find(state_name);
 
@@ -328,15 +329,15 @@ CUDAAgentStateList& CUDAAgent::getAgentStateList(const std::string &state_name) 
             "in CUDAAgent::getAgentStateList()",
             agent_description.name.c_str(), state_name.c_str());
     }
-    return *sm->second;
+    return sm->second;
 }
 
 void* CUDAAgent::getStateVariablePtr(const std::string& state_name, const std::string& variable_name) {
-    return getAgentStateList(state_name).getAgentListVariablePointer(variable_name);
+    return getAgentStateList(state_name)->getAgentListVariablePointer(variable_name);
 }
 
 ModelData::size_type CUDAAgent::getStateSize(const std::string& state_name) const {
-    return getAgentStateList(state_name).getCUDAStateListSize();
+    return getAgentStateList(state_name)->getCUDAStateListSize();
 }
 
 void CUDAAgent::processFunctionCondition(const AgentFunctionData& func, const unsigned int &streamId) {

@@ -1,13 +1,3 @@
-/**
-* @file CUDAAgent.h
-* @authors Paul
-* @date 5 Mar 2014
-* @brief
-*
-* @see
-* @warning
-*/
-
 #ifndef INCLUDE_FLAMEGPU_GPU_CUDAAGENT_H_
 #define INCLUDE_FLAMEGPU_GPU_CUDAAGENT_H_
 
@@ -35,8 +25,8 @@ class AgentPopulation;
 class Curve;
 class CUDAAgentModel;
 
-typedef std::map<const std::string, std::unique_ptr<CUDAAgentStateList>> CUDAStateMap;  // map of state name to CUDAAgentStateList which allocates memory on the device
-typedef std::pair<const std::string, std::unique_ptr<CUDAAgentStateList>> CUDAStateMapPair;
+typedef std::map<const std::string, std::shared_ptr<CUDAAgentStateList>> CUDAStateMap;  // map of state name to CUDAAgentStateList which allocates memory on the device
+typedef std::pair<const std::string, std::shared_ptr<CUDAAgentStateList>> CUDAStateMapPair;
 
 typedef std::map<const std::string, std::unique_ptr<jitify::KernelInstantiation>> CUDARTCFuncMap;  // map of state name to CUDAAgentStateList which allocates memory on the device
 typedef std::pair<const std::string, std::unique_ptr<jitify::KernelInstantiation>> CUDARTCFuncMapPair;
@@ -50,7 +40,11 @@ typedef std::pair<const std::string, std::unique_ptr<jitify::KernelInstantiation
 class CUDAAgent : public AgentInterface {
     friend class AgentVis;
  public:
-    explicit CUDAAgent(const AgentData& description, const CUDAAgentModel& cuda_model);
+    /**
+     * Constructor
+     * @param description The agent description to be represented
+     */
+    CUDAAgent(const AgentData& description, const CUDAAgentModel& cuda_model);
     virtual ~CUDAAgent(void);
 
     const AgentData& getAgentDescription() const override;
@@ -67,7 +61,7 @@ class CUDAAgent : public AgentInterface {
 
     void getPopulationData(AgentPopulation& population);
 
-    unsigned int getMaximumListSize() const;
+    virtual unsigned int getMaximumListSize() const;
 
     /** @brief Uses the cuRVE runtime to map the variables used by the agent function to the cuRVE library so that can be accessed by name within a n agent function
     */
@@ -82,7 +76,7 @@ class CUDAAgent : public AgentInterface {
 
     void unmapRuntimeVariables(const AgentFunctionData& func) const;
 
-    CUDAAgentStateList& getAgentStateList(const std::string &state_name) const;
+    const std::shared_ptr<CUDAAgentStateList> &getAgentStateList(const std::string &state_name) const;
 
     void *getStateVariablePtr(const std::string &state_name, const std::string &variable_name) override;
     ModelData::size_type getStateSize(const std::string &state_name) const override;
@@ -171,7 +165,6 @@ class CUDAAgent : public AgentInterface {
     /** @brief    Zero all state variable data. */
     void zeroAllStateVariableData();
 
- private:
     const AgentData& agent_description;
 
     const CUDAAgentModel& cuda_model;

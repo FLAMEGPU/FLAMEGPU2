@@ -18,8 +18,11 @@
 #include <atomic>
 
 struct VarOffsetStruct;
+struct SubAgentData;
 class CUDAAgent;
 class AgentStateMemory;
+class CUDASubAgentStateList;
+class CUDASubAgent;
 
 // #define UNIFIED_GPU_MEMORY
 
@@ -119,8 +122,10 @@ class CUDAAgentStateList {
      * @param streamId Stream index for stream safe operations
      */
     void initNew(const unsigned int &newSize, const unsigned int &streamId);
+    void setDependentList(CUDASubAgentStateList *d, const std::shared_ptr<const SubAgentData> &mapping);
 
  protected:
+    explicit CUDAAgentStateList(CUDASubAgent& cuda_agent);
     /*
      * The purpose of this function is to allocate on the device a block of memory for each variable. 
      * These vectors are stored within a hash list using the cuRVE technique so that the location of the vectors can be quickly determined at runtime by FLAME GPU functions.
@@ -128,9 +133,9 @@ class CUDAAgentStateList {
      * @param agent_list The agent list to allocate memory within (d_list, d_swap_list, d_new_list)
      * @param allocSize The number of agents that the list needs to be able to hold (probably agent.getMaximumListSize())
      */
-    void allocateDeviceAgentList(CUDAMemoryMap &agent_list, const unsigned int &allocSize);
+    virtual void allocateDeviceAgentList(CUDAMemoryMap &agent_list, const unsigned int &allocSize);
 
-    void releaseDeviceAgentList(CUDAMemoryMap &agent_list);
+    virtual void releaseDeviceAgentList(CUDAMemoryMap &agent_list);
 
     void zeroDeviceAgentList(CUDAMemoryMap &agent_list);
 
@@ -141,7 +146,6 @@ class CUDAAgentStateList {
      */
     void resizeDeviceAgentList(CUDAMemoryMap &agent_list, const unsigned int &newSize, bool copyData);
 
- private:
     /**
      * This value is the number of temporarily 'disabled' agents at the start of the state list
      * It is used to temporarily ignore agents which fail agent function conditions
@@ -177,6 +181,12 @@ class CUDAAgentStateList {
      */
     unsigned int current_list_size;
     CUDAAgent& agent;
+    /**
+     * If a sub agent state is mapped to the state represented by this state list
+     * This is the mapped statelist, which shares some variables
+     */
+    CUDASubAgentStateList *dependent_state = nullptr;
+    std::shared_ptr<const SubAgentData> dependent_mapping = nullptr;
 };
 
 #endif  // INCLUDE_FLAMEGPU_GPU_CUDAAGENTSTATELIST_H_

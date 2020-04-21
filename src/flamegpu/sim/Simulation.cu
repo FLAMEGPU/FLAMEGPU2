@@ -13,6 +13,8 @@
 
 Simulation::Simulation(const ModelDescription& _model)
     : model(_model.model->clone()) { }
+Simulation::Simulation(const std::shared_ptr<ModelData> &_model)
+    : model(_model) { }
 
 void Simulation::initialise(int argc, const char** argv) {
     NVTX_RANGE("Simulation::initialise");
