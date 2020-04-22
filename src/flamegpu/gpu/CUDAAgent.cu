@@ -588,7 +588,7 @@ const jitify::KernelInstantiation& CUDAAgent::getRTCInstantiation(const std::str
     return *mm->second;
 }
 
-void CUDAAgent::RTCSafeCudaMemcpyToSymbol(const void* symbol, const char* symbol_name, const void* src, size_t count, size_t offset) const{
+void CUDAAgent::RTCSafeCudaMemcpyToSymbol(const void* symbol, const char* symbol_name, const void* src, size_t count, size_t offset) const {
     // make the mem copy to runtime API symbol
     gpuErrchk(cudaMemcpyToSymbol(symbol, src, count, offset));
     // loop through any agent functions

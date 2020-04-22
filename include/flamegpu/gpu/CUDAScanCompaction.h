@@ -78,7 +78,7 @@ namespace CUDAScanCompaction {
     extern CUDAScanCompactionConfig hd_configs[MAX_TYPES][MAX_STREAMS];
 
     void resize(const unsigned int& newCount, const Type& type, const unsigned int& streamId, const CUDAAgent &agent);
-    void resize(const unsigned int& newCount, const Type& type, const unsigned int& streamId); // TODO: Remove after updating messaging
+    void resize(const unsigned int& newCount, const Type& type, const unsigned int& streamId);      // TODO: Remove after updating messaging
     void zero(const Type& type, const unsigned int& streamId);
 }  // namespace CUDAScanCompaction
 }  // namespace flamegpu_internal

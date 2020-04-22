@@ -18,6 +18,7 @@ CUDAAgentModel::CUDAAgentModel(const ModelDescription& _model)
     , streams(std::vector<cudaStream_t>())
     , singletons(nullptr)
     , singletonsInitialised(false)
+    , rtcInitialised(false)
     , host_api(std::make_unique<FLAMEGPU_HOST_API>(*this, agentOffsets, agentData)) {
     initOffsetsAndMap();
 
@@ -57,6 +58,9 @@ bool CUDAAgentModel::step() {
 
     // Ensure singletons have been initialised
     initialiseSingletons();
+
+    // initialise any RTC function by compiling if not already compiled
+    initialiseRTC();
 
     step_count++;
     unsigned int nStreams = 1;
@@ -642,8 +646,14 @@ void CUDAAgentModel::initialiseSingletons() {
         // Populate the environment properties in constant Cache
         singletons->environment.init(model->name, *model->environment);
 
+        singletonsInitialised = true;
+    }
+}
+
+void CUDAAgentModel::initialiseRTC() {
+    // Only do this once.
+    if (!rtcInitialised) {
         // Build any RTC functions
-        // populate the CUDA agent map
         const auto& am = model->agents;
         // create new cuda agent and add to the map
         for (auto it = am.cbegin(); it != am.cend(); ++it) {
@@ -658,7 +668,7 @@ void CUDAAgentModel::initialiseSingletons() {
             }
         }
 
-        singletonsInitialised = true;
+        rtcInitialised = true;
     }
 }
 

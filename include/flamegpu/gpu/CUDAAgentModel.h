@@ -177,9 +177,19 @@ class CUDAAgentModel : public Simulation {
     bool singletonsInitialised;
 
     /**
+     * Flag indicating that RTC functions have been compiled
+     */
+    bool rtcInitialised;
+
+    /**
      * Initialise the instances singletons.
      */
     void initialiseSingletons();
+    /**
+     * Initialise the rtc by building any RTC functions.
+     * This must be done at the start of step to ensure that any device selection has taken place and to preserve the context between runtime and RTC.
+     */
+    void initialiseRTC();
     /**
      * One instance of host api is used for entire model
      */
