@@ -34,8 +34,9 @@
 * CUDAMessage class
 * @brief allocates the hash table/list for message variables and copy the list to device
 */
-CUDAMessage::CUDAMessage(const MsgBruteForce::Data& description)
+CUDAMessage::CUDAMessage(const MsgBruteForce::Data& description, const CUDAAgentModel& cuda_model)
     : message_description(description)
+    , cuda_model(cuda_model)
     , message_count(0)
     , max_list_size(0)
     , truncate_messagelist_flag(true)
@@ -77,7 +78,7 @@ void CUDAMessage::resize(unsigned int newSize, const unsigned int &streamId) {
         }
         // This drops old message data
         message_list = std::unique_ptr<CUDAMessageList>(new CUDAMessageList(*this));
-        flamegpu_internal::CUDAScanCompaction::resize(max_list_size, flamegpu_internal::CUDAScanCompaction::MESSAGE_OUTPUT, streamId);
+        flamegpu_internal::CUDAScanCompaction::resize(max_list_size, flamegpu_internal::CUDAScanCompaction::MESSAGE_OUTPUT, streamId, cuda_model);
 
 // #ifdef _DEBUG
         /**set the message list to zero*/

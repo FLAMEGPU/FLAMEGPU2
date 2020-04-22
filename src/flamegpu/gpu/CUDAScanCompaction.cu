@@ -39,7 +39,7 @@ __host__ void CUDAScanCompactionConfig::zero_scan_flag() {
     }
 }
 
-__host__ void CUDAScanCompactionConfig::resize_scan_flag(const unsigned int& count, const CUDAAgent& agent) {
+__host__ void CUDAScanCompactionConfig::resize_scan_flag(const unsigned int& count, const CUDAAgentModel& agent) {
     if (count + 1 > scan_flag_len) {
         free_scan_flag();
         gpuErrchk(cudaMalloc(&d_ptrs.scan_flag, (count + 1) * sizeof(unsigned int)));  // +1 so we can get the total from the scan
@@ -55,32 +55,13 @@ __host__ void CUDAScanCompactionConfig::resize_scan_flag(const unsigned int& cou
     agent.RTCSafeCudaMemcpyToSymbol(flamegpu_internal::CUDAScanCompaction::ds_configs, "flamegpu_internal::CUDAScanCompaction::ds_configs", &this->d_ptrs, sizeof(CUDAScanCompactionPtrs), output_dist);
 }
 
-// TODO : Remove
-__host__ void CUDAScanCompactionConfig::resize_scan_flag(const unsigned int& count) {
-    if (count + 1 > scan_flag_len) {
-        free_scan_flag();
-        gpuErrchk(cudaMalloc(&d_ptrs.scan_flag, (count + 1) * sizeof(unsigned int)));  // +1 so we can get the total from the scan
-        gpuErrchk(cudaMalloc(&d_ptrs.position, (count + 1) * sizeof(unsigned int)));  // +1 so we can get the total from the scan
-        // Calculate offset of this object from start of array, then divide by size of this object, and multiply by size of device object
-        ptrdiff_t output_dist = (std::distance(reinterpret_cast<char*>(flamegpu_internal::CUDAScanCompaction::hd_configs), reinterpret_cast<char*>(this)) / sizeof(CUDAScanCompactionConfig)) * sizeof(CUDAScanCompactionPtrs);
-        gpuErrchk(cudaMemcpyToSymbol(flamegpu_internal::CUDAScanCompaction::ds_configs, &this->d_ptrs, sizeof(CUDAScanCompactionPtrs), output_dist));
-        scan_flag_len = count + 1;
-    }
-}
 
-
-void flamegpu_internal::CUDAScanCompaction::resize(const unsigned int& newCount, const flamegpu_internal::CUDAScanCompaction::Type& type, const unsigned int& streamId, const CUDAAgent &agent) {
+void flamegpu_internal::CUDAScanCompaction::resize(const unsigned int& newCount, const flamegpu_internal::CUDAScanCompaction::Type& type, const unsigned int& streamId, const CUDAAgentModel &agent) {
     assert(streamId < MAX_STREAMS);
     assert(type < MAX_TYPES);
     hd_configs[type][streamId].resize_scan_flag(newCount, agent);
 }
 
-// TODO : Remove
-void flamegpu_internal::CUDAScanCompaction::resize(const unsigned int& newCount, const flamegpu_internal::CUDAScanCompaction::Type& type, const unsigned int& streamId) {
-    assert(streamId < MAX_STREAMS);
-    assert(type < MAX_TYPES);
-    hd_configs[type][streamId].resize_scan_flag(newCount);
-}
 
 void flamegpu_internal::CUDAScanCompaction::zero(const flamegpu_internal::CUDAScanCompaction::Type& type, const unsigned int& streamId) {
     assert(streamId < MAX_STREAMS);

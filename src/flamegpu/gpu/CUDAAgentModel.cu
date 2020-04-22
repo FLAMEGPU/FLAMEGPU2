@@ -27,14 +27,14 @@ CUDAAgentModel::CUDAAgentModel(const ModelDescription& _model)
     // create new cuda agent and add to the map
     for (auto it = am.cbegin(); it != am.cend(); ++it) {
         // insert into map using value_type and store a referecne to the map pair
-        agent_map.emplace(it->first, std::make_unique<CUDAAgent>(*it->second)).first;
+        agent_map.emplace(it->first, std::make_unique<CUDAAgent>(*it->second, *this)).first;
     }
 
     // populate the CUDA message map
     const auto &mm = model->messages;
     // create new cuda message and add to the map
     for (auto it_m = mm.cbegin(); it_m != mm.cend(); ++it_m) {
-        message_map.emplace(it_m->first, std::make_unique<CUDAMessage>(*it_m->second));
+        message_map.emplace(it_m->first, std::make_unique<CUDAMessage>(*it_m->second, *this));
     }
 }
 
@@ -108,7 +108,7 @@ bool CUDAAgentModel::step() {
                 if (func_des->condition) {
                     auto func_agent = func_des->parent.lock();
                     const CUDAAgent& cuda_agent = getCUDAAgent(func_agent->name);
-                    flamegpu_internal::CUDAScanCompaction::resize(cuda_agent.getStateSize(func_des->initial_state), flamegpu_internal::CUDAScanCompaction::AGENT_DEATH, j, cuda_agent);
+                    flamegpu_internal::CUDAScanCompaction::resize(cuda_agent.getStateSize(func_des->initial_state), flamegpu_internal::CUDAScanCompaction::AGENT_DEATH, j, *this);
 
                     // Configure runtime access of the functions variables within the FLAME_API object
                     cuda_agent.mapRuntimeVariables(*func_des, func_des->initial_state);
@@ -204,7 +204,7 @@ bool CUDAAgentModel::step() {
 
             const CUDAAgent& cuda_agent = getCUDAAgent(func_agent->name);
             const unsigned int STATE_SIZE = cuda_agent.getStateSize(func_des->initial_state);
-            flamegpu_internal::CUDAScanCompaction::resize(STATE_SIZE, flamegpu_internal::CUDAScanCompaction::AGENT_DEATH, j, cuda_agent);
+            flamegpu_internal::CUDAScanCompaction::resize(STATE_SIZE, flamegpu_internal::CUDAScanCompaction::AGENT_DEATH, j, *this);
 
             // check if a function has an input message
             if (auto im = func_des->message_input.lock()) {
@@ -224,7 +224,7 @@ bool CUDAAgentModel::step() {
                 const unsigned int existingMessages = cuda_message.getTruncateMessageListFlag() ? 0 : cuda_message.getMessageCount();
                 cuda_message.resize(existingMessages + STATE_SIZE, j);
                 cuda_message.mapWriteRuntimeVariables(*func_des, STATE_SIZE);
-                flamegpu_internal::CUDAScanCompaction::resize(STATE_SIZE, flamegpu_internal::CUDAScanCompaction::MESSAGE_OUTPUT, j, cuda_agent);
+                flamegpu_internal::CUDAScanCompaction::resize(STATE_SIZE, flamegpu_internal::CUDAScanCompaction::MESSAGE_OUTPUT, j, *this);
                 // Zero the scan flag that will be written to
                 if (func_des->message_output_optional)
                     flamegpu_internal::CUDAScanCompaction::zero(flamegpu_internal::CUDAScanCompaction::MESSAGE_OUTPUT, j);
@@ -265,6 +265,8 @@ bool CUDAAgentModel::step() {
             } else {
                 cuda_agent.mapRuntimeVariables(*func_des, func_des->initial_state);
             }
+
+            // TODO: Map message input and  output variables
 
             // Zero the scan flag that will be written to
             if (func_des->has_agent_death)
@@ -757,5 +759,21 @@ void CUDAAgentModel::processHostAgentCreation() {
     if (t_buff) {
         free(t_buff);
         gpuErrchk(cudaFree(dt_buff));
+    }
+}
+
+void CUDAAgentModel::RTCSafeCudaMemcpyToSymbol(const void* symbol, const char* symbol_name, const void* src, size_t count, size_t offset) const {
+    // make the mem copy to runtime API symbol
+    gpuErrchk(cudaMemcpyToSymbol(symbol, src, count, offset));
+    // loop through agents
+    for (const auto& agent_pair : agent_map) {
+        // loop through any agent functions
+        for (const CUDARTCFuncMapPair& rtc_func_pair : agent_pair.second->getRTCFunctions()) {
+            CUdeviceptr rtc_dev_ptr = 0;
+            // get the RTC device symbol
+            rtc_dev_ptr = rtc_func_pair.second->get_global_ptr(symbol_name);
+            // make the memcpy to the rtc version of the symbol
+            gpuErrchkDriverAPI(cuMemcpyHtoD(rtc_dev_ptr + offset, src, count));
+        }
     }
 }

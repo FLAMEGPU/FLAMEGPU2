@@ -33,6 +33,7 @@ struct AgentData;
 struct AgentFunctionData;
 class AgentPopulation;
 class Curve;
+class CUDAAgentModel;
 
 typedef std::map<const std::string, std::unique_ptr<CUDAAgentStateList>> CUDAStateMap;  // map of state name to CUDAAgentStateList which allocates memory on the device
 typedef std::pair<const std::string, std::unique_ptr<CUDAAgentStateList>> CUDAStateMapPair;
@@ -48,7 +49,7 @@ typedef std::pair<const std::string, std::unique_ptr<jitify::KernelInstantiation
  */
 class CUDAAgent : public AgentInterface {
  public:
-    explicit CUDAAgent(const AgentData& description);
+    explicit CUDAAgent(const AgentData& description, const CUDAAgentModel& cuda_model);
     virtual ~CUDAAgent(void);
 
     const AgentData& getAgentDescription() const override;
@@ -163,14 +164,9 @@ class CUDAAgent : public AgentInterface {
     const jitify::KernelInstantiation& getRTCInstantiation(const std::string &function_name) const;
 
     /**
-     * Performs a cudaMemCopyToSymbol in the runimte library and also updates the symbols of any RTC functions (which exist seperately within thier own cuda module)
-     * Will thrown an error if any of the calls fail.
-     * @param symbol_name The name of the symbol
-     * @param src Source memory address
-     * @param count Size in bytes to copy
-     * @param offset Offset from start of symbol in bytes
+     * Returns the CUDARTCFuncMap
      */
-    void RTCSafeCudaMemcpyToSymbol(const void* symbol, const char* symbol_name, const void* src, size_t count, size_t offset = 0) const;
+    const CUDARTCFuncMap& getRTCFunctions() const;
 
 
  protected:
@@ -179,6 +175,8 @@ class CUDAAgent : public AgentInterface {
 
  private:
     const AgentData& agent_description;
+
+    const CUDAAgentModel& cuda_model;
 
     CUDAStateMap state_map;
 

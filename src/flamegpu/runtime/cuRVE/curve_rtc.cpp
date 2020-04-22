@@ -35,7 +35,7 @@ __device__ bool strings_equal(const char(&a)[N], const char(&b)[M]) {
 * Dynamically generated version of Curve without hashing
 */
 
-$DYNAMIC_AGENT_VARIBALES
+$DYNAMIC_VARIABLES
 
 class Curve {
     public:
@@ -126,7 +126,7 @@ void CurveRTCHost::unregisterVariable(const char* variableName, unsigned int nam
 }
 
 std::string CurveRTCHost::getDynamicHeader() {
-    // generate dynamic variables ($DYNAMIC_AGENT_VARIBALES)
+    // generate dynamic variables ($DYNAMIC_VARIABLES)
     std::stringstream variables;
     for (auto key_pair : RTCVariables) {
         unsigned int namespace_hash = key_pair.first;
@@ -134,7 +134,7 @@ std::string CurveRTCHost::getDynamicHeader() {
             variables << "__device__ " << element.second << "* " << "curve_rtc_ptr_" << namespace_hash << "_" << element.first << ";\n";
         }
     }
-    setHeaderPlaceholder("$DYNAMIC_AGENT_VARIBALES", variables.str());
+    setHeaderPlaceholder("$DYNAMIC_VARIABLES", variables.str());
 
     // generate getVariable func implementation ($DYNAMIC_GETVARIABLE_IMPL)
     std::stringstream getVariableImpl;

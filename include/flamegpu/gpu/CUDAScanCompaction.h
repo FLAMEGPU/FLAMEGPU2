@@ -11,7 +11,7 @@
  */
 
 // forward declare classes from other modules
-class CUDAAgent;
+class CUDAAgentModel;
 
 /**
  * Could make this cleaner with an array of a nested struct and enums for access, rather than copy paste/rename
@@ -42,8 +42,7 @@ struct CUDAScanCompactionConfig {
     unsigned int cub_temp_size_max_list_size = 0;
 
     __host__ void free_scan_flag();
-    __host__ void resize_scan_flag(const unsigned int& count, const CUDAAgent& agent);
-    __host__ void resize_scan_flag(const unsigned int& count);  // TODO: Remove after updating messaging
+    __host__ void resize_scan_flag(const unsigned int& count, const CUDAAgentModel& agent);
     __host__ void zero_scan_flag();
 };
 typedef CUDAScanCompactionPtrs CUDASCPtrs;  // Shorthand
@@ -77,8 +76,7 @@ namespace CUDAScanCompaction {
      */
     extern CUDAScanCompactionConfig hd_configs[MAX_TYPES][MAX_STREAMS];
 
-    void resize(const unsigned int& newCount, const Type& type, const unsigned int& streamId, const CUDAAgent &agent);
-    void resize(const unsigned int& newCount, const Type& type, const unsigned int& streamId);      // TODO: Remove after updating messaging
+    void resize(const unsigned int& newCount, const Type& type, const unsigned int& streamId, const CUDAAgentModel&agent);
     void zero(const Type& type, const unsigned int& streamId);
 }  // namespace CUDAScanCompaction
 }  // namespace flamegpu_internal

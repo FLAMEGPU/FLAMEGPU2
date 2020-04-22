@@ -35,8 +35,9 @@
 * CUDAAgent class
 * @brief allocates the hash table/list for agent variables and copy the list to device
 */
-CUDAAgent::CUDAAgent(const AgentData& description)
+CUDAAgent::CUDAAgent(const AgentData& description, const CUDAAgentModel& cuda_model)
     : agent_description(description)
+    , cuda_model(cuda_model)
     , state_map()
     , max_list_size(0) {
     // Regen new empty state_map
@@ -76,7 +77,7 @@ void CUDAAgent::resize(const unsigned int &newSize, const unsigned int &streamId
         }
     }
     // Notify scan flag that it might need resizing
-    flamegpu_internal::CUDAScanCompaction::resize(max_list_size, flamegpu_internal::CUDAScanCompaction::AGENT_DEATH, streamId, *this);
+    flamegpu_internal::CUDAScanCompaction::resize(max_list_size, flamegpu_internal::CUDAScanCompaction::AGENT_DEATH, streamId, cuda_model);
 }
 /**
 * @brief Sets the population data
@@ -454,7 +455,7 @@ void CUDAAgent::resizeNew(const AgentFunctionData& func, const unsigned int &new
         sm->second->initNew(newSize, streamId);
         // Notify scan flag that it might need resizing
         // We need a 3rd array, because a function might combine agent birth, agent death and message output
-        flamegpu_internal::CUDAScanCompaction::resize(newSize, flamegpu_internal::CUDAScanCompaction::AGENT_OUTPUT, streamId, *this);
+        flamegpu_internal::CUDAScanCompaction::resize(newSize, flamegpu_internal::CUDAScanCompaction::AGENT_OUTPUT, streamId, cuda_model);
     }
 }
 
@@ -552,6 +553,24 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func) {
     for (const auto& mmp : func.parent.lock()->variables) {
         curve_header.registerVariable(mmp.first.c_str(), agent_func_name_hash, mmp.second.type.name());
     }
+    // Set input message variables in curve
+    if (auto im = func.message_input.lock()) {
+        // get the message input hash
+        Curve::NamespaceHash msg_in_hash = Curve::getInstance().variableRuntimeHash(im->name.c_str());
+        for (auto msg_in_var : im->variables) {
+            // register message variables using combined hash
+            curve_header.registerVariable(msg_in_var.first.c_str(), msg_in_hash + agent_func_name_hash, msg_in_var.second.type.name());
+        }
+    }
+    // Set output message variables in curve
+    if (auto om = func.message_output.lock()) {
+        // get the message input hash
+        Curve::NamespaceHash msg_out_hash = Curve::getInstance().variableRuntimeHash(om->name.c_str());
+        for (auto msg_out_var : om->variables) {
+            // register message variables using combined hash
+            curve_header.registerVariable(msg_out_var.first.c_str(), msg_out_hash + agent_func_name_hash, msg_out_var.second.type.name());
+        }
+    }
     headers.push_back(curve_header.getDynamicHeader());
 
     // cassert header (to remove remaining warnings) TODO: Ask Jitify to implement safe version of this
@@ -588,15 +607,7 @@ const jitify::KernelInstantiation& CUDAAgent::getRTCInstantiation(const std::str
     return *mm->second;
 }
 
-void CUDAAgent::RTCSafeCudaMemcpyToSymbol(const void* symbol, const char* symbol_name, const void* src, size_t count, size_t offset) const {
-    // make the mem copy to runtime API symbol
-    gpuErrchk(cudaMemcpyToSymbol(symbol, src, count, offset));
-    // loop through any agent functions
-    for (const CUDARTCFuncMapPair& rtc_func_pair : rtc_func_map) {
-        CUdeviceptr rtc_dev_ptr = 0;
-        // get the RTC device symbol
-        rtc_dev_ptr = rtc_func_pair.second->get_global_ptr(symbol_name);
-        // make the memcpy to the rtc version of the symbol
-        gpuErrchkDriverAPI(cuMemcpyHtoD(rtc_dev_ptr + offset, src, count));
-    }
+const CUDARTCFuncMap& CUDAAgent::getRTCFunctions() const
+{
+    return rtc_func_map;
 }

@@ -36,7 +36,7 @@ class CUDAMessage {
       * Allocates enough memory for each variable within the provided MessageData
       * @param description The message to represent
       */
-    explicit CUDAMessage(const MsgBruteForce::Data& description);
+    explicit CUDAMessage(const MsgBruteForce::Data& description, const CUDAAgentModel& cuda_model);
     /**
      * Destructor, releases CUDA memory
      */
@@ -142,6 +142,11 @@ class CUDAMessage {
      */
     bool pbm_construction_required;
     std::unique_ptr<MsgSpecialisationHandler> specialisation_handler;
+
+    /**
+     * A reference to the cuda model which this object belongs to
+     */
+    const CUDAAgentModel& cuda_model;
 };
 
 #endif  // INCLUDE_FLAMEGPU_GPU_CUDAMESSAGE_H_

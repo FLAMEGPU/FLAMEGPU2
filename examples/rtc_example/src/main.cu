@@ -23,6 +23,8 @@
  * http://stackoverflow.com/questions/12388207/interpreting-output-of-ptxas-options-v
  */
 
+#define AGENT_COUNT 32
+
 const char* rtc_test_func_str = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_test_func, MsgNone, MsgNone) {
     printf("Hello from rtc_test_func\n");
@@ -39,171 +41,67 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, MsgNone, MsgNone) {
 }
 )###";
 
-FLAMEGPU_AGENT_FUNCTION(output_func, MsgNone, MsgNone) {
-// some thoughts on how to use messages
-    // FLAMEGPU->outputMessage<float>("location","x");
-    // FLAMEGPU->outputMessage<float>("location","x",FLAMEGPU->getVariable<float>("x"));
-    // FLAMEGPU->outputMessage<float>("location","x",FLAMEGPU->getVariable<float>("x"),"y",FLAMEGPU->getVariable<float>("y"));
-    // FLAMEGPU->outputMessage("location");
-
-    float x = FLAMEGPU->getVariable<float>("x");
-    // printf("x = %f\n", x);
-    FLAMEGPU->setVariable<float>("x", x + 2);
-    x = FLAMEGPU->getVariable<float>("x");
-
+const char* rtc_msg_out_func = R"###(
+FLAMEGPU_AGENT_FUNCTION(rtc_msg_out_func, MsgNone, MsgBruteForce) {
+    printf("x(in)=%d,", FLAMEGPU->getVariable<int>("x"));
+    FLAMEGPU->message_out.setVariable("x", FLAMEGPU->getVariable<int>("x"));
     return ALIVE;
 }
+)###";
 
-FLAMEGPU_AGENT_FUNCTION(input_func, MsgNone, MsgNone) {
-    float x = FLAMEGPU->getVariable<float>("x");
-    // printf("x = %f\n", x);
-    FLAMEGPU->setVariable<float>("x", x + 2);
-    x = FLAMEGPU->getVariable<float>("x");
-
+const char* rtc_msg_in_func = R"###(
+FLAMEGPU_AGENT_FUNCTION(rtc_msg_in_func, MsgBruteForce, MsgNone) {
+    int sum = 0;
+    for (auto& message : FLAMEGPU->message_in) {
+        const int x = message.getVariable<int>("x");
+        printf("x(msg)=%d,", x);
+        sum += x;
+    }
+    FLAMEGPU->setVariable<int>("sum", sum);
     return ALIVE;
 }
-
-FLAMEGPU_AGENT_FUNCTION(move_func, MsgNone, MsgNone) {
-    return ALIVE;
-}
-
-FLAMEGPU_AGENT_FUNCTION(stay_func, MsgNone, MsgNone) {
-    return ALIVE;
-}
+)###";
 
 
 int main(int argc, const char* argv[]) {
-    /* MODEL */
-    /* The model is the description of the actual model that is equivalent to that described by model.xml*/
-    /* Nothing with GPUs it is only about building the model description in memory */
-    ModelDescription flame_model("circles_model");
+    ModelDescription m("RTC TEst Model");
+    MsgBruteForce::Description& msg = m.newMessage("message_x");
+    msg.newVariable<int>("x");
+    AgentDescription& a = m.newAgent("agent");
+    a.newVariable<int>("x");
+    a.newVariable<int>("sum");
+    a.newVariable<int>("product");
+    AgentFunctionDescription& fo = a.newRTCFunction("rtc_msg_out_func", rtc_msg_out_func);
+    fo.setMessageOutput(msg);
+    AgentFunctionDescription& fi = a.newRTCFunction("rtc_msg_in_func", rtc_msg_in_func);
+    fi.setMessageInput(msg);
 
-    // circle agent
-    AgentDescription &circle_agent = flame_model.newAgent("circle");
-    circle_agent.newVariable<float>("x");
-    circle_agent.newVariable<float>("y");
-    circle_agent.newVariable<float>("dx");
-    circle_agent.newVariable<float>("dy");
-
-
-    // circle add states
-    // circle_agent.addState("state1");
-    // circle_agent.addState("state2");
-
-
-    // location message
-    MsgBruteForce::Description &location_message = flame_model.newMessage("location");
-    location_message.newVariable<float>("x");
-    location_message.newVariable<float>("y");
-
-    // circle agent output_data function
-    // Do not specify the state. As their are no states in the system it is assumed that this model is stateless.
-    AgentFunctionDescription &output_data = circle_agent.newFunction("output_data", output_func);
-    // output_data.setMessageOutput(location_message);
-    // output_data.setInitialState("state1");
-
-    // circle agent input_data function
-    // AgentFunctionDescription &input_data = circle_agent.newFunction("input_data", input_func);
-    // input_data.setMessageInput(location_message);
-
-
-    // circle agent move function
-    // AgentFunctionDescription &move = circle_agent.newFunction("move", move_func);
-
-
-    AgentFunctionDescription& rtcfunc = circle_agent.newRTCFunction("rtc_test_func", rtc_test_func_str);
-    rtcfunc.setAllowAgentDeath(true);
-
-    // TODO: At some point the model should be validated and then become read only. You should not be bale to add new agent variables once you have instances of the population for example.
-    // flame_model.validate();
-
-
-    // TODO: globals
-
-    // POPULATION (FLAME2 mem)
-    /* Population is an instantiation of the model. It is equivalent to the data from 0.xml or any other state of the model. It requires a model description to know what the agent variables and states are. */
-    /* Data in populations and instances are only on the host. No concept of GPUs at this stage. */
-
-    AgentPopulation population(circle_agent, 10);
-    // TODO: Set maximum population size if known in advance
-    for (int i=0; i < 10; i++) {
-        AgentInstance instance = population.getNextInstance("default");
-        instance.setVariable<float>("x", i*0.1f);
-        instance.setVariable<float>("y", i*0.1f);
-        instance.setVariable<float>("dx", 0);
-        instance.setVariable<float>("dy", 0);
-
-        // get function would look like
-        // int x = instance.getVariable<int>("x");
+    std::default_random_engine rng(static_cast<unsigned int>(time(nullptr)));
+    std::uniform_int_distribution<int> dist(-3, 3);
+    AgentPopulation pop(a, (unsigned int)AGENT_COUNT);
+    int sum = 0;
+    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+        AgentInstance ai = pop.getNextInstance();
+        const int x = dist(rng);
+        sum += x;
+        ai.setVariable<int>("x", x);
     }
+    LayerDescription& lo = m.newLayer("output_layer");
+    lo.addAgentFunction(fo);
+    LayerDescription& li = m.newLayer("input_layer");
+    li.addAgentFunction(fi);
+    CUDAAgentModel c(m);
+    c.SimulationConfig().steps = 1;
+    c.setPopulationData(pop);
+    c.simulate();
+    c.getPopulationData(pop);
+    // Validate each agent has same result
+    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+        AgentInstance ai = pop.getInstanceAt(i);
+        if (ai.getVariable<int>("sum") != sum)
+            printf("Error: Agent sum (%d) not equal to host sum (%d)\n", ai.getVariable<int>("sum"), sum);
+        // ASSERT_EQ(ai.getVariable<int>("sum"), sum);
 
-    /* GLOBALS */
-    /* TODO: We will consider this later. Not in the circles model. */
-
-
-    // SIMULATION
-    /* This is essentially the function layers from a model.xml */
-    /* Currently this is specified by the user. In the future this could be generated automatically through dependency analysis like with FLAME HPC */
-
-    LayerDescription& rtc_layer = flame_model.newLayer("rtc_layer");
-    rtc_layer.addAgentFunction(rtcfunc);
-
-    // LayerDescription &output_layer = flame_model.newLayer("output_layer");  // in the original schema layers are not named
-    // output_layer.addAgentFunction(output_data);
-
-    // LayerDescription &input_layer = flame_model.newLayer("input_layer");
-    // input_layer.addAgentFunction(input_data);
-
-    // LayerDescription &move_layer = flame_model.newLayer("input_layer");
-    // move_layer.addAgentFunction(move);
-
-    // TODO: simulation.getLayerPosition("layer name") - returns an int
-    // Simulation.addFunctionToLayer(0,"lmove")
-    // This would come from the program arguments. Would be argv[2] if this file had been generated from model.xml
-
-
-    /* CUDA agent model */
-    /* Instantiate the model with a set of data (agents) on the device */
-    /* Run the model */
-    CUDAAgentModel cuda_model(flame_model);
-
-    cuda_model.initialise(argc, argv);
-
-    cuda_model.SimulationConfig().steps = 1;
-
-    cuda_model.setPopulationData(population);
-
-    cuda_model.simulate();
-
-    // cuda_model.simulate(simulation);
-
-    // cuda_model.step();
-
-    cuda_model.getPopulationData(population);
-    printf("Final pop size is %d\n", population.getCurrentListSize());
-
-    /* This is not to be done yet. We want to first replicate the functionality of FLAMEGPU on a single device */
-    /*
-    // EXECUTION
-    HardwareDescription hardware_config();
-    hardware_config.addGPUResource(SM_30);
-    hardware_config.addGPUResource(SM_20);
-
-    // SCHEDULER and MAPPING
-    // dynamic scheduling is not possible without considering the implications of communication later in the iteration (dynamic only suitable for shared memory systems unless lookahead is used)
-    // mapping for now should be simple but in future a generic is based on either
-    // 1) memory constraints
-    // 2) occupancy
-    // scheduler should use occupancy calculator to determine best thread block size
-    GPUScheduler scheduler(&hardware_config);    //GPUWorkerThread
-    scheduler.addSimulation(&simulation);
-    scheduler.map();
-
-    scheduler.simulationIteration();
-    */
-
-
-
-    // system("pause");
+    }
     return 0;
 }
