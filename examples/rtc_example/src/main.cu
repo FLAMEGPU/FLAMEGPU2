@@ -32,8 +32,10 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, MsgNone, MsgNone) {
     //FLAMEGPU->setVariable<float>("x", x + 2);
     //x = FLAMEGPU->getVariable<float>("x");
     // printf("x after set = %f\n", x);
-
-    return ALIVE;
+    if (threadIdx.x %2 == 0)
+        return ALIVE;
+    else
+        return DEAD;
 }
 )###";
 
@@ -110,6 +112,7 @@ int main(int argc, const char* argv[]) {
 
 
     AgentFunctionDescription& rtcfunc = circle_agent.newRTCFunction("rtc_test_func", rtc_test_func_str);
+    rtcfunc.setAllowAgentDeath(true);
 
     // TODO: At some point the model should be validated and then become read only. You should not be bale to add new agent variables once you have instances of the population for example.
     // flame_model.validate();
@@ -177,6 +180,7 @@ int main(int argc, const char* argv[]) {
     // cuda_model.step();
 
     cuda_model.getPopulationData(population);
+    printf("Final pop size is %d\n", population.getCurrentListSize());
 
     /* This is not to be done yet. We want to first replicate the functionality of FLAMEGPU on a single device */
     /*

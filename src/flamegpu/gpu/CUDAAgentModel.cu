@@ -104,7 +104,7 @@ bool CUDAAgentModel::step() {
                 if (func_des->condition) {
                     auto func_agent = func_des->parent.lock();
                     const CUDAAgent& cuda_agent = getCUDAAgent(func_agent->name);
-                    flamegpu_internal::CUDAScanCompaction::resize(cuda_agent.getStateSize(func_des->initial_state), flamegpu_internal::CUDAScanCompaction::AGENT_DEATH, j);
+                    flamegpu_internal::CUDAScanCompaction::resize(cuda_agent.getStateSize(func_des->initial_state), flamegpu_internal::CUDAScanCompaction::AGENT_DEATH, j, cuda_agent);
 
                     // Configure runtime access of the functions variables within the FLAME_API object
                     cuda_agent.mapRuntimeVariables(*func_des, func_des->initial_state);
@@ -200,10 +200,10 @@ bool CUDAAgentModel::step() {
 
             const CUDAAgent& cuda_agent = getCUDAAgent(func_agent->name);
             const unsigned int STATE_SIZE = cuda_agent.getStateSize(func_des->initial_state);
-            flamegpu_internal::CUDAScanCompaction::resize(STATE_SIZE, flamegpu_internal::CUDAScanCompaction::AGENT_DEATH, j);
+            flamegpu_internal::CUDAScanCompaction::resize(STATE_SIZE, flamegpu_internal::CUDAScanCompaction::AGENT_DEATH, j, cuda_agent);
 
             // Map address of runtime ds_configs to runtime function (as device sysmbols are not shared with runtime context)
-            if (!func_des->rtc_func_name.empty()) {
+            /*if (!func_des->rtc_func_name.empty()) {
                 // For runtime functions set the device symbol address for device scan
                 // get rtc instantiation
                 const jitify::KernelInstantiation& instance = cuda_agent.getRTCInstantiation(func_des->rtc_func_name);
@@ -213,7 +213,7 @@ bool CUDAAgentModel::step() {
                 ptrdiff_t offset = sizeof(CUDAScanCompactionPtrs)*(flamegpu_internal::CUDAScanCompaction::AGENT_DEATH* flamegpu_internal::CUDAScanCompaction::MAX_STREAMS + j);
                 // copy pointer values for scan_flags and position to run time device symbol
                 gpuErrchkDriverAPI(cuMemcpyHtoD(ds_configs + offset, (const void*)&flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::AGENT_DEATH][j].d_ptrs, sizeof(CUDAScanCompactionPtrs)));
-            }
+            }*/
 
             // check if a function has an input message
             if (auto im = func_des->message_input.lock()) {
@@ -233,7 +233,7 @@ bool CUDAAgentModel::step() {
                 const unsigned int existingMessages = cuda_message.getTruncateMessageListFlag() ? 0 : cuda_message.getMessageCount();
                 cuda_message.resize(existingMessages + STATE_SIZE, j);
                 cuda_message.mapWriteRuntimeVariables(*func_des, STATE_SIZE);
-                flamegpu_internal::CUDAScanCompaction::resize(STATE_SIZE, flamegpu_internal::CUDAScanCompaction::MESSAGE_OUTPUT, j);
+                flamegpu_internal::CUDAScanCompaction::resize(STATE_SIZE, flamegpu_internal::CUDAScanCompaction::MESSAGE_OUTPUT, j, cuda_agent);
                 // Zero the scan flag that will be written to
                 if (func_des->message_output_optional)
                     flamegpu_internal::CUDAScanCompaction::zero(flamegpu_internal::CUDAScanCompaction::MESSAGE_OUTPUT, j);

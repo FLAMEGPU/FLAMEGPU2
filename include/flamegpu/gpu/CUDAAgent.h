@@ -156,11 +156,22 @@ class CUDAAgent : public AgentInterface {
      */
     void addInstantitateRTCFunction(const AgentFunctionData& func);
     /**
-     * Returns the jitify kernel instantiation of of the agent function.
+     * Returns the jitify kernel instantiation of the agent function.
      * Will throw an InvalidAgentFunc excpetion if the function name does not have a valid instantiation
      * @param function_name the name of the RTC agent function
      */
     const jitify::KernelInstantiation& getRTCInstantiation(const std::string &function_name) const;
+
+    /**
+     * Performs a cudaMemCopyToSymbol in the runimte library and also updates the symbols of any RTC functions (which exist seperately within thier own cuda module)
+     * Will thrown an error if any of the calls fail.
+     * @param symbol_name The name of the symbol
+     * @param src Source memory address
+     * @param count Size in bytes to copy
+     * @param offset Offset from start of symbol in bytes
+     */
+    void RTCSafeCudaMemcpyToSymbol(const void* symbol, const char* symbol_name, const void* src, size_t count, size_t offset = 0) const;
+
 
  protected:
     /** @brief    Zero all state variable data. */

@@ -76,7 +76,7 @@ void CUDAAgent::resize(const unsigned int &newSize, const unsigned int &streamId
         }
     }
     // Notify scan flag that it might need resizing
-    flamegpu_internal::CUDAScanCompaction::resize(max_list_size, flamegpu_internal::CUDAScanCompaction::AGENT_DEATH, streamId);
+    flamegpu_internal::CUDAScanCompaction::resize(max_list_size, flamegpu_internal::CUDAScanCompaction::AGENT_DEATH, streamId, *this);
 }
 /**
 * @brief Sets the population data
@@ -454,7 +454,7 @@ void CUDAAgent::resizeNew(const AgentFunctionData& func, const unsigned int &new
         sm->second->initNew(newSize, streamId);
         // Notify scan flag that it might need resizing
         // We need a 3rd array, because a function might combine agent birth, agent death and message output
-        flamegpu_internal::CUDAScanCompaction::resize(newSize, flamegpu_internal::CUDAScanCompaction::AGENT_OUTPUT, streamId);
+        flamegpu_internal::CUDAScanCompaction::resize(newSize, flamegpu_internal::CUDAScanCompaction::AGENT_OUTPUT, streamId, *this);
     }
 }
 
@@ -586,4 +586,17 @@ const jitify::KernelInstantiation& CUDAAgent::getRTCInstantiation(const std::str
     }
 
     return *mm->second;
+}
+
+void CUDAAgent::RTCSafeCudaMemcpyToSymbol(const void* symbol, const char* symbol_name, const void* src, size_t count, size_t offset) const{
+    // make the mem copy to runtime API symbol
+    gpuErrchk(cudaMemcpyToSymbol(symbol, src, count, offset));
+    // loop through any agent functions
+    for (const CUDARTCFuncMapPair& rtc_func_pair : rtc_func_map) {
+        CUdeviceptr rtc_dev_ptr = 0;
+        // get the RTC device symbol
+        rtc_dev_ptr = rtc_func_pair.second->get_global_ptr(symbol_name);
+        // make the memcpy to the rtc version of the symbol
+        gpuErrchkDriverAPI(cuMemcpyHtoD(rtc_dev_ptr + offset, src, count));
+    }
 }
