@@ -2,12 +2,27 @@
 #include "flamegpu/gpu/CUDAErrorChecking.h"
 
 int util::compute_capability::getComputeCapability(int deviceIndex) {
-        int major = 0;
-        int minor = 0;
-        gpuErrchk(cudaDeviceGetAttribute(&major, cudaDevAttrComputeCapabilityMajor, deviceIndex));
-        gpuErrchk(cudaDeviceGetAttribute(&minor, cudaDevAttrComputeCapabilityMinor, deviceIndex));
-        int arch = (10 * major) + minor;
-        return arch;
+    int major = 0;
+    int minor = 0;
+
+    // Throw an exception if the deviceIndex is negative.
+    if (deviceIndex < 0) {
+        throw InvalidCUDAdevice();
+    }
+
+    // Ensure deviceIndex is valid.
+    int deviceCount = 0;
+    gpuErrchk(cudaGetDeviceCount(&deviceCount));
+    if (deviceIndex >= deviceCount) {
+        // Throw an excpetion if the device index is bad.
+        throw InvalidCUDAdevice();
+    }
+    // Load device attributes
+    gpuErrchk(cudaDeviceGetAttribute(&minor, cudaDevAttrComputeCapabilityMinor, deviceIndex));
+    gpuErrchk(cudaDeviceGetAttribute(&major, cudaDevAttrComputeCapabilityMajor, deviceIndex));
+    // Compute the arch integer value.
+    int arch = (10 * major) + minor;
+    return arch;
 }
 
 int util::compute_capability::minimumCompiledComputeCapability() {
