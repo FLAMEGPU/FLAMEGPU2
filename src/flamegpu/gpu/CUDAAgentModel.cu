@@ -202,19 +202,6 @@ bool CUDAAgentModel::step() {
             const unsigned int STATE_SIZE = cuda_agent.getStateSize(func_des->initial_state);
             flamegpu_internal::CUDAScanCompaction::resize(STATE_SIZE, flamegpu_internal::CUDAScanCompaction::AGENT_DEATH, j, cuda_agent);
 
-            // Map address of runtime ds_configs to runtime function (as device sysmbols are not shared with runtime context)
-            /*if (!func_des->rtc_func_name.empty()) {
-                // For runtime functions set the device symbol address for device scan
-                // get rtc instantiation
-                const jitify::KernelInstantiation& instance = cuda_agent.getRTCInstantiation(func_des->rtc_func_name);
-                // get symbol for runtime device scan configs
-                CUdeviceptr ds_configs = instance.get_global_ptr("flamegpu_internal::CUDAScanCompaction::ds_configs");
-                // calculate offset of CUDAScanCompactionPtrs for AGENT_DEATH in stream j
-                ptrdiff_t offset = sizeof(CUDAScanCompactionPtrs)*(flamegpu_internal::CUDAScanCompaction::AGENT_DEATH* flamegpu_internal::CUDAScanCompaction::MAX_STREAMS + j);
-                // copy pointer values for scan_flags and position to run time device symbol
-                gpuErrchkDriverAPI(cuMemcpyHtoD(ds_configs + offset, (const void*)&flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::AGENT_DEATH][j].d_ptrs, sizeof(CUDAScanCompactionPtrs)));
-            }*/
-
             // check if a function has an input message
             if (auto im = func_des->message_input.lock()) {
                 std::string inpMessage_name = im->name;

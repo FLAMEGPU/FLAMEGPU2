@@ -45,12 +45,14 @@ __host__ void CUDAScanCompactionConfig::resize_scan_flag(const unsigned int& cou
         gpuErrchk(cudaMalloc(&d_ptrs.scan_flag, (count + 1) * sizeof(unsigned int)));  // +1 so we can get the total from the scan
         gpuErrchk(cudaMalloc(&d_ptrs.position, (count + 1) * sizeof(unsigned int)));  // +1 so we can get the total from the scan
         // Calculate offset of this object from start of array, then divide by size of this object, and multiply by size of device object
-        ptrdiff_t output_dist = (std::distance(reinterpret_cast<char*>(flamegpu_internal::CUDAScanCompaction::hd_configs), reinterpret_cast<char*>(this)) / sizeof(CUDAScanCompactionConfig)) * sizeof(CUDAScanCompactionPtrs);
-        // call the RTC safe version of cudamemcpy
-        agent.RTCSafeCudaMemcpyToSymbol(flamegpu_internal::CUDAScanCompaction::ds_configs, "flamegpu_internal::CUDAScanCompaction::ds_configs", &this->d_ptrs, sizeof(CUDAScanCompactionPtrs), output_dist);
-        // gpuErrchk(cudaMemcpyToSymbol(flamegpu_internal::CUDAScanCompaction::ds_configs, &this->d_ptrs, sizeof(CUDAScanCompactionPtrs), output_dist));
+
         scan_flag_len = count + 1;
     }
+    // TODO: This can be moved back in side the check once CUDAScanCompation is no longer a singleton
+    ptrdiff_t output_dist = (std::distance(reinterpret_cast<char*>(flamegpu_internal::CUDAScanCompaction::hd_configs), reinterpret_cast<char*>(this)) / sizeof(CUDAScanCompactionConfig)) * sizeof(CUDAScanCompactionPtrs);
+    // gpuErrchk(cudaMemcpyToSymbol(flamegpu_internal::CUDAScanCompaction::ds_configs, &this->d_ptrs, sizeof(CUDAScanCompactionPtrs), output_dist));
+    // call the RTC safe version of cudamemcpy
+    agent.RTCSafeCudaMemcpyToSymbol(flamegpu_internal::CUDAScanCompaction::ds_configs, "flamegpu_internal::CUDAScanCompaction::ds_configs", &this->d_ptrs, sizeof(CUDAScanCompactionPtrs), output_dist);
 }
 
 // TODO : Remove
