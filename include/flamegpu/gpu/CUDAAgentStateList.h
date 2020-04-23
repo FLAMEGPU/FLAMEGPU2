@@ -48,7 +48,7 @@ class CUDAAgentStateList {
      * @note Does not resize new list
      * @see resizeDeviceAgentList(CUDAMemoryMap &, const unsigned int &, bool)
      */
-    void resize();
+    virtual void resize(bool retain_d_list_data = true);
     /**
      * Resizes the internal newList
      * @param newSize Number of agents to support (probably agent.getMaximumListSize())
@@ -56,7 +56,7 @@ class CUDAAgentStateList {
      */
     void resizeNewList(const unsigned int &newSize);
 
-    void setAgentData(const AgentStateMemory &state_memory);
+    virtual void setAgentData(const AgentStateMemory &state_memory);
 
     void getAgentData(AgentStateMemory &state_memory);
 
@@ -96,7 +96,7 @@ class CUDAAgentStateList {
      * @return The number of agents with scan flag set to true
      * @note This function could do with some cleanup, e.g. move the mode specific stuff to the calling functions
      */
-    unsigned int scatter(const unsigned int &streamId, const unsigned int out_offset = 0, const ScatterMode &mode = Death);
+    virtual unsigned int scatter(const unsigned int &streamId, const unsigned int out_offset = 0, const ScatterMode &mode = Death);
 
     const CUDAMemoryMap &getReadList() { return condition_d_list; }
     const CUDAMemoryMap &getWriteList() { return condition_d_swap_list; }
@@ -122,9 +122,21 @@ class CUDAAgentStateList {
      * @param streamId Stream index for stream safe operations
      */
     void initNew(const unsigned int &newSize, const unsigned int &streamId);
+    /**
+     * Attaches the provided list as the dependent StateList
+     * Initialises mapped variables within the dependent statelist (if they are initialised here)
+     * After being set as the dependent list, calls which affect d_list, d_swap_list or d_new_list will propagate changes to the dependent
+     * @param d The dependent state list (dumb pointer, because its triggered from constructor, before shared_from_this is available)
+     * @param mapping Mapping information, so only mapped variables are handled
+     */
     void setDependentList(CUDASubAgentStateList *d, const std::shared_ptr<const SubAgentData> &mapping);
+    void swapDependants(std::shared_ptr<CUDAAgentStateList> &other);
 
  protected:
+    /**
+     * Constructor used by CUDASubAgent
+     * Unlike the regular constructor, this one does not attempt to init d_list or d_swap_list
+     */
     explicit CUDAAgentStateList(CUDASubAgent& cuda_agent);
     /*
      * The purpose of this function is to allocate on the device a block of memory for each variable. 
@@ -144,7 +156,7 @@ class CUDAAgentStateList {
      * Only copies across old ddata if copyData is set to True
      * @see resize()
      */
-    void resizeDeviceAgentList(CUDAMemoryMap &agent_list, const unsigned int &newSize, bool copyData);
+    virtual void resizeDeviceAgentList(CUDAMemoryMap &agent_list, const unsigned int &newSize, bool copyData);
 
     /**
      * This value is the number of temporarily 'disabled' agents at the start of the state list

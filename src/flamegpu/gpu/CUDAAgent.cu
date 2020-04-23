@@ -12,6 +12,7 @@
 #include <device_launch_parameters.h>
 
 #include "flamegpu/gpu/CUDAAgent.h"
+#include "flamegpu/gpu/CUDASubAgent.h"
 #include "flamegpu/gpu/CUDAAgentStateList.h"
 #include "flamegpu/gpu/CUDAErrorChecking.h"
 #include "flamegpu/gpu/CUDAAgentModel.h"
@@ -74,7 +75,7 @@ void CUDAAgent::resize(const unsigned int &newSize, const unsigned int &streamId
         }
         // Resize all items in the statemap
         for (auto &state : state_map) {
-            state.second->resize();  // It auto pulls size from this->max_list_size
+            state.second->resize(true);  // It auto pulls size from this->max_list_size
         }
     }
     // Notify scan flag that it might need resizing
@@ -87,16 +88,17 @@ void CUDAAgent::resize(const unsigned int &newSize, const unsigned int &streamId
 */
 void CUDAAgent::setPopulationData(const AgentPopulation& population) {
     // check that the gpu state lists have been initialised by a previous call to setInitialPopulationData
-    if (state_map.empty()) {
-        // create map of device state lists by traversing the state list
-        for (const std::string &s : agent_description.states) {
-            // allocate memory for each state list by creating a new Agent State List
-            state_map.insert(CUDAStateMap::value_type(s, std::unique_ptr<CUDAAgentStateList>(new CUDAAgentStateList(*this))));
-        }
-    }
+    assert(!state_map.empty());  // Check the removed code was redundant
+    // if (state_map.empty()) {
+    //     // create map of device state lists by traversing the state list
+    //     for (const std::string &s : agent_description.states) {
+    //         // allocate memory for each state list by creating a new Agent State List
+    //         state_map.insert(CUDAStateMap::value_type(s, std::unique_ptr<CUDAAgentStateList>(new CUDAAgentStateList(*this))));
+    //     }
+    // }
     // Make sure population uses same agent description as was used to initialise the agent CUDAAgent
     const std::string agent_name = agent_description.name;
-    if ((population.getAgentDescription()) != agent_description) {
+    if (population.getAgentDescription() != agent_description) {
         THROW InvalidPopulationData("Error: Initial Population has a different agent description ('%s') "
             "to that which was used to initialise the CUDAAgent ('%s'). "
             "In CUDAAgent::setPopulationData()",
@@ -110,12 +112,9 @@ void CUDAAgent::setPopulationData(const AgentPopulation& population) {
 
         // Update capacity
         max_list_size = population.getMaximumStateListCapacity();
-        // Drop old state_map
-        state_map.clear();
-        // Regen new state_map
-        for (const std::string &s : agent_description.states) {
-            // allocate memory for each state list by creating a new Agent State List
-            state_map.insert(CUDAStateMap::value_type(s, std::unique_ptr<CUDAAgentStateList>(new CUDAAgentStateList(*this))));
+        // Resize all items in the statemap
+        for (auto &state : state_map) {
+            state.second->resize(false);  // It auto pulls size from this->max_list_size
         }
     }
     /**set all population data to zero*/
@@ -141,12 +140,14 @@ void CUDAAgent::setPopulationData(const AgentPopulation& population) {
 
 void CUDAAgent::getPopulationData(AgentPopulation& population) {
     // check that the gpu state lists have been initialised by a previous call to setInitialPopulationData
-    if (state_map.empty()) {
-        THROW InvalidPopulationData("Error: Initial population data for agent '%s' not allocated. "
-            "Have you called getPopulationData()? "
-            "In CUDAAgent::setPopulationData()",
-            population.getAgentName().c_str());
-    }
+    assert(!state_map.empty());  // Check the removed code was redundant
+    // if (state_map.empty()) {
+    //     // create map of device state lists by traversing the state list
+    //     for (const std::string &s : agent_description.states) {
+    //         // allocate memory for each state list by creating a new Agent State List
+    //         state_map.insert(CUDAStateMap::value_type(s, std::unique_ptr<CUDAAgentStateList>(new CUDAAgentStateList(*this))));
+    //     }
+    // }
     // Make sure population uses same agent description as was used to initialise the agent CUDAAgent
     const std::string agent_name = agent_description.name;
     if (population.getAgentDescription() != agent_description) {
@@ -157,15 +158,11 @@ void CUDAAgent::getPopulationData(AgentPopulation& population) {
             agent_description.name.c_str());
     }
     // Resize population if it is too small
-    if (population.getMaximumStateListCapacity() < getMaximumListSize())
-        population.setStateListCapacity(getMaximumListSize());
-
-    /* copy all population from correct state maps */
     const std::set<std::string> &sm = agent_description.states;
+    unsigned int max_current_list_size = 0;
     for (const std::string &s : sm) {
         // get an associated CUDA statemap pair
         CUDAStateMap::iterator i = state_map.find(s);
-
         /**check that the CUDAAgentStateList was found (should ALWAYS be the case)*/
         if (i == state_map.end()) {
             THROW InvalidMapEntry("Error: failed to find memory allocated for agent ('%s') state ('%s') "
@@ -173,6 +170,16 @@ void CUDAAgent::getPopulationData(AgentPopulation& population) {
                 "This should never happen!",
                 population.getAgentName().c_str(), s.c_str());
         }
+        // Condition state should be 0, but getCUDATrueStateListSize() incase not
+        max_current_list_size = std::max(max_current_list_size, i->second->getCUDATrueStateListSize());
+    }
+    if (population.getMaximumStateListCapacity() < max_current_list_size)
+        population.setStateListCapacity(max_current_list_size);
+
+    /* copy all population from correct state maps */
+    for (const std::string &s : sm) {
+        // get an associated CUDA statemap pair
+        CUDAStateMap::iterator i = state_map.find(s);
         // check that the population maximums do not exceed the current maximum (as their will not be enough GPU memory to hold it)
         if (population.getMaximumStateListCapacity() < i->second->getCUDAStateListSize()) {
             // This should be redundant
@@ -316,7 +323,7 @@ void CUDAAgent::processDeath(const AgentFunctionData& func, const unsigned int &
             agent_count + 1);
 
         // Scatter
-        sm->second->scatter(streamId, CUDAAgentStateList::ScatterMode::Death);
+        sm->second->scatter(streamId, 0, CUDAAgentStateList::ScatterMode::Death);
     }
 }
 
@@ -414,11 +421,33 @@ void CUDAAgent::transitionState(const std::string &_src, const std::string &_des
             return;
         // If dest list is empty and we are not in an gent function condition, we can swap the lists
         if (dest->second->getCUDATrueStateListSize() == 0 && src->second->getCUDAStateListSize() == src->second->getCUDATrueStateListSize()) {
+            // This swaps the master_lists, which means their dependants swap and are nolonger aligned correctly
             swap(state_map.at(_src), state_map.at(_dest));
+            // Swap dependants
+            state_map.at(_src)->swapDependants(state_map.at(_dest));
+            // Propagate swap to mapped dependants
+            if (dependent_agent) {
+                dependent_agent->swapListsMaster(_src, _dest);
+            }
             assert(state_map.find(_src)->second->getCUDAStateListSize() == 0);
         } else {  // Otherwise we must perform a scatter all operation
-            auto &cs = CUDAScatter::getInstance(streamId);
-            cs.scatterAll(agent_description.variables, src->second->getReadList(), dest->second->getReadList(), src->second->getCUDAStateListSize(), dest->second->getCUDAStateListSize());
+            // Solve valid merge lists
+            // in[not mapped]->out[not mapped] = No mergelist required, this is old method
+            // in[mapped]->out[mapped] = Mergelist is perfect match
+            // in[mapped]->out[not mapped] = ?????????
+            // in[not mapped]->out[mapped] = ????????
+            // Build Merge list
+            CUDAMemoryMap merge_d_list(src->second->getReadList());
+            CUDAMemoryMap merge_d_swap_list(dest->second->getReadList());
+            VariableMap merge_variables(agent_description.variables);
+            if (dependent_agent) {
+                // Recursively add mapped variables to the lists to be scattered
+                dependent_agent->appendScatterMaps(_src, merge_d_list, _dest, merge_d_swap_list, merge_variables, streamId, src->second->getCUDAStateListSize(), dest->second->getCUDAStateListSize());
+            } else {
+                // Perform scatter
+                auto &cs = CUDAScatter::getInstance(streamId);
+                cs.scatterAll(merge_variables, merge_d_list, merge_d_swap_list, src->second->getCUDAStateListSize(), dest->second->getCUDAStateListSize());
+            }
             // Update list sizes
             dest->second->setCUDAStateListSize(dest->second->getCUDAStateListSize() + src->second->getCUDAStateListSize());
             src->second->setCUDAStateListSize(0);
@@ -678,4 +707,11 @@ const jitify::KernelInstantiation& CUDAAgent::getRTCInstantiation(const std::str
 
 const CUDARTCFuncMap& CUDAAgent::getRTCFunctions() const {
     return rtc_func_map;
+}
+
+void CUDAAgent::setDependent(CUDASubAgent *d) {
+    if (dependent_agent) {
+        THROW InvalidOperation("CUDAAgent may only have it's dependent set once, in CUDAAgent::setDependent()\n");
+    }
+    dependent_agent = d;
 }

@@ -55,9 +55,9 @@ class CUDAAgent : public AgentInterface {
      * @note Currently it is not possible to reduce the allocated size
      * @note Currently it is not possible for internal state lists for the same agent to have different sizes 
      */
-    void resize(const unsigned int &newSize, const unsigned int &streamId);
+    virtual void resize(const unsigned int &newSize, const unsigned int &streamId);
     /* Can be used to override the current population data without reallocating */
-    void setPopulationData(const AgentPopulation& population);
+    virtual void setPopulationData(const AgentPopulation& population);
 
     void getPopulationData(AgentPopulation& population);
 
@@ -79,6 +79,10 @@ class CUDAAgent : public AgentInterface {
     const std::shared_ptr<CUDAAgentStateList> &getAgentStateList(const std::string &state_name) const;
 
     void *getStateVariablePtr(const std::string &state_name, const std::string &variable_name) override;
+    /**
+     * Returns the number of alive and active agents in the state
+     * Agents may be disabled by agent function conditions
+     */
     ModelData::size_type getStateSize(const std::string &state_name) const override;
     /**
      * Uses the agent scan flag for the named stream to sort agents and
@@ -160,6 +164,10 @@ class CUDAAgent : public AgentInterface {
      */
     const CUDARTCFuncMap& getRTCFunctions() const;
 
+    /**
+     * Attaches an agent as the dependent of this CUDAAgent
+     */
+    void setDependent(CUDASubAgent *d);
 
  protected:
     /** @brief    Zero all state variable data. */
@@ -174,6 +182,8 @@ class CUDAAgent : public AgentInterface {
     CUDARTCFuncMap rtc_func_map;    // map between function_name (or function_name_condition) and the jitify instance
 
     unsigned int max_list_size;  // The maximum length of the agent variable arrays based on the maximum population size passed to setPopulationData
+
+    CUDASubAgent *dependent_agent = nullptr;
 };
 
 #endif  // INCLUDE_FLAMEGPU_GPU_CUDAAGENT_H_

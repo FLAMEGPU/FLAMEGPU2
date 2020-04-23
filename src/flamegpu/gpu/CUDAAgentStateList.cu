@@ -72,8 +72,8 @@ void CUDAAgentStateList::cleanupAllocatedData() {
     condition_d_swap_list.clear();
 }
 
-void CUDAAgentStateList::resize() {
-    resizeDeviceAgentList(d_list, agent.getMaximumListSize(), true);
+void CUDAAgentStateList::resize(bool retain_d_list_data) {
+    resizeDeviceAgentList(d_list, agent.getMaximumListSize(), retain_d_list_data);
     resizeDeviceAgentList(d_swap_list, agent.getMaximumListSize(), false);
     if (!condition_d_list.size()) {
         // Init condition state lists (late, as size was 0 at constructor)
@@ -83,6 +83,14 @@ void CUDAAgentStateList::resize() {
             condition_d_swap_list.emplace(c);
     }
     setConditionState(condition_state);  // Update pointers in condition state list
+    // Propagate the resize to dependent agent
+    if (dependent_state || dependent_mapping) {
+        for (auto &vm : dependent_mapping->variables) {
+            const std::string &sub_var_name = vm.first;
+            const std::string &master_var_name = vm.second;
+            dependent_state->setLists(sub_var_name, d_list.at(master_var_name), d_swap_list.at(master_var_name));
+        }
+    }
 }
 void CUDAAgentStateList::resizeNewList(const unsigned int &newSize) {
     // Check new size is bigger
@@ -322,6 +330,7 @@ unsigned int CUDAAgentStateList::getCUDATrueStateListSize() const {
 }
 void CUDAAgentStateList::setCUDAStateListSize(const unsigned int &newCount) {
     current_list_size = condition_state + newCount;
+    // An assumption was made in CUDASubAgent::appendScatterMaps() that this method would not recurse through dependents
 }
 
 __global__ void scatter_living_agents(
@@ -339,11 +348,18 @@ __global__ void scatter_living_agents(
     }
 }
 unsigned int CUDAAgentStateList::scatter(const unsigned int &streamId, const unsigned int out_offset, const ScatterMode &mode) {
+    CUDAMemoryMap merge_d_list(d_list);
+    CUDAMemoryMap merge_d_swap_list(d_swap_list);
+    VariableMap merge_variables(agent.getAgentDescription().variables);
+    if (dependent_state) {
+        dependent_state->appendScatterMaps(merge_d_list, merge_d_swap_list, merge_variables);
+    }
+
     CUDAScatter &scatter = CUDAScatter::getInstance(streamId);
     const unsigned int living_agents = scatter.scatter(
         CUDAScatter::Type::AgentDeath,
-        agent.getAgentDescription().variables,
-        d_list, d_swap_list,
+        merge_variables,
+        merge_d_list, merge_d_swap_list,
         current_list_size, out_offset, mode == FunctionCondition2, condition_state);
     // Swap
     assert(living_agents <= agent.getMaximumListSize());
@@ -354,6 +370,9 @@ unsigned int CUDAAgentStateList::scatter(const unsigned int &streamId, const uns
     } else if (mode == FunctionCondition2) {
         std::swap(d_list, d_swap_list);
         std::swap(condition_d_list, condition_d_swap_list);
+    }
+    if (dependent_state) {
+      dependent_state->swap();
     }
     return living_agents;
 }
@@ -369,15 +388,22 @@ void CUDAAgentStateList::setConditionState(const unsigned int &disabledAgentCt) 
         condition_d_list.at(mm.first) = reinterpret_cast<char*>(d_list.at(mm.first)) + (disabledAgentCt * mm.second.type_size * mm.second.elements);
         condition_d_swap_list.at(mm.first) = reinterpret_cast<char*>(d_swap_list.at(mm.first)) + (disabledAgentCt * mm.second.type_size * mm.second.elements);
     }
+    if (dependent_state) {
+        dependent_state->setConditionState(disabledAgentCt);
+    }
 }
-
 void CUDAAgentStateList::scatterNew(const unsigned int &newSize, const unsigned int &streamId) {
     CUDAScatter &scatter = CUDAScatter::getInstance(streamId);
-    current_list_size += scatter.scatter(
+    const unsigned int new_births = scatter.scatter(
         CUDAScatter::Type::AgentBirth,
         agent.getAgentDescription().variables,
         d_new_list, d_list,
         newSize, current_list_size);
+    // Init new of dependents
+    if (dependent_state) {
+        dependent_state->addAgents(new_births, streamId);
+    }
+    current_list_size += new_births;
 }
 void CUDAAgentStateList::initNew(const unsigned int &newSize, const unsigned int &streamId) {
     CUDAScatter &scatter = CUDAScatter::getInstance(streamId);
@@ -397,9 +423,14 @@ void CUDAAgentStateList::setDependentList(CUDASubAgentStateList *d, const std::s
         for (auto &vm : dependent_mapping->variables) {
             const std::string &sub_var_name = vm.first;
             const std::string &master_var_name = vm.second;
-            d->setLists(sub_var_name, d_list.at(master_var_name), d_swap_list.at(master_var_name), nullptr);
+            d->setLists(sub_var_name, d_list.at(master_var_name), d_swap_list.at(master_var_name));
         }
     }
+}
+
+void CUDAAgentStateList::swapDependants(std::shared_ptr<CUDAAgentStateList> &other) {
+    std::swap(dependent_state, other->dependent_state);
+    std::swap(dependent_mapping, other->dependent_mapping);
 }
 void CUDAAgentStateList::scatterHostCreation(const unsigned int &newSize, char *const d_inBuff, const VarOffsetStruct &offsets) {
     CUDAScatter &cs = CUDAScatter::getInstance(0);  // No plans to make this async yet
