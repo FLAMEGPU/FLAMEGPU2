@@ -100,8 +100,6 @@ int main(int argc, const char* argv[]) {
         AgentInstance ai = pop.getInstanceAt(i);
         if (ai.getVariable<int>("sum") != sum)
             printf("Error: Agent sum (%d) not equal to host sum (%d)\n", ai.getVariable<int>("sum"), sum);
-        // ASSERT_EQ(ai.getVariable<int>("sum"), sum);
-
     }
     return 0;
 }

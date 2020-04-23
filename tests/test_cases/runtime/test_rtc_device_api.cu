@@ -177,7 +177,7 @@ TEST(DeviceRTCAPITest, AgentFunction_getset) {
     // Recover data from device
     AgentPopulation population(agent);
     cuda_model.getPopulationData(population);
-    for (unsigned int i = 0; i < population.getCurrentListSize(); i++) {
+    for (int i = 0; i < population.getCurrentListSize(); i++) {
         AgentInstance instance = population.getInstanceAt(i);
         // Check neighbouring vars are correct
         EXPECT_EQ(instance.getVariable<int>("id"), i);
@@ -294,6 +294,67 @@ TEST(DeviceRTCAPITest, AgentFunction_array_set) {
         EXPECT_EQ(array_var[1], 4 + j);
         EXPECT_EQ(array_var[2], 8 + j);
         EXPECT_EQ(array_var[3], 16 + j);
+    }
+}
+
+const char* rtc_msg_out_func = R"###(
+FLAMEGPU_AGENT_FUNCTION(rtc_msg_out_func, MsgNone, MsgBruteForce) {
+    FLAMEGPU->message_out.setVariable("x", FLAMEGPU->getVariable<int>("x"));
+    return ALIVE;
+}
+)###";
+
+const char* rtc_msg_in_func = R"###(
+FLAMEGPU_AGENT_FUNCTION(rtc_msg_in_func, MsgBruteForce, MsgNone) {
+    int sum = 0;
+    for (auto& message : FLAMEGPU->message_in) {
+        const int x = message.getVariable<int>("x");
+        sum += x;
+    }
+    FLAMEGPU->setVariable<int>("sum", sum);
+    return ALIVE;
+}
+)###";
+/**
+ * Tests RTC behaviour of messages (using brute force messaging) to ensure correct mapping of message variables to RTC device pointers
+ * As messages are derived from a common CUDAMessage type there is no need to perform the same test with every message type.
+ */
+TEST(DeviceRTCAPITest, AgentFunction_msg_bruteforce) {
+    ModelDescription m("model");
+    MsgBruteForce::Description& msg = m.newMessage("message_x");
+    msg.newVariable<int>("x");
+    AgentDescription& a = m.newAgent("agent");
+    a.newVariable<int>("x");
+    a.newVariable<int>("sum");
+    a.newVariable<int>("product");
+    AgentFunctionDescription& fo = a.newRTCFunction("rtc_msg_out_func", rtc_msg_out_func);
+    fo.setMessageOutput(msg);
+    AgentFunctionDescription& fi = a.newRTCFunction("rtc_msg_in_func", rtc_msg_in_func);
+    fi.setMessageInput(msg);
+
+    std::default_random_engine rng(static_cast<unsigned int>(time(nullptr)));
+    std::uniform_int_distribution<int> dist(-3, 3);
+    AgentPopulation pop(a, (unsigned int)AGENT_COUNT);
+    int sum = 0;
+    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+        AgentInstance ai = pop.getNextInstance();
+        const int x = dist(rng);
+        sum += x;
+        ai.setVariable<int>("x", x);
+    }
+    LayerDescription& lo = m.newLayer("output_layer");
+    lo.addAgentFunction(fo);
+    LayerDescription& li = m.newLayer("input_layer");
+    li.addAgentFunction(fi);
+    CUDAAgentModel c(m);
+    c.SimulationConfig().steps = 1;
+    c.setPopulationData(pop);
+    c.simulate();
+    c.getPopulationData(pop);
+    // Validate each agent has same result
+    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+        AgentInstance ai = pop.getInstanceAt(i);
+        ASSERT_EQ(ai.getVariable<int>("sum"), sum);
     }
 }
 

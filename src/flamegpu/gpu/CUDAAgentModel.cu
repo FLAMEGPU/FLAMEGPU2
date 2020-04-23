@@ -197,10 +197,6 @@ bool CUDAAgentModel::step() {
             if (!func_agent) {
                 THROW InvalidAgentFunc("Agent function refers to expired agent.");
             }
-            // create hashes for agent_func_name
-            Curve::NamespaceHash agentname_hash = Curve::getInstance().variableRuntimeHash(func_agent->name.c_str());
-            Curve::NamespaceHash funcname_hash = Curve::getInstance().variableRuntimeHash(func_des->name.c_str());
-            Curve::NamespaceHash agent_func_name_hash = agentname_hash + funcname_hash;
 
             const CUDAAgent& cuda_agent = getCUDAAgent(func_agent->name);
             const unsigned int STATE_SIZE = cuda_agent.getStateSize(func_des->initial_state);
@@ -213,7 +209,7 @@ bool CUDAAgentModel::step() {
                 // Construct PBM here if required!!
                 cuda_message.buildIndex();
                 // Map variables after, as index building can swap arrays
-                cuda_message.mapReadRuntimeVariables(*func_des);
+                cuda_message.mapReadRuntimeVariables(*func_des, cuda_agent);
             }
 
             // check if a function has an output message
@@ -223,7 +219,7 @@ bool CUDAAgentModel::step() {
                 // Resize message list if required
                 const unsigned int existingMessages = cuda_message.getTruncateMessageListFlag() ? 0 : cuda_message.getMessageCount();
                 cuda_message.resize(existingMessages + STATE_SIZE, j);
-                cuda_message.mapWriteRuntimeVariables(*func_des, STATE_SIZE);
+                cuda_message.mapWriteRuntimeVariables(*func_des, cuda_agent, STATE_SIZE);
                 flamegpu_internal::CUDAScanCompaction::resize(STATE_SIZE, flamegpu_internal::CUDAScanCompaction::MESSAGE_OUTPUT, j, *this);
                 // Zero the scan flag that will be written to
                 if (func_des->message_output_optional)
@@ -247,24 +243,7 @@ bool CUDAAgentModel::step() {
             /**
              * Configure runtime access of the functions variables within the FLAME_API object
              */
-            if (!func_des->rtc_func_name.empty()) {
-                // get cuda agent state map
-                CUDAAgentStateList& state_list = cuda_agent.getAgentStateList(func_des->initial_state);
-                // set curve rtc device ptrs for each agent variable
-                for (const auto& mmp : func_agent->variables) {
-                    // get the rtc varibale ptr
-                    const jitify::KernelInstantiation& instance = cuda_agent.getRTCInstantiation(func_des->rtc_func_name);
-                    std::stringstream d_var_ptr_name;
-                    d_var_ptr_name << "curve_rtc_ptr_" << agent_func_name_hash << "_" << mmp.first;
-                    CUdeviceptr d_var_ptr = instance.get_global_ptr(d_var_ptr_name.str().c_str());
-                    // get runtime ptr
-                    void* runtime_ptr = state_list.getAgentListVariablePointer(mmp.first);
-                    // copy runtime ptr to rtc ptr
-                    gpuErrchkDriverAPI(cuMemcpyHtoD(d_var_ptr, &runtime_ptr, sizeof(void*)));
-                }
-            } else {
-                cuda_agent.mapRuntimeVariables(*func_des, func_des->initial_state);
-            }
+            cuda_agent.mapRuntimeVariables(*func_des, func_des->initial_state);
 
             // TODO: Map message input and  output variables
 

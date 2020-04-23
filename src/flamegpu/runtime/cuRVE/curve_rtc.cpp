@@ -102,15 +102,19 @@ CurveRTCHost::CurveRTCHost() : header(CurveRTCHost::curve_rtc_dynamic_h_template
 }
 
 
-void CurveRTCHost::registerVariable(const char* variableName, unsigned int namespace_hash, const char* type) {
+void CurveRTCHost::registerVariable(const char* variableName, unsigned int namespace_hash, const char* type, bool read, bool write) {
     // check to see if namespace key already exists
     auto i = RTCVariables.find(namespace_hash);
+    RTCVariableProperties props;
+    props.type = type;
+    props.read = read;
+    props.write = write;
     if (i != RTCVariables.end()) {
         // emplace into existing namespace key
-        i->second.emplace(variableName, type);
+        i->second.emplace(variableName, props);
     } else {
-        std::unordered_map<std::string, std::string> inner;
-        inner.emplace(variableName, type);
+        std::unordered_map<std::string, RTCVariableProperties> inner;
+        inner.emplace(variableName, props);
         RTCVariables.emplace(namespace_hash, inner);
     }
 }
@@ -130,81 +134,102 @@ std::string CurveRTCHost::getDynamicHeader() {
     std::stringstream variables;
     for (auto key_pair : RTCVariables) {
         unsigned int namespace_hash = key_pair.first;
-        for (std::pair<std::string, std::string> element : key_pair.second) {
-            variables << "__device__ " << element.second << "* " << "curve_rtc_ptr_" << namespace_hash << "_" << element.first << ";\n";
+        for (std::pair<std::string, RTCVariableProperties> element : key_pair.second) {
+            RTCVariableProperties props = element.second;
+            variables << "__device__ " << props.type << "* " << "curve_rtc_ptr_" << namespace_hash << "_" << element.first << ";\n";
         }
     }
     setHeaderPlaceholder("$DYNAMIC_VARIABLES", variables.str());
 
     // generate getVariable func implementation ($DYNAMIC_GETVARIABLE_IMPL)
     std::stringstream getVariableImpl;
-    getVariableImpl <<         "    switch(namespace_hash){\n";
+    getVariableImpl <<             "    switch(namespace_hash){\n";
     for (auto key_pair : RTCVariables) {
         unsigned int namespace_hash = key_pair.first;
-        getVariableImpl <<     "      case(" << namespace_hash << "):\n";
-        for (std::pair<std::string, std::string> element : key_pair.second) {
-            getVariableImpl << "            if (strings_equal(name, \"" << element.first << "\"))\n";
-            getVariableImpl << "                return (T) " << "curve_rtc_ptr_" << namespace_hash << "_" << element.first << "[index];\n";
+        getVariableImpl <<         "      case(" << namespace_hash << "):\n";
+        unsigned int count = 0;
+        for (std::pair<std::string, RTCVariableProperties> element : key_pair.second) {
+            RTCVariableProperties props = element.second;
+            if (props.read) {
+                getVariableImpl << "            if (strings_equal(name, \"" << element.first << "\"))\n";
+                getVariableImpl << "                return (T) " << "curve_rtc_ptr_" << namespace_hash << "_" << element.first << "[index];\n";
+                count++;
+            }
         }
-        getVariableImpl <<     "            else\n";
-        getVariableImpl <<     "                return 0;\n";
+        if (count > 0) {
+            getVariableImpl << "            else\n";
+        }
+        getVariableImpl <<         "                return 0;\n";
     }
-    getVariableImpl <<         "      default:\n";
-    getVariableImpl <<         "          return 0;\n";
-    getVariableImpl <<         "    }\n";
+    getVariableImpl <<             "      default:\n";
+    getVariableImpl <<             "          return 0;\n";
+    getVariableImpl <<             "    }\n";
 
     setHeaderPlaceholder("$DYNAMIC_GETVARIABLE_IMPL", getVariableImpl.str());
 
     // generate setVariable func implementation ($DYNAMIC_SETTVARIABLE_IMPL)
     std::stringstream setVariableImpl;
-    setVariableImpl <<         "    switch(namespace_hash){\n";
+    setVariableImpl <<             "    switch(namespace_hash){\n";
     for (auto key_pair : RTCVariables) {
         unsigned int namespace_hash = key_pair.first;
-        setVariableImpl <<     "      case(" << namespace_hash << "):\n";
-        for (std::pair<std::string, std::string> element : key_pair.second) {
-            setVariableImpl << "          if (strings_equal(name, \"" << element.first << "\"))\n";
-            setVariableImpl << "              curve_rtc_ptr_" << namespace_hash << "_" << element.first << "[index] = (T) variable;\n";
+        setVariableImpl <<         "      case(" << namespace_hash << "):\n";
+        for (std::pair<std::string, RTCVariableProperties> element : key_pair.second) {
+            RTCVariableProperties props = element.second;
+            if (props.write) {
+                setVariableImpl << "          if (strings_equal(name, \"" << element.first << "\"))\n";
+                setVariableImpl << "              curve_rtc_ptr_" << namespace_hash << "_" << element.first << "[index] = (T) variable;\n";
+            }
         }
     }
-    setVariableImpl <<         "      default:\n";
-    setVariableImpl <<         "          return;\n";
-    setVariableImpl <<         "    }\n";
+    setVariableImpl <<             "      default:\n";
+    setVariableImpl <<             "          return;\n";
+    setVariableImpl <<             "    }\n";
     setHeaderPlaceholder("$DYNAMIC_SETVARIABLE_IMPL", setVariableImpl.str());
 
     // generate getArrayVariable func implementation ($DYNAMIC_GETARRAYVARIABLE_IMPL)
     std::stringstream getArrayVariableImpl;
-    getArrayVariableImpl <<         "    const size_t i = (index * N) + array_index;\n";
-    getArrayVariableImpl <<         "    switch(namespace_hash){\n";
+    getArrayVariableImpl <<             "    const size_t i = (index * N) + array_index;\n";
+    getArrayVariableImpl <<             "    switch(namespace_hash){\n";
     for (auto key_pair : RTCVariables) {
         unsigned int namespace_hash = key_pair.first;
-        getArrayVariableImpl <<     "      case(" << namespace_hash << "):\n";
-        for (std::pair<std::string, std::string> element : key_pair.second) {
-            getArrayVariableImpl << "          if (strings_equal(name, \"" << element.first << "\"))\n";
-            getArrayVariableImpl << "              return (T) " << "curve_rtc_ptr_" << namespace_hash << "_" << element.first << "[i];\n";
+        getArrayVariableImpl <<         "      case(" << namespace_hash << "):\n";
+        unsigned int count = 0;
+        for (std::pair<std::string, RTCVariableProperties> element : key_pair.second) {
+            RTCVariableProperties props = element.second;
+            if (props.read) {
+                getArrayVariableImpl << "          if (strings_equal(name, \"" << element.first << "\"))\n";
+                getArrayVariableImpl << "              return (T) " << "curve_rtc_ptr_" << namespace_hash << "_" << element.first << "[i];\n";
+                count++;
+            }
         }
+        if (count > 0) {
+            getArrayVariableImpl <<     "          else\n";
+        }
+        getArrayVariableImpl <<         "              return 0;\n";
     }
-    getArrayVariableImpl <<         "          else\n";
-    getArrayVariableImpl <<         "              return 0;\n";
-    getArrayVariableImpl <<         "      default:\n";
-    getArrayVariableImpl <<         "          return 0;\n";
-    getArrayVariableImpl <<         "    }\n";
+    getArrayVariableImpl <<             "      default:\n";
+    getArrayVariableImpl <<             "          return 0;\n";
+    getArrayVariableImpl <<             "    }\n";
     setHeaderPlaceholder("$DYNAMIC_GETARRAYVARIABLE_IMPL", getArrayVariableImpl.str());
 
     // generate setArrayVariable func implementation ($DYNAMIC_SETARRAYVARIABLE_IMPL)
     std::stringstream setArrayVariableImpl;
-    setArrayVariableImpl <<         "    const size_t i = (index * N) + array_index;\n";
-    setArrayVariableImpl <<         "    switch(namespace_hash){\n";
+    setArrayVariableImpl <<             "    const size_t i = (index * N) + array_index;\n";
+    setArrayVariableImpl <<             "    switch(namespace_hash){\n";
     for (auto key_pair : RTCVariables) {
         unsigned int namespace_hash = key_pair.first;
-        setArrayVariableImpl <<     "      case(" << namespace_hash << "):\n";
-        for (std::pair<std::string, std::string> element : key_pair.second) {
-            setArrayVariableImpl << "          if (strings_equal(name, \"" << element.first << "\"))\n";
-            setArrayVariableImpl << "              curve_rtc_ptr_" << namespace_hash << "_" << element.first << "[i] = (T) variable;\n";
+        setArrayVariableImpl <<         "      case(" << namespace_hash << "):\n";
+        for (std::pair<std::string, RTCVariableProperties> element : key_pair.second) {
+            RTCVariableProperties props = element.second;
+            if (props.write) {
+                setArrayVariableImpl << "          if (strings_equal(name, \"" << element.first << "\"))\n";
+                setArrayVariableImpl << "              curve_rtc_ptr_" << namespace_hash << "_" << element.first << "[i] = (T) variable;\n";
+            }
         }
     }
-    setArrayVariableImpl <<         "      default:\n";
-    setArrayVariableImpl <<         "          return;\n";
-    setArrayVariableImpl <<         "    }\n";
+    setArrayVariableImpl <<             "      default:\n";
+    setArrayVariableImpl <<             "          return;\n";
+    setArrayVariableImpl <<             "    }\n";
     setHeaderPlaceholder("$DYNAMIC_SETARRAYVARIABLE_IMPL", setArrayVariableImpl.str());
 
     return header;
