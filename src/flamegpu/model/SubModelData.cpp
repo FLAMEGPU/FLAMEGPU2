@@ -27,19 +27,15 @@ bool SubModelData::operator==(const SubModelData& rhs) const {
 bool SubModelData::operator!=(const SubModelData& rhs) const {
     return !(*this == rhs);
 }
-std::shared_ptr<const SubModelData> SubModelData::clone() const {
-    std::shared_ptr<SubModelData> b = std::shared_ptr<SubModelData>(new SubModelData(nullptr, *this));
-    // Manually copy construct maps of shared ptr
-    for (const auto f : subagents) {
-        b->subagents.emplace(f.first, std::shared_ptr<SubAgentData>(new SubAgentData(nullptr, b, *f.second)));
-    }
-    return b;
-}
 SubModelData::SubModelData(const ModelData * model, const SubModelData &other)
     : submodel(other.submodel->clone())
-    , description(model ? new SubModelDescription(model, this) : nullptr) { }
-SubModelData::SubModelData(const ModelData * model, std::shared_ptr<ModelData> _submodel)
+    , name(other.name)
+    , description(model ? new SubModelDescription(model, this) : nullptr) {
+    // Note, this does not init subagents!
+}
+SubModelData::SubModelData(const ModelData * model, const std::string &submodel_name, std::shared_ptr<ModelData> _submodel)
     : submodel(std::move(_submodel))
+    , name(submodel_name)
     , description(new SubModelDescription(model, this)) { }
 
 
@@ -74,12 +70,6 @@ bool SubAgentData::operator==(const SubAgentData &rhs) const {
 }
 bool SubAgentData::operator!=(const SubAgentData &rhs) const {
     return !(*this == rhs);
-}
-std::shared_ptr<const SubAgentData> SubAgentData::clone() const {
-    std::shared_ptr<SubAgentData> b = std::shared_ptr<SubAgentData>(new SubAgentData(nullptr, nullptr, *this));
-    // Manually copy construct maps of shared ptr
-    // (None present to copy)
-    return b;
 }
 SubAgentData::SubAgentData(const ModelData *model, const std::shared_ptr<SubModelData> &_parent, const SubAgentData &other)
     : subAgent(_parent->submodel->agents.at(other.subAgent.lock()->name))  // These two can only fail if the submodeldesc is cloned before the submodel

@@ -45,13 +45,17 @@ ModelData::ModelData(const ModelData &other)
     for (const auto &a : other.agents) {
         auto b = agents.find(a.first)->second;
         // Manually copy construct maps of shared ptr
-        for (const auto f : a.second->functions) {
+        for (const auto &f : a.second->functions) {
             b->functions.emplace(f.first, std::shared_ptr<AgentFunctionData>(new AgentFunctionData(this, b, *f.second)));
         }
     }
     // Copy submodels
     for (const auto &a : other.submodels) {
         auto b = std::shared_ptr<SubModelData>(new SubModelData(this, *a.second));
+        // Manually copy construct maps of shared ptr
+        for (const auto &f : a.second->subagents) {
+            b->subagents.emplace(f.first, std::shared_ptr<SubAgentData>(new SubAgentData(this, b, *f.second)));
+        }
         submodels.emplace(a.first, b);
     }
 
@@ -134,4 +138,3 @@ bool ModelData::operator==(const ModelData& rhs) const {
 bool ModelData::operator!=(const ModelData& rhs) const {
     return !operator==(rhs);
 }
-

@@ -59,7 +59,7 @@ SubModelDescription& ModelDescription::newSubModel(const std::string &submodel_n
                 "in ModelDescription::newSubModel().",
                 submodel_name.c_str());
         }
-        auto rtn = std::shared_ptr<SubModelData>(new SubModelData(model, submodel_description.model->clone()));
+        auto rtn = std::shared_ptr<SubModelData>(new SubModelData(model, submodel_name, submodel_description.model->clone()));
         model->submodels.emplace(submodel_name, rtn);
         return *rtn->description;
     }

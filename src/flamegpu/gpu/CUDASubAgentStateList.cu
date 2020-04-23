@@ -3,6 +3,7 @@
 #include "flamegpu/gpu/CUDAScatter.h"
 #include "flamegpu/gpu/CUDASubAgent.h"
 #include "flamegpu/model/SubModelData.h"
+#include "flamegpu/model/AgentData.h"
 
 CUDASubAgentStateList::CUDASubAgentStateList(CUDASubAgent &cuda_agent, const std::shared_ptr<CUDAAgentStateList> &_master_list, const std::shared_ptr<SubAgentData> &_mapping)
     : CUDAAgentStateList(static_cast<CUDAAgent&>(cuda_agent))

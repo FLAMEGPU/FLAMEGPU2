@@ -89,10 +89,12 @@ CUDAAgentModel::CUDAAgentModel(const std::shared_ptr<SubModelData> &submodel_des
 
     // populate the CUDA submodel map
     const auto &smm = model->submodels;
-    // create new cuda message and add to the map
+    // create new cuda model and add to the map
     for (auto it_sm = smm.cbegin(); it_sm != smm.cend(); ++it_sm) {
         submodel_map.emplace(it_sm->first, std::unique_ptr<CUDAAgentModel>(new CUDAAgentModel(it_sm->second, this)));
     }
+    // Submodels all run silent by default
+    SimulationConfig().verbose = false;
 }
 
 CUDAAgentModel::~CUDAAgentModel() {
@@ -151,6 +153,15 @@ bool CUDAAgentModel::step() {
     unsigned int lyr_idx = 0;
     for (auto lyr = model->layers.begin(); lyr != model->layers.end(); ++lyr) {
         NVTX_RANGE(std::string("StepLayer " + std::to_string(lyr_idx)).c_str());
+
+        if ((*lyr)->sub_model) {
+            auto &sm = submodel_map.at((*lyr)->sub_model->name);
+            sm->resetStepCounter();
+            sm->simulate();
+            // Next layer, layer cannot also contain agent functions
+            continue;
+        }
+
         const auto& functions = (*lyr)->agent_functions;
 
         // Track stream id

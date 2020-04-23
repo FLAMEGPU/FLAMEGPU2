@@ -87,6 +87,7 @@ SET(TEST_CASE_SRC
     # ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_func_pointer.cu # Does not currently build
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/gpu/test_cuda_agent_model.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/gpu/test_gpu_validation.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/gpu/test_cuda_sub_agent.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/io/test_xml_io.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/model/test_environment_description.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/model/test_message_validation.cu
@@ -129,7 +130,7 @@ SET(TEST_CASE_SRC
 	${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_rtc_device_api.cu
 )
 SET(DEV_TEST_CASE_SRC
-
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/gpu/test_cuda_sub_agent.cu
 )
 SET(OTHER_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/helpers/device_test_functions.h

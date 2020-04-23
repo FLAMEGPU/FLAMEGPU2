@@ -42,6 +42,10 @@ struct SubModelData : std::enable_shared_from_this<SubModelData> {
      */
     SubAgentMap subagents;
     /**
+     * Name assigned to the submodel at creation
+     */
+    std::string name;
+    /**
      * Description class which provides convenient accessors
      * This may be null if the instance has been cloned
      */
@@ -62,11 +66,6 @@ struct SubModelData : std::enable_shared_from_this<SubModelData> {
      * Default copy constructor, not implemented
      */
     SubModelData(const SubModelData &other) = delete;
-    /**
-     * Returns a constant copy of this submodel's hierarchy
-     * Does not copy description, sets it to nullptr instead
-     */
-    std::shared_ptr<const SubModelData> clone() const;
 
  protected:
     /**
@@ -78,7 +77,7 @@ struct SubModelData : std::enable_shared_from_this<SubModelData> {
      * Normal constructor
      * This should only be called by ModelDescription
      */
-    explicit SubModelData(const ModelData *model, std::shared_ptr<ModelData> submodel);
+    explicit SubModelData(const ModelData *model, const std::string &submodel_name, std::shared_ptr<ModelData> submodel);
 };
 
 struct SubAgentData : std::enable_shared_from_this<SubAgentData> {
@@ -93,7 +92,7 @@ struct SubAgentData : std::enable_shared_from_this<SubAgentData> {
     /**
      * SubModelData needs access to private copy constructor
      */
-    friend struct SubModelData;
+    friend struct ModelData;
     /**
      * The sub agent which is bound
      */
@@ -140,11 +139,6 @@ struct SubAgentData : std::enable_shared_from_this<SubAgentData> {
      * Default copy constructor, not implemented
      */
     SubAgentData(const SubAgentData &other) = delete;
-    /**
-     * Returns a constant copy of this subagent's hierarchy
-     * Does not copy description, sets it to nullptr instead
-     */
-    std::shared_ptr<const SubAgentData> clone() const;
 
  protected:
     /**

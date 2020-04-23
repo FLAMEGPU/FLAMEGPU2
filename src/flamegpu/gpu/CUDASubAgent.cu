@@ -5,6 +5,7 @@
 #include "flamegpu/gpu/CUDASubAgentStateList.h"
 #include "flamegpu/model/SubModelData.h"
 #include "flamegpu/pop/AgentPopulation.h"
+#include "flamegpu/model/AgentData.h"
 
 CUDASubAgent::CUDASubAgent(const AgentData &description, const CUDAAgentModel& cuda_model, const std::unique_ptr<CUDAAgent> &_master_agent, const std::shared_ptr<SubAgentData> &_mapping)
     : CUDAAgent(description, cuda_model)

@@ -82,15 +82,17 @@ void CUDAAgentStateList::resize(bool retain_d_list_data) {
         for (const auto &c : d_swap_list)
             condition_d_swap_list.emplace(c);
     }
-    setConditionState(condition_state);  // Update pointers in condition state list
     // Propagate the resize to dependent agent
     if (dependent_state || dependent_mapping) {
+        dependent_state->resize(retain_d_list_data);
         for (auto &vm : dependent_mapping->variables) {
             const std::string &sub_var_name = vm.first;
             const std::string &master_var_name = vm.second;
             dependent_state->setLists(sub_var_name, d_list.at(master_var_name), d_swap_list.at(master_var_name));
         }
     }
+    // Update pointers in condition state list
+    setConditionState(condition_state);
 }
 void CUDAAgentStateList::resizeNewList(const unsigned int &newSize) {
     // Check new size is bigger
