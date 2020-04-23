@@ -98,8 +98,9 @@ CUDAAgentModel::CUDAAgentModel(const std::shared_ptr<SubModelData> &submodel_des
 }
 
 CUDAAgentModel::~CUDAAgentModel() {
+    submodel_map.clear();  // Test
     // De-initialise, freeing singletons?
-    // @todo - this is unsafe in a destrcutor as it may invoke cuda commands.
+    // @todo - this is unsafe in a destructor as it may invoke cuda commands.
     if (singletonsInitialised) {
         singletons->rng.decreaseSimCounter();
         singletons->scatter.decreaseSimCounter();

@@ -199,10 +199,11 @@ void CUDAAgentStateList::allocateDeviceAgentList(CUDAMemoryMap &memory_map, cons
 */
 void CUDAAgentStateList::releaseDeviceAgentList(CUDAMemoryMap& memory_map) {
     // for each device pointer in the cuda memory map we need to free these
-    for (const CUDAMemoryMapPair& mm : memory_map) {
+    for (const auto& mm : memory_map) {
         // free the memory on the device
         gpuErrchk(cudaFree(mm.second));
     }
+    memory_map.clear();
 }
 
 /**
@@ -258,6 +259,10 @@ void CUDAAgentStateList::setAgentData(const AgentStateMemory &state_memory) {
 
     // Update condition state lists
     setConditionState(0);
+    // Also fix dependent counts
+    if (dependent_state) {
+        dependent_state->setCUDAStateListSize(current_list_size);
+    }
 }
 
 void CUDAAgentStateList::getAgentData(AgentStateMemory &state_memory) {

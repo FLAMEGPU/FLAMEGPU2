@@ -1,6 +1,7 @@
 #include "flamegpu/model/LayerData.h"
 
 #include "flamegpu/model/LayerDescription.h"
+#include "flamegpu/model/SubModelData.h"
 
 LayerData::LayerData(ModelData *const model, const std::string &layer_name, const ModelData::size_type &layer_index)
     : description(new LayerDescription(model, this))
@@ -13,9 +14,9 @@ LayerData::LayerData(ModelData *const model, const LayerData &other)
     , name(other.name)
     , index(other.index) {
     // Manually perform lookup copies
-    for (auto _f : other.agent_functions) {
-        for (auto a : model->agents) {
-            for (auto f : a.second->functions) {
+    for (auto &_f : other.agent_functions) {
+        for (auto &a : model->agents) {
+            for (auto &f : a.second->functions) {
                 if (f.second->func == _f->func) {
                     if (f.second->name == _f->name) {
                         agent_functions.emplace(f.second);
@@ -25,6 +26,13 @@ LayerData::LayerData(ModelData *const model, const LayerData &other)
             }
         }
     next_agent_fn : {}
+    }
+    if (other.sub_model) {
+        for (auto &a : model->submodels) {
+            if (other.sub_model->name == a.second->name) {
+                sub_model = a.second;
+            }
+        }
     }
 }
 

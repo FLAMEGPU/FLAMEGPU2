@@ -33,6 +33,9 @@ CUDASubAgentStateList::CUDASubAgentStateList(CUDASubAgent &cuda_agent, const std
         assert(condition_d_swap_list.size() == agent.getAgentDescription().variables.size());
     }
 }
+CUDASubAgentStateList::~CUDASubAgentStateList() {
+    cleanupAllocatedData();
+}
 void CUDASubAgentStateList::resize(bool retain_d_list_data) {
     // Resize all variables which have not been mapped
     resizeDeviceAgentList(d_list, agent.getMaximumListSize(), retain_d_list_data);
@@ -99,6 +102,7 @@ void CUDASubAgentStateList::releaseDeviceAgentList(CUDAMemoryMap& memory_map) {
             gpuErrchk(cudaFree(mm.second));
         }
     }
+    memory_map.clear();
 }
 
 void CUDASubAgentStateList::setLists(const std::string &var_name, void *list, void *swap_list) {

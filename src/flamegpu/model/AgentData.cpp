@@ -17,7 +17,8 @@ std::shared_ptr<const AgentData> AgentData::clone() const {
     std::shared_ptr<AgentData> b = std::shared_ptr<AgentData>(new AgentData(nullptr, *this));
     // Manually copy construct maps of shared ptr
     for (const auto f : functions) {
-        b->functions.emplace(f.first, std::shared_ptr<AgentFunctionData>(new AgentFunctionData(nullptr, b, *f.second)));
+        // Passing model is risky here, as the weak_ptr for agent output will point here
+        b->functions.emplace(f.first, std::shared_ptr<AgentFunctionData>(new AgentFunctionData(description->model, b, *f.second)));
     }
     return b;
 }

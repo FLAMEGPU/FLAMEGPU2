@@ -28,6 +28,7 @@ class CUDASubAgentStateList : public CUDAAgentStateList {
     * @param mapping This contains a map of which sub list variables are mapped to which master list variables
     */
     CUDASubAgentStateList(CUDASubAgent& cuda_agent, const std::shared_ptr<CUDAAgentStateList> &master_list, const std::shared_ptr<SubAgentData> &mapping);
+    ~CUDASubAgentStateList();
     void setLists(const std::string &var_name, void *list, void *swap_list);
     /**
      * Triggers a resize of all unmapped variables in d_list and d_swap_list
