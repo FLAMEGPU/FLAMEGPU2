@@ -162,6 +162,10 @@ CMAKE_SET_TARGET_FOLDER("gtest" "Tests/Dependencies")
 # Also set as startup project (if top level project)
 set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"  PROPERTY VS_STARTUP_PROJECT "${PROJECT_NAME}")
 
+# Set the default (visual studio) debugger configure_file
+set_target_properties("${PROJECT_NAME}" PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+                                                   VS_DEBUGGER_COMMAND_ARGUMENTS "$<$<CONFIG:Debug>:--gtest_catch_exceptions=0>")
+
 option(TEST_DEV_MODE "Create a mini project for fast building of tests during development" OFF)
 if(TEST_DEV_MODE)
     # DEVELOPMENT TESTING THING (Compact repeated version of above)
@@ -185,4 +189,8 @@ if(TEST_DEV_MODE)
     target_link_libraries("${PROJECT_NAME}" gtest)
     # target_link_libraries("${PROJECT_NAME}" gmock) # Currently unused
     CMAKE_SET_TARGET_FOLDER("${PROJECT_NAME}" "Tests")
+    
+    # Set the default (visual studio) debugger configure_file
+    set_target_properties("${PROJECT_NAME}" PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+                                                       VS_DEBUGGER_COMMAND_ARGUMENTS "$<$<CONFIG:Debug>:--gtest_catch_exceptions=0>")
 endif()
