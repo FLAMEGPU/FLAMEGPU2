@@ -54,6 +54,16 @@ class CUDASubAgentStateList : public CUDAAgentStateList {
      * @param new_births Number of new agents
      */
     void addAgents(const unsigned int &new_births, const unsigned int &streamId);
+    /**
+     * Used to check whether the model if we need to init unmapped vars
+     */
+    bool allListsExist() const;
+    /**
+     * Inits all unmapped variables, including on dependent agents
+     * This is greedy, doesn't know required amount so does whole buffer
+     */
+    void initUnmapped(const unsigned int &streamId);
+    void appendInitMaps(CUDAMemoryMap &merge_d_list, VariableMap &merge_var_list);
 
  protected:
     /**

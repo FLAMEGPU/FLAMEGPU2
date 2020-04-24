@@ -31,16 +31,20 @@ CUDASubAgentStateList::CUDASubAgentStateList(CUDASubAgent &cuda_agent, const std
         assert(d_swap_list.size() == agent.getAgentDescription().variables.size());
         assert(condition_d_list.size() == agent.getAgentDescription().variables.size());
         assert(condition_d_swap_list.size() == agent.getAgentDescription().variables.size());
+        assert(false);
+        // Note: if this route is taken, (I don't think it's possible currently), then unmapped vars won't be init to default
+        // Haven't implemented, as unclear where top of submodel stack is to perform the init from.
     }
 }
 CUDASubAgentStateList::~CUDASubAgentStateList() {
     cleanupAllocatedData();
 }
 void CUDASubAgentStateList::resize(bool retain_d_list_data) {
+    // This might be first resize()
     // Resize all variables which have not been mapped
     resizeDeviceAgentList(d_list, agent.getMaximumListSize(), retain_d_list_data);
     resizeDeviceAgentList(d_swap_list, agent.getMaximumListSize(), false);
-    if (!condition_d_list.size()) {
+    if (condition_d_list.size() != d_list.size()) {
         // Init condition state lists (late, as size was 0 at constructor)
         // Some of these might fail silently, as master_agent inits mapped vars
         // But it doesn't matter, setConditionState() updates them all
@@ -68,7 +72,7 @@ void CUDASubAgentStateList::allocateDeviceAgentList(CUDAMemoryMap &memory_map, c
         const std::string sub_var_name = mm.first;
         const auto map = mapping->variables.find(sub_var_name);
         // Only handle variables which are not mapped, unless we're handling new list
-        if (map == mapping->variables.end() || memory_map == d_new_list) {
+        if (map == mapping->variables.end() || &memory_map == &d_new_list) {
             // get the variable size from agent description
             const auto &var = agent.getAgentDescription().variables.at(sub_var_name);
             const size_t var_size = var.type_size;
@@ -97,7 +101,7 @@ void CUDASubAgentStateList::releaseDeviceAgentList(CUDAMemoryMap& memory_map) {
         std::string sub_var_name = mm.first;
         auto map = mapping->variables.find(sub_var_name);
         // Only handle variables which are not mapped, unless we're handling new list
-        if (map == mapping->variables.end() || memory_map == d_new_list) {
+        if (map == mapping->variables.end() || &memory_map == &d_new_list) {
             // free the memory on the device
             gpuErrchk(cudaFree(mm.second));
         }
@@ -130,7 +134,7 @@ void CUDASubAgentStateList::resizeDeviceAgentList(CUDAMemoryMap &agent_list, con
         const std::string sub_var_name = mm.first;
         const auto map = mapping->variables.find(sub_var_name);
         // Only handle variables which are not mapped, unless we're handling new list
-        if (map == mapping->variables.end() || agent_list == d_new_list) {
+        if (map == mapping->variables.end() || &agent_list == &d_new_list) {
             const auto &var = agent.getAgentDescription().variables.at(sub_var_name);
             const size_t &type_size = var.type_size * var.elements;
             const size_t alloc_size = type_size * newSize;
@@ -214,4 +218,41 @@ void CUDASubAgentStateList::addAgents(const unsigned int &new_births, const unsi
         dependent_state->addAgents(new_births, streamId);
     }
     current_list_size += new_births;
+}
+
+bool CUDASubAgentStateList::allListsExist() const {
+    if (dependent_state) {
+        return d_list.size() == agent.getAgentDescription().variables.size() && dependent_state->allListsExist();
+    }
+    return d_list.size() == agent.getAgentDescription().variables.size();
+}
+void CUDASubAgentStateList::initUnmapped(const unsigned int &streamId) {
+    CUDAScatter &scatter = CUDAScatter::getInstance(streamId);
+    CUDAMemoryMap merge_d_list;
+    VariableMap merge_var_list;
+    appendInitMaps(merge_d_list, merge_var_list);
+    if (merge_d_list.size())
+        scatter.broadcastInit(
+            merge_var_list,
+            merge_d_list,
+            current_list_size, 0);
+}
+void CUDASubAgentStateList::appendInitMaps(CUDAMemoryMap &merge_d_list, VariableMap &merge_var_list) {
+    const VariableMap &vars = agent.getAgentDescription().variables;
+    // for each variable allocate a device array and add to map
+    for (const auto &mm : vars) {
+        // get the variable name
+        const std::string sub_var_name = mm.first;
+        const auto map = mapping->variables.find(sub_var_name);
+        // Only handle variables which are not mapped
+        if (map == mapping->variables.end()) {
+            const std::string sub_var_merge_name = "_" + mm.first;  // Prepend reserved word _, to avoid clashes
+            // Documentation isn't too clear, insert *should* throw an exception if we have a clash
+            merge_d_list.insert({sub_var_merge_name, d_list.at(sub_var_name)});
+            merge_var_list.insert({sub_var_merge_name, vars.at(sub_var_name)});
+        }
+    }
+    if (dependent_state) {
+        dependent_state->appendInitMaps(merge_d_list, merge_var_list);
+    }
 }

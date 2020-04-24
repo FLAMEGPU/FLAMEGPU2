@@ -84,12 +84,13 @@ void CUDAAgentStateList::resize(bool retain_d_list_data) {
     }
     // Propagate the resize to dependent agent
     if (dependent_state || dependent_mapping) {
-        dependent_state->resize(retain_d_list_data);
         for (auto &vm : dependent_mapping->variables) {
             const std::string &sub_var_name = vm.first;
             const std::string &master_var_name = vm.second;
             dependent_state->setLists(sub_var_name, d_list.at(master_var_name), d_swap_list.at(master_var_name));
         }
+        // This might be the first resize
+        dependent_state->resize(retain_d_list_data);
     }
     // Update pointers in condition state list
     setConditionState(condition_state);
@@ -262,6 +263,7 @@ void CUDAAgentStateList::setAgentData(const AgentStateMemory &state_memory) {
     // Also fix dependent counts
     if (dependent_state) {
         dependent_state->setCUDAStateListSize(current_list_size);
+        dependent_state->initUnmapped(0);  // Streamid doesn't matter here?
     }
 }
 
