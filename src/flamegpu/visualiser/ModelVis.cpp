@@ -1,12 +1,13 @@
 #include "flamegpu/visualiser/ModelVis.h"
 
 #include "flamegpu/gpu/CUDAAgentModel.h"
-#include "flamegpu/model/ModelData.h"
+#include "flamegpu/model/AgentData.h"
 
 ModelVis::ModelVis(const CUDAAgentModel &_model)
     : modelCfg(_model.getModelDescription().name.c_str())
     , model(_model)
     , modelData(_model.getModelDescription()) { }
+
 AgentVis &ModelVis::addAgent(const std::string &agent_name) {
     // If agent exists
     if (modelData.agents.find(agent_name) != modelData.agents.end()) {
@@ -22,6 +23,7 @@ AgentVis &ModelVis::addAgent(const std::string &agent_name) {
         "in ModelVis::addAgent()\n",
         agent_name.c_str());
 }
+
 AgentVis &ModelVis::Agent(const std::string &agent_name) {
     // If agent exists
     if (modelData.agents.find(agent_name) != modelData.agents.end()) {
@@ -39,7 +41,6 @@ AgentVis &ModelVis::Agent(const std::string &agent_name) {
         "in ModelVis::Agent()\n",
         agent_name.c_str());
 }
-
 
 // Below methods are related to executing the visualiser
 void ModelVis::activate() {
@@ -74,9 +75,11 @@ void ModelVis::join() {
         visualiser.reset();
     }
 }
+
 bool ModelVis::isRunning() const {
     return visualiser ? visualiser->isRunning() : false;
 }
+
 void ModelVis::updateBuffers(const unsigned int &sc) {
     if (visualiser) {
         for (auto &a : agents) {
@@ -94,21 +97,21 @@ void ModelVis::updateBuffers(const unsigned int &sc) {
     }
 }
 
-
-
-
 void ModelVis::setWindowTitle(const std::string& title) {
     ModelConfig::setString(&modelCfg.windowTitle, title);
 }
+
 void ModelVis::setWindowDimensions(const unsigned int& width, const unsigned int& height) {
     modelCfg.windowDimensions[0] = width;
     modelCfg.windowDimensions[1] = height;
 }
+
 void ModelVis::setClearColor(const float& red, const float& green, const float& blue) {
     modelCfg.clearColor[0] = red;
     modelCfg.clearColor[1] = green;
     modelCfg.clearColor[2] = blue;
 }
+
 void ModelVis::setFPSVisible(const bool& showFPS) {
     modelCfg.fpsVisible = showFPS;
 }
@@ -119,21 +122,23 @@ void ModelVis::setFPSColor(const float& red, const float& green, const float& bl
     modelCfg.fpsColor[2] = blue;
 }
 
-
 void ModelVis::setInitialCameraLocation(const float &x, const float &y, const float &z) {
     modelCfg.cameraLocation[0] = x;
     modelCfg.cameraLocation[1] = y;
     modelCfg.cameraLocation[2] = z;
 }
+
 void ModelVis::setInitialCameraTarget(const float &x, const float &y, const float &z) {
     modelCfg.cameraTarget[0] = x;
     modelCfg.cameraTarget[1] = y;
     modelCfg.cameraTarget[2] = z;
 }
+
 void ModelVis::setCameraSpeed(const float &speed, const float &shiftMultiplier) {
     modelCfg.cameraSpeed[0] = speed;
     modelCfg.cameraSpeed[1] = shiftMultiplier;
 }
+
 void ModelVis::setViewClips(const float &nearClip, const float &farClip) {
     modelCfg.nearFarClip[0] = nearClip;
     modelCfg.nearFarClip[1] = farClip;
@@ -160,6 +165,7 @@ LineVis ModelVis::newLineSketch(float r, float g, float b, float a) {
     modelCfg.lines.push_back(m);
     return LineVis(m, r, g, b, a);
 }
+
 LineVis ModelVis::newPolylineSketch(float r, float g, float b, float a) {
     auto m = std::make_shared<LineConfig>(LineConfig::Type::Polyline);
     modelCfg.lines.push_back(m);

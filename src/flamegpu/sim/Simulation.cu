@@ -7,6 +7,7 @@
 #include "flamegpu/io/factory.h"
 #include "flamegpu/runtime/utility/RandomManager.cuh"
 #include "flamegpu/pop/AgentPopulation.h"
+#include "flamegpu/model/AgentDescription.h"  // Only forward declared by AgentPopulation.h
 #include "flamegpu/util/nvtx.h"
 
 

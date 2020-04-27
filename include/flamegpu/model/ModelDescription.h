@@ -12,7 +12,6 @@
 
 class AgentDescription;
 class LayerDescription;
-struct ModelData;
 
 /**
  * This class represents the hierarchy of components for a FLAMEGPU model

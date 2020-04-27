@@ -68,6 +68,9 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/exception/FGPUStaticAssert.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/LayerDescription.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/ModelData.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/model/AgentData.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/model/AgentFunctionData.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/model/LayerData.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/AgentFunctionDescription.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/EnvironmentDescription.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/AgentDescription.h
@@ -123,6 +126,9 @@ SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/exception/FGPUException.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/model/LayerDescription.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/model/ModelData.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/model/AgentData.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/model/AgentFunctionData.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/model/LayerData.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/model/ModelDescription.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/model/EnvironmentDescription.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/model/AgentDescription.cpp
@@ -147,8 +153,8 @@ SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/Array.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/Array2D.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/Array3D.cu
-    ${FLAMEGPU_ROOT}/src/flamegpu/io/xmlReader.cu
-    ${FLAMEGPU_ROOT}/src/flamegpu/io/xmlWriter.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/io/xmlReader.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/io/xmlWriter.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/utility/HostEnvironment.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/utility/EnvironmentManager.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/utility/RandomManager.cu

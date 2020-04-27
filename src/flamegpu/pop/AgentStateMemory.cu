@@ -13,7 +13,7 @@
 #include "flamegpu/pop/AgentStateMemory.h"
 
 #include "flamegpu/pop/AgentPopulation.h"
-#include "flamegpu/model/ModelData.h"
+#include "flamegpu/model/AgentDescription.h"  // Only forward declared in AgentPopulation.h
 
 AgentStateMemory::AgentStateMemory(const AgentPopulation &p, unsigned int initial_capacity) : population(p) {
     // state memory map is cloned from the agent description
