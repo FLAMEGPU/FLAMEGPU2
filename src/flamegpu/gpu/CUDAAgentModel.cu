@@ -121,7 +121,7 @@ bool CUDAAgentModel::step() {
             }
 
             // Ensure RandomManager is the correct size to accomodate all threads to be launched
-            singletons->rng.resize(totalThreads);
+            singletons->rng.resize(totalThreads, *this);
             // Track stream id
             j = 0;
             // Sum the total number of threads being launched in the layer
@@ -244,8 +244,6 @@ bool CUDAAgentModel::step() {
              * Configure runtime access of the functions variables within the FLAME_API object
              */
             cuda_agent.mapRuntimeVariables(*func_des, func_des->initial_state);
-
-            // TODO: Map message input and  output variables
 
             // Zero the scan flag that will be written to
             if (func_des->has_agent_death)

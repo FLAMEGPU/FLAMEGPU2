@@ -11,6 +11,7 @@
 #include <algorithm>
 
 #include "flamegpu/gpu/CUDAErrorChecking.h"
+#include "flamegpu/gpu/CUDAAgentModel.h"
 
 /**
  * Internal namespace to hide __device__ declarations from modeller
@@ -105,7 +106,7 @@ void RandomManager::free() {
     freeDevice();
 }
 
-bool RandomManager::resize(const size_type &_length) {
+bool RandomManager::resize(const size_type &_length, const CUDAAgentModel& model) {
     assert(growthModifier > 1.0);
     assert(shrinkModifier > 0.0);
     assert(shrinkModifier <= 1.0);
@@ -125,7 +126,7 @@ bool RandomManager::resize(const size_type &_length) {
     // Don't allow array to go below RandomManager::min_length elements
     t_length = std::max<size_type>(t_length, RandomManager::min_length);
     if (t_length != length)
-        resizeDeviceArray(t_length);
+        resizeDeviceArray(t_length, model);
     return t_length != length;
 }
 __global__ void init_curand(unsigned int threadCount, uint64_t seed, RandomManager::size_type offset) {
@@ -133,7 +134,7 @@ __global__ void init_curand(unsigned int threadCount, uint64_t seed, RandomManag
     if (id < threadCount)
         curand_init(seed, offset + id, 0, &flamegpu_internal::d_random_state[offset + id]);
 }
-void RandomManager::resizeDeviceArray(const size_type &_length) {
+void RandomManager::resizeDeviceArray(const size_type &_length, const CUDAAgentModel& model) {
     // Mark that the device hsa now been initialised.
     deviceInitialised = true;
     if (_length > length) {
@@ -150,7 +151,8 @@ void RandomManager::resizeDeviceArray(const size_type &_length) {
             gpuErrchk(cudaFree(flamegpu_internal::hd_random_state));
         }
         flamegpu_internal::hd_random_state = t_hd_random_state;
-        gpuErrchk(cudaMemcpyToSymbol(flamegpu_internal::d_random_state, &flamegpu_internal::hd_random_state, sizeof(curandState*)));
+        //gpuErrchk(cudaMemcpyToSymbol(flamegpu_internal::d_random_state, &flamegpu_internal::hd_random_state, sizeof(curandState*)));
+        model.RTCSafeCudaMemcpyToSymbol(flamegpu_internal::d_random_state, "flamegpu_internal::d_random_state", &flamegpu_internal::hd_random_state, sizeof(curandState*));
         // Init new[    ****]
         if (h_max_random_size > length) {
             // We have part/all host backup, copy to device array
@@ -191,7 +193,8 @@ void RandomManager::resizeDeviceArray(const size_type &_length) {
         }
         // Update pointers
         flamegpu_internal::hd_random_state = t_hd_random_state;
-        gpuErrchk(cudaMemcpyToSymbol(flamegpu_internal::d_random_state, &flamegpu_internal::hd_random_state, sizeof(curandState*)));
+        //gpuErrchk(cudaMemcpyToSymbol(flamegpu_internal::d_random_state, &flamegpu_internal::hd_random_state, sizeof(curandState*)));
+        model.RTCSafeCudaMemcpyToSymbol(flamegpu_internal::d_random_state, "flamegpu_internal::d_random_state", &flamegpu_internal::hd_random_state, sizeof(curandState*));
         // Release old
         if (flamegpu_internal::hd_random_state != nullptr) {
             gpuErrchk(cudaFree(flamegpu_internal::hd_random_state));
@@ -200,7 +203,8 @@ void RandomManager::resizeDeviceArray(const size_type &_length) {
     // Update length
     length = _length;
     flamegpu_internal::hd_random_size = _length;
-    gpuErrchk(cudaMemcpyToSymbol(flamegpu_internal::d_random_size, &flamegpu_internal::hd_random_size, sizeof(RandomManager::size_type)));
+    //gpuErrchk(cudaMemcpyToSymbol(flamegpu_internal::d_random_size, &flamegpu_internal::hd_random_size, sizeof(RandomManager::size_type)));
+    model.RTCSafeCudaMemcpyToSymbol((const void *)flamegpu_internal::d_random_size, "flamegpu_internal::d_random_size", &flamegpu_internal::hd_random_size, sizeof(RandomManager::size_type));
 }
 void RandomManager::setGrowthModifier(float _growthModifier) {
     assert(growthModifier > 1.0);

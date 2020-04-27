@@ -42,7 +42,7 @@ struct CUDAScanCompactionConfig {
     unsigned int cub_temp_size_max_list_size = 0;
 
     __host__ void free_scan_flag();
-    __host__ void resize_scan_flag(const unsigned int& count, const CUDAAgentModel& agent);
+    __host__ void resize_scan_flag(const unsigned int& count, const CUDAAgentModel& model);
     __host__ void zero_scan_flag();
 };
 typedef CUDAScanCompactionPtrs CUDASCPtrs;  // Shorthand
