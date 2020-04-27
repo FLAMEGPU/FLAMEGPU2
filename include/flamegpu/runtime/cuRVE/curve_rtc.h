@@ -10,13 +10,13 @@
 
 /** @brief    A cuRVE instance.
  *
- * The Curve RTC host is a class for dynamically building a header file for use in RTC functions. Rather than providing a hashmap of string variable names it will dynamically create a header with agent varibales directly accessible via compile time string comparisons.
+ * The Curve RTC host is a class for dynamically building a header file for use in RTC functions. Rather than providing a hashmap of string variable names it will dynamically create a header with agent variables directly accessible via compile time string comparisons.
  */
 class CurveRTCHost {
  public:
     CurveRTCHost();
 
-    void registerVariable(const char* variableName, unsigned int namespace_hash, const char* type, bool read = true, bool write = true);
+    void registerVariable(const char* variableName, unsigned int namespace_hash, const char* type, unsigned int elements = 1, bool read = true, bool write = true);
 
     void unregisterVariable(const char* variableName, unsigned int namespace_hash);
 
@@ -29,6 +29,7 @@ class CurveRTCHost {
         std::string type;
         bool read;
         bool write;
+        unsigned int elements;
     } RTCVariableProperties;
 
  private:

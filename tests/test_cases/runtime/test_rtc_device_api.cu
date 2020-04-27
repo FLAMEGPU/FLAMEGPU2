@@ -177,7 +177,7 @@ TEST(DeviceRTCAPITest, AgentFunction_getset) {
     // Recover data from device
     AgentPopulation population(agent);
     cuda_model.getPopulationData(population);
-    for (int i = 0; i < population.getCurrentListSize(); i++) {
+    for (unsigned int i = 0; i < population.getCurrentListSize(); i++) {
         AgentInstance instance = population.getInstanceAt(i);
         // Check neighbouring vars are correct
         EXPECT_EQ(instance.getVariable<int>("id"), i);
@@ -241,25 +241,30 @@ const char* rtc_array_set_agent_func = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_test_func, MsgNone, MsgNone) {
     // Read variables a1 to a4
     // Store as array in array_var
+    int a0 = FLAMEGPU->getVariable<int, 2>("a1", 1);   // should not be able to read scalar value as array (expecting 0)
     int a1 = FLAMEGPU->getVariable<int>("a1");
     int a2 = FLAMEGPU->getVariable<int>("a2");
     int a3 = FLAMEGPU->getVariable<int>("a3");
     int a4 = FLAMEGPU->getVariable<int>("a4");
-    FLAMEGPU->setVariable<int, 4>("array_var", 0, a1);
-    FLAMEGPU->setVariable<int, 4>("array_var", 1, a2);
-    FLAMEGPU->setVariable<int, 4>("array_var", 2, a3);
-    FLAMEGPU->setVariable<int, 4>("array_var", 3, a4);
+    FLAMEGPU->setVariable<int, 5>("array_var", 0, a0);
+    FLAMEGPU->setVariable<int, 5>("array_var", 1, a1);
+    FLAMEGPU->setVariable<int, 5>("array_var", 2, a2);
+    FLAMEGPU->setVariable<int, 5>("array_var", 3, a3);
+    FLAMEGPU->setVariable<int, 5>("array_var", 4, a4);
+    FLAMEGPU->setVariable<int, 2>("a0", 0, 10);           // should not be possible (no value should be written)
     return ALIVE;
 }
 )###";
 /**
  * Test an RTC function to ensure that the setVariable function works correctly for array variables. Expected result is a1, a2, a3 and a4 are copied into 'array_var'.
+ * Also includes a test to ensure that scalar variables can not use the array get and set functions of the API.
  */
 TEST(DeviceRTCAPITest, AgentFunction_array_set) {
     ModelDescription model("model");
     AgentDescription& agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
-    agent.newVariable<int, 4>("array_var");
+    agent.newVariable<int, 5>("array_var");
+    agent.newVariable<int>("a0");
     agent.newVariable<int>("a1");
     agent.newVariable<int>("a2");
     agent.newVariable<int>("a3");
@@ -271,11 +276,12 @@ TEST(DeviceRTCAPITest, AgentFunction_array_set) {
     for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
         AgentInstance instance = init_population.getNextInstance("default");
         instance.setVariable<int>("id", i);
+        instance.setVariable<int>("a0", i);
         instance.setVariable<int>("a1", 2 + i);
         instance.setVariable<int>("a2", 4 + i);
         instance.setVariable<int>("a3", 8 + i);
         instance.setVariable<int>("a4", 16 + i);
-        instance.setVariable<int, 4>("array_var", { 0, 0, 0, 0 });
+        instance.setVariable<int, 5>("array_var", {0, 0, 0, 0, 0 });
     }
     // Setup Model
     CUDAAgentModel cuda_model(model);
@@ -289,11 +295,14 @@ TEST(DeviceRTCAPITest, AgentFunction_array_set) {
         AgentInstance instance = population.getInstanceAt(i);
         int j = instance.getVariable<int>("id");
         // Check array_var has been set from scalar variables
-        std::array<int, 4> array_var = instance.getVariable<int, 4>("array_var");
-        EXPECT_EQ(array_var[0], 2 + j);
-        EXPECT_EQ(array_var[1], 4 + j);
-        EXPECT_EQ(array_var[2], 8 + j);
-        EXPECT_EQ(array_var[3], 16 + j);
+        std::array<int, 5> array_var = instance.getVariable<int, 5>("array_var");
+        EXPECT_EQ(array_var[0], 0);
+        EXPECT_EQ(array_var[1], 2 + j);
+        EXPECT_EQ(array_var[2], 4 + j);
+        EXPECT_EQ(array_var[3], 8 + j);
+        EXPECT_EQ(array_var[4], 16 + j);
+        // Value should not have been set by agent function as the value is scalar and the setter used was for an array
+        EXPECT_EQ(instance.getVariable<int>("a0"), i);
     }
 }
 

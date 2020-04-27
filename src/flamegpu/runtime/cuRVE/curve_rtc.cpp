@@ -102,13 +102,14 @@ CurveRTCHost::CurveRTCHost() : header(CurveRTCHost::curve_rtc_dynamic_h_template
 }
 
 
-void CurveRTCHost::registerVariable(const char* variableName, unsigned int namespace_hash, const char* type, bool read, bool write) {
+void CurveRTCHost::registerVariable(const char* variableName, unsigned int namespace_hash, const char* type, unsigned int elements, bool read, bool write) {
     // check to see if namespace key already exists
     auto i = RTCVariables.find(namespace_hash);
     RTCVariableProperties props;
     props.type = type;
     props.read = read;
     props.write = write;
+    props.elements = elements;
     if (i != RTCVariables.end()) {
         // emplace into existing namespace key
         i->second.emplace(variableName, props);
@@ -150,7 +151,7 @@ std::string CurveRTCHost::getDynamicHeader() {
         unsigned int count = 0;
         for (std::pair<std::string, RTCVariableProperties> element : key_pair.second) {
             RTCVariableProperties props = element.second;
-            if (props.read) {
+            if (props.read && props.elements == 1) {
                 getVariableImpl << "            if (strings_equal(name, \"" << element.first << "\"))\n";
                 getVariableImpl << "                return (T) " << "curve_rtc_ptr_" << namespace_hash << "_" << element.first << "[index];\n";
                 count++;
@@ -164,7 +165,7 @@ std::string CurveRTCHost::getDynamicHeader() {
     getVariableImpl <<             "      default:\n";
     getVariableImpl <<             "          return 0;\n";
     getVariableImpl <<             "    }\n";
-
+    getVariableImpl <<             "    return 0;\n";    // if namespace is not recognised
     setHeaderPlaceholder("$DYNAMIC_GETVARIABLE_IMPL", getVariableImpl.str());
 
     // generate setVariable func implementation ($DYNAMIC_SETTVARIABLE_IMPL)
@@ -175,11 +176,12 @@ std::string CurveRTCHost::getDynamicHeader() {
         setVariableImpl <<         "      case(" << namespace_hash << "):\n";
         for (std::pair<std::string, RTCVariableProperties> element : key_pair.second) {
             RTCVariableProperties props = element.second;
-            if (props.write) {
+            if (props.write && props.elements == 1) {
                 setVariableImpl << "          if (strings_equal(name, \"" << element.first << "\"))\n";
                 setVariableImpl << "              curve_rtc_ptr_" << namespace_hash << "_" << element.first << "[index] = (T) variable;\n";
             }
         }
+        setVariableImpl <<         "          break;\n";
     }
     setVariableImpl <<             "      default:\n";
     setVariableImpl <<             "          return;\n";
@@ -196,7 +198,7 @@ std::string CurveRTCHost::getDynamicHeader() {
         unsigned int count = 0;
         for (std::pair<std::string, RTCVariableProperties> element : key_pair.second) {
             RTCVariableProperties props = element.second;
-            if (props.read) {
+            if (props.read && props.elements > 1) {
                 getArrayVariableImpl << "          if (strings_equal(name, \"" << element.first << "\"))\n";
                 getArrayVariableImpl << "              return (T) " << "curve_rtc_ptr_" << namespace_hash << "_" << element.first << "[i];\n";
                 count++;
@@ -210,6 +212,7 @@ std::string CurveRTCHost::getDynamicHeader() {
     getArrayVariableImpl <<             "      default:\n";
     getArrayVariableImpl <<             "          return 0;\n";
     getArrayVariableImpl <<             "    }\n";
+    getArrayVariableImpl <<             "    return 0;\n";   // if namespace is not recognised
     setHeaderPlaceholder("$DYNAMIC_GETARRAYVARIABLE_IMPL", getArrayVariableImpl.str());
 
     // generate setArrayVariable func implementation ($DYNAMIC_SETARRAYVARIABLE_IMPL)
@@ -221,11 +224,12 @@ std::string CurveRTCHost::getDynamicHeader() {
         setArrayVariableImpl <<         "      case(" << namespace_hash << "):\n";
         for (std::pair<std::string, RTCVariableProperties> element : key_pair.second) {
             RTCVariableProperties props = element.second;
-            if (props.write) {
+            if (props.write && props.elements > 1) {
                 setArrayVariableImpl << "          if (strings_equal(name, \"" << element.first << "\"))\n";
                 setArrayVariableImpl << "              curve_rtc_ptr_" << namespace_hash << "_" << element.first << "[i] = (T) variable;\n";
             }
         }
+        setArrayVariableImpl <<         "          break;\n";
     }
     setArrayVariableImpl <<             "      default:\n";
     setArrayVariableImpl <<             "          return;\n";

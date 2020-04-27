@@ -564,7 +564,7 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func) {
 
     // set agent function variables in rtc curve
     for (const auto& mmp : func.parent.lock()->variables) {
-        curve_header.registerVariable(mmp.first.c_str(), agent_func_name_hash, mmp.second.type.name());
+        curve_header.registerVariable(mmp.first.c_str(), agent_func_name_hash, mmp.second.type.name(), mmp.second.elements);
     }
     // Set input message variables in curve
     if (auto im = func.message_input.lock()) {
@@ -572,7 +572,7 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func) {
         Curve::NamespaceHash msg_in_hash = Curve::getInstance().variableRuntimeHash(im->name.c_str());
         for (auto msg_in_var : im->variables) {
             // register message variables using combined hash
-            curve_header.registerVariable(msg_in_var.first.c_str(), msg_in_hash + agent_func_name_hash, msg_in_var.second.type.name(), true, false);
+            curve_header.registerVariable(msg_in_var.first.c_str(), msg_in_hash + agent_func_name_hash, msg_in_var.second.type.name(), msg_in_var.second.elements, true, false);
         }
     }
     // Set output message variables in curve
@@ -581,7 +581,7 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func) {
         Curve::NamespaceHash msg_out_hash = Curve::getInstance().variableRuntimeHash(om->name.c_str());
         for (auto msg_out_var : om->variables) {
             // register message variables using combined hash
-            curve_header.registerVariable(msg_out_var.first.c_str(), msg_out_hash + agent_func_name_hash, msg_out_var.second.type.name(), false, true);
+            curve_header.registerVariable(msg_out_var.first.c_str(), msg_out_hash + agent_func_name_hash, msg_out_var.second.type.name(), msg_out_var.second.elements, false, true);
         }
     }
     headers.push_back(curve_header.getDynamicHeader());
