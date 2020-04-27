@@ -20,6 +20,12 @@ struct AgentData : std::enable_shared_from_this<AgentData> {
     friend class ModelDescription;
     friend struct ModelData;
     friend class AgentPopulation;
+
+    /**
+     * Type for the auto-generated agent ID
+     */
+    typedef unsigned int IDType;
+
     /**
      * Map of name:agent function definition
      * map<string, AgentFunctionData>
