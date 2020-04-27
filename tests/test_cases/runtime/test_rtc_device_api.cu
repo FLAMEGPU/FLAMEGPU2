@@ -367,4 +367,63 @@ TEST(DeviceRTCAPITest, AgentFunction_msg_bruteforce) {
     }
 }
 
+const char* rtc_rand_func = R"###(
+FLAMEGPU_AGENT_FUNCTION(rtc_rand_func, MsgNone, MsgNone) {
+    FLAMEGPU->setVariable<float>("a", FLAMEGPU->random.uniform<float>());
+    FLAMEGPU->setVariable<float>("b", FLAMEGPU->random.uniform<float>());
+    FLAMEGPU->setVariable<float>("c", FLAMEGPU->random.uniform<float>());
+    return ALIVE;
+}
+)###";
+/**
+ * Test agent random functions to ensure that random values are returned by RTC implementation. Implemented from AgentRandomTest.AgentRandomCheck Test Model 1. No need to check seed as this is done in the orginal test.
+ */
+TEST(DeviceRTCAPITest, AgentFunction_random) {
+    ModelDescription model("model");
+    AgentDescription& agent = model.newAgent("agent_name");
+    agent.newVariable<float>("a");
+    agent.newVariable<float>("b");
+    agent.newVariable<float>("c");
+    // Do nothing, but ensure variables are made available on device
+    AgentFunctionDescription& func = agent.newRTCFunction("rtc_rand_func", rtc_rand_func);
+    model.newLayer().addAgentFunction(func);
+    // Init pop with 0 values for variables
+    AgentPopulation init_population(agent, AGENT_COUNT);
+    for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
+        AgentInstance instance = init_population.getNextInstance("default");
+        instance.setVariable<float>("a", 0);
+        instance.setVariable<float>("b", 0);
+        instance.setVariable<float>("c", 0);
+    }
+    // Setup Model
+    CUDAAgentModel cuda_model(model);
+    cuda_model.setPopulationData(init_population);
+    // Run 1 step to ensure data is pushed to device
+    cuda_model.step();
+    // Recover data from device
+    AgentPopulation population(agent);
+    cuda_model.getPopulationData(population);
+    for (unsigned int i = 0; i < population.getCurrentListSize(); i++) {
+        AgentInstance instance = population.getInstanceAt(i);
+        // Check for random values
+        float a = instance.getVariable<float>("a");
+        float b = instance.getVariable<float>("b");
+        float c = instance.getVariable<float>("c");
+        if (i != 0) {
+            // Check that the value has changed
+            EXPECT_NE(a, 0);
+            EXPECT_NE(b, 0);
+            EXPECT_NE(c, 0);
+            // Check that no error value is returned
+            EXPECT_NE(a, -1);
+            EXPECT_NE(b, -1);
+            EXPECT_NE(c, -1);
+        }
+        // Multiple calls get multiple random numbers
+        EXPECT_TRUE(a != b);
+        EXPECT_TRUE(b != c);
+        EXPECT_TRUE(a != c);
+    }
+}
+
 }  // namespace test_rtc_device_api
