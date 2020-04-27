@@ -190,10 +190,10 @@ class FLAMEGPU_DEVICE_API : public FLAMEGPU_READ_ONLY_DEVICE_API{
      * @note this should ideally use the member getVariable, but that does not compile for some reason.
      */
     __forceinline__ __device__ AgentData::IDType id() const {
-        // AgentData::IDType id = this->getVariable<AgentData::IDType>("_id");
+        AgentData::IDType id = this->getVariable<AgentData::IDType>("id");
         // simple indexing assumes index is the thread number (this may change later)
-        unsigned int index = TID();
-        AgentData::IDType id = Curve::getVariable<AgentData::IDType>("id", agent_func_name_hash, index);
+        // unsigned int index = TID();
+        // AgentData::IDType id = Curve::getVariable<AgentData::IDType>("id", agent_func_name_hash, index);
         // return the variable from curve
         return id;
     }
