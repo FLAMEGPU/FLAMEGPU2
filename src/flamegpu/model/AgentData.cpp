@@ -11,6 +11,8 @@ AgentData::AgentData(std::shared_ptr<const ModelData> model, const std::string &
     , name(agent_name)
     , keepDefaultState(false) {
     states.insert(ModelData::DEFAULT_STATE);
+    const AgentData::IDType defaultID = 0;
+    description->newVariableUnchecked<AgentData::IDType>(AGENT_DATA_ID_VARIABLE_NAME, defaultID);
 }
 
 std::shared_ptr<const AgentData> AgentData::clone() const {

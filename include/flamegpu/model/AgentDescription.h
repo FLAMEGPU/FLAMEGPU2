@@ -107,7 +107,7 @@ class AgentDescription {
     template<typename T, ModelData::size_type N = 1>
     void newVariable(const std::string &variable_name, const std::array<T, N> &default_value = {});
     template<typename T>
-    void newVariable(const std::string &variable_name, const T&default_value);
+    void newVariable(const std::string &variable_name, const T &default_value);
 
     /**
      * Adds a new (device) function to the agent
@@ -217,6 +217,11 @@ class AgentDescription {
     const std::set<std::string> &getStates() const;
 
  private:
+    //  Private method which creates a new variable without checking the name. Used to internally set variables without checking the name (handeld by the public newVariable method(s)
+    template<typename T, ModelData::size_type N = 1>
+    void newVariableUnchecked(const std::string &variable_name, const std::array<T, N> &default_value = {});
+    template<typename T>
+    void newVariableUnchecked(const std::string &variable_name, const T &default_value);
     /**
      * Root of the model hierarchy
      */
@@ -230,19 +235,8 @@ class AgentDescription {
 /**
  * Template implementation
  */
-template <typename T, ModelData::size_type N>
-void AgentDescription::newVariable(const std::string &variable_name, const std::array<T, N> &default_value) {
-    if (!variable_name.empty() && variable_name[0] == '_') {
-        THROW ReservedName("Agent variable names cannot begin with '_', this is reserved for internal usage, "
-            "in AgentDescription::newVariable().");
-    }
-    std::string lower_variable_name = variable_name;
-    for (auto& c : lower_variable_name)
-        c = static_cast<char>(tolower(c));
-    if (lower_variable_name == "name" || lower_variable_name == "state") {
-        THROW ReservedName("Agent variables cannot be named 'name' or 'state', these are reserved for backwards compatibility reasons, "
-            "in AgentDescription::newVariable().");
-    }
+template<typename T, ModelData::size_type N>
+void AgentDescription::newVariableUnchecked(const std::string &variable_name, const std::array<T, N> &default_value) {
     // Array length 0 makes no sense
     static_assert(N > 0, "A variable cannot have 0 elements.");
     if (agent->variables.find(variable_name) == agent->variables.end()) {
@@ -252,6 +246,28 @@ void AgentDescription::newVariable(const std::string &variable_name, const std::
     THROW InvalidAgentVar("Agent ('%s') already contains variable '%s', "
         "in AgentDescription::newVariable().",
         agent->name.c_str(), variable_name.c_str());
+}
+template<typename T>
+void AgentDescription::newVariableUnchecked(const std::string &variable_name, const T &default_value) {
+    newVariableUnchecked<T, 1>(variable_name, {default_value});
+}
+
+// Users accessible implementations which always check for reserved names.
+template<typename T, ModelData::size_type N>
+void AgentDescription::newVariable(const std::string &variable_name, const std::array<T, N> &default_value) {
+    if (!variable_name.empty() && variable_name[0] == '_') {
+        THROW ReservedName("Agent variable names cannot begin with '_', this is reserved for internal usage, "
+                           "%s in AgentDescription::newVariable().",
+                           variable_name.c_str());
+    }
+    std::string lower_variable_name = variable_name;
+    for (auto &c : lower_variable_name)
+        c = static_cast<char>(tolower(c));
+    if (lower_variable_name == "name" || lower_variable_name == "state") {
+        THROW ReservedName("Agent variables cannot be named 'name' or 'state', these are reserved for backwards compatibility reasons, "
+                           "in AgentDescription::newVariable().");
+    }
+    newVariableUnchecked<T, N>(variable_name, default_value);
 }
 template <typename T>
 void AgentDescription::newVariable(const std::string &variable_name, const T &default_value) {

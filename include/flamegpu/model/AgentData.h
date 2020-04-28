@@ -12,6 +12,12 @@
 class AgentDescription;
 struct AgentFunctionData;
 
+    /**
+     * Variable name for the automatically generated id variable. 
+     * Must be a #define as used on host and device, so cannot be a static const(expr).
+     * TODO - Defines are grim. Potentially store the hash of the variable name to pass around? Would need different methods / then this class would become curve aware.
+     */
+    #define AGENT_DATA_ID_VARIABLE_NAME "_id"
 /**
  * This is the internal data store for AgentDescription
  * Users should only access that data stored within via an instance of AgentDescription

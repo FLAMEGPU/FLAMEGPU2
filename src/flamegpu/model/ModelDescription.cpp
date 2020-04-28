@@ -27,9 +27,6 @@ AgentDescription& ModelDescription::newAgent(const std::string &agent_name) {
     if (!hasAgent(agent_name)) {
         auto rtn = std::shared_ptr<AgentData>(new AgentData(model, agent_name));
         model->agents.emplace(agent_name, rtn);
-        // @todo - _id instead of id? Might need to do this somewhere else.
-        AgentData::IDType defaultId = 0;
-        rtn->description->newVariable<AgentData::IDType>("id", defaultId);
         return *rtn->description;
     }
     THROW InvalidAgentName("Agent with name '%s' already exists, "
