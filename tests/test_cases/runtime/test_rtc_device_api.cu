@@ -177,7 +177,7 @@ TEST(DeviceRTCAPITest, AgentFunction_getset) {
     // Recover data from device
     AgentPopulation population(agent);
     cuda_model.getPopulationData(population);
-    for (unsigned int i = 0; i < population.getCurrentListSize(); i++) {
+    for (int i = 0; i < static_cast<int>(population.getCurrentListSize()); i++) {
         AgentInstance instance = population.getInstanceAt(i);
         // Check neighbouring vars are correct
         EXPECT_EQ(instance.getVariable<int>("id"), i);
@@ -291,7 +291,7 @@ TEST(DeviceRTCAPITest, AgentFunction_array_set) {
     // Recover data from device
     AgentPopulation population(agent);
     cuda_model.getPopulationData(population);
-    for (unsigned int i = 0; i < population.getCurrentListSize(); i++) {
+    for (int i = 0; i < static_cast<int>(population.getCurrentListSize()); i++) {
         AgentInstance instance = population.getInstanceAt(i);
         int j = instance.getVariable<int>("id");
         // Check array_var has been set from scalar variables

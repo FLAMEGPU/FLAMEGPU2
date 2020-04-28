@@ -309,4 +309,23 @@ __device__ void FLAMEGPU_DEVICE_API<MsgIn, MsgOut>::AgentOut::setVariable(const 
         flamegpu_internal::CUDAScanCompaction::ds_configs[flamegpu_internal::CUDAScanCompaction::Type::AGENT_OUTPUT][streamId].scan_flag[index] = 1;
     }
 }
+
+#ifdef __CUDACC_RTC__
+/**
+ * The following internal definitions are required for RTC compilation as these are only declared as extern in the device headers.
+ * Each RTC function will get a unique copy of each of these device symbols.
+ */
+namespace flamegpu_internal {
+    __device__ curandState* d_random_state;
+    __device__ AgentRandom::size_type d_random_size;
+}
+
+namespace flamegpu_internal {
+namespace CUDAScanCompaction {
+    __device__ CUDAScanCompactionPtrs ds_configs[MAX_TYPES][MAX_STREAMS];
+}  // namespace CUDAScanCompaction
+}
+#endif   // __CUDACC_RTC__
+
+
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_FLAMEGPU_DEVICE_API_H_

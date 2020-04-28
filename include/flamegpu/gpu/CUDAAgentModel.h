@@ -103,14 +103,26 @@ class CUDAAgentModel : public Simulation {
     const Config &getCUDAConfig() const;
 
     /**
-     * Performs a cudaMemCopyToSymbol in the runimte library and also updates the symbols of any RTC functions (which exist seperately within thier own cuda module)
+     * Performs a cudaMemCopyToSymbol in the runtime library and also updates the symbols of any RTC functions (which exist separately within their own cuda module)
      * Will thrown an error if any of the calls fail.
-     * @param symbol_name The name of the symbol
+     * @param symbol A device symbol
+     * @param rtc_symbol_name The name of the symbol
      * @param src Source memory address
      * @param count Size in bytes to copy
      * @param offset Offset from start of symbol in bytes
      */
-    void RTCSafeCudaMemcpyToSymbol(const void* symbol, const char* symbol_name, const void* src, size_t count, size_t offset = 0) const;
+    void RTCSafeCudaMemcpyToSymbol(const void* symbol, const char* rtc_symbol_name, const void* src, size_t count, size_t offset = 0) const;
+
+    /**
+     * Performs a cudaMemCopy to a pointer in the runtime library and also updates the symbols of any RTC functions (which exist separately within their own cuda module)
+     * Will thrown an error if any of the calls fail.
+     * @param ptr a pointer to a symbol in device memory
+     * @param rtc_symbol_name The name of the symbol
+     * @param src Source memory address
+     * @param count Size in bytes to copy
+     * @param offset Offset from start of symbol in bytes
+     */
+    void RTCSafeCudaMemcpyToSymbolAddress(void* ptr, const char* rtc_symbol_name, const void* src, size_t count, size_t offset = 0) const;
 
 
  protected:

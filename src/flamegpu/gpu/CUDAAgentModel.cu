@@ -739,7 +739,7 @@ void CUDAAgentModel::processHostAgentCreation() {
     }
 }
 
-void CUDAAgentModel::RTCSafeCudaMemcpyToSymbol(const void* symbol, const char* symbol_name, const void* src, size_t count, size_t offset) const {
+void CUDAAgentModel::RTCSafeCudaMemcpyToSymbol(const void* symbol, const char* rtc_symbol_name, const void* src, size_t count, size_t offset) const {
     // make the mem copy to runtime API symbol
     gpuErrchk(cudaMemcpyToSymbol(symbol, src, count, offset));
     // loop through agents
@@ -748,7 +748,25 @@ void CUDAAgentModel::RTCSafeCudaMemcpyToSymbol(const void* symbol, const char* s
         for (const CUDARTCFuncMapPair& rtc_func_pair : agent_pair.second->getRTCFunctions()) {
             CUdeviceptr rtc_dev_ptr = 0;
             // get the RTC device symbol
-            rtc_dev_ptr = rtc_func_pair.second->get_global_ptr(symbol_name);
+            rtc_dev_ptr = rtc_func_pair.second->get_global_ptr(rtc_symbol_name);
+            // make the memcpy to the rtc version of the symbol
+            gpuErrchkDriverAPI(cuMemcpyHtoD(rtc_dev_ptr + offset, src, count));
+        }
+    }
+}
+
+void CUDAAgentModel::RTCSafeCudaMemcpyToSymbolAddress(void* ptr, const char* rtc_symbol_name, const void* src, size_t count, size_t offset) const {
+    // offset the device pointer by casting to char
+    void* offset_ptr = reinterpret_cast<void*>(reinterpret_cast<char*>(ptr) + offset);
+    // make the mem copy to runtime API symbol
+    gpuErrchk(cudaMemcpy(offset_ptr, src, count, cudaMemcpyHostToDevice));
+    // loop through agents
+    for (const auto& agent_pair : agent_map) {
+        // loop through any agent functions
+        for (const CUDARTCFuncMapPair& rtc_func_pair : agent_pair.second->getRTCFunctions()) {
+            CUdeviceptr rtc_dev_ptr = 0;
+            // get the RTC device symbol
+            rtc_dev_ptr = rtc_func_pair.second->get_global_ptr(rtc_symbol_name);
             // make the memcpy to the rtc version of the symbol
             gpuErrchkDriverAPI(cuMemcpyHtoD(rtc_dev_ptr + offset, src, count));
         }

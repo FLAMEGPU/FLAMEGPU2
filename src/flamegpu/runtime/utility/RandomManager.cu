@@ -151,8 +151,10 @@ void RandomManager::resizeDeviceArray(const size_type &_length, const CUDAAgentM
             gpuErrchk(cudaFree(flamegpu_internal::hd_random_state));
         }
         flamegpu_internal::hd_random_state = t_hd_random_state;
-        //gpuErrchk(cudaMemcpyToSymbol(flamegpu_internal::d_random_state, &flamegpu_internal::hd_random_state, sizeof(curandState*)));
-        model.RTCSafeCudaMemcpyToSymbol(flamegpu_internal::d_random_state, "flamegpu_internal::d_random_state", &flamegpu_internal::hd_random_state, sizeof(curandState*));
+        // perform safe copy to symbol by ensuring that the runtime library symbol AND each RTC function symbol is also updated
+        void* d_ptr;
+        gpuErrchk(cudaGetSymbolAddress(&d_ptr, flamegpu_internal::d_random_state));
+        model.RTCSafeCudaMemcpyToSymbolAddress(d_ptr, "flamegpu_internal::d_random_state", &flamegpu_internal::hd_random_state, sizeof(curandState*));
         // Init new[    ****]
         if (h_max_random_size > length) {
             // We have part/all host backup, copy to device array
@@ -193,8 +195,10 @@ void RandomManager::resizeDeviceArray(const size_type &_length, const CUDAAgentM
         }
         // Update pointers
         flamegpu_internal::hd_random_state = t_hd_random_state;
-        //gpuErrchk(cudaMemcpyToSymbol(flamegpu_internal::d_random_state, &flamegpu_internal::hd_random_state, sizeof(curandState*)));
-        model.RTCSafeCudaMemcpyToSymbol(flamegpu_internal::d_random_state, "flamegpu_internal::d_random_state", &flamegpu_internal::hd_random_state, sizeof(curandState*));
+        // perform safe copy to symbol by ensuring that the runtime library symbol AND each RTC function symbol is also updated
+        void* d_ptr;
+        gpuErrchk(cudaGetSymbolAddress(&d_ptr, flamegpu_internal::d_random_state));
+        model.RTCSafeCudaMemcpyToSymbolAddress(d_ptr, "flamegpu_internal::d_random_state", &flamegpu_internal::hd_random_state, sizeof(curandState*));
         // Release old
         if (flamegpu_internal::hd_random_state != nullptr) {
             gpuErrchk(cudaFree(flamegpu_internal::hd_random_state));
@@ -203,8 +207,10 @@ void RandomManager::resizeDeviceArray(const size_type &_length, const CUDAAgentM
     // Update length
     length = _length;
     flamegpu_internal::hd_random_size = _length;
-    //gpuErrchk(cudaMemcpyToSymbol(flamegpu_internal::d_random_size, &flamegpu_internal::hd_random_size, sizeof(RandomManager::size_type)));
-    model.RTCSafeCudaMemcpyToSymbol((const void *)flamegpu_internal::d_random_size, "flamegpu_internal::d_random_size", &flamegpu_internal::hd_random_size, sizeof(RandomManager::size_type));
+    // perform safe copy to symbol by ensuring that the runtime library symbol AND each RTC function symbol is also updated
+    void* d_ptr;
+    gpuErrchk(cudaGetSymbolAddress(&d_ptr, flamegpu_internal::d_random_size));
+    model.RTCSafeCudaMemcpyToSymbolAddress(d_ptr, "flamegpu_internal::d_random_size", &flamegpu_internal::hd_random_size, sizeof(RandomManager::size_type));
 }
 void RandomManager::setGrowthModifier(float _growthModifier) {
     assert(growthModifier > 1.0);
