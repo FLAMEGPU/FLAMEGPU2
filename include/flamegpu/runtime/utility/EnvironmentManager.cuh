@@ -136,7 +136,12 @@ class EnvironmentManager {
      * @param model_name Name of the model
      * @param desc environment properties description to use
      */
-    void init(const std::string &model_name, const EnvironmentDescription &desc);
+    void init(const std::string& model_name, const EnvironmentDescription &desc);
+    /**
+     * RTC functions hold thier own unique constants for environment variables. This function copies all environment variable to the RTC copies.
+     * It can not be incorporated into init() as init will be called before RTC functions have been compiled.
+     */
+    void initRTC(const CUDAAgentModel& cuda_model, const EnvironmentDescription& desc);
     /**
      * Deactives all environmental properties linked to the named model from constant cache
      * @param model_name Name of the model

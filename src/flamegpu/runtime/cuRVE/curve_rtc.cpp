@@ -8,7 +8,6 @@ const char* CurveRTCHost::curve_rtc_dynamic_h_template = R"###(dynamic/curve_rtc
 #ifndef CURVE_RTC_DYNAMIC_H_
 #define CURVE_RTC_DYNAMIC_H_
 
-
 template <unsigned int N, unsigned int I> struct StringCompare {
     __device__ inline static bool strings_equal_loop(const char(&a)[N], const char(&b)[N]) {
         return a[N - I] == b[N - I] && StringCompare<N, I - 1>::strings_equal_loop(a, b);
@@ -36,6 +35,8 @@ __device__ bool strings_equal(const char(&a)[N], const char(&b)[M]) {
 */
 
 $DYNAMIC_VARIABLES
+
+$DYNAMIC_ENV_VARIABLES
 
 class Curve {
     public:
@@ -94,6 +95,24 @@ __device__ __forceinline__ void Curve::setArrayVariable(const char(&name)[M], Va
 $DYNAMIC_SETARRAYVARIABLE_IMPL    
 }
 
+// has to be included after definition of curve namespace
+#include "flamegpu/runtime/utility/DeviceEnvironment.cuh"
+
+template<typename T, unsigned int N>
+__device__ __forceinline__ T DeviceEnvironment::get(const char(&name)[N]) const {
+$DYNAMIC_ENV_GETVARIABLE_IMPL
+}
+
+template<typename T, unsigned int N>
+__device__ __forceinline__ T DeviceEnvironment::get(const char(&name)[N], const unsigned int &index) const {
+$DYNAMIC_ENV_GETARRAYVARIABLE_IMPL
+}
+
+template<unsigned int N>
+__device__ __forceinline__ bool DeviceEnvironment::contains(const char(&name)[N]) const {
+$DYNAMIC_ENV_CONTAINTS_IMPL
+}
+
 #endif  // CURVE_RTC_DYNAMIC_H_
 )###";
 
@@ -130,6 +149,31 @@ void CurveRTCHost::unregisterVariable(const char* variableName, unsigned int nam
     }
 }
 
+void CurveRTCHost::registerEnvVariable(const char* variableName, unsigned int namespace_hash, const char* type, unsigned int elements) {
+    // check to see if namespace key already exists
+    auto i = RTCEnvVariables.find(namespace_hash);
+    RTCEnvVariableProperties props;
+    props.type = type;
+    props.elements = elements;
+    if (i != RTCEnvVariables.end()) {
+        // emplace into existing namespace key
+        i->second.emplace(variableName, props);
+    } else {
+        std::unordered_map<std::string, RTCEnvVariableProperties> inner;
+        inner.emplace(variableName, props);
+        RTCEnvVariables.emplace(namespace_hash, inner);
+    }
+}
+
+void CurveRTCHost::unregisterEnvVariable(const char* variableName, unsigned int namespace_hash) {
+    auto i = RTCEnvVariables.find(namespace_hash);
+    if (i != RTCEnvVariables.end()) {
+        i->second.erase(variableName);
+    } else {
+        THROW UnknownInternalError("Namespace hash (%d) not found when removing environment variable: in CurveRTCHost::unregisterEnvVariable", namespace_hash);
+    }
+}
+
 std::string CurveRTCHost::getDynamicHeader() {
     // generate dynamic variables ($DYNAMIC_VARIABLES)
     std::stringstream variables;
@@ -141,6 +185,17 @@ std::string CurveRTCHost::getDynamicHeader() {
         }
     }
     setHeaderPlaceholder("$DYNAMIC_VARIABLES", variables.str());
+
+    // generate dynamic environment variables ($DYNAMIC_ENV_VARIABLES)
+    std::stringstream envVariables;
+    for (auto key_pair : RTCEnvVariables) {
+        unsigned int namespace_hash = key_pair.first;
+        for (std::pair<std::string, RTCEnvVariableProperties> element : key_pair.second) {
+            RTCEnvVariableProperties props = element.second;
+            envVariables << "__constant__ " << props.type << " " << "curve_env_rtc_ptr_" << namespace_hash << "_" << element.first << ";\n";
+        }
+    }
+    setHeaderPlaceholder("$DYNAMIC_ENV_VARIABLES", envVariables.str());
 
     // generate getVariable func implementation ($DYNAMIC_GETVARIABLE_IMPL)
     std::stringstream getVariableImpl;
@@ -236,6 +291,84 @@ std::string CurveRTCHost::getDynamicHeader() {
     setArrayVariableImpl <<             "    }\n";
     setHeaderPlaceholder("$DYNAMIC_SETARRAYVARIABLE_IMPL", setArrayVariableImpl.str());
 
+    // generate Environment::get func implementation ($DYNAMIC_ENV_GETVARIABLE_IMPL)
+    std::stringstream getEnvVariableImpl;
+    getEnvVariableImpl <<               "    switch(modelname_hash){\n";
+    for (auto key_pair : RTCEnvVariables) {
+        unsigned int namespace_hash = key_pair.first;
+        getEnvVariableImpl <<           "      case(" << namespace_hash << "):\n";
+        unsigned int count = 0;
+        for (std::pair<std::string, RTCEnvVariableProperties> element : key_pair.second) {
+            RTCEnvVariableProperties props = element.second;
+            if (props.elements == 1) {
+                getEnvVariableImpl <<   "            if (strings_equal(name, \"" << element.first << "\"))\n";
+                getEnvVariableImpl <<   "                return (T)" << "curve_env_rtc_ptr_" << namespace_hash << "_" << element.first << ";\n";
+                count++;
+            }
+        }
+        if (count > 0) {
+            getEnvVariableImpl <<       "            else\n";
+        }
+        getEnvVariableImpl <<           "                return 0;\n";
+    }
+    getEnvVariableImpl <<               "      default:\n";
+    getEnvVariableImpl <<               "          return 0;\n";
+    getEnvVariableImpl <<               "    }\n";
+    getEnvVariableImpl <<               "    return 0;\n";    // if namespace is not recognised
+    setHeaderPlaceholder("$DYNAMIC_ENV_GETVARIABLE_IMPL", getEnvVariableImpl.str());
+
+    // generate Environment::get func implementation for array variables ($DYNAMIC_ENV_GETARRAYVARIABLE_IMPL)
+    std::stringstream getEnvArrayVariableImpl;
+    getEnvArrayVariableImpl <<             "    switch(modelname_hash){\n";
+    for (auto key_pair : RTCEnvVariables) {
+        unsigned int namespace_hash = key_pair.first;
+        getEnvArrayVariableImpl <<         "      case(" << namespace_hash << "):\n";
+        unsigned int count = 0;
+        for (std::pair<std::string, RTCEnvVariableProperties> element : key_pair.second) {
+            RTCEnvVariableProperties props = element.second;
+            if (props.elements > 1) {
+                getEnvArrayVariableImpl << "          if (strings_equal(name, \"" << element.first << "\"))\n";
+                getEnvArrayVariableImpl << "              return (T) " << "curve_env_rtc_ptr_" << namespace_hash << "_" << element.first << "[index];\n";
+                count++;
+            }
+        }
+        if (count > 0) {
+            getEnvArrayVariableImpl <<     "          else\n";
+        }
+        getEnvArrayVariableImpl <<         "              return 0;\n";
+    }
+    getEnvArrayVariableImpl <<             "      default:\n";
+    getEnvArrayVariableImpl <<             "          return 0;\n";
+    getEnvArrayVariableImpl <<             "    }\n";
+    getEnvArrayVariableImpl <<             "    return 0;\n";   // if namespace is not recognised
+    setHeaderPlaceholder("$DYNAMIC_ENV_GETARRAYVARIABLE_IMPL", getEnvArrayVariableImpl.str());
+
+    // generate Environment::contains func implementation ($DYNAMIC_ENV_CONTAINTS_IMPL)
+    std::stringstream containsEnvVariableImpl;
+    containsEnvVariableImpl <<               "    switch(modelname_hash){\n";
+    for (auto key_pair : RTCEnvVariables) {
+        unsigned int namespace_hash = key_pair.first;
+        containsEnvVariableImpl <<           "      case(" << namespace_hash << "):\n";
+        unsigned int count = 0;
+        for (std::pair<std::string, RTCEnvVariableProperties> element : key_pair.second) {
+            RTCEnvVariableProperties props = element.second;
+            if (props.elements == 1) {
+                containsEnvVariableImpl <<   "            if (strings_equal(name, \"" << element.first << "\"))\n";
+                containsEnvVariableImpl <<   "                return true;\n";
+                count++;
+            }
+        }
+        if (count > 0) {
+            containsEnvVariableImpl <<       "            else\n";
+        }
+        containsEnvVariableImpl <<           "                return false;\n";
+    }
+    containsEnvVariableImpl <<               "      default:\n";
+    containsEnvVariableImpl <<               "          return false;\n";
+    containsEnvVariableImpl <<               "    }\n";
+    containsEnvVariableImpl <<               "    return false;\n";    // if namespace is not recognised
+    setHeaderPlaceholder("$DYNAMIC_ENV_CONTAINTS_IMPL", containsEnvVariableImpl.str());
+
     return header;
 }
 
@@ -247,4 +380,17 @@ void CurveRTCHost::setHeaderPlaceholder(std::string placeholder, std::string dst
     } else {
         THROW UnknownInternalError("String (%s) not found when creating dynamic version of curve for RTC: in CurveRTCHost::setHeaderPlaceholder", placeholder.c_str());
     }
+}
+
+
+std::string CurveRTCHost::getVariableSymbolName(const char* variableName, unsigned int namespace_hash) {
+    std::stringstream name;
+    name << "curve_rtc_ptr_" << namespace_hash << "_" << variableName;
+    return name.str();
+}
+
+std::string CurveRTCHost::getEnvVariableSymbolName(const char* variableName, unsigned int namespace_hash) {
+    std::stringstream name;
+    name << "curve_env_rtc_ptr_" << namespace_hash << "_" << variableName;
+    return name.str();
 }

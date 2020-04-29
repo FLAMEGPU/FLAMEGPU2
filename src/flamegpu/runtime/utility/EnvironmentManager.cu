@@ -6,6 +6,7 @@
 #include "flamegpu/gpu/CUDAErrorChecking.h"
 #include "flamegpu/runtime/utility/DeviceEnvironment.cuh"
 #include "flamegpu/model/EnvironmentDescription.h"
+#include "flamegpu/gpu/CUDAAgentModel.h"
 
 /**
  * Internal namespace to hide __constant__ declarations from modeller
@@ -32,7 +33,7 @@ EnvironmentManager::EnvironmentManager() :
     deviceInitialised(false) { }
 
 
-void EnvironmentManager::init(const std::string &model_name, const EnvironmentDescription &desc) {
+void EnvironmentManager::init(const std::string& model_name, const EnvironmentDescription &desc) {
     // Initialise device portions of Environment manager
     initialiseDevice();
     // Error if reinit
@@ -62,6 +63,14 @@ void EnvironmentManager::init(const std::string &model_name, const EnvironmentDe
     }
     // Defragment to rebuild it properly
     defragment(&orderedProperties);
+}
+
+void EnvironmentManager::initRTC(const CUDAAgentModel& cuda_model, const EnvironmentDescription& desc) {
+    // loop through environment properties
+    for (auto p : desc.getPropertiesMap()) {
+        // Register variable for use in any RTC functions
+        cuda_model.RTCSetEnvironmentVariable(p.first.c_str(), p.second.data.ptr , p.second.data.length);
+    }
 }
 
 void EnvironmentManager::initialiseDevice() {

@@ -9,6 +9,7 @@
 #include "flamegpu/runtime/flamegpu_host_api.h"
 #include "flamegpu/gpu/CUDAScanCompaction.h"
 #include "flamegpu/util/nvtx.h"
+#include "flamegpu/runtime/cuRVE/curve_rtc.h"
 
 CUDAAgentModel::CUDAAgentModel(const ModelDescription& _model)
     : Simulation(_model)
@@ -647,6 +648,9 @@ void CUDAAgentModel::initialiseRTC() {
             }
         }
 
+        // Initialise device environment for RTC
+        singletons->environment.initRTC(*this, *model->environment);
+
         rtcInitialised = true;
     }
 }
@@ -772,3 +776,21 @@ void CUDAAgentModel::RTCSafeCudaMemcpyToSymbolAddress(void* ptr, const char* rtc
         }
     }
 }
+
+void CUDAAgentModel::RTCSetEnvironmentVariable(const char* variable_name, const void* src, size_t count) const {
+    // get the model hash
+    const Curve::VariableHash model_hash = Curve::getInstance().variableRuntimeHash(getModelDescription().name.c_str());
+    // loop through agents
+    for (const auto& agent_pair : agent_map) {
+        // loop through any agent functions
+        for (const CUDARTCFuncMapPair& rtc_func_pair : agent_pair.second->getRTCFunctions()) {
+            CUdeviceptr rtc_dev_ptr = 0;
+            // get the RTC device symbol
+            std::string rtc_symbol_name = CurveRTCHost::getEnvVariableSymbolName(variable_name, model_hash);
+            rtc_dev_ptr = rtc_func_pair.second->get_global_ptr(rtc_symbol_name.c_str());
+            // make the memcpy to the rtc version of the symbol
+            gpuErrchkDriverAPI(cuMemcpyHtoD(rtc_dev_ptr, src, count));
+        }
+    }
+}
+

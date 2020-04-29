@@ -2,9 +2,10 @@
 #define INCLUDE_FLAMEGPU_RUNTIME_UTILITY_DEVICEENVIRONMENT_CUH_
 
 // #include <cuda_runtime.h>
-
+#include <stdint.h>
 #include <string>
 #include <cassert>
+
 
 // #include "flamegpu/runtime/utility/HostEnvironment.cuh"
 
@@ -57,7 +58,7 @@ class DeviceEnvironment {
      * @tparam N Length of variable name, this should always be implicit if passing a string literal
      */
     template<typename T, unsigned int N>
-    __device__ __forceinline__ const T &get(const char(&name)[N]) const;
+    __device__ __forceinline__ T get(const char(&name)[N]) const;
     /**
      * Gets an element of an environment property array
      * @param name name used for accessing the property, this value should be a string literal e.g. "foobar"
@@ -65,7 +66,7 @@ class DeviceEnvironment {
      * @tparam N Length of variable name, this should always be implicit if passing a string literal
      */
     template<typename T, unsigned int N>
-    __device__ __forceinline__ const T &get(const char(&name)[N], const unsigned int&index) const;
+    __device__ __forceinline__ T get(const char(&name)[N], const unsigned int&index) const;
     /**
      * Returns whether the named env property exists
      * @param name name used for accessing the property, this value should be a string literal e.g. "foobar"
@@ -75,18 +76,19 @@ class DeviceEnvironment {
     __device__ __forceinline__ bool contains(const char(&name)[N]) const;
 };
 
-
+// Mash compilation of these functions from RTC builds as this requires a dynamic implementation of the function in curve_rtc
+#ifndef __CUDACC_RTC__
 /**
  * Getters
  */
 template<typename T, unsigned int N>
-__device__ __forceinline__ const T &DeviceEnvironment::get(const char(&name)[N]) const {
+__device__ __forceinline__ T DeviceEnvironment::get(const char(&name)[N]) const {
     Curve::VariableHash cvh = CURVE_NAMESPACE_HASH() + modelname_hash + Curve::variableHash(name);
     // Error checking is internal to Curve::getVariablePtrByHash, returns nullptr on fail
     // get a pointer to the specific variable by offsetting by the provided index
     T *value_ptr = reinterpret_cast<T*>(Curve::getVariablePtrByHash(cvh, 0));
     if (value_ptr) {
-        return *value_ptr;
+        return (T) *value_ptr;
     } else {
         curve_internal::d_curve_error = Curve::DEVICE_ERROR_UNKNOWN_VARIABLE;
         assert(false);
@@ -94,14 +96,14 @@ __device__ __forceinline__ const T &DeviceEnvironment::get(const char(&name)[N])
     }
 }
 template<typename T, unsigned int N>
-__device__ __forceinline__ const T &DeviceEnvironment::get(const char(&name)[N], const unsigned int &index) const {
+__device__ __forceinline__ T DeviceEnvironment::get(const char(&name)[N], const unsigned int &index) const {
     Curve::VariableHash cvh = CURVE_NAMESPACE_HASH() + modelname_hash + Curve::variableHash(name);
     // Error checking is internal to Curve::getVariablePtrByHash, returns nullptr on fail
     size_t offset = index * sizeof(T);
     // get a pointer to the specific variable by offsetting by the provided index
     T *value_ptr = reinterpret_cast<T*>(Curve::getVariablePtrByHash(cvh, offset));
     if (value_ptr) {
-        return *value_ptr;
+        return (T) *value_ptr;
     } else {
         curve_internal::d_curve_error = Curve::DEVICE_ERROR_UNKNOWN_VARIABLE;
         assert(false);
@@ -117,5 +119,7 @@ __device__ __forceinline__ bool DeviceEnvironment::contains(const char(&name)[N]
     Curve::VariableHash cvh = CURVE_NAMESPACE_HASH() + modelname_hash + Curve::variableHash(name);
     return Curve::getVariable(cvh) != Curve::UNKNOWN_VARIABLE;
 }
+
+#endif  // __CUDACC_RTC__
 
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_UTILITY_DEVICEENVIRONMENT_CUH_

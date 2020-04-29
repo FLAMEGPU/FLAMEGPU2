@@ -37,12 +37,12 @@
 */
 CUDAMessage::CUDAMessage(const MsgBruteForce::Data& description, const CUDAAgentModel& cuda_model)
     : message_description(description)
-    , cuda_model(cuda_model)
     , message_count(0)
     , max_list_size(0)
     , truncate_messagelist_flag(true)
     , pbm_construction_required(false)
-    , specialisation_handler(description.getSpecialisationHander(*this)) {
+    , specialisation_handler(description.getSpecialisationHander(*this))
+    , cuda_model(cuda_model) {
     // resize(0); // Think this call is redundant
 }
 

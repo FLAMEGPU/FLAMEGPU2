@@ -20,7 +20,15 @@ class CurveRTCHost {
 
     void unregisterVariable(const char* variableName, unsigned int namespace_hash);
 
+    void registerEnvVariable(const char* variableName, unsigned int namespace_hash, const char* type, unsigned int elements = 1);
+
+    void unregisterEnvVariable(const char* variableName, unsigned int namespace_hash);
+
     std::string getDynamicHeader();
+
+    static std::string getVariableSymbolName(const char* variableName, unsigned int namespace_hash);
+
+    static std::string getEnvVariableSymbolName(const char* variableName, unsigned int namespace_hash);
 
  protected:
     void setHeaderPlaceholder(std::string placeholder, std::string dst);
@@ -32,9 +40,15 @@ class CurveRTCHost {
         unsigned int elements;
     } RTCVariableProperties;
 
+    typedef struct {
+        std::string type;
+        unsigned int elements;
+    } RTCEnvVariableProperties;
+
  private:
     std::string header;
     static const char* curve_rtc_dynamic_h_template;
     std::unordered_map<unsigned int, std::unordered_map<std::string, RTCVariableProperties>> RTCVariables;     // <namespace, <name, RTCVariableProperties>>
+    std::unordered_map<unsigned int, std::unordered_map<std::string, RTCEnvVariableProperties>> RTCEnvVariables;     // <namespace, <name, RTCEnvVariableProperties>>
 };
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_CURVE_CURVE_RTC_H_

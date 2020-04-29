@@ -14,6 +14,7 @@
 #include "flamegpu/gpu/CUDAAgent.h"
 #include "flamegpu/gpu/CUDAAgentStateList.h"
 #include "flamegpu/gpu/CUDAErrorChecking.h"
+#include "flamegpu/gpu/CUDAAgentModel.h"
 
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/model/AgentFunctionDescription.h"
@@ -240,7 +241,7 @@ void CUDAAgent::mapRuntimeVariables(const AgentFunctionData& func, const std::st
             // get the rtc varibale ptr
             const jitify::KernelInstantiation& instance = getRTCInstantiation(func.rtc_func_name);
             std::stringstream d_var_ptr_name;
-            d_var_ptr_name << "curve_rtc_ptr_" << agent_hash + func_hash << "_" << mmp.first;
+            d_var_ptr_name << CurveRTCHost::getVariableSymbolName(mmp.first.c_str(), agent_hash + func_hash);
             CUdeviceptr d_var_ptr = instance.get_global_ptr(d_var_ptr_name.str().c_str());
             // copy runtime ptr (d_ptr) to rtc ptr (d_var_ptr)
             gpuErrchkDriverAPI(cuMemcpyHtoD(d_var_ptr, &d_ptr, sizeof(void*)));
@@ -584,6 +585,13 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func) {
             curve_header.registerVariable(msg_out_var.first.c_str(), msg_out_hash + agent_func_name_hash, msg_out_var.second.type.name(), msg_out_var.second.elements, false, true);
         }
     }
+    // Set Environment variables in curve
+    Curve::NamespaceHash model_hash = Curve::getInstance().variableRuntimeHash(cuda_model.getModelDescription().name.c_str());
+    for (auto prop : cuda_model.getModelDescription().environment->getPropertiesMap()) {
+        curve_header.registerEnvVariable(prop.first.c_str(), model_hash, prop.second.type.name(), prop.second.elements);
+    }
+
+    // get the dynamically generated header from curve rtc
     headers.push_back(curve_header.getDynamicHeader());
 
     // cassert header (to remove remaining warnings) TODO: Ask Jitify to implement safe version of this

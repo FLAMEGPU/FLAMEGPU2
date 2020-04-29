@@ -124,6 +124,9 @@ class CUDAAgentModel : public Simulation {
      */
     void RTCSafeCudaMemcpyToSymbolAddress(void* ptr, const char* rtc_symbol_name, const void* src, size_t count, size_t offset = 0) const;
 
+    // TODO
+    void RTCSetEnvironmentVariable(const char* variable_name, const void* src, size_t count) const;
+
 
  protected:
      /**

@@ -426,4 +426,53 @@ TEST(DeviceRTCAPITest, AgentFunction_random) {
     }
 }
 
+
+const char* rtc_env_func = R"###(
+FLAMEGPU_AGENT_FUNCTION(rtc_env_func, MsgNone, MsgNone) {
+    int e1_out = FLAMEGPU->environment.get<int>("e1");
+    int e1_exists = FLAMEGPU->environment.contains("e1");
+    FLAMEGPU->setVariable<int>("e1_out", e1_out);
+    FLAMEGPU->setVariable<int>("e1_exists", e1_exists);
+    return ALIVE;
+}
+)###";
+/**
+ * Test agent environment functions.
+ */
+TEST(DeviceRTCAPITest, AgentFunction_env) {
+    ModelDescription model("model");
+    AgentDescription& agent = model.newAgent("agent_name");
+    agent.newVariable<int>("e1_out");
+    agent.newVariable<int>("e1_exists");
+    AgentFunctionDescription& func = agent.newRTCFunction("rtc_env_func", rtc_env_func);
+    model.newLayer().addAgentFunction(func);
+    // create some environment variables
+    EnvironmentDescription& env = model.Environment();
+    env.add<int>("e1", 100);
+    // Init pop with 0 values for variables
+    AgentPopulation init_population(agent, AGENT_COUNT);
+    for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
+        AgentInstance instance = init_population.getNextInstance("default");
+        instance.setVariable<int>("e1_out", 0);
+        instance.setVariable<int>("e1_exists", false);
+    }
+    // Setup Model
+    CUDAAgentModel cuda_model(model);
+    cuda_model.setPopulationData(init_population);
+    // Run 1 step to ensure data is pushed to device
+    cuda_model.step();
+    // Recover data from device
+    AgentPopulation population(agent);
+    cuda_model.getPopulationData(population);
+    for (unsigned int i = 0; i < population.getCurrentListSize(); i++) {
+        AgentInstance instance = population.getInstanceAt(i);
+        // Check for random values
+        int e1_out = instance.getVariable<int>("e1_out");
+        int e1_exists = instance.getVariable<int>("e1_exists");
+        // Check that the value is correct and that the variable is reported as existing
+        EXPECT_EQ(e1_out, 100);
+        EXPECT_TRUE(e1_exists);
+    }
+}
+
 }  // namespace test_rtc_device_api
