@@ -66,6 +66,14 @@ void EnvironmentManager::init(const std::string& model_name, const EnvironmentDe
 }
 
 void EnvironmentManager::initRTC(const CUDAAgentModel& cuda_model, const EnvironmentDescription& desc) {
+    // check to ensure that model name is not already registered
+    auto res = cuda_agent_models.find(cuda_model.getModelDescription().name);
+    if (res != cuda_agent_models.end()) {
+        THROW UnknownInternalError("Agent model name '%s' already registered in initRTC()", cuda_model.getModelDescription().name.c_str());
+    }
+    // register model name
+    cuda_agent_models.emplace(cuda_model.getModelDescription().name, cuda_model);
+
     // loop through environment properties
     for (auto p : desc.getPropertiesMap()) {
         // Register variable for use in any RTC functions
@@ -275,4 +283,17 @@ void EnvironmentManager::defragment(DefragMap *mergeProperties) {
     // Update m_freeSpace, nextFree
     nextFree = buffOffset;
     m_freeSpace = MAX_BUFFER_SIZE - buffOffset + spareFrags;
+}
+
+const CUDAAgentModel& EnvironmentManager::getCUDAAgentModel(std::string model_name) {
+    auto res = cuda_agent_models.find(model_name);
+    if (res == cuda_agent_models.end()) {
+        THROW UnknownInternalError("Agent model name '%s' not registered in EnvironmentManager for use with RTC in EnvironmentManager::getCUDAAgentModel", model_name.c_str());
+    }
+    return res->second;
+}
+
+void EnvironmentManager::setRTCValue(std::string model_name, const char* variable_name, const void* src, size_t count, size_t offset) {
+    const CUDAAgentModel& cuda_agent_model = getCUDAAgentModel(model_name);
+    cuda_agent_model.RTCSetEnvironmentVariable(variable_name, src, count, offset);
 }

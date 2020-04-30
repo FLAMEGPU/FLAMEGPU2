@@ -777,7 +777,7 @@ void CUDAAgentModel::RTCSafeCudaMemcpyToSymbolAddress(void* ptr, const char* rtc
     }
 }
 
-void CUDAAgentModel::RTCSetEnvironmentVariable(const char* variable_name, const void* src, size_t count) const {
+void CUDAAgentModel::RTCSetEnvironmentVariable(const char* variable_name, const void* src, size_t count, size_t offset) const {
     // get the model hash
     const Curve::VariableHash model_hash = Curve::getInstance().variableRuntimeHash(getModelDescription().name.c_str());
     // loop through agents
@@ -789,7 +789,7 @@ void CUDAAgentModel::RTCSetEnvironmentVariable(const char* variable_name, const 
             std::string rtc_symbol_name = CurveRTCHost::getEnvVariableSymbolName(variable_name, model_hash);
             rtc_dev_ptr = rtc_func_pair.second->get_global_ptr(rtc_symbol_name.c_str());
             // make the memcpy to the rtc version of the symbol
-            gpuErrchkDriverAPI(cuMemcpyHtoD(rtc_dev_ptr, src, count));
+            gpuErrchkDriverAPI(cuMemcpyHtoD(rtc_dev_ptr + offset, src, count));
         }
     }
 }

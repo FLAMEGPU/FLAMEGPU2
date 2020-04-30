@@ -192,7 +192,10 @@ std::string CurveRTCHost::getDynamicHeader() {
         unsigned int namespace_hash = key_pair.first;
         for (std::pair<std::string, RTCEnvVariableProperties> element : key_pair.second) {
             RTCEnvVariableProperties props = element.second;
-            envVariables << "__constant__ " << props.type << " " << "curve_env_rtc_ptr_" << namespace_hash << "_" << element.first << ";\n";
+            if (props.elements > 1)
+                envVariables << "__constant__ " << props.type << " " << "curve_env_rtc_ptr_" << namespace_hash << "_" << element.first << "[" << props.elements << "];\n";
+            else
+                envVariables << "__constant__ " << props.type << " " << "curve_env_rtc_ptr_" << namespace_hash << "_" << element.first << ";\n";
         }
     }
     setHeaderPlaceholder("$DYNAMIC_ENV_VARIABLES", envVariables.str());

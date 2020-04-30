@@ -15,6 +15,7 @@
 #include "CUDAScatter.h"
 #include "flamegpu/runtime/flamegpu_host_new_agent_api.h"
 
+
 /**
  * CUDA runner for Simulation interface
  * Executes a FGPU2 model using GPU
@@ -125,7 +126,7 @@ class CUDAAgentModel : public Simulation {
     void RTCSafeCudaMemcpyToSymbolAddress(void* ptr, const char* rtc_symbol_name, const void* src, size_t count, size_t offset = 0) const;
 
     // TODO
-    void RTCSetEnvironmentVariable(const char* variable_name, const void* src, size_t count) const;
+    void RTCSetEnvironmentVariable(const char* variable_name, const void* src, size_t count, size_t offset = 0) const;
 
 
  protected:
