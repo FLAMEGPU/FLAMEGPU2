@@ -187,9 +187,14 @@ set(CMAKE_CUDA_FLAGS_RELEASE "${CMAKE_CUDA_FLAGS_RELEASE} -lineinfo")
 set(CMAKE_CUDA_FLAGS_PROFILE "${CMAKE_CUDA_FLAGS_PROFILE} -lineinfo -DPROFILE -D_PROFILE")
 # Addresses a cub::histogram warning
 set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr")
-# Set high level of warnings
+# Set high level of warnings (only for linux due to Jitify bug: https://github.com/NVIDIA/jitify/issues/62)
 if(WARNINGS_AS_ERRORS)
-    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --Wreorder --Werror reorder,cross-execution-space-call -Xptxas=\"-Werror\"  -Xnvlink=\"-Werror\"")
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+        # Jitify has a problem with cross-execution-space-call under windows, enabling that currently blocks appveyor
+        set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --Wreorder --Werror reorder -Xptxas=\"-Werror\"  -Xnvlink=\"-Werror\"")
+    else()
+        set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --Wreorder --Werror reorder,cross-execution-space-call -Xptxas=\"-Werror\"  -Xnvlink=\"-Werror\"")
+    endif()
 else()
     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --Wreorder")
 endif()
