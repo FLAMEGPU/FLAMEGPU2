@@ -18,7 +18,7 @@ TEST(DeviceRTCAPITest, AgentFunction_empty) {
     ModelDescription model("AgentFunction_empty");
     AgentDescription &agent = model.newAgent("agent_name");
     agent.newVariable<float>("x");
-    // Do nothing, but ensure variables are made available on device
+    // add RTC agent function
     AgentFunctionDescription &func = agent.newRTCFunction("rtc_test_func", rtc_empty_agent_func);
     func.setAllowAgentDeath(true);
     model.newLayer().addAgentFunction(func);
@@ -84,7 +84,7 @@ TEST(DeviceRTCAPITest, AgentFunction_death) {
     ModelDescription model("AgentFunction_death");
     AgentDescription& agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
-    // Do nothing, but ensure variables are made available on device
+    // add RTC agent function
     AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_death_agent_func);
     func.setAllowAgentDeath(true);
     model.newLayer().addAgentFunction(func);
@@ -122,7 +122,7 @@ TEST(DeviceRTCAPITest, AgentFunction_get) {
     ModelDescription model("AgentFunction_get");
     AgentDescription& agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
-    // Do nothing, but ensure variables are made available on device
+    // add RTC agent function
     AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_get_agent_func);
     func.setAllowAgentDeath(true);
     model.newLayer().addAgentFunction(func);
@@ -159,7 +159,7 @@ TEST(DeviceRTCAPITest, AgentFunction_getset) {
     AgentDescription& agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
     agent.newVariable<int>("id_out");
-    // Do nothing, but ensure variables are made available on device
+    // add RTC agent function
     AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_getset_agent_func);
     model.newLayer().addAgentFunction(func);
     // Init pop
@@ -208,7 +208,7 @@ TEST(DeviceRTCAPITest, AgentFunction_array_get) {
     agent.newVariable<int>("a2");
     agent.newVariable<int>("a3");
     agent.newVariable<int>("a4");
-    // Do nothing, but ensure variables are made available on device
+    // add RTC agent function
     AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_array_get_agent_func);
     model.newLayer().addAgentFunction(func);
     // Init pop
@@ -340,7 +340,6 @@ TEST(DeviceRTCAPITest, AgentFunction_msg_bruteforce) {
     fo.setMessageOutput(msg);
     AgentFunctionDescription& fi = a.newRTCFunction("rtc_msg_in_func", rtc_msg_in_func);
     fi.setMessageInput(msg);
-
     std::default_random_engine rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
     AgentPopulation pop(a, (unsigned int)AGENT_COUNT);
@@ -384,7 +383,7 @@ TEST(DeviceRTCAPITest, AgentFunction_random) {
     agent.newVariable<float>("a");
     agent.newVariable<float>("b");
     agent.newVariable<float>("c");
-    // Do nothing, but ensure variables are made available on device
+    // add RTC agent function
     AgentFunctionDescription& func = agent.newRTCFunction("rtc_rand_func", rtc_rand_func);
     model.newLayer().addAgentFunction(func);
     // Init pop with 0 values for variables
@@ -530,6 +529,61 @@ TEST(DeviceRTCAPITest, AgentFunction_env) {
             EXPECT_EQ(e_array_out_2[j], j);
         }
     }
+}
+
+const char* rtc_agent_output_func = R"###(
+FLAMEGPU_AGENT_FUNCTION(rtc_agent_output_func, MsgNone, MsgNone) {
+    unsigned int id = FLAMEGPU->getVariable<unsigned int>("id") + 1;
+    if (threadIdx.x % 2 == 0) {
+        FLAMEGPU->agent_out.setVariable<unsigned int>("x", id + 12);
+        FLAMEGPU->agent_out.setVariable<unsigned int>("id", id);
+    }
+    return ALIVE;
+}
+)###";
+/**
+ * Test rtc agent output by optionally setting an agent output and checking for the correct population size and agent values
+ */
+TEST(DeviceRTCAPITest, AgentFunction_agent_output) {
+    ModelDescription model("AgentFunction_agent_output");
+    AgentDescription& agent = model.newAgent("agent_name");
+    agent.newVariable<unsigned int>("x");
+    agent.newVariable<unsigned int>("id");
+    // add RTC agent function with an agent output
+    AgentFunctionDescription& func = agent.newRTCFunction("rtc_agent_output_func", rtc_agent_output_func);
+    func.setAllowAgentDeath(true);
+    func.setAgentOutput(agent);
+    model.newLayer().addAgentFunction(func);
+    // Init pop
+    AgentPopulation init_population(agent, AGENT_COUNT);
+    for (unsigned int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
+        AgentInstance instance = init_population.getNextInstance("default");
+        instance.setVariable<unsigned int>("x", i + 1);
+        instance.setVariable<unsigned int>("id", i);
+    }
+    // Setup Model
+    CUDAAgentModel cuda_model(model);
+    cuda_model.setPopulationData(init_population);
+    // Run 1 step
+    cuda_model.step();
+    // Test output
+    AgentPopulation population(agent);
+    cuda_model.getPopulationData(population);
+    // Validate each agent has same result
+    EXPECT_EQ(population.getCurrentListSize(), (unsigned int)(AGENT_COUNT * 1.5));
+    unsigned int is_1 = 0;
+    unsigned int is_12 = 0;
+    for (unsigned int i = 0; i < population.getCurrentListSize(); ++i) {
+        AgentInstance ai = population.getInstanceAt(i);
+        const unsigned int id = ai.getVariable<unsigned int>("id");
+        const unsigned int val = ai.getVariable<unsigned int>("x") - id;
+        if (val == 1)
+            is_1++;
+        else if (val == 12)
+            is_12++;
+    }
+    EXPECT_EQ(is_1, AGENT_COUNT);
+    EXPECT_EQ(is_12, AGENT_COUNT / 2);
 }
 
 }  // namespace test_rtc_device_api
