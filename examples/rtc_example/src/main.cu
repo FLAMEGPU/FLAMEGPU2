@@ -91,6 +91,7 @@ int main(int argc, const char* argv[]) {
     LayerDescription& li = m.newLayer("input_layer");
     li.addAgentFunction(fi);
     CUDAAgentModel c(m);
+    c.initialise(argc, argv);
     c.SimulationConfig().steps = 1;
     c.setPopulationData(pop);
     c.simulate();
