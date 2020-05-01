@@ -551,7 +551,7 @@ inline bool load_source(
     // Try loading from callback
     // double brackets prevent assignment in conditional warning
     if (!file_callback ||
-        !((source_stream = file_callback(fullpath, string_stream)))) {
+        !((source_stream = file_callback(fullpath, string_stream)) != 0 )) {
 #if JITIFY_ENABLE_EMBEDDED_FILES
       // Try loading as embedded file
       EmbeddedData embedded;
