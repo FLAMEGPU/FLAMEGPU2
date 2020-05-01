@@ -437,6 +437,17 @@ void CUDAAgent::mapNewRuntimeVariables(const AgentFunctionData& func, const unsi
 
         // maximum population num
         Curve::getInstance().registerVariableByHash(var_hash + _agent_birth_hash + func_hash, d_ptr, type_size, maxLen);
+
+        // Map RTC variables (these must be mapped before each function execution as the runtime pointer may have changed to the swapping)
+        if (!func.rtc_func_name.empty()) {
+            // get the rtc variable ptr
+            const jitify::KernelInstantiation& instance = getRTCInstantiation(func.rtc_func_name);
+            std::stringstream d_var_ptr_name;
+            d_var_ptr_name << CurveRTCHost::getVariableSymbolName(mmp.first.c_str(), _agent_birth_hash + func_hash);
+            CUdeviceptr d_var_ptr = instance.get_global_ptr(d_var_ptr_name.str().c_str());
+            // copy runtime ptr (d_ptr) to rtc ptr (d_var_ptr)
+            gpuErrchkDriverAPI(cuMemcpyHtoD(d_var_ptr, &d_ptr, sizeof(void*)));
+        }
     }
 }
 
@@ -451,6 +462,8 @@ void CUDAAgent::unmapNewRuntimeVariables(const AgentFunctionData& func) const {
         // unmap using curve
         const Curve::VariableHash var_hash = Curve::getInstance().variableRuntimeHash(mmp.first.c_str());
         Curve::getInstance().unregisterVariableByHash(var_hash + _agent_birth_hash + func_hash);
+
+        // no need to unmap RTC variables
     }
 }
 void CUDAAgent::resizeNew(const AgentFunctionData& func, const unsigned int &newSize, const unsigned int &streamId) {
@@ -583,6 +596,15 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func) {
         for (auto msg_out_var : om->variables) {
             // register message variables using combined hash
             curve_header.registerVariable(msg_out_var.first.c_str(), msg_out_hash + agent_func_name_hash, msg_out_var.second.type.name(), msg_out_var.second.elements, false, true);
+        }
+    }
+    // Set agent output variables in curve
+    if (auto ao = func.agent_output.lock()) {
+        // get the message input hash
+        Curve::NamespaceHash agent_out_hash = Curve::getInstance().variableRuntimeHash("_agent_birth");
+        for (auto agent_out_var : ao->variables) {
+            // register message variables using combined hash
+            curve_header.registerVariable(agent_out_var.first.c_str(), agent_out_hash + funcname_hash, agent_out_var.second.type.name(), agent_out_var.second.elements, false, true);
         }
     }
     // Set Environment variables in curve

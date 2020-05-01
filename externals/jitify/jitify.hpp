@@ -549,8 +549,9 @@ inline bool load_source(
   if (!source_stream) {
     std::string fullpath = path_join(current_dir, filename);
     // Try loading from callback
+    // double brackets prevent assignment in conditional warning
     if (!file_callback ||
-        !(source_stream = file_callback(fullpath, string_stream))) {
+        !((source_stream = file_callback(fullpath, string_stream)))) {
 #if JITIFY_ENABLE_EMBEDDED_FILES
       // Try loading as embedded file
       EmbeddedData embedded;
