@@ -228,6 +228,10 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler /wd4505")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4505")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4505")
+    # unreferenced formal parameter warnings disabled - tests make use of it.
+    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler /wd4100")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4100")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4100")
     set(CUDA_DEVICE_LINK_FLAGS "${CUDA_DEVICE_LINK_FLAGS} -Xcompiler /wd4100")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /experimental:external")
     # These flags don't currently have any effect on how CMake passes system-private includes to msvc
