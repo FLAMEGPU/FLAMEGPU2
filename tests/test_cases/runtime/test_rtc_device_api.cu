@@ -15,7 +15,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, MsgNone, MsgNone) {
  * Test an empty agent function to ensure that the RTC library can successful build and run a minimal example
  */
 TEST(DeviceRTCAPITest, AgentFunction_empty) {
-    ModelDescription model("AgentFunction_empty");
+    ModelDescription model("model");
     AgentDescription &agent = model.newAgent("agent_name");
     agent.newVariable<float>("x");
     // add RTC agent function
@@ -47,7 +47,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, MsgNone, MsgNone) {
  */
 /*
 TEST(DeviceRTCAPITest, AgentFunction_compile_error) {
-    ModelDescription model("AgentFunction_compile_error");
+    ModelDescription model("model");
     AgentDescription& agent = model.newAgent("agent_name");
     agent.newVariable<float>("x");
     AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_error_agent_func);
@@ -81,7 +81,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, MsgNone, MsgNone) {
  * Test an RTC function to ensure death is processed correctly
  */
 TEST(DeviceRTCAPITest, AgentFunction_death) {
-    ModelDescription model("AgentFunction_death");
+    ModelDescription model("model");
     AgentDescription& agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
     // add RTC agent function
@@ -119,7 +119,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, MsgNone, MsgNone) {
  * Test an RTC function to ensure that getVaribale function works correctly. Expected result is that all even id agents are killed.
  */
 TEST(DeviceRTCAPITest, AgentFunction_get) {
-    ModelDescription model("AgentFunction_get");
+    ModelDescription model("model");
     AgentDescription& agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
     // add RTC agent function
@@ -155,7 +155,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, MsgNone, MsgNone) {
  * Test an RTC function to ensure that the setVariable function works correctly. Expected result is 'id' is copied to 'id_out'
  */
 TEST(DeviceRTCAPITest, AgentFunction_getset) {
-    ModelDescription model("AgentFunction_getset");
+    ModelDescription model("model");
     AgentDescription& agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
     agent.newVariable<int>("id_out");
@@ -200,7 +200,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, MsgNone, MsgNone) {
  * Test an RTC function to ensure that the getVariable function works correctly for array variables. Expected result is 'array_var' values are copied into a1, a2, a3 and a4.
  */
 TEST(DeviceRTCAPITest, AgentFunction_array_get) {
-    ModelDescription model("AgentFunction_array_get");
+    ModelDescription model("model");
     AgentDescription& agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
     agent.newVariable<int, 4>("array_var");
@@ -260,7 +260,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, MsgNone, MsgNone) {
  * Also includes a test to ensure that scalar variables can not use the array get and set functions of the API.
  */
 TEST(DeviceRTCAPITest, AgentFunction_array_set) {
-    ModelDescription model("AgentFunction_array_set");
+    ModelDescription model("model");
     AgentDescription& agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
     agent.newVariable<int, 5>("array_var");
@@ -329,7 +329,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_msg_in_func, MsgBruteForce, MsgNone) {
  * As messages are derived from a common CUDAMessage type there is no need to perform the same test with every message type.
  */
 TEST(DeviceRTCAPITest, AgentFunction_msg_bruteforce) {
-    ModelDescription m("AgentFunction_msg_bruteforce");
+    ModelDescription m("model");
     MsgBruteForce::Description& msg = m.newMessage("message_x");
     msg.newVariable<int>("x");
     AgentDescription& a = m.newAgent("agent");
@@ -378,7 +378,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_rand_func, MsgNone, MsgNone) {
  * Test agent random functions to ensure that random values are returned by RTC implementation. Implemented from AgentRandomTest.AgentRandomCheck Test Model 1. No need to check seed as this is done in the orginal test.
  */
 TEST(DeviceRTCAPITest, AgentFunction_random) {
-    ModelDescription model("AgentFunction_random");
+    ModelDescription model("model");
     AgentDescription& agent = model.newAgent("agent_name");
     agent.newVariable<float>("a");
     agent.newVariable<float>("b");
@@ -469,7 +469,7 @@ FLAMEGPU_STEP_FUNCTION(etc_env_step) {
  * Test agent environment functions.
  */
 TEST(DeviceRTCAPITest, AgentFunction_env) {
-    ModelDescription model("AgentFunction_env");
+    ModelDescription model("model");
     AgentDescription& agent = model.newAgent("agent_name");
     agent.newVariable<int>("e1_out");
     agent.newVariable<int>("e1_exists");
@@ -545,7 +545,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_agent_output_func, MsgNone, MsgNone) {
  * Test rtc agent output by optionally setting an agent output and checking for the correct population size and agent values
  */
 TEST(DeviceRTCAPITest, AgentFunction_agent_output) {
-    ModelDescription model("AgentFunction_agent_output");
+    ModelDescription model("model");
     AgentDescription& agent = model.newAgent("agent_name");
     agent.newVariable<unsigned int>("x");
     agent.newVariable<unsigned int>("id");
@@ -594,13 +594,13 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, MsgNone, MsgNone) {
 }
 )###";
 FLAMEGPU_AGENT_FUNCTION_CONDITION(odd_only) {
-    return FLAMEGPU->getVariable<int>("x") % 2;
+    return FLAMEGPU->getVariable<int>("id") % 2;
 }
 /**
  * Test an RTC function to an agent function condition (where the condition is not compiled using RTC)
  */
 TEST(DeviceRTCAPITest, AgentFunction_cond_non_rtc) {
-    ModelDescription model("AgentFunction_cond_non_rtc");
+    ModelDescription model("model");
     AgentDescription& agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
     agent.newVariable<int>("id_out");

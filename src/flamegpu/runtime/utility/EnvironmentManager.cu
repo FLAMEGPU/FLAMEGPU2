@@ -109,6 +109,12 @@ void EnvironmentManager::free(const std::string &model_name) {
     Curve::getInstance().setDefaultNamespace();
     // Defragment to clear up all the buffer items we didn't handle here
     defragment();
+    // Remove reference to cuda agent model used by RTC
+    auto cam = cuda_agent_models.find(model_name);
+    if (cam == cuda_agent_models.end()) {
+        THROW UnknownInternalError("Agent model name '%s' not registered in EnvironmentManager for use with RTC in EnvironmentManager::free", model_name.c_str());
+    }
+    cuda_agent_models.erase(cam);
 }
 
 EnvironmentManager::NamePair EnvironmentManager::toName(const std::string &model_name, const std::string &var_name) {
