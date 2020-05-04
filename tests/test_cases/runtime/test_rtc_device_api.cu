@@ -586,4 +586,68 @@ TEST(DeviceRTCAPITest, AgentFunction_agent_output) {
     EXPECT_EQ(is_12, AGENT_COUNT / 2);
 }
 
+const char* rtc_func_cond__non_rtc_func = R"###(
+FLAMEGPU_AGENT_FUNCTION(rtc_test_func, MsgNone, MsgNone) {
+    int id = FLAMEGPU->getVariable<int>("id");
+    FLAMEGPU->setVariable<int>("id_out", id);
+    return ALIVE;
+}
+)###";
+FLAMEGPU_AGENT_FUNCTION_CONDITION(odd_only) {
+    return FLAMEGPU->getVariable<int>("x") % 2;
+}
+/**
+ * Test an RTC function to an agent function condition (where the condition is not compiled using RTC)
+ */
+TEST(DeviceRTCAPITest, AgentFunction_cond_non_rtc) {
+    ModelDescription model("AgentFunction_cond_non_rtc");
+    AgentDescription& agent = model.newAgent("agent_name");
+    agent.newVariable<int>("id");
+    agent.newVariable<int>("id_out");
+    // add a new state for condition
+    agent.newState("default");
+    agent.newState("odd_state");
+    // add RTC agent function
+    AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_func_cond__non_rtc_func);
+    // set output state (input state is default)
+    func.setInitialState("default");
+    func.setEndState("odd_state");
+    func.setFunctionCondition(odd_only);
+    model.newLayer().addAgentFunction(func);
+    // Init pop
+    AgentPopulation init_population(agent, AGENT_COUNT);
+    for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
+        AgentInstance instance = init_population.getNextInstance("default");
+        instance.setVariable<int>("id", i);
+        instance.setVariable<int>("id_out", 0);
+    }
+    // Setup Model
+    CUDAAgentModel cuda_model(model);
+    cuda_model.setPopulationData(init_population);
+    // Run 1 step to ensure data is pushed to device
+    cuda_model.step();
+    // Recover data from device
+    AgentPopulation population(agent);
+    cuda_model.getPopulationData(population);
+    // Check population size is half of initial
+    EXPECT_EQ(population.getCurrentListSize("default"), AGENT_COUNT / 2);
+    EXPECT_EQ(population.getCurrentListSize("odd_state"), AGENT_COUNT / 2);
+    // check default state
+    for (int i = 0; i < static_cast<int>(population.getCurrentListSize("default")); i++) {
+        AgentInstance ai = population.getInstanceAt(i, "default");
+        int id_out = ai.getVariable<int>("id_out");
+        // even id agent in default state should not have updated their id_out value
+        EXPECT_EQ(id_out, 0);
+    }
+    // check odd state
+    for (int i = 0; i < static_cast<int>(population.getCurrentListSize("odd_state")); i++) {
+        AgentInstance ai = population.getInstanceAt(i, "odd_state");
+        int id = ai.getVariable<int>("id");
+        int id_out = ai.getVariable<int>("id_out");
+        // odd id agent should have updated their id_out value
+        EXPECT_EQ(id_out, id);
+    }
+}
+
+
 }  // namespace test_rtc_device_api
