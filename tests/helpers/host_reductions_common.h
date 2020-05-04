@@ -1,10 +1,20 @@
 #ifndef TESTS_HELPERS_HOST_REDUCTIONS_COMMON_H_
 #define TESTS_HELPERS_HOST_REDUCTIONS_COMMON_H_
 
-#include <array>
-#include <random>
+#ifdef _MSC_VER
+#pragma warning(push)
+// conversion warnings inside header (e.g. int vs std::_Array_iterator<int, 256>)
+#pragma warning(disable:4244)
+#pragma warning(disable:4389)
 #include <numeric>
 #include <algorithm>
+#pragma warning(pop)
+#else
+#include <numeric>
+#include <algorithm>
+#endif
+#include <array>
+#include <random>
 #include <vector>
 
 #include "gtest/gtest.h"
