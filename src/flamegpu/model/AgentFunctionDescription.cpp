@@ -318,25 +318,22 @@ void AgentFunctionDescription::setAllowAgentDeath(const bool &has_death) {
 }
 
 void AgentFunctionDescription::setRTCFunctionCondition(std::string func_cond_src) {
-
     // Use Regex to get agent function name
     std::regex rgx(R"###(.*FLAMEGPU_AGENT_FUNCTION_CONDITION\([ \t]*(\w+)[ \t]*)###");
     std::smatch match;
     std::string func_cond_name;
     if (std::regex_search(func_cond_src, match, rgx)) {
-        if (match.size() == 4) {
+        if (match.size() == 2) {
             func_cond_name = match[1];
             // set the runtime agent function condition source in agent function data
             function->rtc_func_condition_name = func_cond_name;
             function->rtc_condition_source = func_cond_src;
             // TODO: Does this need emplacing in CUDAAgent?
-        }
-        else {
+        } else {
             THROW InvalidAgentFunc("Runtime agent function condition is missing FLAMEGPU_AGENT_FUNCTION_CONDITION arguments e.g. 'FLAMEGPU_AGENT_FUNCTION_CONDITION(func_name)', "
                 "in AgentDescription::setRTCFunctionCondition().");
         }
-    }
-    else {
+    } else {
         THROW InvalidAgentFunc("Runtime agent function('%s') is missing FLAMEGPU_AGENT_FUNCTION_CONDITION, "
             "in AgentDescription::setRTCFunctionCondition().");
     }
@@ -346,7 +343,7 @@ void AgentFunctionDescription::setRTCFunctionCondition(std::string func_cond_src
 
     // update the agent function data
     function->rtc_func_condition_name = func_cond_name;
-    function->rtc_condition_source = func_cond_src;
+    function->rtc_condition_source = func_cond_src_str;
 }
 
 MsgBruteForce::Description &AgentFunctionDescription::MessageInput() {

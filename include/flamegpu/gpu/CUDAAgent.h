@@ -152,11 +152,11 @@ class CUDAAgent : public AgentInterface {
      * Uses Jitify to create an instantiation of the program. Any compilation errors in the user provided agent function will be reported here.
      * @throw InvalidAgentFunc thrown if the user supplied agent function has compilation errors
      */
-    void addInstantitateRTCFunction(const AgentFunctionData& func, bool function_condition=false);
+    void addInstantitateRTCFunction(const AgentFunctionData& func, bool function_condition = false);
     /**
      * Returns the jitify kernel instantiation of the agent function.
      * Will throw an InvalidAgentFunc excpetion if the function name does not have a valid instantiation
-     * @param function_name the name of the RTC agent function
+     * @param function_name the name of the RTC agent function or the agent function name suffixed with condition (if it is a function condition)
      */
     const jitify::KernelInstantiation& getRTCInstantiation(const std::string &function_name) const;
 
@@ -177,9 +177,7 @@ class CUDAAgent : public AgentInterface {
 
     CUDAStateMap state_map;
 
-    CUDARTCFuncMap rtc_func_map;
-
-    CUDARTCFuncMap rtc_func_cond_map;
+    CUDARTCFuncMap rtc_func_map;    // map between function_name (or function_name_condition) and the jitify instance
 
     unsigned int max_list_size;  // The maximum length of the agent variable arrays based on the maximum population size passed to setPopulationData
 };

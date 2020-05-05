@@ -4,7 +4,7 @@
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 
-// #include "flamegpu/runtime/cuRVE/curve.h"
+// #include "flamegpu/runtime/flamegpu_device_api.h"
 #include "flamegpu/runtime/AgentFunction_shim.h"
 #include "flamegpu/gpu/CUDAScanCompaction.h"
 

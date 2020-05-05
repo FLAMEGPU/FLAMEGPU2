@@ -106,7 +106,7 @@ bool CUDAAgentModel::step() {
         {
             // Map agent memory
             for (const std::shared_ptr<AgentFunctionData> &func_des : functions) {
-                if (func_des->condition) {
+                if ((func_des->condition) || (!func_des->rtc_func_condition_name.empty())) {
                     auto func_agent = func_des->parent.lock();
                     const CUDAAgent& cuda_agent = getCUDAAgent(func_agent->name);
                     flamegpu_internal::CUDAScanCompaction::resize(cuda_agent.getStateSize(func_des->initial_state), flamegpu_internal::CUDAScanCompaction::AGENT_DEATH, j, *this);
@@ -129,7 +129,7 @@ bool CUDAAgentModel::step() {
             totalThreads = 0;
             // Launch kernel
             for (const std::shared_ptr<AgentFunctionData> &func_des : functions) {
-                if (func_des->condition) {
+                if ((func_des->condition) || (!func_des->rtc_func_condition_name.empty())) {
                     auto func_agent = func_des->parent.lock();
                     if (!func_agent) {
                         THROW InvalidAgentFunc("Agent function condition refers to expired agent.");
@@ -147,19 +147,48 @@ bool CUDAAgentModel::step() {
                     int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
                     int gridSize = 0;  // The actual grid size needed, based on input size
 
-                    // calculate the grid block size for agent function condition
-                    cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, func_des->condition, 0, state_list_size);
-
-                    //! Round up according to CUDAAgent state list size
-                    gridSize = (state_list_size + blockSize - 1) / blockSize;
-
                     // hash agent name
                     Curve::NamespaceHash agentname_hash = singletons->curve.variableRuntimeHash(agent_name.c_str());
                     // hash function name
                     Curve::NamespaceHash funcname_hash = singletons->curve.variableRuntimeHash(func_name.c_str());
+                    // agent function name hash
+                    Curve::NamespaceHash agent_func_name_hash = agentname_hash + funcname_hash;
 
-                    (func_des->condition) <<<gridSize, blockSize, 0, streams.at(j) >>>(modelname_hash, agentname_hash + funcname_hash, state_list_size, totalThreads, j);
-                    gpuErrchkLaunch();
+                    // switch between normal and RTC agent function condition
+                    if (func_des->condition) {
+                        // calculate the grid block size for agent function condition
+                        cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, func_des->condition, 0, state_list_size);
+
+                        //! Round up according to CUDAAgent state list size
+                        gridSize = (state_list_size + blockSize - 1) / blockSize;
+
+                        (func_des->condition) << <gridSize, blockSize, 0, streams.at(j) >> > (modelname_hash, agentname_hash + funcname_hash, state_list_size, totalThreads, j);
+                        gpuErrchkLaunch();
+                    } else {  // RTC function
+                        std::string func_condition_identifier = func_name + "_condition";
+                        // get instantiation
+                        const jitify::KernelInstantiation& instance = cuda_agent.getRTCInstantiation(func_condition_identifier);
+                        // calculate the grid block size for main agent function
+                        CUfunction cu_func = (CUfunction)instance;
+                        cuOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, cu_func, 0, 0, state_list_size);
+                        //! Round up according to CUDAAgent state list size
+                        gridSize = (state_list_size + blockSize - 1) / blockSize;
+
+                        // launch the kernel
+                        CUresult a = instance.configure(gridSize, blockSize).launch({
+                                const_cast<void*>(reinterpret_cast<const void*>(&modelname_hash)),
+                                reinterpret_cast<void*>(&agent_func_name_hash),
+                                reinterpret_cast<void*>(&state_list_size),
+                                reinterpret_cast<void*>(&totalThreads),
+                                reinterpret_cast<void*>(&j) });
+                        if (a != CUresult::CUDA_SUCCESS) {
+                            const char* err_str = nullptr;
+                            cuGetErrorString(a, &err_str);
+                            THROW InvalidAgentFunc("There was a problem launching the runtime agent function condition '%s': %s", func_des->rtc_func_condition_name.c_str(), err_str);
+                        }
+                        cudaDeviceSynchronize();
+                        gpuErrchkLaunch();
+                    }
 
                     totalThreads += state_list_size;
                     ++j;
@@ -170,7 +199,7 @@ bool CUDAAgentModel::step() {
             j = 0;
             // Unmap agent memory, apply condition
             for (const std::shared_ptr<AgentFunctionData> &func_des : functions) {
-                if (func_des->condition) {
+                if ((func_des->condition) || (!func_des->rtc_func_condition_name.empty())) {
                     auto func_agent = func_des->parent.lock();
                     if (!func_agent) {
                         THROW InvalidAgentFunc("Agent function condition refers to expired agent.");
@@ -324,7 +353,7 @@ bool CUDAAgentModel::step() {
                     totalThreads,
                     j);
                 gpuErrchkLaunch();
-            } else {      // assume this is a runtime specied agent function
+            } else {      // assume this is a runtime specified agent function
                 // get instantiation
                 const jitify::KernelInstantiation&  instance = cuda_agent.getRTCInstantiation(func_name);
                 // calculate the grid block size for main agent function

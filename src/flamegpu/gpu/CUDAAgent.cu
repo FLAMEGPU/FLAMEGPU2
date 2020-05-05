@@ -236,10 +236,22 @@ void CUDAAgent::mapRuntimeVariables(const AgentFunctionData& func, const std::st
         // maximum population num
         Curve::getInstance().registerVariableByHash(var_hash + agent_hash + func_hash, d_ptr, type_size, agent_count);
 
-        // Map RTC variables (these must be mapped before each function execution as the runtime pointer may have changed to the swapping)
+        // Map RTC variables to agent function (these must be mapped before each function execution as the runtime pointer may have changed to the swapping)
         if (!func.rtc_func_name.empty()) {
             // get the rtc varibale ptr
             const jitify::KernelInstantiation& instance = getRTCInstantiation(func.rtc_func_name);
+            std::stringstream d_var_ptr_name;
+            d_var_ptr_name << CurveRTCHost::getVariableSymbolName(mmp.first.c_str(), agent_hash + func_hash);
+            CUdeviceptr d_var_ptr = instance.get_global_ptr(d_var_ptr_name.str().c_str());
+            // copy runtime ptr (d_ptr) to rtc ptr (d_var_ptr)
+            gpuErrchkDriverAPI(cuMemcpyHtoD(d_var_ptr, &d_ptr, sizeof(void*)));
+        }
+
+        // Map RTC variables to agent function conditions (these must be mapped before each function execution as the runtime pointer may have changed to the swapping)
+        if (!func.rtc_func_name.empty()) {
+            // get the rtc varibale ptr
+            std::string func_name = func.name + "_condition";
+            const jitify::KernelInstantiation& instance = getRTCInstantiation(func_name);
             std::stringstream d_var_ptr_name;
             d_var_ptr_name << CurveRTCHost::getVariableSymbolName(mmp.first.c_str(), agent_hash + func_hash);
             CUdeviceptr d_var_ptr = instance.get_global_ptr(d_var_ptr_name.str().c_str());
@@ -271,7 +283,7 @@ void CUDAAgent::unmapRuntimeVariables(const AgentFunctionData& func) const {
         Curve::getInstance().unregisterVariableByHash(var_hash + agent_hash + func_hash);
     }
 
-    // No current need to unmap RTC variables as they are specific to the agent function
+    // No current need to unmap RTC variables as they are specific to the agent functions and thus do not persist beyond the scope of a single function
 }
 
 void CUDAAgent::processDeath(const AgentFunctionData& func, const unsigned int &streamId) {
@@ -328,7 +340,7 @@ ModelData::size_type CUDAAgent::getStateSize(const std::string& state_name) cons
 }
 
 void CUDAAgent::processFunctionCondition(const AgentFunctionData& func, const unsigned int &streamId) {
-    if (func.condition) {  // Optionally process agent death
+    if ((func.condition) || (!func.rtc_func_condition_name.empty())) {  // Optionally process agent death
         // check the cuda agent state map to find the correct state list for functions starting state
         CUDAStateMap::const_iterator sm = state_map.find(func.initial_state);
 
@@ -627,9 +639,9 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, bool f
     // jitify to create program (with compilation settings)
     try {
         static jitify::JitCache kernel_cache;
-        auto program = kernel_cache.program(func.rtc_source, headers, options);
         // switch between normal agent function and agent function condition
-        if (function_condition) {
+        if (!function_condition) {
+            auto program = kernel_cache.program(func.rtc_source, headers, options);
             // create jifity instance
             auto kernel = program.kernel("agent_function_wrapper");
             // create string for agent function implementation
@@ -637,12 +649,14 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, bool f
             // add kernal instance to map
             rtc_func_map.insert(CUDARTCFuncMap::value_type(func.name, std::unique_ptr<jitify::KernelInstantiation>(new jitify::KernelInstantiation(kernel, { func_impl.c_str(), func.msg_in_type.c_str(), func.msg_out_type.c_str() }))));
         } else {
+            auto program = kernel_cache.program(func.rtc_condition_source, headers, options);
             // create jifity instance
             auto kernel = program.kernel("agent_function_condition_wrapper");
             // create string for agent function implementation
-            std::string func_impl = std::string(func.rtc_condition_source).append("_cnd_impl");
+            std::string func_impl = std::string(func.rtc_func_condition_name).append("_cdn_impl");
             // add kernal instance to map
-            rtc_func_cond_map.insert(CUDARTCFuncMap::value_type(func.name, std::unique_ptr<jitify::KernelInstantiation>(new jitify::KernelInstantiation(kernel, { func_impl.c_str(), func.msg_in_type.c_str(), func.msg_out_type.c_str() }))));
+            std::string func_name = func.name + "_condition";
+            rtc_func_map.insert(CUDARTCFuncMap::value_type(func_name, std::unique_ptr<jitify::KernelInstantiation>(new jitify::KernelInstantiation(kernel, { func_impl.c_str()}))));
         }
     }
     catch (std::runtime_error e) {

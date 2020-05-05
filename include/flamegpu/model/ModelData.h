@@ -343,6 +343,7 @@ struct AgentFunctionData {
      */
     std::string msg_out_type;
 
+
  protected:
     /**
      * Copy constructor
