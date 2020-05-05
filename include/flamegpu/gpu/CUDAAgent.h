@@ -148,14 +148,11 @@ class CUDAAgent : public AgentInterface {
     void scatterNew(const std::string state, const unsigned int &newSize, const unsigned int &streamId);
     /**
      * Instatiates a RTC Agent function from agent function data description containing the agent function source.
+     * If function_condition variable is true then this function will instantiate a function condition rather than an agent function
      * Uses Jitify to create an instantiation of the program. Any compilation errors in the user provided agent function will be reported here.
-     * @param state The CUDAAgentStateList to perform scatter on
-     * @param newSize The max possible number of new agents
-     * @param streamId Stream index for stream safe operations
      * @throw InvalidAgentFunc thrown if the user supplied agent function has compilation errors
-     * @note This may resize death scan flag, which will lose it's data, hence always processDeath first
      */
-    void addInstantitateRTCFunction(const AgentFunctionData& func);
+    void addInstantitateRTCFunction(const AgentFunctionData& func, bool function_condition=false);
     /**
      * Returns the jitify kernel instantiation of the agent function.
      * Will throw an InvalidAgentFunc excpetion if the function name does not have a valid instantiation
@@ -181,6 +178,8 @@ class CUDAAgent : public AgentInterface {
     CUDAStateMap state_map;
 
     CUDARTCFuncMap rtc_func_map;
+
+    CUDARTCFuncMap rtc_func_cond_map;
 
     unsigned int max_list_size;  // The maximum length of the agent variable arrays based on the maximum population size passed to setPopulationData
 };

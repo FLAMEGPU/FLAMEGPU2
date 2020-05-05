@@ -524,7 +524,7 @@ void CUDAAgent::scatterNew(const std::string state, const unsigned int &newSize,
         sm->second->scatterNew(newSize, streamId);
 }
 
-void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func) {
+void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, bool function_condition) {
     // get header location for fgpu
     const char* env_inc_fgp2 = std::getenv("FLAMEGPU2_INC_DIR");
     if (!env_inc_fgp2) {
@@ -580,31 +580,35 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func) {
     for (const auto& mmp : func.parent.lock()->variables) {
         curve_header.registerVariable(mmp.first.c_str(), agent_func_name_hash, mmp.second.type.name(), mmp.second.elements);
     }
-    // Set input message variables in curve
-    if (auto im = func.message_input.lock()) {
-        // get the message input hash
-        Curve::NamespaceHash msg_in_hash = Curve::getInstance().variableRuntimeHash(im->name.c_str());
-        for (auto msg_in_var : im->variables) {
-            // register message variables using combined hash
-            curve_header.registerVariable(msg_in_var.first.c_str(), msg_in_hash + agent_func_name_hash, msg_in_var.second.type.name(), msg_in_var.second.elements, true, false);
+
+    // for normal agent function (e.g. not an agent function condition) append messages and agent outputs
+    if (!function_condition) {
+        // Set input message variables in curve
+        if (auto im = func.message_input.lock()) {
+            // get the message input hash
+            Curve::NamespaceHash msg_in_hash = Curve::getInstance().variableRuntimeHash(im->name.c_str());
+            for (auto msg_in_var : im->variables) {
+                // register message variables using combined hash
+                curve_header.registerVariable(msg_in_var.first.c_str(), msg_in_hash + agent_func_name_hash, msg_in_var.second.type.name(), msg_in_var.second.elements, true, false);
+            }
         }
-    }
-    // Set output message variables in curve
-    if (auto om = func.message_output.lock()) {
-        // get the message input hash
-        Curve::NamespaceHash msg_out_hash = Curve::getInstance().variableRuntimeHash(om->name.c_str());
-        for (auto msg_out_var : om->variables) {
-            // register message variables using combined hash
-            curve_header.registerVariable(msg_out_var.first.c_str(), msg_out_hash + agent_func_name_hash, msg_out_var.second.type.name(), msg_out_var.second.elements, false, true);
+        // Set output message variables in curve
+        if (auto om = func.message_output.lock()) {
+            // get the message input hash
+            Curve::NamespaceHash msg_out_hash = Curve::getInstance().variableRuntimeHash(om->name.c_str());
+            for (auto msg_out_var : om->variables) {
+                // register message variables using combined hash
+                curve_header.registerVariable(msg_out_var.first.c_str(), msg_out_hash + agent_func_name_hash, msg_out_var.second.type.name(), msg_out_var.second.elements, false, true);
+            }
         }
-    }
-    // Set agent output variables in curve
-    if (auto ao = func.agent_output.lock()) {
-        // get the message input hash
-        Curve::NamespaceHash agent_out_hash = Curve::getInstance().variableRuntimeHash("_agent_birth");
-        for (auto agent_out_var : ao->variables) {
-            // register message variables using combined hash
-            curve_header.registerVariable(agent_out_var.first.c_str(), agent_out_hash + funcname_hash, agent_out_var.second.type.name(), agent_out_var.second.elements, false, true);
+        // Set agent output variables in curve
+        if (auto ao = func.agent_output.lock()) {
+            // get the message input hash
+            Curve::NamespaceHash agent_out_hash = Curve::getInstance().variableRuntimeHash("_agent_birth");
+            for (auto agent_out_var : ao->variables) {
+                // register message variables using combined hash
+                curve_header.registerVariable(agent_out_var.first.c_str(), agent_out_hash + funcname_hash, agent_out_var.second.type.name(), agent_out_var.second.elements, false, true);
+            }
         }
     }
     // Set Environment variables in curve
@@ -624,16 +628,26 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func) {
     try {
         static jitify::JitCache kernel_cache;
         auto program = kernel_cache.program(func.rtc_source, headers, options);
-        // create jifity instance
-        auto kernel = program.kernel("agent_function_wrapper");
-        // create string for agent function implementation
-        std::string func_impl = std::string(func.rtc_func_name).append("_impl");
-        // add kernal instance to map
-        rtc_func_map.insert(CUDARTCFuncMap::value_type(func.name, std::unique_ptr<jitify::KernelInstantiation>(new jitify::KernelInstantiation(kernel, { func_impl.c_str(), func.msg_in_type.c_str(), func.msg_out_type.c_str() }))));
+        // switch between normal agent function and agent function condition
+        if (function_condition) {
+            // create jifity instance
+            auto kernel = program.kernel("agent_function_wrapper");
+            // create string for agent function implementation
+            std::string func_impl = std::string(func.rtc_func_name).append("_impl");
+            // add kernal instance to map
+            rtc_func_map.insert(CUDARTCFuncMap::value_type(func.name, std::unique_ptr<jitify::KernelInstantiation>(new jitify::KernelInstantiation(kernel, { func_impl.c_str(), func.msg_in_type.c_str(), func.msg_out_type.c_str() }))));
+        } else {
+            // create jifity instance
+            auto kernel = program.kernel("agent_function_condition_wrapper");
+            // create string for agent function implementation
+            std::string func_impl = std::string(func.rtc_condition_source).append("_cnd_impl");
+            // add kernal instance to map
+            rtc_func_cond_map.insert(CUDARTCFuncMap::value_type(func.name, std::unique_ptr<jitify::KernelInstantiation>(new jitify::KernelInstantiation(kernel, { func_impl.c_str(), func.msg_in_type.c_str(), func.msg_out_type.c_str() }))));
+        }
     }
     catch (std::runtime_error e) {
         // jitify does not have a method for getting compile logs so rely on JITIFY_PRINT_LOG defined in cmake
-        THROW InvalidAgentFunc("Error compiling runtime agent function ('%s'): function had compilation errors (see std::cout), "
+        THROW InvalidAgentFunc("Error compiling runtime agent function (or function condition) ('%s'): function had compilation errors (see std::cout), "
             "in CUDAAgent::addInstantitateRTCFunction().",
             func.name.c_str());
     }

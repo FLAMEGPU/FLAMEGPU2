@@ -299,6 +299,14 @@ struct AgentFunctionData {
      */
     AgentFunctionConditionWrapper *condition;
     /**
+     * The string representing the RTC defined agent function condition
+     */
+    std::string rtc_condition_source;
+    /**
+     * The string representing the RTC defined agent function condition
+     */
+    std::string rtc_func_condition_name;
+    /**
      * The agent which this function is a member of
      */
     std::weak_ptr<AgentData> parent;

@@ -635,7 +635,7 @@ void CUDAAgentModel::initialiseRTC() {
     if (!rtcInitialised) {
         // Build any RTC functions
         const auto& am = model->agents;
-        // create new cuda agent and add to the map
+        // iterate agents and then agent functions to find any rtc functions or function conditions
         for (auto it = am.cbegin(); it != am.cend(); ++it) {
             auto a_it = agent_map.find(it->first);
             const auto& mf = it->second->functions;
@@ -644,6 +644,11 @@ void CUDAAgentModel::initialiseRTC() {
                 if (!it_f->second->rtc_source.empty()) {
                     // create CUDA agent RTC function by calling addInstantitateRTCFunction on CUDAAgent with AgentFunctionData
                     a_it->second->addInstantitateRTCFunction(*it_f->second);
+                }
+                // check rtc source to see if the function condition is an rtc condition
+                if (!it_f->second->rtc_condition_source.empty()) {
+                    // create CUDA agent RTC function condition by calling addInstantitateRTCFunction on CUDAAgent with AgentFunctionData
+                    a_it->second->addInstantitateRTCFunction(*it_f->second, true);
                 }
             }
         }

@@ -23,6 +23,7 @@
 #include "flamegpu/runtime/utility/DeviceEnvironment.cuh"
 #include "flamegpu/gpu/CUDAScanCompaction.h"
 #include "flamegpu/runtime/AgentFunction.h"
+#include "flamegpu/runtime/AgentFunctionCondition.h"
 #include "flamegpu/runtime/messaging.h"
 
 

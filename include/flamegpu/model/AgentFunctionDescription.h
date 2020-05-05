@@ -173,6 +173,15 @@ class AgentFunctionDescription {
     template<typename AgentFunctionCondition>
     void setFunctionCondition(AgentFunctionCondition);
     /**
+     * Sets the RTC function condition for the agent function
+     * This is string containing a definition of an FLAMEGPU_AGENT_FUNCTION_CONDITION which returns a boolean value (true or false)
+     * Only agents which return true perform the attached FLAMEGPU_AGENT_FUNCTION
+     * and transition from the initial to end state.
+     * The string will be compiled at runtime.
+     *
+     */
+    void setRTCFunctionCondition(std::string func_cond_src);
+    /**
      * @return A mutable reference to the message input of this agent function
      * @see AgentFunctionDescription::getMessageInput() for the immutable version
      * @throw OutOfBoundsException If the message input has not been set
