@@ -248,7 +248,7 @@ void CUDAAgent::mapRuntimeVariables(const AgentFunctionData& func, const std::st
         }
 
         // Map RTC variables to agent function conditions (these must be mapped before each function execution as the runtime pointer may have changed to the swapping)
-        if (!func.rtc_func_name.empty()) {
+        if (!func.rtc_func_condition_name.empty()) {
             // get the rtc varibale ptr
             std::string func_name = func.name + "_condition";
             const jitify::KernelInstantiation& instance = getRTCInstantiation(func_name);
