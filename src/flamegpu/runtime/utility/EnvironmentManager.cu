@@ -115,7 +115,6 @@ void EnvironmentManager::free(const std::string &model_name) {
     if (cam != cuda_agent_models.end()) {
         cuda_agent_models.erase(cam);
     }
-
 }
 
 EnvironmentManager::NamePair EnvironmentManager::toName(const std::string &model_name, const std::string &var_name) {
