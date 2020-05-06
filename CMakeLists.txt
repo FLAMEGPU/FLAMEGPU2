@@ -8,12 +8,23 @@ project(FLAMEGPU2 LANGUAGES NONE)
 set(CMAKE_SKIP_INSTALL_RULES TRUE)
 set(CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}" CACHE INTERNAL ""  FORCE)
 
-# See what languages are supported
+# See if the minimum CUDA version is available. If not, only enable documentation building.
+set(MINIMUM_SUPPORTED_CUDA_VERSION 9.0)
 include(CheckLanguage)
+# See if CUDA is available
 check_language(CUDA)
-if(CMAKE_CUDA_COMPILER STREQUAL NOTFOUND)
+# If so, enable CUDA to check the version.
+if(CMAKE_CUDA_COMPILER)
+    enable_language(CUDA)
+endif()
+# If CUDA is not available, or the minimum version is too low only build the docs.
+if(NOT CMAKE_CUDA_COMPILER OR CMAKE_CUDA_COMPILER_VERSION VERSION_LESS ${MINIMUM_SUPPORTED_CUDA_VERSION})
+    if(NOT CMAKE_CUDA_COMPILER)
+        message(STATUS "Documentation-only build: CUDA toolkit required for library compilation.")
+    else()
+        message(STATUS "Documentation-only build: CUDA ${MINIMUM_SUPPORTED_CUDA_VERSION} or greater is required for library compilation.")
+    endif()
     #Not able to build code, so just make docs    
-    message("Suitable compilers for building code not found.\n" "Attempting generation of minimal documentation only project.")    
     get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR} REALPATH)
     include(./cmake/doxygen.cmake)
     if(${BUILD_API_DOCUMENTATION})
