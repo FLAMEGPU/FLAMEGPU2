@@ -565,7 +565,7 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, bool f
 
     // cuda path
     std::string include_cuda;
-    include_cuda = "-I" + std::string(env_cuda_path) + "/include";
+    include_cuda = "--include-path=" + std::string(env_cuda_path) + "/include";
     options.push_back(include_cuda);
     // std::cout << "cuda include option is " << include_cuda << '\n';     // TODO: Remove DEBUG
 

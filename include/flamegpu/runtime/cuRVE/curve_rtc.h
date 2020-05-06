@@ -30,6 +30,18 @@ class CurveRTCHost {
 
     static std::string getEnvVariableSymbolName(const char* variableName, unsigned int namespace_hash);
 
+    /**
+     * Demangle a verbose type name (e.g. std::type_index.name().c_str()) into a user readable type
+     * This is required as different compilers will perform name mangling in different way (or not at all).
+     */
+    static std::string demangle(const char* verbose_name);
+
+    /**
+     * Demangle  from a std::type_index into a user readable type
+     * This is required as different compilers will perform name mangling in different way (or not at all).
+     */
+    static std::string demangle(const std::type_index& type);
+
  protected:
     void setHeaderPlaceholder(std::string placeholder, std::string dst);
 

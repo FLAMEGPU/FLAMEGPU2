@@ -10,6 +10,7 @@
 #include "flamegpu/runtime/AgentFunctionCondition.h"
 #include "flamegpu/model/LayerDescription.h"
 #include "flamegpu/runtime/messaging/BruteForce.h"
+#include "flamegpu/runtime/cuRVE/curve_rtc.h"
 
 #ifdef _MSC_VER
 #pragma warning(push, 2)
@@ -295,21 +296,13 @@ class AgentFunctionDescription {
     AgentFunctionData *const function;
 };
 
-inline std::string demangle(const char* verbose_name) {
-    std::string s = jitify::reflection::detail::demangle(verbose_name);
-    // Lambda function for trimming whitesapce as jitify demangle does not remove this
-    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
-        return !std::isspace(ch);
-        }));
-    return s;
-}
 
 template<typename AgentFunction>
 AgentFunctionDescription &AgentDescription::newFunction(const std::string &function_name, AgentFunction) {
     if (agent->functions.find(function_name) == agent->functions.end()) {
         AgentFunctionWrapper *f = AgentFunction::fnPtr();
-        std::string in_t = demangle(AgentFunction::inType().name());      // demangle name using handy jitify function
-        std::string out_t = demangle(AgentFunction::outType().name());
+        std::string in_t = CurveRTCHost::demangle(AgentFunction::inType().name());
+        std::string out_t = CurveRTCHost::demangle(AgentFunction::outType().name());
         auto rtn = std::shared_ptr<AgentFunctionData>(new AgentFunctionData(this->agent->shared_from_this(), function_name, f, in_t, out_t));
         agent->functions.emplace(function_name, rtn);
         return *rtn->description;

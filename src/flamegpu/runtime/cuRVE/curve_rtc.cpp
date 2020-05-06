@@ -3,6 +3,15 @@
 #include "flamegpu/runtime/cuRVE/curve_rtc.h"
 #include "flamegpu/exception/FGPUException.h"
 
+// jitify include for demangle
+#ifdef _MSC_VER
+#pragma warning(push, 2)
+#include "jitify/jitify.hpp"
+#pragma warning(pop)
+#else
+#include "jitify/jitify.hpp"
+#endif
+
 
 const char* CurveRTCHost::curve_rtc_dynamic_h_template = R"###(dynamic/curve_rtc_dynamic.h
 #ifndef CURVE_RTC_DYNAMIC_H_
@@ -125,7 +134,7 @@ void CurveRTCHost::registerVariable(const char* variableName, unsigned int names
     // check to see if namespace key already exists
     auto i = RTCVariables.find(namespace_hash);
     RTCVariableProperties props;
-    props.type = type;
+    props.type = CurveRTCHost::demangle(type);
     props.read = read;
     props.write = write;
     props.elements = elements;
@@ -153,7 +162,7 @@ void CurveRTCHost::registerEnvVariable(const char* variableName, unsigned int na
     // check to see if namespace key already exists
     auto i = RTCEnvVariables.find(namespace_hash);
     RTCEnvVariableProperties props;
-    props.type = type;
+    props.type = CurveRTCHost::demangle(type);
     props.elements = elements;
     if (i != RTCEnvVariables.end()) {
         // emplace into existing namespace key
@@ -396,4 +405,22 @@ std::string CurveRTCHost::getEnvVariableSymbolName(const char* variableName, uns
     std::stringstream name;
     name << "curve_env_rtc_ptr_" << namespace_hash << "_" << variableName;
     return name.str();
+}
+
+std::string CurveRTCHost::demangle(const char* verbose_name) {
+    std::string s = jitify::reflection::detail::demangle(verbose_name);
+    // Lambda function for trimming whitesapce as jitify demangle does not remove this
+    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
+        return !std::isspace(ch);
+        }));
+    return s;
+}
+
+std::string CurveRTCHost::demangle(const std::type_index& type) {
+    std::string s = jitify::reflection::detail::demangle(type.name());
+    // Lambda function for trimming whitesapce as jitify demangle does not remove this
+    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
+        return !std::isspace(ch);
+        }));
+    return s;
 }

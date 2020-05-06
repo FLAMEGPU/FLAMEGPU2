@@ -6,6 +6,7 @@
 #include "flamegpu/model/AgentFunctionDescription.h"
 #include "flamegpu/model/LayerDescription.h"
 #include "flamegpu/runtime/messaging/BruteForce.h"
+#include "flamegpu/runtime/cuRVE/curve_rtc.h"
 
 
 const char *ModelData::DEFAULT_STATE = "default";
@@ -145,16 +146,16 @@ AgentFunctionData::AgentFunctionData(ModelData *const model, std::shared_ptr<Age
             if (_m != model->messages.end()) {
                 message_input = _m->second;
             }
-        } else if (other.msg_in_type != demangle(std::type_index(typeid(MsgNone)).name())) {
-            THROW InvalidMessageType("Function '%s' is missing bound input message of type '%s', type provided was '%s'.", other.name.c_str(), other.msg_in_type.c_str(), demangle(std::type_index(typeid(MsgNone)).name()).c_str());
+        } else if (other.msg_in_type != CurveRTCHost::demangle(std::type_index(typeid(MsgNone)))) {
+            THROW InvalidMessageType("Function '%s' is missing bound input message of type '%s', type provided was '%s'.", other.name.c_str(), other.msg_in_type.c_str(), CurveRTCHost::demangle(std::type_index(typeid(MsgNone))).c_str());
         }
         if (auto a = other.message_output.lock()) {
             auto _m = model->messages.find(a->name);
             if (_m != model->messages.end()) {
                 message_output = _m->second;
             }
-        } else if (other.msg_out_type != demangle(std::type_index(typeid(MsgNone)).name())) {
-            THROW InvalidMessageType("Function '%s' is missing bound output message of type '%s'.", other.name.c_str(), other.msg_out_type.c_str(), demangle(std::type_index(typeid(MsgNone)).name()).c_str());
+        } else if (other.msg_out_type != CurveRTCHost::demangle(std::type_index(typeid(MsgNone)))) {
+            THROW InvalidMessageType("Function '%s' is missing bound output message of type '%s'.", other.name.c_str(), other.msg_out_type.c_str(), CurveRTCHost::demangle(std::type_index(typeid(MsgNone))).c_str());
         }
         if (auto a = other.agent_output.lock()) {
             auto _a = model->agents.find(a->name);
