@@ -34,8 +34,6 @@ option(BUILD_EXAMPLE_HOST_FUNCTIONS "Enable building examples/host_functions" OF
 option(BUILD_EXAMPLE_GAME_OF_LIFE "Enable building examples/game_of_life" OFF)
 option(BUILD_EXAMPLE_CIRCLES_BRUTE_FORCE "Enable building examples/circles_brute_force" OFF)
 option(BUILD_EXAMPLE_CIRCLES_SPATIAL_3D "Enable building examples/circles_spatial_3d" OFF)
-option(BUILD_EXAMPLE_MAS "Enable building examples/mas" OFF)
-option(BUILD_EXAMPLE_SIMPLE_EXAMPLE "Enable building examples/simple_example" OFF)
 option(BUILD_EXAMPLE_RTC_EXAMPLE "Enable building examples/rtc_example" OFF)
 
 # Option to enable/disable building the static library
@@ -67,13 +65,6 @@ endif()
 
 # Add each example
 
-if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_MAS)
-    add_subdirectory(examples/mas)
-endif()
-
-if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_SIMPLE_EXAMPLE)
-    add_subdirectory(examples/simple_example)
-endif()
 
 if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_RTC_EXAMPLE)
     add_subdirectory(examples/rtc_example)
