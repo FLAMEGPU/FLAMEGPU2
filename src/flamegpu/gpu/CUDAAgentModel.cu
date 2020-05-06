@@ -774,6 +774,9 @@ void CUDAAgentModel::initialiseSingletons() {
         // Populate the environment properties in constant Cache
         singletons->environment.init(model->name, *model->environment);
 
+        // Reinitialise random for this simulation instance
+        singletons->rng.reseed(getSimulationConfig().random_seed);
+
         singletonsInitialised = true;
     }
 
