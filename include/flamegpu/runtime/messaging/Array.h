@@ -200,7 +200,7 @@ class MsgArray {
              */
             inline __device__ iterator begin(void) const {
                 // Bin before initial bin, as the constructor calls increment operator
-                return iterator(*this, -radius - 1);
+                return iterator(*this, -static_cast<int>(radius) - 1);
             }
             /**
              * Returns an iterator to the position beyond the end of the message list subset
