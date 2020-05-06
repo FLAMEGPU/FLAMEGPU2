@@ -104,13 +104,6 @@ mkdir -p build && cd build
 cmake ..
 ```
 
-#### Runtime compilation of Agent Functions
-
-FLAME GPU 2 support runtime compilation of agent functions. E.g. specification of agent functions, or agent function conditions, as strings. This is a perquisite for other language support via [SWIG](http://www.swig.org/). In order to test RTC features (in tests/test_cases/runtime/test_rtc_device_api.cu) you must set the following environment variables.
-
-1. `FLAMEGPU2_INC_DIR` This should be set to the `\include` directory of the main FLAMEGPU2 directory.
-2. `CUDA_PATH` This will be set when installing CUDA but if you have changed this then it **must** point to the CUDA installation folder of the CUDA version used to compile FLAMEGPU (e.g. the one detected by CMake).
-
 ##### Visualisation
 
 By default FGPU2 will not build visualisations, however this can be enabled with the cmake option `-DVISUALISATION=ON`. This also introduces the `VISUALISATION` preprocessor macro to all projects, so that optional visualisation code can be enabled.
@@ -196,3 +189,10 @@ See `include/util/nvtx.h` and the associated documentation for how to apply cust
 Examples for FLAME GPU 2 build to `<cmake_build_path>/bin/<operating_system>-x64/<Debug|Release|Profile>/`, and can be executed from that directory via command line.
 
 If wishing to run examples within Visual Studio it is necessary to right click the desired example in the Solution Explorer and select `Debug > Start New Instance`. Alternatively, if `Set as StartUp Project` is selected, the main debugging menus can be used to initiate execution. To configure command line argument for execution within Visual Studio, right click the desired example in the Solution Explorer and select `Properties`, in this dialog select `Debugging` in the left hand menu to display the entry field for `command arguments`. Note, it may be necessary to change the configuration as the properties dialog may be targeting a different configuration to the current build configuration.
+
+#### Runtime compilation of Agent Functions
+
+FLAME GPU 2 supports runtime compilation of agent functions. E.g. specification of agent functions, or agent function conditions, as strings. This is a prerequisite for other language support via [SWIG](http://www.swig.org/). In order to test RTC features (in `tests/test_cases/runtime/test_rtc_device_api.cu`) you must set the following environment variables.
+
+1. `FLAMEGPU2_INC_DIR` This should be set to the `\include` directory of the main FLAMEGPU2 directory.
+2. `CUDA_PATH` This may be set when installing CUDA, however if it does not exist or has been changed this then it **must** point to the CUDA installation folder of the CUDA version used to compile FLAMEGPU (e.g. the one detected by CMake).
