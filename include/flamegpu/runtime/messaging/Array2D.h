@@ -1,13 +1,16 @@
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_ARRAY2D_H_
 #define INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_ARRAY2D_H_
 
+#ifndef __CUDACC_RTC__
 #include <string>
 #include <memory>
 #include <array>
 
+#include "flamegpu/model/Variable.h"
+#endif  // __CUDACC_RTC__
 #include "flamegpu/runtime/messaging/None.h"
 #include "flamegpu/runtime/messaging/BruteForce.h"
-#include "flamegpu/model/Variable.h"
+
 
 /**
  * Array messaging functionality
@@ -147,7 +150,7 @@ class MsgArray2D {
             /**
              * Stock iterator for iterating MsgSpatial3D::In::Filter::Message objects
              */
-            class iterator : public std::iterator <std::random_access_iterator_tag, void, void, void, void> {
+            class iterator {  // public std::iterator <std::random_access_iterator_tag, void, void, void, void> {
                 /**
                  * The message returned to the user
                  */
@@ -401,6 +404,8 @@ class MsgArray2D {
          */
         const MetaData * const metadata;
     };
+
+#ifndef __CUDACC_RTC__
     /**
      * Blank handler, brute force requires no index or special allocations
      * Only stores the length on device
@@ -529,7 +534,9 @@ class MsgArray2D {
         size_type getDimX() const;
         size_type getDimY() const;
     };
+#endif  // __CUDACC_RTC__
 };
+
 template<typename T, unsigned int N>
 __device__ T MsgArray2D::Message::getVariable(const char(&variable_name)[N]) const {
     // Ensure that the message is within bounds.

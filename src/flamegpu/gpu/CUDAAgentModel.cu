@@ -59,14 +59,10 @@ CUDAAgentModel::~CUDAAgentModel() {
 }
 
 bool CUDAAgentModel::step() {
-    step_count++;
     NVTX_RANGE(std::string("CUDAAgentModel::step " + std::to_string(step_count)).c_str());
 
     // Ensure singletons have been initialised
     initialiseSingletons();
-
-    // initialise any RTC function by compiling if not already compiled
-    initialiseRTC();
 
     // If verbose, print the step number.
     if (getSimulationConfig().verbose) {
@@ -295,7 +291,7 @@ bool CUDAAgentModel::step() {
         NVTX_POP();
 
         // Ensure RandomManager is the correct size to accomodate all threads to be launched
-        singletons->rng.resize(totalThreads);
+        singletons->rng.resize(totalThreads, *this);
         // Total threads is now used to provide kernel launches an offset to thread-safe thread-index
         totalThreads = 0;
         j = 0;
@@ -361,7 +357,8 @@ bool CUDAAgentModel::step() {
                     message_name_outp_hash,
                     agentoutput_hash,
                     state_list_size,
-                    d_messagelist_metadata,
+                    d_in_messagelist_metadata,
+                    d_out_messagelist_metadata,
                     totalThreads,
                     j);
                 gpuErrchkLaunch();
@@ -382,7 +379,8 @@ bool CUDAAgentModel::step() {
                         reinterpret_cast<void*>(&message_name_outp_hash),
                         reinterpret_cast<void*>(&agentoutput_hash),
                         reinterpret_cast<void*>(&state_list_size),
-                        const_cast<void*>(reinterpret_cast<const void*>(&d_messagelist_metadata)),
+                        const_cast<void*>(reinterpret_cast<const void*>(&d_in_messagelist_metadata)),
+                        const_cast<void*>(reinterpret_cast<const void*>(&d_out_messagelist_metadata)),
                         reinterpret_cast<void*>(&totalThreads),
                         reinterpret_cast<void*>(&j) });
                 if (a != CUresult::CUDA_SUCCESS) {
@@ -778,6 +776,9 @@ void CUDAAgentModel::initialiseSingletons() {
 
         singletonsInitialised = true;
     }
+
+    // init RTC
+    initialiseRTC();
 }
 
 void CUDAAgentModel::initialiseRTC() {
