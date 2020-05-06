@@ -14,11 +14,13 @@
 #include "flamegpu/gpu/CUDAAgent.h"
 #include "flamegpu/gpu/CUDAAgentStateList.h"
 #include "flamegpu/gpu/CUDAErrorChecking.h"
+#include "flamegpu/gpu/CUDAAgentModel.h"
 
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/model/AgentFunctionDescription.h"
 #include "flamegpu/pop/AgentPopulation.h"
 #include "flamegpu/runtime/cuRVE/curve.h"
+#include "flamegpu/runtime/cuRVE/curve_rtc.h"
 #include "flamegpu/gpu/CUDAScatter.h"
 
 #ifdef _MSC_VER
@@ -29,12 +31,14 @@
 #include <cub/cub.cuh>
 #endif
 
+
 /**
 * CUDAAgent class
 * @brief allocates the hash table/list for agent variables and copy the list to device
 */
-CUDAAgent::CUDAAgent(const AgentData& description)
+CUDAAgent::CUDAAgent(const AgentData& description, const CUDAAgentModel& cuda_model)
     : agent_description(description)
+    , cuda_model(cuda_model)
     , state_map()
     , max_list_size(0) {
     // Regen new empty state_map
@@ -74,7 +78,7 @@ void CUDAAgent::resize(const unsigned int &newSize, const unsigned int &streamId
         }
     }
     // Notify scan flag that it might need resizing
-    flamegpu_internal::CUDAScanCompaction::resize(max_list_size, flamegpu_internal::CUDAScanCompaction::AGENT_DEATH, streamId);
+    flamegpu_internal::CUDAScanCompaction::resize(max_list_size, flamegpu_internal::CUDAScanCompaction::AGENT_DEATH, streamId, cuda_model);
 }
 /**
 * @brief Sets the population data
@@ -229,8 +233,31 @@ void CUDAAgent::mapRuntimeVariables(const AgentFunctionData& func, const std::st
         // get the agent variable size
         const size_t type_size = mmp.second.type_size * mmp.second.elements;
 
-       // maximum population num
+        // maximum population num
         Curve::getInstance().registerVariableByHash(var_hash + agent_hash + func_hash, d_ptr, type_size, agent_count);
+
+        // Map RTC variables to agent function (these must be mapped before each function execution as the runtime pointer may have changed to the swapping)
+        if (!func.rtc_func_name.empty()) {
+            // get the rtc varibale ptr
+            const jitify::KernelInstantiation& instance = getRTCInstantiation(func.rtc_func_name);
+            std::stringstream d_var_ptr_name;
+            d_var_ptr_name << CurveRTCHost::getVariableSymbolName(mmp.first.c_str(), agent_hash + func_hash);
+            CUdeviceptr d_var_ptr = instance.get_global_ptr(d_var_ptr_name.str().c_str());
+            // copy runtime ptr (d_ptr) to rtc ptr (d_var_ptr)
+            gpuErrchkDriverAPI(cuMemcpyHtoD(d_var_ptr, &d_ptr, sizeof(void*)));
+        }
+
+        // Map RTC variables to agent function conditions (these must be mapped before each function execution as the runtime pointer may have changed to the swapping)
+        if (!func.rtc_func_condition_name.empty()) {
+            // get the rtc varibale ptr
+            std::string func_name = func.name + "_condition";
+            const jitify::KernelInstantiation& instance = getRTCInstantiation(func_name);
+            std::stringstream d_var_ptr_name;
+            d_var_ptr_name << CurveRTCHost::getVariableSymbolName(mmp.first.c_str(), agent_hash + func_hash);
+            CUdeviceptr d_var_ptr = instance.get_global_ptr(d_var_ptr_name.str().c_str());
+            // copy runtime ptr (d_ptr) to rtc ptr (d_var_ptr)
+            gpuErrchkDriverAPI(cuMemcpyHtoD(d_var_ptr, &d_ptr, sizeof(void*)));
+        }
     }
 }
 
@@ -255,6 +282,8 @@ void CUDAAgent::unmapRuntimeVariables(const AgentFunctionData& func) const {
         const Curve::VariableHash var_hash = Curve::getInstance().variableRuntimeHash(mmp.first.c_str());
         Curve::getInstance().unregisterVariableByHash(var_hash + agent_hash + func_hash);
     }
+
+    // No current need to unmap RTC variables as they are specific to the agent functions and thus do not persist beyond the scope of a single function
 }
 
 void CUDAAgent::processDeath(const AgentFunctionData& func, const unsigned int &streamId) {
@@ -290,7 +319,7 @@ void CUDAAgent::processDeath(const AgentFunctionData& func, const unsigned int &
         sm->second->scatter(streamId, CUDAAgentStateList::ScatterMode::Death);
     }
 }
-const std::unique_ptr<CUDAAgentStateList> &CUDAAgent::getAgentStateList(const std::string &state_name) const {
+CUDAAgentStateList& CUDAAgent::getAgentStateList(const std::string &state_name) const {
     // check the cuda agent state map to find the correct state list for functions starting state
     CUDAStateMap::const_iterator sm = state_map.find(state_name);
 
@@ -299,19 +328,19 @@ const std::unique_ptr<CUDAAgentStateList> &CUDAAgent::getAgentStateList(const st
             "in CUDAAgent::getAgentStateList()",
             agent_description.name.c_str(), state_name.c_str());
     }
-    return sm->second;
+    return *sm->second;
 }
 
 void* CUDAAgent::getStateVariablePtr(const std::string& state_name, const std::string& variable_name) {
-    return getAgentStateList(state_name)->getAgentListVariablePointer(variable_name);
+    return getAgentStateList(state_name).getAgentListVariablePointer(variable_name);
 }
 
 ModelData::size_type CUDAAgent::getStateSize(const std::string& state_name) const {
-    return getAgentStateList(state_name)->getCUDAStateListSize();
+    return getAgentStateList(state_name).getCUDAStateListSize();
 }
 
 void CUDAAgent::processFunctionCondition(const AgentFunctionData& func, const unsigned int &streamId) {
-    if (func.condition) {  // Optionally process agent death
+    if ((func.condition) || (!func.rtc_func_condition_name.empty())) {  // Optionally process agent death
         // check the cuda agent state map to find the correct state list for functions starting state
         CUDAStateMap::const_iterator sm = state_map.find(func.initial_state);
 
@@ -420,6 +449,17 @@ void CUDAAgent::mapNewRuntimeVariables(const AgentFunctionData& func, const unsi
 
         // maximum population num
         Curve::getInstance().registerVariableByHash(var_hash + _agent_birth_hash + func_hash, d_ptr, type_size, maxLen);
+
+        // Map RTC variables (these must be mapped before each function execution as the runtime pointer may have changed to the swapping)
+        if (!func.rtc_func_name.empty()) {
+            // get the rtc variable ptr
+            const jitify::KernelInstantiation& instance = getRTCInstantiation(func.rtc_func_name);
+            std::stringstream d_var_ptr_name;
+            d_var_ptr_name << CurveRTCHost::getVariableSymbolName(mmp.first.c_str(), _agent_birth_hash + func_hash);
+            CUdeviceptr d_var_ptr = instance.get_global_ptr(d_var_ptr_name.str().c_str());
+            // copy runtime ptr (d_ptr) to rtc ptr (d_var_ptr)
+            gpuErrchkDriverAPI(cuMemcpyHtoD(d_var_ptr, &d_ptr, sizeof(void*)));
+        }
     }
 }
 
@@ -434,6 +474,8 @@ void CUDAAgent::unmapNewRuntimeVariables(const AgentFunctionData& func) const {
         // unmap using curve
         const Curve::VariableHash var_hash = Curve::getInstance().variableRuntimeHash(mmp.first.c_str());
         Curve::getInstance().unregisterVariableByHash(var_hash + _agent_birth_hash + func_hash);
+
+        // no need to unmap RTC variables
     }
 }
 void CUDAAgent::resizeNew(const AgentFunctionData& func, const unsigned int &newSize, const unsigned int &streamId) {
@@ -452,7 +494,7 @@ void CUDAAgent::resizeNew(const AgentFunctionData& func, const unsigned int &new
         sm->second->initNew(newSize, streamId);
         // Notify scan flag that it might need resizing
         // We need a 3rd array, because a function might combine agent birth, agent death and message output
-        flamegpu_internal::CUDAScanCompaction::resize(newSize, flamegpu_internal::CUDAScanCompaction::AGENT_OUTPUT, streamId);
+        flamegpu_internal::CUDAScanCompaction::resize(newSize, flamegpu_internal::CUDAScanCompaction::AGENT_OUTPUT, streamId, cuda_model);
     }
 }
 
@@ -492,4 +534,150 @@ void CUDAAgent::scatterNew(const std::string state, const unsigned int &newSize,
     // Scatter
     if (newSize)
         sm->second->scatterNew(newSize, streamId);
+}
+
+void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, bool function_condition) {
+    // get header location for fgpu
+    const char* env_inc_fgp2 = std::getenv("FLAMEGPU2_INC_DIR");
+    if (!env_inc_fgp2) {
+        THROW InvalidAgentFunc("Error compiling runtime agent function ('%s'): FLAMEGPU2_INC_DIR environment variable does not exist, "
+            "in CUDAAgent::addInstantitateRTCFunction().",
+            func.name.c_str());
+    }
+
+    // get the cuda path
+    const char* env_cuda_path = std::getenv("CUDA_PATH");
+    if (!env_cuda_path) {
+        THROW InvalidAgentFunc("Error compiling runtime agent function ('%s'): CUDA_PATH environment variable does not exist, "
+            "in CUDAAgent::addInstantitateRTCFunction().",
+            func.name.c_str());
+    }
+
+    // vector of compiler options for jitify
+    std::vector<std::string> options;
+    std::vector<std::string> headers;
+
+    // fpgu incude
+    std::string include_fgpu;
+    include_fgpu = "-I" + std::string(env_inc_fgp2);
+    options.push_back(include_fgpu);
+    // std::cout << "fgpu include option is " << include_fgpu << '\n';     // TODO: Remove DEBUG
+
+    // cuda path
+    std::string include_cuda;
+    include_cuda = "--include-path=" + std::string(env_cuda_path) + "/include";
+    options.push_back(include_cuda);
+    // std::cout << "cuda include option is " << include_cuda << '\n';     // TODO: Remove DEBUG
+
+    // add __CUDACC_RTC__ symbol
+    std::string rtc_symbol;
+    rtc_symbol = "-D__CUDACC_RTC__";
+    options.push_back(rtc_symbol);
+    // std::cout << "RTC pre-processor symbol is " << rtc_symbol << '\n';     // TODO: Remove DEBUG
+
+    // rdc
+    std::string rdc;
+    rdc = "-rdc=true";
+    options.push_back(rdc);
+    // std::cout << "rdc option is " << rdc << '\n';                       // TODO: Remove DEBUG
+
+    // curve rtc header
+    CurveRTCHost curve_header;
+    // agent function hash
+    Curve::NamespaceHash agentname_hash = Curve::getInstance().variableRuntimeHash(this->getAgentDescription().name.c_str());
+    Curve::NamespaceHash funcname_hash = Curve::getInstance().variableRuntimeHash(func.name.c_str());
+    Curve::NamespaceHash agent_func_name_hash = agentname_hash + funcname_hash;
+
+    // set agent function variables in rtc curve
+    for (const auto& mmp : func.parent.lock()->variables) {
+        curve_header.registerVariable(mmp.first.c_str(), agent_func_name_hash, mmp.second.type.name(), mmp.second.elements);
+    }
+
+    // for normal agent function (e.g. not an agent function condition) append messages and agent outputs
+    if (!function_condition) {
+        // Set input message variables in curve
+        if (auto im = func.message_input.lock()) {
+            // get the message input hash
+            Curve::NamespaceHash msg_in_hash = Curve::getInstance().variableRuntimeHash(im->name.c_str());
+            for (auto msg_in_var : im->variables) {
+                // register message variables using combined hash
+                curve_header.registerVariable(msg_in_var.first.c_str(), msg_in_hash + agent_func_name_hash, msg_in_var.second.type.name(), msg_in_var.second.elements, true, false);
+            }
+        }
+        // Set output message variables in curve
+        if (auto om = func.message_output.lock()) {
+            // get the message input hash
+            Curve::NamespaceHash msg_out_hash = Curve::getInstance().variableRuntimeHash(om->name.c_str());
+            for (auto msg_out_var : om->variables) {
+                // register message variables using combined hash
+                curve_header.registerVariable(msg_out_var.first.c_str(), msg_out_hash + agent_func_name_hash, msg_out_var.second.type.name(), msg_out_var.second.elements, false, true);
+            }
+        }
+        // Set agent output variables in curve
+        if (auto ao = func.agent_output.lock()) {
+            // get the message input hash
+            Curve::NamespaceHash agent_out_hash = Curve::getInstance().variableRuntimeHash("_agent_birth");
+            for (auto agent_out_var : ao->variables) {
+                // register message variables using combined hash
+                curve_header.registerVariable(agent_out_var.first.c_str(), agent_out_hash + funcname_hash, agent_out_var.second.type.name(), agent_out_var.second.elements, false, true);
+            }
+        }
+    }
+    // Set Environment variables in curve
+    Curve::NamespaceHash model_hash = Curve::getInstance().variableRuntimeHash(cuda_model.getModelDescription().name.c_str());
+    for (auto prop : cuda_model.getModelDescription().environment->getPropertiesMap()) {
+        curve_header.registerEnvVariable(prop.first.c_str(), model_hash, prop.second.type.name(), prop.second.elements);
+    }
+
+    // get the dynamically generated header from curve rtc
+    headers.push_back(curve_header.getDynamicHeader());
+
+    // cassert header (to remove remaining warnings) TODO: Ask Jitify to implement safe version of this
+    std::string cassert_h = "cassert\n";
+    headers.push_back(cassert_h);
+
+    // jitify to create program (with compilation settings)
+    try {
+        static jitify::JitCache kernel_cache;
+        // switch between normal agent function and agent function condition
+        if (!function_condition) {
+            auto program = kernel_cache.program(func.rtc_source, headers, options);
+            // create jifity instance
+            auto kernel = program.kernel("agent_function_wrapper");
+            // create string for agent function implementation
+            std::string func_impl = std::string(func.rtc_func_name).append("_impl");
+            // add kernal instance to map
+            rtc_func_map.insert(CUDARTCFuncMap::value_type(func.name, std::unique_ptr<jitify::KernelInstantiation>(new jitify::KernelInstantiation(kernel, { func_impl.c_str(), func.msg_in_type.c_str(), func.msg_out_type.c_str() }))));
+        } else {
+            auto program = kernel_cache.program(func.rtc_condition_source, headers, options);
+            // create jifity instance
+            auto kernel = program.kernel("agent_function_condition_wrapper");
+            // create string for agent function implementation
+            std::string func_impl = std::string(func.rtc_func_condition_name).append("_cdn_impl");
+            // add kernal instance to map
+            std::string func_name = func.name + "_condition";
+            rtc_func_map.insert(CUDARTCFuncMap::value_type(func_name, std::unique_ptr<jitify::KernelInstantiation>(new jitify::KernelInstantiation(kernel, { func_impl.c_str()}))));
+        }
+    }
+    catch (std::runtime_error e) {
+        // jitify does not have a method for getting compile logs so rely on JITIFY_PRINT_LOG defined in cmake
+        THROW InvalidAgentFunc("Error compiling runtime agent function (or function condition) ('%s'): function had compilation errors (see std::cout), "
+            "in CUDAAgent::addInstantitateRTCFunction().",
+            func.name.c_str());
+    }
+}
+
+const jitify::KernelInstantiation& CUDAAgent::getRTCInstantiation(const std::string &function_name) const {
+    CUDARTCFuncMap::const_iterator mm = rtc_func_map.find(function_name);
+    if (mm == rtc_func_map.end()) {
+        THROW InvalidAgentFunc("Function name '%s' is not a runtime compiled agent function , "
+            "in CUDAAgent::getRTCInstantiation()\n",
+            function_name.c_str());
+    }
+
+    return *mm->second;
+}
+
+const CUDARTCFuncMap& CUDAAgent::getRTCFunctions() const {
+    return rtc_func_map;
 }

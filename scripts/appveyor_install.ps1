@@ -68,7 +68,8 @@ if ([version]$CUDA_VERSION_FULL -lt [version]"9.1"){
 $CUDA_PACKAGES  = "$($NVCC_PACKAGE_NAME)_$($CUDA_MAJOR).$($CUDA_MINOR)"
 $CUDA_PACKAGES += " visual_studio_integration_$($CUDA_MAJOR).$($CUDA_MINOR)"
 $CUDA_PACKAGES += " curand_dev_$($CUDA_MAJOR).$($CUDA_MINOR)"
-
+$CUDA_PACKAGES += " nvrtc_$($CUDA_MAJOR).$($CUDA_MINOR)"
+$CUDA_PACKAGES += " nvrtc_dev_$($CUDA_MAJOR).$($CUDA_MINOR)"
 
 ## ------------
 ## Install vc++
@@ -120,5 +121,17 @@ if ($? -eq $false) {
     Write-Host "Error: CUDA installer reported error. $($LASTEXITCODE)"
     exit 1 
 }
+
+# The silent cuda installer doesn't set the PATH with the currently specified subpackages, so must set CUDA_PATH and PATH manually. This is in part a workaround for CMAKE < 3.17 not correctly setting some values when using visual studio generators.
+$CUDA_PATH = "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v$($CUDA_MAJOR).$($CUDA_MINOR)"
+$PATH_CUDA_PATH = "$($CUDA_PATH)\bin\;$($CUDA_PATH)\libnvvp\;"
+# Set environmental variables in this session
+Write-Host "Setting CUDA_PATH and PATH."
+$env:CUDA_PATH = "$($CUDA_PATH)"
+$env:PATH = "$($PATH_CUDA_PATH)$($env:PATH)"
+# Make the new values persist the reboot via the registry.
+[Environment]::SetEnvironmentVariable("CUDA_PATH", $env:CUDA_PATH, [System.EnvironmentVariableTarget]::Machine)
+[Environment]::SetEnvironmentVariable("PATH", $env:PATH, [System.EnvironmentVariableTarget]::Machine)
+# Note that these update the registry, and do not effect the current session until a restart.
 
 Write-Host "Installation Complete!"

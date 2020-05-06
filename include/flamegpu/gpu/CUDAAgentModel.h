@@ -16,6 +16,7 @@
 #include "flamegpu/runtime/flamegpu_host_new_agent_api.h"
 #include "flamegpu/visualiser/ModelVis.h"
 
+
 /**
  * CUDA runner for Simulation interface
  * Executes a FGPU2 model using GPU
@@ -109,6 +110,32 @@ class CUDAAgentModel : public Simulation {
     ModelVis &getVisualisation();
 #endif
 
+    /**
+     * Performs a cudaMemCopyToSymbol in the runtime library and also updates the symbols of any RTC functions (which exist separately within their own cuda module)
+     * Will thrown an error if any of the calls fail.
+     * @param symbol A device symbol
+     * @param rtc_symbol_name The name of the symbol
+     * @param src Source memory address
+     * @param count Size in bytes to copy
+     * @param offset Offset from start of symbol in bytes
+     */
+    void RTCSafeCudaMemcpyToSymbol(const void* symbol, const char* rtc_symbol_name, const void* src, size_t count, size_t offset = 0) const;
+
+    /**
+     * Performs a cudaMemCopy to a pointer in the runtime library and also updates the symbols of any RTC functions (which exist separately within their own cuda module)
+     * Will thrown an error if any of the calls fail.
+     * @param ptr a pointer to a symbol in device memory
+     * @param rtc_symbol_name The name of the symbol
+     * @param src Source memory address
+     * @param count Size in bytes to copy
+     * @param offset Offset from start of symbol in bytes
+     */
+    void RTCSafeCudaMemcpyToSymbolAddress(void* ptr, const char* rtc_symbol_name, const void* src, size_t count, size_t offset = 0) const;
+
+    // TODO
+    void RTCSetEnvironmentVariable(const char* variable_name, const void* src, size_t count, size_t offset = 0) const;
+
+
  protected:
      /**
       * Called by Simulation::applyConfig() to trigger any runner specific configs
@@ -184,9 +211,19 @@ class CUDAAgentModel : public Simulation {
     bool singletonsInitialised;
 
     /**
+     * Flag indicating that RTC functions have been compiled
+     */
+    bool rtcInitialised;
+
+    /**
      * Initialise the instances singletons.
      */
     void initialiseSingletons();
+    /**
+     * Initialise the rtc by building any RTC functions.
+     * This must be done at the start of step to ensure that any device selection has taken place and to preserve the context between runtime and RTC.
+     */
+    void initialiseRTC();
     /**
      * One instance of host api is used for entire model
      */
@@ -197,6 +234,10 @@ class CUDAAgentModel : public Simulation {
      * @note called at the end of step() and after all init/hostLayer functions and exit conditions have finished
      */
     void processHostAgentCreation();
+    /**
+     * Runs a specific agent function
+     * @param func_des the agent function to execute
+     */
 
  public:
     typedef std::vector<NewAgentStorage> AgentDataBuffer;

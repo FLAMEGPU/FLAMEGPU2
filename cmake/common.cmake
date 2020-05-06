@@ -73,6 +73,19 @@ MARK_AS_ADVANCED(
 set(FLAMEGPU_DEPENDENCY_INCLUDE_DIRECTORIES)
 set(FLAMEGPU_DEPENDENCY_LINK_LIBRARIES)
 
+# NVRTC.lib/CUDA.lib
+
+find_package(NVRTC REQUIRED)
+if(NVRTC_FOUND)
+    set(FLAMEGPU_DEPENDENCY_INCLUDE_DIRECTORIES ${FLAMEGPU_DEPENDENCY_INCLUDE_DIRECTORIES} ${NVRTC_INCLUDE_DIRS})
+    set(FLAMEGPU_DEPENDENCY_LINK_LIBRARIES ${FLAMEGPU_DEPENDENCY_LINK_LIBRARIES} ${NVRTC_LIBRARIES})
+    # Also add the driver api
+    set(FLAMEGPU_DEPENDENCY_LINK_LIBRARIES ${FLAMEGPU_DEPENDENCY_LINK_LIBRARIES} cuda)
+else()
+    message("nvrtc not found @todo gracefully handle this")
+endif()
+
+
 # If NVTX is enabled, find the library and update variables accordingly.
 if(NVTX)
     # Find the nvtx library using custom cmake module
@@ -89,6 +102,10 @@ if(NVTX)
         SET(NVTX "OFF")    
     endif()
 endif(NVTX)
+
+# Logging for jitify compilation
+set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -DJITIFY_PRINT_LOG")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DJITIFY_PRINT_LOG")
 
 # Require a minimum cuda version
 if(CMAKE_CUDA_COMPILER_VERSION VERSION_LESS 7.0)
@@ -184,9 +201,14 @@ set(CMAKE_CUDA_FLAGS_RELEASE "${CMAKE_CUDA_FLAGS_RELEASE} -lineinfo")
 set(CMAKE_CUDA_FLAGS_PROFILE "${CMAKE_CUDA_FLAGS_PROFILE} -lineinfo -DPROFILE -D_PROFILE")
 # Addresses a cub::histogram warning
 set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr")
-# Set high level of warnings
+# Set high level of warnings (only for linux due to Jitify bug: https://github.com/NVIDIA/jitify/issues/62)
 if(WARNINGS_AS_ERRORS)
-    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --Wreorder --Werror reorder,cross-execution-space-call -Xptxas=\"-Werror\"  -Xnvlink=\"-Werror\"")
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+        # Jitify has a problem with cross-execution-space-call under windows, enabling that currently blocks appveyor
+        set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --Wreorder --Werror reorder -Xptxas=\"-Werror\"  -Xnvlink=\"-Werror\"")
+    else()
+        set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --Wreorder --Werror reorder,cross-execution-space-call -Xptxas=\"-Werror\"  -Xnvlink=\"-Werror\"")
+    endif()
 else()
     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --Wreorder")
 endif()

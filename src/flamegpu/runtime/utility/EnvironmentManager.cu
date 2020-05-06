@@ -6,6 +6,7 @@
 #include "flamegpu/gpu/CUDAErrorChecking.h"
 #include "flamegpu/runtime/utility/DeviceEnvironment.cuh"
 #include "flamegpu/model/EnvironmentDescription.h"
+#include "flamegpu/gpu/CUDAAgentModel.h"
 
 /**
  * Internal namespace to hide __constant__ declarations from modeller
@@ -38,7 +39,7 @@ void EnvironmentManager::purge() {
     nextFree = 0;
 }
 
-void EnvironmentManager::init(const std::string &model_name, const EnvironmentDescription &desc) {
+void EnvironmentManager::init(const std::string& model_name, const EnvironmentDescription &desc) {
     // Initialise device portions of Environment manager
     initialiseDevice();
     // Error if reinit
@@ -70,6 +71,22 @@ void EnvironmentManager::init(const std::string &model_name, const EnvironmentDe
     defragment(&orderedProperties);
 }
 
+void EnvironmentManager::initRTC(const CUDAAgentModel& cuda_model, const EnvironmentDescription& desc) {
+    // check to ensure that model name is not already registered
+    auto res = cuda_agent_models.find(cuda_model.getModelDescription().name);
+    if (res != cuda_agent_models.end()) {
+        THROW UnknownInternalError("Agent model name '%s' already registered in initRTC()", cuda_model.getModelDescription().name.c_str());
+    }
+    // register model name
+    cuda_agent_models.emplace(cuda_model.getModelDescription().name, cuda_model);
+
+    // loop through environment properties
+    for (auto p : desc.getPropertiesMap()) {
+        // Register variable for use in any RTC functions
+        cuda_model.RTCSetEnvironmentVariable(p.first.c_str(), p.second.data.ptr , p.second.data.length);
+    }
+}
+
 void EnvironmentManager::initialiseDevice() {
     if (!deviceInitialised) {
         void *t_c_buffer = nullptr;
@@ -98,6 +115,12 @@ void EnvironmentManager::free(const std::string &model_name) {
     Curve::getInstance().setDefaultNamespace();
     // Defragment to clear up all the buffer items we didn't handle here
     defragment();
+    // Remove reference to cuda agent model used by RTC
+    // This may not exist if the CUDAgent model has not been created (e.g. some tests which do not run the model)
+    auto cam = cuda_agent_models.find(model_name);
+    if (cam != cuda_agent_models.end()) {
+        cuda_agent_models.erase(cam);
+    }
 }
 
 EnvironmentManager::NamePair EnvironmentManager::toName(const std::string &model_name, const std::string &var_name) {
@@ -272,4 +295,17 @@ void EnvironmentManager::defragment(DefragMap *mergeProperties) {
     // Update m_freeSpace, nextFree
     nextFree = buffOffset;
     m_freeSpace = MAX_BUFFER_SIZE - buffOffset + spareFrags;
+}
+
+const CUDAAgentModel& EnvironmentManager::getCUDAAgentModel(std::string model_name) {
+    auto res = cuda_agent_models.find(model_name);
+    if (res == cuda_agent_models.end()) {
+        THROW UnknownInternalError("Agent model name '%s' not registered in EnvironmentManager for use with RTC in EnvironmentManager::getCUDAAgentModel", model_name.c_str());
+    }
+    return res->second;
+}
+
+void EnvironmentManager::setRTCValue(std::string model_name, const char* variable_name, const void* src, size_t count, size_t offset) {
+    const CUDAAgentModel& cuda_agent_model = getCUDAAgentModel(model_name);
+    cuda_agent_model.RTCSetEnvironmentVariable(variable_name, src, count, offset);
 }

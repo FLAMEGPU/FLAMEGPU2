@@ -1,9 +1,13 @@
+#include <iostream>
+
 #include "flamegpu/model/ModelData.h"
 #include "flamegpu/model/EnvironmentDescription.h"
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/model/AgentFunctionDescription.h"
 #include "flamegpu/model/LayerDescription.h"
 #include "flamegpu/runtime/messaging/BruteForce.h"
+#include "flamegpu/runtime/cuRVE/curve_rtc.h"
+
 
 const char *ModelData::DEFAULT_STATE = "default";
 
@@ -26,13 +30,34 @@ AgentData::AgentData(ModelData *const model, const std::string &agent_name)
 }
 
 
-AgentFunctionData::AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string &function_name, AgentFunctionWrapper *agent_function, const std::type_index &in_type, const std::type_index &out_type)
+AgentFunctionData::AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string &function_name, AgentFunctionWrapper *agent_function, const std::string &in_type, const std::string &out_type)
     : func(agent_function)
+    , rtc_source("")
+    , rtc_func_name("")
     , initial_state(_parent->initial_state)
     , end_state(_parent->initial_state)
     , message_output_optional(false)
     , has_agent_death(false)
     , condition(nullptr)
+    , rtc_condition_source("")
+    , rtc_func_condition_name("")
+    , parent(_parent)
+    , description(new AgentFunctionDescription(_parent->description->model, this))
+    , name(function_name)
+    , msg_in_type(in_type)
+    , msg_out_type(out_type) { }
+
+AgentFunctionData::AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string& function_name, const std::string &rtc_function_src, const std::string &in_type, const std::string& out_type, const std::string& code_func_name)
+    : func(0)
+    , rtc_source(rtc_function_src)
+    , rtc_func_name(code_func_name)
+    , initial_state(_parent->initial_state)
+    , end_state(_parent->initial_state)
+    , message_output_optional(false)
+    , has_agent_death(false)
+    , condition(nullptr)
+    , rtc_condition_source("")
+    , rtc_func_condition_name("")
     , parent(_parent)
     , description(new AgentFunctionDescription(_parent->description->model, this))
     , name(function_name)
@@ -96,14 +121,19 @@ AgentData::AgentData(ModelData *const model, const AgentData &other)
     , description(model ? new AgentDescription(model, this) : nullptr)
     , name(other.name)
     , keepDefaultState(other.keepDefaultState) { }
+
 AgentFunctionData::AgentFunctionData(ModelData *const model, std::shared_ptr<AgentData> _parent, const AgentFunctionData &other)
     : func(other.func)
+    , rtc_source(other.rtc_source)
+    , rtc_func_name(other.rtc_func_name)
     , initial_state(other.initial_state)
     , end_state(other.end_state)
     , message_output_optional(other.message_output_optional)
     , agent_output_state(other.agent_output_state)
     , has_agent_death(other.has_agent_death)
     , condition(other.condition)
+    , rtc_condition_source(other.rtc_condition_source)
+    , rtc_func_condition_name(other.rtc_func_condition_name)
     , parent(_parent)
     , description(model ? new AgentFunctionDescription(model, this) : nullptr)
     , name(other.name)
@@ -116,16 +146,16 @@ AgentFunctionData::AgentFunctionData(ModelData *const model, std::shared_ptr<Age
             if (_m != model->messages.end()) {
                 message_input = _m->second;
             }
-        } else if (other.msg_in_type != std::type_index(typeid(MsgNone))) {
-            THROW InvalidMessageType("Function '%s' is missing bound input message of type '%s'.", other.name.c_str(), other.msg_in_type.name());
+        } else if (other.msg_in_type != CurveRTCHost::demangle(std::type_index(typeid(MsgNone)))) {
+            THROW InvalidMessageType("Function '%s' is missing bound input message of type '%s', type provided was '%s'.", other.name.c_str(), other.msg_in_type.c_str(), CurveRTCHost::demangle(std::type_index(typeid(MsgNone))).c_str());
         }
         if (auto a = other.message_output.lock()) {
             auto _m = model->messages.find(a->name);
             if (_m != model->messages.end()) {
                 message_output = _m->second;
             }
-        } else if (other.msg_out_type != std::type_index(typeid(MsgNone))) {
-            THROW InvalidMessageType("Function '%s' is missing bound output message of type '%s'.", other.name.c_str(), other.msg_out_type.name());
+        } else if (other.msg_out_type != CurveRTCHost::demangle(std::type_index(typeid(MsgNone)))) {
+            THROW InvalidMessageType("Function '%s' is missing bound output message of type '%s'.", other.name.c_str(), other.msg_out_type.c_str(), CurveRTCHost::demangle(std::type_index(typeid(MsgNone))).c_str());
         }
         if (auto a = other.agent_output.lock()) {
             auto _a = model->agents.find(a->name);
@@ -135,6 +165,7 @@ AgentFunctionData::AgentFunctionData(ModelData *const model, std::shared_ptr<Age
         }
     }
 }
+
 LayerData::LayerData(ModelData *const model, const LayerData &other)
     : host_functions(other.host_functions)
     , description(model ? new LayerDescription(model, this) : nullptr)

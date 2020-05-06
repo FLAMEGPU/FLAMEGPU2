@@ -10,6 +10,9 @@
 
 #include "flamegpu/sim/Simulation.h"
 
+// forward declare classes
+class CUDAAgentModel;
+
 /**
  * Singleton manager for initialising simulation wide random with a common seed
  * This is an internal class, that should not be accessed directly by modellers
@@ -53,7 +56,7 @@ class RandomManager {
      *     while(length*shrinkModifier>_length)
      *       length*=shrinkModifier
      */
-    bool resize(const size_type &_length);
+    bool resize(const size_type &_length, const CUDAAgentModel& model);
     /**
      * Accessors
      */
@@ -105,7 +108,7 @@ class RandomManager {
      * If shrinking, 'deallocated' curand states are backed up to host until next required,
      *  this prevents them being reinitialised with the same seed.
      */
-    void resizeDeviceArray(const size_type &_length);
+    void resizeDeviceArray(const size_type &_length, const CUDAAgentModel& model);
     /**
      * Host copy of 'deallocated' curand states
      * When the device array shrinks in size, shrunk away curand states are stored here

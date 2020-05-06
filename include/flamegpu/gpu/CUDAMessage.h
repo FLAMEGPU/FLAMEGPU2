@@ -26,6 +26,7 @@ struct MessageData;
 class AgentPopulation;
 class Curve;
 class MsgSpecialisationHandler;
+class CUDAAgent;
 /**
  * This class is CUDAAgentModel's internal handler for message functionality
  */
@@ -36,7 +37,7 @@ class CUDAMessage {
       * Allocates enough memory for each variable within the provided MessageData
       * @param description The message to represent
       */
-    explicit CUDAMessage(const MsgBruteForce::Data& description);
+    explicit CUDAMessage(const MsgBruteForce::Data& description, const CUDAAgentModel& cuda_model);
     /**
      * Destructor, releases CUDA memory
      */
@@ -69,7 +70,7 @@ class CUDAMessage {
      * The read runtime variables are to be used when reading messages
      * @param func The agent function, this is used for the cuRVE hash mapping
      */
-    void mapReadRuntimeVariables(const AgentFunctionData& func) const;
+    void mapReadRuntimeVariables(const AgentFunctionData& func, const CUDAAgent& cuda_agent) const;
     /**
      * Uses the cuRVE runtime to map the variables used by the agent function to the cuRVE library so that can be accessed by name within a n agent function
      * The write runtime variables are to be used when creating messages, as they are output to swap space
@@ -77,7 +78,7 @@ class CUDAMessage {
      * @param writeLen The number of messages to be output, as the length isn't updated till after ouput
      * @note swap() or scatter() should be called after the agent function has written messages
      */
-    void mapWriteRuntimeVariables(const AgentFunctionData& func, const unsigned int &writeLen) const;
+    void mapWriteRuntimeVariables(const AgentFunctionData& func, const CUDAAgent& cuda_agent, const unsigned int &writeLen) const;
     /**
      * Uses the cuRVE runtime to unmap the variables used by the agent function to the cuRVE
      * library so that they are unavailable to be accessed by name within an agent function.
@@ -152,6 +153,11 @@ class CUDAMessage {
      */
     bool pbm_construction_required;
     std::unique_ptr<MsgSpecialisationHandler> specialisation_handler;
+
+    /**
+     * A reference to the cuda model which this object belongs to
+     */
+    const CUDAAgentModel& cuda_model;
 };
 
 #endif  // INCLUDE_FLAMEGPU_GPU_CUDAMESSAGE_H_

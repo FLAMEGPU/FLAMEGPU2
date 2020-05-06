@@ -1,4 +1,11 @@
+#include <nvrtc.h>
+#include <cuda.h>
+#include <iostream>
+#include <string>
+#include <regex>
+
 #include "flamegpu/model/AgentFunctionDescription.h"
+
 
 /**
  * Constructors
@@ -115,12 +122,12 @@ void AgentFunctionDescription::setMessageInput(const std::string &message_name) 
     }
     auto a = model->messages.find(message_name);
     if (a != model->messages.end()) {
-        if (this->function->msg_in_type == a->second->getType()) {
+        if (this->function->msg_in_type == CurveRTCHost::demangle(a->second->getType())) {
             this->function->message_input = a->second;
         } else {
             THROW InvalidMessageType("Message ('%s') type '%s' does not match type '%s' applied to FLAMEGPU_AGENT_FUNCTION, "
                 "in AgentFunctionDescription::setMessageInput()\n",
-                message_name.c_str(), a->second->getType().name(), this->function->msg_in_type.name());
+                message_name.c_str(), CurveRTCHost::demangle(a->second->getType()).c_str(), this->function->msg_in_type.c_str());
         }
     } else {
         THROW InvalidMessageName("Model ('%s') does not contain message '%s', "
@@ -144,12 +151,12 @@ void AgentFunctionDescription::setMessageInput(MsgBruteForce::Description &messa
     auto a = model->messages.find(message.getName());
     if (a != model->messages.end()) {
         if (a->second->description.get() == &message) {
-            if (this->function->msg_in_type == a->second->getType()) {
+            if (this->function->msg_in_type == CurveRTCHost::demangle(a->second->getType())) {
                 this->function->message_input = a->second;
             } else {
                 THROW InvalidMessageType("Message ('%s') type '%s' does not match type '%s' applied to FLAMEGPU_AGENT_FUNCTION, "
                     "in AgentFunctionDescription::setMessageInput()\n",
-                    a->second->name.c_str(), a->second->getType().name(), this->function->msg_in_type.name());
+                    a->second->name.c_str(), CurveRTCHost::demangle(a->second->getType()).c_str(), this->function->msg_in_type.c_str());
             }
         } else {
             THROW InvalidMessage("Message '%s' is not from Model '%s', "
@@ -179,7 +186,7 @@ void AgentFunctionDescription::setMessageOutput(const std::string &message_name)
     }
     auto a = model->messages.find(message_name);
     if (a != model->messages.end()) {
-        if (this->function->msg_out_type == a->second->getType()) {
+        if (this->function->msg_out_type == CurveRTCHost::demangle(a->second->getType())) {
             this->function->message_output = a->second;
             if (this->function->message_output_optional) {
                 a->second->optional_outputs++;
@@ -187,7 +194,7 @@ void AgentFunctionDescription::setMessageOutput(const std::string &message_name)
         } else {
             THROW InvalidMessageType("Message ('%s') type '%s' does not match type '%s' applied to FLAMEGPU_AGENT_FUNCTION, "
                 "in AgentFunctionDescription::setMessageOutput()\n",
-                message_name.c_str(), a->second->getType().name(), this->function->msg_in_type.name());
+                message_name.c_str(), CurveRTCHost::demangle(a->second->getType()).c_str(), this->function->msg_in_type.c_str());
         }
     } else {
         THROW InvalidMessageName("Model ('%s') does not contain message '%s', "
@@ -217,7 +224,7 @@ void AgentFunctionDescription::setMessageOutput(MsgBruteForce::Description &mess
     auto a = model->messages.find(message.getName());
     if (a != model->messages.end()) {
         if (a->second->description.get() == &message) {
-            if (this->function->msg_out_type == a->second->getType()) {
+            if (this->function->msg_out_type == CurveRTCHost::demangle(a->second->getType())) {
                 this->function->message_output = a->second;
                 if (this->function->message_output_optional) {
                     a->second->optional_outputs++;
@@ -225,7 +232,7 @@ void AgentFunctionDescription::setMessageOutput(MsgBruteForce::Description &mess
             } else {
                 THROW InvalidMessageType("Message ('%s') type '%s' does not match type '%s' applied to FLAMEGPU_AGENT_FUNCTION, "
                     "in AgentFunctionDescription::setMessageOutput()\n",
-                    a->second->name.c_str(), a->second->getType().name(), this->function->msg_in_type.name());
+                    a->second->name.c_str(), CurveRTCHost::demangle(a->second->getType()).c_str(), this->function->msg_in_type.c_str());
             }
         } else {
             THROW InvalidMessage("Message '%s' is not from Model '%s', "
@@ -310,6 +317,35 @@ void AgentFunctionDescription::setAllowAgentDeath(const bool &has_death) {
     function->has_agent_death = has_death;
 }
 
+void AgentFunctionDescription::setRTCFunctionCondition(std::string func_cond_src) {
+    // Use Regex to get agent function name
+    std::regex rgx(R"###(.*FLAMEGPU_AGENT_FUNCTION_CONDITION\([ \t]*(\w+)[ \t]*)###");
+    std::smatch match;
+    std::string func_cond_name;
+    if (std::regex_search(func_cond_src, match, rgx)) {
+        if (match.size() == 2) {
+            func_cond_name = match[1];
+            // set the runtime agent function condition source in agent function data
+            function->rtc_func_condition_name = func_cond_name;
+            function->rtc_condition_source = func_cond_src;
+            // TODO: Does this need emplacing in CUDAAgent?
+        } else {
+            THROW InvalidAgentFunc("Runtime agent function condition is missing FLAMEGPU_AGENT_FUNCTION_CONDITION arguments e.g. 'FLAMEGPU_AGENT_FUNCTION_CONDITION(func_name)', "
+                "in AgentDescription::setRTCFunctionCondition().");
+        }
+    } else {
+        THROW InvalidAgentFunc("Runtime agent function('%s') is missing FLAMEGPU_AGENT_FUNCTION_CONDITION, "
+            "in AgentDescription::setRTCFunctionCondition().");
+    }
+
+    // append jitify program string and include
+    std::string func_cond_src_str = std::string(func_cond_name + "_program\n").append("#include \"flamegpu/runtime/flamegpu_device_api.h\"\n").append(func_cond_src);
+
+    // update the agent function data
+    function->rtc_func_condition_name = func_cond_name;
+    function->rtc_condition_source = func_cond_src_str;
+}
+
 MsgBruteForce::Description &AgentFunctionDescription::MessageInput() {
     if (auto m = function->message_input.lock())
         return *m->description;
@@ -391,3 +427,38 @@ AgentFunctionConditionWrapper *AgentFunctionDescription::getConditionPtr() const
     return function->condition;
 }
 
+bool AgentFunctionDescription::isRTC() const {
+    return !function->rtc_source.empty();
+}
+
+AgentFunctionDescription& AgentDescription::newRTCFunction(const std::string& function_name, const char* func_src) {
+    if (agent->functions.find(function_name) == agent->functions.end()) {
+        // append jitify program string and include
+        std::string func_src_str = std::string(function_name + "_program\n").append("#include \"flamegpu/runtime/flamegpu_device_api.h\"\n").append(func_src);
+        // Use Regex to get agent function name, and input/output message type
+        std::regex rgx(R"###(.*FLAMEGPU_AGENT_FUNCTION\([ \t]*(\w+),[ \t]*(\w+),[ \t]*(\w+)[ \t]*\))###");
+        std::smatch match;
+        if (std::regex_search(func_src_str, match, rgx)) {
+            if (match.size() == 4) {
+                std::string code_func_name = match[1];  // not yet clear if this is required
+                std::string in_type_name = match[2];
+                std::string out_type_name = match[3];
+                // set the runtime agent function source in agent function data
+                auto rtn = std::shared_ptr<AgentFunctionData>(new AgentFunctionData(this->agent->shared_from_this(), function_name, func_src_str, in_type_name, out_type_name, code_func_name));
+                agent->functions.emplace(function_name, rtn);
+                return *rtn->description;
+            } else {
+                THROW InvalidAgentFunc("Runtime agent function('%s') is missing FLAMEGPU_AGENT_FUNCTION arguments e.g. (func_name, message_input_type, message_output_type), "
+                    "in AgentDescription::newRTCFunction().",
+                    agent->name.c_str());
+            }
+        } else {
+            THROW InvalidAgentFunc("Runtime agent function('%s') is missing FLAMEGPU_AGENT_FUNCTION, "
+                "in AgentDescription::newRTCFunction().",
+                agent->name.c_str());
+        }
+    }
+    THROW InvalidAgentFunc("Agent ('%s') already contains function '%s', "
+        "in AgentDescription::newFunction().",
+        agent->name.c_str(), function_name.c_str());
+}

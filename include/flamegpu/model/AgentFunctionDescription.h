@@ -10,6 +10,15 @@
 #include "flamegpu/runtime/AgentFunctionCondition.h"
 #include "flamegpu/model/LayerDescription.h"
 #include "flamegpu/runtime/messaging/BruteForce.h"
+#include "flamegpu/runtime/cuRVE/curve_rtc.h"
+
+#ifdef _MSC_VER
+#pragma warning(push, 2)
+#include "jitify/jitify.hpp"
+#pragma warning(pop)
+#else
+#include "jitify/jitify.hpp"
+#endif
 
 struct ModelData;
 struct AgentFunctionData;
@@ -165,6 +174,15 @@ class AgentFunctionDescription {
     template<typename AgentFunctionCondition>
     void setFunctionCondition(AgentFunctionCondition);
     /**
+     * Sets the RTC function condition for the agent function
+     * This is string containing a definition of an FLAMEGPU_AGENT_FUNCTION_CONDITION which returns a boolean value (true or false)
+     * Only agents which return true perform the attached FLAMEGPU_AGENT_FUNCTION
+     * and transition from the initial to end state.
+     * The string will be compiled at runtime.
+     *
+     */
+    void setRTCFunctionCondition(std::string func_cond_src);
+    /**
      * @return A mutable reference to the message input of this agent function
      * @see AgentFunctionDescription::getMessageInput() for the immutable version
      * @throw OutOfBoundsException If the message input has not been set
@@ -262,6 +280,10 @@ class AgentFunctionDescription {
      * @return The cuda kernel entry point for executing the agent function condition
      */
     AgentFunctionConditionWrapper *getConditionPtr() const;
+    /**
+     * @return True if the function is a runtime time specified function
+     */
+    bool isRTC() const;
 
  private:
     /**
@@ -274,12 +296,13 @@ class AgentFunctionDescription {
     AgentFunctionData *const function;
 };
 
+
 template<typename AgentFunction>
 AgentFunctionDescription &AgentDescription::newFunction(const std::string &function_name, AgentFunction) {
     if (agent->functions.find(function_name) == agent->functions.end()) {
         AgentFunctionWrapper *f = AgentFunction::fnPtr();
-        std::type_index in_t = AgentFunction::inType();
-        std::type_index out_t = AgentFunction::outType();
+        std::string in_t = CurveRTCHost::demangle(AgentFunction::inType().name());
+        std::string out_t = CurveRTCHost::demangle(AgentFunction::outType().name());
         auto rtn = std::shared_ptr<AgentFunctionData>(new AgentFunctionData(this->agent->shared_from_this(), function_name, f, in_t, out_t));
         agent->functions.emplace(function_name, rtn);
         return *rtn->description;
@@ -288,7 +311,6 @@ AgentFunctionDescription &AgentDescription::newFunction(const std::string &funct
         "in AgentDescription::newFunction().",
         agent->name.c_str(), function_name.c_str());
 }
-
 
 template<typename AgentFunctionCondition>
 void AgentFunctionDescription::setFunctionCondition(AgentFunctionCondition) {
