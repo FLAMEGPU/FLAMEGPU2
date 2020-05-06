@@ -1,7 +1,9 @@
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_NONE_H_
 #define INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_NONE_H_
 
+#ifndef __CUDACC_RTC__
 #include "flamegpu/runtime/cuRVE/curve.h"
+#endif  // __CUDACC_RTC__
 
 /**
  * Forward declaration, used for CUDASpecialisationHandler

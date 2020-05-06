@@ -1,7 +1,9 @@
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_AGENTFUNCTION_SHIM_H_
 #define INCLUDE_FLAMEGPU_RUNTIME_AGENTFUNCTION_SHIM_H_
 
-#include "flamegpu/runtime/AgentFunction.h"
+// #include "flamegpu/runtime/AgentFunction.h"
+
+
 
 template<typename MsgIn, typename MsgOut>
 class FLAMEGPU_DEVICE_API;
@@ -24,6 +26,7 @@ class FLAMEGPU_DEVICE_API;
  * };
  *}
  */
+#ifndef __CUDACC_RTC__
 #define FLAMEGPU_AGENT_FUNCTION(funcName, msg_in, msg_out)\
 struct funcName ## _impl {\
     __device__ __forceinline__ FLAME_GPU_AGENT_STATUS operator()(FLAMEGPU_DEVICE_API<msg_in, msg_out> *FLAMEGPU) const;\
@@ -33,6 +36,15 @@ struct funcName ## _impl {\
 };\
 funcName ## _impl funcName;\
 __device__ __forceinline__ FLAME_GPU_AGENT_STATUS funcName ## _impl::operator()(FLAMEGPU_DEVICE_API<msg_in, msg_out> *FLAMEGPU) const
+#else
+#define FLAMEGPU_AGENT_FUNCTION(funcName, msg_in, msg_out)\
+struct funcName ## _impl {\
+    __device__ __forceinline__ FLAME_GPU_AGENT_STATUS operator()(FLAMEGPU_DEVICE_API<msg_in, msg_out> *FLAMEGPU) const;\
+    static constexpr AgentFunctionWrapper *fnPtr() { return &agent_function_wrapper<funcName ## _impl, msg_in, msg_out>; }\
+}; \
+funcName ## _impl funcName; \
+__device__ __forceinline__ FLAME_GPU_AGENT_STATUS funcName ## _impl::operator()(FLAMEGPU_DEVICE_API<msg_in, msg_out> *FLAMEGPU) const
+#endif
 
 
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_AGENTFUNCTION_SHIM_H_

@@ -1,39 +1,36 @@
-# CMake module to find NVTX headers/library
+# CMake module to find NVRTC headers/library
 # This is currently quite simple, could be expanded to support user-provided hinting?
 # Usage:
-#    find_package( NVTX )
-#    if(NVTX_FOUND)
-#        include_directories(${NVTX_INCLUDE_DIRS})
-#        target_link_libraries(target ${NVTX_LIBRARIES})
+#    find_package( NVRTC )
+#    if(NVRTC_FOUND)
+#        include_directories(${NVRTC_INCLUDE_DIRS})
+#        target_link_libraries(target ${NVRTC_LIBRARIES})
 #    endif()
 #
 # Variables:
-#    NVTX_FOUND
-#    NVTX_INCLUDE_DIRS
-#    NVTX_LIBRARIES
+#    NVRTC_FOUND
+#    NVRTC_INCLUDE_DIRS
+#    NVRTC_LIBRARIES
 
 # CMake Native CUDA support doesn't provide the raw directory, only include
 # Note that CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES and CMAKE_CUDA_IMPLICIT_LINK_DIRECTORIES are not set for visual studio generators for CMAKE < 3.17, so this relies on searching the users PATH.
 
-
 # Attempt to find nvToolsExt.h containing directory
-find_path(NVTX_INCLUDE_DIRS
+find_path(NVRTC_INCLUDE_DIRS
 	NAMES
-		nvToolsExt.h
-        nvtx3/nvToolsExt.h
+		nvrtc.h
     PATHS
         ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
     PATH_SUFFIXES
 		include
-		include/nvtx3
 	)
 
 # Find the directory containing the dynamic library
-find_library(NVTX_LIBRARIES
+find_library(NVRTC_LIBRARIES
 	NAMES 
-		libnvToolsExt.so
-		nvToolsExt64_1
-		nvToolsExt32_1 
+		libnvrtc.so
+		nvrtc
+		nvrtc.lib 
 	PATHS 
 		${CMAKE_CUDA_IMPLICIT_LINK_DIRECTORIES}
 	PATH_SUFFIXES
@@ -43,9 +40,9 @@ find_library(NVTX_LIBRARIES
 		lib/x64
 )
 
-# Apply standard cmake find package rules / variables. I.e. QUIET, NVTX_FOUND etc.
+# Apply standard cmake find package rules / variables. I.e. QUIET, NVRTC_FOUND etc.
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(NVTX DEFAULT_MSG NVTX_INCLUDE_DIRS NVTX_LIBRARIES)
+find_package_handle_standard_args(NVRTC DEFAULT_MSG NVRTC_INCLUDE_DIRS NVRTC_LIBRARIES)
 
 # Set returned values as advanced?
-mark_as_advanced(NVTX_INCLUDE_DIRS NVTX_LIBRARIES)
+mark_as_advanced(NVRTC_INCLUDE_DIRS NVRTC_LIBRARIES)

@@ -12,11 +12,12 @@
 
 
 
-#include <device_launch_parameters.h>
-#include <cuda_runtime.h>
+// #include <device_launch_parameters.h>
+// #include <cuda_runtime.h>
+#include <cuda.h>
 
 #include <string>
-#include <stdexcept>
+// #include <stdexcept>
 #include "flamegpu/exception/FGPUException.h"
 
 /* Error check function for safe CUDA API calling */
@@ -24,6 +25,15 @@
 inline void gpuAssert(cudaError_t code, const char *file, int line) {
     if (code != cudaSuccess) {
         THROW CUDAError("CUDA Error: %s(%d): %s", file, line, cudaGetErrorString(code));
+    }
+}
+
+/* Error check function for safe CUDA Driver API calling */
+#define gpuErrchkDriverAPI(ans) { gpuAssert((ans), __FILE__, __LINE__); }
+inline void gpuAssert(CUresult code, const char* file, int line) {
+    if (code != CUDA_SUCCESS) {
+        const char *error_str;
+        THROW CUDAError("CUDA Driver Error: %s(%d): %s", file, line, cuGetErrorString(code, &error_str));
     }
 }
 

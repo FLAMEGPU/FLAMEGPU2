@@ -253,6 +253,14 @@ struct AgentFunctionData {
      */
     AgentFunctionWrapper *func;
     /**
+     * The string representing the RTC defined agent function
+     */
+    std::string rtc_source;
+    /**
+     * The string representing the RTC defined agent function name
+     */
+    std::string rtc_func_name;
+    /**
      * Agent's must be in this state to execute this function
      */
     std::string initial_state;
@@ -291,6 +299,14 @@ struct AgentFunctionData {
      */
     AgentFunctionConditionWrapper *condition;
     /**
+     * The string representing the RTC defined agent function condition
+     */
+    std::string rtc_condition_source;
+    /**
+     * The string representing the RTC defined agent function condition
+     */
+    std::string rtc_func_condition_name;
+    /**
      * The agent which this function is a member of
      */
     std::weak_ptr<AgentData> parent;
@@ -319,13 +335,14 @@ struct AgentFunctionData {
      */
     AgentFunctionData(const AgentFunctionData &other) = delete;
     /**
-     * Input messaging type specified in FLAMEGPU_AGENT_FUNCTION
+     * Input messaging type (as string) specified in FLAMEGPU_AGENT_FUNCTION. Used for type checking in model specification.
      */
-    const std::type_index msg_in_type;
+    std::string msg_in_type;
     /**
-     * Output messaging  type specified in FLAMEGPU_AGENT_FUNCTION
+     * Output messaging  type (as string) specified in FLAMEGPU_AGENT_FUNCTION. Used for type checking in model specification.
      */
-    const std::type_index msg_out_type;
+    std::string msg_out_type;
+
 
  protected:
     /**
@@ -336,7 +353,11 @@ struct AgentFunctionData {
     /**
      * Normal constructor, only to be called by AgentDescription
      */
-    AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string &function_name, AgentFunctionWrapper *agent_function, const std::type_index &in_type, const std::type_index &out_type);
+    AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string &function_name, AgentFunctionWrapper *agent_function, const std::string &in_type, const std::string &out_type);
+    /**
+     * Normal constructor for RTC function, only to be called by AgentDescription
+     */
+    AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string& function_name, const std::string &rtc_function_src, const std::string &in_type, const std::string& out_type, const std::string& code_func_name);
 };
 
 /**

@@ -12,6 +12,7 @@
 #include <device_launch_parameters.h>
 
 #include "flamegpu/gpu/CUDAMessage.h"
+#include "flamegpu/gpu/CUDAAgent.h"
 #include "flamegpu/gpu/CUDAMessageList.h"
 #include "flamegpu/gpu/CUDAErrorChecking.h"
 
@@ -34,13 +35,14 @@
 * CUDAMessage class
 * @brief allocates the hash table/list for message variables and copy the list to device
 */
-CUDAMessage::CUDAMessage(const MsgBruteForce::Data& description)
+CUDAMessage::CUDAMessage(const MsgBruteForce::Data& description, const CUDAAgentModel& cuda_model)
     : message_description(description)
     , message_count(0)
     , max_list_size(0)
     , truncate_messagelist_flag(true)
     , pbm_construction_required(false)
-    , specialisation_handler(description.getSpecialisationHander(*this)) {
+    , specialisation_handler(description.getSpecialisationHander(*this))
+    , cuda_model(cuda_model) {
     // resize(0); // Think this call is redundant
 }
 
@@ -77,7 +79,7 @@ void CUDAMessage::resize(unsigned int newSize, const unsigned int &streamId) {
         }
         // This drops old message data
         message_list = std::unique_ptr<CUDAMessageList>(new CUDAMessageList(*this));
-        flamegpu_internal::CUDAScanCompaction::resize(max_list_size, flamegpu_internal::CUDAScanCompaction::MESSAGE_OUTPUT, streamId);
+        flamegpu_internal::CUDAScanCompaction::resize(max_list_size, flamegpu_internal::CUDAScanCompaction::MESSAGE_OUTPUT, streamId, cuda_model);
 
 // #ifdef _DEBUG
         /**set the message list to zero*/
@@ -118,7 +120,7 @@ void CUDAMessage::zeroAllMessageData() {
 /**
 @bug message_name is input or output, run some tests to see which one is correct
 */
-void CUDAMessage::mapReadRuntimeVariables(const AgentFunctionData& func) const {
+void CUDAMessage::mapReadRuntimeVariables(const AgentFunctionData& func, const CUDAAgent& cuda_agent) const {
     // check that the message list has been allocated
     if (!message_list) {
         THROW InvalidMessageData("Error: Initial message list for message '%s' has not been allocated, "
@@ -145,13 +147,24 @@ void CUDAMessage::mapReadRuntimeVariables(const AgentFunctionData& func) const {
        // maximum population size
         unsigned int length = this->getMessageCount();  // check to see if it is equal to pop
         Curve::getInstance().registerVariableByHash(var_hash + agent_hash + func_hash + message_hash, d_ptr, size, length);
+
+        // Map RTC variables (these must be mapped before each function execution as the runtime pointer may have changed to the swapping)
+        if (!func.rtc_func_name.empty()) {
+            // get the rtc variable ptr
+            const jitify::KernelInstantiation& instance = cuda_agent.getRTCInstantiation(func.rtc_func_name);
+            std::stringstream d_var_ptr_name;
+            d_var_ptr_name << "curve_rtc_ptr_" << agent_hash + func_hash + message_hash << "_" << mmp.first;
+            CUdeviceptr d_var_ptr = instance.get_global_ptr(d_var_ptr_name.str().c_str());
+            // copy runtime ptr (d_ptr) to rtc ptr (d_var_ptr)
+            gpuErrchkDriverAPI(cuMemcpyHtoD(d_var_ptr, &d_ptr, sizeof(void*)));
+        }
     }
 }
 
 void *CUDAMessage::getReadPtr(const std::string &var_name) {
     return message_list->getReadMessageListVariablePointer(var_name);
 }
-void CUDAMessage::mapWriteRuntimeVariables(const AgentFunctionData& func, const unsigned int &writeLen) const {
+void CUDAMessage::mapWriteRuntimeVariables(const AgentFunctionData& func, const CUDAAgent& cuda_agent, const unsigned int &writeLen) const {
     // check that the message list has been allocated
     if (!message_list) {
         THROW InvalidMessageData("Error: Initial message list for message '%s' has not been allocated, "
@@ -178,6 +191,17 @@ void CUDAMessage::mapWriteRuntimeVariables(const AgentFunctionData& func, const 
         // maximum population size
         unsigned int length = writeLen;  // check to see if it is equal to pop
         Curve::getInstance().registerVariableByHash(var_hash + agent_hash + func_hash + message_hash, d_ptr, size, length);
+
+        // Map RTC variables (these must be mapped before each function execution as the runtime pointer may have changed to the swapping)
+        if (!func.rtc_func_name.empty()) {
+            // get the rtc variable ptr
+            const jitify::KernelInstantiation& instance = cuda_agent.getRTCInstantiation(func.rtc_func_name);
+            std::stringstream d_var_ptr_name;
+            d_var_ptr_name << "curve_rtc_ptr_" << agent_hash + func_hash + message_hash << "_" << mmp.first;
+            CUdeviceptr d_var_ptr = instance.get_global_ptr(d_var_ptr_name.str().c_str());
+            // copy runtime ptr (d_ptr) to rtc ptr (d_var_ptr)
+            gpuErrchkDriverAPI(cuMemcpyHtoD(d_var_ptr, &d_ptr, sizeof(void*)));
+        }
     }
 
     // Allocate the metadata if required.

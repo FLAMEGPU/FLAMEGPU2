@@ -20,14 +20,27 @@
 #include "flamegpu/gpu/CUDAAgentStateList.h"
 #include "flamegpu/sim/AgentInterface.h"
 
+#ifdef _MSC_VER
+#pragma warning(push, 2)
+#include "jitify/jitify.hpp"
+#pragma warning(pop)
+#else
+#include "jitify/jitify.hpp"
+#endif
+
 // forward declare classes from other modules
 struct AgentData;
 struct AgentFunctionData;
 class AgentPopulation;
 class Curve;
+class CUDAAgentModel;
 
 typedef std::map<const std::string, std::unique_ptr<CUDAAgentStateList>> CUDAStateMap;  // map of state name to CUDAAgentStateList which allocates memory on the device
 typedef std::pair<const std::string, std::unique_ptr<CUDAAgentStateList>> CUDAStateMapPair;
+
+typedef std::map<const std::string, std::unique_ptr<jitify::KernelInstantiation>> CUDARTCFuncMap;  // map of state name to CUDAAgentStateList which allocates memory on the device
+typedef std::pair<const std::string, std::unique_ptr<jitify::KernelInstantiation>> CUDARTCFuncMapPair;
+
 
 /** \brief CUDAAgent class is used as a container for storing the GPU data of all variables in all states
  * The CUDAAgent contains a hash index which maps a variable name to a unique index. Each CUDAAgentStateList
@@ -37,7 +50,7 @@ typedef std::pair<const std::string, std::unique_ptr<CUDAAgentStateList>> CUDASt
 class CUDAAgent : public AgentInterface {
     friend class AgentVis;
  public:
-    explicit CUDAAgent(const AgentData& description);
+    explicit CUDAAgent(const AgentData& description, const CUDAAgentModel& cuda_model);
     virtual ~CUDAAgent(void);
 
     const AgentData& getAgentDescription() const override;
@@ -69,7 +82,7 @@ class CUDAAgent : public AgentInterface {
 
     void unmapRuntimeVariables(const AgentFunctionData& func) const;
 
-    const std::unique_ptr<CUDAAgentStateList> &getAgentStateList(const std::string &state_name) const;
+    CUDAAgentStateList& getAgentStateList(const std::string &state_name) const;
 
     void *getStateVariablePtr(const std::string &state_name, const std::string &variable_name) override;
     ModelData::size_type getStateSize(const std::string &state_name) const override;
@@ -134,6 +147,25 @@ class CUDAAgent : public AgentInterface {
      * @note This may resize death scan flag, which will lose it's data, hence always processDeath first
      */
     void scatterNew(const std::string state, const unsigned int &newSize, const unsigned int &streamId);
+    /**
+     * Instatiates a RTC Agent function from agent function data description containing the agent function source.
+     * If function_condition variable is true then this function will instantiate a function condition rather than an agent function
+     * Uses Jitify to create an instantiation of the program. Any compilation errors in the user provided agent function will be reported here.
+     * @throw InvalidAgentFunc thrown if the user supplied agent function has compilation errors
+     */
+    void addInstantitateRTCFunction(const AgentFunctionData& func, bool function_condition = false);
+    /**
+     * Returns the jitify kernel instantiation of the agent function.
+     * Will throw an InvalidAgentFunc excpetion if the function name does not have a valid instantiation
+     * @param function_name the name of the RTC agent function or the agent function name suffixed with condition (if it is a function condition)
+     */
+    const jitify::KernelInstantiation& getRTCInstantiation(const std::string &function_name) const;
+
+    /**
+     * Returns the CUDARTCFuncMap
+     */
+    const CUDARTCFuncMap& getRTCFunctions() const;
+
 
  protected:
     /** @brief    Zero all state variable data. */
@@ -142,7 +174,11 @@ class CUDAAgent : public AgentInterface {
  private:
     const AgentData& agent_description;
 
+    const CUDAAgentModel& cuda_model;
+
     CUDAStateMap state_map;
+
+    CUDARTCFuncMap rtc_func_map;    // map between function_name (or function_name_condition) and the jitify instance
 
     unsigned int max_list_size;  // The maximum length of the agent variable arrays based on the maximum population size passed to setPopulationData
 };

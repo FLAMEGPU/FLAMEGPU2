@@ -19,7 +19,10 @@
 #include "flamegpu/gpu/CUDAErrorChecking.h"
 #include "flamegpu/runtime/cuRVE/curve.h"
 
+
 class EnvironmentDescription;
+class CUDAAgentModel;
+
 
 /**
  * Singleton manager for managing environment properties storage in constant memory
@@ -141,7 +144,12 @@ class EnvironmentManager {
      * @param model_name Name of the model
      * @param desc environment properties description to use
      */
-    void init(const std::string &model_name, const EnvironmentDescription &desc);
+    void init(const std::string& model_name, const EnvironmentDescription &desc);
+    /**
+     * RTC functions hold thier own unique constants for environment variables. This function copies all environment variable to the RTC copies.
+     * It can not be incorporated into init() as init will be called before RTC functions have been compiled.
+     */
+    void initRTC(const CUDAAgentModel& cuda_model, const EnvironmentDescription& desc);
     /**
      * Deactives all environmental properties linked to the named model from constant cache
      * @param model_name Name of the model
@@ -497,6 +505,10 @@ class EnvironmentManager {
      * Host copy of data related to each stored property
      */
     std::unordered_map<NamePair, EnvProp, NamePairHash> properties;
+    /**
+     * Map of model name to CUDAAgentModel for use in updating RTC values
+     */
+    std::unordered_map<std::string, const CUDAAgentModel&> cuda_agent_models;
 
     /**
      * Flag indicating that curve has/hasn't been initialised yet on a device.
@@ -525,6 +537,10 @@ class EnvironmentManager {
         static EnvironmentManager instance;  // Guaranteed to be destroyed.
         return instance;                     // Instantiated on first use.
     }
+
+    const CUDAAgentModel& getCUDAAgentModel(std::string model_name);
+
+    void setRTCValue(std::string model_name, const char* variable_name, const void* src, size_t count, size_t offset = 0);
 
  public:
     // Public deleted creates better compiler errors
@@ -593,6 +609,9 @@ T EnvironmentManager::set(const NamePair &name, const T &value) {
     // Store data
     memcpy(hc_buffer + buffOffset, &value, sizeof(T));
     gpuErrchk(cudaMemcpy(reinterpret_cast<void*>(const_cast<char*>(c_buffer + buffOffset)), reinterpret_cast<void*>(hc_buffer + buffOffset), sizeof(T), cudaMemcpyHostToDevice));
+    // update RTC
+    setRTCValue(name.first, name.second.c_str(), hc_buffer + buffOffset, sizeof(T));
+
     return rtn;
 }
 template<typename T>
@@ -625,6 +644,9 @@ std::array<T, N> EnvironmentManager::set(const NamePair &name, const std::array<
     // Store data
     memcpy(hc_buffer + buffOffset, value.data(), N * sizeof(T));
     gpuErrchk(cudaMemcpy(reinterpret_cast<void*>(const_cast<char*>(c_buffer + buffOffset)), reinterpret_cast<void*>(hc_buffer + buffOffset), N * sizeof(T), cudaMemcpyHostToDevice));
+    // update RTC
+    setRTCValue(name.first, name.second.c_str(), hc_buffer + buffOffset, N * sizeof(T));
+
     return rtn;
 }
 template<typename T, EnvironmentManager::size_type N>
@@ -657,6 +679,9 @@ T EnvironmentManager::set(const NamePair &name, const size_type &index, const T 
     // Store data
     memcpy(hc_buffer + buffOffset, &value, sizeof(T));
     gpuErrchk(cudaMemcpy(reinterpret_cast<void*>(const_cast<char*>(c_buffer + buffOffset)), reinterpret_cast<void*>(hc_buffer + buffOffset), sizeof(T), cudaMemcpyHostToDevice));
+    // update RTC
+    setRTCValue(name.first, name.second.c_str(), hc_buffer + buffOffset, sizeof(T), index * sizeof(T));
+
     return rtn;
 }
 template<typename T>

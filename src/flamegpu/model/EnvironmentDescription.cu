@@ -61,3 +61,7 @@ bool EnvironmentDescription::getConst(const std::string &name) {
         "in EnvironmentDescription::getConst().",
         name.c_str());
 }
+
+const std::unordered_map<std::string, EnvironmentDescription::PropData> EnvironmentDescription::getPropertiesMap() const {
+    return properties;
+}

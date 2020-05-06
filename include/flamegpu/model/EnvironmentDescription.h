@@ -199,6 +199,8 @@ class EnvironmentDescription {
     template<typename T>
     void remove(const std::string &name);
 
+    const std::unordered_map<std::string, PropData> getPropertiesMap() const;
+
  private:
     /**
      * Internal common add method, actually performs the heavy lifting of changing properties

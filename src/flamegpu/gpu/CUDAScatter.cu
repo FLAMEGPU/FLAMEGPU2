@@ -23,7 +23,12 @@ CUDAScatter::CUDAScatter()
     , data_len(0) {
 }
 CUDAScatter::~CUDAScatter() {
-    free();
+    /* @note - Do not clear cuda memory in the destructor of singletons.
+     This is because order of static destruction in c++ is undefined
+     So the cuda driver is not guaranteed to still exist when the static is destroyed.
+     As this is only ever destroyed at exit time, it's not a real memory leak either.
+    */
+    // free();
 }
 void CUDAScatter::free() {
     if (d_data) {

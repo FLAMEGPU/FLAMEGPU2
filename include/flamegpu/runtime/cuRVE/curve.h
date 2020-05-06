@@ -12,11 +12,10 @@
  * \todo Requires vector length table for each variable (or namespace) which is registered. For now no safe checking of vector length is done.
  */
 
-#include <cuda_runtime.h>
+// #include <cuda_runtime.h>
 
 #include <cstring>
 #include <cstdio>
-#include <typeinfo>
 
 
 /** @brief    A cuRVE instance.
@@ -326,6 +325,7 @@ class Curve {
     ~Curve() {}
 
  public:
+#ifndef __CUDACC_RTC__
     /**
      * @brief    Gets the instance.
      *
@@ -335,6 +335,7 @@ class Curve {
         static Curve c;
         return c;
     }
+#endif
 };
 
 
