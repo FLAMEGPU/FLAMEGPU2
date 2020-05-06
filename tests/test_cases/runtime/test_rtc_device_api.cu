@@ -457,7 +457,7 @@ FLAMEGPU_STEP_FUNCTION(etc_env_step) {
     for (int i = 0; i < 32; i++) {
         e_array_1[i] = i;  // fill array values
     }
-    std::array<int, 32> res1 = FLAMEGPU->environment.set<int, 32>("e_array_1", e_array_1);
+    FLAMEGPU->environment.set<int, 32>("e_array_1", e_array_1);
     // Test Set + Get for set by array index
     std::array<int, 32> e_array_2;
     for (int i = 0; i < 32; i++) {
