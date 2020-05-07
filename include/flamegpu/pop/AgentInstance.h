@@ -54,7 +54,6 @@ class AgentInstance {
     void setVariableUnchecked(const std::string &variable_name, const std::array<T, N> &value);
     template <typename T>
     void setVariableUnchecked(const std::string &variable_name, const unsigned int &array_index, const T &value);
-    
 };
 
 // Set a variable wihtout checking if the variable name is reserved or not. Used internally.
@@ -124,12 +123,10 @@ void AgentInstance::setVariableUnchecked(const std::string &variable_name, const
 // Public facing implementation, which check internally then call the relevant unchecked method.
 template <typename T>
 void AgentInstance::setVariable(const std::string &variable_name, const T &value) {
-
     if (!variable_name.empty() && variable_name[0] == '_') {
         THROW ReservedName("Cannot set value for reserved variables %s in AgentInstance::setVariable().",
                            variable_name.c_str());
     }
-    
     // Set the variable
     setVariableUnchecked<T>(variable_name, value);
 }
