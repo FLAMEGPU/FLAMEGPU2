@@ -2,11 +2,13 @@
 #define INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_BRUTEFORCE_H_
 
 #ifndef __CUDACC_RTC__
+// TODO: This should *not* be required in a .h file. Need to separate concerns between c++ and CUDA.
+#include <device_launch_parameters.h>
+
 #include <typeindex>
 #include <memory>
 #include <unordered_map>
 #include <string>
-
 
 #include "flamegpu/model/Variable.h"
 #include "flamegpu/gpu/CUDAErrorChecking.h"
@@ -14,9 +16,8 @@
 #include "flamegpu/util/nvtx.h"
 #include "flamegpu/runtime/cuRVE/curve.h"
 #endif  // __CUDACC_RTC__
+
 #include "flamegpu/runtime/messaging/None.h"
-
-
 
 struct ModelData;
 

@@ -5,9 +5,10 @@
 
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/model/AgentDescription.h"
-
-struct ModelData;
-struct LayerData;
+#include "flamegpu/model/ModelData.h"
+#include "flamegpu/model/LayerData.h"
+#include "flamegpu/runtime/AgentFunction.h"
+#include "flamegpu/model/AgentFunctionData.h"
 
 /**
  * Within the model hierarchy, this class represents an execution layer for a FLAMEGPU model

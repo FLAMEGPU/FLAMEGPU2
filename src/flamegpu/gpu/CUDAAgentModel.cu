@@ -3,7 +3,8 @@
 #include <algorithm>
 #include <string>
 
-#include "flamegpu/model/ModelData.h"
+#include "flamegpu/model/AgentFunctionData.h"
+#include "flamegpu/model/LayerData.h"
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/pop/AgentPopulation.h"
 #include "flamegpu/runtime/flamegpu_host_api.h"

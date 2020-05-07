@@ -11,9 +11,9 @@
 #include "flamegpu/model/Variable.h"
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/pop/AgentPopulation.h"
+#include "flamegpu/model/AgentData.h"
+
 class AgentFunctionDescription;
-struct ModelData;
-struct AgentData;
 
 /**
  * Within the model hierarchy, this class represents the definition of an agent for a FLAMEGPU model

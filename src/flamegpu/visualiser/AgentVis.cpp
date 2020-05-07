@@ -1,9 +1,8 @@
 #include "flamegpu/visualiser/AgentVis.h"
 
 #include "flamegpu/gpu/CUDAAgent.h"
-#include "flamegpu/model/ModelData.h"
-
-#include "FLAMEGPU_Visualisation.h"
+#include "flamegpu/model/AgentData.h"
+#include "FLAMEGPU_Visualisation.h"  // TODO - This should probably be flamegpu_visualiser/FLAMEGPU_Visualisation.h?
 
 AgentVis::AgentVis(CUDAAgent &_agent)
     : defaultConfig()
