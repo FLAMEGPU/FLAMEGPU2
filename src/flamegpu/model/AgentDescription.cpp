@@ -84,7 +84,7 @@ ModelData::size_type AgentDescription::getStatesCount() const {
 std::string AgentDescription::getInitialState() const {
     return agent->initial_state;
 }
-std::type_index AgentDescription::getVariableType(const std::string &variable_name) const {
+const std::type_index &AgentDescription::getVariableType(const std::string &variable_name) const {
     auto f = agent->variables.find(variable_name);
     if (f != agent->variables.end()) {
         return f->second.type;

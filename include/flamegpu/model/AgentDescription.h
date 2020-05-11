@@ -157,7 +157,7 @@ class AgentDescription {
      * @return The type of the named variable
      * @throws InvalidAgentVar If a variable with the name does not exist within the agent
      */
-    std::type_index getVariableType(const std::string &variable_name) const;
+    const std::type_index &getVariableType(const std::string &variable_name) const;
     /**
      * @param variable_name Name used to refer to the desired variable
      * @return The size of the named variable's type

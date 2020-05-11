@@ -20,7 +20,7 @@ endif()
 include(UseSWIG)
 
 # Include python
-#find_package(PythonLibs REQUIRED)
+find_package(PythonLibs REQUIRED)
 #include_directories(${PYTHON_INCLUDE_PATH})
 
 # Find Python
