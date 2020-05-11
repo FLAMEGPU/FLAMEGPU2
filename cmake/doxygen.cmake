@@ -34,18 +34,25 @@ function(create_doxygen_target FLAMEGPU_ROOT DOXY_OUT_DIR XML_PATH)
         set(DOXYGEN_UML_LOOK              YES)
         set(DOXYGEN_UML_LIMIT_NUM_FIELDS  50)
         set(DOXYGEN_TEMPLATE_RELATIONS    YES)
-        set(DOXYGEN_DOT_GRAPH_MAX_NODES   100)
-        set(DOXYGEN_MAX_DOT_GRAPH_DEPTH   0)
         set(DOXYGEN_DOT_TRANSPARENT       NO)
         set(DOXYGEN_CALL_GRAPH            YES)
         set(DOXYGEN_CALLER_GRAPH          YES)
         set(DOXYGEN_GENERATE_TREEVIEW     YES)
-        set(DOXYGEN_DOT_IMAGE_FORMAT      png) # can be  svg, but the add --> DOXYGEN_INTERACTIVE_SVG      = YES
         set(DOXYGEN_EXTRACT_PRIVATE       YES)
         set(DOXYGEN_EXTRACT_STATIC        YES)
         set(DOXYGEN_EXTRACT_LOCAL_METHODS NO)
         set(DOXYGEN_FILE_PATTERNS         "*.h" "*.cuh" "*.c" "*.cpp" "*.cu" "*.cuhpp" "*.md" "*.hh" "*.hxx" "*.hpp" "*.h++" "*.cc" "*.cxx" "*.c++")
         set(DOXYGEN_EXTENSION_MAPPING     "cu=C++" "cuh=C++" "cuhpp=C++")
+        # Limit diagram graph node count / depth for simply diagrams.
+        set(DOXYGEN_DOT_GRAPH_MAX_NODES   100)
+        set(DOXYGEN_MAX_DOT_GRAPH_DEPTH   0)
+        # Select diagram output format {png, YES/NO}, {svg, YES}, {svg, NO} 
+        set(DOXYGEN_DOT_IMAGE_FORMAT      png)
+        set(DOXYGEN_INTERACTIVE_SVG       NO)
+        # Replace full absolute paths with relative paths to the project root.
+        set(DOXYGEN_FULL_PATH_NAMES       YES)
+        set(DOXYGEN_STRIP_FROM_PATH       ${FLAMEGPU_ROOT})
+        set(DOXYGEN_STRIP_FROM_INC_PATH   ${FLAMEGPU_ROOT})
         # These are required for expanding FGPUException definition macros to be documented
         set(DOXYGEN_ENABLE_PREPROCESSING  YES)
         set(DOXYGEN_MACRO_EXPANSION       YES)
