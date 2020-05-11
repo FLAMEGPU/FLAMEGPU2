@@ -46,8 +46,9 @@ function(create_doxygen_target FLAMEGPU_ROOT DOXY_OUT_DIR XML_PATH)
         # Limit diagram graph node count / depth for simply diagrams.
         set(DOXYGEN_DOT_GRAPH_MAX_NODES   100)
         set(DOXYGEN_MAX_DOT_GRAPH_DEPTH   0)
-        # Select diagram output format {png, YES/NO}, {svg, YES}, {svg, NO} 
+        # Select diagram output format i.e png or svg
         set(DOXYGEN_DOT_IMAGE_FORMAT      png)
+        # If using svg the interactivity can be enabled if desired.
         set(DOXYGEN_INTERACTIVE_SVG       NO)
         # Replace full absolute paths with relative paths to the project root.
         set(DOXYGEN_FULL_PATH_NAMES       YES)
