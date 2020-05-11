@@ -1,6 +1,7 @@
-#include "gtest/gtest.h"
 #include "flamegpu/util/nvtx.h"
 #include "flamegpu/gpu/CUDAErrorChecking.h"
+
+#include "gtest/gtest.h"
 
 // Test nvtx versions, and whether or not use causes any potential issues.
 TEST(TestUtilNVTX, nvtx) {

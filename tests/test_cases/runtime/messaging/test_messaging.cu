@@ -1,6 +1,6 @@
-#include "gtest/gtest.h"
-
 #include "flamegpu/flame_api.h"
+
+#include "gtest/gtest.h"
 
 namespace test_messaging {
     const char *MODEL_NAME = "Model";

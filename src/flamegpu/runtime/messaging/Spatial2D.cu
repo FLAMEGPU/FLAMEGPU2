@@ -10,6 +10,8 @@
 #endif
 
 #include "flamegpu/runtime/messaging.h"
+#include "flamegpu/runtime/messaging/Spatial2D/Spatial2DHost.h"
+#include "flamegpu/runtime/messaging/Spatial2D/Spatial2DDevice.h"
 #include "flamegpu/gpu/CUDAMessage.h"
 #include "flamegpu/gpu/CUDAScatter.h"
 #include "flamegpu/util/nvtx.h"

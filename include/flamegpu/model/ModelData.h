@@ -12,6 +12,8 @@
 #include "flamegpu/runtime/flamegpu_host_api_macros.h"
 #include "flamegpu/runtime/messaging/BruteForce.h"
 
+
+class HostFunctionCallback;
 class EnvironmentDescription;
 struct AgentData;
 struct LayerData;
@@ -66,6 +68,11 @@ struct ModelData : std::enable_shared_from_this<ModelData>{
      */
     typedef std::set<FLAMEGPU_STEP_FUNCTION_POINTER> StepFunctionSet;
     /**
+     * Set of Step function callback pointers
+     * set<HostFunctionCallback>
+     */
+    typedef std::set<HostFunctionCallback*> HostFunctionCallbackSet;
+    /**
      * Set of Exit function pointers
      * set<FLAMEGPU_EXIT_FUNCTION_POINTER>
      */
@@ -96,14 +103,17 @@ struct ModelData : std::enable_shared_from_this<ModelData>{
      * Holds pointers to all of the init functions used by the model
      */
     InitFunctionSet initFunctions;
+    HostFunctionCallbackSet initFunctionCallbacks;
     /**
      * Holds pointers to all of the step functions used by the model
      */
     StepFunctionSet stepFunctions;
+    HostFunctionCallbackSet stepFunctionCallbacks;
     /**
      * Holds pointers to all of the exit functions used by the model
      */
     ExitFunctionSet exitFunctions;
+    HostFunctionCallbackSet exitFunctionCallbacks;
     /**
      * Holds pointers to all of the exit conditions used by the model
      */

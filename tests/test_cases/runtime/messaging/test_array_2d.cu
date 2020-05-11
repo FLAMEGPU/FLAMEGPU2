@@ -1,10 +1,10 @@
 #include <chrono>
 #include <algorithm>
 
-#include "gtest/gtest.h"
-
 #include "flamegpu/flame_api.h"
 #include "flamegpu/runtime/flamegpu_api.h"
+
+#include "gtest/gtest.h"
 
 namespace test_message_array_2d {
     const char *MODEL_NAME = "Model";

@@ -1,5 +1,6 @@
 #include <thrust/version.h>
 #include <cub/version.cuh>
+
 #include "gtest/gtest.h"
 
 TEST(TestDependencyVersions, ThrustVersion) {

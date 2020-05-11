@@ -13,10 +13,10 @@
  */
 
 #include "helpers/common.h"
+#include "flamegpu/flame_api.h"
 
 #include "gtest/gtest.h"
 
-#include "flamegpu/flame_api.h"
 namespace test_gpu_validation {
 FLAMEGPU_AGENT_FUNCTION(add_func, MsgNone, MsgNone) {
     // should've returned error if the type was not correct. Needs type check

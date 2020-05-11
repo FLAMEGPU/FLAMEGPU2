@@ -87,7 +87,7 @@ void CUDAAgent::mapRuntimeVariables(const AgentFunctionData& func) const {
         // Map RTC variables to agent function (these must be mapped before each function execution as the runtime pointer may have changed to the swapping)
         if (!func.rtc_func_name.empty()) {
             // get the rtc varibale ptr
-            const jitify::KernelInstantiation& instance = getRTCInstantiation(func.rtc_func_name);
+            const jitify::KernelInstantiation& instance = getRTCInstantiation(func.name);
             std::stringstream d_var_ptr_name;
             d_var_ptr_name << CurveRTCHost::getVariableSymbolName(mmp.first.c_str(), agent_hash + func_hash);
             CUdeviceptr d_var_ptr = instance.get_global_ptr(d_var_ptr_name.str().c_str());

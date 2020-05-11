@@ -3,6 +3,10 @@
 #include "flamegpu/gpu/CUDAMessage.h"
 #include "flamegpu/gpu/CUDAScatter.h"
 
+
+#include "flamegpu/runtime/messaging/Array2D/Array2DHost.h"
+#include "flamegpu/runtime/messaging/Array2D/Array2DDevice.h"
+
 /**
 * Sets the array index to store the message in
 */

@@ -10,10 +10,10 @@
  * > add() [per supported type, individual/array]
  */
 
-#include "gtest/gtest.h"
-
 #include "flamegpu/flame_api.h"
 #include "flamegpu/runtime/flamegpu_api.h"
+
+#include "gtest/gtest.h"
 
 namespace {
 const int ARRAY_TEST_LEN = 5;
@@ -268,65 +268,65 @@ TEST(EnvironmentDescriptionTest, ExceptionPropertyType_uint64_t) {
 }
 
 TEST(EnvironmentDescriptionTest, ExceptionPropertyLength_float) {
-    AddGet_SetGet_array_element_test<float>();
+    ExceptionPropertyLength_test<float>();
 }
 TEST(EnvironmentDescriptionTest, ExceptionPropertyLength_double) {
-    AddGet_SetGet_array_element_test<double>();
+    ExceptionPropertyLength_test<double>();
 }
 TEST(EnvironmentDescriptionTest, ExceptionPropertyLength_int8_t) {
-    AddGet_SetGet_array_element_test<int8_t>();
+    ExceptionPropertyLength_test<int8_t>();
 }
 TEST(EnvironmentDescriptionTest, ExceptionPropertyLength_uint8_t) {
-    AddGet_SetGet_array_element_test<uint8_t>();
+    ExceptionPropertyLength_test<uint8_t>();
 }
 TEST(EnvironmentDescriptionTest, ExceptionPropertyLength_int16_t) {
-    AddGet_SetGet_array_element_test<int16_t>();
+    ExceptionPropertyLength_test<int16_t>();
 }
 TEST(EnvironmentDescriptionTest, ExceptionPropertyLength_uint16_t) {
-    AddGet_SetGet_array_element_test<uint16_t>();
+    ExceptionPropertyLength_test<uint16_t>();
 }
 TEST(EnvironmentDescriptionTest, ExceptionPropertyLength_int32_t) {
-    AddGet_SetGet_array_element_test<int32_t>();
+    ExceptionPropertyLength_test<int32_t>();
 }
 TEST(EnvironmentDescriptionTest, ExceptionPropertyLength_uint32_t) {
-    AddGet_SetGet_array_element_test<uint32_t>();
+    ExceptionPropertyLength_test<uint32_t>();
 }
 TEST(EnvironmentDescriptionTest, ExceptionPropertyLength_int64_t) {
-    AddGet_SetGet_array_element_test<int64_t>();
+    ExceptionPropertyLength_test<int64_t>();
 }
 TEST(EnvironmentDescriptionTest, ExceptionPropertyLength_uint64_t) {
-    AddGet_SetGet_array_element_test<uint64_t>();
+    ExceptionPropertyLength_test<uint64_t>();
 }
 
 TEST(EnvironmentDescriptionTest, ExceptionPropertyRange_float) {
-    AddGet_SetGet_array_element_test<float>();
+    ExceptionPropertyRange_test<float>();
 }
 TEST(EnvironmentDescriptionTest, ExceptionPropertyRange_double) {
-    AddGet_SetGet_array_element_test<double>();
+    ExceptionPropertyRange_test<double>();
 }
 TEST(EnvironmentDescriptionTest, ExceptionPropertyRange_int8_t) {
-    AddGet_SetGet_array_element_test<int8_t>();
+    ExceptionPropertyRange_test<int8_t>();
 }
 TEST(EnvironmentDescriptionTest, ExceptionPropertyRange_uint8_t) {
-    AddGet_SetGet_array_element_test<uint8_t>();
+    ExceptionPropertyRange_test<uint8_t>();
 }
 TEST(EnvironmentDescriptionTest, ExceptionPropertyRange_int16_t) {
-    AddGet_SetGet_array_element_test<int16_t>();
+    ExceptionPropertyRange_test<int16_t>();
 }
 TEST(EnvironmentDescriptionTest, ExceptionPropertyRange_uint16_t) {
-    AddGet_SetGet_array_element_test<uint16_t>();
+    ExceptionPropertyRange_test<uint16_t>();
 }
 TEST(EnvironmentDescriptionTest, ExceptionPropertyRange_int32_t) {
-    AddGet_SetGet_array_element_test<int32_t>();
+    ExceptionPropertyRange_test<int32_t>();
 }
 TEST(EnvironmentDescriptionTest, ExceptionPropertyRange_uint32_t) {
-    AddGet_SetGet_array_element_test<uint32_t>();
+    ExceptionPropertyRange_test<uint32_t>();
 }
 TEST(EnvironmentDescriptionTest, ExceptionPropertyRange_int64_t) {
-    AddGet_SetGet_array_element_test<int64_t>();
+    ExceptionPropertyRange_test<int64_t>();
 }
 TEST(EnvironmentDescriptionTest, ExceptionPropertyRange_uint64_t) {
-    AddGet_SetGet_array_element_test<uint64_t>();
+    ExceptionPropertyRange_test<uint64_t>();
 }
 
 TEST(EnvironmentDescriptionTest, ExceptionPropertyDoesntExist) {

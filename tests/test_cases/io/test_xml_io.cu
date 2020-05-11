@@ -1,7 +1,6 @@
-#include "gtest/gtest.h"
-
 #include "flamegpu/flame_api.h"
 
+#include "gtest/gtest.h"
 
 namespace test_xml_io {
 bool validate_has_run = false;
