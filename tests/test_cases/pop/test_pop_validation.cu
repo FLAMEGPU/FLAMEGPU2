@@ -11,12 +11,11 @@
  * @see        https://github.com/FLAMEGPU/FLAMEGPU2_dev
  * @bug        No known bugs
  */
-
-#include "gtest/gtest.h"
-
 #include "helpers/common.h"
 
 #include "flamegpu/flame_api.h"
+
+#include "gtest/gtest.h"
 
 /**
  * @brief      To verify the correctness of agent population name and exception handler

@@ -17,6 +17,7 @@
 #include "flamegpu/util/compute_capability.cuh"
 #include "flamegpu/util/SignalHandlers.h"
 #include "flamegpu/runtime/cuRVE/curve_rtc.h"
+#include "flamegpu/runtime/HostFunctionCallback.h"
 
 
 std::atomic<int> CUDAAgentModel::active_instances;  // This value should default init to 0, specifying =0 was causing warnings on Windows.
@@ -414,8 +415,9 @@ bool CUDAAgentModel::step() {
                 // This will act as a reserve word
                 // which is added to variable hashes for agent creation on device
                 CUDAAgent& output_agent = getCUDAAgent(oa->name);
+
                 // Map vars with curve (this allocates/requests enough new buffer space if an existing version is not available/suitable)
-                output_agent.mapNewRuntimeVariables(*func_des, state_list_size, this->singletons->scatter, j);
+                output_agent.mapNewRuntimeVariables(cuda_agent, *func_des, state_list_size, this->singletons->scatter, j);
             }
 
 
@@ -628,29 +630,44 @@ bool CUDAAgentModel::step() {
             ++j;
         }
 
+        NVTX_PUSH("CUDAAgentModel::step::HostFunctions");
         // Execute all host functions attached to layer
         // TODO: Concurrency?
         assert(host_api);
         for (auto &stepFn : (*lyr)->host_functions) {
+            NVTX_RANGE("hostFunc");
             stepFn(this->host_api.get());
         }
+        // Execute all host function callbacks attached to layer
+        for (auto &stepFn : (*lyr)->host_functions_callbacks) {
+            NVTX_RANGE("hostFunc_swig");
+            stepFn->run(this->host_api.get());
+        }
         // If we have host layer functions, we might have host agent creation
-        if ((*lyr)->host_functions.size())
+        if ((*lyr)->host_functions.size() || ((*lyr)->host_functions_callbacks.size()))
             processHostAgentCreation(j);
         // Update environment on device
         singletons->environment.updateDevice(getInstanceID());
+        NVTX_POP();
 
         // cudaDeviceSynchronize();
     }
 
+    NVTX_PUSH("CUDAAgentModel::step::StepFunctions");
     // Execute step functions
     for (auto &stepFn : model->stepFunctions) {
-        NVTX_RANGE(std::string("stepFunc").c_str());
+        NVTX_RANGE("stepFunc");
         stepFn(this->host_api.get());
     }
+    // Execute step function callbacks
+    for (auto &stepFn : model->stepFunctionCallbacks) {
+        NVTX_RANGE("stepFunc_swig");
+        stepFn->run(this->host_api.get());
+    }
     // If we have step functions, we might have host agent creation
-    if (model->stepFunctions.size())
+    if (model->stepFunctions.size() || model->stepFunctionCallbacks.size())
         processHostAgentCreation(0);
+    NVTX_POP();
 
     // Execute exit conditions
     for (auto &exitCdns : model->exitConditions)
@@ -664,8 +681,20 @@ bool CUDAAgentModel::step() {
             incrementStepCounter();
             return false;
         }
+    // Execute exit condition callbacks
+    for (auto &exitCdns : model->exitConditionCallbacks)
+        if (exitCdns->run(this->host_api.get()) == EXIT) {
+#ifdef VISUALISATION
+            if (visualisation) {
+                visualisation->updateBuffers(step_count+1);
+            }
+#endif
+            // If there were any exit conditions, we also need to update the step count
+            incrementStepCounter();
+            return false;
+        }
     // If we have exit conditions functions, we might have host agent creation
-    if (model->exitConditions.size())
+    if (model->exitConditions.size() || model->exitConditionCallbacks.size())
         processHostAgentCreation(0);
 
 #ifdef VISUALISATION
@@ -711,13 +740,22 @@ void CUDAAgentModel::simulate() {
     // if they have agent creations then buffer space must be allocated for them
 
     // Execute init functions
-    for (auto &initFn : model->initFunctions)
+    NVTX_PUSH("CUDAAgentModel::step::InitFunctions");
+    for (auto &initFn : model->initFunctions) {
+        NVTX_RANGE("initFunc");
         initFn(this->host_api.get());
+    }
+    // Execute init function callbacks
+    for (auto &initFn : model->initFunctionCallbacks) {
+        NVTX_RANGE("initFunc_swig");
+        initFn->run(this->host_api.get());
+    }
     // Check if host agent creation was used in init functions
-    if (model->initFunctions.size())
+    if (model->initFunctions.size() || model->initFunctionCallbacks.size())
         processHostAgentCreation(0);
     // Update environment on device
     singletons->environment.updateDevice(getInstanceID());
+    NVTX_POP()
 
 #ifdef VISUALISATION
     if (visualisation) {
@@ -742,6 +780,8 @@ void CUDAAgentModel::simulate() {
     // Execute exit functions
     for (auto &exitFn : model->exitFunctions)
         exitFn(this->host_api.get());
+    for (auto &exitFn : model->exitFunctionCallbacks)
+        exitFn->run(this->host_api.get());
 
 #ifdef VISUALISATION
     if (visualisation) {

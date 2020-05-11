@@ -167,7 +167,7 @@ void CUDAMessage::mapReadRuntimeVariables(const AgentFunctionData& func, const C
         // Map RTC variables (these must be mapped before each function execution as the runtime pointer may have changed to the swapping)
         if (!func.rtc_func_name.empty()) {
             // get the rtc variable ptr
-            const jitify::KernelInstantiation& instance = cuda_agent.getRTCInstantiation(func.rtc_func_name);
+            const jitify::KernelInstantiation& instance = cuda_agent.getRTCInstantiation(func.name);
             std::stringstream d_var_ptr_name;
             d_var_ptr_name << "curve_rtc_ptr_" << agent_hash + func_hash + message_hash << "_" << mmp.first;
             CUdeviceptr d_var_ptr = instance.get_global_ptr(d_var_ptr_name.str().c_str());
@@ -220,7 +220,7 @@ void CUDAMessage::mapWriteRuntimeVariables(const AgentFunctionData& func, const 
         // Map RTC variables (these must be mapped before each function execution as the runtime pointer may have changed to the swapping)
         if (!func.rtc_func_name.empty()) {
             // get the rtc variable ptr
-            const jitify::KernelInstantiation& instance = cuda_agent.getRTCInstantiation(func.rtc_func_name);
+            const jitify::KernelInstantiation& instance = cuda_agent.getRTCInstantiation(func.name);
             std::stringstream d_var_ptr_name;
             d_var_ptr_name << "curve_rtc_ptr_" << agent_hash + func_hash + message_hash << "_" << mmp.first;
             CUdeviceptr d_var_ptr = instance.get_global_ptr(d_var_ptr_name.str().c_str());

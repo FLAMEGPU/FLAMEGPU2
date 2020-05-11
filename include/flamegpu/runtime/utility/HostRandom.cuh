@@ -95,4 +95,5 @@ inline unsigned char HostRandom::uniform(const unsigned char& min, const unsigne
     return static_cast<unsigned char>(rng.getDistribution<uint16_t>(dist));
 }
 
+
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_UTILITY_HOSTRANDOM_CUH_

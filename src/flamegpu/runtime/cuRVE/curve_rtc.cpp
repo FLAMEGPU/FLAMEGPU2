@@ -508,6 +508,17 @@ std::string CurveRTCHost::demangle(const char* verbose_name) {
     s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
         return !std::isspace(ch);
         }));
+#ifdef _MSC_VER
+    // int64_t is the only known problematic type in windows as it has a typeid().name() of __int64.
+    // This can be manually replaced
+    std::string int64_type = "__int64";
+    std::string int64_type_fixed = "long long int";
+    size_t start_pos = s.find(int64_type);
+    if (!(start_pos == std::string::npos))
+        s.replace(start_pos, int64_type.length(), int64_type_fixed);
+#endif
+
+    // map known basic types in
     return s;
 }
 

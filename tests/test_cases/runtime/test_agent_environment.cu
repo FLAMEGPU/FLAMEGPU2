@@ -4,11 +4,10 @@
  * Tests cover:
  * > get() [per supported type, individual/array/element]
  */
-
-#include "gtest/gtest.h"
-
 #include "flamegpu/flame_api.h"
 #include "flamegpu/runtime/flamegpu_api.h"
+
+#include "gtest/gtest.h"
 
 namespace {
 

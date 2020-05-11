@@ -162,12 +162,13 @@ class CUDAAgent : public AgentInterface {
     /**
      * Allocates a buffer for storing new agents into and
      * uses the cuRVE runtime to map variables for use with an agent function that has device agent birth
+     * @param func_agent The Cuda agent which the agent function belongs to (required so that RTC function instances can be obtained)
      * @param func The agent function being processed
      * @param maxLen The maximum number of new agents (this will be the size of the agent state executing func)
      * @param scatter Scatter instance and scan arrays to be used (CUDAAgentModel::singletons->scatter)
      * @param streamId This is required for scan compaction arrays and async
      */
-    void mapNewRuntimeVariables(const AgentFunctionData& func, const unsigned int &maxLen, CUDAScatter &scatter, const unsigned int &streamId);
+    void mapNewRuntimeVariables(const CUDAAgent& func_agent, const AgentFunctionData& func, const unsigned int &maxLen, CUDAScatter &scatter, const unsigned int &streamId);
     /**
      * Uses the cuRVE runtime to unmap the variables used by agent birth and
      * releases the buffer that was storing the data

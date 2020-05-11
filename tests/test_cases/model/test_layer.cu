@@ -1,7 +1,7 @@
-#include "gtest/gtest.h"
-
 #include "flamegpu/flame_api.h"
 #include "flamegpu/runtime/flamegpu_api.h"
+
+#include "gtest/gtest.h"
 
 namespace test_layer {
 FLAMEGPU_AGENT_FUNCTION(agent_fn1, MsgNone, MsgNone) {

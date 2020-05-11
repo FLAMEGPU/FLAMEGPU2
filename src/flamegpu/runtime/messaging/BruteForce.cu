@@ -1,4 +1,5 @@
-#include "flamegpu/runtime/messaging/BruteForce.h"
+#include "flamegpu/runtime/messaging/BruteForce/BruteForceHost.h"
+#include "flamegpu/runtime/messaging/BruteForce/BruteForceDevice.h"
 #include "flamegpu/model/AgentDescription.h"  // Used by Move-Assign
 #include "flamegpu/gpu/CUDAMessage.h"
 
@@ -96,7 +97,7 @@ std::string MsgBruteForce::Description::getName() const {
     return message->name;
 }
 
-std::type_index MsgBruteForce::Description::getVariableType(const std::string &variable_name) const {
+const std::type_index& MsgBruteForce::Description::getVariableType(const std::string &variable_name) const {
     auto f = message->variables.find(variable_name);
     if (f != message->variables.end()) {
         return f->second.type;

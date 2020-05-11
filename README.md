@@ -37,6 +37,9 @@ Only documentation can be built without the required dependencies (however Doxyg
 * [cpplint](https://github.com/cpplint/cpplint): Required for linting code
 * [Doxygen](http://www.doxygen.nl/): Required for building documentation
 * [git](https://git-scm.com/): Required by CMake for preparing GoogleTest, to build the test suite
+* [Python](https://www.python.org/) >= 3.x: required for python integration
+* [swig](http://www.swig.org/) >= 4: Required for python integration
+  * Swig 4.x will be automatically downloaded by CMake if not provided (if possible).
 
 ### Building FLAME GPU 2
 

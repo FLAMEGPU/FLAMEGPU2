@@ -2,54 +2,10 @@
 #include "flamegpu/model/AgentDescription.h"  // Used by Move-Assign
 #include "flamegpu/gpu/CUDAMessage.h"
 #include "flamegpu/gpu/CUDAScatter.h"
-#include "flamegpu/exception/FGPUDeviceException_device.h"
 
-/**
-* Sets the array index to store the message in
-*/
-__device__ void MsgArray2D::Out::setIndex(const size_type &x, const size_type &y) const {
-    unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
-    size_type index_1d =
-        y * metadata->dimensions[0] +
-        x;
-#ifndef NO_SEATBELTS
-    if (x >= metadata->dimensions[0] ||
-        y >= metadata->dimensions[1]) {
-        DTHROW("MsgArray2D index [%u, %u] is out of bounds [%u, %u]\n", x, y, metadata->dimensions[0], metadata->dimensions[1]);
-    }
-#endif
-    // set the variable using curve
-    Curve::setVariable<size_type>("___INDEX", combined_hash, index_1d, index);
+#include "flamegpu/runtime/messaging/Array2D/Array2DHost.h"
+// #include "flamegpu/runtime/messaging/Array2D/Array2DDevice.h"
 
-    // Set scan flag incase the message is optional
-    this->scan_flag[index] = 1;
-}
-__device__ MsgArray2D::In::Filter::Filter(const MetaData *_metadata, const Curve::NamespaceHash &_combined_hash, const size_type &x, const size_type &y, const size_type &_radius)
-    : radius(_radius)
-    , metadata(_metadata)
-    , combined_hash(_combined_hash) {
-    loc[0] = x;
-    loc[1] = y;
-}
-__device__ MsgArray2D::In::Filter::Message& MsgArray2D::In::Filter::Message::operator++() {
-    if (relative_cell[1] >= static_cast<int>(_parent.radius)) {
-        relative_cell[1] = -_parent.radius;
-        relative_cell[0]++;
-    } else {
-        relative_cell[1]++;
-    }
-    // Skip origin cell
-    if (relative_cell[0] == 0 && relative_cell[1] == 0) {
-        relative_cell[1]++;
-    }
-    // Wrap over boundaries
-    const unsigned int their_x = (this->_parent.loc[0] + relative_cell[0] + this->_parent.metadata->dimensions[0]) % this->_parent.metadata->dimensions[0];
-    const unsigned int their_y = (this->_parent.loc[1] + relative_cell[1] + this->_parent.metadata->dimensions[1]) % this->_parent.metadata->dimensions[1];
-    // Solve to 1 dimensional bin index
-    index_1d = their_y * this->_parent.metadata->dimensions[0] +
-        their_x;
-    return *this;
-}
 /**
  * Constructor
  * Allocates memory on device for message list length

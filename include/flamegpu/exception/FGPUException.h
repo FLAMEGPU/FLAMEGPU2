@@ -30,6 +30,8 @@ class FGPUException : public std::exception {
      */
      const char *what() const noexcept override;
 
+     virtual const char* exception_type() const = 0;
+
     /**
      * Sets internal members file and line, which are used by constructor
      */
@@ -62,6 +64,9 @@ class name : public FGPUException {\
         va_end(argp);\
         fprintf(stderr, "%s\n", err_message.c_str()); \
     }\
+    const char* exception_type() const override {\
+        return #name;\
+    }\
 }
 #else
 #define DERIVED_FGPUException(name, default_msg)\
@@ -72,6 +77,9 @@ class name : public FGPUException {\
         va_start(argp, format);\
         err_message += parseArgs(format, argp);\
         va_end(argp);\
+    }\
+    const char* exception_type() const override {\
+        return #name;\
     }\
 }
 #endif

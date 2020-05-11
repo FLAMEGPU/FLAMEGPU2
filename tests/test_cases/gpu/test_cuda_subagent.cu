@@ -1,7 +1,6 @@
-#include "gtest/gtest.h"
-
 #include "flamegpu/flame_api.h"
 
+#include "gtest/gtest.h"
 /***
  * Things to test on SubAgents
  * Simple:

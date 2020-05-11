@@ -1,7 +1,6 @@
-#include "gtest/gtest.h"
-
 #include "flamegpu/flame_api.h"
-#include "flamegpu/runtime/flamegpu_api.h"
+
+#include "gtest/gtest.h"
 
 namespace test_rtc_device_api {
 const unsigned int AGENT_COUNT = 64;
@@ -20,6 +19,30 @@ TEST(DeviceRTCAPITest, AgentFunction_empty) {
     agent.newVariable<float>("x");
     // add RTC agent function
     AgentFunctionDescription &func = agent.newRTCFunction("rtc_test_func", rtc_empty_agent_func);
+    func.setAllowAgentDeath(true);
+    model.newLayer().addAgentFunction(func);
+    // Init pop
+    AgentPopulation init_population(agent, AGENT_COUNT);
+    for (int i = 0; i< static_cast<int>(AGENT_COUNT); i++) {
+        AgentInstance instance = init_population.getNextInstance("default");
+        instance.setVariable<float>("x", static_cast<float>(i));
+    }
+    // Setup Model
+    CUDAAgentModel cuda_model(model);
+    cuda_model.setPopulationData(init_population);
+    // Run 1 step to ensure agent function compiles and runs
+    cuda_model.step();
+}
+
+/**
+ * Test an empty agent function to ensure that the RTC library can successful build and run a minimal example
+ */
+TEST(DeviceRTCAPITest, AgentFunction_differentName) {
+    ModelDescription model("model");
+    AgentDescription &agent = model.newAgent("agent_name");
+    agent.newVariable<float>("x");
+    // add RTC agent function
+    AgentFunctionDescription &func = agent.newRTCFunction("other_name", rtc_empty_agent_func);
     func.setAllowAgentDeath(true);
     model.newLayer().addAgentFunction(func);
     // Init pop

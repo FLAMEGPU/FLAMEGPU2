@@ -10,10 +10,9 @@
  * > defrag() [init uses this]
  */
 
-#include "gtest/gtest.h"
-
 #include "flamegpu/flame_api.h"
-#include "flamegpu/runtime/flamegpu_api.h"
+
+#include "gtest/gtest.h"
 
 namespace {
 const int TEST_LEN = 256;  // Agent count
