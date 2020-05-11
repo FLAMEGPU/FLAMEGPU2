@@ -561,25 +561,11 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, bool f
     std::string include_fgpu;
     include_fgpu = "-I" + std::string(env_inc_fgp2);
     options.push_back(include_fgpu);
-    // std::cout << "fgpu include option is " << include_fgpu << '\n';     // TODO: Remove DEBUG
 
     // cuda path
     std::string include_cuda;
     include_cuda = "--include-path=" + std::string(env_cuda_path) + "/include";
     options.push_back(include_cuda);
-    // std::cout << "cuda include option is " << include_cuda << '\n';     // TODO: Remove DEBUG
-
-    // add __CUDACC_RTC__ symbol
-    std::string rtc_symbol;
-    rtc_symbol = "-D__CUDACC_RTC__";
-    options.push_back(rtc_symbol);
-    // std::cout << "RTC pre-processor symbol is " << rtc_symbol << '\n';     // TODO: Remove DEBUG
-
-    // rdc
-    std::string rdc;
-    rdc = "-rdc=true";
-    options.push_back(rdc);
-    // std::cout << "rdc option is " << rdc << '\n';                       // TODO: Remove DEBUG
 
     // curve rtc header
     CurveRTCHost curve_header;
