@@ -1,6 +1,8 @@
 #ifndef INCLUDE_FLAMEGPU_UTIL_NVTX_H_
 #define INCLUDE_FLAMEGPU_UTIL_NVTX_H_
 
+#include <cstdint>
+
 /**
  * Utility namespace for handling of NVTX profiling markers/ranges, wrapped in macros to avoid performance impact if not enabled.
  * 

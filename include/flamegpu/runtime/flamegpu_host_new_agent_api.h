@@ -4,6 +4,8 @@
 #include <unordered_map>
 #include <string>
 
+#include "flamegpu/model/Variable.h"
+
 /**
 * This struct holds a map of how memory for a compact representation of some unknown vars needs to look
 */

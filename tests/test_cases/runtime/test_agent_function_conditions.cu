@@ -7,10 +7,10 @@
 
 #include <array>
 
-#include "gtest/gtest.h"
-
 #include "flamegpu/flame_api.h"
 #include "flamegpu/runtime/flamegpu_api.h"
+
+#include "gtest/gtest.h"
 
 
 namespace test_agent_function_conditions {

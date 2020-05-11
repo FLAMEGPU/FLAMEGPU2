@@ -17,10 +17,10 @@
 #include <tuple>
 #include <vector>
 
-#include "gtest/gtest.h"
-
 #include "flamegpu/flame_api.h"
 #include "helpers/common.h"
+
+#include "gtest/gtest.h"
 
 
 namespace test_agent_random {

@@ -10,6 +10,8 @@
 #include "flamegpu/model/ModelData.h"
 struct AgentFunctionData;
 class LayerDescription;
+class HostFunctionCallback;
+class HostFunctionConditionCallback;
 
 /**
  * This is the internal data store for LayerDescription
@@ -29,6 +31,11 @@ struct LayerData {
      * set<FLAMEGPU_HOST_FUNCTION_POINTER>
      */
     std::set<FLAMEGPU_HOST_FUNCTION_POINTER> host_functions;
+    /**
+     * Set of host function callbacks (used by SWIG interface)
+     * set<HostFunctionCallback*>
+     */
+    std::set<HostFunctionCallback*> host_functions_callbacks;
     /**
      * SubModel
      * (If present, layer can hold no host_functions or agent_functions)

@@ -28,13 +28,14 @@ class FLAMEGPU_HOST_API {
      * @todo Could move this behaviour to a seperate singleton class 
      */
     friend class HostAgentInstance;
+
+ public:
     // Typedefs repeated from CUDAAgentModel
     typedef std::vector<NewAgentStorage> AgentDataBuffer;
     typedef std::unordered_map<std::string, AgentDataBuffer> AgentDataBufferStateMap;
     typedef std::unordered_map<std::string, VarOffsetStruct> AgentOffsetMap;
     typedef std::unordered_map<std::string, AgentDataBufferStateMap> AgentDataMap;
 
- public:
     /**
      * Initailises pointers to 0
      * Stores reference of CUDAAgentModel

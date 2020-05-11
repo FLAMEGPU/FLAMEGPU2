@@ -6,14 +6,14 @@
  * The bulk of message specialisation is implemented within headers included at the bottom of this file
  */
 
-#include "flamegpu/runtime/messaging/None.h"
-#include "flamegpu/runtime/messaging/BruteForce.h"
-#include "flamegpu/runtime/messaging/Spatial2D.h"
-#include "flamegpu/runtime/messaging/Spatial3D.h"
-#include "flamegpu/runtime/messaging/Array.h"
-#include "flamegpu/runtime/messaging/Array2D.h"
-#include "flamegpu/runtime/messaging/Array3D.h"
-#include "flamegpu/runtime/messaging/Bucket.h"
+#include "flamegpu/runtime/messaging/None/NoneHost.h"
+#include "flamegpu/runtime/messaging/BruteForce/BruteForceHost.h"
+#include "flamegpu/runtime/messaging/Spatial2D/Spatial2DHost.h"
+#include "flamegpu/runtime/messaging/Spatial3D/Spatial3DHost.h"
+#include "flamegpu/runtime/messaging/Array/ArrayHost.h"
+#include "flamegpu/runtime/messaging/Array2D/Array2DHost.h"
+#include "flamegpu/runtime/messaging/Array3D/Array3DHost.h"
+#include "flamegpu/runtime/messaging/Bucket/BucketHost.h"
 
 /**
  * ######################################################

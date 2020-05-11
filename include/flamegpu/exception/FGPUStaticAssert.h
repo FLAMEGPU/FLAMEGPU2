@@ -61,6 +61,7 @@ template<class _Ty>
 struct _Is_IntType
     : _Cat_base<is_same<_Ty, unsigned char>::value
     || is_same<_Ty, char>::value
+    || is_same<_Ty, signed char>::value
     || is_same<_Ty, uint16_t>::value
     || is_same<_Ty, int16_t>::value
     || is_same<_Ty, uint32_t>::value

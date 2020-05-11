@@ -68,11 +68,15 @@ jobs:
 
     - name: Configure CMake
       id: configure
-      run: cmake . -B ${{ env.build_dir }} -G "${{ matrix.visual_studio }}" -A x64 -DBUILD_TESTS=${{ env.build_tests }} -DWARNINGS_AS_ERRORS=${{ env.werror }} -DCUDA_ARCH="${{ env.cuda_arch }}" -Werror=dev
+      run: cmake . -B ${{ env.build_dir }} -G "${{ matrix.visual_studio }}" -A x64 -DBUILD_TESTS=${{ env.build_tests }} -DWARNINGS_AS_ERRORS=${{ env.werror }} -DCUDA_ARCH="${{ env.cuda_arch }}" -Werror=dev -DBUILD_SWIG_PYTHON=ON -DBUILD_SWIG_PYTHON_VIRTUALENV=ON 
       shell: bash
 
     - name: Build flamegpu2
       run: cmake --build . --config ${{ env.config }} --target flamegpu2 --verbose
+      working-directory: ${{ env.build_dir }}
+
+    - name: Build pyflamegpu
+      run: cmake --build . --config ${{ env.config }} --target pyflamegpu --verbose
       working-directory: ${{ env.build_dir }}
 
     - name: Build tests

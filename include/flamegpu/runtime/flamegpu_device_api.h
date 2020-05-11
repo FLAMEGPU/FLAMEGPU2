@@ -11,6 +11,7 @@
  */
 
 #include <cassert>
+#include <cstdint>
 
 // #include "flamegpu/gpu/CUDAErrorChecking.h"            // required for CUDA error handling functions
 #ifndef __CUDACC_RTC__
@@ -24,7 +25,7 @@
 #include "flamegpu/gpu/CUDAScanCompaction.h"
 #include "flamegpu/runtime/AgentFunction.h"
 #include "flamegpu/runtime/AgentFunctionCondition.h"
-#include "flamegpu/runtime/messaging.h"
+#include "flamegpu/runtime/messaging_device.h"
 
 
 class FLAMEGPU_READ_ONLY_DEVICE_API {

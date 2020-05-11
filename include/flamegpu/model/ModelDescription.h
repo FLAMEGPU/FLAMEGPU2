@@ -8,7 +8,7 @@
 
 #include "flamegpu/model/ModelData.h"
 #include "flamegpu/sim/Simulation.h"
-#include "flamegpu/runtime/messaging/BruteForce.h"
+#include "flamegpu/runtime/messaging/BruteForce/BruteForceHost.h"
 
 class AgentDescription;
 class LayerDescription;
@@ -189,6 +189,30 @@ class ModelDescription {
      */
     void addExitFunction(FLAMEGPU_EXIT_FUNCTION_POINTER func_p);
     /**
+     * Adds an init function callback to the simulation. The callback objects is similar to adding via addInitFunction
+     * however the runnable function is encapsulated within an object which permits cross language support in swig.
+     * Init functions execute once before the simulation begins
+     * @param func_p Pointer to the desired init function callback
+     * @throws InvalidHostFunc If the init function has already been added to this model description
+     */
+    void addInitFunctionCallback(HostFunctionCallback *func_callback);
+    /**
+     * Adds an step function callback to the simulation. The callback objects is similar to adding via addStepFunction
+     * however the runnable function is encapsulated within an object which permits cross language support in swig.
+     * Exit functions execute once after the simulation ends
+     * @param func_callback Pointer to the desired exit function callback
+     * @throws InvalidHostFunc If the step function has already been added to this model description
+     */
+    void addStepFunctionCallback(HostFunctionCallback *func_callback);
+    /**
+     * Adds an exit function callback to the simulation. The callback objects is similar to adding via addExitFunction
+     * however the runnable function is encapsulated within an object which permits cross language support in swig.
+     * Exit functions execute once after the simulation ends
+     * @param func_callback Pointer to the desired exit function callback
+     * @throws InvalidHostFunc If the exit function has already been added to this model description
+     */
+    void addExitFunctionCallback(HostFunctionCallback *func_callback);
+    /**
      * Adds an exit condition function to the simulation
      * Exit conditions execute once per step, after all layers and step functions have been executed
      * If the condition returns false, the simulation exits early
@@ -196,6 +220,14 @@ class ModelDescription {
      * @throws InvalidHostFunc If the exit condition has already been added to this model description
      */
     void addExitCondition(FLAMEGPU_EXIT_CONDITION_POINTER func_p);
+    /**
+     * Adds an exit condition callback to the simulation
+     * Exit conditions execute once per step, after all layers and step functions have been executed
+     * If the condition returns false, the simulation exits early
+     * @param func_callback Pointer to the desired exit condition callback
+     * @throws InvalidHostFunc If the exit condition has already been added to this model description
+     */
+    void addExitConditionCallback(HostFunctionConditionCallback *func_callback);
 
     /**
      * @return The model's name

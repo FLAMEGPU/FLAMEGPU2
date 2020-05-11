@@ -6,10 +6,11 @@
 * > Do setVariable()/getVariable() throw exceptions on bad name/type
 * > Does setVariable() work
 */
-#include "gtest/gtest.h"
-
 #include "flamegpu/flame_api.h"
 #include "flamegpu/runtime/flamegpu_api.h"
+
+#include "gtest/gtest.h"
+
 
 namespace test_agent_population {
 const unsigned int INIT_AGENT_COUNT = 10;

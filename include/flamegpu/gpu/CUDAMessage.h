@@ -17,7 +17,7 @@
 
 // include sub classes
 #include "flamegpu/gpu/CUDAMessageList.h"
-#include "flamegpu/runtime/messaging/BruteForce.h"
+#include "flamegpu/runtime/messaging/BruteForce/BruteForceHost.h"
 
 // forward declare classes from other modules
 

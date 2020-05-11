@@ -1,8 +1,9 @@
 #include <cuda_runtime.h>
 
-#include "gtest/gtest.h"
 #include "flamegpu/util/compute_capability.cuh"
 #include "flamegpu/gpu/CUDAErrorChecking.h"
+
+#include "gtest/gtest.h"
 
 // Test the getting of a device's compute capability.
 TEST(TestUtilComputeCapability, getComputeCapability) {

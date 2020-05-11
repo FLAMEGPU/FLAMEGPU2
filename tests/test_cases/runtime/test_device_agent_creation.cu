@@ -9,10 +9,10 @@
 * > With birthing agent conditional state change
 */
 
-#include "gtest/gtest.h"
-
 #include "flamegpu/flame_api.h"
 #include "flamegpu/runtime/flamegpu_api.h"
+
+#include "gtest/gtest.h"
 
 
 namespace test_device_agent_creation {

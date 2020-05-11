@@ -1,9 +1,9 @@
-#include "gtest/gtest.h"
-
 #include "flamegpu/flame_api.h"
 #include "flamegpu/runtime/flamegpu_api.h"
 #include "flamegpu/util/compute_capability.cuh"
 #include "helpers/device_initialisation.h"
+
+#include "gtest/gtest.h"
 
 namespace test_cuda_agent_model {
     const char *MODEL_NAME = "Model";

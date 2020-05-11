@@ -3,9 +3,9 @@
 
 #include <array>
 
-#include "gtest/gtest.h"
-
 #include "flamegpu/flame_api.h"
+
+#include "gtest/gtest.h"
 
 namespace {
 const unsigned int TEST_LEN = 256;

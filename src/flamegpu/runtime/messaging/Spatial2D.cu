@@ -10,80 +10,13 @@
 #endif
 
 #include "flamegpu/runtime/messaging.h"
+#include "flamegpu/runtime/messaging/Spatial2D/Spatial2DHost.h"
+#include "flamegpu/runtime/messaging/Spatial2D/Spatial2DDevice.h"
 #include "flamegpu/gpu/CUDAMessage.h"
 #include "flamegpu/gpu/CUDAScatter.h"
 #include "flamegpu/util/nvtx.h"
 
 
-__device__ __forceinline__ MsgSpatial2D::GridPos2D getGridPosition2D(const MsgSpatial2D::MetaData *md, float x, float y) {
-    // Clamp each grid coord to 0<=x<dim
-    int gridPos[2] = {
-        static_cast<int>(floor((x / md->environmentWidth[0])*md->gridDim[0])),
-        static_cast<int>(floor((y / md->environmentWidth[1])*md->gridDim[1]))
-    };
-    MsgSpatial2D::GridPos2D rtn = {
-        gridPos[0] < 0 ? 0 : (gridPos[0] >= md->gridDim[0] ? static_cast<int>(md->gridDim[0] - 1) : gridPos[0]),
-        gridPos[1] < 0 ? 0 : (gridPos[1] >= md->gridDim[1] ? static_cast<int>(md->gridDim[1] - 1) : gridPos[1])
-    };
-    return rtn;
-}
-__device__ __forceinline__ unsigned int getHash2D(const MsgSpatial2D::MetaData *md, const MsgSpatial2D::GridPos2D &xyz) {
-    // Bound gridPos to gridDimensions
-    unsigned int gridPos[3] = {
-        (unsigned int)(xyz.x < 0 ? 0 : (xyz.x >= md->gridDim[0] - 1 ? md->gridDim[0] - 1 : xyz.x)),  // Only x should ever be out of bounds here
-        (unsigned int) xyz.y,  // xyz.y < 0 ? 0 : (xyz.y >= md->gridDim[1] - 1 ? md->gridDim[1] - 1 : xyz.y)
-    };
-    // Compute hash (effectivley an index for to a bin within the partitioning grid in this case)
-    return (unsigned int)(
-        (gridPos[1] * md->gridDim[0]) +                    // y
-        gridPos[0]);                                      // x
-}
-
-__device__ void MsgSpatial2D::Out::setLocation(const float &x, const float &y) const {
-    unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;  // + d_message_count;
-
-    // set the variables using curve
-    Curve::setVariable<float>("x", combined_hash, x, index);
-    Curve::setVariable<float>("y", combined_hash, y, index);
-
-    // Set scan flag incase the message is optional
-    this->scan_flag[index] = 1;
-}
-
-__device__ MsgSpatial2D::In::Filter::Filter(const MetaData* _metadata, const Curve::NamespaceHash &_combined_hash, const float& x, const float& y)
-    : metadata(_metadata)
-    , combined_hash(_combined_hash) {
-    loc[0] = x;
-    loc[1] = y;
-    cell = getGridPosition2D(_metadata, x, y);
-}
-__device__ MsgSpatial2D::In::Filter::Message& MsgSpatial2D::In::Filter::Message::operator++() {
-    cell_index++;
-    bool move_strip = cell_index >= cell_index_max;
-    while (move_strip) {
-        nextStrip();
-        cell_index = 0;
-        cell_index_max = 1;
-        if (relative_cell < 2) {
-            // Calculate the strips start and end hash
-            int absolute_cell_y = _parent.cell.y + relative_cell;
-            // Skip the strip if it is completely out of bounds
-            if (absolute_cell_y >= 0 && absolute_cell_y < _parent.metadata->gridDim[1]) {
-                unsigned int start_hash = getHash2D(_parent.metadata, { _parent.cell.x - 1, absolute_cell_y });
-                unsigned int end_hash = getHash2D(_parent.metadata, { _parent.cell.x + 1, absolute_cell_y });
-                // Lookup start and end indicies from PBM
-                cell_index = _parent.metadata->PBM[start_hash];
-                cell_index_max = _parent.metadata->PBM[end_hash + 1];
-            } else {
-                // Goto next strip
-                // Don't update move_strip
-                continue;
-            }
-        }
-        move_strip = cell_index >= cell_index_max;
-    }
-    return *this;
-}
 
 
 MsgSpatial2D::CUDAModelHandler::CUDAModelHandler(CUDAMessage &a)

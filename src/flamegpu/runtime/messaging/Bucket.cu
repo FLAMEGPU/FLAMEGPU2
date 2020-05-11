@@ -9,38 +9,13 @@
 #include <cub/cub.cuh>
 #endif
 
-#include "flamegpu/runtime/messaging.h"
+#include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/gpu/CUDAMessage.h"
 #include "flamegpu/gpu/CUDAScatter.h"
 #include "flamegpu/util/nvtx.h"
-#include "flamegpu/exception/FGPUDeviceException_device.h"
 
-__device__ MsgBucket::In::Filter::Filter(const MetaData* _metadata, const Curve::NamespaceHash &_combined_hash, const IntT& beginKey, const IntT& endKey)
-    : bucket_begin(0)
-    , bucket_end(0)
-    , metadata(_metadata)
-    , combined_hash(_combined_hash) {
-    // If key is in bounds
-    if (beginKey >= metadata->min && endKey < metadata->max && beginKey <= endKey) {
-        bucket_begin = metadata->PBM[beginKey - metadata->min];
-        bucket_end = metadata->PBM[endKey - metadata->min];
-    }
-}
-
-__device__ void MsgBucket::Out::setKey(const IntT &key) const {
-    unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;  // + d_message_count;
-
-#ifndef NO_SEATBELTS
-    if (key < metadata->min || key >= metadata->max) {
-        DTHROW("MsgArray key %u is out of range [%d, %d).\n", key, metadata->min, metadata->max);
-    }
-#endif
-    // set the variables using curve
-    Curve::setVariable<IntT>("_key", combined_hash, key, index);
-
-    // Set scan flag incase the message is optional
-    this->scan_flag[index] = 1;
-}
+#include "flamegpu/runtime/messaging/Bucket/BucketHost.h"
+// #include "flamegpu/runtime/messaging/Bucket/BucketDevice.h"
 
 MsgBucket::CUDAModelHandler::CUDAModelHandler(CUDAMessage &a)
     : MsgSpecialisationHandler()

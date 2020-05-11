@@ -3,6 +3,7 @@
 cmake_minimum_required(VERSION VERSION 3.12 FATAL_ERROR)
 
 project(FLAMEGPU2 LANGUAGES NONE)
+set(FLAMEGPU_PROJECT_VERSION "2.0.0")
 
 # Don't create installation scripts (and hide CMAKE_INSTALL_PREFIX from cmake-gui)
 set(CMAKE_SKIP_INSTALL_RULES TRUE)
@@ -33,6 +34,9 @@ if(NOT CMAKE_CUDA_COMPILER OR CMAKE_CUDA_COMPILER_VERSION VERSION_LESS ${MINIMUM
     return()
 endif()
 
+# include for dependent modules
+include(CMakeDependentOption)
+
 # Option to enable/disable building the static library
 option(BUILD_FLAMEGPU2 "Enable building FLAMEGPU2 library" ON)
 
@@ -46,6 +50,9 @@ option(BUILD_EXAMPLE_CIRCLES_SPATIAL_3D "Enable building examples/circles_spatia
 option(BUILD_EXAMPLE_GAME_OF_LIFE "Enable building examples/game_of_life" OFF)
 option(BUILD_EXAMPLE_HOST_FUNCTIONS "Enable building examples/host_functions" OFF)
 option(BUILD_EXAMPLE_RTC_EXAMPLE "Enable building examples/rtc_example" OFF)
+option(BUILD_SWIG_PYTHON "Enable python bindings via SWIG" OFF)
+cmake_dependent_option(BUILD_SWIG_PYTHON_VIRTUALENV "Enable building of SWIG Python Virtual Env for Python Testing" OFF
+                       "BUILD_SWIG_PYTHON" OFF)
 
 # Option to enable/disable building the static library
 option(VISUALISATION "Enable visualisation support" OFF)
@@ -126,6 +133,10 @@ endif()
 # Add the tests directory (if required)
 if(BUILD_TESTS)
     add_subdirectory(tests)
+endif()
+
+if(BUILD_SWIG_PYTHON)
+    add_subdirectory(swig)
 endif()
 
 # Put all_lint within Lint filter
