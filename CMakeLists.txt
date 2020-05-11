@@ -46,6 +46,7 @@ option(BUILD_EXAMPLE_GAME_OF_LIFE "Enable building examples/game_of_life" OFF)
 option(BUILD_EXAMPLE_CIRCLES_BRUTE_FORCE "Enable building examples/circles_brute_force" OFF)
 option(BUILD_EXAMPLE_CIRCLES_SPATIAL_3D "Enable building examples/circles_spatial_3d" OFF)
 option(BUILD_EXAMPLE_RTC_EXAMPLE "Enable building examples/rtc_example" OFF)
+option(BUILD_SWIG_PYTHON "Enable python bindings via SWIG" OFF)
 
 # Option to enable/disable building the static library
 option(VISUALISATION "Enable visualisation support" OFF)
@@ -100,6 +101,10 @@ endif()
 # Add the tests directory (if required)
 if(BUILD_TESTS)
     add_subdirectory(tests)
+endif()
+
+if(BUILD_SWIG_PYTHON)
+    add_subdirectory(swig)
 endif()
 
 # Put all_lint within Lint filter

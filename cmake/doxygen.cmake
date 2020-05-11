@@ -38,6 +38,7 @@ function(create_doxygen_target FLAMEGPU_ROOT DOXY_OUT_DIR XML_PATH)
         set(DOXYGEN_MAX_DOT_GRAPH_DEPTH   0)
         set(DOXYGEN_DOT_TRANSPARENT       NO)
         set(DOXYGEN_CALL_GRAPH            YES)
+		set(DOXYGEN_RECURSIVE             YES)
         set(DOXYGEN_CALLER_GRAPH          YES)
         set(DOXYGEN_GENERATE_TREEVIEW     YES)
         set(DOXYGEN_DOT_IMAGE_FORMAT      png) # can be  svg, but the add --> DOXYGEN_INTERACTIVE_SVG      = YES
