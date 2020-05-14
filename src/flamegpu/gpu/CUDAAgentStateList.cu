@@ -408,6 +408,7 @@ void CUDAAgentStateList::scatterNew(const unsigned int &newSize, const unsigned 
         agent.getAgentDescription().variables,
         d_new_list, d_list,
         newSize, current_list_size);
+    if (new_births == 0) return;
     // Init new of dependents
     if (dependent_state) {
         dependent_state->addAgents(new_births, streamId);

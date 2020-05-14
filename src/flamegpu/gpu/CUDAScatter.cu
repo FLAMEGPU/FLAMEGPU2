@@ -323,6 +323,8 @@ void CUDAScatter::broadcastInit(
     const std::map<std::string, void*> &out,
     const unsigned int &inCount,
     const unsigned int outIndexOffset) {
+    // No variables means no work to do
+    if (vars.size() == 0) return;
     // 1 thread per agent variable
     const unsigned int threadCount = static_cast<unsigned int>(vars.size()) * inCount;
     int blockSize = 0;  // The launch configurator returned block size

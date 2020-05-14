@@ -210,7 +210,7 @@ void CUDASubAgentStateList::addAgents(const unsigned int &new_births, const unsi
     assert(agent.getMaximumListSize() >= current_list_size + new_births);
     CUDAScatter &scatter = CUDAScatter::getInstance(streamId);
     scatter.broadcastInit(
-        agent.getAgentDescription().variables,
+        dynamic_cast<CUDASubAgent&>(agent).unmappedVariables(),
         d_list,
         new_births, getCUDAStateListSize());
     // Init new of dependent

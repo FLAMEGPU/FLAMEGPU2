@@ -17,6 +17,17 @@ CUDASubAgent::CUDASubAgent(const AgentData &description, const CUDAAgentModel& c
         state_map.at(s_pair.first) = std::make_shared<CUDASubAgentStateList>(*this, master_agent->getAgentStateList(s_pair.second), _mapping);
     }
     master_agent->setDependent(this);
+    // Build a map of unmapped variables
+    // for each variable allocate a device array and add to map
+    for (const auto &mm : description.variables) {
+        // get the variable name
+        const std::string sub_var_name = mm.first;
+        const auto map = mapping->variables.find(sub_var_name);
+        // Only handle variables which are not mapped, unless we're handling new list
+        if (map == mapping->variables.end()) {
+            unmapped_variables.emplace(mm);  // Maybe not great, we're setting a reference (though they both should never change)
+        }
+    }
 }
 
 void CUDASubAgent::resize(const unsigned int &newSize, const unsigned int &streamId) {

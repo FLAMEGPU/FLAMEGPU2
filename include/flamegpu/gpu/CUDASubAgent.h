@@ -56,8 +56,10 @@ class CUDASubAgent : public CUDAAgent {
         unsigned int streamId,
         unsigned int srcListSize,
         unsigned int destListSize);
+    const VariableMap &unmappedVariables() const { return unmapped_variables; }
 
  private:
+    VariableMap unmapped_variables;
     const std::unique_ptr<CUDAAgent> &master_agent;
     const std::shared_ptr<const SubAgentData> &mapping;
 };
