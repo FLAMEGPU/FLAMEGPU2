@@ -70,8 +70,6 @@ bool CUDAAgentModel::step() {
         fprintf(stdout, "Processing Simulation Step %u\n", step_count);
     }
 
-    step_count++;
-
     unsigned int nStreams = 1;
     std::string message_name;
     Curve::NamespaceHash message_name_inp_hash = 0;
@@ -482,10 +480,12 @@ bool CUDAAgentModel::step() {
 #ifdef VISUALISATION
             if (visualisation) {
                 NVTX_PUSH("CUDAAgentModel::step::ExitConditions::UpdateVisualisation");
-                visualisation->updateBuffers(step_count);
+                visualisation->updateBuffers(step_count+1);
                 NVTX_POP();
             }
 #endif
+            // If there were any exit conditions, we also need to update the step count
+            step_count++;
             return false;
         }
     // If we have exit conditions functions, we might have host agent creation
@@ -496,10 +496,12 @@ bool CUDAAgentModel::step() {
 #ifdef VISUALISATION
         if (visualisation) {
             NVTX_PUSH("CUDAAgentModel::step::UpdateVisualisation");
-            visualisation->updateBuffers(step_count);
+            visualisation->updateBuffers(step_count+1);
             NVTX_POP();
         }
 #endif
+    // Update step count at the end of the step - when it has completed.
+    step_count++;
     return true;
 }
 

@@ -75,6 +75,12 @@ class FLAMEGPU_HOST_API {
      */
     const HostEnvironment environment;
 
+    /**
+     * Access the current stepCount
+     * @return the current step count, 0 indexed unsigned.
+     */
+    unsigned int getStepCounter() const;
+
  private:
     /**
      * Used internally for tracking what CUB has already calculated temp memory for
