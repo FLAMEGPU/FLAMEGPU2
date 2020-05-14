@@ -1,8 +1,8 @@
 ---
 name: Bug report
-about: Create a report to help us improve
-title: '[BugReport]'
-labels: ''
+about: Report a problem with flamegpu2
+title: ''
+labels: triage required
 assignees: ''
 
 ---
@@ -27,6 +27,7 @@ If applicable, add screenshots to help explain your problem.
  - OS: [e.g. Ubuntu 16.04, Windows 10]
  - CUDA version: [e.g. 10.1]
  - GPU [e.g. Titan X (Pascal)]
+ - GPU Driver Version [e.g. 445.75]
 
 
 **Additional context**
