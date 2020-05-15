@@ -47,13 +47,13 @@ FLAMEGPU_EXIT_FUNCTION(exit_testGetStepCounter) {
 TEST(hostAPITest, getStepCounter) {
     ModelDescription model("model");
     AgentDescription &agent = model.newAgent("agent");
-    
+
     model.addInitFunction(init_testGetStepCounter);
     model.newLayer().addHostFunction(host_testGetStepCounter);
     model.addStepFunction(step_testGetStepCounter);
     model.addExitCondition(exitCondition_testGetStepCounter);
     model.addExitFunction(exit_testGetStepCounter);
-    
+
     // Init pop
     const unsigned int agentCount = 1;
     AgentPopulation init_population(agent, agentCount);

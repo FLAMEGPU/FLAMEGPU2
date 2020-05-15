@@ -485,7 +485,7 @@ bool CUDAAgentModel::step() {
             }
 #endif
             // If there were any exit conditions, we also need to update the step count
-            step_count++;
+            incrementStepCounter();
             return false;
         }
     // If we have exit conditions functions, we might have host agent creation
@@ -501,7 +501,7 @@ bool CUDAAgentModel::step() {
         }
 #endif
     // Update step count at the end of the step - when it has completed.
-    step_count++;
+    incrementStepCounter();
     return true;
 }
 
@@ -776,6 +776,8 @@ void CUDAAgentModel::initialiseSingletons() {
 
         // Populate the environment properties in constant Cache
         singletons->environment.init(model->name, *model->environment);
+        // Add the CUDAAgentModel specific variables(s)
+        singletons->environment.add({model->name, "_stepCount"}, 0u, false);
 
         // Reinitialise random for this simulation instance
         singletons->rng.reseed(getSimulationConfig().random_seed);
@@ -783,7 +785,7 @@ void CUDAAgentModel::initialiseSingletons() {
         singletonsInitialised = true;
     }
 
-    // init RTC
+    // Ensure RTC is set up.
     initialiseRTC();
 }
 
@@ -811,7 +813,7 @@ void CUDAAgentModel::initialiseRTC() {
         }
 
         // Initialise device environment for RTC
-        singletons->environment.initRTC(*this, *model->environment);
+        singletons->environment.initRTC(*this);
 
         rtcInitialised = true;
     }
@@ -963,3 +965,7 @@ void CUDAAgentModel::RTCSetEnvironmentVariable(const char* variable_name, const 
     }
 }
 
+void CUDAAgentModel::incrementStepCounter() {
+    this->step_count++;
+    this->singletons->environment.set({model->name, "_stepCount"}, this->step_count);
+}

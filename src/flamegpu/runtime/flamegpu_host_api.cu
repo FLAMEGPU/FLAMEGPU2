@@ -97,4 +97,4 @@ void FLAMEGPU_HOST_API::resizeTempStorage(const CUB_Config &cc, const unsigned i
  */
 unsigned int FLAMEGPU_HOST_API::getStepCounter() const {
     return agentModel.getStepCounter();
-};
+}

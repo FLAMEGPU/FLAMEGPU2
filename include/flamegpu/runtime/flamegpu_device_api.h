@@ -65,6 +65,14 @@ class FLAMEGPU_READ_ONLY_DEVICE_API {
      */
     const DeviceEnvironment environment;
 
+    /**
+     * Access the current stepCount
+     * @return the current step count, 0 indexed unsigned.
+     */
+    __forceinline__ __device__ unsigned int getStepCounter() const {
+        return environment.get<unsigned int>("_stepCount");
+    }
+
  protected:
     Curve::NamespaceHash agent_func_name_hash;
 

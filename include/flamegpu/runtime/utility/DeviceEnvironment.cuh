@@ -93,7 +93,9 @@ __device__ __forceinline__ T DeviceEnvironment::get(const char(&name)[N]) const 
     } else {
         curve_internal::d_curve_error = Curve::DEVICE_ERROR_UNKNOWN_VARIABLE;
         assert(false);
-        return *reinterpret_cast<T*>(reinterpret_cast<void*>(&flamegpu_internal::c_deviceEnvErrorPattern));
+        T rtn;
+        memcpy(&rtn, &flamegpu_internal::c_deviceEnvErrorPattern, sizeof(T));
+        return rtn;
     }
 }
 template<typename T, unsigned int N>
@@ -108,7 +110,9 @@ __device__ __forceinline__ T DeviceEnvironment::get(const char(&name)[N], const 
     } else {
         curve_internal::d_curve_error = Curve::DEVICE_ERROR_UNKNOWN_VARIABLE;
         assert(false);
-        return *reinterpret_cast<T*>(reinterpret_cast<void*>(&flamegpu_internal::c_deviceEnvErrorPattern));
+        T rtn;
+        memcpy(&rtn, &flamegpu_internal::c_deviceEnvErrorPattern, sizeof(T));
+        return rtn;
     }
 }
 

@@ -210,4 +210,89 @@ TEST(DeviceAPITest, ArrayUnsuitable) {
     }
 }
 
+// Test device_api::getStepCounter()
+FLAMEGPU_AGENT_FUNCTION(agent_testGetStepCounter, MsgNone, MsgNone) {
+    FLAMEGPU->setVariable<unsigned int>("step", FLAMEGPU->getStepCounter());
+    return ALIVE;
+}
+TEST(DeviceAPITest, getStepCounter) {
+    ModelDescription model("model");
+    AgentDescription &agent = model.newAgent("agent");
+    agent.newVariable<unsigned int>("step");
+    // Do nothing, but ensure variables are made available on device
+    AgentFunctionDescription &func = agent.newFunction("some_function", agent_testGetStepCounter);
+    model.newLayer().addAgentFunction(func);
+    // Init pop
+    const unsigned int agentCount = 1;
+    AgentPopulation init_population(agent, agentCount);
+    for (int i = 0; i< static_cast<int>(agentCount); i++) {
+        AgentInstance instance = init_population.getNextInstance("default");
+        instance.setVariable<unsigned int>("step", 0);
+    }
+    // Setup Model
+    CUDAAgentModel cuda_model(model);
+    cuda_model.setPopulationData(init_population);
+
+    const unsigned int STEPS = 2;
+    for (unsigned int step = 0; step < STEPS; step++) {
+        cuda_model.step();
+        // Recover data from device
+        AgentPopulation population(agent);
+        cuda_model.getPopulationData(population);
+        // Check data is correct.
+        for (unsigned int i = 0; i < population.getCurrentListSize(); i++) {
+            AgentInstance instance = population.getInstanceAt(i);
+            // Check neighbouring vars are correct
+            EXPECT_EQ(instance.getVariable<unsigned int>("step"), step);
+        }
+    }
+}
+
+// Only run the function based on the step accessed in the function condition.
+// I.e. only run the function once.
+FLAMEGPU_AGENT_FUNCTION_CONDITION(condition_testGetStepCounter) {
+    return FLAMEGPU->getStepCounter() == 0;
+}
+FLAMEGPU_AGENT_FUNCTION(condition_testGetStepCounterFunction, MsgNone, MsgNone) {
+    // Increment the counter of the number of times the agent ran the function.
+    unsigned int count = FLAMEGPU->getVariable<unsigned int>("count");
+    FLAMEGPU->setVariable<unsigned int>("count", count + 1);
+    return ALIVE;
+}
+TEST(DeviceAPITest, getStepCounterFunctionCondition) {
+    ModelDescription model("model");
+    AgentDescription &agent = model.newAgent("agent");
+    agent.newVariable<unsigned int>("count");
+    // Do nothing, but ensure variables are made available on device
+    AgentFunctionDescription &func = agent.newFunction("some_function", condition_testGetStepCounterFunction);
+    func.setFunctionCondition(condition_testGetStepCounter);
+    model.newLayer().addAgentFunction(func);
+    // Init pop
+    const unsigned int agentCount = 1;
+    AgentPopulation init_population(agent, agentCount);
+    for (int i = 0; i< static_cast<int>(agentCount); i++) {
+        AgentInstance instance = init_population.getNextInstance("default");
+        instance.setVariable<unsigned int>("count", 0);
+    }
+    const unsigned int STEPS = 4;
+    // Setup Model
+    CUDAAgentModel cuda_model(model);
+    cuda_model.setPopulationData(init_population);
+
+    // RUN STEPS steps of simulation.
+    cuda_model.SimulationConfig().steps = STEPS;
+    cuda_model.simulate();
+
+    // Recover data from device
+    AgentPopulation population(agent);
+    cuda_model.getPopulationData(population);
+    // Check data is correct.
+    const unsigned int EXPECTED_COUNT = 1;
+    for (unsigned int i = 0; i < population.getCurrentListSize(); i++) {
+        AgentInstance instance = population.getInstanceAt(i);
+        // Check neighbouring vars are correct
+        EXPECT_EQ(instance.getVariable<unsigned int>("count"), EXPECTED_COUNT);
+    }
+}
+
 }  // namespace test_device_api

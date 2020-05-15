@@ -624,11 +624,15 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, bool f
         }
     }
 
-    // @todo - this does not belong here.
     // Set Environment variables in curve
     Curve::NamespaceHash model_hash = Curve::variableRuntimeHash(cuda_model.getModelDescription().name.c_str());
-    for (auto prop : cuda_model.getModelDescription().environment->getPropertiesMap()) {
-        curve_header.registerEnvVariable(prop.first.c_str(), model_hash, prop.second.type.name(), prop.second.elements);
+    for (auto p : EnvironmentManager::getInstance().getPropertiesMap()) {
+        if (p.first.first == cuda_model.getModelDescription().name) {
+            const char* variableName = p.first.second.c_str();
+            const char* type = p.second.type.name();
+            unsigned int elements = p.second.elements;
+            curve_header.registerEnvVariable(variableName, model_hash, type, elements);
+        }
     }
 
     // get the dynamically generated header from curve rtc
