@@ -68,14 +68,21 @@ CUDAAgentModel::CUDAAgentModel(const std::shared_ptr<SubModelData> &submodel_des
     // create new cuda agent and add to the map
     for (auto it = am.cbegin(); it != am.cend(); ++it) {
         // Locate the mapping
-        std::shared_ptr<SubAgentData> &mapping = submodel_desc->subagents.at(it->second->name);
-        // Locate the master agent
-        std::shared_ptr<AgentData> masterAgentDesc = mapping->masterAgent.lock();
-        if (!masterAgentDesc) {
-            THROW InvalidParent("Master agent description has expired, in CUDAAgentModel SubModel constructor.\n");
+        auto _mapping = submodel_desc->subagents.find(it->second->name);
+        if (_mapping != submodel_desc->subagents.end()) {
+            // Agent is mapped, create subagent
+            std::shared_ptr<SubAgentData> &mapping = _mapping->second;
+                                                                                                     // Locate the master agent
+            std::shared_ptr<AgentData> masterAgentDesc = mapping->masterAgent.lock();
+            if (!masterAgentDesc) {
+                THROW InvalidParent("Master agent description has expired, in CUDAAgentModel SubModel constructor.\n");
+            }
+            std::unique_ptr<CUDAAgent> &masterAgent = master_model->agent_map.at(masterAgentDesc->name);
+            agent_map.emplace(it->first, std::make_unique<CUDASubAgent>(*it->second, *this, masterAgent, mapping));
+        } else {
+            // Agent is not mapped, create regular agent
+            agent_map.emplace(it->first, std::make_unique<CUDAAgent>(*it->second, *this)).first;
         }
-        std::unique_ptr<CUDAAgent> &masterAgent = master_model->agent_map.at(masterAgentDesc->name);
-        agent_map.emplace(it->first, std::make_unique<CUDASubAgent>(*it->second, *this, masterAgent, mapping));
     }  // insert into map using value_type
 
     // populate the CUDA message map (Sub Messages not currently supported)
