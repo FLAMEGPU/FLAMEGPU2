@@ -58,7 +58,6 @@ FLAMEGPU_AGENT_FUNCTION(AddOne, MsgNone, MsgNone) {
 }
 FLAMEGPU_AGENT_FUNCTION(AddOne2, MsgNone, MsgNone) {
     const unsigned int v = FLAMEGPU->getVariable<unsigned int>("AVar1");
-    const unsigned int sub_v = FLAMEGPU->getVariable<unsigned int>("SubVar1");
     FLAMEGPU->setVariable<unsigned int>("AVar1", v + 1);
     return ALIVE;
 }
@@ -86,13 +85,13 @@ FLAMEGPU_AGENT_FUNCTION(KillEven, MsgNone, MsgNone) {
 FLAMEGPU_AGENT_FUNCTION(BirthEven, MsgNone, MsgNone) {
     const unsigned int v = FLAMEGPU->getVariable<unsigned int>("i");
     FLAMEGPU->setVariable<unsigned int>("i", v * 3);
-    if (FLAMEGPU->getVariable<unsigned int>("AVar2") > UINT_MAX - 1000) {
+    if (FLAMEGPU->getVariable<unsigned int>("AVar2") > UINT_MAX - 2000) {
         // First iteration
         if (v % 4 == 0) {
             FLAMEGPU->agent_out.setVariable("i", v * 3);
             FLAMEGPU->agent_out.setVariable("AVar2", 4000 + v);
         }
-    } else if (FLAMEGPU->getVariable<unsigned int>("AVar2") > UINT_MAX - 3000) {
+    } else if (FLAMEGPU->getVariable<unsigned int>("AVar2") > UINT_MAX - 4000) {
         // Second iteration
         if ((v / 3) % 4 == 0) {
             FLAMEGPU->agent_out.setVariable("i", v * 3);
@@ -349,7 +348,113 @@ TEST(TestCUDASubAgent, AgentBirth_BeforeSubModel) {
         ma.newFunction("2", AddTen);
         auto &smd = m.newSubModel("sub", sm);
         smd.bindAgent(AGENT_NAME, AGENT_NAME, true, true);  // auto map vars and states
+        m.newLayer().addAgentFunction(AddTen);
         m.newLayer().addAgentFunction(BirthEven);
+        m.newLayer().addSubModel("sub");
+        m.newLayer().addAgentFunction(AddTen);
+    }
+    // Init Agents
+    AgentPopulation pop(ma, static_cast<unsigned int>(AGENT_COUNT));
+    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+        AgentInstance ai = pop.getNextInstance();
+        ai.setVariable<unsigned int>(AGENT_VAR_i, static_cast<unsigned int>(i));
+        ai.setVariable<unsigned int>(AGENT_VAR1_NAME, static_cast<unsigned int>(i));
+        ai.setVariable<unsigned int>(AGENT_VAR2_NAME, std::numeric_limits<unsigned int>::max() - i);
+        // Other vars all default init
+    }
+    // Init Model
+    CUDAAgentModel c(m);
+    c.SimulationConfig().steps = 1;
+    c.applyConfig();
+    c.setPopulationData(pop);
+    // Run Model
+    c.step();
+    // Check result
+    // Mapped var = init + af +  af + submodel + af
+    const unsigned int mapped_result = +10 + 1 + 10;
+    // Unmapped var = init + af + af + af
+    const unsigned int unmapped_result = std::numeric_limits<unsigned int>::max() - 1000 - 1000;
+    c.getPopulationData(pop);
+    EXPECT_EQ(pop.getCurrentListSize(), static_cast<unsigned int>(AGENT_COUNT*1.25));    // if AGENT_COUNT != 1000 this test may fail
+    for (unsigned int i = 0; i < pop.getCurrentListSize(); ++i) {
+        AgentInstance ai = pop.getInstanceAt(i);
+        const unsigned int _i = ai.getVariable<unsigned int>(AGENT_VAR_i);
+        EXPECT_EQ(_i % 3, 0u);  // Var divides cleanly by 3
+        const unsigned int _avar2 = ai.getVariable<unsigned int>(AGENT_VAR2_NAME);
+        if (_avar2 < 4000) {
+            // Agent was born
+            const unsigned int __i = _i / 3;  // Calculate original value of AGENT_VAR_i
+            // Agent var name 1 was init to default 1, submodel added +1, +10 from addten()
+            EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), 12u);
+            EXPECT_EQ(_avar2 - 3000, __i);  // AGENT_VAR2_NAME is the expected value 4000 + i - 1000
+        } else {
+            // Agent is from init
+            const unsigned int __i = _i / 3;  // Calculate original value of AGENT_VAR_i
+            EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), __i + mapped_result);
+            EXPECT_EQ(_avar2, unmapped_result - __i);
+        }
+    }
+    // Run Model
+    c.step();
+    // Check result
+    // Mapped var = mapped_result + af +  af + submodel + af
+    const unsigned int mapped_result2 = mapped_result + 10 + 1 + 10;
+    // Unmapped var = unmapped_result + af + af + af
+    const unsigned int unmapped_result2 = unmapped_result - 1000 - 1000;
+    c.getPopulationData(pop);
+    // Init AGENT_COUNT + 25% 1st birth + 25% 2nd birth (25% of init only)
+    EXPECT_EQ(pop.getCurrentListSize(), AGENT_COUNT * 1.25 + AGENT_COUNT * 0.25);
+    for (unsigned int i = 0; i < pop.getCurrentListSize(); ++i) {
+        AgentInstance ai = pop.getInstanceAt(i);
+        const unsigned int _i = ai.getVariable<unsigned int>(AGENT_VAR_i);
+        EXPECT_EQ(_i % 9, 0u);  // Var divides cleanly by 9
+        const unsigned int _avar2 = ai.getVariable<unsigned int>(AGENT_VAR2_NAME);
+        if (_avar2 < 2000) {
+            // Agent was born step 1
+            const unsigned int __i = _i / 9;  // Calculate original value of AGENT_VAR_i
+            // Agent var name 1 was 22 previous step, +10 from addten() submodel added +1, +10 from addten()
+            EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), 33u);
+            EXPECT_EQ(_avar2 - 1000, __i);  // AGENT_VAR2_NAME is the expected value (3000 + i) - 1000 - 1000
+        } else if (_avar2 < 4000) {
+            // Agent was born step 2
+            const unsigned int __i = _i / 3;  // Calculate original value of AGENT_VAR_i
+            // Agent var name 1 was default 1, submodel added +1, +10 from addten()
+            EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), 12u);
+            EXPECT_EQ(_avar2 - 3000, __i);  // AGENT_VAR2_NAME is the expected value 4000 + i - 1000
+        } else {
+            // Agent is from init
+            const unsigned int __i = _i / 9;  // Calculate original value of AGENT_VAR_i
+            EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), __i + mapped_result2);
+            EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR2_NAME), unmapped_result2 - __i);
+        }
+    }
+}
+TEST(TestCUDASubAgent, AgentBirth_InSubModel) {
+    ModelDescription sm(SUB_MODEL_NAME);
+    {
+        // Define SubModel
+        auto &a = sm.newAgent(AGENT_NAME);
+        a.newVariable<unsigned int>(AGENT_VAR1_NAME, 1);
+        a.newVariable<unsigned int>(AGENT_VAR2_NAME, 12);
+        a.newVariable<unsigned int>(SUB_VAR1_NAME, 12);
+        a.newVariable<unsigned int>(AGENT_VAR_i);
+        a.newFunction("1", BirthEven).setAgentOutput(a);
+        a.newFunction("2", AddOne);
+        sm.newLayer().addAgentFunction(BirthEven);
+        sm.newLayer().addAgentFunction(AddOne);
+        sm.addExitCondition(ExitAlways);
+    }
+    ModelDescription m(MODEL_NAME);
+    auto &ma = m.newAgent(AGENT_NAME);
+    {
+        // Define Model
+        ma.newVariable<unsigned int>("default_main_agent_var", 25);
+        ma.newVariable<unsigned int>(AGENT_VAR1_NAME, 10000);
+        ma.newVariable<unsigned int>(AGENT_VAR2_NAME, std::numeric_limits<unsigned int>::max());
+        ma.newVariable<unsigned int>(AGENT_VAR_i);
+        ma.newFunction("2", AddTen);
+        auto &smd = m.newSubModel("sub", sm);
+        smd.bindAgent(AGENT_NAME, AGENT_NAME, true, true);  // auto map vars and states
         m.newLayer().addAgentFunction(AddTen);
         m.newLayer().addSubModel("sub");
         m.newLayer().addAgentFunction(AddTen);
@@ -371,23 +476,24 @@ TEST(TestCUDASubAgent, AgentBirth_BeforeSubModel) {
     // Run Model
     c.step();
     // Check result
-    // Mapped var = init + af + submodel af + af
+    // Mapped var = init + af +  af + submodel + af
     const unsigned int mapped_result = +10 + 1 + 10;
-    // Unmapped var = init + af + af
+    // Unmapped var = init + af + af + af
     const unsigned int unmapped_result = std::numeric_limits<unsigned int>::max() - 1000 - 1000;
     c.getPopulationData(pop);
     EXPECT_EQ(pop.getCurrentListSize(), static_cast<unsigned int>(AGENT_COUNT*1.25));    // if AGENT_COUNT != 1000 this test may fail
     for (unsigned int i = 0; i < pop.getCurrentListSize(); ++i) {
         AgentInstance ai = pop.getInstanceAt(i);
+        EXPECT_EQ(ai.getVariable<unsigned int>("default_main_agent_var"), 25u);
         const unsigned int _i = ai.getVariable<unsigned int>(AGENT_VAR_i);
         EXPECT_EQ(_i % 3, 0u);  // Var divides cleanly by 3
         const unsigned int _avar2 = ai.getVariable<unsigned int>(AGENT_VAR2_NAME);
         if (_avar2 < 4000) {
             // Agent was born
             const unsigned int __i = _i / 3;  // Calculate original value of AGENT_VAR_i
-            // Agent var name 1 was init to default 1, +10 from addten(), submodel added +1, +10 from addten()
-            EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), 22u);
-            EXPECT_EQ(_avar2 - 2000, __i);  // AGENT_VAR2_NAME is the expected value 4000 + i - 1000 - 1000
+                                              // Agent var name 1 was init to default 1, submodel added +1, +10 from addten()
+            EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), 12u);
+            EXPECT_EQ(_avar2 - 3000, __i);  // AGENT_VAR2_NAME is the expected value 4000 + i - 1000
         } else {
             // Agent is from init
             const unsigned int __i = _i / 3;  // Calculate original value of AGENT_VAR_i
@@ -398,9 +504,9 @@ TEST(TestCUDASubAgent, AgentBirth_BeforeSubModel) {
     // Run Model
     c.step();
     // Check result
-    // Mapped var = mapped_result + af + submodel af + af
+    // Mapped var = mapped_result + af +  af + submodel + af
     const unsigned int mapped_result2 = mapped_result + 10 + 1 + 10;
-    // Unmapped var = unmapped_result + af + af
+    // Unmapped var = unmapped_result + af + af + af
     const unsigned int unmapped_result2 = unmapped_result - 1000 - 1000;
     c.getPopulationData(pop);
     // Init AGENT_COUNT + 25% 1st birth + 25% 2nd birth (25% of init only)
@@ -413,15 +519,15 @@ TEST(TestCUDASubAgent, AgentBirth_BeforeSubModel) {
         if (_avar2 < 2000) {
             // Agent was born step 1
             const unsigned int __i = _i / 9;  // Calculate original value of AGENT_VAR_i
-            // Agent var name 1 was 22 previous step, +10 from addten() submodel added +1, +10 from addten()
-            EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), 43u);
-            EXPECT_EQ(_avar2, __i);  // AGENT_VAR2_NAME is the expected value (2000 + i) - 1000 - 1000
+                                              // Agent var name 1 was 22 previous step, +10 from addten() submodel added +1, +10 from addten()
+            EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), 33u);
+            EXPECT_EQ(_avar2 - 1000, __i);  // AGENT_VAR2_NAME is the expected value (3000 + i) - 1000 - 1000
         } else if (_avar2 < 4000) {
             // Agent was born step 2
             const unsigned int __i = _i / 3;  // Calculate original value of AGENT_VAR_i
-            // Agent var name 1 was default 1, +10 from addten(), submodel added +1, +10 from addten()
-            EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), 22u);
-            EXPECT_EQ(_avar2 - 2000, __i);  // AGENT_VAR2_NAME is the expected value 4000 + i - 1000 - 1000
+                                              // Agent var name 1 was default 1, submodel added +1, +10 from addten()
+            EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), 12u);
+            EXPECT_EQ(_avar2 - 3000, __i);  // AGENT_VAR2_NAME is the expected value 4000 + i - 1000
         } else {
             // Agent is from init
             const unsigned int __i = _i / 9;  // Calculate original value of AGENT_VAR_i
@@ -429,7 +535,5 @@ TEST(TestCUDASubAgent, AgentBirth_BeforeSubModel) {
             EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR2_NAME), unmapped_result2 - __i);
         }
     }
-}
-TEST(TestCUDASubAgent, AgentBirth_InSubModel) {
 }
 };  // namespace test_cuda_sub_agent

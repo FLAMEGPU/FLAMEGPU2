@@ -41,6 +41,7 @@ void CUDASubAgent::resize(const unsigned int &newSize, const unsigned int &strea
         }
     }
 }
+
 void CUDASubAgent::setPopulationData(const AgentPopulation& population) {
     // check that the gpu state lists have been initialised by a previous call to setInitialPopulationData
     assert(!state_map.empty());  // Check the removed code was redundant

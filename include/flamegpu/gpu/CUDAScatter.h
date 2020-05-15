@@ -85,6 +85,14 @@ class CUDAScatter {
         const bool &invert_scan_flag = false,
         const unsigned int &scatter_all_count = 0);
     /**
+     * Returns the final flamegpu_internal::CUDAScanCompaction::position item 
+     * Same value as scatter, - scatter_a__count
+     */
+    unsigned int CUDAScatter::scatterCount(
+        Type messageOrAgent,
+        const unsigned int &itemCount,
+        const unsigned int &scatter_all_count = 0);
+    /**
      * Scatters a contigous block from SoA to SoA
      * flamegpu_internal::CUDAScanCompaction::scan_flag/position are not used
      * @param vars Variable description map from ModelData hierarchy

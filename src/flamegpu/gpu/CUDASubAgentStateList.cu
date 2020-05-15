@@ -8,7 +8,8 @@
 CUDASubAgentStateList::CUDASubAgentStateList(CUDASubAgent &cuda_agent, const std::shared_ptr<CUDAAgentStateList> &_master_list, const std::shared_ptr<SubAgentData> &_mapping)
     : CUDAAgentStateList(static_cast<CUDAAgent&>(cuda_agent))
     , master_list(_master_list)
-    , mapping(_mapping) {
+    , mapping(_mapping)
+    , skipInitNewDlist(false) {
     // Bind to master list
     master_list->setDependentList(this, _mapping);
     // Replace mapped state lists
@@ -206,18 +207,30 @@ void CUDASubAgentStateList::swap() {
         dependent_state->swap();
     }
 }
-void CUDASubAgentStateList::addAgents(const unsigned int &new_births, const unsigned int &streamId) {
-    assert(agent.getMaximumListSize() >= current_list_size + new_births);
-    CUDAScatter &scatter = CUDAScatter::getInstance(streamId);
-    scatter.broadcastInit(
-        dynamic_cast<CUDASubAgent&>(agent).unmappedVariables(),
-        d_list,
-        new_births, getCUDAStateListSize());
-    // Init new of dependent
-    if (dependent_state) {
-        dependent_state->addAgents(new_births, streamId);
+void CUDASubAgentStateList::addParentAgents(const unsigned int &new_births, const unsigned int &streamId) {
+    master_list->addParentAgents(new_births, streamId);
+}
+void CUDASubAgentStateList::addDependentAgents(const unsigned int &new_births, const unsigned int &streamId) {
+    if (!skipInitNewDlist) {
+        // Performed normal addAgents(), unmapped variables only
+        assert(agent.getMaximumListSize() >= current_list_size + new_births);
+        CUDAScatter &scatter = CUDAScatter::getInstance(streamId);
+        scatter.broadcastInit(
+            dynamic_cast<CUDASubAgent&>(agent).unmappedVariables(),
+            d_list,
+            new_births, getCUDAStateListSize());
+        // Init new of dependent
+        if (dependent_state) {
+            dependent_state->addDependentAgents(new_births, streamId);
+        }
+        current_list_size += new_births;
+    } else {
+        // We triggered this addAgents() cascade, so we can ignore it
+        // Init new of dependent
+        if (dependent_state) {
+            dependent_state->addDependentAgents(new_births, streamId);
+        }
     }
-    current_list_size += new_births;
 }
 
 bool CUDASubAgentStateList::allListsExist() const {
@@ -255,4 +268,22 @@ void CUDASubAgentStateList::appendInitMaps(CUDAMemoryMap &merge_d_list, Variable
     if (dependent_state) {
         dependent_state->appendInitMaps(merge_d_list, merge_var_list);
     }
+}
+
+void CUDASubAgentStateList::scatterNew(const unsigned int &newSize, const unsigned int &streamId) {
+    CUDAScatter &scatter = CUDAScatter::getInstance(streamId);
+    const unsigned int new_births = scatter.scatterCount(CUDAScatter::Type::AgentBirth, newSize);
+    if (new_births == 0) return;
+    // Init dependents, this flag tells us to not bother when it reaches us
+    skipInitNewDlist = true;
+    master_list->addParentAgents(new_births, streamId);
+    skipInitNewDlist = false;
+    // Scatter the output agents
+    const unsigned int new_births2 = scatter.scatter(
+        CUDAScatter::Type::AgentBirth,
+        agent.getAgentDescription().variables,
+        d_new_list, d_list,
+        newSize, current_list_size);
+    assert(new_births2 == new_births);
+    current_list_size += new_births;
 }

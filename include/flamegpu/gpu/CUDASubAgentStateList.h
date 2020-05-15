@@ -50,10 +50,15 @@ class CUDASubAgentStateList : public CUDAAgentStateList {
      */
     void swap();
     /**
+     * Forwards the call to master_list
+     * This continues until CUDAAgentStateList is reached, which triggers the cascade back down via addDependentAgents()
+     */
+    void addParentAgents(const unsigned int &new_births, const unsigned int &streamId) override;
+    /**
      * Increments current_list_size by count and initialises the agents with default value
      * @param new_births Number of new agents
-     */
-    void addAgents(const unsigned int &new_births, const unsigned int &streamId);
+    */
+     void addDependentAgents(const unsigned int &new_births, const unsigned int &streamId);
     /**
      * Used to check whether the model if we need to init unmapped vars
      */
@@ -64,6 +69,13 @@ class CUDASubAgentStateList : public CUDAAgentStateList {
      */
     void initUnmapped(const unsigned int &streamId);
     void appendInitMaps(CUDAMemoryMap &merge_d_list, VariableMap &merge_var_list);
+
+    /**
+     * This is used after device agent birth to scatter birthed agents into position
+     * It must also then init any spare variables from dependent/master agents
+     * TODO, IMPLEMENT ME
+     */
+    void scatterNew(const unsigned int &newSize, const unsigned int &streamId) override;
 
  protected:
     /**
@@ -82,6 +94,7 @@ class CUDASubAgentStateList : public CUDAAgentStateList {
  private:
     std::shared_ptr<CUDAAgentStateList> master_list;
     std::shared_ptr<SubAgentData> mapping;
+    bool skipInitNewDlist;
 };
 
 #endif  // INCLUDE_FLAMEGPU_GPU_CUDASUBAGENTSTATELIST_H_

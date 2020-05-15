@@ -109,7 +109,12 @@ class CUDAAgentStateList {
      * @param newSize The max possible number of new agents
      * @param streamId Stream index for stream safe operations
      */
-    void scatterNew(const unsigned int &newSize, const unsigned int &streamId);
+    virtual void scatterNew(const unsigned int &newSize, const unsigned int &streamId);
+    /**
+     * Increments current_list_size by count and initialises the agents in d_list with default value
+     * @param new_births Number of new agents
+     */
+    virtual void addParentAgents(const unsigned int &new_births, const unsigned int &streamId);
     /**
      * Scatters agents from AoS to d_list SoA
      * Used by host agent creation

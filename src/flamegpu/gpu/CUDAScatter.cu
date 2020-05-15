@@ -136,6 +136,14 @@ unsigned int CUDAScatter::scatter(
     gpuErrchk(cudaMemcpy(&rtn, flamegpu_internal::CUDAScanCompaction::hd_configs[messageOrAgent][streamId].d_ptrs.position + itemCount - scatter_all_count, sizeof(unsigned int), cudaMemcpyDeviceToHost));
     return rtn + scatter_all_count;
 }
+unsigned int CUDAScatter::scatterCount(
+    Type messageOrAgent,
+    const unsigned int &itemCount,
+    const unsigned int &scatter_all_count) {
+    unsigned int rtn = 0;
+    gpuErrchk(cudaMemcpy(&rtn, flamegpu_internal::CUDAScanCompaction::hd_configs[messageOrAgent][streamId].d_ptrs.position + itemCount - scatter_all_count, sizeof(unsigned int), cudaMemcpyDeviceToHost));
+    return rtn;
+}
 
 unsigned int CUDAScatter::scatterAll(
     const VariableMap &vars,

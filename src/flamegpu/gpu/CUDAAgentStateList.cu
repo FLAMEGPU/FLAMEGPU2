@@ -411,7 +411,20 @@ void CUDAAgentStateList::scatterNew(const unsigned int &newSize, const unsigned 
     if (new_births == 0) return;
     // Init new of dependents
     if (dependent_state) {
-        dependent_state->addAgents(new_births, streamId);
+        dependent_state->addDependentAgents(new_births, streamId);
+    }
+    current_list_size += new_births;
+}
+void CUDAAgentStateList::addParentAgents(const unsigned int &new_births, const unsigned int &streamId) {
+    assert(agent.getMaximumListSize() >= current_list_size + new_births);
+    CUDAScatter &scatter = CUDAScatter::getInstance(streamId);
+    scatter.broadcastInit(
+        agent.getAgentDescription().variables,
+        d_list,
+        new_births, getCUDAStateListSize());
+    // Init new of dependent
+    if (dependent_state) {
+        dependent_state->addDependentAgents(new_births, streamId);
     }
     current_list_size += new_births;
 }
