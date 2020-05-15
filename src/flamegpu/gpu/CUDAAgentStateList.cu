@@ -75,8 +75,10 @@ void CUDAAgentStateList::cleanupAllocatedData() {
 void CUDAAgentStateList::resize(bool retain_d_list_data) {
     resizeDeviceAgentList(d_list, agent.getMaximumListSize(), retain_d_list_data);
     resizeDeviceAgentList(d_swap_list, agent.getMaximumListSize(), false);
-    if (!condition_d_list.size()) {
+    if (condition_d_list.size() != d_list.size()) {
         // Init condition state lists (late, as size was 0 at constructor)
+        // Some of these might fail silently for CUDASubAgentStateList, as master_agent inits mapped vars
+        // But it doesn't matter, we update them all at the end
         for (const auto &c : d_list)
             condition_d_list.emplace(c);
         for (const auto &c : d_swap_list)
@@ -93,7 +95,16 @@ void CUDAAgentStateList::resize(bool retain_d_list_data) {
         dependent_state->resize(retain_d_list_data);
     }
     // Update pointers in condition state list
-    setConditionState(condition_state);
+    // update condition_d_list and condition_d_swap_list (don't use recursive setConditionList())
+    const auto &mem = agent.getAgentDescription().variables;
+    // for each variable allocate a device array and add to map
+    for (const auto &mm : mem) {
+        condition_d_list.at(mm.first) = reinterpret_cast<char*>(d_list.at(mm.first)) + (condition_state * mm.second.type_size * mm.second.elements);
+        condition_d_swap_list.at(mm.first) = reinterpret_cast<char*>(d_swap_list.at(mm.first)) + (condition_state * mm.second.type_size * mm.second.elements);
+    }
+    if (dependent_state) {
+        dependent_state->setConditionState(condition_state);
+    }
 }
 void CUDAAgentStateList::resizeNewList(const unsigned int &newSize) {
     // Check new size is bigger
@@ -340,6 +351,10 @@ unsigned int CUDAAgentStateList::getCUDATrueStateListSize() const {
 void CUDAAgentStateList::setCUDAStateListSize(const unsigned int &newCount) {
     current_list_size = condition_state + newCount;
     // An assumption was made in CUDASubAgent::appendScatterMaps() that this method would not recurse through dependents
+    // 2: I can see where it's used, but unclear of the problem that recursion causes? (Seems necessary)
+    if (dependent_state) {
+        dependent_state->setCUDAStateListSize(current_list_size);
+    }
 }
 
 __global__ void scatter_living_agents(

@@ -30,11 +30,6 @@ class CUDASubAgentStateList : public CUDAAgentStateList {
     CUDASubAgentStateList(CUDASubAgent& cuda_agent, const std::shared_ptr<CUDAAgentStateList> &master_list, const std::shared_ptr<SubAgentData> &mapping);
     ~CUDASubAgentStateList();
     void setLists(const std::string &var_name, void *list, void *swap_list);
-    /**
-     * Triggers a resize of all unmapped variables in d_list and d_swap_list
-     * Then updates all condition lists
-     */
-    void resize(bool retain_d_list_data = true) override;
 
     void setAgentData(const AgentStateMemory &state_memory) override;
 

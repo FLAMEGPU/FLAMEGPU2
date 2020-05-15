@@ -40,22 +40,6 @@ CUDASubAgentStateList::CUDASubAgentStateList(CUDASubAgent &cuda_agent, const std
 CUDASubAgentStateList::~CUDASubAgentStateList() {
     cleanupAllocatedData();
 }
-void CUDASubAgentStateList::resize(bool retain_d_list_data) {
-    // This might be first resize()
-    // Resize all variables which have not been mapped
-    resizeDeviceAgentList(d_list, agent.getMaximumListSize(), retain_d_list_data);
-    resizeDeviceAgentList(d_swap_list, agent.getMaximumListSize(), false);
-    if (condition_d_list.size() != d_list.size()) {
-        // Init condition state lists (late, as size was 0 at constructor)
-        // Some of these might fail silently, as master_agent inits mapped vars
-        // But it doesn't matter, setConditionState() updates them all
-        for (const auto &c : d_list)
-            condition_d_list.emplace(c);
-        for (const auto &c : d_swap_list)
-            condition_d_swap_list.emplace(c);
-    }
-    setConditionState(condition_state);  // Update pointers in condition state list
-}
 void CUDASubAgentStateList::setAgentData(const AgentStateMemory &state_memory) {
     CUDAAgentStateList::setAgentData(state_memory);
     // Use normal resize, but also change the agent count of the mapped state vector

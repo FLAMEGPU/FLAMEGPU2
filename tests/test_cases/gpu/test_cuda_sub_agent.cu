@@ -31,6 +31,7 @@
 namespace test_cuda_sub_agent {
     const unsigned int AGENT_COUNT = 100;
     const char *SUB_MODEL_NAME = "SubModel";
+    const char *PROXY_SUB_MODEL_NAME = "ProxySubModel";
     const char *MODEL_NAME = "Model";
     const char *AGENT_NAME = "Agent";
     const char *AGENT_VAR1_NAME = "AVar1";
@@ -49,7 +50,10 @@ FLAMEGPU_AGENT_FUNCTION(AddOne, MsgNone, MsgNone) {
     const unsigned int v = FLAMEGPU->getVariable<unsigned int>("AVar1");
     const unsigned int sub_v = FLAMEGPU->getVariable<unsigned int>("SubVar1");
     if (sub_v == 12) {
-        // sub_v should always be it's default value 12, we never change it
+        // sub_v should always be it's default value 12 if created in submodel, we never change it
+        FLAMEGPU->setVariable<unsigned int>("AVar1", v + 1);
+    } else if (sub_v == 599) {
+        // sub_v Agents created byproxysubmodel or above will have this value, so original agents set this
         FLAMEGPU->setVariable<unsigned int>("AVar1", v + 1);
     } else {
         FLAMEGPU->setVariable<unsigned int>("AVar1", v + 100000);
@@ -444,6 +448,19 @@ TEST(TestCUDASubAgent, AgentBirth_InSubModel) {
         sm.newLayer().addAgentFunction(AddOne);
         sm.addExitCondition(ExitAlways);
     }
+    ModelDescription psm(PROXY_SUB_MODEL_NAME);
+    {
+        // Define SubModel
+        auto &a = psm.newAgent(AGENT_NAME);
+        a.newVariable<unsigned int>(AGENT_VAR1_NAME, 599);
+        a.newVariable<unsigned int>(AGENT_VAR2_NAME, 599);
+        a.newVariable<unsigned int>(SUB_VAR1_NAME, 599);
+        a.newVariable<unsigned int>(AGENT_VAR_i);
+        auto &smd = psm.newSubModel("sub", sm);
+        smd.bindAgent(AGENT_NAME, AGENT_NAME, true, true);  // auto map vars and states
+        psm.newLayer().addSubModel("sub");
+        psm.addExitCondition(ExitAlways);
+    }
     ModelDescription m(MODEL_NAME);
     auto &ma = m.newAgent(AGENT_NAME);
     {
@@ -453,10 +470,10 @@ TEST(TestCUDASubAgent, AgentBirth_InSubModel) {
         ma.newVariable<unsigned int>(AGENT_VAR2_NAME, std::numeric_limits<unsigned int>::max());
         ma.newVariable<unsigned int>(AGENT_VAR_i);
         ma.newFunction("2", AddTen);
-        auto &smd = m.newSubModel("sub", sm);
+        auto &smd = m.newSubModel("proxysub", psm);
         smd.bindAgent(AGENT_NAME, AGENT_NAME, true, true);  // auto map vars and states
         m.newLayer().addAgentFunction(AddTen);
-        m.newLayer().addSubModel("sub");
+        m.newLayer().addSubModel("proxysub");
         m.newLayer().addAgentFunction(AddTen);
     }
     // Init Agents

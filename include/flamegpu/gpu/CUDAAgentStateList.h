@@ -48,7 +48,7 @@ class CUDAAgentStateList {
      * @note Does not resize new list
      * @see resizeDeviceAgentList(CUDAMemoryMap &, const unsigned int &, bool)
      */
-    virtual void resize(bool retain_d_list_data = true);
+    void resize(bool retain_d_list_data = true);
     /**
      * Resizes the internal newList
      * @param newSize Number of agents to support (probably agent.getMaximumListSize())

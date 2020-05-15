@@ -176,6 +176,7 @@ void CUDASubAgent::appendScatterMaps(
             cs.scatterAll(merge_var_list, merge_d_list, merge_d_swap_list, srcListSize, destListSize);
         }
         // After scatter has been performed, update list sizes
+        // This function assumes they don't recurse? But I changed them so they do
         dest_l->second->setCUDAStateListSize(destListSize + srcListSize);
         src_l->second->setCUDAStateListSize(0);
     } else if (_src.empty() && _dest.empty()) {
