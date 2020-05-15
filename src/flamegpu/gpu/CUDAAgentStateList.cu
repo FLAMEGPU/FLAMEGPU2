@@ -18,7 +18,7 @@
 #include "flamegpu/gpu/CUDAErrorChecking.h"
 #include "flamegpu/pop/AgentStateMemory.h"
 #include "flamegpu/model/AgentDescription.h"
-#include "flamegpu/model/SubModelData.h"
+#include "flamegpu/model/SubAgentData.h"
 #include "flamegpu/gpu/CUDAScatter.h"
 #include "flamegpu/gpu/CUDASubAgent.h"
 #include "flamegpu/runtime/flamegpu_host_new_agent_api.h"

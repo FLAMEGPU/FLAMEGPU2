@@ -7,6 +7,7 @@
 #include "flamegpu/model/LayerData.h"
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/model/SubModelData.h"
+#include "flamegpu/model/SubAgentData.h"
 #include "flamegpu/pop/AgentPopulation.h"
 #include "flamegpu/runtime/flamegpu_host_api.h"
 #include "flamegpu/gpu/CUDAScanCompaction.h"

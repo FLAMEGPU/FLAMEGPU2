@@ -2,6 +2,7 @@
 #include "flamegpu/model/ModelData.h"
 #include "flamegpu/model/AgentData.h"
 #include "flamegpu/model/SubModelData.h"
+#include "flamegpu/model/SubAgentData.h"
 
 SubModelDescription::SubModelDescription(const ModelData *const _model, SubModelData *const _data)
     : model(_model)

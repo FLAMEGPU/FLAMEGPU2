@@ -1,6 +1,6 @@
 #include "flamegpu/model/SubAgentDescription.h"
 #include "flamegpu/model/ModelData.h"
-#include "flamegpu/model/SubModelData.h"
+#include "flamegpu/model/SubAgentData.h"
 #include "flamegpu/model/AgentData.h"
 
 SubAgentDescription::SubAgentDescription(const ModelData *const _model, SubAgentData *const _data)

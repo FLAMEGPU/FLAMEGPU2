@@ -3,7 +3,7 @@
 
 #include "flamegpu/gpu/CUDAScatter.h"
 #include "flamegpu/gpu/CUDASubAgentStateList.h"
-#include "flamegpu/model/SubModelData.h"
+#include "flamegpu/model/SubAgentData.h"
 #include "flamegpu/pop/AgentPopulation.h"
 #include "flamegpu/model/AgentData.h"
 

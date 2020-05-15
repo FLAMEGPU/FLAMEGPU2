@@ -8,6 +8,7 @@
 #include "flamegpu/model/AgentFunctionData.h"
 #include "flamegpu/model/LayerData.h"
 #include "flamegpu/model/SubModelData.h"
+#include "flamegpu/model/SubAgentData.h"
 
 const char *ModelData::DEFAULT_STATE = "default";
 
