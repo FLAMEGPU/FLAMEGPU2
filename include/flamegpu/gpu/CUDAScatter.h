@@ -88,7 +88,7 @@ class CUDAScatter {
      * Returns the final flamegpu_internal::CUDAScanCompaction::position item 
      * Same value as scatter, - scatter_a__count
      */
-    unsigned int CUDAScatter::scatterCount(
+    unsigned int scatterCount(
         Type messageOrAgent,
         const unsigned int &itemCount,
         const unsigned int &scatter_all_count = 0);
