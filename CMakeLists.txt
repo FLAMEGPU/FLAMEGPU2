@@ -33,6 +33,9 @@ if(NOT CMAKE_CUDA_COMPILER OR CMAKE_CUDA_COMPILER_VERSION VERSION_LESS ${MINIMUM
     return()
 endif()
 
+# include for dependent modules
+include(CMakeDependentOption)
+
 # Option to enable/disable building the static library
 option(BUILD_FLAMEGPU2 "Enable building FLAMEGPU2 library" ON)
 
@@ -47,6 +50,8 @@ option(BUILD_EXAMPLE_CIRCLES_BRUTE_FORCE "Enable building examples/circles_brute
 option(BUILD_EXAMPLE_CIRCLES_SPATIAL_3D "Enable building examples/circles_spatial_3d" OFF)
 option(BUILD_EXAMPLE_RTC_EXAMPLE "Enable building examples/rtc_example" OFF)
 option(BUILD_SWIG_PYTHON "Enable python bindings via SWIG" OFF)
+cmake_dependent_option(BUILD_SWIG_PYTHON_TESTS "Enable building of SWIG Python Tests" OFF
+                       "BUILD_SWIG_PYTHON" OFF)
 
 # Option to enable/disable building the static library
 option(VISUALISATION "Enable visualisation support" OFF)

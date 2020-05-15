@@ -26,6 +26,8 @@ find_package(PythonLibs REQUIRED)
 # Find Python
 find_package(Python REQUIRED COMPONENTS Interpreter Development)
 
+message(STATUS "Python found at " ${Python_EXECUTABLE})
+
 if(Python_VERSION VERSION_GREATER_EQUAL 3)
   list(APPEND CMAKE_SWIG_FLAGS "-py3")
 endif()
