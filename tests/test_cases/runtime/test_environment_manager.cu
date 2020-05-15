@@ -114,13 +114,6 @@ TEST_F(EnvironmentManagerTest, OutOfMemory1) {
     ms->env.add<char, EnvironmentManager::MAX_BUFFER_SIZE / 2>("char_5kb_c", char_5kb_c);
     EXPECT_THROW(ms->run(), OutOfMemory);
 }
-TEST_F(EnvironmentManagerTest, OutOfMemory2) {
-    std::array<char, EnvironmentManager::MAX_BUFFER_SIZE / 2> char_5kb_a;
-    std::array<char, EnvironmentManager::MAX_BUFFER_SIZE / 2> char_5kb_b;
-    ms->env.add<char, EnvironmentManager::MAX_BUFFER_SIZE / 2>("char_5kb_a", char_5kb_a);
-    ms->env.add<char, EnvironmentManager::MAX_BUFFER_SIZE / 2>("char_5kb_b", char_5kb_b);
-    EXPECT_NO_THROW(ms->run());
-}
 
 // Multiple models
 TEST(EnvironmentManagerTest2, MultipleModels) {
