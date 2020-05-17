@@ -48,7 +48,7 @@ class ReaderFactory {
         }
         */
         THROW UnsupportedFileType("File '%s' is not a type which can be read "
-            "by ReaderFactory::createReader().\n",
+            "by ReaderFactory::createReader().",
             input.c_str());
     }
 };

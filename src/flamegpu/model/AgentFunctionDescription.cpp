@@ -46,7 +46,7 @@ void AgentFunctionDescription::setInitialState(const std::string &init_state) {
                                             f2->end_state == init_state) {
                                             THROW InvalidAgentFunc("Agent functions's '%s' and '%s', within the same layer "
                                                 "cannot share any input or output states, this is not permitted, "
-                                                "in AgentFunctionDescription::setInitialState()\n",
+                                                "in AgentFunctionDescription::setInitialState().",
                                                 f2->name.c_str(), this->function->name.c_str());
                                         }
                                     }
@@ -60,12 +60,12 @@ void AgentFunctionDescription::setInitialState(const std::string &init_state) {
             this->function->initial_state = init_state;
         } else {
             THROW InvalidStateName("Agent ('%s') does not contain state '%s', "
-                "in AgentFunctionDescription::setInitialState()\n",
+                "in AgentFunctionDescription::setInitialState().",
                 p->name.c_str(), init_state.c_str());
         }
     } else {
         THROW InvalidParent("Agent parent has expired, "
-            "in AgentFunctionDescription::setInitialState()\n");
+            "in AgentFunctionDescription::setInitialState().");
     }
 }
 void AgentFunctionDescription::setEndState(const std::string &exit_state) {
@@ -89,7 +89,7 @@ void AgentFunctionDescription::setEndState(const std::string &exit_state) {
                                             f2->end_state == exit_state) {
                                             THROW InvalidAgentFunc("Agent functions's '%s' and '%s', within the same layer "
                                                 "cannot share any input or output states, this is not permitted, "
-                                                "in AgentFunctionDescription::setEndState()\n",
+                                                "in AgentFunctionDescription::setEndState().",
                                                 f2->name.c_str(), this->function->name.c_str());
                                         }
                                     }
@@ -103,12 +103,12 @@ void AgentFunctionDescription::setEndState(const std::string &exit_state) {
             this->function->end_state = exit_state;
         } else {
             THROW InvalidStateName("Agent ('%s') does not contain state '%s', "
-                "in AgentFunctionDescription::setEndState()\n",
+                "in AgentFunctionDescription::setEndState().",
                 p->name.c_str(), exit_state.c_str());
         }
     } else {
         THROW InvalidParent("Agent parent has expired, "
-            "in AgentFunctionDescription::setEndState()\n");
+            "in AgentFunctionDescription::setEndState().");
     }
 }
 void AgentFunctionDescription::setMessageInput(const std::string &message_name) {
@@ -116,7 +116,7 @@ void AgentFunctionDescription::setMessageInput(const std::string &message_name) 
         if (message_name == other->name) {
             THROW InvalidMessageName("Message '%s' is already bound as message output in agent function %s, "
                 "the same message cannot be input and output by the same function, "
-                "in AgentFunctionDescription::setMessageInput()\n",
+                "in AgentFunctionDescription::setMessageInput().",
                 message_name.c_str(), function->name.c_str());
         }
     }
@@ -126,25 +126,25 @@ void AgentFunctionDescription::setMessageInput(const std::string &message_name) 
             this->function->message_input = a->second;
         } else {
             THROW InvalidMessageType("Message ('%s') type '%s' does not match type '%s' applied to FLAMEGPU_AGENT_FUNCTION, "
-                "in AgentFunctionDescription::setMessageInput()\n",
+                "in AgentFunctionDescription::setMessageInput().",
                 message_name.c_str(), CurveRTCHost::demangle(a->second->getType()).c_str(), this->function->msg_in_type.c_str());
         }
     } else {
         THROW InvalidMessageName("Model ('%s') does not contain message '%s', "
-            "in AgentFunctionDescription::setMessageInput()\n",
+            "in AgentFunctionDescription::setMessageInput().",
             model->name.c_str(), message_name.c_str());
     }
 }
 void AgentFunctionDescription::setMessageInput(MsgBruteForce::Description &message) {
     if (message.model != function->description->model) {
         THROW DifferentModel("Attempted to use agent description from a different model, "
-            "in AgentFunctionDescription::setAgentOutput()\n");
+            "in AgentFunctionDescription::setAgentOutput().");
     }
     if (auto other = function->message_output.lock()) {
         if (message.getName() == other->name) {
             THROW InvalidMessageName("Message '%s' is already bound as message output in agent function %s, "
                 "the same message cannot be input and output by the same function, "
-                "in AgentFunctionDescription::setMessageInput()\n",
+                "in AgentFunctionDescription::setMessageInput().",
                 message.getName().c_str(), function->name.c_str());
         }
     }
@@ -155,17 +155,17 @@ void AgentFunctionDescription::setMessageInput(MsgBruteForce::Description &messa
                 this->function->message_input = a->second;
             } else {
                 THROW InvalidMessageType("Message ('%s') type '%s' does not match type '%s' applied to FLAMEGPU_AGENT_FUNCTION, "
-                    "in AgentFunctionDescription::setMessageInput()\n",
+                    "in AgentFunctionDescription::setMessageInput().",
                     a->second->name.c_str(), CurveRTCHost::demangle(a->second->getType()).c_str(), this->function->msg_in_type.c_str());
             }
         } else {
             THROW InvalidMessage("Message '%s' is not from Model '%s', "
-                "in AgentFunctionDescription::setMessageInput()\n",
+                "in AgentFunctionDescription::setMessageInput().",
                 message.getName().c_str(), model->name.c_str());
         }
     } else {
         THROW InvalidMessageName("Model ('%s') does not contain message '%s', "
-            "in AgentFunctionDescription::setMessageInput()\n",
+            "in AgentFunctionDescription::setMessageInput().",
             model->name.c_str(), message.getName().c_str());
     }
 }
@@ -174,7 +174,7 @@ void AgentFunctionDescription::setMessageOutput(const std::string &message_name)
         if (message_name == other->name) {
             THROW InvalidMessageName("Message '%s' is already bound as message input in agent function %s, "
                 "the same message cannot be input and output by the same function, "
-                "in AgentFunctionDescription::setMessageOutput()\n",
+                "in AgentFunctionDescription::setMessageOutput().",
                 message_name.c_str(), function->name.c_str());
         }
     }
@@ -193,25 +193,25 @@ void AgentFunctionDescription::setMessageOutput(const std::string &message_name)
             }
         } else {
             THROW InvalidMessageType("Message ('%s') type '%s' does not match type '%s' applied to FLAMEGPU_AGENT_FUNCTION, "
-                "in AgentFunctionDescription::setMessageOutput()\n",
+                "in AgentFunctionDescription::setMessageOutput().",
                 message_name.c_str(), CurveRTCHost::demangle(a->second->getType()).c_str(), this->function->msg_in_type.c_str());
         }
     } else {
         THROW InvalidMessageName("Model ('%s') does not contain message '%s', "
-            "in AgentFunctionDescription::setMessageOutput()\n",
+            "in AgentFunctionDescription::setMessageOutput().",
             model->name.c_str(), message_name.c_str());
     }
 }
 void AgentFunctionDescription::setMessageOutput(MsgBruteForce::Description &message) {
     if (message.model != function->description->model) {
         THROW DifferentModel("Attempted to use agent description from a different model, "
-            "in AgentFunctionDescription::setAgentOutput()\n");
+            "in AgentFunctionDescription::setAgentOutput().");
     }
     if (auto other = function->message_input.lock()) {
         if (message.getName() == other->name) {
             THROW InvalidMessageName("Message '%s' is already bound as message input in agent function %s, "
                 "the same message cannot be input and output by the same function, "
-                "in AgentFunctionDescription::setMessageOutput()\n",
+                "in AgentFunctionDescription::setMessageOutput().",
                 message.getName().c_str(), function->name.c_str());
         }
     }
@@ -231,12 +231,12 @@ void AgentFunctionDescription::setMessageOutput(MsgBruteForce::Description &mess
                 }
             } else {
                 THROW InvalidMessageType("Message ('%s') type '%s' does not match type '%s' applied to FLAMEGPU_AGENT_FUNCTION, "
-                    "in AgentFunctionDescription::setMessageOutput()\n",
+                    "in AgentFunctionDescription::setMessageOutput().",
                     a->second->name.c_str(), CurveRTCHost::demangle(a->second->getType()).c_str(), this->function->msg_in_type.c_str());
             }
         } else {
             THROW InvalidMessage("Message '%s' is not from Model '%s', "
-                "in AgentFunctionDescription::setMessageOutput()\n",
+                "in AgentFunctionDescription::setMessageOutput().",
                 message.getName().c_str(), model->name.c_str());
         }
     } else {
@@ -270,19 +270,19 @@ void AgentFunctionDescription::setAgentOutput(const std::string &agent_name, con
             a->second->agent_outputs++;  // Mark inside agent that we are using it as an output
         } else {
             THROW InvalidStateName("Agent ('%s') does not contain state '%s', "
-                "in AgentFunctionDescription::setAgentOutput()\n",
+                "in AgentFunctionDescription::setAgentOutput().",
                 agent_name.c_str(), state.c_str());
         }
     } else {
         THROW InvalidAgentName("Model ('%s') does not contain agent '%s', "
-            "in AgentFunctionDescription::setAgentOutput()\n",
+            "in AgentFunctionDescription::setAgentOutput().",
             model->name.c_str(), agent_name.c_str());
     }
 }
 void AgentFunctionDescription::setAgentOutput(AgentDescription &agent, const std::string state) {
     if (agent.model != function->description->model) {
         THROW DifferentModel("Attempted to use agent description from a different model, "
-            "in AgentFunctionDescription::setAgentOutput()\n");
+            "in AgentFunctionDescription::setAgentOutput().");
     }
     // Set new
     auto a = model->agents.find(agent.getName());
@@ -299,17 +299,17 @@ void AgentFunctionDescription::setAgentOutput(AgentDescription &agent, const std
                 a->second->agent_outputs++;  // Mark inside agent that we are using it as an output
             } else {
                 THROW InvalidStateName("Agent ('%s') does not contain state '%s', "
-                    "in AgentFunctionDescription::setAgentOutput()\n",
+                    "in AgentFunctionDescription::setAgentOutput().",
                     agent.getName().c_str(), state.c_str());
             }
         } else {
             THROW InvalidMessage("Agent '%s' is not from Model '%s', "
-                "in AgentFunctionDescription::setAgentOutput()\n",
+                "in AgentFunctionDescription::setAgentOutput().",
                 agent.getName().c_str(), model->name.c_str());
         }
     } else {
         THROW InvalidMessageName("Model ('%s') does not contain agent '%s', "
-            "in AgentFunctionDescription::setAgentOutput()\n",
+            "in AgentFunctionDescription::setAgentOutput().",
             model->name.c_str(), agent.getName().c_str());
     }
 }
@@ -350,13 +350,13 @@ MsgBruteForce::Description &AgentFunctionDescription::MessageInput() {
     if (auto m = function->message_input.lock())
         return *m->description;
     THROW OutOfBoundsException("Message input has not been set, "
-        "in AgentFunctionDescription::MessageInput()\n");
+        "in AgentFunctionDescription::MessageInput().");
 }
 MsgBruteForce::Description &AgentFunctionDescription::MessageOutput() {
     if (auto m = function->message_output.lock())
         return *m->description;
     THROW OutOfBoundsException("Message output has not been set, "
-        "in AgentFunctionDescription::MessageOutput()\n");
+        "in AgentFunctionDescription::MessageOutput().");
 }
 bool &AgentFunctionDescription::MessageOutputOptional() {
     return function->message_output_optional;
@@ -381,13 +381,13 @@ const MsgBruteForce::Description &AgentFunctionDescription::getMessageInput() co
     if (auto m = function->message_input.lock())
         return *m->description;
     THROW OutOfBoundsException("Message input has not been set, "
-        "in AgentFunctionDescription::getMessageInput()\n");
+        "in AgentFunctionDescription::getMessageInput().");
 }
 const MsgBruteForce::Description &AgentFunctionDescription::getMessageOutput() const {
     if (auto m = function->message_output.lock())
         return *m->description;
     THROW OutOfBoundsException("Message output has not been set, "
-        "in AgentFunctionDescription::getMessageOutput()\n");
+        "in AgentFunctionDescription::getMessageOutput().");
 }
 bool AgentFunctionDescription::getMessageOutputOptional() const {
     return this->function->message_output_optional;
@@ -396,13 +396,13 @@ const AgentDescription &AgentFunctionDescription::getAgentOutput() const {
     if (auto a = function->agent_output.lock())
         return *a->description;
     THROW OutOfBoundsException("Agent output has not been set, "
-        "in AgentFunctionDescription::getAgentOutput()\n");
+        "in AgentFunctionDescription::getAgentOutput().");
 }
 std::string AgentFunctionDescription::getAgentOutputState() const {
     if (auto a = function->agent_output.lock())
         return function->agent_output_state;
     THROW OutOfBoundsException("Agent output has not been set, "
-        "in AgentFunctionDescription::getAgentOutputState()\n");
+        "in AgentFunctionDescription::getAgentOutputState().");
 }
 bool AgentFunctionDescription::getAllowAgentDeath() const {
     return function->has_agent_death;

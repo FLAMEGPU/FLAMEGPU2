@@ -73,13 +73,13 @@ struct NewAgentStorage {
         const auto &var = offsets.vars.find(var_name);
         if (var == offsets.vars.end()) {
             THROW InvalidAgentVar("Variable '%s' not found, "
-                "in NewAgentStorage.setVariable()\n",
+                "in NewAgentStorage.setVariable().",
                 var_name.c_str());
         }
         const auto t_type = std::type_index(typeid(T));
         if (var->second.type != std::type_index(typeid(T))) {
             THROW InvalidVarType("Variable '%s' has type '%s, incorrect  type '%s' was requested, "
-                "in NewAgentStorage.setVariable()\n",
+                "in NewAgentStorage.setVariable().",
                 var_name.c_str(), var->second.type.name(), t_type.name());
         }
         if (var->second.len != sizeof(T)) {
@@ -95,7 +95,7 @@ struct NewAgentStorage {
         const auto &var = offsets.vars.find(var_name);
         if (var == offsets.vars.end()) {
             THROW InvalidAgentVar("Variable '%s' not found, "
-                "in NewAgentStorage.setVariable()\n",
+                "in NewAgentStorage.setVariable().",
                 var_name.c_str());
         }
         // if (var.second.len == 1 || N == 1) {
@@ -106,12 +106,12 @@ struct NewAgentStorage {
         const auto t_type = std::type_index(typeid(T));
         if (var->second.type != std::type_index(typeid(T))) {
             THROW InvalidVarType("Variable '%s' has type '%s, incorrect  type '%s' was requested, "
-                "in NewAgentStorage.setVariable()\n",
+                "in NewAgentStorage.setVariable().",
                 var_name.c_str(), var->second.type.name(), t_type.name());
         }
         if (var->second.len != sizeof(T) * N) {
             THROW InvalidVarArrayLen("Variable '%s' is an array with %u elements, incorrect array of length %u was provided, "
-                "in NewAgentStorage.setVariable()\n",
+                "in NewAgentStorage.setVariable().",
                 var_name.c_str(), var->second.len / sizeof(T), N);
         }
         memcpy(data + var->second.offset, &val, var->second.len);
@@ -121,7 +121,7 @@ struct NewAgentStorage {
         const auto &var = offsets.vars.find(var_name);
         if (var == offsets.vars.end()) {
             THROW InvalidAgentVar("Variable '%s' not found, "
-                "in NewAgentStorage.setVariable()\n",
+                "in NewAgentStorage.setVariable().",
                 var_name.c_str());
         }
         // if (var.second.len == 1) {
@@ -132,12 +132,12 @@ struct NewAgentStorage {
         const auto t_type = std::type_index(typeid(T));
         if (var->second.type != std::type_index(typeid(T))) {
             THROW InvalidVarType("Variable '%s' has type '%s, incorrect  type '%s' was requested, "
-                "in NewAgentStorage.setVariable()\n",
+                "in NewAgentStorage.setVariable().",
                 var_name.c_str(), var->second.type.name(), t_type.name());
         }
         if (var->second.len < sizeof(T) * (index + 1)) {
             THROW OutOfRangeVarArray("Variable '%s' is an array with %u elements, index %u is out of range, "
-                "in NewAgentStorage.setVariable()\n",
+                "in NewAgentStorage.setVariable().",
                 var_name.c_str(), var->second.len / sizeof(T), index);
         }
         memcpy(data + var->second.offset + (index * sizeof(T)), &val, sizeof(T));
@@ -147,13 +147,13 @@ struct NewAgentStorage {
         const auto &var = offsets.vars.find(var_name);
         if (var == offsets.vars.end()) {
             THROW InvalidAgentVar("Variable '%s' not found, "
-                "in NewAgentStorage.getVariable()\n",
+                "in NewAgentStorage.getVariable()",
                 var_name.c_str());
         }
         const auto t_type = std::type_index(typeid(T));
         if (var->second.type != std::type_index(typeid(T))) {
             THROW InvalidVarType("Variable '%s' has type '%s, incorrect  type '%s' was requested, "
-                "in NewAgentStorage.getVariable()\n",
+                "in NewAgentStorage.getVariable().",
                 var_name.c_str(), var->second.type.name(), t_type.name());
         }
         if (var->second.len != sizeof(T)) {
@@ -169,7 +169,7 @@ struct NewAgentStorage {
         const auto &var = offsets.vars.find(var_name);
         if (var == offsets.vars.end()) {
             THROW InvalidAgentVar("Variable '%s' not found, "
-                "in NewAgentStorage.getVariable()\n",
+                "in NewAgentStorage.getVariable().",
                 var_name.c_str());
         }
         // if (var.second.len == 1 || N == 1) {
@@ -180,12 +180,12 @@ struct NewAgentStorage {
         const auto t_type = std::type_index(typeid(T));
         if (var->second.type != std::type_index(typeid(T))) {
             THROW InvalidVarType("Variable '%s' has type '%s, incorrect  type '%s' was requested, "
-                "in NewAgentStorage.getVariable()\n",
+                "in NewAgentStorage.getVariable().",
                 var_name.c_str(), var->second.type.name(), t_type.name());
         }
         if (var->second.len != sizeof(T) * N) {
             THROW InvalidVarArrayLen("Variable '%s' is an array with %u elements, incorrect array of length %u was provided, "
-                "in NewAgentStorage.getVariable()\n",
+                "in NewAgentStorage.getVariable().",
                 var_name.c_str(), var->second.len / sizeof(T), N);
         }
         std::array<T, N> rtn;
@@ -197,7 +197,7 @@ struct NewAgentStorage {
         const auto &var = offsets.vars.find(var_name);
         if (var == offsets.vars.end()) {
             THROW InvalidAgentVar("Variable '%s' not found, "
-                "in NewAgentStorage.getVariable()\n",
+                "in NewAgentStorage.getVariable().",
                 var_name.c_str());
         }
         // if (var.second.len == 1) {
@@ -208,12 +208,12 @@ struct NewAgentStorage {
         const auto t_type = std::type_index(typeid(T));
         if (var->second.type != std::type_index(typeid(T))) {
             THROW InvalidVarType("Variable '%s' has type '%s, incorrect  type '%s' was requested, "
-                "in NewAgentStorage.getVariable()\n",
+                "in NewAgentStorage.getVariable().",
                 var_name.c_str(), var->second.type.name(), t_type.name());
         }
         if (var->second.len < sizeof(T) * (index + 1)) {
             THROW OutOfRangeVarArray("Variable '%s' is an array with %u elements, index %u is out of range, "
-                "in NewAgentStorage.getVariable()\n",
+                "in NewAgentStorage.getVariable().",
                 var_name.c_str(), var->second.len / sizeof(T), index);
         }
         return *reinterpret_cast<T*>(data + var->second.offset + (index * sizeof(T)));

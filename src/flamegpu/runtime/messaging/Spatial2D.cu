@@ -226,19 +226,19 @@ MsgSpatial2D::Data::Data(ModelData *const model, const Data &other)
     , maxY(other.maxY) {
     description = std::unique_ptr<MsgSpatial2D::Description>(model ? new MsgSpatial2D::Description(model, this) : nullptr);
     if (isnan(radius)) {
-        THROW InvalidMessage("Radius has not been set in spatial message '%s'\n", other.name.c_str());
+        THROW InvalidMessage("Radius has not been set in spatial message '%s'.", other.name.c_str());
     }
     if (isnan(minX)) {
-        THROW InvalidMessage("Environment minimum x bound has not been set in spatial message '%s'\n", other.name.c_str());
+        THROW InvalidMessage("Environment minimum x bound has not been set in spatial message '%s.", other.name.c_str());
     }
     if (isnan(minY)) {
-        THROW InvalidMessage("Environment minimum y bound has not been set in spatial message '%s'\n", other.name.c_str());
+        THROW InvalidMessage("Environment minimum y bound has not been set in spatial message '%s'.", other.name.c_str());
     }
     if (isnan(maxX)) {
-        THROW InvalidMessage("Environment maximum x bound has not been set in spatial message '%s'\n", other.name.c_str());
+        THROW InvalidMessage("Environment maximum x bound has not been set in spatial message '%s'.", other.name.c_str());
     }
     if (isnan(maxY)) {
-        THROW InvalidMessage("Environment maximum y bound has not been set in spatial message '%s'\n", other.name.c_str());
+        THROW InvalidMessage("Environment maximum y bound has not been set in spatial message '%s'.", other.name.c_str());
     }
 }
 MsgSpatial2D::Data *MsgSpatial2D::Data::clone(ModelData *const newParent) {
@@ -262,25 +262,25 @@ void MsgSpatial2D::Description::setRadius(const float &r) {
 void MsgSpatial2D::Description::setMinX(const float &x) {
     if (!isnan(reinterpret_cast<Data *>(message)->maxX) &&
         x >= reinterpret_cast<Data *>(message)->maxX) {
-        THROW InvalidArgument("Spatial messaging minimum bound must be lower than max bound, %f !< %f", x, reinterpret_cast<Data *>(message)->maxX);
+        THROW InvalidArgument("Spatial messaging minimum bound must be lower than max bound, %f !< %f.", x, reinterpret_cast<Data *>(message)->maxX);
     }
     reinterpret_cast<Data *>(message)->minX = x;
 }
 void MsgSpatial2D::Description::setMinY(const float &y) {
     if (!isnan(reinterpret_cast<Data *>(message)->maxY) &&
         y >= reinterpret_cast<Data *>(message)->maxY) {
-        THROW InvalidArgument("Spatial messaging minimum bound must be lower than max bound, %f !< %f", y, reinterpret_cast<Data *>(message)->maxY);
+        THROW InvalidArgument("Spatial messaging minimum bound must be lower than max bound, %f !< %f.", y, reinterpret_cast<Data *>(message)->maxY);
     }
     reinterpret_cast<Data *>(message)->minY = y;
 }
 void MsgSpatial2D::Description::setMin(const float &x, const float &y) {
     if (!isnan(reinterpret_cast<Data *>(message)->maxX) &&
         x >= reinterpret_cast<Data *>(message)->maxX) {
-        THROW InvalidArgument("Spatial messaging minimum bound must be lower than max bound, %f !< %f", x, reinterpret_cast<Data *>(message)->maxX);
+        THROW InvalidArgument("Spatial messaging minimum bound must be lower than max bound, %f !< %f.", x, reinterpret_cast<Data *>(message)->maxX);
     }
     if (!isnan(reinterpret_cast<Data *>(message)->maxY) &&
         y >= reinterpret_cast<Data *>(message)->maxY) {
-        THROW InvalidArgument("Spatial messaging minimum bound must be lower than max bound, %f !< %f", y, reinterpret_cast<Data *>(message)->maxY);
+        THROW InvalidArgument("Spatial messaging minimum bound must be lower than max bound, %f !< %f.", y, reinterpret_cast<Data *>(message)->maxY);
     }
     reinterpret_cast<Data *>(message)->minX = x;
     reinterpret_cast<Data *>(message)->minY = y;
@@ -288,25 +288,25 @@ void MsgSpatial2D::Description::setMin(const float &x, const float &y) {
 void MsgSpatial2D::Description::setMaxX(const float &x) {
     if (!isnan(reinterpret_cast<Data *>(message)->minX) &&
         x <= reinterpret_cast<Data *>(message)->minX) {
-        THROW InvalidArgument("Spatial messaging max x bound must be greater than min bound, %f !> %f", x, reinterpret_cast<Data *>(message)->minX);
+        THROW InvalidArgument("Spatial messaging max x bound must be greater than min bound, %f !> %f.", x, reinterpret_cast<Data *>(message)->minX);
     }
     reinterpret_cast<Data *>(message)->maxX = x;
 }
 void MsgSpatial2D::Description::setMaxY(const float &y) {
     if (!isnan(reinterpret_cast<Data *>(message)->minY) &&
         y <= reinterpret_cast<Data *>(message)->minY) {
-        THROW InvalidArgument("Spatial messaging max y bound must be greater than min bound, %f !> %f", y, reinterpret_cast<Data *>(message)->minY);
+        THROW InvalidArgument("Spatial messaging max y bound must be greater than min bound, %f !> %f.", y, reinterpret_cast<Data *>(message)->minY);
     }
     reinterpret_cast<Data *>(message)->maxY = y;
 }
 void MsgSpatial2D::Description::setMax(const float &x, const float &y) {
     if (!isnan(reinterpret_cast<Data *>(message)->minX) &&
         x <= reinterpret_cast<Data *>(message)->minX) {
-        THROW InvalidArgument("Spatial messaging max x bound must be greater than min bound, %f !> %f", x, reinterpret_cast<Data *>(message)->minX);
+        THROW InvalidArgument("Spatial messaging max x bound must be greater than min bound, %f !> %f.", x, reinterpret_cast<Data *>(message)->minX);
     }
     if (!isnan(reinterpret_cast<Data *>(message)->minY) &&
         y <= reinterpret_cast<Data *>(message)->minY) {
-        THROW InvalidArgument("Spatial messaging max y bound must be greater than min bound, %f !> %f", y, reinterpret_cast<Data *>(message)->minY);
+        THROW InvalidArgument("Spatial messaging max y bound must be greater than min bound, %f !> %f.", y, reinterpret_cast<Data *>(message)->minY);
     }
     reinterpret_cast<Data *>(message)->maxX = x;
     reinterpret_cast<Data *>(message)->maxY = y;

@@ -166,7 +166,7 @@ void LayerDescription::addAgentFunction(AgentFunction /*af*/) {
                                 b->end_state == f.second->end_state) {
                                 THROW InvalidAgentFunc("Agent functions '%s' cannot be added to this layer as agent function '%s' "
                                     "within the layer shares an input or output state, this is not permitted, "
-                                    "in LayerDescription::addAgentFunction()\n",
+                                    "in LayerDescription::addAgentFunction().",
                                     f.second->name.c_str(), b->name.c_str());
                             }
                         }
@@ -176,12 +176,12 @@ void LayerDescription::addAgentFunction(AgentFunction /*af*/) {
                 if (layer->agent_functions.emplace(f.second).second)
                     return;
                 THROW InvalidAgentFunc("Attempted to add same agent function to same layer twice, "
-                    "in LayerDescription::addAgentFunction()\n");
+                    "in LayerDescription::addAgentFunction().");
             }
         }
     }
     THROW InvalidAgentFunc("Agent function was not found, "
-        "in LayerDescription::addAgentFunction()\n");
+        "in LayerDescription::addAgentFunction().");
 }
 
 #endif  // INCLUDE_FLAMEGPU_MODEL_LAYERDESCRIPTION_H_
