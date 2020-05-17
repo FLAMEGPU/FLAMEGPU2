@@ -18,7 +18,7 @@ void LayerDescription::addAgentFunction(const AgentFunctionDescription &afd) {
         return;
     }
     THROW DifferentModel("Attempted to add agent function description which is from a different model, "
-        "in LayerDescription::addAgentFunction()\n");
+        "in LayerDescription::addAgentFunction().");
 }
 void LayerDescription::addAgentFunction(const std::string &name) {
     // Locate the matching agent function in the model hierarchy
@@ -37,7 +37,7 @@ void LayerDescription::addAgentFunction(const std::string &name) {
                                 b->end_state == f.second->end_state) {
                                 THROW InvalidAgentFunc("Agent functions '%s' cannot be added to this layer as agent function '%s' "
                                     "within the layer shares an input or output state, this is not permitted, "
-                                    "in LayerDescription::addAgentFunction()\n",
+                                    "in LayerDescription::addAgentFunction().",
                                     f.second->name.c_str(), b->name.c_str());
                             }
                         }
@@ -46,7 +46,7 @@ void LayerDescription::addAgentFunction(const std::string &name) {
                 if (layer->agent_functions.insert(f.second).second)
                     return;
                 THROW InvalidAgentFunc("Attempted to add agent function '%s' to same layer twice, "
-                    "in LayerDescription::addAgentFunction()\n",
+                    "in LayerDescription::addAgentFunction().",
                     name.c_str());
             }
         }
@@ -95,7 +95,7 @@ const AgentFunctionDescription &LayerDescription::getAgentFunction(unsigned int 
         return *((*it)->description);
     }
     THROW OutOfBoundsException("Index %d is out of bounds (only %d items exist) "
-        "in LayerDescription.getAgentFunction()\n",
+        "in LayerDescription.getAgentFunction().",
     index, layer->agent_functions.size());
 }
 FLAMEGPU_HOST_FUNCTION_POINTER LayerDescription::getHostFunction(unsigned int index) const {
@@ -106,6 +106,6 @@ FLAMEGPU_HOST_FUNCTION_POINTER LayerDescription::getHostFunction(unsigned int in
         return *it;
     }
     THROW OutOfBoundsException("Index %d is out of bounds (only %d items exist) "
-        "in LayerDescription.getHostFunction()\n",
+        "in LayerDescription.getHostFunction().",
         index, layer->host_functions.size());
 }

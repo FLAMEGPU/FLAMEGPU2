@@ -60,7 +60,7 @@ class name : public FGPUException {\
         va_start(argp, format);\
         err_message += parseArgs(format, argp);\
         va_end(argp);\
-        fprintf(stderr, "%s", err_message.c_str()); \
+        fprintf(stderr, "%s\n", err_message.c_str()); \
     }\
 }
 #else
