@@ -14,6 +14,7 @@ FGPUException::FGPUException()
         std::stringstream ss;
         ss << file << "(" << line << "): ";
         err_message.append(ss.str());
+        file = nullptr;
     }
 }
 
