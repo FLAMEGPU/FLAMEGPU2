@@ -390,13 +390,16 @@ unsigned int CUDAAgentStateList::scatter(const unsigned int &streamId, const uns
     if (mode == Death) {
         std::swap(d_list, d_swap_list);
         std::swap(condition_d_list, condition_d_swap_list);
+        if (dependent_state) {
+          dependent_state->swap();
+        }
         current_list_size = living_agents;
     } else if (mode == FunctionCondition2) {
         std::swap(d_list, d_swap_list);
         std::swap(condition_d_list, condition_d_swap_list);
-    }
-    if (dependent_state) {
-      dependent_state->swap();
+        if (dependent_state) {
+          dependent_state->swap();
+        }
     }
     return living_agents;
 }
