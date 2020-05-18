@@ -8,20 +8,23 @@ SET(PYTHON_MODULE_NAME pyFlameGPU)
 # TODO: Somehow incorporate $<CONFIG> for multi configuration builds of library
 SET(PYTHON_LIB_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib/${CMAKE_SYSTEM_NAME_LOWER}-x64/python)
 SET(PYTHON_LIB_TEMP_DIRECTORY ${CMAKE_BINARY_DIR}/swig/python/${CMAKE_BUILD_TYPE})
+# set input file name (TODO: consistency of library names e.g. flamegpu nto flamegpu2)
+SET(SWIG_INPUT_FILE_NAME flamegpu2)
 
 
 # setup properties of swig input file
-set_property(SOURCE flamegpu2.i PROPERTY CPLUSPLUS ON)
-set_property(SOURCE flamegpu2.i PROPERTY SWIG_MODULE_NAME ${PYTHON_MODULE_NAME})
+set_property(SOURCE ${SWIG_INPUT_FILE_NAME}.i PROPERTY CPLUSPLUS ON)
+set_property(SOURCE ${SWIG_INPUT_FILE_NAME}.i PROPERTY SWIG_MODULE_NAME ${PYTHON_MODULE_NAME})
 
 # Add swig module
 swig_add_library(${PYTHON_MODULE_NAME}
-	#TYPE SHARED
-	TYPE STATIC
+	TYPE SHARED
+	#TYPE STATIC
 	LANGUAGE python 
 	OUTPUT_DIR ${PYTHON_LIB_TEMP_DIRECTORY}/${PYTHON_MODULE_NAME}
-	SOURCES flamegpu2.i)
+	SOURCES ${SWIG_INPUT_FILE_NAME}.i)
 
+set_source_files_properties(${PYTHON_MODULE_NAME}/${SWIG_INPUT_FILE_NAME}PYTHON_wrap.cxx PROPERTIES LANGUAGE CUDA)
 
 target_include_directories(${PYTHON_MODULE_NAME}
   PRIVATE
@@ -29,16 +32,20 @@ target_include_directories(${PYTHON_MODULE_NAME}
   ../../externals
   ${Python_INCLUDE_DIRS}
   )
+  
+# use the target include directories
 set_property(TARGET ${PYTHON_MODULE_NAME} PROPERTY SWIG_USE_TARGET_INCLUDE_DIRECTORIES ON)
+# needs to have RDC enable for the project
+set_property(TARGET ${PYTHON_MODULE_NAME} PROPERTY CUDA_SEPARABLE_COMPILATION ON)
 
-target_link_libraries(${PYTHON_MODULE_NAME} PRIVATE flamegpu2)
+target_link_libraries(${PYTHON_MODULE_NAME} PRIVATE flamegpu2 cuda)
 
 # Variable PYTHON_LIBRARIES can contains keyword `optimized`
 # which won't be interpreted inside a generator expression.
 # i.e. we can't use: $<$<PLATFORM_ID:Windows>:${PYTHON_LIBRARIES}>
 # see: https://cmake.org/cmake/help/git-stage/command/target_link_libraries.html#command:target_link_libraries
 if(MSVC)
-  target_link_libraries(${PYTHON_MODULE_NAME} PRIVATE ${Python_LIBRARIES})
+  target_link_libraries(${PYTHON_MODULE_NAME} PRIVATE ${Python_LIBRARIES} flamegpu2 cuda)
 endif()
 
 
@@ -97,9 +104,9 @@ add_custom_target(python_package ALL
   COMMAND ${CMAKE_COMMAND} -E copy ${PYTHON_LIB_TEMP_DIRECTORY}/${PYTHON_MODULE_NAME}/${PYTHON_MODULE_NAME}.py ${PYTHON_MODULE_NAME}
   # copy compiled pyd file to library output location
   COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${PYTHON_MODULE_NAME}> ${PYTHON_MODULE_NAME}
-  # copy flamegpu2 libary to .libs
+  # copy module libary to .libs
   COMMAND ${CMAKE_COMMAND} -E make_directory ${PYTHON_MODULE_NAME}/.libs
-  COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:flamegpu2> ${PYTHON_MODULE_NAME}/.libs
+  COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${SWIG_INPUT_FILE_NAME}> ${PYTHON_MODULE_NAME}/.libs
 
   COMMAND ${Python_EXECUTABLE} setup.py bdist_wheel
   BYPRODUCTS
@@ -137,3 +144,10 @@ if (FALSE)
 		COMMAND ${VENV_Python_EXECUTABLE} ${PROJECT_SOURCE_DIR}/swig/python/test.py)
 	endif()
 endif()
+
+# set project folders (for better organisation in visual studio)
+if (CMAKE_USE_FOLDERS)
+  set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+  set_property(TARGET "${PYTHON_MODULE_NAME}" PROPERTY FOLDER "FLAMEGPU")
+  set_property(TARGET "python_package" PROPERTY FOLDER "Python")
+endif ()
