@@ -17,6 +17,7 @@
  * AgentFunction Condition:
  *  - Layer before SubModel
  *  - In SubModel
+ *  - In SubModel (nested verison)
  * Agent State Transitions
  *  - Layer before SubModel
  *    - Unmapped -> Unmapped
@@ -115,6 +116,7 @@ FLAMEGPU_AGENT_FUNCTION_CONDITION(AllowEven) {
 FLAMEGPU_AGENT_FUNCTION(UpdateId100, MsgNone, MsgNone) {
     const unsigned int v = FLAMEGPU->getVariable<unsigned int>("i");
     FLAMEGPU->setVariable<unsigned int>("i", v + 100);
+    return ALIVE;
 }
 FLAMEGPU_EXIT_CONDITION(ExitAlways) {
     return EXIT;
@@ -625,12 +627,14 @@ TEST(TestCUDASubAgent, AgentFunctionCondition_BeforeSubModel) {
         if (_i >= AGENT_COUNT) {
             // Agent passed condition
             const unsigned int __i = _i - 100;  // Calculate original value of AGENT_VAR_i
+            EXPECT_EQ(__i % 4, 0);
             EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), __i + mapped_result);
             EXPECT_EQ(_avar2, unmapped_result - __i);
             pass_count++;
         } else {
             // Agent failed condition
             const unsigned int __i = _i;
+            EXPECT_NE(__i % 4, 0);
             EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), __i + mapped_result);
             EXPECT_EQ(_avar2, unmapped_result - __i);
             fail_count++;
@@ -656,12 +660,14 @@ TEST(TestCUDASubAgent, AgentFunctionCondition_BeforeSubModel) {
         if (_i >= AGENT_COUNT + 100) {
             // Agent passed condition (same agents pass both times)
             const unsigned int __i = _i - 200;  // Calculate original value of AGENT_VAR_i
+            EXPECT_EQ(__i % 4, 0);
             EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), __i + mapped_result2);
             EXPECT_EQ(_avar2, unmapped_result2 - __i);
             pass_count++;
         } else {
             // Agent failed condition
             const unsigned int __i = _i;
+            EXPECT_NE(__i % 4, 0);
             EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), __i + mapped_result2);
             EXPECT_EQ(_avar2, unmapped_result2 - __i);
             fail_count++;
@@ -730,12 +736,14 @@ TEST(TestCUDASubAgent, AgentFunctionCondition_InSubModel) {
         if (_i >= AGENT_COUNT) {
             // Agent passed condition
             const unsigned int __i = _i - 100;  // Calculate original value of AGENT_VAR_i
+            EXPECT_EQ(__i % 4, 0);
             EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), __i + mapped_result);
             EXPECT_EQ(_avar2, unmapped_result - __i);
             pass_count++;
         } else {
             // Agent failed condition
             const unsigned int __i = _i;
+            EXPECT_NE(__i % 4, 0);
             EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), __i + mapped_result);
             EXPECT_EQ(_avar2, unmapped_result - __i);
             fail_count++;
@@ -761,12 +769,135 @@ TEST(TestCUDASubAgent, AgentFunctionCondition_InSubModel) {
         if (_i >= AGENT_COUNT + 100) {
             // Agent passed condition (same agents pass both times)
             const unsigned int __i = _i - 200;  // Calculate original value of AGENT_VAR_i
+            EXPECT_EQ(__i % 4, 0);
             EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), __i + mapped_result2);
             EXPECT_EQ(_avar2, unmapped_result2 - __i);
             pass_count++;
         } else {
             // Agent failed condition
             const unsigned int __i = _i;
+            EXPECT_NE(__i % 4, 0);
+            EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), __i + mapped_result2);
+            EXPECT_EQ(_avar2, unmapped_result2 - __i);
+            fail_count++;
+        }
+    }
+    EXPECT_EQ(static_cast<unsigned int>(pop.getCurrentListSize() * 0.25), pass_count);
+    EXPECT_EQ(static_cast<unsigned int>(pop.getCurrentListSize() * 0.75), fail_count);
+}
+TEST(TestCUDASubAgent, AgentFunctionCondition_InNestedSubModel) {
+    ModelDescription sm(SUB_MODEL_NAME);
+    {
+        // Define SubModel
+        auto &a = sm.newAgent(AGENT_NAME);
+        a.newVariable<unsigned int>(AGENT_VAR_i);
+        a.newVariable<unsigned int>(AGENT_VAR1_NAME, 0);
+        a.newVariable<unsigned int>(SUB_VAR1_NAME, 12);
+        a.newFunction("1", UpdateId100).setFunctionCondition(AllowEven);
+        a.newFunction("", AddOne);
+        sm.newLayer().addAgentFunction(UpdateId100);
+        sm.newLayer().addAgentFunction(AddOne);
+        sm.addExitCondition(ExitAlways);
+    }
+    ModelDescription psm(PROXY_SUB_MODEL_NAME);
+    {
+        // Define SubModel
+        auto &a = psm.newAgent(AGENT_NAME);
+        a.newVariable<unsigned int>(AGENT_VAR_i);
+        a.newVariable<unsigned int>(AGENT_VAR1_NAME, 0);
+        a.newVariable<unsigned int>(SUB_VAR1_NAME, 12);
+        auto &smd = psm.newSubModel("sub", sm);
+        smd.bindAgent(AGENT_NAME, AGENT_NAME, true, true);  // auto map vars and states
+        psm.newLayer().addSubModel("sub");
+        psm.addExitCondition(ExitAlways);
+    }
+    ModelDescription m(MODEL_NAME);
+    auto &ma = m.newAgent(AGENT_NAME);
+    {
+        // Define Model
+        ma.newVariable<unsigned int>(AGENT_VAR1_NAME, 1);
+        ma.newVariable<unsigned int>(AGENT_VAR2_NAME, std::numeric_limits<unsigned int>::max());
+        ma.newVariable<unsigned int>(AGENT_VAR_i);
+        ma.newFunction("2", AddTen);
+        auto &smd = m.newSubModel("proxysub", psm);
+        smd.bindAgent(AGENT_NAME, AGENT_NAME, true, true);  // auto map vars and states
+        m.newLayer().addAgentFunction(AddTen);
+        m.newLayer().addSubModel("proxysub");
+        m.newLayer().addAgentFunction(AddTen);
+    }
+    // Init Agents
+    AgentPopulation pop(ma, static_cast<unsigned int>(AGENT_COUNT));
+    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+        AgentInstance ai = pop.getNextInstance();
+        ai.setVariable<unsigned int>(AGENT_VAR_i, static_cast<unsigned int>(i));
+        ai.setVariable<unsigned int>(AGENT_VAR1_NAME, static_cast<unsigned int>(i));
+        ai.setVariable<unsigned int>(AGENT_VAR2_NAME, std::numeric_limits<unsigned int>::max() - i);
+        // Other vars all default init
+    }
+    // Init Model
+    CUDAAgentModel c(m);
+    c.SimulationConfig().steps = 1;
+    c.applyConfig();
+    c.setPopulationData(pop);
+    // Run Model
+    c.step();
+    // Check result
+    // Mapped var = init + af +  af + submodel + af
+    const unsigned int mapped_result = +10 + 1 + 10;
+    // Unmapped var = init + af + af + af
+    const unsigned int unmapped_result = std::numeric_limits<unsigned int>::max() - 1000 - 1000;
+    c.getPopulationData(pop);
+    EXPECT_EQ(pop.getCurrentListSize(), static_cast<unsigned int>(AGENT_COUNT));
+    unsigned int pass_count = 0;
+    unsigned int fail_count = 0;
+    for (unsigned int i = 0; i < pop.getCurrentListSize(); ++i) {
+        AgentInstance ai = pop.getInstanceAt(i);
+        const unsigned int _i = ai.getVariable<unsigned int>(AGENT_VAR_i);
+        const unsigned int _avar2 = ai.getVariable<unsigned int>(AGENT_VAR2_NAME);
+        if (_i >= AGENT_COUNT) {
+            // Agent passed condition
+            const unsigned int __i = _i - 100;  // Calculate original value of AGENT_VAR_i
+            EXPECT_EQ(__i % 4, 0);
+            EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), __i + mapped_result);
+            EXPECT_EQ(_avar2, unmapped_result - __i);
+            pass_count++;
+        } else {
+            // Agent failed condition
+            const unsigned int __i = _i;
+            EXPECT_NE(__i % 4, 0);
+            EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), __i + mapped_result);
+            EXPECT_EQ(_avar2, unmapped_result - __i);
+            fail_count++;
+        }
+    }
+    EXPECT_EQ(static_cast<unsigned int>(pop.getCurrentListSize() * 0.25), pass_count);
+    EXPECT_EQ(static_cast<unsigned int>(pop.getCurrentListSize() * 0.75), fail_count);
+    // Run Model
+    c.step();
+    // Check result
+    // Mapped var = mapped_result + af +  af + submodel + af
+    const unsigned int mapped_result2 = mapped_result + 10 + 1 + 10;
+    // Unmapped var = unmapped_result + af + af + af
+    const unsigned int unmapped_result2 = unmapped_result - 1000 - 1000;
+    c.getPopulationData(pop);
+    EXPECT_EQ(pop.getCurrentListSize(), static_cast<unsigned int>(AGENT_COUNT));
+    pass_count = 0;
+    fail_count = 0;
+    for (unsigned int i = 0; i < pop.getCurrentListSize(); ++i) {
+        AgentInstance ai = pop.getInstanceAt(i);
+        const unsigned int _i = ai.getVariable<unsigned int>(AGENT_VAR_i);
+        const unsigned int _avar2 = ai.getVariable<unsigned int>(AGENT_VAR2_NAME);
+        if (_i >= AGENT_COUNT + 100) {
+            // Agent passed condition (same agents pass both times)
+            const unsigned int __i = _i - 200;  // Calculate original value of AGENT_VAR_i
+            EXPECT_EQ(__i % 4, 0);
+            EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), __i + mapped_result2);
+            EXPECT_EQ(_avar2, unmapped_result2 - __i);
+            pass_count++;
+        } else {
+            // Agent failed condition
+            const unsigned int __i = _i;
+            EXPECT_NE(__i % 4, 0);
             EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), __i + mapped_result2);
             EXPECT_EQ(_avar2, unmapped_result2 - __i);
             fail_count++;
