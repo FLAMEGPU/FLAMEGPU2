@@ -4,12 +4,12 @@
 STRING(TOLOWER "${CMAKE_SYSTEM_NAME}" CMAKE_SYSTEM_NAME_LOWER)
 
 # Output locations for build
-SET(PYTHON_MODULE_NAME pyFlameGPU)
+SET(PYTHON_MODULE_NAME flamegpu)
 # TODO: Somehow incorporate $<CONFIG> for multi configuration builds of library
 SET(PYTHON_LIB_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib/${CMAKE_SYSTEM_NAME_LOWER}-x64/python)
 SET(PYTHON_LIB_TEMP_DIRECTORY ${CMAKE_BINARY_DIR}/swig/python/${CMAKE_BUILD_TYPE})
 # set input file name (TODO: consistency of library names e.g. flamegpu nto flamegpu2)
-SET(SWIG_INPUT_FILE_NAME flamegpu2)
+SET(SWIG_INPUT_FILE_NAME flamegpu)
 
 
 # setup properties of swig input file
@@ -38,6 +38,7 @@ set_property(TARGET ${PYTHON_MODULE_NAME} PROPERTY SWIG_USE_TARGET_INCLUDE_DIREC
 # needs to have RDC enable for the project
 set_property(TARGET ${PYTHON_MODULE_NAME} PROPERTY CUDA_SEPARABLE_COMPILATION ON)
 
+# link with the static flamegpu and cuda libraries
 target_link_libraries(${PYTHON_MODULE_NAME} PRIVATE flamegpu2 cuda)
 
 # Variable PYTHON_LIBRARIES can contains keyword `optimized`
@@ -52,8 +53,8 @@ endif()
 #######################
 ## Python Packaging  ##
 #######################
-# setup.py.in contains cmake variable e.g. @PROJECT_NAME@ and
-# generator expression e.g. $<TARGET_FILE_NAME:pyFoo>
+# configure the python setup and init files for packaging
+# they contain 
 configure_file(
 	setup.py.in
 	${PYTHON_LIB_TEMP_DIRECTORY}/setup.py.in

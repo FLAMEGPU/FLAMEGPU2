@@ -14,7 +14,7 @@ class InstallPlatlib(install):
         self.install_lib=self.install_platlib
 
 setup(
-  name='@PROJECT_NAME@',
+  name='@PYTHON_MODULE_NAME@',
   version='@PROJECT_VERSION@',
   author='Paul Richmond',
   author_email='\"Paul Richmond\" <p.richmond@sheffield.ac.uk>',
@@ -23,8 +23,8 @@ setup(
   cmdclass={'install': InstallPlatlib},
   packages=find_packages(),
   package_data={
-  '@PROJECT_NAME@':[$<$<NOT:$<PLATFORM_ID:Windows>>:'.libs/*'>],
-  '@PROJECT_NAME@.pyFlameGPU':['$<TARGET_FILE_NAME:pyFlameGPU>'],
+  '@PYTHON_MODULE_NAME@':[$<$<NOT:$<PLATFORM_ID:Windows>>:'.libs/*'>],
+  '@PYTHON_MODULE_NAME@.PYTHON_MODULE_NAME':['$<TARGET_FILE_NAME:@PYTHON_MODULE_NAME@>'],
   },
   include_package_data=True,
   classifiers=[
