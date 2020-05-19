@@ -43,7 +43,7 @@ target_include_directories(${PYTHON_MODULE_NAME}
   PRIVATE
   ../../include
   ../../externals
-  ${Python_INCLUDE_DIRS}
+  ${Python3_INCLUDE_DIRS}
   )
   
 # link with the static flamegpu and cuda libraries
@@ -53,7 +53,7 @@ target_link_libraries(${PYTHON_MODULE_NAME} PRIVATE flamegpu2 cuda)
 # i.e. we can't use: $<$<PLATFORM_ID:Windows>:${PYTHON_LIBRARIES}>
 # see: https://cmake.org/cmake/help/git-stage/command/target_link_libraries.html#command:target_link_libraries
 if(MSVC)
-  target_link_libraries(${PYTHON_MODULE_NAME} PRIVATE ${Python_LIBRARIES} flamegpu2 cuda)
+  target_link_libraries(${PYTHON_MODULE_NAME} PRIVATE ${Python3_LIBRARIES} flamegpu2 cuda)
 endif()
 
 
@@ -79,18 +79,18 @@ file(GENERATE
 # Function to find if python module MODULE_NAME is available, if not then install it to the Python user install directory.
 function(search_python_module MODULE_NAME)
   execute_process(
-    COMMAND ${Python_EXECUTABLE} -c "import ${MODULE_NAME}; print(${MODULE_NAME}.__version__)"
+    COMMAND ${Python3_EXECUTABLE} -c "import ${MODULE_NAME}; print(${MODULE_NAME}.__version__) if hasattr(${MODULE_NAME}, '__version__') else print('Unknown');"
     RESULT_VARIABLE _RESULT
     OUTPUT_VARIABLE MODULE_VERSION
     ERROR_QUIET
     OUTPUT_STRIP_TRAILING_WHITESPACE
     )
   if(${_RESULT} STREQUAL "0")
-    message(STATUS "Found python module: ${MODULE_NAME} (found version \"${MODULE_VERSION}\")")
+    message(STATUS "Found python module: ${MODULE_NAME} (version \"${MODULE_VERSION}\")")
   else()
     message(WARNING "Can't find python module \"${MODULE_NAME}\", user install it using pip...")
     execute_process(
-      COMMAND ${Python_EXECUTABLE} -m pip install --upgrade --user ${MODULE_NAME}
+      COMMAND ${Python3_EXECUTABLE} -m pip install --upgrade --user ${MODULE_NAME}
       OUTPUT_STRIP_TRAILING_WHITESPACE
       )
   endif()
@@ -107,7 +107,7 @@ add_custom_command(TARGET ${PYTHON_MODULE_NAME} POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy ${PYTHON_LIB_TEMP_DIRECTORY}/${PYTHON_MODULE_NAME}/${PYTHON_MODULE_NAME}.py ${PYTHON_MODULE_NAME}
 	# copy the compiled pyd file to library output location
 	COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${PYTHON_MODULE_NAME}> ${PYTHON_MODULE_NAME}
-	COMMAND ${Python_EXECUTABLE} setup.py bdist_wheel
+	COMMAND ${Python3_EXECUTABLE} setup.py bdist_wheel
 	# by products of the packaging
 	BYPRODUCTS
 		${PYTHON_MODULE_NAME}
@@ -121,9 +121,9 @@ add_custom_command(TARGET ${PYTHON_MODULE_NAME} POST_BUILD
 # Build Virtual Environment for python testing and install the packaged wheel
 if(BUILD_SWIG_PYTHON_VIRTUALENV)
 	# Look for python module virtualenv
-	search_python_module(virtualenv)
+	search_python_module(venv)
 	# Testing using a virtual environment
-	set(VENV_EXECUTABLE ${Python_EXECUTABLE} -m virtualenv)
+	set(VENV_EXECUTABLE ${Python3_EXECUTABLE} -m venv)
 	set(VENV_DIR ${PYTHON_LIB_OUTPUT_DIRECTORY}/venv)
 	if(WIN32)
 		set(VENV_Python_EXECUTABLE "${VENV_DIR}\\Scripts\\python.exe")
@@ -132,7 +132,7 @@ if(BUILD_SWIG_PYTHON_VIRTUALENV)
 	endif()
 	# make a virtualenv to install our python package in it
 	add_custom_command(TARGET ${PYTHON_MODULE_NAME} POST_BUILD
-		COMMAND ${VENV_EXECUTABLE} -p ${Python_EXECUTABLE} ${VENV_DIR}
+		COMMAND ${VENV_EXECUTABLE} ${VENV_DIR}
 		# Must not call it in a folder containing the setup.py otherwise pip call it
 		# (i.e. "python setup.py bdist") while we want to consume the wheel package
 		COMMAND ${VENV_Python_EXECUTABLE} -m pip install --force-reinstall --find-links=dist ${PYTHON_MODULE_NAME}
