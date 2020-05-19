@@ -8,6 +8,38 @@ if(POLICY CMP0086)
   cmake_policy(SET CMP0086 NEW)
 endif()
 
+# Pull in swig (on Windows)
+MACRO (download_swig)
+    configure_file(../cmake/swig/CMakeLists.txt.in ${CMAKE_CURRENT_BINARY_DIR}/swig-download/CMakeLists.txt)
+    # Run CMake generate
+    execute_process(
+        COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
+        RESULT_VARIABLE result
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/swig-download
+        )
+    if (result)
+        message(WARNING
+                "CMake step for swig failed: ${result}\n")
+    endif ()
+    # Run CMake build (this only downloads and extracts)
+    execute_process(
+    COMMAND ${CMAKE_COMMAND} --build .
+    RESULT_VARIABLE result
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/swig-download
+    )
+    if (result)
+        message(WARNING
+                "Download step for swig failed: ${result}\n"
+                "Attempting to continue\n")
+    endif ()
+    # Set Swig path variable
+    message(STATUS ${CMAKE_CURRENT_BINARY_DIR}/swig/swig.exe)
+    set(SWIG_EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/swig/swig.exe CACHE FILEPATH "Path to SWIG executable")
+ENDMACRO()
+# If on windows, and SWIG_EXECUTABLE not specified, auto download Swig 4.0.1
+if(WIN32 AND NOT SWIG_EXECUTABLE)  
+    download_swig()
+endif()
 # Set up swig
 set(CMAKE_SWIG_FLAGS)
 find_package(SWIG REQUIRED)
