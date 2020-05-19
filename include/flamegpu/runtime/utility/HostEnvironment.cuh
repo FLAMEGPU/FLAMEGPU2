@@ -102,57 +102,7 @@ class HostEnvironment {
      */
     template<typename T>
     T set(const std::string &name, const EnvironmentManager::size_type &index, const T &value) const;
-    /**
-     * Adds a new environment property
-     * @param name name used for accessing the property
-     * @param value stored value of the property
-     * @param isConst If set to true, it is not possible to change the value
-     * @tparam T Type of the environmental property to be created
-     * @throws DuplicateEnvProperty If a property of the same name already exists
-     */
-    template<typename T>
-    void add(const std::string &name, const T &value, const bool &isConst = false) const;
-    /**
-     * Adds a new environment property array
-     * @param name name used for accessing the property
-     * @param value stored value of the property
-     * @param isConst If set to true, it is not possible to change the value
-     * @tparam T Type of the environmental property array to be created
-     * @tparam N Length of the environmental property array to be created
-     * @throws DuplicateEnvProperty If a property of the same name already exists
-     */
-    template<typename T, EnvironmentManager::size_type N>
-    void add(const std::string &name, const std::array<T, N> &value, const bool &isConst = false) const;
-    /**
-     * Removes an environment property
-     * @param name name used for accessing the property
-     * @tparam T Type of the environmental property
-     * @throws InvalidEnvProperty If a property of the name does not exist
-     * @note This may be used to remove and recreate environment properties (and arrays) marked const
-    **/
-    template<typename T>
-    void remove(const std::string &name) const;
 };
-
-/**
- * Constructors
- */
-template<typename T>
-void HostEnvironment::add(const std::string &name, const T &value, const bool &isConst) const {
-    if (!name.empty() && name[0] == '_') {
-        THROW ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
-            "in HostEnvironment::add().");
-    }
-    env_mgr.add<T>({ model_name, name }, value, isConst);
-}
-template<typename T, EnvironmentManager::size_type N>
-void HostEnvironment::add(const std::string &name, const std::array<T, N> &value, const bool &isConst) const {
-    if (!name.empty() && name[0] == '_') {
-        THROW ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
-            "in HostEnvironment::add().");
-    }
-    env_mgr.add<T, N>({ model_name, name }, value, isConst);
-}
 
 /**
  * Setters
@@ -198,11 +148,4 @@ T HostEnvironment::get(const std::string &name, const EnvironmentManager::size_t
     return env_mgr.get<T>({ model_name, name }, index);
 }
 
-/**
- * Destructors
- */
-template<typename T>
-void HostEnvironment::remove(const std::string &name) const {
-    return env_mgr.remove<T>({ model_name, name });
-}
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_UTILITY_HOSTENVIRONMENT_CUH_

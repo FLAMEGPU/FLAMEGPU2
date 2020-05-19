@@ -561,7 +561,7 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, bool f
     std::string include_fgpu;
     include_fgpu = "-I" + std::string(env_inc_fgp2);
     options.push_back(include_fgpu);
-    
+
     // cuda path
     std::string include_cuda;
     include_cuda = "-I" + std::string(env_cuda_path) + "/include";

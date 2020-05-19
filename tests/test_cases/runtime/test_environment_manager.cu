@@ -21,7 +21,7 @@ const float MS1_VAL = 12.0f;
 const float MS1_VAL2 = 36.0f;
 const double MS2_VAL = 13.0;
 FLAMEGPU_STEP_FUNCTION(DEFAULT_STEP) {
-    EXPECT_ANY_THROW(FLAMEGPU->environment.remove<float>("asdfsdfsdf"));
+    // Do nothing
 }
 FLAMEGPU_STEP_FUNCTION(AlignTest) {
     ASSERT_EQ(FLAMEGPU->environment.get<bool>("a"), false);
