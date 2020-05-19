@@ -36,7 +36,8 @@ set_source_files_properties(${PYTHON_LIB_TEMP_DIRECTORY}/${PYTHON_MODULE_NAME}/$
 set_property(TARGET ${PYTHON_MODULE_NAME} PROPERTY SWIG_USE_TARGET_INCLUDE_DIRECTORIES ON)
 # needs to have RDC enable for the project
 set_property(TARGET ${PYTHON_MODULE_NAME} PROPERTY CUDA_SEPARABLE_COMPILATION ON)
-
+# Suppress warnings during compilation of SWIG generated PYTHON_wrap.cxx
+set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcudafe --diag_suppress=\"declared_but_not_referenced\"")
 # set include directories for module build
 target_include_directories(${PYTHON_MODULE_NAME}
   PRIVATE
