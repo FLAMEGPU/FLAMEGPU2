@@ -50,7 +50,7 @@ option(BUILD_EXAMPLE_CIRCLES_BRUTE_FORCE "Enable building examples/circles_brute
 option(BUILD_EXAMPLE_CIRCLES_SPATIAL_3D "Enable building examples/circles_spatial_3d" OFF)
 option(BUILD_EXAMPLE_RTC_EXAMPLE "Enable building examples/rtc_example" OFF)
 option(BUILD_SWIG_PYTHON "Enable python bindings via SWIG" OFF)
-cmake_dependent_option(BUILD_SWIG_PYTHON_TESTS "Enable building of SWIG Python Tests" OFF
+cmake_dependent_option(BUILD_SWIG_PYTHON_VIRTUALENV "Enable building of SWIG Python Virtual Env for Python Testing" OFF
                        "BUILD_SWIG_PYTHON" OFF)
 
 # Option to enable/disable building the static library
