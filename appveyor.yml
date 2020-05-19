@@ -43,7 +43,7 @@ before_build:
     mkdir build
     cd build
     cmake --version
-    cmake .. -A x64 -DWARNINGS_AS_ERRORS=ON -DSMS=35,60
+    cmake .. -A x64 -DWARNINGS_AS_ERRORS=ON -DSMS=35,60 -DBUILD_SWIG_PYTHON=ON -DBUILD_SWIG_PYTHON_VIRTUALENV=ON -DPYTHON_INCLUDE_DIR=C:\Python38-x64\include -DPYTHON_LIBRARY=C:\Python38-x64\libs\python38.lib
 
 # The build
 build:
