@@ -219,8 +219,8 @@ void CUDAAgent::mapRuntimeVariables(const AgentFunctionData& func, const std::st
             agent_description.name.c_str(), func.initial_state.c_str());
     }
 
-    const Curve::VariableHash agent_hash = Curve::getInstance().variableRuntimeHash(agent_description.name.c_str());
-    const Curve::VariableHash func_hash = Curve::getInstance().variableRuntimeHash(func.name.c_str());
+    const Curve::VariableHash agent_hash = Curve::variableRuntimeHash(agent_description.name.c_str());
+    const Curve::VariableHash func_hash = Curve::variableRuntimeHash(func.name.c_str());
     const unsigned int agent_count = this->getStateSize(func.initial_state);
     // loop through the agents variables to map each variable name using cuRVE
     for (const auto &mmp : agent_description.variables) {
@@ -228,7 +228,7 @@ void CUDAAgent::mapRuntimeVariables(const AgentFunctionData& func, const std::st
         void* d_ptr = sm->second->getAgentListVariablePointer(mmp.first);
 
         // map using curve
-        const Curve::VariableHash var_hash = Curve::getInstance().variableRuntimeHash(mmp.first.c_str());
+        const Curve::VariableHash var_hash = Curve::variableRuntimeHash(mmp.first.c_str());
 
         // get the agent variable size
         const size_t type_size = mmp.second.type_size * mmp.second.elements;
@@ -271,15 +271,15 @@ void CUDAAgent::unmapRuntimeVariables(const AgentFunctionData& func) const {
             agent_description.name.c_str(), func.initial_state.c_str());
     }
 
-    const Curve::VariableHash agent_hash = Curve::getInstance().variableRuntimeHash(agent_description.name.c_str());
-    const Curve::VariableHash func_hash = Curve::getInstance().variableRuntimeHash(func.name.c_str());
+    const Curve::VariableHash agent_hash = Curve::variableRuntimeHash(agent_description.name.c_str());
+    const Curve::VariableHash func_hash = Curve::variableRuntimeHash(func.name.c_str());
     // loop through the agents variables to map each variable name using cuRVE
     for (const auto &mmp : agent_description.variables) {
         // get a device pointer for the agent variable name
         // void* d_ptr = sm->second->getAgentListVariablePointer(mmp.first);
 
         // unmap using curve
-        const Curve::VariableHash var_hash = Curve::getInstance().variableRuntimeHash(mmp.first.c_str());
+        const Curve::VariableHash var_hash = Curve::variableRuntimeHash(mmp.first.c_str());
         Curve::getInstance().unregisterVariableByHash(var_hash + agent_hash + func_hash);
     }
 
@@ -434,15 +434,15 @@ void CUDAAgent::mapNewRuntimeVariables(const AgentFunctionData& func, const unsi
             agent_description.name.c_str(), func.agent_output_state.c_str());
     }
 
-    const Curve::VariableHash _agent_birth_hash = Curve::getInstance().variableRuntimeHash("_agent_birth");
-    const Curve::VariableHash func_hash = Curve::getInstance().variableRuntimeHash(func.name.c_str());
+    const Curve::VariableHash _agent_birth_hash = Curve::variableRuntimeHash("_agent_birth");
+    const Curve::VariableHash func_hash = Curve::variableRuntimeHash(func.name.c_str());
     // loop through the agents variables to map each variable name using cuRVE
     for (const auto &mmp : agent_description.variables) {
         // get a device pointer for the agent variable name
         void* d_ptr = sm->second->getAgentNewListVariablePointer(mmp.first);
 
         // map using curve
-        const Curve::VariableHash var_hash = Curve::getInstance().variableRuntimeHash(mmp.first.c_str());
+        const Curve::VariableHash var_hash = Curve::variableRuntimeHash(mmp.first.c_str());
 
         // get the agent variable size
         size_t type_size = mmp.second.type_size * mmp.second.elements;
@@ -464,15 +464,15 @@ void CUDAAgent::mapNewRuntimeVariables(const AgentFunctionData& func, const unsi
 }
 
 void CUDAAgent::unmapNewRuntimeVariables(const AgentFunctionData& func) const {
-    const Curve::VariableHash _agent_birth_hash = Curve::getInstance().variableRuntimeHash("_agent_birth");
-    const Curve::VariableHash func_hash = Curve::getInstance().variableRuntimeHash(func.name.c_str());
+    const Curve::VariableHash _agent_birth_hash = Curve::variableRuntimeHash("_agent_birth");
+    const Curve::VariableHash func_hash = Curve::variableRuntimeHash(func.name.c_str());
     // loop through the agents variables to map each variable name using cuRVE
     for (const auto &mmp : agent_description.variables) {
         // get a device pointer for the agent variable name
         // void* d_ptr = sm->second->getAgentListVariablePointer(mmp.first);
 
         // unmap using curve
-        const Curve::VariableHash var_hash = Curve::getInstance().variableRuntimeHash(mmp.first.c_str());
+        const Curve::VariableHash var_hash = Curve::variableRuntimeHash(mmp.first.c_str());
         Curve::getInstance().unregisterVariableByHash(var_hash + _agent_birth_hash + func_hash);
 
         // no need to unmap RTC variables
@@ -575,8 +575,8 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, bool f
     // curve rtc header
     CurveRTCHost curve_header;
     // agent function hash
-    Curve::NamespaceHash agentname_hash = Curve::getInstance().variableRuntimeHash(this->getAgentDescription().name.c_str());
-    Curve::NamespaceHash funcname_hash = Curve::getInstance().variableRuntimeHash(func.name.c_str());
+    Curve::NamespaceHash agentname_hash = Curve::variableRuntimeHash(this->getAgentDescription().name.c_str());
+    Curve::NamespaceHash funcname_hash = Curve::variableRuntimeHash(func.name.c_str());
     Curve::NamespaceHash agent_func_name_hash = agentname_hash + funcname_hash;
 
     // set agent function variables in rtc curve
@@ -589,7 +589,7 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, bool f
         // Set input message variables in curve
         if (auto im = func.message_input.lock()) {
             // get the message input hash
-            Curve::NamespaceHash msg_in_hash = Curve::getInstance().variableRuntimeHash(im->name.c_str());
+            Curve::NamespaceHash msg_in_hash = Curve::variableRuntimeHash(im->name.c_str());
             for (auto msg_in_var : im->variables) {
                 // register message variables using combined hash
                 curve_header.registerVariable(msg_in_var.first.c_str(), msg_in_hash + agent_func_name_hash, msg_in_var.second.type.name(), msg_in_var.second.elements, true, false);
@@ -598,7 +598,7 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, bool f
         // Set output message variables in curve
         if (auto om = func.message_output.lock()) {
             // get the message input hash
-            Curve::NamespaceHash msg_out_hash = Curve::getInstance().variableRuntimeHash(om->name.c_str());
+            Curve::NamespaceHash msg_out_hash = Curve::variableRuntimeHash(om->name.c_str());
             for (auto msg_out_var : om->variables) {
                 // register message variables using combined hash
                 curve_header.registerVariable(msg_out_var.first.c_str(), msg_out_hash + agent_func_name_hash, msg_out_var.second.type.name(), msg_out_var.second.elements, false, true);
@@ -607,17 +607,23 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, bool f
         // Set agent output variables in curve
         if (auto ao = func.agent_output.lock()) {
             // get the message input hash
-            Curve::NamespaceHash agent_out_hash = Curve::getInstance().variableRuntimeHash("_agent_birth");
+            Curve::NamespaceHash agent_out_hash = Curve::variableRuntimeHash("_agent_birth");
             for (auto agent_out_var : ao->variables) {
                 // register message variables using combined hash
                 curve_header.registerVariable(agent_out_var.first.c_str(), agent_out_hash + funcname_hash, agent_out_var.second.type.name(), agent_out_var.second.elements, false, true);
             }
         }
     }
+
     // Set Environment variables in curve
-    Curve::NamespaceHash model_hash = Curve::getInstance().variableRuntimeHash(cuda_model.getModelDescription().name.c_str());
-    for (auto prop : cuda_model.getModelDescription().environment->getPropertiesMap()) {
-        curve_header.registerEnvVariable(prop.first.c_str(), model_hash, prop.second.type.name(), prop.second.elements);
+    Curve::NamespaceHash model_hash = Curve::variableRuntimeHash(cuda_model.getModelDescription().name.c_str());
+    for (auto p : EnvironmentManager::getInstance().getPropertiesMap()) {
+        if (p.first.first == cuda_model.getModelDescription().name) {
+            const char* variableName = p.first.second.c_str();
+            const char* type = p.second.type.name();
+            unsigned int elements = p.second.elements;
+            curve_header.registerEnvVariable(variableName, model_hash, type, elements);
+        }
     }
 
     // get the dynamically generated header from curve rtc

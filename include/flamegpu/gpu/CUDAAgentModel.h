@@ -166,6 +166,10 @@ class CUDAAgentModel : public Simulation {
      */
     unsigned int step_count;
     /**
+     * Update the step counter for host and device.
+     */
+    void incrementStepCounter();
+    /**
      * Map of agent storage 
      */
     CUDAAgentMap agent_map;

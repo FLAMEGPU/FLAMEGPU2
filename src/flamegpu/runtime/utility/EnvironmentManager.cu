@@ -71,7 +71,7 @@ void EnvironmentManager::init(const std::string& model_name, const EnvironmentDe
     defragment(&orderedProperties);
 }
 
-void EnvironmentManager::initRTC(const CUDAAgentModel& cuda_model, const EnvironmentDescription& desc) {
+void EnvironmentManager::initRTC(const CUDAAgentModel& cuda_model) {
     // check to ensure that model name is not already registered
     auto res = cuda_agent_models.find(cuda_model.getModelDescription().name);
     if (res != cuda_agent_models.end()) {
@@ -80,10 +80,15 @@ void EnvironmentManager::initRTC(const CUDAAgentModel& cuda_model, const Environ
     // register model name
     cuda_agent_models.emplace(cuda_model.getModelDescription().name, cuda_model);
 
-    // loop through environment properties
-    for (auto p : desc.getPropertiesMap()) {
-        // Register variable for use in any RTC functions
-        cuda_model.RTCSetEnvironmentVariable(p.first.c_str(), p.second.data.ptr , p.second.data.length);
+    // loop through environment properties, already registered by cuda_
+    for (auto &p : properties) {
+        if (p.first.first == cuda_model.getModelDescription().name) {
+            auto var_name = p.first.second;
+            auto src = hc_buffer + p.second.offset;
+            auto length = p.second.length;
+            // Register variable for use in any RTC functions
+            cuda_model.RTCSetEnvironmentVariable(var_name.c_str(), src, length);
+        }
     }
 }
 

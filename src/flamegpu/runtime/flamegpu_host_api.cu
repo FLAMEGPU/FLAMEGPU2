@@ -88,3 +88,13 @@ void FLAMEGPU_HOST_API::resizeTempStorage(const CUB_Config &cc, const unsigned i
     cub_largestAllocatedOp[cc] = items;
 }
 
+
+
+/**
+ * Access the current stepCount
+ * Sepearate implementation to avoid dependency loop with cuda agent model.
+ * @return the current step count, 0 indexed unsigned.
+ */
+unsigned int FLAMEGPU_HOST_API::getStepCounter() const {
+    return agentModel.getStepCounter();
+}

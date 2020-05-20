@@ -22,6 +22,7 @@
 
 class EnvironmentDescription;
 class CUDAAgentModel;
+class CUDAAgent;
 
 
 /**
@@ -33,6 +34,10 @@ class CUDAAgentModel;
  * @note Not thread-safe
  */
 class EnvironmentManager {
+    /**
+     * Uses instance to for RTC compilation
+     */
+    friend class CUDAAgent;
     /**
      * Uses instance to initialise a models environment properties on the device
      */
@@ -148,8 +153,10 @@ class EnvironmentManager {
     /**
      * RTC functions hold thier own unique constants for environment variables. This function copies all environment variable to the RTC copies.
      * It can not be incorporated into init() as init will be called before RTC functions have been compiled.
+     * Uses the already populated Environment data from the cuda_model rather than environmentDescription.
+     * @param cuda_model the cuda model being initialised.
      */
-    void initRTC(const CUDAAgentModel& cuda_model, const EnvironmentDescription& desc);
+    void initRTC(const CUDAAgentModel& cuda_model);
     /**
      * Deactives all environmental properties linked to the named model from constant cache
      * @param model_name Name of the model
