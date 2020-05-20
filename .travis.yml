@@ -25,7 +25,7 @@ matrix:
       - UBUNTU_VERSION=ubuntu1804
       dist: bionic
 
-# Install CUDA
+# Install CUDA and other dependencies
 install: 
  - chmod +x ./scripts/travis_install.sh
  - sudo -E ./scripts/travis_install.sh
@@ -40,4 +40,4 @@ before_script:
   - CUDA_ARCH="35;75"
 
 # Build steps
-script: "mkdir build && cd build && ${CMAKE_CMD} .. -DBUILD_TESTS=ON -DWARNINGS_AS_ERRORS=ON -DSMS=${CUDA_ARCH} && make -j`nproc` all_lint all docs "
+script: "mkdir build && cd build && ${CMAKE_CMD} .. -DBUILD_TESTS=ON -DWARNINGS_AS_ERRORS=ON -DSMS=${CUDA_ARCH} -DBUILD_SWIG_PYTHON=ON -DBUILD_SWIG_PYTHON_VIRTUALENV=ON && make -j`nproc` all_lint all docs "

@@ -33,6 +33,9 @@ apt-get -qq update
 # Install CUDA packages
 apt-get install -y --no-install-recommends cuda-compiler-${CUDA_PACKAGE_VERSION} cuda-cudart-dev-${CUDA_PACKAGE_VERSION} cuda-curand-dev-${CUDA_PACKAGE_VERSION} cuda-nvrtc-dev-${CUDA_PACKAGE_VERSION}
 
+# Install swig
+apt-get install swig
+
 # Install cpplint (optional, not currently used at CI time)
 pip3 install cpplint #--user
 
