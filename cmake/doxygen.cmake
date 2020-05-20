@@ -45,7 +45,7 @@ function(create_doxygen_target FLAMEGPU_ROOT DOXY_OUT_DIR XML_PATH)
         set(DOXYGEN_EXTENSION_MAPPING     "cu=C++" "cuh=C++" "cuhpp=C++")
         # Limit diagram graph node count / depth for simply diagrams.
         set(DOXYGEN_DOT_GRAPH_MAX_NODES   100)
-        set(DOXYGEN_MAX_DOT_GRAPH_DEPTH   0)
+        set(DOXYGEN_MAX_DOT_GRAPH_DEPTH   1)
         # Select diagram output format i.e png or svg
         set(DOXYGEN_DOT_IMAGE_FORMAT      png)
         # If using svg the interactivity can be enabled if desired.
