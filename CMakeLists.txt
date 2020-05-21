@@ -55,7 +55,7 @@ option(VISUALISATION "Enable visualisation support" OFF)
 option(BUILD_TESTS "Enable building tests" OFF)
 
 # Option to enable/disable NVTX markers for improved profiling
-option(NVTX "Enable NVTX markers for improved profiling (if available). Implied by profile builds" OFF)
+option(USE_NVTX "Build with NVTX markers enabled" OFF)
 
 # Define a function to add a lint target.
 find_file(CPPLINT NAMES cpplint cpplint.exe)

@@ -87,22 +87,24 @@ endif()
 
 
 # If NVTX is enabled, find the library and update variables accordingly.
-if(NVTX)
+if(USE_NVTX)
     # Find the nvtx library using custom cmake module
-    find_package(NVTX QUIET)
+    find_package(NVTX)
     # If it was found, use it.
     if(NVTX_FOUND)
-        set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -DNVTX")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNVTX")
+        set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -DUSE_NVTX=${NVTX_VERSION}")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_NVTX=${NVTX_VERSION}")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DUSE_NVTX=${NVTX_VERSION}")
         set(FLAMEGPU_DEPENDENCY_INCLUDE_DIRECTORIES ${FLAMEGPU_DEPENDENCY_INCLUDE_DIRECTORIES} ${NVTX_INCLUDE_DIRS})
-        set(FLAMEGPU_DEPENDENCY_LINK_LIBRARIES ${FLAMEGPU_DEPENDENCY_LINK_LIBRARIES} ${NVTX_LIBRARIES})
-        message("-- Found NVTX: ${NVTX_INCLUDE_DIRS}")
+        if(NVTX_VERSION VERSION_LESS "3")
+            set(FLAMEGPU_DEPENDENCY_LINK_LIBRARIES ${FLAMEGPU_DEPENDENCY_LINK_LIBRARIES} ${NVTX_LIBRARIES})
+        endif()
     else()
         # If not found, disable.
-        message("NVTX Not found, Setting NVTX=OFF")
-        SET(NVTX "OFF")    
+        message("-- NVTX not available")
+        SET(USE_NVTX "OFF" PARENT_SCOPE)    
     endif()
-endif(NVTX)
+endif(USE_NVTX)
 
 # Logging for jitify compilation
 set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -DJITIFY_PRINT_LOG")
