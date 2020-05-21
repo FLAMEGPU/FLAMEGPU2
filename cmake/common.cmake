@@ -113,83 +113,11 @@ if(CMAKE_CUDA_COMPILER_VERSION VERSION_LESS 7.0)
     message(FATAL_ERROR "CUDA version must be at least 7.0")
 endif()
 
-
-# Set Gencode arguments based on cuda version, if not passed in as an argument
-# If a list of SMs not passed from the command line, use the defaults
-list(LENGTH SMS SMS_COUNT)
-if(SMS_COUNT EQUAL 0)
-    SET(SMS "")
-    # If the CUDA version is less than 8, build for Fermi
-    if(CMAKE_CUDA_COMPILER_VERSION VERSION_LESS 8.0)
-        list(APPEND SMS "20") # Deprecated CUDA 8.0
-        list(APPEND SMS "21") # Deprecated CUDA 8.0
-    endif()
-    # If the CUDA version is >= than 5.0, build for Kepler
-    if(CMAKE_CUDA_COMPILER_VERSION GREATER_EQUAL 5.0 )
-        # list(APPEND SMS "30") # CUDA >= 5.0  # Skip kepler 1
-        list(APPEND SMS "35") # CUDA >= 5.0 
-        # list(APPEND SMS "37") # CUDA >= 5.0 # Skip K80s
-    endif()
-    # If the CUDA version is >= than 5.0, build for Maxwell V1 
-    if(CMAKE_CUDA_COMPILER_VERSION GREATER_EQUAL 6.0 )
-        list(APPEND SMS "50") # CUDA >= 6.0
-    endif()
-    # If the CUDA version is >= than 5.0, build for Maxwell V2 
-    if(CMAKE_CUDA_COMPILER_VERSION GREATER_EQUAL 7.0 )
-        list(APPEND SMS "52") # CUDA >= 6.5
-    endif()
-    # If the CUDA version is >= 8.0, build for Pascal
-    if(CMAKE_CUDA_COMPILER_VERSION GREATER_EQUAL 8.0 )
-        list(APPEND SMS "60") # CUDA >= 8.0
-        list(APPEND SMS "61") # CUDA >= 8.0
-    endif()
-    # If the CUDA version is >= 9.0, build for Volta
-    if(CMAKE_CUDA_COMPILER_VERSION GREATER_EQUAL 9.0 )
-        list(APPEND SMS "70") # CUDA >= 9.0
-    endif()
-    # If the CUDA version is >= 10.0, build for Turing
-    if(CMAKE_CUDA_COMPILER_VERSION GREATER_EQUAL 10.0 )
-        list(APPEND SMS "75") # CUDA >= 10.0
-    endif()
-endif()
-
-# Replace commas and spaces with semicolons to correctly form a cmake list
-string (REPLACE " " ";" SMS "${SMS}")
-string (REPLACE "," ";" SMS "${SMS}")
-SET(SMS "${SMS}" CACHE STRING "compute capabilities to build" FORCE)
-
-# Initialise the variable to contain actual -gencode arguments
-SET(GENCODES)
-# Remove duplicates from the list of architectures
-list(REMOVE_DUPLICATES SMS)
-# Remove empty items from the list of architectures
-list(REMOVE_ITEM SMS "")
-# Sort the list of SM architectures into ascending order.
-list(SORT SMS)
-# For each SM, generate the relevant -gencode argument
-foreach(SM IN LISTS SMS)
-    set(GENCODES "${GENCODES} -gencode arch=compute_${SM},code=sm_${SM}")
-endforeach()
-
-# Get the minimum device architecture to pass through to nvcc to enable graceful failure prior to cuda execution.
-list(GET SMS 0 MIN_ARCH)
-# Pass this to the compiler(s)
-SET(CMAKE_CC_FLAGS "${CMAKE_C_FLAGS} -DMIN_ARCH=${MIN_ARCH}")
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMIN_ARCH=${MIN_ARCH}")
-SET(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -DMIN_ARCH=${MIN_ARCH}")
-
-# Using the last element of the list, append the additional gencode argument
-list(GET SMS -1 LAST_SM)
-set(GENCODES "${GENCODES} -gencode arch=compute_${LAST_SM},code=compute_${LAST_SM}")
-
-# Append the gencodes to the nvcc flags
-set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} ${GENCODES}")
-
-# Don't create this message multiple times
-if(NOT COMMAND add_flamegpu_executable)
-    # Output the GENCODES to the user.
-    message(STATUS "Targeting Compute Capabilities: ${SMS}")
-endif()
+# include CUDA_ARCH processing code.
+# Uses -DCUDA_ARCH values (and modifies if appropriate). 
+# Adds -gencode argumetns to CMAKE_CUDA_FLAGS
+# Adds -DMIN_COMPUTE_CAPABILITY=VALUE macro to CMAKE_CC_FLAGS, CMAKE_CXX_FLAGS and CMAKE_CUDA_FLAGS.
+include(${CMAKE_CURRENT_LIST_DIR}/cuda_arch.cmake)
 
 # Specify some additional compiler flags
 # CUDA debug symbols
