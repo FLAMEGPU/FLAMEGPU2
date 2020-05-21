@@ -40,4 +40,4 @@ before_script:
   - CUDA_ARCH="35;75"
 
 # Build steps
-script: "mkdir build && cd build && ${CMAKE_CMD} .. -DBUILD_TESTS=ON -DWARNINGS_AS_ERRORS=ON -DSMS=${CUDA_ARCH} && make -j`nproc` all_lint all docs "
+script: "mkdir build && cd build && ${CMAKE_CMD} .. -DBUILD_TESTS=ON -DWARNINGS_AS_ERRORS=ON -DSMS=${CUDA_ARCH} -DUSE_NVTX=ON && make -j`nproc` all_lint all docs "
