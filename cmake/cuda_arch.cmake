@@ -46,7 +46,9 @@ if(NOT CUDA_ARCH_LENGTH EQUAL 0)
     # Validate the list.
     foreach(ARCH IN LISTS CUDA_ARCH)
         if (NOT ARCH IN_LIST SUPPORTED_CUDA_ARCH)
-            message(WARNING "Compute Capability ${SM} not supported by CUDA ${CMAKE_CUDA_COMPILER_VERSION} and is being ignored.\nChoose from: ${SUPPORTED_CUDA_ARCH}")
+            message(WARNING
+            "  CUDA_ARCH '${ARCH}' not supported by CUDA ${CMAKE_CUDA_COMPILER_VERSION} and is being ignored.\n"
+            "  Choose from: ${SUPPORTED_CUDA_ARCH}")
             list(REMOVE_ITEM CUDA_ARCH "${ARCH}")
         endif()
     endforeach()
@@ -59,6 +61,9 @@ list(LENGTH CUDA_ARCH CUDA_ARCH_LENGTH)
 if(CUDA_ARCH_LENGTH EQUAL 0)
     set(CUDA_ARCH ${DEFAULT_CUDA_ARCH})
 endif()
+
+# Propagate the validated values to the parent scope, to reduce warning duplication.
+set(CUDA_ARCH ${CUDA_ARCH} PARENT_SCOPE)
 
 # If the list is somehow empty now, do not set any gencodes arguments, instead using the compiler defaults.
 list(LENGTH CUDA_ARCH CUDA_ARCH_LENGTH)

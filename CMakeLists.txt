@@ -58,7 +58,7 @@ option(BUILD_TESTS "Enable building tests" OFF)
 option(NVTX "Enable NVTX markers for improved profiling (if available). Implied by profile builds" OFF)
 
 # Control target CUDA_ARCH to compile for
-SET(CUDA_ARCH "${CUDA_ARCH}" CACHE STRING "List of CUDA Architectures to target. 61;70" FORCE)
+SET(CUDA_ARCH "${CUDA_ARCH}" CACHE STRING "List of CUDA Architectures to target. E.g. 61;70" FORCE)
 
 # Define a function to add a lint target.
 find_file(CPPLINT NAMES cpplint cpplint.exe)
