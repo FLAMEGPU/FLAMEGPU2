@@ -407,6 +407,9 @@ endfunction()
 function(add_flamegpu_library NAME SRC FLAMEGPU_ROOT)
     # Define which source files are required for the target executable
     add_library(${NAME} STATIC ${SRC})
+	
+	# enable "fpic" for linux to allow shared libraries to be build from the static library (required for swig)
+	set_property(TARGET ${NAME} PROPERTY POSITION_INDEPENDENT_CODE ON)
     
     # Activate visualisation if requested
     if (VISUALISATION)
