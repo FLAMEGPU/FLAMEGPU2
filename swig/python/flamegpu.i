@@ -5,6 +5,12 @@
 #endif
 %}
 
+// supress known warnings
+#pragma SWIG nowarn=325,302,401
+
+// string support
+%include <std_string.i>
+
 %module pyflamegpu
 %{
 /* Includes the header in the wrapper code */
@@ -25,10 +31,23 @@
 #include "flamegpu/runtime/AgentFunctionCondition_shim.h"
 %}
 
+/* Disable non RTC function and function condtion set methods */
+%ignore AgentDescription::newFunction;
+%ignore AgentFunctionDescription::getFunctionPtr;
+%ignore AgentFunctionDescription::setFunctionCondition;
+%ignore AgentFunctionDescription::getConditionPtr;
 
 /* Parse the header file to generate wrappers */
 %include "flamegpu/model/ModelDescription.h"
 %include "flamegpu/model/AgentDescription.h"
+
+/* Instanciate template functions */
+%template(newFloatVariable) AgentDescription::newVariable<float>;
+%template(newFloatVariable) AgentDescription::newVariable<float, 1>;
+
+
+
+
 %include "flamegpu/model/AgentFunctionDescription.h"
 %include "flamegpu/model/EnvironmentDescription.h"
 %include "flamegpu/model/LayerDescription.h"

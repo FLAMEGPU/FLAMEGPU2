@@ -3,6 +3,7 @@
 cmake_minimum_required(VERSION VERSION 3.12 FATAL_ERROR)
 
 project(FLAMEGPU2 LANGUAGES NONE)
+set(FLAMEGPU_PROJECT_VERSION "2.0.0")
 
 # Don't create installation scripts (and hide CMAKE_INSTALL_PREFIX from cmake-gui)
 set(CMAKE_SKIP_INSTALL_RULES TRUE)
