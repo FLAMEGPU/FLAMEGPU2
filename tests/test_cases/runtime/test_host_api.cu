@@ -20,7 +20,7 @@ unsigned int expectedStepCounter = 0;
 
 // Init should always be 0th iteration/step
 FLAMEGPU_INIT_FUNCTION(init_testGetStepCounter) {
-    EXPECT_EQ(FLAMEGPU->getStepCounter(), 0);
+    EXPECT_EQ(FLAMEGPU->getStepCounter(), 0u);
 }
 // host is during, so 0? - @todo dynamic
 FLAMEGPU_HOST_FUNCTION(host_testGetStepCounter) {
