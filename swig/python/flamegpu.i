@@ -26,7 +26,7 @@
  *    ...
  */
 %define TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(functionType, classfunction, T) 
-%template(functionType ## A1) classfunction<T, 1>;
+%template(functionType) classfunction<T, 1>;
 %template(functionType ## A2) classfunction<T, 2>;
 %template(functionType ## A3) classfunction<T, 3>;
 %template(functionType ## A4) classfunction<T, 4>;
