@@ -107,6 +107,8 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/None.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/BruteForce.h
+	${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/BruteForce/BruteForceDevice.h
+	${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/BruteForce/BruteForceHost.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Spatial2D.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Spatial3D.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Array.h

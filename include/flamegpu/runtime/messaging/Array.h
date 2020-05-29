@@ -8,7 +8,10 @@
 #include "flamegpu/model/Variable.h"
 #endif  // __CUDACC_RTC__
 #include "flamegpu/runtime/messaging/None.h"
-#include "flamegpu/runtime/messaging/BruteForce.h"
+
+
+#include "flamegpu/runtime/messaging/BruteForce/BruteForceHost.h"
+#include "flamegpu/runtime/messaging/BruteForce/BruteForceDevice.h"
 
 
 /**

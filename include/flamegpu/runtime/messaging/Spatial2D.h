@@ -10,6 +10,9 @@
 #include "flamegpu/runtime/messaging/None.h"
 #include "flamegpu/runtime/messaging/BruteForce.h"
 
+#include "flamegpu/runtime/messaging/BruteForce/BruteForceHost.h"
+#include "flamegpu/runtime/messaging/BruteForce/BruteForceDevice.h"
+
 /**
  * 2D Continuous spatial messaging functionality
  *
