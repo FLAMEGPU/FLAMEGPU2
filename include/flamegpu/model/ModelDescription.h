@@ -8,7 +8,7 @@
 
 #include "flamegpu/model/ModelData.h"
 #include "flamegpu/sim/Simulation.h"
-#include "flamegpu/runtime/messaging/BruteForce.h"
+#include "flamegpu/runtime/messaging/BruteForce/BruteForceHost.h"
 
 class AgentDescription;
 class LayerDescription;

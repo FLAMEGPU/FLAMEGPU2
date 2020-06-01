@@ -106,7 +106,7 @@ TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## UInt, classfunction, unsigned in
 
 //#include "flamegpu/runtime/flamegpu_device_api.h"
 #include "flamegpu/runtime/flamegpu_host_api.h"
-//#include "flamegpu/runtime/flamegpu_host_agent_api.h"
+/#include "flamegpu/runtime/flamegpu_host_agent_api.h"
 
 #include "flamegpu/runtime/messaging/BruteForce/BruteForceHost.h"
 #include "flamegpu/runtime/AgentFunction_shim.h"

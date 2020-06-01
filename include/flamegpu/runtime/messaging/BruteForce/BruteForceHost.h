@@ -15,6 +15,7 @@
 #include "flamegpu/util/nvtx.h"
 #include "flamegpu/runtime/cuRVE/curve.h"
 
+#include "flamegpu/runtime/messaging/None/NoneHost.h"
 #include "flamegpu/runtime/messaging/BruteForce.h"
 
 

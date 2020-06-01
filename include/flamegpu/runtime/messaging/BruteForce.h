@@ -21,9 +21,9 @@ class MsgBruteForce {
     // Host
     struct Data;        // Forward declare inner classes
     class Description;  // Forward declare inner classes
-
-    // Device
     class CUDAModelHandler;  // Forward declare inner classes
+	
+    // Device
     class In;  // Forward declare inner classes
     class Out;  // Forward declare inner classes
     /**
