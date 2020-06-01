@@ -1,10 +1,11 @@
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_UTILITY_RANDOMMANAGER_CUH_
 #define INCLUDE_FLAMEGPU_RUNTIME_UTILITY_RANDOMMANAGER_CUH_
 
-#include <curand_kernel.h>
 #include <cstdint>
 #include <random>
 #include <string>
+
+#include <curand_kernel.h>
 
 #include "flamegpu/runtime/utility/AgentRandom.cuh"
 
