@@ -10,14 +10,13 @@
  * @warning
  */
 
-
+#include <string>
+// #include <stdexcept>
 
 // #include <device_launch_parameters.h>
 // #include <cuda_runtime.h>
 #include <cuda.h>
 
-#include <string>
-// #include <stdexcept>
 #include "flamegpu/exception/FGPUException.h"
 
 /* Error check function for safe CUDA API calling */

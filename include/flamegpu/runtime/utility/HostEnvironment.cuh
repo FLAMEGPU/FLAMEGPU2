@@ -1,13 +1,13 @@
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_UTILITY_HOSTENVIRONMENT_CUH_
 #define INCLUDE_FLAMEGPU_RUNTIME_UTILITY_HOSTENVIRONMENT_CUH_
 
-#include <cuda_runtime.h>
-
 #include <unordered_map>
 #include <array>
 #include <string>
 #include <utility>
 #include <set>
+
+#include <cuda_runtime.h>
 
 #include "flamegpu/gpu/CUDAErrorChecking.h"
 #include "flamegpu/runtime/utility/EnvironmentManager.cuh"
