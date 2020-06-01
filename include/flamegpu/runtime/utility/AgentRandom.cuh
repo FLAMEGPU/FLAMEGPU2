@@ -1,8 +1,9 @@
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_UTILITY_AGENTRANDOM_CUH_
 #define INCLUDE_FLAMEGPU_RUNTIME_UTILITY_AGENTRANDOM_CUH_
 
-#include <curand_kernel.h>
 #include <cassert>
+
+#include <curand_kernel.h>
 
 #include "flamegpu/exception/FGPUStaticAssert.h"
 

@@ -1,5 +1,5 @@
-#include <cuda_runtime.h>
 #include <cstdio>
+#include <cuda_runtime.h>
 #include "gtest/gtest.h"
 #include "helpers/device_initialisation.h"
 
