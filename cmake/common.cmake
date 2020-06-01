@@ -245,7 +245,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     endif()
 else()
     # Assume using GCC/Clang which Wall is relatively sane for. 
-    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -Wall -Wsign-compare")
+    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -Wall,-Wsign-compare")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wsign-compare")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wsign-compare")
     if(WARNINGS_AS_ERRORS)
