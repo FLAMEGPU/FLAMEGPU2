@@ -22,7 +22,6 @@ class MsgBruteForce {
     struct Data;        // Forward declare inner classes
     class Description;  // Forward declare inner classes
     class CUDAModelHandler;  // Forward declare inner classes
-	
     // Device
     class In;  // Forward declare inner classes
     class Out;  // Forward declare inner classes
@@ -32,7 +31,6 @@ class MsgBruteForce {
     struct MetaData {
         unsigned int length;
     };
-    
 };
 
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_BRUTEFORCE_H_

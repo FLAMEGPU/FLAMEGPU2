@@ -1,5 +1,5 @@
-#ifndef INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_BRUTEFORCEHOST_H_
-#define INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_BRUTEFORCEHOST_H_
+#ifndef INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_BRUTEFORCE_BRUTEFORCEHOST_H_
+#define INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_BRUTEFORCE_BRUTEFORCEHOST_H_
 
 // TODO: This should *not* be required in a .h file. Need to separate concerns between c++ and CUDA.
 #include <device_launch_parameters.h>
@@ -25,52 +25,52 @@
  */
 class MsgBruteForce::CUDAModelHandler : public MsgSpecialisationHandler {
  public:
-	/**
-	 * Constructor
-	 * Allocates memory on device for message list length
-	 * @param a Parent CUDAMessage, used to access message settings, data ptrs etc
-	 */
-	explicit CUDAModelHandler(CUDAMessage &a)
-		: MsgSpecialisationHandler()
-		, d_metadata(nullptr)
-		, sim_message(a) { }
+    /**
+     * Constructor
+     * Allocates memory on device for message list length
+     * @param a Parent CUDAMessage, used to access message settings, data ptrs etc
+     */
+    explicit CUDAModelHandler(CUDAMessage &a)
+        : MsgSpecialisationHandler()
+        , d_metadata(nullptr)
+        , sim_message(a) { }
 
-	/** 
-	 * Destructor.
-	 * Should free any local host memory (device memory cannot be freed in destructors)
-	 */
-	~CUDAModelHandler() { }
-	/**
-	 * Updates the length of the messagelist stored on device
-	 */
-	void buildIndex() override;
-	/**
-	 * Allocates memory for the constructed index.
-	 * The memory allocation is checked by build index.
-	 */
-	void allocateMetaDataDevicePtr() override;
-	/**
-	 * Releases memory for the constructed index.
-	 */
-	void freeMetaDataDevicePtr() override;
-	/**
-	 * Returns a pointer to the metadata struct, this is required for reading the message data
-	 */
-	const void *getMetaDataDevicePtr() const override { return d_metadata; }
+    /** 
+     * Destructor.
+     * Should free any local host memory (device memory cannot be freed in destructors)
+     */
+    ~CUDAModelHandler() { }
+    /**
+     * Updates the length of the messagelist stored on device
+     */
+    void buildIndex() override;
+    /**
+     * Allocates memory for the constructed index.
+     * The memory allocation is checked by build index.
+     */
+    void allocateMetaDataDevicePtr() override;
+    /**
+     * Releases memory for the constructed index.
+     */
+    void freeMetaDataDevicePtr() override;
+    /**
+     * Returns a pointer to the metadata struct, this is required for reading the message data
+     */
+    const void *getMetaDataDevicePtr() const override { return d_metadata; }
 
  private:
-	/**
-	 * Host copy of metadata struct (message list length)
-	 */
-	MetaData hd_metadata;
-	/**
-	 * Pointer to device copy of metadata struct (message list length)
-	 */
-	MetaData *d_metadata;
-	/**
-	 * Owning CUDAMessage, provides access to message storage etc
-	 */
-	CUDAMessage &sim_message;
+    /**
+     * Host copy of metadata struct (message list length)
+     */
+    MetaData hd_metadata;
+    /**
+     * Pointer to device copy of metadata struct (message list length)
+     */
+    MetaData *d_metadata;
+    /**
+     * Owning CUDAMessage, provides access to message storage etc
+     */
+    CUDAMessage &sim_message;
 };
 
 /**
@@ -78,64 +78,64 @@ class MsgBruteForce::CUDAModelHandler : public MsgSpecialisationHandler {
  * Users should only access that data stored within via an instance of MessageDescription
  */
 struct MsgBruteForce::Data {
-	friend class ModelDescription;
-	friend struct ModelData;
+    friend class ModelDescription;
+    friend struct ModelData;
 
-	virtual ~Data();
+    virtual ~Data();
 
-	/**
-	 * Holds all of the message's variable definitions
-	 */
-	VariableMap variables;
-	/**
-	 * Description class which provides convenient accessors
-	 */
-	std::unique_ptr<Description> description;
-	/**
-	 * Name of the message, used to refer to the message in many functions
-	 */
-	std::string name;
-	/**
-	 * The number of functions that have optional output of this message type
-	 * This value is modified by AgentFunctionDescription
-	 */
-	unsigned int optional_outputs;
-	/**
-	 * Equality operator, checks whether MessageData hierarchies are functionally the same
-	 * @returns True when messages are the same
-	 * @note Instead compare pointers if you wish to check that they are the same instance
-	 */
-	bool operator==(const Data& rhs) const;
-	/**
-	 * Equality operator, checks whether MessageData hierarchies are functionally different
-	 * @returns True when messages are not the same
-	 * @note Instead compare pointers if you wish to check that they are not the same instance
-	 */
-	bool operator!=(const Data& rhs) const;
-	/**
-	 * Default copy constructor, not implemented
-	 */
-	Data(const Data &other) = delete;
+    /**
+     * Holds all of the message's variable definitions
+     */
+    VariableMap variables;
+    /**
+     * Description class which provides convenient accessors
+     */
+    std::unique_ptr<Description> description;
+    /**
+     * Name of the message, used to refer to the message in many functions
+     */
+    std::string name;
+    /**
+     * The number of functions that have optional output of this message type
+     * This value is modified by AgentFunctionDescription
+     */
+    unsigned int optional_outputs;
+    /**
+     * Equality operator, checks whether MessageData hierarchies are functionally the same
+     * @returns True when messages are the same
+     * @note Instead compare pointers if you wish to check that they are the same instance
+     */
+    bool operator==(const Data& rhs) const;
+    /**
+     * Equality operator, checks whether MessageData hierarchies are functionally different
+     * @returns True when messages are not the same
+     * @note Instead compare pointers if you wish to check that they are not the same instance
+     */
+    bool operator!=(const Data& rhs) const;
+    /**
+     * Default copy constructor, not implemented
+     */
+    Data(const Data &other) = delete;
 
-	virtual std::unique_ptr<MsgSpecialisationHandler> getSpecialisationHander(CUDAMessage &owner) const;
+    virtual std::unique_ptr<MsgSpecialisationHandler> getSpecialisationHander(CUDAMessage &owner) const;
 
-	/**
-	 * Used internally to validate that the corresponding Msg type is attached via the agent function shim.
-	 * @return The std::type_index of the Msg type which must be used.
-	 */
-	virtual std::type_index getType() const;
+    /**
+     * Used internally to validate that the corresponding Msg type is attached via the agent function shim.
+     * @return The std::type_index of the Msg type which must be used.
+     */
+    virtual std::type_index getType() const;
 
  protected:
-	virtual Data *clone(ModelData *const newParent);
-	/**
-	 * Copy constructor
-	 * This is unsafe, should only be used internally, use clone() instead
-	 */
-	Data(ModelData *const, const Data &other);
-	/**
-	 * Normal constructor, only to be called by ModelDescription
-	 */
-	Data(ModelData *const, const std::string &message_name);
+    virtual Data *clone(ModelData *const newParent);
+    /**
+     * Copy constructor
+     * This is unsafe, should only be used internally, use clone() instead
+     */
+    Data(ModelData *const, const Data &other);
+    /**
+     * Normal constructor, only to be called by ModelDescription
+     */
+    Data(ModelData *const, const std::string &message_name);
 };
 
 /**
@@ -147,96 +147,95 @@ struct MsgBruteForce::Data {
  * @see ModelDescription::newMessage(const std::string&) For creating instances of this class
  */
 class MsgBruteForce::Description {
-	/**
-	 * Data store class for this description, constructs instances of this class
-	 */
-	friend struct Data;
-	friend class AgentFunctionDescription;
-	// friend void AgentFunctionDescription::setMessageOutput(MsgBruteForce::Description&);
-	// friend void AgentFunctionDescription::setMessageInput(MsgBruteForce::Description&);
+    /**
+     * Data store class for this description, constructs instances of this class
+     */
+    friend struct Data;
+    friend class AgentFunctionDescription;
+    // friend void AgentFunctionDescription::setMessageOutput(MsgBruteForce::Description&);
+    // friend void AgentFunctionDescription::setMessageInput(MsgBruteForce::Description&);
 
  protected:
-	/**
-	 * Constructors
-	 */
-	 Description(ModelData *const _model, Data *const data);
-	/**
-	 * Default copy constructor, not implemented
-	 */
-	 Description(const Description &other_message) = delete;
-	/**
-	 * Default move constructor, not implemented
-	 */
-	 Description(Description &&other_message) noexcept = delete;
-	/**
-	 * Default copy assignment, not implemented
-	 */
-	 Description& operator=(const Description &other_message) = delete;
-	/**
-	 * Default move assignment, not implemented
-	 */
-	 Description& operator=(Description &&other_message) noexcept = delete;
+    /**
+     * Constructors
+     */
+     Description(ModelData *const _model, Data *const data);
+    /**
+     * Default copy constructor, not implemented
+     */
+     Description(const Description &other_message) = delete;
+    /**
+     * Default move constructor, not implemented
+     */
+     Description(Description &&other_message) noexcept = delete;
+    /**
+     * Default copy assignment, not implemented
+     */
+     Description& operator=(const Description &other_message) = delete;
+    /**
+     * Default move assignment, not implemented
+     */
+     Description& operator=(Description &&other_message) noexcept = delete;
 
  public:
-	/**
-	 * Equality operator, checks whether MessageDescription hierarchies are functionally the same
-	 * @returns True when messages are the same
-	 * @note Instead compare pointers if you wish to check that they are the same instance
-	 */
-	bool operator==(const Description& rhs) const;
-	/**
-	 * Equality operator, checks whether MessageDescription hierarchies are functionally different
-	 * @returns True when messages are not the same
-	 * @note Instead compare pointers if you wish to check that they are not the same instance
-	 */
-	bool operator!=(const Description& rhs) const;
+    /**
+     * Equality operator, checks whether MessageDescription hierarchies are functionally the same
+     * @returns True when messages are the same
+     * @note Instead compare pointers if you wish to check that they are the same instance
+     */
+    bool operator==(const Description& rhs) const;
+    /**
+     * Equality operator, checks whether MessageDescription hierarchies are functionally different
+     * @returns True when messages are not the same
+     * @note Instead compare pointers if you wish to check that they are not the same instance
+     */
+    bool operator!=(const Description& rhs) const;
 
-	/**
-	 * Adds a new variable to the message
-	 * @param variable_name Name of the variable
-	 * @tparam T Type of the message variable, this must be an arithmetic type
-	 * @throws InvalidMessageVar If a variable already exists within the message with the same name
-	 */
-	template<typename T>
-	void newVariable(const std::string &variable_name);
+    /**
+     * Adds a new variable to the message
+     * @param variable_name Name of the variable
+     * @tparam T Type of the message variable, this must be an arithmetic type
+     * @throws InvalidMessageVar If a variable already exists within the message with the same name
+     */
+    template<typename T>
+    void newVariable(const std::string &variable_name);
 
-	/**
-	 * @return The message's name
-	 */
-	std::string getName() const;
-	/**
-	 * @param variable_name Name used to refer to the desired variable
-	 * @return The type of the named variable
-	 * @throws InvalidAgentVar If a variable with the name does not exist within the message
-	 */
-	const std::type_index& getVariableType(const std::string &variable_name) const;
-	/**
-	 * @param variable_name Name used to refer to the desired variable
-	 * @return The size of the named variable's type
-	 * @throws InvalidAgentVar If a variable with the name does not exist within the message
-	 */
-	size_t getVariableSize(const std::string &variable_name) const;
-	/**
-	 * @return The total number of variables within the message
-	 */
-	size_type getVariablesCount() const;
-	/**
-	 * @param variable_name Name of the variable to check
-	 * @return True when a variable with the specified name exists within the message
-	 */
-	bool hasVariable(const std::string &variable_name) const;
+    /**
+     * @return The message's name
+     */
+    std::string getName() const;
+    /**
+     * @param variable_name Name used to refer to the desired variable
+     * @return The type of the named variable
+     * @throws InvalidAgentVar If a variable with the name does not exist within the message
+     */
+    const std::type_index& getVariableType(const std::string &variable_name) const;
+    /**
+     * @param variable_name Name used to refer to the desired variable
+     * @return The size of the named variable's type
+     * @throws InvalidAgentVar If a variable with the name does not exist within the message
+     */
+    size_t getVariableSize(const std::string &variable_name) const;
+    /**
+     * @return The total number of variables within the message
+     */
+    size_type getVariablesCount() const;
+    /**
+     * @param variable_name Name of the variable to check
+     * @return True when a variable with the specified name exists within the message
+     */
+    bool hasVariable(const std::string &variable_name) const;
 
  protected:
-	/**
-	 * Root of the model hierarchy
-	 */
-	ModelData *const model;
-	/**
-	 * The class which stores all of the message's data.
-	 */
-	Data *const message;
+    /**
+     * Root of the model hierarchy
+     */
+    ModelData *const model;
+    /**
+     * The class which stores all of the message's data.
+     */
+    Data *const message;
 };
-	
 /**
  * Template implementation
  */
@@ -256,4 +255,4 @@ void MsgBruteForce::Description::newVariable(const std::string &variable_name) {
 }
 
 
-#endif  // INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_BRUTEFORCEHOST_H_
+#endif  // INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_BRUTEFORCE_BRUTEFORCEHOST_H_

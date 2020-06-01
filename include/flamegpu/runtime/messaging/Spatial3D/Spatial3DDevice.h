@@ -1,5 +1,5 @@
-#ifndef INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_SPATIAL3DDEVICE_H_
-#define INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_SPATIAL3DDEVICE_H_
+#ifndef INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_SPATIAL3D_SPATIAL3DDEVICE_H_
+#define INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_SPATIAL3D_SPATIAL3DDEVICE_H_
 
 #include "flamegpu/runtime/messaging/Spatial3D.h"
 #include "flamegpu/runtime/messaging/Spatial2D/Spatial2DDevice.h"
@@ -11,235 +11,234 @@
  */
 class MsgSpatial3D::In {
  public:
-	/**
-	 * This class is created when a search origin is provided to MsgSpatial3D::In::operator()(float, float, float)
-	 * It provides iterator access to a subset of the full message list, according to the provided search origin
-	 * 
-	 * @see MsgSpatial3D::In::operator()(float, float, float)
-	 */
-	class Filter {
+    /**
+     * This class is created when a search origin is provided to MsgSpatial3D::In::operator()(float, float, float)
+     * It provides iterator access to a subset of the full message list, according to the provided search origin
+     * 
+     * @see MsgSpatial3D::In::operator()(float, float, float)
+     */
+    class Filter {
+     public:
+        /**
+         * Provides access to a specific message
+         * Returned by the iterator
+         * @see In::Filter::iterator
+         */
+        class Message {
+            /**
+             * Paired Filter class which created the iterator
+             */
+            const Filter &_parent;
+            /**
+             * Relative strip within the Moore neighbourhood
+             * Strips run along the x axis
+             * relative_cell[0] corresponds to y offset
+             * relative_cell[1] corresponds to z offset
+             */
+            int relative_cell[2] = { -2, 1 };
+            /**
+             * This is the index after the final message, relative to the full message list, in the current bin
+             */
+            int cell_index_max = 0;
+            /**
+             * This is the index of the currently accessed message, relative to the full message list
+             */
+            int cell_index = 0;
 
-	 public:
-		/**
-		 * Provides access to a specific message
-		 * Returned by the iterator
-		 * @see In::Filter::iterator
-		 */
-		class Message {
-			/**
-			 * Paired Filter class which created the iterator
-			 */
-			const Filter &_parent;
-			/**
-			 * Relative strip within the Moore neighbourhood
-			 * Strips run along the x axis
-			 * relative_cell[0] corresponds to y offset
-			 * relative_cell[1] corresponds to z offset
-			 */
-			int relative_cell[2] = { -2, 1 };
-			/**
-			 * This is the index after the final message, relative to the full message list, in the current bin
-			 */
-			int cell_index_max = 0;
-			/**
-			 * This is the index of the currently accessed message, relative to the full message list
-			 */
-			int cell_index = 0;
+         public:
+            /**
+             * Constructs a message and directly initialises all of it's member variables
+             * @note See member variable documentation for their purposes
+             */
+            __device__ Message(const Filter &parent, const int &relative_cell_y, const int &relative_cell_z, const int &_cell_index_max, const int &_cell_index)
+                : _parent(parent)
+                , cell_index_max(_cell_index_max)
+                , cell_index(_cell_index) {
+                relative_cell[0] = relative_cell_y;
+                relative_cell[1] = relative_cell_z;
+            }
+            /**
+             * Equality operator
+             * Compares all internal member vars for equality
+             * @note Does not compare _parent
+             */
+            __device__ bool operator==(const Message& rhs) const {
+                return this->relative_cell[0] == rhs.relative_cell[0]
+                    && this->relative_cell[1] == rhs.relative_cell[1]
+                    && this->cell_index_max == rhs.cell_index_max
+                    && this->cell_index == rhs.cell_index;
+            }
+            /**
+             * Inequality operator
+             * Returns inverse of equality operator
+             * @see operator==(const Message&)
+             */
+            __device__ bool operator!=(const Message& rhs) const { return !(*this == rhs); }
+            /**
+             * Updates the message to return variables from the next message in the message list
+             * @return Returns itself
+             */
+            __device__ Message& operator++();
+            /**
+             * Utility function for deciding next strip to access
+             */
+            __device__ void nextStrip() {
+                if (relative_cell[1] >= 1) {
+                    relative_cell[1] = -1;
+                    relative_cell[0]++;
+                } else {
+                    relative_cell[1]++;
+                }
+            }
+            /**
+             * Returns the value for the current message attached to the named variable
+             * @param variable_name Name of the variable
+             * @tparam T type of the variable
+             * @tparam N Length of variable name (this should be implicit if a string literal is passed to variable name)
+             * @return The specified variable, else 0x0 if an error occurs
+             */
+            template<typename T, size_type N>
+            __device__ T getVariable(const char(&variable_name)[N]) const;
+        };
+        /**
+         * Stock iterator for iterating MsgSpatial3D::In::Filter::Message objects
+         */
+        class iterator {  // class iterator : public std::iterator <std::random_access_iterator_tag, void, void, void, void> {
+            /**
+             * The message returned to the user
+             */
+            Message _message;
 
-		 public:
-			/**
-			 * Constructs a message and directly initialises all of it's member variables
-			 * @note See member variable documentation for their purposes
-			 */
-			__device__ Message(const Filter &parent, const int &relative_cell_y, const int &relative_cell_z, const int &_cell_index_max, const int &_cell_index)
-				: _parent(parent)
-				, cell_index_max(_cell_index_max)
-				, cell_index(_cell_index) {
-				relative_cell[0] = relative_cell_y;
-				relative_cell[1] = relative_cell_z;
-			}
-			/**
-			 * Equality operator
-			 * Compares all internal member vars for equality
-			 * @note Does not compare _parent
-			 */
-			__device__ bool operator==(const Message& rhs) const {
-				return this->relative_cell[0] == rhs.relative_cell[0]
-					&& this->relative_cell[1] == rhs.relative_cell[1]
-					&& this->cell_index_max == rhs.cell_index_max
-					&& this->cell_index == rhs.cell_index;
-			}
-			/**
-			 * Inequality operator
-			 * Returns inverse of equality operator
-			 * @see operator==(const Message&)
-			 */
-			__device__ bool operator!=(const Message& rhs) const { return !(*this == rhs); }
-			/**
-			 * Updates the message to return variables from the next message in the message list
-			 * @return Returns itself
-			 */
-			__device__ Message& operator++();
-			/**
-			 * Utility function for deciding next strip to access
-			 */
-			__device__ void nextStrip() {
-				if (relative_cell[1] >= 1) {
-					relative_cell[1] = -1;
-					relative_cell[0]++;
-				} else {
-					relative_cell[1]++;
-				}
-			}
-			/**
-			 * Returns the value for the current message attached to the named variable
-			 * @param variable_name Name of the variable
-			 * @tparam T type of the variable
-			 * @tparam N Length of variable name (this should be implicit if a string literal is passed to variable name)
-			 * @return The specified variable, else 0x0 if an error occurs
-			 */
-			template<typename T, size_type N>
-			__device__ T getVariable(const char(&variable_name)[N]) const;
-		};
-		/**
-		 * Stock iterator for iterating MsgSpatial3D::In::Filter::Message objects
-		 */
-		class iterator {  // class iterator : public std::iterator <std::random_access_iterator_tag, void, void, void, void> {
-			/**
-			 * The message returned to the user
-			 */
-			Message _message;
+         public:
+            /**
+             * Constructor
+             * This iterator is constructed by MsgSpatial3D::In::Filter::begin()(float, float, float)
+             * @see MsgSpatial3D::In::Operator()(float, float, float)
+             */
+            __device__ iterator(const Filter &parent, const int &relative_cell_y, const int &relative_cell_z, const int &_cell_index_max, const int &_cell_index)
+                : _message(parent, relative_cell_y, relative_cell_z, _cell_index_max, _cell_index) {
+                // Increment to find first message
+                ++_message;
+            }
+            /**
+             * Moves to the next message
+             * (Prefix increment operator)
+             */
+            __device__ iterator& operator++() { ++_message;  return *this; }
+            /**
+             * Moves to the next message
+             * (Postfix increment operator, returns value prior to increment)
+             */
+            __device__ iterator operator++(int) {
+                iterator temp = *this;
+                ++*this;
+                return temp;
+            }
+            /**
+             * Equality operator
+             * Compares message
+             */
+            __device__ bool operator==(const iterator& rhs) const { return  _message == rhs._message; }
+            /**
+             * Inequality operator
+             * Compares message
+             */
+            __device__ bool operator!=(const iterator& rhs) const { return  _message != rhs._message; }
+            /**
+             * Dereferences the iterator to return the message object, for accessing variables
+             */
+            __device__ Message& operator*() { return _message; }
+            /**
+             * Dereferences the iterator to return the message object, for accessing variables
+             */
+            __device__ Message* operator->() { return &_message; }
+        };
+        /**
+         * Constructor, takes the search parameters requried
+         * @param _metadata Pointer to message list metadata
+         * @param combined_hash agentfn+message hash for accessing message data
+         * @param x Search origin x coord
+         * @param y Search origin y coord
+         * @param z search origin z coord
+         */
+        __device__ Filter(const MetaData *_metadata, const Curve::NamespaceHash &combined_hash, const float &x, const float &y, const float &z);
+        /**
+         * Returns an iterator to the start of the message list subset about the search origin
+         */
+        inline __device__ iterator begin(void) const {
+            // Bin before initial bin, as the constructor calls increment operator
+            return iterator(*this, -2, 1, 1, 0);
+        }
+        /**
+         * Returns an iterator to the position beyond the end of the message list subset
+         * @note This iterator is the same for all message list subsets
+         */
+        inline __device__ iterator end(void) const {
+            // Final bin, as the constructor calls increment operator
+            return iterator(*this, 1, 1, 1, 0);
+        }
 
-		 public:
-			/**
-			 * Constructor
-			 * This iterator is constructed by MsgSpatial3D::In::Filter::begin()(float, float, float)
-			 * @see MsgSpatial3D::In::Operator()(float, float, float)
-			 */
-			__device__ iterator(const Filter &parent, const int &relative_cell_y, const int &relative_cell_z, const int &_cell_index_max, const int &_cell_index)
-				: _message(parent, relative_cell_y, relative_cell_z, _cell_index_max, _cell_index) {
-				// Increment to find first message
-				++_message;
-			}
-			/**
-			 * Moves to the next message
-			 * (Prefix increment operator)
-			 */
-			__device__ iterator& operator++() { ++_message;  return *this; }
-			/**
-			 * Moves to the next message
-			 * (Postfix increment operator, returns value prior to increment)
-			 */
-			__device__ iterator operator++(int) {
-				iterator temp = *this;
-				++*this;
-				return temp;
-			}
-			/**
-			 * Equality operator
-			 * Compares message
-			 */
-			__device__ bool operator==(const iterator& rhs) const { return  _message == rhs._message; }
-			/**
-			 * Inequality operator
-			 * Compares message
-			 */
-			__device__ bool operator!=(const iterator& rhs) const { return  _message != rhs._message; }
-			/**
-			 * Dereferences the iterator to return the message object, for accessing variables
-			 */
-			__device__ Message& operator*() { return _message; }
-			/**
-			 * Dereferences the iterator to return the message object, for accessing variables
-			 */
-			__device__ Message* operator->() { return &_message; }
-		};
-		/**
-		 * Constructor, takes the search parameters requried
-		 * @param _metadata Pointer to message list metadata
-		 * @param combined_hash agentfn+message hash for accessing message data
-		 * @param x Search origin x coord
-		 * @param y Search origin y coord
-		 * @param z search origin z coord
-		 */
-		__device__ Filter(const MetaData *_metadata, const Curve::NamespaceHash &combined_hash, const float &x, const float &y, const float &z);
-		/**
-		 * Returns an iterator to the start of the message list subset about the search origin
-		 */
-		inline __device__ iterator begin(void) const {
-			// Bin before initial bin, as the constructor calls increment operator
-			return iterator(*this, -2, 1, 1, 0);
-		}
-		/**
-		 * Returns an iterator to the position beyond the end of the message list subset
-		 * @note This iterator is the same for all message list subsets
-		 */
-		inline __device__ iterator end(void) const {
-			// Final bin, as the constructor calls increment operator
-			return iterator(*this, 1, 1, 1, 0);
-		}
+     private:
+        /**
+         * Search origin
+         */
+        float loc[3];
+        /**
+         * Search origin's grid cell
+         */
+        GridPos3D cell;
+        /**
+         * Pointer to message list metadata, e.g. environment bounds, search radius, PBM location
+         */
+        const MetaData *metadata;
+        /**
+         * CURVE hash for accessing message data
+         * agent function hash + message hash
+         */
+        Curve::NamespaceHash combined_hash;
+    };
 
-	 private:
-		/**
-		 * Search origin
-		 */
-		float loc[3];
-		/**
-		 * Search origin's grid cell
-		 */
-		GridPos3D cell;
-		/**
-		 * Pointer to message list metadata, e.g. environment bounds, search radius, PBM location
-		 */
-		const MetaData *metadata;
-		/**
-		 * CURVE hash for accessing message data
-		 * agent function hash + message hash
-		 */
-		Curve::NamespaceHash combined_hash;
-	};
+    /**
+     * Constructer
+     * Initialises member variables
+     * @param agentfn_hash Added to msg_hash to produce combined_hash
+     * @param msg_hash Added to agentfn_hash to produce combined_hash
+     * @param _metadata Reinterpreted as type MsgSpatial3D::MetaData
+     */
+    __device__ In(Curve::NamespaceHash agentfn_hash, Curve::NamespaceHash msg_hash, const void *_metadata)
+        : combined_hash(agentfn_hash + msg_hash)
+        , metadata(reinterpret_cast<const MetaData*>(_metadata))
+    { }
+    /**
+     * Returns a Filter object which provides access to message iterator
+     * for iterating a subset of messages including those within the radius of the search origin
+     * 
+     * @param x Search origin x coord
+     * @param y Search origin y coord
+     * @param z Search origin z coord
+     */
+    inline __device__ Filter operator() (const float &x, const float &y, const float &z) const {
+        return Filter(metadata, combined_hash, x, y, z);
+    }
 
-	/**
-	 * Constructer
-	 * Initialises member variables
-	 * @param agentfn_hash Added to msg_hash to produce combined_hash
-	 * @param msg_hash Added to agentfn_hash to produce combined_hash
-	 * @param _metadata Reinterpreted as type MsgSpatial3D::MetaData
-	 */
-	__device__ In(Curve::NamespaceHash agentfn_hash, Curve::NamespaceHash msg_hash, const void *_metadata)
-		: combined_hash(agentfn_hash + msg_hash)
-		, metadata(reinterpret_cast<const MetaData*>(_metadata))
-	{ }
-	/**
-	 * Returns a Filter object which provides access to message iterator
-	 * for iterating a subset of messages including those within the radius of the search origin
-	 * 
-	 * @param x Search origin x coord
-	 * @param y Search origin y coord
-	 * @param z Search origin z coord
-	 */
-	inline __device__ Filter operator() (const float &x, const float &y, const float &z) const {
-		return Filter(metadata, combined_hash, x, y, z);
-	}
-
-	/**
-	 * Returns the search radius of the message list defined in the model description
-	 */
-	__forceinline__ __device__ float radius() const {
-		return metadata->radius;
-	}
+    /**
+     * Returns the search radius of the message list defined in the model description
+     */
+    __forceinline__ __device__ float radius() const {
+        return metadata->radius;
+    }
 
  private:
-	/**
-	 * CURVE hash for accessing message data
-	 * agentfn_hash + msg_hash
-	 */
-	Curve::NamespaceHash combined_hash;
-	/**
-	 * Device pointer to metadata required for accessing data structure
-	 * e.g. PBM, search origin, environment bounds
-	 */
-	const MetaData *metadata;
+    /**
+     * CURVE hash for accessing message data
+     * agentfn_hash + msg_hash
+     */
+    Curve::NamespaceHash combined_hash;
+    /**
+     * Device pointer to metadata required for accessing data structure
+     * e.g. PBM, search origin, environment bounds
+     */
+    const MetaData *metadata;
 };
 
 /**
@@ -248,24 +247,24 @@ class MsgSpatial3D::In {
  */
 class MsgSpatial3D::Out : public MsgBruteForce::Out {
  public:
-	/**
-	 * Constructer
-	 * Initialises member variables
-	 * @param agentfn_hash Added to msg_hash to produce combined_hash
-	 * @param msg_hash Added to agentfn_hash to produce combined_hash
-	 * @param _streamId Stream index, used for optional message output flag array
-	 */
-	__device__ Out(Curve::NamespaceHash agentfn_hash, Curve::NamespaceHash msg_hash, const void *, unsigned int _streamId)
-		: MsgBruteForce::Out(agentfn_hash, msg_hash, nullptr, _streamId)
-	{ }
-	/**
-	 * Sets the location for this agents message
-	 * @param x Message x coord
-	 * @param y Message y coord
-	 * @param z Message z coord
-	 * @note Convenience wrapper for setVariable()
-	 */
-	__device__ void setLocation(const float &x, const float &y, const float &z) const;
+    /**
+     * Constructer
+     * Initialises member variables
+     * @param agentfn_hash Added to msg_hash to produce combined_hash
+     * @param msg_hash Added to agentfn_hash to produce combined_hash
+     * @param _streamId Stream index, used for optional message output flag array
+     */
+    __device__ Out(Curve::NamespaceHash agentfn_hash, Curve::NamespaceHash msg_hash, const void *, unsigned int _streamId)
+        : MsgBruteForce::Out(agentfn_hash, msg_hash, nullptr, _streamId)
+    { }
+    /**
+     * Sets the location for this agents message
+     * @param x Message x coord
+     * @param y Message y coord
+     * @param z Message z coord
+     * @note Convenience wrapper for setVariable()
+     */
+    __device__ void setLocation(const float &x, const float &y, const float &z) const;
 };
 
 template<typename T, unsigned int N>
@@ -282,4 +281,4 @@ __device__ T MsgSpatial3D::In::Filter::Message::getVariable(const char(&variable
 }
 
 
-#endif  // INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_SPATIAL3DDEVICE_H_
+#endif  // INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_SPATIAL3D_SPATIAL3DDEVICE_H_

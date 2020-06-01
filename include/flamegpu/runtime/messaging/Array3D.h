@@ -25,16 +25,16 @@ class MsgArray3D {
      */
     typedef MsgNone::size_type size_type;
 
-	// Host
+    // Host
     struct Data;        // Forward declare inner classes
     class Description;  // Forward declare inner classes
-	class CUDAModelHandler;
-    
+    class CUDAModelHandler;
+
     // Device
     class In;
     class Out;
-	
-	/**
+
+    /**
      * MetaData required by brute force during message reads
      */
     struct MetaData {
@@ -47,7 +47,6 @@ class MsgArray3D {
          */
         size_type length;
     };
-
 };
 
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_ARRAY3D_H_

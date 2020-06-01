@@ -1,5 +1,5 @@
-#ifndef INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_NONEHOST_H_
-#define INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_NONEHOST_H_
+#ifndef INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_NONE_NONEHOST_H_
+#define INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_NONE_NONEHOST_H_
 
 #include "flamegpu/runtime/cuRVE/curve.h"
 #include "flamegpu/runtime/messaging/None.h"
@@ -47,18 +47,18 @@ class MsgSpecialisationHandler {
  */
 class MsgNone::CUDAModelHandler : public MsgSpecialisationHandler {
  public:
-	/**
-	 * Constructor
-	 */
-	explicit CUDAModelHandler(CUDAMessage &a)
-		: MsgSpecialisationHandler()
-		, sim_message(a)
-	{ }
-	/**
-	 * Owning CUDAMessage
-	 */
-	CUDAMessage &sim_message;
+    /**
+     * Constructor
+     */
+    explicit CUDAModelHandler(CUDAMessage &a)
+        : MsgSpecialisationHandler()
+        , sim_message(a)
+    { }
+    /**
+     * Owning CUDAMessage
+     */
+    CUDAMessage &sim_message;
 };
 
 
-#endif  // INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_NONEHOST_H_
+#endif  // INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_NONE_NONEHOST_H_

@@ -1,5 +1,5 @@
-#ifndef INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_ARRAY2DDEVICE_H_
-#define INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_ARRAY2DDEVICE_H_
+#ifndef INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_ARRAY2D_ARRAY2DDEVICE_H_
+#define INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_ARRAY2D_ARRAY2DDEVICE_H_
 
 
 #include "flamegpu/runtime/messaging/Array2D.h"
@@ -13,8 +13,7 @@
  */
 class MsgArray2D::In {
  public:
- 
-	/**
+    /**
      * Provides access to a specific message
      * Returned by In::at(size_type)
      * @see In::at(size_type)
@@ -62,304 +61,303 @@ class MsgArray2D::In {
         template<typename T, unsigned int N>
         __device__ T getVariable(const char(&variable_name)[N]) const;
     };
-	
-	/**
-	 * This class is created when a search origin is provided to MsgArray2D::In::operator()(size_type, size_type, size_type = 1)
-	 * It provides iterator access to a subset of the full message list, according to the provided search origin and radius
-	 * 
-	 * @see MsgArray2D::In::operator()(size_type, size_type, size_type)
-	 */
-	class Filter {
-		/**
-		 * Message has full access to Filter, they are treated as the same class so share everything
-		 * Reduces/memory data duplication
-		 */
-		friend class Message;
 
-	 public:
-		/**
-		 * Provides access to a specific message
-		 * Returned by the iterator
-		 * @see In::Filter::iterator
-		 */
-		class Message {
-			/**
-			 * Paired Filter class which created the iterator
-			 */
-			const Filter &_parent;
-			/**
-			 * Relative position within the Moore neighbourhood
-			 * This is initialised based on user provided radius
-			 */
-			int relative_cell[2];
-			/**
-			 * Index into memory of currently pointed message
-			 */
-			size_type index_1d = 0;
+    /**
+     * This class is created when a search origin is provided to MsgArray2D::In::operator()(size_type, size_type, size_type = 1)
+     * It provides iterator access to a subset of the full message list, according to the provided search origin and radius
+     * 
+     * @see MsgArray2D::In::operator()(size_type, size_type, size_type)
+     */
+    class Filter {
+        /**
+         * Message has full access to Filter, they are treated as the same class so share everything
+         * Reduces/memory data duplication
+         */
+        friend class Message;
 
-		 public:
-			/**
-			 * Constructs a message and directly initialises all of it's member variables
-			 * @note See member variable documentation for their purposes
-			 */
-			__device__ Message(const Filter &parent, const int &relative_x, const int &relative_y)
-				: _parent(parent) {
-				relative_cell[0] = relative_x;
-				relative_cell[1] = relative_y;
-			}
-			/**
-			 * Equality operator
-			 * Compares all internal member vars for equality
-			 * @note Does not compare _parent
-			 */
-			__device__ bool operator==(const Message& rhs) const {
-				return this->index_1d == rhs.index_1d
-					&& this->_parent.loc[0] == rhs._parent.loc[0]
-					&& this->_parent.loc[1] == rhs._parent.loc[1];
-			}
-			/**
-			 * Inequality operator
-			 * Returns inverse of equality operator
-			 * @see operator==(const Message&)
-			 */
-			__device__ bool operator!=(const Message& rhs) const { return !(*this == rhs); }
-			/**
-			 * Updates the message to return variables from the next cell in the Moore neighbourhood
-			 * @return Returns itself
-			 */
-			__device__ Message& operator++();
-			/**
-			 * Returns x array index of message
-			 */
-			__device__ size_type getX() const {
-				return (this->_parent.loc[0] + relative_cell[0] + this->_parent.metadata->dimensions[0]) % this->_parent.metadata->dimensions[0];
-			}
-			/**
-			 * Returns y array index of message
-			 */
-			__device__ size_type getY() const {
-				return (this->_parent.loc[1] + relative_cell[1] + this->_parent.metadata->dimensions[1]) % this->_parent.metadata->dimensions[1];
-			}
-			/**
-			 * Returns the value for the current message attached to the named variable
-			 * @param variable_name Name of the variable
-			 * @tparam T type of the variable
-			 * @tparam N Length of variable name (this should be implicit if a string literal is passed to variable name)
-			 * @return The specified variable, else 0x0 if an error occurs
-			 */
-			template<typename T, unsigned int N>
-			__device__ T getVariable(const char(&variable_name)[N]) const;
-		};
-		/**
-		 * Stock iterator for iterating MsgSpatial3D::In::Filter::Message objects
-		 */
-		class iterator {  // public std::iterator <std::random_access_iterator_tag, void, void, void, void> {
-			/**
-			 * The message returned to the user
-			 */
-			Message _message;
+     public:
+        /**
+         * Provides access to a specific message
+         * Returned by the iterator
+         * @see In::Filter::iterator
+         */
+        class Message {
+            /**
+             * Paired Filter class which created the iterator
+             */
+            const Filter &_parent;
+            /**
+             * Relative position within the Moore neighbourhood
+             * This is initialised based on user provided radius
+             */
+            int relative_cell[2];
+            /**
+             * Index into memory of currently pointed message
+             */
+            size_type index_1d = 0;
 
-		 public:
-			/**
-			 * Constructor
-			 * This iterator is constructed by MsgArray2D::In::Filter::begin()(size_type, size_type, size_type)
-			 * @see MsgArray2D::In::Operator()(size_type, size_type, size_type)
-			 */
-			__device__ iterator(const Filter &parent, const int &relative_x, const int &relative_y)
-				: _message(parent, relative_x, relative_y) {
-				// Increment to find first message
-				++_message;
-			}
-			/**
-			 * Moves to the next message
-			 * (Prefix increment operator)
-			 */
-			__device__ iterator& operator++() { ++_message;  return *this; }
-			/**
-			 * Moves to the next message
-			 * (Postfix increment operator, returns value prior to increment)
-			 */
-			__device__ iterator operator++(int) {
-				iterator temp = *this;
-				++*this;
-				return temp;
-			}
-			/**
-			 * Equality operator
-			 * Compares message
-			 */
-			__device__ bool operator==(const iterator& rhs) const { return  _message == rhs._message; }
-			/**
-			 * Inequality operator
-			 * Compares message
-			 */
-			__device__ bool operator!=(const iterator& rhs) const { return  _message != rhs._message; }
-			/**
-			 * Dereferences the iterator to return the message object, for accessing variables
-			 */
-			__device__ Message& operator*() { return _message; }
-			/**
-			 * Dereferences the iterator to return the message object, for accessing variables
-			 */
-			__device__ Message* operator->() { return &_message; }
-		};
-		/**
-		 * Constructor, takes the search parameters requried
-		 * @param _metadata Pointer to message list metadata
-		 * @param _combined_hash agentfn+message hash for accessing message data
-		 * @param x Search origin x coord
-		 * @param y Search origin y coord
-		 * @param _radius Search radius
-		 */
-		__device__ Filter(const MetaData *_metadata, const Curve::NamespaceHash &_combined_hash, const size_type &x, const size_type &y, const size_type &_radius);
-		/**
-		 * Returns an iterator to the start of the message list subset about the search origin
-		 */
-		inline __device__ iterator begin(void) const {
-			// Bin before initial bin, as the constructor calls increment operator
-			return iterator(*this, -static_cast<int>(radius), -static_cast<int>(radius)-1);
-		}
-		/**
-		 * Returns an iterator to the position beyond the end of the message list subset
-		 * @note This iterator is the same for all message list subsets
-		 */
-		inline __device__ iterator end(void) const {
-			// Final bin, as the constructor calls increment operator
-			return iterator(*this, radius, radius);
-		}
+         public:
+            /**
+             * Constructs a message and directly initialises all of it's member variables
+             * @note See member variable documentation for their purposes
+             */
+            __device__ Message(const Filter &parent, const int &relative_x, const int &relative_y)
+                : _parent(parent) {
+                relative_cell[0] = relative_x;
+                relative_cell[1] = relative_y;
+            }
+            /**
+             * Equality operator
+             * Compares all internal member vars for equality
+             * @note Does not compare _parent
+             */
+            __device__ bool operator==(const Message& rhs) const {
+                return this->index_1d == rhs.index_1d
+                    && this->_parent.loc[0] == rhs._parent.loc[0]
+                    && this->_parent.loc[1] == rhs._parent.loc[1];
+            }
+            /**
+             * Inequality operator
+             * Returns inverse of equality operator
+             * @see operator==(const Message&)
+             */
+            __device__ bool operator!=(const Message& rhs) const { return !(*this == rhs); }
+            /**
+             * Updates the message to return variables from the next cell in the Moore neighbourhood
+             * @return Returns itself
+             */
+            __device__ Message& operator++();
+            /**
+             * Returns x array index of message
+             */
+            __device__ size_type getX() const {
+                return (this->_parent.loc[0] + relative_cell[0] + this->_parent.metadata->dimensions[0]) % this->_parent.metadata->dimensions[0];
+            }
+            /**
+             * Returns y array index of message
+             */
+            __device__ size_type getY() const {
+                return (this->_parent.loc[1] + relative_cell[1] + this->_parent.metadata->dimensions[1]) % this->_parent.metadata->dimensions[1];
+            }
+            /**
+             * Returns the value for the current message attached to the named variable
+             * @param variable_name Name of the variable
+             * @tparam T type of the variable
+             * @tparam N Length of variable name (this should be implicit if a string literal is passed to variable name)
+             * @return The specified variable, else 0x0 if an error occurs
+             */
+            template<typename T, unsigned int N>
+            __device__ T getVariable(const char(&variable_name)[N]) const;
+        };
+        /**
+         * Stock iterator for iterating MsgSpatial3D::In::Filter::Message objects
+         */
+        class iterator {  // public std::iterator <std::random_access_iterator_tag, void, void, void, void> {
+            /**
+             * The message returned to the user
+             */
+            Message _message;
 
-	 private:
-		/**
-		 * Search origin
-		 */
-		size_type loc[2];
-		/**
-		 * Search radius
-		 */
-		const size_type radius;
-		/**
-		 * Pointer to message list metadata, e.g. environment bounds, search radius, PBM location
-		 */
-		const MetaData *metadata;
-		/**
-		 * CURVE hash for accessing message data
-		 * agent function hash + message hash
-		 */
-		Curve::NamespaceHash combined_hash;
-	};
-	/**
-	 * Constructer
-	 * Initialises member variables
-	 * @param agentfn_hash Added to msg_hash to produce combined_hash
-	 * @param msg_hash Added to agentfn_hash to produce combined_hash
-	 * @param _metadata Reinterpreted as type MsgArray2D::MetaData
-	 */
-	__device__ In(Curve::NamespaceHash agentfn_hash, Curve::NamespaceHash msg_hash, const void *_metadata)
-		: combined_hash(agentfn_hash + msg_hash)
-		, metadata(reinterpret_cast<const MetaData*>(_metadata))
-	{ }
-	/**
-	 * Returns a Filter object which provides access to message iterator
-	 * for iterating a subset of messages including those within the radius of the search origin
-	 * this excludes the message at the search origin
-	 *
-	 * @param x Search origin x coord
-	 * @param y Search origin y coord
-	 * @param radius Search radius
-	 * @note radius 1 is 8 cells in 3x3
-	 * @note radius 2 is 24 cells in 5x5
-	 * @note If radius is >= half of the array dimensions, cells will be doubly read
-	 * @note radius of 0 is unsupported
-	 */
-	inline __device__ Filter operator() (const size_type &x, const size_type &y, const size_type &radius = 1) const {
-		assert(radius > 0);  // Radius of 0 is bad
-		return Filter(metadata, combined_hash, x, y, radius);
-	}
-	/**
-	 * Returns the x dimension size of the message list
-	 */
-	__device__ size_type getDimX() const {
-		return metadata->dimensions[0];
-	}
-	/**
-	 * Returns the y dimension size of the message list
-	 */
-	__device__ size_type getDimY() const {
-		return metadata->dimensions[1];
-	}
-	/**
-	 * Returns the length of the message list.
-	 * xDim x yDim
-	 */
-	__device__ size_type size(void) const {
-		return metadata->length;
-	}
-	__device__ Message at(const size_type &x, const size_type &y) const {
-		const size_type index_1d =
-			y * metadata->dimensions[0] +
-			x;
-		return Message(*this, index_1d);
-	}
+         public:
+            /**
+             * Constructor
+             * This iterator is constructed by MsgArray2D::In::Filter::begin()(size_type, size_type, size_type)
+             * @see MsgArray2D::In::Operator()(size_type, size_type, size_type)
+             */
+            __device__ iterator(const Filter &parent, const int &relative_x, const int &relative_y)
+                : _message(parent, relative_x, relative_y) {
+                // Increment to find first message
+                ++_message;
+            }
+            /**
+             * Moves to the next message
+             * (Prefix increment operator)
+             */
+            __device__ iterator& operator++() { ++_message;  return *this; }
+            /**
+             * Moves to the next message
+             * (Postfix increment operator, returns value prior to increment)
+             */
+            __device__ iterator operator++(int) {
+                iterator temp = *this;
+                ++*this;
+                return temp;
+            }
+            /**
+             * Equality operator
+             * Compares message
+             */
+            __device__ bool operator==(const iterator& rhs) const { return  _message == rhs._message; }
+            /**
+             * Inequality operator
+             * Compares message
+             */
+            __device__ bool operator!=(const iterator& rhs) const { return  _message != rhs._message; }
+            /**
+             * Dereferences the iterator to return the message object, for accessing variables
+             */
+            __device__ Message& operator*() { return _message; }
+            /**
+             * Dereferences the iterator to return the message object, for accessing variables
+             */
+            __device__ Message* operator->() { return &_message; }
+        };
+        /**
+         * Constructor, takes the search parameters requried
+         * @param _metadata Pointer to message list metadata
+         * @param _combined_hash agentfn+message hash for accessing message data
+         * @param x Search origin x coord
+         * @param y Search origin y coord
+         * @param _radius Search radius
+         */
+        __device__ Filter(const MetaData *_metadata, const Curve::NamespaceHash &_combined_hash, const size_type &x, const size_type &y, const size_type &_radius);
+        /**
+         * Returns an iterator to the start of the message list subset about the search origin
+         */
+        inline __device__ iterator begin(void) const {
+            // Bin before initial bin, as the constructor calls increment operator
+            return iterator(*this, -static_cast<int>(radius), -static_cast<int>(radius)-1);
+        }
+        /**
+         * Returns an iterator to the position beyond the end of the message list subset
+         * @note This iterator is the same for all message list subsets
+         */
+        inline __device__ iterator end(void) const {
+            // Final bin, as the constructor calls increment operator
+            return iterator(*this, radius, radius);
+        }
+
+     private:
+        /**
+         * Search origin
+         */
+        size_type loc[2];
+        /**
+         * Search radius
+         */
+        const size_type radius;
+        /**
+         * Pointer to message list metadata, e.g. environment bounds, search radius, PBM location
+         */
+        const MetaData *metadata;
+        /**
+         * CURVE hash for accessing message data
+         * agent function hash + message hash
+         */
+        Curve::NamespaceHash combined_hash;
+    };
+    /**
+     * Constructer
+     * Initialises member variables
+     * @param agentfn_hash Added to msg_hash to produce combined_hash
+     * @param msg_hash Added to agentfn_hash to produce combined_hash
+     * @param _metadata Reinterpreted as type MsgArray2D::MetaData
+     */
+    __device__ In(Curve::NamespaceHash agentfn_hash, Curve::NamespaceHash msg_hash, const void *_metadata)
+        : combined_hash(agentfn_hash + msg_hash)
+        , metadata(reinterpret_cast<const MetaData*>(_metadata))
+    { }
+    /**
+     * Returns a Filter object which provides access to message iterator
+     * for iterating a subset of messages including those within the radius of the search origin
+     * this excludes the message at the search origin
+     *
+     * @param x Search origin x coord
+     * @param y Search origin y coord
+     * @param radius Search radius
+     * @note radius 1 is 8 cells in 3x3
+     * @note radius 2 is 24 cells in 5x5
+     * @note If radius is >= half of the array dimensions, cells will be doubly read
+     * @note radius of 0 is unsupported
+     */
+    inline __device__ Filter operator() (const size_type &x, const size_type &y, const size_type &radius = 1) const {
+        assert(radius > 0);  // Radius of 0 is bad
+        return Filter(metadata, combined_hash, x, y, radius);
+    }
+    /**
+     * Returns the x dimension size of the message list
+     */
+    __device__ size_type getDimX() const {
+        return metadata->dimensions[0];
+    }
+    /**
+     * Returns the y dimension size of the message list
+     */
+    __device__ size_type getDimY() const {
+        return metadata->dimensions[1];
+    }
+    /**
+     * Returns the length of the message list.
+     * xDim x yDim
+     */
+    __device__ size_type size(void) const {
+        return metadata->length;
+    }
+    __device__ Message at(const size_type &x, const size_type &y) const {
+        const size_type index_1d =
+            y * metadata->dimensions[0] +
+            x;
+        return Message(*this, index_1d);
+    }
 
  private:
-	 /**
-	  * CURVE hash for accessing message data
-	  * agent function hash + message hash
-	  */
-	Curve::NamespaceHash combined_hash;
-	/**
-	 * Metadata struct for accessing messages
-	 */
-	const MetaData * const metadata;
+     /**
+      * CURVE hash for accessing message data
+      * agent function hash + message hash
+      */
+    Curve::NamespaceHash combined_hash;
+    /**
+     * Metadata struct for accessing messages
+     */
+    const MetaData * const metadata;
 };
 
-    
 /**
  * This class is accessible via FLAMEGPU_DEVICE_API.message_out if MsgArray2D is specified in FLAMEGPU_AGENT_FUNCTION
  * It gives access to functionality for outputting array messages
  */
 class MsgArray2D::Out {
  public:
-	/**
-	 * Constructer
-	 * Initialises member variables
-	 * @param agentfn_hash Added to msg_hash to produce combined_hash
-	 * @param msg_hash Added to agentfn_hash to produce combined_hash
-	 * @param _streamId Stream index, used for optional message output flag array
-	 */
-	__device__ Out(Curve::NamespaceHash agentfn_hash, Curve::NamespaceHash msg_hash, const void *_metadata, unsigned int _streamId)
-		: combined_hash(agentfn_hash + msg_hash)
-		, streamId(_streamId)
-		, metadata(reinterpret_cast<const MetaData*>(_metadata))
-	{ }
-	/**
-	 * Sets the array index to store the message in
-	 */
-	__device__ void setIndex(const size_type &x, const size_type &y) const;
-	/**
-	 * Sets the specified variable for this agents message
-	 * @param variable_name Name of the variable
-	 * @tparam T type of the variable
-	 * @tparam N Length of variable name (this should be implicit if a string literal is passed to variable name)
-	 * @return The specified variable, else 0x0 if an error occurs
-	 */
-	template<typename T, unsigned int N>
-	__device__ void setVariable(const char(&variable_name)[N], T value) const;
+    /**
+     * Constructer
+     * Initialises member variables
+     * @param agentfn_hash Added to msg_hash to produce combined_hash
+     * @param msg_hash Added to agentfn_hash to produce combined_hash
+     * @param _streamId Stream index, used for optional message output flag array
+     */
+    __device__ Out(Curve::NamespaceHash agentfn_hash, Curve::NamespaceHash msg_hash, const void *_metadata, unsigned int _streamId)
+        : combined_hash(agentfn_hash + msg_hash)
+        , streamId(_streamId)
+        , metadata(reinterpret_cast<const MetaData*>(_metadata))
+    { }
+    /**
+     * Sets the array index to store the message in
+     */
+    __device__ void setIndex(const size_type &x, const size_type &y) const;
+    /**
+     * Sets the specified variable for this agents message
+     * @param variable_name Name of the variable
+     * @tparam T type of the variable
+     * @tparam N Length of variable name (this should be implicit if a string literal is passed to variable name)
+     * @return The specified variable, else 0x0 if an error occurs
+     */
+    template<typename T, unsigned int N>
+    __device__ void setVariable(const char(&variable_name)[N], T value) const;
 
  protected:
-	/**
-	 * CURVE hash for accessing message data
-	 * agentfn_hash + msg_hash
-	 */
-	Curve::NamespaceHash combined_hash;
-	/**
-	 * Stream index used for setting optional message output flag
-	 */
-	unsigned int streamId;
-	/**
-	 * Metadata struct for accessing messages
-	 */
-	const MetaData * const metadata;
+    /**
+     * CURVE hash for accessing message data
+     * agentfn_hash + msg_hash
+     */
+    Curve::NamespaceHash combined_hash;
+    /**
+     * Stream index used for setting optional message output flag
+     */
+    unsigned int streamId;
+    /**
+     * Metadata struct for accessing messages
+     */
+    const MetaData * const metadata;
 };
 
 
@@ -400,4 +398,4 @@ __device__ void MsgArray2D::Out::setVariable(const char(&variable_name)[N], T va
     // setIndex() sets the optional msg scan flag
 }
 
-#endif  // INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_ARRAY2DDEVICE_H_
+#endif  // INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_ARRAY2D_ARRAY2DDEVICE_H_

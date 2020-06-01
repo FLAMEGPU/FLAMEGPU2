@@ -88,24 +88,24 @@ __device__ MsgSpatial3D::In::Filter::Message& MsgSpatial3D::In::Filter::Message:
 
 
 MsgSpatial3D::CUDAModelHandler::CUDAModelHandler(CUDAMessage &a)
- : MsgSpecialisationHandler()
- , sim_message(a) {
-	NVTX_RANGE("Spatial3D::CUDAModelHandler");
-	const Data &d = (const Data &)a.getMessageDescription();
-	hd_data.radius = d.radius;
-	hd_data.min[0] = d.minX;
-	hd_data.min[1] = d.minY;
-	hd_data.min[2] = d.minZ;
-	hd_data.max[0] = d.maxX;
-	hd_data.max[1] = d.maxY;
-	hd_data.max[2] = d.maxZ;
-	binCount = 1;
-	for (unsigned int axis = 0; axis < 3; ++axis) {
-		hd_data.environmentWidth[axis] = hd_data.max[axis] - hd_data.min[axis];
-		hd_data.gridDim[axis] = static_cast<unsigned int>(ceil(hd_data.environmentWidth[axis] / hd_data.radius));
-		binCount *= hd_data.gridDim[axis];
-	}
-	// Device allocation occurs in allocateMetaDataDevicePtr rather than the constructor.
+  : MsgSpecialisationHandler()
+  , sim_message(a) {
+    NVTX_RANGE("Spatial3D::CUDAModelHandler");
+    const Data &d = (const Data &)a.getMessageDescription();
+    hd_data.radius = d.radius;
+    hd_data.min[0] = d.minX;
+    hd_data.min[1] = d.minY;
+    hd_data.min[2] = d.minZ;
+    hd_data.max[0] = d.maxX;
+    hd_data.max[1] = d.maxY;
+    hd_data.max[2] = d.maxZ;
+    binCount = 1;
+    for (unsigned int axis = 0; axis < 3; ++axis) {
+        hd_data.environmentWidth[axis] = hd_data.max[axis] - hd_data.min[axis];
+        hd_data.gridDim[axis] = static_cast<unsigned int>(ceil(hd_data.environmentWidth[axis] / hd_data.radius));
+        binCount *= hd_data.gridDim[axis];
+    }
+    // Device allocation occurs in allocateMetaDataDevicePtr rather than the constructor.
 }
 
 __global__ void atomicHistogram3D(

@@ -11,14 +11,11 @@ class MsgNone {
      * Common size type
      */
     typedef unsigned int size_type;
-	
-	// Host (Data and Description not required for None)
+    // Host (Data and Description not required for None)
     class CUDAModelHandler;
-	
-	// Device
+    // Device
     class In;
     class Out;
-
 };
 
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_NONE_H_

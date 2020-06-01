@@ -19,16 +19,15 @@ class MsgSpatial3D {
     typedef MsgNone::size_type size_type;
 
  public:
-	// Host
+    // Host
     struct Data;        // Forward declare inner classes
     class Description;  // Forward declare inner classes
-	class CUDAModelHandler;
-    
+    class CUDAModelHandler;
     // Device
     class In;
     class Out;
-	
-	/**
+
+    /**
      * Basic class to group 3 dimensional bin coordinates
      * Would use glm::ivec3, but project does not currently have glm
      */
@@ -65,7 +64,6 @@ class MsgSpatial3D {
          */
         float environmentWidth[3];
     };
-
 };
 
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_SPATIAL3D_H_
