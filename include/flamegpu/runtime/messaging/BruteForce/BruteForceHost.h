@@ -1,13 +1,13 @@
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_BRUTEFORCE_BRUTEFORCEHOST_H_
 #define INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_BRUTEFORCE_BRUTEFORCEHOST_H_
 
-// TODO: This should *not* be required in a .h file. Need to separate concerns between c++ and CUDA.
-#include <device_launch_parameters.h>
-
 #include <typeindex>
 #include <memory>
 #include <unordered_map>
 #include <string>
+
+// TODO: This should *not* be required in a .h file. Need to separate concerns between c++ and CUDA.
+#include <device_launch_parameters.h>
 
 #include "flamegpu/model/Variable.h"
 #include "flamegpu/gpu/CUDAErrorChecking.h"

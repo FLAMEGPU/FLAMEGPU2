@@ -1,12 +1,9 @@
 #include "flamegpu/gpu/CUDAScatter.h"
 
-#include <cuda_runtime.h>
 #include <vector>
 #include <cassert>
 
-#include "flamegpu/gpu/CUDAErrorChecking.h"
-#include "flamegpu/gpu/CUDAScanCompaction.h"
-#include "flamegpu/runtime/flamegpu_host_new_agent_api.h"
+#include <cuda_runtime.h>
 
 #ifdef _MSC_VER
 #pragma warning(push, 3)
@@ -15,6 +12,11 @@
 #else
 #include <cub/cub.cuh>
 #endif
+
+#include "flamegpu/gpu/CUDAErrorChecking.h"
+#include "flamegpu/gpu/CUDAScanCompaction.h"
+#include "flamegpu/runtime/flamegpu_host_new_agent_api.h"
+
 
 unsigned int CUDAScatter::simulationInstances = 0;
 
