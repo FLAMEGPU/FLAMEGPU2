@@ -15,6 +15,7 @@
 %module pyflamegpu
 
 
+
 /**
  * TEMPLATE_VARIABLE_ARRAY_INSTANTIATE macro
  * Given a function name and a class::function specifier, this macro instaciates a typed array size version of the function for a set of basic types. 
@@ -106,9 +107,10 @@ TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## UInt, classfunction, unsigned in
 
 //#include "flamegpu/runtime/flamegpu_device_api.h"
 #include "flamegpu/runtime/flamegpu_host_api.h"
-#include "flamegpu/runtime/flamegpu_host_agent_api.h"
+//#include "flamegpu/runtime/flamegpu_host_agent_api.h"
+#include "flamegpu/runtime/messaging.h"
 
-#include "flamegpu/runtime/messaging/BruteForce/BruteForceHost.h"
+
 #include "flamegpu/runtime/AgentFunction_shim.h"
 #include "flamegpu/runtime/AgentFunctionCondition_shim.h"
 %}
@@ -129,6 +131,7 @@ TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## UInt, classfunction, unsigned in
 %include "flamegpu/model/LayerDescription.h"
 %include "flamegpu/pop/AgentPopulation.h"
 %include "flamegpu/pop/AgentInstance.h"
+
 %include "flamegpu/gpu/CUDAAgentModel.h"
 
 //%include "flamegpu/runtime/flamegpu_device_api.h"
@@ -140,27 +143,52 @@ TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## UInt, classfunction, unsigned in
 
 
 %feature("flatnested");     // flat nested on
-%ignore MsgBruteForce::Data;
-%ignore MsgBruteForce::CUDAModelHandler;
+// Ignore some of the internal host classes defined for messaging
+%ignore *::Data;
+%ignore *::CUDAModelHandler;
+%ignore *::MetaData;
 %rename (MsgBruteForce_Description) MsgBruteForce::Description;
+%rename (MsgSpatial2D_Description) MsgSpatial2D::Description;
+%rename (MsgSpatial3D_Description) MsgSpatial3D::Description;
+%rename (MsgSpatial3D_MetaData) MsgSpatial3D::MetaData;
+%rename (MsgArray_Description) MsgArray::Description;
+%rename (MsgArray2D_Description) MsgArray2D::Description;
+%rename (MsgArray3D_Description) MsgArray3D::Description;
 
-//%include "flamegpu/runtime/messaging.h"
-//%include "flamegpu/runtime/messaging/None.h"
+%include "flamegpu/runtime/messaging/None.h"
+%include "flamegpu/runtime/messaging/None/NoneHost.h"
 %include "flamegpu/runtime/messaging/BruteForce.h"
 %include "flamegpu/runtime/messaging/BruteForce/BruteForceHost.h"
-//%include "flamegpu/runtime/messaging/Spatial2D.h"
-//%include "flamegpu/runtime/messaging/Spatial3D.h"
-//%include "flamegpu/runtime/messaging/Array.h"
-//%include "flamegpu/runtime/messaging/Array2D.h"
-//%include "flamegpu/runtime/messaging/Array3D.h"
+%include "flamegpu/runtime/messaging/Spatial2D.h"
+%include "flamegpu/runtime/messaging/Spatial2D/Spatial2DHost.h"
+%include "flamegpu/runtime/messaging/Spatial3D.h"
+%include "flamegpu/runtime/messaging/Spatial3D/Spatial3DHost.h"
+%include "flamegpu/runtime/messaging/Array.h"
+%include "flamegpu/runtime/messaging/Array/ArrayHost.h"
+%include "flamegpu/runtime/messaging/Array2D.h"
+%include "flamegpu/runtime/messaging/Array2D/Array2DHost.h"
+%include "flamegpu/runtime/messaging/Array3D.h"
+%include "flamegpu/runtime/messaging/Array3D/Array3DHost.h"
 %feature("flatnested", "");     // flat nested off
 
 
-/* Instanciate template versions of functions from the API */
-
+/* Instanciate template versions of agent functions from the API */
 TEMPLATE_VARIABLE_INSTANTIATE_N(newVariable, AgentDescription::newVariable)
 TEMPLATE_VARIABLE_INSTANTIATE_N(setVariable, AgentInstance::setVariable)
 TEMPLATE_VARIABLE_INSTANTIATE(getVariable, AgentInstance::getVariable)
-TEMPLATE_VARIABLE_INSTANTIATE(newVariable, MsgBruteForce::Description::newVariable)
 
-//%template(newVariable) MsgBruteForce::Description::newVariable<int32_t>;
+/* Instanciate template versions of new message types from the API */
+%template(newMessageBruteForce) ModelDescription::newMessage<MsgBruteForce>;
+%template(newMessageSpatial2D) ModelDescription::newMessage<MsgSpatial2D>;
+%template(newMessageSpatial3D) ModelDescription::newMessage<MsgSpatial3D>;
+%template(newMessageArray) ModelDescription::newMessage<MsgArray>;
+%template(newMessageArray2D) ModelDescription::newMessage<MsgArray2D>;
+%template(newMessageArray3D) ModelDescription::newMessage<MsgArray3D>;
+
+/* Instanciate template versions of message functions from the API */
+TEMPLATE_VARIABLE_INSTANTIATE(newVariable, MsgBruteForce::Description::newVariable)
+TEMPLATE_VARIABLE_INSTANTIATE(newVariable, MsgSpatial2D::Description::newVariable)
+TEMPLATE_VARIABLE_INSTANTIATE(newVariable, MsgSpatial3D::Description::newVariable)
+TEMPLATE_VARIABLE_INSTANTIATE(newVariable, MsgArray::Description::newVariable)
+TEMPLATE_VARIABLE_INSTANTIATE(newVariable, MsgArray2D::Description::newVariable)
+TEMPLATE_VARIABLE_INSTANTIATE(newVariable, MsgArray3D::Description::newVariable)

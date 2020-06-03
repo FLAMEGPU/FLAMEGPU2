@@ -22,6 +22,7 @@ agent.newVariableFloat("x");
 # messaging
 message = model.newMessage("location");
 message.newVariableInt("id");
+message
 
 # add RTC agent function
 func = agent.newRTCFunction("rtc_test_func", rtc_empty_agent_func);
