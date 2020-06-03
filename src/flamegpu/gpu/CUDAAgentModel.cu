@@ -112,6 +112,7 @@ bool CUDAAgentModel::step() {
             for (const std::shared_ptr<AgentFunctionData> &func_des : functions) {
                 if ((func_des->condition) || (!func_des->rtc_func_condition_name.empty())) {
                     auto func_agent = func_des->parent.lock();
+                    NVTX_RANGE(std::string("condition map " + func_agent->name + "::" + func_des->name).c_str());
                     const CUDAAgent& cuda_agent = getCUDAAgent(func_agent->name);
                     flamegpu_internal::CUDAScanCompaction::resize(cuda_agent.getStateSize(func_des->initial_state), flamegpu_internal::CUDAScanCompaction::AGENT_DEATH, j, *this);
 
@@ -135,6 +136,7 @@ bool CUDAAgentModel::step() {
             for (const std::shared_ptr<AgentFunctionData> &func_des : functions) {
                 if ((func_des->condition) || (!func_des->rtc_func_condition_name.empty())) {
                     auto func_agent = func_des->parent.lock();
+                    NVTX_RANGE(std::string("condition " + func_agent->name + "::" + func_des->name).c_str());
                     if (!func_agent) {
                         THROW InvalidAgentFunc("Agent function condition refers to expired agent.");
                     }
@@ -208,6 +210,7 @@ bool CUDAAgentModel::step() {
                     if (!func_agent) {
                         THROW InvalidAgentFunc("Agent function condition refers to expired agent.");
                     }
+                    NVTX_RANGE(std::string("condition unmap " + func_agent->name + "::" + func_des->name).c_str());
                     CUDAAgent& cuda_agent = getCUDAAgent(func_agent->name);
 
                     // unmap the function variables
@@ -225,12 +228,12 @@ bool CUDAAgentModel::step() {
         // Sum the total number of threads being launched in the layer
         totalThreads = 0;
         /*! for each func function - Loop through to do all mapping of agent and message variables */
-        NVTX_PUSH("CUDAAgentModel::step::MapLayer");
         for (const std::shared_ptr<AgentFunctionData> &func_des : functions) {
             auto func_agent = func_des->parent.lock();
             if (!func_agent) {
                 THROW InvalidAgentFunc("Agent function refers to expired agent.");
             }
+            NVTX_RANGE(std::string("map" + func_agent->name + "::" + func_des->name).c_str());
 
             const CUDAAgent& cuda_agent = getCUDAAgent(func_agent->name);
             const unsigned int STATE_SIZE = cuda_agent.getStateSize(func_des->initial_state);
@@ -287,7 +290,6 @@ bool CUDAAgentModel::step() {
             totalThreads += cuda_agent.getStateSize(func_des->initial_state);
             ++j;
         }
-        NVTX_POP();
 
         // Ensure RandomManager is the correct size to accomodate all threads to be launched
         singletons->rng.resize(totalThreads, *this);
@@ -300,11 +302,11 @@ bool CUDAAgentModel::step() {
             if (!func_agent) {
                 THROW InvalidAgentFunc("Agent function refers to expired agent.");
             }
+            NVTX_RANGE(std::string(func_agent->name + "::" + func_des->name).c_str());
             const void *d_in_messagelist_metadata = nullptr;
             const void *d_out_messagelist_metadata = nullptr;
             std::string agent_name = func_agent->name;
             std::string func_name = func_des->name;
-            NVTX_RANGE(std::string(agent_name + "::" + func_name).c_str());
 
             // check if a function has an input message
             if (auto im = func_des->message_input.lock()) {
@@ -348,7 +350,6 @@ bool CUDAAgentModel::step() {
                 //! Round up according to CUDAAgent state list size
                 gridSize = (state_list_size + blockSize - 1) / blockSize;
 
-                NVTX_PUSH("CUDAAgentModel::step::Kernel");
                 (func_des->func) << <gridSize, blockSize, 0, streams.at(j) >> > (
                     modelname_hash,
                     agent_func_name_hash,
@@ -397,13 +398,13 @@ bool CUDAAgentModel::step() {
         }
 
         j = 0;
-        NVTX_PUSH("CUDAAgentModel::step::UnmapLayer");
         // for each func function - Loop through to un-map all agent and message variables
         for (const std::shared_ptr<AgentFunctionData> &func_des : functions) {
             auto func_agent = func_des->parent.lock();
             if (!func_agent) {
                 THROW InvalidAgentFunc("Agent function refers to expired agent.");
             }
+            NVTX_RANGE(std::string("unmap" + func_agent->name + "::" + func_des->name).c_str());
             CUDAAgent& cuda_agent = getCUDAAgent(func_agent->name);
 
             // check if a function has an input message
@@ -449,39 +450,34 @@ bool CUDAAgentModel::step() {
 
             ++j;
         }
-        NVTX_POP();
 
         // Execute all host functions attached to layer
         // TODO: Concurrency?
-        NVTX_PUSH("CUDAAgentModel::step::HostFunctions");
         for (auto &stepFn : (*lyr)->host_functions) {
             stepFn(this->host_api.get());
         }
         // If we have host layer functions, we might have host agent creation
         if ((*lyr)->host_functions.size())
             processHostAgentCreation();
-        NVTX_POP();
 
         // cudaDeviceSynchronize();
     }
 
     // Execute step functions
-    for (auto &stepFn : model->stepFunctions)
+    for (auto &stepFn : model->stepFunctions) {
+        NVTX_RANGE(std::string("stepFunc").c_str());
         stepFn(this->host_api.get());
+    }
     // If we have step functions, we might have host agent creation
     if (model->stepFunctions.size())
         processHostAgentCreation();
-    NVTX_POP();
 
     // Execute exit conditions
-    NVTX_PUSH("CUDAAgentModel::step::ExitConditions");
     for (auto &exitCdns : model->exitConditions)
         if (exitCdns(this->host_api.get()) == EXIT) {
 #ifdef VISUALISATION
             if (visualisation) {
-                NVTX_PUSH("CUDAAgentModel::step::ExitConditions::UpdateVisualisation");
                 visualisation->updateBuffers(step_count+1);
-                NVTX_POP();
             }
 #endif
             // If there were any exit conditions, we also need to update the step count
@@ -491,13 +487,10 @@ bool CUDAAgentModel::step() {
     // If we have exit conditions functions, we might have host agent creation
     if (model->exitConditions.size())
         processHostAgentCreation();
-    NVTX_POP();
 
 #ifdef VISUALISATION
         if (visualisation) {
-            NVTX_PUSH("CUDAAgentModel::step::UpdateVisualisation");
             visualisation->updateBuffers(step_count+1);
-            NVTX_POP();
         }
 #endif
     // Update step count at the end of the step - when it has completed.
@@ -584,12 +577,10 @@ void CUDAAgentModel::simulate() {
     }
 
     // Destroy streams.
-    NVTX_PUSH("CUDAAgentModel::step::destroyStreams");
     for (auto stream : streams) {
         gpuErrchk(cudaStreamDestroy(stream));
     }
     streams.clear();
-    NVTX_POP();
 }
 
 void CUDAAgentModel::setPopulationData(AgentPopulation& population) {
@@ -689,6 +680,7 @@ void CUDAAgentModel::printHelp_derived() {
 }
 
 void CUDAAgentModel::applyConfig_derived() {
+    NVTX_RANGE("applyConfig_derived");
     cudaError_t cudaStatus;
     int device_count;
 
@@ -714,16 +706,12 @@ void CUDAAgentModel::applyConfig_derived() {
         THROW InvalidCUDAComputeCapability("Error application compiled for CUDA Compute Capability %d and above. Device %u is compute capability %d. Rebuild for SM_%d.", min_cc, config.device_id, cc, cc);
     }
 
-    NVTX_PUSH("cudaSetDevice");
     cudaStatus = cudaSetDevice(static_cast<int>(config.device_id));
     if (cudaStatus != cudaSuccess) {
         THROW InvalidCUDAdevice("Unknown error setting CUDA device to '%d'. (%d available)", config.device_id, device_count);
     }
-    NVTX_POP();
     // Call cudaFree to initialise the context early
-    NVTX_PUSH("Init Cuda Context");
     gpuErrchk(cudaFree(0));
-    NVTX_POP();
 
     // Initialise singletons once a device has been selected.
     // @todo - if this has already been called, before the device was selected an error should occur.
