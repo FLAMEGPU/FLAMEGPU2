@@ -4,17 +4,25 @@
 /**
  * Utility namespace for handling of NVTX profiling markers/ranges, wrapped in macros to avoid performance impact if not enabled.
  * 
- * Macro `NVTX` must be defined to be enabled.
- * Use NVTX_ macros to use. 
+ * Macro `USE_NVTX` must be defined to be enabled.
+ * Use NVTX_PUSH, NVTX_POP, NVTX_RANGE macros to use.
  */
 
 // If NVTX is enabled, include header, defined namespace / class and macros.
-#if defined(NVTX)
-// Include the header if enabled
-#include "nvToolsExt.h"
+#if defined(USE_NVTX)
+    // Include the appropriate header if enabled
+    #if USE_NVTX >= 3
+        #include "nvtx3/nvToolsExt.h"
+    #else
+        #include "nvToolsExt.h"
+    #endif
 #endif
 
-// #if defined(NVTX)
+/* @todo - Make these macros testable.
+   If USE_NVTX is enabled, store static counts of push/pop/range's
+   Make accessors to enable testing the number of counts is as expected
+   Could also include this in a device shutdown method, to report if there is a mismatch of push/pop and therefore an NVTX error.
+*/
 
 namespace util {
 namespace nvtx {
@@ -36,7 +44,7 @@ const uint32_t colourCount = sizeof(palette) / sizeof(uint32_t);
  * @note The number of pushes must match the number of pops.
  * @see NVTX_PUSH to use with minimal performance impact
  */
-#if defined(NVTX)
+#if defined(USE_NVTX)
 inline void push(const char * label) {
     // Static variable to track the next colour to be used with auto rotation.
     static uint32_t nextColourIdx = 0;
@@ -73,7 +81,7 @@ inline void push(const char *) {
  * @see NVTX_POP to use with minimal performance impact
  */
 inline void pop() {
-    #if defined(NVTX)
+    #if defined(USE_NVTX)
         nvtxRangePop();
     #endif
 }
@@ -102,8 +110,8 @@ class NVTXRange {
 };  // namespace nvtx
 };  // namespace util
 
-// If NVTX is enabled, provide macros which actually use NVTX
-#if defined(NVTX)
+// If USE_NVTX is enabled, provide macros which actually use NVTX
+#if defined(USE_NVTX)
 /**
  * Macro which creates a scope-based NVTX range, with auto-popping of the marker.
  * If NVTX is defined, this constructs an util::nvtx::NVTXRange object with the specified label.

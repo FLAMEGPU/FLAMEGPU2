@@ -43,7 +43,7 @@ before_build:
     mkdir build
     cd build
     cmake --version
-    cmake .. -A x64 -DWARNINGS_AS_ERRORS=ON -DSMS=35,60
+    cmake .. -A x64 -DWARNINGS_AS_ERRORS=ON -DSMS=35,60 -DUSE_NVTX=ON 
 
 # The build
 build:
