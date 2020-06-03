@@ -31,8 +31,8 @@ TEST(TestUtilComputeCapability, getComputeCapability) {
 // Test getting the minimum compiled cuda capabillity.
 TEST(TestUtilComputeCapability, minimumCompiledComputeCapability) {
     // If the macro is defined, the returned value should match, otherwise it should be 0.
-    #if defined(MIN_ARCH)
-        EXPECT_EQ(util::compute_capability::minimumCompiledComputeCapability(), MIN_ARCH);
+    #if defined(MIN_CUDA_ARCH)
+        EXPECT_EQ(util::compute_capability::minimumCompiledComputeCapability(), MIN_CUDA_ARCH);
     #else
         EXPECT_EQ(util::compute_capability::minimumCompiledComputeCapability(), 0);
     #endif

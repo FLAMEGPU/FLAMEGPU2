@@ -26,8 +26,8 @@ int util::compute_capability::getComputeCapability(int deviceIndex) {
 }
 
 int util::compute_capability::minimumCompiledComputeCapability() {
-    #if defined(MIN_ARCH)
-        return MIN_ARCH;
+    #if defined(MIN_CUDA_ARCH)
+        return MIN_CUDA_ARCH;
     #else
         // Return 0 as a default minimum?
         return 0;
@@ -36,14 +36,9 @@ int util::compute_capability::minimumCompiledComputeCapability() {
 
 bool util::compute_capability::checkComputeCapability(int deviceIndex) {
     // If the compile time minimum architecture is defined, fetch the device's compute capability and check that the executable (probably) supports this device.
-    #if defined(MIN_ARCH)
-        if (getComputeCapability(deviceIndex) < MIN_ARCH) {
-            return false;
-        } else {
-            return true;
-        }
-    #else
-        // If not defined, we cannot make a decision so assume it will work?
+    if (getComputeCapability(deviceIndex) < minimumCompiledComputeCapability()) {
+        return false;
+    } else {
         return true;
-    #endif
+    }
 }
