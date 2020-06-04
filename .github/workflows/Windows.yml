@@ -1,0 +1,77 @@
+# Windows builds.
+name: Windows
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      # explicit include-based build matrix, of known valid options
+      matrix:
+        include:
+          # Windows2019 & VS 2019 supports 10.1+
+          - os: windows-2019
+            cuda: "10.2.89"
+            visual_studio: "Visual Studio 16 2019"
+          # - os: windows-2019
+          #   cuda: "10.1.243"
+          #   visual_studio: "Visual Studio 16 2019"
+
+          # Windows2016 & VS 2017 supports 10.0+
+          # - os: windows-2016
+          #   cuda: "10.2.89"
+          #   visual_studio: "Visual Studio 15 2017"
+          # - os: windows-2016
+          #   cuda: "10.1.243"
+          #   visual_studio: "Visual Studio 15 2017"
+          # - os: windows-2016
+          #   cuda: "10.0.130"
+          #   visual_studio: "Visual Studio 15 2017"
+
+    env:
+      cuda_arch: "35"
+      build_dir: "build"
+      config: "Release"
+      build_tests: "OFF"
+      Werror: "ON"
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install CUDA
+      env: 
+        cuda: ${{ matrix.cuda }}
+        visual_studio: ${{ matrix.visual_studio }}
+      run: |
+        # Install CUDA via a powershell script
+        .\scripts\actions\install_cuda_windows.ps1
+        if ($?) {
+          # Set paths for subsequent steps, using $env:CUDA_PATH
+          echo "Adding CUDA to CUDA_PATH, CUDA_PATH_X_Y and PATH"
+          echo "::set-env name=CUDA_PATH::$env:CUDA_PATH"
+          echo "::set-env name=$env:CUDA_PATH_VX_Y::$env:CUDA_PATH"
+          echo "::add-path::$env:CUDA_PATH/bin"
+        }
+      shell: powershell
+
+    - name: Configure CMake
+      id: configure
+      run: cmake . -B ${{ env.build_dir }} -G "${{ matrix.visual_studio }}" -A x64 -DBUILD_TESTS=${{ env.build_tests }} -DWARNINGS_AS_ERRORS=${{ env.werror }} -DCUDA_ARCH="${{ env.cuda_arch }}"
+      shell: bash
+
+    - name: Build flamegpu2
+      run: cmake --build . --config ${{ env.config }} --target flamegpu2 --verbose
+      working-directory: ${{ env.build_dir }}
+
+    - name: Build tests
+      if: env.build_tests == 'ON'
+      run: cmake --build . --config ${{ env.config }} --target tests --verbose
+      working-directory: ${{ env.build_dir }}
+
+    - name: Build everything else
+      run: cmake --build . --config ${{ env.config }} --target ALL_BUILD --verbose
+      working-directory: ${{ env.build_dir }}
