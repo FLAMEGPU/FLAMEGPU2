@@ -6,13 +6,15 @@ The Code is currently under active development and should **not be used** until 
 
 ### Continuous Integration
 
-Continuous integration is provided by Travis (Linux) and windows (AppVeyor). This performs only build tests and the virtual machines do not support executing the unit tests. Each build has a script which is required to install the CUDA toolkit on the VM worker node. See the scripts folder for more details.
+Continuous Integration (CI) is provided by Github Actions, Travis (Linux only) and AppVeyor (Windows only).
+CI jobs *only* include compilation, as the CI workers do not include CUDA GPUs.
 
-#### Current Master Branch Build Status
+| Provider           | Status |
+|--------------------|--------|
+| Github Actions     | [![Ubuntu](https://github.com/ptheywood/FLAMEGPU2_dev/workflows/Ubuntu/badge.svg?branch=master)](https://github.com/ptheywood/FLAMEGPU2_dev/actions?query=workflow%3AUbuntu+branch%3Amaster) [![Windows](https://github.com/ptheywood/FLAMEGPU2_dev/workflows/Windows/badge.svg?branch=master)](https://github.com/ptheywood/FLAMEGPU2_dev/actions?query=workflow%3AWindows+branch%3Amaster) [![Lint](https://github.com/ptheywood/FLAMEGPU2_dev/workflows/Lint/badge.svg?branch=master)](https://github.com/ptheywood/FLAMEGPU2_dev/actions?query=workflow%3ALint+branch%3Amaster) [![Docs](https://github.com/ptheywood/FLAMEGPU2_dev/workflows/Docs/badge.svg?branch=master)](https://github.com/ptheywood/FLAMEGPU2_dev/actions?query=workflow%3ADocs+branch%3Amaster) |
+| Travis (Ubuntu)     | [![Build Status](https://travis-ci.org/FLAMEGPU/FLAMEGPU2_dev.svg?branch=master)](https://travis-ci.org/FLAMEGPU/FLAMEGPU2_dev)|
+| Appveyor (Windows) | [![Build status](https://ci.appveyor.com/api/projects/status/4p58gnu8tyj7y3a7/branch/master?svg=true)](https://ci.appveyor.com/project/mondus/flamegpu2-dev/branch/master) |
 
-[![Build status](https://ci.appveyor.com/api/projects/status/4p58gnu8tyj7y3a7/branch/master?svg=true)](https://ci.appveyor.com/project/mondus/flamegpu2-dev/branch/master)
-
-[![Build Status](https://travis-ci.org/FLAMEGPU/FLAMEGPU2_dev.svg?branch=master)](https://travis-ci.org/FLAMEGPU/FLAMEGPU2_dev)
 
 ### Dependencies
 
@@ -26,7 +28,8 @@ Only documentation can be built without the required dependencies (however Doxyg
 * [CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit) >= 9.0
 * *Linux:*
   * [make](https://www.gnu.org/software/make/)
-  * gcc (version requirements [here](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#system-requirements))
+  * gcc/g++ >= 6 (version requirements [here](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#system-requirements))
+      * gcc/g++ >= 7 required for the test suite 
 * *Windows:*
   * Visual Studio 2015 or higher
 
@@ -168,21 +171,21 @@ doxygen Doxyfile.docs
 
 ##### Device Architectures
 
-CUDA device architectures can be specified via `-DSMS` when generating make files, using a semi colon, space or comma separated list of compute capability numbers. I.e to build for just SM_61 and SM_70:
+CUDA device architectures can be specified via `-DCUDA_ARCH` when generating make files, using a semi colon, space or comma separated list of compute capability numbers. I.e to build for just SM_61 and SM_70:
 
 ```
 mkdir -p build && cd build
-cmake .. -DSMS="61;70"
+cmake .. -DCUDA_ARCH="61;70"
 make -j8
 ```
 
-Pass `-DSMS=` to reset to the default.
+Pass `-DCUDA_ARCH=` to reset to the default.
 
 ##### NVTX Markers
 
-[NVTX markers](https://docs.nvidia.com/cuda/profiler-users-guide/index.html#nvtx) can be enabled to improve the profiling experience, using the `NVTX` Cmake option. 
+[NVTX markers](https://docs.nvidia.com/cuda/profiler-users-guide/index.html#nvtx) can be enabled to improve the profiling experience, using the `USE_NVTX` Cmake option. 
 
-I.e. `-DNVTX=ON` will enable NVTX markers and allow custom markers to be included. This is implied by the `Profile` build configuration. 
+I.e. `-DUSE_NVTX=ON` will enable NVTX markers and allow custom markers to be included. This is implied by the `Profile` build configuration. 
 See `include/util/nvtx.h` and the associated documentation for how to apply custom markers.
 
 ### Running FLAME GPU 2

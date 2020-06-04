@@ -60,6 +60,22 @@ option(USE_NVTX "Build with NVTX markers enabled" OFF)
 # Control target CUDA_ARCH to compile for
 SET(CUDA_ARCH "${CUDA_ARCH}" CACHE STRING "List of CUDA Architectures to target. E.g. 61;70" FORCE)
 
+# Enable the CXX compiler required for feature detection.
+enable_language(CXX)
+
+# If the CXX compiler is GNU, it needs to be >= 6 to build the library and >= 7 to build the tests. This will block certain cuda compilers.
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    # g++-6 is required - 5.5 is a broken compiler, lowever versions untested.
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 6)        
+        message(FATAL_ERROR "g++ version >= 6 is required")
+    elseif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7)
+        if (BUILD_TESTS)
+            message(WARNING "  g++ < 7 is incompatible with googletest when using CUDA.\n  Setting BUILD_TESTS OFF.")
+            set(BUILD_TESTS OFF)
+        endif()
+    endif()
+endif()
+
 # Define a function to add a lint target.
 find_file(CPPLINT NAMES cpplint cpplint.exe)
 if(CPPLINT)

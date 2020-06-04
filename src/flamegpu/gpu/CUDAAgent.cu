@@ -656,7 +656,7 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, bool f
             rtc_func_map.insert(CUDARTCFuncMap::value_type(func_name, std::unique_ptr<jitify::KernelInstantiation>(new jitify::KernelInstantiation(kernel, { func_impl.c_str()}))));
         }
     }
-    catch (std::runtime_error e) {
+    catch (std::runtime_error const&) {
         // jitify does not have a method for getting compile logs so rely on JITIFY_PRINT_LOG defined in cmake
         THROW InvalidAgentFunc("Error compiling runtime agent function (or function condition) ('%s'): function had compilation errors (see std::cout), "
             "in CUDAAgent::addInstantitateRTCFunction().",

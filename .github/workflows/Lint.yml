@@ -1,0 +1,50 @@
+# Lint the project using cpplint
+name: Lint
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  cpplint:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-18.04
+            cuda: "10.2"
+    env:
+      build_dir: "build"
+      build_tests: "ON"
+
+    steps:
+    - uses: actions/checkout@v2
+
+    # Linting currently requires cuda to be installed. Ljnux is faster than windows.
+    - name: Install CUDA
+      env:
+        cuda: ${{ matrix.cuda }}
+      run: |
+        source ./scripts/actions/install_cuda_ubuntu.sh
+        if [[ $? -eq 0 ]]; then
+          # Set paths for subsequent steps, using ${CUDA_PATH}
+          echo "Adding CUDA to CUDA_PATH, PATH and LD_LIBRARY_PATH"
+          echo "::set-env name=CUDA_PATH::${CUDA_PATH}"
+          echo "::add-path::${CUDA_PATH}/bin"
+          echo "::set-env name=LD_LIBRARY_PATH::${CUDA_PATH}/lib:${LD_LIBRARY_PATH}"
+        fi
+      shell: bash
+
+    # Also install the linter.
+    - name: Install cpplint
+      run: pip3 install cpplint && echo "::add-path::$HOME/.local/bin"
+
+    # Configure cmake, including tests to make sure they are linted.
+    - name: Configure cmake
+      run: cmake . -B ${{ env.build_dir }} -DBUILD_TESTS=${{ env.build_tests }} 
+
+    # Run the linter.
+    - name: Lint
+      run: cmake --build . --target all_lint --verbose -j `nproc` 
+      working-directory: ${{ env.build_dir }}

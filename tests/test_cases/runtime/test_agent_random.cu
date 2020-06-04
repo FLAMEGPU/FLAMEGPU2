@@ -86,7 +86,7 @@ TEST(AgentRandomTest, AgentRandomCheck) {
             a1 = instance.getVariable<float>("a");
             b1 = instance.getVariable<float>("b");
             c1 = instance.getVariable<float>("c");
-            results1.push_back({a1, b1, c1});
+            results1.push_back(std::make_tuple(a1, b1, c1));
             if (i != 0) {
                 // Different agents get different random numbers
                 EXPECT_TRUE(a1 != a2);
@@ -115,11 +115,10 @@ TEST(AgentRandomTest, AgentRandomCheck) {
 
         for (unsigned int i = 0; i < population.getCurrentListSize(); i++) {
             AgentInstance instance = population.getInstanceAt(i);
-            results2.push_back({
+            results2.push_back(std::make_tuple(
                 instance.getVariable<float>("a"),
                 instance.getVariable<float>("b"),
-                instance.getVariable<float>("c")
-            });
+                instance.getVariable<float>("c")));
         }
         EXPECT_TRUE(results2.size() == AGENT_COUNT);
 
@@ -144,11 +143,10 @@ TEST(AgentRandomTest, AgentRandomCheck) {
 
         for (unsigned int i = 0; i < population.getCurrentListSize(); i++) {
             AgentInstance instance = population.getInstanceAt(i);
-            results2.push_back({
+            results2.push_back(std::make_tuple(
                 instance.getVariable<float>("a"),
                 instance.getVariable<float>("b"),
-                instance.getVariable<float>("c")
-            });
+                instance.getVariable<float>("c")));
         }
         EXPECT_EQ(results2.size(), AGENT_COUNT);
 

@@ -1,0 +1,22 @@
+# Just build documentation using Doxygen - no CUDA required
+name: Docs
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  doxygen:
+    runs-on: ubuntu-18.04
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install doxygen
+      run: sudo apt -y install doxygen graphviz
+
+    - name: Configure cmake
+      run: cmake . -B build -DBUILD_API_DOCUMENTATION=ON
+
+    - name: Docs
+      run: cmake --build . --target docs --verbose -j `nproc`
+      working-directory: build
