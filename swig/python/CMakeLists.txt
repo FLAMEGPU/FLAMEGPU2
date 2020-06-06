@@ -136,6 +136,8 @@ if(BUILD_SWIG_PYTHON_VIRTUALENV)
 		# Must not call it in a folder containing the setup.py otherwise pip call it
 		# (i.e. "python setup.py bdist") while we want to consume the wheel package
 		COMMAND ${VENV_Python_EXECUTABLE} -m pip install --force-reinstall --find-links=dist ${PYTHON_MODULE_NAME}
+		# install pytest
+		COMMAND ${VENV_Python_EXECUTABLE} -m pip install pytest
 		BYPRODUCTS ${VENV_DIR}
 		# TODO: Add dependancy to ensure this post build step occurs after the previous post build step which builds the wheel
 		WORKING_DIRECTORY ${PYTHON_LIB_OUTPUT_DIRECTORY})

@@ -34,6 +34,7 @@ init_population = pyflamegpu.AgentPopulation(agent, AGENT_COUNT);
 for i in range(AGENT_COUNT):
     instance = init_population.getNextInstance("default");
     instance.setVariableFloat("x", float(i));
+    
 # }
 # // Setup Model
 # CUDAAgentModel cuda_model(model);

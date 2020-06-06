@@ -14,7 +14,16 @@
 
 %module pyflamegpu
 
-
+// Generic exception handling
+%include "exception.i"
+%exception {
+  try {
+    $action
+  }
+  catch (const std::exception& e) {
+    SWIG_exception(SWIG_RuntimeError, e.what());
+  } 
+}
 
 /**
  * TEMPLATE_VARIABLE_ARRAY_INSTANTIATE macro
@@ -132,7 +141,18 @@ TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## UInt, classfunction, unsigned in
 %include "flamegpu/pop/AgentPopulation.h"
 %include "flamegpu/pop/AgentInstance.h"
 
+
+// exceptions
+//%include "flamegpu/exception/FGPUException.h"
+
+%feature("flatnested");     // flat nested on to ensure Config is included
+%rename (CUDAAgentModel_Config) CUDAAgentModel::Config;
+%rename (Simulation_Config) Simulation::Config;
+%include <argcargv.i>                                           // Include and apply to swig library healer for processing argc and argv values
+%apply (int ARGC, char **ARGV) { (int argc, const char **) }    // This is required for CUDAAgentModel.initialise() 
+%include "flamegpu/sim/Simulation.h"
 %include "flamegpu/gpu/CUDAAgentModel.h"
+%feature("flatnested", ""); // flat nested off
 
 //%include "flamegpu/runtime/flamegpu_device_api.h"
 //%include "flamegpu/runtime/flamegpu_host_api.h"
@@ -177,13 +197,20 @@ TEMPLATE_VARIABLE_INSTANTIATE_N(newVariable, AgentDescription::newVariable)
 TEMPLATE_VARIABLE_INSTANTIATE_N(setVariable, AgentInstance::setVariable)
 TEMPLATE_VARIABLE_INSTANTIATE(getVariable, AgentInstance::getVariable)
 
-/* Instanciate template versions of new message types from the API */
+/* Instanciate template versions of new and get message types from the API */
 %template(newMessageBruteForce) ModelDescription::newMessage<MsgBruteForce>;
 %template(newMessageSpatial2D) ModelDescription::newMessage<MsgSpatial2D>;
 %template(newMessageSpatial3D) ModelDescription::newMessage<MsgSpatial3D>;
 %template(newMessageArray) ModelDescription::newMessage<MsgArray>;
 %template(newMessageArray2D) ModelDescription::newMessage<MsgArray2D>;
 %template(newMessageArray3D) ModelDescription::newMessage<MsgArray3D>;
+
+%template(getMessageBruteForce) ModelDescription::getMessage<MsgBruteForce>;
+%template(getMessageSpatial2D) ModelDescription::getMessage<MsgSpatial2D>;
+%template(getMessageSpatial3D) ModelDescription::getMessage<MsgSpatial3D>;
+%template(getMessageArray) ModelDescription::getMessage<MsgArray>;
+%template(getMessageArray2D) ModelDescription::getMessage<MsgArray2D>;
+%template(getMessageArray3D) ModelDescription::getMessage<MsgArray3D>;
 
 /* Instanciate template versions of message functions from the API */
 TEMPLATE_VARIABLE_INSTANTIATE(newVariable, MsgBruteForce::Description::newVariable)
