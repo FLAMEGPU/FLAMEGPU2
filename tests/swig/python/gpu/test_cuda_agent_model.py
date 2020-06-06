@@ -33,30 +33,36 @@ FLAMEGPU_STEP_FUNCTION(IncrementCounter) {
 
 class TestSimulation(TestCase):
     def test_argparse_inputfile_long(self):
-        m = pyflamegpu.ModelDescription(MODEL_NAME)
+        m = pyflamegpu.ModelDescription("test_argparse_inputfile_long")
         c = pyflamegpu.CUDAAgentModel(m)
         argv = [ "prog.exe", "--in", "test" ]
         self.assertEqual(c.getSimulationConfig().xml_input_file, "")
-        with pytest.raises(RuntimeError) as e:  # InvalidInputFile exception is thrown as python RuntimeError by swig
+        with pytest.raises(RuntimeError) as e:  # UnsupportedFileType exception is thrown as python RuntimeError by swig
             c.initialise(argv)
+        self.assertIn("File 'test' is not a type which can be read", str(e.value))
         self.assertEqual(c.getSimulationConfig().xml_input_file, argv[2])
         # Blank init resets value to default
         argv = []
         c.initialise(argv)
         self.assertEqual(c.getSimulationConfig().xml_input_file, "")
 
+
+    def test_argparse_inputfile_short(self):
+        m = pyflamegpu.ModelDescription("test_argparse_inputfile_short")
+        c = pyflamegpu.CUDAAgentModel(m)
+        argv = [ "prog.exe", "-i", "test.xml" ]
+        self.assertEqual(c.getSimulationConfig().xml_input_file, "")
+        with pytest.raises(RuntimeError) as e:  # InvalidInputFile exception is thrown as python RuntimeError by swig
+            c.initialise(argv)
+        self.assertIn("File could not be opened", str(e.value))
+        self.assertEqual(c.getSimulationConfig().xml_input_file, argv[2])
+        # Blank init resets value to default
+        argv = []
+        c.initialise(argv)
+        self.assertEqual(c.getSimulationConfig().xml_input_file, "")
+
+
 """
-TEST(TestSimulation, ArgParse_inputfile_short) {
-    ModelDescription m(MODEL_NAME);
-    CUDAAgentModel c(m);
-    const char *argv[3] = { "prog.exe", "-i", "test.xml" };
-    EXPECT_EQ(c.getSimulationConfig().xml_input_file, "");
-    EXPECT_THROW(c.initialise(sizeof(argv) / sizeof(char*), argv), InvalidInputFile);  // File doesn't exist
-    EXPECT_EQ(c.getSimulationConfig().xml_input_file, argv[2]);
-    // Blank init resets value to default
-    c.initialise(0, nullptr);
-    EXPECT_EQ(c.getSimulationConfig().xml_input_file, "");
-}
 TEST(TestSimulation, ArgParse_steps_long) {
     ModelDescription m(MODEL_NAME);
     CUDAAgentModel c(m);
