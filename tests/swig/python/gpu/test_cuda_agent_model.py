@@ -3,8 +3,6 @@ from unittest import TestCase
 from pyflamegpu import *
 
 
-MODEL_NAME = "Model"
-MODEL_NAME2 = "Model2"
 AGENT_NAME = "Agent";
 AGENT_NAME2 = "Agent2"
 FUNCTION_NAME = "Function"
@@ -141,43 +139,49 @@ class TestSimulation(TestCase):
         self.assertEqual(c.getCUDAConfig().device_id, 0)
 
 
+    SetGetFn = """
+    FLAMEGPU_AGENT_FUNCTION(SetGetFn, MsgNone, MsgNone) {
+        int i = FLAMEGPU->getVariable<int>("test");
+        FLAMEGPU->setVariable<int>("test", i * 3);
+        return ALIVE;
+    }
+    """
+    def test_set_get_population_data(self):
+        m = pyflamegpu.ModelDescription("test_set_get_population_data")
+        a = m.newAgent("Agent")
+        m.newLayer("Layer").addAgentFunction(a.newRTCFunction("SetGetFn", self.SetGetFn))
+        a.newVariableInt("test")
+        pop = pyflamegpu.AgentPopulation(a, AGENT_COUNT);
+        # set agent variable data
+        for _i in range(AGENT_COUNT):
+            i = pop.getNextInstance();
+            i.setVariableInt("test", _i)
+            with pytest.raises(RuntimeError) as e:  # InvalidVarType exception is thrown as python RuntimeError by swig
+                i.setVariableFloat("test", float(_i))
+            self.assertIn("This expects 'int', but 'float' was requested", str(e.value))
+        c = pyflamegpu.CUDAAgentModel(m)
+        c.SimulationConfig().steps = 1
+        c.setPopulationData(pop)
+        # perform simulation
+        c.simulate()
+        c.getPopulationData(pop);
+        # Check results and reset agent variable data
+        for _i in range(AGENT_COUNT):
+            i = pop.getInstanceAt(_i);
+            self.assertEqual(i.getVariableInt("test"), _i * 3)
+            i.setVariableInt("test", _i * 2);
+        # perform second simulation
+        c.setPopulationData(pop)
+        c.simulate();
+        c.getPopulationData(pop);
+        for _i in range(AGENT_COUNT):
+            i = pop.getInstanceAt(_i);
+            self.assertEqual(i.getVariableInt("test"), _i * 3 * 2)
+            with pytest.raises(RuntimeError) as e:  # InvalidVarType exception is thrown as python RuntimeError by swig
+                i.getVariableFloat("test")
+            self.assertIn("This expects 'int', but 'float' was requested", str(e.value))
 
 """
-FLAMEGPU_AGENT_FUNCTION(SetGetFn, MsgNone, MsgNone) {
-    int i = FLAMEGPU->getVariable<int>(dVARIABLE_NAME);
-    FLAMEGPU->setVariable<int>(dVARIABLE_NAME, i * dMULTIPLIER);
-    return ALIVE;
-}
-TEST(TestCUDAAgentModel, SetGetPopulationData) {
-    ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME);
-    m.newLayer(LAYER_NAME).addAgentFunction(a.newFunction(FUNCTION_NAME, SetGetFn));
-    a.newVariable<int>(VARIABLE_NAME);
-    AgentPopulation pop(a, static_cast<unsigned int>(AGENT_COUNT));
-    for (int _i = 0; _i < AGENT_COUNT; ++_i) {
-        AgentInstance i = pop.getNextInstance();
-        i.setVariable<int>(VARIABLE_NAME, _i);
-        EXPECT_THROW(i.setVariable<float>(VARIABLE_NAME, static_cast<float>(_i)), InvalidVarType);
-    }
-    CUDAAgentModel c(m);
-    c.SimulationConfig().steps = 1;
-    c.setPopulationData(pop);
-    c.simulate();
-    c.getPopulationData(pop);
-    for (int _i = 0; _i < AGENT_COUNT; ++_i) {
-        AgentInstance i = pop.getInstanceAt(_i);
-        EXPECT_EQ(i.getVariable<int>(VARIABLE_NAME), _i * MULTIPLIER);
-        i.setVariable<int>(VARIABLE_NAME, _i * 2);
-    }
-    c.setPopulationData(pop);
-    c.simulate();
-    c.getPopulationData(pop);
-    for (int _i = 0; _i < AGENT_COUNT; ++_i) {
-        AgentInstance i = pop.getInstanceAt(_i);
-        EXPECT_EQ(i.getVariable<int>(VARIABLE_NAME), _i * MULTIPLIER * 2);
-        EXPECT_THROW(i.getVariable<float>(VARIABLE_NAME), InvalidVarType);
-    }
-}
 TEST(TestCUDAAgentModel, SetGetPopulationData_InvalidCudaAgent) {
     ModelDescription m2(MODEL_NAME2);
     AgentDescription &a2 = m2.newAgent(AGENT_NAME2);
