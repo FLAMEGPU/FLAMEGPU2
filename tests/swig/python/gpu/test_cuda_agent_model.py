@@ -46,7 +46,6 @@ class TestSimulation(TestCase):
         c.initialise(argv)
         self.assertEqual(c.getSimulationConfig().xml_input_file, "")
 
-
     def test_argparse_inputfile_short(self):
         m = pyflamegpu.ModelDescription("test_argparse_inputfile_short")
         c = pyflamegpu.CUDAAgentModel(m)
@@ -61,84 +60,89 @@ class TestSimulation(TestCase):
         c.initialise(argv)
         self.assertEqual(c.getSimulationConfig().xml_input_file, "")
 
+    def test_argparse_steps_long(self):
+        m = pyflamegpu.ModelDescription("test_argparse_steps_long")
+        c = pyflamegpu.CUDAAgentModel(m)
+        argv = [ "prog.exe", "--steps", "12" ]
+        self.assertEqual(c.getSimulationConfig().steps, 0)
+        c.initialise(argv)
+        self.assertEqual(c.getSimulationConfig().steps, 12)
+        # Blank init resets value to default
+        argv = []
+        c.initialise(argv)
+        self.assertEqual(c.getSimulationConfig().steps, 0)
+        
+    def test_argparse_steps_short(self):
+        m = pyflamegpu.ModelDescription("test_argparse_steps_short")
+        c = pyflamegpu.CUDAAgentModel(m)
+        argv = [ "prog.exe", "-s", "12" ]
+        self.assertEqual(c.getSimulationConfig().steps, 0)
+        c.initialise(argv)
+        self.assertEqual(c.getSimulationConfig().steps, 12)
+        # Blank init resets value to default
+        argv = []
+        c.initialise(argv)
+        self.assertEqual(c.getSimulationConfig().steps, 0)
+        
+    def test_argparse_randomseed_long(self):
+        m = pyflamegpu.ModelDescription("test_argparse_randomseed_long")
+        c = pyflamegpu.CUDAAgentModel(m)
+        argv = [ "prog.exe", "--random", "12" ]
+        self.assertNotEqual(c.getSimulationConfig().random_seed, 12)
+        c.initialise(argv)
+        self.assertEqual(c.getSimulationConfig().random_seed, 12)
+        # Blank init resets value to default
+        argv = []
+        c.initialise(argv)
+        self.assertNotEqual(c.getSimulationConfig().random_seed, 12)
+        
+    def test_argparse_randomseed_short(self):
+        m = pyflamegpu.ModelDescription("test_argparse_randomseed_short")
+        c = pyflamegpu.CUDAAgentModel(m)
+        argv = [ "prog.exe", "-r", "12" ]
+        self.assertNotEqual(c.getSimulationConfig().random_seed, 12)
+        c.initialise(argv)
+        self.assertEqual(c.getSimulationConfig().random_seed, 12)
+        # Blank init resets value to default
+        argv = []
+        c.initialise(argv)
+        self.assertNotEqual(c.getSimulationConfig().random_seed, 12)
+        
+    def test_argparse_device_long(self):
+        m = pyflamegpu.ModelDescription("test_argparse_device_long")
+        c = pyflamegpu.CUDAAgentModel(m)
+        argv = [ "prog.exe", "--device", "1200" ]
+        self.assertEqual(c.getCUDAConfig().device_id, 0)
+        # Setting an invalid device ID is the only safe way to do this without making internal methods accessible
+        # As can set to a valid device, we haven't build code for
+        with pytest.raises(RuntimeError) as e:  # InvalidCUDAdevice exception is thrown as python RuntimeError by swig
+            c.initialise(argv)
+        self.assertIn("Error setting CUDA device to '1200'", str(e.value))
+        self.assertEqual(c.getCUDAConfig().device_id, 1200)
+        # Blank init resets value to default
+        argv = []
+        c.initialise(argv)
+        self.assertEqual(c.getCUDAConfig().device_id, 0)
+        
+    def test_argparse_device_short(self):
+        m = pyflamegpu.ModelDescription("test_argparse_device_short")
+        c = pyflamegpu.CUDAAgentModel(m)
+        argv = [ "prog.exe", "-d", "1200" ]
+        self.assertEqual(c.getCUDAConfig().device_id, 0)
+        # Setting an invalid device ID is the only safe way to do this without making internal methods accessible
+        # As can set to a valid device, we haven't build code for
+        with pytest.raises(RuntimeError) as e:  # InvalidCUDAdevice exception is thrown as python RuntimeError by swig
+            c.initialise(argv)
+        self.assertIn("Error setting CUDA device to '1200'", str(e.value))
+        self.assertEqual(c.getCUDAConfig().device_id, 1200)
+        # Blank init resets value to default
+        argv = []
+        c.initialise(argv)
+        self.assertEqual(c.getCUDAConfig().device_id, 0)
+
+
 
 """
-TEST(TestSimulation, ArgParse_steps_long) {
-    ModelDescription m(MODEL_NAME);
-    CUDAAgentModel c(m);
-    const char *argv[3] = { "prog.exe", "--steps", "12" };
-    EXPECT_EQ(c.getSimulationConfig().steps, 0u);
-    c.initialise(sizeof(argv) / sizeof(char*), argv);
-    EXPECT_EQ(c.getSimulationConfig().steps, 12u);
-    // Blank init resets value to default
-    c.initialise(0, nullptr);
-    EXPECT_EQ(c.getSimulationConfig().steps, 0u);
-}
-TEST(TestSimulation, ArgParse_steps_short) {
-    ModelDescription m(MODEL_NAME);
-    CUDAAgentModel c(m);
-    const char *argv[3] = { "prog.exe", "-s", "12" };
-    EXPECT_EQ(c.getSimulationConfig().steps, 0u);
-    c.initialise(sizeof(argv) / sizeof(char*), argv);
-    EXPECT_EQ(c.getSimulationConfig().steps, 12u);
-    // Blank init resets value to default
-    c.initialise(0, nullptr);
-    EXPECT_EQ(c.getSimulationConfig().steps, 0u);
-}
-TEST(TestSimulation, ArgParse_randomseed_long) {
-    ModelDescription m(MODEL_NAME);
-    CUDAAgentModel c(m);
-    const char *argv[3] = { "prog.exe", "--random", "12" };
-    EXPECT_NE(c.getSimulationConfig().random_seed, 12u);
-    c.initialise(sizeof(argv) / sizeof(char*), argv);
-    EXPECT_EQ(c.getSimulationConfig().random_seed, 12u);
-    // Blank init resets value to default
-    c.initialise(0, nullptr);
-    EXPECT_NE(c.getSimulationConfig().random_seed, 12u);
-}
-TEST(TestSimulation, ArgParse_randomseed_short) {
-    ModelDescription m(MODEL_NAME);
-    CUDAAgentModel c(m);
-    const char *argv[3] = { "prog.exe", "-r", "12" };
-    EXPECT_NE(c.getSimulationConfig().random_seed, 12u);
-    c.initialise(sizeof(argv) / sizeof(char*), argv);
-    EXPECT_EQ(c.getSimulationConfig().random_seed, 12u);
-    // Blank init resets value to default
-    c.initialise(0, nullptr);
-    EXPECT_NE(c.getSimulationConfig().random_seed, 12u);
-}
-TEST(TestCUDAAgentModel, ArgParse_device_long) {
-    ASSERT_EQ(cudaGetLastError(), cudaSuccess);
-    ModelDescription m(MODEL_NAME);
-    CUDAAgentModel c(m);
-    const char *argv[3] = { "prog.exe", "--device", "1200" };
-    EXPECT_EQ(c.getCUDAConfig().device_id, 0);
-    // Setting an invalid device ID is the only safe way to do this without making internal methods accessible
-    // As can set to a valid device, we haven't build code for
-    EXPECT_THROW(c.initialise(sizeof(argv) / sizeof(char*), argv), InvalidCUDAdevice);
-    EXPECT_EQ(c.getCUDAConfig().device_id, 1200);
-    // Blank init resets value to default
-    ASSERT_EQ(cudaGetLastError(), cudaSuccess);
-    c.initialise(0, nullptr);
-    EXPECT_EQ(c.getCUDAConfig().device_id, 0);
-    ASSERT_EQ(cudaGetLastError(), cudaSuccess);
-}
-TEST(TestCUDAAgentModel, ArgParse_device_short) {
-    ASSERT_EQ(cudaGetLastError(), cudaSuccess);
-    ModelDescription m(MODEL_NAME);
-    CUDAAgentModel c(m);
-    const char *argv[3] = { "prog.exe", "-d", "1200" };
-    EXPECT_EQ(c.getCUDAConfig().device_id, 0);
-    // Setting an invalid device ID is the only safe way to do this without making internal methods accessible
-    // As can set to a valid device, we haven't build code for
-    EXPECT_THROW(c.initialise(sizeof(argv) / sizeof(char*), argv), InvalidCUDAdevice);
-    EXPECT_EQ(c.getCUDAConfig().device_id, 1200);
-    // Blank init resets value to default
-    ASSERT_EQ(cudaGetLastError(), cudaSuccess);
-    c.initialise(0, nullptr);
-    EXPECT_EQ(c.getCUDAConfig().device_id, 0);
-    ASSERT_EQ(cudaGetLastError(), cudaSuccess);
-}
 FLAMEGPU_AGENT_FUNCTION(SetGetFn, MsgNone, MsgNone) {
     int i = FLAMEGPU->getVariable<int>(dVARIABLE_NAME);
     FLAMEGPU->setVariable<int>(dVARIABLE_NAME, i * dMULTIPLIER);
