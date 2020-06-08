@@ -1,14 +1,13 @@
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_FLAMEGPU_HOST_API_H_
 #define INCLUDE_FLAMEGPU_RUNTIME_FLAMEGPU_HOST_API_H_
 
+#include <cuda_runtime_api.h>
 #include <cassert>
 #include <string>
 #include <utility>
 #include <functional>
 #include <unordered_map>
 #include <vector>
-
-#include <cuda_runtime_api.h>
 
 #include "flamegpu/gpu/CUDAErrorChecking.h"
 #include "flamegpu/runtime/utility/HostRandom.cuh"

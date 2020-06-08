@@ -1,11 +1,11 @@
-#include "flamegpu/model/AgentFunctionDescription.h"
-
+#include <nvrtc.h>
+#include <cuda.h>
 #include <iostream>
 #include <string>
 #include <regex>
 
-#include <nvrtc.h>
-#include <cuda.h>
+#include "flamegpu/model/AgentFunctionDescription.h"
+
 
 /**
  * Constructors
