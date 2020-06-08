@@ -3,6 +3,8 @@
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_UTILITY_ENVIRONMENTMANAGER_CUH_
 #define INCLUDE_FLAMEGPU_RUNTIME_UTILITY_ENVIRONMENTMANAGER_CUH_
 
+#include <cuda_runtime.h>
+
 #include <cstddef>
 #include <unordered_map>
 #include <array>
@@ -12,8 +14,6 @@
 #include <utility>
 #include <typeindex>
 #include <set>
-
-#include <cuda_runtime.h>
 
 #include "flamegpu/exception/FGPUException.h"
 #include "flamegpu/gpu/CUDAErrorChecking.h"

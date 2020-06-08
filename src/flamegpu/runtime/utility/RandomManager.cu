@@ -1,13 +1,14 @@
 #include "flamegpu/runtime/utility/RandomManager.cuh"
 
-#include <ctime>
-#include <cassert>
-#include <cstdio>
-#include <algorithm>
-
 #include <cuda_runtime.h>
 #include <curand_kernel.h>
 #include <device_launch_parameters.h>
+
+#include<ctime>
+
+#include <cassert>
+#include <cstdio>
+#include <algorithm>
 
 #include "flamegpu/gpu/CUDAErrorChecking.h"
 #include "flamegpu/gpu/CUDAAgentModel.h"
