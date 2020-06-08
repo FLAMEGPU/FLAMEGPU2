@@ -408,7 +408,7 @@ std::string CurveRTCHost::getEnvVariableSymbolName(const char* variableName, uns
 }
 
 std::string CurveRTCHost::demangle(const char* verbose_name) {
-    std::string s = jitify::reflection::detail::demangle(verbose_name);
+    std::string s = jitify::reflection::detail::demangle_cuda_symbol(verbose_name);
     // Lambda function for trimming whitesapce as jitify demangle does not remove this
     s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
         return !std::isspace(ch);
@@ -417,7 +417,7 @@ std::string CurveRTCHost::demangle(const char* verbose_name) {
 }
 
 std::string CurveRTCHost::demangle(const std::type_index& type) {
-    std::string s = jitify::reflection::detail::demangle(type.name());
+    std::string s = jitify::reflection::detail::demangle_cuda_symbol(type.name());
     // Lambda function for trimming whitesapce as jitify demangle does not remove this
     s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
         return !std::isspace(ch);
