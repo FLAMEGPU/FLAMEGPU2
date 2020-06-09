@@ -15,6 +15,9 @@ jobs:
         include:
           # Windows2019 & VS 2019 supports 10.1+
           - os: windows-2019
+            cuda: "11.0.167"
+            visual_studio: "Visual Studio 16 2019"
+          - os: windows-2019
             cuda: "10.2.89"
             visual_studio: "Visual Studio 16 2019"
           # - os: windows-2019
@@ -22,6 +25,9 @@ jobs:
           #   visual_studio: "Visual Studio 16 2019"
 
           # Windows2016 & VS 2017 supports 10.0+
+          # - os: windows-2016
+          #   cuda: "11.0.167"
+          #   visual_studio: "Visual Studio 15 2017"
           # - os: windows-2016
           #   cuda: "10.2.89"
           #   visual_studio: "Visual Studio 15 2017"

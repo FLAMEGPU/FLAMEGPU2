@@ -7,11 +7,14 @@
 
 # @todo - GCC support matrix?
 
-# List of packages to install.
+# List of sub-packages to install.
+# @todo - pass this in from outside the script? 
+# @todo - check the specified subpackages exist via apt pre-install?  apt-rdepends cuda-9-0 | grep "^cuda-"?
+
+# Ideally choose from the list of meta-packages to minimise variance between cuda versions (although it does change too)
 CUDA_PACKAGES_IN=(
     "command-line-tools"
-    "curand-dev"
-    "nvrtc-dev"
+    "libraries-dev"
 )
 
 ## -------------------
@@ -57,6 +60,7 @@ UBUNTU_VERSION="${UBUNTU_VERSION//.}"
 echo "CUDA_MAJOR: ${CUDA_MAJOR}"
 echo "CUDA_MINOR: ${CUDA_MINOR}"
 echo "CUDA_PATCH: ${CUDA_PATCH}"
+# echo "UBUNTU_NAME: ${UBUNTU_NAME}"
 echo "UBUNTU_VERSION: ${UBUNTU_VERSION}"
 
 # If we don't know the CUDA_MAJOR or MINOR, error.
