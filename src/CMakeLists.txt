@@ -88,6 +88,8 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAMessage.h
     ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAAgent.h
     ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAAgentStateList.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAFatAgent.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAFatAgentStateList.h
     ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAScatter.h
     ${FLAMEGPU_ROOT}/include/flamegpu/flame_api.h
     ${FLAMEGPU_ROOT}/include/flamegpu/sim/AgentInterface.h
@@ -125,8 +127,6 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/model/SubAgentData.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/SubModelDescription.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/SubAgentDescription.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDASubAgent.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDASubAgentStateList.h
 )
 SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/exception/FGPUException.cpp
@@ -144,8 +144,10 @@ SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/pop/AgentStateMemory.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAScanCompaction.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAMessageList.cu
-    ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAAgentStateList.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAAgent.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAAgentStateList.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAFatAgent.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAFatAgentStateList.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAMessage.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAScatter.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/sim/Simulation.cu
@@ -169,8 +171,6 @@ SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/model/SubAgentData.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/model/SubModelDescription.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/model/SubAgentDescription.cpp
-    ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDASubAgent.cu
-    ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDASubAgentStateList.cu
 )
 if (VISUALISATION)
     SET(SRC_INCLUDE

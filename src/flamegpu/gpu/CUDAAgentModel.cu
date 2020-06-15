@@ -11,7 +11,6 @@
 #include "flamegpu/pop/AgentPopulation.h"
 #include "flamegpu/runtime/flamegpu_host_api.h"
 #include "flamegpu/gpu/CUDAScanCompaction.h"
-#include "flamegpu/gpu/CUDASubAgent.h"
 #include "flamegpu/util/nvtx.h"
 #include "flamegpu/util/compute_capability.cuh"
 #include "flamegpu/util/SignalHandlers.h"
@@ -79,7 +78,7 @@ CUDAAgentModel::CUDAAgentModel(const std::shared_ptr<SubModelData> &submodel_des
                 THROW InvalidParent("Master agent description has expired, in CUDAAgentModel SubModel constructor.\n");
             }
             std::unique_ptr<CUDAAgent> &masterAgent = master_model->agent_map.at(masterAgentDesc->name);
-            agent_map.emplace(it->first, std::make_unique<CUDASubAgent>(*it->second, *this, masterAgent, mapping));
+            agent_map.emplace(it->first, std::make_unique<CUDAAgent>(*it->second, *this, masterAgent, mapping));
         } else {
             // Agent is not mapped, create regular agent
             agent_map.emplace(it->first, std::make_unique<CUDAAgent>(*it->second, *this)).first;
@@ -187,7 +186,7 @@ bool CUDAAgentModel::step() {
                     flamegpu_internal::CUDAScanCompaction::resize(cuda_agent.getStateSize(func_des->initial_state), flamegpu_internal::CUDAScanCompaction::AGENT_DEATH, j, *this);
 
                     // Configure runtime access of the functions variables within the FLAME_API object
-                    cuda_agent.mapRuntimeVariables(*func_des, func_des->initial_state);
+                    cuda_agent.mapRuntimeVariables(*func_des);
 
                     // Zero the scan flag that will be written to
                     flamegpu_internal::CUDAScanCompaction::zero(flamegpu_internal::CUDAScanCompaction::AGENT_DEATH, j);
@@ -202,7 +201,7 @@ bool CUDAAgentModel::step() {
             j = 0;
             // Sum the total number of threads being launched in the layer
             totalThreads = 0;
-            // Launch kernel
+            // Launch function condition kernels
             for (const std::shared_ptr<AgentFunctionData> &func_des : functions) {
                 if ((func_des->condition) || (!func_des->rtc_func_condition_name.empty())) {
                     auto func_agent = func_des->parent.lock();
@@ -307,6 +306,7 @@ bool CUDAAgentModel::step() {
             const unsigned int STATE_SIZE = cuda_agent.getStateSize(func_des->initial_state);
             if (STATE_SIZE == 0)
                 continue;
+            // Resize death flag array if necessary
             flamegpu_internal::CUDAScanCompaction::resize(STATE_SIZE, flamegpu_internal::CUDAScanCompaction::AGENT_DEATH, j, *this);
 
             // check if a function has an input message
@@ -338,19 +338,17 @@ bool CUDAAgentModel::step() {
                 // This will act as a reserve word
                 // which is added to variable hashes for agent creation on device
                 CUDAAgent& output_agent = getCUDAAgent(oa->name);
-                // Ensure we have enough memory (this resizes the scan flag too)
-                output_agent.resizeNew(*func_des, STATE_SIZE, j);
                 // Ensure the scan flag is zeroed
                 flamegpu_internal::CUDAScanCompaction::zero(flamegpu_internal::CUDAScanCompaction::AGENT_OUTPUT, j);
-                // Map vars with curve
-                output_agent.mapNewRuntimeVariables(*func_des, STATE_SIZE);
+                // Map vars with curve (this allocates/requests enough new buffer space if an existing version is not available/suitable)
+                output_agent.mapNewRuntimeVariables(*func_des, STATE_SIZE, j);
             }
 
 
             /**
              * Configure runtime access of the functions variables within the FLAME_API object
              */
-            cuda_agent.mapRuntimeVariables(*func_des, func_des->initial_state);
+            cuda_agent.mapRuntimeVariables(*func_des);
 
             // Zero the scan flag that will be written to
             if (func_des->has_agent_death)
@@ -504,7 +502,7 @@ bool CUDAAgentModel::step() {
             // Process agent state transition (Longer term merge this with process death?)
             cuda_agent.transitionState(func_des->initial_state, func_des->end_state, j);
             // Process agent function condition
-            cuda_agent.clearFunctionConditionState(func_des->initial_state);
+            cuda_agent.clearFunctionCondition(func_des->initial_state);
 
             // check if a function has an output agent
             if (auto oa = func_des->agent_output.lock()) {
@@ -512,7 +510,7 @@ bool CUDAAgentModel::step() {
                 // which is added to variable hashes for agent creation on device
                 CUDAAgent& output_agent = getCUDAAgent(oa->name);
                 // Scatter the agent birth
-                output_agent.scatterNew(func_des->agent_output_state, PRE_DEATH_STATE_SIZE, j);
+                output_agent.scatterNew(*func_des, PRE_DEATH_STATE_SIZE, j);
                 // unmap vars with curve
                 output_agent.unmapNewRuntimeVariables(*func_des);
             }
@@ -966,15 +964,9 @@ void CUDAAgentModel::processHostAgentCreation() {
                 }
                 // Copy t_buff to device
                 gpuErrchk(cudaMemcpy(dt_buff, t_buff, size_req, cudaMemcpyHostToDevice));
-
-                // Resize agent list if required
-                const unsigned int current_state_size = agent_map.at(agent.first)->getStateSize(state.first);
-                const unsigned int current_max_state_size = agent_map.at(agent.first)->getMaximumListSize();
-                if (current_state_size + state.second.size() > current_max_state_size) {
-                    agent_map.at(agent.first)->resize(static_cast<unsigned int>(state.second.size()) + current_state_size, 0);  // StreamId Doesn't matter
-                }
                 // Scatter to device
-                agent_map.at(agent.first)->getAgentStateList(state.first)->scatterHostCreation(static_cast<unsigned int>(state.second.size()), dt_buff, offsets);
+                auto &cudaagent = agent_map.at(agent.first);
+                cudaagent->scatterHostCreation(state.first, static_cast<unsigned int>(state.second.size()), dt_buff, offsets);
                 // Clear buffer
                 state.second.clear();
             }
@@ -993,7 +985,7 @@ void CUDAAgentModel::RTCSafeCudaMemcpyToSymbol(const void* symbol, const char* r
     // loop through agents
     for (const auto& agent_pair : agent_map) {
         // loop through any agent functions
-        for (const CUDARTCFuncMapPair& rtc_func_pair : agent_pair.second->getRTCFunctions()) {
+        for (const CUDAAgent::CUDARTCFuncMapPair& rtc_func_pair : agent_pair.second->getRTCFunctions()) {
             CUdeviceptr rtc_dev_ptr = 0;
             // get the RTC device symbol
             rtc_dev_ptr = rtc_func_pair.second->get_global_ptr(rtc_symbol_name);
@@ -1011,7 +1003,7 @@ void CUDAAgentModel::RTCSafeCudaMemcpyToSymbolAddress(void* ptr, const char* rtc
     // loop through agents
     for (const auto& agent_pair : agent_map) {
         // loop through any agent functions
-        for (const CUDARTCFuncMapPair& rtc_func_pair : agent_pair.second->getRTCFunctions()) {
+        for (const CUDAAgent::CUDARTCFuncMapPair& rtc_func_pair : agent_pair.second->getRTCFunctions()) {
             CUdeviceptr rtc_dev_ptr = 0;
             // get the RTC device symbol
             rtc_dev_ptr = rtc_func_pair.second->get_global_ptr(rtc_symbol_name);
@@ -1027,7 +1019,7 @@ void CUDAAgentModel::RTCSetEnvironmentVariable(const char* variable_name, const 
     // loop through agents
     for (const auto& agent_pair : agent_map) {
         // loop through any agent functions
-        for (const CUDARTCFuncMapPair& rtc_func_pair : agent_pair.second->getRTCFunctions()) {
+        for (const CUDAAgent::CUDARTCFuncMapPair& rtc_func_pair : agent_pair.second->getRTCFunctions()) {
             CUdeviceptr rtc_dev_ptr = 0;
             // get the RTC device symbol
             std::string rtc_symbol_name = CurveRTCHost::getEnvVariableSymbolName(variable_name, model_hash);
