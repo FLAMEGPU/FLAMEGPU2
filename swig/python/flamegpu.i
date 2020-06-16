@@ -16,7 +16,7 @@
 //%include <std_list.i>
 
 
-%module pyflamegpu
+%module(directors="1") pyflamegpu
 
 // Generic exception handling
 %include "exception.i"
@@ -128,6 +128,24 @@ TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## UInt, classfunction, unsigned in
 #include "flamegpu/runtime/AgentFunctionCondition_shim.h"
 %}
 
+
+/* Callback functions for step, exit and init */
+%feature("director") StepFunc;
+%inline %{
+    class StepFunc {
+    public:
+        virtual void handle(FLAMEGPU_HOST_API*) = 0;
+        virtual ~StepFunc() {}
+    };
+%}
+%{
+    static StepFunc *step_handler_ptr = NULL;
+    static void step_handler_helper(FLAMEGPU_HOST_API* api) {
+        return step_handler_ptr->handle(api);
+    }
+%}
+
+
 /* Disable non RTC function and function condtion set methods */
 %ignore AgentDescription::newFunction;
 %ignore AgentFunctionDescription::getFunctionPtr;
@@ -146,6 +164,17 @@ TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## UInt, classfunction, unsigned in
 %include "flamegpu/pop/AgentInstance.h"
 
 
+%extend ModelDescription{
+
+    void step_func_wrapper(StepFunc *handler) {
+        // TODO step_handler_ptr will be NULL by the time the API makes the callback
+        step_handler_ptr = handler;
+        $self->addStepFunction(step_handler_helper);
+        handler = NULL;
+    }
+}
+
+
 // exceptions
 //%include "flamegpu/exception/FGPUException.h"
 
@@ -159,11 +188,14 @@ TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## UInt, classfunction, unsigned in
 %feature("flatnested", ""); // flat nested off
 
 //%include "flamegpu/runtime/flamegpu_device_api.h"
+%ignore VarOffsetStruct; // not required but defined in flamegpu_host_new_agent_api
 %include "flamegpu/runtime/flamegpu_host_api.h"
 %include "flamegpu/runtime/flamegpu_host_new_agent_api.h"
 %include "flamegpu/runtime/flamegpu_host_agent_api.h"
 %include "flamegpu/runtime/utility/HostRandom.cuh"
 %include "flamegpu/runtime/utility/HostEnvironment.cuh"
+
+// TODO: Temaplte instanciate all the host agent get and set functions
 
 
 %include "flamegpu/runtime/AgentFunction_shim.h"
@@ -227,3 +259,4 @@ TEMPLATE_VARIABLE_INSTANTIATE(newVariable, MsgSpatial3D::Description::newVariabl
 TEMPLATE_VARIABLE_INSTANTIATE(newVariable, MsgArray::Description::newVariable)
 TEMPLATE_VARIABLE_INSTANTIATE(newVariable, MsgArray2D::Description::newVariable)
 TEMPLATE_VARIABLE_INSTANTIATE(newVariable, MsgArray3D::Description::newVariable)
+
