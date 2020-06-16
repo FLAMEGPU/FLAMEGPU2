@@ -138,10 +138,9 @@ TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## UInt, classfunction, unsigned in
         virtual ~StepFunction() {}
     };
 %}
-%{
-    static StepFunction *step_handler_ptr = NULL;
-    static void step_handler_helper(FLAMEGPU_HOST_API* api) {
-        return step_handler_ptr->step(api);
+%inline %{
+    void CUDAAgentModel::runPyFunction(StepFunction *f){
+        f->step(host_api.get());
     }
 %}
 
@@ -151,6 +150,10 @@ TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## UInt, classfunction, unsigned in
 %ignore AgentFunctionDescription::getFunctionPtr;
 %ignore AgentFunctionDescription::setFunctionCondition;
 %ignore AgentFunctionDescription::getConditionPtr;
+%ignore ModelDescription::addInitFunction;
+%ignore ModelDescription::addStepFunction;
+%ignore ModelDescription::addExitFunction;
+%ignore LayerDescription::addHostFunction;
 
 
 
@@ -165,12 +168,31 @@ TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## UInt, classfunction, unsigned in
 
 
 %extend ModelDescription{
-
-    void addPythonStepFunction(StepFunction *handler) {
-        // TODO step_handler_ptr will be NULL by the time the API makes the callback
-        step_handler_ptr = handler;
-        $self->addStepFunction(step_handler_helper);
-        handler = NULL;
+    void addInitFunction(StepFunction *func_p) {
+        if (!model->initFunctionsPy.insert(func_p).second) {
+            THROW InvalidHostFunc("Attempted to add same init function twice,"
+                "in ModelDescription::addInitFunction()");
+        }
+    }
+    void addStepFunction(StepFunction *func_p) {
+        if (!model->stepFunctionsPy.insert(func_p).second) {
+            THROW InvalidHostFunc("Attempted to add same step function twice,"
+                "in ModelDescription::addStepFunction()");
+        }
+    }
+    void addExitFunction(StepFunction *func_p) {
+        if (!model->exitFunctionsPy.insert(func_p).second) {
+            THROW InvalidHostFunc("Attempted to add same exit function twice,"
+                "in ModelDescription::addExitFunction()");
+        }
+    }
+}
+%extend LayerDescription{
+    void addHostFunction(StepFunction *func_p) {
+        if (!layer->host_functionsPy.insert(func_p).second) {
+            THROW InvalidHostFunc("HostFunction has already been added to LayerDescription,"
+                "in LayerDescription::addHostFunction().");
+        }
     }
 }
 

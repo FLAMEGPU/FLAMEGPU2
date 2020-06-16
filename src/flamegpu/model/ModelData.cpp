@@ -26,8 +26,11 @@ std::shared_ptr<ModelData> ModelData::clone() const {
 
 ModelData::ModelData(const ModelData &other)
     : initFunctions(other.initFunctions)
+    , initFunctionsPy(other.initFunctionsPy)
     , stepFunctions(other.stepFunctions)
+    , stepFunctionsPy(other.stepFunctionsPy)
     , exitFunctions(other.exitFunctions)
+    , exitFunctionsPy(other.exitFunctionsPy)
     , exitConditions(other.exitConditions)
     , environment(new EnvironmentDescription(*other.environment))
     , name(other.name) {
@@ -61,8 +64,11 @@ bool ModelData::operator==(const ModelData& rhs) const {
         && messages.size() == rhs.messages.size()
         && layers.size() == rhs.layers.size()
         && initFunctions.size() == rhs.initFunctions.size()
+        && initFunctionsPy.size() == rhs.initFunctionsPy.size()
         && stepFunctions.size() == rhs.stepFunctions.size()
+        && stepFunctionsPy.size() == rhs.stepFunctionsPy.size()
         && exitFunctions.size() == rhs.exitFunctions.size()
+        && exitFunctionsPy.size() == rhs.exitFunctionsPy.size()
         && exitConditions.size() == rhs.exitConditions.size()
         && *environment == *rhs.environment) {
             {  // Compare agents (map)
@@ -96,13 +102,19 @@ bool ModelData::operator==(const ModelData& rhs) const {
             {  // Init fns (set)
                 if (initFunctions != rhs.initFunctions)
                     return false;
+                if (initFunctionsPy != rhs.initFunctionsPy)
+                    return false;
             }
             {  // Step fns (set)
                 if (stepFunctions != rhs.stepFunctions)
                     return false;
+                if (stepFunctionsPy != rhs.stepFunctionsPy)
+                    return false;
             }
             {  // Exit fns (set)
                 if (exitFunctions != rhs.exitFunctions)
+                    return false;
+                if (exitFunctionsPy != rhs.exitFunctionsPy)
                     return false;
             }
             {  // Exit cdns (set)

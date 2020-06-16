@@ -29,6 +29,7 @@ struct LayerData {
      * set<FLAMEGPU_HOST_FUNCTION_POINTER>
      */
     std::set<FLAMEGPU_HOST_FUNCTION_POINTER> host_functions;
+    ModelData::PyHostFunctionSet host_functionsPy;
     /**
      * Description class which provides convenient accessors
      */

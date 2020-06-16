@@ -15,6 +15,7 @@
 class EnvironmentDescription;
 struct AgentData;
 struct LayerData;
+class StepFunction;
 
 /**
  * This is the internal data store for ModelDescription
@@ -69,7 +70,11 @@ struct ModelData : std::enable_shared_from_this<ModelData>{
      * set<FLAMEGPU_EXIT_CONDITION_POINTER>
      */
     typedef std::set<FLAMEGPU_EXIT_CONDITION_POINTER> ExitConditionSet;
-
+    /**
+     * Set of Python defined host pointers
+     * set<StepFunc*>
+     */
+    typedef std::set<StepFunction*> PyHostFunctionSet;
     /**
      * Holds all of the model's agent definitions
      */
@@ -86,14 +91,17 @@ struct ModelData : std::enable_shared_from_this<ModelData>{
      * Holds pointers to all of the init functions used by the model
      */
     InitFunctionSet initFunctions;
+    PyHostFunctionSet initFunctionsPy;
     /**
      * Holds pointers to all of the step functions used by the model
      */
     StepFunctionSet stepFunctions;
+    PyHostFunctionSet stepFunctionsPy;
     /**
      * Holds pointers to all of the exit functions used by the model
      */
     ExitFunctionSet exitFunctions;
+    PyHostFunctionSet exitFunctionsPy;
     /**
      * Holds pointers to all of the exit conditions used by the model
      */

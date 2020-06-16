@@ -224,7 +224,7 @@ class TestSimulation(TestCase):
         pop = pyflamegpu.AgentPopulation(a, AGENT_COUNT)
         # Create IncrementCounter object to add a step function to the special addPythonStepFunction wrapper
         inc = IncrementCounter()
-        m.addPythonStepFunction(inc)
+        m.addStepFunction(inc)
         c = pyflamegpu.CUDAAgentModel(m)
         c.setPopulationData(pop)
         externalCounter = 0
