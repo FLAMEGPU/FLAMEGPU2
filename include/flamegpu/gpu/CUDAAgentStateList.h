@@ -12,7 +12,7 @@
 
 #include <string>
 #include <memory>
-#include <unordered_map>
+#include <map>
 
 #include "flamegpu/gpu/CUDAFatAgentStateList.h"
 #include "flamegpu/pop/AgentStateMemory.h"
@@ -68,7 +68,11 @@ class CUDAAgentStateList {
     void scatterNew(void * d_newBuff, const unsigned int &newSize, const unsigned int &streamId);
 
  private:
-    std::unordered_map<std::string, std::shared_ptr<VariableBuffer>> variables;
+    /**
+     * map rather than unordered_map is used here intentionally
+     * Variable iteration order affects how variables are stored within new buffer for device agent creation
+     */
+    std::map<std::string, std::shared_ptr<VariableBuffer>> variables;
     /**
      * Index of the parent agent within the CUDAFatAgent
      */

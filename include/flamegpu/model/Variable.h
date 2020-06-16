@@ -3,7 +3,7 @@
 
 #include <typeindex>
 #include <memory>
-#include <unordered_map>
+#include <map>
 #include <cassert>
 #include <string>
 #include <cstring>
@@ -92,7 +92,8 @@ struct Variable {
 /**
  * Map of name:variable definition
  * map<string, Variable>
+ * map (rather than unordered_map) is used here intentionally, as device agent birth relies on iteration order not changing. 
  */
-typedef std::unordered_map<std::string, Variable> VariableMap;
+typedef std::map<std::string, Variable> VariableMap;
 
 #endif  // INCLUDE_FLAMEGPU_MODEL_VARIABLE_H_
