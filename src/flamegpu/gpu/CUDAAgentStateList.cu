@@ -184,7 +184,7 @@ void CUDAAgentStateList::scatterNew(void * d_newBuff, const unsigned int &newSiz
         std::vector<CUDAScatter::ScatterData> scatterdata;
         for (const auto &v : variables) {
             char *in_p = reinterpret_cast<char*>(d_var);
-            char *out_p = reinterpret_cast<char*>(v.second->data);
+            char *out_p = reinterpret_cast<char*>(v.second->data_condition);
             scatterdata.push_back({ v.second->type_size * v.second->elements, in_p, out_p });
             // Prep pointer for next var
             d_var += v.second->type_size * v.second->elements * newSize;
