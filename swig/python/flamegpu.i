@@ -130,18 +130,18 @@ TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## UInt, classfunction, unsigned in
 
 
 /* Callback functions for step, exit and init */
-%feature("director") StepFunc;
+%feature("director") StepFunction;
 %inline %{
-    class StepFunc {
+    class StepFunction {
     public:
-        virtual void handle(FLAMEGPU_HOST_API*) = 0;
-        virtual ~StepFunc() {}
+        virtual void step(FLAMEGPU_HOST_API*) = 0;
+        virtual ~StepFunction() {}
     };
 %}
 %{
-    static StepFunc *step_handler_ptr = NULL;
+    static StepFunction *step_handler_ptr = NULL;
     static void step_handler_helper(FLAMEGPU_HOST_API* api) {
-        return step_handler_ptr->handle(api);
+        return step_handler_ptr->step(api);
     }
 %}
 
@@ -166,7 +166,7 @@ TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## UInt, classfunction, unsigned in
 
 %extend ModelDescription{
 
-    void step_func_wrapper(StepFunc *handler) {
+    void addPythonStepFunction(StepFunction *handler) {
         // TODO step_handler_ptr will be NULL by the time the API makes the callback
         step_handler_ptr = handler;
         $self->addStepFunction(step_handler_helper);

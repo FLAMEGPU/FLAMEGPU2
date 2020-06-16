@@ -23,24 +23,22 @@ FLAMEGPU_AGENT_FUNCTION(DeathTestFunc, MsgNone, MsgNone) {
 }
 """
 
-# TEMP
-IncrementCounterStepFunction = """
-FLAMEGPU_STEP_FUNCTION(IncrementCounter) {
-    externalCounter++;
-}
-"""
-
-# Step func test
-class IncrementCounter(pyflamegpu.StepFunc):
+class IncrementCounter(pyflamegpu.StepFunction):
+    """
+    pyflamegpu requires step functions to be a class which extends the StepFunction base class.
+    This class must extend the handle function
+    """
 
     # Define Python class 'constructor'
     def __init__(self):
         # Call C++ base class constructor
-        pyflamegpu.StepFunc.__init__(self)
+        pyflamegpu.StepFunction.__init__(self)
 
     # Override C++ method: virtual int handle(int a, int b) = 0;
-    def handle(self, host_api):
-        print ("Hello")
+    def step(self, host_api):
+        global externalCounter
+        print ("Hello from step function")
+        externalCounter += 1
 
 
 class TestSimulation(TestCase):
@@ -219,18 +217,14 @@ class TestSimulation(TestCase):
     """
         
     def test_step(self):
+        global externalCounter
         # Test that step does a single step
         m = pyflamegpu.ModelDescription("test_step")
         a = m.newAgent("Agent")
         pop = pyflamegpu.AgentPopulation(a, AGENT_COUNT)
-        
-
-
-    
-        #pyflamegpu.set_step_func(IncrementCounter)
+        # Create IncrementCounter object to add a step function to the special addPythonStepFunction wrapper
         inc = IncrementCounter()
-        m.step_func_wrapper(inc)
-        #m.step_func_wrapper()
+        m.addPythonStepFunction(inc)
         c = pyflamegpu.CUDAAgentModel(m)
         c.setPopulationData(pop)
         externalCounter = 0
