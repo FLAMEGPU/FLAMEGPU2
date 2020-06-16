@@ -23,11 +23,16 @@ FLAMEGPU_AGENT_FUNCTION(DeathTestFunc, MsgNone, MsgNone) {
 }
 """
 
+# TEMP
 IncrementCounterStepFunction = """
 FLAMEGPU_STEP_FUNCTION(IncrementCounter) {
     externalCounter++;
 }
 """
+
+# TEMP
+def IncrementCounter():
+    print("Hello")
 
 class TestSimulation(TestCase):
     def test_argparse_inputfile_long(self):
@@ -181,71 +186,51 @@ class TestSimulation(TestCase):
                 i.getVariableFloat("test")
             self.assertIn("This expects 'int', but 'float' was requested", str(e.value))
 
-"""
-TEST(TestCUDAAgentModel, SetGetPopulationData_InvalidCudaAgent) {
-    ModelDescription m2(MODEL_NAME2);
-    AgentDescription &a2 = m2.newAgent(AGENT_NAME2);
-    ModelDescription m(MODEL_NAME);
-    // AgentDescription &a = m.newAgent(AGENT_NAME);
 
-    AgentPopulation pop(a2, static_cast<unsigned int>(AGENT_COUNT));
+    def test_set_get_population_data_invalid_cuda_agent(self):
+        m2 = pyflamegpu.ModelDescription("test_set_get_population_data_invalid_cuda_agent_m2")
+        a2 = m2.newAgent("Agent2");
+        m = pyflamegpu.ModelDescription("test_set_get_population_data_invalid_cuda_agent")
 
-    CUDAAgentModel c(m);
-    EXPECT_THROW(c.setPopulationData(pop), InvalidCudaAgent);
-    EXPECT_THROW(c.getPopulationData(pop), InvalidCudaAgent);
-}
-TEST(TestCUDAAgentModel, GetAgent) {
-    ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME);
-    m.newLayer(LAYER_NAME).addAgentFunction(a.newFunction(FUNCTION_NAME, SetGetFn));
-    a.newVariable<int>(VARIABLE_NAME);
-    AgentPopulation pop(a, static_cast<unsigned int>(AGENT_COUNT));
-    for (int _i = 0; _i < AGENT_COUNT; ++_i) {
-        AgentInstance i = pop.getNextInstance();
-        i.setVariable<int>(VARIABLE_NAME, _i);
-    }
-    CUDAAgentModel c(m);
-    c.SimulationConfig().steps = 1;
-    c.setPopulationData(pop);
-    c.simulate();
-    AgentInterface &agent = c.getAgent(AGENT_NAME);
-    for (int _i = 0; _i < AGENT_COUNT; ++_i) {
-        int host = 0;
-        cudaMemcpy(&host, reinterpret_cast<int*>(agent.getStateVariablePtr(ModelData::DEFAULT_STATE, VARIABLE_NAME)) + _i, sizeof(int), cudaMemcpyDeviceToHost);
-        EXPECT_EQ(host, _i * MULTIPLIER);
-        host = _i * 2;
-        cudaMemcpy(reinterpret_cast<int*>(agent.getStateVariablePtr(ModelData::DEFAULT_STATE, VARIABLE_NAME)) + _i, &host, sizeof(int), cudaMemcpyHostToDevice);
-    }
-    c.simulate();
-    agent = c.getAgent(AGENT_NAME);
-    for (int _i = 0; _i < AGENT_COUNT; ++_i) {
-        int host = 0;
-        cudaMemcpy(&host, reinterpret_cast<int*>(agent.getStateVariablePtr(ModelData::DEFAULT_STATE, VARIABLE_NAME)) + _i, sizeof(int), cudaMemcpyDeviceToHost);
-        EXPECT_EQ(host, _i * 2 * MULTIPLIER);
-    }
-}
+        pop = pyflamegpu.AgentPopulation(a2, AGENT_COUNT);
 
-TEST(TestCUDAAgentModel, Step) {
-    // Test that step does a single step
-    ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME);
-    AgentPopulation pop(a, static_cast<unsigned int>(AGENT_COUNT));
-    m.addStepFunction(IncrementCounter);
-    CUDAAgentModel c(m);
-    c.setPopulationData(pop);
-    externalCounter = 0;
-    c.resetStepCounter();
-    c.step();
-    EXPECT_EQ(externalCounter, 1);
-    EXPECT_EQ(c.getStepCounter(), 1u);
-    externalCounter = 0;
-    c.resetStepCounter();
-    for (unsigned int i = 0; i < 5; ++i) {
+        c = pyflamegpu.CUDAAgentModel(m)
+        # Test setPopulationData
+        with pytest.raises(RuntimeError) as e:  # InvalidCudaAgent exception is thrown as python RuntimeError by swig
+            c.setPopulationData(pop)
+        self.assertIn("Error: Agent ('Agent2') was not found", str(e.value))
+        
+        # Test getPopulationData
+        with pytest.raises(RuntimeError) as e:  # InvalidCudaAgent exception is thrown as python RuntimeError by swig
+            c.getPopulationData(pop)
+        self.assertIn("Error: Agent ('Agent2') was not found", str(e.value))
+
+    """
+    GetAgent Test is not possible without CUDA bindings
+    """
+        
+    def test_step(self):
+        # Test that step does a single step
+        m = pyflamegpu.ModelDescription("test_step")
+        a = m.newAgent("Agent")
+        pop = pyflamegpu.AgentPopulation(a, AGENT_COUNT)
+        m.addStepFunction(IncrementCounter)
+        c = pyflamegpu.CUDAAgentModel(m)
+        c.setPopulationData(pop)
+        externalCounter = 0
+        c.resetStepCounter()
         c.step();
-    }
-    EXPECT_EQ(externalCounter, 5);
-    EXPECT_EQ(c.getStepCounter(), 5u);
-}
+        self.assertEqual(externalCounter, 1)
+        self.assertEqual(c.getStepCounter(), 1)
+        externalCounter = 0;
+        c.resetStepCounter();
+        for i in range(5):
+            c.step()
+        self.assertEqual(externalCounter, 5)
+        self.assertEqual(c.getStepCounter(), 5)
+
+
+"""
 TEST(TestSimulation, Simulate) {
     // Simulation is abstract, so test via CUDAAgentModel
     // Depends on CUDAAgentModel::step()

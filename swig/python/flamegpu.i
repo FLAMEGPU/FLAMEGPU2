@@ -11,6 +11,10 @@
 
 // string support
 %include <std_string.i>
+%include <std_vector.i>
+%include <std_unordered_map.i>
+//%include <std_list.i>
+
 
 %module pyflamegpu
 
@@ -116,7 +120,7 @@ TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## UInt, classfunction, unsigned in
 
 //#include "flamegpu/runtime/flamegpu_device_api.h"
 #include "flamegpu/runtime/flamegpu_host_api.h"
-//#include "flamegpu/runtime/flamegpu_host_agent_api.h"
+#include "flamegpu/runtime/flamegpu_host_agent_api.h"
 #include "flamegpu/runtime/messaging.h"
 
 
@@ -155,8 +159,12 @@ TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## UInt, classfunction, unsigned in
 %feature("flatnested", ""); // flat nested off
 
 //%include "flamegpu/runtime/flamegpu_device_api.h"
-//%include "flamegpu/runtime/flamegpu_host_api.h"
-//#include "flamegpu/runtime/flamegpu_host_agent_api.h" // issues with cub and swig
+%include "flamegpu/runtime/flamegpu_host_api.h"
+%include "flamegpu/runtime/flamegpu_host_new_agent_api.h"
+%include "flamegpu/runtime/flamegpu_host_agent_api.h"
+%include "flamegpu/runtime/utility/HostRandom.cuh"
+%include "flamegpu/runtime/utility/HostEnvironment.cuh"
+
 
 %include "flamegpu/runtime/AgentFunction_shim.h"
 %include "flamegpu/runtime/AgentFunctionCondition_shim.h"
