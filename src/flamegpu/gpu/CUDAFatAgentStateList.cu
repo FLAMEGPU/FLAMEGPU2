@@ -206,19 +206,21 @@ void CUDAFatAgentStateList::setDisabledAgents(const unsigned int numberOfDisable
     }
 }
 void CUDAFatAgentStateList::initVariables(std::set<std::shared_ptr<VariableBuffer>> &exclusionSet, const unsigned int initCount, const unsigned initOffset, const unsigned int &streamId) {
-    assert(initCount + initOffset < bufferLen);
-    std::list<std::shared_ptr<VariableBuffer>> initVars(variables_unique.size());
-    ptrdiff_t offset = 0;
-    // Build list of init vars (to save repeating this process), and calculate memory requirements
-    for (const auto &v : variables_unique) {
-        if (exclusionSet.find(v) == exclusionSet.end()) {
-            initVars.push_back(v);
-            offset += v->type_size * v->elements;
+    if (initCount) {
+        assert(initCount + initOffset <= bufferLen);
+        std::list<std::shared_ptr<VariableBuffer>> initVars;
+        ptrdiff_t offset = 0;
+        // Build list of init vars (to save repeating this process), and calculate memory requirements
+        for (const auto &v : variables_unique) {
+            if (exclusionSet.find(v) == exclusionSet.end()) {
+                initVars.push_back(v);
+                offset += v->type_size * v->elements;
+            }
         }
+        // Perform scatter
+        CUDAScatter &scatter = CUDAScatter::getInstance(streamId);
+        scatter.broadcastInit(initVars, initCount, initOffset);
     }
-    // Perform scatter
-    CUDAScatter &scatter = CUDAScatter::getInstance(streamId);
-    scatter.broadcastInit(initVars, initCount, initOffset);
 }
 
 std::list<std::shared_ptr<VariableBuffer>> &CUDAFatAgentStateList::getUniqueVariables() { return variables_unique; }

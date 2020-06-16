@@ -351,11 +351,11 @@ void CUDAScatter::broadcastInit(
     for (const auto &v : vars) {
         offset += v->type_size * v->elements;
     }
-    resize(static_cast<unsigned int>(vars.size() + (offset /sizeof(ScatterData)) + sizeof(ScatterData)));
+    resize(static_cast<unsigned int>(offset + vars.size() * sizeof(ScatterData)));
     // Build scatter data structure and init data
-    offset = 0;
     std::vector<ScatterData> sd;
     char *default_data = reinterpret_cast<char*>(malloc(offset));
+    offset = 0;
     for (const auto &v : vars) {
         // Scatter data
         char *in_p = reinterpret_cast<char*>(d_data) + offset;
@@ -398,20 +398,21 @@ void CUDAScatter::broadcastInit(
         offset += v.second.type_size * v.second.elements;
     }
     char *default_data = reinterpret_cast<char*>(malloc(offset));
-    resize(static_cast<unsigned int>(vars.size() + (offset /sizeof(ScatterData)) + sizeof(ScatterData)));
+    resize(static_cast<unsigned int>(offset + vars.size() * sizeof(ScatterData)));
     // Build scatter data structure
     offset = 0;
     char * d_var = static_cast<char*>(d_newBuff);
     for (const auto &v : vars) {
         // In this case, in is the location of first variable, but we step by inOffsetData.totalSize
         char *in_p = reinterpret_cast<char*>(d_data) + offset;
-        offset += v.second.type_size * v.second.elements;
         char *out_p = d_var;
         sd.push_back({ v.second.type_size * v.second.elements, in_p, out_p });
         // Build init data
         memcpy(default_data + offset, v.second.default_value, v.second.type_size * v.second.elements);
         // Prep pointer for next var
         d_var += v.second.type_size * v.second.elements * inCount;
+        // Update offset
+        offset += v.second.type_size * v.second.elements;
     }
     // Important that sd.size() is still used here, incase allocated len (data_len) is bigger
     gpuErrchk(cudaMemcpy(d_data, default_data, offset, cudaMemcpyHostToDevice));

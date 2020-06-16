@@ -158,6 +158,10 @@ class CUDAAgent : public AgentInterface {
     unsigned int getFatIndex() const { return fat_index; }
     std::shared_ptr<CUDAFatAgent> getFatAgent() { return fat_agent; }
     /**
+     * The agent description of this agent
+     */
+    const AgentData &agent_description;
+    /**
      * Map of all states held by this agent
      */
     std::unordered_map<std::string, std::shared_ptr<CUDAAgentStateList>> state_map;
@@ -170,10 +174,6 @@ class CUDAAgent : public AgentInterface {
      * Multiple mapped agents may share names/definitions, so instead they are assigned indices
      */
     const unsigned int fat_index;
-    /**
-     * The agent description of this agent
-     */
-    const AgentData &agent_description;
     /**
      * The parent model
      */

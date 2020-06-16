@@ -16,9 +16,9 @@
 #include "flamegpu/gpu/CUDAScatter.h"
 
 CUDAAgent::CUDAAgent(const AgentData& description, const CUDAAgentModel &_cuda_model)
-    : fat_agent(std::make_shared<CUDAFatAgent>(agent_description))  // This is a master agent, so it must create a new fat_agent
-    , fat_index(0)  // if we create fat agent, we're index 0
-    , agent_description(description)
+    : agent_description(description)  // This is a master agent, so it must create a new fat_agent
+    , fat_agent(std::make_shared<CUDAFatAgent>(agent_description))  // if we create fat agent, we're index 0
+    , fat_index(0)
     , cuda_model(_cuda_model)
     , TOTAL_AGENT_VARIABLE_SIZE(calcTotalVarSize(description)) {
     // Generate state map from fat_agent
@@ -37,17 +37,17 @@ CUDAAgent::CUDAAgent(
     const CUDAAgentModel &_cuda_model,
     const std::unique_ptr<CUDAAgent> &master_agent,
     const std::shared_ptr<SubAgentData> &mapping)
-    : fat_agent(master_agent->getFatAgent())
+    : agent_description(description)
+    , fat_agent(master_agent->getFatAgent())
     , fat_index(fat_agent->getMappedAgentCount())
-    , agent_description(description)
     , cuda_model(_cuda_model)
     , TOTAL_AGENT_VARIABLE_SIZE(calcTotalVarSize(description)) {
     // This is next agent to be added to fat_agent, so it takes existing count
     // Pass required info, so fat agent can generate new buffers and mappings
-    fat_agent->addSubAgent(description, master_agent->getFatIndex(), mapping);
+    fat_agent->addSubAgent(agent_description, master_agent->getFatIndex(), mapping);
     // Generate state map from fat_agent
     auto fatstate_map = fat_agent->getStateMap(fat_index);
-    for (auto &state : description.states) {
+    for (auto &state : agent_description.states) {
         // Find correct fat state
         auto fatstate = fatstate_map.at(state);
         // Construct a regular state map from this

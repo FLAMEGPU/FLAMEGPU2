@@ -827,14 +827,14 @@ TEST(TestCUDASubAgent, AgentFunctionCondition_BeforeSubModel) {
         if (_i >= AGENT_COUNT) {
             // Agent passed condition
             const unsigned int __i = _i - 100;  // Calculate original value of AGENT_VAR_i
-            EXPECT_EQ(__i % 4, 0);
+            EXPECT_EQ(__i % 4, 0u);
             EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), __i + mapped_result);
             EXPECT_EQ(_avar2, unmapped_result - __i);
             pass_count++;
         } else {
             // Agent failed condition
             const unsigned int __i = _i;
-            EXPECT_NE(__i % 4, 0);
+            EXPECT_NE(__i % 4, 0u);
             EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), __i + mapped_result);
             EXPECT_EQ(_avar2, unmapped_result - __i);
             fail_count++;
@@ -860,14 +860,14 @@ TEST(TestCUDASubAgent, AgentFunctionCondition_BeforeSubModel) {
         if (_i >= AGENT_COUNT + 100) {
             // Agent passed condition (same agents pass both times)
             const unsigned int __i = _i - 200;  // Calculate original value of AGENT_VAR_i
-            EXPECT_EQ(__i % 4, 0);
+            EXPECT_EQ(__i % 4, 0u);
             EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), __i + mapped_result2);
             EXPECT_EQ(_avar2, unmapped_result2 - __i);
             pass_count++;
         } else {
             // Agent failed condition
             const unsigned int __i = _i;
-            EXPECT_NE(__i % 4, 0);
+            EXPECT_NE(__i % 4, 0u);
             EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), __i + mapped_result2);
             EXPECT_EQ(_avar2, unmapped_result2 - __i);
             fail_count++;
@@ -936,14 +936,14 @@ TEST(TestCUDASubAgent, AgentFunctionCondition_InSubModel) {
         if (_i >= AGENT_COUNT) {
             // Agent passed condition
             const unsigned int __i = _i - 100;  // Calculate original value of AGENT_VAR_i
-            EXPECT_EQ(__i % 4, 0);
+            EXPECT_EQ(__i % 4, 0u);
             EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), __i + mapped_result);
             EXPECT_EQ(_avar2, unmapped_result - __i);
             pass_count++;
         } else {
             // Agent failed condition
             const unsigned int __i = _i;
-            EXPECT_NE(__i % 4, 0);
+            EXPECT_NE(__i % 4, 0u);
             EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), __i + mapped_result);
             EXPECT_EQ(_avar2, unmapped_result - __i);
             fail_count++;
@@ -969,14 +969,14 @@ TEST(TestCUDASubAgent, AgentFunctionCondition_InSubModel) {
         if (_i >= AGENT_COUNT + 100) {
             // Agent passed condition (same agents pass both times)
             const unsigned int __i = _i - 200;  // Calculate original value of AGENT_VAR_i
-            EXPECT_EQ(__i % 4, 0);
+            EXPECT_EQ(__i % 4, 0u);
             EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), __i + mapped_result2);
             EXPECT_EQ(_avar2, unmapped_result2 - __i);
             pass_count++;
         } else {
             // Agent failed condition
             const unsigned int __i = _i;
-            EXPECT_NE(__i % 4, 0);
+            EXPECT_NE(__i % 4, 0u);
             EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), __i + mapped_result2);
             EXPECT_EQ(_avar2, unmapped_result2 - __i);
             fail_count++;
@@ -1057,14 +1057,14 @@ TEST(TestCUDASubAgent, AgentFunctionCondition_InNestedSubModel) {
         if (_i >= AGENT_COUNT) {
             // Agent passed condition
             const unsigned int __i = _i - 100;  // Calculate original value of AGENT_VAR_i
-            EXPECT_EQ(__i % 4, 0);
+            EXPECT_EQ(__i % 4, 0u);
             EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), __i + mapped_result);
             EXPECT_EQ(_avar2, unmapped_result - __i);
             pass_count++;
         } else {
             // Agent failed condition
             const unsigned int __i = _i;
-            EXPECT_NE(__i % 4, 0);
+            EXPECT_NE(__i % 4, 0u);
             EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), __i + mapped_result);
             EXPECT_EQ(_avar2, unmapped_result - __i);
             fail_count++;
@@ -1090,14 +1090,14 @@ TEST(TestCUDASubAgent, AgentFunctionCondition_InNestedSubModel) {
         if (_i >= AGENT_COUNT + 100) {
             // Agent passed condition (same agents pass both times)
             const unsigned int __i = _i - 200;  // Calculate original value of AGENT_VAR_i
-            EXPECT_EQ(__i % 4, 0);
+            EXPECT_EQ(__i % 4, 0u);
             EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), __i + mapped_result2);
             EXPECT_EQ(_avar2, unmapped_result2 - __i);
             pass_count++;
         } else {
             // Agent failed condition
             const unsigned int __i = _i;
-            EXPECT_NE(__i % 4, 0);
+            EXPECT_NE(__i % 4, 0u);
             EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), __i + mapped_result2);
             EXPECT_EQ(_avar2, unmapped_result2 - __i);
             fail_count++;

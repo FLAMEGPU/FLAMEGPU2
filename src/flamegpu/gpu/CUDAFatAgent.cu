@@ -208,7 +208,7 @@ void CUDAFatAgent::processFunctionCondition(const unsigned int &agent_fat_id, co
         agent_count + 1);
     gpuErrchkLaunch();
     // Use inverted scan results to sort true agents into end of list (and swap buffers)
-    const unsigned int conditionpassCount = sm->second->scatterAgentFunctionConditionTrue(streamId, conditionFailCount);
+    const unsigned int conditionpassCount = sm->second->scatterAgentFunctionConditionTrue(conditionFailCount, streamId);
     assert(agent_count == conditionpassCount + conditionFailCount);
 }
 
@@ -226,7 +226,7 @@ void CUDAFatAgent::setConditionState(const unsigned int &agent_fat_id, const std
 void *CUDAFatAgent::allocNewBuffer(const size_t &total_agent_size, const unsigned int &new_agents) {
     std::lock_guard<std::mutex> guard(d_newLists_mutex);
     const size_t SIZE_REQUIRED = total_agent_size * new_agents;
-    const size_t ALLOCATION_SIZE = SIZE_REQUIRED * 1.25;  // Premept larger buffer req, reduce reallocations
+    const size_t ALLOCATION_SIZE = static_cast<size_t>(SIZE_REQUIRED * 1.25);  // Premept larger buffer req, reduce reallocations
     // Find the smallest existing buffer with enough size
     for (auto &b : d_newLists) {
         if (b.size >= SIZE_REQUIRED && !b.in_use) {

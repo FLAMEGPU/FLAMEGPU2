@@ -66,27 +66,29 @@ void CUDAAgentStateList::setAgentData(const AgentStateMemory &data) {
     // Check our internal state matches or exceeds the size of the state in the agent pop
     // This will return if list already correct size
     const unsigned int data_count = data.getStateListSize();
-    parent_list->resize(data_count, false);  // FALSE=Do not retain existing data
-    // Initialise any buffers in the fat_agent which aren't part of the agent description
-    std::set<std::shared_ptr<VariableBuffer>> exclusionSet;
-    for (auto &a : variables)
-        exclusionSet.insert(a.second);
-    parent_list->initVariables(exclusionSet, data_count, 0, 0);
-    // Copy across the required data host->device
-    for (auto &_var : variables) {
-        // get the variable size from agent description
-        const auto &var = agent.getAgentDescription().variables.at(_var.first);
-        const size_t var_size = var.type_size;
-        const unsigned int  var_elements = var.elements;
+    if (data_count) {
+        parent_list->resize(data_count, false);  // FALSE=Do not retain existing data
+        // Initialise any buffers in the fat_agent which aren't part of the agent description
+        std::set<std::shared_ptr<VariableBuffer>> exclusionSet;
+        for (auto &a : variables)
+            exclusionSet.insert(a.second);
+        parent_list->initVariables(exclusionSet, data_count, 0, 0);
+        // Copy across the required data host->device
+        for (auto &_var : variables) {
+            // get the variable size from agent description
+            const auto &var = agent.getAgentDescription().variables.at(_var.first);
+            const size_t var_size = var.type_size;
+            const unsigned int  var_elements = var.elements;
 
-        // get the vector
-        const GenericMemoryVector &m_vec = data.getReadOnlyMemoryVector(_var.first);
+            // get the vector
+            const GenericMemoryVector &m_vec = data.getReadOnlyMemoryVector(_var.first);
 
-        // get pointer to vector data
-        const void * v_data = m_vec.getReadOnlyDataPtr();
+            // get pointer to vector data
+            const void * v_data = m_vec.getReadOnlyDataPtr();
 
-        // copy the host data to the GPU
-        gpuErrchk(cudaMemcpy(_var.second->data, v_data, var_elements * var_size * data_count, cudaMemcpyHostToDevice));
+            // copy the host data to the GPU
+            gpuErrchk(cudaMemcpy(_var.second->data, v_data, var_elements * var_size * data_count, cudaMemcpyHostToDevice));
+        }
     }
     // Update alive count etc
     parent_list->setAgentCount(data_count);
@@ -99,28 +101,30 @@ void CUDAAgentStateList::getAgentData(AgentStateMemory &data) {
             agent.getAgentDescription().name.c_str());
     }
     const unsigned int data_count = getSize();
-    // Check the output buffer has been resized
-    if (data.getStateListSize() < data_count) {
-        THROW InvalidMemoryCapacity("AgentStateMemory must be resized before passing to CUDAAgentStateList::getAgentData()\n");
-    }
-    // Copy across the required data device->host
-    for (auto &_var : variables) {
-        // get the variable size from agent description
-        const auto &var = agent.getAgentDescription().variables.at(_var.first);
-        const size_t var_size = var.type_size;
-        const unsigned int  var_elements = var.elements;
+    if (data_count) {
+        // Check the output buffer has been resized
+        if (data.getPopulationCapacity() < data_count) {
+            THROW InvalidMemoryCapacity("AgentStateMemory must be resized before passing to CUDAAgentStateList::getAgentData()\n");
+        }
+        // Copy across the required data device->host
+        for (auto &_var : variables) {
+            // get the variable size from agent description
+            const auto &var = agent.getAgentDescription().variables.at(_var.first);
+            const size_t var_size = var.type_size;
+            const unsigned int  var_elements = var.elements;
 
-        // get the vector
-        GenericMemoryVector &m_vec = data.getMemoryVector(_var.first);
+            // get the vector
+            GenericMemoryVector &m_vec = data.getMemoryVector(_var.first);
 
-        // get pointer to vector data
-        void * v_data = m_vec.getDataPtr();
+            // get pointer to vector data
+            void * v_data = m_vec.getDataPtr();
 
-        // copy the host data to the GPU
-        gpuErrchk(cudaMemcpy(v_data, _var.second->data, var_elements * var_size * data_count, cudaMemcpyDeviceToHost));
+            // copy the host data to the GPU
+            gpuErrchk(cudaMemcpy(v_data, _var.second->data, var_elements * var_size * data_count, cudaMemcpyDeviceToHost));
+        }
     }
     // Update alive count etc
-    parent_list->setAgentCount(data_count);
+    data.overrideStateListSize(data_count);
 }
 void CUDAAgentStateList::scatterHostCreation(const unsigned int &newSize, char *const d_inBuff, const VarOffsetStruct &offsets) {
     CUDAScatter &cs = CUDAScatter::getInstance(0);  // No plans to make this async yet
