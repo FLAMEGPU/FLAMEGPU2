@@ -109,6 +109,24 @@ void ModelDescription::addExitCondition(FLAMEGPU_EXIT_CONDITION_POINTER func_p) 
             "in ModelDescription::addExitCondition()");
     }
 }
+void ModelDescription::addInitFunction(StepFunction *func_p) {
+    if (!model->initFunctionsPy.insert(func_p).second) {
+        THROW InvalidHostFunc("Attempted to add same init function twice,"
+            "in ModelDescription::addPyStepFunction()");
+    }
+}
+void ModelDescription::addStepFunction(StepFunction *func_p) {
+    if (!model->stepFunctionsPy.insert(func_p).second) {
+        THROW InvalidHostFunc("Attempted to add same step function twice,"
+            "in ModelDescription::addPyStepFunction()");
+    }
+}
+void ModelDescription::addExitFunction(StepFunction *func_p) {
+    if (!model->exitFunctionsPy.insert(func_p).second) {
+        THROW InvalidHostFunc("Attempted to add same exit function twice,"
+            "in ModelDescription::addPyStepFunction()");
+    }
+}
 
 EnvironmentDescription& ModelDescription::Environment() {
     return *model->environment;

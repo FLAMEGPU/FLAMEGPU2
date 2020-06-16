@@ -150,10 +150,10 @@ TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## UInt, classfunction, unsigned in
 %ignore AgentFunctionDescription::getFunctionPtr;
 %ignore AgentFunctionDescription::setFunctionCondition;
 %ignore AgentFunctionDescription::getConditionPtr;
-%ignore ModelDescription::addInitFunction;
-%ignore ModelDescription::addStepFunction;
-%ignore ModelDescription::addExitFunction;
-%ignore LayerDescription::addHostFunction;
+%ignore ModelDescription::addInitFunction(FLAMEGPU_INIT_FUNCTION_POINTER);
+%ignore ModelDescription::addStepFunction(FLAMEGPU_STEP_FUNCTION_POINTER);
+%ignore ModelDescription::addExitFunction(FLAMEGPU_EXIT_FUNCTION_POINTER);
+%ignore LayerDescription::addHostFunction(FLAMEGPU_HOST_FUNCTION_POINTER);
 
 
 
@@ -165,37 +165,6 @@ TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## UInt, classfunction, unsigned in
 %include "flamegpu/model/LayerDescription.h"
 %include "flamegpu/pop/AgentPopulation.h"
 %include "flamegpu/pop/AgentInstance.h"
-
-
-%extend ModelDescription{
-    void addInitFunction(StepFunction *func_p) {
-        if (!model->initFunctionsPy.insert(func_p).second) {
-            THROW InvalidHostFunc("Attempted to add same init function twice,"
-                "in ModelDescription::addInitFunction()");
-        }
-    }
-    void addStepFunction(StepFunction *func_p) {
-        if (!model->stepFunctionsPy.insert(func_p).second) {
-            THROW InvalidHostFunc("Attempted to add same step function twice,"
-                "in ModelDescription::addStepFunction()");
-        }
-    }
-    void addExitFunction(StepFunction *func_p) {
-        if (!model->exitFunctionsPy.insert(func_p).second) {
-            THROW InvalidHostFunc("Attempted to add same exit function twice,"
-                "in ModelDescription::addExitFunction()");
-        }
-    }
-}
-%extend LayerDescription{
-    void addHostFunction(StepFunction *func_p) {
-        if (!layer->host_functionsPy.insert(func_p).second) {
-            THROW InvalidHostFunc("HostFunction has already been added to LayerDescription,"
-                "in LayerDescription::addHostFunction().");
-        }
-    }
-}
-
 
 // exceptions
 //%include "flamegpu/exception/FGPUException.h"

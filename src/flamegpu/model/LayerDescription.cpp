@@ -67,6 +67,12 @@ void LayerDescription::addHostFunction(FLAMEGPU_HOST_FUNCTION_POINTER func_p) {
             "in LayerDescription::addHostFunction().");
     }
 }
+void LayerDescription::addHostFunction(StepFunction *func_p) {
+    if (!layer->host_functionsPy.insert(func_p).second) {
+        THROW InvalidHostFunc("HostFunction has already been added to LayerDescription,"
+            "in LayerDescription::addHostFunction().");
+    }
+}
 
 
 std::string LayerDescription::getName() const {

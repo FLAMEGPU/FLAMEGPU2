@@ -157,6 +157,7 @@ class ModelDescription {
      * @throws InvalidHostFunc If the init function has already been added to this model description
      */
     void addInitFunction(FLAMEGPU_INIT_FUNCTION_POINTER func_p);
+    void addInitFunction(StepFunction *func_p);
     /**
      * Adds a step function to the simulation
      * Step functions execute once per step, after all layers have been executed, before exit conditions
@@ -164,6 +165,7 @@ class ModelDescription {
      * @throws InvalidHostFunc If the step function has already been added to this model description
      */
     void addStepFunction(FLAMEGPU_STEP_FUNCTION_POINTER func_p);
+    void addStepFunction(StepFunction *func_p);
     /**
      * Adds an exit function to the simulation
      * Exit functions execute once after the simulation ends
@@ -171,6 +173,7 @@ class ModelDescription {
      * @throws InvalidHostFunc If the exit function has already been added to this model description
      */
     void addExitFunction(FLAMEGPU_EXIT_FUNCTION_POINTER func_p);
+    void addExitFunction(StepFunction *func_p);
     /**
      * Adds an exit condition function to the simulation
      * Exit conditions execute once per step, after all layers and step functions have been executed
