@@ -459,9 +459,11 @@ bool CUDAAgentModel::step() {
         for (auto &stepFn : (*lyr)->host_functions) {
             stepFn(this->host_api.get());
         }
+#ifdef SWIG
         for (auto &stepFn : (*lyr)->host_functionsPy) {
             runPyFunction(stepFn);
         }
+#endif
 
         // If we have host layer functions, we might have host agent creation
         if ((*lyr)->host_functions.size())
@@ -474,8 +476,10 @@ bool CUDAAgentModel::step() {
     // Execute step functions
     for (auto &stepFn : model->stepFunctions)
         stepFn(this->host_api.get());
+#ifdef SWIG
     for (auto &stepFn : model->stepFunctionsPy)
         runPyFunction(stepFn);
+#endif
     // If we have step functions, we might have host agent creation
     if (model->stepFunctions.size())
         processHostAgentCreation();
@@ -536,8 +540,10 @@ void CUDAAgentModel::simulate() {
     // Execute init functions
     for (auto &initFn : model->initFunctions)
         initFn(this->host_api.get());
+#ifdef SWIG
     for (auto &initFn : model->initFunctionsPy)
         runPyFunction(initFn);
+#endif
     // Check if host agent creation was used in init functions
     if (model->initFunctions.size())
         processHostAgentCreation();
@@ -565,8 +571,10 @@ void CUDAAgentModel::simulate() {
     // Execute exit functions
     for (auto &exitFn : model->exitFunctions)
         exitFn(this->host_api.get());
+#ifdef SWIG
     for (auto &exitFn : model->exitFunctionsPy)
         runPyFunction(exitFn);
+#endif
 
 #ifdef VISUALISATION
     if (visualisation) {

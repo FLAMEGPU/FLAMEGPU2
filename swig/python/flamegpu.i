@@ -3,6 +3,7 @@
 #ifdef _MSC_VER
 #define SWIG_PYTHON_INTERPRETER_NO_DEBUG
 #endif
+#define SWIG
 %}
 
 // supress known warnings
@@ -141,6 +142,30 @@ TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## UInt, classfunction, unsigned in
 %inline %{
     void CUDAAgentModel::runPyFunction(StepFunction *f){
         f->step(host_api.get());
+    }
+    void ModelDescription::addInitFunction(StepFunction *func_p) {
+        if (!model->initFunctionsPy.insert(func_p).second) {
+            THROW InvalidHostFunc("Attempted to add same init function twice,"
+                "in ModelDescription::addPyStepFunction()");
+        }
+    }
+    void ModelDescription::addStepFunction(StepFunction *func_p) {
+        if (!model->stepFunctionsPy.insert(func_p).second) {
+            THROW InvalidHostFunc("Attempted to add same step function twice,"
+                "in ModelDescription::addPyStepFunction()");
+        }
+    }
+    void ModelDescription::addExitFunction(StepFunction *func_p) {
+        if (!model->exitFunctionsPy.insert(func_p).second) {
+            THROW InvalidHostFunc("Attempted to add same exit function twice,"
+                "in ModelDescription::addPyStepFunction()");
+        }
+    }
+    void LayerDescription::addHostFunction(StepFunction *func_p) {
+        if (!layer->host_functionsPy.insert(func_p).second) {
+            THROW InvalidHostFunc("HostFunction has already been added to LayerDescription,"
+                "in LayerDescription::addHostFunction().");
+        }
     }
 %}
 

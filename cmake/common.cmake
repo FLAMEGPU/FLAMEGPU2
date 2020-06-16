@@ -370,6 +370,11 @@ function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
         # target_link_libraries(${NAME} flamegpu2_visualiser)
         add_compile_definitions(VISUALISATION)
     endif()
+    
+    # Activate swig only code
+    if(BUILD_SWIG_PYTHON)
+        add_compile_definitions(SWIG)
+    endif()
 
     # Flag the new linter target and the files to be linted.
     new_linter_target(${NAME} "${SRC}")
@@ -419,6 +424,11 @@ function(add_flamegpu_library NAME SRC FLAMEGPU_ROOT)
         add_compile_definitions(VISUALISATION)
         # set(SDL2_DIR ${VISUALISATION_BUILD}/sdl2)
         # find_package(SDL2 REQUIRED)   
+    endif()
+    
+    # Activate swig only code
+    if(BUILD_SWIG_PYTHON)
+        add_compile_definitions(SWIG)
     endif()
 
     # Enable RDC

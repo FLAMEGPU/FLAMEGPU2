@@ -100,7 +100,9 @@ class LayerDescription {
      * @note This version exists because the template overload was preventing implicit cast to std::string
      */
     void addHostFunction(FLAMEGPU_HOST_FUNCTION_POINTER func_p);
+#ifdef SWIG
     void addHostFunction(StepFunction *func_p);
+#endif
 
     /**
      * @return The layer's name
