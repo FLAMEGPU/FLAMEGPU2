@@ -712,11 +712,11 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_SameState_WithAgentFunctionCondit
             is_1++;
             EXPECT_EQ(ai.getVariable<unsigned int>("id") % 2, 0u);
         } else {
-            ASSERT_TRUE(false); // This should never happen
+            ASSERT_TRUE(false);  // This should never happen
         }
     }
-    EXPECT_EQ(is_1, AGENT_COUNT / 2); // Agent is from init
-    EXPECT_EQ(is_12, AGENT_COUNT / 2); // Agent is from device birth
+    EXPECT_EQ(is_1, AGENT_COUNT / 2);  // Agent is from init
+    EXPECT_EQ(is_12, AGENT_COUNT / 2);  // Agent is from device birth
     EXPECT_EQ(is_12_mod2_1, AGENT_COUNT / 4);
     EXPECT_EQ(is_12_mod2_3, AGENT_COUNT / 4);
 }

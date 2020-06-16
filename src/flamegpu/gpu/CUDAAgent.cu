@@ -285,7 +285,9 @@ void CUDAAgent::mapNewRuntimeVariables(const AgentFunctionData& func, const unsi
         {
             std::lock_guard<std::mutex> guard(newBuffsMutex);
             const auto rtn = newBuffs.emplace(func.initial_state, d_new_buffer);
-            assert(rtn.second);  // Insertion happened (false if element already exists)
+            if (!rtn.second) {
+                assert(false);  // Insertion happened (false if element already exists)
+            }
         }
 
         // Init the buffer to default values for variables
