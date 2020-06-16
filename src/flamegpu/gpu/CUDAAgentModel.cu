@@ -60,6 +60,7 @@ CUDAAgentModel::CUDAAgentModel(const std::shared_ptr<SubModelData> &submodel_des
     , streams(std::vector<cudaStream_t>())
     , singletons(nullptr)
     , singletonsInitialised(false)
+    , rtcInitialised(false)
     , host_api(std::make_unique<FLAMEGPU_HOST_API>(*this, agentOffsets, agentData)) {
     initOffsetsAndMap();
 
@@ -857,7 +858,7 @@ void CUDAAgentModel::initialiseSingletons() {
     }
 
     // Ensure RTC is set up.
-    initialiseRTC();
+    initialiseRTC();    
 }
 
 void CUDAAgentModel::initialiseRTC() {
