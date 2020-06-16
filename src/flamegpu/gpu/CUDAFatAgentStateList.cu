@@ -70,9 +70,9 @@ void CUDAFatAgentStateList::resize(const unsigned int &minSize, const bool &reta
         return;
 
     // else, decide new size
-    size_t newSize = bufferLen > 1024 ? bufferLen : 1024;
+    unsigned int newSize = bufferLen > 1024 ? bufferLen : 1024;
     while (newSize < minSize)
-        newSize *= 1.25f;
+        newSize = static_cast<unsigned int>(newSize * 1.25f);
 
     // Resize all buffers in fat state list
     for (auto &buff : variables_unique) {

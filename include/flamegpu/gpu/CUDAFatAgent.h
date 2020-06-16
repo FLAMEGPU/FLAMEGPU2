@@ -26,6 +26,20 @@ class CUDAFatAgent {
     struct AgentState{
         const unsigned int agent;
         const std::string state;
+
+      bool operator==(const AgentState &other) const
+      { return (agent == other.agent
+                && state == other.state);
+      }
+    };
+    /**
+     * Hash operator for AgentVariable
+    */
+    struct AgentState_hash {
+        std::size_t operator()(const AgentState& k) const noexcept {
+            return ((std::hash<unsigned int>()(k.agent)
+                ^ (std::hash<std::string>()(k.state) << 1)) >> 1);
+        }
     };
 
  public:
@@ -93,7 +107,7 @@ class CUDAFatAgent {
      * Each agent-state pair maps to a CUDAFatStateList
      * Where an agent state is mapped, it will share CUDAFatStateList with another AgentState
      */
-    std::unordered_map<AgentState, std::shared_ptr<CUDAFatAgentStateList>> states;
+    std::unordered_map<AgentState, std::shared_ptr<CUDAFatAgentStateList>, AgentState_hash> states;
     std::set<std::shared_ptr<CUDAFatAgentStateList>> states_unique;
 
     /**

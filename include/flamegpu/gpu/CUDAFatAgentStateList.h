@@ -18,6 +18,20 @@
 struct AgentVariable{
     const unsigned int agent;
     const std::string variable;
+
+      bool operator==(const AgentVariable &other) const
+      { return (agent == other.agent
+                && variable == other.variable);
+      }
+};
+/**
+ * Hash operator for AgentVariable
+ */
+template <> struct std::hash<AgentVariable> {
+    std::size_t operator()(const AgentVariable& k) const noexcept {
+        return ((std::hash<unsigned int>()(k.agent)
+            ^ (std::hash<std::string>()(k.variable) << 1)) >> 1);
+    }
 };
 /**
  * This represents a raw buffer
