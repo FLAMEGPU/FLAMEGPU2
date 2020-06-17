@@ -221,7 +221,7 @@ void CUDAFatAgent::setConditionState(const unsigned int &agent_fat_id, const std
     sm->second->setDisabledAgents(numberOfDisabled);
 }
 
-void *CUDAFatAgent::allocNewBuffer(const size_t &total_agent_size, const unsigned int &new_agents, const unsigned int &varCount) {
+void *CUDAFatAgent::allocNewBuffer(const size_t &total_agent_size, const unsigned int &new_agents, const size_t &varCount) {
     std::lock_guard<std::mutex> guard(d_newLists_mutex);
     const size_t SIZE_REQUIRED = total_agent_size * new_agents + (varCount-1) * 8;
     const size_t ALLOCATION_SIZE = static_cast<size_t>(SIZE_REQUIRED * 1.25);  // Premept larger buffer req, reduce reallocations

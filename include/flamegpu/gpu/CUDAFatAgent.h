@@ -94,7 +94,7 @@ class CUDAFatAgent {
      *
      * @note New buffers are shared between all states and mapped/unmapped agents
      */
-    void *allocNewBuffer(const size_t &total_agent_size, const unsigned int &new_agents, const unsigned int &varCount);
+    void *allocNewBuffer(const size_t &total_agent_size, const unsigned int &new_agents, const size_t &varCount);
     /**
      * Marks the named buffer as free
      */
