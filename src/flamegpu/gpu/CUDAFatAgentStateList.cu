@@ -224,3 +224,12 @@ void CUDAFatAgentStateList::initVariables(std::set<std::shared_ptr<VariableBuffe
 }
 
 std::list<std::shared_ptr<VariableBuffer>> &CUDAFatAgentStateList::getUniqueVariables() { return variables_unique; }
+
+void CUDAFatAgentStateList::swap(CUDAFatAgentStateList*other) {
+    std::swap(aliveAgents, other->aliveAgents);
+    std::swap(disabledAgents, other->disabledAgents);
+    std::swap(bufferLen, other->bufferLen);
+    for (auto a = variables_unique.begin(), b=other->variables_unique.begin(); a != variables_unique.end() && b != other->variables_unique.end(); ++a, ++b) {
+        (*a)->swap(b->get());
+    }
+}

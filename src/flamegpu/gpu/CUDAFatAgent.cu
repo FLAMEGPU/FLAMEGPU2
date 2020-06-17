@@ -132,10 +132,8 @@ void CUDAFatAgent::transitionState(const unsigned int &agent_fat_id, const std::
         }
         // If dest list is empty and we are not in an agent function condition, we can swap the lists
         if (dest->second->getSizeWithDisabled() == 0 && src->second->getSize() == src->second->getSizeWithDisabled()) {
-            // This swaps the master_lists entire states
-            std::swap(states.at({agent_fat_id, _src}), states.at({agent_fat_id, _dest}));
-
-            assert(states.find({agent_fat_id, _src})->second->getSizeWithDisabled() == 0);
+            // This swaps the master_lists entire states (std::swap would only swap pointers in fat_agent, we need to swap components to update copies of shared_ptr)
+            states.at({agent_fat_id, _src})->swap(states.at({agent_fat_id, _dest}).get());
         } else {
             // Otherwise we must perform a scatter all operation
             // Resize destination list

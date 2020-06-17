@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <set>
 #include <string>
+#include <utility>
 
 #include "flamegpu/model/AgentData.h"
 #include "flamegpu/model/SubAgentData.h"
@@ -58,6 +59,7 @@ struct VariableBuffer {
     const void *const default_value;
     VariableBuffer(const std::type_index &_type, const size_t &_type_size, const void * const _default_value, const size_t &_elements = 1, void *_data = nullptr, void *_data_swap = nullptr)
         : data(_data)
+        , data_condition(_data)
         , data_swap(_data_swap)
         , type(_type)
         , type_size(_type_size)
@@ -66,6 +68,7 @@ struct VariableBuffer {
 
     VariableBuffer(const VariableBuffer&other)
         : data(other.data)
+        , data_condition(other.data_condition)
         , data_swap(other.data_swap)
         , type(other.type)
         , type_size(other.type_size)
@@ -74,6 +77,20 @@ struct VariableBuffer {
 
     ~VariableBuffer() {
         free(const_cast<void* const>(default_value));
+    }
+    /**
+     * Swaps the buffers pointed to by the two VariableBuffers
+     * This is used when performing a state transition to an empty statelist
+     * The two buffers must point to the same variable
+     */
+    void swap(VariableBuffer *other) {
+        std::swap(data, other->data);
+        std::swap(data_condition, other->data_condition);
+        std::swap(data_swap, other->data_swap);
+        assert(type == other->type);
+        assert(type_size == other->type_size);
+        assert(elements == other->elements);
+        // assert(default_value == other->default_value);  // Would need to evaluate the value not ptr
     }
 
  private:
@@ -159,6 +176,11 @@ class CUDAFatAgentStateList {
     void initVariables(std::set<std::shared_ptr<VariableBuffer>> &exclusionSet, const unsigned int initCount, const unsigned initOffset, const unsigned int &streamId);
 
     std::list<std::shared_ptr<VariableBuffer>> &getUniqueVariables();
+    /**
+     * Swaps the internals of the two buffers
+     * This is used when performing a state transition to an empty statelist
+     */
+    void swap(CUDAFatAgentStateList*other);
 
  private:
     /**

@@ -181,6 +181,7 @@ void CUDAAgentStateList::scatterNew(void * d_newBuff, const unsigned int &newSiz
         resize(parent_list->getSizeWithDisabled() + newSize, true);
         // Build scatter data
         char * d_var = static_cast<char*>(d_newBuff);
+
         std::vector<CUDAScatter::ScatterData> scatterdata;
         for (const auto &v : variables) {
             char *in_p = reinterpret_cast<char*>(d_var);

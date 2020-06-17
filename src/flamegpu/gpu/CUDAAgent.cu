@@ -277,6 +277,8 @@ void CUDAAgent::mapNewRuntimeVariables(const AgentFunctionData& func, const unsi
         // Notify scan flag that it might need resizing
         // We need a 3rd array, because a function might combine agent birth, agent death and message output
         flamegpu_internal::CUDAScanCompaction::resize(maxLen, flamegpu_internal::CUDAScanCompaction::AGENT_OUTPUT, streamId, cuda_model);
+        // Ensure the scan flag is zeroed
+        flamegpu_internal::CUDAScanCompaction::zero(flamegpu_internal::CUDAScanCompaction::AGENT_OUTPUT, streamId);
 
         // Request a buffer for new
         char *d_new_buffer = static_cast<char*>(fat_agent->allocNewBuffer(TOTAL_AGENT_VARIABLE_SIZE, maxLen));

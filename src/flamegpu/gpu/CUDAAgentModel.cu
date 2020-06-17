@@ -339,8 +339,6 @@ bool CUDAAgentModel::step() {
                 // This will act as a reserve word
                 // which is added to variable hashes for agent creation on device
                 CUDAAgent& output_agent = getCUDAAgent(oa->name);
-                // Ensure the scan flag is zeroed
-                flamegpu_internal::CUDAScanCompaction::zero(flamegpu_internal::CUDAScanCompaction::AGENT_OUTPUT, j);
                 // Map vars with curve (this allocates/requests enough new buffer space if an existing version is not available/suitable)
                 output_agent.mapNewRuntimeVariables(*func_des, STATE_SIZE, j);
             }
@@ -858,7 +856,7 @@ void CUDAAgentModel::initialiseSingletons() {
     }
 
     // Ensure RTC is set up.
-    initialiseRTC();    
+    initialiseRTC();
 }
 
 void CUDAAgentModel::initialiseRTC() {
