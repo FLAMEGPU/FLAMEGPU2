@@ -17,6 +17,7 @@
 CUDAAgentModel::CUDAAgentModel(const ModelDescription& _model)
     : Simulation(_model)
     , step_count(0)
+    , simulation_elapsed_time(0.f)
     , agent_map()
     , message_map()
     , streams(std::vector<cudaStream_t>())
@@ -506,15 +507,15 @@ void CUDAAgentModel::simulate() {
     // Ensure singletons have been initialised
     initialiseSingletons();
 
-    // If timing is required, create cude events and record the start.
+    // create cude events to record the elapsed time for simulate.
     cudaEvent_t simulateStartEvent = nullptr;
     cudaEvent_t simulateEndEvent = nullptr;
-    if (getSimulationConfig().timing) {
-        gpuErrchk(cudaEventCreate(&simulateStartEvent));
-        gpuErrchk(cudaEventCreate(&simulateEndEvent));
-        // Record the start event.
-        gpuErrchk(cudaEventRecord(simulateStartEvent));
-    }
+    gpuErrchk(cudaEventCreate(&simulateStartEvent));
+    gpuErrchk(cudaEventCreate(&simulateEndEvent));
+    // Record the start event.
+    gpuErrchk(cudaEventRecord(simulateStartEvent));
+    // Reset the elapsed time.
+    simulation_elapsed_time = 0.f;
 
     // CUDAAgentMap::iterator it;
 
@@ -559,21 +560,22 @@ void CUDAAgentModel::simulate() {
     }
 #endif
 
-    // If timing is enabled, capture the stop record, output the time and delete the events.
+    // Record and store the elapsed time
+    // if --timing was passed, output to stdout.
+    gpuErrchk(cudaEventRecord(simulateEndEvent));
+    // Syncrhonize the stop event
+    gpuErrchk(cudaEventSynchronize(simulateEndEvent));
+    gpuErrchk(cudaEventElapsedTime(&simulation_elapsed_time, simulateStartEvent, simulateEndEvent));
+
+    gpuErrchk(cudaEventDestroy(simulateStartEvent));
+    gpuErrchk(cudaEventDestroy(simulateEndEvent));
+    simulateStartEvent = nullptr;
+    simulateEndEvent = nullptr;
+
     if (getSimulationConfig().timing) {
         // Record the end event.
-        gpuErrchk(cudaEventRecord(simulateEndEvent));
-        // Syncrhonize the stop event
-        gpuErrchk(cudaEventSynchronize(simulateEndEvent));
-        float milliseconds = 0.;
-        cudaEventElapsedTime(&milliseconds, simulateStartEvent, simulateEndEvent);
         // Resolution is 0.5 microseconds, so print to 1 us.
-        fprintf(stdout, "Total Processing time: %.3f ms\n", milliseconds);
-
-        gpuErrchk(cudaEventDestroy(simulateStartEvent));
-        gpuErrchk(cudaEventDestroy(simulateEndEvent));
-        simulateStartEvent = nullptr;
-        simulateEndEvent = nullptr;
+        fprintf(stdout, "Total Processing time: %.3f ms\n", simulation_elapsed_time);
     }
 
     // Destroy streams.
@@ -956,4 +958,10 @@ void CUDAAgentModel::RTCSetEnvironmentVariable(const char* variable_name, const 
 void CUDAAgentModel::incrementStepCounter() {
     this->step_count++;
     this->singletons->environment.set({model->name, "_stepCount"}, this->step_count);
+}
+
+
+float CUDAAgentModel::getSimulationElapsedTime() const {
+    // Get the value
+    return this->simulation_elapsed_time;
 }

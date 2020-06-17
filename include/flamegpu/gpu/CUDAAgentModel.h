@@ -135,19 +135,24 @@ class CUDAAgentModel : public Simulation {
     // TODO
     void RTCSetEnvironmentVariable(const char* variable_name, const void* src, size_t count, size_t offset = 0) const;
 
+    /**
+     * Get the duration of the last call to simulate() in milliseconds. 
+     * With a resolution of around 0.5 microseconds (cudaEventElapsedtime)
+     */
+    float getSimulationElapsedTime() const;
 
  protected:
-     /**
-      * Called by Simulation::applyConfig() to trigger any runner specific configs
-      * @see CUDAAgentModel::CUDAConfig()
-      */
+    /**
+     * Called by Simulation::applyConfig() to trigger any runner specific configs
+     * @see CUDAAgentModel::CUDAConfig()
+     */
     void applyConfig_derived() override;
-     /**
-      * Called by Simulation::checkArgs() to trigger any runner specific argument checking
-      * This only handles arg 0 before returning
-      * @return True if the argument was handled successfully
-      * @see Simulation::checkArgs()
-      */
+    /**
+     * Called by Simulation::checkArgs() to trigger any runner specific argument checking
+     * This only handles arg 0 before returning
+     * @return True if the argument was handled successfully
+     * @see Simulation::checkArgs()
+     */
     bool checkArgs_derived(int argc, const char** argv, int &i) override;
     /**
      * Called by Simulation::printHelp() to print help for runner specific runtime args
@@ -165,6 +170,10 @@ class CUDAAgentModel : public Simulation {
      * Number of times step() has been called since sim was last reset/init
      */
     unsigned int step_count;
+    /**
+     * Duration of the last call to simulate() in milliseconds, with a resolution of around 0.5 microseconds (cudaEventElapsedtime)
+     */
+    float simulation_elapsed_time;
     /**
      * Update the step counter for host and device.
      */

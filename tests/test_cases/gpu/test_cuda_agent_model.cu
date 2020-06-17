@@ -324,4 +324,31 @@ TEST(TestCUDAAgentModel, AgentDeath) {
     }
 }
 
+// test the programatically accessible simulation time elapsed.
+TEST(TestCUDAAgentModel, getSimulationElapsedTime) {
+    // Define a simple model - doesn't need to do anything other than take some time.
+    ModelDescription m(MODEL_NAME);
+    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentPopulation pop(a, static_cast<unsigned int>(AGENT_COUNT));
+    m.addStepFunction(IncrementCounter);
+
+    CUDAAgentModel c(m);
+    c.setPopulationData(pop);
+
+    // Try getting the timer before running simulate, which should return 0
+    EXPECT_EQ(c.getSimulationElapsedTime(), 0.0f);
+    // Call simulate to run 1 steps, which should take some length of time
+    c.SimulationConfig().steps = 1;
+    c.simulate();
+    EXPECT_GT(c.getSimulationElapsedTime(), 0.0f);
+
+    // Then run 10 steps, which should be longer / not the same.
+    float simulate1StepDuration = c.getSimulationElapsedTime();
+    c.SimulationConfig().steps = 10;
+    c.simulate();
+    float simulate10StepDuration = c.getSimulationElapsedTime();
+    EXPECT_GT(simulate10StepDuration, 0.0f);
+    EXPECT_NE(simulate1StepDuration, simulate10StepDuration);
+}
+
 }  // namespace test_cuda_agent_model
