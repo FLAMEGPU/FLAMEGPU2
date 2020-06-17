@@ -281,7 +281,7 @@ void CUDAAgent::mapNewRuntimeVariables(const AgentFunctionData& func, const unsi
         flamegpu_internal::CUDAScanCompaction::zero(flamegpu_internal::CUDAScanCompaction::AGENT_OUTPUT, streamId);
 
         // Request a buffer for new
-        char *d_new_buffer = static_cast<char*>(fat_agent->allocNewBuffer(TOTAL_AGENT_VARIABLE_SIZE, maxLen));
+        char *d_new_buffer = static_cast<char*>(fat_agent->allocNewBuffer(TOTAL_AGENT_VARIABLE_SIZE, maxLen, agent_description.variables.size()));
 
         // Store buffer so we can release it later
         {
@@ -315,6 +315,11 @@ void CUDAAgent::mapNewRuntimeVariables(const AgentFunctionData& func, const unsi
 
             // Move the pointer along for next variable
             d_new_buffer += type_size * maxLen;
+
+            // 64 bit align the new buffer start
+            if (reinterpret_cast<size_t>(d_new_buffer)%8) {
+                d_new_buffer += 8 - (reinterpret_cast<size_t>(d_new_buffer)%8);
+            }
 
             // maximum population num
             Curve::getInstance().registerVariableByHash(var_hash + _agent_birth_hash + func_hash, d_ptr, type_size, maxLen);

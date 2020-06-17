@@ -189,6 +189,10 @@ void CUDAAgentStateList::scatterNew(void * d_newBuff, const unsigned int &newSiz
             scatterdata.push_back({ v.second->type_size * v.second->elements, in_p, out_p });
             // Prep pointer for next var
             d_var += v.second->type_size * v.second->elements * newSize;
+            // 64 bit align the new buffer start
+            if (reinterpret_cast<size_t>(d_var)%8) {
+                d_var += 8 - (reinterpret_cast<size_t>(d_var)%8);
+            }
         }
         // Perform scatter
         CUDAScatter &scatter = CUDAScatter::getInstance(streamId);
