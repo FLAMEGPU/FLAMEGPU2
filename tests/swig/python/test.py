@@ -41,3 +41,7 @@ for i in range(AGENT_COUNT):
 # cuda_model.setPopulationData(init_population);
 # // Run 1 step to ensure agent function compiles and runs
 # cuda_model.step();
+
+cuda_model = pyflamegpu.CUDAAgentModel(model)
+cuda_model.setPopulationData(init_population)
+cuda_model.step()
