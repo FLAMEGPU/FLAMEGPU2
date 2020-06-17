@@ -1,4 +1,7 @@
 message(STATUS "-----Configuring Project: ${PROJECT_NAME}-----")
+if(NOT CMAKE_VERSION VERSION_LESS 3.18)
+    cmake_policy(SET CMP0105 NEW) # Use separate device link options
+endif()
 # Add custom modules directory
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/modules/ ${CMAKE_MODULE_PATH})
 
@@ -162,7 +165,6 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler /wd4100")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4100")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4100")
-    set(CUDA_DEVICE_LINK_FLAGS "${CUDA_DEVICE_LINK_FLAGS} -Xcompiler /wd4100")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /experimental:external")
     # These flags don't currently have any effect on how CMake passes system-private includes to msvc
     set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "/external:I")
@@ -171,7 +173,6 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
         set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler /WX")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX")
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /WX")
-        set(CUDA_DEVICE_LINK_FLAGS "${CUDA_DEVICE_LINK_FLAGS} -Xcompiler /WX")
     endif()
 else()
     # Assume using GCC/Clang which Wall is relatively sane for. 
@@ -182,7 +183,6 @@ else()
         set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -Werror")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror")
-        set(CUDA_DEVICE_LINK_FLAGS "${CUDA_DEVICE_LINK_FLAGS} -Xcompiler -Werror")
     endif()
 endif()
 # Common CUDA args
@@ -272,6 +272,21 @@ function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
     # Link against the flamegpu2 static library target.
     if (TARGET flamegpu2)
         target_link_libraries(${NAME} flamegpu2)
+    endif()
+    
+    # Configure device link options
+    if(NOT CMAKE_VERSION VERSION_LESS 3.18)
+        if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+            if(WARNINGS_AS_ERRORS)
+                target_link_options(${NAME} PRIVATE $<DEVICE_LINK:-Xcompiler wd4100,/WX>)
+            else()
+                target_link_options(${NAME} PRIVATE $<DEVICE_LINK:-Xcompiler /wd4100>)
+            endif()
+        else()
+            if(WARNINGS_AS_ERRORS)
+                target_link_options(${NAME} PRIVATE $<DEVICE_LINK:-Xcompiler -Werror>)
+            endif()
+        endif()
     endif()
     
     # Activate visualisation if requested
