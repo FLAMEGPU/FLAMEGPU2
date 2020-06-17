@@ -7,6 +7,7 @@
 #include "flamegpu/model/AgentFunctionDescription.h"
 #include "flamegpu/model/AgentFunctionData.h"
 #include "flamegpu/model/LayerData.h"
+#include "flamegpu/runtime/HostFunctionCallback.h"
 
 const char *ModelData::DEFAULT_STATE = "default";
 
@@ -28,6 +29,9 @@ ModelData::ModelData(const ModelData &other)
     : initFunctions(other.initFunctions)
     , stepFunctions(other.stepFunctions)
     , exitFunctions(other.exitFunctions)
+    , initFunctionCallbacks(other.initFunctionCallbacks)
+    , stepFunctionCallbacks(other.stepFunctionCallbacks)
+    , exitFunctionCallbacks(other.exitFunctionCallbacks)
     , exitConditions(other.exitConditions)
     , environment(new EnvironmentDescription(*other.environment))
     , name(other.name) {
@@ -63,6 +67,9 @@ bool ModelData::operator==(const ModelData& rhs) const {
         && initFunctions.size() == rhs.initFunctions.size()
         && stepFunctions.size() == rhs.stepFunctions.size()
         && exitFunctions.size() == rhs.exitFunctions.size()
+        && initFunctionCallbacks.size() == rhs.initFunctionCallbacks.size()
+        && stepFunctionCallbacks.size() == rhs.stepFunctionCallbacks.size()
+        && exitFunctionCallbacks.size() == rhs.exitFunctionCallbacks.size()
         && exitConditions.size() == rhs.exitConditions.size()
         && *environment == *rhs.environment) {
             {  // Compare agents (map)
@@ -96,13 +103,19 @@ bool ModelData::operator==(const ModelData& rhs) const {
             {  // Init fns (set)
                 if (initFunctions != rhs.initFunctions)
                     return false;
+                if (initFunctionCallbacks != rhs.initFunctionCallbacks)
+                    return false;
             }
             {  // Step fns (set)
                 if (stepFunctions != rhs.stepFunctions)
                     return false;
+                if (stepFunctionCallbacks != rhs.stepFunctionCallbacks)
+                    return false;
             }
             {  // Exit fns (set)
                 if (exitFunctions != rhs.exitFunctions)
+                    return false;
+                if (exitFunctionCallbacks != rhs.exitFunctionCallbacks)
                     return false;
             }
             {  // Exit cdns (set)

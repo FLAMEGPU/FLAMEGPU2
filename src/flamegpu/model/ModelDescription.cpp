@@ -103,6 +103,27 @@ void ModelDescription::addExitFunction(FLAMEGPU_EXIT_FUNCTION_POINTER func_p) {
             "in ModelDescription::addExitFunction()");
     }
 }
+
+void ModelDescription::addInitFunctionCallback(HostFunctionCallback* func_callback) {
+    if (!model->initFunctionCallbacks.insert(func_callback).second) {
+            THROW InvalidHostFunc("Attempted to add same init function callback twice,"
+                "in ModelDescription::addInitFunctionCallback()");
+        }
+}
+void ModelDescription::addStepFunctionCallback(HostFunctionCallback* func_callback) {
+    if (!model->stepFunctionCallbacks.insert(func_callback).second) {
+            THROW InvalidHostFunc("Attempted to add same step function callback twice,"
+                "in ModelDescription::addStepFunctionCallback()");
+        }
+}
+void ModelDescription::addExitFunctionCallback(HostFunctionCallback* func_callback) {
+    if (!model->exitFunctionCallbacks.insert(func_callback).second) {
+            THROW InvalidHostFunc("Attempted to add same exit function callback twice,"
+                "in ModelDescription::addExitFunctionCallback()");
+        }
+}
+
+
 void ModelDescription::addExitCondition(FLAMEGPU_EXIT_CONDITION_POINTER func_p) {
     if (!model->exitConditions.insert(func_p).second) {
         THROW InvalidHostFunc("Attempted to add same exit condition twice,"

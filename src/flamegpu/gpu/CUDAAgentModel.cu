@@ -13,6 +13,7 @@
 #include "flamegpu/util/compute_capability.cuh"
 #include "flamegpu/util/SignalHandlers.h"
 #include "flamegpu/runtime/cuRVE/curve_rtc.h"
+#include "flamegpu/runtime/HostFunctionCallback.h"
 
 CUDAAgentModel::CUDAAgentModel(const ModelDescription& _model)
     : Simulation(_model)
@@ -470,8 +471,11 @@ bool CUDAAgentModel::step() {
     // Execute step functions
     for (auto &stepFn : model->stepFunctions)
         stepFn(this->host_api.get());
+    // Execute step function callbacks
+    for (auto &stepFn : model->stepFunctionCallbacks)
+        stepFn->run(this->host_api.get());
     // If we have step functions, we might have host agent creation
-    if (model->stepFunctions.size())
+    if (model->stepFunctions.size() || model->stepFunctionCallbacks.size())
         processHostAgentCreation();
     NVTX_POP();
 
@@ -530,8 +534,11 @@ void CUDAAgentModel::simulate() {
     // Execute init functions
     for (auto &initFn : model->initFunctions)
         initFn(this->host_api.get());
+    // Execute init function callbacks
+    for (auto &initFn : model->initFunctionCallbacks)
+        initFn->run(this->host_api.get());
     // Check if host agent creation was used in init functions
-    if (model->initFunctions.size())
+    if (model->initFunctions.size() || model->initFunctionCallbacks.size())
         processHostAgentCreation();
 
 #ifdef VISUALISATION
@@ -557,6 +564,8 @@ void CUDAAgentModel::simulate() {
     // Execute exit functions
     for (auto &exitFn : model->exitFunctions)
         exitFn(this->host_api.get());
+    for (auto &exitFn : model->exitFunctionCallbacks)
+        exitFn->run(this->host_api.get());
 
 #ifdef VISUALISATION
     if (visualisation) {

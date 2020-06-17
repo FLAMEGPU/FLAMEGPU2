@@ -1,6 +1,7 @@
 import pytest
 from unittest import TestCase
 from pyflamegpu import *
+from random import randint
 
 
 AGENT_NAME = "Agent";
@@ -13,17 +14,9 @@ MULTIPLIER = 3
 dMULTIPLIER = 3
 externalCounter = 0
     
-DeathTestFunc = """
-FLAMEGPU_AGENT_FUNCTION(DeathTestFunc, MsgNone, MsgNone) {
-    unsigned int x = FLAMEGPU->getVariable<unsigned int>("x");
-    // Agents with even value for 'x' die
-    if (x % 2 == 0)
-        return DEAD;
-    return ALIVE;
-}
-"""
 
-class IncrementCounter(pyflamegpu.StepFunction):
+
+class IncrementCounter(pyflamegpu.HostFunctionCallback):
     """
     pyflamegpu requires step functions to be a class which extends the StepFunction base class.
     This class must extend the handle function
@@ -31,11 +24,10 @@ class IncrementCounter(pyflamegpu.StepFunction):
 
     # Define Python class 'constructor'
     def __init__(self):
-        # Call C++ base class constructor
-        pyflamegpu.StepFunction.__init__(self)
+        super().__init__()
 
-    # Override C++ method: virtual int handle(int a, int b) = 0;
-    def step(self, host_api):
+    # Override C++ method: virtual void run(FLAMEGPU_HOST_API*);
+    def run(self, host_api):
         global externalCounter
         print ("Hello from step function")
         externalCounter += 1
@@ -224,12 +216,12 @@ class TestSimulation(TestCase):
         pop = pyflamegpu.AgentPopulation(a, AGENT_COUNT)
         # Create IncrementCounter object to add a step function to the special addPythonStepFunction wrapper
         inc = IncrementCounter()
-        m.addPythonStepFunction(inc)
+        m.addStepFunctionCallback(inc)
         c = pyflamegpu.CUDAAgentModel(m)
         c.setPopulationData(pop)
         externalCounter = 0
         c.resetStepCounter()
-        c.step();
+        c.step()
         self.assertEqual(externalCounter, 1)
         self.assertEqual(c.getStepCounter(), 1)
         externalCounter = 0;
@@ -239,63 +231,61 @@ class TestSimulation(TestCase):
         self.assertEqual(externalCounter, 5)
         self.assertEqual(c.getStepCounter(), 5)
 
+    def test_simulate(self):
+        global externalCounter
+        # Test that step does a single step
+        m = pyflamegpu.ModelDescription("test_simulate")
+        a = m.newAgent("Agent")
+        pop = pyflamegpu.AgentPopulation(a, AGENT_COUNT)
+        # Create IncrementCounter object to add a step function to the special addPythonStepFunction wrapper
+        inc = IncrementCounter()
+        m.addStepFunctionCallback(inc)
+        c = pyflamegpu.CUDAAgentModel(m)
+        c.setPopulationData(pop)
+        externalCounter = 0
+        c.resetStepCounter()
+        c.SimulationConfig().steps = 7
+        c.simulate()
+        self.assertEqual(externalCounter, 7)
+        self.assertEqual(c.getStepCounter(), 7)
+        externalCounter = 0;
+        c.resetStepCounter();
+        c.SimulationConfig().steps = 3
+        c.simulate()
+        self.assertEqual(externalCounter, 3)
+        self.assertEqual(c.getStepCounter(), 3)
 
-"""
-TEST(TestSimulation, Simulate) {
-    // Simulation is abstract, so test via CUDAAgentModel
-    // Depends on CUDAAgentModel::step()
-    // Test that step does a single step
-    ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME);
-    AgentPopulation pop(a, static_cast<unsigned int>(AGENT_COUNT));
-    m.addStepFunction(IncrementCounter);
-    CUDAAgentModel c(m);
-    c.setPopulationData(pop);
-    externalCounter = 0;
-    c.resetStepCounter();
-    c.SimulationConfig().steps = 7;
-    c.simulate();
-    EXPECT_EQ(externalCounter, 7);
-    EXPECT_EQ(c.getStepCounter(), 7u);
-    externalCounter = 0;
-    c.resetStepCounter();
-    c.SimulationConfig().steps = 3;
-    c.simulate();
-    EXPECT_EQ(externalCounter, 3);
-    EXPECT_EQ(c.getStepCounter(), 3u);
-}
+    DeathFunc = """
+        FLAMEGPU_AGENT_FUNCTION(DeathFunc, MsgNone, MsgNone) {
+            unsigned int x = FLAMEGPU->getVariable<unsigned int>("x");
+            // Agents with even value for 'x' die
+            if (x % 2 == 0)
+                return DEAD;
+            return ALIVE;
+        }
+        """
 
-// Show that blank init resets the vals?
-
-TEST(TestCUDAAgentModel, AgentDeath) {
-    std::default_random_engine generator;
-    std::uniform_int_distribution<unsigned int> distribution(0, 12);
-    // Test that step does a single step
-    ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME);
-    a.newVariable<unsigned int>("x");
-    a.newFunction("DeathFunc", DeathTestFunc).setAllowAgentDeath(true);
-    m.newLayer().addAgentFunction(DeathTestFunc);
-    CUDAAgentModel c(m);
-    AgentPopulation pop(a, static_cast<unsigned int>(AGENT_COUNT));
-    std::vector<unsigned int> expected_output;
-    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        auto p = pop.getNextInstance();
-        unsigned int rng = distribution(generator);
-        p.setVariable<unsigned int>("x", rng);
-        if (rng % 2 != 0)
-            expected_output.push_back(rng);
-    }
-    c.setPopulationData(pop);
-    c.SimulationConfig().steps = 1;
-    c.simulate();
-    c.getPopulationData(pop);
-    EXPECT_EQ(static_cast<size_t>(pop.getCurrentListSize()), expected_output.size());
-    for (unsigned int i = 0; i < pop.getCurrentListSize(); ++i) {
-        AgentInstance ai = pop.getInstanceAt(i);
-        // Check x is an expected value
-        EXPECT_EQ(expected_output[i], ai.getVariable<unsigned int>("x"));
-    }
-}
-
-"""
+    def test_agent_death(self):
+        m = pyflamegpu.ModelDescription("test_agent_death")
+        a = m.newAgent("Agent")
+        a.newVariableInt("x")
+        death_func = a.newRTCFunction("DeathFunc", self.DeathFunc)
+        death_func.setAllowAgentDeath(True)
+        m.newLayer().addAgentFunction(death_func)
+        pop = pyflamegpu.AgentPopulation(a, AGENT_COUNT)
+        c = pyflamegpu.CUDAAgentModel(m)
+        expected_output = []
+        for i in range(AGENT_COUNT):
+            p = pop.getNextInstance()
+            rng = randint(0,9999)
+            p.setVariableInt("x", rng)
+            if rng % 2 != 0:
+                expected_output.append(rng)
+        c.setPopulationData(pop)
+        c.SimulationConfig().steps = 1
+        c.simulate()
+        c.getPopulationData(pop)
+        self.assertEqual(pop.getCurrentListSize(), len(expected_output))
+        for i in range(AGENT_COUNT):
+            ai = pop.getInstanceAt(i)
+            self.assertEqual(ai.getVariableInt("x"), expected_output[i])

@@ -126,24 +126,12 @@ TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## UInt, classfunction, unsigned in
 
 #include "flamegpu/runtime/AgentFunction_shim.h"
 #include "flamegpu/runtime/AgentFunctionCondition_shim.h"
+#include "flamegpu/runtime/HostFunctionCallback.h"
 %}
-
 
 /* Callback functions for step, exit and init */
-%feature("director") StepFunction;
-%inline %{
-    class StepFunction {
-    public:
-        virtual void step(FLAMEGPU_HOST_API*) = 0;
-        virtual ~StepFunction() {}
-    };
-%}
-%{
-    static StepFunction *step_handler_ptr = NULL;
-    static void step_handler_helper(FLAMEGPU_HOST_API* api) {
-        return step_handler_ptr->step(api);
-    }
-%}
+%feature("director") HostFunctionCallback;
+%include "flamegpu/runtime/HostFunctionCallback.h"
 
 
 /* Disable non RTC function and function condtion set methods */
@@ -152,6 +140,10 @@ TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## UInt, classfunction, unsigned in
 %ignore AgentFunctionDescription::setFunctionCondition;
 %ignore AgentFunctionDescription::getConditionPtr;
 
+/* Disable functions which allow raw C pointers in favour of callback objects */
+%ignore ModelDescription::addInitFunction;
+%ignore ModelDescription::addStepFunction;
+%ignore ModelDescription::addExitFunction;
 
 
 /* SWIG header includes used to generate wrappers */
@@ -162,17 +154,6 @@ TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## UInt, classfunction, unsigned in
 %include "flamegpu/model/LayerDescription.h"
 %include "flamegpu/pop/AgentPopulation.h"
 %include "flamegpu/pop/AgentInstance.h"
-
-
-%extend ModelDescription{
-
-    void addPythonStepFunction(StepFunction *handler) {
-        // TODO step_handler_ptr will be NULL by the time the API makes the callback
-        step_handler_ptr = handler;
-        $self->addStepFunction(step_handler_helper);
-        handler = NULL;
-    }
-}
 
 
 // exceptions
@@ -194,9 +175,6 @@ TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## UInt, classfunction, unsigned in
 %include "flamegpu/runtime/flamegpu_host_agent_api.h"
 %include "flamegpu/runtime/utility/HostRandom.cuh"
 %include "flamegpu/runtime/utility/HostEnvironment.cuh"
-
-// TODO: Temaplte instanciate all the host agent get and set functions
-
 
 %include "flamegpu/runtime/AgentFunction_shim.h"
 %include "flamegpu/runtime/AgentFunctionCondition_shim.h"
@@ -259,4 +237,11 @@ TEMPLATE_VARIABLE_INSTANTIATE(newVariable, MsgSpatial3D::Description::newVariabl
 TEMPLATE_VARIABLE_INSTANTIATE(newVariable, MsgArray::Description::newVariable)
 TEMPLATE_VARIABLE_INSTANTIATE(newVariable, MsgArray2D::Description::newVariable)
 TEMPLATE_VARIABLE_INSTANTIATE(newVariable, MsgArray3D::Description::newVariable)
+
+/* Instanciate template versions of host agent functions from the API */
+
+/* Instanciate template versions of host environment functions from the API */
+
+
+
 
