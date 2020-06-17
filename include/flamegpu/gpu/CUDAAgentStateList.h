@@ -37,7 +37,7 @@ class CUDAAgentStateList {
         const std::shared_ptr<CUDAFatAgentStateList> &fat_list,
         CUDAAgent& cuda_agent,
         const unsigned int &_fat_index,
-        const AgentData& description);    
+        const AgentData& description);
     /**
      * Resize all variable buffers within the parent CUDAFatAgentStateList
      * @param minimumSize The minimum number of agents that must be representable
