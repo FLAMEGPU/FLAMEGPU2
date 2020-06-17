@@ -37,7 +37,13 @@ class CUDAAgentStateList {
         const std::shared_ptr<CUDAFatAgentStateList> &fat_list,
         CUDAAgent& cuda_agent,
         const unsigned int &_fat_index,
-        const AgentData& description);
+        const AgentData& description);    
+    /**
+     * Resize all variable buffers within the parent CUDAFatAgentStateList
+     * @param minimumSize The minimum number of agents that must be representable
+     * @param retainData If true existing buffer data is retained
+     * @see CUDAFatAgentStateList::resize(const unsigned int &, const bool &)
+     */
     void resize(const unsigned int &minimumSize, const bool &retainData);
     /**
      * Returns the number of alive and active agents in the state list
@@ -53,8 +59,13 @@ class CUDAAgentStateList {
     void *getVariablePointer(const std::string &variable_name);
     /**
      * Store agent data from agent state memory into state list
+     * @data data Source for agent data
      */
     void setAgentData(const AgentStateMemory &data);
+    /**
+     * Retrieve agent data from the agent state list into agent state memory
+     * @data data Destination for agent data
+     */
     void getAgentData(AgentStateMemory &data);
     /**
      * Initialises the specified number of new agents based on agent data from a device buffer
@@ -65,6 +76,13 @@ class CUDAAgentStateList {
      * @param offsets Offset data explaining the layout of d_inBuff
      */
     void scatterHostCreation(const unsigned int &newSize, char *const d_inBuff, const VarOffsetStruct &offsets);
+    /**
+     * Scatters agents from the currently assigned device agent birth buffer (see member variable newBuffs)
+     * The device buffer must be packed in the same format as CUDAAgent::mapNewRuntimeVariables(const AgentFunctionData&, const unsigned int &, const unsigned int &)
+     * @param d_newBuff The buffer holding the new agent data
+     * @param newSize The maximum number of new agents (this will be the size of the agent state executing func)
+     * @param streamId This is required for scan compaction arrays and async
+     */
     void scatterNew(void * d_newBuff, const unsigned int &newSize, const unsigned int &streamId);
 
  private:

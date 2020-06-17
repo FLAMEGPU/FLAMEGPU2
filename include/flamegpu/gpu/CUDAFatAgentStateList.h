@@ -19,14 +19,15 @@
 struct AgentVariable{
     const unsigned int agent;
     const std::string variable;
-
-      bool operator==(const AgentVariable &other) const
-      { return (agent == other.agent
-                && variable == other.variable);
-      }
+    /**
+     * Basic comparison operator, required for use of std::map etc
+     */
+    bool operator==(const AgentVariable &other) const {
+        return (agent == other.agent && variable == other.variable);
+    }
 };
 /**
- * Hash operator for AgentVariable
+ * Hash operator for AgentVariable, required for use of std::map etc
  */
 template <> struct std::hash<AgentVariable> {
     std::size_t operator()(const AgentVariable& k) const noexcept {
@@ -50,12 +51,23 @@ struct VariableBuffer {
      * Pointer to a spare device buffer used when scattering
      */
     void *data_swap;
+    /**
+     * The type of the variable
+     */
     const std::type_index type;
+    /**
+     * The size of the variable's type (e.g. sizeof(T))
+     */
     const size_t type_size;
     /**
      * Is the variable array type
      */
     const size_t elements;
+    /**
+     * Pointer to the default value of the variable
+     * The length of the allocation is equal to elements * type_size
+     * @note The memory pointed to by this pointer is allocated and free'd by the instance
+     */
     const void *const default_value;
     VariableBuffer(const std::type_index &_type, const size_t &_type_size, const void * const _default_value, const size_t &_elements = 1, void *_data = nullptr, void *_data_swap = nullptr)
         : data(_data)
@@ -65,7 +77,9 @@ struct VariableBuffer {
         , type_size(_type_size)
         , elements(_elements)
         , default_value(buildDefaultValue(_default_value)) { }
-
+    /**
+     * Copy constructor
+     */
     VariableBuffer(const VariableBuffer&other)
         : data(other.data)
         , data_condition(other.data_condition)
@@ -74,7 +88,9 @@ struct VariableBuffer {
         , type_size(other.type_size)
         , elements(other.elements)
         , default_value(buildDefaultValue(other.default_value)) { }
-
+    /**
+     * Destructor
+     */
     ~VariableBuffer() {
         free(const_cast<void* const>(default_value));
     }
@@ -94,6 +110,12 @@ struct VariableBuffer {
     }
 
  private:
+    /**
+     * Returns a copy of the paramater allocated with malloc
+     * It is expected that source points to atleast type_size * elements memory
+     * @param source The source location of the default value
+     * @return The destination location of the default value copy
+     */
     void *buildDefaultValue(const void * const source) const {
         void *rtn = malloc(type_size * elements);
         memcpy(rtn, source, type_size * elements);
@@ -117,18 +139,43 @@ class CUDAFatAgentStateList {
      * However buffers must be uninitialised (bufferLen == 0)
      */
     CUDAFatAgentStateList(const CUDAFatAgentStateList& other);
+    /**
+     * Destructor
+     */
     ~CUDAFatAgentStateList();
+    /**
+     * Adds variables from a sub agent to the state list
+     * Variables which are not mapped will have a new VariableBuffer created
+     * Variables which are mapped will be assigned to the corresponding VariableBuffer
+     * @param description Agent description of the sub agent
+     * @param master_fat_index Fat index of the sub agent's mapped (parent) agent within the CUDAFatAgent
+     * @oaram sub_fat_index Fat index of the sub agent within the CUDAFatAgent
+     * @param mapping Mapping definition for how this agent is connected with its master agent.
+     */
     void addSubAgentVariables(
       const AgentData &description,
       const unsigned int &master_fat_index,
       const unsigned int &sub_fat_index,
       const std::shared_ptr<SubAgentData> &mapping);
+    /**
+     * Returns the VariableBuffer for the corresponding agent variable
+     * @param fat_index Fat index of the corresponding agent
+     * @param name Name of the variable within the corresponding agent
+     */
     std::shared_ptr<VariableBuffer> getVariableBuffer(const unsigned int &fat_index, const std::string &name);
+    /**
+     * Resize all variable buffers
+     * @param minSize The minimum number of agents that must be representable
+     * @param retainData If true existing buffer data is retained
+     */
     void resize(const unsigned int &minSize, const bool &retainData);
     /**
      * Returns the number of alive and active agents in the state list
      */
     unsigned int getSize() const;
+    /**
+     * Returns the total number of agents in the state list, including disabled agents
+     */
     unsigned int getSizeWithDisabled() const;
     /**
      * Returns the maximum number of agents that can be stored based on the current buffer allocations
@@ -174,7 +221,9 @@ class CUDAFatAgentStateList {
      * Resets the value of all variables not present in exclusionSet to their defaults
      */
     void initVariables(std::set<std::shared_ptr<VariableBuffer>> &exclusionSet, const unsigned int initCount, const unsigned initOffset, const unsigned int &streamId);
-
+    /**
+     * Returns the collection of unique variable buffers held by this CUDAFatAgentStateList
+     */
     std::list<std::shared_ptr<VariableBuffer>> &getUniqueVariables();
     /**
      * Swaps the internals of the two buffers
@@ -197,8 +246,14 @@ class CUDAFatAgentStateList {
      * This is represented on a per FatAgentStateList level, rather then per VariableBuffer
      */
     unsigned int bufferLen;
-
+    /**
+     * Mapping from {agent fat index, variable name} to variable buffer
+     */
     std::unordered_map<AgentVariable, std::shared_ptr<VariableBuffer>> variables;
+    /**
+     * The collection of unique variables represented
+     * This is a list, however it contains no duplicates
+     */
     std::list<std::shared_ptr<VariableBuffer>> variables_unique;
 };
 

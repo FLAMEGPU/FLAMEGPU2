@@ -26,13 +26,18 @@ class CUDAFatAgent;
 struct VarOffsetStruct;
 /**
  * This is the regular CUDAAgent
+ * It provides access to the device buffers representing the states of a particular agent
+ * However it does not own these buffers, they are owned by it's parent CUDAFatAgent, as buffers are shared with all mapped agents too.
  */
 class CUDAAgent : public AgentInterface {
  public:
     /**
-     *  map of state name to CUDAAgentStateList which allocates memory on the device
+     *  map of agent function name to RTC function instance
      */
     typedef std::map<const std::string, std::unique_ptr<jitify::KernelInstantiation>> CUDARTCFuncMap;
+    /**
+     * Element type of CUDARTCFuncMap
+     */
     typedef std::pair<const std::string, std::unique_ptr<jitify::KernelInstantiation>> CUDARTCFuncMapPair;
     /**
      * Normal constructor
@@ -41,10 +46,12 @@ class CUDAAgent : public AgentInterface {
      */
     CUDAAgent(const AgentData& description, const CUDAAgentModel &_cuda_model);
     /**
-    * Subagent form constructor
-    * @param description Agent description of the agent
-    * @param _cuda_model Parent CUDAAgentModel of the agent
-    */
+     * Subagent form constructor, used when creating a CUDAAgent for a mapped agent within a submodel
+     * @param description Agent description of the agent
+     * @param _cuda_model Parent CUDAAgentModel of the agent
+     * @param master_agent The (parent) agent which this is agent is mapped to
+     * @param mapping Mapping definition for how this agent is connected with its master agent.
+     */
     CUDAAgent(
         const AgentData &description,
         const CUDAAgentModel &_cuda_model,
@@ -61,11 +68,9 @@ class CUDAAgent : public AgentInterface {
     /**
      * Uses the cuRVE runtime to unmap the variables used by the agent function to the cuRVE
      * library so that they are unavailable to be accessed by name within an agent function.
-     *
      * @param func The function.
      */
     void unmapRuntimeVariables(const AgentFunctionData& func) const;
-
     /**
      * Copies population data from the provided host object
      * To the device buffers held by this object (overwriting any existing agent data)
@@ -81,13 +86,22 @@ class CUDAAgent : public AgentInterface {
     void getPopulationData(AgentPopulation& population) const;
     /**
      * Returns the number of alive and active agents in the named state
+     * @state The state to return information about
      */
     unsigned int getStateSize(const std::string &state) const;
     /**
      * Returns the number of alive and active agents in the named state
+     * @state The state to return information about
      */
     unsigned int getStateAllocatedSize(const std::string &state) const;
+    /**
+     * Returns the Agent description which this CUDAAgent represents.
+     */
     const AgentData &getAgentDescription() const;
+    /**
+     * Returns the device pointer to the buffer for the associated state and variable
+     * @note This returns data_condition, such that the buffer does not include disabled agents
+     */
     void *getStateVariablePtr(const std::string &state_name, const std::string &variable_name);
     /**
      * Processes agent death, this call is forwarded to the fat agent
@@ -110,24 +124,50 @@ class CUDAAgent : public AgentInterface {
      * Scatters agents based on their output of the agent function condition
      * Agents which failed the condition are scattered to the front and marked as disabled
      * Agents which pass the condition are scatterd to after the disabled agents
-     * @param func The agent function condition being processed
+     * @param func The agent function being processed
      * @param streamId The index of the agent function within the current layer
      * @see CUDAFatAgent::processFunctionCondition(const unsigned int &, const unsigned int &)
      * @note Named state must not already contain disabled agents
      * @note The disabled agents are re-enabled using clearFunctionCondition(const std::string &)
      */
     void processFunctionCondition(const AgentFunctionData& func, const unsigned int &streamId);
+    /**
+     * Scatters agents from the provided device buffer, this is used for host agent creation
+     * The device buffer must be packed according to the param offsets
+     * @param state_name The state agents are scattered into
+     * @param newSize The number of new agents
+     * @param d_inBuff The device buffer containing the new agents
+     * @param offsets This defines how the memory is laid out within d_inBuff
+     */
     void scatterHostCreation(const std::string &state_name, const unsigned int &newSize, char *const d_inBuff, const VarOffsetStruct &offsets);
+    /**
+     * Allocates a buffer for storing new agents into and
+     * uses the cuRVE runtime to map variables for use with an agent function that has device agent birth
+     * @param func The agent function being processed
+     * @param maxLen The maximum number of new agents (this will be the size of the agent state executing func)
+     * @param streamId This is required for scan compaction arrays and async
+     *
+     */
     void mapNewRuntimeVariables(const AgentFunctionData& func, const unsigned int &maxLen, const unsigned int &streamId);
+    /**
+     * Uses the cuRVE runtime to unmap the variables used by agent birth and
+     * releases the buffer that was storing the data
+     * @param func The function.
+     */
     void unmapNewRuntimeVariables(const AgentFunctionData& func);
+    /**
+     * Scatters agents from the currently assigned device agent birth buffer (see member variable newBuffs)
+     * The device buffer must be packed in the same format as mapNewRuntimeVariables(const AgentFunctionData&, const unsigned int &, const unsigned int &)
+     * @param func The agent function being processed
+     * @param newSize The maximum number of new agents (this will be the size of the agent state executing func)
+     * @param streamId This is required for scan compaction arrays and async
+     */
     void scatterNew(const AgentFunctionData& func, const unsigned int &newSize, const unsigned int &streamId);
-
     /**
      * Reenables all disabled agents within the named state
      * @param state The named state to enable all agents within
      */
     void clearFunctionCondition(const std::string &state);
-
     /**
      * Instatiates a RTC Agent function from agent function data description containing the agent function source.
      * If function_condition variable is true then this function will instantiate a function condition rather than an agent function
@@ -141,13 +181,15 @@ class CUDAAgent : public AgentInterface {
      * @param function_name the name of the RTC agent function or the agent function name suffixed with condition (if it is a function condition)
      */
     const jitify::KernelInstantiation& getRTCInstantiation(const std::string &function_name) const;
-
     /**
      * Returns the CUDARTCFuncMap
      */
     const CUDARTCFuncMap& getRTCFunctions() const;
 
  private:
+    /**
+     * Sums the size required for all variables
+     */
     static size_t calcTotalVarSize(const AgentData &agent) {
         size_t rtn = 0;
         for (const auto v : agent.variables) {
@@ -155,7 +197,13 @@ class CUDAAgent : public AgentInterface {
         }
         return rtn;
     }
+    /**
+     * The fat index of this agent within its CUDAFatAgent
+     */
     unsigned int getFatIndex() const { return fat_index; }
+    /**
+     * Returns this CUDAAgent's fat agent
+     */
     std::shared_ptr<CUDAFatAgent> getFatAgent() { return fat_agent; }
     /**
      * The agent description of this agent
