@@ -149,7 +149,7 @@ TEST(AgentInstanceTest, SetViaAgentInstance) {
         AgentInstance instance = population.getInstanceAt(i);
         EXPECT_EQ(instance.getVariable<float>("x"), 12.0f);
         auto output_array = instance.getVariable<int, 4>("array_var");
-        auto test_array = std::array<int, 4>({ 2, 4, 8, 16 });
+        std::array<int, 4> test_array = { 2, 4, 8, 16 };
         EXPECT_EQ(output_array, test_array);
         EXPECT_EQ(instance.getVariable<float>("y"), 14.0f);
     }
@@ -189,7 +189,7 @@ TEST(AgentInstanceTest, SetViaAgentInstance2) {
     for (unsigned int i = 0; i < population.getCurrentListSize(); i++) {
         AgentInstance instance = population.getInstanceAt(i);
         EXPECT_EQ(instance.getVariable<float>("x"), 12.0f);
-        auto test_array = std::array<int, 4>({ 2, 4, 8, 16 });
+        std::array<int, 4> test_array = { 2, 4, 8, 16 };
         auto output_val = instance.getVariable<int>("array_var", 0);
         EXPECT_EQ(output_val, test_array[0]);
         output_val = instance.getVariable<int>("array_var", 1);

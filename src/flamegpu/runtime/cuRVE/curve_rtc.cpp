@@ -408,7 +408,25 @@ std::string CurveRTCHost::getEnvVariableSymbolName(const char* variableName, uns
 }
 
 std::string CurveRTCHost::demangle(const char* verbose_name) {
-    std::string s = jitify::reflection::detail::demangle(verbose_name);
+#ifndef _MSC_VER
+    std::string s = jitify::reflection::detail::demangle_cuda_symbol(verbose_name);
+#else
+    // Jitify removed the required demangle function, this is a basic clone of what was being done in earlier version
+    // It's possible jitify::reflection::detail::demangle_native_type() would work, however that requires type_info, not type_index
+    size_t index = 0;
+    std::string s = verbose_name;
+    while (true) {
+        /* Locate the substring to replace. */
+        index = s.find("class", index);
+        if (index == std::string::npos) break;
+
+        /* Make the replacement. */
+        s.replace(index, 5, "     ");
+
+        /* Advance index forward so the next iteration doesn't pick it up as well. */
+        index += 5;
+    }
+#endif
     // Lambda function for trimming whitesapce as jitify demangle does not remove this
     s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
         return !std::isspace(ch);
@@ -417,10 +435,5 @@ std::string CurveRTCHost::demangle(const char* verbose_name) {
 }
 
 std::string CurveRTCHost::demangle(const std::type_index& type) {
-    std::string s = jitify::reflection::detail::demangle(type.name());
-    // Lambda function for trimming whitesapce as jitify demangle does not remove this
-    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
-        return !std::isspace(ch);
-        }));
-    return s;
+    return demangle(type.name());
 }
