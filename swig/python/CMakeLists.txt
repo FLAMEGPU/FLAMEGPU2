@@ -126,18 +126,20 @@ if(BUILD_SWIG_PYTHON_VIRTUALENV)
 	set(VENV_EXECUTABLE ${Python3_EXECUTABLE} -m venv)
 	set(VENV_DIR ${PYTHON_LIB_OUTPUT_DIRECTORY}/venv)
 	if(WIN32)
-		set(VENV_Python_EXECUTABLE "${VENV_DIR}\\Scripts\\python.exe")
+		set(VENV_PIP "${VENV_DIR}\\Scripts\\pip.exe")
 	else()
-		set(VENV_Python_EXECUTABLE ${VENV_DIR}/bin/python)
+		set(VENV_PIP ${VENV_DIR}/bin/pip)
 	endif()
 	# make a virtualenv to install our python package in it
 	add_custom_command(TARGET ${PYTHON_MODULE_NAME} POST_BUILD
+		# create venv
 		COMMAND ${VENV_EXECUTABLE} ${VENV_DIR}
+
 		# Must not call it in a folder containing the setup.py otherwise pip call it
 		# (i.e. "python setup.py bdist") while we want to consume the wheel package
-		COMMAND ${VENV_Python_EXECUTABLE} -m pip install --force-reinstall --find-links=dist ${PYTHON_MODULE_NAME}
+		COMMAND ${VENV_PIP} install --force-reinstall --find-links=dist ${PYTHON_MODULE_NAME}
 		# install pytest
-		COMMAND ${VENV_Python_EXECUTABLE} -m pip install pytest
+		COMMAND ${VENV_PIP} install pytest
 		BYPRODUCTS ${VENV_DIR}
 		# TODO: Add dependancy to ensure this post build step occurs after the previous post build step which builds the wheel
 		WORKING_DIRECTORY ${PYTHON_LIB_OUTPUT_DIRECTORY})
