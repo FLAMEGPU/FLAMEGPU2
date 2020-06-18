@@ -137,7 +137,7 @@ if(BUILD_SWIG_PYTHON_VIRTUALENV)
 
 		# Must not call it in a folder containing the setup.py otherwise pip call it
 		# (i.e. "python setup.py bdist") while we want to consume the wheel package
-		COMMAND ${VENV_PIP} install --force-reinstall --find-links=dist ${PYTHON_MODULE_NAME}
+		COMMAND ${VENV_PIP} install --force-reinstall --find-links=dist --no-index -U ${PYTHON_MODULE_NAME}
 		# install pytest
 		COMMAND ${VENV_PIP} install pytest
 		BYPRODUCTS ${VENV_DIR}
