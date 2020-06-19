@@ -148,72 +148,44 @@ TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## UInt, classfunction, unsigned in
 %include "flamegpu/pop/AgentPopulation.h"
 %include "flamegpu/pop/AgentInstance.h"
 
+/** Exception handling
+ * FGPURuntimeException class is a wrapper class to replace specific instances of FGPUException. It is constructed with a error mesage and type which can be queried to give the original error and the original exception class.
+ * The FGPURuntimeException is constructed form the original FGPUException in the handler and then translated into the python version.
+ * The approach avoids having to wrap every exception class which extends FGPUException
+ */
+%exceptionclass FGPURuntimeException;
+%feature("python:slot", "tp_str", functype="reprfunc") FGPURuntimeException::what
+%inline %{
 
-/* Exceptions */
-%varargs (void* null=NULL) CUDAError;
-%varargs (void* null=NULL) ReservedName;
-%varargs (void* null=NULL) InvalidInputFile;
-%varargs (void* null=NULL) InvalidHashList;
-%varargs (void* null=NULL) InvalidVarType;
-%varargs (void* null=NULL) UnsupportedVarType;
-%varargs (void* null=NULL) InvalidStateName;
-%varargs (void* null=NULL) InvalidMapEntry;
-%varargs (void* null=NULL) InvalidParent;
-%varargs (void* null=NULL) InvalidAgentName;
-%varargs (void* null=NULL) InvalidMessageName;
-%varargs (void* null=NULL) InvalidMessageType;
-%varargs (void* null=NULL) InvalidAgent;
-%varargs (void* null=NULL) InvalidMessage;
-%varargs (void* null=NULL) InvalidAgentVar;
-%varargs (void* null=NULL) InvalidVarArrayLen;
-%varargs (void* null=NULL) OutOfRangeVarArray;
-%varargs (void* null=NULL) InvalidMessageVar;
-%varargs (void* null=NULL) InvalidMessageData;
-%varargs (void* null=NULL) InvalidMessageSize;
-%varargs (void* null=NULL) InvalidCudaAgent;
-%varargs (void* null=NULL) InvalidCudaMessage;
-%varargs (void* null=NULL) InvalidCudaAgentMapSize;
-%varargs (void* null=NULL) InvalidCudaAgentDesc;
-%varargs (void* null=NULL) InvalidCudaAgentState;
-%varargs (void* null=NULL) InvalidAgentFunc;
-%varargs (void* null=NULL) InvalidFuncLayerIndx;
-%varargs (void* null=NULL) InvalidPopulationData;
-%varargs (void* null=NULL) InvalidMemoryCapacity;
-%varargs (void* null=NULL) InvalidOperation;
-%varargs (void* null=NULL) InvalidCUDAdevice;
-%varargs (void* null=NULL) InvalidCUDAComputeCapability;
-%varargs (void* null=NULL) InvalidHostFunc;
-%varargs (void* null=NULL) InvalidArgument;
-%varargs (void* null=NULL) DuplicateEnvProperty;
-%varargs (void* null=NULL) InvalidEnvProperty;
-%varargs (void* null=NULL) InvalidEnvPropertyType;
-%varargs (void* null=NULL) ReadOnlyEnvProperty;
-%varargs (void* null=NULL) EnvDescriptionAlreadyLoaded;
-%varargs (void* null=NULL) OutOfMemory;
-%varargs (void* null=NULL) CurveException;
-%varargs (void* null=NULL) OutOfBoundsException;
-%varargs (void* null=NULL) TinyXMLError;
-%varargs (void* null=NULL) DifferentModel;
-%varargs (void* null=NULL) UnsupportedFileType;
-%varargs (void* null=NULL) UnknownInternalError;
-%varargs (void* null=NULL) ArrayMessageWriteConflict;
-%varargs (void* null=NULL) VisualisationException;
-
-%exceptionclass FGPUException;
-
-%include "flamegpu/exception/FGPUException.h"
-// Generic exception handling
+class FGPURuntimeException : public std::exception {
+ public:
+     FGPURuntimeException(std::string msg, std::string type) {
+         err_message = msg;
+         type_str = type;
+     }
+     const char* what() const noexcept {
+         return err_message.c_str();
+     }
+     const char* type() const {
+         return type_str.c_str();
+     }
+ protected:
+    std::string err_message;
+    std::string type_str;
+};
+%}
+// Exception handling
 %include "exception.i"
 %exception {
     try {
         $action
     }
-    catch (UnsupportedFileType& e) {
-        FGPUException *ecopy = new UnsupportedFileType(e);
-        PyObject *err = SWIG_NewPointerObj(ecopy, SWIGTYPE_p_UnsupportedFileType, 1);
-        PyErr_SetObject(SWIG_Python_ExceptionType(SWIGTYPE_p_UnsupportedFileType), err);
+    catch (FGPUException& e) {
+        FGPURuntimeException *except = new FGPURuntimeException(std::string(e.what()), std::string(e.exception_type()));
+        PyObject *err = SWIG_NewPointerObj(except, SWIGTYPE_p_FGPURuntimeException, 1);
+        SWIG_Python_Raise(err, except.type(), SWIGTYPE_p_FGPURuntimeException); 
         SWIG_fail;
-    } 
+    }
     catch (...) {
         SWIG_exception(SWIG_RuntimeError, "Unknown Exception");
     } 

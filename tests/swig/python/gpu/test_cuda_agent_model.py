@@ -31,109 +31,109 @@ class TestSimulation(TestCase):
         m = pyflamegpu.ModelDescription("test_argparse_inputfile_long")
         c = pyflamegpu.CUDAAgentModel(m)
         argv = [ "prog.exe", "--in", "test" ]
-        self.assertEqual(c.getSimulationConfig().xml_input_file, "")
-        with pytest.raises(pyflamegpu.UnsupportedFileType) as e:  # UnsupportedFileType exception is thrown as python RuntimeError by swig
+        assert c.getSimulationConfig().xml_input_file == ""
+        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # UnsupportedFileType exception
             c.initialise(argv)
-        self.assertIn("File 'test' is not a type which can be read", str(e.value))
-        self.assertEqual(c.getSimulationConfig().xml_input_file, argv[2])
+        assert e.value.type() == "UnsupportedFileType"
+        assert c.getSimulationConfig().xml_input_file == argv[2]
         # Blank init resets value to default
         argv = []
         c.initialise(argv)
-        self.assertEqual(c.getSimulationConfig().xml_input_file, "")
+        assert c.getSimulationConfig().xml_input_file == ""
 
     def test_argparse_inputfile_short(self):
         m = pyflamegpu.ModelDescription("test_argparse_inputfile_short")
         c = pyflamegpu.CUDAAgentModel(m)
         argv = [ "prog.exe", "-i", "test.xml" ]
-        self.assertEqual(c.getSimulationConfig().xml_input_file, "")
-        with pytest.raises(RuntimeError) as e:  # InvalidInputFile exception is thrown as python RuntimeError by swig
+        assert c.getSimulationConfig().xml_input_file == ""
+        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # InvalidInputFile
             c.initialise(argv)
-        self.assertIn("File could not be opened", str(e.value))
-        self.assertEqual(c.getSimulationConfig().xml_input_file, argv[2])
+        assert e.value.type() == "InvalidInputFile"
+        assert c.getSimulationConfig().xml_input_file == argv[2]
         # Blank init resets value to default
         argv = []
         c.initialise(argv)
-        self.assertEqual(c.getSimulationConfig().xml_input_file, "")
+        assert c.getSimulationConfig().xml_input_file == ""
 
     def test_argparse_steps_long(self):
         m = pyflamegpu.ModelDescription("test_argparse_steps_long")
         c = pyflamegpu.CUDAAgentModel(m)
         argv = [ "prog.exe", "--steps", "12" ]
-        self.assertEqual(c.getSimulationConfig().steps, 0)
+        assert c.getSimulationConfig().steps == 0
         c.initialise(argv)
-        self.assertEqual(c.getSimulationConfig().steps, 12)
+        assert c.getSimulationConfig().steps == 12
         # Blank init resets value to default
         argv = []
         c.initialise(argv)
-        self.assertEqual(c.getSimulationConfig().steps, 0)
+        assert c.getSimulationConfig().steps == 0
         
     def test_argparse_steps_short(self):
         m = pyflamegpu.ModelDescription("test_argparse_steps_short")
         c = pyflamegpu.CUDAAgentModel(m)
         argv = [ "prog.exe", "-s", "12" ]
-        self.assertEqual(c.getSimulationConfig().steps, 0)
+        assert c.getSimulationConfig().steps == 0
         c.initialise(argv)
-        self.assertEqual(c.getSimulationConfig().steps, 12)
+        assert c.getSimulationConfig().steps == 12
         # Blank init resets value to default
         argv = []
         c.initialise(argv)
-        self.assertEqual(c.getSimulationConfig().steps, 0)
+        assert c.getSimulationConfig().steps == 0
         
     def test_argparse_randomseed_long(self):
         m = pyflamegpu.ModelDescription("test_argparse_randomseed_long")
         c = pyflamegpu.CUDAAgentModel(m)
         argv = [ "prog.exe", "--random", "12" ]
-        self.assertNotEqual(c.getSimulationConfig().random_seed, 12)
+        assert c.getSimulationConfig().random_seed != 12
         c.initialise(argv)
-        self.assertEqual(c.getSimulationConfig().random_seed, 12)
+        assert c.getSimulationConfig().random_seed == 12
         # Blank init resets value to default
         argv = []
         c.initialise(argv)
-        self.assertNotEqual(c.getSimulationConfig().random_seed, 12)
+        assert c.getSimulationConfig().random_seed != 12
         
     def test_argparse_randomseed_short(self):
         m = pyflamegpu.ModelDescription("test_argparse_randomseed_short")
         c = pyflamegpu.CUDAAgentModel(m)
         argv = [ "prog.exe", "-r", "12" ]
-        self.assertNotEqual(c.getSimulationConfig().random_seed, 12)
+        assert c.getSimulationConfig().random_seed != 12
         c.initialise(argv)
-        self.assertEqual(c.getSimulationConfig().random_seed, 12)
+        assert c.getSimulationConfig().random_seed == 12
         # Blank init resets value to default
         argv = []
         c.initialise(argv)
-        self.assertNotEqual(c.getSimulationConfig().random_seed, 12)
+        assert c.getSimulationConfig().random_seed != 12
         
     def test_argparse_device_long(self):
         m = pyflamegpu.ModelDescription("test_argparse_device_long")
         c = pyflamegpu.CUDAAgentModel(m)
         argv = [ "prog.exe", "--device", "1200" ]
-        self.assertEqual(c.getCUDAConfig().device_id, 0)
+        assert c.getCUDAConfig().device_id == 0
         # Setting an invalid device ID is the only safe way to do this without making internal methods accessible
         # As can set to a valid device, we haven't build code for
-        with pytest.raises(RuntimeError) as e:  # InvalidCUDAdevice exception is thrown as python RuntimeError by swig
+        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # InvalidCUDAdevice exception
             c.initialise(argv)
-        self.assertIn("Error setting CUDA device to '1200'", str(e.value))
-        self.assertEqual(c.getCUDAConfig().device_id, 1200)
+        assert e.value.type() == "InvalidCUDAdevice"
+        assert c.getCUDAConfig().device_id == 1200
         # Blank init resets value to default
         argv = []
         c.initialise(argv)
-        self.assertEqual(c.getCUDAConfig().device_id, 0)
+        assert c.getCUDAConfig().device_id == 0
         
     def test_argparse_device_short(self):
         m = pyflamegpu.ModelDescription("test_argparse_device_short")
         c = pyflamegpu.CUDAAgentModel(m)
         argv = [ "prog.exe", "-d", "1200" ]
-        self.assertEqual(c.getCUDAConfig().device_id, 0)
+        assert c.getCUDAConfig().device_id == 0
         # Setting an invalid device ID is the only safe way to do this without making internal methods accessible
         # As can set to a valid device, we haven't build code for
-        with pytest.raises(RuntimeError) as e:  # InvalidCUDAdevice exception is thrown as python RuntimeError by swig
+        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # InvalidCUDAdevice exception 
             c.initialise(argv)
-        self.assertIn("Error setting CUDA device to '1200'", str(e.value))
-        self.assertEqual(c.getCUDAConfig().device_id, 1200)
+        assert e.value.type() == "InvalidCUDAdevice"
+        assert c.getCUDAConfig().device_id == 1200
         # Blank init resets value to default
         argv = []
         c.initialise(argv)
-        self.assertEqual(c.getCUDAConfig().device_id, 0)
+        assert c.getCUDAConfig().device_id == 0
 
 
     SetGetFn = """
@@ -153,9 +153,9 @@ class TestSimulation(TestCase):
         for _i in range(AGENT_COUNT):
             i = pop.getNextInstance();
             i.setVariableInt("test", _i)
-            with pytest.raises(RuntimeError) as e:  # InvalidVarType exception is thrown as python RuntimeError by swig
+            with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # InvalidVarType exception 
                 i.setVariableFloat("test", float(_i))
-            self.assertIn("Wrong variable type", str(e.value))
+            assert e.value.type() == "InvalidVarType"
         c = pyflamegpu.CUDAAgentModel(m)
         c.SimulationConfig().steps = 1
         c.setPopulationData(pop)
@@ -165,7 +165,7 @@ class TestSimulation(TestCase):
         # Check results and reset agent variable data
         for _i in range(AGENT_COUNT):
             i = pop.getInstanceAt(_i);
-            self.assertEqual(i.getVariableInt("test"), _i * 3)
+            assert i.getVariableInt("test") == _i * 3
             i.setVariableInt("test", _i * 2);
         # perform second simulation
         c.setPopulationData(pop)
@@ -173,10 +173,10 @@ class TestSimulation(TestCase):
         c.getPopulationData(pop);
         for _i in range(AGENT_COUNT):
             i = pop.getInstanceAt(_i);
-            self.assertEqual(i.getVariableInt("test"), _i * 3 * 2)
-            with pytest.raises(RuntimeError) as e:  # InvalidVarType exception is thrown as python RuntimeError by swig
+            assert i.getVariableInt("test") == _i * 3 * 2
+            with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # InvalidVarType exception
                 i.getVariableFloat("test")
-            self.assertIn("Wrong variable type", str(e.value))
+            assert e.value.type() == "InvalidVarType"
 
 
     def test_set_get_population_data_invalid_cuda_agent(self):
@@ -188,14 +188,14 @@ class TestSimulation(TestCase):
 
         c = pyflamegpu.CUDAAgentModel(m)
         # Test setPopulationData
-        with pytest.raises(RuntimeError) as e:  # InvalidCudaAgent exception is thrown as python RuntimeError by swig
+        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # InvalidCudaAgent exception
             c.setPopulationData(pop)
-        self.assertIn("Error: Agent ('Agent2') was not found", str(e.value))
+        assert e.value.type() == "InvalidCudaAgent"
         
         # Test getPopulationData
-        with pytest.raises(RuntimeError) as e:  # InvalidCudaAgent exception is thrown as python RuntimeError by swig
+        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # InvalidCudaAgent exception
             c.getPopulationData(pop)
-        self.assertIn("Error: Agent ('Agent2') was not found", str(e.value))
+        assert e.value.type() == "InvalidCudaAgent"
 
     """
     GetAgent Test is not possible without CUDA bindings
@@ -215,14 +215,14 @@ class TestSimulation(TestCase):
         externalCounter = 0
         c.resetStepCounter()
         c.step()
-        self.assertEqual(externalCounter, 1)
-        self.assertEqual(c.getStepCounter(), 1)
+        assert externalCounter == 1
+        assert c.getStepCounter() == 1
         externalCounter = 0;
         c.resetStepCounter();
         for i in range(5):
             c.step()
-        self.assertEqual(externalCounter, 5)
-        self.assertEqual(c.getStepCounter(), 5)
+        assert externalCounter == 5
+        assert c.getStepCounter() == 5
 
     def test_simulate(self):
         global externalCounter
@@ -239,14 +239,14 @@ class TestSimulation(TestCase):
         c.resetStepCounter()
         c.SimulationConfig().steps = 7
         c.simulate()
-        self.assertEqual(externalCounter, 7)
-        self.assertEqual(c.getStepCounter(), 7)
+        assert externalCounter == 7
+        assert c.getStepCounter() == 7
         externalCounter = 0;
         c.resetStepCounter();
         c.SimulationConfig().steps = 3
         c.simulate()
-        self.assertEqual(externalCounter, 3)
-        self.assertEqual(c.getStepCounter(), 3)
+        assert externalCounter == 3
+        assert c.getStepCounter() == 3
 
     DeathFunc = """
         FLAMEGPU_AGENT_FUNCTION(DeathFunc, MsgNone, MsgNone) {
@@ -278,7 +278,7 @@ class TestSimulation(TestCase):
         c.SimulationConfig().steps = 1
         c.simulate()
         c.getPopulationData(pop)
-        self.assertEqual(pop.getCurrentListSize(), len(expected_output))
+        assert pop.getCurrentListSize() == len(expected_output)
         for i in range(pop.getCurrentListSize()):
             ai = pop.getInstanceAt(i)
-            self.assertEqual(ai.getVariableInt("x"), expected_output[i])
+            assert ai.getVariableInt("x") == expected_output[i]

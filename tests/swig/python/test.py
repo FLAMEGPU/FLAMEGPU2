@@ -25,9 +25,9 @@ message.newVariableInt("id");
 message
 
 # add RTC agent function
-func = agent.newRTCFunction("rtc_test_func", rtc_empty_agent_func);
-func.setAllowAgentDeath(True);
-model.newLayer().addAgentFunction(func);
+#func = agent.newRTCFunction("rtc_test_func", rtc_empty_agent_func);
+#func.setAllowAgentDeath(True);
+#model.newLayer().addAgentFunction(func);
 
 # Init pop
 init_population = pyflamegpu.AgentPopulation(agent, AGENT_COUNT);
@@ -42,6 +42,14 @@ for i in range(AGENT_COUNT):
 # // Run 1 step to ensure agent function compiles and runs
 # cuda_model.step();
 
+
 cuda_model = pyflamegpu.CUDAAgentModel(model)
-cuda_model.setPopulationData(init_population)
-cuda_model.step()
+
+argv = [ "prog.exe", "--in", "test" ]
+try:
+    cuda_model.initialise(argv) # expects error
+except pyflamegpu.FGPURuntimeException as e:
+    print(e.type())
+
+#cuda_model.setPopulationData(init_population)
+#cuda_model.step()
