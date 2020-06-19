@@ -5,6 +5,18 @@ endif()
 # Add custom modules directory
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/modules/ ${CMAKE_MODULE_PATH})
 
+# include CUDA_ARCH processing code.
+# Uses -DCUDA_ARCH values (and modifies if appropriate). 
+# Adds -gencode argumetns to CMAKE_CUDA_FLAGS
+# Adds -DMIN_COMPUTE_CAPABILITY=VALUE macro to CMAKE_CC_FLAGS, CMAKE_CXX_FLAGS and CMAKE_CUDA_FLAGS.
+include(${CMAKE_CURRENT_LIST_DIR}/cuda_arch.cmake)
+
+# Ensure that other dependencies are downloaded and available. 
+# This could potentially go in the src cmake.list, once headers do not include third party headers.
+include(${CMAKE_CURRENT_LIST_DIR}/Thrust.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/Jitify.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/Tinyxml2.cmake)
+
 # Common rules for other cmake files
 # Make available lowercase 'linux'/'windows' vars (used for build dirs)
 STRING(TOLOWER "${CMAKE_SYSTEM_NAME}" CMAKE_SYSTEM_NAME_LOWER)
@@ -80,7 +92,7 @@ set(FLAMEGPU_DEPENDENCY_LINK_LIBRARIES)
 
 find_package(NVRTC REQUIRED)
 if(NVRTC_FOUND)
-    set(FLAMEGPU_DEPENDENCY_INCLUDE_DIRECTORIES ${FLAMEGPU_DEPENDENCY_INCLUDE_DIRECTORIES} ${NVRTC_INCLUDE_DIRS})
+    set(FLAMEGPU_DEPENDENCY_INCLUDE_DIRECTORIES ${FLAMEGPU_DEPENDENCY_INCLUDE_DIRECTORIES} "${NVRTC_INCLUDE_DIRS}")
     set(FLAMEGPU_DEPENDENCY_LINK_LIBRARIES ${FLAMEGPU_DEPENDENCY_LINK_LIBRARIES} ${NVRTC_LIBRARIES})
     # Also add the driver api
     set(FLAMEGPU_DEPENDENCY_LINK_LIBRARIES ${FLAMEGPU_DEPENDENCY_LINK_LIBRARIES} cuda)
@@ -98,7 +110,7 @@ if(USE_NVTX)
         set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -DUSE_NVTX=${NVTX_VERSION}")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_NVTX=${NVTX_VERSION}")
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DUSE_NVTX=${NVTX_VERSION}")
-        set(FLAMEGPU_DEPENDENCY_INCLUDE_DIRECTORIES ${FLAMEGPU_DEPENDENCY_INCLUDE_DIRECTORIES} ${NVTX_INCLUDE_DIRS})
+        set(FLAMEGPU_DEPENDENCY_INCLUDE_DIRECTORIES ${FLAMEGPU_DEPENDENCY_INCLUDE_DIRECTORIES} "${NVTX_INCLUDE_DIRS}")
         if(NVTX_VERSION VERSION_LESS "3")
             set(FLAMEGPU_DEPENDENCY_LINK_LIBRARIES ${FLAMEGPU_DEPENDENCY_LINK_LIBRARIES} ${NVTX_LIBRARIES})
         endif()
@@ -109,6 +121,11 @@ if(USE_NVTX)
     endif()
 endif(USE_NVTX)
 
+# If jitify was found, add it to the include dirs.
+if(Jitify_FOUND)
+    set(FLAMEGPU_DEPENDENCY_INCLUDE_DIRECTORIES ${FLAMEGPU_DEPENDENCY_INCLUDE_DIRECTORIES} "${Jitify_INCLUDE_DIRS}")
+endif()
+
 # Logging for jitify compilation
 set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -DJITIFY_PRINT_LOG")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DJITIFY_PRINT_LOG")
@@ -117,12 +134,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DJITIFY_PRINT_LOG")
 if(CMAKE_CUDA_COMPILER_VERSION VERSION_LESS 7.0)
     message(FATAL_ERROR "CUDA version must be at least 7.0")
 endif()
-
-# include CUDA_ARCH processing code.
-# Uses -DCUDA_ARCH values (and modifies if appropriate). 
-# Adds -gencode argumetns to CMAKE_CUDA_FLAGS
-# Adds -DMIN_COMPUTE_CAPABILITY=VALUE macro to CMAKE_CC_FLAGS, CMAKE_CXX_FLAGS and CMAKE_CUDA_FLAGS.
-include(${CMAKE_CURRENT_LIST_DIR}/cuda_arch.cmake)
 
 # Specify some additional compiler flags
 # CUDA debug symbols
@@ -135,9 +146,6 @@ set(CMAKE_CUDA_FLAGS_RELEASE "${CMAKE_CUDA_FLAGS_RELEASE} -lineinfo")
 set(CMAKE_CUDA_FLAGS_PROFILE "${CMAKE_CUDA_FLAGS_PROFILE} -lineinfo -DPROFILE -D_PROFILE")
 # Addresses a cub::histogram warning
 set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr")
-
-# Enable nvcc warnings for initilisation order
-set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --Wreorder")
 
 # Host Compiler version specific high warnings
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
@@ -158,15 +166,27 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler /wd4100")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4100")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4100")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /experimental:external")
-    # These flags don't currently have any effect on how CMake passes system-private includes to msvc
-    set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "/external:I")
-    set(CMAKE_INCLUDE_SYSTEM_FLAG_CUDA "/external:I")
+    # Suppress some VS2015 specific warnings.
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 19.10)
+        set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler /wd4091")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4091")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4091")
+    endif()
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.10)
+        # These flags don't currently have any effect on how CMake passes system-private includes to msvc (VS 2017+)
+        set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "/external:I")
+        set(CMAKE_INCLUDE_SYSTEM_FLAG_CUDA "/external:I")
+        # VS 2017+
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /experimental:external")
+    endif()
 else()
     # Assume using GCC/Clang which Wall is relatively sane for. 
     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -Wall,-Wsign-compare")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wsign-compare")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wsign-compare")
+
+    # CUB 1.9.10 prevents Wreorder being usable on windows. Cannot suppress via diag_suppress pragmas.
+    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --Wreorder")
 endif()
 
 # Promote  warnings to errors if requested
@@ -183,7 +203,7 @@ if(WARNINGS_AS_ERRORS)
     endif()
 
     # Generic WError settings for nvcc
-    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Werror reorder -Xptxas=\"-Werror\"  -Xnvlink=\"-Werror\"")
+    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xptxas=\"-Werror\"  -Xnvlink=\"-Werror\"")
 
     # If CUDA 10.2+, add all_warnings to the Werror option
     if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL "10.2")
@@ -194,7 +214,20 @@ if(WARNINGS_AS_ERRORS)
     if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
         set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Werror cross-execution-space-call ")
     endif()
+
+    # If not msvc, add reorder to Werror. This is blocked under msvc by cub/thrust and the lack of isystem on msvc. Appears unable to suppress the warning via diag_suppress pragmas.
+    if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+        set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Werror reorder ")
+    endif()
 endif()
+
+# Ask the cuda frontend to include warnings numbers, so they can be targetted for suppression.
+set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcudafe --display_error_number")
+if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    # Suppress nodiscard warnings from the cuda frontend
+    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcudafe --diag_suppress=2809")
+endif()
+
 # Common CUDA args
 
 # Use C++14 standard - std::make_unique is 14 not 11
@@ -204,10 +237,17 @@ if(NOT DEFINED CMAKE_CXX_STANDARD)
     set(CMAKE_CXX_STANDARD_REQUIRED true)
 endif()
 
-# Tell CUDA to use C++14 standard
+# Tell CUDA to use C++14 standard.
 if(NOT DEFINED CMAKE_CUDA_STANDARD)
+    # This has no effect on msvc, even though CUDA supports it...
     set(CMAKE_CUDA_STANDARD 14)
     set(CMAKE_CUDA_STANDARD_REQUIRED True)
+
+    # Actually pass --std=c++14 on windows for VS 2017+ and CUDA 11+
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.10 AND CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 11.0)
+        set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -std=c++14 ")
+        set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler /std:c++14")
+    endif()
 endif()
 
 # Define a function to add a lint target.
@@ -266,12 +306,7 @@ function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
     # Define which source files are required for the target executable
     add_executable(${NAME} ${SRC})
     
-    # Add include directories
-    target_include_directories(${NAME} ${INCLUDE_SYSTEM_FLAG} PRIVATE ${FLAMEGPU_ROOT}/externals)
-    # Add the cuda include directory as a system include to allow user-provided thrust. ../include trickery for cmake >= 3.12
-    target_include_directories(${NAME} ${INCLUDE_SYSTEM_FLAG} PRIVATE "${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}/../include")    
-    target_include_directories(${NAME} ${INCLUDE_SYSTEM_FLAG} PRIVATE ${FLAMEGPU_DEPENDENCY_INCLUDE_DIRECTORIES})
-    target_include_directories(${NAME} PRIVATE ${FLAMEGPU_ROOT}/include)
+    # @todo - Once public/private/interface is perfected on the library, some includes may need adding back here.
 
     # Add extra linker targets
     target_link_libraries(${NAME} ${FLAMEGPU_DEPENDENCY_LINK_LIBRARIES})
@@ -301,7 +336,7 @@ function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
     
     # Activate visualisation if requested
     if (VISUALISATION)
-        target_include_directories(${NAME} PRIVATE ${VISUALISATION_ROOT}/include)
+        target_include_directories(${NAME} PUBLIC "${VISUALISATION_ROOT}/include")
         # Copy DLLs
         if(WIN32)
             # sdl
@@ -362,10 +397,9 @@ endfunction()
 function(add_flamegpu_library NAME SRC FLAMEGPU_ROOT)
     # Define which source files are required for the target executable
     add_library(${NAME} STATIC ${SRC})
-    
     # Activate visualisation if requested
     if (VISUALISATION)
-        target_include_directories(${NAME} PRIVATE ${VISUALISATION_ROOT}/include)
+        target_include_directories(${NAME} PRIVATE "${VISUALISATION_ROOT}/include")
         target_link_libraries(${NAME} flamegpu2_visualiser)
         CMAKE_SET_TARGET_FOLDER(flamegpu2_visualiser "FLAMEGPU")
         add_compile_definitions(VISUALISATION)
@@ -376,13 +410,46 @@ function(add_flamegpu_library NAME SRC FLAMEGPU_ROOT)
     # Enable RDC
     set_property(TARGET ${NAME}  PROPERTY CUDA_SEPARABLE_COMPILATION ON)
 
-    # Define include dirs
-    target_include_directories(${NAME} ${INCLUDE_SYSTEM_FLAG} PRIVATE ${FLAMEGPU_ROOT}/externals)
-    # Add the cuda include directory as a system include to allow user-provided thrust. ../include trickerty for cmake >= 3.12
-    target_include_directories(${NAME}  ${INCLUDE_SYSTEM_FLAG} PRIVATE "${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}/../include")
-    target_include_directories(${NAME}  ${INCLUDE_SYSTEM_FLAG} PRIVATE ${FLAMEGPU_DEPENDENCY_INCLUDE_DIRECTORIES})
-    target_include_directories(${NAME}  PRIVATE ${FLAMEGPU_ROOT}/include)
-    target_include_directories(${NAME}  PRIVATE ${FLAMEGPU_ROOT}/src) #private headers
+    # Link against dependency targets / directories.
+
+    # Linux / not windows has -isystem for suppressing warnings from "system" libraries - ie exeternal dependencies such as thrust.
+    if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+        # CUB (and thrust) cause many compiler warnings at high levels, including Wreorder. 
+        # CUB:CUB does not use -isystem to prevent the automatic -I<cuda_path>/include  from being more important, and the CUDA disributed CUB being used. 
+        # Instead, if possible we pass the include directory directly rather than using the imported target.
+        # And also pass {CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}/../include" as isystem so the include order is correct for isystem to work (a workaround for a workaround). The `../` is required to prevent cmake from removing the duplicate path.
+
+        # Include CUB via isystem if possible (via _CUB_INCLUDE_DIR which may be subject to change), otherwise use it via target_link_libraries.
+        if(DEFINED _CUB_INCLUDE_DIR)
+            target_include_directories(${NAME} ${INCLUDE_SYSTEM_FLAG} PUBLIC "${_CUB_INCLUDE_DIR}")
+        else()
+            target_link_libraries(${NAME} CUB::CUB)
+        endif()
+        target_include_directories(${NAME}  ${INCLUDE_SYSTEM_FLAG} PUBLIC "${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}/../include")  
+    else()
+        # MSVC just includes cub via the CUB::CUB target as no isystem to worry about.
+        target_link_libraries(${NAME} CUB::CUB)
+        # Same for Thrust.
+        # Visual studio 2015 needs to suppress deprecation messages from CUB/Thrust.
+        if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 19.10)
+            target_compile_definitions(${NAME} PUBLIC "CUB_IGNORE_DEPRECATED_CPP_DIALECT")
+            target_compile_definitions(${NAME} PUBLIC "THRUST_IGNORE_DEPRECATED_CPP_DIALECT")
+        endif()
+    endif()
+        
+    # Thrust uses isystem if available
+    target_link_libraries(${NAME} Thrust::Thrust)
+
+    # tinyxml2 static library
+    target_link_libraries(${NAME} tinyxml2)
+
+    # Add extra includes (jitify, nvtx, nvrtc etc.) @todo improve this.
+    target_include_directories(${NAME}  ${INCLUDE_SYSTEM_FLAG} PUBLIC ${FLAMEGPU_DEPENDENCY_INCLUDE_DIRECTORIES})
+
+    # Add the library headers as public so they are forwarded on.
+    target_include_directories(${NAME}  PUBLIC "${FLAMEGPU_ROOT}/include")
+    # Add any private headers.
+    target_include_directories(${NAME}  PRIVATE "${FLAMEGPU_ROOT}/src")
 
     # Add extra linker targets
     target_link_libraries(${NAME} ${FLAMEGPU_DEPENDENCY_LINK_LIBRARIES})
@@ -392,6 +459,8 @@ function(add_flamegpu_library NAME SRC FLAMEGPU_ROOT)
     
     # Put within FLAMEGPU filter
     CMAKE_SET_TARGET_FOLDER(${NAME} "FLAMEGPU")
+    # Put the tinyxml2 in the folder
+    CMAKE_SET_TARGET_FOLDER("tinyxml2" "FLAMEGPU/Dependencies")
 endfunction()
 
 #-----------------------------------------------------------------------

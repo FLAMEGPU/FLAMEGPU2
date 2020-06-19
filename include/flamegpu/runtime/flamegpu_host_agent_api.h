@@ -1,10 +1,9 @@
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_FLAMEGPU_HOST_AGENT_API_H_
 #define INCLUDE_FLAMEGPU_RUNTIME_FLAMEGPU_HOST_AGENT_API_H_
 #ifdef _MSC_VER
-#pragma warning(push, 3)
+#pragma warning(push, 1)
+#pragma warning(disable : 4706 4834)
 #include <cub/cub.cuh>
-#pragma warning(pop)
-#pragma warning(push, 2)
 #include <thrust/count.h>
 #include <thrust/device_ptr.h>
 #include <thrust/sort.h>
@@ -14,6 +13,8 @@
 #include <cub/cub.cuh>
 #include <thrust/count.h>
 #include <thrust/device_ptr.h>
+#include <thrust/sort.h>
+#include <thrust/execution_policy.h>
 #endif
 
 #include <algorithm>

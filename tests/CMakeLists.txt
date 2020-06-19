@@ -3,7 +3,6 @@
 cmake_minimum_required(VERSION VERSION 3.12 FATAL_ERROR)
 
 # Tests require GTest
-#enable_testing()
 
 # Apply the CUDA_ARCH target before gtest is included to resolve cmake 3.18+ warnings?
 # Set the location of the ROOT flame gpu project relative to this CMakeList.txt
@@ -12,58 +11,24 @@ get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/.. REALPATH)
 # Include common rules.
 include(${FLAMEGPU_ROOT}/cmake/common.cmake)
 
-# START Download & Build GoogleTest
-MACRO (download_gtest)
-    configure_file(CMakeLists.txt.in googletest-download/CMakeLists.txt)
-    # Run CMake generate
-    execute_process(
-        COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
-        RESULT_VARIABLE result
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download
-        )
-    if (result)
-        message(WARNING 
-                "CMake step for googletest failed: ${result}\n")
-    endif()
-    # Run CMake build (this only downloads, it is built at build time)
-    execute_process(
-    COMMAND ${CMAKE_COMMAND} --build .
-    RESULT_VARIABLE result
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download
-    )
-    if (result)
-        message(WARNING 
-                "Download step for googletest-build failed: ${result}\n"
-                "Attempting to continue\n"
-                "You may want to disable BUILD_TESTS")
-    endif()
-ENDMACRO()
+FetchContent_Declare(
+  googletest
+  GIT_REPOSITORY https://github.com/google/googletest.git
+  GIT_TAG        release-1.10.0
+)
 
-IF(UPDATE_GTEST)
-    download_gtest()
-ENDIF()
-IF(NOT EXISTS ${CMAKE_CURRENT_BINARY_DIR}/googletest-src)
-    download_gtest()
-    # Give option to disable trying to update after first run
-    set(UPDATE_GTEST ON CACHE BOOL "Update GTest from Git")
-ENDIF()
-
-# Prevent overriding the parent project's compiler/linker
-# settings on Windows
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-
-# Suppress installation target, as this makes a warning
-set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
-mark_as_advanced(FORCE INSTALL_GTEST)
-mark_as_advanced(FORCE BUILD_GMOCK)
-
-# Add googletest directly to our build. This defines
-# the gtest and gtest_main targets.
-add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src
-                 ${CMAKE_CURRENT_BINARY_DIR}/googletest-build
-                 EXCLUDE_FROM_ALL
-                 )
-# END Download & Build GoogleTest
+FetchContent_GetProperties(googletest)
+if(NOT googletest_POPULATED)
+    FetchContent_Populate(googletest)
+    # Suppress installation target, as this makes a warning
+    set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
+    mark_as_advanced(FORCE INSTALL_GTEST)
+    mark_as_advanced(FORCE BUILD_GMOCK)
+    # Prevent overriding the parent project's compiler/linker
+    # settings on Windows
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+    add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR} EXCLUDE_FROM_ALL)
+endif()
 
 # Name the project and set languages
 project(tests CUDA CXX)
@@ -131,6 +96,7 @@ SET(TEST_CASE_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/messaging/test_append_truncate.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/util/test_compute_capability.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/util/test_nvtx.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/util/test_dependency_versions.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_rtc_device_api.cu
 )
 SET(DEV_TEST_CASE_SRC

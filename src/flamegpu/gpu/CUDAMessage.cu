@@ -25,7 +25,8 @@
 #include "flamegpu/runtime/messaging.h"
 
 #ifdef _MSC_VER
-#pragma warning(push, 3)
+#pragma warning(push, 1)
+#pragma warning(disable : 4706 4834)
 #include <cub/cub.cuh>
 #pragma warning(pop)
 #else

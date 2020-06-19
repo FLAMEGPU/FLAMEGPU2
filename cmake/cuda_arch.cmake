@@ -1,12 +1,11 @@
 # Build a list of gencode arguments, based on CUDA verison.
 # Accepts user override via CUDA_ARCH
 
-# @todo - split setting of values out of the project so it's onyl done once before include_directory?
-
 # CMAKE > 3.18 introduces CUDA_ARCHITECTURES as a cmake-native way of generating gencodes (Policy CMP0104). Set the value to OFF to prevent errors for it being not provided.
 if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.18")
     set(CMAKE_CUDA_ARCHITECTURES "OFF")
 endif()
+
 
 # Check if any have been provided by the users
 string(LENGTH "${CUDA_ARCH}" CUDA_ARCH_LENGTH)
@@ -73,7 +72,11 @@ set(CUDA_ARCH ${CUDA_ARCH} PARENT_SCOPE)
 # If the list is somehow empty now, do not set any gencodes arguments, instead using the compiler defaults.
 list(LENGTH CUDA_ARCH CUDA_ARCH_LENGTH)
 if(NOT CUDA_ARCH_LENGTH EQUAL 0)
-    message(STATUS "Using Compute Capabilities: ${CUDA_ARCH}")
+    # Only do this if required.I.e. CUDA_ARCH is the same as the last time this file was included
+    if(NOT CUDA_ARCH_APPLIED EQUAL CUDA_ARCH)
+        message(STATUS "Generating Compute Capabilities: ${CUDA_ARCH}")
+        set(CUDA_ARCH_APPLIED "${CUDA_ARCH}" PARENT_SCOPE )
+    endif()
     set(GENCODES_FLAGS)
     set(MIN_CUDA_ARCH)
     # Convert to gencode arguments
@@ -97,5 +100,11 @@ if(NOT CUDA_ARCH_LENGTH EQUAL 0)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMIN_CUDA_ARCH=${MIN_CUDA_ARCH}")
     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -DMIN_CUDA_ARCH=${MIN_CUDA_ARCH}")
 else()
-    message(STATUS "Using default CUDA Compute Capabilities ${CUDA_ARCH}")
+    message(STATUS "Generating default CUDA Compute Capabilities ${CUDA_ARCH}")
 endif()
+
+# Supress deprecated architecture warnings, as they are not fitered out by checking against nvcc help.
+# Ideally a warning would be output once at config time (i.e. above) and not at every file compilation.
+# But this is challenging due to multiline string detection.
+# Could potentially compile a simple program, without this flag to detect if its valid/deprecated? Would likely increase build time.
+set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
