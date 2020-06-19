@@ -4,14 +4,7 @@ from pyflamegpu import *
 from random import randint
 
 
-AGENT_NAME = "Agent";
-AGENT_NAME2 = "Agent2"
-FUNCTION_NAME = "Function"
-LAYER_NAME = "Layer"
-VARIABLE_NAME = "test"
 AGENT_COUNT = 10
-MULTIPLIER = 3
-dMULTIPLIER = 3
 externalCounter = 0
     
 
@@ -39,7 +32,7 @@ class TestSimulation(TestCase):
         c = pyflamegpu.CUDAAgentModel(m)
         argv = [ "prog.exe", "--in", "test" ]
         self.assertEqual(c.getSimulationConfig().xml_input_file, "")
-        with pytest.raises(RuntimeError) as e:  # UnsupportedFileType exception is thrown as python RuntimeError by swig
+        with pytest.raises(pyflamegpu.UnsupportedFileType) as e:  # UnsupportedFileType exception is thrown as python RuntimeError by swig
             c.initialise(argv)
         self.assertIn("File 'test' is not a type which can be read", str(e.value))
         self.assertEqual(c.getSimulationConfig().xml_input_file, argv[2])
@@ -162,7 +155,7 @@ class TestSimulation(TestCase):
             i.setVariableInt("test", _i)
             with pytest.raises(RuntimeError) as e:  # InvalidVarType exception is thrown as python RuntimeError by swig
                 i.setVariableFloat("test", float(_i))
-            self.assertIn("This expects 'int', but 'float' was requested", str(e.value))
+            self.assertIn("Wrong variable type", str(e.value))
         c = pyflamegpu.CUDAAgentModel(m)
         c.SimulationConfig().steps = 1
         c.setPopulationData(pop)
@@ -183,7 +176,7 @@ class TestSimulation(TestCase):
             self.assertEqual(i.getVariableInt("test"), _i * 3 * 2)
             with pytest.raises(RuntimeError) as e:  # InvalidVarType exception is thrown as python RuntimeError by swig
                 i.getVariableFloat("test")
-            self.assertIn("This expects 'int', but 'float' was requested", str(e.value))
+            self.assertIn("Wrong variable type", str(e.value))
 
 
     def test_set_get_population_data_invalid_cuda_agent(self):
@@ -286,6 +279,6 @@ class TestSimulation(TestCase):
         c.simulate()
         c.getPopulationData(pop)
         self.assertEqual(pop.getCurrentListSize(), len(expected_output))
-        for i in range(AGENT_COUNT):
+        for i in range(pop.getCurrentListSize()):
             ai = pop.getInstanceAt(i)
             self.assertEqual(ai.getVariableInt("x"), expected_output[i])
