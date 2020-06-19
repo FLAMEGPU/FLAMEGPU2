@@ -25,13 +25,14 @@ Only documentation can be built without the required dependencies (however Doxyg
 #### Required
 
 * [CMake](https://cmake.org/) >= 3.12
+  * CMake 3.16 is known to have issues on certain platforms
 * [CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit) >= 9.0
 * *Linux:*
   * [make](https://www.gnu.org/software/make/)
   * gcc/g++ >= 6 (version requirements [here](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#system-requirements))
       * gcc/g++ >= 7 required for the test suite 
 * *Windows:*
-  * Visual Studio 2015 or higher
+  * Visual Studio 2015 or higher (2019 preferred)
 
 #### Optional
 * [cpplint](https://github.com/cpplint/cpplint): Required for linting code

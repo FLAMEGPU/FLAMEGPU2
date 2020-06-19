@@ -45,12 +45,12 @@ if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL "10.0")
         file(READ "${NVTX_INCLUDE_DIRS}/nvToolsExt.h" nvtx_header_text)
         string(REGEX MATCH "define NVTX_VERSION ([0-9]+)" NVTX_VERSION_DEFINE ${nvtx_header_text})
         set(NVTX_VERSION "${CMAKE_MATCH_1}")
-        # Apply standard cmake find package rules / variables. I.e. QUIET, NVTX_FOUND etc.
-        find_package_handle_standard_args(NVTX
-            REQUIRED_VARS NVTX_INCLUDE_DIRS
-            VERSION_VAR NVTX_VERSION
-        )
     endif()
+    # Apply standard cmake find package rules / variables. I.e. QUIET, NVTX_FOUND etc.
+    find_package_handle_standard_args(NVTX
+        REQUIRED_VARS NVTX_INCLUDE_DIRS
+        VERSION_VAR NVTX_VERSION
+    )
 endif()
 
 # If not yet aware of NVTX, or we found V1/2 while looking for V3, make sure we find the actual V1/2
@@ -85,12 +85,12 @@ if(NOT NVTX_FOUND OR NVTX_VERSION VERSION_LESS 3)
         file(READ "${NVTX_INCLUDE_DIRS}/nvToolsExt.h" nvtx_header_text)
         string(REGEX MATCH "define NVTX_VERSION ([0-9]+)" NVTX_VERSION_DEFINE ${nvtx_header_text})
         set(NVTX_VERSION "${CMAKE_MATCH_1}")
-        # Apply standard cmake find package rules / variables. I.e. QUIET, NVTX_FOUND etc.
-        find_package_handle_standard_args(NVTX
-            REQUIRED_VARS NVTX_INCLUDE_DIRS
-            VERSION_VAR NVTX_VERSION
-        )
     endif()
+    # Apply standard cmake find package rules / variables. I.e. QUIET, NVTX_FOUND etc.
+    find_package_handle_standard_args(NVTX
+        REQUIRED_VARS NVTX_INCLUDE_DIRS
+        VERSION_VAR NVTX_VERSION
+    )
 endif()
 
 # Set returned values as advanced?

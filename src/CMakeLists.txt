@@ -1,6 +1,13 @@
 # 3.10 required for cuda -std=c++14, however 3.12 fixes some device linker errors
 cmake_minimum_required(VERSION VERSION 3.12 FATAL_ERROR)
 
+# Cmake 3.16 has issues with CUB and Thrust due to the order of the include path it generates.
+if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.16 AND CMAKE_VERSION VERSION_LESS 3.17)
+    message(WARNING
+    " CMake 3.16 does not use the correct CUDA include paths on some platforms.\n"
+    " Please consider using a different version of CMake.")
+endif()
+
 # Set the location of the ROOT flame gpu project relative to this CMakeList.txt
 get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/.. REALPATH)
 
@@ -27,8 +34,7 @@ include(${FLAMEGPU_ROOT}/cmake/common.cmake)
 include(${FLAMEGPU_ROOT}/cmake/doxygen.cmake)
 
 if(VISUALISATION)
-  include(${FLAMEGPU_ROOT}/cmake/visualiser/download.cmake)
-  download_visualiser()
+  include(${FLAMEGPU_ROOT}/cmake/flamegpu2_visualiser.cmake)
 endif()
 
 # Define output location of static library
@@ -55,9 +61,6 @@ endif()
 
 # Specify source files for the static library
 # Can't do this automatically, as CMake wouldn't know when to regen (as CMakeLists.txt would be unchanged)
-SET(SRC_EXTERNALS
-    ${FLAMEGPU_ROOT}/externals/tinyxml2/tinyxml2.cpp
-)
 SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/io/statereader.h
     ${FLAMEGPU_ROOT}/include/flamegpu/io/statewriter.h
@@ -196,13 +199,11 @@ if (VISUALISATION)
     )
 endif()
 SET(ALL_SRC
-    ${SRC_EXTERNALS}
     ${SRC_INCLUDE}
     ${SRC_FLAMEGPU2}
 )
 
 # Setup Visual Studio (and eclipse) filters
-source_group(TREE ${FLAMEGPU_ROOT} FILES ${SRC_EXTERNALS})
 source_group(TREE ${FLAMEGPU_ROOT}/include/flamegpu PREFIX include FILES ${SRC_INCLUDE})
 set(T_SRC "${SRC_FLAMEGPU2}")
 list(FILTER T_SRC INCLUDE REGEX ".*\.(h|hpp|cuh)$")
