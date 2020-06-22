@@ -246,12 +246,12 @@ class CUDAAgentModel : public Simulation {
       /**
        * Held here for tracking when to release cuda memory
        */
-      CUDAScatter &scatter;
+      CUDAScatter scatter;
       /**
        * Held here for tracking when to release cuda memory
        */
       EnvironmentManager &environment;
-      Singletons(Curve &curve, CUDAScatter &scatter, EnvironmentManager &environment) : curve(curve), scatter(scatter), environment(environment) {}
+      Singletons(Curve &curve, EnvironmentManager &environment) : curve(curve), environment(environment) { }
     } * singletons;
     /**
      * Flag indicating that the model has been initialsed
@@ -279,9 +279,10 @@ class CUDAAgentModel : public Simulation {
     /**
      * Adds any agents stored in agentData to the device
      * Clears agent storage in agentData
+     * @param streamId Stream index to perform scatter on
      * @note called at the end of step() and after all init/hostLayer functions and exit conditions have finished
      */
-    void processHostAgentCreation();
+    void processHostAgentCreation(const unsigned int &streamId);
     /**
      * Runs a specific agent function
      * @param func_des the agent function to execute

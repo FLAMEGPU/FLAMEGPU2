@@ -24,8 +24,9 @@ typedef void(AgentFunctionWrapper)(
     const void *in_messagelist_metadata,
     const void *out_messagelist_metadata,
     curandState *d_rng,
-    const unsigned int thread_in_layer_offset,
-    const unsigned int streamId);  // Can't put __global__ in a typedef
+    unsigned int *scanFlag_agentDeath,
+    unsigned int *scanFlag_messageOutput,
+    unsigned int *scanFlag_agentOutput);  // Can't put __global__ in a typedef
 
 /**
  * Wrapper function for launching agent functions
@@ -38,7 +39,10 @@ typedef void(AgentFunctionWrapper)(
  * @param popNo Total number of agents exeucting the function (number of threads launched)
  * @param in_messagelist_metadata Pointer to the MsgIn metadata struct, it is interpreted by MsgIn
  * @param out_messagelist_metadata Pointer to the MsgOut metadata struct, it is interpreted by MsgOut
- * @param thread_in_layer_offset Add this value to TID to calculate a thread-safe TID (TS_ID), used by ActorRandom for accessing curand array in a thread-safe manner
+ * @param d_rng Array of curand states for this kernel
+ * @param scanFlag_agentDeath Scanflag array for agent death
+ * @param scanFlag_messageOutput Scanflag array for optional message output
+ * @param scanFlag_agentOutput Scanflag array for optional agent output
  * @tparam AgentFunction The modeller defined agent function (defined as FLAMEGPU_AGENT_FUNCTION in model code)
  * @tparam MsgIn Message handler for input messages (e.g. MsgNone, MsgBruteForce, MsgSpatial3D)
  * @tparam MsgOut Message handler for output messages (e.g. MsgNone, MsgBruteForce, MsgSpatial3D)
@@ -54,27 +58,27 @@ __global__ void agent_function_wrapper(
     const void *in_messagelist_metadata,
     const void *out_messagelist_metadata,
     curandState *d_rng,
-    const unsigned int thread_in_layer_offset,
-    const unsigned int streamId) {
+    unsigned int *scanFlag_agentDeath,
+    unsigned int *scanFlag_messageOutput,
+    unsigned int *scanFlag_agentOutput) {
     // Must be terminated here, else AgentRandom has bounds issues inside FLAMEGPU_DEVICE_API constructor
     if (FLAMEGPU_DEVICE_API<MsgIn, MsgOut>::TID() >= popNo)
         return;
     // create a new device FLAME_GPU instance
     FLAMEGPU_DEVICE_API<MsgIn, MsgOut> *api = new FLAMEGPU_DEVICE_API<MsgIn, MsgOut>(
-        thread_in_layer_offset,
         model_name_hash,
         agent_func_name_hash,
         agent_output_hash,
         d_rng,
-        streamId,
+        scanFlag_agentOutput,
         MsgIn::In(agent_func_name_hash, messagename_inp_hash, in_messagelist_metadata),
-        MsgOut::Out(agent_func_name_hash, messagename_outp_hash, out_messagelist_metadata, streamId));
+        MsgOut::Out(agent_func_name_hash, messagename_outp_hash, out_messagelist_metadata, scanFlag_messageOutput));
 
     // call the user specified device function
     {
         FLAME_GPU_AGENT_STATUS flag = AgentFunction()(api);
         // (scan flags will not be processed unless agent death has been requested in model definition)
-        flamegpu_internal::CUDAScanCompaction::ds_configs[flamegpu_internal::CUDAScanCompaction::AGENT_DEATH][streamId].scan_flag[FLAMEGPU_DEVICE_API<MsgIn, MsgOut>::TID()] = flag;
+        scanFlag_agentDeath[FLAMEGPU_DEVICE_API<MsgIn, MsgOut>::TID()] = flag;
     }
     // do something with the return value to set a flag for deletion
 

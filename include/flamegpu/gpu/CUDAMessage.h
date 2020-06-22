@@ -21,6 +21,7 @@
 
 // forward declare classes from other modules
 
+class CUDAScatter;
 struct AgentFunctionData;
 struct MessageData;
 class AgentPopulation;
@@ -63,8 +64,10 @@ class CUDAMessage {
     /**
      * Updates message_count to equal newSize, internally reallocates buffer space if more space is required
      * @param newSize The number of messages that the buffer should be capable of storing
+     * @param scatter Scatter instance and scan arrays to be used (CUDAAgentModel::singletons->scatter)
+     * @param streamId Index of stream specific structures used
      */
-    void resize(unsigned int newSize, const unsigned int &streamId);
+    void resize(unsigned int newSize, CUDAScatter &scatter, const unsigned int &streamId);
     /**
      * Uses the cuRVE runtime to map the variables used by the agent function to the cuRVE library so that can be accessed by name within a n agent function
      * The read runtime variables are to be used when reading messages
@@ -92,9 +95,10 @@ class CUDAMessage {
      * Swaps the two internal maps within message_list
      * @param isOptional If optional newMsgCount will be reduced based on scan_flag[streamId]
      * @param newMsgCount The number of output messages (including optional messages which were not output)
+     * @param scatter Scatter instance and scan arrays to be used (CUDAAgentModel::singletons->scatter)
      * @param streamId Index of stream specific structures used
      */
-    virtual void swap(bool isOptional, const unsigned int &newMsgCount, const unsigned int &streamId);
+    virtual void swap(bool isOptional, const unsigned int &newMsgCount, CUDAScatter &scatter, const unsigned int &streamId);
     /**
      * Basic list swap with no additional actions
      */
@@ -105,7 +109,12 @@ class CUDAMessage {
     bool getPBMConstructionRequiredFlag() const  { return pbm_construction_required; }
     void setPBMConstructionRequiredFlag() { pbm_construction_required = true; }
     void clearPBMConstructionRequiredFlag() { pbm_construction_required = false; }
-    void buildIndex();
+    /**
+     * Builds index, required to read messages (some messaging types won't require an implementation)
+     * @param scatter Scatter instance and scan arrays to be used (CUDAAgentModel::singletons->scatter)
+     * @param streamId Index of stream specific structures used
+     */
+    void buildIndex(CUDAScatter &scatter, const unsigned int &streamId);
     const void *getMetaDataDevicePtr() const;
 
  protected:

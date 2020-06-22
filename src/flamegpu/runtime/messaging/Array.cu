@@ -15,7 +15,7 @@ __device__ void MsgArray::Out::setIndex(const size_type &id) const {
     Curve::setVariable<size_type>("___INDEX", combined_hash, id, index);
 
     // Set scan flag incase the message is optional
-    flamegpu_internal::CUDAScanCompaction::ds_configs[flamegpu_internal::CUDAScanCompaction::MESSAGE_OUTPUT][streamId].scan_flag[index] = 1;
+    this->scan_flag[index] = 1;
 }
 __device__ MsgArray::In::Filter::Filter(const size_type &_length, const Curve::NamespaceHash &_combined_hash, const size_type &x, const size_type &_radius)
     : radius(_radius)
@@ -67,7 +67,7 @@ void MsgArray::CUDAModelHandler::freeMetaDataDevicePtr() {
     d_write_flag = nullptr;
     d_write_flag_len = 0;
 }
-void MsgArray::CUDAModelHandler::buildIndex() {
+void MsgArray::CUDAModelHandler::buildIndex(CUDAScatter &scatter, const unsigned int &streamId) {
     const unsigned int MESSAGE_COUNT = this->sim_message.getMessageCount();
     // Zero the output arrays
     auto &read_list = this->sim_message.getReadList();
@@ -92,8 +92,7 @@ void MsgArray::CUDAModelHandler::buildIndex() {
         }
         t_d_write_flag = d_write_flag;
     }
-    auto &cs = CUDAScatter::getInstance(0);  // Choose proper stream_id in future!d
-    cs.arrayMessageReorder(this->sim_message.getMessageDescription().variables, read_list, write_list, MESSAGE_COUNT, hd_metadata.length, t_d_write_flag);
+    scatter.arrayMessageReorder(streamId, this->sim_message.getMessageDescription().variables, read_list, write_list, MESSAGE_COUNT, hd_metadata.length, t_d_write_flag);
     this->sim_message.swap();
     // Reset message count back to full array length
     // Array message exposes not output messages as 0

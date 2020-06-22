@@ -22,7 +22,7 @@ __device__ void MsgArray3D::Out::setIndex(const size_type &x, const size_type &y
     Curve::setVariable<size_type>("___INDEX", combined_hash, index_1d, index);
 
     // Set scan flag incase the message is optional
-    flamegpu_internal::CUDAScanCompaction::ds_configs[flamegpu_internal::CUDAScanCompaction::MESSAGE_OUTPUT][streamId].scan_flag[index] = 1;
+    this->scan_flag[index] = 1;
 }
 __device__ MsgArray3D::In::Filter::Filter(const MetaData *_metadata, const Curve::NamespaceHash &_combined_hash, const size_type &x, const size_type &y, const size_type &z, const size_type &_radius)
     : radius(_radius)
@@ -94,7 +94,7 @@ void MsgArray3D::CUDAModelHandler::freeMetaDataDevicePtr() {
     d_write_flag = nullptr;
     d_write_flag_len = 0;
 }
-void MsgArray3D::CUDAModelHandler::buildIndex() {
+void MsgArray3D::CUDAModelHandler::buildIndex(CUDAScatter &scatter, const unsigned int &streamId) {
     const unsigned int MESSAGE_COUNT = this->sim_message.getMessageCount();
     // Zero the output arrays
     auto &read_list = this->sim_message.getReadList();
@@ -119,8 +119,7 @@ void MsgArray3D::CUDAModelHandler::buildIndex() {
         }
         t_d_write_flag = d_write_flag;
     }
-    auto &cs = CUDAScatter::getInstance(0);  // Choose proper stream_id in future!d
-    cs.arrayMessageReorder(this->sim_message.getMessageDescription().variables, read_list, write_list, MESSAGE_COUNT, hd_metadata.length, t_d_write_flag);
+    scatter.arrayMessageReorder(streamId, this->sim_message.getMessageDescription().variables, read_list, write_list, MESSAGE_COUNT, hd_metadata.length, t_d_write_flag);
     this->sim_message.swap();
     // Reset message count back to full array length
     // Array message exposes not output messages as 0

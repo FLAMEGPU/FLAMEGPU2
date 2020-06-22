@@ -22,6 +22,7 @@
 #include "jitify/jitify.hpp"
 #endif
 
+class CUDAScatter;
 class CUDAFatAgent;
 struct VarOffsetStruct;
 /**
@@ -75,9 +76,12 @@ class CUDAAgent : public AgentInterface {
      * Copies population data from the provided host object
      * To the device buffers held by this object (overwriting any existing agent data)
      * Also updates population size, clears disabled agents
+     * @param scatter Scatter instance and scan arrays to be used (CUDAAgentModel::singletons->scatter)
+     * @param streamId The index of the agent function within the current layer
      * @param population An AgentPopulation object with the same internal AgentData description, to provide the input data
+     * @note Scatter is required for initialising submodel vars
      */
-    void setPopulationData(const AgentPopulation& population);
+    void setPopulationData(const AgentPopulation& population, CUDAScatter &scatter, const unsigned int &streamId);
     /**
      * Copies population data the device buffers held by this object
      * To the hosts object (overwriting any existing agent data)
@@ -108,29 +112,32 @@ class CUDAAgent : public AgentInterface {
      * All disabled agents are scattered to swap
      * Only alive agents with deathflag are scattered
      * @param func The agent function condition being processed
+     * @param scatter Scatter instance and scan arrays to be used (CUDAAgentModel::singletons->scatter)
      * @param streamId The index of the agent function within the current layer
      * @see CUDAFatAgent::processDeath(const unsigned int &, const std::string &, const unsigned int &)
      */
-    void processDeath(const AgentFunctionData& func, const unsigned int &streamId);
+    void processDeath(const AgentFunctionData& func, CUDAScatter &scatter, const unsigned int &streamId);
     /**
      * Transitions all active agents from the source state to the destination state
      * @param _src The source state
      * @param _dest The destination state
+     * @param scatter Scatter instance and scan arrays to be used (CUDAAgentModel::singletons->scatter)
      * @param streamId The index of the agent function within the current layer
      * @see CUDAFatAgent::transitionState(const unsigned int &, const std::string &, const std::string &, const unsigned int &)
      */
-    void transitionState(const std::string &_src, const std::string &_dest, const unsigned int &streamId);
+    void transitionState(const std::string &_src, const std::string &_dest, CUDAScatter &scatter, const unsigned int &streamId);
     /**
      * Scatters agents based on their output of the agent function condition
      * Agents which failed the condition are scattered to the front and marked as disabled
-     * Agents which pass the condition are scatterd to after the disabled agents
+     * Agents which pass the condition are scattered to after the disabled agents
      * @param func The agent function being processed
+     * @param scatter Scatter instance and scan arrays to be used (CUDAAgentModel::singletons->scatter)
      * @param streamId The index of the agent function within the current layer
      * @see CUDAFatAgent::processFunctionCondition(const unsigned int &, const unsigned int &)
      * @note Named state must not already contain disabled agents
      * @note The disabled agents are re-enabled using clearFunctionCondition(const std::string &)
      */
-    void processFunctionCondition(const AgentFunctionData& func, const unsigned int &streamId);
+    void processFunctionCondition(const AgentFunctionData& func, CUDAScatter &scatter, const unsigned int &streamId);
     /**
      * Scatters agents from the provided device buffer, this is used for host agent creation
      * The device buffer must be packed according to the param offsets
@@ -138,17 +145,19 @@ class CUDAAgent : public AgentInterface {
      * @param newSize The number of new agents
      * @param d_inBuff The device buffer containing the new agents
      * @param offsets This defines how the memory is laid out within d_inBuff
+     * @param scatter Scatter instance and scan arrays to be used (CUDAAgentModel::singletons->scatter)
+     * @param streamId This is required for scan compaction arrays and async
      */
-    void scatterHostCreation(const std::string &state_name, const unsigned int &newSize, char *const d_inBuff, const VarOffsetStruct &offsets);
+    void scatterHostCreation(const std::string &state_name, const unsigned int &newSize, char *const d_inBuff, const VarOffsetStruct &offsets, CUDAScatter &scatter, const unsigned int &streamId);
     /**
      * Allocates a buffer for storing new agents into and
      * uses the cuRVE runtime to map variables for use with an agent function that has device agent birth
      * @param func The agent function being processed
      * @param maxLen The maximum number of new agents (this will be the size of the agent state executing func)
+     * @param scatter Scatter instance and scan arrays to be used (CUDAAgentModel::singletons->scatter)
      * @param streamId This is required for scan compaction arrays and async
-     *
      */
-    void mapNewRuntimeVariables(const AgentFunctionData& func, const unsigned int &maxLen, const unsigned int &streamId);
+    void mapNewRuntimeVariables(const AgentFunctionData& func, const unsigned int &maxLen, CUDAScatter &scatter, const unsigned int &streamId);
     /**
      * Uses the cuRVE runtime to unmap the variables used by agent birth and
      * releases the buffer that was storing the data
@@ -160,9 +169,10 @@ class CUDAAgent : public AgentInterface {
      * The device buffer must be packed in the same format as mapNewRuntimeVariables(const AgentFunctionData&, const unsigned int &, const unsigned int &)
      * @param func The agent function being processed
      * @param newSize The maximum number of new agents (this will be the size of the agent state executing func)
+     * @param scatter Scatter instance and scan arrays to be used (CUDAAgentModel::singletons->scatter)
      * @param streamId This is required for scan compaction arrays and async
      */
-    void scatterNew(const AgentFunctionData& func, const unsigned int &newSize, const unsigned int &streamId);
+    void scatterNew(const AgentFunctionData& func, const unsigned int &newSize, CUDAScatter &scatter, const unsigned int &streamId);
     /**
      * Reenables all disabled agents within the named state
      * @param state The named state to enable all agents within
@@ -188,8 +198,10 @@ class CUDAAgent : public AgentInterface {
     /**
      * Resets the number of agents in any unmapped statelists to 0
      * They count as unmapped if they are not mapped to a master state, sub mappings will be reset
+     * @param scatter Scatter instance and scan arrays to be used (CUDAAgentModel::singletons->scatter)
+     * @param streamId This is required for scan compaction arrays and async
      */
-    void initUnmappedVars();
+    void initUnmappedVars(CUDAScatter &scatter, const unsigned int &streamId);
     /**
      * Resets the number of agents in every statelist to 0
      */

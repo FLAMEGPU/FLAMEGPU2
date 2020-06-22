@@ -16,34 +16,27 @@
 #include <cub/cub.cuh>
 #endif
 
-unsigned int CUDAScatter::simulationInstances = 0;
-
-CUDAScatter::CUDAScatter()
+CUDAScatter::StreamData::StreamData()
     : d_data(nullptr)
     , data_len(0) {
 }
-CUDAScatter::~CUDAScatter() {
+CUDAScatter::StreamData::~StreamData() {
     /* @note - Do not clear cuda memory in the destructor of singletons.
      This is because order of static destruction in c++ is undefined
      So the cuda driver is not guaranteed to still exist when the static is destroyed.
      As this is only ever destroyed at exit time, it's not a real memory leak either.
     */
-    // free();
-}
-void CUDAScatter::free() {
     if (d_data) {
         gpuErrchk(cudaFree(d_data));
     }
     d_data = nullptr;
     data_len = 0;
 }
-
-void CUDAScatter::purge() {
+void CUDAScatter::StreamData::purge() {
     d_data = nullptr;
     data_len = 0;
 }
-
-void CUDAScatter::resize(const unsigned int &newLen) {
+void CUDAScatter::StreamData::resize(const unsigned int &newLen) {
     if (newLen > data_len) {
         if (d_data) {
             gpuErrchk(cudaFree(d_data));
@@ -52,6 +45,14 @@ void CUDAScatter::resize(const unsigned int &newLen) {
         data_len = newLen;
     }
 }
+
+void CUDAScatter::purge() {
+    for (auto &s : streams) {
+        s.purge();
+    }
+    scan.purge();
+}
+
 
 template <typename T>
 __global__ void scatter_generic(
@@ -90,7 +91,8 @@ __global__ void scatter_all_generic(
 }
 
 unsigned int CUDAScatter::scatter(
-    Type messageOrAgent,
+    const unsigned int &streamId,
+    const Type &messageOrAgent,
     const VariableMap &vars,
     const std::map<std::string, void*> &in,
     const std::map<std::string, void*> &out,
@@ -104,10 +106,11 @@ unsigned int CUDAScatter::scatter(
         char *out_p = reinterpret_cast<char*>(out.at(v.first));
         scatterData.push_back({ v.second.type_size * v.second.elements, in_p, out_p });
     }
-    return scatter(messageOrAgent, scatterData, itemCount, out_index_offset, invert_scan_flag, scatter_all_count);
+    return scatter(streamId, messageOrAgent, scatterData, itemCount, out_index_offset, invert_scan_flag, scatter_all_count);
 }
 unsigned int CUDAScatter::scatter(
-    Type messageOrAgent,
+    const unsigned int &streamId,
+    const Type &messageOrAgent,
     const std::vector<ScatterData> &sd,
     const unsigned int &itemCount,
     const unsigned int &out_index_offset,
@@ -121,40 +124,42 @@ unsigned int CUDAScatter::scatter(
     //! Round up according to CUDAAgent state list size
     gridSize = (itemCount + blockSize - 1) / blockSize;
     // Make sure we have enough space to store scatterdata
-    resize(static_cast<unsigned int>(sd.size()));
+    streams[streamId].resize(static_cast<unsigned int>(sd.size()));
     // Important that sd.size() is still used here, incase allocated len (data_len) is bigger
-    gpuErrchk(cudaMemcpy(d_data, sd.data(), sizeof(ScatterData) * sd.size(), cudaMemcpyHostToDevice));
+    gpuErrchk(cudaMemcpy(streams[streamId].d_data, sd.data(), sizeof(ScatterData) * sd.size(), cudaMemcpyHostToDevice));
     if (invert_scan_flag) {
         scatter_generic << <gridSize, blockSize >> > (
             itemCount,
-            InversionIterator(flamegpu_internal::CUDAScanCompaction::hd_configs[messageOrAgent][streamId].d_ptrs.scan_flag),
-            flamegpu_internal::CUDAScanCompaction::hd_configs[messageOrAgent][streamId].d_ptrs.position,
-            d_data, static_cast<unsigned int>(sd.size()),
+            InversionIterator(scan.Config(messageOrAgent, streamId).d_ptrs.scan_flag),
+            scan.Config(messageOrAgent, streamId).d_ptrs.position,
+            streams[streamId].d_data, static_cast<unsigned int>(sd.size()),
             out_index_offset, scatter_all_count);
     } else {
         scatter_generic << <gridSize, blockSize >> > (
             itemCount,
-            flamegpu_internal::CUDAScanCompaction::hd_configs[messageOrAgent][streamId].d_ptrs.scan_flag,
-            flamegpu_internal::CUDAScanCompaction::hd_configs[messageOrAgent][streamId].d_ptrs.position,
-            d_data, static_cast<unsigned int>(sd.size()),
+            scan.Config(messageOrAgent, streamId).d_ptrs.scan_flag,
+            scan.Config(messageOrAgent, streamId).d_ptrs.position,
+            streams[streamId].d_data, static_cast<unsigned int>(sd.size()),
             out_index_offset, scatter_all_count);
     }
     gpuErrchkLaunch();
     // Update count of live agents
     unsigned int rtn = 0;
-    gpuErrchk(cudaMemcpy(&rtn, flamegpu_internal::CUDAScanCompaction::hd_configs[messageOrAgent][streamId].d_ptrs.position + itemCount - scatter_all_count, sizeof(unsigned int), cudaMemcpyDeviceToHost));
+    gpuErrchk(cudaMemcpy(&rtn, scan.Config(messageOrAgent, streamId).d_ptrs.position + itemCount - scatter_all_count, sizeof(unsigned int), cudaMemcpyDeviceToHost));
     return rtn + scatter_all_count;
 }
 unsigned int CUDAScatter::scatterCount(
-    Type messageOrAgent,
+    const unsigned int &streamId,
+    const Type &messageOrAgent,
     const unsigned int &itemCount,
     const unsigned int &scatter_all_count) {
     unsigned int rtn = 0;
-    gpuErrchk(cudaMemcpy(&rtn, flamegpu_internal::CUDAScanCompaction::hd_configs[messageOrAgent][streamId].d_ptrs.position + itemCount - scatter_all_count, sizeof(unsigned int), cudaMemcpyDeviceToHost));
+    gpuErrchk(cudaMemcpy(&rtn, scan.Config(messageOrAgent, streamId).d_ptrs.position + itemCount - scatter_all_count, sizeof(unsigned int), cudaMemcpyDeviceToHost));
     return rtn;
 }
 
 unsigned int CUDAScatter::scatterAll(
+    const unsigned int &streamId,
     const std::vector<ScatterData> &sd,
     const unsigned int &itemCount,
     const unsigned int &out_index_offset) {
@@ -168,18 +173,19 @@ unsigned int CUDAScatter::scatterAll(
     gpuErrchk(cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, scatter_all_generic, 0, itemCount));
     //! Round up according to CUDAAgent state list size
     gridSize = (itemCount + blockSize - 1) / blockSize;
-    resize(static_cast<unsigned int>(sd.size()));
+    streams[streamId].resize(static_cast<unsigned int>(sd.size()));
     // Important that sd.size() is still used here, incase allocated len (data_len) is bigger
-    gpuErrchk(cudaMemcpy(d_data, sd.data(), sizeof(ScatterData) * sd.size(), cudaMemcpyHostToDevice));
+    gpuErrchk(cudaMemcpy(streams[streamId].d_data, sd.data(), sizeof(ScatterData) * sd.size(), cudaMemcpyHostToDevice));
     scatter_all_generic << <gridSize, blockSize >> > (
         itemCount,
-        d_data, static_cast<unsigned int>(sd.size()),
+        streams[streamId].d_data, static_cast<unsigned int>(sd.size()),
         out_index_offset);
     gpuErrchkLaunch();
     // Update count of live agents
     return itemCount;
 }
 unsigned int CUDAScatter::scatterAll(
+    const unsigned int &streamId,
     const VariableMap &vars,
     const std::map<std::string, void*> &in,
     const std::map<std::string, void*> &out,
@@ -191,7 +197,7 @@ unsigned int CUDAScatter::scatterAll(
         char *out_p = reinterpret_cast<char*>(out.at(v.first));
         scatterData.push_back({ v.second.type_size * v.second.elements, in_p, out_p });
     }
-    return scatterAll(scatterData, itemCount, out_index_offset);
+    return scatterAll(streamId, scatterData, itemCount, out_index_offset);
 }
 
 __global__ void pbm_reorder_generic(
@@ -215,6 +221,7 @@ __global__ void pbm_reorder_generic(
 }
 
 void CUDAScatter::pbm_reorder(
+    const unsigned int &streamId,
     const VariableMap &vars,
     const std::map<std::string, void*> &in,
     const std::map<std::string, void*> &out,
@@ -237,15 +244,15 @@ void CUDAScatter::pbm_reorder(
         char *out_p = reinterpret_cast<char*>(out.at(v.first));
         sd.push_back({ v.second.type_size * v.second.elements, in_p, out_p });
     }
-    resize(static_cast<unsigned int>(sd.size()));
+    streams[streamId].resize(static_cast<unsigned int>(sd.size()));
     // Important that sd.size() is still used here, incase allocated len (data_len) is bigger
-    gpuErrchk(cudaMemcpy(d_data, sd.data(), sizeof(ScatterData) * sd.size(), cudaMemcpyHostToDevice));
+    gpuErrchk(cudaMemcpy(streams[streamId].d_data, sd.data(), sizeof(ScatterData) * sd.size(), cudaMemcpyHostToDevice));
     pbm_reorder_generic <<<gridSize, blockSize>>> (
             itemCount,
             d_bin_index,
             d_bin_sub_index,
             d_pbm,
-            d_data, static_cast<unsigned int>(sd.size()));
+            streams[streamId].d_data, static_cast<unsigned int>(sd.size()));
     gpuErrchkLaunch();
 }
 
@@ -279,6 +286,7 @@ __global__ void scatter_new_agents(
     memcpy(out_ptr, in_ptr, scatter_data[var_out].typeLen);
 }
 void CUDAScatter::scatterNewAgents(
+    const unsigned int &streamId,
     const std::vector<ScatterData> &sd,
     const size_t &totalAgentSize,
     const unsigned int &inCount,
@@ -293,13 +301,13 @@ void CUDAScatter::scatterNewAgents(
     gpuErrchk(cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, scatter_new_agents, 0, threadCount));
     //! Round up according to CUDAAgent state list size
     gridSize = (threadCount + blockSize - 1) / blockSize;
-    resize(static_cast<unsigned int>(sd.size()));
+    streams[streamId].resize(static_cast<unsigned int>(sd.size()));
     // Important that sd.size() is still used here, incase allocated len (data_len) is bigger
-    gpuErrchk(cudaMemcpy(d_data, sd.data(), sizeof(ScatterData) * sd.size(), cudaMemcpyHostToDevice));
+    gpuErrchk(cudaMemcpy(streams[streamId].d_data, sd.data(), sizeof(ScatterData) * sd.size(), cudaMemcpyHostToDevice));
     scatter_new_agents << <gridSize, blockSize >> > (
         threadCount,
         static_cast<unsigned int>(totalAgentSize),
-        d_data, static_cast<unsigned int>(sd.size()),
+        streams[streamId].d_data, static_cast<unsigned int>(sd.size()),
         outIndexOffset);
     gpuErrchkLaunch();
 }
@@ -331,6 +339,7 @@ __global__ void broadcastInitKernel(
     memcpy(out_ptr, in_ptr, type_len);
 }
 void CUDAScatter::broadcastInit(
+    const unsigned int &streamId,
     const std::list<std::shared_ptr<VariableBuffer>> &vars,
     const unsigned int &inCount,
     const unsigned int outIndexOffset) {
@@ -351,14 +360,14 @@ void CUDAScatter::broadcastInit(
     for (const auto &v : vars) {
         offset += v->type_size * v->elements;
     }
-    resize(static_cast<unsigned int>(offset + vars.size() * sizeof(ScatterData)));
+    streams[streamId].resize(static_cast<unsigned int>(offset + vars.size() * sizeof(ScatterData)));
     // Build scatter data structure and init data
     std::vector<ScatterData> sd;
     char *default_data = reinterpret_cast<char*>(malloc(offset));
     offset = 0;
     for (const auto &v : vars) {
         // Scatter data
-        char *in_p = reinterpret_cast<char*>(d_data) + offset;
+        char *in_p = reinterpret_cast<char*>(streams[streamId].d_data) + offset;
         char *out_p = reinterpret_cast<char*>(v->data_condition);
         sd.push_back({ v->type_size * v->elements, in_p, out_p });
         // Init data
@@ -367,16 +376,17 @@ void CUDAScatter::broadcastInit(
         offset += v->type_size * v->elements;
     }
     // Important that sd.size() is used here, as allocated len would exceed 2nd memcpy
-    gpuErrchk(cudaMemcpy(d_data, default_data, offset, cudaMemcpyHostToDevice));
-    gpuErrchk(cudaMemcpy(d_data + offset, sd.data(), sizeof(ScatterData) * sd.size(), cudaMemcpyHostToDevice));
+    gpuErrchk(cudaMemcpy(streams[streamId].d_data, default_data, offset, cudaMemcpyHostToDevice));
+    gpuErrchk(cudaMemcpy(streams[streamId].d_data + offset, sd.data(), sizeof(ScatterData) * sd.size(), cudaMemcpyHostToDevice));
     ::free(default_data);
     broadcastInitKernel <<<gridSize, blockSize>>> (
         threadCount,
-        d_data + offset, static_cast<unsigned int>(sd.size()),
+        streams[streamId].d_data + offset, static_cast<unsigned int>(sd.size()),
         outIndexOffset);
     gpuErrchkLaunch();
 }
 void CUDAScatter::broadcastInit(
+    const unsigned int &streamId,
     const VariableMap &vars,
     void * const d_newBuff,
     const unsigned int &inCount,
@@ -398,13 +408,13 @@ void CUDAScatter::broadcastInit(
         offset += v.second.type_size * v.second.elements;
     }
     char *default_data = reinterpret_cast<char*>(malloc(offset));
-    resize(static_cast<unsigned int>(offset + vars.size() * sizeof(ScatterData)));
+    streams[streamId].resize(static_cast<unsigned int>(offset + vars.size() * sizeof(ScatterData)));
     // Build scatter data structure
     offset = 0;
     char * d_var = static_cast<char*>(d_newBuff);
     for (const auto &v : vars) {
         // In this case, in is the location of first variable, but we step by inOffsetData.totalSize
-        char *in_p = reinterpret_cast<char*>(d_data) + offset;
+        char *in_p = reinterpret_cast<char*>(streams[streamId].d_data) + offset;
         char *out_p = d_var;
         sd.push_back({ v.second.type_size * v.second.elements, in_p, out_p });
         // Build init data
@@ -415,12 +425,12 @@ void CUDAScatter::broadcastInit(
         offset += v.second.type_size * v.second.elements;
     }
     // Important that sd.size() is still used here, incase allocated len (data_len) is bigger
-    gpuErrchk(cudaMemcpy(d_data, default_data, offset, cudaMemcpyHostToDevice));
-    gpuErrchk(cudaMemcpy(d_data + offset, sd.data(), sizeof(ScatterData) * sd.size(), cudaMemcpyHostToDevice));
+    gpuErrchk(cudaMemcpy(streams[streamId].d_data, default_data, offset, cudaMemcpyHostToDevice));
+    gpuErrchk(cudaMemcpy(streams[streamId].d_data + offset, sd.data(), sizeof(ScatterData) * sd.size(), cudaMemcpyHostToDevice));
     ::free(default_data);
     broadcastInitKernel <<<gridSize, blockSize>>> (
         threadCount,
-        d_data + offset, static_cast<unsigned int>(sd.size()),
+        streams[streamId].d_data + offset, static_cast<unsigned int>(sd.size()),
         outIndexOffset);
     gpuErrchkLaunch();
 }
@@ -447,6 +457,7 @@ __global__ void reorder_array_messages(
     atomicInc(d_write_flag + output_index, UINT_MAX);
 }
 void CUDAScatter::arrayMessageReorder(
+    const unsigned int &streamId,
     const VariableMap &vars,
     const std::map<std::string, void*> &in,
     const std::map<std::string, void*> &out,
@@ -480,26 +491,26 @@ void CUDAScatter::arrayMessageReorder(
     size_t t_data_len = 0;
     {  // Decide curve memory requirements
         gpuErrchk(cub::DeviceReduce::Max(nullptr, t_data_len, d_write_flag, d_position, array_length));
-        if (t_data_len > data_len * sizeof(ScatterData)) {
+        if (t_data_len > streams[streamId].data_len * sizeof(ScatterData)) {
             // t_data_len is bigger than current allocation
             if (t_data_len > sd.size() * sizeof(ScatterData)) {
                 // td_data_len is bigger than sd.size()
-                resize(static_cast<unsigned int>((t_data_len / sizeof(ScatterData)) + 1));
+                streams[streamId].resize(static_cast<unsigned int>((t_data_len / sizeof(ScatterData)) + 1));
             } else {
                 // sd.size() is bigger
-                resize(static_cast<unsigned int>(sd.size()));
+                streams[streamId].resize(static_cast<unsigned int>(sd.size()));
             }
         }
     }
     // Important that sd.size() is still used here, incase allocated len (data_len) is bigger
-    gpuErrchk(cudaMemcpy(d_data, sd.data(), sizeof(ScatterData) * sd.size(), cudaMemcpyHostToDevice));
+    gpuErrchk(cudaMemcpy(streams[streamId].d_data, sd.data(), sizeof(ScatterData) * sd.size(), cudaMemcpyHostToDevice));
     reorder_array_messages << <gridSize, blockSize >> > (
         itemCount, array_length,
         d_position, d_write_flag,
-        d_data, static_cast<unsigned int>(sd.size()));
+        streams[streamId].d_data, static_cast<unsigned int>(sd.size()));
     gpuErrchkLaunch();
     // Check d_write_flag for dupes
-    gpuErrchk(cub::DeviceReduce::Max(d_data, t_data_len, d_write_flag, d_position, array_length));
+    gpuErrchk(cub::DeviceReduce::Max(streams[streamId].d_data, t_data_len, d_write_flag, d_position, array_length));
     unsigned int maxBinSize = 0;
     gpuErrchk(cudaMemcpy(&maxBinSize, d_position, sizeof(unsigned int), cudaMemcpyDeviceToHost));
     if (maxBinSize > 1) {
@@ -512,16 +523,5 @@ void CUDAScatter::arrayMessageReorder(
                 fprintf(stderr, "Array messagelist contains %u messages at index %u!\n", hd_write_flag[i], i);
         }
         THROW ArrayMessageWriteConflict("Multiple threads output array messages to the same index, see stderr.\n");
-    }
-}
-void CUDAScatter::increaseSimCounter() {
-    simulationInstances++;
-}
-void CUDAScatter::decreaseSimCounter() {
-    simulationInstances--;
-    if (simulationInstances == 0) {
-        for (unsigned int i = 0; i < flamegpu_internal::CUDAScanCompaction::MAX_STREAMS; ++i) {
-            getInstance(i).free();
-        }
     }
 }

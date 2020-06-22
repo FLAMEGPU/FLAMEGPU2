@@ -203,11 +203,11 @@ class MsgBruteForce {
          * Initialises member variables
          * @param agentfn_hash Added to msg_hash to produce combined_hash
          * @param msg_hash Added to agentfn_hash to produce combined_hash
-         * @param _streamId Stream index, used for optional message output flag array
+         * @param scan_flag_messageOutput Scan flag array for optional message output
          */
-        __device__ Out(Curve::NamespaceHash agentfn_hash, Curve::NamespaceHash msg_hash, const void *, unsigned int _streamId)
+        __device__ Out(Curve::NamespaceHash agentfn_hash, Curve::NamespaceHash msg_hash, const void *, unsigned int *scan_flag_messageOutput)
             : combined_hash(agentfn_hash + msg_hash)
-            , streamId(_streamId)
+            , scan_flag(scan_flag_messageOutput)
         { }
         /**
          * Sets the specified variable for this agents message
@@ -226,9 +226,9 @@ class MsgBruteForce {
          */
         Curve::NamespaceHash combined_hash;
         /**
-         * Stream index used for setting optional message output flag
+         * Scan flag array for optional message output
          */
-        unsigned int streamId;
+        unsigned int *scan_flag;
     };
 #ifndef __CUDACC_RTC__
     /**
@@ -254,8 +254,10 @@ class MsgBruteForce {
         ~CUDAModelHandler() { }
         /**
          * Updates the length of the messagelist stored on device
+         * @param scatter Scatter instance and scan arrays to be used (CUDAAgentModel::singletons->scatter)
+         * @param streamId Index of stream specific structures used
          */
-        void buildIndex() override;
+        void buildIndex(CUDAScatter &scatter, const unsigned int &streamId) override;
         /**
          * Allocates memory for the constructed index.
          * The memory allocation is checked by build index.
@@ -481,7 +483,7 @@ __device__ void MsgBruteForce::Out::setVariable(const char(&variable_name)[N], T
     Curve::setVariable<T>(variable_name, combined_hash, value, index);
 
     // Set scan flag incase the message is optional
-    flamegpu_internal::CUDAScanCompaction::ds_configs[flamegpu_internal::CUDAScanCompaction::MESSAGE_OUTPUT][streamId].scan_flag[index] = 1;
+    this->scan_flag[index] = 1;
 }
 #ifndef __CUDACC_RTC__
 /**

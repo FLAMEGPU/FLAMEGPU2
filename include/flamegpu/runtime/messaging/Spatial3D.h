@@ -324,10 +324,10 @@ class MsgSpatial3D {
          * Initialises member variables
          * @param agentfn_hash Added to msg_hash to produce combined_hash
          * @param msg_hash Added to agentfn_hash to produce combined_hash
-         * @param _streamId Stream index, used for optional message output flag array
+         * @param scan_flag_messageOutput Scan flag array for optional message output
          */
-        __device__ Out(Curve::NamespaceHash agentfn_hash, Curve::NamespaceHash msg_hash, const void *, unsigned int _streamId)
-            : MsgBruteForce::Out(agentfn_hash, msg_hash, nullptr, _streamId)
+        __device__ Out(Curve::NamespaceHash agentfn_hash, Curve::NamespaceHash msg_hash, const void *, unsigned int *scan_flag_messageOutput)
+            : MsgBruteForce::Out(agentfn_hash, msg_hash, nullptr, scan_flag_messageOutput)
         { }
         /**
          * Sets the location for this agents message
@@ -380,8 +380,10 @@ class MsgSpatial3D {
         /**
          * Reconstructs the partition boundary matrix
          * This should be called before reading newly output messages
+         * @param scatter Scatter instance and scan arrays to be used (CUDAAgentModel::singletons->scatter)
+         * @param streamId Index of stream specific structures used
          */
-        void buildIndex() override;
+        void buildIndex(CUDAScatter &scatter, const unsigned int &streamId) override;
         /**
          * Allocates memory for the constructed index.
          * The memory allocation is checked by build index.

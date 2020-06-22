@@ -1,10 +1,6 @@
 #ifndef INCLUDE_FLAMEGPU_GPU_CUDASCANCOMPACTION_H_
 #define INCLUDE_FLAMEGPU_GPU_CUDASCANCOMPACTION_H_
 
-// #include <cuda_runtime.h>
-// #include "CUDAErrorChecking.h"
-// #include <cassert>
-
 /**
  * PLEASE NOTE: This implementation currently assumes there is only one instance of CUDAAgentModel executing at once
  * PLEASE NOTE: There is not currently a mechanism to release these (could trigger something via CUDAAgentModel destructor)
@@ -33,6 +29,9 @@ struct CUDAScanCompactionConfig {
         , cub_temp_size(0)
         , cub_temp_size_max_list_size(0)
     { }
+    ~CUDAScanCompactionConfig();
+    CUDAScanCompactionConfig(CUDAScanCompactionConfig const&) = delete;
+    void operator=(CUDAScanCompactionConfig const&) = delete;
     unsigned int scan_flag_len = 0;
 
     CUDAScanCompactionPtrs d_ptrs;
@@ -41,23 +40,13 @@ struct CUDAScanCompactionConfig {
     size_t cub_temp_size = 0;
     unsigned int cub_temp_size_max_list_size = 0;
 
-    __host__ void free_scan_flag();
-    __host__ void resize_scan_flag(const unsigned int& count, const CUDAAgentModel& model);
-    __host__ void zero_scan_flag();
+    void free_scan_flag();
+    void resize_scan_flag(const unsigned int& count);
+    void zero_scan_flag();
 };
-typedef CUDAScanCompactionPtrs CUDASCPtrs;  // Shorthand
-typedef CUDAScanCompactionConfig CUDASCConfig;  // Shorthand
 
-namespace flamegpu_internal {
-namespace CUDAScanCompaction {
-    /**
-     * Try and be a bit more dynamic by using 2d array here
-     */
-    enum Type : unsigned int {
-        MESSAGE_OUTPUT = 0,
-        AGENT_DEATH = 1,
-        AGENT_OUTPUT = 2
-    };
+class CUDAScanCompaction {
+ public:
     /**
     * Number of valid values in Type
     */
@@ -67,30 +56,36 @@ namespace CUDAScanCompaction {
      */
     static const unsigned int MAX_STREAMS = 128;
     /**
-     * These will remain unallocated until used
-     * They exist so that the correct array can be used with only the stream index known
+     * Try and be a bit more dynamic by using 2d array here
      */
-    extern __device__ CUDAScanCompactionPtrs ds_configs[MAX_TYPES][MAX_STREAMS];
-    /**
-     * Host mirror of ds_configs
-     */
-    extern CUDAScanCompactionConfig hd_configs[MAX_TYPES][MAX_STREAMS];
+    enum Type : unsigned int {
+        MESSAGE_OUTPUT = 0,
+        AGENT_DEATH = 1,
+        AGENT_OUTPUT = 2
+    };
 
+    CUDAScanCompaction() { }
+    CUDAScanCompaction(CUDAScanCompaction const&) = delete;
+    void operator=(CUDAScanCompaction const&) = delete;
     /**
      * Wipes out host mirrors of device memory
      * Only really to be used after calls to cudaDeviceReset()
      * @note Only currently used after some tests
      */
-    inline void purge() {
-        memset(hd_configs, 0, sizeof(hd_configs));
-    }
+    void purge();
 
-    void resize(const unsigned int& newCount, const Type& type, const unsigned int& streamId, const CUDAAgentModel&agent);
+    void resize(const unsigned int& newCount, const Type& type, const unsigned int& streamId);
     void zero(const Type& type, const unsigned int& streamId);
 
-}  // namespace CUDAScanCompaction
-}  // namespace flamegpu_internal
+    const CUDAScanCompactionConfig &getConfig(const Type& type, const unsigned int& streamId);
+    CUDAScanCompactionConfig &Config(const Type& type, const unsigned int& streamId);
 
-
+ private:
+    /**
+     * These will remain unallocated until used
+     * They exist so that the correct array can be used with only the stream index known
+     */
+    CUDAScanCompactionConfig configs[MAX_TYPES][MAX_STREAMS];
+};
 
 #endif  // INCLUDE_FLAMEGPU_GPU_CUDASCANCOMPACTION_H_

@@ -1,9 +1,5 @@
 #include "flamegpu/runtime/messaging/Spatial2D.h"
-#include "flamegpu/runtime/messaging.h"
 
-#include "flamegpu/gpu/CUDAMessage.h"
-#include "flamegpu/gpu/CUDAScatter.h"
-#include "flamegpu/util/nvtx.h"
 #ifdef _MSC_VER
 #pragma warning(push, 3)
 #include <cub/cub.cuh>
@@ -11,6 +7,12 @@
 #else
 #include <cub/cub.cuh>
 #endif
+
+#include "flamegpu/runtime/messaging.h"
+#include "flamegpu/gpu/CUDAMessage.h"
+#include "flamegpu/gpu/CUDAScatter.h"
+#include "flamegpu/util/nvtx.h"
+
 
 __device__ __forceinline__ MsgSpatial2D::GridPos2D getGridPosition2D(const MsgSpatial2D::MetaData *md, float x, float y) {
     // Clamp each grid coord to 0<=x<dim
@@ -44,7 +46,7 @@ __device__ void MsgSpatial2D::Out::setLocation(const float &x, const float &y) c
     Curve::setVariable<float>("y", combined_hash, y, index);
 
     // Set scan flag incase the message is optional
-    flamegpu_internal::CUDAScanCompaction::ds_configs[flamegpu_internal::CUDAScanCompaction::Type::MESSAGE_OUTPUT][streamId].scan_flag[index] = 1;
+    this->scan_flag[index] = 1;
 }
 
 __device__ MsgSpatial2D::In::Filter::Filter(const MetaData* _metadata, const Curve::NamespaceHash &_combined_hash, const float& x, const float& y)
@@ -151,7 +153,7 @@ void MsgSpatial2D::CUDAModelHandler::freeMetaDataDevicePtr() {
     }
 }
 
-void MsgSpatial2D::CUDAModelHandler::buildIndex() {
+void MsgSpatial2D::CUDAModelHandler::buildIndex(CUDAScatter &scatter, const unsigned int &streamId) {
     const unsigned int MESSAGE_COUNT = this->sim_message.getMessageCount();
     resizeKeysVals(this->sim_message.getMaximumListSize());  // Resize based on allocated amount rather than message count
     {  // Build atomic histogram
@@ -170,8 +172,7 @@ void MsgSpatial2D::CUDAModelHandler::buildIndex() {
     }
     {  // Reorder messages
        // Copy messages from d_messages to d_messages_swap, in hash order
-        auto &cs = CUDAScatter::getInstance(0);  // Choose proper stream_id in future!
-        cs.pbm_reorder(this->sim_message.getMessageDescription().variables, this->sim_message.getReadList(), this->sim_message.getWriteList(), MESSAGE_COUNT, d_keys, d_vals, hd_data.PBM);
+        scatter.pbm_reorder(streamId, this->sim_message.getMessageDescription().variables, this->sim_message.getReadList(), this->sim_message.getWriteList(), MESSAGE_COUNT, d_keys, d_vals, hd_data.PBM);
         this->sim_message.swap();
     }
     {  // Fill PBM and Message Texture Buffers
