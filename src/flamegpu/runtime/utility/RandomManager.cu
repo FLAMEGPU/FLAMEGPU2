@@ -18,7 +18,7 @@ RandomManager::RandomManager() :
     reseed(static_cast<unsigned int>(seedFromTime() % UINT_MAX));
 }
 RandomManager::~RandomManager() {
-    // free(); // @todo call free/freeDevice not in the constructor! instead just log that?
+    free();  // @todo call free/freeDevice not in the constructor! instead just log that?
 }
 void RandomManager::purge() {
     length = 0;

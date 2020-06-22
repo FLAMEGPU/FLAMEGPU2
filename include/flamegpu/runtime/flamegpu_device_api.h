@@ -35,21 +35,17 @@ class FLAMEGPU_READ_ONLY_DEVICE_API {
         Curve::NamespaceHash,
         const int,
         curandState *,
-        const unsigned int,
-        const unsigned int);
+        unsigned int *);
 
  public:
     /**
      * @param _thread_in_layer_offset This offset can be added to TID to give a thread-safe unique index for the thread
      * @param modelname_hash CURVE hash of the model's name
-     * @param _streamId Index used for accessing global members in a stream safe manner
      */
-    __device__ FLAMEGPU_READ_ONLY_DEVICE_API(const unsigned int &_thread_in_layer_offset, const Curve::NamespaceHash &modelname_hash, const Curve::NamespaceHash &agentfuncname_hash, curandState *&d_rng, const unsigned int &_streamId)
+    __device__ FLAMEGPU_READ_ONLY_DEVICE_API(const Curve::NamespaceHash &modelname_hash, const Curve::NamespaceHash &agentfuncname_hash, curandState *&d_rng)
         : random(AgentRandom(&d_rng[TID()]))
         , environment(DeviceEnvironment(modelname_hash))
-        , agent_func_name_hash(agentfuncname_hash)
-        , thread_in_layer_offset(_thread_in_layer_offset)
-        , streamId(_streamId) { }
+        , agent_func_name_hash(agentfuncname_hash) { }
 
     template<typename T, unsigned int N> __device__
     T getVariable(const char(&variable_name)[N]);
@@ -77,8 +73,6 @@ class FLAMEGPU_READ_ONLY_DEVICE_API {
  protected:
     Curve::NamespaceHash agent_func_name_hash;
 
-    unsigned int thread_in_layer_offset;
-    unsigned int streamId;
     /**
      * Thread index
      */
@@ -97,12 +91,6 @@ class FLAMEGPU_READ_ONLY_DEVICE_API {
         assert(gridDim.y == 1);
         assert(gridDim.z == 1);
         return blockIdx.x * blockDim.x + threadIdx.x;
-    }
-    /**
-    * Thread-safe index
-    */
-    __forceinline__ __device__ unsigned int TS_ID() const {
-        return thread_in_layer_offset + TID();
     }
 };
 
@@ -129,15 +117,16 @@ class FLAMEGPU_DEVICE_API : public FLAMEGPU_READ_ONLY_DEVICE_API{
         const void *,
         const void *,
         curandState *,
-        const unsigned int,
-        const unsigned int);
+        unsigned int *,
+        unsigned int *,
+        unsigned int *);
 
  public:
      class AgentOut {
       public:
-         __device__ AgentOut(const Curve::NamespaceHash &aoh, const unsigned int &_streamId)
+         __device__ AgentOut(const Curve::NamespaceHash &aoh, unsigned int *&scan_flag_agentOutput)
              : agent_output_hash(aoh)
-             , streamId(_streamId) { }
+             , scan_flag(scan_flag_agentOutput) { }
          /**
           * Sets a variable in a new agent to be output after the agent function has completed
           * @param variable_name The name of the variable
@@ -165,31 +154,29 @@ class FLAMEGPU_DEVICE_API : public FLAMEGPU_READ_ONLY_DEVICE_API{
 
       private:
          const Curve::NamespaceHash agent_output_hash;
-         const unsigned int streamId;
+         unsigned int * const scan_flag;
      };
     /**
-     * @param _thread_in_layer_offset This offset can be added to TID to give a thread-safe unique index for the thread
      * @param modelname_hash CURVE hash of the model's name
      * @param agentfuncname_hash Combined CURVE hashes of agent name and func name
      * @param _agent_output_hash Combined CURVE hashes for agent output
      * @param d_rng Device pointer to curand state for this kernel, index 0 should for TID()==0
-     * @param _streamId Index used for accessing global members in a stream safe manner
+     * @param scanFlag_agentOutput Array for agent output scan flag
      * @param msg_in Input message handler
      * @param msg_out Output message handler
      */
     __device__ FLAMEGPU_DEVICE_API(
-        const unsigned int &_thread_in_layer_offset,
         const Curve::NamespaceHash &modelname_hash,
         const Curve::NamespaceHash &agentfuncname_hash,
         const Curve::NamespaceHash &_agent_output_hash,
         curandState *&d_rng,
-        const unsigned int &_streamId,
+        unsigned int *&scanFlag_agentOutput,
         typename MsgIn::In &&msg_in,
         typename MsgOut::Out &&msg_out)
-        : FLAMEGPU_READ_ONLY_DEVICE_API(_thread_in_layer_offset, modelname_hash, agentfuncname_hash, d_rng, _streamId)
+        : FLAMEGPU_READ_ONLY_DEVICE_API(modelname_hash, agentfuncname_hash, d_rng)
         , message_in(msg_in)
         , message_out(msg_out)
-        , agent_out(AgentOut(_agent_output_hash, _streamId))
+        , agent_out(AgentOut(_agent_output_hash, scanFlag_agentOutput))
     { }
     /**
      * Sets a variable within the currently executing agent
@@ -316,7 +303,7 @@ __device__ void FLAMEGPU_DEVICE_API<MsgIn, MsgOut>::AgentOut::setVariable(const 
         Curve::setVariable<T>(variable_name, agent_output_hash, value, index);
 
         // Mark scan flag
-        flamegpu_internal::CUDAScanCompaction::ds_configs[flamegpu_internal::CUDAScanCompaction::Type::AGENT_OUTPUT][streamId].scan_flag[index] = 1;
+        this->scan_flag[index] = 1;
     }
 }
 template<typename MsgIn, typename MsgOut>
@@ -333,21 +320,8 @@ __device__ void FLAMEGPU_DEVICE_API<MsgIn, MsgOut>::AgentOut::setVariable(const 
         Curve::setArrayVariable<T, N>(variable_name, agent_output_hash, value, index, array_index);
 
         // Mark scan flag
-        flamegpu_internal::CUDAScanCompaction::ds_configs[flamegpu_internal::CUDAScanCompaction::Type::AGENT_OUTPUT][streamId].scan_flag[index] = 1;
+        this->scan_flag[index] = 1;
     }
 }
-
-#ifdef __CUDACC_RTC__
-/**
- * The following internal definitions are required for RTC compilation as these are only declared as extern in the device headers.
- * Each RTC function will get a unique copy of each of these device symbols.
- */
-namespace flamegpu_internal {
-namespace CUDAScanCompaction {
-    __device__ CUDAScanCompactionPtrs ds_configs[MAX_TYPES][MAX_STREAMS];
-}  // namespace CUDAScanCompaction
-}
-#endif   // __CUDACC_RTC__
-
 
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_FLAMEGPU_DEVICE_API_H_

@@ -14,22 +14,21 @@
 * CUDAMessageList class
 * @brief populates CUDA message map
 */
-CUDAMessageList::CUDAMessageList(CUDAMessage& cuda_message)
+CUDAMessageList::CUDAMessageList(CUDAMessage& cuda_message, CUDAScatter &scatter, const unsigned int &streamId)
     : message(cuda_message) {
     // allocate message lists
     allocateDeviceMessageList(d_list);
     allocateDeviceMessageList(d_swap_list);
     if (message.getMessageCount() != 0) {
-        auto &cs = CUDAScatter::getInstance(0);  // Probably need to actually use stream here
         {
             auto &a = cuda_message.getReadList();
             auto &_a = d_list;
-            cs.scatterAll(message.getMessageDescription().variables, a, _a, message.getMessageCount(), 0);
+            scatter.scatterAll(streamId, message.getMessageDescription().variables, a, _a, message.getMessageCount(), 0);
         }
         {  // Is copying writelist redundant?
             auto &a = cuda_message.getWriteList();
             auto &_a = d_swap_list;
-            cs.scatterAll(message.getMessageDescription().variables, a, _a, message.getMessageCount(), 0);
+            scatter.scatterAll(streamId, message.getMessageDescription().variables, a, _a, message.getMessageCount(), 0);
         }
     }
 }
@@ -139,29 +138,27 @@ void CUDAMessageList::swap() {
     std::swap(d_list, d_swap_list);
 }
 
-unsigned int CUDAMessageList::scatter(const unsigned int &newCount, const unsigned int &streamId, const bool &append) {
-    CUDAScatter &scatter = CUDAScatter::getInstance(streamId);
+unsigned int CUDAMessageList::scatter(const unsigned int &newCount, CUDAScatter &scatter, const unsigned int &streamId, const bool &append) {
     if (append) {
         unsigned int oldCount = message.getMessageCount();
-        return oldCount + scatter.scatter(
-            CUDAScatter::Type::Message,
+        return oldCount + scatter.scatter(streamId,
+            CUDAScatter::Type::MESSAGE_OUTPUT,
             message.getMessageDescription().variables,
             d_swap_list, d_list,
             newCount,
             oldCount);
     } else {
-        return scatter.scatter(
-            CUDAScatter::Type::Message,
+        return scatter.scatter(streamId,
+            CUDAScatter::Type::MESSAGE_OUTPUT,
             message.getMessageDescription().variables,
             d_swap_list, d_list,
             newCount,
             0);
     }
 }
-unsigned int CUDAMessageList::scatterAll(const unsigned int &newCount, const unsigned int &streamId) {
-    CUDAScatter &scatter = CUDAScatter::getInstance(streamId);
+unsigned int CUDAMessageList::scatterAll(const unsigned int &newCount, CUDAScatter &scatter, const unsigned int &streamId) {
     unsigned int oldCount = message.getMessageCount();
-    return oldCount + scatter.scatterAll(
+    return oldCount + scatter.scatterAll(streamId,
         message.getMessageDescription().variables,
         d_swap_list, d_list,
         newCount,

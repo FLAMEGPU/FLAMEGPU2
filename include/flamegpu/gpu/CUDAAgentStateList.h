@@ -18,6 +18,7 @@
 #include "flamegpu/gpu/CUDAFatAgentStateList.h"
 #include "flamegpu/pop/AgentStateMemory.h"
 
+class CUDAScatter;
 struct VarOffsetStruct;
 class CUDAAgent;
 
@@ -71,8 +72,10 @@ class CUDAAgentStateList {
     /**
      * Store agent data from agent state memory into state list
      * @data data Source for agent data
+     * @param scatter Scatter instance and scan arrays to be used
+     * @param streamId This is required for scan compaction arrays and async
      */
-    void setAgentData(const AgentStateMemory &data);
+    void setAgentData(const AgentStateMemory &data, CUDAScatter &scatter, const unsigned int &streamId);
     /**
      * Retrieve agent data from the agent state list into agent state memory
      * @data data Destination for agent data
@@ -85,24 +88,29 @@ class CUDAAgentStateList {
      * @param newSize The number of new agents to initialise
      * @param d_inBuff device pointer to buffer of agent init data
      * @param offsets Offset data explaining the layout of d_inBuff
+     * @param scatter Scatter instance and scan arrays to be used
+     * @param streamId This is required for scan compaction arrays and async
      */
-    void scatterHostCreation(const unsigned int &newSize, char *const d_inBuff, const VarOffsetStruct &offsets);
+    void scatterHostCreation(const unsigned int &newSize, char *const d_inBuff, const VarOffsetStruct &offsets, CUDAScatter &scatter, const unsigned int &streamId);
     /**
      * Scatters agents from the currently assigned device agent birth buffer (see member variable newBuffs)
      * The device buffer must be packed in the same format as CUDAAgent::mapNewRuntimeVariables(const AgentFunctionData&, const unsigned int &, const unsigned int &)
      * @param d_newBuff The buffer holding the new agent data
      * @param newSize The maximum number of new agents (this will be the size of the agent state executing func)
+     * @param scatter Scatter instance and scan arrays to be used
      * @param streamId This is required for scan compaction arrays and async
      */
-    void scatterNew(void * d_newBuff, const unsigned int &newSize, const unsigned int &streamId);
+    void scatterNew(void * d_newBuff, const unsigned int &newSize, CUDAScatter &scatter, const unsigned int &streamId);
     /**
      * Returns true if the state list is not the primary statelist (and is mapped to a master agent state)
      */
     bool getIsSubStatelist();
     /**
      * Returns any unmapped variables (for alive agents) to their default value
+     * @param scatter Scatter instance and scan arrays to be used
+     * @param streamId This is required for scan compaction arrays and async
      */
-    void initUnmappedVars();
+    void initUnmappedVars(CUDAScatter &scatter, const unsigned int &streamId);
     /**
      * Returns the statelist to an empty state
      * This resets the size to 0.

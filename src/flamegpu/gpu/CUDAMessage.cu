@@ -15,6 +15,7 @@
 #include "flamegpu/gpu/CUDAAgent.h"
 #include "flamegpu/gpu/CUDAMessageList.h"
 #include "flamegpu/gpu/CUDAErrorChecking.h"
+#include "flamegpu/gpu/CUDAScatter.h"
 
 #include "flamegpu/runtime/messaging/BruteForce.h"
 #include "flamegpu/model/AgentFunctionDescription.h"
@@ -70,7 +71,7 @@ const MsgBruteForce::Data& CUDAMessage::getMessageDescription() const {
 * @return none
 */
 
-void CUDAMessage::resize(unsigned int newSize, const unsigned int &streamId) {
+void CUDAMessage::resize(unsigned int newSize, CUDAScatter &scatter, const unsigned int &streamId) {
     // Only grow currently
     max_list_size = max_list_size < 2 ? 2 : max_list_size;
     if (newSize > max_list_size) {
@@ -78,8 +79,8 @@ void CUDAMessage::resize(unsigned int newSize, const unsigned int &streamId) {
             max_list_size = static_cast<unsigned int>(max_list_size * 1.5);
         }
         // This drops old message data
-        message_list = std::unique_ptr<CUDAMessageList>(new CUDAMessageList(*this));
-        flamegpu_internal::CUDAScanCompaction::resize(max_list_size, flamegpu_internal::CUDAScanCompaction::MESSAGE_OUTPUT, streamId, cuda_model);
+        message_list = std::unique_ptr<CUDAMessageList>(new CUDAMessageList(*this, scatter, streamId));
+        scatter.Scan().resize(max_list_size, CUDAScanCompaction::MESSAGE_OUTPUT, streamId);
 
 // #ifdef _DEBUG
         /**set the message list to zero*/
@@ -224,32 +225,33 @@ void CUDAMessage::unmapRuntimeVariables(const AgentFunctionData& func) const {
         Curve::getInstance().unregisterVariableByHash(var_hash + agent_hash + func_hash + message_hash);
     }
 }
-void CUDAMessage::swap(bool isOptional, const unsigned int &newMsgCount, const unsigned int &streamId) {
+void CUDAMessage::swap(bool isOptional, const unsigned int &newMsgCount, CUDAScatter &scatter, const unsigned int &streamId) {
     if (isOptional && message_description.optional_outputs > 0) {
-        if (newMsgCount > flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::MESSAGE_OUTPUT][streamId].cub_temp_size_max_list_size) {
-            if (flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::MESSAGE_OUTPUT][streamId].hd_cub_temp) {
-                gpuErrchk(cudaFree(flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::MESSAGE_OUTPUT][streamId].hd_cub_temp));
+        CUDAScanCompactionConfig &scanCfg = scatter.Scan().Config(CUDAScanCompaction::Type::MESSAGE_OUTPUT, streamId);
+        if (newMsgCount > scanCfg.cub_temp_size_max_list_size) {
+            if (scanCfg.hd_cub_temp) {
+                gpuErrchk(cudaFree(scanCfg.hd_cub_temp));
             }
-            flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::MESSAGE_OUTPUT][streamId].cub_temp_size = 0;
+            scanCfg.cub_temp_size = 0;
             gpuErrchk(cub::DeviceScan::ExclusiveSum(
                 nullptr,
-                flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::MESSAGE_OUTPUT][streamId].cub_temp_size,
-                flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::MESSAGE_OUTPUT][streamId].d_ptrs.scan_flag,
-                flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::MESSAGE_OUTPUT][streamId].d_ptrs.position,
+                scanCfg.cub_temp_size,
+                scanCfg.d_ptrs.scan_flag,
+                scanCfg.d_ptrs.position,
                 max_list_size + 1));
-            gpuErrchk(cudaMalloc(&flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::MESSAGE_OUTPUT][streamId].hd_cub_temp,
-                flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::MESSAGE_OUTPUT][streamId].cub_temp_size));
-            flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::MESSAGE_OUTPUT][streamId].cub_temp_size_max_list_size = max_list_size;
+            gpuErrchk(cudaMalloc(&scanCfg.hd_cub_temp,
+                scanCfg.cub_temp_size));
+            scanCfg.cub_temp_size_max_list_size = max_list_size;
         }
         gpuErrchk(cub::DeviceScan::ExclusiveSum(
-            flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::MESSAGE_OUTPUT][streamId].hd_cub_temp,
-            flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::MESSAGE_OUTPUT][streamId].cub_temp_size,
-            flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::MESSAGE_OUTPUT][streamId].d_ptrs.scan_flag,
-            flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::MESSAGE_OUTPUT][streamId].d_ptrs.position,
+            scanCfg.hd_cub_temp,
+            scanCfg.cub_temp_size,
+            scanCfg.d_ptrs.scan_flag,
+            scanCfg.d_ptrs.position,
             newMsgCount + 1));
         // Scatter
         // Update count
-        message_count = message_list->scatter(newMsgCount, streamId, !this->truncate_messagelist_flag);
+        message_count = message_list->scatter(newMsgCount, scatter, streamId, !this->truncate_messagelist_flag);
     } else {
         if (this->truncate_messagelist_flag) {
             message_count = newMsgCount;
@@ -257,7 +259,7 @@ void CUDAMessage::swap(bool isOptional, const unsigned int &newMsgCount, const u
         } else {
             assert(message_count + newMsgCount <= max_list_size);
             // We're appending so use our scatter kernel
-            message_count = message_list->scatterAll(newMsgCount, streamId);
+            message_count = message_list->scatterAll(newMsgCount, scatter, streamId);
         }
     }
 }
@@ -265,10 +267,10 @@ void CUDAMessage::swap() {
     message_list->swap();
 }
 
-void CUDAMessage::buildIndex() {
+void CUDAMessage::buildIndex(CUDAScatter &scatter, const unsigned int &streamId) {
     // Build the index if required.
     if (pbm_construction_required) {
-        specialisation_handler->buildIndex();
+        specialisation_handler->buildIndex(scatter, streamId);
         pbm_construction_required = false;
     }
 }

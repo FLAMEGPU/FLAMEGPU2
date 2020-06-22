@@ -14,8 +14,7 @@ typedef void(AgentFunctionConditionWrapper)(
     Curve::NamespaceHash agent_func_name_hash,
     const int popNo,
     curandState *d_rng,
-    const unsigned int thread_in_layer_offset,
-    const unsigned int streamId);  // Can't put __global__ in a typedef
+    unsigned int *scanFlag_conditionResult);  // Can't put __global__ in a typedef
 
 /**
  * Wrapper function for launching agent functions
@@ -23,7 +22,8 @@ typedef void(AgentFunctionConditionWrapper)(
  * @param model_name_hash CURVE hash of the model's name
  * @param agent_func_name_hash CURVE hash of the agent + function's names
  * @param popNo Total number of agents exeucting the function (number of threads launched)
- * @param thread_in_layer_offset Add this value to TID to calculate a thread-safe TID (TS_ID), used by ActorRandom for accessing curand array in a thread-safe manner
+ * @param d_rng Array of curand states for this kernel
+ * @param scanFlag_conditionResult Scanflag array for condition result (this uses same buffer as agent death)
  * @tparam AgentFunctionCondition The modeller defined agent function condition (defined as FLAMEGPU_AGENT_FUNCTION_CONDITION in model code)
  * @note This is basically a cutdown version of agent_function_wrapper
  */
@@ -33,25 +33,22 @@ __global__ void agent_function_condition_wrapper(
     Curve::NamespaceHash agent_func_name_hash,
     const int popNo,
     curandState *d_rng,
-    const unsigned int thread_in_layer_offset,
-    const unsigned int streamId) {
+    unsigned int *scanFlag_conditionResult) {
     // Must be terminated here, else AgentRandom has bounds issues inside FLAMEGPU_DEVICE_API constructor
     if (FLAMEGPU_READ_ONLY_DEVICE_API::TID() >= popNo)
         return;
     // create a new device FLAME_GPU instance
     FLAMEGPU_READ_ONLY_DEVICE_API *api = new FLAMEGPU_READ_ONLY_DEVICE_API(
-        thread_in_layer_offset,
         model_name_hash,
         agent_func_name_hash,
-        d_rng,
-        streamId);
+        d_rng);
 
     // call the user specified device function
     {
         // Negate the return value, we want false at the start of the scattered array
         bool conditionResult = !(AgentFunctionCondition()(api));
         // (scan flags will be processed to filter agents
-        flamegpu_internal::CUDAScanCompaction::ds_configs[flamegpu_internal::CUDAScanCompaction::AGENT_DEATH][streamId].scan_flag[FLAMEGPU_READ_ONLY_DEVICE_API::TID()] = conditionResult;
+        scanFlag_conditionResult[FLAMEGPU_READ_ONLY_DEVICE_API::TID()] = conditionResult;
     }
 
     delete api;

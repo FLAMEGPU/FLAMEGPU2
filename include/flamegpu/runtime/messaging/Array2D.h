@@ -368,11 +368,11 @@ class MsgArray2D {
          * Initialises member variables
          * @param agentfn_hash Added to msg_hash to produce combined_hash
          * @param msg_hash Added to agentfn_hash to produce combined_hash
-         * @param _streamId Stream index, used for optional message output flag array
+         * @param scan_flag_messageOutput Scan flag array for optional message output
          */
-        __device__ Out(Curve::NamespaceHash agentfn_hash, Curve::NamespaceHash msg_hash, const void *_metadata, unsigned int _streamId)
+        __device__ Out(Curve::NamespaceHash agentfn_hash, Curve::NamespaceHash msg_hash, const void *_metadata, unsigned int *scan_flag_messageOutput)
             : combined_hash(agentfn_hash + msg_hash)
-            , streamId(_streamId)
+            , scan_flag(scan_flag_messageOutput)
             , metadata(reinterpret_cast<const MetaData*>(_metadata))
         { }
         /**
@@ -396,9 +396,9 @@ class MsgArray2D {
          */
         Curve::NamespaceHash combined_hash;
         /**
-         * Stream index used for setting optional message output flag
+         * Scan flag array for optional message output
          */
-        unsigned int streamId;
+        unsigned int *scan_flag;
         /**
          * Metadata struct for accessing messages
          */
@@ -426,8 +426,10 @@ class MsgArray2D {
         /**
          * Sort messages according to index
          * Detect and report any duplicate indicies/gaps
+         * @param scatter Scatter instance and scan arrays to be used (CUDAAgentModel::singletons->scatter)
+         * @param streamId Index of stream specific structures used
          */
-        void buildIndex() override;
+        void buildIndex(CUDAScatter &scatter, const unsigned int &streamId) override;
         /**
          * Allocates memory for the constructed index.
          * The memory allocation is checked by build index.

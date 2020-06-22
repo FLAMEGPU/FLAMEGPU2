@@ -46,7 +46,7 @@ __device__ void MsgSpatial3D::Out::setLocation(const float &x, const float &y, c
     Curve::setVariable<float>("z", combined_hash, z, index);
 
     // Set scan flag incase the message is optional
-    flamegpu_internal::CUDAScanCompaction::ds_configs[flamegpu_internal::CUDAScanCompaction::Type::MESSAGE_OUTPUT][streamId].scan_flag[index] = 1;
+    this->scan_flag[index] = 1;
 }
 
 __device__ MsgSpatial3D::In::Filter::Filter(const MetaData* _metadata, const Curve::NamespaceHash &_combined_hash, const float& x, const float& y, const float& z)
@@ -137,7 +137,7 @@ void MsgSpatial3D::CUDAModelHandler::freeMetaDataDevicePtr() {
     }
 }
 
-void MsgSpatial3D::CUDAModelHandler::buildIndex() {
+void MsgSpatial3D::CUDAModelHandler::buildIndex(CUDAScatter &scatter, const unsigned int &streamId) {
     const unsigned int MESSAGE_COUNT = this->sim_message.getMessageCount();
     resizeKeysVals(this->sim_message.getMaximumListSize());  // Resize based on allocated amount rather than message count
     {  // Build atomic histogram
@@ -157,8 +157,7 @@ void MsgSpatial3D::CUDAModelHandler::buildIndex() {
     }
     {  // Reorder messages
        // Copy messages from d_messages to d_messages_swap, in hash order
-        auto &cs = CUDAScatter::getInstance(0);  // Choose proper stream_id in future!
-        cs.pbm_reorder(this->sim_message.getMessageDescription().variables, this->sim_message.getReadList(), this->sim_message.getWriteList(), MESSAGE_COUNT, d_keys, d_vals, hd_data.PBM);
+        scatter.pbm_reorder(streamId, this->sim_message.getMessageDescription().variables, this->sim_message.getReadList(), this->sim_message.getWriteList(), MESSAGE_COUNT, d_keys, d_vals, hd_data.PBM);
         this->sim_message.swap();  // Stream id is unused here
     }
     {  // Fill PBM and Message Texture Buffers

@@ -76,7 +76,7 @@ void CUDAFatAgent::addSubAgent(
     mappedAgentCount++;
 }
 
-void CUDAFatAgent::processDeath(const unsigned int &agent_fat_id, const std::string &state_name, const unsigned int &streamId) {
+void CUDAFatAgent::processDeath(const unsigned int &agent_fat_id, const std::string &state_name, CUDAScatter &scatter, const unsigned int &streamId) {
     auto sm = states.find({agent_fat_id, state_name});
     if (sm == states.end()) {
         THROW InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found "
@@ -84,35 +84,36 @@ void CUDAFatAgent::processDeath(const unsigned int &agent_fat_id, const std::str
             "?", state_name.c_str());
     }
 
+    CUDAScanCompactionConfig &scanCfg = scatter.Scan().Config(CUDAScanCompaction::Type::AGENT_DEATH, streamId);
     const unsigned int agent_count = sm->second->getSize();
     // Resize cub (if required)
-    if (agent_count > flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::AGENT_DEATH][streamId].cub_temp_size_max_list_size) {
-        if (flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::AGENT_DEATH][streamId].hd_cub_temp) {
-            gpuErrchk(cudaFree(flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::AGENT_DEATH][streamId].hd_cub_temp));
+    if (agent_count > scanCfg.cub_temp_size_max_list_size) {
+        if (scanCfg.hd_cub_temp) {
+            gpuErrchk(cudaFree(scanCfg.hd_cub_temp));
         }
-        flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::AGENT_DEATH][streamId].cub_temp_size = 0;
+        scanCfg.cub_temp_size = 0;
         gpuErrchk(cub::DeviceScan::ExclusiveSum(
             nullptr,
-            flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::AGENT_DEATH][streamId].cub_temp_size,
-            flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::AGENT_DEATH][streamId].d_ptrs.scan_flag,
-            flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::AGENT_DEATH][streamId].d_ptrs.position,
+            scanCfg.cub_temp_size,
+            scanCfg.d_ptrs.scan_flag,
+            scanCfg.d_ptrs.position,
             sm->second->getAllocatedSize() + 1));
-        gpuErrchk(cudaMalloc(&flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::AGENT_DEATH][streamId].hd_cub_temp,
-            flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::AGENT_DEATH][streamId].cub_temp_size));
-        flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::AGENT_DEATH][streamId].cub_temp_size_max_list_size = sm->second->getAllocatedSize();
+        gpuErrchk(cudaMalloc(&scanCfg.hd_cub_temp,
+            scanCfg.cub_temp_size));
+        scanCfg.cub_temp_size_max_list_size = sm->second->getAllocatedSize();
     }
     gpuErrchk(cub::DeviceScan::ExclusiveSum(
-        flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::AGENT_DEATH][streamId].hd_cub_temp,
-        flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::AGENT_DEATH][streamId].cub_temp_size,
-        flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::AGENT_DEATH][streamId].d_ptrs.scan_flag,
-        flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::AGENT_DEATH][streamId].d_ptrs.position,
+        scanCfg.hd_cub_temp,
+        scanCfg.cub_temp_size,
+        scanCfg.d_ptrs.scan_flag,
+        scanCfg.d_ptrs.position,
         agent_count + 1));
 
     // Scatter
-    sm->second->scatterDeath(streamId);
+    sm->second->scatterDeath(scatter, streamId);
 }
 
-void CUDAFatAgent::transitionState(const unsigned int &agent_fat_id, const std::string &_src, const std::string &_dest, const unsigned int &streamId) {
+void CUDAFatAgent::transitionState(const unsigned int &agent_fat_id, const std::string &_src, const std::string &_dest, CUDAScatter &scatter, const unsigned int &streamId) {
     // Optionally process state transition
     if (_src != _dest) {
         auto src = states.find({agent_fat_id, _src});
@@ -151,8 +152,7 @@ void CUDAFatAgent::transitionState(const unsigned int &agent_fat_id, const std::
                 assert((*src_it)->elements == (*dest_it)->elements);
             }
             // Perform scatter
-            auto &cs = CUDAScatter::getInstance(streamId);
-            cs.scatterAll(sd, src->second->getSize(), dest->second->getSizeWithDisabled());
+            scatter.scatterAll(streamId, sd, src->second->getSize(), dest->second->getSizeWithDisabled());
             // Update list sizes
             dest->second->setAgentCount(dest->second->getSize() + src->second->getSize());
             src->second->setAgentCount(0);
@@ -160,7 +160,7 @@ void CUDAFatAgent::transitionState(const unsigned int &agent_fat_id, const std::
     }
 }
 
-void CUDAFatAgent::processFunctionCondition(const unsigned int &agent_fat_id, const std::string &state_name, const unsigned int &streamId) {
+void CUDAFatAgent::processFunctionCondition(const unsigned int &agent_fat_id, const std::string &state_name, CUDAScatter &scatter, const unsigned int &streamId) {
     auto sm = states.find({agent_fat_id, state_name});
     if (sm == states.end()) {
         THROW InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found "
@@ -168,45 +168,46 @@ void CUDAFatAgent::processFunctionCondition(const unsigned int &agent_fat_id, co
             "?", state_name.c_str());
     }
 
+    CUDAScanCompactionConfig &scanCfg = scatter.Scan().Config(CUDAScanCompaction::Type::AGENT_DEATH, streamId);
     unsigned int agent_count = sm->second->getSize();
     // Resize cub (if required)
-    if (agent_count > flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::AGENT_DEATH][streamId].cub_temp_size_max_list_size) {
-        if (flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::AGENT_DEATH][streamId].hd_cub_temp) {
-            gpuErrchk(cudaFree(flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::AGENT_DEATH][streamId].hd_cub_temp));
+    if (agent_count > scanCfg.cub_temp_size_max_list_size) {
+        if (scanCfg.hd_cub_temp) {
+            gpuErrchk(cudaFree(scanCfg.hd_cub_temp));
         }
-        flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::AGENT_DEATH][streamId].cub_temp_size = 0;
+        scanCfg.cub_temp_size = 0;
         gpuErrchk(cub::DeviceScan::ExclusiveSum(
             nullptr,
-            flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::AGENT_DEATH][streamId].cub_temp_size,
-            flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::AGENT_DEATH][streamId].d_ptrs.scan_flag,
-            flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::AGENT_DEATH][streamId].d_ptrs.position,
+            scanCfg.cub_temp_size,
+            scanCfg.d_ptrs.scan_flag,
+            scanCfg.d_ptrs.position,
             sm->second->getAllocatedSize() + 1));
-        gpuErrchk(cudaMalloc(&flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::AGENT_DEATH][streamId].hd_cub_temp,
-            flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::AGENT_DEATH][streamId].cub_temp_size));
-        flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::AGENT_DEATH][streamId].cub_temp_size_max_list_size = sm->second->getAllocatedSize();
+        gpuErrchk(cudaMalloc(&scanCfg.hd_cub_temp,
+            scanCfg.cub_temp_size));
+        scanCfg.cub_temp_size_max_list_size = sm->second->getAllocatedSize();
     }
     // Perform scan (agent function conditions use death flag scan compact arrays as there is no overlap in use)
     gpuErrchk(cub::DeviceScan::ExclusiveSum(
-        flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::AGENT_DEATH][streamId].hd_cub_temp,
-        flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::AGENT_DEATH][streamId].cub_temp_size,
-        flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::AGENT_DEATH][streamId].d_ptrs.scan_flag,
-        flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::AGENT_DEATH][streamId].d_ptrs.position,
+        scanCfg.hd_cub_temp,
+        scanCfg.cub_temp_size,
+        scanCfg.d_ptrs.scan_flag,
+        scanCfg.d_ptrs.position,
         agent_count + 1));
     gpuErrchkLaunch();
     // Use scan results to sort false agents into start of list (and don't swap buffers)
-    const unsigned int conditionFailCount = sm->second->scatterAgentFunctionConditionFalse(streamId);
+    const unsigned int conditionFailCount = sm->second->scatterAgentFunctionConditionFalse(scatter, streamId);
     // Invert scan
-    CUDAScatter::InversionIterator ii = CUDAScatter::InversionIterator(flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::AGENT_DEATH][streamId].d_ptrs.scan_flag);
-    cudaMemset(flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::AGENT_DEATH][streamId].d_ptrs.position, 0, sizeof(unsigned int)*(agent_count + 1));
+    CUDAScatter::InversionIterator ii = CUDAScatter::InversionIterator(scanCfg.d_ptrs.scan_flag);
+    cudaMemset(scanCfg.d_ptrs.position, 0, sizeof(unsigned int)*(agent_count + 1));
     gpuErrchk(cub::DeviceScan::ExclusiveSum(
-        flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::AGENT_DEATH][streamId].hd_cub_temp,
-        flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::AGENT_DEATH][streamId].cub_temp_size,
+        scanCfg.hd_cub_temp,
+        scanCfg.cub_temp_size,
         ii,
-        flamegpu_internal::CUDAScanCompaction::hd_configs[flamegpu_internal::CUDAScanCompaction::Type::AGENT_DEATH][streamId].d_ptrs.position,
+        scanCfg.d_ptrs.position,
         agent_count + 1));
     gpuErrchkLaunch();
     // Use inverted scan results to sort true agents into end of list (and swap buffers)
-    const unsigned int conditionpassCount = sm->second->scatterAgentFunctionConditionTrue(conditionFailCount, streamId);
+    const unsigned int conditionpassCount = sm->second->scatterAgentFunctionConditionTrue(conditionFailCount, scatter, streamId);
     assert(agent_count == conditionpassCount + conditionFailCount);
 }
 

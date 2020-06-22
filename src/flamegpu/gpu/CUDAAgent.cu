@@ -134,7 +134,7 @@ void CUDAAgent::unmapRuntimeVariables(const AgentFunctionData& func) const {
     // No current need to unmap RTC variables as they are specific to the agent functions and thus do not persist beyond the scope of a single function
 }
 
-void CUDAAgent::setPopulationData(const AgentPopulation& population) {
+void CUDAAgent::setPopulationData(const AgentPopulation& population, CUDAScatter &scatter, const unsigned int &streamId) {
     // Make sure population uses same agent description as was used to initialise the agent CUDAAgent
     if (population.getAgentDescription() != agent_description) {
         THROW InvalidCudaAgentDesc("Agent State memory has different description to CUDA Agent ('%s'), "
@@ -145,7 +145,7 @@ void CUDAAgent::setPopulationData(const AgentPopulation& population) {
     for (const auto &state : agent_description.states) {
         auto &our_state = state_map.at(state);
         // Copy population data
-        our_state->setAgentData(population.getReadOnlyStateMemory(state));
+        our_state->setAgentData(population.getReadOnlyStateMemory(state), scatter, streamId);
     }
 }
 
@@ -216,11 +216,11 @@ void *CUDAAgent::getStateVariablePtr(const std::string &state_name, const std::s
  * @param streamId The index of the agent function within the current layer
  * @see CUDAFatAgent::processDeath(const unsigned int &, const std::string &, const unsigned int &)
  */
-void CUDAAgent::processDeath(const AgentFunctionData& func, const unsigned int &streamId) {
+void CUDAAgent::processDeath(const AgentFunctionData& func, CUDAScatter &scatter, const unsigned int &streamId) {
     // Optionally process agent death
     if (func.has_agent_death) {
         // Agent death operates on all mapped vars, so handled by fat agent
-        fat_agent->processDeath(fat_index, func.initial_state, streamId);
+        fat_agent->processDeath(fat_index, func.initial_state, scatter, streamId);
     }
 }
 /**
@@ -230,9 +230,9 @@ void CUDAAgent::processDeath(const AgentFunctionData& func, const unsigned int &
  * @param streamId The index of the agent function within the current layer
  * @see CUDAFatAgent::transitionState(const unsigned int &, const std::string &, const std::string &, const unsigned int &)
  */
-void CUDAAgent::transitionState(const std::string &_src, const std::string &_dest, const unsigned int &streamId) {
+void CUDAAgent::transitionState(const std::string &_src, const std::string &_dest, CUDAScatter &scatter, const unsigned int &streamId) {
     // All mapped vars need to transition too, so handled by fat agent
-    fat_agent->transitionState(fat_index, _src, _dest, streamId);
+    fat_agent->transitionState(fat_index, _src, _dest, scatter, streamId);
 }
 /**
  * Scatters agents based on their output of the agent function condition
@@ -244,26 +244,26 @@ void CUDAAgent::transitionState(const std::string &_src, const std::string &_des
  * @note Named state must not already contain disabled agents
  * @note The disabled agents are re-enabled using clearFunctionCondition(const std::string &)
  */
-void CUDAAgent::processFunctionCondition(const AgentFunctionData& func, const unsigned int &streamId) {
+void CUDAAgent::processFunctionCondition(const AgentFunctionData& func, CUDAScatter &scatter, const unsigned int &streamId) {
     // Optionally process function condition
     if ((func.condition) || (!func.rtc_func_condition_name.empty())) {
         // Agent function condition operates on all mapped vars, so handled by fat agent
-        fat_agent->processFunctionCondition(fat_index, func.initial_state, streamId);
+        fat_agent->processFunctionCondition(fat_index, func.initial_state, scatter, streamId);
     }
 }
 /**
  * 
  */
-void CUDAAgent::scatterHostCreation(const std::string &state_name, const unsigned int &newSize, char *const d_inBuff, const VarOffsetStruct &offsets) {
+void CUDAAgent::scatterHostCreation(const std::string &state_name, const unsigned int &newSize, char *const d_inBuff, const VarOffsetStruct &offsets, CUDAScatter &scatter, const unsigned int &streamId) {
     auto sm = state_map.find(state_name);
     if (sm == state_map.end()) {
         THROW InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found "
             "in CUDAAgent::scatterHostCreation()",
             agent_description.name.c_str(), state_name.c_str());
     }
-    sm->second->scatterHostCreation(newSize, d_inBuff, offsets);
+    sm->second->scatterHostCreation(newSize, d_inBuff, offsets, scatter, streamId);
 }
-void CUDAAgent::mapNewRuntimeVariables(const AgentFunctionData& func, const unsigned int &maxLen, const unsigned int &streamId) {
+void CUDAAgent::mapNewRuntimeVariables(const AgentFunctionData& func, const unsigned int &maxLen, CUDAScatter &scatter, const unsigned int &streamId) {
     // Confirm agent output is set
     if (auto oa = func.agent_output.lock()) {
         // check the cuda agent state map to find the correct state list for functions starting state
@@ -276,9 +276,9 @@ void CUDAAgent::mapNewRuntimeVariables(const AgentFunctionData& func, const unsi
         }
         // Notify scan flag that it might need resizing
         // We need a 3rd array, because a function might combine agent birth, agent death and message output
-        flamegpu_internal::CUDAScanCompaction::resize(maxLen, flamegpu_internal::CUDAScanCompaction::AGENT_OUTPUT, streamId, cuda_model);
+        scatter.Scan().resize(maxLen, CUDAScanCompaction::AGENT_OUTPUT, streamId);
         // Ensure the scan flag is zeroed
-        flamegpu_internal::CUDAScanCompaction::zero(flamegpu_internal::CUDAScanCompaction::AGENT_OUTPUT, streamId);
+        scatter.Scan().zero(CUDAScanCompaction::AGENT_OUTPUT, streamId);
 
         // Request a buffer for new
         char *d_new_buffer = static_cast<char*>(fat_agent->allocNewBuffer(TOTAL_AGENT_VARIABLE_SIZE, maxLen, agent_description.variables.size()));
@@ -293,8 +293,8 @@ void CUDAAgent::mapNewRuntimeVariables(const AgentFunctionData& func, const unsi
         }
 
         // Init the buffer to default values for variables
-        CUDAScatter &scatter = CUDAScatter::getInstance(streamId);
         scatter.broadcastInit(
+            streamId,
             agent_description.variables,
             d_new_buffer,
             maxLen, 0);
@@ -368,7 +368,7 @@ void CUDAAgent::unmapNewRuntimeVariables(const AgentFunctionData& func) {
     }
 }
 
-void CUDAAgent::scatterNew(const AgentFunctionData& func, const unsigned int &newSize, const unsigned int &streamId) {
+void CUDAAgent::scatterNew(const AgentFunctionData& func, const unsigned int &newSize, CUDAScatter &scatter, const unsigned int &streamId) {
     // Confirm agent output is set
     if (auto oa = func.agent_output.lock()) {
         auto sm = state_map.find(func.agent_output_state);
@@ -391,7 +391,7 @@ void CUDAAgent::scatterNew(const AgentFunctionData& func, const unsigned int &ne
                 " in CUDAAgent::scatterNew()\n",
                 func.initial_state.c_str());
         }
-        sm->second->scatterNew(newBuff, newSize, streamId);
+        sm->second->scatterNew(newBuff, newSize, scatter, streamId);
     }
 }
 void CUDAAgent::clearFunctionCondition(const std::string &state) {
@@ -541,9 +541,9 @@ const CUDAAgent::CUDARTCFuncMap& CUDAAgent::getRTCFunctions() const {
     return rtc_func_map;
 }
 
-void CUDAAgent::initUnmappedVars() {
+void CUDAAgent::initUnmappedVars(CUDAScatter &scatter, const unsigned int &streamId) {
     for (auto &s : state_map) {
-        s.second->initUnmappedVars();
+        s.second->initUnmappedVars(scatter, streamId);
     }
 }
 void CUDAAgent::cullUnmappedStates() {
