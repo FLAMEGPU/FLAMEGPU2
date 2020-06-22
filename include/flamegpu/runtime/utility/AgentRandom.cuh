@@ -16,12 +16,10 @@ class AgentRandom {
     typedef unsigned int size_type;
     /**
      * Constructs an AgentRandom instance
-     * @param _TS_ID ThreadSafe-Index
-     *   this is a unique index for the thread among all concurrently executing kernels
-     *   It is used as the index into the device side random array
-     * @note DO NOT USE REFERENCES FOR TS_ID, CAUSES MEMORY ERROR
+     * @param d_rng ThreadSafe device curand state instance
+     *   this is a unique instance for the thread among all concurrently executing kernels
      */
-    __forceinline__ __device__ AgentRandom(const unsigned int _TS_ID);
+    __forceinline__ __device__ AgentRandom(curandState *d_rng);
     /**
      * Returns a float uniformly distributed between 0.0 and 1.0. 
      * @note It may return from 0.0 to 1.0, where 1.0 is included and 0.0 is excluded.
@@ -53,24 +51,10 @@ class AgentRandom {
     /**
      * Thread-safe index for accessing curand
      */
-    const unsigned int TS_ID;
+    curandState *d_random_state;
 };
 
-/**
- * Internal namespace to hide __device__ declarations from modeller
- */
-namespace flamegpu_internal {
-    extern __device__ curandState *d_random_state;
-    extern __device__ AgentRandom::size_type d_random_size;
-}
-
-
-__forceinline__ __device__ AgentRandom::AgentRandom(const unsigned int _TS_ID) : TS_ID(_TS_ID) {
-    // Check once per agent per kernel
-    // as opposed to every time rng is called
-    // assert(TS_ID < flamegpu_internal::d_random_size);
-    // TODO: device safe assert
-}
+__forceinline__ __device__ AgentRandom::AgentRandom(curandState *d_rng) : d_random_state(d_rng) { }
 /**
  * All templates are specialised
  */
@@ -80,11 +64,11 @@ __forceinline__ __device__ AgentRandom::AgentRandom(const unsigned int _TS_ID) :
  */
 template<>
 __forceinline__ __device__ float AgentRandom::uniform() const {
-    return curand_uniform(&flamegpu_internal::d_random_state[TS_ID]);
+    return curand_uniform(d_random_state);
 }
 template<>
 __forceinline__ __device__ double AgentRandom::uniform() const {
-    return curand_uniform_double(&flamegpu_internal::d_random_state[TS_ID]);
+    return curand_uniform_double(d_random_state);
 }
 
 /**
@@ -92,22 +76,22 @@ __forceinline__ __device__ double AgentRandom::uniform() const {
  */
 template<>
 __forceinline__ __device__ float AgentRandom::normal() const {
-    return curand_normal(&flamegpu_internal::d_random_state[TS_ID]);
+    return curand_normal(d_random_state);
 }
 template<>
 __forceinline__ __device__ double AgentRandom::normal() const {
-    return curand_normal_double(&flamegpu_internal::d_random_state[TS_ID]);
+    return curand_normal_double(d_random_state);
 }
 /**
  * Log Normal floating point
  */
 template<>
 __forceinline__ __device__ float AgentRandom::logNormal(const float& mean, const float& stddev) const {
-    return curand_log_normal(&flamegpu_internal::d_random_state[TS_ID], mean, stddev);
+    return curand_log_normal(d_random_state, mean, stddev);
 }
 template<>
 __forceinline__ __device__ double AgentRandom::logNormal(const double& mean, const double& stddev) const {
-    return curand_log_normal_double(&flamegpu_internal::d_random_state[TS_ID], mean, stddev);
+    return curand_log_normal_double(d_random_state, mean, stddev);
 }
 /**
 * Uniform Int

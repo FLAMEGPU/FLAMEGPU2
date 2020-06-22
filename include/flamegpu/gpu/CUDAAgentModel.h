@@ -207,7 +207,7 @@ class CUDAAgentModel : public Simulation {
       /**
        * Resizes device random array during step()
        */
-      RandomManager &rng;
+      RandomManager rng;
       /**
        * Held here for tracking when to release cuda memory
        */
@@ -216,7 +216,7 @@ class CUDAAgentModel : public Simulation {
        * Held here for tracking when to release cuda memory
        */
       EnvironmentManager &environment;
-      Singletons(Curve &curve, RandomManager &rng, CUDAScatter &scatter, EnvironmentManager &environment) : curve(curve), rng(rng), scatter(scatter), environment(environment) {}
+      Singletons(Curve &curve, CUDAScatter &scatter, EnvironmentManager &environment) : curve(curve), scatter(scatter), environment(environment) {}
     } * singletons;
     /**
      * Flag indicating that the model has been initialsed

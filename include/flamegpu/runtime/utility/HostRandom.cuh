@@ -46,7 +46,7 @@ class HostRandom {
     inline T uniform(const T& min, const T& max) const;
 
  private:
-    HostRandom() : rng(RandomManager::getInstance()) { }
+    explicit HostRandom(RandomManager &_rng) : rng(_rng) { }
     RandomManager &rng;
 };
 
