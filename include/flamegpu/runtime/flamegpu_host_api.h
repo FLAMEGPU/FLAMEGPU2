@@ -40,6 +40,7 @@ class FLAMEGPU_HOST_API {
      * Stores reference of CUDAAgentModel
      */
      explicit FLAMEGPU_HOST_API(CUDAAgentModel&_agentModel,
+        RandomManager &rng,
          const AgentOffsetMap &agentOffsets,
          AgentDataMap &agentData);
     /**

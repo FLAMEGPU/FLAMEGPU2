@@ -28,8 +28,7 @@ void Simulation::initialise(int argc, const char** argv) {
 void Simulation::applyConfig() {
     // Call derived class config stuff first
     applyConfig_derived();
-    // The cuda part of this should really be a seperate class triggered by derived cfg
-    RandomManager::getInstance().reseed(config.random_seed);
+    // Random is handled by derived class, as it relies on singletons being init
     // Build population vector
     std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> pops;
     for (auto &agent : model->agents) {

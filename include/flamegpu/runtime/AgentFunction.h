@@ -3,15 +3,16 @@
 
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
+#include <curand_kernel.h>
 
 // #include "flamegpu/runtime/flamegpu_device_api.h"
+
 #include "flamegpu/runtime/AgentFunction_shim.h"
 #include "flamegpu/gpu/CUDAScanCompaction.h"
 
 
 // ! FLAMEGPU function return type
 enum FLAME_GPU_AGENT_STATUS { ALIVE = 1, DEAD = 0 };
-
 
 typedef void(AgentFunctionWrapper)(
     Curve::NamespaceHash model_name_hash,
@@ -22,6 +23,7 @@ typedef void(AgentFunctionWrapper)(
     const int popNo,
     const void *in_messagelist_metadata,
     const void *out_messagelist_metadata,
+    curandState *d_rng,
     const unsigned int thread_in_layer_offset,
     const unsigned int streamId);  // Can't put __global__ in a typedef
 
@@ -51,6 +53,7 @@ __global__ void agent_function_wrapper(
     const int popNo,
     const void *in_messagelist_metadata,
     const void *out_messagelist_metadata,
+    curandState *d_rng,
     const unsigned int thread_in_layer_offset,
     const unsigned int streamId) {
     // Must be terminated here, else AgentRandom has bounds issues inside FLAMEGPU_DEVICE_API constructor
@@ -62,6 +65,7 @@ __global__ void agent_function_wrapper(
         model_name_hash,
         agent_func_name_hash,
         agent_output_hash,
+        d_rng,
         streamId,
         MsgIn::In(agent_func_name_hash, messagename_inp_hash, in_messagelist_metadata),
         MsgOut::Out(agent_func_name_hash, messagename_outp_hash, out_messagelist_metadata, streamId));

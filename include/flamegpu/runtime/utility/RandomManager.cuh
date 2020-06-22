@@ -40,6 +40,12 @@ class RandomManager {
      */
     typedef AgentRandom::size_type size_type;
     /**
+     * Creates the random manager and calls reseed() with the return value from seedFromTime()
+     */
+    RandomManager();
+
+     ~RandomManager();
+    /**
      * Utility for generating a psuesdo-random seed to pass to init
      */
     uint64_t seedFromTime();
@@ -56,7 +62,7 @@ class RandomManager {
      *     while(length*shrinkModifier>_length)
      *       length*=shrinkModifier
      */
-    bool resize(const size_type &_length, const CUDAAgentModel& model);
+    curandState *resize(const size_type &_length);
     /**
      * Accessors
      */
@@ -78,8 +84,14 @@ class RandomManager {
      */
     size_type size();
     uint64_t seed();
+    curandState *cudaRandomState();
 
  private:
+    /**
+     * Device array holding curand states
+     * They should always be initialised
+     */
+    curandState *d_random_state = nullptr;
     /**
      * Random seed used to initialise all currently allocated curand states
      */
@@ -108,7 +120,7 @@ class RandomManager {
      * If shrinking, 'deallocated' curand states are backed up to host until next required,
      *  this prevents them being reinitialised with the same seed.
      */
-    void resizeDeviceArray(const size_type &_length, const CUDAAgentModel& model);
+    void resizeDeviceArray(const size_type &_length);
     /**
      * Host copy of 'deallocated' curand states
      * When the device array shrinks in size, shrunk away curand states are stored here
@@ -163,36 +175,6 @@ class RandomManager {
      * @note includes cuda commands.
      */
     void reseedDevice();
-    /**
-     * Remainder of class is singleton pattern
-     */
-    /**
-     * Creates the singleton and calls reseed() with the return value from seedFromTime()
-     */
-    RandomManager();
-    /**
-     * Logs how many CUDAAgentModel objects exist, if this reaches 0, free is called
-     */
-    static unsigned int simulationInstances;
-    /**
-     * Increases internal counter of CUDAAgentModel instances
-     */
-    void increaseSimCounter();
-    /**
-     * Decreases internal counter of CUDAAgentModel instances
-     * If this reaches 0, free() is called
-     */
-    void decreaseSimCounter();
-
- protected:
-     /**
-      * Returns the RandomManager singleton instance
-      */
-     static RandomManager& getInstance() {
-         static RandomManager instance;  // Guaranteed to be destroyed.
-         return instance;                // Instantiated on first use.
-     }
-     ~RandomManager();
 
  public:
     // Public deleted creates better compiler errors

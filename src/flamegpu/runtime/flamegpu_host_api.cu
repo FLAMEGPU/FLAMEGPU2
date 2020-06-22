@@ -6,9 +6,10 @@
 #include "flamegpu/gpu/CUDAAgentModel.h"
 
 FLAMEGPU_HOST_API::FLAMEGPU_HOST_API(CUDAAgentModel &_agentModel,
+    RandomManager &rng,
     const AgentOffsetMap &_agentOffsets,
     AgentDataMap &_agentData)
-    : random()
+    : random(rng)
     , environment(_agentModel.getModelDescription().name)
     , agentModel(_agentModel)
     , d_cub_temp(nullptr)

@@ -34,6 +34,7 @@ class FLAMEGPU_READ_ONLY_DEVICE_API {
         Curve::NamespaceHash,
         Curve::NamespaceHash,
         const int,
+        curandState *,
         const unsigned int,
         const unsigned int);
 
@@ -43,8 +44,8 @@ class FLAMEGPU_READ_ONLY_DEVICE_API {
      * @param modelname_hash CURVE hash of the model's name
      * @param _streamId Index used for accessing global members in a stream safe manner
      */
-    __device__ FLAMEGPU_READ_ONLY_DEVICE_API(const unsigned int &_thread_in_layer_offset, const Curve::NamespaceHash &modelname_hash, const Curve::NamespaceHash &agentfuncname_hash, const unsigned int &_streamId)
-        : random(AgentRandom(TID() + _thread_in_layer_offset))
+    __device__ FLAMEGPU_READ_ONLY_DEVICE_API(const unsigned int &_thread_in_layer_offset, const Curve::NamespaceHash &modelname_hash, const Curve::NamespaceHash &agentfuncname_hash, curandState *&d_rng, const unsigned int &_streamId)
+        : random(AgentRandom(&d_rng[TID()]))
         , environment(DeviceEnvironment(modelname_hash))
         , agent_func_name_hash(agentfuncname_hash)
         , thread_in_layer_offset(_thread_in_layer_offset)
@@ -127,6 +128,7 @@ class FLAMEGPU_DEVICE_API : public FLAMEGPU_READ_ONLY_DEVICE_API{
         const int,
         const void *,
         const void *,
+        curandState *,
         const unsigned int,
         const unsigned int);
 
@@ -169,6 +171,8 @@ class FLAMEGPU_DEVICE_API : public FLAMEGPU_READ_ONLY_DEVICE_API{
      * @param _thread_in_layer_offset This offset can be added to TID to give a thread-safe unique index for the thread
      * @param modelname_hash CURVE hash of the model's name
      * @param agentfuncname_hash Combined CURVE hashes of agent name and func name
+     * @param _agent_output_hash Combined CURVE hashes for agent output
+     * @param d_rng Device pointer to curand state for this kernel, index 0 should for TID()==0
      * @param _streamId Index used for accessing global members in a stream safe manner
      * @param msg_in Input message handler
      * @param msg_out Output message handler
@@ -178,10 +182,11 @@ class FLAMEGPU_DEVICE_API : public FLAMEGPU_READ_ONLY_DEVICE_API{
         const Curve::NamespaceHash &modelname_hash,
         const Curve::NamespaceHash &agentfuncname_hash,
         const Curve::NamespaceHash &_agent_output_hash,
+        curandState *&d_rng,
         const unsigned int &_streamId,
         typename MsgIn::In &&msg_in,
         typename MsgOut::Out &&msg_out)
-        : FLAMEGPU_READ_ONLY_DEVICE_API(_thread_in_layer_offset, modelname_hash, agentfuncname_hash, _streamId)
+        : FLAMEGPU_READ_ONLY_DEVICE_API(_thread_in_layer_offset, modelname_hash, agentfuncname_hash, d_rng, _streamId)
         , message_in(msg_in)
         , message_out(msg_out)
         , agent_out(AgentOut(_agent_output_hash, _streamId))
@@ -337,11 +342,6 @@ __device__ void FLAMEGPU_DEVICE_API<MsgIn, MsgOut>::AgentOut::setVariable(const 
  * The following internal definitions are required for RTC compilation as these are only declared as extern in the device headers.
  * Each RTC function will get a unique copy of each of these device symbols.
  */
-namespace flamegpu_internal {
-    __device__ curandState* d_random_state;
-    __device__ AgentRandom::size_type d_random_size;
-}
-
 namespace flamegpu_internal {
 namespace CUDAScanCompaction {
     __device__ CUDAScanCompactionPtrs ds_configs[MAX_TYPES][MAX_STREAMS];

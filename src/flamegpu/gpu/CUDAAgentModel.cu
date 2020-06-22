@@ -1,5 +1,7 @@
 #include "flamegpu/gpu/CUDAAgentModel.h"
 
+#include <curand_kernel.h>
+
 #include <algorithm>
 #include <string>
 
@@ -18,13 +20,10 @@ CUDAAgentModel::CUDAAgentModel(const ModelDescription& _model)
     : Simulation(_model)
     , step_count(0)
     , simulation_elapsed_time(0.f)
-    , agent_map()
-    , message_map()
     , streams(std::vector<cudaStream_t>())
     , singletons(nullptr)
     , singletonsInitialised(false)
-    , rtcInitialised(false)
-    , host_api(std::make_unique<FLAMEGPU_HOST_API>(*this, agentOffsets, agentData)) {
+    , rtcInitialised(false) {
     initOffsetsAndMap();
 
     // Register the signal handler.
@@ -49,7 +48,6 @@ CUDAAgentModel::~CUDAAgentModel() {
     // De-initialise, freeing singletons?
     // @todo - this is unsafe in a destrcutor as it may invoke cuda commands.
     if (singletonsInitialised) {
-        singletons->rng.decreaseSimCounter();
         singletons->scatter.decreaseSimCounter();
         // unique pointers cleanup by automatically
         // Drop all constants from the constant cache linked to this model
@@ -128,7 +126,7 @@ bool CUDAAgentModel::step() {
             }
 
             // Ensure RandomManager is the correct size to accomodate all threads to be launched
-            singletons->rng.resize(totalThreads, *this);
+            curandState *d_rng = singletons->rng.resize(totalThreads);
             // Track stream id
             j = 0;
             // Sum the total number of threads being launched in the layer
@@ -169,7 +167,7 @@ bool CUDAAgentModel::step() {
                         //! Round up according to CUDAAgent state list size
                         gridSize = (state_list_size + blockSize - 1) / blockSize;
 
-                        (func_des->condition) << <gridSize, blockSize, 0, streams.at(j) >> > (modelname_hash, agentname_hash + funcname_hash, state_list_size, totalThreads, j);
+                        (func_des->condition) << <gridSize, blockSize, 0, streams.at(j) >> > (modelname_hash, agentname_hash + funcname_hash, state_list_size, d_rng + totalThreads, totalThreads, j);
                         gpuErrchkLaunch();
                     } else {  // RTC function
                         std::string func_condition_identifier = func_name + "_condition";
@@ -180,12 +178,13 @@ bool CUDAAgentModel::step() {
                         cuOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, cu_func, 0, 0, state_list_size);
                         //! Round up according to CUDAAgent state list size
                         gridSize = (state_list_size + blockSize - 1) / blockSize;
-
+                        curandState *t_rng = d_rng + totalThreads;
                         // launch the kernel
                         CUresult a = instance.configure(gridSize, blockSize).launch({
                                 const_cast<void*>(reinterpret_cast<const void*>(&modelname_hash)),
                                 reinterpret_cast<void*>(&agent_func_name_hash),
                                 reinterpret_cast<void*>(&state_list_size),
+                                reinterpret_cast<void*>(&t_rng),
                                 reinterpret_cast<void*>(&totalThreads),
                                 reinterpret_cast<void*>(&j) });
                         if (a != CUresult::CUDA_SUCCESS) {
@@ -293,7 +292,7 @@ bool CUDAAgentModel::step() {
         }
 
         // Ensure RandomManager is the correct size to accomodate all threads to be launched
-        singletons->rng.resize(totalThreads, *this);
+        curandState *d_rng = singletons->rng.resize(totalThreads);
         // Total threads is now used to provide kernel launches an offset to thread-safe thread-index
         totalThreads = 0;
         j = 0;
@@ -360,6 +359,7 @@ bool CUDAAgentModel::step() {
                     state_list_size,
                     d_in_messagelist_metadata,
                     d_out_messagelist_metadata,
+                    d_rng + totalThreads,
                     totalThreads,
                     j);
                 gpuErrchkLaunch();
@@ -371,7 +371,7 @@ bool CUDAAgentModel::step() {
                 cuOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, cu_func, 0, 0, state_list_size);
                 //! Round up according to CUDAAgent state list size
                 gridSize = (state_list_size + blockSize - 1) / blockSize;
-
+                curandState * t_rng = d_rng + totalThreads;
                 // launch the kernel
                 CUresult a = instance.configure(gridSize, blockSize).launch({
                         const_cast<void*>(reinterpret_cast<const void*>(&modelname_hash)),
@@ -382,6 +382,7 @@ bool CUDAAgentModel::step() {
                         reinterpret_cast<void*>(&state_list_size),
                         const_cast<void*>(reinterpret_cast<const void*>(&d_in_messagelist_metadata)),
                         const_cast<void*>(reinterpret_cast<const void*>(&d_out_messagelist_metadata)),
+                        const_cast<void*>(reinterpret_cast<const void*>(&t_rng)),
                         reinterpret_cast<void*>(&totalThreads),
                         reinterpret_cast<void*>(&j) });
                 if (a != CUresult::CUDA_SUCCESS) {
@@ -454,6 +455,7 @@ bool CUDAAgentModel::step() {
 
         // Execute all host functions attached to layer
         // TODO: Concurrency?
+        assert(host_api);
         for (auto &stepFn : (*lyr)->host_functions) {
             stepFn(this->host_api.get());
         }
@@ -718,6 +720,9 @@ void CUDAAgentModel::applyConfig_derived() {
     // Initialise singletons once a device has been selected.
     // @todo - if this has already been called, before the device was selected an error should occur.
     initialiseSingletons();
+
+    // We init Random after singletons
+    singletons->rng.reseed(getSimulationConfig().random_seed);
 }
 
 /**
@@ -745,7 +750,8 @@ void CUDAAgentModel::initialiseSingletons() {
         if (DEVICE_HAS_RESET_CHECK == DEVICE_HAS_RESET_FLAG) {
             // Device has been reset, purge host mirrors of static objects/singletons
             Curve::getInstance().purge();
-            RandomManager::getInstance().purge();
+            if (singletons)
+                singletons->rng.purge();
             flamegpu_internal::CUDAScanCompaction::purge();
             CUDAScatter::getInstance(UINT_MAX);
             EnvironmentManager::getInstance().purge();
@@ -756,12 +762,10 @@ void CUDAAgentModel::initialiseSingletons() {
         // Get references to all required singleton and store in the instance.
         singletons = new Singletons(
             Curve::getInstance(),
-            RandomManager::getInstance(),
             CUDAScatter::getInstance(0),
             EnvironmentManager::getInstance());
 
         // Increase counters within some singletons.
-        singletons->rng.increaseSimCounter();
         singletons->scatter.increaseSimCounter();
 
         // Populate the environment properties in constant Cache
@@ -771,6 +775,9 @@ void CUDAAgentModel::initialiseSingletons() {
 
         // Reinitialise random for this simulation instance
         singletons->rng.reseed(getSimulationConfig().random_seed);
+
+        // Pass created RandomManager to host api
+        host_api = std::make_unique<FLAMEGPU_HOST_API>(*this, singletons->rng, agentOffsets, agentData);
 
         singletonsInitialised = true;
     }
