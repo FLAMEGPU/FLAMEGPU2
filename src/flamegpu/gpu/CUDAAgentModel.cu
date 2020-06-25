@@ -460,8 +460,13 @@ bool CUDAAgentModel::step() {
         for (auto &stepFn : (*lyr)->host_functions) {
             stepFn(this->host_api.get());
         }
+        // Execute all host function callbacks attached to layer
+        NVTX_PUSH("CUDAAgentModel::step::HostFunctions");
+        for (auto &stepFn : (*lyr)->host_functions_callbacks) {
+            stepFn->run(this->host_api.get());
+        }
         // If we have host layer functions, we might have host agent creation
-        if ((*lyr)->host_functions.size())
+        if ((*lyr)->host_functions.size() || ((*lyr)->host_functions_callbacks.size()))
             processHostAgentCreation();
         NVTX_POP();
 

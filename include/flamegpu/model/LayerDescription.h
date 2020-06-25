@@ -102,6 +102,14 @@ class LayerDescription {
     void addHostFunction(FLAMEGPU_HOST_FUNCTION_POINTER func_p);
 
     /**
+     * Adds a host function to this layer
+     * The host function will be called during this stage of model execution
+     * @param func_callback a Host function callback object
+     * @throw InvalidHostFunc If the function has already been added to the layer
+     */
+    void addHostFunctionCallback(HostFunctionCallback *func_callback);
+
+    /**
      * @return The layer's name
      */
     std::string getName() const;
@@ -117,6 +125,10 @@ class LayerDescription {
      * @return The total number of host functions within the layer
      */
     ModelData::size_type getHostFunctionsCount() const;
+    /**
+     * @return The total number of host function callbacks within the layer
+     */
+    ModelData::size_type getHostFunctionCallbackCount() const;
 
     /**
      * @param index Index of the function to return
@@ -130,10 +142,18 @@ class LayerDescription {
      * @param index Index of the function to return
      * @return A function pointer to the host function at the provided index
      * @throw OutOfBoundsException When index exceeds number of host functions in the layer
-     * @see LayerDescription::getAgentFunctionsCount()
+     * @see LayerDescription::getHostFunctionsCount()
      * @note Functions are stored in a set, so order may change as new functions are added
      */
     FLAMEGPU_HOST_FUNCTION_POINTER getHostFunction(unsigned int index) const;
+    /**
+     * @param index Index of the function to return
+     * @return A function callback to the host function at the provided index
+     * @throw OutOfBoundsException When index exceeds number of host functions in the layer
+     * @see LayerDescription::getHostFunctionCallbackCount()
+     * @note Functions are stored in a set, so order may change as new functions are added
+     */
+    HostFunctionCallback* getHostFunctionCallback(unsigned int index) const;
 
  private:
     /**

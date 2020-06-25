@@ -9,6 +9,7 @@ LayerData::LayerData(ModelData *const model, const std::string &layer_name, cons
 
 LayerData::LayerData(ModelData *const model, const LayerData &other)
     : host_functions(other.host_functions)
+    , host_functions_callbacks(other.host_functions_callbacks)
     , description(model ? new LayerDescription(model, this) : nullptr)
     , name(other.name)
     , index(other.index) {
@@ -35,6 +36,7 @@ bool LayerData::operator==(const LayerData &rhs) const {
     && index == rhs.index
     && agent_functions.size() == rhs.agent_functions.size()
     && host_functions.size() == rhs.host_functions.size()
+    && host_functions_callbacks.size() == rhs.host_functions_callbacks.size()
     && agent_functions == rhs.agent_functions
     && host_functions == rhs.host_functions) {
         return true;

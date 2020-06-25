@@ -68,6 +68,13 @@ void LayerDescription::addHostFunction(FLAMEGPU_HOST_FUNCTION_POINTER func_p) {
     }
 }
 
+void LayerDescription::addHostFunctionCallback(HostFunctionCallback* func_callback) {
+    if (!layer->host_functions_callbacks.insert(func_callback).second) {
+            THROW InvalidHostFunc("Attempted to add same host function callback twice,"
+                "in LayerDescription::addHostFunctionCallback()");
+        }
+}
+
 
 std::string LayerDescription::getName() const {
     return layer->name;
@@ -85,6 +92,11 @@ ModelData::size_type LayerDescription::getAgentFunctionsCount() const {
 ModelData::size_type LayerDescription::getHostFunctionsCount() const {
     // Safe down-cast
     return static_cast<ModelData::size_type>(layer->host_functions.size());
+}
+
+ModelData::size_type LayerDescription::getHostFunctionCallbackCount() const {
+    // Safe down-cast
+    return static_cast<ModelData::size_type>(layer->host_functions_callbacks.size());
 }
 
 const AgentFunctionDescription &LayerDescription::getAgentFunction(unsigned int index) const {
@@ -108,4 +120,16 @@ FLAMEGPU_HOST_FUNCTION_POINTER LayerDescription::getHostFunction(unsigned int in
     THROW OutOfBoundsException("Index %d is out of bounds (only %d items exist) "
         "in LayerDescription.getHostFunction()\n",
         index, layer->host_functions.size());
+}
+
+HostFunctionCallback* LayerDescription::getHostFunctionCallback(unsigned int index) const {
+    if (index < layer->host_functions_callbacks.size()) {
+        auto it = layer->host_functions_callbacks.begin();
+        for (unsigned int i = 0; i < index; ++i)
+            ++it;
+        return *it;
+    }
+    THROW OutOfBoundsException("Index %d is out of bounds (only %d items exist) "
+        "in LayerDescription.getHostFunctionCallback()\n",
+        index, layer->host_functions_callbacks.size());
 }

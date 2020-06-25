@@ -10,15 +10,38 @@
 //#pragma SWIG nowarn=302
 
 // string support
+%include <stl.i>
 %include <std_string.i>
 %include <std_vector.i>
 %include <std_unordered_map.i>
-//%include <std_list.i>
+%include <std_array.i>
+
+// typemax for integer types
+%include <stdint.i>
 
 
+// Directors required for callback functions
 %module(directors="1") pyflamegpu
 
 
+/**
+ * TEMPLATE_ARRAY_TYPE_INSTANTIATE macro
+ *  This is used to instanciate the array sizes of a given type. This allows a mapping between python types and the function arguments created by TEMPLATE_VARIABLE_ARRAY_INSTANTIATE
+ */
+%define TEMPLATE_ARRAY_TYPE_INSTANTIATE(Typename, T) 
+%template(Typename ## Array1) std::array<T, 1>;
+%template(Typename ## Array2) std::array<T, 2>;
+%template(Typename ## Array3) std::array<T, 3>;
+%template(Typename ## Array4) std::array<T, 4>;
+%template(Typename ## Array8) std::array<T, 8>;
+%template(Typename ## Array16) std::array<T, 16>;
+%template(Typename ## Array32) std::array<T, 32>;
+%template(Typename ## Array64) std::array<T, 64>;
+%template(Typename ## Array128) std::array<T, 128>;
+%template(Typename ## Array256) std::array<T, 256>;
+%template(Typename ## Array512) std::array<T, 512>;
+%template(Typename ## Array1024) std::array<T, 1024>;
+%enddef
 
 /**
  * TEMPLATE_VARIABLE_ARRAY_INSTANTIATE macro
@@ -32,17 +55,17 @@
  */
 %define TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(functionType, classfunction, T) 
 %template(functionType) classfunction<T, 1>;
-%template(functionType ## A2) classfunction<T, 2>;
-%template(functionType ## A3) classfunction<T, 3>;
-%template(functionType ## A4) classfunction<T, 4>;
-%template(functionType ## A8) classfunction<T, 8>;
-%template(functionType ## A16) classfunction<T, 16>;
-%template(functionType ## A32) classfunction<T, 32>;
-%template(functionType ## A64) classfunction<T, 64>;
-%template(functionType ## A128) classfunction<T, 128>;
-%template(functionType ## A256) classfunction<T, 256>;
-%template(functionType ## A512) classfunction<T, 512>;
-%template(functionType ## A1024) classfunction<T, 1024>;
+%template(functionType ## Array2) classfunction<T, 2>;
+%template(functionType ## Array3) classfunction<T, 3>;
+%template(functionType ## Array4) classfunction<T, 4>;
+%template(functionType ## Array8) classfunction<T, 8>;
+%template(functionType ## Array16) classfunction<T, 16>;
+%template(functionType ## Array32) classfunction<T, 32>;
+%template(functionType ## Array64) classfunction<T, 64>;
+%template(functionType ## Array128) classfunction<T, 128>;
+%template(functionType ## Array256) classfunction<T, 256>;
+%template(functionType ## Array512) classfunction<T, 512>;
+%template(functionType ## Array1024) classfunction<T, 1024>;
 %enddef
 
 /**
@@ -84,12 +107,12 @@ TEMPLATE_VARIABLE_INSTANTIATE(function, classfunction)
 TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## Int8, classfunction, int8_t)
 TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## Int16, classfunction, int16_t)
 TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## Int32, classfunction, int32_t)
-TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## Int64, classfunction, int8_t)
+TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## Int64, classfunction, int64_t)
 // unsigned ints
 TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## UInt8, classfunction, uint8_t)
 TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## UInt16, classfunction, uint16_t)
 TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## UInt32, classfunction, uint32_t)
-TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## UInt64, classfunction, uint8_t)
+TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## UInt64, classfunction, uint64_t)
 // float and double
 TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## Float, classfunction, float)
 TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## Double, classfunction, double)
@@ -122,6 +145,24 @@ TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## UInt, classfunction, unsigned in
 #include "flamegpu/runtime/HostFunctionCallback.h"
 %}
 
+/* Instanciate the array types used in the templated variable functions. Types must match those in TEMPLATE_VARIABLE_INSTANTIATE and TEMPLATE_VARIABLE_INSTANTIATE_N macros*/
+TEMPLATE_ARRAY_TYPE_INSTANTIATE(Int8, int8_t)
+TEMPLATE_ARRAY_TYPE_INSTANTIATE(Int16, int16_t)
+TEMPLATE_ARRAY_TYPE_INSTANTIATE(Int32, int32_t)
+TEMPLATE_ARRAY_TYPE_INSTANTIATE(Int64, int64_t)
+// unsigned ints
+TEMPLATE_ARRAY_TYPE_INSTANTIATE(UInt8, uint8_t)
+TEMPLATE_ARRAY_TYPE_INSTANTIATE(UInt16, uint16_t)
+TEMPLATE_ARRAY_TYPE_INSTANTIATE(UInt32, uint32_t)
+TEMPLATE_ARRAY_TYPE_INSTANTIATE(UInt64, uint64_t)
+// float and double
+TEMPLATE_ARRAY_TYPE_INSTANTIATE(Float, float)
+TEMPLATE_ARRAY_TYPE_INSTANTIATE(Double, double)
+// default int and uint (causes redefintion warning)
+//TEMPLATE_ARRAY_TYPE_INSTANTIATE(Int, int)
+//TEMPLATE_ARRAY_TYPE_INSTANTIATE(UInt, unsigned int)
+
+
 /* Callback functions for step, exit and init */
 %feature("director") HostFunctionCallback;
 %include "flamegpu/runtime/HostFunctionCallback.h"
@@ -137,13 +178,14 @@ TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## UInt, classfunction, unsigned in
 %ignore ModelDescription::addInitFunction;
 %ignore ModelDescription::addStepFunction;
 %ignore ModelDescription::addExitFunction;
+%ignore LayerDescription::addHostFunction;
 
 
 /* SWIG header includes used to generate wrappers */
 %include "flamegpu/model/ModelDescription.h"
 %include "flamegpu/model/AgentDescription.h"
 %include "flamegpu/model/AgentFunctionDescription.h"
-//%include "flamegpu/model/EnvironmentDescription.h"
+%include "flamegpu/model/EnvironmentDescription.h"
 %include "flamegpu/model/LayerDescription.h"
 %include "flamegpu/pop/AgentPopulation.h"
 %include "flamegpu/pop/AgentInstance.h"
@@ -154,7 +196,7 @@ TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## UInt, classfunction, unsigned in
  * The approach avoids having to wrap every exception class which extends FGPUException
  */
 %exceptionclass FGPURuntimeException;
-%feature("python:slot", "tp_str", functype="reprfunc") FGPURuntimeException::what
+//%feature("python:slot", "tp_str", functype="reprfunc") FGPURuntimeException::what
 %inline %{
 
 class FGPURuntimeException : public std::exception {
@@ -274,7 +316,7 @@ TEMPLATE_VARIABLE_INSTANTIATE(newVariable, MsgArray3D::Description::newVariable)
 /* Instanciate template versions of host agent functions from the API */
 
 /* Instanciate template versions of host environment functions from the API */
-
+TEMPLATE_VARIABLE_INSTANTIATE_N(add, EnvironmentDescription::add)
 
 
 

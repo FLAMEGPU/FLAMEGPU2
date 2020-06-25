@@ -10,6 +10,7 @@
 #include "flamegpu/model/ModelData.h"
 struct AgentFunctionData;
 class LayerDescription;
+class HostFunctionCallback;
 
 /**
  * This is the internal data store for LayerDescription
@@ -29,6 +30,11 @@ struct LayerData {
      * set<FLAMEGPU_HOST_FUNCTION_POINTER>
      */
     std::set<FLAMEGPU_HOST_FUNCTION_POINTER> host_functions;
+    /**
+     * Set of host function callbacks
+     * set<FLAMEGPU_HOST_FUNCTION_POINTER>
+     */
+    std::set<HostFunctionCallback*> host_functions_callbacks;
     /**
      * Description class which provides convenient accessors
      */

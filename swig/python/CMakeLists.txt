@@ -39,6 +39,10 @@ set_property(TARGET ${PYTHON_MODULE_NAME} PROPERTY SWIG_USE_TARGET_INCLUDE_DIREC
 set_property(TARGET ${PYTHON_MODULE_NAME} PROPERTY CUDA_SEPARABLE_COMPILATION ON)
 # Suppress warnings during compilation of SWIG generated PYTHON_wrap.cxx
 set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcudafe --diag_suppress=\"declared_but_not_referenced\"")
+# set bigobj property for windows compiler (needed due to the sheer size of the generated swig file: https://www.reddit.com/r/AbsoluteUnits/)
+if(MSVC)
+	set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler /bigobj")
+endif()
 # set include directories for module build
 target_include_directories(${PYTHON_MODULE_NAME}
   PRIVATE
