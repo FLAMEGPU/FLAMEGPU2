@@ -72,6 +72,9 @@ __host__ Curve::VariableHash Curve::variableRuntimeHash(const char* str) {
     }
     return hash;
 }
+__host__ Curve::VariableHash Curve::variableRuntimeHash(unsigned int num) {
+    return variableRuntimeHash(std::to_string(num).c_str());
+}
 
 __host__ Curve::Variable Curve::getVariableHandle(VariableHash variable_hash) {
     unsigned int i, n;

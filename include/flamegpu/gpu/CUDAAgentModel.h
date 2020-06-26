@@ -162,6 +162,11 @@ class CUDAAgentModel : public Simulation {
      * With a resolution of around 0.5 microseconds (cudaEventElapsedtime)
      */
     float getSimulationElapsedTime() const;
+    /**
+     * Returns the unique instance id of this CUDAAgentModel instance
+     * @note This value is used internally for environment property storage
+     */
+    using Simulation::getInstanceID;
 
  protected:
     /**
@@ -293,10 +298,6 @@ class CUDAAgentModel : public Simulation {
      * @note called at the end of step() and after all init/hostLayer functions and exit conditions have finished
      */
     void processHostAgentCreation(const unsigned int &streamId);
-    /**
-     * Runs a specific agent function
-     * @param func_des the agent function to execute
-     */
 
  public:
     typedef std::vector<NewAgentStorage> AgentDataBuffer;

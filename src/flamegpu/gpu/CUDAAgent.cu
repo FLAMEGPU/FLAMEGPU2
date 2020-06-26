@@ -487,13 +487,13 @@ void CUDAAgent::addInstantitateRTCFunction(jitify::JitCache &kernel_cache, const
     }
 
     // Set Environment variables in curve
-    Curve::NamespaceHash model_hash = Curve::variableRuntimeHash(cuda_model.getModelDescription().name.c_str());
+    Curve::NamespaceHash instance_id_hash = Curve::variableRuntimeHash(cuda_model.getInstanceID());
     for (auto p : EnvironmentManager::getInstance().getPropertiesMap()) {
-        if (p.first.first == cuda_model.getModelDescription().name) {
+        if (p.first.first == cuda_model.getInstanceID()) {
             const char* variableName = p.first.second.c_str();
             const char* type = p.second.type.name();
             unsigned int elements = p.second.elements;
-            curve_header.registerEnvVariable(variableName, model_hash, type, elements);
+            curve_header.registerEnvVariable(variableName, instance_id_hash, type, elements);
         }
     }
 

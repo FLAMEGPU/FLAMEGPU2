@@ -39,12 +39,12 @@ class FLAMEGPU_READ_ONLY_DEVICE_API {
 
  public:
     /**
-     * @param _thread_in_layer_offset This offset can be added to TID to give a thread-safe unique index for the thread
+     * @param instance_id_hash CURVE hash of the CUDAAgentModel's instance id
      * @param modelname_hash CURVE hash of the model's name
      */
-    __device__ FLAMEGPU_READ_ONLY_DEVICE_API(const Curve::NamespaceHash &modelname_hash, const Curve::NamespaceHash &agentfuncname_hash, curandState *&d_rng)
+    __device__ FLAMEGPU_READ_ONLY_DEVICE_API(const Curve::NamespaceHash &instance_id_hash, const Curve::NamespaceHash &agentfuncname_hash, curandState *&d_rng)
         : random(AgentRandom(&d_rng[TID()]))
-        , environment(DeviceEnvironment(modelname_hash))
+        , environment(DeviceEnvironment(instance_id_hash))
         , agent_func_name_hash(agentfuncname_hash) { }
 
     template<typename T, unsigned int N> __device__
@@ -157,7 +157,12 @@ class FLAMEGPU_DEVICE_API : public FLAMEGPU_READ_ONLY_DEVICE_API{
          unsigned int * const scan_flag;
      };
     /**
+<<<<<<< HEAD
      * @param modelname_hash CURVE hash of the model's name
+=======
+     * @param _thread_in_layer_offset This offset can be added to TID to give a thread-safe unique index for the thread
+     * @param instance_id_hash CURVE hash of the CUDAAgentModel's instance id
+>>>>>>> 8c3509e... Support for multiple CUDAAgentModel instances of same ModelDescription.
      * @param agentfuncname_hash Combined CURVE hashes of agent name and func name
      * @param _agent_output_hash Combined CURVE hashes for agent output
      * @param d_rng Device pointer to curand state for this kernel, index 0 should for TID()==0
@@ -166,14 +171,14 @@ class FLAMEGPU_DEVICE_API : public FLAMEGPU_READ_ONLY_DEVICE_API{
      * @param msg_out Output message handler
      */
     __device__ FLAMEGPU_DEVICE_API(
-        const Curve::NamespaceHash &modelname_hash,
+        const Curve::NamespaceHash &instance_id_hash,
         const Curve::NamespaceHash &agentfuncname_hash,
         const Curve::NamespaceHash &_agent_output_hash,
         curandState *&d_rng,
         unsigned int *&scanFlag_agentOutput,
         typename MsgIn::In &&msg_in,
         typename MsgOut::Out &&msg_out)
-        : FLAMEGPU_READ_ONLY_DEVICE_API(modelname_hash, agentfuncname_hash, d_rng)
+        : FLAMEGPU_READ_ONLY_DEVICE_API(instance_id_hash, agentfuncname_hash, d_rng)
         , message_in(msg_in)
         , message_out(msg_out)
         , agent_out(AgentOut(_agent_output_hash, scanFlag_agentOutput))

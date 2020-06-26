@@ -36,11 +36,25 @@ inline std::string getFileExt(const std::string& s) {
 */
 class ReaderFactory {
  public:
-    static StateReader *createReader(const std::string &model_name, const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &model_state, const std::string &input) {
-        std::string extension = getFileExt(input);
+    /**
+     * Returns a reader capable of reading 'input'
+     * Environment properties will be read into the Simulation instance pointed to by 'sim_instance_id'
+     * Agent data will be read into 'model_state'
+     * @param model_name Name from the model description hierarchy of the model to be loaded
+     * @param sim_instance_id Instance is from the Simulation instance to load the environment properties into
+     * @param model_state Map of AgentPopulation to load the agent data into per agent, key should be agent name
+     * @param input Filename of the input file (This will be used to determine which reader to return)
+     * @throws UnsupportedFileType If the file extension does not match an appropriate reader
+     */
+    static StateReader *createReader(
+        const std::string &model_name,
+        const unsigned int &sim_instance_id,
+        const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &model_state,
+        const std::string &input) {
+        const std::string extension = getFileExt(input);
 
         if (extension == "xml") {
-            return new xmlReader(model_name, model_state, input);
+            return new xmlReader(model_name, sim_instance_id, model_state, input);
         }
         /*
         if (extension == "bin") {
@@ -55,8 +69,31 @@ class ReaderFactory {
 
 class WriterFactory {
  public:
-     static StateWriter *createWriter(const std::string &model_name, const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &model_state, const unsigned int &iterations, const std::string &output_file) {
-         return new xmlWriter(model_name, model_state, iterations, output_file);
+    /**
+     * Returns a writer capable of writing model state to 'output_file'
+     * Environment properties from the Simulation instance pointed to by 'sim_instance_id' will be used
+     * Agent data will be read from 'model_state'
+     * @param model_name Name from the model description hierarchy of the model to be exported
+     * @param sim_instance_id Instance is from the Simulation instance to export the environment properties from
+     * @param model_state Map of AgentPopulation to read the agent data from per agent, key should be agent name
+     * @param iterations The value from the step counter at the time of export.
+     * @param output_file Filename of the input file (This will be used to determine which reader to return)
+     * @throws UnsupportedFileType If the file extension does not match an appropriate reader
+     */
+    static StateWriter *createWriter(
+        const std::string &model_name,
+        const unsigned int &sim_instance_id,
+        const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &model_state,
+        const unsigned int &iterations,
+        const std::string &output_file) {
+        const std::string extension = getFileExt(output_file);
+
+        if (extension == "xml") {
+            return new xmlWriter(model_name, sim_instance_id, model_state, iterations, output_file);
+        }
+        THROW UnsupportedFileType("File '%s' is not a type which can be written "
+            "by WriterFactory::createWriter().",
+            output_file.c_str());
      }
 };
 

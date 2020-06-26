@@ -115,7 +115,7 @@ CUDAAgentModel::~CUDAAgentModel() {
     if (singletonsInitialised) {
         // unique pointers cleanup by automatically
         // Drop all constants from the constant cache linked to this model
-        singletons->environment.free(model->name);
+        singletons->environment.free(instance_id);
 
         delete singletons;
         singletons = nullptr;
@@ -156,7 +156,7 @@ bool CUDAAgentModel::step() {
     Curve::NamespaceHash message_name_inp_hash = 0;
     Curve::NamespaceHash message_name_outp_hash = 0;
     // hash model name
-    const Curve::NamespaceHash modelname_hash = singletons->curve.variableRuntimeHash(model->name.c_str());
+    const Curve::NamespaceHash instance_id_hash = Curve::variableRuntimeHash(instance_id);
 
     // TODO: simulation.getMaxFunctionsPerLayer()
     for (auto lyr = model->layers.begin(); lyr != model->layers.end(); ++lyr) {
@@ -245,8 +245,8 @@ bool CUDAAgentModel::step() {
                     int gridSize = 0;  // The actual grid size needed, based on input size
 
                     //  Agent function condition kernel wrapper args
-                    Curve::NamespaceHash agentname_hash = singletons->curve.variableRuntimeHash(agent_name.c_str());
-                    Curve::NamespaceHash funcname_hash = singletons->curve.variableRuntimeHash(func_name.c_str());
+                    Curve::NamespaceHash agentname_hash = Curve::variableRuntimeHash(agent_name.c_str());
+                    Curve::NamespaceHash funcname_hash = Curve::variableRuntimeHash(func_name.c_str());
                     Curve::NamespaceHash agent_func_name_hash = agentname_hash + funcname_hash;
                     curandState *t_rng = d_rng + totalThreads;
                     unsigned int *scanFlag_agentDeath = this->singletons->scatter.Scan().Config(CUDAScanCompaction::Type::AGENT_DEATH, j).d_ptrs.scan_flag;
@@ -258,8 +258,7 @@ bool CUDAAgentModel::step() {
 
                         //! Round up according to CUDAAgent state list size
                         gridSize = (state_list_size + blockSize - 1) / blockSize;
-
-                        (func_des->condition) << <gridSize, blockSize, 0, streams.at(j) >> > (modelname_hash, agent_func_name_hash, state_list_size, t_rng, scanFlag_agentDeath);
+                        (func_des->condition) << <gridSize, blockSize, 0, streams.at(j) >> > (instance_id_hash, agent_func_name_hash, state_list_size, t_rng, scanFlag_agentDeath);
                         gpuErrchkLaunch();
                     } else {  // RTC function
                         std::string func_condition_identifier = func_name + "_condition";
@@ -272,7 +271,7 @@ bool CUDAAgentModel::step() {
                         gridSize = (state_list_size + blockSize - 1) / blockSize;
                         // launch the kernel
                         CUresult a = instance.configure(gridSize, blockSize).launch({
-                                const_cast<void*>(reinterpret_cast<const void*>(&modelname_hash)),
+                                const_cast<void*>(reinterpret_cast<const void*>(&instance_id_hash)),
                                 reinterpret_cast<void*>(&agent_func_name_hash),
                                 reinterpret_cast<void*>(&state_list_size),
                                 reinterpret_cast<void*>(&t_rng),
@@ -403,7 +402,7 @@ bool CUDAAgentModel::step() {
                 const CUDAMessage& cuda_message = getCUDAMessage(inpMessage_name);
 
                 // hash message name
-                message_name_inp_hash = singletons->curve.variableRuntimeHash(inpMessage_name.c_str());
+                message_name_inp_hash = Curve::variableRuntimeHash(inpMessage_name.c_str());
 
                 d_in_messagelist_metadata = cuda_message.getMetaDataDevicePtr();
             }
@@ -414,7 +413,7 @@ bool CUDAAgentModel::step() {
                 const CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
 
                 // hash message name
-                message_name_outp_hash =  singletons->curve.variableRuntimeHash(outpMessage_name.c_str());
+                message_name_outp_hash =  Curve::variableRuntimeHash(outpMessage_name.c_str());
                 d_out_messagelist_metadata = cuda_message.getMetaDataDevicePtr();
             }
 
@@ -429,8 +428,8 @@ bool CUDAAgentModel::step() {
             int gridSize = 0;  // The actual grid size needed, based on input size
 
             // Agent function kernel wrapper args
-            Curve::NamespaceHash agentname_hash = singletons->curve.variableRuntimeHash(agent_name.c_str());
-            Curve::NamespaceHash funcname_hash = singletons->curve.variableRuntimeHash(func_name.c_str());
+            Curve::NamespaceHash agentname_hash = Curve::variableRuntimeHash(agent_name.c_str());
+            Curve::NamespaceHash funcname_hash = Curve::variableRuntimeHash(func_name.c_str());
             Curve::NamespaceHash agent_func_name_hash = agentname_hash + funcname_hash;
             Curve::NamespaceHash agentoutput_hash = func_des->agent_output.lock() ? singletons->curve.variableRuntimeHash("_agent_birth") + funcname_hash : 0;
             curandState * t_rng = d_rng + totalThreads;
@@ -445,7 +444,7 @@ bool CUDAAgentModel::step() {
                 gridSize = (state_list_size + blockSize - 1) / blockSize;
 
                 (func_des->func) << <gridSize, blockSize, 0, streams.at(j) >> > (
-                    modelname_hash,
+                    instance_id_hash,
                     agent_func_name_hash,
                     message_name_inp_hash,
                     message_name_outp_hash,
@@ -468,7 +467,7 @@ bool CUDAAgentModel::step() {
                 gridSize = (state_list_size + blockSize - 1) / blockSize;
                 // launch the kernel
                 CUresult a = instance.configure(gridSize, blockSize).launch({
-                        const_cast<void*>(reinterpret_cast<const void*>(&modelname_hash)),
+                        const_cast<void*>(reinterpret_cast<const void*>(&instance_id_hash)),
                         reinterpret_cast<void*>(&agent_func_name_hash),
                         reinterpret_cast<void*>(&message_name_inp_hash),
                         reinterpret_cast<void*>(&message_name_outp_hash),
@@ -696,7 +695,7 @@ void CUDAAgentModel::reset(bool submodelReset) {
 
     if (singletonsInitialised) {
         // Reset environment properties
-        singletons->environment.resetModel(model->name, *model->environment);
+        singletons->environment.resetModel(instance_id, *model->environment);
 
         // Reseed random, unless performing submodel reset
         if (!submodelReset) {
@@ -930,12 +929,12 @@ void CUDAAgentModel::initialiseSingletons() {
 
         // Populate the environment properties in constant Cache
         if (!submodel) {
-            singletons->environment.init(model->name, *model->environment);
+            singletons->environment.init(instance_id, *model->environment);
         } else {
-            singletons->environment.init(model->name, *model->environment, mastermodel->model->name, *submodel->subenvironment);
+            singletons->environment.init(instance_id, *model->environment, mastermodel->getInstanceID(), *submodel->subenvironment);
         }
         // Add the CUDAAgentModel specific variables(s)
-        singletons->environment.add({model->name, "_stepCount"}, 0u, false);
+        singletons->environment.add({instance_id, "_stepCount"}, 0u, false);
 
         // Reinitialise random for this simulation instance
         singletons->rng.reseed(getSimulationConfig().random_seed);
@@ -1114,14 +1113,14 @@ void CUDAAgentModel::RTCSafeCudaMemcpyToSymbolAddress(void* ptr, const char* rtc
 
 void CUDAAgentModel::RTCSetEnvironmentVariable(const std::string &variable_name, const void* src, size_t count, size_t offset) const {
     // get the model hash
-    const Curve::VariableHash model_hash = Curve::getInstance().variableRuntimeHash(getModelDescription().name.c_str());
+    const Curve::VariableHash instance_id_hash = Curve::variableRuntimeHash(instance_id);
     // loop through agents
     for (const auto& agent_pair : agent_map) {
         // loop through any agent functions
         for (const CUDAAgent::CUDARTCFuncMapPair& rtc_func_pair : agent_pair.second->getRTCFunctions()) {
             CUdeviceptr rtc_dev_ptr = 0;
             // get the RTC device symbol
-            std::string rtc_symbol_name = CurveRTCHost::getEnvVariableSymbolName(variable_name.c_str(), model_hash);
+            std::string rtc_symbol_name = CurveRTCHost::getEnvVariableSymbolName(variable_name.c_str(), instance_id_hash);
             rtc_dev_ptr = rtc_func_pair.second->get_global_ptr(rtc_symbol_name.c_str());
             // make the memcpy to the rtc version of the symbol
             gpuErrchkDriverAPI(cuMemcpyHtoD(rtc_dev_ptr + offset, src, count));
@@ -1131,9 +1130,8 @@ void CUDAAgentModel::RTCSetEnvironmentVariable(const std::string &variable_name,
 
 void CUDAAgentModel::incrementStepCounter() {
     this->step_count++;
-    this->singletons->environment.set({model->name, "_stepCount"}, this->step_count);
+    this->singletons->environment.set({instance_id, "_stepCount"}, this->step_count);
 }
-
 
 float CUDAAgentModel::getSimulationElapsedTime() const {
     // Get the value

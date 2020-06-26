@@ -131,34 +131,3 @@ TEST(EnvironmentManagerTest2, MultipleModels) {
     delete ms1;
     delete ms2;
 }
-
-// Free/Rehost model
-// This test will need expanding once Environment manager is separated into host and device management so the EnvDescriptionAlreadyLoaded can be thrown at construction rather than first use.
-TEST(EnvironmentManagerTest2, RehostModel) {
-    MiniSim *ms1 = new MiniSim();
-    ms1->env.add<float>("ms1_float", MS1_VAL);
-    CUDAAgentModel *cuda_model1 = new CUDAAgentModel(ms1->model);
-    cuda_model1->SimulationConfig().steps = 1;
-    cuda_model1->setPopulationData(*ms1->population);
-    EXPECT_NO_THROW(cuda_model1->simulate());
-    MiniSim *ms2 = new MiniSim();
-    ms2->env.add<float>("ms1_float", MS1_VAL);
-    {
-        CUDAAgentModel *cuda_model2 = nullptr;
-        cuda_model2 = new CUDAAgentModel(ms2->model);
-        // Errors because ms1 CUDAAgentModel still alive, but a method must be called on it to initialise the device (rather than error at construction)
-        EXPECT_THROW(cuda_model2->step(), EnvDescriptionAlreadyLoaded);
-        delete cuda_model2;
-    }
-    delete cuda_model1;
-    // Try again now ms1 has been deleted
-    CUDAAgentModel *cuda_model2 = nullptr;
-    cuda_model2 = new CUDAAgentModel(ms2->model);
-    EXPECT_NO_THROW(cuda_model2->step());
-    cuda_model2->setPopulationData(*ms2->population);
-    cuda_model2->SimulationConfig().steps = 1;
-    EXPECT_NO_THROW(cuda_model2->simulate());
-    delete cuda_model2;
-    delete ms1;
-    delete ms2;
-}

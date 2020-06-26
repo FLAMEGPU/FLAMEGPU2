@@ -43,15 +43,15 @@ void EnvironmentManager::purge() {
     mapped_properties.clear();
 }
 
-void EnvironmentManager::init(const std::string& model_name, const EnvironmentDescription &desc) {
+void EnvironmentManager::init(const unsigned int &instance_id, const EnvironmentDescription &desc) {
     // Initialise device portions of Environment manager
     initialiseDevice();
     // Error if reinit
     for (auto &&i : properties) {
-        if (i.first.first == model_name) {
-            THROW EnvDescriptionAlreadyLoaded("Environment description with same model name '%s' is already loaded, "
+        if (i.first.first == instance_id) {
+            THROW EnvDescriptionAlreadyLoaded("Environment description with same instance id '%u' is already loaded, "
                 "in EnvironmentManager::init().",
-                model_name.c_str());
+                instance_id);
         }
     }
     // Build a DefragMap to send to defragger method
@@ -59,7 +59,7 @@ void EnvironmentManager::init(const std::string& model_name, const EnvironmentDe
     size_t newSize = 0;
     for (auto _i = desc.properties.begin(); _i != desc.properties.end(); ++_i) {
         const auto &i = _i->second;
-        NamePair name = toName(model_name, _i->first);
+        NamePair name = toName(instance_id, _i->first);
         DefragProp prop = DefragProp(i.data.ptr, i.data.length, i.isConst, i.elements, i.type);
         const size_t typeSize = i.data.length / i.elements;
         orderedProperties.emplace(typeSize, std::make_pair(name, prop));
@@ -74,15 +74,15 @@ void EnvironmentManager::init(const std::string& model_name, const EnvironmentDe
     // Defragment to rebuild it properly
     defragment(&orderedProperties);
 }
-void EnvironmentManager::init(const std::string& model_name, const EnvironmentDescription &desc, const std::string& master_model_name, const SubEnvironmentData &mapping) {
+void EnvironmentManager::init(const unsigned int &instance_id, const EnvironmentDescription &desc, const unsigned int &master_instance_id, const SubEnvironmentData &mapping) {
     // Initialise device portions of Environment manager
     assert(deviceInitialised);  // submodel init should never be called first, requires parent init first for mapping
     // Error if reinit
     for (auto &&i : properties) {
-        if (i.first.first == model_name) {
-            THROW EnvDescriptionAlreadyLoaded("Environment description with same model name '%s' is already loaded, "
+        if (i.first.first == instance_id) {
+            THROW EnvDescriptionAlreadyLoaded("Environment description with same instance id '%u' is already loaded, "
                 "in EnvironmentManager::init().",
-                model_name.c_str());
+                instance_id);
         }
     }
 
@@ -93,7 +93,7 @@ void EnvironmentManager::init(const std::string& model_name, const EnvironmentDe
     for (auto _i = desc.properties.begin(); _i != desc.properties.end(); ++_i) {
         auto prop_mapping = mapping.properties.find(_i->first);
         const auto &i = _i->second;
-        NamePair name = toName(model_name, _i->first);
+        NamePair name = toName(instance_id, _i->first);
         if (prop_mapping == mapping.properties.end()) {
             // Property is not mapped, so add to defrag map
             DefragProp prop = DefragProp(i.data.ptr, i.data.length, i.isConst, i.elements, i.type);
@@ -102,7 +102,7 @@ void EnvironmentManager::init(const std::string& model_name, const EnvironmentDe
             newSize += i.data.length;
         } else {
             // Property is mapped, follow it's mapping upwards until we find the highest parent
-            NamePair ultimateParent = toName(master_model_name, prop_mapping->second);
+            NamePair ultimateParent = toName(master_instance_id, prop_mapping->second);
             auto propFind = mapped_properties.find(ultimateParent);
             while (propFind != mapped_properties.end()) {
                 ultimateParent = propFind->second.masterProp;
@@ -126,16 +126,16 @@ void EnvironmentManager::init(const std::string& model_name, const EnvironmentDe
 
 void EnvironmentManager::initRTC(const CUDAAgentModel& cuda_model) {
     // check to ensure that model name is not already registered
-    auto res = cuda_agent_models.find(cuda_model.getModelDescription().name);
+    auto res = cuda_agent_models.find(cuda_model.getInstanceID());
     if (res != cuda_agent_models.end()) {
         THROW UnknownInternalError("Agent model name '%s' already registered in initRTC()", cuda_model.getModelDescription().name.c_str());
     }
     // register model name
-    cuda_agent_models.emplace(cuda_model.getModelDescription().name, cuda_model);
+    cuda_agent_models.emplace(cuda_model.getInstanceID(), cuda_model);
 
     // loop through environment properties, already registered by cuda_
     for (auto &p : properties) {
-        if (p.first.first == cuda_model.getModelDescription().name) {
+        if (p.first.first == cuda_model.getInstanceID()) {
             auto var_name = p.first.second;
             auto src = hc_buffer + p.second.offset;
             auto length = p.second.length;
@@ -158,11 +158,11 @@ void EnvironmentManager::initialiseDevice() {
         deviceInitialised = true;
     }
 }
-void EnvironmentManager::free(const std::string &model_name) {
+void EnvironmentManager::free(const unsigned int &instance_id) {
     Curve::getInstance().setNamespaceByHash(CURVE_NAMESPACE_HASH);
     // Release regular properties
     for (auto &&i = properties.begin(); i != properties.end();) {
-        if (i->first.first == model_name) {
+        if (i->first.first == instance_id) {
             // Release from CURVE
             Curve::VariableHash cvh = toHash(i->first);
             Curve::getInstance().unregisterVariableByHash(cvh);
@@ -174,7 +174,7 @@ void EnvironmentManager::free(const std::string &model_name) {
     }
     // Release mapped properties
     for (auto &&i = mapped_properties.begin(); i != mapped_properties.end();) {
-        if (i->first.first == model_name) {
+        if (i->first.first == instance_id) {
             // Release from CURVE
             Curve::VariableHash cvh = toHash(i->first);
             Curve::getInstance().unregisterVariableByHash(cvh);
@@ -189,21 +189,21 @@ void EnvironmentManager::free(const std::string &model_name) {
     defragment();
     // Remove reference to cuda agent model used by RTC
     // This may not exist if the CUDAgent model has not been created (e.g. some tests which do not run the model)
-    auto cam = cuda_agent_models.find(model_name);
+    auto cam = cuda_agent_models.find(instance_id);
     if (cam != cuda_agent_models.end()) {
         cuda_agent_models.erase(cam);
     }
 }
 
-EnvironmentManager::NamePair EnvironmentManager::toName(const std::string &model_name, const std::string &var_name) {
-    return std::make_pair(model_name, var_name);
+EnvironmentManager::NamePair EnvironmentManager::toName(const unsigned int &instance_id, const std::string &var_name) {
+    return std::make_pair(instance_id, var_name);
 }
 
 /**
  * @note Not static, because eventually we might need to use curve singleton
  */
 Curve::VariableHash EnvironmentManager::toHash(const NamePair &name) const {
-    Curve::VariableHash model_cvh = Curve::getInstance().variableRuntimeHash(name.first.c_str());
+    Curve::VariableHash model_cvh = Curve::getInstance().variableRuntimeHash(name.first);
     Curve::VariableHash var_cvh = Curve::getInstance().variableRuntimeHash(name.second.c_str());
     return model_cvh + var_cvh;
 }
@@ -387,16 +387,16 @@ void EnvironmentManager::defragment(DefragMap *mergeProperties, std::set<NamePai
     Curve::getInstance().setDefaultNamespace();
 }
 
-const CUDAAgentModel& EnvironmentManager::getCUDAAgentModel(std::string model_name) {
-    auto res = cuda_agent_models.find(model_name);
+const CUDAAgentModel& EnvironmentManager::getCUDAAgentModel(const unsigned int &instance_id) {
+    auto res = cuda_agent_models.find(instance_id);
     if (res == cuda_agent_models.end()) {
-        THROW UnknownInternalError("Agent model name '%s' not registered in EnvironmentManager for use with RTC in EnvironmentManager::getCUDAAgentModel", model_name.c_str());
+        THROW UnknownInternalError("Instance with id '%u' not registered in EnvironmentManager for use with RTC in EnvironmentManager::getCUDAAgentModel", instance_id);
     }
     return res->second;
 }
 
-void EnvironmentManager::setRTCValue(const std::string &model_name, const std::string &variable_name, const void* src, size_t count, size_t offset) {
-    const CUDAAgentModel& cuda_agent_model = getCUDAAgentModel(model_name);
+void EnvironmentManager::setRTCValue(const unsigned int &instance_id, const std::string &variable_name, const void* src, size_t count, size_t offset) {
+    const CUDAAgentModel& cuda_agent_model = getCUDAAgentModel(instance_id);
     cuda_agent_model.RTCSetEnvironmentVariable(variable_name, src, count, offset);
 }
 
@@ -426,24 +426,24 @@ void EnvironmentManager::remove(const NamePair &name) {
         mapped_properties.erase(name);
     }
 }
-void EnvironmentManager::remove(const std::string &model_name, const std::string &var_name) {
-    remove({model_name, var_name});
+void EnvironmentManager::remove(const unsigned int &instance_id, const std::string &var_name) {
+    remove({instance_id, var_name});
 }
 
-void EnvironmentManager::resetModel(const std::string &model_name, const EnvironmentDescription &desc) {
+void EnvironmentManager::resetModel(const unsigned int &instance_id, const EnvironmentDescription &desc) {
     // Todo: Might want to change this, so EnvManager holds a copy of the default at init time
     // For every property, in the named model, which is not a mapped property
     for (auto &d : desc.getPropertiesMap()) {
-        if (mapped_properties.find({model_name, d.first}) == mapped_properties.end()) {
+        if (mapped_properties.find({instance_id, d.first}) == mapped_properties.end()) {
             // Find the local property data
-            auto &p = properties.at({model_name, d.first});
+            auto &p = properties.at({instance_id, d.first});
             // Set back to default value
             memcpy(hc_buffer + p.offset, d.second.data.ptr, d.second.data.length);
             assert(d.second.data.length == p.length);
             // Store data
             gpuErrchk(cudaMemcpy(reinterpret_cast<void*>(const_cast<char*>(c_buffer + p.offset)), reinterpret_cast<void*>(hc_buffer + p.offset), p.length, cudaMemcpyHostToDevice));
             // update RTC
-            setRTCValue(model_name, d.first, hc_buffer + p.offset, p.length, p.offset);
+            setRTCValue(instance_id, d.first, hc_buffer + p.offset, p.length, p.offset);
         }
     }
 }

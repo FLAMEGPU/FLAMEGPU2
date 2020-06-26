@@ -56,6 +56,7 @@ class Curve {
      *  @return a 32 bit cuRVE string variable hash.
      */
     __host__ static VariableHash variableRuntimeHash(const char* str);
+    __host__ static VariableHash variableRuntimeHash(unsigned int num);
 
     /** @brief Main cuRVE variable hashing function
      *  Calls recursive hashing functions
