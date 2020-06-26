@@ -101,8 +101,6 @@
  * See description of TEMPLATE_VARIABLE_INSTANTIATE and TEMPLATE_VARIABLE_ARRAY_INSTANTIATE
  */
 %define TEMPLATE_VARIABLE_INSTANTIATE_N(function, classfunction) 
-// generate non array versions
-TEMPLATE_VARIABLE_INSTANTIATE(function, classfunction)
 // signed ints
 TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## Int8, classfunction, int8_t)
 TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## Int16, classfunction, int16_t)
@@ -180,7 +178,6 @@ TEMPLATE_ARRAY_TYPE_INSTANTIATE(Double, double)
 %ignore ModelDescription::addExitFunction;
 %ignore LayerDescription::addHostFunction;
 
-
 /* SWIG header includes used to generate wrappers */
 %include "flamegpu/model/ModelDescription.h"
 %include "flamegpu/model/AgentDescription.h"
@@ -189,6 +186,21 @@ TEMPLATE_ARRAY_TYPE_INSTANTIATE(Double, double)
 %include "flamegpu/model/LayerDescription.h"
 %include "flamegpu/pop/AgentPopulation.h"
 %include "flamegpu/pop/AgentInstance.h"
+
+/* Extend AgentInstance to add a templated version of the getVariable function with a different name so this can be extened */
+%extend AgentInstance{
+    template <typename T, unsigned int N>  std::array<T, N> getVariableArray(const std::string& variable_name) const {
+        return $self->getVariable<T,N>(variable_name);
+    }
+}
+
+/* Extend HostEnvironment to add a templated version of the getVariable function with a different name so this can be extened */
+%extend HostEnvironment{
+    template<typename T, EnvironmentManager::size_type N> std::array<T, N> getArray(const std::string& name) const {
+        return $self->get<T,N>(name);
+    }
+}
+
 
 /** Exception handling
  * FGPURuntimeException class is a wrapper class to replace specific instances of FGPUException. It is constructed with a error mesage and type which can be queried to give the original error and the original exception class.
@@ -227,6 +239,10 @@ class FGPURuntimeException : public std::exception {
         PyObject *err = SWIG_NewPointerObj(except, SWIGTYPE_p_FGPURuntimeException, 1);
         SWIG_Python_Raise(err, except.type(), SWIGTYPE_p_FGPURuntimeException); 
         SWIG_fail;
+    }
+    catch(const std::exception& e)
+    {
+        SWIG_exception(SWIG_RuntimeError, const_cast<char*>(e.what()) );
     }
     catch (...) {
         SWIG_exception(SWIG_RuntimeError, "Unknown Exception");
@@ -285,10 +301,28 @@ class FGPURuntimeException : public std::exception {
 %feature("flatnested", "");     // flat nested off
 
 
+
+
 /* Instanciate template versions of agent functions from the API */
+TEMPLATE_VARIABLE_INSTANTIATE(newVariable, AgentDescription::newVariable)
 TEMPLATE_VARIABLE_INSTANTIATE_N(newVariable, AgentDescription::newVariable)
+
+/* Instanciate template versions of host agent functions from the API */
+TEMPLATE_VARIABLE_INSTANTIATE(setVariable, AgentInstance::setVariable)
 TEMPLATE_VARIABLE_INSTANTIATE_N(setVariable, AgentInstance::setVariable)
 TEMPLATE_VARIABLE_INSTANTIATE(getVariable, AgentInstance::getVariable)
+TEMPLATE_VARIABLE_INSTANTIATE_N(getVariable, AgentInstance::getVariableArray)
+
+/* Instanciate template versions of host environment functions from the API */
+TEMPLATE_VARIABLE_INSTANTIATE(get, HostEnvironment::get)
+TEMPLATE_VARIABLE_INSTANTIATE_N(get, HostEnvironment::getArray)
+TEMPLATE_VARIABLE_INSTANTIATE(set, HostEnvironment::set)
+TEMPLATE_VARIABLE_INSTANTIATE_N(set, HostEnvironment::set)
+
+/* Instanciate template versions of environment escription functions from the API */
+TEMPLATE_VARIABLE_INSTANTIATE(add, EnvironmentDescription::add)
+TEMPLATE_VARIABLE_INSTANTIATE_N(add, EnvironmentDescription::add)
+
 
 /* Instanciate template versions of new and get message types from the API */
 %template(newMessageBruteForce) ModelDescription::newMessage<MsgBruteForce>;
@@ -313,10 +347,7 @@ TEMPLATE_VARIABLE_INSTANTIATE(newVariable, MsgArray::Description::newVariable)
 TEMPLATE_VARIABLE_INSTANTIATE(newVariable, MsgArray2D::Description::newVariable)
 TEMPLATE_VARIABLE_INSTANTIATE(newVariable, MsgArray3D::Description::newVariable)
 
-/* Instanciate template versions of host agent functions from the API */
 
-/* Instanciate template versions of host environment functions from the API */
-TEMPLATE_VARIABLE_INSTANTIATE_N(add, EnvironmentDescription::add)
 
 
 
