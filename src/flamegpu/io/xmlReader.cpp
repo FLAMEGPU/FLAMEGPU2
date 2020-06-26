@@ -54,8 +54,8 @@
 }
 #endif
 
-xmlReader::xmlReader(const std::string &model_name, const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &model_state, const std::string &input)
-    : StateReader(model_name, model_state, input) {}
+xmlReader::xmlReader(const std::string &model_name, const unsigned int &sim_instance_id, const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &model_state, const std::string &input)
+    : StateReader(model_name, sim_instance_id, model_state, input) {}
 
 /**
 * \brief parses the xml file
@@ -90,7 +90,7 @@ int xmlReader::parse() {
             const char *key = envElement->Value();
             std::stringstream ss(envElement->GetText());
             std::string token;
-            const EnvironmentManager::NamePair np = { model_name , std::string(key) };
+            const EnvironmentManager::NamePair np = { sim_instance_id , std::string(key) };
             if (env_manager.contains(np)) {
                 const std::type_index val_type = env_manager.type(np);
                 const auto elements = env_manager.length(np);

@@ -15,11 +15,13 @@
 Simulation::Simulation(const ModelDescription& _model)
     : model(_model.model->clone())
     , submodel(nullptr)
-    , mastermodel(nullptr) { }
+    , mastermodel(nullptr)
+    , instance_id(get_instance_id()) { }
 Simulation::Simulation(const std::shared_ptr<SubModelData> &submodel_desc, CUDAAgentModel *master_model)
     : model(submodel_desc->submodel)
     , submodel(submodel_desc)
-    , mastermodel(master_model) { }
+    , mastermodel(master_model)
+    , instance_id(get_instance_id()) { }
 void Simulation::initialise(int argc, const char** argv) {
     NVTX_RANGE("Simulation::initialise");
     config = Config();  // Reset to defaults
@@ -42,7 +44,7 @@ void Simulation::applyConfig() {
         pops.emplace(agent.first, a);
     }
     if (!config.xml_input_file.empty()) {
-        StateReader *read__ = ReaderFactory::createReader(model->name, pops, config.xml_input_file.c_str());
+        StateReader *read__ = ReaderFactory::createReader(model->name, getInstanceID(), pops, config.xml_input_file.c_str());
         if (read__) {
             read__->parse();
             for (auto &agent : pops) {
@@ -68,7 +70,7 @@ void Simulation::exportData(const std::string &path) {
         pops.emplace(agent.first, a);
     }
 
-    StateWriter *write__ = WriterFactory::createWriter(model->name, pops, getStepCounter(), path);
+    StateWriter *write__ = WriterFactory::createWriter(model->name, getInstanceID(), pops, getStepCounter(), path);
     write__->writeStates();
 }
 
@@ -158,4 +160,9 @@ const Simulation::Config &Simulation::getSimulationConfig() const {
 
 void Simulation::reset() {
     reset(false);
+}
+
+unsigned int Simulation::get_instance_id() {
+    static unsigned int i = 0;
+    return i++;
 }

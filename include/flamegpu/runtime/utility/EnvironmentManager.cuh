@@ -56,11 +56,13 @@ class EnvironmentManager {
      */
     friend class xmlWriter;
     friend class xmlReader;
-
-    typedef std::pair<std::string, std::string> NamePair;
+    /**
+     * CUDAAgentModel instance id and Property name
+     */
+    typedef std::pair<unsigned int, std::string> NamePair;
     struct NamePairHash {
         size_t operator()(const NamePair& k) const {
-            return std::hash<std::string>()(k.first) ^
+            return std::hash<unsigned int>()(k.first) ^
                 (std::hash<std::string>()(k.second) << 1);
         }
     };
@@ -161,30 +163,31 @@ class EnvironmentManager {
     typedef std::multimap<size_t, std::pair<const NamePair, DefragProp>> DefragMap;
     /**
      * Activates a models environment properties, by adding them to constant cache
-     * @param model_name Name of the model
+     * @param instance_id instance_id of the CUDAAgentModel instance the properties are attached to
      * @param desc environment properties description to use
      */
-    void init(const std::string& model_name, const EnvironmentDescription &desc);
+    void init(const unsigned int &instance_id, const EnvironmentDescription &desc);
     /**
      * Submodel variant of init()
      * Activates a models unmapped environment properties, by adding them to constant cache
      * Maps a models mapped environment properties to their master property
-     * @param model_name Name of the model
+     * @param instance_id instance_id of the CUDAAgentModel instance the properties are attached to
+     * @param master_instance_id instance_id of the CUDAAgentModel instance of the parent of the submodel
      * @param desc environment properties description to use
      */
-    void init(const std::string& model_name, const EnvironmentDescription &desc, const std::string& master_model_name, const SubEnvironmentData &mapping);
+    void init(const unsigned int &instance_id, const EnvironmentDescription &desc, const unsigned int &master_instance_id, const SubEnvironmentData &mapping);
     /**
-     * RTC functions hold thier own unique constants for environment variables. This function copies all environment variable to the RTC copies.
+     * RTC functions hold their own unique constants for environment variables. This function copies all environment variable to the RTC copies.
      * It can not be incorporated into init() as init will be called before RTC functions have been compiled.
      * Uses the already populated Environment data from the cuda_model rather than environmentDescription.
      * @param cuda_model the cuda model being initialised.
      */
-    void initRTC(const CUDAAgentModel& cuda_model);
+    void initRTC(const CUDAAgentModel &cuda_model);
     /**
      * Deactives all environmental properties linked to the named model from constant cache
-     * @param model_name Name of the model
+     * @param instance_id instance_id of the CUDAAgentModel instance the properties are attached to
      */
-    void free(const std::string &model_name);
+    void free(const unsigned int &instance_id);
     /**
      * Max amount of space that can be used for storing environmental properties
      */
@@ -201,7 +204,7 @@ class EnvironmentManager {
     void add(const NamePair &name, const T &value, const bool &isConst = false);
     /**
      * Convenience method: Adds a new environment property
-     * @param model_name name of the model the property is attached to
+     * @param instance_id instance_id of the CUDAAgentModel instance the property is attached to
      * @param var_name name used for accessing the property
      * @param value stored value of the property
      * @param isConst If set to true, it is not possible to change the value
@@ -210,7 +213,7 @@ class EnvironmentManager {
      * @see add(const NamePair &, const T &, const bool &)
      */
     template<typename T>
-    void add(const std::string &model_name, const std::string &var_name, const T &value, const bool &isConst = false);
+    void add(const unsigned int &instance_id, const std::string &var_name, const T &value, const bool &isConst = false);
     /**
      * Adds a new environment property array
      * @param name name used for accessing the property
@@ -224,7 +227,7 @@ class EnvironmentManager {
     void add(const NamePair &name, const std::array<T, N> &value, const bool &isConst = false);
     /**
      * Convenience method: Adds a new environment property array
-     * @param model_name name of the model the property is attached to
+     * @param instance_id instance_id of the CUDAAgentModel instance the property is attached to
      * @param var_name name used for accessing the property
      * @param value stored value of the property
      * @param isConst If set to true, it is not possible to change the value
@@ -234,7 +237,7 @@ class EnvironmentManager {
      * @see add(const NamePair &, const std::array<T, N> &, const bool &)
      */
     template<typename T, size_type N>
-    void add(const std::string &model_name, const std::string &var_name, const std::array<T, N> &value, const bool &isConst = false);
+    void add(const unsigned int &instance_id, const std::string &var_name, const std::array<T, N> &value, const bool &isConst = false);
     /**
      * Sets an environment property
      * @param name name used for accessing the property
@@ -248,7 +251,7 @@ class EnvironmentManager {
     T set(const NamePair &name, const T &value);
     /**
      * Convenience method: Sets an environment property
-     * @param model_name name of the model the property is attached to
+     * @param instance_id instance_id of the CUDAAgentModel instance the property is attached to
      * @param var_name name used for accessing the property
      * @param value value to set the property
      * @tparam T Type of the environmental property array to be created
@@ -258,7 +261,7 @@ class EnvironmentManager {
      * @see add(const NamePair &, const T &)
      */
     template<typename T>
-    T set(const std::string &model_name, const std::string &var_name, const T &value);
+    T set(const unsigned int &instance_id, const std::string &var_name, const T &value);
     /**
      * Sets an environment property array
      * @param name name used for accessing the property array
@@ -273,7 +276,7 @@ class EnvironmentManager {
     std::array<T, N> set(const NamePair &name, const std::array<T, N> &value);
     /**
      * Convenience method: Sets an environment property array
-     * @param model_name name of the model the property is attached to
+     * @param instance_id instance_id of the CUDAAgentModel instance the property is attached to
      * @param var_name name used for accessing the property
      * @param value value to set the property array
      * @tparam T Type of the environmental property array to be created
@@ -284,10 +287,11 @@ class EnvironmentManager {
      * @see set(const NamePair &, const std::array<T, N> &)
      */
     template<typename T, size_type N>
-    std::array<T, N> set(const std::string &model_name, const std::string &var_name, const std::array<T, N> &value);
+    std::array<T, N> set(const unsigned int &instance_id, const std::string &var_name, const std::array<T, N> &value);
     /**
      * Sets an element of an environment property array
      * @param name name used for accessing the property array
+     * @param index Index of the element within the array
      * @param value value to set the element of the property array
      * @tparam T Type of the environmental property array to be created
      * @return Returns the previous value
@@ -298,8 +302,9 @@ class EnvironmentManager {
     T set(const NamePair &name, const size_type &index, const T &value);
     /**
      * Convenience method: Sets an element of an environment property array
-     * @param model_name name of the model the property is attached to
+     * @param instance_id instance_id of the CUDAAgentModel instance the property is attached to
      * @param var_name name used for accessing the property
+     * @param index Index of the element within the array
      * @param value value to set the element of the property array
      * @tparam T Type of the environmental property array to be created
      * @return Returns the previous value
@@ -308,7 +313,7 @@ class EnvironmentManager {
      * @see set(const NamePair &, const size_type &, const T &)
      */
     template<typename T>
-    T set(const std::string &model_name, const std::string &var_name, const size_type &index, const T &value);
+    T set(const unsigned int &instance_id, const std::string &var_name, const size_type &index, const T &value);
     /**
      * Gets an environment property
      * @param name name used for accessing the property
@@ -320,13 +325,13 @@ class EnvironmentManager {
     T get(const NamePair &name);
     /**
      * Convenience method: Gets an environment property
-     * @param model_name name of the model the property is attached to
+     * @param instance_id instance_id of the CUDAAgentModel instance the property is attached to
      * @param var_name name used for accessing the property
      * @tparam T Type of the environmental property array to be created
      * @throws InvalidEnvProperty If a property of the name does not exist
      */
     template<typename T>
-    T get(const std::string &model_name, const std::string &var_name);
+    T get(const unsigned int &instance_id, const std::string &var_name);
     /**
      * Gets an environment property array
      * @param name name used for accessing the property array
@@ -338,7 +343,7 @@ class EnvironmentManager {
     std::array<T, N> get(const NamePair &name);
     /**
      * Convenience method: Gets an environment property array
-     * @param model_name name of the model the property is attached to
+     * @param instance_id instance_id of the CUDAAgentModel instance the property is attached to
      * @param var_name name used for accessing the property
      * @tparam T Type of the environmental property array to be created
      * @tparam N Length of the environmental property array to be created
@@ -346,10 +351,11 @@ class EnvironmentManager {
      * @see get(const NamePair &)
      */
     template<typename T, size_type N>
-    std::array<T, N> get(const std::string &model_name, const std::string &var_name);
+    std::array<T, N> get(const unsigned int &instance_id, const std::string &var_name);
     /**
      * Gets an element of an environment property array
      * @param name name used for accessing the property array
+     * @param index Index of the element within the array
      * @tparam T Type of the value to be returned
      * @throws InvalidEnvProperty If a property of the name does not exist
      * @throws std::out_of_range
@@ -358,7 +364,7 @@ class EnvironmentManager {
     T get(const NamePair &name, const size_type &index);
     /**
      * Convenience method: Gets an element of an environment property array
-     * @param model_name name of the model the property is attached to
+     * @param instance_id instance_id of the CUDAAgentModel instance the property is attached to
      * @param var_name name used for accessing the property
      * @tparam T Type of the value to be returned
      * @throws InvalidEnvProperty If a property of the name does not exist
@@ -366,7 +372,7 @@ class EnvironmentManager {
      * @see get(const NamePair &, const size_type &)
      */
     template<typename T>
-    T get(const std::string &model_name, const std::string &var_name, const size_type &index);
+    T get(const unsigned int &instance_id, const std::string &var_name, const size_type &index);
     /**
      * Removes an environment property
      * @param name name used for accessing the property
@@ -376,21 +382,21 @@ class EnvironmentManager {
     void remove(const NamePair &name);
     /**
      * Convenience method: Removes an environment property
-     * @param model_name name of the model the property is attached to
+     * @param instance_id instance_id of the CUDAAgentModel instance the property is attached to
      * @param var_name name used for accessing the property
      * @throws InvalidEnvProperty If a property of the name does not exist
      * @note This may be used to remove and recreate environment properties (and arrays) marked const
      * @see remove(const NamePair &)
      */
-    void remove(const std::string &model_name, const std::string &var_name);
+    void remove(const unsigned int &instance_id, const std::string &var_name);
     /**
      * Returns all environment properties owned by a model to their default values
      * This means that properties inherited by a submodel will not be reset to their default values
-     * @param model_name name of the model the property is attached to
+     * @param instance_id instance_id of the CUDAAgentModel instance the property is attached to
      * @param desc The environment description (this is where the defaults are pulled from)
      * @todo This is not a particularly efficient implementation, as it updates them all individually.
      */
-    void resetModel(const std::string &model_name, const EnvironmentDescription &desc);
+    void resetModel(const unsigned int &instance_id, const EnvironmentDescription &desc);
     /**
      * Returns whether the named env property exists
      * @param name name used for accessing the property
@@ -398,11 +404,11 @@ class EnvironmentManager {
     inline bool contains(const NamePair &name) const { return properties.find(name) != properties.end() || mapped_properties.find(name) != mapped_properties.end(); }
     /**
      * Convenience method: Returns whether the named env property exists
-     * @param model_name name of the model the property is attached to
+     * @param instance_id instance_id of the CUDAAgentModel instance the property is attached to
      * @param var_name name used for accessing the property
      * @see contains(const NamePair &)
      */
-    inline bool contains(const std::string &model_name, const std::string &var_name) const { return contains(toName(model_name, var_name)); }
+    inline bool contains(const unsigned int &instance_id, const std::string &var_name) const { return contains(toName(instance_id, var_name)); }
     /**
      * Returns whether the named env property is marked as const
      * @param name name used for accessing the property
@@ -417,19 +423,19 @@ class EnvironmentManager {
         if (b != mapped_properties.end()) {
             return b->second.isConst;
         }
-        THROW InvalidEnvProperty("Environmental property with name '%s:%s' does not exist, "
+        THROW InvalidEnvProperty("Environmental property with name '%u:%s' does not exist, "
             "in EnvironmentManager::isConst().",
-            name.first.c_str(), name.second.c_str());
+            name.first, name.second.c_str());
     }
     /**
      * Convenience method: Returns whether the named env property is marked as const
-     * @param model_name name of the model the property is attached to
+     * @param instance_id instance_id of the CUDAAgentModel instance the property is attached to
      * @param var_name name used for accessing the property
      * @return true if the var is marked as constant (cannot be changed during simulation)
      * @throws InvalidEnvProperty If a property of the name does not exist
      * @see isConst(const NamePair &)
      */
-    inline bool isConst(const std::string &model_name, const std::string &var_name) const { return isConst(toName(model_name, var_name)); }
+    inline bool isConst(const unsigned int &instance_id, const std::string &var_name) const { return isConst(toName(instance_id, var_name)); }
     /**
      * Returns the number of elements of the named env property (1 if not an array)
      * @param name name used for accessing the property
@@ -444,22 +450,22 @@ class EnvironmentManager {
             a = properties.find(b->second.masterProp);
             if (a != properties.end())
                 return a->second.elements;
-            THROW InvalidEnvProperty("Mapped environmental property with name '%s:%s' maps to missing property with name '%s:%s', "
+            THROW InvalidEnvProperty("Mapped environmental property with name '%u:%s' maps to missing property with name '%u:%s', "
                 "in EnvironmentManager::type().",
-                name.first.c_str(), name.second.c_str(), b->second.masterProp.first.c_str(), b->second.masterProp.second.c_str());
+                name.first, name.second.c_str(), b->second.masterProp.first, b->second.masterProp.second.c_str());
         }
-        THROW InvalidEnvProperty("Environmental property with name '%s:%s' does not exist, "
+        THROW InvalidEnvProperty("Environmental property with name '%u:%s' does not exist, "
             "in EnvironmentManager::length().",
-            name.first.c_str(), name.second.c_str());
+            name.first, name.second.c_str());
     }
     /**
      * Convenience method: Returns the number of elements of the named env property (1 if not an array)
-     * @param model_name name of the model the property is attached to
+     * @param instance_id instance_id of the CUDAAgentModel instance the property is attached to
      * @param var_name name used for accessing the property
      * @throws InvalidEnvProperty If a property of the name does not exist
      * @see length(const NamePair &)
      */
-    inline size_type length(const std::string &model_name, const std::string &var_name) const { return length(toName(model_name, var_name)); }
+    inline size_type length(const unsigned int &instance_id, const std::string &var_name) const { return length(toName(instance_id, var_name)); }
     /**
      * Returns the variable type of named env property
      * @param name name used for accessing the property
@@ -474,22 +480,22 @@ class EnvironmentManager {
             a = properties.find(b->second.masterProp);
             if (a != properties.end())
                 return a->second.type;
-            THROW InvalidEnvProperty("Mapped environmental property with name '%s:%s' maps to missing property with name '%s:%s', "
+            THROW InvalidEnvProperty("Mapped environmental property with name '%u:%s' maps to missing property with name '%u:%s', "
                 "in EnvironmentManager::type().",
-                name.first.c_str(), name.second.c_str(), b->second.masterProp.first.c_str(), b->second.masterProp.second.c_str());
+                name.first, name.second.c_str(), b->second.masterProp.first, b->second.masterProp.second.c_str());
         }
-        THROW InvalidEnvProperty("Environmental property with name '%s:%s' does not exist, "
+        THROW InvalidEnvProperty("Environmental property with name '%u:%s' does not exist, "
             "in EnvironmentManager::type().",
-            name.first.c_str(), name.second.c_str());
+            name.first, name.second.c_str());
     }
     /**
      * Convenience method: Returns the variable type of named env property
-     * @param model_name name of the model the property is attached to
+     * @param instance_id instance_id of the CUDAAgentModel instance the property is attached to
      * @param var_name name used for accessing the property
      * @throws InvalidEnvProperty If a property of the name does not exist
      * @see type(const NamePair &)
      */
-    inline std::type_index type(const std::string &model_name, const std::string &var_name) const { return type(toName(model_name, var_name)); }
+    inline std::type_index type(const unsigned int &instance_id, const std::string &var_name) const { return type(toName(instance_id, var_name)); }
     /**
      * Returns the available space remaining (bytes) for storing environmental properties
      */
@@ -516,11 +522,11 @@ class EnvironmentManager {
  private:
     /**
      * Joins the two strings into a std::pair
-     * @param model_name becomes first item of pair
+     * @param instance_id becomes first item of pair
      * @param var_name becomes second item of pair
-     * @return Returns std::make_pair(model_name, var_name)
+     * @return Returns std::make_pair(instance_id, var_name)
      */
-    static NamePair toName(const std::string &model_name, const std::string &var_name);
+    static NamePair toName(const unsigned int &instance_id, const std::string &var_name);
     /**
      * Returns the sum of the curve variable hash for the two items within name
      * @param name Pair of the two items to produce the curve value hash
@@ -569,7 +575,7 @@ class EnvironmentManager {
     /**
      * Map of model name to CUDAAgentModel for use in updating RTC values
      */
-    std::unordered_map<std::string, const CUDAAgentModel&> cuda_agent_models;
+    std::unordered_map<unsigned int, const CUDAAgentModel&> cuda_agent_models;
 
     /**
      * Flag indicating that curve has/hasn't been initialised yet on a device.
@@ -599,9 +605,9 @@ class EnvironmentManager {
         return instance;                     // Instantiated on first use.
     }
 
-    const CUDAAgentModel& getCUDAAgentModel(std::string model_name);
+    const CUDAAgentModel& getCUDAAgentModel(const unsigned int &instance_id);
 
-    void setRTCValue(const std::string &model_name, const std::string &variable_name, const void* src, size_t count, size_t offset = 0);
+    void setRTCValue(const unsigned int &instance_id, const std::string &variable_name, const void* src, size_t count, size_t offset = 0);
 
  public:
     // Public deleted creates better compiler errors
@@ -619,15 +625,15 @@ void EnvironmentManager::add(const NamePair &name, const T &value, const bool &i
     static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value,
         "Only arithmetic types can be used as environmental properties");
     if (contains(name)) {
-        THROW DuplicateEnvProperty("Environmental property with name '%s:%s' already exists, "
+        THROW DuplicateEnvProperty("Environmental property with name '%u:%s' already exists, "
             "in EnvironmentManager::add().",
-            name.first.c_str(), name.second.c_str());
+            name.first, name.second.c_str());
     }
     add(name, reinterpret_cast<const char*>(&value), sizeof(T), isConst, 1, typeid(T));
 }
 template<typename T>
-void EnvironmentManager::add(const std::string &model_name, const std::string &var_name, const T &value, const bool &isConst) {
-    add<T>(toName(model_name, var_name), value, isConst);
+void EnvironmentManager::add(const unsigned int &instance_id, const std::string &var_name, const T &value, const bool &isConst) {
+    add<T>(toName(instance_id, var_name), value, isConst);
 }
 template<typename T, EnvironmentManager::size_type N>
 void EnvironmentManager::add(const NamePair &name, const std::array<T, N> &value, const bool &isConst) {
@@ -636,15 +642,15 @@ void EnvironmentManager::add(const NamePair &name, const std::array<T, N> &value
     static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value,
         "Only arithmetic types can be used as environmental properties");
     if (contains(name)) {
-        THROW DuplicateEnvProperty("Environmental property with name '%s:%s' already exists, "
+        THROW DuplicateEnvProperty("Environmental property with name '%u:%s' already exists, "
             "in EnvironmentManager::add().",
-            name.first.c_str(), name.second.c_str());
+            name.first, name.second.c_str());
     }
     add(name, reinterpret_cast<const char*>(value.data()), N * sizeof(T), isConst, N, typeid(T));
 }
 template<typename T, EnvironmentManager::size_type N>
-void EnvironmentManager::add(const std::string &model_name, const std::string &var_name, const std::array<T, N> &value, const bool &isConst) {
-    add<T, N>(toName(model_name, var_name), value, isConst);
+void EnvironmentManager::add(const unsigned int &instance_id, const std::string &var_name, const std::array<T, N> &value, const bool &isConst) {
+    add<T, N>(toName(instance_id, var_name), value, isConst);
 }
 
 /**
@@ -654,14 +660,14 @@ template<typename T>
 T EnvironmentManager::set(const NamePair &name, const T &value) {
     const std::type_index typ_id = type(name);
     if (typ_id != std::type_index(typeid(T))) {
-        THROW InvalidEnvPropertyType("Environmental property ('%s:%s') type (%s) does not match template argument T (%s), "
+        THROW InvalidEnvPropertyType("Environmental property ('%u:%s') type (%s) does not match template argument T (%s), "
             "in EnvironmentManager::set().",
-            name.first.c_str(), name.second.c_str(), typ_id.name(), typeid(T).name());
+            name.first, name.second.c_str(), typ_id.name(), typeid(T).name());
     }
     if (isConst(name)) {
-        THROW ReadOnlyEnvProperty("Environmental property ('%s:%s') is marked as const and cannot be changed, "
+        THROW ReadOnlyEnvProperty("Environmental property ('%u:%s') is marked as const and cannot be changed, "
             "in EnvironmentManager::set().",
-            name.first.c_str(), name.second.c_str());
+            name.first, name.second.c_str());
     }
     // Copy old data to return
     T rtn = get<T>(name);
@@ -682,21 +688,21 @@ T EnvironmentManager::set(const NamePair &name, const T &value) {
     return rtn;
 }
 template<typename T>
-T EnvironmentManager::set(const std::string &model_name, const std::string &var_name, const T &value) {
-    return set<T>(toName(model_name, var_name), value);
+T EnvironmentManager::set(const unsigned int &instance_id, const std::string &var_name, const T &value) {
+    return set<T>(toName(instance_id, var_name), value);
 }
 template<typename T, EnvironmentManager::size_type N>
 std::array<T, N> EnvironmentManager::set(const NamePair &name, const std::array<T, N> &value) {
     const std::type_index typ_id = type(name);
     if (typ_id != std::type_index(typeid(T))) {
-        THROW InvalidEnvPropertyType("Environmental property array ('%s:%s') type (%s) does not match template argument T (%s), "
+        THROW InvalidEnvPropertyType("Environmental property array ('%u:%s') type (%s) does not match template argument T (%s), "
             "in EnvironmentManager::set().",
-            name.first.c_str(), name.second.c_str(), typ_id.name(), typeid(T).name());
+            name.first, name.second.c_str(), typ_id.name(), typeid(T).name());
     }
     if (isConst(name)) {
-        THROW ReadOnlyEnvProperty("Environmental property array ('%s:%s') is marked as const and cannot be changed, "
+        THROW ReadOnlyEnvProperty("Environmental property array ('%u:%s') is marked as const and cannot be changed, "
             "in EnvironmentManager::set().",
-            name.first.c_str(), name.second.c_str());
+            name.first, name.second.c_str());
     }
     const size_type array_len = length(name);
     if (array_len != N) {
@@ -723,21 +729,21 @@ std::array<T, N> EnvironmentManager::set(const NamePair &name, const std::array<
     return rtn;
 }
 template<typename T, EnvironmentManager::size_type N>
-std::array<T, N> EnvironmentManager::set(const std::string &model_name, const std::string &var_name, const std::array<T, N> &value) {
-    return set<T, N>(toName(model_name, var_name), value);
+std::array<T, N> EnvironmentManager::set(const unsigned int &instance_id, const std::string &var_name, const std::array<T, N> &value) {
+    return set<T, N>(toName(instance_id, var_name), value);
 }
 template<typename T>
 T EnvironmentManager::set(const NamePair &name, const size_type &index, const T &value) {
     const std::type_index typ_id = type(name);
     if (typ_id != std::type_index(typeid(T))) {
-        THROW InvalidEnvPropertyType("Environmental property array ('%s:%s') type (%s) does not match template argument T (%s), "
+        THROW InvalidEnvPropertyType("Environmental property array ('%u:%s') type (%s) does not match template argument T (%s), "
             "in EnvironmentManager::set().",
-            name.first.c_str(), name.second.c_str(), typ_id.name(), typeid(T).name());
+            name.first, name.second.c_str(), typ_id.name(), typeid(T).name());
     }
     if (isConst(name)) {
-        THROW ReadOnlyEnvProperty("Environmental property array ('%s:%s') is marked as const and cannot be changed, "
+        THROW ReadOnlyEnvProperty("Environmental property array ('%u:%s') is marked as const and cannot be changed, "
             "in EnvironmentManager::set().",
-            name.first.c_str(), name.second.c_str());
+            name.first, name.second.c_str());
     }
     const size_type array_len = length(name);
     if (index >= array_len) {
@@ -764,8 +770,8 @@ T EnvironmentManager::set(const NamePair &name, const size_type &index, const T 
     return rtn;
 }
 template<typename T>
-T EnvironmentManager::set(const std::string &model_name, const std::string &var_name, const size_type &index, const T &value) {
-    return set<T>(toName(model_name, var_name), index, value);
+T EnvironmentManager::set(const unsigned int &instance_id, const std::string &var_name, const size_type &index, const T &value) {
+    return set<T>(toName(instance_id, var_name), index, value);
 }
 
 /**
@@ -779,9 +785,9 @@ T EnvironmentManager::get(const NamePair &name) {
         "Only arithmetic types can be used as environmental properties");
     std::type_index typ_id = type(name);
     if (typ_id != std::type_index(typeid(T))) {
-        THROW InvalidEnvPropertyType("Environmental property ('%s:%s') type (%s) does not match template argument T (%s), "
+        THROW InvalidEnvPropertyType("Environmental property ('%u:%s') type (%s) does not match template argument T (%s), "
             "in EnvironmentManager::get().",
-            name.first.c_str(), name.second.c_str(), typ_id.name(), typeid(T).name());
+            name.first, name.second.c_str(), typ_id.name(), typeid(T).name());
     }
     // Copy old data to return
     const auto a = properties.find(name);
@@ -790,8 +796,8 @@ T EnvironmentManager::get(const NamePair &name) {
     return *reinterpret_cast<T*>(hc_buffer + properties.at(mapped_properties.at(name).masterProp).offset);
 }
 template<typename T>
-T EnvironmentManager::get(const std::string &model_name, const std::string &var_name) {
-    return get<T>(toName(model_name, var_name));
+T EnvironmentManager::get(const unsigned int &instance_id, const std::string &var_name) {
+    return get<T>(toName(instance_id, var_name));
 }
 template<typename T, EnvironmentManager::size_type N>
 std::array<T, N> EnvironmentManager::get(const NamePair &name) {
@@ -801,9 +807,9 @@ std::array<T, N> EnvironmentManager::get(const NamePair &name) {
         "Only arithmetic types can be used as environmental properties");
     const std::type_index typ_id = type(name);
     if (typ_id != std::type_index(typeid(T))) {
-        THROW InvalidEnvPropertyType("Environmental property array ('%s:%s') type (%s) does not match template argument T (%s), "
+        THROW InvalidEnvPropertyType("Environmental property array ('%u:%s') type (%s) does not match template argument T (%s), "
             "in EnvironmentManager::get().",
-            name.first.c_str(), name.second.c_str(), typ_id.name(), typeid(T).name());
+            name.first, name.second.c_str(), typ_id.name(), typeid(T).name());
     }
     const size_type array_len = length(name);
     if (array_len != N) {
@@ -822,8 +828,8 @@ std::array<T, N> EnvironmentManager::get(const NamePair &name) {
     return rtn;
 }
 template<typename T, EnvironmentManager::size_type N>
-std::array<T, N> EnvironmentManager::get(const std::string &model_name, const std::string &var_name) {
-    return get<T, N>(toName(model_name, var_name));
+std::array<T, N> EnvironmentManager::get(const unsigned int &instance_id, const std::string &var_name) {
+    return get<T, N>(toName(instance_id, var_name));
 }
 template<typename T>
 T EnvironmentManager::get(const NamePair &name, const size_type &index) {
@@ -833,9 +839,9 @@ T EnvironmentManager::get(const NamePair &name, const size_type &index) {
         "Only arithmetic types can be used as environmental properties");
     const std::type_index typ_id = type(name);
     if (typ_id != std::type_index(typeid(T))) {
-        THROW InvalidEnvPropertyType("Environmental property array ('%s:%s') type (%s) does not match template argument T (%s), "
+        THROW InvalidEnvPropertyType("Environmental property array ('%u:%s') type (%s) does not match template argument T (%s), "
             "in EnvironmentManager::get().",
-            name.first.c_str(), name.second.c_str(), typ_id.name(), typeid(T).name());
+            name.first, name.second.c_str(), typ_id.name(), typeid(T).name());
     }
     const size_type array_len = length(name);
     if (index >= array_len) {
@@ -850,8 +856,8 @@ T EnvironmentManager::get(const NamePair &name, const size_type &index) {
     return *reinterpret_cast<T*>(hc_buffer + properties.at(mapped_properties.at(name).masterProp).offset + index * sizeof(T));
 }
 template<typename T>
-T EnvironmentManager::get(const std::string &model_name, const std::string &var_name, const size_type &index) {
-    return get<T>(toName(model_name, var_name), index);
+T EnvironmentManager::get(const unsigned int &instance_id, const std::string &var_name, const size_type &index) {
+    return get<T>(toName(instance_id, var_name), index);
 }
 
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_UTILITY_ENVIRONMENTMANAGER_CUH_

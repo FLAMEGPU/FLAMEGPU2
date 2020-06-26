@@ -53,8 +53,8 @@
 }
 #endif
 
-xmlWriter::xmlWriter(const std::string &model_name, const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &model, const unsigned int &iterations, const std::string &output_file)
-    : StateWriter(model_name, model, iterations, output_file) {}
+xmlWriter::xmlWriter(const std::string &model_name, const unsigned int &sim_instance_id, const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &model, const unsigned int &iterations, const std::string &output_file)
+    : StateWriter(model_name, sim_instance_id, model, iterations, output_file) {}
 
 int xmlWriter::writeStates() {
     tinyxml2::XMLDocument doc;
@@ -72,7 +72,7 @@ int xmlWriter::writeStates() {
     const char *env_buffer = reinterpret_cast<const char *>(env_manager.getHostBuffer());
     for (auto &a : env_manager.getPropertiesMap()) {
         // If it is from this model
-        if (a.first.first == model_name) {
+        if (a.first.first == sim_instance_id) {
             tinyxml2::XMLElement* pListElement = doc.NewElement(a.first.second.c_str());
             pListElement->SetAttribute("type", a.second.type.name());
                 // Output properties

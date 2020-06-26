@@ -80,6 +80,11 @@ class Simulation {
     virtual bool checkArgs_derived(int argc, const char** argv, int &i) = 0;
     virtual void printHelp_derived() = 0;
     virtual void resetDerivedConfig() = 0;
+    /**
+     * Returns the unique instance id of this CUDAAgentModel instance
+     * @note This value is used internally for environment property storage
+     */
+    unsigned int getInstanceID() const { return instance_id; }
     const std::shared_ptr<const ModelData> model;
 
     /**
@@ -93,8 +98,16 @@ class Simulation {
     CUDAAgentModel const * mastermodel;
 
     Config config;
+    /**
+     * Unique index of Simulation instance
+     */
+    const unsigned int instance_id;
 
  private:
+    /**
+     * Generates a unique id number for the instance
+     */
+    static unsigned int get_instance_id();
     void printHelp(const char *executable);
     int checkArgs(int argc, const char** argv);
 };

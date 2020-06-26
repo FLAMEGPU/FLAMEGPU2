@@ -350,5 +350,18 @@ TEST(TestCUDAAgentModel, getSimulationElapsedTime) {
     EXPECT_GT(simulate10StepDuration, 0.0f);
     EXPECT_NE(simulate1StepDuration, simulate10StepDuration);
 }
+// test that we can have 2 instances of the same ModelDescription simultaneously
+TEST(TestCUDAAgentModel, MultipleInstances) {
+    // Define a simple model - doesn't need to do anything other than take some time.
+    ModelDescription m(MODEL_NAME);
+    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentPopulation pop(a, static_cast<unsigned int>(AGENT_COUNT));
+    m.addStepFunction(IncrementCounter);
+
+    CUDAAgentModel c1(m);
+    c1.setPopulationData(pop);
+    // Set population data should trigger initialiseSingletons(), which is what leads to crash if EnvManager has matching name/id
+    EXPECT_NO_THROW(CUDAAgentModel c2(m); c2.setPopulationData(pop););
+}
 
 }  // namespace test_cuda_agent_model

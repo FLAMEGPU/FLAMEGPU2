@@ -29,16 +29,16 @@ class HostEnvironment {
     /**
      * Constructor, to be called by FLAMEGPU_HOST_API
      */
-    explicit HostEnvironment(const std::string &model_name);
+    explicit HostEnvironment(const unsigned int &instance_id);
     /**
      * Provides access to EnvironmentManager singleton
      */
     EnvironmentManager &env_mgr;
     /**
-     * Access to name of the model
+     * Access to instance id of the CUDAAgentModel
      * This is used to augment all variable names
      */
-    const std::string model_name;
+    const unsigned int instance_id;
 
  public:
     /**
@@ -113,7 +113,7 @@ T HostEnvironment::set(const std::string &name, const T &value) const {
         THROW ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
             "in HostEnvironment::set().");
     }
-    return env_mgr.set<T>({ model_name, name }, value);
+    return env_mgr.set<T>({ instance_id, name }, value);
 }
 template<typename T, EnvironmentManager::size_type N>
 std::array<T, N> HostEnvironment::set(const std::string &name, const std::array<T, N> &value) const {
@@ -121,7 +121,7 @@ std::array<T, N> HostEnvironment::set(const std::string &name, const std::array<
         THROW ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
             "in HostEnvironment::set().");
     }
-    return env_mgr.set<T, N>({ model_name, name }, value);
+    return env_mgr.set<T, N>({ instance_id, name }, value);
 }
 template<typename T>
 T HostEnvironment::set(const std::string &name, const EnvironmentManager::size_type &index, const T &value) const {
@@ -129,7 +129,7 @@ T HostEnvironment::set(const std::string &name, const EnvironmentManager::size_t
         THROW ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
             "in HostEnvironment::set().");
     }
-    return env_mgr.set<T>({ model_name, name }, index, value);
+    return env_mgr.set<T>({ instance_id, name }, index, value);
 }
 
 /**
@@ -137,15 +137,15 @@ T HostEnvironment::set(const std::string &name, const EnvironmentManager::size_t
  */
 template<typename T>
 T HostEnvironment::get(const std::string &name) const  {
-    return env_mgr.get<T>({ model_name, name });
+    return env_mgr.get<T>({ instance_id, name });
 }
 template<typename T, EnvironmentManager::size_type N>
 std::array<T, N> HostEnvironment::get(const std::string &name) const  {
-    return env_mgr.get<T, N>({ model_name, name });
+    return env_mgr.get<T, N>({ instance_id, name });
 }
 template<typename T>
 T HostEnvironment::get(const std::string &name, const EnvironmentManager::size_type &index) const  {
-    return env_mgr.get<T>({ model_name, name }, index);
+    return env_mgr.get<T>({ instance_id, name }, index);
 }
 
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_UTILITY_HOSTENVIRONMENT_CUH_

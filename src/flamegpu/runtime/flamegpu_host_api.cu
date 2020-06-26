@@ -10,7 +10,7 @@ FLAMEGPU_HOST_API::FLAMEGPU_HOST_API(CUDAAgentModel &_agentModel,
     const AgentOffsetMap &_agentOffsets,
     AgentDataMap &_agentData)
     : random(rng)
-    , environment(_agentModel.getModelDescription().name)
+    , environment(_agentModel.getInstanceID())
     , agentModel(_agentModel)
     , d_cub_temp(nullptr)
     , d_cub_temp_size(0)
