@@ -1,3 +1,5 @@
+# FLAME GPU 2
+
 ### Introduction
 
 The project aim is to develop an existing computer application called FLAMEGPU, a high performance Graphics Processing Unit (GPU) extension to the FLAME framework that provides a mapping between a formal agent specifications with C based scripting and optimised CUDA code to support scalable muti-agent simulation.  The plan it to expand/extend features and capabilities of the exiting <a href="https://github.com/FLAMEGPU/FLAMEGPU">FLAMEGPU software</a>, in order to position it as a middle-ware for complex systems simulation. The application is expected to be the equivalent of Thrust for simplifying complex systems on GPUs.  The FLAMEGPU library includes algorithms such as spatial partitioning, network communication.
@@ -6,14 +8,11 @@ The Code is currently under active development and should **not be used** until 
 
 ### Continuous Integration
 
-Continuous Integration (CI) is provided by Github Actions, Travis (Linux only) and AppVeyor (Windows only).
-CI jobs *only* include compilation, as the CI workers do not include CUDA GPUs.
+Continuous Integration (CI) is provided by Github Actions.
+CI jobs *only* include compilation, as the CI workers do not include CUDA-capable GPUs.
 
-| Provider           | Status |
-|--------------------|--------|
-| Github Actions     | [![Ubuntu](https://github.com/FLAMEGPU/FLAMEGPU2_dev/workflows/Ubuntu/badge.svg?branch=master)](https://github.com/FLAMEGPU/FLAMEGPU2_dev/actions?query=workflow%3AUbuntu+branch%3Amaster) [![Windows](https://github.com/FLAMEGPU/FLAMEGPU2_dev/workflows/Windows/badge.svg?branch=master)](https://github.com/FLAMEGPU/FLAMEGPU2_dev/actions?query=workflow%3AWindows+branch%3Amaster) [![Lint](https://github.com/FLAMEGPU/FLAMEGPU2_dev/workflows/Lint/badge.svg?branch=master)](https://github.com/FLAMEGPU/FLAMEGPU2_dev/actions?query=workflow%3ALint+branch%3Amaster) [![Docs](https://github.com/FLAMEGPU/FLAMEGPU2_dev/workflows/Docs/badge.svg?branch=master)](https://github.com/FLAMEGPU/FLAMEGPU2_dev/actions?query=workflow%3ADocs+branch%3Amaster) |
-| Travis (Ubuntu)     | [![Build Status](https://travis-ci.org/FLAMEGPU/FLAMEGPU2_dev.svg?branch=master)](https://travis-ci.org/FLAMEGPU/FLAMEGPU2_dev)|
-| Appveyor (Windows) | [![Build status](https://ci.appveyor.com/api/projects/status/4p58gnu8tyj7y3a7/branch/master?svg=true)](https://ci.appveyor.com/project/mondus/flamegpu2-dev/branch/master) |
+[![Ubuntu](https://github.com/FLAMEGPU/FLAMEGPU2_dev/workflows/Ubuntu/badge.svg?branch=master)](https://github.com/FLAMEGPU/FLAMEGPU2_dev/actions?query=workflow%3AUbuntu+branch%3Amaster) [![Windows](https://github.com/FLAMEGPU/FLAMEGPU2_dev/workflows/Windows/badge.svg?branch=master)](https://github.com/FLAMEGPU/FLAMEGPU2_dev/actions?query=workflow%3AWindows+branch%3Amaster) [![Lint](https://github.com/FLAMEGPU/FLAMEGPU2_dev/workflows/Lint/badge.svg?branch=master)](https://github.com/FLAMEGPU/FLAMEGPU2_dev/actions?query=workflow%3ALint+branch%3Amaster) [![Docs](https://github.com/FLAMEGPU/FLAMEGPU2_dev/workflows/Docs/badge.svg?branch=master)](https://github.com/FLAMEGPU/FLAMEGPU2_dev/actions?query=workflow%3ADocs+branch%3Amaster)
+
 
 
 ### Dependencies
