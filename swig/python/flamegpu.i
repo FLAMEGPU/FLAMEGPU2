@@ -52,9 +52,10 @@
  *    typedef SomeClass:function<int, 3> functionInt;
  *    typedef SomeClass:function<int, 4> functionInt;
  *    ...
+ * Dev Notes: If array size of 1 is generated this will cause redefinition warnings. Disabling the array size of 1 requires that scalar functions have a default value. E.g. AgentDescription::addVariable.
  */
 %define TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(functionType, classfunction, T) 
-%template(functionType) classfunction<T, 1>;
+//%template(functionType) classfunction<T, 1>; 
 %template(functionType ## Array2) classfunction<T, 2>;
 %template(functionType ## Array3) classfunction<T, 3>;
 %template(functionType ## Array4) classfunction<T, 4>;
@@ -143,71 +144,13 @@ TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## UInt, classfunction, unsigned in
 #include "flamegpu/runtime/HostFunctionCallback.h"
 %}
 
-/* Instanciate the array types used in the templated variable functions. Types must match those in TEMPLATE_VARIABLE_INSTANTIATE and TEMPLATE_VARIABLE_INSTANTIATE_N macros*/
-TEMPLATE_ARRAY_TYPE_INSTANTIATE(Int8, int8_t)
-TEMPLATE_ARRAY_TYPE_INSTANTIATE(Int16, int16_t)
-TEMPLATE_ARRAY_TYPE_INSTANTIATE(Int32, int32_t)
-TEMPLATE_ARRAY_TYPE_INSTANTIATE(Int64, int64_t)
-// unsigned ints
-TEMPLATE_ARRAY_TYPE_INSTANTIATE(UInt8, uint8_t)
-TEMPLATE_ARRAY_TYPE_INSTANTIATE(UInt16, uint16_t)
-TEMPLATE_ARRAY_TYPE_INSTANTIATE(UInt32, uint32_t)
-TEMPLATE_ARRAY_TYPE_INSTANTIATE(UInt64, uint64_t)
-// float and double
-TEMPLATE_ARRAY_TYPE_INSTANTIATE(Float, float)
-TEMPLATE_ARRAY_TYPE_INSTANTIATE(Double, double)
-// default int and uint (causes redefintion warning)
-//TEMPLATE_ARRAY_TYPE_INSTANTIATE(Int, int)
-//TEMPLATE_ARRAY_TYPE_INSTANTIATE(UInt, unsigned int)
-
-
-/* Callback functions for step, exit and init */
-%feature("director") HostFunctionCallback;
-%include "flamegpu/runtime/HostFunctionCallback.h"
-
-
-/* Disable non RTC function and function condtion set methods */
-%ignore AgentDescription::newFunction;
-%ignore AgentFunctionDescription::getFunctionPtr;
-%ignore AgentFunctionDescription::setFunctionCondition;
-%ignore AgentFunctionDescription::getConditionPtr;
-
-/* Disable functions which allow raw C pointers in favour of callback objects */
-%ignore ModelDescription::addInitFunction;
-%ignore ModelDescription::addStepFunction;
-%ignore ModelDescription::addExitFunction;
-%ignore LayerDescription::addHostFunction;
-
-/* SWIG header includes used to generate wrappers */
-%include "flamegpu/model/ModelDescription.h"
-%include "flamegpu/model/AgentDescription.h"
-%include "flamegpu/model/AgentFunctionDescription.h"
-%include "flamegpu/model/EnvironmentDescription.h"
-%include "flamegpu/model/LayerDescription.h"
-%include "flamegpu/pop/AgentPopulation.h"
-%include "flamegpu/pop/AgentInstance.h"
-
-/* Extend AgentInstance to add a templated version of the getVariable function with a different name so this can be extened */
-%extend AgentInstance{
-    template <typename T, unsigned int N>  std::array<T, N> getVariableArray(const std::string& variable_name) const {
-        return $self->getVariable<T,N>(variable_name);
-    }
-}
-
-/* Extend HostEnvironment to add a templated version of the getVariable function with a different name so this can be extened */
-%extend HostEnvironment{
-    template<typename T, EnvironmentManager::size_type N> std::array<T, N> getArray(const std::string& name) const {
-        return $self->get<T,N>(name);
-    }
-}
-
-
 /** Exception handling
  * FGPURuntimeException class is a wrapper class to replace specific instances of FGPUException. It is constructed with a error mesage and type which can be queried to give the original error and the original exception class.
  * The FGPURuntimeException is constructed form the original FGPUException in the handler and then translated into the python version.
  * The approach avoids having to wrap every exception class which extends FGPUException
  */
 %exceptionclass FGPURuntimeException;
+// It was hoped that the following would provide a nice repr implementation of the Python FGPURuntimeException objects. It does not.
 //%feature("python:slot", "tp_str", functype="reprfunc") FGPURuntimeException::what
 %inline %{
 
@@ -249,6 +192,55 @@ class FGPURuntimeException : public std::exception {
     } 
 }
 
+/* Instanciate the array types used in the templated variable functions. Types must match those in TEMPLATE_VARIABLE_INSTANTIATE and TEMPLATE_VARIABLE_INSTANTIATE_N macros*/
+TEMPLATE_ARRAY_TYPE_INSTANTIATE(Int8, int8_t)
+TEMPLATE_ARRAY_TYPE_INSTANTIATE(Int16, int16_t)
+TEMPLATE_ARRAY_TYPE_INSTANTIATE(Int32, int32_t)
+TEMPLATE_ARRAY_TYPE_INSTANTIATE(Int64, int64_t)
+TEMPLATE_ARRAY_TYPE_INSTANTIATE(UInt8, uint8_t)
+TEMPLATE_ARRAY_TYPE_INSTANTIATE(UInt16, uint16_t)
+TEMPLATE_ARRAY_TYPE_INSTANTIATE(UInt32, uint32_t)
+TEMPLATE_ARRAY_TYPE_INSTANTIATE(UInt64, uint64_t)
+TEMPLATE_ARRAY_TYPE_INSTANTIATE(Float, float)
+TEMPLATE_ARRAY_TYPE_INSTANTIATE(Double, double)
+
+
+/* Enable callback functions for step, exit and init through the use of "director" which allows Python -> C and C-> Python in callback.
+ * FGPU2 supports callback or function pointers so no special tricks are needed. 
+ * To prevent raw pointer functions being exposed in Python these are ignored so only the callback versions are accessible.
+ */
+%feature("director") HostFunctionCallback;
+%include "flamegpu/runtime/HostFunctionCallback.h"
+
+// Disable non RTC function and function condtion set methods
+%ignore AgentDescription::newFunction;
+%ignore AgentFunctionDescription::getFunctionPtr;
+%ignore AgentFunctionDescription::setFunctionCondition;
+%ignore AgentFunctionDescription::getConditionPtr;
+
+// Disable functions which allow raw C pointers in favour of callback objects
+%ignore ModelDescription::addInitFunction;
+%ignore ModelDescription::addStepFunction;
+%ignore ModelDescription::addExitFunction;
+%ignore LayerDescription::addHostFunction;
+
+/* SWIG header includes used to generate wrappers */
+%include "flamegpu/model/ModelDescription.h"
+%include "flamegpu/model/AgentDescription.h"
+%include "flamegpu/model/AgentFunctionDescription.h"
+%include "flamegpu/model/EnvironmentDescription.h"
+%include "flamegpu/model/LayerDescription.h"
+%include "flamegpu/pop/AgentPopulation.h"
+
+/* Extend AgentInstance to add a templated version of the getVariable function with a different name so this can be instantiated */
+%include "flamegpu/pop/AgentInstance.h"
+%extend AgentInstance{
+    template <typename T, unsigned int N>  std::array<T, N> getVariableArray(const std::string& variable_name) const {
+        return $self->getVariable<T,N>(variable_name);
+    }
+}
+
+
 /* Include Simulation and CUDAModel */
 %feature("flatnested");     // flat nested on to ensure Config is included
 %rename (CUDAAgentModel_Config) CUDAAgentModel::Config;
@@ -265,7 +257,14 @@ class FGPURuntimeException : public std::exception {
 %include "flamegpu/runtime/flamegpu_host_new_agent_api.h"
 %include "flamegpu/runtime/flamegpu_host_agent_api.h"
 %include "flamegpu/runtime/utility/HostRandom.cuh"
+
+/* Extend HostEnvironment to add a templated version of the getVariable function with a different name so this can be instantiated */
 %include "flamegpu/runtime/utility/HostEnvironment.cuh"
+%extend HostEnvironment{
+    template<typename T, EnvironmentManager::size_type N> std::array<T, N> getArray(const std::string& name) const {
+        return $self->get<T,N>(name);
+    }
+}
 
 %include "flamegpu/runtime/AgentFunction_shim.h"
 %include "flamegpu/runtime/AgentFunctionCondition_shim.h"

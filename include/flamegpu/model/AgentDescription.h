@@ -104,10 +104,10 @@ class AgentDescription {
      * @throws InvalidAgentVar If a variable already exists within the agent with the same name
      * @throws InvalidAgentVar If N is <= 0
      */
-    template<typename T, ModelData::size_type N = 1>
+    template<typename T, ModelData::size_type N>
     void newVariable(const std::string &variable_name, const std::array<T, N> &default_value = {});
     template<typename T>
-    void newVariable(const std::string &variable_name, const T&default_value);
+    void newVariable(const std::string &variable_name, const T&default_value = 0);
 
     /**
      * Adds a new (device) function to the agent

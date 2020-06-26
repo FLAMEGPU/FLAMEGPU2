@@ -1,7 +1,6 @@
 import pytest
 from unittest import TestCase
 from pyflamegpu import *
-import numpy as np
 import os
 
 XML_FILE_NAME = "test.xml"
@@ -174,8 +173,8 @@ class IOTest(TestCase):
         e.addInt8Array3("int8_t_a", ( 20, 0, 1 ))
         e.addUInt8Array3("uint8_t_a", (21, 0, 1))
 
-        pop_a_out = pyflamegpu.AgentPopulation (a, 5)
-        for i in range(5):
+        pop_a_out = pyflamegpu.AgentPopulation (a, AGENT_COUNT)
+        for i in range(AGENT_COUNT):
             agent = pop_a_out.getNextInstance()
             agent.setVariableFloat("float", float(1.0 + i))
             agent.setVariableDouble("double", float(2.0 + i))
@@ -189,8 +188,8 @@ class IOTest(TestCase):
             agent.setVariableUInt8("uint8_t", (10 + i))
 
 
-        pop_b_out = pyflamegpu.AgentPopulation(b, 5)
-        for i in range(5):
+        pop_b_out = pyflamegpu.AgentPopulation(b, AGENT_COUNT)
+        for i in range(AGENT_COUNT):
             agent = pop_b_out.getNextInstance("2")  # Set Variables not in the initial state
             agent.setVariableFloatArray3("float", ( 1.0, float(i), 1.0 ))
             agent.setVariableDoubleArray3("double", ( 2.0, float(i), 1.0 ))
@@ -220,8 +219,8 @@ class IOTest(TestCase):
         am = pyflamegpu.CUDAAgentModel(m)
         am.SimulationConfig().xml_input_file = XML_FILE_NAME
         am.applyConfig()
-        pop_a_in = pyflamegpu.AgentPopulation(a, 5)
-        pop_b_in = pyflamegpu.AgentPopulation(b, 5)
+        pop_a_in = pyflamegpu.AgentPopulation(a, AGENT_COUNT)
+        pop_b_in = pyflamegpu.AgentPopulation(b, AGENT_COUNT)
         am.getPopulationData(pop_a_in)
         am.getPopulationData(pop_b_in)
         
