@@ -420,7 +420,20 @@ void CUDAScatter::arrayMessageReorder(
         }
     }
     assert(d_position);  // Not an array message, lacking ___INDEX var
-    resize(static_cast<unsigned int>(sd.size()));
+    size_t t_data_len = 0;
+    {  // Decide curve memory requirements
+        gpuErrchk(cub::DeviceReduce::Max(nullptr, t_data_len, d_write_flag, d_position, array_length));
+        if (t_data_len > data_len * sizeof(ScatterData)) {
+            // t_data_len is bigger than current allocation
+            if (t_data_len > sd.size() * sizeof(ScatterData)) {
+                // td_data_len is bigger than sd.size()
+                resize(static_cast<unsigned int>((t_data_len / sizeof(ScatterData)) + 1));
+            } else {
+                // sd.size() is bigger
+                resize(static_cast<unsigned int>(sd.size()));
+            }
+        }
+    }
     // Important that sd.size() is still used here, incase allocated len (data_len) is bigger
     gpuErrchk(cudaMemcpy(d_data, sd.data(), sizeof(ScatterData) * sd.size(), cudaMemcpyHostToDevice));
     reorder_array_messages << <gridSize, blockSize >> > (
@@ -429,8 +442,7 @@ void CUDAScatter::arrayMessageReorder(
         d_data, static_cast<unsigned int>(sd.size()));
     gpuErrchkLaunch();
     // Check d_write_flag for dupes
-    size_t t_data_len = data_len;
-    cub::DeviceReduce::Max(d_data, t_data_len, d_write_flag, d_position, array_length);
+    gpuErrchk(cub::DeviceReduce::Max(d_data, t_data_len, d_write_flag, d_position, array_length));
     unsigned int maxBinSize = 0;
     gpuErrchk(cudaMemcpy(&maxBinSize, d_position, sizeof(unsigned int), cudaMemcpyDeviceToHost));
     if (maxBinSize > 1) {
