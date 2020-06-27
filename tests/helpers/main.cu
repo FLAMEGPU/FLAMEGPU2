@@ -1,10 +1,14 @@
 #include <cuda_runtime.h>
 #include <cstdio>
+
+#include "flamegpu/gpu/CUDAAgentModel.h"
 #include "gtest/gtest.h"
 #include "helpers/device_initialisation.h"
 
 
 GTEST_API_ int main(int argc, char **argv) {
+  // Disable auto reset, as it slows down test execution quite a bit.
+  CUDAAgentModel::AUTO_CUDA_DEVICE_RESET = false;
   // Time the cuda agent model initialisation, to check it creates the context.
   timeCUDAAgentModelContextCreationTest();
   // Run the main google test body

@@ -18,6 +18,10 @@
 #include "flamegpu/util/SignalHandlers.h"
 #include "flamegpu/runtime/cuRVE/curve_rtc.h"
 
+
+std::atomic<int> CUDAAgentModel::active_instances;  // This value should default init to 0, specifying =0 was causing warnings on Windows.
+bool CUDAAgentModel::AUTO_CUDA_DEVICE_RESET = true;
+
 CUDAAgentModel::CUDAAgentModel(const ModelDescription& _model)
     : Simulation(_model)
     , step_count(0)
@@ -25,7 +29,9 @@ CUDAAgentModel::CUDAAgentModel(const ModelDescription& _model)
     , streams(std::vector<cudaStream_t>())
     , singletons(nullptr)
     , singletonsInitialised(false)
-    , rtcInitialised(false) {
+    , rtcInitialised(false)
+    , rtc_kernel_cache(nullptr) {
+    ++active_instances;
     initOffsetsAndMap();
 
     // Register the signal handler.
@@ -34,7 +40,7 @@ CUDAAgentModel::CUDAAgentModel(const ModelDescription& _model)
     const auto &am = model->agents;
     // create new cuda agent and add to the map
     for (auto it = am.cbegin(); it != am.cend(); ++it) {
-        // insert into map using value_type and store a referecne to the map pair
+        // insert into map using value_type and store a reference to the map pair
         agent_map.emplace(it->first, std::make_unique<CUDAAgent>(*it->second, *this)).first;
     }
 
@@ -58,7 +64,9 @@ CUDAAgentModel::CUDAAgentModel(const std::shared_ptr<SubModelData> &submodel_des
     , streams(std::vector<cudaStream_t>())
     , singletons(nullptr)
     , singletonsInitialised(false)
-    , rtcInitialised(false) {
+    , rtcInitialised(false)
+    , rtc_kernel_cache(nullptr)  {
+    ++active_instances;
     initOffsetsAndMap();
 
     // populate the CUDA agent map (With SubAgents!)
@@ -70,7 +78,7 @@ CUDAAgentModel::CUDAAgentModel(const std::shared_ptr<SubModelData> &submodel_des
         if (_mapping != submodel_desc->subagents.end()) {
             // Agent is mapped, create subagent
             std::shared_ptr<SubAgentData> &mapping = _mapping->second;
-                                                                                                     // Locate the master agent
+            // Locate the master agent
             std::shared_ptr<AgentData> masterAgentDesc = mapping->masterAgent.lock();
             if (!masterAgentDesc) {
                 THROW InvalidParent("Master agent description has expired, in CUDAAgentModel SubModel constructor.\n");
@@ -111,6 +119,24 @@ CUDAAgentModel::~CUDAAgentModel() {
 
         delete singletons;
         singletons = nullptr;
+    }
+
+    // We must explicitly delete all cuda members before we cuda device reset
+    agent_map.clear();
+    message_map.clear();
+    submodel_map.clear();
+    host_api.reset();
+#ifdef VISUALISATION
+    visualisation.reset();
+#endif
+    delete rtc_kernel_cache;
+    rtc_kernel_cache = nullptr;
+
+    // If we are the last instance to destruct
+    if ((!--active_instances)&& AUTO_CUDA_DEVICE_RESET) {
+        gpuErrchk(cudaDeviceReset());
+        EnvironmentManager::getInstance().purge();
+        Curve::getInstance().purge();
     }
 }
 
@@ -932,6 +958,10 @@ void CUDAAgentModel::initialiseSingletons() {
 void CUDAAgentModel::initialiseRTC() {
     // Only do this once.
     if (!rtcInitialised) {
+        // Create jitify cache
+        if (!rtc_kernel_cache) {
+            rtc_kernel_cache = new jitify::JitCache();
+        }
         // Build any RTC functions
         const auto& am = model->agents;
         // iterate agents and then agent functions to find any rtc functions or function conditions
@@ -942,12 +972,12 @@ void CUDAAgentModel::initialiseRTC() {
                 // check rtc source to see if this is a RTC function
                 if (!it_f->second->rtc_source.empty()) {
                     // create CUDA agent RTC function by calling addInstantitateRTCFunction on CUDAAgent with AgentFunctionData
-                    a_it->second->addInstantitateRTCFunction(*it_f->second);
+                    a_it->second->addInstantitateRTCFunction(*rtc_kernel_cache, *it_f->second);
                 }
                 // check rtc source to see if the function condition is an rtc condition
                 if (!it_f->second->rtc_condition_source.empty()) {
                     // create CUDA agent RTC function condition by calling addInstantitateRTCFunction on CUDAAgent with AgentFunctionData
-                    a_it->second->addInstantitateRTCFunction(*it_f->second, true);
+                    a_it->second->addInstantitateRTCFunction(*rtc_kernel_cache, *it_f->second, true);
                 }
             }
         }

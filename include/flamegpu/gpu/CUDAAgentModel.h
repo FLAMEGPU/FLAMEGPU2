@@ -1,5 +1,6 @@
 #ifndef INCLUDE_FLAMEGPU_GPU_CUDAAGENTMODEL_H_
 #define INCLUDE_FLAMEGPU_GPU_CUDAAGENTMODEL_H_
+#include <atomic>
 #include <memory>
 #include <vector>
 #include <string>
@@ -277,6 +278,11 @@ class CUDAAgentModel : public Simulation {
      */
     void initialiseRTC();
     /**
+     * This must be allocated after initialise singletons
+     * This must be reset after cudaDeviceReset()
+     */
+    jitify::JitCache *rtc_kernel_cache;
+    /**
      * One instance of host api is used for entire model
      */
     std::unique_ptr<FLAMEGPU_HOST_API> host_api;
@@ -315,6 +321,17 @@ class CUDAAgentModel : public Simulation {
      */
     std::unique_ptr<ModelVis> visualisation;
 #endif
+    /**
+     * This tracks the current number of alive CUDAAgentModel instances
+     * When the last is destructed, cudaDeviceReset is triggered();
+     */
+    static std::atomic<int> active_instances;
+
+ public:
+    /**
+     * If changed to false, will not auto cudaDeviceReset when final CUDAAgentModel instance is destructed
+     */
+    static bool AUTO_CUDA_DEVICE_RESET;
 };
 
 #endif  // INCLUDE_FLAMEGPU_GPU_CUDAAGENTMODEL_H_

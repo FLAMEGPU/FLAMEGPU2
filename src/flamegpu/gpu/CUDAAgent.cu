@@ -407,7 +407,7 @@ void CUDAAgent::clearFunctionCondition(const std::string &state) {
     fat_agent->setConditionState(fat_index, state, 0);
 }
 
-void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, bool function_condition) {
+void CUDAAgent::addInstantitateRTCFunction(jitify::JitCache &kernel_cache, const AgentFunctionData& func, bool function_condition) {
     // get header location for fgpu
     const char* env_inc_fgp2 = std::getenv("FLAMEGPU2_INC_DIR");
     if (!env_inc_fgp2) {
@@ -506,7 +506,6 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, bool f
 
     // jitify to create program (with compilation settings)
     try {
-        static jitify::JitCache kernel_cache;
         // switch between normal agent function and agent function condition
         if (!function_condition) {
             auto program = kernel_cache.program(func.rtc_source, headers, options);
