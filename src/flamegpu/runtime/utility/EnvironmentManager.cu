@@ -38,6 +38,9 @@ void EnvironmentManager::purge() {
     freeFragments.clear();
     m_freeSpace = EnvironmentManager::MAX_BUFFER_SIZE;
     nextFree = 0;
+    cuda_agent_models.clear();
+    properties.clear();
+    mapped_properties.clear();
 }
 
 void EnvironmentManager::init(const std::string& model_name, const EnvironmentDescription &desc) {

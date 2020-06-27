@@ -190,9 +190,10 @@ class CUDAAgent : public AgentInterface {
      * Instatiates a RTC Agent function from agent function data description containing the agent function source.
      * If function_condition variable is true then this function will instantiate a function condition rather than an agent function
      * Uses Jitify to create an instantiation of the program. Any compilation errors in the user provided agent function will be reported here.
+     * @param kernel_cache The JitCache to use (probably CUDAAgentModel::rtc_kernel_cache)
      * @throw InvalidAgentFunc thrown if the user supplied agent function has compilation errors
      */
-    void addInstantitateRTCFunction(const AgentFunctionData& func, bool function_condition = false);
+    void addInstantitateRTCFunction(jitify::JitCache &kernel_cache, const AgentFunctionData& func, bool function_condition = false);
     /**
      * Returns the jitify kernel instantiation of the agent function.
      * Will throw an InvalidAgentFunc excpetion if the function name does not have a valid instantiation
