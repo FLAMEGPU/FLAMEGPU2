@@ -16,7 +16,7 @@
 %include <std_unordered_map.i>
 %include <std_array.i>
 
-// typemax for integer types
+// typemaps for integer types (allows mapping of python types to stdint types)
 %include <stdint.i>
 
 
@@ -205,6 +205,51 @@ TEMPLATE_ARRAY_TYPE_INSTANTIATE(Float, float)
 TEMPLATE_ARRAY_TYPE_INSTANTIATE(Double, double)
 
 
+/* Create some type objects to obtain sizes and type info of flamegpu2 basic types.
+ * It is not required to demangle type names. These can be used to compare directly with the type_index 
+ * returned by the flamegpu2 library
+ */
+%nodefaultctor std::type_index;
+%inline %{
+    namespace Types{
+        template <typename T>
+        struct type_info{
+	
+	        static unsigned int size(){
+		        return sizeof(T);
+	        }
+	
+	        static const char* typeName() {
+                return std::type_index(typeid(T)).name();
+	        }
+
+            static T empty() {
+                return T();
+            }
+
+            static T fromValue(T value) {
+                return value;
+            }
+        };
+
+        const char* typeName(const std::type_index& type) {
+            return type.name();
+        }
+    }
+%}
+%template(IntType) Types::type_info<int>;
+%template(Int8Type) Types::type_info<int8_t>;
+%template(Int16Type) Types::type_info<int16_t>;
+%template(Int32Type) Types::type_info<int32_t>;
+%template(Int64Type) Types::type_info<int64_t>;
+%template(UIntType) Types::type_info<unsigned int>;
+%template(UInt8Type) Types::type_info<uint8_t>;
+%template(UInt16Type) Types::type_info<uint16_t>;
+%template(UInt32Type) Types::type_info<uint32_t>;
+%template(UInt64Type) Types::type_info<uint64_t>;
+%template(FloatType) Types::type_info<float>;
+%template(DoubleType) Types::type_info<double>;
+
 /* Enable callback functions for step, exit and init through the use of "director" which allows Python -> C and C-> Python in callback.
  * FGPU2 supports callback or function pointers so no special tricks are needed. 
  * To prevent raw pointer functions being exposed in Python these are ignored so only the callback versions are accessible.
@@ -223,6 +268,11 @@ TEMPLATE_ARRAY_TYPE_INSTANTIATE(Double, double)
 %ignore ModelDescription::addStepFunction;
 %ignore ModelDescription::addExitFunction;
 %ignore LayerDescription::addHostFunction;
+
+/* Define ModelData size type (as ModelData is internal and not a generated swig object) */
+namespace ModelData{
+    typedef unsigned int size_type;
+}
 
 /* SWIG header includes used to generate wrappers */
 %include "flamegpu/model/ModelDescription.h"
