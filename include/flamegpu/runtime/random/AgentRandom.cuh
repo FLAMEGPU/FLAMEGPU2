@@ -109,7 +109,7 @@ __forceinline__ __device__ T AgentRandom::uniform(T min, T max) const {
         DTHROW("Invalid arguments passed to AgentRandom::uniform(), %lld > %lld\n", static_cast<int64_t>(min), static_cast<int64_t>(max));
     }
 #endif
-    return static_cast<T>(min + (max - min) * uniform<float>());
+    return static_cast<T>(min + (1 + max - min) * (1.0 - uniform<float>()));
 }
 template<>
 __forceinline__ __device__ int64_t AgentRandom::uniform(const int64_t min, const int64_t max) const {
@@ -118,7 +118,7 @@ __forceinline__ __device__ int64_t AgentRandom::uniform(const int64_t min, const
         DTHROW("Invalid arguments passed to AgentRandom::uniform(), %lld > %lld\n", static_cast<int64_t>(min), static_cast<int64_t>(max));
     }
 #endif
-    return static_cast<int64_t>(min + (max - min) * uniform<double>());
+    return static_cast<int64_t>(min + (1 + max - min) * (1.0 - uniform<double>()));
 }
 template<>
 __forceinline__ __device__ uint64_t AgentRandom::uniform(const uint64_t min, const uint64_t max) const {
@@ -127,7 +127,7 @@ __forceinline__ __device__ uint64_t AgentRandom::uniform(const uint64_t min, con
         DTHROW("Invalid arguments passed to AgentRandom::uniform(), %lld > %lld\n", static_cast<int64_t>(min), static_cast<int64_t>(max));
     }
 #endif
-    return static_cast<uint64_t>(min + (max - min) * uniform<double>());
+    return static_cast<uint64_t>(min + (1 + max - min) * (1.0 - uniform<double>()));
 }
 template<>
 __forceinline__ __device__ float AgentRandom::uniform(const float min, const float max) const {
