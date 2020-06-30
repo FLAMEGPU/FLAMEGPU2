@@ -203,6 +203,22 @@ void CUDAFatAgentStateList::setDisabledAgents(const unsigned int &numberOfDisabl
         v->data_condition = data_p + (numberOfDisabled * v->type_size * v->elements);
     }
 }
+void CUDAFatAgentStateList::scatterSort(CUDAScatter &scatter, const unsigned int &streamId) {
+    // This is not designed to run when there are disabled agents
+    assert(disabledAgents == 0);
+    // Build scatter data
+    std::vector<CUDAScatter::ScatterData> sd;
+    for (const auto &v : variables_unique) {
+        char *in_p = reinterpret_cast<char*>(v->data);
+        char *out_p = reinterpret_cast<char*>(v->data_swap);
+        sd.push_back({ v->type_size * v->elements, in_p, out_p });
+        // Pre swap stored pointers
+        std::swap(v->data, v->data_swap);
+        // Pre update data_condition
+        v->data_condition = out_p;
+    }
+    scatter.scatterPosition(streamId, CUDAScatter::Type::MESSAGE_OUTPUT, sd, aliveAgents);
+}
 void CUDAFatAgentStateList::initVariables(std::set<std::shared_ptr<VariableBuffer>> &exclusionSet, const unsigned int initCount, const unsigned initOffset, CUDAScatter &scatter, const unsigned int &streamId) {
     if (initCount && exclusionSet.size()) {
         assert(initCount + initOffset <= bufferLen);

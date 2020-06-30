@@ -172,6 +172,9 @@ void CUDAAgentStateList::scatterHostCreation(const unsigned int &newSize, char *
     // Update number of alive agents
     parent_list->setAgentCount(parent_list->getSize() + newSize);
 }
+void CUDAAgentStateList::scatterSort(CUDAScatter &scatter, const unsigned int &streamId) {
+    parent_list->scatterSort(scatter, streamId);
+}
 void CUDAAgentStateList::scatterNew(void * d_newBuff, const unsigned int &newSize, CUDAScatter &scatter, const unsigned int &streamId) {
     if (newSize) {
         CUDAScanCompactionConfig &scanCfg = scatter.Scan().Config(CUDAScanCompaction::Type::AGENT_OUTPUT, streamId);

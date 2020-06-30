@@ -217,6 +217,12 @@ class CUDAFatAgentStateList {
      */
     unsigned int scatterAgentFunctionConditionTrue(const unsigned int &conditionFailCount, CUDAScatter &scatter, const unsigned int &streamId);
     /**
+     * Sorts all agent variables according to the positions stored inside Message Output scan buffer
+     * @param scatter Scatter instance and scan arrays to be used (CUDAAgentModel::singletons->scatter)
+     * @param streamId The stream in which the corresponding agent function has executed
+     */
+    void scatterSort(CUDAScatter &scatter, const unsigned int &streamId);
+    /**
      * Set the number of disabled agents within the state list
      * Updates member var disabledAgents and data_condition for every item inside variables_unique
      * @param numberOfDisabled The new number of disabled agents (this can increase of decrease)

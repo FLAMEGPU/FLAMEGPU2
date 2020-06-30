@@ -7,6 +7,8 @@
 #pragma warning(push, 2)
 #include <thrust/count.h>
 #include <thrust/device_ptr.h>
+#include <thrust/sort.h>
+#include <thrust/execution_policy.h>
 #pragma warning(pop)
 #else
 #include <cub/cub.cuh>
@@ -23,7 +25,7 @@
 #include "flamegpu/sim/AgentInterface.h"
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/runtime/flamegpu_host_api.h"
-#include "flamegpu/gpu/CUDAErrorChecking.h"
+#include "flamegpu/gpu/CUDAAgentModel.h"
 
 #define FLAMEGPU_CUSTOM_REDUCTION(funcName, a, b)\
 struct funcName ## _impl {\
@@ -162,8 +164,52 @@ class HostAgentInstance {
     OutT transformReduce(const std::string &variable, transformOperatorT transformOperator, reductionOperatorT reductionOperator, const OutT &init) const;
     // template<typename InT, typename OutT, typename transformOperatorT, typename reductionOperatorT>
     // OutT transformReduce(const std::string &variable, std::unary_function<OutT, OutT> transformOperator, std::binary_function<OutT, OutT, OutT>, const OutT &init) const;
+    enum Order {Asc, Desc};
+    /**
+     * Sorts agents according to the named variable
+     * @param variable The agent variable to sort the agents according to
+     * @param order Whether the agents should be sorted in ascending or descending order of the variable
+     * @param beginBit Advanced Option, see note
+     * @param endBit Advanced Option, see note
+     * @tParam VarT The type of the variable as specified in the model description hierarchy
+     * @throws UnsupportedVarType Array variables are not supported
+     * @throws InvalidAgentVar If the agent does not contain a variable of the same name
+     * @throws InvalidVarType If the passed variable type does not match that specified in the model description hierarchy
+     * @note An optional bit subrange [begin_bit, end_bit) of differentiating variable bits can be specified. This can reduce overall sorting overhead and yield a corresponding performance improvement.
+     * @note The sort provides no guarantee of stability
+     */
+    template<typename VarT>
+    void sort(const std::string &variable, Order order, int beginBit = 0, int endBit = sizeof(VarT)*8);
+    /**
+     * Sort agents according to two variables e.g. [1:c, 3:b, 1:b, 1:a] -> [1:a, 1:b, 1:c, 3:b]
+     * @param variable1 This variable will be the main direction that agents are sorted
+     * @param order1 The order that variable 1 should be sorted according to
+     * @param variable2 Agents with equal variable1's, will be sorted according this this variable
+     * @param order2 The order that variable 2 should be sorted according to
+     * @throws UnsupportedVarType Array variables are not supported
+     * @tParam Var1T The type of variable1 as specified in the model description hierarchy
+     * @tParam Var2T The type of variable2 as specified in the model description hierarchy
+     * @throws InvalidAgentVar If the agent does not contain a variable of the same name
+     * @throws InvalidVarType If the passed variable type does not match that specified in the model description hierarchy
+     */
+    template<typename Var1T, typename Var2T>
+    void sort(const std::string &variable1, Order order1, const std::string &variable2, Order order2);
 
  private:
+    /**
+     * Fills the provided device buffer with consecutive integers
+     * @param d_buffer Device pointer to buffer to be filled
+     * @param length Length of the buffer (how many unsigned ints can it hold)
+     */
+    static void fillTIDArray(unsigned int *d_buffer, const unsigned int &length);
+    /**
+     * Sorts a buffer by the positions array, used for multi variable agent sorts
+     * @param dest Device pointer to buffer for sorted data to be placed
+     * @param src Device pointer to buffer to be sorted
+     * @param typeLen sizeof the type stored in the buffer (e.g. sizeof(int))
+     * @param length Length of the buffer (how many items it can it hold)
+     */
+    static void sortBuffer(void *dest, void*src, unsigned int *position, const size_t &typeLen, const unsigned int &length);
     FLAMEGPU_HOST_API &api;
     AgentInterface &agent;
     bool hasState;
@@ -189,7 +235,7 @@ OutT HostAgentInstance::sum(const std::string &variable) const {
 
     std::type_index typ = agentDesc.description->getVariableType(variable);  // This will throw name exception
     if (agentDesc.variables.at(variable).elements != 1) {
-        THROW UnsupportedVarType("FLAMEGPU_HOST_AGENT_API::sum() does not support agent array variables.");
+        THROW UnsupportedVarType("HostAgentInstance::sum() does not support agent array variables.");
     }
     if (std::type_index(typeid(InT)) != typ) {
         THROW InvalidVarType("Wrong variable type passed to HostAgentInstance::sum(). "
@@ -219,7 +265,7 @@ InT HostAgentInstance::min(const std::string &variable) const {
     const auto &agentDesc = agent.getAgentDescription();
     const std::type_index typ = agentDesc.description->getVariableType(variable);  // This will throw name exception
     if (agentDesc.variables.at(variable).elements != 1) {
-        THROW UnsupportedVarType("FLAMEGPU_HOST_AGENT_API::sum() does not support agent array variables.");
+        THROW UnsupportedVarType("HostAgentInstance::min() does not support agent array variables.");
     }
     if (std::type_index(typeid(InT)) != typ) {
         THROW InvalidVarType("Wrong variable type passed to HostAgentInstance::min(). "
@@ -250,7 +296,7 @@ InT HostAgentInstance::max(const std::string &variable) const {
     const auto &agentDesc = agent.getAgentDescription();
     const std::type_index typ = agentDesc.description->getVariableType(variable);  // This will throw name exception
     if (agentDesc.variables.at(variable).elements != 1) {
-        THROW UnsupportedVarType("HostAgentInstance::sum() does not support agent array variables.");
+        THROW UnsupportedVarType("HostAgentInstance::max() does not support agent array variables.");
     }
     if (std::type_index(typeid(InT)) != typ) {
         THROW InvalidVarType("Wrong variable type passed to FLAMEGPU_HOST_AGENT_API::max(). "
@@ -281,7 +327,7 @@ unsigned int HostAgentInstance::count(const std::string &variable, const InT &va
     const auto &agentDesc = agent.getAgentDescription();
     const std::type_index typ = agentDesc.description->getVariableType(variable);  // This will throw name exception
     if (agentDesc.variables.at(variable).elements != 1) {
-        THROW UnsupportedVarType("HostAgentInstance::sum() does not support agent array variables.");
+        THROW UnsupportedVarType("HostAgentInstance::count() does not support agent array variables.");
     }
     if (std::type_index(typeid(InT)) != typ) {
         THROW InvalidVarType("Wrong variable type passed to FLAMEGPU_HOST_AGENT_API::count(). "
@@ -308,10 +354,10 @@ std::vector<OutT> HostAgentInstance::histogramEven(const std::string &variable, 
     const auto &agentDesc = agent.getAgentDescription();
     const std::type_index typ = agentDesc.description->getVariableType(variable);  // This will throw name exception
     if (agentDesc.variables.at(variable).elements != 1) {
-        THROW UnsupportedVarType("HostAgentInstance::sum() does not support agent array variables.");
+        THROW UnsupportedVarType("HostAgentInstance::histogramEven() does not support agent array variables.");
     }
     if (std::type_index(typeid(InT)) != typ) {
-        THROW InvalidVarType("Wrong variable type passed to FLAMEGPU_HOST_AGENT_API::histogramEven(). "
+        THROW InvalidVarType("Wrong variable type passed to HostAgentInstance::histogramEven(). "
             "This call expects '%s', but '%s' was requested.",
             agentDesc.variables.at(variable).type.name(), typeid(InT).name());
     }
@@ -341,10 +387,10 @@ InT HostAgentInstance::reduce(const std::string &variable, reductionOperatorT /*
     const auto &agentDesc = agent.getAgentDescription();
     const std::type_index typ = agentDesc.description->getVariableType(variable);  // This will throw name exception
     if (agentDesc.variables.at(variable).elements != 1) {
-        THROW UnsupportedVarType("HostAgentInstance::sum() does not support agent array variables.");
+        THROW UnsupportedVarType("HostAgentInstance::reduce() does not support agent array variables.");
     }
     if (std::type_index(typeid(InT)) != typ) {
-        THROW InvalidVarType("Wrong variable type passed to FLAMEGPU_HOST_AGENT_API::reduce(). "
+        THROW InvalidVarType("Wrong variable type passed to HostAgentInstance::reduce(). "
             "This call expects '%s', but '%s' was requested.",
             agentDesc.variables.at(variable).type.name(), typeid(InT).name());
     }
@@ -374,7 +420,7 @@ OutT HostAgentInstance::transformReduce(const std::string &variable, transformOp
     const auto &agentDesc = agent.getAgentDescription();
     const std::type_index typ = agentDesc.description->getVariableType(variable);  // This will throw name exception
     if (agentDesc.variables.at(variable).elements != 1) {
-        THROW UnsupportedVarType("FLAMEGPU_HOST_AGENT_API::sum() does not support agent array variables.");
+        THROW UnsupportedVarType("HostAgentInstance::transformReduce() does not support agent array variables.");
     }
     if (std::type_index(typeid(InT)) != typ) {
         THROW InvalidVarType("Wrong variable type passed to HostAgentInstance::transformReduce(). "
@@ -390,5 +436,148 @@ OutT HostAgentInstance::transformReduce(const std::string &variable, transformOp
         typename transformOperatorT::template unary_function<InT, OutT>(), init, typename reductionOperatorT::template binary_function<OutT>());
     gpuErrchkLaunch();
     return rtn;
+}
+
+
+template<typename VarT>
+void HostAgentInstance::sort(const std::string &variable, Order order, int beginBit, int endBit) {
+    const unsigned int streamId = 0;
+    auto &scatter = api.agentModel.singletons->scatter;
+    auto &scan = scatter.Scan();
+    // Check variable is valid
+    const auto &agentDesc = agent.getAgentDescription();
+    const std::type_index typ = agentDesc.description->getVariableType(variable);  // This will throw name exception
+    if (agentDesc.variables.at(variable).elements != 1) {
+        THROW UnsupportedVarType("HostAgentInstance::sort() does not support agent array variables.");
+    }
+    if (std::type_index(typeid(VarT)) != typ) {
+        THROW InvalidVarType("Wrong variable type passed to HostAgentInstance::sort(). "
+            "This call expects '%s', but '%s' was requested.",
+            agentDesc.variables.at(variable).type.name(), typeid(VarT).name());
+    }
+    // We will use scan_flag agent_death/message_output here so resize
+    const unsigned int agentCount = agent.getStateSize(stateName);
+    void *var_ptr = agent.getStateVariablePtr(stateName, variable);
+    const size_t total_variable_buffer_size = sizeof(VarT) * agentCount;
+    const unsigned int fake_num_agent = static_cast<unsigned int>(total_variable_buffer_size/sizeof(unsigned int)) +1;
+    scan.resize(fake_num_agent, CUDAScanCompaction::AGENT_DEATH, streamId);
+    scan.resize(agentCount, CUDAScanCompaction::MESSAGE_OUTPUT, streamId);
+    VarT *keys_in = reinterpret_cast<VarT *>(scan.Config(CUDAScanCompaction::Type::AGENT_DEATH, streamId).d_ptrs.scan_flag);
+    VarT *keys_out = reinterpret_cast<VarT *>(scan.Config(CUDAScanCompaction::Type::AGENT_DEATH, streamId).d_ptrs.position);
+    unsigned int *vals_in = scan.Config(CUDAScanCompaction::Type::MESSAGE_OUTPUT, streamId).d_ptrs.scan_flag;
+    unsigned int *vals_out = scan.Config(CUDAScanCompaction::Type::MESSAGE_OUTPUT, streamId).d_ptrs.position;
+    // Create array of TID (use scanflag_death.position)
+    fillTIDArray(vals_in, agentCount);
+    // Create array of agent values (use scanflag_death.scan_flag)
+    gpuErrchk(cudaMemcpy(keys_in, var_ptr, total_variable_buffer_size, cudaMemcpyDeviceToDevice));
+    // Check if we need to resize cub storage
+    const FLAMEGPU_HOST_API::CUB_Config cc = { FLAMEGPU_HOST_API::SORT, typeid(VarT).hash_code() };
+    if (api.tempStorageRequiresResize(cc, agentCount)) {
+        // Resize cub storage
+        size_t tempByte = 0;
+        if (order == Asc) {
+            gpuErrchk(cub::DeviceRadixSort::SortPairs(nullptr, tempByte, keys_in, keys_out, vals_in, vals_out, agentCount, beginBit, endBit));
+        } else {
+            gpuErrchk(cub::DeviceRadixSort::SortPairsDescending(nullptr, tempByte, keys_in, keys_out, vals_in, vals_out, agentCount, beginBit, endBit));
+        }
+        api.resizeTempStorage(cc, agentCount, tempByte);
+    }
+    // pair sort
+    if (order == Asc) {
+        gpuErrchk(cub::DeviceRadixSort::SortPairs(api.d_cub_temp, api.d_cub_temp_size, keys_in, keys_out, vals_in, vals_out, agentCount, beginBit, endBit));
+    } else {
+        gpuErrchk(cub::DeviceRadixSort::SortPairsDescending(api.d_cub_temp, api.d_cub_temp_size, keys_in, keys_out, vals_in, vals_out, agentCount, beginBit, endBit));
+    }
+    // Scatter all agent variables
+    api.agentModel.agent_map.at(agentDesc.name)->scatterSort(stateName, scatter, streamId);
+}
+
+
+template<typename Var1T, typename Var2T>
+void HostAgentInstance::sort(const std::string &variable1, Order order1, const std::string &variable2, Order order2) {
+    const unsigned int streamId = 0;
+    auto &scatter = api.agentModel.singletons->scatter;
+    auto &scan = scatter.Scan();
+    const auto &agentDesc = agent.getAgentDescription();
+    {  // Check variable 1 is valid
+        const std::type_index typ = agentDesc.description->getVariableType(variable1);  // This will throw name exception
+        if (agentDesc.variables.at(variable1).elements != 1) {
+            THROW UnsupportedVarType("HostAgentInstance::sort() does not support agent array variables.");
+        }
+        if (std::type_index(typeid(Var1T)) != typ) {
+            THROW InvalidVarType("Wrong type for variable '%s' passed to HostAgentInstance::sort(). "
+                "This call expects '%s', but '%s' was requested.",
+                variable1.c_str(), agentDesc.variables.at(variable1).type.name(), typeid(Var1T).name());
+        }
+    }
+    {  // Check variable 2 is valid
+        const std::type_index typ = agentDesc.description->getVariableType(variable2);  // This will throw name exception
+        if (agentDesc.variables.at(variable2).elements != 1) {
+            THROW UnsupportedVarType("HostAgentInstance::sort() does not support agent array variables.");
+        }
+        if (std::type_index(typeid(Var2T)) != typ) {
+            THROW InvalidVarType("Wrong type for variable '%s' passed to HostAgentInstance::sort(). "
+                "This call expects '%s', but '%s' was requested.",
+                variable2.c_str(), agentDesc.variables.at(variable2).type.name(), typeid(Var2T).name());
+        }
+    }
+    const unsigned int agentCount = agent.getStateSize(stateName);
+    // Fill array with var1 keys
+    {
+        // Resize
+        const size_t total_variable_buffer_size = sizeof(Var1T) * agentCount;
+        const unsigned int fake_num_agent = static_cast<unsigned int>(total_variable_buffer_size/sizeof(unsigned int)) +1;
+        scan.resize(fake_num_agent, CUDAScanCompaction::AGENT_DEATH, streamId);
+        // Fill
+        void *keys1b = scan.Config(CUDAScanCompaction::Type::AGENT_DEATH, streamId).d_ptrs.position;
+        void *var_ptr = agent.getStateVariablePtr(stateName, variable1);
+        gpuErrchk(cudaMemcpy(keys1b, var_ptr, total_variable_buffer_size, cudaMemcpyDeviceToDevice));
+    }
+    // Fill array with var2 keys
+    {
+        // Resize
+        const size_t total_variable_buffer_size = sizeof(Var2T) * agentCount;
+        const unsigned int fake_num_agent = static_cast<unsigned int>(total_variable_buffer_size/sizeof(unsigned int)) +1;
+        scan.resize(std::max(agentCount, fake_num_agent), CUDAScanCompaction::MESSAGE_OUTPUT, streamId);
+        // Fill
+        void *keys2 = scan.Config(CUDAScanCompaction::Type::MESSAGE_OUTPUT, streamId).d_ptrs.scan_flag;
+        void *var_ptr = agent.getStateVariablePtr(stateName, variable2);
+        gpuErrchk(cudaMemcpy(keys2, var_ptr, total_variable_buffer_size, cudaMemcpyDeviceToDevice));
+    }
+    // Define our buffers (here, after resize)
+    Var1T *keys1 = reinterpret_cast<Var1T *>(scan.Config(CUDAScanCompaction::Type::AGENT_DEATH, streamId).d_ptrs.scan_flag);
+    Var1T *keys1b = reinterpret_cast<Var1T *>(scan.Config(CUDAScanCompaction::Type::AGENT_DEATH, streamId).d_ptrs.position);
+    Var2T *keys2 = reinterpret_cast<Var2T *>(scan.Config(CUDAScanCompaction::Type::MESSAGE_OUTPUT, streamId).d_ptrs.scan_flag);
+    unsigned int *vals = scan.Config(CUDAScanCompaction::Type::MESSAGE_OUTPUT, streamId).d_ptrs.position;
+    // Init value array
+    fillTIDArray(vals, agentCount);
+    // Process variable 2 first
+    {
+        // pair sort values
+        if (order2 == Asc) {
+            thrust::stable_sort_by_key(thrust::device_ptr<Var2T>(keys2), thrust::device_ptr<Var2T>(keys2 + agentCount),
+            thrust::device_ptr<unsigned int>(vals), thrust::less<Var2T>());
+        } else {
+            thrust::stable_sort_by_key(thrust::device_ptr<Var2T>(keys2), thrust::device_ptr<Var2T>(keys2 + agentCount),
+            thrust::device_ptr<unsigned int>(vals), thrust::greater<Var2T>());
+        }
+        gpuErrchkLaunch();
+        // sort keys1 based on this order
+        sortBuffer(keys1, keys1b, vals, sizeof(Var1T), agentCount);
+    }
+    // Process variable 1 second
+    {
+        // pair sort
+        if (order1 == Asc) {
+            thrust::stable_sort_by_key(thrust::device_ptr<Var1T>(keys1), thrust::device_ptr<Var1T>(keys1 + agentCount),
+            thrust::device_ptr<unsigned int>(vals), thrust::less<Var1T>());
+        } else {
+            thrust::stable_sort_by_key(thrust::device_ptr<Var1T>(keys1), thrust::device_ptr<Var1T>(keys1 + agentCount),
+            thrust::device_ptr<unsigned int>(vals), thrust::greater<Var1T>());
+        }
+        gpuErrchkLaunch();
+    }
+    // Scatter all agent variables
+    api.agentModel.agent_map.at(agentDesc.name)->scatterSort(stateName, scatter, streamId);
 }
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_FLAMEGPU_HOST_AGENT_API_H_

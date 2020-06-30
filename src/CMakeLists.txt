@@ -156,7 +156,8 @@ SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAAgentModel.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/cuRVE/curve.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/cuRVE/curve_rtc.cpp
-    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/flamegpu_host_api.cu    
+    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/flamegpu_host_api.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/flamegpu_host_agent_api.cu 
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/BruteForce.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/Spatial2D.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/Spatial3D.cu

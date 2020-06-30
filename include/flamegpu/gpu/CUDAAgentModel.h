@@ -22,6 +22,10 @@
  */
 class CUDAAgentModel : public Simulation {
     /**
+     * Requires internal access to scan/scatter singletons
+     */
+    friend class HostAgentInstance;
+    /**
      * Map of a number of CUDA agents by name.
      * The CUDA agents are responsible for allocating and managing all the device memory
      */
