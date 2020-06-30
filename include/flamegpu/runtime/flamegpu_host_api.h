@@ -92,7 +92,8 @@ class FLAMEGPU_HOST_API {
         MAX,
         SUM,
         CUSTOM_REDUCE,
-        HISTOGRAM_EVEN
+        HISTOGRAM_EVEN,
+        SORT
     };
     // Can't put type_info in map, deleted constructors, so we use it's hash code
     // Histogram always has type int, so we use number of bins instead

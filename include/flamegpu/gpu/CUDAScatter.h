@@ -123,6 +123,20 @@ class CUDAScatter {
         const bool &invert_scan_flag = false,
         const unsigned int &scatter_all_count = 0);
     /**
+     * Scatters agents from SoA to SoA according to d_position flag as input_source, all variables are scattered
+     * Used for Host function sort agent
+     * CUDAScanCompaction::position is used to decide where to scatter to
+     * @param streamId Index of internal resources to use
+     * @param messageOrAgent Flag of whether message or agent CUDAScanCompaction arrays should be used
+     * @param scatterData Vector of scatter configuration for each variable to be scattered
+     * @param itemCount Total number of items in input array to consider
+     */
+    void scatterPosition(
+        const unsigned int &streamId,
+        const Type &messageOrAgent,
+        const std::vector<ScatterData> &scatterData,
+        const unsigned int &itemCount);
+    /**
      * Returns the final CUDAScanCompaction::position item 
      * Same value as scatter, - scatter_a__count
      * @param streamId Index of internal resources to use

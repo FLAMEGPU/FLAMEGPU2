@@ -150,6 +150,14 @@ class CUDAAgent : public AgentInterface {
      */
     void scatterHostCreation(const std::string &state_name, const unsigned int &newSize, char *const d_inBuff, const VarOffsetStruct &offsets, CUDAScatter &scatter, const unsigned int &streamId);
     /**
+     * Sorts all agent variables according to the positions stored inside Message Output scan buffer
+     * @param state_name The state agents are scattered into
+     * @param scatter Scatter instance and scan arrays to be used (CUDAAgentModel::singletons->scatter)
+     * @param streamId The stream in which the corresponding agent function has executed
+     * @see HostAgentInstance::sort(const std::string &, HostAgentInstance::Order, int, int)
+     */
+    void scatterSort(const std::string &state_name, CUDAScatter &scatter, const unsigned int &streamId);
+    /**
      * Allocates a buffer for storing new agents into and
      * uses the cuRVE runtime to map variables for use with an agent function that has device agent birth
      * @param func The agent function being processed

@@ -76,6 +76,22 @@ __global__ void scatter_generic(
         }
     }
 }
+__global__ void scatter_position_generic(
+    unsigned int threadCount,
+    unsigned int *position,
+    CUDAScatter::ScatterData *scatter_data,
+    const unsigned int scatter_len) {
+    // global thread index
+    int index = (blockIdx.x*blockDim.x) + threadIdx.x;
+
+    if (index >= threadCount) return;
+
+    // if optional message is to be written
+    int input_index = position[index];
+    for (unsigned int i = 0; i < scatter_len; ++i) {
+        memcpy(scatter_data[i].out + (index * scatter_data[i].typeLen), scatter_data[i].in + (input_index * scatter_data[i].typeLen), scatter_data[i].typeLen);
+    }
+}
 __global__ void scatter_all_generic(
     unsigned int threadCount,
     CUDAScatter::ScatterData *scatter_data,
@@ -147,6 +163,28 @@ unsigned int CUDAScatter::scatter(
     unsigned int rtn = 0;
     gpuErrchk(cudaMemcpy(&rtn, scan.Config(messageOrAgent, streamId).d_ptrs.position + itemCount - scatter_all_count, sizeof(unsigned int), cudaMemcpyDeviceToHost));
     return rtn + scatter_all_count;
+}
+void CUDAScatter::scatterPosition(
+    const unsigned int &streamId,
+    const Type &messageOrAgent,
+    const std::vector<ScatterData> &sd,
+    const unsigned int &itemCount) {
+    int blockSize = 0;  // The launch configurator returned block size
+    int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
+    int gridSize = 0;  // The actual grid size needed, based on input size
+    // calculate the grid block size for main agent function
+    gpuErrchk(cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, scatter_generic<unsigned int*>, 0, itemCount));
+    //! Round up according to CUDAAgent state list size
+    gridSize = (itemCount + blockSize - 1) / blockSize;
+    // Make sure we have enough space to store scatterdata
+    streams[streamId].resize(static_cast<unsigned int>(sd.size()));
+    // Important that sd.size() is still used here, incase allocated len (data_len) is bigger
+    gpuErrchk(cudaMemcpy(streams[streamId].d_data, sd.data(), sizeof(ScatterData) * sd.size(), cudaMemcpyHostToDevice));
+    scatter_position_generic << <gridSize, blockSize >> > (
+        itemCount,
+        scan.Config(messageOrAgent, streamId).d_ptrs.position,
+        streams[streamId].d_data, static_cast<unsigned int>(sd.size()));
+    gpuErrchkLaunch();
 }
 unsigned int CUDAScatter::scatterCount(
     const unsigned int &streamId,

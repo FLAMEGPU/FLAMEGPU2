@@ -93,6 +93,12 @@ class CUDAAgentStateList {
      */
     void scatterHostCreation(const unsigned int &newSize, char *const d_inBuff, const VarOffsetStruct &offsets, CUDAScatter &scatter, const unsigned int &streamId);
     /**
+     * Sorts all agent variables according to the positions stored inside Message Output scan buffer
+     * @param scatter Scatter instance and scan arrays to be used (CUDAAgentModel::singletons->scatter)
+     * @param streamId The stream in which the corresponding agent function has executed
+     */
+    void scatterSort(CUDAScatter &scatter, const unsigned int &streamId);
+    /**
      * Scatters agents from the currently assigned device agent birth buffer (see member variable newBuffs)
      * The device buffer must be packed in the same format as CUDAAgent::mapNewRuntimeVariables(const AgentFunctionData&, const unsigned int &, const unsigned int &)
      * @param d_newBuff The buffer holding the new agent data
