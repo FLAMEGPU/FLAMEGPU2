@@ -5,6 +5,13 @@ cmake_minimum_required(VERSION VERSION 3.12 FATAL_ERROR)
 # Tests require GTest
 #enable_testing()
 
+# Apply the CUDA_ARCH target before gtest is included to resolve cmake 3.18+ warnings?
+# Set the location of the ROOT flame gpu project relative to this CMakeList.txt
+get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/.. REALPATH)
+
+# Include common rules.
+include(${FLAMEGPU_ROOT}/cmake/common.cmake)
+
 # START Download & Build GoogleTest
 MACRO (download_gtest)
     configure_file(CMakeLists.txt.in googletest-download/CMakeLists.txt)
@@ -60,12 +67,6 @@ add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src
 
 # Name the project and set languages
 project(tests CUDA CXX)
-
-# Set the location of the ROOT flame gpu project relative to this CMakeList.txt
-get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/.. REALPATH)
-
-# Include common rules.
-include(${FLAMEGPU_ROOT}/cmake/common.cmake)
 
 # Define output location of binary files
 if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
