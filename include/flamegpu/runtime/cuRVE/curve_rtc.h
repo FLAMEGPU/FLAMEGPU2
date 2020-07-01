@@ -45,17 +45,17 @@ class CurveRTCHost {
  protected:
     void setHeaderPlaceholder(std::string placeholder, std::string dst);
 
-    typedef struct {
+    struct RTCVariableProperties {
         std::string type;
         bool read;
         bool write;
         unsigned int elements;
-    } RTCVariableProperties;
+    };
 
-    typedef struct {
+    struct RTCEnvVariableProperties {
         std::string type;
         unsigned int elements;
-    } RTCEnvVariableProperties;
+    };
 
  private:
     std::string header;

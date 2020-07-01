@@ -4,6 +4,8 @@
 #include "flamegpu/model/LayerDescription.h"
 #include "flamegpu/exception/FGPUException.h"
 #include "flamegpu/runtime/messaging/BruteForce.h"
+#include "flamegpu/model/SubModelData.h"
+#include "flamegpu/model/SubModelDescription.h"
 
 /**
 * Constructors
@@ -19,8 +21,8 @@ bool ModelDescription::operator!=(const ModelDescription& rhs) const {
 }
 
 /**
-* Accessors
-*/
+ * Accessors
+ */
 AgentDescription& ModelDescription::newAgent(const std::string &agent_name) {
     if (!hasAgent(agent_name)) {
         auto rtn = std::shared_ptr<AgentData>(new AgentData(model, agent_name));
@@ -45,6 +47,56 @@ MsgBruteForce::Description& ModelDescription::newMessage(const std::string &mess
 }
 MsgBruteForce::Description& ModelDescription::Message(const std::string &message_name) {
     return Message<MsgBruteForce>(message_name);
+}
+
+EnvironmentDescription& ModelDescription::Environment() {
+    return *model->environment;
+}
+
+SubModelDescription& ModelDescription::newSubModel(const std::string &submodel_name, const ModelDescription &submodel_description) {
+    // Submodel is not self
+    if (submodel_description.model == this->model) {
+        THROW InvalidSubModel("A model cannot be a submodel of itself, that would create infinite recursion, "
+            "in ModelDescription::newSubModel().");
+    }
+    // Submodel is not already a submodel of this model
+    for (auto &m : this->model->submodels) {
+        if (m.second->submodel == submodel_description.model) {
+            THROW InvalidSubModel("Model '%s' is already a submodel of '%s', "
+                "in ModelDescription::newSubModel().",
+                submodel_name.c_str(), this->model->name.c_str());
+        }
+    }
+    // Submodel is not already in the submodel hierarchy above us
+    if (submodel_description.model->hasSubModelRecursive(this->model)) {
+        THROW InvalidSubModel("Models cannot exist in their own submodel hierarchy, that would create infinite recursion,"
+            "in ModelDescription::newSubModel().");
+    }
+    // Submodel name is not in use
+    if (!hasSubModel(submodel_name)) {
+        if (submodel_description.model->exitConditions.empty()) {
+            THROW InvalidSubModel("Model '%s' does not contain any exit conditions, SubModels must exit of their own accord, "
+                "in ModelDescription::newSubModel().",
+                submodel_name.c_str());
+        }
+        auto rtn = std::shared_ptr<SubModelData>(new SubModelData(model, submodel_name, submodel_description.model));
+        // This will actually generate the environment mapping (cant do it in constructor, due to shared_from_this)
+        // Not the end of the world if it isn't init (we should be able to catch it down the line), but safer this way
+        rtn->description->SubEnvironment(false);
+        model->submodels.emplace(submodel_name, rtn);
+        return *rtn->description;
+    }
+    THROW InvalidSubModelName("SubModel with name '%s' already exists, "
+        "in ModelDescription::newSubModel().",
+        submodel_name.c_str());
+}
+SubModelDescription &ModelDescription::SubModel(const std::string &submodel_name) {
+    auto rtn = model->submodels.find(submodel_name);
+    if (rtn != model->submodels.end())
+        return *rtn->second->description;
+    THROW InvalidSubModelName("SubModel ('%s') was not found, "
+        "in ModelDescription::SubModel().",
+        submodel_name.c_str());
 }
 
 LayerDescription& ModelDescription::newLayer(const std::string &name) {
@@ -75,10 +127,10 @@ LayerDescription& ModelDescription::Layer(const ModelData::size_type &layer_inde
 }
 LayerDescription& ModelDescription::Layer(const std::string &name) {
     if (!name.empty()) {  // Can't search for no name, multiple layers might be nameless
-            for (auto it = model->layers.begin(); it != model->layers.end(); ++it) {
-                if ((*it)->name == name)
-                    return *(*it)->description;
-            }
+        for (auto &layer : model->layers) {
+            if (layer->name == name)
+                return *layer->description;
+        }
     }
     THROW InvalidFuncLayerIndx("Layer '%s' was not found, "
         "in ModelDescription::Layer().",
@@ -110,10 +162,6 @@ void ModelDescription::addExitCondition(FLAMEGPU_EXIT_CONDITION_POINTER func_p) 
     }
 }
 
-EnvironmentDescription& ModelDescription::Environment() {
-    return *model->environment;
-}
-
 /**
 * Const Accessors
 */
@@ -122,15 +170,23 @@ std::string ModelDescription::getName() const {
 }
 
 const AgentDescription& ModelDescription::getAgent(const std::string &agent_name) const {
-    auto rtn = model->agents.find(agent_name);
+    const auto rtn = model->agents.find(agent_name);
     if (rtn != model->agents.end())
         return *rtn->second->description;
-    THROW InvalidAgentVar("Agent ('%s') was not found, "
+    THROW InvalidAgentName("Agent ('%s') was not found, "
         "in ModelDescription::getAgent().",
         agent_name.c_str());
 }
 const MsgBruteForce::Description& ModelDescription::getMessage(const std::string &message_name) const {
     return getMessage<MsgBruteForce>(message_name);
+}
+const SubModelDescription &ModelDescription::getSubModel(const std::string &submodel_name) const {
+    const auto rtn = model->submodels.find(submodel_name);
+    if (rtn != model->submodels.end())
+        return *rtn->second->description;
+    THROW InvalidSubModelName("SubModel ('%s') was not found, "
+        "in ModelDescription::getSubModel().",
+        submodel_name.c_str());
 }
 const EnvironmentDescription& ModelDescription::getEnvironment() const {
     return *model->environment;
@@ -163,6 +219,10 @@ bool ModelDescription::hasAgent(const std::string &agent_name) const {
 bool ModelDescription::hasMessage(const std::string &message_name) const {
     return model->messages.find(message_name) != model->messages.end();
 }
+bool ModelDescription::hasSubModel(const std::string &submodel_name) const {
+    return model->submodels.find(submodel_name) != model->submodels.end();
+}
+
 bool ModelDescription::hasLayer(const std::string &name) const {
     if (!name.empty()) {  // Can't search for no name, multiple layers might be nameless
         for (auto it = model->layers.begin(); it != model->layers.end(); ++it) {

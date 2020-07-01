@@ -6,6 +6,7 @@
 #include "flamegpu/gpu/CUDAErrorChecking.h"
 #include "flamegpu/runtime/utility/DeviceEnvironment.cuh"
 #include "flamegpu/model/EnvironmentDescription.h"
+#include "flamegpu/model/SubEnvironmentData.h"
 #include "flamegpu/gpu/CUDAAgentModel.h"
 
 /**
@@ -70,6 +71,55 @@ void EnvironmentManager::init(const std::string& model_name, const EnvironmentDe
     // Defragment to rebuild it properly
     defragment(&orderedProperties);
 }
+void EnvironmentManager::init(const std::string& model_name, const EnvironmentDescription &desc, const std::string& master_model_name, const SubEnvironmentData &mapping) {
+    // Initialise device portions of Environment manager
+    assert(deviceInitialised);  // submodel init should never be called first, requires parent init first for mapping
+    // Error if reinit
+    for (auto &&i : properties) {
+        if (i.first.first == model_name) {
+            THROW EnvDescriptionAlreadyLoaded("Environment description with same model name '%s' is already loaded, "
+                "in EnvironmentManager::init().",
+                model_name.c_str());
+        }
+    }
+
+    // Build a DefragMap of to send to defragger method
+    DefragMap orderedProperties;
+    size_t newSize = 0;
+    std::set<NamePair> new_mapped_props;
+    for (auto _i = desc.properties.begin(); _i != desc.properties.end(); ++_i) {
+        auto prop_mapping = mapping.properties.find(_i->first);
+        const auto &i = _i->second;
+        NamePair name = toName(model_name, _i->first);
+        if (prop_mapping == mapping.properties.end()) {
+            // Property is not mapped, so add to defrag map
+            DefragProp prop = DefragProp(i.data.ptr, i.data.length, i.isConst, i.elements, i.type);
+            const size_t typeSize = i.data.length / i.elements;
+            orderedProperties.emplace(typeSize, std::make_pair(name, prop));
+            newSize += i.data.length;
+        } else {
+            // Property is mapped, follow it's mapping upwards until we find the highest parent
+            NamePair ultimateParent = toName(master_model_name, prop_mapping->second);
+            auto propFind = mapped_properties.find(ultimateParent);
+            while (propFind != mapped_properties.end()) {
+                ultimateParent = propFind->second.masterProp;
+                propFind = mapped_properties.find(ultimateParent);
+            }
+            // Add to mapping list
+            MappedProp mp = MappedProp(ultimateParent, i.isConst);
+            mapped_properties.emplace(name, mp);
+            new_mapped_props.emplace(name);
+        }
+    }
+    if (newSize > m_freeSpace) {
+        // Ran out of constant cache space! (this can only trigger when a DefragMap is passed)
+        // Arguably this check should be performed by init()
+        THROW OutOfMemory("Insufficient EnvProperty memory to create new properties,"
+            "in EnvironmentManager::init().");
+    }
+    // Defragment to rebuild it properly
+    defragment(&orderedProperties, new_mapped_props);
+}
 
 void EnvironmentManager::initRTC(const CUDAAgentModel& cuda_model) {
     // check to ensure that model name is not already registered
@@ -102,10 +152,12 @@ void EnvironmentManager::initialiseDevice() {
         // Setup device-side error pattern
         const uint64_t h_errorPattern = DeviceEnvironment::ERROR_PATTERN();
         gpuErrchk(cudaMemcpyToSymbol(flamegpu_internal::c_deviceEnvErrorPattern, reinterpret_cast<const void*>(&h_errorPattern), sizeof(uint64_t), 0, cudaMemcpyHostToDevice));
+        deviceInitialised = true;
     }
 }
 void EnvironmentManager::free(const std::string &model_name) {
     Curve::getInstance().setNamespaceByHash(CURVE_NAMESPACE_HASH);
+    // Release regular properties
     for (auto &&i = properties.begin(); i != properties.end();) {
         if (i->first.first == model_name) {
             // Release from CURVE
@@ -113,6 +165,18 @@ void EnvironmentManager::free(const std::string &model_name) {
             Curve::getInstance().unregisterVariableByHash(cvh);
             // Drop from properties map
             i = properties.erase(i);
+        } else {
+            ++i;
+        }
+    }
+    // Release mapped properties
+    for (auto &&i = mapped_properties.begin(); i != mapped_properties.end();) {
+        if (i->first.first == model_name) {
+            // Release from CURVE
+            Curve::VariableHash cvh = toHash(i->first);
+            Curve::getInstance().unregisterVariableByHash(cvh);
+            // Drop from properties map
+            i = mapped_properties.erase(i);
         } else {
             ++i;
         }
@@ -221,7 +285,7 @@ void EnvironmentManager::add(const NamePair &name, const char *ptr, const size_t
     Curve::getInstance().setDefaultNamespace();
 }
 
-void EnvironmentManager::defragment(DefragMap *mergeProperties) {
+void EnvironmentManager::defragment(DefragMap *mergeProperties, std::set<NamePair> newmaps) {
     // Build a multimap to sort the elements (to create natural alignment in compact form)
     DefragMap orderedProperties;
     for (auto &i : properties) {
@@ -279,7 +343,7 @@ void EnvironmentManager::defragment(DefragMap *mergeProperties) {
                 typeSize, i.second.elements);
             if (CURVE_RESULT == Curve::UNKNOWN_VARIABLE) {
                 THROW CurveException("curveRegisterVariableByHash() returned UNKNOWN_CURVE_VARIABLE, "
-                    "in EnvironmentManager::add().");
+                    "in EnvironmentManager::defragment().");
             }
             // Increase buffer offset length that has been added
             buffOffset += i.second.length;
@@ -287,10 +351,9 @@ void EnvironmentManager::defragment(DefragMap *mergeProperties) {
             // Ran out of constant cache space! (this can only trigger when a DefragMap is passed)
             // Arguably this check should be performed by init()
             THROW OutOfMemory("Insufficient EnvProperty memory to create new properties, "
-                "in EnvironmentManager::defragment(DefragMap).");
+                "in EnvironmentManager::defragment().");
         }
     }
-    Curve::getInstance().setDefaultNamespace();
     // Replace stored properties with temp
     std::swap(properties, t_properties);
     // Replace buffer on host
@@ -300,6 +363,25 @@ void EnvironmentManager::defragment(DefragMap *mergeProperties) {
     // Update m_freeSpace, nextFree
     nextFree = buffOffset;
     m_freeSpace = MAX_BUFFER_SIZE - buffOffset + spareFrags;
+    // Update cub for any mapped properties
+    for (auto &mp : mapped_properties) {
+        // Generate hash for the subproperty name
+        Curve::VariableHash cvh = toHash(mp.first);
+        // Unregister the property if it's already been registered
+        if (newmaps.find(mp.first) == newmaps.end()) {
+            Curve::getInstance().unregisterVariableByHash(cvh);
+        }
+        // Find the location of the mappedproperty
+        auto masterprop = properties.at(mp.second.masterProp);
+        // Create the mapping
+        const auto CURVE_RESULT = Curve::getInstance().registerVariableByHash(cvh, reinterpret_cast<void*>(const_cast<char*>(c_buffer + masterprop.offset)),
+                masterprop.length / masterprop.elements, masterprop.elements);
+        if (CURVE_RESULT == Curve::UNKNOWN_VARIABLE) {
+            THROW CurveException("curveRegisterVariableByHash() returned UNKNOWN_CURVE_VARIABLE, "
+                "in EnvironmentManager::defragment().");
+        }
+    }
+    Curve::getInstance().setDefaultNamespace();
 }
 
 const CUDAAgentModel& EnvironmentManager::getCUDAAgentModel(std::string model_name) {
@@ -310,7 +392,55 @@ const CUDAAgentModel& EnvironmentManager::getCUDAAgentModel(std::string model_na
     return res->second;
 }
 
-void EnvironmentManager::setRTCValue(std::string model_name, const char* variable_name, const void* src, size_t count, size_t offset) {
+void EnvironmentManager::setRTCValue(const std::string &model_name, const std::string &variable_name, const void* src, size_t count, size_t offset) {
     const CUDAAgentModel& cuda_agent_model = getCUDAAgentModel(model_name);
     cuda_agent_model.RTCSetEnvironmentVariable(variable_name, src, count, offset);
+}
+
+void EnvironmentManager::remove(const NamePair &name) {
+    // Unregister in cuRVE
+    Curve::getInstance().setNamespaceByHash(CURVE_NAMESPACE_HASH);
+    Curve::VariableHash cvh = toHash(name);
+    Curve::getInstance().unregisterVariableByHash(cvh);
+    Curve::getInstance().setDefaultNamespace();
+    // Update free space
+    // Remove from properties map
+    auto realprop = properties.find(name);
+    if (realprop!= properties.end()) {
+        auto i = realprop->second;
+        // Cast is safe, length would need to be gigabytes, we only have 64KB constant cache
+        if (i.offset + static_cast<uint32_t>(i.length) == nextFree) {
+            // Rollback nextFree
+            nextFree = i.offset;
+        } else {
+            // Notify free fragments
+            freeFragments.push_back(OffsetLen(i.offset, i.length));
+        }
+        m_freeSpace += i.length;
+        // Purge properties
+        properties.erase(name);
+    } else {
+        mapped_properties.erase(name);
+    }
+}
+void EnvironmentManager::remove(const std::string &model_name, const std::string &var_name) {
+    remove({model_name, var_name});
+}
+
+void EnvironmentManager::resetModel(const std::string &model_name, const EnvironmentDescription &desc) {
+    // Todo: Might want to change this, so EnvManager holds a copy of the default at init time
+    // For every property, in the named model, which is not a mapped property
+    for (auto &d : desc.getPropertiesMap()) {
+        if (mapped_properties.find({model_name, d.first}) == mapped_properties.end()) {
+            // Find the local property data
+            auto &p = properties.at({model_name, d.first});
+            // Set back to default value
+            memcpy(hc_buffer + p.offset, d.second.data.ptr, d.second.data.length);
+            assert(d.second.data.length == p.length);
+            // Store data
+            gpuErrchk(cudaMemcpy(reinterpret_cast<void*>(const_cast<char*>(c_buffer + p.offset)), reinterpret_cast<void*>(hc_buffer + p.offset), p.length, cudaMemcpyHostToDevice));
+            // update RTC
+            setRTCValue(model_name, d.first, hc_buffer + p.offset, p.length, p.offset);
+        }
+    }
 }

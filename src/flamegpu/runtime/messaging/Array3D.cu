@@ -131,13 +131,13 @@ void MsgArray3D::CUDAModelHandler::buildIndex() {
 }
 
 
-MsgArray3D::Data::Data(ModelData *const model, const std::string &message_name)
+MsgArray3D::Data::Data(const std::shared_ptr<const ModelData> &model, const std::string &message_name)
     : MsgBruteForce::Data(model, message_name)
     , dimensions({0, 0, 0}) {
     description = std::unique_ptr<MsgArray3D::Description>(new MsgArray3D::Description(model, this));
     variables.emplace("___INDEX", Variable(1, size_type()));
 }
-MsgArray3D::Data::Data(ModelData *const model, const Data &other)
+MsgArray3D::Data::Data(const std::shared_ptr<const ModelData> &model, const Data &other)
     : MsgBruteForce::Data(model, other)
     , dimensions(other.dimensions) {
     description = std::unique_ptr<MsgArray3D::Description>(model ? new MsgArray3D::Description(model, this) : nullptr);
@@ -145,7 +145,7 @@ MsgArray3D::Data::Data(ModelData *const model, const Data &other)
         THROW InvalidMessage("All dimensions must be above zero in array3D message '%s'\n", other.name.c_str());
     }
 }
-MsgArray3D::Data *MsgArray3D::Data::clone(ModelData *const newParent) {
+MsgArray3D::Data *MsgArray3D::Data::clone(const std::shared_ptr<const ModelData> &newParent) {
     return new Data(newParent, *this);
 }
 std::unique_ptr<MsgSpecialisationHandler> MsgArray3D::Data::getSpecialisationHander(CUDAMessage &owner) const {
@@ -154,7 +154,7 @@ std::unique_ptr<MsgSpecialisationHandler> MsgArray3D::Data::getSpecialisationHan
 std::type_index MsgArray3D::Data::getType() const { return std::type_index(typeid(MsgArray3D)); }
 
 
-MsgArray3D::Description::Description(ModelData *const _model, Data *const data)
+MsgArray3D::Description::Description(const std::shared_ptr<const ModelData> &_model, Data *const data)
     : MsgBruteForce::Description(_model, data) { }
 
 void MsgArray3D::Description::setDimensions(const size_type& len_x, const size_type& len_y, const size_type& len_z) {

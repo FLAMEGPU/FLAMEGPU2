@@ -24,11 +24,31 @@ class Simulation {
         bool timing = false;
     };
     virtual ~Simulation() = default;
+    /**
+     * This constructor takes a clone of the ModelData hierarchy
+     */
     explicit Simulation(const ModelDescription& model);
+
+ protected:
+    /**
+     * This constructor is for use with submodels, it does not call clone
+     * Additionally sets the submodel ptr
+     */
+    explicit Simulation(const std::shared_ptr<SubModelData> &sub_model, CUDAAgentModel *master_model);
+
+ public:
     void initialise(int argc, const char** argv);
 
     virtual bool step() = 0;
     virtual void simulate() = 0;
+    /**
+     * Returns the simulation to a clean state
+     * This clears all agents and message lists, resets environment properties and reseeds random generation.
+     * Also calls resetStepCounter();
+     * @note If triggered on a submodel, agent states and environment properties mapped to a parent agent, and random generation are not affected.
+     * @note If random was manually seeded, it will return to it's original state. If random was seeded from time, it will return to a new random state.
+     */
+    void reset();
     virtual unsigned int getStepCounter() = 0;
     virtual void resetStepCounter() = 0;
 
@@ -47,11 +67,30 @@ class Simulation {
     void applyConfig();
 
  protected:
+    /**
+     * Returns the model to a clean state
+     * This clears all agents and message lists, resets environment properties and reseeds random generation.
+     * Also calls resetStepCounter();
+     * @param submodelReset This should only be set to true when called automatically when a submodel reaches it's exit condition during execution. This performs a subset of the regular reset procedure.
+     * @note If triggered on a submodel, agent states and environment properties mapped to a parent agent, and random generation are not affected.
+     * @note If random was manually seeded, it will return to it's original state. If random was seeded from time, it will return to a new random state.
+     */
+    virtual void reset(bool submodelReset) = 0;
     virtual void applyConfig_derived() = 0;
     virtual bool checkArgs_derived(int argc, const char** argv, int &i) = 0;
     virtual void printHelp_derived() = 0;
     virtual void resetDerivedConfig() = 0;
     const std::shared_ptr<const ModelData> model;
+
+    /**
+     * This is only used when model is a submodel, otherwise it is empty
+     * If it is set, it causes simulate() to additionally reset/cull unmapped populations
+     */
+    const std::shared_ptr<const SubModelData> submodel;
+    /**
+     * Only used by submodels, only required to fetch the name of master model when initialising environment (as this occurs after constructor)
+     */
+    CUDAAgentModel const * mastermodel;
 
     Config config;
 

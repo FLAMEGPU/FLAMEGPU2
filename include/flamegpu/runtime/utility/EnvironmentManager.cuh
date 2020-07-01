@@ -1,5 +1,6 @@
 #include <map>
 #include <cassert>
+#include <memory>
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_UTILITY_ENVIRONMENTMANAGER_CUH_
 #define INCLUDE_FLAMEGPU_RUNTIME_UTILITY_ENVIRONMENTMANAGER_CUH_
 
@@ -19,7 +20,7 @@
 #include "flamegpu/gpu/CUDAErrorChecking.h"
 #include "flamegpu/runtime/cuRVE/curve.h"
 
-
+struct SubEnvironmentData;
 class EnvironmentDescription;
 class CUDAAgentModel;
 class CUDAAgent;
@@ -105,6 +106,20 @@ class EnvironmentManager {
         const std::type_index type;
     };
     /**
+     * Used to represent properties of a mapped environment property
+     */
+    struct MappedProp {
+        /**
+         * @param _masterProp Master property of mapping
+         * @param _isConst Is the stored data constant
+         */
+        MappedProp(const NamePair &_masterProp, const bool &_isConst)
+            : masterProp(_masterProp),
+            isConst(_isConst) {}
+        const NamePair masterProp;
+        const bool isConst;
+    };
+    /**
      * This structure is a clone of EnvProp
      * However, instead of offset (which points to an offset into hc_buffer)
      * data is avaialable, which points to host memory
@@ -150,6 +165,14 @@ class EnvironmentManager {
      * @param desc environment properties description to use
      */
     void init(const std::string& model_name, const EnvironmentDescription &desc);
+    /**
+     * Submodel variant of init()
+     * Activates a models unmapped environment properties, by adding them to constant cache
+     * Maps a models mapped environment properties to their master property
+     * @param model_name Name of the model
+     * @param desc environment properties description to use
+     */
+    void init(const std::string& model_name, const EnvironmentDescription &desc, const std::string& master_model_name, const SubEnvironmentData &mapping);
     /**
      * RTC functions hold thier own unique constants for environment variables. This function copies all environment variable to the RTC copies.
      * It can not be incorporated into init() as init will be called before RTC functions have been compiled.
@@ -347,28 +370,32 @@ class EnvironmentManager {
     /**
      * Removes an environment property
      * @param name name used for accessing the property
-     * @tparam T Type of the environmental property array to be created
      * @throws InvalidEnvProperty If a property of the name does not exist
      * @note This may be used to remove and recreate environment properties (and arrays) marked const
      */
-    template<typename T>
     void remove(const NamePair &name);
     /**
      * Convenience method: Removes an environment property
      * @param model_name name of the model the property is attached to
      * @param var_name name used for accessing the property
-     * @tparam T Type of the environmental property array to be created
      * @throws InvalidEnvProperty If a property of the name does not exist
      * @note This may be used to remove and recreate environment properties (and arrays) marked const
      * @see remove(const NamePair &)
      */
-    template<typename T>
     void remove(const std::string &model_name, const std::string &var_name);
+    /**
+     * Returns all environment properties owned by a model to their default values
+     * This means that properties inherited by a submodel will not be reset to their default values
+     * @param model_name name of the model the property is attached to
+     * @param desc The environment description (this is where the defaults are pulled from)
+     * @todo This is not a particularly efficient implementation, as it updates them all individually.
+     */
+    void resetModel(const std::string &model_name, const EnvironmentDescription &desc);
     /**
      * Returns whether the named env property exists
      * @param name name used for accessing the property
      */
-    inline bool contains(const NamePair &name) const { return properties.find(name) != properties.end(); }
+    inline bool contains(const NamePair &name) const { return properties.find(name) != properties.end() || mapped_properties.find(name) != mapped_properties.end(); }
     /**
      * Convenience method: Returns whether the named env property exists
      * @param model_name name of the model the property is attached to
@@ -386,6 +413,10 @@ class EnvironmentManager {
         auto a = properties.find(name);
         if (a != properties.end())
             return a->second.isConst;
+        const auto b = mapped_properties.find(name);
+        if (b != mapped_properties.end()) {
+            return b->second.isConst;
+        }
         THROW InvalidEnvProperty("Environmental property with name '%s:%s' does not exist, "
             "in EnvironmentManager::isConst().",
             name.first.c_str(), name.second.c_str());
@@ -408,6 +439,15 @@ class EnvironmentManager {
         auto a = properties.find(name);
         if (a != properties.end())
             return a->second.elements;
+        const auto b = mapped_properties.find(name);
+        if (b != mapped_properties.end()) {
+            a = properties.find(b->second.masterProp);
+            if (a != properties.end())
+                return a->second.elements;
+            THROW InvalidEnvProperty("Mapped environmental property with name '%s:%s' maps to missing property with name '%s:%s', "
+                "in EnvironmentManager::type().",
+                name.first.c_str(), name.second.c_str(), b->second.masterProp.first.c_str(), b->second.masterProp.second.c_str());
+        }
         THROW InvalidEnvProperty("Environmental property with name '%s:%s' does not exist, "
             "in EnvironmentManager::length().",
             name.first.c_str(), name.second.c_str());
@@ -429,6 +469,15 @@ class EnvironmentManager {
         auto a = properties.find(name);
         if (a != properties.end())
             return a->second.type;
+        const auto b = mapped_properties.find(name);
+        if (b != mapped_properties.end()) {
+            a = properties.find(b->second.masterProp);
+            if (a != properties.end())
+                return a->second.type;
+            THROW InvalidEnvProperty("Mapped environmental property with name '%s:%s' maps to missing property with name '%s:%s', "
+                "in EnvironmentManager::type().",
+                name.first.c_str(), name.second.c_str(), b->second.masterProp.first.c_str(), b->second.masterProp.second.c_str());
+        }
         THROW InvalidEnvProperty("Environmental property with name '%s:%s' does not exist, "
             "in EnvironmentManager::type().",
             name.first.c_str(), name.second.c_str());
@@ -485,9 +534,10 @@ class EnvironmentManager {
     /**
      * Cleanup freeFragments
      * @param mergeProps Used by init to defragement whilst merging in new data
+     * @param newmaps Namepairs of newly mapped properties, yet to to be setup (essentially ones not yet registered in curve)
      * @note any EnvPROP
      */
-    void defragment(DefragMap *mergeProps = nullptr);
+    void defragment(DefragMap *mergeProps = nullptr, std::set<NamePair> newmaps = {});
     /**
      * Device pointer to the environment property buffer in __constant__ memory
      */
@@ -512,6 +562,10 @@ class EnvironmentManager {
      * Host copy of data related to each stored property
      */
     std::unordered_map<NamePair, EnvProp, NamePairHash> properties;
+    /**
+     * This lists all currently mapped properties, so their access can be redirected to the appropriate property
+     */
+    std::unordered_map<NamePair, MappedProp, NamePairHash> mapped_properties;
     /**
      * Map of model name to CUDAAgentModel for use in updating RTC values
      */
@@ -547,7 +601,7 @@ class EnvironmentManager {
 
     const CUDAAgentModel& getCUDAAgentModel(std::string model_name);
 
-    void setRTCValue(std::string model_name, const char* variable_name, const void* src, size_t count, size_t offset = 0);
+    void setRTCValue(const std::string &model_name, const std::string &variable_name, const void* src, size_t count, size_t offset = 0);
 
  public:
     // Public deleted creates better compiler errors
@@ -612,7 +666,13 @@ T EnvironmentManager::set(const NamePair &name, const T &value) {
     // Copy old data to return
     T rtn = get<T>(name);
     // Find property offset
-    ptrdiff_t buffOffset = properties.at(name).offset;
+    ptrdiff_t buffOffset = 0;
+    const auto a = properties.find(name);
+    if (a != properties.end()) {
+        buffOffset = a->second.offset;
+    } else {
+        buffOffset = properties.at(mapped_properties.at(name).masterProp).offset;
+    }
     // Store data
     memcpy(hc_buffer + buffOffset, &value, sizeof(T));
     gpuErrchk(cudaMemcpy(reinterpret_cast<void*>(const_cast<char*>(c_buffer + buffOffset)), reinterpret_cast<void*>(hc_buffer + buffOffset), sizeof(T), cudaMemcpyHostToDevice));
@@ -645,7 +705,13 @@ std::array<T, N> EnvironmentManager::set(const NamePair &name, const std::array<
             array_len, N);
     }
     // Find property offset
-    ptrdiff_t buffOffset = properties.at(name).offset;
+    ptrdiff_t buffOffset = 0;
+    const auto a = properties.find(name);
+    if (a != properties.end()) {
+        buffOffset = a->second.offset;
+    } else {
+        buffOffset = properties.at(mapped_properties.at(name).masterProp).offset;
+    }
     // Copy old data to return
     std::array<T, N> rtn = get<T, N>(name);
     // Store data
@@ -680,7 +746,13 @@ T EnvironmentManager::set(const NamePair &name, const size_type &index, const T 
             index, array_len);
     }
     // Find property offset
-    ptrdiff_t buffOffset = properties.at(name).offset + (index * sizeof(T));
+    ptrdiff_t buffOffset = 0;
+    const auto a = properties.find(name);
+    if (a != properties.end()) {
+        buffOffset = a->second.offset + index * sizeof(T);
+    } else {
+        buffOffset = properties.at(mapped_properties.at(name).masterProp).offset + index * sizeof(T);
+    }
     // Copy old data to return
     T rtn = *reinterpret_cast<T*>(hc_buffer + buffOffset);
     // Store data
@@ -711,10 +783,11 @@ T EnvironmentManager::get(const NamePair &name) {
             "in EnvironmentManager::get().",
             name.first.c_str(), name.second.c_str(), typ_id.name(), typeid(T).name());
     }
-    // Find property offset
-    ptrdiff_t buffOffset = properties.at(name).offset;
     // Copy old data to return
-    return *reinterpret_cast<T*>(hc_buffer + buffOffset);
+    const auto a = properties.find(name);
+    if (a != properties.end())
+        return *reinterpret_cast<T*>(hc_buffer + a->second.offset);
+    return *reinterpret_cast<T*>(hc_buffer + properties.at(mapped_properties.at(name).masterProp).offset);
 }
 template<typename T>
 T EnvironmentManager::get(const std::string &model_name, const std::string &var_name) {
@@ -738,11 +811,14 @@ std::array<T, N> EnvironmentManager::get(const NamePair &name) {
             "in EnvironmentManager::get().",
             array_len, N);
     }
-    // Find property offset
-    ptrdiff_t buffOffset = properties.at(name).offset;
     // Copy old data to return
     std::array<T, N> rtn;
-    memcpy(rtn.data(), reinterpret_cast<T*>(hc_buffer + buffOffset), N * sizeof(T));
+    const auto a = properties.find(name);
+    if (a != properties.end()) {
+        memcpy(rtn.data(), reinterpret_cast<T*>(hc_buffer + a->second.offset), N * sizeof(T));
+    } else {
+        memcpy(rtn.data(), reinterpret_cast<T*>(hc_buffer + properties.at(mapped_properties.at(name).masterProp).offset), N * sizeof(T));
+    }
     return rtn;
 }
 template<typename T, EnvironmentManager::size_type N>
@@ -767,52 +843,15 @@ T EnvironmentManager::get(const NamePair &name, const size_type &index) {
             "in EnvironmentManager::set().",
             index, array_len);
     }
-    // Find property offset
-    ptrdiff_t buffOffset = properties.at(name).offset + index * sizeof(T);
     // Copy old data to return
-    return *reinterpret_cast<T*>(hc_buffer + buffOffset);
+    const auto a = properties.find(name);
+    if (a != properties.end())
+        return *reinterpret_cast<T*>(hc_buffer + a->second.offset + index * sizeof(T));
+    return *reinterpret_cast<T*>(hc_buffer + properties.at(mapped_properties.at(name).masterProp).offset + index * sizeof(T));
 }
 template<typename T>
 T EnvironmentManager::get(const std::string &model_name, const std::string &var_name, const size_type &index) {
     return get<T>(toName(model_name, var_name), index);
 }
 
-/**
- * Destructors
- */
-template<typename T>
-void EnvironmentManager::remove(const NamePair &name) {
-    // Limited to Arithmetic types
-    // Compound types would allow host pointers inside structs to be passed
-    static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value,
-        "Only arithmetic types can be used as environmental properties");
-    const std::type_index typ_id = type(name);
-    if (typ_id != std::type_index(typeid(T))) {
-        THROW InvalidEnvPropertyType("Environmental property ('%s:%s') type (%s) does not match template argument T (%s), "
-            "in EnvironmentManager::remove().",
-            name.first.c_str(), name.second.c_str(), typ_id.name(), typeid(T).name());
-    }
-    auto i = properties.at(name);
-    // Unregister in cuRVE
-    Curve::getInstance().setNamespaceByHash(CURVE_NAMESPACE_HASH);
-    Curve::VariableHash cvh = toHash(name);
-    Curve::getInstance().unregisterVariableByHash(cvh);
-    Curve::getInstance().setDefaultNamespace();
-    // Update free space
-    // Cast is safe, length would need to be gigabytes, we only have 64KB constant cache
-    if (i.offset + static_cast<uint32_t>(i.length) == nextFree) {
-        // Rollback nextFree
-        nextFree = i.offset;
-    } else {
-        // Notify free fragments
-        freeFragments.push_back(OffsetLen(i.offset, i.length));
-    }
-    m_freeSpace += i.length;
-    // Purge properties
-    properties.erase(name);
-}
-template<typename T>
-void EnvironmentManager::remove(const std::string &model_name, const std::string &var_name) {
-    remove<T>(model_name, var_name);
-}
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_UTILITY_ENVIRONMENTMANAGER_CUH_

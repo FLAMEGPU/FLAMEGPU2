@@ -7,6 +7,9 @@
 #include "flamegpu/model/AgentFunctionDescription.h"
 #include "flamegpu/model/AgentFunctionData.h"
 #include "flamegpu/model/LayerData.h"
+#include "flamegpu/model/SubModelData.h"
+#include "flamegpu/model/SubAgentData.h"
+#include "flamegpu/model/SubEnvironmentData.h"
 
 const char *ModelData::DEFAULT_STATE = "default";
 
@@ -21,7 +24,41 @@ ModelData::~ModelData() { }
 
 std::shared_ptr<ModelData> ModelData::clone() const {
     // Awkwardly cant use shared from this inside constructor, so use raw pts instead
-    return std::shared_ptr<ModelData>(new ModelData(*this));
+    auto rtn = std::shared_ptr<ModelData>(new ModelData(*this));
+
+    // Manually copy construct maps of shared ptr
+    for (const auto &m : this->messages) {
+        rtn->messages.emplace(m.first, std::shared_ptr<MsgBruteForce::Data>(m.second->clone(rtn)));  // Need to convert this to shared_ptr, how to force shared copy construct?
+    }
+    // Copy all agents first
+    for (const auto &a : this->agents) {
+        auto b = std::shared_ptr<AgentData>(new AgentData(rtn, *a.second));
+        rtn->agents.emplace(a.first, b);
+    }
+    // Copy agent functions per agent, after all agents have been implemented.
+    for (const auto &a : this->agents) {
+        auto b = rtn->agents.find(a.first)->second;
+        // Manually copy construct maps of shared ptr
+        for (const auto &f : a.second->functions) {
+            b->functions.emplace(f.first, std::shared_ptr<AgentFunctionData>(new AgentFunctionData(rtn, b, *f.second)));
+        }
+    }
+    // Copy submodels
+    for (const auto &a : this->submodels) {
+        auto b = std::shared_ptr<SubModelData>(new SubModelData(rtn, *a.second));
+        // Manually copy construct maps of shared ptr
+        for (const auto &f : a.second->subagents) {
+            b->subagents.emplace(f.first, std::shared_ptr<SubAgentData>(new SubAgentData(rtn, b, *f.second)));
+        }
+        // Manually copy construct environment
+        b->subenvironment = std::unique_ptr<SubEnvironmentData>(new SubEnvironmentData(rtn, b, *a.second->subenvironment));
+        rtn->submodels.emplace(a.first, b);
+    }
+
+    for (const auto &m : this->layers) {
+        rtn->layers.push_back(std::shared_ptr<LayerData>(new LayerData(rtn, *m)));
+    }
+    return rtn;
 }
 
 ModelData::ModelData(const ModelData &other)
@@ -31,26 +68,7 @@ ModelData::ModelData(const ModelData &other)
     , exitConditions(other.exitConditions)
     , environment(new EnvironmentDescription(*other.environment))
     , name(other.name) {
-    // Manually copy construct maps of shared ptr
-    for (const auto m : other.messages) {
-        messages.emplace(m.first, std::shared_ptr<MsgBruteForce::Data>(m.second->clone(this)));  // Need to convert this to shared_ptr, how to force shared copy construct?
-    }
-    // Copy all agents first
-    for (const auto a : other.agents) {
-        auto b = std::shared_ptr<AgentData>(new AgentData(this, *a.second));
-        agents.emplace(a.first, b);
-    }
-    // Copy agent functions per agent, after all agents have been implemented.
-    for (const auto a : other.agents) {
-        auto b = agents.find(a.first)->second;
-        // Manually copy construct maps of shared ptr
-        for (const auto f : a.second->functions) {
-            b->functions.emplace(f.first, std::shared_ptr<AgentFunctionData>(new AgentFunctionData(this, b, *f.second)));
-        }
-    }
-    for (const auto m : other.layers) {
-        layers.push_back(std::shared_ptr<LayerData>(new LayerData(this, *m)));
-    }
+    // Must be called from clone() so that items are all init
 }
 
 bool ModelData::operator==(const ModelData& rhs) const {
@@ -59,6 +77,7 @@ bool ModelData::operator==(const ModelData& rhs) const {
     if (name == rhs.name
         && agents.size() == rhs.agents.size()
         && messages.size() == rhs.messages.size()
+        && submodels.size() == rhs.submodels.size()
         && layers.size() == rhs.layers.size()
         && initFunctions.size() == rhs.initFunctions.size()
         && stepFunctions.size() == rhs.stepFunctions.size()
@@ -78,6 +97,15 @@ bool ModelData::operator==(const ModelData& rhs) const {
                 for (auto &v : messages) {
                     auto _v = rhs.messages.find(v.first);
                     if (_v == rhs.messages.end())
+                        return false;
+                    if (*v.second != *_v->second)
+                        return false;
+                }
+            }
+            {  // Compare submodels (map)
+                for (auto &v : submodels) {
+                    auto _v = rhs.submodels.find(v.first);
+                    if (_v == rhs.submodels.end())
                         return false;
                     if (*v.second != *_v->second)
                         return false;
@@ -117,3 +145,13 @@ bool ModelData::operator==(const ModelData& rhs) const {
 bool ModelData::operator!=(const ModelData& rhs) const {
     return !operator==(rhs);
 }
+bool ModelData::hasSubModelRecursive(const std::shared_ptr<const ModelData> &submodel_data) const {
+    for (auto &m : submodels) {
+        if (m.second->submodel.get() == submodel_data.get())
+            return true;
+        if (m.second->submodel->hasSubModelRecursive(submodel_data))
+            return true;
+    }
+    return false;
+}
+

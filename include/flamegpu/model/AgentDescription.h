@@ -49,7 +49,7 @@ class AgentDescription {
      * @param _model Model at root of model hierarchy
      * @param data Data store of this agent's data
      */
-    AgentDescription(ModelData *const _model, AgentData *const data);
+    AgentDescription(std::shared_ptr<const ModelData> _model, AgentData *const data);
     /**
      * Default copy constructor, not implemented
      */
@@ -124,7 +124,7 @@ class AgentDescription {
     /**
      * Adds a new runtime (device) function to the agent
      * @param function_name Name of the functions
-     * @param string representation of an agent function
+     * @param func_src representation of an agent function
      * Should be declared using FLAMEGPU_AGENT_FUNCTION notation
      * @return A mutable reference to the new AgentFunctionDescription
      * @throws InvalidAgentFunc If a variable already exists within the agent with the same name
@@ -220,7 +220,7 @@ class AgentDescription {
     /**
      * Root of the model hierarchy
      */
-    ModelData *const model;
+    std::weak_ptr<const ModelData> model;
     /**
      * The class which stores all of the agent's data.
      */

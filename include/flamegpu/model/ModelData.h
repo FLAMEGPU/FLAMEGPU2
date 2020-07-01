@@ -9,12 +9,13 @@
 #include <string>
 
 #include "flamegpu/model/EnvironmentDescription.h"
-#include "flamegpu/runtime/flamegpu_host_api_macros.h"  // Todo replace with std/cub style fns (see AgentFunction.h)
+#include "flamegpu/runtime/flamegpu_host_api_macros.h"
 #include "flamegpu/runtime/messaging/BruteForce.h"
 
 class EnvironmentDescription;
 struct AgentData;
 struct LayerData;
+struct SubModelData;
 
 /**
  * This is the internal data store for ModelDescription
@@ -44,6 +45,11 @@ struct ModelData : std::enable_shared_from_this<ModelData>{
      * map<string, MessageData>
      */
     typedef std::unordered_map<std::string, std::shared_ptr<MsgBruteForce::Data>> MessageMap;
+    /**
+     * Map of name:message definition
+     * map<string, MessageData>
+     */
+    typedef std::unordered_map<std::string, std::shared_ptr<SubModelData>> SubModelMap;
     /**
      * List of layer definitions
      * list<LayerData>
@@ -79,6 +85,10 @@ struct ModelData : std::enable_shared_from_this<ModelData>{
      */
     MessageMap messages;
     /**
+     * Holds all of the model's sub models
+     */
+    SubModelMap submodels;
+    /**
      * Holds all of the model's layer definitions
      */
     LayerList layers;
@@ -101,7 +111,7 @@ struct ModelData : std::enable_shared_from_this<ModelData>{
     /**
      * Holds all of the model's environment property definitions
      */
-    std::unique_ptr<EnvironmentDescription> environment;  // TODO: Move this to same Data:Description format
+    std::shared_ptr<EnvironmentDescription> environment;  // TODO: Move this to same Data:Description format
     /**
      * The name of the model
      * This must be unique among Simulation (e.g. CUDAAgentModel) instances
@@ -126,6 +136,7 @@ struct ModelData : std::enable_shared_from_this<ModelData>{
     bool operator!=(const ModelData& rhs) const;
 
  protected:
+    friend SubModelData;  // Uses private copy constructor
     /**
      * Copy constructor
      * This should only be called via clone();
@@ -136,6 +147,13 @@ struct ModelData : std::enable_shared_from_this<ModelData>{
      * This should only be called by ModelDescription
      */
     explicit ModelData(const std::string &model_name);
+
+ private:
+    /**
+     * @param submodel_data The submodel's data to check
+     * @return True when a submodel with the specified name exists within the model's hierarchy
+     */
+    bool hasSubModelRecursive(const std::shared_ptr<const ModelData> &submodel_data) const;
 };
 
 #endif  // INCLUDE_FLAMEGPU_MODEL_MODELDATA_H_

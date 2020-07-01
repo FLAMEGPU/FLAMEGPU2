@@ -45,7 +45,7 @@ void RandomManager::reseedDevice() {
 
 void RandomManager::reseed(const unsigned int &seed) {
     // Set the instance's seed to the new value
-    RandomManager::mSeed = seed;
+    mSeed = seed;
 
     // Apply the new seed to the host
     reseedHost();

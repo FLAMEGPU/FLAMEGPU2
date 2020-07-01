@@ -166,7 +166,7 @@ void MsgSpatial2D::CUDAModelHandler::buildIndex() {
         gpuErrchk(cudaDeviceSynchronize());
     }
     {  // Scan (sum), to finalise PBM
-        cub::DeviceScan::ExclusiveSum(d_CUB_temp_storage, d_CUB_temp_storage_bytes, d_histogram, hd_data.PBM, binCount + 1);
+        gpuErrchk(cub::DeviceScan::ExclusiveSum(d_CUB_temp_storage, d_CUB_temp_storage_bytes, d_histogram, hd_data.PBM, binCount + 1));
     }
     {  // Reorder messages
        // Copy messages from d_messages to d_messages_swap, in hash order
@@ -182,7 +182,7 @@ void MsgSpatial2D::CUDAModelHandler::buildIndex() {
 
 void MsgSpatial2D::CUDAModelHandler::resizeCubTemp() {
     size_t bytesCheck = 0;
-    cub::DeviceScan::ExclusiveSum(nullptr, bytesCheck, hd_data.PBM, d_histogram, binCount + 1);
+    gpuErrchk(cub::DeviceScan::ExclusiveSum(nullptr, bytesCheck, hd_data.PBM, d_histogram, binCount + 1));
     if (bytesCheck > d_CUB_temp_storage_bytes) {
         if (d_CUB_temp_storage) {
             gpuErrchk(cudaFree(d_CUB_temp_storage));
@@ -206,7 +206,7 @@ void MsgSpatial2D::CUDAModelHandler::resizeKeysVals(const unsigned int &newSize)
 }
 
 
-MsgSpatial2D::Data::Data(ModelData *const model, const std::string &message_name)
+MsgSpatial2D::Data::Data(const std::shared_ptr<const ModelData> &model, const std::string &message_name)
     : MsgBruteForce::Data(model, message_name)
     , radius(NAN)
     , minX(NAN)
@@ -217,7 +217,7 @@ MsgSpatial2D::Data::Data(ModelData *const model, const std::string &message_name
     description->newVariable<float>("x");
     description->newVariable<float>("y");
 }
-MsgSpatial2D::Data::Data(ModelData *const model, const Data &other)
+MsgSpatial2D::Data::Data(const std::shared_ptr<const ModelData> &model, const Data &other)
     : MsgBruteForce::Data(model, other)
     , radius(other.radius)
     , minX(other.minX)
@@ -241,7 +241,7 @@ MsgSpatial2D::Data::Data(ModelData *const model, const Data &other)
         THROW InvalidMessage("Environment maximum y bound has not been set in spatial message '%s'.", other.name.c_str());
     }
 }
-MsgSpatial2D::Data *MsgSpatial2D::Data::clone(ModelData *const newParent) {
+MsgSpatial2D::Data *MsgSpatial2D::Data::clone(const std::shared_ptr<const ModelData> &newParent) {
     return new Data(newParent, *this);
 }
 std::unique_ptr<MsgSpecialisationHandler> MsgSpatial2D::Data::getSpecialisationHander(CUDAMessage &owner) const {
@@ -250,7 +250,7 @@ std::unique_ptr<MsgSpecialisationHandler> MsgSpatial2D::Data::getSpecialisationH
 std::type_index MsgSpatial2D::Data::getType() const { return std::type_index(typeid(MsgSpatial2D)); }
 
 
-MsgSpatial2D::Description::Description(ModelData *const _model, Data *const data)
+MsgSpatial2D::Description::Description(const std::shared_ptr<const ModelData> &_model, Data *const data)
     : MsgBruteForce::Description(_model, data) { }
 
 void MsgSpatial2D::Description::setRadius(const float &r) {

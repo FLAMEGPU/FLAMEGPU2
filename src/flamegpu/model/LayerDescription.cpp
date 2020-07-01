@@ -1,7 +1,9 @@
 #include "flamegpu/model/LayerDescription.h"
 #include "flamegpu/model/AgentFunctionDescription.h"
+#include "flamegpu/model/SubModelDescription.h"
+#include "flamegpu/model/SubModelData.h"
 
-LayerDescription::LayerDescription(ModelData *const _model, LayerData *const data)
+LayerDescription::LayerDescription(const std::shared_ptr<const ModelData> &_model, LayerData *const data)
     : model(_model)
     , layer(data) { }
 
@@ -13,7 +15,7 @@ bool LayerDescription::operator!=(const LayerDescription& rhs) const {
 }
 
 void LayerDescription::addAgentFunction(const AgentFunctionDescription &afd) {
-    if (afd.model == layer->description->model) {
+    if (afd.model.lock() == model.lock()) {
         addAgentFunction(afd.getName());
         return;
     }
@@ -21,8 +23,16 @@ void LayerDescription::addAgentFunction(const AgentFunctionDescription &afd) {
         "in LayerDescription::addAgentFunction().");
 }
 void LayerDescription::addAgentFunction(const std::string &name) {
+    if (layer->sub_model) {
+        THROW InvalidLayerMember("A layer containing agent functions and/or host functions, may not also contain a submodel, "
+        "in LayerDescription::addSubModel()\n");
+    }
     // Locate the matching agent function in the model hierarchy
-    for (auto a : model->agents) {
+    auto mdl = model.lock();
+    if (!mdl) {
+        THROW ExpiredWeakPtr();
+    }
+    for (auto a : mdl->agents) {
         for (auto f : a.second->functions) {
             if (f.second->name == name) {
                 // Check that layer does not already contain function with same agent + states
@@ -62,12 +72,57 @@ void LayerDescription::addAgentFunction(const char *af) {
     addAgentFunction(std::string(af));
 }
 void LayerDescription::addHostFunction(FLAMEGPU_HOST_FUNCTION_POINTER func_p) {
+    if (layer->sub_model) {
+        THROW InvalidLayerMember("A layer containing agent functions and/or host functions, may not also contain a submodel, "
+        "in LayerDescription::addSubModel()\n");
+    }
     if (!layer->host_functions.insert(func_p).second) {
         THROW InvalidHostFunc("HostFunction has already been added to LayerDescription,"
             "in LayerDescription::addHostFunction().");
     }
 }
-
+void LayerDescription::addSubModel(const std::string &name) {
+    if (!layer->host_functions.empty() || !layer->agent_functions.empty()) {
+        THROW InvalidLayerMember("A layer containing agent functions and/or host functions, may not also contain a submodel, "
+        "in LayerDescription::addSubModel()\n");
+    }
+    if (layer->sub_model) {
+        THROW InvalidSubModel("Layer has already been assigned a submodel, "
+            "in LayerDescription::addSubModel()\n");
+    }
+    // Find the correct submodel shared ptr
+    auto mdl = model.lock();
+    if (!mdl) {
+        THROW ExpiredWeakPtr();
+    }
+    for (auto &sm : mdl->submodels) {
+        if (sm.first == name) {
+            layer->sub_model = sm.second;
+            return;
+        }
+    }
+    THROW InvalidSubModel("SubModel '%s' does not belong to Model '%s', "
+        "in LayerDescription::addSubModel()\n",
+        name.c_str(), mdl->name.c_str());
+}
+void LayerDescription::addSubModel(const SubModelDescription &submodel) {
+    auto mdl = model.lock();
+    if (!mdl) {
+        THROW ExpiredWeakPtr();
+    }
+    if (submodel.model.lock() == mdl) {
+        // Find the correct submodel shared ptr
+        for (auto &sm : mdl->submodels) {
+            if (sm.second.get() == submodel.data) {
+                addSubModel(sm.first);
+                return;
+            }
+        }
+    }
+    THROW InvalidSubModel("SubModel '%s' does not belong to Model '%s', "
+        "in LayerDescription::addSubModel()\n",
+        submodel.data->submodel->name.c_str(), mdl->name.c_str());
+}
 
 std::string LayerDescription::getName() const {
     return layer->name;

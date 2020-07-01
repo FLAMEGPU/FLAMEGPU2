@@ -177,6 +177,12 @@ DERIVED_FGPUException(InvalidMessage, "Invalid message");
 DERIVED_FGPUException(InvalidAgentVar, "Invalid agent memory variable");
 
 /**
+ * Defines a type of object to be thrown as exception.
+ * It reports errors that are due to invalid agent state names.
+ */
+DERIVED_FGPUException(InvalidAgentState, "Invalid agent state");
+
+/**
 * Defines a type of object to be thrown as exception.
 * It reports errors that are due to length mismatch of array variables.
 */
@@ -204,6 +210,27 @@ DERIVED_FGPUException(InvalidMessageData, "Invalid Message data");
  * It reports errors that are due to invalid message list size.
  */
 DERIVED_FGPUException(InvalidMessageSize, "Invalid Message List size");
+
+/**
+ * Defines a type of object to be thrown as exception.
+ * It reports errors that are due to invalid sub models
+ */
+DERIVED_FGPUException(InvalidSubModel, "Invalid SubModel");
+/**
+ * Defines a type of object to be thrown as exception.
+ * It reports errors that are due to sub model name already being in use
+ */
+DERIVED_FGPUException(InvalidSubModelName, "Invalid SubModel Name, already in use");
+/**
+ * Defines a type of object to be thrown as exception.
+ * It reports errors that are due to sub agent name not being recognised
+ */
+DERIVED_FGPUException(InvalidSubAgentName, "SubAgent name was not recognised");
+/**
+ * Defines a type of object to be thrown as exception.
+ * It reports errors when a user adds an unsupported combination of items to a layer
+ */
+DERIVED_FGPUException(InvalidLayerMember, "Layer configuration unsupported");
 
 /**
  * Defines a type of object to be thrown as exception.
@@ -364,5 +391,9 @@ DERIVED_FGPUException(ArrayMessageWriteConflict, "Two messages attempted to writ
  * Defines an exception for errors relted to visualisation
  */
 DERIVED_FGPUException(VisualisationException, "An exception prevented the visualisation from working.");
+/**
+ * Defines when std::weak_ptr::lock() returns nullptr
+ */
+DERIVED_FGPUException(ExpiredWeakPtr, "Unable to convert weak pointer to shared pointer.");
 
 #endif  // INCLUDE_FLAMEGPU_EXCEPTION_FGPUEXCEPTION_H_

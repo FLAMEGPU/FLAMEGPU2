@@ -23,6 +23,11 @@ class EnvironmentDescription {
      */
     friend class EnvironmentManager;
     /**
+     * This directly accesses properties map, to build mappings
+     * Not required if this class is changed into description/data format like others
+     */
+    friend class SubEnvironmentDescription;
+    /**
      * Minimal std::any replacement, works pre c++17
      * We don't care about type, so it isn't tracked
      */
@@ -183,21 +188,6 @@ class EnvironmentDescription {
      */
     template<typename T>
     T set(const std::string &name, const EnvironmentManager::size_type &index, const T &value);
-    /**
-     * Sets whether an environment property is read-only during simulation execution
-     * @param name name used for accessing the property
-     * @param isConst Whether the property should be read-only during the simulation
-     * @throws InvalidEnvProperty If a property of the name does not exist
-     */
-    void setConst(const std::string &name, const bool &isConst);
-    /**
-     * Removes an environment property
-     * @param name name used for accessing the property
-     * @tparam T Type of the value to be returned
-     * @throws InvalidEnvProperty If a property of the name does not exist
-     **/
-    template<typename T>
-    void remove(const std::string &name);
 
     const std::unordered_map<std::string, PropData> getPropertiesMap() const;
 
@@ -425,34 +415,6 @@ T EnvironmentDescription::set(const std::string &name, const EnvironmentManager:
     }
     THROW InvalidEnvProperty("Environmental property with name '%s' does not exist, "
         "in EnvironmentDescription::set().",
-        name.c_str());
-}
-
-/**
- * Destructors
- */
-template<typename T>
-void EnvironmentDescription::remove(const std::string &name) {
-    if (!name.empty() && name[0] == '_') {
-        THROW ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
-            "in EnvironmentDescription::remove().");
-    }
-    // Limited to Arithmetic types
-    // Compound types would allow host pointers inside structs to be passed
-    static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value,
-        "Only arithmetic types can be used as environmental properties");
-    auto &&i = properties.find(name);
-    if (i != properties.end()) {
-        if (i->second.type != std::type_index(typeid(T))) {
-            THROW InvalidEnvPropertyType("Environmental property ('%s') type (%s) does not match template argument T (%s), "
-                "in EnvironmentDescription::remove().",
-                name.c_str(), i->second.type.name(), typeid(T).name());
-        }
-        properties.erase(i);
-        return;
-    }
-    THROW InvalidEnvProperty("Environmental property with name '%s' does not exist, "
-        "in EnvironmentDescription::remove().",
         name.c_str());
 }
 #endif  // INCLUDE_FLAMEGPU_MODEL_ENVIRONMENTDESCRIPTION_H_

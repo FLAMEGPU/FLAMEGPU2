@@ -104,13 +104,13 @@ void MsgArray::CUDAModelHandler::buildIndex() {
 }
 
 
-MsgArray::Data::Data(ModelData *const model, const std::string &message_name)
+MsgArray::Data::Data(const std::shared_ptr<const ModelData>&model, const std::string &message_name)
     : MsgBruteForce::Data(model, message_name)
     , length(0) {
     description = std::unique_ptr<MsgArray::Description>(new MsgArray::Description(model, this));
     variables.emplace("___INDEX", Variable(1, size_type()));
 }
-MsgArray::Data::Data(ModelData *const model, const Data &other)
+MsgArray::Data::Data(const std::shared_ptr<const ModelData>&model, const Data &other)
     : MsgBruteForce::Data(model, other)
     , length(other.length) {
     description = std::unique_ptr<MsgArray::Description>(model ? new MsgArray::Description(model, this) : nullptr);
@@ -118,7 +118,7 @@ MsgArray::Data::Data(ModelData *const model, const Data &other)
         THROW InvalidMessage("Length must not be zero in array message '%s'\n", other.name.c_str());
     }
 }
-MsgArray::Data *MsgArray::Data::clone(ModelData *const newParent) {
+MsgArray::Data *MsgArray::Data::clone(const std::shared_ptr<const ModelData> &newParent) {
     return new Data(newParent, *this);
 }
 std::unique_ptr<MsgSpecialisationHandler> MsgArray::Data::getSpecialisationHander(CUDAMessage &owner) const {
@@ -127,7 +127,7 @@ std::unique_ptr<MsgSpecialisationHandler> MsgArray::Data::getSpecialisationHande
 std::type_index MsgArray::Data::getType() const { return std::type_index(typeid(MsgArray)); }
 
 
-MsgArray::Description::Description(ModelData *const _model, Data *const data)
+MsgArray::Description::Description(const std::shared_ptr<const ModelData>&_model, Data *const data)
     : MsgBruteForce::Description(_model, data) { }
 
 void MsgArray::Description::setLength(const size_type &len) {

@@ -40,7 +40,7 @@ class AgentFunctionDescription {
     /**
      * Constructors
      */
-    AgentFunctionDescription(ModelData *const model, AgentFunctionData *const data);
+    AgentFunctionDescription(const std::shared_ptr<const ModelData> &model, AgentFunctionData *const data);
     /**
      * Default copy constructor, not implemented
      */
@@ -289,7 +289,7 @@ class AgentFunctionDescription {
     /**
      * Root of the model hierarchy
      */
-    ModelData *const model;
+    const std::weak_ptr<const ModelData> model;
     /**
      * The class which stores all of the layer's data.
      */

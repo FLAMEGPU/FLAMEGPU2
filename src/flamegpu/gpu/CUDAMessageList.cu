@@ -1,13 +1,3 @@
- /**
- * @file CUDAMessageList.cpp
- * @authors
- * @date
- * @brief
- *
- * @see
- * @warning Not done, will not compile
- */
-
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 

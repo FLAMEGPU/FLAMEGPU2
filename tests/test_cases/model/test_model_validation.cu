@@ -134,7 +134,7 @@ TEST(ModelDescTest, MessageFunctionCheck) {
      * statement and checks if it throws the exception or not. The second argument
      * is the expected exception.
      */
-    EXPECT_THROW(flame_model.getAgent("error"), InvalidAgentVar);  // expecting an error
+    EXPECT_THROW(flame_model.getAgent("error"), InvalidAgentName);  // expecting an error
 }
 
 #endif  // TESTS_TEST_CASES_MODEL_TEST_MODEL_VALIDATION_H_

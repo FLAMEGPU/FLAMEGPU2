@@ -1,13 +1,3 @@
-/**
-* @file CUDAAgent.h
-* @authors Paul
-* @date 5 Mar 2014
-* @brief
-*
-* @see
-* @warning
-*/
-
 #ifndef INCLUDE_FLAMEGPU_GPU_CUDAAGENT_H_
 #define INCLUDE_FLAMEGPU_GPU_CUDAAGENT_H_
 
@@ -15,9 +5,13 @@
 #include <map>
 #include <utility>
 #include <string>
+#include <mutex>
+#include <unordered_map>
 
 // include sub classes
 #include "flamegpu/gpu/CUDAAgentStateList.h"
+#include "flamegpu/model/AgentFunctionData.h"
+#include "flamegpu/model/SubAgentData.h"
 #include "flamegpu/sim/AgentInterface.h"
 
 #ifdef _MSC_VER
@@ -28,125 +22,152 @@
 #include "jitify/jitify.hpp"
 #endif
 
-// forward declare classes from other modules
-struct AgentData;
-struct AgentFunctionData;
-class AgentPopulation;
-class Curve;
-class CUDAAgentModel;
-
-typedef std::map<const std::string, std::unique_ptr<CUDAAgentStateList>> CUDAStateMap;  // map of state name to CUDAAgentStateList which allocates memory on the device
-typedef std::pair<const std::string, std::unique_ptr<CUDAAgentStateList>> CUDAStateMapPair;
-
-typedef std::map<const std::string, std::unique_ptr<jitify::KernelInstantiation>> CUDARTCFuncMap;  // map of state name to CUDAAgentStateList which allocates memory on the device
-typedef std::pair<const std::string, std::unique_ptr<jitify::KernelInstantiation>> CUDARTCFuncMapPair;
-
-
-/** \brief CUDAAgent class is used as a container for storing the GPU data of all variables in all states
- * The CUDAAgent contains a hash index which maps a variable name to a unique index. Each CUDAAgentStateList
- * will use this hash index to map variable names to unique pointers in GPU memory space. This is required so
- * that at runtime a variable name can be related to a unique array of data on the device. It works like a traditional hashmap however the same hashing is used for all states that an agent can be in (as agents have the same variables regardless of state).
+class CUDAFatAgent;
+struct VarOffsetStruct;
+/**
+ * This is the regular CUDAAgent
+ * It provides access to the device buffers representing the states of a particular agent
+ * However it does not own these buffers, they are owned by it's parent CUDAFatAgent, as buffers are shared with all mapped agents too.
  */
 class CUDAAgent : public AgentInterface {
-    friend class AgentVis;
  public:
-    explicit CUDAAgent(const AgentData& description, const CUDAAgentModel& cuda_model);
-    virtual ~CUDAAgent(void);
-
-    const AgentData& getAgentDescription() const override;
     /**
-     * Resizes the internal CUDAAgentStateLists
-     * @param newSize The new minimum number of agents required, it may allocate more than requested here
-     * @param streamId Internally passed by CUDAAgentModel to identify which scan array to resize
-     * @note Currently it is not possible to reduce the allocated size
-     * @note Currently it is not possible for internal state lists for the same agent to have different sizes 
+     *  map of agent function name to RTC function instance
      */
-    void resize(const unsigned int &newSize, const unsigned int &streamId);
-    /* Can be used to override the current population data without reallocating */
-    void setPopulationData(const AgentPopulation& population);
-
-    void getPopulationData(AgentPopulation& population);
-
-    unsigned int getMaximumListSize() const;
-
-    /** @brief Uses the cuRVE runtime to map the variables used by the agent function to the cuRVE library so that can be accessed by name within a n agent function
-    */
-    void mapRuntimeVariables(const AgentFunctionData& func, const std::string &state) const;
-
+    typedef std::map<const std::string, std::unique_ptr<jitify::KernelInstantiation>> CUDARTCFuncMap;
     /**
-     * @brief    Uses the cuRVE runtime to unmap the variables used by the agent function to the cuRVE
-     *             library so that they are unavailable to be accessed by name within an agent function.
-     *
-     * @param    func    The function.
+     * Element type of CUDARTCFuncMap
      */
-
+    typedef std::pair<const std::string, std::unique_ptr<jitify::KernelInstantiation>> CUDARTCFuncMapPair;
+    /**
+     * Normal constructor
+     * @param description Agent description of the agent
+     * @param _cuda_model Parent CUDAAgentModel of the agent
+     */
+    CUDAAgent(const AgentData& description, const CUDAAgentModel &_cuda_model);
+    /**
+     * Subagent form constructor, used when creating a CUDAAgent for a mapped agent within a submodel
+     * @param description Agent description of the agent
+     * @param _cuda_model Parent CUDAAgentModel of the agent
+     * @param master_agent The (parent) agent which this is agent is mapped to
+     * @param mapping Mapping definition for how this agent is connected with its master agent.
+     */
+    CUDAAgent(
+        const AgentData &description,
+        const CUDAAgentModel &_cuda_model,
+        const std::unique_ptr<CUDAAgent> &master_agent,
+        const std::shared_ptr<SubAgentData> &mapping);
+    /** 
+     * Uses the cuRVE runtime to map the variables used by the agent function to the cuRVE
+     * library so that can be accessed by name within a n agent function
+     * @param func The function.
+     * @note TODO: This could be improved by iterating the variable list within the state_list, rather than individually looking up vars (the two lists should have all the same vars)
+     * @note This should probably be addressed when curve is updated to not use individual memcpys
+     */
+    void mapRuntimeVariables(const AgentFunctionData& func) const;
+    /**
+     * Uses the cuRVE runtime to unmap the variables used by the agent function to the cuRVE
+     * library so that they are unavailable to be accessed by name within an agent function.
+     * @param func The function.
+     */
     void unmapRuntimeVariables(const AgentFunctionData& func) const;
-
-    CUDAAgentStateList& getAgentStateList(const std::string &state_name) const;
-
-    void *getStateVariablePtr(const std::string &state_name, const std::string &variable_name) override;
-    ModelData::size_type getStateSize(const std::string &state_name) const override;
     /**
-     * Uses the agent scan flag for the named stream to sort agents and
-     * reduce agent count so that agents which have reported death are removed
-     *
-     * @param func Agent function being actioned
-     * @param streamId The scan_flag stream to use
+     * Copies population data from the provided host object
+     * To the device buffers held by this object (overwriting any existing agent data)
+     * Also updates population size, clears disabled agents
+     * @param population An AgentPopulation object with the same internal AgentData description, to provide the input data
+     */
+    void setPopulationData(const AgentPopulation& population);
+    /**
+     * Copies population data the device buffers held by this object
+     * To the hosts object (overwriting any existing agent data)
+     * @param population An AgentPopulation object with the same internal AgentData description, to receive the output data
+     */
+    void getPopulationData(AgentPopulation& population) const;
+    /**
+     * Returns the number of alive and active agents in the named state
+     * @state The state to return information about
+     */
+    unsigned int getStateSize(const std::string &state) const;
+    /**
+     * Returns the number of alive and active agents in the named state
+     * @state The state to return information about
+     */
+    unsigned int getStateAllocatedSize(const std::string &state) const;
+    /**
+     * Returns the Agent description which this CUDAAgent represents.
+     */
+    const AgentData &getAgentDescription() const;
+    /**
+     * Returns the device pointer to the buffer for the associated state and variable
+     * @note This returns data_condition, such that the buffer does not include disabled agents
+     */
+    void *getStateVariablePtr(const std::string &state_name, const std::string &variable_name);
+    /**
+     * Processes agent death, this call is forwarded to the fat agent
+     * All disabled agents are scattered to swap
+     * Only alive agents with deathflag are scattered
+     * @param func The agent function condition being processed
+     * @param streamId The index of the agent function within the current layer
+     * @see CUDAFatAgent::processDeath(const unsigned int &, const std::string &, const unsigned int &)
      */
     void processDeath(const AgentFunctionData& func, const unsigned int &streamId);
     /**
-     * Uses the agent scan flag for the named stream to sort agents and 
-     * set the agent function condition state for the function's initial state
-     * 
-     * Agents are sorted so that those which failed the condition are moved to the start of the list
-     * and those which failed the condition are move to the end of the list
-     * @param func Agent function being actioned
-     * @param streamId The scan_flag stream to use
+     * Transitions all active agents from the source state to the destination state
+     * @param _src The source state
+     * @param _dest The destination state
+     * @param streamId The index of the agent function within the current layer
+     * @see CUDAFatAgent::transitionState(const unsigned int &, const std::string &, const std::string &, const unsigned int &)
+     */
+    void transitionState(const std::string &_src, const std::string &_dest, const unsigned int &streamId);
+    /**
+     * Scatters agents based on their output of the agent function condition
+     * Agents which failed the condition are scattered to the front and marked as disabled
+     * Agents which pass the condition are scatterd to after the disabled agents
+     * @param func The agent function being processed
+     * @param streamId The index of the agent function within the current layer
+     * @see CUDAFatAgent::processFunctionCondition(const unsigned int &, const unsigned int &)
+     * @note Named state must not already contain disabled agents
+     * @note The disabled agents are re-enabled using clearFunctionCondition(const std::string &)
      */
     void processFunctionCondition(const AgentFunctionData& func, const unsigned int &streamId);
     /**
-     * Clears the agent function condition state values for the provided agent state
-     * @param state The agent state to action
+     * Scatters agents from the provided device buffer, this is used for host agent creation
+     * The device buffer must be packed according to the param offsets
+     * @param state_name The state agents are scattered into
+     * @param newSize The number of new agents
+     * @param d_inBuff The device buffer containing the new agents
+     * @param offsets This defines how the memory is laid out within d_inBuff
      */
-    void clearFunctionConditionState(const std::string &state);
+    void scatterHostCreation(const std::string &state_name, const unsigned int &newSize, char *const d_inBuff, const VarOffsetStruct &offsets);
     /**
-     * Transitions agents from src state to dest state, appending the existing destiation state list
-     * @param src Source state
-     * @dest dest Destination state
-     * @param streamId The stream being used
+     * Allocates a buffer for storing new agents into and
+     * uses the cuRVE runtime to map variables for use with an agent function that has device agent birth
+     * @param func The agent function being processed
+     * @param maxLen The maximum number of new agents (this will be the size of the agent state executing func)
+     * @param streamId This is required for scan compaction arrays and async
+     *
      */
-    void transitionState(const std::string &src, const std::string &dest, const unsigned int &streamId);
-
+    void mapNewRuntimeVariables(const AgentFunctionData& func, const unsigned int &maxLen, const unsigned int &streamId);
     /**
-     * Maps variables within initial_state->new CUDAAgentStateList
-     * They are mapped to "_agent_birth"_hash + func_hash + var_hash
-     * @param func The agent function which will use the mapped variables
-     * @param maxLen The maximum length set within curve
+     * Uses the cuRVE runtime to unmap the variables used by agent birth and
+     * releases the buffer that was storing the data
+     * @param func The function.
      */
-    void mapNewRuntimeVariables(const AgentFunctionData& func, const unsigned int &maxLen) const;
+    void unmapNewRuntimeVariables(const AgentFunctionData& func);
     /**
-    * Unmapaps variables within initial_state->new CUDAAgentStateList, freeing up space in CURVE hash table
-    * They are mapped to "_agent_birth"_hash + func_hash + var_hash
-    * @param func The agent function which used the mapped variables
-    */
-    void unmapNewRuntimeVariables(const AgentFunctionData& func) const;
-    /**
-     * Resize the new agent variable state list to the required length
-     * This is useful because an agent function attached to a larget agent pop, might output agents of a smaller agent pop
-     * Hence is should scale independently of other lists
-     * @param func The agent function performing the agent birth
-     * @param newSize The new minimum number of agents to be stored in the new list
-     * @oaram streamId The stream index for handling any stream safe stuff
+     * Scatters agents from the currently assigned device agent birth buffer (see member variable newBuffs)
+     * The device buffer must be packed in the same format as mapNewRuntimeVariables(const AgentFunctionData&, const unsigned int &, const unsigned int &)
+     * @param func The agent function being processed
+     * @param newSize The maximum number of new agents (this will be the size of the agent state executing func)
+     * @param streamId This is required for scan compaction arrays and async
      */
-    void resizeNew(const AgentFunctionData& func, const unsigned int &newSize, const unsigned int &streamId);
+    void scatterNew(const AgentFunctionData& func, const unsigned int &newSize, const unsigned int &streamId);
     /**
-     * Scatters agents from d_list_new to d_list
-     * @param state The CUDAAgentStateList to perform scatter on
-     * @param newSize The max possible number of new agents
-     * @param streamId Stream index for stream safe operations
-     * @note This may resize death scan flag, which will lose it's data, hence always processDeath first
+     * Reenables all disabled agents within the named state
+     * @param state The named state to enable all agents within
      */
-    void scatterNew(const std::string state, const unsigned int &newSize, const unsigned int &streamId);
+    void clearFunctionCondition(const std::string &state);
     /**
      * Instatiates a RTC Agent function from agent function data description containing the agent function source.
      * If function_condition variable is true then this function will instantiate a function condition rather than an agent function
@@ -160,27 +181,82 @@ class CUDAAgent : public AgentInterface {
      * @param function_name the name of the RTC agent function or the agent function name suffixed with condition (if it is a function condition)
      */
     const jitify::KernelInstantiation& getRTCInstantiation(const std::string &function_name) const;
-
     /**
      * Returns the CUDARTCFuncMap
      */
     const CUDARTCFuncMap& getRTCFunctions() const;
-
-
- protected:
-    /** @brief    Zero all state variable data. */
-    void zeroAllStateVariableData();
+    /**
+     * Resets the number of agents in any unmapped statelists to 0
+     * They count as unmapped if they are not mapped to a master state, sub mappings will be reset
+     */
+    void initUnmappedVars();
+    /**
+     * Resets the number of agents in every statelist to 0
+     */
+    void cullAllStates();
+    /**
+     * Resets the number of agents in any unmapped statelists to 0
+     * They count as unmapped if they are not mapped to a master state, sub mappings will be reset
+     */
+    void cullUnmappedStates();
 
  private:
-    const AgentData& agent_description;
-
-    const CUDAAgentModel& cuda_model;
-
-    CUDAStateMap state_map;
-
-    CUDARTCFuncMap rtc_func_map;    // map between function_name (or function_name_condition) and the jitify instance
-
-    unsigned int max_list_size;  // The maximum length of the agent variable arrays based on the maximum population size passed to setPopulationData
+    /**
+     * Sums the size required for all variables
+     */
+    static size_t calcTotalVarSize(const AgentData &agent) {
+        size_t rtn = 0;
+        for (const auto v : agent.variables) {
+            rtn += v.second.type_size * v.second.elements;
+        }
+        return rtn;
+    }
+    /**
+     * The fat index of this agent within its CUDAFatAgent
+     */
+    unsigned int getFatIndex() const { return fat_index; }
+    /**
+     * Returns this CUDAAgent's fat agent
+     */
+    std::shared_ptr<CUDAFatAgent> getFatAgent() { return fat_agent; }
+    /**
+     * The agent description of this agent
+     */
+    const AgentData &agent_description;
+    /**
+     * Map of all states held by this agent
+     */
+    std::unordered_map<std::string, std::shared_ptr<CUDAAgentStateList>> state_map;
+    /**
+     * The 'fat agent' representation of this agent
+     * This acts as a CUDAAgent with access to all variables for all mapped agent-states
+     */
+    std::shared_ptr<CUDAFatAgent> fat_agent;
+    /**
+     * Multiple mapped agents may share names/definitions, so instead they are assigned indices
+     */
+    const unsigned int fat_index;
+    /**
+     * The parent model
+     */
+    const CUDAAgentModel &cuda_model;
+    /**
+     * map between function_name (or function_name_condition) and the jitify instance
+     */
+    CUDARTCFuncMap rtc_func_map;
+    /**
+     * Used when allocated new buffers
+     */
+    const size_t TOTAL_AGENT_VARIABLE_SIZE;
+    /**
+     * Holds currently held new buffs set by mapNewRuntimeVariables, cleared by unmapNewRuntimeVariables
+     * key: initial state name, val: allocated buffer
+     */
+    std::unordered_map<std::string, void*> newBuffs;
+    /**
+     * Mutex for writing to newBuffs
+     */
+    std::mutex newBuffsMutex;
 };
 
 #endif  // INCLUDE_FLAMEGPU_GPU_CUDAAGENT_H_

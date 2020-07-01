@@ -99,3 +99,38 @@ TEST(ModelDescriptionTest, Layer) {
     EXPECT_EQ(0u, a.getIndex());
     EXPECT_EQ(1u, b.getIndex());
 }
+FLAMEGPU_EXIT_CONDITION(ExitAlways) {
+    return EXIT;
+}
+TEST(ModelDescriptionTest, SubModelRecursionNotAllowed) {
+    ModelDescription a("a");
+    ModelDescription b("b");
+    ModelDescription c("c");
+    ModelDescription d("d");
+    a.addExitCondition(ExitAlways);
+    b.addExitCondition(ExitAlways);
+    c.addExitCondition(ExitAlways);
+    d.addExitCondition(ExitAlways);
+    EXPECT_NO_THROW(a.newSubModel("b", b));
+    EXPECT_NO_THROW(a.newSubModel("c", c));
+    // Name already exists
+    EXPECT_THROW(a.newSubModel("c", d), InvalidSubModelName);
+    EXPECT_NO_THROW(c.newSubModel("d", d));
+    // A cannot sub itself
+    EXPECT_THROW(a.newSubModel("", a), InvalidSubModel);
+    // B is already sub of A
+    EXPECT_THROW(a.newSubModel("", b), InvalidSubModel);
+    // A is already a parent of B
+    EXPECT_THROW(b.newSubModel("", a), InvalidSubModel);
+    // A is already a parent of C
+    EXPECT_THROW(c.newSubModel("", a), InvalidSubModel);
+    EXPECT_THROW(d.newSubModel("", a), InvalidSubModel);
+    // D is already a child of A
+    EXPECT_THROW(c.newSubModel("", d), InvalidSubModel);
+    // Submodel can be added twice if to different branches
+    EXPECT_NO_THROW(b.newSubModel("d2", d));
+    // D cannot add itself
+    EXPECT_THROW(d.newSubModel("", d), InvalidSubModel);
+    // C is already a parent of D
+    EXPECT_THROW(d.newSubModel("", c), InvalidSubModel);
+}

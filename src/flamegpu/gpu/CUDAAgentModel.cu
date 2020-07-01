@@ -8,6 +8,8 @@
 #include "flamegpu/model/AgentFunctionData.h"
 #include "flamegpu/model/LayerData.h"
 #include "flamegpu/model/AgentDescription.h"
+#include "flamegpu/model/SubModelData.h"
+#include "flamegpu/model/SubAgentData.h"
 #include "flamegpu/pop/AgentPopulation.h"
 #include "flamegpu/runtime/flamegpu_host_api.h"
 #include "flamegpu/gpu/CUDAScanCompaction.h"
@@ -42,11 +44,66 @@ CUDAAgentModel::CUDAAgentModel(const ModelDescription& _model)
     for (auto it_m = mm.cbegin(); it_m != mm.cend(); ++it_m) {
         message_map.emplace(it_m->first, std::make_unique<CUDAMessage>(*it_m->second, *this));
     }
+
+    // populate the CUDA submodel map
+    const auto &smm = model->submodels;
+    // create new cuda message and add to the map
+    for (auto it_sm = smm.cbegin(); it_sm != smm.cend(); ++it_sm) {
+        submodel_map.emplace(it_sm->first, std::unique_ptr<CUDAAgentModel>(new CUDAAgentModel(it_sm->second, this)));
+    }
+}
+CUDAAgentModel::CUDAAgentModel(const std::shared_ptr<SubModelData> &submodel_desc, CUDAAgentModel *master_model)
+    : Simulation(submodel_desc, master_model)
+    , step_count(0)
+    , streams(std::vector<cudaStream_t>())
+    , singletons(nullptr)
+    , singletonsInitialised(false)
+    , rtcInitialised(false) {
+    initOffsetsAndMap();
+
+    // populate the CUDA agent map (With SubAgents!)
+    const auto &am = model->agents;
+    // create new cuda agent and add to the map
+    for (auto it = am.cbegin(); it != am.cend(); ++it) {
+        // Locate the mapping
+        auto _mapping = submodel_desc->subagents.find(it->second->name);
+        if (_mapping != submodel_desc->subagents.end()) {
+            // Agent is mapped, create subagent
+            std::shared_ptr<SubAgentData> &mapping = _mapping->second;
+                                                                                                     // Locate the master agent
+            std::shared_ptr<AgentData> masterAgentDesc = mapping->masterAgent.lock();
+            if (!masterAgentDesc) {
+                THROW InvalidParent("Master agent description has expired, in CUDAAgentModel SubModel constructor.\n");
+            }
+            std::unique_ptr<CUDAAgent> &masterAgent = master_model->agent_map.at(masterAgentDesc->name);
+            agent_map.emplace(it->first, std::make_unique<CUDAAgent>(*it->second, *this, masterAgent, mapping));
+        } else {
+            // Agent is not mapped, create regular agent
+            agent_map.emplace(it->first, std::make_unique<CUDAAgent>(*it->second, *this)).first;
+        }
+    }  // insert into map using value_type
+
+    // populate the CUDA message map (Sub Messages not currently supported)
+    const auto &mm = model->messages;
+    // create new cuda message and add to the map
+    for (auto it_m = mm.cbegin(); it_m != mm.cend(); ++it_m) {
+        message_map.emplace(it_m->first, std::make_unique<CUDAMessage>(*it_m->second, *this));
+    }
+
+    // populate the CUDA submodel map
+    const auto &smm = model->submodels;
+    // create new cuda model and add to the map
+    for (auto it_sm = smm.cbegin(); it_sm != smm.cend(); ++it_sm) {
+        submodel_map.emplace(it_sm->first, std::unique_ptr<CUDAAgentModel>(new CUDAAgentModel(it_sm->second, this)));
+    }
+    // Submodels all run silent by default
+    SimulationConfig().verbose = false;
 }
 
 CUDAAgentModel::~CUDAAgentModel() {
+    submodel_map.clear();  // Test
     // De-initialise, freeing singletons?
-    // @todo - this is unsafe in a destrcutor as it may invoke cuda commands.
+    // @todo - this is unsafe in a destructor as it may invoke cuda commands.
     if (singletonsInitialised) {
         singletons->scatter.decreaseSimCounter();
         // unique pointers cleanup by automatically
@@ -99,6 +156,16 @@ bool CUDAAgentModel::step() {
     unsigned int lyr_idx = 0;
     for (auto lyr = model->layers.begin(); lyr != model->layers.end(); ++lyr) {
         NVTX_RANGE(std::string("StepLayer " + std::to_string(lyr_idx)).c_str());
+
+        if ((*lyr)->sub_model) {
+            auto &sm = submodel_map.at((*lyr)->sub_model->name);
+            sm->resetStepCounter();
+            sm->simulate();
+            sm->reset(true);
+            // Next layer, this layer cannot also contain agent functions
+            continue;
+        }
+
         const auto& functions = (*lyr)->agent_functions;
 
         // Track stream id
@@ -116,7 +183,7 @@ bool CUDAAgentModel::step() {
                     flamegpu_internal::CUDAScanCompaction::resize(cuda_agent.getStateSize(func_des->initial_state), flamegpu_internal::CUDAScanCompaction::AGENT_DEATH, j, *this);
 
                     // Configure runtime access of the functions variables within the FLAME_API object
-                    cuda_agent.mapRuntimeVariables(*func_des, func_des->initial_state);
+                    cuda_agent.mapRuntimeVariables(*func_des);
 
                     // Zero the scan flag that will be written to
                     flamegpu_internal::CUDAScanCompaction::zero(flamegpu_internal::CUDAScanCompaction::AGENT_DEATH, j);
@@ -131,7 +198,7 @@ bool CUDAAgentModel::step() {
             j = 0;
             // Sum the total number of threads being launched in the layer
             totalThreads = 0;
-            // Launch kernel
+            // Launch function condition kernels
             for (const std::shared_ptr<AgentFunctionData> &func_des : functions) {
                 if ((func_des->condition) || (!func_des->rtc_func_condition_name.empty())) {
                     auto func_agent = func_des->parent.lock();
@@ -237,6 +304,9 @@ bool CUDAAgentModel::step() {
 
             const CUDAAgent& cuda_agent = getCUDAAgent(func_agent->name);
             const unsigned int STATE_SIZE = cuda_agent.getStateSize(func_des->initial_state);
+            if (STATE_SIZE == 0)
+                continue;
+            // Resize death flag array if necessary
             flamegpu_internal::CUDAScanCompaction::resize(STATE_SIZE, flamegpu_internal::CUDAScanCompaction::AGENT_DEATH, j, *this);
 
             // check if a function has an input message
@@ -268,19 +338,15 @@ bool CUDAAgentModel::step() {
                 // This will act as a reserve word
                 // which is added to variable hashes for agent creation on device
                 CUDAAgent& output_agent = getCUDAAgent(oa->name);
-                // Ensure we have enough memory (this resizes the scan flag too)
-                output_agent.resizeNew(*func_des, STATE_SIZE, j);
-                // Ensure the scan flag is zeroed
-                flamegpu_internal::CUDAScanCompaction::zero(flamegpu_internal::CUDAScanCompaction::AGENT_OUTPUT, j);
-                // Map vars with curve
-                output_agent.mapNewRuntimeVariables(*func_des, STATE_SIZE);
+                // Map vars with curve (this allocates/requests enough new buffer space if an existing version is not available/suitable)
+                output_agent.mapNewRuntimeVariables(*func_des, STATE_SIZE, j);
             }
 
 
             /**
              * Configure runtime access of the functions variables within the FLAME_API object
              */
-            cuda_agent.mapRuntimeVariables(*func_des, func_des->initial_state);
+            cuda_agent.mapRuntimeVariables(*func_des);
 
             // Zero the scan flag that will be written to
             if (func_des->has_agent_death)
@@ -434,7 +500,7 @@ bool CUDAAgentModel::step() {
             // Process agent state transition (Longer term merge this with process death?)
             cuda_agent.transitionState(func_des->initial_state, func_des->end_state, j);
             // Process agent function condition
-            cuda_agent.clearFunctionConditionState(func_des->initial_state);
+            cuda_agent.clearFunctionCondition(func_des->initial_state);
 
             // check if a function has an output agent
             if (auto oa = func_des->agent_output.lock()) {
@@ -442,7 +508,7 @@ bool CUDAAgentModel::step() {
                 // which is added to variable hashes for agent creation on device
                 CUDAAgent& output_agent = getCUDAAgent(oa->name);
                 // Scatter the agent birth
-                output_agent.scatterNew(func_des->agent_output_state, PRE_DEATH_STATE_SIZE, j);
+                output_agent.scatterNew(*func_des, PRE_DEATH_STATE_SIZE, j);
                 // unmap vars with curve
                 output_agent.unmapNewRuntimeVariables(*func_des);
             }
@@ -508,6 +574,13 @@ void CUDAAgentModel::simulate() {
 
     // Ensure singletons have been initialised
     initialiseSingletons();
+
+    // Reinitialise any unmapped agent variables
+    if (submodel) {
+        for (auto &a : agent_map) {
+            a.second->initUnmappedVars();
+        }
+    }
 
     // create cude events to record the elapsed time for simulate.
     cudaEvent_t simulateStartEvent = nullptr;
@@ -585,6 +658,47 @@ void CUDAAgentModel::simulate() {
         gpuErrchk(cudaStreamDestroy(stream));
     }
     streams.clear();
+}
+
+void CUDAAgentModel::reset(bool submodelReset) {
+    // Reset step counter
+    resetStepCounter();
+
+    if (singletonsInitialised) {
+        // Reset environment properties
+        singletons->environment.resetModel(model->name, *model->environment);
+
+        // Reseed random, unless performing submodel reset
+        if (!submodelReset) {
+            singletons->rng.reseed(getSimulationConfig().random_seed);
+        }
+    }
+
+    // Cull agents
+    if (submodel) {
+        // Submodels only want to reset unmapped states, otherwise they will break parent model
+        for (auto &a : agent_map) {
+            a.second->cullUnmappedStates();
+        }
+    } else {
+        for (auto &a : agent_map) {
+            a.second->cullAllStates();
+        }
+    }
+
+    // Cull messagelists
+    for (auto &a : message_map) {
+        a.second->setMessageCount(0);
+        a.second->setTruncateMessageListFlag();
+    }
+
+
+    // Trigger reset in all submodels, propagation is not necessary when performing submodel reset
+    if (!submodelReset) {
+        for (auto &s : submodel_map) {
+            s.second->reset(false);
+        }
+    }
 }
 
 void CUDAAgentModel::setPopulationData(AgentPopulation& population) {
@@ -715,16 +829,36 @@ void CUDAAgentModel::applyConfig_derived() {
         THROW InvalidCUDAdevice("Unknown error setting CUDA device to '%d'. (%d available)", config.device_id, device_count);
     }
     // Call cudaFree to initialise the context early
-    gpuErrchk(cudaFree(0));
+    gpuErrchk(cudaFree(nullptr));
+
+    // Apply changes to submodels
+    for (auto &sm : submodel_map) {
+        // We're not actually going to use this value, but it might be useful there later
+        // Calling apply config a second time would reinit GPU, which might clear existing gpu allocations etc
+        sm.second->CUDAConfig().device_id = config.device_id;
+    }
 
     // Initialise singletons once a device has been selected.
     // @todo - if this has already been called, before the device was selected an error should occur.
     initialiseSingletons();
 
-    // We init Random after singletons
-    singletons->rng.reseed(getSimulationConfig().random_seed);
+    // We init Random through submodel hierarchy after singletons
+    reseed(getSimulationConfig().random_seed);
 }
 
+void CUDAAgentModel::reseed(const unsigned int &seed) {
+    SimulationConfig().random_seed = seed;
+    singletons->rng.reseed(seed);
+
+    // Propagate to submodels
+    int i = 7;
+    for (auto &sm : submodel_map) {
+        // Pass random seed on to submodels
+        sm.second->singletons->rng.reseed(getSimulationConfig().random_seed * i * 23);
+        // Mutate seed
+        i *= 13;
+    }
+}
 /**
  * These values are ony used by CUDAAgentModel::initialiseSingletons()
  * Can't put a __device__ symbol method static
@@ -769,7 +903,11 @@ void CUDAAgentModel::initialiseSingletons() {
         singletons->scatter.increaseSimCounter();
 
         // Populate the environment properties in constant Cache
-        singletons->environment.init(model->name, *model->environment);
+        if (!submodel) {
+            singletons->environment.init(model->name, *model->environment);
+        } else {
+            singletons->environment.init(model->name, *model->environment, mastermodel->model->name, *submodel->subenvironment);
+        }
         // Add the CUDAAgentModel specific variables(s)
         singletons->environment.add({model->name, "_stepCount"}, 0u, false);
 
@@ -778,6 +916,11 @@ void CUDAAgentModel::initialiseSingletons() {
 
         // Pass created RandomManager to host api
         host_api = std::make_unique<FLAMEGPU_HOST_API>(*this, singletons->rng, agentOffsets, agentData);
+
+        // Propagate singleton init to submodels
+        for (auto &sm : submodel_map) {
+            sm.second->initialiseSingletons();
+        }
 
         singletonsInitialised = true;
     }
@@ -890,15 +1033,9 @@ void CUDAAgentModel::processHostAgentCreation() {
                 }
                 // Copy t_buff to device
                 gpuErrchk(cudaMemcpy(dt_buff, t_buff, size_req, cudaMemcpyHostToDevice));
-
-                // Resize agent list if required
-                const unsigned int current_state_size = agent_map.at(agent.first)->getStateSize(state.first);
-                const unsigned int current_max_state_size = agent_map.at(agent.first)->getMaximumListSize();
-                if (current_state_size + state.second.size() > current_max_state_size) {
-                    agent_map.at(agent.first)->resize(static_cast<unsigned int>(state.second.size()) + current_state_size, 0);  // StreamId Doesn't matter
-                }
                 // Scatter to device
-                agent_map.at(agent.first)->getAgentStateList(state.first).scatterHostCreation(static_cast<unsigned int>(state.second.size()), dt_buff, offsets);
+                auto &cudaagent = agent_map.at(agent.first);
+                cudaagent->scatterHostCreation(state.first, static_cast<unsigned int>(state.second.size()), dt_buff, offsets);
                 // Clear buffer
                 state.second.clear();
             }
@@ -917,7 +1054,7 @@ void CUDAAgentModel::RTCSafeCudaMemcpyToSymbol(const void* symbol, const char* r
     // loop through agents
     for (const auto& agent_pair : agent_map) {
         // loop through any agent functions
-        for (const CUDARTCFuncMapPair& rtc_func_pair : agent_pair.second->getRTCFunctions()) {
+        for (const CUDAAgent::CUDARTCFuncMapPair& rtc_func_pair : agent_pair.second->getRTCFunctions()) {
             CUdeviceptr rtc_dev_ptr = 0;
             // get the RTC device symbol
             rtc_dev_ptr = rtc_func_pair.second->get_global_ptr(rtc_symbol_name);
@@ -935,7 +1072,7 @@ void CUDAAgentModel::RTCSafeCudaMemcpyToSymbolAddress(void* ptr, const char* rtc
     // loop through agents
     for (const auto& agent_pair : agent_map) {
         // loop through any agent functions
-        for (const CUDARTCFuncMapPair& rtc_func_pair : agent_pair.second->getRTCFunctions()) {
+        for (const CUDAAgent::CUDARTCFuncMapPair& rtc_func_pair : agent_pair.second->getRTCFunctions()) {
             CUdeviceptr rtc_dev_ptr = 0;
             // get the RTC device symbol
             rtc_dev_ptr = rtc_func_pair.second->get_global_ptr(rtc_symbol_name);
@@ -945,16 +1082,16 @@ void CUDAAgentModel::RTCSafeCudaMemcpyToSymbolAddress(void* ptr, const char* rtc
     }
 }
 
-void CUDAAgentModel::RTCSetEnvironmentVariable(const char* variable_name, const void* src, size_t count, size_t offset) const {
+void CUDAAgentModel::RTCSetEnvironmentVariable(const std::string &variable_name, const void* src, size_t count, size_t offset) const {
     // get the model hash
     const Curve::VariableHash model_hash = Curve::getInstance().variableRuntimeHash(getModelDescription().name.c_str());
     // loop through agents
     for (const auto& agent_pair : agent_map) {
         // loop through any agent functions
-        for (const CUDARTCFuncMapPair& rtc_func_pair : agent_pair.second->getRTCFunctions()) {
+        for (const CUDAAgent::CUDARTCFuncMapPair& rtc_func_pair : agent_pair.second->getRTCFunctions()) {
             CUdeviceptr rtc_dev_ptr = 0;
             // get the RTC device symbol
-            std::string rtc_symbol_name = CurveRTCHost::getEnvVariableSymbolName(variable_name, model_hash);
+            std::string rtc_symbol_name = CurveRTCHost::getEnvVariableSymbolName(variable_name.c_str(), model_hash);
             rtc_dev_ptr = rtc_func_pair.second->get_global_ptr(rtc_symbol_name.c_str());
             // make the memcpy to the rtc version of the symbol
             gpuErrchkDriverAPI(cuMemcpyHtoD(rtc_dev_ptr + offset, src, count));

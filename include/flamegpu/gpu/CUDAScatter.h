@@ -4,10 +4,14 @@
 #include <map>
 #include <string>
 #include <array>
+#include <memory>
+#include <list>
+#include <vector>
 
 #include "flamegpu/model/Variable.h"
 #include "flamegpu/gpu/CUDAScanCompaction.h"
 struct VarOffsetStruct;
+struct VariableBuffer;
 
 /**
  * Singleton class for performing generic scatters
@@ -62,6 +66,7 @@ class CUDAScatter {
         char *out;
     };
     /**
+     * Convenience wrapper for scatter()
      * Scatters agents from SoA to SoA according to d_position flag
      * Used for device agent creation and agent death
      * flamegpu_internal::CUDAScanCompaction::scan_flag is used to decide who should be scattered
@@ -74,8 +79,9 @@ class CUDAScatter {
      * @param out_index_offset The offset to be applied to the ouput index (e.g. if out already contains data)
      * @parma invert_scan_flag If true, agents with scan_flag set to 0 will be moved instead
      * @parma scatter_all_count The number of agents at the start of in to be copied, ones after this use scanflag
+     * @note This is deprecated, unclear if still used
      */
-    unsigned int scatter(
+     unsigned int scatter(
         Type messageOrAgent,
         const VariableMap &vars,
         const std::map<std::string, void*> &in,
@@ -85,21 +91,56 @@ class CUDAScatter {
         const bool &invert_scan_flag = false,
         const unsigned int &scatter_all_count = 0);
     /**
+     * Scatters agents from SoA to SoA according to d_position flag
+     * Used for device agent creation and agent death
+     * flamegpu_internal::CUDAScanCompaction::scan_flag is used to decide who should be scattered
+     * flamegpu_internal::CUDAScanCompaction::position is used to decide where to scatter to
+     * @param messageOrAgent Flag of whether message or agent flamegpu_internal::CUDAScanCompaction arrays should be used
+     * @param scatterData Vector of scatter configuration for each variable to be scattered
+     * @param itemCount Total number of items in input array to consider
+     * @param out_index_offset The offset to be applied to the ouput index (e.g. if out already contains data)
+     * @parma invert_scan_flag If true, agents with scan_flag set to 0 will be moved instead
+     * @parma scatter_all_count The number of agents at the start of in to be copied, ones after this use scanflag
+     */
+    unsigned int scatter(
+        Type messageOrAgent,
+        const std::vector<ScatterData> &scatterData,
+        const unsigned int &itemCount,
+        const unsigned int &out_index_offset = 0,
+        const bool &invert_scan_flag = false,
+        const unsigned int &scatter_all_count = 0);
+    /**
+     * Returns the final flamegpu_internal::CUDAScanCompaction::position item 
+     * Same value as scatter, - scatter_a__count
+     */
+    unsigned int scatterCount(
+        Type messageOrAgent,
+        const unsigned int &itemCount,
+        const unsigned int &scatter_all_count = 0);
+    /**
      * Scatters a contigous block from SoA to SoA
      * flamegpu_internal::CUDAScanCompaction::scan_flag/position are not used
-     * @param vars Variable description map from ModelData hierarchy
-     * @param in Input variable name:ptr map
-     * @paramn out Output variable name:ptr map
+     * @param scatterData Vector of scatter configuration for each variable to be scattered
      * @param itemCount Total number of items in input array to consider
      * @param out_index_offset The offset to be applied to the ouput index (e.g. if out already contains data)
      * @note If calling scatter() with itemCount == scatter_all_count works the same
+     */
+    unsigned int scatterAll(
+        const std::vector<ScatterData> &scatterData,
+        const unsigned int &itemCount,
+        const unsigned int &out_index_offset = 0);
+    /**
+     * Convenience wrapper to scatterAll()
+     * @param vars Variable description map from ModelData hierarchy
+     * @param in Input variable name:ptr map
+     * @paramn out Output variable name:ptr map
      */
     unsigned int scatterAll(
         const VariableMap &vars,
         const std::map<std::string, void*> &in,
         const std::map<std::string, void*> &out,
         const unsigned int &itemCount,
-        const unsigned int &out_index_offset = 0);
+        const unsigned int &out_index_offset);
     /**
      * Used for reordering messages from SoA to SoA
      * Position information is taken using PBM data, rather than d_position
@@ -123,31 +164,30 @@ class CUDAScatter {
     /**
      * Scatters agents from AoS to SoA
      * Used by host agent creation
-     * @param vars Variable description map from ModelData hierarchy
-     * @param out Output variable name:ptr map
-     * @param in_buff AoS buffer of variable data, with structs packed according to inOffsetData
-     * @param inOffsetData Packing information for in_buff structs
-     * @param itemCount Total number of items in input array to consider
+     * @param scatterData Vector of scatter configuration for each variable to be scattered
+     * @param totalAgentSize Total size of all of the variables in an agent
+     * @param inCount Total number of items in input array to consider
      * @param out_index_offset The offset to be applied to the ouput index (e.g. if out already contains data)
      */
     void scatterNewAgents(
-        const VariableMap &vars,
-        const std::map<std::string, void*> &out,
-        void *in_buff,
-        const VarOffsetStruct &inOffsetData,
-        const unsigned int &itemCount,
-        const unsigned int out_index_offset);
+        const std::vector<ScatterData> &scatterData,
+        const size_t &totalAgentSize,
+        const unsigned int &inCount,
+        const unsigned int &out_index_offset);
     /**
      * Broadcasts a single value for each variable to a contiguous block in SoA
      * Used prior to device agent creation
      * @param vars Variable description map from ModelData hierarchy
-     * @param out Output variable name:ptr map
      * @param itemCount Total number of items in input array to consider
      * @param out_index_offset The offset to be applied to the ouput index (e.g. if out already contains data)
      */
     void broadcastInit(
+        const std::list<std::shared_ptr<VariableBuffer>> &vars,
+        const unsigned int &itemCount,
+        const unsigned int out_index_offset);
+    void broadcastInit(
         const VariableMap &vars,
-        const std::map<std::string, void*> &out,
+        void * const d_newBuff,
         const unsigned int &itemCount,
         const unsigned int out_index_offset);
     /**

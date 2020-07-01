@@ -3,6 +3,7 @@
 #include <algorithm>
 
 #include "flamegpu/model/ModelData.h"
+#include "flamegpu/model/SubModelData.h"
 #include "flamegpu/io/xmlWriter.h"
 #include "flamegpu/io/factory.h"
 #include "flamegpu/runtime/utility/RandomManager.cuh"
@@ -12,8 +13,13 @@
 
 
 Simulation::Simulation(const ModelDescription& _model)
-    : model(_model.model->clone()) { }
-
+    : model(_model.model->clone())
+    , submodel(nullptr)
+    , mastermodel(nullptr) { }
+Simulation::Simulation(const std::shared_ptr<SubModelData> &submodel_desc, CUDAAgentModel *master_model)
+    : model(submodel_desc->submodel)
+    , submodel(submodel_desc)
+    , mastermodel(master_model) { }
 void Simulation::initialise(int argc, const char** argv) {
     NVTX_RANGE("Simulation::initialise");
     config = Config();  // Reset to defaults
@@ -148,4 +154,8 @@ Simulation::Config &Simulation::SimulationConfig() {
 }
 const Simulation::Config &Simulation::getSimulationConfig() const {
     return config;
+}
+
+void Simulation::reset() {
+    reset(false);
 }

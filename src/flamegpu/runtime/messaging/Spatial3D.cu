@@ -153,7 +153,7 @@ void MsgSpatial3D::CUDAModelHandler::buildIndex() {
         gpuErrchk(cudaDeviceSynchronize());
     }
     {  // Scan (sum), to finalise PBM
-        cub::DeviceScan::ExclusiveSum(d_CUB_temp_storage, d_CUB_temp_storage_bytes, d_histogram, hd_data.PBM, binCount + 1);
+        gpuErrchk(cub::DeviceScan::ExclusiveSum(d_CUB_temp_storage, d_CUB_temp_storage_bytes, d_histogram, hd_data.PBM, binCount + 1));
     }
     {  // Reorder messages
        // Copy messages from d_messages to d_messages_swap, in hash order
@@ -169,7 +169,7 @@ void MsgSpatial3D::CUDAModelHandler::buildIndex() {
 
 void MsgSpatial3D::CUDAModelHandler::resizeCubTemp() {
     size_t bytesCheck = 0;
-    cub::DeviceScan::ExclusiveSum(nullptr, bytesCheck, hd_data.PBM, d_histogram, binCount + 1);
+    gpuErrchk(cub::DeviceScan::ExclusiveSum(nullptr, bytesCheck, hd_data.PBM, d_histogram, binCount + 1));
     if (bytesCheck > d_CUB_temp_storage_bytes) {
         if (d_CUB_temp_storage) {
             gpuErrchk(cudaFree(d_CUB_temp_storage));
@@ -192,14 +192,14 @@ void MsgSpatial3D::CUDAModelHandler::resizeKeysVals(const unsigned int &newSize)
     }
 }
 
-MsgSpatial3D::Data::Data(ModelData *const model, const std::string &message_name)
+MsgSpatial3D::Data::Data(const std::shared_ptr<const ModelData> &model, const std::string &message_name)
     : MsgSpatial2D::Data(model, message_name)
     , minZ(NAN)
     , maxZ(NAN) {
     description = std::unique_ptr<Description>(new Description(model, this));
     description->newVariable<float>("z");
 }
-MsgSpatial3D::Data::Data(ModelData *const model, const Data &other)
+MsgSpatial3D::Data::Data(const std::shared_ptr<const ModelData> &model, const Data &other)
     : MsgSpatial2D::Data(model, other)
     , minZ(other.minZ)
     , maxZ(other.maxZ) {
@@ -211,7 +211,7 @@ MsgSpatial3D::Data::Data(ModelData *const model, const Data &other)
         THROW InvalidMessage("Environment maximum z bound has not been set in spatial message '%s'\n", other.name.c_str());
     }
 }
-MsgSpatial3D::Data *MsgSpatial3D::Data::clone(ModelData *const newParent) {
+MsgSpatial3D::Data *MsgSpatial3D::Data::clone(const std::shared_ptr<const ModelData> &newParent) {
     return new Data(newParent, *this);
 }
 std::unique_ptr<MsgSpecialisationHandler> MsgSpatial3D::Data::getSpecialisationHander(CUDAMessage &owner) const {
@@ -219,7 +219,7 @@ std::unique_ptr<MsgSpecialisationHandler> MsgSpatial3D::Data::getSpecialisationH
 }
 std::type_index MsgSpatial3D::Data::getType() const { return std::type_index(typeid(MsgSpatial3D)); }
 
-MsgSpatial3D::Description::Description(ModelData *const _model, Data *const data)
+MsgSpatial3D::Description::Description(const std::shared_ptr<const ModelData> &_model, Data *const data)
     : MsgBruteForce::Description(_model, data) { }
 
 void MsgSpatial3D::Description::setRadius(const float &r) {

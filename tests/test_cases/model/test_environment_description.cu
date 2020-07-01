@@ -112,12 +112,6 @@ void ExceptionPropertyType_test() {
     // EXPECT_THROW(ed.set<_T>("b", _b), InvalidEnvPropertyType);  // Doesn't build on Travis
     EXPECT_THROW((ed.*setArray)("b", _b), InvalidEnvPropertyType);
     EXPECT_THROW(ed.set<_T>("b", 0, _a), InvalidEnvPropertyType);
-
-    EXPECT_THROW(ed.remove<_T>("a"), InvalidEnvPropertyType);
-    EXPECT_THROW(ed.remove<_T>("b"), InvalidEnvPropertyType);
-
-    EXPECT_NO_THROW(ed.remove<T>("a"));
-    EXPECT_NO_THROW(ed.remove<T>("b"));
 }
 
 template<typename T>
@@ -341,27 +335,21 @@ TEST(EnvironmentDescriptionTest, ExceptionPropertyDoesntExist) {
     EXPECT_THROW(ed.get<float>("a"), InvalidEnvProperty);
     ed.add<float>("a", a);
     EXPECT_EQ(ed.get<float>("a"), a);
-    EXPECT_NO_THROW(ed.remove<float>("a"));
-    EXPECT_THROW(ed.get<float>("a"), InvalidEnvProperty);
-    EXPECT_THROW(ed.remove<float>("a"), InvalidEnvProperty);
     // array version
+    auto f = &EnvironmentDescription::get<int, 2>;
+    EXPECT_THROW((ed.*f)("b"), InvalidEnvProperty);
     auto addArray = &EnvironmentDescription::add<int, ARRAY_TEST_LEN>;
     std::array<int, ARRAY_TEST_LEN> b;
-    // EXPECT_NO_THROW(ed.add<int>("a", b));  // Doesn't build on Travis
-    EXPECT_NO_THROW((ed.*addArray)("a", b, false));
-    EXPECT_NO_THROW(ed.get<int>("a"));
-    EXPECT_NO_THROW(ed.get<int>("a", 1));
-    EXPECT_NO_THROW(ed.remove<int>("a"));
-    EXPECT_THROW(ed.get<float>("a"), InvalidEnvProperty);
-    EXPECT_THROW(ed.get<float>("a", 1), InvalidEnvProperty);
-    EXPECT_THROW(ed.remove<float>("a"), InvalidEnvProperty);
+    // EXPECT_NO_THROW(ed.add<int>("b", b));  // Doesn't build on Travis
+    EXPECT_NO_THROW((ed.*addArray)("b", b, false));
+    EXPECT_NO_THROW(ed.get<int>("b"));
+    EXPECT_NO_THROW(ed.get<int>("b", 1));
 }
 
 TEST(EnvironmentDescriptionTest, reserved_name) {
     EnvironmentDescription ed;
     EXPECT_THROW(ed.add<int>("_", 1), ReservedName);
     EXPECT_THROW(ed.set<int>("_", 1), ReservedName);
-    EXPECT_THROW(ed.setConst("_", true), ReservedName);
     auto add = &EnvironmentDescription::add<int, 2>;
     auto set = &EnvironmentDescription::set<int, 2>;
     EXPECT_THROW((ed.*add)("_", { 1, 2 }, false), ReservedName);

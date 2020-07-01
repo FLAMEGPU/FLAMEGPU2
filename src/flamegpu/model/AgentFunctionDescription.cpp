@@ -11,7 +11,7 @@
  * Constructors
  */
 
-AgentFunctionDescription::AgentFunctionDescription(ModelData *const _model, AgentFunctionData *const description)
+AgentFunctionDescription::AgentFunctionDescription(const std::shared_ptr<const ModelData> &_model, AgentFunctionData *const description)
     : model(_model)
     , function(description) { }
 
@@ -29,7 +29,11 @@ void AgentFunctionDescription::setInitialState(const std::string &init_state) {
     if (auto p = function->parent.lock()) {
         if (p->description->hasState(init_state)) {
             // Check if this agent function is already in a layer
-            for (const auto &l : model->layers) {
+            auto mdl = model.lock();
+            if (!mdl) {
+                THROW ExpiredWeakPtr();
+            }
+            for (const auto &l : mdl->layers) {
                 for (const auto &f : l->agent_functions) {
                     // Agent fn is in layer
                     if (f->name == this->function->name) {
@@ -72,7 +76,11 @@ void AgentFunctionDescription::setEndState(const std::string &exit_state) {
     if (auto p = function->parent.lock()) {
         if (p->description->hasState(exit_state)) {
             // Check if this agent function is already in a layer
-            for (const auto &l : model->layers) {
+            auto mdl = model.lock();
+            if (!mdl) {
+                THROW ExpiredWeakPtr();
+            }
+            for (const auto &l : mdl->layers) {
                 for (const auto &f : l->agent_functions) {
                     // Agent fn is in layer
                     if (f->name == this->function->name) {
@@ -120,8 +128,12 @@ void AgentFunctionDescription::setMessageInput(const std::string &message_name) 
                 message_name.c_str(), function->name.c_str());
         }
     }
-    auto a = model->messages.find(message_name);
-    if (a != model->messages.end()) {
+    auto mdl = model.lock();
+    if (!mdl) {
+        THROW ExpiredWeakPtr();
+    }
+    auto a = mdl->messages.find(message_name);
+    if (a != mdl->messages.end()) {
         if (this->function->msg_in_type == CurveRTCHost::demangle(a->second->getType())) {
             this->function->message_input = a->second;
         } else {
@@ -132,11 +144,11 @@ void AgentFunctionDescription::setMessageInput(const std::string &message_name) 
     } else {
         THROW InvalidMessageName("Model ('%s') does not contain message '%s', "
             "in AgentFunctionDescription::setMessageInput().",
-            model->name.c_str(), message_name.c_str());
+            mdl->name.c_str(), message_name.c_str());
     }
 }
 void AgentFunctionDescription::setMessageInput(MsgBruteForce::Description &message) {
-    if (message.model != function->description->model) {
+    if (message.model.lock() != function->description->model.lock()) {
         THROW DifferentModel("Attempted to use agent description from a different model, "
             "in AgentFunctionDescription::setAgentOutput().");
     }
@@ -148,8 +160,12 @@ void AgentFunctionDescription::setMessageInput(MsgBruteForce::Description &messa
                 message.getName().c_str(), function->name.c_str());
         }
     }
-    auto a = model->messages.find(message.getName());
-    if (a != model->messages.end()) {
+    auto mdl = model.lock();
+    if (!mdl) {
+        THROW ExpiredWeakPtr();
+    }
+    auto a = mdl->messages.find(message.getName());
+    if (a != mdl->messages.end()) {
         if (a->second->description.get() == &message) {
             if (this->function->msg_in_type == CurveRTCHost::demangle(a->second->getType())) {
                 this->function->message_input = a->second;
@@ -161,12 +177,12 @@ void AgentFunctionDescription::setMessageInput(MsgBruteForce::Description &messa
         } else {
             THROW InvalidMessage("Message '%s' is not from Model '%s', "
                 "in AgentFunctionDescription::setMessageInput().",
-                message.getName().c_str(), model->name.c_str());
+                message.getName().c_str(), mdl->name.c_str());
         }
     } else {
         THROW InvalidMessageName("Model ('%s') does not contain message '%s', "
             "in AgentFunctionDescription::setMessageInput().",
-            model->name.c_str(), message.getName().c_str());
+            mdl->name.c_str(), message.getName().c_str());
     }
 }
 void AgentFunctionDescription::setMessageOutput(const std::string &message_name) {
@@ -184,8 +200,12 @@ void AgentFunctionDescription::setMessageOutput(const std::string &message_name)
             b->optional_outputs--;
         }
     }
-    auto a = model->messages.find(message_name);
-    if (a != model->messages.end()) {
+    auto mdl = model.lock();
+    if (!mdl) {
+        THROW ExpiredWeakPtr();
+    }
+    auto a = mdl->messages.find(message_name);
+    if (a != mdl->messages.end()) {
         if (this->function->msg_out_type == CurveRTCHost::demangle(a->second->getType())) {
             this->function->message_output = a->second;
             if (this->function->message_output_optional) {
@@ -199,11 +219,11 @@ void AgentFunctionDescription::setMessageOutput(const std::string &message_name)
     } else {
         THROW InvalidMessageName("Model ('%s') does not contain message '%s', "
             "in AgentFunctionDescription::setMessageOutput().",
-            model->name.c_str(), message_name.c_str());
+            mdl->name.c_str(), message_name.c_str());
     }
 }
 void AgentFunctionDescription::setMessageOutput(MsgBruteForce::Description &message) {
-    if (message.model != function->description->model) {
+    if (message.model.lock() != function->description->model.lock()) {
         THROW DifferentModel("Attempted to use agent description from a different model, "
             "in AgentFunctionDescription::setAgentOutput().");
     }
@@ -221,8 +241,12 @@ void AgentFunctionDescription::setMessageOutput(MsgBruteForce::Description &mess
             b->optional_outputs--;
         }
     }
-    auto a = model->messages.find(message.getName());
-    if (a != model->messages.end()) {
+    auto mdl = model.lock();
+    if (!mdl) {
+        THROW ExpiredWeakPtr();
+    }
+    auto a = mdl->messages.find(message.getName());
+    if (a != mdl->messages.end()) {
         if (a->second->description.get() == &message) {
             if (this->function->msg_out_type == CurveRTCHost::demangle(a->second->getType())) {
                 this->function->message_output = a->second;
@@ -237,12 +261,12 @@ void AgentFunctionDescription::setMessageOutput(MsgBruteForce::Description &mess
         } else {
             THROW InvalidMessage("Message '%s' is not from Model '%s', "
                 "in AgentFunctionDescription::setMessageOutput().",
-                message.getName().c_str(), model->name.c_str());
+                message.getName().c_str(), mdl->name.c_str());
         }
     } else {
         THROW InvalidMessageName("Model ('%s') does not contain message '%s', "
             "in AgentFunctionDescription::setMessageOutput()\n",
-            model->name.c_str(), message.getName().c_str());
+            mdl->name.c_str(), message.getName().c_str());
     }
 }
 void AgentFunctionDescription::setMessageOutputOptional(const bool &output_is_optional) {
@@ -258,8 +282,12 @@ void AgentFunctionDescription::setMessageOutputOptional(const bool &output_is_op
 }
 void AgentFunctionDescription::setAgentOutput(const std::string &agent_name, const std::string state) {
     // Set new
-    auto a = model->agents.find(agent_name);
-    if (a != model->agents.end()) {
+    auto mdl = model.lock();
+    if (!mdl) {
+        THROW ExpiredWeakPtr();
+    }
+    auto a = mdl->agents.find(agent_name);
+    if (a != mdl->agents.end()) {
         // Check agent state is valid
         if (a->second->states.find(state)!= a->second->states.end()) {    // Clear old value
             if (auto b = this->function->agent_output.lock()) {
@@ -276,17 +304,21 @@ void AgentFunctionDescription::setAgentOutput(const std::string &agent_name, con
     } else {
         THROW InvalidAgentName("Model ('%s') does not contain agent '%s', "
             "in AgentFunctionDescription::setAgentOutput().",
-            model->name.c_str(), agent_name.c_str());
+            mdl->name.c_str(), agent_name.c_str());
     }
 }
 void AgentFunctionDescription::setAgentOutput(AgentDescription &agent, const std::string state) {
-    if (agent.model != function->description->model) {
+    if (agent.model.lock() != function->description->model.lock()) {
         THROW DifferentModel("Attempted to use agent description from a different model, "
             "in AgentFunctionDescription::setAgentOutput().");
     }
     // Set new
-    auto a = model->agents.find(agent.getName());
-    if (a != model->agents.end()) {
+    auto mdl = model.lock();
+    if (!mdl) {
+        THROW ExpiredWeakPtr();
+    }
+    auto a = mdl->agents.find(agent.getName());
+    if (a != mdl->agents.end()) {
         if (a->second->description.get() == &agent) {
             // Check agent state is valid
             if (a->second->states.find(state) != a->second->states.end()) {
@@ -305,12 +337,12 @@ void AgentFunctionDescription::setAgentOutput(AgentDescription &agent, const std
         } else {
             THROW InvalidMessage("Agent '%s' is not from Model '%s', "
                 "in AgentFunctionDescription::setAgentOutput().",
-                agent.getName().c_str(), model->name.c_str());
+                agent.getName().c_str(), mdl->name.c_str());
         }
     } else {
         THROW InvalidMessageName("Model ('%s') does not contain agent '%s', "
             "in AgentFunctionDescription::setAgentOutput().",
-            model->name.c_str(), agent.getName().c_str());
+            mdl->name.c_str(), agent.getName().c_str());
     }
 }
 void AgentFunctionDescription::setAllowAgentDeath(const bool &has_death) {
