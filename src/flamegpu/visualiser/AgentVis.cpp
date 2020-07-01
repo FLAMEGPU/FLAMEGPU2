@@ -81,17 +81,17 @@ void AgentVis::initBindings(std::unique_ptr<FLAMEGPU_Visualisation> &vis) {
 void AgentVis::requestBufferResizes(std::unique_ptr<FLAMEGPU_Visualisation> &vis) {
     for (auto &state : agentData.states) {
         auto &state_map = agent.state_map.at(state);
-        vis->requestBufferResizes(agentData.name, state, state_map->getCUDAStateListSize());
+        vis->requestBufferResizes(agentData.name, state, state_map->getSize());
     }
 }
 void AgentVis::updateBuffers(std::unique_ptr<FLAMEGPU_Visualisation> &vis) {
     for (auto &state : agentData.states) {
         auto &state_map = agent.state_map.at(state);
         vis->updateAgentStateBuffer(agentData.name, state,
-            state_map->getCUDAStateListSize(),
-            reinterpret_cast<float *>(state_map->getAgentListVariablePointer(x_var)),
-            reinterpret_cast<float *>(state_map->getAgentListVariablePointer(y_var)),
-            reinterpret_cast<float *>(z_var == "" ? nullptr : state_map->getAgentListVariablePointer(z_var)));
+            state_map->getSize(),
+            reinterpret_cast<float *>(state_map->getVariablePointer(x_var)),
+            reinterpret_cast<float *>(state_map->getVariablePointer(y_var)),
+            reinterpret_cast<float *>(z_var == "" ? nullptr : state_map->getVariablePointer(z_var)));
     }
     // TODO Tertiary buffers? (e.g. color, direction[xyz])
 }
