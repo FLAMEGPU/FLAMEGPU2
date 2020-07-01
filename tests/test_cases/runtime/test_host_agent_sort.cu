@@ -298,7 +298,7 @@ TEST(HostAgentSort, 2x_Ascending_int) {
     AgentPopulation pop(agent, AGENT_COUNT);
     for (int i = 0; i< static_cast<int>(AGENT_COUNT); i++) {
         AgentInstance instance = pop.getNextInstance();
-        const int t1 = static_cast<float>(dist1(rd)*1000);
+        const int t1 = static_cast<int>(dist1(rd)*1000);
         const int t2 = dist2(rd);
         instance.setVariable<int>("int1", t1);
         instance.setVariable<int>("int2", t2);
@@ -342,7 +342,7 @@ TEST(HostAgentSort, 2x_Descending_int) {
     AgentPopulation pop(agent, AGENT_COUNT);
     for (int i = 0; i< static_cast<int>(AGENT_COUNT); i++) {
         AgentInstance instance = pop.getNextInstance();
-        const int t1 = static_cast<float>(dist1(rd)*1000);
+        const int t1 = static_cast<int>(dist1(rd)*1000);
         const int t2 = dist2(rd);
         instance.setVariable<int>("int1", t1);
         instance.setVariable<int>("int2", t2);
@@ -386,7 +386,7 @@ TEST(HostAgentSort, 2x_AscDesc_int) {
     AgentPopulation pop(agent, AGENT_COUNT);
     for (int i = 0; i< static_cast<int>(AGENT_COUNT); i++) {
         AgentInstance instance = pop.getNextInstance();
-        const int t1 = static_cast<float>(dist1(rd)*1000);
+        const int t1 = static_cast<int>(dist1(rd)*1000);
         const int t2 = dist2(rd);
         instance.setVariable<int>("int1", t1);
         instance.setVariable<int>("int2", t2);
@@ -430,7 +430,7 @@ TEST(HostAgentSort, 2x_DescAsc_int) {
     AgentPopulation pop(agent, AGENT_COUNT);
     for (int i = 0; i< static_cast<int>(AGENT_COUNT); i++) {
         AgentInstance instance = pop.getNextInstance();
-        const int t1 = static_cast<float>(dist1(rd)*1000);
+        const int t1 = static_cast<int>(dist1(rd)*1000);
         const int t2 = dist2(rd);
         instance.setVariable<int>("int1", t1);
         instance.setVariable<int>("int2", t2);
