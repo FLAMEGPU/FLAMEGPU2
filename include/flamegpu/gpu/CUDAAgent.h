@@ -31,6 +31,8 @@ struct VarOffsetStruct;
  * However it does not own these buffers, they are owned by it's parent CUDAFatAgent, as buffers are shared with all mapped agents too.
  */
 class CUDAAgent : public AgentInterface {
+    friend class AgentVis;
+
  public:
     /**
      *  map of agent function name to RTC function instance
