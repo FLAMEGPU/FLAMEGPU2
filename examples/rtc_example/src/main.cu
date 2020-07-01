@@ -11,10 +11,6 @@
  * Date    Feb 2017
  *****************************************************************************/
 
-#include <iostream>
-#include <cstdio>
-#include <cstdlib>
-
 #include "flamegpu/flame_api.h"
 
 

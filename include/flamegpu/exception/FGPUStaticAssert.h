@@ -1,6 +1,8 @@
 #ifndef INCLUDE_FLAMEGPU_EXCEPTION_FGPUSTATICASSERT_H_
 #define INCLUDE_FLAMEGPU_EXCEPTION_FGPUSTATICASSERT_H_
 
+#include <cstdint>
+
 /**
  * These are taken from MSVCs std to allow us to perform static assertions
  */

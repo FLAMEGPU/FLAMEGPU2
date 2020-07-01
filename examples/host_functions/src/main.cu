@@ -1,9 +1,4 @@
-#include <iostream>
-#include <cstdio>
-#include <cstdlib>
-
 #include "flamegpu/flame_api.h"
-#include "flamegpu/runtime/flamegpu_api.h"
 
 const unsigned int AGENT_COUNT = 1024;
 

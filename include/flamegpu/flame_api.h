@@ -23,5 +23,6 @@
 #include "flamegpu/runtime/messaging.h"
 #include "flamegpu/runtime/AgentFunction_shim.h"
 #include "flamegpu/runtime/AgentFunctionCondition_shim.h"
+#include "flamegpu/visualiser/ModelVis.h"
 
 #endif  // INCLUDE_FLAMEGPU_FLAME_API_H_
