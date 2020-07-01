@@ -1,13 +1,4 @@
-#include <iostream>
-#include <cstdio>
-#include <cstdlib>
-#include <fstream>
-
-
 #include "flamegpu/flame_api.h"
-#include "flamegpu/runtime/flamegpu_api.h"
-#include "flamegpu/io/factory.h"
-#include "flamegpu/visualiser/ModelVis.h"
 
 FLAMEGPU_AGENT_FUNCTION(output_message, MsgNone, MsgSpatial3D) {
     FLAMEGPU->message_out.setVariable<int>("id", FLAMEGPU->getVariable<int>("id"));
