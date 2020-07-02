@@ -116,6 +116,9 @@ void CUDAMessage::setMessageCount(const unsigned int &_message_count) {
 * @return none
 */
 void CUDAMessage::zeroAllMessageData() {
+    if (!message_list) {
+        THROW InvalidMessageData("MessageList '%s' is not yet allocated, in CUDAMessage::swap()\n", message_description.name.c_str());
+    }
     message_list->zeroMessageData();
 }
 
@@ -164,6 +167,9 @@ void CUDAMessage::mapReadRuntimeVariables(const AgentFunctionData& func, const C
 }
 
 void *CUDAMessage::getReadPtr(const std::string &var_name) {
+    if (!message_list) {
+        THROW InvalidMessageData("MessageList '%s' is not yet allocated, in CUDAMessage::swap()\n", message_description.name.c_str());
+    }
     return message_list->getReadMessageListVariablePointer(var_name);
 }
 void CUDAMessage::mapWriteRuntimeVariables(const AgentFunctionData& func, const CUDAAgent& cuda_agent, const unsigned int &writeLen) const {
@@ -227,6 +233,9 @@ void CUDAMessage::unmapRuntimeVariables(const AgentFunctionData& func) const {
     }
 }
 void CUDAMessage::swap(bool isOptional, const unsigned int &newMsgCount, CUDAScatter &scatter, const unsigned int &streamId) {
+    if (!message_list) {
+        THROW InvalidMessageData("MessageList '%s' is not yet allocated, in CUDAMessage::swap()\n", message_description.name.c_str());
+    }
     if (isOptional && message_description.optional_outputs > 0) {
         CUDAScanCompactionConfig &scanCfg = scatter.Scan().Config(CUDAScanCompaction::Type::MESSAGE_OUTPUT, streamId);
         if (newMsgCount > scanCfg.cub_temp_size_max_list_size) {
@@ -265,6 +274,9 @@ void CUDAMessage::swap(bool isOptional, const unsigned int &newMsgCount, CUDASca
     }
 }
 void CUDAMessage::swap() {
+    if (!message_list) {
+        THROW InvalidMessageData("MessageList '%s' is not yet allocated, in CUDAMessage::swap()\n", message_description.name.c_str());
+    }
     message_list->swap();
 }
 

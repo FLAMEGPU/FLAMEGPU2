@@ -12,7 +12,7 @@
 typedef void(AgentFunctionConditionWrapper)(
     Curve::NamespaceHash instance_id_hash,
     Curve::NamespaceHash agent_func_name_hash,
-    const int popNo,
+    const unsigned int popNo,
     curandState *d_rng,
     unsigned int *scanFlag_conditionResult);  // Can't put __global__ in a typedef
 
@@ -31,7 +31,7 @@ template<typename AgentFunctionCondition>
 __global__ void agent_function_condition_wrapper(
     Curve::NamespaceHash instance_id_hash,
     Curve::NamespaceHash agent_func_name_hash,
-    const int popNo,
+    const unsigned int popNo,
     curandState *d_rng,
     unsigned int *scanFlag_conditionResult) {
     // Must be terminated here, else AgentRandom has bounds issues inside FLAMEGPU_DEVICE_API constructor
