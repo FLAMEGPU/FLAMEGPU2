@@ -205,7 +205,11 @@ bool CUDAAgentModel::step() {
                     auto func_agent = func_des->parent.lock();
                     NVTX_RANGE(std::string("condition map " + func_agent->name + "::" + func_des->name).c_str());
                     const CUDAAgent& cuda_agent = getCUDAAgent(func_agent->name);
-                    singletons->scatter.Scan().resize(cuda_agent.getStateSize(func_des->initial_state), CUDAScanCompaction::AGENT_DEATH, j);
+
+                    const unsigned int state_list_size = cuda_agent.getStateSize(func_des->initial_state);
+                    if (state_list_size == 0)
+                        continue;
+                    singletons->scatter.Scan().resize(state_list_size, CUDAScanCompaction::AGENT_DEATH, j);
 
                     // Configure runtime access of the functions variables within the FLAME_API object
                     cuda_agent.mapRuntimeVariables(*func_des);
@@ -213,7 +217,7 @@ bool CUDAAgentModel::step() {
                     // Zero the scan flag that will be written to
                     singletons->scatter.Scan().zero(CUDAScanCompaction::AGENT_DEATH, j);
 
-                    totalThreads += cuda_agent.getStateSize(func_des->initial_state);
+                    totalThreads += state_list_size;
                 }
             }
 
@@ -236,7 +240,7 @@ bool CUDAAgentModel::step() {
 
                     const CUDAAgent& cuda_agent = getCUDAAgent(agent_name);
 
-                    int state_list_size = cuda_agent.getStateSize(func_des->initial_state);
+                    const unsigned int state_list_size = cuda_agent.getStateSize(func_des->initial_state);
                     if (state_list_size == 0)
                         continue;
 
@@ -273,7 +277,7 @@ bool CUDAAgentModel::step() {
                         CUresult a = instance.configure(gridSize, blockSize).launch({
                                 const_cast<void*>(reinterpret_cast<const void*>(&instance_id_hash)),
                                 reinterpret_cast<void*>(&agent_func_name_hash),
-                                reinterpret_cast<void*>(&state_list_size),
+                                const_cast<void *>(reinterpret_cast<const void*>(&state_list_size)),
                                 reinterpret_cast<void*>(&t_rng),
                                 reinterpret_cast<void*>(&scanFlag_agentDeath) });
                         if (a != CUresult::CUDA_SUCCESS) {
@@ -325,11 +329,11 @@ bool CUDAAgentModel::step() {
             NVTX_RANGE(std::string("map" + func_agent->name + "::" + func_des->name).c_str());
 
             const CUDAAgent& cuda_agent = getCUDAAgent(func_agent->name);
-            const unsigned int STATE_SIZE = cuda_agent.getStateSize(func_des->initial_state);
-            if (STATE_SIZE == 0)
+            const unsigned int state_list_size = cuda_agent.getStateSize(func_des->initial_state);
+            if (state_list_size == 0)
                 continue;
             // Resize death flag array if necessary
-            singletons->scatter.Scan().resize(STATE_SIZE, CUDAScanCompaction::AGENT_DEATH, j);
+            singletons->scatter.Scan().resize(state_list_size, CUDAScanCompaction::AGENT_DEATH, j);
 
             // check if a function has an input message
             if (auto im = func_des->message_input.lock()) {
@@ -347,9 +351,9 @@ bool CUDAAgentModel::step() {
                 CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
                 // Resize message list if required
                 const unsigned int existingMessages = cuda_message.getTruncateMessageListFlag() ? 0 : cuda_message.getMessageCount();
-                cuda_message.resize(existingMessages + STATE_SIZE, this->singletons->scatter, j);
-                cuda_message.mapWriteRuntimeVariables(*func_des, cuda_agent, STATE_SIZE);
-                singletons->scatter.Scan().resize(STATE_SIZE, CUDAScanCompaction::MESSAGE_OUTPUT, j);
+                cuda_message.resize(existingMessages + state_list_size, this->singletons->scatter, j);
+                cuda_message.mapWriteRuntimeVariables(*func_des, cuda_agent, state_list_size);
+                singletons->scatter.Scan().resize(state_list_size, CUDAScanCompaction::MESSAGE_OUTPUT, j);
                 // Zero the scan flag that will be written to
                 if (func_des->message_output_optional)
                     singletons->scatter.Scan().zero(CUDAScanCompaction::MESSAGE_OUTPUT, j);
@@ -361,7 +365,7 @@ bool CUDAAgentModel::step() {
                 // which is added to variable hashes for agent creation on device
                 CUDAAgent& output_agent = getCUDAAgent(oa->name);
                 // Map vars with curve (this allocates/requests enough new buffer space if an existing version is not available/suitable)
-                output_agent.mapNewRuntimeVariables(*func_des, STATE_SIZE, this->singletons->scatter, j);
+                output_agent.mapNewRuntimeVariables(*func_des, state_list_size, this->singletons->scatter, j);
             }
 
 
@@ -419,7 +423,7 @@ bool CUDAAgentModel::step() {
 
             const CUDAAgent& cuda_agent = getCUDAAgent(agent_name);
 
-            int state_list_size = cuda_agent.getStateSize(func_des->initial_state);
+            const unsigned int state_list_size = cuda_agent.getStateSize(func_des->initial_state);
             if (state_list_size == 0)
                 continue;
 
@@ -472,7 +476,7 @@ bool CUDAAgentModel::step() {
                         reinterpret_cast<void*>(&message_name_inp_hash),
                         reinterpret_cast<void*>(&message_name_outp_hash),
                         reinterpret_cast<void*>(&agentoutput_hash),
-                        reinterpret_cast<void*>(&state_list_size),
+                        const_cast<void*>(reinterpret_cast<const void*>(&state_list_size)),
                         const_cast<void*>(reinterpret_cast<const void*>(&d_in_messagelist_metadata)),
                         const_cast<void*>(reinterpret_cast<const void*>(&d_out_messagelist_metadata)),
                         const_cast<void*>(reinterpret_cast<const void*>(&t_rng)),
@@ -503,6 +507,10 @@ bool CUDAAgentModel::step() {
             NVTX_RANGE(std::string("unmap" + func_agent->name + "::" + func_des->name).c_str());
             CUDAAgent& cuda_agent = getCUDAAgent(func_agent->name);
 
+            const unsigned int state_list_size = cuda_agent.getStateSize(func_des->initial_state);
+            if (state_list_size == 0)
+                continue;
+
             // check if a function has an input message
             if (auto im = func_des->message_input.lock()) {
                 std::string inpMessage_name = im->name;
@@ -515,14 +523,13 @@ bool CUDAAgentModel::step() {
                 std::string outpMessage_name = om->name;
                 CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
                 cuda_message.unmapRuntimeVariables(*func_des);
-                cuda_message.swap(func_des->message_output_optional, cuda_agent.getStateSize(func_des->initial_state), this->singletons->scatter, j);
+                cuda_message.swap(func_des->message_output_optional, state_list_size, this->singletons->scatter, j);
                 cuda_message.clearTruncateMessageListFlag();
                 cuda_message.setPBMConstructionRequiredFlag();
             }
 
             // Process agent death (has agent death check is handled by the method)
             // This MUST occur before agent_output, as if agent_output triggers resize then scan_flag for death will be purged
-            const unsigned int PRE_DEATH_STATE_SIZE = cuda_agent.getStateSize(func_des->initial_state);
             cuda_agent.processDeath(*func_des, this->singletons->scatter, j);
 
             // Process agent state transition (Longer term merge this with process death?)
@@ -536,7 +543,7 @@ bool CUDAAgentModel::step() {
                 // which is added to variable hashes for agent creation on device
                 CUDAAgent& output_agent = getCUDAAgent(oa->name);
                 // Scatter the agent birth
-                output_agent.scatterNew(*func_des, PRE_DEATH_STATE_SIZE, this->singletons->scatter, j);
+                output_agent.scatterNew(*func_des, state_list_size, this->singletons->scatter, j);  // This must be passed the state list size prior to death
                 // unmap vars with curve
                 output_agent.unmapNewRuntimeVariables(*func_des);
             }

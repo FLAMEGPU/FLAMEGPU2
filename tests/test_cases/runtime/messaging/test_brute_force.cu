@@ -268,4 +268,5 @@ TEST(TestMessage_BruteForce, reserved_name) {
     EXPECT_THROW(msg.newVariable<int>("_"), ReservedName);
 }
 
+
 }  // namespace test_message_brute_force

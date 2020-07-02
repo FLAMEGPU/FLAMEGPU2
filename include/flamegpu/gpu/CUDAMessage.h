@@ -97,12 +97,13 @@ class CUDAMessage {
      * @param newMsgCount The number of output messages (including optional messages which were not output)
      * @param scatter Scatter instance and scan arrays to be used (CUDAAgentModel::singletons->scatter)
      * @param streamId Index of stream specific structures used
+     * @throw InvalidCudaMessage If this is called before the internal buffers have been allocated
      */
-    virtual void swap(bool isOptional, const unsigned int &newMsgCount, CUDAScatter &scatter, const unsigned int &streamId);
+    void swap(bool isOptional, const unsigned int &newMsgCount, CUDAScatter &scatter, const unsigned int &streamId);
     /**
      * Basic list swap with no additional actions
      */
-    virtual void swap();
+    void swap();
     bool getTruncateMessageListFlag() const { return truncate_messagelist_flag; }
     void setTruncateMessageListFlag() { truncate_messagelist_flag = true; }
     void clearTruncateMessageListFlag() { truncate_messagelist_flag = false; }

@@ -33,7 +33,7 @@ class FLAMEGPU_READ_ONLY_DEVICE_API {
     friend __global__ void agent_function_condition_wrapper(
         Curve::NamespaceHash,
         Curve::NamespaceHash,
-        const int,
+        const unsigned int,
         curandState *,
         unsigned int *);
 
@@ -113,7 +113,7 @@ class FLAMEGPU_DEVICE_API : public FLAMEGPU_READ_ONLY_DEVICE_API{
         Curve::NamespaceHash,
         Curve::NamespaceHash,
         Curve::NamespaceHash,
-        const int,
+        const unsigned int,
         const void *,
         const void *,
         curandState *,
