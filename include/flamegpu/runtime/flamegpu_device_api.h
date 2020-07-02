@@ -157,12 +157,8 @@ class FLAMEGPU_DEVICE_API : public FLAMEGPU_READ_ONLY_DEVICE_API{
          unsigned int * const scan_flag;
      };
     /**
-<<<<<<< HEAD
-     * @param modelname_hash CURVE hash of the model's name
-=======
-     * @param _thread_in_layer_offset This offset can be added to TID to give a thread-safe unique index for the thread
+     * Constructs the device-only API class instance.
      * @param instance_id_hash CURVE hash of the CUDAAgentModel's instance id
->>>>>>> 8c3509e... Support for multiple CUDAAgentModel instances of same ModelDescription.
      * @param agentfuncname_hash Combined CURVE hashes of agent name and func name
      * @param _agent_output_hash Combined CURVE hashes for agent output
      * @param d_rng Device pointer to curand state for this kernel, index 0 should for TID()==0
