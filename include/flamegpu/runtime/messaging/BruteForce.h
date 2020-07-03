@@ -42,7 +42,7 @@ class MsgBruteForce {
      * MetaData required by brute force during message reads
      */
     struct MetaData {
-        unsigned int length;
+        unsigned int length = 0;
     };
     /**
      * This class is accessible via FLAMEGPU_DEVICE_API.message_in if MsgBruteForce is specified in FLAMEGPU_AGENT_FUNCTION
@@ -252,6 +252,13 @@ class MsgBruteForce {
          * Should free any local host memory (device memory cannot be freed in destructors)
          */
         ~CUDAModelHandler() { }
+        /**
+         * Allocates memory for the constructed index.
+         * Sets data asthough message list is empty
+         * @param scatter Scatter instance and scan arrays to be used (CUDAAgentModel::singletons->scatter)
+         * @param streamId Index of stream specific structures used
+         */
+        void init(CUDAScatter &scatter, const unsigned int &streamId) override;
         /**
          * Updates the length of the messagelist stored on device
          * @param scatter Scatter instance and scan arrays to be used (CUDAAgentModel::singletons->scatter)

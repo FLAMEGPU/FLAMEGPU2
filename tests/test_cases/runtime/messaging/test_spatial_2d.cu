@@ -362,4 +362,48 @@ TEST(Spatial2DMsgTest, reserved_name) {
     EXPECT_THROW(message.newVariable<int>("_"), ReservedName);
 }
 
+FLAMEGPU_AGENT_FUNCTION(count2D, MsgSpatial2D, MsgNone) {
+    unsigned int count = 0;
+    // Count how many messages we received (including our own)
+    // This is all those which fall within the 3x3 Moore neighbourhood
+    for (const auto &message : FLAMEGPU->message_in(0, 0)) {
+        count++;
+    }
+    FLAMEGPU->setVariable<unsigned int>("count", count);
+    return ALIVE;
+}
+TEST(Spatial2DMsgTest, ReadEmpty) {
+// What happens if we read a message list before it has been output?
+    ModelDescription model("Model");
+    {   // Location message
+        MsgSpatial2D::Description &message = model.newMessage<MsgSpatial2D>("location");
+        message.setMin(-3, -3);
+        message.setMax(3, 3);
+        message.setRadius(2);
+        message.newVariable<int>("id");  // unused by current test
+    }
+    {   // Circle agent
+        AgentDescription &agent = model.newAgent("agent");
+        agent.newVariable<unsigned int>("count", 0);  // Count the number of messages read
+        agent.newFunction("in", count2D).setMessageInput("location");
+    }
+    {   // Layer #1
+        LayerDescription &layer = model.newLayer();
+        layer.addAgentFunction(count2D);
+    }
+    // Create 1 agent
+    AgentPopulation pop_in(model.Agent("agent"), 1);
+    pop_in.getNextInstance();
+    CUDAAgentModel cuda_model(model);
+    cuda_model.setPopulationData(pop_in);
+    // Execute model
+    EXPECT_NO_THROW(cuda_model.step());
+    // Check result
+    AgentPopulation pop_out(model.Agent("agent"), 1);
+    pop_out.getNextInstance().setVariable<unsigned int>("count", 1);
+    cuda_model.getPopulationData(pop_out);
+    EXPECT_EQ(pop_out.getCurrentListSize(), 1u);
+    auto ai = pop_out.getInstanceAt(0);
+    EXPECT_EQ(ai.getVariable<unsigned int>("count"), 0u);
+}
 }  // namespace test_message_spatial2d

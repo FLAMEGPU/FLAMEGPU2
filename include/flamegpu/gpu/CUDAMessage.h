@@ -62,6 +62,13 @@ class CUDAMessage {
      */
     void setMessageCount(const unsigned int &_message_count);
     /**
+     * Initialise the CUDAMessagelist
+     * This allocates and initialises any CUDA data structures for reading the messagelist, and sets them asthough the messagelist were empty.
+     * @param scatter Scatter instance and scan arrays to be used (CUDAAgentModel::singletons->scatter)
+     * @param streamId Index of stream specific structures used
+     */
+    void init(CUDAScatter &scatter, const unsigned int &streamId);
+    /**
      * Updates message_count to equal newSize, internally reallocates buffer space if more space is required
      * @param newSize The number of messages that the buffer should be capable of storing
      * @param scatter Scatter instance and scan arrays to be used (CUDAAgentModel::singletons->scatter)

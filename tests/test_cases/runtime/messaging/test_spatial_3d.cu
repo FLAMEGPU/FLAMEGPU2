@@ -42,7 +42,7 @@ FLAMEGPU_AGENT_FUNCTION(in3D, MsgSpatial3D, MsgNone) {
          static_cast<int>(y1),
          static_cast<int>(z1)
      };
-    // Count how many messages we recieved (including our own)
+    // Count how many messages we received (including our own)
     // This is all those which fall within the 3x3x3 Moore neighbourhood
     // Not our search radius
     for (const auto &message : FLAMEGPU->message_in(x1, y1, z1)) {
@@ -398,5 +398,50 @@ TEST(Spatial3DMsgTest, reserved_name) {
     ModelDescription model("Spatial3DMsgTestModel");
     MsgSpatial3D::Description &message = model.newMessage<MsgSpatial3D>("location");
     EXPECT_THROW(message.newVariable<int>("_"), ReservedName);
+}
+
+FLAMEGPU_AGENT_FUNCTION(count3D, MsgSpatial3D, MsgNone) {
+    unsigned int count = 0;
+    // Count how many messages we received (including our own)
+    // This is all those which fall within the 3x3x3 Moore neighbourhood
+    for (const auto &message : FLAMEGPU->message_in(0, 0, 0)) {
+        count++;
+    }
+    FLAMEGPU->setVariable<unsigned int>("count", count);
+    return ALIVE;
+}
+TEST(Spatial3DMsgTest, ReadEmpty) {
+// What happens if we read a message list before it has been output?
+    ModelDescription model("Model");
+    {   // Location message
+        MsgSpatial3D::Description &message = model.newMessage<MsgSpatial3D>("location");
+        message.setMin(-3, -3, -3);
+        message.setMax(3, 3, 3);
+        message.setRadius(2);
+        message.newVariable<int>("id");  // unused by current test
+    }
+    {   // Circle agent
+        AgentDescription &agent = model.newAgent("agent");
+        agent.newVariable<unsigned int>("count", 0);  // Count the number of messages read
+        agent.newFunction("in", count3D).setMessageInput("location");
+    }
+    {   // Layer #1
+        LayerDescription &layer = model.newLayer();
+        layer.addAgentFunction(count3D);
+    }
+    // Create 1 agent
+    AgentPopulation pop_in(model.Agent("agent"), 1);
+    pop_in.getNextInstance();
+    CUDAAgentModel cuda_model(model);
+    cuda_model.setPopulationData(pop_in);
+    // Execute model
+    EXPECT_NO_THROW(cuda_model.step());
+    // Check result
+    AgentPopulation pop_out(model.Agent("agent"), 1);
+    pop_out.getNextInstance().setVariable<unsigned int>("count", 1);
+    cuda_model.getPopulationData(pop_out);
+    EXPECT_EQ(pop_out.getCurrentListSize(), 1u);
+    auto ai = pop_out.getInstanceAt(0);
+    EXPECT_EQ(ai.getVariable<unsigned int>("count"), 0u);
 }
 }  // namespace test_message_spatial3d

@@ -22,7 +22,13 @@ class MsgSpecialisationHandler {
     /**
      * Destructor, should free any allocated memory in derived classes
      */
-    virtual ~MsgSpecialisationHandler() { }
+    virtual ~MsgSpecialisationHandler() {  }
+    /**
+     * Allocate and fill metadata, as though message list was empty
+     * @param scatter Scatter instance and scan arrays to be used (CUDAAgentModel::singletons->scatter)
+     * @param streamId Index of stream specific structures used
+     */
+    virtual void init(CUDAScatter &scatter, const unsigned int &streamId) = 0;
     /**
      * Constructs an index for the message data structure (e.g. Partition boundary matrix for spatial message types)
      * This is called the first time messages are read, after new messages have been output

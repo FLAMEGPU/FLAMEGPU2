@@ -2,6 +2,13 @@
 #include "flamegpu/model/AgentDescription.h"  // Used by Move-Assign
 #include "flamegpu/gpu/CUDAMessage.h"
 
+void MsgBruteForce::CUDAModelHandler::init(CUDAScatter &, const unsigned int &) {
+    allocateMetaDataDevicePtr();
+    // Allocate messages
+    hd_metadata.length = 0;  // This value should already be 0
+    gpuErrchk(cudaMemcpy(d_metadata, &hd_metadata, sizeof(MetaData), cudaMemcpyHostToDevice));
+}
+
 void MsgBruteForce::CUDAModelHandler::allocateMetaDataDevicePtr() {
     if (d_metadata == nullptr) {
         gpuErrchk(cudaMalloc(&d_metadata, sizeof(MetaData)));
