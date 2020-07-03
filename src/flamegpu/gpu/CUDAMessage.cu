@@ -74,8 +74,8 @@ const MsgBruteForce::Data& CUDAMessage::getMessageDescription() const {
 
 void CUDAMessage::resize(unsigned int newSize, CUDAScatter &scatter, const unsigned int &streamId) {
     // Only grow currently
-    max_list_size = max_list_size < 2 ? 2 : max_list_size;
     if (newSize > max_list_size) {
+        max_list_size = std::max<unsigned int>(max_list_size, 2u);
         while (max_list_size < newSize) {
             max_list_size = static_cast<unsigned int>(max_list_size * 1.5);
         }
@@ -109,7 +109,9 @@ void CUDAMessage::setMessageCount(const unsigned int &_message_count) {
     }
     message_count = _message_count;
 }
-
+void CUDAMessage::init(CUDAScatter &scatter, const unsigned int &streamId) {
+    specialisation_handler->init(scatter, streamId);
+}
 /**
 * @brief Sets all message variable data to zero
 * @param none
@@ -128,6 +130,9 @@ void CUDAMessage::zeroAllMessageData() {
 void CUDAMessage::mapReadRuntimeVariables(const AgentFunctionData& func, const CUDAAgent& cuda_agent) const {
     // check that the message list has been allocated
     if (!message_list) {
+        if (getMessageCount() == 0) {
+            return;  // Message list is empty, this should be safe
+        }
         THROW InvalidMessageData("Error: Initial message list for message '%s' has not been allocated, "
             "in CUDAMessage::mapRuntimeVariables()",
             message_description.name.c_str());
@@ -212,7 +217,7 @@ void CUDAMessage::mapWriteRuntimeVariables(const AgentFunctionData& func, const 
         }
     }
 
-    // Allocate the metadata if required.
+    // Allocate the metadata if required. (This call should now be redundant)
     specialisation_handler->allocateMetaDataDevicePtr();
 }
 

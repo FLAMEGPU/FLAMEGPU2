@@ -268,5 +268,46 @@ TEST(TestMessage_BruteForce, reserved_name) {
     EXPECT_THROW(msg.newVariable<int>("_"), ReservedName);
 }
 
+FLAMEGPU_AGENT_FUNCTION(countBF, MsgBruteForce, MsgNone) {
+    unsigned int count = 0;
+    // Count how many messages we received (including our own)
+    // This is all those which fall within the 3x3 Moore neighbourhood
+    for (const auto &message : FLAMEGPU->message_in) {
+        count++;
+    }
+    FLAMEGPU->setVariable<unsigned int>("count", count);
+    return ALIVE;
+}
+TEST(TestMessage_BruteForce, ReadEmpty) {
+// What happens if we read a message list before it has been output?
+    ModelDescription model("Model");
+    {   // Location message
+        MsgBruteForce::Description &message = model.newMessage<MsgBruteForce>("location");
+        message.newVariable<int>("id");  // unused by current test
+    }
+    {   // Circle agent
+        AgentDescription &agent = model.newAgent("agent");
+        agent.newVariable<unsigned int>("count", 0);  // Count the number of messages read
+        agent.newFunction("in", countBF).setMessageInput("location");
+    }
+    {   // Layer #1
+        LayerDescription &layer = model.newLayer();
+        layer.addAgentFunction(countBF);
+    }
+    // Create 1 agent
+    AgentPopulation pop_in(model.Agent("agent"), 1);
+    pop_in.getNextInstance();
+    CUDAAgentModel cuda_model(model);
+    cuda_model.setPopulationData(pop_in);
+    // Execute model
+    EXPECT_NO_THROW(cuda_model.step());
+    // Check result
+    AgentPopulation pop_out(model.Agent("agent"), 1);
+    pop_out.getNextInstance().setVariable<unsigned int>("count", 1);
+    cuda_model.getPopulationData(pop_out);
+    EXPECT_EQ(pop_out.getCurrentListSize(), 1u);
+    auto ai = pop_out.getInstanceAt(0);
+    EXPECT_EQ(ai.getVariable<unsigned int>("count"), 0u);
+}
 
 }  // namespace test_message_brute_force

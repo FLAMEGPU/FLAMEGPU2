@@ -157,7 +157,7 @@ unsigned int CUDAFatAgentStateList::scatterDeath(CUDAScatter &scatter, const uns
     return living_agents;
 }
 unsigned int CUDAFatAgentStateList::scatterAgentFunctionConditionFalse(CUDAScatter &scatter, const unsigned int &streamId) {
-    // This makes no sense if we have disabled agents (it's suppose to reorder to create disabled agents)
+    // This makes no sense if we have disabled agents (it's supposed to reorder to create disabled agents)
     assert(disabledAgents == 0);
     // Build scatter data
     std::vector<CUDAScatter::ScatterData> sd;

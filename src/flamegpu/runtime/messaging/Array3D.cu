@@ -75,6 +75,21 @@ MsgArray3D::CUDAModelHandler::CUDAModelHandler(CUDAMessage &a)
     hd_metadata.length = d.dimensions[0] * d.dimensions[1] * d.dimensions[2];
 }
 
+void MsgArray3D::CUDAModelHandler::init(CUDAScatter &scatter, const unsigned int &streamId) {
+    allocateMetaDataDevicePtr();
+    // Allocate messages
+    this->sim_message.resize(hd_metadata.length, scatter, streamId);
+    this->sim_message.setMessageCount(hd_metadata.length);
+    // Zero the output arrays
+    auto &read_list = this->sim_message.getReadList();
+    auto &write_list = this->sim_message.getWriteList();
+    for (auto &var : this->sim_message.getMessageDescription().variables) {
+        // Elements is harmless, futureproof for arrays support
+        // hd_metadata.length is used, as message array can be longer than message count
+        gpuErrchk(cudaMemset(write_list.at(var.first), 0, var.second.type_size * var.second.elements * hd_metadata.length));
+        gpuErrchk(cudaMemset(read_list.at(var.first), 0, var.second.type_size * var.second.elements * hd_metadata.length));
+    }
+}
 void MsgArray3D::CUDAModelHandler::allocateMetaDataDevicePtr() {
     if (d_metadata == nullptr) {
         gpuErrchk(cudaMalloc(&d_metadata, sizeof(MetaData)));

@@ -107,6 +107,12 @@ __global__ void atomicHistogram3D(
     bin_sub_index[index] = bin_idx;
 }
 
+void MsgSpatial3D::CUDAModelHandler::init(CUDAScatter &, const unsigned int &) {
+    allocateMetaDataDevicePtr();
+    // Set PBM to 0
+    gpuErrchk(cudaMemset(hd_data.PBM, 0x00000000, (binCount + 1) * sizeof(unsigned int)));
+}
+
 void MsgSpatial3D::CUDAModelHandler::allocateMetaDataDevicePtr() {
     if (d_data == nullptr) {
         gpuErrchk(cudaMalloc(&d_histogram, (binCount + 1) * sizeof(unsigned int)));

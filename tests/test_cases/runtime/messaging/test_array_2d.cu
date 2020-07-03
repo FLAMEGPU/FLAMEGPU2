@@ -336,5 +336,42 @@ TEST(TestMessage_Array2D, reserved_name) {
     MsgArray2D::Description &message = model.newMessage<MsgArray2D>(MESSAGE_NAME);
     EXPECT_THROW(message.newVariable<int>("_"), ReservedName);
 }
+FLAMEGPU_AGENT_FUNCTION(countArray2D, MsgArray2D, MsgNone) {
+    unsigned int value = FLAMEGPU->message_in.at(0, 0).getVariable<unsigned int>("value");
+    FLAMEGPU->setVariable<unsigned int>("value", value);
+    return ALIVE;
+}
+TEST(TestMessage_Array2D, ReadEmpty) {
+// What happens if we read a message list before it has been output?
+    ModelDescription model("Model");
+    {   // Location message
+        MsgArray2D::Description &message = model.newMessage<MsgArray2D>("location");
+        message.setDimensions(2, 2);
+        message.newVariable<int>("id");  // unused by current test
+    }
+    {   // Circle agent
+        AgentDescription &agent = model.newAgent("agent");
+        agent.newVariable<unsigned int>("value", 32323);  // Count the number of messages read
+        agent.newFunction("in", countArray2D).setMessageInput("location");
+    }
+    {   // Layer #1
+        LayerDescription &layer = model.newLayer();
+        layer.addAgentFunction(countArray2D);
+    }
+    // Create 1 agent
+    AgentPopulation pop_in(model.Agent("agent"), 1);
+    pop_in.getNextInstance();
+    CUDAAgentModel cuda_model(model);
+    cuda_model.setPopulationData(pop_in);
+    // Execute model
+    EXPECT_NO_THROW(cuda_model.step());
+    // Check result
+    AgentPopulation pop_out(model.Agent("agent"), 1);
+    pop_out.getNextInstance().setVariable<unsigned int>("value", 22221);
+    cuda_model.getPopulationData(pop_out);
+    EXPECT_EQ(pop_out.getCurrentListSize(), 1u);
+    auto ai = pop_out.getInstanceAt(0);
+    EXPECT_EQ(ai.getVariable<unsigned int>("value"), 0u);  // Unset array msgs should be 0
+}
 
 }  // namespace test_message_array_2d

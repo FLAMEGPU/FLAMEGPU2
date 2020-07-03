@@ -96,6 +96,33 @@ namespace test_agent_function_conditions {
             ASSERT_EQ(test, ARRAY_REFERENCE2);
         }
     }
-
-
+    FLAMEGPU_AGENT_FUNCTION_CONDITION(AllFail) {
+        return false;
+    }
+    TEST(TestAgentFunctionConditions, AllDisabled) {
+        // Tests for a bug created by #342, fixed by #343
+        // If all agents got disabled by an agent function condition, they would not get re-enabled
+        // This would lead to an exception later on
+        ModelDescription m(MODEL_NAME);
+        AgentDescription &a = m.newAgent(AGENT_NAME);
+        a.newVariable<int>("x");
+        a.newVariable<int, 4>("y");
+        AgentFunctionDescription &af1 = a.newFunction(FUNCTION_NAME1, NullFn1);
+        af1.setFunctionCondition(AllFail);
+        AgentFunctionDescription &af2 = a.newFunction(FUNCTION_NAME2, NullFn2);
+        LayerDescription &l1 = m.newLayer();
+        l1.addAgentFunction(af1);
+        LayerDescription &l2 = m.newLayer();
+        l2.addAgentFunction(af2);
+        // Create a bunch of empty agents
+        AgentPopulation pop(a, AGENT_COUNT);
+        for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+            AgentInstance ai = pop.getNextInstance();
+        }
+        CUDAAgentModel c(m);
+        c.setPopulationData(pop);
+        EXPECT_NO_THROW(c.step());
+        EXPECT_NO_THROW(c.step());
+        EXPECT_NO_THROW(c.step());
+    }
 }  // namespace test_agent_function_conditions
