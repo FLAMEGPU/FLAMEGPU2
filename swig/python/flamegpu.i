@@ -401,7 +401,6 @@ TEMPLATE_VARIABLE_INSTANTIATE_N(get, EnvironmentDescription::getArray)
 //TEMPLATE_VARIABLE_INSTANTIATE(getAt, EnvironmentDescription::getArrayAtIndex)
 TEMPLATE_VARIABLE_INSTANTIATE(set, EnvironmentDescription::set)
 TEMPLATE_VARIABLE_INSTANTIATE_N(set, EnvironmentDescription::set)
-TEMPLATE_VARIABLE_INSTANTIATE(remove, EnvironmentDescription::remove)
 
 
 /* Instanciate template versions of new and get message types from the API */
