@@ -44,6 +44,8 @@ jobs:
       config: "Release"
       build_tests: "OFF"
       Werror: "ON"
+      individual_example: "game_of_life"
+      build_individual_example: "OFF"
 
     steps:
     - uses: actions/checkout@v2
@@ -66,7 +68,7 @@ jobs:
 
     - name: Configure CMake
       id: configure
-      run: cmake . -B ${{ env.build_dir }} -G "${{ matrix.visual_studio }}" -A x64 -DBUILD_TESTS=${{ env.build_tests }} -DWARNINGS_AS_ERRORS=${{ env.werror }} -DCUDA_ARCH="${{ env.cuda_arch }}"
+      run: cmake . -B ${{ env.build_dir }} -G "${{ matrix.visual_studio }}" -A x64 -DBUILD_TESTS=${{ env.build_tests }} -DWARNINGS_AS_ERRORS=${{ env.werror }} -DCUDA_ARCH="${{ env.cuda_arch }}" -Werror=dev
       shell: bash
 
     - name: Build flamegpu2
@@ -81,3 +83,12 @@ jobs:
     - name: Build everything else
       run: cmake --build . --config ${{ env.config }} --target ALL_BUILD --verbose
       working-directory: ${{ env.build_dir }}
+
+    - name: Configure Individual example
+      run: cmake . -B ${{ env.build_dir }} -G "${{ matrix.visual_studio }}" -A x64 -DWARNINGS_AS_ERRORS=${{ env.werror }} -DCUDA_ARCH="${{ env.cuda_arch }}" -Werror=dev
+      working-directory: examples/${{ env.individual_example }}
+    
+    - name: Build Individual example
+      if: env.build_individual_example == 'ON'
+      run: cmake --build . --config ${{ env.config }} --target ${{ env.individual_example }} --verbose
+      working-directory: examples/${{ env.individual_example }}/${{ env.build_dir }}
