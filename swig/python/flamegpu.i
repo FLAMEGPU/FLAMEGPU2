@@ -95,6 +95,9 @@
 // default int types
 %template(function ## Int) classfunction<int>;
 %template(function ## UInt) classfunction<unsigned int>;
+// char type
+%template(function ## Char) classfunction<char>;
+%template(function ## UChar) classfunction<unsigned char>;
 // bool type (not supported causes error)
 //%template(function ## Bool) classfunction<bool>;
 %enddef
@@ -121,6 +124,9 @@ TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## Double, classfunction, double)
 // default int and uint (causes redefintion warning)
 TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## Int, classfunction, int)
 TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## UInt, classfunction, unsigned int)
+// Char type
+TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## Char, classfunction, char)
+TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## UChar, classfunction, unsigned char)
 // Bool type
 //TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## Bool, classfunction, bool)
 %enddef
