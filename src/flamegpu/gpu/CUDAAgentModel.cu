@@ -378,8 +378,9 @@ bool CUDAAgentModel::step() {
                 // This will act as a reserve word
                 // which is added to variable hashes for agent creation on device
                 CUDAAgent& output_agent = getCUDAAgent(oa->name);
+
                 // Map vars with curve (this allocates/requests enough new buffer space if an existing version is not available/suitable)
-                output_agent.mapNewRuntimeVariables(*func_des, state_list_size, this->singletons->scatter, j);
+                output_agent.mapNewRuntimeVariables(cuda_agent, *func_des, state_list_size, this->singletons->scatter, j);
             }
 
 

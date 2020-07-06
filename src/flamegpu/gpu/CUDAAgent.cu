@@ -251,9 +251,6 @@ void CUDAAgent::processFunctionCondition(const AgentFunctionData& func, CUDAScat
         fat_agent->processFunctionCondition(fat_index, func.initial_state, scatter, streamId);
     }
 }
-/**
- * 
- */
 void CUDAAgent::scatterHostCreation(const std::string &state_name, const unsigned int &newSize, char *const d_inBuff, const VarOffsetStruct &offsets, CUDAScatter &scatter, const unsigned int &streamId) {
     auto sm = state_map.find(state_name);
     if (sm == state_map.end()) {
@@ -272,7 +269,7 @@ void CUDAAgent::scatterSort(const std::string &state_name, CUDAScatter &scatter,
     }
     sm->second->scatterSort(scatter, streamId);
 }
-void CUDAAgent::mapNewRuntimeVariables(const AgentFunctionData& func, const unsigned int &maxLen, CUDAScatter &scatter, const unsigned int &streamId) {
+void CUDAAgent::mapNewRuntimeVariables(const CUDAAgent& func_agent, const AgentFunctionData& func, const unsigned int &maxLen, CUDAScatter &scatter, const unsigned int &streamId) {
     // Confirm agent output is set
     if (auto oa = func.agent_output.lock()) {
         // check the cuda agent state map to find the correct state list for functions starting state
@@ -336,7 +333,7 @@ void CUDAAgent::mapNewRuntimeVariables(const AgentFunctionData& func, const unsi
             // Map RTC variables (these must be mapped before each function execution as the runtime pointer may have changed to the swapping)
             if (!func.rtc_func_name.empty()) {
                 // get the rtc variable ptr
-                const jitify::KernelInstantiation& instance = getRTCInstantiation(func.rtc_func_name);
+                const jitify::KernelInstantiation& instance = func_agent.getRTCInstantiation(func.rtc_func_name);
                 std::stringstream d_var_ptr_name;
                 d_var_ptr_name << CurveRTCHost::getVariableSymbolName(mmp.first.c_str(), _agent_birth_hash + func_hash);
                 CUdeviceptr d_var_ptr = instance.get_global_ptr(d_var_ptr_name.str().c_str());

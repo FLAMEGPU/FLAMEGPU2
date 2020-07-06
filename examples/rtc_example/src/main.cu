@@ -24,11 +24,10 @@
 
 
 const char* rtc_func = R"###(
-FLAMEGPU_AGENT_FUNCTION(rtc_test_func, MsgNone, MsgNone) {
-    int64_t a_out = FLAMEGPU->environment.get<int64_t>("a");
-    int contains_a = FLAMEGPU->environment.contains("a");
-    FLAMEGPU->setVariable<int64_t>("a_out", a_out);
-    FLAMEGPU->setVariable<int>("contains_a", contains_a);
+FLAMEGPU_AGENT_FUNCTION(MandatoryOutput, MsgNone, MsgNone) {
+    unsigned int id = FLAMEGPU->getVariable<unsigned int>("id") + 1;
+    FLAMEGPU->agent_out.setVariable<float>("x", id + 12.0f);
+    FLAMEGPU->agent_out.setVariable<unsigned int>("id", id);
     return ALIVE;
 }
 )###";
@@ -38,21 +37,63 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, MsgNone, MsgNone) {
  */
 int main() {
 
-    ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent_name");
-    EnvironmentDescription& env = model.Environment();
-    env.add<int64_t>("a", 12);
-    agent.newVariable<int64_t>("a_out");
-    agent.newVariable<int>("contains_1");
-    // add RTC agent function
-    AgentFunctionDescription &func = agent.newRTCFunction("rtc_test_func", rtc_func);
-    func.setAllowAgentDeath(false);
-    model.newLayer().addAgentFunction(func);
-    // Init pop
-    AgentPopulation init_population(agent, 1);
-    // Setup Model
+    // Define model
+    ModelDescription model("Spatial3DMsgTestModel");
+    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription &agent2 = model.newAgent("agent2");
+    agent.newState("a");
+    agent.newState("b");
+    agent.newVariable<float>("x");
+    agent.newVariable<unsigned int>("id");
+    agent2.newVariable<float>("x");
+    agent2.newVariable<unsigned int>("id");
+    AgentFunctionDescription &function = agent2.newRTCFunction("output", rtc_func);
+    function.setAgentOutput(agent, "b");
+    LayerDescription &layer1 = model.newLayer();
+    layer1.addAgentFunction(function);
+    // Init agent pop
     CUDAAgentModel cuda_model(model);
-    cuda_model.setPopulationData(init_population);
-    // Run 1 step to ensure agent function compiles and runs
+    AgentPopulation population(model.Agent("agent2"), AGENT_COUNT);
+    // Initialise agents
+    for (unsigned int i = 0; i < AGENT_COUNT; i++) {
+        AgentInstance instance = population.getNextInstance();
+        instance.setVariable<float>("x", i + 1.0f);
+        instance.setVariable<unsigned int>("id", i);
+    }
+    cuda_model.setPopulationData(population);
+    // Execute model
     cuda_model.step();
+    // Test output
+    AgentPopulation newPopulation(model.Agent("agent"));
+    cuda_model.getPopulationData(population);
+    cuda_model.getPopulationData(newPopulation);
+    // Validate each agent has same result
+    EXPECT_EQ(population.getCurrentListSize(), AGENT_COUNT);
+    EXPECT_EQ(newPopulation.getCurrentListSize("b"), AGENT_COUNT);
+    unsigned int is_1_mod2_0 = 0;
+    unsigned int is_1_mod2_1 = 0;
+    for (unsigned int i = 0; i < population.getCurrentListSize(); ++i) {
+        AgentInstance ai = population.getInstanceAt(i);
+        EXPECT_EQ(ai.getVariable<float>("x") - ai.getVariable<unsigned int>("id"), 1.0f);
+        if (ai.getVariable<unsigned int>("id") % 2 == 0) {
+            is_1_mod2_0++;
+        } else {
+            is_1_mod2_1++;
+        }
+    }
+    EXPECT_EQ(is_1_mod2_0, AGENT_COUNT / 2);
+    EXPECT_EQ(is_1_mod2_1, AGENT_COUNT / 2);
+    unsigned int is_12_mod2_0 = 0;
+    unsigned int is_12_mod2_1 = 0;
+    for (unsigned int i = 0; i < newPopulation.getCurrentListSize("b"); ++i) {
+        AgentInstance ai = newPopulation.getInstanceAt(i, "b");
+        EXPECT_EQ(ai.getVariable<float>("x") - ai.getVariable<unsigned int>("id"), 12.0f);
+        if (ai.getVariable<unsigned int>("id") % 2 == 0) {
+            is_12_mod2_0++;
+        } else {
+            is_12_mod2_1++;
+        }
+    }
+    EXPECT_EQ(is_12_mod2_0, AGENT_COUNT / 2);
+    EXPECT_EQ(is_12_mod2_1, AGENT_COUNT / 2);
 }
