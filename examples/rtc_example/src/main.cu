@@ -36,7 +36,6 @@ FLAMEGPU_AGENT_FUNCTION(MandatoryOutput, MsgNone, MsgNone) {
  * Test an RTC function to an agent function condition (where the condition is not compiled using RTC)
  */
 int main() {
-
     // Define model
     ModelDescription model("Spatial3DMsgTestModel");
     AgentDescription &agent = model.newAgent("agent");
