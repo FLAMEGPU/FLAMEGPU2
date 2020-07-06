@@ -1,6 +1,6 @@
-##########
-# Jitify #
-##########
+###################################
+# Flamegpu2 Visualisation Library #
+###################################
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/modules/ ${CMAKE_MODULE_PATH})
 include(FetchContent)
@@ -11,8 +11,7 @@ if (VISUALISATION_ROOT)
     message("VisualisationRoot override")
     add_subdirectory(${VISUALISATION_ROOT} ${CMAKE_CURRENT_BINARY_DIR}/_deps/flamegpu2_visualiser-build EXCLUDE_FROM_ALL)
     # Set locally and for parent scope, which are mutually exclusive
-    set(VISUALISATION_BUILD ${CMAKE_CURRENT_BINARY_DIR}/_deps/flamegpu2_visualiser-build)
-    set(VISUALISATION_BUILD ${CMAKE_CURRENT_BINARY_DIR}/_deps/flamegpu2_visualiser-build PARENT_SCOPE)
+    set(VISUALISATION_BUILD ${CMAKE_CURRENT_BINARY_DIR}/_deps/flamegpu2_visualiser-build CACHE INTERNAL "flamegpu2_visualiser_BINARY_DIR")
 else()
     # Otherwise download.
     FetchContent_Declare(
@@ -29,9 +28,7 @@ else()
         add_subdirectory(${flamegpu2_visualiser_SOURCE_DIR} ${flamegpu2_visualiser_BINARY_DIR} EXCLUDE_FROM_ALL)
         
         # Set locally and for parent scope, which are mutually exclusive
-        set(VISUALISATION_ROOT ${flamegpu2_visualiser_SOURCE_DIR})
-        set(VISUALISATION_ROOT ${flamegpu2_visualiser_SOURCE_DIR} PARENT_SCOPE)
-        set(VISUALISATION_BUILD ${flamegpu2_visualiser_BINARY_DIR})
-        set(VISUALISATION_BUILD ${flamegpu2_visualiser_BINARY_DIR} PARENT_SCOPE)
+        set(VISUALISATION_ROOT ${flamegpu2_visualiser_SOURCE_DIR} CACHE INTERNAL "flamegpu2_visualiser_SOURCE_DIR")
+        set(VISUALISATION_BUILD ${flamegpu2_visualiser_BINARY_DIR} CACHE INTERNAL "flamegpu2_visualiser_BINARY_DIR")
     endif()
 endif()
