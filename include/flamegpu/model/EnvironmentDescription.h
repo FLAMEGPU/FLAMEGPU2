@@ -5,6 +5,7 @@
 #include <string>
 #include <typeinfo>
 #include <typeindex>
+#include <array>
 
 #include "flamegpu/exception/FGPUException.h"
 #include "flamegpu/runtime/utility/HostEnvironment.cuh"
