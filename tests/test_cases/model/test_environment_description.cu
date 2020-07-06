@@ -121,9 +121,12 @@ void ExceptionPropertyLength_test() {
     std::array<T, ARRAY_TEST_LEN + 1> _b2;
     std::array<T, ARRAY_TEST_LEN * 2> _b3;
     ed.add<T, ARRAY_TEST_LEN>("a", b);
-    EXPECT_THROW(ed.set<T>("a", _b1), OutOfBoundsException);
-    EXPECT_THROW(ed.set<T>("a", _b2), OutOfBoundsException);
-    EXPECT_THROW(ed.set<T>("a", _b3), OutOfBoundsException);
+    auto fn1 = &EnvironmentDescription::set<T, ARRAY_TEST_LEN>;
+    auto fn2 = &EnvironmentDescription::set<T, ARRAY_TEST_LEN + 1>;
+    auto fn3 = &EnvironmentDescription::set<T, ARRAY_TEST_LEN * 2>;
+    EXPECT_THROW((ed.*fn1)("a", _b1), OutOfBoundsException);
+    EXPECT_THROW((ed.*fn2)("a", _b2), OutOfBoundsException);
+    EXPECT_THROW((ed.*fn3)("a", _b3), OutOfBoundsException);
 }
 
 template<typename T>
