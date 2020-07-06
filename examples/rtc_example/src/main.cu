@@ -20,7 +20,7 @@
  */
 
 #define AGENT_COUNT 32
-#define EXPECT_EQ(x, y) if (x != y) printf("%d not equal to %d", x, y)
+#define EXPECT_EQ(x, y) if (x != y) printf("%d not equal to %d", static_cast<int>(x), static_cast<int>(y))
 
 
 const char* rtc_func = R"###(
