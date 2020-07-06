@@ -67,15 +67,19 @@ if(CUDA_ARCH_LENGTH EQUAL 0)
 endif()
 
 # Propagate the validated values to the parent scope, to reduce warning duplication.
-set(CUDA_ARCH ${CUDA_ARCH} PARENT_SCOPE)
-
+get_directory_property(hasParent PARENT_DIRECTORY)
+if(hasParent)
+    set(CUDA_ARCH ${CUDA_ARCH} PARENT_SCOPE)
+endif()
 # If the list is somehow empty now, do not set any gencodes arguments, instead using the compiler defaults.
 list(LENGTH CUDA_ARCH CUDA_ARCH_LENGTH)
 if(NOT CUDA_ARCH_LENGTH EQUAL 0)
     # Only do this if required.I.e. CUDA_ARCH is the same as the last time this file was included
     if(NOT CUDA_ARCH_APPLIED EQUAL CUDA_ARCH)
         message(STATUS "Generating Compute Capabilities: ${CUDA_ARCH}")
-        set(CUDA_ARCH_APPLIED "${CUDA_ARCH}" PARENT_SCOPE )
+        if(hasParent)
+            set(CUDA_ARCH_APPLIED "${CUDA_ARCH}" PARENT_SCOPE )
+        endif()
     endif()
     set(GENCODES_FLAGS)
     set(MIN_CUDA_ARCH)
