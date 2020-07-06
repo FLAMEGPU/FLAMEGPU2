@@ -121,7 +121,7 @@ void ExceptionPropertyLength_test() {
     std::array<T, ARRAY_TEST_LEN + 1> _b2;
     std::array<T, ARRAY_TEST_LEN * 2> _b3;
     ed.add<T, ARRAY_TEST_LEN>("a", b);
-    auto fn1 = &EnvironmentDescription::set<T, ARRAY_TEST_LEN>;
+    auto fn1 = &EnvironmentDescription::set<T, 1>;
     auto fn2 = &EnvironmentDescription::set<T, ARRAY_TEST_LEN + 1>;
     auto fn3 = &EnvironmentDescription::set<T, ARRAY_TEST_LEN * 2>;
     EXPECT_THROW((ed.*fn1)("a", _b1), OutOfBoundsException);
