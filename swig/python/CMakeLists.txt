@@ -47,7 +47,6 @@ endif()
 target_include_directories(${PYTHON_MODULE_NAME}
   PRIVATE
   ../../include
-  ../../externals
   ${Python3_INCLUDE_DIRS}
   )
   
