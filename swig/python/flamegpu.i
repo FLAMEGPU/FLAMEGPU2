@@ -5,11 +5,6 @@
 #endif
 %}
 
-// If not on MSVC, need to set SWIGWORDSIZE64 (where long is 64bit)
-#ifndef _MSC_VER
-#define SWIGWORDSIZE64
-#endif
-
 // supress known warnings
 //#pragma SWIG nowarn=325,302,401
 //#pragma SWIG nowarn=302
