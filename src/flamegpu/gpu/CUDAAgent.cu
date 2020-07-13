@@ -82,7 +82,14 @@ void CUDAAgent::mapRuntimeVariables(const AgentFunctionData& func) const {
         const size_t type_size = mmp.second.type_size * mmp.second.elements;
 
         // maximum population num
+#ifdef _DEBUG
+        const Curve::Variable cv = Curve::getInstance().registerVariableByHash(var_hash + agent_hash + func_hash, d_ptr, type_size, agent_count);
+        if (cv != static_cast<int>((var_hash + agent_hash + func_hash)%Curve::MAX_VARIABLES)) {
+            fprintf(stderr, "Curve Warning: Agent Function '%s' Variable '%s' has a collision and may work improperly.\n", func.name.c_str(), mmp.first.c_str());
+        }
+#else
         Curve::getInstance().registerVariableByHash(var_hash + agent_hash + func_hash, d_ptr, type_size, agent_count);
+#endif
 
         // Map RTC variables to agent function (these must be mapped before each function execution as the runtime pointer may have changed to the swapping)
         if (!func.rtc_func_name.empty()) {
@@ -331,8 +338,14 @@ void CUDAAgent::mapNewRuntimeVariables(const AgentFunctionData& func, const unsi
             }
 
             // maximum population num
+#ifdef _DEBUG
+            const Curve::Variable cv = Curve::getInstance().registerVariableByHash(var_hash + _agent_birth_hash + func_hash, d_ptr, type_size, maxLen);
+            if (cv != static_cast<int>((var_hash + _agent_birth_hash + func_hash)%Curve::MAX_VARIABLES)) {
+                fprintf(stderr, "Curve Warning: Agent Function '%s' New Agent Variable '%s' has a collision and may work improperly.\n", func.name.c_str(), mmp.first.c_str());
+            }
+#else
             Curve::getInstance().registerVariableByHash(var_hash + _agent_birth_hash + func_hash, d_ptr, type_size, maxLen);
-
+#endif
             // Map RTC variables (these must be mapped before each function execution as the runtime pointer may have changed to the swapping)
             if (!func.rtc_func_name.empty()) {
                 // get the rtc variable ptr

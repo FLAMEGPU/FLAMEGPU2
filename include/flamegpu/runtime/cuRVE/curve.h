@@ -281,7 +281,7 @@ class Curve {
 
     __host__ unsigned int checkHowManyMappedItems();
     unsigned int h_namespace;
-    static const int MAX_VARIABLES = 32;          // !< Default maximum number of cuRVE variables (must be a power of 2)
+    static const int MAX_VARIABLES = 1024;          // !< Default maximum number of cuRVE variables (must be a power of 2)
     static const int VARIABLE_DISABLED = 0;
     static const int VARIABLE_ENABLED = 1;
     static const int NAMESPACE_NONE = 0;

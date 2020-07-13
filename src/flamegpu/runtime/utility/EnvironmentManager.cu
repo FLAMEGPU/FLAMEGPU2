@@ -285,6 +285,11 @@ void EnvironmentManager::add(const NamePair &name, const char *ptr, const size_t
         THROW CurveException("curveRegisterVariableByHash() returned UNKNOWN_CURVE_VARIABLE"
             "in EnvironmentManager::add().");
     }
+#ifdef _DEBUG
+    if (CURVE_RESULT != static_cast<int>((cvh+CURVE_NAMESPACE_HASH)%Curve::MAX_VARIABLES)) {
+        fprintf(stderr, "Curve Warning: Environment Property '%s' has a collision and may work improperly.\n", name.second.c_str());
+    }
+#endif
     Curve::getInstance().setDefaultNamespace();
 }
 
@@ -348,6 +353,11 @@ void EnvironmentManager::defragment(DefragMap *mergeProperties, std::set<NamePai
                 THROW CurveException("curveRegisterVariableByHash() returned UNKNOWN_CURVE_VARIABLE, "
                     "in EnvironmentManager::defragment().");
             }
+#ifdef _DEBUG
+            if (CURVE_RESULT != static_cast<int>((cvh+CURVE_NAMESPACE_HASH)%Curve::MAX_VARIABLES)) {
+                fprintf(stderr, "Curve Warning: Environment Property '%s' has a collision and may work improperly.\n", i.first.second.c_str());
+            }
+#endif
             // Increase buffer offset length that has been added
             buffOffset += i.second.length;
         } else {
@@ -383,6 +393,11 @@ void EnvironmentManager::defragment(DefragMap *mergeProperties, std::set<NamePai
             THROW CurveException("curveRegisterVariableByHash() returned UNKNOWN_CURVE_VARIABLE, "
                 "in EnvironmentManager::defragment().");
         }
+#ifdef _DEBUG
+        if (CURVE_RESULT != static_cast<int>((cvh+CURVE_NAMESPACE_HASH)%Curve::MAX_VARIABLES)) {
+            fprintf(stderr, "Curve Warning: Environment Property '%s' has a collision and may work improperly.\n", mp.first.second.c_str());
+        }
+#endif
     }
     Curve::getInstance().setDefaultNamespace();
 }
