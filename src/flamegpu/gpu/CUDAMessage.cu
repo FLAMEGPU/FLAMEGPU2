@@ -156,8 +156,14 @@ void CUDAMessage::mapReadRuntimeVariables(const AgentFunctionData& func, const C
 
        // maximum population size
         unsigned int length = this->getMessageCount();  // check to see if it is equal to pop
+#ifdef _DEBUG
+        const Curve::Variable cv = Curve::getInstance().registerVariableByHash(var_hash + agent_hash + func_hash + message_hash, d_ptr, size, length);
+        if (cv != static_cast<int>((var_hash + agent_hash + func_hash + message_hash)%Curve::MAX_VARIABLES)) {
+            fprintf(stderr, "Curve Warning: Agent Function '%s' Message In Variable '%s' has a collision and may work improperly.\n", message_name.c_str(), mmp.first.c_str());
+        }
+#else
         Curve::getInstance().registerVariableByHash(var_hash + agent_hash + func_hash + message_hash, d_ptr, size, length);
-
+#endif
         // Map RTC variables (these must be mapped before each function execution as the runtime pointer may have changed to the swapping)
         if (!func.rtc_func_name.empty()) {
             // get the rtc variable ptr
@@ -196,15 +202,21 @@ void CUDAMessage::mapWriteRuntimeVariables(const AgentFunctionData& func, const 
         void* d_ptr = message_list->getWriteMessageListVariablePointer(mmp.first);
 
         // map using curve
-        Curve::VariableHash var_hash = Curve::getInstance().variableRuntimeHash(mmp.first.c_str());
+        Curve::VariableHash var_hash = Curve::variableRuntimeHash(mmp.first.c_str());
 
         // get the message variable size
         size_t size = mmp.second.type_size;
 
         // maximum population size
         unsigned int length = writeLen;  // check to see if it is equal to pop
+#ifdef _DEBUG
+        const Curve::Variable cv = Curve::getInstance().registerVariableByHash(var_hash + agent_hash + func_hash + message_hash, d_ptr, size, length);
+        if (cv != static_cast<int>((var_hash + agent_hash + func_hash + message_hash)%Curve::MAX_VARIABLES)) {
+            fprintf(stderr, "Curve Warning: Agent Function '%s' Message '%s' Out? Variable '%s' has a collision and may work improperly.\n", func.name.c_str(), message_name.c_str(), mmp.first.c_str());
+        }
+#else
         Curve::getInstance().registerVariableByHash(var_hash + agent_hash + func_hash + message_hash, d_ptr, size, length);
-
+#endif
         // Map RTC variables (these must be mapped before each function execution as the runtime pointer may have changed to the swapping)
         if (!func.rtc_func_name.empty()) {
             // get the rtc variable ptr
