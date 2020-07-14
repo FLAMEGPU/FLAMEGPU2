@@ -36,6 +36,10 @@ CUDAAgentModel::CUDAAgentModel(const ModelDescription& _model)
 
     // Register the signal handler.
     SignalHandlers::registerSignalHandlers();
+
+    // Populate the environment properties
+    initEnvironmentMgr();
+
     // populate the CUDA agent map
     const auto &am = model->agents;
     // create new cuda agent and add to the map
@@ -68,6 +72,9 @@ CUDAAgentModel::CUDAAgentModel(const std::shared_ptr<SubModelData> &submodel_des
     , rtc_kernel_cache(nullptr)  {
     ++active_instances;
     initOffsetsAndMap();
+
+    // Populate the environment properties
+    initEnvironmentMgr();
 
     // populate the CUDA agent map (With SubAgents!)
     const auto &am = model->agents;
@@ -145,6 +152,8 @@ bool CUDAAgentModel::step() {
 
     // Ensure singletons have been initialised
     initialiseSingletons();
+    // Update environment on device
+    singletons->environment.updateDevice(getInstanceID());
 
     // If verbose, print the step number.
     if (getSimulationConfig().verbose) {
@@ -224,7 +233,9 @@ bool CUDAAgentModel::step() {
                 }
             }
 
-            // Ensure RandomManager is the correct size to accomodate all threads to be launched
+            // Update curve
+            singletons->curve.updateDevice();
+            // Ensure RandomManager is the correct size to accommodate all threads to be launched
             curandState *d_rng = singletons->rng.resize(totalThreads);
             // Track stream id
             j = 0;
@@ -396,7 +407,9 @@ bool CUDAAgentModel::step() {
             ++j;
         }
 
-        // Ensure RandomManager is the correct size to accomodate all threads to be launched
+        // Update curve
+        singletons->curve.updateDevice();
+        // Ensure RandomManager is the correct size to accommodate all threads to be launched
         curandState *d_rng = singletons->rng.resize(totalThreads);
         // Total threads is now used to provide kernel launches an offset to thread-safe thread-index
         totalThreads = 0;
@@ -582,6 +595,8 @@ bool CUDAAgentModel::step() {
         // If we have host layer functions, we might have host agent creation
         if ((*lyr)->host_functions.size())
             processHostAgentCreation(j);
+        // Update environment on device
+        singletons->environment.updateDevice(getInstanceID());
 
         // cudaDeviceSynchronize();
     }
@@ -659,6 +674,8 @@ void CUDAAgentModel::simulate() {
     // Check if host agent creation was used in init functions
     if (model->initFunctions.size())
         processHostAgentCreation(0);
+    // Update environment on device
+    singletons->environment.updateDevice(getInstanceID());
 
 #ifdef VISUALISATION
     if (visualisation) {
@@ -953,15 +970,6 @@ void CUDAAgentModel::initialiseSingletons() {
             Curve::getInstance(),
             EnvironmentManager::getInstance());
 
-        // Populate the environment properties in constant Cache
-        if (!submodel) {
-            singletons->environment.init(instance_id, *model->environment);
-        } else {
-            singletons->environment.init(instance_id, *model->environment, mastermodel->getInstanceID(), *submodel->subenvironment);
-        }
-        // Add the CUDAAgentModel specific variables(s)
-        singletons->environment.add({instance_id, "_stepCount"}, 0u, false);
-
         // Reinitialise random for this simulation instance
         singletons->rng.reseed(getSimulationConfig().random_seed);
 
@@ -977,12 +985,14 @@ void CUDAAgentModel::initialiseSingletons() {
             sm.second->initialiseSingletons();
         }
 
-
         singletonsInitialised = true;
     }
 
     // Ensure RTC is set up.
     initialiseRTC();
+
+    // Update environment on device
+    singletons->environment.updateDevice(getInstanceID());
 }
 
 void CUDAAgentModel::initialiseRTC() {
@@ -1142,19 +1152,17 @@ void CUDAAgentModel::RTCSafeCudaMemcpyToSymbolAddress(void* ptr, const char* rtc
     }
 }
 
-void CUDAAgentModel::RTCSetEnvironmentVariable(const std::string &variable_name, const void* src, size_t count, size_t offset) const {
-    // get the model hash
-    const Curve::VariableHash instance_id_hash = Curve::variableRuntimeHash(instance_id);
+void CUDAAgentModel::RTCUpdateEnvironmentVariables(const void* src, size_t count) const {
     // loop through agents
     for (const auto& agent_pair : agent_map) {
         // loop through any agent functions
         for (const CUDAAgent::CUDARTCFuncMapPair& rtc_func_pair : agent_pair.second->getRTCFunctions()) {
             CUdeviceptr rtc_dev_ptr = 0;
             // get the RTC device symbol
-            std::string rtc_symbol_name = CurveRTCHost::getEnvVariableSymbolName(variable_name.c_str(), instance_id_hash);
+            std::string rtc_symbol_name = CurveRTCHost::getEnvVariableSymbolName();
             rtc_dev_ptr = rtc_func_pair.second->get_global_ptr(rtc_symbol_name.c_str());
             // make the memcpy to the rtc version of the symbol
-            gpuErrchkDriverAPI(cuMemcpyHtoD(rtc_dev_ptr + offset, src, count));
+            gpuErrchkDriverAPI(cuMemcpyHtoD(rtc_dev_ptr, src, count));
         }
     }
 }
@@ -1167,4 +1175,16 @@ void CUDAAgentModel::incrementStepCounter() {
 float CUDAAgentModel::getSimulationElapsedTime() const {
     // Get the value
     return this->simulation_elapsed_time;
+}
+
+void CUDAAgentModel::initEnvironmentMgr() {
+    // Populate the environment properties
+    if (!submodel) {
+        EnvironmentManager::getInstance().init(instance_id, *model->environment);
+    } else {
+        EnvironmentManager::getInstance().init(instance_id, *model->environment, mastermodel->getInstanceID(), *submodel->subenvironment);
+    }
+
+    // Add the CUDAAgentModel specific variables(s)
+    EnvironmentManager::getInstance().add({instance_id, "_stepCount"}, 0u, false);
 }

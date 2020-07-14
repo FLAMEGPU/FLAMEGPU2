@@ -13,6 +13,7 @@
 #include "flamegpu/exception/FGPUException.h"
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/pop/AgentPopulation.h"
+#include "flamegpu/gpu/CUDAAgentModel.h"
 
 #ifndef XMLCheckResult
 #define XMLCheckResult(a_eResult) if (a_eResult != tinyxml2::XML_SUCCESS) { FGPUException::setLocation(__FILE__, __LINE__);\
@@ -53,17 +54,81 @@
 }
 #endif
 
-xmlWriter::xmlWriter(const std::string &model_name, const unsigned int &sim_instance_id, const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &model, const unsigned int &iterations, const std::string &output_file)
-    : StateWriter(model_name, sim_instance_id, model, iterations, output_file) {}
+xmlWriter::xmlWriter(
+    const std::string &model_name,
+    const unsigned int &sim_instance_id, const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &model,
+    const unsigned int &iterations,
+    const std::string &output_file,
+    const Simulation *_sim_instance)
+    : StateWriter(model_name, sim_instance_id, model, iterations, output_file, _sim_instance) {}
 
-int xmlWriter::writeStates() {
+int xmlWriter::writeStates(bool prettyPrint) {
     tinyxml2::XMLDocument doc;
 
     tinyxml2::XMLNode * pRoot = doc.NewElement("states");
     doc.InsertFirstChild(pRoot);
 
+    // Redundant for FLAMEGPU1 backwards compatibility
     tinyxml2::XMLElement * pElement = doc.NewElement("itno");
-    pElement->SetText(iterations);  // get simulation step here - later
+    pElement->SetText(iterations);
+    pRoot->InsertEndChild(pElement);
+
+    // Output config elements
+    pElement = doc.NewElement("config");
+    {
+        // Sim config
+        tinyxml2::XMLElement *pSimCfg = doc.NewElement("simulation");
+        {
+            const auto &sim_cfg = sim_instance->getSimulationConfig();
+            tinyxml2::XMLElement *pListElement = nullptr;
+            // Input file
+            pListElement = doc.NewElement("input_file");
+            pListElement->SetText(sim_cfg.input_file.c_str());
+            pSimCfg->InsertEndChild(pListElement);
+            // Steps
+            pListElement = doc.NewElement("steps");
+            pListElement->SetText(sim_cfg.steps);
+            pSimCfg->InsertEndChild(pListElement);
+            // Timing Output
+            pListElement = doc.NewElement("timing");
+            pListElement->SetText(sim_cfg.timing);
+            pSimCfg->InsertEndChild(pListElement);
+            // Random seed
+            pListElement = doc.NewElement("random_seed");
+            pListElement->SetText(sim_cfg.random_seed);
+            pSimCfg->InsertEndChild(pListElement);
+            // Verbose output
+            pListElement = doc.NewElement("verbose");
+            pListElement->SetText(sim_cfg.verbose);
+            pSimCfg->InsertEndChild(pListElement);
+        }
+        pElement->InsertEndChild(pSimCfg);
+
+        // Cuda config
+        if (auto *cudamodel_instance = dynamic_cast<const CUDAAgentModel*>(sim_instance)) {
+            tinyxml2::XMLElement *pCUDACfg = doc.NewElement("cuda");
+            {
+                const auto &cuda_cfg = cudamodel_instance->getCUDAConfig();
+                tinyxml2::XMLElement *pListElement = nullptr;
+                // Input file
+                pListElement = doc.NewElement("device_id");
+                pListElement->SetText(cuda_cfg.device_id);
+                pCUDACfg->InsertEndChild(pListElement);
+            }
+            pElement->InsertEndChild(pCUDACfg);
+        }
+    }
+    pRoot->InsertEndChild(pElement);
+
+    // Output stats elements
+    pElement = doc.NewElement("stats");
+    {
+        tinyxml2::XMLElement *pListElement = nullptr;
+        // Input file
+        pListElement = doc.NewElement("step_count");
+        pListElement->SetText(iterations);
+        pElement->InsertEndChild(pListElement);
+    }
     pRoot->InsertEndChild(pElement);
 
     pElement = doc.NewElement("environment");
@@ -185,7 +250,7 @@ int xmlWriter::writeStates() {
         }
     }
 
-    tinyxml2::XMLError errorId = doc.SaveFile(outputFile.c_str());
+    tinyxml2::XMLError errorId = doc.SaveFile(outputFile.c_str(), !prettyPrint);
     XMLCheckResult(errorId);
 
     return tinyxml2::XML_SUCCESS;

@@ -154,8 +154,12 @@ class CUDAAgentModel : public Simulation {
      */
     void RTCSafeCudaMemcpyToSymbolAddress(void* ptr, const char* rtc_symbol_name, const void* src, size_t count, size_t offset = 0) const;
 
-    // TODO
-    void RTCSetEnvironmentVariable(const std::string &variable_name, const void* src, size_t count, size_t offset = 0) const;
+    /**
+     * Updates the environment property cache for all RTC agent functions
+     * @param src Source memory address
+     * @param count Length of buffer (Probably EnvironmentManager::MAX_BUFFER_SIZE)
+     */
+    void RTCUpdateEnvironmentVariables(const void* src, size_t count) const;
 
     /**
      * Get the duration of the last call to simulate() in milliseconds. 
@@ -263,6 +267,10 @@ class CUDAAgentModel : public Simulation {
       EnvironmentManager &environment;
       Singletons(Curve &curve, EnvironmentManager &environment) : curve(curve), environment(environment) { }
     } * singletons;
+    /**
+     * Common method for adding this Model's data to env manager
+     */
+    void initEnvironmentMgr();
     /**
      * Flag indicating that the model has been initialsed
      */

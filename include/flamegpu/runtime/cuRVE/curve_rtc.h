@@ -20,7 +20,7 @@ class CurveRTCHost {
 
     void unregisterVariable(const char* variableName, unsigned int namespace_hash);
 
-    void registerEnvVariable(const char* variableName, unsigned int namespace_hash, const char* type, unsigned int elements = 1);
+    void registerEnvVariable(const char* variableName, unsigned int namespace_hash, ptrdiff_t offset, const char* type, unsigned int elements = 1);
 
     void unregisterEnvVariable(const char* variableName, unsigned int namespace_hash);
 
@@ -28,7 +28,7 @@ class CurveRTCHost {
 
     static std::string getVariableSymbolName(const char* variableName, unsigned int namespace_hash);
 
-    static std::string getEnvVariableSymbolName(const char* variableName, unsigned int namespace_hash);
+    static std::string getEnvVariableSymbolName();
 
     /**
      * Demangle a verbose type name (e.g. std::type_index.name().c_str()) into a user readable type
@@ -55,6 +55,7 @@ class CurveRTCHost {
     struct RTCEnvVariableProperties {
         std::string type;
         unsigned int elements;
+        ptrdiff_t offset;
     };
 
  private:

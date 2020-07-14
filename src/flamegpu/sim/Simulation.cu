@@ -34,24 +34,29 @@ void Simulation::initialise(int argc, const char** argv) {
 }
 
 void Simulation::applyConfig() {
-    // Call derived class config stuff first
-    applyConfig_derived();
-    // Random is handled by derived class, as it relies on singletons being init
-    // Build population vector
-    std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> pops;
-    for (auto &agent : model->agents) {
-        auto a = std::make_shared<AgentPopulation>(*agent.second->description);
-        pops.emplace(agent.first, a);
-    }
-    if (!config.xml_input_file.empty()) {
-        StateReader *read__ = ReaderFactory::createReader(model->name, getInstanceID(), pops, config.xml_input_file.c_str());
+    if (!config.input_file.empty() && config.input_file != loaded_input_file) {
+        const std::string current_input_file = config.input_file;
+        // Build population vector
+        std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> pops;
+        for (auto &agent : model->agents) {
+            auto a = std::make_shared<AgentPopulation>(*agent.second->description);
+            pops.emplace(agent.first, a);
+        }
+        StateReader *read__ = ReaderFactory::createReader(model->name, getInstanceID(), pops, config.input_file.c_str(), this);
         if (read__) {
             read__->parse();
             for (auto &agent : pops) {
                 setPopulationData(*agent.second);
             }
         }
+        // Reset input file (we don't support input file recursion)
+        config.input_file = current_input_file;
+        // Set flag so we don't reload this in future
+        loaded_input_file = current_input_file;
     }
+    // Call derived class config stuff first
+    applyConfig_derived();
+    // Random is handled by derived class, as it relies on singletons being init
 }
 
 const ModelData& Simulation::getModelDescription() const {
@@ -61,7 +66,7 @@ const ModelData& Simulation::getModelDescription() const {
 /*
  * issues: only saves the last output, hardcoded, will be changed
  */
-void Simulation::exportData(const std::string &path) {
+void Simulation::exportData(const std::string &path, bool prettyPrint) {
     // Build population vector
     std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> pops;
     for (auto &agent : model->agents) {
@@ -70,21 +75,19 @@ void Simulation::exportData(const std::string &path) {
         pops.emplace(agent.first, a);
     }
 
-    StateWriter *write__ = WriterFactory::createWriter(model->name, getInstanceID(), pops, getStepCounter(), path);
-    write__->writeStates();
+    StateWriter *write__ = WriterFactory::createWriter(model->name, getInstanceID(), pops, getStepCounter(), path, this);
+    write__->writeStates(prettyPrint);
 }
 
 int Simulation::checkArgs(int argc, const char** argv) {
-    // These should really be in some kind of config struct
-    // unsigned int device_id = 0;
-    // unsigned int iterations = 0;
     // Required args
     if (argc < 1) {
         printHelp(argv[0]);
         return false;
     }
 
-    // Parse optional args
+    // First pass only looks for and handles input files
+    // Remaining arguments can override args passed via input file
     int i = 1;
     for (; i < argc; i++) {
         // Get arg as lowercase
@@ -96,7 +99,43 @@ int Simulation::checkArgs(int argc, const char** argv) {
                 fprintf(stderr, "%s requires a trailing argument\n", arg.c_str());
                 return false;
             }
-            config.xml_input_file = std::string(argv[++i]);
+            const std::string new_input_file = std::string(argv[++i]);
+            config.input_file = new_input_file;
+            // Load the input file
+            {
+                // Build population vector
+                std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> pops;
+                for (auto &agent : model->agents) {
+                    auto a = std::make_shared<AgentPopulation>(*agent.second->description);
+                    pops.emplace(agent.first, a);
+                }
+                StateReader *read__ = ReaderFactory::createReader(model->name, getInstanceID(), pops, config.input_file.c_str(), this);
+                if (read__) {
+                    read__->parse();
+                    for (auto &agent : pops) {
+                        setPopulationData(*agent.second);
+                    }
+                }
+            }
+            // Reset input file (we don't support input file recursion)
+            config.input_file = new_input_file;
+            // Set flag so input file isn't reloaded via apply_config
+            loaded_input_file = new_input_file;
+            // Break, we have loaded an input file
+            break;
+        }
+    }
+
+    // Parse optional args
+    i = 1;
+    for (; i < argc; i++) {
+        // Get arg as lowercase
+        std::string arg(argv[i]);
+        std::transform(arg.begin(), arg.end(), arg.begin(), [](unsigned char c) { return std::use_facet< std::ctype<char>>(std::locale()).tolower(c); });
+        // -in <string>, Specifies the input state file
+        if (arg.compare("--in") == 0 || arg.compare("-i") == 0) {
+            // We already processed input file above, skip here
+            ++i;
             continue;
         }
         // -steps <uint>, The number of steps to be executed
@@ -143,7 +182,7 @@ void Simulation::printHelp(const char* executable) {
     printf("Usage: %s [-s steps] [-d device_id] [-r random_seed]\n", executable);
     printf("Optional Arguments:\n");
     const char *line_fmt = "%-18s %s\n";
-    printf(line_fmt, "-i, --in <file.xml>", "Initial state file (XML)");
+    printf(line_fmt, "-i, --in <file.xml/file.json>", "Initial state file (XML or JSON)");
     printf(line_fmt, "-s, --steps <steps>", "Number of simulation iterations");
     printf(line_fmt, "-r, --random <seed>", "RandomManager seed");
     printf(line_fmt, "-v, --verbose", "Verbose FLAME GPU output");
@@ -159,6 +198,7 @@ const Simulation::Config &Simulation::getSimulationConfig() const {
 }
 
 void Simulation::reset() {
+    loaded_input_file = "";
     reset(false);
 }
 

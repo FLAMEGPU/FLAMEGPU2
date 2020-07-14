@@ -10,10 +10,12 @@
 
 #include "flamegpu/io/xmlReader.h"
 #include <sstream>
+#include <algorithm>
 #include "tinyxml2/tinyxml2.h"              // downloaded from https:// github.com/leethomason/tinyxml2, the list of xml parsers : http:// lars.ruoff.free.fr/xmlcpp/
 #include "flamegpu/exception/FGPUException.h"
 #include "flamegpu/pop/AgentPopulation.h"
 #include "flamegpu/model/AgentDescription.h"
+#include "flamegpu/gpu/CUDAAgentModel.h"
 
 #ifndef XMLCheckResult
 #define XMLCheckResult(a_eResult) if (a_eResult != tinyxml2::XML_SUCCESS) { FGPUException::setLocation(__FILE__, __LINE__);\
@@ -54,8 +56,13 @@
 }
 #endif
 
-xmlReader::xmlReader(const std::string &model_name, const unsigned int &sim_instance_id, const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &model_state, const std::string &input)
-    : StateReader(model_name, sim_instance_id, model_state, input) {}
+xmlReader::xmlReader(
+    const std::string &model_name,
+    const unsigned int &sim_instance_id,
+    const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &model_state,
+    const std::string &input,
+    Simulation *sim_instance)
+    : StateReader(model_name, sim_instance_id, model_state, input, sim_instance) {}
 
 /**
 * \brief parses the xml file
@@ -65,8 +72,6 @@ int xmlReader::parse() {
 
     tinyxml2::XMLError errorId = doc.LoadFile(inputFile.c_str());
     XMLCheckResult(errorId);
-
-    printf("XML file '%s' loaded.\n", inputFile.c_str());
 
     tinyxml2::XMLNode* pRoot = doc.FirstChild();
     if (pRoot == nullptr) {
@@ -81,6 +86,66 @@ int xmlReader::parse() {
     int error;
     errorId = pElement->QueryIntText(&error);
     XMLCheckResult(errorId);
+
+    // Read config data
+    pElement = pRoot->FirstChildElement("config");
+    if (pElement) {
+        // Sim config
+        if (sim_instance) {
+            tinyxml2::XMLElement *pSimCfgBlock = pElement->FirstChildElement("simulation");
+            for (auto simCfgElement = pSimCfgBlock->FirstChildElement(); simCfgElement; simCfgElement = simCfgElement->NextSiblingElement()) {
+                std::string key = simCfgElement->Value();
+                std::string val = simCfgElement->GetText();
+                if (key == "input_file") {
+                    if (inputFile != val)
+                        printf("Warning: Input file '%s' refers to second input file '%s', this will not be loaded.\n", inputFile.c_str(), val.c_str());
+                    // sim_instance->SimulationConfig().input_file = val;
+                } else if (key == "steps") {
+                    sim_instance->SimulationConfig().steps = static_cast<unsigned int>(stoull(val));
+                } else if (key == "timing") {
+                    for (auto& c : val)
+                        c = static_cast<char>(::tolower(c));
+                    if (val == "true") {
+                        sim_instance->SimulationConfig().timing = true;
+                    } else if (val == "false") {
+                        sim_instance->SimulationConfig().timing = false;
+                    } else {
+                        sim_instance->SimulationConfig().timing = static_cast<bool>(stoll(val));
+                    }
+                } else if (key == "random_seed") {
+                    sim_instance->SimulationConfig().random_seed = static_cast<unsigned int>(stoull(val));
+                } else if (key == "verbose") {
+                    for (auto& c : val)
+                        c = static_cast<char>(::tolower(c));
+                    if (val == "true") {
+                        sim_instance->SimulationConfig().verbose = true;
+                    } else if (val == "false") {
+                        sim_instance->SimulationConfig().verbose = false;
+                    } else {
+                        sim_instance->SimulationConfig().verbose = static_cast<bool>(stoll(val));
+                    }
+                }  else {
+                    fprintf(stderr, "Warning: Input file '%s' contains unexpected simulation config property '%s'.\n", inputFile.c_str(), key.c_str());
+                }
+            }
+        }
+        // CUDA config
+        CUDAAgentModel *cudamodel_instance = dynamic_cast<CUDAAgentModel*>(sim_instance);
+        if (cudamodel_instance) {
+            tinyxml2::XMLElement *pCUDACfgBlock = pElement->FirstChildElement("cuda");
+            for (auto cudaCfgElement = pCUDACfgBlock->FirstChildElement(); cudaCfgElement; cudaCfgElement = cudaCfgElement->NextSiblingElement()) {
+                std::string key = cudaCfgElement->Value();
+                std::string val = cudaCfgElement->GetText();
+                if (key == "device_id") {
+                    cudamodel_instance->CUDAConfig().device_id = static_cast<unsigned int>(stoull(val));
+                }  else {
+                    fprintf(stderr, "Warning: Input file '%s' contains unexpected cuda config property '%s'.\n", inputFile.c_str(), key.c_str());
+                }
+            }
+        }
+    } else {
+        // No warning, environment node is not mandatory
+    }
 
     // Read environment data
     EnvironmentManager &env_manager = EnvironmentManager::getInstance();

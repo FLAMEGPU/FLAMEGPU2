@@ -501,15 +501,27 @@ void CUDAAgent::addInstantitateRTCFunction(jitify::JitCache &kernel_cache, const
 
     // Set Environment variables in curve
     Curve::NamespaceHash instance_id_hash = Curve::variableRuntimeHash(cuda_model.getInstanceID());
-    for (auto p : EnvironmentManager::getInstance().getPropertiesMap()) {
+    const auto &prop_map = EnvironmentManager::getInstance().getPropertiesMap();
+    for (auto p : prop_map) {
         if (p.first.first == cuda_model.getInstanceID()) {
             const char* variableName = p.first.second.c_str();
             const char* type = p.second.type.name();
             unsigned int elements = p.second.elements;
-            curve_header.registerEnvVariable(variableName, instance_id_hash, type, elements);
+            ptrdiff_t offset = p.second.rtc_offset;
+            curve_header.registerEnvVariable(variableName, instance_id_hash, offset, type, elements);
         }
     }
-
+    // Set mapped environment variables in curve
+    for (auto mp : EnvironmentManager::getInstance().getMappedProperties()) {
+        if (mp.first.first == cuda_model.getInstanceID()) {
+            auto p = prop_map.at(mp.second.masterProp);
+            const char* variableName = mp.second.masterProp.second.c_str();
+            const char* type = p.type.name();
+            unsigned int elements = p.elements;
+            ptrdiff_t offset = p.rtc_offset;
+            curve_header.registerEnvVariable(variableName, instance_id_hash, offset, type, elements);
+        }
+    }
     // get the dynamically generated header from curve rtc
     headers.push_back(curve_header.getDynamicHeader());
 

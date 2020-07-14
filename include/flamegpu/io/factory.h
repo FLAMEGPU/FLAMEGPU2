@@ -18,6 +18,8 @@
 #include "flamegpu/io/statewriter.h"
 #include "flamegpu/io/xmlReader.h"
 #include "flamegpu/io/xmlWriter.h"
+#include "flamegpu/io/jsonReader.h"
+#include "flamegpu/io/jsonWriter.h"
 
 //  move later
 inline std::string getFileExt(const std::string& s) {
@@ -44,17 +46,21 @@ class ReaderFactory {
      * @param sim_instance_id Instance is from the Simulation instance to load the environment properties into
      * @param model_state Map of AgentPopulation to load the agent data into per agent, key should be agent name
      * @param input Filename of the input file (This will be used to determine which reader to return)
+     * @param sim_instance Instance of the Simulation object (This is used for setting/getting config)
      * @throws UnsupportedFileType If the file extension does not match an appropriate reader
      */
     static StateReader *createReader(
         const std::string &model_name,
         const unsigned int &sim_instance_id,
         const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &model_state,
-        const std::string &input) {
+        const std::string &input,
+        Simulation *sim_instance) {
         const std::string extension = getFileExt(input);
 
         if (extension == "xml") {
-            return new xmlReader(model_name, sim_instance_id, model_state, input);
+            return new xmlReader(model_name, sim_instance_id, model_state, input, sim_instance);
+        } else if (extension == "json") {
+            return new jsonReader(model_name, sim_instance_id, model_state, input, sim_instance);
         }
         /*
         if (extension == "bin") {
@@ -78,6 +84,7 @@ class WriterFactory {
      * @param model_state Map of AgentPopulation to read the agent data from per agent, key should be agent name
      * @param iterations The value from the step counter at the time of export.
      * @param output_file Filename of the input file (This will be used to determine which reader to return)
+     * @param sim_instance Instance of the Simulation object (This is used for setting/getting config)
      * @throws UnsupportedFileType If the file extension does not match an appropriate reader
      */
     static StateWriter *createWriter(
@@ -85,11 +92,14 @@ class WriterFactory {
         const unsigned int &sim_instance_id,
         const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &model_state,
         const unsigned int &iterations,
-        const std::string &output_file) {
+        const std::string &output_file,
+        const Simulation *sim_instance) {
         const std::string extension = getFileExt(output_file);
 
         if (extension == "xml") {
-            return new xmlWriter(model_name, sim_instance_id, model_state, iterations, output_file);
+            return new xmlWriter(model_name, sim_instance_id, model_state, iterations, output_file, sim_instance);
+        } else if (extension == "json") {
+            return new jsonWriter(model_name, sim_instance_id, model_state, iterations, output_file, sim_instance);
         }
         THROW UnsupportedFileType("File '%s' is not a type which can be written "
             "by WriterFactory::createWriter().",

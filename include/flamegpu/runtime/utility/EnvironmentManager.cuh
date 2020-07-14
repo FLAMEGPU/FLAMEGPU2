@@ -56,6 +56,9 @@ class EnvironmentManager {
      */
     friend class xmlWriter;
     friend class xmlReader;
+    friend class jsonWriter;
+    friend class jsonReader;
+    friend class jsonReader_impl;
     /**
      * CUDAAgentModel instance id and Property name
      */
@@ -68,6 +71,10 @@ class EnvironmentManager {
     };
 
  public:
+    /**
+     * Max amount of space that can be used for storing environmental properties
+     */
+    static const size_t MAX_BUFFER_SIZE = 10 * 1024;  // 10KB
     /**
      * Offset relative to c_buffer
      * Length in bytes
@@ -106,6 +113,7 @@ class EnvironmentManager {
         bool isConst;
         size_type elements;
         const std::type_index type;
+        ptrdiff_t rtc_offset = 0;  // This is set by buildRTCOffsets();
     };
     /**
      * Used to represent properties of a mapped environment property
@@ -157,6 +165,21 @@ class EnvironmentManager {
         const std::type_index type;
     };
     /**
+     * Struct used by rtc_caches
+     * Represents a personalised constant cache buffer for a single CUDAAgentModel instance
+     * These are shared by submodels
+     */
+    struct RTCEnvPropCache {
+        /**
+         * Host copy of the device memory pointed to by c_buffer
+         */
+        char hc_buffer[MAX_BUFFER_SIZE];
+        /**
+         * Offset relative to c_buffer, where no more data has been stored
+         */
+        ptrdiff_t nextFree = 0;
+    };
+    /**
      * Typedef for the map used for defragementation
      * The map is ordered by key of type size, therefore a reverse sort creates aligned data
      */
@@ -188,10 +211,6 @@ class EnvironmentManager {
      * @param instance_id instance_id of the CUDAAgentModel instance the properties are attached to
      */
     void free(const unsigned int &instance_id);
-    /**
-     * Max amount of space that can be used for storing environmental properties
-     */
-    static const size_t MAX_BUFFER_SIZE = 10 * 1024;  // 10KB
     /**
      * Adds a new environment property
      * @param name name used for accessing the property
@@ -515,9 +534,20 @@ class EnvironmentManager {
     const std::unordered_map<NamePair, EnvProp, NamePairHash> &getPropertiesMap() const {
         return properties;
     }
+    /**
+     * Returns readonly access to mapped properties
+     */    
+    const std::unordered_map<NamePair, MappedProp, NamePairHash> &getMappedProperties() const {
+        return mapped_properties;
+    }
     const void * getHostBuffer() const {
         return hc_buffer;
     }
+    /**
+     * Updates the copy of the environment property cache on the device
+     * @param instance_id Used to update the specified instance's rtc too
+     */
+    void updateDevice(const unsigned int &instance_id);
 
  private:
     /**
@@ -543,7 +573,21 @@ class EnvironmentManager {
      * @param newmaps Namepairs of newly mapped properties, yet to to be setup (essentially ones not yet registered in curve)
      * @note any EnvPROP
      */
-    void defragment(DefragMap *mergeProps = nullptr, std::set<NamePair> newmaps = {});
+    void defragment(const DefragMap * mergeProps = nullptr, std::set<NamePair> newmaps = {});
+    /**
+     * This is the RTC version of defragment()
+     * RTC Constant offsets are fixed at RTC time, and exist in their own constant block.
+     * Therefore if the main constant cache is defragmented, and offsets change, the RTC constants will be incorrect.
+     * Which fix this by maintaining a seperate constant cache per CUDAAgentModel instance
+     * @param instance_id Instance id of the cuda agent model that owns the properties
+     * @param master_instance_id Instance id of the parent model (If this isn't a submodel, pass instance_id here too
+     * @param mergeProperties Ordered map of properties to be stored.
+     */
+    void buildRTCOffsets(const unsigned int &instance_id, const unsigned int &master_instance_id, const DefragMap &mergeProperties);
+    /**
+     * Useful for adding individual variables to RTC cache later on
+     */
+    void addRTCOffset(const NamePair &name);
     /**
      * Device pointer to the environment property buffer in __constant__ memory
      */
@@ -576,11 +620,45 @@ class EnvironmentManager {
      * Map of model name to CUDAAgentModel for use in updating RTC values
      */
     std::unordered_map<unsigned int, const CUDAAgentModel&> cuda_agent_models;
-
+    /**
+     * Map of RTC caches per CUDAAgentModel instance
+     * They are shared by submodels
+     */
+    std::unordered_map<unsigned int, std::shared_ptr<RTCEnvPropCache>> rtc_caches;
     /**
      * Flag indicating that curve has/hasn't been initialised yet on a device.
      */
     bool deviceInitialised;
+    /*
+     * Convenience fn for managing deviceRequiresUpdate
+     * @param instance_id Sim instance id, UINT_MAX sets all
+     */
+    void setDeviceRequiresUpdateFlag(const unsigned int &instance_id = UINT_MAX);
+    /**
+     * These flags control what happens when updateDevice() is called
+     * Their primary purpose is to cause the device memory to updated as lazily as possible
+     */
+    struct EnvUpdateFlags {
+        /**
+         * Update the device constant cache for main C env var storage
+         */
+        bool c_update_required = true;
+        /**
+         * Update the RTC environment cache for a specific CUDAAgentModel instance
+         */
+        bool rtc_update_required = true;
+        /**
+         * Additionally register all variables inside CURVE
+         * This should only be triggered after a device reset, when EnvironmentManager::purge()  has been called
+         * As properties are registered with curve when they are first added to EnvironmentManager
+         **/
+        bool curve_registration_required = false;
+    };
+    /**
+     * Flag indicating whether the device copy is upto date
+     * sim_instance_id:(C needs update, RTC needs update)
+     */
+    std::unordered_map<unsigned int, EnvUpdateFlags> deviceRequiresUpdate;
     /**
      * Function to initialise device-side portions of the environment manager
      */
@@ -606,8 +684,11 @@ class EnvironmentManager {
     }
 
     const CUDAAgentModel& getCUDAAgentModel(const unsigned int &instance_id);
-
-    void setRTCValue(const unsigned int &instance_id, const std::string &variable_name, const void* src, size_t count, size_t offset = 0);
+    /**
+     * Update the copy of the env var that exists in the rtc_cache to match the main cache
+     * @param name namepair of the variable to be updated
+     */
+    void updateRTCValue(const NamePair &name);
 
  public:
     // Public deleted creates better compiler errors
@@ -681,9 +762,10 @@ T EnvironmentManager::set(const NamePair &name, const T &value) {
     }
     // Store data
     memcpy(hc_buffer + buffOffset, &value, sizeof(T));
-    gpuErrchk(cudaMemcpy(reinterpret_cast<void*>(const_cast<char*>(c_buffer + buffOffset)), reinterpret_cast<void*>(hc_buffer + buffOffset), sizeof(T), cudaMemcpyHostToDevice));
-    // update RTC
-    setRTCValue(name.first, name.second.c_str(), hc_buffer + buffOffset, sizeof(T));
+    // Do rtc too
+    updateRTCValue(name);
+    // Set device update flag
+    setDeviceRequiresUpdateFlag(name.first);
 
     return rtn;
 }
@@ -722,9 +804,10 @@ std::array<T, N> EnvironmentManager::set(const NamePair &name, const std::array<
     std::array<T, N> rtn = get<T, N>(name);
     // Store data
     memcpy(hc_buffer + buffOffset, value.data(), N * sizeof(T));
-    gpuErrchk(cudaMemcpy(reinterpret_cast<void*>(const_cast<char*>(c_buffer + buffOffset)), reinterpret_cast<void*>(hc_buffer + buffOffset), N * sizeof(T), cudaMemcpyHostToDevice));
-    // update RTC
-    setRTCValue(name.first, name.second.c_str(), hc_buffer + buffOffset, N * sizeof(T));
+    // Do rtc too
+    updateRTCValue(name);
+    // Set device update flag
+    setDeviceRequiresUpdateFlag(name.first);
 
     return rtn;
 }
@@ -757,15 +840,17 @@ T EnvironmentManager::set(const NamePair &name, const size_type &index, const T 
     if (a != properties.end()) {
         buffOffset = a->second.offset + index * sizeof(T);
     } else {
-        buffOffset = properties.at(mapped_properties.at(name).masterProp).offset + index * sizeof(T);
+        const auto &master_name = mapped_properties.at(name).masterProp;
+        buffOffset = properties.at(master_name).offset + index * sizeof(T);
     }
     // Copy old data to return
     T rtn = *reinterpret_cast<T*>(hc_buffer + buffOffset);
     // Store data
     memcpy(hc_buffer + buffOffset, &value, sizeof(T));
-    gpuErrchk(cudaMemcpy(reinterpret_cast<void*>(const_cast<char*>(c_buffer + buffOffset)), reinterpret_cast<void*>(hc_buffer + buffOffset), sizeof(T), cudaMemcpyHostToDevice));
-    // update RTC
-    setRTCValue(name.first, name.second.c_str(), hc_buffer + buffOffset, sizeof(T), index * sizeof(T));
+    // Do rtc too
+    updateRTCValue(name);
+    // Set device update flag
+    setDeviceRequiresUpdateFlag(name.first);
 
     return rtn;
 }

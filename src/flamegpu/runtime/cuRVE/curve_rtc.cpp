@@ -2,6 +2,7 @@
 
 #include "flamegpu/runtime/cuRVE/curve_rtc.h"
 #include "flamegpu/exception/FGPUException.h"
+#include "flamegpu/runtime/utility/EnvironmentManager.cuh"
 
 // jitify include for demangle
 #ifdef _MSC_VER
@@ -158,12 +159,13 @@ void CurveRTCHost::unregisterVariable(const char* variableName, unsigned int nam
     }
 }
 
-void CurveRTCHost::registerEnvVariable(const char* variableName, unsigned int namespace_hash, const char* type, unsigned int elements) {
+void CurveRTCHost::registerEnvVariable(const char* variableName, unsigned int namespace_hash, ptrdiff_t offset, const char* type, unsigned int elements) {
     // check to see if namespace key already exists
     auto i = RTCEnvVariables.find(namespace_hash);
     RTCEnvVariableProperties props;
     props.type = CurveRTCHost::demangle(type);
     props.elements = elements;
+    props.offset = offset;
     if (i != RTCEnvVariables.end()) {
         // emplace into existing namespace key
         i->second.emplace(variableName, props);
@@ -197,16 +199,7 @@ std::string CurveRTCHost::getDynamicHeader() {
 
     // generate dynamic environment variables ($DYNAMIC_ENV_VARIABLES)
     std::stringstream envVariables;
-    for (auto key_pair : RTCEnvVariables) {
-        unsigned int namespace_hash = key_pair.first;
-        for (std::pair<std::string, RTCEnvVariableProperties> element : key_pair.second) {
-            RTCEnvVariableProperties props = element.second;
-            if (props.elements > 1)
-                envVariables << "__constant__ " << props.type << " " << "curve_env_rtc_ptr_" << namespace_hash << "_" << element.first << "[" << props.elements << "];\n";
-            else
-                envVariables << "__constant__ " << props.type << " " << "curve_env_rtc_ptr_" << namespace_hash << "_" << element.first << ";\n";
-        }
-    }
+    envVariables << "__constant__  char " << getEnvVariableSymbolName() <<"[" << EnvironmentManager::MAX_BUFFER_SIZE << "];\n";
     setHeaderPlaceholder("$DYNAMIC_ENV_VARIABLES", envVariables.str());
 
     // generate getVariable func implementation ($DYNAMIC_GETVARIABLE_IMPL)
@@ -314,7 +307,7 @@ std::string CurveRTCHost::getDynamicHeader() {
             RTCEnvVariableProperties props = element.second;
             if (props.elements == 1) {
                 getEnvVariableImpl <<   "            if (strings_equal(name, \"" << element.first << "\"))\n";
-                getEnvVariableImpl <<   "                return (T)" << "curve_env_rtc_ptr_" << namespace_hash << "_" << element.first << ";\n";
+                getEnvVariableImpl <<   "                return *reinterpret_cast<T*>(reinterpret_cast<void*>(" << getEnvVariableSymbolName() <<" + " << props.offset << "));\n";
                 count++;
             }
         }
@@ -340,7 +333,7 @@ std::string CurveRTCHost::getDynamicHeader() {
             RTCEnvVariableProperties props = element.second;
             if (props.elements > 1) {
                 getEnvArrayVariableImpl << "          if (strings_equal(name, \"" << element.first << "\"))\n";
-                getEnvArrayVariableImpl << "              return (T) " << "curve_env_rtc_ptr_" << namespace_hash << "_" << element.first << "[index];\n";
+                getEnvArrayVariableImpl << "              return reinterpret_cast<T*>(reinterpret_cast<void*>(" << getEnvVariableSymbolName() <<" + " << props.offset << "))[index];\n";
                 count++;
             }
         }
@@ -401,9 +394,9 @@ std::string CurveRTCHost::getVariableSymbolName(const char* variableName, unsign
     return name.str();
 }
 
-std::string CurveRTCHost::getEnvVariableSymbolName(const char* variableName, unsigned int namespace_hash) {
+std::string CurveRTCHost::getEnvVariableSymbolName() {
     std::stringstream name;
-    name << "curve_env_rtc_ptr_" << namespace_hash << "_" << variableName;
+    name << "curve_env_rtc_ptr";
     return name.str();
 }
 
