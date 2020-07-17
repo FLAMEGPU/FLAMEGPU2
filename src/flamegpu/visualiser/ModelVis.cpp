@@ -45,7 +45,7 @@ AgentVis &ModelVis::Agent(const std::string &agent_name) {
 // Below methods are related to executing the visualiser
 void ModelVis::activate() {
     // Only execute if background thread is not active
-    if (!visualiser || !visualiser->isRunning()) {
+    if ((!visualiser || !visualiser->isRunning()) && !model.getSimulationConfig().console_mode) {
         // Init visualiser
         visualiser = std::make_unique<FLAMEGPU_Visualisation>(modelCfg);  // Window resolution
         for (auto &agent : agents) {

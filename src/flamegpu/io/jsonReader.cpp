@@ -275,6 +275,14 @@ class jsonReader_agentsize_counter : public rapidjson::BaseReaderHandler<rapidjs
                     sim_instance->SimulationConfig().timing = static_cast<bool>(val);
                 } else if (lastKey == "verbose") {
                     sim_instance->SimulationConfig().verbose = static_cast<bool>(val);
+                } else if (lastKey == "console_mode") {
+#ifdef VISUALISATION
+                    sim_instance->SimulationConfig().console_mode = static_cast<bool>(val);
+#else
+                    if (static_cast<bool>(val) == false) {
+                        fprintf(stderr, "Warning: Cannot disable 'console_mode' with input file '%s', FLAMEGPU2 library has not been built with visualisation support enabled.\n", filename.c_str());
+                    }
+#endif
                 } else {
                     THROW RapidJSONError("Unexpected simulation config item '%s' in input file '%s'.\n", lastKey.c_str(), filename.c_str());
                 }

@@ -117,6 +117,7 @@ int main(int argc, const char ** argv) {
      * Create Model Runner
      */
     CUDAAgentModel cuda_model(model);
+    cuda_model.initialise(argc, argv);
 
     /**
      * Create visualisation
@@ -165,7 +166,6 @@ int main(int argc, const char ** argv) {
     /**
      * Initialisation
      */
-    cuda_model.initialise(argc, argv);
     if (cuda_model.getSimulationConfig().input_file.empty()) {
         // Currently population has not been init, so generate an agent population on the fly
         std::default_random_engine rng;

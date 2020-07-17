@@ -124,6 +124,22 @@ int xmlReader::parse() {
                     } else {
                         sim_instance->SimulationConfig().verbose = static_cast<bool>(stoll(val));
                     }
+                } else if (key == "console_mode") {
+#ifdef VISUALISATION
+                    for (auto& c : val)
+                        c = static_cast<char>(::tolower(c));
+                    if (val == "true") {
+                        sim_instance->SimulationConfig().console_mode = true;
+                    } else if (val == "false") {
+                        sim_instance->SimulationConfig().console_mode = false;
+                    } else {
+                        sim_instance->SimulationConfig().console_mode = static_cast<bool>(stoll(val));
+                    }
+#else
+                    if (val == "false") {
+                        fprintf(stderr, "Warning: Cannot disable 'console_mode' with input file '%s', FLAMEGPU2 library has not been built with visualisation support enabled.\n", inputFile.c_str());
+                    }
+#endif
                 }  else {
                     fprintf(stderr, "Warning: Input file '%s' contains unexpected simulation config property '%s'.\n", inputFile.c_str(), key.c_str());
                 }

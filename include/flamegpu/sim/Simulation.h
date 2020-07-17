@@ -17,11 +17,26 @@ class Simulation {
     struct Config {
         Config() : random_seed(static_cast<unsigned int>(time(nullptr))) {
         }
+        void operator=(const Config &other) {
+            input_file = other.input_file;
+            random_seed = other.random_seed;
+            steps = other.steps;
+            verbose = other.verbose;
+            timing = other.timing;
+#ifdef VISUALISATION
+            console_mode = other.console_mode;
+#endif
+        }
         std::string input_file;
         unsigned int random_seed;
         unsigned int steps = 0;
         bool verbose = false;
         bool timing = false;
+#ifdef VISUALISATION
+        bool console_mode = false;
+#else
+        const bool console_mode = true;
+#endif
     };
     virtual ~Simulation() = default;
     /**

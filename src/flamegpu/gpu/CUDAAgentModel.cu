@@ -871,6 +871,17 @@ void CUDAAgentModel::printHelp_derived() {
 
 void CUDAAgentModel::applyConfig_derived() {
     NVTX_RANGE("applyConfig_derived");
+
+    // Handle console_mode
+#ifdef VISUALISATION
+    if (getSimulationConfig().console_mode) {
+        if (visualisation) {
+            visualisation->deactivate();
+        }
+    }
+#endif
+
+
     cudaError_t cudaStatus;
     int device_count;
 
