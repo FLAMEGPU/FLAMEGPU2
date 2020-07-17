@@ -52,6 +52,9 @@ void jsonWriter::doWrite(T &writer) {
                 // Verbose output
                 writer.Key("verbose");
                 writer.Bool(sim_cfg.verbose);
+                // Console mode
+                writer.Key("console_mode");
+                writer.Bool(sim_cfg.console_mode);
             }
             writer.EndObject();
         }

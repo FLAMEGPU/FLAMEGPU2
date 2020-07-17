@@ -167,6 +167,13 @@ int Simulation::checkArgs(int argc, const char** argv) {
             config.timing = true;
             continue;
         }
+#ifdef VISUALISATION
+        // -c/--console, Renders the visualisation inert
+        if (arg.compare("--console") == 0 || arg.compare("-c") == 0) {
+            config.console_mode = true;
+            continue;
+        }
+#endif
         // Test this arg with the derived class
         if (checkArgs_derived(argc, argv, i)) {
             continue;
@@ -187,6 +194,9 @@ void Simulation::printHelp(const char* executable) {
     printf(line_fmt, "-r, --random <seed>", "RandomManager seed");
     printf(line_fmt, "-v, --verbose", "Verbose FLAME GPU output");
     printf(line_fmt, "-t, --timing", "Output timing information to stdout");
+#ifdef VISUALISATION
+    printf(line_fmt, "-c, --console", "Console mode, disable the visualisation");
+#endif
     printHelp_derived();
 }
 
