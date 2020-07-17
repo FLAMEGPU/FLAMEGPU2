@@ -46,5 +46,9 @@ funcName ## _impl funcName; \
 __device__ __forceinline__ FLAME_GPU_AGENT_STATUS funcName ## _impl::operator()(FLAMEGPU_DEVICE_API<msg_in, msg_out> *FLAMEGPU) const
 #endif
 
+/**
+ * Macro so users can define their own device functions
+ */
+#define FLAMEGPU_DEVICE_FUNCTION __device__ __forceinline__
 
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_AGENTFUNCTION_SHIM_H_
