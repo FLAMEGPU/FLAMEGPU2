@@ -35,7 +35,8 @@ if(NOT thrust_POPULATED)
     # Set the location for where to find cub (ideally)
     set(EXPECTED_CUB_CONFIG_LOCATION "${thrust_SOURCE_DIR}/cub/cmake/")
     # Check that CUB exists at the expected (symlinked) location.
-    if(EXISTS "${EXPECTED_CUB_CONFIG_LOCATION}")
+    # We can't trust the symlink with visual studio
+    if(EXISTS "${EXPECTED_CUB_CONFIG_LOCATION}" AND NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
         # Use the symlinked "default" location
         set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};${thrust_SOURCE_DIR}/cub/cmake")
     else()
