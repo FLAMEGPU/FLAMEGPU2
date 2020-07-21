@@ -13,6 +13,7 @@
 #include "flamegpu/runtime/messaging/Array.h"
 #include "flamegpu/runtime/messaging/Array2D.h"
 #include "flamegpu/runtime/messaging/Array3D.h"
+#include "flamegpu/runtime/messaging/Bucket.h"
 
 /**
  * ######################################################

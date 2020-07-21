@@ -1,5 +1,6 @@
-#ifndef INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_SPATIAL2D_H_
-#define INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_SPATIAL2D_H_
+#ifndef INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_BUCKET_H_
+#define INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_BUCKET_H_
+
 #ifndef __CUDACC_RTC__
 #include <memory>
 #include <string>
@@ -10,16 +11,18 @@
 #include "flamegpu/runtime/messaging/None.h"
 #include "flamegpu/runtime/messaging/BruteForce.h"
 
+typedef int IntT;
+
 /**
- * 2D Continuous spatial messaging functionality
+ * Bucket messaging functionality
  *
- * User specifies the environment bounds and search radius
- * When accessing messages, a search origin is specified
- * A subset of messages, including those within radius of the search origin are returned
- * The user must distance check that they fall within the search radius manually
- * Unlike FLAMEGPU1, these spatial messages do not wrap over environment bounds.
+ * User specifies an integer upper and lower bound, these form a set of consecutive indices which act as keys to buckets.
+ * Each bucket may contain 0 to many messages, however an index is generated such that empty bins still consume a small amount of space.
+ * As such, this is similar to a multi-map, however the key space must be a set of consecutive integers.
+ *
+ * By using your own hash function you can convert non-integer keys to suitable integer keys.
  */
-class MsgSpatial2D {
+class MsgBucket {
     /**
      * Common size type
      */
@@ -30,56 +33,37 @@ class MsgSpatial2D {
     class iterator;     // Forward declare inner classes
     struct Data;        // Forward declare inner classes
     class Description;  // Forward declare inner classes
-    /**
-     * Basic class to group 3 dimensional bin coordinates
-     * Would use glm::ivec3, but project does not currently have glm
-     */
-    struct GridPos2D {
-        int x, y;
-    };
 
     /**
-     * MetaData required by spatial partitioning during message reads
+     * MetaData required by bucket messaging during message reads
      */
     struct MetaData {
         /**
-         * Minimum environment bounds
+         * The inclusive minimum environment bound
          */
-        float min[2];
+        IntT min;
         /**
-         * Maximum environment bounds
+         * The exclusive maximum environment bound
          */
-        float max[2];
-        /**
-         * Search radius (also used as subdividision bin width)
-         */
-        float radius;
+        IntT max;
         /**
          * Pointer to the partition boundary matrix in device memory
          * The PBM is never stored on the host
          */
         unsigned int *PBM;
-        /**
-         * The number of subdividision bins in each dimensions
-         */
-        unsigned int gridDim[2];
-        /**
-         * max-lowerBound
-         */
-        float environmentWidth[3];
     };
 
     /**
-     * This class is accessible via FLAMEGPU_DEVICE_API.message_in if MsgSpatial3D is specified in FLAMEGPU_AGENT_FUNCTION
-     * It gives access to functionality for reading spatially partitioned messages
+     * This class is accessible via FLAMEGPU_DEVICE_API.message_in if MsgBucket is specified in FLAMEGPU_AGENT_FUNCTION
+     * It gives access to functionality for reading bucket
      */
     class In {
      public:
         /**
-         * This class is created when a search origin is provided to MsgSpatial2D::In::operator()(float, float)
-         * It provides iterator access to a subset of the full message list, according to the provided search origin
+         * This class is created when a search origin is provided to MsgBucket::In::operator()(IntT)
+         * It provides iterator access to the subset of messages found within the specified bucket
          * 
-         * @see MsgSpatial2D::In::operator()(float, float)
+         * @see MsgBucket::In::operator()(IntT)
          */
         class Filter {
             /**
@@ -100,40 +84,25 @@ class MsgSpatial2D {
                  */
                 const Filter &_parent;
                 /**
-                 * Relative strip within the Moore neighbourhood
-                 * Strips run along the x axis
-                 * relative_cell corresponds to y offset
-                 */
-                int relative_cell = { -2 };
-                /**
-                 * This is the index after the final message, relative to the full message list, in the current bin
-                 */
-                int cell_index_max = 0;
-                /**
                  * This is the index of the currently accessed message, relative to the full message list
                  */
-                int cell_index = 0;
+                unsigned int cell_index;
 
              public:
                 /**
                  * Constructs a message and directly initialises all of it's member variables
                  * @note See member variable documentation for their purposes
                  */
-                __device__ Message(const Filter &parent, const int &relative_cell_y, const int &_cell_index_max, const int &_cell_index)
+                __device__ Message(const Filter &parent, const unsigned int &_cell_index)
                     : _parent(parent)
-                    , cell_index_max(_cell_index_max)
-                    , cell_index(_cell_index) {
-                    relative_cell = relative_cell_y;
-                }
+                    , cell_index(_cell_index) { }
                 /**
                  * Equality operator
                  * Compares all internal member vars for equality
                  * @note Does not compare _parent
                  */
                 __device__ bool operator==(const Message& rhs) const {
-                    return this->relative_cell == rhs.relative_cell
-                        && this->cell_index_max == rhs.cell_index_max
-                        && this->cell_index == rhs.cell_index;
+                    return this->cell_index == rhs.cell_index;
                 }
                 /**
                  * Inequality operator
@@ -145,13 +114,7 @@ class MsgSpatial2D {
                  * Updates the message to return variables from the next message in the message list
                  * @return Returns itself
                  */
-                __device__ Message& operator++();
-                /**
-                 * Utility function for deciding next strip to access
-                 */
-                __device__ void nextStrip() {
-                    relative_cell++;
-                }
+                __device__ Message& operator++() { ++cell_index; return *this; }
                 /**
                  * Returns the value for the current message attached to the named variable
                  * @param variable_name Name of the variable
@@ -163,7 +126,7 @@ class MsgSpatial2D {
                 __device__ T getVariable(const char(&variable_name)[N]) const;
             };
             /**
-             * Stock iterator for iterating MsgSpatial3D::In::Filter::Message objects
+             * Stock iterator for iterating MsgBucket::In::Filter::Message objects
              */
             class iterator {  // class iterator : public std::iterator <std::random_access_iterator_tag, void, void, void, void> {
                 /**
@@ -174,11 +137,11 @@ class MsgSpatial2D {
              public:
                 /**
                  * Constructor
-                 * This iterator is constructed by MsgSpatial2D::In::Filter::begin()(float, float)
-                 * @see MsgSpatial2D::In::Operator()(float, float)
+                 * This iterator is constructed by MsgBucket::In::Filter::begin()(IntT)
+                 * @see MsgBucket::In::Operator()(IntT)
                  */
-                __device__ iterator(const Filter &parent, const int &relative_cell_y, const int &_cell_index_max, const int &_cell_index)
-                    : _message(parent, relative_cell_y, _cell_index_max, _cell_index) {
+                __device__ iterator(const Filter &parent, const unsigned int &cell_index)
+                    : _message(parent, cell_index) {
                     // Increment to find first message
                     ++_message;
                 }
@@ -216,19 +179,20 @@ class MsgSpatial2D {
                 __device__ Message* operator->() { return &_message; }
             };
             /**
-             * Constructor, takes the search parameters requried
+             * Constructor, takes the search parameters required
+             * Begin key and end key specify the [begin, end) contiguous range of bucket. (inclusive begin, exclusive end)
              * @param _metadata Pointer to message list metadata
              * @param combined_hash agentfn+message hash for accessing message data
-             * @param x Search origin x coord
-             * @param y Search origin y coord
+             * @param beginKey Inclusive first bucket of range to access
+             * @param endKey Exclusive final bucket of range to access, this is the final bucket + 1
              */
-            __device__ Filter(const MetaData *_metadata, const Curve::NamespaceHash &combined_hash, const float &x, const float &y);
+            __device__ Filter(const MetaData *_metadata, const Curve::NamespaceHash &combined_hash, const IntT &beginKey, const IntT &endKey);
             /**
              * Returns an iterator to the start of the message list subset about the search origin
              */
             inline __device__ iterator begin(void) const {
                 // Bin before initial bin, as the constructor calls increment operator
-                return iterator(*this, -2, 1, 0);
+                return iterator(*this, bucket_begin-1);
             }
             /**
              * Returns an iterator to the position beyond the end of the message list subset
@@ -236,18 +200,20 @@ class MsgSpatial2D {
              */
             inline __device__ iterator end(void) const {
                 // Final bin, as the constructor calls increment operator
-                return iterator(*this, 1, 1, 0);
+                return iterator(*this, bucket_end-1);
+            }
+            /**
+             * Returns the number of messages in the filtered bucket
+             */
+            inline __device__ unsigned int size(void) const {
+                return bucket_end - bucket_begin;
             }
 
          private:
             /**
-             * Search origin
+             * Search bucket bounds
              */
-            float loc[2];
-            /**
-             * Search origin's grid cell
-             */
-            GridPos2D cell;
+            IntT bucket_begin, bucket_end;
             /**
              * Pointer to message list metadata, e.g. environment bounds, search radius, PBM location
              */
@@ -259,11 +225,11 @@ class MsgSpatial2D {
             Curve::NamespaceHash combined_hash;
         };
         /**
-         * Constructer
+         * Constructor
          * Initialises member variables
          * @param agentfn_hash Added to msg_hash to produce combined_hash
          * @param msg_hash Added to agentfn_hash to produce combined_hash
-         * @param _metadata Reinterpreted as type MsgSpatial3D::MetaData
+         * @param _metadata Reinterpreted as type MsgBucket::MetaData
          */
         __device__ In(Curve::NamespaceHash agentfn_hash, Curve::NamespaceHash msg_hash, const void *_metadata)
             : combined_hash(agentfn_hash + msg_hash)
@@ -271,21 +237,23 @@ class MsgSpatial2D {
         { }
         /**
          * Returns a Filter object which provides access to message iterator
-         * for iterating a subset of messages including those within the radius of the search origin
+         * for iterating a subset of messages stored within the specified bucket
          *
-         * @param x Search origin x coord
-         * @param y Search origin y coord
+         * @param key The bucket to access
          */
-         inline __device__ Filter operator() (const float &x, const float &y) const {
-             return Filter(metadata, combined_hash, x, y);
+         inline __device__ Filter operator() (const IntT &key) const {
+             return Filter(metadata, combined_hash, key, key + 1);
          }
-
         /**
-         * Returns the search radius of the message list defined in the model description
+         * Returns a Filter object which provides access to message iterator
+         * for iterating a subset of messages within the [begin, end) range of buckets specified.
+         *
+         * @param beginKey The first bin to access messages from
+         * @param endKey The bin beyond the last bin to access messages from
          */
-         __forceinline__ __device__ float radius() const {
-             return metadata->radius;
-        }
+         inline __device__ Filter operator() (const IntT &beginKey, const IntT &endKey) const {
+             return Filter(metadata, combined_hash, beginKey, endKey);
+         }
 
      private:
         /**
@@ -301,13 +269,13 @@ class MsgSpatial2D {
     };
 
     /**
-     * This class is accessible via FLAMEGPU_DEVICE_API.message_out if MsgSpatial3D is specified in FLAMEGPU_AGENT_FUNCTION
-     * It gives access to functionality for outputting spatially partitioned messages
+     * This class is accessible via FLAMEGPU_DEVICE_API.message_out if MsgBucket is specified in FLAMEGPU_AGENT_FUNCTION
+     * It gives access to functionality for outputting bucketed messages
      */
     class Out : public MsgBruteForce::Out {
      public:
         /**
-         * Constructer
+         * Constructor
          * Initialises member variables
          * @param agentfn_hash Added to msg_hash to produce combined_hash
          * @param msg_hash Added to agentfn_hash to produce combined_hash
@@ -318,15 +286,14 @@ class MsgSpatial2D {
         { }
         /**
          * Sets the location for this agents message
-         * @param x Message x coord
-         * @param y Message y coord
+         * @param key Key of the bucket to store the message
          * @note Convenience wrapper for setVariable()
          */
-        __device__ void setLocation(const float &x, const float &y) const;
+        __device__ void setKey(const IntT &key) const;
     };
 #ifndef __CUDACC_RTC__
     /**
-     * CUDA host side handler of spatial messages
+     * CUDA host side handler of bucket messages
      * Allocates memory for and constructs PBM
      */
     class CUDAModelHandler : public MsgSpecialisationHandler {
@@ -341,7 +308,7 @@ class MsgSpatial2D {
          explicit CUDAModelHandler(CUDAMessage &a);
         /**
          * Destructor
-         * Frees all alocated memory
+         * Frees all allocated memory
          */
          ~CUDAModelHandler() override;
         /**
@@ -387,9 +354,9 @@ class MsgSpatial2D {
          */
         void resizeKeysVals(const unsigned int &newSize);
         /**
-         * Number of bins, arrays are +1 this length
+         * upperBound-lowerBound
          */
-        unsigned int binCount = 0;
+        unsigned int bucketCount;
         /**
          * Size of currently allocated temp storage memory for cub
          */
@@ -425,17 +392,22 @@ class MsgSpatial2D {
     };
 
     /**
-     * Internal data representation of Spatial2D messages within model description hierarchy
+     * Internal data representation of Bucket messages within model description hierarchy
      * @see Description
      */
     struct Data : public MsgBruteForce::Data {
         friend class ModelDescription;
         friend struct ModelData;
-        float radius;
-        float minX;
-        float minY;
-        float maxX;
-        float maxY;
+        /**
+         * Initially set to 0
+         * Min must be set to the first valid key
+         */
+        IntT lowerBound;
+        /**
+         * Initially set to std::numeric_limits<IntT>::max(), which acts as flag to say it has not been set
+         * Max must be set to the last valid key
+         */
+        IntT upperBound;
         virtual ~Data() = default;
 
         std::unique_ptr<MsgSpecialisationHandler> getSpecialisationHander(CUDAMessage &owner) const override;
@@ -460,7 +432,7 @@ class MsgSpatial2D {
     };
 
     /**
-     * User accessible interface to Spatial2D messages within mode description hierarchy
+     * User accessible interface to Bucket messages within mode description hierarchy
      * @see Data
      */
     class Description : public MsgBruteForce::Description {
@@ -492,28 +464,31 @@ class MsgSpatial2D {
          Description& operator=(Description &&other_message) noexcept = delete;
 
      public:
-        void setRadius(const float &r);
-        void setMinX(const float &x);
-        void setMinY(const float &y);
-        void setMin(const float &x, const float &y);
-        void setMaxX(const float &x);
-        void setMaxY(const float &y);
-        void setMax(const float &x, const float &y);
-
-        float getRadius() const;
-        float getMinX() const;
-        float getMinY() const;
-        float getMaxX() const;
-        float getMaxY() const;
+        /**
+         * Set the (inclusive) minimum bound, this is the first valid key
+         */
+        void setLowerBound(const IntT &key);
+        /**
+         * Set the (inclusive) maximum bound, this is the last valid key
+         */
+        void setUpperBound(const IntT &key);
+        void setBounds(const IntT &min, const IntT &max);
+        /**
+         * Return the currently set (inclusive) lower bound, this is the first valid key
+         */
+        IntT getLowerBound() const;
+        /**
+         * Return the currently set (inclusive) upper bound, this is the last valid key
+         */
+        IntT getUpperBound() const;
     };
 #endif  // __CUDACC_RTC__
 };
 
-
 template<typename T, unsigned int N>
-__device__ T MsgSpatial2D::In::Filter::Message::getVariable(const char(&variable_name)[N]) const {
+__device__ T MsgBucket::In::Filter::Message::getVariable(const char(&variable_name)[N]) const {
     //// Ensure that the message is within bounds.
-    if (relative_cell < 2) {
+    if (cell_index < _parent.bucket_end) {
         // get the value from curve using the stored hashes and message index.
         T value = Curve::getVariable<T>(variable_name, this->_parent.combined_hash, cell_index);
         return value;
@@ -523,5 +498,4 @@ __device__ T MsgSpatial2D::In::Filter::Message::getVariable(const char(&variable
     }
 }
 
-
-#endif  // INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_SPATIAL2D_H_
+#endif  // INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_BUCKET_H_

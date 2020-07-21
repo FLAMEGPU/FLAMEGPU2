@@ -38,7 +38,7 @@ class HostRandom {
     template<typename T>
     inline T logNormal(const T& mean, const T& stddev) const;
     /**
-    * Returns an integer uniformly distributed in the inclusive range [min, max]
+    * Returns an integer uniformly distributed in the inclusive range [lowerBound, max]
     * @tparam T return type (must be integer)
     * @note Available as signed and unsigned: char, short, int, long long
     */
@@ -75,7 +75,7 @@ inline T HostRandom::logNormal(const T& mean, const T& stddev) const {
 
 template<typename T>
 inline T HostRandom::uniform(const T& min, const T& max) const {
-    static_assert(FGPU_SA::_Is_IntType<T>::value, "Invalid template argument for HostRandom::uniform(const T& min, const T& max)");
+    static_assert(FGPU_SA::_Is_IntType<T>::value, "Invalid template argument for HostRandom::uniform(const T& lowerBound, const T& max)");
     std::uniform_int_distribution<T> dist(min, max);
     return rng.getDistribution<T>(dist);
 }

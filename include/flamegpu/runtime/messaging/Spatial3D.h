@@ -67,7 +67,7 @@ class MsgSpatial3D {
          */
         unsigned int gridDim[3];
         /**
-         * max-min
+         * max-lowerBound
          */
         float environmentWidth[3];
     };
