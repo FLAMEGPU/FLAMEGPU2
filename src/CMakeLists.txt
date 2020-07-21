@@ -119,6 +119,7 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Array.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Array2D.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Array3D.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Bucket.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/AgentRandom.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/DeviceEnvironment.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/EnvironmentManager.cuh
@@ -169,6 +170,7 @@ SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/Array.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/Array2D.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/Array3D.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/Bucket.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/io/jsonReader.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/io/jsonWriter.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/io/xmlReader.cpp

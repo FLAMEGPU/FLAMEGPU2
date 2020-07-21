@@ -93,7 +93,7 @@ class HostAgentInstance {
     OutT sum(const std::string &variable) const;
     /**
      * Wraps cub::DeviceReduce::Min()
-     * @param variable The agent variable to perform the min reduction across
+     * @param variable The agent variable to perform the lowerBound reduction across
      * @tParam InT The type of the variable as specified in the model description hierarchy
      * @throws UnsupportedVarType Array variables are not supported
      * @throws InvalidAgentVar If the agent does not contain a variable of the same name
@@ -103,7 +103,7 @@ class HostAgentInstance {
     InT min(const std::string &variable) const;
     /**
      * Wraps cub::DeviceReduce::Max()
-     * @param variable The agent variable to perform the max reduction across
+     * @param variable The agent variable to perform the upperBound reduction across
      * @tParam InT The type of the variable as specified in the model description hierarchy
      * @throws UnsupportedVarType Array variables are not supported
      * @throws InvalidAgentVar If the agent does not contain a variable of the same name
@@ -266,10 +266,10 @@ InT HostAgentInstance::min(const std::string &variable) const {
     const auto &agentDesc = agent.getAgentDescription();
     const std::type_index typ = agentDesc.description->getVariableType(variable);  // This will throw name exception
     if (agentDesc.variables.at(variable).elements != 1) {
-        THROW UnsupportedVarType("HostAgentInstance::min() does not support agent array variables.");
+        THROW UnsupportedVarType("HostAgentInstance::lowerBound() does not support agent array variables.");
     }
     if (std::type_index(typeid(InT)) != typ) {
-        THROW InvalidVarType("Wrong variable type passed to HostAgentInstance::min(). "
+        THROW InvalidVarType("Wrong variable type passed to HostAgentInstance::lowerBound(). "
             "This call expects '%s', but '%s' was requested.",
             agentDesc.variables.at(variable).type.name(), typeid(InT).name());
     }
@@ -297,10 +297,10 @@ InT HostAgentInstance::max(const std::string &variable) const {
     const auto &agentDesc = agent.getAgentDescription();
     const std::type_index typ = agentDesc.description->getVariableType(variable);  // This will throw name exception
     if (agentDesc.variables.at(variable).elements != 1) {
-        THROW UnsupportedVarType("HostAgentInstance::max() does not support agent array variables.");
+        THROW UnsupportedVarType("HostAgentInstance::upperBound() does not support agent array variables.");
     }
     if (std::type_index(typeid(InT)) != typ) {
-        THROW InvalidVarType("Wrong variable type passed to FLAMEGPU_HOST_AGENT_API::max(). "
+        THROW InvalidVarType("Wrong variable type passed to FLAMEGPU_HOST_AGENT_API::upperBound(). "
             "This call expects '%s', but '%s' was requested.",
             agentDesc.variables.at(variable).type.name(), typeid(InT).name());
     }
