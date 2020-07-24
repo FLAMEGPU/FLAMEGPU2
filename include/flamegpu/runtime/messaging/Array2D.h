@@ -269,7 +269,11 @@ class MsgArray2D {
          * @note radius of 0 is unsupported
          */
         inline __device__ Filter operator() (const size_type &x, const size_type &y, const size_type &radius = 1) const {
-            assert(radius > 0);  // Radius of 0 is bad
+#ifndef NO_SEATBELTS
+            if (radius == 0) {
+                DTHROW("%llu is not a valid radius for accessing Array2D message lists.\n", radius);
+            }
+#endif
             return Filter(metadata, combined_hash, x, y, radius);
         }
         /**
@@ -292,6 +296,11 @@ class MsgArray2D {
             return metadata->length;
         }
         __device__ Message at(const size_type &x, const size_type &y) const {
+#ifndef NO_SEATBELTS
+            if (x >= metadata->dimensions[0] || y >= metadata->dimensions[1]) {
+                DTHROW("Index is out of bounds for Array2D messagelist ([%u, %u] >= [%u, %u]).\n", x, y, metadata->dimensions[0], metadata->dimensions[1]);
+            }
+#endif
             const size_type index_1d =
                 y * metadata->dimensions[0] +
                 x;

@@ -2,6 +2,7 @@
 #include "flamegpu/model/AgentDescription.h"  // Used by Move-Assign
 #include "flamegpu/gpu/CUDAMessage.h"
 #include "flamegpu/gpu/CUDAScatter.h"
+#include "flamegpu/exception/FGPUDeviceException_device.h"
 
 /**
 * Sets the array index to store the message in
@@ -12,11 +13,13 @@ __device__ void MsgArray3D::Out::setIndex(const size_type &x, const size_type &y
         z * metadata->dimensions[0] * metadata->dimensions[1] +
         y * metadata->dimensions[0] +
         x;
+#ifndef NO_SEATBELTS
     if (x >= metadata->dimensions[0] ||
         y >= metadata->dimensions[1] ||
         z >= metadata->dimensions[2]) {
-        index_1d = metadata->length;  // Put message in invalid bin, will be caught during sort
+        DTHROW("MsgArray3D index [%u, %u, %u] is out of bounds [%u, %u, %u]\n", x, y, z, metadata->dimensions[0], metadata->dimensions[1], metadata->dimensions[2]);
     }
+#endif
 
     // set the variable using curve
     Curve::setVariable<size_type>("___INDEX", combined_hash, index_1d, index);

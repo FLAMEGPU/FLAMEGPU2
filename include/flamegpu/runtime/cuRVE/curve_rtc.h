@@ -16,11 +16,11 @@ class CurveRTCHost {
  public:
     CurveRTCHost();
 
-    void registerVariable(const char* variableName, unsigned int namespace_hash, const char* type, unsigned int elements = 1, bool read = true, bool write = true);
+    void registerVariable(const char* variableName, unsigned int namespace_hash, const char* type, size_t type_size, unsigned int elements = 1, bool read = true, bool write = true);
 
     void unregisterVariable(const char* variableName, unsigned int namespace_hash);
 
-    void registerEnvVariable(const char* variableName, unsigned int namespace_hash, ptrdiff_t offset, const char* type, unsigned int elements = 1);
+    void registerEnvVariable(const char* variableName, unsigned int namespace_hash, ptrdiff_t offset, const char* type, size_t type_size, unsigned int elements = 1);
 
     void unregisterEnvVariable(const char* variableName, unsigned int namespace_hash);
 
@@ -50,12 +50,14 @@ class CurveRTCHost {
         bool read;
         bool write;
         unsigned int elements;
+        size_t type_size;
     };
 
     struct RTCEnvVariableProperties {
         std::string type;
         unsigned int elements;
         ptrdiff_t offset;
+        size_t type_size;
     };
 
  private:

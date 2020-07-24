@@ -477,7 +477,9 @@ __global__ void reorder_array_messages(
     const unsigned int threadCount,
     const unsigned int array_length,
     const unsigned int *d_position,
+#ifndef NO_SEATBELTS
     unsigned int *d_write_flag,
+#endif
     CUDAScatter::ScatterData *scatter_data,
     const unsigned int scatter_len
 ) {
@@ -487,13 +489,16 @@ __global__ void reorder_array_messages(
     if (index >= threadCount) return;
 
     const unsigned int output_index = d_position[index];
-    assert(output_index < array_length);  // This or fail silently
-
-    for (unsigned int i = 0; i < scatter_len; ++i) {
-        memcpy(scatter_data[i].out + (output_index * scatter_data[i].typeLen), scatter_data[i].in + (index * scatter_data[i].typeLen), scatter_data[i].typeLen);
+    // If out of bounds, put it in 1 out of bounds slot
+    if (output_index < array_length) {
+        for (unsigned int i = 0; i < scatter_len; ++i) {
+            memcpy(scatter_data[i].out + (output_index * scatter_data[i].typeLen), scatter_data[i].in + (index * scatter_data[i].typeLen), scatter_data[i].typeLen);
+        }
+#ifndef NO_SEATBELTS
+        // Set err check flag
+        atomicInc(d_write_flag + output_index, UINT_MAX);
+#endif
     }
-    // Set err check flag
-    atomicInc(d_write_flag + output_index, UINT_MAX);
 }
 void CUDAScatter::arrayMessageReorder(
     const unsigned int &streamId,
@@ -545,9 +550,13 @@ void CUDAScatter::arrayMessageReorder(
     gpuErrchk(cudaMemcpy(streams[streamId].d_data, sd.data(), sizeof(ScatterData) * sd.size(), cudaMemcpyHostToDevice));
     reorder_array_messages << <gridSize, blockSize >> > (
         itemCount, array_length,
-        d_position, d_write_flag,
+        d_position,
+#ifndef NO_SEATBELTS
+        d_write_flag,
+#endif
         streams[streamId].d_data, static_cast<unsigned int>(sd.size()));
     gpuErrchkLaunch();
+#ifndef NO_SEATBELTS
     // Check d_write_flag for dupes
     gpuErrchk(cub::DeviceReduce::Max(streams[streamId].d_data, t_data_len, d_write_flag, d_position, array_length));
     unsigned int maxBinSize = 0;
@@ -563,4 +572,5 @@ void CUDAScatter::arrayMessageReorder(
         }
         THROW ArrayMessageWriteConflict("Multiple threads output array messages to the same index, see stderr.\n");
     }
+#endif
 }

@@ -51,6 +51,7 @@ endif()
 # Prepare list of source files
 SET(TEST_CASE_SRC
     # ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_func_pointer.cu # Does not currently build
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/exception/test_device_exception.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/gpu/test_cuda_agent_model.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/gpu/test_gpu_validation.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/gpu/test_cuda_subagent.cu
@@ -100,6 +101,7 @@ SET(TEST_CASE_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/util/test_nvtx.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/util/test_dependency_versions.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_rtc_device_api.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/exception/test_rtc_device_exception.cu
 )
 SET(DEV_TEST_CASE_SRC
 )

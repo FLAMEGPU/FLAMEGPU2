@@ -100,6 +100,7 @@ int xmlWriter::writeStates(bool prettyPrint) {
             // Verbose output
             pListElement = doc.NewElement("verbose");
             pListElement->SetText(sim_cfg.verbose);
+            pSimCfg->InsertEndChild(pListElement);
             // Verbose output
             pListElement = doc.NewElement("console_mode");
             pListElement->SetText(sim_cfg.console_mode);

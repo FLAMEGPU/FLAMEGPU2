@@ -31,6 +31,9 @@ class FLAMEGPU_READ_ONLY_DEVICE_API {
     // Friends have access to TID() & TS_ID()
     template<typename AgentFunctionCondition>
     friend __global__ void agent_function_condition_wrapper(
+#ifndef NO_SEATBELTS
+        DeviceExceptionBuffer *error_buffer,
+#endif
         Curve::NamespaceHash,
         Curve::NamespaceHash,
         const unsigned int,
@@ -42,7 +45,10 @@ class FLAMEGPU_READ_ONLY_DEVICE_API {
      * @param instance_id_hash CURVE hash of the CUDAAgentModel's instance id
      * @param modelname_hash CURVE hash of the model's name
      */
-    __device__ FLAMEGPU_READ_ONLY_DEVICE_API(const Curve::NamespaceHash &instance_id_hash, const Curve::NamespaceHash &agentfuncname_hash, curandState *&d_rng)
+    __device__ FLAMEGPU_READ_ONLY_DEVICE_API(
+        const Curve::NamespaceHash &instance_id_hash,
+        const Curve::NamespaceHash &agentfuncname_hash,
+        curandState *&d_rng)
         : random(AgentRandom(&d_rng[TID()]))
         , environment(DeviceEnvironment(instance_id_hash))
         , agent_func_name_hash(agentfuncname_hash) { }
@@ -108,6 +114,9 @@ class FLAMEGPU_DEVICE_API : public FLAMEGPU_READ_ONLY_DEVICE_API{
     // Friends have access to TID() & TS_ID()
     template<typename AgentFunction, typename _MsgIn, typename _MsgOut>
     friend __global__ void agent_function_wrapper(
+#ifndef NO_SEATBELTS
+        DeviceExceptionBuffer *error_buffer,
+#endif
         Curve::NamespaceHash,
         Curve::NamespaceHash,
         Curve::NamespaceHash,

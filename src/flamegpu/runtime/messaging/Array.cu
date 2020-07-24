@@ -9,7 +9,11 @@
 __device__ void MsgArray::Out::setIndex(const size_type &id) const {
     unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
 
-    // Todo: checking if the output message type is single or optional?  (d_message_type)
+#ifndef NO_SEATBELTS
+    if (id >= metadata->length) {
+        DTHROW("MsgArray index [%u] is out of bounds [%u]\n", id, metadata->length);
+    }
+#endif
 
     // set the variable using curve
     Curve::setVariable<size_type>("___INDEX", combined_hash, id, index);

@@ -279,10 +279,14 @@ TEST(TestMessage_Array2D, Moore2) {
 }
 
 // Exception tests
+#ifndef NO_SEATBELTS
 TEST(TestMessage_Array2D, DuplicateOutputException) {
+#else
+TEST(TestMessage_Array2D, DISABLED_DuplicateOutputException) {
+#endif
     ModelDescription m(MODEL_NAME);
     MsgArray2D::Description &msg = m.newMessage<MsgArray2D>(MESSAGE_NAME);
-    msg.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT);
+    msg.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1);
     msg.newVariable<unsigned int>("index_times_3");
     AgentDescription &a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
@@ -348,6 +352,7 @@ TEST(TestMessage_Array2D, ReadEmpty) {
         MsgArray2D::Description &message = model.newMessage<MsgArray2D>("location");
         message.setDimensions(2, 2);
         message.newVariable<int>("id");  // unused by current test
+        message.newVariable<unsigned int>("value");  // unused by current test
     }
     {   // Circle agent
         AgentDescription &agent = model.newAgent("agent");

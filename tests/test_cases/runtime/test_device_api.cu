@@ -74,14 +74,6 @@ FLAMEGPU_AGENT_FUNCTION(agent_fn_da_get, MsgNone, MsgNone) {
     FLAMEGPU->setVariable<int>("a4", FLAMEGPU->getVariable<int, 4>("array_var", 3));
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(agent_fn_da_arrayunsuitable, MsgNone, MsgNone) {
-    FLAMEGPU->setVariable<int>("array_var", 0);
-    FLAMEGPU->setVariable<int>("array_var", 0);
-    FLAMEGPU->setVariable<int>("array_var", 0);
-    FLAMEGPU->setVariable<int>("array_var", 0);
-    FLAMEGPU->setVariable<int>("var", FLAMEGPU->getVariable<int>("array_var"));
-    return ALIVE;
-}
 TEST(DeviceAPITest, ArraySet) {
     ModelDescription model("model");
     AgentDescription &agent = model.newAgent("agent_name");
@@ -172,41 +164,6 @@ TEST(DeviceAPITest, ArrayGet) {
         EXPECT_EQ(instance.getVariable<int>("a2"), 4 + j);
         EXPECT_EQ(instance.getVariable<int>("a3"), 8 + j);
         EXPECT_EQ(instance.getVariable<int>("a4"), 16 + j);
-    }
-}
-TEST(DeviceAPITest, ArrayUnsuitable) {
-    // Cant pass array var to arraySet, will not change variable
-    // Can't pass array var to get, so 0 will be returned
-    const std::array<int, 4> TEST_REFERENCE = { 3, 5, 9, 17 };
-    ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent_name");
-    agent.newVariable<int, 4>("array_var", TEST_REFERENCE);
-    agent.newVariable<int>("var", 1);
-    // Do nothing, but ensure variables are made available on device
-    AgentFunctionDescription &func = agent.newFunction("some_function", agent_fn_da_arrayunsuitable);
-    model.newLayer().addAgentFunction(func);
-    // Init pop
-    AgentPopulation init_population(agent, AGENT_COUNT);
-    for (int i = 0; i< static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = init_population.getNextInstance("default");
-    }
-    // Setup Model
-    CUDAAgentModel cuda_model(model);
-    cuda_model.setPopulationData(init_population);
-    // Run 1 step to ensure data is pushed to device
-    cuda_model.step();
-    // Recover data from device
-    AgentPopulation population(agent, AGENT_COUNT);
-    cuda_model.getPopulationData(population);
-    // Check data is intact
-    // Might need to go more complicate and give different agents different values
-    // They should remain in order for such a basic function, but can't guarntee
-    EXPECT_EQ(population.getCurrentListSize(), AGENT_COUNT);
-    for (unsigned int i = 0; i < population.getCurrentListSize(); i++) {
-        AgentInstance instance = population.getInstanceAt(i);
-        auto test = instance.getVariable<int, 4>("array_var");
-        EXPECT_EQ(test, TEST_REFERENCE);
-        EXPECT_EQ(instance.getVariable<int>("var"), 0);
     }
 }
 

@@ -7,6 +7,8 @@
 #include <unordered_map>
 #include <map>
 
+
+#include "flamegpu/exception/FGPUDeviceException.h"
 #include "flamegpu/sim/Simulation.h"
 
 #include "flamegpu/gpu/CUDAAgent.h"
@@ -269,6 +271,12 @@ class CUDAAgentModel : public Simulation {
        * Held here for tracking when to release cuda memory
        */
       EnvironmentManager &environment;
+#ifndef NO_SEATBELTS
+      /**
+       * Provides buffers for device error checking
+       */
+      DeviceExceptionManager exception;
+#endif
       Singletons(Curve &curve, EnvironmentManager &environment) : curve(curve), environment(environment) { }
     } * singletons;
     /**
