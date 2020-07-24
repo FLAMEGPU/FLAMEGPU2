@@ -361,6 +361,11 @@ function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
         # target_link_libraries(${NAME} flamegpu2_visualiser)
         add_compile_definitions(VISUALISATION)
     endif()
+    
+    # This macro disables expensive runtime checks (when not in debug mode)
+    if (NO_SEATBELTS)
+        add_compile_definitions($<IF:$<CONFIG:Debug>,,NO_SEATBELTS>)
+    endif()
 
     # Flag the new linter target and the files to be linted.
     new_linter_target(${NAME} "${SRC}")
@@ -407,7 +412,12 @@ function(add_flamegpu_library NAME SRC FLAMEGPU_ROOT)
         # set(SDL2_DIR ${VISUALISATION_BUILD}/sdl2)
         # find_package(SDL2 REQUIRED)   
     endif()
-
+    
+    # This macro disables expensive runtime checks (when not in debug mode)
+    if (NO_SEATBELTS)
+        add_compile_definitions($<IF:$<CONFIG:Debug>,,NO_SEATBELTS>)
+    endif()
+    
     # Enable RDC
     set_property(TARGET ${NAME}  PROPERTY CUDA_SEPARABLE_COMPILATION ON)
 

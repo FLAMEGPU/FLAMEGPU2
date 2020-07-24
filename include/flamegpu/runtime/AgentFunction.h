@@ -7,6 +7,7 @@
 
 // #include "flamegpu/runtime/flamegpu_device_api.h"
 
+#include "flamegpu/exception/FGPUDeviceException.h"
 #include "flamegpu/runtime/AgentFunction_shim.h"
 #include "flamegpu/gpu/CUDAScanCompaction.h"
 
@@ -15,6 +16,9 @@
 enum FLAME_GPU_AGENT_STATUS { ALIVE = 1, DEAD = 0 };
 
 typedef void(AgentFunctionWrapper)(
+#ifndef NO_SEATBELTS
+    DeviceExceptionBuffer *error_buffer,
+#endif
     Curve::NamespaceHash instance_id_hash,
     Curve::NamespaceHash agent_func_name_hash,
     Curve::NamespaceHash messagename_inp_hash,
@@ -49,6 +53,9 @@ typedef void(AgentFunctionWrapper)(
  */
 template<typename AgentFunction, typename MsgIn, typename MsgOut>
 __global__ void agent_function_wrapper(
+#ifndef NO_SEATBELTS
+    DeviceExceptionBuffer *error_buffer,
+#endif
     Curve::NamespaceHash instance_id_hash,
     Curve::NamespaceHash agent_func_name_hash,
     Curve::NamespaceHash messagename_inp_hash,
@@ -61,6 +68,11 @@ __global__ void agent_function_wrapper(
     unsigned int *scanFlag_agentDeath,
     unsigned int *scanFlag_messageOutput,
     unsigned int *scanFlag_agentOutput) {
+#ifndef NO_SEATBELTS
+    // We place this at the start of shared memory, so we can locate it anywhere in device code without a reference
+    extern __shared__ DeviceExceptionBuffer *buff[];
+    buff[0] = error_buffer;
+#endif
     // Must be terminated here, else AgentRandom has bounds issues inside FLAMEGPU_DEVICE_API constructor
     if (FLAMEGPU_DEVICE_API<MsgIn, MsgOut>::TID() >= popNo)
         return;

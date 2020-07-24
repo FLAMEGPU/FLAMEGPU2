@@ -1190,32 +1190,4 @@ TEST(DeviceAgentCreationTest, DeviceAgentBirth_DefaultWorks) {
         EXPECT_EQ(instance.getVariable<float>("y"), 14.0f);
     }
 }
-TEST(DeviceAgentCreationTest, DeviceAgentBirth_ArrayUnsuitable) {
-    // Curve will error, however agent creation will go through, agent will have default value
-    const std::array<int, 4> TEST_REFERENCE = { 3, 5, 9, 17 };
-    ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent_name");
-    agent.newVariable<int, 4>("array_var", TEST_REFERENCE);
-    auto &fn = agent.newFunction("out", ArrayVarDeviceBirth_ArrayUnsuitable);
-    fn.setAllowAgentDeath(true);
-    fn.setAgentOutput(agent);
-    model.newLayer().addAgentFunction(fn);
-    // Run the init function
-    AgentPopulation population(agent, AGENT_COUNT);
-    for (unsigned int i = 0; i < AGENT_COUNT; i++) {
-        auto in = population.getNextInstance();
-    }
-    CUDAAgentModel sim(model);
-    sim.setPopulationData(population);
-    sim.step();
-    sim.getPopulationData(population);
-    // Check data is correct
-    EXPECT_EQ(population.getCurrentListSize(), AGENT_COUNT);
-    for (unsigned int i = 0; i < population.getCurrentListSize(); i++) {
-        AgentInstance instance = population.getInstanceAt(i);
-        // Check array sets are correct
-        auto array1 = instance.getVariable<int, 4>("array_var");
-        EXPECT_EQ(array1, TEST_REFERENCE);
-    }
-}
 }  // namespace test_device_agent_creation

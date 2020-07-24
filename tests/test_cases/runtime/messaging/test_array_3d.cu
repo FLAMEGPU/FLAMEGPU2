@@ -292,7 +292,11 @@ TEST(TestMessage_Array3D, Moore2) {
 }
 
 // Exception tests
+#ifndef NO_SEATBELTS
 TEST(TestMessage_Array3D, DuplicateOutputException) {
+#else
+TEST(TestMessage_Array3D, DISABLED_DuplicateOutputException) {
+#endif
     ModelDescription m(MODEL_NAME);
     MsgArray3D::Description &msg = m.newMessage<MsgArray3D>(MESSAGE_NAME);
     msg.setDimensions(CBRT_AGENT_COUNT, CBRT_AGENT_COUNT + 1, CBRT_AGENT_COUNT + 2);
@@ -363,6 +367,7 @@ TEST(TestMessage_Array3D, ReadEmpty) {
         MsgArray3D::Description &message = model.newMessage<MsgArray3D>("location");
         message.setDimensions(2, 2, 2);
         message.newVariable<int>("id");  // unused by current test
+        message.newVariable<unsigned int>("value");  // unused by current test
     }
     {   // Circle agent
         AgentDescription &agent = model.newAgent("agent");

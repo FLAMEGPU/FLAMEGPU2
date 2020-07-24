@@ -18,6 +18,8 @@ const char* CurveRTCHost::curve_rtc_dynamic_h_template = R"###(dynamic/curve_rtc
 #ifndef CURVE_RTC_DYNAMIC_H_
 #define CURVE_RTC_DYNAMIC_H_
 
+#include "flamegpu/exception/FGPUDeviceException.h"
+
 template <unsigned int N, unsigned int I> struct StringCompare {
     __device__ inline static bool strings_equal_loop(const char(&a)[N], const char(&b)[N]) {
         return a[N - I] == b[N - I] && StringCompare<N, I - 1>::strings_equal_loop(a, b);
@@ -131,7 +133,7 @@ CurveRTCHost::CurveRTCHost() : header(CurveRTCHost::curve_rtc_dynamic_h_template
 }
 
 
-void CurveRTCHost::registerVariable(const char* variableName, unsigned int namespace_hash, const char* type, unsigned int elements, bool read, bool write) {
+void CurveRTCHost::registerVariable(const char* variableName, unsigned int namespace_hash, const char* type, size_t type_size, unsigned int elements, bool read, bool write) {
     // check to see if namespace key already exists
     auto i = RTCVariables.find(namespace_hash);
     RTCVariableProperties props;
@@ -139,6 +141,7 @@ void CurveRTCHost::registerVariable(const char* variableName, unsigned int names
     props.read = read;
     props.write = write;
     props.elements = elements;
+    props.type_size = type_size;
     if (i != RTCVariables.end()) {
         // emplace into existing namespace key
         i->second.emplace(variableName, props);
@@ -159,13 +162,14 @@ void CurveRTCHost::unregisterVariable(const char* variableName, unsigned int nam
     }
 }
 
-void CurveRTCHost::registerEnvVariable(const char* variableName, unsigned int namespace_hash, ptrdiff_t offset, const char* type, unsigned int elements) {
+void CurveRTCHost::registerEnvVariable(const char* variableName, unsigned int namespace_hash, ptrdiff_t offset, const char* type, size_t type_size, unsigned int elements) {
     // check to see if namespace key already exists
     auto i = RTCEnvVariables.find(namespace_hash);
     RTCEnvVariableProperties props;
     props.type = CurveRTCHost::demangle(type);
     props.elements = elements;
     props.offset = offset;
+    props.type_size = type_size;
     if (i != RTCEnvVariables.end()) {
         // emplace into existing namespace key
         i->second.emplace(variableName, props);
@@ -204,26 +208,36 @@ std::string CurveRTCHost::getDynamicHeader() {
 
     // generate getVariable func implementation ($DYNAMIC_GETVARIABLE_IMPL)
     std::stringstream getVariableImpl;
+    getVariableImpl <<             "    // Switch over agent\n";
     getVariableImpl <<             "    switch(namespace_hash){\n";
     for (auto key_pair : RTCVariables) {
         unsigned int namespace_hash = key_pair.first;
         getVariableImpl <<         "      case(" << namespace_hash << "):\n";
-        unsigned int count = 0;
         for (std::pair<std::string, RTCVariableProperties> element : key_pair.second) {
             RTCVariableProperties props = element.second;
             if (props.read && props.elements == 1) {
-                getVariableImpl << "            if (strings_equal(name, \"" << element.first << "\"))\n";
+                getVariableImpl << "            if (strings_equal(name, \"" << element.first << "\")) {\n";
+                getVariableImpl << "#ifndef NO_SEATBELTS\n";
+                getVariableImpl << "                if(sizeof(T) != " << element.second.type_size << ") {\n";
+                getVariableImpl << "                    DTHROW(\"Agent variable '%s' type mismatch during getVariable().\\n\", name);\n";
+                getVariableImpl << "                    return 0;\n";
+                getVariableImpl << "                }\n";
+                getVariableImpl << "#endif\n";
                 getVariableImpl << "                return (T) " << "curve_rtc_ptr_" << namespace_hash << "_" << element.first << "[index];\n";
-                count++;
+                getVariableImpl << "            }\n";
             }
         }
-        if (count > 0) {
-            getVariableImpl << "            else\n";
-        }
-        getVariableImpl <<         "                return 0;\n";
+        getVariableImpl <<         "#ifndef NO_SEATBELTS\n";
+        getVariableImpl <<         "            DTHROW(\"Agent variable '%s' was not found during getVariable().\\n\", name);\n";
+        getVariableImpl <<         "#endif\n";
+        getVariableImpl <<         "            return 0;\n";
     }
-    getVariableImpl <<             "      default:\n";
+    getVariableImpl <<             "      default:{\n";
+    getVariableImpl <<             "#ifndef NO_SEATBELTS\n";
+    getVariableImpl <<             "          DTHROW(\"Unexpected namespace hash %d for agent variable '%s' during getVariable().\\n\", namespace_hash, name);\n";
+    getVariableImpl <<             "#endif\n";
     getVariableImpl <<             "          return 0;\n";
+    getVariableImpl <<             "      }\n";
     getVariableImpl <<             "    }\n";
     getVariableImpl <<             "    return 0;\n";    // if namespace is not recognised
     setHeaderPlaceholder("$DYNAMIC_GETVARIABLE_IMPL", getVariableImpl.str());
@@ -237,13 +251,27 @@ std::string CurveRTCHost::getDynamicHeader() {
         for (std::pair<std::string, RTCVariableProperties> element : key_pair.second) {
             RTCVariableProperties props = element.second;
             if (props.write && props.elements == 1) {
-                setVariableImpl << "          if (strings_equal(name, \"" << element.first << "\"))\n";
+                setVariableImpl << "          if (strings_equal(name, \"" << element.first << "\")) {\n";
+                setVariableImpl << "#ifndef NO_SEATBELTS\n";
+                setVariableImpl << "                if(sizeof(T) != " << element.second.type_size << ") {\n";
+                setVariableImpl << "                    DTHROW(\"Agent variable '%s' type mismatch during setVariable().\\n\", name);\n";
+                setVariableImpl << "                    break;\n";
+                setVariableImpl << "                }\n";
+                setVariableImpl << "#endif\n";
                 setVariableImpl << "              curve_rtc_ptr_" << namespace_hash << "_" << element.first << "[index] = (T) variable;\n";
+                setVariableImpl << "              break;\n";
+                setVariableImpl << "          }\n";
             }
         }
+        setVariableImpl <<         "#ifndef NO_SEATBELTS\n";
+        setVariableImpl <<         "          DTHROW(\"Agent variable '%s' was not found during setVariable().\\n\", name);\n";
+        setVariableImpl <<         "#endif\n";
         setVariableImpl <<         "          break;\n";
     }
     setVariableImpl <<             "      default:\n";
+    setVariableImpl <<             "#ifndef NO_SEATBELTS\n";
+    setVariableImpl <<             "          DTHROW(\"Unexpected namespace hash %d for agent variable '%s' during setVariable().\\n\", namespace_hash, name);\n";
+    setVariableImpl <<             "#endif\n";
     setVariableImpl <<             "          return;\n";
     setVariableImpl <<             "    }\n";
     setHeaderPlaceholder("$DYNAMIC_SETVARIABLE_IMPL", setVariableImpl.str());
@@ -255,21 +283,35 @@ std::string CurveRTCHost::getDynamicHeader() {
     for (auto key_pair : RTCVariables) {
         unsigned int namespace_hash = key_pair.first;
         getArrayVariableImpl <<         "      case(" << namespace_hash << "):\n";
-        unsigned int count = 0;
         for (std::pair<std::string, RTCVariableProperties> element : key_pair.second) {
             RTCVariableProperties props = element.second;
             if (props.read && props.elements > 1) {
-                getArrayVariableImpl << "          if (strings_equal(name, \"" << element.first << "\"))\n";
+                getArrayVariableImpl << "          if (strings_equal(name, \"" << element.first << "\")) {\n";
+                getArrayVariableImpl << "#ifndef NO_SEATBELTS\n";
+                getArrayVariableImpl << "              if(sizeof(T) != " << element.second.type_size << ") {\n";
+                getArrayVariableImpl << "                  DTHROW(\"Agent array variable '%s' type mismatch during getVariable().\\n\", name);\n";
+                getArrayVariableImpl << "                  return 0;\n";
+                getArrayVariableImpl << "              } else if (N != " << element.second.elements << ") {\n";
+                getArrayVariableImpl << "                  DTHROW(\"Agent array variable '%s' length mismatch during getVariable().\\n\", name);\n";
+                getArrayVariableImpl << "                  return 0;\n";
+                getArrayVariableImpl << "              } else if (array_index >= " << element.second.elements << "|| array_index < 0) {\n";
+                getArrayVariableImpl << "                  DTHROW(\"Agent array variable '%s', index %d is out of bounds during getVariable().\\n\", name, array_index);\n";
+                getArrayVariableImpl << "                  return 0;\n";
+                getArrayVariableImpl << "              }\n";
+                getArrayVariableImpl << "#endif\n";
                 getArrayVariableImpl << "              return (T) " << "curve_rtc_ptr_" << namespace_hash << "_" << element.first << "[i];\n";
-                count++;
+                getArrayVariableImpl << "           };\n";
             }
         }
-        if (count > 0) {
-            getArrayVariableImpl <<     "          else\n";
-        }
-        getArrayVariableImpl <<         "              return 0;\n";
+        getArrayVariableImpl <<         "#ifndef NO_SEATBELTS\n";
+        getArrayVariableImpl <<         "           DTHROW(\"Agent array variable '%s' was not found during getVariable().\\n\", name);\n";
+        getArrayVariableImpl <<         "#endif\n";
+        getArrayVariableImpl <<         "           return 0;\n";
     }
     getArrayVariableImpl <<             "      default:\n";
+    getArrayVariableImpl <<             "#ifndef NO_SEATBELTS\n";
+    getArrayVariableImpl <<             "          DTHROW(\"Unexpected namespace hash %d for agent array variable '%s' during getVariable().\\n\", namespace_hash, name);\n";
+    getArrayVariableImpl <<             "#endif\n";
     getArrayVariableImpl <<             "          return 0;\n";
     getArrayVariableImpl <<             "    }\n";
     getArrayVariableImpl <<             "    return 0;\n";   // if namespace is not recognised
@@ -285,13 +327,33 @@ std::string CurveRTCHost::getDynamicHeader() {
         for (std::pair<std::string, RTCVariableProperties> element : key_pair.second) {
             RTCVariableProperties props = element.second;
             if (props.write && props.elements > 1) {
-                setArrayVariableImpl << "          if (strings_equal(name, \"" << element.first << "\"))\n";
+                setArrayVariableImpl << "          if (strings_equal(name, \"" << element.first << "\")) {\n";
+                setArrayVariableImpl << "#ifndef NO_SEATBELTS\n";
+                setArrayVariableImpl << "              if(sizeof(T) != " << element.second.type_size << ") {\n";
+                setArrayVariableImpl << "                  DTHROW(\"Agent array variable '%s' type mismatch during setVariable().\\n\", name);\n";
+                setArrayVariableImpl << "                  break;\n";
+                setArrayVariableImpl << "              } else if (N != " << element.second.elements << ") {\n";
+                setArrayVariableImpl << "                  DTHROW(\"Agent array variable '%s' length mismatch during setVariable().\\n\", name);\n";
+                setArrayVariableImpl << "                  break;\n";
+                setArrayVariableImpl << "              } else if (array_index >= " << element.second.elements << "|| array_index < 0) {\n";
+                setArrayVariableImpl << "                  DTHROW(\"Agent array variable '%s', index %d is out of bounds during setVariable().\\n\", name, array_index);\n";
+                setArrayVariableImpl << "                  break;\n";
+                setArrayVariableImpl << "              }\n";
+                setArrayVariableImpl << "#endif\n";
                 setArrayVariableImpl << "              curve_rtc_ptr_" << namespace_hash << "_" << element.first << "[i] = (T) variable;\n";
+                setArrayVariableImpl << "              break;\n";
+                setArrayVariableImpl << "          }\n";
             }
         }
+        setArrayVariableImpl <<         "#ifndef NO_SEATBELTS\n";
+        setArrayVariableImpl <<         "          DTHROW(\"Agent array variable '%s' was not found during setVariable().\\n\", name);\n";
+        setArrayVariableImpl <<         "#endif\n";
         setArrayVariableImpl <<         "          break;\n";
     }
     setArrayVariableImpl <<             "      default:\n";
+    setArrayVariableImpl <<             "#ifndef NO_SEATBELTS\n";
+    setArrayVariableImpl <<             "          DTHROW(\"Unexpected namespace hash %d for agent array variable '%s' during setVariable().\\n\", namespace_hash, name);\n";
+    setArrayVariableImpl <<             "#endif\n";
     setArrayVariableImpl <<             "          return;\n";
     setArrayVariableImpl <<             "    }\n";
     setHeaderPlaceholder("$DYNAMIC_SETARRAYVARIABLE_IMPL", setArrayVariableImpl.str());
@@ -302,21 +364,29 @@ std::string CurveRTCHost::getDynamicHeader() {
     for (auto key_pair : RTCEnvVariables) {
         unsigned int namespace_hash = key_pair.first;
         getEnvVariableImpl <<           "      case(" << namespace_hash << "):\n";
-        unsigned int count = 0;
         for (std::pair<std::string, RTCEnvVariableProperties> element : key_pair.second) {
             RTCEnvVariableProperties props = element.second;
             if (props.elements == 1) {
-                getEnvVariableImpl <<   "            if (strings_equal(name, \"" << element.first << "\"))\n";
+                getEnvVariableImpl <<   "            if (strings_equal(name, \"" << element.first << "\")) {\n";
+                getEnvVariableImpl <<   "#ifndef NO_SEATBELTS\n";
+                getEnvVariableImpl <<   "                if(sizeof(T) != " << element.second.type_size << ") {\n";
+                getEnvVariableImpl <<   "                    DTHROW(\"Environment property '%s' type mismatch.\\n\", name);\n";
+                getEnvVariableImpl <<   "                    return 0;\n";
+                getEnvVariableImpl <<   "                }\n";
+                getEnvVariableImpl <<   "#endif\n";
                 getEnvVariableImpl <<   "                return *reinterpret_cast<T*>(reinterpret_cast<void*>(" << getEnvVariableSymbolName() <<" + " << props.offset << "));\n";
-                count++;
+                getEnvVariableImpl <<   "            };\n";
             }
         }
-        if (count > 0) {
-            getEnvVariableImpl <<       "            else\n";
-        }
-        getEnvVariableImpl <<           "                return 0;\n";
+        getEnvVariableImpl <<           "#ifndef NO_SEATBELTS\n";
+        getEnvVariableImpl <<           "            DTHROW(\"Environment property '%s' was not found.\\n\", name);\n";
+        getEnvVariableImpl <<           "#endif\n";
+        getEnvVariableImpl <<           "            return 0;\n";
     }
     getEnvVariableImpl <<               "      default:\n";
+    getEnvVariableImpl <<               "#ifndef NO_SEATBELTS\n";
+    getEnvVariableImpl <<               "          DTHROW(\"Unexpected modelname hash %d for environment property '%s'.\\n\", modelname_hash, name);\n";
+    getEnvVariableImpl <<               "#endif\n";
     getEnvVariableImpl <<               "          return 0;\n";
     getEnvVariableImpl <<               "    }\n";
     getEnvVariableImpl <<               "    return 0;\n";    // if namespace is not recognised
@@ -328,21 +398,36 @@ std::string CurveRTCHost::getDynamicHeader() {
     for (auto key_pair : RTCEnvVariables) {
         unsigned int namespace_hash = key_pair.first;
         getEnvArrayVariableImpl <<         "      case(" << namespace_hash << "):\n";
-        unsigned int count = 0;
         for (std::pair<std::string, RTCEnvVariableProperties> element : key_pair.second) {
             RTCEnvVariableProperties props = element.second;
             if (props.elements > 1) {
-                getEnvArrayVariableImpl << "          if (strings_equal(name, \"" << element.first << "\"))\n";
+                getEnvArrayVariableImpl << "          if (strings_equal(name, \"" << element.first << "\")) {\n";
+                getEnvArrayVariableImpl << "#ifndef NO_SEATBELTS\n";
+                getEnvArrayVariableImpl << "              if(sizeof(T) != " << element.second.type_size << ") {\n";
+                getEnvArrayVariableImpl << "                  DTHROW(\"Environment array property '%s' type mismatch.\\n\", name);\n";
+                getEnvArrayVariableImpl << "                  return 0;\n";
+                // Env var doesn't currently require user to specify length
+                // getEnvArrayVariableImpl << "              } else if (N != " << element.second.elements << ") {\n";
+                // getEnvArrayVariableImpl << "                  DTHROW(\"Environment array property '%s' length mismatch.\\n\", name);\n";
+                // getEnvArrayVariableImpl << "                  return 0;\n";
+                getEnvArrayVariableImpl << "              } else if (index >= " << element.second.elements << "|| index < 0) {\n";
+                getEnvArrayVariableImpl << "                  DTHROW(\"Environment array property '%s', index %d is out of bounds.\\n\", name, index);\n";
+                getEnvArrayVariableImpl << "                  return 0;\n";
+                getEnvArrayVariableImpl << "              }\n";
+                getEnvArrayVariableImpl << "#endif\n";
                 getEnvArrayVariableImpl << "              return reinterpret_cast<T*>(reinterpret_cast<void*>(" << getEnvVariableSymbolName() <<" + " << props.offset << "))[index];\n";
-                count++;
+                getEnvArrayVariableImpl << "          };\n";
             }
         }
-        if (count > 0) {
-            getEnvArrayVariableImpl <<     "          else\n";
-        }
-        getEnvArrayVariableImpl <<         "              return 0;\n";
+        getEnvArrayVariableImpl <<         "#ifndef NO_SEATBELTS\n";
+        getEnvArrayVariableImpl <<         "          DTHROW(\"Environment array property '%s' was not found.\\n\", name);\n";
+        getEnvArrayVariableImpl <<         "#endif\n";
+        getEnvArrayVariableImpl <<         "          return 0;\n";
     }
     getEnvArrayVariableImpl <<             "      default:\n";
+    getEnvArrayVariableImpl <<             "#ifndef NO_SEATBELTS\n";
+    getEnvArrayVariableImpl <<             "          DTHROW(\"Unexpected modelname hash %d for environment array property '%s'.\\n\", modelname_hash, name);\n";
+    getEnvArrayVariableImpl <<             "#endif\n";
     getEnvArrayVariableImpl <<             "          return 0;\n";
     getEnvArrayVariableImpl <<             "    }\n";
     getEnvArrayVariableImpl <<             "    return 0;\n";   // if namespace is not recognised
@@ -373,7 +458,6 @@ std::string CurveRTCHost::getDynamicHeader() {
     containsEnvVariableImpl <<               "    }\n";
     containsEnvVariableImpl <<               "    return false;\n";    // if namespace is not recognised
     setHeaderPlaceholder("$DYNAMIC_ENV_CONTAINTS_IMPL", containsEnvVariableImpl.str());
-
     return header;
 }
 

@@ -279,7 +279,11 @@ class MsgArray3D {
          * @note radius of 0 is unsupported
          */
         inline __device__ Filter operator() (const size_type &x, const size_type &y, const size_type &z, const size_type &radius = 1) const {
-            assert(radius > 0);  // Radius of 0 is bad
+#ifndef NO_SEATBELTS
+            if (radius == 0) {
+                DTHROW("%llu is not a valid radius for accessing Array3D message lists.\n", radius);
+            }
+#endif
             return Filter(metadata, combined_hash, x, y, z, radius);
         }
         /**
@@ -308,6 +312,11 @@ class MsgArray3D {
             return metadata->length;
         }
         __device__ Message at(const size_type &x, const size_type &y, const size_type &z) const {
+#ifndef NO_SEATBELTS
+            if (x >= metadata->dimensions[0] || y >= metadata->dimensions[1] || z >= metadata->dimensions[2]) {
+                DTHROW("Index is out of bounds for Array3D messagelist ([%u, %u, %u] >= [%u, %u, %u]).\n", x, y, z, metadata->dimensions[0], metadata->dimensions[1], metadata->dimensions[2]);
+            }
+#endif
             const size_type index_1d =
                 z * metadata->dimensions[0] * metadata->dimensions[1]  +
                 y * metadata->dimensions[0]  +

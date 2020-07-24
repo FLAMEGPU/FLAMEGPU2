@@ -242,6 +242,15 @@ class MsgBucket {
          * @param key The bucket to access
          */
          inline __device__ Filter operator() (const IntT &key) const {
+#ifndef NO_SEATBELTS
+            {
+                if (key < metadata->min) {
+                    DTHROW("Bucket messaging iterator key %d is lower than minimum key (%d).\n", key, metadata->min);
+                } else if (key >= metadata->max)  {
+                    DTHROW("Bucket messaging iterator key %d is higher than maximum key (%d).\n", key, metadata->max - 1);
+                }
+            }
+#endif
              return Filter(metadata, combined_hash, key, key + 1);
          }
         /**
@@ -252,6 +261,17 @@ class MsgBucket {
          * @param endKey The bin beyond the last bin to access messages from
          */
          inline __device__ Filter operator() (const IntT &beginKey, const IntT &endKey) const {
+#ifndef NO_SEATBELTS
+            {
+                if (beginKey < metadata->min) {
+                    DTHROW("Bucket messaging iterator begin key %d is lower than minimum key (%d).\n", beginKey, metadata->min);
+                } else if (endKey > metadata->max)  {
+                    DTHROW("Bucket messaging iterator end key %d is higher than maximum key + 1 (%d).\n", endKey, metadata->max);
+                } else if (endKey <= beginKey) {
+                    DTHROW("Bucket messaging iterator begin key must be lower than end key (%d !< %d).\n", beginKey, endKey);
+                }
+            }
+#endif
              return Filter(metadata, combined_hash, beginKey, endKey);
          }
 
@@ -281,8 +301,13 @@ class MsgBucket {
          * @param msg_hash Added to agentfn_hash to produce combined_hash
          * @param scan_flag_messageOutput Scan flag array for optional message output
          */
-        __device__ Out(Curve::NamespaceHash agentfn_hash, Curve::NamespaceHash msg_hash, const void *, unsigned int *scan_flag_messageOutput)
+        __device__ Out(Curve::NamespaceHash agentfn_hash, Curve::NamespaceHash msg_hash, const void *_metadata, unsigned int *scan_flag_messageOutput)
             : MsgBruteForce::Out(agentfn_hash, msg_hash, nullptr, scan_flag_messageOutput)
+#ifndef NO_SEATBELTS
+            , metadata(reinterpret_cast<const MetaData*>(_metadata))
+#else
+            , metadata(nullptr)
+#endif
         { }
         /**
          * Sets the location for this agents message
@@ -290,6 +315,10 @@ class MsgBucket {
          * @note Convenience wrapper for setVariable()
          */
         __device__ void setKey(const IntT &key) const;
+        /**
+         * Metadata struct for accessing messages
+         */
+        const MetaData * const metadata;
     };
 #ifndef __CUDACC_RTC__
     /**

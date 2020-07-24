@@ -254,7 +254,11 @@ class MsgArray {
          * @note radius of 0 is unsupported
          */
         inline __device__ Filter operator() (const size_type &x, const size_type &radius = 1) const {
-            assert(radius > 0);  // Radius of 0 is bad
+#ifndef NO_SEATBELTS
+            if (radius == 0 || radius > length) {
+                DTHROW("Invalid radius %llu for accessing array messaglist of length %u\n", radius, length);
+            }
+#endif
             return Filter(length, combined_hash, x, radius);
         }
         /**
@@ -264,6 +268,11 @@ class MsgArray {
             return length;
         }
         __device__ Message at(const size_type &index) const {
+#ifndef NO_SEATBELTS
+            if (index >= length) {
+                DTHROW("Index is out of bounds for Array messagelist (%u >= %u).\n", index, length);
+            }
+#endif
             return Message(*this, index);
         }
 
@@ -339,9 +348,14 @@ class MsgArray {
          * @param msg_hash Added to agentfn_hash to produce combined_hash
          * @param scan_flag_messageOutput Scan flag array for optional message output
          */
-        __device__ Out(Curve::NamespaceHash agentfn_hash, Curve::NamespaceHash msg_hash, const void *, unsigned int *scan_flag_messageOutput)
+        __device__ Out(Curve::NamespaceHash agentfn_hash, Curve::NamespaceHash msg_hash, const void *_metadata, unsigned int *scan_flag_messageOutput)
             : combined_hash(agentfn_hash + msg_hash)
             , scan_flag(scan_flag_messageOutput)
+#ifndef NO_SEATBELTS
+            , metadata(reinterpret_cast<const MetaData*>(_metadata))
+#else
+            , metadata(nullptr)
+#endif
         { }
         /**
          * Sets the array index to store the message in
@@ -367,6 +381,10 @@ class MsgArray {
          * Scan flag array for optional message output
          */
         unsigned int *scan_flag;
+        /**
+         * Metadata struct for accessing messages
+         */
+        const MetaData * const metadata;
     };
 
 #ifndef __CUDACC_RTC__

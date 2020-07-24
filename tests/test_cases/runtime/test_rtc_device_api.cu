@@ -241,7 +241,7 @@ const char* rtc_array_set_agent_func = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_test_func, MsgNone, MsgNone) {
     // Read variables a1 to a4
     // Store as array in array_var
-    int a0 = FLAMEGPU->getVariable<int, 2>("a1", 1);   // should not be able to read scalar value as array (expecting 0)
+    int a0 = 0;
     int a1 = FLAMEGPU->getVariable<int>("a1");
     int a2 = FLAMEGPU->getVariable<int>("a2");
     int a3 = FLAMEGPU->getVariable<int>("a3");
@@ -251,7 +251,6 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, MsgNone, MsgNone) {
     FLAMEGPU->setVariable<int, 5>("array_var", 2, a2);
     FLAMEGPU->setVariable<int, 5>("array_var", 3, a3);
     FLAMEGPU->setVariable<int, 5>("array_var", 4, a4);
-    FLAMEGPU->setVariable<int, 2>("a0", 0, 10);           // should not be possible (no value should be written)
     return ALIVE;
 }
 )###";
@@ -756,6 +755,5 @@ TEST(DeviceRTCAPITest, getStepCounter) {
         }
     }
 }
-
 
 }  // namespace test_rtc_device_api

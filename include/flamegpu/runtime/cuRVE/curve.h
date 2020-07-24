@@ -17,6 +17,8 @@
 #include <cstring>
 #include <cstdio>
 
+#include "flamegpu/exception/FGPUDeviceException.h"
+
 
 /** @brief    A cuRVE instance.
  *
@@ -349,7 +351,7 @@ namespace curve_internal {
     extern __constant__ Curve::VariableHash d_hashes[Curve::MAX_VARIABLES];   // Device array of the hash values of registered variables
     extern __device__ char* d_variables[Curve::MAX_VARIABLES];                // Device array of pointer to device memory addresses for variable storage
     extern __constant__ int d_states[Curve::MAX_VARIABLES];                   // Device array of the states of registered variables
-    extern  __constant__ size_t d_sizes[Curve::MAX_VARIABLES];                // Device array of the types of registered variables
+    extern __constant__ size_t d_sizes[Curve::MAX_VARIABLES];                // Device array of the types of registered variables
     extern __constant__ unsigned int d_lengths[Curve::MAX_VARIABLES];
 
     extern __device__ Curve::DeviceError d_curve_error;
@@ -447,6 +449,7 @@ __device__ __forceinline__ void* Curve::getVariablePtrByHash(const VariableHash 
     Variable cv;
 
     cv = getVariable(variable_hash);
+#ifndef NO_SEATBELTS
     // error checking
     if (cv == UNKNOWN_VARIABLE) {
         curve_internal::d_curve_error = DEVICE_ERROR_UNKNOWN_VARIABLE;
@@ -462,6 +465,7 @@ __device__ __forceinline__ void* Curve::getVariablePtrByHash(const VariableHash 
         curve_internal::d_curve_error = DEVICE_ERROR_UNKNOWN_LENGTH;
         return nullptr;
     }
+#endif
     // return a generic pointer to variable address for given offset (no bounds checking here!)
     return curve_internal::d_variables[cv] + offset;
 }
@@ -469,94 +473,138 @@ template <typename T>
 __device__ __forceinline__ T Curve::getVariableByHash(const VariableHash variable_hash, unsigned int index) {
     size_t offset = index *sizeof(T);
 
+#ifndef NO_SEATBELTS
     // do a check on the size as otherwise the value_ptr may eb out of bounds.
     size_t size = getVariableSize(variable_hash);
 
     // error checking
     if (size != sizeof(T)) {
         curve_internal::d_curve_error = DEVICE_ERROR_UNKNOWN_TYPE;
-        return NULL;
-    } else {
-        // get a pointer to the specific variable by offsetting by the provided index
-        T *value_ptr = reinterpret_cast<T*>(getVariablePtrByHash(variable_hash, offset));
-
-        if (value_ptr)
-            return *value_ptr;
-        else
-            return 0;
+        return 0;
     }
+#endif
+    // get a pointer to the specific variable by offsetting by the provided index
+    T *value_ptr = reinterpret_cast<T*>(getVariablePtrByHash(variable_hash, offset));
+
+    if (value_ptr)
+        return *value_ptr;
+    return 0;
 }
 template <typename T, unsigned int N>
 __device__ __forceinline__ T Curve::getArrayVariableByHash(const VariableHash variable_hash, unsigned int agent_index, unsigned int array_index) {
     // do a check on the size as otherwise the value_ptr may eb out of bounds.
-    const size_t size = getVariableSize(variable_hash);
     const size_t var_size = N * sizeof(T);
-
     // error checking
+#ifndef NO_SEATBELTS
+    const size_t size = getVariableSize(variable_hash);
     if (size != var_size) {
         curve_internal::d_curve_error = DEVICE_ERROR_UNKNOWN_TYPE;
         return NULL;
-    } else {
-        const size_t offset = (agent_index * size) + (array_index * sizeof(T));
-        // get a pointer to the specific variable by offsetting by the provided index
-        T *value_ptr = reinterpret_cast<T*>(getVariablePtrByHash(variable_hash, offset));
-
-        if (value_ptr)
-            return *value_ptr;
-        else
-            return 0;
     }
+#endif
+    const size_t offset = (agent_index * var_size) + (array_index * sizeof(T));
+    // get a pointer to the specific variable by offsetting by the provided index
+    T *value_ptr = reinterpret_cast<T*>(getVariablePtrByHash(variable_hash, offset));
+
+    if (value_ptr)
+        return *value_ptr;
+    return 0;
 }
 template <typename T, unsigned int N>
 __device__ __forceinline__ T Curve::getVariable(const char (&variableName)[N], VariableHash namespace_hash, unsigned int index) {
     VariableHash variable_hash = variableHash(variableName);
-
+#ifndef NO_SEATBELTS
+    {
+        const auto cv = getVariable(variable_hash+namespace_hash);
+        if (cv ==  UNKNOWN_VARIABLE) {
+            DTHROW("Curve variable with name '%s' was not found.\n", variableName);
+        } else if (curve_internal::d_sizes[cv] != sizeof(T)) {
+            DTHROW("Curve variable with name '%s' type size mismatch %llu != %llu.\n", variableName, curve_internal::d_sizes[cv], sizeof(T));
+        }
+    }
+#endif
     return getVariableByHash<T>(variable_hash+namespace_hash, index);
 }
 template <typename T, unsigned int N, unsigned int M>
 __device__ __forceinline__ T Curve::getArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, unsigned int agent_index, unsigned int array_index) {
     VariableHash variable_hash = variableHash(variableName);
-    if (array_index >= N)
+#ifndef NO_SEATBELTS
+    {
+        const auto cv = getVariable(variable_hash+namespace_hash);
+        if (cv ==  UNKNOWN_VARIABLE) {
+            DTHROW("Curve variable array with name '%s' was not found.\n", variableName);
+        } else if (curve_internal::d_sizes[cv] != sizeof(T) * N) {
+            DTHROW("Curve variable array with name '%s', type size mismatch %llu != %llu.\n", variableName, curve_internal::d_sizes[cv], sizeof(T) * N);
+        }
+    }
+    if (array_index >= N) {
+        DTHROW("Curve array index %u is out of bounds for variable with name '%s'.\n", array_index, variableName);
         return 0;
+    }
+#endif
     // Curve currently doesn't store whether a variable is an array
     // Curve stores M * sizeof(T), so this is checked instead
     return getArrayVariableByHash<T, N>(variable_hash + namespace_hash, agent_index, array_index);
 }
 template <typename T>
 __device__ __forceinline__ void Curve::setVariableByHash(const VariableHash variable_hash, T variable, unsigned int index) {
+#ifndef NO_SEATBELTS
     size_t size = getVariableSize(variable_hash);
-
     if (size != sizeof(T)) {
         curve_internal::d_curve_error = DEVICE_ERROR_UNKNOWN_TYPE;
-    } else {
-        size_t offset = index *sizeof(T);
-        T *value_ptr = reinterpret_cast<T*>(getVariablePtrByHash(variable_hash, offset));
-        *value_ptr = variable;
+        return;
     }
+#endif
+    size_t offset = index *sizeof(T);
+    T *value_ptr = reinterpret_cast<T*>(getVariablePtrByHash(variable_hash, offset));
+    *value_ptr = variable;
 }
 template <typename T, unsigned int N>
 __device__ __forceinline__ void Curve::setArrayVariableByHash(const VariableHash variable_hash, T variable, unsigned int agent_index, unsigned int array_index) {
-    const size_t size = getVariableSize(variable_hash);
     const size_t var_size = N * sizeof(T);
-
+#ifndef NO_SEATBELTS
+    const size_t size = getVariableSize(variable_hash);
     if (size != var_size) {
         curve_internal::d_curve_error = DEVICE_ERROR_UNKNOWN_TYPE;
-    } else {
-        const size_t offset = (agent_index * size) + (array_index * sizeof(T));
-        T *value_ptr = reinterpret_cast<T*>(getVariablePtrByHash(variable_hash, offset));
-        *value_ptr = variable;
+        return;
     }
+#endif
+    const size_t offset = (agent_index * var_size) + (array_index * sizeof(T));
+    T *value_ptr = reinterpret_cast<T*>(getVariablePtrByHash(variable_hash, offset));
+    *value_ptr = variable;
 }
 template <typename T, unsigned int N>
 __device__ __forceinline__ void Curve::setVariable(const char(&variableName)[N], VariableHash namespace_hash, T variable, unsigned int index) {
     VariableHash variable_hash = variableHash(variableName);
+#ifndef NO_SEATBELTS
+    {
+        const auto cv = getVariable(variable_hash+namespace_hash);
+        if (cv ==  UNKNOWN_VARIABLE) {
+            DTHROW("Curve variable with name '%s' was not found.\n", variableName);
+        } else if (curve_internal::d_sizes[cv] != sizeof(T)) {
+            DTHROW("Curve variable with name '%s', type size mismatch %llu != %llu.\n", variableName, curve_internal::d_sizes[cv], sizeof(T));
+        }
+    }
+#endif
     setVariableByHash<T>(variable_hash+namespace_hash, variable, index);
 }
 template <typename T, unsigned int N, unsigned int M>
 __device__ __forceinline__ void Curve::setArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, T variable, unsigned int agent_index, unsigned int array_index) {
     VariableHash variable_hash = variableHash(variableName);
-    if (array_index >= N)
+#ifndef NO_SEATBELTS
+    {
+        const auto cv = getVariable(variable_hash+namespace_hash);
+        if (cv ==  UNKNOWN_VARIABLE) {
+            DTHROW("Curve variable array with name '%s' was not found.\n", variableName);
+        } else if (curve_internal::d_sizes[cv] != sizeof(T) * N) {
+            DTHROW("Curve variable array with name '%s', size mismatch %llu != %llu.\n", variableName, curve_internal::d_sizes[cv], sizeof(T) * N);
+        }
+    }
+    if (array_index >= N) {
+        DTHROW("Curve array index %u is out of bounds for variable with name '%s'.\n", array_index, variableName);
         return;
+    }
+#endif
     // Curve currently doesn't store whether a variable is an array
     // Curve stores M * sizeof(T), so this is checked instead
     return setArrayVariableByHash<T, N>(variable_hash + namespace_hash, variable, agent_index, array_index);

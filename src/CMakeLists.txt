@@ -29,6 +29,10 @@ endif()
 # Name the project and set languages
 project(flamegpu2 CUDA CXX)
 
+# Option to enable/disable runtime checks which may impact performance
+# This will primarily prevent device code from reporting errors
+option(NO_SEATBELTS "Disable runtime checks which harm performance for release/profile builds.\nThis should only be enabled after a model is known to be correct." OFF)
+
 # Include common rules.
 include(${FLAMEGPU_ROOT}/cmake/common.cmake)
 include(${FLAMEGPU_ROOT}/cmake/doxygen.cmake)
@@ -70,6 +74,8 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/io/xmlWriter.h
     ${FLAMEGPU_ROOT}/include/flamegpu/io/factory.h
     ${FLAMEGPU_ROOT}/include/flamegpu/exception/FGPUException.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/exception/FGPUDeviceException.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/exception/FGPUDeviceException_device.h
     ${FLAMEGPU_ROOT}/include/flamegpu/exception/FGPUStaticAssert.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/LayerDescription.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/ModelData.h
@@ -138,6 +144,7 @@ SET(SRC_INCLUDE
 )
 SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/exception/FGPUException.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/exception/FGPUDeviceException.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/model/LayerDescription.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/model/ModelData.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/model/AgentData.cpp
@@ -217,6 +224,12 @@ source_group(TREE ${FLAMEGPU_ROOT}/src/flamegpu PREFIX headers FILES ${T_SRC})
 set(T_SRC "${SRC_FLAMEGPU2}")
 list(FILTER T_SRC EXCLUDE REGEX ".*\.(h|hpp|cuh)$")
 source_group(TREE ${FLAMEGPU_ROOT}/src/flamegpu PREFIX src FILES ${T_SRC})
+set(T_SRC "${SRC_EXTERNAL}")
+list(FILTER T_SRC INCLUDE REGEX ".*\.(h|hpp|cuh)$")
+source_group(TREE ${FLAMEGPU_ROOT}/include PREFIX external FILES ${T_SRC})
+set(T_SRC "${SRC_EXTERNAL}")
+list(FILTER T_SRC EXCLUDE REGEX ".*\.(h|hpp|cuh)$")
+source_group(TREE ${FLAMEGPU_ROOT}/include PREFIX external FILES ${T_SRC})
 
 # Define which source files are required for the target executable
 add_flamegpu_library("${PROJECT_NAME}" "${ALL_SRC}" "${FLAMEGPU_ROOT}")

@@ -13,6 +13,7 @@
 #include "flamegpu/gpu/CUDAMessage.h"
 #include "flamegpu/gpu/CUDAScatter.h"
 #include "flamegpu/util/nvtx.h"
+#include "flamegpu/exception/FGPUDeviceException_device.h"
 
 __device__ MsgBucket::In::Filter::Filter(const MetaData* _metadata, const Curve::NamespaceHash &_combined_hash, const IntT& beginKey, const IntT& endKey)
     : bucket_begin(0)
@@ -29,6 +30,11 @@ __device__ MsgBucket::In::Filter::Filter(const MetaData* _metadata, const Curve:
 __device__ void MsgBucket::Out::setKey(const IntT &key) const {
     unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;  // + d_message_count;
 
+#ifndef NO_SEATBELTS
+    if (key < metadata->min || key >= metadata->max) {
+        DTHROW("MsgArray key %u is out of range [%d, %d).\n", key, metadata->min, metadata->max);
+    }
+#endif
     // set the variables using curve
     Curve::setVariable<IntT>("_key", combined_hash, key, index);
 

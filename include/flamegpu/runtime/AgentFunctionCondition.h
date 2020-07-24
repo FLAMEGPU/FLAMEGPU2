@@ -10,6 +10,9 @@
 
 // ! FLAMEGPU function return type
 typedef void(AgentFunctionConditionWrapper)(
+#ifndef NO_SEATBELTS
+    DeviceExceptionBuffer *error_buffer,
+#endif
     Curve::NamespaceHash instance_id_hash,
     Curve::NamespaceHash agent_func_name_hash,
     const unsigned int popNo,
@@ -29,11 +32,19 @@ typedef void(AgentFunctionConditionWrapper)(
  */
 template<typename AgentFunctionCondition>
 __global__ void agent_function_condition_wrapper(
+#ifndef NO_SEATBELTS
+    DeviceExceptionBuffer *error_buffer,
+#endif
     Curve::NamespaceHash instance_id_hash,
     Curve::NamespaceHash agent_func_name_hash,
     const unsigned int popNo,
     curandState *d_rng,
     unsigned int *scanFlag_conditionResult) {
+#ifndef NO_SEATBELTS
+    // We place this at the start of shared memory, so we can locate it anywhere in device code without a reference
+    extern __shared__ DeviceExceptionBuffer *shared_mem[];
+    shared_mem[0] = error_buffer;
+#endif
     // Must be terminated here, else AgentRandom has bounds issues inside FLAMEGPU_DEVICE_API constructor
     if (FLAMEGPU_READ_ONLY_DEVICE_API::TID() >= popNo)
         return;

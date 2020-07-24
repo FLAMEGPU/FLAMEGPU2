@@ -399,5 +399,9 @@ DERIVED_FGPUException(VisualisationException, "An exception prevented the visual
  * Defines when std::weak_ptr::lock() returns nullptr
  */
 DERIVED_FGPUException(ExpiredWeakPtr, "Unable to convert weak pointer to shared pointer.");
+/**
+ * Defines an error reported from cuda device code (agent functions and agent function conditions)
+ */
+DERIVED_FGPUException(DeviceError, "Error reported from device code");
 
 #endif  // INCLUDE_FLAMEGPU_EXCEPTION_FGPUEXCEPTION_H_

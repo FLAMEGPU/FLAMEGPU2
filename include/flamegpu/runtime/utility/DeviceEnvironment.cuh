@@ -84,36 +84,38 @@ class DeviceEnvironment {
 template<typename T, unsigned int N>
 __device__ __forceinline__ T DeviceEnvironment::get(const char(&name)[N]) const {
     Curve::VariableHash cvh = CURVE_NAMESPACE_HASH() + modelname_hash + Curve::variableHash(name);
-
-    // Error checking is internal to Curve::getVariablePtrByHash, returns nullptr on fail
-    // get a pointer to the specific variable by offsetting by the provided index
-    T *value_ptr = reinterpret_cast<T*>(Curve::getVariablePtrByHash(cvh, 0));
-    if (value_ptr) {
-        return (T) *value_ptr;
+    const auto cv = Curve::getVariable(cvh);
+#ifndef NO_SEATBELTS
+    if (cv ==  Curve::UNKNOWN_VARIABLE) {
+        DTHROW("Environment property with name: %s was not found.\n", name);
+    } else if (curve_internal::d_sizes[cv] != sizeof(T)) {
+        DTHROW("Environment property with name: %s type size mismatch %llu != %llu.\n", name, curve_internal::d_sizes[cv], sizeof(T));
     } else {
-        curve_internal::d_curve_error = Curve::DEVICE_ERROR_UNKNOWN_VARIABLE;
-        assert(false);
-        T rtn;
-        memcpy(&rtn, &flamegpu_internal::c_deviceEnvErrorPattern, sizeof(T));
-        return rtn;
+        return *reinterpret_cast<T*>(curve_internal::d_variables[cv]);
     }
+    return {};
+#else
+    return *reinterpret_cast<T*>(curve_internal::d_variables[cv]);
+#endif
 }
 template<typename T, unsigned int N>
 __device__ __forceinline__ T DeviceEnvironment::get(const char(&name)[N], const unsigned int &index) const {
     Curve::VariableHash cvh = CURVE_NAMESPACE_HASH() + modelname_hash + Curve::variableHash(name);
-    // Error checking is internal to Curve::getVariablePtrByHash, returns nullptr on fail
-    size_t offset = index * sizeof(T);
-    // get a pointer to the specific variable by offsetting by the provided index
-    T *value_ptr = reinterpret_cast<T*>(Curve::getVariablePtrByHash(cvh, offset));
-    if (value_ptr) {
-        return (T) *value_ptr;
+    const auto cv = Curve::getVariable(cvh);
+#ifndef NO_SEATBELTS
+    if (cv ==  Curve::UNKNOWN_VARIABLE) {
+        DTHROW("Environment property array with name: %s was not found.\n", name);
+    } else if (curve_internal::d_sizes[cv] != sizeof(T)) {
+        DTHROW("Environment property array with name: %s type size mismatch %llu != %llu.\n", name, curve_internal::d_sizes[cv], sizeof(T));
+    } else if (curve_internal::d_lengths[cv] <= index) {
+        DTHROW("Environment property array with name: %s index %u is out of bounds (length %u).\n", name, index, curve_internal::d_lengths[cv]);
     } else {
-        curve_internal::d_curve_error = Curve::DEVICE_ERROR_UNKNOWN_VARIABLE;
-        assert(false);
-        T rtn;
-        memcpy(&rtn, &flamegpu_internal::c_deviceEnvErrorPattern, sizeof(T));
-        return rtn;
+        return *(reinterpret_cast<T*>(curve_internal::d_variables[cv]) + index);
     }
+    return {};
+#else
+    return *(reinterpret_cast<T*>(curve_internal::d_variables[cv]) + index);
+#endif
 }
 
 /**

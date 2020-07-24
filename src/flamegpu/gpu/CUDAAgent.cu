@@ -456,6 +456,10 @@ void CUDAAgent::addInstantitateRTCFunction(jitify::JitCache &kernel_cache, const
     include_cuda_h = "--pre-include=" + std::string(env_cuda_path) + "/include/cuda.h";
     options.push_back(include_cuda_h);
 
+#ifdef NO_SEATBELTS
+    options.push_back("--define-macro=NO_SEATBELTS");
+#endif
+
     // curve rtc header
     CurveRTCHost curve_header;
     // agent function hash
@@ -465,7 +469,7 @@ void CUDAAgent::addInstantitateRTCFunction(jitify::JitCache &kernel_cache, const
 
     // set agent function variables in rtc curve
     for (const auto& mmp : func.parent.lock()->variables) {
-        curve_header.registerVariable(mmp.first.c_str(), agent_func_name_hash, mmp.second.type.name(), mmp.second.elements);
+        curve_header.registerVariable(mmp.first.c_str(), agent_func_name_hash, mmp.second.type.name(), mmp.second.type_size, mmp.second.elements);
     }
 
     // for normal agent function (e.g. not an agent function condition) append messages and agent outputs
@@ -476,7 +480,7 @@ void CUDAAgent::addInstantitateRTCFunction(jitify::JitCache &kernel_cache, const
             Curve::NamespaceHash msg_in_hash = Curve::variableRuntimeHash(im->name.c_str());
             for (auto msg_in_var : im->variables) {
                 // register message variables using combined hash
-                curve_header.registerVariable(msg_in_var.first.c_str(), msg_in_hash + agent_func_name_hash, msg_in_var.second.type.name(), msg_in_var.second.elements, true, false);
+                curve_header.registerVariable(msg_in_var.first.c_str(), msg_in_hash + agent_func_name_hash, msg_in_var.second.type.name(), msg_in_var.second.type_size, msg_in_var.second.elements, true, false);
             }
         }
         // Set output message variables in curve
@@ -485,7 +489,7 @@ void CUDAAgent::addInstantitateRTCFunction(jitify::JitCache &kernel_cache, const
             Curve::NamespaceHash msg_out_hash = Curve::variableRuntimeHash(om->name.c_str());
             for (auto msg_out_var : om->variables) {
                 // register message variables using combined hash
-                curve_header.registerVariable(msg_out_var.first.c_str(), msg_out_hash + agent_func_name_hash, msg_out_var.second.type.name(), msg_out_var.second.elements, false, true);
+                curve_header.registerVariable(msg_out_var.first.c_str(), msg_out_hash + agent_func_name_hash, msg_out_var.second.type.name(), msg_out_var.second.type_size, msg_out_var.second.elements, false, true);
             }
         }
         // Set agent output variables in curve
@@ -494,7 +498,7 @@ void CUDAAgent::addInstantitateRTCFunction(jitify::JitCache &kernel_cache, const
             Curve::NamespaceHash agent_out_hash = Curve::variableRuntimeHash("_agent_birth");
             for (auto agent_out_var : ao->variables) {
                 // register message variables using combined hash
-                curve_header.registerVariable(agent_out_var.first.c_str(), agent_out_hash + funcname_hash, agent_out_var.second.type.name(), agent_out_var.second.elements, false, true);
+                curve_header.registerVariable(agent_out_var.first.c_str(), agent_out_hash + funcname_hash, agent_out_var.second.type.name(), agent_out_var.second.type_size, agent_out_var.second.elements, false, true);
             }
         }
     }
@@ -508,7 +512,7 @@ void CUDAAgent::addInstantitateRTCFunction(jitify::JitCache &kernel_cache, const
             const char* type = p.second.type.name();
             unsigned int elements = p.second.elements;
             ptrdiff_t offset = p.second.rtc_offset;
-            curve_header.registerEnvVariable(variableName, instance_id_hash, offset, type, elements);
+            curve_header.registerEnvVariable(variableName, instance_id_hash, offset, type, p.second.length/elements, elements);
         }
     }
     // Set mapped environment variables in curve
@@ -519,7 +523,7 @@ void CUDAAgent::addInstantitateRTCFunction(jitify::JitCache &kernel_cache, const
             const char* type = p.type.name();
             unsigned int elements = p.elements;
             ptrdiff_t offset = p.rtc_offset;
-            curve_header.registerEnvVariable(variableName, instance_id_hash, offset, type, elements);
+            curve_header.registerEnvVariable(variableName, instance_id_hash, offset, type, p.length/elements, elements);
         }
     }
     // get the dynamically generated header from curve rtc

@@ -255,7 +255,11 @@ TEST(TestMessage_Array, Moore2) {
     }
 }
 // Exception tests
+#ifndef NO_SEATBELTS
 TEST(TestMessage_Array, DuplicateOutputException) {
+#else
+TEST(TestMessage_Array, DISABLED_DuplicateOutputException) {
+#endif
     ModelDescription m(MODEL_NAME);
     MsgArray::Description &msg = m.newMessage<MsgArray>(MESSAGE_NAME);
     msg.setLength(AGENT_COUNT);
@@ -321,6 +325,7 @@ TEST(TestMessage_Array, ReadEmpty) {
         MsgArray::Description &message = model.newMessage<MsgArray>("location");
         message.setLength(2);
         message.newVariable<int>("id");  // unused by current test
+        message.newVariable<unsigned int>("value");
     }
     {   // Circle agent
         AgentDescription &agent = model.newAgent("agent");

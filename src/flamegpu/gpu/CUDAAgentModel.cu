@@ -274,6 +274,11 @@ bool CUDAAgentModel::step() {
                     Curve::NamespaceHash agent_func_name_hash = agentname_hash + funcname_hash;
                     curandState *t_rng = d_rng + totalThreads;
                     unsigned int *scanFlag_agentDeath = this->singletons->scatter.Scan().Config(CUDAScanCompaction::Type::AGENT_DEATH, j).d_ptrs.scan_flag;
+                    unsigned int sm_size = 0;
+#ifndef NO_SEATBELTS
+                    auto *error_buffer = this->singletons->exception.getDevicePtr(j);
+                    sm_size = sizeof(error_buffer);
+#endif
 
                     // switch between normal and RTC agent function condition
                     if (func_des->condition) {
@@ -282,7 +287,15 @@ bool CUDAAgentModel::step() {
 
                         //! Round up according to CUDAAgent state list size
                         gridSize = (state_list_size + blockSize - 1) / blockSize;
-                        (func_des->condition) << <gridSize, blockSize, 0, streams.at(j) >> > (instance_id_hash, agent_func_name_hash, state_list_size, t_rng, scanFlag_agentDeath);
+                        (func_des->condition) << <gridSize, blockSize, sm_size, streams.at(j) >> > (
+#ifndef NO_SEATBELTS
+                        error_buffer,
+#endif
+                        instance_id_hash,
+                        agent_func_name_hash,
+                        state_list_size,
+                        t_rng,
+                        scanFlag_agentDeath);
                         gpuErrchkLaunch();
                     } else {  // RTC function
                         std::string func_condition_identifier = func_name + "_condition";
@@ -294,7 +307,10 @@ bool CUDAAgentModel::step() {
                         //! Round up according to CUDAAgent state list size
                         gridSize = (state_list_size + blockSize - 1) / blockSize;
                         // launch the kernel
-                        CUresult a = instance.configure(gridSize, blockSize).launch({
+                        CUresult a = instance.configure(gridSize, blockSize, sm_size, streams.at(j)).launch({
+#ifndef NO_SEATBELTS
+                                reinterpret_cast<void*>(&error_buffer),
+#endif
                                 const_cast<void*>(reinterpret_cast<const void*>(&instance_id_hash)),
                                 reinterpret_cast<void*>(&agent_func_name_hash),
                                 const_cast<void *>(reinterpret_cast<const void*>(&state_list_size)),
@@ -334,6 +350,12 @@ bool CUDAAgentModel::step() {
 
                     // unmap the function variables
                     cuda_agent.unmapRuntimeVariables(*func_des);
+
+#ifndef NO_SEATBELTS
+                    // Error check after unmap vars
+                    // This means that curve is cleaned up before we throw exception (mostly prevents curve being polluted if we catch and handle errors)
+                    this->singletons->exception.checkError("condition " + func_des->name, j);
+#endif
 
                     // Process agent function condition
                     cuda_agent.processFunctionCondition(*func_des, this->singletons->scatter, j);
@@ -472,6 +494,11 @@ bool CUDAAgentModel::step() {
             unsigned int *scanFlag_agentDeath = this->singletons->scatter.Scan().Config(CUDAScanCompaction::Type::AGENT_DEATH, j).d_ptrs.scan_flag;
             unsigned int *scanFlag_messageOutput = this->singletons->scatter.Scan().Config(CUDAScanCompaction::Type::MESSAGE_OUTPUT, j).d_ptrs.scan_flag;
             unsigned int *scanFlag_agentOutput = this->singletons->scatter.Scan().Config(CUDAScanCompaction::Type::AGENT_OUTPUT, j).d_ptrs.scan_flag;
+            unsigned int sm_size = 0;
+#ifndef NO_SEATBELTS
+            auto *error_buffer = this->singletons->exception.getDevicePtr(j);
+            sm_size = sizeof(error_buffer);
+#endif
 
             if (func_des->func) {   // compile time specified agent function launch
                 // calculate the grid block size for main agent function
@@ -479,7 +506,10 @@ bool CUDAAgentModel::step() {
                 //! Round up according to CUDAAgent state list size
                 gridSize = (state_list_size + blockSize - 1) / blockSize;
 
-                (func_des->func) << <gridSize, blockSize, 0, streams.at(j) >> > (
+                (func_des->func) << <gridSize, blockSize, sm_size, streams.at(j) >> > (
+#ifndef NO_SEATBELTS
+                    error_buffer,
+#endif
                     instance_id_hash,
                     agent_func_name_hash,
                     message_name_inp_hash,
@@ -502,7 +532,10 @@ bool CUDAAgentModel::step() {
                 //! Round up according to CUDAAgent state list size
                 gridSize = (state_list_size + blockSize - 1) / blockSize;
                 // launch the kernel
-                CUresult a = instance.configure(gridSize, blockSize).launch({
+                CUresult a = instance.configure(gridSize, blockSize, sm_size, streams.at(j)).launch({
+#ifndef NO_SEATBELTS
+                        reinterpret_cast<void*>(&error_buffer),
+#endif
                         const_cast<void*>(reinterpret_cast<const void*>(&instance_id_hash)),
                         reinterpret_cast<void*>(&agent_func_name_hash),
                         reinterpret_cast<void*>(&message_name_inp_hash),
@@ -585,6 +618,11 @@ bool CUDAAgentModel::step() {
 
                 // unmap the function variables
                 cuda_agent.unmapRuntimeVariables(*func_des);
+#ifndef NO_SEATBELTS
+                // Error check after unmap vars
+                // This means that curve is cleaned up before we throw exception (mostly prevents curve being polluted if we catch and handle errors)
+                this->singletons->exception.checkError(func_des->name, j);
+#endif
             }
 
             ++j;

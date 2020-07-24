@@ -2,24 +2,27 @@
 #include "flamegpu/model/AgentDescription.h"  // Used by Move-Assign
 #include "flamegpu/gpu/CUDAMessage.h"
 #include "flamegpu/gpu/CUDAScatter.h"
+#include "flamegpu/exception/FGPUDeviceException_device.h"
 
 /**
 * Sets the array index to store the message in
 */
 __device__ void MsgArray2D::Out::setIndex(const size_type &x, const size_type &y) const {
-        unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
-        size_type index_1d =
-            y * metadata->dimensions[0] +
-            x;
-        if (x >= metadata->dimensions[0] ||
-            y >= metadata->dimensions[1]) {
-            index_1d = metadata->length;  // Put message in invalid bin, will be caught during sort
-        }
-        // set the variable using curve
-        Curve::setVariable<size_type>("___INDEX", combined_hash, index_1d, index);
+    unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
+    size_type index_1d =
+        y * metadata->dimensions[0] +
+        x;
+#ifndef NO_SEATBELTS
+    if (x >= metadata->dimensions[0] ||
+        y >= metadata->dimensions[1]) {
+        DTHROW("MsgArray2D index [%u, %u] is out of bounds [%u, %u]\n", x, y, metadata->dimensions[0], metadata->dimensions[1]);
+    }
+#endif
+    // set the variable using curve
+    Curve::setVariable<size_type>("___INDEX", combined_hash, index_1d, index);
 
-        // Set scan flag incase the message is optional
-        this->scan_flag[index] = 1;
+    // Set scan flag incase the message is optional
+    this->scan_flag[index] = 1;
 }
 __device__ MsgArray2D::In::Filter::Filter(const MetaData *_metadata, const Curve::NamespaceHash &_combined_hash, const size_type &x, const size_type &y, const size_type &_radius)
     : radius(_radius)
