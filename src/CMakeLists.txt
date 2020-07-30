@@ -64,6 +64,8 @@ endif()
 SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/io/statereader.h
     ${FLAMEGPU_ROOT}/include/flamegpu/io/statewriter.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/io/jsonReader.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/io/jsonWriter.h
     ${FLAMEGPU_ROOT}/include/flamegpu/io/xmlReader.h
     ${FLAMEGPU_ROOT}/include/flamegpu/io/xmlWriter.h
     ${FLAMEGPU_ROOT}/include/flamegpu/io/factory.h
@@ -167,6 +169,8 @@ SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/Array.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/Array2D.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/Array3D.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/io/jsonReader.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/io/jsonWriter.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/io/xmlReader.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/io/xmlWriter.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/utility/HostEnvironment.cu

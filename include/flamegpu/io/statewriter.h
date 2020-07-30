@@ -29,12 +29,19 @@ class StateWriter {
      * @param _iterations The value from the step counter at the time of export.
      * @param output_file Filename of the input file (This will be used to determine which reader to return)
      */
-    StateWriter(const std::string &_model_name, const unsigned int &_sim_instance_id, const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &_model_state, const unsigned int &_iterations, const std::string &output_file)
+    StateWriter(const std::string &_model_name,
+        const unsigned int &_sim_instance_id,
+        const std::unordered_map<std::string,
+        std::shared_ptr<AgentPopulation>> &_model_state,
+        const unsigned int &_iterations,
+        const std::string &output_file,
+        const Simulation *_sim_instance)
     : model_state(_model_state)
     , iterations(_iterations)
     , outputFile(output_file)
     , model_name(_model_name)
-    , sim_instance_id(_sim_instance_id) {}
+    , sim_instance_id(_sim_instance_id)
+    , sim_instance(_sim_instance) {}
     ~StateWriter() {}
 
     // -----------------------------------------------------------------------
@@ -42,10 +49,11 @@ class StateWriter {
     // -----------------------------------------------------------------------
     /**
      * Actually perform the file export
+     * @param prettyPrint Whether to include indentation and line breaks to aide human reading
      * @return Returns a return code
      * @todo: This should probably be the same return code between subclasses, and seems redundant with our exceptions as should never return fail.
      */
-    virtual int writeStates() = 0;
+    virtual int writeStates(bool prettyPrint) = 0;
 
  protected:
     const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> model_state{};
@@ -53,6 +61,7 @@ class StateWriter {
     std::string outputFile;
     const std::string model_name;
     const unsigned int sim_instance_id;
+    const Simulation *sim_instance;
 };
 
 #endif  // INCLUDE_FLAMEGPU_IO_STATEWRITER_H_

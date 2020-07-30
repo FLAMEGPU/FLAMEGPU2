@@ -85,6 +85,10 @@ class Curve {
      */ // Note: this function was never called
     template <unsigned int N, typename T>
     __host__ Variable registerVariable(const char(&variableName)[N], void* d_ptr, unsigned int length);
+    /**
+     * Copy host structures to device
+     */
+    __host__ void updateDevice();
     /** @brief Function for un-registering a variable by a VariableHash
      *     Un-registers a variable by removal from a hash table. Recommend using the provided unregisterVariable template function.
      *  @param variable_hash A cuRVE variable string hash from variableHash.

@@ -17,7 +17,7 @@ class Simulation {
     struct Config {
         Config() : random_seed(static_cast<unsigned int>(time(nullptr))) {
         }
-        std::string xml_input_file;
+        std::string input_file;
         unsigned int random_seed;
         unsigned int steps = 0;
         bool verbose = false;
@@ -53,8 +53,14 @@ class Simulation {
     virtual void resetStepCounter() = 0;
 
     const ModelData& getModelDescription() const;
-
-    void exportData(const std::string &path);
+    /**
+     * Export model state to file
+     * Export includes config structures, environment and agent data
+     * @param path The file to output (must end '.json' or '.xml')
+     * @param prettyPrint Whether to include indentation and line breaks to aide human reading
+     * @note XML export does not currently includes config structures, only the same data present in FLAMEGPU1
+     */
+    void exportData(const std::string &path, bool prettyPrint = true);
 
     virtual void setPopulationData(AgentPopulation& population) = 0;
     virtual void getPopulationData(AgentPopulation& population) = 0;
@@ -98,6 +104,10 @@ class Simulation {
     CUDAAgentModel const * mastermodel;
 
     Config config;
+    /**
+     * If this matches config.input_file, apply_config() will not load the input file
+     */
+    std::string loaded_input_file;
     /**
      * Unique index of Simulation instance
      */

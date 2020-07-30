@@ -1,5 +1,6 @@
 # Model output files
 *.xml
+*.json
 *.bin
 
 # GoogleTest directories (handled by CMake)

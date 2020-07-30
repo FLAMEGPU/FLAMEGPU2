@@ -28,11 +28,17 @@ class StateReader {
      * @param _model_state Map of AgentPopulation to load the agent data into per agent, key should be agent name
      * @param input Filename of the input file (This will be used to determine which reader to return)
      */
-    StateReader(const std::string &_model_name, const unsigned int &_sim_instance_id, const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &_model_state, const std::string &input)
+    StateReader(
+        const std::string &_model_name,
+        const unsigned int &_sim_instance_id,
+        const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &_model_state,
+        const std::string &input,
+        Simulation *_sim_instance)
     : model_state(_model_state)
     , inputFile(input)
     , model_name(_model_name)
-    , sim_instance_id(_sim_instance_id)  {}
+    , sim_instance_id(_sim_instance_id)
+    , sim_instance(_sim_instance) {}
     ~StateReader() {}
 
     // -----------------------------------------------------------------------
@@ -69,6 +75,7 @@ class StateReader {
     std::string inputFile;
     const std::string model_name;
     const unsigned int sim_instance_id;
+    Simulation *sim_instance;
 };
 
 #endif  // INCLUDE_FLAMEGPU_IO_STATEREADER_H_

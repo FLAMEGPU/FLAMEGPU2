@@ -27,7 +27,7 @@ namespace flamegpu_internal {
 const char EnvironmentManager::CURVE_NAMESPACE_STRING[23] = "ENVIRONMENT_PROPERTIES";
 
 EnvironmentManager::EnvironmentManager() :
-    CURVE_NAMESPACE_HASH(Curve::getInstance().variableRuntimeHash(CURVE_NAMESPACE_STRING)),
+    CURVE_NAMESPACE_HASH(Curve::variableRuntimeHash(CURVE_NAMESPACE_STRING)),
     nextFree(0),
     m_freeSpace(EnvironmentManager::MAX_BUFFER_SIZE),
     freeFragments(),
@@ -35,17 +35,22 @@ EnvironmentManager::EnvironmentManager() :
 
 void EnvironmentManager::purge() {
     deviceInitialised = false;
-    freeFragments.clear();
-    m_freeSpace = EnvironmentManager::MAX_BUFFER_SIZE;
-    nextFree = 0;
-    cuda_agent_models.clear();
-    properties.clear();
-    mapped_properties.clear();
+    for (auto &a : deviceRequiresUpdate) {
+        a.second.c_update_required = true;
+        a.second.rtc_update_required = true;
+        a.second.curve_registration_required = true;
+    }
+    // We are now able to only purge the device stuff after device reset?
+    // freeFragments.clear();
+    // m_freeSpace = EnvironmentManager::MAX_BUFFER_SIZE;
+    // nextFree = 0;
+    // cuda_agent_models.clear();
+    // properties.clear();
+    // mapped_properties.clear();
+    // rtc_caches.clear();
 }
 
 void EnvironmentManager::init(const unsigned int &instance_id, const EnvironmentDescription &desc) {
-    // Initialise device portions of Environment manager
-    initialiseDevice();
     // Error if reinit
     for (auto &&i : properties) {
         if (i.first.first == instance_id) {
@@ -54,6 +59,10 @@ void EnvironmentManager::init(const unsigned int &instance_id, const Environment
                 instance_id);
         }
     }
+
+    // Add to device requires update map
+    deviceRequiresUpdate.emplace(instance_id, EnvUpdateFlags());
+
     // Build a DefragMap to send to defragger method
     DefragMap orderedProperties;
     size_t newSize = 0;
@@ -73,10 +82,15 @@ void EnvironmentManager::init(const unsigned int &instance_id, const Environment
     }
     // Defragment to rebuild it properly
     defragment(&orderedProperties);
+    // Setup RTC version
+    buildRTCOffsets(instance_id, instance_id, orderedProperties);
 }
 void EnvironmentManager::init(const unsigned int &instance_id, const EnvironmentDescription &desc, const unsigned int &master_instance_id, const SubEnvironmentData &mapping) {
-    // Initialise device portions of Environment manager
-    assert(deviceInitialised);  // submodel init should never be called first, requires parent init first for mapping
+    assert(deviceRequiresUpdate.size());  // submodel init should never be called first, requires parent init first for mapping
+
+    // Add to device requires update map
+    deviceRequiresUpdate.emplace(instance_id, EnvUpdateFlags());
+
     // Error if reinit
     for (auto &&i : properties) {
         if (i.first.first == instance_id) {
@@ -122,6 +136,8 @@ void EnvironmentManager::init(const unsigned int &instance_id, const Environment
     }
     // Defragment to rebuild it properly
     defragment(&orderedProperties, new_mapped_props);
+    // Setup RTC version
+    buildRTCOffsets(instance_id, master_instance_id, orderedProperties);
 }
 
 void EnvironmentManager::initRTC(const CUDAAgentModel& cuda_model) {
@@ -132,17 +148,6 @@ void EnvironmentManager::initRTC(const CUDAAgentModel& cuda_model) {
     }
     // register model name
     cuda_agent_models.emplace(cuda_model.getInstanceID(), cuda_model);
-
-    // loop through environment properties, already registered by cuda_
-    for (auto &p : properties) {
-        if (p.first.first == cuda_model.getInstanceID()) {
-            auto var_name = p.first.second;
-            auto src = hc_buffer + p.second.offset;
-            auto length = p.second.length;
-            // Register variable for use in any RTC functions
-            cuda_model.RTCSetEnvironmentVariable(var_name.c_str(), src, length);
-        }
-    }
 }
 
 void EnvironmentManager::initialiseDevice() {
@@ -192,6 +197,16 @@ void EnvironmentManager::free(const unsigned int &instance_id) {
     auto cam = cuda_agent_models.find(instance_id);
     if (cam != cuda_agent_models.end()) {
         cuda_agent_models.erase(cam);
+    }
+    // Sample applies to requires update map
+    auto dru = deviceRequiresUpdate.find(instance_id);
+    if (dru != deviceRequiresUpdate.end()) {
+        deviceRequiresUpdate.erase(dru);
+    }
+    // Sample applies to rtc_caches
+    auto rtcc = rtc_caches.find(instance_id);
+    if (rtcc != rtc_caches.end()) {
+        rtc_caches.erase(rtcc);
     }
 }
 
@@ -276,7 +291,6 @@ void EnvironmentManager::add(const NamePair &name, const char *ptr, const size_t
     properties.emplace(name, EnvProp(buffOffset, length, isConst, elements, type));
     // Store data
     memcpy(hc_buffer + buffOffset, ptr, length);
-    gpuErrchk(cudaMemcpy(reinterpret_cast<void*>(const_cast<char*>(c_buffer + buffOffset)), reinterpret_cast<void*>(hc_buffer + buffOffset), length, cudaMemcpyHostToDevice));
     // Register in cuRVE
     Curve::getInstance().setNamespaceByHash(CURVE_NAMESPACE_HASH);
     Curve::VariableHash cvh = toHash(name);
@@ -291,9 +305,11 @@ void EnvironmentManager::add(const NamePair &name, const char *ptr, const size_t
     }
 #endif
     Curve::getInstance().setDefaultNamespace();
+    addRTCOffset(name);
+    setDeviceRequiresUpdateFlag();
 }
 
-void EnvironmentManager::defragment(DefragMap *mergeProperties, std::set<NamePair> newmaps) {
+void EnvironmentManager::defragment(const DefragMap * mergeProperties, std::set<NamePair> newmaps) {
     // Build a multimap to sort the elements (to create natural alignment in compact form)
     DefragMap orderedProperties;
     for (auto &i : properties) {
@@ -371,8 +387,6 @@ void EnvironmentManager::defragment(DefragMap *mergeProperties, std::set<NamePai
     std::swap(properties, t_properties);
     // Replace buffer on host
     memcpy(hc_buffer, t_buffer, buffOffset);
-    // Replace buffer on device
-    gpuErrchk(cudaMemcpy(reinterpret_cast<void*>(const_cast<char*>(c_buffer)), reinterpret_cast<void*>(hc_buffer), buffOffset, cudaMemcpyHostToDevice));
     // Update m_freeSpace, nextFree
     nextFree = buffOffset;
     m_freeSpace = MAX_BUFFER_SIZE - buffOffset + spareFrags;
@@ -400,6 +414,98 @@ void EnvironmentManager::defragment(DefragMap *mergeProperties, std::set<NamePai
 #endif
     }
     Curve::getInstance().setDefaultNamespace();
+    setDeviceRequiresUpdateFlag();
+}
+
+void EnvironmentManager::buildRTCOffsets(const unsigned int &instance_id, const unsigned int &master_instance_id, const DefragMap &orderedProperties) {
+    // Actually begin
+    if (instance_id == master_instance_id) {
+        // Create a new cache
+        std::shared_ptr<RTCEnvPropCache> cache = std::make_shared<RTCEnvPropCache>();
+        // Add the properties, they are already ordered so we can just enforce alignment
+        // As we add each property, set its rtc_offset value in main properties map
+        for (auto _i = orderedProperties.rbegin(); _i != orderedProperties.rend(); ++_i) {
+            auto &i = _i->second;
+            size_t alignmentSize = _i->first;
+            // Handle alignment
+            const ptrdiff_t alignmentOffset = cache->nextFree % alignmentSize;
+            const ptrdiff_t alignmentFix = alignmentOffset != 0 ? alignmentSize - alignmentOffset : 0;
+            cache->nextFree += alignmentFix;
+            if (cache->nextFree + i.second.length <= MAX_BUFFER_SIZE) {
+                // Setup constant in new position
+                memcpy(cache->hc_buffer + cache->nextFree, i.second.data, i.second.length);
+                properties.at(i.first).rtc_offset = cache->nextFree;
+                // Increase buffer offset length that has been added
+                cache->nextFree += i.second.length;
+            } else {
+                // Ran out of constant cache space! (this can only trigger when a DefragMap is passed)
+                // Arguably this check should be performed by init()
+                // This should never happen, it would be caught by defrag sooner
+                THROW OutOfMemory("Insufficient EnvProperty memory to create new properties, "
+                    "in EnvironmentManager::buildRTCOffsets().");
+            }
+        }
+        // Cache is complete, add it to cache map
+        rtc_caches.emplace(instance_id, cache);
+    } else {
+        // Find the master cache
+        std::shared_ptr<RTCEnvPropCache> &cache = rtc_caches.at(master_instance_id);
+        // Add the properties, they are already ordered so we can just enforce alignment
+        // As we add each property, set its rtc_offset value in main properties map
+        for (auto _i = orderedProperties.rbegin(); _i != orderedProperties.rend(); ++_i) {
+            auto &i = _i->second;
+            auto mi_it = mapped_properties.find(i.first);
+            if (mi_it ==  mapped_properties.end()) {
+                // Property is not mapped, add it to cache
+                size_t alignmentSize = _i->first;
+                // Handle alignment
+                const ptrdiff_t alignmentOffset = cache->nextFree % alignmentSize;
+                const ptrdiff_t alignmentFix = alignmentOffset != 0 ? alignmentSize - alignmentOffset : 0;
+                cache->nextFree += alignmentFix;
+                if (cache->nextFree + i.second.length <= MAX_BUFFER_SIZE) {
+                    // Setup constant in new position
+                    memcpy(cache->hc_buffer + cache->nextFree, i.second.data, i.second.length);
+                    properties.at(i.first).rtc_offset = cache->nextFree;
+                    // Increase buffer offset length that has been added
+                    cache->nextFree += i.second.length;
+                } else {
+                    // Ran out of constant cache space! (this can only trigger when a DefragMap is passed)
+                    // Arguably this check should be performed by init()
+                    // This should never happen, it would be caught by defrag sooner
+                    THROW OutOfMemory("Insufficient EnvProperty memory to create new properties, "
+                        "in EnvironmentManager::buildRTCOffsets().");
+                }
+            }
+        }
+        // Add a copy of cache for this instance_id to env manager
+        rtc_caches.emplace(instance_id, cache);
+    }
+}
+void EnvironmentManager::addRTCOffset(const NamePair &name) {
+    auto mi_it = mapped_properties.find(name);
+    // Property is not mapped (it's not even currently possible to add mapped properties after the fact)
+    if (mi_it ==  mapped_properties.end()) {
+        auto &cache = rtc_caches.at(name.first);
+        auto &p = properties.at(name);
+        size_t alignmentSize = p.length > 64 ? 64 : p.length;  // This creates better alignment for small vectors
+        // Handle alignment
+        const ptrdiff_t alignmentOffset = cache->nextFree % alignmentSize;
+        const ptrdiff_t alignmentFix = alignmentOffset != 0 ? alignmentSize - alignmentOffset : 0;
+        cache->nextFree += alignmentFix;
+        if (cache->nextFree + p.length <= MAX_BUFFER_SIZE) {
+            // Setup constant in new position
+            memcpy(cache->hc_buffer + cache->nextFree, hc_buffer + p.offset, p.length);
+            p.rtc_offset = cache->nextFree;
+            // Increase buffer offset length that has been added
+            cache->nextFree += p.length;
+        } else {
+            THROW OutOfMemory("Insufficient EnvProperty memory to create new properties, "
+                "in EnvironmentManager::buildRTCOffsets().");
+        }
+    } else {
+        THROW OutOfMemory("Support for mapped (sub) properties is not currently implemented, "
+            "in EnvironmentManager::addRTCOffset().");
+    }
 }
 
 const CUDAAgentModel& EnvironmentManager::getCUDAAgentModel(const unsigned int &instance_id) {
@@ -410,9 +516,33 @@ const CUDAAgentModel& EnvironmentManager::getCUDAAgentModel(const unsigned int &
     return res->second;
 }
 
-void EnvironmentManager::setRTCValue(const unsigned int &instance_id, const std::string &variable_name, const void* src, size_t count, size_t offset) {
-    const CUDAAgentModel& cuda_agent_model = getCUDAAgentModel(instance_id);
-    cuda_agent_model.RTCSetEnvironmentVariable(variable_name, src, count, offset);
+void EnvironmentManager::updateRTCValue(const NamePair &name) {
+    // Grab the updated prop
+    auto a = properties.find(name);
+    if (a == properties.end()) {
+        a = properties.find(mapped_properties.at(name).masterProp);
+    }
+    // Grab the main cache ptr for the prop
+    void *main_ptr = hc_buffer + a->second.offset;
+    // Grab the rtc cache ptr for the prop
+    void *rtc_ptr = rtc_caches.at(name.first)->hc_buffer + a->second.rtc_offset;
+    // Copy
+    memcpy(rtc_ptr, main_ptr, a->second.length);
+
+    // Now we must detect if the variable is mapped in any form
+    // If this is the case, any rtc models which share the property must be flagged for update too
+    {
+        // First check if it's the subvar
+        auto mp_it = mapped_properties.find(name);
+        const NamePair check = mp_it == mapped_properties.end() ? name : mp_it->second.masterProp;
+        // Now check for any properties mapped to this variable
+        for (auto mp : mapped_properties) {
+            if (mp.second.masterProp == check) {
+                // It's a hit, set flag to true
+                deviceRequiresUpdate.at(check.first).rtc_update_required = true;
+            }
+        }
+    }
 }
 
 void EnvironmentManager::remove(const NamePair &name) {
@@ -440,6 +570,7 @@ void EnvironmentManager::remove(const NamePair &name) {
     } else {
         mapped_properties.erase(name);
     }
+    setDeviceRequiresUpdateFlag(name.first);
 }
 void EnvironmentManager::remove(const unsigned int &instance_id, const std::string &var_name) {
     remove({instance_id, var_name});
@@ -454,11 +585,96 @@ void EnvironmentManager::resetModel(const unsigned int &instance_id, const Envir
             auto &p = properties.at({instance_id, d.first});
             // Set back to default value
             memcpy(hc_buffer + p.offset, d.second.data.ptr, d.second.data.length);
+            // Do rtc too
+            void *rtc_ptr = rtc_caches.at(instance_id)->hc_buffer + p.rtc_offset;
+            memcpy(rtc_ptr, d.second.data.ptr, d.second.data.length);
             assert(d.second.data.length == p.length);
-            // Store data
-            gpuErrchk(cudaMemcpy(reinterpret_cast<void*>(const_cast<char*>(c_buffer + p.offset)), reinterpret_cast<void*>(hc_buffer + p.offset), p.length, cudaMemcpyHostToDevice));
-            // update RTC
-            setRTCValue(instance_id, d.first, hc_buffer + p.offset, p.length, p.offset);
         }
+    }
+    setDeviceRequiresUpdateFlag(instance_id);
+}
+void EnvironmentManager::setDeviceRequiresUpdateFlag(const unsigned int &instance_id) {
+    // Increment host version
+    if (instance_id == UINT_MAX) {
+        // Set required version for all, we have defragged
+        for (auto &a : deviceRequiresUpdate) {
+            a.second.c_update_required = true;
+            a.second.rtc_update_required = true;
+        }
+    } else {
+        // Set individual
+        auto &flags = deviceRequiresUpdate.at(instance_id);
+        flags.c_update_required = true;
+        flags.rtc_update_required = true;
+    }
+}
+void EnvironmentManager::updateDevice(const unsigned int &instance_id) {
+    // Device must be init first
+    initialiseDevice();
+
+    auto &flags = deviceRequiresUpdate.at(instance_id);
+    auto &c_update_required = flags.c_update_required;
+    auto &rtc_update_required = flags.rtc_update_required;
+    auto &curve_registration_required = flags.curve_registration_required;
+    if (c_update_required) {
+        // Store data
+        gpuErrchk(cudaMemcpy(reinterpret_cast<void*>(const_cast<char*>(c_buffer)), reinterpret_cast<void*>(const_cast<char*>(hc_buffer)), MAX_BUFFER_SIZE, cudaMemcpyHostToDevice));
+        // Update C update flag for all instances
+        for (auto &a : deviceRequiresUpdate) {
+            a.second.c_update_required = false;
+        }
+    }
+    if (rtc_update_required) {
+        // update RTC
+        const CUDAAgentModel& cuda_agent_model = getCUDAAgentModel(instance_id);
+        const auto &rtc_cache = rtc_caches.at(instance_id);
+        cuda_agent_model.RTCUpdateEnvironmentVariables(rtc_cache->hc_buffer, rtc_cache->nextFree);
+        // Update instance's rtc update flag
+        rtc_update_required = false;
+    }
+    if (curve_registration_required) {
+        Curve::getInstance().setNamespaceByHash(CURVE_NAMESPACE_HASH);
+        // Update cub for any not mapped properties
+        for (auto &p : properties) {
+            if (p.first.first == instance_id) {
+                // Generate hash for the subproperty name
+                Curve::VariableHash cvh = toHash(p.first);
+                const auto &prop = p.second;
+                // Create the mapping
+                const auto CURVE_RESULT = Curve::getInstance().registerVariableByHash(cvh, reinterpret_cast<void*>(const_cast<char*>(c_buffer + prop.offset)),
+                        prop.length / prop.elements, prop.elements);
+                if (CURVE_RESULT == Curve::UNKNOWN_VARIABLE) {
+                    THROW CurveException("curveRegisterVariableByHash() returned UNKNOWN_CURVE_VARIABLE, "
+                        "in EnvironmentManager::updateDevice().");
+                }
+#ifdef _DEBUG
+                if (CURVE_RESULT != static_cast<int>((cvh+CURVE_NAMESPACE_HASH)%Curve::MAX_VARIABLES)) {
+                    fprintf(stderr, "Curve Warning: Environment Property '%s' has a collision and may work improperly.\n", p.first.second.c_str());
+                }
+#endif
+            }
+        }
+        // Update cub for any mapped properties
+        for (auto &mp : mapped_properties) {
+            if (mp.first.first == instance_id) {
+                // Generate hash for the subproperty name
+                Curve::VariableHash cvh = toHash(mp.first);
+                const auto &masterprop = properties.at(mp.second.masterProp);
+                // Create the mapping
+                const auto CURVE_RESULT = Curve::getInstance().registerVariableByHash(cvh, reinterpret_cast<void*>(const_cast<char*>(c_buffer + masterprop.offset)),
+                        masterprop.length / masterprop.elements, masterprop.elements);
+                if (CURVE_RESULT == Curve::UNKNOWN_VARIABLE) {
+                    THROW CurveException("curveRegisterVariableByHash() returned UNKNOWN_CURVE_VARIABLE, "
+                        "in EnvironmentManager::updateDevice().");
+                }
+#ifdef _DEBUG
+                if (CURVE_RESULT != static_cast<int>((cvh+CURVE_NAMESPACE_HASH)%Curve::MAX_VARIABLES)) {
+                    fprintf(stderr, "Curve Warning: Environment Property '%s' has a collision and may work improperly.\n", mp.first.second.c_str());
+                }
+#endif
+            }
+        }
+        curve_registration_required = false;
+        Curve::getInstance().setDefaultNamespace();
     }
 }

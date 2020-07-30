@@ -368,6 +368,10 @@ DERIVED_FGPUException(OutOfBoundsException, "Index exceeds bounds of array!");
  * Defines an exception for errors reported by TinyXML
  */
 DERIVED_FGPUException(TinyXMLError, "TinyXML returned an error code!");
+/**
+ * Defines an exception for errors reported by RapidJSON
+ */
+DERIVED_FGPUException(RapidJSONError, "RapidJSON returned an error code!");
 
 /**
  * Defines an exception for errors when model components are mixed up

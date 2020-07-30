@@ -16,6 +16,7 @@ include(${CMAKE_CURRENT_LIST_DIR}/cuda_arch.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/Thrust.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/Jitify.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/Tinyxml2.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/rapidjson.cmake)
 
 # Common rules for other cmake files
 # Make available lowercase 'linux'/'windows' vars (used for build dirs)
@@ -442,7 +443,12 @@ function(add_flamegpu_library NAME SRC FLAMEGPU_ROOT)
 
     # tinyxml2 static library
     target_link_libraries(${NAME} tinyxml2)
-
+    
+    # If rapidjson was found, add it to the include dirs.
+    if(RapidJSON_FOUND)
+        target_include_directories(${NAME} ${INCLUDE_SYSTEM_FLAG} PRIVATE "${RapidJSON_INCLUDE_DIRS}")
+    endif()
+    
     # Add extra includes (jitify, nvtx, nvrtc etc.) @todo improve this.
     target_include_directories(${NAME}  ${INCLUDE_SYSTEM_FLAG} PUBLIC ${FLAMEGPU_DEPENDENCY_INCLUDE_DIRECTORIES})
 
