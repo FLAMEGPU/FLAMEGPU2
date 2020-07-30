@@ -77,8 +77,7 @@ int main(int argc, const char ** argv) {
      * Create Model Runner
      */
     NVTX_PUSH("CUDAAgentModel creation");
-    CUDAAgentModel cuda_model(model);
-    cuda_model.initialise(argc, argv);
+    CUDAAgentModel cuda_model(model, argc, argv);
     NVTX_POP();
 
     /**

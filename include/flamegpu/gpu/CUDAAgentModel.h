@@ -57,9 +57,13 @@ class CUDAAgentModel : public Simulation {
     /**
      * Initialise cuda runner
      * Allocates memory for agents/messages, copies environment properties to device etc
+     * If provided, you can pass runtime arguments to this constructor, to automatically call inititialise()
+     * This is not required, you can call inititialise() manually later, or not at all.
      * @param model The model description to initialise the runner to execute
+     * @param argc Runtime argument count
+     * @param argv Runtime argument list ptr
      */
-    explicit CUDAAgentModel(const ModelDescription& model);
+    explicit CUDAAgentModel(const ModelDescription& model, int argc = 0, const char** argv = nullptr);
 
  private:
     /**

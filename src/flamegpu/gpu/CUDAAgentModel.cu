@@ -22,7 +22,7 @@
 std::atomic<int> CUDAAgentModel::active_instances;  // This value should default init to 0, specifying =0 was causing warnings on Windows.
 bool CUDAAgentModel::AUTO_CUDA_DEVICE_RESET = true;
 
-CUDAAgentModel::CUDAAgentModel(const ModelDescription& _model)
+CUDAAgentModel::CUDAAgentModel(const ModelDescription& _model, int argc, const char** argv)
     : Simulation(_model)
     , step_count(0)
     , simulation_elapsed_time(0.f)
@@ -60,6 +60,10 @@ CUDAAgentModel::CUDAAgentModel(const ModelDescription& _model)
     // create new cuda message and add to the map
     for (auto it_sm = smm.cbegin(); it_sm != smm.cend(); ++it_sm) {
         submodel_map.emplace(it_sm->first, std::unique_ptr<CUDAAgentModel>(new CUDAAgentModel(it_sm->second, this)));
+    }
+
+    if (argc && argv) {
+        initialise(argc, argv);
     }
 }
 CUDAAgentModel::CUDAAgentModel(const std::shared_ptr<SubModelData> &submodel_desc, CUDAAgentModel *master_model)
