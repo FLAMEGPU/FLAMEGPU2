@@ -39,12 +39,12 @@ option(BUILD_FLAMEGPU2 "Enable building FLAMEGPU2 library" ON)
 # Option to enable building all examples
 option(BUILD_ALL_EXAMPLES "Enable building examples" ON)
 
-
 # Options to enable building individual examples, if BUILD_ALL_EXAMPLES is off.
-option(BUILD_EXAMPLE_HOST_FUNCTIONS "Enable building examples/host_functions" OFF)
-option(BUILD_EXAMPLE_GAME_OF_LIFE "Enable building examples/game_of_life" OFF)
+option(BUILD_EXAMPLE_BOIDS_BRUTE_FORCE "Enable building examples/boids_brute_force" OFF)
 option(BUILD_EXAMPLE_CIRCLES_BRUTE_FORCE "Enable building examples/circles_brute_force" OFF)
 option(BUILD_EXAMPLE_CIRCLES_SPATIAL_3D "Enable building examples/circles_spatial_3d" OFF)
+option(BUILD_EXAMPLE_GAME_OF_LIFE "Enable building examples/game_of_life" OFF)
+option(BUILD_EXAMPLE_HOST_FUNCTIONS "Enable building examples/host_functions" OFF)
 option(BUILD_EXAMPLE_RTC_EXAMPLE "Enable building examples/rtc_example" OFF)
 
 # Option to enable/disable building the static library
@@ -104,8 +104,12 @@ if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_HOST_FUNCTIONS)
     add_subdirectory(examples/host_functions)
 endif()
 
-if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_GAME_OF_LIFE)
-    add_subdirectory(examples/game_of_life)
+
+if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_BOIDS_BRUTE_FORCE)
+    add_subdirectory(examples/boids_bruteforce)
+endif()
+if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_BOIDS_SPATIAL_3D)
+    add_subdirectory(examples/boids_spatial3D)
 endif()
 
 if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_CIRCLES_BRUTE_FORCE)
@@ -116,6 +120,9 @@ if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_CIRCLES_SPATIAL_3D)
     add_subdirectory(examples/circles_spatial3D)
 endif()
 
+if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_GAME_OF_LIFE)
+    add_subdirectory(examples/game_of_life)
+endif()
 # Add the tests directory (if required)
 if(BUILD_TESTS)
     add_subdirectory(tests)
