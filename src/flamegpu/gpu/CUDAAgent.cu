@@ -2,6 +2,8 @@
 
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
+#include <iostream>
+#include <fstream>
 
 #include <iostream>
 #include <fstream>
@@ -612,7 +614,8 @@ void CUDAAgent::addInstantitateRTCFunction(jitify::JitCache &kernel_cache, const
         }
     }
     // get the dynamically generated header from curve rtc
-    headers.push_back(curve_header.getDynamicHeader());
+    std::string curve_dynamic_header = curve_header.getDynamicHeader();
+    headers.push_back(curve_dynamic_header);
 
     // cassert header (to remove remaining warnings) TODO: Ask Jitify to implement safe version of this
     std::string cassert_h = "cassert\n";
@@ -627,6 +630,21 @@ void CUDAAgent::addInstantitateRTCFunction(jitify::JitCache &kernel_cache, const
             auto kernel = program.kernel("agent_function_wrapper");
             // create string for agent function implementation
             std::string func_impl = std::string(func.rtc_func_name).append("_impl");
+            // output to disk if OUTPUT_RTC_DYNAMIC_FILES macro is set
+#ifdef OUTPUT_RTC_DYNAMIC_FILES
+            // curve
+            std::ofstream file_curve_rtc_header;
+            file_curve_rtc_header.open ("curve_rtc_dynamic.h");
+            file_curve_rtc_header << curve_dynamic_header;
+            file_curve_rtc_header.close();
+            // agent function
+            std::ofstream agent_function_file;
+            std::string agent_function_filename = func_impl.c_str();
+            agent_function_filename.append(".cu");
+            agent_function_file.open (agent_function_filename);
+            agent_function_file << func.rtc_source;
+            agent_function_file.close();
+#endif
             // add kernal instance to map
             rtc_func_map.insert(CUDARTCFuncMap::value_type(func.name, std::unique_ptr<jitify::KernelInstantiation>(new jitify::KernelInstantiation(kernel, { func_impl.c_str(), func.msg_in_type.c_str(), func.msg_out_type.c_str() }))));
         } else {
