@@ -6,7 +6,7 @@
 #include "flamegpu/flame_api.h"
 
 /**
- * FLAME GPU 2 implementation of the Boids model, using spatial3D messaging.
+ * FLAME GPU 2 implementation of the Boids model, using BruteForce messaging.
  * This is based on the FLAME GPU 1 implementation, but with dynamic generation of agents. 
  * Agents are also clamped to be within the environment bounds, rather than wrapped as in FLAME GPU 1.
  * 
@@ -115,7 +115,8 @@ FLAMEGPU_HOST_DEVICE_FUNCTION void clampPosition(float &x, float &y, float &z, c
 /**
  * outputdata agent function for Boid agents, which outputs publicly visible properties to a message list
  */
-FLAMEGPU_AGENT_FUNCTION(outputdata, MsgNone, MsgSpatial3D) {
+const char* outputdata = R"###(
+FLAMEGPU_AGENT_FUNCTION(outputdata, MsgNone, MsgBruteForce) {
     // Output each agents publicly visible properties.
     FLAMEGPU->message_out.setVariable<int>("id", FLAMEGPU->getVariable<int>("id"));
     FLAMEGPU->message_out.setVariable<float>("x", FLAMEGPU->getVariable<float>("x"));
@@ -126,10 +127,52 @@ FLAMEGPU_AGENT_FUNCTION(outputdata, MsgNone, MsgSpatial3D) {
     FLAMEGPU->message_out.setVariable<float>("fz", FLAMEGPU->getVariable<float>("fz"));
     return ALIVE;
 }
+)###";
 /**
  * inputdata agent function for Boid agents, which reads data from neighbouring Boid agents, to perform the boid flocking model.
  */
-FLAMEGPU_AGENT_FUNCTION(inputdata, MsgSpatial3D, MsgNone) {
+const char* inputdata = R"###(
+// Vector utility functions, see top of file for versions with commentary
+FLAMEGPU_HOST_DEVICE_FUNCTION float vec3Length(const float x, const float y, const float z) {
+    return sqrtf(x * x + y * y + z * z);
+}
+FLAMEGPU_HOST_DEVICE_FUNCTION void vec3Add(float &x, float &y, float &z, const float value) {
+    x += value;
+    y += value;
+    z += value;
+}
+FLAMEGPU_HOST_DEVICE_FUNCTION void vec3Sub(float &x, float &y, float &z, const float value) {
+    x -= value;
+    y -= value;
+    z -= value;
+}
+FLAMEGPU_HOST_DEVICE_FUNCTION void vec3Mult(float &x, float &y, float &z, const float multiplier) {
+    x *= multiplier;
+    y *= multiplier;
+    z *= multiplier;
+}
+FLAMEGPU_HOST_DEVICE_FUNCTION void vec3Div(float &x, float &y, float &z, const float divisor) {
+    x /= divisor;
+    y /= divisor;
+    z /= divisor;
+}
+FLAMEGPU_HOST_DEVICE_FUNCTION void vec3Normalize(float &x, float &y, float &z) {
+    // Get the length
+    float length = vec3Length(x, y, z);
+    vec3Div(x, y, z, length);
+}
+FLAMEGPU_HOST_DEVICE_FUNCTION void clampPosition(float &x, float &y, float &z, const float MIN_POSITION, const float MAX_POSITION) {
+    x = (x < MIN_POSITION)? MIN_POSITION: x;
+    x = (x > MAX_POSITION)? MAX_POSITION: x;
+
+    y = (y < MIN_POSITION)? MIN_POSITION: y;
+    y = (y > MAX_POSITION)? MAX_POSITION: y;
+
+    z = (z < MIN_POSITION)? MIN_POSITION: z;
+    z = (z > MAX_POSITION)? MAX_POSITION: z;
+}
+// Agent function
+FLAMEGPU_AGENT_FUNCTION(inputdata, MsgBruteForce, MsgNone) {
     // Agent properties in local register
     int id = FLAMEGPU->getVariable<int>("id");
     // Agent position
@@ -161,7 +204,7 @@ FLAMEGPU_AGENT_FUNCTION(inputdata, MsgSpatial3D, MsgNone) {
     const float INTERACTION_RADIUS = FLAMEGPU->environment.get<float>("INTERACTION_RADIUS");
     const float SEPARATION_RADIUS = FLAMEGPU->environment.get<float>("SEPARATION_RADIUS");
     // Iterate location messages, accumulating relevant data and counts.
-    for (const auto &message : FLAMEGPU->message_in(agent_x, agent_y, agent_z)) {
+    for (const auto &message : FLAMEGPU->message_in) {
         // Ignore self messages.
         if (message.getVariable<int>("id") != id) {
             // Get the message location and velocity.
@@ -284,14 +327,40 @@ FLAMEGPU_AGENT_FUNCTION(inputdata, MsgSpatial3D, MsgNone) {
 
     return ALIVE;
 }
+)###";
 
 int main(int argc, const char ** argv) {
-    ModelDescription model("boids_spatial3D");
+    ModelDescription model("Boids_BruteForce");
+
+    {   // Location message
+        MsgBruteForce::Description &message = model.newMessage("location");
+        // A message to hold the location of an agent.
+        message.newVariable<int>("id");
+        message.newVariable<float>("x");
+        message.newVariable<float>("y");
+        message.newVariable<float>("z");
+        message.newVariable<float>("fx");
+        message.newVariable<float>("fy");
+        message.newVariable<float>("fz");
+    }
+    {   // Boid agent
+        AgentDescription &agent = model.newAgent("Boid");
+        agent.newVariable<int>("id");
+        agent.newVariable<float>("x");
+        agent.newVariable<float>("y");
+        agent.newVariable<float>("z");
+        agent.newVariable<float>("fx");
+        agent.newVariable<float>("fy");
+        agent.newVariable<float>("fz");
+        agent.newRTCFunction("outputdata", outputdata).setMessageOutput("location");
+        agent.newRTCFunction("inputdata", inputdata).setMessageInput("location");
+    }
+
 
     /**
      * GLOBALS
      */
-     {
+    {
         EnvironmentDescription &env = model.Environment();
 
         // Population size to generate, if no agents are loaded from disk
@@ -319,48 +388,16 @@ int main(int argc, const char ** argv) {
         env.add("MATCH_SCALE", 1.25f);
     }
 
-
-    {   // Location message
-        EnvironmentDescription &env = model.Environment();
-        MsgSpatial3D::Description &message = model.newMessage<MsgSpatial3D>("location");
-        // Set the range and bounds.
-        message.setRadius(env.get<float>("INTERACTION_RADIUS"));
-        message.setMin(env.get<float>("MIN_POSITION"), env.get<float>("MIN_POSITION"), env.get<float>("MIN_POSITION"));
-        message.setMax(env.get<float>("MAX_POSITION"), env.get<float>("MAX_POSITION"), env.get<float>("MAX_POSITION"));
-
-        // A message to hold the location of an agent.
-        message.newVariable<int>("id");
-        // X Y Z are implicit.
-        // message.newVariable<float>("x");
-        // message.newVariable<float>("y");
-        // message.newVariable<float>("z");
-        message.newVariable<float>("fx");
-        message.newVariable<float>("fy");
-        message.newVariable<float>("fz");
-    }
-    {   // Boid agent
-        AgentDescription &agent = model.newAgent("Boid");
-        agent.newVariable<int>("id");
-        agent.newVariable<float>("x");
-        agent.newVariable<float>("y");
-        agent.newVariable<float>("z");
-        agent.newVariable<float>("fx");
-        agent.newVariable<float>("fy");
-        agent.newVariable<float>("fz");
-        agent.newFunction("outputdata", outputdata).setMessageOutput("location");
-        agent.newFunction("inputdata", inputdata).setMessageInput("location");
-    }
-
     /**
      * Control flow
      */     
     {   // Layer #1
         LayerDescription &layer = model.newLayer();
-        layer.addAgentFunction(outputdata);
+        layer.addAgentFunction("Boid", "outputdata");
     }
     {   // Layer #2
         LayerDescription &layer = model.newLayer();
-        layer.addAgentFunction(inputdata);
+        layer.addAgentFunction("Boid", "inputdata");
     }
 
 
@@ -395,16 +432,10 @@ int main(int argc, const char ** argv) {
     if (cuda_model.getSimulationConfig().input_file.empty()) {
         EnvironmentDescription &env = model.Environment();
         // Uniformly distribute agents within space, with uniformly distributed initial velocity.
-        // c++ random number generator engine
         std::mt19937 rngEngine(cuda_model.getSimulationConfig().random_seed);
-        // Uniform distribution for agent position components
         std::uniform_real_distribution<float> position_distribution(env.get<float>("MIN_POSITION"), env.get<float>("MAX_POSITION"));
-        // Uniform distribution of velocity direction components
         std::uniform_real_distribution<float> velocity_distribution(-1, 1);
-        // Uniform distribution of velocity magnitudes
         std::uniform_real_distribution<float> velocity_magnitude_distribution(env.get<float>("MIN_INITIAL_SPEED"), env.get<float>("MAX_INITIAL_SPEED"));
-
-        // Generate a population of agents, based on the relevant environment property
         const unsigned int populationSize = env.get<unsigned int>("POPULATION_TO_GENERATE");
         AgentPopulation population(model.Agent("Boid"), populationSize);
         for (unsigned int i = 0; i < populationSize; i++) {
@@ -450,4 +481,3 @@ int main(int argc, const char ** argv) {
 #endif
     return 0;
 }
-
