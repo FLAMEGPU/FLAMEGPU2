@@ -77,7 +77,7 @@ __global__ void agent_function_wrapper(
     if (FLAMEGPU_DEVICE_API<MsgIn, MsgOut>::TID() >= popNo)
         return;
     // create a new device FLAME_GPU instance
-    FLAMEGPU_DEVICE_API<MsgIn, MsgOut> *api = new FLAMEGPU_DEVICE_API<MsgIn, MsgOut>(
+    FLAMEGPU_DEVICE_API<MsgIn, MsgOut> api = FLAMEGPU_DEVICE_API<MsgIn, MsgOut>(
         instance_id_hash,
         agent_func_name_hash,
         agent_output_hash,
@@ -88,13 +88,13 @@ __global__ void agent_function_wrapper(
 
     // call the user specified device function
     {
-        FLAME_GPU_AGENT_STATUS flag = AgentFunction()(api);
+        FLAME_GPU_AGENT_STATUS flag = AgentFunction()(&api);
         // (scan flags will not be processed unless agent death has been requested in model definition)
         scanFlag_agentDeath[FLAMEGPU_DEVICE_API<MsgIn, MsgOut>::TID()] = flag;
     }
     // do something with the return value to set a flag for deletion
 
-    delete api;
+    // delete api;
 }
 
 
