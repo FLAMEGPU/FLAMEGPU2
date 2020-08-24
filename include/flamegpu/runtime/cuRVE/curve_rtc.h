@@ -7,7 +7,6 @@
 #include <typeindex>
 #include <unordered_map>
 
-
 /** @brief    A cuRVE instance.
  *
  * The Curve RTC host is a class for dynamically building a header file for use in RTC functions. Rather than providing a hashmap of string variable names it will dynamically create a header with agent variables directly accessible via compile time string comparisons.

@@ -172,6 +172,8 @@ class Curve {
      */
     template <typename T>
     __device__ __forceinline__ static T getVariableByHash(const VariableHash variable_hash, unsigned int index);
+    template <typename T>
+    __device__ __forceinline__ static T getVariableByHash_ldg(const VariableHash variable_hash, unsigned int index);
     /**
      * @tparam T Type of variable array
      * @tparam N Length of variable array
@@ -186,6 +188,8 @@ class Curve {
      */
     template <typename T, unsigned int N>
     __device__ __forceinline__ static T getVariable(const char(&variableName)[N], VariableHash namespace_hash, unsigned int index);
+    template <typename T, unsigned int N>
+    __device__ __forceinline__ static T getVariable_ldg(const char(&variableName)[N], VariableHash namespace_hash, unsigned int index);
     /**
      * Returns a value from a position of a variable array
      * @tparam T Type of the variable array
@@ -490,6 +494,27 @@ __device__ __forceinline__ T Curve::getVariableByHash(const VariableHash variabl
         return *value_ptr;
     return 0;
 }
+template <typename T>
+__device__ __forceinline__ T Curve::getVariableByHash_ldg(const VariableHash variable_hash, unsigned int index) {
+    size_t offset = index *sizeof(T);
+
+    // do a check on the size as otherwise the value_ptr may eb out of bounds.
+    size_t size = getVariableSize(variable_hash);
+
+    // error checking
+    if (size != sizeof(T)) {
+        curve_internal::d_curve_error = DEVICE_ERROR_UNKNOWN_TYPE;
+        return NULL;
+    } else {
+        // get a pointer to the specific variable by offsetting by the provided index
+        T *value_ptr = reinterpret_cast<T*>(getVariablePtrByHash(variable_hash, offset));
+
+        if (value_ptr)
+            return __ldg(value_ptr);
+        else
+            return 0;
+    }
+}
 template <typename T, unsigned int N>
 __device__ __forceinline__ T Curve::getArrayVariableByHash(const VariableHash variable_hash, unsigned int agent_index, unsigned int array_index) {
     // do a check on the size as otherwise the value_ptr may eb out of bounds.
@@ -524,6 +549,12 @@ __device__ __forceinline__ T Curve::getVariable(const char (&variableName)[N], V
     }
 #endif
     return getVariableByHash<T>(variable_hash+namespace_hash, index);
+}
+template <typename T, unsigned int N>
+__device__ __forceinline__ T Curve::getVariable_ldg(const char (&variableName)[N], VariableHash namespace_hash, unsigned int index) {
+    VariableHash variable_hash = variableHash(variableName);
+
+    return getVariableByHash_ldg<T>(variable_hash+namespace_hash, index);
 }
 template <typename T, unsigned int N, unsigned int M>
 __device__ __forceinline__ T Curve::getArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, unsigned int agent_index, unsigned int array_index) {
