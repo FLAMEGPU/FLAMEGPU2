@@ -44,12 +44,14 @@ option(BUILD_FLAMEGPU2 "Enable building FLAMEGPU2 library" ON)
 option(BUILD_ALL_EXAMPLES "Enable building examples" ON)
 
 # Options to enable building individual examples, if BUILD_ALL_EXAMPLES is off.
-option(BUILD_EXAMPLE_BOIDS_BRUTE_FORCE "Enable building examples/boids_brute_force" OFF)
-option(BUILD_EXAMPLE_CIRCLES_BRUTE_FORCE "Enable building examples/circles_brute_force" OFF)
-option(BUILD_EXAMPLE_CIRCLES_SPATIAL_3D "Enable building examples/circles_spatial_3d" OFF)
+option(BUILD_EXAMPLE_BOIDS_BRUTEFORCE "Enable building examples/boids_bruteforce" OFF)
+option(BUILD_EXAMPLE_BOIDS_SPATIAL3D "Enable building examples/boids_spatial3D" OFF)
+option(BUILD_EXAMPLE_BOIDS_RTC_BRUTEFORCE "Enable building examples/boids_rtc_bruteforce" OFF)
+option(BUILD_EXAMPLE_BOIDS_RTC_SPATIAL3DE "Enable building examples/boids_rtc_bruteforce" OFF)
+option(BUILD_EXAMPLE_CIRCLES_BRUTEFORCE "Enable building examples/circles_bruteforcespatial3D" OFF)
+option(BUILD_EXAMPLE_CIRCLES_SPATIAL3D "Enable building examples/circles_spatial3D" OFF)
 option(BUILD_EXAMPLE_GAME_OF_LIFE "Enable building examples/game_of_life" OFF)
 option(BUILD_EXAMPLE_HOST_FUNCTIONS "Enable building examples/host_functions" OFF)
-option(BUILD_EXAMPLE_RTC_EXAMPLE "Enable building examples/rtc_example" OFF)
 option(BUILD_SWIG_PYTHON "Enable python bindings via SWIG" OFF)
 cmake_dependent_option(BUILD_SWIG_PYTHON_VIRTUALENV "Enable building of SWIG Python Virtual Env for Python Testing" OFF
                        "BUILD_SWIG_PYTHON" OFF)
@@ -102,28 +104,31 @@ endif()
 
 # Add each example
 
-
-if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_RTC_EXAMPLE)
-    add_subdirectory(examples/rtc_example)
-endif()
-
 if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_HOST_FUNCTIONS)
     add_subdirectory(examples/host_functions)
 endif()
 
-
-if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_BOIDS_BRUTE_FORCE)
+if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_BOIDS_BRUTEFORCE)
     add_subdirectory(examples/boids_bruteforce)
 endif()
-if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_BOIDS_SPATIAL_3D)
+
+if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_BOIDS_SPATIAL3D)
     add_subdirectory(examples/boids_spatial3D)
 endif()
 
-if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_CIRCLES_BRUTE_FORCE)
+if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_BOIDS_RTC_BRUTEFORCE)
+    add_subdirectory(examples/boids_rtc_bruteforce)
+endif()
+
+if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_BOIDS_RTC_SPATIAL3D)
+    add_subdirectory(examples/boids_rtc_spatial3D)
+endif()
+
+if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_CIRCLES_BRUTEFORCE)
     add_subdirectory(examples/circles_bruteforce)
 endif()
 
-if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_CIRCLES_SPATIAL_3D)
+if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_CIRCLES_SPATIAL3D)
     add_subdirectory(examples/circles_spatial3D)
 endif()
 

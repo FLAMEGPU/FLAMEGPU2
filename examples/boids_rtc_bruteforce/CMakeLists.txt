@@ -3,7 +3,7 @@
 cmake_minimum_required(VERSION VERSION 3.12 FATAL_ERROR)
 
 # Name the project and set languages
-project(rtc_example CUDA CXX)
+project(boids_rtc_bruteforce CUDA CXX)
 
 # Set the location of the ROOT flame gpu project relative to this CMakeList.txt
 get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../.. REALPATH)
