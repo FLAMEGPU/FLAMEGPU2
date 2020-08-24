@@ -47,7 +47,7 @@ option(BUILD_ALL_EXAMPLES "Enable building examples" ON)
 option(BUILD_EXAMPLE_BOIDS_BRUTEFORCE "Enable building examples/boids_bruteforce" OFF)
 option(BUILD_EXAMPLE_BOIDS_SPATIAL3D "Enable building examples/boids_spatial3D" OFF)
 option(BUILD_EXAMPLE_BOIDS_RTC_BRUTEFORCE "Enable building examples/boids_rtc_bruteforce" OFF)
-option(BUILD_EXAMPLE_BOIDS_RTC_SPATIAL3DE "Enable building examples/boids_rtc_bruteforce" OFF)
+option(BUILD_EXAMPLE_BOIDS_RTC_SPATIAL3D "Enable building examples/boids_rtc_spatial3D" OFF)
 option(BUILD_EXAMPLE_CIRCLES_BRUTEFORCE "Enable building examples/circles_bruteforcespatial3D" OFF)
 option(BUILD_EXAMPLE_CIRCLES_SPATIAL3D "Enable building examples/circles_spatial3D" OFF)
 option(BUILD_EXAMPLE_GAME_OF_LIFE "Enable building examples/game_of_life" OFF)
@@ -65,6 +65,8 @@ option(BUILD_TESTS "Enable building tests" OFF)
 
 # Option to enable/disable NVTX markers for improved profiling
 option(USE_NVTX "Build with NVTX markers enabled" OFF)
+# Option to enable/disable logging of dynamic RTC files to disk
+option(EXPORT_RTC_SOURCES "Export RTC source files to disk at runtime" OFF)
 
 # Control target CUDA_ARCH to compile for
 SET(CUDA_ARCH "${CUDA_ARCH}" CACHE STRING "List of CUDA Architectures to target. E.g. 61;70" FORCE)

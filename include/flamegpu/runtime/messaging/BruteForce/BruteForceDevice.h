@@ -209,7 +209,7 @@ __device__ T MsgBruteForce::In::Message::getVariable(const char(&variable_name)[
     }
 #endif
     // get the value from curve using the stored hashes and message index.
-    T value = Curve::getVariable<T>(variable_name, this->_parent.combined_hash, index);
+    T value = Curve::getVariable_ldg<T>(variable_name, this->_parent.combined_hash, index);
     return value;
 }
 

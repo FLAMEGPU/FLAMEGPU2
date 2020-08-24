@@ -75,6 +75,9 @@ class Curve {
     template <typename T, unsigned int N>
     __device__ __forceinline__ static T getVariable(const char(&name)[N], VariableHash namespace_hash, unsigned int index);
 
+    template <typename T, unsigned int N>
+    __device__ __forceinline__ static T getVariable_ldg(const char(&name)[N], VariableHash namespace_hash, unsigned int index);
+
     template <typename T, unsigned int N, unsigned int M>
     __device__ __forceinline__ static T getArrayVariable(const char(&name)[M], VariableHash namespace_hash, unsigned int variable_index, unsigned int array_index);
     
@@ -90,6 +93,11 @@ class Curve {
 template <typename T, unsigned int N>
 __device__ __forceinline__ T Curve::getVariable(const char (&name)[N], VariableHash namespace_hash, unsigned int index) {
 $DYNAMIC_GETVARIABLE_IMPL
+}
+
+template <typename T, unsigned int N>
+__device__ __forceinline__ T Curve::getVariable_ldg(const char (&name)[N], VariableHash namespace_hash, unsigned int index) {
+$DYNAMIC_GETVARIABLE_LDG_IMPL
 }
 
 template <typename T, unsigned int N, unsigned int M>
@@ -241,6 +249,32 @@ std::string CurveRTCHost::getDynamicHeader() {
     getVariableImpl <<             "    }\n";
     getVariableImpl <<             "    return 0;\n";    // if namespace is not recognised
     setHeaderPlaceholder("$DYNAMIC_GETVARIABLE_IMPL", getVariableImpl.str());
+
+    // generate getVariable_ldg func implementation ($DYNAMIC_GETVARIABLE_LDG_IMPL)
+    std::stringstream getVariableLDGImpl;
+    getVariableLDGImpl <<             "    switch(namespace_hash){\n";
+    for (auto key_pair : RTCVariables) {
+        unsigned int namespace_hash = key_pair.first;
+        getVariableLDGImpl <<         "      case(" << namespace_hash << "):\n";
+        unsigned int count = 0;
+        for (std::pair<std::string, RTCVariableProperties> element : key_pair.second) {
+            RTCVariableProperties props = element.second;
+            if (props.read && props.elements == 1) {
+                getVariableLDGImpl << "            if (strings_equal(name, \"" << element.first << "\"))\n";
+                getVariableLDGImpl << "                return (T) " << "__ldg(&curve_rtc_ptr_" << namespace_hash << "_" << element.first << "[index]);\n";
+                count++;
+            }
+        }
+        if (count > 0) {
+            getVariableLDGImpl << "            else\n";
+        }
+        getVariableLDGImpl <<         "                return 0;\n";
+    }
+    getVariableLDGImpl <<             "      default:\n";
+    getVariableLDGImpl <<             "          return 0;\n";
+    getVariableLDGImpl <<             "    }\n";
+    getVariableLDGImpl <<             "    return 0;\n";    // if namespace is not recognised
+    setHeaderPlaceholder("$DYNAMIC_GETVARIABLE_LDG_IMPL", getVariableLDGImpl.str());
 
     // generate setVariable func implementation ($DYNAMIC_SETTVARIABLE_IMPL)
     std::stringstream setVariableImpl;

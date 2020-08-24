@@ -430,6 +430,10 @@ function(add_flamegpu_library NAME SRC FLAMEGPU_ROOT)
         add_compile_definitions($<IF:$<CONFIG:Debug>,,NO_SEATBELTS>)
     endif()
     
+    if (EXPORT_RTC_SOURCES)
+        add_compile_definitions(OUTPUT_RTC_DYNAMIC_FILES)
+    endif ()
+    
     # Enable RDC
     set_property(TARGET ${NAME}  PROPERTY CUDA_SEPARABLE_COMPILATION ON)
 
