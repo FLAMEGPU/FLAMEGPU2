@@ -31,6 +31,7 @@ using std::experimental::filesystem::v1::path;
 #include "flamegpu/runtime/cuRVE/curve.h"
 #include "flamegpu/runtime/cuRVE/curve_rtc.h"
 #include "flamegpu/gpu/CUDAScatter.h"
+#include "flamegpu/util/compute_capability.cuh"
 
 CUDAAgent::CUDAAgent(const AgentData& description, const CUDASimulation &_cuda_model)
     : agent_description(description)  // This is a master agent, so it must create a new fat_agent
@@ -483,31 +484,61 @@ void CUDAAgent::addInstantitateRTCFunction(jitify::JitCache &kernel_cache, const
         }
     }
 
-    // get the cuda path
-    const char* env_cuda_path = std::getenv("CUDA_PATH");
-    if (!env_cuda_path) {
+    // get the cuda path from the environment variable.
+    std::string env_cuda_path = std::getenv("CUDA_PATH");
+    if (env_cuda_path.size() == 0) {
         THROW InvalidAgentFunc("Error compiling runtime agent function ('%s'): CUDA_PATH environment variable does not exist, "
             "in CUDAAgent::addInstantitateRTCFunction().",
             func.name.c_str());
+    }
+    // If the last char is a / or \, remove it. Only removes a single slash.
+    if (env_cuda_path.size() && (env_cuda_path.back() == '/' || env_cuda_path.back() == '\\')) {
+        env_cuda_path.pop_back();
     }
 
     // vector of compiler options for jitify
     std::vector<std::string> options;
     std::vector<std::string> headers;
 
-    // fpgu incude
-    std::string include_fgpu;
-    include_fgpu = "-I" + std::string(env_inc_fgp2);
-    options.push_back(include_fgpu);
+    // fpgu include directory
+    options.push_back(std::string("-I" + std::string(env_inc_fgp2)));
 
-    // cuda path
-    std::string include_cuda;
-    include_cuda = "-I" + std::string(env_cuda_path) + "/include";
-    options.push_back(include_cuda);
+    // cuda include directory (via CUDA_PATH)
+    options.push_back(std::string("-I" + env_cuda_path + "/include"));
+
+    // Set the compilation architecture target if it was successfully detected.
+    int currentDeviceIdx = 0;
+    cudaError_t status = cudaGetDevice(&currentDeviceIdx);
+    if (status == cudaSuccess) {
+        int arch = util::compute_capability::getComputeCapability(currentDeviceIdx);
+        options.push_back(std::string("--gpu-architecture=compute_" + std::to_string(arch)));
+    }
+
+    // If CUDA is compiled with -G (--device-debug) forward it to the compiler, otherwise forward lineinfo for profiling.
+    #if defined(__CUDACC_DEBUG__)
+        options.push_back("--device-debug");
+    #else
+        options.push_back("--generate-line-info");
+    #endif
+
+    // If DEBUG is defined, forward it
+    #if defined(DEBUG)
+        options.push_back("-DDEBUG");
+    #endif
+
+    // If NDEBUG is defiend, forward it, this should disable asserts in device code.
+    #if defined(NDEBUG)
+        options.push_back("-DNDEBUG");
+    #endif
+
+    // pass the c++14 language dialect if detected successfully.
+    #if defined(__cplusplus) && __cplusplus > 201400L
+        options.push_back("--std=c++14");
+    #endif
 
     // cuda.h
     std::string include_cuda_h;
-    include_cuda_h = "--pre-include=" + std::string(env_cuda_path) + "/include/cuda.h";
+    include_cuda_h = "--pre-include=" + env_cuda_path + "/include/cuda.h";
     options.push_back(include_cuda_h);
 
 #ifdef NO_SEATBELTS
