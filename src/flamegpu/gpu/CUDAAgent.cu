@@ -634,14 +634,14 @@ void CUDAAgent::addInstantitateRTCFunction(jitify::JitCache &kernel_cache, const
 #ifdef OUTPUT_RTC_DYNAMIC_FILES
             // curve
             std::ofstream file_curve_rtc_header;
-            file_curve_rtc_header.open ("curve_rtc_dynamic.h");
+            file_curve_rtc_header.open("curve_rtc_dynamic.h");
             file_curve_rtc_header << curve_dynamic_header;
             file_curve_rtc_header.close();
             // agent function
             std::ofstream agent_function_file;
             std::string agent_function_filename = func_impl.c_str();
             agent_function_filename.append(".cu");
-            agent_function_file.open (agent_function_filename);
+            agent_function_file.open(agent_function_filename);
             agent_function_file << func.rtc_source;
             agent_function_file.close();
 #endif
