@@ -37,6 +37,9 @@ FLAMEGPU_AGENT_FUNCTION(OutOptionalFunction, MsgNone, MsgArray3D) {
     }
     return ALIVE;
 }
+FLAMEGPU_AGENT_FUNCTION(OutOptionalNoneFunction, MsgNone, MsgArray3D) {
+    return ALIVE;
+}
 FLAMEGPU_AGENT_FUNCTION(OutBad, MsgNone, MsgArray3D) {
     unsigned int index = FLAMEGPU->getVariable<unsigned int>("message_write");
     FLAMEGPU->message_out.setVariable<unsigned int>("index_times_3", index * 3);
@@ -149,6 +152,47 @@ TEST(TestMessage_Array3D, Optional) {
         const unsigned int message_read = ai.getVariable<unsigned int>("message_read");
         index = index % 2 == 0 ? index : 0;
         EXPECT_EQ(index * 3, message_read);
+    }
+}
+// Test optional message output, wehre no messages are output.
+TEST(TestMessage_Array3D, OptionalNone) {
+    ModelDescription m(MODEL_NAME);
+    MsgArray3D::Description &msg = m.newMessage<MsgArray3D>(MESSAGE_NAME);
+    msg.setDimensions(CBRT_AGENT_COUNT, CBRT_AGENT_COUNT + 1, CBRT_AGENT_COUNT + 2);
+    msg.newVariable<unsigned int>("index_times_3");
+    AgentDescription &a = m.newAgent(AGENT_NAME);
+    a.newVariable<unsigned int>("index");
+    a.newVariable<unsigned int>("message_read", UINT_MAX);
+    a.newVariable<unsigned int>("message_write");
+    AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, OutOptionalNoneFunction);
+    fo.setMessageOutput(msg);
+    fo.setMessageOutputOptional(true);
+    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, InFunction);
+    fi.setMessageInput(msg);
+    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    lo.addAgentFunction(fo);
+    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    li.addAgentFunction(fi);
+
+    // Generate an arbitrary population.
+    AgentPopulation pop(a, AGENT_COUNT);
+    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+        AgentInstance ai = pop.getNextInstance();
+        ai.setVariable<unsigned int>("index", i);
+        ai.setVariable<unsigned int>("message_read", UINT_MAX);
+    }
+    // Set pop in model
+    CUDAAgentModel c(m);
+    c.setPopulationData(pop);
+    c.step();
+    c.getPopulationData(pop);
+    // Validate each agent has same result
+    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+        AgentInstance ai = pop.getInstanceAt(i);
+        unsigned int index = ai.getVariable<unsigned int>("index");
+        const unsigned int message_read = ai.getVariable<unsigned int>("message_read");
+        // no messages should have been read.
+        EXPECT_EQ(0, message_read);
     }
 }
 
