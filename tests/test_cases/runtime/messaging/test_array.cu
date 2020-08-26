@@ -175,10 +175,9 @@ TEST(TestMessage_Array, OptionalNone) {
     // Validate each agent has same result
     for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
         AgentInstance ai = pop.getInstanceAt(i);
-        unsigned int index = ai.getVariable<unsigned int>("index");
         const unsigned int message_read = ai.getVariable<unsigned int>("message_read");
         // no messages should have been read.
-        EXPECT_EQ(0, message_read);
+        EXPECT_EQ(0u, message_read);
     }
 }
 

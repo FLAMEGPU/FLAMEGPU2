@@ -267,7 +267,6 @@ TEST(BucketMsgTest, OptionalNone) {
         std::default_random_engine rng;
         std::uniform_real_distribution<float> dist(0.0f, 1.0f);
         for (unsigned int i = 0; i < AGENT_COUNT; i++) {
-            int do_out =  dist(rng) > 0.3 ? 1 : 0;
             AgentInstance instance = population.getNextInstance();
             instance.setVariable<int>("id", i);
             // Create it if it doesn't already exist
@@ -289,9 +288,9 @@ TEST(BucketMsgTest, OptionalNone) {
         AgentInstance ai = population.getInstanceAt(i);
         const int id = ai.getVariable<int>("id");
         const int id_m1 = id == 0 ? 0 : id-1;
-        EXPECT_EQ(0, bucket_count.at(id_m1/2));
-        EXPECT_EQ(0, bucket_count.at(id_m1/2));
-        EXPECT_EQ(0, bucket_sum.at(id_m1/2));
+        EXPECT_EQ(0u, bucket_count.at(id_m1/2));
+        EXPECT_EQ(0u, bucket_count.at(id_m1/2));
+        EXPECT_EQ(0u, bucket_sum.at(id_m1/2));
     }
 }
 TEST(BucketMsgTest, Mandatory_Range) {

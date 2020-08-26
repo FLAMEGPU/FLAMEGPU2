@@ -408,11 +408,10 @@ TEST(Spatial2DMsgTest, OptionalNone) {
     unsigned int badCountWrong = 0;
     for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
         AgentInstance ai = population.getInstanceAt(i);
-        unsigned int myBin = ai.getVariable<unsigned int>("myBin");
         unsigned int myResult = ai.getVariable<unsigned int>("count");
         if (ai.getVariable<unsigned int>("badCount"))
             badCountWrong++;
-        EXPECT_EQ(myResult, 0);  // NEW!
+        EXPECT_EQ(myResult, 0u);  // NEW!
     }
     EXPECT_EQ(badCountWrong, 0u);
 }
