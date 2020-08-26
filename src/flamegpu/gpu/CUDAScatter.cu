@@ -268,6 +268,11 @@ void CUDAScatter::pbm_reorder(
     const unsigned int *d_bin_index,
     const unsigned int *d_bin_sub_index,
     const unsigned int *d_pbm) {
+    // If itemCount is 0, then there is no work to be done.
+    if (itemCount == 0) {
+        return;
+    }
+
     int blockSize = 0;  // The launch configurator returned block size
     int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
     int gridSize = 0;  // The actual grid size needed, based on input size
@@ -508,6 +513,11 @@ void CUDAScatter::arrayMessageReorder(
     const unsigned int &itemCount,
     const unsigned int &array_length,
     unsigned int *d_write_flag) {
+    // If itemCount is 0, then there is no work to be done.
+    if (itemCount == 0) {
+        return;
+    }
+
     if (itemCount > array_length) {
         THROW ArrayMessageWriteConflict("Too many messages output for array message structure (%u > %u).\n", itemCount, array_length);
     }

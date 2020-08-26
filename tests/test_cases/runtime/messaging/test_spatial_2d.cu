@@ -29,6 +29,9 @@ FLAMEGPU_AGENT_FUNCTION(out_optional2D, MsgNone, MsgSpatial2D) {
     }
     return ALIVE;
 }
+FLAMEGPU_AGENT_FUNCTION(out_optional2DNone, MsgNone, MsgSpatial2D) {
+    return ALIVE;
+}
 FLAMEGPU_AGENT_FUNCTION(in2D, MsgSpatial2D, MsgNone) {
     const float x1 = FLAMEGPU->getVariable<float>("x");
     const float y1 = FLAMEGPU->getVariable<float>("y");
@@ -320,6 +323,100 @@ TEST(Spatial2DMsgTest, Optional) {
     }
     EXPECT_EQ(badCountWrong, 0u);
 }
+TEST(Spatial2DMsgTest, OptionalNone) {
+    /**
+     * This test is same as Mandatory, however extra flag has been added to block certain agents from outputting messages
+     * Look for NEW!
+     */
+    std::unordered_map<int, unsigned int> bin_counts;
+    std::unordered_map<int, unsigned int> bin_counts_optional;
+    // Construct model
+    ModelDescription model("Spatial2DMsgTestModel");
+    {   // Location message
+        MsgSpatial2D::Description &message = model.newMessage<MsgSpatial2D>("location");
+        message.setMin(0, 0);
+        message.setMax(11, 11);
+        message.setRadius(1);
+        // 11x11 bins, total 121
+        message.newVariable<int>("id");  // unused by current test
+    }
+    {   // Circle agent
+        AgentDescription &agent = model.newAgent("agent");
+        agent.newVariable<int>("id");
+        agent.newVariable<float>("x");
+        agent.newVariable<float>("y");
+        agent.newVariable<int>("do_output");  // NEW!
+        agent.newVariable<unsigned int>("myBin");  // This will be presumed bin index of the agent, might not use this
+        agent.newVariable<unsigned int>("count");  // Store the distance moved here, for validation
+        agent.newVariable<unsigned int>("badCount");  // Store how many messages are out of range
+        auto &af = agent.newFunction("out", out_optional2DNone);  // NEW!
+        af.setMessageOutput("location");
+        af.setMessageOutputOptional(true);  // NEW!
+        agent.newFunction("in", in2D).setMessageInput("location");
+    }
+    {   // Layer #1
+        LayerDescription &layer = model.newLayer();
+        layer.addAgentFunction(out_optional2DNone);  // NEW!
+    }
+    {   // Layer #2
+        LayerDescription &layer = model.newLayer();
+        layer.addAgentFunction(in2D);
+    }
+    CUDAAgentModel cuda_model(model);
+
+    const int AGENT_COUNT = 2049;
+    AgentPopulation population(model.Agent("agent"), AGENT_COUNT);
+    // Initialise agents (TODO)
+    {
+        // Currently population has not been init, so generate an agent population on the fly
+        std::default_random_engine rng;
+        std::uniform_real_distribution<float> dist(0.0f, 11.0f);
+        std::uniform_real_distribution<float> dist5(0.0f, 5.0f);
+        for (unsigned int i = 0; i < AGENT_COUNT; i++) {
+            AgentInstance instance = population.getNextInstance();
+            instance.setVariable<int>("id", i);
+            float pos[3] = { dist(rng), dist(rng), dist(rng) };
+            int do_output = dist5(rng) < 4 ? 1 : 0;  // 80% chance of output  // NEW!
+            instance.setVariable<float>("x", pos[0]);
+            instance.setVariable<float>("y", pos[1]);
+            instance.setVariable<int>("do_output", do_output);  // NEW!
+            // Solve the bin index
+            const unsigned int bin_pos[2] = {
+                (unsigned int)(pos[0] / 1),
+                (unsigned int)(pos[1] / 1)
+            };
+            const unsigned int bin_index =
+                bin_pos[1] * 11 +
+                bin_pos[0];
+            instance.setVariable<unsigned int>("myBin", bin_index);
+            // Create it if it doesn't already exist
+            bin_counts[bin_index] += 1;
+            if (do_output) {  // NEW!
+                bin_counts_optional[bin_index] += 1;  // NEW!
+            }
+        }
+        cuda_model.setPopulationData(population);
+    }
+
+    // Execute a single step of the model
+    cuda_model.step();
+
+    // Recover the results and check they match what was expected
+
+    cuda_model.getPopulationData(population);
+    // Validate each agent has same result
+    unsigned int badCountWrong = 0;
+    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+        AgentInstance ai = population.getInstanceAt(i);
+        unsigned int myBin = ai.getVariable<unsigned int>("myBin");
+        unsigned int myResult = ai.getVariable<unsigned int>("count");
+        if (ai.getVariable<unsigned int>("badCount"))
+            badCountWrong++;
+        EXPECT_EQ(myResult, 0);  // NEW!
+    }
+    EXPECT_EQ(badCountWrong, 0u);
+}
+
 TEST(Spatial2DMsgTest, BadRadius) {
     ModelDescription model("Spatial2DMsgTestModel");
     MsgSpatial2D::Description &message = model.newMessage<MsgSpatial2D>("location");

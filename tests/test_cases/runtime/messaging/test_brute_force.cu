@@ -25,6 +25,9 @@ FLAMEGPU_AGENT_FUNCTION(OutFunction_Optional, MsgNone, MsgBruteForce) {
     if (x) FLAMEGPU->message_out.setVariable("x", x);
     return ALIVE;
 }
+FLAMEGPU_AGENT_FUNCTION(OutFunction_OptionalNone, MsgNone, MsgBruteForce) {
+    return ALIVE;
+}
 FLAMEGPU_AGENT_FUNCTION(InFunction, MsgBruteForce, MsgNone) {
     int sum = FLAMEGPU->getVariable<int>("sum");
     int product = FLAMEGPU->getVariable<int>("product");
@@ -51,6 +54,12 @@ FLAMEGPU_AGENT_FUNCTION(InFunction2, MsgBruteForce, MsgNone) {
     FLAMEGPU->setVariable<int>("product", product);
     int x = FLAMEGPU->getVariable<int>("x");
     FLAMEGPU->setVariable<int>("x", x + 1);
+    return ALIVE;
+}
+FLAMEGPU_AGENT_FUNCTION(InFunctionNone, MsgBruteForce, MsgNone) {
+    for (auto &message : FLAMEGPU->message_in) {
+        FLAMEGPU->setVariable("message_read", message.getVariable<unsigned int>("index_times_3"));
+    }
     return ALIVE;
 }
 
@@ -259,6 +268,46 @@ TEST(TestMessage_BruteForce, Optional2) {
         AgentInstance ai = pop.getInstanceAt(i);
         ASSERT_EQ(ai.getVariable<int>("sum"), sum);
         ASSERT_EQ(ai.getVariable<int>("product"), product);
+    }
+}
+// Test optional message output, wehre no messages are output.
+TEST(TestMessage_BruteForce, OptionalNone) {
+    ModelDescription m(MODEL_NAME);
+    MsgBruteForce::Description &msg = m.newMessage(MESSAGE_NAME);
+    msg.newVariable<unsigned int>("index_times_3");
+    AgentDescription &a = m.newAgent(AGENT_NAME);
+    a.newVariable<unsigned int>("index");
+    a.newVariable<unsigned int>("message_read", UINT_MAX);
+    AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction_OptionalNone);
+    fo.setMessageOutputOptional(true);
+    fo.setMessageOutput(msg);
+    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, InFunctionNone);
+    fi.setMessageInput(msg);
+    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    lo.addAgentFunction(fo);
+    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    li.addAgentFunction(fi);
+
+    // Generate an arbitrary population.
+    AgentPopulation pop(a, AGENT_COUNT);
+    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+        AgentInstance ai = pop.getNextInstance();
+        ai.setVariable<unsigned int>("index", i);
+        ai.setVariable<unsigned int>("message_read", UINT_MAX);
+    }
+
+    CUDAAgentModel c(m);
+    c.SimulationConfig().steps = 1;
+    c.setPopulationData(pop);
+    c.simulate();
+    c.getPopulationData(pop);
+    // Validate each agent has seen no messages.
+    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+        AgentInstance ai = pop.getInstanceAt(i);
+        unsigned int index = ai.getVariable<unsigned int>("index");
+        const unsigned int message_read = ai.getVariable<unsigned int>("message_read");
+        // no messages should have been read.
+        EXPECT_EQ(UINT_MAX, message_read);
     }
 }
 

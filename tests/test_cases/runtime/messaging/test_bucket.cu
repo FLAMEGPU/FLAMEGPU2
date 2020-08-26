@@ -55,6 +55,9 @@ FLAMEGPU_AGENT_FUNCTION(out_optional, MsgNone, MsgBucket) {
     }
     return ALIVE;
 }
+FLAMEGPU_AGENT_FUNCTION(out_optionalNone, MsgNone, MsgBucket) {
+    return ALIVE;
+}
 FLAMEGPU_AGENT_FUNCTION(in, MsgBucket, MsgNone) {
     const int id = FLAMEGPU->getVariable<int>("id");
     const int id_m1 = id == 0 ? 0 : id-1;
@@ -222,6 +225,73 @@ TEST(BucketMsgTest, Optional) {
         EXPECT_EQ(count1, bucket_count.at(id_m1/2));
         EXPECT_EQ(count2, bucket_count.at(id_m1/2));
         EXPECT_EQ(sum, bucket_sum.at(id_m1/2));
+    }
+}
+// Test optional message output, wehre no messages are output.
+TEST(BucketMsgTest, OptionalNone) {
+    const int AGENT_COUNT = 1024;
+    std::unordered_map<int, unsigned int> bucket_count;
+    std::unordered_map<int, unsigned int> bucket_sum;
+    // Construct model
+    ModelDescription model("BucketMsgTest");
+    {   // MsgBucket::Description
+        MsgBucket::Description &message = model.newMessage<MsgBucket>("bucket");
+        message.setBounds(12, 12 +(AGENT_COUNT/2));  // None zero lowerBound, to check that's working
+        message.newVariable<int>("id");
+    }
+    {   // AgentDescription
+        AgentDescription &agent = model.newAgent("agent");
+        agent.newVariable<int>("id");
+        agent.newVariable<unsigned int>("count1", 0);  // Number of messages iterated
+        agent.newVariable<unsigned int>("count2", 0);  // Size of bucket as returned by size()
+        agent.newVariable<unsigned int>("sum", 0);  // Sums of IDs in bucket
+        auto &af = agent.newFunction("out", out_optionalNone);
+        af.setMessageOutput("bucket");
+        af.setMessageOutputOptional(true);
+        agent.newFunction("in", in).setMessageInput("bucket");
+    }
+    {   // Layer #1
+        LayerDescription &layer = model.newLayer();
+        layer.addAgentFunction(out_optionalNone);
+    }
+    {   // Layer #2
+        LayerDescription &layer = model.newLayer();
+        layer.addAgentFunction(in);
+    }
+    CUDAAgentModel cuda_model(model);
+
+    AgentPopulation population(model.Agent("agent"), AGENT_COUNT);
+    // Initialise agents (TODO)
+    {
+        // Currently population has not been init, so generate an agent population on the fly
+        std::default_random_engine rng;
+        std::uniform_real_distribution<float> dist(0.0f, 1.0f);
+        for (unsigned int i = 0; i < AGENT_COUNT; i++) {
+            int do_out =  dist(rng) > 0.3 ? 1 : 0;
+            AgentInstance instance = population.getNextInstance();
+            instance.setVariable<int>("id", i);
+            // Create it if it doesn't already exist
+            if (bucket_count.find(i/2) == bucket_count.end()) {
+                bucket_count.emplace(i/2, 0);
+                bucket_sum.emplace(i/2, 0);
+            }
+        }
+        cuda_model.setPopulationData(population);
+    }
+
+    // Execute a single step of the model
+    cuda_model.step();
+
+    // Recover the results and check they match what was expected
+    cuda_model.getPopulationData(population);
+    // Validate each agent has correct result
+    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+        AgentInstance ai = population.getInstanceAt(i);
+        const int id = ai.getVariable<int>("id");
+        const int id_m1 = id == 0 ? 0 : id-1;
+        EXPECT_EQ(0, bucket_count.at(id_m1/2));
+        EXPECT_EQ(0, bucket_count.at(id_m1/2));
+        EXPECT_EQ(0, bucket_sum.at(id_m1/2));
     }
 }
 TEST(BucketMsgTest, Mandatory_Range) {
