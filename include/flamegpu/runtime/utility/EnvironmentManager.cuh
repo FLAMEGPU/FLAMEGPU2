@@ -25,7 +25,6 @@ class EnvironmentDescription;
 class CUDAAgentModel;
 class CUDAAgent;
 
-
 /**
  * Singleton manager for managing environment properties storage in constant memory
  * This is an internal class, that should not be accessed directly by modellers

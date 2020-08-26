@@ -294,7 +294,7 @@ void EnvironmentManager::add(const NamePair &name, const char *ptr, const size_t
     // Register in cuRVE
     Curve::getInstance().setNamespaceByHash(CURVE_NAMESPACE_HASH);
     Curve::VariableHash cvh = toHash(name);
-    const auto CURVE_RESULT = Curve::getInstance().registerVariableByHash(cvh, reinterpret_cast<void*>(const_cast<char*>(c_buffer + buffOffset)), typeSize, elements);
+    const auto CURVE_RESULT = Curve::getInstance().registerVariableByHash(cvh, reinterpret_cast<void*>(buffOffset), typeSize, elements);
     if (CURVE_RESULT == Curve::UNKNOWN_VARIABLE) {
         THROW CurveException("curveRegisterVariableByHash() returned UNKNOWN_CURVE_VARIABLE"
             "in EnvironmentManager::add().");
@@ -363,7 +363,7 @@ void EnvironmentManager::defragment(const DefragMap * mergeProperties, std::set<
                     Curve::getInstance().unregisterVariableByHash(cvh);
                 }
             }
-            const auto CURVE_RESULT = Curve::getInstance().registerVariableByHash(cvh, reinterpret_cast<void*>(const_cast<char*>(c_buffer + buffOffset)),
+            const auto CURVE_RESULT = Curve::getInstance().registerVariableByHash(cvh, reinterpret_cast<void*>(buffOffset),
                 typeSize, i.second.elements);
             if (CURVE_RESULT == Curve::UNKNOWN_VARIABLE) {
                 THROW CurveException("curveRegisterVariableByHash() returned UNKNOWN_CURVE_VARIABLE, "
@@ -401,7 +401,7 @@ void EnvironmentManager::defragment(const DefragMap * mergeProperties, std::set<
         // Find the location of the mappedproperty
         auto masterprop = properties.at(mp.second.masterProp);
         // Create the mapping
-        const auto CURVE_RESULT = Curve::getInstance().registerVariableByHash(cvh, reinterpret_cast<void*>(const_cast<char*>(c_buffer + masterprop.offset)),
+        const auto CURVE_RESULT = Curve::getInstance().registerVariableByHash(cvh, reinterpret_cast<void*>(masterprop.offset),
                 masterprop.length / masterprop.elements, masterprop.elements);
         if (CURVE_RESULT == Curve::UNKNOWN_VARIABLE) {
             THROW CurveException("curveRegisterVariableByHash() returned UNKNOWN_CURVE_VARIABLE, "
@@ -641,7 +641,7 @@ void EnvironmentManager::updateDevice(const unsigned int &instance_id) {
                 Curve::VariableHash cvh = toHash(p.first);
                 const auto &prop = p.second;
                 // Create the mapping
-                const auto CURVE_RESULT = Curve::getInstance().registerVariableByHash(cvh, reinterpret_cast<void*>(const_cast<char*>(c_buffer + prop.offset)),
+                const auto CURVE_RESULT = Curve::getInstance().registerVariableByHash(cvh, reinterpret_cast<void*>(prop.offset),
                         prop.length / prop.elements, prop.elements);
                 if (CURVE_RESULT == Curve::UNKNOWN_VARIABLE) {
                     THROW CurveException("curveRegisterVariableByHash() returned UNKNOWN_CURVE_VARIABLE, "
@@ -661,7 +661,7 @@ void EnvironmentManager::updateDevice(const unsigned int &instance_id) {
                 Curve::VariableHash cvh = toHash(mp.first);
                 const auto &masterprop = properties.at(mp.second.masterProp);
                 // Create the mapping
-                const auto CURVE_RESULT = Curve::getInstance().registerVariableByHash(cvh, reinterpret_cast<void*>(const_cast<char*>(c_buffer + masterprop.offset)),
+                const auto CURVE_RESULT = Curve::getInstance().registerVariableByHash(cvh, reinterpret_cast<void*>(masterprop.offset),
                         masterprop.length / masterprop.elements, masterprop.elements);
                 if (CURVE_RESULT == Curve::UNKNOWN_VARIABLE) {
                     THROW CurveException("curveRegisterVariableByHash() returned UNKNOWN_CURVE_VARIABLE, "

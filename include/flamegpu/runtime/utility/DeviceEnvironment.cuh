@@ -2,19 +2,22 @@
 #define INCLUDE_FLAMEGPU_RUNTIME_UTILITY_DEVICEENVIRONMENT_CUH_
 
 // #include <cuda_runtime.h>
-#include <stdint.h>
+#include <cstdint>
 #include <string>
 #include <cassert>
 
-
-// #include "flamegpu/runtime/utility/HostEnvironment.cuh"
-
 namespace flamegpu_internal {
+#ifndef __CUDACC_RTC__
+    /**
+     * Defined in EnvironmentManager.cu
+     */
+    extern __constant__ char c_envPropBuffer[EnvironmentManager::MAX_BUFFER_SIZE];
+#endif
     /**
      * Managed by HostEnvironment, returned whenever a failure state is reached
      */
     extern __constant__ uint64_t c_deviceEnvErrorPattern;
-}
+}  // namespace flamegpu_internal
 
 /**
  * Utility for accessing environmental properties
@@ -91,11 +94,11 @@ __device__ __forceinline__ T DeviceEnvironment::get(const char(&name)[N]) const 
     } else if (curve_internal::d_sizes[cv] != sizeof(T)) {
         DTHROW("Environment property with name: %s type size mismatch %llu != %llu.\n", name, curve_internal::d_sizes[cv], sizeof(T));
     } else {
-        return *reinterpret_cast<T*>(curve_internal::d_variables[cv]);
+        return *reinterpret_cast<T*>(flamegpu_internal::c_envPropBuffer + reinterpret_cast<ptrdiff_t>(curve_internal::d_variables[cv]));
     }
     return {};
 #else
-    return *reinterpret_cast<T*>(curve_internal::d_variables[cv]);
+    return *reinterpret_cast<T*>(flamegpu_internal::c_envPropBuffer + reinterpret_cast<ptrdiff_t>(curve_internal::d_variables[cv]));
 #endif
 }
 template<typename T, unsigned int N>
@@ -110,11 +113,11 @@ __device__ __forceinline__ T DeviceEnvironment::get(const char(&name)[N], const 
     } else if (curve_internal::d_lengths[cv] <= index) {
         DTHROW("Environment property array with name: %s index %u is out of bounds (length %u).\n", name, index, curve_internal::d_lengths[cv]);
     } else {
-        return *(reinterpret_cast<T*>(curve_internal::d_variables[cv]) + index);
+        return *(reinterpret_cast<T*>(flamegpu_internal::c_envPropBuffer + reinterpret_cast<ptrdiff_t>(curve_internal::d_variables[cv])) + index);
     }
     return {};
 #else
-    return *(reinterpret_cast<T*>(curve_internal::d_variables[cv]) + index);
+    return *(reinterpret_cast<T*>(flamegpu_internal::c_envPropBuffer + reinterpret_cast<ptrdiff_t>(curve_internal::d_variables[cv])) + index);
 #endif
 }
 
