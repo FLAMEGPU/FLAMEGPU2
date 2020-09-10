@@ -27,7 +27,7 @@
 
 /**
  * TEMPLATE_ARRAY_TYPE_INSTANTIATE macro
- *  This is used to instanciate the array sizes of a given type. This allows a mapping between python types and the function arguments created by TEMPLATE_VARIABLE_ARRAY_INSTANTIATE
+ *  This is used to Instantiate the array sizes of a given type. This allows a mapping between python types and the function arguments created by TEMPLATE_VARIABLE_ARRAY_INSTANTIATE
  */
 %define TEMPLATE_ARRAY_TYPE_INSTANTIATE(Typename, T) 
 %template(Typename ## Array1) std::array<T, 1>;
@@ -123,7 +123,7 @@ TEMPLATE_VARIABLE_INSTANTIATE_INTS(function, classfunction)
 /**
  * TEMPLATE_SUM_INSTANTIATE macro
  * Specific template expansion for sum which allows different return types to avoid range issues 
- * Return with same type is not instanciated. I.e. All int type use 64 bit signed returned types
+ * Return with same type is not Instantiated. I.e. All int type use 64 bit signed returned types
  */
 %define TEMPLATE_SUM_INSTANTIATE(sum_class) 
 // float and double
@@ -147,7 +147,7 @@ TEMPLATE_VARIABLE_INSTANTIATE_INTS(function, classfunction)
 
 /**
  * TEMPLATE_VARIABLE_INSTANTIATE_N macro
- * Given a function name and a class::function specifier, this macro instanciates a typed version of the function for a set of basic types AND default array lengths. 
+ * Given a function name and a class::function specifier, this macro Instantiates a typed version of the function for a set of basic types AND default array lengths. 
  * See description of TEMPLATE_VARIABLE_INSTANTIATE and TEMPLATE_VARIABLE_ARRAY_INSTANTIATE
  */
 %define TEMPLATE_VARIABLE_INSTANTIATE_N(function, classfunction) 
@@ -182,6 +182,9 @@ TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## UChar, classfunction, unsigned c
 #include "flamegpu/model/AgentFunctionDescription.h"
 #include "flamegpu/model/EnvironmentDescription.h"
 #include "flamegpu/model/LayerDescription.h"
+#include "flamegpu/model/SubModelDescription.h"
+#include "flamegpu/model/SubAgentDescription.h"
+#include "flamegpu/model/SubEnvironmentDescription.h"
 #include "flamegpu/pop/AgentPopulation.h"
 #include "flamegpu/gpu/CUDASimulation.h"
 
@@ -256,7 +259,7 @@ class FGPURuntimeException : public std::exception {
     } 
 }
 
-/* Instanciate the array types used in the templated variable functions. Types must match those in TEMPLATE_VARIABLE_INSTANTIATE and TEMPLATE_VARIABLE_INSTANTIATE_N macros*/
+/* Instantiate the array types used in the templated variable functions. Types must match those in TEMPLATE_VARIABLE_INSTANTIATE and TEMPLATE_VARIABLE_INSTANTIATE_N macros*/
 TEMPLATE_ARRAY_TYPE_INSTANTIATE(Int8, int8_t)
 TEMPLATE_ARRAY_TYPE_INSTANTIATE(Int16, int16_t)
 TEMPLATE_ARRAY_TYPE_INSTANTIATE(Int32, int32_t)
@@ -323,11 +326,10 @@ TEMPLATE_ARRAY_TYPE_INSTANTIATE(Double, double)
 %feature("director") HostFunctionCallback;
 %feature("director") HostFunctionConditionCallback;
 %include "flamegpu/runtime/HostFunctionCallback.h"
-/* Rather than input a header with lots of other function pointer stuff just inline dclare the required enum */
+/* Rather than input a header with lots of other function pointer stuff just inline declare the required enum */
 enum FLAME_GPU_CONDITION_RESULT { CONTINUE, EXIT };
 
-
-// Disable non RTC function and function condtion set methods
+// Disable non RTC function and function condition set methods
 %ignore AgentDescription::newFunction;
 %ignore AgentFunctionDescription::getFunctionPtr;
 %ignore AgentFunctionDescription::setFunctionCondition;
@@ -353,7 +355,7 @@ namespace EnvironmentManager{
 %include "flamegpu/model/AgentDescription.h"
 %include "flamegpu/model/AgentFunctionDescription.h"
 
-/* Extend EnvironmentDescription to add a templated version of the arrray and arry+index get function with a different name so this can be instantiated */
+/* Extend EnvironmentDescription to add a templated version of the array and array+index get function with a different name so this can be instantiated */
 %include "flamegpu/model/EnvironmentDescription.h"
 %extend EnvironmentDescription{
     template<typename T, EnvironmentManager::size_type N> std::array<T, N> getArray(const std::string& name) const {
@@ -363,6 +365,11 @@ namespace EnvironmentManager{
 
 
 %include "flamegpu/model/LayerDescription.h"
+
+%include "flamegpu/model/SubModelDescription.h"
+%include "flamegpu/model/SubAgentDescription.h"
+%include "flamegpu/model/SubEnvironmentDescription.h"
+
 %include "flamegpu/pop/AgentPopulation.h"
 
 /* Extend AgentInstance to add a templated version of the getVariable function with a different name so this can be instantiated */
@@ -437,6 +444,7 @@ namespace EnvironmentManager{
 %rename (MsgArray_Description) MsgArray::Description;
 %rename (MsgArray2D_Description) MsgArray2D::Description;
 %rename (MsgArray3D_Description) MsgArray3D::Description;
+%rename (MsgBucket_Description) MsgBucket::Description;
 
 %include "flamegpu/runtime/messaging/None.h"
 %include "flamegpu/runtime/messaging/None/NoneHost.h"
@@ -452,22 +460,24 @@ namespace EnvironmentManager{
 %include "flamegpu/runtime/messaging/Array2D/Array2DHost.h"
 %include "flamegpu/runtime/messaging/Array3D.h"
 %include "flamegpu/runtime/messaging/Array3D/Array3DHost.h"
+%include "flamegpu/runtime/messaging/Bucket.h"
+%include "flamegpu/runtime/messaging/Bucket/BucketHost.h"
 %feature("flatnested", "");     // flat nested off
 
 
 
 
-// Instanciate template versions of agent functions from the API
+// Instantiate template versions of agent functions from the API
 TEMPLATE_VARIABLE_INSTANTIATE(newVariable, AgentDescription::newVariable)
 TEMPLATE_VARIABLE_INSTANTIATE_N(newVariable, AgentDescription::newVariable)
 
-// Instanciate template versions of host agent functions from the API
+// Instantiate template versions of host agent functions from the API
 TEMPLATE_VARIABLE_INSTANTIATE(setVariable, AgentInstance::setVariable)
 TEMPLATE_VARIABLE_INSTANTIATE_N(setVariable, AgentInstance::setVariable)
 TEMPLATE_VARIABLE_INSTANTIATE(getVariable, AgentInstance::getVariable)
 TEMPLATE_VARIABLE_INSTANTIATE_N(getVariable, AgentInstance::getVariableArray)
 
-// Instanciate template versions of host agent instance functions from the API
+// Instantiate template versions of host agent instance functions from the API
 // Not currently supported: custom reductions, transformations or histograms
 TEMPLATE_VARIABLE_INSTANTIATE(sort, HostAgentInstance::sort)
 TEMPLATE_VARIABLE_INSTANTIATE(count, HostAgentInstance::count)
@@ -475,20 +485,20 @@ TEMPLATE_VARIABLE_INSTANTIATE(min, HostAgentInstance::min)
 TEMPLATE_VARIABLE_INSTANTIATE(max, HostAgentInstance::max)
 TEMPLATE_SUM_INSTANTIATE(HostAgentInstance)
 
-// Instanciate template versions of host environment functions from the API
+// Instantiate template versions of host environment functions from the API
 TEMPLATE_VARIABLE_INSTANTIATE(get, HostEnvironment::get)
 TEMPLATE_VARIABLE_INSTANTIATE_N(get, HostEnvironment::getArray)
 TEMPLATE_VARIABLE_INSTANTIATE(set, HostEnvironment::set)
 TEMPLATE_VARIABLE_INSTANTIATE_N(set, HostEnvironment::set)
 
-// Instanciate template versions of host agent functions from the API
+// Instantiate template versions of host agent functions from the API
 TEMPLATE_VARIABLE_INSTANTIATE(getVariable, FLAMEGPU_HOST_NEW_AGENT_API::getVariable)
 TEMPLATE_VARIABLE_INSTANTIATE_N(getVariable, FLAMEGPU_HOST_NEW_AGENT_API::getVariable)
 TEMPLATE_VARIABLE_INSTANTIATE(setVariable, FLAMEGPU_HOST_NEW_AGENT_API::setVariable)
 TEMPLATE_VARIABLE_INSTANTIATE_N(setVariable, FLAMEGPU_HOST_NEW_AGENT_API::setVariable)
 
 
-// Instanciate template versions of environment description functions from the API
+// Instantiate template versions of environment description functions from the API
 TEMPLATE_VARIABLE_INSTANTIATE(add, EnvironmentDescription::add)
 TEMPLATE_VARIABLE_INSTANTIATE_N(add, EnvironmentDescription::add)
 TEMPLATE_VARIABLE_INSTANTIATE(get, EnvironmentDescription::get)
@@ -498,13 +508,14 @@ TEMPLATE_VARIABLE_INSTANTIATE(set, EnvironmentDescription::set)
 TEMPLATE_VARIABLE_INSTANTIATE_N(set, EnvironmentDescription::set)
 
 
-// Instanciate template versions of new and get message types from the API
+// Instantiate template versions of new and get message types from the API
 %template(newMessageBruteForce) ModelDescription::newMessage<MsgBruteForce>;
 %template(newMessageSpatial2D) ModelDescription::newMessage<MsgSpatial2D>;
 %template(newMessageSpatial3D) ModelDescription::newMessage<MsgSpatial3D>;
 %template(newMessageArray) ModelDescription::newMessage<MsgArray>;
 %template(newMessageArray2D) ModelDescription::newMessage<MsgArray2D>;
 %template(newMessageArray3D) ModelDescription::newMessage<MsgArray3D>;
+%template(newMessageBucket) ModelDescription::newMessage<MsgBucket>;
 
 %template(getMessageBruteForce) ModelDescription::getMessage<MsgBruteForce>;
 %template(getMessageSpatial2D) ModelDescription::getMessage<MsgSpatial2D>;
@@ -512,18 +523,20 @@ TEMPLATE_VARIABLE_INSTANTIATE_N(set, EnvironmentDescription::set)
 %template(getMessageArray) ModelDescription::getMessage<MsgArray>;
 %template(getMessageArray2D) ModelDescription::getMessage<MsgArray2D>;
 %template(getMessageArray3D) ModelDescription::getMessage<MsgArray3D>;
+%template(getMessageBucket) ModelDescription::getMessage<MsgBucket>;
 
-// Instanciate template versions of message functions from the API
+// Instantiate template versions of message functions from the API
 TEMPLATE_VARIABLE_INSTANTIATE(newVariable, MsgBruteForce::Description::newVariable)
 TEMPLATE_VARIABLE_INSTANTIATE(newVariable, MsgSpatial2D::Description::newVariable)
 TEMPLATE_VARIABLE_INSTANTIATE(newVariable, MsgSpatial3D::Description::newVariable)
 TEMPLATE_VARIABLE_INSTANTIATE(newVariable, MsgArray::Description::newVariable)
 TEMPLATE_VARIABLE_INSTANTIATE(newVariable, MsgArray2D::Description::newVariable)
 TEMPLATE_VARIABLE_INSTANTIATE(newVariable, MsgArray3D::Description::newVariable)
+TEMPLATE_VARIABLE_INSTANTIATE(newVariable, MsgBucket::Description::newVariable)
 
 
 
-// Instanciate template versions of host random functions from the API
+// Instantiate template versions of host random functions from the API
 TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(uniform, HostRandom::uniformNoRange)
 TEMPLATE_VARIABLE_INSTANTIATE_INTS(uniform, HostRandom::uniformRange)
 TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(normal, HostRandom::normal)
