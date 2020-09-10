@@ -286,11 +286,12 @@ TEST(BucketMsgTest, OptionalNone) {
     // Validate each agent has correct result
     for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
         AgentInstance ai = population.getInstanceAt(i);
-        const int id = ai.getVariable<int>("id");
-        const int id_m1 = id == 0 ? 0 : id-1;
-        EXPECT_EQ(0u, bucket_count.at(id_m1/2));
-        EXPECT_EQ(0u, bucket_count.at(id_m1/2));
-        EXPECT_EQ(0u, bucket_sum.at(id_m1/2));
+        unsigned int count1 = ai.getVariable<unsigned int>("count1");
+        unsigned int count2 = ai.getVariable<unsigned int>("count2");
+        unsigned int sum = ai.getVariable<unsigned int>("sum");
+        EXPECT_EQ(0u, count1);
+        EXPECT_EQ(0u, count2);
+        EXPECT_EQ(0u, sum);
     }
 }
 TEST(BucketMsgTest, Mandatory_Range) {
