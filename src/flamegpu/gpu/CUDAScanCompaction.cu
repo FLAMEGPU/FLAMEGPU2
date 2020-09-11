@@ -2,7 +2,7 @@
 
 #include "flamegpu/gpu/CUDAScanCompaction.h"
 #include "flamegpu/gpu/CUDAErrorChecking.h"
-#include "flamegpu/gpu/CUDAAgentModel.h"
+#include "flamegpu/gpu/CUDASimulation.h"
 
 /**
  * CUDAScanCompaction methods

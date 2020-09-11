@@ -88,7 +88,7 @@ namespace test_message_AppendTruncate {
         lo.addAgentFunction(fo);
         LayerDescription &li = m.newLayer(IN_LAYER_NAME);
         li.addAgentFunction(fi);
-        CUDAAgentModel c(m);
+        CUDASimulation c(m);
         c.setPopulationData(pop);
         c.step();
         c.getPopulationData(pop);
@@ -131,7 +131,7 @@ namespace test_message_AppendTruncate {
         lo2.addAgentFunction(fo2);
         LayerDescription &li = m.newLayer(IN_LAYER_NAME);
         li.addAgentFunction(fi);
-        CUDAAgentModel c(m);
+        CUDASimulation c(m);
         c.setPopulationData(pop);
         c.step();
         c.getPopulationData(pop);
@@ -180,7 +180,7 @@ namespace test_message_AppendTruncate {
         lo.addAgentFunction(fo);
         LayerDescription &li = m.newLayer(IN_LAYER_NAME);
         li.addAgentFunction(fi);
-        CUDAAgentModel c(m);
+        CUDASimulation c(m);
         c.setPopulationData(pop);
         c.step();
         c.getPopulationData(pop);
@@ -234,7 +234,7 @@ namespace test_message_AppendTruncate {
         lo2.addAgentFunction(fo2);
         LayerDescription &li = m.newLayer(IN_LAYER_NAME);
         li.addAgentFunction(fi);
-        CUDAAgentModel c(m);
+        CUDASimulation c(m);
         c.setPopulationData(pop);
         c.step();
         c.getPopulationData(pop);

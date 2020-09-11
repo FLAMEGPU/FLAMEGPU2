@@ -93,7 +93,7 @@ TEST(Spatial2DMsgTest, Mandatory) {
         LayerDescription &layer = model.newLayer();
         layer.addAgentFunction(in2D);
     }
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
 
     const int AGENT_COUNT = 2049;
     AgentPopulation population(model.Agent("agent"), AGENT_COUNT);
@@ -224,7 +224,7 @@ TEST(Spatial2DMsgTest, Optional) {
         LayerDescription &layer = model.newLayer();
         layer.addAgentFunction(in2D);
     }
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
 
     const int AGENT_COUNT = 2049;
     AgentPopulation population(model.Agent("agent"), AGENT_COUNT);
@@ -361,7 +361,7 @@ TEST(Spatial2DMsgTest, OptionalNone) {
         LayerDescription &layer = model.newLayer();
         layer.addAgentFunction(in2D);
     }
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
 
     const int AGENT_COUNT = 2049;
     AgentPopulation population(model.Agent("agent"), AGENT_COUNT);
@@ -443,13 +443,13 @@ TEST(Spatial2DMsgTest, UnsetMax) {
     ModelDescription model("Spatial2DMsgTestModel");
     MsgSpatial2D::Description &message = model.newMessage<MsgSpatial2D>("location");
     message.setMin(5, 5);
-    EXPECT_THROW(CUDAAgentModel m(model), InvalidMessage);
+    EXPECT_THROW(CUDASimulation m(model), InvalidMessage);
 }
 TEST(Spatial2DMsgTest, UnsetMin) {
     ModelDescription model("Spatial2DMsgTestModel");
     MsgSpatial2D::Description &message = model.newMessage<MsgSpatial2D>("location");
     message.setMin(5, 5);
-    EXPECT_THROW(CUDAAgentModel m(model), InvalidMessage);
+    EXPECT_THROW(CUDASimulation m(model), InvalidMessage);
 }
 TEST(Spatial2DMsgTest, reserved_name) {
     ModelDescription model("Spatial2DMsgTestModel");
@@ -489,7 +489,7 @@ TEST(Spatial2DMsgTest, ReadEmpty) {
     // Create 1 agent
     AgentPopulation pop_in(model.Agent("agent"), 1);
     pop_in.getNextInstance();
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(pop_in);
     // Execute model
     EXPECT_NO_THROW(cuda_model.step());

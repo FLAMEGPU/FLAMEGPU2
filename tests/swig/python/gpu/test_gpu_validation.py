@@ -38,7 +38,7 @@ class GPUTest(TestCase):
         for i in range(AGENT_COUNT):
             instance = p.getNextInstance("default")
             instance.setVariableInt("id", i)
-        cm = pyflamegpu.CUDAAgentModel(m)
+        cm = pyflamegpu.CUDASimulation(m)
         # copy to device then back by setting and getting population data
         cm.setPopulationData(p)
         cm.getPopulationData(p)
@@ -65,7 +65,7 @@ class GPUTest(TestCase):
             instance.setVariableInt("x", i)
         layer = m.newLayer("add_layer")
         layer.addAgentFunction(func)
-        cm = pyflamegpu.CUDAAgentModel(m)
+        cm = pyflamegpu.CUDASimulation(m)
         cm.SimulationConfig().steps = 5
         cm.setPopulationData(p)
         cm.simulate()
@@ -108,7 +108,7 @@ class GPUTest(TestCase):
         layer.addAgentFunction(func_add)
         layer.addAgentFunction(func_sub) # error here
 
-        cm = pyflamegpu.CUDAAgentModel(m)
+        cm = pyflamegpu.CUDASimulation(m)
         cm.SimulationConfig().steps = 1
         cm.setPopulationData(pop1)
         cm.setPopulationData(pop2)

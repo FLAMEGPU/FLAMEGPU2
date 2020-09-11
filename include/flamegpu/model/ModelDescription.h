@@ -29,7 +29,7 @@ class ModelDescription {
  public:
     /**
      * Constructor
-     * @param model_name Name of the model, this must be unique between models currently held by instances of CUDAAgentModel
+     * @param model_name Name of the model, this must be unique between models currently held by instances of CUDASimulation
      */
     explicit ModelDescription(const std::string &model_name);
     /**

@@ -1,4 +1,4 @@
-#include "flamegpu/gpu/CUDAAgentModel.h"
+#include "flamegpu/gpu/CUDASimulation.h"
 
 #include <curand_kernel.h>
 
@@ -20,10 +20,10 @@
 #include "flamegpu/runtime/HostFunctionCallback.h"
 
 
-std::atomic<int> CUDAAgentModel::active_instances;  // This value should default init to 0, specifying =0 was causing warnings on Windows.
-bool CUDAAgentModel::AUTO_CUDA_DEVICE_RESET = true;
+std::atomic<int> CUDASimulation::active_instances;  // This value should default init to 0, specifying =0 was causing warnings on Windows.
+bool CUDASimulation::AUTO_CUDA_DEVICE_RESET = true;
 
-CUDAAgentModel::CUDAAgentModel(const ModelDescription& _model, int argc, const char** argv)
+CUDASimulation::CUDASimulation(const ModelDescription& _model, int argc, const char** argv)
     : Simulation(_model)
     , step_count(0)
     , simulation_elapsed_time(0.f)
@@ -60,14 +60,14 @@ CUDAAgentModel::CUDAAgentModel(const ModelDescription& _model, int argc, const c
     const auto &smm = model->submodels;
     // create new cuda message and add to the map
     for (auto it_sm = smm.cbegin(); it_sm != smm.cend(); ++it_sm) {
-        submodel_map.emplace(it_sm->first, std::unique_ptr<CUDAAgentModel>(new CUDAAgentModel(it_sm->second, this)));
+        submodel_map.emplace(it_sm->first, std::unique_ptr<CUDASimulation>(new CUDASimulation(it_sm->second, this)));
     }
 
     if (argc && argv) {
         initialise(argc, argv);
     }
 }
-CUDAAgentModel::CUDAAgentModel(const std::shared_ptr<SubModelData> &submodel_desc, CUDAAgentModel *master_model)
+CUDASimulation::CUDASimulation(const std::shared_ptr<SubModelData> &submodel_desc, CUDASimulation *master_model)
     : Simulation(submodel_desc, master_model)
     , step_count(0)
     , streams(std::vector<cudaStream_t>())
@@ -93,7 +93,7 @@ CUDAAgentModel::CUDAAgentModel(const std::shared_ptr<SubModelData> &submodel_des
             // Locate the master agent
             std::shared_ptr<AgentData> masterAgentDesc = mapping->masterAgent.lock();
             if (!masterAgentDesc) {
-                THROW InvalidParent("Master agent description has expired, in CUDAAgentModel SubModel constructor.\n");
+                THROW InvalidParent("Master agent description has expired, in CUDASimulation SubModel constructor.\n");
             }
             std::unique_ptr<CUDAAgent> &masterAgent = master_model->agent_map.at(masterAgentDesc->name);
             agent_map.emplace(it->first, std::make_unique<CUDAAgent>(*it->second, *this, masterAgent, mapping));
@@ -114,13 +114,13 @@ CUDAAgentModel::CUDAAgentModel(const std::shared_ptr<SubModelData> &submodel_des
     const auto &smm = model->submodels;
     // create new cuda model and add to the map
     for (auto it_sm = smm.cbegin(); it_sm != smm.cend(); ++it_sm) {
-        submodel_map.emplace(it_sm->first, std::unique_ptr<CUDAAgentModel>(new CUDAAgentModel(it_sm->second, this)));
+        submodel_map.emplace(it_sm->first, std::unique_ptr<CUDASimulation>(new CUDASimulation(it_sm->second, this)));
     }
     // Submodels all run silent by default
     SimulationConfig().verbose = false;
 }
 
-CUDAAgentModel::~CUDAAgentModel() {
+CUDASimulation::~CUDASimulation() {
     submodel_map.clear();  // Test
     // De-initialise, freeing singletons?
     // @todo - this is unsafe in a destructor as it may invoke cuda commands.
@@ -152,8 +152,8 @@ CUDAAgentModel::~CUDAAgentModel() {
     }
 }
 
-bool CUDAAgentModel::step() {
-    NVTX_RANGE(std::string("CUDAAgentModel::step " + std::to_string(step_count)).c_str());
+bool CUDASimulation::step() {
+    NVTX_RANGE(std::string("CUDASimulation::step " + std::to_string(step_count)).c_str());
 
     // Ensure singletons have been initialised
     initialiseSingletons();
@@ -630,7 +630,7 @@ bool CUDAAgentModel::step() {
             ++j;
         }
 
-        NVTX_PUSH("CUDAAgentModel::step::HostFunctions");
+        NVTX_PUSH("CUDASimulation::step::HostFunctions");
         // Execute all host functions attached to layer
         // TODO: Concurrency?
         assert(host_api);
@@ -653,7 +653,7 @@ bool CUDAAgentModel::step() {
         // cudaDeviceSynchronize();
     }
 
-    NVTX_PUSH("CUDAAgentModel::step::StepFunctions");
+    NVTX_PUSH("CUDASimulation::step::StepFunctions");
     // Execute step functions
     for (auto &stepFn : model->stepFunctions) {
         NVTX_RANGE("stepFunc");
@@ -707,9 +707,9 @@ bool CUDAAgentModel::step() {
     return true;
 }
 
-void CUDAAgentModel::simulate() {
+void CUDASimulation::simulate() {
     if (agent_map.size() == 0) {
-        THROW InvalidCudaAgentMapSize("Simulation has no agents, in CUDAAgentModel::simulate().");  // recheck if this is really required
+        THROW InvalidCudaAgentMapSize("Simulation has no agents, in CUDASimulation::simulate().");  // recheck if this is really required
     }
 
     // Ensure singletons have been initialised
@@ -740,7 +740,7 @@ void CUDAAgentModel::simulate() {
     // if they have agent creations then buffer space must be allocated for them
 
     // Execute init functions
-    NVTX_PUSH("CUDAAgentModel::step::InitFunctions");
+    NVTX_PUSH("CUDASimulation::step::InitFunctions");
     for (auto &initFn : model->initFunctions) {
         NVTX_RANGE("initFunc");
         initFn(this->host_api.get());
@@ -814,7 +814,7 @@ void CUDAAgentModel::simulate() {
     streams.clear();
 }
 
-void CUDAAgentModel::reset(bool submodelReset) {
+void CUDASimulation::reset(bool submodelReset) {
     // Reset step counter
     resetStepCounter();
 
@@ -855,7 +855,7 @@ void CUDAAgentModel::reset(bool submodelReset) {
     }
 }
 
-void CUDAAgentModel::setPopulationData(AgentPopulation& population) {
+void CUDASimulation::setPopulationData(AgentPopulation& population) {
     // Ensure singletons have been initialised
     initialiseSingletons();
 
@@ -864,7 +864,7 @@ void CUDAAgentModel::setPopulationData(AgentPopulation& population) {
 
     if (it == agent_map.end()) {
         THROW InvalidCudaAgent("Error: Agent ('%s') was not found, "
-            "in CUDAAgentModel::setPopulationData()",
+            "in CUDASimulation::setPopulationData()",
             population.getAgentName().c_str());
     }
 
@@ -878,7 +878,7 @@ void CUDAAgentModel::setPopulationData(AgentPopulation& population) {
 #endif
 }
 
-void CUDAAgentModel::getPopulationData(AgentPopulation& population) {
+void CUDASimulation::getPopulationData(AgentPopulation& population) {
     // Ensure singletons have been initialised
     initialiseSingletons();
 
@@ -887,7 +887,7 @@ void CUDAAgentModel::getPopulationData(AgentPopulation& population) {
 
     if (it == agent_map.end()) {
         THROW InvalidCudaAgent("Error: Agent ('%s') was not found, "
-            "in CUDAAgentModel::getPopulationData()",
+            "in CUDASimulation::getPopulationData()",
             population.getAgentName().c_str());
     }
 
@@ -895,45 +895,45 @@ void CUDAAgentModel::getPopulationData(AgentPopulation& population) {
     it->second->getPopulationData(population);
 }
 
-CUDAAgent& CUDAAgentModel::getCUDAAgent(const std::string& agent_name) const {
+CUDAAgent& CUDASimulation::getCUDAAgent(const std::string& agent_name) const {
     CUDAAgentMap::const_iterator it;
     it = agent_map.find(agent_name);
 
     if (it == agent_map.end()) {
-        THROW InvalidCudaAgent("CUDA agent ('%s') not found, in CUDAAgentModel::getCUDAAgent().",
+        THROW InvalidCudaAgent("CUDA agent ('%s') not found, in CUDASimulation::getCUDAAgent().",
             agent_name.c_str());
     }
 
     return *(it->second);
 }
 
-AgentInterface& CUDAAgentModel::getAgent(const std::string& agent_name) {
+AgentInterface& CUDASimulation::getAgent(const std::string& agent_name) {
     // Ensure singletons have been initialised
     initialiseSingletons();
 
     auto it = agent_map.find(agent_name);
 
     if (it == agent_map.end()) {
-        THROW InvalidCudaAgent("CUDA agent ('%s') not found, in CUDAAgentModel::getAgent().",
+        THROW InvalidCudaAgent("CUDA agent ('%s') not found, in CUDASimulation::getAgent().",
             agent_name.c_str());
     }
 
     return *(it->second);
 }
 
-CUDAMessage& CUDAAgentModel::getCUDAMessage(const std::string& message_name) const {
+CUDAMessage& CUDASimulation::getCUDAMessage(const std::string& message_name) const {
     CUDAMessageMap::const_iterator it;
     it = message_map.find(message_name);
 
     if (it == message_map.end()) {
-        THROW InvalidCudaMessage("CUDA message ('%s') not found, in CUDAAgentModel::getCUDAMessage().",
+        THROW InvalidCudaMessage("CUDA message ('%s') not found, in CUDASimulation::getCUDAMessage().",
             message_name.c_str());
     }
 
     return *(it->second);
 }
 
-bool CUDAAgentModel::checkArgs_derived(int argc, const char** argv, int &i) {
+bool CUDASimulation::checkArgs_derived(int argc, const char** argv, int &i) {
     // Get arg as lowercase
     std::string arg(argv[i]);
     std::transform(arg.begin(), arg.end(), arg.begin(), [](unsigned char c) { return std::use_facet< std::ctype<char>>(std::locale()).tolower(c); });
@@ -945,13 +945,13 @@ bool CUDAAgentModel::checkArgs_derived(int argc, const char** argv, int &i) {
     return false;
 }
 
-void CUDAAgentModel::printHelp_derived() {
+void CUDASimulation::printHelp_derived() {
     const char *line_fmt = "%-18s %s\n";
     printf("CUDA Model Optional Arguments:\n");
     printf(line_fmt, "-d, --device", "GPU index");
 }
 
-void CUDAAgentModel::applyConfig_derived() {
+void CUDASimulation::applyConfig_derived() {
     NVTX_RANGE("applyConfig_derived");
 
     // Handle console_mode
@@ -1011,7 +1011,7 @@ void CUDAAgentModel::applyConfig_derived() {
     reseed(getSimulationConfig().random_seed);
 }
 
-void CUDAAgentModel::reseed(const unsigned int &seed) {
+void CUDASimulation::reseed(const unsigned int &seed) {
     SimulationConfig().random_seed = seed;
     singletons->rng.reseed(seed);
 
@@ -1025,7 +1025,7 @@ void CUDAAgentModel::reseed(const unsigned int &seed) {
     }
 }
 /**
- * These values are ony used by CUDAAgentModel::initialiseSingletons()
+ * These values are ony used by CUDASimulation::initialiseSingletons()
  * Can't put a __device__ symbol method static
  */
 namespace {
@@ -1033,7 +1033,7 @@ namespace {
     const unsigned int DEVICE_HAS_RESET_FLAG = 0xDEADBEEF;
 }  // namespace
 
-void CUDAAgentModel::initialiseSingletons() {
+void CUDASimulation::initialiseSingletons() {
     // Only do this once.
     if (!singletonsInitialised) {
         // If the device has not been specified, also check the compute capability is OK
@@ -1088,7 +1088,7 @@ void CUDAAgentModel::initialiseSingletons() {
     singletons->environment.updateDevice(getInstanceID());
 }
 
-void CUDAAgentModel::initialiseRTC() {
+void CUDASimulation::initialiseRTC() {
     // Only do this once.
     if (!rtcInitialised) {
         // Create jitify cache
@@ -1122,34 +1122,34 @@ void CUDAAgentModel::initialiseRTC() {
     }
 }
 
-void CUDAAgentModel::resetDerivedConfig() {
-    this->config = CUDAAgentModel::Config();
+void CUDASimulation::resetDerivedConfig() {
+    this->config = CUDASimulation::Config();
     resetStepCounter();
 }
 
 
-CUDAAgentModel::Config &CUDAAgentModel::CUDAConfig() {
+CUDASimulation::Config &CUDASimulation::CUDAConfig() {
     return config;
 }
-const CUDAAgentModel::Config &CUDAAgentModel::getCUDAConfig() const {
+const CUDASimulation::Config &CUDASimulation::getCUDAConfig() const {
     return config;
 }
 #ifdef VISUALISATION
-ModelVis &CUDAAgentModel::getVisualisation() {
+ModelVis &CUDASimulation::getVisualisation() {
     if (!visualisation)
         visualisation = std::make_unique<ModelVis>(*this);
     return *visualisation.get();
 }
 #endif
 
-unsigned int CUDAAgentModel::getStepCounter() {
+unsigned int CUDASimulation::getStepCounter() {
     return step_count;
 }
-void CUDAAgentModel::resetStepCounter() {
+void CUDASimulation::resetStepCounter() {
     step_count = 0;
 }
 
-void CUDAAgentModel::initOffsetsAndMap() {
+void CUDASimulation::initOffsetsAndMap() {
     const auto &md = getModelDescription();
     // Build offsets
     agentOffsets.clear();
@@ -1166,7 +1166,7 @@ void CUDAAgentModel::initOffsetsAndMap() {
     }
 }
 
-void CUDAAgentModel::processHostAgentCreation(const unsigned int &streamId) {
+void CUDASimulation::processHostAgentCreation(const unsigned int &streamId) {
     size_t t_bufflen = 0;
     char *t_buff = nullptr;
     char *dt_buff = nullptr;
@@ -1211,7 +1211,7 @@ void CUDAAgentModel::processHostAgentCreation(const unsigned int &streamId) {
     }
 }
 
-void CUDAAgentModel::RTCSafeCudaMemcpyToSymbol(const void* symbol, const char* rtc_symbol_name, const void* src, size_t count, size_t offset) const {
+void CUDASimulation::RTCSafeCudaMemcpyToSymbol(const void* symbol, const char* rtc_symbol_name, const void* src, size_t count, size_t offset) const {
     // make the mem copy to runtime API symbol
     gpuErrchk(cudaMemcpyToSymbol(symbol, src, count, offset));
     // loop through agents
@@ -1227,7 +1227,7 @@ void CUDAAgentModel::RTCSafeCudaMemcpyToSymbol(const void* symbol, const char* r
     }
 }
 
-void CUDAAgentModel::RTCSafeCudaMemcpyToSymbolAddress(void* ptr, const char* rtc_symbol_name, const void* src, size_t count, size_t offset) const {
+void CUDASimulation::RTCSafeCudaMemcpyToSymbolAddress(void* ptr, const char* rtc_symbol_name, const void* src, size_t count, size_t offset) const {
     // offset the device pointer by casting to char
     void* offset_ptr = reinterpret_cast<void*>(reinterpret_cast<char*>(ptr) + offset);
     // make the mem copy to runtime API symbol
@@ -1245,7 +1245,7 @@ void CUDAAgentModel::RTCSafeCudaMemcpyToSymbolAddress(void* ptr, const char* rtc
     }
 }
 
-void CUDAAgentModel::RTCUpdateEnvironmentVariables(const void* src, size_t count) const {
+void CUDASimulation::RTCUpdateEnvironmentVariables(const void* src, size_t count) const {
     // loop through agents
     for (const auto& agent_pair : agent_map) {
         // loop through any agent functions
@@ -1260,17 +1260,17 @@ void CUDAAgentModel::RTCUpdateEnvironmentVariables(const void* src, size_t count
     }
 }
 
-void CUDAAgentModel::incrementStepCounter() {
+void CUDASimulation::incrementStepCounter() {
     this->step_count++;
     this->singletons->environment.set({instance_id, "_stepCount"}, this->step_count);
 }
 
-float CUDAAgentModel::getSimulationElapsedTime() const {
+float CUDASimulation::getSimulationElapsedTime() const {
     // Get the value
     return this->simulation_elapsed_time;
 }
 
-void CUDAAgentModel::initEnvironmentMgr() {
+void CUDASimulation::initEnvironmentMgr() {
     // Populate the environment properties
     if (!submodel) {
         EnvironmentManager::getInstance().init(instance_id, *model->environment);
@@ -1278,6 +1278,6 @@ void CUDAAgentModel::initEnvironmentMgr() {
         EnvironmentManager::getInstance().init(instance_id, *model->environment, mastermodel->getInstanceID(), *submodel->subenvironment);
     }
 
-    // Add the CUDAAgentModel specific variables(s)
+    // Add the CUDASimulation specific variables(s)
     EnvironmentManager::getInstance().add({instance_id, "_stepCount"}, 0u, false);
 }

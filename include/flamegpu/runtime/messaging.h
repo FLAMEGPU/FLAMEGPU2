@@ -39,7 +39,7 @@
  *  It's only required methods are the format of the construtor, see None.h for example.
  *  
  *  CUDAModelHandler:
- *  This is used internally, with one allocated inside each CUDAMessage created by CUDAAgentModel.
+ *  This is used internally, with one allocated inside each CUDAMessage created by CUDASimulation.
  *  This class provides message specific handling of message lists, 
  *  some of this functionality may not be required for your messaging type.
  *  

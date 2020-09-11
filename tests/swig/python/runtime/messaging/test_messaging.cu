@@ -48,7 +48,7 @@ TEST(TestMessage, NoAgents) {
     lo.addAgentFunction(fo);
     LayerDescription &li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     c.SimulationConfig().steps = 10;
     EXPECT_NO_THROW(c.simulate());
 }

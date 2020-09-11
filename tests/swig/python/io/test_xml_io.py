@@ -209,14 +209,14 @@ class IOTest(TestCase):
         m.newLayer().addHostFunctionCallback(reset)
         
         # Run Export
-        am_export = pyflamegpu.CUDAAgentModel(m)
+        am_export = pyflamegpu.CUDASimulation(m)
         am_export.setPopulationData(pop_a_out)
         am_export.setPopulationData(pop_b_out)
         am_export.exportData(XML_FILE_NAME)
-        del am_export # Delete previous CUDAAgentModel as multiple models with same name cant exist
+        del am_export # Delete previous CUDASimulation as multiple models with same name cant exist
 
         # Run Import
-        am = pyflamegpu.CUDAAgentModel(m)
+        am = pyflamegpu.CUDASimulation(m)
         am.SimulationConfig().xml_input_file = XML_FILE_NAME
         am.applyConfig()
         pop_a_in = pyflamegpu.AgentPopulation(a, AGENT_COUNT)
@@ -256,7 +256,7 @@ class IOTest(TestCase):
             assert agent_in.getVariableInt8Array3("int8_t") == agent_out.getVariableInt8Array3("int8_t")
             assert agent_in.getVariableUInt8Array3("uint8_t") == agent_out.getVariableUInt8Array3("uint8_t")
 
-        am = pyflamegpu.CUDAAgentModel(m)
+        am = pyflamegpu.CUDASimulation(m)
 
         # Step once, this checks and clears env vars
         am.step()

@@ -150,7 +150,7 @@ class MiniSim {
         model.newLayer().addHostFunction(VALIDATE_ENV);
         model.newLayer().addHostFunction(RESET_ENV);
         {  // Run export
-            CUDAAgentModel am(model);
+            CUDASimulation am(model);
             am.setPopulationData(pop_a_out);
             am.setPopulationData(pop_b_out);
             // Set config files for export too
@@ -163,7 +163,7 @@ class MiniSim {
             am.exportData(test_file_name);
         }
         {  // Run Import
-            CUDAAgentModel am(model);
+            CUDASimulation am(model);
             // Ensure config doesn;t match
             am.SimulationConfig().random_seed = 0;
             am.SimulationConfig().steps = 0;
@@ -229,7 +229,7 @@ class MiniSim {
         }
         {  // Validate env_vars
             // Load model
-            CUDAAgentModel am(model);
+            CUDASimulation am(model);
             // Step once, this checks and clears env vars
             validate_has_run = false;
             am.step();

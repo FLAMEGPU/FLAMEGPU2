@@ -154,7 +154,7 @@ class TestMessage_Array(TestCase):
             ai.setVariableUInt("message_write", numbers[i])
         
         # Set pop in model
-        c = pyflamegpu.CUDAAgentModel(m)
+        c = pyflamegpu.CUDASimulation(m)
         c.setPopulationData(pop)
         c.step()
         c.getPopulationData(pop)
@@ -199,7 +199,7 @@ class TestMessage_Array(TestCase):
             ai.setVariableUInt("message_write", numbers[i])
         
         # Set pop in model
-        c = pyflamegpu.CUDAAgentModel(m)
+        c = pyflamegpu.CUDASimulation(m)
         c.setPopulationData(pop)
         c.step()
         c.getPopulationData(pop)
@@ -239,7 +239,7 @@ class TestMessage_Array(TestCase):
             ai.setVariableUInt("message_read", UINT_MAX)
         
         # Set pop in model
-        c = pyflamegpu.CUDAAgentModel(m)
+        c = pyflamegpu.CUDASimulation(m)
         c.setPopulationData(pop)
         c.step()
         c.getPopulationData(pop)
@@ -273,7 +273,7 @@ class TestMessage_Array(TestCase):
             ai.setVariableUInt("message_read", UINT_MAX)
         
         # Set pop in model
-        c = pyflamegpu.CUDAAgentModel(m)
+        c = pyflamegpu.CUDASimulation(m)
         c.setPopulationData(pop)
         c.step()
         c.getPopulationData(pop)
@@ -318,7 +318,7 @@ class TestMessage_Array(TestCase):
             ai.setVariableUInt("message_write", numbers[i])
         
         # Set pop in model
-        c = pyflamegpu.CUDAAgentModel(m)
+        c = pyflamegpu.CUDASimulation(m)
         c.setPopulationData(pop)
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
             c.step()
@@ -336,7 +336,7 @@ class TestMessage_Array(TestCase):
         model.newMessageArray(MESSAGE_NAME)
         # message.setLength(5)  # Intentionally commented out
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-            m = pyflamegpu.CUDAAgentModel(model)
+            m = pyflamegpu.CUDASimulation(model)
         assert e.value.type() == "InvalidMessage"
 
     def test_reserved_name(self): 
@@ -365,7 +365,7 @@ class TestMessage_Array(TestCase):
         # Create 1 agent
         pop_in = pyflamegpu.AgentPopulation(model.Agent("agent"), 1)
         pop_in.getNextInstance()
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         cuda_model.setPopulationData(pop_in)
         # Execute model
         cuda_model.step()

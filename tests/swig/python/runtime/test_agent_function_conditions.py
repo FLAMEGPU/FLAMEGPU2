@@ -84,7 +84,7 @@ class TestAgentFunctionConditions(TestCase):
             ai.setVariableInt("x", val)
             ai.setVariableIntArray4("y", ARRAY_REFERENCE)
         
-        c = pyflamegpu.CUDAAgentModel(m)
+        c = pyflamegpu.CUDASimulation(m)
         c.setPopulationData(pop)
         c.step()
         c.getPopulationData(pop)
@@ -126,7 +126,7 @@ class TestAgentFunctionConditions(TestCase):
         for i in range(AGENT_COUNT): 
             ai = pop.getNextInstance()
         
-        c = pyflamegpu.CUDAAgentModel(m)
+        c = pyflamegpu.CUDASimulation(m)
         c.setPopulationData(pop)
         # should not throw exception
         c.step()

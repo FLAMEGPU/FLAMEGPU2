@@ -183,7 +183,7 @@ TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## UChar, classfunction, unsigned c
 #include "flamegpu/model/EnvironmentDescription.h"
 #include "flamegpu/model/LayerDescription.h"
 #include "flamegpu/pop/AgentPopulation.h"
-#include "flamegpu/gpu/CUDAAgentModel.h"
+#include "flamegpu/gpu/CUDASimulation.h"
 
 #include "flamegpu/exception/FGPUException.h"
 
@@ -374,14 +374,14 @@ namespace EnvironmentManager{
 }
 
 
-/* Include Simulation and CUDAModel */
+/* Include Simulation and CUDASimulation */
 %feature("flatnested");     // flat nested on to ensure Config is included
-%rename (CUDAAgentModel_Config) CUDAAgentModel::Config;
+%rename (CUDASimulation_Config) CUDASimulation::Config;
 %rename (Simulation_Config) Simulation::Config;
 %include <argcargv.i>                                           // Include and apply to swig library healer for processing argc and argv values
-%apply (int ARGC, char **ARGV) { (int argc, const char **) }    // This is required for CUDAAgentModel.initialise() 
+%apply (int ARGC, char **ARGV) { (int argc, const char **) }    // This is required for CUDASimulation.initialise() 
 %include "flamegpu/sim/Simulation.h"
-%include "flamegpu/gpu/CUDAAgentModel.h"
+%include "flamegpu/gpu/CUDASimulation.h"
 %feature("flatnested", ""); // flat nested off
 
 //%include "flamegpu/runtime/flamegpu_device_api.h"

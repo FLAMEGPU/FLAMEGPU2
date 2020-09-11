@@ -31,14 +31,14 @@ class MsgArray2D::CUDAModelHandler : public MsgSpecialisationHandler {
     /**
      * Allocates memory for the constructed index.
      * Allocates message buffers, and memsets data to 0
-     * @param scatter Scatter instance and scan arrays to be used (CUDAAgentModel::singletons->scatter)
+     * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
      * @param streamId Index of stream specific structures used
      */
     void init(CUDAScatter &scatter, const unsigned int &streamId) override;
     /**
      * Sort messages according to index
      * Detect and report any duplicate indicies/gaps
-     * @param scatter Scatter instance and scan arrays to be used (CUDAAgentModel::singletons->scatter)
+     * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
      * @param streamId Index of stream specific structures used
      */
     void buildIndex(CUDAScatter &scatter, const unsigned int &streamId) override;

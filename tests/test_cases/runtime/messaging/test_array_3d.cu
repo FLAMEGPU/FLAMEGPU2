@@ -93,7 +93,7 @@ TEST(TestMessage_Array3D, Mandatory) {
         ai.setVariable<unsigned int>("message_write", numbers[i]);
     }
     // Set pop in model
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     c.setPopulationData(pop);
     c.step();
     c.getPopulationData(pop);
@@ -140,7 +140,7 @@ TEST(TestMessage_Array3D, Optional) {
         ai.setVariable<unsigned int>("message_write", numbers[i]);
     }
     // Set pop in model
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     c.setPopulationData(pop);
     c.step();
     c.getPopulationData(pop);
@@ -182,7 +182,7 @@ TEST(TestMessage_Array3D, OptionalNone) {
         ai.setVariable<unsigned int>("message_read", UINT_MAX);
     }
     // Set pop in model
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     c.setPopulationData(pop);
     c.step();
     c.getPopulationData(pop);
@@ -288,7 +288,7 @@ TEST(TestMessage_Array3D, Moore1) {
         ai.setVariable<unsigned int>("message_read", UINT_MAX);
     }
     // Set pop in model
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     c.setPopulationData(pop);
     c.step();
     c.getPopulationData(pop);
@@ -322,7 +322,7 @@ TEST(TestMessage_Array3D, Moore2) {
         ai.setVariable<unsigned int>("message_read", UINT_MAX);
     }
     // Set pop in model
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     c.setPopulationData(pop);
     c.step();
     c.getPopulationData(pop);
@@ -373,7 +373,7 @@ TEST(TestMessage_Array3D, DISABLED_DuplicateOutputException) {
         ai.setVariable<unsigned int>("message_write", numbers[i]);
     }
     // Set pop in model
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     c.setPopulationData(pop);
     EXPECT_THROW(c.step(), ArrayMessageWriteConflict);
 }
@@ -391,7 +391,7 @@ TEST(TestMessage_Array3D, UnsetDimensions) {
     ModelDescription model(MODEL_NAME);
     model.newMessage<MsgArray3D>(MESSAGE_NAME);
     // message.setDimensions(5, 5, 5);  // Intentionally commented out
-    EXPECT_THROW(CUDAAgentModel m(model), InvalidMessage);
+    EXPECT_THROW(CUDASimulation m(model), InvalidMessage);
 }
 TEST(TestMessage_Array3D, reserved_name) {
     ModelDescription model(MODEL_NAME);
@@ -424,7 +424,7 @@ TEST(TestMessage_Array3D, ReadEmpty) {
     // Create 1 agent
     AgentPopulation pop_in(model.Agent("agent"), 1);
     pop_in.getNextInstance();
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(pop_in);
     // Execute model
     EXPECT_NO_THROW(cuda_model.step());

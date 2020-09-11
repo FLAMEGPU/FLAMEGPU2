@@ -14,21 +14,21 @@
 #include "config/ModelConfig.h"
 
 struct ModelData;
-class CUDAAgentModel;
+class CUDASimulation;
 
 /**
- * This provides an interface for managing the render options for a specific CUDAAgentModel
+ * This provides an interface for managing the render options for a specific CUDASimulation
  */
 class ModelVis {
  public:
     /**
-     * This class is constructed by/with a CUDAAgentModel
+     * This class is constructed by/with a CUDASimulation
      * Constructor will be clarified later, once requirements are clearer
      * Requires:
      * > texturise agent variable pointers
      * > On resize, also update textures
      */
-    explicit ModelVis(const CUDAAgentModel &model/*TBD*/);
+    explicit ModelVis(const CUDASimulation &model/*TBD*/);
 
     /**
      * Enables visualisation of the named agent and returns the configuration handler
@@ -178,7 +178,7 @@ class ModelVis {
     /**
      * Reference back to the model to be visualised
      */
-    const CUDAAgentModel &model;
+    const CUDASimulation &model;
     /**
      * Reference back to the model description hierarchy to be visualised
      */

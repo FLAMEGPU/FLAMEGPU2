@@ -360,7 +360,7 @@ int main(int argc, const char ** argv) {
     /**
      * Create Model Runner
      */
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
 
     /**
      * Create visualisation

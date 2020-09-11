@@ -11,7 +11,7 @@
 #include <algorithm>
 
 #include "flamegpu/gpu/CUDAErrorChecking.h"
-#include "flamegpu/gpu/CUDAAgentModel.h"
+#include "flamegpu/gpu/CUDASimulation.h"
 
 RandomManager::RandomManager() :
     deviceInitialised(false) {

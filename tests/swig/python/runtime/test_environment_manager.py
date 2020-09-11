@@ -27,7 +27,7 @@ class MiniSim:
         # CudaModel must be declared here
         # As the initial call to constructor fixes the agent population
         # This means if we haven't called model.newAgent(agent) first
-        self.cuda_model = pyflamegpu.CUDAAgentModel(self.model)
+        self.cuda_model = pyflamegpu.CUDASimulation(self.model)
         self.cuda_model.SimulationConfig().steps = 1
         # This fails as agentMap is empty
         self.cuda_model.setPopulationData(self.population)

@@ -7,7 +7,7 @@
 #include "flamegpu/runtime/utility/DeviceEnvironment.cuh"
 #include "flamegpu/model/EnvironmentDescription.h"
 #include "flamegpu/model/SubEnvironmentData.h"
-#include "flamegpu/gpu/CUDAAgentModel.h"
+#include "flamegpu/gpu/CUDASimulation.h"
 
 /**
  * Internal namespace to hide __constant__ declarations from modeller
@@ -140,7 +140,7 @@ void EnvironmentManager::init(const unsigned int &instance_id, const Environment
     buildRTCOffsets(instance_id, master_instance_id, orderedProperties);
 }
 
-void EnvironmentManager::initRTC(const CUDAAgentModel& cuda_model) {
+void EnvironmentManager::initRTC(const CUDASimulation& cuda_model) {
     // check to ensure that model name is not already registered
     auto res = cuda_agent_models.find(cuda_model.getInstanceID());
     if (res != cuda_agent_models.end()) {
@@ -508,10 +508,10 @@ void EnvironmentManager::addRTCOffset(const NamePair &name) {
     }
 }
 
-const CUDAAgentModel& EnvironmentManager::getCUDAAgentModel(const unsigned int &instance_id) {
+const CUDASimulation& EnvironmentManager::getCUDASimulation(const unsigned int &instance_id) {
     auto res = cuda_agent_models.find(instance_id);
     if (res == cuda_agent_models.end()) {
-        THROW UnknownInternalError("Instance with id '%u' not registered in EnvironmentManager for use with RTC in EnvironmentManager::getCUDAAgentModel", instance_id);
+        THROW UnknownInternalError("Instance with id '%u' not registered in EnvironmentManager for use with RTC in EnvironmentManager::getCUDASimulation", instance_id);
     }
     return res->second;
 }
@@ -626,7 +626,7 @@ void EnvironmentManager::updateDevice(const unsigned int &instance_id) {
     }
     if (rtc_update_required) {
         // update RTC
-        const CUDAAgentModel& cuda_agent_model = getCUDAAgentModel(instance_id);
+        const CUDASimulation& cuda_agent_model = getCUDASimulation(instance_id);
         const auto &rtc_cache = rtc_caches.at(instance_id);
         cuda_agent_model.RTCUpdateEnvironmentVariables(rtc_cache->hc_buffer, rtc_cache->nextFree);
         // Update instance's rtc update flag

@@ -62,7 +62,7 @@ class AgentRandomTest(TestCase):
         layer = model.newLayer("layer")
         layer.addAgentFunction(af)
 
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         cuda_model.SimulationConfig().steps = 1
         args_1 =  ("process.exe", "-r", "0", "-s", "1")
         args_2 =  ("process.exe", "-r", "1", "-s", "1")
@@ -189,7 +189,7 @@ class AgentRandomTest(TestCase):
         layer = model.newLayer("layer")
         layer.addAgentFunction(do_random)
 
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         cuda_model.SimulationConfig().steps = 1
         cuda_model.setPopulationData(population)
         cuda_model.simulate()

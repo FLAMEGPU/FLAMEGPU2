@@ -19,7 +19,7 @@
 #include "flamegpu/model/SubAgentDescription.h"
 #include "flamegpu/model/SubEnvironmentDescription.h"
 #include "flamegpu/pop/AgentPopulation.h"
-#include "flamegpu/gpu/CUDAAgentModel.h"
+#include "flamegpu/gpu/CUDASimulation.h"
 #include "flamegpu/runtime/messaging.h"
 #include "flamegpu/runtime/AgentFunction_shim.h"
 #include "flamegpu/runtime/AgentFunctionCondition_shim.h"

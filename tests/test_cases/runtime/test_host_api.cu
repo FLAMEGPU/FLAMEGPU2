@@ -59,7 +59,7 @@ TEST(hostAPITest, getStepCounter) {
         AgentInstance instance = init_population.getNextInstance("default");
     }
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(init_population);
 
     cuda_model.SimulationConfig().steps = TOTAL_STEPS;

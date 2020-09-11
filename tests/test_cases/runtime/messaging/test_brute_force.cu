@@ -98,7 +98,7 @@ TEST(TestMessage_BruteForce, Mandatory1) {
     lo.addAgentFunction(fo);
     LayerDescription &li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
     c.setPopulationData(pop);
     c.simulate();
@@ -149,7 +149,7 @@ TEST(TestMessage_BruteForce, Mandatory2) {
     lo.addAgentFunction(fo);
     LayerDescription &li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     c.SimulationConfig().steps = 2;
     c.setPopulationData(pop);
     c.simulate();
@@ -201,7 +201,7 @@ TEST(TestMessage_BruteForce, Optional1) {
     lo.addAgentFunction(fo);
     LayerDescription &li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
     c.setPopulationData(pop);
     c.simulate();
@@ -258,7 +258,7 @@ TEST(TestMessage_BruteForce, Optional2) {
     lo.addAgentFunction(fo);
     LayerDescription &li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     c.SimulationConfig().steps = 2;
     c.setPopulationData(pop);
     c.simulate();
@@ -296,7 +296,7 @@ TEST(TestMessage_BruteForce, OptionalNone) {
         ai.setVariable<unsigned int>("message_read", UINT_MAX);
     }
 
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
     c.setPopulationData(pop);
     c.simulate();
@@ -346,7 +346,7 @@ TEST(TestMessage_BruteForce, ReadEmpty) {
     // Create 1 agent
     AgentPopulation pop_in(model.Agent("agent"), 1);
     pop_in.getNextInstance();
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(pop_in);
     // Execute model
     EXPECT_NO_THROW(cuda_model.step());

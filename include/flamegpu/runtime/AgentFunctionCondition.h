@@ -22,7 +22,7 @@ typedef void(AgentFunctionConditionWrapper)(
 /**
  * Wrapper function for launching agent functions
  * Initialises FLAMEGPU_API instance
- * @param instance_id_hash CURVE hash of the CUDAAgentModel's instance id
+ * @param instance_id_hash CURVE hash of the CUDASimulation's instance id
  * @param agent_func_name_hash CURVE hash of the agent + function's names
  * @param popNo Total number of agents exeucting the function (number of threads launched)
  * @param d_rng Array of curand states for this kernel

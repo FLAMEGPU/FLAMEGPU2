@@ -90,7 +90,7 @@ class DeviceAgentCreationTest(TestCase):
         layer1 = model.newLayer()
         layer1.addAgentFunction(function)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         population = pyflamegpu.AgentPopulation(model.Agent("agent"), AGENT_COUNT)
         # Initialise agents
         for i in range(AGENT_COUNT):
@@ -131,7 +131,7 @@ class DeviceAgentCreationTest(TestCase):
         layer1 = model.newLayer()
         layer1.addAgentFunction(function)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         population = pyflamegpu.AgentPopulation(model.Agent("agent"), AGENT_COUNT)
         # Initialise agents
         for i in range(AGENT_COUNT):
@@ -175,7 +175,7 @@ class DeviceAgentCreationTest(TestCase):
         layer1 = model.newLayer()
         layer1.addAgentFunction(function)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         population = pyflamegpu.AgentPopulation(model.Agent("agent"), AGENT_COUNT)
         # Initialise agents
         for i in range(AGENT_COUNT):
@@ -215,7 +215,7 @@ class DeviceAgentCreationTest(TestCase):
         layer1 = model.newLayer()
         layer1.addAgentFunction(function)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         population = pyflamegpu.AgentPopulation(model.Agent("agent"), AGENT_COUNT)
         # Initialise agents
         for i in range(AGENT_COUNT):
@@ -251,7 +251,7 @@ class DeviceAgentCreationTest(TestCase):
         layer1 = model.newLayer()
         layer1.addAgentFunction(function)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         population = pyflamegpu.AgentPopulation(model.Agent("agent"), AGENT_COUNT)
         # Initialise agents
         for i in range(AGENT_COUNT):
@@ -292,7 +292,7 @@ class DeviceAgentCreationTest(TestCase):
         layer1 = model.newLayer()
         layer1.addAgentFunction(function)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         AGENT_COUNT = 1024
         population = pyflamegpu.AgentPopulation(model.Agent("agent"), AGENT_COUNT)
         # Initialise agents
@@ -338,7 +338,7 @@ class DeviceAgentCreationTest(TestCase):
         layer1 = model.newLayer()
         layer1.addAgentFunction(function)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         population = pyflamegpu.AgentPopulation(model.Agent("agent"), AGENT_COUNT)
         # Initialise agents
         for i in range(AGENT_COUNT):
@@ -375,7 +375,7 @@ class DeviceAgentCreationTest(TestCase):
         layer1 = model.newLayer()
         layer1.addAgentFunction(function)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         population = pyflamegpu.AgentPopulation(model.Agent("agent"), AGENT_COUNT)
         # Initialise agents
         for i in range(AGENT_COUNT):
@@ -417,7 +417,7 @@ class DeviceAgentCreationTest(TestCase):
         layer1 = model.newLayer()
         layer1.addAgentFunction(function)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         population = pyflamegpu.AgentPopulation(model.Agent("agent2"), AGENT_COUNT)
         # Initialise agents
         for i in range(AGENT_COUNT):
@@ -478,7 +478,7 @@ class DeviceAgentCreationTest(TestCase):
         layer1 = model.newLayer()
         layer1.addAgentFunction(function)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         population = pyflamegpu.AgentPopulation(model.Agent("agent2"), AGENT_COUNT)
         # Initialise agents
         for i in range(AGENT_COUNT):
@@ -534,7 +534,7 @@ class DeviceAgentCreationTest(TestCase):
         layer1 = model.newLayer()
         layer1.addAgentFunction(function)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         population = pyflamegpu.AgentPopulation(model.Agent("agent2"), AGENT_COUNT)
         # Initialise agents
         for i in range(AGENT_COUNT):
@@ -593,7 +593,7 @@ class DeviceAgentCreationTest(TestCase):
         layer1 = model.newLayer()
         layer1.addAgentFunction(function)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         population = pyflamegpu.AgentPopulation(model.Agent("agent2"), AGENT_COUNT)
         # Initialise agents
         for i in range(AGENT_COUNT):
@@ -639,7 +639,7 @@ class DeviceAgentCreationTest(TestCase):
         layer1 = model.newLayer()
         layer1.addAgentFunction(function)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         AGENT_COUNT = 1024
         population = pyflamegpu.AgentPopulation(model.Agent("agent2"), AGENT_COUNT)
         # Initialise agents
@@ -692,7 +692,7 @@ class DeviceAgentCreationTest(TestCase):
         layer1 = model.newLayer()
         layer1.addAgentFunction(function)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         population = pyflamegpu.AgentPopulation(model.Agent("agent"), AGENT_COUNT)
         # Initialise agents
         for i in range(AGENT_COUNT):
@@ -752,7 +752,7 @@ class DeviceAgentCreationTest(TestCase):
         layer1 = model.newLayer()
         layer1.addAgentFunction(function)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         population = pyflamegpu.AgentPopulation(model.Agent("agent"), AGENT_COUNT)
         # Initialise agents
         for i in range(AGENT_COUNT):
@@ -809,7 +809,7 @@ class DeviceAgentCreationTest(TestCase):
         layer1 = model.newLayer()
         layer1.addAgentFunction(function)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         population = pyflamegpu.AgentPopulation(model.Agent("agent"), AGENT_COUNT)
         # Initialise agents
         for i in range(AGENT_COUNT):
@@ -867,7 +867,7 @@ class DeviceAgentCreationTest(TestCase):
         layer1 = model.newLayer()
         layer1.addAgentFunction(function)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         population = pyflamegpu.AgentPopulation(model.Agent("agent"), AGENT_COUNT)
         # Initialise agents
         for i in range(AGENT_COUNT):
@@ -913,7 +913,7 @@ class DeviceAgentCreationTest(TestCase):
         layer1 = model.newLayer()
         layer1.addAgentFunction(function)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         population = pyflamegpu.AgentPopulation(model.Agent("agent"), AGENT_COUNT)
         # Initialise agents
         for i in range(AGENT_COUNT):
@@ -966,7 +966,7 @@ class DeviceAgentCreationTest(TestCase):
         layer1 = model.newLayer()
         layer1.addAgentFunction(function)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         AGENT_COUNT = 1024
         population = pyflamegpu.AgentPopulation(model.Agent("agent"), AGENT_COUNT)
         # Initialise agents
@@ -1027,7 +1027,7 @@ class DeviceAgentCreationTest(TestCase):
         layer1 = model.newLayer()
         layer1.addAgentFunction(function)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         population = pyflamegpu.AgentPopulation(model.Agent("agent"), AGENT_COUNT)
         # Initialise agents
         for i in range(AGENT_COUNT):
@@ -1071,7 +1071,7 @@ class DeviceAgentCreationTest(TestCase):
         layer1 = model.newLayer()
         layer1.addAgentFunction(function)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         AGENT_COUNT = 1024
         population = pyflamegpu.AgentPopulation(model.Agent("agent"), AGENT_COUNT)
         # Initialise agents
@@ -1126,7 +1126,7 @@ class DeviceAgentCreationTest(TestCase):
             ai = population.getNextInstance()
             ai.setVariableUInt("id", i)
         
-        sim = pyflamegpu.CUDAAgentModel(model)
+        sim = pyflamegpu.CUDASimulation(model)
         sim.setPopulationData(population)
         sim.step()
         sim.getPopulationData(population)
@@ -1162,7 +1162,7 @@ class DeviceAgentCreationTest(TestCase):
             ai = population.getNextInstance()
             ai.setVariableUInt("id", i)
         
-        sim = pyflamegpu.CUDAAgentModel(model)
+        sim = pyflamegpu.CUDASimulation(model)
         sim.setPopulationData(population)
         sim.step()
         sim.getPopulationData(population)

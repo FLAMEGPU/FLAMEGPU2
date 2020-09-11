@@ -35,7 +35,7 @@ class HostEnvironment {
      */
     EnvironmentManager &env_mgr;
     /**
-     * Access to instance id of the CUDAAgentModel
+     * Access to instance id of the CUDASimulation
      * This is used to augment all variable names
      */
     const unsigned int instance_id;

@@ -11,7 +11,7 @@
 #include "flamegpu/exception/FGPUException.h"
 #include "flamegpu/pop/AgentPopulation.h"
 #include "flamegpu/model/AgentDescription.h"
-#include "flamegpu/gpu/CUDAAgentModel.h"
+#include "flamegpu/gpu/CUDASimulation.h"
 
 jsonReader::jsonReader(
     const std::string &model_name,
@@ -243,7 +243,7 @@ class jsonReader_agentsize_counter : public rapidjson::BaseReaderHandler<rapidjs
     };
     std::unordered_map<std::pair<std::string, std::string>, unsigned int, StringPairHash> agentstate_counts;
     Simulation *sim_instance;
-    CUDAAgentModel *cudamodel_instance;
+    CUDASimulation *cudamodel_instance;
 
  public:
     std::unordered_map<std::string, unsigned int> getAgentCounts() const {
@@ -256,7 +256,7 @@ class jsonReader_agentsize_counter : public rapidjson::BaseReaderHandler<rapidjs
     explicit jsonReader_agentsize_counter(const std::string &_filename, Simulation *_sim_instance)
         : filename(_filename)
         , sim_instance(_sim_instance)
-        , cudamodel_instance(dynamic_cast<CUDAAgentModel*>(_sim_instance)) { }
+        , cudamodel_instance(dynamic_cast<CUDASimulation*>(_sim_instance)) { }
 
     template<typename T>
     bool processValue(const T&val) {

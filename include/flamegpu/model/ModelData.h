@@ -131,12 +131,12 @@ struct ModelData : std::enable_shared_from_this<ModelData>{
     std::shared_ptr<EnvironmentDescription> environment;  // TODO: Move this to same Data:Description format
     /**
      * The name of the model
-     * This must be unique among Simulation (e.g. CUDAAgentModel) instances
+     * This must be unique among Simulation (e.g. CUDASimulation) instances
      */
     std::string name;
     /**
      * Creates a copy of the entire model definition hierarchy
-     * This is called when a ModelDescription is passed to a Simulation (e.g. CUDAAgentModel)
+     * This is called when a ModelDescription is passed to a Simulation (e.g. CUDASimulation)
      */
     std::shared_ptr<ModelData> clone() const;
     /**

@@ -221,9 +221,9 @@ struct NewAgentStorage {
         return *reinterpret_cast<T*>(data + var->second.offset + (index * sizeof(T)));
     }
     /**
-     * Used by CUDAAgentModel::processHostAgentCreation() which needs raw access to the data buffer
+     * Used by CUDASimulation::processHostAgentCreation() which needs raw access to the data buffer
      */
-    friend class CUDAAgentModel;
+    friend class CUDASimulation;
  private:
     char *const data;
     const VarOffsetStruct &offsets;

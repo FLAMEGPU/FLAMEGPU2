@@ -74,7 +74,7 @@ namespace test_agent_function_conditions {
             ai.setVariable<int>("x", val);
             ai.setVariable<int, 4>("y", ARRAY_REFERENCE);
         }
-        CUDAAgentModel c(m);
+        CUDASimulation c(m);
         c.setPopulationData(pop);
         c.step();
         c.getPopulationData(pop);
@@ -119,7 +119,7 @@ namespace test_agent_function_conditions {
         for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
             AgentInstance ai = pop.getNextInstance();
         }
-        CUDAAgentModel c(m);
+        CUDASimulation c(m);
         c.setPopulationData(pop);
         EXPECT_NO_THROW(c.step());
         EXPECT_NO_THROW(c.step());

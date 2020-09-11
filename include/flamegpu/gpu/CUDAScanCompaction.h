@@ -2,12 +2,12 @@
 #define INCLUDE_FLAMEGPU_GPU_CUDASCANCOMPACTION_H_
 
 /**
- * PLEASE NOTE: This implementation currently assumes there is only one instance of CUDAAgentModel executing at once
- * PLEASE NOTE: There is not currently a mechanism to release these (could trigger something via CUDAAgentModel destructor)
+ * PLEASE NOTE: This implementation currently assumes there is only one instance of CUDASimulation executing at once
+ * PLEASE NOTE: There is not currently a mechanism to release these (could trigger something via CUDASimulation destructor)
  */
 
 // forward declare classes from other modules
-class CUDAAgentModel;
+class CUDASimulation;
 
 /**
  * Could make this cleaner with an array of a nested struct and enums for access, rather than copy paste/rename

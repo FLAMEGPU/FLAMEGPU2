@@ -187,7 +187,7 @@ TEST(TestCUDASubAgent, Simple) {
         // Vars all default init
     }
     // Init Model
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
     c.applyConfig();
     c.setPopulationData(pop);
@@ -255,7 +255,7 @@ TEST(TestCUDASubAgent, AgentDeath_BeforeSubModel) {
         // Other vars all default init
     }
     // Init Model
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
     c.applyConfig();
     c.setPopulationData(pop);
@@ -333,7 +333,7 @@ TEST(TestCUDASubAgent, AgentDeath_InSubModel) {
         // Other vars all default init
     }
     // Init Model
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
     c.applyConfig();
     c.setPopulationData(pop);
@@ -423,7 +423,7 @@ TEST(TestCUDASubAgent, AgentDeath_InNestedSubModel) {
         // Other vars all default init
     }
     // Init Model
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
     c.applyConfig();
     c.setPopulationData(pop);
@@ -502,7 +502,7 @@ TEST(TestCUDASubAgent, DeviceAgentBirth_BeforeSubModel) {
         // Other vars all default init
     }
     // Init Model
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
     c.applyConfig();
     c.setPopulationData(pop);
@@ -608,7 +608,7 @@ TEST(TestCUDASubAgent, DeviceAgentBirth_InSubModel) {
         // Other vars all default init
     }
     // Init Model
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
     c.applyConfig();
     c.setPopulationData(pop);
@@ -728,7 +728,7 @@ TEST(TestCUDASubAgent, DeviceAgentBirth_InNestedSubModel) {
         // Other vars all default init
     }
     // Init Model
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
     c.applyConfig();
     c.setPopulationData(pop);
@@ -822,7 +822,7 @@ TEST(TestCUDASubAgent, HostAgentBirth_BeforeSubModel) {
     pop.getNextInstance().setVariable<unsigned int>(AGENT_VAR2_NAME, 4);  // 1 agent, default values except var2
 
     // Init Model
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     c.setPopulationData(pop);
     // Run Model
     c.step();
@@ -867,7 +867,7 @@ TEST(TestCUDASubAgent, HostAgentBirth_InSubModel) {
     pop.getNextInstance().setVariable<unsigned int>(AGENT_VAR2_NAME, 4);  // 1 agent, default values except var2
 
     // Init Model
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     c.setPopulationData(pop);
     // Run Model
     c.step();
@@ -922,7 +922,7 @@ TEST(TestCUDASubAgent, HostAgentBirth_InNestedSubModel) {
     pop.getNextInstance().setVariable<unsigned int>(AGENT_VAR2_NAME, 4);  // 1 agent, default values except var2
 
     // Init Model
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     c.setPopulationData(pop);
     // Run Model
     c.step();
@@ -981,7 +981,7 @@ TEST(TestCUDASubAgent, AgentFunctionCondition_BeforeSubModel) {
         // Other vars all default init
     }
     // Init Model
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
     c.applyConfig();
     c.setPopulationData(pop);
@@ -1090,7 +1090,7 @@ TEST(TestCUDASubAgent, AgentFunctionCondition_InSubModel) {
         // Other vars all default init
     }
     // Init Model
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
     c.applyConfig();
     c.setPopulationData(pop);
@@ -1211,7 +1211,7 @@ TEST(TestCUDASubAgent, AgentFunctionCondition_InNestedSubModel) {
         // Other vars all default init
     }
     // Init Model
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
     c.applyConfig();
     c.setPopulationData(pop);
@@ -1326,7 +1326,7 @@ TEST(TestCUDASubAgent, AgentStateTransition_UnmapToUnmap_BeforeSubModel) {
         ai2.setVariable<unsigned int>(AGENT_VAR2_NAME, i);
     }
     // Init Model
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
     c.applyConfig();
     c.setPopulationData(pop);
@@ -1389,7 +1389,7 @@ TEST(TestCUDASubAgent, AgentStateTransition_MapToMap_BeforeSubModel) {
         ai.setVariable<unsigned int>(AGENT_VAR2_NAME, i);
     }
     // Init Model
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
     c.applyConfig();
     c.setPopulationData(pop);
@@ -1446,7 +1446,7 @@ TEST(TestCUDASubAgent, AgentStateTransition_MapToUnmap_BeforeSubModel) {
         ai.setVariable<unsigned int>(AGENT_VAR2_NAME, i);
     }
     // Init Model
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
     c.applyConfig();
     c.setPopulationData(pop);
@@ -1503,7 +1503,7 @@ TEST(TestCUDASubAgent, AgentStateTransition_UnmapToMap_BeforeSubModel) {
         ai.setVariable<unsigned int>(AGENT_VAR2_NAME, i);
     }
     // Init Model
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
     c.applyConfig();
     c.setPopulationData(pop);
@@ -1571,7 +1571,7 @@ TEST(TestCUDASubAgent, AgentStateTransition_UnmapToUnmap_InSubModel) {
         ai.setVariable<unsigned int>(AGENT_VAR2_NAME, i);
     }
     // Init Model
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
     c.applyConfig();
     c.setPopulationData(pop);
@@ -1623,7 +1623,7 @@ TEST(TestCUDASubAgent, AgentStateTransition_MapToMap_InSubModel) {
         ai.setVariable<unsigned int>(AGENT_VAR1_NAME, i);
     }
     // Init Model
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
     c.applyConfig();
     c.setPopulationData(pop);
@@ -1673,7 +1673,7 @@ TEST(TestCUDASubAgent, AgentStateTransition_MapToUnmap_InSubModel) {
         ai.setVariable<unsigned int>(AGENT_VAR1_NAME, i);
     }
     // Init Model
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
     c.applyConfig();
     c.setPopulationData(pop);
@@ -1725,7 +1725,7 @@ TEST(TestCUDASubAgent, AgentStateTransition_UnmapToMap_InSubModel) {
         ai.setVariable<unsigned int>(AGENT_VAR2_NAME, i);
     }
     // Init Model
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
     c.applyConfig();
     c.setPopulationData(pop);
@@ -1795,7 +1795,7 @@ TEST(TestCUDASubAgent, AgentStateTransition_MapToUnmapToMap_InSubModel) {
         ai.setVariable<unsigned int>(AGENT_VAR2_NAME, 12+i);
     }
     // Init Model
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
     c.applyConfig();
     c.setPopulationData(pop);
@@ -1868,7 +1868,7 @@ TEST(TestCUDASubAgent, AgentStateTransition_UnmapToUnmap_InNestedSubModel) {
         ai.setVariable<unsigned int>(AGENT_VAR2_NAME, i);
     }
     // Init Model
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
     c.applyConfig();
     c.setPopulationData(pop);
@@ -1932,7 +1932,7 @@ TEST(TestCUDASubAgent, AgentStateTransition_MapToMap_InNestedSubModel) {
         ai.setVariable<unsigned int>(AGENT_VAR1_NAME, i);
     }
     // Init Model
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
     c.applyConfig();
     c.setPopulationData(pop);
@@ -1994,7 +1994,7 @@ TEST(TestCUDASubAgent, AgentStateTransition_MapToUnmap_InNestedSubModel) {
         ai.setVariable<unsigned int>(AGENT_VAR1_NAME, i);
     }
     // Init Model
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
     c.applyConfig();
     c.setPopulationData(pop);
@@ -2057,7 +2057,7 @@ TEST(TestCUDASubAgent, AgentStateTransition_UnmapToMap_InNestedSubModel) {
         ai.setVariable<unsigned int>(AGENT_VAR2_NAME, i);
     }
     // Init Model
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
     c.applyConfig();
     c.setPopulationData(pop);
@@ -2139,7 +2139,7 @@ TEST(TestCUDASubAgent, AgentStateTransition_MapToUnmapToMap_InNestedSubModel) {
         ai.setVariable<unsigned int>(AGENT_VAR2_NAME, 12+i);
     }
     // Init Model
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
     c.applyConfig();
     c.setPopulationData(pop);
@@ -2196,7 +2196,7 @@ TEST(TestCUDASubAgent, UnmappedAgentStatesDontPersistBetweenSubmodelRuns) {
         ai.setVariable<unsigned int>(AGENT_VAR1_NAME, i);
     }
     // Init Model
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
     c.applyConfig();
     c.setPopulationData(pop);
@@ -2241,7 +2241,7 @@ TEST(TestCUDASubAgent, UnmappedVariablesResetToDefaultBetweenSubmodelRuns) {
         ai.setVariable<unsigned int>(AGENT_VAR1_NAME, i);
     }
     // Init Model
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
     c.applyConfig();
     c.setPopulationData(pop);

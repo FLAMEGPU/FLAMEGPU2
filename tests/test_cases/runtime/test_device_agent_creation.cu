@@ -57,7 +57,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_SameState) {
     LayerDescription &layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     const unsigned int AGENT_COUNT = 1024;
     AgentPopulation population(model.Agent("agent"), AGENT_COUNT);
     // Initialise agents
@@ -98,7 +98,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_SameState) {
     LayerDescription &layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     const unsigned int AGENT_COUNT = 1024;
     AgentPopulation population(model.Agent("agent"), AGENT_COUNT);
     // Initialise agents
@@ -143,7 +143,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentState) {
     LayerDescription &layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     const unsigned int AGENT_COUNT = 1024;
     AgentPopulation population(model.Agent("agent"), AGENT_COUNT);
     // Initialise agents
@@ -184,7 +184,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentState) {
     LayerDescription &layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     const unsigned int AGENT_COUNT = 1024;
     AgentPopulation population(model.Agent("agent"), AGENT_COUNT);
     // Initialise agents
@@ -222,7 +222,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_SameState_WithDeath) {
     LayerDescription &layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     const unsigned int AGENT_COUNT = 1024;
     AgentPopulation population(model.Agent("agent"), AGENT_COUNT);
     // Initialise agents
@@ -264,7 +264,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_SameState_WithDeath) {
     LayerDescription &layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     const unsigned int AGENT_COUNT = 1024;
     AgentPopulation population(model.Agent("agent"), AGENT_COUNT);
     // Initialise agents
@@ -310,7 +310,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentState_WithDeath) {
     LayerDescription &layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     const unsigned int AGENT_COUNT = 1024;
     AgentPopulation population(model.Agent("agent"), AGENT_COUNT);
     // Initialise agents
@@ -348,7 +348,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentState_WithDeath) {
     LayerDescription &layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     const unsigned int AGENT_COUNT = 1024;
     AgentPopulation population(model.Agent("agent"), AGENT_COUNT);
     // Initialise agents
@@ -391,7 +391,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentAgent) {
     LayerDescription &layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     const unsigned int AGENT_COUNT = 1024;
     AgentPopulation population(model.Agent("agent2"), AGENT_COUNT);
     // Initialise agents
@@ -453,7 +453,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentAgent) {
     LayerDescription &layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     const unsigned int AGENT_COUNT = 1024;
     AgentPopulation population(model.Agent("agent2"), AGENT_COUNT);
     // Initialise agents
@@ -511,7 +511,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentAgent_WithDeath) {
     LayerDescription &layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     const unsigned int AGENT_COUNT = 1024;
     AgentPopulation population(model.Agent("agent2"), AGENT_COUNT);
     // Initialise agents
@@ -571,7 +571,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentAgent_WithDeath) {
     LayerDescription &layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     const unsigned int AGENT_COUNT = 1024;
     AgentPopulation population(model.Agent("agent2"), AGENT_COUNT);
     // Initialise agents
@@ -618,7 +618,7 @@ TEST(DeviceAgentCreationTest, DefaultVariableValue) {
     LayerDescription &layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     const unsigned int AGENT_COUNT = 1024;
     AgentPopulation population(model.Agent("agent2"), AGENT_COUNT);
     // Initialise agents
@@ -673,7 +673,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_SameState_WithAgentFunctionCondit
     LayerDescription &layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     const unsigned int AGENT_COUNT = 1024;
     AgentPopulation population(model.Agent("agent"), AGENT_COUNT);
     // Initialise agents
@@ -736,7 +736,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_SameState_WithAgentFunctionConditi
     LayerDescription &layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     const unsigned int AGENT_COUNT = 1024;
     AgentPopulation population(model.Agent("agent"), AGENT_COUNT);
     // Initialise agents
@@ -794,7 +794,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentState_WithAgentFunctionC
     LayerDescription &layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     const unsigned int AGENT_COUNT = 1024;
     AgentPopulation population(model.Agent("agent"), AGENT_COUNT);
     // Initialise agents
@@ -853,7 +853,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentState_WithAgentFunctionCo
     LayerDescription &layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     const unsigned int AGENT_COUNT = 1024;
     AgentPopulation population(model.Agent("agent"), AGENT_COUNT);
     // Initialise agents
@@ -900,7 +900,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_SameState_WithDeath_WithAgentFunc
     LayerDescription &layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     const unsigned int AGENT_COUNT = 1024;
     AgentPopulation population(model.Agent("agent"), AGENT_COUNT);
     // Initialise agents
@@ -954,7 +954,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_SameState_WithDeath_WithAgentFunct
     LayerDescription &layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     const unsigned int AGENT_COUNT = 1024;
     AgentPopulation population(model.Agent("agent"), AGENT_COUNT);
     // Initialise agents
@@ -1015,7 +1015,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentState_WithDeath_WithAgen
     LayerDescription &layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     const unsigned int AGENT_COUNT = 1024;
     AgentPopulation population(model.Agent("agent"), AGENT_COUNT);
     // Initialise agents
@@ -1060,7 +1060,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentState_WithDeath_WithAgent
     LayerDescription &layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     const unsigned int AGENT_COUNT = 1024;
     AgentPopulation population(model.Agent("agent"), AGENT_COUNT);
     // Initialise agents
@@ -1138,7 +1138,7 @@ TEST(DeviceAgentCreationTest, DeviceAgentBirth_ArraySet) {
         auto in = population.getNextInstance();
         in.setVariable<unsigned int>("id", i);
     }
-    CUDAAgentModel sim(model);
+    CUDASimulation sim(model);
     sim.setPopulationData(population);
     sim.step();
     sim.getPopulationData(population);
@@ -1174,7 +1174,7 @@ TEST(DeviceAgentCreationTest, DeviceAgentBirth_DefaultWorks) {
         auto in = population.getNextInstance();
         in.setVariable<unsigned int>("id", i);
     }
-    CUDAAgentModel sim(model);
+    CUDASimulation sim(model);
     sim.setPopulationData(population);
     sim.step();
     sim.getPopulationData(population);

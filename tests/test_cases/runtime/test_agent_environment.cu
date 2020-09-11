@@ -145,7 +145,7 @@ class MiniSim {
         // CudaModel must be declared here
         // As the initial call to constructor fixes the agent population
         // This means if we haven't called model.newAgent(agent) first
-        cuda_model = new CUDAAgentModel(model);
+        cuda_model = new CUDASimulation(model);
         cuda_model->SimulationConfig().steps = 2;
         // This fails as agentMap is empty
         cuda_model->setPopulationData(*population);
@@ -158,7 +158,7 @@ class MiniSim {
     AgentDescription &agent;
     AgentPopulation *population;
     EnvironmentDescription &env;
-    CUDAAgentModel *cuda_model;
+    CUDASimulation *cuda_model;
 
     template <typename T>
     T Get_test() {
