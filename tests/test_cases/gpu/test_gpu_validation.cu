@@ -89,7 +89,7 @@ TEST(GPUTest, GPUMemoryTest) {
         instance.setVariable<int>("id", i);
     }
 
-    CUDAAgentModel cuda_model(flame_model);
+    CUDASimulation cuda_model(flame_model);
     cuda_model.setPopulationData(population);
 
     cuda_model.getPopulationData(population);
@@ -139,7 +139,7 @@ TEST(GPUTest, GPUSimulationTest) {
     add_layer.addAgentFunction(add_data);
 
 
-    CUDAAgentModel cuda_model(flame_model);
+    CUDASimulation cuda_model(flame_model);
     const int STEPS = 5;
     cuda_model.SimulationConfig().steps = STEPS;
 
@@ -204,7 +204,7 @@ TEST(GPUTest, GPUSimulationTestMultiple) {
 
 
     /* Run the model */
-    CUDAAgentModel cuda_model(flame_model);
+    CUDASimulation cuda_model(flame_model);
     cuda_model.SimulationConfig().steps = 1;
 
     cuda_model.setPopulationData(population1);

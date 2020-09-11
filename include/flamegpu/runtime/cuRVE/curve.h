@@ -312,7 +312,7 @@ class Curve {
     /**
      * Has access to call purge
      */
-    friend class CUDAAgentModel;
+    friend class CUDASimulation;
     /**
      * Wipes out host mirrors of device memory
      * Only really to be used after calls to cudaDeviceReset()

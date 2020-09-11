@@ -58,7 +58,7 @@ class HostAgentSort(TestCase):
             instance.setVariableFloat("spare", t+12.0)
         
         # Setup Model
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         cuda_model.setPopulationData(pop)
         # Execute step fn
         cuda_model.step()
@@ -96,7 +96,7 @@ class HostAgentSort(TestCase):
             instance.setVariableFloat("spare", t+12.0)
         
         # Setup Model
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         cuda_model.setPopulationData(pop)
         # Execute step fn
         cuda_model.step()
@@ -138,7 +138,7 @@ class HostAgentSort(TestCase):
             instance.setVariableInt("spare", t+12)
         
         # Setup Model
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         cuda_model.setPopulationData(pop)
         # Execute step fn
         cuda_model.step()
@@ -176,7 +176,7 @@ class HostAgentSort(TestCase):
             instance.setVariableInt("spare", t+12)
         
         # Setup Model
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         cuda_model.setPopulationData(pop)
         # Execute step fn
         cuda_model.step()

@@ -116,7 +116,7 @@ int main(int argc, const char ** argv) {
     /**
      * Create Model Runner
      */
-    CUDAAgentModel cuda_model(model, argc, argv);
+    CUDASimulation cuda_model(model, argc, argv);
 
     /**
      * Create visualisation

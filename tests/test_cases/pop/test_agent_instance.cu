@@ -22,7 +22,7 @@ TEST(AgentInstanceTest, DefaultVariableValue) {
     agent.newVariable<float>("x");
     agent.newVariable<float>("default", 15.0f);
     // Init agent pop
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     AgentPopulation population(model.Agent("agent"), INIT_AGENT_COUNT);
     // Initialise agents
     for (unsigned int i = 0; i < INIT_AGENT_COUNT; i++) {
@@ -38,7 +38,7 @@ TEST(AgentInstanceTest, GetterBadVarName) {
     agent.newVariable<float>("x");
     agent.newVariable<float>("default", 15.0f);
     // Init agent pop
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     AgentPopulation population(model.Agent("agent"), INIT_AGENT_COUNT);
     // Initialise agents
     for (unsigned int i = 0; i < INIT_AGENT_COUNT; i++) {
@@ -54,7 +54,7 @@ TEST(AgentInstanceTest, GetterBadVarType) {
     agent.newVariable<float>("x");
     agent.newVariable<float>("default", 15.0f);
     // Init agent pop
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     AgentPopulation population(model.Agent("agent"), INIT_AGENT_COUNT);
     // Initialise agents
     for (unsigned int i = 0; i < INIT_AGENT_COUNT; i++) {
@@ -70,7 +70,7 @@ TEST(AgentInstanceTest, SetterBadVarName) {
     agent.newVariable<float>("x");
     agent.newVariable<float>("default", 15.0f);
     // Init agent pop
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     AgentPopulation population(model.Agent("agent"), INIT_AGENT_COUNT);
     // Initialise agents
     for (unsigned int i = 0; i < INIT_AGENT_COUNT; i++) {
@@ -86,7 +86,7 @@ TEST(AgentInstanceTest, SetterBadVarType) {
     agent.newVariable<float>("x");
     agent.newVariable<float>("default", 15.0f);
     // Init agent pop
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     AgentPopulation population(model.Agent("agent"), INIT_AGENT_COUNT);
     // Initialise agents
     for (unsigned int i = 0; i < INIT_AGENT_COUNT; i++) {
@@ -101,7 +101,7 @@ TEST(AgentInstanceTest, SetterAndGetterWork) {
     AgentDescription &agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("x");
     // Init agent pop
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     AgentPopulation population(model.Agent("agent"), INIT_AGENT_COUNT);
     // Initialise agents
     for (unsigned int i = 0; i < INIT_AGENT_COUNT; i++) {
@@ -135,7 +135,7 @@ TEST(AgentInstanceTest, SetViaAgentInstance) {
         instance.setVariable<float>("y", 14.0f);
     }
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     cuda_model.step();
@@ -176,7 +176,7 @@ TEST(AgentInstanceTest, SetViaAgentInstance2) {
         instance.setVariable<float>("y", 14.0f);
     }
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     cuda_model.step();

@@ -59,7 +59,7 @@ class MiniSim():
 
     
     def run(self): 
-        self.cuda_model = pyflamegpu.CUDAAgentModel(self.model)
+        self.cuda_model = pyflamegpu.CUDASimulation(self.model)
         self.cuda_model.SimulationConfig().steps = 1
         self.cuda_model.setPopulationData(self.population)      
         self.cuda_model.simulate()

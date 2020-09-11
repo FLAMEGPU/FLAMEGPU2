@@ -13,7 +13,7 @@
 #include "flamegpu/exception/FGPUDeviceException_device.h"
 
 /**
- * Host 'singleton', owned 1 per CUDAAgentModel, provides facility for generating and checking DeviceExceptionBuffers
+ * Host 'singleton', owned 1 per CUDASimulation, provides facility for generating and checking DeviceExceptionBuffers
  */
 class DeviceExceptionManager {
  public:

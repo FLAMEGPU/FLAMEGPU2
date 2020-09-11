@@ -13,7 +13,7 @@
 #include "flamegpu/exception/FGPUException.h"
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/pop/AgentPopulation.h"
-#include "flamegpu/gpu/CUDAAgentModel.h"
+#include "flamegpu/gpu/CUDASimulation.h"
 
 #ifndef XMLCheckResult
 #define XMLCheckResult(a_eResult) if (a_eResult != tinyxml2::XML_SUCCESS) { FGPUException::setLocation(__FILE__, __LINE__);\
@@ -109,7 +109,7 @@ int xmlWriter::writeStates(bool prettyPrint) {
         pElement->InsertEndChild(pSimCfg);
 
         // Cuda config
-        if (auto *cudamodel_instance = dynamic_cast<const CUDAAgentModel*>(sim_instance)) {
+        if (auto *cudamodel_instance = dynamic_cast<const CUDASimulation*>(sim_instance)) {
             tinyxml2::XMLElement *pCUDACfg = doc.NewElement("cuda");
             {
                 const auto &cuda_cfg = cudamodel_instance->getCUDAConfig();

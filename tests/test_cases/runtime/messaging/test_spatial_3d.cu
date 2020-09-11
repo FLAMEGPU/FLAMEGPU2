@@ -100,7 +100,7 @@ TEST(Spatial3DMsgTest, Mandatory) {
         LayerDescription &layer = model.newLayer();
         layer.addAgentFunction(in3D);
     }
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
 
     const int AGENT_COUNT = 2049;
     AgentPopulation population(model.Agent("agent"), AGENT_COUNT);
@@ -246,7 +246,7 @@ TEST(Spatial3DMsgTest, Optional) {
         LayerDescription &layer = model.newLayer();
         layer.addAgentFunction(in3D);
     }
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
 
     const int AGENT_COUNT = 2049;
     AgentPopulation population(model.Agent("agent"), AGENT_COUNT);
@@ -398,7 +398,7 @@ TEST(Spatial3DMsgTest, OptionalNone) {
         LayerDescription &layer = model.newLayer();
         layer.addAgentFunction(in3D);
     }
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
 
     const int AGENT_COUNT = 2049;
     AgentPopulation population(model.Agent("agent"), AGENT_COUNT);
@@ -488,13 +488,13 @@ TEST(Spatial3DMsgTest, UnsetMax) {
     ModelDescription model("Spatial23MsgTestModel");
     MsgSpatial3D::Description &message = model.newMessage<MsgSpatial3D>("location");
     message.setMin(5, 5, 5);
-    EXPECT_THROW(CUDAAgentModel m(model), InvalidMessage);
+    EXPECT_THROW(CUDASimulation m(model), InvalidMessage);
 }
 TEST(Spatial3DMsgTest, UnsetMin) {
     ModelDescription model("Spatial3DMsgTestModel");
     MsgSpatial3D::Description &message = model.newMessage<MsgSpatial3D>("location");
     message.setMin(5, 5, 5);
-    EXPECT_THROW(CUDAAgentModel m(model), InvalidMessage);
+    EXPECT_THROW(CUDASimulation m(model), InvalidMessage);
 }
 TEST(Spatial3DMsgTest, reserved_name) {
     ModelDescription model("Spatial3DMsgTestModel");
@@ -534,7 +534,7 @@ TEST(Spatial3DMsgTest, ReadEmpty) {
     // Create 1 agent
     AgentPopulation pop_in(model.Agent("agent"), 1);
     pop_in.getNextInstance();
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(pop_in);
     // Execute model
     EXPECT_NO_THROW(cuda_model.step());

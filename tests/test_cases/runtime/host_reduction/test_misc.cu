@@ -162,7 +162,7 @@ TEST(HostMiscTest, ArrayVarNotSupported_sum1) {
     // Add the function to be tested
     model.addStepFunction(ArrayVarNotSupported_sum1);
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     EXPECT_THROW(cuda_model.step(), UnsupportedVarType);
@@ -178,7 +178,7 @@ TEST(HostMiscTest, ArrayVarNotSupported_sum2) {
     // Add the function to be tested
     model.addStepFunction(ArrayVarNotSupported_sum2);
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     EXPECT_THROW(cuda_model.step(), UnsupportedVarType);
@@ -194,7 +194,7 @@ TEST(HostMiscTest, ArrayVarNotSupported_min) {
     // Add the function to be tested
     model.addStepFunction(ArrayVarNotSupported_min);
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     EXPECT_THROW(cuda_model.step(), UnsupportedVarType);
@@ -210,7 +210,7 @@ TEST(HostMiscTest, ArrayVarNotSupported_max) {
     // Add the function to be tested
     model.addStepFunction(ArrayVarNotSupported_max);
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     EXPECT_THROW(cuda_model.step(), UnsupportedVarType);
@@ -226,7 +226,7 @@ TEST(HostMiscTest, ArrayVarNotSupported_count) {
     // Add the function to be tested
     model.addStepFunction(ArrayVarNotSupported_count);
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     EXPECT_THROW(cuda_model.step(), UnsupportedVarType);
@@ -242,7 +242,7 @@ TEST(HostMiscTest, ArrayVarNotSupported_hist1) {
     // Add the function to be tested
     model.addStepFunction(ArrayVarNotSupported_hist1);
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     EXPECT_THROW(cuda_model.step(), UnsupportedVarType);
@@ -258,7 +258,7 @@ TEST(HostMiscTest, ArrayVarNotSupported_hist2) {
     // Add the function to be tested
     model.addStepFunction(ArrayVarNotSupported_hist2);
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     EXPECT_THROW(cuda_model.step(), UnsupportedVarType);
@@ -274,7 +274,7 @@ TEST(HostMiscTest, ArrayVarNotSupported_reduce) {
     // Add the function to be tested
     model.addStepFunction(ArrayVarNotSupported_reduce);
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     EXPECT_THROW(cuda_model.step(), UnsupportedVarType);
@@ -290,7 +290,7 @@ TEST(HostMiscTest, ArrayVarNotSupported_transformReduce) {
     // Add the function to be tested
     model.addStepFunction(ArrayVarNotSupported_transformReduce);
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     EXPECT_THROW(cuda_model.step(), UnsupportedVarType);

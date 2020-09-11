@@ -44,7 +44,7 @@ CUDAAgentStateList::CUDAAgentStateList(
     const SubAgentData::Mapping &varMap)
     : CUDAAgentStateList(fat_list, cuda_agent, _fat_index, description, _isSubStateList) {
     // Build a list of variables not present in the mapping
-    // These are not mapped to parent agent, therefore they must be reset when CUDAAgentModel::simulate() is called
+    // These are not mapped to parent agent, therefore they must be reset when CUDASimulation::simulate() is called
     for (auto var : variables) {
         if (varMap.find(var.first)== varMap.end()) {
             unmappedBuffers.push_back(var.second);

@@ -87,7 +87,7 @@ class CUDAFatAgent {
      * This updates the alive agent count
      * @param agent_fat_id The index of the CUDAAgent within this CUDAFatAgent
      * @param state_name The name of the state attached to the named fat agent index
-     * @param scatter Scatter instance and scan arrays to be used (CUDAAgentModel::singletons->scatter)
+     * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
      * @param streamId Index of the stream used for scan compaction flags (and async cuda ops)
      */
     void processDeath(const unsigned int &agent_fat_id, const std::string &state_name, CUDAScatter &scatter, const unsigned int &streamId);
@@ -96,7 +96,7 @@ class CUDAFatAgent {
      * @param agent_fat_id The index of the CUDAAgent within this CUDAFatAgent
      * @param _src The name of the source state attached to the named fat agent index
      * @param _dest The name of the destination state attached to the named fat agent index
-     * @param scatter Scatter instance and scan arrays to be used (CUDAAgentModel::singletons->scatter)
+     * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
      * @param streamId Index of the stream used for scan compaction flags (and async cuda ops)
      */
     void transitionState(const unsigned int &agent_fat_id, const std::string &_src, const std::string &_dest, CUDAScatter &scatter, const unsigned int &streamId);
@@ -105,7 +105,7 @@ class CUDAFatAgent {
      * Failed agents are sorted to the front and marked as disabled, passing agents are then sorted to the back
      * @param agent_fat_id The index of the CUDAAgent within this CUDAFatAgent
      * @param state_name The name of the state attached to the named fat agent index
-     * @param scatter Scatter instance and scan arrays to be used (CUDAAgentModel::singletons->scatter)
+     * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
      * @param streamId Index of the stream used for scan compaction flags (and async cuda ops)
      */
     void processFunctionCondition(const unsigned int &agent_fat_id, const std::string &state_name, CUDAScatter &scatter, const unsigned int &streamId);

@@ -71,7 +71,7 @@ class DeviceAPITest(TestCase):
             instance.setVariableInt("id", i)
         
         # Setup Model
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         cuda_model.setPopulationData(init_population)
         # Run 1 step to ensure data is pushed to device
         cuda_model.step()
@@ -116,7 +116,7 @@ class DeviceAPITest(TestCase):
             instance.setVariableInt("id", i)
         
         # Setup Model
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         cuda_model.setPopulationData(init_population)
         # Run 1 step to ensure data is pushed to device
         cuda_model.step()
@@ -165,7 +165,7 @@ class DeviceAPITest(TestCase):
             instance.setVariableInt("id", i)
         
         # Setup Model
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         cuda_model.setPopulationData(init_population)
         # Run 1 step to ensure data is pushed to device
         cuda_model.step()

@@ -84,7 +84,7 @@ TEST(TestAgentStateTransitions, Src_0_Dest_10) {
         ai.setVariable<int>("x", 12);
         ai.setVariable<int, 4>("y", ARRAY_REFERENCE);
     }
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     c.setPopulationData(pop);
     // Step 1, all agents go from Start->End state, and value become 11
     c.step();
@@ -137,7 +137,7 @@ TEST(TestAgentStateTransitions, Src_10_Dest_0) {
         ai.setVariable<int>("x", 12);
         ai.setVariable<int, 4>("y", ARRAY_REFERENCE);
     }
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     c.setPopulationData(pop);
     // Step 1, all agents go from Start->End state, and value become 11
     c.step();
@@ -202,7 +202,7 @@ TEST(TestAgentStateTransitions, Src_10_Dest_10) {
         ai.setVariable<unsigned int>("y", val);
         ai.setVariable<int, 4>("z", ARRAY_REFERENCE);
     }
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     c.setPopulationData(pop);
 
     // Step 1, all agents go from Start->End state, and value become 11

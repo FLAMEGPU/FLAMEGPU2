@@ -78,7 +78,7 @@ class MessageDescriptionTest(TestCase):
         lo = m.newLayer("foo2")
         lo.addAgentFunction(fo)
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-            c = pyflamegpu.CUDAAgentModel(m)
+            c = pyflamegpu.CUDASimulation(m)
         assert e.value.type() == "InvalidMessageType"
 
     def test_correct_message_type_bound2(self):
@@ -88,7 +88,7 @@ class MessageDescriptionTest(TestCase):
         lo = m.newLayer("foo2")
         lo.addAgentFunction(fo)
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-            c = pyflamegpu.CUDAAgentModel(m)
+            c = pyflamegpu.CUDASimulation(m)
         assert e.value.type() == "InvalidMessageType"
 
     def test_correct_message_type_bound3(self):

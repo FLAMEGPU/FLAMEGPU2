@@ -29,11 +29,11 @@ TEST(BucketMsgTest, DataValidation) {
     ModelDescription model("BucketMsgTest");
     // Test Data copy constructor knows when bounds have not been init
     MsgBucket::Description &message = model.newMessage<MsgBucket>("buckets");
-    EXPECT_THROW(CUDAAgentModel c(model), InvalidMessage);  // Max not set
+    EXPECT_THROW(CUDASimulation c(model), InvalidMessage);  // Max not set
     message.setLowerBound(1);  // It should default to 0
-    EXPECT_THROW(CUDAAgentModel c(model), InvalidMessage);  // Max not set
+    EXPECT_THROW(CUDASimulation c(model), InvalidMessage);  // Max not set
     message.setUpperBound(10);
-    EXPECT_NO_THROW(CUDAAgentModel c(model));
+    EXPECT_NO_THROW(CUDASimulation c(model));
 }
 TEST(BucketMsgTest, reserved_name) {
     ModelDescription model("BucketMsgTest");
@@ -114,7 +114,7 @@ TEST(BucketMsgTest, Mandatory) {
         LayerDescription &layer = model.newLayer();
         layer.addAgentFunction(in);
     }
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
 
     AgentPopulation population(model.Agent("agent"), AGENT_COUNT);
     // Initialise agents (TODO)
@@ -183,7 +183,7 @@ TEST(BucketMsgTest, Optional) {
         LayerDescription &layer = model.newLayer();
         layer.addAgentFunction(in);
     }
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
 
     AgentPopulation population(model.Agent("agent"), AGENT_COUNT);
     // Initialise agents (TODO)
@@ -258,7 +258,7 @@ TEST(BucketMsgTest, OptionalNone) {
         LayerDescription &layer = model.newLayer();
         layer.addAgentFunction(in);
     }
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
 
     AgentPopulation population(model.Agent("agent"), AGENT_COUNT);
     // Initialise agents (TODO)
@@ -322,7 +322,7 @@ TEST(BucketMsgTest, Mandatory_Range) {
         LayerDescription &layer = model.newLayer();
         layer.addAgentFunction(in_range);
     }
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
 
     AgentPopulation population(model.Agent("agent"), AGENT_COUNT);
     // Initialise agents (TODO)

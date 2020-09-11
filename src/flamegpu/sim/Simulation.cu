@@ -17,7 +17,7 @@ Simulation::Simulation(const ModelDescription& _model)
     , submodel(nullptr)
     , mastermodel(nullptr)
     , instance_id(get_instance_id()) { }
-Simulation::Simulation(const std::shared_ptr<SubModelData> &submodel_desc, CUDAAgentModel *master_model)
+Simulation::Simulation(const std::shared_ptr<SubModelData> &submodel_desc, CUDASimulation *master_model)
     : model(submodel_desc->submodel)
     , submodel(submodel_desc)
     , mastermodel(master_model)

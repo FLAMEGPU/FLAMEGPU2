@@ -37,7 +37,7 @@ TEST(HostAgentSort, Ascending_float) {
         instance.setVariable<int>("spare", static_cast<int>(t+12));
     }
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(pop);
     // Execute step fn
     cuda_model.step();
@@ -76,7 +76,7 @@ TEST(HostAgentSort, Descending_float) {
         instance.setVariable<int>("spare", static_cast<int>(t+12));
     }
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(pop);
     // Execute step fn
     cuda_model.step();
@@ -115,7 +115,7 @@ TEST(HostAgentSort, Ascending_int) {
         instance.setVariable<int>("spare", t+12);
     }
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(pop);
     // Execute step fn
     cuda_model.step();
@@ -154,7 +154,7 @@ TEST(HostAgentSort, Descending_int) {
         instance.setVariable<int>("spare", t+12);
     }
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(pop);
     // Execute step fn
     cuda_model.step();
@@ -216,7 +216,7 @@ TEST(HostAgentSort, 2x_Ascending_float) {
         instance.setVariable<int>("spare", static_cast<int>(t2+12));
     }
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(pop);
     // Execute step fn
     cuda_model.step();
@@ -260,7 +260,7 @@ TEST(HostAgentSort, 2x_Descending_float) {
         instance.setVariable<int>("spare", static_cast<int>(t2+12));
     }
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(pop);
     // Execute step fn
     cuda_model.step();
@@ -304,7 +304,7 @@ TEST(HostAgentSort, 2x_Ascending_int) {
         instance.setVariable<int>("spare", static_cast<int>(t2+12));
     }
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(pop);
     // Execute step fn
     cuda_model.step();
@@ -348,7 +348,7 @@ TEST(HostAgentSort, 2x_Descending_int) {
         instance.setVariable<int>("spare", static_cast<int>(t2+12));
     }
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(pop);
     // Execute step fn
     cuda_model.step();
@@ -392,7 +392,7 @@ TEST(HostAgentSort, 2x_AscDesc_int) {
         instance.setVariable<int>("spare", static_cast<int>(t2+12));
     }
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(pop);
     // Execute step fn
     cuda_model.step();
@@ -436,7 +436,7 @@ TEST(HostAgentSort, 2x_DescAsc_int) {
         instance.setVariable<int>("spare", static_cast<int>(t2+12));
     }
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(pop);
     // Execute step fn
     cuda_model.step();

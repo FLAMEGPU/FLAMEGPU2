@@ -29,7 +29,7 @@ class IncrementCounter(pyflamegpu.HostFunctionCallback):
 class TestSimulation(TestCase):
     def test_argparse_inputfile_long(self):
         m = pyflamegpu.ModelDescription("test_argparse_inputfile_long")
-        c = pyflamegpu.CUDAAgentModel(m)
+        c = pyflamegpu.CUDASimulation(m)
         argv = [ "prog.exe", "--in", "test" ]
         assert c.getSimulationConfig().input_file == ""
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # UnsupportedFileType exception
@@ -43,7 +43,7 @@ class TestSimulation(TestCase):
 
     def test_argparse_inputfile_short(self):
         m = pyflamegpu.ModelDescription("test_argparse_inputfile_short")
-        c = pyflamegpu.CUDAAgentModel(m)
+        c = pyflamegpu.CUDASimulation(m)
         argv = [ "prog.exe", "-i", "I_DO_NOT_EXIST.xml" ]
         assert c.getSimulationConfig().input_file == ""
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # InvalidInputFile
@@ -57,7 +57,7 @@ class TestSimulation(TestCase):
 
     def test_argparse_steps_long(self):
         m = pyflamegpu.ModelDescription("test_argparse_steps_long")
-        c = pyflamegpu.CUDAAgentModel(m)
+        c = pyflamegpu.CUDASimulation(m)
         argv = [ "prog.exe", "--steps", "12" ]
         assert c.getSimulationConfig().steps == 0
         c.initialise(argv)
@@ -69,7 +69,7 @@ class TestSimulation(TestCase):
         
     def test_argparse_steps_short(self):
         m = pyflamegpu.ModelDescription("test_argparse_steps_short")
-        c = pyflamegpu.CUDAAgentModel(m)
+        c = pyflamegpu.CUDASimulation(m)
         argv = [ "prog.exe", "-s", "12" ]
         assert c.getSimulationConfig().steps == 0
         c.initialise(argv)
@@ -81,7 +81,7 @@ class TestSimulation(TestCase):
         
     def test_argparse_randomseed_long(self):
         m = pyflamegpu.ModelDescription("test_argparse_randomseed_long")
-        c = pyflamegpu.CUDAAgentModel(m)
+        c = pyflamegpu.CUDASimulation(m)
         argv = [ "prog.exe", "--random", "12" ]
         assert c.getSimulationConfig().random_seed != 12
         c.initialise(argv)
@@ -93,7 +93,7 @@ class TestSimulation(TestCase):
         
     def test_argparse_randomseed_short(self):
         m = pyflamegpu.ModelDescription("test_argparse_randomseed_short")
-        c = pyflamegpu.CUDAAgentModel(m)
+        c = pyflamegpu.CUDASimulation(m)
         argv = [ "prog.exe", "-r", "12" ]
         assert c.getSimulationConfig().random_seed != 12
         c.initialise(argv)
@@ -105,7 +105,7 @@ class TestSimulation(TestCase):
         
     def test_argparse_device_long(self):
         m = pyflamegpu.ModelDescription("test_argparse_device_long")
-        c = pyflamegpu.CUDAAgentModel(m)
+        c = pyflamegpu.CUDASimulation(m)
         argv = [ "prog.exe", "--device", "1200" ]
         assert c.getCUDAConfig().device_id == 0
         # Setting an invalid device ID is the only safe way to do this without making internal methods accessible
@@ -121,7 +121,7 @@ class TestSimulation(TestCase):
         
     def test_argparse_device_short(self):
         m = pyflamegpu.ModelDescription("test_argparse_device_short")
-        c = pyflamegpu.CUDAAgentModel(m)
+        c = pyflamegpu.CUDASimulation(m)
         argv = [ "prog.exe", "-d", "1200" ]
         assert c.getCUDAConfig().device_id == 0
         # Setting an invalid device ID is the only safe way to do this without making internal methods accessible
@@ -156,7 +156,7 @@ class TestSimulation(TestCase):
             with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # InvalidVarType exception 
                 i.setVariableFloat("test", float(_i))
             assert e.value.type() == "InvalidVarType"
-        c = pyflamegpu.CUDAAgentModel(m)
+        c = pyflamegpu.CUDASimulation(m)
         c.SimulationConfig().steps = 1
         c.setPopulationData(pop)
         # perform simulation
@@ -186,7 +186,7 @@ class TestSimulation(TestCase):
 
         pop = pyflamegpu.AgentPopulation(a2, AGENT_COUNT);
 
-        c = pyflamegpu.CUDAAgentModel(m)
+        c = pyflamegpu.CUDASimulation(m)
         # Test setPopulationData
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # InvalidCudaAgent exception
             c.setPopulationData(pop)
@@ -210,7 +210,7 @@ class TestSimulation(TestCase):
         # Create IncrementCounter object to add a step function to the special addPythonStepFunction wrapper
         inc = IncrementCounter()
         m.addStepFunctionCallback(inc)
-        c = pyflamegpu.CUDAAgentModel(m)
+        c = pyflamegpu.CUDASimulation(m)
         c.setPopulationData(pop)
         externalCounter = 0
         c.resetStepCounter()
@@ -233,7 +233,7 @@ class TestSimulation(TestCase):
         # Create IncrementCounter object to add a step function to the special addPythonStepFunction wrapper
         inc = IncrementCounter()
         m.addStepFunctionCallback(inc)
-        c = pyflamegpu.CUDAAgentModel(m)
+        c = pyflamegpu.CUDASimulation(m)
         c.setPopulationData(pop)
         externalCounter = 0
         c.resetStepCounter()
@@ -266,7 +266,7 @@ class TestSimulation(TestCase):
         death_func.setAllowAgentDeath(True)
         m.newLayer().addAgentFunction(death_func)
         pop = pyflamegpu.AgentPopulation(a, AGENT_COUNT)
-        c = pyflamegpu.CUDAAgentModel(m)
+        c = pyflamegpu.CUDASimulation(m)
         expected_output = []
         for i in range(AGENT_COUNT):
             p = pop.getNextInstance()

@@ -72,7 +72,7 @@ TEST(MessageDescriptionTest, CorrectMessageTypeBound1) {
     AgentFunctionDescription &fo = a.newFunction("bar", NoInput);
     LayerDescription &lo = m.newLayer("foo2");
     lo.addAgentFunction(fo);
-    EXPECT_THROW(CUDAAgentModel c(m), InvalidMessageType);
+    EXPECT_THROW(CUDASimulation c(m), InvalidMessageType);
 }
 TEST(MessageDescriptionTest, CorrectMessageTypeBound2) {
     ModelDescription m(MODEL_NAME);
@@ -80,7 +80,7 @@ TEST(MessageDescriptionTest, CorrectMessageTypeBound2) {
     AgentFunctionDescription &fo = a.newFunction("bar", NoOutput);
     LayerDescription &lo = m.newLayer("foo2");
     lo.addAgentFunction(fo);
-    EXPECT_THROW(CUDAAgentModel c(m), InvalidMessageType);
+    EXPECT_THROW(CUDASimulation c(m), InvalidMessageType);
 }
 TEST(MessageDescriptionTest, CorrectMessageTypeBound3) {
     ModelDescription m(MODEL_NAME);

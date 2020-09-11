@@ -43,7 +43,7 @@ class FLAMEGPU_READ_ONLY_DEVICE_API {
 
  public:
     /**
-     * @param instance_id_hash CURVE hash of the CUDAAgentModel's instance id
+     * @param instance_id_hash CURVE hash of the CUDASimulation's instance id
      * @param modelname_hash CURVE hash of the model's name
      */
     __device__ FLAMEGPU_READ_ONLY_DEVICE_API(
@@ -168,7 +168,7 @@ class FLAMEGPU_DEVICE_API : public FLAMEGPU_READ_ONLY_DEVICE_API{
      };
     /**
      * Constructs the device-only API class instance.
-     * @param instance_id_hash CURVE hash of the CUDAAgentModel's instance id
+     * @param instance_id_hash CURVE hash of the CUDASimulation's instance id
      * @param agentfuncname_hash Combined CURVE hashes of agent name and func name
      * @param _agent_output_hash Combined CURVE hashes for agent output
      * @param d_rng Device pointer to curand state for this kernel, index 0 should for TID()==0

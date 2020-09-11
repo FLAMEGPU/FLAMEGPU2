@@ -34,7 +34,7 @@ class CUDAAgentStateList {
      * @param cuda_agent The owning CUDAAgent
      * @param _fat_index The owning CUDAAgent's fat index within the CUDAFatAgent
      * @param description The owning CUDAAgent's description, used to identify variables
-     * @param _isSubStateList If true, the statelist is mapped to a master agent (and will be reset after CUDAAgentModel::simulate())
+     * @param _isSubStateList If true, the statelist is mapped to a master agent (and will be reset after CUDASimulation::simulate())
      * @param mapping Mapping definition for how the variables are to their master state.
      */
     CUDAAgentStateList(
@@ -94,7 +94,7 @@ class CUDAAgentStateList {
     void scatterHostCreation(const unsigned int &newSize, char *const d_inBuff, const VarOffsetStruct &offsets, CUDAScatter &scatter, const unsigned int &streamId);
     /**
      * Sorts all agent variables according to the positions stored inside Message Output scan buffer
-     * @param scatter Scatter instance and scan arrays to be used (CUDAAgentModel::singletons->scatter)
+     * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
      * @param streamId The stream in which the corresponding agent function has executed
      */
     void scatterSort(CUDAScatter &scatter, const unsigned int &streamId);
@@ -142,12 +142,12 @@ class CUDAAgentStateList {
      */
     const std::shared_ptr<CUDAFatAgentStateList> parent_list;
     /**
-     * If true, the statelist is mapped to a master agent (and will be reset after CUDAAgentModel::simulate())
+     * If true, the statelist is mapped to a master agent (and will be reset after CUDASimulation::simulate())
      */
     const bool isSubStateList;
     /**
      * These variables are not mapped to a master agent
-     * Hence they are reset each time CUDAAgentModel::simulate() is called
+     * Hence they are reset each time CUDASimulation::simulate() is called
      */
     std::list<std::shared_ptr<VariableBuffer>> unmappedBuffers;
 };

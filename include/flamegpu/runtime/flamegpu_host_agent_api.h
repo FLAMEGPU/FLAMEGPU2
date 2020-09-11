@@ -26,7 +26,7 @@
 #include "flamegpu/sim/AgentInterface.h"
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/runtime/flamegpu_host_api.h"
-#include "flamegpu/gpu/CUDAAgentModel.h"
+#include "flamegpu/gpu/CUDASimulation.h"
 
 #define FLAMEGPU_CUSTOM_REDUCTION(funcName, a, b)\
 struct funcName ## _impl {\

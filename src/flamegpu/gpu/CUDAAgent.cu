@@ -6,7 +6,7 @@
 #include "flamegpu/gpu/CUDAFatAgent.h"
 #include "flamegpu/gpu/CUDAAgentStateList.h"
 #include "flamegpu/gpu/CUDAErrorChecking.h"
-#include "flamegpu/gpu/CUDAAgentModel.h"
+#include "flamegpu/gpu/CUDASimulation.h"
 
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/model/AgentFunctionDescription.h"
@@ -15,7 +15,7 @@
 #include "flamegpu/runtime/cuRVE/curve_rtc.h"
 #include "flamegpu/gpu/CUDAScatter.h"
 
-CUDAAgent::CUDAAgent(const AgentData& description, const CUDAAgentModel &_cuda_model)
+CUDAAgent::CUDAAgent(const AgentData& description, const CUDASimulation &_cuda_model)
     : agent_description(description)  // This is a master agent, so it must create a new fat_agent
     , fat_agent(std::make_shared<CUDAFatAgent>(agent_description))  // if we create fat agent, we're index 0
     , fat_index(0)
@@ -34,7 +34,7 @@ CUDAAgent::CUDAAgent(const AgentData& description, const CUDAAgentModel &_cuda_m
 }
 CUDAAgent::CUDAAgent(
     const AgentData &description,
-    const CUDAAgentModel &_cuda_model,
+    const CUDASimulation &_cuda_model,
     const std::unique_ptr<CUDAAgent> &master_agent,
     const std::shared_ptr<SubAgentData> &mapping)
     : agent_description(description)

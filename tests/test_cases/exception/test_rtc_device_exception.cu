@@ -35,7 +35,7 @@ TEST(RTCDeviceExceptionTest, getAgentVar_name) {
         instance.setVariable<int>("id", i);
     }
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     EXPECT_THROW(cuda_model.step(), DeviceError);
@@ -60,7 +60,7 @@ TEST(RTCDeviceExceptionTest, getAgentVar_typesize) {
         instance.setVariable<int>("id", i);
     }
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     EXPECT_THROW(cuda_model.step(), DeviceError);
@@ -87,7 +87,7 @@ TEST(RTCDeviceExceptionTest, getAgentArrayVar_name) {
         AgentInstance instance = init_population.getNextInstance("default");
     }
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     EXPECT_THROW(cuda_model.step(), DeviceError);
@@ -111,7 +111,7 @@ TEST(RTCDeviceExceptionTest, getAgentArrayVar_typesize) {
         AgentInstance instance = init_population.getNextInstance("default");
     }
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     EXPECT_THROW(cuda_model.step(), DeviceError);
@@ -135,7 +135,7 @@ TEST(RTCDeviceExceptionTest, getAgentArrayVar_length) {
         AgentInstance instance = init_population.getNextInstance("default");
     }
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     EXPECT_THROW(cuda_model.step(), DeviceError);
@@ -159,7 +159,7 @@ TEST(RTCDeviceExceptionTest, getAgentArrayVar_bounds) {
         AgentInstance instance = init_population.getNextInstance("default");
     }
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     EXPECT_THROW(cuda_model.step(), DeviceError);
@@ -187,7 +187,7 @@ TEST(RTCDeviceExceptionTest, setAgentVar_name) {
         instance.setVariable<int>("id", i);
     }
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     EXPECT_THROW(cuda_model.step(), DeviceError);
@@ -212,7 +212,7 @@ TEST(RTCDeviceExceptionTest, setAgentVar_typesize) {
         instance.setVariable<int>("id", i);
     }
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     EXPECT_THROW(cuda_model.step(), DeviceError);
@@ -239,7 +239,7 @@ TEST(RTCDeviceExceptionTest, setAgentArrayVar_name) {
         AgentInstance instance = init_population.getNextInstance("default");
     }
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     EXPECT_THROW(cuda_model.step(), DeviceError);
@@ -263,7 +263,7 @@ TEST(RTCDeviceExceptionTest, setAgentArrayVar_typesize) {
         AgentInstance instance = init_population.getNextInstance("default");
     }
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     EXPECT_THROW(cuda_model.step(), DeviceError);
@@ -287,7 +287,7 @@ TEST(RTCDeviceExceptionTest, setAgentArrayVar_length) {
         AgentInstance instance = init_population.getNextInstance("default");
     }
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     EXPECT_THROW(cuda_model.step(), DeviceError);
@@ -311,7 +311,7 @@ TEST(RTCDeviceExceptionTest, setAgentArrayVar_bounds) {
         AgentInstance instance = init_population.getNextInstance("default");
     }
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     EXPECT_THROW(cuda_model.step(), DeviceError);
@@ -340,7 +340,7 @@ TEST(RTCDeviceExceptionTest, getEnvironmentProp_name) {
         instance.setVariable<int>("id", i);
     }
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     EXPECT_THROW(cuda_model.step(), DeviceError);
@@ -366,7 +366,7 @@ TEST(RTCDeviceExceptionTest, getEnvironmentProp_typesize) {
         instance.setVariable<int>("id", i);
     }
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     EXPECT_THROW(cuda_model.step(), DeviceError);
@@ -395,7 +395,7 @@ TEST(RTCDeviceExceptionTest, getEnvironmentArrayProp_name) {
         instance.setVariable<int>("id", i);
     }
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     EXPECT_THROW(cuda_model.step(), DeviceError);
@@ -421,7 +421,7 @@ TEST(RTCDeviceExceptionTest, getEnvironmentArrayProp_typesize) {
         instance.setVariable<int>("id", i);
     }
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     EXPECT_THROW(cuda_model.step(), DeviceError);
@@ -448,7 +448,7 @@ TEST(RTCDeviceExceptionTest, getEnvironmentArrayProp_typesize) {
 //         instance.setVariable<int>("id", i);
 //     }
 //     // Setup Model
-//     CUDAAgentModel cuda_model(model);
+//     CUDASimulation cuda_model(model);
 //     cuda_model.setPopulationData(init_population);
 //     // Run 1 step to ensure data is pushed to device
 //     EXPECT_THROW(cuda_model.step(), DeviceError);
@@ -474,7 +474,7 @@ TEST(RTCDeviceExceptionTest, getEnvironmentArrayProp_bounds) {
         instance.setVariable<int>("id", i);
     }
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     EXPECT_THROW(cuda_model.step(), DeviceError);

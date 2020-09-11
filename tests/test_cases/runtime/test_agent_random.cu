@@ -63,7 +63,7 @@ TEST(AgentRandomTest, AgentRandomCheck) {
     LayerDescription &layer = model.newLayer("layer");
     layer.addAgentFunction(af);
 
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.SimulationConfig().steps = 1;
     const char *args_1[5] = { "process.exe", "-r", "0", "-s", "1" };
     const char *args_2[5] = { "process.exe", "-r", "1", "-s", "1" };
@@ -237,7 +237,7 @@ TEST(AgentRandomTest, AgentRandomFunctionsNoExcept) {
     LayerDescription &layer = model.newLayer("layer");
     layer.addAgentFunction(do_random);
 
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.SimulationConfig().steps = 1;
     cuda_model.setPopulationData(population);
     ASSERT_NO_THROW(cuda_model.simulate());

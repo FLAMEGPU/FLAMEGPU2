@@ -65,7 +65,7 @@ class MiniSim {
         // CudaModel must be declared here
         // As the initial call to constructor fixes the agent population
         // This means if we haven't called model.newAgent(agent) first
-        CUDAAgentModel cuda_model(model);
+        CUDASimulation cuda_model(model);
         cuda_model.SimulationConfig().steps = steps;
         // This fails as agentMap is empty
         cuda_model.setPopulationData(*population);
@@ -1245,12 +1245,12 @@ FLAMEGPU_STEP_FUNCTION(reserved_name_set_array_step) {
 TEST_F(HostEnvironmentTest, reserved_name_set) {
     ModelDescription model("model");
     model.addStepFunction(reserved_name_set_step);
-    CUDAAgentModel sim(model);
+    CUDASimulation sim(model);
     EXPECT_THROW(sim.step(), ReservedName);
 }
 TEST_F(HostEnvironmentTest, reserved_name_set_array) {
     ModelDescription model("model");
     model.addStepFunction(reserved_name_set_array_step);
-    CUDAAgentModel sim(model);
+    CUDASimulation sim(model);
     EXPECT_THROW(sim.step(), ReservedName);
 }

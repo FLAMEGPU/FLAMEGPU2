@@ -28,7 +28,7 @@ class MiniSim {
         // CudaModel must be declared here
         // As the initial call to constructor fixes the agent population
         // This means if we haven't called model.newAgent(agent) first
-        CUDAAgentModel cuda_model(model);
+        CUDASimulation cuda_model(model);
         cuda_model.SimulationConfig().steps = steps;
         // This fails as agentMap is empty
         AgentPopulation population(agent, 1);

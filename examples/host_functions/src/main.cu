@@ -116,7 +116,7 @@ int main(int argc, const char ** argv) {
     /**
      * Execution
      */
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.SimulationConfig().steps = 0;
     cuda_model.setPopulationData(population);
     cuda_model.initialise(argc, argv);

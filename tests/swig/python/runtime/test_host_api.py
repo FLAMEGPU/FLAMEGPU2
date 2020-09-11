@@ -80,7 +80,7 @@ class HostAPITest(TestCase):
             instance = init_population.getNextInstance("default")
         
         # Setup Model
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         cuda_model.setPopulationData(init_population)
         cuda_model.SimulationConfig().steps = TOTAL_STEPS
         cuda_model.simulate()

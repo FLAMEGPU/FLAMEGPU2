@@ -116,7 +116,7 @@ class Spatial3DMsgTest(TestCase):
         layer = model.newLayer()
         layer.addAgentFunction(inf)
 
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
 
         population = pyflamegpu.AgentPopulation(model.Agent("agent"), AGENT_COUNT)
         # Initialise agents (TODO)
@@ -226,7 +226,7 @@ class Spatial3DMsgTest(TestCase):
         layer = model.newLayer()
         layer.addAgentFunction(inf)
 
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
 
         population = pyflamegpu.AgentPopulation(model.Agent("agent"), AGENT_COUNT)
         # Initialise agents (TODO)
@@ -375,7 +375,7 @@ class Spatial3DMsgTest(TestCase):
         message = model.newMessageSpatial3D("location")
         message.setMin(5, 5, 5)
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-            m = pyflamegpu.CUDAAgentModel(model)
+            m = pyflamegpu.CUDASimulation(model)
         assert e.value.type() == "InvalidMessage"
 
     def test_UnsetMin(self): 
@@ -383,7 +383,7 @@ class Spatial3DMsgTest(TestCase):
         message = model.newMessageSpatial3D("location")
         message.setMin(5, 5, 5)
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-            m = pyflamegpu.CUDAAgentModel(model)
+            m = pyflamegpu.CUDASimulation(model)
         assert e.value.type() == "InvalidMessage"
 
     def test_reserved_name(self): 
@@ -416,7 +416,7 @@ class Spatial3DMsgTest(TestCase):
         # Create 1 agent
         pop_in = pyflamegpu.AgentPopulation(model.Agent("agent"), 1)
         pop_in.getNextInstance()
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         cuda_model.setPopulationData(pop_in)
         # Execute model
         cuda_model.step()

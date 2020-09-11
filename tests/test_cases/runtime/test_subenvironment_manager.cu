@@ -63,7 +63,7 @@ TEST(SubEnvironmentManagerTest, SubDeviceAPIGetDefault) {
     AgentPopulation pop(a);
     pop.getNextInstance();
     // Init and step model
-    CUDAAgentModel cm(m);
+    CUDASimulation cm(m);
     cm.setPopulationData(pop);
     cm.step();
     // Test result
@@ -108,7 +108,7 @@ TEST(SubEnvironmentManagerTest, SubDeviceAPIGetMasterChange) {
     AgentPopulation pop(a);
     pop.getNextInstance();
     // Init and step model
-    CUDAAgentModel cm(m);
+    CUDASimulation cm(m);
     cm.setPopulationData(pop);
     cm.step();
     // Test result
@@ -147,7 +147,7 @@ TEST(SubEnvironmentManagerTest, SubHostAPIGetMasterChange) {
     AgentPopulation pop(a);
     pop.getNextInstance();
     // Init and step model
-    CUDAAgentModel cm(m);
+    CUDASimulation cm(m);
     cm.setPopulationData(pop);
     // Stepping the model performs the test (the assert is in the step fn)
     cm.step();
@@ -184,7 +184,7 @@ TEST(SubEnvironmentManagerTest, SubHostAPISetSub) {
     AgentPopulation pop(a);
     pop.getNextInstance();
     // Init and step model
-    CUDAAgentModel cm(m);
+    CUDASimulation cm(m);
     cm.setPopulationData(pop);
     // Stepping the model performs the test (the assert is in the step fn)
     cm.step();
@@ -222,7 +222,7 @@ TEST(SubEnvironmentManagerTest, SubHostAPISetConstSub) {
     AgentPopulation pop(a);
     pop.getNextInstance();
     // Init and step model
-    CUDAAgentModel cm(m);
+    CUDASimulation cm(m);
     cm.setPopulationData(pop);
     // Stepping the model performs the test (the assert is in the step fn)
     cm.step();
@@ -278,7 +278,7 @@ TEST(SubEnvironmentManagerTest, SubSubDeviceAPIGetDefault) {
     AgentPopulation pop(a);
     pop.getNextInstance();
     // Init and step model
-    CUDAAgentModel cm(m);
+    CUDASimulation cm(m);
     cm.setPopulationData(pop);
     cm.step();
     // Test result
@@ -338,7 +338,7 @@ TEST(SubEnvironmentManagerTest, SubSubDeviceAPIGetMasterChange) {
     AgentPopulation pop(a);
     pop.getNextInstance();
     // Init and step model
-    CUDAAgentModel cm(m);
+    CUDASimulation cm(m);
     cm.setPopulationData(pop);
     cm.step();
     // Test result
@@ -389,7 +389,7 @@ TEST(SubEnvironmentManagerTest, SubSubHostAPIGetMasterChange) {
     AgentPopulation pop(a);
     pop.getNextInstance();
     // Init and step model
-    CUDAAgentModel cm(m);
+    CUDASimulation cm(m);
     cm.setPopulationData(pop);
     // Stepping the model performs the test (the assert is in the step fn)
     cm.step();
@@ -442,7 +442,7 @@ TEST(SubEnvironmentManagerTest, SubSubHostAPISetSub) {
     AgentPopulation pop(a);
     pop.getNextInstance();
     // Init and step model
-    CUDAAgentModel cm(m);
+    CUDASimulation cm(m);
     cm.setPopulationData(pop);
     // Stepping the model performs the test (the assert is in the step fn)
     cm.step();
@@ -493,7 +493,7 @@ TEST(SubEnvironmentManagerTest, SubSubHostAPISetConstSub) {
     AgentPopulation pop(a);
     pop.getNextInstance();
     // Init and step model
-    CUDAAgentModel cm(m);
+    CUDASimulation cm(m);
     cm.setPopulationData(pop);
     // Stepping the model performs the test (the assert is in the step fn)
     cm.step();

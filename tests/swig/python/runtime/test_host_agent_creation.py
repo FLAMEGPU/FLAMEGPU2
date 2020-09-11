@@ -210,7 +210,7 @@ class HostAgentCreationTest(TestCase):
         func = BasicOutput()
         model.addInitFunctionCallback(func)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         population = pyflamegpu.AgentPopulation(model.Agent("agent"), INIT_AGENT_COUNT)
         # Initialise agents
         for i in range (INIT_AGENT_COUNT): 
@@ -247,7 +247,7 @@ class HostAgentCreationTest(TestCase):
         func = BasicOutput()
         model.addStepFunctionCallback(func)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         population = pyflamegpu.AgentPopulation(model.Agent("agent"), INIT_AGENT_COUNT)
         # Initialise agents
         for i in range (INIT_AGENT_COUNT): 
@@ -284,7 +284,7 @@ class HostAgentCreationTest(TestCase):
         func = BasicOutput()
         model.newLayer().addHostFunctionCallback(func)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         population = pyflamegpu.AgentPopulation(model.Agent("agent"), INIT_AGENT_COUNT)
         # Initialise agents
         for i in range (INIT_AGENT_COUNT): 
@@ -321,7 +321,7 @@ class HostAgentCreationTest(TestCase):
         func = BasicOutputCdn()
         model.addExitConditionCallback(func)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         population = pyflamegpu.AgentPopulation(model.Agent("agent"), INIT_AGENT_COUNT)
         # Initialise agents
         for i in range (INIT_AGENT_COUNT): 
@@ -358,7 +358,7 @@ class HostAgentCreationTest(TestCase):
         func = BasicOutput()
         model.addStepFunctionCallback(func)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         population = pyflamegpu.AgentPopulation(model.Agent("agent"))
         # Execute model
         cuda_model.SimulationConfig().steps = 1
@@ -387,7 +387,7 @@ class HostAgentCreationTest(TestCase):
         func = OutputState()
         model.addStepFunctionCallback(func)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         population = pyflamegpu.AgentPopulation(model.Agent("agent"), INIT_AGENT_COUNT)
         # Initialise agents
         for i in range (INIT_AGENT_COUNT): 
@@ -425,7 +425,7 @@ class HostAgentCreationTest(TestCase):
         func = OutputMultiAgent()
         model.addStepFunctionCallback(func)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         population = pyflamegpu.AgentPopulation(agent, INIT_AGENT_COUNT)
         # Initialise agents
         for i in range (INIT_AGENT_COUNT): 
@@ -467,7 +467,7 @@ class HostAgentCreationTest(TestCase):
         func = BasicOutput()
         model.addStepFunctionCallback(func)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         # Execute model
         cuda_model.SimulationConfig().steps = 1
         cuda_model.applyConfig()
@@ -494,7 +494,7 @@ class HostAgentCreationTest(TestCase):
         func = BadVarName()
         model.addStepFunctionCallback(func)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         # Execute model
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
             cuda_model.step()
@@ -508,7 +508,7 @@ class HostAgentCreationTest(TestCase):
         func = BadVarType()
         model.addStepFunctionCallback(func)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         # Execute model
         with pytest.raises (TypeError) as e: # Python raises TypeError rather than InvalidVarType when passing float as int
             cuda_model.step() 
@@ -522,7 +522,7 @@ class HostAgentCreationTest(TestCase):
         func = Getter()
         model.addStepFunctionCallback(func)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         # Execute model
         cuda_model.SimulationConfig().steps = 1
         cuda_model.applyConfig()
@@ -550,7 +550,7 @@ class HostAgentCreationTest(TestCase):
         func = GetBadVarName()
         model.addStepFunctionCallback(func)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         # Execute model
         with pytest.raises (pyflamegpu.FGPURuntimeException) as e:
             cuda_model.step()
@@ -564,7 +564,7 @@ class HostAgentCreationTest(TestCase):
         func = GetBadVarType()
         model.addStepFunctionCallback(func)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         # Execute model
         with pytest.raises (pyflamegpu.FGPURuntimeException) as e:
             cuda_model.step()
@@ -583,7 +583,7 @@ class HostAgentCreationTest(TestCase):
         # Run the init function
         func = ArrayVarHostBirth()
         model.addStepFunctionCallback(func)
-        sim = pyflamegpu.CUDAAgentModel(model)
+        sim = pyflamegpu.CUDASimulation(model)
         sim.step()
         population = pyflamegpu.AgentPopulation(agent)
         sim.getPopulationData(population)
@@ -616,7 +616,7 @@ class HostAgentCreationTest(TestCase):
         # Run the init function
         func = ArrayVarHostBirthSetGet()
         model.addStepFunctionCallback(func)
-        sim = pyflamegpu.CUDAAgentModel(model)
+        sim = pyflamegpu.CUDASimulation(model)
         sim.step()
         population = pyflamegpu.AgentPopulation(agent)
         sim.getPopulationData(population)
@@ -649,7 +649,7 @@ class HostAgentCreationTest(TestCase):
         # Run the init function
         func = ArrayVarHostBirth_DefaultWorks()
         model.addStepFunctionCallback(func)
-        sim = pyflamegpu.CUDAAgentModel(model)
+        sim = pyflamegpu.CUDASimulation(model)
         sim.step()
         population = pyflamegpu.AgentPopulation(agent)
         sim.getPopulationData(population)
@@ -674,7 +674,7 @@ class HostAgentCreationTest(TestCase):
         # Run the init function
         func = ArrayVarHostBirth_LenWrong()
         model.addStepFunctionCallback(func)
-        sim = pyflamegpu.CUDAAgentModel(model)
+        sim = pyflamegpu.CUDASimulation(model)
         with pytest.raises (pyflamegpu.FGPURuntimeException) as e:
             sim.step()
         assert e.value.type() == "InvalidVarArrayLen"
@@ -686,7 +686,7 @@ class HostAgentCreationTest(TestCase):
         # Run the init function
         func = ArrayVarHostBirth_LenWrong2()
         model.addStepFunctionCallback(func)
-        sim = pyflamegpu.CUDAAgentModel(model)
+        sim = pyflamegpu.CUDASimulation(model)
         with pytest.raises (pyflamegpu.FGPURuntimeException) as e:
             sim.step()
         assert e.value.type() == "OutOfRangeVarArray"
@@ -698,7 +698,7 @@ class HostAgentCreationTest(TestCase):
         # Run the init function
         func = ArrayVarHostBirth_LenWrong()
         model.addStepFunctionCallback(func)
-        sim = pyflamegpu.CUDAAgentModel(model)
+        sim = pyflamegpu.CUDASimulation(model)
         with pytest.raises (pyflamegpu.FGPURuntimeException) as e:
             sim.step()
         assert e.value.type() == "InvalidVarArrayLen"
@@ -710,7 +710,7 @@ class HostAgentCreationTest(TestCase):
         # Run the init function
         func = ArrayVarHostBirth_LenWrong2()
         model.addStepFunctionCallback(func)
-        sim = pyflamegpu.CUDAAgentModel(model)
+        sim = pyflamegpu.CUDASimulation(model)
         with pytest.raises (pyflamegpu.FGPURuntimeException) as e:
             sim.step()
         assert e.value.type() == "OutOfRangeVarArray"
@@ -722,7 +722,7 @@ class HostAgentCreationTest(TestCase):
         # Run the init function
         func = ArrayVarHostBirth_TypeWrong()
         model.addStepFunctionCallback(func)
-        sim = pyflamegpu.CUDAAgentModel(model)
+        sim = pyflamegpu.CUDASimulation(model)
         with pytest.raises (pyflamegpu.FGPURuntimeException) as e:
             sim.step()
         assert e.value.type() == "InvalidVarType"
@@ -734,7 +734,7 @@ class HostAgentCreationTest(TestCase):
         # Run the init function
         func = ArrayVarHostBirth_TypeWrong2()
         model.addStepFunctionCallback(func)
-        sim = pyflamegpu.CUDAAgentModel(model)
+        sim = pyflamegpu.CUDASimulation(model)
         with pytest.raises (pyflamegpu.FGPURuntimeException) as e:
             sim.step()
         assert e.value.type() == "InvalidVarType"
@@ -746,7 +746,7 @@ class HostAgentCreationTest(TestCase):
         # Run the init function
         func = ArrayVarHostBirth_NameWrong()
         model.addStepFunctionCallback(func)
-        sim = pyflamegpu.CUDAAgentModel(model)
+        sim = pyflamegpu.CUDASimulation(model)
         with pytest.raises (pyflamegpu.FGPURuntimeException) as e:
             sim.step()
         assert e.value.type() == "InvalidAgentVar"
@@ -758,7 +758,7 @@ class HostAgentCreationTest(TestCase):
         # Run the init function
         func = ArrayVarHostBirth_NameWrong()
         model.addStepFunctionCallback(func)
-        sim = pyflamegpu.CUDAAgentModel(model)
+        sim = pyflamegpu.CUDASimulation(model)
         with pytest.raises (pyflamegpu.FGPURuntimeException) as e:
             sim.step()
         assert e.value.type() == "InvalidAgentVar"
@@ -770,7 +770,7 @@ class HostAgentCreationTest(TestCase):
         # Run the init function
         func = ArrayVarHostBirth_ArrayNotSuitableSet()
         model.addStepFunctionCallback(func)
-        sim = pyflamegpu.CUDAAgentModel(model)
+        sim = pyflamegpu.CUDASimulation(model)
         with pytest.raises (pyflamegpu.FGPURuntimeException) as e:
             sim.step()
         assert e.value.type() == "InvalidAgentVar"
@@ -782,7 +782,7 @@ class HostAgentCreationTest(TestCase):
         # Run the init function
         func = ArrayVarHostBirth_ArrayNotSuitableGet()
         model.addStepFunctionCallback(func)
-        sim = pyflamegpu.CUDAAgentModel(model)
+        sim = pyflamegpu.CUDASimulation(model)
         with pytest.raises (pyflamegpu.FGPURuntimeException) as e:
             sim.step()
         assert e.value.type() == "InvalidAgentVar"
@@ -794,7 +794,7 @@ class HostAgentCreationTest(TestCase):
         # Run the init function
         func = reserved_name_step()
         model.addStepFunctionCallback(func)
-        sim = pyflamegpu.CUDAAgentModel(model)
+        sim = pyflamegpu.CUDASimulation(model)
         with pytest.raises (pyflamegpu.FGPURuntimeException) as e:
             sim.step()
         assert e.value.type() == "ReservedName"
@@ -804,7 +804,7 @@ class HostAgentCreationTest(TestCase):
         model.newAgent("agent_name")
         func = reserved_name_step_array()
         model.addStepFunctionCallback(func)
-        sim = pyflamegpu.CUDAAgentModel(model)
+        sim = pyflamegpu.CUDASimulation(model)
         with pytest.raises (pyflamegpu.FGPURuntimeException) as e:
             sim.step()
         assert e.value.type() == "ReservedName"

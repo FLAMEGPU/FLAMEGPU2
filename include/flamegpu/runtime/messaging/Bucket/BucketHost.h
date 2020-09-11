@@ -30,14 +30,14 @@ class MsgBucket::CUDAModelHandler : public MsgSpecialisationHandler {
     /**
     * Allocates memory for the constructed index.
     * Sets data asthough message list is empty
-    * @param scatter Scatter instance and scan arrays to be used (CUDAAgentModel::singletons->scatter)
+    * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
     * @param streamId Index of stream specific structures used
     */
     void init(CUDAScatter &scatter, const unsigned int &streamId) override;
     /**
     * Reconstructs the partition boundary matrix
     * This should be called before reading newly output messages
-    * @param scatter Scatter instance and scan arrays to be used (CUDAAgentModel::singletons->scatter)
+    * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
     * @param streamId Index of stream specific structures used
     */
     void buildIndex(CUDAScatter &scatter, const unsigned int &streamId) override;

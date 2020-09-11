@@ -28,7 +28,7 @@ TEST(DeviceRTCAPITest, AgentFunction_empty) {
         instance.setVariable<float>("x", static_cast<float>(i));
     }
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(init_population);
     // Run 1 step to ensure agent function compiles and runs
     cuda_model.step();
@@ -52,7 +52,7 @@ TEST(DeviceRTCAPITest, AgentFunction_differentName) {
         instance.setVariable<float>("x", static_cast<float>(i));
     }
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(init_population);
     // Run 1 step to ensure agent function compiles and runs
     cuda_model.step();
@@ -85,7 +85,7 @@ TEST(DeviceRTCAPITest, AgentFunction_compile_error) {
     // Setup Model
     EXPECT_THROW({
         // expected to throw an exception before running due to agent function compile error
-        CUDAAgentModel cuda_model(model);
+        CUDASimulation cuda_model(model);
         cuda_model.setPopulationData(init_population);
         // Run 1 step to ensure agent function compiles and runs
         cuda_model.step();
@@ -118,7 +118,7 @@ TEST(DeviceRTCAPITest, AgentFunction_death) {
         instance.setVariable<int>("id", i);
     }
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     cuda_model.step();
@@ -156,7 +156,7 @@ TEST(DeviceRTCAPITest, AgentFunction_get) {
         instance.setVariable<int>("id", i);
     }
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     cuda_model.step();
@@ -193,7 +193,7 @@ TEST(DeviceRTCAPITest, AgentFunction_getset) {
         instance.setVariable<int>("id_out", 0);
     }
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     cuda_model.step();
@@ -242,7 +242,7 @@ TEST(DeviceRTCAPITest, AgentFunction_array_get) {
         instance.setVariable<int, 4>("array_var", { 2 + i, 4 + i, 8 + i, 16 + i });
     }
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     cuda_model.step();
@@ -306,7 +306,7 @@ TEST(DeviceRTCAPITest, AgentFunction_array_set) {
         instance.setVariable<int, 5>("array_var", {0, 0, 0, 0, 0 });
     }
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     cuda_model.step();
@@ -376,7 +376,7 @@ TEST(DeviceRTCAPITest, AgentFunction_msg_bruteforce) {
     lo.addAgentFunction(fo);
     LayerDescription& li = m.newLayer("input_layer");
     li.addAgentFunction(fi);
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
     c.setPopulationData(pop);
     c.simulate();
@@ -417,7 +417,7 @@ TEST(DeviceRTCAPITest, AgentFunction_random) {
         instance.setVariable<float>("c", 0);
     }
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     cuda_model.step();
@@ -524,7 +524,7 @@ TEST(DeviceRTCAPITest, AgentFunction_env) {
     // add step function to increase environment variable
     model.addStepFunction(etc_env_step);
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(init_population);
     // Set the number of steps to 2
     cuda_model.SimulationConfig().steps = 2;
@@ -584,7 +584,7 @@ TEST(DeviceRTCAPITest, AgentFunction_agent_output) {
         instance.setVariable<unsigned int>("id", i);
     }
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(init_population);
     // Run 1 step
     cuda_model.step();
@@ -644,7 +644,7 @@ TEST(DeviceRTCAPITest, AgentFunction_cond_non_rtc) {
         instance.setVariable<int>("id_out", 0);
     }
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     cuda_model.step();
@@ -709,7 +709,7 @@ TEST(DeviceRTCAPITest, AgentFunction_cond_rtc) {
         instance.setVariable<int>("id_out", 0);
     }
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     cuda_model.step();
@@ -761,7 +761,7 @@ TEST(DeviceRTCAPITest, getStepCounter) {
         instance.setVariable<unsigned int>("step", 0);
     }
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(init_population);
 
     const unsigned int STEPS = 2;

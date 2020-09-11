@@ -22,7 +22,7 @@
 
 struct SubEnvironmentData;
 class EnvironmentDescription;
-class CUDAAgentModel;
+class CUDASimulation;
 class CUDAAgent;
 
 /**
@@ -41,7 +41,7 @@ class EnvironmentManager {
     /**
      * Uses instance to initialise a models environment properties on the device
      */
-    friend class CUDAAgentModel;
+    friend class CUDASimulation;
     /**
      * Uses instance to access env properties in host functions
      */
@@ -59,7 +59,7 @@ class EnvironmentManager {
     friend class jsonReader;
     friend class jsonReader_impl;
     /**
-     * CUDAAgentModel instance id and Property name
+     * CUDASimulation instance id and Property name
      */
     typedef std::pair<unsigned int, std::string> NamePair;
     struct NamePairHash {
@@ -165,7 +165,7 @@ class EnvironmentManager {
     };
     /**
      * Struct used by rtc_caches
-     * Represents a personalised constant cache buffer for a single CUDAAgentModel instance
+     * Represents a personalised constant cache buffer for a single CUDASimulation instance
      * These are shared by submodels
      */
     struct RTCEnvPropCache {
@@ -185,7 +185,7 @@ class EnvironmentManager {
     typedef std::multimap<size_t, std::pair<const NamePair, DefragProp>> DefragMap;
     /**
      * Activates a models environment properties, by adding them to constant cache
-     * @param instance_id instance_id of the CUDAAgentModel instance the properties are attached to
+     * @param instance_id instance_id of the CUDASimulation instance the properties are attached to
      * @param desc environment properties description to use
      */
     void init(const unsigned int &instance_id, const EnvironmentDescription &desc);
@@ -193,8 +193,8 @@ class EnvironmentManager {
      * Submodel variant of init()
      * Activates a models unmapped environment properties, by adding them to constant cache
      * Maps a models mapped environment properties to their master property
-     * @param instance_id instance_id of the CUDAAgentModel instance the properties are attached to
-     * @param master_instance_id instance_id of the CUDAAgentModel instance of the parent of the submodel
+     * @param instance_id instance_id of the CUDASimulation instance the properties are attached to
+     * @param master_instance_id instance_id of the CUDASimulation instance of the parent of the submodel
      * @param desc environment properties description to use
      */
     void init(const unsigned int &instance_id, const EnvironmentDescription &desc, const unsigned int &master_instance_id, const SubEnvironmentData &mapping);
@@ -204,10 +204,10 @@ class EnvironmentManager {
      * Uses the already populated Environment data from the cuda_model rather than environmentDescription.
      * @param cuda_model the cuda model being initialised.
      */
-    void initRTC(const CUDAAgentModel &cuda_model);
+    void initRTC(const CUDASimulation &cuda_model);
     /**
      * Deactives all environmental properties linked to the named model from constant cache
-     * @param instance_id instance_id of the CUDAAgentModel instance the properties are attached to
+     * @param instance_id instance_id of the CUDASimulation instance the properties are attached to
      */
     void free(const unsigned int &instance_id);
     /**
@@ -222,7 +222,7 @@ class EnvironmentManager {
     void add(const NamePair &name, const T &value, const bool &isConst = false);
     /**
      * Convenience method: Adds a new environment property
-     * @param instance_id instance_id of the CUDAAgentModel instance the property is attached to
+     * @param instance_id instance_id of the CUDASimulation instance the property is attached to
      * @param var_name name used for accessing the property
      * @param value stored value of the property
      * @param isConst If set to true, it is not possible to change the value
@@ -245,7 +245,7 @@ class EnvironmentManager {
     void add(const NamePair &name, const std::array<T, N> &value, const bool &isConst = false);
     /**
      * Convenience method: Adds a new environment property array
-     * @param instance_id instance_id of the CUDAAgentModel instance the property is attached to
+     * @param instance_id instance_id of the CUDASimulation instance the property is attached to
      * @param var_name name used for accessing the property
      * @param value stored value of the property
      * @param isConst If set to true, it is not possible to change the value
@@ -269,7 +269,7 @@ class EnvironmentManager {
     T set(const NamePair &name, const T &value);
     /**
      * Convenience method: Sets an environment property
-     * @param instance_id instance_id of the CUDAAgentModel instance the property is attached to
+     * @param instance_id instance_id of the CUDASimulation instance the property is attached to
      * @param var_name name used for accessing the property
      * @param value value to set the property
      * @tparam T Type of the environmental property array to be created
@@ -294,7 +294,7 @@ class EnvironmentManager {
     std::array<T, N> set(const NamePair &name, const std::array<T, N> &value);
     /**
      * Convenience method: Sets an environment property array
-     * @param instance_id instance_id of the CUDAAgentModel instance the property is attached to
+     * @param instance_id instance_id of the CUDASimulation instance the property is attached to
      * @param var_name name used for accessing the property
      * @param value value to set the property array
      * @tparam T Type of the environmental property array to be created
@@ -320,7 +320,7 @@ class EnvironmentManager {
     T set(const NamePair &name, const size_type &index, const T &value);
     /**
      * Convenience method: Sets an element of an environment property array
-     * @param instance_id instance_id of the CUDAAgentModel instance the property is attached to
+     * @param instance_id instance_id of the CUDASimulation instance the property is attached to
      * @param var_name name used for accessing the property
      * @param index Index of the element within the array
      * @param value value to set the element of the property array
@@ -343,7 +343,7 @@ class EnvironmentManager {
     T get(const NamePair &name);
     /**
      * Convenience method: Gets an environment property
-     * @param instance_id instance_id of the CUDAAgentModel instance the property is attached to
+     * @param instance_id instance_id of the CUDASimulation instance the property is attached to
      * @param var_name name used for accessing the property
      * @tparam T Type of the environmental property array to be created
      * @throws InvalidEnvProperty If a property of the name does not exist
@@ -361,7 +361,7 @@ class EnvironmentManager {
     std::array<T, N> get(const NamePair &name);
     /**
      * Convenience method: Gets an environment property array
-     * @param instance_id instance_id of the CUDAAgentModel instance the property is attached to
+     * @param instance_id instance_id of the CUDASimulation instance the property is attached to
      * @param var_name name used for accessing the property
      * @tparam T Type of the environmental property array to be created
      * @tparam N Length of the environmental property array to be created
@@ -382,7 +382,7 @@ class EnvironmentManager {
     T get(const NamePair &name, const size_type &index);
     /**
      * Convenience method: Gets an element of an environment property array
-     * @param instance_id instance_id of the CUDAAgentModel instance the property is attached to
+     * @param instance_id instance_id of the CUDASimulation instance the property is attached to
      * @param var_name name used for accessing the property
      * @tparam T Type of the value to be returned
      * @throws InvalidEnvProperty If a property of the name does not exist
@@ -400,7 +400,7 @@ class EnvironmentManager {
     void remove(const NamePair &name);
     /**
      * Convenience method: Removes an environment property
-     * @param instance_id instance_id of the CUDAAgentModel instance the property is attached to
+     * @param instance_id instance_id of the CUDASimulation instance the property is attached to
      * @param var_name name used for accessing the property
      * @throws InvalidEnvProperty If a property of the name does not exist
      * @note This may be used to remove and recreate environment properties (and arrays) marked const
@@ -410,7 +410,7 @@ class EnvironmentManager {
     /**
      * Returns all environment properties owned by a model to their default values
      * This means that properties inherited by a submodel will not be reset to their default values
-     * @param instance_id instance_id of the CUDAAgentModel instance the property is attached to
+     * @param instance_id instance_id of the CUDASimulation instance the property is attached to
      * @param desc The environment description (this is where the defaults are pulled from)
      * @todo This is not a particularly efficient implementation, as it updates them all individually.
      */
@@ -422,7 +422,7 @@ class EnvironmentManager {
     inline bool contains(const NamePair &name) const { return properties.find(name) != properties.end() || mapped_properties.find(name) != mapped_properties.end(); }
     /**
      * Convenience method: Returns whether the named env property exists
-     * @param instance_id instance_id of the CUDAAgentModel instance the property is attached to
+     * @param instance_id instance_id of the CUDASimulation instance the property is attached to
      * @param var_name name used for accessing the property
      * @see contains(const NamePair &)
      */
@@ -447,7 +447,7 @@ class EnvironmentManager {
     }
     /**
      * Convenience method: Returns whether the named env property is marked as const
-     * @param instance_id instance_id of the CUDAAgentModel instance the property is attached to
+     * @param instance_id instance_id of the CUDASimulation instance the property is attached to
      * @param var_name name used for accessing the property
      * @return true if the var is marked as constant (cannot be changed during simulation)
      * @throws InvalidEnvProperty If a property of the name does not exist
@@ -478,7 +478,7 @@ class EnvironmentManager {
     }
     /**
      * Convenience method: Returns the number of elements of the named env property (1 if not an array)
-     * @param instance_id instance_id of the CUDAAgentModel instance the property is attached to
+     * @param instance_id instance_id of the CUDASimulation instance the property is attached to
      * @param var_name name used for accessing the property
      * @throws InvalidEnvProperty If a property of the name does not exist
      * @see length(const NamePair &)
@@ -508,7 +508,7 @@ class EnvironmentManager {
     }
     /**
      * Convenience method: Returns the variable type of named env property
-     * @param instance_id instance_id of the CUDAAgentModel instance the property is attached to
+     * @param instance_id instance_id of the CUDASimulation instance the property is attached to
      * @param var_name name used for accessing the property
      * @throws InvalidEnvProperty If a property of the name does not exist
      * @see type(const NamePair &)
@@ -577,7 +577,7 @@ class EnvironmentManager {
      * This is the RTC version of defragment()
      * RTC Constant offsets are fixed at RTC time, and exist in their own constant block.
      * Therefore if the main constant cache is defragmented, and offsets change, the RTC constants will be incorrect.
-     * Which fix this by maintaining a seperate constant cache per CUDAAgentModel instance
+     * Which fix this by maintaining a seperate constant cache per CUDASimulation instance
      * @param instance_id Instance id of the cuda agent model that owns the properties
      * @param master_instance_id Instance id of the parent model (If this isn't a submodel, pass instance_id here too
      * @param mergeProperties Ordered map of properties to be stored.
@@ -616,11 +616,11 @@ class EnvironmentManager {
      */
     std::unordered_map<NamePair, MappedProp, NamePairHash> mapped_properties;
     /**
-     * Map of model name to CUDAAgentModel for use in updating RTC values
+     * Map of model name to CUDASimulation for use in updating RTC values
      */
-    std::unordered_map<unsigned int, const CUDAAgentModel&> cuda_agent_models;
+    std::unordered_map<unsigned int, const CUDASimulation&> cuda_agent_models;
     /**
-     * Map of RTC caches per CUDAAgentModel instance
+     * Map of RTC caches per CUDASimulation instance
      * They are shared by submodels
      */
     std::unordered_map<unsigned int, std::shared_ptr<RTCEnvPropCache>> rtc_caches;
@@ -643,7 +643,7 @@ class EnvironmentManager {
          */
         bool c_update_required = true;
         /**
-         * Update the RTC environment cache for a specific CUDAAgentModel instance
+         * Update the RTC environment cache for a specific CUDASimulation instance
          */
         bool rtc_update_required = true;
         /**
@@ -682,7 +682,7 @@ class EnvironmentManager {
         return instance;                     // Instantiated on first use.
     }
 
-    const CUDAAgentModel& getCUDAAgentModel(const unsigned int &instance_id);
+    const CUDASimulation& getCUDASimulation(const unsigned int &instance_id);
     /**
      * Update the copy of the env var that exists in the rtc_cache to match the main cache
      * @param name namepair of the variable to be updated

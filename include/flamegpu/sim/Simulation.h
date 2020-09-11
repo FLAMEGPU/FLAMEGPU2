@@ -49,7 +49,7 @@ class Simulation {
      * This constructor is for use with submodels, it does not call clone
      * Additionally sets the submodel ptr
      */
-    explicit Simulation(const std::shared_ptr<SubModelData> &sub_model, CUDAAgentModel *master_model);
+    explicit Simulation(const std::shared_ptr<SubModelData> &sub_model, CUDASimulation *master_model);
 
  public:
     void initialise(int argc, const char** argv);
@@ -102,7 +102,7 @@ class Simulation {
     virtual void printHelp_derived() = 0;
     virtual void resetDerivedConfig() = 0;
     /**
-     * Returns the unique instance id of this CUDAAgentModel instance
+     * Returns the unique instance id of this CUDASimulation instance
      * @note This value is used internally for environment property storage
      */
     unsigned int getInstanceID() const { return instance_id; }
@@ -116,7 +116,7 @@ class Simulation {
     /**
      * Only used by submodels, only required to fetch the name of master model when initialising environment (as this occurs after constructor)
      */
-    CUDAAgentModel const * mastermodel;
+    CUDASimulation const * mastermodel;
 
     Config config;
     /**

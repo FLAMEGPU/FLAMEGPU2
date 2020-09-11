@@ -29,7 +29,7 @@ class Curve;
 class MsgSpecialisationHandler;
 class CUDAAgent;
 /**
- * This class is CUDAAgentModel's internal handler for message functionality
+ * This class is CUDASimulation's internal handler for message functionality
  */
 class CUDAMessage {
  public:
@@ -38,7 +38,7 @@ class CUDAMessage {
       * Allocates enough memory for each variable within the provided MessageData
       * @param description The message to represent
       */
-    explicit CUDAMessage(const MsgBruteForce::Data& description, const CUDAAgentModel& cuda_model);
+    explicit CUDAMessage(const MsgBruteForce::Data& description, const CUDASimulation& cuda_model);
     /**
      * Destructor, releases CUDA memory
      */
@@ -64,14 +64,14 @@ class CUDAMessage {
     /**
      * Initialise the CUDAMessagelist
      * This allocates and initialises any CUDA data structures for reading the messagelist, and sets them asthough the messagelist were empty.
-     * @param scatter Scatter instance and scan arrays to be used (CUDAAgentModel::singletons->scatter)
+     * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
      * @param streamId Index of stream specific structures used
      */
     void init(CUDAScatter &scatter, const unsigned int &streamId);
     /**
      * Updates message_count to equal newSize, internally reallocates buffer space if more space is required
      * @param newSize The number of messages that the buffer should be capable of storing
-     * @param scatter Scatter instance and scan arrays to be used (CUDAAgentModel::singletons->scatter)
+     * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
      * @param streamId Index of stream specific structures used
      */
     void resize(unsigned int newSize, CUDAScatter &scatter, const unsigned int &streamId);
@@ -102,7 +102,7 @@ class CUDAMessage {
      * Swaps the two internal maps within message_list
      * @param isOptional If optional newMsgCount will be reduced based on scan_flag[streamId]
      * @param newMsgCount The number of output messages (including optional messages which were not output)
-     * @param scatter Scatter instance and scan arrays to be used (CUDAAgentModel::singletons->scatter)
+     * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
      * @param streamId Index of stream specific structures used
      * @throw InvalidCudaMessage If this is called before the internal buffers have been allocated
      */
@@ -119,7 +119,7 @@ class CUDAMessage {
     void clearPBMConstructionRequiredFlag() { pbm_construction_required = false; }
     /**
      * Builds index, required to read messages (some messaging types won't require an implementation)
-     * @param scatter Scatter instance and scan arrays to be used (CUDAAgentModel::singletons->scatter)
+     * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
      * @param streamId Index of stream specific structures used
      */
     void buildIndex(CUDAScatter &scatter, const unsigned int &streamId);
@@ -174,7 +174,7 @@ class CUDAMessage {
     /**
      * A reference to the cuda model which this object belongs to
      */
-    const CUDAAgentModel& cuda_model;
+    const CUDASimulation& cuda_model;
 };
 
 #endif  // INCLUDE_FLAMEGPU_GPU_CUDAMESSAGE_H_

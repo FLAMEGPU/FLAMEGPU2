@@ -11,7 +11,7 @@
 #include "flamegpu/sim/Simulation.h"
 
 // forward declare classes
-class CUDAAgentModel;
+class CUDASimulation;
 
 /**
  * Singleton manager for initialising simulation wide random with a common seed
@@ -33,7 +33,7 @@ class RandomManager {
     /**
      * Calls resize() during simulation execution to resize device random array
      */
-    friend class CUDAAgentModel;  // bool CUDAAgentModel::step(const Simulation&)
+    friend class CUDASimulation;  // bool CUDASimulation::step(const Simulation&)
  public:
     /**
      * Inherit size_type from include-public partner class

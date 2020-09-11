@@ -61,7 +61,7 @@ class MiniSim():
         # CudaModel must be declarself.ed here
         # As the initial call to constructor fixes the agent population
         # This means if we haven't callself.ed model.newAgent(agent) first
-        self.cuda_model = pyflamegpu.CUDAAgentModel(self.model)
+        self.cuda_model = pyflamegpu.CUDASimulation(self.model)
         self.cuda_model.SimulationConfig().steps = steps
         # This fails as agentMap is empty
         self.cuda_model.setPopulationData(self.population)
@@ -1716,7 +1716,7 @@ class HostEnvironmentTest(TestCase):
         model = pyflamegpu.ModelDescription("model")
         step = reserved_name_set_step()
         model.addStepFunctionCallback(step)
-        sim = pyflamegpu.CUDAAgentModel(model)
+        sim = pyflamegpu.CUDASimulation(model)
         # Test and apply assertions
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
             sim.step()
@@ -1726,7 +1726,7 @@ class HostEnvironmentTest(TestCase):
         model = pyflamegpu.ModelDescription("model")
         step = reserved_name_set_array_step()
         model.addStepFunctionCallback(step)
-        sim = pyflamegpu.CUDAAgentModel(model)
+        sim = pyflamegpu.CUDASimulation(model)
         # Test and apply assertions
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
             sim.step()

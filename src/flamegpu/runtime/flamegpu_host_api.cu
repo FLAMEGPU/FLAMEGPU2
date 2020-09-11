@@ -3,9 +3,9 @@
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/sim/Simulation.h"
 #include "flamegpu/util/nvtx.h"
-#include "flamegpu/gpu/CUDAAgentModel.h"
+#include "flamegpu/gpu/CUDASimulation.h"
 
-FLAMEGPU_HOST_API::FLAMEGPU_HOST_API(CUDAAgentModel &_agentModel,
+FLAMEGPU_HOST_API::FLAMEGPU_HOST_API(CUDASimulation &_agentModel,
     RandomManager &rng,
     const AgentOffsetMap &_agentOffsets,
     AgentDataMap &_agentData)

@@ -65,7 +65,7 @@ class CUDAMessageList {
     /**
      * Perform a compaction using d_msg_scan_flag and d_msg_position
      * @param newCount Number of new messages to be scattered
-     * @param scatter Scatter instance and scan arrays to be used (CUDAAgentModel::singletons->scatter)
+     * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
      * @return Total number of messages now in list (includes old + new counts if appending)
      */
     virtual unsigned int scatter(const unsigned int &newCount, CUDAScatter &scatter, const unsigned int &streamId, const bool &append);
@@ -74,7 +74,7 @@ class CUDAMessageList {
      * This ALWAYS performs and append to the existing message list count
      * Used by swap() when appending messagelists
      * @param newCount Number of new messages to be scattered
-     * @param scatter Scatter instance and scan arrays to be used (CUDAAgentModel::singletons->scatter)
+     * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
      * @return Total number of messages now in list (includes old + new counts)
      */
     virtual unsigned int scatterAll(const unsigned int &newCount, CUDAScatter &scatter, const unsigned int &streamId);

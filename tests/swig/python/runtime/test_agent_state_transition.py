@@ -89,7 +89,7 @@ class TestAgentStateTransitions(TestCase):
             ai.setVariableInt("x", 12)
             ai.setVariableIntArray4("y", ARRAY_REFERENCE)
         
-        c = pyflamegpu.CUDAAgentModel(m)
+        c = pyflamegpu.CUDASimulation(m)
         c.setPopulationData(pop)
         # Step 1, all agents go from Start->End state, and value become 11
         c.step()
@@ -141,7 +141,7 @@ class TestAgentStateTransitions(TestCase):
             ai.setVariableInt("x", 12)
             ai.setVariableIntArray4("y", ARRAY_REFERENCE)
         
-        c = pyflamegpu.CUDAAgentModel(m)
+        c = pyflamegpu.CUDASimulation(m)
         c.setPopulationData(pop)
         # Step 1, all agents go from Start->End state, and value become 11
         c.step()
@@ -206,7 +206,7 @@ class TestAgentStateTransitions(TestCase):
             ai.setVariableUInt("y", val)
             ai.setVariableIntArray4("z", ARRAY_REFERENCE)
         
-        c = pyflamegpu.CUDAAgentModel(m)
+        c = pyflamegpu.CUDASimulation(m)
         c.setPopulationData(pop)
 
         # Step 1, all agents go from Start->End state, and value become 11

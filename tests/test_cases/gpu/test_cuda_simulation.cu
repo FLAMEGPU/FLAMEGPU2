@@ -5,7 +5,7 @@
 
 #include "gtest/gtest.h"
 
-namespace test_cuda_agent_model {
+namespace test_cuda_simulation {
     const char *MODEL_NAME = "Model";
     const char *MODEL_NAME2 = "Model2";
     const char *AGENT_NAME = "Agent";
@@ -29,14 +29,14 @@ FLAMEGPU_STEP_FUNCTION(IncrementCounter) {
     externalCounter++;
 }
 
-TEST(TestCUDAAgentModel, ApplyConfigDerivedContextCreation) {
+TEST(TestCUDASimulation, ApplyConfigDerivedContextCreation) {
     // Simply get the result from the method provided by the helper file.
-    ASSERT_TRUE(getCUDAAgentModelContextCreationTestResult());
+    ASSERT_TRUE(getCUDASimulationContextCreationTestResult());
     // Reset the device, just to be sure.
     ASSERT_EQ(cudaSuccess, cudaDeviceReset());
 }
-// Test that the CUDAAgentModel applyConfig_derived works for multiple GPU device_id values (if available)
-TEST(TestCUDAAgentModel, AllDeviceIdValues) {
+// Test that the CUDASimulation applyConfig_derived works for multiple GPU device_id values (if available)
+TEST(TestCUDASimulation, AllDeviceIdValues) {
     // Get the number of devices
     int device_count = 1;
     if (cudaSuccess != cudaGetDeviceCount(&device_count) || device_count <= 0) {
@@ -51,7 +51,7 @@ TEST(TestCUDAAgentModel, AllDeviceIdValues) {
         m.newAgent(AGENT_NAME);
         // Scoping
         {
-            CUDAAgentModel c(m);
+            CUDASimulation c(m);
             // Set the device ID
             c.CUDAConfig().device_id = i;
             c.SimulationConfig().steps = 1;
@@ -72,7 +72,7 @@ TEST(TestCUDAAgentModel, AllDeviceIdValues) {
 }
 TEST(TestSimulation, ArgParse_inputfile_long) {
     ModelDescription m(MODEL_NAME);
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     const char *argv[3] = { "prog.exe", "--in", "test" };
     EXPECT_EQ(c.getSimulationConfig().input_file, "");
     EXPECT_THROW(c.initialise(sizeof(argv)/sizeof(char*), argv), UnsupportedFileType);  // cant detect filetype
@@ -83,7 +83,7 @@ TEST(TestSimulation, ArgParse_inputfile_long) {
 }
 TEST(TestSimulation, ArgParse_inputfile_short) {
     ModelDescription m(MODEL_NAME);
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     const char *argv[3] = { "prog.exe", "-i", "I_DO_NOT_EXIST.xml" };
     EXPECT_EQ(c.getSimulationConfig().input_file, "");
     EXPECT_THROW(c.initialise(sizeof(argv) / sizeof(char*), argv), InvalidInputFile);  // File doesn't exist
@@ -94,7 +94,7 @@ TEST(TestSimulation, ArgParse_inputfile_short) {
 }
 TEST(TestSimulation, ArgParse_steps_long) {
     ModelDescription m(MODEL_NAME);
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     const char *argv[3] = { "prog.exe", "--steps", "12" };
     EXPECT_EQ(c.getSimulationConfig().steps, 0u);
     c.initialise(sizeof(argv) / sizeof(char*), argv);
@@ -105,7 +105,7 @@ TEST(TestSimulation, ArgParse_steps_long) {
 }
 TEST(TestSimulation, ArgParse_steps_short) {
     ModelDescription m(MODEL_NAME);
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     const char *argv[3] = { "prog.exe", "-s", "12" };
     EXPECT_EQ(c.getSimulationConfig().steps, 0u);
     c.initialise(sizeof(argv) / sizeof(char*), argv);
@@ -116,7 +116,7 @@ TEST(TestSimulation, ArgParse_steps_short) {
 }
 TEST(TestSimulation, ArgParse_randomseed_long) {
     ModelDescription m(MODEL_NAME);
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     const char *argv[3] = { "prog.exe", "--random", "12" };
     EXPECT_NE(c.getSimulationConfig().random_seed, 12u);
     c.initialise(sizeof(argv) / sizeof(char*), argv);
@@ -127,7 +127,7 @@ TEST(TestSimulation, ArgParse_randomseed_long) {
 }
 TEST(TestSimulation, ArgParse_randomseed_short) {
     ModelDescription m(MODEL_NAME);
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     const char *argv[3] = { "prog.exe", "-r", "12" };
     EXPECT_NE(c.getSimulationConfig().random_seed, 12u);
     c.initialise(sizeof(argv) / sizeof(char*), argv);
@@ -136,10 +136,10 @@ TEST(TestSimulation, ArgParse_randomseed_short) {
     c.initialise(0, nullptr);
     EXPECT_NE(c.getSimulationConfig().random_seed, 12u);
 }
-TEST(TestCUDAAgentModel, ArgParse_device_long) {
+TEST(TestCUDASimulation, ArgParse_device_long) {
     ASSERT_EQ(cudaGetLastError(), cudaSuccess);
     ModelDescription m(MODEL_NAME);
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     const char *argv[3] = { "prog.exe", "--device", "1200" };
     EXPECT_EQ(c.getCUDAConfig().device_id, 0);
     // Setting an invalid device ID is the only safe way to do this without making internal methods accessible
@@ -152,10 +152,10 @@ TEST(TestCUDAAgentModel, ArgParse_device_long) {
     EXPECT_EQ(c.getCUDAConfig().device_id, 0);
     ASSERT_EQ(cudaGetLastError(), cudaSuccess);
 }
-TEST(TestCUDAAgentModel, ArgParse_device_short) {
+TEST(TestCUDASimulation, ArgParse_device_short) {
     ASSERT_EQ(cudaGetLastError(), cudaSuccess);
     ModelDescription m(MODEL_NAME);
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     const char *argv[3] = { "prog.exe", "-d", "1200" };
     EXPECT_EQ(c.getCUDAConfig().device_id, 0);
     // Setting an invalid device ID is the only safe way to do this without making internal methods accessible
@@ -173,7 +173,7 @@ FLAMEGPU_AGENT_FUNCTION(SetGetFn, MsgNone, MsgNone) {
     FLAMEGPU->setVariable<int>(dVARIABLE_NAME, i * dMULTIPLIER);
     return ALIVE;
 }
-TEST(TestCUDAAgentModel, SetGetPopulationData) {
+TEST(TestCUDASimulation, SetGetPopulationData) {
     ModelDescription m(MODEL_NAME);
     AgentDescription &a = m.newAgent(AGENT_NAME);
     m.newLayer(LAYER_NAME).addAgentFunction(a.newFunction(FUNCTION_NAME, SetGetFn));
@@ -184,7 +184,7 @@ TEST(TestCUDAAgentModel, SetGetPopulationData) {
         i.setVariable<int>(VARIABLE_NAME, _i);
         EXPECT_THROW(i.setVariable<float>(VARIABLE_NAME, static_cast<float>(_i)), InvalidVarType);
     }
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
     c.setPopulationData(pop);
     c.simulate();
@@ -203,7 +203,7 @@ TEST(TestCUDAAgentModel, SetGetPopulationData) {
         EXPECT_THROW(i.getVariable<float>(VARIABLE_NAME), InvalidVarType);
     }
 }
-TEST(TestCUDAAgentModel, SetGetPopulationData_InvalidCudaAgent) {
+TEST(TestCUDASimulation, SetGetPopulationData_InvalidCudaAgent) {
     ModelDescription m2(MODEL_NAME2);
     AgentDescription &a2 = m2.newAgent(AGENT_NAME2);
     ModelDescription m(MODEL_NAME);
@@ -211,11 +211,11 @@ TEST(TestCUDAAgentModel, SetGetPopulationData_InvalidCudaAgent) {
 
     AgentPopulation pop(a2, static_cast<unsigned int>(AGENT_COUNT));
 
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     EXPECT_THROW(c.setPopulationData(pop), InvalidCudaAgent);
     EXPECT_THROW(c.getPopulationData(pop), InvalidCudaAgent);
 }
-TEST(TestCUDAAgentModel, GetAgent) {
+TEST(TestCUDASimulation, GetAgent) {
     ModelDescription m(MODEL_NAME);
     AgentDescription &a = m.newAgent(AGENT_NAME);
     m.newLayer(LAYER_NAME).addAgentFunction(a.newFunction(FUNCTION_NAME, SetGetFn));
@@ -225,7 +225,7 @@ TEST(TestCUDAAgentModel, GetAgent) {
         AgentInstance i = pop.getNextInstance();
         i.setVariable<int>(VARIABLE_NAME, _i);
     }
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
     c.setPopulationData(pop);
     c.simulate();
@@ -246,13 +246,13 @@ TEST(TestCUDAAgentModel, GetAgent) {
     }
 }
 
-TEST(TestCUDAAgentModel, Step) {
+TEST(TestCUDASimulation, Step) {
     // Test that step does a single step
     ModelDescription m(MODEL_NAME);
     AgentDescription &a = m.newAgent(AGENT_NAME);
     AgentPopulation pop(a, static_cast<unsigned int>(AGENT_COUNT));
     m.addStepFunction(IncrementCounter);
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     c.setPopulationData(pop);
     externalCounter = 0;
     c.resetStepCounter();
@@ -272,7 +272,7 @@ FLAMEGPU_AGENT_FUNCTION(add_fn, MsgNone, MsgNone) {
     FLAMEGPU->setVariable<int>("j", FLAMEGPU->getVariable<int>("j") + 1);
     return ALIVE;
 }
-TEST(TestCUDAAgentModel, SharedAgentFunction) {
+TEST(TestCUDASimulation, SharedAgentFunction) {
     // Test that two different agents can share an agent function name/implementation
     ModelDescription model("test");
 
@@ -291,8 +291,8 @@ TEST(TestCUDAAgentModel, SharedAgentFunction) {
     layer.addAgentFunction(a1f);
     layer.addAgentFunction(a2f);
 
-    CUDAAgentModel cuda_model(model);
-    cuda_model.applyConfig();
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.applyConfig();
 
     const unsigned int populationSize = 5;
     AgentPopulation pop1(agent1, populationSize);
@@ -301,16 +301,16 @@ TEST(TestCUDAAgentModel, SharedAgentFunction) {
         pop1.getNextInstance();
         pop2.getNextInstance();
     }
-    cuda_model.setPopulationData(pop1);
-    cuda_model.setPopulationData(pop2);
+    cudaSimulation.setPopulationData(pop1);
+    cudaSimulation.setPopulationData(pop2);
 
     const unsigned int steps = 5;
     for (unsigned int i = 0; i < steps; ++i) {
-        cuda_model.step();
+        cudaSimulation.step();
     }
 
-    cuda_model.getPopulationData(pop1);
-    cuda_model.getPopulationData(pop2);
+    cudaSimulation.getPopulationData(pop1);
+    cudaSimulation.getPopulationData(pop2);
     for (unsigned int i = 0; i < populationSize; i++) {
         auto instance = pop1.getInstanceAt(i);
         EXPECT_EQ(instance.getVariable<int>("i"), 6);
@@ -323,14 +323,14 @@ TEST(TestCUDAAgentModel, SharedAgentFunction) {
     }
 }
 TEST(TestSimulation, Simulate) {
-    // Simulation is abstract, so test via CUDAAgentModel
-    // Depends on CUDAAgentModel::step()
+    // Simulation is abstract, so test via CUDASimulation
+    // Depends on CUDASimulation::step()
     // Test that step does a single step
     ModelDescription m(MODEL_NAME);
     AgentDescription &a = m.newAgent(AGENT_NAME);
     AgentPopulation pop(a, static_cast<unsigned int>(AGENT_COUNT));
     m.addStepFunction(IncrementCounter);
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     c.setPopulationData(pop);
     externalCounter = 0;
     c.resetStepCounter();
@@ -348,7 +348,7 @@ TEST(TestSimulation, Simulate) {
 
 // Show that blank init resets the vals?
 
-TEST(TestCUDAAgentModel, AgentDeath) {
+TEST(TestCUDASimulation, AgentDeath) {
     std::default_random_engine generator;
     std::uniform_int_distribution<unsigned int> distribution(0, 12);
     // Test that step does a single step
@@ -357,7 +357,7 @@ TEST(TestCUDAAgentModel, AgentDeath) {
     a.newVariable<unsigned int>("x");
     a.newFunction("DeathFunc", DeathTestFunc).setAllowAgentDeath(true);
     m.newLayer().addAgentFunction(DeathTestFunc);
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     AgentPopulation pop(a, static_cast<unsigned int>(AGENT_COUNT));
     std::vector<unsigned int> expected_output;
     for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
@@ -380,14 +380,14 @@ TEST(TestCUDAAgentModel, AgentDeath) {
 }
 
 // test the programatically accessible simulation time elapsed.
-TEST(TestCUDAAgentModel, getSimulationElapsedTime) {
+TEST(TestCUDASimulation, getSimulationElapsedTime) {
     // Define a simple model - doesn't need to do anything other than take some time.
     ModelDescription m(MODEL_NAME);
     AgentDescription &a = m.newAgent(AGENT_NAME);
     AgentPopulation pop(a, static_cast<unsigned int>(AGENT_COUNT));
     m.addStepFunction(IncrementCounter);
 
-    CUDAAgentModel c(m);
+    CUDASimulation c(m);
     c.setPopulationData(pop);
 
     // Try getting the timer before running simulate, which should return 0
@@ -406,17 +406,17 @@ TEST(TestCUDAAgentModel, getSimulationElapsedTime) {
     EXPECT_NE(simulate1StepDuration, simulate10StepDuration);
 }
 // test that we can have 2 instances of the same ModelDescription simultaneously
-TEST(TestCUDAAgentModel, MultipleInstances) {
+TEST(TestCUDASimulation, MultipleInstances) {
     // Define a simple model - doesn't need to do anything other than take some time.
     ModelDescription m(MODEL_NAME);
     AgentDescription &a = m.newAgent(AGENT_NAME);
     AgentPopulation pop(a, static_cast<unsigned int>(AGENT_COUNT));
     m.addStepFunction(IncrementCounter);
 
-    CUDAAgentModel c1(m);
+    CUDASimulation c1(m);
     c1.setPopulationData(pop);
     // Set population data should trigger initialiseSingletons(), which is what leads to crash if EnvManager has matching name/id
-    EXPECT_NO_THROW(CUDAAgentModel c2(m); c2.setPopulationData(pop););
+    EXPECT_NO_THROW(CUDASimulation c2(m); c2.setPopulationData(pop););
 }
 
-}  // namespace test_cuda_agent_model
+}  // namespace test_cuda_simulation

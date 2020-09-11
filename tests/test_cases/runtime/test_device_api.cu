@@ -30,7 +30,7 @@ TEST(DeviceAPITest, AgentDeath_array) {
         instance.setVariable<int>("id", i);
     }
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     cuda_model.step();
@@ -92,7 +92,7 @@ TEST(DeviceAPITest, ArraySet) {
         instance.setVariable<int>("id", i);
     }
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     cuda_model.step();
@@ -141,7 +141,7 @@ TEST(DeviceAPITest, ArrayGet) {
         instance.setVariable<int>("id", i);
     }
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     cuda_model.step();
@@ -186,7 +186,7 @@ TEST(DeviceAPITest, getStepCounter) {
         instance.setVariable<unsigned int>("step", 0);
     }
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(init_population);
 
     const unsigned int STEPS = 2;
@@ -232,7 +232,7 @@ TEST(DeviceAPITest, getStepCounterFunctionCondition) {
     }
     const unsigned int STEPS = 4;
     // Setup Model
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(init_population);
 
     // RUN STEPS steps of simulation.

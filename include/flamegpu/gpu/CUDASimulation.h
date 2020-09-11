@@ -1,5 +1,5 @@
-#ifndef INCLUDE_FLAMEGPU_GPU_CUDAAGENTMODEL_H_
-#define INCLUDE_FLAMEGPU_GPU_CUDAAGENTMODEL_H_
+#ifndef INCLUDE_FLAMEGPU_GPU_CUDASIMULATION_H_
+#define INCLUDE_FLAMEGPU_GPU_CUDASIMULATION_H_
 #include <atomic>
 #include <memory>
 #include <vector>
@@ -23,7 +23,7 @@
  * CUDA runner for Simulation interface
  * Executes a FGPU2 model using GPU
  */
-class CUDAAgentModel : public Simulation {
+class CUDASimulation : public Simulation {
     /**
      * Requires internal access to scan/scatter singletons
      */
@@ -43,7 +43,7 @@ class CUDAAgentModel : public Simulation {
      * The CUDA submodels are responsible for allocating and managing all the device memory of non mapped agent vars
      * Ordered is used, so that random seed mutation always occurs same order.
      */
-    typedef std::map<std::string, std::unique_ptr<CUDAAgentModel>> CUDASubModelMap;
+    typedef std::map<std::string, std::unique_ptr<CUDASimulation>> CUDASubModelMap;
 
  public:
      /**
@@ -65,23 +65,23 @@ class CUDAAgentModel : public Simulation {
      * @param argc Runtime argument count
      * @param argv Runtime argument list ptr
      */
-    explicit CUDAAgentModel(const ModelDescription& model, int argc = 0, const char** argv = nullptr);
+    explicit CUDASimulation(const ModelDescription& model, int argc = 0, const char** argv = nullptr);
 
  private:
     /**
      * Private constructor, used to initialise submodels
      * Allocates CUDASubAgents, and handles mappings
      * @param submodel_desc The submodel description of the submodel (this should be from the already cloned model hierarchy)
-     * @param master_model The CUDAAgentModel of the master model
+     * @param master_model The CUDASimulation of the master model
      * @todo Move common components (init list and initOffsetsAndMap()) into a common/shared constructor
      */
-    CUDAAgentModel(const std::shared_ptr<SubModelData>& submodel_desc, CUDAAgentModel *master_model);
+    CUDASimulation(const std::shared_ptr<SubModelData>& submodel_desc, CUDASimulation *master_model);
 
  public:
     /**
      * Inverse operation of contructor
      */
-    virtual ~CUDAAgentModel();
+    virtual ~CUDASimulation();
     /**
      * Steps the simulation once
      * @return False if an exit condition was triggered
@@ -173,7 +173,7 @@ class CUDAAgentModel : public Simulation {
      */
     float getSimulationElapsedTime() const;
     /**
-     * Returns the unique instance id of this CUDAAgentModel instance
+     * Returns the unique instance id of this CUDASimulation instance
      * @note This value is used internally for environment property storage
      */
     using Simulation::getInstanceID;
@@ -190,7 +190,7 @@ class CUDAAgentModel : public Simulation {
     void reset(bool submodelReset) override;
     /**
      * Called by Simulation::applyConfig() to trigger any runner specific configs
-     * @see CUDAAgentModel::CUDAConfig()
+     * @see CUDASimulation::CUDAConfig()
      */
     void applyConfig_derived() override;
     /**
@@ -343,16 +343,16 @@ class CUDAAgentModel : public Simulation {
     std::unique_ptr<ModelVis> visualisation;
 #endif
     /**
-     * This tracks the current number of alive CUDAAgentModel instances
+     * This tracks the current number of alive CUDASimulation instances
      * When the last is destructed, cudaDeviceReset is triggered();
      */
     static std::atomic<int> active_instances;
 
  public:
     /**
-     * If changed to false, will not auto cudaDeviceReset when final CUDAAgentModel instance is destructed
+     * If changed to false, will not auto cudaDeviceReset when final CUDASimulation instance is destructed
      */
     static bool AUTO_CUDA_DEVICE_RESET;
 };
 
-#endif  // INCLUDE_FLAMEGPU_GPU_CUDAAGENTMODEL_H_
+#endif  // INCLUDE_FLAMEGPU_GPU_CUDASIMULATION_H_

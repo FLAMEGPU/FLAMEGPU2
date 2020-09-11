@@ -61,7 +61,7 @@ TEST(HostAgentCreationTest, FromInit) {
     agent.newVariable<float>("x");
     model.addInitFunction(BasicOutput);
     // Init agent pop
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     AgentPopulation population(model.Agent("agent"), INIT_AGENT_COUNT);
     // Initialise agents
     for (unsigned int i = 0; i < INIT_AGENT_COUNT; i++) {
@@ -97,7 +97,7 @@ TEST(HostAgentCreationTest, FromStep) {
     agent.newVariable<float>("x");
     model.addStepFunction(BasicOutput);
     // Init agent pop
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     AgentPopulation population(model.Agent("agent"), INIT_AGENT_COUNT);
     // Initialise agents
     for (unsigned int i = 0; i < INIT_AGENT_COUNT; i++) {
@@ -133,7 +133,7 @@ TEST(HostAgentCreationTest, FromHostLayer) {
     agent.newVariable<float>("x");
     model.newLayer().addHostFunction(BasicOutput);
     // Init agent pop
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     AgentPopulation population(model.Agent("agent"), INIT_AGENT_COUNT);
     // Initialise agents
     for (unsigned int i = 0; i < INIT_AGENT_COUNT; i++) {
@@ -169,7 +169,7 @@ TEST(HostAgentCreationTest, FromExitCondition) {
     agent.newVariable<float>("x");
     model.addExitCondition(BasicOutputCdn);
     // Init agent pop
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     AgentPopulation population(model.Agent("agent"), INIT_AGENT_COUNT);
     // Initialise agents
     for (unsigned int i = 0; i < INIT_AGENT_COUNT; i++) {
@@ -205,7 +205,7 @@ TEST(HostAgentCreationTest, FromStepEmptyPop) {
     agent.newVariable<float>("x");
     model.addStepFunction(BasicOutput);
     // Init agent pop
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     AgentPopulation population(model.Agent("agent"));
     // Execute model
     cuda_model.SimulationConfig().steps = 1;
@@ -233,7 +233,7 @@ TEST(HostAgentCreationTest, FromStepMultiState) {
     agent.newVariable<float>("x");
     model.addStepFunction(OutputState);
     // Init agent pop
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     AgentPopulation population(model.Agent("agent"), INIT_AGENT_COUNT);
     // Initialise agents
     for (unsigned int i = 0; i < INIT_AGENT_COUNT; i++) {
@@ -270,7 +270,7 @@ TEST(HostAgentCreationTest, FromStepMultiAgent) {
     agent2.newVariable<float>("y");
     model.addStepFunction(OutputMultiAgent);
     // Init agent pop
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     AgentPopulation population(agent, INIT_AGENT_COUNT);
     // Initialise agents
     for (unsigned int i = 0; i < INIT_AGENT_COUNT; i++) {
@@ -311,7 +311,7 @@ TEST(HostAgentCreationTest, DefaultVariableValue) {
     agent.newVariable<float>("default", 15.0f);
     model.addStepFunction(BasicOutput);
     // Init agent pop
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     // Execute model
     cuda_model.SimulationConfig().steps = 1;
     cuda_model.applyConfig();
@@ -337,7 +337,7 @@ TEST(HostAgentCreationTest, BadVarName) {
     agent.newVariable<float>("x");
     model.addStepFunction(BadVarName);
     // Init agent pop
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     // Execute model
     EXPECT_THROW(cuda_model.step(), InvalidAgentVar);
 }
@@ -348,7 +348,7 @@ TEST(HostAgentCreationTest, BadVarType) {
     agent.newVariable<float>("x");
     model.addStepFunction(BadVarType);
     // Init agent pop
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     // Execute model
     EXPECT_THROW(cuda_model.step(), InvalidVarType);
 }
@@ -360,7 +360,7 @@ TEST(HostAgentCreationTest, GetterWorks) {
     agent.newVariable<float>("default", 15.0f);
     model.addStepFunction(Getter);
     // Init agent pop
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     // Execute model
     cuda_model.SimulationConfig().steps = 1;
     cuda_model.applyConfig();
@@ -387,7 +387,7 @@ TEST(HostAgentCreationTest, GetterBadVarName) {
     agent.newVariable<float>("x");
     model.addStepFunction(GetBadVarName);
     // Init agent pop
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     // Execute model
     EXPECT_THROW(cuda_model.step(), InvalidAgentVar);
 }
@@ -398,7 +398,7 @@ TEST(HostAgentCreationTest, GetterBadVarType) {
     agent.newVariable<float>("x");
     model.addStepFunction(GetBadVarType);
     // Init agent pop
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
     // Execute model
     EXPECT_THROW(cuda_model.step(), InvalidVarType);
 }
@@ -477,7 +477,7 @@ TEST(HostAgentCreationTest, HostAgentBirth_ArraySet) {
     agent.newVariable<float>("y", 13.0f);
     // Run the init function
     model.addStepFunction(ArrayVarHostBirth);
-    CUDAAgentModel sim(model);
+    CUDASimulation sim(model);
     sim.step();
     AgentPopulation population(agent);
     sim.getPopulationData(population);
@@ -509,7 +509,7 @@ TEST(HostAgentCreationTest, HostAgentBirth_ArraySetGet) {
     agent.newVariable<float>("y", 13.0f);
     // Run the init function
     model.addStepFunction(ArrayVarHostBirthSetGet);
-    CUDAAgentModel sim(model);
+    CUDASimulation sim(model);
     sim.step();
     AgentPopulation population(agent);
     sim.getPopulationData(population);
@@ -541,7 +541,7 @@ TEST(HostAgentCreationTest, HostAgentBirth_ArrayDefaultWorks) {
     agent.newVariable<float>("y", 13.0f);
     // Run the init function
     model.addStepFunction(ArrayVarHostBirth_DefaultWorks);
-    CUDAAgentModel sim(model);
+    CUDASimulation sim(model);
     sim.step();
     AgentPopulation population(agent);
     sim.getPopulationData(population);
@@ -565,7 +565,7 @@ TEST(HostAgentCreationTest, HostAgentBirth_ArrayLenWrong) {
     agent.newVariable<int, 4>("array_var");
     // Run the init function
     model.addStepFunction(ArrayVarHostBirth_LenWrong);
-    CUDAAgentModel sim(model);
+    CUDASimulation sim(model);
     EXPECT_THROW(sim.step(), InvalidVarArrayLen);
 }
 TEST(HostAgentCreationTest, HostAgentBirth_ArrayLenWrong2) {
@@ -574,7 +574,7 @@ TEST(HostAgentCreationTest, HostAgentBirth_ArrayLenWrong2) {
     agent.newVariable<int, 4>("array_var");
     // Run the init function
     model.addStepFunction(ArrayVarHostBirth_LenWrong2);
-    CUDAAgentModel sim(model);
+    CUDASimulation sim(model);
     EXPECT_THROW(sim.step(), OutOfRangeVarArray);
 }
 TEST(HostAgentCreationTest, HostAgentBirth_ArrayLenWrong3) {
@@ -583,7 +583,7 @@ TEST(HostAgentCreationTest, HostAgentBirth_ArrayLenWrong3) {
     agent.newVariable<int>("array_var");
     // Run the init function
     model.addStepFunction(ArrayVarHostBirth_LenWrong);
-    CUDAAgentModel sim(model);
+    CUDASimulation sim(model);
     EXPECT_THROW(sim.step(), InvalidVarArrayLen);
 }
 TEST(HostAgentCreationTest, HostAgentBirth_ArrayLenWrong4) {
@@ -592,7 +592,7 @@ TEST(HostAgentCreationTest, HostAgentBirth_ArrayLenWrong4) {
     agent.newVariable<int>("array_var");
     // Run the init function
     model.addStepFunction(ArrayVarHostBirth_LenWrong2);
-    CUDAAgentModel sim(model);
+    CUDASimulation sim(model);
     EXPECT_THROW(sim.step(), OutOfRangeVarArray);
 }
 TEST(HostAgentCreationTest, HostAgentBirth_ArrayTypeWrong) {
@@ -601,7 +601,7 @@ TEST(HostAgentCreationTest, HostAgentBirth_ArrayTypeWrong) {
     agent.newVariable<int, 4>("array_var");
     // Run the init function
     model.addStepFunction(ArrayVarHostBirth_TypeWrong);
-    CUDAAgentModel sim(model);
+    CUDASimulation sim(model);
     EXPECT_THROW(sim.step(), InvalidVarType);
 }
 TEST(HostAgentCreationTest, HostAgentBirth_ArrayTypeWrong2) {
@@ -610,7 +610,7 @@ TEST(HostAgentCreationTest, HostAgentBirth_ArrayTypeWrong2) {
     agent.newVariable<int, 4>("array_var");
     // Run the init function
     model.addStepFunction(ArrayVarHostBirth_TypeWrong2);
-    CUDAAgentModel sim(model);
+    CUDASimulation sim(model);
     EXPECT_THROW(sim.step(), InvalidVarType);
 }
 TEST(HostAgentCreationTest, HostAgentBirth_ArrayNameWrong) {
@@ -619,7 +619,7 @@ TEST(HostAgentCreationTest, HostAgentBirth_ArrayNameWrong) {
     agent.newVariable<int, 4>("array_var");
     // Run the init function
     model.addStepFunction(ArrayVarHostBirth_NameWrong);
-    CUDAAgentModel sim(model);
+    CUDASimulation sim(model);
     EXPECT_THROW(sim.step(), InvalidAgentVar);
 }
 TEST(HostAgentCreationTest, HostAgentBirth_ArrayNameWrong2) {
@@ -628,7 +628,7 @@ TEST(HostAgentCreationTest, HostAgentBirth_ArrayNameWrong2) {
     agent.newVariable<int, 4>("array_var");
     // Run the init function
     model.addStepFunction(ArrayVarHostBirth_NameWrong);
-    CUDAAgentModel sim(model);
+    CUDASimulation sim(model);
     EXPECT_THROW(sim.step(), InvalidAgentVar);
 }
 TEST(HostAgentCreationTest, HostAgentBirth_ArrayNotSuitableSet) {
@@ -637,7 +637,7 @@ TEST(HostAgentCreationTest, HostAgentBirth_ArrayNotSuitableSet) {
     agent.newVariable<int, 4>("array_var");
     // Run the init function
     model.addStepFunction(ArrayVarHostBirth_ArrayNotSuitableSet);
-    CUDAAgentModel sim(model);
+    CUDASimulation sim(model);
     EXPECT_THROW(sim.step(), InvalidAgentVar);
 }
 TEST(HostAgentCreationTest, HostAgentBirth_ArrayNotSuitableGet) {
@@ -646,7 +646,7 @@ TEST(HostAgentCreationTest, HostAgentBirth_ArrayNotSuitableGet) {
     agent.newVariable<int, 4>("array_var");
     // Run the init function
     model.addStepFunction(ArrayVarHostBirth_ArrayNotSuitableGet);
-    CUDAAgentModel sim(model);
+    CUDASimulation sim(model);
     EXPECT_THROW(sim.step(), InvalidAgentVar);
 }
 FLAMEGPU_STEP_FUNCTION(reserved_name_step) {
@@ -660,14 +660,14 @@ TEST(HostAgentCreationTest, reserved_name) {
     model.newAgent("agent_name");
     // Run the init function
     model.addStepFunction(reserved_name_step);
-    CUDAAgentModel sim(model);
+    CUDASimulation sim(model);
     EXPECT_THROW(sim.step(), ReservedName);
 }
 TEST(HostAgentCreationTest, reserved_name_array) {
     ModelDescription model("model");
     model.newAgent("agent_name");
     model.addStepFunction(reserved_name_step_array);
-    CUDAAgentModel sim(model);
+    CUDASimulation sim(model);
     EXPECT_THROW(sim.step(), ReservedName);
 }
 }  // namespace test_host_agent_creation

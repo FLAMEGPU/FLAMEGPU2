@@ -10,7 +10,7 @@
 #include "flamegpu/exception/FGPUException.h"
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/pop/AgentPopulation.h"
-#include "flamegpu/gpu/CUDAAgentModel.h"
+#include "flamegpu/gpu/CUDASimulation.h"
 #include "tinyxml2/tinyxml2.h"
 
 jsonWriter::jsonWriter(
@@ -60,7 +60,7 @@ void jsonWriter::doWrite(T &writer) {
         }
 
         // CUDA config
-        if (auto *cudamodel_instance = dynamic_cast<const CUDAAgentModel*>(sim_instance)) {
+        if (auto *cudamodel_instance = dynamic_cast<const CUDASimulation*>(sim_instance)) {
             writer.Key("cuda");
             writer.StartObject();
             {

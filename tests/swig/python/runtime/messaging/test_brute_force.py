@@ -112,7 +112,7 @@ class TestMessage_BruteForce(TestCase):
         lo.addAgentFunction(fo)
         li = m.newLayer(IN_LAYER_NAME)
         li.addAgentFunction(fi)
-        c = pyflamegpu.CUDAAgentModel(m)
+        c = pyflamegpu.CUDASimulation(m)
         c.SimulationConfig().steps = 1
         c.setPopulationData(pop)
         c.simulate()
@@ -161,7 +161,7 @@ class TestMessage_BruteForce(TestCase):
         lo.addAgentFunction(fo)
         li = m.newLayer(IN_LAYER_NAME)
         li.addAgentFunction(fi)
-        c = pyflamegpu.CUDAAgentModel(m)
+        c = pyflamegpu.CUDASimulation(m)
         c.SimulationConfig().steps = 2
         c.setPopulationData(pop)
         c.simulate()
@@ -210,7 +210,7 @@ class TestMessage_BruteForce(TestCase):
         lo.addAgentFunction(fo)
         li = m.newLayer(IN_LAYER_NAME)
         li.addAgentFunction(fi)
-        c = pyflamegpu.CUDAAgentModel(m)
+        c = pyflamegpu.CUDASimulation(m)
         c.SimulationConfig().steps = 1
         c.setPopulationData(pop)
         c.simulate()
@@ -265,7 +265,7 @@ class TestMessage_BruteForce(TestCase):
         lo.addAgentFunction(fo)
         li = m.newLayer(IN_LAYER_NAME)
         li.addAgentFunction(fi)
-        c = pyflamegpu.CUDAAgentModel(m)
+        c = pyflamegpu.CUDASimulation(m)
         c.SimulationConfig().steps = 2
         c.setPopulationData(pop)
         c.simulate()
@@ -304,7 +304,7 @@ class TestMessage_BruteForce(TestCase):
         # Create 1 agent
         pop_in = pyflamegpu.AgentPopulation(model.Agent("agent"), 1)
         pop_in.getNextInstance()
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         cuda_model.setPopulationData(pop_in)
         # Execute model
         cuda_model.step()

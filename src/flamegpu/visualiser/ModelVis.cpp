@@ -1,9 +1,9 @@
 #include "flamegpu/visualiser/ModelVis.h"
 
-#include "flamegpu/gpu/CUDAAgentModel.h"
+#include "flamegpu/gpu/CUDASimulation.h"
 #include "flamegpu/model/AgentData.h"
 
-ModelVis::ModelVis(const CUDAAgentModel &_model)
+ModelVis::ModelVis(const CUDASimulation &_model)
     : modelCfg(_model.getModelDescription().name.c_str())
     , model(_model)
     , modelData(_model.getModelDescription()) { }

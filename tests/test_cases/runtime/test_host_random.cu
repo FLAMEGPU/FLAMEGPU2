@@ -161,7 +161,7 @@ class MiniSim {
     }
     void run(int argc = 0, const char** argv = nullptr) {
         if (!simulation) {
-            simulation = new CUDAAgentModel(model);
+            simulation = new CUDASimulation(model);
             simulation->SimulationConfig().steps = 1;
             simulation->setPopulationData(population);
         }
@@ -181,7 +181,7 @@ class MiniSim {
     ModelDescription model;
     AgentDescription &agent;
     AgentPopulation population;
-    CUDAAgentModel *simulation;
+    CUDASimulation *simulation;
 };
 /**
  * This defines a common fixture used as a base for all test cases in the file

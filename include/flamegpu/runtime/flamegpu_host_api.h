@@ -15,7 +15,7 @@
 #include "flamegpu/runtime/flamegpu_host_api_macros.h"
 #include "flamegpu/runtime/flamegpu_host_new_agent_api.h"
 
-class CUDAAgentModel;
+class CUDASimulation;
 class HostAgentInstance;
 
 /**
@@ -30,7 +30,7 @@ class FLAMEGPU_HOST_API {
     friend class HostAgentInstance;
 
  public:
-    // Typedefs repeated from CUDAAgentModel
+    // Typedefs repeated from CUDASimulation
     typedef std::vector<NewAgentStorage> AgentDataBuffer;
     typedef std::unordered_map<std::string, AgentDataBuffer> AgentDataBufferStateMap;
     typedef std::unordered_map<std::string, VarOffsetStruct> AgentOffsetMap;
@@ -38,9 +38,9 @@ class FLAMEGPU_HOST_API {
 
     /**
      * Initailises pointers to 0
-     * Stores reference of CUDAAgentModel
+     * Stores reference of CUDASimulation
      */
-     explicit FLAMEGPU_HOST_API(CUDAAgentModel&_agentModel,
+     explicit FLAMEGPU_HOST_API(CUDASimulation&_agentModel,
         RandomManager &rng,
          const AgentOffsetMap &agentOffsets,
          AgentDataMap &agentData);
@@ -112,18 +112,18 @@ class FLAMEGPU_HOST_API {
     void resizeTempStorage(const CUB_Config &cc, const unsigned int &items, const size_t &newSize);
     template<typename T>
     void resizeOutputSpace(const unsigned int &items = 1);
-    CUDAAgentModel &agentModel;
+    CUDASimulation &agentModel;
     void *d_cub_temp;
     size_t d_cub_temp_size;
     void *d_output_space;
     size_t d_output_space_size;
     /*
-     * Owned by CUDAAgentModel, this provides memory offsets for agent variables
+     * Owned by CUDASimulation, this provides memory offsets for agent variables
      * Used for host agent creationg
      */
     const AgentOffsetMap &agentOffsets;
     /*
-     * Owned by CUDAAgentModel, this provides storage for new agents
+     * Owned by CUDASimulation, this provides storage for new agents
      * Used for host agent creation, this should be emptied end of each step 
      * when new agents are copied to device.
      */

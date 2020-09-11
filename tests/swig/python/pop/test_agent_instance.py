@@ -21,7 +21,7 @@ class AgentInstanceTest(TestCase):
         agent.newVariableFloat("x")
         agent.newVariableFloat("default", 15.0)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         population = pyflamegpu.AgentPopulation(agent, INIT_AGENT_COUNT)
         # Initialise agents
         for i in range(INIT_AGENT_COUNT):
@@ -37,7 +37,7 @@ class AgentInstanceTest(TestCase):
         agent.newVariableFloat("x")
         agent.newVariableFloat("default", 15.0)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         population = pyflamegpu.AgentPopulation(agent, INIT_AGENT_COUNT)
         # Initialise agents
         for i in range(INIT_AGENT_COUNT):
@@ -57,7 +57,7 @@ class AgentInstanceTest(TestCase):
         agent.newVariableFloat("x")
         agent.newVariableFloat("default", 15.0)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         population = pyflamegpu.AgentPopulation(agent, INIT_AGENT_COUNT)
         # Initialise agents
         for i in range(INIT_AGENT_COUNT):
@@ -77,7 +77,7 @@ class AgentInstanceTest(TestCase):
         agent.newVariableFloat("x")
         agent.newVariableFloat("default", 15.0)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         population = pyflamegpu.AgentPopulation(agent, INIT_AGENT_COUNT)
         # Initialise agents
         for i in range(INIT_AGENT_COUNT):
@@ -97,7 +97,7 @@ class AgentInstanceTest(TestCase):
         agent.newVariableFloat("x")
         agent.newVariableFloat("default", 15.0)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         population = pyflamegpu.AgentPopulation(agent, INIT_AGENT_COUNT)
         # Initialise agents
         for i in range(INIT_AGENT_COUNT):
@@ -116,7 +116,7 @@ class AgentInstanceTest(TestCase):
         agent = model.newAgent("agent")
         agent.newVariableUInt("x")
         # Init agent pop
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         population = pyflamegpu.AgentPopulation(agent, INIT_AGENT_COUNT)
         # Initialise agents
         for i in range(INIT_AGENT_COUNT):
@@ -144,7 +144,7 @@ class AgentInstanceTest(TestCase):
             instance.setVariableFloat("y", 14.0)
         
         # Setup Model
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         cuda_model.setPopulationData(init_population)
         # Run 1 step to ensure data is pushed to device
         cuda_model.step()
@@ -184,7 +184,7 @@ class AgentInstanceTest(TestCase):
             instance.setVariableFloat("y", 14.0)
         
         # Setup Model
-        cuda_model = pyflamegpu.CUDAAgentModel(model)
+        cuda_model = pyflamegpu.CUDASimulation(model)
         cuda_model.setPopulationData(init_population)
         # Run 1 step to ensure data is pushed to device
         cuda_model.step()

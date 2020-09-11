@@ -15,7 +15,7 @@
 #include "flamegpu/exception/FGPUException.h"
 #include "flamegpu/pop/AgentPopulation.h"
 #include "flamegpu/model/AgentDescription.h"
-#include "flamegpu/gpu/CUDAAgentModel.h"
+#include "flamegpu/gpu/CUDASimulation.h"
 
 #ifndef XMLCheckResult
 #define XMLCheckResult(a_eResult) if (a_eResult != tinyxml2::XML_SUCCESS) { FGPUException::setLocation(__FILE__, __LINE__);\
@@ -146,7 +146,7 @@ int xmlReader::parse() {
             }
         }
         // CUDA config
-        CUDAAgentModel *cudamodel_instance = dynamic_cast<CUDAAgentModel*>(sim_instance);
+        CUDASimulation *cudamodel_instance = dynamic_cast<CUDASimulation*>(sim_instance);
         if (cudamodel_instance) {
             tinyxml2::XMLElement *pCUDACfgBlock = pElement->FirstChildElement("cuda");
             for (auto cudaCfgElement = pCUDACfgBlock->FirstChildElement(); cudaCfgElement; cudaCfgElement = cudaCfgElement->NextSiblingElement()) {
