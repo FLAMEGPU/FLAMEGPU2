@@ -553,7 +553,16 @@ __device__ __forceinline__ T Curve::getVariable(const char (&variableName)[N], V
 template <typename T, unsigned int N>
 __device__ __forceinline__ T Curve::getVariable_ldg(const char (&variableName)[N], VariableHash namespace_hash, unsigned int index) {
     VariableHash variable_hash = variableHash(variableName);
-
+#ifndef NO_SEATBELTS
+    {
+        const auto cv = getVariable(variable_hash+namespace_hash);
+        if (cv ==  UNKNOWN_VARIABLE) {
+            DTHROW("Curve variable with name '%s' was not found.\n", variableName);
+        } else if (curve_internal::d_sizes[cv] != sizeof(T)) {
+            DTHROW("Curve variable with name '%s' type size mismatch %llu != %llu.\n", variableName, curve_internal::d_sizes[cv], sizeof(T));
+        }
+    }
+#endif
     return getVariableByHash_ldg<T>(variable_hash+namespace_hash, index);
 }
 template <typename T, unsigned int N, unsigned int M>
