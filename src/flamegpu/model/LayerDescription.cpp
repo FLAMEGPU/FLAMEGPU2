@@ -14,15 +14,23 @@ bool LayerDescription::operator!=(const LayerDescription& rhs) const {
     return !(*this == rhs);
 }
 
-void LayerDescription::addAgentFunction(const AgentFunctionDescription &afd) {
+void LayerDescription::addAgentFunction(const AgentFunctionDescription &afd) {    
     if (afd.model.lock() == model.lock()) {
-        addAgentFunction(afd.getName());
-        return;
+        auto m = model.lock();
+        // Find the same afd in the model hierarchy
+        for (auto &agt : m->agents) {
+            for (auto &fn : agt.second->functions) {
+                if (fn.second->description.get() == &afd) {
+                    addAgentFunction(agt.first, fn.first);
+                    return;
+                }
+            }
+        }
     }
     THROW DifferentModel("Attempted to add agent function description which is from a different model, "
         "in LayerDescription::addAgentFunction().");
 }
-void LayerDescription::addAgentFunction(const std::string &name) {
+void LayerDescription::addAgentFunction(const std::string &agentName, const std::string &functionName) {
     if (layer->sub_model) {
         THROW InvalidLayerMember("A layer containing agent functions and/or host functions, may not also contain a submodel, "
         "in LayerDescription::addSubModel()\n");
@@ -32,44 +40,47 @@ void LayerDescription::addAgentFunction(const std::string &name) {
     if (!mdl) {
         THROW ExpiredWeakPtr();
     }
-    for (auto a : mdl->agents) {
-        for (auto f : a.second->functions) {
-            if (f.second->name == name) {
-                // Check that layer does not already contain function with same agent + states
-                for (const auto &b : layer->agent_functions) {
-                    if (auto parent = b->parent.lock()) {
-                        // If agent matches
-                        if (parent->name == a.second->name) {
-                            // If they share a state
-                            if (b->initial_state == f.second->initial_state ||
-                                b->initial_state == f.second->end_state ||
-                                b->end_state == f.second->initial_state ||
-                                b->end_state == f.second->end_state) {
-                                THROW InvalidAgentFunc("Agent functions '%s' cannot be added to this layer as agent function '%s' "
-                                    "within the layer shares an input or output state, this is not permitted, "
-                                    "in LayerDescription::addAgentFunction().",
-                                    f.second->name.c_str(), b->name.c_str());
-                            }
+    auto a = mdl->agents.find(agentName);
+    if (a != mdl->agents.end()) {
+        auto f = a->second->functions.find(functionName);
+        if (f != a->second->functions.end()) {
+            // Check it's not a duplicate agent fn 
+            if (layer->agent_functions.find(f->second) != layer->agent_functions.end()) {
+                THROW InvalidAgentFunc("Attempted to add agent function '%s' owned by agent '%s' to same layer twice, "
+                    "in LayerDescription::addAgentFunction().",
+                    functionName.c_str(), agentName.c_str());
+            }
+            // Check that layer does not already contain function with same agent + states
+            for (const auto &b : layer->agent_functions) {
+                if (auto parent = b->parent.lock()) {
+                    // If agent matches
+                    if (parent->name == a->second->name) {
+                        // If they share a state
+                        if (b->initial_state == f->second->initial_state ||
+                            b->initial_state == f->second->end_state ||
+                            b->end_state == f->second->initial_state ||
+                            b->end_state == f->second->end_state) {
+                            THROW InvalidAgentFunc("Agent function '%s' owned by agent '%s' cannot be added to this layer as agent function '%s' "
+                                "within the layer shares an input or output state, this is not permitted, "
+                                "in LayerDescription::addAgentFunction().",
+                                a->second->name.c_str(), agentName.c_str(), b->name.c_str());
                         }
                     }
                 }
-                if (layer->agent_functions.insert(f.second).second)
-                    return;
-                THROW InvalidAgentFunc("Attempted to add agent function '%s' to same layer twice, "
-                    "in LayerDescription::addAgentFunction().",
-                    name.c_str());
             }
+            layer->agent_functions.insert(f->second);
+            return;
         }
     }
-    THROW InvalidAgentFunc("Agent function '%s' was not found, "
+    THROW InvalidAgentFunc("Agent function '%s' owned by agent '%s' was not found, "
         "in LayerDescription::addAgentFunction()\n",
-        name.c_str());
+        functionName.c_str(), agentName.c_str());
 }
 /**
  * Template magic means that the implicit cast doesn't occur as normal
  */
-void LayerDescription::addAgentFunction(const char *af) {
-    addAgentFunction(std::string(af));
+void LayerDescription::addAgentFunction(const char *an, const char *fn) {
+    addAgentFunction(std::string(an), std::string(fn));
 }
 void LayerDescription::addHostFunction(FLAMEGPU_HOST_FUNCTION_POINTER func_p) {
     if (layer->sub_model) {

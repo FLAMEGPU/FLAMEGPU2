@@ -81,22 +81,24 @@ class LayerDescription {
     /**
      * Adds an agent function to this layer
      * The agent function will be called during this stage of model execution
-     * @param name Name of the agent function description to execute during this layer
+     * @param agentName Name of the agent which owns the function to execute during this layer
+     * @param functionName Name of the agent function description to execute during this layer
      * @throw InvalidAgentFunc If the agent function does not exist within the model hierarchy
      * @throw InvalidAgentFunc If the agent function has already been added to the layer
      * @throw InvalidLayerMember If the layer already contains a SubModel
      */
-    void addAgentFunction(const std::string &name);
+    void addAgentFunction(const std::string &agentName, const std::string &functionName);
     /**
      * Adds an agent function to this layer
      * The agent function will be called during this stage of model execution
-     * @param name Name of the agent function description to execute during this layer
+     * @param agentName Name of the agent which owns the function to execute during this layer
+     * @param functionName Name of the agent function description to execute during this layer
      * @throw InvalidAgentFunc If the agent function does not exist within the model hierarchy
      * @throw InvalidAgentFunc If the agent function has already been added to the layer
      * @throw InvalidLayerMember If the layer already contains a SubModel
      * @note This version exists because the template overload was preventing implicit cast to std::string
      */
-    void addAgentFunction(const char *name);
+    void addAgentFunction(const char *agentName, const char *functionName);
     /**
      * Adds a host function to this layer
      * The host function will be called during this stage of model execution
