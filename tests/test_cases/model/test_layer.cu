@@ -71,10 +71,10 @@ TEST(LayerDescriptionTest, AgentFunction) {
     EXPECT_NO_THROW(l.addAgentFunction(f2));
     EXPECT_EQ(l.getAgentFunctionsCount(), 2u);
     // Add by string
-    EXPECT_NO_THROW(l.addAgentFunction(std::string(FUNCTION_NAME3)));
+    EXPECT_NO_THROW(l.addAgentFunction(AGENT_NAME, std::string(FUNCTION_NAME3)));
     EXPECT_EQ(l.getAgentFunctionsCount(), 3u);
     // Add by string literal (char*)
-    EXPECT_NO_THROW(l.addAgentFunction(FUNCTION_NAME4));
+    EXPECT_NO_THROW(l.addAgentFunction(AGENT_NAME, FUNCTION_NAME4));
     EXPECT_EQ(l.getAgentFunctionsCount(), 4u);
 
     // Cannot add function not attached to an agent
@@ -86,8 +86,8 @@ TEST(LayerDescriptionTest, AgentFunction) {
     // Cannot add duplicate function variable with same name
     EXPECT_THROW(l.addAgentFunction(agent_fn2), InvalidAgentFunc);
     EXPECT_THROW(l.addAgentFunction(f3), InvalidAgentFunc);
-    EXPECT_THROW(l.addAgentFunction(std::string(FUNCTION_NAME4)), InvalidAgentFunc);
-    EXPECT_THROW(l.addAgentFunction(FUNCTION_NAME1), InvalidAgentFunc);
+    EXPECT_THROW(l.addAgentFunction(AGENT_NAME, std::string(FUNCTION_NAME4)), InvalidAgentFunc);
+    EXPECT_THROW(l.addAgentFunction(AGENT_NAME, FUNCTION_NAME1), InvalidAgentFunc);
     EXPECT_EQ(l.getAgentFunctionsCount(), 4u);
 
     // Function have the right name (not implemented
@@ -129,7 +129,7 @@ TEST(LayerDescriptionTest, SameAgentAndState1) {
     // Both have agent in default state
     EXPECT_NO_THROW(l.addAgentFunction(agent_fn2));
     EXPECT_THROW(l.addAgentFunction(agent_fn3), InvalidAgentFunc);
-    EXPECT_THROW(l.addAgentFunction(FUNCTION_NAME2), InvalidAgentFunc);
+    EXPECT_THROW(l.addAgentFunction(AGENT_NAME, FUNCTION_NAME2), InvalidAgentFunc);
     EXPECT_THROW(l.addAgentFunction(f2), InvalidAgentFunc);
 }
 TEST(LayerDescriptionTest, SameAgentAndState2) {
@@ -148,7 +148,7 @@ TEST(LayerDescriptionTest, SameAgentAndState2) {
     // Both have STATE_NAME:NEW_STATE_NAME state
     EXPECT_NO_THROW(l.addAgentFunction(agent_fn2));
     EXPECT_THROW(l.addAgentFunction(agent_fn3), InvalidAgentFunc);
-    EXPECT_THROW(l.addAgentFunction(FUNCTION_NAME2), InvalidAgentFunc);
+    EXPECT_THROW(l.addAgentFunction(AGENT_NAME, FUNCTION_NAME2), InvalidAgentFunc);
     EXPECT_THROW(l.addAgentFunction(f2), InvalidAgentFunc);
 }
 TEST(LayerDescriptionTest, SameAgentAndState3) {
@@ -167,7 +167,7 @@ TEST(LayerDescriptionTest, SameAgentAndState3) {
     // Both share initial state
     EXPECT_NO_THROW(l.addAgentFunction(agent_fn2));
     EXPECT_THROW(l.addAgentFunction(agent_fn3), InvalidAgentFunc);
-    EXPECT_THROW(l.addAgentFunction(FUNCTION_NAME2), InvalidAgentFunc);
+    EXPECT_THROW(l.addAgentFunction(AGENT_NAME, FUNCTION_NAME2), InvalidAgentFunc);
     EXPECT_THROW(l.addAgentFunction(f2), InvalidAgentFunc);
 }
 TEST(LayerDescriptionTest, SameAgentAndState4) {
@@ -186,7 +186,7 @@ TEST(LayerDescriptionTest, SameAgentAndState4) {
     // start matches end and vice versa
     EXPECT_NO_THROW(l.addAgentFunction(agent_fn2));
     EXPECT_THROW(l.addAgentFunction(agent_fn3), InvalidAgentFunc);
-    EXPECT_THROW(l.addAgentFunction(FUNCTION_NAME2), InvalidAgentFunc);
+    EXPECT_THROW(l.addAgentFunction(AGENT_NAME, FUNCTION_NAME2), InvalidAgentFunc);
     EXPECT_THROW(l.addAgentFunction(f2), InvalidAgentFunc);
 }
 TEST(LayerDescriptionTest, SameAgentAndState5) {
@@ -205,7 +205,7 @@ TEST(LayerDescriptionTest, SameAgentAndState5) {
     // end matches start state
     EXPECT_NO_THROW(l.addAgentFunction(agent_fn2));
     EXPECT_THROW(l.addAgentFunction(agent_fn3), InvalidAgentFunc);
-    EXPECT_THROW(l.addAgentFunction(FUNCTION_NAME2), InvalidAgentFunc);
+    EXPECT_THROW(l.addAgentFunction(AGENT_NAME, FUNCTION_NAME2), InvalidAgentFunc);
     EXPECT_THROW(l.addAgentFunction(f2), InvalidAgentFunc);
 }
 TEST(LayerDescriptionTest, SameAgentAndState6) {
@@ -224,7 +224,7 @@ TEST(LayerDescriptionTest, SameAgentAndState6) {
     // start matches end state
     EXPECT_NO_THROW(l.addAgentFunction(agent_fn2));
     EXPECT_THROW(l.addAgentFunction(agent_fn3), InvalidAgentFunc);
-    EXPECT_THROW(l.addAgentFunction(FUNCTION_NAME2), InvalidAgentFunc);
+    EXPECT_THROW(l.addAgentFunction(AGENT_NAME, FUNCTION_NAME2), InvalidAgentFunc);
     EXPECT_THROW(l.addAgentFunction(f2), InvalidAgentFunc);
 }
 
