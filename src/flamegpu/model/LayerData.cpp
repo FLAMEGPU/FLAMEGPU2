@@ -18,11 +18,9 @@ LayerData::LayerData(const std::shared_ptr<const ModelData> &model, const LayerD
     for (auto &_f : other.agent_functions) {
         for (auto &a : model->agents) {
             for (auto &f : a.second->functions) {
-                if (f.second->func == _f->func) {
-                    if (f.second->name == _f->name) {
-                        agent_functions.emplace(f.second);
-                        goto next_agent_fn;
-                    }
+                if (*f.second == *_f) {
+                    agent_functions.emplace(f.second);
+                    goto next_agent_fn;
                 }
             }
         }

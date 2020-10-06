@@ -97,6 +97,19 @@ bool AgentFunctionData::operator==(const AgentFunctionData &rhs) const {
         && (rtc_condition_source == rhs.rtc_condition_source)
         && (rtc_func_condition_name == rhs.rtc_func_condition_name)) {
         // Test weak pointers
+        {   // parent
+            auto a = parent.lock();
+            auto b = rhs.parent.lock();
+            if (a && b) {
+                // We can't call equality here, as that would be infinite recursion
+                if (a->name != b->name ||
+                    a->functions.size() != b->functions.size()) {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        }
         {  // message_input
             auto a = message_input.lock();
             auto b = rhs.message_input.lock();

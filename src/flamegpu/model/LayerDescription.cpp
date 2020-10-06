@@ -14,7 +14,7 @@ bool LayerDescription::operator!=(const LayerDescription& rhs) const {
     return !(*this == rhs);
 }
 
-void LayerDescription::addAgentFunction(const AgentFunctionDescription &afd) {    
+void LayerDescription::addAgentFunction(const AgentFunctionDescription &afd) {
     if (afd.model.lock() == model.lock()) {
         auto m = model.lock();
         // Find the same afd in the model hierarchy
@@ -44,7 +44,7 @@ void LayerDescription::addAgentFunction(const std::string &agentName, const std:
     if (a != mdl->agents.end()) {
         auto f = a->second->functions.find(functionName);
         if (f != a->second->functions.end()) {
-            // Check it's not a duplicate agent fn 
+            // Check it's not a duplicate agent fn
             if (layer->agent_functions.find(f->second) != layer->agent_functions.end()) {
                 THROW InvalidAgentFunc("Attempted to add agent function '%s' owned by agent '%s' to same layer twice, "
                     "in LayerDescription::addAgentFunction().",
