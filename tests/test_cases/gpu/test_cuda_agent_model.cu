@@ -267,6 +267,61 @@ TEST(TestCUDAAgentModel, Step) {
     EXPECT_EQ(externalCounter, 5);
     EXPECT_EQ(c.getStepCounter(), 5u);
 }
+FLAMEGPU_AGENT_FUNCTION(add_fn, MsgNone, MsgNone) {
+    FLAMEGPU->setVariable<int>("i", FLAMEGPU->getVariable<int>("i") + 1);
+    FLAMEGPU->setVariable<int>("j", FLAMEGPU->getVariable<int>("j") + 1);
+    return ALIVE;
+}
+TEST(TestCUDAAgentModel, SharedAgentFunction) {
+    // Test that two different agents can share an agent function name/implementation
+    ModelDescription model("test");
+
+    auto &agent1 = model.newAgent("a1");
+    auto &agent2 = model.newAgent("a2");
+
+    agent1.newVariable<int>("i", 1);
+    agent1.newVariable<int>("j", -1);
+    agent2.newVariable<int>("i", -1);
+    agent2.newVariable<int>("j", 1);
+
+    auto &a1f = agent1.newFunction("add", add_fn);
+    auto &a2f = agent2.newFunction("add", add_fn);
+
+    auto &layer = model.newLayer();
+    layer.addAgentFunction(a1f);
+    layer.addAgentFunction(a2f);
+
+    CUDAAgentModel cuda_model(model);
+    cuda_model.applyConfig();
+
+    const unsigned int populationSize = 5;
+    AgentPopulation pop1(agent1, populationSize);
+    AgentPopulation pop2(agent2, populationSize);
+    for (unsigned int i = 0; i < populationSize; i++) {
+        pop1.getNextInstance();
+        pop2.getNextInstance();
+    }
+    cuda_model.setPopulationData(pop1);
+    cuda_model.setPopulationData(pop2);
+
+    const unsigned int steps = 5;
+    for (unsigned int i = 0; i < steps; ++i) {
+        cuda_model.step();
+    }
+
+    cuda_model.getPopulationData(pop1);
+    cuda_model.getPopulationData(pop2);
+    for (unsigned int i = 0; i < populationSize; i++) {
+        auto instance = pop1.getInstanceAt(i);
+        EXPECT_EQ(instance.getVariable<int>("i"), 6);
+        EXPECT_EQ(instance.getVariable<int>("j"), 4);
+    }
+    for (unsigned int i = 0; i < populationSize; i++) {
+        auto instance = pop2.getInstanceAt(i);
+        EXPECT_EQ(instance.getVariable<int>("i"), 4);
+        EXPECT_EQ(instance.getVariable<int>("j"), 6);
+    }
+}
 TEST(TestSimulation, Simulate) {
     // Simulation is abstract, so test via CUDAAgentModel
     // Depends on CUDAAgentModel::step()

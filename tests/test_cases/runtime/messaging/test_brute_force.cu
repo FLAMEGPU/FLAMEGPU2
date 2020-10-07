@@ -304,7 +304,7 @@ TEST(TestMessage_BruteForce, OptionalNone) {
     // Validate each agent has seen no messages.
     for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
         AgentInstance ai = pop.getInstanceAt(i);
-        unsigned int index = ai.getVariable<unsigned int>("index");
+        // unsigned int index = ai.getVariable<unsigned int>("index");
         const unsigned int message_read = ai.getVariable<unsigned int>("message_read");
         // no messages should have been read.
         EXPECT_EQ(UINT_MAX, message_read);

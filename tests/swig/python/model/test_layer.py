@@ -98,10 +98,10 @@ class LayerDescriptionTest(TestCase):
         l.addAgentFunction(f2)
         assert l.getAgentFunctionsCount() == 2
         # Add by string
-        l.addAgentFunction(FUNCTION_NAME3)
+        l.addAgentFunction(AGENT_NAME, FUNCTION_NAME3)
         assert l.getAgentFunctionsCount() == 3
         # Add by string literal (char*)
-        l.addAgentFunction(FUNCTION_NAME4)
+        l.addAgentFunction(AGENT_NAME, FUNCTION_NAME4)
         assert l.getAgentFunctionsCount() == 4
 
         # Cannot add function not attached to an agent
@@ -112,7 +112,7 @@ class LayerDescriptionTest(TestCase):
             l.addAgentFunction(f4)
         assert e.value.type() == "InvalidAgentFunc"
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-            l.addAgentFunction(FUNCTION_NAME5)
+            l.addAgentFunction(AGENT_NAME, FUNCTION_NAME5)
         assert e.value.type() == "InvalidAgentFunc"
         assert l.getAgentFunctionsCount() == 4
 
@@ -124,10 +124,10 @@ class LayerDescriptionTest(TestCase):
             l.addAgentFunction(f3)
         assert e.value.type() == "InvalidAgentFunc"
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-            l.addAgentFunction(FUNCTION_NAME4)
+            l.addAgentFunction(AGENT_NAME, FUNCTION_NAME4)
         assert e.value.type() == "InvalidAgentFunc"
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-            l.addAgentFunction(FUNCTION_NAME1)
+            l.addAgentFunction(AGENT_NAME, FUNCTION_NAME1)
         assert e.value.type() == "InvalidAgentFunc"
         assert l.getAgentFunctionsCount() == 4
 
@@ -170,7 +170,7 @@ class LayerDescriptionTest(TestCase):
             l.addAgentFunction(f2)
         assert e.value.type() == "InvalidAgentFunc"
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-            l.addAgentFunction(FUNCTION_NAME2)
+            l.addAgentFunction(AGENT_NAME, FUNCTION_NAME2)
         assert e.value.type() == "InvalidAgentFunc"
 
 
@@ -193,7 +193,7 @@ class LayerDescriptionTest(TestCase):
             l.addAgentFunction(f2)
         assert e.value.type() == "InvalidAgentFunc"
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-            l.addAgentFunction(FUNCTION_NAME2)
+            l.addAgentFunction(AGENT_NAME, FUNCTION_NAME2)
         assert e.value.type() == "InvalidAgentFunc"
 
     def test_same_agent_and_state3(self):
@@ -215,7 +215,7 @@ class LayerDescriptionTest(TestCase):
             l.addAgentFunction(f2)
         assert e.value.type() == "InvalidAgentFunc"
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-            l.addAgentFunction(FUNCTION_NAME2)
+            l.addAgentFunction(AGENT_NAME, FUNCTION_NAME2)
         assert e.value.type() == "InvalidAgentFunc"
 
     def test_same_agent_and_state4(self):
@@ -237,7 +237,7 @@ class LayerDescriptionTest(TestCase):
             l.addAgentFunction(f2)
         assert e.value.type() == "InvalidAgentFunc"
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-            l.addAgentFunction(FUNCTION_NAME2)
+            l.addAgentFunction(AGENT_NAME, FUNCTION_NAME2)
         assert e.value.type() == "InvalidAgentFunc"
 
     def test_same_agent_and_state5(self):
@@ -259,7 +259,7 @@ class LayerDescriptionTest(TestCase):
             l.addAgentFunction(f2)
         assert e.value.type() == "InvalidAgentFunc"
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-            l.addAgentFunction(FUNCTION_NAME2)
+            l.addAgentFunction(AGENT_NAME, FUNCTION_NAME2)
         assert e.value.type() == "InvalidAgentFunc"
 
     def test_same_agent_and_state6(self):
@@ -281,6 +281,6 @@ class LayerDescriptionTest(TestCase):
             l.addAgentFunction(f2)
         assert e.value.type() == "InvalidAgentFunc"
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-            l.addAgentFunction(FUNCTION_NAME2)
+            l.addAgentFunction(AGENT_NAME, FUNCTION_NAME2)
         assert e.value.type() == "InvalidAgentFunc"
     
