@@ -305,7 +305,7 @@ TEST(TestCUDAAgentModel, SharedAgentFunction) {
     cuda_model.setPopulationData(pop2);
 
     const unsigned int steps = 5;
-    for (int i = 0; i < steps; ++i) {
+    for (unsigned int i = 0; i < steps; ++i) {
         cuda_model.step();
     }
 
