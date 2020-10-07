@@ -311,13 +311,11 @@ TEST(TestCUDAAgentModel, SharedAgentFunction) {
 
     cuda_model.getPopulationData(pop1);
     cuda_model.getPopulationData(pop2);
-    printf("Pop1\n");
     for (unsigned int i = 0; i < populationSize; i++) {
         auto instance = pop1.getInstanceAt(i);
         EXPECT_EQ(instance.getVariable<int>("i"), 6);
         EXPECT_EQ(instance.getVariable<int>("j"), 4);
     }
-    printf("Pop2\n");
     for (unsigned int i = 0; i < populationSize; i++) {
         auto instance = pop2.getInstanceAt(i);
         EXPECT_EQ(instance.getVariable<int>("i"), 4);
