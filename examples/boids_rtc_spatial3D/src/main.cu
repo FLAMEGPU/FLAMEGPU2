@@ -396,18 +396,18 @@ int main(int argc, const char ** argv) {
      */     
     {   // Layer #1
         LayerDescription &layer = model.newLayer();
-        layer.addAgentFunction("outputdata");
+        layer.addAgentFunction("Boid", "outputdata");
     }
     {   // Layer #2
         LayerDescription &layer = model.newLayer();
-        layer.addAgentFunction("inputdata");
+        layer.addAgentFunction("Boid", "inputdata");
     }
 
 
     /**
      * Create Model Runner
      */
-    CUDAAgentModel cuda_model(model);
+    CUDASimulation cuda_model(model);
 
     /**
      * Create visualisation
