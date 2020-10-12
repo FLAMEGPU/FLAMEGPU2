@@ -115,6 +115,7 @@ FLAMEGPU_HOST_DEVICE_FUNCTION void clampPosition(float &x, float &y, float &z, c
 /**
  * outputdata agent function for Boid agents, which outputs publicly visible properties to a message list
  */
+const char* outputdata = R"###(
 FLAMEGPU_AGENT_FUNCTION(outputdata, MsgNone, MsgSpatial3D) {
     // Output each agents publicly visible properties.
     FLAMEGPU->message_out.setVariable<int>("id", FLAMEGPU->getVariable<int>("id"));
@@ -126,9 +127,51 @@ FLAMEGPU_AGENT_FUNCTION(outputdata, MsgNone, MsgSpatial3D) {
     FLAMEGPU->message_out.setVariable<float>("fz", FLAMEGPU->getVariable<float>("fz"));
     return ALIVE;
 }
+)###";
 /**
  * inputdata agent function for Boid agents, which reads data from neighbouring Boid agents, to perform the boid flocking model.
  */
+const char* inputdata = R"###(
+// Vector utility functions, see top of file for versions with commentary
+FLAMEGPU_HOST_DEVICE_FUNCTION float vec3Length(const float x, const float y, const float z) {
+    return sqrtf(x * x + y * y + z * z);
+}
+FLAMEGPU_HOST_DEVICE_FUNCTION void vec3Add(float &x, float &y, float &z, const float value) {
+    x += value;
+    y += value;
+    z += value;
+}
+FLAMEGPU_HOST_DEVICE_FUNCTION void vec3Sub(float &x, float &y, float &z, const float value) {
+    x -= value;
+    y -= value;
+    z -= value;
+}
+FLAMEGPU_HOST_DEVICE_FUNCTION void vec3Mult(float &x, float &y, float &z, const float multiplier) {
+    x *= multiplier;
+    y *= multiplier;
+    z *= multiplier;
+}
+FLAMEGPU_HOST_DEVICE_FUNCTION void vec3Div(float &x, float &y, float &z, const float divisor) {
+    x /= divisor;
+    y /= divisor;
+    z /= divisor;
+}
+FLAMEGPU_HOST_DEVICE_FUNCTION void vec3Normalize(float &x, float &y, float &z) {
+    // Get the length
+    float length = vec3Length(x, y, z);
+    vec3Div(x, y, z, length);
+}
+FLAMEGPU_HOST_DEVICE_FUNCTION void clampPosition(float &x, float &y, float &z, const float MIN_POSITION, const float MAX_POSITION) {
+    x = (x < MIN_POSITION)? MIN_POSITION: x;
+    x = (x > MAX_POSITION)? MAX_POSITION: x;
+
+    y = (y < MIN_POSITION)? MIN_POSITION: y;
+    y = (y > MAX_POSITION)? MAX_POSITION: y;
+
+    z = (z < MIN_POSITION)? MIN_POSITION: z;
+    z = (z > MAX_POSITION)? MAX_POSITION: z;
+}
+// Agent function
 FLAMEGPU_AGENT_FUNCTION(inputdata, MsgSpatial3D, MsgNone) {
     // Agent properties in local register
     int id = FLAMEGPU->getVariable<int>("id");
@@ -284,16 +327,16 @@ FLAMEGPU_AGENT_FUNCTION(inputdata, MsgSpatial3D, MsgNone) {
 
     return ALIVE;
 }
+)###";
 
 int main(int argc, const char ** argv) {
-    ModelDescription model("boids_spatial3D");
+    ModelDescription model("Boids_BruteForce");
 
     /**
      * GLOBALS
      */
-     {
-        EnvironmentDescription &env = model.Environment();
-
+    EnvironmentDescription &env = model.Environment();
+    {
         // Population size to generate, if no agents are loaded from disk
         env.add("POPULATION_TO_GENERATE", 32768u);
 
@@ -319,15 +362,12 @@ int main(int argc, const char ** argv) {
         env.add("MATCH_SCALE", 1.25f);
     }
 
-
     {   // Location message
-        EnvironmentDescription &env = model.Environment();
         MsgSpatial3D::Description &message = model.newMessage<MsgSpatial3D>("location");
         // Set the range and bounds.
         message.setRadius(env.get<float>("INTERACTION_RADIUS"));
         message.setMin(env.get<float>("MIN_POSITION"), env.get<float>("MIN_POSITION"), env.get<float>("MIN_POSITION"));
         message.setMax(env.get<float>("MAX_POSITION"), env.get<float>("MAX_POSITION"), env.get<float>("MAX_POSITION"));
-
         // A message to hold the location of an agent.
         message.newVariable<int>("id");
         // X Y Z are implicit.
@@ -347,8 +387,8 @@ int main(int argc, const char ** argv) {
         agent.newVariable<float>("fx");
         agent.newVariable<float>("fy");
         agent.newVariable<float>("fz");
-        agent.newFunction("outputdata", outputdata).setMessageOutput("location");
-        agent.newFunction("inputdata", inputdata).setMessageInput("location");
+        agent.newRTCFunction("outputdata", outputdata).setMessageOutput("location");
+        agent.newRTCFunction("inputdata", inputdata).setMessageInput("location");
     }
 
     /**
@@ -356,18 +396,18 @@ int main(int argc, const char ** argv) {
      */     
     {   // Layer #1
         LayerDescription &layer = model.newLayer();
-        layer.addAgentFunction(outputdata);
+        layer.addAgentFunction("outputdata");
     }
     {   // Layer #2
         LayerDescription &layer = model.newLayer();
-        layer.addAgentFunction(inputdata);
+        layer.addAgentFunction("inputdata");
     }
 
 
     /**
      * Create Model Runner
      */
-    CUDASimulation cuda_model(model);
+    CUDAAgentModel cuda_model(model);
 
     /**
      * Create visualisation
@@ -395,16 +435,10 @@ int main(int argc, const char ** argv) {
     if (cuda_model.getSimulationConfig().input_file.empty()) {
         EnvironmentDescription &env = model.Environment();
         // Uniformly distribute agents within space, with uniformly distributed initial velocity.
-        // c++ random number generator engine
         std::mt19937 rngEngine(cuda_model.getSimulationConfig().random_seed);
-        // Uniform distribution for agent position components
         std::uniform_real_distribution<float> position_distribution(env.get<float>("MIN_POSITION"), env.get<float>("MAX_POSITION"));
-        // Uniform distribution of velocity direction components
         std::uniform_real_distribution<float> velocity_distribution(-1, 1);
-        // Uniform distribution of velocity magnitudes
         std::uniform_real_distribution<float> velocity_magnitude_distribution(env.get<float>("MIN_INITIAL_SPEED"), env.get<float>("MAX_INITIAL_SPEED"));
-
-        // Generate a population of agents, based on the relevant environment property
         const unsigned int populationSize = env.get<unsigned int>("POPULATION_TO_GENERATE");
         AgentPopulation population(model.Agent("Boid"), populationSize);
         for (unsigned int i = 0; i < populationSize; i++) {
@@ -450,4 +484,3 @@ int main(int argc, const char ** argv) {
 #endif
     return 0;
 }
-
