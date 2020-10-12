@@ -755,7 +755,7 @@ void CUDASimulation::simulate() {
         processHostAgentCreation(0);
     // Update environment on device
     singletons->environment.updateDevice(getInstanceID());
-    NVTX_POP()
+    NVTX_POP();
 
 #ifdef VISUALISATION
     if (visualisation) {
