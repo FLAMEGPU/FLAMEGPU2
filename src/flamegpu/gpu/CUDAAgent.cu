@@ -634,15 +634,23 @@ void CUDAAgent::addInstantitateRTCFunction(jitify::JitCache &kernel_cache, const
 #ifdef OUTPUT_RTC_DYNAMIC_FILES
             // curve
             std::ofstream file_curve_rtc_header;
-            file_curve_rtc_header.open("curve_rtc_dynamic.h");
-            file_curve_rtc_header << curve_dynamic_header;
+            std::string file_curve_rtc_header_filename = func_impl.c_str();
+            file_curve_rtc_header_filename.append("_curve_rtc_dynamic.h");
+            file_curve_rtc_header.open(file_curve_rtc_header_filename);
+            // Remove first line as it is the filename, which misaligns profiler
+            std::string out_s = curve_dynamic_header;
+            out_s.erase(0, out_s.find("\n") + 1);
+            file_curve_rtc_header << out_s;
             file_curve_rtc_header.close();
             // agent function
             std::ofstream agent_function_file;
             std::string agent_function_filename = func_impl.c_str();
             agent_function_filename.append(".cu");
             agent_function_file.open(agent_function_filename);
-            agent_function_file << func.rtc_source;
+            // Remove first line as it is the filename, which misaligns profiler
+            out_s = func.rtc_source;
+            out_s.erase(0, out_s.find("\n") + 1);
+            agent_function_file << out_s;
             agent_function_file.close();
 #endif
             // add kernal instance to map

@@ -65,6 +65,8 @@ option(BUILD_TESTS "Enable building tests" OFF)
 
 # Option to enable/disable NVTX markers for improved profiling
 option(USE_NVTX "Build with NVTX markers enabled" OFF)
+# Option to enable/disable logging of dynamic RTC files to disk
+option(EXPORT_RTC_SOURCES "Export RTC source files to disk at runtime" OFF)
 
 # Control target CUDA_ARCH to compile for
 SET(CUDA_ARCH "${CUDA_ARCH}" CACHE STRING "List of CUDA Architectures to target. E.g. 61;70" FORCE)
