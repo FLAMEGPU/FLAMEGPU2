@@ -432,7 +432,6 @@ int main(int argc, const char ** argv) {
 
     // If no xml model file was is provided, generate a population.
     if (cuda_model.getSimulationConfig().input_file.empty()) {
-        EnvironmentDescription &env = model.Environment();
         // Uniformly distribute agents within space, with uniformly distributed initial velocity.
         std::mt19937 rngEngine(cuda_model.getSimulationConfig().random_seed);
         std::uniform_real_distribution<float> position_distribution(env.get<float>("MIN_POSITION"), env.get<float>("MAX_POSITION"));
