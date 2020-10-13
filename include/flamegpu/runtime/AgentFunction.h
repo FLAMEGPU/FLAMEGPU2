@@ -92,9 +92,6 @@ __global__ void agent_function_wrapper(
         // (scan flags will not be processed unless agent death has been requested in model definition)
         scanFlag_agentDeath[FLAMEGPU_DEVICE_API<MsgIn, MsgOut>::TID()] = flag;
     }
-    // do something with the return value to set a flag for deletion
-
-    // delete api;
 }
 
 

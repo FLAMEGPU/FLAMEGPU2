@@ -49,7 +49,7 @@ __global__ void agent_function_condition_wrapper(
     if (FLAMEGPU_READ_ONLY_DEVICE_API::TID() >= popNo)
         return;
     // create a new device FLAME_GPU instance
-    FLAMEGPU_READ_ONLY_DEVICE_API *api = new FLAMEGPU_READ_ONLY_DEVICE_API(
+    FLAMEGPU_READ_ONLY_DEVICE_API api = FLAMEGPU_READ_ONLY_DEVICE_API(
         instance_id_hash,
         agent_func_name_hash,
         d_rng);
@@ -57,12 +57,10 @@ __global__ void agent_function_condition_wrapper(
     // call the user specified device function
     {
         // Negate the return value, we want false at the start of the scattered array
-        bool conditionResult = !(AgentFunctionCondition()(api));
+        bool conditionResult = !(AgentFunctionCondition()(&api));
         // (scan flags will be processed to filter agents
         scanFlag_conditionResult[FLAMEGPU_READ_ONLY_DEVICE_API::TID()] = conditionResult;
     }
-
-    delete api;
 }
 
 
