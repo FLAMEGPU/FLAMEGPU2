@@ -141,7 +141,7 @@ std::array<T, N> AgentInstance::getVariable(const std::string &variable_name) co
     }
     std::array<T, N> rtn;
     memcpy(rtn.data(), reinterpret_cast<T*>(v.getDataPtr()) + (index * N), sizeof(T) * N);
-    return std::move(rtn);  // I think std::move will transfer the std::array rather than duplicating it
+    return rtn;
 }
 template <typename T>
 T AgentInstance::getVariable(const std::string &variable_name, const unsigned int &array_index) const {
