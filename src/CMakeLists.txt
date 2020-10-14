@@ -65,7 +65,11 @@ endif()
 
 # Specify source files for the static library
 # Can't do this automatically, as CMake wouldn't know when to regen (as CMakeLists.txt would be unchanged)
+# version.h is automatically generated so does not exist prior to configure time
 SET(SRC_INCLUDE
+    ${FLAMEGPU_ROOT}/include/flamegpu/version.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/defines.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/flame_api.h
     ${FLAMEGPU_ROOT}/include/flamegpu/io/statereader.h
     ${FLAMEGPU_ROOT}/include/flamegpu/io/statewriter.h
     ${FLAMEGPU_ROOT}/include/flamegpu/io/jsonReader.h
@@ -91,7 +95,6 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/pop/AgentPopulation.h
     ${FLAMEGPU_ROOT}/include/flamegpu/pop/MemoryVector.h
     ${FLAMEGPU_ROOT}/include/flamegpu/pop/AgentStateMemory.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/defines.h
     ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAScanCompaction.h
     ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAErrorChecking.h
     ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAMessageList.h
@@ -102,7 +105,6 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAFatAgent.h
     ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAFatAgentStateList.h
     ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAScatter.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/flame_api.h
     ${FLAMEGPU_ROOT}/include/flamegpu/sim/AgentInterface.h
     ${FLAMEGPU_ROOT}/include/flamegpu/sim/Simulation.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/AgentFunction.h

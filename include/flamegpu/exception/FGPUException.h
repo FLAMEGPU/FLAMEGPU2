@@ -411,5 +411,9 @@ DERIVED_FGPUException(ExpiredWeakPtr, "Unable to convert weak pointer to shared 
  * Defines an error reported from cuda device code (agent functions and agent function conditions)
  */
 DERIVED_FGPUException(DeviceError, "Error reported from device code");
+/**
+ * Defines an error reported when versions do not match
+ */
+DERIVED_FGPUException(VersionMismatch, "Versions do not match");
 
 #endif  // INCLUDE_FLAMEGPU_EXCEPTION_FGPUEXCEPTION_H_

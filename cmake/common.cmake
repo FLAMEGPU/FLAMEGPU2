@@ -406,6 +406,9 @@ endfunction()
 
 # Function to mask some of the flag setting for the static library
 function(add_flamegpu_library NAME SRC FLAMEGPU_ROOT)
+    # Generate version file
+    GET_COMMIT_HASH()
+  
     # Define which source files are required for the target executable
     add_library(${NAME} STATIC ${SRC})
 
@@ -502,4 +505,70 @@ macro(CMAKE_SET_TARGET_FOLDER tgt folder)
   else()
     set_property(GLOBAL PROPERTY USE_FOLDERS OFF)
   endif()
+endmacro()
+
+#-----------------------------------------------------------------------
+# Generate files that act as informal version numbers
+# ${CMAKE_CURRENT_BINARY_DIR}/short_hash.txt - File only contains git short hash for use by CMake
+# ${FLAMEGPU_ROOT}/include/flamegpu/version.h - Programatically accessible version
+#
+# Based on https://cmake.org/pipermail/cmake/2018-October/068388.html
+#-----------------------------------------------------------------------
+macro(GET_COMMIT_HASH)
+set(SHORT_HASH_FILE ${CMAKE_CURRENT_BINARY_DIR}/short_hash.txt)
+find_package(Git)
+if(Git_FOUND)
+    execute_process(
+        COMMAND
+            ${GIT_EXECUTABLE} rev-parse --short HEAD
+        WORKING_DIRECTORY
+            ${FLAMEGPU_ROOT}
+        RESULT_VARIABLE
+            SHORT_HASH_RESULT
+        OUTPUT_VARIABLE
+            SHORT_HASH
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
+else()
+    set(SHORT_HASH "GitHash") # Placeholder, though its unlikely to be required
+endif()
+
+# If running in script mode (this runs on every build)
+if (CMAKE_SCRIPT_MODE_FILE)
+    if (EXISTS "${SHORT_HASH_FILE}")
+        file(READ ${SHORT_HASH_FILE} READ_IN_SHORT_HASH)
+    else()
+        set(READ_IN_SHORT_HASH "")
+    endif()
+
+    if (NOT ("${READ_IN_SHORT_HASH}" STREQUAL "${SHORT_HASH}"))
+        message(STATUS "Short hash is out of date")
+        # This will update short_hash.txt, causing cmake to reconfigure
+        file(WRITE ${SHORT_HASH_FILE} ${SHORT_HASH})
+    endif()
+
+# Else running as part of cmake configure
+else()
+    file(WRITE ${SHORT_HASH_FILE} ${SHORT_HASH})
+    # Also create version.h
+    configure_file(${FLAMEGPU_ROOT}/cmake/version.h ${FLAMEGPU_ROOT}/include/flamegpu/version.h)
+
+    # The trick here is to make sure short_hash.txt is listed as a byproduct
+    add_custom_target(
+        git_short_hash
+        BYPRODUCTS
+            ${SHORT_HASH_FILE}
+        COMMAND
+            ${CMAKE_COMMAND}
+            "-DSHORT_HASH_FILE=${SHORT_HASH_FILE}"
+            "-P" "${CMAKE_CURRENT_LIST_FILE}"
+        COMMENT
+            "Re-checking short hash..."
+        VERBATIM
+        USES_TERMINAL)
+
+    # This configure_file makes cmake reconfigure dependent on short_hash.txt
+    configure_file(${SHORT_HASH_FILE} ${SHORT_HASH_FILE}.junk COPYONLY)
+
+    message(STATUS "Short Hash: ${SHORT_HASH}")
+endif()
 endmacro()
