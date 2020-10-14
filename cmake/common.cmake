@@ -542,21 +542,6 @@ else()
     set(SHORT_HASH "GitHash") # Placeholder, though its unlikely to be required
 endif()
 
-file(WRITE ${SHORT_HASH_FILE} ${SHORT_HASH})
 # Also create version.h
 configure_file(${FLAMEGPU_ROOT}/cmake/version.h ${FLAMEGPU_ROOT}/include/flamegpu/version.h)
-
-# The trick here is to make sure short_hash.txt is listed as a byproduct
-add_custom_target(
-    git_short_hash
-    BYPRODUCTS
-        ${SHORT_HASH_FILE}
-    COMMAND
-        ${CMAKE_COMMAND}
-        "-DSHORT_HASH_FILE=${SHORT_HASH_FILE}"
-        "-P" "${CMAKE_CURRENT_LIST_FILE}"
-    COMMENT
-        "Re-checking short hash..."
-    VERBATIM
-    USES_TERMINAL)
 endmacro()
