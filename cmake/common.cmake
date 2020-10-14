@@ -127,6 +127,11 @@ if(Jitify_FOUND)
     set(FLAMEGPU_DEPENDENCY_INCLUDE_DIRECTORIES ${FLAMEGPU_DEPENDENCY_INCLUDE_DIRECTORIES} "${Jitify_INCLUDE_DIRS}")
 endif()
 
+# If gcc, need to add linker flag for std::experimental::filesystem pre c++17
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    set(FLAMEGPU_DEPENDENCY_LINK_LIBRARIES ${FLAMEGPU_DEPENDENCY_LINK_LIBRARIES} "-lstdc++fs")
+endif()
+
 # Logging for jitify compilation
 set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -DJITIFY_PRINT_LOG")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DJITIFY_PRINT_LOG")
@@ -401,6 +406,9 @@ endfunction()
 
 # Function to mask some of the flag setting for the static library
 function(add_flamegpu_library NAME SRC FLAMEGPU_ROOT)
+    # Generate version file
+    GET_COMMIT_HASH()
+  
     # Define which source files are required for the target executable
     add_library(${NAME} STATIC ${SRC})
 
@@ -497,4 +505,58 @@ macro(CMAKE_SET_TARGET_FOLDER tgt folder)
   else()
     set_property(GLOBAL PROPERTY USE_FOLDERS OFF)
   endif()
+endmacro()
+
+#-----------------------------------------------------------------------
+# Generate files that act as informal version numbers
+# ${CMAKE_CURRENT_BINARY_DIR}/short_hash.txt - File only contains git short hash for use by CMake
+# ${FLAMEGPU_ROOT}/include/flamegpu/version.h - Programatically accessible version
+#
+# Based on https://cmake.org/pipermail/cmake/2018-October/068388.html
+#-----------------------------------------------------------------------
+macro(GET_COMMIT_HASH)
+# If git changes, we reconfigure
+# This is a very aggressive version
+# Might be better to simply make generation of the file a pre-build script
+# That would be cheaper than re-configure
+set_property(
+  DIRECTORY 
+  APPEND 
+  PROPERTY CMAKE_CONFIGURE_DEPENDS 
+  "${FLAMEGPU_ROOT}/.git/index"
+)
+set(SHORT_HASH_FILE ${CMAKE_CURRENT_BINARY_DIR}/short_hash.txt)
+find_package(Git)
+if(Git_FOUND)
+    execute_process(
+        COMMAND
+            ${GIT_EXECUTABLE} rev-parse --short HEAD
+        WORKING_DIRECTORY
+            ${FLAMEGPU_ROOT}
+        RESULT_VARIABLE
+            SHORT_HASH_RESULT
+        OUTPUT_VARIABLE
+            SHORT_HASH
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
+else()
+    set(SHORT_HASH "GitHash") # Placeholder, though its unlikely to be required
+endif()
+
+file(WRITE ${SHORT_HASH_FILE} ${SHORT_HASH})
+# Also create version.h
+configure_file(${FLAMEGPU_ROOT}/cmake/version.h ${FLAMEGPU_ROOT}/include/flamegpu/version.h)
+
+# The trick here is to make sure short_hash.txt is listed as a byproduct
+add_custom_target(
+    git_short_hash
+    BYPRODUCTS
+        ${SHORT_HASH_FILE}
+    COMMAND
+        ${CMAKE_COMMAND}
+        "-DSHORT_HASH_FILE=${SHORT_HASH_FILE}"
+        "-P" "${CMAKE_CURRENT_LIST_FILE}"
+    COMMENT
+        "Re-checking short hash..."
+    VERBATIM
+    USES_TERMINAL)
 endmacro()

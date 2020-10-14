@@ -3,6 +3,23 @@
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 
+#include <iostream>
+#include <fstream>
+#include <string>
+// If MSVC earlier than VS 2019
+#if defined(_MSC_VER) && _MSC_VER < 1920
+#include <filesystem>
+using std::tr2::sys::exists;
+using std::tr2::sys::path;
+#else
+// VS2019 requires this macro, as building pre c++17 cant use std::filesystem
+#define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
+#include <experimental/filesystem>
+using std::experimental::filesystem::v1::exists;
+using std::experimental::filesystem::v1::path;
+#endif
+
+#include "flamegpu/version.h"
 #include "flamegpu/gpu/CUDAFatAgent.h"
 #include "flamegpu/gpu/CUDAAgentStateList.h"
 #include "flamegpu/gpu/CUDAErrorChecking.h"
@@ -419,11 +436,51 @@ void CUDAAgent::clearFunctionCondition(const std::string &state) {
 
 void CUDAAgent::addInstantitateRTCFunction(jitify::JitCache &kernel_cache, const AgentFunctionData& func, bool function_condition) {
     // get header location for fgpu
-    const char* env_inc_fgp2 = std::getenv("FLAMEGPU2_INC_DIR");
-    if (!env_inc_fgp2) {
-        THROW InvalidAgentFunc("Error compiling runtime agent function ('%s'): FLAMEGPU2_INC_DIR environment variable does not exist, "
-            "in CUDAAgent::addInstantitateRTCFunction().",
-            func.name.c_str());
+    static std::string env_inc_fgp2 = std::getenv("FLAMEGPU2_INC_DIR") ? std::getenv("FLAMEGPU2_INC_DIR") : "";
+    static bool header_version_confirmed = false;
+    if (env_inc_fgp2.empty()) {
+        // Var is not set, attempt to use default arrangement
+        path test_include("");
+        // Try 5 levels of directory, to see if we can find flame_api.h
+        for (int i = 0; i < 5; ++i) {
+            path check_file = test_include;
+            check_file/= "include/flamegpu/version.h";
+            if (exists(check_file)) {
+                test_include/= "include";
+                env_inc_fgp2 = test_include.string();
+                break;
+            }
+            // Go up a level for next iteration
+            test_include/= "..";
+        }
+        if (env_inc_fgp2.empty()) {
+            THROW InvalidAgentFunc("Error compiling runtime agent function ('%s'): Unable to automatically determine include directory and FLAMEGPU2_INC_DIR environment variable does not exist, "
+                "in CUDAAgent::addInstantitateRTCFunction().",
+                func.name.c_str());
+        }
+    }
+
+    if (!header_version_confirmed) {
+        std::string fileHash;
+        // Open version.h
+        path version_file = env_inc_fgp2;
+        version_file/= "flamegpu/version.h";
+        std::ifstream vFile(version_file);
+        if (vFile.is_open()) {
+            // Read the first line
+            std::string line;
+            if (getline(vFile, line)) {
+                // If characters 3-9 match programatic hash we have success, else fail
+                fileHash = line.substr(3, 7);
+            }
+            vFile.close();
+        }
+        if (fileHash == flamegpu_internal::getCommitHash()) {
+            header_version_confirmed = true;
+        } else {
+            THROW VersionMismatch("RTC header version (%s) does not match version flamegpu2 library was built with (%s). Set the environment variable FLAMEGPU2_INC_DIR to the correct include directory.\n",
+                fileHash.c_str(), flamegpu_internal::getCommitHash().c_str());
+        }
     }
 
     // get the cuda path
