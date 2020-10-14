@@ -114,12 +114,31 @@ $CUDA_REPO_PKG_LOCAL="cuda_$($CUDA_VERSION_FULL)_win10_network.exe"
 
 # Get CUDA network installer
 Write-Output "Downloading CUDA Network Installer for $($CUDA_VERSION_FULL) from: $($CUDA_REPO_PKG_REMOTE)"
-Invoke-WebRequest $CUDA_REPO_PKG_REMOTE -OutFile $CUDA_REPO_PKG_LOCAL | Out-Null
-if(Test-Path -Path $CUDA_REPO_PKG_LOCAL){
-    Write-Output "Downloading Complete"
-} else {
-    Write-Output "Error: Failed to download $($CUDA_REPO_PKG_LOCAL) from $($CUDA_REPO_PKG_REMOTE)"
-    exit 1
+
+$downloaded = $false
+$download_attempt = 0
+$download_attempt_delay = 30
+$download_attempts_max = 5
+
+while (-not $downloaded) {
+    Invoke-WebRequest $CUDA_REPO_PKG_REMOTE -OutFile $CUDA_REPO_PKG_LOCAL | Out-Null
+    $download_attempt++
+    # If download succeeded, break out the loop.
+    if(Test-Path -Path $CUDA_REPO_PKG_LOCAL){
+        Write-Output "Downloading Complete"
+        $downloaded=$true
+    } else {
+        # If downlaod failed, either wait and try again, or give up and error.
+        if ($download_attempt -le $download_attempts_max) {
+            Write-Output "Error: Failed to download $($CUDA_REPO_PKG_LOCAL) (attempt $($download_attempt)/$($download_attempts_max)). Retrying."
+            # Sleep for a number of seconds.
+            Start-Sleep $download_attempt_delay
+        } else {
+            Write-Output "Error: Failed to download $($CUDA_REPO_PKG_LOCAL) after $($download_attempts_max) attempts. Aborting."
+            # Abort the script.
+            exit 1
+        }
+    }
 }
 
 # Invoke silent install of CUDA (via network installer)
