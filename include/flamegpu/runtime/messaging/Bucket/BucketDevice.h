@@ -301,15 +301,16 @@ __device__ void MsgBucket::Out::setKey(const IntT &key) const {
 
 template<typename T, unsigned int N>
 __device__ T MsgBucket::In::Filter::Message::getVariable(const char(&variable_name)[N]) const {
+#ifndef NO_SEATBELTS
     // Ensure that the message is within bounds.
-    if (cell_index < _parent.bucket_end) {
-        // get the value from curve using the stored hashes and message index.
-        T value = Curve::getVariable<T>(variable_name, this->_parent.combined_hash, cell_index);
-        return value;
-    } else {
-        // @todo - Improved error handling of out of bounds message access? Return a default value or assert?
+    if (cell_index >= _parent.bucket_end) {
+        DTHROW("Bucket message index exceeds bin length, unable to get variable '%s'.\n", variable_name);
         return static_cast<T>(0);
     }
+#endif
+    // get the value from curve using the stored hashes and message index.
+    T value = Curve::getVariable<T>(variable_name, this->_parent.combined_hash, cell_index);
+    return value;
 }
 
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_BUCKET_BUCKETDEVICE_H_

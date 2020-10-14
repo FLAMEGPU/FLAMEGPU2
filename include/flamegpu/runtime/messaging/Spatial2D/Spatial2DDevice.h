@@ -257,15 +257,16 @@ class MsgSpatial2D::Out : public MsgBruteForce::Out {
 
 template<typename T, unsigned int N>
 __device__ T MsgSpatial2D::In::Filter::Message::getVariable(const char(&variable_name)[N]) const {
-    //// Ensure that the message is within bounds.
-    if (relative_cell < 2) {
-        // get the value from curve using the stored hashes and message index.
-        T value = Curve::getVariable<T>(variable_name, this->_parent.combined_hash, cell_index);
-        return value;
-    } else {
-        // @todo - Improved error handling of out of bounds message access? Return a default value or assert?
+#ifndef NO_SEATBELTS
+    // Ensure that the message is within bounds.
+    if (relative_cell >= 2) {
+        DTHROW("MsgSpatial2D in invalid bin, unable to get variable '%s'.\n", variable_name);
         return static_cast<T>(0);
     }
+#endif
+    // get the value from curve using the stored hashes and message index.
+    T value = Curve::getVariable<T>(variable_name, this->_parent.combined_hash, cell_index);
+    return value;
 }
 
 

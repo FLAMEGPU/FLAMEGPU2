@@ -346,25 +346,27 @@ class MsgArray::Out {
 
 template<typename T, unsigned int N>
 __device__ T MsgArray::In::Message::getVariable(const char(&variable_name)[N]) const {
+#ifndef NO_SEATBELTS
     // Ensure that the message is within bounds.
-    if (index < this->_parent.length) {
-        // get the value from curve using the stored hashes and message index.
-        return Curve::getVariable<T>(variable_name, this->_parent.combined_hash, index);
-    } else {
-        // @todo - Improved error handling of out of bounds message access? Return a default value or assert?
+    if (index >= this->_parent.length) {
+        DTHROW("Invalid Array message, unable to get variable '%s'.\n", variable_name);
         return static_cast<T>(0);
     }
+#endif
+    // get the value from curve using the stored hashes and message index.
+    return Curve::getVariable<T>(variable_name, this->_parent.combined_hash, index);
 }
 template<typename T, unsigned int N>
 __device__ T MsgArray::In::Filter::Message::getVariable(const char(&variable_name)[N]) const {
+#ifndef NO_SEATBELTS
     // Ensure that the message is within bounds.
-    if (index_1d < this->_parent.length) {
-        // get the value from curve using the stored hashes and message index.
-        return Curve::getVariable<T>(variable_name, this->_parent.combined_hash, index_1d);
-    } else {
-        // @todo - Improved error handling of out of bounds message access? Return a default value or assert?
+    if (index_1d >= this->_parent.length) {
+        DTHROW("Invalid Array message, unable to get variable '%s'.\n", variable_name);
         return static_cast<T>(0);
     }
+#endif
+    // get the value from curve using the stored hashes and message index.
+    return Curve::getVariable<T>(variable_name, this->_parent.combined_hash, index_1d);
 }
 
 template<typename T, unsigned int N>
