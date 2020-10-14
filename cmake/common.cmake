@@ -516,6 +516,9 @@ endmacro()
 #-----------------------------------------------------------------------
 macro(GET_COMMIT_HASH)
 # If git changes, we reconfigure
+# This is a very aggressive version
+# Might be better to simply make generation of the file a pre-build script
+# That would be cheaper than re-configure
 set_property(
   DIRECTORY 
   APPEND 

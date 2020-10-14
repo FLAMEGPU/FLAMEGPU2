@@ -465,7 +465,7 @@ void CUDAAgent::addInstantitateRTCFunction(jitify::JitCache &kernel_cache, const
         // Open version.h
         path version_file = env_inc_fgp2;
         version_file/= "flamegpu/version.h";
-        std::ifstream vFile (version_file);
+        std::ifstream vFile(version_file);
         if (vFile.is_open()) {
             // Read the first line
             std::string line;
