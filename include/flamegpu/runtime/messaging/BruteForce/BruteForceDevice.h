@@ -201,15 +201,16 @@ class MsgBruteForce::Out {
 
 template<typename T, unsigned int N>
 __device__ T MsgBruteForce::In::Message::getVariable(const char(&variable_name)[N]) const {
+#ifndef NO_SEATBELTS
     // Ensure that the message is within bounds.
-    if (index < this->_parent.len) {
-        // get the value from curve using the stored hashes and message index.
-        T value = Curve::getVariable<T>(variable_name, this->_parent.combined_hash, index);
-        return value;
-    } else {
-        // @todo - Improved error handling of out of bounds message access? Return a default value or assert?
+    if (index >= this->_parent.len) {
+        DTHROW("Brute force message index exceeds messagelist length, unable to get variable '%s'.\n", variable_name);
         return static_cast<T>(0);
     }
+#endif
+    // get the value from curve using the stored hashes and message index.
+    T value = Curve::getVariable<T>(variable_name, this->_parent.combined_hash, index);
+    return value;
 }
 
 /**
