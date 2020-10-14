@@ -515,6 +515,13 @@ endmacro()
 # Based on https://cmake.org/pipermail/cmake/2018-October/068388.html
 #-----------------------------------------------------------------------
 macro(GET_COMMIT_HASH)
+# If git changes, we reconfigure
+set_property(
+  DIRECTORY 
+  APPEND 
+  PROPERTY CMAKE_CONFIGURE_DEPENDS 
+  "${FLAMEGPU_ROOT}/.git/index"
+)
 set(SHORT_HASH_FILE ${CMAKE_CURRENT_BINARY_DIR}/short_hash.txt)
 find_package(Git)
 if(Git_FOUND)
@@ -532,43 +539,21 @@ else()
     set(SHORT_HASH "GitHash") # Placeholder, though its unlikely to be required
 endif()
 
-# If running in script mode (this runs on every build)
-if (CMAKE_SCRIPT_MODE_FILE)
-    if (EXISTS "${SHORT_HASH_FILE}")
-        file(READ ${SHORT_HASH_FILE} READ_IN_SHORT_HASH)
-    else()
-        set(READ_IN_SHORT_HASH "")
-    endif()
+file(WRITE ${SHORT_HASH_FILE} ${SHORT_HASH})
+# Also create version.h
+configure_file(${FLAMEGPU_ROOT}/cmake/version.h ${FLAMEGPU_ROOT}/include/flamegpu/version.h)
 
-    if (NOT ("${READ_IN_SHORT_HASH}" STREQUAL "${SHORT_HASH}"))
-        message(STATUS "Short hash is out of date")
-        # This will update short_hash.txt, causing cmake to reconfigure
-        file(WRITE ${SHORT_HASH_FILE} ${SHORT_HASH})
-    endif()
-
-# Else running as part of cmake configure
-else()
-    file(WRITE ${SHORT_HASH_FILE} ${SHORT_HASH})
-    # Also create version.h
-    configure_file(${FLAMEGPU_ROOT}/cmake/version.h ${FLAMEGPU_ROOT}/include/flamegpu/version.h)
-
-    # The trick here is to make sure short_hash.txt is listed as a byproduct
-    add_custom_target(
-        git_short_hash
-        BYPRODUCTS
-            ${SHORT_HASH_FILE}
-        COMMAND
-            ${CMAKE_COMMAND}
-            "-DSHORT_HASH_FILE=${SHORT_HASH_FILE}"
-            "-P" "${CMAKE_CURRENT_LIST_FILE}"
-        COMMENT
-            "Re-checking short hash..."
-        VERBATIM
-        USES_TERMINAL)
-
-    # This configure_file makes cmake reconfigure dependent on short_hash.txt
-    configure_file(${SHORT_HASH_FILE} ${SHORT_HASH_FILE}.junk COPYONLY)
-
-    message(STATUS "Short Hash: ${SHORT_HASH}")
-endif()
+# The trick here is to make sure short_hash.txt is listed as a byproduct
+add_custom_target(
+    git_short_hash
+    BYPRODUCTS
+        ${SHORT_HASH_FILE}
+    COMMAND
+        ${CMAKE_COMMAND}
+        "-DSHORT_HASH_FILE=${SHORT_HASH_FILE}"
+        "-P" "${CMAKE_CURRENT_LIST_FILE}"
+    COMMENT
+        "Re-checking short hash..."
+    VERBATIM
+    USES_TERMINAL)
 endmacro()
