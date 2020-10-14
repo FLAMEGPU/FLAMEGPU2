@@ -4,9 +4,6 @@
 #include <device_launch_parameters.h>
 #include <iostream>
 #include <fstream>
-
-#include <iostream>
-#include <fstream>
 #include <string>
 // If MSVC earlier than VS 2019
 #if defined(_MSC_VER) && _MSC_VER < 1920
