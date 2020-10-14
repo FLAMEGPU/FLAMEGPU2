@@ -3,19 +3,17 @@
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 
-// If earlier than VS 2019
+// If MSVC earlier than VS 2019
 #if defined(_MSC_VER) && _MSC_VER < 1920
 #include <filesystem>
 using std::tr2::sys::exists;
 using std::tr2::sys::path;
-using std::tr2::sys::absolute;
 #else
 // VS2019 requires this macro, as building pre c++17 cant use std::filesystem
 #define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
 #include <experimental/filesystem>
 using std::experimental::filesystem::v1::exists;
 using std::experimental::filesystem::v1::path;
-using std::experimental::filesystem::v1::absolute;
 #endif
 
 #include "flamegpu/gpu/CUDAFatAgent.h"

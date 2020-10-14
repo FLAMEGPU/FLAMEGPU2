@@ -127,6 +127,11 @@ if(Jitify_FOUND)
     set(FLAMEGPU_DEPENDENCY_INCLUDE_DIRECTORIES ${FLAMEGPU_DEPENDENCY_INCLUDE_DIRECTORIES} "${Jitify_INCLUDE_DIRS}")
 endif()
 
+# If gcc, need to add linker flag for std::experimental::filesystem pre c++17
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    set(FLAMEGPU_DEPENDENCY_LINK_LIBRARIES ${FLAMEGPU_DEPENDENCY_LINK_LIBRARIES} "-lstdc++fs")
+endif()
+
 # Logging for jitify compilation
 set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -DJITIFY_PRINT_LOG")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DJITIFY_PRINT_LOG")
