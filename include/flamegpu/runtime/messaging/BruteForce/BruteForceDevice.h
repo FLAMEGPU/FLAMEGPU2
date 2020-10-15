@@ -209,7 +209,7 @@ __device__ T MsgBruteForce::In::Message::getVariable(const char(&variable_name)[
     }
 #endif
     // get the value from curve using the stored hashes and message index.
-    T value = Curve::getVariable_ldg<T>(variable_name, this->_parent.combined_hash, index);
+    T value = Curve::getMessageVariable_ldg<T>(variable_name, this->_parent.combined_hash, index);
     return value;
 }
 
@@ -228,7 +228,7 @@ __device__ void MsgBruteForce::Out::setVariable(const char(&variable_name)[N], T
     // Todo: checking if the output message type is single or optional?  (d_message_type)
 
     // set the variable using curve
-    Curve::setVariable<T>(variable_name, combined_hash, value, index);
+    Curve::setMessageVariable<T>(variable_name, combined_hash, value, index);
 
     // Set scan flag incase the message is optional
     this->scan_flag[index] = 1;

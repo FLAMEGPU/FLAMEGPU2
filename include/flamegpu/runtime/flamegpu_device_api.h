@@ -244,7 +244,7 @@ __device__ T FLAMEGPU_READ_ONLY_DEVICE_API::getVariable(const char(&variable_nam
     unsigned int index =  (blockDim.x * blockIdx.x) + threadIdx.x;
 
     // get the value from curve
-    T value = Curve::getVariable<T>(variable_name, agent_func_name_hash , index);
+    T value = Curve::getAgentVariable<T>(variable_name, agent_func_name_hash , index);
 
     // return the variable from curve
     return value;
@@ -264,7 +264,7 @@ __device__ void FLAMEGPU_DEVICE_API<MsgIn, MsgOut>::setVariable(const char(&vari
     // simple indexing assumes index is the thread number (this may change later)
     unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
     // set the variable using curve
-    Curve::setVariable<T>(variable_name, agent_func_name_hash,  value, index);
+    Curve::setAgentVariable<T>(variable_name, agent_func_name_hash,  value, index);
 }
 /**
  * \brief Gets an agent memory value
@@ -276,7 +276,7 @@ __device__ T FLAMEGPU_READ_ONLY_DEVICE_API::getVariable(const char(&variable_nam
     unsigned int index =  (blockDim.x * blockIdx.x) + threadIdx.x;
 
     // get the value from curve
-    T value = Curve::getArrayVariable<T, N>(variable_name, agent_func_name_hash , index, array_index);
+    T value = Curve::getAgentArrayVariable<T, N>(variable_name, agent_func_name_hash , index, array_index);
 
     // return the variable from curve
     return value;
@@ -297,7 +297,7 @@ __device__ void FLAMEGPU_DEVICE_API<MsgIn, MsgOut>::setVariable(const char(&vari
     unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
 
     // set the variable using curve
-    Curve::setArrayVariable<T, N>(variable_name , agent_func_name_hash,  value, index, array_index);
+    Curve::setAgentArrayVariable<T, N>(variable_name , agent_func_name_hash,  value, index, array_index);
 }
 
 template<typename MsgIn, typename MsgOut>
@@ -311,7 +311,7 @@ __device__ void FLAMEGPU_DEVICE_API<MsgIn, MsgOut>::AgentOut::setVariable(const 
         unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
 
         // set the variable using curve
-        Curve::setVariable<T>(variable_name, agent_output_hash, value, index);
+        Curve::setNewAgentVariable<T>(variable_name, agent_output_hash, value, index);
 
         // Mark scan flag
         this->scan_flag[index] = 1;
@@ -328,7 +328,7 @@ __device__ void FLAMEGPU_DEVICE_API<MsgIn, MsgOut>::AgentOut::setVariable(const 
         unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
 
         // set the variable using curve
-        Curve::setArrayVariable<T, N>(variable_name, agent_output_hash, value, index, array_index);
+        Curve::setNewAgentArrayVariable<T, N>(variable_name, agent_output_hash, value, index, array_index);
 
         // Mark scan flag
         this->scan_flag[index] = 1;

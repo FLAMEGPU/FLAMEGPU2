@@ -180,29 +180,29 @@ class Curve {
      */
     template <typename T, unsigned int N>
     __device__ __forceinline__ static T getArrayVariableByHash(const VariableHash variable_hash, unsigned int agent_index, unsigned int array_index);
-    /** @brief Template device function for getting a single typed value from a constant string variable name
-     *     Returns a single value from a constant string expression using the given index position
-     *  @param variableName A constant string variable name which must have been registered as a cuRVE variable.
-     *  @param index The index of the variable in the named variable vector
-     *  @return T A value of given typr at the given index for the variable with the provided hash. Will return 0 if an error is raised.
+    template <typename T, unsigned int N>
+    __device__ __forceinline__ static T getArrayVariableByHash_ldg(const VariableHash variable_hash, unsigned int agent_index, unsigned int array_index);
+    /**
+     * These methods all forward to getVariable()
+     * This allows RTC to selectively remove a branch
      */
     template <typename T, unsigned int N>
-    __device__ __forceinline__ static T getVariable(const char(&variableName)[N], VariableHash namespace_hash, unsigned int index);
+    __device__ __forceinline__ static T getAgentVariable(const char(&variableName)[N], VariableHash namespace_hash, unsigned int index);
     template <typename T, unsigned int N>
-    __device__ __forceinline__ static T getVariable_ldg(const char(&variableName)[N], VariableHash namespace_hash, unsigned int index);
+    __device__ __forceinline__ static T getMessageVariable(const char(&variableName)[N], VariableHash namespace_hash, unsigned int index);
+    template <typename T, unsigned int N>
+    __device__ __forceinline__ static T getAgentVariable_ldg(const char(&variableName)[N], VariableHash namespace_hash, unsigned int index);
+    template <typename T, unsigned int N>
+    __device__ __forceinline__ static T getMessageVariable_ldg(const char(&variableName)[N], VariableHash namespace_hash, unsigned int index);
     /**
-     * Returns a value from a position of a variable array
-     * @tparam T Type of the variable array
-     * @tparam N length of the variable array
-     * @tparam M This is set implicitly, can be ignored
-     * @param variableName Name of the variable
-     * @param namespace_hash Curve hash of the agentfn or similar
-     * @param variable_index Index of the agent or similar
-     * @param array_index Index within the variable array
-     * @note Returns 0 on failure
+     * These methods all forward to getArrayVariable()
+     * This allows RTC to selectively remove a branch
+     * Note: Currently messages do not support array variables
      */
     template <typename T, unsigned int N, unsigned int M>
-    __device__ __forceinline__ static T getArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, unsigned int variable_index, unsigned int array_index);
+    __device__ __forceinline__ static T getAgentArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, unsigned int variable_index, unsigned int array_index);
+    template <typename T, unsigned int N, unsigned int M>
+    __device__ __forceinline__ static T getAgentArrayVariable_ldg(const char(&variableName)[M], VariableHash namespace_hash, unsigned int variable_index, unsigned int array_index);
     /** @brief Device function for setting a single typed value from a VariableHash
      *     Sets a single value from a variableHash using the given index position.
      *  @param variable_hash A cuRVE variable string hash from VariableHash.
@@ -217,28 +217,25 @@ class Curve {
      */
     template <typename T, unsigned int N>
     __device__ __forceinline__ static void setArrayVariableByHash(const VariableHash variable_hash, T value, unsigned int agent_index, unsigned int array_index);
-    /** @brief Device template function for getting a setting a single typed value from a constant string variable name
-     *     Returns a single value from a constant string expression using the given index position
-     *  @param variableName A constant string variable name which must have been registered as a curve variable.
-     *  @param index The index of the variable in the named variable vector
-     *  @param value The typed value to set at the given index.
+    /**
+     * These methods all forward to setArrayVariable()
+     * This allows RTC to selectively remove a branch
      */
     template <typename T, unsigned int N>
-    __device__ __forceinline__ static void setVariable(const char(&variableName)[N], VariableHash namespace_hash, T variable, unsigned int index);
+    __device__ __forceinline__ static void setAgentVariable(const char(&variableName)[N], VariableHash namespace_hash, T variable, unsigned int index);
+    template <typename T, unsigned int N>
+    __device__ __forceinline__ static void setMessageVariable(const char(&variableName)[N], VariableHash namespace_hash, T variable, unsigned int index);
+    template <typename T, unsigned int N>
+    __device__ __forceinline__ static void setNewAgentVariable(const char(&variableName)[N], VariableHash namespace_hash, T variable, unsigned int index);
     /**
-     * Stores a value at a position of a variable array
-     * @tparam T Type of the variable array
-     * @tparam N length of the variable array
-     * @tparam M This is set implicitly, can be ignored
-     * @param variableName Name of the variable
-     * @param namespace_hash Curve hash of the agentfn or similar
-     * @param variable The value to store
-     * @param variable_index Index of the agent or similar
-     * @param array_index Index within the variable array
-     * @note Returns 0 on failure
+     * These methods all forward to setArrayVariable()
+     * This allows RTC to selectively remove a branch
+     * Note: Currently messages do not support array variables
      */
     template <typename T, unsigned int N, unsigned int M>
-    __device__ __forceinline__ static void setArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, T variable, unsigned int variable_index, unsigned int array_index);
+    __device__ __forceinline__ static void setAgentArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, T variable, unsigned int variable_index, unsigned int array_index);
+    template <typename T, unsigned int N, unsigned int M>
+    __device__ __forceinline__ static void setNewAgentArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, T variable, unsigned int variable_index, unsigned int array_index);
 
     /* ERROR CHECKING API FUNCTIONS */
 
@@ -299,6 +296,53 @@ class Curve {
     static const VariableHash DELETED_FLAG = 1;
 
  private:
+    /** @brief Device template function for getting a setting a single typed value from a constant string variable name
+     *     Returns a single value from a constant string expression using the given index position
+     *  @param variableName A constant string variable name which must have been registered as a curve variable.
+     *  @param index The index of the variable in the named variable vector
+     *  @param value The typed value to set at the given index.
+     */
+    template <typename T, unsigned int N>
+    __device__ __forceinline__ static void setVariable(const char(&variableName)[N], VariableHash namespace_hash, T variable, unsigned int index);
+    /** @brief Template device function for getting a single typed value from a constant string variable name
+     *     Returns a single value from a constant string expression using the given index position
+     *  @param variableName A constant string variable name which must have been registered as a cuRVE variable.
+     *  @param index The index of the variable in the named variable vector
+     *  @return T A value of given typr at the given index for the variable with the provided hash. Will return 0 if an error is raised.
+     */
+    template <typename T, unsigned int N>
+    __device__ __forceinline__ static T getVariable(const char(&variableName)[N], VariableHash namespace_hash, unsigned int index);
+    template <typename T, unsigned int N>
+    __device__ __forceinline__ static T getVariable_ldg(const char(&variableName)[N], VariableHash namespace_hash, unsigned int index);
+    /**
+     * Returns a value from a position of a variable array
+     * @tparam T Type of the variable array
+     * @tparam N length of the variable array
+     * @tparam M This is set implicitly, can be ignored
+     * @param variableName Name of the variable
+     * @param namespace_hash Curve hash of the agentfn or similar
+     * @param variable_index Index of the agent or similar
+     * @param array_index Index within the variable array
+     * @note Returns 0 on failure
+     */
+    template <typename T, unsigned int N, unsigned int M>
+    __device__ __forceinline__ static T getArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, unsigned int variable_index, unsigned int array_index);
+    template <typename T, unsigned int N, unsigned int M>
+    __device__ __forceinline__ static T getArrayVariable_ldg(const char(&variableName)[M], VariableHash namespace_hash, unsigned int variable_index, unsigned int array_index);
+    /**
+     * Stores a value at a position of a variable array
+     * @tparam T Type of the variable array
+     * @tparam N length of the variable array
+     * @tparam M This is set implicitly, can be ignored
+     * @param variableName Name of the variable
+     * @param namespace_hash Curve hash of the agentfn or similar
+     * @param variable The value to store
+     * @param variable_index Index of the agent or similar
+     * @param array_index Index within the variable array
+     * @note Returns 0 on failure
+     */
+    template <typename T, unsigned int N, unsigned int M>
+    __device__ __forceinline__ static void setArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, T variable, unsigned int variable_index, unsigned int array_index);
     VariableHash h_hashes[MAX_VARIABLES];         // Host array of the hash values of registered variables
     void* h_d_variables[MAX_VARIABLES];           // Host array of pointer to device memory addresses for variable storage
     int    h_states[MAX_VARIABLES];               // Host array of the states of registered variables
@@ -536,6 +580,34 @@ __device__ __forceinline__ T Curve::getArrayVariableByHash(const VariableHash va
     return 0;
 }
 template <typename T, unsigned int N>
+__device__ __forceinline__ T Curve::getArrayVariableByHash_ldg(const VariableHash variable_hash, unsigned int agent_index, unsigned int array_index) {
+    // do a check on the size as otherwise the value_ptr may eb out of bounds.
+    const size_t var_size = N * sizeof(T);
+    // error checking
+#ifndef NO_SEATBELTS
+    const size_t size = getVariableSize(variable_hash);
+    if (size != var_size) {
+        curve_internal::d_curve_error = DEVICE_ERROR_UNKNOWN_TYPE;
+        return NULL;
+    }
+#endif
+    const size_t offset = (agent_index * var_size) + (array_index * sizeof(T));
+    // get a pointer to the specific variable by offsetting by the provided index
+    T *value_ptr = reinterpret_cast<T*>(getVariablePtrByHash(variable_hash, offset));
+
+    if (value_ptr)
+        return __ldg(value_ptr);
+    return 0;
+}
+template <typename T, unsigned int N>
+__device__ __forceinline__ T Curve::getAgentVariable(const char (&variableName)[N], VariableHash namespace_hash, unsigned int index) {
+    return getVariable<T>(variableName, namespace_hash, index);
+}
+template <typename T, unsigned int N>
+__device__ __forceinline__ T Curve::getMessageVariable(const char (&variableName)[N], VariableHash namespace_hash, unsigned int index) {
+    return getVariable<T>(variableName, namespace_hash, index);
+}
+template <typename T, unsigned int N>
 __device__ __forceinline__ T Curve::getVariable(const char (&variableName)[N], VariableHash namespace_hash, unsigned int index) {
     VariableHash variable_hash = variableHash(variableName);
 #ifndef NO_SEATBELTS
@@ -551,6 +623,14 @@ __device__ __forceinline__ T Curve::getVariable(const char (&variableName)[N], V
     return getVariableByHash<T>(variable_hash+namespace_hash, index);
 }
 template <typename T, unsigned int N>
+__device__ __forceinline__ T Curve::getAgentVariable_ldg(const char (&variableName)[N], VariableHash namespace_hash, unsigned int index) {
+    return getVariable_ldg<T>(variableName, namespace_hash, index);
+}
+template <typename T, unsigned int N>
+__device__ __forceinline__ T Curve::getMessageVariable_ldg(const char (&variableName)[N], VariableHash namespace_hash, unsigned int index) {
+    return getVariable_ldg<T>(variableName, namespace_hash, index);
+}
+template <typename T, unsigned int N>
 __device__ __forceinline__ T Curve::getVariable_ldg(const char (&variableName)[N], VariableHash namespace_hash, unsigned int index) {
     VariableHash variable_hash = variableHash(variableName);
 #ifndef NO_SEATBELTS
@@ -564,6 +644,10 @@ __device__ __forceinline__ T Curve::getVariable_ldg(const char (&variableName)[N
     }
 #endif
     return getVariableByHash_ldg<T>(variable_hash+namespace_hash, index);
+}
+template <typename T, unsigned int N, unsigned int M>
+__device__ __forceinline__ T Curve::getAgentArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, unsigned int agent_index, unsigned int array_index) {
+    return getArrayVariable<T, N>(variableName, namespace_hash, agent_index, array_index);
 }
 template <typename T, unsigned int N, unsigned int M>
 __device__ __forceinline__ T Curve::getArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, unsigned int agent_index, unsigned int array_index) {
@@ -586,6 +670,32 @@ __device__ __forceinline__ T Curve::getArrayVariable(const char(&variableName)[M
     // Curve stores M * sizeof(T), so this is checked instead
     return getArrayVariableByHash<T, N>(variable_hash + namespace_hash, agent_index, array_index);
 }
+template <typename T, unsigned int N, unsigned int M>
+__device__ __forceinline__ T Curve::getAgentArrayVariable_ldg(const char(&variableName)[M], VariableHash namespace_hash, unsigned int agent_index, unsigned int array_index) {
+    return getArrayVariable_ldg<T, N>(variableName, namespace_hash, agent_index, array_index);
+}
+template <typename T, unsigned int N, unsigned int M>
+__device__ __forceinline__ T Curve::getArrayVariable_ldg(const char(&variableName)[M], VariableHash namespace_hash, unsigned int agent_index, unsigned int array_index) {
+    VariableHash variable_hash = variableHash(variableName);
+#ifndef NO_SEATBELTS
+    {
+        const auto cv = getVariable(variable_hash+namespace_hash);
+        if (cv ==  UNKNOWN_VARIABLE) {
+            DTHROW("Curve variable array with name '%s' was not found.\n", variableName);
+        } else if (curve_internal::d_sizes[cv] != sizeof(T) * N) {
+            DTHROW("Curve variable array with name '%s', type size mismatch %llu != %llu.\n", variableName, curve_internal::d_sizes[cv], sizeof(T) * N);
+        }
+    }
+    if (array_index >= N) {
+        DTHROW("Curve array index %u is out of bounds for variable with name '%s'.\n", array_index, variableName);
+        return 0;
+    }
+#endif
+    // Curve currently doesn't store whether a variable is an array
+    // Curve stores M * sizeof(T), so this is checked instead
+    return getArrayVariableByHash_ldg<T, N>(variable_hash + namespace_hash, agent_index, array_index);
+}
+
 template <typename T>
 __device__ __forceinline__ void Curve::setVariableByHash(const VariableHash variable_hash, T variable, unsigned int index) {
 #ifndef NO_SEATBELTS
@@ -613,6 +723,19 @@ __device__ __forceinline__ void Curve::setArrayVariableByHash(const VariableHash
     T *value_ptr = reinterpret_cast<T*>(getVariablePtrByHash(variable_hash, offset));
     *value_ptr = variable;
 }
+
+template <typename T, unsigned int N>
+__device__ __forceinline__ void Curve::setAgentVariable(const char(&variableName)[N], VariableHash namespace_hash, T variable, unsigned int index) {
+    setVariable<T>(variableName, namespace_hash, variable, index);
+}
+template <typename T, unsigned int N>
+__device__ __forceinline__ void Curve::setMessageVariable(const char(&variableName)[N], VariableHash namespace_hash, T variable, unsigned int index) {
+    setVariable<T>(variableName, namespace_hash, variable, index);
+}
+template <typename T, unsigned int N>
+__device__ __forceinline__ void Curve::setNewAgentVariable(const char(&variableName)[N], VariableHash namespace_hash, T variable, unsigned int index) {
+    setVariable<T>(variableName, namespace_hash, variable, index);
+}
 template <typename T, unsigned int N>
 __device__ __forceinline__ void Curve::setVariable(const char(&variableName)[N], VariableHash namespace_hash, T variable, unsigned int index) {
     VariableHash variable_hash = variableHash(variableName);
@@ -627,6 +750,14 @@ __device__ __forceinline__ void Curve::setVariable(const char(&variableName)[N],
     }
 #endif
     setVariableByHash<T>(variable_hash+namespace_hash, variable, index);
+}
+template <typename T, unsigned int N, unsigned int M>
+__device__ __forceinline__ void Curve::setAgentArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, T variable, unsigned int agent_index, unsigned int array_index) {
+    setArrayVariable<T, N>(variableName, namespace_hash, variable, agent_index, array_index);
+}
+template <typename T, unsigned int N, unsigned int M>
+__device__ __forceinline__ void Curve::setNewAgentArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, T variable, unsigned int agent_index, unsigned int array_index) {
+    setArrayVariable<T, N>(variableName, namespace_hash, variable, agent_index, array_index);
 }
 template <typename T, unsigned int N, unsigned int M>
 __device__ __forceinline__ void Curve::setArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, T variable, unsigned int agent_index, unsigned int array_index) {
