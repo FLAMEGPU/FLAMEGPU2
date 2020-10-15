@@ -293,7 +293,7 @@ __device__ void MsgBucket::Out::setKey(const IntT &key) const {
     }
 #endif
     // set the variables using curve
-    Curve::setVariable<IntT>("_key", combined_hash, key, index);
+    Curve::setMessageVariable<IntT>("_key", combined_hash, key, index);
 
     // Set scan flag incase the message is optional
     this->scan_flag[index] = 1;
@@ -309,7 +309,7 @@ __device__ T MsgBucket::In::Filter::Message::getVariable(const char(&variable_na
     }
 #endif
     // get the value from curve using the stored hashes and message index.
-    T value = Curve::getVariable<T>(variable_name, this->_parent.combined_hash, cell_index);
+    T value = Curve::getMessageVariable<T>(variable_name, this->_parent.combined_hash, cell_index);
     return value;
 }
 

@@ -354,7 +354,7 @@ __device__ T MsgArray::In::Message::getVariable(const char(&variable_name)[N]) c
     }
 #endif
     // get the value from curve using the stored hashes and message index.
-    return Curve::getVariable<T>(variable_name, this->_parent.combined_hash, index);
+    return Curve::getMessageVariable<T>(variable_name, this->_parent.combined_hash, index);
 }
 template<typename T, unsigned int N>
 __device__ T MsgArray::In::Filter::Message::getVariable(const char(&variable_name)[N]) const {
@@ -366,7 +366,7 @@ __device__ T MsgArray::In::Filter::Message::getVariable(const char(&variable_nam
     }
 #endif
     // get the value from curve using the stored hashes and message index.
-    return Curve::getVariable<T>(variable_name, this->_parent.combined_hash, index_1d);
+    return Curve::getMessageVariable<T>(variable_name, this->_parent.combined_hash, index_1d);
 }
 
 template<typename T, unsigned int N>
@@ -377,7 +377,7 @@ __device__ void MsgArray::Out::setVariable(const char(&variable_name)[N], T valu
     unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
 
     // set the variable using curve
-    Curve::setVariable<T>(variable_name, combined_hash, value, index);
+    Curve::setMessageVariable<T>(variable_name, combined_hash, value, index);
 
     // setIndex() sets the optional msg scan flag
 }
@@ -395,7 +395,7 @@ __device__ void MsgArray::Out::setIndex(const size_type &id) const {
 #endif
 
     // set the variable using curve
-    Curve::setVariable<size_type>("___INDEX", combined_hash, id, index);
+    Curve::setMessageVariable<size_type>("___INDEX", combined_hash, id, index);
 
     // Set scan flag incase the message is optional
     this->scan_flag[index] = 1;
