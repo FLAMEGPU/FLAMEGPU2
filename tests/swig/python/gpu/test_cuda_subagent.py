@@ -192,7 +192,7 @@ class TestCUDASubAgent(TestCase):
             # Vars all default init
 
         # Init Model
-        c = pyflamegpu.CUDAAgentModel(m)
+        c = pyflamegpu.CUDASimulation(m)
         c.SimulationConfig().steps = 1;
         c.applyConfig();
         c.setPopulationData(pop);
@@ -259,7 +259,7 @@ class TestCUDASubAgent(TestCase):
             # Other vars all default init
 
         # Init Model
-        c = pyflamegpu.CUDAAgentModel(m)
+        c = pyflamegpu.CUDASimulation(m)
         c.SimulationConfig().steps = 1;
         c.applyConfig();
         c.setPopulationData(pop);
@@ -336,7 +336,7 @@ class TestCUDASubAgent(TestCase):
             # Other vars all default init
 
         # Init Model
-        c = pyflamegpu.CUDAAgentModel(m)
+        c = pyflamegpu.CUDASimulation(m)
         c.SimulationConfig().steps = 1;
         c.applyConfig();
         c.setPopulationData(pop);
@@ -424,7 +424,7 @@ class TestCUDASubAgent(TestCase):
             # Other vars all default init
 
         # Init Model
-        c = pyflamegpu.CUDAAgentModel(m)
+        c = pyflamegpu.CUDASimulation(m)
         c.SimulationConfig().steps = 1;
         c.applyConfig();
         c.setPopulationData(pop);
