@@ -15,9 +15,15 @@ class CurveRTCHost {
  public:
     CurveRTCHost();
 
-    void registerVariable(const char* variableName, unsigned int namespace_hash, const char* type, size_t type_size, unsigned int elements = 1, bool read = true, bool write = true);
+    void registerAgentVariable(const char* variableName, unsigned int namespace_hash, const char* type, size_t type_size, unsigned int elements = 1, bool read = true, bool write = true);
+    void registerMessageOutVariable(const char* variableName, unsigned int namespace_hash, const char* type, size_t type_size, unsigned int elements = 1, bool read = true, bool write = true);
+    void registerMessageInVariable(const char* variableName, unsigned int namespace_hash, const char* type, size_t type_size, unsigned int elements = 1, bool read = true, bool write = true);
+    void registerNewAgentVariable(const char* variableName, unsigned int namespace_hash, const char* type, size_t type_size, unsigned int elements = 1, bool read = true, bool write = true);
 
-    void unregisterVariable(const char* variableName, unsigned int namespace_hash);
+    void unregisterAgentVariable(const char* variableName, unsigned int namespace_hash);
+    void unregisterMessageOutVariable(const char* variableName, unsigned int namespace_hash);
+    void unregisterMessageInVariable(const char* variableName, unsigned int namespace_hash);
+    void unregisterNewAgentVariable(const char* variableName, unsigned int namespace_hash);
 
     void registerEnvVariable(const char* variableName, unsigned int namespace_hash, ptrdiff_t offset, const char* type, size_t type_size, unsigned int elements = 1);
 
@@ -60,9 +66,20 @@ class CurveRTCHost {
     };
 
  private:
+    void initHeaderEnvironment();
+    void initHeaderSetters();
+    void initHeaderGetters();
     std::string header;
     static const char* curve_rtc_dynamic_h_template;
-    std::unordered_map<unsigned int, std::unordered_map<std::string, RTCVariableProperties>> RTCVariables;     // <namespace, <name, RTCVariableProperties>>
+
+    unsigned int agent_namespace = 0;
+    unsigned int messageOut_namespace = 0;
+    unsigned int messageIn_namespace = 0;
+    unsigned int newAgent_namespace = 0;
+    std::unordered_map<std::string, RTCVariableProperties> agent_variables;  // <name, RTCVariableProperties>
+    std::unordered_map<std::string, RTCVariableProperties> messageOut_variables;  // <name, RTCVariableProperties>
+    std::unordered_map<std::string, RTCVariableProperties> messageIn_variables;  // <name, RTCVariableProperties>
+    std::unordered_map<std::string, RTCVariableProperties> newAgent_variables;  // <name, RTCVariableProperties>
     std::unordered_map<unsigned int, std::unordered_map<std::string, RTCEnvVariableProperties>> RTCEnvVariables;     // <namespace, <name, RTCEnvVariableProperties>>
 };
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_CURVE_CURVE_RTC_H_

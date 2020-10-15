@@ -553,7 +553,7 @@ void CUDAAgent::addInstantitateRTCFunction(jitify::JitCache &kernel_cache, const
 
     // set agent function variables in rtc curve
     for (const auto& mmp : func.parent.lock()->variables) {
-        curve_header.registerVariable(mmp.first.c_str(), agent_func_name_hash, mmp.second.type.name(), mmp.second.type_size, mmp.second.elements);
+        curve_header.registerAgentVariable(mmp.first.c_str(), agent_func_name_hash, mmp.second.type.name(), mmp.second.type_size, mmp.second.elements);
     }
 
     // for normal agent function (e.g. not an agent function condition) append messages and agent outputs
@@ -564,7 +564,8 @@ void CUDAAgent::addInstantitateRTCFunction(jitify::JitCache &kernel_cache, const
             Curve::NamespaceHash msg_in_hash = Curve::variableRuntimeHash(im->name.c_str());
             for (auto msg_in_var : im->variables) {
                 // register message variables using combined hash
-                curve_header.registerVariable(msg_in_var.first.c_str(), msg_in_hash + agent_func_name_hash, msg_in_var.second.type.name(), msg_in_var.second.type_size, msg_in_var.second.elements, true, false);
+                curve_header.registerMessageInVariable(msg_in_var.first.c_str(), msg_in_hash + agent_func_name_hash,
+                msg_in_var.second.type.name(), msg_in_var.second.type_size, msg_in_var.second.elements, true, false);
             }
         }
         // Set output message variables in curve
@@ -573,7 +574,8 @@ void CUDAAgent::addInstantitateRTCFunction(jitify::JitCache &kernel_cache, const
             Curve::NamespaceHash msg_out_hash = Curve::variableRuntimeHash(om->name.c_str());
             for (auto msg_out_var : om->variables) {
                 // register message variables using combined hash
-                curve_header.registerVariable(msg_out_var.first.c_str(), msg_out_hash + agent_func_name_hash, msg_out_var.second.type.name(), msg_out_var.second.type_size, msg_out_var.second.elements, false, true);
+                curve_header.registerMessageOutVariable(msg_out_var.first.c_str(), msg_out_hash + agent_func_name_hash,
+                msg_out_var.second.type.name(), msg_out_var.second.type_size, msg_out_var.second.elements, false, true);
             }
         }
         // Set agent output variables in curve
@@ -582,7 +584,8 @@ void CUDAAgent::addInstantitateRTCFunction(jitify::JitCache &kernel_cache, const
             Curve::NamespaceHash agent_out_hash = Curve::variableRuntimeHash("_agent_birth");
             for (auto agent_out_var : ao->variables) {
                 // register message variables using combined hash
-                curve_header.registerVariable(agent_out_var.first.c_str(), agent_out_hash + funcname_hash, agent_out_var.second.type.name(), agent_out_var.second.type_size, agent_out_var.second.elements, false, true);
+                curve_header.registerNewAgentVariable(agent_out_var.first.c_str(), agent_out_hash + funcname_hash,
+                agent_out_var.second.type.name(), agent_out_var.second.type_size, agent_out_var.second.elements, false, true);
             }
         }
     }

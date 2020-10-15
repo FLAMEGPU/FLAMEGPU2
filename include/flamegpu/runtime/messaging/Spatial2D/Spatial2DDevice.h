@@ -265,7 +265,7 @@ __device__ T MsgSpatial2D::In::Filter::Message::getVariable(const char(&variable
     }
 #endif
     // get the value from curve using the stored hashes and message index.
-    T value = Curve::getVariable<T>(variable_name, this->_parent.combined_hash, cell_index);
+    T value = Curve::getMessageVariable<T>(variable_name, this->_parent.combined_hash, cell_index);
     return value;
 }
 
@@ -298,8 +298,8 @@ __device__ inline void MsgSpatial2D::Out::setLocation(const float &x, const floa
     unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;  // + d_message_count;
 
     // set the variables using curve
-    Curve::setVariable<float>("x", combined_hash, x, index);
-    Curve::setVariable<float>("y", combined_hash, y, index);
+    Curve::setMessageVariable<float>("x", combined_hash, x, index);
+    Curve::setMessageVariable<float>("y", combined_hash, y, index);
 
     // Set scan flag incase the message is optional
     this->scan_flag[index] = 1;
