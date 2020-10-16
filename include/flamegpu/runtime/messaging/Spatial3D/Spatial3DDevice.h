@@ -58,22 +58,33 @@ class MsgSpatial3D::In {
                 relative_cell[1] = relative_cell_z;
             }
             /**
+             * False minimal constructor used by iterator::end()
+             */
+            __device__ Message(const Filter &parent)
+                : _parent(parent) { }
+            /**
              * Equality operator
              * Compares all internal member vars for equality
              * @note Does not compare _parent
              */
-            __device__ bool operator==(const Message& rhs) const {
+            __device__ bool operator==(const Message &rhs) const {
                 return this->relative_cell[0] == rhs.relative_cell[0]
                     && this->relative_cell[1] == rhs.relative_cell[1]
                     && this->cell_index_max == rhs.cell_index_max
                     && this->cell_index == rhs.cell_index;
             }
             /**
-             * Inequality operator
-             * Returns inverse of equality operator
-             * @see operator==(const Message&)
+             * This should only be called to compare against end()
+             * It has been modified to check for end of iteration with minimal instructions
+             * Therefore it does not even perform the equality operation
+             * @note Use operator==() if proper equality is required
              */
-            __device__ bool operator!=(const Message& rhs) const { return !(*this == rhs); }
+            __device__ bool operator!=(const Message&) const {
+                // The incoming Message& is end(), so we don't care about that
+                // We only care that the host object has reached end
+                // When the strip number equals 2, it has exceeded the [-1, 1] range
+                return !(this->relative_cell[0] >= 2);
+            }
             /**
              * Updates the message to return variables from the next message in the message list
              * @return Returns itself
@@ -120,6 +131,12 @@ class MsgSpatial3D::In {
                 // Increment to find first message
                 ++_message;
             }
+            /**
+             * False constructor
+             * Only used by Filter::end(), creates a null objct
+             */
+            __device__ iterator(const Filter &parent)
+                : _message(parent) { }
             /**
              * Moves to the next message
              * (Prefix increment operator)
@@ -174,8 +191,9 @@ class MsgSpatial3D::In {
          * @note This iterator is the same for all message list subsets
          */
         inline __device__ iterator end(void) const {
-            // Final bin, as the constructor calls increment operator
-            return iterator(*this, 1, 1, 1, 0);
+            // Empty init, because this object is never used
+            // iterator equality doesn't actually check the end object
+            return iterator(*this);
         }
 
      private:

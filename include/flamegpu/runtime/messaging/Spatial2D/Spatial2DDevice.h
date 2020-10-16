@@ -54,7 +54,12 @@ class MsgSpatial2D::In {
                 , cell_index_max(_cell_index_max)
                 , cell_index(_cell_index) {
                 relative_cell = relative_cell_y;
-            }
+            }            
+            /**
+             * False minimal constructor used by iterator::end()
+             */
+            __device__ Message(const Filter &parent)
+                : _parent(parent) { }
             /**
              * Equality operator
              * Compares all internal member vars for equality
@@ -66,11 +71,17 @@ class MsgSpatial2D::In {
                     && this->cell_index == rhs.cell_index;
             }
             /**
-             * Inequality operator
-             * Returns inverse of equality operator
-             * @see operator==(const Message&)
+             * This should only be called to compare against end()
+             * It has been modified to check for end of iteration with minimal instructions
+             * Therefore it does not even perform the equality operation
+             * @note Use operator==() if proper equality is required
              */
-            __device__ bool operator!=(const Message& rhs) const { return !(*this == rhs); }
+            __device__ bool operator!=(const Message& rhs) const {
+                // The incoming Message& is end(), so we don't care about that
+                // We only care that the host object has reached end
+                // When the strip number equals 2, it has exceeded the [-1, 1] range
+                return !(this->relative_cell >= 2);
+            }
             /**
              * Updates the message to return variables from the next message in the message list
              * @return Returns itself
@@ -112,6 +123,12 @@ class MsgSpatial2D::In {
                 // Increment to find first message
                 ++_message;
             }
+            /**
+             * False constructor
+             * Only used by Filter::end(), creates a null objct
+             */
+            __device__ iterator(const Filter &parent)
+                : _message(parent) { }
             /**
              * Moves to the next message
              * (Prefix increment operator)
@@ -165,8 +182,9 @@ class MsgSpatial2D::In {
          * @note This iterator is the same for all message list subsets
          */
         inline __device__ iterator end(void) const {
-            // Final bin, as the constructor calls increment operator
-            return iterator(*this, 1, 1, 0);
+            // Empty init, because this object is never used
+            // iterator equality doesn't actually check the end object
+            return iterator(*this);
         }
 
      private:
