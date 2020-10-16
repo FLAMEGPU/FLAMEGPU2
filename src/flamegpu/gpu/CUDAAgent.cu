@@ -470,8 +470,8 @@ void CUDAAgent::addInstantitateRTCFunction(jitify::JitCache &kernel_cache, const
             // Read the first line
             std::string line;
             if (getline(vFile, line)) {
-                // If characters 3-9 match programatic hash we have success, else fail
-                fileHash = line.substr(3, 7);
+                // If characters 3-onwards match programatic hash we have success, else fail
+                fileHash = line.substr(3, std::string::npos);
             }
             vFile.close();
         }
