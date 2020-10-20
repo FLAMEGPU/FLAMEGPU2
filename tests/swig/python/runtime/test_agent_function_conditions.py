@@ -61,7 +61,7 @@ class TestAgentFunctionConditions(TestCase):
         m = pyflamegpu.ModelDescription(MODEL_NAME)
         a = m.newAgent(AGENT_NAME)
         a.newVariableInt("x")
-        a.newVariableIntArray4("y")
+        a.newVariableArrayInt("y", 4)
         a.newState(STATE1)
         a.newState(STATE2)
         a.newState(STATE3)
@@ -82,7 +82,7 @@ class TestAgentFunctionConditions(TestCase):
             ai = pop.getNextInstance(STATE1)
             val = i % 2  # 0, 1, 0, 1, etc
             ai.setVariableInt("x", val)
-            ai.setVariableIntArray4("y", ARRAY_REFERENCE)
+            ai.setVariableArrayInt("y", ARRAY_REFERENCE)
         
         c = pyflamegpu.CUDASimulation(m)
         c.setPopulationData(pop)
@@ -95,14 +95,14 @@ class TestAgentFunctionConditions(TestCase):
         for j in range(pop.getCurrentListSize(STATE2)):
             ai = pop.getInstanceAt(j, STATE2)
             assert ai.getVariableInt("x") == 2
-            test = ai.getVariableIntArray4("y")
+            test = ai.getVariableArrayInt("y")
             assert test == ARRAY_REFERENCE3
         
         # Check val of agents in STATE3 state
         for j in range(pop.getCurrentListSize(STATE3)): 
             ai = pop.getInstanceAt(j, STATE3)
             assert ai.getVariableInt("x") == -1
-            test = ai.getVariableIntArray4("y")
+            test = ai.getVariableArrayInt("y")
             assert test == ARRAY_REFERENCE2
         
     
@@ -113,7 +113,7 @@ class TestAgentFunctionConditions(TestCase):
         m = pyflamegpu.ModelDescription(MODEL_NAME)
         a = m.newAgent(AGENT_NAME)
         a.newVariableInt("x")
-        a.newVariableIntArray4("y")
+        a.newVariableArrayInt("y", 4)
         af1 = a.newRTCFunction(FUNCTION_NAME1, self.NullFn1)
         af1.setRTCFunctionCondition(self.AllFail)
         af2 = a.newRTCFunction(FUNCTION_NAME2, self.NullFn2)

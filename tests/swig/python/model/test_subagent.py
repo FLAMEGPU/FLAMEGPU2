@@ -93,7 +93,7 @@ class SubAgentDescriptionTest(TestCase):
         a = sm.newAgent("a");
         a.newVariableFloat("a_float");
         a.newVariableUInt("a_uint");
-        a.newVariableUIntArray2("a_uint2");
+        a.newVariableArrayUInt("a_uint2", 2);
         a.newVariableFloat("a_float2");
         a.newState("a");
         m = pyflamegpu.ModelDescription("host");
@@ -101,7 +101,7 @@ class SubAgentDescriptionTest(TestCase):
         # Define Model
         ma.newVariableFloat("b_float");
         ma.newVariableUInt("b_uint");
-        ma.newVariableUIntArray2("b_uint2");
+        ma.newVariableArrayUInt("b_uint2", 2);
         ma.newVariableFloat("b_float2");
         ma.newState("b");
         smd = m.newSubModel("sub", sm);

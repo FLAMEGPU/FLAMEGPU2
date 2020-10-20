@@ -108,6 +108,10 @@ class AgentDescription {
     void newVariable(const std::string &variable_name, const std::array<T, N> &default_value = {});
     template<typename T>
     void newVariable(const std::string &variable_name, const T&default_value = 0);
+#ifdef SWIG
+    template<typename T>
+    void newVariableArray(const std::string &variable_name, const ModelData::size_type &length, const std::vector<T>&default_value = {});
+#endif
 
     /**
      * Adds a new (device) function to the agent
@@ -257,7 +261,43 @@ template <typename T>
 void AgentDescription::newVariable(const std::string &variable_name, const T &default_value) {
     newVariable<T, 1>(variable_name, { default_value });
 }
-
+#ifdef SWIG
+template<typename T>
+void AgentDescription::newVariableArray(const std::string& variable_name, const ModelData::size_type& length, const std::vector<T>& default_value) {
+    if (!variable_name.empty() && variable_name[0] == '_') {
+        THROW ReservedName("Agent variable names cannot begin with '_', this is reserved for internal usage, "
+            "in AgentDescription::newVariable().");
+    }
+    std::string lower_variable_name = variable_name;
+    for (auto& c : lower_variable_name)
+        c = static_cast<char>(tolower(c));
+    if (lower_variable_name == "name" || lower_variable_name == "state") {
+        THROW ReservedName("Agent variables cannot be named 'name' or 'state', these are reserved for backwards compatibility reasons, "
+            "in AgentDescription::newVariable().");
+    }
+    if (length == 0) {
+        THROW InvalidAgentVar("Agent variable arrays must have a length greater than 0."
+            "in AgentDescription::newVariable().");
+    }
+    if (default_value.size() && default_value.size() != length) {
+        THROW InvalidAgentVar("Agent variable array length specified as %d, but default value provided with %llu elements, "
+            "in AgentDescription::newVariable().",
+            length, static_cast<unsigned int>(default_value.size()));
+    }
+    if (agent->variables.find(variable_name) == agent->variables.end()) {
+        if (!default_value.size()) {
+            std::vector<T> temp(static_cast<size_t>(length));
+            agent->variables.emplace(variable_name, Variable(length, temp));
+        } else {
+            agent->variables.emplace(variable_name, Variable(length, default_value));
+        }
+        return;
+    }
+    THROW InvalidAgentVar("Agent ('%s') already contains variable '%s', "
+        "in AgentDescription::newVariable().",
+        agent->name.c_str(), variable_name.c_str());
+}
+#endif
 // Found in "flamegpu/model/AgentFunctionDescription.h"
 // template<typename AgentFunction>
 // AgentFunctionDescription &AgentDescription::newFunction(const std::string &function_name, AgentFunction)

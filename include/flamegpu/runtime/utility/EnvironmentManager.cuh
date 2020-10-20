@@ -15,6 +15,7 @@
 #include <utility>
 #include <typeindex>
 #include <set>
+#include <vector>
 
 #include "flamegpu/exception/FGPUException.h"
 #include "flamegpu/gpu/CUDAErrorChecking.h"
@@ -306,6 +307,19 @@ class EnvironmentManager {
      */
     template<typename T, size_type N>
     std::array<T, N> set(const unsigned int &instance_id, const std::string &var_name, const std::array<T, N> &value);
+#ifdef SWIG
+    /**
+     * Sets an environment property array
+     * @param name name used for accessing the property array
+     * @param value value to set the property array
+     * @tparam T Type of the environmental property array to be created
+     * @return Returns the previous value
+     * @throws InvalidEnvProperty If a property of the name does not exist
+     * @throws ReadOnlyEnvProperty If the named property is marked as const
+     */
+    template<typename T>
+    std::vector<T> setArray(const NamePair &name, const std::vector<T> &value);
+#endif
     /**
      * Sets an element of an environment property array
      * @param name name used for accessing the property array
@@ -380,6 +394,17 @@ class EnvironmentManager {
      */
     template<typename T>
     T get(const NamePair &name, const size_type &index);
+#ifdef SWIG
+    /**
+     * Convenience method: Gets an environment property array
+     * @param name name used for accessing the property array
+     * @tparam T Type of the environmental property array to be created
+     * @throws InvalidEnvProperty If a property array of the name does not exist
+     * @see get(const NamePair &)
+     */
+    template<typename T>
+    std::vector<T> getArray(const NamePair& name);
+#endif
     /**
      * Convenience method: Gets an element of an environment property array
      * @param instance_id instance_id of the CUDASimulation instance the property is attached to
@@ -814,6 +839,51 @@ template<typename T, EnvironmentManager::size_type N>
 std::array<T, N> EnvironmentManager::set(const unsigned int &instance_id, const std::string &var_name, const std::array<T, N> &value) {
     return set<T, N>(toName(instance_id, var_name), value);
 }
+#ifdef SWIG
+template<typename T>
+std::vector<T> EnvironmentManager::setArray(const NamePair& name, const std::vector<T>& value) {
+    const std::type_index typ_id = type(name);
+    if (typ_id != std::type_index(typeid(T))) {
+        THROW InvalidEnvPropertyType("Environmental property array ('%u:%s') type (%s) does not match template argument T (%s), "
+            "in EnvironmentManager::set().",
+            name.first, name.second.c_str(), typ_id.name(), typeid(T).name());
+    }
+    if (isConst(name)) {
+        THROW ReadOnlyEnvProperty("Environmental property array ('%u:%s') is marked as const and cannot be changed, "
+            "in EnvironmentManager::set().",
+            name.first, name.second.c_str());
+    }
+    const size_type array_len = length(name);
+    if (array_len != value.size()) {
+        THROW OutOfBoundsException("Length of named environmental property array (%u) does not match length of provided array (%llu)! "
+            "in EnvironmentManager::set().",
+            array_len, value.size());
+    }
+    // Find property offset
+    ptrdiff_t buffOffset = 0;
+    const auto a = properties.find(name);
+    if (a != properties.end()) {
+        buffOffset = a->second.offset;
+    } else {
+        buffOffset = properties.at(mapped_properties.at(name).masterProp).offset;
+    }
+    // Copy old data to return
+    std::vector<T> rtn(value.size());
+    if (a != properties.end()) {
+        memcpy(rtn.data(), reinterpret_cast<T*>(hc_buffer + buffOffset), array_len * sizeof(T));
+    } else {
+        memcpy(rtn.data(), reinterpret_cast<T*>(hc_buffer + buffOffset), array_len * sizeof(T));
+    }
+    // Store data
+    memcpy(hc_buffer + buffOffset, value.data(), value.size() * sizeof(T));
+    // Do rtc too
+    updateRTCValue(name);
+    // Set device update flag
+    setDeviceRequiresUpdateFlag(name.first);
+
+    return rtn;
+}
+#endif
 template<typename T>
 T EnvironmentManager::set(const NamePair &name, const size_type &index, const T &value) {
     const std::type_index typ_id = type(name);
@@ -939,6 +1009,31 @@ T EnvironmentManager::get(const NamePair &name, const size_type &index) {
         return *reinterpret_cast<T*>(hc_buffer + a->second.offset + index * sizeof(T));
     return *reinterpret_cast<T*>(hc_buffer + properties.at(mapped_properties.at(name).masterProp).offset + index * sizeof(T));
 }
+#ifdef SWIG
+template<typename T>
+std::vector<T> EnvironmentManager::getArray(const NamePair& name) {
+    // Limited to Arithmetic types
+    // Compound types would allow host pointers inside structs to be passed
+    static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value,
+        "Only arithmetic types can be used as environmental properties");
+    const std::type_index typ_id = type(name);
+    if (typ_id != std::type_index(typeid(T))) {
+        THROW InvalidEnvPropertyType("Environmental property array ('%u:%s') type (%s) does not match template argument T (%s), "
+            "in EnvironmentManager::get().",
+            name.first, name.second.c_str(), typ_id.name(), typeid(T).name());
+    }
+    const size_type array_len = length(name);
+    // Copy old data to return
+    std::vector<T> rtn(static_cast<size_t>(array_len));
+    const auto a = properties.find(name);
+    if (a != properties.end()) {
+        memcpy(rtn.data(), reinterpret_cast<T*>(hc_buffer + a->second.offset), array_len * sizeof(T));
+    } else {
+        memcpy(rtn.data(), reinterpret_cast<T*>(hc_buffer + properties.at(mapped_properties.at(name).masterProp).offset), array_len * sizeof(T));
+    }
+    return rtn;
+}
+#endif
 template<typename T>
 T EnvironmentManager::get(const unsigned int &instance_id, const std::string &var_name, const size_type &index) {
     return get<T>(toName(instance_id, var_name), index);

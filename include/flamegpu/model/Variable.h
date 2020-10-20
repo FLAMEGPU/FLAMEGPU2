@@ -7,6 +7,7 @@
 #include <cassert>
 #include <string>
 #include <cstring>
+#include <vector>
 
 #include "flamegpu/pop/MemoryVector.h"
 
@@ -43,6 +44,21 @@ struct Variable {
         , memory_vector(new MemoryVector<T>(N))
         , default_value(malloc(sizeof(T) * N)) {
         assert(N > 0);  // This should be enforced with static_assert where Variable's are defined, see MessageDescription::newVariable()
+        // Limited to Arithmetic types
+        // Compound types would allow host pointers inside structs to be passed
+        static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value,
+            "Only arithmetic types can be used");
+        memcpy(default_value, _default_value.data(), sizeof(T) * N);
+    }
+    template<typename T>
+    explicit Variable(const unsigned int &N, const std::vector<T> &_default_value)
+        : type(typeid(T))
+        , type_size(sizeof(T))
+        , elements(N)
+        , memory_vector(new MemoryVector<T>(N))
+        , default_value(malloc(sizeof(T) * N)) {
+        assert(N > 0);  // This should be enforced with static_assert where Variable's are defined, see MessageDescription::newVariable()
+        assert(N  ==  _default_value.size());  // This should be enforced where variables are defined
         // Limited to Arithmetic types
         // Compound types would allow host pointers inside structs to be passed
         static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value,

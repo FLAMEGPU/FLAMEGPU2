@@ -89,7 +89,7 @@ class ArrayVarHostBirth(pyflamegpu.HostFunctionCallback):
         for i in range(AGENT_COUNT): 
             a = FLAMEGPU.newAgent("agent_name")
             a.setVariableUInt("id", i)
-            a.setVariableIntArray4("array_var",  (2 + i, 4 + i, 8 + i, 16 + i) )
+            a.setVariableArrayInt("array_var", (2 + i, 4 + i, 8 + i, 16 + i) )
             a.setVariableInt("array_var2", 0, 3 + i)
             a.setVariableInt("array_var2", 1, 5 + i)
             a.setVariableInt("array_var2", 2, 9 + i)
@@ -105,14 +105,14 @@ class ArrayVarHostBirthSetGet(pyflamegpu.HostFunctionCallback):
             a = FLAMEGPU.newAgent("agent_name")
             a.setVariableUInt("id", i)
             # Set
-            a.setVariableIntArray4("array_var",  (2 + i, 4 + i, 8 + i, 16 + i) )
+            a.setVariableArrayInt("array_var", (2 + i, 4 + i, 8 + i, 16 + i) )
             a.setVariableInt("array_var2", 0, 3 + i)
             a.setVariableInt("array_var2", 1, 5 + i)
             a.setVariableInt("array_var2", 2, 9 + i)
             a.setVariableInt("array_var2", 3, 17 + i)
             a.setVariableFloat("y", 14.0 + i)
             # GetSet
-            a.setVariableIntArray4("array_var", a.getVariableIntArray4("array_var"))
+            a.setVariableArrayInt("array_var", a.getVariableArrayInt("array_var"))
             a.setVariableInt("array_var2", 0, a.getVariableInt("array_var2", 0))
             a.setVariableInt("array_var2", 1, a.getVariableInt("array_var2", 1))
             a.setVariableInt("array_var2", 2, a.getVariableInt("array_var2", 2))
@@ -132,7 +132,7 @@ class ArrayVarHostBirth_LenWrong(pyflamegpu.HostFunctionCallback):
         super().__init__()
 
     def run(self, FLAMEGPU):
-        FLAMEGPU.newAgent("agent_name").setVariableIntArray8("array_var", [0]*8)
+        FLAMEGPU.newAgent("agent_name").setVariableArrayInt("array_var", [0]*8)
         
 class ArrayVarHostBirth_LenWrong2(pyflamegpu.HostFunctionCallback):
     def __init__(self):
@@ -146,7 +146,7 @@ class ArrayVarHostBirth_TypeWrong(pyflamegpu.HostFunctionCallback):
         super().__init__()
 
     def run(self, FLAMEGPU):
-        FLAMEGPU.newAgent("agent_name").setVariableFloatArray4("array_var", [0]*4)
+        FLAMEGPU.newAgent("agent_name").setVariableArrayFloat("array_var", [0]*4)
         
 class ArrayVarHostBirth_TypeWrong2(pyflamegpu.HostFunctionCallback):
     def __init__(self):
@@ -160,7 +160,7 @@ class ArrayVarHostBirth_NameWrong(pyflamegpu.HostFunctionCallback):
         super().__init__()
 
     def run(self, FLAMEGPU):
-        FLAMEGPU.newAgent("agent_name").setVariableIntArray4("array_varAAAAAA", [0]*4)
+        FLAMEGPU.newAgent("agent_name").setVariableArrayInt("array_varAAAAAA", [0]*4)
         
 class ArrayVarHostBirth_NameWrong2(pyflamegpu.HostFunctionCallback):
     def __init__(self):
@@ -195,7 +195,7 @@ class reserved_name_step_array(pyflamegpu.HostFunctionCallback):
         super().__init__()
 
     def run(self, FLAMEGPU):
-        FLAMEGPU.newAgent("agent_name").setVariableIntArray3("_", [0]*3)
+        FLAMEGPU.newAgent("agent_name").setVariableArrayInt("_", [0]*3)
 
      
         
@@ -577,8 +577,8 @@ class HostAgentCreationTest(TestCase):
         model = pyflamegpu.ModelDescription("model")
         agent = model.newAgent("agent_name")
         agent.newVariableUInt("id", 0)
-        agent.newVariableIntArray4("array_var")
-        agent.newVariableIntArray4("array_var2")
+        agent.newVariableArrayInt("array_var", 4)
+        agent.newVariableArrayInt("array_var2", 4)
         agent.newVariableFloat("y", 13.0)
         # Run the init function
         func = ArrayVarHostBirth()
@@ -593,8 +593,8 @@ class HostAgentCreationTest(TestCase):
             instance = population.getInstanceAt(i)
             j = instance.getVariableUInt("id")
             # Check array sets are correct
-            array1 = list(instance.getVariableIntArray4("array_var"))
-            array2 = list(instance.getVariableIntArray4("array_var2"))
+            array1 = list(instance.getVariableArrayInt("array_var"))
+            array2 = list(instance.getVariableArrayInt("array_var2"))
             for k in range(4): 
                 array1[k] -= j
                 array2[k] -= j
@@ -610,8 +610,8 @@ class HostAgentCreationTest(TestCase):
         model = pyflamegpu.ModelDescription("model")
         agent = model.newAgent("agent_name")
         agent.newVariableUInt("id", 0)
-        agent.newVariableIntArray4("array_var")
-        agent.newVariableIntArray4("array_var2")
+        agent.newVariableArrayInt("array_var", 4)
+        agent.newVariableArrayInt("array_var2", 4)
         agent.newVariableFloat("y", 13.0)
         # Run the init function
         func = ArrayVarHostBirthSetGet()
@@ -626,8 +626,8 @@ class HostAgentCreationTest(TestCase):
             instance = population.getInstanceAt(i)
             j = instance.getVariableUInt("id")
             # Check array sets are correct
-            array1 = list(instance.getVariableIntArray4("array_var"))
-            array2 = list(instance.getVariableIntArray4("array_var2"))
+            array1 = list(instance.getVariableArrayInt("array_var"))
+            array2 = list(instance.getVariableArrayInt("array_var2"))
             for k in range(4): 
                 array1[k] -= j
                 array2[k] -= j
@@ -643,8 +643,8 @@ class HostAgentCreationTest(TestCase):
         model = pyflamegpu.ModelDescription("model")
         agent = model.newAgent("agent_name")
         agent.newVariableUInt("id", 0)
-        agent.newVariableIntArray4("array_var", TEST_REFERENCE)
-        agent.newVariableIntArray4("array_var2", TEST_REFERENCE2)
+        agent.newVariableArrayInt("array_var", 4, TEST_REFERENCE)
+        agent.newVariableArrayInt("array_var2", 4, TEST_REFERENCE2)
         agent.newVariableFloat("y", 13.0)
         # Run the init function
         func = ArrayVarHostBirth_DefaultWorks()
@@ -659,8 +659,8 @@ class HostAgentCreationTest(TestCase):
             instance = population.getInstanceAt(i)
             j = instance.getVariableUInt("id")
             # Check array sets are correct
-            array1 = instance.getVariableIntArray4("array_var")
-            array2 = instance.getVariableIntArray4("array_var2")
+            array1 = instance.getVariableArrayInt("array_var")
+            array2 = instance.getVariableArrayInt("array_var2")
             assert instance.getVariableUInt("id") == 0
             assert array1 == TEST_REFERENCE
             assert array2 == TEST_REFERENCE2
@@ -670,7 +670,7 @@ class HostAgentCreationTest(TestCase):
     def test_host_agent_birth_array_len_wrong(self): 
         model = pyflamegpu.ModelDescription("model")
         agent = model.newAgent("agent_name")
-        agent.newVariableIntArray4("array_var")
+        agent.newVariableArrayInt("array_var", 4)
         # Run the init function
         func = ArrayVarHostBirth_LenWrong()
         model.addStepFunctionCallback(func)
@@ -682,7 +682,7 @@ class HostAgentCreationTest(TestCase):
     def test_host_agent_birth_array_len_wrong2(self): 
         model = pyflamegpu.ModelDescription("model")
         agent = model.newAgent("agent_name")
-        agent.newVariableIntArray4("array_var")
+        agent.newVariableArrayInt("array_var", 4)
         # Run the init function
         func = ArrayVarHostBirth_LenWrong2()
         model.addStepFunctionCallback(func)
@@ -718,7 +718,7 @@ class HostAgentCreationTest(TestCase):
     def test_host_agent_birth_array_type_wrong(self): 
         model = pyflamegpu.ModelDescription("model")
         agent = model.newAgent("agent_name")
-        agent.newVariableIntArray4("array_var")
+        agent.newVariableArrayInt("array_var", 4)
         # Run the init function
         func = ArrayVarHostBirth_TypeWrong()
         model.addStepFunctionCallback(func)
@@ -730,7 +730,7 @@ class HostAgentCreationTest(TestCase):
     def test_host_agent_birth_array_type_wrong2(self): 
         model = pyflamegpu.ModelDescription("model")
         agent = model.newAgent("agent_name")
-        agent.newVariableIntArray4("array_var")
+        agent.newVariableArrayInt("array_var", 4)
         # Run the init function
         func = ArrayVarHostBirth_TypeWrong2()
         model.addStepFunctionCallback(func)
@@ -742,8 +742,8 @@ class HostAgentCreationTest(TestCase):
     def test_host_agent_birth_array_name_wrong(self): 
         model = pyflamegpu.ModelDescription("model")
         agent = model.newAgent("agent_name")
-        agent.newVariableIntArray4("array_var")
-        # Run the init function
+        agent.newVariableArrayInt("array_var", 4)
+        # Run the init funcagent.newVariableIntArray4("array_var")tion
         func = ArrayVarHostBirth_NameWrong()
         model.addStepFunctionCallback(func)
         sim = pyflamegpu.CUDASimulation(model)
@@ -754,7 +754,7 @@ class HostAgentCreationTest(TestCase):
     def test_host_agent_birth_array_name_wrong2(self): 
         model = pyflamegpu.ModelDescription("model")
         agent = model.newAgent("agent_name")
-        agent.newVariableIntArray4("array_var")
+        agent.newVariableArrayInt("array_var", 4)
         # Run the init function
         func = ArrayVarHostBirth_NameWrong()
         model.addStepFunctionCallback(func)
@@ -766,7 +766,7 @@ class HostAgentCreationTest(TestCase):
     def test_host_agent_birth_array_not_suitable_set(self): 
         model = pyflamegpu.ModelDescription("model")
         agent = model.newAgent("agent_name")
-        agent.newVariableIntArray4("array_var")
+        agent.newVariableArrayInt("array_var", 4)
         # Run the init function
         func = ArrayVarHostBirth_ArrayNotSuitableSet()
         model.addStepFunctionCallback(func)
@@ -778,7 +778,7 @@ class HostAgentCreationTest(TestCase):
     def test_host_agent_birth_array_not_suitable_get(self): 
         model = pyflamegpu.ModelDescription("model")
         agent = model.newAgent("agent_name")
-        agent.newVariableIntArray4("array_var")
+        agent.newVariableArrayInt("array_var", 4)
         # Run the init function
         func = ArrayVarHostBirth_ArrayNotSuitableGet()
         model.addStepFunctionCallback(func)

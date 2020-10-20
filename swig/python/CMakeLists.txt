@@ -41,6 +41,8 @@ set_source_files_properties(${PYTHON_LIB_TEMP_DIRECTORY}/${PYTHON_MODULE_NAME}/$
 set_property(TARGET ${PYTHON_MODULE_NAME} PROPERTY SWIG_USE_TARGET_INCLUDE_DIRECTORIES ON)
 # needs to have RDC enable for the project
 set_property(TARGET ${PYTHON_MODULE_NAME} PROPERTY CUDA_SEPARABLE_COMPILATION ON)
+# Build with the SWIG pre-processor macro enabled
+set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY COMPILE_DEFINITIONS "SWIG")
 # Suppress warnings during compilation of SWIG generated PYTHON_wrap.cxx
 set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcudafe --diag_suppress=\"declared_but_not_referenced\"")
 # set bigobj property for windows compiler (needed due to the sheer size of the generated swig file: https://www.reddit.com/r/AbsoluteUnits/)

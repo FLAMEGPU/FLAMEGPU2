@@ -6,6 +6,7 @@
 #include <typeinfo>
 #include <typeindex>
 #include <array>
+#include <vector>
 
 #include "flamegpu/exception/FGPUException.h"
 #include "flamegpu/runtime/utility/HostEnvironment.cuh"
@@ -122,6 +123,19 @@ class EnvironmentDescription {
      */
     template<typename T, EnvironmentManager::size_type N>
     void add(const std::string &name, const std::array<T, N> &value, const bool &isConst = false);
+#ifdef SWIG
+    /**
+     * Adds a new environment property array
+     * @param name Name used for accessing the property
+     * @param length Length of the environmental property array to be created
+     * @param value Stored value of the property
+     * @param isConst If set to true, it is not possible to change the value during the simulation
+     * @tparam T Type of the environmental property array to be created
+     * @throws DuplicateEnvProperty If a property of the same name already exists
+     */
+    template<typename T>
+    void addArray(const std::string &name, const EnvironmentManager::size_type &length, const std::vector<T> &value, const bool &isConst = false);
+#endif
     /**
      * Gets an environment property
      * @param name name used for accessing the property
@@ -149,6 +163,17 @@ class EnvironmentDescription {
      */
     template<typename T>
     T get(const std::string &name, const EnvironmentManager::size_type &index) const;
+#ifdef SWIG
+    /**
+     * Gets an environment property array
+     * @param name name used for accessing the property
+     * @tparam T Type of the value to be returned
+     * @throws InvalidEnvProperty If a property of the name does not exist
+     * @throws std::out_of_range
+     */
+    template<typename T>
+    std::vector<T> getArray(const std::string &name) const;
+#endif
     /**
      * Returns whether an environment property is marked as const
      * @param name name used for accessing the property
@@ -189,6 +214,18 @@ class EnvironmentDescription {
      */
     template<typename T>
     T set(const std::string &name, const EnvironmentManager::size_type &index, const T &value);
+#ifdef SWIG
+    /**
+     * Sets an environment property array
+     * @param name name used for accessing the property
+     * @param value value to set the property (vector must be of the correct length)
+     * @tparam T Type of the value to be returned
+     * @return Returns the previous value
+     * @throws InvalidEnvProperty If a property of the name does not exist
+     */
+    template<typename T>
+    std::vector<T> setArray(const std::string &name, const std::vector<T> &value);
+#endif
 
     const std::unordered_map<std::string, PropData> getPropertiesMap() const;
 
@@ -236,6 +273,7 @@ void EnvironmentDescription::add(const std::string &name, const std::array<T, N>
         THROW ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
             "in EnvironmentDescription::add().");
     }
+    static_assert(N > 0, "Environment property arrays must have a length greater than 0.");
     // Limited to Arithmetic types
     // Compound types would allow host pointers inside structs to be passed
     static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value,
@@ -247,7 +285,33 @@ void EnvironmentDescription::add(const std::string &name, const std::array<T, N>
     }
     add(name, reinterpret_cast<const char*>(value.data()), N * sizeof(T), isConst, N, typeid(T));
 }
-
+#ifdef SWIG
+template<typename T>
+void EnvironmentDescription::addArray(const std::string &name, const EnvironmentManager::size_type &N, const std::vector<T> &value, const bool& isConst) {
+    if (!name.empty() && name[0] == '_') {
+        THROW ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
+            "in EnvironmentDescription::addArray().");
+    }
+    if (value.size() != N) {
+        THROW InvalidEnvProperty("Environment property array length does not match the value provided, %u != %llu,"
+            "in EnvironmentDescription::addArray().", N, value.size());
+    }
+    if (N == 0) {
+        THROW InvalidEnvProperty("Environment property arrays must have a length greater than 0."
+            "in EnvironmentDescription::addArray().");
+    }
+    // Limited to Arithmetic types
+    // Compound types would allow host pointers inside structs to be passed
+    static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value,
+        "Only arithmetic types can be used as environmental properties");
+    if (properties.find(name) != properties.end()) {
+        THROW DuplicateEnvProperty("Environmental property with name '%s' already exists, "
+            "in EnvironmentDescription::addArray().",
+            name.c_str());
+    }
+    add(name, reinterpret_cast<const char*>(value.data()), N * sizeof(T), isConst, N, typeid(T));
+}
+#endif
 /**
  * Getters
  */
@@ -322,6 +386,30 @@ T EnvironmentDescription::get(const std::string &name, const EnvironmentManager:
         "in EnvironmentDescription::get().",
         name.c_str());
 }
+#ifdef SWIG
+template<typename T>
+std::vector<T> EnvironmentDescription::getArray(const std::string& name) const {
+    // Limited to Arithmetic types
+    // Compound types would allow host pointers inside structs to be passed
+    static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value,
+        "Only arithmetic types can be used as environmental properties");
+    auto &&i = properties.find(name);
+    if (i != properties.end()) {
+        if (i->second.type != std::type_index(typeid(T))) {
+            THROW InvalidEnvPropertyType("Environmental property array ('%s') type (%s) does not match template argument T (%s), "
+                "in EnvironmentDescription::getArray().",
+                name.c_str(), i->second.type.name(), typeid(T).name());
+        }
+        // Copy old data to return
+        std::vector<T> rtn(i->second.elements);
+        memcpy(rtn.data(), reinterpret_cast<T*>(i->second.data.ptr), i->second.elements * sizeof(T));
+        return rtn;
+    }
+    THROW InvalidEnvProperty("Environmental property with name '%s' does not exist, "
+        "in EnvironmentDescription::getArray().",
+        name.c_str());
+}
+#endif
 
 /**
  * Setters
@@ -379,7 +467,7 @@ std::array<T, N> EnvironmentDescription::set(const std::string &name, const std:
         std::array<T, N> rtn;
         memcpy(rtn.data(), reinterpret_cast<T*>(i->second.data.ptr), N * sizeof(T));
         // Store data
-        memcpy(reinterpret_cast<T*>(i->second.data.ptr), &value, N * sizeof(T));
+        memcpy(reinterpret_cast<T*>(i->second.data.ptr), value.data(), N * sizeof(T));
         return rtn;
     }
     THROW InvalidEnvProperty("Environmental property with name '%s' does not exist, "
@@ -418,4 +506,39 @@ T EnvironmentDescription::set(const std::string &name, const EnvironmentManager:
         "in EnvironmentDescription::set().",
         name.c_str());
 }
+#ifdef SWIG
+template<typename T>
+std::vector<T> EnvironmentDescription::setArray(const std::string& name, const std::vector<T>& value) {
+    if (!name.empty() && name[0] == '_') {
+        THROW ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
+            "in EnvironmentDescription::set().");
+    }
+    // Limited to Arithmetic types
+    // Compound types would allow host pointers inside structs to be passed
+    static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value,
+        "Only arithmetic types can be used as environmental properties");
+    auto &&i = properties.find(name);
+    if (i != properties.end()) {
+        if (i->second.type != std::type_index(typeid(T))) {
+            THROW InvalidEnvPropertyType("Environmental property array ('%s') type (%s) does not match template argument T (%s), "
+                "in EnvironmentDescription::set().",
+                name.c_str(), i->second.type.name(), typeid(T).name());
+        }
+        if (i->second.elements != value.size()) {
+            THROW OutOfBoundsException("Length of named environmental property array (%u) does not match length of provided vector (%llu), "
+                "in EnvironmentDescription::set().",
+                i->second.elements, value.size());
+        }
+        // Copy old data to return
+        std::vector<T> rtn(i->second.elements);
+        memcpy(rtn.data(), reinterpret_cast<T*>(i->second.data.ptr), i->second.elements * sizeof(T));
+        // Store data
+        memcpy(reinterpret_cast<T*>(i->second.data.ptr), value.data(), i->second.elements * sizeof(T));
+        return rtn;
+    }
+    THROW InvalidEnvProperty("Environmental property with name '%s' does not exist, "
+        "in EnvironmentDescription::set().",
+        name.c_str());
+}
+#endif
 #endif  // INCLUDE_FLAMEGPU_MODEL_ENVIRONMENTDESCRIPTION_H_

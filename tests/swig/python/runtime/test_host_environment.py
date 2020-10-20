@@ -38,17 +38,17 @@ class MiniSim():
         self.ed.addUInt64("uint64_", TEST_VALUE)
         self.ed.addFloat("read_only", TEST_VALUE, True)
         
-        self.ed.addFloatArray4("float_a_", MiniSim.make_array())
-        self.ed.addDoubleArray4("double_a_", MiniSim.make_array())
-        self.ed.addInt8Array4("int8_a_", MiniSim.make_array())
-        self.ed.addUInt8Array4("uint8_a_", MiniSim.make_array())
-        self.ed.addInt16Array4("int16_a_", MiniSim.make_array())
-        self.ed.addUInt16Array4("uint16_a_", MiniSim.make_array())
-        self.ed.addInt32Array4("int32_a_", MiniSim.make_array())
-        self.ed.addUInt32Array4("uint32_a_", MiniSim.make_array())
-        self.ed.addInt64Array4("int64_a_", MiniSim.make_array())
-        self.ed.addUInt64Array4("uint64_a_", MiniSim.make_array())
-        self.ed.addIntArray4("read_only_a", MiniSim.make_array(), True)
+        self.ed.addArrayFloat("float_a_", 4, MiniSim.make_array())
+        self.ed.addArrayDouble("double_a_", 4, MiniSim.make_array())
+        self.ed.addArrayInt8("int8_a_", 4, MiniSim.make_array())
+        self.ed.addArrayUInt8("uint8_a_", 4, MiniSim.make_array())
+        self.ed.addArrayInt16("int16_a_", 4, MiniSim.make_array())
+        self.ed.addArrayUInt16("uint16_a_", 4, MiniSim.make_array())
+        self.ed.addArrayInt32("int32_a_", 4, MiniSim.make_array())
+        self.ed.addArrayUInt32("uint32_a_", 4, MiniSim.make_array())
+        self.ed.addArrayInt64("int64_a_", 4, MiniSim.make_array())
+        self.ed.addArrayUInt64("uint64_a_", 4, MiniSim.make_array())
+        self.ed.addArrayInt("read_only_a", 4, MiniSim.make_array(), True)
     
     @staticmethod
     def make_array(offset = 0): 
@@ -227,9 +227,9 @@ class get_set_array_float(pyflamegpu.HostFunctionCallback):
     def run(self, FLAMEGPU):
         init1 = MiniSim.make_array()
         init2 = MiniSim.make_array(TEST_ARRAY_OFFSET)
-        self.set_float_a = FLAMEGPU.environment.setFloatArray4("float_a_", init2)
-        self.get_float_a = FLAMEGPU.environment.getFloatArray4("float_a_")
-        FLAMEGPU.environment.setFloatArray4("float_a_", init1)
+        self.set_float_a = FLAMEGPU.environment.setArrayFloat("float_a_", init2)
+        self.get_float_a = FLAMEGPU.environment.getArrayFloat("float_a_")
+        FLAMEGPU.environment.setArrayFloat("float_a_", init1)
         
     def apply_assertions(self):
         init1 = MiniSim.make_array()
@@ -244,9 +244,9 @@ class get_set_array_double(pyflamegpu.HostFunctionCallback):
     def run(self, FLAMEGPU):
         init1 = MiniSim.make_array()
         init2 = MiniSim.make_array(TEST_ARRAY_OFFSET)
-        self.set_double_a = FLAMEGPU.environment.setDoubleArray4("double_a_", init2)
-        self.get_double_a = FLAMEGPU.environment.getDoubleArray4("double_a_")
-        FLAMEGPU.environment.setDoubleArray4("double_a_", init1)
+        self.set_double_a = FLAMEGPU.environment.setArrayDouble("double_a_", init2)
+        self.get_double_a = FLAMEGPU.environment.getArrayDouble("double_a_")
+        FLAMEGPU.environment.setArrayDouble("double_a_", init1)
         
     def apply_assertions(self):
         init1 = MiniSim.make_array()
@@ -263,9 +263,9 @@ class get_set_array_int8(pyflamegpu.HostFunctionCallback):
     def run(self, FLAMEGPU):
         init1 = MiniSim.make_array()
         init2 = MiniSim.make_array(TEST_ARRAY_OFFSET)
-        self.set_int8_a = FLAMEGPU.environment.setInt8Array4("int8_a_", init2)
-        self.get_int8_a = FLAMEGPU.environment.getInt8Array4("int8_a_")
-        FLAMEGPU.environment.setInt8Array4("int8_a_", init1)
+        self.set_int8_a = FLAMEGPU.environment.setArrayInt8("int8_a_", init2)
+        self.get_int8_a = FLAMEGPU.environment.getArrayInt8("int8_a_")
+        FLAMEGPU.environment.setArrayInt8("int8_a_", init1)
         
     def apply_assertions(self):
         init1 = MiniSim.make_array()
@@ -280,9 +280,9 @@ class get_set_array_uint8(pyflamegpu.HostFunctionCallback):
     def run(self, FLAMEGPU):
         init1 = MiniSim.make_array()
         init2 = MiniSim.make_array(TEST_ARRAY_OFFSET)
-        self.set_uint8_a = FLAMEGPU.environment.setUInt8Array4("uint8_a_", init2)
-        self.get_uint8_a = FLAMEGPU.environment.getUInt8Array4("uint8_a_")
-        FLAMEGPU.environment.setUInt8Array4("uint8_a_", init1)
+        self.set_uint8_a = FLAMEGPU.environment.setArrayUInt8("uint8_a_", init2)
+        self.get_uint8_a = FLAMEGPU.environment.getArrayUInt8("uint8_a_")
+        FLAMEGPU.environment.setArrayUInt8("uint8_a_", init1)
         
     def apply_assertions(self):
         init1 = MiniSim.make_array()
@@ -297,9 +297,9 @@ class get_set_array_int16(pyflamegpu.HostFunctionCallback):
     def run(self, FLAMEGPU):
         init1 = MiniSim.make_array()
         init2 = MiniSim.make_array(TEST_ARRAY_OFFSET)
-        self.set_int16_a = FLAMEGPU.environment.setInt16Array4("int16_a_", init2)
-        self.get_int16_a = FLAMEGPU.environment.getInt16Array4("int16_a_")
-        FLAMEGPU.environment.setInt16Array4("int16_a_", init1)
+        self.set_int16_a = FLAMEGPU.environment.setArrayInt16("int16_a_", init2)
+        self.get_int16_a = FLAMEGPU.environment.getArrayInt16("int16_a_")
+        FLAMEGPU.environment.setArrayInt16("int16_a_", init1)
         
     def apply_assertions(self):
         init1 = MiniSim.make_array()
@@ -314,9 +314,9 @@ class get_set_array_uint16(pyflamegpu.HostFunctionCallback):
     def run(self, FLAMEGPU):
         init1 = MiniSim.make_array()
         init2 = MiniSim.make_array(TEST_ARRAY_OFFSET)
-        self.set_uint16_a = FLAMEGPU.environment.setUInt16Array4("uint16_a_", init2)
-        self.get_uint16_a = FLAMEGPU.environment.getUInt16Array4("uint16_a_")
-        FLAMEGPU.environment.setUInt16Array4("uint16_a_", init1)
+        self.set_uint16_a = FLAMEGPU.environment.setArrayUInt16("uint16_a_", init2)
+        self.get_uint16_a = FLAMEGPU.environment.getArrayUInt16("uint16_a_")
+        FLAMEGPU.environment.setArrayUInt16("uint16_a_", init1)
         
     def apply_assertions(self):
         init1 = MiniSim.make_array()
@@ -331,9 +331,9 @@ class get_set_array_int32(pyflamegpu.HostFunctionCallback):
     def run(self, FLAMEGPU):
         init1 = MiniSim.make_array()
         init2 = MiniSim.make_array(TEST_ARRAY_OFFSET)
-        self.set_int32_a = FLAMEGPU.environment.setInt32Array4("int32_a_", init2)
-        self.get_int32_a = FLAMEGPU.environment.getInt32Array4("int32_a_")
-        FLAMEGPU.environment.setInt32Array4("int32_a_", init1)
+        self.set_int32_a = FLAMEGPU.environment.setArrayInt32("int32_a_", init2)
+        self.get_int32_a = FLAMEGPU.environment.getArrayInt32("int32_a_")
+        FLAMEGPU.environment.setArrayInt32("int32_a_", init1)
         
     def apply_assertions(self):
         init1 = MiniSim.make_array()
@@ -348,9 +348,9 @@ class get_set_array_uint32(pyflamegpu.HostFunctionCallback):
     def run(self, FLAMEGPU):
         init1 = MiniSim.make_array()
         init2 = MiniSim.make_array(TEST_ARRAY_OFFSET)
-        self.set_uint32_a = FLAMEGPU.environment.setUInt32Array4("uint32_a_", init2)
-        self.get_uint32_a = FLAMEGPU.environment.getUInt32Array4("uint32_a_")
-        FLAMEGPU.environment.setUInt32Array4("uint32_a_", init1)
+        self.set_uint32_a = FLAMEGPU.environment.setArrayUInt32("uint32_a_", init2)
+        self.get_uint32_a = FLAMEGPU.environment.getArrayUInt32("uint32_a_")
+        FLAMEGPU.environment.setArrayUInt32("uint32_a_", init1)
         
     def apply_assertions(self):
         init1 = MiniSim.make_array()
@@ -365,9 +365,9 @@ class get_set_array_int64(pyflamegpu.HostFunctionCallback):
     def run(self, FLAMEGPU):
         init1 = MiniSim.make_array()
         init2 = MiniSim.make_array(TEST_ARRAY_OFFSET)
-        self.set_int64_a = FLAMEGPU.environment.setInt64Array4("int64_a_", init2)
-        self.get_int64_a = FLAMEGPU.environment.getInt64Array4("int64_a_")
-        FLAMEGPU.environment.setInt64Array4("int64_a_", init1)
+        self.set_int64_a = FLAMEGPU.environment.setArrayInt64("int64_a_", init2)
+        self.get_int64_a = FLAMEGPU.environment.getArrayInt64("int64_a_")
+        FLAMEGPU.environment.setArrayInt64("int64_a_", init1)
         
     def apply_assertions(self):
         init1 = MiniSim.make_array()
@@ -382,9 +382,9 @@ class get_set_array_uint64(pyflamegpu.HostFunctionCallback):
     def run(self, FLAMEGPU):
         init1 = MiniSim.make_array()
         init2 = MiniSim.make_array(TEST_ARRAY_OFFSET)
-        self.set_uint64_a = FLAMEGPU.environment.setUInt64Array4("uint64_a_", init2)
-        self.get_uint64_a = FLAMEGPU.environment.getUInt64Array4("uint64_a_")
-        FLAMEGPU.environment.setUInt64Array4("uint64_a_", init1)
+        self.set_uint64_a = FLAMEGPU.environment.setArrayUInt64("uint64_a_", init2)
+        self.get_uint64_a = FLAMEGPU.environment.getArrayUInt64("uint64_a_")
+        FLAMEGPU.environment.setArrayUInt64("uint64_a_", init1)
         
     def apply_assertions(self):
         init1 = MiniSim.make_array()
@@ -557,7 +557,7 @@ class exception_property_type_float(pyflamegpu.HostFunctionCallback):
         except pyflamegpu.FGPURuntimeException as e:
             self.e1 = e.type()
         try:
-            FLAMEGPU.environment.setUInt64Array4("float_", init1)
+            FLAMEGPU.environment.setArrayUInt64("float_", init1)
         except pyflamegpu.FGPURuntimeException as e:
             self.e2 = e.type()
         
@@ -577,7 +577,7 @@ class exception_property_type_double(pyflamegpu.HostFunctionCallback):
         except pyflamegpu.FGPURuntimeException as e:
             self.e1 = e.type()
         try:
-            FLAMEGPU.environment.setUInt64Array4("double_", init1)
+            FLAMEGPU.environment.setArrayUInt64("double_", init1)
         except pyflamegpu.FGPURuntimeException as e:
             self.e2 = e.type()
         
@@ -597,7 +597,7 @@ class exception_property_type_int8(pyflamegpu.HostFunctionCallback):
         except pyflamegpu.FGPURuntimeException as e:
             self.e1 = e.type()
         try:
-            FLAMEGPU.environment.setUInt64Array4("int8_", init1)
+            FLAMEGPU.environment.setArrayUInt64("int8_", init1)
         except pyflamegpu.FGPURuntimeException as e:
             self.e2 = e.type()
         
@@ -617,7 +617,7 @@ class exception_property_type_uint8(pyflamegpu.HostFunctionCallback):
         except pyflamegpu.FGPURuntimeException as e:
             self.e1 = e.type()
         try:
-            FLAMEGPU.environment.setUInt64Array4("uint8_", init1)
+            FLAMEGPU.environment.setArrayUInt64("uint8_", init1)
         except pyflamegpu.FGPURuntimeException as e:
             self.e2 = e.type()
         
@@ -637,7 +637,7 @@ class exception_property_type_int16(pyflamegpu.HostFunctionCallback):
         except pyflamegpu.FGPURuntimeException as e:
             self.e1 = e.type()
         try:
-            FLAMEGPU.environment.setUInt64Array4("int16_", init1)
+            FLAMEGPU.environment.setArrayUInt64("int16_", init1)
         except pyflamegpu.FGPURuntimeException as e:
             self.e2 = e.type()
         
@@ -657,7 +657,7 @@ class exception_property_type_uint16(pyflamegpu.HostFunctionCallback):
         except pyflamegpu.FGPURuntimeException as e:
             self.e1 = e.type()
         try:
-            FLAMEGPU.environment.setUInt64Array4("uint16_", init1)
+            FLAMEGPU.environment.setArrayUInt64("uint16_", init1)
         except pyflamegpu.FGPURuntimeException as e:
             self.e2 = e.type()
         
@@ -677,7 +677,7 @@ class exception_property_type_int32(pyflamegpu.HostFunctionCallback):
         except pyflamegpu.FGPURuntimeException as e:
             self.e1 = e.type()
         try:
-            FLAMEGPU.environment.setUInt64Array4("int32_", init1)
+            FLAMEGPU.environment.setArrayUInt64("int32_", init1)
         except pyflamegpu.FGPURuntimeException as e:
             self.e2 = e.type()
         
@@ -697,7 +697,7 @@ class exception_property_type_uint32(pyflamegpu.HostFunctionCallback):
         except pyflamegpu.FGPURuntimeException as e:
             self.e1 = e.type()
         try:
-            FLAMEGPU.environment.setUInt64Array4("uint32_", init1)
+            FLAMEGPU.environment.setArrayUInt64("uint32_", init1)
         except pyflamegpu.FGPURuntimeException as e:
             self.e2 = e.type()
         
@@ -717,7 +717,7 @@ class exception_property_type_int64(pyflamegpu.HostFunctionCallback):
         except pyflamegpu.FGPURuntimeException as e:
             self.e1 = e.type()
         try:
-            FLAMEGPU.environment.setFloatArray4("int64_", init1)
+            FLAMEGPU.environment.setArrayFloat("int64_", init1)
         except pyflamegpu.FGPURuntimeException as e:
             self.e2 = e.type()
         
@@ -737,7 +737,7 @@ class exception_property_type_uint64(pyflamegpu.HostFunctionCallback):
         except pyflamegpu.FGPURuntimeException as e:
             self.e1 = e.type()
         try:
-            FLAMEGPU.environment.setFloatArray4("uint64_", init1)
+            FLAMEGPU.environment.setArrayFloat("uint64_", init1)
         except pyflamegpu.FGPURuntimeException as e:
             self.e2 = e.type()
         
@@ -756,13 +756,13 @@ class exception_property_length_float(pyflamegpu.HostFunctionCallback):
         b = MiniSim.make_array()
         b1 = [0] * 2
         b2 = [0] * 8
-        FLAMEGPU.environment.setFloatArray4("float_a_", b)
+        FLAMEGPU.environment.setArrayFloat("float_a_", b)
         try:
-            FLAMEGPU.environment.setFloatArray2("float_a_", b1)
+            FLAMEGPU.environment.setArrayFloat("float_a_", b1)
         except pyflamegpu.FGPURuntimeException as e:
             self.e1 = e.type()
         try:
-            FLAMEGPU.environment.setFloatArray8("float_a_", b2)
+            FLAMEGPU.environment.setArrayFloat("float_a_", b2)
         except pyflamegpu.FGPURuntimeException as e:
             self.e2 = e.type()
         
@@ -778,13 +778,13 @@ class exception_property_length_double(pyflamegpu.HostFunctionCallback):
         b = MiniSim.make_array()
         b1 = [0] * 2
         b2 = [0] * 8
-        FLAMEGPU.environment.setDoubleArray4("double_a_", b)
+        FLAMEGPU.environment.setArrayDouble("double_a_", b)
         try:
-            FLAMEGPU.environment.setDoubleArray2("double_a_", b1)
+            FLAMEGPU.environment.setArrayDouble("double_a_", b1)
         except pyflamegpu.FGPURuntimeException as e:
             self.e1 = e.type()
         try:
-            FLAMEGPU.environment.setDoubleArray8("double_a_", b2)
+            FLAMEGPU.environment.setArrayDouble("double_a_", b2)
         except pyflamegpu.FGPURuntimeException as e:
             self.e2 = e.type()
         
@@ -800,13 +800,13 @@ class exception_property_length_int8(pyflamegpu.HostFunctionCallback):
         b = MiniSim.make_array()
         b1 = [0] * 2
         b2 = [0] * 8
-        FLAMEGPU.environment.setInt8Array4("int8_a_", b)
+        FLAMEGPU.environment.setArrayInt8("int8_a_", b)
         try:
-            FLAMEGPU.environment.setInt8Array2("int8_a_", b1)
+            FLAMEGPU.environment.setArrayInt8("int8_a_", b1)
         except pyflamegpu.FGPURuntimeException as e:
             self.e1 = e.type()
         try:
-            FLAMEGPU.environment.setInt8Array8("int8_a_", b2)
+            FLAMEGPU.environment.setArrayInt8("int8_a_", b2)
         except pyflamegpu.FGPURuntimeException as e:
             self.e2 = e.type()
         
@@ -822,13 +822,13 @@ class exception_property_length_uint8(pyflamegpu.HostFunctionCallback):
         b = MiniSim.make_array()
         b1 = [0] * 2
         b2 = [0] * 8
-        FLAMEGPU.environment.setUInt8Array4("uint8_a_", b)
+        FLAMEGPU.environment.setArrayUInt8("uint8_a_", b)
         try:
-            FLAMEGPU.environment.setUInt8Array2("uint8_a_", b1)
+            FLAMEGPU.environment.setArrayUInt8("uint8_a_", b1)
         except pyflamegpu.FGPURuntimeException as e:
             self.e1 = e.type()
         try:
-            FLAMEGPU.environment.setUInt8Array8("uint8_a_", b2)
+            FLAMEGPU.environment.setArrayUInt8("uint8_a_", b2)
         except pyflamegpu.FGPURuntimeException as e:
             self.e2 = e.type()
         
@@ -844,13 +844,13 @@ class exception_property_length_int16(pyflamegpu.HostFunctionCallback):
         b = MiniSim.make_array()
         b1 = [0] * 2
         b2 = [0] * 8
-        FLAMEGPU.environment.setInt16Array4("int16_a_", b)
+        FLAMEGPU.environment.setArrayInt16("int16_a_", b)
         try:
-            FLAMEGPU.environment.setInt16Array2("int16_a_", b1)
+            FLAMEGPU.environment.setArrayInt16("int16_a_", b1)
         except pyflamegpu.FGPURuntimeException as e:
             self.e1 = e.type()
         try:
-            FLAMEGPU.environment.setInt16Array8("int16_a_", b2)
+            FLAMEGPU.environment.setArrayInt16("int16_a_", b2)
         except pyflamegpu.FGPURuntimeException as e:
             self.e2 = e.type()
         
@@ -866,13 +866,13 @@ class exception_property_length_uint16(pyflamegpu.HostFunctionCallback):
         b = MiniSim.make_array()
         b1 = [0] * 2
         b2 = [0] * 8
-        FLAMEGPU.environment.setUInt16Array4("uint16_a_", b)
+        FLAMEGPU.environment.setArrayUInt16("uint16_a_", b)
         try:
-            FLAMEGPU.environment.setUInt16Array2("uint16_a_", b1)
+            FLAMEGPU.environment.setArrayUInt16("uint16_a_", b1)
         except pyflamegpu.FGPURuntimeException as e:
             self.e1 = e.type()
         try:
-            FLAMEGPU.environment.setUInt16Array8("uint16_a_", b2)
+            FLAMEGPU.environment.setArrayUInt16("uint16_a_", b2)
         except pyflamegpu.FGPURuntimeException as e:
             self.e2 = e.type()
         
@@ -888,13 +888,13 @@ class exception_property_length_int32(pyflamegpu.HostFunctionCallback):
         b = MiniSim.make_array()
         b1 = [0] * 2
         b2 = [0] * 8
-        FLAMEGPU.environment.setInt32Array4("int32_a_", b)
+        FLAMEGPU.environment.setArrayInt32("int32_a_", b)
         try:
-            FLAMEGPU.environment.setInt32Array2("int32_a_", b1)
+            FLAMEGPU.environment.setArrayInt32("int32_a_", b1)
         except pyflamegpu.FGPURuntimeException as e:
             self.e1 = e.type()
         try:
-            FLAMEGPU.environment.setInt32Array8("int32_a_", b2)
+            FLAMEGPU.environment.setArrayInt32("int32_a_", b2)
         except pyflamegpu.FGPURuntimeException as e:
             self.e2 = e.type()
         
@@ -910,13 +910,13 @@ class exception_property_length_uint32(pyflamegpu.HostFunctionCallback):
         b = MiniSim.make_array()
         b1 = [0] * 2
         b2 = [0] * 8
-        FLAMEGPU.environment.setUInt32Array4("uint32_a_", b)
+        FLAMEGPU.environment.setArrayUInt32("uint32_a_", b)
         try:
-            FLAMEGPU.environment.setUInt32Array2("uint32_a_", b1)
+            FLAMEGPU.environment.setArrayUInt32("uint32_a_", b1)
         except pyflamegpu.FGPURuntimeException as e:
             self.e1 = e.type()
         try:
-            FLAMEGPU.environment.setUInt32Array8("uint32_a_", b2)
+            FLAMEGPU.environment.setArrayUInt32("uint32_a_", b2)
         except pyflamegpu.FGPURuntimeException as e:
             self.e2 = e.type()
         
@@ -932,13 +932,13 @@ class exception_property_length_int64(pyflamegpu.HostFunctionCallback):
         b = MiniSim.make_array()
         b1 = [0] * 2
         b2 = [0] * 8
-        FLAMEGPU.environment.setInt64Array4("int64_a_", b)
+        FLAMEGPU.environment.setArrayInt64("int64_a_", b)
         try:
-            FLAMEGPU.environment.setInt64Array2("int64_a_", b1)
+            FLAMEGPU.environment.setArrayInt64("int64_a_", b1)
         except pyflamegpu.FGPURuntimeException as e:
             self.e1 = e.type()
         try:
-            FLAMEGPU.environment.setInt64Array8("int64_a_", b2)
+            FLAMEGPU.environment.setArrayInt64("int64_a_", b2)
         except pyflamegpu.FGPURuntimeException as e:
             self.e2 = e.type()
         
@@ -954,13 +954,13 @@ class exception_property_length_uint64(pyflamegpu.HostFunctionCallback):
         b = MiniSim.make_array()
         b1 = [0] * 2
         b2 = [0] * 8
-        FLAMEGPU.environment.setUInt64Array4("uint64_a_", b)
+        FLAMEGPU.environment.setArrayUInt64("uint64_a_", b)
         try:
-            FLAMEGPU.environment.setUInt64Array2("uint64_a_", b1)
+            FLAMEGPU.environment.setArrayUInt64("uint64_a_", b1)
         except pyflamegpu.FGPURuntimeException as e:
             self.e1 = e.type()
         try:
-            FLAMEGPU.environment.setUInt64Array8("uint64_a_", b2)
+            FLAMEGPU.environment.setArrayUInt64("uint64_a_", b2)
         except pyflamegpu.FGPURuntimeException as e:
             self.e2 = e.type()
         
@@ -1196,7 +1196,7 @@ class exception_property_read_only(pyflamegpu.HostFunctionCallback):
         FLAMEGPU.environment.getFloat("read_only")
         # array version
         try:
-            FLAMEGPU.environment.setIntArray4("read_only_a", b)
+            FLAMEGPU.environment.setArrayInt("read_only_a", b)
         except pyflamegpu.FGPURuntimeException as e:
             self.e2 = e.type()
         # no throw

@@ -79,7 +79,7 @@ class AgentDescriptionTest(TestCase):
             a.newVariableInt64(VARIABLE_NAME1)
         assert e.value.type() == "InvalidAgentVar"
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # InvalidAgentVar exception
-            a.newVariableInt64Array3(VARIABLE_NAME1)
+            a.newVariableArrayInt64(VARIABLE_NAME1, 3)
         assert e.value.type() == "InvalidAgentVar"
         # Variable have the right name
         assert a.hasVariable(VARIABLE_NAME1)
@@ -99,11 +99,11 @@ class AgentDescriptionTest(TestCase):
         assert a.hasVariable(VARIABLE_NAME1) == False
         assert a.hasVariable(VARIABLE_NAME2) == False
         assert a.getVariablesCount() == 0
-        a.newVariableFloatArray2(VARIABLE_NAME1)
+        a.newVariableArrayFloat(VARIABLE_NAME1, 2)
         assert a.getVariablesCount() == 1
-        a.newVariableInt16(VARIABLE_NAME2)
+        a.newVariableInt16(VARIABLE_NAME2, 1)
         assert a.getVariablesCount() == 2
-        a.newVariableInt16Array32(VARIABLE_NAME3)
+        a.newVariableArrayInt16(VARIABLE_NAME3, 32)
         assert a.getVariablesCount() == 3
         # Cannot create variable with same name
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # InvalidAgentVar exception
@@ -214,18 +214,18 @@ class AgentDescriptionTest(TestCase):
         assert e.value.type() == "ReservedName"
         # Array versions of the above
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # ReservedName exception
-            a.newVariableIntArray3("_")
+            a.newVariableArrayInt("_", 3)
         assert e.value.type() == "ReservedName"
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # ReservedName exception
-            a.newVariableIntArray3("name")
+            a.newVariableArrayInt("name", 3)
         assert e.value.type() == "ReservedName"
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # ReservedName exception
-            a.newVariableIntArray3("state")
+            a.newVariableArrayInt("state", 3)
         assert e.value.type() == "ReservedName"
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # ReservedName exception
-            a.newVariableIntArray3("nAme")
+            a.newVariableArrayInt("nAme", 3)
         assert e.value.type() == "ReservedName"
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # ReservedName exception
-            a.newVariableIntArray3("sTate")
+            a.newVariableArrayInt("sTate", 3)
         assert e.value.type() == "ReservedName"
 
