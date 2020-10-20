@@ -130,7 +130,7 @@ class AgentInstanceTest(TestCase):
         model = pyflamegpu.ModelDescription("test_set_via_agent_instance")
         agent = model.newAgent("agent")
         agent.newVariableFloat("x")
-        agent.newVariableIntArray4("array_var")
+        agent.newVariableArrayInt("array_var", 4)
         agent.newVariableFloat("y")
         # Do nothing, but ensure variables are made available on device
         func = agent.newRTCFunction("some_function", self.agent_fn_ap1)
@@ -140,7 +140,7 @@ class AgentInstanceTest(TestCase):
         for i in range(AGENT_COUNT):
             instance = init_population.getNextInstance("default")
             instance.setVariableFloat("x", 12.0)
-            instance.setVariableIntArray4("array_var", [2, 4, 8, 16])
+            instance.setVariableArrayInt("array_var", [2, 4, 8, 16])
             instance.setVariableFloat("y", 14.0)
         
         # Setup Model
@@ -158,7 +158,7 @@ class AgentInstanceTest(TestCase):
         for i in range(population.getCurrentListSize()):
             instance = population.getInstanceAt(i)
             assert instance.getVariableFloat("x") == 12.0
-            output_array = instance.getVariableIntArray4("array_var")
+            output_array = instance.getVariableArrayInt("array_var")
             test_array = (2, 4, 8, 16)
             assert output_array == test_array
             assert instance.getVariableFloat("y") == 14.0
@@ -167,7 +167,7 @@ class AgentInstanceTest(TestCase):
         model = pyflamegpu.ModelDescription("test_set_via_agent_instance2")
         agent = model.newAgent("agent")
         agent.newVariableFloat("x")
-        agent.newVariableIntArray4("array_var")
+        agent.newVariableArrayInt("array_var", 4)
         agent.newVariableFloat("y")
         # Do nothing, but ensure variables are made available on device
         func = agent.newRTCFunction("some_function", self.agent_fn_ap1)
@@ -215,7 +215,7 @@ class AgentInstanceTest(TestCase):
         model = pyflamegpu.ModelDescription("test_agent_instance_array_default_works")
         agent = model.newAgent("agent")
         agent.newVariableFloat("x", 12.0)
-        agent.newVariableIntArray4("array_var", TEST_REFERENCE)
+        agent.newVariableArrayInt("array_var", 4, TEST_REFERENCE)
         agent.newVariableFloat("y", 13.0)
         # Do nothing, but ensure variables are made available on device
         func = agent.newRTCFunction("some_function", self.agent_fn_ap1)
@@ -224,7 +224,7 @@ class AgentInstanceTest(TestCase):
         init_population = pyflamegpu.AgentPopulation(agent, AGENT_COUNT)
         for i in range(AGENT_COUNT):
             instance = init_population.getNextInstance("default")
-            test = instance.getVariableIntArray4("array_var")
+            test = instance.getVariableArrayInt("array_var")
             assert test == TEST_REFERENCE
             assert instance.getVariableFloat("x") == 12.0
             assert instance.getVariableFloat("y") == 13.0
@@ -233,16 +233,16 @@ class AgentInstanceTest(TestCase):
     def test_agent_instance_array_type_wrong(self) : 
         model = pyflamegpu.ModelDescription("test_agent_instance_array_type_wrong")
         agent = model.newAgent("agent")
-        agent.newVariableIntArray4("array_var")
+        agent.newVariableArrayInt("array_var", 4)
         # Init pop
         init_population = pyflamegpu.AgentPopulation(agent, 1)
         instance = init_population.getNextInstance("default")
 
         # Check for expected exceptions
-        with pytest.raises(TypeError) as e: # Will be a type error in Python rather than InvalidVarType
-            instance.setVariableFloatArray4("array_var", ())
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-            instance.getVariableFloatArray4("array_var")
+            instance.setVariableArrayFloat("array_var", ())
+        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+            instance.getVariableArrayFloat("array_var")
         assert e.value.type() == "InvalidVarType"
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
             instance.setVariableFloat("array_var", 0, 2)
@@ -255,21 +255,16 @@ class AgentInstanceTest(TestCase):
         model = pyflamegpu.ModelDescription("test_agent_instance_array_len_wrong")
         agent = model.newAgent("agent_name")
         agent.newVariableInt("x")
-        agent.newVariableIntArray4("array_var")
+        agent.newVariableArrayInt("array_var", 4)
         # Init pop
         init_population = pyflamegpu.AgentPopulation(agent, 1)
         instance = init_population.getNextInstance("default")
         # Check for expected exceptions
-        with pytest.raises(TypeError) as e: # Will be a type error in Python rather than InvalidVarArrayLen
-            instance.setVariableIntArray8("x", ())
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-            instance.getVariableIntArray8("x")
-        assert e.value.type() == "InvalidVarArrayLen"
-        with pytest.raises(TypeError) as e: # Will be a type error in Python rather than InvalidVarArrayLen
-            instance.setVariableIntArray8("array_var", ())
+            instance.setVariableArrayInt("x", ())
+        assert e.value.type() == "InvalidAgentVar"
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-            instance.getVariableIntArray8("array_var")
-        assert e.value.type() == "InvalidVarArrayLen"
+            instance.setVariableArrayInt("array_var", ())
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
             instance.setVariableInt("x", 10, 0)
         assert e.value.type() == "OutOfRangeVarArray"
@@ -286,17 +281,17 @@ class AgentInstanceTest(TestCase):
     def test_agent_instance_array_name_wrong(self): 
         model = pyflamegpu.ModelDescription("test_agent_instance_array_name_wrong")
         agent = model.newAgent("agent_name")
-        agent.newVariableIntArray4("array_var")
+        agent.newVariableArrayInt("array_var", 4)
         # Init pop
         init_population = pyflamegpu.AgentPopulation(agent, 1)
         instance = init_population.getNextInstance("default")
 
         # Check for expected exceptions
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-            instance.setVariableFloatArray4("array_varAAAAAA", (1,2,3,4))
+            instance.setVariableArrayFloat("array_varAAAAAA", (1,2,3,4))
         assert e.value.type() == "InvalidAgentVar"
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-            instance.getVariableFloatArray4("array_varAAAAAA")
+            instance.getVariableArrayFloat("array_varAAAAAA")
         assert e.value.type() == "InvalidAgentVar"
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
             instance.setVariableInt("array_varAAAAAA", 0, 2)
@@ -308,7 +303,7 @@ class AgentInstanceTest(TestCase):
     def test_agent_instance_array_not_suitable(self): 
         model = pyflamegpu.ModelDescription("test_agent_instance_array_not_suitable")
         agent = model.newAgent("agent_name")
-        agent.newVariableIntArray4("array_var")
+        agent.newVariableArrayInt("array_var", 4)
         # Init pop
         init_population = pyflamegpu.AgentPopulation(agent, 1)
         instance = init_population.getNextInstance("default")

@@ -54,7 +54,7 @@ class DeviceAPITest(TestCase):
         model = pyflamegpu.ModelDescription("test_agent_death_array")
         agent = model.newAgent("agent_name")
         agent.newVariableFloat("x")
-        agent.newVariableIntArray4("array_var")
+        agent.newVariableArrayInt("array_var", 4)
         agent.newVariableFloat("y")
         agent.newVariableInt("id")
         # Do nothing, but ensure variables are made available on device
@@ -66,7 +66,7 @@ class DeviceAPITest(TestCase):
         for i in range(AGENT_COUNT):
             instance = init_population.getNextInstance("default")
             instance.setVariableFloat("x", 12.0)
-            instance.setVariableIntArray4("array_var",  (2 + i, 4 + i, 8 + i, 16 + i) )
+            instance.setVariableArrayInt("array_var", (2 + i, 4 + i, 8 + i, 16 + i) )
             instance.setVariableFloat("y", 14.0)
             instance.setVariableInt("id", i)
         
@@ -89,7 +89,7 @@ class DeviceAPITest(TestCase):
             assert instance.getVariableFloat("y") == 14.0
             j = instance.getVariableInt("id")
             # Check array sets are correct
-            output_array = instance.getVariableIntArray4("array_var")
+            output_array = instance.getVariableArrayInt("array_var")
             assert output_array[0] == 2 + j
             assert output_array[1] == 4 + j
             assert output_array[2] == 8 + j
@@ -101,7 +101,7 @@ class DeviceAPITest(TestCase):
         model = pyflamegpu.ModelDescription("model")
         agent = model.newAgent("agent_name")
         agent.newVariableFloat("x")
-        agent.newVariableIntArray4("array_var")
+        agent.newVariableArrayInt("array_var", 4)
         agent.newVariableFloat("y")
         agent.newVariableInt("id")
         # Do nothing, but ensure variables are made available on device
@@ -134,7 +134,7 @@ class DeviceAPITest(TestCase):
             assert instance.getVariableFloat("y") == 14.0
             j = instance.getVariableInt("id")
             # Check array sets are correct
-            output_array = instance.getVariableIntArray4("array_var")
+            output_array = instance.getVariableArrayInt("array_var")
             assert output_array[0] == 2 + j
             assert output_array[1] == 4 + j
             assert output_array[2] == 8 + j
@@ -145,7 +145,7 @@ class DeviceAPITest(TestCase):
         model = pyflamegpu.ModelDescription("test_array_get")
         agent = model.newAgent("agent_name")
         agent.newVariableFloat("x")
-        agent.newVariableIntArray4("array_var")
+        agent.newVariableArrayInt("array_var", 4)
         agent.newVariableFloat("y")
         agent.newVariableInt("id")
         agent.newVariableInt("a1")
@@ -160,7 +160,7 @@ class DeviceAPITest(TestCase):
         for i in range(AGENT_COUNT):
             instance = init_population.getNextInstance("default")
             instance.setVariableFloat("x", 12.0)
-            instance.setVariableIntArray4("array_var",  (2 + i, 4 + i, 8 + i, 16 + i) )
+            instance.setVariableArrayInt("array_var", (2 + i, 4 + i, 8 + i, 16 + i) )
             instance.setVariableFloat("y", 14.0)
             instance.setVariableInt("id", i)
         

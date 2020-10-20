@@ -3,6 +3,7 @@
 
 #include <unordered_map>
 #include <string>
+#include <vector>
 
 #include "flamegpu/model/Variable.h"
 
@@ -116,7 +117,7 @@ struct NewAgentStorage {
                 "in NewAgentStorage.setVariable().",
                 var_name.c_str(), var->second.len / sizeof(T), N);
         }
-        memcpy(data + var->second.offset, &val, var->second.len);
+        memcpy(data + var->second.offset, val.data(), var->second.len);
     }
     template<typename T>
     void setVariable(const std::string &var_name, const unsigned int &index, const T &val) {
@@ -144,6 +145,34 @@ struct NewAgentStorage {
         }
         memcpy(data + var->second.offset + (index * sizeof(T)), &val, sizeof(T));
     }
+#ifdef SWIG
+    template<typename T>
+    void setVariableArray(const std::string &var_name, const std::vector<T> &val) {
+        const auto &var = offsets.vars.find(var_name);
+        if (var == offsets.vars.end()) {
+            THROW InvalidAgentVar("Variable '%s' not found, "
+                "in NewAgentStorage.setVariableArray().",
+                var_name.c_str());
+        }
+        // if (var.second.len == 1 || N == 1) {
+        //     THROW InvalidAgentVar("Agent variable '%s' in not an array variable, "
+        //         "in NewAgentStorage::setVariableArray().",
+        //         var_name.c_str());
+        // }
+        const auto t_type = std::type_index(typeid(T));
+        if (var->second.type != std::type_index(typeid(T))) {
+            THROW InvalidVarType("Variable '%s' has type '%s, incorrect  type '%s' was requested, "
+                "in NewAgentStorage.setVariableArray().",
+                var_name.c_str(), var->second.type.name(), t_type.name());
+        }
+        if (var->second.len != sizeof(T) * val.size()) {
+            THROW InvalidVarArrayLen("Variable '%s' is an array with %u elements, incorrect array of length %u was provided, "
+                "in NewAgentStorage.setVariableArray().",
+                var_name.c_str(), var->second.len / sizeof(T), val.size());
+        }
+        memcpy(data + var->second.offset, val.data(), var->second.len);
+    }
+#endif
     template<typename T>
     T getVariable(const std::string &var_name) const {
         const auto &var = offsets.vars.find(var_name);
@@ -186,7 +215,7 @@ struct NewAgentStorage {
                 var_name.c_str(), var->second.type.name(), t_type.name());
         }
         if (var->second.len != sizeof(T) * N) {
-            THROW InvalidVarArrayLen("Variable '%s' is an array with %u elements, incorrect array of length %u was provided, "
+            THROW InvalidVarArrayLen("Variable '%s' is an array with %u elements, incorrect array of length %u was specified, "
                 "in NewAgentStorage.getVariable().",
                 var_name.c_str(), var->second.len / sizeof(T), N);
         }
@@ -220,6 +249,27 @@ struct NewAgentStorage {
         }
         return *reinterpret_cast<T*>(data + var->second.offset + (index * sizeof(T)));
     }
+#ifdef SWIG
+    template<typename T>
+    std::vector<T> getVariableArray(const std::string &var_name) {
+        const auto &var = offsets.vars.find(var_name);
+        if (var == offsets.vars.end()) {
+            THROW InvalidAgentVar("Variable '%s' not found, "
+                "in NewAgentStorage.getVariableArray().",
+                var_name.c_str());
+        }
+        const auto t_type = std::type_index(typeid(T));
+        if (var->second.type != std::type_index(typeid(T))) {
+            THROW InvalidVarType("Variable '%s' has type '%s, incorrect  type '%s' was requested, "
+                "in NewAgentStorage.getVariableArray().",
+                var_name.c_str(), var->second.type.name(), t_type.name());
+        }
+        const size_t elements = var->second.len / sizeof(T);
+        std::vector<T> rtn(elements);
+        memcpy(rtn.data(), data + var->second.offset, var->second.len);
+        return rtn;
+    }
+#endif
     /**
      * Used by CUDASimulation::processHostAgentCreation() which needs raw access to the data buffer
      */
@@ -281,6 +331,16 @@ class FLAMEGPU_HOST_NEW_AGENT_API {
         }
         s->setVariable<T>(var_name, index, val);
     }
+#ifdef SWIG
+    template<typename T>
+    void setVariableArray(const std::string &var_name, const std::vector<T> &val) {
+        if (!var_name.empty() && var_name[0] == '_') {
+            THROW ReservedName("Agent variable names cannot begin with '_', this is reserved for internal usage, "
+                "in FLAMEGPU_HOST_NEW_AGENT_API::setVariable().");
+        }
+        s->setVariableArray<T>(var_name, val);
+    }
+#endif
     /**
      * Returns a varaiable within the new agent
      */
@@ -296,6 +356,12 @@ class FLAMEGPU_HOST_NEW_AGENT_API {
     T getVariable(const std::string &var_name, const unsigned int &index) {
         return s->getVariable<T>(var_name, index);
     }
+#ifdef SWIG
+    template<typename T>
+    std::vector<T> getVariableArray(const std::string &var_name) {
+        return s->getVariableArray<T>(var_name);
+    }
+#endif
 
  private:
     // Can't use reference here, makes it non-assignable

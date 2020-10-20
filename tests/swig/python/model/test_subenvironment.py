@@ -17,11 +17,11 @@ class SubEnvironmentDescriptionTest(TestCase):
         exitcdn = ExitAlways()
         m2.addExitConditionCallback(exitcdn);
         m2.Environment().addFloat("a", 0);
-        m2.Environment().addFloatArray2("a2", [0] * 2);
+        m2.Environment().addArrayFloat("a2", 2, [0] * 2);
         m = pyflamegpu.ModelDescription("host");
         # Define Model
         m.Environment().addFloat("b", 0);
-        m.Environment().addFloatArray2("b2", [0] * 2);
+        m.Environment().addArrayFloat("b2", 2, [0] * 2);
         sm = m.newSubModel("sub", m2);
         senv = sm.SubEnvironment();
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # InvalidEnvProperty exception
@@ -41,11 +41,11 @@ class SubEnvironmentDescriptionTest(TestCase):
         exitcdn = ExitAlways()
         m2.addExitConditionCallback(exitcdn);
         m2.Environment().addFloat("a", 0);
-        m2.Environment().addIntArray2("a2", [0] * 2);
+        m2.Environment().addArrayInt("a2", 2, [0] * 2);
         m = pyflamegpu.ModelDescription("host");
         # Define Model
         m.Environment().addUInt("b", 0);
-        m.Environment().addFloatArray2("b2", [0] * 2);
+        m.Environment().addArrayFloat("b2", 2, [0] * 2);
         sm = m.newSubModel("sub", m2);
         senv = sm.SubEnvironment();
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # InvalidEnvProperty exception
@@ -59,11 +59,11 @@ class SubEnvironmentDescriptionTest(TestCase):
         exitcdn = ExitAlways()
         m2.addExitConditionCallback(exitcdn);
         m2.Environment().addFloat("a", 0);
-        m2.Environment().addFloatArray2("a2", [0] * 2);
+        m2.Environment().addArrayFloat("a2", 2, [0] * 2);
         m = pyflamegpu.ModelDescription("host");
         # Define Model
         m.Environment().addFloat("b", 0);
-        m.Environment().addFloatArray2("b2", [0] * 2);
+        m.Environment().addArrayFloat("b2", 2, [0] * 2);
         sm = m.newSubModel("sub", m2);
         senv = sm.SubEnvironment();
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # InvalidEnvProperty exception
@@ -79,11 +79,11 @@ class SubEnvironmentDescriptionTest(TestCase):
         exitcdn = ExitAlways()
         m2.addExitConditionCallback(exitcdn);
         m2.Environment().addFloat("a", 0);
-        m2.Environment().addFloatArray2("a2", [0] * 2);
+        m2.Environment().addArrayFloat("a2", 2, [0] * 2);
         m = pyflamegpu.ModelDescription("host");
         # Define Model
         m.Environment().addFloat("b", 0, True);
-        m.Environment().addFloatArray2("b2", [0] * 2, True);
+        m.Environment().addArrayFloat("b2", 2, [0] * 2, True);
         sm = m.newSubModel("sub", m2);
         senv = sm.SubEnvironment();
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # InvalidEnvProperty exception
@@ -97,15 +97,15 @@ class SubEnvironmentDescriptionTest(TestCase):
         exitcdn = ExitAlways()
         m2.addExitConditionCallback(exitcdn);
         m2.Environment().addFloat("a", 0);
-        m2.Environment().addFloatArray2("a2", [0.0] * 2);
+        m2.Environment().addArrayFloat("a2", 2, [0.0] * 2);
         m2.Environment().addFloat("a_", 0);
-        m2.Environment().addFloatArray2("a2_", [0] * 2);
+        m2.Environment().addArrayFloat("a2_", 2, [0] * 2);
         m = pyflamegpu.ModelDescription("host");
         # Define Model
         m.Environment().addFloat("b", 0);
-        m.Environment().addFloatArray2("b2", [0] * 2);
+        m.Environment().addArrayFloat("b2", 2, [0] * 2);
         m.Environment().addFloat("b_", 0);
-        m.Environment().addFloatArray2("b2_", [0] * 2);
+        m.Environment().addArrayFloat("b2_", 2, [0] * 2);
         # Missing exit condition
         sm = m.newSubModel("sub", m2);
         senv = sm.SubEnvironment();

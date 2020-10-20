@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 #include <set>
+#include <vector>
 
 #include "flamegpu/gpu/CUDAErrorChecking.h"
 #include "flamegpu/runtime/utility/EnvironmentManager.cuh"
@@ -53,6 +54,7 @@ class HostEnvironment {
      * Gets an environment property array
      * @param name name used for accessing the property
      * @tparam T Type of the elements of the environment property array
+     * @tparam N Length of the environment property array
      * @throws InvalidEnvProperty If a property array of the name does not exist
      */
     template<typename T, EnvironmentManager::size_type N>
@@ -67,6 +69,16 @@ class HostEnvironment {
      */
     template<typename T>
     T get(const std::string &name, const EnvironmentManager::size_type &index) const;
+#ifdef SWIG
+    /**
+     * Gets an environment property array
+     * @param name name used for accessing the property
+     * @tparam T Type of the elements of the environment property array
+     * @throws InvalidEnvProperty If a property array of the name does not exist
+     */
+    template<typename T>
+    std::vector<T> getArray(const std::string &name) const;
+#endif
     /**
      * Sets an environment property
      * @param name name used for accessing the property
@@ -83,6 +95,7 @@ class HostEnvironment {
      * @param name name used for accessing the property array
      * @param value to set the property array
      * @tparam T Type of the elements of the environment property array
+     * @tparam N Length of the environmental property array
      * @return Returns the previous value
      * @throws InvalidEnvProperty If a property of the name does not exist
      * @throws ReadOnlyEnvProperty If the named property is marked as const
@@ -102,6 +115,19 @@ class HostEnvironment {
      */
     template<typename T>
     T set(const std::string &name, const EnvironmentManager::size_type &index, const T &value) const;
+#ifdef SWIG
+    /**
+     * Sets an environment property array
+     * @param name name used for accessing the property array
+     * @param value to set the property array
+     * @tparam T Type of the elements of the environment property array
+     * @return Returns the previous value
+     * @throws InvalidEnvProperty If a property of the name does not exist
+     * @throws ReadOnlyEnvProperty If the named property is marked as const
+     */
+    template<typename T>
+    std::vector<T> setArray(const std::string &name, const std::vector<T> &value) const;
+#endif
 };
 
 /**
@@ -131,6 +157,16 @@ T HostEnvironment::set(const std::string &name, const EnvironmentManager::size_t
     }
     return env_mgr.set<T>({ instance_id, name }, index, value);
 }
+#ifdef SWIG
+template<typename T>
+std::vector<T> HostEnvironment::setArray(const std::string &name, const std::vector<T> &value) const {
+    if (!name.empty() && name[0] == '_') {
+        THROW ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
+            "in HostEnvironment::setArray().");
+    }
+    return env_mgr.setArray<T>({ instance_id, name }, value);
+}
+#endif
 
 /**
  * Getters
@@ -147,5 +183,10 @@ template<typename T>
 T HostEnvironment::get(const std::string &name, const EnvironmentManager::size_type &index) const  {
     return env_mgr.get<T>({ instance_id, name }, index);
 }
-
+#ifdef SWIG
+template<typename T>
+std::vector<T> HostEnvironment::getArray(const std::string& name) const {
+    return env_mgr.getArray<T>({instance_id, name});
+}
+#endif
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_UTILITY_HOSTENVIRONMENT_CUH_

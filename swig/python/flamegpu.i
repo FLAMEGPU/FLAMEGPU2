@@ -25,51 +25,18 @@
 %module(directors="1") pyflamegpu
 
 
-/**
- * TEMPLATE_ARRAY_TYPE_INSTANTIATE macro
- *  This is used to Instantiate the array sizes of a given type. This allows a mapping between python types and the function arguments created by TEMPLATE_VARIABLE_ARRAY_INSTANTIATE
- */
-%define TEMPLATE_ARRAY_TYPE_INSTANTIATE(Typename, T) 
-%template(Typename ## Array1) std::array<T, 1>;
-%template(Typename ## Array2) std::array<T, 2>;
-%template(Typename ## Array3) std::array<T, 3>;
-%template(Typename ## Array4) std::array<T, 4>;
-%template(Typename ## Array8) std::array<T, 8>;
-%template(Typename ## Array16) std::array<T, 16>;
-%template(Typename ## Array32) std::array<T, 32>;
-%template(Typename ## Array64) std::array<T, 64>;
-%template(Typename ## Array128) std::array<T, 128>;
-%template(Typename ## Array256) std::array<T, 256>;
-%template(Typename ## Array512) std::array<T, 512>;
-%template(Typename ## Array1024) std::array<T, 1024>;
-%enddef
-
-/**
- * TEMPLATE_VARIABLE_ARRAY_INSTANTIATE macro
- * Given a function name and a class::function specifier, this macro instaciates a typed array size version of the function for a set of basic types. 
- * E.g. TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(functionType, SomeClass:function, int) will generate swig typed versions of the function like the following
- *    typedef SomeClass:function<int, 1> functionInt;
- *    typedef SomeClass:function<int, 2> functionInt;
- *    typedef SomeClass:function<int, 3> functionInt;
- *    typedef SomeClass:function<int, 4> functionInt;
- *    ...
- * Dev Notes: If array size of 1 is generated this will cause redefinition warnings. Disabling the array size of 1 requires that scalar functions have a default value. E.g. AgentDescription::addVariable.
- */
-%define TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(functionType, classfunction, T) 
-//%template(functionType) classfunction<T, 1>; 
-%template(functionType ## Array2) classfunction<T, 2>;
-%template(functionType ## Array3) classfunction<T, 3>;
-%template(functionType ## Array4) classfunction<T, 4>;
-%template(functionType ## Array8) classfunction<T, 8>;
-%template(functionType ## Array16) classfunction<T, 16>;
-%template(functionType ## Array32) classfunction<T, 32>;
-%template(functionType ## Array64) classfunction<T, 64>;
-%template(functionType ## Array128) classfunction<T, 128>;
-%template(functionType ## Array256) classfunction<T, 256>;
-%template(functionType ## Array512) classfunction<T, 512>;
-%template(functionType ## Array1024) classfunction<T, 1024>;
-%enddef
-
+/* Instantiate the vector types used in the templated variable functions. Types must match those in TEMPLATE_VARIABLE_INSTANTIATE and TEMPLATE_VARIABLE_INSTANTIATE_N macros*/
+%template(Int8Vector) std::vector<int8_t>;
+%template(Int16Vector) std::vector<int16_t>;
+%template(Int32Vector) std::vector<int32_t>;
+%template(Int64Vector) std::vector<int64_t>;
+%template(UInt8Vector) std::vector<uint8_t>;
+%template(UInt16Vector) std::vector<uint16_t>;
+%template(UInt32Vector) std::vector<uint32_t>;
+%template(UInt64Vector) std::vector<uint64_t>;
+%template(FloatVector) std::vector<float>;
+%template(DoubleVector) std::vector<double>;
+//%template(BoolVector) std::vector<bool>;
 
 /**
  * TEMPLATE_VARIABLE_INSTANTIATE_FLOATS macro
@@ -144,36 +111,6 @@ TEMPLATE_VARIABLE_INSTANTIATE_INTS(function, classfunction)
 // no chars or bool
 %enddef
 
-
-/**
- * TEMPLATE_VARIABLE_INSTANTIATE_N macro
- * Given a function name and a class::function specifier, this macro Instantiates a typed version of the function for a set of basic types AND default array lengths. 
- * See description of TEMPLATE_VARIABLE_INSTANTIATE and TEMPLATE_VARIABLE_ARRAY_INSTANTIATE
- */
-%define TEMPLATE_VARIABLE_INSTANTIATE_N(function, classfunction) 
-// signed ints
-TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## Int8, classfunction, int8_t)
-TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## Int16, classfunction, int16_t)
-TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## Int32, classfunction, int32_t)
-TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## Int64, classfunction, int64_t)
-// unsigned ints
-TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## UInt8, classfunction, uint8_t)
-TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## UInt16, classfunction, uint16_t)
-TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## UInt32, classfunction, uint32_t)
-TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## UInt64, classfunction, uint64_t)
-// float and double
-TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## Float, classfunction, float)
-TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## Double, classfunction, double)
-// default int and uint (causes redefintion warning)
-TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## Int, classfunction, int)
-TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## UInt, classfunction, unsigned int)
-// Char type
-TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## Char, classfunction, char)
-TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## UChar, classfunction, unsigned char)
-// Bool type
-//TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## Bool, classfunction, bool)
-%enddef
-
 /* Compilation header includes */
 %{
 /* Includes the header in the wrapper code */
@@ -195,11 +132,15 @@ TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function ## UChar, classfunction, unsigned c
 #include "flamegpu/runtime/flamegpu_host_agent_api.h"
 #include "flamegpu/runtime/messaging.h"
 
-
 #include "flamegpu/runtime/AgentFunction_shim.h"
 #include "flamegpu/runtime/AgentFunctionCondition_shim.h"
 #include "flamegpu/runtime/HostFunctionCallback.h"
 %}
+
+
+/* Instantiate array types, these are required by message types when setting dimensions. */
+%template(UIntArray2) std::array<unsigned int, 2>;
+%template(UIntArray3) std::array<unsigned int, 3>;
 
 /** Exception handling
  * FGPURuntimeException class is a wrapper class to replace specific instances of FGPUException. It is constructed with a error mesage and type which can be queried to give the original error and the original exception class.
@@ -258,20 +199,6 @@ class FGPURuntimeException : public std::exception {
         SWIG_exception(SWIG_RuntimeError, "Unknown Exception");
     } 
 }
-
-/* Instantiate the array types used in the templated variable functions. Types must match those in TEMPLATE_VARIABLE_INSTANTIATE and TEMPLATE_VARIABLE_INSTANTIATE_N macros*/
-TEMPLATE_ARRAY_TYPE_INSTANTIATE(Int8, int8_t)
-TEMPLATE_ARRAY_TYPE_INSTANTIATE(Int16, int16_t)
-TEMPLATE_ARRAY_TYPE_INSTANTIATE(Int32, int32_t)
-TEMPLATE_ARRAY_TYPE_INSTANTIATE(Int64, int64_t)
-TEMPLATE_ARRAY_TYPE_INSTANTIATE(UInt8, uint8_t)
-TEMPLATE_ARRAY_TYPE_INSTANTIATE(UInt16, uint16_t)
-TEMPLATE_ARRAY_TYPE_INSTANTIATE(UInt32, uint32_t)
-TEMPLATE_ARRAY_TYPE_INSTANTIATE(UInt64, uint64_t)
-TEMPLATE_ARRAY_TYPE_INSTANTIATE(Float, float)
-TEMPLATE_ARRAY_TYPE_INSTANTIATE(Double, double)
-//TEMPLATE_ARRAY_TYPE_INSTANTIATE(Bool, bool)
-
 
 /* Create some type objects to obtain sizes and type info of flamegpu2 basic types.
  * It is not required to demangle type names. These can be used to compare directly with the type_index 
@@ -354,16 +281,7 @@ namespace EnvironmentManager{
 %include "flamegpu/model/ModelDescription.h"
 %include "flamegpu/model/AgentDescription.h"
 %include "flamegpu/model/AgentFunctionDescription.h"
-
-/* Extend EnvironmentDescription to add a templated version of the array and array+index get function with a different name so this can be instantiated */
 %include "flamegpu/model/EnvironmentDescription.h"
-%extend EnvironmentDescription{
-    template<typename T, EnvironmentManager::size_type N> std::array<T, N> getArray(const std::string& name) const {
-        return $self->get<T,N>(name);
-    }
-}
-
-
 %include "flamegpu/model/LayerDescription.h"
 
 %include "flamegpu/model/SubModelDescription.h"
@@ -371,15 +289,7 @@ namespace EnvironmentManager{
 %include "flamegpu/model/SubEnvironmentDescription.h"
 
 %include "flamegpu/pop/AgentPopulation.h"
-
-/* Extend AgentInstance to add a templated version of the getVariable function with a different name so this can be instantiated */
 %include "flamegpu/pop/AgentInstance.h"
-%extend AgentInstance{
-    template <typename T, unsigned int N>  std::array<T, N> getVariableArray(const std::string& variable_name) const {
-        return $self->getVariable<T,N>(variable_name);
-    }
-}
-
 
 /* Include Simulation and CUDASimulation */
 %feature("flatnested");     // flat nested on to ensure Config is included
@@ -420,13 +330,7 @@ namespace EnvironmentManager{
     }
 }
 
-/* Extend HostEnvironment to add a templated version of the getVariable function with a different name so this can be instantiated */
 %include "flamegpu/runtime/utility/HostEnvironment.cuh"
-%extend HostEnvironment{
-    template<typename T, EnvironmentManager::size_type N> std::array<T, N> getArray(const std::string& name) const {
-        return $self->get<T,N>(name);
-    }
-}
 
 %include "flamegpu/runtime/AgentFunction_shim.h"
 %include "flamegpu/runtime/AgentFunctionCondition_shim.h"
@@ -469,13 +373,13 @@ namespace EnvironmentManager{
 
 // Instantiate template versions of agent functions from the API
 TEMPLATE_VARIABLE_INSTANTIATE(newVariable, AgentDescription::newVariable)
-TEMPLATE_VARIABLE_INSTANTIATE_N(newVariable, AgentDescription::newVariable)
+TEMPLATE_VARIABLE_INSTANTIATE(newVariableArray, AgentDescription::newVariableArray)
 
 // Instantiate template versions of host agent functions from the API
 TEMPLATE_VARIABLE_INSTANTIATE(setVariable, AgentInstance::setVariable)
-TEMPLATE_VARIABLE_INSTANTIATE_N(setVariable, AgentInstance::setVariable)
+TEMPLATE_VARIABLE_INSTANTIATE(setVariableArray, AgentInstance::setVariableArray)
 TEMPLATE_VARIABLE_INSTANTIATE(getVariable, AgentInstance::getVariable)
-TEMPLATE_VARIABLE_INSTANTIATE_N(getVariable, AgentInstance::getVariableArray)
+TEMPLATE_VARIABLE_INSTANTIATE(getVariableArray, AgentInstance::getVariableArray)
 
 // Instantiate template versions of host agent instance functions from the API
 // Not currently supported: custom reductions, transformations or histograms
@@ -487,25 +391,25 @@ TEMPLATE_SUM_INSTANTIATE(HostAgentInstance)
 
 // Instantiate template versions of host environment functions from the API
 TEMPLATE_VARIABLE_INSTANTIATE(get, HostEnvironment::get)
-TEMPLATE_VARIABLE_INSTANTIATE_N(get, HostEnvironment::getArray)
+TEMPLATE_VARIABLE_INSTANTIATE(getArray, HostEnvironment::getArray)
 TEMPLATE_VARIABLE_INSTANTIATE(set, HostEnvironment::set)
-TEMPLATE_VARIABLE_INSTANTIATE_N(set, HostEnvironment::set)
+TEMPLATE_VARIABLE_INSTANTIATE(setArray, HostEnvironment::setArray)
 
 // Instantiate template versions of host agent functions from the API
 TEMPLATE_VARIABLE_INSTANTIATE(getVariable, FLAMEGPU_HOST_NEW_AGENT_API::getVariable)
-TEMPLATE_VARIABLE_INSTANTIATE_N(getVariable, FLAMEGPU_HOST_NEW_AGENT_API::getVariable)
+TEMPLATE_VARIABLE_INSTANTIATE(getVariableArray, FLAMEGPU_HOST_NEW_AGENT_API::getVariableArray)
 TEMPLATE_VARIABLE_INSTANTIATE(setVariable, FLAMEGPU_HOST_NEW_AGENT_API::setVariable)
-TEMPLATE_VARIABLE_INSTANTIATE_N(setVariable, FLAMEGPU_HOST_NEW_AGENT_API::setVariable)
+TEMPLATE_VARIABLE_INSTANTIATE(setVariableArray, FLAMEGPU_HOST_NEW_AGENT_API::setVariableArray)
 
 
 // Instantiate template versions of environment description functions from the API
 TEMPLATE_VARIABLE_INSTANTIATE(add, EnvironmentDescription::add)
-TEMPLATE_VARIABLE_INSTANTIATE_N(add, EnvironmentDescription::add)
+TEMPLATE_VARIABLE_INSTANTIATE(addArray, EnvironmentDescription::addArray)
 TEMPLATE_VARIABLE_INSTANTIATE(get, EnvironmentDescription::get)
-TEMPLATE_VARIABLE_INSTANTIATE_N(get, EnvironmentDescription::getArray)
+TEMPLATE_VARIABLE_INSTANTIATE(getArray, EnvironmentDescription::getArray)
 //TEMPLATE_VARIABLE_INSTANTIATE(getAt, EnvironmentDescription::getArrayAtIndex)
 TEMPLATE_VARIABLE_INSTANTIATE(set, EnvironmentDescription::set)
-TEMPLATE_VARIABLE_INSTANTIATE_N(set, EnvironmentDescription::set)
+TEMPLATE_VARIABLE_INSTANTIATE(setArray, EnvironmentDescription::setArray)
 
 
 // Instantiate template versions of new and get message types from the API

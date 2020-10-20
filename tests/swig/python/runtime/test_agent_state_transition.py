@@ -77,7 +77,7 @@ class TestAgentStateTransitions(TestCase):
         a.newState(END_STATE)
         a.setInitialState(START_STATE)
         a.newVariableInt("x")
-        a.newVariableIntArray4("y")
+        a.newVariableArrayInt("y", 4)
         af1 = a.newRTCFunction(FUNCTION_NAME1, self.AgentGood)
         af1.setInitialState(START_STATE)
         af1.setEndState(END_STATE)
@@ -87,7 +87,7 @@ class TestAgentStateTransitions(TestCase):
         for i in range(AGENT_COUNT): 
             ai = pop.getNextInstance(START_STATE)
             ai.setVariableInt("x", 12)
-            ai.setVariableIntArray4("y", ARRAY_REFERENCE)
+            ai.setVariableArrayInt("y", ARRAY_REFERENCE)
         
         c = pyflamegpu.CUDASimulation(m)
         c.setPopulationData(pop)
@@ -99,7 +99,7 @@ class TestAgentStateTransitions(TestCase):
         for i in range (pop.getCurrentListSize(END_STATE)): 
             ai = pop.getInstanceAt(i, END_STATE)
             assert ai.getVariableInt("x") == 11
-            test = ai.getVariableIntArray4("y")
+            test = ai.getVariableArrayInt("y")
             assert test == ARRAY_REFERENCE2
         
         # Step 2, no agents in start state, nothing changes
@@ -110,7 +110,7 @@ class TestAgentStateTransitions(TestCase):
         for i in range (pop.getCurrentListSize(END_STATE)): 
             ai = pop.getInstanceAt(i, END_STATE)
             assert ai.getVariableInt("x") == 11
-            test = ai.getVariableIntArray4("y")
+            test = ai.getVariableArrayInt("y")
             assert test == ARRAY_REFERENCE2
         
     def test_src_10_dest_0(self): 
@@ -124,7 +124,7 @@ class TestAgentStateTransitions(TestCase):
         a.newState(END_STATE2)
         a.setInitialState(START_STATE)
         a.newVariableInt("x")
-        a.newVariableIntArray4("y")
+        a.newVariableArrayInt("y", 4)
         af1 = a.newRTCFunction(FUNCTION_NAME1, self.AgentGood)
         af1.setInitialState(START_STATE)
         af1.setEndState(END_STATE)
@@ -139,7 +139,7 @@ class TestAgentStateTransitions(TestCase):
         for i in range(AGENT_COUNT):
             ai = pop.getNextInstance(START_STATE)
             ai.setVariableInt("x", 12)
-            ai.setVariableIntArray4("y", ARRAY_REFERENCE)
+            ai.setVariableArrayInt("y", ARRAY_REFERENCE)
         
         c = pyflamegpu.CUDASimulation(m)
         c.setPopulationData(pop)
@@ -152,7 +152,7 @@ class TestAgentStateTransitions(TestCase):
         for i in range(pop.getCurrentListSize(END_STATE)): 
             ai = pop.getInstanceAt(i, END_STATE)
             assert ai.getVariableInt("x") == 11
-            test = ai.getVariableIntArray4("y")
+            test = ai.getVariableArrayInt("y")
             assert test == ARRAY_REFERENCE2
         
         # Step 2, all agents go from End->End2 state, and value become 13
@@ -164,7 +164,7 @@ class TestAgentStateTransitions(TestCase):
         for i in range(pop.getCurrentListSize(END_STATE2)): 
             ai = pop.getInstanceAt(i, END_STATE2)
             assert ai.getVariableInt("x") == 13
-            test = ai.getVariableIntArray4("y")
+            test = ai.getVariableArrayInt("y")
             assert test == ARRAY_REFERENCE3
         
 
@@ -183,7 +183,7 @@ class TestAgentStateTransitions(TestCase):
         a.setInitialState(START_STATE)
         a.newVariableUInt("x")
         a.newVariableUInt("y")
-        a.newVariableIntArray4("z")
+        a.newVariableArrayInt("z", 4)
         af1 = a.newRTCFunction(FUNCTION_NAME1, self.AgentDecrement)
         af1.setInitialState(START_STATE)
         af1.setEndState(START_STATE)
@@ -204,7 +204,7 @@ class TestAgentStateTransitions(TestCase):
             val = 1 + (i % ROUNDS)  # 1, 2, 3, 1, 2, 3 etc
             ai.setVariableUInt("x", val)
             ai.setVariableUInt("y", val)
-            ai.setVariableIntArray4("z", ARRAY_REFERENCE)
+            ai.setVariableArrayInt("z", ARRAY_REFERENCE)
         
         c = pyflamegpu.CUDASimulation(m)
         c.setPopulationData(pop)
@@ -221,7 +221,7 @@ class TestAgentStateTransitions(TestCase):
                 ai = pop.getInstanceAt(j, START_STATE)
                 y = ai.getVariableUInt("y")
                 out[y] += 1
-                test = ai.getVariableIntArray4("z")
+                test = ai.getVariableArrayInt("z")
                 assert test == ARRAY_REFERENCE2
             
             assert out[0] == 0
@@ -237,7 +237,7 @@ class TestAgentStateTransitions(TestCase):
                 ai = pop.getInstanceAt(j, END_STATE)
                 y = ai.getVariableUInt("y")
                 out[y] += 1
-                test = ai.getVariableIntArray4("z")
+                test = ai.getVariableArrayInt("z")
                 assert test == ARRAY_REFERENCE3
             
             for j in range(1, i + 1): 

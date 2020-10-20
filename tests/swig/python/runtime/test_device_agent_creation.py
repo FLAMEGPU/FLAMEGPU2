@@ -1114,7 +1114,7 @@ class DeviceAgentCreationTest(TestCase):
         model = pyflamegpu.ModelDescription("test_device_agent_birth_array_set")
         agent = model.newAgent("agent_name")
         agent.newVariableUInt("id")
-        agent.newVariableIntArray4("array_var")
+        agent.newVariableArrayInt("array_var", 4)
         agent.newVariableFloat("y")
         fn = agent.newRTCFunction("out", self.ArrayVarDeviceBirth)
         fn.setAllowAgentDeath(True)
@@ -1136,7 +1136,7 @@ class DeviceAgentCreationTest(TestCase):
             instance = population.getInstanceAt(i)
             j = instance.getVariableUInt("id")
             # Check array sets are correct
-            array1 = list(instance.getVariableIntArray4("array_var"))
+            array1 = list(instance.getVariableArrayInt("array_var"))
             for k in range(4): 
                 array1[k] -= j
             
@@ -1150,7 +1150,7 @@ class DeviceAgentCreationTest(TestCase):
         model = pyflamegpu.ModelDescription("test_device_agent_birth_default_works")
         agent = model.newAgent("agent_name")
         agent.newVariableUInt("id")
-        agent.newVariableIntArray4("array_var", TEST_REFERENCE)
+        agent.newVariableArrayInt("array_var", 4, TEST_REFERENCE)
         agent.newVariableFloat("y", 14.0)
         fn = agent.newRTCFunction("out", self.ArrayVarDeviceBirth_DefaultWorks)
         fn.setAllowAgentDeath(True)
@@ -1172,7 +1172,7 @@ class DeviceAgentCreationTest(TestCase):
             instance = population.getInstanceAt(i)
             j = instance.getVariableUInt("id")
             # Check array sets are correct
-            array1 = instance.getVariableIntArray4("array_var")
+            array1 = instance.getVariableArrayInt("array_var")
             assert j % 3 == 0
             assert array1 == TEST_REFERENCE
             assert instance.getVariableFloat("y") == 14.0

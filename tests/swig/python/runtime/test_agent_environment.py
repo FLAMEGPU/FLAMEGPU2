@@ -75,8 +75,8 @@ class MiniSim:
         layer = self.model.newLayer("devicefn_layer")
         layer.addAgentFunction(func)
         # Setup environment
-        add_func = getattr(self.env, f"add{python_type}Array4")
-        add_func("a", ARRAY_TEST_VALUE)
+        add_func = getattr(self.env, f"addArray{python_type}")
+        add_func("a", 4, ARRAY_TEST_VALUE)
         # run
         self.__run()
         # get instance and test output values
