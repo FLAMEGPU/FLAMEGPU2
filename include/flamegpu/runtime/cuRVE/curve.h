@@ -542,6 +542,7 @@ template <typename T>
 __device__ __forceinline__ T Curve::getVariableByHash_ldg(const VariableHash variable_hash, unsigned int index) {
     size_t offset = index *sizeof(T);
 
+#ifndef NO_SEATBELTS
     // do a check on the size as otherwise the value_ptr may eb out of bounds.
     size_t size = getVariableSize(variable_hash);
 
@@ -549,15 +550,14 @@ __device__ __forceinline__ T Curve::getVariableByHash_ldg(const VariableHash var
     if (size != sizeof(T)) {
         curve_internal::d_curve_error = DEVICE_ERROR_UNKNOWN_TYPE;
         return NULL;
-    } else {
-        // get a pointer to the specific variable by offsetting by the provided index
-        T *value_ptr = reinterpret_cast<T*>(getVariablePtrByHash(variable_hash, offset));
-
-        if (value_ptr)
-            return __ldg(value_ptr);
-        else
-            return 0;
     }
+#endif
+    // get a pointer to the specific variable by offsetting by the provided index
+    T *value_ptr = reinterpret_cast<T*>(getVariablePtrByHash(variable_hash, offset));
+
+    if (value_ptr)
+        return __ldg(value_ptr);
+    return 0;
 }
 template <typename T, unsigned int N>
 __device__ __forceinline__ T Curve::getArrayVariableByHash(const VariableHash variable_hash, unsigned int agent_index, unsigned int array_index) {
