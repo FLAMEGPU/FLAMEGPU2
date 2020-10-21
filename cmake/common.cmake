@@ -368,7 +368,7 @@ function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
     endif()
     
     # This macro disables expensive runtime checks (when not in debug mode)
-    if (NO_SEATBELTS)
+    if (NOT SEATBELTS)
         add_compile_definitions($<IF:$<CONFIG:Debug>,,NO_SEATBELTS>)
     endif()
 
@@ -426,7 +426,7 @@ function(add_flamegpu_library NAME SRC FLAMEGPU_ROOT)
     endif()
     
     # This macro disables expensive runtime checks (when not in debug mode)
-    if (NO_SEATBELTS)
+    if (NOT SEATBELTS)
         add_compile_definitions($<IF:$<CONFIG:Debug>,,NO_SEATBELTS>)
     endif()
     

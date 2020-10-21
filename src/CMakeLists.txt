@@ -31,7 +31,7 @@ project(flamegpu2 CUDA CXX)
 
 # Option to enable/disable runtime checks which may impact performance
 # This will primarily prevent device code from reporting errors
-option(NO_SEATBELTS "Disable runtime checks which harm performance for release/profile builds.\nThis should only be enabled after a model is known to be correct." OFF)
+option(SEATBELTS "Enable runtime checks which harm performance for release/profile builds.\nThis should only be disabled after a model is known to be correct." ON)
 
 # Include common rules.
 include(${FLAMEGPU_ROOT}/cmake/common.cmake)
