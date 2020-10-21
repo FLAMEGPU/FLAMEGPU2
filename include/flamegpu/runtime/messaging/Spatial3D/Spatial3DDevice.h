@@ -295,7 +295,7 @@ __device__ T MsgSpatial3D::In::Filter::Message::getVariable(const char(&variable
     }
 #endif
     // get the value from curve using the stored hashes and message index.
-    T value = Curve::getMessageVariable<T>(variable_name, this->_parent.combined_hash, cell_index);
+    T value = Curve::getMessageVariable_ldg<T>(variable_name, this->_parent.combined_hash, cell_index);
     return value;
 }
 
