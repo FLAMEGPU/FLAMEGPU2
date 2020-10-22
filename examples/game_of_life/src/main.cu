@@ -56,8 +56,8 @@ int main(int argc, const char ** argv) {
      */
     {
         EnvironmentDescription &env = model.Environment();
-        env.add("repulse", 0.05f);
-        env.add("radius", 1.0f);
+        env.newProperty("repulse", 0.05f);
+        env.newProperty("radius", 1.0f);
     }
 
     /**

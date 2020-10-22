@@ -61,7 +61,7 @@ class DeviceEnvironment {
      * @tparam N Length of variable name, this should always be implicit if passing a string literal
      */
     template<typename T, unsigned int N>
-    __device__ __forceinline__ T get(const char(&name)[N]) const;
+    __device__ __forceinline__ T getProperty(const char(&name)[N]) const;
     /**
      * Gets an element of an environment property array
      * @param name name used for accessing the property, this value should be a string literal e.g. "foobar"
@@ -69,14 +69,15 @@ class DeviceEnvironment {
      * @tparam N Length of variable name, this should always be implicit if passing a string literal
      */
     template<typename T, unsigned int N>
-    __device__ __forceinline__ T get(const char(&name)[N], const unsigned int&index) const;
+    __device__ __forceinline__ T getProperty(const char(&name)[N], const unsigned int&index) const;
     /**
      * Returns whether the named env property exists
      * @param name name used for accessing the property, this value should be a string literal e.g. "foobar"
      * @tparam N Length of variable name, this should always be implicit if passing a string literal
+     * @note Use of this function is not recommended as it should be unnecessary
      */
     template<unsigned int N>
-    __device__ __forceinline__ bool contains(const char(&name)[N]) const;
+    __device__ __forceinline__ bool containsProperty(const char(&name)[N]) const;
 };
 
 // Mash compilation of these functions from RTC builds as this requires a dynamic implementation of the function in curve_rtc
@@ -85,7 +86,7 @@ class DeviceEnvironment {
  * Getters
  */
 template<typename T, unsigned int N>
-__device__ __forceinline__ T DeviceEnvironment::get(const char(&name)[N]) const {
+__device__ __forceinline__ T DeviceEnvironment::getProperty(const char(&name)[N]) const {
     Curve::VariableHash cvh = CURVE_NAMESPACE_HASH() + modelname_hash + Curve::variableHash(name);
     const auto cv = Curve::getVariable(cvh);
 #ifndef NO_SEATBELTS
@@ -102,7 +103,7 @@ __device__ __forceinline__ T DeviceEnvironment::get(const char(&name)[N]) const 
 #endif
 }
 template<typename T, unsigned int N>
-__device__ __forceinline__ T DeviceEnvironment::get(const char(&name)[N], const unsigned int &index) const {
+__device__ __forceinline__ T DeviceEnvironment::getProperty(const char(&name)[N], const unsigned int &index) const {
     Curve::VariableHash cvh = CURVE_NAMESPACE_HASH() + modelname_hash + Curve::variableHash(name);
     const auto cv = Curve::getVariable(cvh);
 #ifndef NO_SEATBELTS
@@ -125,7 +126,7 @@ __device__ __forceinline__ T DeviceEnvironment::get(const char(&name)[N], const 
  * Util
  */
 template<unsigned int N>
-__device__ __forceinline__ bool DeviceEnvironment::contains(const char(&name)[N]) const {
+__device__ __forceinline__ bool DeviceEnvironment::containsProperty(const char(&name)[N]) const {
     Curve::VariableHash cvh = CURVE_NAMESPACE_HASH() + modelname_hash + Curve::variableHash(name);
     return Curve::getVariable(cvh) != Curve::UNKNOWN_VARIABLE;
 }

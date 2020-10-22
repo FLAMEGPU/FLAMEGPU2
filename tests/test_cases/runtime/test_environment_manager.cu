@@ -23,22 +23,22 @@ FLAMEGPU_STEP_FUNCTION(DEFAULT_STEP) {
     // Do nothing
 }
 FLAMEGPU_STEP_FUNCTION(AlignTest) {
-    ASSERT_EQ(FLAMEGPU->environment.get<bool>("a"), false);
-    ASSERT_EQ(FLAMEGPU->environment.get<uint64_t>("b"), static_cast<uint64_t>(UINT64_MAX / 2));
-    ASSERT_EQ(FLAMEGPU->environment.get<int8_t>("c"), 12);
-    ASSERT_EQ(FLAMEGPU->environment.get<int64_t>("d"), static_cast<int64_t>(INT64_MAX / 2));
-    ASSERT_EQ(FLAMEGPU->environment.get<int8_t>("e"), 21);
-    ASSERT_EQ(FLAMEGPU->environment.get<float>("f"), 13.0f);
+    ASSERT_EQ(FLAMEGPU->environment.getProperty<bool>("a"), false);
+    ASSERT_EQ(FLAMEGPU->environment.getProperty<uint64_t>("b"), static_cast<uint64_t>(UINT64_MAX / 2));
+    ASSERT_EQ(FLAMEGPU->environment.getProperty<int8_t>("c"), 12);
+    ASSERT_EQ(FLAMEGPU->environment.getProperty<int64_t>("d"), static_cast<int64_t>(INT64_MAX / 2));
+    ASSERT_EQ(FLAMEGPU->environment.getProperty<int8_t>("e"), 21);
+    ASSERT_EQ(FLAMEGPU->environment.getProperty<float>("f"), 13.0f);
 }
 FLAMEGPU_STEP_FUNCTION(Multi_ms1) {
-    ASSERT_EQ(FLAMEGPU->environment.get<float>("ms1_float"), MS1_VAL);
-    ASSERT_EQ(FLAMEGPU->environment.get<float>("ms1_float2"), MS1_VAL2);
-    ASSERT_THROW(FLAMEGPU->environment.get<double>("ms2_double"), InvalidEnvProperty);
+    ASSERT_EQ(FLAMEGPU->environment.getProperty<float>("ms1_float"), MS1_VAL);
+    ASSERT_EQ(FLAMEGPU->environment.getProperty<float>("ms1_float2"), MS1_VAL2);
+    ASSERT_THROW(FLAMEGPU->environment.getProperty<double>("ms2_double"), InvalidEnvProperty);
 }
 FLAMEGPU_STEP_FUNCTION(Multi_ms2) {
-    ASSERT_EQ(FLAMEGPU->environment.get<double>("ms2_double"), MS2_VAL);
-    ASSERT_EQ(FLAMEGPU->environment.get<float>("ms1_float"), static_cast<float>(MS2_VAL));
-    ASSERT_EQ(FLAMEGPU->environment.get<double>("ms1_float2"), MS2_VAL);
+    ASSERT_EQ(FLAMEGPU->environment.getProperty<double>("ms2_double"), MS2_VAL);
+    ASSERT_EQ(FLAMEGPU->environment.getProperty<float>("ms1_float"), static_cast<float>(MS2_VAL));
+    ASSERT_EQ(FLAMEGPU->environment.getProperty<double>("ms1_float2"), MS2_VAL);
 }
 
 class MiniSim {
@@ -93,12 +93,12 @@ class EnvironmentManagerTest : public testing::Test {
 
 // Test alignment
 TEST_F(EnvironmentManagerTest, Alignment) {
-    ms->env.add<bool>("a", static_cast<bool>(false));
-    ms->env.add<uint64_t>("b", static_cast<uint64_t>(UINT64_MAX/2));
-    ms->env.add<int8_t>("c", 12);
-    ms->env.add<int64_t>("d", static_cast<int64_t>(INT64_MAX / 2));
-    ms->env.add<int8_t>("e", 21);
-    ms->env.add<float>("f", 13.0f);
+    ms->env.newProperty<bool>("a", static_cast<bool>(false));
+    ms->env.newProperty<uint64_t>("b", static_cast<uint64_t>(UINT64_MAX/2));
+    ms->env.newProperty<int8_t>("c", 12);
+    ms->env.newProperty<int64_t>("d", static_cast<int64_t>(INT64_MAX / 2));
+    ms->env.newProperty<int8_t>("e", 21);
+    ms->env.newProperty<float>("f", 13.0f);
     ms->model.addStepFunction(AlignTest);
     ms->run();
 }
@@ -108,9 +108,9 @@ TEST_F(EnvironmentManagerTest, OutOfMemory1) {
     std::array<char, EnvironmentManager::MAX_BUFFER_SIZE / 2> char_5kb_a;
     std::array<char, EnvironmentManager::MAX_BUFFER_SIZE / 2> char_5kb_b;
     std::array<char, EnvironmentManager::MAX_BUFFER_SIZE / 2> char_5kb_c;
-    ms->env.add<char, EnvironmentManager::MAX_BUFFER_SIZE / 2>("char_5kb_a", char_5kb_a);
-    ms->env.add<char, EnvironmentManager::MAX_BUFFER_SIZE / 2>("char_5kb_b", char_5kb_b);
-    ms->env.add<char, EnvironmentManager::MAX_BUFFER_SIZE / 2>("char_5kb_c", char_5kb_c);
+    ms->env.newProperty<char, EnvironmentManager::MAX_BUFFER_SIZE / 2>("char_5kb_a", char_5kb_a);
+    ms->env.newProperty<char, EnvironmentManager::MAX_BUFFER_SIZE / 2>("char_5kb_b", char_5kb_b);
+    ms->env.newProperty<char, EnvironmentManager::MAX_BUFFER_SIZE / 2>("char_5kb_c", char_5kb_c);
     EXPECT_THROW(ms->run(), OutOfMemory);
 }
 
@@ -118,11 +118,11 @@ TEST_F(EnvironmentManagerTest, OutOfMemory1) {
 TEST(EnvironmentManagerTest2, MultipleModels) {
     MiniSim *ms1 = new MiniSim("ms1");
     MiniSim *ms2 = new MiniSim("ms2");
-    ms1->env.add<float>("ms1_float", MS1_VAL);
-    ms1->env.add<float>("ms1_float2", MS1_VAL2);
-    ms2->env.add<double>("ms2_double", MS2_VAL);
-    ms2->env.add<float>("ms1_float", static_cast<float>(MS2_VAL));
-    ms2->env.add<double>("ms1_float2", MS2_VAL);
+    ms1->env.newProperty<float>("ms1_float", MS1_VAL);
+    ms1->env.newProperty<float>("ms1_float2", MS1_VAL2);
+    ms2->env.newProperty<double>("ms2_double", MS2_VAL);
+    ms2->env.newProperty<float>("ms1_float", static_cast<float>(MS2_VAL));
+    ms2->env.newProperty<double>("ms1_float2", MS2_VAL);
     ms1->model.addStepFunction(Multi_ms1);
     ms2->model.addStepFunction(Multi_ms2);
     EXPECT_NO_THROW(ms1->run());

@@ -3,11 +3,11 @@
 const unsigned int AGENT_COUNT = 1024;
 
 FLAMEGPU_AGENT_FUNCTION(device_function, MsgNone, MsgNone) {
-    const float &prop_float = FLAMEGPU->environment.get<float>("float");
-    const int16_t &prop_int16 = FLAMEGPU->environment.get<int16_t>("int16_t");
-    const uint64_t &prop_uint64_0 = FLAMEGPU->environment.get<uint64_t>("uint64_t", 0);
-    const uint64_t &prop_uint64_1 = FLAMEGPU->environment.get<uint64_t>("uint64_t", 1);
-    const uint64_t &prop_uint64_2 = FLAMEGPU->environment.get<uint64_t>("uint64_t", 2);
+    const float &prop_float = FLAMEGPU->environment.getProperty<float>("float");
+    const int16_t &prop_int16 = FLAMEGPU->environment.getProperty<int16_t>("int16_t");
+    const uint64_t &prop_uint64_0 = FLAMEGPU->environment.getProperty<uint64_t>("uint64_t", 0);
+    const uint64_t &prop_uint64_1 = FLAMEGPU->environment.getProperty<uint64_t>("uint64_t", 1);
+    const uint64_t &prop_uint64_2 = FLAMEGPU->environment.getProperty<uint64_t>("uint64_t", 2);
     if (blockIdx.x * blockDim.x + threadIdx.x == 0) {
         printf("Agent Function[Thread 0]! Properties(Float: %g, int16: %hd, uint64[3]: {%llu, %llu, %llu})\n", prop_float, prop_int16, prop_uint64_0, prop_uint64_1, prop_uint64_2);
     }
@@ -50,7 +50,7 @@ FLAMEGPU_HOST_FUNCTION(host_function) {
     std::vector<unsigned int> hist_x = FLAMEGPU->agent("agent").histogramEven<float>("x", 8, -0.5, 1023.5);
     printf("Host Function! (Hist: [%u, %u, %u, %u, %u, %u, %u, %u]\n",
         hist_x[0], hist_x[1], hist_x[2], hist_x[3], hist_x[4], hist_x[5], hist_x[6], hist_x[7]);
-    FLAMEGPU->environment.set<int16_t>("int16_t", FLAMEGPU->environment.get<int16_t>("int16_t") + 1);
+    FLAMEGPU->environment.setProperty<int16_t>("int16_t", FLAMEGPU->environment.getProperty<int16_t>("int16_t") + 1);
 }
 FLAMEGPU_EXIT_CONDITION(exit_condition) {
     const float CHANCE = 0.15f;
@@ -79,9 +79,9 @@ int main(int argc, const char ** argv) {
      */
     {
         EnvironmentDescription &envProperties = model.Environment();
-        envProperties.add<float>("float", 12.0f);
-        envProperties.add<int16_t>("int16_t", 0);
-        envProperties.add<uint64_t, 3>("uint64_t", {11llu, 12llu, 13llu});
+        envProperties.newProperty<float>("float", 12.0f);
+        envProperties.newProperty<int16_t>("int16_t", 0);
+        envProperties.newProperty<uint64_t, 3>("uint64_t", {11llu, 12llu, 13llu});
     }
     /**
      * Control flow

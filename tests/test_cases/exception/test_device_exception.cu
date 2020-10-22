@@ -21,8 +21,8 @@ class MiniSim {
         agent(model.newAgent("agent")) {
         agent.newVariable<int>("int");
         agent.newVariable<int, 2>("array");
-        model.Environment().add<int>("int", 12);
-        model.Environment().add<int, 2>("array", {12, 13});
+        model.Environment().newProperty<int>("int", 12);
+        model.Environment().newProperty<int, 2>("array", {12, 13});
     }
     void run(int steps = 2) {
         // CudaModel must be declared here
@@ -397,7 +397,7 @@ TEST_F(DeviceExceptionTest, AgentRandomUniformInvalidRange3) {
 
 // DeviceEnvironment::get<T, N>()
 FLAMEGPU_AGENT_FUNCTION(DeviceEnvironmentGetUnknownProperty, MsgNone, MsgNone) {
-    FLAMEGPU->environment.get<int>("nope");
+    FLAMEGPU->environment.getProperty<int>("nope");
     return ALIVE;
 }
 TEST_F(DeviceExceptionTest, DeviceEnvironmentGetUnknownProperty) {
@@ -407,7 +407,7 @@ TEST_F(DeviceExceptionTest, DeviceEnvironmentGetUnknownProperty) {
     ms->run(1);
 }
 FLAMEGPU_AGENT_FUNCTION(DeviceEnvironmentGetBadType, MsgNone, MsgNone) {
-    FLAMEGPU->environment.get<double>("int");
+    FLAMEGPU->environment.getProperty<double>("int");
     return ALIVE;
 }
 TEST_F(DeviceExceptionTest, DeviceEnvironmentGetBadType) {
@@ -417,7 +417,7 @@ TEST_F(DeviceExceptionTest, DeviceEnvironmentGetBadType) {
     ms->run(1);
 }
 FLAMEGPU_AGENT_FUNCTION(DeviceEnvironmentGetOutOfRange, MsgNone, MsgNone) {
-    FLAMEGPU->environment.get<int>("array", 2);
+    FLAMEGPU->environment.getProperty<int>("array", 2);
     return ALIVE;
 }
 TEST_F(DeviceExceptionTest, DeviceEnvironmentGetOutOfRange) {

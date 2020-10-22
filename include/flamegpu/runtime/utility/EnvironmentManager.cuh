@@ -220,7 +220,7 @@ class EnvironmentManager {
      * @throws DuplicateEnvProperty If a property of the same name already exists
      */
     template<typename T>
-    void add(const NamePair &name, const T &value, const bool &isConst = false);
+    void newProperty(const NamePair &name, const T &value, const bool &isConst = false);
     /**
      * Convenience method: Adds a new environment property
      * @param instance_id instance_id of the CUDASimulation instance the property is attached to
@@ -232,7 +232,7 @@ class EnvironmentManager {
      * @see add(const NamePair &, const T &, const bool &)
      */
     template<typename T>
-    void add(const unsigned int &instance_id, const std::string &var_name, const T &value, const bool &isConst = false);
+    void newProperty(const unsigned int &instance_id, const std::string &var_name, const T &value, const bool &isConst = false);
     /**
      * Adds a new environment property array
      * @param name name used for accessing the property
@@ -243,7 +243,7 @@ class EnvironmentManager {
      * @throws DuplicateEnvProperty If a property of the same name already exists
      */
     template<typename T, size_type N>
-    void add(const NamePair &name, const std::array<T, N> &value, const bool &isConst = false);
+    void newProperty(const NamePair &name, const std::array<T, N> &value, const bool &isConst = false);
     /**
      * Convenience method: Adds a new environment property array
      * @param instance_id instance_id of the CUDASimulation instance the property is attached to
@@ -256,7 +256,7 @@ class EnvironmentManager {
      * @see add(const NamePair &, const std::array<T, N> &, const bool &)
      */
     template<typename T, size_type N>
-    void add(const unsigned int &instance_id, const std::string &var_name, const std::array<T, N> &value, const bool &isConst = false);
+    void newProperty(const unsigned int &instance_id, const std::string &var_name, const std::array<T, N> &value, const bool &isConst = false);
     /**
      * Sets an environment property
      * @param name name used for accessing the property
@@ -267,7 +267,7 @@ class EnvironmentManager {
      * @throws ReadOnlyEnvProperty If the named property is marked as const
      */
     template<typename T>
-    T set(const NamePair &name, const T &value);
+    T setProperty(const NamePair &name, const T &value);
     /**
      * Convenience method: Sets an environment property
      * @param instance_id instance_id of the CUDASimulation instance the property is attached to
@@ -280,7 +280,7 @@ class EnvironmentManager {
      * @see add(const NamePair &, const T &)
      */
     template<typename T>
-    T set(const unsigned int &instance_id, const std::string &var_name, const T &value);
+    T setProperty(const unsigned int &instance_id, const std::string &var_name, const T &value);
     /**
      * Sets an environment property array
      * @param name name used for accessing the property array
@@ -292,7 +292,7 @@ class EnvironmentManager {
      * @throws ReadOnlyEnvProperty If the named property is marked as const
      */
     template<typename T, size_type N>
-    std::array<T, N> set(const NamePair &name, const std::array<T, N> &value);
+    std::array<T, N> setProperty(const NamePair &name, const std::array<T, N> &value);
     /**
      * Convenience method: Sets an environment property array
      * @param instance_id instance_id of the CUDASimulation instance the property is attached to
@@ -306,7 +306,7 @@ class EnvironmentManager {
      * @see set(const NamePair &, const std::array<T, N> &)
      */
     template<typename T, size_type N>
-    std::array<T, N> set(const unsigned int &instance_id, const std::string &var_name, const std::array<T, N> &value);
+    std::array<T, N> setProperty(const unsigned int &instance_id, const std::string &var_name, const std::array<T, N> &value);
 #ifdef SWIG
     /**
      * Sets an environment property array
@@ -318,7 +318,7 @@ class EnvironmentManager {
      * @throws ReadOnlyEnvProperty If the named property is marked as const
      */
     template<typename T>
-    std::vector<T> setArray(const NamePair &name, const std::vector<T> &value);
+    std::vector<T> setPropertyArray(const NamePair &name, const std::vector<T> &value);
 #endif
     /**
      * Sets an element of an environment property array
@@ -331,7 +331,7 @@ class EnvironmentManager {
      * @throws std::out_of_range
      */
     template<typename T>
-    T set(const NamePair &name, const size_type &index, const T &value);
+    T setProperty(const NamePair &name, const size_type &index, const T &value);
     /**
      * Convenience method: Sets an element of an environment property array
      * @param instance_id instance_id of the CUDASimulation instance the property is attached to
@@ -345,7 +345,7 @@ class EnvironmentManager {
      * @see set(const NamePair &, const size_type &, const T &)
      */
     template<typename T>
-    T set(const unsigned int &instance_id, const std::string &var_name, const size_type &index, const T &value);
+    T setProperty(const unsigned int &instance_id, const std::string &var_name, const size_type &index, const T &value);
     /**
      * Gets an environment property
      * @param name name used for accessing the property
@@ -354,7 +354,7 @@ class EnvironmentManager {
      * @see get(const NamePair &)
      */
     template<typename T>
-    T get(const NamePair &name);
+    T getProperty(const NamePair &name);
     /**
      * Convenience method: Gets an environment property
      * @param instance_id instance_id of the CUDASimulation instance the property is attached to
@@ -363,7 +363,7 @@ class EnvironmentManager {
      * @throws InvalidEnvProperty If a property of the name does not exist
      */
     template<typename T>
-    T get(const unsigned int &instance_id, const std::string &var_name);
+    T getProperty(const unsigned int &instance_id, const std::string &var_name);
     /**
      * Gets an environment property array
      * @param name name used for accessing the property array
@@ -372,7 +372,7 @@ class EnvironmentManager {
      * @throws InvalidEnvProperty If a property array of the name does not exist
      */
     template<typename T, size_type N>
-    std::array<T, N> get(const NamePair &name);
+    std::array<T, N> getProperty(const NamePair &name);
     /**
      * Convenience method: Gets an environment property array
      * @param instance_id instance_id of the CUDASimulation instance the property is attached to
@@ -383,7 +383,7 @@ class EnvironmentManager {
      * @see get(const NamePair &)
      */
     template<typename T, size_type N>
-    std::array<T, N> get(const unsigned int &instance_id, const std::string &var_name);
+    std::array<T, N> getProperty(const unsigned int &instance_id, const std::string &var_name);
     /**
      * Gets an element of an environment property array
      * @param name name used for accessing the property array
@@ -393,7 +393,7 @@ class EnvironmentManager {
      * @throws std::out_of_range
      */
     template<typename T>
-    T get(const NamePair &name, const size_type &index);
+    T getProperty(const NamePair &name, const size_type &index);
 #ifdef SWIG
     /**
      * Convenience method: Gets an environment property array
@@ -403,7 +403,7 @@ class EnvironmentManager {
      * @see get(const NamePair &)
      */
     template<typename T>
-    std::vector<T> getArray(const NamePair& name);
+    std::vector<T> getPropertyArray(const NamePair& name);
 #endif
     /**
      * Convenience method: Gets an element of an environment property array
@@ -415,14 +415,14 @@ class EnvironmentManager {
      * @see get(const NamePair &, const size_type &)
      */
     template<typename T>
-    T get(const unsigned int &instance_id, const std::string &var_name, const size_type &index);
+    T getProperty(const unsigned int &instance_id, const std::string &var_name, const size_type &index);
     /**
      * Removes an environment property
      * @param name name used for accessing the property
      * @throws InvalidEnvProperty If a property of the name does not exist
      * @note This may be used to remove and recreate environment properties (and arrays) marked const
      */
-    void remove(const NamePair &name);
+    void removeProperty(const NamePair &name);
     /**
      * Convenience method: Removes an environment property
      * @param instance_id instance_id of the CUDASimulation instance the property is attached to
@@ -431,7 +431,7 @@ class EnvironmentManager {
      * @note This may be used to remove and recreate environment properties (and arrays) marked const
      * @see remove(const NamePair &)
      */
-    void remove(const unsigned int &instance_id, const std::string &var_name);
+    void removeProperty(const unsigned int &instance_id, const std::string &var_name);
     /**
      * Returns all environment properties owned by a model to their default values
      * This means that properties inherited by a submodel will not be reset to their default values
@@ -444,14 +444,14 @@ class EnvironmentManager {
      * Returns whether the named env property exists
      * @param name name used for accessing the property
      */
-    inline bool contains(const NamePair &name) const { return properties.find(name) != properties.end() || mapped_properties.find(name) != mapped_properties.end(); }
+    inline bool containsProperty(const NamePair &name) const { return properties.find(name) != properties.end() || mapped_properties.find(name) != mapped_properties.end(); }
     /**
      * Convenience method: Returns whether the named env property exists
      * @param instance_id instance_id of the CUDASimulation instance the property is attached to
      * @param var_name name used for accessing the property
      * @see contains(const NamePair &)
      */
-    inline bool contains(const unsigned int &instance_id, const std::string &var_name) const { return contains(toName(instance_id, var_name)); }
+    inline bool containsProperty(const unsigned int &instance_id, const std::string &var_name) const { return containsProperty(toName(instance_id, var_name)); }
     /**
      * Returns whether the named env property is marked as const
      * @param name name used for accessing the property
@@ -590,7 +590,7 @@ class EnvironmentManager {
     /**
      * Common add handler
      */
-    void add(const NamePair &name, const char *ptr, const size_t &len, const bool &isConst, const size_type &elements, const std::type_index &type);
+    void newProperty(const NamePair &name, const char *ptr, const size_t &len, const bool &isConst, const size_type &elements, const std::type_index &type);
     /**
      * Cleanup freeFragments
      * @param mergeProps Used by init to defragement whilst merging in new data
@@ -724,45 +724,45 @@ class EnvironmentManager {
  * Constructors
  */
 template<typename T>
-void EnvironmentManager::add(const NamePair &name, const T &value, const bool &isConst) {
+void EnvironmentManager::newProperty(const NamePair &name, const T &value, const bool &isConst) {
     // Limited to Arithmetic types
     // Compound types would allow host pointers inside structs to be passed
     static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value,
         "Only arithmetic types can be used as environmental properties");
-    if (contains(name)) {
+    if (containsProperty(name)) {
         THROW DuplicateEnvProperty("Environmental property with name '%u:%s' already exists, "
             "in EnvironmentManager::add().",
             name.first, name.second.c_str());
     }
-    add(name, reinterpret_cast<const char*>(&value), sizeof(T), isConst, 1, typeid(T));
+    newProperty(name, reinterpret_cast<const char*>(&value), sizeof(T), isConst, 1, typeid(T));
 }
 template<typename T>
-void EnvironmentManager::add(const unsigned int &instance_id, const std::string &var_name, const T &value, const bool &isConst) {
-    add<T>(toName(instance_id, var_name), value, isConst);
+void EnvironmentManager::newProperty(const unsigned int &instance_id, const std::string &var_name, const T &value, const bool &isConst) {
+    newProperty<T>(toName(instance_id, var_name), value, isConst);
 }
 template<typename T, EnvironmentManager::size_type N>
-void EnvironmentManager::add(const NamePair &name, const std::array<T, N> &value, const bool &isConst) {
+void EnvironmentManager::newProperty(const NamePair &name, const std::array<T, N> &value, const bool &isConst) {
     // Limited to Arithmetic types
     // Compound types would allow host pointers inside structs to be passed
     static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value,
         "Only arithmetic types can be used as environmental properties");
-    if (contains(name)) {
+    if (containsProperty(name)) {
         THROW DuplicateEnvProperty("Environmental property with name '%u:%s' already exists, "
             "in EnvironmentManager::add().",
             name.first, name.second.c_str());
     }
-    add(name, reinterpret_cast<const char*>(value.data()), N * sizeof(T), isConst, N, typeid(T));
+    newProperty(name, reinterpret_cast<const char*>(value.data()), N * sizeof(T), isConst, N, typeid(T));
 }
 template<typename T, EnvironmentManager::size_type N>
-void EnvironmentManager::add(const unsigned int &instance_id, const std::string &var_name, const std::array<T, N> &value, const bool &isConst) {
-    add<T, N>(toName(instance_id, var_name), value, isConst);
+void EnvironmentManager::newProperty(const unsigned int &instance_id, const std::string &var_name, const std::array<T, N> &value, const bool &isConst) {
+    newProperty<T, N>(toName(instance_id, var_name), value, isConst);
 }
 
 /**
  * Setters
  */
 template<typename T>
-T EnvironmentManager::set(const NamePair &name, const T &value) {
+T EnvironmentManager::setProperty(const NamePair &name, const T &value) {
     const std::type_index typ_id = type(name);
     if (typ_id != std::type_index(typeid(T))) {
         THROW InvalidEnvPropertyType("Environmental property ('%u:%s') type (%s) does not match template argument T (%s), "
@@ -775,7 +775,7 @@ T EnvironmentManager::set(const NamePair &name, const T &value) {
             name.first, name.second.c_str());
     }
     // Copy old data to return
-    T rtn = get<T>(name);
+    T rtn = getProperty<T>(name);
     // Find property offset
     ptrdiff_t buffOffset = 0;
     const auto a = properties.find(name);
@@ -794,11 +794,11 @@ T EnvironmentManager::set(const NamePair &name, const T &value) {
     return rtn;
 }
 template<typename T>
-T EnvironmentManager::set(const unsigned int &instance_id, const std::string &var_name, const T &value) {
-    return set<T>(toName(instance_id, var_name), value);
+T EnvironmentManager::setProperty(const unsigned int &instance_id, const std::string &var_name, const T &value) {
+    return setProperty<T>(toName(instance_id, var_name), value);
 }
 template<typename T, EnvironmentManager::size_type N>
-std::array<T, N> EnvironmentManager::set(const NamePair &name, const std::array<T, N> &value) {
+std::array<T, N> EnvironmentManager::setProperty(const NamePair &name, const std::array<T, N> &value) {
     const std::type_index typ_id = type(name);
     if (typ_id != std::type_index(typeid(T))) {
         THROW InvalidEnvPropertyType("Environmental property array ('%u:%s') type (%s) does not match template argument T (%s), "
@@ -825,7 +825,7 @@ std::array<T, N> EnvironmentManager::set(const NamePair &name, const std::array<
         buffOffset = properties.at(mapped_properties.at(name).masterProp).offset;
     }
     // Copy old data to return
-    std::array<T, N> rtn = get<T, N>(name);
+    std::array<T, N> rtn = getProperty<T, N>(name);
     // Store data
     memcpy(hc_buffer + buffOffset, value.data(), N * sizeof(T));
     // Do rtc too
@@ -836,12 +836,12 @@ std::array<T, N> EnvironmentManager::set(const NamePair &name, const std::array<
     return rtn;
 }
 template<typename T, EnvironmentManager::size_type N>
-std::array<T, N> EnvironmentManager::set(const unsigned int &instance_id, const std::string &var_name, const std::array<T, N> &value) {
-    return set<T, N>(toName(instance_id, var_name), value);
+std::array<T, N> EnvironmentManager::setProperty(const unsigned int &instance_id, const std::string &var_name, const std::array<T, N> &value) {
+    return setProperty<T, N>(toName(instance_id, var_name), value);
 }
 #ifdef SWIG
 template<typename T>
-std::vector<T> EnvironmentManager::setArray(const NamePair& name, const std::vector<T>& value) {
+std::vector<T> EnvironmentManager::setPropertyArray(const NamePair& name, const std::vector<T>& value) {
     const std::type_index typ_id = type(name);
     if (typ_id != std::type_index(typeid(T))) {
         THROW InvalidEnvPropertyType("Environmental property array ('%u:%s') type (%s) does not match template argument T (%s), "
@@ -885,7 +885,7 @@ std::vector<T> EnvironmentManager::setArray(const NamePair& name, const std::vec
 }
 #endif
 template<typename T>
-T EnvironmentManager::set(const NamePair &name, const size_type &index, const T &value) {
+T EnvironmentManager::setProperty(const NamePair &name, const size_type &index, const T &value) {
     const std::type_index typ_id = type(name);
     if (typ_id != std::type_index(typeid(T))) {
         THROW InvalidEnvPropertyType("Environmental property array ('%u:%s') type (%s) does not match template argument T (%s), "
@@ -924,15 +924,15 @@ T EnvironmentManager::set(const NamePair &name, const size_type &index, const T 
     return rtn;
 }
 template<typename T>
-T EnvironmentManager::set(const unsigned int &instance_id, const std::string &var_name, const size_type &index, const T &value) {
-    return set<T>(toName(instance_id, var_name), index, value);
+T EnvironmentManager::setProperty(const unsigned int &instance_id, const std::string &var_name, const size_type &index, const T &value) {
+    return setProperty<T>(toName(instance_id, var_name), index, value);
 }
 
 /**
  * Getters
  */
 template<typename T>
-T EnvironmentManager::get(const NamePair &name) {
+T EnvironmentManager::getProperty(const NamePair &name) {
     // Limited to Arithmetic types
     // Compound types would allow host pointers inside structs to be passed
     static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value,
@@ -950,11 +950,11 @@ T EnvironmentManager::get(const NamePair &name) {
     return *reinterpret_cast<T*>(hc_buffer + properties.at(mapped_properties.at(name).masterProp).offset);
 }
 template<typename T>
-T EnvironmentManager::get(const unsigned int &instance_id, const std::string &var_name) {
-    return get<T>(toName(instance_id, var_name));
+T EnvironmentManager::getProperty(const unsigned int &instance_id, const std::string &var_name) {
+    return getProperty<T>(toName(instance_id, var_name));
 }
 template<typename T, EnvironmentManager::size_type N>
-std::array<T, N> EnvironmentManager::get(const NamePair &name) {
+std::array<T, N> EnvironmentManager::getProperty(const NamePair &name) {
     // Limited to Arithmetic types
     // Compound types would allow host pointers inside structs to be passed
     static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value,
@@ -982,11 +982,11 @@ std::array<T, N> EnvironmentManager::get(const NamePair &name) {
     return rtn;
 }
 template<typename T, EnvironmentManager::size_type N>
-std::array<T, N> EnvironmentManager::get(const unsigned int &instance_id, const std::string &var_name) {
-    return get<T, N>(toName(instance_id, var_name));
+std::array<T, N> EnvironmentManager::getProperty(const unsigned int &instance_id, const std::string &var_name) {
+    return getProperty<T, N>(toName(instance_id, var_name));
 }
 template<typename T>
-T EnvironmentManager::get(const NamePair &name, const size_type &index) {
+T EnvironmentManager::getProperty(const NamePair &name, const size_type &index) {
     // Limited to Arithmetic types
     // Compound types would allow host pointers inside structs to be passed
     static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value,
@@ -1011,7 +1011,7 @@ T EnvironmentManager::get(const NamePair &name, const size_type &index) {
 }
 #ifdef SWIG
 template<typename T>
-std::vector<T> EnvironmentManager::getArray(const NamePair& name) {
+std::vector<T> EnvironmentManager::getPropertyArray(const NamePair& name) {
     // Limited to Arithmetic types
     // Compound types would allow host pointers inside structs to be passed
     static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value,
@@ -1035,8 +1035,8 @@ std::vector<T> EnvironmentManager::getArray(const NamePair& name) {
 }
 #endif
 template<typename T>
-T EnvironmentManager::get(const unsigned int &instance_id, const std::string &var_name, const size_type &index) {
-    return get<T>(toName(instance_id, var_name), index);
+T EnvironmentManager::getProperty(const unsigned int &instance_id, const std::string &var_name, const size_type &index) {
+    return getProperty<T>(toName(instance_id, var_name), index);
 }
 
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_UTILITY_ENVIRONMENTMANAGER_CUH_

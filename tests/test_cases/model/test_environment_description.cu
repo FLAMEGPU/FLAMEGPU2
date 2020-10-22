@@ -7,7 +7,7 @@
  * > remove() [does it work for isConst]
  * > exception throwing
  * Implied tests: (Covered as a result of other tests)
- * > add() [per supported type, individual/array]
+ * > newProperty() [per supported type, individual/array]
  */
 
 #include "flamegpu/flame_api.h"
@@ -18,7 +18,7 @@ namespace {
 const int ARRAY_TEST_LEN = 5;
 
 /**
- * Tests void EnvDesc::add<T>(const std::string &, const T&) 
+ * Tests void EnvDesc::newProperty<T>(const std::string &, const T&) 
  * Tests T EnvDesc::get<T>(const std::string &)
  * Tests T EnvDesc::set<T>(const std::string &, const T&) 
  * Tests T EnvDesc::get<T>(const std::string &)
@@ -28,13 +28,13 @@ void AddGet_SetGet_test() {
     EnvironmentDescription ed;
     T b = static_cast<T>(1);
     T c = static_cast<T>(2);
-    ed.add<T>("a", b);
-    EXPECT_EQ(ed.get<T>("a"), b);
-    EXPECT_EQ(ed.set<T>("a", c), b);
-    EXPECT_EQ(ed.get<T>("a"), c);
+    ed.newProperty<T>("a", b);
+    EXPECT_EQ(ed.getProperty<T>("a"), b);
+    EXPECT_EQ(ed.setProperty<T>("a", c), b);
+    EXPECT_EQ(ed.getProperty<T>("a"), c);
 }
 /**
- * Tests void EnvDesc::add<T, N>(const std::string &, const std::array<T, N>&)
+ * Tests void EnvDesc::newProperty<T, N>(const std::string &, const std::array<T, N>&)
  * Tests std::array<T, N> EnvDesc::get<T, N>(const std::string &)
  * Tests std::array<T, N> EnvDesc::set<T, N>(const std::string &, const std::array<T, N>&)
  * Tests std::array<T, N> EnvDesc::get<T, N>(const std::string &)
@@ -48,23 +48,23 @@ void AddGet_SetGet_array_test() {
         b[i] = static_cast<T>(i);
         c[i] = static_cast<T>(ARRAY_TEST_LEN-i);
     }
-    ed.add<T, ARRAY_TEST_LEN>("a", b);
+    ed.newProperty<T, ARRAY_TEST_LEN>("a", b);
     std::array<T, ARRAY_TEST_LEN> a;
-    a = ed.get<T, ARRAY_TEST_LEN>("a");
+    a = ed.getProperty<T, ARRAY_TEST_LEN>("a");
     for (int i = 0; i < ARRAY_TEST_LEN; ++i) {
         EXPECT_EQ(a[i], b[i]);
     }
-    a = ed.set<T, ARRAY_TEST_LEN>("a", c);
+    a = ed.setProperty<T, ARRAY_TEST_LEN>("a", c);
     for (int i = 0; i < ARRAY_TEST_LEN; ++i) {
         EXPECT_EQ(a[i], b[i]);
     }
-    a = ed.get<T, ARRAY_TEST_LEN>("a");
+    a = ed.getProperty<T, ARRAY_TEST_LEN>("a");
     for (int i = 0; i < ARRAY_TEST_LEN; ++i) {
         EXPECT_EQ(a[i], c[i]);
     }
 }
 /**
- * Tests void EnvDesc::add<T, N>(const std::string &, const std::array<T, N>&)
+ * Tests void EnvDesc::newProperty<T, N>(const std::string &, const std::array<T, N>&)
  * Tests T EnvDesc::get<T, N>(const std::string &, const size_type &)
  * Tests T EnvDesc::set<T, N>(const std::string &, const size_type &, const T &)
  * Tests T EnvDesc::get<T, N>(const std::string &, const size_type &)
@@ -78,13 +78,13 @@ void AddGet_SetGet_array_element_test() {
         b[i] = static_cast<T>(i);
         c[i] = static_cast<T>(ARRAY_TEST_LEN - i);
     }
-    ed.add<T, ARRAY_TEST_LEN>("a", b);
+    ed.newProperty<T, ARRAY_TEST_LEN>("a", b);
     for (int i = 0; i < ARRAY_TEST_LEN; ++i) {
-        EXPECT_EQ(ed.get<T>("a", i), b[i]);
-        EXPECT_EQ(ed.set<T>("a", i, c[i]), b[i]);
+        EXPECT_EQ(ed.getProperty<T>("a", i), b[i]);
+        EXPECT_EQ(ed.setProperty<T>("a", i, c[i]), b[i]);
     }
     for (int i = 0; i < ARRAY_TEST_LEN; ++i) {
-        EXPECT_EQ(ed.get<T>("a", i), c[i]);
+        EXPECT_EQ(ed.getProperty<T>("a", i), c[i]);
     }
 }
 
@@ -95,7 +95,7 @@ void ExceptionPropertyType_test() {
     * It is necessary to use function pointers for any functions that are templated with 2 args and overloaded
     * They don't build on Travis with implied template args
     */
-    auto setArray = &EnvironmentDescription::set<_T, ARRAY_TEST_LEN>;
+    auto setArray = &EnvironmentDescription::setProperty<_T, ARRAY_TEST_LEN>;
 
     T a = static_cast<T>(1);
     _T _a = static_cast<_T>(1);
@@ -105,12 +105,12 @@ void ExceptionPropertyType_test() {
         b[i] = static_cast<T>(i);
         _b[i] = static_cast<_T>(i);
     }
-    ed.add<T>("a", a, true);
-    ed.add<T, ARRAY_TEST_LEN>("b", b, true);
-    EXPECT_THROW(ed.set<_T>("a", _a), InvalidEnvPropertyType);
+    ed.newProperty<T>("a", a, true);
+    ed.newProperty<T, ARRAY_TEST_LEN>("b", b, true);
+    EXPECT_THROW(ed.setProperty<_T>("a", _a), InvalidEnvPropertyType);
     // EXPECT_THROW(ed.set<_T>("b", _b), InvalidEnvPropertyType);  // Doesn't build on Travis
     EXPECT_THROW((ed.*setArray)("b", _b), InvalidEnvPropertyType);
-    EXPECT_THROW(ed.set<_T>("b", 0, _a), InvalidEnvPropertyType);
+    EXPECT_THROW(ed.setProperty<_T>("b", 0, _a), InvalidEnvPropertyType);
 }
 
 template<typename T>
@@ -120,10 +120,10 @@ void ExceptionPropertyLength_test() {
     std::array<T, 1> _b1;
     std::array<T, ARRAY_TEST_LEN + 1> _b2;
     std::array<T, ARRAY_TEST_LEN * 2> _b3;
-    ed.add<T, ARRAY_TEST_LEN>("a", b);
-    auto fn1 = &EnvironmentDescription::set<T, 1>;
-    auto fn2 = &EnvironmentDescription::set<T, ARRAY_TEST_LEN + 1>;
-    auto fn3 = &EnvironmentDescription::set<T, ARRAY_TEST_LEN * 2>;
+    ed.newProperty<T, ARRAY_TEST_LEN>("a", b);
+    auto fn1 = &EnvironmentDescription::setProperty<T, 1>;
+    auto fn2 = &EnvironmentDescription::setProperty<T, ARRAY_TEST_LEN + 1>;
+    auto fn3 = &EnvironmentDescription::setProperty<T, ARRAY_TEST_LEN * 2>;
     EXPECT_THROW((ed.*fn1)("a", _b1), OutOfBoundsException);
     EXPECT_THROW((ed.*fn2)("a", _b2), OutOfBoundsException);
     EXPECT_THROW((ed.*fn3)("a", _b3), OutOfBoundsException);
@@ -133,12 +133,12 @@ template<typename T>
 void ExceptionPropertyRange_test() {
     std::array<T, ARRAY_TEST_LEN> b;
     EnvironmentDescription ed;
-    ed.add<T, ARRAY_TEST_LEN>("a", b);
+    ed.newProperty<T, ARRAY_TEST_LEN>("a", b);
     T c = static_cast<T>(12);
 
     for (int i = 0; i < 5; ++i) {
-        EXPECT_THROW(ed.set<T>("a", ARRAY_TEST_LEN + i, c), OutOfBoundsException);
-        EXPECT_THROW(ed.get<T>("a", ARRAY_TEST_LEN + i), OutOfBoundsException);
+        EXPECT_THROW(ed.setProperty<T>("a", ARRAY_TEST_LEN + i, c), OutOfBoundsException);
+        EXPECT_THROW(ed.getProperty<T>("a", ARRAY_TEST_LEN + i), OutOfBoundsException);
     }
 }
 
@@ -334,26 +334,26 @@ TEST(EnvironmentDescriptionTest, ExceptionPropertyRange_uint64_t) {
 TEST(EnvironmentDescriptionTest, ExceptionPropertyDoesntExist) {
     EnvironmentDescription ed;
     float a = static_cast<float>(12);
-    EXPECT_THROW(ed.get<float>("a"), InvalidEnvProperty);
-    ed.add<float>("a", a);
-    EXPECT_EQ(ed.get<float>("a"), a);
+    EXPECT_THROW(ed.getProperty<float>("a"), InvalidEnvProperty);
+    ed.newProperty<float>("a", a);
+    EXPECT_EQ(ed.getProperty<float>("a"), a);
     // array version
-    auto f = &EnvironmentDescription::get<int, 2>;
+    auto f = &EnvironmentDescription::getProperty<int, 2>;
     EXPECT_THROW((ed.*f)("b"), InvalidEnvProperty);
-    auto addArray = &EnvironmentDescription::add<int, ARRAY_TEST_LEN>;
+    auto addArray = &EnvironmentDescription::newProperty<int, ARRAY_TEST_LEN>;
     std::array<int, ARRAY_TEST_LEN> b;
-    // EXPECT_NO_THROW(ed.add<int>("b", b));  // Doesn't build on Travis
+    // EXPECT_NO_THROW(ed.newProperty<int>("b", b));  // Doesn't build on Travis
     EXPECT_NO_THROW((ed.*addArray)("b", b, false));
-    EXPECT_NO_THROW(ed.get<int>("b"));
-    EXPECT_NO_THROW(ed.get<int>("b", 1));
+    EXPECT_NO_THROW(ed.getProperty<int>("b"));
+    EXPECT_NO_THROW(ed.getProperty<int>("b", 1));
 }
 
 TEST(EnvironmentDescriptionTest, reserved_name) {
     EnvironmentDescription ed;
-    EXPECT_THROW(ed.add<int>("_", 1), ReservedName);
-    EXPECT_THROW(ed.set<int>("_", 1), ReservedName);
-    auto add = &EnvironmentDescription::add<int, 2>;
-    auto set = &EnvironmentDescription::set<int, 2>;
+    EXPECT_THROW(ed.newProperty<int>("_", 1), ReservedName);
+    EXPECT_THROW(ed.setProperty<int>("_", 1), ReservedName);
+    auto add = &EnvironmentDescription::newProperty<int, 2>;
+    auto set = &EnvironmentDescription::setProperty<int, 2>;
     EXPECT_THROW((ed.*add)("_", { 1, 2 }, false), ReservedName);
     EXPECT_THROW((ed.*set)("_", { 1, 2 }), ReservedName);
 }

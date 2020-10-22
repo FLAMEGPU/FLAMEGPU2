@@ -390,10 +390,10 @@ TEMPLATE_VARIABLE_INSTANTIATE(max, HostAgentInstance::max)
 TEMPLATE_SUM_INSTANTIATE(HostAgentInstance)
 
 // Instantiate template versions of host environment functions from the API
-TEMPLATE_VARIABLE_INSTANTIATE(get, HostEnvironment::get)
-TEMPLATE_VARIABLE_INSTANTIATE(getArray, HostEnvironment::getArray)
-TEMPLATE_VARIABLE_INSTANTIATE(set, HostEnvironment::set)
-TEMPLATE_VARIABLE_INSTANTIATE(setArray, HostEnvironment::setArray)
+TEMPLATE_VARIABLE_INSTANTIATE(getProperty, HostEnvironment::getProperty)
+TEMPLATE_VARIABLE_INSTANTIATE(getPropertyArray, HostEnvironment::getPropertyArray)
+TEMPLATE_VARIABLE_INSTANTIATE(setProperty, HostEnvironment::setProperty)
+TEMPLATE_VARIABLE_INSTANTIATE(setPropertyArray, HostEnvironment::setPropertyArray)
 
 // Instantiate template versions of host agent functions from the API
 TEMPLATE_VARIABLE_INSTANTIATE(getVariable, FLAMEGPU_HOST_NEW_AGENT_API::getVariable)
@@ -403,13 +403,13 @@ TEMPLATE_VARIABLE_INSTANTIATE(setVariableArray, FLAMEGPU_HOST_NEW_AGENT_API::set
 
 
 // Instantiate template versions of environment description functions from the API
-TEMPLATE_VARIABLE_INSTANTIATE(add, EnvironmentDescription::add)
-TEMPLATE_VARIABLE_INSTANTIATE(addArray, EnvironmentDescription::addArray)
-TEMPLATE_VARIABLE_INSTANTIATE(get, EnvironmentDescription::get)
-TEMPLATE_VARIABLE_INSTANTIATE(getArray, EnvironmentDescription::getArray)
-//TEMPLATE_VARIABLE_INSTANTIATE(getAt, EnvironmentDescription::getArrayAtIndex)
-TEMPLATE_VARIABLE_INSTANTIATE(set, EnvironmentDescription::set)
-TEMPLATE_VARIABLE_INSTANTIATE(setArray, EnvironmentDescription::setArray)
+TEMPLATE_VARIABLE_INSTANTIATE(newProperty, EnvironmentDescription::newProperty)
+TEMPLATE_VARIABLE_INSTANTIATE(newPropertyArray, EnvironmentDescription::newPropertyArray)
+TEMPLATE_VARIABLE_INSTANTIATE(getProperty, EnvironmentDescription::getProperty)
+TEMPLATE_VARIABLE_INSTANTIATE(getPropertyArray, EnvironmentDescription::getPropertyArray)
+//TEMPLATE_VARIABLE_INSTANTIATE(getPropertyAt, EnvironmentDescription::getPropertyArrayAtIndex)
+TEMPLATE_VARIABLE_INSTANTIATE(setProperty, EnvironmentDescription::setProperty)
+TEMPLATE_VARIABLE_INSTANTIATE(setPropertyArray, EnvironmentDescription::setPropertyArray)
 
 
 // Instantiate template versions of new and get message types from the API

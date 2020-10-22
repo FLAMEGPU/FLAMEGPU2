@@ -223,7 +223,7 @@ Curve::VariableHash EnvironmentManager::toHash(const NamePair &name) const {
     return model_cvh + var_cvh;
 }
 
-void EnvironmentManager::add(const NamePair &name, const char *ptr, const size_t &length, const bool &isConst, const size_type &elements, const std::type_index &type) {
+void EnvironmentManager::newProperty(const NamePair &name, const char *ptr, const size_t &length, const bool &isConst, const size_type &elements, const std::type_index &type) {
     assert(elements > 0);
     const size_t typeSize = (length / elements);
     ptrdiff_t buffOffset = MAX_BUFFER_SIZE;
@@ -545,7 +545,7 @@ void EnvironmentManager::updateRTCValue(const NamePair &name) {
     }
 }
 
-void EnvironmentManager::remove(const NamePair &name) {
+void EnvironmentManager::removeProperty(const NamePair &name) {
     // Unregister in cuRVE
     Curve::getInstance().setNamespaceByHash(CURVE_NAMESPACE_HASH);
     Curve::VariableHash cvh = toHash(name);
@@ -572,8 +572,8 @@ void EnvironmentManager::remove(const NamePair &name) {
     }
     setDeviceRequiresUpdateFlag(name.first);
 }
-void EnvironmentManager::remove(const unsigned int &instance_id, const std::string &var_name) {
-    remove({instance_id, var_name});
+void EnvironmentManager::removeProperty(const unsigned int &instance_id, const std::string &var_name) {
+    removeProperty({instance_id, var_name});
 }
 
 void EnvironmentManager::resetModel(const unsigned int &instance_id, const EnvironmentDescription &desc) {

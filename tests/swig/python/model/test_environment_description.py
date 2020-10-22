@@ -11,9 +11,9 @@ def AddGet_SetGet_test(type: str):
     functions from EnvironmentDescription
     """
     ed = pyflamegpu.EnvironmentDescription()
-    add_func = getattr(ed, f"add{type}")
-    get_func = getattr(ed, f"get{type}")
-    set_func = getattr(ed, f"set{type}")
+    add_func = getattr(ed, f"newProperty{type}")
+    get_func = getattr(ed, f"getProperty{type}")
+    set_func = getattr(ed, f"setProperty{type}")
     add_func("a", 1)
     assert get_func("a") == 1
     assert set_func("a", 2) == 1
@@ -27,9 +27,9 @@ def AddGet_SetGet_array_test(type: str):
     add, get and set functions from EnvironmentDescription
     """
     ed = pyflamegpu.EnvironmentDescription()
-    add_func = getattr(ed, f"addArray{type}")
-    get_func = getattr(ed, f"getArray{type}")
-    set_func = getattr(ed, f"setArray{type}")
+    add_func = getattr(ed, f"newPropertyArray{type}")
+    get_func = getattr(ed, f"getPropertyArray{type}")
+    set_func = getattr(ed, f"setPropertyArray{type}")
     b = [0] * ARRAY_TEST_LEN
     c = [0] * ARRAY_TEST_LEN
     for i in range(ARRAY_TEST_LEN):
@@ -53,9 +53,9 @@ def AddGet_SetGet_array_element_test(type: str):
     add, get and set functions from EnvironmentDescription
     """
     ed = pyflamegpu.EnvironmentDescription()
-    add_func = getattr(ed, f"addArray{type}")
-    get_func = getattr(ed, f"get{type}")
-    set_func = getattr(ed, f"set{type}")
+    add_func = getattr(ed, f"newPropertyArray{type}")
+    get_func = getattr(ed, f"getProperty{type}")
+    set_func = getattr(ed, f"setProperty{type}")
     b = [0] * ARRAY_TEST_LEN
     c = [0] * ARRAY_TEST_LEN
     for i in range(ARRAY_TEST_LEN):
@@ -75,11 +75,11 @@ def ExceptionPropertyType_test(type1: str, type2: str):
     add, get and set functions from EnvironmentDescription
     """
     ed = pyflamegpu.EnvironmentDescription()
-    add_func_t1 = getattr(ed, f"add{type1}")
-    add_func_array_t1 = getattr(ed, f"addArray{type1}")
-    set_func_t1 = getattr(ed, f"set{type1}")
-    set_func_t2 = getattr(ed, f"set{type2}")
-    set_func_array_t2 = getattr(ed, f"setArray{type2}")
+    add_func_t1 = getattr(ed, f"newProperty{type1}")
+    add_func_array_t1 = getattr(ed, f"newPropertyArray{type1}")
+    set_func_t1 = getattr(ed, f"setProperty{type1}")
+    set_func_t2 = getattr(ed, f"setProperty{type2}")
+    set_func_array_t2 = getattr(ed, f"setPropertyArray{type2}")
   
     a_t1 = 1
     a_t2 = 1
@@ -108,8 +108,8 @@ def ExceptionPropertyLength_test(type: str):
     add, get and set functions from EnvironmentDescription
     """
     ed = pyflamegpu.EnvironmentDescription()
-    add_func = getattr(ed, f"addArray{type}")
-    set_func = getattr(ed, f"setArray{type}")
+    add_func = getattr(ed, f"newPropertyArray{type}")
+    set_func = getattr(ed, f"setPropertyArray{type}")
     
     b = [0] * ARRAY_TEST_LEN
     _b1 = [0] * 1
@@ -128,9 +128,9 @@ def ExceptionPropertyLength_test(type: str):
 
 def ExceptionPropertyRange_test(type:str):
     ed = pyflamegpu.EnvironmentDescription()
-    add_func = getattr(ed, f"addArray{type}")
-    set_func = getattr(ed, f"set{type}")
-    get_func = getattr(ed, f"get{type}")
+    add_func = getattr(ed, f"newPropertyArray{type}")
+    set_func = getattr(ed, f"setProperty{type}")
+    get_func = getattr(ed, f"getProperty{type}")
     b = [0] * ARRAY_TEST_LEN
 
     add_func("a", ARRAY_TEST_LEN, b)
@@ -345,37 +345,37 @@ class EnvironmentDescriptionTest(TestCase):
         ed = pyflamegpu.EnvironmentDescription()
         a = 12.0
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-            ed.getFloat("a")
+            ed.getPropertyFloat("a")
         assert e.value.type() == "InvalidEnvProperty"
-        ed.addFloat("a", a)
-        assert ed.getFloat("a") == a
+        ed.newPropertyFloat("a", a)
+        assert ed.getPropertyFloat("a") == a
         # array version (get array functions dynamically to avoid hard coded ARRAY_TEST_LEN)
-        add_int_array_func = getattr(ed, f"addArrayInt")
-        get_int_array_func = getattr(ed, f"getArrayInt")
-        get_float_array_func = getattr(ed, f"getArrayFloat")
+        add_int_array_func = getattr(ed, f"newPropertyArrayInt")
+        get_int_array_func = getattr(ed, f"getPropertyArrayInt")
+        get_float_array_func = getattr(ed, f"getPropertyArrayFloat")
         b = [0] * ARRAY_TEST_LEN
         add_int_array_func("b", ARRAY_TEST_LEN, b, False)
         get_int_array_func("b")
-        ed.getInt("b", 1)
+        ed.getPropertyInt("b", 1)
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
             get_float_array_func("c")
         assert e.value.type() == "InvalidEnvProperty"
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-            ed.getFloat("c", 1)
+            ed.getPropertyFloat("c", 1)
         assert e.value.type() == "InvalidEnvProperty"
 
     def test_reserved_name(self):
         ed = pyflamegpu.EnvironmentDescription()
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-            ed.addInt("_", 1)
+            ed.newPropertyInt("_", 1)
         assert e.value.type() == "ReservedName"
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-            ed.setInt("_", 1)
+            ed.setPropertyInt("_", 1)
         assert e.value.type() == "ReservedName"
         # Array version
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-            ed.addArrayInt("_", 2, [ 1, 2 ], False)
+            ed.newPropertyArrayInt("_", 2, [ 1, 2 ], False)
         assert e.value.type() == "ReservedName"
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-            ed.setArrayInt("_", [ 1, 2 ])
+            ed.setPropertyArrayInt("_", [ 1, 2 ])
         assert e.value.type() == "ReservedName"

@@ -12,14 +12,14 @@ TEST(SubEnvironmentDescriptionTest, InvalidNames) {
     {
         // Define SubModel
         m2.addExitCondition(ExitAlways);
-        m2.Environment().add<float>("a", 0);
-        m2.Environment().add<float, 2>("a2", {});
+        m2.Environment().newProperty<float>("a", 0);
+        m2.Environment().newProperty<float, 2>("a2", {});
     }
     ModelDescription m("host");
     {
         // Define Model
-        m.Environment().add<float>("b", 0);
-        m.Environment().add<float, 2>("b2", {});
+        m.Environment().newProperty<float>("b", 0);
+        m.Environment().newProperty<float, 2>("b2", {});
     }
     auto &sm = m.newSubModel("sub", m2);
     auto &senv = sm.SubEnvironment();
@@ -35,14 +35,14 @@ TEST(SubEnvironmentDescriptionTest, TypesDoNotMatch) {
     {
         // Define SubModel
         m2.addExitCondition(ExitAlways);
-        m2.Environment().add<float>("a", 0);
-        m2.Environment().add<int, 2>("a2", {});
+        m2.Environment().newProperty<float>("a", 0);
+        m2.Environment().newProperty<int, 2>("a2", {});
     }
     ModelDescription m("host");
     {
         // Define Model
-        m.Environment().add<unsigned int>("b", 0);
-        m.Environment().add<float, 2>("b2", {});
+        m.Environment().newProperty<unsigned int>("b", 0);
+        m.Environment().newProperty<float, 2>("b2", {});
     }
     auto &sm = m.newSubModel("sub", m2);
     auto &senv = sm.SubEnvironment();
@@ -54,14 +54,14 @@ TEST(SubEnvironmentDescriptionTest, ElementsDoNotMatch) {
     {
         // Define SubModel
         m2.addExitCondition(ExitAlways);
-        m2.Environment().add<float>("a", 0);
-        m2.Environment().add<float, 2>("a2", {});
+        m2.Environment().newProperty<float>("a", 0);
+        m2.Environment().newProperty<float, 2>("a2", {});
     }
     ModelDescription m("host");
     {
         // Define Model
-        m.Environment().add<float>("b", 0);
-        m.Environment().add<float, 2>("b2", {});
+        m.Environment().newProperty<float>("b", 0);
+        m.Environment().newProperty<float, 2>("b2", {});
     }
     auto &sm = m.newSubModel("sub", m2);
     auto &senv = sm.SubEnvironment();
@@ -75,14 +75,14 @@ TEST(SubEnvironmentDescriptionTest, IsConstWrong) {
     {
         // Define SubModel
         m2.addExitCondition(ExitAlways);
-        m2.Environment().add<float>("a", 0);
-        m2.Environment().add<float, 2>("a2", {});
+        m2.Environment().newProperty<float>("a", 0);
+        m2.Environment().newProperty<float, 2>("a2", {});
     }
     ModelDescription m("host");
     {
         // Define Model
-        m.Environment().add<float>("b", 0, true);
-        m.Environment().add<float, 2>("b2", {}, true);
+        m.Environment().newProperty<float>("b", 0, true);
+        m.Environment().newProperty<float, 2>("b2", {}, true);
     }
     auto &sm = m.newSubModel("sub", m2);
     auto &senv = sm.SubEnvironment();
@@ -94,18 +94,18 @@ TEST(SubEnvironmentDescriptionTest, AlreadyBound) {
     {
         // Define SubModel
         m2.addExitCondition(ExitAlways);
-        m2.Environment().add<float>("a", 0);
-        m2.Environment().add<float, 2>("a2", {});
-        m2.Environment().add<float>("a_", 0);
-        m2.Environment().add<float, 2>("a2_", {});
+        m2.Environment().newProperty<float>("a", 0);
+        m2.Environment().newProperty<float, 2>("a2", {});
+        m2.Environment().newProperty<float>("a_", 0);
+        m2.Environment().newProperty<float, 2>("a2_", {});
     }
     ModelDescription m("host");
     {
         // Define Model
-        m.Environment().add<float>("b", 0);
-        m.Environment().add<float, 2>("b2", {});
-        m.Environment().add<float>("b_", 0);
-        m.Environment().add<float, 2>("b2_", {});
+        m.Environment().newProperty<float>("b", 0);
+        m.Environment().newProperty<float, 2>("b2", {});
+        m.Environment().newProperty<float>("b_", 0);
+        m.Environment().newProperty<float, 2>("b2_", {});
     }
     // Missing exit condition
     auto &sm = m.newSubModel("sub", m2);
