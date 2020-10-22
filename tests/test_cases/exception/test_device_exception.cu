@@ -1093,3 +1093,34 @@ TEST_F(DeviceExceptionTest, AgentFunctionConditionError2) {
     // Test Something
     ms->run(1);
 }
+
+// Test error if agent birth/death not enabled
+FLAMEGPU_AGENT_FUNCTION(AgentBirthMock1, MsgNone, MsgNone) {
+    FLAMEGPU->agent_out.setVariable<int>("int", 0);
+    return ALIVE;
+}
+FLAMEGPU_AGENT_FUNCTION(AgentBirthMock2, MsgNone, MsgNone) {
+    FLAMEGPU->agent_out.setVariable<int, 2>("int", 0, 0);
+    return ALIVE;
+}
+FLAMEGPU_AGENT_FUNCTION(AgentDeathMock, MsgNone, MsgNone) {
+    return DEAD;
+}
+TEST_F(DeviceExceptionTest, AgentBirthDisabled1) {
+    // Add required agent function
+    ms->addFunc(AgentBirthMock1);
+    // Test Something
+    ms->run(1);
+}
+TEST_F(DeviceExceptionTest, AgentBirthDisabled2) {
+    // Add required agent function
+    ms->addFunc(AgentBirthMock2);
+    // Test Something
+    ms->run(1);
+}
+TEST_F(DeviceExceptionTest, AgentDeathDisabled) {
+    // Add required agent function
+    ms->addFunc(AgentDeathMock);
+    // Test Something
+    ms->run(1);
+}

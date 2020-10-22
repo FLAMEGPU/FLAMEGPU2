@@ -87,10 +87,14 @@ __global__ void agent_function_wrapper(
         MsgOut::Out(agent_func_name_hash, messagename_outp_hash, out_messagelist_metadata, scanFlag_messageOutput));
 
     // call the user specified device function
-    {
-        FLAME_GPU_AGENT_STATUS flag = AgentFunction()(&api);
+    FLAME_GPU_AGENT_STATUS flag = AgentFunction()(&api);
+    if (scanFlag_agentDeath) {
         // (scan flags will not be processed unless agent death has been requested in model definition)
         scanFlag_agentDeath[FLAMEGPU_DEVICE_API<MsgIn, MsgOut>::TID()] = flag;
+#ifndef NO_SEATBELTS
+    } else if (flag == DEAD) {
+        DTHROW("Agent death must be enabled per agent function when defining the model.\n");
+#endif
     }
 }
 

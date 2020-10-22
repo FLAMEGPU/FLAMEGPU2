@@ -303,27 +303,33 @@ __device__ void FLAMEGPU_DEVICE_API<MsgIn, MsgOut>::setVariable(const char(&vari
 template<typename MsgIn, typename MsgOut>
 template<typename T, unsigned int N>
 __device__ void FLAMEGPU_DEVICE_API<MsgIn, MsgOut>::AgentOut::setVariable(const char(&variable_name)[N], T value) const {
-    if (variable_name[0] == '_') {
-        return;  // Fail silently
-    }
     if (agent_output_hash) {
-        // simple indexing assumes index is the thread number (this may change later)
-        unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
+        if (variable_name[0] == '_') {
+            return;  // Fail silently
+        }
+        if (agent_output_hash) {
+            // simple indexing assumes index is the thread number (this may change later)
+            unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
 
-        // set the variable using curve
-        Curve::setNewAgentVariable<T>(variable_name, agent_output_hash, value, index);
+            // set the variable using curve
+            Curve::setNewAgentVariable<T>(variable_name, agent_output_hash, value, index);
 
-        // Mark scan flag
-        this->scan_flag[index] = 1;
+            // Mark scan flag
+            this->scan_flag[index] = 1;
+        }
+#ifndef NO_SEATBELTS
+    } else {
+        DTHROW("Agent output must be enabled per agent function when defining the model.\n");
+#endif
     }
 }
 template<typename MsgIn, typename MsgOut>
 template<typename T, unsigned int N, unsigned int M>
 __device__ void FLAMEGPU_DEVICE_API<MsgIn, MsgOut>::AgentOut::setVariable(const char(&variable_name)[M], const unsigned int &array_index, T value) const {
-    if (variable_name[0] == '_') {
-        return;  // Fail silently
-    }
     if (agent_output_hash) {
+        if (variable_name[0] == '_') {
+            return;  // Fail silently
+        }
         // simple indexing assumes index is the thread number (this may change later)
         unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
 
@@ -332,6 +338,10 @@ __device__ void FLAMEGPU_DEVICE_API<MsgIn, MsgOut>::AgentOut::setVariable(const 
 
         // Mark scan flag
         this->scan_flag[index] = 1;
+#ifndef NO_SEATBELTS
+    } else {
+        DTHROW("Agent output must be enabled per agent function when defining the model.\n");
+#endif
     }
 }
 
