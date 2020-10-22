@@ -321,7 +321,7 @@ TEST(RTCDeviceExceptionTest, setAgentArrayVar_bounds) {
  */
 const char* rtc_dthrow_agent_func_getEnvironmentProp = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_test_func, MsgNone, MsgNone) {
-    FLAMEGPU->environment.get<int>("nope");
+    FLAMEGPU->environment.getProperty<int>("nope");
     return ALIVE;
 }
 )###";
@@ -329,7 +329,7 @@ TEST(RTCDeviceExceptionTest, getEnvironmentProp_name) {
     ModelDescription model("model");
     AgentDescription& agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
-    model.Environment().add<int>("test", 12);
+    model.Environment().newProperty<int>("test", 12);
     // add RTC agent function
     AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_dthrow_agent_func_getEnvironmentProp);
     model.newLayer().addAgentFunction(func);
@@ -347,7 +347,7 @@ TEST(RTCDeviceExceptionTest, getEnvironmentProp_name) {
 }
 const char* rtc_dthrow_agent_func_getEnvironmentProp1 = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_test_func, MsgNone, MsgNone) {
-    FLAMEGPU->environment.get<double>("test");
+    FLAMEGPU->environment.getProperty<double>("test");
     return ALIVE;
 }
 )###";
@@ -355,7 +355,7 @@ TEST(RTCDeviceExceptionTest, getEnvironmentProp_typesize) {
     ModelDescription model("model");
     AgentDescription& agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
-    model.Environment().add<int>("test", 12);
+    model.Environment().newProperty<int>("test", 12);
     // add RTC agent function
     AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_dthrow_agent_func_getEnvironmentProp1);
     model.newLayer().addAgentFunction(func);
@@ -376,7 +376,7 @@ TEST(RTCDeviceExceptionTest, getEnvironmentProp_typesize) {
  */
 const char* rtc_dthrow_agent_func_getEnvironmentArrayProp = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_test_func, MsgNone, MsgNone) {
-    FLAMEGPU->environment.get<int>("nope", 0);
+    FLAMEGPU->environment.getProperty<int>("nope", 0);
     return ALIVE;
 }
 )###";
@@ -384,7 +384,7 @@ TEST(RTCDeviceExceptionTest, getEnvironmentArrayProp_name) {
     ModelDescription model("model");
     AgentDescription& agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
-    model.Environment().add<int>("test", 12);
+    model.Environment().newProperty<int>("test", 12);
     // add RTC agent function
     AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_dthrow_agent_func_getEnvironmentArrayProp);
     model.newLayer().addAgentFunction(func);
@@ -402,7 +402,7 @@ TEST(RTCDeviceExceptionTest, getEnvironmentArrayProp_name) {
 }
 const char* rtc_dthrow_agent_func_getEnvironmentArrayProp1 = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_test_func, MsgNone, MsgNone) {
-    FLAMEGPU->environment.get<double>("test", 0);
+    FLAMEGPU->environment.getProperty<double>("test", 0);
     return ALIVE;
 }
 )###";
@@ -410,7 +410,7 @@ TEST(RTCDeviceExceptionTest, getEnvironmentArrayProp_typesize) {
     ModelDescription model("model");
     AgentDescription& agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
-    model.Environment().add<int, 2>("test", {11, 12});
+    model.Environment().newProperty<int, 2>("test", {11, 12});
     // add RTC agent function
     AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_dthrow_agent_func_getEnvironmentArrayProp1);
     model.newLayer().addAgentFunction(func);
@@ -429,7 +429,7 @@ TEST(RTCDeviceExceptionTest, getEnvironmentArrayProp_typesize) {
 // Device environment does not currently require user to specify length of array
 // const char* rtc_dthrow_agent_func_getEnvironmentArrayProp2 = R"###(
 // FLAMEGPU_AGENT_FUNCTION(rtc_test_func, MsgNone, MsgNone) {
-//     FLAMEGPU->environment.get<int>("test", 0);
+//     FLAMEGPU->environment.getProperty<int>("test", 0);
 //     return ALIVE;
 // }
 // )###";
@@ -437,7 +437,7 @@ TEST(RTCDeviceExceptionTest, getEnvironmentArrayProp_typesize) {
 //     ModelDescription model("model");
 //     AgentDescription& agent = model.newAgent("agent_name");
 //     agent.newVariable<int>("id");
-//     model.Environment().add<int, 2>("test", {11, 12});
+//     model.Environment().newProperty<int, 2>("test", {11, 12});
 //     // add RTC agent function
 //     AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_dthrow_agent_func_getEnvironmentArrayProp2);
 //     model.newLayer().addAgentFunction(func);
@@ -455,7 +455,7 @@ TEST(RTCDeviceExceptionTest, getEnvironmentArrayProp_typesize) {
 // }
 const char* rtc_dthrow_agent_func_getEnvironmentArrayProp3 = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_test_func, MsgNone, MsgNone) {
-    FLAMEGPU->environment.get<int>("test", 2);
+    FLAMEGPU->environment.getProperty<int>("test", 2);
     return ALIVE;
 }
 )###";
@@ -463,7 +463,7 @@ TEST(RTCDeviceExceptionTest, getEnvironmentArrayProp_bounds) {
     ModelDescription model("model");
     AgentDescription& agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
-    model.Environment().add<int, 2>("test", {11, 12});
+    model.Environment().newProperty<int, 2>("test", {11, 12});
     // add RTC agent function
     AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_dthrow_agent_func_getEnvironmentArrayProp3);
     model.newLayer().addAgentFunction(func);

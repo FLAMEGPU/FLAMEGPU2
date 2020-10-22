@@ -49,7 +49,7 @@ class HostEnvironment {
      * @throws InvalidEnvProperty If a property of the name does not exist
      */
     template<typename T>
-    T get(const std::string &name) const;
+    T getProperty(const std::string &name) const;
     /**
      * Gets an environment property array
      * @param name name used for accessing the property
@@ -58,7 +58,7 @@ class HostEnvironment {
      * @throws InvalidEnvProperty If a property array of the name does not exist
      */
     template<typename T, EnvironmentManager::size_type N>
-    std::array<T, N> get(const std::string &name) const;
+    std::array<T, N> getProperty(const std::string &name) const;
     /**
      * Gets an element of an environment property array
      * @param name name used for accessing the property
@@ -68,7 +68,7 @@ class HostEnvironment {
      * @see get(const std::string &)
      */
     template<typename T>
-    T get(const std::string &name, const EnvironmentManager::size_type &index) const;
+    T getProperty(const std::string &name, const EnvironmentManager::size_type &index) const;
 #ifdef SWIG
     /**
      * Gets an environment property array
@@ -77,7 +77,7 @@ class HostEnvironment {
      * @throws InvalidEnvProperty If a property array of the name does not exist
      */
     template<typename T>
-    std::vector<T> getArray(const std::string &name) const;
+    std::vector<T> getPropertyArray(const std::string &name) const;
 #endif
     /**
      * Sets an environment property
@@ -89,7 +89,7 @@ class HostEnvironment {
      * @throws ReadOnlyEnvProperty If the named property is marked as const
      */
     template<typename T>
-    T set(const std::string &name, const T &value) const;
+    T setProperty(const std::string &name, const T &value) const;
     /**
      * Sets an environment property array
      * @param name name used for accessing the property array
@@ -101,7 +101,7 @@ class HostEnvironment {
      * @throws ReadOnlyEnvProperty If the named property is marked as const
      */
     template<typename T, EnvironmentManager::size_type N>
-    std::array<T, N> set(const std::string &name, const std::array<T, N> &value) const;
+    std::array<T, N> setProperty(const std::string &name, const std::array<T, N> &value) const;
     /**
      * Sets an element of an environment property array
      * @param name name used for accessing the property array
@@ -114,7 +114,7 @@ class HostEnvironment {
      * @see get(const std::string &)
      */
     template<typename T>
-    T set(const std::string &name, const EnvironmentManager::size_type &index, const T &value) const;
+    T setProperty(const std::string &name, const EnvironmentManager::size_type &index, const T &value) const;
 #ifdef SWIG
     /**
      * Sets an environment property array
@@ -126,7 +126,7 @@ class HostEnvironment {
      * @throws ReadOnlyEnvProperty If the named property is marked as const
      */
     template<typename T>
-    std::vector<T> setArray(const std::string &name, const std::vector<T> &value) const;
+    std::vector<T> setPropertyArray(const std::string &name, const std::vector<T> &value) const;
 #endif
 };
 
@@ -134,37 +134,37 @@ class HostEnvironment {
  * Setters
  */
 template<typename T>
-T HostEnvironment::set(const std::string &name, const T &value) const {
+T HostEnvironment::setProperty(const std::string &name, const T &value) const {
     if (!name.empty() && name[0] == '_') {
         THROW ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
             "in HostEnvironment::set().");
     }
-    return env_mgr.set<T>({ instance_id, name }, value);
+    return env_mgr.setProperty<T>({ instance_id, name }, value);
 }
 template<typename T, EnvironmentManager::size_type N>
-std::array<T, N> HostEnvironment::set(const std::string &name, const std::array<T, N> &value) const {
+std::array<T, N> HostEnvironment::setProperty(const std::string &name, const std::array<T, N> &value) const {
     if (!name.empty() && name[0] == '_') {
         THROW ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
             "in HostEnvironment::set().");
     }
-    return env_mgr.set<T, N>({ instance_id, name }, value);
+    return env_mgr.setProperty<T, N>({ instance_id, name }, value);
 }
 template<typename T>
-T HostEnvironment::set(const std::string &name, const EnvironmentManager::size_type &index, const T &value) const {
+T HostEnvironment::setProperty(const std::string &name, const EnvironmentManager::size_type &index, const T &value) const {
     if (!name.empty() && name[0] == '_') {
         THROW ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
             "in HostEnvironment::set().");
     }
-    return env_mgr.set<T>({ instance_id, name }, index, value);
+    return env_mgr.setProperty<T>({ instance_id, name }, index, value);
 }
 #ifdef SWIG
 template<typename T>
-std::vector<T> HostEnvironment::setArray(const std::string &name, const std::vector<T> &value) const {
+std::vector<T> HostEnvironment::setPropertyArray(const std::string &name, const std::vector<T> &value) const {
     if (!name.empty() && name[0] == '_') {
         THROW ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
             "in HostEnvironment::setArray().");
     }
-    return env_mgr.setArray<T>({ instance_id, name }, value);
+    return env_mgr.setPropertyArray<T>({ instance_id, name }, value);
 }
 #endif
 
@@ -172,21 +172,21 @@ std::vector<T> HostEnvironment::setArray(const std::string &name, const std::vec
  * Getters
  */
 template<typename T>
-T HostEnvironment::get(const std::string &name) const  {
-    return env_mgr.get<T>({ instance_id, name });
+T HostEnvironment::getProperty(const std::string &name) const  {
+    return env_mgr.getProperty<T>({ instance_id, name });
 }
 template<typename T, EnvironmentManager::size_type N>
-std::array<T, N> HostEnvironment::get(const std::string &name) const  {
-    return env_mgr.get<T, N>({ instance_id, name });
+std::array<T, N> HostEnvironment::getProperty(const std::string &name) const  {
+    return env_mgr.getProperty<T, N>({ instance_id, name });
 }
 template<typename T>
-T HostEnvironment::get(const std::string &name, const EnvironmentManager::size_type &index) const  {
-    return env_mgr.get<T>({ instance_id, name }, index);
+T HostEnvironment::getProperty(const std::string &name, const EnvironmentManager::size_type &index) const  {
+    return env_mgr.getProperty<T>({ instance_id, name }, index);
 }
 #ifdef SWIG
 template<typename T>
-std::vector<T> HostEnvironment::getArray(const std::string& name) const {
-    return env_mgr.getArray<T>({instance_id, name});
+std::vector<T> HostEnvironment::getPropertyArray(const std::string& name) const {
+    return env_mgr.getPropertyArray<T>({instance_id, name});
 }
 #endif
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_UTILITY_HOSTENVIRONMENT_CUH_

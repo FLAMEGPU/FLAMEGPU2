@@ -74,7 +74,7 @@ class FLAMEGPU_READ_ONLY_DEVICE_API {
      * @return the current step count, 0 indexed unsigned.
      */
     __forceinline__ __device__ unsigned int getStepCounter() const {
-        return environment.get<unsigned int>("_stepCount");
+        return environment.getProperty<unsigned int>("_stepCount");
     }
 
  protected:

@@ -158,17 +158,17 @@ $DYNAMIC_SETNEWAGENTARRAYVARIABLE_IMPL
 #include "flamegpu/runtime/utility/DeviceEnvironment.cuh"
 
 template<typename T, unsigned int N>
-__device__ __forceinline__ T DeviceEnvironment::get(const char(&name)[N]) const {
+__device__ __forceinline__ T DeviceEnvironment::getProperty(const char(&name)[N]) const {
 $DYNAMIC_ENV_GETVARIABLE_IMPL
 }
 
 template<typename T, unsigned int N>
-__device__ __forceinline__ T DeviceEnvironment::get(const char(&name)[N], const unsigned int &index) const {
+__device__ __forceinline__ T DeviceEnvironment::getProperty(const char(&name)[N], const unsigned int &index) const {
 $DYNAMIC_ENV_GETARRAYVARIABLE_IMPL
 }
 
 template<unsigned int N>
-__device__ __forceinline__ bool DeviceEnvironment::contains(const char(&name)[N]) const {
+__device__ __forceinline__ bool DeviceEnvironment::containsProperty(const char(&name)[N]) const {
 $DYNAMIC_ENV_CONTAINTS_IMPL
 }
 

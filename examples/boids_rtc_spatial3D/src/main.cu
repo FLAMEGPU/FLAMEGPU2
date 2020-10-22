@@ -201,8 +201,8 @@ FLAMEGPU_AGENT_FUNCTION(inputdata, MsgSpatial3D, MsgNone) {
     float collision_centre_z = 0.0f;
     int collision_count = 0;
 
-    const float INTERACTION_RADIUS = FLAMEGPU->environment.get<float>("INTERACTION_RADIUS");
-    const float SEPARATION_RADIUS = FLAMEGPU->environment.get<float>("SEPARATION_RADIUS");
+    const float INTERACTION_RADIUS = FLAMEGPU->environment.getProperty<float>("INTERACTION_RADIUS");
+    const float SEPARATION_RADIUS = FLAMEGPU->environment.getProperty<float>("SEPARATION_RADIUS");
     // Iterate location messages, accumulating relevant data and counts.
     for (const auto &message : FLAMEGPU->message_in(agent_x, agent_y, agent_z)) {
         // Ignore self messages.
@@ -256,7 +256,7 @@ FLAMEGPU_AGENT_FUNCTION(inputdata, MsgSpatial3D, MsgNone) {
     float steer_velocity_y = 0.f;
     float steer_velocity_z = 0.f;
     if (perceived_count > 0) {
-        const float STEER_SCALE = FLAMEGPU->environment.get<float>("STEER_SCALE");
+        const float STEER_SCALE = FLAMEGPU->environment.getProperty<float>("STEER_SCALE");
         steer_velocity_x = (perceived_centre_x - agent_x) * STEER_SCALE;
         steer_velocity_y = (perceived_centre_y - agent_y) * STEER_SCALE;
         steer_velocity_z = (perceived_centre_z - agent_z) * STEER_SCALE;
@@ -270,7 +270,7 @@ FLAMEGPU_AGENT_FUNCTION(inputdata, MsgSpatial3D, MsgNone) {
     float match_velocity_y = 0.f;
     float match_velocity_z = 0.f;
     if (collision_count > 0) {
-        const float MATCH_SCALE = FLAMEGPU->environment.get<float>("MATCH_SCALE");
+        const float MATCH_SCALE = FLAMEGPU->environment.getProperty<float>("MATCH_SCALE");
         match_velocity_x = global_velocity_x * MATCH_SCALE;
         match_velocity_y = global_velocity_y * MATCH_SCALE;
         match_velocity_z = global_velocity_z * MATCH_SCALE;
@@ -284,7 +284,7 @@ FLAMEGPU_AGENT_FUNCTION(inputdata, MsgSpatial3D, MsgNone) {
     float avoid_velocity_y = 0.0f;
     float avoid_velocity_z = 0.0f;
     if (collision_count > 0) {
-        const float COLLISION_SCALE = FLAMEGPU->environment.get<float>("COLLISION_SCALE");
+        const float COLLISION_SCALE = FLAMEGPU->environment.getProperty<float>("COLLISION_SCALE");
         avoid_velocity_x = (agent_x - collision_centre_x) * COLLISION_SCALE;
         avoid_velocity_y = (agent_y - collision_centre_y) * COLLISION_SCALE;
         avoid_velocity_z = (agent_z - collision_centre_z) * COLLISION_SCALE;
@@ -294,7 +294,7 @@ FLAMEGPU_AGENT_FUNCTION(inputdata, MsgSpatial3D, MsgNone) {
     velocity_change_z += avoid_velocity_z;
 
     // Global scale of velocity change
-    vec3Mult(velocity_change_x, velocity_change_y, velocity_change_z, FLAMEGPU->environment.get<float>("GLOBAL_SCALE"));
+    vec3Mult(velocity_change_x, velocity_change_y, velocity_change_z, FLAMEGPU->environment.getProperty<float>("GLOBAL_SCALE"));
 
     // Update agent velocity
     agent_fx += velocity_change_x;
@@ -308,13 +308,13 @@ FLAMEGPU_AGENT_FUNCTION(inputdata, MsgSpatial3D, MsgNone) {
     }
 
     // Apply the velocity
-    const float TIME_SCALE = FLAMEGPU->environment.get<float>("TIME_SCALE");
+    const float TIME_SCALE = FLAMEGPU->environment.getProperty<float>("TIME_SCALE");
     agent_x += agent_fx * TIME_SCALE;
     agent_y += agent_fy * TIME_SCALE;
     agent_z += agent_fz * TIME_SCALE;
 
     // Bound position
-    clampPosition(agent_x, agent_y, agent_z, FLAMEGPU->environment.get<float>("MIN_POSITION"), FLAMEGPU->environment.get<float>("MAX_POSITION"));
+    clampPosition(agent_x, agent_y, agent_z, FLAMEGPU->environment.getProperty<float>("MIN_POSITION"), FLAMEGPU->environment.getProperty<float>("MAX_POSITION"));
 
     // Update global agent memory.
     FLAMEGPU->setVariable<float>("x", agent_x);
@@ -338,36 +338,36 @@ int main(int argc, const char ** argv) {
     EnvironmentDescription &env = model.Environment();
     {
         // Population size to generate, if no agents are loaded from disk
-        env.add("POPULATION_TO_GENERATE", 32768u);
+        env.newProperty("POPULATION_TO_GENERATE", 32768u);
 
         // Environment Bounds
-        env.add("MIN_POSITION", -0.5f);
-        env.add("MAX_POSITION", +0.5f);
+        env.newProperty("MIN_POSITION", -0.5f);
+        env.newProperty("MAX_POSITION", +0.5f);
 
         // Initialisation parameter(s)
-        env.add("MAX_INITIAL_SPEED", 1.0f);
-        env.add("MIN_INITIAL_SPEED", 0.01f);
+        env.newProperty("MAX_INITIAL_SPEED", 1.0f);
+        env.newProperty("MIN_INITIAL_SPEED", 0.01f);
 
         // Interaction radius
-        env.add("INTERACTION_RADIUS", 0.1f);
-        env.add("SEPARATION_RADIUS", 0.005f);
+        env.newProperty("INTERACTION_RADIUS", 0.1f);
+        env.newProperty("SEPARATION_RADIUS", 0.005f);
 
         // Global Scalers
-        env.add("TIME_SCALE", 0.0005f);
-        env.add("GLOBAL_SCALE", 0.15f);
+        env.newProperty("TIME_SCALE", 0.0005f);
+        env.newProperty("GLOBAL_SCALE", 0.15f);
 
         // Rule scalers
-        env.add("STEER_SCALE", 0.65f);
-        env.add("COLLISION_SCALE", 0.75f);
-        env.add("MATCH_SCALE", 1.25f);
+        env.newProperty("STEER_SCALE", 0.65f);
+        env.newProperty("COLLISION_SCALE", 0.75f);
+        env.newProperty("MATCH_SCALE", 1.25f);
     }
 
     {   // Location message
         MsgSpatial3D::Description &message = model.newMessage<MsgSpatial3D>("location");
         // Set the range and bounds.
-        message.setRadius(env.get<float>("INTERACTION_RADIUS"));
-        message.setMin(env.get<float>("MIN_POSITION"), env.get<float>("MIN_POSITION"), env.get<float>("MIN_POSITION"));
-        message.setMax(env.get<float>("MAX_POSITION"), env.get<float>("MAX_POSITION"), env.get<float>("MAX_POSITION"));
+        message.setRadius(env.getProperty<float>("INTERACTION_RADIUS"));
+        message.setMin(env.getProperty<float>("MIN_POSITION"), env.getProperty<float>("MIN_POSITION"), env.getProperty<float>("MIN_POSITION"));
+        message.setMax(env.getProperty<float>("MAX_POSITION"), env.getProperty<float>("MAX_POSITION"), env.getProperty<float>("MAX_POSITION"));
         // A message to hold the location of an agent.
         message.newVariable<int>("id");
         // X Y Z are implicit.
@@ -434,10 +434,10 @@ int main(int argc, const char ** argv) {
     if (cuda_model.getSimulationConfig().input_file.empty()) {
         // Uniformly distribute agents within space, with uniformly distributed initial velocity.
         std::mt19937 rngEngine(cuda_model.getSimulationConfig().random_seed);
-        std::uniform_real_distribution<float> position_distribution(env.get<float>("MIN_POSITION"), env.get<float>("MAX_POSITION"));
+        std::uniform_real_distribution<float> position_distribution(env.getProperty<float>("MIN_POSITION"), env.getProperty<float>("MAX_POSITION"));
         std::uniform_real_distribution<float> velocity_distribution(-1, 1);
-        std::uniform_real_distribution<float> velocity_magnitude_distribution(env.get<float>("MIN_INITIAL_SPEED"), env.get<float>("MAX_INITIAL_SPEED"));
-        const unsigned int populationSize = env.get<unsigned int>("POPULATION_TO_GENERATE");
+        std::uniform_real_distribution<float> velocity_magnitude_distribution(env.getProperty<float>("MIN_INITIAL_SPEED"), env.getProperty<float>("MAX_INITIAL_SPEED"));
+        const unsigned int populationSize = env.getProperty<unsigned int>("POPULATION_TO_GENERATE");
         AgentPopulation population(model.Agent("Boid"), populationSize);
         for (unsigned int i = 0; i < populationSize; i++) {
             AgentInstance instance = population.getNextInstance();

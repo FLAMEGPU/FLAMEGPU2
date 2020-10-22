@@ -57,12 +57,12 @@ class AlignTest(pyflamegpu.HostFunctionCallback):
         Assertions are not possible within the run function as this is a callback in the c++ library. 
         Instead values can be saved to the class and asserted after the model step function has completed.
         """
-        # self.a = FLAMEGPU.environment.getBool("a")
-        self.b = FLAMEGPU.environment.getUInt64("b")
-        self.c = FLAMEGPU.environment.getInt8("c")
-        self.d = FLAMEGPU.environment.getInt64("d")
-        self.e = FLAMEGPU.environment.getInt8("e")
-        self.f = FLAMEGPU.environment.getFloat("f")
+        # self.a = FLAMEGPU.environment.getPropertyBool("a")
+        self.b = FLAMEGPU.environment.getPropertyUInt64("b")
+        self.c = FLAMEGPU.environment.getPropertyInt8("c")
+        self.d = FLAMEGPU.environment.getPropertyInt64("d")
+        self.e = FLAMEGPU.environment.getPropertyInt8("e")
+        self.f = FLAMEGPU.environment.getPropertyFloat("f")
         
     def apply_assertions(self):
         # assert self.a = True # no bool
@@ -89,10 +89,10 @@ class Multi_ms1(pyflamegpu.HostFunctionCallback):
         Assertions are not possible within the run function as this is a callback in the c++ library. 
         Instead values can be saved to the class and asserted after the model step function has completed.
         """
-        self.ms1_float = FLAMEGPU.environment.getFloat("ms1_float");
-        self.ms1_float2 = FLAMEGPU.environment.getFloat("ms1_float2");
+        self.ms1_float = FLAMEGPU.environment.getPropertyFloat("ms1_float");
+        self.ms1_float2 = FLAMEGPU.environment.getPropertyFloat("ms1_float2");
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-            FLAMEGPU.environment.getDouble("ms2_double")
+            FLAMEGPU.environment.getPropertyDouble("ms2_double")
         assert e.value.type() == "InvalidEnvProperty"
         
     def apply_assertions(self):
@@ -115,8 +115,8 @@ class Multi_ms2(pyflamegpu.HostFunctionCallback):
         Assertions are not possible within the run function as this is a callback in the c++ library. 
         Instead values can be saved to the class and asserted after the model step function has completed.
         """
-        self.ms1_double = FLAMEGPU.environment.getDouble("ms2_double");
-        self.ms1_float = FLAMEGPU.environment.getFloat("ms2_float");
+        self.ms1_double = FLAMEGPU.environment.getPropertyDouble("ms2_double");
+        self.ms1_float = FLAMEGPU.environment.getPropertyFloat("ms2_float");
         
     def apply_assertions(self):
         assert self.ms2_double == MS2_VAL
@@ -129,11 +129,11 @@ class EnvironmentManagerTest(TestCase):
     def test_alignment(self):
         ms = MiniSim("test_alignment")
         # add environment varibles (no bool)
-        ms.env.addUInt64("b", UINT64_MAX)
-        ms.env.addInt8("c", 12)
-        ms.env.addInt64("d", INT64_MAX)
-        ms.env.addInt8("e", 21)
-        ms.env.addFloat("f", 13.0)
+        ms.env.newPropertyUInt64("b", UINT64_MAX)
+        ms.env.newPropertyInt8("c", 12)
+        ms.env.newPropertyInt64("d", INT64_MAX)
+        ms.env.newPropertyInt8("e", 21)
+        ms.env.newPropertyFloat("f", 13.0)
         # simulate
         at = AlignTest()
         ms.model.addStepFunctionCallback(at)
@@ -155,10 +155,10 @@ class EnvironmentManagerTest(TestCase):
     def test_multiple_models(self): 
         ms1 = MiniSim("ms1")
         ms2 = MiniSim("ms2")
-        ms1.env.addFloat("ms1_float", MS1_VAL)
-        ms1.env.addFloat("ms1_float2", MS1_VAL2)
-        ms2.env.addDouble("ms2_double", MS2_VAL)
-        ms2.env.addFloat("ms2_float", MS2_VAL)
+        ms1.env.newPropertyFloat("ms1_float", MS1_VAL)
+        ms1.env.newPropertyFloat("ms1_float2", MS1_VAL2)
+        ms2.env.newPropertyDouble("ms2_double", MS2_VAL)
+        ms2.env.newPropertyFloat("ms2_float", MS2_VAL)
         multi_ms1 = Multi_ms1()
         multi_ms2 = Multi_ms2()
         ms1.model.addStepFunctionCallback(multi_ms1)

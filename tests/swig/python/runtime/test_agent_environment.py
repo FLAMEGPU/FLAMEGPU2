@@ -22,8 +22,8 @@ class MiniSim:
 
         return f"""
         FLAMEGPU_AGENT_FUNCTION(get_{c_type}, MsgNone, MsgNone) {{
-            {c_type} a_out = FLAMEGPU->environment.get<{c_type}>("a");
-            int contains_a = FLAMEGPU->environment.contains("a");
+            {c_type} a_out = FLAMEGPU->environment.getProperty<{c_type}>("a");
+            int contains_a = FLAMEGPU->environment.containsProperty("a");
             FLAMEGPU->setVariable<{c_type}>("a_out", a_out);
             FLAMEGPU->setVariable<int>("contains_a", contains_a);
             return ALIVE;
@@ -35,8 +35,8 @@ class MiniSim:
 
         return f"""
         FLAMEGPU_AGENT_FUNCTION(get_{c_type}, MsgNone, MsgNone) {{
-            {c_type} a1_out = FLAMEGPU->environment.get<{c_type}>("a", 1);
-            int contains_b = FLAMEGPU->environment.contains("b");
+            {c_type} a1_out = FLAMEGPU->environment.getProperty<{c_type}>("a", 1);
+            int contains_b = FLAMEGPU->environment.containsProperty("b");
             FLAMEGPU->setVariable<{c_type}>("a1_out", a1_out);
             FLAMEGPU->setVariable<int>("contains_b", contains_b);
             return ALIVE;
@@ -54,7 +54,7 @@ class MiniSim:
         layer = self.model.newLayer("devicefn_layer")
         layer.addAgentFunction(func)
         # Setup environment
-        add_func = getattr(self.env, f"add{python_type}")
+        add_func = getattr(self.env, f"newProperty{python_type}")
         add_func("a", SCALAR_TEST_VALUE)
         # run
         self.__run()
@@ -75,7 +75,7 @@ class MiniSim:
         layer = self.model.newLayer("devicefn_layer")
         layer.addAgentFunction(func)
         # Setup environment
-        add_func = getattr(self.env, f"addArray{python_type}")
+        add_func = getattr(self.env, f"newPropertyArray{python_type}")
         add_func("a", 4, ARRAY_TEST_VALUE)
         # run
         self.__run()

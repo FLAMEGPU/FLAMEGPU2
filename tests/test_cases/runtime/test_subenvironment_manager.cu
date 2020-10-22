@@ -11,23 +11,23 @@ FLAMEGPU_EXIT_CONDITION(ExitAlways) {
 }
 
 FLAMEGPU_AGENT_FUNCTION(DeviceAPIGetFn, MsgNone, MsgNone) {
-    FLAMEGPU->setVariable<int>("property_read", FLAMEGPU->environment.get<int>("property_read"));
-    FLAMEGPU->setVariable<int, 2>("property_read2", 0, FLAMEGPU->environment.get<int>("property_read2", 0));
-    FLAMEGPU->setVariable<int, 2>("property_read2", 1, FLAMEGPU->environment.get<int>("property_read2", 1));
+    FLAMEGPU->setVariable<int>("property_read", FLAMEGPU->environment.getProperty<int>("property_read"));
+    FLAMEGPU->setVariable<int, 2>("property_read2", 0, FLAMEGPU->environment.getProperty<int>("property_read2", 0));
+    FLAMEGPU->setVariable<int, 2>("property_read2", 1, FLAMEGPU->environment.getProperty<int>("property_read2", 1));
     return ALIVE;
 }
 FLAMEGPU_HOST_FUNCTION(HostAPIGetFn) {
-    std::array<int, 2> property_read2 = FLAMEGPU->environment.get<int, 2>("property_read2");
-    EXPECT_EQ(FLAMEGPU->environment.get<int>("property_read"), PROPERTY_READ_TEST);  // Value read in sub was default from master
+    std::array<int, 2> property_read2 = FLAMEGPU->environment.getProperty<int, 2>("property_read2");
+    EXPECT_EQ(FLAMEGPU->environment.getProperty<int>("property_read"), PROPERTY_READ_TEST);  // Value read in sub was default from master
     EXPECT_EQ(property_read2, PROPERTY_READ2_TEST);  // Value read in sub was default from master
 }
 FLAMEGPU_HOST_FUNCTION(HostAPISetFn) {
-    FLAMEGPU->environment.set<int>("property_read", PROPERTY_READ_TEST);
-    FLAMEGPU->environment.set<int, 2>("property_read2", PROPERTY_READ2_TEST);
+    FLAMEGPU->environment.setProperty<int>("property_read", PROPERTY_READ_TEST);
+    FLAMEGPU->environment.setProperty<int, 2>("property_read2", PROPERTY_READ2_TEST);
 }
 FLAMEGPU_HOST_FUNCTION(HostAPISetIsConstFn) {
-    auto array_set_fn = &HostEnvironment::set<int, 2>;
-    EXPECT_THROW(FLAMEGPU->environment.set<int>("property_read", 0), ReadOnlyEnvProperty);
+    auto array_set_fn = &HostEnvironment::setProperty<int, 2>;
+    EXPECT_THROW(FLAMEGPU->environment.setProperty<int>("property_read", 0), ReadOnlyEnvProperty);
     EXPECT_THROW((FLAMEGPU->environment.*array_set_fn)("property_read2", {0, 0}), ReadOnlyEnvProperty);
 }
 TEST(SubEnvironmentManagerTest, SubDeviceAPIGetDefault) {
@@ -36,8 +36,8 @@ TEST(SubEnvironmentManagerTest, SubDeviceAPIGetDefault) {
         // Define SubModel
         m2.addExitCondition(ExitAlways);
         // These defaults won't be used
-        m2.Environment().add<int>("property_read", 0);
-        m2.Environment().add<int, 2>("property_read2", {0, 0});
+        m2.Environment().newProperty<int>("property_read", 0);
+        m2.Environment().newProperty<int, 2>("property_read2", {0, 0});
         auto &a = m2.newAgent("agent");
         a.newFunction("", DeviceAPIGetFn);
         a.newVariable<int>("property_read", 0);
@@ -48,8 +48,8 @@ TEST(SubEnvironmentManagerTest, SubDeviceAPIGetDefault) {
     auto &a = m.newAgent("agent");
     {
         // Define Model
-        m.Environment().add<int>("property_read", PROPERTY_READ_TEST);
-        m.Environment().add<int, 2>("property_read2", PROPERTY_READ2_TEST);
+        m.Environment().newProperty<int>("property_read", PROPERTY_READ_TEST);
+        m.Environment().newProperty<int, 2>("property_read2", PROPERTY_READ2_TEST);
         a.newVariable<int>("property_read", 0);
         a.newVariable<int, 2>("property_read2", {0, 0});
     }
@@ -80,8 +80,8 @@ TEST(SubEnvironmentManagerTest, SubDeviceAPIGetMasterChange) {
         // Define SubModel
         m2.addExitCondition(ExitAlways);
         // These defaults won't be used
-        m2.Environment().add<int>("property_read", 0);
-        m2.Environment().add<int, 2>("property_read2", {0, 0});
+        m2.Environment().newProperty<int>("property_read", 0);
+        m2.Environment().newProperty<int, 2>("property_read2", {0, 0});
         auto &a = m2.newAgent("agent");
         a.newFunction("", DeviceAPIGetFn);
         a.newVariable<int>("property_read", 0);
@@ -92,8 +92,8 @@ TEST(SubEnvironmentManagerTest, SubDeviceAPIGetMasterChange) {
     auto &a = m.newAgent("agent");
     {
         // Define Model
-        m.Environment().add<int>("property_read", 0);
-        m.Environment().add<int, 2>("property_read2", {0, 0});
+        m.Environment().newProperty<int>("property_read", 0);
+        m.Environment().newProperty<int, 2>("property_read2", {0, 0});
         a.newVariable<int>("property_read", 0);
         a.newVariable<int, 2>("property_read2", {0, 0});
     }
@@ -125,8 +125,8 @@ TEST(SubEnvironmentManagerTest, SubHostAPIGetMasterChange) {
         // Define SubModel
         m2.addExitCondition(ExitAlways);
         // These defaults won't be used
-        m2.Environment().add<int>("property_read", 0);
-        m2.Environment().add<int, 2>("property_read2", {0, 0});
+        m2.Environment().newProperty<int>("property_read", 0);
+        m2.Environment().newProperty<int, 2>("property_read2", {0, 0});
         m2.newAgent("agent");
         m2.newLayer().addHostFunction(HostAPIGetFn);
     }
@@ -134,8 +134,8 @@ TEST(SubEnvironmentManagerTest, SubHostAPIGetMasterChange) {
     auto &a = m.newAgent("agent");
     {
         // Define Model
-        m.Environment().add<int>("property_read", 0);
-        m.Environment().add<int, 2>("property_read2", {0, 0});
+        m.Environment().newProperty<int>("property_read", 0);
+        m.Environment().newProperty<int, 2>("property_read2", {0, 0});
     }
     // Setup submodel bindings
     auto &sm = m.newSubModel("sub", m2);
@@ -158,8 +158,8 @@ TEST(SubEnvironmentManagerTest, SubHostAPISetSub) {
         // Define SubModel
         m2.addExitCondition(ExitAlways);
         // These defaults won't be used
-        m2.Environment().add<int>("property_read", 0);
-        m2.Environment().add<int, 2>("property_read2", {0, 0});
+        m2.Environment().newProperty<int>("property_read", 0);
+        m2.Environment().newProperty<int, 2>("property_read2", {0, 0});
         auto &a = m2.newAgent("agent");
         a.newVariable<int>("property_read", 0);
         a.newVariable<int, 2>("property_read2", {0, 0});
@@ -169,8 +169,8 @@ TEST(SubEnvironmentManagerTest, SubHostAPISetSub) {
     auto &a = m.newAgent("agent");
     {
         // Define Model
-        m.Environment().add<int>("property_read", 0);
-        m.Environment().add<int, 2>("property_read2", {0, 0});
+        m.Environment().newProperty<int>("property_read", 0);
+        m.Environment().newProperty<int, 2>("property_read2", {0, 0});
         a.newVariable<int>("property_read", 0);
         a.newVariable<int, 2>("property_read2", {0, 0});
     }
@@ -195,8 +195,8 @@ TEST(SubEnvironmentManagerTest, SubHostAPISetConstSub) {
         // Define SubModel
         m2.addExitCondition(ExitAlways);
         // These defaults won't be used
-        m2.Environment().add<int>("property_read", 0,  true);
-        m2.Environment().add<int, 2>("property_read2", {0, 0},  true);
+        m2.Environment().newProperty<int>("property_read", 0,  true);
+        m2.Environment().newProperty<int, 2>("property_read2", {0, 0},  true);
         auto &a = m2.newAgent("agent");
         a.newVariable<int>("property_read", 0);
         a.newVariable<int, 2>("property_read2", {0, 0});
@@ -206,8 +206,8 @@ TEST(SubEnvironmentManagerTest, SubHostAPISetConstSub) {
     auto &a = m.newAgent("agent");
     {
         // Define Model
-        m.Environment().add<int>("property_read", PROPERTY_READ_TEST);
-        m.Environment().add<int, 2>("property_read2", PROPERTY_READ2_TEST);
+        m.Environment().newProperty<int>("property_read", PROPERTY_READ_TEST);
+        m.Environment().newProperty<int, 2>("property_read2", PROPERTY_READ2_TEST);
         a.newVariable<int>("property_read", 0);
         a.newVariable<int, 2>("property_read2", {0, 0});
     }
@@ -236,8 +236,8 @@ TEST(SubEnvironmentManagerTest, SubSubDeviceAPIGetDefault) {
         // Define SubModel
         m2.addExitCondition(ExitAlways);
         // These defaults won't be used
-        m2.Environment().add<int>("property_read", 0);
-        m2.Environment().add<int, 2>("property_read2", {0, 0});
+        m2.Environment().newProperty<int>("property_read", 0);
+        m2.Environment().newProperty<int, 2>("property_read2", {0, 0});
         auto &a = m2.newAgent("agent");
         a.newFunction("", DeviceAPIGetFn);
         a.newVariable<int>("property_read", 0);
@@ -249,8 +249,8 @@ TEST(SubEnvironmentManagerTest, SubSubDeviceAPIGetDefault) {
         // Define SubModel
         proxy.addExitCondition(ExitAlways);
         // These defaults won't be used
-        proxy.Environment().add<int>("property_read", 0);
-        proxy.Environment().add<int, 2>("property_read2", {0, 0});
+        proxy.Environment().newProperty<int>("property_read", 0);
+        proxy.Environment().newProperty<int, 2>("property_read2", {0, 0});
         auto &a = proxy.newAgent("agent");
         a.newVariable<int>("property_read", 0);
         a.newVariable<int, 2>("property_read2", {0, 0});
@@ -263,8 +263,8 @@ TEST(SubEnvironmentManagerTest, SubSubDeviceAPIGetDefault) {
     auto &a = m.newAgent("agent");
     {
         // Define Model
-        m.Environment().add<int>("property_read", PROPERTY_READ_TEST);
-        m.Environment().add<int, 2>("property_read2", PROPERTY_READ2_TEST);
+        m.Environment().newProperty<int>("property_read", PROPERTY_READ_TEST);
+        m.Environment().newProperty<int, 2>("property_read2", PROPERTY_READ2_TEST);
         a.newVariable<int>("property_read", 0);
         a.newVariable<int, 2>("property_read2", {0, 0});
     }
@@ -295,8 +295,8 @@ TEST(SubEnvironmentManagerTest, SubSubDeviceAPIGetMasterChange) {
         // Define SubModel
         m2.addExitCondition(ExitAlways);
         // These defaults won't be used
-        m2.Environment().add<int>("property_read", 0);
-        m2.Environment().add<int, 2>("property_read2", {0, 0});
+        m2.Environment().newProperty<int>("property_read", 0);
+        m2.Environment().newProperty<int, 2>("property_read2", {0, 0});
         auto &a = m2.newAgent("agent");
         a.newFunction("", DeviceAPIGetFn);
         a.newVariable<int>("property_read", 0);
@@ -308,8 +308,8 @@ TEST(SubEnvironmentManagerTest, SubSubDeviceAPIGetMasterChange) {
         // Define SubModel
         proxy.addExitCondition(ExitAlways);
         // These defaults won't be used
-        proxy.Environment().add<int>("property_read", 0);
-        proxy.Environment().add<int, 2>("property_read2", {0, 0});
+        proxy.Environment().newProperty<int>("property_read", 0);
+        proxy.Environment().newProperty<int, 2>("property_read2", {0, 0});
         auto &a = proxy.newAgent("agent");
         a.newVariable<int>("property_read", 0);
         a.newVariable<int, 2>("property_read2", {0, 0});
@@ -322,8 +322,8 @@ TEST(SubEnvironmentManagerTest, SubSubDeviceAPIGetMasterChange) {
     auto &a = m.newAgent("agent");
     {
         // Define Model
-        m.Environment().add<int>("property_read", 0);
-        m.Environment().add<int, 2>("property_read2", {0, 0});
+        m.Environment().newProperty<int>("property_read", 0);
+        m.Environment().newProperty<int, 2>("property_read2", {0, 0});
         a.newVariable<int>("property_read", 0);
         a.newVariable<int, 2>("property_read2", {0, 0});
     }
@@ -355,8 +355,8 @@ TEST(SubEnvironmentManagerTest, SubSubHostAPIGetMasterChange) {
         // Define SubModel
         m2.addExitCondition(ExitAlways);
         // These defaults won't be used
-        m2.Environment().add<int>("property_read", 0);
-        m2.Environment().add<int, 2>("property_read2", {0, 0});
+        m2.Environment().newProperty<int>("property_read", 0);
+        m2.Environment().newProperty<int, 2>("property_read2", {0, 0});
         m2.newAgent("agent");
         m2.newLayer().addHostFunction(HostAPIGetFn);
     }
@@ -365,8 +365,8 @@ TEST(SubEnvironmentManagerTest, SubSubHostAPIGetMasterChange) {
         // Define SubModel
         proxy.addExitCondition(ExitAlways);
         // These defaults won't be used
-        proxy.Environment().add<int>("property_read", 0);
-        proxy.Environment().add<int, 2>("property_read2", {0, 0});
+        proxy.Environment().newProperty<int>("property_read", 0);
+        proxy.Environment().newProperty<int, 2>("property_read2", {0, 0});
         proxy.newAgent("agent");
         auto &sm = proxy.newSubModel("proxysub", m2);
         sm.SubEnvironment(true);
@@ -376,8 +376,8 @@ TEST(SubEnvironmentManagerTest, SubSubHostAPIGetMasterChange) {
     auto &a = m.newAgent("agent");
     {
         // Define Model
-        m.Environment().add<int>("property_read", 0);
-        m.Environment().add<int, 2>("property_read2", {0, 0});
+        m.Environment().newProperty<int>("property_read", 0);
+        m.Environment().newProperty<int, 2>("property_read2", {0, 0});
     }
     // Setup submodel bindings
     auto &sm = m.newSubModel("sub", proxy);
@@ -400,8 +400,8 @@ TEST(SubEnvironmentManagerTest, SubSubHostAPISetSub) {
         // Define SubModel
         m2.addExitCondition(ExitAlways);
         // These defaults won't be used
-        m2.Environment().add<int>("property_read", 0);
-        m2.Environment().add<int, 2>("property_read2", {0, 0});
+        m2.Environment().newProperty<int>("property_read", 0);
+        m2.Environment().newProperty<int, 2>("property_read2", {0, 0});
         auto &a = m2.newAgent("agent");
         a.newVariable<int>("property_read", 0);
         a.newVariable<int, 2>("property_read2", {0, 0});
@@ -412,8 +412,8 @@ TEST(SubEnvironmentManagerTest, SubSubHostAPISetSub) {
         // Define SubModel
         proxy.addExitCondition(ExitAlways);
         // These defaults won't be used
-        proxy.Environment().add<int>("property_read", 0);
-        proxy.Environment().add<int, 2>("property_read2", {0, 0});
+        proxy.Environment().newProperty<int>("property_read", 0);
+        proxy.Environment().newProperty<int, 2>("property_read2", {0, 0});
         auto &a = proxy.newAgent("agent");
         a.newVariable<int>("property_read", 0);
         a.newVariable<int, 2>("property_read2", {0, 0});
@@ -426,8 +426,8 @@ TEST(SubEnvironmentManagerTest, SubSubHostAPISetSub) {
     auto &a = m.newAgent("agent");
     {
         // Define Model
-        m.Environment().add<int>("property_read", 0);
-        m.Environment().add<int, 2>("property_read2", {0, 0});
+        m.Environment().newProperty<int>("property_read", 0);
+        m.Environment().newProperty<int, 2>("property_read2", {0, 0});
         a.newVariable<int>("property_read", 0);
         a.newVariable<int, 2>("property_read2", {0, 0});
     }
@@ -453,8 +453,8 @@ TEST(SubEnvironmentManagerTest, SubSubHostAPISetConstSub) {
         // Define SubModel
         m2.addExitCondition(ExitAlways);
         // These defaults won't be used
-        m2.Environment().add<int>("property_read", 0,  true);
-        m2.Environment().add<int, 2>("property_read2", {0, 0},  true);
+        m2.Environment().newProperty<int>("property_read", 0,  true);
+        m2.Environment().newProperty<int, 2>("property_read2", {0, 0},  true);
         auto &a = m2.newAgent("agent");
         a.newVariable<int>("property_read", 0);
         a.newVariable<int, 2>("property_read2", {0, 0});
@@ -465,8 +465,8 @@ TEST(SubEnvironmentManagerTest, SubSubHostAPISetConstSub) {
         // Define SubModel
         proxy.addExitCondition(ExitAlways);
         // These defaults won't be used
-        proxy.Environment().add<int>("property_read", 0);
-        proxy.Environment().add<int, 2>("property_read2", {0, 0});
+        proxy.Environment().newProperty<int>("property_read", 0);
+        proxy.Environment().newProperty<int, 2>("property_read2", {0, 0});
         auto &a = proxy.newAgent("agent");
         a.newVariable<int>("property_read", 0);
         a.newVariable<int, 2>("property_read2", {0, 0});
@@ -478,8 +478,8 @@ TEST(SubEnvironmentManagerTest, SubSubHostAPISetConstSub) {
     auto &a = m.newAgent("agent");
     {
         // Define Model
-        m.Environment().add<int>("property_read", PROPERTY_READ_TEST);
-        m.Environment().add<int, 2>("property_read2", PROPERTY_READ2_TEST);
+        m.Environment().newProperty<int>("property_read", PROPERTY_READ_TEST);
+        m.Environment().newProperty<int, 2>("property_read2", PROPERTY_READ2_TEST);
         a.newVariable<int>("property_read", 0);
         a.newVariable<int, 2>("property_read2", {0, 0});
     }

@@ -70,25 +70,25 @@ class jsonReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, j
             const EnvironmentManager::NamePair np = { sim_instance_id , lastKey };
             const std::type_index val_type = env_manager.type(np);
             if (val_type == std::type_index(typeid(float))) {
-                env_manager.set<float>(np, current_variable_array_index++, static_cast<float>(val));
+                env_manager.setProperty<float>(np, current_variable_array_index++, static_cast<float>(val));
             } else if (val_type == std::type_index(typeid(double))) {
-                env_manager.set<double>(np, current_variable_array_index++, static_cast<double>(val));
+                env_manager.setProperty<double>(np, current_variable_array_index++, static_cast<double>(val));
             } else if (val_type == std::type_index(typeid(int64_t))) {
-                env_manager.set<int64_t>(np, current_variable_array_index++, static_cast<int64_t>(val));
+                env_manager.setProperty<int64_t>(np, current_variable_array_index++, static_cast<int64_t>(val));
             } else if (val_type == std::type_index(typeid(uint64_t))) {
-                env_manager.set<uint64_t>(np, current_variable_array_index++, static_cast<uint64_t>(val));
+                env_manager.setProperty<uint64_t>(np, current_variable_array_index++, static_cast<uint64_t>(val));
             } else if (val_type == std::type_index(typeid(int32_t))) {
-                env_manager.set<int32_t>(np, current_variable_array_index++, static_cast<int32_t>(val));
+                env_manager.setProperty<int32_t>(np, current_variable_array_index++, static_cast<int32_t>(val));
             } else if (val_type == std::type_index(typeid(uint32_t))) {
-                env_manager.set<uint32_t>(np, current_variable_array_index++, static_cast<uint32_t>(val));
+                env_manager.setProperty<uint32_t>(np, current_variable_array_index++, static_cast<uint32_t>(val));
             } else if (val_type == std::type_index(typeid(int16_t))) {
-                env_manager.set<int16_t>(np, current_variable_array_index++, static_cast<int16_t>(val));
+                env_manager.setProperty<int16_t>(np, current_variable_array_index++, static_cast<int16_t>(val));
             } else if (val_type == std::type_index(typeid(uint16_t))) {
-                env_manager.set<uint16_t>(np, current_variable_array_index++, static_cast<uint16_t>(val));
+                env_manager.setProperty<uint16_t>(np, current_variable_array_index++, static_cast<uint16_t>(val));
             } else if (val_type == std::type_index(typeid(int8_t))) {
-                env_manager.set<int8_t>(np, current_variable_array_index++, static_cast<int8_t>(val));
+                env_manager.setProperty<int8_t>(np, current_variable_array_index++, static_cast<int8_t>(val));
             } else if (val_type == std::type_index(typeid(uint8_t))) {
-                env_manager.set<uint8_t>(np, current_variable_array_index++, static_cast<uint8_t>(val));
+                env_manager.setProperty<uint8_t>(np, current_variable_array_index++, static_cast<uint8_t>(val));
             } else {
                 THROW RapidJSONError("Model contains environment property '%s' of unsupported type '%s', "
                     "in jsonReader::parse()\n", lastKey.c_str(), val_type.name());

@@ -10,7 +10,7 @@ FLAMEGPU_AGENT_FUNCTION(output_message, MsgNone, MsgSpatial3D) {
 }
 FLAMEGPU_AGENT_FUNCTION(move, MsgSpatial3D, MsgNone) {
     const int ID = FLAMEGPU->getVariable<int>("id");
-    const float REPULSE_FACTOR = FLAMEGPU->environment.get<float>("repulse");
+    const float REPULSE_FACTOR = FLAMEGPU->environment.getProperty<float>("repulse");
     const float RADIUS = FLAMEGPU->message_in.radius();
     float fx = 0.0;
     float fy = 0.0;
@@ -94,7 +94,7 @@ int main(int argc, const char ** argv) {
      */
     {
         EnvironmentDescription &env = model.Environment();
-        env.add("repulse", 0.05f);
+        env.newProperty("repulse", 0.05f);
     }
 
     /**

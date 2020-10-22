@@ -1262,7 +1262,7 @@ void CUDASimulation::RTCUpdateEnvironmentVariables(const void* src, size_t count
 
 void CUDASimulation::incrementStepCounter() {
     this->step_count++;
-    this->singletons->environment.set({instance_id, "_stepCount"}, this->step_count);
+    this->singletons->environment.setProperty({instance_id, "_stepCount"}, this->step_count);
 }
 
 float CUDASimulation::getSimulationElapsedTime() const {
@@ -1279,5 +1279,5 @@ void CUDASimulation::initEnvironmentMgr() {
     }
 
     // Add the CUDASimulation specific variables(s)
-    EnvironmentManager::getInstance().add({instance_id, "_stepCount"}, 0u, false);
+    EnvironmentManager::getInstance().newProperty({instance_id, "_stepCount"}, 0u, false);
 }

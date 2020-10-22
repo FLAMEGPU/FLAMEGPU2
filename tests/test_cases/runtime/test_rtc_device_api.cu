@@ -451,18 +451,18 @@ TEST(DeviceRTCAPITest, AgentFunction_random) {
 const char* rtc_env_func = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_env_func, MsgNone, MsgNone) {
     // get environment variable and set it as an agent variable (environment variable does not change)
-    int e1_out = FLAMEGPU->environment.get<int>("e1");
-    int e1_exists = FLAMEGPU->environment.contains("e1");
+    int e1_out = FLAMEGPU->environment.getProperty<int>("e1");
+    int e1_exists = FLAMEGPU->environment.containsProperty("e1");
     FLAMEGPU->setVariable<int>("e1_out", e1_out);
     FLAMEGPU->setVariable<int>("e1_exists", e1_exists);
     // get stepped environment variable and add it to agent variable (environment variable is increased in step function)
-    int e2 = FLAMEGPU->environment.get<int>("e2");
+    int e2 = FLAMEGPU->environment.getProperty<int>("e2");
     int e2_out = FLAMEGPU->getVariable<int>("e2_out") + e2;
     FLAMEGPU->setVariable<int>("e2_out", e2_out);
     // get array variables and set in agent variable arrays
     for (int i=0; i<32; i++) {
-        int e_temp1 = FLAMEGPU->environment.get<int>("e_array_1", i);
-        int e_temp2 = FLAMEGPU->environment.get<int>("e_array_2", i);
+        int e_temp1 = FLAMEGPU->environment.getProperty<int>("e_array_1", i);
+        int e_temp2 = FLAMEGPU->environment.getProperty<int>("e_array_2", i);
         // set values in agent arrary
         FLAMEGPU->setVariable<int, 32>("e_array_out_1", i, e_temp1);
         FLAMEGPU->setVariable<int, 32>("e_array_out_2", i, e_temp2);
@@ -473,18 +473,18 @@ FLAMEGPU_AGENT_FUNCTION(rtc_env_func, MsgNone, MsgNone) {
 
 FLAMEGPU_STEP_FUNCTION(etc_env_step) {
     // Test Set + Get for scalar (set returns previous value)
-    FLAMEGPU->environment.set<int>("e2", 400);
+    FLAMEGPU->environment.setProperty<int>("e2", 400);
     // Test Set + Get for set by array
     std::array<int, 32> e_array_1;
     for (int i = 0; i < 32; i++) {
         e_array_1[i] = i;  // fill array values
     }
-    FLAMEGPU->environment.set<int, 32>("e_array_1", e_array_1);
+    FLAMEGPU->environment.setProperty<int, 32>("e_array_1", e_array_1);
     // Test Set + Get for set by array index
     std::array<int, 32> e_array_2;
     for (int i = 0; i < 32; i++) {
         e_array_2[i] = i;  // fill array values
-        FLAMEGPU->environment.set<int>("e_array_2", i, e_array_2[i]);
+        FLAMEGPU->environment.setProperty<int>("e_array_2", i, e_array_2[i]);
     }
 }
 /**
@@ -505,10 +505,10 @@ TEST(DeviceRTCAPITest, AgentFunction_env) {
     zero_array.fill(0);
     // create some environment variables
     EnvironmentDescription& env = model.Environment();
-    env.add<int>("e1", 100);
-    env.add<int>("e2", 200);
-    env.add<int, 32>("e_array_1", zero_array);
-    env.add<int, 32>("e_array_2", zero_array);
+    env.newProperty<int>("e1", 100);
+    env.newProperty<int>("e2", 200);
+    env.newProperty<int, 32>("e_array_1", zero_array);
+    env.newProperty<int, 32>("e_array_2", zero_array);
     // Init pop with 0 values for variables
     AgentPopulation init_population(agent, AGENT_COUNT);
     for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {

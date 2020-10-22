@@ -111,7 +111,7 @@ class EnvironmentDescription {
      * @throws DuplicateEnvProperty If a property of the same name already exists
      */
     template<typename T>
-    void add(const std::string &name, const T &value, const bool &isConst = false);
+    void newProperty(const std::string &name, const T &value, const bool &isConst = false);
     /**
      * Adds a new environment property array
      * @param name Name used for accessing the property
@@ -122,7 +122,7 @@ class EnvironmentDescription {
      * @throws DuplicateEnvProperty If a property of the same name already exists
      */
     template<typename T, EnvironmentManager::size_type N>
-    void add(const std::string &name, const std::array<T, N> &value, const bool &isConst = false);
+    void newProperty(const std::string &name, const std::array<T, N> &value, const bool &isConst = false);
 #ifdef SWIG
     /**
      * Adds a new environment property array
@@ -134,7 +134,7 @@ class EnvironmentDescription {
      * @throws DuplicateEnvProperty If a property of the same name already exists
      */
     template<typename T>
-    void addArray(const std::string &name, const EnvironmentManager::size_type &length, const std::vector<T> &value, const bool &isConst = false);
+    void newPropertyArray(const std::string &name, const EnvironmentManager::size_type &length, const std::vector<T> &value, const bool &isConst = false);
 #endif
     /**
      * Gets an environment property
@@ -143,7 +143,7 @@ class EnvironmentDescription {
      * @throws InvalidEnvProperty If a property of the name does not exist
      */
     template<typename T>
-    T get(const std::string &name) const;
+    T getProperty(const std::string &name) const;
     /**
      * Gets an environment property array
      * @param name name used for accessing the property
@@ -152,7 +152,7 @@ class EnvironmentDescription {
      * @throws InvalidEnvProperty If a property array of the name does not exist
      */
     template<typename T, EnvironmentManager::size_type N>
-    std::array<T, N> get(const std::string &name) const;
+    std::array<T, N> getProperty(const std::string &name) const;
     /**
      * Gets an element of an environment property array
      * @param name name used for accessing the property
@@ -162,7 +162,7 @@ class EnvironmentDescription {
      * @throws std::out_of_range
      */
     template<typename T>
-    T get(const std::string &name, const EnvironmentManager::size_type &index) const;
+    T getProperty(const std::string &name, const EnvironmentManager::size_type &index) const;
 #ifdef SWIG
     /**
      * Gets an environment property array
@@ -172,7 +172,7 @@ class EnvironmentDescription {
      * @throws std::out_of_range
      */
     template<typename T>
-    std::vector<T> getArray(const std::string &name) const;
+    std::vector<T> getPropertyArray(const std::string &name) const;
 #endif
     /**
      * Returns whether an environment property is marked as const
@@ -189,7 +189,7 @@ class EnvironmentDescription {
      * @throws InvalidEnvProperty If a property of the name does not exist
      */
     template<typename T>
-    T set(const std::string &name, const T &value);
+    T setProperty(const std::string &name, const T &value);
     /**
      * Sets an environment property array
      * @param name name used for accessing the property
@@ -200,7 +200,7 @@ class EnvironmentDescription {
      * @throws InvalidEnvProperty If a property of the name does not exist
      */
     template<typename T, EnvironmentManager::size_type N>
-    std::array<T, N> set(const std::string &name, const std::array<T, N> &value);
+    std::array<T, N> setProperty(const std::string &name, const std::array<T, N> &value);
     /**
      * Sets an element of an environment property array
      * @param name name used for accessing the property
@@ -213,7 +213,7 @@ class EnvironmentDescription {
      * @see set(const std::string &, const T &value)
      */
     template<typename T>
-    T set(const std::string &name, const EnvironmentManager::size_type &index, const T &value);
+    T setProperty(const std::string &name, const EnvironmentManager::size_type &index, const T &value);
 #ifdef SWIG
     /**
      * Sets an environment property array
@@ -224,7 +224,7 @@ class EnvironmentDescription {
      * @throws InvalidEnvProperty If a property of the name does not exist
      */
     template<typename T>
-    std::vector<T> setArray(const std::string &name, const std::vector<T> &value);
+    std::vector<T> setPropertyArray(const std::string &name, const std::vector<T> &value);
 #endif
 
     const std::unordered_map<std::string, PropData> getPropertiesMap() const;
@@ -239,7 +239,7 @@ class EnvironmentDescription {
      * @param elements How many elements does the property have (1 if it's not an array)
      * @param type value returned by typeid()
      */
-    void add(const std::string &name, const char *ptr, const size_t &len, const bool &isConst, const EnvironmentManager::size_type &elements, const std::type_index &type);
+    void newProperty(const std::string &name, const char *ptr, const size_t &len, const bool &isConst, const EnvironmentManager::size_type &elements, const std::type_index &type);
     /**
      * Main storage of all properties
      */
@@ -251,7 +251,7 @@ class EnvironmentDescription {
  * Constructors
  */
 template<typename T>
-void EnvironmentDescription::add(const std::string &name, const T &value, const bool &isConst) {
+void EnvironmentDescription::newProperty(const std::string &name, const T &value, const bool &isConst) {
     if (!name.empty() && name[0] == '_') {
         THROW ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
             "in EnvironmentDescription::add().");
@@ -265,10 +265,10 @@ void EnvironmentDescription::add(const std::string &name, const T &value, const 
             "in EnvironmentDescription::add().",
             name.c_str());
     }
-    add(name, reinterpret_cast<const char*>(&value), sizeof(T), isConst, 1, typeid(T));
+    newProperty(name, reinterpret_cast<const char*>(&value), sizeof(T), isConst, 1, typeid(T));
 }
 template<typename T, EnvironmentManager::size_type N>
-void EnvironmentDescription::add(const std::string &name, const std::array<T, N> &value, const bool &isConst) {
+void EnvironmentDescription::newProperty(const std::string &name, const std::array<T, N> &value, const bool &isConst) {
     if (!name.empty() && name[0] == '_') {
         THROW ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
             "in EnvironmentDescription::add().");
@@ -283,11 +283,11 @@ void EnvironmentDescription::add(const std::string &name, const std::array<T, N>
             "in EnvironmentDescription::add().",
             name.c_str());
     }
-    add(name, reinterpret_cast<const char*>(value.data()), N * sizeof(T), isConst, N, typeid(T));
+    newProperty(name, reinterpret_cast<const char*>(value.data()), N * sizeof(T), isConst, N, typeid(T));
 }
 #ifdef SWIG
 template<typename T>
-void EnvironmentDescription::addArray(const std::string &name, const EnvironmentManager::size_type &N, const std::vector<T> &value, const bool& isConst) {
+void EnvironmentDescription::newPropertyArray(const std::string &name, const EnvironmentManager::size_type &N, const std::vector<T> &value, const bool& isConst) {
     if (!name.empty() && name[0] == '_') {
         THROW ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
             "in EnvironmentDescription::addArray().");
@@ -309,14 +309,14 @@ void EnvironmentDescription::addArray(const std::string &name, const Environment
             "in EnvironmentDescription::addArray().",
             name.c_str());
     }
-    add(name, reinterpret_cast<const char*>(value.data()), N * sizeof(T), isConst, N, typeid(T));
+    newProperty(name, reinterpret_cast<const char*>(value.data()), N * sizeof(T), isConst, N, typeid(T));
 }
 #endif
 /**
  * Getters
  */
 template<typename T>
-T EnvironmentDescription::get(const std::string &name) const {
+T EnvironmentDescription::getProperty(const std::string &name) const {
     // Limited to Arithmetic types
     // Compound types would allow host pointers inside structs to be passed
     static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value,
@@ -335,7 +335,7 @@ T EnvironmentDescription::get(const std::string &name) const {
         name.c_str());
 }
 template<typename T, EnvironmentManager::size_type N>
-std::array<T, N> EnvironmentDescription::get(const std::string &name) const {
+std::array<T, N> EnvironmentDescription::getProperty(const std::string &name) const {
     // Limited to Arithmetic types
     // Compound types would allow host pointers inside structs to be passed
     static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value,
@@ -362,7 +362,7 @@ std::array<T, N> EnvironmentDescription::get(const std::string &name) const {
         name.c_str());
 }
 template<typename T>
-T EnvironmentDescription::get(const std::string &name, const EnvironmentManager::size_type &index) const {
+T EnvironmentDescription::getProperty(const std::string &name, const EnvironmentManager::size_type &index) const {
     // Limited to Arithmetic types
     // Compound types would allow host pointers inside structs to be passed
     static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value,
@@ -388,7 +388,7 @@ T EnvironmentDescription::get(const std::string &name, const EnvironmentManager:
 }
 #ifdef SWIG
 template<typename T>
-std::vector<T> EnvironmentDescription::getArray(const std::string& name) const {
+std::vector<T> EnvironmentDescription::getPropertyArray(const std::string& name) const {
     // Limited to Arithmetic types
     // Compound types would allow host pointers inside structs to be passed
     static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value,
@@ -415,7 +415,7 @@ std::vector<T> EnvironmentDescription::getArray(const std::string& name) const {
  * Setters
  */
 template<typename T>
-T EnvironmentDescription::set(const std::string &name, const T &value) {
+T EnvironmentDescription::setProperty(const std::string &name, const T &value) {
     if (!name.empty() && name[0] == '_') {
         THROW ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
             "in EnvironmentDescription::set().");
@@ -442,7 +442,7 @@ T EnvironmentDescription::set(const std::string &name, const T &value) {
         name.c_str());
 }
 template<typename T, EnvironmentManager::size_type N>
-std::array<T, N> EnvironmentDescription::set(const std::string &name, const std::array<T, N> &value) {
+std::array<T, N> EnvironmentDescription::setProperty(const std::string &name, const std::array<T, N> &value) {
     if (!name.empty() && name[0] == '_') {
         THROW ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
             "in EnvironmentDescription::set().");
@@ -475,7 +475,7 @@ std::array<T, N> EnvironmentDescription::set(const std::string &name, const std:
         name.c_str());
 }
 template<typename T>
-T EnvironmentDescription::set(const std::string &name, const EnvironmentManager::size_type &index, const T &value) {
+T EnvironmentDescription::setProperty(const std::string &name, const EnvironmentManager::size_type &index, const T &value) {
     if (!name.empty() && name[0] == '_') {
         THROW ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
             "in EnvironmentDescription::set().");
@@ -508,7 +508,7 @@ T EnvironmentDescription::set(const std::string &name, const EnvironmentManager:
 }
 #ifdef SWIG
 template<typename T>
-std::vector<T> EnvironmentDescription::setArray(const std::string& name, const std::vector<T>& value) {
+std::vector<T> EnvironmentDescription::setPropertyArray(const std::string& name, const std::vector<T>& value) {
     if (!name.empty() && name[0] == '_') {
         THROW ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
             "in EnvironmentDescription::set().");
