@@ -105,7 +105,7 @@ class LayerDescription {
      * @param func_p Function pointer to the host function declared using FLAMEGPU_HOST_FUNCTION notation
      * @throw InvalidHostFunc If the function has already been added to the layer
      * @throw InvalidLayerMember If the layer already contains a SubModel
-     * @note This version exists because the template overload was preventing implicit cast to std::string
+     * @note There is no guarantee on the order in which multiple host functions in the same layer will be executed
      */
     void addHostFunction(FLAMEGPU_HOST_FUNCTION_POINTER func_p);
     /**
@@ -126,15 +126,16 @@ class LayerDescription {
      * @see addSubModel(const std::string &)
      */
     void addSubModel(const SubModelDescription &submodel);
-
+#ifdef SWIG
     /**
-     * Adds a host function to this layer
+     * Adds a host function to this layer, similar to addHostFunction
+     * however the runnable function is encapsulated within an object which permits cross language support in swig.
      * The host function will be called during this stage of model execution
      * @param func_callback a Host function callback object
      * @throw InvalidHostFunc If the function has already been added to the layer
      */
-    void addHostFunctionCallback(HostFunctionCallback *func_callback);
-
+    inline void addHostFunctionCallback(HostFunctionCallback *func_callback);
+#endif
     /**
      * @return The layer's name
      */
@@ -151,10 +152,12 @@ class LayerDescription {
      * @return The total number of host functions within the layer
      */
     ModelData::size_type getHostFunctionsCount() const;
+#ifdef SWIG
     /**
      * @return The total number of host function callbacks within the layer
      */
-    ModelData::size_type getHostFunctionCallbackCount() const;
+    inline ModelData::size_type getHostFunctionCallbackCount() const;
+#endif
 
     /**
      * @param index Index of the function to return
@@ -172,6 +175,7 @@ class LayerDescription {
      * @note Functions are stored in a set, so order may change as new functions are added
      */
     FLAMEGPU_HOST_FUNCTION_POINTER getHostFunction(unsigned int index) const;
+#ifdef SWIG
     /**
      * @param index Index of the function to return
      * @return A function callback to the host function at the provided index
@@ -179,7 +183,8 @@ class LayerDescription {
      * @see LayerDescription::getHostFunctionCallbackCount()
      * @note Functions are stored in a set, so order may change as new functions are added
      */
-    HostFunctionCallback* getHostFunctionCallback(unsigned int index) const;
+    inline HostFunctionCallback* getHostFunctionCallback(unsigned int index) const;
+#endif
 
  private:
     /**
@@ -233,5 +238,29 @@ void LayerDescription::addAgentFunction(AgentFunction /*af*/) {
     THROW InvalidAgentFunc("Agent function was not found, "
         "in LayerDescription::addAgentFunction().");
 }
+
+#ifdef SWIG
+void LayerDescription::addHostFunctionCallback(HostFunctionCallback* func_callback) {
+    if (!layer->host_functions_callbacks.insert(func_callback).second) {
+            THROW InvalidHostFunc("Attempted to add same host function callback twice,"
+                "in LayerDescription::addHostFunctionCallback()");
+        }
+}
+ModelData::size_type LayerDescription::getHostFunctionCallbackCount() const {
+    // Safe down-cast
+    return static_cast<ModelData::size_type>(layer->host_functions_callbacks.size());
+}
+HostFunctionCallback* LayerDescription::getHostFunctionCallback(unsigned int index) const {
+    if (index < layer->host_functions_callbacks.size()) {
+        auto it = layer->host_functions_callbacks.begin();
+        for (unsigned int i = 0; i < index; ++i)
+            ++it;
+        return *it;
+    }
+    THROW OutOfBoundsException("Index %d is out of bounds (only %d items exist) "
+        "in LayerDescription.getHostFunctionCallback()\n",
+        index, layer->host_functions_callbacks.size());
+}
+#endif
 
 #endif  // INCLUDE_FLAMEGPU_MODEL_LAYERDESCRIPTION_H_
