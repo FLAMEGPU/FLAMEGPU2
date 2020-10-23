@@ -1,7 +1,7 @@
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_RANDOM_AGENTRANDOM_CUH_
 #define INCLUDE_FLAMEGPU_RUNTIME_RANDOM_AGENTRANDOM_CUH_
 
-#include <cassert>
+#include <limits>
 
 #include "flamegpu/detail/curand.cuh"
 #include "flamegpu/detail/StaticAssert.h"
@@ -24,7 +24,7 @@ class AgentRandom {
     __forceinline__ __device__ AgentRandom(detail::curandState *d_rng);
     /**
      * Returns a float uniformly distributed between 0.0 and 1.0. 
-     * @note It may return from 0.0 to 1.0, where 1.0 is included and 0.0 is excluded.
+     * @note It may return from 0.0 to 1.0, where 0.0 is included and 1.0 is excluded.
      * @note Available as float or double
      */
     template<typename T>
@@ -69,7 +69,12 @@ __forceinline__ __device__ AgentRandom::AgentRandom(detail::curandState *d_rng) 
  */
 template<>
 __forceinline__ __device__ float AgentRandom::uniform() const {
-    return curand_uniform(d_random_state);
+    // curand naturally generates the range (0, 1], we want [0, 1)
+    // https://github.com/pytorch/pytorch/blob/059aa34b124916dfd761f3cbdb5fa97d7a01fc93/aten/src/ATen/native/cuda/Distributions.cu#L71-L77
+    uint32_t val = curand(d_random_state);  // need just bits
+    constexpr auto MASK = static_cast<uint32_t>((static_cast<uint64_t>(1) << std::numeric_limits<float>::digits) - 1);
+    constexpr auto DIVISOR = static_cast<float>(1) / (static_cast<uint32_t>(1) << std::numeric_limits<float>::digits);
+    return (val & MASK) * DIVISOR;
 }
 template<>
 __forceinline__ __device__ double AgentRandom::uniform() const {
@@ -109,7 +114,7 @@ __forceinline__ __device__ T AgentRandom::uniform(T min, T max) const {
         DTHROW("Invalid arguments passed to AgentRandom::uniform(), %lld > %lld\n", static_cast<int64_t>(min), static_cast<int64_t>(max));
     }
 #endif
-    return static_cast<T>(min + (1 + max - min) * (1.0 - uniform<float>()));
+    return static_cast<T>(min + (1 + max - min) * uniform<float>());
 }
 template<>
 __forceinline__ __device__ int64_t AgentRandom::uniform(const int64_t min, const int64_t max) const {
@@ -118,7 +123,7 @@ __forceinline__ __device__ int64_t AgentRandom::uniform(const int64_t min, const
         DTHROW("Invalid arguments passed to AgentRandom::uniform(), %lld > %lld\n", static_cast<int64_t>(min), static_cast<int64_t>(max));
     }
 #endif
-    return static_cast<int64_t>(min + (1 + max - min) * (1.0 - uniform<double>()));
+    return static_cast<int64_t>(min + (1 + max - min) * uniform<double>());
 }
 template<>
 __forceinline__ __device__ uint64_t AgentRandom::uniform(const uint64_t min, const uint64_t max) const {
@@ -127,7 +132,7 @@ __forceinline__ __device__ uint64_t AgentRandom::uniform(const uint64_t min, con
         DTHROW("Invalid arguments passed to AgentRandom::uniform(), %lld > %lld\n", static_cast<int64_t>(min), static_cast<int64_t>(max));
     }
 #endif
-    return static_cast<uint64_t>(min + (1 + max - min) * (1.0 - uniform<double>()));
+    return static_cast<uint64_t>(min + (1 + max - min) * uniform<double>());
 }
 template<>
 __forceinline__ __device__ float AgentRandom::uniform(const float min, const float max) const {
