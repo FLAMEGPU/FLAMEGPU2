@@ -172,6 +172,7 @@ class ModelDescription {
      * Init functions execute once before the simulation begins
      * @param func_p Pointer to the desired init function
      * @throws InvalidHostFunc If the init function has already been added to this model description
+     * @note There is no guarantee on the order in which multiple init functions will be executed
      */
     void addInitFunction(FLAMEGPU_INIT_FUNCTION_POINTER func_p);
     /**
@@ -179,55 +180,70 @@ class ModelDescription {
      * Step functions execute once per step, after all layers have been executed, before exit conditions
      * @param func_p Pointer to the desired step function
      * @throws InvalidHostFunc If the step function has already been added to this model description
+     * @note There is no guarantee on the order in which multiple step functions will be executed, host-layer functions can be used if order is required.
      */
     void addStepFunction(FLAMEGPU_STEP_FUNCTION_POINTER func_p);
     /**
      * Adds an exit function to the simulation
-     * Exit functions execute once after the simulation ends
+     * Exit functions execute once after all simulation steps have completed or an exit conditions has returned EXIT
      * @param func_p Pointer to the desired exit function
      * @throws InvalidHostFunc If the exit function has already been added to this model description
+     * @note There is no guarantee on the order in which multiple exit functions will be executed
      */
     void addExitFunction(FLAMEGPU_EXIT_FUNCTION_POINTER func_p);
+#ifdef SWIG
     /**
      * Adds an init function callback to the simulation. The callback objects is similar to adding via addInitFunction
      * however the runnable function is encapsulated within an object which permits cross language support in swig.
      * Init functions execute once before the simulation begins
-     * @param func_p Pointer to the desired init function callback
+     * @param func_callback Pointer to the desired init function callback
      * @throws InvalidHostFunc If the init function has already been added to this model description
+     * @note There is no guarantee on the order in which multiple init functions will be executed
      */
-    void addInitFunctionCallback(HostFunctionCallback *func_callback);
+    inline void addInitFunctionCallback(HostFunctionCallback *func_callback);
     /**
      * Adds an step function callback to the simulation. The callback objects is similar to adding via addStepFunction
      * however the runnable function is encapsulated within an object which permits cross language support in swig.
      * Exit functions execute once after the simulation ends
      * @param func_callback Pointer to the desired exit function callback
      * @throws InvalidHostFunc If the step function has already been added to this model description
+     * @note There is no guarantee on the order in which multiple step functions will be executed, host-layer functions can be used if order is required.
      */
-    void addStepFunctionCallback(HostFunctionCallback *func_callback);
+    inline void addStepFunctionCallback(HostFunctionCallback *func_callback);
     /**
      * Adds an exit function callback to the simulation. The callback objects is similar to adding via addExitFunction
      * however the runnable function is encapsulated within an object which permits cross language support in swig.
-     * Exit functions execute once after the simulation ends
+     * Exit functions execute once after all simulation steps have completed or an exit conditions has returned EXIT
      * @param func_callback Pointer to the desired exit function callback
      * @throws InvalidHostFunc If the exit function has already been added to this model description
+     * @note There is no guarantee on the order in which multiple exit functions will be executed
      */
-    void addExitFunctionCallback(HostFunctionCallback *func_callback);
+    inline void addExitFunctionCallback(HostFunctionCallback *func_callback);
+#endif
     /**
      * Adds an exit condition function to the simulation
      * Exit conditions execute once per step, after all layers and step functions have been executed
      * If the condition returns false, the simulation exits early
      * @param func_p Pointer to the desired exit condition function
      * @throws InvalidHostFunc If the exit condition has already been added to this model description
+     * @note Exit conditions are the last functions to operate each step and can still make changes to the model
+     * @note The step counter is updated after exit conditions have completed
+     * @note There is no guarantee on the order in which multiple exit conditions will be executed
      */
     void addExitCondition(FLAMEGPU_EXIT_CONDITION_POINTER func_p);
+#ifdef SWIG
     /**
      * Adds an exit condition callback to the simulation
      * Exit conditions execute once per step, after all layers and step functions have been executed
      * If the condition returns false, the simulation exits early
      * @param func_callback Pointer to the desired exit condition callback
      * @throws InvalidHostFunc If the exit condition has already been added to this model description
+     * @note Exit conditions are the last functions to operate each step and can still make changes to the model
+     * @note The step counter is updated after exit conditions have completed
+     * @note There is no guarantee on the order in which multiple exit conditions will be executed
      */
-    void addExitConditionCallback(HostFunctionConditionCallback *func_callback);
+    inline void addExitConditionCallback(HostFunctionConditionCallback *func_callback);
+#endif
 
     /**
      * @return The model's name
@@ -351,5 +367,32 @@ class ModelDescription {
      */
      std::shared_ptr<ModelData> model;
 };
+
+#ifdef SWIG
+void ModelDescription::addInitFunctionCallback(HostFunctionCallback* func_callback) {
+    if (!model->initFunctionCallbacks.insert(func_callback).second) {
+            THROW InvalidHostFunc("Attempted to add same init function callback twice,"
+                "in ModelDescription::addInitFunctionCallback()");
+        }
+}
+void ModelDescription::addStepFunctionCallback(HostFunctionCallback* func_callback) {
+    if (!model->stepFunctionCallbacks.insert(func_callback).second) {
+            THROW InvalidHostFunc("Attempted to add same step function callback twice,"
+                "in ModelDescription::addStepFunctionCallback()");
+        }
+}
+void ModelDescription::addExitFunctionCallback(HostFunctionCallback* func_callback) {
+    if (!model->exitFunctionCallbacks.insert(func_callback).second) {
+            THROW InvalidHostFunc("Attempted to add same exit function callback twice,"
+                "in ModelDescription::addExitFunctionCallback()");
+        }
+}
+void ModelDescription::addExitConditionCallback(HostFunctionConditionCallback *func_callback) {
+    if (!model->exitConditionCallbacks.insert(func_callback).second) {
+            THROW InvalidHostFunc("Attempted to add same exit condition callback twice,"
+                "in ModelDescription::addExitConditionCallback()");
+        }
+}
+#endif
 
 #endif  // INCLUDE_FLAMEGPU_MODEL_MODELDESCRIPTION_H_

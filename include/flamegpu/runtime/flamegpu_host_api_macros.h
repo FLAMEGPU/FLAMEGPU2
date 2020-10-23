@@ -27,7 +27,9 @@ void funcName ## _impl(FLAMEGPU_HOST_API* FLAMEGPU); \
 FLAMEGPU_HOST_FUNCTION_POINTER funcName = funcName ## _impl;\
 void funcName ## _impl(FLAMEGPU_HOST_API* FLAMEGPU)
 
-// FLAMEGPU function return type
+/**
+ * Return type for FLAMEGPU conditions
+ */
 enum FLAME_GPU_CONDITION_RESULT { CONTINUE, EXIT };
 /**
  * @brief FLAMEGPU host function pointer definition
