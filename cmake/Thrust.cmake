@@ -13,12 +13,17 @@ cmake_policy(SET CMP0079 NEW)
 # This may need some adjusting for future Thrust versions (potentially)
 
 # Declare information about where and what we want from thrust.
-# Thrust version must be >= 1.9.10 for good cmake integration, making our lives easy
-# We require 1.9.8 for a bug fix anyway, so no harm using 1.9.10 instead.
+# Thrust version must be >= 1.9.10 for good cmake integration. 
+# Thrust 1.9.8 is a miniumum as it includes a bugfix that was causing issues.
+# Once https://github.com/NVIDIA/thrust/issues/1294 is resolved (CUDA 11.2?) Then we can attempt to find the CUDA distributed version of thrust, and use that if it is atleast the supported version 
+# (This will prevent us having to track the CUDA release version explicitly in the future. )
+
+set(THRUST_DOWNLOAD_VERSION 1.10.0)
+
 FetchContent_Declare(
     thrust
-    GIT_REPOSITORY https://github.com/thrust/thrust.git
-    GIT_TAG        1.9.10
+    GIT_REPOSITORY https://github.com/NVIDIA/thrust.git
+    GIT_TAG        ${THRUST_DOWNLOAD_VERSION}
     GIT_SHALLOW    1
     GIT_PROGRESS   ON
     # UPDATE_DISCONNECTED   ON
