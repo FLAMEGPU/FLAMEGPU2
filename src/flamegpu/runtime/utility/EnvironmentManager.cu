@@ -8,6 +8,7 @@
 #include "flamegpu/model/EnvironmentDescription.h"
 #include "flamegpu/model/SubEnvironmentData.h"
 #include "flamegpu/gpu/CUDASimulation.h"
+#include "flamegpu/util/nvtx.h"
 
 /**
  * Internal namespace to hide __constant__ declarations from modeller
@@ -72,8 +73,8 @@ void EnvironmentManager::init(const unsigned int &instance_id, const Environment
     for (auto _i = desc.properties.begin(); _i != desc.properties.end(); ++_i) {
         const auto &i = _i->second;
         NamePair name = toName(instance_id, _i->first);
-        DefragProp prop = DefragProp(i.data.ptr, i.data.length, i.isConst, i.elements, i.type);
-        const size_t typeSize = i.data.length / i.elements;
+        DefragProp prop = DefragProp(i.data.ptr, i.data.length, i.isConst, i.data.elements, i.data.type);
+        const size_t typeSize = i.data.length / i.data.elements;
         orderedProperties.emplace(std::make_pair(typeSize, name), prop);
         newSize += i.data.length;
     }
@@ -116,8 +117,8 @@ void EnvironmentManager::init(const unsigned int &instance_id, const Environment
         NamePair name = toName(instance_id, _i->first);
         if (prop_mapping == mapping.properties.end()) {
             // Property is not mapped, so add to defrag map
-            DefragProp prop = DefragProp(i.data.ptr, i.data.length, i.isConst, i.elements, i.type);
-            const size_t typeSize = i.data.length / i.elements;
+            DefragProp prop = DefragProp(i.data.ptr, i.data.length, i.isConst, i.data.elements, i.data.type);
+            const size_t typeSize = i.data.length / i.data.elements;
             orderedProperties.emplace(std::make_pair(typeSize, name), prop);
             newSize += i.data.length;
         } else {
@@ -708,4 +709,25 @@ EnvironmentManager& EnvironmentManager::getInstance() {
     if (f != instances.end())
         return *f->second;
     return *(instances.emplace(device_id, std::unique_ptr<EnvironmentManager>(new EnvironmentManager())).first->second);
+}
+
+
+Any EnvironmentManager::getPropertyAny(const unsigned int &instance_id, const std::string &var_name) const {
+    std::shared_lock<std::shared_timed_mutex> lock(mutex);
+    const NamePair name = toName(instance_id, var_name);
+    auto a = properties.find(name);
+    if (a != properties.end())
+        return Any(hc_buffer + a->second.offset, a->second.length, a->second.type, a->second.elements);
+    const auto b = mapped_properties.find(name);
+    if (b != mapped_properties.end()) {
+        a = properties.find(b->second.masterProp);
+        if (a != properties.end())
+            return Any(hc_buffer + a->second.offset, a->second.length, a->second.type, a->second.elements);
+        THROW InvalidEnvProperty("Mapped environmental property with name '%u:%s' maps to missing property with name '%u:%s', "
+            "in EnvironmentManager::getPropertyAny().",
+            name.first, name.second.c_str(), b->second.masterProp.first, b->second.masterProp.second.c_str());
+    }
+    THROW InvalidEnvProperty("Environmental property with name '%u:%s' does not exist, "
+        "in EnvironmentManager::getPropertyAny().",
+        name.first, name.second.c_str());
 }

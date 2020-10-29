@@ -124,7 +124,7 @@ bool ModelData::operator==(const ModelData& rhs) const {
                 auto it1 = layers.begin();
                 auto it2 = rhs.layers.begin();
                 while (it1 != layers.end() && it2 != rhs.layers.end()) {
-                    if (*it1 != *it2)
+                    if (*(*it1) != *(*it2))
                         return false;
                     ++it1;
                     ++it2;

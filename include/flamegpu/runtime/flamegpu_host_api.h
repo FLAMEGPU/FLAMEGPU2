@@ -2,7 +2,6 @@
 #define INCLUDE_FLAMEGPU_RUNTIME_FLAMEGPU_HOST_API_H_
 
 #include <cuda_runtime_api.h>
-#include <cassert>
 #include <string>
 #include <utility>
 #include <functional>

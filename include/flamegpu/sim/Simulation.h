@@ -13,6 +13,7 @@ class FLAMEGPU_HOST_API;
 class ModelDescription;
 class AgentPopulation;
 struct ModelData;
+struct RunLog;
 
 
 namespace std {
@@ -50,6 +51,10 @@ class Simulation {
 #endif
         }
         std::string input_file;
+        std::string step_log_file;
+        std::string exit_log_file;
+        std::string common_log_file;
+        bool truncate_log_files = true;
         unsigned int random_seed;
         unsigned int steps = 0;
         bool verbose = false;
@@ -64,7 +69,7 @@ class Simulation {
     /**
      * This constructor takes a clone of the ModelData hierarchy
      */
-    explicit Simulation(const ModelDescription& model);
+    explicit Simulation(const std::shared_ptr<const ModelData> &model);
 
  protected:
     /**
@@ -98,10 +103,20 @@ class Simulation {
      * @note XML export does not currently includes config structures, only the same data present in FLAMEGPU1
      */
     void exportData(const std::string &path, bool prettyPrint = true);
+    /**
+     * Export the data logged by the last call to simulate() (and/or step) to the given path
+     * @param path The file to output (must end '.json' or '.xml')
+     * @param steps Whether the step log should be included in the log file
+     * @param exit Whether the exit log should be included in the log file
+     * @param prettyPrint Whether the log file should be minified or not
+     * @note The config (possibly just random seed) is always output
+     */
+    void exportLog(const std::string &path, bool steps, bool exit, bool prettyPrint = true);
 
     virtual void setPopulationData(AgentPopulation& population) = 0;
     virtual void getPopulationData(AgentPopulation& population) = 0;
 
+    virtual const RunLog &getRunLog() const = 0;
     virtual AgentInterface &getAgent(const std::string &name) = 0;
 
     Config &SimulationConfig();
@@ -152,7 +167,7 @@ class Simulation {
     /**
      * Initial environment items if they have been loaded from file, prior to device selection
      */
-    std::unordered_map<std::pair<std::string, unsigned int>, EnvironmentDescription::Any> env_init;
+    std::unordered_map<std::pair<std::string, unsigned int>, Any> env_init;
 
  private:
     /**

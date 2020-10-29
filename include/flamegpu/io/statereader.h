@@ -33,7 +33,7 @@ class StateReader {
     StateReader(
         const std::string &_model_name,
         const std::unordered_map<std::string, EnvironmentDescription::PropData> &_env_desc,
-        std::unordered_map<std::pair<std::string, unsigned int>, EnvironmentDescription::Any> &_env_init,
+        std::unordered_map<std::pair<std::string, unsigned int>, Any> &_env_init,
         const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &_model_state,
         const std::string &input,
         Simulation *_sim_instance)
@@ -79,7 +79,7 @@ class StateReader {
     std::string inputFile;
     const std::string model_name;
     const std::unordered_map<std::string, EnvironmentDescription::PropData> &env_desc;
-    std::unordered_map<std::pair<std::string, unsigned int>, EnvironmentDescription::Any> &env_init;
+    std::unordered_map<std::pair<std::string, unsigned int>, Any> &env_init;
     Simulation *sim_instance;
 };
 

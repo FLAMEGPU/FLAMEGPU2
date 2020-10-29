@@ -43,8 +43,32 @@ bool LayerData::operator==(const LayerData &rhs) const {
     && agent_functions.size() == rhs.agent_functions.size()
     && host_functions.size() == rhs.host_functions.size()
     && host_functions_callbacks.size() == rhs.host_functions_callbacks.size()
-    && agent_functions == rhs.agent_functions
-    && host_functions == rhs.host_functions) {
+    && host_functions_callbacks == rhs.host_functions_callbacks) {
+        // Compare pointed to values, not pointers
+        for (auto &a : agent_functions) {
+            bool success = false;
+            for (auto &b : rhs.agent_functions) {
+                if (*a == *b) {
+                    success = true;
+                    break;
+                }
+            }
+            if (!success) {
+                return false;
+            }
+        }
+        for (auto &a : host_functions) {
+            bool success = false;
+            for (auto &b : rhs.host_functions) {
+                if (*a == *b) {
+                    success = true;
+                    break;
+                }
+            }
+            if (!success) {
+                return false;
+            }
+        }
         return true;
     }
     return false;

@@ -57,6 +57,8 @@ SET(TEST_CASE_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/gpu/test_gpu_validation.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/gpu/test_cuda_subagent.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/io/test_io.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/io/test_logging.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/io/test_logging_exceptions.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/model/test_environment_description.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/model/test_model.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/model/test_agent.cu
