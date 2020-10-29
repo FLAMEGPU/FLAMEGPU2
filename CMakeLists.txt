@@ -52,6 +52,7 @@ option(BUILD_EXAMPLE_CIRCLES_BRUTEFORCE "Enable building examples/circles_brutef
 option(BUILD_EXAMPLE_CIRCLES_SPATIAL3D "Enable building examples/circles_spatial3D" OFF)
 option(BUILD_EXAMPLE_GAME_OF_LIFE "Enable building examples/game_of_life" OFF)
 option(BUILD_EXAMPLE_HOST_FUNCTIONS "Enable building examples/host_functions" OFF)
+option(BUILD_EXAMPLE_ENSEMBLE "Enable building examples/ensemble" OFF)
 option(BUILD_SWIG_PYTHON "Enable python bindings via SWIG" OFF)
 cmake_dependent_option(BUILD_SWIG_PYTHON_VIRTUALENV "Enable building of SWIG Python Virtual Env for Python Testing" OFF
                        "BUILD_SWIG_PYTHON" OFF)
@@ -106,10 +107,6 @@ endif()
 
 # Add each example
 
-if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_HOST_FUNCTIONS)
-    add_subdirectory(examples/host_functions)
-endif()
-
 if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_BOIDS_BRUTEFORCE)
     add_subdirectory(examples/boids_bruteforce)
 endif()
@@ -137,6 +134,15 @@ endif()
 if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_GAME_OF_LIFE)
     add_subdirectory(examples/game_of_life)
 endif()
+
+if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_HOST_FUNCTIONS)
+    add_subdirectory(examples/host_functions)
+endif()
+
+if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_ENSEMBLE)
+    add_subdirectory(examples/ensemble)
+endif()
+
 # Add the tests directory (if required)
 if(BUILD_TESTS)
     add_subdirectory(tests)
