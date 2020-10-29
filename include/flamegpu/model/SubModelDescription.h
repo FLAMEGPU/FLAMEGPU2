@@ -81,6 +81,17 @@ class SubModelDescription {
     const SubAgentDescription &getSubAgent(const std::string &sub_agent_name) const;
     SubEnvironmentDescription &SubEnvironment(bool auto_map_props = false);
     const SubEnvironmentDescription &getSubEnvironment(bool auto_map_props = false) const;
+    /**
+     * Set the maximum number of steps per execution of the submodel
+     * If 0 (default), unlimited however an exit condition is required
+     */
+    void setMaxSteps(const unsigned int &max_steps);
+    /**
+     * Return the current value of max steps, defaults to 0
+     * This is the maximum number of steps per call of the submodel
+     * 0 is unlimited, however requires the model to have an exit condition
+     */
+    unsigned int getMaxSteps() const;
 
  private:
     /**

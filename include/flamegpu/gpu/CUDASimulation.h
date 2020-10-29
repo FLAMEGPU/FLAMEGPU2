@@ -7,17 +7,29 @@
 #include <unordered_map>
 #include <map>
 
-
 #include "flamegpu/exception/FGPUDeviceException.h"
 #include "flamegpu/sim/Simulation.h"
 
-#include "flamegpu/gpu/CUDAAgent.h"
-#include "flamegpu/gpu/CUDAMessage.h"
 #include "flamegpu/gpu/CUDAScatter.h"
+#include "flamegpu/gpu/CUDAEnsemble.h"
 #include "flamegpu/runtime/utility/RandomManager.cuh"
 #include "flamegpu/runtime/flamegpu_host_new_agent_api.h"
 #include "flamegpu/visualiser/ModelVis.h"
 
+#ifdef _MSC_VER
+#pragma warning(push, 2)
+#include "jitify/jitify.hpp"
+#pragma warning(pop)
+#else
+#include "jitify/jitify.hpp"
+#endif
+
+class CUDAAgent;
+class CUDAMessage;
+class LoggingConfig;
+class StepLoggingConfig;
+
+struct RunLog;
 
 /**
  * CUDA runner for Simulation interface
@@ -28,6 +40,7 @@ class CUDASimulation : public Simulation {
      * Requires internal access to scan/scatter singletons
      */
     friend class HostAgentInstance;
+    friend class SimRunner;
     /**
      * Map of a number of CUDA agents by name.
      * The CUDA agents are responsible for allocating and managing all the device memory
@@ -68,6 +81,10 @@ class CUDASimulation : public Simulation {
     explicit CUDASimulation(const ModelDescription& model, int argc = 0, const char** argv = nullptr);
 
  private:
+    /**
+     * Alt constructor used by CUDAEnsemble
+     */
+    explicit CUDASimulation(const std::shared_ptr<const ModelData> &model);
     /**
      * Private constructor, used to initialise submodels
      * Allocates CUDASubAgents, and handles mappings
@@ -131,6 +148,22 @@ class CUDASimulation : public Simulation {
      * @return An immutable reference to the cuda model specific configuration struct
      */
     const Config &getCUDAConfig() const;
+    /**
+     * Configure which step data should be logged
+     * @param stepConfig The step logging config for the CUDASimulation
+     * @note This must be for the same model description hierarchy as the CUDASimulation
+     */
+    void setStepLog(const StepLoggingConfig &stepConfig);
+    /**
+     * Configure which exit data should be logged
+     * @param exitConfig The logging config for the CUDASimulation
+     * @note This must be for the same model description hierarchy as the CUDASimulation
+     */
+    void setExitLog(const LoggingConfig &exitConfig);
+    /**
+     * Returns a reference to the current exit log
+     */
+    const RunLog &getRunLog() const;
 #ifdef VISUALISATION
     /**
      * Creates (on first call) and returns the visualisation configuration options for this model instance
@@ -237,6 +270,31 @@ class CUDASimulation : public Simulation {
      * Internal model config
      */
     Config config;
+    /**
+     * Step logging config
+     */
+    std::shared_ptr<const StepLoggingConfig> step_log_config;
+    /**
+     * Exit logging config
+     */
+    std::shared_ptr<const LoggingConfig> exit_log_config;
+    /**
+     * Collection of currently logged data
+     */
+    std::unique_ptr<RunLog> run_log;
+    /**
+     * Clear and reinitialise the current run_log
+     */
+    void resetLog();
+    /**
+     * Check if step_count is a divisible by step_log_config.frequency
+     * If true, add the current simulation state to the step log
+     */
+    void processStepLog();
+    /**
+     * Replace the current exit log with the current simulation state
+     */
+    void processExitLog();
     /**
      * Map of message storage 
      */

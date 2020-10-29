@@ -22,6 +22,7 @@
 #include "flamegpu/exception/FGPUException.h"
 #include "flamegpu/gpu/CUDAErrorChecking.h"
 #include "flamegpu/runtime/cuRVE/curve.h"
+#include "flamegpu/util/Any.h"
 
 struct SubEnvironmentData;
 class EnvironmentDescription;
@@ -444,6 +445,14 @@ class EnvironmentManager {
     template<typename T>
     T getProperty(const unsigned int &instance_id, const std::string &var_name, const size_type &index);
     /**
+     * Returns the current value of an environment property as an Any object
+     * This method should not be exposed to users
+     * @param instance_id instance_id of the CUDASimulation instance the property is attached to
+     * @param var_name name used for accessing the property
+     * @throws InvalidEnvProperty If a property of the name does not exist
+     */
+    Any getPropertyAny(const unsigned int &instance_id, const std::string &var_name) const;
+    /**
      * Removes an environment property
      * @param name name used for accessing the property
      * @throws InvalidEnvProperty If a property of the name does not exist
@@ -526,7 +535,7 @@ class EnvironmentManager {
             if (a != properties.end())
                 return a->second.elements;
             THROW InvalidEnvProperty("Mapped environmental property with name '%u:%s' maps to missing property with name '%u:%s', "
-                "in EnvironmentManager::type().",
+                "in EnvironmentManager::length().",
                 name.first, name.second.c_str(), b->second.masterProp.first, b->second.masterProp.second.c_str());
         }
         THROW InvalidEnvProperty("Environmental property with name '%u:%s' does not exist, "

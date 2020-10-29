@@ -10,6 +10,8 @@
 
 #include "flamegpu/exception/FGPUException.h"
 #include "flamegpu/runtime/utility/HostEnvironment.cuh"
+#include "flamegpu/util/Any.h"
+#include "flamegpu/gpu/CUDAEnsemble.h"
 
 /**
  * @brief Description class for environment properties
@@ -35,75 +37,40 @@ class EnvironmentDescription {
      */
     friend class CUDASimulation;
 
+    friend class SimRunner;
+    friend void CUDAEnsemble::simulate(const RunPlanVec &plans);
+
  public:
-    /**
-     * Minimal std::any replacement, works pre c++17
-     * We don't care about type, so it isn't tracked
-     */
-    struct Any {
-        /**
-         * Constructor
-         * @param _ptr Pointer to data to represent
-         * @param _length Length of pointed to data
-         * @note Copies the data
-         */
-        Any(const void *_ptr, const size_t &_length)
-            : ptr(malloc(_length)),
-            length(_length) {
-            memcpy(ptr, _ptr, length);
-        }
-        /**
-         * Copy constructor
-         * @param _other Other Any to be cloned, makes a copy of the pointed to data
-         */
-        Any(const Any &_other)
-            : ptr(malloc(_other.length)),
-            length(_other.length) {
-            memcpy(ptr, _other.ptr, length);
-        }
-        /*
-         * Releases the allocated memory
-         */
-        ~Any() {
-            free(ptr);
-        }
-        /**
-         * Can't assign, members are const at creation
-         */
-        void operator=(const Any &_other) = delete;
-        /**
-         * Data represented by this object
-         */
-        void *const ptr;
-        /**
-         * Length of memory allocation pointed to by ptr
-         */
-        const size_t length;
-    };
     /**
      * Holds all of the properties required to add a value to EnvironmentManager
      */
     struct PropData {
         /**
          * @param _is_const Is the property constant
-         * @param _elements How many elements does the property have (1 if it's not an array)
          * @param _data The data to initially fill the property with
-         * @param _type Identifier of type
          */
-        PropData(const bool &_is_const, const EnvironmentManager::size_type &_elements, const Any &_data, const std::type_index &_type)
-            : isConst(_is_const),
-            elements(_elements),
-            data(_data),
-            type(_type) { }
+        PropData(const bool &_is_const, const Any &_data)
+            : isConst(_is_const)
+            , data(_data) { }
         bool isConst;
-        const EnvironmentManager::size_type elements;
         const Any data;
-        const std::type_index type;
+        bool operator==(const PropData &rhs) const {
+            if (this->isConst != rhs.isConst
+               || this->data.elements != rhs.data.elements
+               || this->data.length != rhs.data.length
+               || this->data.type != rhs.data.type)
+                return false;
+            for (size_t i = 0; i < this->data.length; ++i) {
+                if (static_cast<const char *>(this->data.ptr)[i] != static_cast<const char *>(rhs.data.ptr)[i])
+                    return false;
+            }
+            return true;
+        }
     };
     /**
      * Default destruction
      */
-    EnvironmentDescription() = default;
+    EnvironmentDescription();
 
     bool operator==(const EnvironmentDescription& rhs) const;
     bool operator!=(const EnvironmentDescription& rhs) const;
@@ -248,7 +215,7 @@ class EnvironmentDescription {
     /**
      * Main storage of all properties
      */
-    std::unordered_map<std::string, PropData> properties;
+    std::unordered_map<std::string, PropData> properties{};
 };
 
 
@@ -328,10 +295,10 @@ T EnvironmentDescription::getProperty(const std::string &name) const {
         "Only arithmetic types can be used as environmental properties");
     auto &&i = properties.find(name);
     if (i != properties.end()) {
-        if (i->second.type != std::type_index(typeid(T))) {
+        if (i->second.data.type != std::type_index(typeid(T))) {
             THROW InvalidEnvPropertyType("Environmental property ('%s') type (%s) does not match template argument T (%s), "
                 "in EnvironmentDescription::get().",
-                name.c_str(), i->second.type.name(), typeid(T).name());
+                name.c_str(), i->second.data.type.name(), typeid(T).name());
         }
         return *reinterpret_cast<T*>(i->second.data.ptr);
     }
@@ -347,15 +314,15 @@ std::array<T, N> EnvironmentDescription::getProperty(const std::string &name) co
         "Only arithmetic types can be used as environmental properties");
     auto &&i = properties.find(name);
     if (i != properties.end()) {
-        if (i->second.type != std::type_index(typeid(T))) {
+        if (i->second.data.type != std::type_index(typeid(T))) {
             THROW InvalidEnvPropertyType("Environmental property array ('%s') type (%s) does not match template argument T (%s), "
                 "in EnvironmentDescription::get().",
-                name.c_str(), i->second.type.name(), typeid(T).name());
+                name.c_str(), i->second.data.type.name(), typeid(T).name());
         }
-        if (i->second.elements != N) {
+        if (i->second.data.elements != N) {
             THROW OutOfBoundsException("Length of named environmental property array (%u) does not match template argument N (%u), "
                 "in EnvironmentDescription::get().",
-                i->second.elements, N);
+                i->second.data.elements, N);
         }
         // Copy old data to return
         std::array<T, N> rtn;
@@ -374,15 +341,15 @@ T EnvironmentDescription::getProperty(const std::string &name, const Environment
         "Only arithmetic types can be used as environmental properties");
     auto &&i = properties.find(name);
     if (i != properties.end()) {
-        if (i->second.type != std::type_index(typeid(T))) {
+        if (i->second.data.type != std::type_index(typeid(T))) {
             THROW InvalidEnvPropertyType("Environmental property array ('%s') type (%s) does not match template argument T (%s), "
                 "in EnvironmentDescription::get().",
-                name.c_str(), i->second.type.name(), typeid(T).name());
+                name.c_str(), i->second.data.type.name(), typeid(T).name());
         }
-        if (i->second.elements <= index) {
+        if (i->second.data.elements <= index) {
             THROW OutOfBoundsException("Index (%u) exceeds named environmental property array's length (%u), "
                 "in EnvironmentDescription::get().",
-                index, i->second.elements);
+                index, i->second.data.elements);
         }
         // Copy old data to return
         return *(reinterpret_cast<T*>(i->second.data.ptr) + index);
@@ -400,14 +367,14 @@ std::vector<T> EnvironmentDescription::getPropertyArray(const std::string& name)
         "Only arithmetic types can be used as environmental properties");
     auto &&i = properties.find(name);
     if (i != properties.end()) {
-        if (i->second.type != std::type_index(typeid(T))) {
+        if (i->second.data.type != std::type_index(typeid(T))) {
             THROW InvalidEnvPropertyType("Environmental property array ('%s') type (%s) does not match template argument T (%s), "
                 "in EnvironmentDescription::getArray().",
-                name.c_str(), i->second.type.name(), typeid(T).name());
+                name.c_str(), i->second.data.type.name(), typeid(T).name());
         }
         // Copy old data to return
-        std::vector<T> rtn(i->second.elements);
-        memcpy(rtn.data(), reinterpret_cast<T*>(i->second.data.ptr), i->second.elements * sizeof(T));
+        std::vector<T> rtn(i->second.data.elements);
+        memcpy(rtn.data(), reinterpret_cast<T*>(i->second.data.ptr), i->second.data.elements * sizeof(T));
         return rtn;
     }
     THROW InvalidEnvProperty("Environmental property with name '%s' does not exist, "
@@ -431,10 +398,10 @@ T EnvironmentDescription::setProperty(const std::string &name, const T &value) {
         "Only arithmetic types can be used as environmental properties");
     auto &&i = properties.find(name);
     if (i != properties.end()) {
-        if (i->second.type != std::type_index(typeid(T))) {
+        if (i->second.data.type != std::type_index(typeid(T))) {
             THROW InvalidEnvPropertyType("Environmental property ('%s') type (%s) does not match template argument T (%s), "
                 "in EnvironmentDescription::set().",
-                name.c_str(), i->second.type.name(), typeid(T).name());
+                name.c_str(), i->second.data.type.name(), typeid(T).name());
         }
         // Copy old data to return
         T rtn = *reinterpret_cast<T*>(i->second.data.ptr);
@@ -458,15 +425,15 @@ std::array<T, N> EnvironmentDescription::setProperty(const std::string &name, co
         "Only arithmetic types can be used as environmental properties");
     auto &&i = properties.find(name);
     if (i != properties.end()) {
-        if (i->second.type != std::type_index(typeid(T))) {
+        if (i->second.data.type != std::type_index(typeid(T))) {
             THROW InvalidEnvPropertyType("Environmental property array ('%s') type (%s) does not match template argument T (%s), "
                 "in EnvironmentDescription::set().",
-                name.c_str(), i->second.type.name(), typeid(T).name());
+                name.c_str(), i->second.data.type.name(), typeid(T).name());
         }
-        if (i->second.elements != N) {
+        if (i->second.data.elements != N) {
             THROW OutOfBoundsException("Length of named environmental property array (%u) does not match template argument N (%u), "
                 "in EnvironmentDescription::set().",
-                i->second.elements, N);
+                i->second.data.elements, N);
         }
         // Copy old data to return
         std::array<T, N> rtn;
@@ -491,15 +458,15 @@ T EnvironmentDescription::setProperty(const std::string &name, const Environment
         "Only arithmetic types can be used as environmental properties");
     auto &&i = properties.find(name);
     if (i != properties.end()) {
-        if (i->second.type != std::type_index(typeid(T))) {
+        if (i->second.data.type != std::type_index(typeid(T))) {
             THROW InvalidEnvPropertyType("Environmental property array ('%s') type (%s) does not match template argument T (%s), "
                 "in EnvironmentDescription::set().",
-                name.c_str(), i->second.type.name(), typeid(T).name());
+                name.c_str(), i->second.data.type.name(), typeid(T).name());
         }
-        if (i->second.elements <= index) {
+        if (i->second.data.elements <= index) {
             THROW OutOfBoundsException("Index (%u) exceeds named environmental property array's length (%u), "
                 "in EnvironmentDescription::set().",
-                index, i->second.elements);
+                index, i->second.data.elements);
         }
         // Copy old data to return
         T rtn = *(reinterpret_cast<T*>(i->second.data.ptr) + index);
@@ -524,21 +491,21 @@ std::vector<T> EnvironmentDescription::setPropertyArray(const std::string& name,
         "Only arithmetic types can be used as environmental properties");
     auto &&i = properties.find(name);
     if (i != properties.end()) {
-        if (i->second.type != std::type_index(typeid(T))) {
+        if (i->second.data.type != std::type_index(typeid(T))) {
             THROW InvalidEnvPropertyType("Environmental property array ('%s') type (%s) does not match template argument T (%s), "
                 "in EnvironmentDescription::set().",
-                name.c_str(), i->second.type.name(), typeid(T).name());
+                name.c_str(), i->second.data.type.name(), typeid(T).name());
         }
-        if (i->second.elements != value.size()) {
+        if (i->second.data.elements != value.size()) {
             THROW OutOfBoundsException("Length of named environmental property array (%u) does not match length of provided vector (%llu), "
                 "in EnvironmentDescription::set().",
-                i->second.elements, value.size());
+                i->second.data.elements, value.size());
         }
         // Copy old data to return
-        std::vector<T> rtn(i->second.elements);
-        memcpy(rtn.data(), reinterpret_cast<T*>(i->second.data.ptr), i->second.elements * sizeof(T));
+        std::vector<T> rtn(i->second.data.elements);
+        memcpy(rtn.data(), reinterpret_cast<T*>(i->second.data.ptr), i->second.data.elements * sizeof(T));
         // Store data
-        memcpy(reinterpret_cast<T*>(i->second.data.ptr), value.data(), i->second.elements * sizeof(T));
+        memcpy(reinterpret_cast<T*>(i->second.data.ptr), value.data(), i->second.data.elements * sizeof(T));
         return rtn;
     }
     THROW InvalidEnvProperty("Environmental property with name '%s' does not exist, "

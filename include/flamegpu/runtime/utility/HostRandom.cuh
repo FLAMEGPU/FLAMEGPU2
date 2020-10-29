@@ -44,6 +44,15 @@ class HostRandom {
     */
     template<typename T>
     inline T uniform(const T& min, const T& max) const;
+    /**
+     * Change the seed used for random generation
+     * @param seed New random seed
+     */
+    void setSeed(const unsigned int &seed);
+    /**
+     * Returns the last value used to seed random generation
+     */
+    unsigned int getSeed() const;
 
  private:
     explicit HostRandom(RandomManager &_rng) : rng(_rng) { }
@@ -93,6 +102,12 @@ template<>
 inline unsigned char HostRandom::uniform(const unsigned char& min, const unsigned char& max) const {
     std::uniform_int_distribution<uint16_t> dist(min, max);
     return static_cast<unsigned char>(rng.getDistribution<uint16_t>(dist));
+}
+
+template<>
+inline signed char HostRandom::uniform(const signed char& min, const signed char& max) const {
+    std::uniform_int_distribution<int16_t> dist(min, max);
+    return static_cast<signed char>(rng.getDistribution<int16_t>(dist));
 }
 
 

@@ -24,6 +24,7 @@ SET(SWIG_INPUT_FILE_NAME flamegpu)
 # setup properties of swig input file
 set_property(SOURCE ${SWIG_INPUT_FILE_NAME}.i PROPERTY CPLUSPLUS ON)
 set_property(SOURCE ${SWIG_INPUT_FILE_NAME}.i PROPERTY SWIG_MODULE_NAME ${PYTHON_MODULE_NAME})
+set_property(SOURCE ${SWIG_INPUT_FILE_NAME}.i PROPERTY SWIG_FLAGS "-threads")
 #set_property(SOURCE ${SWIG_INPUT_FILE_NAME}.i PROPERTY SWIG_FLAGS "-builtin")
 
 # Add swig module

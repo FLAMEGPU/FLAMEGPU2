@@ -16,7 +16,7 @@
 jsonReader::jsonReader(
     const std::string &model_name,
     const std::unordered_map<std::string, EnvironmentDescription::PropData> &env_desc,
-    std::unordered_map<std::pair<std::string, unsigned int>, EnvironmentDescription::Any> &env_init,
+    std::unordered_map<std::pair<std::string, unsigned int>, Any> &env_init,
     const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &model_state,
     const std::string &input,
     Simulation *sim_instance)
@@ -31,7 +31,7 @@ class jsonReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, j
     std::string lastKey;
     std::string filename;
     const std::unordered_map<std::string, EnvironmentDescription::PropData> env_desc;
-    std::unordered_map<std::pair<std::string, unsigned int>, EnvironmentDescription::Any> &env_init;
+    std::unordered_map<std::pair<std::string, unsigned int>, Any> &env_init;
     /**
      * Used for setting agent values
      */
@@ -56,7 +56,7 @@ class jsonReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, j
  public:
     jsonReader_impl(const std::string &_filename,
         const std::unordered_map<std::string, EnvironmentDescription::PropData> &_env_desc,
-        std::unordered_map<std::pair<std::string, unsigned int>, EnvironmentDescription::Any> &_env_init,
+        std::unordered_map<std::pair<std::string, unsigned int>, Any> &_env_init,
         const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &_model_state)
         : filename(_filename)
         , env_desc(_env_desc)
@@ -79,37 +79,37 @@ class jsonReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, j
                 THROW RapidJSONError("Input file contains environment property '%s' multiple times, "
                     "in jsonReader::parse()\n", lastKey.c_str());
             }
-            const std::type_index val_type = it->second.type;
+            const std::type_index val_type = it->second.data.type;
             if (val_type == std::type_index(typeid(float))) {
                 const float t = static_cast<float>(val);
-                env_init.emplace(make_pair(lastKey, current_variable_array_index++), EnvironmentDescription::Any(&t, sizeof(float)));
+                env_init.emplace(make_pair(lastKey, current_variable_array_index++), Any(&t, sizeof(float), val_type, 1));
             } else if (val_type == std::type_index(typeid(double))) {
                 const double t = static_cast<double>(val);
-                env_init.emplace(make_pair(lastKey, current_variable_array_index++), EnvironmentDescription::Any(&t, sizeof(double)));
+                env_init.emplace(make_pair(lastKey, current_variable_array_index++), Any(&t, sizeof(double), val_type, 1));
             } else if (val_type == std::type_index(typeid(int64_t))) {
                 const int64_t t = static_cast<int64_t>(val);
-                env_init.emplace(make_pair(lastKey, current_variable_array_index++), EnvironmentDescription::Any(&t, sizeof(int64_t)));
+                env_init.emplace(make_pair(lastKey, current_variable_array_index++), Any(&t, sizeof(int64_t), val_type, 1));
             } else if (val_type == std::type_index(typeid(uint64_t))) {
                 const uint64_t t = static_cast<uint64_t>(val);
-                env_init.emplace(make_pair(lastKey, current_variable_array_index++), EnvironmentDescription::Any(&t, sizeof(uint64_t)));
+                env_init.emplace(make_pair(lastKey, current_variable_array_index++), Any(&t, sizeof(uint64_t), val_type, 1));
             } else if (val_type == std::type_index(typeid(int32_t))) {
                 const int32_t t = static_cast<int32_t>(val);
-                env_init.emplace(make_pair(lastKey, current_variable_array_index++), EnvironmentDescription::Any(&t, sizeof(int32_t)));
+                env_init.emplace(make_pair(lastKey, current_variable_array_index++), Any(&t, sizeof(int32_t), val_type, 1));
             } else if (val_type == std::type_index(typeid(uint32_t))) {
                 const uint32_t t = static_cast<uint32_t>(val);
-                env_init.emplace(make_pair(lastKey, current_variable_array_index++), EnvironmentDescription::Any(&t, sizeof(uint32_t)));
+                env_init.emplace(make_pair(lastKey, current_variable_array_index++), Any(&t, sizeof(uint32_t), val_type, 1));
             } else if (val_type == std::type_index(typeid(int16_t))) {
                 const int16_t t = static_cast<int16_t>(val);
-                env_init.emplace(make_pair(lastKey, current_variable_array_index++), EnvironmentDescription::Any(&t, sizeof(int16_t)));
+                env_init.emplace(make_pair(lastKey, current_variable_array_index++), Any(&t, sizeof(int16_t), val_type, 1));
             } else if (val_type == std::type_index(typeid(uint16_t))) {
                 const uint16_t t = static_cast<uint16_t>(val);
-                env_init.emplace(make_pair(lastKey, current_variable_array_index++), EnvironmentDescription::Any(&t, sizeof(uint16_t)));
+                env_init.emplace(make_pair(lastKey, current_variable_array_index++), Any(&t, sizeof(uint16_t), val_type, 1));
             } else if (val_type == std::type_index(typeid(int8_t))) {
                 const int8_t t = static_cast<int8_t>(val);
-                env_init.emplace(make_pair(lastKey, current_variable_array_index++), EnvironmentDescription::Any(&t, sizeof(int8_t)));
+                env_init.emplace(make_pair(lastKey, current_variable_array_index++), Any(&t, sizeof(int8_t), val_type, 1));
             } else if (val_type == std::type_index(typeid(uint8_t))) {
                 const uint8_t t = static_cast<uint8_t>(val);
-                env_init.emplace(make_pair(lastKey, current_variable_array_index++), EnvironmentDescription::Any(&t, sizeof(uint8_t)));
+                env_init.emplace(make_pair(lastKey, current_variable_array_index++), Any(&t, sizeof(uint8_t), val_type, 1));
             } else {
                 THROW RapidJSONError("Model contains environment property '%s' of unsupported type '%s', "
                     "in jsonReader::parse()\n", lastKey.c_str(), val_type.name());

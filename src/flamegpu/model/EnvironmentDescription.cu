@@ -1,5 +1,12 @@
 #include "flamegpu/model/EnvironmentDescription.h"
 
+EnvironmentDescription::EnvironmentDescription() {
+    // Add CUDASimulation specific environment members
+    // We do this here, to not break comparing different model description hierarchies before/after CUDASimulation creation
+    unsigned int zero = 0;
+    newProperty("_stepCount", reinterpret_cast<const char*>(&zero), sizeof(unsigned int), false, 1, typeid(unsigned int));
+}
+
 bool EnvironmentDescription::operator==(const EnvironmentDescription& rhs) const {
     if (this == &rhs)  // They point to same object
         return true;
@@ -9,8 +16,8 @@ bool EnvironmentDescription::operator==(const EnvironmentDescription& rhs) const
             if (_v == rhs.properties.end())
                 return false;
             if (v.second.isConst != _v->second.isConst
-                || v.second.elements != _v->second.elements
-                || v.second.type != _v->second.type)
+                || v.second.data.elements != _v->second.data.elements
+                || v.second.data.type != _v->second.data.type)
                 return false;
             if (v.second.data.ptr == _v->second.data.ptr &&
                 v.second.data.length == _v->second.data.length)
@@ -32,7 +39,7 @@ bool EnvironmentDescription::operator!=(const EnvironmentDescription& rhs) const
 }
 
 void EnvironmentDescription::newProperty(const std::string &name, const char *ptr, const size_t &length, const bool &isConst, const EnvironmentManager::size_type &elements, const std::type_index &type) {
-    properties.emplace(name, PropData(isConst,  elements, Any(ptr, length), type));
+    properties.emplace(name, PropData(isConst,  Any(ptr, length, type, elements)));
 }
 
 bool EnvironmentDescription::getConst(const std::string &name) {

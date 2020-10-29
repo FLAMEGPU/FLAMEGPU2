@@ -10,7 +10,8 @@ bool SubModelData::operator==(const SubModelData& rhs) const {
         return true;
     // Compare members
     if (subagents.size() == rhs.subagents.size()
-        && (submodel == rhs.submodel || *submodel == *rhs.submodel)) {
+        && (submodel == rhs.submodel || *submodel == *rhs.submodel)
+        && max_steps == rhs.max_steps) {
         // Compare subagents map
         for (auto &v : subagents) {
             auto _v = rhs.subagents.find(v.first);
@@ -21,6 +22,7 @@ bool SubModelData::operator==(const SubModelData& rhs) const {
             if (*v.second != *_v->second)
                 return false;
         }
+        return true;
     }
     return false;
 }
@@ -29,6 +31,7 @@ bool SubModelData::operator!=(const SubModelData& rhs) const {
 }
 SubModelData::SubModelData(const std::shared_ptr<ModelData> &model, const SubModelData &other)
     : submodel(other.submodel->clone())
+    , max_steps(other.max_steps)
     , name(other.name)
     , description(model ? new SubModelDescription(model, this) : nullptr) {
     // Note, this does not init subagents!
@@ -36,5 +39,6 @@ SubModelData::SubModelData(const std::shared_ptr<ModelData> &model, const SubMod
 }
 SubModelData::SubModelData(const std::shared_ptr<ModelData> &model, const std::string &submodel_name, const std::shared_ptr<ModelData> &_submodel)
     : submodel(_submodel)
+    , max_steps(0)
     , name(submodel_name)
-    , description(new SubModelDescription(model, this)) { }
+    , description(new SubModelDescription(model, this))  { }

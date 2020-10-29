@@ -27,6 +27,7 @@
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/runtime/flamegpu_host_api.h"
 #include "flamegpu/gpu/CUDASimulation.h"
+#include "flamegpu/gpu/CUDAAgent.h"
 
 #define FLAMEGPU_CUSTOM_REDUCTION(funcName, a, b)\
 struct funcName ## _impl {\
@@ -55,7 +56,7 @@ __device__ __forceinline__ OutT funcName ## _impl::unary_function<InT, OutT>::op
 class HostAgentInstance {
  public:
     HostAgentInstance(FLAMEGPU_HOST_API &_api, AgentInterface &_agent, const std::string &_stateName = "default")
-        :api(_api),
+        : api(_api),
         agent(_agent),
         hasState(true),
         stateName(_stateName) {
