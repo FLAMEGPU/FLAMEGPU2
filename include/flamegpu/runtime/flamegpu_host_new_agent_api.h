@@ -274,6 +274,7 @@ struct NewAgentStorage {
      * Used by CUDASimulation::processHostAgentCreation() which needs raw access to the data buffer
      */
     friend class CUDASimulation;
+    friend class CUDAEnsemble;
  private:
     char *const data;
     const VarOffsetStruct &offsets;

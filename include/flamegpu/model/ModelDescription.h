@@ -13,6 +13,7 @@
 class AgentDescription;
 class LayerDescription;
 class SubModelDescription;
+class CUDAEnsemble;
 struct ModelData;
 
 /**
@@ -25,6 +26,7 @@ class ModelDescription {
      * Simulation accesses the classes internals to convert it to a constant ModelData
      */
     friend Simulation::Simulation(const ModelDescription& model);
+    friend CUDAEnsemble;
 
  public:
     /**

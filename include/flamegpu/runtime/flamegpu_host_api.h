@@ -40,7 +40,7 @@ class FLAMEGPU_HOST_API {
      * Initailises pointers to 0
      * Stores reference of CUDASimulation
      */
-     explicit FLAMEGPU_HOST_API(CUDASimulation&_agentModel,
+     explicit FLAMEGPU_HOST_API(SimInterface &_agentModel,
         RandomManager &rng,
          const AgentOffsetMap &agentOffsets,
          AgentDataMap &agentData);
@@ -112,7 +112,7 @@ class FLAMEGPU_HOST_API {
     void resizeTempStorage(const CUB_Config &cc, const unsigned int &items, const size_t &newSize);
     template<typename T>
     void resizeOutputSpace(const unsigned int &items = 1);
-    CUDASimulation &agentModel;
+    SimInterface &agentModel;
     void *d_cub_temp;
     size_t d_cub_temp_size;
     void *d_output_space;

@@ -415,5 +415,9 @@ DERIVED_FGPUException(DeviceError, "Error reported from device code");
  * Defines an error reported when versions do not match
  */
 DERIVED_FGPUException(VersionMismatch, "Versions do not match");
+/**
+ * Exceptions related specifically to the execution of ensembles
+ */
+DERIVED_FGPUException(EnsembleException, "Ensemble requirements not met");
 
 #endif  // INCLUDE_FLAMEGPU_EXCEPTION_FGPUEXCEPTION_H_

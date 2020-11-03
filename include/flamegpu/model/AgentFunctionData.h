@@ -28,6 +28,10 @@ struct AgentFunctionData {
      */
     AgentFunctionWrapper *func;
     /**
+     * The cuda kernel entry point for executing the agent function as part of an Ensemble
+     */
+    AgentFunctionEnsembleWrapper *ensemble_func;
+    /**
      * The string representing the RTC defined agent function
      */
     std::string rtc_source;
@@ -73,6 +77,10 @@ struct AgentFunctionData {
      * @see void agent_function_condition_wrapper(Curve::NamespaceHash, Curve::NamespaceHash, const int, const unsigned int, const unsigned int)
      */
     AgentFunctionConditionWrapper *condition;
+    /**
+     * The cuda kernel entry point for executing the agent function condition as part of an Ensemble
+     */
+    AgentFunctionConditionEnsembleWrapper *ensemble_condition;
     /**
      * The string representing the RTC defined agent function condition
      */
@@ -127,7 +135,7 @@ struct AgentFunctionData {
     /**
      * Normal constructor, only to be called by AgentDescription
      */
-    AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string &function_name, AgentFunctionWrapper *agent_function, const std::string &in_type, const std::string &out_type);
+    AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string &function_name, AgentFunctionWrapper *agent_function, AgentFunctionEnsembleWrapper *agent_ensemble_function, const std::string &in_type, const std::string &out_type);
     /**
      * Normal constructor for RTC function, only to be called by AgentDescription
      */

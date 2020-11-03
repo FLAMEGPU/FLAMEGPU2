@@ -40,6 +40,17 @@ class FLAMEGPU_READ_ONLY_DEVICE_API {
         const unsigned int,
         curandState *,
         unsigned int *);
+    template<typename AgentFunctionCondition>
+    friend __global__ void agent_function_condition_ensemble_wrapper(
+#ifndef NO_SEATBELTS
+        DeviceExceptionBuffer *error_buffer,
+#endif
+        unsigned int total_instances,
+        unsigned int *instance_offsets,
+        Curve::NamespaceHash *instance_id_hash_array,
+        Curve::NamespaceHash agent_func_name_hash,
+        curandState *d_rng,
+        unsigned int *scanFlag_conditionResult);
 
  public:
     /**

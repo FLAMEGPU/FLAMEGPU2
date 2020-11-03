@@ -37,14 +37,13 @@
 * CUDAMessage class
 * @brief allocates the hash table/list for message variables and copy the list to device
 */
-CUDAMessage::CUDAMessage(const MsgBruteForce::Data& description, const CUDASimulation& cuda_model)
+CUDAMessage::CUDAMessage(const MsgBruteForce::Data& description)
     : message_description(description)
     , message_count(0)
     , max_list_size(0)
     , truncate_messagelist_flag(true)
     , pbm_construction_required(false)
-    , specialisation_handler(description.getSpecialisationHander(*this))
-    , cuda_model(cuda_model) {
+    , specialisation_handler(description.getSpecialisationHander(*this)) {
     // resize(0); // Think this call is redundant
 }
 

@@ -45,19 +45,19 @@ class CUDAAgent : public AgentInterface {
     /**
      * Normal constructor
      * @param description Agent description of the agent
-     * @param _cuda_model Parent CUDASimulation of the agent
+     * @param instance_id Instance id of parent CUDASimulation of the agent
      */
-    CUDAAgent(const AgentData& description, const CUDASimulation &_cuda_model);
+    CUDAAgent(const AgentData& description, const unsigned int &instance_id);
     /**
      * Subagent form constructor, used when creating a CUDAAgent for a mapped agent within a submodel
      * @param description Agent description of the agent
-     * @param _cuda_model Parent CUDASimulation of the agent
+     * @param instance_id Instance id of parent CUDASimulation of the agent
      * @param master_agent The (parent) agent which this is agent is mapped to
      * @param mapping Mapping definition for how this agent is connected with its master agent.
      */
     CUDAAgent(
         const AgentData &description,
-        const CUDASimulation &_cuda_model,
+        const unsigned int &instance_id,
         const std::unique_ptr<CUDAAgent> &master_agent,
         const std::shared_ptr<SubAgentData> &mapping);
     /** 
@@ -261,9 +261,10 @@ class CUDAAgent : public AgentInterface {
      */
     const unsigned int fat_index;
     /**
-     * The parent model
+     * The parent model's instance id
+     * This is used for building the rtc header
      */
-    const CUDASimulation &cuda_model;
+    const unsigned int &instance_id;
     /**
      * map between function_name (or function_name_condition) and the jitify instance
      */

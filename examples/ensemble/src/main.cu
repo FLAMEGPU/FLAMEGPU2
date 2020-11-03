@@ -367,7 +367,7 @@ int main(int argc, const char ** argv) {
     /**
      * Create Model Runner
      */
-    CUDASimulation cuda_model(model);
+    CUDAEnsemble cuda_model(model);
 
     /**
      * Create visualisation

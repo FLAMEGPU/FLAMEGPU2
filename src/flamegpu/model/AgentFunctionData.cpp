@@ -4,8 +4,9 @@
 #include "flamegpu/model/AgentFunctionDescription.h"
 #include "flamegpu/runtime/cuRVE/curve_rtc.h"
 
-AgentFunctionData::AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string &function_name, AgentFunctionWrapper *agent_function, const std::string &in_type, const std::string &out_type)
+AgentFunctionData::AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string &function_name, AgentFunctionWrapper *agent_function, AgentFunctionEnsembleWrapper *agent_ensemble_function, const std::string &in_type, const std::string &out_type)
     : func(agent_function)
+    , ensemble_func(agent_ensemble_function)
     , rtc_source("")
     , rtc_func_name("")
     , initial_state(_parent->initial_state)
@@ -21,7 +22,8 @@ AgentFunctionData::AgentFunctionData(std::shared_ptr<AgentData> _parent, const s
     , msg_in_type(in_type)
     , msg_out_type(out_type) { }
 AgentFunctionData::AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string& function_name, const std::string &rtc_function_src, const std::string &in_type, const std::string& out_type, const std::string& code_func_name)
-    : func(0)
+    : func(nullptr)
+    , ensemble_func(nullptr)
     , rtc_source(rtc_function_src)
     , rtc_func_name(code_func_name)
     , initial_state(_parent->initial_state)

@@ -46,14 +46,14 @@ CUDASimulation::CUDASimulation(const ModelDescription& _model, int argc, const c
     // create new cuda agent and add to the map
     for (auto it = am.cbegin(); it != am.cend(); ++it) {
         // insert into map using value_type and store a reference to the map pair
-        agent_map.emplace(it->first, std::make_unique<CUDAAgent>(*it->second, *this)).first;
+        agent_map.emplace(it->first, std::make_unique<CUDAAgent>(*it->second, instance_id)).first;
     }
 
     // populate the CUDA message map
     const auto &mm = model->messages;
     // create new cuda message and add to the map
     for (auto it_m = mm.cbegin(); it_m != mm.cend(); ++it_m) {
-        message_map.emplace(it_m->first, std::make_unique<CUDAMessage>(*it_m->second, *this));
+        message_map.emplace(it_m->first, std::make_unique<CUDAMessage>(*it_m->second));
     }
 
     // populate the CUDA submodel map

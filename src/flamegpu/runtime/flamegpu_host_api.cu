@@ -5,7 +5,7 @@
 #include "flamegpu/util/nvtx.h"
 #include "flamegpu/gpu/CUDASimulation.h"
 
-FLAMEGPU_HOST_API::FLAMEGPU_HOST_API(CUDASimulation &_agentModel,
+FLAMEGPU_HOST_API::FLAMEGPU_HOST_API(SimInterface &_agentModel,
     RandomManager &rng,
     const AgentOffsetMap &_agentOffsets,
     AgentDataMap &_agentData)

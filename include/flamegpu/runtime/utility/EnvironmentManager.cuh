@@ -43,6 +43,7 @@ class EnvironmentManager {
      * Uses instance to initialise a models environment properties on the device
      */
     friend class CUDASimulation;
+    friend class CUDAEnsemble;
     /**
      * Uses instance to access env properties in host functions
      */

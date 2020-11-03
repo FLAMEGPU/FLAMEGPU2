@@ -11,8 +11,18 @@ class FLAMEGPU_HOST_API;
 class ModelDescription;
 class AgentPopulation;
 struct ModelData;
-
-class Simulation {
+/**
+ * This class holds a minimal interface for a simulation for use internally.
+ * This allows items such as FLAMEGPU_HOST_API to be passed either a CUDASimulation or a CUDAEnsembleInstance
+ */
+struct SimInterface {
+    virtual ~SimInterface() = default;
+    virtual const ModelData& getModelDescription() const = 0;
+    virtual AgentInterface &getAgent(const std::string &name) = 0;
+    virtual unsigned int getInstanceID() const = 0;
+    virtual unsigned int getStepCounter() = 0;
+};
+class Simulation : public SimInterface {
  public:
     struct Config {
         Config() : random_seed(static_cast<unsigned int>(time(nullptr))) {
