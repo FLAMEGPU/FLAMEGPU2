@@ -43,8 +43,8 @@ typedef void(AgentFunctionEnsembleWrapper)(
     Curve::NamespaceHash messagename_inp_hash,
     Curve::NamespaceHash messagename_outp_hash,
     Curve::NamespaceHash agent_output_hash,
-    const void *in_messagelist_metadata,
-    const void *out_messagelist_metadata,
+    const void ** in_messagelist_metadata,
+    const void ** out_messagelist_metadata,
     curandState *d_rng,
     unsigned int *scanFlag_agentDeath,
     unsigned int *scanFlag_messageOutput,
@@ -149,8 +149,8 @@ __global__ void agent_function_ensemble_wrapper(
     Curve::NamespaceHash messagename_inp_hash,
     Curve::NamespaceHash messagename_outp_hash,
     Curve::NamespaceHash agent_output_hash,
-    const void *in_messagelist_metadata,
-    const void *out_messagelist_metadata,
+    const void ** in_messagelist_metadata,
+    const void ** out_messagelist_metadata,
     curandState *d_rng,
     unsigned int *scanFlag_agentDeath,
     unsigned int *scanFlag_messageOutput,
@@ -164,10 +164,9 @@ __global__ void agent_function_ensemble_wrapper(
     if (FLAMEGPU_DEVICE_API<MsgIn, MsgOut>::TID() >= instance_offsets[total_instances])
         return;
     // Perform a search to extract correct instance_id_hash
-    // Note this cannot handle active instances with 0 length    
-    Curve::NamespaceHash instance_id_hash;
+    // Note this cannot handle active instances with 0 length
+    unsigned int min = 0;
     {
-        unsigned int min = 0;
         unsigned int max = total_instances;
 
         while (min + 1 != max) {
@@ -181,16 +180,20 @@ __global__ void agent_function_ensemble_wrapper(
             }
         }
         instance_id_hash = instance_id_hash_array[min];
+        instance_id_hash = instance_id_hash_array[min];
+        instance_id_hash = instance_id_hash_array[min];
+        instance_id_hash = instance_id_hash_array[min];
+        instance_id_hash = instance_id_hash_array[min];
     }
     // create a new device FLAME_GPU instance
     FLAMEGPU_DEVICE_API<MsgIn, MsgOut> api = FLAMEGPU_DEVICE_API<MsgIn, MsgOut>(
-        instance_id_hash,
+        instance_id_hash_array[min],
         agent_func_name_hash,
         agent_output_hash,
         d_rng,
         scanFlag_agentOutput,
-        MsgIn::In(agent_func_name_hash, messagename_inp_hash, in_messagelist_metadata),
-        MsgOut::Out(agent_func_name_hash, messagename_outp_hash, out_messagelist_metadata, scanFlag_messageOutput));
+        MsgIn::In(agent_func_name_hash, messagename_inp_hash, in_messagelist_metadata[min]),
+        MsgOut::Out(agent_func_name_hash, messagename_outp_hash, out_messagelist_metadata[min], scanFlag_messageOutput));
 
     // call the user specified device function
     FLAME_GPU_AGENT_STATUS flag = AgentFunction()(&api);

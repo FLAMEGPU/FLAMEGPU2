@@ -212,6 +212,7 @@ class CUDAEnsemble {
         CUDAEnsembleInstance(std::shared_ptr<const ModelData> modelddata,
         std::map<std::string, std::unique_ptr<CUDAEnsemble>> &submodels,
         RandomManager &rng,
+        CUDAScatter &scatter,
         const AgentOffsetMap &agentOffsets, const unsigned int &instance_id);
         ~CUDAEnsembleInstance() override {};
         const ModelData& getModelDescription() const override {
@@ -249,8 +250,17 @@ class CUDAEnsemble {
         unsigned int getInstanceID() const override {
             return instance_id;
         }
-        unsigned int getStepCounter() override {
-            return 0;// TODO: how will this work?
+        unsigned int getStepCounter() const override {
+            return step_count;
+        }
+        void incrementStepCounter() override {            
+            step_count++;
+        }
+        /**
+         * Manually resets the step counter
+         */
+        void resetStepCounter() {
+            step_count = 0;
         }
         const std::shared_ptr<const ModelData> model;
         std::unordered_map<std::string, std::unique_ptr<CUDAAgent>> agent_map;
@@ -262,6 +272,7 @@ class CUDAEnsemble {
         AgentDataMap agentData;
         const unsigned int instance_id;
         std::unique_ptr<FLAMEGPU_HOST_API> host_api = nullptr;
+        unsigned int step_count = 0;
     };
 
  protected:
@@ -274,6 +285,10 @@ class CUDAEnsemble {
      * @note If random was manually seeded, it will return to it's original state. If random was seeded from time, it will return to a new random state.
      */
     void reset(bool submodelReset) override;
+    /**
+     * Manually resets the step counter
+     */
+    void resetStepCounter();
 
  private:
     /**
@@ -392,14 +407,21 @@ class CUDAEnsemble {
     void applyConfig();
  private:
     // 1 Of these structs exists per stream
-    struct InstanceOffsetData {
-        InstanceOffsetData(const unsigned int &activeInstances);
-        ~InstanceOffsetData();
+    struct InstanceOffsetData_cdn {
+        InstanceOffsetData_cdn(const unsigned int &activeInstances);
+        virtual ~InstanceOffsetData_cdn();
         unsigned int * const d_instance_offsets;
         Curve::NamespaceHash * const d_instance_id_hashes;
-    private:
+    protected:
         static void * const cmalloc(const size_t &len);
     };
+    struct InstanceOffsetData : public InstanceOffsetData_cdn {
+        InstanceOffsetData(const unsigned int &activeInstances);
+        ~InstanceOffsetData();
+        const void ** d_in_messagelist_metadata;
+        const void ** d_out_messagelist_metadata;
+    };
+    std::vector<InstanceOffsetData_cdn> instance_offset_cdn_vector;
     std::vector<InstanceOffsetData> instance_offset_vector;
     // Setup all of the CUDAAgent, CUDAMessage objects for the active instances
     void initCUDAInstances(const unsigned int &active_instances);

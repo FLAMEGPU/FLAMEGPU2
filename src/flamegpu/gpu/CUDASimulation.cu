@@ -418,6 +418,11 @@ bool CUDASimulation::step() {
 
                 // Map vars with curve (this allocates/requests enough new buffer space if an existing version is not available/suitable)
                 output_agent.mapNewRuntimeVariables(cuda_agent, *func_des, state_list_size, this->singletons->scatter, j);
+                // Notify scan flag that it might need resizing
+                // We need a 3rd array, because a function might combine agent birth, agent death and message output
+                singletons->scatter.Scan().resize(state_list_size, CUDAScanCompaction::AGENT_OUTPUT, j);
+                // Ensure the scan flag is zeroed
+                singletons->scatter.Scan().zero(CUDAScanCompaction::AGENT_OUTPUT, j);
             }
 
 

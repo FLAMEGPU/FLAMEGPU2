@@ -122,7 +122,7 @@ class CUDASimulation : public Simulation {
     /**
      * Returns the number of times step() has been called since the simulation was last reset/init
      */
-    unsigned int getStepCounter() override;
+    unsigned int getStepCounter() const override;
     /**
      * Manually resets the step counter
      */

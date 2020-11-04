@@ -20,7 +20,10 @@ struct SimInterface {
     virtual const ModelData& getModelDescription() const = 0;
     virtual AgentInterface &getAgent(const std::string &name) = 0;
     virtual unsigned int getInstanceID() const = 0;
-    virtual unsigned int getStepCounter() = 0;
+    //These step counter methods could be implemented here and made final?
+    virtual unsigned int getStepCounter() const = 0;
+    virtual void incrementStepCounter() = 0;
+    virtual void resetStepCounter() = 0;
 };
 class Simulation : public SimInterface {
  public:
@@ -74,8 +77,6 @@ class Simulation : public SimInterface {
      * @note If random was manually seeded, it will return to it's original state. If random was seeded from time, it will return to a new random state.
      */
     void reset();
-    virtual unsigned int getStepCounter() = 0;
-    virtual void resetStepCounter() = 0;
 
     const ModelData& getModelDescription() const;
     /**
