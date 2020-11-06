@@ -16,6 +16,10 @@
 
 #include <cstring>
 #include <cstdio>
+#ifndef __CUDACC_RTC__
+#include <mutex>
+#include <shared_mutex>
+#endif
 
 #include "flamegpu/exception/FGPUDeviceException.h"
 
@@ -88,6 +92,10 @@ class Curve {
     template <unsigned int N, typename T>
     __host__ Variable registerVariable(const char(&variableName)[N], void* d_ptr, unsigned int length);
     /**
+     * Check how many items are in the hash table
+     */
+    __host__ int size() const;
+    /**
      * Copy host structures to device
      */
     __host__ void updateDevice();
@@ -102,46 +110,10 @@ class Curve {
      */
     template <unsigned int N>
     __host__ void unregisterVariable(const char(&variableName)[N]);
-    /** @brief Function for disabling access to a cuRVE variable from a VariableHash
-     *     Disables device access to the cuRVE variable. Does not disable host access.
-     *  @param variable_hash A cuRVE variable string hash from VariableHash.
-     */
-    __host__ void disableVariableByHash(VariableHash variable_hash);
-    /** @brief Template function for disabling access to a cuRVE variable from a constant string variable name
-     *     Disables device access to the cuRVE variable. Does not disable host access.
-     *  @param variableName A constant string variable name which must have been registered as a curve variable
-     */
-    template <unsigned int N>
-    __host__ void disableVariable(const char(&variableName)[N]);
-    /** @brief Function for enabling access to a cuRVE variable from a VariableHash
-     *     Enables device access to the cuRVE variable.
-     *  @param variable_hash A cuRVE variable string hash from VariableHash.
-     */
-    __host__ void enableVariableByHash(VariableHash variable_hash);
-    /** @brief Template function for enabling access to a cuRVE variable from a constant string variable name
-     *     Enables device access to the cuRVE variable.
-     *  @param variableName A constant string variable name which must have been registered as a curve variable
-     */
-    template <unsigned int N>
-    __host__ void enableVariable(const char(&variableName)[N]);
-    /** @brief Function changes the current namespace from a NamespaceHash
-     *     Changing the namespace will affect both the host and device.
-     *  @param variable_hash A cuRVE variable string hash from VariableHash.
-     */
-    __host__ void setNamespaceByHash(NamespaceHash variable_hash);
-    /** @brief Function changes the current namespace to the default empty namespace
-     *     Changing the namespace will affect both the host and device.
-     */
-    __host__ void setDefaultNamespace();
-    /** @brief Template function changes the current namespace using a constant string namespace name
-     *     Changing the namespace will affect both the host and device.
-     *  @param namespaceName A constant string variable name which must have been registered as a curve variable
-     */
-    template <unsigned int N>
-    __host__ void setNamespace(const char(&namespaceName)[N]);
 
-
-
+    /**
+     * Returns the index of the hashed variable within the hash table
+     */
     __device__ __forceinline__ static Variable getVariable(const VariableHash variable_hash);
     /** @brief Gets the size of the cuRVE variable type given the variable hash
      * Gets the size of the cuRVE variable type given the variable hash
@@ -287,15 +259,26 @@ class Curve {
     __host__ void clearErrors();
 
     __host__ unsigned int checkHowManyMappedItems();
-    unsigned int h_namespace;
     static const int MAX_VARIABLES = 1024;          // !< Default maximum number of cuRVE variables (must be a power of 2)
-    static const int VARIABLE_DISABLED = 0;
-    static const int VARIABLE_ENABLED = 1;
-    static const int NAMESPACE_NONE = 0;
     static const VariableHash EMPTY_FLAG = 0;
     static const VariableHash DELETED_FLAG = 1;
 
  private:
+    /**
+     * Check how many items are in the hash table
+     * This private version assumes you have already locked mutex
+     */
+    __host__ int _size() const;
+    /**
+     * Private common implementation for mutex reasons
+     * @see registerVariableByHash(VariableHash, void*, size_t, unsigned int)
+     */
+    __host__ Variable _registerVariableByHash(VariableHash variable_hash, void* d_ptr, size_t size, unsigned int length);
+    /**
+     * Private common implementation for mutex reasons
+     * @see unregisterVariableByHash(VariableHash)
+     */
+    __host__ void _unregisterVariableByHash(VariableHash variable_hash);
     /** @brief Device template function for getting a setting a single typed value from a constant string variable name
      *     Returns a single value from a constant string expression using the given index position
      *  @param variableName A constant string variable name which must have been registered as a curve variable.
@@ -345,11 +328,21 @@ class Curve {
     __device__ __forceinline__ static void setArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, T variable, unsigned int variable_index, unsigned int array_index);
     VariableHash h_hashes[MAX_VARIABLES];         // Host array of the hash values of registered variables
     void* h_d_variables[MAX_VARIABLES];           // Host array of pointer to device memory addresses for variable storage
-    int    h_states[MAX_VARIABLES];               // Host array of the states of registered variables
     size_t h_sizes[MAX_VARIABLES];                // Host array of the sizes of registered variable types (Note: RTTI not supported in CUDA so this is the best we can do for now)
     unsigned int h_lengths[MAX_VARIABLES];        // Host array of the length of registered variables (i.e: vector length)
     bool deviceInitialised;                       // Flag indicating that curve has/hasn't been initialised yet on a device.
 
+#ifndef __CUDACC_RTC__
+    /**
+     * Managed multi-threaded access to the internal storage
+     * All read-only methods take a shared-lock
+     * All methods which modify the internals require a unique-lock
+     * Some private methods expect a lock to be gained before calling (to prevent the same thread attempting to lock the mutex twice)
+     */
+    mutable std::shared_timed_mutex mutex;
+    std::shared_lock<std::shared_timed_mutex> getSharedLock() const { return std::shared_lock<std::shared_timed_mutex>(mutex); }
+    std::unique_lock<std::shared_timed_mutex> getUniqueLock() const { return std::unique_lock<std::shared_timed_mutex>(mutex); }
+#endif
     /**
      * Initialises cuRVE on the currently active device.
      * 
@@ -375,9 +368,7 @@ class Curve {
      *  This ensure that curveInit is only ever called once by the program.
      *  This will initialise the internal storage used for hash tables.
      */
-     Curve();
-
-    ~Curve() {}
+    Curve();
 
  public:
 #ifndef __CUDACC_RTC__
@@ -386,19 +377,15 @@ class Curve {
      *
      * @return    A new instance if this is the first request for an instance otherwise an existing instance.
      */
-    static Curve& getInstance() {
-        static Curve c;
-        return c;
-    }
+    static Curve& getInstance();
+    static std::mutex instance_mutex;
 #endif
 };
 
 
 namespace curve_internal {
-    extern __constant__ Curve::NamespaceHash d_namespace;
     extern __constant__ Curve::VariableHash d_hashes[Curve::MAX_VARIABLES];   // Device array of the hash values of registered variables
     extern __device__ char* d_variables[Curve::MAX_VARIABLES];                // Device array of pointer to device memory addresses for variable storage
-    extern __constant__ int d_states[Curve::MAX_VARIABLES];                   // Device array of the states of registered variables
     extern __constant__ size_t d_sizes[Curve::MAX_VARIABLES];                // Device array of the types of registered variables
     extern __constant__ unsigned int d_lengths[Curve::MAX_VARIABLES];
 
@@ -429,46 +416,34 @@ template <unsigned int N> struct CurveStringHash<N, 1> {
     }
 };
 
+#ifndef __CUDACC_RTC__
 /**
  * Host side template class implementation
  */
 template <unsigned int N, typename T>
 __host__ Curve::Variable Curve::registerVariable(const char(&variableName)[N], void* d_ptr, unsigned int length) {
+    auto lock = std::unique_lock<std::shared_timed_mutex>(mutex);
     VariableHash variable_hash = variableHash(variableName);
     size_t size = sizeof(T);
-    return registerVariableByHash(variable_hash, d_ptr, size, length);  // the const func can get const and non const argument (for 3rd argument)
+    return _registerVariableByHash(variable_hash, d_ptr, size, length);  // the const func can get const and non const argument (for 3rd argument)
 }
 template <unsigned int N>
 __host__ void Curve::unregisterVariable(const char(&variableName)[N]) {
+    auto lock = std::unique_lock<std::shared_timed_mutex>(mutex);
     VariableHash variable_hash = variableHash(variableName);
-    unregisterVariableByHash(variable_hash);
+    _unregisterVariableByHash(variable_hash);
 }
-template <unsigned int N>
-__host__ void Curve::disableVariable(const char (&variableName)[N]) {
-    VariableHash variable_hash = variableHash(variableName);
-    disableVariableByHash(variable_hash);
-}
-template <unsigned int N>
-__host__ void Curve::enableVariable(const char (&variableName)[N]) {
-    VariableHash variable_hash = variableHash(variableName);
-    enableVariableByHash(variable_hash);
-}
-template <unsigned int N>
-__host__ void Curve::setNamespace(const char (&namespaceName)[N]) {
-    NamespaceHash namespace_hash = variableHash(namespaceName);
-    setNamespaceByHash(namespace_hash);
-}
+#endif
 
 /**
 * Device side class implementation
 */
 /* loop unrolling of hash collision detection */
 __device__ __forceinline__ Curve::Variable Curve::getVariable(const VariableHash variable_hash) {
-    const VariableHash hash = variable_hash + curve_internal::d_namespace;
     for (unsigned int x = 0; x< MAX_VARIABLES; x++) {
-        const Variable i = ((hash + x) & (MAX_VARIABLES - 1));
+        const Variable i = ((variable_hash + x) & (MAX_VARIABLES - 1));
         const VariableHash h = curve_internal::d_hashes[i];
-        if (h == hash)
+        if (h == variable_hash)
             return i;
     }
     return UNKNOWN_VARIABLE;
@@ -501,10 +476,6 @@ __device__ __forceinline__ void* Curve::getVariablePtrByHash(const VariableHash 
     // error checking
     if (cv == UNKNOWN_VARIABLE) {
         curve_internal::d_curve_error = DEVICE_ERROR_UNKNOWN_VARIABLE;
-        return nullptr;
-    }
-    if (!curve_internal::d_states[cv]) {
-        curve_internal::d_curve_error = DEVICE_ERROR_VARIABLE_DISABLED;
         return nullptr;
     }
 

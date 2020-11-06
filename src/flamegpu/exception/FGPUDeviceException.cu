@@ -25,6 +25,7 @@ DeviceExceptionBuffer *DeviceExceptionManager::getDevicePtr(const unsigned int &
     if (!d_buffer[streamId]) {
         gpuErrchk(cudaMalloc(&d_buffer[streamId], sizeof(DeviceExceptionBuffer)));
     }
+    gpuErrchk(cudaDeviceSynchronize());
     // Memset and return buffer
     gpuErrchk(cudaMemset(d_buffer[streamId], 0, sizeof(DeviceExceptionBuffer)));
     memset(&hd_buffer[streamId], 0, sizeof(DeviceExceptionBuffer));

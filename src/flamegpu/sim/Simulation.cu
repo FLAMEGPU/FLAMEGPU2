@@ -42,7 +42,10 @@ void Simulation::applyConfig() {
             auto a = std::make_shared<AgentPopulation>(*agent.second->description);
             pops.emplace(agent.first, a);
         }
-        StateReader *read__ = ReaderFactory::createReader(model->name, getInstanceID(), pops, config.input_file.c_str(), this);
+
+        env_init.clear();
+        const auto env_desc = model->environment->getPropertiesMap();  // For some reason this method returns a copy, not a reference
+        StateReader *read__ = ReaderFactory::createReader(model->name, env_desc, env_init, pops, config.input_file.c_str(), this);
         if (read__) {
             read__->parse();
             for (auto &agent : pops) {
@@ -109,7 +112,9 @@ int Simulation::checkArgs(int argc, const char** argv) {
                     auto a = std::make_shared<AgentPopulation>(*agent.second->description);
                     pops.emplace(agent.first, a);
                 }
-                StateReader *read__ = ReaderFactory::createReader(model->name, getInstanceID(), pops, config.input_file.c_str(), this);
+                env_init.clear();
+                const auto env_desc = model->environment->getPropertiesMap();  // For some reason this method returns a copy, not a reference
+                StateReader *read__ = ReaderFactory::createReader(model->name, env_desc, env_init, pops, config.input_file.c_str(), this);
                 if (read__) {
                     read__->parse();
                     for (auto &agent : pops) {
@@ -214,5 +219,5 @@ void Simulation::reset() {
 
 unsigned int Simulation::get_instance_id() {
     static unsigned int i = 0;
-    return i++;
+    return 641 * (i++);
 }

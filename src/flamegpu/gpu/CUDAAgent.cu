@@ -74,7 +74,7 @@ CUDAAgent::CUDAAgent(
     }
 }
 
-void CUDAAgent::mapRuntimeVariables(const AgentFunctionData& func) const {
+void CUDAAgent::mapRuntimeVariables(const AgentFunctionData& func, const unsigned int &instance_id) const {
     // check the cuda agent state map to find the correct state list for functions starting state
     auto sm = state_map.find(func.initial_state);
 
@@ -86,6 +86,7 @@ void CUDAAgent::mapRuntimeVariables(const AgentFunctionData& func) const {
 
     const Curve::VariableHash agent_hash = Curve::variableRuntimeHash(agent_description.name.c_str());
     const Curve::VariableHash func_hash = Curve::variableRuntimeHash(func.name.c_str());
+    auto &curve = Curve::getInstance();
     const unsigned int agent_count = this->getStateSize(func.initial_state);
     // loop through the agents variables to map each variable name using cuRVE
     for (const auto &mmp : agent_description.variables) {
@@ -99,15 +100,16 @@ void CUDAAgent::mapRuntimeVariables(const AgentFunctionData& func) const {
         const size_t type_size = mmp.second.type_size * mmp.second.elements;
 
         // maximum population num
+        {
 #ifdef _DEBUG
-        const Curve::Variable cv = Curve::getInstance().registerVariableByHash(var_hash + agent_hash + func_hash, d_ptr, type_size, agent_count);
-        if (cv != static_cast<int>((var_hash + agent_hash + func_hash)%Curve::MAX_VARIABLES)) {
-            fprintf(stderr, "Curve Warning: Agent Function '%s' Variable '%s' has a collision and may work improperly.\n", func.name.c_str(), mmp.first.c_str());
-        }
+            const Curve::Variable cv = curve.registerVariableByHash(var_hash + agent_hash + func_hash + instance_id, d_ptr, type_size, agent_count);
+            if (cv != static_cast<int>((var_hash + agent_hash + func_hash + instance_id)%Curve::MAX_VARIABLES)) {
+                fprintf(stderr, "Curve Warning: Agent Function '%s' Variable '%s' has a collision and may work improperly.\n", func.name.c_str(), mmp.first.c_str());
+            }
 #else
-        Curve::getInstance().registerVariableByHash(var_hash + agent_hash + func_hash, d_ptr, type_size, agent_count);
+            curve.registerVariableByHash(var_hash + agent_hash + func_hash + instance_id, d_ptr, type_size, agent_count);
 #endif
-
+        }
         // Map RTC variables to agent function (these must be mapped before each function execution as the runtime pointer may have changed to the swapping)
         if (!func.rtc_func_name.empty()) {
             // get the rtc varibale ptr
@@ -133,7 +135,7 @@ void CUDAAgent::mapRuntimeVariables(const AgentFunctionData& func) const {
     }
 }
 
-void CUDAAgent::unmapRuntimeVariables(const AgentFunctionData& func) const {
+void CUDAAgent::unmapRuntimeVariables(const AgentFunctionData& func, const unsigned int &instance_id) const {
     // check the cuda agent state map to find the correct state list for functions starting state
     const auto &sm = state_map.find(func.initial_state);
 
@@ -152,7 +154,7 @@ void CUDAAgent::unmapRuntimeVariables(const AgentFunctionData& func) const {
 
         // unmap using curve
         const Curve::VariableHash var_hash = Curve::variableRuntimeHash(mmp.first.c_str());
-        Curve::getInstance().unregisterVariableByHash(var_hash + agent_hash + func_hash);
+        Curve::getInstance().unregisterVariableByHash(var_hash + agent_hash + func_hash + instance_id);
     }
 
     // No current need to unmap RTC variables as they are specific to the agent functions and thus do not persist beyond the scope of a single function
@@ -293,7 +295,7 @@ void CUDAAgent::scatterSort(const std::string &state_name, CUDAScatter &scatter,
     }
     sm->second->scatterSort(scatter, streamId);
 }
-void CUDAAgent::mapNewRuntimeVariables(const CUDAAgent& func_agent, const AgentFunctionData& func, const unsigned int &maxLen, CUDAScatter &scatter, const unsigned int &streamId) {
+void CUDAAgent::mapNewRuntimeVariables(const CUDAAgent& func_agent, const AgentFunctionData& func, const unsigned int &maxLen, CUDAScatter &scatter, const unsigned int &instance_id, const unsigned int &streamId) {
     // Confirm agent output is set
     if (auto oa = func.agent_output.lock()) {
         // check the cuda agent state map to find the correct state list for functions starting state
@@ -332,6 +334,7 @@ void CUDAAgent::mapNewRuntimeVariables(const CUDAAgent& func_agent, const AgentF
         // Map variables to curve
         const Curve::VariableHash _agent_birth_hash = Curve::variableRuntimeHash("_agent_birth");
         const Curve::VariableHash func_hash = Curve::variableRuntimeHash(func.name.c_str());
+        auto &curve = Curve::getInstance();
         // loop through the agents variables to map each variable name using cuRVE
         for (const auto &mmp : agent_description.variables) {
             // map using curve
@@ -353,12 +356,12 @@ void CUDAAgent::mapNewRuntimeVariables(const CUDAAgent& func_agent, const AgentF
 
             // maximum population num
 #ifdef _DEBUG
-            const Curve::Variable cv = Curve::getInstance().registerVariableByHash(var_hash + _agent_birth_hash + func_hash, d_ptr, type_size, maxLen);
-            if (cv != static_cast<int>((var_hash + _agent_birth_hash + func_hash)%Curve::MAX_VARIABLES)) {
+            const Curve::Variable cv = curve.registerVariableByHash(var_hash + (_agent_birth_hash ^ func_hash) + instance_id, d_ptr, type_size, maxLen);
+            if (cv != static_cast<int>((var_hash + (_agent_birth_hash ^ func_hash) + instance_id)%Curve::MAX_VARIABLES)) {
                 fprintf(stderr, "Curve Warning: Agent Function '%s' New Agent Variable '%s' has a collision and may work improperly.\n", func.name.c_str(), mmp.first.c_str());
             }
 #else
-            Curve::getInstance().registerVariableByHash(var_hash + _agent_birth_hash + func_hash, d_ptr, type_size, maxLen);
+            curve.registerVariableByHash(var_hash + (_agent_birth_hash ^ func_hash) + instance_id, d_ptr, type_size, maxLen);
 #endif
             // Map RTC variables (these must be mapped before each function execution as the runtime pointer may have changed to the swapping)
             if (!func.rtc_func_name.empty()) {
@@ -373,7 +376,7 @@ void CUDAAgent::mapNewRuntimeVariables(const CUDAAgent& func_agent, const AgentF
         }
     }
 }
-void CUDAAgent::unmapNewRuntimeVariables(const AgentFunctionData& func) {
+void CUDAAgent::unmapNewRuntimeVariables(const AgentFunctionData& func, const unsigned int &instance_id) {
     // Confirm agent output is set
     if (auto oa = func.agent_output.lock()) {
         // Release new buffer
@@ -390,14 +393,12 @@ void CUDAAgent::unmapNewRuntimeVariables(const AgentFunctionData& func) {
         // Unmap curve
         const Curve::VariableHash _agent_birth_hash = Curve::variableRuntimeHash("_agent_birth");
         const Curve::VariableHash func_hash = Curve::variableRuntimeHash(func.name.c_str());
+        auto &curve = Curve::getInstance();
         // loop through the agents variables to map each variable name using cuRVE
         for (const auto &mmp : agent_description.variables) {
-            // get a device pointer for the agent variable name
-            // void* d_ptr = sm->second->getAgentListVariablePointer(mmp.first);
-
             // unmap using curve
             const Curve::VariableHash var_hash = Curve::variableRuntimeHash(mmp.first.c_str());
-            Curve::getInstance().unregisterVariableByHash(var_hash + _agent_birth_hash + func_hash);
+            curve.unregisterVariableByHash(var_hash + (_agent_birth_hash ^ func_hash) + instance_id);
 
             // no need to unmap RTC variables
         }
@@ -591,26 +592,29 @@ void CUDAAgent::addInstantitateRTCFunction(jitify::JitCache &kernel_cache, const
     }
 
     // Set Environment variables in curve
-    Curve::NamespaceHash instance_id_hash = Curve::variableRuntimeHash(cuda_model.getInstanceID());
-    const auto &prop_map = EnvironmentManager::getInstance().getPropertiesMap();
-    for (auto p : prop_map) {
-        if (p.first.first == cuda_model.getInstanceID()) {
-            const char* variableName = p.first.second.c_str();
-            const char* type = p.second.type.name();
-            unsigned int elements = p.second.elements;
-            ptrdiff_t offset = p.second.rtc_offset;
-            curve_header.registerEnvVariable(variableName, instance_id_hash, offset, type, p.second.length/elements, elements);
+    {
+        // Scope the mutex
+        auto lock = EnvironmentManager::getInstance().getSharedLock();
+        const auto &prop_map = EnvironmentManager::getInstance().getPropertiesMap();
+        for (auto p : prop_map) {
+            if (p.first.first == cuda_model.getInstanceID()) {
+                const char* variableName = p.first.second.c_str();
+                const char* type = p.second.type.name();
+                unsigned int elements = p.second.elements;
+                ptrdiff_t offset = p.second.rtc_offset;
+                curve_header.registerEnvVariable(variableName, cuda_model.getInstanceID(), offset, type, p.second.length/elements, elements);
+            }
         }
-    }
-    // Set mapped environment variables in curve
-    for (auto mp : EnvironmentManager::getInstance().getMappedProperties()) {
-        if (mp.first.first == cuda_model.getInstanceID()) {
-            auto p = prop_map.at(mp.second.masterProp);
-            const char* variableName = mp.second.masterProp.second.c_str();
-            const char* type = p.type.name();
-            unsigned int elements = p.elements;
-            ptrdiff_t offset = p.rtc_offset;
-            curve_header.registerEnvVariable(variableName, instance_id_hash, offset, type, p.length/elements, elements);
+        // Set mapped environment variables in curve
+        for (const auto mp : EnvironmentManager::getInstance().getMappedProperties()) {
+            if (mp.first.first == cuda_model.getInstanceID()) {
+                auto p = prop_map.at(mp.second.masterProp);
+                const char* variableName = mp.second.masterProp.second.c_str();
+                const char* type = p.type.name();
+                unsigned int elements = p.elements;
+                ptrdiff_t offset = p.rtc_offset;
+                curve_header.registerEnvVariable(variableName, cuda_model.getInstanceID(), offset, type, p.length/elements, elements);
+            }
         }
     }
     // get the dynamically generated header from curve rtc

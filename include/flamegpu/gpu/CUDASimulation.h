@@ -292,6 +292,11 @@ class CUDASimulation : public Simulation {
      * Flag indicating that RTC functions have been compiled
      */
     bool rtcInitialised;
+    /**
+     * Set to the ID of the device on which the simulation was initialised
+     * Cannot change device after this point
+     */
+    int deviceInitialised = -1;
 
     /**
      * Initialise the instances singletons.
@@ -347,6 +352,14 @@ class CUDASimulation : public Simulation {
      * When the last is destructed, cudaDeviceReset is triggered();
      */
     static std::atomic<int> active_instances;
+    /**
+     * Active instances, but linked to the device each instance has been initialised on
+     */
+    static std::array<std::atomic<int>, MAX_CUDA_DEVICES> active_device_instances;
+    /**
+     * These exist to prevent us doing device reset in the short period between checking last sim of device, and reset
+     */
+    static std::array<std::shared_timed_mutex, MAX_CUDA_DEVICES> active_device_mutex;
 
  public:
     /**

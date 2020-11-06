@@ -100,6 +100,8 @@ SET(TEST_CASE_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/util/test_compute_capability.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/util/test_nvtx.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/util/test_dependency_versions.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/util/test_multi_thread_device.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/util/test_rtc_multi_thread_device.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_rtc_device_api.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/exception/test_rtc_device_exception.cu
 )

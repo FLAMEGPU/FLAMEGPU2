@@ -4,6 +4,8 @@
 #include <memory>
 #include <string>
 #include <ctime>
+#include <utility>
+#include <unordered_map>
 
 #include "flamegpu/sim/AgentInterface.h"
 
@@ -11,6 +13,26 @@ class FLAMEGPU_HOST_API;
 class ModelDescription;
 class AgentPopulation;
 struct ModelData;
+
+
+namespace std {
+/**
+ * Required so this pair type can be key in an unordered_map
+ */
+template <>
+struct hash<std::pair<std::string, unsigned int>> {
+    std::size_t operator()(const std::pair<std::string, unsigned int>& k) const noexcept {
+        using std::string;
+
+        // Compute individual hash values for first,
+        // second and combine them using XOR
+        // and bit shifting:
+
+        return ((hash<string>()(k.first)
+            ^ (hash<unsigned int>()(k.second) << 1)) >> 1);
+    }
+};
+}  // namespace std
 
 class Simulation {
  public:
@@ -127,6 +149,10 @@ class Simulation {
      * Unique index of Simulation instance
      */
     const unsigned int instance_id;
+    /**
+     * Initial environment items if they have been loaded from file, prior to device selection
+     */
+    std::unordered_map<std::pair<std::string, unsigned int>, EnvironmentDescription::Any> env_init;
 
  private:
     /**

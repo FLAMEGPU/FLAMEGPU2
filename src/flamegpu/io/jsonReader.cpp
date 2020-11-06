@@ -15,11 +15,12 @@
 
 jsonReader::jsonReader(
     const std::string &model_name,
-    const unsigned int &sim_instance_id,
+    const std::unordered_map<std::string, EnvironmentDescription::PropData> &env_desc,
+    std::unordered_map<std::pair<std::string, unsigned int>, EnvironmentDescription::Any> &env_init,
     const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &model_state,
     const std::string &input,
     Simulation *sim_instance)
-    : StateReader(model_name, sim_instance_id, model_state, input, sim_instance) {}
+    : StateReader(model_name, env_desc, env_init, model_state, input, sim_instance) {}
 /**
  * This is the main sax style parser for the json state
  * It stores it's current position within the hierarchy with mode, lastKey and current_variable_array_index
@@ -29,8 +30,8 @@ class jsonReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, j
     std::stack<Mode> mode;
     std::string lastKey;
     std::string filename;
-    EnvironmentManager &env_manager;
-    unsigned int sim_instance_id;
+    const std::unordered_map<std::string, EnvironmentDescription::PropData> env_desc;
+    std::unordered_map<std::pair<std::string, unsigned int>, EnvironmentDescription::Any> &env_init;
     /**
      * Used for setting agent values
      */
@@ -53,11 +54,13 @@ class jsonReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, j
     std::string current_state;
 
  public:
-    jsonReader_impl(const std::string &_filename, EnvironmentManager &em, unsigned int _sim_instance_id,
+    jsonReader_impl(const std::string &_filename,
+        const std::unordered_map<std::string, EnvironmentDescription::PropData> &_env_desc,
+        std::unordered_map<std::pair<std::string, unsigned int>, EnvironmentDescription::Any> &_env_init,
         const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &_model_state)
         : filename(_filename)
-        , env_manager(em)
-        , sim_instance_id(_sim_instance_id)
+        , env_desc(_env_desc)
+        , env_init(_env_init)
         , model_state(_model_state) { }
     template<typename T>
     bool processValue(const T&val) {
@@ -67,28 +70,46 @@ class jsonReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, j
             mode.pop();
         }
         if (mode.top() == Environment) {
-            const EnvironmentManager::NamePair np = { sim_instance_id , lastKey };
-            const std::type_index val_type = env_manager.type(np);
+            const auto it = env_desc.find(lastKey);
+            if (it == env_desc.end()) {
+                THROW RapidJSONError("Input file contains unrecognised environment property '%s',"
+                    "in jsonReader::parse()\n", lastKey.c_str());
+            }
+            if (env_init.find(make_pair(lastKey, current_variable_array_index)) != env_init.end()) {
+                THROW RapidJSONError("Input file contains environment property '%s' multiple times, "
+                    "in jsonReader::parse()\n", lastKey.c_str());
+            }
+            const std::type_index val_type = it->second.type;
             if (val_type == std::type_index(typeid(float))) {
-                env_manager.setProperty<float>(np, current_variable_array_index++, static_cast<float>(val));
+                const float t = static_cast<float>(val);
+                env_init.emplace(make_pair(lastKey, current_variable_array_index++), EnvironmentDescription::Any(&t, sizeof(float)));
             } else if (val_type == std::type_index(typeid(double))) {
-                env_manager.setProperty<double>(np, current_variable_array_index++, static_cast<double>(val));
+                const double t = static_cast<double>(val);
+                env_init.emplace(make_pair(lastKey, current_variable_array_index++), EnvironmentDescription::Any(&t, sizeof(double)));
             } else if (val_type == std::type_index(typeid(int64_t))) {
-                env_manager.setProperty<int64_t>(np, current_variable_array_index++, static_cast<int64_t>(val));
+                const int64_t t = static_cast<int64_t>(val);
+                env_init.emplace(make_pair(lastKey, current_variable_array_index++), EnvironmentDescription::Any(&t, sizeof(int64_t)));
             } else if (val_type == std::type_index(typeid(uint64_t))) {
-                env_manager.setProperty<uint64_t>(np, current_variable_array_index++, static_cast<uint64_t>(val));
+                const uint64_t t = static_cast<uint64_t>(val);
+                env_init.emplace(make_pair(lastKey, current_variable_array_index++), EnvironmentDescription::Any(&t, sizeof(uint64_t)));
             } else if (val_type == std::type_index(typeid(int32_t))) {
-                env_manager.setProperty<int32_t>(np, current_variable_array_index++, static_cast<int32_t>(val));
+                const int32_t t = static_cast<int32_t>(val);
+                env_init.emplace(make_pair(lastKey, current_variable_array_index++), EnvironmentDescription::Any(&t, sizeof(int32_t)));
             } else if (val_type == std::type_index(typeid(uint32_t))) {
-                env_manager.setProperty<uint32_t>(np, current_variable_array_index++, static_cast<uint32_t>(val));
+                const uint32_t t = static_cast<uint32_t>(val);
+                env_init.emplace(make_pair(lastKey, current_variable_array_index++), EnvironmentDescription::Any(&t, sizeof(uint32_t)));
             } else if (val_type == std::type_index(typeid(int16_t))) {
-                env_manager.setProperty<int16_t>(np, current_variable_array_index++, static_cast<int16_t>(val));
+                const int16_t t = static_cast<int16_t>(val);
+                env_init.emplace(make_pair(lastKey, current_variable_array_index++), EnvironmentDescription::Any(&t, sizeof(int16_t)));
             } else if (val_type == std::type_index(typeid(uint16_t))) {
-                env_manager.setProperty<uint16_t>(np, current_variable_array_index++, static_cast<uint16_t>(val));
+                const uint16_t t = static_cast<uint16_t>(val);
+                env_init.emplace(make_pair(lastKey, current_variable_array_index++), EnvironmentDescription::Any(&t, sizeof(uint16_t)));
             } else if (val_type == std::type_index(typeid(int8_t))) {
-                env_manager.setProperty<int8_t>(np, current_variable_array_index++, static_cast<int8_t>(val));
+                const int8_t t = static_cast<int8_t>(val);
+                env_init.emplace(make_pair(lastKey, current_variable_array_index++), EnvironmentDescription::Any(&t, sizeof(int8_t)));
             } else if (val_type == std::type_index(typeid(uint8_t))) {
-                env_manager.setProperty<uint8_t>(np, current_variable_array_index++, static_cast<uint8_t>(val));
+                const uint8_t t = static_cast<uint8_t>(val);
+                env_init.emplace(make_pair(lastKey, current_variable_array_index++), EnvironmentDescription::Any(&t, sizeof(uint8_t)));
             } else {
                 THROW RapidJSONError("Model contains environment property '%s' of unsupported type '%s', "
                     "in jsonReader::parse()\n", lastKey.c_str(), val_type.name());
@@ -396,7 +417,7 @@ int jsonReader::parse() {
         THROW RapidJSONError("Unable to open file '%s' for reading.\n", inputFile.c_str());
     }
     jsonReader_agentsize_counter agentcounter(inputFile, sim_instance);
-    jsonReader_impl handler(inputFile, EnvironmentManager::getInstance(), sim_instance_id, model_state);
+    jsonReader_impl handler(inputFile, env_desc, env_init, model_state);
     std::string filestring = std::string((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
     rapidjson::StringStream filess(filestring.c_str());
     rapidjson::Reader reader;

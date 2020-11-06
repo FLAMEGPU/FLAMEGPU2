@@ -127,7 +127,7 @@ void CUDAMessage::zeroAllMessageData() {
 /**
 @bug message_name is input or output, run some tests to see which one is correct
 */
-void CUDAMessage::mapReadRuntimeVariables(const AgentFunctionData& func, const CUDAAgent& cuda_agent) const {
+void CUDAMessage::mapReadRuntimeVariables(const AgentFunctionData& func, const CUDAAgent& cuda_agent, const unsigned int &instance_id) const {
     // check that the message list has been allocated
     if (!message_list) {
         if (getMessageCount() == 0) {
@@ -143,6 +143,7 @@ void CUDAMessage::mapReadRuntimeVariables(const AgentFunctionData& func, const C
     const Curve::VariableHash message_hash = Curve::getInstance().variableRuntimeHash(message_name.c_str());
     const Curve::VariableHash agent_hash = Curve::getInstance().variableRuntimeHash(func.parent.lock()->name.c_str());
     const Curve::VariableHash func_hash = Curve::getInstance().variableRuntimeHash(func.name.c_str());
+    auto &curve = Curve::getInstance();
     // loop through the message variables to map each variable name using cuRVE
     for (const auto &mmp : message_description.variables) {
         // get a device pointer for the message variable name
@@ -157,12 +158,12 @@ void CUDAMessage::mapReadRuntimeVariables(const AgentFunctionData& func, const C
        // maximum population size
         unsigned int length = this->getMessageCount();  // check to see if it is equal to pop
 #ifdef _DEBUG
-        const Curve::Variable cv = Curve::getInstance().registerVariableByHash(var_hash + agent_hash + func_hash + message_hash, d_ptr, size, length);
-        if (cv != static_cast<int>((var_hash + agent_hash + func_hash + message_hash)%Curve::MAX_VARIABLES)) {
+        const Curve::Variable cv = curve.registerVariableByHash(var_hash + agent_hash + func_hash + message_hash + instance_id, d_ptr, size, length);
+        if (cv != static_cast<int>((var_hash + agent_hash + func_hash + message_hash + instance_id)%Curve::MAX_VARIABLES)) {
             fprintf(stderr, "Curve Warning: Agent Function '%s' Message In Variable '%s' has a collision and may work improperly.\n", message_name.c_str(), mmp.first.c_str());
         }
 #else
-        Curve::getInstance().registerVariableByHash(var_hash + agent_hash + func_hash + message_hash, d_ptr, size, length);
+        curve.registerVariableByHash(var_hash + agent_hash + func_hash + message_hash + instance_id, d_ptr, size, length);
 #endif
         // Map RTC variables (these must be mapped before each function execution as the runtime pointer may have changed to the swapping)
         if (!func.rtc_func_name.empty()) {
@@ -183,7 +184,7 @@ void *CUDAMessage::getReadPtr(const std::string &var_name) {
     }
     return message_list->getReadMessageListVariablePointer(var_name);
 }
-void CUDAMessage::mapWriteRuntimeVariables(const AgentFunctionData& func, const CUDAAgent& cuda_agent, const unsigned int &writeLen) const {
+void CUDAMessage::mapWriteRuntimeVariables(const AgentFunctionData& func, const CUDAAgent& cuda_agent, const unsigned int &writeLen, const unsigned int &instance_id) const {
     // check that the message list has been allocated
     if (!message_list) {
         THROW InvalidMessageData("Error: Initial message list for message '%s' has not been allocated, "
@@ -196,6 +197,7 @@ void CUDAMessage::mapWriteRuntimeVariables(const AgentFunctionData& func, const 
     const Curve::VariableHash message_hash = Curve::getInstance().variableRuntimeHash(message_name.c_str());
     const Curve::VariableHash agent_hash = Curve::getInstance().variableRuntimeHash(func.parent.lock()->name.c_str());
     const Curve::VariableHash func_hash = Curve::getInstance().variableRuntimeHash(func.name.c_str());
+    auto &curve = Curve::getInstance();
     // loop through the message variables to map each variable name using cuRVE
     for (const auto &mmp : message_description.variables) {
         // get a device pointer for the message variable name
@@ -210,12 +212,12 @@ void CUDAMessage::mapWriteRuntimeVariables(const AgentFunctionData& func, const 
         // maximum population size
         unsigned int length = writeLen;  // check to see if it is equal to pop
 #ifdef _DEBUG
-        const Curve::Variable cv = Curve::getInstance().registerVariableByHash(var_hash + agent_hash + func_hash + message_hash, d_ptr, size, length);
-        if (cv != static_cast<int>((var_hash + agent_hash + func_hash + message_hash)%Curve::MAX_VARIABLES)) {
+        const Curve::Variable cv = curve.registerVariableByHash(var_hash + agent_hash + func_hash + message_hash + instance_id, d_ptr, size, length);
+        if (cv != static_cast<int>((var_hash + agent_hash + func_hash + message_hash + instance_id)%Curve::MAX_VARIABLES)) {
             fprintf(stderr, "Curve Warning: Agent Function '%s' Message '%s' Out? Variable '%s' has a collision and may work improperly.\n", func.name.c_str(), message_name.c_str(), mmp.first.c_str());
         }
 #else
-        Curve::getInstance().registerVariableByHash(var_hash + agent_hash + func_hash + message_hash, d_ptr, size, length);
+        curve.registerVariableByHash(var_hash + agent_hash + func_hash + message_hash + instance_id, d_ptr, size, length);
 #endif
         // Map RTC variables (these must be mapped before each function execution as the runtime pointer may have changed to the swapping)
         if (!func.rtc_func_name.empty()) {
@@ -233,20 +235,23 @@ void CUDAMessage::mapWriteRuntimeVariables(const AgentFunctionData& func, const 
     specialisation_handler->allocateMetaDataDevicePtr();
 }
 
-void CUDAMessage::unmapRuntimeVariables(const AgentFunctionData& func) const {
-    const std::string message_name = message_description.name;
+void CUDAMessage::unmapRuntimeVariables(const AgentFunctionData& func, const unsigned int &instance_id) const {
+  if (!message_list) {
+      if (getMessageCount() == 0) {
+          return;  // Message list is empty, this should be safe
+      }
+  }
+  const std::string message_name = message_description.name;
 
     const Curve::VariableHash message_hash = Curve::getInstance().variableRuntimeHash(message_name.c_str());
     const Curve::VariableHash agent_hash = Curve::getInstance().variableRuntimeHash(func.parent.lock()->name.c_str());
     const Curve::VariableHash func_hash = Curve::getInstance().variableRuntimeHash(func.name.c_str());
+    auto &curve = Curve::getInstance();
     // loop through the message variables to map each variable name using cuRVE
     for (const auto &mmp : message_description.variables) {
-        // get a device pointer for the message variable name
-        // void* d_ptr = message_list->getMessageListVariablePointer(mmp.first);
-
         // unmap using curve
-        Curve::VariableHash var_hash = Curve::getInstance().variableRuntimeHash(mmp.first.c_str());
-        Curve::getInstance().unregisterVariableByHash(var_hash + agent_hash + func_hash + message_hash);
+        Curve::VariableHash var_hash = Curve::variableRuntimeHash(mmp.first.c_str());
+        curve.unregisterVariableByHash(var_hash + agent_hash + func_hash + message_hash + instance_id);
     }
 }
 void CUDAMessage::swap(bool isOptional, const unsigned int &newMsgCount, CUDAScatter &scatter, const unsigned int &streamId) {

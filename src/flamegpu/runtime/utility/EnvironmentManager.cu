@@ -24,6 +24,7 @@ namespace flamegpu_internal {
     __constant__ uint64_t c_deviceEnvErrorPattern;
 }  // namespace flamegpu_internal
 
+std::mutex EnvironmentManager::instance_mutex;
 const char EnvironmentManager::CURVE_NAMESPACE_STRING[23] = "ENVIRONMENT_PROPERTIES";
 
 EnvironmentManager::EnvironmentManager() :
@@ -34,12 +35,15 @@ EnvironmentManager::EnvironmentManager() :
     deviceInitialised(false) { }
 
 void EnvironmentManager::purge() {
+    std::unique_lock<std::shared_timed_mutex> lock(mutex);
+    std::unique_lock<std::shared_timed_mutex> deviceRequiresUpdate_lock(deviceRequiresUpdate_mutex);
     deviceInitialised = false;
     for (auto &a : deviceRequiresUpdate) {
         a.second.c_update_required = true;
         a.second.rtc_update_required = true;
         a.second.curve_registration_required = true;
     }
+    deviceRequiresUpdate_lock.unlock();
     // We are now able to only purge the device stuff after device reset?
     // freeFragments.clear();
     // m_freeSpace = EnvironmentManager::MAX_BUFFER_SIZE;
@@ -48,9 +52,11 @@ void EnvironmentManager::purge() {
     // properties.clear();
     // mapped_properties.clear();
     // rtc_caches.clear();
+    initialiseDevice();
 }
 
 void EnvironmentManager::init(const unsigned int &instance_id, const EnvironmentDescription &desc) {
+    std::unique_lock<std::shared_timed_mutex> lock(mutex);
     // Error if reinit
     for (auto &&i : properties) {
         if (i.first.first == instance_id) {
@@ -61,7 +67,9 @@ void EnvironmentManager::init(const unsigned int &instance_id, const Environment
     }
 
     // Add to device requires update map
+    std::unique_lock<std::shared_timed_mutex> deviceRequiresUpdate_lock(deviceRequiresUpdate_mutex);
     deviceRequiresUpdate.emplace(instance_id, EnvUpdateFlags());
+    deviceRequiresUpdate_lock.unlock();
 
     // Build a DefragMap to send to defragger method
     DefragMap orderedProperties;
@@ -81,15 +89,18 @@ void EnvironmentManager::init(const unsigned int &instance_id, const Environment
             "in EnvironmentManager::init().");
     }
     // Defragment to rebuild it properly
-    defragment(&orderedProperties);
+    defragment(Curve::getInstance(), &orderedProperties);
     // Setup RTC version
     buildRTCOffsets(instance_id, instance_id, orderedProperties);
 }
 void EnvironmentManager::init(const unsigned int &instance_id, const EnvironmentDescription &desc, const unsigned int &master_instance_id, const SubEnvironmentData &mapping) {
     assert(deviceRequiresUpdate.size());  // submodel init should never be called first, requires parent init first for mapping
+    std::unique_lock<std::shared_timed_mutex> lock(mutex);
 
     // Add to device requires update map
+    std::unique_lock<std::shared_timed_mutex> deviceRequiresUpdate_lock(deviceRequiresUpdate_mutex);
     deviceRequiresUpdate.emplace(instance_id, EnvUpdateFlags());
+    deviceRequiresUpdate_lock.unlock();
 
     // Error if reinit
     for (auto &&i : properties) {
@@ -135,12 +146,13 @@ void EnvironmentManager::init(const unsigned int &instance_id, const Environment
             "in EnvironmentManager::init().");
     }
     // Defragment to rebuild it properly
-    defragment(&orderedProperties, new_mapped_props);
+    defragment(Curve::getInstance(), &orderedProperties, new_mapped_props);
     // Setup RTC version
     buildRTCOffsets(instance_id, master_instance_id, orderedProperties);
 }
 
 void EnvironmentManager::initRTC(const CUDASimulation& cuda_model) {
+    std::unique_lock<std::shared_timed_mutex> lock(mutex);
     // check to ensure that model name is not already registered
     auto res = cuda_agent_models.find(cuda_model.getInstanceID());
     if (res != cuda_agent_models.end()) {
@@ -151,6 +163,7 @@ void EnvironmentManager::initRTC(const CUDASimulation& cuda_model) {
 }
 
 void EnvironmentManager::initialiseDevice() {
+    // Caller must lock mutex
     if (!deviceInitialised) {
         void *t_c_buffer = nullptr;
         gpuErrchk(cudaGetSymbolAddress(&t_c_buffer, flamegpu_internal::c_envPropBuffer));
@@ -163,14 +176,14 @@ void EnvironmentManager::initialiseDevice() {
         deviceInitialised = true;
     }
 }
-void EnvironmentManager::free(const unsigned int &instance_id) {
-    Curve::getInstance().setNamespaceByHash(CURVE_NAMESPACE_HASH);
+void EnvironmentManager::free(Curve &curve, const unsigned int &instance_id) {
+    std::unique_lock<std::shared_timed_mutex> lock(mutex);
     // Release regular properties
     for (auto &&i = properties.begin(); i != properties.end();) {
         if (i->first.first == instance_id) {
             // Release from CURVE
             Curve::VariableHash cvh = toHash(i->first);
-            Curve::getInstance().unregisterVariableByHash(cvh);
+            curve.unregisterVariableByHash(cvh);
             // Drop from properties map
             i = properties.erase(i);
         } else {
@@ -182,16 +195,15 @@ void EnvironmentManager::free(const unsigned int &instance_id) {
         if (i->first.first == instance_id) {
             // Release from CURVE
             Curve::VariableHash cvh = toHash(i->first);
-            Curve::getInstance().unregisterVariableByHash(cvh);
+            curve.unregisterVariableByHash(cvh);
             // Drop from properties map
             i = mapped_properties.erase(i);
         } else {
             ++i;
         }
     }
-    Curve::getInstance().setDefaultNamespace();
     // Defragment to clear up all the buffer items we didn't handle here
-    defragment();
+    defragment(curve);
     // Remove reference to cuda agent model used by RTC
     // This may not exist if the CUDAgent model has not been created (e.g. some tests which do not run the model)
     auto cam = cuda_agent_models.find(instance_id);
@@ -199,10 +211,13 @@ void EnvironmentManager::free(const unsigned int &instance_id) {
         cuda_agent_models.erase(cam);
     }
     // Sample applies to requires update map
+    std::unique_lock<std::shared_timed_mutex> deviceRequiresUpdate_lock(deviceRequiresUpdate_mutex);
     auto dru = deviceRequiresUpdate.find(instance_id);
     if (dru != deviceRequiresUpdate.end()) {
         deviceRequiresUpdate.erase(dru);
     }
+    deviceRequiresUpdate_lock.unlock();
+
     // Sample applies to rtc_caches
     auto rtcc = rtc_caches.find(instance_id);
     if (rtcc != rtc_caches.end()) {
@@ -218,12 +233,12 @@ EnvironmentManager::NamePair EnvironmentManager::toName(const unsigned int &inst
  * @note Not static, because eventually we might need to use curve singleton
  */
 Curve::VariableHash EnvironmentManager::toHash(const NamePair &name) const {
-    Curve::VariableHash model_cvh = Curve::getInstance().variableRuntimeHash(name.first);
-    Curve::VariableHash var_cvh = Curve::getInstance().variableRuntimeHash(name.second.c_str());
-    return model_cvh + var_cvh;
+    Curve::VariableHash var_cvh = Curve::variableRuntimeHash(name.second.c_str());
+    return CURVE_NAMESPACE_HASH + name.first + var_cvh;
 }
 
 void EnvironmentManager::newProperty(const NamePair &name, const char *ptr, const size_t &length, const bool &isConst, const size_type &elements, const std::type_index &type) {
+    std::unique_lock<std::shared_timed_mutex> lock(mutex);
     assert(elements > 0);
     const size_t typeSize = (length / elements);
     ptrdiff_t buffOffset = MAX_BUFFER_SIZE;
@@ -266,7 +281,7 @@ void EnvironmentManager::newProperty(const NamePair &name, const char *ptr, cons
     }
     if (buffOffset == MAX_BUFFER_SIZE) {  // buffOffset hasn't changed from init value
         // defragment() and retry using nextFree
-        defragment();
+        defragment(Curve::getInstance());
         const ptrdiff_t alignmentOffset = nextFree % typeSize;
         const ptrdiff_t alignmentFix = alignmentOffset != 0 ? typeSize - alignmentOffset : 0;
         if (nextFree + alignmentFix + length < MAX_BUFFER_SIZE) {
@@ -292,7 +307,6 @@ void EnvironmentManager::newProperty(const NamePair &name, const char *ptr, cons
     // Store data
     memcpy(hc_buffer + buffOffset, ptr, length);
     // Register in cuRVE
-    Curve::getInstance().setNamespaceByHash(CURVE_NAMESPACE_HASH);
     Curve::VariableHash cvh = toHash(name);
     const auto CURVE_RESULT = Curve::getInstance().registerVariableByHash(cvh, reinterpret_cast<void*>(buffOffset), typeSize, elements);
     if (CURVE_RESULT == Curve::UNKNOWN_VARIABLE) {
@@ -300,16 +314,17 @@ void EnvironmentManager::newProperty(const NamePair &name, const char *ptr, cons
             "in EnvironmentManager::add().");
     }
 #ifdef _DEBUG
-    if (CURVE_RESULT != static_cast<int>((cvh+CURVE_NAMESPACE_HASH)%Curve::MAX_VARIABLES)) {
+    if (CURVE_RESULT != static_cast<int>(cvh%Curve::MAX_VARIABLES)) {
         fprintf(stderr, "Curve Warning: Environment Property '%s' has a collision and may work improperly.\n", name.second.c_str());
     }
 #endif
-    Curve::getInstance().setDefaultNamespace();
     addRTCOffset(name);
     setDeviceRequiresUpdateFlag();
 }
 
-void EnvironmentManager::defragment(const DefragMap * mergeProperties, std::set<NamePair> newmaps) {
+void EnvironmentManager::defragment(Curve &curve, const DefragMap * mergeProperties, std::set<NamePair> newmaps) {
+    // Do not lock mutex here, do it in the calling method
+    auto device_lock = std::unique_lock<std::shared_timed_mutex>(device_mutex);
     // Build a multimap to sort the elements (to create natural alignment in compact form)
     DefragMap orderedProperties;
     for (auto &i : properties) {
@@ -320,6 +335,7 @@ void EnvironmentManager::defragment(const DefragMap * mergeProperties, std::set<
     if (mergeProperties) {
         orderedProperties.insert(mergeProperties->cbegin(), mergeProperties->cend());
     }
+    // Lock device mutex here, as we begin to mess with curve
     // Clear freefrags, so we can refill it with alignment junk
     freeFragments.clear();
     size_t spareFrags = 0;
@@ -327,7 +343,6 @@ void EnvironmentManager::defragment(const DefragMap * mergeProperties, std::set<
     std::unordered_map<NamePair, EnvProp, NamePairHash> t_properties;
     char t_buffer[MAX_BUFFER_SIZE];
     ptrdiff_t buffOffset = 0;
-    Curve::getInstance().setNamespaceByHash(CURVE_NAMESPACE_HASH);
     // Iterate largest vars first
     for (auto _i = orderedProperties.rbegin(); _i != orderedProperties.rend(); ++_i) {
         size_t typeSize = _i->first;
@@ -343,12 +358,12 @@ void EnvironmentManager::defragment(const DefragMap * mergeProperties, std::set<
         if (buffOffset + i.second.length <= MAX_BUFFER_SIZE) {
             // Setup constant in new position
             memcpy(t_buffer + buffOffset, i.second.data, i.second.length);
-            t_properties.emplace(i.first, EnvProp(buffOffset, i.second.length, i.second.isConst, i.second.elements, i.second.type));
+            t_properties.emplace(i.first, EnvProp(buffOffset, i.second.length, i.second.isConst, i.second.elements, i.second.type, i.second.rtc_offset));
             // Update cuRVE (There isn't an update, so unregister and reregister)  // TODO: curveGetVariableHandle()?
             Curve::VariableHash cvh = toHash(i.first);
             // Only unregister variable if it's already registered
             if (!mergeProperties) {  // Merge properties are only provided on 1st init, when vars can't be unregistered
-                Curve::getInstance().unregisterVariableByHash(cvh);
+                curve.unregisterVariableByHash(cvh);
             } else {
                 // Can this var be found inside mergeProps
                 auto range = mergeProperties->equal_range(_i->first);
@@ -360,17 +375,17 @@ void EnvironmentManager::defragment(const DefragMap * mergeProperties, std::set<
                     }
                 }
                 if (!isFound) {
-                    Curve::getInstance().unregisterVariableByHash(cvh);
+                    curve.unregisterVariableByHash(cvh);
                 }
             }
-            const auto CURVE_RESULT = Curve::getInstance().registerVariableByHash(cvh, reinterpret_cast<void*>(buffOffset),
+            const auto CURVE_RESULT = curve.registerVariableByHash(cvh, reinterpret_cast<void*>(buffOffset),
                 typeSize, i.second.elements);
             if (CURVE_RESULT == Curve::UNKNOWN_VARIABLE) {
                 THROW CurveException("curveRegisterVariableByHash() returned UNKNOWN_CURVE_VARIABLE, "
                     "in EnvironmentManager::defragment().");
             }
 #ifdef _DEBUG
-            if (CURVE_RESULT != static_cast<int>((cvh+CURVE_NAMESPACE_HASH)%Curve::MAX_VARIABLES)) {
+            if (CURVE_RESULT != static_cast<int>(cvh%Curve::MAX_VARIABLES)) {
                 fprintf(stderr, "Curve Warning: Environment Property '%s' has a collision and may work improperly.\n", i.first.second.c_str());
             }
 #endif
@@ -396,28 +411,28 @@ void EnvironmentManager::defragment(const DefragMap * mergeProperties, std::set<
         Curve::VariableHash cvh = toHash(mp.first);
         // Unregister the property if it's already been registered
         if (newmaps.find(mp.first) == newmaps.end()) {
-            Curve::getInstance().unregisterVariableByHash(cvh);
+            curve.unregisterVariableByHash(cvh);
         }
         // Find the location of the mappedproperty
         auto masterprop = properties.at(mp.second.masterProp);
         // Create the mapping
-        const auto CURVE_RESULT = Curve::getInstance().registerVariableByHash(cvh, reinterpret_cast<void*>(masterprop.offset),
+        const auto CURVE_RESULT = curve.registerVariableByHash(cvh, reinterpret_cast<void*>(masterprop.offset),
                 masterprop.length / masterprop.elements, masterprop.elements);
         if (CURVE_RESULT == Curve::UNKNOWN_VARIABLE) {
             THROW CurveException("curveRegisterVariableByHash() returned UNKNOWN_CURVE_VARIABLE, "
                 "in EnvironmentManager::defragment().");
         }
 #ifdef _DEBUG
-        if (CURVE_RESULT != static_cast<int>((cvh+CURVE_NAMESPACE_HASH)%Curve::MAX_VARIABLES)) {
+        if (CURVE_RESULT != static_cast<int>(cvh%Curve::MAX_VARIABLES)) {
             fprintf(stderr, "Curve Warning: Environment Property '%s' has a collision and may work improperly.\n", mp.first.second.c_str());
         }
 #endif
     }
-    Curve::getInstance().setDefaultNamespace();
     setDeviceRequiresUpdateFlag();
 }
 
 void EnvironmentManager::buildRTCOffsets(const unsigned int &instance_id, const unsigned int &master_instance_id, const DefragMap &orderedProperties) {
+    // Do not lock mutex here, do it in the calling method
     // Actually begin
     if (instance_id == master_instance_id) {
         // Create a new cache
@@ -482,6 +497,7 @@ void EnvironmentManager::buildRTCOffsets(const unsigned int &instance_id, const 
     }
 }
 void EnvironmentManager::addRTCOffset(const NamePair &name) {
+    // Do not lock mutex here, do it in the calling method
     auto mi_it = mapped_properties.find(name);
     // Property is not mapped (it's not even currently possible to add mapped properties after the fact)
     if (mi_it ==  mapped_properties.end()) {
@@ -509,6 +525,7 @@ void EnvironmentManager::addRTCOffset(const NamePair &name) {
 }
 
 const CUDASimulation& EnvironmentManager::getCUDASimulation(const unsigned int &instance_id) {
+    // Don't lock mutex here, lock it in the calling function
     auto res = cuda_agent_models.find(instance_id);
     if (res == cuda_agent_models.end()) {
         THROW UnknownInternalError("Instance with id '%u' not registered in EnvironmentManager for use with RTC in EnvironmentManager::getCUDASimulation", instance_id);
@@ -517,6 +534,7 @@ const CUDASimulation& EnvironmentManager::getCUDASimulation(const unsigned int &
 }
 
 void EnvironmentManager::updateRTCValue(const NamePair &name) {
+    // Don't lock mutex here, lock it in the calling function
     // Grab the updated prop
     auto a = properties.find(name);
     if (a == properties.end()) {
@@ -532,6 +550,7 @@ void EnvironmentManager::updateRTCValue(const NamePair &name) {
     // Now we must detect if the variable is mapped in any form
     // If this is the case, any rtc models which share the property must be flagged for update too
     {
+        std::unique_lock<std::shared_timed_mutex> deviceRequiresUpdate_lock(deviceRequiresUpdate_mutex);
         // First check if it's the subvar
         auto mp_it = mapped_properties.find(name);
         const NamePair check = mp_it == mapped_properties.end() ? name : mp_it->second.masterProp;
@@ -542,15 +561,15 @@ void EnvironmentManager::updateRTCValue(const NamePair &name) {
                 deviceRequiresUpdate.at(check.first).rtc_update_required = true;
             }
         }
+        deviceRequiresUpdate_lock.unlock();
     }
 }
 
 void EnvironmentManager::removeProperty(const NamePair &name) {
+    std::unique_lock<std::shared_timed_mutex> lock(mutex);
     // Unregister in cuRVE
-    Curve::getInstance().setNamespaceByHash(CURVE_NAMESPACE_HASH);
     Curve::VariableHash cvh = toHash(name);
     Curve::getInstance().unregisterVariableByHash(cvh);
-    Curve::getInstance().setDefaultNamespace();
     // Update free space
     // Remove from properties map
     auto realprop = properties.find(name);
@@ -577,6 +596,7 @@ void EnvironmentManager::removeProperty(const unsigned int &instance_id, const s
 }
 
 void EnvironmentManager::resetModel(const unsigned int &instance_id, const EnvironmentDescription &desc) {
+    std::unique_lock<std::shared_timed_mutex> lock(mutex);
     // Todo: Might want to change this, so EnvManager holds a copy of the default at init time
     // For every property, in the named model, which is not a mapped property
     for (auto &d : desc.getPropertiesMap()) {
@@ -594,6 +614,8 @@ void EnvironmentManager::resetModel(const unsigned int &instance_id, const Envir
     setDeviceRequiresUpdateFlag(instance_id);
 }
 void EnvironmentManager::setDeviceRequiresUpdateFlag(const unsigned int &instance_id) {
+    std::unique_lock<std::shared_timed_mutex> deviceRequiresUpdate_lock(deviceRequiresUpdate_mutex);
+    // Don't lock mutex here, lock it in the calling function
     // Increment host version
     if (instance_id == UINT_MAX) {
         // Set required version for all, we have defragged
@@ -610,8 +632,10 @@ void EnvironmentManager::setDeviceRequiresUpdateFlag(const unsigned int &instanc
 }
 void EnvironmentManager::updateDevice(const unsigned int &instance_id) {
     // Device must be init first
-    initialiseDevice();
-
+    assert(deviceInitialised);
+    std::shared_lock<std::shared_timed_mutex> lock(mutex);
+    std::unique_lock<std::shared_timed_mutex> deviceRequiresUpdate_lock(deviceRequiresUpdate_mutex);
+    NVTX_RANGE("EnvironmentManager::updateDevice()");
     auto &flags = deviceRequiresUpdate.at(instance_id);
     auto &c_update_required = flags.c_update_required;
     auto &rtc_update_required = flags.rtc_update_required;
@@ -633,7 +657,7 @@ void EnvironmentManager::updateDevice(const unsigned int &instance_id) {
         rtc_update_required = false;
     }
     if (curve_registration_required) {
-        Curve::getInstance().setNamespaceByHash(CURVE_NAMESPACE_HASH);
+        auto &curve = Curve::getInstance();
         // Update cub for any not mapped properties
         for (auto &p : properties) {
             if (p.first.first == instance_id) {
@@ -641,14 +665,14 @@ void EnvironmentManager::updateDevice(const unsigned int &instance_id) {
                 Curve::VariableHash cvh = toHash(p.first);
                 const auto &prop = p.second;
                 // Create the mapping
-                const auto CURVE_RESULT = Curve::getInstance().registerVariableByHash(cvh, reinterpret_cast<void*>(prop.offset),
+                const auto CURVE_RESULT = curve.registerVariableByHash(cvh, reinterpret_cast<void*>(prop.offset),
                         prop.length / prop.elements, prop.elements);
                 if (CURVE_RESULT == Curve::UNKNOWN_VARIABLE) {
                     THROW CurveException("curveRegisterVariableByHash() returned UNKNOWN_CURVE_VARIABLE, "
                         "in EnvironmentManager::updateDevice().");
                 }
 #ifdef _DEBUG
-                if (CURVE_RESULT != static_cast<int>((cvh+CURVE_NAMESPACE_HASH)%Curve::MAX_VARIABLES)) {
+                if (CURVE_RESULT != static_cast<int>(cvh%Curve::MAX_VARIABLES)) {
                     fprintf(stderr, "Curve Warning: Environment Property '%s' has a collision and may work improperly.\n", p.first.second.c_str());
                 }
 #endif
@@ -661,20 +685,30 @@ void EnvironmentManager::updateDevice(const unsigned int &instance_id) {
                 Curve::VariableHash cvh = toHash(mp.first);
                 const auto &masterprop = properties.at(mp.second.masterProp);
                 // Create the mapping
-                const auto CURVE_RESULT = Curve::getInstance().registerVariableByHash(cvh, reinterpret_cast<void*>(masterprop.offset),
+                const auto CURVE_RESULT = curve.registerVariableByHash(cvh, reinterpret_cast<void*>(masterprop.offset),
                         masterprop.length / masterprop.elements, masterprop.elements);
                 if (CURVE_RESULT == Curve::UNKNOWN_VARIABLE) {
                     THROW CurveException("curveRegisterVariableByHash() returned UNKNOWN_CURVE_VARIABLE, "
                         "in EnvironmentManager::updateDevice().");
                 }
 #ifdef _DEBUG
-                if (CURVE_RESULT != static_cast<int>((cvh+CURVE_NAMESPACE_HASH)%Curve::MAX_VARIABLES)) {
+                if (CURVE_RESULT != static_cast<int>(cvh%Curve::MAX_VARIABLES)) {
                     fprintf(stderr, "Curve Warning: Environment Property '%s' has a collision and may work improperly.\n", mp.first.second.c_str());
                 }
 #endif
             }
         }
         curve_registration_required = false;
-        Curve::getInstance().setDefaultNamespace();
     }
+}
+
+
+EnvironmentManager& EnvironmentManager::getInstance() {
+    auto lock = std::unique_lock<std::mutex>(instance_mutex);  // Mutex to protect from two threads triggering the static instantiation concurrently
+    static std::array<EnvironmentManager, MAX_CUDA_DEVICES> instances = {};  // Instantiated on first use.
+    int device_id = -1;
+    gpuErrchk(cudaGetDevice(&device_id));
+    // Don't bother error checking, array will throw an exception
+    // CUDASimulation should already be checking it's validity
+    return instances[device_id];
 }

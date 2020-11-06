@@ -16,6 +16,8 @@
 #include <typeindex>
 #include <set>
 #include <vector>
+#include <mutex>
+#include <shared_mutex>
 
 #include "flamegpu/exception/FGPUException.h"
 #include "flamegpu/gpu/CUDAErrorChecking.h"
@@ -100,20 +102,22 @@ class EnvironmentManager {
          * @param _length Length of associated storage
          * @param _isConst Is the stored data constant
          * @param _elements How many elements does the stored data contain (1 if not array)
-         * @param _type Type of propert (from typeid())
+         * @param _type Type of property (from typeid())
+        * @param _rtc_offset Offset into the instances rtc cache, this can be skipped if the relevant rtc cache has not yet been built
          */
-        EnvProp(const ptrdiff_t &_offset, const size_t &_length, const bool &_isConst, const size_type &_elements, const std::type_index &_type)
+        EnvProp(const ptrdiff_t &_offset, const size_t &_length, const bool &_isConst, const size_type &_elements, const std::type_index &_type, const ptrdiff_t &_rtc_offset = 0)
             : offset(_offset),
             length(_length),
             isConst(_isConst),
             elements(_elements),
-            type(_type) {}
+            type(_type),
+            rtc_offset(_rtc_offset) {}
         ptrdiff_t offset;
         size_t length;
         bool isConst;
         size_type elements;
         const std::type_index type;
-        ptrdiff_t rtc_offset = 0;  // This is set by buildRTCOffsets();
+        ptrdiff_t rtc_offset;  // This is set by buildRTCOffsets();
     };
     /**
      * Used to represent properties of a mapped environment property
@@ -132,7 +136,7 @@ class EnvironmentManager {
     /**
      * This structure is a clone of EnvProp
      * However, instead of offset (which points to an offset into hc_buffer)
-     * data is avaialable, which points to host memory
+     * data is available, which points to host memory
      */
     struct DefragProp {
         /**
@@ -144,25 +148,29 @@ class EnvironmentManager {
             length(ep.length),
             isConst(ep.isConst),
             elements(ep.elements),
-            type(ep.type) { }
+            type(ep.type),
+            rtc_offset(ep.rtc_offset) { }
         /**
         * @param _data Pointer to the data in host memory
         * @param _length Length of associated storage
         * @param _isConst Is the stored data constant
         * @param _elements How many elements does the stored data contain (1 if not array)
         * @param _type Type of propert (from typeid())
+        * @param _rtc_offset Offset into the instances rtc cache, this can be skipped if the relevant rtc cache has not yet been built
         */
-        DefragProp(void *_data, const size_t &_length, const bool &_isConst, const size_type &_elements, const std::type_index &_type)
+        DefragProp(void *_data, const size_t &_length, const bool &_isConst, const size_type &_elements, const std::type_index &_type, const ptrdiff_t &_rtc_offset = 0)
             : data(_data),
             length(_length),
             isConst(_isConst),
             elements(_elements),
-            type(_type) { }
+            type(_type),
+            rtc_offset(_rtc_offset) { }
         void *data;
         size_t length;
         bool isConst;
         size_type elements;
         const std::type_index type;
+        ptrdiff_t rtc_offset;
     };
     /**
      * Struct used by rtc_caches
@@ -208,9 +216,10 @@ class EnvironmentManager {
     void initRTC(const CUDASimulation &cuda_model);
     /**
      * Deactives all environmental properties linked to the named model from constant cache
+     * @param curve The Curve singleton instance to use, it is important that we purge curve for the correct device
      * @param instance_id instance_id of the CUDASimulation instance the properties are attached to
      */
-    void free(const unsigned int &instance_id);
+    void free(Curve &curve, const unsigned int &instance_id);
     /**
      * Adds a new environment property
      * @param name name used for accessing the property
@@ -444,7 +453,10 @@ class EnvironmentManager {
      * Returns whether the named env property exists
      * @param name name used for accessing the property
      */
-    inline bool containsProperty(const NamePair &name) const { return properties.find(name) != properties.end() || mapped_properties.find(name) != mapped_properties.end(); }
+    inline bool containsProperty(const NamePair &name) const {
+        std::shared_lock<std::shared_timed_mutex> lock(mutex);
+        return properties.find(name) != properties.end() || mapped_properties.find(name) != mapped_properties.end();
+    }
     /**
      * Convenience method: Returns whether the named env property exists
      * @param instance_id instance_id of the CUDASimulation instance the property is attached to
@@ -459,7 +471,8 @@ class EnvironmentManager {
      * @throws InvalidEnvProperty If a property of the name does not exist
      */
     inline bool isConst(const NamePair &name) const {
-        auto a = properties.find(name);
+        std::shared_lock<std::shared_timed_mutex> lock(mutex);
+        const auto a = properties.find(name);
         if (a != properties.end())
             return a->second.isConst;
         const auto b = mapped_properties.find(name);
@@ -485,6 +498,7 @@ class EnvironmentManager {
      * @throws InvalidEnvProperty If a property of the name does not exist
      */
     inline size_type length(const NamePair &name) const {
+        std::shared_lock<std::shared_timed_mutex> lock(mutex);
         auto a = properties.find(name);
         if (a != properties.end())
             return a->second.elements;
@@ -515,6 +529,7 @@ class EnvironmentManager {
      * @throws InvalidEnvProperty If a property of the name does not exist
      */
     inline std::type_index type(const NamePair &name) const {
+        std::shared_lock<std::shared_timed_mutex> lock(mutex);
         auto a = properties.find(name);
         if (a != properties.end())
             return a->second.type;
@@ -542,7 +557,7 @@ class EnvironmentManager {
     /**
      * Returns the available space remaining (bytes) for storing environmental properties
      */
-    inline size_t freeSpace() const { return m_freeSpace; }
+    inline size_t freeSpace() const { std::shared_lock<std::shared_timed_mutex> lock(mutex); return m_freeSpace; }
     /**
      * This is the string used to generate CURVE_NAMESPACE_HASH
      */
@@ -554,16 +569,22 @@ class EnvironmentManager {
     const Curve::NamespaceHash CURVE_NAMESPACE_HASH;
     /**
      * Returns read-only access to the properties map
+     * @note You must acquire a lock on mutex before calling this method
      */
     const std::unordered_map<NamePair, EnvProp, NamePairHash> &getPropertiesMap() const {
         return properties;
     }
     /**
      * Returns readonly access to mapped properties
+     * @note You must acquire a lock on mutex before calling this method
      */    
     const std::unordered_map<NamePair, MappedProp, NamePairHash> &getMappedProperties() const {
         return mapped_properties;
     }
+    /**
+     * Used by IO methods to efficiently access environment
+     * @note You must acquire a lock on mutex before calling this method
+     */
     const void * getHostBuffer() const {
         return hc_buffer;
     }
@@ -593,11 +614,13 @@ class EnvironmentManager {
     void newProperty(const NamePair &name, const char *ptr, const size_t &len, const bool &isConst, const size_type &elements, const std::type_index &type);
     /**
      * Cleanup freeFragments
+     * @param curve The curve instance to use (important if thread has cuda device set wrong)
+     * @param unique_lock Due to a complex mutex interaction, defrag will release and re-lock this mutex during it's execution
      * @param mergeProps Used by init to defragement whilst merging in new data
      * @param newmaps Namepairs of newly mapped properties, yet to to be setup (essentially ones not yet registered in curve)
      * @note any EnvPROP
      */
-    void defragment(const DefragMap * mergeProps = nullptr, std::set<NamePair> newmaps = {});
+    void defragment(Curve &curve, const DefragMap * mergeProps = nullptr, std::set<NamePair> newmaps = {});
     /**
      * This is the RTC version of defragment()
      * RTC Constant offsets are fixed at RTC time, and exist in their own constant block.
@@ -688,6 +711,25 @@ class EnvironmentManager {
      */
     void initialiseDevice();
     /**
+     * Managed multi-threaded access to the internal storage
+     * All read-only methods take a shared-lock
+     * All methods which modify the internals require a unique-lock
+     * Some private methods expect a lock to be gained before calling (to prevent the same thread attempting to lock the mutex twice)
+     */
+    mutable std::shared_timed_mutex mutex;
+    std::shared_lock<std::shared_timed_mutex> getSharedLock() const { return std::shared_lock<std::shared_timed_mutex>(mutex); }
+    std::unique_lock<std::shared_timed_mutex> getUniqueLock() const { return std::unique_lock<std::shared_timed_mutex>(mutex); }
+    /**
+     * This mutex exists to stop defrag being called, between curve being updated, and an agent function executing
+     */
+    mutable std::shared_timed_mutex device_mutex;
+    std::shared_lock<std::shared_timed_mutex> getDeviceSharedLock() const { return std::shared_lock<std::shared_timed_mutex>(device_mutex); }
+    std::unique_lock<std::shared_timed_mutex> getDeviceUniqueLock() const { return std::unique_lock<std::shared_timed_mutex>(device_mutex); }
+    /**
+     * This mutex only protects deviceRequiresUpdate map
+     */
+    mutable std::shared_timed_mutex deviceRequiresUpdate_mutex;
+    /**
      * Remainder of class is singleton pattern
      */
     EnvironmentManager();
@@ -702,10 +744,8 @@ class EnvironmentManager {
     /**
      * Returns the EnvironmentManager singleton instance
      */
-    static EnvironmentManager& getInstance() {
-        static EnvironmentManager instance;  // Guaranteed to be destroyed.
-        return instance;                     // Instantiated on first use.
-    }
+    static EnvironmentManager& getInstance();
+    static std::mutex instance_mutex;
 
     const CUDASimulation& getCUDASimulation(const unsigned int &instance_id);
     /**
@@ -776,6 +816,7 @@ T EnvironmentManager::setProperty(const NamePair &name, const T &value) {
     }
     // Copy old data to return
     T rtn = getProperty<T>(name);
+    std::unique_lock<std::shared_timed_mutex> lock(mutex);
     // Find property offset
     ptrdiff_t buffOffset = 0;
     const auto a = properties.find(name);
@@ -816,6 +857,9 @@ std::array<T, N> EnvironmentManager::setProperty(const NamePair &name, const std
             "in EnvironmentManager::set().",
             array_len, N);
     }
+    // Copy old data to return
+    std::array<T, N> rtn = getProperty<T, N>(name);
+    std::unique_lock<std::shared_timed_mutex> lock(mutex);
     // Find property offset
     ptrdiff_t buffOffset = 0;
     const auto a = properties.find(name);
@@ -824,8 +868,6 @@ std::array<T, N> EnvironmentManager::setProperty(const NamePair &name, const std
     } else {
         buffOffset = properties.at(mapped_properties.at(name).masterProp).offset;
     }
-    // Copy old data to return
-    std::array<T, N> rtn = getProperty<T, N>(name);
     // Store data
     memcpy(hc_buffer + buffOffset, value.data(), N * sizeof(T));
     // Do rtc too
@@ -859,6 +901,7 @@ std::vector<T> EnvironmentManager::setPropertyArray(const NamePair& name, const 
             "in EnvironmentManager::set().",
             array_len, value.size());
     }
+    std::unique_lock<std::shared_timed_mutex> lock(mutex);
     // Find property offset
     ptrdiff_t buffOffset = 0;
     const auto a = properties.find(name);
@@ -903,6 +946,7 @@ T EnvironmentManager::setProperty(const NamePair &name, const size_type &index, 
             "in EnvironmentManager::set().",
             index, array_len);
     }
+    std::unique_lock<std::shared_timed_mutex> lock(mutex);
     // Find property offset
     ptrdiff_t buffOffset = 0;
     const auto a = properties.find(name);
@@ -943,6 +987,7 @@ T EnvironmentManager::getProperty(const NamePair &name) {
             "in EnvironmentManager::get().",
             name.first, name.second.c_str(), typ_id.name(), typeid(T).name());
     }
+    std::shared_lock<std::shared_timed_mutex> lock(mutex);
     // Copy old data to return
     const auto a = properties.find(name);
     if (a != properties.end())
@@ -973,6 +1018,7 @@ std::array<T, N> EnvironmentManager::getProperty(const NamePair &name) {
     }
     // Copy old data to return
     std::array<T, N> rtn;
+    std::shared_lock<std::shared_timed_mutex> lock(mutex);
     const auto a = properties.find(name);
     if (a != properties.end()) {
         memcpy(rtn.data(), reinterpret_cast<T*>(hc_buffer + a->second.offset), N * sizeof(T));
@@ -1003,6 +1049,7 @@ T EnvironmentManager::getProperty(const NamePair &name, const size_type &index) 
             "in EnvironmentManager::set().",
             index, array_len);
     }
+    std::shared_lock<std::shared_timed_mutex> lock(mutex);
     // Copy old data to return
     const auto a = properties.find(name);
     if (a != properties.end())
@@ -1025,6 +1072,7 @@ std::vector<T> EnvironmentManager::getPropertyArray(const NamePair& name) {
     const size_type array_len = length(name);
     // Copy old data to return
     std::vector<T> rtn(static_cast<size_t>(array_len));
+    std::shared_lock<std::shared_timed_mutex> lock(mutex);
     const auto a = properties.find(name);
     if (a != properties.end()) {
         memcpy(rtn.data(), reinterpret_cast<T*>(hc_buffer + a->second.offset), array_len * sizeof(T));
