@@ -71,7 +71,9 @@ __global__ void agent_function_wrapper(
 #ifndef NO_SEATBELTS
     // We place this at the start of shared memory, so we can locate it anywhere in device code without a reference
     extern __shared__ DeviceExceptionBuffer *buff[];
-    buff[0] = error_buffer;
+    if (threadIdx.x == 0) {
+        buff[0] = error_buffer;
+    }
 #endif
     // Must be terminated here, else AgentRandom has bounds issues inside FLAMEGPU_DEVICE_API constructor
     if (FLAMEGPU_DEVICE_API<MsgIn, MsgOut>::TID() >= popNo)

@@ -11,6 +11,7 @@
 #include "flamegpu/io/xmlReader.h"
 #include <sstream>
 #include <algorithm>
+#include <tuple>
 #include "tinyxml2/tinyxml2.h"              // downloaded from https:// github.com/leethomason/tinyxml2, the list of xml parsers : http:// lars.ruoff.free.fr/xmlcpp/
 #include "flamegpu/exception/FGPUException.h"
 #include "flamegpu/pop/AgentPopulation.h"
@@ -58,11 +59,12 @@
 
 xmlReader::xmlReader(
     const std::string &model_name,
-    const unsigned int &sim_instance_id,
+    const std::unordered_map<std::string, EnvironmentDescription::PropData> &env_desc,
+    std::unordered_map<std::pair<std::string, unsigned int>, EnvironmentDescription::Any> &env_init,
     const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &model_state,
     const std::string &input,
     Simulation *sim_instance)
-    : StateReader(model_name, sim_instance_id, model_state, input, sim_instance) {}
+    : StateReader(model_name, env_desc, env_init, model_state, input, sim_instance) {}
 
 /**
 * \brief parses the xml file
@@ -164,50 +166,63 @@ int xmlReader::parse() {
     }
 
     // Read environment data
-    EnvironmentManager &env_manager = EnvironmentManager::getInstance();
     pElement = pRoot->FirstChildElement("environment");
     if (pElement) {
         for (auto envElement = pElement->FirstChildElement(); envElement; envElement = envElement->NextSiblingElement()) {
             const char *key = envElement->Value();
             std::stringstream ss(envElement->GetText());
             std::string token;
-            const EnvironmentManager::NamePair np = { sim_instance_id , std::string(key) };
-            if (env_manager.containsProperty(np)) {
-                const std::type_index val_type = env_manager.type(np);
-                const auto elements = env_manager.length(np);
-                unsigned int el = 0;
-                while (getline(ss, token, ',')) {
-                    if (val_type == std::type_index(typeid(float))) {
-                        env_manager.setProperty<float>(np, el++, stof(token));
-                    } else if (val_type == std::type_index(typeid(double))) {
-                        env_manager.setProperty<double>(np, el++, stod(token));
-                    } else if (val_type == std::type_index(typeid(int64_t))) {
-                        env_manager.setProperty<int64_t>(np, el++, stoll(token));
-                    } else if (val_type == std::type_index(typeid(uint64_t))) {
-                        env_manager.setProperty<uint64_t>(np, el++, stoull(token));
-                    } else if (val_type == std::type_index(typeid(int32_t))) {
-                        env_manager.setProperty<int32_t>(np, el++, static_cast<int32_t>(stoll(token)));
-                    } else if (val_type == std::type_index(typeid(uint32_t))) {
-                        env_manager.setProperty<uint32_t>(np, el++, static_cast<uint32_t>(stoull(token)));
-                    } else if (val_type == std::type_index(typeid(int16_t))) {
-                        env_manager.setProperty<int16_t>(np, el++, static_cast<int16_t>(stoll(token)));
-                    } else if (val_type == std::type_index(typeid(uint16_t))) {
-                        env_manager.setProperty<uint16_t>(np, el++, static_cast<uint16_t>(stoull(token)));
-                    } else if (val_type == std::type_index(typeid(int8_t))) {
-                        env_manager.setProperty<int8_t>(np, el++, static_cast<int8_t>(stoll(token)));
-                    } else if (val_type == std::type_index(typeid(uint8_t))) {
-                        env_manager.setProperty<uint8_t>(np, el++, static_cast<uint8_t>(stoull(token)));
-                    } else {
-                        THROW TinyXMLError("Model contains environment property '%s' of unsupported type '%s', "
-                            "in xmlReader::parse()\n", key, val_type.name());
-                    }
+            const auto it = env_desc.find(std::string(key));
+            if (it == env_desc.end()) {
+                THROW TinyXMLError("Input file contains unrecognised environment property '%s',"
+                    "in xmlReader::parse()\n", key);
+            }
+            const std::type_index val_type = it->second.type;
+            const auto elements = it->second.elements;
+            unsigned int el = 0;
+            while (getline(ss, token, ',')) {
+                if (env_init.find(make_pair(std::string(key), el)) != env_init.end()) {
+                    THROW TinyXMLError("Input file contains environment property '%s' multiple times, "
+                        "in xmlReader::parse()\n", key);
                 }
-                if (el != elements) {
-                    fprintf(stderr, "Warning: Environment array property '%s' expects '%u' elements, input file '%s' contains '%u' elements.\n",
-                        key, elements, inputFile.c_str(), el);
+                if (val_type == std::type_index(typeid(float))) {
+                    const float t = stof(token);
+                    env_init.emplace(make_pair(std::string(key), el++), EnvironmentDescription::Any(&t, sizeof(float)));
+                } else if (val_type == std::type_index(typeid(double))) {
+                    const double t = stod(token);
+                    env_init.emplace(make_pair(std::string(key), el++), EnvironmentDescription::Any(&t, sizeof(double)));
+                } else if (val_type == std::type_index(typeid(int64_t))) {
+                    const int64_t t = stoll(token);
+                    env_init.emplace(make_pair(std::string(key), el++), EnvironmentDescription::Any(&t, sizeof(int64_t)));
+                } else if (val_type == std::type_index(typeid(uint64_t))) {
+                    const uint64_t t = stoull(token);
+                    env_init.emplace(make_pair(std::string(key), el++), EnvironmentDescription::Any(&t, sizeof(uint64_t)));
+                } else if (val_type == std::type_index(typeid(int32_t))) {
+                    const int32_t t = static_cast<int32_t>(stoll(token));
+                    env_init.emplace(make_pair(std::string(key), el++), EnvironmentDescription::Any(&t, sizeof(int32_t)));
+                } else if (val_type == std::type_index(typeid(uint32_t))) {
+                    const uint32_t t = static_cast<uint32_t>(stoull(token));
+                    env_init.emplace(make_pair(std::string(key), el++), EnvironmentDescription::Any(&t, sizeof(uint32_t)));
+                } else if (val_type == std::type_index(typeid(int16_t))) {
+                    const int16_t t = static_cast<int16_t>(stoll(token));
+                    env_init.emplace(make_pair(std::string(key), el++), EnvironmentDescription::Any(&t, sizeof(int16_t)));
+                } else if (val_type == std::type_index(typeid(uint16_t))) {
+                    const uint16_t t = static_cast<uint16_t>(stoull(token));
+                    env_init.emplace(make_pair(std::string(key), el++), EnvironmentDescription::Any(&t, sizeof(uint16_t)));
+                } else if (val_type == std::type_index(typeid(int8_t))) {
+                    const int8_t t = static_cast<int8_t>(stoll(token));
+                    env_init.emplace(make_pair(std::string(key), el++), EnvironmentDescription::Any(&t, sizeof(int8_t)));
+                } else if (val_type == std::type_index(typeid(uint8_t))) {
+                    const uint8_t t = static_cast<uint8_t>(stoull(token));
+                    env_init.emplace(make_pair(std::string(key), el++), EnvironmentDescription::Any(&t, sizeof(uint8_t)));
+                } else {
+                    THROW TinyXMLError("Model contains environment property '%s' of unsupported type '%s', "
+                        "in xmlReader::parse()\n", key, val_type.name());
                 }
-            } else {
-                fprintf(stderr, "Warning: Input file '%s' contains unexpected environment property '%s'.\n", inputFile.c_str(), key);
+            }
+            if (el != elements) {
+                fprintf(stderr, "Warning: Environment array property '%s' expects '%u' elements, input file '%s' contains '%u' elements.\n",
+                    key, elements, inputFile.c_str(), el);
             }
         }
     } else {

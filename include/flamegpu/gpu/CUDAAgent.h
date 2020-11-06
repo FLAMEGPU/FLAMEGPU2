@@ -64,16 +64,18 @@ class CUDAAgent : public AgentInterface {
      * Uses the cuRVE runtime to map the variables used by the agent function to the cuRVE
      * library so that can be accessed by name within a n agent function
      * @param func The function.
+     * @param instance_id The CUDASimulation instance_id of the parent instance. This is added to the hash, to differentiate instances
      * @note TODO: This could be improved by iterating the variable list within the state_list, rather than individually looking up vars (the two lists should have all the same vars)
      * @note This should probably be addressed when curve is updated to not use individual memcpys
      */
-    void mapRuntimeVariables(const AgentFunctionData& func) const;
+    void mapRuntimeVariables(const AgentFunctionData& func, const unsigned int &instance_id) const;
     /**
      * Uses the cuRVE runtime to unmap the variables used by the agent function to the cuRVE
      * library so that they are unavailable to be accessed by name within an agent function.
      * @param func The function.
+     * @param instance_id The CUDASimulation instance_id of the parent instance. This is added to the hash, to differentiate instances
      */
-    void unmapRuntimeVariables(const AgentFunctionData& func) const;
+    void unmapRuntimeVariables(const AgentFunctionData& func, const unsigned int &instance_id) const;
     /**
      * Copies population data from the provided host object
      * To the device buffers held by this object (overwriting any existing agent data)
@@ -166,15 +168,17 @@ class CUDAAgent : public AgentInterface {
      * @param func The agent function being processed
      * @param maxLen The maximum number of new agents (this will be the size of the agent state executing func)
      * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
+     * @param instance_id The CUDASimulation instance_id of the parent instance. This is added to the hash, to differentiate instances
      * @param streamId This is required for scan compaction arrays and async
      */
-    void mapNewRuntimeVariables(const CUDAAgent& func_agent, const AgentFunctionData& func, const unsigned int &maxLen, CUDAScatter &scatter, const unsigned int &streamId);
+    void mapNewRuntimeVariables(const CUDAAgent& func_agent, const AgentFunctionData& func, const unsigned int &maxLen, CUDAScatter &scatter, const unsigned int &instance_id, const unsigned int &streamId);
     /**
      * Uses the cuRVE runtime to unmap the variables used by agent birth and
      * releases the buffer that was storing the data
      * @param func The function.
+     * @param instance_id The CUDASimulation instance_id of the parent instance. This is added to the hash, to differentiate instances
      */
-    void unmapNewRuntimeVariables(const AgentFunctionData& func);
+    void unmapNewRuntimeVariables(const AgentFunctionData& func, const unsigned int &instance_id);
     /**
      * Scatters agents from the currently assigned device agent birth buffer (see member variable newBuffs)
      * The device buffer must be packed in the same format as mapNewRuntimeVariables(const AgentFunctionData&, const unsigned int &, const unsigned int &)

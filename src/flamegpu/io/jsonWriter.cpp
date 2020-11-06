@@ -91,6 +91,7 @@ void jsonWriter::doWrite(T &writer) {
     {
         // for each environment property
         EnvironmentManager &env_manager = EnvironmentManager::getInstance();
+        auto lock = env_manager.getSharedLock();
         const char *env_buffer = reinterpret_cast<const char *>(env_manager.getHostBuffer());
         for (auto &a : env_manager.getPropertiesMap()) {
             // If it is from this model

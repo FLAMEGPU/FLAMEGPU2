@@ -19,7 +19,8 @@
 #include "flamegpu/runtime/cuRVE/curve_rtc.h"
 #include "flamegpu/runtime/HostFunctionCallback.h"
 
-
+std::array<std::atomic<int>, MAX_CUDA_DEVICES> CUDASimulation::active_device_instances;
+std::array<std::shared_timed_mutex, MAX_CUDA_DEVICES> CUDASimulation::active_device_mutex;
 std::atomic<int> CUDASimulation::active_instances;  // This value should default init to 0, specifying =0 was causing warnings on Windows.
 bool CUDASimulation::AUTO_CUDA_DEVICE_RESET = true;
 
@@ -34,12 +35,12 @@ CUDASimulation::CUDASimulation(const ModelDescription& _model, int argc, const c
     , rtc_kernel_cache(nullptr) {
     ++active_instances;
     initOffsetsAndMap();
+    // Add CUDASimulation specific environment members
+    unsigned int zero = 0;
+    model->environment->newProperty("_stepCount", reinterpret_cast<const char*>(&zero), sizeof(unsigned int), false, 1, typeid(unsigned int));
 
     // Register the signal handler.
     SignalHandlers::registerSignalHandlers();
-
-    // Populate the environment properties
-    initEnvironmentMgr();
 
     // populate the CUDA agent map
     const auto &am = model->agents;
@@ -77,9 +78,9 @@ CUDASimulation::CUDASimulation(const std::shared_ptr<SubModelData> &submodel_des
     , rtc_kernel_cache(nullptr)  {
     ++active_instances;
     initOffsetsAndMap();
-
-    // Populate the environment properties
-    initEnvironmentMgr();
+    // Add CUDASimulation specific environment members
+    unsigned int zero = 0;
+    model->environment->newProperty("_stepCount", reinterpret_cast<const char*>(&zero), sizeof(unsigned int), false, 1, typeid(unsigned int));
 
     // populate the CUDA agent map (With SubAgents!)
     const auto &am = model->agents;
@@ -121,14 +122,23 @@ CUDASimulation::CUDASimulation(const std::shared_ptr<SubModelData> &submodel_des
 }
 
 CUDASimulation::~CUDASimulation() {
+    // Ensure we destruct with the right device, otherwise we could dealloc pointers on the wrong device
+    int t_device_id = -1;
+    gpuErrchk(cudaGetDevice(&t_device_id));
+    if (t_device_id != deviceInitialised && deviceInitialised != -1) {
+        gpuErrchk(cudaSetDevice(deviceInitialised));
+    }
+
     submodel_map.clear();  // Test
     // De-initialise, freeing singletons?
     // @todo - this is unsafe in a destructor as it may invoke cuda commands.
     if (singletonsInitialised) {
         // unique pointers cleanup by automatically
         // Drop all constants from the constant cache linked to this model
-        singletons->environment.free(instance_id);
-
+        singletons->environment.free(singletons->curve, instance_id);
+        // if (active_instances == 1) {
+        //   assert(singletons->curve.size() == 0);
+        // }
         delete singletons;
         singletons = nullptr;
     }
@@ -145,11 +155,22 @@ CUDASimulation::~CUDASimulation() {
     rtc_kernel_cache = nullptr;
 
     // If we are the last instance to destruct
-    if ((!--active_instances)&& AUTO_CUDA_DEVICE_RESET) {
-        gpuErrchk(cudaDeviceReset());
-        EnvironmentManager::getInstance().purge();
-        Curve::getInstance().purge();
+    // This doesn't really play nicely if we are passing multi-device CUDASimulations between threads!
+    // I think this exists to prevent curve getting left with dead items when exceptions are thrown during the test suite.
+    if (deviceInitialised >= 0 && AUTO_CUDA_DEVICE_RESET) {
+        std::unique_lock<std::shared_timed_mutex> lock(active_device_mutex[deviceInitialised]);
+        if ((!--active_device_instances[deviceInitialised])) {
+            // Small chance that time between the atomic and body of this fn will cause a problem
+            // Could mutex it with init simulation cuda stuff, but really seems unlikely
+            gpuErrchk(cudaDeviceReset());
+            EnvironmentManager::getInstance().purge();
+            Curve::getInstance().purge();
+        }
     }
+    if (t_device_id != deviceInitialised) {
+        gpuErrchk(cudaSetDevice(t_device_id));
+    }
+    --active_instances;
 }
 
 bool CUDASimulation::step() {
@@ -169,8 +190,6 @@ bool CUDASimulation::step() {
     std::string message_name;
     Curve::NamespaceHash message_name_inp_hash = 0;
     Curve::NamespaceHash message_name_outp_hash = 0;
-    // hash model name
-    const Curve::NamespaceHash instance_id_hash = Curve::variableRuntimeHash(instance_id);
 
     // TODO: simulation.getMaxFunctionsPerLayer()
     for (auto lyr = model->layers.begin(); lyr != model->layers.end(); ++lyr) {
@@ -228,7 +247,7 @@ bool CUDASimulation::step() {
                     singletons->scatter.Scan().resize(state_list_size, CUDAScanCompaction::AGENT_DEATH, j);
 
                     // Configure runtime access of the functions variables within the FLAME_API object
-                    cuda_agent.mapRuntimeVariables(*func_des);
+                    cuda_agent.mapRuntimeVariables(*func_des, instance_id);
 
                     // Zero the scan flag that will be written to
                     singletons->scatter.Scan().zero(CUDAScanCompaction::AGENT_DEATH, j);
@@ -247,6 +266,7 @@ bool CUDASimulation::step() {
             // Sum the total number of threads being launched in the layer
             totalThreads = 0;
             // Launch function condition kernels
+            gpuErrchk(cudaStreamSynchronize(0));
             for (const std::shared_ptr<AgentFunctionData> &func_des : functions) {
                 if ((func_des->condition) || (!func_des->rtc_func_condition_name.empty())) {
                     auto func_agent = func_des->parent.lock();
@@ -272,7 +292,7 @@ bool CUDASimulation::step() {
                     //  Agent function condition kernel wrapper args
                     Curve::NamespaceHash agentname_hash = Curve::variableRuntimeHash(agent_name.c_str());
                     Curve::NamespaceHash funcname_hash = Curve::variableRuntimeHash(func_name.c_str());
-                    Curve::NamespaceHash agent_func_name_hash = agentname_hash + funcname_hash;
+                    Curve::NamespaceHash agent_func_name_hash = agentname_hash + funcname_hash + instance_id;
                     curandState *t_rng = d_rng + totalThreads;
                     unsigned int *scanFlag_agentDeath = this->singletons->scatter.Scan().Config(CUDAScanCompaction::Type::AGENT_DEATH, j).d_ptrs.scan_flag;
                     unsigned int sm_size = 0;
@@ -281,6 +301,11 @@ bool CUDASimulation::step() {
                     sm_size = sizeof(error_buffer);
 #endif
 
+                    auto env_shared_lock = this->singletons->environment.getSharedLock();
+                    auto env_device_lock = this->singletons->environment.getDeviceSharedLock();
+                    this->singletons->environment.updateDevice(instance_id);
+                    this->singletons->curve.updateDevice();
+                    gpuErrchk(cudaDeviceSynchronize());
                     // switch between normal and RTC agent function condition
                     if (func_des->condition) {
                         // calculate the grid block size for agent function condition
@@ -292,7 +317,7 @@ bool CUDASimulation::step() {
 #ifndef NO_SEATBELTS
                         error_buffer,
 #endif
-                        instance_id_hash,
+                        instance_id,
                         agent_func_name_hash,
                         state_list_size,
                         t_rng,
@@ -312,7 +337,7 @@ bool CUDASimulation::step() {
 #ifndef NO_SEATBELTS
                                 reinterpret_cast<void*>(&error_buffer),
 #endif
-                                const_cast<void*>(reinterpret_cast<const void*>(&instance_id_hash)),
+                                const_cast<void*>(reinterpret_cast<const void*>(&instance_id)),
                                 reinterpret_cast<void*>(&agent_func_name_hash),
                                 const_cast<void *>(reinterpret_cast<const void*>(&state_list_size)),
                                 reinterpret_cast<void*>(&t_rng),
@@ -325,11 +350,15 @@ bool CUDASimulation::step() {
                         cudaDeviceSynchronize();
                         gpuErrchkLaunch();
                     }
+                    gpuErrchk(cudaStreamSynchronize(streams.at(j)));
+                    env_shared_lock.unlock();
+                    env_device_lock.unlock();
 
                     totalThreads += state_list_size;
                     ++j;
                 }
             }
+            gpuErrchk(cudaDeviceSynchronize());
 
             // Track stream id
             j = 0;
@@ -350,7 +379,7 @@ bool CUDASimulation::step() {
                     }
 
                     // unmap the function variables
-                    cuda_agent.unmapRuntimeVariables(*func_des);
+                    cuda_agent.unmapRuntimeVariables(*func_des, instance_id);
 
 #ifndef NO_SEATBELTS
                     // Error check after unmap vars
@@ -393,7 +422,7 @@ bool CUDASimulation::step() {
                 // Construct PBM here if required!!
                 cuda_message.buildIndex(this->singletons->scatter, j);
                 // Map variables after, as index building can swap arrays
-                cuda_message.mapReadRuntimeVariables(*func_des, cuda_agent);
+                cuda_message.mapReadRuntimeVariables(*func_des, cuda_agent, instance_id);
             }
 
             // check if a function has an output message
@@ -403,7 +432,7 @@ bool CUDASimulation::step() {
                 // Resize message list if required
                 const unsigned int existingMessages = cuda_message.getTruncateMessageListFlag() ? 0 : cuda_message.getMessageCount();
                 cuda_message.resize(existingMessages + state_list_size, this->singletons->scatter, j);
-                cuda_message.mapWriteRuntimeVariables(*func_des, cuda_agent, state_list_size);
+                cuda_message.mapWriteRuntimeVariables(*func_des, cuda_agent, state_list_size, instance_id);
                 singletons->scatter.Scan().resize(state_list_size, CUDAScanCompaction::MESSAGE_OUTPUT, j);
                 // Zero the scan flag that will be written to
                 if (func_des->message_output_optional)
@@ -417,14 +446,14 @@ bool CUDASimulation::step() {
                 CUDAAgent& output_agent = getCUDAAgent(oa->name);
 
                 // Map vars with curve (this allocates/requests enough new buffer space if an existing version is not available/suitable)
-                output_agent.mapNewRuntimeVariables(cuda_agent, *func_des, state_list_size, this->singletons->scatter, j);
+                output_agent.mapNewRuntimeVariables(cuda_agent, *func_des, state_list_size, this->singletons->scatter, instance_id, j);
             }
 
 
             /**
              * Configure runtime access of the functions variables within the FLAME_API object
              */
-            cuda_agent.mapRuntimeVariables(*func_des);
+            cuda_agent.mapRuntimeVariables(*func_des, instance_id);
 
             // Zero the scan flag that will be written to
             if (func_des->has_agent_death)
@@ -442,6 +471,8 @@ bool CUDASimulation::step() {
         // Total threads is now used to provide kernel launches an offset to thread-safe thread-index
         totalThreads = 0;
         j = 0;
+        // gpuErrchk(cudaStreamSynchronize(0));
+        gpuErrchk(cudaDeviceSynchronize());
         //! for each func function - Loop through to launch all agent functions
         for (const std::shared_ptr<AgentFunctionData> &func_des : functions) {
             auto func_agent = func_des->parent.lock();
@@ -490,8 +521,8 @@ bool CUDASimulation::step() {
             // Agent function kernel wrapper args
             Curve::NamespaceHash agentname_hash = Curve::variableRuntimeHash(agent_name.c_str());
             Curve::NamespaceHash funcname_hash = Curve::variableRuntimeHash(func_name.c_str());
-            Curve::NamespaceHash agent_func_name_hash = agentname_hash + funcname_hash;
-            Curve::NamespaceHash agentoutput_hash = func_des->agent_output.lock() ? singletons->curve.variableRuntimeHash("_agent_birth") + funcname_hash : 0;
+            Curve::NamespaceHash agent_func_name_hash = agentname_hash + funcname_hash + instance_id;
+            Curve::NamespaceHash agentoutput_hash = func_des->agent_output.lock() ? (Curve::variableRuntimeHash("_agent_birth") ^ funcname_hash) + instance_id : 0;
             curandState * t_rng = d_rng + totalThreads;
             unsigned int *scanFlag_agentDeath = func_des->has_agent_death ? this->singletons->scatter.Scan().Config(CUDAScanCompaction::Type::AGENT_DEATH, j).d_ptrs.scan_flag : nullptr;
             unsigned int *scanFlag_messageOutput = this->singletons->scatter.Scan().Config(CUDAScanCompaction::Type::MESSAGE_OUTPUT, j).d_ptrs.scan_flag;
@@ -502,6 +533,11 @@ bool CUDASimulation::step() {
             sm_size = sizeof(error_buffer);
 #endif
 
+            auto env_shared_lock = this->singletons->environment.getSharedLock();
+            auto env_device_lock = this->singletons->environment.getDeviceSharedLock();
+            this->singletons->environment.updateDevice(instance_id);
+            this->singletons->curve.updateDevice();
+            gpuErrchk(cudaDeviceSynchronize());
             if (func_des->func) {   // compile time specified agent function launch
                 // calculate the grid block size for main agent function
                 cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, func_des->func, 0, state_list_size);
@@ -512,7 +548,7 @@ bool CUDASimulation::step() {
 #ifndef NO_SEATBELTS
                     error_buffer,
 #endif
-                    instance_id_hash,
+                    instance_id,
                     agent_func_name_hash,
                     message_name_inp_hash,
                     message_name_outp_hash,
@@ -538,7 +574,7 @@ bool CUDASimulation::step() {
 #ifndef NO_SEATBELTS
                         reinterpret_cast<void*>(&error_buffer),
 #endif
-                        const_cast<void*>(reinterpret_cast<const void*>(&instance_id_hash)),
+                        const_cast<void*>(reinterpret_cast<const void*>(&instance_id)),
                         reinterpret_cast<void*>(&agent_func_name_hash),
                         reinterpret_cast<void*>(&message_name_inp_hash),
                         reinterpret_cast<void*>(&message_name_outp_hash),
@@ -558,11 +594,14 @@ bool CUDASimulation::step() {
                 cudaDeviceSynchronize();
                 gpuErrchkLaunch();
             }
-
+            gpuErrchk(cudaStreamSynchronize(streams.at(j)));
+            env_shared_lock.unlock();
+            env_device_lock.unlock();
             totalThreads += state_list_size;
             ++j;
             ++lyr_idx;
         }
+        gpuErrchk(cudaDeviceSynchronize());  // This sync was added to fix errors running tests in release mode of multi-thread-device branch, Pete thinks he has fixed the issue in concurrency branch via other means.
 
         j = 0;
         // for each func function - Loop through to un-map all agent and message variables
@@ -581,14 +620,14 @@ bool CUDASimulation::step() {
                 if (auto im = func_des->message_input.lock()) {
                     std::string inpMessage_name = im->name;
                     const CUDAMessage& cuda_message = getCUDAMessage(inpMessage_name);
-                    cuda_message.unmapRuntimeVariables(*func_des);
+                    cuda_message.unmapRuntimeVariables(*func_des, instance_id);
                 }
 
                 // check if a function has an output message
                 if (auto om = func_des->message_output.lock()) {
                     std::string outpMessage_name = om->name;
                     CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
-                    cuda_message.unmapRuntimeVariables(*func_des);
+                    cuda_message.unmapRuntimeVariables(*func_des, instance_id);
                     cuda_message.swap(func_des->message_output_optional, state_list_size, this->singletons->scatter, j);
                     cuda_message.clearTruncateMessageListFlag();
                     cuda_message.setPBMConstructionRequiredFlag();
@@ -615,11 +654,11 @@ bool CUDASimulation::step() {
                     // Scatter the agent birth
                     output_agent.scatterNew(*func_des, state_list_size, this->singletons->scatter, j);  // This must be passed the state list size prior to death
                     // unmap vars with curve
-                    output_agent.unmapNewRuntimeVariables(*func_des);
+                    output_agent.unmapNewRuntimeVariables(*func_des, instance_id);
                 }
 
                 // unmap the function variables
-                cuda_agent.unmapRuntimeVariables(*func_des);
+                cuda_agent.unmapRuntimeVariables(*func_des, instance_id);
 #ifndef NO_SEATBELTS
                 // Error check after unmap vars
                 // This means that curve is cleaned up before we throw exception (mostly prevents curve being polluted if we catch and handle errors)
@@ -858,6 +897,7 @@ void CUDASimulation::reset(bool submodelReset) {
 void CUDASimulation::setPopulationData(AgentPopulation& population) {
     // Ensure singletons have been initialised
     initialiseSingletons();
+    NVTX_RANGE("CUDASimulation::setPopulationData()");
 
     CUDAAgentMap::iterator it;
     it = agent_map.find(population.getAgentName());
@@ -876,11 +916,14 @@ void CUDASimulation::setPopulationData(AgentPopulation& population) {
         visualisation->updateBuffers();
     }
 #endif
+    gpuErrchk(cudaDeviceSynchronize());
 }
 
 void CUDASimulation::getPopulationData(AgentPopulation& population) {
     // Ensure singletons have been initialised
     initialiseSingletons();
+    NVTX_RANGE("CUDASimulation::getPopulationData()");
+    gpuErrchk(cudaDeviceSynchronize());
 
     CUDAAgentMap::iterator it;
     it = agent_map.find(population.getAgentName());
@@ -893,6 +936,7 @@ void CUDASimulation::getPopulationData(AgentPopulation& population) {
 
     /*!create agent state lists */
     it->second->getPopulationData(population);
+    gpuErrchk(cudaDeviceSynchronize());
 }
 
 CUDAAgent& CUDASimulation::getCUDAAgent(const std::string& agent_name) const {
@@ -981,6 +1025,12 @@ void CUDASimulation::applyConfig_derived() {
     if (config.device_id >= device_count) {
         THROW InvalidCUDAdevice("Error setting CUDA device to '%d', only %d available!", config.device_id, device_count);
     }
+    if (config.device_id >= MAX_CUDA_DEVICES) {
+        THROW InvalidCUDAdevice("Error setting CUDA device to '%d', FLAMEGPU2 has built for a max of %d devices. Update MAX_CUDA_DEVICES and recompile the library.", config.device_id, MAX_CUDA_DEVICES);
+    }
+    if (deviceInitialised !=- 1 && deviceInitialised != config.device_id) {
+        THROW InvalidCUDAdevice("Unable to set CUDA device to '%d' after the CUDASimulation has already initialised on device '%d'.", config.device_id, deviceInitialised);
+    }
 
     // Check the compute capability of the device, throw an exception if not valid for the executable.
     if (!util::compute_capability::checkComputeCapability(static_cast<int>(config.device_id))) {
@@ -1043,9 +1093,12 @@ void CUDASimulation::initialiseSingletons() {
             int cc = util::compute_capability::getComputeCapability(static_cast<int>(config.device_id));
             THROW InvalidCUDAComputeCapability("Error application compiled for CUDA Compute Capability %d and above. Device %u is compute capability %d. Rebuild for SM_%d.", min_cc, config.device_id, cc, cc);
         }
+        gpuErrchk(cudaGetDevice(&deviceInitialised));
+        ++active_device_instances[deviceInitialised];
+        std::shared_lock<std::shared_timed_mutex> lock(active_device_mutex[deviceInitialised]);
         // Check if device has been reset
         unsigned int DEVICE_HAS_RESET_CHECK = 0;
-        cudaMemcpyFromSymbol(&DEVICE_HAS_RESET_CHECK, DEVICE_HAS_RESET, sizeof(unsigned int));
+        gpuErrchk(cudaMemcpyFromSymbol(&DEVICE_HAS_RESET_CHECK, DEVICE_HAS_RESET, sizeof(unsigned int)));
         if (DEVICE_HAS_RESET_CHECK == DEVICE_HAS_RESET_FLAG) {
             // Device has been reset, purge host mirrors of static objects/singletons
             Curve::getInstance().purge();
@@ -1056,7 +1109,7 @@ void CUDASimulation::initialiseSingletons() {
             EnvironmentManager::getInstance().purge();
             // Reset flag
             DEVICE_HAS_RESET_CHECK = 0;  // Any value that doesnt match DEVICE_HAS_RESET_FLAG
-            cudaMemcpyToSymbol(DEVICE_HAS_RESET, &DEVICE_HAS_RESET_CHECK, sizeof(unsigned int));
+            gpuErrchk(cudaMemcpyToSymbol(DEVICE_HAS_RESET, &DEVICE_HAS_RESET_CHECK, sizeof(unsigned int)));
         }
         // Get references to all required singleton and store in the instance.
         singletons = new Singletons(
@@ -1073,13 +1126,27 @@ void CUDASimulation::initialiseSingletons() {
             cm.second->init(singletons->scatter, 0);
         }
 
+        // Populate the environment properties
+        if (!submodel) {
+            singletons->environment.init(instance_id, *model->environment);
+        } else {
+            singletons->environment.init(instance_id, *model->environment, mastermodel->getInstanceID(), *submodel->subenvironment);
+        }
+
         // Propagate singleton init to submodels
         for (auto &sm : submodel_map) {
             sm.second->initialiseSingletons();
         }
-
         singletonsInitialised = true;
+    } else {
+        int t = -1;
+        gpuErrchk(cudaGetDevice(&t));
+        if (t != deviceInitialised) {
+            THROW CUDAError("CUDASimulation initialised on device %d, but stepped on device %d.\n", deviceInitialised, t);
+        }
     }
+    // Populate the environment properties
+    initEnvironmentMgr();
 
     // Ensure RTC is set up.
     initialiseRTC();
@@ -1271,13 +1338,43 @@ float CUDASimulation::getSimulationElapsedTime() const {
 }
 
 void CUDASimulation::initEnvironmentMgr() {
-    // Populate the environment properties
-    if (!submodel) {
-        EnvironmentManager::getInstance().init(instance_id, *model->environment);
-    } else {
-        EnvironmentManager::getInstance().init(instance_id, *model->environment, mastermodel->getInstanceID(), *submodel->subenvironment);
+    if (!singletons) {
+        THROW UnknownInternalError("CUDASimulation::initEnvironmentMgr() called before singletons member initialised.");
     }
-
-    // Add the CUDASimulation specific variables(s)
-    EnvironmentManager::getInstance().newProperty({instance_id, "_stepCount"}, 0u, false);
+    // Set any properties loaded from file during arg parse stage
+    for (const auto &prop : env_init) {
+        const EnvironmentManager::NamePair np = { instance_id , prop.first.first };
+        if (!singletons->environment.containsProperty(np)) {
+            THROW InvalidEnvProperty("Environment init data contains unexpected environment property '%s', "
+                "in CUDASimulation::initEnvironmentMgr()\n", prop.first.first.c_str());
+        }
+        const std::type_index val_type = singletons->environment.type(np);
+        if (val_type == std::type_index(typeid(float))) {
+            singletons->environment.setProperty<float>(np, prop.first.second, *static_cast<float*>(prop.second.ptr));
+        } else if (val_type == std::type_index(typeid(double))) {
+            singletons->environment.setProperty<double>(np, prop.first.second, *static_cast<double*>(prop.second.ptr));
+        } else if (val_type == std::type_index(typeid(int64_t))) {
+            singletons->environment.setProperty<int64_t>(np, prop.first.second, *static_cast<int64_t*>(prop.second.ptr));
+        } else if (val_type == std::type_index(typeid(uint64_t))) {
+            singletons->environment.setProperty<uint64_t>(np, prop.first.second, *static_cast<uint64_t*>(prop.second.ptr));
+        } else if (val_type == std::type_index(typeid(int32_t))) {
+            singletons->environment.setProperty<int32_t>(np, prop.first.second, *static_cast<int32_t*>(prop.second.ptr));
+        } else if (val_type == std::type_index(typeid(uint32_t))) {
+            singletons->environment.setProperty<uint32_t>(np, prop.first.second, *static_cast<uint32_t*>(prop.second.ptr));
+        } else if (val_type == std::type_index(typeid(int16_t))) {
+            singletons->environment.setProperty<int16_t>(np, prop.first.second, *static_cast<int16_t*>(prop.second.ptr));
+        } else if (val_type == std::type_index(typeid(uint16_t))) {
+            singletons->environment.setProperty<uint16_t>(np, prop.first.second, *static_cast<uint16_t*>(prop.second.ptr));
+        } else if (val_type == std::type_index(typeid(int8_t))) {
+            singletons->environment.setProperty<int8_t>(np, prop.first.second, *static_cast<int8_t*>(prop.second.ptr));
+        } else if (val_type == std::type_index(typeid(uint8_t))) {
+            singletons->environment.setProperty<uint8_t>(np, prop.first.second, *static_cast<uint8_t*>(prop.second.ptr));
+        } else {
+            THROW InvalidEnvProperty("Environment init data contains environment property '%s' of unsupported type '%s', "
+                "this should have been caught during file parsing, "
+                "in CUDASimulation::initEnvironmentMgr()\n", prop.first.first.c_str(), val_type.name());
+        }
+    }
+    // Clear init
+    env_init.clear();
 }

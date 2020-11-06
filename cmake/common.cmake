@@ -1,4 +1,5 @@
 message(STATUS "-----Configuring Project: ${PROJECT_NAME}-----")
+include_guard(DIRECTORY)
 if(NOT CMAKE_VERSION VERSION_LESS 3.18)
     cmake_policy(SET CMP0105 NEW) # Use separate device link options
 endif()
@@ -152,7 +153,12 @@ set(CMAKE_CUDA_FLAGS_RELEASE "${CMAKE_CUDA_FLAGS_RELEASE} -lineinfo")
 set(CMAKE_CUDA_FLAGS_PROFILE "${CMAKE_CUDA_FLAGS_PROFILE} -lineinfo -DPROFILE -D_PROFILE")
 # Addresses a cub::histogram warning
 set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr")
-
+# Enable default stream per thread for target, in-case of ensembles
+# This removes implicit syncs in default stream, using it has only been tested for basic models
+# It has not been tested with host functions, agent death, optional messages etc
+# Hence using it is unsafe
+#set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --default-stream per-thread")    
+    
 # Host Compiler version specific high warnings
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     # Only set W4 for MSVC, WAll is more like Wall, Wextra and Wpedantic

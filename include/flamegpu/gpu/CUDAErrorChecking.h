@@ -45,5 +45,10 @@ inline void gpuLaunchAssert(const char *file, int line) {
 #endif
     gpuAssert(cudaPeekAtLastError(), file, line);
 }
+/**
+ * Maximum number of CUDA devices supported
+ * This affects how singletons are handed out
+ */
+constexpr int MAX_CUDA_DEVICES = 8;
 
 #endif  // INCLUDE_FLAMEGPU_GPU_CUDAERRORCHECKING_H_

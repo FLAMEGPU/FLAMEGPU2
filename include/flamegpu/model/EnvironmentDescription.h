@@ -30,6 +30,13 @@ class EnvironmentDescription {
      */
     friend class SubEnvironmentDescription;
     /**
+     * Constructor has access to privately add reserved items
+     * Might be a cleaner way to do this
+     */
+    friend class CUDASimulation;
+
+ public:
+    /**
      * Minimal std::any replacement, works pre c++17
      * We don't care about type, so it isn't tracked
      */
@@ -73,8 +80,6 @@ class EnvironmentDescription {
          */
         const size_t length;
     };
-
- public:
     /**
      * Holds all of the properties required to add a value to EnvironmentManager
      */
