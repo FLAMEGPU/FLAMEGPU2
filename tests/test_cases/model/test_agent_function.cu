@@ -292,5 +292,75 @@ TEST(AgentFunctionDescriptionTest, SameAgentAndStateInLayer) {
     EXPECT_THROW(f2.setEndState(STATE_NAME), InvalidAgentFunc);
     EXPECT_THROW(f2.setEndState(NEW_STATE_NAME), InvalidAgentFunc);
 }
+TEST(AgentFunctionDescriptionTest, DefaultDependencies) {
+    ModelDescription _m(MODEL_NAME);
+    AgentDescription &a = _m.newAgent(AGENT_NAME);
+    AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    // Has no dependencies
+    EXPECT_FALSE(f.hasDependencies());     
+}
+TEST(AgentFunctionDescriptionTest, DefaultDependents) {
+    ModelDescription _m(MODEL_NAME);
+    AgentDescription &a = _m.newAgent(AGENT_NAME);
+    AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    // Has no dependents
+    EXPECT_FALSE(f.hasDependents());     
+}
+TEST(AgentFunctionDescriptionTest, AddNullptrAsDependency) {
+    ModelDescription _m(MODEL_NAME);
+    AgentDescription &a = _m.newAgent(AGENT_NAME);
+    AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    // Cannot add nullptr as dependency
+    EXPECT_THROW(f.dependsOn(nullptr), InvalidAgentFunc);
+}
+TEST(AgentFunctionDescriptionTest, AddSingleDependency) {
+    ModelDescription _m(MODEL_NAME);
+    AgentDescription &a = _m.newAgent(AGENT_NAME);
+    AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    AgentFunctionDescription &f2 = a.newFunction(FUNCTION_NAME2, agent_fn2);
+    // Add single valid dependency
+    EXPECT_NO_THROW(f2.dependsOn(&f));
+    EXPECT_TRUE(f2.hasDependencies());
+    EXPECT_TRUE(f.hasDependents());
+    // Check dependents vector state
+    const std::vector<AgentFunctionDescription*> fDependents = f.getDependents();
+    EXPECT_EQ(fDependents.size(), 1);
+    if (fDependents.size())
+        EXPECT_EQ(fDependents[0], &f2);
+    // check dependency vector state
+    const std::vector<AgentFunctionDescription*> f2Dependencies = f2.getDependencies();
+    EXPECT_EQ(f2Dependencies.size(), 1);
+    if (f2Dependencies.size())
+        EXPECT_EQ(f2Dependencies[0], &f);
+}
+TEST(AgentFunctionDescriptionTest, AddMultipleDependencies) {
+    ModelDescription _m(MODEL_NAME);
+    AgentDescription &a = _m.newAgent(AGENT_NAME);
+    AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    AgentFunctionDescription &f2 = a.newFunction(FUNCTION_NAME2, agent_fn2);
+    AgentFunctionDescription &f3 = a.newFunction(FUNCTION_NAME3, agent_fn3);
+    // Add multiple valid dependencies
+    EXPECT_NO_THROW(f2.dependsOn(&f));
+    EXPECT_NO_THROW(f3.dependsOn(&f));
+    EXPECT_TRUE(f2.hasDependencies());
+    EXPECT_TRUE(f3.hasDependencies());
+    EXPECT_TRUE(f.hasDependents());
+    // Check dependents vector state
+    const std::vector<AgentFunctionDescription*> fDependents = f.getDependents();
+    EXPECT_EQ(fDependents.size(), 2);
+    if (fDependents.size())
+        EXPECT_EQ(fDependents[0], &f2);
+    if (fDependents.size() > 1) 
+        EXPECT_EQ(fDependents[1], &f3);
+    // check dependency vector state
+    const std::vector<AgentFunctionDescription*> f2Dependencies = f2.getDependencies();
+    EXPECT_EQ(f2Dependencies.size(), 1);
+    if (f2Dependencies.size())
+        EXPECT_EQ(f2Dependencies[0], &f);
+    const std::vector<AgentFunctionDescription*> f3Dependencies = f3.getDependencies();
+    EXPECT_EQ(f3Dependencies.size(), 1);
+    if (f3Dependencies.size())
+        EXPECT_EQ(f3Dependencies[0], &f);
+}
 
 }  // namespace test_agent_function

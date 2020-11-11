@@ -452,6 +452,18 @@ bool AgentFunctionDescription::hasAgentOutput() const {
 bool AgentFunctionDescription::hasFunctionCondition() const {
     return function->condition != nullptr;
 }
+bool AgentFunctionDescription::hasDependents() const {
+    return dependents.size() != 0;
+}
+const std::vector<AgentFunctionDescription*> AgentFunctionDescription::getDependents() const {
+    return dependents;
+}
+bool AgentFunctionDescription::hasDependencies() const {
+    return dependencies.size() != 0;
+}
+const std::vector<AgentFunctionDescription*> AgentFunctionDescription::getDependencies() const {
+    return dependencies;
+}
 AgentFunctionWrapper *AgentFunctionDescription::getFunctionPtr() const {
     return function->func;
 }
@@ -493,4 +505,20 @@ AgentFunctionDescription& AgentDescription::newRTCFunction(const std::string& fu
     THROW InvalidAgentFunc("Agent ('%s') already contains function '%s', "
         "in AgentDescription::newFunction().",
         agent->name.c_str(), function_name.c_str());
+}
+
+/**
+ * Dependency functions
+ */
+void AgentFunctionDescription::dependsOn(AgentFunctionDescription* dependency) {
+    if (dependency) {
+        dependency->addDependent(this);
+        dependencies.push_back(dependency);
+    } else { 
+        THROW InvalidAgentFunc("Attempting to set dependency of %s to nullptr", function->name.c_str());
+    }
+}
+
+void AgentFunctionDescription::addDependent(AgentFunctionDescription* dependent) {
+    dependents.push_back(dependent);
 }

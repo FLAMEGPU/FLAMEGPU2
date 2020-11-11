@@ -3,6 +3,7 @@
 
 #include <string>
 #include <memory>
+#include <vector>
 
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/model/AgentDescription.h"
@@ -183,6 +184,11 @@ class AgentFunctionDescription {
      */
     void setRTCFunctionCondition(std::string func_cond_src);
     /**
+     * Specifies that this agent function depends on the completion of another agent function
+     * @param dependency The agent function which must be complete before this agent function may run
+     */
+    void dependsOn(AgentFunctionDescription* dependency);
+    /**
      * @return A mutable reference to the message input of this agent function
      * @see AgentFunctionDescription::getMessageInput() for the immutable version
      * @throw OutOfBoundsException If the message input has not been set
@@ -277,6 +283,22 @@ class AgentFunctionDescription {
      */
     AgentFunctionWrapper *getFunctionPtr() const;
     /**
+     * @return Whether this agent function has any dependents
+     */
+    bool hasDependents() const;
+    /**
+     * @return Immutable vector of the dependents of this agent function
+     */
+    const std::vector<AgentFunctionDescription*> getDependents() const;
+    /**
+     * @return Whether this agent function has any dependencies
+     */
+    bool hasDependencies() const;
+    /**
+     * @return Immutable vector of the dependencies of this agent function
+     */
+    const std::vector<AgentFunctionDescription*> getDependencies() const;
+    /**
      * @return The cuda kernel entry point for executing the agent function condition
      */
     AgentFunctionConditionWrapper *getConditionPtr() const;
@@ -294,6 +316,18 @@ class AgentFunctionDescription {
      * The class which stores all of the layer's data.
      */
     AgentFunctionData *const function;
+    /**
+     * Vector storing the 'children' of this agent function in the dependency tree, i.e. those functions which depend on the completion of this one
+     */
+    std::vector<AgentFunctionDescription*> dependents;
+    /**
+     * Vector storing the 'parents' of this agent function in the dependency tree, i.e. those functions which must be completed before this one may begin
+     */
+    std::vector<AgentFunctionDescription*> dependencies;
+    /**
+     * Adds an agent function to this agent function's list of dependents
+     */
+    void addDependent(AgentFunctionDescription* dependent);
 };
 
 
