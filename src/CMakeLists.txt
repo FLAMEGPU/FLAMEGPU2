@@ -91,6 +91,7 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/model/ModelData.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/AgentData.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/AgentFunctionData.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/model/AgentFunctionDependencyGraph.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/LayerData.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/AgentFunctionDescription.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/EnvironmentDescription.h
@@ -195,8 +196,8 @@ SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/model/EnvironmentDescription.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/model/AgentDescription.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/model/AgentFunctionDescription.cpp
-    ${FLAMEGPU_ROOT}/src/flamegpu/pop/AgentVector.cpp
-    ${FLAMEGPU_ROOT}/src/flamegpu/pop/AgentVector_Agent.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/model/AgentFunctionDependencyGraph.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/pop/AgentPopulation.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/pop/AgentInstance.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAScanCompaction.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAMessageList.cu

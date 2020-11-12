@@ -423,5 +423,9 @@ DERIVED_FGPUException(InvalidFilePath, "File does not exist.");
  * Defines an error indicating that a CUDAEventTimer was queried without being synced.
  */
 DERIVED_FGPUException(UnsycnedCUDAEventTimer, "Elapsed time requested for Un-synced CUDAEventTimer");
+/*
+ * Defines an error reported by AgentFunctionDependencyGraph if the graph is invalid
+ */
+DERIVED_FGPUException(InvalidDependencyGraph, "Agent function dependency graph is invalid");
 
 #endif  // INCLUDE_FLAMEGPU_EXCEPTION_FGPUEXCEPTION_H_
