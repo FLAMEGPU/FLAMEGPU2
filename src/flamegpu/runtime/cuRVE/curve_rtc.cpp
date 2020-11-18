@@ -397,7 +397,7 @@ void CurveRTCHost::initHeaderEnvironment() {
                     // getEnvArrayVariableImpl << "              } else if (N != " << element.second.elements << ") {\n";
                     // getEnvArrayVariableImpl << "                  DTHROW(\"Environment array property '%s' length mismatch.\\n\", name);\n";
                     // getEnvArrayVariableImpl << "                  return 0;\n";
-                    getEnvArrayVariableImpl << "              } else if (index >= " << element.second.elements << "|| index < 0) {\n";
+                    getEnvArrayVariableImpl << "              } else if (index >= " << element.second.elements << ") {\n";
                     getEnvArrayVariableImpl << "                  DTHROW(\"Environment array property '%s', index %d is out of bounds.\\n\", name, index);\n";
                     getEnvArrayVariableImpl << "                  return 0;\n";
                     getEnvArrayVariableImpl << "              }\n";
@@ -534,7 +534,7 @@ void CurveRTCHost::initHeaderSetters() {
                 setAgentArrayVariableImpl << "              } else if (N != " << element.second.elements << ") {\n";
                 setAgentArrayVariableImpl << "                  DTHROW(\"Agent array variable '%s' length mismatch during setVariable().\\n\", name);\n";
                 setAgentArrayVariableImpl << "                  return;\n";
-                setAgentArrayVariableImpl << "              } else if (array_index >= " << element.second.elements << "|| array_index < 0) {\n";
+                setAgentArrayVariableImpl << "              } else if (array_index >= " << element.second.elements << ") {\n";
                 setAgentArrayVariableImpl << "                  DTHROW(\"Agent array variable '%s', index %d is out of bounds during setVariable().\\n\", name, array_index);\n";
                 setAgentArrayVariableImpl << "                  return;\n";
                 setAgentArrayVariableImpl << "              }\n";
@@ -565,7 +565,7 @@ void CurveRTCHost::initHeaderSetters() {
                 setNewAgentArrayVariableImpl << "              } else if (N != " << element.second.elements << ") {\n";
                 setNewAgentArrayVariableImpl << "                  DTHROW(\"New agent array variable '%s' length mismatch during setVariable().\\n\", name);\n";
                 setNewAgentArrayVariableImpl << "                  return;\n";
-                setNewAgentArrayVariableImpl << "              } else if (array_index >= " << element.second.elements << "|| array_index < 0) {\n";
+                setNewAgentArrayVariableImpl << "              } else if (array_index >= " << element.second.elements << ") {\n";
                 setNewAgentArrayVariableImpl << "                  DTHROW(\"New agent array variable '%s', index %d is out of bounds during setVariable().\\n\", name, array_index);\n";
                 setNewAgentArrayVariableImpl << "                  return;\n";
                 setNewAgentArrayVariableImpl << "              }\n";
@@ -690,7 +690,7 @@ void CurveRTCHost::initHeaderGetters() {
                 getAgentArrayVariableImpl << "              } else if (N != " << element.second.elements << ") {\n";
                 getAgentArrayVariableImpl << "                  DTHROW(\"Agent array variable '%s' length mismatch during getVariable().\\n\", name);\n";
                 getAgentArrayVariableImpl << "                  return 0;\n";
-                getAgentArrayVariableImpl << "              } else if (array_index >= " << element.second.elements << "|| array_index < 0) {\n";
+                getAgentArrayVariableImpl << "              } else if (array_index >= " << element.second.elements << ") {\n";
                 getAgentArrayVariableImpl << "                  DTHROW(\"Agent array variable '%s', index %d is out of bounds during getVariable().\\n\", name, array_index);\n";
                 getAgentArrayVariableImpl << "                  return 0;\n";
                 getAgentArrayVariableImpl << "              }\n";
@@ -721,7 +721,7 @@ void CurveRTCHost::initHeaderGetters() {
                 getAgentArrayVariableLDGImpl << "              } else if (N != " << element.second.elements << ") {\n";
                 getAgentArrayVariableLDGImpl << "                  DTHROW(\"Agent array variable '%s' length mismatch during getVariable().\\n\", name);\n";
                 getAgentArrayVariableLDGImpl << "                  return 0;\n";
-                getAgentArrayVariableLDGImpl << "              } else if (array_index >= " << element.second.elements << "|| array_index < 0) {\n";
+                getAgentArrayVariableLDGImpl << "              } else if (array_index >= " << element.second.elements << ") {\n";
                 getAgentArrayVariableLDGImpl << "                  DTHROW(\"Agent array variable '%s', index %d is out of bounds during getVariable().\\n\", name, array_index);\n";
                 getAgentArrayVariableLDGImpl << "                  return 0;\n";
                 getAgentArrayVariableLDGImpl << "              }\n";
