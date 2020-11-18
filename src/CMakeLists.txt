@@ -1,5 +1,5 @@
-# 3.10 required for cuda -std=c++14, however 3.12 fixes some device linker errors
-cmake_minimum_required(VERSION VERSION 3.12 FATAL_ERROR)
+# CMake 3.15+ for Thrust/Cub support
+cmake_minimum_required(VERSION VERSION 3.15 FATAL_ERROR)
 
 # Cmake 3.16 has issues with CUB and Thrust due to the order of the include path it generates.
 if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.16 AND CMAKE_VERSION VERSION_LESS 3.17)
