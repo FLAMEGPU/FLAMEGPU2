@@ -23,23 +23,28 @@ Only documentation can be built without the required dependencies (however Doxyg
 
 #### Required
 
-* [CMake](https://cmake.org/) >= 3.12
-  * CMake 3.16 is known to have issues on certain platforms
-* [CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit) >= 9.0
-* *Linux:*
-  * [make](https://www.gnu.org/software/make/)
-  * gcc/g++ >= 6 (version requirements [here](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#system-requirements))
-      * gcc/g++ >= 7 required for the test suite 
-* *Windows:*
-  * Visual Studio 2015 or higher (2019 preferred)
++ [CMake](https://cmake.org/) `>= 3.15` (`>= 3.18` recommended) 
++ [CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit) `>= 10.0`
++ [git](https://git-scm.com/) (Used for dependency management)
++ *Linux:*
+  + [make](https://www.gnu.org/software/make/)
+  + gcc/g++ `>= 7` (version requirements [here](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#system-requirements))
++ *Windows:*
+  + Visual Studio 2017 or higher (2019 recommended)
 
 #### Optional
-* [cpplint](https://github.com/cpplint/cpplint): Required for linting code
-* [Doxygen](http://www.doxygen.nl/): Required for building documentation
-* [git](https://git-scm.com/): Required by CMake for preparing GoogleTest, to build the test suite
-* [Python](https://www.python.org/) >= 3.x: required for python integration
-* [swig](http://www.swig.org/) >= 4: Required for python integration
-  * Swig 4.x will be automatically downloaded by CMake if not provided (if possible).
++ [cpplint](https://github.com/cpplint/cpplint): Required for linting code
++ [Doxygen](http://www.doxygen.nl/): Required for building documentation
++ [Python](https://www.python.org/) `>= 3.x`: required for python integration
++ [swig](http://www.swig.org/) `>= 4.0.2`: Required for python integration
+  + Swig 4.x will be automatically downloaded by CMake if not provided (if possible).
+
+#### Known Issues
+<!-- Thrust issue https://github.com/NVIDIA/thrust/issues/1090 -->
++ Windows/MSVC and CUDA < 11.0
+  + There may be intermittent compilation errors due to an NVCC+MSVC bug exposed by Thrust/CUB. 
+  + Re-running the build appears to work in most cases, Otherwise consider upgrading to CUDA 11.0+ if possible.
++ CMake 3.16 has known issues on some platforms.
 
 ### Building FLAME GPU 2
 
@@ -88,11 +93,11 @@ Alternatively using `-G` the desired version of Visual studio can be specified:
 
 ```
 mkdir build && cd build
-cmake .. -G "Visual Studio 14 2015" -A x64
+cmake .. -G "Visual Studio 16 2019" -A x64
 FLAMEGPU2.sln
 ```
 
-`Visual Studio 14 2015` can be replaced with any supported [Visual studio generator](https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html#visual-studio-generators) that is installed.
+`Visual Studio 16 2019` can be replaced with any supported [Visual studio generator](https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html#visual-studio-generators) that is installed.
 
 #### Configuring CMake
 
@@ -118,10 +123,10 @@ On Windows this will then automatically download the visualisation repository an
 On Linux you may need to install additional packages, refer to the CMake configure output for clarification of which packages are missing from your system.
 
 **Visualisation Dependencies:**
-* [SDL](https://www.libsdl.org/)
-* [GLM](http://glm.g-truc.net/) *(consistent C++/GLSL vector maths functionality)*
-* [GLEW](http://glew.sourceforge.net/) *(GL extension loader)*
-* [FreeType](http://www.freetype.org/)  *(font loading)*
++ [SDL](https://www.libsdl.org/)
++ [GLM](http://glm.g-truc.net/) *(consistent C++/GLSL vector maths functionality)*
++ [GLEW](http://glew.sourceforge.net/) *(GL extension loader)*
++ [FreeType](http://www.freetype.org/)  *(font loading)*
 
 The visualisation codebase can be found at [this location](https://github.com/FLAMEGPU/FLAMEGPU2_visualiser) and is a fork of [sdl_exp](https://github.com/Robadob/sdl_exp).
 
@@ -138,8 +143,6 @@ make -j8
 The first time CMake is configured with `-DBUILD_TESTS=ON` an internet connection is required, as [GoogleTest](https://github.com/google/googletest) is downloaded and built. 
 Subsequent reconfigures will attempt to update this copy, but will continue if updating fails.
 Automatic updating of GoogleTest can be disabled by passing `-DBUILD_TESTS=OFF`.
-
-*Known Issues:* The tests do not build under the combination of Visual Studio 2015 and CUDA 9.0 or 9.1. Use CUDA 9.2 or newer if you require the tests.
 
 GoogleTest runtime documentation can be found [here](https://github.com/google/googletest/blob/master/googletest/docs/advanced.md).
 In particular `--gtest_catch_exceptions=0` may be useful during test development, so that unhandled exceptions are passed straight to the debugger.

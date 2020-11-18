@@ -1,5 +1,5 @@
-# Required a version of cmake which has Fetch Content (3.11 maybe, but 3.12 elsewhere)
-cmake_minimum_required(VERSION VERSION 3.12 FATAL_ERROR)
+# CMake 3.15+ for Thrust/Cub support
+cmake_minimum_required(VERSION VERSION 3.15 FATAL_ERROR)
 include(FetchContent)
 
 

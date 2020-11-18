@@ -1,6 +1,5 @@
-# Set the minimum cmake version to that which supports cuda natively.
-# 3.10 required for cuda -std=c++14, however 3.12 fixes some device linker errors
-cmake_minimum_required(VERSION VERSION 3.12 FATAL_ERROR)
+# CMake 3.15+ for Thrust/Cub support
+cmake_minimum_required(VERSION VERSION 3.15 FATAL_ERROR)
 
 # Name the project and set languages
 project(boids_spatial3D CUDA CXX)

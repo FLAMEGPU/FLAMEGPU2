@@ -137,9 +137,13 @@ endif()
 set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -DJITIFY_PRINT_LOG")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DJITIFY_PRINT_LOG")
 
+# Set the minimum supported cuda version, if not already set. Currently duplicated due to docs only build logic.
+if(NOT DEFINED MINIMUM_SUPPORTED_CUDA_VERSION)
+    set(MINIMUM_SUPPORTED_CUDA_VERSION 10.0)
+endif()
 # Require a minimum cuda version
-if(CMAKE_CUDA_COMPILER_VERSION VERSION_LESS 7.0)
-    message(FATAL_ERROR "CUDA version must be at least 7.0")
+if(CMAKE_CUDA_COMPILER_VERSION VERSION_LESS ${MINIMUM_SUPPORTED_CUDA_VERSION})
+    message(FATAL_ERROR "CUDA version must be at least ${MINIMUM_SUPPORTED_CUDA_VERSION}")
 endif()
 
 # Specify some additional compiler flags

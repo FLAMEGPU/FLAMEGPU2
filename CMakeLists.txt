@@ -1,6 +1,5 @@
-# Set the minimum cmake version to that which supports cuda natively.
-# 3.10 required for cuda -std=c++14, however 3.12 fixes some device linker errors
-cmake_minimum_required(VERSION VERSION 3.12 FATAL_ERROR)
+# CMake 3.15+ for Thrust/Cub support
+cmake_minimum_required(VERSION VERSION 3.15 FATAL_ERROR)
 
 project(FLAMEGPU2 LANGUAGES NONE)
 set(FLAMEGPU_PROJECT_VERSION "2.0.0")
@@ -10,7 +9,7 @@ set(CMAKE_SKIP_INSTALL_RULES TRUE)
 set(CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}" CACHE INTERNAL ""  FORCE)
 
 # See if the minimum CUDA version is available. If not, only enable documentation building.
-set(MINIMUM_SUPPORTED_CUDA_VERSION 9.0)
+set(MINIMUM_SUPPORTED_CUDA_VERSION 10.0)
 include(CheckLanguage)
 # See if CUDA is available
 check_language(CUDA)
