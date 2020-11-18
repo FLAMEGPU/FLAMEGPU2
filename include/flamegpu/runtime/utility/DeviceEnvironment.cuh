@@ -6,18 +6,14 @@
 #include <string>
 #include <cassert>
 
-namespace flamegpu_internal {
 #ifndef __CUDACC_RTC__
+namespace flamegpu_internal {
     /**
      * Defined in EnvironmentManager.cu
      */
     extern __constant__ char c_envPropBuffer[EnvironmentManager::MAX_BUFFER_SIZE];
-#endif
-    /**
-     * Managed by HostEnvironment, returned whenever a failure state is reached
-     */
-    extern __constant__ uint64_t c_deviceEnvErrorPattern;
 }  // namespace flamegpu_internal
+#endif
 
 /**
  * Utility for accessing environmental properties
@@ -50,10 +46,6 @@ class DeviceEnvironment {
         : modelname_hash(_modelname_hash) { }
 
  public:
-    /**
-     * Recognisable error pattern returned by methods on failure
-     */
-    __host__ __device__ static constexpr uint64_t ERROR_PATTERN() { return 0XDEADBEEFDEAFBABEllu; }
     /**
      * Gets an environment property
      * @param name name used for accessing the property, this value should be a string literal e.g. "foobar"

@@ -17,11 +17,6 @@ namespace flamegpu_internal {
      * Managed by HostEnvironment, holds all environment properties
      */
     __constant__ char c_envPropBuffer[EnvironmentManager::MAX_BUFFER_SIZE];
-    /**
-     * Managed by HostEnvironment, returned whenever a failure state is reached
-     * Think this exists because we cant return a reference to a constexpr
-     */
-    __constant__ uint64_t c_deviceEnvErrorPattern;
 }  // namespace flamegpu_internal
 
 const char EnvironmentManager::CURVE_NAMESPACE_STRING[23] = "ENVIRONMENT_PROPERTIES";
@@ -157,9 +152,6 @@ void EnvironmentManager::initialiseDevice() {
         c_buffer = reinterpret_cast<char*>(t_c_buffer);
         // printf("Env Prop Constant Cache Buffer: %p - %p\n", c_buffer, c_buffer + MAX_BUFFER_SIZE);
         assert(CURVE_NAMESPACE_HASH == DeviceEnvironment::CURVE_NAMESPACE_HASH());  // Host and Device namespace const's do not match
-        // Setup device-side error pattern
-        const uint64_t h_errorPattern = DeviceEnvironment::ERROR_PATTERN();
-        gpuErrchk(cudaMemcpyToSymbol(flamegpu_internal::c_deviceEnvErrorPattern, reinterpret_cast<const void*>(&h_errorPattern), sizeof(uint64_t), 0, cudaMemcpyHostToDevice));
         deviceInitialised = true;
     }
 }
