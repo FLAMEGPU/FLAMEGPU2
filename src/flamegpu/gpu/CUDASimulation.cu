@@ -178,8 +178,6 @@ bool CUDASimulation::step() {
 
     // Ensure singletons have been initialised
     initialiseSingletons();
-    // Update environment on device
-    singletons->environment.updateDevice(getInstanceID());
 
     // If verbose, print the step number.
     if (getSimulationConfig().verbose) {
@@ -685,8 +683,6 @@ bool CUDASimulation::step() {
         // If we have host layer functions, we might have host agent creation
         if ((*lyr)->host_functions.size() || ((*lyr)->host_functions_callbacks.size()))
             processHostAgentCreation(j);
-        // Update environment on device
-        singletons->environment.updateDevice(getInstanceID());
         NVTX_POP();
 
         // cudaDeviceSynchronize();
@@ -792,8 +788,6 @@ void CUDASimulation::simulate() {
     // Check if host agent creation was used in init functions
     if (model->initFunctions.size() || model->initFunctionCallbacks.size())
         processHostAgentCreation(0);
-    // Update environment on device
-    singletons->environment.updateDevice(getInstanceID());
     NVTX_POP();
 
 #ifdef VISUALISATION
@@ -1150,9 +1144,6 @@ void CUDASimulation::initialiseSingletons() {
 
     // Ensure RTC is set up.
     initialiseRTC();
-
-    // Update environment on device
-    singletons->environment.updateDevice(getInstanceID());
 }
 
 void CUDASimulation::initialiseRTC() {

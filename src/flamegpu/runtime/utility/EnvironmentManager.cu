@@ -623,9 +623,9 @@ void EnvironmentManager::setDeviceRequiresUpdateFlag(const unsigned int &instanc
     }
 }
 void EnvironmentManager::updateDevice(const unsigned int &instance_id) {
+    // Lock shared mutex of mutex in calling method first!!!
     // Device must be init first
     assert(deviceInitialised);
-    std::shared_lock<std::shared_timed_mutex> lock(mutex);
     std::unique_lock<std::shared_timed_mutex> deviceRequiresUpdate_lock(deviceRequiresUpdate_mutex);
     NVTX_RANGE("EnvironmentManager::updateDevice()");
     auto &flags = deviceRequiresUpdate.at(instance_id);
