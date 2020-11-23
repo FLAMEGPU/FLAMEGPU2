@@ -1,6 +1,7 @@
 #include "flamegpu/sim/Simulation.h"
 
 #include <algorithm>
+#include <atomic>
 
 #include "flamegpu/model/ModelData.h"
 #include "flamegpu/model/SubModelData.h"
@@ -218,6 +219,6 @@ void Simulation::reset() {
 }
 
 unsigned int Simulation::get_instance_id() {
-    static unsigned int i = 0;
+    static std::atomic<unsigned int> i;
     return 641 * (i++);
 }
