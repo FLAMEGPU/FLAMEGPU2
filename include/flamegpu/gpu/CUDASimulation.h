@@ -355,11 +355,15 @@ class CUDASimulation : public Simulation {
     /**
      * Active instances, but linked to the device each instance has been initialised on
      */
-    static std::array<std::atomic<int>, MAX_CUDA_DEVICES> active_device_instances;
+    static std::map<int, std::atomic<int>> active_device_instances;
     /**
      * These exist to prevent us doing device reset in the short period between checking last sim of device, and reset
      */
-    static std::array<std::shared_timed_mutex, MAX_CUDA_DEVICES> active_device_mutex;
+    static std::map<int, std::shared_timed_mutex> active_device_mutex;
+    /**
+     * This controls access to active_device_instances, active_device_mutex
+     */
+    static std::shared_timed_mutex active_device_maps_mutex;
 
  public:
     /**

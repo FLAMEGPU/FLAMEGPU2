@@ -19,8 +19,9 @@
 #include "flamegpu/runtime/cuRVE/curve_rtc.h"
 #include "flamegpu/runtime/HostFunctionCallback.h"
 
-std::array<std::atomic<int>, MAX_CUDA_DEVICES> CUDASimulation::active_device_instances;
-std::array<std::shared_timed_mutex, MAX_CUDA_DEVICES> CUDASimulation::active_device_mutex;
+std::map<int, std::atomic<int>> CUDASimulation::active_device_instances;
+std::map<int, std::shared_timed_mutex> CUDASimulation::active_device_mutex;
+std::shared_timed_mutex CUDASimulation::active_device_maps_mutex;
 std::atomic<int> CUDASimulation::active_instances;  // This value should default init to 0, specifying =0 was causing warnings on Windows.
 bool CUDASimulation::AUTO_CUDA_DEVICE_RESET = true;
 
@@ -158,8 +159,9 @@ CUDASimulation::~CUDASimulation() {
     // This doesn't really play nicely if we are passing multi-device CUDASimulations between threads!
     // I think this exists to prevent curve getting left with dead items when exceptions are thrown during the test suite.
     if (deviceInitialised >= 0 && AUTO_CUDA_DEVICE_RESET) {
-        std::unique_lock<std::shared_timed_mutex> lock(active_device_mutex[deviceInitialised]);
-        if ((!--active_device_instances[deviceInitialised])) {
+        std::shared_lock<std::shared_timed_mutex> maps_lock(active_device_maps_mutex);
+        std::unique_lock<std::shared_timed_mutex> lock(active_device_mutex.at(deviceInitialised));
+        if (!--active_device_instances.at(deviceInitialised)) {
             // Small chance that time between the atomic and body of this fn will cause a problem
             // Could mutex it with init simulation cuda stuff, but really seems unlikely
             gpuErrchk(cudaDeviceReset());
@@ -1019,9 +1021,6 @@ void CUDASimulation::applyConfig_derived() {
     if (config.device_id >= device_count) {
         THROW InvalidCUDAdevice("Error setting CUDA device to '%d', only %d available!", config.device_id, device_count);
     }
-    if (config.device_id >= MAX_CUDA_DEVICES) {
-        THROW InvalidCUDAdevice("Error setting CUDA device to '%d', FLAMEGPU2 has built for a max of %d devices. Update MAX_CUDA_DEVICES and recompile the library.", config.device_id, MAX_CUDA_DEVICES);
-    }
     if (deviceInitialised !=- 1 && deviceInitialised != config.device_id) {
         THROW InvalidCUDAdevice("Unable to set CUDA device to '%d' after the CUDASimulation has already initialised on device '%d'.", config.device_id, deviceInitialised);
     }
@@ -1088,8 +1087,11 @@ void CUDASimulation::initialiseSingletons() {
             THROW InvalidCUDAComputeCapability("Error application compiled for CUDA Compute Capability %d and above. Device %u is compute capability %d. Rebuild for SM_%d.", min_cc, config.device_id, cc, cc);
         }
         gpuErrchk(cudaGetDevice(&deviceInitialised));
-        ++active_device_instances[deviceInitialised];
-        std::shared_lock<std::shared_timed_mutex> lock(active_device_mutex[deviceInitialised]);
+        std::unique_lock<std::shared_timed_mutex> maps_lock(active_device_maps_mutex);
+        auto &adm = active_device_mutex[deviceInitialised];
+        auto &adi = active_device_instances[deviceInitialised];
+        std::shared_lock<std::shared_timed_mutex> lock(adm);
+        ++(adi);
         // Check if device has been reset
         unsigned int DEVICE_HAS_RESET_CHECK = 0;
         gpuErrchk(cudaMemcpyFromSymbol(&DEVICE_HAS_RESET_CHECK, DEVICE_HAS_RESET, sizeof(unsigned int)));
@@ -1105,6 +1107,8 @@ void CUDASimulation::initialiseSingletons() {
             DEVICE_HAS_RESET_CHECK = 0;  // Any value that doesnt match DEVICE_HAS_RESET_FLAG
             gpuErrchk(cudaMemcpyToSymbol(DEVICE_HAS_RESET, &DEVICE_HAS_RESET_CHECK, sizeof(unsigned int)));
         }
+        lock.unlock();
+        maps_lock.unlock();
         // Get references to all required singleton and store in the instance.
         singletons = new Singletons(
             Curve::getInstance(),

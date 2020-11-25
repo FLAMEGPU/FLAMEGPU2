@@ -2,9 +2,12 @@
 
 #include <cstdio>
 #include <cassert>
-#include <array>
+#include <map>
+#include <memory>
 
 #include "flamegpu/runtime/cuRVE/curve.h"
+
+
 #include "flamegpu/gpu/CUDAErrorChecking.h"
 #include "flamegpu/util/nvtx.h"
 
@@ -248,10 +251,12 @@ __host__ unsigned int Curve::checkHowManyMappedItems() {
 }
 Curve& Curve::getInstance() {
     auto lock = std::unique_lock<std::mutex>(instance_mutex);  // Mutex to protect from two threads triggering the static instantiation concurrently
-    static std::array<Curve, MAX_CUDA_DEVICES> instances = {};  // Instantiated on first use.
+    static std::map<int, std::unique_ptr<Curve>> instances = {};  // Instantiated on first use.
     int device_id = -1;
     gpuErrchk(cudaGetDevice(&device_id));
-    // Don't bother error checking, array will throw an exception
-    // CUDASimulation should already be checking it's validity
-    return instances[device_id];
+    // Can't use operator[] here, constructor is private
+    const auto f = instances.find(device_id);
+    if (f != instances.end())
+        return *f->second;
+    return *(instances.emplace(device_id, std::unique_ptr<Curve>(new Curve())).first->second);
 }
