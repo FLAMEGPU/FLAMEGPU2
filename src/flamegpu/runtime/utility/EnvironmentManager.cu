@@ -1,7 +1,7 @@
 #include "flamegpu/runtime/utility/EnvironmentManager.cuh"
 
 #include <cassert>
-#include <map>
+#include <memory>
 
 #include "flamegpu/gpu/CUDAErrorChecking.h"
 #include "flamegpu/runtime/utility/DeviceEnvironment.cuh"
@@ -697,10 +697,12 @@ void EnvironmentManager::updateDevice(const unsigned int &instance_id) {
 
 EnvironmentManager& EnvironmentManager::getInstance() {
     auto lock = std::unique_lock<std::mutex>(instance_mutex);  // Mutex to protect from two threads triggering the static instantiation concurrently
-    static std::array<EnvironmentManager, MAX_CUDA_DEVICES> instances = {};  // Instantiated on first use.
+    static std::map<int, std::unique_ptr<EnvironmentManager>> instances = {};  // Instantiated on first use.
     int device_id = -1;
     gpuErrchk(cudaGetDevice(&device_id));
-    // Don't bother error checking, array will throw an exception
-    // CUDASimulation should already be checking it's validity
-    return instances[device_id];
+    // Can't use operator[] here, constructor is private
+    const auto f = instances.find(device_id);
+    if (f != instances.end())
+        return *f->second;
+    return *(instances.emplace(device_id, std::unique_ptr<EnvironmentManager>(new EnvironmentManager())).first->second);
 }
