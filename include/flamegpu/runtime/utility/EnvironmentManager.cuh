@@ -1,6 +1,3 @@
-#include <map>
-#include <cassert>
-#include <memory>
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_UTILITY_ENVIRONMENTMANAGER_CUH_
 #define INCLUDE_FLAMEGPU_RUNTIME_UTILITY_ENVIRONMENTMANAGER_CUH_
 
@@ -18,6 +15,9 @@
 #include <vector>
 #include <mutex>
 #include <shared_mutex>
+#include <map>
+#include <functional>
+#include <memory>
 
 #include "flamegpu/exception/FGPUException.h"
 #include "flamegpu/gpu/CUDAErrorChecking.h"
@@ -188,10 +188,28 @@ class EnvironmentManager {
         ptrdiff_t nextFree = 0;
     };
     /**
+     * Transparent operators for DefragMap
+     * This allows them to be secondarily ordered based on NamePair if size is equal
+     */
+    friend bool operator<(const std::pair<size_t, const NamePair>& fk, const size_t& lk) { return fk.first < lk; }
+    friend bool operator<(const size_t& lk, const std::pair<size_t, const NamePair>& fk) { return lk < fk.first; }
+    friend bool operator<(const std::pair<size_t, const NamePair>& fk1, const std::pair<size_t, const NamePair>& fk2) {
+        if (fk1.first == fk2.first) {
+            // If size equal, order by instance_id
+            if (fk1.second.first == fk2.second.first) {
+                // If instance id is equal, order by name
+                return fk1.second.second < fk2.second.second;
+            }
+            return fk1.second.first < fk2.second.first;
+        }
+        return fk1.first < fk2.first;
+    }
+    /**
      * Typedef for the map used for defragementation
      * The map is ordered by key of type size, therefore a reverse sort creates aligned data
+     * Specify a transparent operator, to allow us to operate only over size_t part of key
      */
-    typedef std::multimap<size_t, std::pair<const NamePair, DefragProp>> DefragMap;
+    typedef std::multimap<std::pair<size_t, const NamePair>, DefragProp, std::less<>> DefragMap;
     /**
      * Activates a models environment properties, by adding them to constant cache
      * @param instance_id instance_id of the CUDASimulation instance the properties are attached to

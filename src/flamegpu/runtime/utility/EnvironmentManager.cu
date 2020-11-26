@@ -74,7 +74,7 @@ void EnvironmentManager::init(const unsigned int &instance_id, const Environment
         NamePair name = toName(instance_id, _i->first);
         DefragProp prop = DefragProp(i.data.ptr, i.data.length, i.isConst, i.elements, i.type);
         const size_t typeSize = i.data.length / i.elements;
-        orderedProperties.emplace(typeSize, std::make_pair(name, prop));
+        orderedProperties.emplace(std::make_pair(typeSize, name), prop);
         newSize += i.data.length;
     }
     if (newSize > m_freeSpace) {
@@ -118,7 +118,7 @@ void EnvironmentManager::init(const unsigned int &instance_id, const Environment
             // Property is not mapped, so add to defrag map
             DefragProp prop = DefragProp(i.data.ptr, i.data.length, i.isConst, i.elements, i.type);
             const size_t typeSize = i.data.length / i.elements;
-            orderedProperties.emplace(typeSize, std::make_pair(name, prop));
+            orderedProperties.emplace(std::make_pair(typeSize, name), prop);
             newSize += i.data.length;
         } else {
             // Property is mapped, follow it's mapping upwards until we find the highest parent
@@ -321,7 +321,7 @@ void EnvironmentManager::defragment(Curve &curve, const DefragMap * mergePropert
     DefragMap orderedProperties;
     for (auto &i : properties) {
         size_t typeLen = i.second.length / i.second.elements;
-        orderedProperties.emplace(typeLen, std::make_pair(i.first, DefragProp(i.second)));
+        orderedProperties.emplace(std::make_pair(typeLen, i.first), DefragProp(i.second));
     }
     // Include any merge elements
     if (mergeProperties) {
@@ -337,7 +337,8 @@ void EnvironmentManager::defragment(Curve &curve, const DefragMap * mergePropert
     ptrdiff_t buffOffset = 0;
     // Iterate largest vars first
     for (auto _i = orderedProperties.rbegin(); _i != orderedProperties.rend(); ++_i) {
-        size_t typeSize = _i->first;
+        size_t typeSize = _i->first.first;
+        const NamePair &name = _i->first.second;
         auto &i = _i->second;
         // Handle alignment
         const ptrdiff_t alignmentOffset = buffOffset % typeSize;
@@ -347,12 +348,12 @@ void EnvironmentManager::defragment(Curve &curve, const DefragMap * mergePropert
             buffOffset += alignmentFix;
             spareFrags += alignmentFix;
         }
-        if (buffOffset + i.second.length <= MAX_BUFFER_SIZE) {
+        if (buffOffset + i.length <= MAX_BUFFER_SIZE) {
             // Setup constant in new position
-            memcpy(t_buffer + buffOffset, i.second.data, i.second.length);
-            t_properties.emplace(i.first, EnvProp(buffOffset, i.second.length, i.second.isConst, i.second.elements, i.second.type, i.second.rtc_offset));
+            memcpy(t_buffer + buffOffset, i.data, i.length);
+            t_properties.emplace(name, EnvProp(buffOffset, i.length, i.isConst, i.elements, i.type, i.rtc_offset));
             // Update cuRVE (There isn't an update, so unregister and reregister)  // TODO: curveGetVariableHandle()?
-            Curve::VariableHash cvh = toHash(i.first);
+            Curve::VariableHash cvh = toHash(name);
             // Only unregister variable if it's already registered
             if (!mergeProperties) {  // Merge properties are only provided on 1st init, when vars can't be unregistered
                 curve.unregisterVariableByHash(cvh);
@@ -361,7 +362,7 @@ void EnvironmentManager::defragment(Curve &curve, const DefragMap * mergePropert
                 auto range = mergeProperties->equal_range(_i->first);
                 bool isFound = false;
                 for (auto w = range.first; w != range.second; ++w) {
-                    if (w->second.first == _i->second.first) {
+                    if (w->first.second == name) {
                         isFound = true;
                         break;
                     }
@@ -371,18 +372,18 @@ void EnvironmentManager::defragment(Curve &curve, const DefragMap * mergePropert
                 }
             }
             const auto CURVE_RESULT = curve.registerVariableByHash(cvh, reinterpret_cast<void*>(buffOffset),
-                typeSize, i.second.elements);
+                typeSize, i.elements);
             if (CURVE_RESULT == Curve::UNKNOWN_VARIABLE) {
                 THROW CurveException("curveRegisterVariableByHash() returned UNKNOWN_CURVE_VARIABLE, "
                     "in EnvironmentManager::defragment().");
             }
 #ifdef _DEBUG
             if (CURVE_RESULT != static_cast<int>(cvh%Curve::MAX_VARIABLES)) {
-                fprintf(stderr, "Curve Warning: Environment Property '%s' has a collision and may work improperly.\n", i.first.second.c_str());
+                fprintf(stderr, "Curve Warning: Environment Property '%s' has a collision and may work improperly.\n", name.second.c_str());
             }
 #endif
             // Increase buffer offset length that has been added
-            buffOffset += i.second.length;
+            buffOffset += i.length;
         } else {
             // Ran out of constant cache space! (this can only trigger when a DefragMap is passed)
             // Arguably this check should be performed by init()
@@ -433,17 +434,18 @@ void EnvironmentManager::buildRTCOffsets(const unsigned int &instance_id, const 
         // As we add each property, set its rtc_offset value in main properties map
         for (auto _i = orderedProperties.rbegin(); _i != orderedProperties.rend(); ++_i) {
             auto &i = _i->second;
-            size_t alignmentSize = _i->first;
+            size_t alignmentSize = _i->first.first;
+            const NamePair &name = _i->first.second;
             // Handle alignment
             const ptrdiff_t alignmentOffset = cache->nextFree % alignmentSize;
             const ptrdiff_t alignmentFix = alignmentOffset != 0 ? alignmentSize - alignmentOffset : 0;
             cache->nextFree += alignmentFix;
-            if (cache->nextFree + i.second.length <= MAX_BUFFER_SIZE) {
+            if (cache->nextFree + i.length <= MAX_BUFFER_SIZE) {
                 // Setup constant in new position
-                memcpy(cache->hc_buffer + cache->nextFree, i.second.data, i.second.length);
-                properties.at(i.first).rtc_offset = cache->nextFree;
+                memcpy(cache->hc_buffer + cache->nextFree, i.data, i.length);
+                properties.at(name).rtc_offset = cache->nextFree;
                 // Increase buffer offset length that has been added
-                cache->nextFree += i.second.length;
+                cache->nextFree += i.length;
             } else {
                 // Ran out of constant cache space! (this can only trigger when a DefragMap is passed)
                 // Arguably this check should be performed by init()
@@ -460,21 +462,22 @@ void EnvironmentManager::buildRTCOffsets(const unsigned int &instance_id, const 
         // Add the properties, they are already ordered so we can just enforce alignment
         // As we add each property, set its rtc_offset value in main properties map
         for (auto _i = orderedProperties.rbegin(); _i != orderedProperties.rend(); ++_i) {
+            const NamePair &name = _i->first.second;
             auto &i = _i->second;
-            auto mi_it = mapped_properties.find(i.first);
+            auto mi_it = mapped_properties.find(name);
             if (mi_it ==  mapped_properties.end()) {
                 // Property is not mapped, add it to cache
-                size_t alignmentSize = _i->first;
+                size_t alignmentSize = _i->first.first;
                 // Handle alignment
                 const ptrdiff_t alignmentOffset = cache->nextFree % alignmentSize;
                 const ptrdiff_t alignmentFix = alignmentOffset != 0 ? alignmentSize - alignmentOffset : 0;
                 cache->nextFree += alignmentFix;
-                if (cache->nextFree + i.second.length <= MAX_BUFFER_SIZE) {
+                if (cache->nextFree + i.length <= MAX_BUFFER_SIZE) {
                     // Setup constant in new position
-                    memcpy(cache->hc_buffer + cache->nextFree, i.second.data, i.second.length);
-                    properties.at(i.first).rtc_offset = cache->nextFree;
+                    memcpy(cache->hc_buffer + cache->nextFree, i.data, i.length);
+                    properties.at(name).rtc_offset = cache->nextFree;
                     // Increase buffer offset length that has been added
-                    cache->nextFree += i.second.length;
+                    cache->nextFree += i.length;
                 } else {
                     // Ran out of constant cache space! (this can only trigger when a DefragMap is passed)
                     // Arguably this check should be performed by init()
