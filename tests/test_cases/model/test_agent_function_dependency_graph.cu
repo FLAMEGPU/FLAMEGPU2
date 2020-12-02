@@ -101,6 +101,7 @@ TEST(AgentFunctionDependencyGraphTest, ValidateRootWithDependencies) {
     graph.addRoot(&f2);
     EXPECT_THROW(graph.validateDependencyGraph(), InvalidDependencyGraph); 
 }
+
 TEST(AgentFunctionDependencyGraphTest, ConstructLayersSingleChain) {
     ModelDescription _m(MODEL_NAME);
     AgentDescription &a = _m.newAgent(AGENT_NAME);
@@ -113,6 +114,7 @@ TEST(AgentFunctionDependencyGraphTest, ConstructLayersSingleChain) {
     graph.addRoot(&f);
     graph.generateLayers(_m); 
 }
+
 TEST(AgentFunctionDependencyGraphTest, ConstructLayersRootTwoChildrenConflict) {
     ModelDescription _m(MODEL_NAME);
     AgentDescription &a = _m.newAgent(AGENT_NAME);
@@ -125,4 +127,4 @@ TEST(AgentFunctionDependencyGraphTest, ConstructLayersRootTwoChildrenConflict) {
     graph.addRoot(&f);
     graph.generateLayers(_m); 
 }
-}  // namespace test_agent_function
+}  // namespace test_agent_function_dependency_graph

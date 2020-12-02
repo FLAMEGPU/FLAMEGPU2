@@ -24,12 +24,14 @@ bool AgentFunctionDependencyGraph::validateDependencyGraph() {
 
 void AgentFunctionDependencyGraph::generateLayers(ModelDescription& model) {
     
+    // Check dependency graph is valid before we attempt to build layers
+    validateDependencyGraph();
+    
     // Lambda to walk the graph and set minimum layer depths of nodes
     std::function<void(AgentFunctionDescription*, int)> setMinLayerDepths;
     setMinLayerDepths = [&setMinLayerDepths] (AgentFunctionDescription* node, int depth) {
         if (depth >= node->getMinimumLayerDepth()) { 
             node->setMinimumLayerDepth(depth);
-            printf("Setting depth to %d\n", depth);
         }
         for (auto child : node->getDependents()) {
             setMinLayerDepths(child, depth + 1);
@@ -41,23 +43,18 @@ void AgentFunctionDependencyGraph::generateLayers(ModelDescription& model) {
         setMinLayerDepths(root, 0);
     }
 
-    printf("Finished setting depths\n");
-    
     // Build list of functions in their respective ideal layers assuming no conflicts
     std::vector<std::vector<AgentFunctionDescription*>> idealLayers;
     std::function<void(AgentFunctionDescription*)> buildIdealLayers;
     buildIdealLayers = [&buildIdealLayers, &idealLayers] (AgentFunctionDescription* node) {
         // New layers required
         int nodeDepth = node->getMinimumLayerDepth();
-        printf("Node depth %d\n", nodeDepth);
         if (nodeDepth >= idealLayers.size()) {
             idealLayers.push_back(std::vector<AgentFunctionDescription*>());
-            printf("Adding ideal layer\n");
         }
           
         // Add node to relevant layer
         idealLayers[nodeDepth].push_back(node);
-        printf("Added node to layer %d\n", nodeDepth);
 
         // Repeat for children
         for (auto child : node->getDependents()) {
@@ -73,9 +70,7 @@ void AgentFunctionDependencyGraph::generateLayers(ModelDescription& model) {
     // Now iterate structure attempting to add functions to layers.
     // If we encounter conflicts, introduce additional layers as necessary
 
-    int extraLayers = 0;
     for (auto idealLayer : idealLayers) {
-        printf("Handling ideal layer\n");
         // Request a new layer from the model
         LayerDescription* layer = &model.newLayer();
        
@@ -83,16 +78,15 @@ void AgentFunctionDependencyGraph::generateLayers(ModelDescription& model) {
         for (auto agentFunction : idealLayer) { 
             try {
                 layer->addAgentFunction(*agentFunction);
-                printf("AgentFunction added to existing layer - no conflict\n");
             } catch (const InvalidAgentFunc& e) {
                 // Conflict, create new layer and add to that instead
                 layer = &model.newLayer();
                 layer->addAgentFunction(*agentFunction);
-                printf("New layer created - InvalidAgentFunc exception\n");
+                printf("New function execution layer created - InvalidAgentFunc exception\n");
             } catch (const InvalidLayerMember& e) {
                 layer = &model.newLayer();
                 layer->addAgentFunction(*agentFunction);
-                printf("New layer created - InvalidLayerMember exception\n");
+                printf("New function execution layer created - InvalidLayerMember exception\n");
             }
         }
     } 
@@ -111,7 +105,7 @@ bool AgentFunctionDependencyGraph::validateSubTree(AgentFunctionDescription* nod
             return false;
     }
    
-    // No problems, tree formed by this node is valid
+    // No problems, tree formed by this node and its children is valid
     return true;
 } 
 
@@ -130,6 +124,5 @@ void AgentFunctionDependencyGraph::printGraph() const {
 }
 
 void AgentFunctionDependencyGraph::generateDOTDiagram(std::string outputFileName) const {
-    //std::ofstream(outputFileName);
     printf("generateDOTDiagram not yet implemented!\n");  
 }
