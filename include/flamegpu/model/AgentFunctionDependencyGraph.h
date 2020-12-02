@@ -1,7 +1,10 @@
 #ifndef INCLUDE_FLAMEGPU_MODEL_AGENTFUNCTIONDEPENDENCYGRAPH_H_
 #define INCLUDE_FLAMEGPU_MODEL_AGENTFUNCTIONDEPENDENCYGRAPH_H_
 
+#include <functional> 
+
 #include "AgentFunctionDescription.h"
+#include "ModelDescription.h"
 
 /**
  * This class represents the dependency tree for agent functions. Each AgentFunctionDescription has its own dependencies/dependents, the purpose of this class is to
@@ -15,7 +18,7 @@ class AgentFunctionDependencyGraph {
         
         void addRoot(AgentFunctionDescription* root);
         bool validateDependencyGraph();
-        std::vector<std::vector<std::string>> generateLayers();
+        void generateLayers(ModelDescription& model);
         void printGraph() const;
         void generateDOTDiagram(std::string outputFileName) const;
     

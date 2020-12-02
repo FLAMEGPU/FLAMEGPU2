@@ -510,6 +510,15 @@ AgentFunctionDescription& AgentDescription::newRTCFunction(const std::string& fu
 /**
  * Dependency functions
  */
+void AgentFunctionDescription::setMinimumLayerDepth(const int minLayerDepth) {
+    this->minLayerDepth = minLayerDepth;
+}
+
+const int AgentFunctionDescription::getMinimumLayerDepth() {
+    return minLayerDepth;
+} 
+
+
 void AgentFunctionDescription::dependsOn(AgentFunctionDescription* dependency) {
     if (dependency) {
         dependency->addDependent(this);

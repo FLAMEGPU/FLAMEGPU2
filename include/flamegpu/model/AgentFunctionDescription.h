@@ -189,6 +189,10 @@ class AgentFunctionDescription {
      */
     void dependsOn(AgentFunctionDescription* dependency);
     /**
+     * Sets the minimum layer depth for this agent function
+     */
+    void setMinimumLayerDepth(const int minLayerDepth);
+    /**
      * @return A mutable reference to the message input of this agent function
      * @see AgentFunctionDescription::getMessageInput() for the immutable version
      * @throw OutOfBoundsException If the message input has not been set
@@ -295,7 +299,7 @@ class AgentFunctionDescription {
      */
     bool hasDependencies() const;
     /**
-     * @return Immutable vector of the dependencies of this agent function
+     * @return The vector of the dependencies of this agent function
      */
     const std::vector<AgentFunctionDescription*> getDependencies() const;
     /**
@@ -306,6 +310,10 @@ class AgentFunctionDescription {
      * @return True if the function is a runtime time specified function
      */
     bool isRTC() const;
+    /**
+     * @return The minimum layer depth for this agent function
+     */
+    const int getMinimumLayerDepth();
 
  private:
     /**
@@ -328,6 +336,10 @@ class AgentFunctionDescription {
      * Adds an agent function to this agent function's list of dependents
      */
     void addDependent(AgentFunctionDescription* dependent);
+    /**
+     * This functions minimum layer depth in the execution graph
+     */
+    int minLayerDepth = 0;
 };
 
 

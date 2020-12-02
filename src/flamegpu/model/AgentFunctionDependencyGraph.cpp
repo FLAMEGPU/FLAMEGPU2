@@ -9,25 +9,93 @@ void AgentFunctionDependencyGraph::addRoot(AgentFunctionDescription* root) {
 
 bool AgentFunctionDependencyGraph::validateDependencyGraph() {
     if (roots.size() == 0) {
-            std::cout << "Warning! Agent function dependency graph is empty!" << std::endl;
-            THROW InvalidDependencyGraph();
+            THROW InvalidDependencyGraph("Warning! Agent function dependency graph is empty!");
     }
     for(auto& root : roots) {
         if (root->getDependencies().size() != 0) {
-            std::cout << "Warning! Root agent function has dependencies!" << std::endl;
-            THROW InvalidDependencyGraph();
+            THROW InvalidDependencyGraph("Warning! Root agent function has dependencies!");
         }
         if (!validateSubTree(root)) {
-            std::cout << "Warning! Dependency graph validation failed! Does the graph have a cycle?" << std::endl;
-            THROW InvalidDependencyGraph();
+            THROW InvalidDependencyGraph("Warning! Dependency graph validation failed! Does the graph have a cycle?");
         }
     }
     return true;
 }
 
-std::vector<std::vector<std::string>> AgentFunctionDependencyGraph::generateLayers() {
-    printf("generateLayers not yet implemented!\n");
-    return std::vector<std::vector<std::string>>();
+void AgentFunctionDependencyGraph::generateLayers(ModelDescription& model) {
+    
+    // Lambda to walk the graph and set minimum layer depths of nodes
+    std::function<void(AgentFunctionDescription*, int)> setMinLayerDepths;
+    setMinLayerDepths = [&setMinLayerDepths] (AgentFunctionDescription* node, int depth) {
+        if (depth >= node->getMinimumLayerDepth()) { 
+            node->setMinimumLayerDepth(depth);
+            printf("Setting depth to %d\n", depth);
+        }
+        for (auto child : node->getDependents()) {
+            setMinLayerDepths(child, depth + 1);
+        }
+    };
+
+    // Set minimum layer depths
+    for (auto root : roots) {
+        setMinLayerDepths(root, 0);
+    }
+
+    printf("Finished setting depths\n");
+    
+    // Build list of functions in their respective ideal layers assuming no conflicts
+    std::vector<std::vector<AgentFunctionDescription*>> idealLayers;
+    std::function<void(AgentFunctionDescription*)> buildIdealLayers;
+    buildIdealLayers = [&buildIdealLayers, &idealLayers] (AgentFunctionDescription* node) {
+        // New layers required
+        int nodeDepth = node->getMinimumLayerDepth();
+        printf("Node depth %d\n", nodeDepth);
+        if (nodeDepth >= idealLayers.size()) {
+            idealLayers.push_back(std::vector<AgentFunctionDescription*>());
+            printf("Adding ideal layer\n");
+        }
+          
+        // Add node to relevant layer
+        idealLayers[nodeDepth].push_back(node);
+        printf("Added node to layer %d\n", nodeDepth);
+
+        // Repeat for children
+        for (auto child : node->getDependents()) {
+            buildIdealLayers(child);
+        }
+    }; 
+
+    for (auto root : roots) {
+        buildIdealLayers(root);
+    } 
+
+    // idealLayers now contains AgentFunctionDescription pointers in their ideal layers, i.e. assuming no conflicts. 
+    // Now iterate structure attempting to add functions to layers.
+    // If we encounter conflicts, introduce additional layers as necessary
+
+    int extraLayers = 0;
+    for (auto idealLayer : idealLayers) {
+        printf("Handling ideal layer\n");
+        // Request a new layer from the model
+        LayerDescription* layer = &model.newLayer();
+       
+        // Attempt to add each function in the idealLayer to the layer
+        for (auto agentFunction : idealLayer) { 
+            try {
+                layer->addAgentFunction(*agentFunction);
+                printf("AgentFunction added to existing layer - no conflict\n");
+            } catch (const InvalidAgentFunc& e) {
+                // Conflict, create new layer and add to that instead
+                layer = &model.newLayer();
+                layer->addAgentFunction(*agentFunction);
+                printf("New layer created - InvalidAgentFunc exception\n");
+            } catch (const InvalidLayerMember& e) {
+                layer = &model.newLayer();
+                layer->addAgentFunction(*agentFunction);
+                printf("New layer created - InvalidLayerMember exception\n");
+            }
+        }
+    } 
 }
 
 bool AgentFunctionDependencyGraph::validateSubTree(AgentFunctionDescription* node) {
