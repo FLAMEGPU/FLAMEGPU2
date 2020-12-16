@@ -320,7 +320,7 @@ int main(int argc, const char ** argv) {
         EnvironmentDescription &env = model.Environment();
 
         // Population size to generate, if no agents are loaded from disk
-        env.newProperty("POPULATION_TO_GENERATE", 1024u);
+        env.newProperty("POPULATION_TO_GENERATE", 32768u);
 
         // Environment Bounds
         env.newProperty("MIN_POSITION", -0.5f);
