@@ -45,6 +45,12 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    # Install a specific cmake version to avoid gtest issues.
+    - name: Install Specific Cmake version via Pip.
+      run: |
+        python3 -m pip install --user cmake==3.18.4
+        echo "$(python3 -m site --user-base)/bin" >> $GITHUB_PATH
+
     - name: Install CUDA
       env:
         cuda: ${{ matrix.cuda }}
