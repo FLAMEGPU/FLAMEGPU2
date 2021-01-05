@@ -49,10 +49,10 @@ jobs:
 
     # Install a specific cmake version to avoid gtest issues.
     # Do not use --user on windows, so no need to alter path.
-    - name: Install Specific Cmake version via Pip.
-      shell: bash
-      run: |
-        python -m pip install cmake==3.18.4
+    # - name: Install Specific Cmake version via Pip.
+    #   shell: bash
+    #   run: |
+    #     python -m pip install cmake==3.18.4
 
     - name: Install CUDA
       env: 

@@ -10,10 +10,12 @@ get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/.. REALPATH)
 # Include common rules.
 include(${FLAMEGPU_ROOT}/cmake/common.cmake)
 
+# 389cb68b87193358358ae87cc56d257fd0d80189 is the first commit to support cmake 3.19+.
+# the next release after release-1.10.0 should include this patch.
 FetchContent_Declare(
   googletest
   GIT_REPOSITORY https://github.com/google/googletest.git
-  GIT_TAG        release-1.10.0
+  GIT_TAG        389cb68b87193358358ae87cc56d257fd0d80189
 )
 
 FetchContent_GetProperties(googletest)
