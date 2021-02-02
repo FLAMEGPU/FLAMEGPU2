@@ -32,8 +32,7 @@ CUDASimulation::CUDASimulation(const ModelDescription& _model, int argc, const c
     , streams(std::vector<cudaStream_t>())
     , singletons(nullptr)
     , singletonsInitialised(false)
-    , rtcInitialised(false)
-    , rtc_kernel_cache(nullptr) {
+    , rtcInitialised(false) {
     ++active_instances;
     initOffsetsAndMap();
     // Add CUDASimulation specific environment members
@@ -75,8 +74,7 @@ CUDASimulation::CUDASimulation(const std::shared_ptr<SubModelData> &submodel_des
     , streams(std::vector<cudaStream_t>())
     , singletons(nullptr)
     , singletonsInitialised(false)
-    , rtcInitialised(false)
-    , rtc_kernel_cache(nullptr)  {
+    , rtcInitialised(false) {
     ++active_instances;
     initOffsetsAndMap();
     // Add CUDASimulation specific environment members
@@ -152,9 +150,6 @@ CUDASimulation::~CUDASimulation() {
 #ifdef VISUALISATION
     visualisation.reset();
 #endif
-    delete rtc_kernel_cache;
-    rtc_kernel_cache = nullptr;
-
     // If we are the last instance to destruct
     // This doesn't really play nicely if we are passing multi-device CUDASimulations between threads!
     // I think this exists to prevent curve getting left with dead items when exceptions are thrown during the test suite.
@@ -326,7 +321,7 @@ bool CUDASimulation::step() {
                     } else {  // RTC function
                         std::string func_condition_identifier = func_name + "_condition";
                         // get instantiation
-                        const jitify::KernelInstantiation& instance = cuda_agent.getRTCInstantiation(func_condition_identifier);
+                        const jitify::experimental::KernelInstantiation& instance = cuda_agent.getRTCInstantiation(func_condition_identifier);
                         // calculate the grid block size for main agent function
                         CUfunction cu_func = (CUfunction)instance;
                         cuOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, cu_func, 0, 0, state_list_size);
@@ -563,7 +558,7 @@ bool CUDASimulation::step() {
                 gpuErrchkLaunch();
             } else {      // assume this is a runtime specified agent function
                 // get instantiation
-                const jitify::KernelInstantiation&  instance = cuda_agent.getRTCInstantiation(func_name);
+                const jitify::experimental::KernelInstantiation&  instance = cuda_agent.getRTCInstantiation(func_name);
                 // calculate the grid block size for main agent function
                 CUfunction cu_func = (CUfunction)instance;
                 cuOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, cu_func, 0, 0, state_list_size);
@@ -1153,10 +1148,6 @@ void CUDASimulation::initialiseSingletons() {
 void CUDASimulation::initialiseRTC() {
     // Only do this once.
     if (!rtcInitialised) {
-        // Create jitify cache
-        if (!rtc_kernel_cache) {
-            rtc_kernel_cache = new jitify::JitCache();
-        }
         // Build any RTC functions
         const auto& am = model->agents;
         // iterate agents and then agent functions to find any rtc functions or function conditions
@@ -1167,12 +1158,12 @@ void CUDASimulation::initialiseRTC() {
                 // check rtc source to see if this is a RTC function
                 if (!it_f->second->rtc_source.empty()) {
                     // create CUDA agent RTC function by calling addInstantitateRTCFunction on CUDAAgent with AgentFunctionData
-                    a_it->second->addInstantitateRTCFunction(*rtc_kernel_cache, *it_f->second);
+                    a_it->second->addInstantitateRTCFunction(*it_f->second);
                 }
                 // check rtc source to see if the function condition is an rtc condition
                 if (!it_f->second->rtc_condition_source.empty()) {
                     // create CUDA agent RTC function condition by calling addInstantitateRTCFunction on CUDAAgent with AgentFunctionData
-                    a_it->second->addInstantitateRTCFunction(*rtc_kernel_cache, *it_f->second, true);
+                    a_it->second->addInstantitateRTCFunction(*it_f->second, true);
                 }
             }
         }

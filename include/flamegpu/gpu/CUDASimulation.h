@@ -308,11 +308,6 @@ class CUDASimulation : public Simulation {
      */
     void initialiseRTC();
     /**
-     * This must be allocated after initialise singletons
-     * This must be reset after cudaDeviceReset()
-     */
-    jitify::JitCache *rtc_kernel_cache;
-    /**
      * One instance of host api is used for entire model
      */
     std::unique_ptr<FLAMEGPU_HOST_API> host_api;

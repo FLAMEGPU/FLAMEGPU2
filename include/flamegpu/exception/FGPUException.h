@@ -415,5 +415,9 @@ DERIVED_FGPUException(DeviceError, "Error reported from device code");
  * Defines an error reported when versions do not match
  */
 DERIVED_FGPUException(VersionMismatch, "Versions do not match");
+/**
+ * Defines an error reported when the expect input/output file path does not exist
+ */
+DERIVED_FGPUException(InvalidFilePath, "File does not exist.");
 
 #endif  // INCLUDE_FLAMEGPU_EXCEPTION_FGPUEXCEPTION_H_

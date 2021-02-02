@@ -33,6 +33,9 @@ project(flamegpu2 CUDA CXX)
 # This will primarily prevent device code from reporting errors
 option(SEATBELTS "Enable runtime checks which harm performance for release/profile builds.\nThis should only be disabled after a model is known to be correct." ON)
 
+# Option to enable/disable the default status of JitifyCache
+option(RTC_DISK_CACHE "Enable caching of RTC kernels to disk by default (this can still be overridden programatically)." ON)
+
 # Include common rules.
 include(${FLAMEGPU_ROOT}/cmake/common.cmake)
 include(${FLAMEGPU_ROOT}/cmake/doxygen.cmake)
@@ -155,6 +158,7 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/util/nvtx.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/SignalHandlers.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/compute_capability.cuh
+    ${FLAMEGPU_ROOT}/include/flamegpu/util/JitifyCache.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/SubModelData.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/SubAgentData.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/SubEnvironmentData.h
@@ -206,6 +210,7 @@ SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/utility/EnvironmentManager.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/utility/RandomManager.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/util/compute_capability.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/util/JitifyCache.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/model/SubModelData.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/model/SubAgentData.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/model/SubEnvironmentData.cpp

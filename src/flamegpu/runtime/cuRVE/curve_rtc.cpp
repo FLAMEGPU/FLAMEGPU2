@@ -306,7 +306,7 @@ void CurveRTCHost::registerEnvVariable(const char* variableName, unsigned int na
         // emplace into existing namespace key
         i->second.emplace(variableName, props);
     } else {
-        std::unordered_map<std::string, RTCEnvVariableProperties> inner;
+        std::map<std::string, RTCEnvVariableProperties> inner;
         inner.emplace(variableName, props);
         RTCEnvVariables.emplace(namespace_hash, inner);
     }
