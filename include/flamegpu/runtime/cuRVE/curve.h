@@ -155,6 +155,11 @@ class Curve {
     template <typename T, unsigned int N>
     __device__ __forceinline__ static T getArrayVariableByHash_ldg(const VariableHash variable_hash, unsigned int agent_index, unsigned int array_index);
     /**
+     * Experimental std::array version
+     */
+    template <typename T, unsigned int N>
+    __device__ __forceinline__ static std::array<T, N> getArrayVariableByHash(const VariableHash variable_hash, unsigned int agent_index);
+    /**
      * These methods all forward to getVariable()
      * This allows RTC to selectively remove a branch
      */
@@ -189,6 +194,8 @@ class Curve {
      */
     template <typename T, unsigned int N>
     __device__ __forceinline__ static void setArrayVariableByHash(const VariableHash variable_hash, T value, unsigned int agent_index, unsigned int array_index);
+    template <typename T, unsigned int N>
+    __device__ __forceinline__ static void setArrayVariableByHash(const VariableHash variable_hash, const std::array<T, N> &value, unsigned int agent_index);
     /**
      * These methods all forward to setArrayVariable()
      * This allows RTC to selectively remove a branch
@@ -208,6 +215,16 @@ class Curve {
     __device__ __forceinline__ static void setAgentArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, T variable, unsigned int variable_index, unsigned int array_index);
     template <typename T, unsigned int N, unsigned int M>
     __device__ __forceinline__ static void setNewAgentArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, T variable, unsigned int variable_index, unsigned int array_index);
+
+    /**
+     * These are beta std::array methods for agent array variables, they may not be supported by RTC
+     */
+    template <typename T, unsigned int N, unsigned int M>
+    __device__ __forceinline__ static std::array<T, N> getAgentArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, unsigned int variable_index);
+    template <typename T, unsigned int N, unsigned int M>
+    __device__ __forceinline__ static void setAgentArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, const std::array<T, N> &variable, unsigned int variable_index);
+    template <typename T, unsigned int N, unsigned int M>
+    __device__ __forceinline__ static void setNewAgentArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, const std::array<T, N> &variable, unsigned int variable_index);
 
     /* ERROR CHECKING API FUNCTIONS */
 
@@ -579,6 +596,28 @@ __device__ __forceinline__ T Curve::getArrayVariableByHash_ldg(const VariableHas
     return __ldg(value_ptr);
 }
 template <typename T, unsigned int N>
+__device__ __forceinline__ std::array<T,N> Curve::getArrayVariableByHash(const VariableHash variable_hash, unsigned int agent_index) {
+    // do a check on the size as otherwise the value_ptr may eb out of bounds.
+    const size_t var_size = N * sizeof(T);
+    // error checking
+#ifndef NO_SEATBELTS
+    const size_t size = getVariableSize(variable_hash);
+    if (size != var_size) {
+        curve_internal::d_curve_error = DEVICE_ERROR_UNKNOWN_TYPE;
+        return std::array<T, N>();
+    }
+#endif
+    const size_t offset = (agent_index * var_size);
+    // get a pointer to the specific variable by offsetting by the provided index
+    std::array<T, N>* value_ptr = reinterpret_cast<std::array<T, N>*>(getVariablePtrByHash(variable_hash, offset));
+
+#ifndef NO_SEATBELTS
+    if (!value_ptr)
+        return std::array<T, N>();
+#endif
+    return *value_ptr;
+}
+template <typename T, unsigned int N>
 __device__ __forceinline__ T Curve::getAgentVariable(const char (&variableName)[N], VariableHash namespace_hash, unsigned int index) {
     return getVariable<T>(variableName, namespace_hash, index);
 }
@@ -702,6 +741,20 @@ __device__ __forceinline__ void Curve::setArrayVariableByHash(const VariableHash
     T *value_ptr = reinterpret_cast<T*>(getVariablePtrByHash(variable_hash, offset));
     *value_ptr = variable;
 }
+template <typename T, unsigned int N>
+__device__ __forceinline__ void Curve::setArrayVariableByHash(const VariableHash variable_hash, const std::array<T, N> &variable, unsigned int agent_index) {
+    const size_t var_size = N * sizeof(T);
+#ifndef NO_SEATBELTS
+    const size_t size = getVariableSize(variable_hash);
+    if (size != var_size) {
+        curve_internal::d_curve_error = DEVICE_ERROR_UNKNOWN_TYPE;
+        return;
+    }
+#endif
+    const size_t offset = (agent_index * var_size);
+    std::array<T, N>* value_ptr = reinterpret_cast<std::array<T, N>*>(getVariablePtrByHash(variable_hash, offset));
+    *value_ptr = variable;
+}
 
 template <typename T, unsigned int N>
 __device__ __forceinline__ void Curve::setAgentVariable(const char(&variableName)[N], VariableHash namespace_hash, T variable, unsigned int index) {
@@ -758,6 +811,47 @@ __device__ __forceinline__ void Curve::setArrayVariable(const char(&variableName
     // Curve currently doesn't store whether a variable is an array
     // Curve stores M * sizeof(T), so this is checked instead
     return setArrayVariableByHash<T, N>(variable_hash + namespace_hash, variable, agent_index, array_index);
+}
+
+template <typename T, unsigned int N, unsigned int M>
+__device__ __forceinline__ std::array<T, N> Curve::getAgentArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, unsigned int agent_index) {
+    VariableHash variable_hash = variableHash(variableName);
+#ifndef NO_SEATBELTS
+    {
+        const auto cv = getVariable(variable_hash + namespace_hash);
+        if (cv == UNKNOWN_VARIABLE) {
+            DTHROW("Curve variable array with name '%s' was not found.\n", variableName);
+        }
+        else if (curve_internal::d_sizes[cv] != sizeof(T) * N) {
+            DTHROW("Curve variable array with name '%s', type size mismatch %llu != %llu.\n", variableName, curve_internal::d_sizes[cv], sizeof(T) * N);
+        }
+    }
+#endif
+    // Curve currently doesn't store whether a variable is an array
+    // Curve stores M * sizeof(T), so this is checked instead
+    return getArrayVariableByHash<T, N>(variable_hash + namespace_hash, agent_index);
+}
+template <typename T, unsigned int N, unsigned int M>
+__device__ __forceinline__ void Curve::setAgentArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, const std::array<T, N> &variable, unsigned int agent_index) {
+    VariableHash variable_hash = variableHash(variableName);
+#ifndef NO_SEATBELTS
+    {
+        const auto cv = getVariable(variable_hash + namespace_hash);
+        if (cv == UNKNOWN_VARIABLE) {
+            DTHROW("Curve variable array with name '%s' was not found.\n", variableName);
+        }
+        else if (curve_internal::d_sizes[cv] != sizeof(T) * N) {
+            DTHROW("Curve variable array with name '%s', size mismatch %llu != %llu.\n", variableName, curve_internal::d_sizes[cv], sizeof(T) * N);
+        }
+    }
+#endif
+    // Curve currently doesn't store whether a variable is an array
+    // Curve stores M * sizeof(T), so this is checked instead
+    return setArrayVariableByHash<T, N>(variable_hash + namespace_hash, variable, agent_index);
+}
+template <typename T, unsigned int N, unsigned int M>
+__device__ __forceinline__ void Curve::setNewAgentArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, const std::array<T, N> &variable, unsigned int agent_index) {
+    setAgentArrayVariable<T, N ,M>(variable_name, namespace_hash, variable, agent_index);
 }
 
 /* ERROR CHECKING API FUNCTIONS */
