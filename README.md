@@ -45,6 +45,9 @@ Only documentation can be built without the required dependencies (however Doxyg
   + There may be intermittent compilation errors due to an NVCC+MSVC bug exposed by Thrust/CUB. 
   + Re-running the build appears to work in most cases, Otherwise consider upgrading to CUDA 11.0+ if possible.
 + CMake 3.16 has known issues on some platforms.
++ Python <= 3.5 may encounter issues with dependency installation such as setuptools. If so, please manually install the correct version.
+  + i.e. `python3 -m pip install --upgrade 'setuptools; python_version >= "3.6"' 'setuptools<51.3.0; python_version < "3.6" and python_version >= "3.0"'`
+
 
 ### Building FLAME GPU 2
 

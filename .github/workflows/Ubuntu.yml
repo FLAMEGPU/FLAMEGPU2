@@ -76,6 +76,12 @@ jobs:
         echo "CXX=/usr/bin/g++-${{ matrix.gcc }}" >> $GITHUB_ENV
         echo "CUDAHOSTCXX=/usr/bin/g++-${{ matrix.gcc }}" >> $GITHUB_ENV
 
+    - name: install setuptools with an appropriate version
+      run: | 
+        python3 -m pip install --upgrade wheel
+        python3 -m pip install --upgrade 'setuptools; python_version >= "3.6"' 'setuptools<51.3.0; python_version < "3.6" and python_version >= "3.0"'
+
+
     - name: Install Python Venv
       run: sudo apt-get install python3-venv
 
