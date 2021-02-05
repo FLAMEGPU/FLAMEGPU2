@@ -21,7 +21,7 @@ message(STATUS "Python found at " ${Python3_EXECUTABLE})
 
 # Define the minimum version of cmake we support.
 # Swig 4.0+ is required for c++14 (and c++11 std::unordered_map). 
-set(SWIG_MINIMUM_SUPPORTED_VERSION 4)
+set(SWIG_MINIMUM_SUPPORTED_VERSION 4.0.2)
 # Define the version of SWIG to be downloaded (to simplify upgrading / output.)
 set(SWIG_DOWNLOAD_VERSION 4.0.2)
 

@@ -107,6 +107,9 @@ function(search_python_module MODULE_NAME)
 endfunction()
 
 # Look for required python modules to build the python module
+# @todo - Python3.5 is no longer supported by setuptools > 51.3, so need to change the install command to reflect this in cases where pip is too old (i.e. ubuntu 16.04 on CI). It would be better to not install dependencies into non-venvs too.
+# Arguably, we could set up a requirements.txt for building (and exeucting)?
+# https://github.com/pypa/setuptools/issues/2541
 search_python_module(setuptools)
 search_python_module(wheel)
 
