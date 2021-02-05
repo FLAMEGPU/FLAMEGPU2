@@ -596,7 +596,7 @@ __device__ __forceinline__ T Curve::getArrayVariableByHash_ldg(const VariableHas
     return __ldg(value_ptr);
 }
 template <typename T, unsigned int N>
-__device__ __forceinline__ std::array<T,N> Curve::getArrayVariableByHash(const VariableHash variable_hash, unsigned int agent_index) {
+__device__ __forceinline__ std::array<T, N> Curve::getArrayVariableByHash(const VariableHash variable_hash, unsigned int agent_index) {
     // do a check on the size as otherwise the value_ptr may eb out of bounds.
     const size_t var_size = N * sizeof(T);
     // error checking
@@ -821,8 +821,7 @@ __device__ __forceinline__ std::array<T, N> Curve::getAgentArrayVariable(const c
         const auto cv = getVariable(variable_hash + namespace_hash);
         if (cv == UNKNOWN_VARIABLE) {
             DTHROW("Curve variable array with name '%s' was not found.\n", variableName);
-        }
-        else if (curve_internal::d_sizes[cv] != sizeof(T) * N) {
+        } else if (curve_internal::d_sizes[cv] != sizeof(T) * N) {
             DTHROW("Curve variable array with name '%s', type size mismatch %llu != %llu.\n", variableName, curve_internal::d_sizes[cv], sizeof(T) * N);
         }
     }
@@ -839,8 +838,7 @@ __device__ __forceinline__ void Curve::setAgentArrayVariable(const char(&variabl
         const auto cv = getVariable(variable_hash + namespace_hash);
         if (cv == UNKNOWN_VARIABLE) {
             DTHROW("Curve variable array with name '%s' was not found.\n", variableName);
-        }
-        else if (curve_internal::d_sizes[cv] != sizeof(T) * N) {
+        } else if (curve_internal::d_sizes[cv] != sizeof(T) * N) {
             DTHROW("Curve variable array with name '%s', size mismatch %llu != %llu.\n", variableName, curve_internal::d_sizes[cv], sizeof(T) * N);
         }
     }
@@ -851,7 +849,7 @@ __device__ __forceinline__ void Curve::setAgentArrayVariable(const char(&variabl
 }
 template <typename T, unsigned int N, unsigned int M>
 __device__ __forceinline__ void Curve::setNewAgentArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, const std::array<T, N> &variable, unsigned int agent_index) {
-    setAgentArrayVariable<T, N ,M>(variable_name, namespace_hash, variable, agent_index);
+    setAgentArrayVariable<T, N, M>(variableName, namespace_hash, variable, agent_index);
 }
 
 /* ERROR CHECKING API FUNCTIONS */

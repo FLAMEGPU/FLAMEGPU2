@@ -73,6 +73,24 @@ FLAMEGPU_AGENT_FUNCTION(agent_fn_da_get, MsgNone, MsgNone) {
     FLAMEGPU->setVariable<int>("a4", FLAMEGPU->getVariable<int, 4>("array_var", 3));
     return ALIVE;
 }
+FLAMEGPU_AGENT_FUNCTION(agent_fn_stdarray_set, MsgNone, MsgNone) {
+    // Read array from `array_var`
+    int id = FLAMEGPU->getVariable<int>("id");
+    // Store it's values back in `a1` -> `a4`
+    std::array<int, 4> out = {2 + id, 4 + id, 8 + id, 16 + id };
+    FLAMEGPU->setVariable<int, 4>("array_var", out);
+    return ALIVE;
+}
+FLAMEGPU_AGENT_FUNCTION(agent_fn_stdarray_get, MsgNone, MsgNone) {
+    // Read array from `array_var`
+    const std::array<int, 4> in = FLAMEGPU->getVariable<int, 4>("array_var");
+    // Store it's values back in `a1` -> `a4`
+    FLAMEGPU->setVariable<int>("a1", in[0]);
+    FLAMEGPU->setVariable<int>("a2", in[1]);
+    FLAMEGPU->setVariable<int>("a3", in[2]);
+    FLAMEGPU->setVariable<int>("a4", in[3]);
+    return ALIVE;
+}
 TEST(DeviceAPITest, ArraySet) {
     ModelDescription model("model");
     AgentDescription &agent = model.newAgent("agent_name");
@@ -134,6 +152,98 @@ TEST(DeviceAPITest, ArrayGet) {
     // Init pop
     AgentPopulation init_population(agent, AGENT_COUNT);
     for (int i = 0; i< static_cast<int>(AGENT_COUNT); i++) {
+        AgentInstance instance = init_population.getNextInstance("default");
+        instance.setVariable<float>("x", 12.0f);
+        instance.setVariable<int, 4>("array_var", { 2 + i, 4 + i, 8 + i, 16 + i });
+        instance.setVariable<float>("y", 14.0f);
+        instance.setVariable<int>("id", i);
+    }
+    // Setup Model
+    CUDASimulation cuda_model(model);
+    cuda_model.setPopulationData(init_population);
+    // Run 1 step to ensure data is pushed to device
+    cuda_model.step();
+    // Recover data from device
+    AgentPopulation population(agent, AGENT_COUNT);
+    cuda_model.getPopulationData(population);
+    // Check data is intact
+    // Might need to go more complicate and give different agents different values
+    // They should remain in order for such a basic function, but can't guarntee
+    EXPECT_EQ(population.getCurrentListSize(), AGENT_COUNT);
+    for (unsigned int i = 0; i < population.getCurrentListSize(); i++) {
+        AgentInstance instance = population.getInstanceAt(i);
+        // Check neighbouring vars are correct
+        EXPECT_EQ(instance.getVariable<float>("x"), 12.0f);
+        EXPECT_EQ(instance.getVariable<float>("y"), 14.0f);
+        int j = instance.getVariable<int>("id");
+        // Check array sets are correct
+        EXPECT_EQ(instance.getVariable<int>("a1"), 2 + j);
+        EXPECT_EQ(instance.getVariable<int>("a2"), 4 + j);
+        EXPECT_EQ(instance.getVariable<int>("a3"), 8 + j);
+        EXPECT_EQ(instance.getVariable<int>("a4"), 16 + j);
+    }
+}
+TEST(DeviceAPITest, stdarraySet) {
+    ModelDescription model("model");
+    AgentDescription& agent = model.newAgent("agent_name");
+    agent.newVariable<float>("x");
+    agent.newVariable<int, 4>("array_var");
+    agent.newVariable<float>("y");
+    agent.newVariable<int>("id");
+    // Do nothing, but ensure variables are made available on device
+    AgentFunctionDescription& func = agent.newFunction("some_function", agent_fn_stdarray_set);
+    model.newLayer().addAgentFunction(func);
+    // Init pop
+    AgentPopulation init_population(agent, AGENT_COUNT);
+    for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
+        AgentInstance instance = init_population.getNextInstance("default");
+        instance.setVariable<float>("x", 12.0f);
+        instance.setVariable<float>("y", 14.0f);
+        instance.setVariable<int>("id", i);
+    }
+    // Setup Model
+    CUDASimulation cuda_model(model);
+    cuda_model.setPopulationData(init_population);
+    // Run 1 step to ensure data is pushed to device
+    cuda_model.step();
+    // Recover data from device
+    AgentPopulation population(agent, AGENT_COUNT);
+    cuda_model.getPopulationData(population);
+    // Check data is intact
+    // Might need to go more complicate and give different agents different values
+    // They should remain in order for such a basic function, but can't guarntee
+    EXPECT_EQ(population.getCurrentListSize(), AGENT_COUNT);
+    for (unsigned int i = 0; i < population.getCurrentListSize(); i++) {
+        AgentInstance instance = population.getInstanceAt(i);
+        // Check neighbouring vars are correct
+        EXPECT_EQ(instance.getVariable<float>("x"), 12.0f);
+        EXPECT_EQ(instance.getVariable<float>("y"), 14.0f);
+        int j = instance.getVariable<int>("id");
+        // Check array sets are correct
+        auto output_array = instance.getVariable<int, 4>("array_var");
+        EXPECT_EQ(output_array[0], 2 + j);
+        EXPECT_EQ(output_array[1], 4 + j);
+        EXPECT_EQ(output_array[2], 8 + j);
+        EXPECT_EQ(output_array[3], 16 + j);
+    }
+}
+TEST(DeviceAPITest, stdarrayGet) {
+    ModelDescription model("model");
+    AgentDescription& agent = model.newAgent("agent_name");
+    agent.newVariable<float>("x");
+    agent.newVariable<int, 4>("array_var");
+    agent.newVariable<float>("y");
+    agent.newVariable<int>("id");
+    agent.newVariable<int>("a1");
+    agent.newVariable<int>("a2");
+    agent.newVariable<int>("a3");
+    agent.newVariable<int>("a4");
+    // Do nothing, but ensure variables are made available on device
+    AgentFunctionDescription& func = agent.newFunction("some_function", agent_fn_stdarray_get);
+    model.newLayer().addAgentFunction(func);
+    // Init pop
+    AgentPopulation init_population(agent, AGENT_COUNT);
+    for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
         AgentInstance instance = init_population.getNextInstance("default");
         instance.setVariable<float>("x", 12.0f);
         instance.setVariable<int, 4>("array_var", { 2 + i, 4 + i, 8 + i, 16 + i });

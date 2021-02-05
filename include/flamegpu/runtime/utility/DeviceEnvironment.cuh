@@ -63,6 +63,15 @@ class DeviceEnvironment {
     template<typename T, unsigned int N>
     __device__ __forceinline__ T getProperty(const char(&name)[N], const unsigned int&index) const;
     /**
+     * Gets an element of an environment property array
+     * @param name name used for accessing the property, this value should be a string literal e.g. "foobar"
+     * @tparam T Type of the environment property being accessed
+     * @tparam N Length of the property array being retrieved
+     * @tparam M Length of variable name, this should always be implicit if passing a string literal
+     */
+    template<typename T, unsigned int N, unsigned int M>
+    __device__ __forceinline__ std::array<T, N> getProperty(const char(&name)[M]) const;
+    /**
      * Returns whether the named env property exists
      * @param name name used for accessing the property, this value should be a string literal e.g. "foobar"
      * @tparam N Length of variable name, this should always be implicit if passing a string literal
@@ -111,6 +120,25 @@ __device__ __forceinline__ T DeviceEnvironment::getProperty(const char(&name)[N]
     return {};
 #else
     return *(reinterpret_cast<T*>(flamegpu_internal::c_envPropBuffer + reinterpret_cast<ptrdiff_t>(curve_internal::d_variables[cv])) + index);
+#endif
+}
+template<typename T, unsigned int N, unsigned int M>
+__device__ __forceinline__ std::array<T, N> DeviceEnvironment::getProperty(const char(&name)[M]) const {
+    Curve::VariableHash cvh = CURVE_NAMESPACE_HASH() + modelname_hash + Curve::variableHash(name);
+    const auto cv = Curve::getVariable(cvh);
+#ifndef NO_SEATBELTS
+    if (cv == Curve::UNKNOWN_VARIABLE) {
+        DTHROW("Environment property array with name: %s was not found.\n", name);
+    } else if (curve_internal::d_sizes[cv] != sizeof(T)) {
+        DTHROW("Environment property array with name: %s type size mismatch %llu != %llu.\n", name, curve_internal::d_sizes[cv], sizeof(T));
+    } else if (curve_internal::d_lengths[cv] != N) {
+        DTHROW("Environment property array with name: %s length mismatch %u != %u).\n", name, curve_internal::d_lengths[cv], N);
+    } else {
+        return *reinterpret_cast<std::array<T, N>*>(flamegpu_internal::c_envPropBuffer + reinterpret_cast<ptrdiff_t>(curve_internal::d_variables[cv]));
+    }
+    return {};
+#else
+    return *reinterpret_cast<T*>(flamegpu_internal::c_envPropBuffer + reinterpret_cast<ptrdiff_t>(curve_internal::d_variables[cv]));
 #endif
 }
 

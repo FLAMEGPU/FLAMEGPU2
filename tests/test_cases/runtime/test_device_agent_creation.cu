@@ -1120,6 +1120,14 @@ FLAMEGPU_AGENT_FUNCTION(ArrayVarDeviceBirth_ArrayUnsuitable, MsgNone, MsgNone) {
     FLAMEGPU->agent_out.setVariable<int>("array_var", 0);
     return DEAD;
 }
+FLAMEGPU_AGENT_FUNCTION(stdarrayVarDeviceBirth, MsgNone, MsgNone) {
+    unsigned int i = FLAMEGPU->getVariable<unsigned int>("id") * 3;
+    FLAMEGPU->agent_out.setVariable<unsigned int>("id", i);
+    std::array<int, 4> out = {static_cast<int>(3 + i), static_cast<int>(5 + i), static_cast<int>(9 + i), static_cast<int>(17 + i)};
+    FLAMEGPU->agent_out.setVariable<int, 4>("array_var", out);
+    FLAMEGPU->agent_out.setVariable<float>("y", 14.0f + i);
+    return DEAD;
+}
 
 TEST(DeviceAgentCreationTest, DeviceAgentBirth_ArraySet) {
     const std::array<int, 4> TEST_REFERENCE = { 3, 5, 9, 17 };
@@ -1129,6 +1137,42 @@ TEST(DeviceAgentCreationTest, DeviceAgentBirth_ArraySet) {
     agent.newVariable<int, 4>("array_var");
     agent.newVariable<float>("y");
     auto &fn = agent.newFunction("out", ArrayVarDeviceBirth);
+    fn.setAllowAgentDeath(true);
+    fn.setAgentOutput(agent);
+    model.newLayer().addAgentFunction(fn);
+    // Run the init function
+    AgentPopulation population(agent, AGENT_COUNT);
+    for (unsigned int i = 0; i < AGENT_COUNT; i++) {
+        auto in = population.getNextInstance();
+        in.setVariable<unsigned int>("id", i);
+    }
+    CUDASimulation sim(model);
+    sim.setPopulationData(population);
+    sim.step();
+    sim.getPopulationData(population);
+    // Check data is correct
+    EXPECT_EQ(population.getCurrentListSize(), AGENT_COUNT);
+    for (unsigned int i = 0; i < population.getCurrentListSize(); i++) {
+        AgentInstance instance = population.getInstanceAt(i);
+        const unsigned int j = instance.getVariable<unsigned int>("id");
+        // Check array sets are correct
+        auto array1 = instance.getVariable<int, 4>("array_var");
+        for (unsigned int k = 0; k < 4; ++k) {
+            array1[k] -= j;
+        }
+        EXPECT_EQ(j % 3, 0u);
+        EXPECT_EQ(array1, TEST_REFERENCE);
+        EXPECT_EQ(instance.getVariable<float>("y"), 14.0f + j);
+    }
+}
+TEST(DeviceAgentCreationTest, DeviceAgentBirth_stdarraySet) {
+    const std::array<int, 4> TEST_REFERENCE = { 3, 5, 9, 17 };
+    ModelDescription model("model");
+    AgentDescription& agent = model.newAgent("agent_name");
+    agent.newVariable<unsigned int>("id", UINT_MAX);
+    agent.newVariable<int, 4>("array_var");
+    agent.newVariable<float>("y");
+    auto& fn = agent.newFunction("out", stdarrayVarDeviceBirth);
     fn.setAllowAgentDeath(true);
     fn.setAgentOutput(agent);
     model.newLayer().addAgentFunction(fn);

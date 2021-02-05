@@ -352,7 +352,7 @@ __device__ void FLAMEGPU_DEVICE_API<MsgIn, MsgOut>::setVariable(const char(&vari
     // simple indexing assumes index is the thread number (this may change later)
     unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
     // set the variable using curve
-    Curve::setAgentArrayVariable<T, N, M>(variable_name, agent_func_name_hash, value);
+    Curve::setAgentArrayVariable<T, N, M>(variable_name, agent_func_name_hash, value, index);
 }
 /**
  * \brief Gets an agent memory value

@@ -23,6 +23,8 @@ __device__ int32_t int32_t_out;
 __device__ uint64_t uint64_t_out;
 __device__ int64_t int64_t_out;
 
+__device__ int32_t stdarray_out[5];
+
 FLAMEGPU_AGENT_FUNCTION(get_float, MsgNone, MsgNone) {
     float_out = FLAMEGPU->environment.getProperty<float>("a");
     bool_out = FLAMEGPU->environment.containsProperty("a");
@@ -124,6 +126,13 @@ FLAMEGPU_AGENT_FUNCTION(get_arrayElement_int64_t, MsgNone, MsgNone) {
     bool_out = FLAMEGPU->environment.containsProperty("b");
     return ALIVE;
 }
+FLAMEGPU_AGENT_FUNCTION(get_stdarray_int32_t, MsgNone, MsgNone) {
+    const auto int32_t_array = FLAMEGPU->environment.getProperty<int32_t, 5>("a");
+    for (int i = 0; i <5; ++i) {
+        stdarray_out[i] = int32_t_array[i];
+    }
+    return ALIVE;
+}
 
 class MiniSim {
  public:
@@ -174,6 +183,17 @@ class MiniSim {
         std::array<T, 5> a;
         for (int i = 0; i < 5; ++i) {
             a[i] = static_cast<T>(1);
+        }
+        env.newProperty<T, 5>("a", a);
+        run();
+        return a[1];
+    }
+    template <typename T>
+    T Get_stdarray_test() {
+        // Setup environment
+        std::array<T, 5> a;
+        for (int i = 0; i < 5; ++i) {
+            a[i] = static_cast<T>(1 + i);
         }
         env.newProperty<T, 5>("a", a);
         run();
@@ -522,5 +542,19 @@ TEST_F(AgentEnvironmentTest, Get_arrayElement_int64_t) {
     bool _bool_out = false;
     cudaMemcpyFromSymbol(&_bool_out, bool_out, sizeof(bool));
     EXPECT_EQ(false, _bool_out);
+    EXPECT_EQ(cudaGetLastError(), CUDA_SUCCESS);
+}
+TEST_F(AgentEnvironmentTest, Get_stdarray_int32_t) {
+    // Setup agent fn
+    AgentFunctionDescription& deviceFn = ms->agent.newFunction("device_function", get_stdarray_int32_t);
+    LayerDescription& devicefn_layer = ms->model.newLayer("devicefn_layer");
+    devicefn_layer.addAgentFunction(deviceFn);
+    // Setup environment
+    auto int64_t_check = ms->Get_stdarray_test<int32_t>();
+    std::array<int32_t, 5> h_stdarray_out = {};
+    cudaMemcpyFromSymbol(h_stdarray_out.data(), stdarray_out, sizeof(int32_t) * 5);
+    for (int i = 0; i < 5; ++i) {
+        EXPECT_EQ(i + 1, h_stdarray_out[i]);
+    }
     EXPECT_EQ(cudaGetLastError(), CUDA_SUCCESS);
 }
