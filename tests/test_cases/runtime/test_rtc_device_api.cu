@@ -328,6 +328,123 @@ TEST(DeviceRTCAPITest, AgentFunction_array_set) {
     }
 }
 
+const char* rtc_stdarray_get_agent_func = R"###(
+FLAMEGPU_AGENT_FUNCTION(rtc_test_func, MsgNone, MsgNone) {
+    // Read array from `array_var`
+    // Store it's values back in `a1` -> `a4`
+    std::array<int, 4> a = FLAMEGPU->getVariable<int, 4>("array_var");
+    FLAMEGPU->setVariable<int>("a1", a[0]);
+    FLAMEGPU->setVariable<int>("a2", a[1]);
+    FLAMEGPU->setVariable<int>("a3", a[2]);
+    FLAMEGPU->setVariable<int>("a4", a[3]);
+    return ALIVE;
+}
+)###";
+/**
+ * Test an RTC function to ensure that the getVariable function works correctly for array variables. Expected result is 'array_var' values are copied into a1, a2, a3 and a4.
+ */
+TEST(DeviceRTCAPITest, AgentFunction_stdarray_get) {
+    ModelDescription model("model");
+    AgentDescription& agent = model.newAgent("agent_name");
+    agent.newVariable<int>("id");
+    agent.newVariable<int, 4>("array_var");
+    agent.newVariable<int>("a1");
+    agent.newVariable<int>("a2");
+    agent.newVariable<int>("a3");
+    agent.newVariable<int>("a4");
+    // add RTC agent function
+    AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_stdarray_get_agent_func);
+    model.newLayer().addAgentFunction(func);
+    // Init pop
+    AgentPopulation init_population(agent, AGENT_COUNT);
+    for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
+        AgentInstance instance = init_population.getNextInstance("default");
+        instance.setVariable<int>("id", i);
+        instance.setVariable<int, 4>("array_var", { 2 + i, 4 + i, 8 + i, 16 + i });
+    }
+    // Setup Model
+    CUDASimulation cuda_model(model);
+    cuda_model.setPopulationData(init_population);
+    // Run 1 step to ensure data is pushed to device
+    cuda_model.step();
+    // Recover data from device
+    AgentPopulation population(agent);
+    cuda_model.getPopulationData(population);
+    for (unsigned int i = 0; i < population.getCurrentListSize(); i++) {
+        AgentInstance instance = population.getInstanceAt(i);
+        int j = instance.getVariable<int>("id");
+        // Check scalar variables have been set correctly by agent function (which has read them from an array)
+        EXPECT_EQ(instance.getVariable<int>("a1"), 2 + j);
+        EXPECT_EQ(instance.getVariable<int>("a2"), 4 + j);
+        EXPECT_EQ(instance.getVariable<int>("a3"), 8 + j);
+        EXPECT_EQ(instance.getVariable<int>("a4"), 16 + j);
+    }
+}
+
+const char* rtc_stdarray_set_agent_func = R"###(
+FLAMEGPU_AGENT_FUNCTION(rtc_test_func, MsgNone, MsgNone) {
+    // Read variables a1 to a4
+    // Store as array in array_var
+    std::array<int, 5> a = {0,
+                            FLAMEGPU->getVariable<int>("a1"),
+                            FLAMEGPU->getVariable<int>("a2"),
+                            FLAMEGPU->getVariable<int>("a3"),
+                            FLAMEGPU->getVariable<int>("a4")};
+    FLAMEGPU->setVariable<int, 5>("array_var", a);
+    return ALIVE;
+}
+)###";
+/**
+ * Test an RTC function to ensure that the setVariable function works correctly for array variables. Expected result is a1, a2, a3 and a4 are copied into 'array_var'.
+ * Also includes a test to ensure that scalar variables can not use the array get and set functions of the API.
+ */
+TEST(DeviceRTCAPITest, AgentFunction_stdarray_set) {
+    ModelDescription model("model");
+    AgentDescription& agent = model.newAgent("agent_name");
+    agent.newVariable<int>("id");
+    agent.newVariable<int, 5>("array_var");
+    agent.newVariable<int>("a0");
+    agent.newVariable<int>("a1");
+    agent.newVariable<int>("a2");
+    agent.newVariable<int>("a3");
+    agent.newVariable<int>("a4");
+    AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_stdarray_set_agent_func);
+    model.newLayer().addAgentFunction(func);
+    // Init pop
+    AgentPopulation init_population(agent, AGENT_COUNT);
+    for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
+        AgentInstance instance = init_population.getNextInstance("default");
+        instance.setVariable<int>("id", i);
+        instance.setVariable<int>("a0", i);
+        instance.setVariable<int>("a1", 2 + i);
+        instance.setVariable<int>("a2", 4 + i);
+        instance.setVariable<int>("a3", 8 + i);
+        instance.setVariable<int>("a4", 16 + i);
+        instance.setVariable<int, 5>("array_var", { 0, 0, 0, 0, 0 });
+    }
+    // Setup Model
+    CUDASimulation cuda_model(model);
+    cuda_model.setPopulationData(init_population);
+    // Run 1 step to ensure data is pushed to device
+    cuda_model.step();
+    // Recover data from device
+    AgentPopulation population(agent);
+    cuda_model.getPopulationData(population);
+    for (int i = 0; i < static_cast<int>(population.getCurrentListSize()); i++) {
+        AgentInstance instance = population.getInstanceAt(i);
+        int j = instance.getVariable<int>("id");
+        // Check array_var has been set from scalar variables
+        std::array<int, 5> array_var = instance.getVariable<int, 5>("array_var");
+        EXPECT_EQ(array_var[0], 0);
+        EXPECT_EQ(array_var[1], 2 + j);
+        EXPECT_EQ(array_var[2], 4 + j);
+        EXPECT_EQ(array_var[3], 8 + j);
+        EXPECT_EQ(array_var[4], 16 + j);
+        // Value should not have been set by agent function as the value is scalar and the setter used was for an array
+        EXPECT_EQ(instance.getVariable<int>("a0"), i);
+    }
+}
+
 const char* rtc_msg_out_func = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_msg_out_func, MsgNone, MsgBruteForce) {
     FLAMEGPU->message_out.setVariable("x", FLAMEGPU->getVariable<int>("x"));
@@ -553,6 +670,89 @@ TEST(DeviceRTCAPITest, AgentFunction_env) {
     }
 }
 
+
+const char* rtc_env_func_stdarray = R"###(
+FLAMEGPU_AGENT_FUNCTION(rtc_env_func, MsgNone, MsgNone) {
+    // get environment variable and set it as an agent variable (environment variable does not change)
+    int e1_out = FLAMEGPU->environment.getProperty<int>("e1");
+    int e1_exists = FLAMEGPU->environment.containsProperty("e1");
+    FLAMEGPU->setVariable<int>("e1_out", e1_out);
+    FLAMEGPU->setVariable<int>("e1_exists", e1_exists);
+    // get stepped environment variable and add it to agent variable (environment variable is increased in step function)
+    int e2 = FLAMEGPU->environment.getProperty<int>("e2");
+    int e2_out = FLAMEGPU->getVariable<int>("e2_out") + e2;
+    FLAMEGPU->setVariable<int>("e2_out", e2_out);
+    // get array variables and set in agent variable arrays
+    std::array<int, 32> e_array = FLAMEGPU->environment.getProperty<int, 32>("e_array_1");
+    FLAMEGPU->setVariable<int, 32>("e_array_out_1", e_array);
+    std::array<int, 32> e_array = FLAMEGPU->environment.getProperty<int, 32>("e_array_2");
+    FLAMEGPU->setVariable<int, 32>("e_array_out_2", e_array);
+    return ALIVE;
+}
+)###";
+TEST(DeviceRTCAPITest, AgentFunction_env_stdarray) {
+    ModelDescription model("model");
+    AgentDescription& agent = model.newAgent("agent_name");
+    agent.newVariable<int>("e1_out");
+    agent.newVariable<int>("e1_exists");
+    agent.newVariable<int>("e2_out");
+    agent.newVariable<int, 32>("e_array_out_1");
+    agent.newVariable<int, 32>("e_array_out_2");
+    AgentFunctionDescription& func = agent.newRTCFunction("rtc_env_func", rtc_env_func_stdarray);
+    model.newLayer().addAgentFunction(func);
+    // empty array
+    std::array<int, 32> zero_array;
+    zero_array.fill(0);
+    // create some environment variables
+    EnvironmentDescription& env = model.Environment();
+    env.newProperty<int>("e1", 100);
+    env.newProperty<int>("e2", 200);
+    env.newProperty<int, 32>("e_array_1", zero_array);
+    env.newProperty<int, 32>("e_array_2", zero_array);
+    // Init pop with 0 values for variables
+    AgentPopulation init_population(agent, AGENT_COUNT);
+    for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
+        AgentInstance instance = init_population.getNextInstance("default");
+        instance.setVariable<int>("e1_out", 0);
+        instance.setVariable<int>("e1_exists", false);
+        instance.setVariable<int>("e2_out", 0);
+        // set the agent array variables to 0
+
+        instance.setVariable<int, 32>("e_array_out_1", zero_array);
+        instance.setVariable<int, 32>("e_array_out_2", zero_array);
+    }
+    // add step function to increase environment variable
+    model.addStepFunction(etc_env_step);
+    // Setup Model
+    CUDASimulation cuda_model(model);
+    cuda_model.setPopulationData(init_population);
+    // Set the number of steps to 2
+    cuda_model.SimulationConfig().steps = 2;
+    cuda_model.simulate();
+    // Recover data from device
+    AgentPopulation population(agent);
+    cuda_model.getPopulationData(population);
+    for (unsigned int i = 0; i < population.getCurrentListSize(); i++) {
+        AgentInstance instance = population.getInstanceAt(i);
+        // Check constant environment values have been updated
+        int e1_out = instance.getVariable<int>("e1_out");
+        int e1_exists = instance.getVariable<int>("e1_exists");
+        // Check that the value is correct and that the variable is reported as existing
+        EXPECT_EQ(e1_out, 100);
+        EXPECT_TRUE(e1_exists);
+        // check that the stepped value has been reported correctly (e.g. should be 200 (from step 1) + 400 (from step 2)
+        int e2_out = instance.getVariable<int>("e2_out");
+        EXPECT_EQ(e2_out, 600);
+        // check the agent array outputs match the environment variables set in the step function
+        std::array<int, 32> e_array_out_1 = instance.getVariable<int, 32>("e_array_out_1");
+        std::array<int, 32> e_array_out_2 = instance.getVariable<int, 32>("e_array_out_2");
+        for (int j = 0; j < 32; j++) {
+            EXPECT_EQ(e_array_out_1[j], j);
+            EXPECT_EQ(e_array_out_2[j], j);
+        }
+    }
+}
+
 const char* rtc_agent_output_func = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_agent_output_func, MsgNone, MsgNone) {
     unsigned int id = FLAMEGPU->getVariable<unsigned int>("id") + 1;
@@ -606,6 +806,59 @@ TEST(DeviceRTCAPITest, AgentFunction_agent_output) {
     }
     EXPECT_EQ(is_1, AGENT_COUNT);
     EXPECT_EQ(is_12, AGENT_COUNT / 2);
+}
+
+const char* rtc_agent_output_func_stdarray = R"###(
+FLAMEGPU_AGENT_FUNCTION(rtc_agent_output_func, MsgNone, MsgNone) {
+    unsigned int id = FLAMEGPU->getVariable<unsigned int>("id");
+    FLAMEGPU->agent_out.setVariable<unsigned int>("id", id);
+    FLAMEGPU->agent_out.setVariable<unsigned int, 4>("a", {id, id + 1, id + 2, i + 3});
+    return ALIVE;
+}
+)###";
+/**
+ * Test rtc agent output by optionally setting an agent output and checking for the correct population size and agent values
+ */
+TEST(DeviceRTCAPITest, AgentFunction_agent_output_stdarray) {
+    ModelDescription model("model");
+    AgentDescription& in_agent = model.newAgent("in_agent");
+    in_agent.newVariable<unsigned int>("id");
+
+    AgentDescription& out_agent = model.newAgent("out_agent");
+    out_agent.newVariable<unsigned int>("id");
+    out_agent.newVariable<unsigned int, 4>("a");
+    // add RTC agent function with an agent output
+    AgentFunctionDescription& func = in_agent.newRTCFunction("rtc_agent_output_func", rtc_agent_output_func_stdarray);
+    func.setAllowAgentDeath(true);
+    func.setAgentOutput(out_agent);
+    model.newLayer().addAgentFunction(func);
+    // Init pop
+    AgentPopulation init_population(in_agent, AGENT_COUNT);
+    for (unsigned int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
+        AgentInstance instance = init_population.getNextInstance("default");
+        instance.setVariable<unsigned int>("id", i);
+    }
+    // Setup Model
+    CUDASimulation cuda_model(model);
+    cuda_model.setPopulationData(init_population);
+    // Run 1 step
+    cuda_model.step();
+    // Test output
+    AgentPopulation population(out_agent);
+    cuda_model.getPopulationData(population);
+    // Validate each agent has same result
+    EXPECT_EQ(population.getCurrentListSize(), (unsigned int)(AGENT_COUNT * 1.5));
+    unsigned int is_right = 0;
+    for (unsigned int i = 0; i < population.getCurrentListSize(); ++i) {
+        AgentInstance ai = population.getInstanceAt(i);
+        const unsigned int id = ai.getVariable<unsigned int>("id");
+        const std::array<unsigned int, 4> val = ai.getVariable<unsigned int, 4>("a");
+        is_right += val[0] == id + 0 ? 1 : 0;
+        is_right += val[1] == id + 1 ? 1 : 0;
+        is_right += val[2] == id + 2 ? 1 : 0;
+        is_right += val[3] == id + 3 ? 1 : 0;
+    }
+    EXPECT_EQ(is_right, AGENT_COUNT * 4);
 }
 
 const char* rtc_func_cond_non_rtc_func = R"###(

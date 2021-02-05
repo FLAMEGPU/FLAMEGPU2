@@ -624,14 +624,13 @@ void CUDAAgent::addInstantitateRTCFunction(jitify::JitCache &kernel_cache, const
     // cassert header (to remove remaining warnings) TODO: Ask Jitify to implement safe version of this
     std::string cassert_h = "cassert\n";
     headers.push_back(cassert_h);
+    cassert_h = "array\n";
+    headers.push_back(cassert_h);
 
     // jitify to create program (with compilation settings)
     try {
         // switch between normal agent function and agent function condition
         if (!function_condition) {
-            auto program = kernel_cache.program(func.rtc_source, headers, options);
-            // create jifity instance
-            auto kernel = program.kernel("agent_function_wrapper");
             // create string for agent function implementation
             std::string func_impl = std::string(func.rtc_func_name).append("_impl");
             // output to disk if OUTPUT_RTC_DYNAMIC_FILES macro is set
@@ -657,6 +656,9 @@ void CUDAAgent::addInstantitateRTCFunction(jitify::JitCache &kernel_cache, const
             agent_function_file << out_s;
             agent_function_file.close();
 #endif
+            auto program = kernel_cache.program(func.rtc_source, headers, options);
+            // create jifity instance
+            auto kernel = program.kernel("agent_function_wrapper");
             // add kernal instance to map
             rtc_func_map.insert(CUDARTCFuncMap::value_type(func.name, std::unique_ptr<jitify::KernelInstantiation>(new jitify::KernelInstantiation(kernel, { func_impl.c_str(), func.msg_in_type.c_str(), func.msg_out_type.c_str() }))));
         } else {

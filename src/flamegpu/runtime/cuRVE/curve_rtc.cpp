@@ -102,6 +102,13 @@ class Curve {
     template <typename T, unsigned int N, unsigned int M>
     __device__ __forceinline__ static void setNewAgentArrayVariable(const char(&name)[M], VariableHash namespace_hash, T variable, unsigned int variable_index, unsigned int array_index);
 
+    template <typename T, unsigned int N, unsigned int M>
+    __device__ __forceinline__ static std::array<T, N> getAgentArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, unsigned int variable_index);
+    template <typename T, unsigned int N, unsigned int M>
+    __device__ __forceinline__ static void setAgentArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, const std::array<T, N> &variable, unsigned int variable_index);
+    template <typename T, unsigned int N, unsigned int M>
+    __device__ __forceinline__ static void setNewAgentArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, const std::array<T, N> &variable, unsigned int variable_index);
+
 };
 
 template <typename T, unsigned int N>
@@ -154,6 +161,19 @@ __device__ __forceinline__ void Curve::setNewAgentArrayVariable(const char(&name
 $DYNAMIC_SETNEWAGENTARRAYVARIABLE_IMPL    
 }
 
+template <typename T, unsigned int N, unsigned int M>
+__device__ __forceinline__ std::array<T, N> Curve::getAgentArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, unsigned int variable_index) {
+$DYNAMIC_GETAGENTSTDARRAYVARIABLE_IMPL    
+}
+template <typename T, unsigned int N, unsigned int M>
+__device__ __forceinline__ void Curve::setAgentArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, const std::array<T, N> &variable, unsigned int variable_index) {
+$DYNAMIC_SETAGENTSTDARRAYVARIABLE_IMPL    
+}
+template <typename T, unsigned int N, unsigned int M>
+__device__ __forceinline__ void Curve::setNewAgentArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, const std::array<T, N> &variable, unsigned int variable_index) {
+$DYNAMIC_SETNEWAGENTSTDARRAYVARIABLE_IMPL    
+}
+
 // has to be included after definition of curve namespace
 #include "flamegpu/runtime/utility/DeviceEnvironment.cuh"
 
@@ -170,6 +190,11 @@ $DYNAMIC_ENV_GETARRAYVARIABLE_IMPL
 template<unsigned int N>
 __device__ __forceinline__ bool DeviceEnvironment::containsProperty(const char(&name)[N]) const {
 $DYNAMIC_ENV_CONTAINTS_IMPL
+}
+
+template<typename T, unsigned int N, unsigned int M>
+__device__ __forceinline__ std::array<T, N> DeviceEnvironment::getProperty(const char(&name)[M]) const {
+$DYNAMIC_ENV_GETSTDARRAYVARIABLE_IMPL
 }
 
 #endif  // CURVE_RTC_DYNAMIC_H_
@@ -447,6 +472,34 @@ void CurveRTCHost::initHeaderEnvironment() {
         containsEnvVariableImpl <<               "    return false;\n";    // if namespace is not recognised
         setHeaderPlaceholder("$DYNAMIC_ENV_CONTAINTS_IMPL", containsEnvVariableImpl.str());
     }
+    // generate Environment::get func implementation for array variables ($DYNAMIC_ENV_GETSTDARRAYVARIABLE_IMPL)
+    {
+        std::stringstream getEnvArrayVariableImpl;
+        for (auto key_pair : RTCEnvVariables) {
+            for (std::pair<std::string, RTCEnvVariableProperties> element : key_pair.second) {
+                RTCEnvVariableProperties props = element.second;
+                if (props.elements > 1) {
+                    getEnvArrayVariableImpl << "          if (strings_equal(name, \"" << element.first << "\")) {\n";
+                    getEnvArrayVariableImpl << "#ifndef NO_SEATBELTS\n";
+                    getEnvArrayVariableImpl << "              if(sizeof(T) != " << element.second.type_size << ") {\n";
+                    getEnvArrayVariableImpl << "                  DTHROW(\"Environment array property '%s' type mismatch, during getEnvArrayVariable().\\n\", name);\n";
+                    getEnvArrayVariableImpl << "                  return 0;\n";
+                    getEnvArrayVariableImpl << "              } else if (N != " << element.second.elements << ") {\n";
+                    getEnvArrayVariableImpl << "                  DTHROW(\"Environment array property '%s' length mismatch, %u != %u, during getEnvArrayVariable().\\n\", name, N, " << element.second.elements << " );\n";
+                    getEnvArrayVariableImpl << "                  return 0;\n";
+                    getEnvArrayVariableImpl << "              }\n";
+                    getEnvArrayVariableImpl << "#endif\n";
+                    getEnvArrayVariableImpl << "              return reinterpret_cast<std::array<T, N>*>(reinterpret_cast<void*>(" << getEnvVariableSymbolName() << " + " << props.offset << "));\n";
+                    getEnvArrayVariableImpl << "          };\n";
+                }
+            }
+            getEnvArrayVariableImpl << "#ifndef NO_SEATBELTS\n";
+            getEnvArrayVariableImpl << "          DTHROW(\"Environment array property '%s' was not found.\\n\", name);\n";
+            getEnvArrayVariableImpl << "#endif\n";
+            getEnvArrayVariableImpl << "          return std::array<T, N>();\n";
+        }
+        setHeaderPlaceholder("$DYNAMIC_ENV_GETSTDARRAYVARIABLE_IMPL", getEnvArrayVariableImpl.str());
+    }
 }
 void CurveRTCHost::initHeaderSetters() {
     // generate setAgentVariable func implementation ($DYNAMIC_SETAGENTVARIABLE_IMPL)
@@ -549,6 +602,32 @@ void CurveRTCHost::initHeaderSetters() {
         setAgentArrayVariableImpl <<         "#endif\n";
         setHeaderPlaceholder("$DYNAMIC_SETAGENTARRAYVARIABLE_IMPL", setAgentArrayVariableImpl.str());
     }
+    // generate setAgentArrayVariable func implementation ($DYNAMIC_SETAGENTSTDARRAYVARIABLE_IMPL)
+    {
+        std::stringstream setAgentArrayVariableImpl;
+        for (const auto& element : agent_variables) {
+            RTCVariableProperties props = element.second;
+            if (props.write && props.elements > 1) {
+                setAgentArrayVariableImpl << "          if (strings_equal(name, \"" << element.first << "\")) {\n";
+                setAgentArrayVariableImpl << "#ifndef NO_SEATBELTS\n";
+                setAgentArrayVariableImpl << "              if(sizeof(T) != " << element.second.type_size << ") {\n";
+                setAgentArrayVariableImpl << "                  DTHROW(\"Agent array variable '%s' type mismatch during setVariable().\\n\", name);\n";
+                setAgentArrayVariableImpl << "                  return;\n";
+                setAgentArrayVariableImpl << "              } else if (N != " << element.second.elements << ") {\n";
+                setAgentArrayVariableImpl << "                  DTHROW(\"Agent array variable '%s' length mismatch, %u != %u, during setVariable().\\n\", name, N, " << element.second.elements << ");\n";
+                setAgentArrayVariableImpl << "                  return;\n";
+                setAgentArrayVariableImpl << "              }\n";
+                setAgentArrayVariableImpl << "#endif\n";
+                setAgentArrayVariableImpl << "              reinterpret_cast<std::array<T, N>*>(curve_rtc_ptr_" << agent_namespace << "_" << element.first << ")[index] = variable;\n";
+                setAgentArrayVariableImpl << "              return;\n";
+                setAgentArrayVariableImpl << "          }\n";
+            }
+        }
+        setAgentArrayVariableImpl << "#ifndef NO_SEATBELTS\n";
+        setAgentArrayVariableImpl << "          DTHROW(\"Agent array variable '%s' was not found during setVariable().\\n\", name);\n";
+        setAgentArrayVariableImpl << "#endif\n";
+        setHeaderPlaceholder("$DYNAMIC_SETAGENTSTDARRAYVARIABLE_IMPL", setAgentArrayVariableImpl.str());
+    }
     // generate setNewAgentArrayVariable func implementation ($DYNAMIC_SETNEWAGENTARRAYVARIABLE_IMPL)
     {
         std::stringstream setNewAgentArrayVariableImpl;
@@ -579,6 +658,34 @@ void CurveRTCHost::initHeaderSetters() {
         setNewAgentArrayVariableImpl <<         "          DTHROW(\"New agent array variable '%s' was not found during setVariable().\\n\", name);\n";
         setNewAgentArrayVariableImpl <<         "#endif\n";
         setHeaderPlaceholder("$DYNAMIC_SETNEWAGENTARRAYVARIABLE_IMPL", setNewAgentArrayVariableImpl.str());
+    }
+    // generate setNewAgentArrayVariable func implementation ($DYNAMIC_SETNEWAGENTSTDARRAYVARIABLE_IMPL)
+    {
+        std::stringstream setNewAgentArrayVariableImpl;
+        if (!newAgent_variables.empty())
+            setNewAgentArrayVariableImpl << "    const size_t i = (index * N) + array_index;\n";
+        for (const auto& element : newAgent_variables) {
+            RTCVariableProperties props = element.second;
+            if (props.write && props.elements > 1) {
+                setNewAgentArrayVariableImpl << "          if (strings_equal(name, \"" << element.first << "\")) {\n";
+                setNewAgentArrayVariableImpl << "#ifndef NO_SEATBELTS\n";
+                setNewAgentArrayVariableImpl << "              if(sizeof(T) != " << element.second.type_size << ") {\n";
+                setNewAgentArrayVariableImpl << "                  DTHROW(\"New agent array variable '%s' type mismatch during setVariable().\\n\", name);\n";
+                setNewAgentArrayVariableImpl << "                  return;\n";
+                setNewAgentArrayVariableImpl << "              } else if (N != " << element.second.elements << ") {\n";
+                setNewAgentArrayVariableImpl << "                  DTHROW(\"New agent array variable '%s' length mismatch, %u != %u, during setVariable().\\n\", name, N, " << element.second.elements << ");\n";
+                setNewAgentArrayVariableImpl << "                  return;\n";
+                setNewAgentArrayVariableImpl << "              }\n";
+                setNewAgentArrayVariableImpl << "#endif\n";
+                setNewAgentArrayVariableImpl << "              reinterpret_cast<std::array<T, N>*>(curve_rtc_ptr_" << newAgent_namespace << "_" << element.first << ")[index] = variable;\n";
+                 setNewAgentArrayVariableImpl << "              return;\n";
+                setNewAgentArrayVariableImpl << "          }\n";
+            }
+        }
+        setNewAgentArrayVariableImpl << "#ifndef NO_SEATBELTS\n";
+        setNewAgentArrayVariableImpl << "          DTHROW(\"New agent array variable '%s' was not found during setVariable().\\n\", name);\n";
+        setNewAgentArrayVariableImpl << "#endif\n";
+        setHeaderPlaceholder("$DYNAMIC_SETNEWAGENTSTDARRAYVARIABLE_IMPL", setNewAgentArrayVariableImpl.str());
     }
 }
 void CurveRTCHost::initHeaderGetters() {
@@ -735,6 +842,34 @@ void CurveRTCHost::initHeaderGetters() {
         getAgentArrayVariableLDGImpl <<         "#endif\n";
         getAgentArrayVariableLDGImpl <<         "           return 0;\n";
         setHeaderPlaceholder("$DYNAMIC_GETAGENTARRAYVARIABLE_LDG_IMPL", getAgentArrayVariableLDGImpl.str());
+    }
+    // generate getArrayVariable func implementation ($DYNAMIC_GETAGENTSTDARRAYVARIABLE_IMPL)
+    {
+        std::stringstream getAgentArrayVariableImpl;
+        if (!agent_variables.empty())
+            getAgentArrayVariableImpl << "    const size_t i = (index * N) + array_index;\n";
+        for (const auto& element : agent_variables) {
+            RTCVariableProperties props = element.second;
+            if (props.read && props.elements > 1) {
+                getAgentArrayVariableImpl << "          if (strings_equal(name, \"" << element.first << "\")) {\n";
+                getAgentArrayVariableImpl << "#ifndef NO_SEATBELTS\n";
+                getAgentArrayVariableImpl << "              if(sizeof(T) != " << element.second.type_size << ") {\n";
+                getAgentArrayVariableImpl << "                  DTHROW(\"Agent array variable '%s' type mismatch during getVariable().\\n\", name);\n";
+                getAgentArrayVariableImpl << "                  return 0;\n";
+                getAgentArrayVariableImpl << "              } else if (N != " << element.second.elements << ") {\n";
+                getAgentArrayVariableImpl << "                  DTHROW(\"Agent array variable '%s' length mismatch, %u != %u, during getVariable().\\n\", name, N, " << element.second.elements << ");\n";
+                getAgentArrayVariableImpl << "                  return 0;\n";
+                getAgentArrayVariableImpl << "              }\n";
+                getAgentArrayVariableImpl << "#endif\n";
+                getAgentArrayVariableImpl << "              return reinterpret_cast<std::array<T, N>*>(reinterpret_cast<void*>(curve_rtc_ptr_" << agent_namespace << "_" << element.first << "))[index];\n";
+                getAgentArrayVariableImpl << "           };\n";
+            }
+        }
+        getAgentArrayVariableImpl << "#ifndef NO_SEATBELTS\n";
+        getAgentArrayVariableImpl << "           DTHROW(\"Agent array variable '%s' was not found during getVariable().\\n\", name);\n";
+        getAgentArrayVariableImpl << "#endif\n";
+        getAgentArrayVariableImpl << "           return 0;\n";
+        setHeaderPlaceholder("$DYNAMIC_GETAGENTSTDARRAYVARIABLE_IMPL", getAgentArrayVariableImpl.str());
     }
 }
 
