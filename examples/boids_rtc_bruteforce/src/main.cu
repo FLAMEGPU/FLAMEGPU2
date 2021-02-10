@@ -413,14 +413,14 @@ int main(int argc, const char ** argv) {
     ModelVis &visualisation = cuda_model.getVisualisation();
     {
         EnvironmentDescription &env = model.Environment();
-        float envWidth = env.get<float>("MAX_POSITION") - env.get<float>("MIN_POSITION");
-        const float INIT_CAM = env.get<float>("MAX_POSITION") * 1.25f;
+        float envWidth = env.getProperty<float>("MAX_POSITION") - env.getProperty<float>("MIN_POSITION");
+        const float INIT_CAM = env.getProperty<float>("MAX_POSITION") * 1.25f;
         visualisation.setInitialCameraLocation(INIT_CAM, INIT_CAM, INIT_CAM);
         visualisation.setCameraSpeed(0.002f * envWidth);
         auto &circ_agt = visualisation.addAgent("Boid");
         // Position vars are named x, y, z; so they are used by default
         circ_agt.setModel(Stock::Models::ICOSPHERE);
-        circ_agt.setModelScale(env.get<float>("SEPARATION_RADIUS"));
+        circ_agt.setModelScale(env.getProperty<float>("SEPARATION_RADIUS"));
     }
     visualisation.activate();
 #endif
