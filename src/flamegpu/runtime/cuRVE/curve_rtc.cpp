@@ -306,7 +306,7 @@ void CurveRTCHost::registerEnvVariable(const char* variableName, unsigned int na
         // emplace into existing namespace key
         i->second.emplace(variableName, props);
     } else {
-        std::unordered_map<std::string, RTCEnvVariableProperties> inner;
+        std::map<std::string, RTCEnvVariableProperties> inner;
         inner.emplace(variableName, props);
         RTCEnvVariables.emplace(namespace_hash, inner);
     }
@@ -346,105 +346,73 @@ void CurveRTCHost::initHeaderEnvironment() {
     // generate Environment::get func implementation ($DYNAMIC_ENV_GETVARIABLE_IMPL)
     {
         std::stringstream getEnvVariableImpl;
-        getEnvVariableImpl <<               "    switch(modelname_hash){\n";
         for (auto key_pair : RTCEnvVariables) {
-            unsigned int namespace_hash = key_pair.first;
-            getEnvVariableImpl <<           "      case(" << namespace_hash << "):\n";
             for (std::pair<std::string, RTCEnvVariableProperties> element : key_pair.second) {
                 RTCEnvVariableProperties props = element.second;
                 if (props.elements == 1) {
-                    getEnvVariableImpl <<   "            if (strings_equal(name, \"" << element.first << "\")) {\n";
+                    getEnvVariableImpl <<   "    if (strings_equal(name, \"" << element.first << "\")) {\n";
                     getEnvVariableImpl <<   "#ifndef NO_SEATBELTS\n";
-                    getEnvVariableImpl <<   "                if(sizeof(T) != " << element.second.type_size << ") {\n";
-                    getEnvVariableImpl <<   "                    DTHROW(\"Environment property '%s' type mismatch.\\n\", name);\n";
-                    getEnvVariableImpl <<   "                    return 0;\n";
-                    getEnvVariableImpl <<   "                }\n";
+                    getEnvVariableImpl <<   "        if(sizeof(T) != " << element.second.type_size << ") {\n";
+                    getEnvVariableImpl <<   "            DTHROW(\"Environment property '%s' type mismatch.\\n\", name);\n";
+                    getEnvVariableImpl <<   "            return 0;\n";
+                    getEnvVariableImpl <<   "        }\n";
                     getEnvVariableImpl <<   "#endif\n";
-                    getEnvVariableImpl <<   "                return *reinterpret_cast<T*>(reinterpret_cast<void*>(" << getEnvVariableSymbolName() <<" + " << props.offset << "));\n";
-                    getEnvVariableImpl <<   "            };\n";
+                    getEnvVariableImpl <<   "        return *reinterpret_cast<T*>(reinterpret_cast<void*>(" << getEnvVariableSymbolName() <<" + " << props.offset << "));\n";
+                    getEnvVariableImpl <<   "    };\n";
                 }
             }
             getEnvVariableImpl <<           "#ifndef NO_SEATBELTS\n";
-            getEnvVariableImpl <<           "            DTHROW(\"Environment property '%s' was not found.\\n\", name);\n";
+            getEnvVariableImpl <<           "    DTHROW(\"Environment property '%s' was not found.\\n\", name);\n";
             getEnvVariableImpl <<           "#endif\n";
-            getEnvVariableImpl <<           "            return 0;\n";
+            getEnvVariableImpl <<           "    return 0;\n";
         }
-        getEnvVariableImpl <<               "      default:\n";
-        getEnvVariableImpl <<               "#ifndef NO_SEATBELTS\n";
-        getEnvVariableImpl <<               "          DTHROW(\"Unexpected modelname hash %d for environment property '%s'.\\n\", modelname_hash, name);\n";
-        getEnvVariableImpl <<               "#endif\n";
-        getEnvVariableImpl <<               "          return 0;\n";
-        getEnvVariableImpl <<               "    }\n";
-        getEnvVariableImpl <<               "    return 0;\n";    // if namespace is not recognised
         setHeaderPlaceholder("$DYNAMIC_ENV_GETVARIABLE_IMPL", getEnvVariableImpl.str());
     }
     // generate Environment::get func implementation for array variables ($DYNAMIC_ENV_GETARRAYVARIABLE_IMPL)
     {
         std::stringstream getEnvArrayVariableImpl;
-        getEnvArrayVariableImpl <<             "    switch(modelname_hash){\n";
         for (auto key_pair : RTCEnvVariables) {
-            unsigned int namespace_hash = key_pair.first;
-            getEnvArrayVariableImpl <<         "      case(" << namespace_hash << "):\n";
             for (std::pair<std::string, RTCEnvVariableProperties> element : key_pair.second) {
                 RTCEnvVariableProperties props = element.second;
                 if (props.elements > 1) {
-                    getEnvArrayVariableImpl << "          if (strings_equal(name, \"" << element.first << "\")) {\n";
+                    getEnvArrayVariableImpl << "    if (strings_equal(name, \"" << element.first << "\")) {\n";
                     getEnvArrayVariableImpl << "#ifndef NO_SEATBELTS\n";
-                    getEnvArrayVariableImpl << "              if(sizeof(T) != " << element.second.type_size << ") {\n";
-                    getEnvArrayVariableImpl << "                  DTHROW(\"Environment array property '%s' type mismatch.\\n\", name);\n";
-                    getEnvArrayVariableImpl << "                  return 0;\n";
+                    getEnvArrayVariableImpl << "        if(sizeof(T) != " << element.second.type_size << ") {\n";
+                    getEnvArrayVariableImpl << "            DTHROW(\"Environment array property '%s' type mismatch.\\n\", name);\n";
+                    getEnvArrayVariableImpl << "            return 0;\n";
                     // Env var doesn't currently require user to specify length
-                    // getEnvArrayVariableImpl << "              } else if (N != " << element.second.elements << ") {\n";
-                    // getEnvArrayVariableImpl << "                  DTHROW(\"Environment array property '%s' length mismatch.\\n\", name);\n";
-                    // getEnvArrayVariableImpl << "                  return 0;\n";
-                    getEnvArrayVariableImpl << "              } else if (index >= " << element.second.elements << ") {\n";
-                    getEnvArrayVariableImpl << "                  DTHROW(\"Environment array property '%s', index %d is out of bounds.\\n\", name, index);\n";
-                    getEnvArrayVariableImpl << "                  return 0;\n";
-                    getEnvArrayVariableImpl << "              }\n";
+                    // getEnvArrayVariableImpl << "        } else if (N != " << element.second.elements << ") {\n";
+                    // getEnvArrayVariableImpl << "            DTHROW(\"Environment array property '%s' length mismatch.\\n\", name);\n";
+                    // getEnvArrayVariableImpl << "            return 0;\n";
+                    getEnvArrayVariableImpl << "        } else if (index >= " << element.second.elements << ") {\n";
+                    getEnvArrayVariableImpl << "            DTHROW(\"Environment array property '%s', index %d is out of bounds.\\n\", name, index);\n";
+                    getEnvArrayVariableImpl << "            return 0;\n";
+                    getEnvArrayVariableImpl << "        }\n";
                     getEnvArrayVariableImpl << "#endif\n";
-                    getEnvArrayVariableImpl << "              return reinterpret_cast<T*>(reinterpret_cast<void*>(" << getEnvVariableSymbolName() <<" + " << props.offset << "))[index];\n";
-                    getEnvArrayVariableImpl << "          };\n";
+                    getEnvArrayVariableImpl << "        return reinterpret_cast<T*>(reinterpret_cast<void*>(" << getEnvVariableSymbolName() <<" + " << props.offset << "))[index];\n";
+                    getEnvArrayVariableImpl << "    };\n";
                 }
             }
             getEnvArrayVariableImpl <<         "#ifndef NO_SEATBELTS\n";
-            getEnvArrayVariableImpl <<         "          DTHROW(\"Environment array property '%s' was not found.\\n\", name);\n";
+            getEnvArrayVariableImpl <<         "    DTHROW(\"Environment array property '%s' was not found.\\n\", name);\n";
             getEnvArrayVariableImpl <<         "#endif\n";
-            getEnvArrayVariableImpl <<         "          return 0;\n";
+            getEnvArrayVariableImpl <<         "    return 0;\n";
         }
-        getEnvArrayVariableImpl <<             "      default:\n";
-        getEnvArrayVariableImpl <<             "#ifndef NO_SEATBELTS\n";
-        getEnvArrayVariableImpl <<             "          DTHROW(\"Unexpected modelname hash %d for environment array property '%s'.\\n\", modelname_hash, name);\n";
-        getEnvArrayVariableImpl <<             "#endif\n";
-        getEnvArrayVariableImpl <<             "          return 0;\n";
-        getEnvArrayVariableImpl <<             "    }\n";
-        getEnvArrayVariableImpl <<             "    return 0;\n";   // if namespace is not recognised
         setHeaderPlaceholder("$DYNAMIC_ENV_GETARRAYVARIABLE_IMPL", getEnvArrayVariableImpl.str());
     }
     // generate Environment::contains func implementation ($DYNAMIC_ENV_CONTAINTS_IMPL)
     {
         std::stringstream containsEnvVariableImpl;
-        containsEnvVariableImpl <<               "    switch(modelname_hash){\n";
         for (auto key_pair : RTCEnvVariables) {
-            unsigned int namespace_hash = key_pair.first;
-            containsEnvVariableImpl <<           "      case(" << namespace_hash << "):\n";
-            unsigned int count = 0;
             for (std::pair<std::string, RTCEnvVariableProperties> element : key_pair.second) {
                 RTCEnvVariableProperties props = element.second;
                 if (props.elements == 1) {
-                    containsEnvVariableImpl <<   "            if (strings_equal(name, \"" << element.first << "\"))\n";
-                    containsEnvVariableImpl <<   "                return true;\n";
-                    count++;
+                    containsEnvVariableImpl <<   "    if (strings_equal(name, \"" << element.first << "\"))\n";
+                    containsEnvVariableImpl <<   "        return true;\n";
                 }
             }
-            if (count > 0) {
-                containsEnvVariableImpl <<       "            else\n";
-            }
-            containsEnvVariableImpl <<           "                return false;\n";
+            containsEnvVariableImpl <<           "    return false;\n";
         }
-        containsEnvVariableImpl <<               "      default:\n";
-        containsEnvVariableImpl <<               "          return false;\n";
-        containsEnvVariableImpl <<               "    }\n";
-        containsEnvVariableImpl <<               "    return false;\n";    // if namespace is not recognised
         setHeaderPlaceholder("$DYNAMIC_ENV_CONTAINTS_IMPL", containsEnvVariableImpl.str());
     }
 }

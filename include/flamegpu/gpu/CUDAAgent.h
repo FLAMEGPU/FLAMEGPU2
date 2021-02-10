@@ -9,18 +9,11 @@
 #include <unordered_map>
 
 // include sub classes
+#include "flamegpu/util/JitifyCache.h"
 #include "flamegpu/gpu/CUDAAgentStateList.h"
 #include "flamegpu/model/AgentFunctionData.h"
 #include "flamegpu/model/SubAgentData.h"
 #include "flamegpu/sim/AgentInterface.h"
-
-#ifdef _MSC_VER
-#pragma warning(push, 2)
-#include "jitify/jitify.hpp"
-#pragma warning(pop)
-#else
-#include "jitify/jitify.hpp"
-#endif
 
 class CUDAScatter;
 class CUDAFatAgent;
@@ -37,11 +30,11 @@ class CUDAAgent : public AgentInterface {
     /**
      *  map of agent function name to RTC function instance
      */
-    typedef std::map<const std::string, std::unique_ptr<jitify::KernelInstantiation>> CUDARTCFuncMap;
+    typedef std::map<const std::string, std::unique_ptr<jitify::experimental::KernelInstantiation>> CUDARTCFuncMap;
     /**
      * Element type of CUDARTCFuncMap
      */
-    typedef std::pair<const std::string, std::unique_ptr<jitify::KernelInstantiation>> CUDARTCFuncMapPair;
+    typedef std::pair<const std::string, std::unique_ptr<jitify::experimental::KernelInstantiation>> CUDARTCFuncMapPair;
     /**
      * Normal constructor
      * @param description Agent description of the agent
@@ -200,13 +193,13 @@ class CUDAAgent : public AgentInterface {
      * @param kernel_cache The JitCache to use (probably CUDASimulation::rtc_kernel_cache)
      * @throw InvalidAgentFunc thrown if the user supplied agent function has compilation errors
      */
-    void addInstantitateRTCFunction(jitify::JitCache &kernel_cache, const AgentFunctionData& func, bool function_condition = false);
+    void addInstantitateRTCFunction(const AgentFunctionData& func, bool function_condition = false);
     /**
      * Returns the jitify kernel instantiation of the agent function.
      * Will throw an InvalidAgentFunc excpetion if the function name does not have a valid instantiation
      * @param function_name the name of the RTC agent function or the agent function name suffixed with condition (if it is a function condition)
      */
-    const jitify::KernelInstantiation& getRTCInstantiation(const std::string &function_name) const;
+    const jitify::experimental::KernelInstantiation& getRTCInstantiation(const std::string &function_name) const;
     /**
      * Returns the CUDARTCFuncMap
      */

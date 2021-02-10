@@ -5,7 +5,7 @@
 #include <string>
 #include <cstdio>
 #include <typeindex>
-#include <unordered_map>
+#include <map>
 
 /** @brief    A cuRVE instance.
  *
@@ -76,10 +76,10 @@ class CurveRTCHost {
     unsigned int messageOut_namespace = 0;
     unsigned int messageIn_namespace = 0;
     unsigned int newAgent_namespace = 0;
-    std::unordered_map<std::string, RTCVariableProperties> agent_variables;  // <name, RTCVariableProperties>
-    std::unordered_map<std::string, RTCVariableProperties> messageOut_variables;  // <name, RTCVariableProperties>
-    std::unordered_map<std::string, RTCVariableProperties> messageIn_variables;  // <name, RTCVariableProperties>
-    std::unordered_map<std::string, RTCVariableProperties> newAgent_variables;  // <name, RTCVariableProperties>
-    std::unordered_map<unsigned int, std::unordered_map<std::string, RTCEnvVariableProperties>> RTCEnvVariables;     // <namespace, <name, RTCEnvVariableProperties>>
+    std::map<std::string, RTCVariableProperties> agent_variables;  // <name, RTCVariableProperties>
+    std::map<std::string, RTCVariableProperties> messageOut_variables;  // <name, RTCVariableProperties>
+    std::map<std::string, RTCVariableProperties> messageIn_variables;  // <name, RTCVariableProperties>
+    std::map<std::string, RTCVariableProperties> newAgent_variables;  // <name, RTCVariableProperties>
+    std::map<unsigned int, std::map<std::string, RTCEnvVariableProperties>> RTCEnvVariables;     // <namespace, <name, RTCEnvVariableProperties>>
 };
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_CURVE_CURVE_RTC_H_

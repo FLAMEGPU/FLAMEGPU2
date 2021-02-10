@@ -7,7 +7,7 @@
 #include <string>
 
 namespace flamegpu_internal {
-std::string getCommitHash() {
+inline std::string getCommitHash() {
     return "${SHORT_HASH}";
 }
 }  // namespace flamegpu_internal

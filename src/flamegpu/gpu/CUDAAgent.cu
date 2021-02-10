@@ -113,7 +113,7 @@ void CUDAAgent::mapRuntimeVariables(const AgentFunctionData& func, const unsigne
         // Map RTC variables to agent function (these must be mapped before each function execution as the runtime pointer may have changed to the swapping)
         if (!func.rtc_func_name.empty()) {
             // get the rtc varibale ptr
-            const jitify::KernelInstantiation& instance = getRTCInstantiation(func.name);
+            const jitify::experimental::KernelInstantiation& instance = getRTCInstantiation(func.name);
             std::stringstream d_var_ptr_name;
             d_var_ptr_name << CurveRTCHost::getVariableSymbolName(mmp.first.c_str(), agent_hash + func_hash);
             CUdeviceptr d_var_ptr = instance.get_global_ptr(d_var_ptr_name.str().c_str());
@@ -125,7 +125,7 @@ void CUDAAgent::mapRuntimeVariables(const AgentFunctionData& func, const unsigne
         if (!func.rtc_func_condition_name.empty()) {
             // get the rtc varibale ptr
             std::string func_name = func.name + "_condition";
-            const jitify::KernelInstantiation& instance = getRTCInstantiation(func_name);
+            const jitify::experimental::KernelInstantiation& instance = getRTCInstantiation(func_name);
             std::stringstream d_var_ptr_name;
             d_var_ptr_name << CurveRTCHost::getVariableSymbolName(mmp.first.c_str(), agent_hash + func_hash);
             CUdeviceptr d_var_ptr = instance.get_global_ptr(d_var_ptr_name.str().c_str());
@@ -366,7 +366,7 @@ void CUDAAgent::mapNewRuntimeVariables(const CUDAAgent& func_agent, const AgentF
             // Map RTC variables (these must be mapped before each function execution as the runtime pointer may have changed to the swapping)
             if (!func.rtc_func_name.empty()) {
                 // get the rtc variable ptr
-                const jitify::KernelInstantiation& instance = func_agent.getRTCInstantiation(func.name);
+                const jitify::experimental::KernelInstantiation& instance = func_agent.getRTCInstantiation(func.name);
                 std::stringstream d_var_ptr_name;
                 d_var_ptr_name << CurveRTCHost::getVariableSymbolName(mmp.first.c_str(), _agent_birth_hash + func_hash);
                 CUdeviceptr d_var_ptr = instance.get_global_ptr(d_var_ptr_name.str().c_str());
@@ -435,117 +435,8 @@ void CUDAAgent::clearFunctionCondition(const std::string &state) {
     fat_agent->setConditionState(fat_index, state, 0);
 }
 
-void CUDAAgent::addInstantitateRTCFunction(jitify::JitCache &kernel_cache, const AgentFunctionData& func, bool function_condition) {
-    // get header location for fgpu
-    static std::string env_inc_fgp2 = std::getenv("FLAMEGPU2_INC_DIR") ? std::getenv("FLAMEGPU2_INC_DIR") : "";
-    static bool header_version_confirmed = false;
-    if (env_inc_fgp2.empty()) {
-        // Var is not set, attempt to use default arrangement
-        path test_include("");
-        // Try 5 levels of directory, to see if we can find flame_api.h
-        for (int i = 0; i < 5; ++i) {
-            path check_file = test_include;
-            check_file/= "include/flamegpu/version.h";
-            if (exists(check_file)) {
-                test_include/= "include";
-                env_inc_fgp2 = test_include.string();
-                break;
-            }
-            // Go up a level for next iteration
-            test_include/= "..";
-        }
-        if (env_inc_fgp2.empty()) {
-            THROW InvalidAgentFunc("Error compiling runtime agent function ('%s'): Unable to automatically determine include directory and FLAMEGPU2_INC_DIR environment variable does not exist, "
-                "in CUDAAgent::addInstantitateRTCFunction().",
-                func.name.c_str());
-        }
-    }
-
-    if (!header_version_confirmed) {
-        std::string fileHash;
-        // Open version.h
-        path version_file = env_inc_fgp2;
-        version_file/= "flamegpu/version.h";
-        std::ifstream vFile(version_file);
-        if (vFile.is_open()) {
-            // Read the first line
-            std::string line;
-            if (getline(vFile, line)) {
-                // If characters 3-onwards match programatic hash we have success, else fail
-                fileHash = line.substr(3, std::string::npos);
-            }
-            vFile.close();
-        }
-        if (fileHash == flamegpu_internal::getCommitHash()) {
-            header_version_confirmed = true;
-        } else {
-            THROW VersionMismatch("RTC header version (%s) does not match version flamegpu2 library was built with (%s). Set the environment variable FLAMEGPU2_INC_DIR to the correct include directory.\n",
-                fileHash.c_str(), flamegpu_internal::getCommitHash().c_str());
-        }
-    }
-
-    // get the cuda path from the environment variable.
-    std::string env_cuda_path = std::getenv("CUDA_PATH");
-    if (env_cuda_path.size() == 0) {
-        THROW InvalidAgentFunc("Error compiling runtime agent function ('%s'): CUDA_PATH environment variable does not exist, "
-            "in CUDAAgent::addInstantitateRTCFunction().",
-            func.name.c_str());
-    }
-    // If the last char is a / or \, remove it. Only removes a single slash.
-    if (env_cuda_path.size() && (env_cuda_path.back() == '/' || env_cuda_path.back() == '\\')) {
-        env_cuda_path.pop_back();
-    }
-
-    // vector of compiler options for jitify
-    std::vector<std::string> options;
-    std::vector<std::string> headers;
-
-    // fpgu include directory
-    options.push_back(std::string("-I" + std::string(env_inc_fgp2)));
-
-    // cuda include directory (via CUDA_PATH)
-    options.push_back(std::string("-I" + env_cuda_path + "/include"));
-
-    // Set the compilation architecture target if it was successfully detected.
-    int currentDeviceIdx = 0;
-    cudaError_t status = cudaGetDevice(&currentDeviceIdx);
-    if (status == cudaSuccess) {
-        int arch = util::compute_capability::getComputeCapability(currentDeviceIdx);
-        options.push_back(std::string("--gpu-architecture=compute_" + std::to_string(arch)));
-    }
-
-    // If CUDA is compiled with -G (--device-debug) forward it to the compiler, otherwise forward lineinfo for profiling.
-    #if defined(__CUDACC_DEBUG__)
-        options.push_back("--device-debug");
-    #else
-        options.push_back("--generate-line-info");
-    #endif
-
-    // If DEBUG is defined, forward it
-    #if defined(DEBUG)
-        options.push_back("-DDEBUG");
-    #endif
-
-    // If NDEBUG is defiend, forward it, this should disable asserts in device code.
-    #if defined(NDEBUG)
-        options.push_back("-DNDEBUG");
-    #endif
-
-    // pass the c++14 language dialect if detected successfully.
-    #if defined(__cplusplus) && __cplusplus > 201400L
-        options.push_back("--std=c++14");
-    #endif
-
-    // cuda.h
-    std::string include_cuda_h;
-    include_cuda_h = "--pre-include=" + env_cuda_path + "/include/cuda.h";
-    options.push_back(include_cuda_h);
-
-#ifdef NO_SEATBELTS
-    options.push_back("--define-macro=NO_SEATBELTS");
-#endif
-
-    // curve rtc header
+void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, bool function_condition) {
+    // Generate the dynamic curve header
     CurveRTCHost curve_header;
     // agent function hash
     Curve::NamespaceHash agentname_hash = Curve::variableRuntimeHash(this->getAgentDescription().name.c_str());
@@ -619,66 +510,55 @@ void CUDAAgent::addInstantitateRTCFunction(jitify::JitCache &kernel_cache, const
     }
     // get the dynamically generated header from curve rtc
     std::string curve_dynamic_header = curve_header.getDynamicHeader();
-    headers.push_back(curve_dynamic_header);
 
-    // cassert header (to remove remaining warnings) TODO: Ask Jitify to implement safe version of this
-    std::string cassert_h = "cassert\n";
-    headers.push_back(cassert_h);
-
-    // jitify to create program (with compilation settings)
-    try {
-        // switch between normal agent function and agent function condition
-        if (!function_condition) {
-            auto program = kernel_cache.program(func.rtc_source, headers, options);
-            // create jifity instance
-            auto kernel = program.kernel("agent_function_wrapper");
-            // create string for agent function implementation
-            std::string func_impl = std::string(func.rtc_func_name).append("_impl");
-            // output to disk if OUTPUT_RTC_DYNAMIC_FILES macro is set
+    // output to disk if OUTPUT_RTC_DYNAMIC_FILES macro is set
 #ifdef OUTPUT_RTC_DYNAMIC_FILES
-            // curve
-            std::ofstream file_curve_rtc_header;
-            std::string file_curve_rtc_header_filename = func_impl.c_str();
-            file_curve_rtc_header_filename.append("_curve_rtc_dynamic.h");
-            file_curve_rtc_header.open(file_curve_rtc_header_filename);
-            // Remove first line as it is the filename, which misaligns profiler
-            std::string out_s = curve_dynamic_header;
-            out_s.erase(0, out_s.find("\n") + 1);
-            file_curve_rtc_header << out_s;
-            file_curve_rtc_header.close();
-            // agent function
-            std::ofstream agent_function_file;
-            std::string agent_function_filename = func_impl.c_str();
-            agent_function_filename.append(".cu");
-            agent_function_file.open(agent_function_filename);
-            // Remove first line as it is the filename, which misaligns profiler
-            out_s = func.rtc_source;
-            out_s.erase(0, out_s.find("\n") + 1);
-            agent_function_file << out_s;
-            agent_function_file.close();
+        // create string for agent function implementation
+        std::string func_impl = std::string(func.rtc_func_name).append("_impl");
+        // curve
+        std::ofstream file_curve_rtc_header;
+        std::string file_curve_rtc_header_filename = func_impl.c_str();
+        if (function_condition)
+            file_curve_rtc_header_filename.append("_condition");
+        file_curve_rtc_header_filename.append("_curve_rtc_dynamic.h");
+        file_curve_rtc_header.open(file_curve_rtc_header_filename);
+        // Remove first line as it is the filename, which misaligns profiler
+        std::string out_s = curve_dynamic_header;
+        out_s.erase(0, out_s.find("\n") + 1);
+        file_curve_rtc_header << out_s;
+        file_curve_rtc_header.close();
+        // agent function
+        std::ofstream agent_function_file;
+        std::string agent_function_filename = func_impl.c_str();
+        if (function_condition)
+            agent_function_filename.append("_condition");
+        agent_function_filename.append(".cu");
+        agent_function_file.open(agent_function_filename);
+        // Remove first line as it is the filename, which misaligns profiler
+        out_s = func.rtc_source;
+        out_s.erase(0, out_s.find("\n") + 1);
+        agent_function_file << out_s;
+        agent_function_file.close();
 #endif
-            // add kernal instance to map
-            rtc_func_map.insert(CUDARTCFuncMap::value_type(func.name, std::unique_ptr<jitify::KernelInstantiation>(new jitify::KernelInstantiation(kernel, { func_impl.c_str(), func.msg_in_type.c_str(), func.msg_out_type.c_str() }))));
-        } else {
-            auto program = kernel_cache.program(func.rtc_condition_source, headers, options);
-            // create jifity instance
-            auto kernel = program.kernel("agent_function_condition_wrapper");
-            // create string for agent function implementation
-            std::string func_impl = std::string(func.rtc_func_condition_name).append("_cdn_impl");
-            // add kernal instance to map
-            std::string func_name = func.name + "_condition";
-            rtc_func_map.insert(CUDARTCFuncMap::value_type(func_name, std::unique_ptr<jitify::KernelInstantiation>(new jitify::KernelInstantiation(kernel, { func_impl.c_str()}))));
-        }
-    }
-    catch (std::runtime_error const&) {
-        // jitify does not have a method for getting compile logs so rely on JITIFY_PRINT_LOG defined in cmake
-        THROW InvalidAgentFunc("Error compiling runtime agent function (or function condition) ('%s'): function had compilation errors (see std::cout), "
-            "in CUDAAgent::addInstantitateRTCFunction().",
-            func.name.c_str());
+
+    JitifyCache &jitify = JitifyCache::getInstance();
+    // switch between normal agent function and agent function condition
+    if (!function_condition) {
+        const std::string func_impl = std::string(func.rtc_func_name).append("_impl");
+        const std::vector<std::string> template_args = { func_impl.c_str(), func.msg_in_type.c_str(), func.msg_out_type.c_str() };
+        auto kernel_inst = jitify.loadKernel(func.rtc_func_name, template_args, func.rtc_source, curve_dynamic_header);
+        // add kernel instance to map
+        rtc_func_map.insert(CUDARTCFuncMap::value_type(func.name, std::move(kernel_inst)));
+    } else {
+        const std::string func_impl = std::string(func.rtc_func_condition_name).append("_cdn_impl");
+        const std::vector<std::string> template_args = { func_impl.c_str() };
+        auto kernel_inst = jitify.loadKernel(func.rtc_func_name + "_condition", template_args, func.rtc_condition_source, curve_dynamic_header);
+        // add kernel instance to map
+        rtc_func_map.insert(CUDARTCFuncMap::value_type(func.name + "_condition", std::move(kernel_inst)));
     }
 }
 
-const jitify::KernelInstantiation& CUDAAgent::getRTCInstantiation(const std::string &function_name) const {
+const jitify::experimental::KernelInstantiation& CUDAAgent::getRTCInstantiation(const std::string &function_name) const {
     CUDARTCFuncMap::const_iterator mm = rtc_func_map.find(function_name);
     if (mm == rtc_func_map.end()) {
         THROW InvalidAgentFunc("Function name '%s' is not a runtime compiled agent function in agent '%s', "
