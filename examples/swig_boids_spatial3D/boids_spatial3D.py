@@ -1,5 +1,5 @@
 from pyflamegpu import *
-import sys, random
+import sys, random, math
 
 """
   FLAME GPU 2 implementation of the Boids model, using spatial3D messaging.
@@ -18,7 +18,7 @@ import sys, random
   @return the length of the vector
 """
 def vec3Length(x, y, z):
-    return sqrtf(x * x + y * y + z * z);
+    return math.sqrt(x * x + y * y + z * z);
 
 """
   Add a scalar to a vector in-place
@@ -162,7 +162,7 @@ FLAMEGPU_HOST_DEVICE_FUNCTION void clampPosition(float &x, float &y, float &z, c
     z = (z < MIN_POSITION)? MIN_POSITION: z;
     z = (z > MAX_POSITION)? MAX_POSITION: z;
 }
-# Agent function
+// Agent function
 FLAMEGPU_AGENT_FUNCTION(inputdata, MsgSpatial3D, MsgNone) {
     // Agent properties in local register
     int id = FLAMEGPU->getVariable<int>("id");
@@ -419,15 +419,15 @@ if VISUALISATION:
 cuda_model.initialise(sys.argv);
 
 # If no xml model file was is provided, generate a population.
-if cuda_model.getSimulationConfig().input_file.empty():
+if not cuda_model.getSimulationConfig().input_file:
     # Uniformly distribute agents within space, with uniformly distributed initial velocity.
     random.seed(cuda_model.getSimulationConfig().random_seed);
-    min_pos = env.getPropertyFloat("MIN_POSITION")
+    min_pos = env.getPropertyFloat("MIN_POSITION");
     max_pos = env.getPropertyFloat("MAX_POSITION");
-    min_speed = env.getPropertyFloat("MIN_INITIAL_SPEED"),
-    max_speed = env.getPropertyFloat("MAX_INITIAL_SPEED")
+    min_speed = env.getPropertyFloat("MIN_INITIAL_SPEED");
+    max_speed = env.getPropertyFloat("MAX_INITIAL_SPEED");
     populationSize = env.getPropertyUInt("POPULATION_TO_GENERATE");
-    population = AgentPopulation(model.Agent("Boid"), populationSize);
+    population = pyflamegpu.AgentPopulation(model.Agent("Boid"), populationSize);
     for i in range(populationSize):
         instance = population.getNextInstance();
         instance.setVariableInt("id", i);
