@@ -213,6 +213,10 @@ class CUDASimulation : public Simulation {
 
  private:
     /**
+     * Execute all agent initialiser functions.
+     */
+    void agentInitialisers();
+    /**
      * Reinitalises random generation for this model and all submodels
      * @param seed New random seed (this updates stored seed in config)
      */

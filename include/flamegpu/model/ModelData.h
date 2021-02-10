@@ -9,6 +9,7 @@
 #include <string>
 
 #include "flamegpu/model/EnvironmentDescription.h"
+#include "flamegpu/runtime/AgentFunction.h"
 #include "flamegpu/runtime/flamegpu_host_api_macros.h"
 #include "flamegpu/runtime/messaging/BruteForce.h"
 
@@ -110,6 +111,18 @@ struct ModelData : std::enable_shared_from_this<ModelData>{
      */
     InitFunctionSet initFunctions;
     HostFunctionCallbackSet initFunctionCallbacks;
+    /**
+     * Agent name and State name
+     */
+    typedef std::pair<std::string, std::string> NamePair;
+    struct NamePairHash {
+        size_t operator()(const NamePair& k) const {
+            return std::hash<std::string>()(k.first) ^
+                (std::hash<std::string>()(k.second) << 1);
+        }
+    };
+    std::map<NamePair, AgentFunctionWrapper*, NamePairHash> agentInitFunctions;
+    std::map<NamePair, std::string, NamePairHash> agentInitRTCSources;
     /**
      * Holds pointers to all of the step functions used by the model
      */

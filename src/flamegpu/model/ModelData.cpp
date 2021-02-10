@@ -65,6 +65,8 @@ std::shared_ptr<ModelData> ModelData::clone() const {
 ModelData::ModelData(const ModelData &other)
     : initFunctions(other.initFunctions)
     , initFunctionCallbacks(other.initFunctionCallbacks)
+    , agentInitFunctions(other.agentInitFunctions)
+    , agentInitRTCSources(other.agentInitRTCSources)
     , stepFunctions(other.stepFunctions)
     , stepFunctionCallbacks(other.stepFunctionCallbacks)
     , exitFunctions(other.exitFunctions)
@@ -92,6 +94,8 @@ bool ModelData::operator==(const ModelData& rhs) const {
         && exitFunctionCallbacks.size() == rhs.exitFunctionCallbacks.size()
         && exitConditionCallbacks.size() == rhs.exitConditionCallbacks.size()
         && exitConditions.size() == rhs.exitConditions.size()
+        && agentInitFunctions.size() == rhs.agentInitFunctions.size()
+        && agentInitRTCSources.size() == rhs.agentInitRTCSources.size()
         && *environment == *rhs.environment) {
             {  // Compare agents (map)
                 for (auto &v : agents) {
@@ -152,6 +156,12 @@ bool ModelData::operator==(const ModelData& rhs) const {
                 if (exitConditions != rhs.exitConditions)
                     return false;
                 if (exitConditionCallbacks != rhs.exitConditionCallbacks)
+                    return false;
+            }
+            {  // Init Fns (map)
+                if (agentInitFunctions != rhs.agentInitFunctions)
+                    return false;
+                if (agentInitRTCSources != rhs.agentInitRTCSources)
                     return false;
             }
             return true;

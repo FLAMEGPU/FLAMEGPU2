@@ -792,6 +792,12 @@ void CUDASimulation::simulate() {
         processHostAgentCreation(0);
     NVTX_POP();
 
+    // Execute agent init functions
+    NVTX_PUSH("CUDASimulation::step::AgentInitFunctions");
+        agentInitialisers();
+    NVTX_POP();
+
+
 #ifdef VISUALISATION
     if (visualisation) {
         visualisation->updateBuffers();
@@ -888,6 +894,52 @@ void CUDASimulation::reset(bool submodelReset) {
             s.second->reset(false);
         }
     }
+}
+
+void CUDASimulation::agentInitialisers() {
+
+    // Ensure singletons have been initialised
+    initialiseSingletons();
+
+    // Ensure there are enough streams to execute the layer.
+    while (streams.size() < model->agentInitFunctions.size()) {
+        cudaStream_t stream;
+        gpuErrchk(cudaStreamCreate(&stream));
+        streams.push_back(stream);
+    }
+
+    // Track stream id
+    int j = 0;
+    // Sum the total number of threads being launched in the layer
+    unsigned int totalThreads = 0;
+
+    for (auto& initFn : model->agentInitFunctions) {
+        auto func_agent = model->agents.at(initFn.first.first);
+        if (!func_agent) {
+            THROW InvalidAgentFunc("Agent init function refers to expired agent.");
+        }
+        NVTX_RANGE(std::string("map" + func_agent->name + "::" + func_des->name).c_str());
+
+        const CUDAAgent& cuda_agent = getCUDAAgent(func_agent->name);
+        const unsigned int state_list_size = cuda_agent.getStateSize(initFn.first.second);
+        if (state_list_size == 0) {
+            ++j;
+            continue;
+        }
+        // Resize death flag array if necessary
+        singletons->scatter.Scan().resize(state_list_size, CUDAScanCompaction::AGENT_DEATH, j);
+
+        /**
+         * Configure runtime access of the functions variables within the FLAME_API object
+         */
+        cuda_agent.mapRuntimeVariables(*func_des, instance_id);  // Todo, need to make a more general version of this
+
+        // Count total threads being launched
+        totalThreads += cuda_agent.getStateSize(initFn.first.second);
+        ++j;
+    }
+    // Execute init function callbacks
+    // @todo (They need to be compiled first)
 }
 
 void CUDASimulation::setPopulationData(AgentPopulation& population) {

@@ -43,6 +43,11 @@ class AgentDescription {
      * Only way to construct an AgentDescription
      */
     friend AgentDescription& ModelDescription::newAgent(const std::string &);
+    /**
+     * Required for agent init functions
+     */
+    template<typename AgentInitFunction>
+    friend void ModelDescription::setInitFunction(const AgentDescription&, const std::string&, AgentInitFunction a);
 
     /**
      * Constructor, this should only be called by AgentData

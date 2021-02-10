@@ -47,6 +47,12 @@ __device__ __forceinline__ FLAME_GPU_AGENT_STATUS funcName ## _impl::operator()(
 #endif
 
 /**
+ * Macro for defining Agent init functions to be executed on device
+ * It acts as a proxy for FLAMEGPU_AGENT_FUNCTION, with both message types set to MsgNone
+ */
+#define FLAMEGPU_AGENT_INIT(funcName) FLAMEGPU_AGENT_FUNCTION(funcName, MsgNone, MsgNone)
+
+/**
  * Macro so users can define their own device functions
  */
 #define FLAMEGPU_DEVICE_FUNCTION __device__ __forceinline__

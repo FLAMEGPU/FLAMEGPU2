@@ -9,6 +9,8 @@
 #include "flamegpu/model/ModelData.h"
 #include "flamegpu/sim/Simulation.h"
 #include "flamegpu/runtime/messaging/BruteForce/BruteForceHost.h"
+#include "flamegpu/model/AgentData.h"
+#include "flamegpu/model/AgentDescription.h"
 
 class AgentDescription;
 class LayerDescription;
@@ -166,7 +168,6 @@ class ModelDescription {
      * @see ModelDescription::getLayer(const ModelData::size_type &) for the immutable version
      */
     LayerDescription& Layer(const ModelData::size_type &layer_index);
-
     /**
      * Adds an init function to the simulation
      * Init functions execute once before the simulation begins
@@ -175,6 +176,22 @@ class ModelDescription {
      * @note There is no guarantee on the order in which multiple init functions will be executed
      */
     void addInitFunction(FLAMEGPU_INIT_FUNCTION_POINTER func_p);
+    /**
+     * Sets an init function for specific agent and state combinations
+     * These functions execute after init functions, in order to provide a faster per agent init for large initial populations
+     * @param agent_name Name of the agent to be init
+     * @param agent Description of the agent to be init
+     * @param state_name Name of the agent state to be init, methods lacking this arg use ModelData::DEFAULT_STATE
+     * @param a The FLAMEGPU_AGENT_INIT to be used
+     */
+    template<typename AgentInitFunction>
+    void setInitFunction(const std::string& agent_name, const std::string& state_name, AgentInitFunction a = AgentInitFunction());
+    template<typename AgentInitFunction>
+    void setInitFunction(const AgentDescription& agent, const std::string& state_name, AgentInitFunction a = AgentInitFunction());
+    template<typename AgentInitFunction>
+    void setInitFunction(const std::string& agent_name, AgentInitFunction a = AgentInitFunction());
+    template<typename AgentInitFunction>
+    void setInitFunction(const AgentDescription& agent, AgentInitFunction a = AgentInitFunction());
     /**
      * Adds a step function to the simulation
      * Step functions execute once per step, after all layers have been executed, before exit conditions
@@ -367,6 +384,53 @@ class ModelDescription {
      */
      std::shared_ptr<ModelData> model;
 };
+
+
+template<typename AgentInitFunction>
+void ModelDescription::setInitFunction(const std::string& agent_name, const std::string& state_name, AgentInitFunction a) {
+    // Find the appropriate agent description
+    const auto rtn = model->agents.find(agent_name);
+    if (rtn == model->agents.end()) {
+        THROW InvalidAgentName("Agent ('%s') was not found, "
+            "in ModelDescription::setInitFunction().",
+            agent_name.c_str());
+    }
+    // Forward to the core function
+    setInitFunction(*rtn->second->description, state_name, a);
+}
+template<typename AgentInitFunction>
+void ModelDescription::setInitFunction(const AgentDescription& agent, const std::string& state_name, AgentInitFunction a) {
+    // Validate that state name is valid for the provided agent
+    if (agent.agent->states.find(state_name) == agent.agent->state.end()) {
+        THROW InvalidAgentState("Agent ('%s') does not contain State (%s), "
+            "in ModelDescription::setInitFunction().",
+            agent.agent->name.c_str(), state_name.c_str());
+    }
+    // Validate that the agent is from the correct model
+    if (agent.model.get() != model.get()) {
+        THROW InvalidAgent("Agent ('%s') is not from this model, "
+            "in ModelDescription::setInitFunction().",
+            agent.agent->name.c_str());
+    }
+    ModelData::NamePair name_pair = (agent.agent->name, state_name);
+    // Check it doesn't already have an init fn set
+    if (model->agentInitFunctions.find(name_pair) != model->agentInitFunctions.end() ||
+        model->agentInitRTCSources.find(name_pair) != model->agentInitRTCSources.end())  {
+        THROW InvalidArgument("Init function has already been assigned to Agent ('%s') State (%s), "
+            "in ModelDescription::setInitFunction().",
+            agent.agent->name.c_str(), state_name.c_str());
+    }
+    // Store its init fn
+    model->agentInitFunctions.emplace(name_pair, AgentInitFunction::fnPtr());
+}
+template<typename AgentInitFunction>
+void ModelDescription::setInitFunction(const std::string& agent_name, AgentInitFunction a) {
+    setInitFunction(agent_name, ModelData::DEFAULT_STATE, a);
+}
+template<typename AgentInitFunction>
+void ModelDescription::setInitFunction(const AgentDescription& agent, AgentInitFunction a) {
+    setInitFunction(agent, ModelData::DEFAULT_STATE, a);
+}
 
 #ifdef SWIG
 void ModelDescription::addInitFunctionCallback(HostFunctionCallback* func_callback) {
