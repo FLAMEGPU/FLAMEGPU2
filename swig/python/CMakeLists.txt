@@ -27,28 +27,12 @@ set_property(SOURCE ${SWIG_INPUT_FILE_NAME}.i PROPERTY SWIG_MODULE_NAME ${PYTHON
 set_property(SOURCE ${SWIG_INPUT_FILE_NAME}.i PROPERTY SWIG_FLAGS "-threads")
 #set_property(SOURCE ${SWIG_INPUT_FILE_NAME}.i PROPERTY SWIG_FLAGS "-builtin")
 
-# Build a list of pre proocessor variables
-SET(SWIG_COMPILE_DEFS "")
-if (VISUALISATION)
-  SET(SWIG_COMPILE_DEFS "${SWIG_COMPILE_DEFS}VISUALISATION;")
-endif()
-if (NOT SEATBELTS)
-  SET(SWIG_COMPILE_DEFS "${SWIG_COMPILE_DEFS}$<IF:$<CONFIG:Debug>,,NO_SEATBELTS>;")
-endif()
-if (NOT RTC_DISK_CACHE)
-  SET(SWIG_COMPILE_DEFS "${SWIG_COMPILE_DEFS}DISABLE_RTC_DISK_CACHE;")
-endif()    
-if (EXPORT_RTC_SOURCES)
-  SET(SWIG_COMPILE_DEFS "${SWIG_COMPILE_DEFS}OUTPUT_RTC_DYNAMIC_FILES;")
-endif ()
-
 # Add swig module
 swig_add_library(${PYTHON_MODULE_NAME}
 	TYPE SHARED
 	#TYPE STATIC
 	LANGUAGE python 
 	OUTPUT_DIR ${PYTHON_LIB_TEMP_DIRECTORY}/${PYTHON_MODULE_NAME}
-  COMPILE_DEFINITIONS  ${SWIG_COMPILE_DEFS}
 	SOURCES ${SWIG_INPUT_FILE_NAME}.i)
 
 # configure wrapper code to build with cuda compiler
@@ -72,6 +56,21 @@ target_include_directories(${PYTHON_MODULE_NAME}
   ../../include
   ${Python3_INCLUDE_DIRS}
   )
+  
+# Handle user options
+if (VISUALISATION)
+  add_compile_definitions(VISUALISATION)
+  target_include_directories(${PYTHON_MODULE_NAME} PUBLIC "${VISUALISATION_ROOT}/include")
+endif()
+if (NOT SEATBELTS)
+  add_compile_definitions($<IF:$<CONFIG:Debug>,,NO_SEATBELTS>)
+endif()
+if (NOT RTC_DISK_CACHE)
+  add_compile_definitions(DISABLE_RTC_DISK_CACHE)
+endif()    
+if (EXPORT_RTC_SOURCES)
+  add_compile_definitions(OUTPUT_RTC_DYNAMIC_FILES)
+endif ()
   
 # link with the static flamegpu and cuda libraries
 target_link_libraries(${PYTHON_MODULE_NAME} PRIVATE flamegpu2 cuda)
