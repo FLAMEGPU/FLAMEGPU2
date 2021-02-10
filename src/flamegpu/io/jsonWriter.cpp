@@ -11,7 +11,6 @@
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/pop/AgentPopulation.h"
 #include "flamegpu/gpu/CUDASimulation.h"
-#include "tinyxml2/tinyxml2.h"
 
 jsonWriter::jsonWriter(
     const std::string &model_name,

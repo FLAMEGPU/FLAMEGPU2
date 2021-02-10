@@ -22,17 +22,14 @@ class SubAgentDescriptionTest(TestCase):
         ma.newVariableUInt("b_uint");
         ma.newState("b");
         # Missing exit condition        
+        m.newSubModel("sub", sm);
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # InvalidSubModel exception
-            m.newSubModel("sub", sm);
+            s = pyflamegpu.CUDASimulation(m)
+        assert e.value.type() == "InvalidSubModel"
         exitcdn = ExitAlways()
         sm.addExitConditionCallback(exitcdn);
-        m.newSubModel("sub", sm);
-        # Submodel name already exists
-        sm2 = pyflamegpu.ModelDescription("sub2");
-        # Define SubModel
-        sm2.newAgent("a");
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # InvalidSubModelName exception
-            m.newSubModel("sub", sm2);
+        # Does not throw with exit condition
+        s = pyflamegpu.CUDASimulation(m)
 
     def test_InvalidAgentName(self):
         sm = pyflamegpu.ModelDescription("sub");

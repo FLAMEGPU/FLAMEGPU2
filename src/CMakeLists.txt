@@ -80,6 +80,9 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/io/xmlReader.h
     ${FLAMEGPU_ROOT}/include/flamegpu/io/xmlWriter.h
     ${FLAMEGPU_ROOT}/include/flamegpu/io/factory.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/io/Logger.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/io/xmlLogger.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/io/jsonLogger.h
     ${FLAMEGPU_ROOT}/include/flamegpu/exception/FGPUException.h
     ${FLAMEGPU_ROOT}/include/flamegpu/exception/FGPUDeviceException.h
     ${FLAMEGPU_ROOT}/include/flamegpu/exception/FGPUDeviceException_device.h
@@ -102,6 +105,7 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAErrorChecking.h
     ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAMessageList.h
     ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDASimulation.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAEnsemble.h
     ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAMessage.h
     ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAAgent.h
     ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAAgentStateList.h
@@ -109,6 +113,14 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAFatAgentStateList.h
     ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAScatter.h
     ${FLAMEGPU_ROOT}/include/flamegpu/sim/AgentInterface.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/sim/AgentLoggingConfig.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/sim/AgentLoggingConfig_Reductions.cuh
+    ${FLAMEGPU_ROOT}/include/flamegpu/sim/LoggingConfig.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/sim/LogFrame.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/sim/RunPlan.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/sim/RunPlanVec.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/sim/SimRunner.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/sim/SimLogger.h
     ${FLAMEGPU_ROOT}/include/flamegpu/sim/Simulation.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/AgentFunction.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/AgentFunction_shim.h
@@ -155,10 +167,12 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/HostEnvironment.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/HostRandom.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/RandomManager.cuh    
+    ${FLAMEGPU_ROOT}/include/flamegpu/util/Any.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/nvtx.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/SignalHandlers.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/compute_capability.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/util/JitifyCache.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/util/filesystem.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/SubModelData.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/SubAgentData.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/SubEnvironmentData.h
@@ -189,8 +203,16 @@ SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAFatAgentStateList.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAMessage.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAScatter.cu
-    ${FLAMEGPU_ROOT}/src/flamegpu/sim/Simulation.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDASimulation.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAEnsemble.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/sim/AgentLoggingConfig.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/sim/LoggingConfig.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/sim/LogFrame.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/sim/RunPlan.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/sim/RunPlanVec.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/sim/SimRunner.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/sim/SimLogger.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/sim/Simulation.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/cuRVE/curve.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/cuRVE/curve_rtc.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/flamegpu_host_api.cu
@@ -206,9 +228,12 @@ SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/io/jsonWriter.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/io/xmlReader.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/io/xmlWriter.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/io/xmlLogger.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/io/jsonLogger.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/utility/HostEnvironment.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/utility/EnvironmentManager.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/utility/RandomManager.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/utility/HostRandom.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/util/compute_capability.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/util/JitifyCache.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/model/SubModelData.cpp

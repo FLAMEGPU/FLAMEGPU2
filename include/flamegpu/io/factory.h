@@ -14,6 +14,7 @@
 #include <string>
 #include <unordered_map>
 #include <utility>
+#include <algorithm>
 
 #include "flamegpu/io/statereader.h"
 #include "flamegpu/io/statewriter.h"
@@ -21,6 +22,8 @@
 #include "flamegpu/io/xmlWriter.h"
 #include "flamegpu/io/jsonReader.h"
 #include "flamegpu/io/jsonWriter.h"
+#include "flamegpu/io/jsonLogger.h"
+#include "flamegpu/io/xmlLogger.h"
 
 //  move later
 inline std::string getFileExt(const std::string& s) {
@@ -32,6 +35,7 @@ inline std::string getFileExt(const std::string& s) {
     // In case of no extension return empty string
     return("");
 }
+
 
 /**
 * Concrete factory creates concrete products, but
@@ -54,7 +58,7 @@ class ReaderFactory {
     static StateReader *createReader(
         const std::string &model_name,
         const std::unordered_map<std::string, EnvironmentDescription::PropData> &env_desc,
-        std::unordered_map<std::pair<std::string, unsigned int>, EnvironmentDescription::Any> &env_init,
+        std::unordered_map<std::pair<std::string, unsigned int>, Any> &env_init,
         const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &model_state,
         const std::string &input,
         Simulation *sim_instance) {
@@ -107,7 +111,40 @@ class WriterFactory {
         THROW UnsupportedFileType("File '%s' is not a type which can be written "
             "by WriterFactory::createWriter().",
             output_file.c_str());
-     }
+    }
+    /**
+     * Return a clean file extension from the provided string
+     * If the file extension is not supported empty string is returned instead
+     */
+    static std::string detectSupportedFileExt(const std::string &user_file_ext) {
+        std::string rtn = user_file_ext;
+        // Move entire string to lower case
+        std::transform(rtn.begin(), rtn.end(), rtn.begin(), [](unsigned char c) { return std::use_facet< std::ctype<char>>(std::locale()).tolower(c); });
+        // Strip first character if it is '.'
+        if (rtn[0] == '.')
+          rtn = rtn.substr(1);
+        // Compare against supported formats
+        if (rtn == "xml" ||
+            rtn == "json") {
+            return rtn;
+        }
+        return "";
+    }
+    /**
+     * @param output_path File for the log to be output to, this will be used to determine the logger type
+     */
+    static std::unique_ptr<Logger> createLogger(const std::string &output_path, bool prettyPrint, bool truncateFile = true) {
+        const std::string extension = getFileExt(output_path);
+
+        if (extension == "xml") {
+            return std::make_unique<xmlLogger>(output_path, prettyPrint, truncateFile);
+        } else if (extension == "json") {
+            return std::make_unique<jsonLogger>(output_path, prettyPrint, truncateFile);
+        }
+        THROW UnsupportedFileType("File '%s' is not a type which can be written "
+            "by WriterFactory::createLogger().",
+            output_path.c_str());
+    }
 };
 
 #endif  // INCLUDE_FLAMEGPU_IO_FACTORY_H_

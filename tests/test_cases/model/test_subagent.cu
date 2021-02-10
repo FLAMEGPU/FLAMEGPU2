@@ -21,17 +21,11 @@ TEST(SubAgentDescriptionTest, RequiresExitCondition) {
         ma.newVariable<unsigned int>("b_uint");
         ma.newState("b");
     }
-    // Missing exit condition
-    EXPECT_THROW(m.newSubModel("sub", sm), InvalidSubModel);
-    sm.addExitCondition(ExitAlways);
     m.newSubModel("sub", sm);
-    // Submodel name already exists
-    ModelDescription sm2("sub2");
-    {
-        // Define SubModel
-        sm2.newAgent("a");
-    }
-    EXPECT_THROW(m.newSubModel("sub", sm2), InvalidSubModelName);
+    // Missing exit condition
+    EXPECT_THROW(CUDASimulation s(m), InvalidSubModel);
+    sm.addExitCondition(ExitAlways);
+    EXPECT_NO_THROW(CUDASimulation s(m));
 }
 TEST(SubAgentDescriptionTest, InvalidAgentName) {
     ModelDescription sm("sub");

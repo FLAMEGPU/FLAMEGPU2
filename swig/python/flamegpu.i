@@ -16,6 +16,7 @@
 %include <std_vector.i>
 %include <std_unordered_map.i>
 %include <std_array.i>
+%include <std_list.i>
 
 // typemaps for integer types (allows mapping of python types to stdint types)
 %include <stdint.i>
@@ -135,6 +136,14 @@ TEMPLATE_VARIABLE_INSTANTIATE_INTS(function, classfunction)
 #include "flamegpu/runtime/AgentFunction_shim.h"
 #include "flamegpu/runtime/AgentFunctionCondition_shim.h"
 #include "flamegpu/runtime/HostFunctionCallback.h"
+
+#include "flamegpu/sim/LoggingConfig.h"
+#include "flamegpu/sim/AgentLoggingConfig.h"
+#include "flamegpu/sim/LogFrame.h"
+
+#include "flamegpu/sim/RunPlan.h"
+#include "flamegpu/sim/RunPlanVec.h"
+#include "flamegpu/gpu/CUDAEnsemble.h"
 %}
 
 
@@ -368,7 +377,64 @@ namespace EnvironmentManager{
 %include "flamegpu/runtime/messaging/Bucket/BucketHost.h"
 %feature("flatnested", "");     // flat nested off
 
+// Manually map all template type redirections defined by AgentLoggingConfig
+%apply double { sum_input_t<float>::result_t, sum_input_t<double>::result_t }
+%apply uint64_t { sum_input_t<char>::result_t, sum_input_t<uint8_t>::result_t, sum_input_t<uint16_t>::result_t, sum_input_t<uint32_t>::result_t, sum_input_t<uint64_t>::result_t }
+%apply int64_t { sum_input_t<int8_t>::result_t, sum_input_t<int16_t>::result_t, sum_input_t<int32_t>::result_t, sum_input_t<int64_t>::result_t }
 
+// Include logging implementations
+%ignore flamegpu_internal;
+%include "flamegpu/sim/LoggingConfig.h"
+%include "flamegpu/sim/AgentLoggingConfig.h"
+%include "flamegpu/sim/LogFrame.h"
+%template(LogFrameList) std::list<LogFrame>;
+
+
+// Extend RunPlanVec so that it is python iterable
+%pythoncode %{
+class VectorIterator(object):
+
+    def __init__(self, pointerToVector):
+        self.pointerToVector = pointerToVector
+        self.index = -1
+
+    def __next__(self):
+        self.index += 1
+        if self.index < len(self.pointerToVector):
+            return self.pointerToVector[self.index]
+        else:
+            raise StopIteration
+%}
+
+%extend RunPlanVec {
+%pythoncode {
+    def __iter__(self):
+        return VectorIterator(self)
+    def __len__(self):
+        return self.size()
+
+    def insert(self, i, x):
+        if isinstance(i, int): # "insert" is used as if the vector is a Python list
+            self.insert(self, self.begin() + i, x)
+        else: # "insert" is used as if the vector is a native C++ container
+            return self.insert(self, i, x)
+   }
+   RunPlan &RunPlanVec::__getitem__(const size_t &index) {
+        return $self->operator[](index);
+   }
+   void RunPlanVec::__setitem__(const size_t &index, RunPlan &value) {
+        $self->operator[](index) = value;
+   }
+}
+
+// Include ensemble implementations
+%include "flamegpu/sim/RunPlan.h"
+%include "flamegpu/sim/RunPlanVec.h"
+%feature("flatnested");     // flat nested on to ensure Config is included
+%rename (CUDAEnsembleConfig) CUDAEnsemble::EnsembleConfig;
+%include "flamegpu/gpu/CUDAEnsemble.h"
+%feature("flatnested", ""); // flat nested off
+%template(RunLogVec) std::vector<RunLog>;
 
 
 // Instantiate template versions of agent functions from the API
@@ -411,6 +477,35 @@ TEMPLATE_VARIABLE_INSTANTIATE(getPropertyArray, EnvironmentDescription::getPrope
 TEMPLATE_VARIABLE_INSTANTIATE(setProperty, EnvironmentDescription::setProperty)
 TEMPLATE_VARIABLE_INSTANTIATE(setPropertyArray, EnvironmentDescription::setPropertyArray)
 
+// Instantiate template versions of RunPlan functions from the API
+TEMPLATE_VARIABLE_INSTANTIATE(setProperty, RunPlan::setProperty)
+TEMPLATE_VARIABLE_INSTANTIATE(setPropertyArray, RunPlan::setPropertyArray)
+TEMPLATE_VARIABLE_INSTANTIATE(getProperty, RunPlan::getProperty)
+TEMPLATE_VARIABLE_INSTANTIATE(getPropertyArray, RunPlan::getPropertyArray)
+
+// Instantiate template versions of RunPlanVec functions from the API
+TEMPLATE_VARIABLE_INSTANTIATE(setProperty, RunPlanVec::setProperty)
+TEMPLATE_VARIABLE_INSTANTIATE(setPropertyArray, RunPlanVec::setPropertyArray)
+TEMPLATE_VARIABLE_INSTANTIATE(setPropertyUniformDistribution, RunPlanVec::setPropertyUniformDistribution)
+TEMPLATE_VARIABLE_INSTANTIATE(setPropertyUniformRandomDistribution, RunPlanVec::setPropertyUniformRandom)
+TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(setPropertyNormalRandomDistribution, RunPlanVec::setPropertyNormalRandom)
+TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(setPropertyLogNormalRandomDistribution, RunPlanVec::setPropertyLogNormalRandom)
+
+// Instantiate template versions of AgentLoggingConfig functions from the API
+TEMPLATE_VARIABLE_INSTANTIATE(logMean, AgentLoggingConfig::logMean)
+TEMPLATE_VARIABLE_INSTANTIATE(logMin, AgentLoggingConfig::logMin)
+TEMPLATE_VARIABLE_INSTANTIATE(logMax, AgentLoggingConfig::logMax)
+TEMPLATE_VARIABLE_INSTANTIATE(logStandardDev, AgentLoggingConfig::logStandardDev)
+TEMPLATE_VARIABLE_INSTANTIATE(logSum, AgentLoggingConfig::logSum)
+
+// Instantiate template versions of LogFrame functions from the API
+TEMPLATE_VARIABLE_INSTANTIATE(getEnvironmentProperty, LogFrame::getEnvironmentProperty)
+TEMPLATE_VARIABLE_INSTANTIATE(getEnvironmentPropertyArray, LogFrame::getEnvironmentPropertyArray)
+
+// Instantiate template versions of AgentLogFrame functions from the API
+TEMPLATE_VARIABLE_INSTANTIATE(getMin, AgentLogFrame::getMin)
+TEMPLATE_VARIABLE_INSTANTIATE(getMax, AgentLogFrame::getMax)
+TEMPLATE_VARIABLE_INSTANTIATE(getSum, AgentLogFrame::getSum)
 
 // Instantiate template versions of new and get message types from the API
 %template(newMessageBruteForce) ModelDescription::newMessage<MsgBruteForce>;

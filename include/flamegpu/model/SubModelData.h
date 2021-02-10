@@ -48,6 +48,11 @@ struct SubModelData : std::enable_shared_from_this<SubModelData> {
      */
     std::shared_ptr<SubEnvironmentData> subenvironment;
     /**
+     * Max number of steps per submodel execution
+     * 0 is unlimited, but requires the submodel to have an exit condition
+     */
+    unsigned int max_steps;
+    /**
      * Name assigned to the submodel at creation
      */
     std::string name;

@@ -18,6 +18,10 @@
 #include "flamegpu/util/SignalHandlers.h"
 #include "flamegpu/runtime/cuRVE/curve_rtc.h"
 #include "flamegpu/runtime/HostFunctionCallback.h"
+#include "flamegpu/gpu/CUDAAgent.h"
+#include "flamegpu/gpu/CUDAMessage.h"
+#include "flamegpu/sim/LoggingConfig.h"
+#include "flamegpu/sim/LogFrame.h"
 
 std::map<int, std::atomic<int>> CUDASimulation::active_device_instances;
 std::map<int, std::shared_timed_mutex> CUDASimulation::active_device_mutex;
@@ -26,19 +30,22 @@ std::atomic<int> CUDASimulation::active_instances;  // This value should default
 bool CUDASimulation::AUTO_CUDA_DEVICE_RESET = true;
 
 CUDASimulation::CUDASimulation(const ModelDescription& _model, int argc, const char** argv)
+    : CUDASimulation(_model.model) {
+    if (argc && argv) {
+        initialise(argc, argv);
+    }
+}
+CUDASimulation::CUDASimulation(const std::shared_ptr<const ModelData> &_model)
     : Simulation(_model)
     , step_count(0)
     , simulation_elapsed_time(0.f)
+    , run_log(std::make_unique<RunLog>())
     , streams(std::vector<cudaStream_t>())
     , singletons(nullptr)
     , singletonsInitialised(false)
     , rtcInitialised(false) {
     ++active_instances;
     initOffsetsAndMap();
-    // Add CUDASimulation specific environment members
-    unsigned int zero = 0;
-    model->environment->newProperty("_stepCount", reinterpret_cast<const char*>(&zero), sizeof(unsigned int), false, 1, typeid(unsigned int));
-
     // Register the signal handler.
     SignalHandlers::registerSignalHandlers();
 
@@ -63,23 +70,23 @@ CUDASimulation::CUDASimulation(const ModelDescription& _model, int argc, const c
     for (auto it_sm = smm.cbegin(); it_sm != smm.cend(); ++it_sm) {
         submodel_map.emplace(it_sm->first, std::unique_ptr<CUDASimulation>(new CUDASimulation(it_sm->second, this)));
     }
-
-    if (argc && argv) {
-        initialise(argc, argv);
-    }
 }
 CUDASimulation::CUDASimulation(const std::shared_ptr<SubModelData> &submodel_desc, CUDASimulation *master_model)
     : Simulation(submodel_desc, master_model)
     , step_count(0)
+    , run_log(std::make_unique<RunLog>())
     , streams(std::vector<cudaStream_t>())
     , singletons(nullptr)
     , singletonsInitialised(false)
     , rtcInitialised(false) {
     ++active_instances;
     initOffsetsAndMap();
-    // Add CUDASimulation specific environment members
-    unsigned int zero = 0;
-    model->environment->newProperty("_stepCount", reinterpret_cast<const char*>(&zero), sizeof(unsigned int), false, 1, typeid(unsigned int));
+    // Ensure submodel is valid
+    if (submodel_desc->submodel->exitConditions.empty() && submodel_desc->submodel->exitConditionCallbacks.empty() && submodel_desc->max_steps == 0) {
+        THROW InvalidSubModel("Model '%s' does not contain any exit conditions or exit condition callbacks and submodel '%s' max steps is set to 0, SubModels must exit of their own accord, "
+            "in CUDASimulation::CUDASimulation().",
+            submodel_desc->submodel->name.c_str(), submodel_desc->name.c_str());
+    }
 
     // populate the CUDA agent map (With SubAgents!)
     const auto &am = model->agents;
@@ -118,6 +125,7 @@ CUDASimulation::CUDASimulation(const std::shared_ptr<SubModelData> &submodel_des
     }
     // Submodels all run silent by default
     SimulationConfig().verbose = false;
+    SimulationConfig().steps = submodel_desc->max_steps;
 }
 
 CUDASimulation::~CUDASimulation() {
@@ -734,8 +742,11 @@ bool CUDASimulation::step() {
             visualisation->updateBuffers(step_count+1);
         }
 #endif
+
     // Update step count at the end of the step - when it has completed.
     incrementStepCounter();
+
+    processStepLog();
     return true;
 }
 
@@ -787,6 +798,10 @@ void CUDASimulation::simulate() {
         processHostAgentCreation(0);
     NVTX_POP();
 
+    // Reset and log initial state to step log 0
+    resetLog();
+    processStepLog();
+
 #ifdef VISUALISATION
     if (visualisation) {
         visualisation->updateBuffers();
@@ -795,8 +810,10 @@ void CUDASimulation::simulate() {
 
     for (unsigned int i = 0; getSimulationConfig().steps == 0 ? true : i < getSimulationConfig().steps; i++) {
         // std::cout <<"step: " << i << std::endl;
-        if (!step())
+        if (!step()) {
+            processStepLog();
             break;
+        }
 #ifdef VISUALISATION
         // Special case, if steps == 0 and visualisation has been closed
         if (getSimulationConfig().steps == 0 &&
@@ -812,6 +829,8 @@ void CUDASimulation::simulate() {
         exitFn(this->host_api.get());
     for (auto &exitFn : model->exitFunctionCallbacks)
         exitFn->run(this->host_api.get());
+
+    processExitLog();
 
 #ifdef VISUALISATION
     if (visualisation) {
@@ -842,6 +861,14 @@ void CUDASimulation::simulate() {
         gpuErrchk(cudaStreamDestroy(stream));
     }
     streams.clear();
+
+    // Export logs
+    if (!SimulationConfig().step_log_file.empty())
+        exportLog(SimulationConfig().step_log_file, true, false);
+    if (!SimulationConfig().exit_log_file.empty())
+        exportLog(SimulationConfig().exit_log_file, false, true);
+    if (!SimulationConfig().common_log_file.empty())
+        exportLog(SimulationConfig().common_log_file, true, true);
 }
 
 void CUDASimulation::reset(bool submodelReset) {
@@ -966,6 +993,23 @@ CUDAMessage& CUDASimulation::getCUDAMessage(const std::string& message_name) con
     }
 
     return *(it->second);
+}
+
+void CUDASimulation::setStepLog(const StepLoggingConfig &stepConfig) {
+    // Validate ModelDescription matches
+    if (*stepConfig.model != *model) {
+        THROW InvalidArgument("Model descriptions attached to LoggingConfig and CUDASimulation do not match, in CUDASimulation::setStepLog()\n");
+    }
+    // Set internal config
+    step_log_config = std::make_shared<StepLoggingConfig>(stepConfig);
+}
+void CUDASimulation::setExitLog(const LoggingConfig &exitConfig) {
+    // Validate ModelDescription matches
+    if (*exitConfig.model != *model) {
+        THROW InvalidArgument("Model descriptions attached to LoggingConfig and CUDASimulation do not match, in CUDASimulation::setExitLog()\n");
+    }
+    // Set internal config
+    exit_log_config = std::make_shared<LoggingConfig>(exitConfig);
 }
 
 bool CUDASimulation::checkArgs_derived(int argc, const char** argv, int &i) {
@@ -1363,4 +1407,80 @@ void CUDASimulation::initEnvironmentMgr() {
     }
     // Clear init
     env_init.clear();
+}
+void CUDASimulation::resetLog() {
+    run_log->step.clear();
+    run_log->exit = LogFrame();
+    run_log->random_seed = SimulationConfig().random_seed;
+    run_log->step_log_frequency = step_log_config ? step_log_config->frequency : 0;
+}
+void CUDASimulation::processStepLog() {
+    if (!step_log_config)
+        return;
+    if (step_count % step_log_config->frequency != 0)
+        return;
+    // Iterate members of step log to build the step log frame
+    std::map<std::string, Any> environment_log;
+    for (const auto &prop_name : step_log_config->environment) {
+        // Fetch the named environment prop
+        environment_log.emplace(prop_name, singletons->environment.getPropertyAny(instance_id, prop_name));
+    }
+    std::map<LoggingConfig::NameStatePair, std::pair<std::map<LoggingConfig::NameReductionFn, Any>, unsigned int>> agents_log;
+    for (const auto &name_state : step_log_config->agents) {
+        // Create the named sub map
+        const std::string &agent_name = name_state.first.first;
+        const std::string &agent_state = name_state.first.second;
+        HostAgentInstance host_agent = host_api->agent(agent_name, agent_state);
+        auto &agent_state_log = agents_log.emplace(name_state.first, std::make_pair(std::map<LoggingConfig::NameReductionFn, Any>(), UINT_MAX)).first->second;
+        // Log individual variable reductions
+        for (const auto &name_reduction : *name_state.second.first) {
+            // Perform the corresponding reduction
+            auto result = name_reduction.function(host_agent, name_reduction.name);
+            // Store the result
+            agent_state_log.first.emplace(name_reduction, std::move(result));
+        }
+        // Log count of agents in state
+        if (name_state.second.second) {
+            agent_state_log.second = host_api->agent(agent_name, agent_state).count();
+        }
+    }
+
+    // Append to step log
+    run_log->step.push_back(LogFrame(std::move(environment_log), std::move(agents_log), step_count));
+}
+
+void CUDASimulation::processExitLog() {
+    if (!exit_log_config)
+        return;
+    // Iterate members of step log to build the step log frame
+    std::map<std::string, Any> environment_log;
+    for (const auto &prop_name : step_log_config->environment) {
+        // Fetch the named environment prop
+        environment_log.emplace(prop_name, singletons->environment.getPropertyAny(instance_id, prop_name));
+    }
+    std::map<LoggingConfig::NameStatePair, std::pair<std::map<LoggingConfig::NameReductionFn, Any>, unsigned int>> agents_log;
+    for (const auto &name_state : step_log_config->agents) {
+        // Create the named sub map
+        const std::string &agent_name = name_state.first.first;
+        const std::string &agent_state = name_state.first.second;
+        HostAgentInstance host_agent = host_api->agent(agent_name, agent_state);
+        auto &agent_state_log = agents_log.emplace(name_state.first, std::make_pair(std::map<LoggingConfig::NameReductionFn, Any>(), UINT_MAX)).first->second;
+        // Log individual variable reductions
+        for (const auto &name_reduction : *name_state.second.first) {
+            // Perform the corresponding reduction
+            auto result = name_reduction.function(host_agent, name_reduction.name);
+            // Store the result
+            agent_state_log.first.emplace(name_reduction, std::move(result));
+        }
+        // Log count of agents in state
+        if (name_state.second.second) {
+            agent_state_log.second = host_api->agent(agent_name, agent_state).count();
+        }
+    }
+
+    // Set Log
+    run_log->exit = LogFrame(std::move(environment_log), std::move(agents_log), step_count);
+}
+const RunLog &CUDASimulation::getRunLog() const {
+    return *run_log;
 }

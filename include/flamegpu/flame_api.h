@@ -24,5 +24,10 @@
 #include "flamegpu/runtime/AgentFunction_shim.h"
 #include "flamegpu/runtime/AgentFunctionCondition_shim.h"
 #include "flamegpu/visualiser/ModelVis.h"
+#include "flamegpu/gpu/CUDAEnsemble.h"
+#include "flamegpu/sim/RunPlanVec.h"
+#include "flamegpu/sim/LoggingConfig.h"
+#include "flamegpu/sim/AgentLoggingConfig.h"
+#include "flamegpu/sim/LogFrame.h"
 
 #endif  // INCLUDE_FLAMEGPU_FLAME_API_H_

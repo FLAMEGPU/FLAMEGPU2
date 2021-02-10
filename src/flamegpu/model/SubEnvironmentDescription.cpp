@@ -46,13 +46,13 @@ void SubEnvironmentDescription::mapProperty(const std::string &sub_property_name
         }
     }
     // Check properties are the same
-    if (subProp->second.type != masterProp->second.type) {
+    if (subProp->second.data.type != masterProp->second.data.type) {
         THROW InvalidEnvProperty("Property types do not match, '%s' != '%s', "
-            "in SubEnvironmentDescription::mapProperty()\n", subProp->second.type.name(), masterProp->second.type.name());
+            "in SubEnvironmentDescription::mapProperty()\n", subProp->second.data.type.name(), masterProp->second.data.type.name());
     }
-    if (subProp->second.elements != masterProp->second.elements) {
+    if (subProp->second.data.elements != masterProp->second.data.elements) {
         THROW InvalidEnvProperty("Property lengths do not match, '%u' != '%u'",
-            "in SubEnvironmentDescription::mapProperty()\n", subProp->second.elements, masterProp->second.elements);
+            "in SubEnvironmentDescription::mapProperty()\n", subProp->second.data.elements, masterProp->second.data.elements);
     }
     if (masterProp->second.isConst && !subProp->second.isConst) {
         THROW InvalidEnvProperty("SubEnvironment property '%s' must be const, if mapped to const MasterEnvironment property '%s', "
@@ -89,8 +89,8 @@ void SubEnvironmentDescription::autoMapProperties() {
         // If there exists variable with same name in both environments
         if (masterProp != masterEnv->properties.end()) {
             // Check properties are the same
-            if ((subProp.second.type == masterProp->second.type) &&
-                (subProp.second.elements == masterProp->second.elements) &&
+            if ((subProp.second.data.type == masterProp->second.data.type) &&
+                (subProp.second.data.elements == masterProp->second.data.elements) &&
                 !(masterProp->second.isConst && !subProp.second.isConst)) {
                 data->properties.emplace(subProp.first, masterProp->first);  // Doesn't actually matter, both strings are equal
             }

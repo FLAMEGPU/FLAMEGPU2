@@ -11,10 +11,11 @@
 #include "flamegpu/pop/AgentPopulation.h"
 #include "flamegpu/model/AgentDescription.h"  // Only forward declared by AgentPopulation.h
 #include "flamegpu/util/nvtx.h"
+#include "flamegpu/util/filesystem.h"
 
 
-Simulation::Simulation(const ModelDescription& _model)
-    : model(_model.model->clone())
+Simulation::Simulation(const std::shared_ptr<const ModelData> &_model)
+    : model(_model->clone())
     , submodel(nullptr)
     , mastermodel(nullptr)
     , instance_id(get_instance_id()) { }
@@ -58,6 +59,29 @@ void Simulation::applyConfig() {
         // Set flag so we don't reload this in future
         loaded_input_file = current_input_file;
     }
+    // Create directory for log files
+    if (!config.step_log_file.empty()) {
+        path t_path = config.step_log_file;
+        try {
+            t_path = t_path.parent_path();
+            if (!t_path.empty()) {
+                util::filesystem::recursive_create_dir(t_path);
+            }
+        } catch(std::exception &e) {
+            THROW InvalidArgument("Failed to init step log file directory '%s': %s\n", t_path.c_str(), e.what());
+        }
+    }
+    if (!config.exit_log_file.empty()) {
+        path t_path = config.exit_log_file;
+        try {
+            t_path = t_path.parent_path();
+            if (!t_path.empty()) {
+                util::filesystem::recursive_create_dir(t_path);
+            }
+        } catch(std::exception &e) {
+            THROW InvalidArgument("Failed to init exit log file directory: '%s': %s\n", t_path.c_str(), e.what());
+        }
+    }
     // Call derived class config stuff first
     applyConfig_derived();
     // Random is handled by derived class, as it relies on singletons being init
@@ -81,6 +105,12 @@ void Simulation::exportData(const std::string &path, bool prettyPrint) {
 
     StateWriter *write__ = WriterFactory::createWriter(model->name, getInstanceID(), pops, getStepCounter(), path, this);
     write__->writeStates(prettyPrint);
+}
+void Simulation::exportLog(const std::string &path, bool steps, bool exit, bool prettyPrint) {
+    // Create the correct type of logger
+    auto logger = WriterFactory::createLogger(path, prettyPrint, config.truncate_log_files);
+    // Perform logging
+    logger->log(getRunLog(), true, steps, exit);
 }
 
 int Simulation::checkArgs(int argc, const char** argv) {
@@ -173,6 +203,33 @@ int Simulation::checkArgs(int argc, const char** argv) {
             config.timing = true;
             continue;
         }
+        // -os/--out_step <file.xml/file.json>, Step log file path
+        if (arg.compare("--out_step") == 0 || arg.compare("-os") == 0) {
+            if (i + 1 >= argc) {
+                fprintf(stderr, "%s requires a trailing argument\n", arg.c_str());
+                return false;
+            }
+            config.step_log_file = argv[++i];
+            continue;
+        }
+        // -oe/--out_exit <file.xml/file.json>, Exit log file path
+        if (arg.compare("--out_exit") == 0 || arg.compare("-oe") == 0) {
+            if (i + 1 >= argc) {
+                fprintf(stderr, "%s requires a trailing argument\n", arg.c_str());
+                return false;
+            }
+            config.exit_log_file = argv[++i];
+            continue;
+        }
+        // -ol/--out_log <file.xml/file.json>, Common log file path
+        if (arg.compare("--out_log") == 0 || arg.compare("-ol") == 0) {
+            if (i + 1 >= argc) {
+                fprintf(stderr, "%s requires a trailing argument\n", arg.c_str());
+                return false;
+            }
+            config.common_log_file = argv[++i];
+            continue;
+        }
 #ifdef VISUALISATION
         // -c/--console, Renders the visualisation inert
         if (arg.compare("--console") == 0 || arg.compare("-c") == 0) {
@@ -196,6 +253,9 @@ void Simulation::printHelp(const char* executable) {
     printf("Optional Arguments:\n");
     const char *line_fmt = "%-18s %s\n";
     printf(line_fmt, "-i, --in <file.xml/file.json>", "Initial state file (XML or JSON)");
+    printf(line_fmt, "-os, --out_step <file.xml/file.json>", "Step log file (XML or JSON)");
+    printf(line_fmt, "-oe, --out_exit <file.xml/file.json>", "Exit log file (XML or JSON)");
+    printf(line_fmt, "-ol, --out_log <file.xml/file.json>", "Common log file (XML or JSON)");
     printf(line_fmt, "-s, --steps <steps>", "Number of simulation iterations");
     printf(line_fmt, "-r, --random <seed>", "RandomManager seed");
     printf(line_fmt, "-v, --verbose", "Verbose FLAME GPU output");
