@@ -399,7 +399,7 @@ cuda_model = pyflamegpu.CUDASimulation(model);
 """
   Create Visualisation
 """
-if VISUALISATION:
+if pyflamegpu.VISUALISATION:
     visualisation = cuda_model.getVisualisation();
     # Configure vis
     envWidth = env.getPropertyFloat("MAX_POSITION") - env.getPropertyFloat("MIN_POSITION");
@@ -464,5 +464,5 @@ cuda_model.simulate();
 """
 # cuda_model.exportData("end.xml");
 
-if VISUALISATION:
+if pyflamegpu.VISUALISATION:
     visualisation.join();

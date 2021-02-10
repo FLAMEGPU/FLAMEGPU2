@@ -555,4 +555,11 @@ TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(logNormal, HostRandom::logNormal)
 %include "flamegpu/visualiser/ModelVis.h"
 %include "flamegpu/visualiser/StaticModelVis.h"
 %include "config/Stock.h"
+// This messes with a define, so must occur after all other files which might check VISUALISATION
+// #define VISUALISATION false, still causes #ifdef VISUALISATION as true
+// I tried `%inline %{const boolean VISUALISATION = false;%}` but swig didnt like it
+#undef VISUALISATION
+#define VISUALISATION true
+#else
+#define VISUALISATION false
 #endif
