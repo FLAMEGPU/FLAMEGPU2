@@ -541,9 +541,18 @@ TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(logNormal, HostRandom::logNormal)
 
 // Optionally instantiate visualisation classes
 #ifdef VISUALISATION
+%{
+#include "flamegpu/visualiser/AgentStateVis.h"
+#include "flamegpu/visualiser/AgentVis.h"
+#include "flamegpu/visualiser/LineVis.h"
+#include "flamegpu/visualiser/ModelVis.h"
+#include "flamegpu/visualiser/StaticModelVis.h"
+#include "config/Stock.h"
+%}
 %include "flamegpu/visualiser/AgentStateVis.h"
 %include "flamegpu/visualiser/AgentVis.h"
 %include "flamegpu/visualiser/LineVis.h"
 %include "flamegpu/visualiser/ModelVis.h"
 %include "flamegpu/visualiser/StaticModelVis.h"
+%include "config/Stock.h"
 #endif

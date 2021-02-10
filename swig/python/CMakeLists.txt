@@ -43,7 +43,7 @@ set_property(TARGET ${PYTHON_MODULE_NAME} PROPERTY SWIG_USE_TARGET_INCLUDE_DIREC
 # needs to have RDC enable for the project
 set_property(TARGET ${PYTHON_MODULE_NAME} PROPERTY CUDA_SEPARABLE_COMPILATION ON)
 # Build with the SWIG pre-processor macro enabled
-set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY COMPILE_DEFINITIONS "SWIG")
+set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY SWIG_GENERATED_COMPILE_DEFINITIONS "SWIG")
 # Suppress warnings during compilation of SWIG generated PYTHON_wrap.cxx
 set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcudafe --diag_suppress=\"declared_but_not_referenced\"")
 # set bigobj property for windows compiler (needed due to the sheer size of the generated swig file: https://www.reddit.com/r/AbsoluteUnits/)
@@ -59,17 +59,21 @@ target_include_directories(${PYTHON_MODULE_NAME}
   
 # Handle user options
 if (VISUALISATION)
-  add_compile_definitions(VISUALISATION)
+  set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY SWIG_COMPILE_DEFINITIONS VISUALISATION)
+  set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY SWIG_GENERATED_COMPILE_DEFINITIONS VISUALISATION)
   target_include_directories(${PYTHON_MODULE_NAME} PUBLIC "${VISUALISATION_ROOT}/include")
 endif()
 if (NOT SEATBELTS)
-  add_compile_definitions($<IF:$<CONFIG:Debug>,,NO_SEATBELTS>)
+  set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY SWIG_COMPILE_DEFINITIONS $<IF:$<CONFIG:Debug>,,NO_SEATBELTS>)
+  set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY SWIG_GENERATED_COMPILE_DEFINITIONS $<IF:$<CONFIG:Debug>,,NO_SEATBELTS>)
 endif()
 if (NOT RTC_DISK_CACHE)
-  add_compile_definitions(DISABLE_RTC_DISK_CACHE)
+  set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY SWIG_COMPILE_DEFINITIONS DISABLE_RTC_DISK_CACHE)
+  set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY SWIG_GENERATED_COMPILE_DEFINITIONS DISABLE_RTC_DISK_CACHE)
 endif()    
 if (EXPORT_RTC_SOURCES)
-  add_compile_definitions(OUTPUT_RTC_DYNAMIC_FILES)
+  set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY SWIG_COMPILE_DEFINITIONS OUTPUT_RTC_DYNAMIC_FILES)
+  set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY SWIG_GENERATED_COMPILE_DEFINITIONS OUTPUT_RTC_DYNAMIC_FILES)
 endif ()
   
 # link with the static flamegpu and cuda libraries

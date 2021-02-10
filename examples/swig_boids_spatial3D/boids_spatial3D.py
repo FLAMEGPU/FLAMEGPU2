@@ -106,7 +106,7 @@ VISUALISATION = True;
 """
   outputdata agent function for Boid agents, which outputs publicly visible properties to a message list
 """
-utputdata = """
+outputdata = """
 FLAMEGPU_AGENT_FUNCTION(outputdata, MsgNone, MsgSpatial3D) {
     // Output each agents publicly visible properties.
     FLAMEGPU->message_out.setVariable<int>("id", FLAMEGPU->getVariable<int>("id"));
@@ -327,28 +327,28 @@ model = pyflamegpu.ModelDescription("Boids_BruteForce");
 """
 env = model.Environment();
 # Population size to generate, if no agents are loaded from disk
-env.newProperty("POPULATION_TO_GENERATE", 32768);
+env.newPropertyUInt("POPULATION_TO_GENERATE", 32768);
 
 # Environment Bounds
-env.newProperty("MIN_POSITION", -0.5);
-env.newProperty("MAX_POSITION", +0.5);
+env.newPropertyFloat("MIN_POSITION", -0.5);
+env.newPropertyFloat("MAX_POSITION", +0.5);
 
 # Initialisation parameter(s)
-env.newProperty("MAX_INITIAL_SPEED", 1.0);
-env.newProperty("MIN_INITIAL_SPEED", 0.01);
+env.newPropertyFloat("MAX_INITIAL_SPEED", 1.0);
+env.newPropertyFloat("MIN_INITIAL_SPEED", 0.01);
 
 # Interaction radius
-env.newProperty("INTERACTION_RADIUS", 0.1);
-env.newProperty("SEPARATION_RADIUS", 0.005);
+env.newPropertyFloat("INTERACTION_RADIUS", 0.1);
+env.newPropertyFloat("SEPARATION_RADIUS", 0.005);
 
 # Global Scalers
-env.newProperty("TIME_SCALE", 0.0005);
-env.newProperty("GLOBAL_SCALE", 0.15);
+env.newPropertyFloat("TIME_SCALE", 0.0005);
+env.newPropertyFloat("GLOBAL_SCALE", 0.15);
 
 # Rule scalers
-env.newProperty("STEER_SCALE", 0.65);
-env.newProperty("COLLISION_SCALE", 0.75);
-env.newProperty("MATCH_SCALE", 1.25);
+env.newPropertyFloat("STEER_SCALE", 0.65);
+env.newPropertyFloat("COLLISION_SCALE", 0.75);
+env.newPropertyFloat("MATCH_SCALE", 1.25);
 
 """
   Location message
@@ -408,7 +408,7 @@ if VISUALISATION:
     visualisation.setCameraSpeed(0.002 * envWidth);
     circ_agt = visualisation.addAgent("Boid");
     # Position vars are named x, y, z; so they are used by default
-    circ_agt.setModel(pyflamegpu.stock.Models.ICOSPHERE);
+    circ_agt.setModel(pyflamegpu.ICOSPHERE);
     circ_agt.setModelScale(env.getPropertyFloat("SEPARATION_RADIUS"));
 
     visualisation.activate();
