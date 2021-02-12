@@ -137,11 +137,11 @@ class TestMessage_Bucket(TestCase):
        
         cuda_model = pyflamegpu.CUDASimulation(model)
 
-        population = pyflamegpu.AgentPopulation(agent, AGENT_COUNT)
+        population = pyflamegpu.AgentVector(agent, AGENT_COUNT)
         # Initialise agents
         # Currently population has not been init, so generate an agent population on the fly
         for i in range(AGENT_COUNT):
-            instance = population.getNextInstance();
+            instance = population[i];
             instance.setVariableInt("id", i);
             # Create it if it doesn't already exist
             if not int(i/2) in bucket_count:
@@ -158,8 +158,7 @@ class TestMessage_Bucket(TestCase):
         # Recover the results and check they match what was expected
         cuda_model.getPopulationData(population);
         # Validate each agent has correct result
-        for i in range(AGENT_COUNT):
-            ai = population.getInstanceAt(i);
+        for ai in population:
             id = ai.getVariableInt("id");
             id_m1 = 0 if id == 0 else id-1;
             count1 = ai.getVariableUInt("count1");
@@ -199,12 +198,12 @@ class TestMessage_Bucket(TestCase):
         
         cuda_model = pyflamegpu.CUDASimulation(model)
 
-        population = pyflamegpu.AgentPopulation(agent, AGENT_COUNT)
+        population = pyflamegpu.AgentVector(agent, AGENT_COUNT)
         # Initialise agents
         # Currently population has not been init, so generate an agent population on the fly
         for i in range(AGENT_COUNT):
             do_out = 1 if rand.random() > 0.3 else 0;
-            instance = population.getNextInstance();
+            instance = population[i];
             instance.setVariableInt("id", i);
             instance.setVariableInt("do_output", do_out);
             # Create it if it doesn't already exist
@@ -223,8 +222,7 @@ class TestMessage_Bucket(TestCase):
         # Recover the results and check they match what was expected
         cuda_model.getPopulationData(population);
         # Validate each agent has correct result
-        for i in range(AGENT_COUNT):
-            ai = population.getInstanceAt(i);
+        for ai in population:
             id = ai.getVariableInt("id");
             id_m1 = 0 if id == 0 else id-1;
             count1 = ai.getVariableUInt("count1");
@@ -263,11 +261,11 @@ class TestMessage_Bucket(TestCase):
        
         cuda_model = pyflamegpu.CUDASimulation(model)
 
-        population = pyflamegpu.AgentPopulation(agent, AGENT_COUNT)
+        population = pyflamegpu.AgentVector(agent, AGENT_COUNT)
         # Initialise agents
         # Currently population has not been init, so generate an agent population on the fly
         for i in range(AGENT_COUNT):
-            instance = population.getNextInstance();
+            instance = population[i];
             instance.setVariableInt("id", i);
             # Create it if it doesn't already exist
             if not int(i/2) in bucket_count:
@@ -282,8 +280,7 @@ class TestMessage_Bucket(TestCase):
         # Recover the results and check they match what was expected
         cuda_model.getPopulationData(population);
         # Validate each agent has correct result
-        for i in range(AGENT_COUNT):
-            ai = population.getInstanceAt(i);
+        for ai in population:
             id = ai.getVariableInt("id");
             id_m1 = 0 if id == 0 else id-1;
             count1 = ai.getVariableUInt("count1");
@@ -321,11 +318,11 @@ class TestMessage_Bucket(TestCase):
        
         cuda_model = pyflamegpu.CUDASimulation(model)
 
-        population = pyflamegpu.AgentPopulation(agent, AGENT_COUNT)
+        population = pyflamegpu.AgentVector(agent, AGENT_COUNT)
         # Initialise agents
         # Currently population has not been init, so generate an agent population on the fly
         for i in range(AGENT_COUNT):
-            instance = population.getNextInstance();
+            instance = population[i];
             instance.setVariableInt("id", i);
             # Create it if it doesn't already exist
             if not int(i/2) in bucket_count:
@@ -342,8 +339,7 @@ class TestMessage_Bucket(TestCase):
         # Recover the results and check they match what was expected
         cuda_model.getPopulationData(population);
         # Validate each agent has correct result
-        for i in range(AGENT_COUNT):
-            ai = population.getInstanceAt(i);
+        for ai in population:
             id = ai.getVariableInt("id");
             id_m4 = int(int(id / 8) * 4);
             count1 = ai.getVariableUInt("count1");

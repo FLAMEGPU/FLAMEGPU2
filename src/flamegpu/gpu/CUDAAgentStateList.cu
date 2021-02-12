@@ -5,7 +5,7 @@
 
 #include "flamegpu/gpu/CUDAAgent.h"
 #include "flamegpu/gpu/CUDAErrorChecking.h"
-#include "flamegpu/pop/AgentStateMemory.h"
+#include "flamegpu/pop/AgentVector.h"
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/gpu/CUDAScatter.h"
 #include "flamegpu/runtime/flamegpu_host_new_agent_api.h"
@@ -75,35 +75,32 @@ void *CUDAAgentStateList::getVariablePointer(const std::string &variable_name) {
 
     return var->second->data_condition;
 }
-void CUDAAgentStateList::setAgentData(const AgentStateMemory &data, CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream) {
-    // check that we are using the same agent description
-    if (!data.isSameDescription(agent.getAgentDescription())) {
-        THROW InvalidCudaAgentDesc("Agent State memory has different description to CUDA Agent ('%s'), "
-            "in CUDAAgentStateList::setAgentData().",
-            agent.getAgentDescription().name.c_str());
+void CUDAAgentStateList::setAgentData(const AgentVector& population, CUDAScatter& scatter, const unsigned int& streamId, const cudaStream_t& stream) {
+    // Validate AgentData matches
+    if (!population.matchesAgentType(agent.getAgentDescription())) {
+        THROW InvalidCudaAgentDesc("Agent description for agent '%s' does not match that of AgentVector, "
+            "in CUDAAgentStateList::setAgentData()",
+            population.getAgentName().c_str());
     }
     // Check our internal state matches or exceeds the size of the state in the agent pop
     // This will return if list already correct size
-    const unsigned int data_count = data.getStateListSize();
+    const unsigned int data_count = population.size();
     if (data_count) {
         parent_list->resize(data_count, false);  // FALSE=Do not retain existing data
         // Initialise any buffers in the fat_agent which aren't part of the agent description
         std::set<std::shared_ptr<VariableBuffer>> exclusionSet;
-        for (auto &a : variables)
+        for (auto& a : variables)
             exclusionSet.insert(a.second);
         parent_list->initVariables(exclusionSet, data_count, 0, scatter, streamId, stream);
         // Copy across the required data host->device
-        for (auto &_var : variables) {
+        for (auto& _var : variables) {
             // get the variable size from agent description
-            const auto &var = agent.getAgentDescription().variables.at(_var.first);
+            const auto& var = agent.getAgentDescription().variables.at(_var.first);
             const size_t var_size = var.type_size;
             const unsigned int  var_elements = var.elements;
 
-            // get the vector
-            const GenericMemoryVector &m_vec = data.getReadOnlyMemoryVector(_var.first);
-
             // get pointer to vector data
-            const void * v_data = m_vec.getReadOnlyDataPtr();
+            const void* v_data = population.data(_var.first);
 
             // copy the host data to the GPU
             gpuErrchk(cudaMemcpyAsync(_var.second->data, v_data, var_elements * var_size * data_count, cudaMemcpyHostToDevice, stream));
@@ -113,41 +110,33 @@ void CUDAAgentStateList::setAgentData(const AgentStateMemory &data, CUDAScatter 
     // Update alive count etc
     parent_list->setAgentCount(data_count);
 }
-void CUDAAgentStateList::getAgentData(AgentStateMemory &data) {
-    // check that we are using the same agent description
-    if (!data.isSameDescription(agent.getAgentDescription())) {
-        THROW InvalidCudaAgentDesc("Agent State memory has different description to CUDA Agent ('%s'), "
-            "in CUDAAgentStateList::getAgentData().",
-            agent.getAgentDescription().name.c_str());
+void CUDAAgentStateList::getAgentData(AgentVector& population) const {
+    // Validate AgentData matches
+    if (!population.matchesAgentType(agent.getAgentDescription())) {
+        THROW InvalidCudaAgentDesc("Agent description for agent '%s' does not match that of AgentVector, "
+            "in CUDAAgentStateList::setAgentData()",
+            population.getAgentName().c_str());
     }
     const unsigned int data_count = getSize();
     if (data_count) {
-        // Check the output buffer has been resized
-        if (data.getPopulationCapacity() < data_count) {
-            THROW InvalidMemoryCapacity("AgentStateMemory must be resized before passing to CUDAAgentStateList::getAgentData()\n");
-        }
+        population.resize(data_count, false);
         // Copy across the required data device->host
-        for (auto &_var : variables) {
+        for (auto& _var : variables) {
             // get the variable size from agent description
-            const auto &var = agent.getAgentDescription().variables.at(_var.first);
+            const auto& var = agent.getAgentDescription().variables.at(_var.first);
             const size_t var_size = var.type_size;
             const unsigned int  var_elements = var.elements;
 
-            // get the vector
-            GenericMemoryVector &m_vec = data.getMemoryVector(_var.first);
-
             // get pointer to vector data
-            void * v_data = m_vec.getDataPtr();
+            void* v_data = population.data(_var.first);
 
             // copy the host data to the GPU
             gpuErrchk(cudaMemcpy(v_data, _var.second->data, var_elements * var_size * data_count, cudaMemcpyDeviceToHost));
         }
     }
-
-    // Update alive count etc
-    data.overrideStateListSize(data_count);
+    population._size = data_count;  // Private AgentVector::resize() does not update size
 }
-void CUDAAgentStateList::scatterHostCreation(const unsigned int &newSize, char *const d_inBuff, const VarOffsetStruct &offsets, CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream) {
+void CUDAAgentStateList::scatterHostCreation(const unsigned int& newSize, char* const d_inBuff, const VarOffsetStruct & offsets, CUDAScatter & scatter, const unsigned int& streamId, const cudaStream_t & stream) {
     // Resize agent list if required
     parent_list->resize(parent_list->getSizeWithDisabled() + newSize, true);
     // Build scatter data

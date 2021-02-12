@@ -57,7 +57,7 @@ TEST_F(HostReductionTest, HistogramEvenFloat) {
     std::uniform_real_distribution <float> dist(0, 20);
     std::array<float, TEST_LEN> in;
     for (unsigned int i = 0; i < TEST_LEN; i++) {
-        AgentInstance instance = ms->population->getNextInstance();
+        AgentVector::Agent instance = ms->population->at(i);
         in[i] = dist(rd);
         instance.setVariable<float>("float", in[i]);
     }
@@ -73,7 +73,7 @@ TEST_F(HostReductionTest, HistogramEvenDouble) {
     std::uniform_real_distribution <double> dist(0, 20);
     std::array<double, TEST_LEN> in;
     for (unsigned int i = 0; i < TEST_LEN; i++) {
-        AgentInstance instance = ms->population->getNextInstance();
+        AgentVector::Agent instance = ms->population->at(i);
         in[i] = dist(rd);
         instance.setVariable<double>("double", in[i]);
     }
@@ -89,7 +89,7 @@ TEST_F(HostReductionTest, HistogramEvenChar) {
     std::uniform_int_distribution <int16_t> dist(0, 19);
     std::array<char, TEST_LEN> in;
     for (unsigned int i = 0; i < TEST_LEN; i++) {
-        AgentInstance instance = ms->population->getNextInstance();
+        AgentVector::Agent instance = ms->population->at(i);
         if (i < 256) {
             in[i] = static_cast<char>(dist(rd));
         } else {
@@ -109,7 +109,7 @@ TEST_F(HostReductionTest, HistogramEvenUnsignedChar) {
     std::uniform_int_distribution <uint16_t> dist(0, 19);
     std::array<unsigned char, TEST_LEN> in;
     for (unsigned int i = 0; i < TEST_LEN; i++) {
-        AgentInstance instance = ms->population->getNextInstance();
+        AgentVector::Agent instance = ms->population->at(i);
         in[i] = static_cast<unsigned char>(dist(rd));
         instance.setVariable<unsigned char>("uchar", in[i]);
     }
@@ -125,7 +125,7 @@ TEST_F(HostReductionTest, HistogramEvenInt16) {
     std::uniform_int_distribution <int16_t> dist(0, 19);
     std::array<int16_t, TEST_LEN> in;
     for (unsigned int i = 0; i < TEST_LEN; i++) {
-        AgentInstance instance = ms->population->getNextInstance();
+        AgentVector::Agent instance = ms->population->at(i);
         in[i] = dist(rd);
         instance.setVariable<int16_t>("int16_t", in[i]);
     }
@@ -141,7 +141,7 @@ TEST_F(HostReductionTest, HistogramEvenUnsignedInt16) {
     std::uniform_int_distribution <uint16_t> dist(0, 19);
     std::array<uint16_t, TEST_LEN> in;
     for (unsigned int i = 0; i < TEST_LEN; i++) {
-        AgentInstance instance = ms->population->getNextInstance();
+        AgentVector::Agent instance = ms->population->at(i);
         in[i] = dist(rd);
         instance.setVariable<uint16_t>("uint16_t", in[i]);
     }
@@ -157,7 +157,7 @@ TEST_F(HostReductionTest, HistogramEvenInt32) {
     std::uniform_int_distribution <int32_t> dist(0, 19);
     std::array<int32_t, TEST_LEN> in;
     for (unsigned int i = 0; i < TEST_LEN; i++) {
-        AgentInstance instance = ms->population->getNextInstance();
+        AgentVector::Agent instance = ms->population->at(i);
         in[i] = dist(rd);
         instance.setVariable<int32_t>("int32_t", in[i]);
     }
@@ -173,7 +173,7 @@ TEST_F(HostReductionTest, HistogramEvenUnsignedInt32) {
     std::uniform_int_distribution <uint32_t> dist(0, 19);
     std::array<uint32_t, TEST_LEN> in;
     for (unsigned int i = 0; i < TEST_LEN; i++) {
-        AgentInstance instance = ms->population->getNextInstance();
+        AgentVector::Agent instance = ms->population->at(i);
         in[i] = dist(rd);
         instance.setVariable<uint32_t>("uint32_t", in[i]);
     }
@@ -189,7 +189,7 @@ TEST_F(HostReductionTest, HistogramEvenInt64) {
     std::uniform_int_distribution <int64_t> dist(0, 19);
     std::array<int64_t, TEST_LEN> in;
     for (unsigned int i = 0; i < TEST_LEN; i++) {
-        AgentInstance instance = ms->population->getNextInstance();
+        AgentVector::Agent instance = ms->population->at(i);
         in[i] = dist(rd);
         instance.setVariable<int64_t>("int64_t", in[i]);
     }
@@ -205,7 +205,7 @@ TEST_F(HostReductionTest, HistogramEvenUnsignedInt64) {
     std::uniform_int_distribution <uint64_t> dist(0, 19);
     std::array<uint64_t, TEST_LEN> in;
     for (unsigned int i = 0; i < TEST_LEN; i++) {
-        AgentInstance instance = ms->population->getNextInstance();
+        AgentVector::Agent instance = ms->population->at(i);
         in[i] = dist(rd);
         instance.setVariable<uint64_t>("uint64_t", in[i]);
     }

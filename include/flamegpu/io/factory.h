@@ -24,6 +24,9 @@
 #include "flamegpu/io/jsonWriter.h"
 #include "flamegpu/io/jsonLogger.h"
 #include "flamegpu/io/xmlLogger.h"
+#include "flamegpu/util/StringPair.h"
+
+class AgentVector;
 
 //  move later
 inline std::string getFileExt(const std::string& s) {
@@ -35,7 +38,6 @@ inline std::string getFileExt(const std::string& s) {
     // In case of no extension return empty string
     return("");
 }
-
 
 /**
 * Concrete factory creates concrete products, but
@@ -50,18 +52,18 @@ class ReaderFactory {
      * @param model_name Name from the model description hierarchy of the model to be loaded
      * @param env_desc Environment description for validating property data on load
      * @param env_init Dictionary of loaded values map:<{name, index}, value>
-     * @param model_state Map of AgentPopulation to load the agent data into per agent, key should be agent name
+     * @param model_state Map of AgentVector to load the agent data into per agent, key should be agent name
      * @param input Filename of the input file (This will be used to determine which reader to return)
      * @param sim_instance Instance of the Simulation object (This is used for setting/getting config)
      * @throws UnsupportedFileType If the file extension does not match an appropriate reader
      */
-    static StateReader *createReader(
-        const std::string &model_name,
-        const std::unordered_map<std::string, EnvironmentDescription::PropData> &env_desc,
-        std::unordered_map<std::pair<std::string, unsigned int>, Any> &env_init,
-        const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &model_state,
-        const std::string &input,
-        Simulation *sim_instance) {
+    static StateReader* createReader(
+        const std::string& model_name,
+        const std::unordered_map<std::string, EnvironmentDescription::PropData>& env_desc,
+        std::unordered_map<std::pair<std::string, unsigned int>, Any>& env_init,
+        StringPairUnorderedMap<std::shared_ptr<AgentVector>>& model_state,
+        const std::string& input,
+        Simulation* sim_instance) {
         const std::string extension = getFileExt(input);
 
         if (extension == "xml") {
@@ -88,19 +90,19 @@ class WriterFactory {
      * Agent data will be read from 'model_state'
      * @param model_name Name from the model description hierarchy of the model to be exported
      * @param sim_instance_id Instance is from the Simulation instance to export the environment properties from
-     * @param model_state Map of AgentPopulation to read the agent data from per agent, key should be agent name
+     * @param model_state Map of AgentVector to read the agent data from per agent, key should be agent name
      * @param iterations The value from the step counter at the time of export.
      * @param output_file Filename of the input file (This will be used to determine which reader to return)
      * @param sim_instance Instance of the Simulation object (This is used for setting/getting config)
      * @throws UnsupportedFileType If the file extension does not match an appropriate reader
      */
-    static StateWriter *createWriter(
-        const std::string &model_name,
-        const unsigned int &sim_instance_id,
-        const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &model_state,
-        const unsigned int &iterations,
-        const std::string &output_file,
-        const Simulation *sim_instance) {
+    static StateWriter* createWriter(
+        const std::string& model_name,
+        const unsigned int& sim_instance_id,
+        const StringPairUnorderedMap<std::shared_ptr<AgentVector>>& model_state,
+        const unsigned int& iterations,
+        const std::string& output_file,
+        const Simulation* sim_instance) {
         const std::string extension = getFileExt(output_file);
 
         if (extension == "xml") {

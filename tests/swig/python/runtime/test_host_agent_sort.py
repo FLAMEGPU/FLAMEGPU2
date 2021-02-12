@@ -50,9 +50,8 @@ class HostAgentSort(TestCase):
         model.newLayer().addHostFunctionCallback(func)
         rand.seed(a=31313131)
         # Init pop
-        pop = pyflamegpu.AgentPopulation(agent, AGENT_COUNT)
-        for i in range(AGENT_COUNT): 
-            instance = pop.getNextInstance()
+        pop = pyflamegpu.AgentVector(agent, AGENT_COUNT)
+        for instance in pop:
             t = rand.uniform(1, 1000000)
             instance.setVariableFloat("float", t)
             instance.setVariableFloat("spare", t+12.0)
@@ -64,10 +63,9 @@ class HostAgentSort(TestCase):
         cuda_model.step()
         # Check results
         cuda_model.getPopulationData(pop)
-        assert AGENT_COUNT == pop.getCurrentListSize()
+        assert AGENT_COUNT == pop.size()
         prev = 1
-        for i in range(AGENT_COUNT): 
-            instance = pop.getInstanceAt(i)
+        for instance in pop:
             f = instance.getVariableFloat("float")
             s = instance.getVariableFloat("spare")
             # Agent variables are still aligned
@@ -88,9 +86,8 @@ class HostAgentSort(TestCase):
         rand.seed(a=31313131)
 
         # Init pop
-        pop = pyflamegpu.AgentPopulation(agent, AGENT_COUNT)
-        for i in range(AGENT_COUNT): 
-            instance = pop.getNextInstance()
+        pop = pyflamegpu.AgentVector(agent, AGENT_COUNT)
+        for instance in pop:
             t = rand.uniform(1, 1000000)
             instance.setVariableFloat("float", t)
             instance.setVariableFloat("spare", t+12.0)
@@ -102,10 +99,9 @@ class HostAgentSort(TestCase):
         cuda_model.step()
         # Check results
         cuda_model.getPopulationData(pop)
-        assert AGENT_COUNT == pop.getCurrentListSize()
+        assert AGENT_COUNT == pop.size()
         prev = 1000000
-        for i in range(AGENT_COUNT): 
-            instance = pop.getInstanceAt(i)
+        for instance in pop:
             f = instance.getVariableFloat("float")
             s = instance.getVariableFloat("spare")
             # Agent variables are still aligned
@@ -127,9 +123,9 @@ class HostAgentSort(TestCase):
         rand.seed(a=31313131)
 
         # Init pop
-        pop = pyflamegpu.AgentPopulation(agent, AGENT_COUNT)
+        pop = pyflamegpu.AgentVector(agent, AGENT_COUNT)
         for i in range(AGENT_COUNT): 
-            instance = pop.getNextInstance()
+            instance = pop[i]
             if i == AGENT_COUNT/2 : # Ensure zero is output at least once
                 t = 0 
             else:
@@ -144,10 +140,9 @@ class HostAgentSort(TestCase):
         cuda_model.step()
         # Check results
         cuda_model.getPopulationData(pop)
-        assert AGENT_COUNT == pop.getCurrentListSize()
+        assert AGENT_COUNT == pop.size()
         prev = 0
-        for i in range(AGENT_COUNT): 
-            instance = pop.getInstanceAt(i)
+        for instance in pop:
             f = instance.getVariableInt("int")
             s = instance.getVariableInt("spare")
             # Agent variables are still aligned
@@ -168,9 +163,8 @@ class HostAgentSort(TestCase):
         rand.seed(a=31313131)
 
         # Init pop
-        pop = pyflamegpu.AgentPopulation(agent, AGENT_COUNT)
-        for i in range(AGENT_COUNT): 
-            instance = pop.getNextInstance()
+        pop = pyflamegpu.AgentVector(agent, AGENT_COUNT)
+        for instance in pop:
             t = int(rand.uniform(1, 1000000))
             instance.setVariableInt("int", t)
             instance.setVariableInt("spare", t+12)
@@ -182,10 +176,9 @@ class HostAgentSort(TestCase):
         cuda_model.step()
         # Check results
         cuda_model.getPopulationData(pop)
-        assert AGENT_COUNT == pop.getCurrentListSize()
+        assert AGENT_COUNT == pop.size()
         prev = 1000000
-        for i in range(AGENT_COUNT): 
-            instance = pop.getInstanceAt(i)
+        for instance in pop:
             f = instance.getVariableInt("int")
             s = instance.getVariableInt("spare")
             # Agent variables are still aligned

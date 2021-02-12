@@ -9,15 +9,16 @@
 #include <cerrno>
 
 #include "flamegpu/exception/FGPUException.h"
-#include "flamegpu/pop/AgentPopulation.h"
+#include "flamegpu/pop/AgentVector.h"
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/gpu/CUDASimulation.h"
+#include "flamegpu/util/StringPair.h"
 
 jsonReader::jsonReader(
     const std::string &model_name,
     const std::unordered_map<std::string, EnvironmentDescription::PropData> &env_desc,
     std::unordered_map<std::pair<std::string, unsigned int>, Any> &env_init,
-    const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &model_state,
+    StringPairUnorderedMap<std::shared_ptr<AgentVector>> &model_state,
     const std::string &input,
     Simulation *sim_instance)
     : StateReader(model_name, env_desc, env_init, model_state, input, sim_instance) {}
@@ -35,15 +36,11 @@ class jsonReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, j
     /**
      * Used for setting agent values
      */
-    const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &model_state;
+    StringPairUnorderedMap<std::shared_ptr<AgentVector>>&model_state;
     /**
      * Tracks current position reading variable array
      */
     unsigned int current_variable_array_index = 0;
-    /**
-     * Set when we enter an agent instance
-     */
-    unsigned int current_agent_index = 0;
     /**
      * Set when we enter an agent
      */
@@ -57,7 +54,7 @@ class jsonReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, j
     jsonReader_impl(const std::string &_filename,
         const std::unordered_map<std::string, EnvironmentDescription::PropData> &_env_desc,
         std::unordered_map<std::pair<std::string, unsigned int>, Any> &_env_init,
-        const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &_model_state)
+        StringPairUnorderedMap<std::shared_ptr<AgentVector>> &_model_state)
         : filename(_filename)
         , env_desc(_env_desc)
         , env_init(_env_init)
@@ -115,10 +112,9 @@ class jsonReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, j
                     "in jsonReader::parse()\n", lastKey.c_str(), val_type.name());
             }
         } else if (mode.top() == AgentInstance) {
-            const std::shared_ptr<AgentPopulation> &pop = model_state.at(current_agent);
-            ::AgentInstance instance = pop->getInstanceAt(current_agent_index, current_state);
-            const auto &agentVariables = model_state.at(current_agent)->getAgentDescription().variables;
-            const std::type_index val_type = agentVariables.at(lastKey).type;
+            const std::shared_ptr<AgentVector> &pop = model_state.at({current_agent, current_state});
+            AgentVector::Agent instance = pop->back();
+            const std::type_index val_type = pop->getVariableType(lastKey);
             if (val_type == std::type_index(typeid(float))) {
                 instance.setVariable<float>(lastKey, current_variable_array_index++, static_cast<float>(val));
             } else if (val_type == std::type_index(typeid(double))) {
@@ -198,9 +194,11 @@ class jsonReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, j
             mode.push(Agent);
         } else if (mode.top() == State) {
             mode.push(AgentInstance);
-            // Currently agent pop is annoying, we need to call this to actually create the next agent
-            // We can't hold an empty AgentInstance, so we will recover it later with current_agent_index
-            model_state.at(current_agent)->getNextInstance(current_state);
+            auto f = model_state.find({ current_agent, current_state });
+            if (f == model_state.end()) {
+                THROW RapidJSONError("Input file '%s' contains data for agent:state combination '%s:%s' not found in model description hierarchy.\n", filename.c_str());
+            }
+            f->second->push_back();
         } else {
             THROW RapidJSONError("Unexpected object start whilst parsing input file '%s'.\n", filename.c_str());
         }
@@ -211,9 +209,6 @@ class jsonReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, j
         return true;
     }
     bool EndObject(rapidjson::SizeType) {
-        if (mode.top() == AgentInstance) {
-            current_agent_index++;
-        }
         mode.pop();
         return true;
     }
@@ -236,8 +231,6 @@ class jsonReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, j
     bool EndArray(rapidjson::SizeType) {
         if (mode.top() == VariableArray) {
             current_variable_array_index = 0;
-        } else if (mode.top() == State) {
-            current_agent_index = 0;
         }
         mode.pop();
         return true;
@@ -256,23 +249,13 @@ class jsonReader_agentsize_counter : public rapidjson::BaseReaderHandler<rapidjs
     std::string filename;
     std::string current_agent = "";
     std::string current_state = "";
-    struct StringPairHash {
-        size_t operator()(const std::pair<std::string, std::string>& k) const {
-            return std::hash<std::string>()(k.first) ^
-                (std::hash<std::string>()(k.second) << 1);
-        }
-    };
-    std::unordered_map<std::pair<std::string, std::string>, unsigned int, StringPairHash> agentstate_counts;
+    StringPairUnorderedMap<unsigned int> agentstate_counts;
     Simulation *sim_instance;
     CUDASimulation *cudamodel_instance;
 
  public:
-    std::unordered_map<std::string, unsigned int> getAgentCounts() const {
-        std::unordered_map<std::string, unsigned int> rtn;
-        for (const auto &asc : agentstate_counts) {
-            rtn[asc.first.first] = rtn[asc.first.first] > asc.second ? rtn.at(asc.first.first) : asc.second;
-        }
-        return rtn;
+     StringPairUnorderedMap<unsigned int> getAgentCounts() const {
+        return agentstate_counts;
     }
     explicit jsonReader_agentsize_counter(const std::string &_filename, Simulation *_sim_instance)
         : filename(_filename)
@@ -423,12 +406,12 @@ int jsonReader::parse() {
     rapidjson::Reader reader;
     // First parse the file and simply count the size of agent list
     reader.Parse(filess, agentcounter);
-    const auto agentCounts = agentcounter.getAgentCounts();
+    const StringPairUnorderedMap<unsigned int> agentCounts = agentcounter.getAgentCounts();
     // Use this to preallocate the agent statelists
     for (auto &agt : agentCounts) {
-        if (agt.second > AgentPopulation::DEFAULT_POPULATION_SIZE) {
-            model_state.at(agt.first)->setStateListCapacity(agt.second);
-        }
+        auto f = model_state.find(agt.first);
+        if (f!= model_state.end())
+            f->second->reserve(agt.second);
     }
     // Reset the string stream
     filess = rapidjson::StringStream(filestring.c_str());

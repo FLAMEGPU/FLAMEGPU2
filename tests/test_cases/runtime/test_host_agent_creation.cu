@@ -62,10 +62,9 @@ TEST(HostAgentCreationTest, FromInit) {
     model.addInitFunction(BasicOutput);
     // Init agent pop
     CUDASimulation cuda_model(model);
-    AgentPopulation population(model.Agent("agent"), INIT_AGENT_COUNT);
+    AgentVector population(model.Agent("agent"), INIT_AGENT_COUNT);
     // Initialise agents
-    for (unsigned int i = 0; i < INIT_AGENT_COUNT; i++) {
-        AgentInstance instance = population.getNextInstance();
+    for (AgentVector::Agent instance : population) {
         instance.setVariable<float>("x", 12.0f);
     }
     cuda_model.setPopulationData(population);
@@ -76,11 +75,10 @@ TEST(HostAgentCreationTest, FromInit) {
     // Test output
     cuda_model.getPopulationData(population);
     // Validate each agent has same result
-    EXPECT_EQ(population.getCurrentListSize(), INIT_AGENT_COUNT + NEW_AGENT_COUNT);
+    EXPECT_EQ(population.size(), INIT_AGENT_COUNT + NEW_AGENT_COUNT);
     unsigned int is_1 = 0;
     unsigned int is_12 = 0;
-    for (unsigned int i = 0; i < population.getCurrentListSize(); ++i) {
-        AgentInstance ai = population.getInstanceAt(i);
+    for (AgentVector::Agent ai : population) {
         float val = ai.getVariable<float>("x");
         if (val == 1.0f)
             is_1++;
@@ -98,10 +96,9 @@ TEST(HostAgentCreationTest, FromStep) {
     model.addStepFunction(BasicOutput);
     // Init agent pop
     CUDASimulation cuda_model(model);
-    AgentPopulation population(model.Agent("agent"), INIT_AGENT_COUNT);
+    AgentVector population(model.Agent("agent"), INIT_AGENT_COUNT);
     // Initialise agents
-    for (unsigned int i = 0; i < INIT_AGENT_COUNT; i++) {
-        AgentInstance instance = population.getNextInstance();
+    for (AgentVector::Agent instance : population) {
         instance.setVariable<float>("x", 12.0f);
     }
     cuda_model.setPopulationData(population);
@@ -112,11 +109,10 @@ TEST(HostAgentCreationTest, FromStep) {
     // Test output
     cuda_model.getPopulationData(population);
     // Validate each agent has same result
-    EXPECT_EQ(population.getCurrentListSize(), INIT_AGENT_COUNT + NEW_AGENT_COUNT);
+    EXPECT_EQ(population.size(), INIT_AGENT_COUNT + NEW_AGENT_COUNT);
     unsigned int is_1 = 0;
     unsigned int is_12 = 0;
-    for (unsigned int i = 0; i < population.getCurrentListSize(); ++i) {
-        AgentInstance ai = population.getInstanceAt(i);
+    for (AgentVector::Agent ai : population) {
         float val = ai.getVariable<float>("x");
         if (val == 1.0f)
             is_1++;
@@ -134,10 +130,9 @@ TEST(HostAgentCreationTest, FromHostLayer) {
     model.newLayer().addHostFunction(BasicOutput);
     // Init agent pop
     CUDASimulation cuda_model(model);
-    AgentPopulation population(model.Agent("agent"), INIT_AGENT_COUNT);
+    AgentVector population(model.Agent("agent"), INIT_AGENT_COUNT);
     // Initialise agents
-    for (unsigned int i = 0; i < INIT_AGENT_COUNT; i++) {
-        AgentInstance instance = population.getNextInstance();
+    for (AgentVector::Agent instance : population) {
         instance.setVariable<float>("x", 12.0f);
     }
     cuda_model.setPopulationData(population);
@@ -148,11 +143,10 @@ TEST(HostAgentCreationTest, FromHostLayer) {
     // Test output
     cuda_model.getPopulationData(population);
     // Validate each agent has same result
-    EXPECT_EQ(population.getCurrentListSize(), INIT_AGENT_COUNT + NEW_AGENT_COUNT);
+    EXPECT_EQ(population.size(), INIT_AGENT_COUNT + NEW_AGENT_COUNT);
     unsigned int is_1 = 0;
     unsigned int is_12 = 0;
-    for (unsigned int i = 0; i < population.getCurrentListSize(); ++i) {
-        AgentInstance ai = population.getInstanceAt(i);
+    for (AgentVector::Agent ai : population) {
         float val = ai.getVariable<float>("x");
         if (val == 1.0f)
             is_1++;
@@ -170,10 +164,9 @@ TEST(HostAgentCreationTest, FromExitCondition) {
     model.addExitCondition(BasicOutputCdn);
     // Init agent pop
     CUDASimulation cuda_model(model);
-    AgentPopulation population(model.Agent("agent"), INIT_AGENT_COUNT);
+    AgentVector population(model.Agent("agent"), INIT_AGENT_COUNT);
     // Initialise agents
-    for (unsigned int i = 0; i < INIT_AGENT_COUNT; i++) {
-        AgentInstance instance = population.getNextInstance();
+    for (AgentVector::Agent instance : population) {
         instance.setVariable<float>("x", 12.0f);
     }
     cuda_model.setPopulationData(population);
@@ -184,11 +177,10 @@ TEST(HostAgentCreationTest, FromExitCondition) {
     // Test output
     cuda_model.getPopulationData(population);
     // Validate each agent has same result
-    EXPECT_EQ(population.getCurrentListSize(), INIT_AGENT_COUNT + NEW_AGENT_COUNT);
+    EXPECT_EQ(population.size(), INIT_AGENT_COUNT + NEW_AGENT_COUNT);
     unsigned int is_1 = 0;
     unsigned int is_12 = 0;
-    for (unsigned int i = 0; i < population.getCurrentListSize(); ++i) {
-        AgentInstance ai = population.getInstanceAt(i);
+    for (AgentVector::Agent ai : population) {
         float val = ai.getVariable<float>("x");
         if (val == 1.0f)
             is_1++;
@@ -206,7 +198,7 @@ TEST(HostAgentCreationTest, FromStepEmptyPop) {
     model.addStepFunction(BasicOutput);
     // Init agent pop
     CUDASimulation cuda_model(model);
-    AgentPopulation population(model.Agent("agent"));
+    AgentVector population(model.Agent("agent"));
     // Execute model
     cuda_model.SimulationConfig().steps = 1;
     cuda_model.applyConfig();
@@ -214,10 +206,9 @@ TEST(HostAgentCreationTest, FromStepEmptyPop) {
     // Test output
     cuda_model.getPopulationData(population);
     // Validate each agent has same result
-    EXPECT_EQ(population.getCurrentListSize(), NEW_AGENT_COUNT);
+    EXPECT_EQ(population.size(), NEW_AGENT_COUNT);
     unsigned int is_1 = 0;
-    for (unsigned int i = 0; i < population.getCurrentListSize(); ++i) {
-        AgentInstance ai = population.getInstanceAt(i);
+    for (AgentVector::Agent ai : population) {
         float val = ai.getVariable<float>("x");
         if (val == 1.0f)
             is_1++;
@@ -234,28 +225,28 @@ TEST(HostAgentCreationTest, FromStepMultiState) {
     model.addStepFunction(OutputState);
     // Init agent pop
     CUDASimulation cuda_model(model);
-    AgentPopulation population(model.Agent("agent"), INIT_AGENT_COUNT);
+    AgentVector population(model.Agent("agent"), INIT_AGENT_COUNT);
     // Initialise agents
-    for (unsigned int i = 0; i < INIT_AGENT_COUNT; i++) {
-        AgentInstance instance = population.getNextInstance("a");
+    for (AgentVector::Agent instance : population) {
         instance.setVariable<float>("x", 12.0f);
     }
-    cuda_model.setPopulationData(population);
+    cuda_model.setPopulationData(population, "a");
     // Execute model
     cuda_model.SimulationConfig().steps = 1;
     cuda_model.applyConfig();
     cuda_model.simulate();
     // Test output
-    cuda_model.getPopulationData(population);
+    AgentVector population_a(model.Agent("agent"));
+    AgentVector population_b(model.Agent("agent"));
+    cuda_model.getPopulationData(population_a, "a");
+    cuda_model.getPopulationData(population_b, "b");
     // Validate each agent has same result
-    EXPECT_EQ(population.getCurrentListSize("a"), INIT_AGENT_COUNT);
-    EXPECT_EQ(population.getCurrentListSize("b"), NEW_AGENT_COUNT);
-    for (unsigned int i = 0; i < population.getCurrentListSize("a"); ++i) {
-        AgentInstance ai = population.getInstanceAt(i, "a");
+    EXPECT_EQ(population_a.size(), INIT_AGENT_COUNT);
+    EXPECT_EQ(population_b.size(), NEW_AGENT_COUNT);
+    for (AgentVector::Agent ai : population_a) {
         EXPECT_EQ(12.0f, ai.getVariable<float>("x"));
     }
-    for (unsigned int i = 0; i < population.getCurrentListSize("b"); ++i) {
-        AgentInstance ai = population.getInstanceAt(i, "b");
+    for (AgentVector::Agent ai : population_b) {
         EXPECT_EQ(1.0f, ai.getVariable<float>("x"));
     }
 }
@@ -271,35 +262,34 @@ TEST(HostAgentCreationTest, FromStepMultiAgent) {
     model.addStepFunction(OutputMultiAgent);
     // Init agent pop
     CUDASimulation cuda_model(model);
-    AgentPopulation population(agent, INIT_AGENT_COUNT);
+    AgentVector population(agent, INIT_AGENT_COUNT);
     // Initialise agents
-    for (unsigned int i = 0; i < INIT_AGENT_COUNT; i++) {
-        AgentInstance instance = population.getNextInstance("a");
+    for (AgentVector::Agent instance : population) {
         instance.setVariable<float>("x", 12.0f);
     }
-    cuda_model.setPopulationData(population);
+    cuda_model.setPopulationData(population, "a");
     // Execute model
     cuda_model.SimulationConfig().steps = 1;
     cuda_model.applyConfig();
     cuda_model.simulate();
     // Test output
-    cuda_model.getPopulationData(population);
-    AgentPopulation population2(agent2);
-    cuda_model.getPopulationData(population2);
+    AgentVector population_a(model.Agent("agent"));
+    AgentVector population_b(model.Agent("agent"));
+    AgentVector population_2(model.Agent("agent2"));
+    cuda_model.getPopulationData(population_a, "a");
+    cuda_model.getPopulationData(population_b, "b");
+    cuda_model.getPopulationData(population_2);
     // Validate each agent has same result
-    EXPECT_EQ(population.getCurrentListSize("a"), INIT_AGENT_COUNT);
-    EXPECT_EQ(population.getCurrentListSize("b"), NEW_AGENT_COUNT);
-    EXPECT_EQ(population2.getCurrentListSize(), NEW_AGENT_COUNT);
-    for (unsigned int i = 0; i < population.getCurrentListSize("a"); ++i) {
-        AgentInstance ai = population.getInstanceAt(i, "a");
+    EXPECT_EQ(population_a.size(), INIT_AGENT_COUNT);
+    EXPECT_EQ(population_b.size(), NEW_AGENT_COUNT);
+    EXPECT_EQ(population_2.size(), NEW_AGENT_COUNT);
+    for (AgentVector::Agent ai : population_a) {
         EXPECT_EQ(12.0f, ai.getVariable<float>("x"));
     }
-    for (unsigned int i = 0; i < population.getCurrentListSize("b"); ++i) {
-        AgentInstance ai = population.getInstanceAt(i, "b");
+    for (AgentVector::Agent ai : population_b) {
         EXPECT_EQ(1.0f, ai.getVariable<float>("x"));
     }
-    for (unsigned int i = 0; i < population2.getCurrentListSize(); ++i) {
-        AgentInstance ai = population2.getInstanceAt(i);
+    for (AgentVector::Agent ai : population_2) {
         EXPECT_EQ(2.0f, ai.getVariable<float>("y"));
     }
 }
@@ -317,13 +307,12 @@ TEST(HostAgentCreationTest, DefaultVariableValue) {
     cuda_model.applyConfig();
     cuda_model.simulate();
     // Test output
-    AgentPopulation population(model.Agent("agent"), NEW_AGENT_COUNT);
+    AgentVector population(model.Agent("agent"), NEW_AGENT_COUNT);
     cuda_model.getPopulationData(population);
     // Validate each agent has same result
-    EXPECT_EQ(population.getCurrentListSize(),  NEW_AGENT_COUNT);
+    EXPECT_EQ(population.size(),  NEW_AGENT_COUNT);
     unsigned int is_15 = 0;
-    for (unsigned int i = 0; i < population.getCurrentListSize(); ++i) {
-        AgentInstance ai = population.getInstanceAt(i);
+    for (AgentVector::Agent ai : population) {
         float val = ai.getVariable<float>("default");
         if (val == 15.0f)
             is_15++;
@@ -366,13 +355,12 @@ TEST(HostAgentCreationTest, GetterWorks) {
     cuda_model.applyConfig();
     cuda_model.simulate();
     // Test output
-    AgentPopulation population(model.Agent("agent"), NEW_AGENT_COUNT);
+    AgentVector population(model.Agent("agent"), NEW_AGENT_COUNT);
     cuda_model.getPopulationData(population);
     // Validate each agent has same result
-    EXPECT_EQ(population.getCurrentListSize(), NEW_AGENT_COUNT);
+    EXPECT_EQ(population.size(), NEW_AGENT_COUNT);
     unsigned int is_15 = 0;
-    for (unsigned int i = 0; i < population.getCurrentListSize(); ++i) {
-        AgentInstance ai = population.getInstanceAt(i);
+    for (AgentVector::Agent ai : population) {
         float val = ai.getVariable<float>("x");
         if (val == 15.0f)
             is_15++;
@@ -479,12 +467,11 @@ TEST(HostAgentCreationTest, HostAgentBirth_ArraySet) {
     model.addStepFunction(ArrayVarHostBirth);
     CUDASimulation sim(model);
     sim.step();
-    AgentPopulation population(agent);
+    AgentVector population(agent);
     sim.getPopulationData(population);
     // Check data is correct
-    EXPECT_EQ(population.getCurrentListSize(), AGENT_COUNT);
-    for (unsigned int i = 0; i < population.getCurrentListSize(); i++) {
-        AgentInstance instance = population.getInstanceAt(i);
+    EXPECT_EQ(population.size(), AGENT_COUNT);
+    for (AgentVector::Agent instance : population) {
         const unsigned int j = instance.getVariable<unsigned int>("id");
         // Check array sets are correct
         auto array1 = instance.getVariable<int, 4>("array_var");
@@ -511,12 +498,11 @@ TEST(HostAgentCreationTest, HostAgentBirth_ArraySetGet) {
     model.addStepFunction(ArrayVarHostBirthSetGet);
     CUDASimulation sim(model);
     sim.step();
-    AgentPopulation population(agent);
+    AgentVector population(agent);
     sim.getPopulationData(population);
     // Check data is correct
-    EXPECT_EQ(population.getCurrentListSize(), AGENT_COUNT);
-    for (unsigned int i = 0; i < population.getCurrentListSize(); i++) {
-        AgentInstance instance = population.getInstanceAt(i);
+    EXPECT_EQ(population.size(), AGENT_COUNT);
+    for (AgentVector::Agent instance : population) {
         const unsigned int j = instance.getVariable<unsigned int>("id");
         // Check array sets are correct
         auto array1 = instance.getVariable<int, 4>("array_var");
@@ -543,12 +529,11 @@ TEST(HostAgentCreationTest, HostAgentBirth_ArrayDefaultWorks) {
     model.addStepFunction(ArrayVarHostBirth_DefaultWorks);
     CUDASimulation sim(model);
     sim.step();
-    AgentPopulation population(agent);
+    AgentVector population(agent);
     sim.getPopulationData(population);
     // Check data is correct
-    EXPECT_EQ(population.getCurrentListSize(), AGENT_COUNT);
-    for (unsigned int i = 0; i < population.getCurrentListSize(); i++) {
-        AgentInstance instance = population.getInstanceAt(i);
+    EXPECT_EQ(population.size(), AGENT_COUNT);
+    for (AgentVector::Agent instance : population) {
         const unsigned int j = instance.getVariable<unsigned int>("id");
         // Check array sets are correct
         auto array1 = instance.getVariable<int, 4>("array_var");

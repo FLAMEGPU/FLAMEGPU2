@@ -78,32 +78,34 @@ TEST(TestAgentStateTransitions, Src_0_Dest_10) {
     af1.setEndState(END_STATE);
     LayerDescription &lo1 = m.newLayer(LAYER_NAME1);
     lo1.addAgentFunction(af1);
-    AgentPopulation pop(a, AGENT_COUNT);
-    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getNextInstance(START_STATE);
+    AgentVector pop(a, AGENT_COUNT);
+    for (AgentVector::Agent ai : pop) {
         ai.setVariable<int>("x", 12);
         ai.setVariable<int, 4>("y", ARRAY_REFERENCE);
     }
     CUDASimulation c(m);
-    c.setPopulationData(pop);
+    c.setPopulationData(pop, START_STATE);
     // Step 1, all agents go from Start->End state, and value become 11
     c.step();
-    c.getPopulationData(pop);
-    EXPECT_EQ(pop.getCurrentListSize(START_STATE), 0u);
-    EXPECT_EQ(pop.getCurrentListSize(END_STATE), AGENT_COUNT);
-    for (unsigned int i = 0; i < pop.getCurrentListSize(END_STATE); ++i) {
-        AgentInstance ai = pop.getInstanceAt(i, END_STATE);
+
+    AgentVector pop_START_STATE(a);
+    AgentVector pop_END_STATE(a);
+    c.getPopulationData(pop_START_STATE, START_STATE);
+    c.getPopulationData(pop_END_STATE, END_STATE);
+    EXPECT_EQ(pop_START_STATE.size(), 0u);
+    EXPECT_EQ(pop_END_STATE.size(), AGENT_COUNT);
+    for (AgentVector::Agent ai : pop_END_STATE) {
         ASSERT_EQ(ai.getVariable<int>("x"), 11);
         auto test = ai.getVariable<int, 4>("y");
         ASSERT_EQ(test, ARRAY_REFERENCE2);
     }
     // Step 2, no agents in start state, nothing changes
     c.step();
-    c.getPopulationData(pop);
-    EXPECT_EQ(pop.getCurrentListSize(START_STATE), 0u);
-    EXPECT_EQ(pop.getCurrentListSize(END_STATE), AGENT_COUNT);
-    for (unsigned int i = 0; i < pop.getCurrentListSize(END_STATE); ++i) {
-        AgentInstance ai = pop.getInstanceAt(i, END_STATE);
+    c.getPopulationData(pop_START_STATE, START_STATE);
+    c.getPopulationData(pop_END_STATE, END_STATE);
+    EXPECT_EQ(pop_START_STATE.size(), 0u);
+    EXPECT_EQ(pop_END_STATE.size(), AGENT_COUNT);
+    for (AgentVector::Agent ai : pop_END_STATE) {
         ASSERT_EQ(ai.getVariable<int>("x"), 11);
         auto test = ai.getVariable<int, 4>("y");
         ASSERT_EQ(test, ARRAY_REFERENCE2);
@@ -131,34 +133,38 @@ TEST(TestAgentStateTransitions, Src_10_Dest_0) {
     LayerDescription &lo2 = m.newLayer(LAYER_NAME2);
     lo1.addAgentFunction(af2);
     lo2.addAgentFunction(af1);
-    AgentPopulation pop(a, AGENT_COUNT);
-    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getNextInstance(START_STATE);
+    AgentVector pop(a, AGENT_COUNT);
+    for (AgentVector::Agent ai : pop) {
         ai.setVariable<int>("x", 12);
         ai.setVariable<int, 4>("y", ARRAY_REFERENCE);
     }
     CUDASimulation c(m);
-    c.setPopulationData(pop);
+    c.setPopulationData(pop, START_STATE);
     // Step 1, all agents go from Start->End state, and value become 11
     c.step();
-    c.getPopulationData(pop);
-    EXPECT_EQ(pop.getCurrentListSize(START_STATE), 0u);
-    EXPECT_EQ(pop.getCurrentListSize(END_STATE), AGENT_COUNT);
-    EXPECT_EQ(pop.getCurrentListSize(END_STATE2), 0u);
-    for (unsigned int i = 0; i < pop.getCurrentListSize(END_STATE); ++i) {
-        AgentInstance ai = pop.getInstanceAt(i, END_STATE);
+    AgentVector pop_START_STATE(a);
+    AgentVector pop_END_STATE(a);
+    AgentVector pop_END_STATE2(a);
+    c.getPopulationData(pop_START_STATE, START_STATE);
+    c.getPopulationData(pop_END_STATE, END_STATE);
+    c.getPopulationData(pop_END_STATE2, END_STATE2);
+    EXPECT_EQ(pop_START_STATE.size(), 0u);
+    EXPECT_EQ(pop_END_STATE.size(), AGENT_COUNT);
+    EXPECT_EQ(pop_END_STATE2.size(), 0u);
+    for (AgentVector::Agent ai : pop_END_STATE) {
         ASSERT_EQ(ai.getVariable<int>("x"), 11);
         auto test = ai.getVariable<int, 4>("y");
         ASSERT_EQ(test, ARRAY_REFERENCE2);
     }
     // Step 2, all agents go from End->End2 state, and value become 13
     c.step();
-    c.getPopulationData(pop);
-    EXPECT_EQ(pop.getCurrentListSize(START_STATE), 0u);
-    EXPECT_EQ(pop.getCurrentListSize(END_STATE), 0u);
-    EXPECT_EQ(pop.getCurrentListSize(END_STATE2), AGENT_COUNT);
-    for (unsigned int i = 0; i < pop.getCurrentListSize(END_STATE2); ++i) {
-        AgentInstance ai = pop.getInstanceAt(i, END_STATE2);
+    c.getPopulationData(pop_START_STATE, START_STATE);
+    c.getPopulationData(pop_END_STATE, END_STATE);
+    c.getPopulationData(pop_END_STATE2, END_STATE2);
+    EXPECT_EQ(pop_START_STATE.size(), 0u);
+    EXPECT_EQ(pop_END_STATE.size(), 0u);
+    EXPECT_EQ(pop_END_STATE2.size(), AGENT_COUNT);
+    for (AgentVector::Agent ai : pop_END_STATE2) {
         ASSERT_EQ(ai.getVariable<int>("x"), 13);
         auto test = ai.getVariable<int, 4>("y");
         ASSERT_EQ(test, ARRAY_REFERENCE3);
@@ -194,29 +200,31 @@ TEST(TestAgentStateTransitions, Src_10_Dest_10) {
     lo2.addAgentFunction(af2);
     // Init pop
     const unsigned int ROUNDS = 3;
-    AgentPopulation pop(a, ROUNDS * AGENT_COUNT);
+    AgentVector pop(a, ROUNDS * AGENT_COUNT);
     for (unsigned int i = 0; i < ROUNDS * AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getNextInstance(START_STATE);
+        AgentVector::Agent ai = pop[i];
         unsigned int val = 1 + (i % ROUNDS);  // 1, 2, 3, 1, 2, 3 etc
         ai.setVariable<unsigned int>("x", val);
         ai.setVariable<unsigned int>("y", val);
         ai.setVariable<int, 4>("z", ARRAY_REFERENCE);
     }
     CUDASimulation c(m);
-    c.setPopulationData(pop);
+    c.setPopulationData(pop, START_STATE);
 
+    AgentVector pop_START_STATE(a);
+    AgentVector pop_END_STATE(a);
     // Step 1, all agents go from Start->End state, and value become 11
     for (unsigned int i = 1; i <= ROUNDS; i++) {
         // printf("Round: %d\n", i);
         std::array<unsigned int, ROUNDS + 1> out;
         memset(out.data(), 0, sizeof(unsigned int) * (ROUNDS + 1));
         c.step();
-        c.getPopulationData(pop);
-        EXPECT_EQ(pop.getCurrentListSize(START_STATE), (ROUNDS - i) * AGENT_COUNT);
-        EXPECT_EQ(pop.getCurrentListSize(END_STATE), i * AGENT_COUNT);
+        c.getPopulationData(pop_START_STATE, START_STATE);
+        c.getPopulationData(pop_END_STATE, END_STATE);
+        EXPECT_EQ(pop_START_STATE.size(), (ROUNDS - i) * AGENT_COUNT);
+        EXPECT_EQ(pop_END_STATE.size(), i * AGENT_COUNT);
         // Check val of agents in start state
-        for (unsigned int j = 0; j < pop.getCurrentListSize(START_STATE); ++j) {
-            AgentInstance ai = pop.getInstanceAt(j, START_STATE);
+        for (AgentVector::Agent ai : pop_START_STATE) {
             unsigned int y = ai.getVariable<unsigned int>("y");
             out[y]++;
             auto test = ai.getVariable<int, 4>("z");
@@ -232,8 +240,7 @@ TEST(TestAgentStateTransitions, Src_10_Dest_10) {
         }
         // Check val of agents in end state
         memset(out.data(), 0, sizeof(unsigned int) * (ROUNDS + 1));
-        for (unsigned int j = 0; j < pop.getCurrentListSize(END_STATE); ++j) {
-            AgentInstance ai = pop.getInstanceAt(j, END_STATE);
+        for (AgentVector::Agent ai : pop_END_STATE) {
             unsigned int y = ai.getVariable<unsigned int>("y");
             out[y]++;
             auto test = ai.getVariable<int, 4>("z");

@@ -141,20 +141,6 @@ class MiniSim {
         // agent.newVariable<int>("int");
         // agent.newVariable<uint64_t>("uint64_t");
         // agent.newVariable<int64_t>("int64_t");
-
-        for (unsigned int i = 0; i < AGENT_COUNT; i++) {
-            AgentInstance instance = population.getNextInstance();
-            // instance.setVariable<float>("float", 0);
-            // instance.setVariable<double>("double", 0);
-            // instance.setVariable<unsigned char>("unsigned_char", 0);
-            // instance.setVariable<char>("char", 0);
-            // instance.setVariable<uint16_t>("uint16_t", 0);
-            // instance.setVariable<int16_t>("int16_t", 0);
-            // instance.setVariable<unsigned int>("unsigned_int", 0);
-            // instance.setVariable<int>("int", 0);
-            // instance.setVariable<uint64_t>("uint64_t", 0);
-            // instance.setVariable<int64_t>("int64_t", 0);
-        }
     }
     ~MiniSim() {
         if (simulation) delete simulation;
@@ -180,7 +166,7 @@ class MiniSim {
     const unsigned int AGENT_COUNT = 5;
     ModelDescription model;
     AgentDescription &agent;
-    AgentPopulation population;
+    AgentVector population;
     CUDASimulation *simulation;
 };
 /**

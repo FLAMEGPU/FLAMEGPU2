@@ -31,8 +31,7 @@ class MiniSim {
         CUDASimulation cuda_model(model);
         cuda_model.SimulationConfig().steps = steps;
         // This fails as agentMap is empty
-        AgentPopulation population(agent, 1);
-        population.getNextInstance();  // Default init 1st and only agent
+        AgentVector population(agent, 1);
         cuda_model.setPopulationData(population);
         EXPECT_THROW(cuda_model.simulate(), DeviceError);
     }

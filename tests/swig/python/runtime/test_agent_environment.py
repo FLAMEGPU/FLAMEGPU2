@@ -59,7 +59,7 @@ class MiniSim:
         # run
         self.__run()
         # get instance and test output values
-        instance = self.population.getInstanceAt(0)
+        instance = self.population.front()
         instance_get_func = getattr(instance, f"getVariable{python_type}")
         assert instance_get_func("a_out") == SCALAR_TEST_VALUE
         assert instance.getVariableInt("contains_a") == True
@@ -80,14 +80,13 @@ class MiniSim:
         # run
         self.__run()
         # get instance and test output values
-        instance = self.population.getInstanceAt(0)
+        instance = self.population.front()
         instance_get_func = getattr(instance, f"getVariable{python_type}")
         assert instance_get_func("a1_out") == ARRAY_TEST_VALUE[1]
         assert instance.getVariableInt("contains_b") == False # B should not be found
             
     def __run(self):
-        self.population = pyflamegpu.AgentPopulation(self.agent, 1)
-        self.population.getNextInstance()  # Create one agent
+        self.population = pyflamegpu.AgentVector(self.agent, 1)
         # CudaModel must be declared here
         # As the initial call to constructor fixes the agent population
         # This means if we haven't called model.newAgent(agent) first

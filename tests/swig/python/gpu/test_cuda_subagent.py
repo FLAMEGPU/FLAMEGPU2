@@ -186,10 +186,7 @@ class TestCUDASubAgent(TestCase):
         m.newLayer().addAgentFunction(fn_3);
         
         # Init Agents
-        pop = pyflamegpu.AgentPopulation(ma, AGENT_COUNT);
-        for i in range(AGENT_COUNT):
-            ai = pop.getNextInstance();
-            # Vars all default init
+        pop = pyflamegpu.AgentVector(ma, AGENT_COUNT);
 
         # Init Model
         c = pyflamegpu.CUDASimulation(m)
@@ -204,8 +201,7 @@ class TestCUDASubAgent(TestCase):
         # Unmapped var = init + af + af
         unmapped_result = UINT_MAX() - 1000 - 1000;
         c.getPopulationData(pop);
-        for i in range(AGENT_COUNT):
-            ai = pop.getInstanceAt(i);
+        for ai in pop:
             assert ai.getVariableUInt(AGENT_VAR1_NAME) == mapped_result
             assert ai.getVariableUInt(AGENT_VAR2_NAME) == unmapped_result
 
@@ -217,8 +213,7 @@ class TestCUDASubAgent(TestCase):
         # Unmapped var = unmapped_result + af + af
         unmapped_result2 = unmapped_result - 1000 - 1000;
         c.getPopulationData(pop);
-        for i in range(AGENT_COUNT):
-            ai = pop.getInstanceAt(i);
+        for ai in pop:
             assert ai.getVariableUInt(AGENT_VAR1_NAME) == mapped_result2
             assert ai.getVariableUInt(AGENT_VAR2_NAME) == unmapped_result2
             
@@ -250,9 +245,9 @@ class TestCUDASubAgent(TestCase):
         m.newLayer().addAgentFunction(fn_3);
 
         # Init Agents
-        pop = pyflamegpu.AgentPopulation(ma, AGENT_COUNT);
+        pop = pyflamegpu.AgentVector(ma, AGENT_COUNT);
         for i in range(AGENT_COUNT):
-            ai = pop.getNextInstance();
+            ai = pop[i]
             ai.setVariableUInt(AGENT_VAR_i, i);
             ai.setVariableUInt(AGENT_VAR1_NAME, i);
             ai.setVariableUInt(AGENT_VAR2_NAME, UINT_MAX() - i);
@@ -271,9 +266,8 @@ class TestCUDASubAgent(TestCase):
         # Unmapped var = init + af + af
         unmapped_result = UINT_MAX() - 1000 - 1000;
         c.getPopulationData(pop);
-        assert pop.getCurrentListSize() == int(AGENT_COUNT*0.75) # if AGENT_COUNT > 1000 this test will fail
-        for i in range(pop.getCurrentListSize()):
-            ai = pop.getInstanceAt(i);
+        assert len(pop) == int(AGENT_COUNT*0.75) # if AGENT_COUNT > 1000 this test will fail
+        for ai in pop:
             _i = ai.getVariableUInt(AGENT_VAR_i);
             assert _i % 3 == 0  # Var divides cleanly by 3
             __i = int(_i/3);  # Calculate original value of AGENT_VAR_i
@@ -289,9 +283,8 @@ class TestCUDASubAgent(TestCase):
         # Unmapped var = unmapped_result + af + af
         unmapped_result2 = unmapped_result - 1000 - 1000;
         c.getPopulationData(pop);
-        assert pop.getCurrentListSize() == int(AGENT_COUNT/2)
-        for i in range(pop.getCurrentListSize()):
-            ai = pop.getInstanceAt(i);
+        assert len(pop) == int(AGENT_COUNT/2)
+        for ai in pop:
             _i = ai.getVariableUInt(AGENT_VAR_i);
             assert _i % 9 == 0  # Var divides cleanly by 3
             __i = _i/9;  # Calculate original value of AGENT_VAR_i
@@ -327,9 +320,9 @@ class TestCUDASubAgent(TestCase):
         m.newLayer().addAgentFunction(fn_3);
         
         # Init Agents
-        pop = pyflamegpu.AgentPopulation(ma, AGENT_COUNT);
+        pop = pyflamegpu.AgentVector(ma, AGENT_COUNT);
         for i in range(AGENT_COUNT):
-            ai = pop.getNextInstance();
+            ai = pop[i]
             ai.setVariableUInt(AGENT_VAR_i, i);
             ai.setVariableUInt(AGENT_VAR1_NAME, i);
             ai.setVariableUInt(AGENT_VAR2_NAME, UINT_MAX() - i);
@@ -348,9 +341,8 @@ class TestCUDASubAgent(TestCase):
         # Unmapped var = init + af + af
         unmapped_result = UINT_MAX() - 1000;
         c.getPopulationData(pop);
-        assert pop.getCurrentListSize() == int(AGENT_COUNT*0.75) # if AGENT_COUNT > 1000 this test will fail
-        for i in range(pop.getCurrentListSize()):
-            ai = pop.getInstanceAt(i);
+        assert len(pop) == int(AGENT_COUNT*0.75) # if AGENT_COUNT > 1000 this test will fail
+        for ai in pop:
             _i = ai.getVariableUInt(AGENT_VAR_i);
             assert _i % 3 == 0  # Var divides cleanly by 3
             __i = int(_i/3);  # Calculate original value of AGENT_VAR_i
@@ -366,9 +358,8 @@ class TestCUDASubAgent(TestCase):
         # Unmapped var = unmapped_result + af + af
         unmapped_result2 = unmapped_result - 1000;
         c.getPopulationData(pop);
-        assert pop.getCurrentListSize() == int(AGENT_COUNT/2)
-        for i in range(pop.getCurrentListSize()):
-            ai = pop.getInstanceAt(i);
+        assert len(pop) == int(AGENT_COUNT/2)
+        for ai in pop:
             _i = ai.getVariableUInt(AGENT_VAR_i);
             assert _i % 9 == 0  # Var divides cleanly by 3
             __i = _i/9;  # Calculate original value of AGENT_VAR_i
@@ -415,9 +406,9 @@ class TestCUDASubAgent(TestCase):
         m.newLayer().addAgentFunction(fn_3);
 
         # Init Agents
-        pop = pyflamegpu.AgentPopulation(ma, AGENT_COUNT);
+        pop = pyflamegpu.AgentVector(ma, AGENT_COUNT);
         for i in range(AGENT_COUNT):
-            ai = pop.getNextInstance();
+            ai = pop[i];
             ai.setVariableUInt(AGENT_VAR_i, i);
             ai.setVariableUInt(AGENT_VAR1_NAME, i);
             ai.setVariableUInt(AGENT_VAR2_NAME, UINT_MAX() - i);
@@ -436,9 +427,8 @@ class TestCUDASubAgent(TestCase):
         # Unmapped var = init + af + af
         unmapped_result = UINT_MAX() - 1000;
         c.getPopulationData(pop);
-        assert pop.getCurrentListSize() == int(AGENT_COUNT*0.75) # if AGENT_COUNT > 1000 this test will fail
-        for i in range(pop.getCurrentListSize()):
-            ai = pop.getInstanceAt(i);
+        assert len(pop) == int(AGENT_COUNT*0.75) # if AGENT_COUNT > 1000 this test will fail
+        for ai in pop:
             _i = ai.getVariableUInt(AGENT_VAR_i);
             assert _i % 3 == 0  # Var divides cleanly by 3
             __i = int(_i/3);  # Calculate original value of AGENT_VAR_i
@@ -454,9 +444,8 @@ class TestCUDASubAgent(TestCase):
         # Unmapped var = unmapped_result + af + af
         unmapped_result2 = unmapped_result - 1000;
         c.getPopulationData(pop);
-        assert pop.getCurrentListSize() == int(AGENT_COUNT/2)
-        for i in range(pop.getCurrentListSize()):
-            ai = pop.getInstanceAt(i);
+        assert len(pop) == int(AGENT_COUNT/2)
+        for ai in pop:
             _i = ai.getVariableUInt(AGENT_VAR_i);
             assert _i % 9 == 0  # Var divides cleanly by 3
             __i = _i/9;  # Calculate original value of AGENT_VAR_i

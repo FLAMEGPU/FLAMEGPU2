@@ -9,9 +9,9 @@
 
 #include "flamegpu/sim/AgentInterface.h"
 
+class AgentVector;
 class FLAMEGPU_HOST_API;
 class ModelDescription;
-class AgentPopulation;
 struct ModelData;
 struct RunLog;
 
@@ -115,8 +115,8 @@ class Simulation {
      */
     void exportLog(const std::string &path, bool steps, bool exit, bool prettyPrint = true);
 
-    virtual void setPopulationData(AgentPopulation& population) = 0;
-    virtual void getPopulationData(AgentPopulation& population) = 0;
+    virtual void setPopulationData(AgentVector& population, const std::string& state_name = ModelData::DEFAULT_STATE) = 0;
+    virtual void getPopulationData(AgentVector& population, const std::string& state_name = ModelData::DEFAULT_STATE) = 0;
 
     virtual const RunLog &getRunLog() const = 0;
     virtual AgentInterface &getAgent(const std::string &name) = 0;

@@ -1,218 +1,261 @@
- /**
- * @file AgentInstance.h
- * @authors Paul
- * @date 5 Mar 2014
- * @brief
- *
- * @see
- * @warning
- */
-
 #ifndef INCLUDE_FLAMEGPU_POP_AGENTINSTANCE_H_
 #define INCLUDE_FLAMEGPU_POP_AGENTINSTANCE_H_
 
-#include <vector>
+#include <memory>
+#include <map>
 #include <string>
-#include <utility>
+#include <vector>
 
-// include dependant class agent state memory (required in template functions)
-#include "flamegpu/pop/AgentStateMemory.h"
+#include "flamegpu/model/AgentData.h"
+#include "flamegpu/pop/AgentVector.h"
 
+class AgentDescription;
+
+/**
+ * This class represents standalone copy of a single agent
+ * It stores all the data internally, unlike an AgentVector::Agent
+ * @note Not 100% on the name, might change
+ */
 class AgentInstance {
+    friend AgentVector::iterator AgentVector::insert(AgentVector::const_iterator pos, AgentVector::size_type count, const AgentInstance& value);
+    friend AgentVector::iterator AgentVector::insert(AgentVector::size_type pos, AgentVector::size_type count, const AgentInstance& value);
+
  public:
-    AgentInstance(AgentStateMemory& state_memory, unsigned int i);
+    /**
+     * Initialises the agent variables with their default values
+     */
+    explicit AgentInstance(const AgentDescription &agent_desc);
 
-    virtual ~AgentInstance();
+    /**
+     * Copy constructors
+     */
+    AgentInstance(const AgentInstance& other);
+    explicit AgentInstance(const AgentVector::CAgent& other);
 
-    template <typename T> void setVariable(const std::string &variable_name, const T &value);
-    template <typename T, unsigned int N>  void setVariable(const std::string &variable_name, const std::array<T, N> &value);
-    template <typename T> void setVariable(const std::string &variable_name, const unsigned int &index, const T &value);
+    /**
+     * Move constructor
+     */
+    AgentInstance(AgentInstance&& other) noexcept;
+
+    /**
+     * Assignment operators
+     */
+    AgentInstance& operator=(const AgentInstance& other);
+    AgentInstance& operator=(const AgentVector::CAgent& other);
+    AgentInstance& operator=(AgentInstance&& other) noexcept;
+
+    /**
+     * Getters
+     */
+    template <typename T>
+    T getVariable(const std::string& variable_name) const;
+    template <typename T, unsigned int N>
+    std::array<T, N> getVariable(const std::string& variable_name) const;
+    template <typename T>
+    T getVariable(const std::string& variable_name, const unsigned int& index) const;
 #ifdef SWIG
-    template <typename T>  void setVariableArray(const std::string &variable_name, const std::vector<T> &value);
+    template <typename T>
+    std::vector<T> getVariableArray(const std::string& variable_name) const;
 #endif
 
-    template <typename T>  T getVariable(const std::string &variable_name) const;
-    template <typename T, unsigned int N>  std::array<T, N> getVariable(const std::string &variable_name) const;
-    template <typename T>  T getVariable(const std::string &variable_name, const unsigned int &index) const;
+    /**
+     * Setters
+     */
+    template <typename T>
+    void setVariable(const std::string& variable_name, const T& value);
+    template <typename T, unsigned int N>
+    void setVariable(const std::string& variable_name, const std::array<T, N>& value);
+    template <typename T>
+    void setVariable(const std::string& variable_name, const unsigned int& index, const T& value);
 #ifdef SWIG
-    template <typename T>  std::vector<T> getVariableArray(const std::string &variable_name) const;
+    template <typename T>
+    void setVariableArray(const std::string& variable_name, const std::vector<T>& value);
 #endif
 
  private:
-    const unsigned int index;
-    AgentStateMemory& agent_state_memory;
+    std::map<std::string, Any> _data;
+    std::shared_ptr<const AgentData> _agent;
 };
 
-template <typename T>
-void AgentInstance::setVariable(const std::string &variable_name, const T &value) {
-    // todo check that the variable exists
-    GenericMemoryVector& v = agent_state_memory.getMemoryVector(variable_name);
-    const Variable &v_desc = agent_state_memory.getVariableDescription(variable_name);
-    if (v_desc.elements != 1) {
-        THROW InvalidAgentVar("This method is not suitable for agent array variables, "
-            " variable '%s' was passed, "
-            "in AgentInstance::getVariable().",
-            variable_name.c_str());
-    }
-    if (v.getType() != std::type_index(typeid(T))) {
-        THROW InvalidVarType("Wrong variable type passed to AgentInstance::setVariable(). "
-            "This expects '%s', but '%s' was requested.",
-            v.getType().name(), typeid(T).name());
-    }
-    // do the replace
-    reinterpret_cast<T*>(v.getDataPtr())[index] = value;
-}
-template <typename T, unsigned int N>
-void AgentInstance::setVariable(const std::string &variable_name, const std::array<T, N> &value) {
-    // todo check that the variable exists
-    GenericMemoryVector& v = agent_state_memory.getMemoryVector(variable_name);
-    const Variable &v_desc = agent_state_memory.getVariableDescription(variable_name);
-    // if (v_desc.elements < 2) {
-    //     THROW InvalidAgentVar("Agent variable '%s' in not an array variable, "
-    //         "in AgentInstance::setVariable().",
-    //         variable_name.c_str());
-    // }
-    if (v.getType() != std::type_index(typeid(T))) {
-        THROW InvalidVarType("Wrong variable type passed to AgentInstance::setVariable(). "
-            "This expects '%s', but '%s' was requested.",
-            v.getType().name(), typeid(T).name());
-    }
-    if (v_desc.elements != N) {
-        THROW InvalidVarArrayLen("Wrong variable array length passed to AgentInstance::setVariable(). "
-            "This expects %u, but %u was requested.",
-            v_desc.elements, N);
-    }
-    memcpy(reinterpret_cast<T*>(v.getDataPtr()) + (index * N), value.data(), sizeof(T) * N);
-}
-template <typename T>
-void AgentInstance::setVariable(const std::string &variable_name, const unsigned int &array_index, const T &value) {
-    // todo check that the variable exists
-    GenericMemoryVector& v = agent_state_memory.getMemoryVector(variable_name);
-    const Variable &v_desc = agent_state_memory.getVariableDescription(variable_name);
-    // if (v_desc.elements < 2) {
-    //     THROW InvalidAgentVar("Agent variable '%s' in not an array variable, "
-    //         "in AgentInstance::setVariable().",
-    //         variable_name.c_str());
-    // }
-    if (v.getType() != std::type_index(typeid(T))) {
-        THROW InvalidVarType("Wrong variable type passed to AgentInstance::setVariable(). "
-            "This expects '%s', but '%s' was requested.",
-            v.getType().name(), typeid(T).name());
-    }
-    if (v_desc.elements <= array_index) {
-        THROW OutOfRangeVarArray("Index %d is out range %d in AgentInstance::setVariable(). ",
-            array_index, v_desc.elements);
-    }
-    reinterpret_cast<T*>(v.getDataPtr())[(index * v_desc.elements) + array_index] = value;
-}
-#ifdef SWIG
-template <typename T>
-void AgentInstance::setVariableArray(const std::string &variable_name, const std::vector<T> &value) {
-    // todo check that the variable exists
-    GenericMemoryVector& v = agent_state_memory.getMemoryVector(variable_name);
-    const Variable &v_desc = agent_state_memory.getVariableDescription(variable_name);
-    if (v_desc.elements != value.size()) {
-        THROW InvalidAgentVar("Agent variable '%s' has %u elements, value passed has %llu, "
-            "in AgentInstance::setVariableArray().",
-            variable_name.c_str(), v_desc.elements, value.size());
-    }
-    if (v.getType() != std::type_index(typeid(T))) {
-        THROW InvalidVarType("Wrong variable type passed to AgentInstance::setVariableArray(). "
-            "This expects '%s', but '%s' was requested.",
-            v.getType().name(), typeid(T).name());
-    }
-    if (v_desc.elements != value.size()) {
-        THROW InvalidVarArrayLen("Wrong variable array length passed to AgentInstance::setVariableArray(). "
-            "This expects %u, but %llu was provided.",
-            v_desc.elements, value.size());
-    }
-    memcpy(reinterpret_cast<T*>(v.getDataPtr()) + (index * v_desc.elements), value.data(), sizeof(T) * v_desc.elements);
-}
-#endif
 
 template <typename T>
-T AgentInstance::getVariable(const std::string &variable_name) const {
-    // todo check that the variable exists
-    GenericMemoryVector& v = agent_state_memory.getMemoryVector(variable_name);
-    const Variable &v_desc = agent_state_memory.getVariableDescription(variable_name);
-    if (v_desc.elements != 1) {
-        THROW InvalidAgentVar("This method is not suitable for agent array variables, "
-            " variable '%s' was passed, "
+T AgentInstance::getVariable(const std::string& variable_name) const {
+    const auto v_it = _data.find(variable_name);
+    if (v_it == _data.end()) {
+        THROW InvalidAgentVar("Variable with name '%s' was not found in agent, "
             "in AgentInstance::getVariable().",
             variable_name.c_str());
     }
-    if (v.getType() != std::type_index(typeid(T))) {
-        THROW InvalidVarType("Wrong variable type passed to AgentInstance::getVariable(). "
-            "This expects '%s', but '%s' was requested.",
-            v.getType().name(), typeid(T).name());
+    const auto& v_buff = v_it->second;
+    if (v_buff.elements != 1) {
+        THROW InvalidVarType("Variable '%s' is an array variable, use the array method instead, "
+            "in AgentInstance::getVariable().",
+            variable_name.c_str());
     }
-    // todo error handling around the cast to check for exceptions
-    return reinterpret_cast<const T*>(v.getReadOnlyDataPtr())[index];
+    if (v_buff.type != std::type_index(typeid(T))) {
+        THROW InvalidVarType("Variable '%s' is of a different type. "
+            "'%s' was expected, but '%s' was requested,"
+            "in AgentInstance::getVariable().",
+            variable_name.c_str(), v_buff.type.name(), typeid(T).name());
+    }
+    return *static_cast<const T*>(v_buff.ptr);
 }
 template <typename T, unsigned int N>
-std::array<T, N> AgentInstance::getVariable(const std::string &variable_name) const {
-    // todo check that the variable exists
-    GenericMemoryVector& v = agent_state_memory.getMemoryVector(variable_name);
-    const Variable &v_desc = agent_state_memory.getVariableDescription(variable_name);
-    // if (v_desc.elements < 2) {
-    //     THROW InvalidAgentVar("Agent variable '%s' in not an array variable, "
-    //         "in AgentInstance::getVariable().",
-    //         variable_name.c_str());
-    // }
-    if (v.getType() != std::type_index(typeid(T))) {
-        THROW InvalidVarType("Wrong variable type passed to AgentInstance::getVariable(). "
-            "This expects '%s', but '%s' was requested.",
-            v.getType().name(), typeid(T).name());
+std::array<T, N> AgentInstance::getVariable(const std::string& variable_name) const {
+    const auto v_it = _data.find(variable_name);
+    if (v_it == _data.end()) {
+        THROW InvalidAgentVar("Variable with name '%s' was not found in agent, "
+            "in AgentInstance::getVariable().",
+            variable_name.c_str());
     }
-    if (v_desc.elements != N) {
-        THROW InvalidVarArrayLen("Wrong variable array length passed to AgentInstance::getVariable(). "
-            "This expects %u, but %u was requested.",
-            v_desc.elements, N);
+    const auto& v_buff = v_it->second;
+    if (v_buff.elements != N) {
+        THROW InvalidVarType("Variable '%s' has '%u' elements, but an array of length %u was passed, "
+            "in AgentInstance::getVariable().",
+            variable_name.c_str(), v_buff.elements, N);
+    }
+    if (v_buff.type != std::type_index(typeid(T))) {
+        THROW InvalidVarType("Variable '%s' is of a different type. "
+            "'%s' was expected, but '%s' was requested,"
+            "in AgentInstance::getVariable().",
+            variable_name.c_str(), v_buff.type.name(), typeid(T).name());
     }
     std::array<T, N> rtn;
-    memcpy(rtn.data(), reinterpret_cast<T*>(v.getDataPtr()) + (index * N), sizeof(T) * N);
+    memcpy(rtn.data(), v_buff.ptr, sizeof(T) * N);
     return rtn;
 }
 template <typename T>
-T AgentInstance::getVariable(const std::string &variable_name, const unsigned int &array_index) const {
-    // todo check that the variable exists
-    GenericMemoryVector& v = agent_state_memory.getMemoryVector(variable_name);
-    const Variable &v_desc = agent_state_memory.getVariableDescription(variable_name);
-    // if (v_desc.elements < 2) {
-    //     THROW InvalidAgentVar("Agent variable '%s' in not an array variable, "
-    //         "in AgentInstance::getVariable().",
-    //         variable_name.c_str());
-    // }
-    if (v.getType() != std::type_index(typeid(T))) {
-        THROW InvalidVarType("Wrong variable type passed to AgentInstance::getVariable(). "
-            "This expects '%s', but '%s' was requested.",
-            v.getType().name(), typeid(T).name());
+T AgentInstance::getVariable(const std::string& variable_name, const unsigned int& index) const {
+    const auto v_it = _data.find(variable_name);
+    if (v_it == _data.end()) {
+        THROW InvalidAgentVar("Variable with name '%s' was not found in agent, "
+            "in AgentInstance::getVariable().",
+            variable_name.c_str());
     }
-    if (v_desc.elements <= array_index) {
-        THROW OutOfRangeVarArray("Index %d is out range %d in AgentInstance::getVariable(). ",
-            array_index, v_desc.elements);
+    const auto& v_buff = v_it->second;
+    if (index >= v_buff.elements) {
+        THROW OutOfBoundsException("Index '%u' exceeds array bounds [0-%u) of variable '%s',  "
+            "in AgentInstance::getVariable().",
+            index, v_buff.elements, variable_name.c_str());
     }
-    return reinterpret_cast<T*>(v.getDataPtr())[(index * v_desc.elements) + array_index];
+    if (v_buff.type != std::type_index(typeid(T))) {
+        THROW InvalidVarType("Variable '%s' is of a different type. "
+            "'%s' was expected, but '%s' was requested,"
+            "in AgentInstance::getVariable().",
+            variable_name.c_str(), v_buff.type.name(), typeid(T).name());
+    }
+    return static_cast<T*>(v_buff.ptr)[index];
 }
 #ifdef SWIG
 template <typename T>
 std::vector<T> AgentInstance::getVariableArray(const std::string& variable_name) const {
-    // todo check that the variable exists
-    GenericMemoryVector& v = agent_state_memory.getMemoryVector(variable_name);
-    const Variable &v_desc = agent_state_memory.getVariableDescription(variable_name);
-    // if (v_desc.elements < 2) {
-    //     THROW InvalidAgentVar("Agent variable '%s' in not an array variable, "
-    //         "in AgentInstance::getVariable().",
-    //         variable_name.c_str());
-    // }
-    if (v.getType() != std::type_index(typeid(T))) {
-        THROW InvalidVarType("Wrong variable type passed to AgentInstance::getVariable(). "
-            "This expects '%s', but '%s' was requested.",
-            v.getType().name(), typeid(T).name());
+    const auto v_it = _data.find(variable_name);
+    if (v_it == _data.end()) {
+        THROW InvalidAgentVar("Variable with name '%s' was not found in agent, "
+            "in AgentInstance::getVariableArray().",
+            variable_name.c_str());
     }
-    std::vector<T> rtn(static_cast<size_t>(v_desc.elements));
-    memcpy(rtn.data(), reinterpret_cast<T*>(v.getDataPtr()) + (index * v_desc.elements), sizeof(T) * v_desc.elements);
+    const auto& v_buff = v_it->second;
+    if (v_buff.type != std::type_index(typeid(T))) {
+        THROW InvalidVarType("Variable '%s' is of a different type. "
+            "'%s' was expected, but '%s' was requested,"
+            "in AgentInstance::getVariableArray().",
+            variable_name.c_str(), v_buff.type.name(), typeid(T).name());
+    }
+    std::vector<T> rtn(static_cast<size_t>(v_buff.elements));
+    memcpy(rtn.data(), static_cast<T*>(v_buff.ptr), sizeof(T) * v_buff.elements);
     return rtn;
+}
+#endif
+template <typename T>
+void AgentInstance::setVariable(const std::string& variable_name, const T& value) {
+    const auto v_it = _data.find(variable_name);
+    if (v_it == _data.end()) {
+        THROW InvalidAgentVar("Variable with name '%s' was not found in agent, "
+            "in AgentInstance::setVariable().",
+            variable_name.c_str());
+    }
+    auto& v_buff = v_it->second;
+    if (v_buff.elements != 1) {
+        THROW InvalidVarType("Variable '%s' is an array variable, use the array method instead, "
+            "in AgentInstance::setVariable().",
+            variable_name.c_str());
+    }
+    if (v_buff.type != std::type_index(typeid(T))) {
+        THROW InvalidVarType("Variable '%s' is of a different type. "
+            "'%s' was expected, but '%s' was requested,"
+            "in AgentInstance::setVariable().",
+            variable_name.c_str(), v_buff.type.name(), typeid(T).name());
+    }
+    // do the replace
+    *static_cast<T*>(v_buff.ptr) = value;
+}
+template <typename T, unsigned int N>
+void AgentInstance::setVariable(const std::string& variable_name, const std::array<T, N>& value) {
+    const auto v_it = _data.find(variable_name);
+    if (v_it == _data.end()) {
+        THROW InvalidAgentVar("Variable with name '%s' was not found in agent, "
+            "in AgentInstance::setVariable().",
+            variable_name.c_str());
+    }
+    auto& v_buff = v_it->second;
+    if (v_buff.elements != N) {
+        THROW InvalidVarType("Variable '%s' has '%u' elements, but an array of length %u was passed, "
+            "in AgentInstance::setVariable().",
+            variable_name.c_str(), v_buff.elements, N);
+    }
+    if (v_buff.type != std::type_index(typeid(T))) {
+        THROW InvalidVarType("Variable '%s' is of a different type. "
+            "'%s' was expected, but '%s' was requested,"
+            "in AgentInstance::setVariable().",
+            variable_name.c_str(), v_buff.type.name(), typeid(T).name());
+    }
+    memcpy(static_cast<T*>(v_buff.ptr), value.data(), sizeof(T) * N);
+}
+template <typename T>
+void AgentInstance::setVariable(const std::string& variable_name, const unsigned int& index, const T& value) {
+    const auto v_it = _data.find(variable_name);
+    if (v_it == _data.end()) {
+        THROW InvalidAgentVar("Variable with name '%s' was not found in agent, "
+            "in AgentInstance::setVariable().",
+            variable_name.c_str());
+    }
+    auto& v_buff = v_it->second;
+    if (index >= v_buff.elements) {
+        THROW OutOfBoundsException("Index '%u' exceeds array bounds [0-%u) of variable '%s',  "
+            "in AgentInstance::setVariable().",
+            index, v_buff.elements, variable_name.c_str());
+    }
+    if (v_buff.type != std::type_index(typeid(T))) {
+        THROW InvalidVarType("Variable '%s' is of a different type. "
+            "'%s' was expected, but '%s' was requested,"
+            "in AgentInstance::setVariable().",
+            variable_name.c_str(), v_buff.type.name(), typeid(T).name());
+    }
+    static_cast<T*>(v_buff.ptr)[index] = value;
+}
+#ifdef SWIG
+template <typename T>
+void AgentInstance::setVariableArray(const std::string& variable_name, const std::vector<T>& value) {
+    const auto v_it = _data.find(variable_name);
+    if (v_it == _data.end()) {
+        THROW InvalidAgentVar("Variable with name '%s' was not found in agent, "
+            "in AgentInstance::setVariableArray().",
+            variable_name.c_str());
+    }
+    auto& v_buff = v_it->second;
+    if (v_buff.elements != value.size()) {
+        THROW InvalidVarType("Variable '%s' has '%u' elements, but an array of length %u was passed, "
+            "in AgentInstance::setVariableArray().",
+            variable_name.c_str(), v_buff.elements, value.size());
+    }
+    if (v_buff.type != std::type_index(typeid(T))) {
+        THROW InvalidVarType("Variable '%s' is of a different type. "
+            "'%s' was expected, but '%s' was requested,"
+            "in AgentInstance::setVariableArray().",
+            variable_name.c_str(), v_buff.type.name(), typeid(T).name());
+    }
+    memcpy(static_cast<T*>(v_buff.ptr), value.data(), sizeof(T) * v_buff.elements);
 }
 #endif
 

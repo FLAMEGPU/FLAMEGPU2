@@ -8,8 +8,8 @@
 #include "flamegpu/io/xmlWriter.h"
 #include "flamegpu/io/factory.h"
 #include "flamegpu/runtime/utility/RandomManager.cuh"
-#include "flamegpu/pop/AgentPopulation.h"
-#include "flamegpu/model/AgentDescription.h"  // Only forward declared by AgentPopulation.h
+#include "flamegpu/pop/AgentVector.h"
+#include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/util/nvtx.h"
 #include "flamegpu/util/filesystem.h"
 
@@ -43,10 +43,11 @@ void Simulation::applyConfig() {
     if (!config.input_file.empty() && config.input_file != loaded_input_file) {
         const std::string current_input_file = config.input_file;
         // Build population vector
-        std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> pops;
+        StringPairUnorderedMap<std::shared_ptr<AgentVector>> pops;
         for (auto &agent : model->agents) {
-            auto a = std::make_shared<AgentPopulation>(*agent.second->description);
-            pops.emplace(agent.first, a);
+            for (const auto &state : agent.second->states) {
+                pops.emplace(StringPair{ agent.first, state }, std::make_shared<AgentVector>(*agent.second->description));
+            }
         }
 
         env_init.clear();
@@ -55,7 +56,7 @@ void Simulation::applyConfig() {
         if (read__) {
             read__->parse();
             for (auto &agent : pops) {
-                setPopulationData(*agent.second);
+                setPopulationData(*agent.second, agent.first.second);
             }
         }
         // Reset input file (we don't support input file recursion)
@@ -100,11 +101,13 @@ const ModelData& Simulation::getModelDescription() const {
  */
 void Simulation::exportData(const std::string &path, bool prettyPrint) {
     // Build population vector
-    std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> pops;
+    StringPairUnorderedMap<std::shared_ptr<AgentVector>> pops;
     for (auto &agent : model->agents) {
-        auto a = std::make_shared<AgentPopulation>(*agent.second->description);
-        getPopulationData(*a);
-        pops.emplace(agent.first, a);
+        for (auto &state : agent.second->states) {
+            auto a = std::make_shared<AgentVector>(*agent.second->description);
+            getPopulationData(*a, state);
+            pops.emplace(StringPair{agent.first, state}, a);
+        }
     }
 
     StateWriter *write__ = WriterFactory::createWriter(model->name, getInstanceID(), pops, getStepCounter(), path, this);
@@ -142,10 +145,11 @@ int Simulation::checkArgs(int argc, const char** argv) {
             // Load the input file
             {
                 // Build population vector
-                std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> pops;
+                StringPairUnorderedMap<std::shared_ptr<AgentVector>> pops;
                 for (auto &agent : model->agents) {
-                    auto a = std::make_shared<AgentPopulation>(*agent.second->description);
-                    pops.emplace(agent.first, a);
+                    for (auto& state : agent.second->states) {
+                        pops.emplace(StringPair{ agent.first, state }, std::make_shared<AgentVector>(*agent.second->description));
+                    }
                 }
                 env_init.clear();
                 const auto env_desc = model->environment->getPropertiesMap();  // For some reason this method returns a copy, not a reference

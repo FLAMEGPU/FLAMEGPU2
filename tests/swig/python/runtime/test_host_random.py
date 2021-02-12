@@ -123,9 +123,7 @@ class MiniSim():
         self.model = pyflamegpu.ModelDescription("model")
         self.agent = self.model.newAgent("agent")
         self.ed = self.model.Environment()
-        self.population = pyflamegpu.AgentPopulation(self.agent, TEST_LEN)
-        for i in range(AGENT_COUNT):
-            instance = self.population.getNextInstance()
+        self.population = pyflamegpu.AgentVector(self.agent, TEST_LEN)
     
     def run(self, args): 
         self.cuda_model = pyflamegpu.CUDASimulation(self.model)

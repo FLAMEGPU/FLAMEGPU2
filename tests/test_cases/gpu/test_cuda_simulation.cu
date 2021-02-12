@@ -194,9 +194,9 @@ TEST(TestCUDASimulation, SetGetPopulationData) {
     AgentDescription &a = m.newAgent(AGENT_NAME);
     m.newLayer(LAYER_NAME).addAgentFunction(a.newFunction(FUNCTION_NAME, SetGetFn));
     a.newVariable<int>(VARIABLE_NAME);
-    AgentPopulation pop(a, static_cast<unsigned int>(AGENT_COUNT));
+    AgentVector pop(a, static_cast<unsigned int>(AGENT_COUNT));
     for (int _i = 0; _i < AGENT_COUNT; ++_i) {
-        AgentInstance i = pop.getNextInstance();
+        AgentVector::Agent i = pop[_i];
         i.setVariable<int>(VARIABLE_NAME, _i);
         EXPECT_THROW(i.setVariable<float>(VARIABLE_NAME, static_cast<float>(_i)), InvalidVarType);
     }
@@ -206,7 +206,7 @@ TEST(TestCUDASimulation, SetGetPopulationData) {
     c.simulate();
     c.getPopulationData(pop);
     for (int _i = 0; _i < AGENT_COUNT; ++_i) {
-        AgentInstance i = pop.getInstanceAt(_i);
+        AgentVector::Agent i = pop[_i];
         EXPECT_EQ(i.getVariable<int>(VARIABLE_NAME), _i * MULTIPLIER);
         i.setVariable<int>(VARIABLE_NAME, _i * 2);
     }
@@ -214,31 +214,31 @@ TEST(TestCUDASimulation, SetGetPopulationData) {
     c.simulate();
     c.getPopulationData(pop);
     for (int _i = 0; _i < AGENT_COUNT; ++_i) {
-        AgentInstance i = pop.getInstanceAt(_i);
+        AgentVector::Agent i = pop[_i];
         EXPECT_EQ(i.getVariable<int>(VARIABLE_NAME), _i * MULTIPLIER * 2);
         EXPECT_THROW(i.getVariable<float>(VARIABLE_NAME), InvalidVarType);
     }
 }
-TEST(TestCUDASimulation, SetGetPopulationData_InvalidCudaAgent) {
+TEST(TestCUDASimulation, SetGetPopulationData_InvalidAgent) {
     ModelDescription m2(MODEL_NAME2);
     AgentDescription &a2 = m2.newAgent(AGENT_NAME2);
     ModelDescription m(MODEL_NAME);
     // AgentDescription &a = m.newAgent(AGENT_NAME);
 
-    AgentPopulation pop(a2, static_cast<unsigned int>(AGENT_COUNT));
+    AgentVector pop(a2, static_cast<unsigned int>(AGENT_COUNT));
 
     CUDASimulation c(m);
-    EXPECT_THROW(c.setPopulationData(pop), InvalidCudaAgent);
-    EXPECT_THROW(c.getPopulationData(pop), InvalidCudaAgent);
+    EXPECT_THROW(c.setPopulationData(pop), InvalidAgent);
+    EXPECT_THROW(c.getPopulationData(pop), InvalidAgent);
 }
 TEST(TestCUDASimulation, GetAgent) {
     ModelDescription m(MODEL_NAME);
     AgentDescription &a = m.newAgent(AGENT_NAME);
     m.newLayer(LAYER_NAME).addAgentFunction(a.newFunction(FUNCTION_NAME, SetGetFn));
     a.newVariable<int>(VARIABLE_NAME);
-    AgentPopulation pop(a, static_cast<unsigned int>(AGENT_COUNT));
+    AgentVector pop(a, static_cast<unsigned int>(AGENT_COUNT));
     for (int _i = 0; _i < AGENT_COUNT; ++_i) {
-        AgentInstance i = pop.getNextInstance();
+        AgentVector::Agent i = pop[_i];
         i.setVariable<int>(VARIABLE_NAME, _i);
     }
     CUDASimulation c(m);
@@ -266,7 +266,7 @@ TEST(TestCUDASimulation, Step) {
     // Test that step does a single step
     ModelDescription m(MODEL_NAME);
     AgentDescription &a = m.newAgent(AGENT_NAME);
-    AgentPopulation pop(a, static_cast<unsigned int>(AGENT_COUNT));
+    AgentVector pop(a, static_cast<unsigned int>(AGENT_COUNT));
     m.addStepFunction(IncrementCounter);
     CUDASimulation c(m);
     c.setPopulationData(pop);
@@ -311,12 +311,8 @@ TEST(TestCUDASimulation, SharedAgentFunction) {
     cudaSimulation.applyConfig();
 
     const unsigned int populationSize = 5;
-    AgentPopulation pop1(agent1, populationSize);
-    AgentPopulation pop2(agent2, populationSize);
-    for (unsigned int i = 0; i < populationSize; i++) {
-        pop1.getNextInstance();
-        pop2.getNextInstance();
-    }
+    AgentVector pop1(agent1, populationSize);
+    AgentVector pop2(agent2, populationSize);
     cudaSimulation.setPopulationData(pop1);
     cudaSimulation.setPopulationData(pop2);
 
@@ -328,12 +324,12 @@ TEST(TestCUDASimulation, SharedAgentFunction) {
     cudaSimulation.getPopulationData(pop1);
     cudaSimulation.getPopulationData(pop2);
     for (unsigned int i = 0; i < populationSize; i++) {
-        auto instance = pop1.getInstanceAt(i);
+        auto instance = pop1[i];
         EXPECT_EQ(instance.getVariable<int>("i"), 6);
         EXPECT_EQ(instance.getVariable<int>("j"), 4);
     }
     for (unsigned int i = 0; i < populationSize; i++) {
-        auto instance = pop2.getInstanceAt(i);
+        auto instance = pop2[i];
         EXPECT_EQ(instance.getVariable<int>("i"), 4);
         EXPECT_EQ(instance.getVariable<int>("j"), 6);
     }
@@ -344,7 +340,7 @@ TEST(TestSimulation, Simulate) {
     // Test that step does a single step
     ModelDescription m(MODEL_NAME);
     AgentDescription &a = m.newAgent(AGENT_NAME);
-    AgentPopulation pop(a, static_cast<unsigned int>(AGENT_COUNT));
+    AgentVector pop(a, static_cast<unsigned int>(AGENT_COUNT));
     m.addStepFunction(IncrementCounter);
     CUDASimulation c(m);
     c.setPopulationData(pop);
@@ -374,10 +370,9 @@ TEST(TestCUDASimulation, AgentDeath) {
     a.newFunction("DeathFunc", DeathTestFunc).setAllowAgentDeath(true);
     m.newLayer().addAgentFunction(DeathTestFunc);
     CUDASimulation c(m);
-    AgentPopulation pop(a, static_cast<unsigned int>(AGENT_COUNT));
+    AgentVector pop(a, static_cast<unsigned int>(AGENT_COUNT));
     std::vector<unsigned int> expected_output;
-    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        auto p = pop.getNextInstance();
+    for (auto p : pop) {
         unsigned int rng = distribution(generator);
         p.setVariable<unsigned int>("x", rng);
         if (rng % 2 != 0)
@@ -387,11 +382,10 @@ TEST(TestCUDASimulation, AgentDeath) {
     c.SimulationConfig().steps = 1;
     c.simulate();
     c.getPopulationData(pop);
-    EXPECT_EQ(static_cast<size_t>(pop.getCurrentListSize()), expected_output.size());
-    for (unsigned int i = 0; i < pop.getCurrentListSize(); ++i) {
-        AgentInstance ai = pop.getInstanceAt(i);
+    EXPECT_EQ(static_cast<size_t>(pop.size()), expected_output.size());
+    for (unsigned int i = 0; i < pop.size(); ++i) {
         // Check x is an expected value
-        EXPECT_EQ(expected_output[i], ai.getVariable<unsigned int>("x"));
+        EXPECT_EQ(expected_output[i], pop[i].getVariable<unsigned int>("x"));
     }
 }
 
@@ -400,7 +394,7 @@ TEST(TestCUDASimulation, simulationElapsedTime) {
     // Define a simple model - doesn't need to do anything other than take some time.
     ModelDescription m(MODEL_NAME);
     AgentDescription &a = m.newAgent(AGENT_NAME);
-    AgentPopulation pop(a, static_cast<unsigned int>(AGENT_COUNT));
+    AgentVector pop(a, static_cast<unsigned int>(AGENT_COUNT));
     m.addStepFunction(IncrementCounterSlow);
 
     CUDASimulation c(m);
@@ -428,7 +422,7 @@ TEST(TestCUDASimulation, initExitElapsedTime) {
     // Define a simple model - doesn't need to do anything other than take some time.
     ModelDescription m(MODEL_NAME);
     AgentDescription &a = m.newAgent(AGENT_NAME);
-    AgentPopulation pop(a, static_cast<unsigned int>(AGENT_COUNT));
+    AgentVector pop(a, static_cast<unsigned int>(AGENT_COUNT));
     m.addInitFunction(InitIncrementCounterSlow);
     m.addStepFunction(IncrementCounterSlow);
     m.addExitFunction(ExitIncrementCounterSlow);
@@ -454,7 +448,7 @@ TEST(TestCUDASimulation, stepElapsedTime) {
     // Define a simple model - doesn't need to do anything other than take some time.
     ModelDescription m(MODEL_NAME);
     AgentDescription &a = m.newAgent(AGENT_NAME);
-    AgentPopulation pop(a, static_cast<unsigned int>(AGENT_COUNT));
+    AgentVector pop(a, static_cast<unsigned int>(AGENT_COUNT));
     m.addStepFunction(IncrementCounterSlow);
 
     CUDASimulation c(m);
@@ -489,7 +483,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, MsgNone, MsgNone) {
 /* TEST(TestCUDASimulation, RTCElapsedTime) {
     ModelDescription m(MODEL_NAME);
     AgentDescription &a = m.newAgent(AGENT_NAME);
-    AgentPopulation p(a, static_cast<unsigned int>(AGENT_COUNT));
+    AgentVector p(a, static_cast<unsigned int>(AGENT_COUNT));
     a.newVariable<unsigned int>("x");
 
     // add RTC agent function
@@ -497,7 +491,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, MsgNone, MsgNone) {
     m.newLayer().addAgentFunction(rtcFunc);
     // Init pop
     for (unsigned int i = 0u; i < AGENT_COUNT; i++) {
-        AgentInstance instance = p.getNextInstance();
+        AgentVector::Agent instance = p[i];
         instance.setVariable<unsigned int>("x", static_cast<unsigned int>(i));
     }
     // Setup Model
@@ -526,10 +520,7 @@ TEST(TestCUDASimulation, RTCElapsedTime) {
     func.setAllowAgentDeath(true);
     m.newLayer().addAgentFunction(func);
     // Init pop
-    AgentPopulation p(agent, AGENT_COUNT);
-    for (int i = 0; i< static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = p.getNextInstance("default");
-    }
+    AgentVector p(agent, AGENT_COUNT);
     CUDASimulation s(m);
     // The RTC initialisation occurs before anything try to  interact with the device, i.e. population generation so the timer should be 0 here
     EXPECT_EQ(s.getElapsedTimeRTCInitialisation(), 0.0f);
@@ -545,7 +536,7 @@ TEST(TestCUDASimulation, MultipleInstances) {
     // Define a simple model - doesn't need to do anything other than take some time.
     ModelDescription m(MODEL_NAME);
     AgentDescription &a = m.newAgent(AGENT_NAME);
-    AgentPopulation pop(a, static_cast<unsigned int>(AGENT_COUNT));
+    AgentVector pop(a, static_cast<unsigned int>(AGENT_COUNT));
     m.addStepFunction(IncrementCounter);
 
     CUDASimulation c1(m);

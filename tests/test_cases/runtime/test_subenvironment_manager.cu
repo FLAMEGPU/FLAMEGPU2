@@ -60,16 +60,15 @@ TEST(SubEnvironmentManagerTest, SubDeviceAPIGetDefault) {
     // Construct model layers
     m.newLayer().addSubModel(sm);  // DeviceAPIGetFn
     // Init agent population (we only need 1 agent, default value is fine)
-    AgentPopulation pop(a);
-    pop.getNextInstance();
+    AgentVector pop(a, 1);
     // Init and step model
     CUDASimulation cm(m);
     cm.setPopulationData(pop);
     cm.step();
     // Test result
     cm.getPopulationData(pop);
-    EXPECT_EQ(pop.getCurrentListSize(), 1u);  // Pop size is unchanged
-    AgentInstance ai = pop.getInstanceAt(0);
+    EXPECT_EQ(pop.size(), 1u);  // Pop size is unchanged
+    AgentVector::Agent ai = pop.front();
     std::array<int, 2> property_read2 = ai.getVariable<int, 2>("property_read2");
     EXPECT_EQ(ai.getVariable<int>("property_read"), PROPERTY_READ_TEST);  // Value read in sub was default from master
     EXPECT_EQ(property_read2, PROPERTY_READ2_TEST);  // Value read in sub was default from master
@@ -105,16 +104,15 @@ TEST(SubEnvironmentManagerTest, SubDeviceAPIGetMasterChange) {
     m.newLayer().addHostFunction(HostAPISetFn);
     m.newLayer().addSubModel(sm);  // DeviceAPIGetFn
     // Init agent population (we only need 1 agent, default value is fine)
-    AgentPopulation pop(a);
-    pop.getNextInstance();
+    AgentVector pop(a, 1);
     // Init and step model
     CUDASimulation cm(m);
     cm.setPopulationData(pop);
     cm.step();
     // Test result
     cm.getPopulationData(pop);
-    EXPECT_EQ(pop.getCurrentListSize(), 1u);  // Pop size is unchanged
-    AgentInstance ai = pop.getInstanceAt(0);
+    EXPECT_EQ(pop.size(), 1u);  // Pop size is unchanged
+    AgentVector::Agent ai = pop.front();
     std::array<int, 2> property_read2 = ai.getVariable<int, 2>("property_read2");
     EXPECT_EQ(ai.getVariable<int>("property_read"), PROPERTY_READ_TEST);  // Value read in sub was default from master
     EXPECT_EQ(property_read2, PROPERTY_READ2_TEST);  // Value read in sub was default from master
@@ -144,8 +142,7 @@ TEST(SubEnvironmentManagerTest, SubHostAPIGetMasterChange) {
     m.newLayer().addHostFunction(HostAPISetFn);
     m.newLayer().addSubModel(sm);  // HostAPIGetFn
     // Init agent population (we only need 1 agent, default value is fine)
-    AgentPopulation pop(a);
-    pop.getNextInstance();
+    AgentVector pop(a, 1);
     // Init and step model
     CUDASimulation cm(m);
     cm.setPopulationData(pop);
@@ -181,8 +178,7 @@ TEST(SubEnvironmentManagerTest, SubHostAPISetSub) {
     m.newLayer().addSubModel(sm);  // HostAPISetFn
     m.newLayer().addHostFunction(HostAPIGetFn);
     // Init agent population (we only need 1 agent, default value is fine)
-    AgentPopulation pop(a);
-    pop.getNextInstance();
+    AgentVector pop(a, 1);
     // Init and step model
     CUDASimulation cm(m);
     cm.setPopulationData(pop);
@@ -219,8 +215,7 @@ TEST(SubEnvironmentManagerTest, SubHostAPISetConstSub) {
     m.newLayer().addSubModel(sm);  // HostAPISetIsConstFn
     m.newLayer().addHostFunction(HostAPIGetFn);
     // Init agent population (we only need 1 agent, default value is fine)
-    AgentPopulation pop(a);
-    pop.getNextInstance();
+    AgentVector pop(a, 1);
     // Init and step model
     CUDASimulation cm(m);
     cm.setPopulationData(pop);
@@ -275,16 +270,15 @@ TEST(SubEnvironmentManagerTest, SubSubDeviceAPIGetDefault) {
     // Construct model layers
     m.newLayer().addSubModel(sm);  // DeviceAPIGetFn
     // Init agent population (we only need 1 agent, default value is fine)
-    AgentPopulation pop(a);
-    pop.getNextInstance();
+    AgentVector pop(a, 1);
     // Init and step model
     CUDASimulation cm(m);
     cm.setPopulationData(pop);
     cm.step();
     // Test result
     cm.getPopulationData(pop);
-    EXPECT_EQ(pop.getCurrentListSize(), 1u);  // Pop size is unchanged
-    AgentInstance ai = pop.getInstanceAt(0);
+    EXPECT_EQ(pop.size(), 1u);  // Pop size is unchanged
+    AgentVector::Agent ai = pop.front();
     std::array<int, 2> property_read2 = ai.getVariable<int, 2>("property_read2");
     EXPECT_EQ(ai.getVariable<int>("property_read"), PROPERTY_READ_TEST);  // Value read in sub was default from master
     EXPECT_EQ(property_read2, PROPERTY_READ2_TEST);  // Value read in sub was default from master
@@ -335,16 +329,15 @@ TEST(SubEnvironmentManagerTest, SubSubDeviceAPIGetMasterChange) {
     m.newLayer().addHostFunction(HostAPISetFn);
     m.newLayer().addSubModel(sm);  // DeviceAPIGetFn
     // Init agent population (we only need 1 agent, default value is fine)
-    AgentPopulation pop(a);
-    pop.getNextInstance();
+    AgentVector pop(a, 1);
     // Init and step model
     CUDASimulation cm(m);
     cm.setPopulationData(pop);
     cm.step();
     // Test result
     cm.getPopulationData(pop);
-    EXPECT_EQ(pop.getCurrentListSize(), 1u);  // Pop size is unchanged
-    AgentInstance ai = pop.getInstanceAt(0);
+    EXPECT_EQ(pop.size(), 1u);  // Pop size is unchanged
+    AgentVector::Agent ai = pop.front();
     std::array<int, 2> property_read2 = ai.getVariable<int, 2>("property_read2");
     EXPECT_EQ(ai.getVariable<int>("property_read"), PROPERTY_READ_TEST);  // Value read in sub was default from master
     EXPECT_EQ(property_read2, PROPERTY_READ2_TEST);  // Value read in sub was default from master
@@ -386,8 +379,7 @@ TEST(SubEnvironmentManagerTest, SubSubHostAPIGetMasterChange) {
     m.newLayer().addHostFunction(HostAPISetFn);
     m.newLayer().addSubModel(sm);  // HostAPIGetFn
     // Init agent population (we only need 1 agent, default value is fine)
-    AgentPopulation pop(a);
-    pop.getNextInstance();
+    AgentVector pop(a, 1);
     // Init and step model
     CUDASimulation cm(m);
     cm.setPopulationData(pop);
@@ -439,8 +431,7 @@ TEST(SubEnvironmentManagerTest, SubSubHostAPISetSub) {
     m.newLayer().addSubModel(sm);  // HostAPISetFn
     m.newLayer().addHostFunction(HostAPIGetFn);
     // Init agent population (we only need 1 agent, default value is fine)
-    AgentPopulation pop(a);
-    pop.getNextInstance();
+    AgentVector pop(a, 1);
     // Init and step model
     CUDASimulation cm(m);
     cm.setPopulationData(pop);
@@ -490,8 +481,7 @@ TEST(SubEnvironmentManagerTest, SubSubHostAPISetConstSub) {
     m.newLayer().addSubModel(sm);  // HostAPISetIsConstFn
     m.newLayer().addHostFunction(HostAPIGetFn);
     // Init agent population (we only need 1 agent, default value is fine)
-    AgentPopulation pop(a);
-    pop.getNextInstance();
+    AgentVector pop(a, 1);
     // Init and step model
     CUDASimulation cm(m);
     cm.setPopulationData(pop);

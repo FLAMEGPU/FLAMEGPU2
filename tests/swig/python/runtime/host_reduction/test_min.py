@@ -44,11 +44,10 @@ class MiniSim():
         self.model.addStepFunctionCallback(self.step)
         
         # create a population and set random values to be counted
-        self.population = pyflamegpu.AgentPopulation(self.agent, TEST_LEN)
+        self.population = pyflamegpu.AgentVector(self.agent, TEST_LEN)
         rand.seed() # Seed does not matter 
         self.expected_min = range_max;
-        for i in range(TEST_LEN): 
-            instance = self.population.getNextInstance()
+        for instance in self.population:
             value = rand.randint(0, range_max)
             if (value < self.expected_min):
                 self.expected_min = value

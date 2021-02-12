@@ -54,10 +54,7 @@ TEST(hostAPITest, getStepCounter) {
 
     // Init pop
     const unsigned int agentCount = 1;
-    AgentPopulation init_population(agent, agentCount);
-    for (int i = 0; i< static_cast<int>(agentCount); i++) {
-        AgentInstance instance = init_population.getNextInstance("default");
-    }
+    AgentVector init_population(agent, agentCount);
     // Setup Model
     CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(init_population);

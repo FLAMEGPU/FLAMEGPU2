@@ -96,14 +96,14 @@ TEST(Spatial2DMsgTest, Mandatory) {
     CUDASimulation cuda_model(model);
 
     const int AGENT_COUNT = 2049;
-    AgentPopulation population(model.Agent("agent"), AGENT_COUNT);
+    AgentVector population(model.Agent("agent"), AGENT_COUNT);
     // Initialise agents (TODO)
     {
         // Currently population has not been init, so generate an agent population on the fly
         std::default_random_engine rng;
         std::uniform_real_distribution<float> dist(0.0f, 11.0f);
         for (unsigned int i = 0; i < AGENT_COUNT; i++) {
-            AgentInstance instance = population.getNextInstance();
+            AgentVector::Agent instance = population[i];
             instance.setVariable<int>("id", i);
             float pos[3] = { dist(rng), dist(rng), dist(rng) };
             instance.setVariable<float>("x", pos[0]);
@@ -174,8 +174,7 @@ TEST(Spatial2DMsgTest, Mandatory) {
     cuda_model.getPopulationData(population);
     // Validate each agent has same result
     unsigned int badCountWrong = 0;
-    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = population.getInstanceAt(i);
+    for (AgentVector::Agent ai : population) {
         unsigned int myBin = ai.getVariable<unsigned int>("myBin");
         unsigned int myResult = ai.getVariable<unsigned int>("count");
         EXPECT_EQ(myResult, bin_results.at(myBin));
@@ -227,7 +226,7 @@ TEST(Spatial2DMsgTest, Optional) {
     CUDASimulation cuda_model(model);
 
     const int AGENT_COUNT = 2049;
-    AgentPopulation population(model.Agent("agent"), AGENT_COUNT);
+    AgentVector population(model.Agent("agent"), AGENT_COUNT);
     // Initialise agents (TODO)
     {
         // Currently population has not been init, so generate an agent population on the fly
@@ -235,7 +234,7 @@ TEST(Spatial2DMsgTest, Optional) {
         std::uniform_real_distribution<float> dist(0.0f, 11.0f);
         std::uniform_real_distribution<float> dist5(0.0f, 5.0f);
         for (unsigned int i = 0; i < AGENT_COUNT; i++) {
-            AgentInstance instance = population.getNextInstance();
+            AgentVector::Agent instance = population[i];
             instance.setVariable<int>("id", i);
             float pos[3] = { dist(rng), dist(rng), dist(rng) };
             int do_output = dist5(rng) < 4 ? 1 : 0;  // 80% chance of output  // NEW!
@@ -312,8 +311,7 @@ TEST(Spatial2DMsgTest, Optional) {
     cuda_model.getPopulationData(population);
     // Validate each agent has same result
     unsigned int badCountWrong = 0;
-    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = population.getInstanceAt(i);
+    for (AgentVector::Agent ai : population) {
         unsigned int myBin = ai.getVariable<unsigned int>("myBin");
         unsigned int myResult = ai.getVariable<unsigned int>("count");
         if (ai.getVariable<unsigned int>("badCount"))
@@ -364,7 +362,7 @@ TEST(Spatial2DMsgTest, OptionalNone) {
     CUDASimulation cuda_model(model);
 
     const int AGENT_COUNT = 2049;
-    AgentPopulation population(model.Agent("agent"), AGENT_COUNT);
+    AgentVector population(model.Agent("agent"), AGENT_COUNT);
     // Initialise agents (TODO)
     {
         // Currently population has not been init, so generate an agent population on the fly
@@ -372,7 +370,7 @@ TEST(Spatial2DMsgTest, OptionalNone) {
         std::uniform_real_distribution<float> dist(0.0f, 11.0f);
         std::uniform_real_distribution<float> dist5(0.0f, 5.0f);
         for (unsigned int i = 0; i < AGENT_COUNT; i++) {
-            AgentInstance instance = population.getNextInstance();
+            AgentVector::Agent instance = population[i];
             instance.setVariable<int>("id", i);
             float pos[3] = { dist(rng), dist(rng), dist(rng) };
             int do_output = dist5(rng) < 4 ? 1 : 0;  // 80% chance of output  // NEW!
@@ -405,8 +403,7 @@ TEST(Spatial2DMsgTest, OptionalNone) {
     cuda_model.getPopulationData(population);
     // Validate each agent has same result
     unsigned int badCountWrong = 0;
-    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = population.getInstanceAt(i);
+    for (AgentVector::Agent ai : population) {
         unsigned int myResult = ai.getVariable<unsigned int>("count");
         if (ai.getVariable<unsigned int>("badCount"))
             badCountWrong++;
@@ -487,18 +484,16 @@ TEST(Spatial2DMsgTest, ReadEmpty) {
         layer.addAgentFunction(count2D);
     }
     // Create 1 agent
-    AgentPopulation pop_in(model.Agent("agent"), 1);
-    pop_in.getNextInstance();
+    AgentVector pop_in(model.Agent("agent"), 1);
     CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(pop_in);
     // Execute model
     EXPECT_NO_THROW(cuda_model.step());
     // Check result
-    AgentPopulation pop_out(model.Agent("agent"), 1);
-    pop_out.getNextInstance().setVariable<unsigned int>("count", 1);
+    AgentVector pop_out(model.Agent("agent"), 1);
+    pop_out[0].setVariable<unsigned int>("count", 1);
     cuda_model.getPopulationData(pop_out);
-    EXPECT_EQ(pop_out.getCurrentListSize(), 1u);
-    auto ai = pop_out.getInstanceAt(0);
-    EXPECT_EQ(ai.getVariable<unsigned int>("count"), 0u);
+    EXPECT_EQ(pop_out.size(), 1u);
+    EXPECT_EQ(pop_out[0].getVariable<unsigned int>("count"), 0u);
 }
 }  // namespace test_message_spatial2d

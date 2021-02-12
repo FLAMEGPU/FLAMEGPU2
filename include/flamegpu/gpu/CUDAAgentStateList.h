@@ -16,7 +16,6 @@
 #include <list>
 
 #include "flamegpu/gpu/CUDAFatAgentStateList.h"
-#include "flamegpu/pop/AgentStateMemory.h"
 
 class CUDAScatter;
 struct VarOffsetStruct;
@@ -75,12 +74,12 @@ class CUDAAgentStateList {
      * @param scatter Scatter instance and scan arrays to be used
      * @param streamId This is required for scan compaction arrays and async
      */
-    void setAgentData(const AgentStateMemory &data, CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream);
+    void setAgentData(const AgentVector &data, CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t& stream);
     /**
      * Retrieve agent data from the agent state list into agent state memory
      * @data data Destination for agent data
      */
-    void getAgentData(AgentStateMemory &data);
+    void getAgentData(AgentVector&data) const;
     /**
      * Initialises the specified number of new agents based on agent data from a device buffer
      * Variables in mapped agents are also initialised to their default values

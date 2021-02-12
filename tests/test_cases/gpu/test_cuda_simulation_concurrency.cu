@@ -53,11 +53,11 @@ const unsigned int POPULATION_SIZES = 512;
 /** 
  * Utility function to time N repetitions of a simulation, returning the mean (but skipping the first)
  */
-float meanSimulationTime(const int REPETITIONS, CUDASimulation &s, std::vector<AgentPopulation *> const &populations) {
+float meanSimulationTime(const int REPETITIONS, CUDASimulation &s, std::vector<AgentVector *> const &populations) {
     float total_time = 0.f;
     for (int r = 0; r < REPETITIONS + 1; r++) {
         // re-set each population
-        for (AgentPopulation * pop : populations) {
+        for (AgentVector* pop : populations) {
             s.setPopulationData(*pop);
         }
         // Run and time the simulation
@@ -73,7 +73,7 @@ float meanSimulationTime(const int REPETITIONS, CUDASimulation &s, std::vector<A
 /** 
  * Utility function checking for a speedup after running a sim with and without concurrency.
  */
-float concurrentLayerSpeedup(const int REPETITIONS, CUDASimulation &s, std::vector<AgentPopulation *> const &populations) {
+float concurrentLayerSpeedup(const int REPETITIONS, CUDASimulation &s, std::vector<AgentVector*> const &populations) {
     // Set a single step.
     s.SimulationConfig().steps = 1;
 
@@ -408,7 +408,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, LayerConcurrency) {
     // Create a layer, which contains one function for each agent type - with no dependencies this is allowed.
     LayerDescription &layer  = m.newLayer();
 
-    std::vector<AgentPopulation *> populations = std::vector<AgentPopulation *>();
+    std::vector<AgentVector*> populations = std::vector<AgentVector*>();
 
     // Add a few agent types, each with a single agent function.
     for (int i = 0; i < CONCURRENCY_DEGREE; i++) {
@@ -421,9 +421,9 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, LayerConcurrency) {
         layer.addAgentFunction(f);
 
         // Generate an iniital population.
-        AgentPopulation * a_pop = new AgentPopulation(a, POPULATION_SIZES);
+        AgentVector* a_pop = new AgentVector(a, POPULATION_SIZES);
         for (unsigned int j = 0; j < POPULATION_SIZES; ++j) {
-            auto agent = a_pop->getNextInstance();
+            auto agent = a_pop->at(j);
             agent.setVariable<float>("v", static_cast<float>(j));
         }
         populations.push_back(a_pop);
@@ -450,7 +450,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, DISABLED_FastLayerConcurrency) 
     // Create a layer, which contains one function for each agent type - with no dependencies this is allowed.
     LayerDescription &layer  = m.newLayer();
 
-    std::vector<AgentPopulation *> populations = std::vector<AgentPopulation *>();
+    std::vector<AgentVector*> populations = std::vector<AgentVector*>();
 
     // Add a few agent types, each with a single agent function.
     for (int i = 0; i < CONCURRENCY_DEGREE; i++) {
@@ -463,9 +463,9 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, DISABLED_FastLayerConcurrency) 
         layer.addAgentFunction(f);
 
         // Generate an iniital population.
-        AgentPopulation * a_pop = new AgentPopulation(a, POPULATION_SIZES);
+        AgentVector* a_pop = new AgentVector(a, POPULATION_SIZES);
         for (unsigned int j = 0; j < POPULATION_SIZES; ++j) {
-            auto agent = a_pop->getNextInstance();
+            auto agent = a_pop->at(j);
             agent.setVariable<float>("v", static_cast<float>(j));
         }
         populations.push_back(a_pop);
@@ -491,7 +491,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentMessageOutput) {
     // Create a layer, which contains one function for each agent type - with no dependencies this is allowed.
     LayerDescription &layer  = m.newLayer();
 
-    std::vector<AgentPopulation *> populations = std::vector<AgentPopulation *>();
+    std::vector<AgentVector*> populations = std::vector<AgentVector*>();
 
     // Add a few agent types, each with a single agent function.
     for (int i = 0; i < CONCURRENCY_DEGREE; i++) {
@@ -510,9 +510,9 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentMessageOutput) {
         layer.addAgentFunction(f);
 
         // Generate an iniital population.
-        AgentPopulation * a_pop = new AgentPopulation(a, POPULATION_SIZES);
+        AgentVector* a_pop = new AgentVector(a, POPULATION_SIZES);
         for (unsigned int j = 0; j < POPULATION_SIZES; ++j) {
-            auto agent = a_pop->getNextInstance();
+            auto agent = a_pop->at(j);
             agent.setVariable<float>("v", static_cast<float>(j));
         }
         populations.push_back(a_pop);
@@ -539,7 +539,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentMessageOutputInput) {
     LayerDescription &layer0  = m.newLayer();
     LayerDescription &layer1  = m.newLayer();
 
-    std::vector<AgentPopulation *> populations = std::vector<AgentPopulation *>();
+    std::vector<AgentVector*> populations = std::vector<AgentVector*>();
 
     // Add a few agent types, each with a single agent function.
     for (int i = 0; i < CONCURRENCY_DEGREE; i++) {
@@ -564,9 +564,9 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentMessageOutputInput) {
         layer1.addAgentFunction(f_in);
 
         // Generate an iniital population.
-        AgentPopulation * a_pop = new AgentPopulation(a, POPULATION_SIZES);
+        AgentVector* a_pop = new AgentVector(a, POPULATION_SIZES);
         for (unsigned int j = 0; j < POPULATION_SIZES; ++j) {
-            auto agent = a_pop->getNextInstance();
+            auto agent = a_pop->at(j);
             agent.setVariable<float>("v", static_cast<float>(j));
         }
         populations.push_back(a_pop);
@@ -593,7 +593,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentMessageOutputInputSam
     LayerDescription &layer0  = m.newLayer();
     LayerDescription &layer1  = m.newLayer();
 
-    std::vector<AgentPopulation *> populations = std::vector<AgentPopulation *>();
+    std::vector<AgentVector*> populations = std::vector<AgentVector*>();
 
     std::string msg_in_name("agent_0_messages");
 
@@ -622,9 +622,9 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentMessageOutputInputSam
         layer1.addAgentFunction(f_in);
 
         // Generate an iniital population.
-        AgentPopulation * a_pop = new AgentPopulation(a, POPULATION_SIZES);
+        AgentVector* a_pop = new AgentVector(a, POPULATION_SIZES);
         for (unsigned int j = 0; j < POPULATION_SIZES; ++j) {
-            auto agent = a_pop->getNextInstance();
+            auto agent = a_pop->at(j);
             agent.setVariable<float>("v", static_cast<float>(j));
         }
         populations.push_back(a_pop);
@@ -650,7 +650,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentOptionalMessageOutput
     LayerDescription &layer0  = m.newLayer();
     LayerDescription &layer1  = m.newLayer();
 
-    std::vector<AgentPopulation *> populations = std::vector<AgentPopulation *>();
+    std::vector<AgentVector*> populations = std::vector<AgentVector*>();
 
     std::string msg_in_name("agent_0_messages");
 
@@ -681,9 +681,9 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentOptionalMessageOutput
         layer1.addAgentFunction(f_in);
 
         // Generate an iniital population.
-        AgentPopulation * a_pop = new AgentPopulation(a, POPULATION_SIZES);
+        AgentVector* a_pop = new AgentVector(a, POPULATION_SIZES);
         for (unsigned int j = 0; j < POPULATION_SIZES; ++j) {
-            auto agent = a_pop->getNextInstance();
+            auto agent = a_pop->at(j);
             agent.setVariable<unsigned int>("id", j);
             agent.setVariable<float>("v", static_cast<float>(j));
         }
@@ -715,7 +715,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentMessageOutputInputSpa
     LayerDescription &layer0  = m.newLayer();
     LayerDescription &layer1  = m.newLayer();
 
-    std::vector<AgentPopulation *> populations = std::vector<AgentPopulation *>();
+    std::vector<AgentVector*> populations = std::vector<AgentVector*>();
 
     // Add a few agent types, each with a single agent function.
     for (int i = 0; i < CONCURRENCY_DEGREE; i++) {
@@ -748,11 +748,11 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentMessageOutputInputSpa
         layer1.addAgentFunction(f_in);
 
         // Generate an iniital population.
-        AgentPopulation * a_pop = new AgentPopulation(a, POPULATION_SIZES);
+        AgentVector* a_pop = new AgentVector(a, POPULATION_SIZES);
         std::default_random_engine rng;
         std::uniform_real_distribution<float> dist(0.0f, 11.0f);
         for (unsigned int j = 0; j < POPULATION_SIZES; ++j) {
-            auto agent = a_pop->getNextInstance();
+            auto agent = a_pop->at(j);
             agent.setVariable<float>("v", static_cast<float>(j));
             agent.setVariable<float>("x", dist(rng));
             agent.setVariable<float>("y", dist(rng));
@@ -785,7 +785,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentMessageOutputInputSpa
     LayerDescription &layer0  = m.newLayer();
     LayerDescription &layer1  = m.newLayer();
 
-    std::vector<AgentPopulation *> populations = std::vector<AgentPopulation *>();
+    std::vector<AgentVector*> populations = std::vector<AgentVector*>();
 
     // Add a few agent types, each with a single agent function.
     for (int i = 0; i < CONCURRENCY_DEGREE; i++) {
@@ -820,11 +820,11 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentMessageOutputInputSpa
         layer1.addAgentFunction(f_in);
 
         // Generate an iniital population.
-        AgentPopulation * a_pop = new AgentPopulation(a, POPULATION_SIZES);
+        AgentVector* a_pop = new AgentVector(a, POPULATION_SIZES);
         std::default_random_engine rng;
         std::uniform_real_distribution<float> dist(0.0f, 11.0f);
         for (unsigned int j = 0; j < POPULATION_SIZES; ++j) {
-            auto agent = a_pop->getNextInstance();
+            auto agent = a_pop->at(j);
             agent.setVariable<float>("v", static_cast<float>(j));
             agent.setVariable<float>("x", dist(rng));
             agent.setVariable<float>("y", dist(rng));
@@ -852,7 +852,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, LayerConcurrencyBirth) {
     // Create a layer, which contains one function for each agent type - with no dependencies this is allowed.
     LayerDescription &layer  = m.newLayer();
 
-    std::vector<AgentPopulation *> populations = std::vector<AgentPopulation *>();
+    std::vector<AgentVector *> populations = std::vector<AgentVector *>();
 
     // Add a few agent types, each with a single agent function.
     for (int i = 0; i < CONCURRENCY_DEGREE; i++) {
@@ -866,9 +866,9 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, LayerConcurrencyBirth) {
         layer.addAgentFunction(f);
 
         // Generate an iniital population.
-        AgentPopulation * a_pop = new AgentPopulation(a, POPULATION_SIZES);
+        AgentVector * a_pop = new AgentVector(a, POPULATION_SIZES);
         for (unsigned int j = 0; j < POPULATION_SIZES; ++j) {
-            auto agent = a_pop->getNextInstance();
+            auto agent = a_pop->at(j);
             agent.setVariable<float>("v", static_cast<float>(j));
         }
         populations.push_back(a_pop);
@@ -893,7 +893,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, LayerConcurrencyDeath) {
     // Create a layer, which contains one function for each agent type - with no dependencies this is allowed.
     LayerDescription &layer  = m.newLayer();
 
-    std::vector<AgentPopulation *> populations = std::vector<AgentPopulation *>();
+    std::vector<AgentVector *> populations = std::vector<AgentVector *>();
 
     // Add a few agent types, each with a single agent function.
     for (int i = 0; i < CONCURRENCY_DEGREE; i++) {
@@ -907,9 +907,9 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, LayerConcurrencyDeath) {
         layer.addAgentFunction(f);
 
         // Generate an iniital population.
-        AgentPopulation * a_pop = new AgentPopulation(a, POPULATION_SIZES);
+        AgentVector * a_pop = new AgentVector(a, POPULATION_SIZES);
         for (unsigned int j = 0; j < POPULATION_SIZES; ++j) {
-            auto agent = a_pop->getNextInstance();
+            auto agent = a_pop->at(j);
             agent.setVariable<float>("v", static_cast<float>(j));
         }
         populations.push_back(a_pop);
@@ -934,7 +934,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConditionConcurrencyAllDisabled
     // Create a layer, which contains one function for each agent type - with no dependencies this is allowed.
     LayerDescription &layer  = m.newLayer();
 
-    std::vector<AgentPopulation *> populations = std::vector<AgentPopulation *>();
+    std::vector<AgentVector *> populations = std::vector<AgentVector *>();
 
     // Add a few agent types, each with a single agent function.
     for (int i = 0; i < CONCURRENCY_DEGREE; i++) {
@@ -948,9 +948,9 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConditionConcurrencyAllDisabled
         layer.addAgentFunction(f);
 
         // Generate an iniital population.
-        AgentPopulation * a_pop = new AgentPopulation(a, POPULATION_SIZES);
+        AgentVector * a_pop = new AgentVector(a, POPULATION_SIZES);
         for (unsigned int j = 0; j < POPULATION_SIZES; ++j) {
-            auto agent = a_pop->getNextInstance();
+            auto agent = a_pop->at(j);
             agent.setVariable<float>("v", static_cast<float>(j));
         }
         populations.push_back(a_pop);
@@ -975,7 +975,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConditionConcurrencyAllEnabled)
     // Create a layer, which contains one function for each agent type - with no dependencies this is allowed.
     LayerDescription &layer  = m.newLayer();
 
-    std::vector<AgentPopulation *> populations = std::vector<AgentPopulation *>();
+    std::vector<AgentVector *> populations = std::vector<AgentVector *>();
 
     // Add a few agent types, each with a single agent function.
     for (int i = 0; i < CONCURRENCY_DEGREE; i++) {
@@ -989,9 +989,9 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConditionConcurrencyAllEnabled)
         layer.addAgentFunction(f);
 
         // Generate an iniital population.
-        AgentPopulation * a_pop = new AgentPopulation(a, POPULATION_SIZES);
+        AgentVector * a_pop = new AgentVector(a, POPULATION_SIZES);
         for (unsigned int j = 0; j < POPULATION_SIZES; ++j) {
-            auto agent = a_pop->getNextInstance();
+            auto agent = a_pop->at(j);
             agent.setVariable<float>("v", static_cast<float>(j));
         }
         populations.push_back(a_pop);
@@ -1017,7 +1017,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConditionConcurrency5050) {
     // Create a layer, which contains one function for each agent type - with no dependencies this is allowed.
     LayerDescription &layer  = m.newLayer();
 
-    std::vector<AgentPopulation *> populations = std::vector<AgentPopulation *>();
+    std::vector<AgentVector *> populations = std::vector<AgentVector *>();
 
     // Add a few agent types, each with a single agent function.
     for (int i = 0; i < CONCURRENCY_DEGREE; i++) {
@@ -1031,9 +1031,9 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConditionConcurrency5050) {
         layer.addAgentFunction(f);
 
         // Generate an iniital population.
-        AgentPopulation * a_pop = new AgentPopulation(a, POPULATION_SIZES);
+        AgentVector * a_pop = new AgentVector(a, POPULATION_SIZES);
         for (unsigned int j = 0; j < POPULATION_SIZES; ++j) {
-            auto agent = a_pop->getNextInstance();
+            auto agent = a_pop->at(j);
             agent.setVariable<float>("v", static_cast<float>(j));
         }
         populations.push_back(a_pop);
@@ -1059,7 +1059,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, DISABLED_FastConditiRELEASE_ONL
     // Create a layer, which contains one function for each agent type - with no dependencies this is allowed.
     LayerDescription &layer  = m.newLayer();
 
-    std::vector<AgentPopulation *> populations = std::vector<AgentPopulation *>();
+    std::vector<AgentVector *> populations = std::vector<AgentVector *>();
 
     // Add a few agent types, each with a single agent function.
     for (int i = 0; i < CONCURRENCY_DEGREE; i++) {
@@ -1073,9 +1073,9 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, DISABLED_FastConditiRELEASE_ONL
         layer.addAgentFunction(f);
 
         // Generate an iniital population.
-        AgentPopulation * a_pop = new AgentPopulation(a, POPULATION_SIZES);
+        AgentVector * a_pop = new AgentVector(a, POPULATION_SIZES);
         for (unsigned int j = 0; j < POPULATION_SIZES; ++j) {
-            auto agent = a_pop->getNextInstance();
+            auto agent = a_pop->at(j);
             agent.setVariable<float>("v", static_cast<float>(j));
         }
         populations.push_back(a_pop);
@@ -1101,7 +1101,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, DISABLED_FastConditionConcurren
     // Create a layer, which contains one function for each agent type - with no dependencies this is allowed.
     LayerDescription &layer  = m.newLayer();
 
-    std::vector<AgentPopulation *> populations = std::vector<AgentPopulation *>();
+    std::vector<AgentVector *> populations = std::vector<AgentVector *>();
 
     // Add a few agent types, each with a single agent function.
     for (int i = 0; i < CONCURRENCY_DEGREE; i++) {
@@ -1115,9 +1115,9 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, DISABLED_FastConditionConcurren
         layer.addAgentFunction(f);
 
         // Generate an iniital population.
-        AgentPopulation * a_pop = new AgentPopulation(a, POPULATION_SIZES);
+        AgentVector * a_pop = new AgentVector(a, POPULATION_SIZES);
         for (unsigned int j = 0; j < POPULATION_SIZES; ++j) {
-            auto agent = a_pop->getNextInstance();
+            auto agent = a_pop->at(j);
             agent.setVariable<float>("v", static_cast<float>(j));
         }
         populations.push_back(a_pop);
@@ -1143,7 +1143,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, DISABLED_FastConditionConcurren
     // Create a layer, which contains one function for each agent type - with no dependencies this is allowed.
     LayerDescription &layer  = m.newLayer();
 
-    std::vector<AgentPopulation *> populations = std::vector<AgentPopulation *>();
+    std::vector<AgentVector *> populations = std::vector<AgentVector *>();
 
     // Add a few agent types, each with a single agent function.
     for (int i = 0; i < CONCURRENCY_DEGREE; i++) {
@@ -1157,9 +1157,9 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, DISABLED_FastConditionConcurren
         layer.addAgentFunction(f);
 
         // Generate an iniital population.
-        AgentPopulation * a_pop = new AgentPopulation(a, POPULATION_SIZES);
+        AgentVector * a_pop = new AgentVector(a, POPULATION_SIZES);
         for (unsigned int j = 0; j < POPULATION_SIZES; ++j) {
-            auto agent = a_pop->getNextInstance();
+            auto agent = a_pop->at(j);
             agent.setVariable<float>("v", static_cast<float>(j));
         }
         populations.push_back(a_pop);
@@ -1184,7 +1184,7 @@ RELEASE_ONLY_SEATBELTS_TEST(TestCUDASimulationConcurrency, LayerConcurrencyDevic
     // Create a layer, which contains one function for each agent type - with no dependencies this is allowed.
     LayerDescription &layer  = m.newLayer();
 
-    std::vector<AgentPopulation *> populations = std::vector<AgentPopulation *>();
+    std::vector<AgentVector*> populations = std::vector<AgentVector*>();
 
     // Add a few agent types, each with a single agent function.
     for (int i = 0; i < CONCURRENCY_DEGREE; i++) {
@@ -1197,9 +1197,9 @@ RELEASE_ONLY_SEATBELTS_TEST(TestCUDASimulationConcurrency, LayerConcurrencyDevic
         layer.addAgentFunction(f);
 
         // Generate an iniital population.
-        AgentPopulation * a_pop = new AgentPopulation(a, POPULATION_SIZES);
+        AgentVector* a_pop = new AgentVector(a, POPULATION_SIZES);
         for (unsigned int j = 0; j < POPULATION_SIZES; ++j) {
-            auto agent = a_pop->getNextInstance();
+            auto agent = a_pop->at(j);
             agent.setVariable<float>("v", static_cast<float>(j));
         }
         populations.push_back(a_pop);
@@ -1215,7 +1215,7 @@ RELEASE_ONLY_SEATBELTS_TEST(TestCUDASimulationConcurrency, LayerConcurrencyDevic
     EXPECT_EQ(s.CUDAConfig().inLayerConcurrency, true);
 
     // re-set each population
-    for (AgentPopulation * pop : populations) {
+    for (AgentVector* pop : populations) {
         s.setPopulationData(*pop);
     }
     // Run and time the simulation, expecting a throw.
@@ -1253,7 +1253,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, RTCLayerConcurrency) {
     // Create a layer, which contains one function for each agent type - with no dependencies this is allowed.
     LayerDescription &layer  = m.newLayer();
 
-    std::vector<AgentPopulation *> populations = std::vector<AgentPopulation *>();
+    std::vector<AgentVector*> populations = std::vector<AgentVector*>();
 
     // Add a few agent types, each with a single agent function.
     for (int i = 0; i < CONCURRENCY_DEGREE; i++) {
@@ -1268,9 +1268,9 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, RTCLayerConcurrency) {
         layer.addAgentFunction(f);
 
         // Generate an iniital population.
-        AgentPopulation * a_pop = new AgentPopulation(a, POPULATION_SIZES);
+        AgentVector* a_pop = new AgentVector(a, POPULATION_SIZES);
         for (unsigned int j = 0; j < POPULATION_SIZES; ++j) {
-            auto agent = a_pop->getNextInstance();
+            auto agent = a_pop->at(j);
             agent.setVariable<float>("v", static_cast<float>(j));
         }
         populations.push_back(a_pop);

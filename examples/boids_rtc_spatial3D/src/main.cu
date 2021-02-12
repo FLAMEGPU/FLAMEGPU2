@@ -438,9 +438,9 @@ int main(int argc, const char ** argv) {
         std::uniform_real_distribution<float> velocity_distribution(-1, 1);
         std::uniform_real_distribution<float> velocity_magnitude_distribution(env.getProperty<float>("MIN_INITIAL_SPEED"), env.getProperty<float>("MAX_INITIAL_SPEED"));
         const unsigned int populationSize = env.getProperty<unsigned int>("POPULATION_TO_GENERATE");
-        AgentPopulation population(model.Agent("Boid"), populationSize);
+        AgentVector population(model.Agent("Boid"), populationSize);
         for (unsigned int i = 0; i < populationSize; i++) {
-            AgentInstance instance = population.getNextInstance();
+            AgentVector::Agent instance = population[i];
             instance.setVariable<int>("id", i);
 
             // Agent position in space

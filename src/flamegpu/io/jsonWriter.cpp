@@ -9,13 +9,14 @@
 
 #include "flamegpu/exception/FGPUException.h"
 #include "flamegpu/model/AgentDescription.h"
-#include "flamegpu/pop/AgentPopulation.h"
+#include "flamegpu/pop/AgentVector.h"
 #include "flamegpu/gpu/CUDASimulation.h"
+#include "flamegpu/util/StringPair.h"
 
 jsonWriter::jsonWriter(
     const std::string &model_name,
     const unsigned int &sim_instance_id,
-    const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &model,
+    const StringPairUnorderedMap<std::shared_ptr<AgentVector>>&model,
     const unsigned int &iterations,
     const std::string &output_file,
     const Simulation *_sim_instance)
@@ -138,69 +139,69 @@ void jsonWriter::doWrite(T &writer) {
     }
     writer.EndObject();
 
-    // Agents
+    // AgentStates
     writer.Key("agents");
     writer.StartObject();
-    for (auto &agent : model_state) {
-        writer.Key(agent.first.c_str());
+    for (const auto &agent : model_state) {
+        const std::string &agent_name = agent.first.first;
+        const std::string &state_name = agent.first.second;
+        writer.Key(agent_name.c_str());
         writer.StartObject();
-        const auto &agent_vars = agent.second->getAgentDescription().variables;
+        const VariableMap &agent_vars = agent.second->getVariableMetaData();
         // States
-        for (auto &state : agent.second->getAgentDescription().states) {
-            const unsigned int populationSize = agent.second->getStateMemory(state).getStateListSize();
-            // Only log states with agents
-            if (populationSize) {
-                writer.Key(state.c_str());
-                writer.StartArray();
-                for (unsigned int i = 0; i < populationSize; ++i) {
-                    writer.StartObject();
-                    AgentInstance instance = agent.second->getInstanceAt(i, state);
-                    // for each variable
-                    for (auto var : agent_vars) {
-                        // Set name
-                        const std::string variable_name = var.first;
-                        writer.Key(variable_name.c_str());
-                        // Output value
-                        if (var.second.elements > 1) {
-                            // Value is an array
-                            writer.StartArray();
-                        }
-                        // Loop through elements, to construct array
-                        for (unsigned int el = 0; el < var.second.elements; ++el) {
-                            if (var.second.type == std::type_index(typeid(float))) {
-                                writer.Double(instance.getVariable<float>(variable_name, el));
-                            } else if (var.second.type == std::type_index(typeid(double))) {
-                                writer.Double(instance.getVariable<double>(variable_name, el));
-                            } else if (var.second.type == std::type_index(typeid(int64_t))) {
-                                writer.Int64(instance.getVariable<int64_t>(variable_name, el));
-                            } else if (var.second.type == std::type_index(typeid(uint64_t))) {
-                                writer.Uint64(instance.getVariable<uint64_t>(variable_name, el));
-                            } else if (var.second.type == std::type_index(typeid(int32_t))) {
-                                writer.Int(instance.getVariable<int32_t>(variable_name, el));
-                            } else if (var.second.type == std::type_index(typeid(uint32_t))) {
-                                writer.Uint(instance.getVariable<uint32_t>(variable_name, el));
-                            } else if (var.second.type == std::type_index(typeid(int16_t))) {
-                                writer.Int(instance.getVariable<int16_t>(variable_name, el));
-                            } else if (var.second.type == std::type_index(typeid(uint16_t))) {
-                                writer.Uint(instance.getVariable<uint16_t>(variable_name, el));
-                            } else if (var.second.type == std::type_index(typeid(int8_t))) {
-                                writer.Int(instance.getVariable<int8_t>(variable_name, el));  // Char outputs weird if being used as an integer
-                            } else if (var.second.type == std::type_index(typeid(uint8_t))) {
-                                writer.Uint(instance.getVariable<uint8_t>(variable_name, el));  // Char outputs weird if being used as an integer
-                            } else {
-                                THROW RapidJSONError("Agent '%s' contains variable '%s' of unsupported type '%s', "
-                                    "in jsonWriter::writeStates()\n", agent.first.c_str(), variable_name.c_str(), var.second.type.name());
-                            }
-                        }
-                        if (var.second.elements > 1) {
-                            // Value is an array
-                            writer.EndArray();
+        const unsigned int populationSize = agent.second->size();
+        // Only log states with agents
+        if (populationSize) {
+            writer.Key(state_name.c_str());
+            writer.StartArray();
+            for (unsigned int i = 0; i < populationSize; ++i) {
+                writer.StartObject();
+                AgentVector::Agent instance = agent.second->at(i);
+                // for each variable
+                for (auto var : agent_vars) {
+                    // Set name
+                    const std::string variable_name = var.first;
+                    writer.Key(variable_name.c_str());
+                    // Output value
+                    if (var.second.elements > 1) {
+                        // Value is an array
+                        writer.StartArray();
+                    }
+                    // Loop through elements, to construct array
+                    for (unsigned int el = 0; el < var.second.elements; ++el) {
+                        if (var.second.type == std::type_index(typeid(float))) {
+                            writer.Double(instance.getVariable<float>(variable_name, el));
+                        } else if (var.second.type == std::type_index(typeid(double))) {
+                            writer.Double(instance.getVariable<double>(variable_name, el));
+                        } else if (var.second.type == std::type_index(typeid(int64_t))) {
+                            writer.Int64(instance.getVariable<int64_t>(variable_name, el));
+                        } else if (var.second.type == std::type_index(typeid(uint64_t))) {
+                            writer.Uint64(instance.getVariable<uint64_t>(variable_name, el));
+                        } else if (var.second.type == std::type_index(typeid(int32_t))) {
+                            writer.Int(instance.getVariable<int32_t>(variable_name, el));
+                        } else if (var.second.type == std::type_index(typeid(uint32_t))) {
+                            writer.Uint(instance.getVariable<uint32_t>(variable_name, el));
+                        } else if (var.second.type == std::type_index(typeid(int16_t))) {
+                            writer.Int(instance.getVariable<int16_t>(variable_name, el));
+                        } else if (var.second.type == std::type_index(typeid(uint16_t))) {
+                            writer.Uint(instance.getVariable<uint16_t>(variable_name, el));
+                        } else if (var.second.type == std::type_index(typeid(int8_t))) {
+                            writer.Int(instance.getVariable<int8_t>(variable_name, el));  // Char outputs weird if being used as an integer
+                        } else if (var.second.type == std::type_index(typeid(uint8_t))) {
+                            writer.Uint(instance.getVariable<uint8_t>(variable_name, el));  // Char outputs weird if being used as an integer
+                        } else {
+                            THROW RapidJSONError("Agent '%s' contains variable '%s' of unsupported type '%s', "
+                                "in jsonWriter::writeStates()\n", agent.first.first.c_str(), variable_name.c_str(), var.second.type.name());
                         }
                     }
-                    writer.EndObject();
+                    if (var.second.elements > 1) {
+                        // Value is an array
+                        writer.EndArray();
+                    }
                 }
-                writer.EndArray();
+                writer.EndObject();
             }
+            writer.EndArray();
         }
         writer.EndObject();
     }

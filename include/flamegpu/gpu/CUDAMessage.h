@@ -24,7 +24,6 @@
 class CUDAScatter;
 struct AgentFunctionData;
 struct MessageData;
-class AgentPopulation;
 class Curve;
 class MsgSpecialisationHandler;
 class CUDAAgent;

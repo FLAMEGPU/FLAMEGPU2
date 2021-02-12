@@ -10,7 +10,8 @@
 
 #include "flamegpu/model/Variable.h"
 #include "flamegpu/model/ModelDescription.h"
-#include "flamegpu/pop/AgentPopulation.h"
+#include "flamegpu/pop/AgentVector.h"
+#include "flamegpu/pop/AgentInstance.h"
 #include "flamegpu/model/AgentData.h"
 
 class AgentFunctionDescription;
@@ -31,9 +32,11 @@ class AgentDescription {
      */
     friend struct AgentFunctionData;
     /**
-     * Agent population takes a clone of AgentData
+     * AgentVector takes a clone of AgentData
      */
-    friend AgentPopulation::AgentPopulation(const AgentDescription &, unsigned int);
+    friend AgentVector::AgentVector(const AgentDescription& agent_desc, AgentVector::size_type);
+    friend AgentInstance::AgentInstance(const AgentDescription& agent_desc);
+    friend bool AgentVector::matchesAgentType(const AgentDescription& other) const;
     /**
      * AgentFunctionData accesses member variable model
      * to check that agent outputs are from the same model instance

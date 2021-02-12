@@ -1,7 +1,7 @@
 #include "flamegpu/flame_api.h"
 #include "flamegpu/util/nvtx.h"
 
-void printPopulation(AgentPopulation &pop);
+void printPopulation(AgentVector &pop);
 
 FLAMEGPU_AGENT_FUNCTION(output, MsgNone, MsgArray2D) {
     FLAMEGPU->message_out.setVariable<char>("is_alive", FLAMEGPU->getVariable<char>("is_alive"));
@@ -89,10 +89,12 @@ int main(int argc, const char ** argv) {
         const unsigned int AGENT_COUNT = SQRT_AGENT_COUNT * SQRT_AGENT_COUNT;
         std::default_random_engine rng;
         std::uniform_real_distribution<float> dist(0.0f, 1.0f);
-        AgentPopulation init_pop(model.Agent("cell"), AGENT_COUNT);
+        AgentVector init_pop(model.Agent("cell"));
+        init_pop.reserve(AGENT_COUNT);
         for (unsigned int x = 0; x < SQRT_AGENT_COUNT; ++x) {
             for (unsigned int y = 0; y < SQRT_AGENT_COUNT; ++y) {
-                AgentInstance instance = init_pop.getNextInstance();
+                init_pop.push_back();
+                AgentVector::Agent instance = init_pop.back();
                 instance.setVariable<unsigned int, 2>("pos", { x, y });
                 char is_alive = dist(rng) < 0.4f ? 1 : 0;
                 instance.setVariable<char>("is_alive", is_alive);  // 40% Chance of being alive
@@ -105,29 +107,29 @@ int main(int argc, const char ** argv) {
     /**
      * Execution
      */
-    AgentPopulation cell_pop(model.Agent("cell"));
-     while (cuda_model.getStepCounter() < cuda_model.getSimulationConfig().steps && cuda_model.step()) {
+    AgentVector cell_pop(model.Agent("cell"));
+    while (cuda_model.getStepCounter() < cuda_model.getSimulationConfig().steps && cuda_model.step()) {
         cuda_model.getPopulationData(cell_pop);
         printPopulation(cell_pop);
         getchar();
-     }
+    }
 
     /**
      * Export Pop
      */
-    // TODO
+    // cuda_model.exportData("end.xml");
     return 0;
 }
 /**
  * Only works on square grids
  * Assumes grid is always in same order as output
  */
-void printPopulation(AgentPopulation &pop) {
-    const unsigned int dim = static_cast<unsigned int>(sqrt(pop.getCurrentListSize()));
+void printPopulation(AgentVector &pop) {
+    const unsigned int dim = static_cast<unsigned int>(sqrt(pop.size()));
     unsigned int i = 0;
     for (unsigned int x = 0; x < dim; ++x) {
         for (unsigned int y = 0; y < dim; ++y) {
-            AgentInstance instance = pop.getInstanceAt(i++);
+            AgentVector::Agent instance = pop[i++];
             printf("%s", instance.getVariable<char>("is_alive") ? "#" : " ");
         }
         printf("\n");

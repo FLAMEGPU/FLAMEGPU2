@@ -75,9 +75,7 @@ class HostAPITest(TestCase):
 
         # Init pop
         agentCount = 1
-        init_population = pyflamegpu.AgentPopulation(agent, agentCount)
-        for i in range(agentCount):
-            instance = init_population.getNextInstance("default")
+        init_population = pyflamegpu.AgentVector(agent, agentCount)
         
         # Setup Model
         cuda_model = pyflamegpu.CUDASimulation(model)

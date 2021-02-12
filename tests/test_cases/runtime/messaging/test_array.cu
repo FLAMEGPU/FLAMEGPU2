@@ -70,9 +70,9 @@ TEST(TestMessage_Array, Mandatory) {
     const unsigned seed = static_cast<unsigned int>(std::chrono::system_clock::now().time_since_epoch().count());
     std::shuffle(numbers.begin(), numbers.end(), std::default_random_engine(seed));
     // Assign the numbers in shuffled order to agents
-    AgentPopulation pop(a, AGENT_COUNT);
+    AgentVector pop(a, AGENT_COUNT);
     for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getNextInstance();
+        AgentVector::Agent ai = pop[i];
         ai.setVariable<unsigned int>("index", i);
         ai.setVariable<unsigned int>("message_read", UINT_MAX);
         ai.setVariable<unsigned int>("message_write", numbers[i]);
@@ -83,8 +83,7 @@ TEST(TestMessage_Array, Mandatory) {
     c.step();
     c.getPopulationData(pop);
     // Validate each agent has same result
-    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getInstanceAt(i);
+    for (AgentVector::Agent ai : pop) {
         const unsigned int index = ai.getVariable<unsigned int>("index");
         const unsigned int message_read = ai.getVariable<unsigned int>("message_read");
         EXPECT_EQ(index * 3, message_read);
@@ -117,9 +116,9 @@ TEST(TestMessage_Array, Optional) {
     const unsigned seed = static_cast<unsigned int>(std::chrono::system_clock::now().time_since_epoch().count());
     std::shuffle(numbers.begin(), numbers.end(), std::default_random_engine(seed));
     // Assign the numbers in shuffled order to agents
-    AgentPopulation pop(a, AGENT_COUNT);
+    AgentVector pop(a, AGENT_COUNT);
     for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getNextInstance();
+        AgentVector::Agent ai = pop[i];
         ai.setVariable<unsigned int>("index", i);
         ai.setVariable<unsigned int>("message_read", UINT_MAX);
         ai.setVariable<unsigned int>("message_write", numbers[i]);
@@ -130,9 +129,7 @@ TEST(TestMessage_Array, Optional) {
     c.step();
     c.getPopulationData(pop);
     // Validate each agent has same result
-    // Validate each agent has same result
-    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getInstanceAt(i);
+    for (AgentVector::Agent ai : pop) {
         unsigned int index = ai.getVariable<unsigned int>("index");
         const unsigned int message_read = ai.getVariable<unsigned int>("message_read");
         index = index % 2 == 0 ? index : 0;
@@ -161,9 +158,9 @@ TEST(TestMessage_Array, OptionalNone) {
     li.addAgentFunction(fi);
 
     // Generate an arbitrary population.
-    AgentPopulation pop(a, AGENT_COUNT);
+    AgentVector pop(a, AGENT_COUNT);
     for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getNextInstance();
+        AgentVector::Agent ai = pop[i];
         ai.setVariable<unsigned int>("index", i);
         ai.setVariable<unsigned int>("message_read", UINT_MAX);
     }
@@ -173,8 +170,7 @@ TEST(TestMessage_Array, OptionalNone) {
     c.step();
     c.getPopulationData(pop);
     // Validate each agent has same result
-    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getInstanceAt(i);
+    for (AgentVector::Agent ai : pop) {
         const unsigned int message_read = ai.getVariable<unsigned int>("message_read");
         // no messages should have been read.
         EXPECT_EQ(0u, message_read);
@@ -246,9 +242,9 @@ TEST(TestMessage_Array, Moore1) {
     LayerDescription &li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Assign the numbers in shuffled order to agents
-    AgentPopulation pop(a, AGENT_COUNT);
+    AgentVector pop(a, AGENT_COUNT);
     for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getNextInstance();
+        AgentVector::Agent ai = pop[i];
         ai.setVariable<unsigned int>("index", i);
         ai.setVariable<unsigned int>("message_read", UINT_MAX);
     }
@@ -258,8 +254,7 @@ TEST(TestMessage_Array, Moore1) {
     c.step();
     c.getPopulationData(pop);
     // Validate each agent has read 8 correct messages
-    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getInstanceAt(i);
+    for (AgentVector::Agent ai : pop) {
         const unsigned int message_read = ai.getVariable<unsigned int>("message_read");
         EXPECT_EQ(3u, message_read);
     }
@@ -280,9 +275,9 @@ TEST(TestMessage_Array, Moore2) {
     LayerDescription &li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Assign the numbers in shuffled order to agents
-    AgentPopulation pop(a, AGENT_COUNT);
+    AgentVector pop(a, AGENT_COUNT);
     for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getNextInstance();
+        AgentVector::Agent ai = pop[i];
         ai.setVariable<unsigned int>("index", i);
         ai.setVariable<unsigned int>("message_read", UINT_MAX);
     }
@@ -292,8 +287,7 @@ TEST(TestMessage_Array, Moore2) {
     c.step();
     c.getPopulationData(pop);
     // Validate each agent has read 8 correct messages
-    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getInstanceAt(i);
+    for (AgentVector::Agent ai : pop) {
         const unsigned int message_read = ai.getVariable<unsigned int>("message_read");
         EXPECT_EQ(5u, message_read);
     }
@@ -329,9 +323,9 @@ TEST(TestMessage_Array, DISABLED_DuplicateOutputException) {
     const unsigned seed = static_cast<unsigned int>(std::chrono::system_clock::now().time_since_epoch().count());
     std::shuffle(numbers.begin(), numbers.end(), std::default_random_engine(seed));
     // Assign the numbers in shuffled order to agents
-    AgentPopulation pop(a, AGENT_COUNT);
+    AgentVector pop(a, AGENT_COUNT);
     for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getNextInstance();
+        AgentVector::Agent ai = pop[i];
         ai.setVariable<unsigned int>("index", i);
         ai.setVariable<unsigned int>("message_read", UINT_MAX);
         ai.setVariable<unsigned int>("message_write", numbers[i]);
@@ -381,18 +375,17 @@ TEST(TestMessage_Array, ReadEmpty) {
         layer.addAgentFunction(countArray);
     }
     // Create 1 agent
-    AgentPopulation pop_in(model.Agent("agent"), 1);
-    pop_in.getNextInstance();
+    AgentVector pop_in(model.Agent("agent"), 1);
     CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(pop_in);
     // Execute model
     EXPECT_NO_THROW(cuda_model.step());
     // Check result
-    AgentPopulation pop_out(model.Agent("agent"), 1);
-    pop_out.getNextInstance().setVariable<unsigned int>("value", 22221);
+    AgentVector pop_out(model.Agent("agent"), 1);
+    pop_out[0].setVariable<unsigned int>("value", 22221);
     cuda_model.getPopulationData(pop_out);
-    EXPECT_EQ(pop_out.getCurrentListSize(), 1u);
-    auto ai = pop_out.getInstanceAt(0);
+    EXPECT_EQ(pop_out.size(), 1u);
+    auto ai = pop_out[0];
     EXPECT_EQ(ai.getVariable<unsigned int>("value"), 0u);  // Unset array msgs should be 0
 }
 

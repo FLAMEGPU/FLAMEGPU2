@@ -167,9 +167,9 @@ def io_test_fixture(IO_FILENAME):
     e.newPropertyArrayInt8("int8_t_a", 3, ( 20, 0, 1 ))
     e.newPropertyArrayUInt8("uint8_t_a", 3, (21, 0, 1))
 
-    pop_a_out = pyflamegpu.AgentPopulation (a, AGENT_COUNT)
+    pop_a_out = pyflamegpu.AgentVector (a, AGENT_COUNT)
     for i in range(AGENT_COUNT):
-        agent = pop_a_out.getNextInstance()
+        agent = pop_a_out[i]
         agent.setVariableFloat("float", float(1.0 + i))
         agent.setVariableDouble("double", float(2.0 + i))
         agent.setVariableInt64("int64_t", 3 + i)
@@ -182,9 +182,9 @@ def io_test_fixture(IO_FILENAME):
         agent.setVariableUInt8("uint8_t", (10 + i))
 
 
-    pop_b_out = pyflamegpu.AgentPopulation(b, AGENT_COUNT)
+    pop_b_out = pyflamegpu.AgentVector(b, AGENT_COUNT)
     for i in range(AGENT_COUNT):
-        agent = pop_b_out.getNextInstance("2")  # Set Variables not in the initial state
+        agent = pop_b_out[i]
         agent.setVariableArrayFloat("float", ( 1.0, float(i), 1.0 ))
         agent.setVariableArrayDouble("double", ( 2.0, float(i), 1.0 ))
         agent.setVariableArrayInt64("int64_t", ( 3, i, 1 ))
@@ -205,7 +205,7 @@ def io_test_fixture(IO_FILENAME):
     # Run Export
     am_export = pyflamegpu.CUDASimulation(m)
     am_export.setPopulationData(pop_a_out)
-    am_export.setPopulationData(pop_b_out)
+    am_export.setPopulationData(pop_b_out, "2")  # Set Variables not in the initial state
     # Set config files for export too
     am_export.SimulationConfig().input_file = "invalid";
     am_export.SimulationConfig().random_seed = 654321;
@@ -233,16 +233,16 @@ def io_test_fixture(IO_FILENAME):
     assert am.getSimulationConfig().verbose == False
     assert am.getSimulationConfig().input_file == IO_FILENAME
     assert am.getCUDAConfig().device_id == 0;
-    pop_a_in = pyflamegpu.AgentPopulation(a, AGENT_COUNT)
-    pop_b_in = pyflamegpu.AgentPopulation(b, AGENT_COUNT)
+    pop_a_in = pyflamegpu.AgentVector(a)
+    pop_b_in = pyflamegpu.AgentVector(b)
     am.getPopulationData(pop_a_in)
-    am.getPopulationData(pop_b_in)
+    am.getPopulationData(pop_b_in, "2")
     
     # Valid agent none array vars
-    assert pop_a_in.getCurrentListSize() == pop_a_out.getCurrentListSize()
-    for i in range(pop_a_in.getCurrentListSize()):
-        agent_in = pop_a_in.getInstanceAt(i)
-        agent_out = pop_a_out.getInstanceAt(i)
+    assert len(pop_a_in) == len(pop_a_out)
+    for i in range(len(pop_a_in)):
+        agent_in = pop_a_in[i]
+        agent_out = pop_a_out[i]
         assert agent_in.getVariableFloat("float") == agent_out.getVariableFloat("float")
         assert agent_in.getVariableDouble("double") == agent_out.getVariableDouble("double")
         assert agent_in.getVariableInt64("int64_t") == agent_out.getVariableInt64("int64_t")
@@ -255,10 +255,10 @@ def io_test_fixture(IO_FILENAME):
         assert agent_in.getVariableUInt8("uint8_t") == agent_out.getVariableUInt8("uint8_t")
 
     # Valid agent array vars
-    assert pop_b_in.getCurrentListSize("2") == pop_b_out.getCurrentListSize("2")
-    for i in range(pop_b_in.getCurrentListSize("2")):
-        agent_in = pop_b_in.getInstanceAt(i, "2")
-        agent_out = pop_b_out.getInstanceAt(i, "2")
+    assert len(pop_b_in) == len(pop_b_out)
+    for i in range(len(pop_b_in)):
+        agent_in = pop_b_in[i]
+        agent_out = pop_b_out[i]
         assert agent_in.getVariableArrayFloat("float") == agent_out.getVariableArrayFloat("float")
         assert agent_in.getVariableArrayDouble("double") == agent_out.getVariableArrayDouble("double")
         assert agent_in.getVariableArrayInt64("int64_t") == agent_out.getVariableArrayInt64("int64_t")

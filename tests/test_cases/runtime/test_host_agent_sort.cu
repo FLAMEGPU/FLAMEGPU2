@@ -29,9 +29,9 @@ TEST(HostAgentSort, Ascending_float) {
     std::uniform_real_distribution <float> dist(1, 1000000);
 
     // Init pop
-    AgentPopulation pop(agent, AGENT_COUNT);
+    AgentVector pop(agent, AGENT_COUNT);
     for (int i = 0; i< static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = pop.getNextInstance();
+        AgentVector::Agent instance = pop[i];
         const float t = dist(rd);
         instance.setVariable<float>("float", t);
         instance.setVariable<int>("spare", static_cast<int>(t+12));
@@ -43,10 +43,9 @@ TEST(HostAgentSort, Ascending_float) {
     cuda_model.step();
     // Check results
     cuda_model.getPopulationData(pop);
-    EXPECT_EQ(AGENT_COUNT, pop.getCurrentListSize());
+    EXPECT_EQ(AGENT_COUNT, pop.size());
     float prev = 1;
-    for (int i = 0; i< static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = pop.getInstanceAt(i);
+    for (AgentVector::Agent instance : pop) {
         const float f = instance.getVariable<float>("float");
         const int s = instance.getVariable<int>("spare");
         // Agent variables are still aligned
@@ -68,9 +67,9 @@ TEST(HostAgentSort, Descending_float) {
     std::uniform_real_distribution <float> dist(1, 1000000);
 
     // Init pop
-    AgentPopulation pop(agent, AGENT_COUNT);
+    AgentVector pop(agent, AGENT_COUNT);
     for (int i = 0; i< static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = pop.getNextInstance();
+        AgentVector::Agent instance = pop[i];
         const float t = dist(rd);
         instance.setVariable<float>("float", t);
         instance.setVariable<int>("spare", static_cast<int>(t+12));
@@ -82,10 +81,9 @@ TEST(HostAgentSort, Descending_float) {
     cuda_model.step();
     // Check results
     cuda_model.getPopulationData(pop);
-    EXPECT_EQ(AGENT_COUNT, pop.getCurrentListSize());
+    EXPECT_EQ(AGENT_COUNT, pop.size());
     float prev = 1000000;
-    for (int i = 0; i< static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = pop.getInstanceAt(i);
+    for (AgentVector::Agent instance : pop) {
         const float f = instance.getVariable<float>("float");
         const int s = instance.getVariable<int>("spare");
         // Agent variables are still aligned
@@ -107,9 +105,9 @@ TEST(HostAgentSort, Ascending_int) {
     std::uniform_int_distribution <int> dist(0, 1000000);
 
     // Init pop
-    AgentPopulation pop(agent, AGENT_COUNT);
+    AgentVector pop(agent, AGENT_COUNT);
     for (int i = 0; i< static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = pop.getNextInstance();
+        AgentVector::Agent instance = pop[i];
         const int t = i == AGENT_COUNT/2 ? 0 : dist(rd);  // Ensure zero is output atleast once
         instance.setVariable<int>("int", t);
         instance.setVariable<int>("spare", t+12);
@@ -121,10 +119,9 @@ TEST(HostAgentSort, Ascending_int) {
     cuda_model.step();
     // Check results
     cuda_model.getPopulationData(pop);
-    EXPECT_EQ(AGENT_COUNT, pop.getCurrentListSize());
+    EXPECT_EQ(AGENT_COUNT, pop.size());
     int prev = 0;
-    for (int i = 0; i< static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = pop.getInstanceAt(i);
+    for (AgentVector::Agent instance : pop) {
         const int f = instance.getVariable<int>("int");
         const int s = instance.getVariable<int>("spare");
         // Agent variables are still aligned
@@ -146,9 +143,9 @@ TEST(HostAgentSort, Descending_int) {
     std::uniform_int_distribution <int> dist(1, 1000000);
 
     // Init pop
-    AgentPopulation pop(agent, AGENT_COUNT);
+    AgentVector pop(agent, AGENT_COUNT);
     for (int i = 0; i< static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = pop.getNextInstance();
+        AgentVector::Agent instance = pop[i];
         const int t = dist(rd);
         instance.setVariable<int>("int", t);
         instance.setVariable<int>("spare", t+12);
@@ -160,10 +157,9 @@ TEST(HostAgentSort, Descending_int) {
     cuda_model.step();
     // Check results
     cuda_model.getPopulationData(pop);
-    EXPECT_EQ(AGENT_COUNT, pop.getCurrentListSize());
+    EXPECT_EQ(AGENT_COUNT, pop.size());
     int prev = 1000000;
-    for (int i = 0; i< static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = pop.getInstanceAt(i);
+    for (AgentVector::Agent instance : pop) {
         const int f = instance.getVariable<int>("int");
         const int s = instance.getVariable<int>("spare");
         // Agent variables are still aligned
@@ -206,9 +202,9 @@ TEST(HostAgentSort, 2x_Ascending_float) {
     std::uniform_real_distribution <float> dist2(0, 999);
 
     // Init pop
-    AgentPopulation pop(agent, AGENT_COUNT);
+    AgentVector pop(agent, AGENT_COUNT);
     for (int i = 0; i< static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = pop.getNextInstance();
+        AgentVector::Agent instance = pop[i];
         const float t1 = static_cast<float>(dist1(rd)*1000);
         const float t2 = dist2(rd);
         instance.setVariable<float>("float1", t1);
@@ -222,10 +218,9 @@ TEST(HostAgentSort, 2x_Ascending_float) {
     cuda_model.step();
     // Check results
     cuda_model.getPopulationData(pop);
-    EXPECT_EQ(AGENT_COUNT, pop.getCurrentListSize());
+    EXPECT_EQ(AGENT_COUNT, pop.size());
     float prev = 1;
-    for (int i = 0; i< static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = pop.getInstanceAt(i);
+    for (AgentVector::Agent instance : pop) {
         const float f1 = instance.getVariable<float>("float1");
         const float f2 = instance.getVariable<float>("float2");
         const int s = instance.getVariable<int>("spare");
@@ -250,9 +245,9 @@ TEST(HostAgentSort, 2x_Descending_float) {
     std::uniform_real_distribution <float> dist2(0, 999);
 
     // Init pop
-    AgentPopulation pop(agent, AGENT_COUNT);
+    AgentVector pop(agent, AGENT_COUNT);
     for (int i = 0; i< static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = pop.getNextInstance();
+        AgentVector::Agent instance = pop[i];
         const float t1 = static_cast<float>(dist1(rd)*1000);
         const float t2 = dist2(rd);
         instance.setVariable<float>("float1", t1);
@@ -266,10 +261,9 @@ TEST(HostAgentSort, 2x_Descending_float) {
     cuda_model.step();
     // Check results
     cuda_model.getPopulationData(pop);
-    EXPECT_EQ(AGENT_COUNT, pop.getCurrentListSize());
+    EXPECT_EQ(AGENT_COUNT, pop.size());
     float prev = 1000000;
-    for (int i = 0; i< static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = pop.getInstanceAt(i);
+    for (AgentVector::Agent instance : pop) {
         const float f1 = instance.getVariable<float>("float1");
         const float f2 = instance.getVariable<float>("float2");
         const int s = instance.getVariable<int>("spare");
@@ -294,9 +288,9 @@ TEST(HostAgentSort, 2x_Ascending_int) {
     std::uniform_int_distribution <int> dist2(0, 999);
 
     // Init pop
-    AgentPopulation pop(agent, AGENT_COUNT);
+    AgentVector pop(agent, AGENT_COUNT);
     for (int i = 0; i< static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = pop.getNextInstance();
+        AgentVector::Agent instance = pop[i];
         const int t1 = static_cast<int>(dist1(rd)*1000);
         const int t2 = dist2(rd);
         instance.setVariable<int>("int1", t1);
@@ -310,10 +304,9 @@ TEST(HostAgentSort, 2x_Ascending_int) {
     cuda_model.step();
     // Check results
     cuda_model.getPopulationData(pop);
-    EXPECT_EQ(AGENT_COUNT, pop.getCurrentListSize());
+    EXPECT_EQ(AGENT_COUNT, pop.size());
     int prev = 0;
-    for (int i = 0; i< static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = pop.getInstanceAt(i);
+    for (AgentVector::Agent instance : pop) {
         const int f1 = instance.getVariable<int>("int1");
         const int f2 = instance.getVariable<int>("int2");
         const int s = instance.getVariable<int>("spare");
@@ -338,9 +331,9 @@ TEST(HostAgentSort, 2x_Descending_int) {
     std::uniform_int_distribution <int> dist2(0, 999);
 
     // Init pop
-    AgentPopulation pop(agent, AGENT_COUNT);
+    AgentVector pop(agent, AGENT_COUNT);
     for (int i = 0; i< static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = pop.getNextInstance();
+        AgentVector::Agent instance = pop[i];
         const int t1 = static_cast<int>(dist1(rd)*1000);
         const int t2 = dist2(rd);
         instance.setVariable<int>("int1", t1);
@@ -354,10 +347,9 @@ TEST(HostAgentSort, 2x_Descending_int) {
     cuda_model.step();
     // Check results
     cuda_model.getPopulationData(pop);
-    EXPECT_EQ(AGENT_COUNT, pop.getCurrentListSize());
+    EXPECT_EQ(AGENT_COUNT, pop.size());
     int prev = 1000000;
-    for (int i = 0; i< static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = pop.getInstanceAt(i);
+    for (AgentVector::Agent instance : pop) {
         const int f1 = instance.getVariable<int>("int1");
         const int f2 = instance.getVariable<int>("int2");
         const int s = instance.getVariable<int>("spare");
@@ -382,9 +374,9 @@ TEST(HostAgentSort, 2x_AscDesc_int) {
     std::uniform_int_distribution <int> dist2(0, 999);
 
     // Init pop
-    AgentPopulation pop(agent, AGENT_COUNT);
+    AgentVector pop(agent, AGENT_COUNT);
     for (int i = 0; i< static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = pop.getNextInstance();
+        AgentVector::Agent instance = pop[i];
         const int t1 = static_cast<int>(dist1(rd)*1000);
         const int t2 = dist2(rd);
         instance.setVariable<int>("int1", t1);
@@ -398,10 +390,9 @@ TEST(HostAgentSort, 2x_AscDesc_int) {
     cuda_model.step();
     // Check results
     cuda_model.getPopulationData(pop);
-    EXPECT_EQ(AGENT_COUNT, pop.getCurrentListSize());
+    EXPECT_EQ(AGENT_COUNT, pop.size());
     int prev = 0;
-    for (int i = 0; i< static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = pop.getInstanceAt(i);
+    for (AgentVector::Agent instance : pop) {
         const int f1 = instance.getVariable<int>("int1");
         const int f2 = instance.getVariable<int>("int2");
         const int s = instance.getVariable<int>("spare");
@@ -426,9 +417,9 @@ TEST(HostAgentSort, 2x_DescAsc_int) {
     std::uniform_int_distribution <int> dist2(0, 999);
 
     // Init pop
-    AgentPopulation pop(agent, AGENT_COUNT);
+    AgentVector pop(agent, AGENT_COUNT);
     for (int i = 0; i< static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = pop.getNextInstance();
+        AgentVector::Agent instance = pop[i];
         const int t1 = static_cast<int>(dist1(rd)*1000);
         const int t2 = dist2(rd);
         instance.setVariable<int>("int1", t1);
@@ -442,10 +433,9 @@ TEST(HostAgentSort, 2x_DescAsc_int) {
     cuda_model.step();
     // Check results
     cuda_model.getPopulationData(pop);
-    EXPECT_EQ(AGENT_COUNT, pop.getCurrentListSize());
+    EXPECT_EQ(AGENT_COUNT, pop.size());
     int prev = 1000000;
-    for (int i = 0; i< static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = pop.getInstanceAt(i);
+    for (AgentVector::Agent instance : pop) {
         const int f1 = instance.getVariable<int>("int1");
         const int f2 = instance.getVariable<int>("int2");
         const int s = instance.getVariable<int>("spare");

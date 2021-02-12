@@ -68,7 +68,7 @@ SET(TEST_CASE_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/model/test_layer.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/model/test_subagent.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/model/test_subenvironment.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/pop/test_pop_validation.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/pop/test_agent_vector.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/pop/test_agent_instance.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/sim/test_host_functions.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_agent_environment.cu

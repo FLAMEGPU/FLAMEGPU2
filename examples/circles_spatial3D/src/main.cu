@@ -169,9 +169,9 @@ int main(int argc, const char ** argv) {
         // Currently population has not been init, so generate an agent population on the fly
         std::default_random_engine rng;
         std::uniform_real_distribution<float> dist(0.0f, ENV_MAX);
-        AgentPopulation population(model.Agent("Circle"), AGENT_COUNT);
+        AgentVector population(model.Agent("Circle"), AGENT_COUNT);
         for (unsigned int i = 0; i < AGENT_COUNT; i++) {
-            AgentInstance instance = population.getNextInstance();
+            AgentVector::Agent instance = population[i];
             instance.setVariable<int>("id", i);
             instance.setVariable<float>("x", dist(rng));
             instance.setVariable<float>("y", dist(rng));

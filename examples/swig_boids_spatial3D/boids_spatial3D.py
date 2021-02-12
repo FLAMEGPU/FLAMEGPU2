@@ -427,9 +427,9 @@ if not cuda_model.getSimulationConfig().input_file:
     min_speed = env.getPropertyFloat("MIN_INITIAL_SPEED");
     max_speed = env.getPropertyFloat("MAX_INITIAL_SPEED");
     populationSize = env.getPropertyUInt("POPULATION_TO_GENERATE");
-    population = pyflamegpu.AgentPopulation(model.Agent("Boid"), populationSize);
+    population = pyflamegpu.AgentVector(model.Agent("Boid"), populationSize);
     for i in range(populationSize):
-        instance = population.getNextInstance();
+        instance = population[i];
         instance.setVariableInt("id", i);
 
         # Agent position in space

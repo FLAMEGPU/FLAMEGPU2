@@ -87,9 +87,9 @@ FLAMEGPU_AGENT_FUNCTION_CONDITION(AllowEvenOnly) {
 void initRunSim(std::shared_ptr<CUDASimulation> sim, const AgentDescription &a, int offset, int device, unsigned int POP_SIZE, int &exception_thrown, int steps = 10) {
     exception_thrown = 0;
     try {
-        AgentPopulation pop_in(a, POP_SIZE);
+        AgentVector pop_in(a, POP_SIZE);
         for (unsigned int i = 0; i < POP_SIZE; ++i) {
-            pop_in.getNextInstance().setVariable<int>("x", offset);
+            pop_in[i].setVariable<int>("x", offset);
         }
         sim->SimulationConfig().steps = steps;
         sim->CUDAConfig().device_id = device;
@@ -152,7 +152,7 @@ TEST(RTCMultiThreadDeviceTest, SameModelMultiDevice_Message) {
     for (auto &th : threads) {
         th.join();
     }
-    AgentPopulation pop(a, POP_SIZE);
+    AgentVector pop(a, POP_SIZE);
     // Check results
     for (unsigned int i = 0; i < results.size(); ++i) {
         // Check exceptions
@@ -161,7 +161,7 @@ TEST(RTCMultiThreadDeviceTest, SameModelMultiDevice_Message) {
         ASSERT_EQ(cudaSetDevice(sims[i]->CUDAConfig().device_id), cudaSuccess);
         sims[i]->getPopulationData(pop);
         for (unsigned int j = 0; j < POP_SIZE; ++j) {
-            int x = pop.getInstanceAt(j).getVariable<int>("x");
+            int x = pop[j].getVariable<int>("x");
             ASSERT_EQ(x, static_cast<int>(POP_SIZE * STEPS + i));
         }
     }
@@ -230,7 +230,7 @@ TEST(RTCMultiThreadDeviceTest, SameModelMultiDevice_Environment) {
     for (auto &th : threads) {
         th.join();
     }
-    AgentPopulation pop(a, POP_SIZE);
+    AgentVector pop(a, POP_SIZE);
     // Check results
     for (unsigned int i = 0; i < results.size(); ++i) {
         // Check exceptions
@@ -240,8 +240,8 @@ TEST(RTCMultiThreadDeviceTest, SameModelMultiDevice_Environment) {
         sims[i]->getPopulationData(pop);
         int bad = 0;
         int x = static_cast<int>(4 * STEPS * (i + 1) + i);
-        for (unsigned int j = 0; j < POP_SIZE; ++j) {
-            x = pop.getInstanceAt(j).getVariable<int>("x");
+        for (AgentVector::Agent ai : pop) {
+            x = ai.getVariable<int>("x");
             if (x != static_cast<int>(4 * STEPS * (i + 1) + i)) {
                 bad++;
             }
@@ -256,8 +256,8 @@ TEST(RTCMultiThreadDeviceTest, SameModelMultiDevice_Environment) {
         // Get agent data
         ASSERT_EQ(cudaSetDevice(sims[i]->CUDAConfig().device_id), cudaSuccess);
         sims[i]->getPopulationData(pop);
-        for (unsigned int j = 0; j < POP_SIZE; ++j) {
-            int x = pop.getInstanceAt(j).getVariable<int>("x");
+        for (AgentVector::Agent ai : pop) {
+            int x = ai.getVariable<int>("x");
             ASSERT_EQ(x, static_cast<int>(4 * STEPS * (i + 1) + i));
         }
     }
@@ -314,7 +314,7 @@ TEST(RTCMultiThreadDeviceTest, SameModelMultiDevice_AgentOutput) {
     for (auto &th : threads) {
         th.join();
     }
-    AgentPopulation pop(a, POP_SIZE);
+    AgentVector pop(a, POP_SIZE);
     // Check results
     for (unsigned int i = 0; i < results.size(); ++i) {
         // Check exceptions
@@ -323,7 +323,7 @@ TEST(RTCMultiThreadDeviceTest, SameModelMultiDevice_AgentOutput) {
         ASSERT_EQ(cudaSetDevice(sims[i]->CUDAConfig().device_id), cudaSuccess);
         sims[i]->getPopulationData(pop);
         for (unsigned int j = 0; j < POP_SIZE; ++j) {
-            int x = pop.getInstanceAt(j).getVariable<int>("x");
+            int x = pop[j].getVariable<int>("x");
             // 5 steps with 2x +1 each.
             ASSERT_EQ(x, static_cast<int>(10 + i));
         }
@@ -332,7 +332,7 @@ TEST(RTCMultiThreadDeviceTest, SameModelMultiDevice_AgentOutput) {
             const unsigned int initial_pop = POP_SIZE * static_cast<unsigned int>(pow(2, step));
             const unsigned int next_pop = POP_SIZE * static_cast<unsigned int>(pow(2, step+1));
             for (unsigned int j = initial_pop; j < next_pop; ++j) {
-                int x = pop.getInstanceAt(j).getVariable<int>("x");
+                int x = pop[j].getVariable<int>("x");
                 ASSERT_EQ(x, 9 - (step * 2));
             }
         }
@@ -390,7 +390,7 @@ TEST(RTCMultiThreadDeviceTest, SameModelMultiDevice_AgentFunctionCondition) {
     for (auto &th : threads) {
         th.join();
     }
-    AgentPopulation pop(a, POP_SIZE);
+    AgentVector pop(a, POP_SIZE);
     // Check results
     for (unsigned int i = 0; i < results.size(); ++i) {
         // Check exceptions
@@ -398,8 +398,8 @@ TEST(RTCMultiThreadDeviceTest, SameModelMultiDevice_AgentFunctionCondition) {
         // Get agent data
         cudaSetDevice(sims[i]->CUDAConfig().device_id);
         sims[i]->getPopulationData(pop);
-        for (unsigned int j = 0; j < POP_SIZE; ++j) {
-            int x = pop.getInstanceAt(j).getVariable<int>("x");
+        for (AgentVector::Agent ai : pop) {
+            int x = ai.getVariable<int>("x");
             // 0, +2*10
             // 1, +1, +2*9
             // 2, +2*10

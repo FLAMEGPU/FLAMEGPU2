@@ -81,11 +81,10 @@ TEST(TestMessage_BruteForce, Mandatory1) {
 
     std::default_random_engine rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
-    AgentPopulation pop(a, (unsigned int)AGENT_COUNT);
+    AgentVector pop(a, (unsigned int)AGENT_COUNT);
     int sum = 0;
     int product = 1;
-    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getNextInstance();
+    for (AgentVector::Agent ai : pop) {
         const int x = dist(rng);
         sum += x;
         product *= x;
@@ -104,8 +103,7 @@ TEST(TestMessage_BruteForce, Mandatory1) {
     c.simulate();
     c.getPopulationData(pop);
     // Validate each agent has same result
-    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getInstanceAt(i);
+    for (AgentVector::Agent ai : pop) {
         ASSERT_EQ(ai.getVariable<int>("sum"), sum);
         ASSERT_EQ(ai.getVariable<int>("product"), product);
     }
@@ -129,11 +127,10 @@ TEST(TestMessage_BruteForce, Mandatory2) {
 
     std::default_random_engine rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
-    AgentPopulation pop(a, (unsigned int)AGENT_COUNT);
+    AgentVector pop(a, (unsigned int)AGENT_COUNT);
     int sum = 0;
     int product = 1;
-    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getNextInstance();
+    for (AgentVector::Agent ai : pop) {
         const int x = dist(rng);
         sum += x;
         product *= x;
@@ -155,8 +152,7 @@ TEST(TestMessage_BruteForce, Mandatory2) {
     c.simulate();
     c.getPopulationData(pop);
     // Validate each agent has same result
-    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getInstanceAt(i);
+    for (AgentVector::Agent ai : pop) {
         ASSERT_EQ(ai.getVariable<int>("sum"), sum);
         ASSERT_EQ(ai.getVariable<int>("product"), product);
     }
@@ -182,11 +178,10 @@ TEST(TestMessage_BruteForce, Optional1) {
 
     std::default_random_engine rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
-    AgentPopulation pop(a, (unsigned int)AGENT_COUNT);
+    AgentVector pop(a, (unsigned int)AGENT_COUNT);
     int sum = 0;
     int product = 1;
-    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getNextInstance();
+    for (AgentVector::Agent ai : pop) {
         const int x = dist(rng);
         if (x) {
             sum += x;
@@ -207,8 +202,7 @@ TEST(TestMessage_BruteForce, Optional1) {
     c.simulate();
     c.getPopulationData(pop);
     // Validate each agent has same result
-    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getInstanceAt(i);
+    for (AgentVector::Agent ai : pop) {
         ASSERT_EQ(ai.getVariable<int>("sum"), sum);
         ASSERT_EQ(ai.getVariable<int>("product"), product);
     }
@@ -229,11 +223,10 @@ TEST(TestMessage_BruteForce, Optional2) {
 
     std::default_random_engine rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
-    AgentPopulation pop(a, (unsigned int)AGENT_COUNT);
+    AgentVector pop(a, (unsigned int)AGENT_COUNT);
     int sum = 0;
     int product = 1;
-    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getNextInstance();
+    for (AgentVector::Agent ai : pop) {
         const int x = dist(rng);
         if (x) {
             sum += x;
@@ -245,8 +238,7 @@ TEST(TestMessage_BruteForce, Optional2) {
         ai.setVariable<int>("product", 1);
     }
 
-    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getInstanceAt(i);
+    for (AgentVector::Agent ai : pop) {
         const int x = ai.getVariable<int>("x");
         if (x + 1) {
             sum += (x + 1);
@@ -264,8 +256,7 @@ TEST(TestMessage_BruteForce, Optional2) {
     c.simulate();
     c.getPopulationData(pop);
     // Validate each agent has same result
-    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getInstanceAt(i);
+    for (AgentVector::Agent ai : pop) {
         ASSERT_EQ(ai.getVariable<int>("sum"), sum);
         ASSERT_EQ(ai.getVariable<int>("product"), product);
     }
@@ -289,9 +280,9 @@ TEST(TestMessage_BruteForce, OptionalNone) {
     li.addAgentFunction(fi);
 
     // Generate an arbitrary population.
-    AgentPopulation pop(a, AGENT_COUNT);
+    AgentVector pop(a, AGENT_COUNT);
     for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getNextInstance();
+        AgentVector::Agent ai = pop[i];
         ai.setVariable<unsigned int>("index", i);
         ai.setVariable<unsigned int>("message_read", UINT_MAX);
     }
@@ -302,8 +293,7 @@ TEST(TestMessage_BruteForce, OptionalNone) {
     c.simulate();
     c.getPopulationData(pop);
     // Validate each agent has seen no messages.
-    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getInstanceAt(i);
+    for (AgentVector::Agent ai : pop) {
         // unsigned int index = ai.getVariable<unsigned int>("index");
         const unsigned int message_read = ai.getVariable<unsigned int>("message_read");
         // no messages should have been read.
@@ -344,18 +334,17 @@ TEST(TestMessage_BruteForce, ReadEmpty) {
         layer.addAgentFunction(countBF);
     }
     // Create 1 agent
-    AgentPopulation pop_in(model.Agent("agent"), 1);
-    pop_in.getNextInstance();
+    AgentVector pop_in(model.Agent("agent"), 1);
     CUDASimulation cuda_model(model);
     cuda_model.setPopulationData(pop_in);
     // Execute model
     EXPECT_NO_THROW(cuda_model.step());
     // Check result
-    AgentPopulation pop_out(model.Agent("agent"), 1);
-    pop_out.getNextInstance().setVariable<unsigned int>("count", 1);
+    AgentVector pop_out(model.Agent("agent"), 1);
+    pop_out[0].setVariable<unsigned int>("count", 1);
     cuda_model.getPopulationData(pop_out);
-    EXPECT_EQ(pop_out.getCurrentListSize(), 1u);
-    auto ai = pop_out.getInstanceAt(0);
+    EXPECT_EQ(pop_out.size(), 1u);
+    auto ai = pop_out[0];
     EXPECT_EQ(ai.getVariable<unsigned int>("count"), 0u);
 }
 

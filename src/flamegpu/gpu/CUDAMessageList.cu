@@ -5,7 +5,6 @@
 
 #include "flamegpu/gpu/CUDAMessage.h"
 #include "flamegpu/gpu/CUDAErrorChecking.h"
-#include "flamegpu/pop/AgentStateMemory.h"
 #include "flamegpu/runtime/messaging/BruteForce/BruteForceHost.h"
 #include "flamegpu/gpu/CUDAScanCompaction.h"
 #include "flamegpu/gpu/CUDAScatter.h"

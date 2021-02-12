@@ -34,9 +34,9 @@ class GPUTest(TestCase):
         m = pyflamegpu.ModelDescription("test_gpu_memory_test")
         a = m.newAgent("agent")
         a.newVariableInt("id")
-        p = pyflamegpu.AgentPopulation(a, AGENT_COUNT)
+        p = pyflamegpu.AgentVector(a, AGENT_COUNT)
         for i in range(AGENT_COUNT):
-            instance = p.getNextInstance("default")
+            instance = p[i]
             instance.setVariableInt("id", i)
         cm = pyflamegpu.CUDASimulation(m)
         # copy to device then back by setting and getting population data
@@ -44,7 +44,7 @@ class GPUTest(TestCase):
         cm.getPopulationData(p)
         # check values are the same
         for i in range(AGENT_COUNT):
-            instance = p.getInstanceAt(i, "default")
+            instance = p[i]
             assert instance.getVariableInt("id") == i
 
     def test_gpu_simulation(self):
@@ -59,9 +59,9 @@ class GPUTest(TestCase):
         a.newVariableInt("id")
         a.newVariableInt("x")
         func = a.newRTCFunction("add_func", self.add_func)
-        p = pyflamegpu.AgentPopulation(a, AGENT_COUNT)
+        p = pyflamegpu.AgentVector(a, AGENT_COUNT)
         for i in range(AGENT_COUNT):
-            instance = p.getNextInstance("default")
+            instance = p[i]
             instance.setVariableInt("x", i)
         layer = m.newLayer("add_layer")
         layer.addAgentFunction(func)
@@ -73,7 +73,7 @@ class GPUTest(TestCase):
         cm.getPopulationData(p)
         # check values are the same
         for i in range(AGENT_COUNT):
-            instance = p.getInstanceAt(i, "default")
+            instance = p[i]
             # use AgentInstance equality operator
             assert instance.getVariableInt("x") == (i + (2 * 5))
             
@@ -92,14 +92,14 @@ class GPUTest(TestCase):
         func_add = a1.newRTCFunction("add_func", self.add_func)
         func_sub = a2.newRTCFunction("sub_func", self.sub_func)
 
-        pop1 = pyflamegpu.AgentPopulation(a1, AGENT_COUNT)
+        pop1 = pyflamegpu.AgentVector(a1, AGENT_COUNT)
         for i in range(AGENT_COUNT):
-            instance = pop1.getNextInstance("default")
+            instance = pop1[i]
             instance.setVariableInt("x", i)
 
-        pop2 = pyflamegpu.AgentPopulation(a2, AGENT_COUNT)
+        pop2 = pyflamegpu.AgentVector(a2, AGENT_COUNT)
         for i in range(AGENT_COUNT):
-            instance = pop2.getNextInstance("default")
+            instance = pop2[i]
             instance.setVariableInt("x", i)
             instance.setVariableInt("y", i)
 
@@ -118,7 +118,7 @@ class GPUTest(TestCase):
 
         # check values are the same
         for i in range(AGENT_COUNT):
-            instance1 = pop1.getInstanceAt(i, "default")
-            instance2 = pop2.getInstanceAt(i, "default")
+            instance1 = pop1[i]
+            instance2 = pop2[i]
             assert instance1.getVariableInt("x") == i + 2
             assert instance2.getVariableInt("y") == 0

@@ -146,9 +146,9 @@ class TestMessage_Array(TestCase):
         # Shuffle the list of numbers
         rand.shuffle(numbers)
         # Assign the numbers in shuffled order to agents
-        pop = pyflamegpu.AgentPopulation(a, AGENT_COUNT)
+        pop = pyflamegpu.AgentVector(a, AGENT_COUNT)
         for i in range(AGENT_COUNT):
-            ai = pop.getNextInstance()
+            ai = pop[i]
             ai.setVariableUInt("index", i)
             ai.setVariableUInt("message_read", UINT_MAX)
             ai.setVariableUInt("message_write", numbers[i])
@@ -159,8 +159,7 @@ class TestMessage_Array(TestCase):
         c.step()
         c.getPopulationData(pop)
         # Validate each agent has same result
-        for i in range(AGENT_COUNT):
-            ai = pop.getInstanceAt(i)
+        for ai in pop:
             index = ai.getVariableUInt("index")
             message_read = ai.getVariableUInt("message_read")
             assert index * 3 == message_read
@@ -191,9 +190,9 @@ class TestMessage_Array(TestCase):
         # Shuffle the list of numbers
         rand.shuffle(numbers)
         # Assign the numbers in shuffled order to agents
-        pop = pyflamegpu.AgentPopulation(a, AGENT_COUNT)
+        pop = pyflamegpu.AgentVector(a, AGENT_COUNT)
         for i in range(AGENT_COUNT):
-            ai = pop.getNextInstance()
+            ai = pop[i]
             ai.setVariableUInt("index", i)
             ai.setVariableUInt("message_read", UINT_MAX)
             ai.setVariableUInt("message_write", numbers[i])
@@ -204,8 +203,7 @@ class TestMessage_Array(TestCase):
         c.step()
         c.getPopulationData(pop)
         # Validate each agent has same result
-        for i in range(AGENT_COUNT):
-            ai = pop.getInstanceAt(i)
+        for ai in pop:
             index = ai.getVariableUInt("index")
             message_read = ai.getVariableUInt("message_read")
             # index = index % 2 == 0 ? index : 0
@@ -232,9 +230,9 @@ class TestMessage_Array(TestCase):
         li = m.newLayer(IN_LAYER_NAME)
         li.addAgentFunction(fi)
         # Assign the numbers in shuffled order to agents
-        pop = pyflamegpu.AgentPopulation(a, AGENT_COUNT)
+        pop = pyflamegpu.AgentVector(a, AGENT_COUNT)
         for i in range(AGENT_COUNT):
-            ai = pop.getNextInstance()
+            ai = pop[i]
             ai.setVariableUInt("index", i)
             ai.setVariableUInt("message_read", UINT_MAX)
         
@@ -244,8 +242,7 @@ class TestMessage_Array(TestCase):
         c.step()
         c.getPopulationData(pop)
         # Validate each agent has read 8 correct messages
-        for i in range(AGENT_COUNT):
-            ai = pop.getInstanceAt(i)
+        for ai in pop:
             message_read = ai.getVariableUInt("message_read")
             assert 3 == message_read
         
@@ -266,9 +263,9 @@ class TestMessage_Array(TestCase):
         li = m.newLayer(IN_LAYER_NAME)
         li.addAgentFunction(fi)
         # Assign the numbers in shuffled order to agents
-        pop = pyflamegpu.AgentPopulation(a, AGENT_COUNT)
+        pop = pyflamegpu.AgentVector(a, AGENT_COUNT)
         for i in range(AGENT_COUNT):
-            ai = pop.getNextInstance()
+            ai = pop[i]
             ai.setVariableUInt("index", i)
             ai.setVariableUInt("message_read", UINT_MAX)
         
@@ -278,8 +275,7 @@ class TestMessage_Array(TestCase):
         c.step()
         c.getPopulationData(pop)
         # Validate each agent has read 8 correct messages
-        for i in range(AGENT_COUNT):
-            ai = pop.getInstanceAt(i)
+        for ai in pop:
             message_read = ai.getVariableUInt("message_read")
             assert 5 == message_read
         
@@ -310,9 +306,9 @@ class TestMessage_Array(TestCase):
         # Shuffle the list of numbers
         rand.shuffle(numbers)
         # Assign the numbers in shuffled order to agents
-        pop = pyflamegpu.AgentPopulation(a, AGENT_COUNT)
+        pop = pyflamegpu.AgentVector(a, AGENT_COUNT)
         for i in range(AGENT_COUNT):
-            ai = pop.getNextInstance()
+            ai = pop[i]
             ai.setVariableUInt("index", i)
             ai.setVariableUInt("message_read", UINT_MAX)
             ai.setVariableUInt("message_write", numbers[i])
@@ -363,17 +359,16 @@ class TestMessage_Array(TestCase):
         layer = model.newLayer()
         layer.addAgentFunction(cf)
         # Create 1 agent
-        pop_in = pyflamegpu.AgentPopulation(model.Agent("agent"), 1)
-        pop_in.getNextInstance()
+        pop_in = pyflamegpu.AgentVector(model.Agent("agent"), 1)
         cuda_model = pyflamegpu.CUDASimulation(model)
         cuda_model.setPopulationData(pop_in)
         # Execute model
         cuda_model.step()
         # Check result
-        pop_out = pyflamegpu.AgentPopulation(model.Agent("agent"), 1)
-        pop_out.getNextInstance().setVariableUInt("value", 22221)
+        pop_out = pyflamegpu.AgentVector(model.Agent("agent"), 1)
+        pop_out.front().setVariableUInt("value", 22221)
         cuda_model.getPopulationData(pop_out)
-        assert pop_out.getCurrentListSize() == 1
-        ai = pop_out.getInstanceAt(0)
+        assert len(pop_out) == 1
+        ai = pop_out.front()
         assert ai.getVariableUInt("value") == 0  # Unset array msgs should be 0
 
