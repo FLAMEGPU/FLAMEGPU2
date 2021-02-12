@@ -26,7 +26,7 @@
 std::map<int, std::atomic<int>> CUDASimulation::active_device_instances;
 std::map<int, std::shared_timed_mutex> CUDASimulation::active_device_mutex;
 std::shared_timed_mutex CUDASimulation::active_device_maps_mutex;
-std::atomic<int> CUDASimulation::active_instances;  // This value should default init to 0, specifying =0 was causing warnings on Windows.
+std::atomic<int> CUDASimulation::active_instances = {0};
 bool CUDASimulation::AUTO_CUDA_DEVICE_RESET = true;
 
 CUDASimulation::CUDASimulation(const ModelDescription& _model, int argc, const char** argv)
@@ -1128,6 +1128,9 @@ void CUDASimulation::initialiseSingletons() {
         gpuErrchk(cudaGetDevice(&deviceInitialised));
         std::unique_lock<std::shared_timed_mutex> maps_lock(active_device_maps_mutex);
         auto &adm = active_device_mutex[deviceInitialised];
+        if (active_device_instances.find(deviceInitialised) == active_device_instances.end()) {
+            active_device_instances[deviceInitialised] = 0;
+        }
         auto &adi = active_device_instances[deviceInitialised];
         std::shared_lock<std::shared_timed_mutex> lock(adm);
         ++(adi);

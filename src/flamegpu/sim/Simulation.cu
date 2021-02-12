@@ -279,6 +279,6 @@ void Simulation::reset() {
 }
 
 unsigned int Simulation::get_instance_id() {
-    static std::atomic<unsigned int> i;
+    static std::atomic<unsigned int> i = {0};;
     return 641 * (i++);
 }
