@@ -48,7 +48,7 @@ class MiniSim {
         , agent(model.newAgent("agent"))
         , population(nullptr)
         , env(model.Environment()) {
-        population = new AgentPopulation(agent, TEST_LEN);
+        population = new AgentVector(agent, TEST_LEN);
         model.addStepFunction(DEFAULT_STEP);
     }
     ~MiniSim() {
@@ -69,7 +69,7 @@ class MiniSim {
     }
     ModelDescription model;
     AgentDescription &agent;
-    AgentPopulation *population;
+    AgentVector *population;
     EnvironmentDescription &env;
 };
 /**

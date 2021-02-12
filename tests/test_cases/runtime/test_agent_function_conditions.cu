@@ -67,30 +67,34 @@ namespace test_agent_function_conditions {
         l1.addAgentFunction(af1);
         LayerDescription &l2 = m.newLayer();
         l2.addAgentFunction(af2);
-        AgentPopulation pop(a, AGENT_COUNT * 2);
+        AgentVector pop(a, AGENT_COUNT * 2);
         for (unsigned int i = 0; i < AGENT_COUNT * 2; ++i) {
-            AgentInstance ai = pop.getNextInstance(STATE1);
+            AgentVector::Agent ai = pop[i];
             unsigned int val = i % 2;  // 0, 1, 0, 1, etc
             ai.setVariable<int>("x", val);
             ai.setVariable<int, 4>("y", ARRAY_REFERENCE);
         }
         CUDASimulation c(m);
-        c.setPopulationData(pop);
+        c.setPopulationData(pop, STATE1);
         c.step();
-        c.getPopulationData(pop);
-        EXPECT_EQ(pop.getCurrentListSize(STATE1), 0u);
-        EXPECT_EQ(pop.getCurrentListSize(STATE2), AGENT_COUNT);
-        EXPECT_EQ(pop.getCurrentListSize(STATE3), AGENT_COUNT);
+
+        AgentVector pop_STATE1(a);
+        AgentVector pop_STATE2(a);
+        AgentVector pop_STATE3(a);
+        c.getPopulationData(pop_STATE1, STATE1);
+        c.getPopulationData(pop_STATE2, STATE2);
+        c.getPopulationData(pop_STATE3, STATE3);
+        EXPECT_EQ(pop_STATE1.size(), 0u);
+        EXPECT_EQ(pop_STATE2.size(), AGENT_COUNT);
+        EXPECT_EQ(pop_STATE3.size(), AGENT_COUNT);
         // Check val of agents in STATE2 state
-        for (unsigned int j = 0; j < pop.getCurrentListSize(STATE2); ++j) {
-            AgentInstance ai = pop.getInstanceAt(j, STATE2);
+        for (AgentVector::Agent ai : pop_STATE2) {
             EXPECT_EQ(ai.getVariable<int>("x"), 2);
             auto test = ai.getVariable<int, 4>("y");
             ASSERT_EQ(test, ARRAY_REFERENCE3);
         }
         // Check val of agents in STATE3 state
-        for (unsigned int j = 0; j < pop.getCurrentListSize(STATE3); ++j) {
-            AgentInstance ai = pop.getInstanceAt(j, STATE3);
+        for (AgentVector::Agent ai : pop_STATE3) {
             EXPECT_EQ(ai.getVariable<int>("x"), -1);
             auto test = ai.getVariable<int, 4>("y");
             ASSERT_EQ(test, ARRAY_REFERENCE2);
@@ -115,10 +119,7 @@ namespace test_agent_function_conditions {
         LayerDescription &l2 = m.newLayer();
         l2.addAgentFunction(af2);
         // Create a bunch of empty agents
-        AgentPopulation pop(a, AGENT_COUNT);
-        for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-            AgentInstance ai = pop.getNextInstance();
-        }
+        AgentVector pop(a, AGENT_COUNT);
         CUDASimulation c(m);
         c.setPopulationData(pop);
         EXPECT_NO_THROW(c.step());

@@ -14,7 +14,7 @@
 #include <tuple>
 #include "tinyxml2/tinyxml2.h"              // downloaded from https:// github.com/leethomason/tinyxml2, the list of xml parsers : http:// lars.ruoff.free.fr/xmlcpp/
 #include "flamegpu/exception/FGPUException.h"
-#include "flamegpu/pop/AgentPopulation.h"
+#include "flamegpu/pop/AgentVector.h"
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/gpu/CUDASimulation.h"
 
@@ -61,11 +61,18 @@ xmlReader::xmlReader(
     const std::string &model_name,
     const std::unordered_map<std::string, EnvironmentDescription::PropData> &env_desc,
     std::unordered_map<std::pair<std::string, unsigned int>, Any> &env_init,
-    const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &model_state,
+    StringPairUnorderedMap<std::shared_ptr<AgentVector>> &model_state,
     const std::string &input,
     Simulation *sim_instance)
     : StateReader(model_name, env_desc, env_init, model_state, input, sim_instance) {}
 
+std::string xmlReader::getInitialState(const std::string &agent_name) const {
+    for (const auto &i : model_state) {
+        if (agent_name == i.first.first)
+            return i.second->getInitialState();
+    }
+    return ModelData::DEFAULT_STATE;
+}
 /**
 * \brief parses the xml file
 */
@@ -230,14 +237,18 @@ int xmlReader::parse() {
     }
 
     // Count how many of each agent are in the file and resize state lists
-    std::unordered_map<std::string, unsigned int> cts;
+    StringPairUnorderedMap<unsigned int> cts;
     for (pElement = pRoot->FirstChildElement("xagent"); pElement != nullptr; pElement = pElement->NextSiblingElement("xagent")) {
-        cts[std::string(pElement->FirstChildElement("name")->GetText())]++;
+        std::string agent_name = pElement->FirstChildElement("name")->GetText();
+        tinyxml2::XMLElement *state_element = pElement->FirstChildElement("state");
+        std::string state_name = state_element ? state_element->GetText() : getInitialState(agent_name);
+        cts[{agent_name, state_name}]++;
     }
-    // Resize state lists
-    for (auto &agt : cts) {
-        if (agt.second > AgentPopulation::DEFAULT_POPULATION_SIZE)
-            model_state.at(agt.first)->setStateListCapacity(agt.second);
+    // Resize state lists (greedy, all lists are resized to max size of state)
+    for (auto& it : model_state) {
+        auto f = cts.find(it.first);
+        if (f != cts.end())
+          it.second->reserve(f->second);
     }
 
     // Read in agent data
@@ -247,10 +258,12 @@ int xmlReader::parse() {
         const char* agentName = pNameElement->GetText();
         // Find agent state, use initial state if not set (means its old fgpu1 input file)
         tinyxml2::XMLElement* pStateElement = pElement->FirstChildElement("state");
-        const char* agentState = pStateElement ? pStateElement->GetText() : model_state.at(agentName)->getAgentDescription().initial_state.c_str();
-        const auto &agentVariables = model_state.at(agentName)->getAgentDescription().variables;
-        // Create instace to store variable data in
-        AgentInstance instance = model_state.at(agentName)->getNextInstance(agentState);
+        const char* agentState = pStateElement ? pStateElement->GetText() : getInitialState(agentName).c_str();
+        std::shared_ptr<AgentVector> &agentVec = model_state.at({agentName, std::string(agentState)});
+        const VariableMap& agentVariables = agentVec->getVariableMetaData();
+        // Create instance to store variable data in
+        agentVec->push_back();
+        AgentVector::Agent instance = agentVec->back();
         bool hasWarnedElements = false;
         bool hasWarnedMissingVar = false;
         // Iterate agent variables

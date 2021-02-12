@@ -45,12 +45,11 @@ class MiniSim():
         self.model.addStepFunctionCallback(self.step)
         
         # create a population and set random values to be sumed
-        self.population = pyflamegpu.AgentPopulation(self.agent, TEST_LEN)
+        self.population = pyflamegpu.AgentVector(self.agent, TEST_LEN)
         rand.seed() # Seed does not matter 
         self.expected_sum = 0;
-        for i in range(TEST_LEN): 
-            instance = self.population.getNextInstance()
-            value = rand.randint(0, range_max) # value not actually important as suming the 0s
+        for instance in self.population:
+            value = rand.randint(0, range_max) # value not actually important as summing the 0s
             # accumulate
             self.expected_sum += value
             # set instance value (will be cast to correct type)

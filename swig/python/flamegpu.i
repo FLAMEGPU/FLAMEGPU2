@@ -115,37 +115,26 @@ TEMPLATE_VARIABLE_INSTANTIATE_INTS(function, classfunction)
 /* Compilation header includes */
 %{
 /* Includes the header in the wrapper code */
-#include "flamegpu/model/ModelDescription.h"
-#include "flamegpu/model/AgentDescription.h"
-#include "flamegpu/model/AgentFunctionDescription.h"
-#include "flamegpu/model/EnvironmentDescription.h"
-#include "flamegpu/model/LayerDescription.h"
-#include "flamegpu/model/SubModelDescription.h"
-#include "flamegpu/model/SubAgentDescription.h"
-#include "flamegpu/model/SubEnvironmentDescription.h"
-#include "flamegpu/pop/AgentPopulation.h"
-#include "flamegpu/gpu/CUDASimulation.h"
-
-#include "flamegpu/exception/FGPUException.h"
-
-//#include "flamegpu/runtime/flamegpu_device_api.h"
-#include "flamegpu/runtime/flamegpu_host_api.h"
-#include "flamegpu/runtime/flamegpu_host_agent_api.h"
-#include "flamegpu/runtime/messaging.h"
-
-#include "flamegpu/runtime/AgentFunction_shim.h"
-#include "flamegpu/runtime/AgentFunctionCondition_shim.h"
+#include "flamegpu/flame_api.h"
 #include "flamegpu/runtime/HostFunctionCallback.h"
-
-#include "flamegpu/sim/LoggingConfig.h"
-#include "flamegpu/sim/AgentLoggingConfig.h"
-#include "flamegpu/sim/LogFrame.h"
-
-#include "flamegpu/sim/RunPlan.h"
-#include "flamegpu/sim/RunPlanVec.h"
-#include "flamegpu/gpu/CUDAEnsemble.h"
 %}
 
+
+/* Custom Iterator to Swigify iterable types (RunPlanVec, AgentVector) */
+%pythoncode %{
+class FLAMEGPUIterator(object):
+
+    def __init__(self, pointerToVector):
+        self.pointerToVector = pointerToVector
+        self.index = -1
+
+    def __next__(self):
+        self.index += 1
+        if self.index < len(self.pointerToVector):
+            return self.pointerToVector[self.index]
+        else:
+            raise StopIteration
+%}
 
 /* Instantiate array types, these are required by message types when setting dimensions. */
 %template(UIntArray2) std::array<unsigned int, 2>;
@@ -297,7 +286,50 @@ namespace EnvironmentManager{
 %include "flamegpu/model/SubAgentDescription.h"
 %include "flamegpu/model/SubEnvironmentDescription.h"
 
-%include "flamegpu/pop/AgentPopulation.h"
+/* Include AgentVector/AgentView/AgentInstance */
+// Disable functions which use C++ iterators/type_index
+%ignore AgentVector::const_iterator;
+%ignore AgentVector::const_reverse_iterator;
+%ignore AgentVector::iterator;
+%ignore AgentVector::const_iterator;
+%ignore AgentVector::reverse_iterator;
+%ignore AgentVector::const_reverse_iterator;
+%ignore AgentVector::begin;
+%ignore AgentVector::cbegin;
+%ignore AgentVector::end;
+%ignore AgentVector::cend;
+%ignore AgentVector::rbegin;
+%ignore AgentVector::crbegin;
+%ignore AgentVector::rend;
+%ignore AgentVector::crend;
+%ignore AgentVector::insert;
+%ignore AgentVector::erase;
+%ignore AgentVector::getVariableType;
+%ignore AgentVector::getVariableMetaData;
+%ignore AgentVector::data;
+%rename(insert) AgentVector::py_insert; 
+%rename(erase) AgentVector::py_erase; 
+
+// Extend AgentVector so that it is python iterable
+%extend AgentVector {
+%pythoncode {
+    def __iter__(self):
+        return FLAMEGPUIterator(self)
+    def __len__(self):
+        return self.size()
+}
+    AgentVector::Agent AgentVector::__getitem__(const int &index) {
+        if (index >= 0)
+            return $self->operator[](index);
+        return $self->operator[]($self->size() + index);
+    }
+    void AgentVector::__setitem__(const AgentVector::size_type &index, const AgentVector::Agent &value) {
+        $self->operator[](index).setData(value);
+    }
+}
+
+%include "flamegpu/pop/AgentVector.h"
+%include "flamegpu/pop/AgentVector_Agent.h"
 %include "flamegpu/pop/AgentInstance.h"
 
 /* Include Simulation and CUDASimulation */
@@ -389,27 +421,11 @@ namespace EnvironmentManager{
 %include "flamegpu/sim/LogFrame.h"
 %template(LogFrameList) std::list<LogFrame>;
 
-
 // Extend RunPlanVec so that it is python iterable
-%pythoncode %{
-class VectorIterator(object):
-
-    def __init__(self, pointerToVector):
-        self.pointerToVector = pointerToVector
-        self.index = -1
-
-    def __next__(self):
-        self.index += 1
-        if self.index < len(self.pointerToVector):
-            return self.pointerToVector[self.index]
-        else:
-            raise StopIteration
-%}
-
 %extend RunPlanVec {
 %pythoncode {
     def __iter__(self):
-        return VectorIterator(self)
+        return FLAMEGPUIterator(self)
     def __len__(self):
         return self.size()
 
@@ -419,8 +435,10 @@ class VectorIterator(object):
         else: # "insert" is used as if the vector is a native C++ container
             return self.insert(self, i, x)
    }
-   RunPlan &RunPlanVec::__getitem__(const size_t &index) {
-        return $self->operator[](index);
+   RunPlan &RunPlanVec::__getitem__(const int &index) {
+        if (index >= 0)
+            return $self->operator[](index);
+        return $self->operator[]($self->size() + index);
    }
    void RunPlanVec::__setitem__(const size_t &index, RunPlan &value) {
         $self->operator[](index) = value;
@@ -441,7 +459,12 @@ class VectorIterator(object):
 TEMPLATE_VARIABLE_INSTANTIATE(newVariable, AgentDescription::newVariable)
 TEMPLATE_VARIABLE_INSTANTIATE(newVariableArray, AgentDescription::newVariableArray)
 
-// Instantiate template versions of host agent functions from the API
+// Instantiate template versions of AgentVector_Agent/AgentInstance from the API
+TEMPLATE_VARIABLE_INSTANTIATE(setVariable, AgentVector_Agent::setVariable)
+TEMPLATE_VARIABLE_INSTANTIATE(setVariableArray, AgentVector_Agent::setVariableArray)
+TEMPLATE_VARIABLE_INSTANTIATE(getVariable, AgentVector_Agent::getVariable)
+TEMPLATE_VARIABLE_INSTANTIATE(getVariableArray, AgentVector_Agent::getVariableArray)
+
 TEMPLATE_VARIABLE_INSTANTIATE(setVariable, AgentInstance::setVariable)
 TEMPLATE_VARIABLE_INSTANTIATE(setVariableArray, AgentInstance::setVariableArray)
 TEMPLATE_VARIABLE_INSTANTIATE(getVariable, AgentInstance::getVariable)

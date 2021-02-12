@@ -83,32 +83,33 @@ class TestAgentStateTransitions(TestCase):
         af1.setEndState(END_STATE)
         lo1 = m.newLayer(LAYER_NAME1)
         lo1.addAgentFunction(af1)
-        pop = pyflamegpu.AgentPopulation(a, AGENT_COUNT)
-        for i in range(AGENT_COUNT): 
-            ai = pop.getNextInstance(START_STATE)
+        pop = pyflamegpu.AgentVector(a, AGENT_COUNT)
+        for ai in pop:
             ai.setVariableInt("x", 12)
             ai.setVariableArrayInt("y", ARRAY_REFERENCE)
         
         c = pyflamegpu.CUDASimulation(m)
-        c.setPopulationData(pop)
+        c.setPopulationData(pop, START_STATE)
         # Step 1, all agents go from Start->End state, and value become 11
         c.step()
-        c.getPopulationData(pop)
-        assert pop.getCurrentListSize(START_STATE) == 0
-        assert pop.getCurrentListSize(END_STATE) == AGENT_COUNT
-        for i in range (pop.getCurrentListSize(END_STATE)): 
-            ai = pop.getInstanceAt(i, END_STATE)
+        pop_START_STATE = pyflamegpu.AgentVector(a) 
+        pop_END_STATE = pyflamegpu.AgentVector(a) 
+        c.getPopulationData(pop_START_STATE, START_STATE)
+        c.getPopulationData(pop_END_STATE, END_STATE)
+        assert len(pop_START_STATE) == 0
+        assert len(pop_END_STATE) == AGENT_COUNT
+        for ai in pop_END_STATE:
             assert ai.getVariableInt("x") == 11
             test = ai.getVariableArrayInt("y")
             assert test == ARRAY_REFERENCE2
         
         # Step 2, no agents in start state, nothing changes
         c.step()
-        c.getPopulationData(pop)
-        assert pop.getCurrentListSize(START_STATE) == 0
-        assert pop.getCurrentListSize(END_STATE) == AGENT_COUNT
-        for i in range (pop.getCurrentListSize(END_STATE)): 
-            ai = pop.getInstanceAt(i, END_STATE)
+        c.getPopulationData(pop_START_STATE, START_STATE)
+        c.getPopulationData(pop_END_STATE, END_STATE)
+        assert len(pop_START_STATE) == 0
+        assert len(pop_END_STATE) == AGENT_COUNT
+        for ai in pop_END_STATE:
             assert ai.getVariableInt("x") == 11
             test = ai.getVariableArrayInt("y")
             assert test == ARRAY_REFERENCE2
@@ -135,34 +136,38 @@ class TestAgentStateTransitions(TestCase):
         lo2 = m.newLayer(LAYER_NAME2)
         lo1.addAgentFunction(af2)
         lo2.addAgentFunction(af1)
-        pop = pyflamegpu.AgentPopulation(a, AGENT_COUNT)
-        for i in range(AGENT_COUNT):
-            ai = pop.getNextInstance(START_STATE)
+        pop = pyflamegpu.AgentVector(a, AGENT_COUNT)
+        for ai in pop:
             ai.setVariableInt("x", 12)
             ai.setVariableArrayInt("y", ARRAY_REFERENCE)
         
         c = pyflamegpu.CUDASimulation(m)
-        c.setPopulationData(pop)
+        c.setPopulationData(pop, START_STATE)
         # Step 1, all agents go from Start->End state, and value become 11
         c.step()
-        c.getPopulationData(pop)
-        assert pop.getCurrentListSize(START_STATE) == 0
-        assert pop.getCurrentListSize(END_STATE) == AGENT_COUNT
-        assert pop.getCurrentListSize(END_STATE2) == 0
-        for i in range(pop.getCurrentListSize(END_STATE)): 
-            ai = pop.getInstanceAt(i, END_STATE)
+        pop_START_STATE = pyflamegpu.AgentVector(a) 
+        pop_END_STATE = pyflamegpu.AgentVector(a) 
+        pop_END_STATE2 = pyflamegpu.AgentVector(a) 
+        c.getPopulationData(pop_START_STATE, START_STATE)
+        c.getPopulationData(pop_END_STATE, END_STATE)
+        c.getPopulationData(pop_END_STATE2, END_STATE2)
+        assert len(pop_START_STATE) == 0
+        assert len(pop_END_STATE) == AGENT_COUNT
+        assert len(pop_END_STATE2) == 0
+        for ai in pop_END_STATE:
             assert ai.getVariableInt("x") == 11
             test = ai.getVariableArrayInt("y")
             assert test == ARRAY_REFERENCE2
         
         # Step 2, all agents go from End->End2 state, and value become 13
         c.step()
-        c.getPopulationData(pop)
-        assert pop.getCurrentListSize(START_STATE) == 0
-        assert pop.getCurrentListSize(END_STATE) == 0
-        assert pop.getCurrentListSize(END_STATE2) == AGENT_COUNT
-        for i in range(pop.getCurrentListSize(END_STATE2)): 
-            ai = pop.getInstanceAt(i, END_STATE2)
+        c.getPopulationData(pop_START_STATE, START_STATE)
+        c.getPopulationData(pop_END_STATE, END_STATE)
+        c.getPopulationData(pop_END_STATE2, END_STATE2)
+        assert len(pop_START_STATE) == 0
+        assert len(pop_END_STATE) == 0
+        assert len(pop_END_STATE2) == AGENT_COUNT
+        for ai in pop_END_STATE2: 
             assert ai.getVariableInt("x") == 13
             test = ai.getVariableArrayInt("y")
             assert test == ARRAY_REFERENCE3
@@ -198,27 +203,30 @@ class TestAgentStateTransitions(TestCase):
         lo2.addAgentFunction(af2)
         # Init pop
         ROUNDS = 3
-        pop = pyflamegpu.AgentPopulation(a, ROUNDS * AGENT_COUNT)
-        for i in range(ROUNDS * AGENT_COUNT): 
-            ai = pop.getNextInstance(START_STATE)
+        pop = pyflamegpu.AgentVector(a, ROUNDS * AGENT_COUNT)
+        for i in range(ROUNDS * AGENT_COUNT):
+            ai = pop[i]
             val = 1 + (i % ROUNDS)  # 1, 2, 3, 1, 2, 3 etc
             ai.setVariableUInt("x", val)
             ai.setVariableUInt("y", val)
             ai.setVariableArrayInt("z", ARRAY_REFERENCE)
         
         c = pyflamegpu.CUDASimulation(m)
-        c.setPopulationData(pop)
+        c.setPopulationData(pop, START_STATE)
+
+        pop_START_STATE = pyflamegpu.AgentVector(a);
+        pop_END_STATE = pyflamegpu.AgentVector(a);
 
         # Step 1, all agents go from Start->End state, and value become 11
         for i in range(1, ROUNDS): 
             out = [0] * (ROUNDS + 1)
             c.step()
-            c.getPopulationData(pop)
-            assert pop.getCurrentListSize(START_STATE) == (ROUNDS - i) * AGENT_COUNT
-            assert pop.getCurrentListSize(END_STATE) == i * AGENT_COUNT
+            c.getPopulationData(pop_START_STATE, START_STATE)
+            c.getPopulationData(pop_END_STATE, END_STATE)
+            assert len(pop_START_STATE) == (ROUNDS - i) * AGENT_COUNT
+            assert len(pop_END_STATE) == i * AGENT_COUNT
             # Check val of agents in start state
-            for j in range (pop.getCurrentListSize(START_STATE)): 
-                ai = pop.getInstanceAt(j, START_STATE)
+            for ai in pop_START_STATE:
                 y = ai.getVariableUInt("y")
                 out[y] += 1
                 test = ai.getVariableArrayInt("z")
@@ -233,8 +241,7 @@ class TestAgentStateTransitions(TestCase):
             
             # Check val of agents in end state
             out = [0] * (ROUNDS + 1)
-            for j in range(pop.getCurrentListSize(END_STATE)): 
-                ai = pop.getInstanceAt(j, END_STATE)
+            for ai in pop_END_STATE: 
                 y = ai.getVariableUInt("y")
                 out[y] += 1
                 test = ai.getVariableArrayInt("z")

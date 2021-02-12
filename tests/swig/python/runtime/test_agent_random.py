@@ -51,10 +51,9 @@ class AgentRandomTest(TestCase):
         agent.newVariableFloat("b")
         agent.newVariableFloat("c")
         af = agent.newRTCFunction("random1", self.random1_func)
-        init_population = pyflamegpu.AgentPopulation(agent, AGENT_COUNT)
-        population = pyflamegpu.AgentPopulation(agent, AGENT_COUNT)
-        for i in range(AGENT_COUNT): 
-            instance = init_population.getNextInstance("default")
+        init_population = pyflamegpu.AgentVector(agent, AGENT_COUNT)
+        population = pyflamegpu.AgentVector(agent, AGENT_COUNT)
+        for instance in init_population:
             instance.setVariableFloat("a", 0)
             instance.setVariableFloat("b", 0)
             instance.setVariableFloat("c", 0)
@@ -82,13 +81,13 @@ class AgentRandomTest(TestCase):
         cuda_model.getPopulationData(population)
 
         a1 = b1 = c1 = a2 = b2 = c2 = -1
-        for i in range(population.getCurrentListSize()): 
+        for i in range(len(population)): 
             if (i != 0):
                 a2 = a1
                 b2 = b1
                 c2 = c1
             
-            instance = population.getInstanceAt(i)
+            instance = population[i]
             a1 = instance.getVariableFloat("a")
             b1 = instance.getVariableFloat("b")
             c1 = instance.getVariableFloat("c")
@@ -114,8 +113,8 @@ class AgentRandomTest(TestCase):
         cuda_model.simulate()
         cuda_model.getPopulationData(population)
 
-        for i in range (population.getCurrentListSize()):
-            instance = population.getInstanceAt(i)
+        for i in range(len(population)):
+            instance = population[i]
             results2.append((
                 instance.getVariableFloat("a"),
                 instance.getVariableFloat("b"),
@@ -127,8 +126,6 @@ class AgentRandomTest(TestCase):
             # Different seed produces different results
             assert results1[i] != results2[i]
         
-        
-        
         # Test Model 3
         # Different seed produces different random numbers
         results2.clear()
@@ -138,8 +135,8 @@ class AgentRandomTest(TestCase):
         cuda_model.simulate()
         cuda_model.getPopulationData(population)
 
-        for i in range (population.getCurrentListSize()):
-            instance = population.getInstanceAt(i)
+        for i in range(len(population)):
+            instance = population[i]
             results2.append((
                 instance.getVariableFloat("a"),
                 instance.getVariableFloat("b"),
@@ -180,11 +177,7 @@ class AgentRandomTest(TestCase):
 
         do_random = agent.newRTCFunction("random2", self.random2_func)
 
-        population = pyflamegpu.AgentPopulation(agent, AGENT_COUNT)
-        for i in range(AGENT_COUNT): 
-            # Actually create the agents
-            instance = population.getNextInstance("default")
-            # Don't bother initialising
+        population = pyflamegpu.AgentVector(agent, AGENT_COUNT)
         
         layer = model.newLayer("layer")
         layer.addAgentFunction(do_random)

@@ -25,7 +25,7 @@ class MiniSim():
         self.model = pyflamegpu.ModelDescription("model")
         self.agent = self.model.newAgent("agent")
         self.ed = self.model.Environment()
-        self.population = pyflamegpu.AgentPopulation(self.agent, TEST_LEN)
+        self.population = pyflamegpu.AgentVector(self.agent, TEST_LEN)
         self.ed.newPropertyFloat("float_", TEST_VALUE)
         self.ed.newPropertyDouble("double_", TEST_VALUE)
         self.ed.newPropertyInt8("int8_", TEST_VALUE)

@@ -50,10 +50,9 @@ TEST(AgentRandomTest, AgentRandomCheck) {
 
     AgentFunctionDescription &af = agent.newFunction("random1", random1_func);
 
-    AgentPopulation init_population(agent, AGENT_COUNT);
-    AgentPopulation population(agent, AGENT_COUNT);
-    for (unsigned int i = 0; i< AGENT_COUNT; i++) {
-        AgentInstance instance = init_population.getNextInstance("default");
+    AgentVector init_population(agent, AGENT_COUNT);
+    AgentVector population(agent, AGENT_COUNT);
+    for (AgentVector::Agent instance : init_population) {
         instance.setVariable<float>("a", 0);
         instance.setVariable<float>("b", 0);
         instance.setVariable<float>("c", 0);
@@ -84,13 +83,13 @@ TEST(AgentRandomTest, AgentRandomCheck) {
         cuda_model.getPopulationData(population);
 
         float a1 = -1, b1 = -1, c1 = -1, a2 = -1, b2 = -1, c2 = -1;
-        for (unsigned int i = 0; i < population.getCurrentListSize(); i++) {
+        for (unsigned int i = 0; i < population.size(); i++) {
+            AgentVector::Agent instance = population[i];
             if (i != 0) {
                 a2 = a1;
                 b2 = b1;
                 c2 = c1;
             }
-            AgentInstance instance = population.getInstanceAt(i);
             a1 = instance.getVariable<float>("a");
             b1 = instance.getVariable<float>("b");
             c1 = instance.getVariable<float>("c");
@@ -121,8 +120,8 @@ TEST(AgentRandomTest, AgentRandomCheck) {
 
         cuda_model.getPopulationData(population);
 
-        for (unsigned int i = 0; i < population.getCurrentListSize(); i++) {
-            AgentInstance instance = population.getInstanceAt(i);
+        for (unsigned int i = 0; i < population.size(); i++) {
+            AgentVector::Agent instance = population[i];
             results2.push_back(std::make_tuple(
                 instance.getVariable<float>("a"),
                 instance.getVariable<float>("b"),
@@ -149,8 +148,8 @@ TEST(AgentRandomTest, AgentRandomCheck) {
 
         cuda_model.getPopulationData(population);
 
-        for (unsigned int i = 0; i < population.getCurrentListSize(); i++) {
-            AgentInstance instance = population.getInstanceAt(i);
+        for (unsigned int i = 0; i < population.size(); i++) {
+            AgentVector::Agent instance = population[i];
             results2.push_back(std::make_tuple(
                 instance.getVariable<float>("a"),
                 instance.getVariable<float>("b"),
@@ -225,14 +224,7 @@ TEST(AgentRandomTest, AgentRandomFunctionsNoExcept) {
     // do_random.setFunction(&random1);
     AgentFunctionDescription &do_random = agent.newFunction("random2", random2_func);
 
-
-    AgentPopulation population(agent, AGENT_COUNT);
-    for (unsigned int i = 0; i< AGENT_COUNT; i++) {
-        // Actually create the agents
-        AgentInstance instance = population.getNextInstance("default");
-        // Don't bother initialising
-    }
-
+    AgentVector population(agent, AGENT_COUNT);
 
     LayerDescription &layer = model.newLayer("layer");
     layer.addAgentFunction(do_random);

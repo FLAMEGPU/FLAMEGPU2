@@ -211,10 +211,9 @@ class HostAgentCreationTest(TestCase):
         model.addInitFunctionCallback(func)
         # Init agent pop
         cuda_model = pyflamegpu.CUDASimulation(model)
-        population = pyflamegpu.AgentPopulation(model.Agent("agent"), INIT_AGENT_COUNT)
+        population = pyflamegpu.AgentVector(model.Agent("agent"), INIT_AGENT_COUNT)
         # Initialise agents
-        for i in range (INIT_AGENT_COUNT): 
-            instance = population.getNextInstance()
+        for instance in population:
             instance.setVariableFloat("x", 12.0)
         
         cuda_model.setPopulationData(population)
@@ -225,11 +224,10 @@ class HostAgentCreationTest(TestCase):
         # Test output
         cuda_model.getPopulationData(population)
         # Validate each agent has same result
-        assert population.getCurrentListSize() == INIT_AGENT_COUNT + NEW_AGENT_COUNT
+        assert len(population) == INIT_AGENT_COUNT + NEW_AGENT_COUNT
         is_1 = 0
         is_12 = 0
-        for i in range(population.getCurrentListSize()):
-            ai = population.getInstanceAt(i)
+        for ai in population:
             val = ai.getVariableFloat("x")
             if val == 1.0:
                 is_1 += 1
@@ -248,10 +246,9 @@ class HostAgentCreationTest(TestCase):
         model.addStepFunctionCallback(func)
         # Init agent pop
         cuda_model = pyflamegpu.CUDASimulation(model)
-        population = pyflamegpu.AgentPopulation(model.Agent("agent"), INIT_AGENT_COUNT)
+        population = pyflamegpu.AgentVector(model.Agent("agent"), INIT_AGENT_COUNT)
         # Initialise agents
-        for i in range (INIT_AGENT_COUNT): 
-            instance = population.getNextInstance()
+        for instance in population:
             instance.setVariableFloat("x", 12.0)
         
         cuda_model.setPopulationData(population)
@@ -262,11 +259,10 @@ class HostAgentCreationTest(TestCase):
         # Test output
         cuda_model.getPopulationData(population)
         # Validate each agent has same result
-        assert population.getCurrentListSize() == INIT_AGENT_COUNT + NEW_AGENT_COUNT
+        assert len(population)  == INIT_AGENT_COUNT + NEW_AGENT_COUNT
         is_1 = 0
         is_12 = 0
-        for i in range(population.getCurrentListSize()):
-            ai = population.getInstanceAt(i)
+        for ai in population:
             val = ai.getVariableFloat("x")
             if val == 1.0:
                 is_1 += 1
@@ -285,10 +281,9 @@ class HostAgentCreationTest(TestCase):
         model.newLayer().addHostFunctionCallback(func)
         # Init agent pop
         cuda_model = pyflamegpu.CUDASimulation(model)
-        population = pyflamegpu.AgentPopulation(model.Agent("agent"), INIT_AGENT_COUNT)
+        population = pyflamegpu.AgentVector(model.Agent("agent"), INIT_AGENT_COUNT)
         # Initialise agents
-        for i in range (INIT_AGENT_COUNT): 
-            instance = population.getNextInstance()
+        for instance in population:
             instance.setVariableFloat("x", 12.0)
         
         cuda_model.setPopulationData(population)
@@ -299,11 +294,10 @@ class HostAgentCreationTest(TestCase):
         # Test output
         cuda_model.getPopulationData(population)
         # Validate each agent has same result
-        assert population.getCurrentListSize() == INIT_AGENT_COUNT + NEW_AGENT_COUNT
+        assert len(population)  == INIT_AGENT_COUNT + NEW_AGENT_COUNT
         is_1 = 0
         is_12 = 0
-        for i in range(population.getCurrentListSize()):
-            ai = population.getInstanceAt(i)
+        for ai in population:
             val = ai.getVariableFloat("x")
             if val == 1.0:
                 is_1 += 1
@@ -322,10 +316,9 @@ class HostAgentCreationTest(TestCase):
         model.addExitConditionCallback(func)
         # Init agent pop
         cuda_model = pyflamegpu.CUDASimulation(model)
-        population = pyflamegpu.AgentPopulation(model.Agent("agent"), INIT_AGENT_COUNT)
+        population = pyflamegpu.AgentVector(model.Agent("agent"), INIT_AGENT_COUNT)
         # Initialise agents
-        for i in range (INIT_AGENT_COUNT): 
-            instance = population.getNextInstance()
+        for instance in population:
             instance.setVariableFloat("x", 12.0)
         
         cuda_model.setPopulationData(population)
@@ -336,11 +329,10 @@ class HostAgentCreationTest(TestCase):
         # Test output
         cuda_model.getPopulationData(population)
         # Validate each agent has same result
-        assert population.getCurrentListSize() == INIT_AGENT_COUNT + NEW_AGENT_COUNT
+        assert len(population)  == INIT_AGENT_COUNT + NEW_AGENT_COUNT
         is_1 = 0
         is_12 = 0
-        for i in range(population.getCurrentListSize()):
-            ai = population.getInstanceAt(i)
+        for ai in population:
             val = ai.getVariableFloat("x")
             if val == 1.0:
                 is_1 += 1
@@ -359,7 +351,7 @@ class HostAgentCreationTest(TestCase):
         model.addStepFunctionCallback(func)
         # Init agent pop
         cuda_model = pyflamegpu.CUDASimulation(model)
-        population = pyflamegpu.AgentPopulation(model.Agent("agent"))
+        population = pyflamegpu.AgentVector(model.Agent("agent"))
         # Execute model
         cuda_model.SimulationConfig().steps = 1
         cuda_model.applyConfig()
@@ -367,10 +359,9 @@ class HostAgentCreationTest(TestCase):
         # Test output
         cuda_model.getPopulationData(population)
         # Validate each agent has same result
-        assert population.getCurrentListSize() == NEW_AGENT_COUNT
+        assert len(population) == NEW_AGENT_COUNT
         is_1 = 0
-        for i in range(population.getCurrentListSize()):
-            ai = population.getInstanceAt(i)
+        for ai in population:
             val = ai.getVariableFloat("x")
             if val == 1.0:
                 is_1 += 1
@@ -388,28 +379,28 @@ class HostAgentCreationTest(TestCase):
         model.addStepFunctionCallback(func)
         # Init agent pop
         cuda_model = pyflamegpu.CUDASimulation(model)
-        population = pyflamegpu.AgentPopulation(model.Agent("agent"), INIT_AGENT_COUNT)
+        population = pyflamegpu.AgentVector(model.Agent("agent"), INIT_AGENT_COUNT)
         # Initialise agents
-        for i in range (INIT_AGENT_COUNT): 
-            instance = population.getNextInstance("a")
+        for instance in population:
             instance.setVariableFloat("x", 12.0)
         
-        cuda_model.setPopulationData(population)
+        cuda_model.setPopulationData(population, "a")
         # Execute model
         cuda_model.SimulationConfig().steps = 1
         cuda_model.applyConfig()
         cuda_model.simulate()
         # Test output
-        cuda_model.getPopulationData(population)
+        population_a = pyflamegpu.AgentVector(model.Agent("agent"))
+        population_b = pyflamegpu.AgentVector(model.Agent("agent"))
+        cuda_model.getPopulationData(population_a, "a")
+        cuda_model.getPopulationData(population_b, "b")
         # Validate each agent has same result
-        assert population.getCurrentListSize("a") == INIT_AGENT_COUNT
-        assert population.getCurrentListSize("b") == NEW_AGENT_COUNT
-        for i in range (population.getCurrentListSize("a")): 
-            ai = population.getInstanceAt(i, "a")
+        assert len(population_a) == INIT_AGENT_COUNT
+        assert len(population_a) == NEW_AGENT_COUNT
+        for ai in population_a:
             assert 12.0 == ai.getVariableFloat("x")
         
-        for i in range (population.getCurrentListSize("b")): 
-            ai = population.getInstanceAt(i, "b")
+        for ai in population_b:
             assert 1.0 == ai.getVariableFloat("x")
         
 
@@ -426,35 +417,34 @@ class HostAgentCreationTest(TestCase):
         model.addStepFunctionCallback(func)
         # Init agent pop
         cuda_model = pyflamegpu.CUDASimulation(model)
-        population = pyflamegpu.AgentPopulation(agent, INIT_AGENT_COUNT)
+        population = pyflamegpu.AgentVector(agent, INIT_AGENT_COUNT)
         # Initialise agents
-        for i in range (INIT_AGENT_COUNT): 
-            instance = population.getNextInstance("a")
+        for instance in population:
             instance.setVariableFloat("x", 12.0)
         
-        cuda_model.setPopulationData(population)
+        cuda_model.setPopulationData(population, "a")
         # Execute model
         cuda_model.SimulationConfig().steps = 1
         cuda_model.applyConfig()
         cuda_model.simulate()
         # Test output
-        cuda_model.getPopulationData(population)
-        population2 = pyflamegpu.AgentPopulation(agent2)
-        cuda_model.getPopulationData(population2)
+        population_a = pyflamegpu.AgentVector(agent)
+        population_b = pyflamegpu.AgentVector(agent)
+        population_2 = pyflamegpu.AgentVector(agent2)
+        cuda_model.getPopulationData(population_a, "a")
+        cuda_model.getPopulationData(population_b, "b")
+        cuda_model.getPopulationData(population_2)
         # Validate each agent has same result
-        assert population.getCurrentListSize("a") == INIT_AGENT_COUNT
-        assert population.getCurrentListSize("b") == NEW_AGENT_COUNT
-        assert population2.getCurrentListSize() == NEW_AGENT_COUNT
-        for i in range (population.getCurrentListSize("a")): 
-            ai = population.getInstanceAt(i, "a")
+        assert len(population_a) == INIT_AGENT_COUNT
+        assert len(population_b) == NEW_AGENT_COUNT
+        assert len(population_2) == NEW_AGENT_COUNT
+        for ai in population_a:
             assert 12.0 == ai.getVariableFloat("x")
         
-        for i in range (population.getCurrentListSize("b")):
-            ai = population.getInstanceAt(i, "b")
+        for ai in population_b:
             assert 1.0 == ai.getVariableFloat("x")
         
-        for i in range (population2.getCurrentListSize()): 
-            ai = population2.getInstanceAt(i)
+        for ai in population_2:
             assert 2.0 == ai.getVariableFloat("y")
         
 
@@ -473,13 +463,12 @@ class HostAgentCreationTest(TestCase):
         cuda_model.applyConfig()
         cuda_model.simulate()
         # Test output
-        population = pyflamegpu.AgentPopulation(model.Agent("agent"), NEW_AGENT_COUNT)
+        population = pyflamegpu.AgentVector(model.Agent("agent"), NEW_AGENT_COUNT)
         cuda_model.getPopulationData(population)
         # Validate each agent has same result
-        assert population.getCurrentListSize() ==  NEW_AGENT_COUNT
+        assert len(population) ==  NEW_AGENT_COUNT
         is_15 = 0
-        for i in range(population.getCurrentListSize()):
-            ai = population.getInstanceAt(i)
+        for ai in population:
             val = ai.getVariableFloat("default")
             if val == 15.0:
                 is_15 += 1
@@ -528,13 +517,12 @@ class HostAgentCreationTest(TestCase):
         cuda_model.applyConfig()
         cuda_model.simulate()
         # Test output
-        population = pyflamegpu.AgentPopulation(model.Agent("agent"), NEW_AGENT_COUNT)
+        population = pyflamegpu.AgentVector(model.Agent("agent"), NEW_AGENT_COUNT)
         cuda_model.getPopulationData(population)
         # Validate each agent has same result
-        assert population.getCurrentListSize() == NEW_AGENT_COUNT
+        assert len(population) == NEW_AGENT_COUNT
         is_15 = 0
-        for i in range(population.getCurrentListSize()):
-            ai = population.getInstanceAt(i)
+        for ai in population:
             val = ai.getVariableFloat("x")
             if val == 15.0:
                 is_15 += 1
@@ -585,12 +573,11 @@ class HostAgentCreationTest(TestCase):
         model.addStepFunctionCallback(func)
         sim = pyflamegpu.CUDASimulation(model)
         sim.step()
-        population = pyflamegpu.AgentPopulation(agent)
+        population = pyflamegpu.AgentVector(agent)
         sim.getPopulationData(population)
         # Check data is correct
-        assert population.getCurrentListSize() == AGENT_COUNT
-        for i in range(population.getCurrentListSize()):
-            instance = population.getInstanceAt(i)
+        assert len(population) == AGENT_COUNT
+        for instance in population:
             j = instance.getVariableUInt("id")
             # Check array sets are correct
             array1 = list(instance.getVariableArrayInt("array_var"))
@@ -618,12 +605,11 @@ class HostAgentCreationTest(TestCase):
         model.addStepFunctionCallback(func)
         sim = pyflamegpu.CUDASimulation(model)
         sim.step()
-        population = pyflamegpu.AgentPopulation(agent)
+        population = pyflamegpu.AgentVector(agent)
         sim.getPopulationData(population)
         # Check data is correct
-        assert population.getCurrentListSize() == AGENT_COUNT
-        for i in range(population.getCurrentListSize()):
-            instance = population.getInstanceAt(i)
+        assert len(population) == AGENT_COUNT
+        for instance in population:
             j = instance.getVariableUInt("id")
             # Check array sets are correct
             array1 = list(instance.getVariableArrayInt("array_var"))
@@ -651,12 +637,11 @@ class HostAgentCreationTest(TestCase):
         model.addStepFunctionCallback(func)
         sim = pyflamegpu.CUDASimulation(model)
         sim.step()
-        population = pyflamegpu.AgentPopulation(agent)
+        population = pyflamegpu.AgentVector(agent)
         sim.getPopulationData(population)
         # Check data is correct
-        assert population.getCurrentListSize() == AGENT_COUNT
-        for i in range(population.getCurrentListSize()):
-            instance = population.getInstanceAt(i)
+        assert len(population) == AGENT_COUNT
+        for instance in population:
             j = instance.getVariableUInt("id")
             # Check array sets are correct
             array1 = instance.getVariableArrayInt("array_var")

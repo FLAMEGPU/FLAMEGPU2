@@ -140,8 +140,7 @@ class MiniSim {
         delete population;
     }
     void run() {
-        population = new AgentPopulation(agent, 1);
-        population->getNextInstance();  // Create one agent
+        population = new AgentVector(agent, 1);
         // CudaModel must be declared here
         // As the initial call to constructor fixes the agent population
         // This means if we haven't called model.newAgent(agent) first
@@ -156,7 +155,7 @@ class MiniSim {
     }
     ModelDescription model;
     AgentDescription &agent;
-    AgentPopulation *population;
+    AgentVector *population;
     EnvironmentDescription &env;
     CUDASimulation *cuda_model;
 

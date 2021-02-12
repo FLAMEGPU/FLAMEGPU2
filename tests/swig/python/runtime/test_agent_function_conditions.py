@@ -77,30 +77,33 @@ class TestAgentFunctionConditions(TestCase):
         l1.addAgentFunction(af1)
         l2 = m.newLayer()
         l2.addAgentFunction(af2)
-        pop = pyflamegpu.AgentPopulation(a, AGENT_COUNT * 2)
+        pop = pyflamegpu.AgentVector(a, AGENT_COUNT * 2)
         for i in range(AGENT_COUNT*2): 
-            ai = pop.getNextInstance(STATE1)
+            ai = pop[i]
             val = i % 2  # 0, 1, 0, 1, etc
             ai.setVariableInt("x", val)
             ai.setVariableArrayInt("y", ARRAY_REFERENCE)
         
         c = pyflamegpu.CUDASimulation(m)
-        c.setPopulationData(pop)
+        c.setPopulationData(pop, STATE1)
         c.step()
-        c.getPopulationData(pop)
-        assert pop.getCurrentListSize(STATE1) == 0
-        assert pop.getCurrentListSize(STATE2) == AGENT_COUNT
-        assert pop.getCurrentListSize(STATE3) == AGENT_COUNT
+        pop_STATE1 = pyflamegpu.AgentVector(a)
+        pop_STATE2 = pyflamegpu.AgentVector(a)
+        pop_STATE3 = pyflamegpu.AgentVector(a)
+        c.getPopulationData(pop_STATE1, STATE1)
+        c.getPopulationData(pop_STATE2, STATE2)
+        c.getPopulationData(pop_STATE3, STATE3)
+        assert len(pop_STATE1) == 0
+        assert len(pop_STATE2) == AGENT_COUNT
+        assert len(pop_STATE3) == AGENT_COUNT
         # Check val of agents in STATE2 state
-        for j in range(pop.getCurrentListSize(STATE2)):
-            ai = pop.getInstanceAt(j, STATE2)
+        for ai in pop_STATE2:
             assert ai.getVariableInt("x") == 2
             test = ai.getVariableArrayInt("y")
             assert test == ARRAY_REFERENCE3
         
         # Check val of agents in STATE3 state
-        for j in range(pop.getCurrentListSize(STATE3)): 
-            ai = pop.getInstanceAt(j, STATE3)
+        for ai in pop_STATE3:
             assert ai.getVariableInt("x") == -1
             test = ai.getVariableArrayInt("y")
             assert test == ARRAY_REFERENCE2
@@ -122,9 +125,7 @@ class TestAgentFunctionConditions(TestCase):
         l2 = m.newLayer()
         l2.addAgentFunction(af2)
         # Create a bunch of empty agents
-        pop = pyflamegpu.AgentPopulation(a, AGENT_COUNT)
-        for i in range(AGENT_COUNT): 
-            ai = pop.getNextInstance()
+        pop = pyflamegpu.AgentVector(a, AGENT_COUNT)
         
         c = pyflamegpu.CUDASimulation(m)
         c.setPopulationData(pop)

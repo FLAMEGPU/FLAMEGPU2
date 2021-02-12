@@ -29,9 +29,9 @@ TEST(RTCDeviceExceptionTest, getAgentVar_name) {
     AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_dthrow_agent_func_getAgentVar);
     model.newLayer().addAgentFunction(func);
     // Init pop
-    AgentPopulation init_population(agent, AGENT_COUNT);
+    AgentVector init_population(agent, AGENT_COUNT);
     for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = init_population.getNextInstance("default");
+        AgentVector::Agent instance = init_population[i];
         instance.setVariable<int>("id", i);
     }
     // Setup Model
@@ -54,9 +54,9 @@ TEST(RTCDeviceExceptionTest, getAgentVar_typesize) {
     AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_dthrow_agent_func_getAgentVarType);
     model.newLayer().addAgentFunction(func);
     // Init pop
-    AgentPopulation init_population(agent, AGENT_COUNT);
+    AgentVector init_population(agent, AGENT_COUNT);
     for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = init_population.getNextInstance("default");
+        AgentVector::Agent instance = init_population[i];
         instance.setVariable<int>("id", i);
     }
     // Setup Model
@@ -82,9 +82,9 @@ TEST(RTCDeviceExceptionTest, getAgentArrayVar_name) {
     AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_dthrow_agent_func_getAgentArrayVar);
     model.newLayer().addAgentFunction(func);
     // Init pop
-    AgentPopulation init_population(agent, AGENT_COUNT);
+    AgentVector init_population(agent, AGENT_COUNT);
     for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = init_population.getNextInstance("default");
+        AgentVector::Agent instance = init_population[i];
     }
     // Setup Model
     CUDASimulation cuda_model(model);
@@ -106,9 +106,9 @@ TEST(RTCDeviceExceptionTest, getAgentArrayVar_typesize) {
     AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_dthrow_agent_func_getAgentArrayVar1);
     model.newLayer().addAgentFunction(func);
     // Init pop
-    AgentPopulation init_population(agent, AGENT_COUNT);
+    AgentVector init_population(agent, AGENT_COUNT);
     for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = init_population.getNextInstance("default");
+        AgentVector::Agent instance = init_population[i];
     }
     // Setup Model
     CUDASimulation cuda_model(model);
@@ -130,9 +130,9 @@ TEST(RTCDeviceExceptionTest, getAgentArrayVar_length) {
     AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_dthrow_agent_func_getAgentArrayVar2);
     model.newLayer().addAgentFunction(func);
     // Init pop
-    AgentPopulation init_population(agent, AGENT_COUNT);
+    AgentVector init_population(agent, AGENT_COUNT);
     for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = init_population.getNextInstance("default");
+        AgentVector::Agent instance = init_population[i];
     }
     // Setup Model
     CUDASimulation cuda_model(model);
@@ -154,9 +154,9 @@ TEST(RTCDeviceExceptionTest, getAgentArrayVar_bounds) {
     AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_dthrow_agent_func_getAgentArrayVar3);
     model.newLayer().addAgentFunction(func);
     // Init pop
-    AgentPopulation init_population(agent, AGENT_COUNT);
+    AgentVector init_population(agent, AGENT_COUNT);
     for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = init_population.getNextInstance("default");
+        AgentVector::Agent instance = init_population[i];
     }
     // Setup Model
     CUDASimulation cuda_model(model);
@@ -181,9 +181,9 @@ TEST(RTCDeviceExceptionTest, setAgentVar_name) {
     AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_dthrow_agent_func_setAgentVar);
     model.newLayer().addAgentFunction(func);
     // Init pop
-    AgentPopulation init_population(agent, AGENT_COUNT);
+    AgentVector init_population(agent, AGENT_COUNT);
     for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = init_population.getNextInstance("default");
+        AgentVector::Agent instance = init_population[i];
         instance.setVariable<int>("id", i);
     }
     // Setup Model
@@ -206,9 +206,9 @@ TEST(RTCDeviceExceptionTest, setAgentVar_typesize) {
     AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_dthrow_agent_func_setAgentVar2);
     model.newLayer().addAgentFunction(func);
     // Init pop
-    AgentPopulation init_population(agent, AGENT_COUNT);
+    AgentVector init_population(agent, AGENT_COUNT);
     for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = init_population.getNextInstance("default");
+        AgentVector::Agent instance = init_population[i];
         instance.setVariable<int>("id", i);
     }
     // Setup Model
@@ -234,9 +234,9 @@ TEST(RTCDeviceExceptionTest, setAgentArrayVar_name) {
     AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_dthrow_agent_func_setAgentArrayVar);
     model.newLayer().addAgentFunction(func);
     // Init pop
-    AgentPopulation init_population(agent, AGENT_COUNT);
+    AgentVector init_population(agent, AGENT_COUNT);
     for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = init_population.getNextInstance("default");
+        AgentVector::Agent instance = init_population[i];
     }
     // Setup Model
     CUDASimulation cuda_model(model);
@@ -258,9 +258,9 @@ TEST(RTCDeviceExceptionTest, setAgentArrayVar_typesize) {
     AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_dthrow_agent_func_setAgentArrayVar1);
     model.newLayer().addAgentFunction(func);
     // Init pop
-    AgentPopulation init_population(agent, AGENT_COUNT);
+    AgentVector init_population(agent, AGENT_COUNT);
     for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = init_population.getNextInstance("default");
+        AgentVector::Agent instance = init_population[i];
     }
     // Setup Model
     CUDASimulation cuda_model(model);
@@ -282,9 +282,9 @@ TEST(RTCDeviceExceptionTest, setAgentArrayVar_length) {
     AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_dthrow_agent_func_setAgentArrayVar2);
     model.newLayer().addAgentFunction(func);
     // Init pop
-    AgentPopulation init_population(agent, AGENT_COUNT);
+    AgentVector init_population(agent, AGENT_COUNT);
     for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = init_population.getNextInstance("default");
+        AgentVector::Agent instance = init_population[i];
     }
     // Setup Model
     CUDASimulation cuda_model(model);
@@ -306,9 +306,9 @@ TEST(RTCDeviceExceptionTest, setAgentArrayVar_bounds) {
     AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_dthrow_agent_func_setAgentArrayVar3);
     model.newLayer().addAgentFunction(func);
     // Init pop
-    AgentPopulation init_population(agent, AGENT_COUNT);
+    AgentVector init_population(agent, AGENT_COUNT);
     for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = init_population.getNextInstance("default");
+        AgentVector::Agent instance = init_population[i];
     }
     // Setup Model
     CUDASimulation cuda_model(model);
@@ -334,9 +334,9 @@ TEST(RTCDeviceExceptionTest, getEnvironmentProp_name) {
     AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_dthrow_agent_func_getEnvironmentProp);
     model.newLayer().addAgentFunction(func);
     // Init pop
-    AgentPopulation init_population(agent, AGENT_COUNT);
+    AgentVector init_population(agent, AGENT_COUNT);
     for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = init_population.getNextInstance("default");
+        AgentVector::Agent instance = init_population[i];
         instance.setVariable<int>("id", i);
     }
     // Setup Model
@@ -360,9 +360,9 @@ TEST(RTCDeviceExceptionTest, getEnvironmentProp_typesize) {
     AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_dthrow_agent_func_getEnvironmentProp1);
     model.newLayer().addAgentFunction(func);
     // Init pop
-    AgentPopulation init_population(agent, AGENT_COUNT);
+    AgentVector init_population(agent, AGENT_COUNT);
     for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = init_population.getNextInstance("default");
+        AgentVector::Agent instance = init_population[i];
         instance.setVariable<int>("id", i);
     }
     // Setup Model
@@ -389,9 +389,9 @@ TEST(RTCDeviceExceptionTest, getEnvironmentArrayProp_name) {
     AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_dthrow_agent_func_getEnvironmentArrayProp);
     model.newLayer().addAgentFunction(func);
     // Init pop
-    AgentPopulation init_population(agent, AGENT_COUNT);
+    AgentVector init_population(agent, AGENT_COUNT);
     for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = init_population.getNextInstance("default");
+        AgentVector::Agent instance = init_population[i];
         instance.setVariable<int>("id", i);
     }
     // Setup Model
@@ -415,9 +415,9 @@ TEST(RTCDeviceExceptionTest, getEnvironmentArrayProp_typesize) {
     AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_dthrow_agent_func_getEnvironmentArrayProp1);
     model.newLayer().addAgentFunction(func);
     // Init pop
-    AgentPopulation init_population(agent, AGENT_COUNT);
+    AgentVector init_population(agent, AGENT_COUNT);
     for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = init_population.getNextInstance("default");
+        AgentVector::Agent instance = init_population[i];
         instance.setVariable<int>("id", i);
     }
     // Setup Model
@@ -442,9 +442,9 @@ TEST(RTCDeviceExceptionTest, getEnvironmentArrayProp_typesize) {
 //     AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_dthrow_agent_func_getEnvironmentArrayProp2);
 //     model.newLayer().addAgentFunction(func);
 //     // Init pop
-//     AgentPopulation init_population(agent, AGENT_COUNT);
+//     AgentVector init_population(agent, AGENT_COUNT);
 //     for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
-//         AgentInstance instance = init_population.getNextInstance("default");
+//         AgentVector::Agent instance = init_population[i];
 //         instance.setVariable<int>("id", i);
 //     }
 //     // Setup Model
@@ -468,9 +468,9 @@ TEST(RTCDeviceExceptionTest, getEnvironmentArrayProp_bounds) {
     AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_dthrow_agent_func_getEnvironmentArrayProp3);
     model.newLayer().addAgentFunction(func);
     // Init pop
-    AgentPopulation init_population(agent, AGENT_COUNT);
+    AgentVector init_population(agent, AGENT_COUNT);
     for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = init_population.getNextInstance("default");
+        AgentVector::Agent instance = init_population[i];
         instance.setVariable<int>("id", i);
     }
     // Setup Model

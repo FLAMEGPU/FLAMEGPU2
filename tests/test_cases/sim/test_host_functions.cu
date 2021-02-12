@@ -70,10 +70,6 @@ class MiniSim {
         model.addExitCondition(exit_condition);
 
         hostfn_layer.addHostFunction(host_function);
-
-        for (unsigned int i = 0; i < AGENT_COUNT; i++) {
-            AgentInstance instance = population.getNextInstance();
-        }
     }
     void run(unsigned int steps = 0) {
         // CudaModel must be declared here
@@ -92,7 +88,7 @@ class MiniSim {
     const unsigned int AGENT_COUNT = 5;
     ModelDescription model;
     AgentDescription &agent;
-    AgentPopulation population;
+    AgentVector population;
     LayerDescription &hostfn_layer;
 };
 /**

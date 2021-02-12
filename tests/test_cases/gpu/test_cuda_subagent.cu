@@ -181,11 +181,7 @@ TEST(TestCUDASubAgent, Simple) {
         m.newLayer().addAgentFunction(AddTen);
     }
     // Init Agents
-    AgentPopulation pop(ma, static_cast<unsigned int>(AGENT_COUNT));
-    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getNextInstance();
-        // Vars all default init
-    }
+    AgentVector pop(ma, static_cast<unsigned int>(AGENT_COUNT));
     // Init Model
     CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
@@ -199,8 +195,7 @@ TEST(TestCUDASubAgent, Simple) {
     // Unmapped var = init + af + af
     const unsigned int unmapped_result = std::numeric_limits<unsigned int>::max() - 1000 - 1000;
     c.getPopulationData(pop);
-    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getInstanceAt(i);
+    for (AgentVector::Agent ai : pop) {
         EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), mapped_result);
         EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR2_NAME), unmapped_result);
     }
@@ -212,8 +207,7 @@ TEST(TestCUDASubAgent, Simple) {
     // Unmapped var = unmapped_result + af + af
     const unsigned int unmapped_result2 = unmapped_result - 1000 - 1000;
     c.getPopulationData(pop);
-    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getInstanceAt(i);
+    for (AgentVector::Agent ai : pop) {
         EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), mapped_result2);
         EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR2_NAME), unmapped_result2);
     }
@@ -246,9 +240,9 @@ TEST(TestCUDASubAgent, AgentDeath_BeforeSubModel) {
         m.newLayer().addAgentFunction(AddTen);
     }
     // Init Agents
-    AgentPopulation pop(ma, static_cast<unsigned int>(AGENT_COUNT));
+    AgentVector pop(ma, static_cast<unsigned int>(AGENT_COUNT));
     for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getNextInstance();
+        AgentVector::Agent ai = pop[i];
         ai.setVariable<unsigned int>(AGENT_VAR_i, static_cast<unsigned int>(i));
         ai.setVariable<unsigned int>(AGENT_VAR1_NAME, static_cast<unsigned int>(i));
         ai.setVariable<unsigned int>(AGENT_VAR2_NAME, std::numeric_limits<unsigned int>::max() - i);
@@ -267,9 +261,8 @@ TEST(TestCUDASubAgent, AgentDeath_BeforeSubModel) {
     // Unmapped var = init + af + af
     const unsigned int unmapped_result = std::numeric_limits<unsigned int>::max() - 1000 - 1000;
     c.getPopulationData(pop);
-    EXPECT_EQ(pop.getCurrentListSize(), static_cast<unsigned int>(AGENT_COUNT*0.75));    // if AGENT_COUNT > 1000 this test will fail
-    for (unsigned int i = 0; i < pop.getCurrentListSize(); ++i) {
-        AgentInstance ai = pop.getInstanceAt(i);
+    EXPECT_EQ(pop.size(), static_cast<unsigned int>(AGENT_COUNT*0.75));    // if AGENT_COUNT > 1000 this test will fail
+    for (AgentVector::Agent ai : pop) {
         const unsigned int _i = ai.getVariable<unsigned int>(AGENT_VAR_i);
         EXPECT_EQ(_i % 3, 0u);  // Var divides cleanly by 3
         const unsigned int __i = _i/3;  // Calculate original value of AGENT_VAR_i
@@ -285,9 +278,8 @@ TEST(TestCUDASubAgent, AgentDeath_BeforeSubModel) {
     // Unmapped var = unmapped_result + af + af
     const unsigned int unmapped_result2 = unmapped_result - 1000 - 1000;
     c.getPopulationData(pop);
-    EXPECT_EQ(pop.getCurrentListSize(), AGENT_COUNT/2);
-    for (unsigned int i = 0; i < pop.getCurrentListSize(); ++i) {
-        AgentInstance ai = pop.getInstanceAt(i);
+    EXPECT_EQ(pop.size(), AGENT_COUNT/2);
+    for (AgentVector::Agent ai : pop) {
         const unsigned int _i = ai.getVariable<unsigned int>(AGENT_VAR_i);
         EXPECT_EQ(_i % 9, 0u);  // Var divides cleanly by 3
         const unsigned int __i = _i/9;  // Calculate original value of AGENT_VAR_i
@@ -324,9 +316,9 @@ TEST(TestCUDASubAgent, AgentDeath_InSubModel) {
         m.newLayer().addAgentFunction(AddTen);
     }
     // Init Agents
-    AgentPopulation pop(ma, static_cast<unsigned int>(AGENT_COUNT));
+    AgentVector pop(ma, static_cast<unsigned int>(AGENT_COUNT));
     for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getNextInstance();
+        AgentVector::Agent ai = pop[i];
         ai.setVariable<unsigned int>(AGENT_VAR_i, static_cast<unsigned int>(i));
         ai.setVariable<unsigned int>(AGENT_VAR1_NAME, static_cast<unsigned int>(i));
         ai.setVariable<unsigned int>(AGENT_VAR2_NAME, std::numeric_limits<unsigned int>::max() - i);
@@ -345,9 +337,8 @@ TEST(TestCUDASubAgent, AgentDeath_InSubModel) {
     // Unmapped var = init + af + af
     const unsigned int unmapped_result = std::numeric_limits<unsigned int>::max() - 1000;
     c.getPopulationData(pop);
-    EXPECT_EQ(pop.getCurrentListSize(), static_cast<unsigned int>(AGENT_COUNT*0.75));    // if AGENT_COUNT > 1000 this test will fail
-    for (unsigned int i = 0; i < pop.getCurrentListSize(); ++i) {
-        AgentInstance ai = pop.getInstanceAt(i);
+    EXPECT_EQ(pop.size(), static_cast<unsigned int>(AGENT_COUNT*0.75));    // if AGENT_COUNT > 1000 this test will fail
+    for (AgentVector::Agent ai : pop) {
         const unsigned int _i = ai.getVariable<unsigned int>(AGENT_VAR_i);
         EXPECT_EQ(_i % 3, 0u);  // Var divides cleanly by 3
         const unsigned int __i = _i/3;  // Calculate original value of AGENT_VAR_i
@@ -363,9 +354,8 @@ TEST(TestCUDASubAgent, AgentDeath_InSubModel) {
     // Unmapped var = unmapped_result + af + af
     const unsigned int unmapped_result2 = unmapped_result - 1000;
     c.getPopulationData(pop);
-    EXPECT_EQ(pop.getCurrentListSize(), AGENT_COUNT/2);
-    for (unsigned int i = 0; i < pop.getCurrentListSize(); ++i) {
-        AgentInstance ai = pop.getInstanceAt(i);
+    EXPECT_EQ(pop.size(), AGENT_COUNT/2);
+    for (AgentVector::Agent ai : pop) {
         const unsigned int _i = ai.getVariable<unsigned int>(AGENT_VAR_i);
         EXPECT_EQ(_i % 9, 0u);  // Var divides cleanly by 3
         const unsigned int __i = _i/9;  // Calculate original value of AGENT_VAR_i
@@ -414,9 +404,9 @@ TEST(TestCUDASubAgent, AgentDeath_InNestedSubModel) {
         m.newLayer().addAgentFunction(AddTen);
     }
     // Init Agents
-    AgentPopulation pop(ma, static_cast<unsigned int>(AGENT_COUNT));
+    AgentVector pop(ma, static_cast<unsigned int>(AGENT_COUNT));
     for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getNextInstance();
+        AgentVector::Agent ai = pop[i];
         ai.setVariable<unsigned int>(AGENT_VAR_i, static_cast<unsigned int>(i));
         ai.setVariable<unsigned int>(AGENT_VAR1_NAME, static_cast<unsigned int>(i));
         ai.setVariable<unsigned int>(AGENT_VAR2_NAME, std::numeric_limits<unsigned int>::max() - i);
@@ -435,9 +425,8 @@ TEST(TestCUDASubAgent, AgentDeath_InNestedSubModel) {
     // Unmapped var = init + af + af
     const unsigned int unmapped_result = std::numeric_limits<unsigned int>::max() - 1000;
     c.getPopulationData(pop);
-    EXPECT_EQ(pop.getCurrentListSize(), static_cast<unsigned int>(AGENT_COUNT*0.75));    // if AGENT_COUNT > 1000 this test will fail
-    for (unsigned int i = 0; i < pop.getCurrentListSize(); ++i) {
-        AgentInstance ai = pop.getInstanceAt(i);
+    EXPECT_EQ(pop.size(), static_cast<unsigned int>(AGENT_COUNT*0.75));    // if AGENT_COUNT > 1000 this test will fail
+    for (AgentVector::Agent ai : pop) {
         const unsigned int _i = ai.getVariable<unsigned int>(AGENT_VAR_i);
         EXPECT_EQ(_i % 3, 0u);  // Var divides cleanly by 3
         const unsigned int __i = _i/3;  // Calculate original value of AGENT_VAR_i
@@ -453,9 +442,8 @@ TEST(TestCUDASubAgent, AgentDeath_InNestedSubModel) {
     // Unmapped var = unmapped_result + af + af
     const unsigned int unmapped_result2 = unmapped_result - 1000;
     c.getPopulationData(pop);
-    EXPECT_EQ(pop.getCurrentListSize(), AGENT_COUNT/2);
-    for (unsigned int i = 0; i < pop.getCurrentListSize(); ++i) {
-        AgentInstance ai = pop.getInstanceAt(i);
+    EXPECT_EQ(pop.size(), AGENT_COUNT/2);
+    for (AgentVector::Agent ai : pop) {
         const unsigned int _i = ai.getVariable<unsigned int>(AGENT_VAR_i);
         EXPECT_EQ(_i % 9, 0u);  // Var divides cleanly by 3
         const unsigned int __i = _i/9;  // Calculate original value of AGENT_VAR_i
@@ -493,9 +481,9 @@ TEST(TestCUDASubAgent, DeviceAgentBirth_BeforeSubModel) {
         m.newLayer().addAgentFunction(AddTen);
     }
     // Init Agents
-    AgentPopulation pop(ma, static_cast<unsigned int>(AGENT_COUNT));
+    AgentVector pop(ma, static_cast<unsigned int>(AGENT_COUNT));
     for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getNextInstance();
+        AgentVector::Agent ai = pop[i];
         ai.setVariable<unsigned int>(AGENT_VAR_i, static_cast<unsigned int>(i));
         ai.setVariable<unsigned int>(AGENT_VAR1_NAME, static_cast<unsigned int>(i));
         ai.setVariable<unsigned int>(AGENT_VAR2_NAME, std::numeric_limits<unsigned int>::max() - i);
@@ -514,9 +502,8 @@ TEST(TestCUDASubAgent, DeviceAgentBirth_BeforeSubModel) {
     // Unmapped var = init + af + af + af
     const unsigned int unmapped_result = std::numeric_limits<unsigned int>::max() - 1000 - 1000;
     c.getPopulationData(pop);
-    EXPECT_EQ(pop.getCurrentListSize(), static_cast<unsigned int>(AGENT_COUNT*1.25));    // if AGENT_COUNT != 1000 this test may fail
-    for (unsigned int i = 0; i < pop.getCurrentListSize(); ++i) {
-        AgentInstance ai = pop.getInstanceAt(i);
+    EXPECT_EQ(pop.size(), static_cast<unsigned int>(AGENT_COUNT*1.25));    // if AGENT_COUNT != 1000 this test may fail
+    for (AgentVector::Agent ai : pop) {
         const unsigned int _i = ai.getVariable<unsigned int>(AGENT_VAR_i);
         EXPECT_EQ(_i % 3, 0u);  // Var divides cleanly by 3
         const unsigned int _avar2 = ai.getVariable<unsigned int>(AGENT_VAR2_NAME);
@@ -542,9 +529,8 @@ TEST(TestCUDASubAgent, DeviceAgentBirth_BeforeSubModel) {
     const unsigned int unmapped_result2 = unmapped_result - 1000 - 1000;
     c.getPopulationData(pop);
     // Init AGENT_COUNT + 25% 1st birth + 25% 2nd birth (25% of init only)
-    EXPECT_EQ(pop.getCurrentListSize(), AGENT_COUNT * 1.25 + AGENT_COUNT * 0.25);
-    for (unsigned int i = 0; i < pop.getCurrentListSize(); ++i) {
-        AgentInstance ai = pop.getInstanceAt(i);
+    EXPECT_EQ(pop.size(), AGENT_COUNT * 1.25 + AGENT_COUNT * 0.25);
+    for (AgentVector::Agent ai : pop) {
         const unsigned int _i = ai.getVariable<unsigned int>(AGENT_VAR_i);
         EXPECT_EQ(_i % 9, 0u);  // Var divides cleanly by 9
         const unsigned int _avar2 = ai.getVariable<unsigned int>(AGENT_VAR2_NAME);
@@ -599,9 +585,9 @@ TEST(TestCUDASubAgent, DeviceAgentBirth_InSubModel) {
         m.newLayer().addAgentFunction(AddTen);
     }
     // Init Agents
-    AgentPopulation pop(ma, static_cast<unsigned int>(AGENT_COUNT));
+    AgentVector pop(ma, static_cast<unsigned int>(AGENT_COUNT));
     for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getNextInstance();
+        AgentVector::Agent ai = pop[i];
         ai.setVariable<unsigned int>(AGENT_VAR_i, static_cast<unsigned int>(i));
         ai.setVariable<unsigned int>(AGENT_VAR1_NAME, static_cast<unsigned int>(i));
         ai.setVariable<unsigned int>(AGENT_VAR2_NAME, std::numeric_limits<unsigned int>::max() - i);
@@ -620,9 +606,8 @@ TEST(TestCUDASubAgent, DeviceAgentBirth_InSubModel) {
     // Unmapped var = init + af + af + af
     const unsigned int unmapped_result = std::numeric_limits<unsigned int>::max() - 1000 - 1000;
     c.getPopulationData(pop);
-    EXPECT_EQ(pop.getCurrentListSize(), static_cast<unsigned int>(AGENT_COUNT*1.25));    // if AGENT_COUNT != 1000 this test may fail
-    for (unsigned int i = 0; i < pop.getCurrentListSize(); ++i) {
-        AgentInstance ai = pop.getInstanceAt(i);
+    EXPECT_EQ(pop.size(), static_cast<unsigned int>(AGENT_COUNT*1.25));    // if AGENT_COUNT != 1000 this test may fail
+    for (AgentVector::Agent ai : pop) {
         EXPECT_EQ(ai.getVariable<unsigned int>("default_main_agent_var"), 25u);
         const unsigned int _i = ai.getVariable<unsigned int>(AGENT_VAR_i);
         EXPECT_EQ(_i % 3, 0u);  // Var divides cleanly by 3
@@ -649,9 +634,8 @@ TEST(TestCUDASubAgent, DeviceAgentBirth_InSubModel) {
     const unsigned int unmapped_result2 = unmapped_result - 1000 - 1000;
     c.getPopulationData(pop);
     // Init AGENT_COUNT + 25% 1st birth + 25% 2nd birth (25% of init only)
-    EXPECT_EQ(pop.getCurrentListSize(), AGENT_COUNT * 1.25 + AGENT_COUNT * 0.25);
-    for (unsigned int i = 0; i < pop.getCurrentListSize(); ++i) {
-        AgentInstance ai = pop.getInstanceAt(i);
+    EXPECT_EQ(pop.size(), AGENT_COUNT * 1.25 + AGENT_COUNT * 0.25);
+    for (AgentVector::Agent ai : pop) {
         const unsigned int _i = ai.getVariable<unsigned int>(AGENT_VAR_i);
         EXPECT_EQ(_i % 9, 0u);  // Var divides cleanly by 9
         const unsigned int _avar2 = ai.getVariable<unsigned int>(AGENT_VAR2_NAME);
@@ -719,9 +703,9 @@ TEST(TestCUDASubAgent, DeviceAgentBirth_InNestedSubModel) {
         m.newLayer().addAgentFunction(AddTen);
     }
     // Init Agents
-    AgentPopulation pop(ma, static_cast<unsigned int>(AGENT_COUNT));
+    AgentVector pop(ma, static_cast<unsigned int>(AGENT_COUNT));
     for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getNextInstance();
+        AgentVector::Agent ai = pop[i];
         ai.setVariable<unsigned int>(AGENT_VAR_i, static_cast<unsigned int>(i));
         ai.setVariable<unsigned int>(AGENT_VAR1_NAME, static_cast<unsigned int>(i));
         ai.setVariable<unsigned int>(AGENT_VAR2_NAME, std::numeric_limits<unsigned int>::max() - i);
@@ -740,9 +724,8 @@ TEST(TestCUDASubAgent, DeviceAgentBirth_InNestedSubModel) {
     // Unmapped var = init + af + af + af
     const unsigned int unmapped_result = std::numeric_limits<unsigned int>::max() - 1000 - 1000;
     c.getPopulationData(pop);
-    EXPECT_EQ(pop.getCurrentListSize(), static_cast<unsigned int>(AGENT_COUNT*1.25));    // if AGENT_COUNT != 1000 this test may fail
-    for (unsigned int i = 0; i < pop.getCurrentListSize(); ++i) {
-        AgentInstance ai = pop.getInstanceAt(i);
+    EXPECT_EQ(pop.size(), static_cast<unsigned int>(AGENT_COUNT*1.25));    // if AGENT_COUNT != 1000 this test may fail
+    for (AgentVector::Agent ai : pop) {
         EXPECT_EQ(ai.getVariable<unsigned int>("default_main_agent_var"), 25u);
         const unsigned int _i = ai.getVariable<unsigned int>(AGENT_VAR_i);
         EXPECT_EQ(_i % 3, 0u);  // Var divides cleanly by 3
@@ -769,9 +752,8 @@ TEST(TestCUDASubAgent, DeviceAgentBirth_InNestedSubModel) {
     const unsigned int unmapped_result2 = unmapped_result - 1000 - 1000;
     c.getPopulationData(pop);
     // Init AGENT_COUNT + 25% 1st birth + 25% 2nd birth (25% of init only)
-    EXPECT_EQ(pop.getCurrentListSize(), AGENT_COUNT * 1.25 + AGENT_COUNT * 0.25);
-    for (unsigned int i = 0; i < pop.getCurrentListSize(); ++i) {
-        AgentInstance ai = pop.getInstanceAt(i);
+    EXPECT_EQ(pop.size(), AGENT_COUNT * 1.25 + AGENT_COUNT * 0.25);
+    for (AgentVector::Agent ai : pop) {
         const unsigned int _i = ai.getVariable<unsigned int>(AGENT_VAR_i);
         EXPECT_EQ(_i % 9, 0u);  // Var divides cleanly by 9
         const unsigned int _avar2 = ai.getVariable<unsigned int>(AGENT_VAR2_NAME);
@@ -818,8 +800,8 @@ TEST(TestCUDASubAgent, HostAgentBirth_BeforeSubModel) {
         m.newLayer().addSubModel("sub");
     }
     // Init Agents
-    AgentPopulation pop(ma, 1);
-    pop.getNextInstance().setVariable<unsigned int>(AGENT_VAR2_NAME, 4);  // 1 agent, default values except var2
+    AgentVector pop(ma, 1);
+    pop[0].setVariable<unsigned int>(AGENT_VAR2_NAME, 4);  // 1 agent, default values except var2
 
     // Init Model
     CUDASimulation c(m);
@@ -828,9 +810,8 @@ TEST(TestCUDASubAgent, HostAgentBirth_BeforeSubModel) {
     c.step();
     // Check result
     c.getPopulationData(pop);
-    EXPECT_EQ(pop.getCurrentListSize(), 2u);
-    for (unsigned int i = 0; i < pop.getCurrentListSize(); ++i) {
-        AgentInstance ai = pop.getInstanceAt(i);
+    EXPECT_EQ(pop.size(), 2u);
+    for (AgentVector::Agent ai : pop) {
         const unsigned int _i = ai.getVariable<unsigned int>(AGENT_VAR2_NAME);
         if (_i == 500) {
             // agent was born
@@ -863,8 +844,8 @@ TEST(TestCUDASubAgent, HostAgentBirth_InSubModel) {
         m.newLayer().addSubModel("sub");
     }
     // Init Agents
-    AgentPopulation pop(ma, 1);
-    pop.getNextInstance().setVariable<unsigned int>(AGENT_VAR2_NAME, 4);  // 1 agent, default values except var2
+    AgentVector pop(ma, 1);
+    pop[0].setVariable<unsigned int>(AGENT_VAR2_NAME, 4);  // 1 agent, default values except var2
 
     // Init Model
     CUDASimulation c(m);
@@ -873,9 +854,8 @@ TEST(TestCUDASubAgent, HostAgentBirth_InSubModel) {
     c.step();
     // Check result
     c.getPopulationData(pop);
-    EXPECT_EQ(pop.getCurrentListSize(), 2u);
-    for (unsigned int i = 0; i < pop.getCurrentListSize(); ++i) {
-        AgentInstance ai = pop.getInstanceAt(i);
+    EXPECT_EQ(pop.size(), 2u);
+    for (AgentVector::Agent ai : pop) {
         const unsigned int _i = ai.getVariable<unsigned int>(AGENT_VAR2_NAME);
         if (_i == 2u) {
             // agent was born
@@ -918,8 +898,8 @@ TEST(TestCUDASubAgent, HostAgentBirth_InNestedSubModel) {
         m.newLayer().addSubModel("proxysub");
     }
     // Init Agents
-    AgentPopulation pop(ma, 1);
-    pop.getNextInstance().setVariable<unsigned int>(AGENT_VAR2_NAME, 4);  // 1 agent, default values except var2
+    AgentVector pop(ma, 1);
+    pop[0].setVariable<unsigned int>(AGENT_VAR2_NAME, 4);  // 1 agent, default values except var2
 
     // Init Model
     CUDASimulation c(m);
@@ -928,9 +908,8 @@ TEST(TestCUDASubAgent, HostAgentBirth_InNestedSubModel) {
     c.step();
     // Check result
     c.getPopulationData(pop);
-    EXPECT_EQ(pop.getCurrentListSize(), 2u);
-    for (unsigned int i = 0; i < pop.getCurrentListSize(); ++i) {
-        AgentInstance ai = pop.getInstanceAt(i);
+    EXPECT_EQ(pop.size(), 2u);
+    for (AgentVector::Agent ai : pop) {
         const unsigned int _i = ai.getVariable<unsigned int>(AGENT_VAR2_NAME);
         if (_i == 2u) {
             // agent was born
@@ -972,9 +951,9 @@ TEST(TestCUDASubAgent, AgentFunctionCondition_BeforeSubModel) {
         m.newLayer().addAgentFunction(AddTen);
     }
     // Init Agents
-    AgentPopulation pop(ma, static_cast<unsigned int>(AGENT_COUNT));
+    AgentVector pop(ma, static_cast<unsigned int>(AGENT_COUNT));
     for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getNextInstance();
+        AgentVector::Agent ai = pop[i];
         ai.setVariable<unsigned int>(AGENT_VAR_i, static_cast<unsigned int>(i));
         ai.setVariable<unsigned int>(AGENT_VAR1_NAME, static_cast<unsigned int>(i));
         ai.setVariable<unsigned int>(AGENT_VAR2_NAME, std::numeric_limits<unsigned int>::max() - i);
@@ -993,11 +972,10 @@ TEST(TestCUDASubAgent, AgentFunctionCondition_BeforeSubModel) {
     // Unmapped var = init + af + af + af
     const unsigned int unmapped_result = std::numeric_limits<unsigned int>::max() - 1000 - 1000;
     c.getPopulationData(pop);
-    EXPECT_EQ(pop.getCurrentListSize(), static_cast<unsigned int>(AGENT_COUNT));
+    EXPECT_EQ(pop.size(), static_cast<unsigned int>(AGENT_COUNT));
     unsigned int pass_count = 0;
     unsigned int fail_count = 0;
-    for (unsigned int i = 0; i < pop.getCurrentListSize(); ++i) {
-        AgentInstance ai = pop.getInstanceAt(i);
+    for (AgentVector::Agent ai : pop) {
         const unsigned int _i = ai.getVariable<unsigned int>(AGENT_VAR_i);
         const unsigned int _avar2 = ai.getVariable<unsigned int>(AGENT_VAR2_NAME);
         if (_i >= AGENT_COUNT) {
@@ -1016,8 +994,8 @@ TEST(TestCUDASubAgent, AgentFunctionCondition_BeforeSubModel) {
             fail_count++;
         }
     }
-    EXPECT_EQ(static_cast<unsigned int>(pop.getCurrentListSize() * 0.25), pass_count);
-    EXPECT_EQ(static_cast<unsigned int>(pop.getCurrentListSize() * 0.75), fail_count);
+    EXPECT_EQ(static_cast<unsigned int>(pop.size() * 0.25), pass_count);
+    EXPECT_EQ(static_cast<unsigned int>(pop.size() * 0.75), fail_count);
     // Run Model
     c.step();
     // Check result
@@ -1026,11 +1004,10 @@ TEST(TestCUDASubAgent, AgentFunctionCondition_BeforeSubModel) {
     // Unmapped var = unmapped_result + af + af + af
     const unsigned int unmapped_result2 = unmapped_result - 1000 - 1000;
     c.getPopulationData(pop);
-    EXPECT_EQ(pop.getCurrentListSize(), static_cast<unsigned int>(AGENT_COUNT));
+    EXPECT_EQ(pop.size(), static_cast<unsigned int>(AGENT_COUNT));
     pass_count = 0;
     fail_count = 0;
-    for (unsigned int i = 0; i < pop.getCurrentListSize(); ++i) {
-        AgentInstance ai = pop.getInstanceAt(i);
+    for (AgentVector::Agent ai : pop) {
         const unsigned int _i = ai.getVariable<unsigned int>(AGENT_VAR_i);
         const unsigned int _avar2 = ai.getVariable<unsigned int>(AGENT_VAR2_NAME);
         if (_i >= AGENT_COUNT + 100) {
@@ -1049,8 +1026,8 @@ TEST(TestCUDASubAgent, AgentFunctionCondition_BeforeSubModel) {
             fail_count++;
         }
     }
-    EXPECT_EQ(static_cast<unsigned int>(pop.getCurrentListSize() * 0.25), pass_count);
-    EXPECT_EQ(static_cast<unsigned int>(pop.getCurrentListSize() * 0.75), fail_count);
+    EXPECT_EQ(static_cast<unsigned int>(pop.size() * 0.25), pass_count);
+    EXPECT_EQ(static_cast<unsigned int>(pop.size() * 0.75), fail_count);
 }
 TEST(TestCUDASubAgent, AgentFunctionCondition_InSubModel) {
     ModelDescription sm(SUB_MODEL_NAME);
@@ -1081,9 +1058,9 @@ TEST(TestCUDASubAgent, AgentFunctionCondition_InSubModel) {
         m.newLayer().addAgentFunction(AddTen);
     }
     // Init Agents
-    AgentPopulation pop(ma, static_cast<unsigned int>(AGENT_COUNT));
+    AgentVector pop(ma, static_cast<unsigned int>(AGENT_COUNT));
     for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getNextInstance();
+        AgentVector::Agent ai = pop[i];
         ai.setVariable<unsigned int>(AGENT_VAR_i, static_cast<unsigned int>(i));
         ai.setVariable<unsigned int>(AGENT_VAR1_NAME, static_cast<unsigned int>(i));
         ai.setVariable<unsigned int>(AGENT_VAR2_NAME, std::numeric_limits<unsigned int>::max() - i);
@@ -1102,11 +1079,10 @@ TEST(TestCUDASubAgent, AgentFunctionCondition_InSubModel) {
     // Unmapped var = init + af + af + af
     const unsigned int unmapped_result = std::numeric_limits<unsigned int>::max() - 1000 - 1000;
     c.getPopulationData(pop);
-    EXPECT_EQ(pop.getCurrentListSize(), static_cast<unsigned int>(AGENT_COUNT));
+    EXPECT_EQ(pop.size(), static_cast<unsigned int>(AGENT_COUNT));
     unsigned int pass_count = 0;
     unsigned int fail_count = 0;
-    for (unsigned int i = 0; i < pop.getCurrentListSize(); ++i) {
-        AgentInstance ai = pop.getInstanceAt(i);
+    for (AgentVector::Agent ai : pop) {
         const unsigned int _i = ai.getVariable<unsigned int>(AGENT_VAR_i);
         const unsigned int _avar2 = ai.getVariable<unsigned int>(AGENT_VAR2_NAME);
         if (_i >= AGENT_COUNT) {
@@ -1125,8 +1101,8 @@ TEST(TestCUDASubAgent, AgentFunctionCondition_InSubModel) {
             fail_count++;
         }
     }
-    EXPECT_EQ(static_cast<unsigned int>(pop.getCurrentListSize() * 0.25), pass_count);
-    EXPECT_EQ(static_cast<unsigned int>(pop.getCurrentListSize() * 0.75), fail_count);
+    EXPECT_EQ(static_cast<unsigned int>(pop.size() * 0.25), pass_count);
+    EXPECT_EQ(static_cast<unsigned int>(pop.size() * 0.75), fail_count);
     // Run Model
     c.step();
     // Check result
@@ -1135,11 +1111,10 @@ TEST(TestCUDASubAgent, AgentFunctionCondition_InSubModel) {
     // Unmapped var = unmapped_result + af + af + af
     const unsigned int unmapped_result2 = unmapped_result - 1000 - 1000;
     c.getPopulationData(pop);
-    EXPECT_EQ(pop.getCurrentListSize(), static_cast<unsigned int>(AGENT_COUNT));
+    EXPECT_EQ(pop.size(), static_cast<unsigned int>(AGENT_COUNT));
     pass_count = 0;
     fail_count = 0;
-    for (unsigned int i = 0; i < pop.getCurrentListSize(); ++i) {
-        AgentInstance ai = pop.getInstanceAt(i);
+    for (AgentVector::Agent ai : pop) {
         const unsigned int _i = ai.getVariable<unsigned int>(AGENT_VAR_i);
         const unsigned int _avar2 = ai.getVariable<unsigned int>(AGENT_VAR2_NAME);
         if (_i >= AGENT_COUNT + 100) {
@@ -1158,8 +1133,8 @@ TEST(TestCUDASubAgent, AgentFunctionCondition_InSubModel) {
             fail_count++;
         }
     }
-    EXPECT_EQ(static_cast<unsigned int>(pop.getCurrentListSize() * 0.25), pass_count);
-    EXPECT_EQ(static_cast<unsigned int>(pop.getCurrentListSize() * 0.75), fail_count);
+    EXPECT_EQ(static_cast<unsigned int>(pop.size() * 0.25), pass_count);
+    EXPECT_EQ(static_cast<unsigned int>(pop.size() * 0.75), fail_count);
 }
 TEST(TestCUDASubAgent, AgentFunctionCondition_InNestedSubModel) {
     ModelDescription sm(SUB_MODEL_NAME);
@@ -1202,9 +1177,9 @@ TEST(TestCUDASubAgent, AgentFunctionCondition_InNestedSubModel) {
         m.newLayer().addAgentFunction(AddTen);
     }
     // Init Agents
-    AgentPopulation pop(ma, static_cast<unsigned int>(AGENT_COUNT));
+    AgentVector pop(ma, static_cast<unsigned int>(AGENT_COUNT));
     for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getNextInstance();
+        AgentVector::Agent ai = pop[i];
         ai.setVariable<unsigned int>(AGENT_VAR_i, static_cast<unsigned int>(i));
         ai.setVariable<unsigned int>(AGENT_VAR1_NAME, static_cast<unsigned int>(i));
         ai.setVariable<unsigned int>(AGENT_VAR2_NAME, std::numeric_limits<unsigned int>::max() - i);
@@ -1223,11 +1198,10 @@ TEST(TestCUDASubAgent, AgentFunctionCondition_InNestedSubModel) {
     // Unmapped var = init + af + af + af
     const unsigned int unmapped_result = std::numeric_limits<unsigned int>::max() - 1000 - 1000;
     c.getPopulationData(pop);
-    EXPECT_EQ(pop.getCurrentListSize(), static_cast<unsigned int>(AGENT_COUNT));
+    EXPECT_EQ(pop.size(), static_cast<unsigned int>(AGENT_COUNT));
     unsigned int pass_count = 0;
     unsigned int fail_count = 0;
-    for (unsigned int i = 0; i < pop.getCurrentListSize(); ++i) {
-        AgentInstance ai = pop.getInstanceAt(i);
+    for (AgentVector::Agent ai : pop) {
         const unsigned int _i = ai.getVariable<unsigned int>(AGENT_VAR_i);
         const unsigned int _avar2 = ai.getVariable<unsigned int>(AGENT_VAR2_NAME);
         if (_i >= AGENT_COUNT) {
@@ -1246,8 +1220,8 @@ TEST(TestCUDASubAgent, AgentFunctionCondition_InNestedSubModel) {
             fail_count++;
         }
     }
-    EXPECT_EQ(static_cast<unsigned int>(pop.getCurrentListSize() * 0.25), pass_count);
-    EXPECT_EQ(static_cast<unsigned int>(pop.getCurrentListSize() * 0.75), fail_count);
+    EXPECT_EQ(static_cast<unsigned int>(pop.size() * 0.25), pass_count);
+    EXPECT_EQ(static_cast<unsigned int>(pop.size() * 0.75), fail_count);
     // Run Model
     c.step();
     // Check result
@@ -1256,11 +1230,10 @@ TEST(TestCUDASubAgent, AgentFunctionCondition_InNestedSubModel) {
     // Unmapped var = unmapped_result + af + af + af
     const unsigned int unmapped_result2 = unmapped_result - 1000 - 1000;
     c.getPopulationData(pop);
-    EXPECT_EQ(pop.getCurrentListSize(), static_cast<unsigned int>(AGENT_COUNT));
+    EXPECT_EQ(pop.size(), static_cast<unsigned int>(AGENT_COUNT));
     pass_count = 0;
     fail_count = 0;
-    for (unsigned int i = 0; i < pop.getCurrentListSize(); ++i) {
-        AgentInstance ai = pop.getInstanceAt(i);
+    for (AgentVector::Agent ai : pop) {
         const unsigned int _i = ai.getVariable<unsigned int>(AGENT_VAR_i);
         const unsigned int _avar2 = ai.getVariable<unsigned int>(AGENT_VAR2_NAME);
         if (_i >= AGENT_COUNT + 100) {
@@ -1279,8 +1252,8 @@ TEST(TestCUDASubAgent, AgentFunctionCondition_InNestedSubModel) {
             fail_count++;
         }
     }
-    EXPECT_EQ(static_cast<unsigned int>(pop.getCurrentListSize() * 0.25), pass_count);
-    EXPECT_EQ(static_cast<unsigned int>(pop.getCurrentListSize() * 0.75), fail_count);
+    EXPECT_EQ(static_cast<unsigned int>(pop.size() * 0.25), pass_count);
+    EXPECT_EQ(static_cast<unsigned int>(pop.size() * 0.75), fail_count);
 }
 
 TEST(TestCUDASubAgent, AgentStateTransition_UnmapToUnmap_BeforeSubModel) {
@@ -1314,36 +1287,38 @@ TEST(TestCUDASubAgent, AgentStateTransition_UnmapToUnmap_BeforeSubModel) {
         m.newLayer().addSubModel("sub");
     }
     // Init Agents
-    AgentPopulation pop(ma, static_cast<unsigned int>(AGENT_COUNT));
+    AgentVector pop(ma, static_cast<unsigned int>(AGENT_COUNT));
     for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai1 = pop.getNextInstance(UNMAPPED_STATE1);
-        AgentInstance ai2 = pop.getNextInstance(MAPPED_STATE1);
-        ai1.setVariable<unsigned int>("id", i);
-        ai2.setVariable<unsigned int>("id", i);
-        ai1.setVariable<unsigned int>(AGENT_VAR1_NAME, i);
-        ai2.setVariable<unsigned int>(AGENT_VAR1_NAME, i);
-        ai1.setVariable<unsigned int>(AGENT_VAR2_NAME, i);
-        ai2.setVariable<unsigned int>(AGENT_VAR2_NAME, i);
+        AgentVector::Agent ai = pop[i];
+        ai.setVariable<unsigned int>("id", i);
+        ai.setVariable<unsigned int>(AGENT_VAR1_NAME, i);
+        ai.setVariable<unsigned int>(AGENT_VAR2_NAME, i);
     }
     // Init Model
     CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
     c.applyConfig();
-    c.setPopulationData(pop);
+    c.setPopulationData(pop, UNMAPPED_STATE1);
+    c.setPopulationData(pop, MAPPED_STATE1);
     // Run Model
     c.step();
     // Check result
-    c.getPopulationData(pop);
-    ASSERT_EQ(pop.getCurrentListSize(UNMAPPED_STATE1), 0u);
-    ASSERT_EQ(pop.getCurrentListSize(UNMAPPED_STATE2), AGENT_COUNT);
-    ASSERT_EQ(pop.getCurrentListSize(MAPPED_STATE1), AGENT_COUNT);
+    AgentVector pop_UNMAPPED_STATE1(ma);
+    AgentVector pop_UNMAPPED_STATE2(ma);
+    AgentVector pop_MAPPED_STATE1(ma);
+    c.getPopulationData(pop_UNMAPPED_STATE1, UNMAPPED_STATE1);
+    c.getPopulationData(pop_UNMAPPED_STATE2, UNMAPPED_STATE2);
+    c.getPopulationData(pop_MAPPED_STATE1, MAPPED_STATE1);
+    ASSERT_EQ(pop_UNMAPPED_STATE1.size(), 0u);
+    ASSERT_EQ(pop_UNMAPPED_STATE2.size(), AGENT_COUNT);
+    ASSERT_EQ(pop_MAPPED_STATE1.size(), AGENT_COUNT);
     for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
         // Unmapped agents only call AddTen()
-        AgentInstance ai = pop.getInstanceAt(i, UNMAPPED_STATE2);
+        AgentVector::Agent ai = pop_UNMAPPED_STATE2[i];
         EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), ai.getVariable<unsigned int>("id") + 10);
         EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR2_NAME), ai.getVariable<unsigned int>("id") - 1000);
         // Mapped agents only call AddOne2()
-        AgentInstance ai2 = pop.getInstanceAt(i, MAPPED_STATE1);
+        AgentVector::Agent ai2 = pop_MAPPED_STATE1[i];
         EXPECT_EQ(ai2.getVariable<unsigned int>(AGENT_VAR1_NAME), ai2.getVariable<unsigned int>("id") + 1);
         EXPECT_EQ(ai2.getVariable<unsigned int>(AGENT_VAR2_NAME), ai2.getVariable<unsigned int>("id"));
     }
@@ -1381,9 +1356,9 @@ TEST(TestCUDASubAgent, AgentStateTransition_MapToMap_BeforeSubModel) {
         m.newLayer().addSubModel("sub");
     }
     // Init Agents
-    AgentPopulation pop(ma, static_cast<unsigned int>(AGENT_COUNT));
+    AgentVector pop(ma, static_cast<unsigned int>(AGENT_COUNT));
     for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getNextInstance(MAPPED_STATE1);
+        AgentVector::Agent ai = pop[i];
         ai.setVariable<unsigned int>("id", i);
         ai.setVariable<unsigned int>(AGENT_VAR1_NAME, i);
         ai.setVariable<unsigned int>(AGENT_VAR2_NAME, i);
@@ -1392,16 +1367,18 @@ TEST(TestCUDASubAgent, AgentStateTransition_MapToMap_BeforeSubModel) {
     CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
     c.applyConfig();
-    c.setPopulationData(pop);
+    c.setPopulationData(pop, MAPPED_STATE1);
     // Run Model
     c.step();
     // Check result
-    c.getPopulationData(pop);
-    ASSERT_EQ(pop.getCurrentListSize(MAPPED_STATE1), 0u);
-    ASSERT_EQ(pop.getCurrentListSize(MAPPED_STATE2), AGENT_COUNT);
-    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+    AgentVector pop_MAPPED_STATE1(ma);
+    AgentVector pop_MAPPED_STATE2(ma);
+    c.getPopulationData(pop_MAPPED_STATE1, MAPPED_STATE1);
+    c.getPopulationData(pop_MAPPED_STATE2, MAPPED_STATE2);
+    ASSERT_EQ(pop_MAPPED_STATE1.size(), 0u);
+    ASSERT_EQ(pop_MAPPED_STATE2.size(), AGENT_COUNT);
+    for (AgentVector::Agent ai : pop_MAPPED_STATE2) {
         // Mapped agents call AddTen() and AddOne2()
-        AgentInstance ai = pop.getInstanceAt(i, MAPPED_STATE2);
         EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), ai.getVariable<unsigned int>("id") + 10 + 1);
         EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR2_NAME), ai.getVariable<unsigned int>("id") - 1000);
     }
@@ -1438,9 +1415,9 @@ TEST(TestCUDASubAgent, AgentStateTransition_MapToUnmap_BeforeSubModel) {
         m.newLayer().addSubModel("sub");
     }
     // Init Agents
-    AgentPopulation pop(ma, static_cast<unsigned int>(AGENT_COUNT));
+    AgentVector pop(ma, static_cast<unsigned int>(AGENT_COUNT));
     for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getNextInstance(MAPPED_STATE2);
+        AgentVector::Agent ai = pop[i];
         ai.setVariable<unsigned int>("id", i);
         ai.setVariable<unsigned int>(AGENT_VAR1_NAME, i);
         ai.setVariable<unsigned int>(AGENT_VAR2_NAME, i);
@@ -1449,16 +1426,18 @@ TEST(TestCUDASubAgent, AgentStateTransition_MapToUnmap_BeforeSubModel) {
     CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
     c.applyConfig();
-    c.setPopulationData(pop);
+    c.setPopulationData(pop, MAPPED_STATE2);
     // Run Model
     c.step();
     // Check result
-    c.getPopulationData(pop);
-    ASSERT_EQ(pop.getCurrentListSize(MAPPED_STATE2), 0u);
-    ASSERT_EQ(pop.getCurrentListSize(UNMAPPED_STATE1), AGENT_COUNT);
-    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+    AgentVector pop_MAPPED_STATE2(ma);
+    AgentVector pop_UNMAPPED_STATE1(ma);
+    c.getPopulationData(pop_MAPPED_STATE2, MAPPED_STATE2);
+    c.getPopulationData(pop_UNMAPPED_STATE1, UNMAPPED_STATE1);
+    ASSERT_EQ(pop_MAPPED_STATE2.size(), 0u);
+    ASSERT_EQ(pop_UNMAPPED_STATE1.size(), AGENT_COUNT);
+    for (AgentVector::Agent ai : pop_UNMAPPED_STATE1) {
         // Mapped agents only call AddTen()
-        AgentInstance ai = pop.getInstanceAt(i, UNMAPPED_STATE1);
         EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), ai.getVariable<unsigned int>("id") + 10);
         EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR2_NAME), ai.getVariable<unsigned int>("id") - 1000);
     }
@@ -1495,9 +1474,9 @@ TEST(TestCUDASubAgent, AgentStateTransition_UnmapToMap_BeforeSubModel) {
         m.newLayer().addSubModel("sub");
     }
     // Init Agents
-    AgentPopulation pop(ma, static_cast<unsigned int>(AGENT_COUNT));
+    AgentVector pop(ma, static_cast<unsigned int>(AGENT_COUNT));
     for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getNextInstance(UNMAPPED_STATE1);
+        AgentVector::Agent ai = pop[i];
         ai.setVariable<unsigned int>("id", i);
         ai.setVariable<unsigned int>(AGENT_VAR1_NAME, i);
         ai.setVariable<unsigned int>(AGENT_VAR2_NAME, i);
@@ -1506,16 +1485,18 @@ TEST(TestCUDASubAgent, AgentStateTransition_UnmapToMap_BeforeSubModel) {
     CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
     c.applyConfig();
-    c.setPopulationData(pop);
+    c.setPopulationData(pop, UNMAPPED_STATE1);
     // Run Model
     c.step();
     // Check result
-    c.getPopulationData(pop);
-    ASSERT_EQ(pop.getCurrentListSize(UNMAPPED_STATE1), 0u);
-    ASSERT_EQ(pop.getCurrentListSize(MAPPED_STATE2), AGENT_COUNT);
-    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+    AgentVector pop_UNMAPPED_STATE1(ma);
+    AgentVector pop_MAPPED_STATE2(ma);
+    c.getPopulationData(pop_UNMAPPED_STATE1, UNMAPPED_STATE1);
+    c.getPopulationData(pop_MAPPED_STATE2, MAPPED_STATE2);
+    ASSERT_EQ(pop_UNMAPPED_STATE1.size(), 0u);
+    ASSERT_EQ(pop_MAPPED_STATE2.size(), AGENT_COUNT);
+    for (AgentVector::Agent ai : pop_MAPPED_STATE2) {
         // Mapped agents call AddTen() and AddOne2()
-        AgentInstance ai = pop.getInstanceAt(i, MAPPED_STATE2);
         EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), ai.getVariable<unsigned int>("id") + 10 + 1);
         EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR2_NAME), ai.getVariable<unsigned int>("id") - 1000);
     }
@@ -1563,9 +1544,9 @@ TEST(TestCUDASubAgent, AgentStateTransition_UnmapToUnmap_InSubModel) {
         m.newLayer().addSubModel("sub");
     }
     // Init Agents
-    AgentPopulation pop(ma, static_cast<unsigned int>(AGENT_COUNT));
+    AgentVector pop(ma, static_cast<unsigned int>(AGENT_COUNT));
     for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getNextInstance(MAPPED_STATE2);
+        AgentVector::Agent ai = pop[i];
         ai.setVariable<unsigned int>("id", i);
         ai.setVariable<unsigned int>(AGENT_VAR1_NAME, i);
         ai.setVariable<unsigned int>(AGENT_VAR2_NAME, i);
@@ -1574,15 +1555,14 @@ TEST(TestCUDASubAgent, AgentStateTransition_UnmapToUnmap_InSubModel) {
     CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
     c.applyConfig();
-    c.setPopulationData(pop);
+    c.setPopulationData(pop, MAPPED_STATE2);
     // Run Model
     c.step();
     // Check result
-    c.getPopulationData(pop);
-    ASSERT_EQ(pop.getCurrentListSize(MAPPED_STATE2), AGENT_COUNT);
-    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+    c.getPopulationData(pop, MAPPED_STATE2);
+    ASSERT_EQ(pop.size(), AGENT_COUNT);
+    for (AgentVector::Agent ai : pop) {
         // Mapped agents call AddTen() and AddOne2()
-        AgentInstance ai = pop.getInstanceAt(i, MAPPED_STATE2);
         EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), ai.getVariable<unsigned int>("id") + 10 + 1);
         EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR2_NAME), ai.getVariable<unsigned int>("id") - 1000);
     }
@@ -1616,9 +1596,9 @@ TEST(TestCUDASubAgent, AgentStateTransition_MapToMap_InSubModel) {
         m.newLayer().addSubModel("sub");
     }
     // Init Agents
-    AgentPopulation pop(ma, static_cast<unsigned int>(AGENT_COUNT));
+    AgentVector pop(ma, static_cast<unsigned int>(AGENT_COUNT));
     for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getNextInstance(MAPPED_STATE1);
+        AgentVector::Agent ai = pop[i];
         ai.setVariable<unsigned int>("id", i);
         ai.setVariable<unsigned int>(AGENT_VAR1_NAME, i);
     }
@@ -1626,16 +1606,18 @@ TEST(TestCUDASubAgent, AgentStateTransition_MapToMap_InSubModel) {
     CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
     c.applyConfig();
-    c.setPopulationData(pop);
+    c.setPopulationData(pop, MAPPED_STATE1);
     // Run Model
     c.step();
     // Check result
-    c.getPopulationData(pop);
-    ASSERT_EQ(pop.getCurrentListSize(MAPPED_STATE1), 0u);
-    ASSERT_EQ(pop.getCurrentListSize(MAPPED_STATE2), AGENT_COUNT);
-    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+    AgentVector pop_MAPPED_STATE1(ma);
+    AgentVector pop_MAPPED_STATE2(ma);
+    c.getPopulationData(pop_MAPPED_STATE1, MAPPED_STATE1);
+    c.getPopulationData(pop_MAPPED_STATE2, MAPPED_STATE2);
+    ASSERT_EQ(pop_MAPPED_STATE1.size(), 0u);
+    ASSERT_EQ(pop_MAPPED_STATE2.size(), AGENT_COUNT);
+    for (AgentVector::Agent ai : pop_MAPPED_STATE2) {
         // Mapped agents only call AddOne2()
-        AgentInstance ai = pop.getInstanceAt(i, MAPPED_STATE2);
         EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), ai.getVariable<unsigned int>("id") + 1);
     }
 }
@@ -1666,9 +1648,9 @@ TEST(TestCUDASubAgent, AgentStateTransition_MapToUnmap_InSubModel) {
         m.newLayer().addSubModel("sub");
     }
     // Init Agents
-    AgentPopulation pop(ma, static_cast<unsigned int>(AGENT_COUNT));
+    AgentVector pop(ma, static_cast<unsigned int>(AGENT_COUNT));
     for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getNextInstance(MAPPED_STATE1);
+        AgentVector::Agent ai = pop[i];
         ai.setVariable<unsigned int>("id", i);
         ai.setVariable<unsigned int>(AGENT_VAR1_NAME, i);
     }
@@ -1676,12 +1658,12 @@ TEST(TestCUDASubAgent, AgentStateTransition_MapToUnmap_InSubModel) {
     CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
     c.applyConfig();
-    c.setPopulationData(pop);
+    c.setPopulationData(pop, MAPPED_STATE1);
     // Run Model
     c.step();
     // Check result
-    c.getPopulationData(pop);
-    ASSERT_EQ(pop.getCurrentListSize(MAPPED_STATE1), 0u);
+    c.getPopulationData(pop, MAPPED_STATE1);
+    ASSERT_EQ(pop.size(), 0u);
 }
 TEST(TestCUDASubAgent, AgentStateTransition_UnmapToMap_InSubModel) {
     // Agents created within the submodel will enter the main model (with default values to unmapped vars)
@@ -1717,9 +1699,9 @@ TEST(TestCUDASubAgent, AgentStateTransition_UnmapToMap_InSubModel) {
         m.newLayer().addAgentFunction(af);
     }
     // Init Agents
-    AgentPopulation pop(ma, static_cast<unsigned int>(AGENT_COUNT));
+    AgentVector pop(ma, static_cast<unsigned int>(AGENT_COUNT));
     for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getNextInstance(MAPPED_STATE2);
+        AgentVector::Agent ai = pop[i];
         ai.setVariable<unsigned int>("id", i);
         ai.setVariable<unsigned int>(AGENT_VAR1_NAME, i);
         ai.setVariable<unsigned int>(AGENT_VAR2_NAME, i);
@@ -1728,16 +1710,15 @@ TEST(TestCUDASubAgent, AgentStateTransition_UnmapToMap_InSubModel) {
     CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
     c.applyConfig();
-    c.setPopulationData(pop);
+    c.setPopulationData(pop, MAPPED_STATE2);
     // Run Model
     c.step();
     // Check result
-    c.getPopulationData(pop);
-    ASSERT_EQ(pop.getCurrentListSize(MAPPED_STATE2), AGENT_COUNT*2);
+    c.getPopulationData(pop, MAPPED_STATE2);
+    ASSERT_EQ(pop.size(), AGENT_COUNT*2);
     unsigned int original = 0;
     unsigned int fromsub = 0;
-    for (unsigned int i = 0; i < AGENT_COUNT*2; ++i) {
-        AgentInstance ai = pop.getInstanceAt(i, MAPPED_STATE2);
+    for (AgentVector::Agent ai : pop) {
         if (ai.getVariable<unsigned int>(AGENT_VAR1_NAME) < 2*AGENT_COUNT) {
             // Original agents call AddTen() twice
             EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), ai.getVariable<unsigned int>("id") + 10 + 10);
@@ -1787,9 +1768,9 @@ TEST(TestCUDASubAgent, AgentStateTransition_MapToUnmapToMap_InSubModel) {
         m.newLayer().addSubModel("sub");
     }
     // Init Agents
-    AgentPopulation pop(ma, static_cast<unsigned int>(AGENT_COUNT));
+    AgentVector pop(ma, static_cast<unsigned int>(AGENT_COUNT));
     for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getNextInstance(MAPPED_STATE1);
+        AgentVector::Agent ai = pop[i];
         ai.setVariable<unsigned int>("id", i);
         ai.setVariable<unsigned int>(AGENT_VAR1_NAME, i);
         ai.setVariable<unsigned int>(AGENT_VAR2_NAME, 12+i);
@@ -1798,16 +1779,18 @@ TEST(TestCUDASubAgent, AgentStateTransition_MapToUnmapToMap_InSubModel) {
     CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
     c.applyConfig();
-    c.setPopulationData(pop);
+    c.setPopulationData(pop, MAPPED_STATE1);
     // Run Model
     c.step();
     // Check result
-    c.getPopulationData(pop);
-    ASSERT_EQ(pop.getCurrentListSize(MAPPED_STATE1), 0u);
-    ASSERT_EQ(pop.getCurrentListSize(MAPPED_STATE2), AGENT_COUNT);
-    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+    AgentVector pop_MAPPED_STATE1(ma);
+    AgentVector pop_MAPPED_STATE2(ma);
+    c.getPopulationData(pop_MAPPED_STATE1, MAPPED_STATE1);
+    c.getPopulationData(pop_MAPPED_STATE2, MAPPED_STATE2);
+    ASSERT_EQ(pop_MAPPED_STATE1.size(), 0u);
+    ASSERT_EQ(pop_MAPPED_STATE2.size(), AGENT_COUNT);
+    for (AgentVector::Agent ai : pop_MAPPED_STATE2) {
         // Mapped agents call AddOne2() twice
-        AgentInstance ai = pop.getInstanceAt(i, MAPPED_STATE2);
         EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), ai.getVariable<unsigned int>("id") + 1 + 1);
         EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR2_NAME), ai.getVariable<unsigned int>("id") + 12);  // This is original unchanged value
     }
@@ -1860,9 +1843,9 @@ TEST(TestCUDASubAgent, AgentStateTransition_UnmapToUnmap_InNestedSubModel) {
         m.newLayer().addSubModel("sub");
     }
     // Init Agents
-    AgentPopulation pop(ma, static_cast<unsigned int>(AGENT_COUNT));
+    AgentVector pop(ma, static_cast<unsigned int>(AGENT_COUNT));
     for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getNextInstance(MAPPED_STATE2);
+        AgentVector::Agent ai = pop[i];
         ai.setVariable<unsigned int>("id", i);
         ai.setVariable<unsigned int>(AGENT_VAR1_NAME, i);
         ai.setVariable<unsigned int>(AGENT_VAR2_NAME, i);
@@ -1871,15 +1854,14 @@ TEST(TestCUDASubAgent, AgentStateTransition_UnmapToUnmap_InNestedSubModel) {
     CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
     c.applyConfig();
-    c.setPopulationData(pop);
+    c.setPopulationData(pop, MAPPED_STATE2);
     // Run Model
     c.step();
     // Check result
-    c.getPopulationData(pop);
-    ASSERT_EQ(pop.getCurrentListSize(MAPPED_STATE2), AGENT_COUNT);
-    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+    c.getPopulationData(pop, MAPPED_STATE2);
+    ASSERT_EQ(pop.size(), AGENT_COUNT);
+    for (AgentVector::Agent ai : pop) {
         // Mapped agents call AddTen() and AddOne2()
-        AgentInstance ai = pop.getInstanceAt(i, MAPPED_STATE2);
         EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), ai.getVariable<unsigned int>("id") + 10 + 1);
         EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR2_NAME), ai.getVariable<unsigned int>("id") - 1000);
     }
@@ -1925,9 +1907,9 @@ TEST(TestCUDASubAgent, AgentStateTransition_MapToMap_InNestedSubModel) {
         m.newLayer().addSubModel("sub");
     }
     // Init Agents
-    AgentPopulation pop(ma, static_cast<unsigned int>(AGENT_COUNT));
+    AgentVector pop(ma, static_cast<unsigned int>(AGENT_COUNT));
     for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getNextInstance(MAPPED_STATE1);
+        AgentVector::Agent ai = pop[i];
         ai.setVariable<unsigned int>("id", i);
         ai.setVariable<unsigned int>(AGENT_VAR1_NAME, i);
     }
@@ -1935,16 +1917,18 @@ TEST(TestCUDASubAgent, AgentStateTransition_MapToMap_InNestedSubModel) {
     CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
     c.applyConfig();
-    c.setPopulationData(pop);
+    c.setPopulationData(pop, MAPPED_STATE1);
     // Run Model
     c.step();
     // Check result
-    c.getPopulationData(pop);
-    ASSERT_EQ(pop.getCurrentListSize(MAPPED_STATE1), 0u);
-    ASSERT_EQ(pop.getCurrentListSize(MAPPED_STATE2), AGENT_COUNT);
-    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+    AgentVector pop_MAPPED_STATE1(ma);
+    AgentVector pop_MAPPED_STATE2(ma);
+    c.getPopulationData(pop_MAPPED_STATE1, MAPPED_STATE1);
+    c.getPopulationData(pop_MAPPED_STATE2, MAPPED_STATE2);
+    ASSERT_EQ(pop_MAPPED_STATE1.size(), 0u);
+    ASSERT_EQ(pop_MAPPED_STATE2.size(), AGENT_COUNT);
+    for (AgentVector::Agent ai : pop_MAPPED_STATE2) {
         // Mapped agents only call AddOne2()
-        AgentInstance ai = pop.getInstanceAt(i, MAPPED_STATE2);
         EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), ai.getVariable<unsigned int>("id") + 1);
     }
 }
@@ -1987,9 +1971,9 @@ TEST(TestCUDASubAgent, AgentStateTransition_MapToUnmap_InNestedSubModel) {
         m.newLayer().addSubModel("sub");
     }
     // Init Agents
-    AgentPopulation pop(ma, static_cast<unsigned int>(AGENT_COUNT));
+    AgentVector pop(ma, static_cast<unsigned int>(AGENT_COUNT));
     for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getNextInstance(MAPPED_STATE1);
+        AgentVector::Agent ai = pop[i];
         ai.setVariable<unsigned int>("id", i);
         ai.setVariable<unsigned int>(AGENT_VAR1_NAME, i);
     }
@@ -1997,12 +1981,12 @@ TEST(TestCUDASubAgent, AgentStateTransition_MapToUnmap_InNestedSubModel) {
     CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
     c.applyConfig();
-    c.setPopulationData(pop);
+    c.setPopulationData(pop, MAPPED_STATE1);
     // Run Model
     c.step();
     // Check result
-    c.getPopulationData(pop);
-    ASSERT_EQ(pop.getCurrentListSize(MAPPED_STATE1), 0u);
+    c.getPopulationData(pop, MAPPED_STATE1);
+    ASSERT_EQ(pop.size(), 0u);
 }
 TEST(TestCUDASubAgent, AgentStateTransition_UnmapToMap_InNestedSubModel) {
     // Agents created within the submodel will enter the main model (with default values to unmapped vars)
@@ -2049,9 +2033,9 @@ TEST(TestCUDASubAgent, AgentStateTransition_UnmapToMap_InNestedSubModel) {
         m.newLayer().addAgentFunction(af);
     }
     // Init Agents
-    AgentPopulation pop(ma, static_cast<unsigned int>(AGENT_COUNT));
+    AgentVector pop(ma, static_cast<unsigned int>(AGENT_COUNT));
     for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getNextInstance(MAPPED_STATE2);
+        AgentVector::Agent ai = pop[i];
         ai.setVariable<unsigned int>("id", i);
         ai.setVariable<unsigned int>(AGENT_VAR1_NAME, i);
         ai.setVariable<unsigned int>(AGENT_VAR2_NAME, i);
@@ -2060,16 +2044,15 @@ TEST(TestCUDASubAgent, AgentStateTransition_UnmapToMap_InNestedSubModel) {
     CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
     c.applyConfig();
-    c.setPopulationData(pop);
+    c.setPopulationData(pop, MAPPED_STATE2);
     // Run Model
     c.step();
     // Check result
-    c.getPopulationData(pop);
-    ASSERT_EQ(pop.getCurrentListSize(MAPPED_STATE2), AGENT_COUNT*2);
+    c.getPopulationData(pop, MAPPED_STATE2);
+    ASSERT_EQ(pop.size(), AGENT_COUNT*2);
     unsigned int original = 0;
     unsigned int fromsub = 0;
-    for (unsigned int i = 0; i < AGENT_COUNT*2; ++i) {
-        AgentInstance ai = pop.getInstanceAt(i, MAPPED_STATE2);
+    for (AgentVector::Agent ai : pop) {
         if (ai.getVariable<unsigned int>(AGENT_VAR1_NAME) < 2*AGENT_COUNT) {
             // Original agents call AddTen() twice
             EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), ai.getVariable<unsigned int>("id") + 10 + 10);
@@ -2131,9 +2114,9 @@ TEST(TestCUDASubAgent, AgentStateTransition_MapToUnmapToMap_InNestedSubModel) {
         m.newLayer().addSubModel("sub");
     }
     // Init Agents
-    AgentPopulation pop(ma, static_cast<unsigned int>(AGENT_COUNT));
+    AgentVector pop(ma, static_cast<unsigned int>(AGENT_COUNT));
     for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getNextInstance(MAPPED_STATE1);
+        AgentVector::Agent ai = pop[i];
         ai.setVariable<unsigned int>("id", i);
         ai.setVariable<unsigned int>(AGENT_VAR1_NAME, i);
         ai.setVariable<unsigned int>(AGENT_VAR2_NAME, 12+i);
@@ -2142,16 +2125,18 @@ TEST(TestCUDASubAgent, AgentStateTransition_MapToUnmapToMap_InNestedSubModel) {
     CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
     c.applyConfig();
-    c.setPopulationData(pop);
+    c.setPopulationData(pop, MAPPED_STATE1);
     // Run Model
     c.step();
     // Check result
-    c.getPopulationData(pop);
-    ASSERT_EQ(pop.getCurrentListSize(MAPPED_STATE1), 0u);
-    ASSERT_EQ(pop.getCurrentListSize(MAPPED_STATE2), AGENT_COUNT);
-    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+    AgentVector pop_MAPPED_STATE1(ma);
+    AgentVector pop_MAPPED_STATE2(ma);
+    c.getPopulationData(pop_MAPPED_STATE1, MAPPED_STATE1);
+    c.getPopulationData(pop_MAPPED_STATE2, MAPPED_STATE2);
+    ASSERT_EQ(pop_MAPPED_STATE1.size(), 0u);
+    ASSERT_EQ(pop_MAPPED_STATE2.size(), AGENT_COUNT);
+    for (AgentVector::Agent ai : pop_MAPPED_STATE2) {
         // Mapped agents call AddOne2() twice
-        AgentInstance ai = pop.getInstanceAt(i, MAPPED_STATE2);
         EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), ai.getVariable<unsigned int>("id") + 1 + 1);
         EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR2_NAME), ai.getVariable<unsigned int>("id") + 12);  // This is original unchanged value
     }
@@ -2189,9 +2174,9 @@ TEST(TestCUDASubAgent, UnmappedAgentStatesDontPersistBetweenSubmodelRuns) {
     }
     // Init Agents
     ASSERT_NE(AGENT_COUNT, 0u);  // This constant should not be 0
-    AgentPopulation pop(ma, static_cast<unsigned int>(AGENT_COUNT));
+    AgentVector pop(ma, static_cast<unsigned int>(AGENT_COUNT));
     for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getNextInstance(MAPPED_STATE1);
+        AgentVector::Agent ai = pop[i];
         ai.setVariable<unsigned int>("id", i);
         ai.setVariable<unsigned int>(AGENT_VAR1_NAME, i);
     }
@@ -2199,17 +2184,17 @@ TEST(TestCUDASubAgent, UnmappedAgentStatesDontPersistBetweenSubmodelRuns) {
     CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
     c.applyConfig();
-    c.setPopulationData(pop);
+    c.setPopulationData(pop, MAPPED_STATE1);
     // Run Model (agents move into UNMAPPED_STATE1 and die)
     c.step();
     // Check result
-    c.getPopulationData(pop);
-    ASSERT_EQ(pop.getCurrentListSize(MAPPED_STATE1), 0u);
+    c.getPopulationData(pop, MAPPED_STATE1);
+    ASSERT_EQ(pop.size(), 0u);
     // Run Model (agents nolonger exist, so can't move from UNMAPPED_STATE1 back to MAPPED_STATE1)
     c.step();
     // Check result
-    c.getPopulationData(pop);
-    ASSERT_EQ(pop.getCurrentListSize(MAPPED_STATE1), 0u);
+    c.getPopulationData(pop, MAPPED_STATE1);
+    ASSERT_EQ(pop.size(), 0u);
 }
 TEST(TestCUDASubAgent, UnmappedVariablesResetToDefaultBetweenSubmodelRuns) {
     // Agents that rely on unmapped subagent variables will receive the default value each time the submodel is called by the parent model
@@ -2234,9 +2219,9 @@ TEST(TestCUDASubAgent, UnmappedVariablesResetToDefaultBetweenSubmodelRuns) {
         m.newLayer().addSubModel("sub");
     }
     // Init Agents
-    AgentPopulation pop(ma, static_cast<unsigned int>(AGENT_COUNT));
+    AgentVector pop(ma, static_cast<unsigned int>(AGENT_COUNT));
     for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getNextInstance();
+        AgentVector::Agent ai = pop[i];
         ai.setVariable<unsigned int>("id", i);
         ai.setVariable<unsigned int>(AGENT_VAR1_NAME, i);
     }
@@ -2249,20 +2234,18 @@ TEST(TestCUDASubAgent, UnmappedVariablesResetToDefaultBetweenSubmodelRuns) {
     c.step();
     // Check result
     c.getPopulationData(pop);
-    ASSERT_EQ(pop.getCurrentListSize(), AGENT_COUNT);
-    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+    ASSERT_EQ(pop.size(), AGENT_COUNT);
+    for (AgentVector::Agent ai : pop) {
         // Mapped agents only call AddSubVar()
-        AgentInstance ai = pop.getInstanceAt(i);
         EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), ai.getVariable<unsigned int>("id") + 1);
     }
     // Run Model
     c.step();
     // Check result
     c.getPopulationData(pop);
-    ASSERT_EQ(pop.getCurrentListSize(), AGENT_COUNT);
-    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+    ASSERT_EQ(pop.size(), AGENT_COUNT);
+    for (AgentVector::Agent ai : pop) {
         // Mapped agents only call AddSubVar() (with default value of subvar)
-        AgentInstance ai = pop.getInstanceAt(i);
         EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), ai.getVariable<unsigned int>("id") + 1 + 1);  // If unmapped subvar persists would be + 1 + 2
     }
 }

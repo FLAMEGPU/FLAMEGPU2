@@ -21,7 +21,6 @@
 #include "flamegpu/model/AgentFunctionDescription.h"
 #include "flamegpu/runtime/cuRVE/curve.h"
 #include "flamegpu/model/AgentDescription.h"
-#include "flamegpu/pop/AgentPopulation.h"
 #include "flamegpu/runtime/messaging.h"
 
 #ifdef _MSC_VER

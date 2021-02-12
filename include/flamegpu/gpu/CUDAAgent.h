@@ -73,18 +73,21 @@ class CUDAAgent : public AgentInterface {
      * Copies population data from the provided host object
      * To the device buffers held by this object (overwriting any existing agent data)
      * Also updates population size, clears disabled agents
+     * @param population An AgentVector object with the same internal AgentData description, to provide the input data
+     * @param state_name The agent state to add the agents to
      * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
      * @param streamId The index of the agent function within the current layer
-     * @param population An AgentPopulation object with the same internal AgentData description, to provide the input data
+     * @param stream The stream to perform the memcpys over
      * @note Scatter is required for initialising submodel vars
      */
-    void setPopulationData(const AgentPopulation& population, CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream);
+    void setPopulationData(const AgentVector& population, const std::string &state_name, CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t& stream);
     /**
      * Copies population data the device buffers held by this object
      * To the hosts object (overwriting any existing agent data)
-     * @param population An AgentPopulation object with the same internal AgentData description, to receive the output data
+     * @param population An AgentVector object with the same internal AgentData description, to receive the output data
+     * @param state_name The agent state to get the agents from
      */
-    void getPopulationData(AgentPopulation& population) const;
+    void getPopulationData(AgentVector& population, const std::string& state_name) const;
     /**
      * Returns the number of alive and active agents in the named state
      * @state The state to return information about

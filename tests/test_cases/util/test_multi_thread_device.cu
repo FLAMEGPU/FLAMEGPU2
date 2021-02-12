@@ -53,13 +53,13 @@ TEST(MultiThreadDeviceTest, SameModelSeperateThread_Agent) {
     m.Environment().newProperty<int>("ten thousand", 10000);
     m.Environment().newProperty<int>("zero", 0);
 
-    AgentPopulation pop_in1(a, POP_SIZE);
-    AgentPopulation pop_in2(a, POP_SIZE);
-    AgentPopulation pop_in3(a, POP_SIZE);
+    AgentVector pop_in1(a, POP_SIZE);
+    AgentVector pop_in2(a, POP_SIZE);
+    AgentVector pop_in3(a, POP_SIZE);
     for (unsigned int i = 0; i < POP_SIZE; ++i) {
-        pop_in1.getNextInstance().setVariable<int>("x", 1);
-        pop_in2.getNextInstance().setVariable<int>("x", 2);
-        pop_in3.getNextInstance().setVariable<int>("x", 3);
+        pop_in1[i].setVariable<int>("x", 1);
+        pop_in2[i].setVariable<int>("x", 2);
+        pop_in3[i].setVariable<int>("x", 3);
     }
 
     CUDASimulation sim1(m);
@@ -85,26 +85,26 @@ TEST(MultiThreadDeviceTest, SameModelSeperateThread_Agent) {
     ASSERT_FALSE(has_error_2);
     ASSERT_FALSE(has_error_3);
     // Check results
-    AgentPopulation pop1(a, POP_SIZE);
-    AgentPopulation pop2(a, POP_SIZE);
-    AgentPopulation pop3(a, POP_SIZE);
+    AgentVector pop1(a, POP_SIZE);
+    AgentVector pop2(a, POP_SIZE);
+    AgentVector pop3(a, POP_SIZE);
     sim1.getPopulationData(pop1);
     sim2.getPopulationData(pop2);
     sim3.getPopulationData(pop3);
     // Use expect, rather than assert for first 3 agents.
     for (unsigned int i = 0; i < 3; ++i) {
-        int x1 = pop1.getInstanceAt(i).getVariable<int>("x");
-        int x2 = pop2.getInstanceAt(i).getVariable<int>("x");
-        int x3 = pop3.getInstanceAt(i).getVariable<int>("x");
+        int x1 = pop1[i].getVariable<int>("x");
+        int x2 = pop2[i].getVariable<int>("x");
+        int x3 = pop3[i].getVariable<int>("x");
         // 10 steps with 2x +1 each.
         EXPECT_EQ(x1, 21);
         EXPECT_EQ(x2, 22);
         EXPECT_EQ(x3, 23);
     }
     for (unsigned int i = 3; i < POP_SIZE; ++i) {
-        int x1 = pop1.getInstanceAt(i).getVariable<int>("x");
-        int x2 = pop2.getInstanceAt(i).getVariable<int>("x");
-        int x3 = pop3.getInstanceAt(i).getVariable<int>("x");
+        int x1 = pop1[i].getVariable<int>("x");
+        int x2 = pop2[i].getVariable<int>("x");
+        int x3 = pop3[i].getVariable<int>("x");
         // 10 steps with 2x +1 each.
         ASSERT_EQ(x1, 21);
         ASSERT_EQ(x2, 22);
@@ -141,13 +141,13 @@ TEST(MultiThreadDeviceTest, SameModelSeperateThread_Message) {
     m.newLayer().addAgentFunction(FastFnMsg);
     m.newLayer().addAgentFunction(SlowFnMsg);
 
-    AgentPopulation pop_in1(a, POP_SIZE);
-    AgentPopulation pop_in2(a, POP_SIZE);
-    AgentPopulation pop_in3(a, POP_SIZE);
+    AgentVector pop_in1(a, POP_SIZE);
+    AgentVector pop_in2(a, POP_SIZE);
+    AgentVector pop_in3(a, POP_SIZE);
     for (unsigned int i = 0; i < POP_SIZE; ++i) {
-        pop_in1.getNextInstance().setVariable<int>("x", 1);
-        pop_in2.getNextInstance().setVariable<int>("x", 2);
-        pop_in3.getNextInstance().setVariable<int>("x", 3);
+        pop_in1[i].setVariable<int>("x", 1);
+        pop_in2[i].setVariable<int>("x", 2);
+        pop_in3[i].setVariable<int>("x", 3);
     }
 
     CUDASimulation sim1(m);
@@ -173,26 +173,26 @@ TEST(MultiThreadDeviceTest, SameModelSeperateThread_Message) {
     ASSERT_FALSE(has_error_2);
     ASSERT_FALSE(has_error_3);
     // Check results
-    AgentPopulation pop1(a, POP_SIZE);
-    AgentPopulation pop2(a, POP_SIZE);
-    AgentPopulation pop3(a, POP_SIZE);
+    AgentVector pop1(a, POP_SIZE);
+    AgentVector pop2(a, POP_SIZE);
+    AgentVector pop3(a, POP_SIZE);
     sim1.getPopulationData(pop1);
     sim2.getPopulationData(pop2);
     sim3.getPopulationData(pop3);
     // Use expect, rather than assert for first 3 agents.
     for (unsigned int i = 0; i < 3; ++i) {
-        int x1 = pop1.getInstanceAt(i).getVariable<int>("x");
-        int x2 = pop2.getInstanceAt(i).getVariable<int>("x");
-        int x3 = pop3.getInstanceAt(i).getVariable<int>("x");
+        int x1 = pop1[i].getVariable<int>("x");
+        int x2 = pop2[i].getVariable<int>("x");
+        int x3 = pop3[i].getVariable<int>("x");
         // 10 steps with 1x +10000 each.
         EXPECT_EQ(x1, 100001);
         EXPECT_EQ(x2, 100002);
         EXPECT_EQ(x3, 100003);
     }
     for (unsigned int i = 3; i < POP_SIZE; ++i) {
-        int x1 = pop1.getInstanceAt(i).getVariable<int>("x");
-        int x2 = pop2.getInstanceAt(i).getVariable<int>("x");
-        int x3 = pop3.getInstanceAt(i).getVariable<int>("x");
+        int x1 = pop1[i].getVariable<int>("x");
+        int x2 = pop2[i].getVariable<int>("x");
+        int x3 = pop3[i].getVariable<int>("x");
         // 10 steps with 1x +10000 each.
         ASSERT_EQ(x1, 100001);
         ASSERT_EQ(x2, 100002);
@@ -232,13 +232,13 @@ TEST(MultiThreadDeviceTest, SameModelSeperateThread_Environment) {
     m.Environment().newProperty<int>("one", 1);
     m.Environment().newProperty<int>("three", 3);
 
-    AgentPopulation pop_in1(a, POP_SIZE);
-    AgentPopulation pop_in2(a, POP_SIZE);
-    AgentPopulation pop_in3(a, POP_SIZE);
+    AgentVector pop_in1(a, POP_SIZE);
+    AgentVector pop_in2(a, POP_SIZE);
+    AgentVector pop_in3(a, POP_SIZE);
     for (unsigned int i = 0; i < POP_SIZE; ++i) {
-        pop_in1.getNextInstance().setVariable<int>("x", 1);
-        pop_in2.getNextInstance().setVariable<int>("x", 2);
-        pop_in3.getNextInstance().setVariable<int>("x", 3);
+        pop_in1[i].setVariable<int>("x", 1);
+        pop_in2[i].setVariable<int>("x", 2);
+        pop_in3[i].setVariable<int>("x", 3);
     }
 
     CUDASimulation sim1(m);
@@ -268,26 +268,26 @@ TEST(MultiThreadDeviceTest, SameModelSeperateThread_Environment) {
     ASSERT_FALSE(has_error_2);
     ASSERT_FALSE(has_error_3);
     // Check results
-    AgentPopulation pop1(a, POP_SIZE);
-    AgentPopulation pop2(a, POP_SIZE);
-    AgentPopulation pop3(a, POP_SIZE);
+    AgentVector pop1(a, POP_SIZE);
+    AgentVector pop2(a, POP_SIZE);
+    AgentVector pop3(a, POP_SIZE);
     sim1.getPopulationData(pop1);
     sim2.getPopulationData(pop2);
     sim3.getPopulationData(pop3);
     // Use expect, rather than assert for first 3 agents.
     for (unsigned int i = 0; i < 3; ++i) {
-        int x1 = pop1.getInstanceAt(i).getVariable<int>("x");
-        int x2 = pop2.getInstanceAt(i).getVariable<int>("x");
-        int x3 = pop3.getInstanceAt(i).getVariable<int>("x");
+        int x1 = pop1[i].getVariable<int>("x");
+        int x2 = pop2[i].getVariable<int>("x");
+        int x3 = pop3[i].getVariable<int>("x");
         // 10 steps with 1x +4 each.
         EXPECT_EQ(x1, 41);
         EXPECT_EQ(x2, 402);
         EXPECT_EQ(x3, 4003);
     }
     for (unsigned int i = 3; i < POP_SIZE; ++i) {
-        int x1 = pop1.getInstanceAt(i).getVariable<int>("x");
-        int x2 = pop2.getInstanceAt(i).getVariable<int>("x");
-        int x3 = pop3.getInstanceAt(i).getVariable<int>("x");
+        int x1 = pop1[i].getVariable<int>("x");
+        int x2 = pop2[i].getVariable<int>("x");
+        int x3 = pop3[i].getVariable<int>("x");
         // 10 steps with 1x +4 each.
         ASSERT_EQ(x1, 41);
         ASSERT_EQ(x2, 402);
@@ -320,13 +320,13 @@ TEST(MultiThreadDeviceTest, SameModelSeperateThread_AgentOutput) {
     m.Environment().newProperty<int>("ten thousand", 10000);
     m.Environment().newProperty<int>("zero", 0);
 
-    AgentPopulation pop_in1(a, POP_SIZE);
-    AgentPopulation pop_in2(a, POP_SIZE);
-    AgentPopulation pop_in3(a, POP_SIZE);
+    AgentVector pop_in1(a, POP_SIZE);
+    AgentVector pop_in2(a, POP_SIZE);
+    AgentVector pop_in3(a, POP_SIZE);
     for (unsigned int i = 0; i < POP_SIZE; ++i) {
-        pop_in1.getNextInstance().setVariable<int>("x", 1);
-        pop_in2.getNextInstance().setVariable<int>("x", 2);
-        pop_in3.getNextInstance().setVariable<int>("x", 3);
+        pop_in1[i].setVariable<int>("x", 1);
+        pop_in2[i].setVariable<int>("x", 2);
+        pop_in3[i].setVariable<int>("x", 3);
     }
 
     CUDASimulation sim1(m);
@@ -353,19 +353,19 @@ TEST(MultiThreadDeviceTest, SameModelSeperateThread_AgentOutput) {
     ASSERT_FALSE(has_error_3);
     // Check results
     // 1000 * 2^5
-    AgentPopulation pop1(a, 32 * POP_SIZE);
-    AgentPopulation pop2(a, 32 * POP_SIZE);
-    AgentPopulation pop3(a, 32 * POP_SIZE);
+    AgentVector pop1(a);
+    AgentVector pop2(a);
+    AgentVector pop3(a);
     sim1.getPopulationData(pop1);
     sim2.getPopulationData(pop2);
     sim3.getPopulationData(pop3);
-    EXPECT_EQ(pop1.getCurrentListSize(), 32 * POP_SIZE);
-    EXPECT_EQ(pop2.getCurrentListSize(), 32 * POP_SIZE);
-    EXPECT_EQ(pop3.getCurrentListSize(), 32 * POP_SIZE);
+    EXPECT_EQ(pop1.size(), 32 * POP_SIZE);
+    EXPECT_EQ(pop2.size(), 32 * POP_SIZE);
+    EXPECT_EQ(pop3.size(), 32 * POP_SIZE);
     for (unsigned int i = 0; i < POP_SIZE; ++i) {
-        int x1 = pop1.getInstanceAt(i).getVariable<int>("x");
-        int x2 = pop2.getInstanceAt(i).getVariable<int>("x");
-        int x3 = pop3.getInstanceAt(i).getVariable<int>("x");
+        int x1 = pop1[i].getVariable<int>("x");
+        int x2 = pop2[i].getVariable<int>("x");
+        int x3 = pop3[i].getVariable<int>("x");
         // 5 steps with 2x +1 each.
         ASSERT_EQ(x1, 11);
         ASSERT_EQ(x2, 12);
@@ -376,9 +376,9 @@ TEST(MultiThreadDeviceTest, SameModelSeperateThread_AgentOutput) {
         const unsigned int initial_pop = POP_SIZE * static_cast<unsigned int>(pow(2, step));
         const unsigned int next_pop = POP_SIZE * static_cast<unsigned int>(pow(2, step+1));
         for (unsigned int i = initial_pop; i < next_pop; ++i) {
-            int x1 = pop1.getInstanceAt(i).getVariable<int>("x");
-            int x2 = pop2.getInstanceAt(i).getVariable<int>("x");
-            int x3 = pop3.getInstanceAt(i).getVariable<int>("x");
+            int x1 = pop1[i].getVariable<int>("x");
+            int x2 = pop2[i].getVariable<int>("x");
+            int x3 = pop3[i].getVariable<int>("x");
             ASSERT_EQ(x1, 9 - (step * 2));
             ASSERT_EQ(x2, 9 - (step * 2));
             ASSERT_EQ(x3, 9 - (step * 2));
@@ -404,13 +404,13 @@ TEST(MultiThreadDeviceTest, SameModelSeperateThread_AgentFunctionCondition) {
     m.Environment().newProperty<int>("ten thousand", 10000);
     m.Environment().newProperty<int>("zero", 0);
 
-    AgentPopulation pop_in1(a, POP_SIZE);
-    AgentPopulation pop_in2(a, POP_SIZE);
-    AgentPopulation pop_in3(a, POP_SIZE);
+    AgentVector pop_in1(a, POP_SIZE);
+    AgentVector pop_in2(a, POP_SIZE);
+    AgentVector pop_in3(a, POP_SIZE);
     for (unsigned int i = 0; i < POP_SIZE; ++i) {
-        pop_in1.getNextInstance().setVariable<int>("x", 1);
-        pop_in2.getNextInstance().setVariable<int>("x", 2);
-        pop_in3.getNextInstance().setVariable<int>("x", 3);
+        pop_in1[i].setVariable<int>("x", 1);
+        pop_in2[i].setVariable<int>("x", 2);
+        pop_in3[i].setVariable<int>("x", 3);
     }
 
     CUDASimulation sim1(m);
@@ -436,17 +436,17 @@ TEST(MultiThreadDeviceTest, SameModelSeperateThread_AgentFunctionCondition) {
     ASSERT_FALSE(has_error_2);
     ASSERT_FALSE(has_error_3);
     // Check results
-    AgentPopulation pop1(a, POP_SIZE);
-    AgentPopulation pop2(a, POP_SIZE);
-    AgentPopulation pop3(a, POP_SIZE);
+    AgentVector pop1(a, POP_SIZE);
+    AgentVector pop2(a, POP_SIZE);
+    AgentVector pop3(a, POP_SIZE);
     sim1.getPopulationData(pop1);
     sim2.getPopulationData(pop2);
     sim3.getPopulationData(pop3);
     // Use expect, rather than assert for first 3 agents.
     for (unsigned int i = 0; i < 3; ++i) {
-        int x1 = pop1.getInstanceAt(i).getVariable<int>("x");
-        int x2 = pop2.getInstanceAt(i).getVariable<int>("x");
-        int x3 = pop3.getInstanceAt(i).getVariable<int>("x");
+        int x1 = pop1[i].getVariable<int>("x");
+        int x2 = pop2[i].getVariable<int>("x");
+        int x3 = pop3[i].getVariable<int>("x");
         // 1, +1, +2*9
         // 2, +2*10
         // 3, +1, +2*9
@@ -455,9 +455,9 @@ TEST(MultiThreadDeviceTest, SameModelSeperateThread_AgentFunctionCondition) {
         EXPECT_EQ(x3, 22);
     }
     for (unsigned int i = 3; i < POP_SIZE; ++i) {
-        int x1 = pop1.getInstanceAt(i).getVariable<int>("x");
-        int x2 = pop2.getInstanceAt(i).getVariable<int>("x");
-        int x3 = pop3.getInstanceAt(i).getVariable<int>("x");
+        int x1 = pop1[i].getVariable<int>("x");
+        int x2 = pop2[i].getVariable<int>("x");
+        int x3 = pop3[i].getVariable<int>("x");
         // 5 steps with 1x +1, 1x +2 each.
         ASSERT_EQ(x1, 20);
         ASSERT_EQ(x2, 22);
@@ -467,9 +467,9 @@ TEST(MultiThreadDeviceTest, SameModelSeperateThread_AgentFunctionCondition) {
 void initRunSim(std::shared_ptr<CUDASimulation> sim, const AgentDescription &a, int offset, int device, unsigned int POP_SIZE, int &exception_thrown, int steps = 10) {
     exception_thrown = 0;
     try {
-        AgentPopulation pop_in(a, POP_SIZE);
+        AgentVector pop_in(a, POP_SIZE);
         for (unsigned int i = 0; i < POP_SIZE; ++i) {
-            pop_in.getNextInstance().setVariable<int>("x", offset);
+            pop_in[i].setVariable<int>("x", offset);
         }
         sim->SimulationConfig().steps = steps;
         sim->CUDAConfig().device_id = device;
@@ -531,7 +531,7 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_Agent) {
     for (auto &th : threads) {
         th.join();
     }
-    AgentPopulation pop(a, POP_SIZE);
+    AgentVector pop(a, POP_SIZE);
     // Check results
     for (unsigned int i = 0; i < results.size(); ++i) {
         // Check exceptions
@@ -540,7 +540,7 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_Agent) {
         ASSERT_EQ(cudaSetDevice(sims[i]->CUDAConfig().device_id), cudaSuccess);
         sims[i]->getPopulationData(pop);
         for (unsigned int j = 0; j < POP_SIZE; ++j) {
-            int x = pop.getInstanceAt(j).getVariable<int>("x");
+            int x = pop[j].getVariable<int>("x");
             ASSERT_EQ(x, static_cast<int>(2 * STEPS + i));
         }
     }
@@ -595,7 +595,7 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_Message) {
     for (auto &th : threads) {
         th.join();
     }
-    AgentPopulation pop(a, POP_SIZE);
+    AgentVector pop(a, POP_SIZE);
     // Check results
     for (unsigned int i = 0; i < results.size(); ++i) {
         // Check exceptions
@@ -604,7 +604,7 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_Message) {
         ASSERT_EQ(cudaSetDevice(sims[i]->CUDAConfig().device_id), cudaSuccess);
         sims[i]->getPopulationData(pop);
         for (unsigned int j = 0; j < POP_SIZE; ++j) {
-            int x = pop.getInstanceAt(j).getVariable<int>("x");
+            int x = pop[j].getVariable<int>("x");
             ASSERT_EQ(x, static_cast<int>(POP_SIZE * STEPS + i));
         }
     }
@@ -673,7 +673,7 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_Environment) {
     for (auto &th : threads) {
         th.join();
     }
-    AgentPopulation pop(a, POP_SIZE);
+    AgentVector pop(a, POP_SIZE);
     // Check results
     for (unsigned int i = 0; i < results.size(); ++i) {
         // Check exceptions
@@ -684,7 +684,7 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_Environment) {
         int bad = 0;
         int x = static_cast<int>(4 * STEPS * (i + 1) + i);
         for (unsigned int j = 0; j < POP_SIZE; ++j) {
-            x = pop.getInstanceAt(j).getVariable<int>("x");
+            x = pop[j].getVariable<int>("x");
             if (x != static_cast<int>(4 * STEPS * (i + 1) + i)) {
                 bad++;
             }
@@ -700,7 +700,7 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_Environment) {
         ASSERT_EQ(cudaSetDevice(sims[i]->CUDAConfig().device_id), cudaSuccess);
         sims[i]->getPopulationData(pop);
         for (unsigned int j = 0; j < POP_SIZE; ++j) {
-            int x = pop.getInstanceAt(j).getVariable<int>("x");
+            int x = pop[j].getVariable<int>("x");
             ASSERT_EQ(x, static_cast<int>(4 * STEPS * (i + 1) + i));
         }
     }
@@ -756,7 +756,7 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_AgentOutput) {
     for (auto &th : threads) {
         th.join();
     }
-    AgentPopulation pop(a, POP_SIZE);
+    AgentVector pop(a, POP_SIZE);
     // Check results
     for (unsigned int i = 0; i < results.size(); ++i) {
         // Check exceptions
@@ -765,7 +765,7 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_AgentOutput) {
         ASSERT_EQ(cudaSetDevice(sims[i]->CUDAConfig().device_id), cudaSuccess);
         sims[i]->getPopulationData(pop);
         for (unsigned int j = 0; j < POP_SIZE; ++j) {
-            int x = pop.getInstanceAt(j).getVariable<int>("x");
+            int x = pop[j].getVariable<int>("x");
             // 5 steps with 2x +1 each.
             ASSERT_EQ(x, static_cast<int>(10 + i));
         }
@@ -774,7 +774,7 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_AgentOutput) {
             const unsigned int initial_pop = POP_SIZE * static_cast<unsigned int>(pow(2, step));
             const unsigned int next_pop = POP_SIZE * static_cast<unsigned int>(pow(2, step+1));
             for (unsigned int j = initial_pop; j < next_pop; ++j) {
-                int x = pop.getInstanceAt(j).getVariable<int>("x");
+                int x = pop[j].getVariable<int>("x");
                 ASSERT_EQ(x, 9 - (step * 2));
             }
         }
@@ -831,7 +831,7 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_AgentFunctionCondition) {
     for (auto &th : threads) {
         th.join();
     }
-    AgentPopulation pop(a, POP_SIZE);
+    AgentVector pop(a, POP_SIZE);
     // Check results
     for (unsigned int i = 0; i < results.size(); ++i) {
         // Check exceptions
@@ -840,7 +840,7 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_AgentFunctionCondition) {
         cudaSetDevice(sims[i]->CUDAConfig().device_id);
         sims[i]->getPopulationData(pop);
         for (unsigned int j = 0; j < POP_SIZE; ++j) {
-            int x = pop.getInstanceAt(j).getVariable<int>("x");
+            int x = pop[j].getVariable<int>("x");
             // 0, +2*10
             // 1, +1, +2*9
             // 2, +2*10

@@ -17,6 +17,7 @@
 
 #include "flamegpu/io/statereader.h"
 #include "flamegpu/model/ModelDescription.h"
+#include "flamegpu/util/StringPair.h"
 
 // Derived classes
 class xmlReader : public StateReader {
@@ -28,15 +29,14 @@ class xmlReader : public StateReader {
      * @param model_name Name from the model description hierarchy of the model to be loaded
      * @param env_desc Environment description for validating property data on load
      * @param env_init Dictionary of loaded values map:<{name, index}, value>
-     * @param model_state Map of AgentPopulation to load the agent data into per agent, key should be agent name
+     * @param model_state Map of AgentVector to load the agent data into per agent, key should be agent name
      * @param input_file Filename of the input file (This will be used to determine which reader to return)
      */
     xmlReader(
         const std::string &model_name,
         const std::unordered_map<std::string, EnvironmentDescription::PropData> &env_desc,
         std::unordered_map<std::pair<std::string, unsigned int>, Any> &env_init,
-        const std::unordered_map<std::string,
-        std::shared_ptr<AgentPopulation>> &model_state,
+        StringPairUnorderedMap<std::shared_ptr<AgentVector>> &model_state,
         const std::string &input_file,
         Simulation *sim_instance);
     /**
@@ -45,6 +45,13 @@ class xmlReader : public StateReader {
      * @throws TinyXMLError If parsing of the input file fails
      */
     int parse();
+
+ private:
+    /**
+     * Flamegpu1 xml input files are allowed to omit state
+     * This function extracts the initial state for the named agent from model_state;
+     */
+    std::string getInitialState(const std::string& agent_name) const;
 };
 
 #endif  // INCLUDE_FLAMEGPU_IO_XMLREADER_H_

@@ -12,8 +12,8 @@
 #include "tinyxml2/tinyxml2.h"              // downloaded from https:// github.com/leethomason/tinyxml2, the list of xml parsers : http:// lars.ruoff.free.fr/xmlcpp/
 #include "flamegpu/exception/FGPUException.h"
 #include "flamegpu/model/AgentDescription.h"
-#include "flamegpu/pop/AgentPopulation.h"
 #include "flamegpu/gpu/CUDASimulation.h"
+#include "flamegpu/pop/AgentVector.h"
 
 #ifndef XMLCheckResult
 #define XMLCheckResult(a_eResult) if (a_eResult != tinyxml2::XML_SUCCESS) { FGPUException::setLocation(__FILE__, __LINE__);\
@@ -56,7 +56,8 @@
 
 xmlWriter::xmlWriter(
     const std::string &model_name,
-    const unsigned int &sim_instance_id, const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &model,
+    const unsigned int &sim_instance_id,
+    const StringPairUnorderedMap<std::shared_ptr<AgentVector>> &model,
     const unsigned int &iterations,
     const std::string &output_file,
     const Simulation *_sim_instance)
@@ -185,74 +186,75 @@ int xmlWriter::writeStates(bool prettyPrint) {
     unsigned int populationSize;
 
     // for each agent types
-    for (auto &agent : model_state) {
+    for (const auto &agent : model_state) {
         // For each agent state
-        for (auto &state : agent.second->getAgentDescription().states) {
-            populationSize = agent.second->getStateMemory(state).getStateListSize();
-            if (populationSize) {
-                for (unsigned int i = 0; i < populationSize; ++i) {
-                    // Create vars block
-                    tinyxml2::XMLElement * pXagentElement = doc.NewElement("xagent");
+        const std::string &agent_name = agent.first.first;
+        const std::string &state_name = agent.first.second;
 
-                    AgentInstance instance = agent.second->getInstanceAt(i, state);
-                    const auto &mm = agent.second->getAgentDescription().variables;
+        populationSize = agent.second->size();
+        if (populationSize) {
+            for (unsigned int i = 0; i < populationSize; ++i) {
+                // Create vars block
+                tinyxml2::XMLElement * pXagentElement = doc.NewElement("xagent");
 
-                    // Add agent's name to block
-                    tinyxml2::XMLElement * pXagentNameElement = doc.NewElement("name");
-                    pXagentNameElement->SetText(agent.first.c_str());
-                    pXagentElement->InsertEndChild(pXagentNameElement);
-                    // Add state's name to block
-                    tinyxml2::XMLElement * pStateNameElement = doc.NewElement("state");
-                    pStateNameElement->SetText(state.c_str());
-                    pXagentElement->InsertEndChild(pStateNameElement);
+                AgentVector::Agent instance = agent.second->at(i);
+                const VariableMap &mm = agent.second->getVariableMetaData();
 
-                    // for each variable
-                    for (auto iter_mm = mm.begin(); iter_mm != mm.end(); ++iter_mm) {
-                        const std::string variable_name = iter_mm->first;
+                // Add agent's name to block
+                tinyxml2::XMLElement * pXagentNameElement = doc.NewElement("name");
+                pXagentNameElement->SetText(agent_name.c_str());
+                pXagentElement->InsertEndChild(pXagentNameElement);
+                // Add state's name to block
+                tinyxml2::XMLElement * pStateNameElement = doc.NewElement("state");
+                pStateNameElement->SetText(state_name.c_str());
+                pXagentElement->InsertEndChild(pStateNameElement);
 
-                        tinyxml2::XMLElement* pListElement = doc.NewElement(variable_name.c_str());
-                        if (i == 0)
-                            pListElement->SetAttribute("type", iter_mm->second.type.name());
+                // for each variable
+                for (auto iter_mm = mm.begin(); iter_mm != mm.end(); ++iter_mm) {
+                    const std::string variable_name = iter_mm->first;
 
-                        // Output properties
-                        std::stringstream ss;
-                        // Loop through elements, to construct csv string
-                        for (unsigned int el = 0; el < iter_mm->second.elements; ++el) {
-                            if (iter_mm->second.type == std::type_index(typeid(float))) {
-                                ss << instance.getVariable<float>(variable_name, el);
-                            } else if (iter_mm->second.type == std::type_index(typeid(double))) {
-                                ss << instance.getVariable<double>(variable_name, el);
-                            } else if (iter_mm->second.type == std::type_index(typeid(int64_t))) {
-                                ss << instance.getVariable<int64_t>(variable_name, el);
-                            } else if (iter_mm->second.type == std::type_index(typeid(uint64_t))) {
-                                ss << instance.getVariable<uint64_t>(variable_name, el);
-                            } else if (iter_mm->second.type == std::type_index(typeid(int32_t))) {
-                                ss << instance.getVariable<int32_t>(variable_name, el);
-                            } else if (iter_mm->second.type == std::type_index(typeid(uint32_t))) {
-                                ss << instance.getVariable<uint32_t>(variable_name, el);
-                            } else if (iter_mm->second.type == std::type_index(typeid(int16_t))) {
-                                ss << instance.getVariable<int16_t>(variable_name, el);
-                            } else if (iter_mm->second.type == std::type_index(typeid(uint16_t))) {
-                                ss << instance.getVariable<uint16_t>(variable_name, el);
-                            } else if (iter_mm->second.type == std::type_index(typeid(int8_t))) {
-                                ss << static_cast<int32_t>(instance.getVariable<int8_t>(variable_name, el));  // Char outputs weird if being used as an integer
-                            } else if (iter_mm->second.type == std::type_index(typeid(uint8_t))) {
-                                ss << static_cast<uint32_t>(instance.getVariable<uint8_t>(variable_name, el));  // Char outputs weird if being used as an integer
-                            } else {
-                                THROW TinyXMLError("Agent '%s' contains variable '%s' of unsupported type '%s', "
-                                    "in xmlWriter::writeStates()\n", agent.first.c_str(), variable_name.c_str(), iter_mm->second.type.name());
-                            }
-                            if (el + 1 != iter_mm->second.elements)
-                                ss << ",";
+                    tinyxml2::XMLElement* pListElement = doc.NewElement(variable_name.c_str());
+                    if (i == 0)
+                        pListElement->SetAttribute("type", iter_mm->second.type.name());
+
+                    // Output properties
+                    std::stringstream ss;
+                    // Loop through elements, to construct csv string
+                    for (unsigned int el = 0; el < iter_mm->second.elements; ++el) {
+                        if (iter_mm->second.type == std::type_index(typeid(float))) {
+                            ss << instance.getVariable<float>(variable_name, el);
+                        } else if (iter_mm->second.type == std::type_index(typeid(double))) {
+                            ss << instance.getVariable<double>(variable_name, el);
+                        } else if (iter_mm->second.type == std::type_index(typeid(int64_t))) {
+                            ss << instance.getVariable<int64_t>(variable_name, el);
+                        } else if (iter_mm->second.type == std::type_index(typeid(uint64_t))) {
+                            ss << instance.getVariable<uint64_t>(variable_name, el);
+                        } else if (iter_mm->second.type == std::type_index(typeid(int32_t))) {
+                            ss << instance.getVariable<int32_t>(variable_name, el);
+                        } else if (iter_mm->second.type == std::type_index(typeid(uint32_t))) {
+                            ss << instance.getVariable<uint32_t>(variable_name, el);
+                        } else if (iter_mm->second.type == std::type_index(typeid(int16_t))) {
+                            ss << instance.getVariable<int16_t>(variable_name, el);
+                        } else if (iter_mm->second.type == std::type_index(typeid(uint16_t))) {
+                            ss << instance.getVariable<uint16_t>(variable_name, el);
+                        } else if (iter_mm->second.type == std::type_index(typeid(int8_t))) {
+                            ss << static_cast<int32_t>(instance.getVariable<int8_t>(variable_name, el));  // Char outputs weird if being used as an integer
+                        } else if (iter_mm->second.type == std::type_index(typeid(uint8_t))) {
+                            ss << static_cast<uint32_t>(instance.getVariable<uint8_t>(variable_name, el));  // Char outputs weird if being used as an integer
+                        } else {
+                            THROW TinyXMLError("Agent '%s' contains variable '%s' of unsupported type '%s', "
+                                "in xmlWriter::writeStates()\n", agent_name.c_str(), variable_name.c_str(), iter_mm->second.type.name());
                         }
-                        pListElement->SetText(ss.str().c_str());
-                        pXagentElement->InsertEndChild(pListElement);
+                        if (el + 1 != iter_mm->second.elements)
+                            ss << ",";
                     }
-                    // Insert xagent block into doc root
-                    pRoot->InsertEndChild(pXagentElement);
+                    pListElement->SetText(ss.str().c_str());
+                    pXagentElement->InsertEndChild(pListElement);
                 }
-            }  // if state has agents
-        }
+                // Insert xagent block into doc root
+                pRoot->InsertEndChild(pXagentElement);
+            }
+        }  // if state has agents
     }
 
     tinyxml2::XMLError errorId = doc.SaveFile(outputFile.c_str(), !prettyPrint);

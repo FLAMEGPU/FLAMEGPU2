@@ -94,11 +94,10 @@ class TestMessage_BruteForce(TestCase):
         fo.setMessageOutput(msg)
         fi = a.newRTCFunction(IN_FUNCTION_NAME, InFunction)
         fi.setMessageInput(msg)
-        pop = pyflamegpu.AgentPopulation(a, AGENT_COUNT)
+        pop = pyflamegpu.AgentVector(a, AGENT_COUNT)
         sum = 0
         product = 1
-        for i in range(AGENT_COUNT): 
-            ai = pop.getNextInstance()
+        for ai in pop:
             x = rand.randint(-3, 3)
             sum += x
             product *= x
@@ -118,8 +117,7 @@ class TestMessage_BruteForce(TestCase):
         c.simulate()
         c.getPopulationData(pop)
         # Validate each agent has same result
-        for i in range(AGENT_COUNT): 
-            ai = pop.getInstanceAt(i)
+        for ai in pop:
             assert ai.getVariableInt("sum") == sum
             assert ai.getVariableInt("product") == product
         
@@ -139,11 +137,10 @@ class TestMessage_BruteForce(TestCase):
         fo.setMessageOutput(msg)
         fi = a.newRTCFunction(IN_FUNCTION_NAME, InFunction2)
         fi.setMessageInput(msg)
-        pop = pyflamegpu.AgentPopulation(a, AGENT_COUNT)
+        pop = pyflamegpu.AgentVector(a, AGENT_COUNT)
         sum = 0
         product = 1
-        for i in range(AGENT_COUNT): 
-            ai = pop.getNextInstance()
+        for ai in pop:
             x = rand.randint(-3, 3)
             sum += x
             product *= x
@@ -167,8 +164,7 @@ class TestMessage_BruteForce(TestCase):
         c.simulate()
         c.getPopulationData(pop)
         # Validate each agent has same result
-        for i in range(AGENT_COUNT): 
-            ai = pop.getInstanceAt(i)
+        for ai in pop:
             assert ai.getVariableInt("sum") == sum
             assert ai.getVariableInt("product") == product
         
@@ -190,11 +186,10 @@ class TestMessage_BruteForce(TestCase):
         fi = a.newRTCFunction(IN_FUNCTION_NAME, InFunction)
         fi.setMessageInput(msg)
 
-        pop = pyflamegpu.AgentPopulation(a, AGENT_COUNT)
+        pop = pyflamegpu.AgentVector(a, AGENT_COUNT)
         sum = 0
         product = 1
-        for i in range(AGENT_COUNT): 
-            ai = pop.getNextInstance()
+        for ai in pop:
             x = rand.randint(-3, 3)
             if (x): 
                 sum += x
@@ -216,8 +211,7 @@ class TestMessage_BruteForce(TestCase):
         c.simulate()
         c.getPopulationData(pop)
         # Validate each agent has same result
-        for i in range(AGENT_COUNT): 
-            ai = pop.getInstanceAt(i)
+        for ai in pop:
             assert ai.getVariableInt("sum") == sum
             assert ai.getVariableInt("product") == product
         
@@ -236,11 +230,10 @@ class TestMessage_BruteForce(TestCase):
         fi = a.newRTCFunction(IN_FUNCTION_NAME, InFunction2)
         fi.setMessageInput(msg)
 
-        pop = pyflamegpu.AgentPopulation(a, AGENT_COUNT)
+        pop = pyflamegpu.AgentVector(a, AGENT_COUNT)
         sum = 0
         product = 1
-        for i in range(AGENT_COUNT): 
-            ai = pop.getNextInstance()
+        for ai in pop:
             x = rand.randint(-3,3)
             if (x): 
                 sum += x
@@ -252,8 +245,7 @@ class TestMessage_BruteForce(TestCase):
             ai.setVariableInt("sum", 0)
             ai.setVariableInt("product", 1)
         
-        for i in range(AGENT_COUNT): 
-            ai = pop.getInstanceAt(i)
+        for ai in pop:
             x = ai.getVariableInt("x")
             if (x + 1): # dont proceed if x == -1
                 sum += (x + 1)
@@ -271,8 +263,7 @@ class TestMessage_BruteForce(TestCase):
         c.simulate()
         c.getPopulationData(pop)
         # Validate each agent has same result
-        for i in range(AGENT_COUNT): 
-            ai = pop.getInstanceAt(i)
+        for ai in pop:
             assert ai.getVariableInt("sum") == sum
             assert ai.getVariableInt("product") == product
         
@@ -302,16 +293,15 @@ class TestMessage_BruteForce(TestCase):
         layer.addAgentFunction(cf)
         
         # Create 1 agent
-        pop_in = pyflamegpu.AgentPopulation(model.Agent("agent"), 1)
-        pop_in.getNextInstance()
+        pop_in = pyflamegpu.AgentVector(model.Agent("agent"), 1)
         cuda_model = pyflamegpu.CUDASimulation(model)
         cuda_model.setPopulationData(pop_in)
         # Execute model
         cuda_model.step()
         # Check result
-        pop_out = pyflamegpu.AgentPopulation(model.Agent("agent"), 1)
-        pop_out.getNextInstance().setVariableUInt("count", 1)
+        pop_out = pyflamegpu.AgentVector(model.Agent("agent"), 1)
+        pop_out.front().setVariableUInt("count", 1)
         cuda_model.getPopulationData(pop_out)
-        assert pop_out.getCurrentListSize() == 1
-        ai = pop_out.getInstanceAt(0)
+        assert len(pop_out) == 1
+        ai = pop_out.front()
         assert ai.getVariableUInt("count") == 0

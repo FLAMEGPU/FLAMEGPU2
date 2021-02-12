@@ -62,9 +62,9 @@ class DeviceAPITest(TestCase):
         func.setAllowAgentDeath(True)
         model.newLayer().addAgentFunction(func)
         # Init pop
-        init_population = pyflamegpu.AgentPopulation(agent, AGENT_COUNT)
+        init_population = pyflamegpu.AgentVector(agent, AGENT_COUNT)
         for i in range(AGENT_COUNT):
-            instance = init_population.getNextInstance("default")
+            instance = init_population[i]
             instance.setVariableFloat("x", 12.0)
             instance.setVariableArrayInt("array_var", (2 + i, 4 + i, 8 + i, 16 + i) )
             instance.setVariableFloat("y", 14.0)
@@ -76,14 +76,13 @@ class DeviceAPITest(TestCase):
         # Run 1 step to ensure data is pushed to device
         cuda_model.step()
         # Recover data from device
-        population = pyflamegpu.AgentPopulation(agent)
+        population = pyflamegpu.AgentVector(agent)
         cuda_model.getPopulationData(population)
         # Check data is intact
         # Might need to go more complicate and give different agents different values
         # They should remain in order for such a basic function, but can't guarntee
-        assert population.getCurrentListSize() == AGENT_COUNT / 2
-        for i in range(population.getCurrentListSize()): 
-            instance = population.getInstanceAt(i)
+        assert len(population) == AGENT_COUNT / 2
+        for instance in population:
             # Check neighbouring vars are correct
             assert instance.getVariableFloat("x") == 12.0
             assert instance.getVariableFloat("y") == 14.0
@@ -108,9 +107,9 @@ class DeviceAPITest(TestCase):
         func = agent.newRTCFunction("some_function", self.agent_fn_da_set)
         model.newLayer().addAgentFunction(func)
         # Init pop
-        init_population = pyflamegpu.AgentPopulation(agent, AGENT_COUNT)
+        init_population = pyflamegpu.AgentVector(agent, AGENT_COUNT)
         for i in range(AGENT_COUNT):
-            instance = init_population.getNextInstance("default")
+            instance = init_population[i]
             instance.setVariableFloat("x", 12.0)
             instance.setVariableFloat("y", 14.0)
             instance.setVariableInt("id", i)
@@ -121,14 +120,13 @@ class DeviceAPITest(TestCase):
         # Run 1 step to ensure data is pushed to device
         cuda_model.step()
         # Recover data from device
-        population = pyflamegpu.AgentPopulation(agent, AGENT_COUNT)
+        population = pyflamegpu.AgentVector(agent, AGENT_COUNT)
         cuda_model.getPopulationData(population)
         # Check data is intact
         # Might need to go more complicate and give different agents different values
         # They should remain in order for such a basic function, but can't guarntee
-        assert population.getCurrentListSize() == AGENT_COUNT
-        for i in range(population.getCurrentListSize()): 
-            instance = population.getInstanceAt(i)
+        assert len(population) == AGENT_COUNT
+        for instance in population:
             # Check neighbouring vars are correct
             assert instance.getVariableFloat("x") == 12.0
             assert instance.getVariableFloat("y") == 14.0
@@ -156,9 +154,9 @@ class DeviceAPITest(TestCase):
         func = agent.newRTCFunction("some_function", self.agent_fn_da_get)
         model.newLayer().addAgentFunction(func)
         # Init pop
-        init_population = pyflamegpu.AgentPopulation(agent, AGENT_COUNT)
+        init_population = pyflamegpu.AgentVector(agent, AGENT_COUNT)
         for i in range(AGENT_COUNT):
-            instance = init_population.getNextInstance("default")
+            instance = init_population[i]
             instance.setVariableFloat("x", 12.0)
             instance.setVariableArrayInt("array_var", (2 + i, 4 + i, 8 + i, 16 + i) )
             instance.setVariableFloat("y", 14.0)
@@ -170,14 +168,13 @@ class DeviceAPITest(TestCase):
         # Run 1 step to ensure data is pushed to device
         cuda_model.step()
         # Recover data from device
-        population = pyflamegpu.AgentPopulation(agent, AGENT_COUNT)
+        population = pyflamegpu.AgentVector(agent, AGENT_COUNT)
         cuda_model.getPopulationData(population)
         # Check data is intact
         # Might need to go more complicate and give different agents different values
         # They should remain in order for such a basic function, but can't guarntee
-        assert population.getCurrentListSize() == AGENT_COUNT
-        for i in range(population.getCurrentListSize()): 
-            instance = population.getInstanceAt(i)
+        assert len(population) == AGENT_COUNT
+        for instance in population:
             # Check neighbouring vars are correct
             assert instance.getVariableFloat("x") == 12.0
             assert instance.getVariableFloat("y") == 14.0

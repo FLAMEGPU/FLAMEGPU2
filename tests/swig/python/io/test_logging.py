@@ -96,9 +96,9 @@ class LoggingTest(TestCase):
         slcfg.setFrequency(2);
 
         # Create agent population
-        pop = pyflamegpu.AgentPopulation(a, 101);
+        pop = pyflamegpu.AgentVector(a, 101);
         for i in range(101):
-            instance = pop.getNextInstance();
+            instance = pop[i];
             instance.setVariableFloat("float_var", i);
             instance.setVariableInt("int_var", i+1);
             instance.setVariableUInt("uint_var", i+2);
@@ -210,9 +210,9 @@ class LoggingTest(TestCase):
         slcfg.setFrequency(2);
 
         # Create agent population
-        pop = pyflamegpu.AgentPopulation(a, 101);
+        pop = pyflamegpu.AgentVector(a, 101);
         for i in range(101):
-            instance = pop.getNextInstance();
+            instance = pop[i];
             instance.setVariableFloat("float_var", i);
             instance.setVariableInt("int_var", i+1);
             instance.setVariableUInt("uint_var", i+2);

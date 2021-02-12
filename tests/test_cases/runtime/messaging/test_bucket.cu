@@ -116,12 +116,12 @@ TEST(BucketMsgTest, Mandatory) {
     }
     CUDASimulation cuda_model(model);
 
-    AgentPopulation population(model.Agent("agent"), AGENT_COUNT);
+    AgentVector population(model.Agent("agent"), AGENT_COUNT);
     // Initialise agents (TODO)
     {
         // Currently population has not been init, so generate an agent population on the fly
         for (unsigned int i = 0; i < AGENT_COUNT; i++) {
-            AgentInstance instance = population.getNextInstance();
+            AgentVector::Agent instance = population[i];
             instance.setVariable<int>("id", i);
             // Create it if it doesn't already exist
             if (bucket_count.find(i/2) == bucket_count.end()) {
@@ -140,8 +140,7 @@ TEST(BucketMsgTest, Mandatory) {
     // Recover the results and check they match what was expected
     cuda_model.getPopulationData(population);
     // Validate each agent has correct result
-    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = population.getInstanceAt(i);
+    for (AgentVector::Agent ai : population) {
         const int id = ai.getVariable<int>("id");
         const int id_m1 = id == 0 ? 0 : id-1;
         unsigned int count1 = ai.getVariable<unsigned int>("count1");
@@ -185,7 +184,7 @@ TEST(BucketMsgTest, Optional) {
     }
     CUDASimulation cuda_model(model);
 
-    AgentPopulation population(model.Agent("agent"), AGENT_COUNT);
+    AgentVector population(model.Agent("agent"), AGENT_COUNT);
     // Initialise agents (TODO)
     {
         // Currently population has not been init, so generate an agent population on the fly
@@ -193,7 +192,7 @@ TEST(BucketMsgTest, Optional) {
         std::uniform_real_distribution<float> dist(0.0f, 1.0f);
         for (unsigned int i = 0; i < AGENT_COUNT; i++) {
             int do_out =  dist(rng) > 0.3 ? 1 : 0;
-            AgentInstance instance = population.getNextInstance();
+            AgentVector::Agent instance = population[i];
             instance.setVariable<int>("id", i);
             instance.setVariable<int>("do_output", do_out);
             // Create it if it doesn't already exist
@@ -215,8 +214,7 @@ TEST(BucketMsgTest, Optional) {
     // Recover the results and check they match what was expected
     cuda_model.getPopulationData(population);
     // Validate each agent has correct result
-    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = population.getInstanceAt(i);
+    for (AgentVector::Agent ai : population) {
         const int id = ai.getVariable<int>("id");
         const int id_m1 = id == 0 ? 0 : id-1;
         unsigned int count1 = ai.getVariable<unsigned int>("count1");
@@ -260,14 +258,14 @@ TEST(BucketMsgTest, OptionalNone) {
     }
     CUDASimulation cuda_model(model);
 
-    AgentPopulation population(model.Agent("agent"), AGENT_COUNT);
+    AgentVector population(model.Agent("agent"), AGENT_COUNT);
     // Initialise agents (TODO)
     {
         // Currently population has not been init, so generate an agent population on the fly
         std::default_random_engine rng;
         std::uniform_real_distribution<float> dist(0.0f, 1.0f);
         for (unsigned int i = 0; i < AGENT_COUNT; i++) {
-            AgentInstance instance = population.getNextInstance();
+            AgentVector::Agent instance = population[i];
             instance.setVariable<int>("id", i);
             // Create it if it doesn't already exist
             if (bucket_count.find(i/2) == bucket_count.end()) {
@@ -284,8 +282,7 @@ TEST(BucketMsgTest, OptionalNone) {
     // Recover the results and check they match what was expected
     cuda_model.getPopulationData(population);
     // Validate each agent has correct result
-    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = population.getInstanceAt(i);
+    for (AgentVector::Agent ai : population) {
         unsigned int count1 = ai.getVariable<unsigned int>("count1");
         unsigned int count2 = ai.getVariable<unsigned int>("count2");
         unsigned int sum = ai.getVariable<unsigned int>("sum");
@@ -325,12 +322,12 @@ TEST(BucketMsgTest, Mandatory_Range) {
     }
     CUDASimulation cuda_model(model);
 
-    AgentPopulation population(model.Agent("agent"), AGENT_COUNT);
+    AgentVector population(model.Agent("agent"), AGENT_COUNT);
     // Initialise agents (TODO)
     {
         // Currently population has not been init, so generate an agent population on the fly
         for (unsigned int i = 0; i < AGENT_COUNT; i++) {
-            AgentInstance instance = population.getNextInstance();
+            AgentVector::Agent instance = population[i];
             instance.setVariable<int>("id", i);
             // Create it if it doesn't already exist
             if (bucket_count.find(i/2) == bucket_count.end()) {
@@ -349,8 +346,7 @@ TEST(BucketMsgTest, Mandatory_Range) {
     // Recover the results and check they match what was expected
     cuda_model.getPopulationData(population);
     // Validate each agent has correct result
-    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = population.getInstanceAt(i);
+    for (AgentVector::Agent ai : population) {
         const int id = ai.getVariable<int>("id");
         const int id_m4 = ((id / 8) * 4);
         unsigned int count1 = ai.getVariable<unsigned int>("count1");

@@ -53,7 +53,7 @@ class MiniSim {
         agent.newVariable<int32_t>("int32_t");
         agent.newVariable<uint64_t>("uint64_t");
         agent.newVariable<int64_t>("int64_t");
-        population = new AgentPopulation(agent, TEST_LEN);
+        population = new AgentVector(agent, TEST_LEN);
     }
     ~MiniSim() { delete population; }
     void run() {
@@ -71,7 +71,7 @@ class MiniSim {
     }
     ModelDescription model;
     AgentDescription &agent;
-    AgentPopulation *population;
+    AgentVector*population;
 };
 /**
 * This defines a common fixture used as a base for all test cases in the file

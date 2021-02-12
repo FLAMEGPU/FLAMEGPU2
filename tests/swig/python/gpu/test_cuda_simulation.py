@@ -148,10 +148,10 @@ class TestSimulation(TestCase):
         a = m.newAgent("Agent")
         m.newLayer("Layer").addAgentFunction(a.newRTCFunction("SetGetFn", self.SetGetFn))
         a.newVariableInt("test")
-        pop = pyflamegpu.AgentPopulation(a, AGENT_COUNT);
+        pop = pyflamegpu.AgentVector(a, AGENT_COUNT);
         # set agent variable data
         for _i in range(AGENT_COUNT):
-            i = pop.getNextInstance();
+            i = pop[_i];
             i.setVariableInt("test", _i)
             with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # InvalidVarType exception 
                 i.setVariableFloat("test", float(_i))
@@ -164,7 +164,7 @@ class TestSimulation(TestCase):
         c.getPopulationData(pop);
         # Check results and reset agent variable data
         for _i in range(AGENT_COUNT):
-            i = pop.getInstanceAt(_i);
+            i = pop[_i];
             assert i.getVariableInt("test") == _i * 3
             i.setVariableInt("test", _i * 2);
         # perform second simulation
@@ -172,7 +172,7 @@ class TestSimulation(TestCase):
         c.simulate();
         c.getPopulationData(pop);
         for _i in range(AGENT_COUNT):
-            i = pop.getInstanceAt(_i);
+            i = pop[_i];
             assert i.getVariableInt("test") == _i * 3 * 2
             with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # InvalidVarType exception
                 i.getVariableFloat("test")
@@ -184,18 +184,18 @@ class TestSimulation(TestCase):
         a2 = m2.newAgent("Agent2");
         m = pyflamegpu.ModelDescription("test_set_get_population_data_invalid_cuda_agent")
 
-        pop = pyflamegpu.AgentPopulation(a2, AGENT_COUNT);
+        pop = pyflamegpu.AgentVector(a2, AGENT_COUNT);
 
         c = pyflamegpu.CUDASimulation(m)
         # Test setPopulationData
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # InvalidCudaAgent exception
             c.setPopulationData(pop)
-        assert e.value.type() == "InvalidCudaAgent"
+        assert e.value.type() == "InvalidAgent"
         
         # Test getPopulationData
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # InvalidCudaAgent exception
             c.getPopulationData(pop)
-        assert e.value.type() == "InvalidCudaAgent"
+        assert e.value.type() == "InvalidAgent"
 
     """
     GetAgent Test is not possible without CUDA bindings
@@ -206,7 +206,7 @@ class TestSimulation(TestCase):
         # Test that step does a single step
         m = pyflamegpu.ModelDescription("test_step")
         a = m.newAgent("Agent")
-        pop = pyflamegpu.AgentPopulation(a, AGENT_COUNT)
+        pop = pyflamegpu.AgentVector(a, AGENT_COUNT)
         # Create IncrementCounter object to add a step function to the special addPythonStepFunction wrapper
         inc = IncrementCounter()
         m.addStepFunctionCallback(inc)
@@ -229,7 +229,7 @@ class TestSimulation(TestCase):
         # Test that step does a single step
         m = pyflamegpu.ModelDescription("test_simulate")
         a = m.newAgent("Agent")
-        pop = pyflamegpu.AgentPopulation(a, AGENT_COUNT)
+        pop = pyflamegpu.AgentVector(a, AGENT_COUNT)
         # Create IncrementCounter object to add a step function to the special addPythonStepFunction wrapper
         inc = IncrementCounter()
         m.addStepFunctionCallback(inc)
@@ -265,11 +265,10 @@ class TestSimulation(TestCase):
         death_func = a.newRTCFunction("DeathFunc", self.DeathFunc)
         death_func.setAllowAgentDeath(True)
         m.newLayer().addAgentFunction(death_func)
-        pop = pyflamegpu.AgentPopulation(a, AGENT_COUNT)
+        pop = pyflamegpu.AgentVector(a, AGENT_COUNT)
         c = pyflamegpu.CUDASimulation(m)
         expected_output = []
-        for i in range(AGENT_COUNT):
-            p = pop.getNextInstance()
+        for p in pop:
             rng = randint(0,9999)
             p.setVariableInt("x", rng)
             if rng % 2 != 0:
@@ -278,9 +277,9 @@ class TestSimulation(TestCase):
         c.SimulationConfig().steps = 1
         c.simulate()
         c.getPopulationData(pop)
-        assert pop.getCurrentListSize() == len(expected_output)
-        for i in range(pop.getCurrentListSize()):
-            ai = pop.getInstanceAt(i)
+        assert pop.size() == len(expected_output)
+        for i in range(pop.size()):
+            ai = pop[i]
             assert ai.getVariableInt("x") == expected_output[i]
 
     def test_config_inLayerConcurrency(self):

@@ -26,7 +26,6 @@ using std::experimental::filesystem::v1::path;
 
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/model/AgentFunctionDescription.h"
-#include "flamegpu/pop/AgentPopulation.h"
 #include "flamegpu/runtime/cuRVE/curve.h"
 #include "flamegpu/runtime/cuRVE/curve_rtc.h"
 #include "flamegpu/gpu/CUDAScatter.h"
@@ -161,37 +160,41 @@ void CUDAAgent::unmapRuntimeVariables(const AgentFunctionData& func, const unsig
     // No current need to unmap RTC variables as they are specific to the agent functions and thus do not persist beyond the scope of a single function
 }
 
-void CUDAAgent::setPopulationData(const AgentPopulation& population, CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream) {
-    // Make sure population uses same agent description as was used to initialise the agent CUDAAgent
-    if (population.getAgentDescription() != agent_description) {
-        THROW InvalidCudaAgentDesc("Agent State memory has different description to CUDA Agent ('%s'), "
-            "in CUDAAgentStateList::setPopulationData().",
-            agent_description.name.c_str());
+void CUDAAgent::setPopulationData(const AgentVector& population, const std::string& state_name, CUDAScatter& scatter, const unsigned int& streamId, const cudaStream_t& stream) {
+    // Validate agent state
+    auto our_state = state_map.find(state_name);
+    if (our_state == state_map.end()) {
+        if (state_name == ModelData::DEFAULT_STATE) {
+            THROW InvalidAgentState("Agent '%s' does not use the default state, so the state must be passed explicitly, "
+                "in CUDAAgent::setPopulationData()",
+                state_name.c_str(), population.getAgentName().c_str());
+        } else {
+            THROW InvalidAgentState("State '%s' was not found in agent '%s', "
+                "in CUDAAgent::setPopulationData()",
+                state_name.c_str(), population.getAgentName().c_str());
+        }
     }
-    // For each possible state
-    for (const auto &state : agent_description.states) {
-        auto &our_state = state_map.at(state);
-        // Copy population data
-        our_state->setAgentData(population.getReadOnlyStateMemory(state), scatter, streamId, stream);
-    }
+    // Copy population data
+    // This call hierarchy validates agent desc matches
+    our_state->second->setAgentData(population, scatter, streamId, stream);
 }
-
-void CUDAAgent::getPopulationData(AgentPopulation& population) const {
-    // Make sure population uses same agent description as was used to initialise the agent CUDAAgent
-    if (population.getAgentDescription() != agent_description) {
-        THROW InvalidCudaAgentDesc("Agent State memory has different description to CUDA Agent ('%s'), "
-            "in CUDAAgentStateList::getPopulationData().",
-            agent_description.name.c_str());
+void CUDAAgent::getPopulationData(AgentVector& population, const std::string& state_name) const {
+    // Validate agent state
+    auto our_state = state_map.find(state_name);
+    if (our_state == state_map.end()) {
+        if (state_name == ModelData::DEFAULT_STATE) {
+            THROW InvalidAgentState("Agent '%s' does not use the default state, so the state must be passed explicitly, "
+                "in CUDAAgent::getPopulationData()",
+                state_name.c_str(), population.getAgentName().c_str());
+        } else {
+            THROW InvalidAgentState("State '%s' was not found in agent '%s', "
+                "in CUDAAgent::getPopulationData()",
+                state_name.c_str(), population.getAgentName().c_str());
+        }
     }
-    // For each possible state
-    for (const auto &state : agent_description.states) {
-        auto &our_state = state_map.at(state);
-        // All buffers in Agent pop are same size, so resize here
-        if (population.getMaximumStateListCapacity() < our_state->getSize())
-            population.setStateListCapacity(our_state->getSize());
-        // Copy population data
-        our_state->getAgentData(population.getStateMemory(state));
-    }
+    // Copy population data
+    // This call hierarchy validates agent desc matches
+    our_state->second->getAgentData(population);
 }
 /**
  * Returns the number of alive and active agents in the named state

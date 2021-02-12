@@ -95,9 +95,8 @@ class TestMessageAppendTruncate(TestCase):
         fi = a.newRTCFunction(IN_FUNCTION_NAME, In_AppendTruncate)
         fi.setMessageInput(msg)
 
-        pop = pyflamegpu.AgentPopulation(a, AGENT_COUNT)
-        for i in range(AGENT_COUNT): 
-            ai = pop.getNextInstance()
+        pop = pyflamegpu.AgentVector(a, AGENT_COUNT)
+        for ai in pop:
             ai.setVariableUInt("count", 0)
         
         lo = m.newLayer(OUT_LAYER_NAME)
@@ -109,15 +108,13 @@ class TestMessageAppendTruncate(TestCase):
         c.step()
         c.getPopulationData(pop)
         # Validate each agent has same result
-        for i in range(AGENT_COUNT): 
-            ai = pop.getInstanceAt(i)
+        for ai in pop:
             assert ai.getVariableUInt("count") == AGENT_COUNT
         
         c.step()
         c.getPopulationData(pop)
         # Validate each agent has same result
-        for i in range(AGENT_COUNT): 
-            ai = pop.getInstanceAt(i)
+        for ai in pop:
             assert ai.getVariableUInt("count") == AGENT_COUNT
         
     
@@ -135,9 +132,8 @@ class TestMessageAppendTruncate(TestCase):
         fi = a.newRTCFunction(IN_FUNCTION_NAME, In_AppendTruncate2)
         fi.setMessageInput(msg)
 
-        pop = pyflamegpu.AgentPopulation(a, AGENT_COUNT)
-        for i in range(AGENT_COUNT): 
-            ai = pop.getNextInstance()
+        pop = pyflamegpu.AgentVector(a, AGENT_COUNT)
+        for ai in pop:
             ai.setVariableUInt("count0", 0)
             ai.setVariableUInt("count1", 0)
         
@@ -152,16 +148,14 @@ class TestMessageAppendTruncate(TestCase):
         c.step()
         c.getPopulationData(pop)
         # Validate each agent has same result
-        for i in range(AGENT_COUNT): 
-            ai = pop.getInstanceAt(i)
+        for ai in pop:
             assert ai.getVariableUInt("count0") == AGENT_COUNT
             assert ai.getVariableUInt("count1") == AGENT_COUNT
         
         c.step()
         c.getPopulationData(pop)
         # Validate each agent has same result
-        for i in range(AGENT_COUNT): 
-            ai = pop.getInstanceAt(i)
+        for ai in pop:
             assert ai.getVariableUInt("count0") == AGENT_COUNT
             assert ai.getVariableUInt("count1") == AGENT_COUNT
         
@@ -179,9 +173,8 @@ class TestMessageAppendTruncate(TestCase):
         fi = a.newRTCFunction(IN_FUNCTION_NAME, In_AppendTruncate)
         fi.setMessageInput(msg)
         result_count = 0
-        pop = pyflamegpu.AgentPopulation(a, AGENT_COUNT)
-        for i in range(AGENT_COUNT): 
-            ai = pop.getNextInstance()
+        pop = pyflamegpu.AgentVector(a, AGENT_COUNT)
+        for ai in pop:
             if rand.random() < 0.7:   # 70% chance of outputting
                 ai.setVariableUInt("do_out", 1)
                 result_count += 1
@@ -199,15 +192,13 @@ class TestMessageAppendTruncate(TestCase):
         c.step()
         c.getPopulationData(pop)
         # Validate each agent has same result
-        for i in range(AGENT_COUNT): 
-            ai = pop.getInstanceAt(i)
+        for ai in pop:
             assert ai.getVariableUInt("count") == result_count
         
         c.step()
         c.getPopulationData(pop)
         # Validate each agent has same result
-        for i in range(AGENT_COUNT): 
-            ai = pop.getInstanceAt(i)
+        for ai in pop:
             assert ai.getVariableUInt("count") == AGENT_COUNT - result_count
         
     
@@ -228,9 +219,8 @@ class TestMessageAppendTruncate(TestCase):
         fi = a.newRTCFunction(IN_FUNCTION_NAME, In_AppendTruncate2)
         fi.setMessageInput(msg)
         result_count = 0
-        pop = pyflamegpu.AgentPopulation(a, AGENT_COUNT)
-        for i in range(AGENT_COUNT): 
-            ai = pop.getNextInstance()
+        pop = pyflamegpu.AgentVector(a, AGENT_COUNT)
+        for ai in pop:
             if rand.random() < 0.7:   # 70% chance of outputting
                 ai.setVariableUInt("do_out", 1)
                 result_count += 1
@@ -251,16 +241,14 @@ class TestMessageAppendTruncate(TestCase):
         c.step()
         c.getPopulationData(pop)
         # Validate each agent has same result
-        for i in range(AGENT_COUNT): 
-            ai = pop.getInstanceAt(i)
+        for ai in pop:
             assert ai.getVariableUInt("count0") == result_count
             assert ai.getVariableUInt("count1") == AGENT_COUNT - result_count
         
         c.step()
         c.getPopulationData(pop)
         # Validate each agent has same result
-        for i in range(AGENT_COUNT): 
-            ai = pop.getInstanceAt(i)
+        for ai in pop:
             assert ai.getVariableUInt("count0") == AGENT_COUNT - result_count
             assert ai.getVariableUInt("count1") == result_count
         

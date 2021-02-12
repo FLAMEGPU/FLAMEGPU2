@@ -16,6 +16,9 @@
 
 #include "flamegpu/exception/FGPUException.h"
 #include "flamegpu/model/ModelDescription.h"
+#include "flamegpu/util/StringPair.h"
+
+class AgentVector;
 
 class StateWriter {
  public:
@@ -25,14 +28,13 @@ class StateWriter {
      * Agent data will be read from 'model_state'
      * @param _model_name Name from the model description hierarchy of the model to be exported
      * @param _sim_instance_id Instance is from the Simulation instance to export the environment properties fromo
-     * @param _model_state Map of AgentPopulation to read the agent data from per agent, key should be agent name
+     * @param _model_state Map of AgentVector to read the agent data from per agent, key should be agent name
      * @param _iterations The value from the step counter at the time of export.
      * @param output_file Filename of the input file (This will be used to determine which reader to return)
      */
     StateWriter(const std::string &_model_name,
         const unsigned int &_sim_instance_id,
-        const std::unordered_map<std::string,
-        std::shared_ptr<AgentPopulation>> &_model_state,
+        const StringPairUnorderedMap<std::shared_ptr<AgentVector>> &_model_state,
         const unsigned int &_iterations,
         const std::string &output_file,
         const Simulation *_sim_instance)
@@ -56,7 +58,7 @@ class StateWriter {
     virtual int writeStates(bool prettyPrint) = 0;
 
  protected:
-    const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> model_state{};
+    const StringPairUnorderedMap<std::shared_ptr<AgentVector>> model_state{};
     unsigned int iterations;
     std::string outputFile;
     const std::string model_name;

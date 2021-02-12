@@ -1,315 +1,172 @@
 import pytest
 from unittest import TestCase
 from pyflamegpu import *
- 
-INIT_AGENT_COUNT = 10
-AGENT_COUNT = 1024
 
 class AgentInstanceTest(TestCase):
 
-    agent_fn_ap1 = """
-    FLAMEGPU_AGENT_FUNCTION(agent_fn_ap1, MsgNone, MsgNone){
-        // do nothing
-        return ALIVE;
-    }
-    """
+    def test_constructor(self): 
+        model = pyflamegpu.ModelDescription("model");
+        agent = model.newAgent("agent");
+        agent.newVariableInt("int", 1);
+        agent.newVariableUInt("uint", 2);
+        ai = pyflamegpu.AgentInstance(agent);
+        # New AgentInstance is default init
+        assert ai.getVariableInt("int") == 1
+        assert ai.getVariableUInt("uint") == 2
+    
+    def test_copy_constructor(self): 
+      model = pyflamegpu.ModelDescription("model");
+      agent = model.newAgent("agent");
+      agent.newVariableInt("int", 1);
+      agent.newVariableArrayUInt("uint3", 3, [2, 3, 4]);
+      ai_uint3_ref = (0, 1, 2);
+      # Copying an agent instance retains the values
+      ai = pyflamegpu.AgentInstance(agent);
+      ai.setVariableInt("int", 12);
+      ai.setVariableArrayUInt("uint3", ai_uint3_ref);
+      ai2 = pyflamegpu.AgentInstance(ai);
+      assert ai2.getVariableInt("int") == 12
+      ai2_uint3_check = ai2.getVariableArrayUInt("uint3");
+      assert ai2_uint3_check == ai_uint3_ref
+      # Copying an agent instance from an AgentVector::Agent retains values
+      av = pyflamegpu.AgentVector(agent, 1);
+      ava = av.front();
+      ava.setVariableInt("int", 12);
+      ava.setVariableArrayUInt("uint3", ai_uint3_ref);
+      ai3 = pyflamegpu.AgentInstance(ava);
+      assert ai3.getVariableInt("int") == 12
+      ai2_uint3_check2 = ai3.getVariableArrayUInt("uint3");
+      assert ai2_uint3_check2 == ai_uint3_ref
+    
+    # def test_move_constructor(self): Not applicable to python
+    
+    # def test_copy_assignment_operator(self):  Not applicable to python (assignment always works by ref in python)
+    
+    # def test_move_assignment_operator(self):  Not applicable to python
+    
+    def test_getsetVariable(self): 
+        i = 15;  # This is a stripped down version of AgentVectorTest::AgentVector_Agent
+        # Test correctness of AgentVector getVariableType
+        model = pyflamegpu.ModelDescription("model");
+        agent = model.newAgent("agent");
+        agent.newVariableUInt("uint", 12);
+        agent.newVariableArrayInt("int3", 3, [2, 3, 4] );
+        agent.newVariableArrayInt("int2", 2, [5, 6] );
+        agent.newVariableFloat("float", 15.0);
 
-    def test_default_variable_value(self): 
-        # Define model
-        model = pyflamegpu.ModelDescription("test_default_variable_value")
-        agent = model.newAgent("agent")
-        agent.newVariableFloat("x")
-        agent.newVariableFloat("default", 15.0)
-        # Init agent pop
-        cuda_model = pyflamegpu.CUDASimulation(model)
-        population = pyflamegpu.AgentPopulation(agent, INIT_AGENT_COUNT)
-        # Initialise agents
-        for i in range(INIT_AGENT_COUNT):
-           instance = population.getNextInstance()
-           assert instance.getVariableFloat("x") == float(0)
-           assert instance.getVariableFloat("default") == float(15.0)
+        # Create pop, variables are as expected
+        ai = pyflamegpu.AgentInstance(agent);
+        int3_ref = ( 2, 3, 4 );
+        assert ai.getVariableUInt("uint") == 12
+        int3_check = ai.getVariableArrayInt("int3");
+        assert int3_check == int3_ref
+        assert ai.getVariableInt("int2", 0) == 5
+        assert ai.getVariableInt("int2", 1) == 6
+        assert ai.getVariableFloat("float") == 15.0
+
+        # Update value
+        ai.setVariableUInt("uint", 12 + i);
+        int3_set = ( 2 + i, 3 + i, 4 + i );
+        ai.setVariableArrayInt("int3", int3_set);
+        ai.setVariableInt("int2", 0, 5 + i);
+        ai.setVariableInt("int2", 1, 6 + i);
+        ai.setVariableFloat("float", 15.0 + i);
         
 
-    def test_getter_bad_var_name(self): 
-        # Define model
-        model = pyflamegpu.ModelDescription("test_getter_bad_var_name")
-        agent = model.newAgent("agent")
-        agent.newVariableFloat("x")
-        agent.newVariableFloat("default", 15.0)
-        # Init agent pop
-        cuda_model = pyflamegpu.CUDASimulation(model)
-        population = pyflamegpu.AgentPopulation(agent, INIT_AGENT_COUNT)
-        # Initialise agents
-        for i in range(INIT_AGENT_COUNT):
-            instance = population.getNextInstance()
-            with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-                instance.getVariableFloat("nope")
-            assert e.value.type() == "InvalidAgentVar"
-            with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-                instance.getVariableFloat("this is not valid")
-            assert e.value.type() == "InvalidAgentVar"
+        # Check vars now match as expected
+        assert ai.getVariableUInt("uint") == 12 + i
+        int3_ref2 = ( 2 + i, 3 + i, 4 + i );
+        int3_check = ai.getVariableArrayInt("int3");
+        assert int3_check == int3_ref2
+        assert ai.getVariableInt("int2", 0) == 5 + i
+        assert ai.getVariableInt("int2", 1) == 6 + i
+        assert ai.getVariableFloat("float") == 15.0 + i
         
 
-    def test_getter_bad_var_type(self): 
-        # Define model
-        model = pyflamegpu.ModelDescription("test_getter_bad_var_type")
-        agent = model.newAgent("agent")
-        agent.newVariableFloat("x")
-        agent.newVariableFloat("default", 15.0)
-        # Init agent pop
-        cuda_model = pyflamegpu.CUDASimulation(model)
-        population = pyflamegpu.AgentPopulation(agent, INIT_AGENT_COUNT)
-        # Initialise agents
-        for i in range(INIT_AGENT_COUNT):
-            instance = population.getNextInstance()
-            with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-                instance.getVariableInt64("x")
-            assert e.value.type() == "InvalidVarType"
-            with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-                instance.getVariableUInt("default")
-            assert e.value.type() == "InvalidVarType"
-        
-
-    def test_setter_bad_var_name(self): 
-        # Define model
-        model = pyflamegpu.ModelDescription("test_getter_bad_var_type")
-        agent = model.newAgent("agent")
-        agent.newVariableFloat("x")
-        agent.newVariableFloat("default", 15.0)
-        # Init agent pop
-        cuda_model = pyflamegpu.CUDASimulation(model)
-        population = pyflamegpu.AgentPopulation(agent, INIT_AGENT_COUNT)
-        # Initialise agents
-        for i in range(INIT_AGENT_COUNT):
-            instance = population.getNextInstance()
-            with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-                instance.setVariableFloat("nope", 1.0)
-            assert e.value.type() == "InvalidAgentVar"
-            with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-                instance.setVariableFloat("this is not valid", 1.0)
-            assert e.value.type() == "InvalidAgentVar"
-        
-
-    def test_setter_bad_var_type(self): 
-        # Define model
-        model = pyflamegpu.ModelDescription("test_setter_bad_var_type")
-        agent = model.newAgent("agent")
-        agent.newVariableFloat("x")
-        agent.newVariableFloat("default", 15.0)
-        # Init agent pop
-        cuda_model = pyflamegpu.CUDASimulation(model)
-        population = pyflamegpu.AgentPopulation(agent, INIT_AGENT_COUNT)
-        # Initialise agents
-        for i in range(INIT_AGENT_COUNT):
-            instance = population.getNextInstance()
-            with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-                instance.setVariableInt64("x", 1)
-            assert e.value.type() == "InvalidVarType"
-            with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-                instance.setVariableUInt("default", 1)
-            assert e.value.type() == "InvalidVarType"
-        
-
-    def test_setter_and_getter_work(self): 
-        # Define model
-        model = pyflamegpu.ModelDescription("test_setter_and_getter_work")
-        agent = model.newAgent("agent")
-        agent.newVariableUInt("x")
-        # Init agent pop
-        cuda_model = pyflamegpu.CUDASimulation(model)
-        population = pyflamegpu.AgentPopulation(agent, INIT_AGENT_COUNT)
-        # Initialise agents
-        for i in range(INIT_AGENT_COUNT):
-            instance = population.getNextInstance()
-            instance.setVariableUInt("x", i)
-            assert instance.getVariableUInt("x") == i
-        
-
-
-    def test_set_via_agent_instance(self): 
-        model = pyflamegpu.ModelDescription("test_set_via_agent_instance")
-        agent = model.newAgent("agent")
-        agent.newVariableFloat("x")
-        agent.newVariableArrayInt("array_var", 4)
-        agent.newVariableFloat("y")
-        # Do nothing, but ensure variables are made available on device
-        func = agent.newRTCFunction("some_function", self.agent_fn_ap1)
-        model.newLayer().addAgentFunction(func)
-        # Init pop
-        init_population = pyflamegpu.AgentPopulation(agent, AGENT_COUNT)
-        for i in range(AGENT_COUNT):
-            instance = init_population.getNextInstance("default")
-            instance.setVariableFloat("x", 12.0)
-            instance.setVariableArrayInt("array_var", [2, 4, 8, 16])
-            instance.setVariableFloat("y", 14.0)
-        
-        # Setup Model
-        cuda_model = pyflamegpu.CUDASimulation(model)
-        cuda_model.setPopulationData(init_population)
-        # Run 1 step to ensure data is pushed to device
-        cuda_model.step()
-        # Recover data from device
-        population = pyflamegpu.AgentPopulation(agent, AGENT_COUNT)
-        cuda_model.getPopulationData(population)
-        # Check data is intact
-        # Might need to go more complicate and give different agents different values
-        # They should remain in order for such a basic function, but can't guarantee
-        assert population.getCurrentListSize() == AGENT_COUNT
-        for i in range(population.getCurrentListSize()):
-            instance = population.getInstanceAt(i)
-            assert instance.getVariableFloat("x") == 12.0
-            output_array = instance.getVariableArrayInt("array_var")
-            test_array = (2, 4, 8, 16)
-            assert output_array == test_array
-            assert instance.getVariableFloat("y") == 14.0
-        
-    def test_set_via_agent_instance2(self): 
-        model = pyflamegpu.ModelDescription("test_set_via_agent_instance2")
-        agent = model.newAgent("agent")
-        agent.newVariableFloat("x")
-        agent.newVariableArrayInt("array_var", 4)
-        agent.newVariableFloat("y")
-        # Do nothing, but ensure variables are made available on device
-        func = agent.newRTCFunction("some_function", self.agent_fn_ap1)
-        model.newLayer().addAgentFunction(func)
-        # Init pop
-        init_population = pyflamegpu.AgentPopulation(agent, AGENT_COUNT)
-        for i in range(AGENT_COUNT):
-            instance = init_population.getNextInstance("default")
-            instance.setVariableFloat("x", 12.0)
-            instance.setVariableInt("array_var", 0, 2)
-            instance.setVariableInt("array_var", 1, 4)
-            instance.setVariableInt("array_var", 2, 8)
-            instance.setVariableInt("array_var", 3, 16)
-            instance.setVariableFloat("y", 14.0)
-        
-        # Setup Model
-        cuda_model = pyflamegpu.CUDASimulation(model)
-        cuda_model.setPopulationData(init_population)
-        # Run 1 step to ensure data is pushed to device
-        cuda_model.step()
-        # Recover data from device
-        population = pyflamegpu.AgentPopulation(agent, AGENT_COUNT)
-        cuda_model.getPopulationData(population)
-        # Check data is intact
-        # Might need to go more complicate and give different agents different values
-        # They should remain in order for such a basic function, but can't guarntee
-        assert population.getCurrentListSize() == AGENT_COUNT
-        for i in range(population.getCurrentListSize()):
-            instance = population.getInstanceAt(i)
-            assert instance.getVariableFloat("x") == 12.0
-            test_array = ( 2, 4, 8, 16 )
-            output_val = instance.getVariableInt("array_var", 0)
-            assert output_val == test_array[0]
-            output_val = instance.getVariableInt("array_var", 1)
-            assert output_val == test_array[1]
-            output_val = instance.getVariableInt("array_var", 2)
-            assert output_val == test_array[2]
-            output_val = instance.getVariableInt("array_var", 3)
-            assert output_val == test_array[3]
-            assert instance.getVariableFloat("y") == 14.0
-        
-
-    def test_agent_instance_array_default_works(self): 
-        TEST_REFERENCE  =  (2, 4, 8, 16) 
-        model = pyflamegpu.ModelDescription("test_agent_instance_array_default_works")
-        agent = model.newAgent("agent")
-        agent.newVariableFloat("x", 12.0)
-        agent.newVariableArrayInt("array_var", 4, TEST_REFERENCE)
-        agent.newVariableFloat("y", 13.0)
-        # Do nothing, but ensure variables are made available on device
-        func = agent.newRTCFunction("some_function", self.agent_fn_ap1)
-        model.newLayer().addAgentFunction(func)
-        # Init pop
-        init_population = pyflamegpu.AgentPopulation(agent, AGENT_COUNT)
-        for i in range(AGENT_COUNT):
-            instance = init_population.getNextInstance("default")
-            test = instance.getVariableArrayInt("array_var")
-            assert test == TEST_REFERENCE
-            assert instance.getVariableFloat("x") == 12.0
-            assert instance.getVariableFloat("y") == 13.0
-        
-
-    def test_agent_instance_array_type_wrong(self) : 
-        model = pyflamegpu.ModelDescription("test_agent_instance_array_type_wrong")
-        agent = model.newAgent("agent")
-        agent.newVariableArrayInt("array_var", 4)
-        # Init pop
-        init_population = pyflamegpu.AgentPopulation(agent, 1)
-        instance = init_population.getNextInstance("default")
-
-        # Check for expected exceptions
+        # Check various exceptions
+        # setVariable(const std::string &variable_name, const T &value)
+        # Bad name
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-            instance.setVariableArrayFloat("array_var", ())
+            ai.setVariableInt("wrong", 1)
+        assert e.value.type() == "InvalidAgentVar"
+        # Array passed to non-array method
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-            instance.getVariableArrayFloat("array_var")
+            ai.setVariableInt("int2", 1)
         assert e.value.type() == "InvalidVarType"
+        # Wrong type
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-            instance.setVariableFloat("array_var", 0, 2)
+            ai.setVariableInt("float", 1)
         assert e.value.type() == "InvalidVarType"
+        
+        # setVariableArray(const std::string &variable_name, const std::vector<T> &value)
+        int3_ref2 = ( 2, 3, 4 );
+        float3_ref = ( 2.0, 3.0, 4.0 );
+        # Bad name
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-            instance.getVariableFloat("array_var", 0)
+            ai.setVariableArrayInt("wrong", int3_ref2);
+        assert e.value.type() == "InvalidAgentVar"
+        # Array passed to non-array method
+        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+            ai.setVariableArrayInt("int2", int3_ref2);
         assert e.value.type() == "InvalidVarType"
-
-    def test_agent_instance_array_len_wrong(self): 
-        model = pyflamegpu.ModelDescription("test_agent_instance_array_len_wrong")
-        agent = model.newAgent("agent_name")
-        agent.newVariableInt("x")
-        agent.newVariableArrayInt("array_var", 4)
-        # Init pop
-        init_population = pyflamegpu.AgentPopulation(agent, 1)
-        instance = init_population.getNextInstance("default")
-        # Check for expected exceptions
+        # Wrong type
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-            instance.setVariableArrayInt("x", ())
+            ai.setVariableArrayFloat("int3", float3_ref);
+        assert e.value.type() == "InvalidVarType"
+        
+        # setVariable(const std::string &variable_name, const unsigned int &array_index, const T &value)
+        # Bad name
+        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+            ai.setVariableInt("wrong", 0, 1);
         assert e.value.type() == "InvalidAgentVar"
+        # Index out of bounds
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-            instance.setVariableArrayInt("array_var", ())
+            ai.setVariableInt("int2", 2, 1);
+        assert e.value.type() == "OutOfBoundsException"
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-            instance.setVariableInt("x", 10, 0)
-        assert e.value.type() == "OutOfRangeVarArray"
+            ai.setVariableFloat("float", 1, 1);
+        assert e.value.type() == "OutOfBoundsException"
+        # Wrong type
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-            instance.getVariableInt("x", 1)
-        assert e.value.type() == "OutOfRangeVarArray"
+            ai.setVariableInt("float", 0, 1);
+        assert e.value.type() == "InvalidVarType"
+        
+        # getVariable(const std::string &variable_name) const
+        # Bad name
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-            instance.setVariableInt("array_var", 10, 0)
-        assert e.value.type() == "OutOfRangeVarArray"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-            instance.getVariableInt("array_var", 10)
-        assert e.value.type() == "OutOfRangeVarArray"
-
-    def test_agent_instance_array_name_wrong(self): 
-        model = pyflamegpu.ModelDescription("test_agent_instance_array_name_wrong")
-        agent = model.newAgent("agent_name")
-        agent.newVariableArrayInt("array_var", 4)
-        # Init pop
-        init_population = pyflamegpu.AgentPopulation(agent, 1)
-        instance = init_population.getNextInstance("default")
-
-        # Check for expected exceptions
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-            instance.setVariableArrayFloat("array_varAAAAAA", (1,2,3,4))
+            ai.getVariableInt("wrong");
         assert e.value.type() == "InvalidAgentVar"
+        # Array passed to non-array method
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-            instance.getVariableArrayFloat("array_varAAAAAA")
-        assert e.value.type() == "InvalidAgentVar"
+            ai.getVariableInt("int2");
+        assert e.value.type() == "InvalidVarType"
+        # Wrong type
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-            instance.setVariableInt("array_varAAAAAA", 0, 2)
-        assert e.value.type() == "InvalidAgentVar"
+            ai.getVariableInt("float");
+        assert e.value.type() == "InvalidVarType"
+        
+        # getVariable(const std::string &variable_name) const
+        # Bad name
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-            instance.getVariableInt("array_varAAAAAA", 0)
+            ai.getVariableArrayInt("wrong");
         assert e.value.type() == "InvalidAgentVar"
-
-    def test_agent_instance_array_not_suitable(self): 
-        model = pyflamegpu.ModelDescription("test_agent_instance_array_not_suitable")
-        agent = model.newAgent("agent_name")
-        agent.newVariableArrayInt("array_var", 4)
-        # Init pop
-        init_population = pyflamegpu.AgentPopulation(agent, 1)
-        instance = init_population.getNextInstance("default")
+        # Wrong type
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-            instance.setVariableInt("array_var", 0)
-        assert e.value.type() == "InvalidAgentVar"
+            ai.getVariableArrayFloat("int3");
+        assert e.value.type() == "InvalidVarType"
+        
+        # getVariable(const std::string &variable_name, const unsigned int &array_index) const
+        # Bad name
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-            instance.getVariableInt("array_var")
+            ai.getVariableInt("wrong", 0);
         assert e.value.type() == "InvalidAgentVar"
+        # Index out of bounds
+        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+            ai.getVariableInt("int2", 2);
+        assert e.value.type() == "OutOfBoundsException"
+        # Wrong type
+        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+            ai.setVariableArrayFloat("int3", float3_ref);
+        assert e.value.type() == "InvalidVarType"
+        
+    

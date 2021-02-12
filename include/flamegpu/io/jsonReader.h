@@ -8,6 +8,7 @@
 
 #include "flamegpu/io/statereader.h"
 #include "flamegpu/model/ModelDescription.h"
+#include "flamegpu/util/StringPair.h"
 
 // Derived classes
 class jsonReader : public StateReader {
@@ -19,7 +20,7 @@ class jsonReader : public StateReader {
      * @param model_name Name from the model description hierarchy of the model to be loaded
      * @param env_desc Environment description for validating property data on load
      * @param env_init Dictionary of loaded values map:<{name, index}, value>
-     * @param model_state Map of AgentPopulation to load the agent data into per agent, key should be agent name
+     * @param model_state Map of AgentVector to load the agent data into per agent, key should be agent name
      * @param input_file Filename of the input file (This will be used to determine which reader to return)
      * @param sim_instance Instance of the Simulation object (This is used for setting/getting config)
      */
@@ -27,8 +28,7 @@ class jsonReader : public StateReader {
         const std::string &model_name,
         const std::unordered_map<std::string, EnvironmentDescription::PropData> &env_desc,
         std::unordered_map<std::pair<std::string, unsigned int>, Any> &env_init,
-        const std::unordered_map<std::string,
-        std::shared_ptr<AgentPopulation>> &model_state,
+        StringPairUnorderedMap<std::shared_ptr<AgentVector>> &model_state,
         const std::string &input_file,
         Simulation *sim_instance);
     /**

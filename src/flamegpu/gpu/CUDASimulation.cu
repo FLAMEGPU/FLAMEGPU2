@@ -10,7 +10,6 @@
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/model/SubModelData.h"
 #include "flamegpu/model/SubAgentData.h"
-#include "flamegpu/pop/AgentPopulation.h"
 #include "flamegpu/runtime/flamegpu_host_api.h"
 #include "flamegpu/gpu/CUDAScanCompaction.h"
 #include "flamegpu/util/nvtx.h"
@@ -991,49 +990,39 @@ void CUDASimulation::reset(bool submodelReset) {
     this->elapsedMillisecondsPerStep.clear();
 }
 
-void CUDASimulation::setPopulationData(AgentPopulation& population) {
+void CUDASimulation::setPopulationData(AgentVector& population, const std::string& state_name) {
     // Ensure singletons have been initialised
     initialiseSingletons();
     NVTX_RANGE("CUDASimulation::setPopulationData()");
-
-    CUDAAgentMap::iterator it;
-    it = agent_map.find(population.getAgentName());
-
+    auto it = agent_map.find(population.getAgentName());
     if (it == agent_map.end()) {
-        THROW InvalidCudaAgent("Error: Agent ('%s') was not found, "
+        THROW InvalidAgent("Agent '%s' was not found, "
             "in CUDASimulation::setPopulationData()",
             population.getAgentName().c_str());
     }
-
-    /*! create agent state lists */
-    it->second->setPopulationData(population, this->singletons->scatter, 0, 0);  // Streamid shouldn't matter here, also using default stream.
-
+    // This call hierarchy validates agent desc matches and state is valid
+    it->second->setPopulationData(population, state_name, this->singletons->scatter, 0, 0);  // Streamid shouldn't matter here, also using default stream.
 #ifdef VISUALISATION
     if (visualisation) {
         visualisation->updateBuffers();
     }
 #endif
-    gpuErrchk(cudaStreamSynchronize(0));
+    gpuErrchk(cudaDeviceSynchronize());
 }
-
-void CUDASimulation::getPopulationData(AgentPopulation& population) {
+void CUDASimulation::getPopulationData(AgentVector& population, const std::string& state_name) {
     // Ensure singletons have been initialised
     initialiseSingletons();
     NVTX_RANGE("CUDASimulation::getPopulationData()");
-    gpuErrchk(cudaStreamSynchronize(0));
-
-    CUDAAgentMap::iterator it;
-    it = agent_map.find(population.getAgentName());
-
+    gpuErrchk(cudaDeviceSynchronize());
+    auto it = agent_map.find(population.getAgentName());
     if (it == agent_map.end()) {
-        THROW InvalidCudaAgent("Error: Agent ('%s') was not found, "
-            "in CUDASimulation::getPopulationData()",
+        THROW InvalidAgent("Agent '%s' was not found, "
+            "in CUDASimulation::setPopulationData()",
             population.getAgentName().c_str());
     }
-
-    /*!create agent state lists */
-    it->second->getPopulationData(population);
-    gpuErrchk(cudaStreamSynchronize(0));
+    // This call hierarchy validates agent desc matches and state is valid
+    it->second->getPopulationData(population, state_name);
+    gpuErrchk(cudaDeviceSynchronize());
 }
 
 CUDAAgent& CUDASimulation::getCUDAAgent(const std::string& agent_name) const {

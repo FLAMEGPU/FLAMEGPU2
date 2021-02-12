@@ -22,9 +22,9 @@ TEST(DeviceRTCAPITest, AgentFunction_empty) {
     func.setAllowAgentDeath(true);
     model.newLayer().addAgentFunction(func);
     // Init pop
-    AgentPopulation init_population(agent, AGENT_COUNT);
+    AgentVector init_population(agent, AGENT_COUNT);
     for (int i = 0; i< static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = init_population.getNextInstance("default");
+        AgentVector::Agent instance = init_population[i];
         instance.setVariable<float>("x", static_cast<float>(i));
     }
     // Setup Model
@@ -46,9 +46,9 @@ TEST(DeviceRTCAPITest, AgentFunction_differentName) {
     func.setAllowAgentDeath(true);
     model.newLayer().addAgentFunction(func);
     // Init pop
-    AgentPopulation init_population(agent, AGENT_COUNT);
+    AgentVector init_population(agent, AGENT_COUNT);
     for (int i = 0; i< static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = init_population.getNextInstance("default");
+        AgentVector::Agent instance = init_population[i];
         instance.setVariable<float>("x", static_cast<float>(i));
     }
     // Setup Model
@@ -77,9 +77,9 @@ TEST(DeviceRTCAPITest, AgentFunction_compile_error) {
     func.setAllowAgentDeath(true);
     model.newLayer().addAgentFunction(func);
     // Init pop
-    AgentPopulation init_population(agent, AGENT_COUNT);
+    AgentVector init_population(agent, AGENT_COUNT);
     for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = init_population.getNextInstance("default");
+        AgentVector::Agent instance = init_population[i];
         instance.setVariable<float>("x", static_cast<float>(i));
     }
     // Setup Model
@@ -112,9 +112,9 @@ TEST(DeviceRTCAPITest, AgentFunction_death) {
     func.setAllowAgentDeath(true);
     model.newLayer().addAgentFunction(func);
     // Init pop
-    AgentPopulation init_population(agent, AGENT_COUNT);
+    AgentVector init_population(agent, AGENT_COUNT);
     for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = init_population.getNextInstance("default");
+        AgentVector::Agent instance = init_population[i];
         instance.setVariable<int>("id", i);
     }
     // Setup Model
@@ -123,10 +123,10 @@ TEST(DeviceRTCAPITest, AgentFunction_death) {
     // Run 1 step to ensure data is pushed to device
     cuda_model.step();
     // Recover data from device
-    AgentPopulation population(agent);
+    AgentVector population(agent);
     cuda_model.getPopulationData(population);
     // Check population size is half of initial
-    EXPECT_EQ(population.getCurrentListSize(), AGENT_COUNT / 2);
+    EXPECT_EQ(population.size(), AGENT_COUNT / 2);
 }
 
 
@@ -150,9 +150,9 @@ TEST(DeviceRTCAPITest, AgentFunction_get) {
     func.setAllowAgentDeath(true);
     model.newLayer().addAgentFunction(func);
     // Init pop
-    AgentPopulation init_population(agent, AGENT_COUNT);
+    AgentVector init_population(agent, AGENT_COUNT);
     for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = init_population.getNextInstance("default");
+        AgentVector::Agent instance = init_population[i];
         instance.setVariable<int>("id", i);
     }
     // Setup Model
@@ -161,10 +161,10 @@ TEST(DeviceRTCAPITest, AgentFunction_get) {
     // Run 1 step to ensure data is pushed to device
     cuda_model.step();
     // Recover data from device
-    AgentPopulation population(agent);
+    AgentVector population(agent);
     cuda_model.getPopulationData(population);
     // Check population size is half of initial (which is only possible if get has returned the correct id)
-    EXPECT_EQ(population.getCurrentListSize(), AGENT_COUNT / 2);
+    EXPECT_EQ(population.size(), AGENT_COUNT / 2);
 }
 
 const char* rtc_getset_agent_func = R"###(
@@ -186,9 +186,9 @@ TEST(DeviceRTCAPITest, AgentFunction_getset) {
     AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_getset_agent_func);
     model.newLayer().addAgentFunction(func);
     // Init pop
-    AgentPopulation init_population(agent, AGENT_COUNT);
+    AgentVector init_population(agent, AGENT_COUNT);
     for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = init_population.getNextInstance("default");
+        AgentVector::Agent instance = init_population[i];
         instance.setVariable<int>("id", i);
         instance.setVariable<int>("id_out", 0);
     }
@@ -198,10 +198,10 @@ TEST(DeviceRTCAPITest, AgentFunction_getset) {
     // Run 1 step to ensure data is pushed to device
     cuda_model.step();
     // Recover data from device
-    AgentPopulation population(agent);
+    AgentVector population(agent);
     cuda_model.getPopulationData(population);
-    for (int i = 0; i < static_cast<int>(population.getCurrentListSize()); i++) {
-        AgentInstance instance = population.getInstanceAt(i);
+    for (int i = 0; i < static_cast<int>(population.size()); i++) {
+        AgentVector::Agent instance = population[i];
         // Check neighbouring vars are correct
         EXPECT_EQ(instance.getVariable<int>("id"), i);
         EXPECT_EQ(instance.getVariable<int>("id_out"), i);
@@ -235,9 +235,9 @@ TEST(DeviceRTCAPITest, AgentFunction_array_get) {
     AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_array_get_agent_func);
     model.newLayer().addAgentFunction(func);
     // Init pop
-    AgentPopulation init_population(agent, AGENT_COUNT);
+    AgentVector init_population(agent, AGENT_COUNT);
     for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = init_population.getNextInstance("default");
+        AgentVector::Agent instance = init_population[i];
         instance.setVariable<int>("id", i);
         instance.setVariable<int, 4>("array_var", { 2 + i, 4 + i, 8 + i, 16 + i });
     }
@@ -247,10 +247,9 @@ TEST(DeviceRTCAPITest, AgentFunction_array_get) {
     // Run 1 step to ensure data is pushed to device
     cuda_model.step();
     // Recover data from device
-    AgentPopulation population(agent);
+    AgentVector population(agent);
     cuda_model.getPopulationData(population);
-    for (unsigned int i = 0; i < population.getCurrentListSize(); i++) {
-        AgentInstance instance = population.getInstanceAt(i);
+    for (AgentVector::Agent instance : population) {
         int j = instance.getVariable<int>("id");
         // Check scalar variables have been set correctly by agent function (which has read them from an array)
         EXPECT_EQ(instance.getVariable<int>("a1"), 2 + j);
@@ -294,9 +293,9 @@ TEST(DeviceRTCAPITest, AgentFunction_array_set) {
     AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_array_set_agent_func);
     model.newLayer().addAgentFunction(func);
     // Init pop
-    AgentPopulation init_population(agent, AGENT_COUNT);
+    AgentVector init_population(agent, AGENT_COUNT);
     for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = init_population.getNextInstance("default");
+        AgentVector::Agent instance = init_population[i];
         instance.setVariable<int>("id", i);
         instance.setVariable<int>("a0", i);
         instance.setVariable<int>("a1", 2 + i);
@@ -311,10 +310,10 @@ TEST(DeviceRTCAPITest, AgentFunction_array_set) {
     // Run 1 step to ensure data is pushed to device
     cuda_model.step();
     // Recover data from device
-    AgentPopulation population(agent);
+    AgentVector population(agent);
     cuda_model.getPopulationData(population);
-    for (int i = 0; i < static_cast<int>(population.getCurrentListSize()); i++) {
-        AgentInstance instance = population.getInstanceAt(i);
+    for (unsigned int i = 0; i < population.size(); ++i) {
+        AgentVector::Agent instance = population[i];
         int j = instance.getVariable<int>("id");
         // Check array_var has been set from scalar variables
         std::array<int, 5> array_var = instance.getVariable<int, 5>("array_var");
@@ -324,7 +323,7 @@ TEST(DeviceRTCAPITest, AgentFunction_array_set) {
         EXPECT_EQ(array_var[3], 8 + j);
         EXPECT_EQ(array_var[4], 16 + j);
         // Value should not have been set by agent function as the value is scalar and the setter used was for an array
-        EXPECT_EQ(instance.getVariable<int>("a0"), i);
+        EXPECT_EQ(instance.getVariable<int>("a0"), static_cast<int>(i));
     }
 }
 
@@ -364,10 +363,9 @@ TEST(DeviceRTCAPITest, AgentFunction_msg_bruteforce) {
     fi.setMessageInput(msg);
     std::default_random_engine rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
-    AgentPopulation pop(a, (unsigned int)AGENT_COUNT);
+    AgentVector pop(a, (unsigned int)AGENT_COUNT);
     int sum = 0;
-    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getNextInstance();
+    for (AgentVector::Agent ai : pop) {
         const int x = dist(rng);
         sum += x;
         ai.setVariable<int>("x", x);
@@ -382,8 +380,7 @@ TEST(DeviceRTCAPITest, AgentFunction_msg_bruteforce) {
     c.simulate();
     c.getPopulationData(pop);
     // Validate each agent has same result
-    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        AgentInstance ai = pop.getInstanceAt(i);
+    for (AgentVector::Agent ai : pop) {
         ASSERT_EQ(ai.getVariable<int>("sum"), sum);
     }
 }
@@ -409,9 +406,9 @@ TEST(DeviceRTCAPITest, AgentFunction_random) {
     AgentFunctionDescription& func = agent.newRTCFunction("rtc_rand_func", rtc_rand_func);
     model.newLayer().addAgentFunction(func);
     // Init pop with 0 values for variables
-    AgentPopulation init_population(agent, AGENT_COUNT);
+    AgentVector init_population(agent, AGENT_COUNT);
     for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = init_population.getNextInstance("default");
+        AgentVector::Agent instance = init_population[i];
         instance.setVariable<float>("a", 0);
         instance.setVariable<float>("b", 0);
         instance.setVariable<float>("c", 0);
@@ -422,10 +419,10 @@ TEST(DeviceRTCAPITest, AgentFunction_random) {
     // Run 1 step to ensure data is pushed to device
     cuda_model.step();
     // Recover data from device
-    AgentPopulation population(agent);
+    AgentVector population(agent);
     cuda_model.getPopulationData(population);
-    for (unsigned int i = 0; i < population.getCurrentListSize(); i++) {
-        AgentInstance instance = population.getInstanceAt(i);
+    for (unsigned int i = 0; i < population.size(); i++) {
+        AgentVector::Agent instance = population[i];
         // Check for random values
         float a = instance.getVariable<float>("a");
         float b = instance.getVariable<float>("b");
@@ -510,9 +507,9 @@ TEST(DeviceRTCAPITest, AgentFunction_env) {
     env.newProperty<int, 32>("e_array_1", zero_array);
     env.newProperty<int, 32>("e_array_2", zero_array);
     // Init pop with 0 values for variables
-    AgentPopulation init_population(agent, AGENT_COUNT);
+    AgentVector init_population(agent, AGENT_COUNT);
     for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = init_population.getNextInstance("default");
+        AgentVector::Agent instance = init_population[i];
         instance.setVariable<int>("e1_out", 0);
         instance.setVariable<int>("e1_exists", false);
         instance.setVariable<int>("e2_out", 0);
@@ -530,10 +527,9 @@ TEST(DeviceRTCAPITest, AgentFunction_env) {
     cuda_model.SimulationConfig().steps = 2;
     cuda_model.simulate();
     // Recover data from device
-    AgentPopulation population(agent);
+    AgentVector population(agent);
     cuda_model.getPopulationData(population);
-    for (unsigned int i = 0; i < population.getCurrentListSize(); i++) {
-        AgentInstance instance = population.getInstanceAt(i);
+    for (AgentVector::Agent instance : population) {
         // Check constant environment values have been updated
         int e1_out = instance.getVariable<int>("e1_out");
         int e1_exists = instance.getVariable<int>("e1_exists");
@@ -577,9 +573,9 @@ TEST(DeviceRTCAPITest, AgentFunction_agent_output) {
     func.setAgentOutput(agent);
     model.newLayer().addAgentFunction(func);
     // Init pop
-    AgentPopulation init_population(agent, AGENT_COUNT);
+    AgentVector init_population(agent, AGENT_COUNT);
     for (unsigned int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = init_population.getNextInstance("default");
+        AgentVector::Agent instance = init_population[i];
         instance.setVariable<unsigned int>("x", i + 1);
         instance.setVariable<unsigned int>("id", i);
     }
@@ -589,14 +585,13 @@ TEST(DeviceRTCAPITest, AgentFunction_agent_output) {
     // Run 1 step
     cuda_model.step();
     // Test output
-    AgentPopulation population(agent);
+    AgentVector population(agent);
     cuda_model.getPopulationData(population);
     // Validate each agent has same result
-    EXPECT_EQ(population.getCurrentListSize(), (unsigned int)(AGENT_COUNT * 1.5));
+    EXPECT_EQ(population.size(), (unsigned int)(AGENT_COUNT * 1.5));
     unsigned int is_1 = 0;
     unsigned int is_12 = 0;
-    for (unsigned int i = 0; i < population.getCurrentListSize(); ++i) {
-        AgentInstance ai = population.getInstanceAt(i);
+    for (AgentVector::Agent ai : population) {
         const unsigned int id = ai.getVariable<unsigned int>("id");
         const unsigned int val = ai.getVariable<unsigned int>("x") - id;
         if (val == 1)
@@ -637,9 +632,9 @@ TEST(DeviceRTCAPITest, AgentFunction_cond_non_rtc) {
     func.setFunctionCondition(odd_only);
     model.newLayer().addAgentFunction(func);
     // Init pop
-    AgentPopulation init_population(agent, AGENT_COUNT);
+    AgentVector init_population(agent, AGENT_COUNT);
     for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = init_population.getNextInstance("default");
+        AgentVector::Agent instance = init_population[i];
         instance.setVariable<int>("id", i);
         instance.setVariable<int>("id_out", 0);
     }
@@ -649,21 +644,21 @@ TEST(DeviceRTCAPITest, AgentFunction_cond_non_rtc) {
     // Run 1 step to ensure data is pushed to device
     cuda_model.step();
     // Recover data from device
-    AgentPopulation population(agent);
-    cuda_model.getPopulationData(population);
+    AgentVector population_default(agent);
+    AgentVector population_odd_state(agent);
+    cuda_model.getPopulationData(population_default, "default");
+    cuda_model.getPopulationData(population_odd_state, "odd_state");
     // Check population size is half of initial
-    EXPECT_EQ(population.getCurrentListSize("default"), AGENT_COUNT / 2);
-    EXPECT_EQ(population.getCurrentListSize("odd_state"), AGENT_COUNT / 2);
+    EXPECT_EQ(population_default.size(), AGENT_COUNT / 2);
+    EXPECT_EQ(population_odd_state.size(), AGENT_COUNT / 2);
     // check default state
-    for (int i = 0; i < static_cast<int>(population.getCurrentListSize("default")); i++) {
-        AgentInstance ai = population.getInstanceAt(i, "default");
+    for (AgentVector::Agent ai : population_default) {
         int id_out = ai.getVariable<int>("id_out");
         // even id agent in default state should not have updated their id_out value
         EXPECT_EQ(id_out, 0);
     }
     // check odd state
-    for (int i = 0; i < static_cast<int>(population.getCurrentListSize("odd_state")); i++) {
-        AgentInstance ai = population.getInstanceAt(i, "odd_state");
+    for (AgentVector::Agent ai : population_odd_state) {
         int id = ai.getVariable<int>("id");
         int id_out = ai.getVariable<int>("id_out");
         // odd id agent should have updated their id_out value
@@ -702,9 +697,9 @@ TEST(DeviceRTCAPITest, AgentFunction_cond_rtc) {
     func.setRTCFunctionCondition(rtc_func_cond);
     model.newLayer().addAgentFunction(func);
     // Init pop
-    AgentPopulation init_population(agent, AGENT_COUNT);
+    AgentVector init_population(agent, AGENT_COUNT);
     for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = init_population.getNextInstance("default");
+        AgentVector::Agent instance = init_population[i];
         instance.setVariable<int>("id", i);
         instance.setVariable<int>("id_out", 0);
     }
@@ -714,21 +709,21 @@ TEST(DeviceRTCAPITest, AgentFunction_cond_rtc) {
     // Run 1 step to ensure data is pushed to device
     cuda_model.step();
     // Recover data from device
-    AgentPopulation population(agent);
-    cuda_model.getPopulationData(population);
+    AgentVector population_default(agent);
+    AgentVector population_odd_state(agent);
+    cuda_model.getPopulationData(population_default, "default");
+    cuda_model.getPopulationData(population_odd_state, "odd_state");
     // Check population size is half of initial
-    EXPECT_EQ(population.getCurrentListSize("default"), AGENT_COUNT / 2);
-    EXPECT_EQ(population.getCurrentListSize("odd_state"), AGENT_COUNT / 2);
+    EXPECT_EQ(population_default.size(), AGENT_COUNT / 2);
+    EXPECT_EQ(population_odd_state.size(), AGENT_COUNT / 2);
     // check default state
-    for (int i = 0; i < static_cast<int>(population.getCurrentListSize("default")); i++) {
-        AgentInstance ai = population.getInstanceAt(i, "default");
+    for (AgentVector::Agent ai : population_default) {
         int id_out = ai.getVariable<int>("id_out");
         // even id agent in default state should not have updated their id_out value
         EXPECT_EQ(id_out, 0);
     }
     // check odd state
-    for (int i = 0; i < static_cast<int>(population.getCurrentListSize("odd_state")); i++) {
-        AgentInstance ai = population.getInstanceAt(i, "odd_state");
+    for (AgentVector::Agent ai : population_odd_state) {
         int id = ai.getVariable<int>("id");
         int id_out = ai.getVariable<int>("id_out");
         // odd id agent should have updated their id_out value
@@ -755,9 +750,9 @@ TEST(DeviceRTCAPITest, getStepCounter) {
     model.newLayer().addAgentFunction(func);
     // Init pop
     const unsigned int agentCount = 1;
-    AgentPopulation init_population(agent, agentCount);
+    AgentVector init_population(agent, agentCount);
     for (int i = 0; i< static_cast<int>(agentCount); i++) {
-        AgentInstance instance = init_population.getNextInstance("default");
+        AgentVector::Agent instance = init_population[i];
         instance.setVariable<unsigned int>("step", 0);
     }
     // Setup Model
@@ -768,11 +763,10 @@ TEST(DeviceRTCAPITest, getStepCounter) {
     for (unsigned int step = 0; step < STEPS; step++) {
         cuda_model.step();
         // Recover data from device
-        AgentPopulation population(agent);
+        AgentVector population(agent);
         cuda_model.getPopulationData(population);
         // Check data is correct.
-        for (unsigned int i = 0; i < population.getCurrentListSize(); i++) {
-            AgentInstance instance = population.getInstanceAt(i);
+        for (AgentVector::Agent instance : population) {
             // Check neighbouring vars are correct
             EXPECT_EQ(instance.getVariable<unsigned int>("step"), step);
         }

@@ -7,6 +7,7 @@
 
 #include "flamegpu/io/statewriter.h"
 #include "flamegpu/model/ModelDescription.h"
+#include "flamegpu/util/StringPair.h"
 
 // Derived classes
 class jsonWriter : public StateWriter {
@@ -17,7 +18,7 @@ class jsonWriter : public StateWriter {
      * Agent data will be read from 'model_state'
      * @param model_name Name from the model description hierarchy of the model to be exported
      * @param sim_instance_id Instance is from the Simulation instance to export the environment properties from
-     * @param model_state Map of AgentPopulation to read the agent data from per agent, key should be agent name
+     * @param model_state Map of AgentVector to read the agent data from per agent, key should be agent name
      * @param iterations The value from the step counter at the time of export.
      * @param output_file Filename of the input file (This will be used to determine which reader to return)
      * @param sim_instance Instance of the Simulation object (This is used for setting/getting config)
@@ -25,8 +26,7 @@ class jsonWriter : public StateWriter {
     jsonWriter(
         const std::string &model_name,
         const unsigned int &sim_instance_id,
-        const std::unordered_map<std::string,
-        std::shared_ptr<AgentPopulation>> &model_state,
+        const StringPairUnorderedMap<std::shared_ptr<AgentVector>> &model_state,
         const unsigned int &iterations,
         const std::string &output_file,
         const Simulation *sim_instance);

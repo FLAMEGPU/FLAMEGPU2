@@ -21,9 +21,9 @@ TEST(DeviceAPITest, AgentDeath_array) {
     func.setAllowAgentDeath(true);
     model.newLayer().addAgentFunction(func);
     // Init pop
-    AgentPopulation init_population(agent, AGENT_COUNT);
+    AgentVector init_population(agent, AGENT_COUNT);
     for (int i = 0; i< static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = init_population.getNextInstance("default");
+        AgentVector::Agent instance = init_population[i];
         instance.setVariable<float>("x", 12.0f);
         instance.setVariable<int, 4>("array_var", { 2 + i, 4 + i, 8 + i, 16 + i });
         instance.setVariable<float>("y", 14.0f);
@@ -35,14 +35,13 @@ TEST(DeviceAPITest, AgentDeath_array) {
     // Run 1 step to ensure data is pushed to device
     cuda_model.step();
     // Recover data from device
-    AgentPopulation population(agent);
+    AgentVector population(agent);
     cuda_model.getPopulationData(population);
     // Check data is intact
     // Might need to go more complicate and give different agents different values
     // They should remain in order for such a basic function, but can't guarntee
-    EXPECT_EQ(population.getCurrentListSize(), AGENT_COUNT / 2);
-    for (unsigned int i = 0; i < population.getCurrentListSize(); i++) {
-        AgentInstance instance = population.getInstanceAt(i);
+    EXPECT_EQ(population.size(), AGENT_COUNT / 2);
+    for (AgentVector::Agent instance : population) {
         // Check neighbouring vars are correct
         EXPECT_EQ(instance.getVariable<float>("x"), 12.0f);
         EXPECT_EQ(instance.getVariable<float>("y"), 14.0f);
@@ -84,9 +83,9 @@ TEST(DeviceAPITest, ArraySet) {
     AgentFunctionDescription &func = agent.newFunction("some_function", agent_fn_da_set);
     model.newLayer().addAgentFunction(func);
     // Init pop
-    AgentPopulation init_population(agent, AGENT_COUNT);
-    for (int i = 0; i< static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = init_population.getNextInstance("default");
+    AgentVector init_population(agent, AGENT_COUNT);
+    for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
+        AgentVector::Agent instance = init_population[i];
         instance.setVariable<float>("x", 12.0f);
         instance.setVariable<float>("y", 14.0f);
         instance.setVariable<int>("id", i);
@@ -97,14 +96,13 @@ TEST(DeviceAPITest, ArraySet) {
     // Run 1 step to ensure data is pushed to device
     cuda_model.step();
     // Recover data from device
-    AgentPopulation population(agent, AGENT_COUNT);
+    AgentVector population(agent, AGENT_COUNT);
     cuda_model.getPopulationData(population);
     // Check data is intact
     // Might need to go more complicate and give different agents different values
     // They should remain in order for such a basic function, but can't guarntee
-    EXPECT_EQ(population.getCurrentListSize(), AGENT_COUNT);
-    for (unsigned int i = 0; i < population.getCurrentListSize(); i++) {
-        AgentInstance instance = population.getInstanceAt(i);
+    EXPECT_EQ(population.size(), AGENT_COUNT);
+    for (AgentVector::Agent instance : population) {
         // Check neighbouring vars are correct
         EXPECT_EQ(instance.getVariable<float>("x"), 12.0f);
         EXPECT_EQ(instance.getVariable<float>("y"), 14.0f);
@@ -132,9 +130,9 @@ TEST(DeviceAPITest, ArrayGet) {
     AgentFunctionDescription &func = agent.newFunction("some_function", agent_fn_da_get);
     model.newLayer().addAgentFunction(func);
     // Init pop
-    AgentPopulation init_population(agent, AGENT_COUNT);
+    AgentVector init_population(agent, AGENT_COUNT);
     for (int i = 0; i< static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = init_population.getNextInstance("default");
+        AgentVector::Agent instance = init_population[i];
         instance.setVariable<float>("x", 12.0f);
         instance.setVariable<int, 4>("array_var", { 2 + i, 4 + i, 8 + i, 16 + i });
         instance.setVariable<float>("y", 14.0f);
@@ -146,14 +144,13 @@ TEST(DeviceAPITest, ArrayGet) {
     // Run 1 step to ensure data is pushed to device
     cuda_model.step();
     // Recover data from device
-    AgentPopulation population(agent, AGENT_COUNT);
+    AgentVector population(agent, AGENT_COUNT);
     cuda_model.getPopulationData(population);
     // Check data is intact
     // Might need to go more complicate and give different agents different values
     // They should remain in order for such a basic function, but can't guarntee
-    EXPECT_EQ(population.getCurrentListSize(), AGENT_COUNT);
-    for (unsigned int i = 0; i < population.getCurrentListSize(); i++) {
-        AgentInstance instance = population.getInstanceAt(i);
+    EXPECT_EQ(population.size(), AGENT_COUNT);
+    for (AgentVector::Agent instance : population) {
         // Check neighbouring vars are correct
         EXPECT_EQ(instance.getVariable<float>("x"), 12.0f);
         EXPECT_EQ(instance.getVariable<float>("y"), 14.0f);
@@ -180,9 +177,9 @@ TEST(DeviceAPITest, getStepCounter) {
     model.newLayer().addAgentFunction(func);
     // Init pop
     const unsigned int agentCount = 1;
-    AgentPopulation init_population(agent, agentCount);
+    AgentVector init_population(agent, agentCount);
     for (int i = 0; i< static_cast<int>(agentCount); i++) {
-        AgentInstance instance = init_population.getNextInstance("default");
+        AgentVector::Agent instance = init_population[i];
         instance.setVariable<unsigned int>("step", 0);
     }
     // Setup Model
@@ -193,11 +190,10 @@ TEST(DeviceAPITest, getStepCounter) {
     for (unsigned int step = 0; step < STEPS; step++) {
         cuda_model.step();
         // Recover data from device
-        AgentPopulation population(agent);
+        AgentVector population(agent);
         cuda_model.getPopulationData(population);
         // Check data is correct.
-        for (unsigned int i = 0; i < population.getCurrentListSize(); i++) {
-            AgentInstance instance = population.getInstanceAt(i);
+        for (AgentVector::Agent instance : population) {
             // Check neighbouring vars are correct
             EXPECT_EQ(instance.getVariable<unsigned int>("step"), step);
         }
@@ -225,9 +221,9 @@ TEST(DeviceAPITest, getStepCounterFunctionCondition) {
     model.newLayer().addAgentFunction(func);
     // Init pop
     const unsigned int agentCount = 1;
-    AgentPopulation init_population(agent, agentCount);
+    AgentVector init_population(agent, agentCount);
     for (int i = 0; i< static_cast<int>(agentCount); i++) {
-        AgentInstance instance = init_population.getNextInstance("default");
+        AgentVector::Agent instance = init_population[i];
         instance.setVariable<unsigned int>("count", 0);
     }
     const unsigned int STEPS = 4;
@@ -240,12 +236,11 @@ TEST(DeviceAPITest, getStepCounterFunctionCondition) {
     cuda_model.simulate();
 
     // Recover data from device
-    AgentPopulation population(agent);
+    AgentVector population(agent);
     cuda_model.getPopulationData(population);
     // Check data is correct.
     const unsigned int EXPECTED_COUNT = 1;
-    for (unsigned int i = 0; i < population.getCurrentListSize(); i++) {
-        AgentInstance instance = population.getInstanceAt(i);
+    for (AgentVector::Agent instance : population) {
         // Check neighbouring vars are correct
         EXPECT_EQ(instance.getVariable<unsigned int>("count"), EXPECTED_COUNT);
     }

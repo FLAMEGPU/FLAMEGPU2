@@ -106,9 +106,9 @@ int main(int argc, const char ** argv) {
     /**
      * Initialisation
      */
-    AgentPopulation population(model.Agent("agent"), AGENT_COUNT/2);
+    AgentVector population(model.Agent("agent"), AGENT_COUNT/2);
     for (unsigned int i = 0; i < AGENT_COUNT/2; i++) {
-        AgentInstance instance = population.getNextInstance();
+        AgentVector::Agent instance = population[i];
         instance.setVariable<float>("x", static_cast<float>(i));
         instance.setVariable<int>("a", i % 2 == 0 ? 1 : 0);
     }

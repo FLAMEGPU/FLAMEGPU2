@@ -69,49 +69,49 @@ FLAMEGPU_STEP_FUNCTION(step_countException) {
 TEST_F(HostReductionTest, SumException) {
     ms->model.addStepFunction(step_sumException);
     for (unsigned int i = 0; i < TEST_LEN; i++) {
-        AgentInstance instance = ms->population->getNextInstance();
+        AgentVector::Agent instance = ms->population->at(i);
     }
     ms->run();
 }
 TEST_F(HostReductionTest, MinException) {
     ms->model.addStepFunction(step_minException);
     for (unsigned int i = 0; i < TEST_LEN; i++) {
-        AgentInstance instance = ms->population->getNextInstance();
+        AgentVector::Agent instance = ms->population->at(i);
     }
     ms->run();
 }
 TEST_F(HostReductionTest, MaxException) {
     ms->model.addStepFunction(step_maxException);
     for (unsigned int i = 0; i < TEST_LEN; i++) {
-        AgentInstance instance = ms->population->getNextInstance();
+        AgentVector::Agent instance = ms->population->at(i);
     }
     ms->run();
 }
 TEST_F(HostReductionTest, CustomReductionException) {
     ms->model.addStepFunction(step_customReductionException);
     for (unsigned int i = 0; i < TEST_LEN; i++) {
-        AgentInstance instance = ms->population->getNextInstance();
+        AgentVector::Agent instance = ms->population->at(i);
     }
     ms->run();
 }
 TEST_F(HostReductionTest, HistogramEvenException) {
     ms->model.addStepFunction(step_histogramEvenException);
     for (unsigned int i = 0; i < TEST_LEN; i++) {
-        AgentInstance instance = ms->population->getNextInstance();
+        AgentVector::Agent instance = ms->population->at(i);
     }
     ms->run();
 }
 TEST_F(HostReductionTest, CustomTransformException) {
     ms->model.addStepFunction(step_transformReduceException);
     for (unsigned int i = 0; i < TEST_LEN; i++) {
-        AgentInstance instance = ms->population->getNextInstance();
+        AgentVector::Agent instance = ms->population->at(i);
     }
     ms->run();
 }
 TEST_F(HostReductionTest, CountException) {
     ms->model.addStepFunction(step_countException);
     for (unsigned int i = 0; i < TEST_LEN; i++) {
-        AgentInstance instance = ms->population->getNextInstance();
+        AgentVector::Agent instance = ms->population->at(i);
     }
     ms->run();
 }
@@ -155,10 +155,7 @@ TEST(HostMiscTest, ArrayVarNotSupported_sum1) {
     ModelDescription model("model");
     AgentDescription &agent = model.newAgent("agent_name");
     agent.newVariable<int, 4>("array_var");
-    AgentPopulation init_population(agent, AGENT_COUNT);
-    for (int i = 0; i< static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = init_population.getNextInstance("default");
-    }
+    AgentVector init_population(agent, AGENT_COUNT);
     // Add the function to be tested
     model.addStepFunction(ArrayVarNotSupported_sum1);
     // Setup Model
@@ -171,10 +168,7 @@ TEST(HostMiscTest, ArrayVarNotSupported_sum2) {
     ModelDescription model("model");
     AgentDescription &agent = model.newAgent("agent_name");
     agent.newVariable<int, 4>("array_var");
-    AgentPopulation init_population(agent, AGENT_COUNT);
-    for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = init_population.getNextInstance("default");
-    }
+    AgentVector init_population(agent, AGENT_COUNT);
     // Add the function to be tested
     model.addStepFunction(ArrayVarNotSupported_sum2);
     // Setup Model
@@ -187,10 +181,7 @@ TEST(HostMiscTest, ArrayVarNotSupported_min) {
     ModelDescription model("model");
     AgentDescription &agent = model.newAgent("agent_name");
     agent.newVariable<int, 4>("array_var");
-    AgentPopulation init_population(agent, AGENT_COUNT);
-    for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = init_population.getNextInstance("default");
-    }
+    AgentVector init_population(agent, AGENT_COUNT);
     // Add the function to be tested
     model.addStepFunction(ArrayVarNotSupported_min);
     // Setup Model
@@ -203,10 +194,7 @@ TEST(HostMiscTest, ArrayVarNotSupported_max) {
     ModelDescription model("model");
     AgentDescription &agent = model.newAgent("agent_name");
     agent.newVariable<int, 4>("array_var");
-    AgentPopulation init_population(agent, AGENT_COUNT);
-    for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = init_population.getNextInstance("default");
-    }
+    AgentVector init_population(agent, AGENT_COUNT);
     // Add the function to be tested
     model.addStepFunction(ArrayVarNotSupported_max);
     // Setup Model
@@ -219,10 +207,7 @@ TEST(HostMiscTest, ArrayVarNotSupported_count) {
     ModelDescription model("model");
     AgentDescription &agent = model.newAgent("agent_name");
     agent.newVariable<int, 4>("array_var");
-    AgentPopulation init_population(agent, AGENT_COUNT);
-    for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = init_population.getNextInstance("default");
-    }
+    AgentVector init_population(agent, AGENT_COUNT);
     // Add the function to be tested
     model.addStepFunction(ArrayVarNotSupported_count);
     // Setup Model
@@ -235,10 +220,7 @@ TEST(HostMiscTest, ArrayVarNotSupported_hist1) {
     ModelDescription model("model");
     AgentDescription &agent = model.newAgent("agent_name");
     agent.newVariable<int, 4>("array_var");
-    AgentPopulation init_population(agent, AGENT_COUNT);
-    for (int i = 0; i< static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = init_population.getNextInstance("default");
-    }
+    AgentVector init_population(agent, AGENT_COUNT);
     // Add the function to be tested
     model.addStepFunction(ArrayVarNotSupported_hist1);
     // Setup Model
@@ -251,10 +233,7 @@ TEST(HostMiscTest, ArrayVarNotSupported_hist2) {
     ModelDescription model("model");
     AgentDescription &agent = model.newAgent("agent_name");
     agent.newVariable<int, 4>("array_var");
-    AgentPopulation init_population(agent, AGENT_COUNT);
-    for (int i = 0; i< static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = init_population.getNextInstance("default");
-    }
+    AgentVector init_population(agent, AGENT_COUNT);
     // Add the function to be tested
     model.addStepFunction(ArrayVarNotSupported_hist2);
     // Setup Model
@@ -267,10 +246,7 @@ TEST(HostMiscTest, ArrayVarNotSupported_reduce) {
     ModelDescription model("model");
     AgentDescription &agent = model.newAgent("agent_name");
     agent.newVariable<int, 4>("array_var");
-    AgentPopulation init_population(agent, AGENT_COUNT);
-    for (int i = 0; i< static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = init_population.getNextInstance("default");
-    }
+    AgentVector init_population(agent, AGENT_COUNT);
     // Add the function to be tested
     model.addStepFunction(ArrayVarNotSupported_reduce);
     // Setup Model
@@ -283,10 +259,7 @@ TEST(HostMiscTest, ArrayVarNotSupported_transformReduce) {
     ModelDescription model("model");
     AgentDescription &agent = model.newAgent("agent_name");
     agent.newVariable<int, 4>("array_var");
-    AgentPopulation init_population(agent, AGENT_COUNT);
-    for (int i = 0; i< static_cast<int>(AGENT_COUNT); i++) {
-        AgentInstance instance = init_population.getNextInstance("default");
-    }
+    AgentVector init_population(agent, AGENT_COUNT);
     // Add the function to be tested
     model.addStepFunction(ArrayVarNotSupported_transformReduce);
     // Setup Model

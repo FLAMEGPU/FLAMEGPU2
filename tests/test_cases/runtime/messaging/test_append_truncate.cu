@@ -79,9 +79,8 @@ namespace test_message_AppendTruncate {
         AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, In_AppendTruncate);
         fi.setMessageInput(msg);
 
-        AgentPopulation pop(a, (unsigned int)AGENT_COUNT);
-        for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-            AgentInstance ai = pop.getNextInstance();
+        AgentVector pop(a, (unsigned int)AGENT_COUNT);
+        for (AgentVector::Agent ai : pop) {
             ai.setVariable<unsigned int>("count", 0);
         }
         LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
@@ -93,15 +92,13 @@ namespace test_message_AppendTruncate {
         c.step();
         c.getPopulationData(pop);
         // Validate each agent has same result
-        for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-            AgentInstance ai = pop.getInstanceAt(i);
+        for (AgentVector::Agent ai : pop) {
             ASSERT_EQ(ai.getVariable<unsigned int>("count"), AGENT_COUNT);
         }
         c.step();
         c.getPopulationData(pop);
         // Validate each agent has same result
-        for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-            AgentInstance ai = pop.getInstanceAt(i);
+        for (AgentVector::Agent ai : pop) {
             ASSERT_EQ(ai.getVariable<unsigned int>("count"), AGENT_COUNT);
         }
     }
@@ -119,9 +116,8 @@ namespace test_message_AppendTruncate {
         AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, In_AppendTruncate2);
         fi.setMessageInput(msg);
 
-        AgentPopulation pop(a, (unsigned int)AGENT_COUNT);
-        for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-            AgentInstance ai = pop.getNextInstance();
+        AgentVector pop(a, (unsigned int)AGENT_COUNT);
+        for (AgentVector::Agent ai : pop) {
             ai.setVariable<unsigned int>("count0", 0);
             ai.setVariable<unsigned int>("count1", 0);
         }
@@ -136,16 +132,14 @@ namespace test_message_AppendTruncate {
         c.step();
         c.getPopulationData(pop);
         // Validate each agent has same result
-        for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-            AgentInstance ai = pop.getInstanceAt(i);
+        for (AgentVector::Agent ai : pop) {
             ASSERT_EQ(ai.getVariable<unsigned int>("count0"), AGENT_COUNT);
             ASSERT_EQ(ai.getVariable<unsigned int>("count1"), AGENT_COUNT);
         }
         c.step();
         c.getPopulationData(pop);
         // Validate each agent has same result
-        for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-            AgentInstance ai = pop.getInstanceAt(i);
+        for (AgentVector::Agent ai : pop) {
             ASSERT_EQ(ai.getVariable<unsigned int>("count0"), AGENT_COUNT);
             ASSERT_EQ(ai.getVariable<unsigned int>("count1"), AGENT_COUNT);
         }
@@ -165,9 +159,8 @@ namespace test_message_AppendTruncate {
         std::default_random_engine rng;
         std::uniform_real_distribution<double> dist(0.0, 1.0);
         unsigned int result_count = 0;
-        AgentPopulation pop(a, (unsigned int)AGENT_COUNT);
-        for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-            AgentInstance ai = pop.getNextInstance();
+        AgentVector pop(a, (unsigned int)AGENT_COUNT);
+        for (AgentVector::Agent ai : pop) {
             if (dist(rng) < 0.7) {  // 70% chance of outputting
                 ai.setVariable<unsigned int>("do_out", 1);
                 result_count++;
@@ -185,15 +178,13 @@ namespace test_message_AppendTruncate {
         c.step();
         c.getPopulationData(pop);
         // Validate each agent has same result
-        for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-            AgentInstance ai = pop.getInstanceAt(i);
+        for (AgentVector::Agent ai : pop) {
             ASSERT_EQ(ai.getVariable<unsigned int>("count"), result_count);
         }
         c.step();
         c.getPopulationData(pop);
         // Validate each agent has same result
-        for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-            AgentInstance ai = pop.getInstanceAt(i);
+        for (AgentVector::Agent ai : pop) {
             ASSERT_EQ(ai.getVariable<unsigned int>("count"), AGENT_COUNT - result_count);
         }
     }
@@ -216,9 +207,8 @@ namespace test_message_AppendTruncate {
         std::default_random_engine rng;
         std::uniform_real_distribution<double> dist(0.0, 1.0);
         unsigned int result_count = 0;
-        AgentPopulation pop(a, (unsigned int)AGENT_COUNT);
-        for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-            AgentInstance ai = pop.getNextInstance();
+        AgentVector pop(a, (unsigned int)AGENT_COUNT);
+        for (AgentVector::Agent ai : pop) {
             if (dist(rng) < 0.7) {  // 70% chance of outputting
                 ai.setVariable<unsigned int>("do_out", 1);
                 result_count++;
@@ -239,16 +229,14 @@ namespace test_message_AppendTruncate {
         c.step();
         c.getPopulationData(pop);
         // Validate each agent has same result
-        for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-            AgentInstance ai = pop.getInstanceAt(i);
+        for (AgentVector::Agent ai : pop) {
             ASSERT_EQ(ai.getVariable<unsigned int>("count0"), result_count);
             ASSERT_EQ(ai.getVariable<unsigned int>("count1"), AGENT_COUNT - result_count);
         }
         c.step();
         c.getPopulationData(pop);
         // Validate each agent has same result
-        for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-            AgentInstance ai = pop.getInstanceAt(i);
+        for (AgentVector::Agent ai : pop) {
             ASSERT_EQ(ai.getVariable<unsigned int>("count0"), AGENT_COUNT - result_count);
             ASSERT_EQ(ai.getVariable<unsigned int>("count1"), result_count);
         }

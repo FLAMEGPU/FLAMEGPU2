@@ -83,9 +83,9 @@ TEST(GPUTest, GPUMemoryTest) {
 
     circle_agent.newVariable<int>("id");
 
-    AgentPopulation population(circle_agent, 100);
+    AgentVector population(circle_agent, 100);
     for (int i = 0; i< 100; i++) {
-        AgentInstance instance = population.getNextInstance("default");
+        AgentVector::Agent instance = population[i];
         instance.setVariable<int>("id", i);
     }
 
@@ -98,15 +98,15 @@ TEST(GPUTest, GPUMemoryTest) {
 
     // check values are the same
     for (int i = 0; i < 10; i++) {
-        AgentInstance i1 = population.getInstanceAt(i, "default");
-        // use AgentInstance equality operator
+        AgentVector::Agent i1 = population[i];
+        // use AgentVector::Agent equality operator
         EXPECT_EQ(i1.getVariable<int>("id"), i);
     }
 }
 
 /**
-* @brief      To verify the correctness of ::AgentInstance::setVariable  and
-*  ::AgentInstance::getVariable variable function and hashing after simulating a function
+* @brief      To verify the correctness of ::AgentVector::Agent::setVariable  and
+*  ::AgentVector::Agent::getVariable variable function and hashing after simulating a function
 *
 * To ensure initial values for agent population is transferred correctly onto
 * the GPU, this test checks the correctness of the values copied back from the device
@@ -126,9 +126,9 @@ TEST(GPUTest, GPUSimulationTest) {
 
     AgentFunctionDescription &add_data = circle_agent.newFunction("add", add_func);
 
-    AgentPopulation population(circle_agent, 10);
+    AgentVector population(circle_agent, 10);
     for (int i = 0; i< 10; i++) {
-        AgentInstance instance = population.getNextInstance("default");
+        AgentVector::Agent instance = population[i];
         // The value of x will be the index of the agent
         instance.setVariable<double>("x", i);
     }
@@ -154,8 +154,8 @@ TEST(GPUTest, GPUSimulationTest) {
 
     // check values are the same
     for (int i = 0; i < 10; i++) {
-        AgentInstance i1 = population.getInstanceAt(i, "default");
-        // use AgentInstance equality operator
+        AgentVector::Agent i1 = population[i];
+        // use AgentVector::Agent equality operator
         EXPECT_EQ(i1.getVariable<double>("x"), i + (2 * STEPS));
     }
 }
@@ -184,15 +184,15 @@ TEST(GPUTest, GPUSimulationTestMultiple) {
 
 
     #define SIZE 10
-    AgentPopulation population1(circle1_agent, SIZE);
+    AgentVector population1(circle1_agent, SIZE);
     for (int i = 0; i < SIZE; i++) {
-        AgentInstance instance = population1.getNextInstance("default");
+        AgentVector::Agent instance = population1[i];
         instance.setVariable<double>("x", i);
     }
 
-    AgentPopulation population2(circle2_agent, SIZE);
+    AgentVector population2(circle2_agent, SIZE);
     for (int i=0; i< SIZE; i++) {
-        AgentInstance instance = population2.getNextInstance("default");
+        AgentVector::Agent instance = population2[i];
         instance.setVariable<double>("x", i);
         instance.setVariable<double>("y", i);
     }
@@ -218,10 +218,10 @@ TEST(GPUTest, GPUSimulationTestMultiple) {
 
     // check values are the same
     for (int i = 0; i < SIZE; i++) {
-        AgentInstance i1 = population1.getInstanceAt(i, "default");
-        AgentInstance i2 = population2.getInstanceAt(i, "default");
+        AgentVector::Agent i1 = population1[i];
+        AgentVector::Agent i2 = population2[i];
 
-        // use AgentInstance equality operator
+        // use AgentVector::Agent equality operator
         EXPECT_EQ(i1.getVariable<double>("x"), i + 2);
         EXPECT_EQ(i2.getVariable<double>("y"), 0);
     }

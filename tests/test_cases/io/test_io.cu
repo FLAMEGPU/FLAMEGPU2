@@ -119,9 +119,9 @@ class MiniSim {
             e.newProperty<int8_t, 3>("int8_t_a", { 20, 0, 1 });
             e.newProperty<uint8_t, 3>("uint8_t_a", {21u, 0u, 1u});
         }
-        AgentPopulation pop_a_out(a, 5);
+        AgentVector pop_a_out(a, 5);
         for (unsigned int i = 0; i < 5; ++i) {
-            auto agent = pop_a_out.getNextInstance();
+            auto agent = pop_a_out[i];
             agent.setVariable<float>("float", static_cast<float>(1.0f + i));
             agent.setVariable<double>("double", static_cast<double>(2.0 + i));
             agent.setVariable<int64_t>("int64_t", 3 + i);
@@ -133,9 +133,9 @@ class MiniSim {
             agent.setVariable<int8_t>("int8_t", static_cast<int8_t>(9 + i));
             agent.setVariable<uint8_t>("uint8_t", static_cast<uint8_t>(10u + i));
         }
-        AgentPopulation pop_b_out(b, 5);
+        AgentVector pop_b_out(b, 5);
         for (unsigned int i = 0; i < 5; ++i) {
-            auto agent = pop_b_out.getNextInstance("2");  // Create them in the not initial state
+            auto agent = pop_b_out[i];
             agent.setVariable<float, 3>("float", { 1.0f, static_cast<float>(i), 1.0f });
             agent.setVariable<double, 3>("double", { 2.0, static_cast<double>(i), 1.0 });
             agent.setVariable<int64_t, 3>("int64_t", { 3, static_cast<int64_t>(i), 1 });
@@ -152,7 +152,7 @@ class MiniSim {
         {  // Run export
             CUDASimulation am(model);
             am.setPopulationData(pop_a_out);
-            am.setPopulationData(pop_b_out);
+            am.setPopulationData(pop_b_out, "2");  // Create them in the not initial state
             // Set config files for export too
             am.SimulationConfig().input_file = "invalid";
             am.SimulationConfig().random_seed = 654321;
@@ -180,15 +180,15 @@ class MiniSim {
             EXPECT_EQ(am.getSimulationConfig().verbose, false);
             EXPECT_EQ(am.getSimulationConfig().input_file, test_file_name);
             EXPECT_EQ(am.getCUDAConfig().device_id, 0);
-            AgentPopulation pop_a_in(a, 5);
-            AgentPopulation pop_b_in(b, 5);
+            AgentVector pop_a_in(a, 5);
+            AgentVector pop_b_in(b, 5);
             am.getPopulationData(pop_a_in);
-            am.getPopulationData(pop_b_in);
+            am.getPopulationData(pop_b_in, "2");
             // Valid agent none array vars
-            ASSERT_EQ(pop_a_in.getCurrentListSize(), pop_a_out.getCurrentListSize());
-            for (unsigned int i = 0; i < pop_a_in.getCurrentListSize(); ++i) {
-                const auto agent_in = pop_a_in.getInstanceAt(i);
-                const auto agent_out = pop_a_out.getInstanceAt(i);
+            ASSERT_EQ(pop_a_in.size(), pop_a_out.size());
+            for (unsigned int i = 0; i < pop_a_in.size(); ++i) {
+                const auto agent_in = pop_a_in[i];
+                const auto agent_out = pop_a_out[i];
                 EXPECT_EQ(agent_in.getVariable<float>("float"), agent_out.getVariable<float>("float"));
                 EXPECT_EQ(agent_in.getVariable<double>("double"), agent_out.getVariable<double>("double"));
                 EXPECT_EQ(agent_in.getVariable<int64_t>("int64_t"), agent_out.getVariable<int64_t>("int64_t"));
@@ -201,10 +201,10 @@ class MiniSim {
                 EXPECT_EQ(agent_in.getVariable<uint8_t>("uint8_t"), agent_out.getVariable<uint8_t>("uint8_t"));
             }
             // Valid agent array vars
-            ASSERT_EQ(pop_b_in.getCurrentListSize("2"), pop_b_out.getCurrentListSize("2"));
-            for (unsigned int i = 0; i < pop_b_in.getCurrentListSize("2"); ++i) {
-                const auto agent_in = pop_b_in.getInstanceAt(i, "2");
-                const auto agent_out = pop_b_out.getInstanceAt(i, "2");
+            ASSERT_EQ(pop_b_in.size(), pop_b_out.size());
+            for (unsigned int i = 0; i < pop_b_in.size(); ++i) {
+                const auto agent_in = pop_b_in[i];
+                const auto agent_out = pop_b_out[i];
                 const bool float_array = agent_in.getVariable<float, 3>("float") == agent_out.getVariable<float, 3>("float");
                 const bool double_array = agent_in.getVariable<double, 3>("double") == agent_out.getVariable<double, 3>("double");
                 const bool int64_t_array = agent_in.getVariable<int64_t, 3>("int64_t") == agent_out.getVariable<int64_t, 3>("int64_t");

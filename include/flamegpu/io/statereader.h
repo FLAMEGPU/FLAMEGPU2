@@ -16,6 +16,9 @@
 #include <utility>
 
 #include "flamegpu/model/ModelDescription.h"
+#include "flamegpu/util/StringPair.h"
+
+class AgentVector;
 
 // Base class
 class StateReader {
@@ -27,16 +30,16 @@ class StateReader {
      * @param _model_name Name from the model description hierarchy of the model to be loaded
      * @param _env_desc Environment description for validating property data on load
      * @param _env_init Dictionary of loaded values map:<{name, index}, value>
-     * @param _model_state Map of AgentPopulation to load the agent data into per agent, key should be agent name
+     * @param _model_state Map of AgentVector to load the agent data into per agent, key should be agent name
      * @param input Filename of the input file (This will be used to determine which reader to return)
      */
     StateReader(
-        const std::string &_model_name,
-        const std::unordered_map<std::string, EnvironmentDescription::PropData> &_env_desc,
-        std::unordered_map<std::pair<std::string, unsigned int>, Any> &_env_init,
-        const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &_model_state,
-        const std::string &input,
-        Simulation *_sim_instance)
+        const std::string& _model_name,
+        const std::unordered_map<std::string, EnvironmentDescription::PropData>& _env_desc,
+        std::unordered_map<std::pair<std::string, unsigned int>, Any>& _env_init,
+        StringPairUnorderedMap<std::shared_ptr<AgentVector>>& _model_state,
+        const std::string& input,
+        Simulation* _sim_instance)
     : model_state(_model_state)
     , inputFile(input)
     , model_name(_model_name)
@@ -75,7 +78,7 @@ class StateReader {
 */
 
  protected:
-    const std::unordered_map<std::string, std::shared_ptr<AgentPopulation>> &model_state;
+    StringPairUnorderedMap<std::shared_ptr<AgentVector>>& model_state;
     std::string inputFile;
     const std::string model_name;
     const std::unordered_map<std::string, EnvironmentDescription::PropData> &env_desc;

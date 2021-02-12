@@ -7,8 +7,7 @@
 #define INCLUDE_FLAMEGPU_POP_MEMORYVECTOR_H_
 
 #include <vector>
-#include <ostream>
-#include <typeinfo>
+#include <typeindex>
 #include <map>
 #include <memory>
 #include <utility>
@@ -21,9 +20,15 @@ class GenericMemoryVector{
     /**
      * Acts as a multiplier
      */
-    virtual ~GenericMemoryVector() { ; }
+    virtual ~GenericMemoryVector() { }
 
     virtual const std::type_index& getType() const = 0;
+
+    virtual unsigned int getElements() const = 0;
+
+    virtual size_t getTypeSize() const = 0;
+
+    virtual size_t getVariableSize() const = 0;
 
     virtual void* getDataPtr() = 0;
 
@@ -41,17 +46,27 @@ class MemoryVector : public GenericMemoryVector {
  public:
     /**
      * Memory vector is an array of variables
-     * @param _sub_length the length of the array within a variable, most variables will be 1 (a lone variable)
+     * @param _elements the length of the array within a variable, most variables will be 1 (a lone variable)
      */
-    explicit MemoryVector(unsigned int _sub_length = 1)
+    explicit MemoryVector(unsigned int _elements = 1)
     : GenericMemoryVector()
-    , sub_length(_sub_length)
-    , type(typeid(T)) { }
+    , elements(_elements)
+    , type(typeid(T))
+    , type_size(sizeof(T)) { }
 
     virtual ~MemoryVector() { ; }
 
     const std::type_index& getType() const override {
         return type;
+    }
+    unsigned int getElements() const {
+        return elements;
+    }
+    size_t getTypeSize() const {
+        return type_size;
+    }
+    size_t getVariableSize() const {
+        return type_size * elements;
     }
 
     void* getDataPtr() override {
@@ -73,20 +88,21 @@ class MemoryVector : public GenericMemoryVector {
     }
 
     virtual MemoryVector<T>* clone() const {
-        return (new MemoryVector<T>(sub_length));
+        return (new MemoryVector<T>(elements));
     }
 
     void resize(unsigned int s) override {
-        vec.resize(s * sub_length);
+        vec.resize(s * elements);
     }
 
  protected:
     /**
      * Multiplies with size to allocate enough memory
      */
-    const unsigned int sub_length;
+    const unsigned int elements;
     std::vector<T> vec;
     const std::type_index type;
+    const size_t type_size;
 };
 
 // use this to store default values for a population, must be here to register the correct types at compile time

@@ -76,9 +76,9 @@ TEST(LoggingTest, CUDASimulationStep) {
     slcfg.setFrequency(2);
 
     // Create agent population
-    AgentPopulation pop(a, 101);
+    AgentVector pop(a, 101);
     for (int i = 0; i < 101; ++i) {
-        auto instance = pop.getNextInstance();
+        auto instance = pop[i];
         instance.setVariable<float>("float_var", static_cast<float>(i));
         instance.setVariable<int>("int_var", static_cast<int>(i+1));
         instance.setVariable<unsigned int>("uint_var", static_cast<unsigned int>(i+2));
@@ -190,9 +190,9 @@ TEST(LoggingTest, CUDASimulationSimulate) {
     slcfg.setFrequency(2);
 
     // Create agent population
-    AgentPopulation pop(a, 101);
+    AgentVector pop(a, 101);
     for (int i = 0; i < 101; ++i) {
-        auto instance = pop.getNextInstance();
+        auto instance = pop[i];
         instance.setVariable<float>("float_var", static_cast<float>(i));
         instance.setVariable<int>("int_var", static_cast<int>(i+1));
         instance.setVariable<unsigned int>("uint_var", static_cast<unsigned int>(i+2));

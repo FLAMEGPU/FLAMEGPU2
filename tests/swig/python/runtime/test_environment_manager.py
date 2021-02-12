@@ -20,7 +20,7 @@ class MiniSim:
         self.model = pyflamegpu.ModelDescription(model_name)
         self.agent = self.model.newAgent("agent")
         self.env = self.model.Environment()
-        self.population = pyflamegpu.AgentPopulation(self.agent, TEST_LEN)
+        self.population = pyflamegpu.AgentVector(self.agent, TEST_LEN)
         #self.model.addStepFunction(DEFAULT_STEP) # Default step not required
     
     def run(self): 

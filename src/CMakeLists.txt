@@ -97,10 +97,10 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/model/AgentDescription.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/ModelDescription.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/Variable.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/pop/AgentInstance.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/pop/AgentPopulation.h
     ${FLAMEGPU_ROOT}/include/flamegpu/pop/MemoryVector.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/pop/AgentStateMemory.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/pop/AgentVector.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/pop/AgentVector_Agent.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/pop/AgentInstance.h
     ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAScanCompaction.h
     ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAErrorChecking.h
     ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAMessageList.h
@@ -175,6 +175,7 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/util/compute_capability.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/util/JitifyCache.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/filesystem.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/util/StringPair.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/SubModelData.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/SubAgentData.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/SubEnvironmentData.h
@@ -194,9 +195,9 @@ SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/model/EnvironmentDescription.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/model/AgentDescription.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/model/AgentFunctionDescription.cpp
-    ${FLAMEGPU_ROOT}/src/flamegpu/pop/AgentPopulation.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/pop/AgentVector.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/pop/AgentVector_Agent.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/pop/AgentInstance.cpp
-    ${FLAMEGPU_ROOT}/src/flamegpu/pop/AgentStateMemory.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAScanCompaction.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAMessageList.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAAgent.cu
