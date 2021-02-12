@@ -14,8 +14,8 @@ FLAMEGPU_INIT_FUNCTION(Init) {
         agent.setVariable<int>("x", init + i * init_offset);
     }
 }
-std::atomic<unsigned int> atomic_init;
-std::atomic<uint64_t> atomic_result;
+std::atomic<unsigned int> atomic_init = {0};
+std::atomic<uint64_t> atomic_result = {0};
 FLAMEGPU_EXIT_FUNCTION(Exit) {
     atomic_init += FLAMEGPU->environment.getProperty<int>("init");
     atomic_result += FLAMEGPU->agent("Agent").sum<int>("x");
