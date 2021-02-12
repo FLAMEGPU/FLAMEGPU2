@@ -93,8 +93,8 @@ void CUDAEnsemble::simulate(const RunPlanVec &plans) {
     gpuErrchk(cudaSetDevice(0));
 
     // Init runners, devices * concurrent runs
-    std::atomic<unsigned int> err_ct;
-    std::atomic<unsigned int> next_run;
+    std::atomic<unsigned int> err_ct = {0};
+    std::atomic<unsigned int> next_run = {0};
     const size_t TOTAL_RUNNERS = devices.size() * config.concurrent_runs;
     SimRunner *runners = static_cast<SimRunner *>(malloc(sizeof(SimRunner) * TOTAL_RUNNERS));
 
