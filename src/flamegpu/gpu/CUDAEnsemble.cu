@@ -5,7 +5,6 @@
 #include <memory>
 #include <thread>
 #include <set>
-#include <chrono>
 #include <queue>
 #include <mutex>
 #include <condition_variable>
@@ -13,6 +12,7 @@
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/sim/RunPlanVec.h"
 #include "flamegpu/util/compute_capability.cuh"
+#include "flamegpu/util/SteadyClockTimer.h"
 #include "flamegpu/gpu/CUDASimulation.h"
 #include "flamegpu/io/factory.h"
 #include "flamegpu/util/filesystem.h"
@@ -99,9 +99,10 @@ void CUDAEnsemble::simulate(const RunPlanVec &plans) {
     SimRunner *runners = static_cast<SimRunner *>(malloc(sizeof(SimRunner) * TOTAL_RUNNERS));
 
     // Log Time (We can't use CUDA events here, due to device resets)
-    const auto start_time = std::chrono::high_resolution_clock::now();
+    auto ensemble_timer = util::SteadyClockTimer();
+    ensemble_timer.start();
     // Reset the elapsed time.
-    ensemble_elapsed_time = 0;
+    ensemble_elapsed_time = 0.f;
 
     // Logging thread-safety items
     std::queue<unsigned int> log_export_queue;
@@ -146,8 +147,8 @@ void CUDAEnsemble::simulate(const RunPlanVec &plans) {
     }
 
     // Record and store the elapsed time
-    const auto end_time = std::chrono::high_resolution_clock::now();
-    ensemble_elapsed_time = static_cast<int64_t>(std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count());
+    ensemble_timer.stop();
+    ensemble_elapsed_time = ensemble_timer.getElapsedMilliseconds();
 
     // Ensemble has finished, print summary
     if (!config.silent) {
@@ -156,7 +157,7 @@ void CUDAEnsemble::simulate(const RunPlanVec &plans) {
             printf("There were a total of %u errors.\n", err_ct.load());
     }
     if (config.timing) {
-        printf("Ensemble time elapsed: %zums\n", ensemble_elapsed_time);
+        printf("Ensemble time elapsed: %fms\n", ensemble_elapsed_time);
     }
 
     // Free memory

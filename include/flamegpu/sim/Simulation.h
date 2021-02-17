@@ -81,7 +81,9 @@ class Simulation {
  public:
     void initialise(int argc, const char** argv);
 
+    virtual void initFunctions() = 0;
     virtual bool step() = 0;
+    virtual void exitFunctions() = 0;
     virtual void simulate() = 0;
     /**
      * Returns the simulation to a clean state
@@ -143,6 +145,13 @@ class Simulation {
      * @note This value is used internally for environment property storage
      */
     unsigned int getInstanceID() const { return instance_id; }
+
+    /**
+     * returns the width of the widest layer in model.
+     * @return the width of the widest layer.
+     */
+    unsigned int getMaximumLayerWidth() const { return maxLayerWidth; }
+
     const std::shared_ptr<const ModelData> model;
 
     /**
@@ -168,6 +177,10 @@ class Simulation {
      * Initial environment items if they have been loaded from file, prior to device selection
      */
     std::unordered_map<std::pair<std::string, unsigned int>, Any> env_init;
+    /**
+     * the width of the widest layer in the concrete version of the model (calculated once)
+     */
+    unsigned int maxLayerWidth;
 
  private:
     /**

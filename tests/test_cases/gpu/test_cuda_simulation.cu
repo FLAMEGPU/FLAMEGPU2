@@ -1,7 +1,11 @@
+#include <chrono>
+#include <thread>
+
 #include "flamegpu/flame_api.h"
 #include "flamegpu/runtime/flamegpu_api.h"
 #include "flamegpu/util/compute_capability.cuh"
 #include "helpers/device_initialisation.h"
+
 
 #include "gtest/gtest.h"
 
@@ -27,6 +31,18 @@ FLAMEGPU_AGENT_FUNCTION(DeathTestFunc, MsgNone, MsgNone) {
 }
 FLAMEGPU_STEP_FUNCTION(IncrementCounter) {
     externalCounter++;
+}
+FLAMEGPU_STEP_FUNCTION(IncrementCounterSlow) {
+    externalCounter++;
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+}
+FLAMEGPU_INIT_FUNCTION(InitIncrementCounterSlow) {
+    externalCounter++;
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+}
+FLAMEGPU_EXIT_FUNCTION(ExitIncrementCounterSlow) {
+    externalCounter++;
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
 }
 
 TEST(TestCUDASimulation, ApplyConfigDerivedContextCreation) {
@@ -380,31 +396,150 @@ TEST(TestCUDASimulation, AgentDeath) {
 }
 
 // test the programatically accessible simulation time elapsed.
-TEST(TestCUDASimulation, getSimulationElapsedTime) {
+TEST(TestCUDASimulation, simulationElapsedTime) {
     // Define a simple model - doesn't need to do anything other than take some time.
     ModelDescription m(MODEL_NAME);
     AgentDescription &a = m.newAgent(AGENT_NAME);
     AgentPopulation pop(a, static_cast<unsigned int>(AGENT_COUNT));
-    m.addStepFunction(IncrementCounter);
+    m.addStepFunction(IncrementCounterSlow);
 
     CUDASimulation c(m);
     c.setPopulationData(pop);
 
     // Try getting the timer before running simulate, which should return 0
-    EXPECT_EQ(c.getSimulationElapsedTime(), 0.0f);
+    EXPECT_EQ(c.getElapsedTimeSimulation(), 0.0f);
     // Call simulate to run 1 steps, which should take some length of time
     c.SimulationConfig().steps = 1;
     c.simulate();
-    EXPECT_GT(c.getSimulationElapsedTime(), 0.0f);
+    EXPECT_GT(c.getElapsedTimeSimulation(), 0.0f);
 
     // Then run 10 steps, which should be longer / not the same.
-    float simulate1StepDuration = c.getSimulationElapsedTime();
+    float simulate1StepDuration = c.getElapsedTimeSimulation();
     c.SimulationConfig().steps = 10;
     c.simulate();
-    float simulate10StepDuration = c.getSimulationElapsedTime();
+    float simulate10StepDuration = c.getElapsedTimeSimulation();
     EXPECT_GT(simulate10StepDuration, 0.0f);
     EXPECT_NE(simulate1StepDuration, simulate10StepDuration);
 }
+
+
+// test the programatically accessible simulation time elapsed.
+TEST(TestCUDASimulation, initExitElapsedTime) {
+    // Define a simple model - doesn't need to do anything other than take some time.
+    ModelDescription m(MODEL_NAME);
+    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentPopulation pop(a, static_cast<unsigned int>(AGENT_COUNT));
+    m.addInitFunction(InitIncrementCounterSlow);
+    m.addStepFunction(IncrementCounterSlow);
+    m.addExitFunction(ExitIncrementCounterSlow);
+
+    CUDASimulation c(m);
+    c.setPopulationData(pop);
+
+    // Try getting the timer before running simulate, which should return 0
+    EXPECT_EQ(c.getElapsedTimeSimulation(), 0.0f);
+    EXPECT_EQ(c.getElapsedTimeInitFunctions(), 0.0f);
+    EXPECT_EQ(c.getElapsedTimeExitFunctions(), 0.0f);
+    // Call simulate to run 1 steps, which should take some length of time
+    c.SimulationConfig().steps = 1;
+    c.simulate();
+    // Afterwards timers should be non 0.
+    EXPECT_GT(c.getElapsedTimeSimulation(), 0.0f);
+    EXPECT_GT(c.getElapsedTimeInitFunctions(), 0.0f);
+    EXPECT_GT(c.getElapsedTimeExitFunctions(), 0.0f);
+}
+
+// test the programatically accessible per step simulation time.
+TEST(TestCUDASimulation, stepElapsedTime) {
+    // Define a simple model - doesn't need to do anything other than take some time.
+    ModelDescription m(MODEL_NAME);
+    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentPopulation pop(a, static_cast<unsigned int>(AGENT_COUNT));
+    m.addStepFunction(IncrementCounterSlow);
+
+    CUDASimulation c(m);
+    c.setPopulationData(pop);
+
+    // Try getting the timer before running simulate, which should be empty.
+    EXPECT_EQ(c.getElapsedTimeSteps().size(), 0u);
+    // Or gettng an individual element which is out of boudns should have some kind of error.
+    // EXPECT_GT(c.getElapsedTimeStep(1), 0.0f); // @todo
+
+    // Call simulate to run 10 steps, which should take some length of time
+    const unsigned int STEPS = 10u;
+    c.SimulationConfig().steps = STEPS;
+    c.simulate();
+
+    std::vector<float> stepTimes = c.getElapsedTimeSteps();
+    EXPECT_EQ(stepTimes.size(), STEPS);
+    for (unsigned int step = 0; step < STEPS; step++) {
+        EXPECT_GT(stepTimes.at(step), 0.0f);
+        EXPECT_GT(c.getElapsedTimeStep(step), 0.0f);
+    }
+}
+
+/* const char* rtc_empty_agent_func = R"###(
+FLAMEGPU_AGENT_FUNCTION(rtc_test_func, MsgNone, MsgNone) {
+    return ALIVE;
+}
+)###"; */
+/**
+* Test an empty agent function to ensure that the RTC library can successful build and run a minimal example
+*/
+/* TEST(TestCUDASimulation, RTCElapsedTime) {
+    ModelDescription m(MODEL_NAME);
+    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentPopulation p(a, static_cast<unsigned int>(AGENT_COUNT));
+    a.newVariable<unsigned int>("x");
+
+    // add RTC agent function
+    AgentFunctionDescription &rtcFunc = a.newRTCFunction("rtc_test_func", rtc_empty_agent_func);
+    m.newLayer().addAgentFunction(rtcFunc);
+    // Init pop
+    for (unsigned int i = 0u; i < AGENT_COUNT; i++) {
+        AgentInstance instance = p.getNextInstance();
+        instance.setVariable<unsigned int>("x", static_cast<unsigned int>(i));
+    }
+    // Setup Model
+    CUDASimulation s(m);
+    s.setPopulationData(p);
+
+    EXPECT_EQ(s.getElapsedTimeRTCInitialisation(), 0.0f);
+    EXPECT_EQ(s.getElapsedTimeSimulation(), 0.0f);
+
+} */
+
+
+const char* rtc_empty_agent_func = R"###(
+FLAMEGPU_AGENT_FUNCTION(rtc_test_func, MsgNone, MsgNone) {
+    return ALIVE;
+}
+)###";
+/**
+ * Test an empty agent function to ensure that the RTC library can successful build and run a minimal example
+ */
+TEST(TestCUDASimulation, RTCElapsedTime) {
+    ModelDescription m("m");
+    AgentDescription &agent = m.newAgent(AGENT_NAME);
+    // add RTC agent function
+    AgentFunctionDescription &func = agent.newRTCFunction("rtc_test_func", rtc_empty_agent_func);
+    func.setAllowAgentDeath(true);
+    m.newLayer().addAgentFunction(func);
+    // Init pop
+    AgentPopulation p(agent, AGENT_COUNT);
+    for (int i = 0; i< static_cast<int>(AGENT_COUNT); i++) {
+        AgentInstance instance = p.getNextInstance("default");
+    }
+    CUDASimulation s(m);
+    // The RTC initialisation occurs before anything try to  interact with the device, i.e. population generation so the timer should be 0 here
+    EXPECT_EQ(s.getElapsedTimeRTCInitialisation(), 0.0f);
+    s.SimulationConfig().steps = 1;
+    s.setPopulationData(p);
+    s.simulate();
+    // Afterwards timers should be non 0.
+    EXPECT_GT(s.getElapsedTimeRTCInitialisation(), 0.0f);
+}
+
 // test that we can have 2 instances of the same ModelDescription simultaneously
 TEST(TestCUDASimulation, MultipleInstances) {
     // Define a simple model - doesn't need to do anything other than take some time.

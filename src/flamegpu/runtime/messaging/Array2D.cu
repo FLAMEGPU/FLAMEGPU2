@@ -56,7 +56,7 @@ void MsgArray2D::CUDAModelHandler::freeMetaDataDevicePtr() {
     d_write_flag = nullptr;
     d_write_flag_len = 0;
 }
-void MsgArray2D::CUDAModelHandler::buildIndex(CUDAScatter &scatter, const unsigned int &streamId) {
+void MsgArray2D::CUDAModelHandler::buildIndex(CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream) {
     const unsigned int MESSAGE_COUNT = this->sim_message.getMessageCount();
     // Zero the output arrays
     auto &read_list = this->sim_message.getReadList();
@@ -81,7 +81,7 @@ void MsgArray2D::CUDAModelHandler::buildIndex(CUDAScatter &scatter, const unsign
         }
         t_d_write_flag = d_write_flag;
     }
-    scatter.arrayMessageReorder(streamId, this->sim_message.getMessageDescription().variables, read_list, write_list, MESSAGE_COUNT, hd_metadata.length, t_d_write_flag);
+    scatter.arrayMessageReorder(streamId, stream, this->sim_message.getMessageDescription().variables, read_list, write_list, MESSAGE_COUNT, hd_metadata.length, t_d_write_flag);
     this->sim_message.swap();
     // Reset message count back to full array length
     // Array message exposes not output messages as 0

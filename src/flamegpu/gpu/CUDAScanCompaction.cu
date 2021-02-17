@@ -48,10 +48,10 @@ void CUDAScanCompactionConfig::free_scan_flag() {
 
 void CUDAScanCompactionConfig::zero_scan_flag() {
     if (d_ptrs.position) {
-        gpuErrchk(cudaMemset(d_ptrs.position, 0, scan_flag_len * sizeof(unsigned int)));
+        gpuErrchk(cudaMemset(d_ptrs.position, 0, scan_flag_len * sizeof(unsigned int)));  // @todo - make this async + streamSync for less ensbemble blocking.
     }
     if (d_ptrs.scan_flag) {
-        gpuErrchk(cudaMemset(d_ptrs.scan_flag, 0, scan_flag_len * sizeof(unsigned int)));
+        gpuErrchk(cudaMemset(d_ptrs.scan_flag, 0, scan_flag_len * sizeof(unsigned int)));  // @todo - make this async + streamSync for less ensbemble blocking.
     }
 }
 

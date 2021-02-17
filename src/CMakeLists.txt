@@ -169,6 +169,8 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/RandomManager.cuh    
     ${FLAMEGPU_ROOT}/include/flamegpu/util/Any.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/nvtx.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/util/CUDAEventTimer.cuh
+    ${FLAMEGPU_ROOT}/include/flamegpu/util/SteadyClockTimer.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/SignalHandlers.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/compute_capability.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/util/JitifyCache.h

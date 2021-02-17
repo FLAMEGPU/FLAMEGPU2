@@ -7,8 +7,8 @@ __global__ void initToThreadIndex(unsigned int *output, unsigned int threadCount
     }
 }
 
-void HostAgentInstance::fillTIDArray(unsigned int *buffer, const unsigned int &threadCount) {
-    initToThreadIndex<<<(threadCount/512)+1, 512 >>>(buffer, threadCount);
+void HostAgentInstance::fillTIDArray(unsigned int *buffer, const unsigned int &threadCount, const cudaStream_t &stream) {
+    initToThreadIndex<<<(threadCount/512)+1, 512, 0, stream>>>(buffer, threadCount);
     gpuErrchkLaunch();
 }
 
@@ -19,7 +19,7 @@ __global__ void sortBuffer_kernel(char *dest, char*src, unsigned int *position, 
     }
 }
 
-void HostAgentInstance::sortBuffer(void *dest, void*src, unsigned int *position, const size_t &typeLen, const unsigned int &threadCount) {
-    sortBuffer_kernel<<<(threadCount/512)+1, 512 >>>(static_cast<char*>(dest), static_cast<char*>(src), position, typeLen, threadCount);
+void HostAgentInstance::sortBuffer(void *dest, void*src, unsigned int *position, const size_t &typeLen, const unsigned int &threadCount, const cudaStream_t &stream) {
+    sortBuffer_kernel<<<(threadCount/512)+1, 512, 0, stream >>>(static_cast<char*>(dest), static_cast<char*>(src), position, typeLen, threadCount);
     gpuErrchkLaunch();
 }

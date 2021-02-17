@@ -16,6 +16,7 @@
 #include "flamegpu/util/nvtx.h"
 #include "flamegpu/util/compute_capability.cuh"
 #include "flamegpu/util/SignalHandlers.h"
+#include "flamegpu/util/CUDAEventTimer.cuh"
 #include "flamegpu/runtime/cuRVE/curve_rtc.h"
 #include "flamegpu/runtime/HostFunctionCallback.h"
 #include "flamegpu/gpu/CUDAAgent.h"
@@ -38,7 +39,10 @@ CUDASimulation::CUDASimulation(const ModelDescription& _model, int argc, const c
 CUDASimulation::CUDASimulation(const std::shared_ptr<const ModelData> &_model)
     : Simulation(_model)
     , step_count(0)
-    , simulation_elapsed_time(0.f)
+    , elapsedMillisecondsSimulation(0.f)
+    , elapsedMillisecondsInitFunctions(0.f)
+    , elapsedMillisecondsExitFunctions(0.f)
+    , elapsedMillisecondsRTCInitialisation(0.f)
     , run_log(std::make_unique<RunLog>())
     , streams(std::vector<cudaStream_t>())
     , singletons(nullptr)
@@ -146,9 +150,14 @@ CUDASimulation::~CUDASimulation() {
         // if (active_instances == 1) {
         //   assert(singletons->curve.size() == 0);
         // }
+
         delete singletons;
         singletons = nullptr;
     }
+
+    // Destroy streams, potentially unsafe in a destructor as it will invoke cuda commands.
+    // Do this once to re-use existing streams rather than per-step.
+    this->destroyStreams();
 
     // We must explicitly delete all cuda members before we cuda device reset
     agent_map.clear();
@@ -178,8 +187,63 @@ CUDASimulation::~CUDASimulation() {
     --active_instances;
 }
 
+
+
+void CUDASimulation::initFunctions() {
+    NVTX_RANGE("CUDASimulation::initFunctions");
+    util::CUDAEventTimer initFunctionsTimer = util::CUDAEventTimer();
+    initFunctionsTimer.start();
+
+    // Execute normal init functions
+    for (auto &initFn : model->initFunctions) {
+        initFn(this->host_api.get());
+    }
+    // Execute init function callbacks (python)
+    for (auto &initFn : model->initFunctionCallbacks) {
+        initFn->run(this->host_api.get());
+    }
+    // Check if host agent creation was used in init functions
+    if (model->initFunctions.size() || model->initFunctionCallbacks.size()) {
+        processHostAgentCreation(0);
+    }
+
+    // Record, store and output the elapsed time of the step.
+    initFunctionsTimer.stop();
+    initFunctionsTimer.sync();
+    this->elapsedMillisecondsInitFunctions = initFunctionsTimer.getElapsedMilliseconds();
+    if (getSimulationConfig().timing) {
+        fprintf(stdout, "Init Function Processing time: %.3f ms\n", this->elapsedMillisecondsInitFunctions);
+    }
+}
+
+void CUDASimulation::exitFunctions() {
+    NVTX_RANGE("CUDASimulation::exitFunctions");
+    util::CUDAEventTimer exitFunctionsTimer = util::CUDAEventTimer();
+    exitFunctionsTimer.start();
+
+    // Execute exit functions
+    for (auto &exitFn : model->exitFunctions) {
+        exitFn(this->host_api.get());
+    }
+    // Execute any exit functions from swig/python
+    for (auto &exitFn : model->exitFunctionCallbacks) {
+        exitFn->run(this->host_api.get());
+    }
+
+    // Record, store and output the elapsed time of the step.
+    exitFunctionsTimer.stop();
+    exitFunctionsTimer.sync();
+    this->elapsedMillisecondsExitFunctions = exitFunctionsTimer.getElapsedMilliseconds();
+    if (getSimulationConfig().timing) {
+        fprintf(stdout, "Exit Function Processing time: %.3f ms\n", this->elapsedMillisecondsExitFunctions);
+    }
+}
+
 bool CUDASimulation::step() {
     NVTX_RANGE(std::string("CUDASimulation::step " + std::to_string(step_count)).c_str());
+    // Time the individual step.
+    util::CUDAEventTimer stepTimer = util::CUDAEventTimer();
+    stepTimer.start();
 
     // Ensure singletons have been initialised
     initialiseSingletons();
@@ -189,295 +253,317 @@ bool CUDASimulation::step() {
         fprintf(stdout, "Processing Simulation Step %u\n", step_count);
     }
 
-    unsigned int nStreams = 1;
-    std::string message_name;
-    Curve::NamespaceHash message_name_inp_hash = 0;
-    Curve::NamespaceHash message_name_outp_hash = 0;
-
-    // TODO: simulation.getMaxFunctionsPerLayer()
-    for (auto lyr = model->layers.begin(); lyr != model->layers.end(); ++lyr) {
-        unsigned int temp = static_cast<unsigned int>((*lyr)->agent_functions.size());
-        nStreams = std::max(nStreams, temp);
-    }
-
-    /*!  Stream creations */
     // Ensure there are enough streams to execute the layer.
-    while (streams.size() < nStreams) {
-        cudaStream_t stream;
-        gpuErrchk(cudaStreamCreate(&stream));
-        streams.push_back(stream);
-    }
+    // Taking into consideration if in-layer concurrency is disabled or not.
+    unsigned int nStreams = getMaximumLayerWidth();
+    this->createStreams(nStreams);
 
     // Reset message list flags
     for (auto m =  message_map.begin(); m != message_map.end(); ++m) {
         m->second->setTruncateMessageListFlag();
     }
 
-    /*! for each each sim layer, launch each agent function in its own stream */
-    unsigned int lyr_idx = 0;
-    for (auto lyr = model->layers.begin(); lyr != model->layers.end(); ++lyr) {
-        NVTX_RANGE(std::string("StepLayer " + std::to_string(lyr_idx)).c_str());
+    // Execute each layer of the simulation.
+    unsigned int layerIndex = 0;
+    for (auto& layer : model->layers) {
+        // Execute the individual layer
+        stepLayer(layer, layerIndex);
+        // Increment counter
+        ++layerIndex;
+    }
 
-        if ((*lyr)->sub_model) {
-            auto &sm = submodel_map.at((*lyr)->sub_model->name);
-            sm->resetStepCounter();
-            sm->simulate();
-            sm->reset(true);
-            // Next layer, this layer cannot also contain agent functions
-            continue;
-        }
+    // Run the step functions (including pyhton.)
+    stepStepFunctions();
 
-        const auto& functions = (*lyr)->agent_functions;
+    // Run the exit conditons, detecting wheter or not any we
+    bool exitRequired = this->stepExitConditions();
 
-        // Track stream id
-        int j = 0;
-        // Sum the total number of threads being launched in the layer
-        unsigned int totalThreads = 0;
-        /*! for each function apply any agent function conditions*/
-        {
-            // Map agent memory
-            for (const std::shared_ptr<AgentFunctionData> &func_des : functions) {
-                if ((func_des->condition) || (!func_des->rtc_func_condition_name.empty())) {
-                    auto func_agent = func_des->parent.lock();
-                    NVTX_RANGE(std::string("condition map " + func_agent->name + "::" + func_des->name).c_str());
-                    const CUDAAgent& cuda_agent = getCUDAAgent(func_agent->name);
+    // Record, store and output the elapsed time of the step.
+    stepTimer.stop();
+    stepTimer.sync();
+    float stepMilliseconds = stepTimer.getElapsedMilliseconds();
+    this->elapsedMillisecondsPerStep.push_back(stepMilliseconds);
+    if (getSimulationConfig().timing) {
+        // Resolution is 0.5 microseconds, so print to 1 us.
+        fprintf(stdout, "Step %d Processing time: %.3f ms\n", this->step_count, stepMilliseconds);
+    }
 
-                    const unsigned int state_list_size = cuda_agent.getStateSize(func_des->initial_state);
-                    if (state_list_size == 0) {
-                        ++j;
-                        continue;
-                    }
-                    singletons->scatter.Scan().resize(state_list_size, CUDAScanCompaction::AGENT_DEATH, j);
+    // Update step count at the end of the step - when it has completed.
+    incrementStepCounter();
+    // Update the log for the step.
+    processStepLog();
+    // Return false if any exit condition's passed.
+    return !exitRequired;
+}
 
-                    // Configure runtime access of the functions variables within the FLAME_API object
-                    cuda_agent.mapRuntimeVariables(*func_des, instance_id);
+void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const unsigned int layerIndex) {
+    NVTX_RANGE(std::string("stepLayer " + std::to_string(layerIndex)).c_str());
 
-                    // Zero the scan flag that will be written to
-                    singletons->scatter.Scan().zero(CUDAScanCompaction::AGENT_DEATH, j);
+    std::string message_name;
+    Curve::NamespaceHash message_name_inp_hash = 0;
+    Curve::NamespaceHash message_name_outp_hash = 0;
 
-                    totalThreads += state_list_size;
-                    ++j;
-                }
-            }
+    // If the layer contains a sub model, it can only execute the sub model.
+    if (layer->sub_model) {
+        auto &sm = submodel_map.at(layer->sub_model->name);
+        sm->resetStepCounter();
+        sm->simulate();
+        sm->reset(true);
+        // Next layer, this layer cannot also contain agent functions
+        // Ensure syncrhonisation has occured.
+        this->synchronizeAllStreams();
+        return;
+    }
 
-            // Update curve
-            singletons->curve.updateDevice();
-            // Ensure RandomManager is the correct size to accommodate all threads to be launched
-            curandState *d_rng = singletons->rng.resize(totalThreads);
-            // Track stream id
-            j = 0;
-            // Sum the total number of threads being launched in the layer
-            totalThreads = 0;
-            // Launch function condition kernels
-            gpuErrchk(cudaStreamSynchronize(0));
-            for (const std::shared_ptr<AgentFunctionData> &func_des : functions) {
-                if ((func_des->condition) || (!func_des->rtc_func_condition_name.empty())) {
-                    auto func_agent = func_des->parent.lock();
-                    NVTX_RANGE(std::string("condition " + func_agent->name + "::" + func_des->name).c_str());
-                    if (!func_agent) {
-                        THROW InvalidAgentFunc("Agent function condition refers to expired agent.");
-                    }
-                    std::string agent_name = func_agent->name;
-                    std::string func_name = func_des->name;
+    // Track stream index
+    int streamIdx = 0;
+    // Sum the total number of threads being launched in the layer
+    unsigned int totalThreads = 0;
 
-                    const CUDAAgent& cuda_agent = getCUDAAgent(agent_name);
-
-                    const unsigned int state_list_size = cuda_agent.getStateSize(func_des->initial_state);
-                    if (state_list_size == 0) {
-                        ++j;
-                        continue;
-                    }
-
-                    int blockSize = 0;  // The launch configurator returned block size
-                    int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
-                    int gridSize = 0;  // The actual grid size needed, based on input size
-
-                    //  Agent function condition kernel wrapper args
-                    Curve::NamespaceHash agentname_hash = Curve::variableRuntimeHash(agent_name.c_str());
-                    Curve::NamespaceHash funcname_hash = Curve::variableRuntimeHash(func_name.c_str());
-                    Curve::NamespaceHash agent_func_name_hash = agentname_hash + funcname_hash + instance_id;
-                    curandState *t_rng = d_rng + totalThreads;
-                    unsigned int *scanFlag_agentDeath = this->singletons->scatter.Scan().Config(CUDAScanCompaction::Type::AGENT_DEATH, j).d_ptrs.scan_flag;
-                    unsigned int sm_size = 0;
-#ifndef NO_SEATBELTS
-                    auto *error_buffer = this->singletons->exception.getDevicePtr(j);
-                    sm_size = sizeof(error_buffer);
-#endif
-
-                    auto env_shared_lock = this->singletons->environment.getSharedLock();
-                    auto env_device_lock = this->singletons->environment.getDeviceSharedLock();
-                    this->singletons->environment.updateDevice(instance_id);
-                    this->singletons->curve.updateDevice();
-                    gpuErrchk(cudaDeviceSynchronize());
-                    // switch between normal and RTC agent function condition
-                    if (func_des->condition) {
-                        // calculate the grid block size for agent function condition
-                        cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, func_des->condition, 0, state_list_size);
-
-                        //! Round up according to CUDAAgent state list size
-                        gridSize = (state_list_size + blockSize - 1) / blockSize;
-                        (func_des->condition) << <gridSize, blockSize, sm_size, streams.at(j) >> > (
-#ifndef NO_SEATBELTS
-                        error_buffer,
-#endif
-                        instance_id,
-                        agent_func_name_hash,
-                        state_list_size,
-                        t_rng,
-                        scanFlag_agentDeath);
-                        gpuErrchkLaunch();
-                    } else {  // RTC function
-                        std::string func_condition_identifier = func_name + "_condition";
-                        // get instantiation
-                        const jitify::experimental::KernelInstantiation& instance = cuda_agent.getRTCInstantiation(func_condition_identifier);
-                        // calculate the grid block size for main agent function
-                        CUfunction cu_func = (CUfunction)instance;
-                        cuOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, cu_func, 0, 0, state_list_size);
-                        //! Round up according to CUDAAgent state list size
-                        gridSize = (state_list_size + blockSize - 1) / blockSize;
-                        // launch the kernel
-                        CUresult a = instance.configure(gridSize, blockSize, sm_size, streams.at(j)).launch({
-#ifndef NO_SEATBELTS
-                                reinterpret_cast<void*>(&error_buffer),
-#endif
-                                const_cast<void*>(reinterpret_cast<const void*>(&instance_id)),
-                                reinterpret_cast<void*>(&agent_func_name_hash),
-                                const_cast<void *>(reinterpret_cast<const void*>(&state_list_size)),
-                                reinterpret_cast<void*>(&t_rng),
-                                reinterpret_cast<void*>(&scanFlag_agentDeath) });
-                        if (a != CUresult::CUDA_SUCCESS) {
-                            const char* err_str = nullptr;
-                            cuGetErrorString(a, &err_str);
-                            THROW InvalidAgentFunc("There was a problem launching the runtime agent function condition '%s': %s", func_des->rtc_func_condition_name.c_str(), err_str);
-                        }
-                        cudaDeviceSynchronize();
-                        gpuErrchkLaunch();
-                    }
-                    gpuErrchk(cudaStreamSynchronize(streams.at(j)));
-                    env_shared_lock.unlock();
-                    env_device_lock.unlock();
-
-                    totalThreads += state_list_size;
-                    ++j;
-                }
-            }
-            gpuErrchk(cudaDeviceSynchronize());
-
-            // Track stream id
-            j = 0;
-            // Unmap agent memory, apply condition
-            for (const std::shared_ptr<AgentFunctionData> &func_des : functions) {
-                if ((func_des->condition) || (!func_des->rtc_func_condition_name.empty())) {
-                    auto func_agent = func_des->parent.lock();
-                    if (!func_agent) {
-                        THROW InvalidAgentFunc("Agent function condition refers to expired agent.");
-                    }
-                    NVTX_RANGE(std::string("condition unmap " + func_agent->name + "::" + func_des->name).c_str());
-                    CUDAAgent& cuda_agent = getCUDAAgent(func_agent->name);
-
-                    const unsigned int state_list_size = cuda_agent.getStateSize(func_des->initial_state);
-                    if (state_list_size == 0) {
-                        ++j;
-                        continue;
-                    }
-
-                    // unmap the function variables
-                    cuda_agent.unmapRuntimeVariables(*func_des, instance_id);
-
-#ifndef NO_SEATBELTS
-                    // Error check after unmap vars
-                    // This means that curve is cleaned up before we throw exception (mostly prevents curve being polluted if we catch and handle errors)
-                    this->singletons->exception.checkError("condition " + func_des->name, j);
-#endif
-
-                    // Process agent function condition
-                    cuda_agent.processFunctionCondition(*func_des, this->singletons->scatter, j);
-
-                    ++j;
-                }
-            }
-        }
-
-        j = 0;
-        // Sum the total number of threads being launched in the layer
-        totalThreads = 0;
-        /*! for each func function - Loop through to do all mapping of agent and message variables */
-        for (const std::shared_ptr<AgentFunctionData> &func_des : functions) {
+    // Map agent memory
+    for (const auto &func_des : layer->agent_functions) {
+        if ((func_des->condition) || (!func_des->rtc_func_condition_name.empty())) {
             auto func_agent = func_des->parent.lock();
-            if (!func_agent) {
-                THROW InvalidAgentFunc("Agent function refers to expired agent.");
-            }
-            NVTX_RANGE(std::string("map" + func_agent->name + "::" + func_des->name).c_str());
-
+            NVTX_RANGE(std::string("condition map " + func_agent->name + "::" + func_des->name).c_str());
             const CUDAAgent& cuda_agent = getCUDAAgent(func_agent->name);
+
             const unsigned int state_list_size = cuda_agent.getStateSize(func_des->initial_state);
             if (state_list_size == 0) {
-                ++j;
+                ++streamIdx;
                 continue;
             }
-            // Resize death flag array if necessary
-            singletons->scatter.Scan().resize(state_list_size, CUDAScanCompaction::AGENT_DEATH, j);
+            singletons->scatter.Scan().resize(state_list_size, CUDAScanCompaction::AGENT_DEATH, streamIdx);
 
-            // check if a function has an input message
-            if (auto im = func_des->message_input.lock()) {
-                std::string inpMessage_name = im->name;
-                CUDAMessage& cuda_message = getCUDAMessage(inpMessage_name);
-                // Construct PBM here if required!!
-                cuda_message.buildIndex(this->singletons->scatter, j);
-                // Map variables after, as index building can swap arrays
-                cuda_message.mapReadRuntimeVariables(*func_des, cuda_agent, instance_id);
-            }
-
-            // check if a function has an output message
-            if (auto om = func_des->message_output.lock()) {
-                std::string outpMessage_name = om->name;
-                CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
-                // Resize message list if required
-                const unsigned int existingMessages = cuda_message.getTruncateMessageListFlag() ? 0 : cuda_message.getMessageCount();
-                cuda_message.resize(existingMessages + state_list_size, this->singletons->scatter, j);
-                cuda_message.mapWriteRuntimeVariables(*func_des, cuda_agent, state_list_size, instance_id);
-                singletons->scatter.Scan().resize(state_list_size, CUDAScanCompaction::MESSAGE_OUTPUT, j);
-                // Zero the scan flag that will be written to
-                if (func_des->message_output_optional)
-                    singletons->scatter.Scan().zero(CUDAScanCompaction::MESSAGE_OUTPUT, j);
-            }
-
-            // check if a function has an output agent
-            if (auto oa = func_des->agent_output.lock()) {
-                // This will act as a reserve word
-                // which is added to variable hashes for agent creation on device
-                CUDAAgent& output_agent = getCUDAAgent(oa->name);
-
-                // Map vars with curve (this allocates/requests enough new buffer space if an existing version is not available/suitable)
-                output_agent.mapNewRuntimeVariables(cuda_agent, *func_des, state_list_size, this->singletons->scatter, instance_id, j);
-            }
-
-
-            /**
-             * Configure runtime access of the functions variables within the FLAME_API object
-             */
+            // Configure runtime access of the functions variables within the FLAME_API object
             cuda_agent.mapRuntimeVariables(*func_des, instance_id);
 
             // Zero the scan flag that will be written to
-            if (func_des->has_agent_death)
-                singletons->scatter.Scan().CUDAScanCompaction::zero(CUDAScanCompaction::AGENT_DEATH, j);
+            singletons->scatter.Scan().zero(CUDAScanCompaction::AGENT_DEATH, streamIdx);  // @todo - stream
 
-            // Count total threads being launched
-            totalThreads += cuda_agent.getStateSize(func_des->initial_state);
-            ++j;
+            totalThreads += state_list_size;
+            ++streamIdx;
+        }
+    }
+
+    // If any condition kernel needs to be executed, do so, by checking the number of threads from before.
+    if (totalThreads > 0) {
+        auto env_shared_lock = this->singletons->environment.getSharedLock();
+        auto env_device_lock = this->singletons->environment.getDeviceSharedLock();
+        this->singletons->environment.updateDevice(instance_id);
+        this->singletons->curve.updateDevice();
+        // this->synchronizeAllStreams();  // Not required, the above is snchronizing.
+
+        // Ensure RandomManager is the correct size to accommodate all threads to be launched
+        curandState *d_rng = singletons->rng.resize(totalThreads);  // @todo - stream + sync.
+        // Track which stream to use for concurrency
+        streamIdx = 0;
+        // Sum the total number of threads being launched in the layer, for rng offsetting.
+        totalThreads = 0;
+        // Launch function condition kernels
+        for (const auto &func_des : layer->agent_functions) {
+            if ((func_des->condition) || (!func_des->rtc_func_condition_name.empty())) {
+                auto func_agent = func_des->parent.lock();
+                NVTX_RANGE(std::string("condition " + func_agent->name + "::" + func_des->name).c_str());
+                if (!func_agent) {
+                    THROW InvalidAgentFunc("Agent function condition refers to expired agent.");
+                }
+                std::string agent_name = func_agent->name;
+                std::string func_name = func_des->name;
+
+                const CUDAAgent& cuda_agent = getCUDAAgent(agent_name);
+
+                const unsigned int state_list_size = cuda_agent.getStateSize(func_des->initial_state);
+                if (state_list_size == 0) {
+                    ++streamIdx;
+                    continue;
+                }
+
+                int blockSize = 0;  // The launch configurator returned block size
+                int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
+                int gridSize = 0;  // The actual grid size needed, based on input size
+
+                //  Agent function condition kernel wrapper args
+                Curve::NamespaceHash agentname_hash = Curve::variableRuntimeHash(agent_name.c_str());
+                Curve::NamespaceHash funcname_hash = Curve::variableRuntimeHash(func_name.c_str());
+                Curve::NamespaceHash agent_func_name_hash = agentname_hash + funcname_hash + instance_id;
+                curandState *t_rng = d_rng + totalThreads;
+                unsigned int *scanFlag_agentDeath = this->singletons->scatter.Scan().Config(CUDAScanCompaction::Type::AGENT_DEATH, streamIdx).d_ptrs.scan_flag;
+                unsigned int sm_size = 0;
+#ifndef NO_SEATBELTS
+                auto *error_buffer = this->singletons->exception.getDevicePtr(streamIdx, this->getStream(streamIdx));
+                sm_size = sizeof(error_buffer);
+#endif
+                // switch between normal and RTC agent function condition
+                if (func_des->condition) {
+                    // calculate the grid block size for agent function condition
+                    cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, func_des->condition, 0, state_list_size);
+
+                    //! Round up according to CUDAAgent state list size
+                    gridSize = (state_list_size + blockSize - 1) / blockSize;
+                    (func_des->condition) << <gridSize, blockSize, sm_size, this->getStream(streamIdx) >> > (
+#ifndef NO_SEATBELTS
+                    error_buffer,
+#endif
+                    instance_id,
+                    agent_func_name_hash,
+                    state_list_size,
+                    t_rng,
+                    scanFlag_agentDeath);
+                    gpuErrchkLaunch();
+                } else {  // RTC function
+                    std::string func_condition_identifier = func_name + "_condition";
+                    // get instantiation
+                    const jitify::experimental::KernelInstantiation& instance = cuda_agent.getRTCInstantiation(func_condition_identifier);
+                    // calculate the grid block size for main agent function
+                    CUfunction cu_func = (CUfunction)instance;
+                    cuOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, cu_func, 0, 0, state_list_size);
+                    //! Round up according to CUDAAgent state list size
+                    gridSize = (state_list_size + blockSize - 1) / blockSize;
+                    // launch the kernel
+                    CUresult a = instance.configure(gridSize, blockSize, sm_size, this->getStream(streamIdx)).launch({
+#ifndef NO_SEATBELTS
+                        reinterpret_cast<void*>(&error_buffer),
+#endif
+                        const_cast<void*>(reinterpret_cast<const void*>(&instance_id)),
+                        reinterpret_cast<void*>(&agent_func_name_hash),
+                        const_cast<void *>(reinterpret_cast<const void*>(&state_list_size)),
+                        reinterpret_cast<void*>(&t_rng),
+                        reinterpret_cast<void*>(&scanFlag_agentDeath) });
+                    if (a != CUresult::CUDA_SUCCESS) {
+                        const char* err_str = nullptr;
+                        cuGetErrorString(a, &err_str);
+                        THROW InvalidAgentFunc("There was a problem launching the runtime agent function condition '%s': %s", func_des->rtc_func_condition_name.c_str(), err_str);
+                    }
+                    gpuErrchkLaunch();
+                }
+
+                totalThreads += state_list_size;
+                ++streamIdx;
+            }
         }
 
-        // Update curve
-        singletons->curve.updateDevice();
+        // Ensure that each condition function has finished before unlocking the environment
+        // Potentially there might be performance gains within a model by moving this until after the unmapping, although this may block other threads
+        this->synchronizeAllStreams();
+        env_shared_lock.unlock();
+        env_device_lock.unlock();
+    }
+
+    // Track stream index
+    streamIdx = 0;
+    // Unmap agent memory, apply condition.
+    for (const auto &func_des : layer->agent_functions) {
+        if ((func_des->condition) || (!func_des->rtc_func_condition_name.empty())) {
+            auto func_agent = func_des->parent.lock();
+            if (!func_agent) {
+                THROW InvalidAgentFunc("Agent function condition refers to expired agent.");
+            }
+            NVTX_RANGE(std::string("condition unmap " + func_agent->name + "::" + func_des->name).c_str());
+            CUDAAgent& cuda_agent = getCUDAAgent(func_agent->name);
+
+            // Skip if no agents in the input state
+            const unsigned int state_list_size = cuda_agent.getStateSize(func_des->initial_state);
+            if (state_list_size == 0) {
+                ++streamIdx;
+                continue;
+            }
+
+            // unmap the function variables
+            cuda_agent.unmapRuntimeVariables(*func_des, instance_id);
+#ifndef NO_SEATBELTS
+            // Error check after unmap vars
+            this->singletons->exception.checkError("condition " + func_des->name, streamIdx, this->getStream(streamIdx));
+#endif
+            // Process agent function condition
+            cuda_agent.processFunctionCondition(*func_des, this->singletons->scatter, streamIdx, this->getStream(streamIdx));
+            // Increment the stream tracker.
+            ++streamIdx;
+        }
+    }
+
+    streamIdx = 0;
+    // Sum the total number of threads being launched in the layer
+    totalThreads = 0;
+    /*! for each func function - Loop through to do all mapping of agent and message variables */
+    for (const auto &func_des : layer->agent_functions) {
+        auto func_agent = func_des->parent.lock();
+        if (!func_agent) {
+            THROW InvalidAgentFunc("Agent function refers to expired agent.");
+        }
+        NVTX_RANGE(std::string("map" + func_agent->name + "::" + func_des->name).c_str());
+
+        const CUDAAgent& cuda_agent = getCUDAAgent(func_agent->name);
+        const unsigned int state_list_size = cuda_agent.getStateSize(func_des->initial_state);
+        if (state_list_size == 0) {
+            ++streamIdx;
+            continue;
+        }
+        // Resize death flag array if necessary
+        singletons->scatter.Scan().resize(state_list_size, CUDAScanCompaction::AGENT_DEATH, streamIdx);
+
+        // check if a function has an input message
+        if (auto im = func_des->message_input.lock()) {
+            std::string inpMessage_name = im->name;
+            CUDAMessage& cuda_message = getCUDAMessage(inpMessage_name);
+            // Construct PBM here if required!!
+            cuda_message.buildIndex(this->singletons->scatter, streamIdx, this->getStream(streamIdx));  // This is synchronous.
+            // Map variables after, as index building can swap arrays
+            cuda_message.mapReadRuntimeVariables(*func_des, cuda_agent, instance_id);
+        }
+
+        // check if a function has an output message
+        if (auto om = func_des->message_output.lock()) {
+            std::string outpMessage_name = om->name;
+            CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
+            // Resize message list if required
+            const unsigned int existingMessages = cuda_message.getTruncateMessageListFlag() ? 0 : cuda_message.getMessageCount();
+            cuda_message.resize(existingMessages + state_list_size, this->singletons->scatter, streamIdx);
+            cuda_message.mapWriteRuntimeVariables(*func_des, cuda_agent, state_list_size, instance_id);
+            singletons->scatter.Scan().resize(state_list_size, CUDAScanCompaction::MESSAGE_OUTPUT, streamIdx);
+            // Zero the scan flag that will be written to
+            if (func_des->message_output_optional)
+                singletons->scatter.Scan().zero(CUDAScanCompaction::MESSAGE_OUTPUT, streamIdx);  // @todo - do this in a stream?
+        }
+
+        // check if a function has an output agent
+        if (auto oa = func_des->agent_output.lock()) {
+            // This will act as a reserve word
+            // which is added to variable hashes for agent creation on device
+            CUDAAgent& output_agent = getCUDAAgent(oa->name);
+
+            // Map vars with curve (this allocates/requests enough new buffer space if an existing version is not available/suitable)
+            output_agent.mapNewRuntimeVariables(cuda_agent, *func_des, state_list_size, this->singletons->scatter, instance_id, streamIdx);  // @todo - stream?
+        }
+
+        // Configure runtime access of the functions variables within the FLAME_API object
+        cuda_agent.mapRuntimeVariables(*func_des, instance_id);
+
+        // Zero the scan flag that will be written to
+        if (func_des->has_agent_death) {
+            singletons->scatter.Scan().CUDAScanCompaction::zero(CUDAScanCompaction::AGENT_DEATH, streamIdx);  // @todo stream?
+        }
+
+        // Count total threads being launched
+        totalThreads += cuda_agent.getStateSize(func_des->initial_state);
+        ++streamIdx;
+    }
+
+    // If any condition kernel needs to be executed, do so, by checking the number of threads from before.
+    if (totalThreads > 0) {
+        auto env_shared_lock = this->singletons->environment.getSharedLock();
+        auto env_device_lock = this->singletons->environment.getDeviceSharedLock();
+        this->singletons->environment.updateDevice(instance_id);
+        this->singletons->curve.updateDevice();
+        this->synchronizeAllStreams();  // This is not striclty required as updateDevice is synchronous.
+
         // Ensure RandomManager is the correct size to accommodate all threads to be launched
         curandState *d_rng = singletons->rng.resize(totalThreads);
         // Total threads is now used to provide kernel launches an offset to thread-safe thread-index
         totalThreads = 0;
-        j = 0;
-        // gpuErrchk(cudaStreamSynchronize(0));
-        gpuErrchk(cudaDeviceSynchronize());
-        //! for each func function - Loop through to launch all agent functions
-        for (const std::shared_ptr<AgentFunctionData> &func_des : functions) {
+        streamIdx = 0;
+
+        // for each func function - Loop through to launch all agent functions
+        for (const auto &func_des : layer->agent_functions) {
             auto func_agent = func_des->parent.lock();
             if (!func_agent) {
                 THROW InvalidAgentFunc("Agent function refers to expired agent.");
@@ -513,7 +599,7 @@ bool CUDASimulation::step() {
 
             const unsigned int state_list_size = cuda_agent.getStateSize(func_des->initial_state);
             if (state_list_size == 0) {
-                ++j;
+                ++streamIdx;
                 continue;
             }
 
@@ -527,30 +613,25 @@ bool CUDASimulation::step() {
             Curve::NamespaceHash agent_func_name_hash = agentname_hash + funcname_hash + instance_id;
             Curve::NamespaceHash agentoutput_hash = func_des->agent_output.lock() ? (Curve::variableRuntimeHash("_agent_birth") ^ funcname_hash) + instance_id : 0;
             curandState * t_rng = d_rng + totalThreads;
-            unsigned int *scanFlag_agentDeath = func_des->has_agent_death ? this->singletons->scatter.Scan().Config(CUDAScanCompaction::Type::AGENT_DEATH, j).d_ptrs.scan_flag : nullptr;
-            unsigned int *scanFlag_messageOutput = this->singletons->scatter.Scan().Config(CUDAScanCompaction::Type::MESSAGE_OUTPUT, j).d_ptrs.scan_flag;
-            unsigned int *scanFlag_agentOutput = this->singletons->scatter.Scan().Config(CUDAScanCompaction::Type::AGENT_OUTPUT, j).d_ptrs.scan_flag;
+            unsigned int *scanFlag_agentDeath = func_des->has_agent_death ? this->singletons->scatter.Scan().Config(CUDAScanCompaction::Type::AGENT_DEATH, streamIdx).d_ptrs.scan_flag : nullptr;
+            unsigned int *scanFlag_messageOutput = this->singletons->scatter.Scan().Config(CUDAScanCompaction::Type::MESSAGE_OUTPUT, streamIdx).d_ptrs.scan_flag;
+            unsigned int *scanFlag_agentOutput = this->singletons->scatter.Scan().Config(CUDAScanCompaction::Type::AGENT_OUTPUT, streamIdx).d_ptrs.scan_flag;
             unsigned int sm_size = 0;
-#ifndef NO_SEATBELTS
-            auto *error_buffer = this->singletons->exception.getDevicePtr(j);
+    #ifndef NO_SEATBELTS
+            auto *error_buffer = this->singletons->exception.getDevicePtr(streamIdx, this->getStream(streamIdx));
             sm_size = sizeof(error_buffer);
-#endif
+    #endif
 
-            auto env_shared_lock = this->singletons->environment.getSharedLock();
-            auto env_device_lock = this->singletons->environment.getDeviceSharedLock();
-            this->singletons->environment.updateDevice(instance_id);
-            this->singletons->curve.updateDevice();
-            gpuErrchk(cudaDeviceSynchronize());
             if (func_des->func) {   // compile time specified agent function launch
                 // calculate the grid block size for main agent function
                 cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, func_des->func, 0, state_list_size);
                 //! Round up according to CUDAAgent state list size
                 gridSize = (state_list_size + blockSize - 1) / blockSize;
 
-                (func_des->func) << <gridSize, blockSize, sm_size, streams.at(j) >> > (
-#ifndef NO_SEATBELTS
+                (func_des->func) << <gridSize, blockSize, sm_size, this->getStream(streamIdx) >> > (
+    #ifndef NO_SEATBELTS
                     error_buffer,
-#endif
+    #endif
                     instance_id,
                     agent_func_name_hash,
                     message_name_inp_hash,
@@ -566,134 +647,145 @@ bool CUDASimulation::step() {
                 gpuErrchkLaunch();
             } else {      // assume this is a runtime specified agent function
                 // get instantiation
-                const jitify::experimental::KernelInstantiation&  instance = cuda_agent.getRTCInstantiation(func_name);
+                const jitify::experimental::KernelInstantiation& instance = cuda_agent.getRTCInstantiation(func_name);
                 // calculate the grid block size for main agent function
                 CUfunction cu_func = (CUfunction)instance;
                 cuOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, cu_func, 0, 0, state_list_size);
                 //! Round up according to CUDAAgent state list size
                 gridSize = (state_list_size + blockSize - 1) / blockSize;
                 // launch the kernel
-                CUresult a = instance.configure(gridSize, blockSize, sm_size, streams.at(j)).launch({
+                CUresult a = instance.configure(gridSize, blockSize, sm_size, this->getStream(streamIdx)).launch({
 #ifndef NO_SEATBELTS
-                        reinterpret_cast<void*>(&error_buffer),
+                    reinterpret_cast<void*>(&error_buffer),
 #endif
-                        const_cast<void*>(reinterpret_cast<const void*>(&instance_id)),
-                        reinterpret_cast<void*>(&agent_func_name_hash),
-                        reinterpret_cast<void*>(&message_name_inp_hash),
-                        reinterpret_cast<void*>(&message_name_outp_hash),
-                        reinterpret_cast<void*>(&agentoutput_hash),
-                        const_cast<void*>(reinterpret_cast<const void*>(&state_list_size)),
-                        const_cast<void*>(reinterpret_cast<const void*>(&d_in_messagelist_metadata)),
-                        const_cast<void*>(reinterpret_cast<const void*>(&d_out_messagelist_metadata)),
-                        const_cast<void*>(reinterpret_cast<const void*>(&t_rng)),
-                        reinterpret_cast<void*>(&scanFlag_agentDeath),
-                        reinterpret_cast<void*>(&scanFlag_messageOutput),
-                        reinterpret_cast<void*>(&scanFlag_agentOutput)});
+                    const_cast<void*>(reinterpret_cast<const void*>(&instance_id)),
+                    reinterpret_cast<void*>(&agent_func_name_hash),
+                    reinterpret_cast<void*>(&message_name_inp_hash),
+                    reinterpret_cast<void*>(&message_name_outp_hash),
+                    reinterpret_cast<void*>(&agentoutput_hash),
+                    const_cast<void*>(reinterpret_cast<const void*>(&state_list_size)),
+                    const_cast<void*>(reinterpret_cast<const void*>(&d_in_messagelist_metadata)),
+                    const_cast<void*>(reinterpret_cast<const void*>(&d_out_messagelist_metadata)),
+                    const_cast<void*>(reinterpret_cast<const void*>(&t_rng)),
+                    reinterpret_cast<void*>(&scanFlag_agentDeath),
+                    reinterpret_cast<void*>(&scanFlag_messageOutput),
+                    reinterpret_cast<void*>(&scanFlag_agentOutput)});
                 if (a != CUresult::CUDA_SUCCESS) {
                     const char* err_str = nullptr;
                     cuGetErrorString(a, &err_str);
                     THROW InvalidAgentFunc("There was a problem launching the runtime agent function '%s': %s", func_name.c_str(), err_str);
                 }
-                cudaDeviceSynchronize();
                 gpuErrchkLaunch();
             }
-            gpuErrchk(cudaStreamSynchronize(streams.at(j)));
-            env_shared_lock.unlock();
-            env_device_lock.unlock();
             totalThreads += state_list_size;
-            ++j;
-            ++lyr_idx;
-        }
-        gpuErrchk(cudaDeviceSynchronize());  // This sync was added to fix errors running tests in release mode of multi-thread-device branch, Pete thinks he has fixed the issue in concurrency branch via other means.
-
-        j = 0;
-        // for each func function - Loop through to un-map all agent and message variables
-        for (const std::shared_ptr<AgentFunctionData> &func_des : functions) {
-            auto func_agent = func_des->parent.lock();
-            if (!func_agent) {
-                THROW InvalidAgentFunc("Agent function refers to expired agent.");
-            }
-            NVTX_RANGE(std::string("unmap" + func_agent->name + "::" + func_des->name).c_str());
-            CUDAAgent& cuda_agent = getCUDAAgent(func_agent->name);
-
-            const unsigned int state_list_size = cuda_agent.getStateSize(func_des->initial_state);
-            // If agent function wasn't executed, these are redundant
-            if (state_list_size > 0) {
-                // check if a function has an input message
-                if (auto im = func_des->message_input.lock()) {
-                    std::string inpMessage_name = im->name;
-                    const CUDAMessage& cuda_message = getCUDAMessage(inpMessage_name);
-                    cuda_message.unmapRuntimeVariables(*func_des, instance_id);
-                }
-
-                // check if a function has an output message
-                if (auto om = func_des->message_output.lock()) {
-                    std::string outpMessage_name = om->name;
-                    CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
-                    cuda_message.unmapRuntimeVariables(*func_des, instance_id);
-                    cuda_message.swap(func_des->message_output_optional, state_list_size, this->singletons->scatter, j);
-                    cuda_message.clearTruncateMessageListFlag();
-                    cuda_message.setPBMConstructionRequiredFlag();
-                }
-
-                // Process agent death (has agent death check is handled by the method)
-                // This MUST occur before agent_output, as if agent_output triggers resize then scan_flag for death will be purged
-                cuda_agent.processDeath(*func_des, this->singletons->scatter, j);
-
-                // Process agent state transition (Longer term merge this with process death?)
-                cuda_agent.transitionState(func_des->initial_state, func_des->end_state, this->singletons->scatter, j);
-            }
-
-            // Process agent function condition
-            cuda_agent.clearFunctionCondition(func_des->initial_state);
-
-            // If agent function wasn't executed, these are redundant
-            if (state_list_size > 0) {
-                // check if a function has an output agent
-                if (auto oa = func_des->agent_output.lock()) {
-                    // This will act as a reserve word
-                    // which is added to variable hashes for agent creation on device
-                    CUDAAgent& output_agent = getCUDAAgent(oa->name);
-                    // Scatter the agent birth
-                    output_agent.scatterNew(*func_des, state_list_size, this->singletons->scatter, j);  // This must be passed the state list size prior to death
-                    // unmap vars with curve
-                    output_agent.unmapNewRuntimeVariables(*func_des, instance_id);
-                }
-
-                // unmap the function variables
-                cuda_agent.unmapRuntimeVariables(*func_des, instance_id);
-#ifndef NO_SEATBELTS
-                // Error check after unmap vars
-                // This means that curve is cleaned up before we throw exception (mostly prevents curve being polluted if we catch and handle errors)
-                this->singletons->exception.checkError(func_des->name, j);
-#endif
-            }
-
-            ++j;
+            ++streamIdx;
         }
 
-        NVTX_PUSH("CUDASimulation::step::HostFunctions");
-        // Execute all host functions attached to layer
-        // TODO: Concurrency?
-        assert(host_api);
-        for (auto &stepFn : (*lyr)->host_functions) {
-            NVTX_RANGE("hostFunc");
-            stepFn(this->host_api.get());
-        }
-        // Execute all host function callbacks attached to layer
-        for (auto &stepFn : (*lyr)->host_functions_callbacks) {
-            NVTX_RANGE("hostFunc_swig");
-            stepFn->run(this->host_api.get());
-        }
-        // If we have host layer functions, we might have host agent creation
-        if ((*lyr)->host_functions.size() || ((*lyr)->host_functions_callbacks.size()))
-            processHostAgentCreation(j);
-        NVTX_POP();
-
-        // cudaDeviceSynchronize();
+        // Ensure that each stream of work has finished before releasing the environment lock.
+        this->synchronizeAllStreams();
+        env_shared_lock.unlock();
+        env_device_lock.unlock();
     }
 
-    NVTX_PUSH("CUDASimulation::step::StepFunctions");
+    streamIdx = 0;
+    // for each func function - Loop through to un-map all agent and message variables
+    for (const auto &func_des : layer->agent_functions) {
+        auto func_agent = func_des->parent.lock();
+        if (!func_agent) {
+            THROW InvalidAgentFunc("Agent function refers to expired agent.");
+        }
+        NVTX_RANGE(std::string("unmap" + func_agent->name + "::" + func_des->name).c_str());
+        CUDAAgent& cuda_agent = getCUDAAgent(func_agent->name);
+
+        const unsigned int state_list_size = cuda_agent.getStateSize(func_des->initial_state);
+        // If agent function wasn't executed, these are redundant
+        if (state_list_size > 0) {
+            // check if a function has an input message
+            if (auto im = func_des->message_input.lock()) {
+                std::string inpMessage_name = im->name;
+                const CUDAMessage& cuda_message = getCUDAMessage(inpMessage_name);
+                cuda_message.unmapRuntimeVariables(*func_des, instance_id);
+            }
+
+            // check if a function has an output message
+            if (auto om = func_des->message_output.lock()) {
+                std::string outpMessage_name = om->name;
+                CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
+                cuda_message.unmapRuntimeVariables(*func_des, instance_id);
+                cuda_message.swap(func_des->message_output_optional, state_list_size, this->singletons->scatter, streamIdx);
+                cuda_message.clearTruncateMessageListFlag();
+                cuda_message.setPBMConstructionRequiredFlag();
+            }
+
+            // Process agent death (has agent death check is handled by the method)
+            // This MUST occur before agent_output, as if agent_output triggers resize then scan_flag for death will be purged
+            cuda_agent.processDeath(*func_des, this->singletons->scatter, streamIdx, this->getStream(streamIdx));
+
+            // Process agent state transition (Longer term merge this with process death?)
+            cuda_agent.transitionState(func_des->initial_state, func_des->end_state, this->singletons->scatter, streamIdx, this->getStream(streamIdx));
+        }
+
+        // Process agent function condition
+        cuda_agent.clearFunctionCondition(func_des->initial_state);
+
+        // If agent function wasn't executed, these are redundant
+        if (state_list_size > 0) {
+            // check if a function has an output agent
+            if (auto oa = func_des->agent_output.lock()) {
+                // This will act as a reserve word
+                // which is added to variable hashes for agent creation on device
+                CUDAAgent& output_agent = getCUDAAgent(oa->name);
+                // Scatter the agent birth
+                output_agent.scatterNew(*func_des, state_list_size, this->singletons->scatter, streamIdx, this->getStream(streamIdx));
+                // unmap vars with curve
+                output_agent.unmapNewRuntimeVariables(*func_des, instance_id);
+            }
+
+            // unmap the function variables
+            cuda_agent.unmapRuntimeVariables(*func_des, instance_id);
+#ifndef NO_SEATBELTS
+            // Error check after unmap vars
+            // This means that curve is cleaned up before we throw exception (mostly prevents curve being polluted if we catch and handle errors)
+            this->singletons->exception.checkError(func_des->name, streamIdx, this->getStream(streamIdx));
+#endif
+        }
+
+        ++streamIdx;
+    }
+
+    // Synchronise to ensure that device memory is in a goood state prior to host layer functions? This can potentially be removed
+    this->synchronizeAllStreams();
+
+    // Execute the host functions.
+    layerHostFunctions(layer, layerIndex);
+
+    // Synchronise  after the host layer functions to ensure that the device is up to date? This can potentially be removed.
+    this->synchronizeAllStreams();
+}
+
+void CUDASimulation::layerHostFunctions(const std::shared_ptr<LayerData>& layer, const unsigned int layerIndex) {
+    NVTX_RANGE("CUDASimulation::stepHostFunctions");
+    // Execute all host functions attached to layer
+    // TODO: Concurrency?
+    assert(host_api);
+    for (auto &stepFn : layer->host_functions) {
+        NVTX_RANGE("hostFunc");
+        stepFn(this->host_api.get());
+    }
+    // Execute all host function callbacks attached to layer
+    for (auto &stepFn : layer->host_functions_callbacks) {
+        NVTX_RANGE("hostFunc_swig");
+        stepFn->run(this->host_api.get());
+    }
+    // If we have host layer functions, we might have host agent creation
+    if (layer->host_functions.size() || (layer->host_functions_callbacks.size())) {
+        // @todo - What is the most appropriate stream to use here?
+        processHostAgentCreation(0);
+    }
+}
+
+void CUDASimulation::stepStepFunctions() {
+    NVTX_RANGE("CUDASimulation::step::StepFunctions");
     // Execute step functions
     for (auto &stepFn : model->stepFunctions) {
         NVTX_RANGE("stepFunc");
@@ -705,163 +797,146 @@ bool CUDASimulation::step() {
         stepFn->run(this->host_api.get());
     }
     // If we have step functions, we might have host agent creation
-    if (model->stepFunctions.size() || model->stepFunctionCallbacks.size())
+    if (model->stepFunctions.size() || model->stepFunctionCallbacks.size()) {
         processHostAgentCreation(0);
-    NVTX_POP();
+    }
+}
+
+bool CUDASimulation::stepExitConditions() {
+    NVTX_RANGE("CUDASimulation::stepExitConditions");
+    // Track if any exit conditions were successful. Use this to control return code and skipsteps.
+    // early returning makes timing/stepCounter logic more complicated.
+    bool exitConditionExit = false;
 
     // Execute exit conditions
-    for (auto &exitCdns : model->exitConditions)
+    for (auto &exitCdns : model->exitConditions) {
         if (exitCdns(this->host_api.get()) == EXIT) {
-#ifdef VISUALISATION
-            if (visualisation) {
-                visualisation->updateBuffers(step_count+1);
-            }
-#endif
-            // If there were any exit conditions, we also need to update the step count
-            incrementStepCounter();
-            return false;
+            #ifdef VISUALISATION
+                if (visualisation) {
+                    visualisation->updateBuffers(step_count+1);
+                }
+            #endif
+            // Set the flag, and bail out of the exit condition loop.
+            exitConditionExit = true;
+            break;
         }
+    }
     // Execute exit condition callbacks
-    for (auto &exitCdns : model->exitConditionCallbacks)
-        if (exitCdns->run(this->host_api.get()) == EXIT) {
-#ifdef VISUALISATION
+    if (!exitConditionExit) {
+        for (auto &exitCdns : model->exitConditionCallbacks) {
+            if (exitCdns->run(this->host_api.get()) == EXIT) {
+                #ifdef VISUALISATION
+                if (visualisation) {
+                    visualisation->updateBuffers(step_count+1);
+                }
+                #endif
+                // Set the flag, and bail out of the exit condition loop.
+                exitConditionExit = true;
+                break;
+            }
+        }
+    }
+    // No need for this if any exit conditions passed.
+    if (!exitConditionExit) {
+        // If we have exit conditions functions, we might have host agent creation
+        if (model->exitConditions.size() || model->exitConditionCallbacks.size()) {
+            processHostAgentCreation(0);
+        }
+
+        #ifdef VISUALISATION
             if (visualisation) {
                 visualisation->updateBuffers(step_count+1);
             }
-#endif
-            // If there were any exit conditions, we also need to update the step count
-            incrementStepCounter();
-            return false;
-        }
-    // If we have exit conditions functions, we might have host agent creation
-    if (model->exitConditions.size() || model->exitConditionCallbacks.size())
-        processHostAgentCreation(0);
-
-#ifdef VISUALISATION
-        if (visualisation) {
-            visualisation->updateBuffers(step_count+1);
-        }
-#endif
-
-    // Update step count at the end of the step - when it has completed.
-    incrementStepCounter();
-
-    processStepLog();
-    return true;
+        #endif
+    }
+    return exitConditionExit;
 }
 
 void CUDASimulation::simulate() {
+    NVTX_RANGE("CUDASimulation::simulate");
+
+    // Ensure there is work to do.
     if (agent_map.size() == 0) {
-        THROW InvalidCudaAgentMapSize("Simulation has no agents, in CUDASimulation::simulate().");  // recheck if this is really required
+        THROW InvalidCudaAgentMapSize("Simulation has no agents, in CUDASimulation::simulate().");
     }
 
     // Ensure singletons have been initialised
     initialiseSingletons();
 
+    // Create as many streams as required
+    unsigned int nStreams = getMaximumLayerWidth();
+    this->createStreams(nStreams);
+
     // Reinitialise any unmapped agent variables
     if (submodel) {
-        int j = 0;
+        int streamIdx = 0;
         for (auto &a : agent_map) {
-            a.second->initUnmappedVars(this->singletons->scatter, j++);
+            a.second->initUnmappedVars(this->singletons->scatter, streamIdx, this->getStream(streamIdx));
+            streamIdx++;
         }
     }
 
-    // create cude events to record the elapsed time for simulate.
-    cudaEvent_t simulateStartEvent = nullptr;
-    cudaEvent_t simulateEndEvent = nullptr;
-    gpuErrchk(cudaEventCreate(&simulateStartEvent));
-    gpuErrchk(cudaEventCreate(&simulateEndEvent));
-    // Record the start event.
-    gpuErrchk(cudaEventRecord(simulateStartEvent));
-    // Reset the elapsed time.
-    simulation_elapsed_time = 0.f;
-
-    // CUDAAgentMap::iterator it;
-
-    // check any CUDAAgents with population size == 0
-    // if they have executable functions then these can be ignored
-    // if they have agent creations then buffer space must be allocated for them
+    // Create the event timing object.
+    util::CUDAEventTimer simulationTimer = util::CUDAEventTimer();
+    simulationTimer.start();
+    // Reset the class' elapsed time value.
+    this->elapsedMillisecondsSimulation = 0.f;
+    this->elapsedMillisecondsPerStep.clear();
+    if (getSimulationConfig().steps > 0) {
+        this->elapsedMillisecondsPerStep.reserve(getSimulationConfig().steps);
+    }
 
     // Execute init functions
-    NVTX_PUSH("CUDASimulation::step::InitFunctions");
-    for (auto &initFn : model->initFunctions) {
-        NVTX_RANGE("initFunc");
-        initFn(this->host_api.get());
-    }
-    // Execute init function callbacks
-    for (auto &initFn : model->initFunctionCallbacks) {
-        NVTX_RANGE("initFunc_swig");
-        initFn->run(this->host_api.get());
-    }
-    // Check if host agent creation was used in init functions
-    if (model->initFunctions.size() || model->initFunctionCallbacks.size())
-        processHostAgentCreation(0);
-    NVTX_POP();
+    this->initFunctions();
 
     // Reset and log initial state to step log 0
     resetLog();
     processStepLog();
 
-#ifdef VISUALISATION
+    #ifdef VISUALISATION
+    // Pre step-loop visualisation update
     if (visualisation) {
         visualisation->updateBuffers();
     }
-#endif
+    #endif
 
+    // Run the required number of simulation steps.
     for (unsigned int i = 0; getSimulationConfig().steps == 0 ? true : i < getSimulationConfig().steps; i++) {
-        // std::cout <<"step: " << i << std::endl;
-        if (!step()) {
+        // Run the step
+        bool continueSimulation = step();
+        if (!continueSimulation) {
             processStepLog();
             break;
         }
-#ifdef VISUALISATION
+        #ifdef VISUALISATION
         // Special case, if steps == 0 and visualisation has been closed
         if (getSimulationConfig().steps == 0 &&
             visualisation && !visualisation->isRunning()) {
             visualisation->join();  // Vis exists in separate thread, make sure it has actually exited
             break;
         }
-#endif
+        #endif
     }
 
-    // Execute exit functions
-    for (auto &exitFn : model->exitFunctions)
-        exitFn(this->host_api.get());
-    for (auto &exitFn : model->exitFunctionCallbacks)
-        exitFn->run(this->host_api.get());
-
+    // Exit functions
+    this->exitFunctions();
     processExitLog();
 
-#ifdef VISUALISATION
+    // Sync visualistaion after the exit functions
+    #ifdef VISUALISATION
     if (visualisation) {
         visualisation->updateBuffers();
     }
-#endif
+    #endif
 
-    // Record and store the elapsed time
-    // if --timing was passed, output to stdout.
-    gpuErrchk(cudaEventRecord(simulateEndEvent));
-    // Syncrhonize the stop event
-    gpuErrchk(cudaEventSynchronize(simulateEndEvent));
-    gpuErrchk(cudaEventElapsedTime(&simulation_elapsed_time, simulateStartEvent, simulateEndEvent));
-
-    gpuErrchk(cudaEventDestroy(simulateStartEvent));
-    gpuErrchk(cudaEventDestroy(simulateEndEvent));
-    simulateStartEvent = nullptr;
-    simulateEndEvent = nullptr;
-
+    // Record, store and output the elapsed simulation time
+    simulationTimer.stop();
+    simulationTimer.sync();
+    elapsedMillisecondsSimulation = simulationTimer.getElapsedMilliseconds();
     if (getSimulationConfig().timing) {
-        // Record the end event.
         // Resolution is 0.5 microseconds, so print to 1 us.
-        fprintf(stdout, "Total Processing time: %.3f ms\n", simulation_elapsed_time);
+        fprintf(stdout, "Total Processing time: %.3f ms\n", elapsedMillisecondsSimulation);
     }
-
-    // Destroy streams.
-    for (auto stream : streams) {
-        gpuErrchk(cudaStreamDestroy(stream));
-    }
-    streams.clear();
-
     // Export logs
     if (!SimulationConfig().step_log_file.empty())
         exportLog(SimulationConfig().step_log_file, true, false);
@@ -910,6 +985,10 @@ void CUDASimulation::reset(bool submodelReset) {
             s.second->reset(false);
         }
     }
+
+    // Reset any timing data.
+    this->elapsedMillisecondsSimulation = 0.f;
+    this->elapsedMillisecondsPerStep.clear();
 }
 
 void CUDASimulation::setPopulationData(AgentPopulation& population) {
@@ -927,21 +1006,21 @@ void CUDASimulation::setPopulationData(AgentPopulation& population) {
     }
 
     /*! create agent state lists */
-    it->second->setPopulationData(population, this->singletons->scatter, 0);  // Streamid shouldn't matter here
+    it->second->setPopulationData(population, this->singletons->scatter, 0, 0);  // Streamid shouldn't matter here, also using default stream.
 
 #ifdef VISUALISATION
     if (visualisation) {
         visualisation->updateBuffers();
     }
 #endif
-    gpuErrchk(cudaDeviceSynchronize());
+    gpuErrchk(cudaStreamSynchronize(0));
 }
 
 void CUDASimulation::getPopulationData(AgentPopulation& population) {
     // Ensure singletons have been initialised
     initialiseSingletons();
     NVTX_RANGE("CUDASimulation::getPopulationData()");
-    gpuErrchk(cudaDeviceSynchronize());
+    gpuErrchk(cudaStreamSynchronize(0));
 
     CUDAAgentMap::iterator it;
     it = agent_map.find(population.getAgentName());
@@ -954,7 +1033,7 @@ void CUDASimulation::getPopulationData(AgentPopulation& population) {
 
     /*!create agent state lists */
     it->second->getPopulationData(population);
-    gpuErrchk(cudaDeviceSynchronize());
+    gpuErrchk(cudaStreamSynchronize(0));
 }
 
 CUDAAgent& CUDASimulation::getCUDAAgent(const std::string& agent_name) const {
@@ -1086,7 +1165,6 @@ void CUDASimulation::applyConfig_derived() {
     }
 
     // Initialise singletons once a device has been selected.
-    // @todo - if this has already been called, before the device was selected an error should occur.
     initialiseSingletons();
 
     // We init Random through submodel hierarchy after singletons
@@ -1188,6 +1266,11 @@ void CUDASimulation::initialiseSingletons() {
     // Populate the environment properties
     initEnvironmentMgr();
 
+    // Ensure there are enough streams to execute the layer.
+    // Taking into consideration if in-layer concurrency is disabled or not.
+    unsigned int nStreams = getMaximumLayerWidth();
+    this->createStreams(nStreams);
+
     // Ensure RTC is set up.
     initialiseRTC();
 }
@@ -1195,6 +1278,9 @@ void CUDASimulation::initialiseSingletons() {
 void CUDASimulation::initialiseRTC() {
     // Only do this once.
     if (!rtcInitialised) {
+        NVTX_RANGE("CUDASimulation::initialiseRTC");
+        util::CUDAEventTimer rtcTimer = util::CUDAEventTimer();
+        rtcTimer.start();
         // Build any RTC functions
         const auto& am = model->agents;
         // iterate agents and then agent functions to find any rtc functions or function conditions
@@ -1219,6 +1305,14 @@ void CUDASimulation::initialiseRTC() {
         singletons->environment.initRTC(*this);
 
         rtcInitialised = true;
+
+        // Record, store and output the elapsed time of the step.
+        rtcTimer.stop();
+        rtcTimer.sync();
+        this->elapsedMillisecondsRTCInitialisation = rtcTimer.getElapsedMilliseconds();
+        if (getSimulationConfig().timing) {
+            fprintf(stdout, "RTC Initialisation Processing time: %.3f ms\n", this->elapsedMillisecondsRTCInitialisation);
+        }
     }
 }
 
@@ -1295,10 +1389,10 @@ void CUDASimulation::processHostAgentCreation(const unsigned int &streamId) {
                     memcpy(t_buff + (i*offsets.totalSize), state.second[i].data, offsets.totalSize);
                 }
                 // Copy t_buff to device
-                gpuErrchk(cudaMemcpy(dt_buff, t_buff, size_req, cudaMemcpyHostToDevice));
+                gpuErrchk(cudaMemcpyAsync(dt_buff, t_buff, size_req, cudaMemcpyHostToDevice, this->getStream(streamId)));
                 // Scatter to device
                 auto &cudaagent = agent_map.at(agent.first);
-                cudaagent->scatterHostCreation(state.first, static_cast<unsigned int>(state.second.size()), dt_buff, offsets, this->singletons->scatter, streamId);
+                cudaagent->scatterHostCreation(state.first, static_cast<unsigned int>(state.second.size()), dt_buff, offsets, this->singletons->scatter, streamId, this->getStream(streamId));
                 // Clear buffer
                 state.second.clear();
             }
@@ -1365,15 +1459,43 @@ void CUDASimulation::incrementStepCounter() {
     this->singletons->environment.setProperty({instance_id, "_stepCount"}, this->step_count);
 }
 
-float CUDASimulation::getSimulationElapsedTime() const {
+float CUDASimulation::getElapsedTimeSimulation() const {
     // Get the value
-    return this->simulation_elapsed_time;
+    return this->elapsedMillisecondsSimulation;
+}
+
+float CUDASimulation::getElapsedTimeInitFunctions() const {
+    // Get the value
+    return this->elapsedMillisecondsInitFunctions;
+}
+
+float CUDASimulation::getElapsedTimeExitFunctions() const {
+    // Get the value
+    return this->elapsedMillisecondsExitFunctions;
+}
+float CUDASimulation::getElapsedTimeRTCInitialisation() const {
+    // Get the value
+    return this->elapsedMillisecondsRTCInitialisation;
+}
+
+std::vector<float> CUDASimulation::getElapsedTimeSteps() const {
+    // returns a copy of the timing vector, to avoid mutabililty issues. This should not be called in a performacne intensive part of the application.
+    std::vector<float> rtn = this->elapsedMillisecondsPerStep;
+    return rtn;
+}
+
+float CUDASimulation::getElapsedTimeStep(unsigned int step) const {
+    if (step > this->elapsedMillisecondsPerStep.size()) {
+        THROW OutOfBoundsException("getElapsedTimeStep out of bounds.\n");
+    }
+    return this->elapsedMillisecondsPerStep.at(step);
 }
 
 void CUDASimulation::initEnvironmentMgr() {
     if (!singletons) {
         THROW UnknownInternalError("CUDASimulation::initEnvironmentMgr() called before singletons member initialised.");
     }
+
     // Set any properties loaded from file during arg parse stage
     for (const auto &prop : env_init) {
         const EnvironmentManager::NamePair np = { instance_id , prop.first.first };
@@ -1486,4 +1608,43 @@ void CUDASimulation::processExitLog() {
 }
 const RunLog &CUDASimulation::getRunLog() const {
     return *run_log;
+}
+
+void CUDASimulation::createStreams(const unsigned int nStreams) {
+    // There should always be atleast 1 stream, as some tests require the 0th stream even when there is no concurrent work to be done.
+    unsigned int totalStreams = std::max(nStreams, 1u);
+    while (streams.size() < totalStreams) {
+        cudaStream_t stream = 0;
+        gpuErrchk(cudaStreamCreate(&stream));
+        streams.push_back(stream);
+    }
+}
+
+cudaStream_t CUDASimulation::getStream(const unsigned int n) {
+    // Return the appropriate stream, unless concurrency is disabled in which case always stream 0.
+    if (this->streams.size() < n) {
+        unsigned int nStreams = getMaximumLayerWidth();
+        this->createStreams(nStreams);
+    }
+
+    if (getCUDAConfig().inLayerConcurrency && n < streams.size()) {
+        return streams.at(n);
+    } else {
+        return streams.at(0);
+    }
+}
+
+void CUDASimulation::destroyStreams() {
+    // Destroy streams.
+    for (auto stream : streams) {
+        gpuErrchk(cudaStreamDestroy(stream));
+    }
+    streams.clear();
+}
+
+void CUDASimulation::synchronizeAllStreams() {
+    // Destroy streams.
+    for (auto stream : streams) {
+        gpuErrchk(cudaStreamSynchronize(stream));
+    }
 }

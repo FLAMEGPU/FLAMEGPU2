@@ -23,12 +23,12 @@ CUDAMessageList::CUDAMessageList(CUDAMessage& cuda_message, CUDAScatter &scatter
         {
             auto &a = cuda_message.getReadList();
             auto &_a = d_list;
-            scatter.scatterAll(streamId, message.getMessageDescription().variables, a, _a, message.getMessageCount(), 0);
+            scatter.scatterAll(streamId, 0, message.getMessageDescription().variables, a, _a, message.getMessageCount(), 0);
         }
         {  // Is copying writelist redundant?
             auto &a = cuda_message.getWriteList();
             auto &_a = d_swap_list;
-            scatter.scatterAll(streamId, message.getMessageDescription().variables, a, _a, message.getMessageCount(), 0);
+            scatter.scatterAll(streamId, 0, message.getMessageDescription().variables, a, _a, message.getMessageCount(), 0);
         }
     }
 }
@@ -142,6 +142,7 @@ unsigned int CUDAMessageList::scatter(const unsigned int &newCount, CUDAScatter 
     if (append) {
         unsigned int oldCount = message.getMessageCount();
         return oldCount + scatter.scatter(streamId,
+            0,
             CUDAScatter::Type::MESSAGE_OUTPUT,
             message.getMessageDescription().variables,
             d_swap_list, d_list,
@@ -149,6 +150,7 @@ unsigned int CUDAMessageList::scatter(const unsigned int &newCount, CUDAScatter 
             oldCount);
     } else {
         return scatter.scatter(streamId,
+            0,
             CUDAScatter::Type::MESSAGE_OUTPUT,
             message.getMessageDescription().variables,
             d_swap_list, d_list,
@@ -159,6 +161,7 @@ unsigned int CUDAMessageList::scatter(const unsigned int &newCount, CUDAScatter 
 unsigned int CUDAMessageList::scatterAll(const unsigned int &newCount, CUDAScatter &scatter, const unsigned int &streamId) {
     unsigned int oldCount = message.getMessageCount();
     return oldCount + scatter.scatterAll(streamId,
+        0,
         message.getMessageDescription().variables,
         d_swap_list, d_list,
         newCount,

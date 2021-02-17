@@ -77,7 +77,7 @@ void CUDAFatAgent::addSubAgent(
     mappedAgentCount++;
 }
 
-void CUDAFatAgent::processDeath(const unsigned int &agent_fat_id, const std::string &state_name, CUDAScatter &scatter, const unsigned int &streamId) {
+void CUDAFatAgent::processDeath(const unsigned int &agent_fat_id, const std::string &state_name, CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream) {
     auto sm = states.find({agent_fat_id, state_name});
     if (sm == states.end()) {
         THROW InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found "
@@ -98,7 +98,9 @@ void CUDAFatAgent::processDeath(const unsigned int &agent_fat_id, const std::str
             scanCfg.cub_temp_size,
             scanCfg.d_ptrs.scan_flag,
             scanCfg.d_ptrs.position,
-            sm->second->getAllocatedSize() + 1));
+            sm->second->getAllocatedSize() + 1,
+            stream));
+        gpuErrchk(cudaStreamSynchronize(stream));
         gpuErrchk(cudaMalloc(&scanCfg.hd_cub_temp,
             scanCfg.cub_temp_size));
         scanCfg.cub_temp_size_max_list_size = sm->second->getAllocatedSize();
@@ -108,13 +110,15 @@ void CUDAFatAgent::processDeath(const unsigned int &agent_fat_id, const std::str
         scanCfg.cub_temp_size,
         scanCfg.d_ptrs.scan_flag,
         scanCfg.d_ptrs.position,
-        agent_count + 1));
+        agent_count + 1,
+        stream));
+    gpuErrchk(cudaStreamSynchronize(stream));
 
     // Scatter
-    sm->second->scatterDeath(scatter, streamId);
+    sm->second->scatterDeath(scatter, streamId, stream);
 }
 
-void CUDAFatAgent::transitionState(const unsigned int &agent_fat_id, const std::string &_src, const std::string &_dest, CUDAScatter &scatter, const unsigned int &streamId) {
+void CUDAFatAgent::transitionState(const unsigned int &agent_fat_id, const std::string &_src, const std::string &_dest, CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream) {
     // Optionally process state transition
     if (_src != _dest) {
         auto src = states.find({agent_fat_id, _src});
@@ -153,7 +157,7 @@ void CUDAFatAgent::transitionState(const unsigned int &agent_fat_id, const std::
                 assert((*src_it)->elements == (*dest_it)->elements);
             }
             // Perform scatter
-            scatter.scatterAll(streamId, sd, src->second->getSize(), dest->second->getSizeWithDisabled());
+            scatter.scatterAll(streamId, stream, sd, src->second->getSize(), dest->second->getSizeWithDisabled());
             // Update list sizes
             dest->second->setAgentCount(dest->second->getSize() + src->second->getSize());
             src->second->setAgentCount(0);
@@ -161,7 +165,7 @@ void CUDAFatAgent::transitionState(const unsigned int &agent_fat_id, const std::
     }
 }
 
-void CUDAFatAgent::processFunctionCondition(const unsigned int &agent_fat_id, const std::string &state_name, CUDAScatter &scatter, const unsigned int &streamId) {
+void CUDAFatAgent::processFunctionCondition(const unsigned int &agent_fat_id, const std::string &state_name, CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream) {
     auto sm = states.find({agent_fat_id, state_name});
     if (sm == states.end()) {
         THROW InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found "
@@ -193,22 +197,26 @@ void CUDAFatAgent::processFunctionCondition(const unsigned int &agent_fat_id, co
         scanCfg.cub_temp_size,
         scanCfg.d_ptrs.scan_flag,
         scanCfg.d_ptrs.position,
-        agent_count + 1));
+        agent_count + 1,
+        stream));
     gpuErrchkLaunch();
+    gpuErrchk(cudaStreamSynchronize(stream));
     // Use scan results to sort false agents into start of list (and don't swap buffers)
-    const unsigned int conditionFailCount = sm->second->scatterAgentFunctionConditionFalse(scatter, streamId);
+    const unsigned int conditionFailCount = sm->second->scatterAgentFunctionConditionFalse(scatter, streamId, stream);
     // Invert scan
     CUDAScatter::InversionIterator ii = CUDAScatter::InversionIterator(scanCfg.d_ptrs.scan_flag);
-    cudaMemset(scanCfg.d_ptrs.position, 0, sizeof(unsigned int)*(agent_count + 1));
+    cudaMemsetAsync(scanCfg.d_ptrs.position, 0, sizeof(unsigned int)*(agent_count + 1), stream);
     gpuErrchk(cub::DeviceScan::ExclusiveSum(
         scanCfg.hd_cub_temp,
         scanCfg.cub_temp_size,
         ii,
         scanCfg.d_ptrs.position,
-        agent_count + 1));
+        agent_count + 1,
+        stream));
     gpuErrchkLaunch();
+    gpuErrchk(cudaStreamSynchronize(stream));
     // Use inverted scan results to sort true agents into end of list (and swap buffers)
-    const unsigned int conditionpassCount = sm->second->scatterAgentFunctionConditionTrue(conditionFailCount, scatter, streamId);
+    const unsigned int conditionpassCount = sm->second->scatterAgentFunctionConditionTrue(conditionFailCount, scatter, streamId, stream);
     assert(agent_count == conditionpassCount + conditionFailCount);
 }
 

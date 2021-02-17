@@ -282,3 +282,15 @@ class TestSimulation(TestCase):
         for i in range(pop.getCurrentListSize()):
             ai = pop.getInstanceAt(i)
             assert ai.getVariableInt("x") == expected_output[i]
+
+    def test_config_inLayerConcurrency(self):
+        m = pyflamegpu.ModelDescription("test_config_inLayerConcurrency")
+        c = pyflamegpu.CUDASimulation(m)
+        argv = []
+        # Check it's enabled by deafault
+        assert c.getCUDAConfig().inLayerConcurrency == True
+        c.initialise(argv)
+        # disable concurrency
+        c.CUDAConfig().inLayerConcurrency = False
+        # Assert that it is disabled.
+        assert c.getCUDAConfig().inLayerConcurrency == False

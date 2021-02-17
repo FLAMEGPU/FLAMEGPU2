@@ -67,7 +67,12 @@ class CUDASimulation : public Simulation {
          * GPU to execute model on
          * Defaults to device 0, this is most performant device as detected by CUDA
          */
-         int device_id = 0;
+        int device_id = 0;
+        /**
+         * Enable / disable the use of concurrency within a layer.
+         * Defaults to enabled.
+         */
+        bool inLayerConcurrency = true;
     };
     /**
      * Initialise cuda runner
@@ -100,12 +105,22 @@ class CUDASimulation : public Simulation {
      */
     virtual ~CUDASimulation();
     /**
+     * Run the initFunctions of Simulation
+     */
+    void initFunctions() override;
+    /**
      * Steps the simulation once
      * @return False if an exit condition was triggered
      */
     bool step() override;
     /**
+     * Run the exitFunctions of the Simulation.. 
+     * @return False if an exit condition was triggered
+     */
+    void exitFunctions() override;
+    /**
      * Execute the simulation until config.steps have been executed, or an exit condition trips
+     * Includes init and exit functions calls.
      */
     void simulate() override;
     /**
@@ -200,11 +215,50 @@ class CUDASimulation : public Simulation {
      */
     void RTCUpdateEnvironmentVariables(const void* src, size_t count) const;
 
+   /**
+     * Get the duration of the last time RTC was iniitliased 
+     * With a resolution of around 0.5 microseconds (cudaEventElapsedtime)
+     * @return elapsed time of last simulation call in milliseconds.
+     */
+    float getElapsedTimeRTCInitialisation() const;
+
     /**
      * Get the duration of the last call to simulate() in milliseconds. 
      * With a resolution of around 0.5 microseconds (cudaEventElapsedtime)
+     * @return elapsed time of last simulation call in milliseconds.
      */
-    float getSimulationElapsedTime() const;
+    float getElapsedTimeSimulation() const;
+
+    /**
+     * Get the duration of the last call to initFunctions() in milliseconds. 
+     * With a resolution of around 0.5 microseconds (cudaEventElapsedtime)
+     * @return elapsed time of last simulation call in milliseconds.
+     */
+    float getElapsedTimeInitFunctions() const;
+
+    /**
+     * Get the duration of the last call to stepFunctions() in milliseconds. 
+     * With a resolution of around 0.5 microseconds (cudaEventElapsedtime)
+     * @return elapsed time of last simulation call in milliseconds.
+     */
+    float getElapsedTimeExitFunctions() const;
+
+    /**
+     * Get the duration of each step() since the last call to `reset`
+     * Timing resolution of around 0.5 microseconds (CudaEventElapsedTime)
+     * @return vector of step times 
+     */
+    std::vector<float> getElapsedTimeSteps() const;
+
+
+    /** 
+     * Get the duration of an individual step in milliseconds.
+     * Timing resolution of around 0.5 microseconds.
+     * @param step Index of step, must be less than the number of steps executed.
+     * @return elapsed time of required step in milliseconds
+     */
+    float getElapsedTimeStep(unsigned int step) const;
+
     /**
      * Returns the unique instance id of this CUDASimulation instance
      * @note This value is used internally for environment property storage
@@ -257,7 +311,24 @@ class CUDASimulation : public Simulation {
     /**
      * Duration of the last call to simulate() in milliseconds, with a resolution of around 0.5 microseconds (cudaEventElapsedtime)
      */
-    float simulation_elapsed_time;
+    float elapsedMillisecondsSimulation;
+    /**
+     * Duration of the last call to initFunctions() in milliseconds, with a resolution of around 0.5 microseconds (cudaEventElapsedtime)
+     */
+    float elapsedMillisecondsInitFunctions;
+    /**
+     * Duration of the last call to exitFunctions() in milliseconds, with a resolution of around 0.5 microseconds (cudaEventElapsedtime)
+     */
+    float elapsedMillisecondsExitFunctions;
+   /**
+     * Duration of the last call to initialiseRTC() in milliseconds, with a resolution of around 0.5 microseconds (cudaEventElapsedtime)
+     */
+    float elapsedMillisecondsRTCInitialisation;
+
+    /**
+     * Vector of per step timing information in milliseconds, with a resolution of around 0.5 microseconds.
+     */
+    std::vector<float> elapsedMillisecondsPerStep;
     /**
      * Update the step counter for host and device.
      */
@@ -307,6 +378,45 @@ class CUDASimulation : public Simulation {
      * Streams created within this cuda context for executing functions within layers in parallel
      */
     std::vector<cudaStream_t> streams;
+
+    /** 
+     * Ensure the correct number of streams exist.
+     */
+    void createStreams(const unsigned int nStreams);
+
+    /**
+     * Get a specific stream based on index (if possible). 
+     * In some cases, this may return the 0th stream based on class flags.
+     * @return specified cudaStream
+     */
+    cudaStream_t getStream(const unsigned int n);
+
+    /**
+     * Destroy all streams
+     */
+    void destroyStreams();
+
+    /**
+     * Synchronize all streams for this simulation.
+     * To be used in place of device syncs, to reduce blocking in an ensemble.
+     */
+    void synchronizeAllStreams();
+
+    /**
+     * Execute a single layer as part of a step.
+     * @future - this should not be user-callable.
+     */
+    void stepLayer(const std::shared_ptr<LayerData>& layer, const unsigned int layerIndex);
+    void layerHostFunctions(const std::shared_ptr<LayerData>& layer, const unsigned int layerIndex);
+
+    /**
+     * Execute the step functions of the model. 
+     * This should only be called within step();
+     * @future - this should not be user-callable
+     */
+    void stepStepFunctions();
+    bool stepExitConditions();
+
 
     /**
      * Struct containing references to the various singletons which may include CUDA code, and therefore can only be initialsed after the deferred arg parsing is completed.

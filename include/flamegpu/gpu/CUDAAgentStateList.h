@@ -75,7 +75,7 @@ class CUDAAgentStateList {
      * @param scatter Scatter instance and scan arrays to be used
      * @param streamId This is required for scan compaction arrays and async
      */
-    void setAgentData(const AgentStateMemory &data, CUDAScatter &scatter, const unsigned int &streamId);
+    void setAgentData(const AgentStateMemory &data, CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream);
     /**
      * Retrieve agent data from the agent state list into agent state memory
      * @data data Destination for agent data
@@ -91,13 +91,13 @@ class CUDAAgentStateList {
      * @param scatter Scatter instance and scan arrays to be used
      * @param streamId This is required for scan compaction arrays and async
      */
-    void scatterHostCreation(const unsigned int &newSize, char *const d_inBuff, const VarOffsetStruct &offsets, CUDAScatter &scatter, const unsigned int &streamId);
+    void scatterHostCreation(const unsigned int &newSize, char *const d_inBuff, const VarOffsetStruct &offsets, CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream);
     /**
      * Sorts all agent variables according to the positions stored inside Message Output scan buffer
      * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
      * @param streamId The stream in which the corresponding agent function has executed
      */
-    void scatterSort(CUDAScatter &scatter, const unsigned int &streamId);
+    void scatterSort(CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream);
     /**
      * Scatters agents from the currently assigned device agent birth buffer (see member variable newBuffs)
      * The device buffer must be packed in the same format as CUDAAgent::mapNewRuntimeVariables(const AgentFunctionData&, const unsigned int &, const unsigned int &)
@@ -106,7 +106,7 @@ class CUDAAgentStateList {
      * @param scatter Scatter instance and scan arrays to be used
      * @param streamId This is required for scan compaction arrays and async
      */
-    void scatterNew(void * d_newBuff, const unsigned int &newSize, CUDAScatter &scatter, const unsigned int &streamId);
+    void scatterNew(void * d_newBuff, const unsigned int &newSize, CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream);
     /**
      * Returns true if the state list is not the primary statelist (and is mapped to a master agent state)
      */
@@ -116,7 +116,7 @@ class CUDAAgentStateList {
      * @param scatter Scatter instance and scan arrays to be used
      * @param streamId This is required for scan compaction arrays and async
      */
-    void initUnmappedVars(CUDAScatter &scatter, const unsigned int &streamId);
+    void initUnmappedVars(CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream);
     /**
      * Returns the statelist to an empty state
      * This resets the size to 0.

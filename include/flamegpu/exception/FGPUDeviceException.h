@@ -22,8 +22,8 @@ class DeviceExceptionManager {
      * Free all device memory
      */
     ~DeviceExceptionManager();
-    DeviceExceptionBuffer *getDevicePtr(const unsigned int &streamId);
-    void checkError(const std::string &function, const unsigned int &streamId);
+    DeviceExceptionBuffer *getDevicePtr(const unsigned int &streamId, const cudaStream_t &stream);
+    void checkError(const std::string &function, const unsigned int &streamId, const cudaStream_t &stream);
 
  private:
     /**
