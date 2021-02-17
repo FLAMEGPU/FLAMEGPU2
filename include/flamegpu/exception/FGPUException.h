@@ -419,5 +419,9 @@ DERIVED_FGPUException(VersionMismatch, "Versions do not match");
  * Defines an error reported when the expect input/output file path does not exist
  */
 DERIVED_FGPUException(InvalidFilePath, "File does not exist.");
+/*
+ * Defines an error indicating that a CUDAEventTimer was queried without being synced.
+ */
+DERIVED_FGPUException(UnsycnedCUDAEventTimer, "Elapsed time requested for Un-synced CUDAEventTimer");
 
 #endif  // INCLUDE_FLAMEGPU_EXCEPTION_FGPUEXCEPTION_H_

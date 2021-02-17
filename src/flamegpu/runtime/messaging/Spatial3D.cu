@@ -91,28 +91,29 @@ void MsgSpatial3D::CUDAModelHandler::freeMetaDataDevicePtr() {
     }
 }
 
-void MsgSpatial3D::CUDAModelHandler::buildIndex(CUDAScatter &scatter, const unsigned int &streamId) {
+void MsgSpatial3D::CUDAModelHandler::buildIndex(CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream) {
+    NVTX_RANGE("MsgSpatial3D::CUDAModelHandler::buildIndex");
     const unsigned int MESSAGE_COUNT = this->sim_message.getMessageCount();
     resizeKeysVals(this->sim_message.getMaximumListSize());  // Resize based on allocated amount rather than message count
     {  // Build atomic histogram
-        gpuErrchk(cudaMemset(d_histogram, 0x00000000, (binCount + 1) * sizeof(unsigned int)));
+        gpuErrchk(cudaMemsetAsync(d_histogram, 0x00000000, (binCount + 1) * sizeof(unsigned int), stream));
         int blockSize;  // The launch configurator returned block size
         gpuErrchk(cudaOccupancyMaxActiveBlocksPerMultiprocessor(&blockSize, atomicHistogram3D, 32, 0));  // Randomly 32
                                                                                                          // Round up according to array size
         int gridSize = (MESSAGE_COUNT + blockSize - 1) / blockSize;
-        atomicHistogram3D << <gridSize, blockSize >> >(d_data, d_keys, d_vals, d_histogram, MESSAGE_COUNT,
+        atomicHistogram3D <<<gridSize, blockSize, 0, stream >>>(d_data, d_keys, d_vals, d_histogram, MESSAGE_COUNT,
             reinterpret_cast<float*>(this->sim_message.getReadPtr("x")),
             reinterpret_cast<float*>(this->sim_message.getReadPtr("y")),
             reinterpret_cast<float*>(this->sim_message.getReadPtr("z")));
-        gpuErrchk(cudaDeviceSynchronize());
     }
     {  // Scan (sum), to finalise PBM
-        gpuErrchk(cub::DeviceScan::ExclusiveSum(d_CUB_temp_storage, d_CUB_temp_storage_bytes, d_histogram, hd_data.PBM, binCount + 1));
+        gpuErrchk(cub::DeviceScan::ExclusiveSum(d_CUB_temp_storage, d_CUB_temp_storage_bytes, d_histogram, hd_data.PBM, binCount + 1, stream));
     }
     {  // Reorder messages
        // Copy messages from d_messages to d_messages_swap, in hash order
-        scatter.pbm_reorder(streamId, this->sim_message.getMessageDescription().variables, this->sim_message.getReadList(), this->sim_message.getWriteList(), MESSAGE_COUNT, d_keys, d_vals, hd_data.PBM);
+        scatter.pbm_reorder(streamId, stream, this->sim_message.getMessageDescription().variables, this->sim_message.getReadList(), this->sim_message.getWriteList(), MESSAGE_COUNT, d_keys, d_vals, hd_data.PBM);
         this->sim_message.swap();  // Stream id is unused here
+        gpuErrchk(cudaStreamSynchronize(stream));  // Not striclty neceesary while pbm_reorder is synchronous.
     }
     {  // Fill PBM and Message Texture Buffers
        // gpuErrchk(cudaBindTexture(nullptr, d_texMessages, d_agents, sizeof(glm::vec4) * MESSAGE_COUNT));

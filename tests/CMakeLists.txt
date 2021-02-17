@@ -54,6 +54,7 @@ SET(TEST_CASE_SRC
     # ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_func_pointer.cu # Does not currently build
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/exception/test_device_exception.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/gpu/test_cuda_simulation.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/gpu/test_cuda_simulation_concurrency.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/gpu/test_gpu_validation.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/gpu/test_cuda_subagent.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/io/test_io.cu
@@ -104,8 +105,10 @@ SET(TEST_CASE_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/util/test_nvtx.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/util/test_dependency_versions.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/util/test_multi_thread_device.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/util/test_rtc_multi_thread_device.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/util/test_CUDAEventTimer.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/util/test_SteadyClockTimer.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_rtc_device_api.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/util/test_rtc_multi_thread_device.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/exception/test_rtc_device_exception.cu
 )
 SET(DEV_TEST_CASE_SRC

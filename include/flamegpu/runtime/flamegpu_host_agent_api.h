@@ -203,7 +203,7 @@ class HostAgentInstance {
      * @param d_buffer Device pointer to buffer to be filled
      * @param length Length of the buffer (how many unsigned ints can it hold)
      */
-    static void fillTIDArray(unsigned int *d_buffer, const unsigned int &length);
+    static void fillTIDArray(unsigned int *d_buffer, const unsigned int &length, const cudaStream_t &stream);
     /**
      * Sorts a buffer by the positions array, used for multi variable agent sorts
      * @param dest Device pointer to buffer for sorted data to be placed
@@ -211,7 +211,7 @@ class HostAgentInstance {
      * @param typeLen sizeof the type stored in the buffer (e.g. sizeof(int))
      * @param length Length of the buffer (how many items it can it hold)
      */
-    static void sortBuffer(void *dest, void*src, unsigned int *position, const size_t &typeLen, const unsigned int &length);
+    static void sortBuffer(void *dest, void*src, unsigned int *position, const size_t &typeLen, const unsigned int &length, const cudaStream_t &stream);
     FLAMEGPU_HOST_API &api;
     AgentInterface &agent;
     bool hasState;
@@ -469,7 +469,7 @@ void HostAgentInstance::sort(const std::string &variable, Order order, int begin
     unsigned int *vals_in = scan.Config(CUDAScanCompaction::Type::MESSAGE_OUTPUT, streamId).d_ptrs.scan_flag;
     unsigned int *vals_out = scan.Config(CUDAScanCompaction::Type::MESSAGE_OUTPUT, streamId).d_ptrs.position;
     // Create array of TID (use scanflag_death.position)
-    fillTIDArray(vals_in, agentCount);
+    fillTIDArray(vals_in, agentCount, 0);  // @todo - use a non default stream
     // Create array of agent values (use scanflag_death.scan_flag)
     gpuErrchk(cudaMemcpy(keys_in, var_ptr, total_variable_buffer_size, cudaMemcpyDeviceToDevice));
     // Check if we need to resize cub storage
@@ -491,7 +491,7 @@ void HostAgentInstance::sort(const std::string &variable, Order order, int begin
         gpuErrchk(cub::DeviceRadixSort::SortPairsDescending(api.d_cub_temp, api.d_cub_temp_size, keys_in, keys_out, vals_in, vals_out, agentCount, beginBit, endBit));
     }
     // Scatter all agent variables
-    api.agentModel.agent_map.at(agentDesc.name)->scatterSort(stateName, scatter, streamId);
+    api.agentModel.agent_map.at(agentDesc.name)->scatterSort(stateName, scatter, streamId, 0);  // @todo use a per simulation stream?
 }
 
 
@@ -552,7 +552,7 @@ void HostAgentInstance::sort(const std::string &variable1, Order order1, const s
     Var2T *keys2 = reinterpret_cast<Var2T *>(scan.Config(CUDAScanCompaction::Type::MESSAGE_OUTPUT, streamId).d_ptrs.scan_flag);
     unsigned int *vals = scan.Config(CUDAScanCompaction::Type::MESSAGE_OUTPUT, streamId).d_ptrs.position;
     // Init value array
-    fillTIDArray(vals, agentCount);
+    fillTIDArray(vals, agentCount, 0);  // @todo - use a non default stream
     // Process variable 2 first
     {
         // pair sort values
@@ -565,7 +565,7 @@ void HostAgentInstance::sort(const std::string &variable1, Order order1, const s
         }
         gpuErrchkLaunch();
         // sort keys1 based on this order
-        sortBuffer(keys1, keys1b, vals, sizeof(Var1T), agentCount);
+        sortBuffer(keys1, keys1b, vals, sizeof(Var1T), agentCount, 0);  // @todo use a non default stream
     }
     // Process variable 1 second
     {
@@ -580,6 +580,6 @@ void HostAgentInstance::sort(const std::string &variable1, Order order1, const s
         gpuErrchkLaunch();
     }
     // Scatter all agent variables
-    api.agentModel.agent_map.at(agentDesc.name)->scatterSort(stateName, scatter, streamId);
+    api.agentModel.agent_map.at(agentDesc.name)->scatterSort(stateName, scatter, streamId, 0);  // @todo - use simulation specific stream.
 }
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_FLAMEGPU_HOST_AGENT_API_H_

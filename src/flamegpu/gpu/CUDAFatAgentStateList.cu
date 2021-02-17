@@ -133,7 +133,7 @@ void CUDAFatAgentStateList::setAgentCount(const unsigned int &newCount, const bo
     }
     aliveAgents = disabledAgents + newCount;
 }
-unsigned int CUDAFatAgentStateList::scatterDeath(CUDAScatter &scatter, const unsigned int &streamId) {
+unsigned int CUDAFatAgentStateList::scatterDeath(CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream) {
     // Build scatter data
     std::vector<CUDAScatter::ScatterData> sd;
     for (const auto &v : variables_unique) {
@@ -148,6 +148,7 @@ unsigned int CUDAFatAgentStateList::scatterDeath(CUDAScatter &scatter, const uns
     // Perform scatter
     const unsigned int living_agents = scatter.scatter(
         streamId,
+        stream,
         CUDAScatter::Type::AGENT_DEATH, sd,
         aliveAgents, 0, false, disabledAgents);
     // Update size
@@ -156,7 +157,7 @@ unsigned int CUDAFatAgentStateList::scatterDeath(CUDAScatter &scatter, const uns
 
     return living_agents;
 }
-unsigned int CUDAFatAgentStateList::scatterAgentFunctionConditionFalse(CUDAScatter &scatter, const unsigned int &streamId) {
+unsigned int CUDAFatAgentStateList::scatterAgentFunctionConditionFalse(CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream) {
     // This makes no sense if we have disabled agents (it's supposed to reorder to create disabled agents)
     assert(disabledAgents == 0);
     // Build scatter data
@@ -168,11 +169,12 @@ unsigned int CUDAFatAgentStateList::scatterAgentFunctionConditionFalse(CUDAScatt
     }
     // Perform scatter
     const unsigned int scattered_agents = scatter.scatter(streamId,
+        stream,
         CUDAScatter::Type::AGENT_DEATH, sd,
         aliveAgents, 0, false, disabledAgents);
     return scattered_agents;
 }
-unsigned int CUDAFatAgentStateList::scatterAgentFunctionConditionTrue(const unsigned int &conditionFailCount, CUDAScatter &scatter, const unsigned int &streamId) {
+unsigned int CUDAFatAgentStateList::scatterAgentFunctionConditionTrue(const unsigned int &conditionFailCount, CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream) {
     // This makes no sense if we have disabled agents (it's suppose to reorder to create disabled agents)
     assert(disabledAgents == 0);
     // Build scatter data
@@ -188,6 +190,7 @@ unsigned int CUDAFatAgentStateList::scatterAgentFunctionConditionTrue(const unsi
     }
     // Perform scatter
     const unsigned int scattered_agents = scatter.scatter(streamId,
+        stream,
         CUDAScatter::Type::AGENT_DEATH, sd,
         aliveAgents, conditionFailCount, true, disabledAgents);
     // Update disabled agents count
@@ -203,7 +206,7 @@ void CUDAFatAgentStateList::setDisabledAgents(const unsigned int &numberOfDisabl
         v->data_condition = data_p + (numberOfDisabled * v->type_size * v->elements);
     }
 }
-void CUDAFatAgentStateList::scatterSort(CUDAScatter &scatter, const unsigned int &streamId) {
+void CUDAFatAgentStateList::scatterSort(CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream) {
     // This is not designed to run when there are disabled agents
     assert(disabledAgents == 0);
     // Build scatter data
@@ -217,9 +220,9 @@ void CUDAFatAgentStateList::scatterSort(CUDAScatter &scatter, const unsigned int
         // Pre update data_condition
         v->data_condition = out_p;
     }
-    scatter.scatterPosition(streamId, CUDAScatter::Type::MESSAGE_OUTPUT, sd, aliveAgents);
+    scatter.scatterPosition(streamId, stream, CUDAScatter::Type::MESSAGE_OUTPUT, sd, aliveAgents);
 }
-void CUDAFatAgentStateList::initVariables(std::set<std::shared_ptr<VariableBuffer>> &exclusionSet, const unsigned int initCount, const unsigned initOffset, CUDAScatter &scatter, const unsigned int &streamId) {
+void CUDAFatAgentStateList::initVariables(std::set<std::shared_ptr<VariableBuffer>> &exclusionSet, const unsigned int initCount, const unsigned initOffset, CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream) {
     if (initCount && exclusionSet.size()) {
         assert(initCount + initOffset <= bufferLen);
         std::list<std::shared_ptr<VariableBuffer>> initVars;
@@ -230,7 +233,7 @@ void CUDAFatAgentStateList::initVariables(std::set<std::shared_ptr<VariableBuffe
             }
         }
         // Perform scatter
-        scatter.broadcastInit(streamId, initVars, initCount, initOffset);
+        scatter.broadcastInit(streamId, stream, initVars, initCount, initOffset);
     }
 }
 

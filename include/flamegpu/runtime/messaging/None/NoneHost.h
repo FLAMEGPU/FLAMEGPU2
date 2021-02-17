@@ -31,7 +31,7 @@ class MsgSpecialisationHandler {
      * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
      * @param streamId Index of stream specific structures used
      */
-    virtual void buildIndex(CUDAScatter &, const unsigned int &) { }
+    virtual void buildIndex(CUDAScatter &, const unsigned int &streamId, const cudaStream_t &stream) { }
     /**
      * Allocates memory for the constructed index.
      * The memory allocation is checked by build index.

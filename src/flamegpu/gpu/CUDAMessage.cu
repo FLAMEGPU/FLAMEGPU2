@@ -302,10 +302,10 @@ void CUDAMessage::swap() {
     message_list->swap();
 }
 
-void CUDAMessage::buildIndex(CUDAScatter &scatter, const unsigned int &streamId) {
+void CUDAMessage::buildIndex(CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream) {
     // Build the index if required.
     if (pbm_construction_required) {
-        specialisation_handler->buildIndex(scatter, streamId);
+        specialisation_handler->buildIndex(scatter, streamId, stream);
         pbm_construction_required = false;
     }
 }

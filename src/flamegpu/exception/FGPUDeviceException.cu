@@ -17,28 +17,32 @@ DeviceExceptionManager::~DeviceExceptionManager() {
         gpuErrchk(cudaFree(i));
     }
 }
-DeviceExceptionBuffer *DeviceExceptionManager::getDevicePtr(const unsigned int &streamId) {
+DeviceExceptionBuffer *DeviceExceptionManager::getDevicePtr(const unsigned int &streamId, const cudaStream_t &stream) {
     if (streamId >= CUDAScanCompaction::MAX_STREAMS) {
         THROW OutOfBoundsException("Stream id %u is out of bounds, %u >= %u, "
         "in FGPUDeviceException::getDevicePtr()\n", streamId, streamId, CUDAScanCompaction::MAX_STREAMS);
     }
+    // It may be better to move this (and the memsets) out to a separate up-front reset call in the future.
     if (!d_buffer[streamId]) {
         gpuErrchk(cudaMalloc(&d_buffer[streamId], sizeof(DeviceExceptionBuffer)));
     }
-    gpuErrchk(cudaDeviceSynchronize());
+    // @todo - We might need a sync here in some cases? Tests all pass without it.
+    // gpuErrchk(cudaDeviceSynchronize());
+
     // Memset and return buffer
-    gpuErrchk(cudaMemset(d_buffer[streamId], 0, sizeof(DeviceExceptionBuffer)));
+    gpuErrchk(cudaMemsetAsync(d_buffer[streamId], 0, sizeof(DeviceExceptionBuffer), stream));
     memset(&hd_buffer[streamId], 0, sizeof(DeviceExceptionBuffer));
     return d_buffer[streamId];
 }
-void DeviceExceptionManager::checkError(const std::string &function, const unsigned int &streamId) {
+void DeviceExceptionManager::checkError(const std::string &function, const unsigned int &streamId, const cudaStream_t &stream) {
     if (streamId >= CUDAScanCompaction::MAX_STREAMS) {
         THROW OutOfBoundsException("Stream id %u is out of bounds, %u >= %u, "
         "in FGPUDeviceException::checkError()\n", streamId, streamId, CUDAScanCompaction::MAX_STREAMS);
     }
     if (d_buffer[streamId]) {
         // Grab buffer from device
-        cudaMemcpy(&hd_buffer[streamId], d_buffer[streamId], sizeof(DeviceExceptionBuffer), cudaMemcpyDeviceToHost);
+        gpuErrchk(cudaMemcpyAsync(&hd_buffer[streamId], d_buffer[streamId], sizeof(DeviceExceptionBuffer), cudaMemcpyDeviceToHost, stream));
+        gpuErrchk(cudaStreamSynchronize(stream));
         // If there is a reported error count
         if (hd_buffer[streamId].error_count) {
             std::string location_string = getLocationString(hd_buffer[streamId]);

@@ -6,6 +6,7 @@
 #include "flamegpu/version.h"
 #include "flamegpu/exception/FGPUException.h"
 #include "flamegpu/util/compute_capability.cuh"
+#include "flamegpu/util/nvtx.h"
 
 // If MSVC earlier than VS 2019
 #if defined(_MSC_VER) && _MSC_VER < 1920
@@ -81,6 +82,7 @@ std::string loadFile(const path &filepath) {
 std::mutex JitifyCache::instance_mutex;
 
 std::unique_ptr<KernelInstantiation> JitifyCache::compileKernel(const std::string &func_name, const std::vector<std::string> &template_args, const std::string &kernel_src, const std::string &dynamic_header) {
+    NVTX_RANGE("JitifyCache::compileKernel");
     // Init runtime compilation constants
     static std::string env_inc_fgp2 = std::getenv("FLAMEGPU2_INC_DIR") ? std::getenv("FLAMEGPU2_INC_DIR") : "";
     static bool header_version_confirmed = false;
@@ -208,6 +210,7 @@ std::unique_ptr<KernelInstantiation> JitifyCache::compileKernel(const std::strin
 }
 
 std::unique_ptr<KernelInstantiation> JitifyCache::loadKernel(const std::string &func_name, const std::vector<std::string> &template_args, const std::string &kernel_src, const std::string &dynamic_header) {
+    NVTX_RANGE("JitifyCache::loadKernel");
     std::lock_guard<std::mutex> lock(cache_mutex);
     // Detect current compute capability=
     int currentDeviceIdx = 0;

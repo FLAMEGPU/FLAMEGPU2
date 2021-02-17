@@ -90,7 +90,7 @@ class CUDAFatAgent {
      * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
      * @param streamId Index of the stream used for scan compaction flags (and async cuda ops)
      */
-    void processDeath(const unsigned int &agent_fat_id, const std::string &state_name, CUDAScatter &scatter, const unsigned int &streamId);
+    void processDeath(const unsigned int &agent_fat_id, const std::string &state_name, CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream);
     /**
      * Transitions all active agents from the source state to the destination state
      * @param agent_fat_id The index of the CUDAAgent within this CUDAFatAgent
@@ -99,7 +99,7 @@ class CUDAFatAgent {
      * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
      * @param streamId Index of the stream used for scan compaction flags (and async cuda ops)
      */
-    void transitionState(const unsigned int &agent_fat_id, const std::string &_src, const std::string &_dest, CUDAScatter &scatter, const unsigned int &streamId);
+    void transitionState(const unsigned int &agent_fat_id, const std::string &_src, const std::string &_dest, CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream);
     /**
      * Reads the flags set by an agent function condition in order to sort agents according to whether they passed or failed
      * Failed agents are sorted to the front and marked as disabled, passing agents are then sorted to the back
@@ -108,7 +108,7 @@ class CUDAFatAgent {
      * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
      * @param streamId Index of the stream used for scan compaction flags (and async cuda ops)
      */
-    void processFunctionCondition(const unsigned int &agent_fat_id, const std::string &state_name, CUDAScatter &scatter, const unsigned int &streamId);
+    void processFunctionCondition(const unsigned int &agent_fat_id, const std::string &state_name, CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream);
     /**
      * Marks the specified number of agents within the specified statelist as disabled
      * @param agent_fat_id The index of the CUDAAgent within this CUDAFatAgent

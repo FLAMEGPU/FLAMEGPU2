@@ -152,6 +152,11 @@ struct ModelData : std::enable_shared_from_this<ModelData>{
      */
     bool operator!=(const ModelData& rhs) const;
 
+    /**
+     * @return The maximum layer width within the model's hierarchy
+     */
+    ModelData::size_type getMaxLayerWidth() const;
+
  protected:
     friend SubModelData;  // Uses private copy constructor
     /**

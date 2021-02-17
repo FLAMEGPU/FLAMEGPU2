@@ -23,7 +23,7 @@ void MsgBruteForce::CUDAModelHandler::freeMetaDataDevicePtr() {
     d_metadata = nullptr;
 }
 
-void MsgBruteForce::CUDAModelHandler::buildIndex(CUDAScatter &, const unsigned int &) {
+void MsgBruteForce::CUDAModelHandler::buildIndex(CUDAScatter &, const unsigned int &, const cudaStream_t &) {
     unsigned int newLength = this->sim_message.getMessageCount();
     if (newLength != hd_metadata.length) {
         hd_metadata.length = newLength;

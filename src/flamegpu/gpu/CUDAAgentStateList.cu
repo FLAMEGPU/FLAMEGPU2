@@ -75,7 +75,7 @@ void *CUDAAgentStateList::getVariablePointer(const std::string &variable_name) {
 
     return var->second->data_condition;
 }
-void CUDAAgentStateList::setAgentData(const AgentStateMemory &data, CUDAScatter &scatter, const unsigned int &streamId) {
+void CUDAAgentStateList::setAgentData(const AgentStateMemory &data, CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream) {
     // check that we are using the same agent description
     if (!data.isSameDescription(agent.getAgentDescription())) {
         THROW InvalidCudaAgentDesc("Agent State memory has different description to CUDA Agent ('%s'), "
@@ -91,7 +91,7 @@ void CUDAAgentStateList::setAgentData(const AgentStateMemory &data, CUDAScatter 
         std::set<std::shared_ptr<VariableBuffer>> exclusionSet;
         for (auto &a : variables)
             exclusionSet.insert(a.second);
-        parent_list->initVariables(exclusionSet, data_count, 0, scatter, streamId);
+        parent_list->initVariables(exclusionSet, data_count, 0, scatter, streamId, stream);
         // Copy across the required data host->device
         for (auto &_var : variables) {
             // get the variable size from agent description
@@ -106,7 +106,8 @@ void CUDAAgentStateList::setAgentData(const AgentStateMemory &data, CUDAScatter 
             const void * v_data = m_vec.getReadOnlyDataPtr();
 
             // copy the host data to the GPU
-            gpuErrchk(cudaMemcpy(_var.second->data, v_data, var_elements * var_size * data_count, cudaMemcpyHostToDevice));
+            gpuErrchk(cudaMemcpyAsync(_var.second->data, v_data, var_elements * var_size * data_count, cudaMemcpyHostToDevice, stream));
+            gpuErrchk(cudaStreamSynchronize(stream));
         }
     }
     // Update alive count etc
@@ -146,7 +147,7 @@ void CUDAAgentStateList::getAgentData(AgentStateMemory &data) {
     // Update alive count etc
     data.overrideStateListSize(data_count);
 }
-void CUDAAgentStateList::scatterHostCreation(const unsigned int &newSize, char *const d_inBuff, const VarOffsetStruct &offsets, CUDAScatter &scatter, const unsigned int &streamId) {
+void CUDAAgentStateList::scatterHostCreation(const unsigned int &newSize, char *const d_inBuff, const VarOffsetStruct &offsets, CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream) {
     // Resize agent list if required
     parent_list->resize(parent_list->getSizeWithDisabled() + newSize, true);
     // Build scatter data
@@ -159,6 +160,7 @@ void CUDAAgentStateList::scatterHostCreation(const unsigned int &newSize, char *
     }
     // Scatter to device
     scatter.scatterNewAgents(streamId,
+        stream,
         sd,
         offsets.totalSize,
         newSize,
@@ -169,14 +171,14 @@ void CUDAAgentStateList::scatterHostCreation(const unsigned int &newSize, char *
     std::set<std::shared_ptr<VariableBuffer>> exclusionSet;
     for (auto &a : variables)
         exclusionSet.insert(a.second);
-    parent_list->initVariables(exclusionSet, newSize, parent_list->getSize(), scatter, streamId);
+    parent_list->initVariables(exclusionSet, newSize, parent_list->getSize(), scatter, streamId, stream);
     // Update number of alive agents
     parent_list->setAgentCount(parent_list->getSize() + newSize);
 }
-void CUDAAgentStateList::scatterSort(CUDAScatter &scatter, const unsigned int &streamId) {
-    parent_list->scatterSort(scatter, streamId);
+void CUDAAgentStateList::scatterSort(CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream) {
+    parent_list->scatterSort(scatter, streamId, stream);
 }
-void CUDAAgentStateList::scatterNew(void * d_newBuff, const unsigned int &newSize, CUDAScatter &scatter, const unsigned int &streamId) {
+void CUDAAgentStateList::scatterNew(void * d_newBuff, const unsigned int &newSize, CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream) {
     if (newSize) {
         CUDAScanCompactionConfig &scanCfg = scatter.Scan().Config(CUDAScanCompaction::Type::AGENT_OUTPUT, streamId);
         // Perform scan
@@ -190,9 +192,10 @@ void CUDAAgentStateList::scatterNew(void * d_newBuff, const unsigned int &newSiz
                 scanCfg.cub_temp_size,
                 scanCfg.d_ptrs.scan_flag,
                 scanCfg.d_ptrs.position,
-                newSize + 1));
-            gpuErrchk(cudaMalloc(&scanCfg.hd_cub_temp,
-                scanCfg.cub_temp_size));
+                newSize + 1,
+                stream));
+            gpuErrchk(cudaStreamSynchronize(stream));
+            gpuErrchk(cudaMalloc(&scanCfg.hd_cub_temp, scanCfg.cub_temp_size));
             scanCfg.cub_temp_size_max_list_size = newSize;
         }
         gpuErrchk(cub::DeviceScan::ExclusiveSum(
@@ -200,7 +203,9 @@ void CUDAAgentStateList::scatterNew(void * d_newBuff, const unsigned int &newSiz
             scanCfg.cub_temp_size,
             scanCfg.d_ptrs.scan_flag,
             scanCfg.d_ptrs.position,
-            newSize + 1));
+            newSize + 1,
+            stream));
+        gpuErrchk(cudaStreamSynchronize(stream));
         // Resize if necessary
         // @todo? this could be improved by checking scan result for the actual size, rather than max size)
         resize(parent_list->getSizeWithDisabled() + newSize, true);
@@ -222,6 +227,7 @@ void CUDAAgentStateList::scatterNew(void * d_newBuff, const unsigned int &newSiz
         // Perform scatter
         const unsigned int new_births = scatter.scatter(
             streamId,
+            stream,
             CUDAScatter::Type::AGENT_OUTPUT,
             scatterdata,
             newSize, parent_list->getSizeWithDisabled());
@@ -232,7 +238,7 @@ void CUDAAgentStateList::scatterNew(void * d_newBuff, const unsigned int &newSiz
         std::set<std::shared_ptr<VariableBuffer>> exclusionSet;
         for (auto &a : variables)
             exclusionSet.insert(a.second);
-        parent_list->initVariables(exclusionSet, newSize, parent_list->getSize(), scatter, streamId);
+        parent_list->initVariables(exclusionSet, newSize, parent_list->getSize(), scatter, streamId, stream);
         // Update number of alive agents
         parent_list->setAgentCount(parent_list->getSize() + new_births);
     }
@@ -240,13 +246,13 @@ void CUDAAgentStateList::scatterNew(void * d_newBuff, const unsigned int &newSiz
 bool CUDAAgentStateList::getIsSubStatelist() {
     return isSubStateList;
 }
-void CUDAAgentStateList::initUnmappedVars(CUDAScatter &scatter, const unsigned int &streamId) {
+void CUDAAgentStateList::initUnmappedVars(CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream) {
     assert(parent_list->getSizeWithDisabled() == parent_list->getSize());
     if (parent_list->getSize()) {
         assert(isSubStateList);
         // If unmappedBuffers is not empty, perform broadcast init
         if (unmappedBuffers.size()) {
-            scatter.broadcastInit(streamId, unmappedBuffers, parent_list->getSize(), 0);
+            scatter.broadcastInit(streamId, stream, unmappedBuffers, parent_list->getSize(), 0);
         }
     }
 }

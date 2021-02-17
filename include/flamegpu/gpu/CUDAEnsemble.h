@@ -77,9 +77,8 @@ class CUDAEnsemble {
     void setExitLog(const LoggingConfig &exitConfig);
     /**
      * Get the duration of the last call to simulate() in milliseconds. 
-     * With a resolution of around 0.5 microseconds (cudaEventElapsedtime)
      */
-    int64_t getEnsembleElapsedTime() const { return ensemble_elapsed_time; }
+    float getEnsembleElapsedTime() const { return ensemble_elapsed_time; }
     /**
      * Return the list of logs collected from the last call to simulate()
      */
@@ -117,7 +116,7 @@ class CUDAEnsemble {
     /**
      * Runtime of previous call to simulate() in milliseconds, initially 0
      */
-    int64_t ensemble_elapsed_time = 0;
+    float ensemble_elapsed_time = 0.f;
 };
 
 #endif  // INCLUDE_FLAMEGPU_GPU_CUDAENSEMBLE_H_
