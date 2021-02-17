@@ -43,7 +43,7 @@ set_property(TARGET ${PYTHON_MODULE_NAME} PROPERTY SWIG_USE_TARGET_INCLUDE_DIREC
 # needs to have RDC enable for the project
 set_property(TARGET ${PYTHON_MODULE_NAME} PROPERTY CUDA_SEPARABLE_COMPILATION ON)
 # Build with the SWIG pre-processor macro enabled
-set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY COMPILE_DEFINITIONS "SWIG")
+set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY SWIG_GENERATED_COMPILE_DEFINITIONS "SWIG")
 # Suppress warnings during compilation of SWIG generated PYTHON_wrap.cxx
 set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcudafe --diag_suppress=\"declared_but_not_referenced\"")
 # set bigobj property for windows compiler (needed due to the sheer size of the generated swig file: https://www.reddit.com/r/AbsoluteUnits/)
@@ -56,6 +56,25 @@ target_include_directories(${PYTHON_MODULE_NAME}
   ../../include
   ${Python3_INCLUDE_DIRS}
   )
+  
+# Handle user options
+if (VISUALISATION)
+  set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY SWIG_COMPILE_DEFINITIONS VISUALISATION)
+  set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY SWIG_GENERATED_COMPILE_DEFINITIONS VISUALISATION)
+  target_include_directories(${PYTHON_MODULE_NAME} PUBLIC "${VISUALISATION_ROOT}/include")
+endif()
+if (NOT SEATBELTS)
+  set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY SWIG_COMPILE_DEFINITIONS $<IF:$<CONFIG:Debug>,,NO_SEATBELTS>)
+  set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY SWIG_GENERATED_COMPILE_DEFINITIONS $<IF:$<CONFIG:Debug>,,NO_SEATBELTS>)
+endif()
+if (NOT RTC_DISK_CACHE)
+  set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY SWIG_COMPILE_DEFINITIONS DISABLE_RTC_DISK_CACHE)
+  set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY SWIG_GENERATED_COMPILE_DEFINITIONS DISABLE_RTC_DISK_CACHE)
+endif()    
+if (EXPORT_RTC_SOURCES)
+  set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY SWIG_COMPILE_DEFINITIONS OUTPUT_RTC_DYNAMIC_FILES)
+  set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY SWIG_GENERATED_COMPILE_DEFINITIONS OUTPUT_RTC_DYNAMIC_FILES)
+endif ()
   
 # link with the static flamegpu and cuda libraries
 target_link_libraries(${PYTHON_MODULE_NAME} PRIVATE flamegpu2 cuda)
@@ -113,6 +132,33 @@ endfunction()
 # https://github.com/pypa/setuptools/issues/2541
 search_python_module(setuptools)
 search_python_module(wheel)
+
+# Copy the visualisation dlls if required, this must occur before the wheel is built
+if (VISUALISATION)
+    # Copy DLLs
+    if(WIN32)
+        # These might fall over if libraries becomes plural
+        get_filename_component(SDL2_RUNTIME_LIB_NAME ${SDL2_RUNTIME_LIBRARIES} NAME)
+        get_filename_component(GLEW_RUNTIME_LIB_NAME ${GLEW_RUNTIME_LIBRARIES} NAME)
+        # create the directory first (this is normally created by the following post-build commands
+        add_custom_command(TARGET ${PYTHON_MODULE_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E make_directory "${PYTHON_LIB_OUTPUT_DIRECTORY}/${PYTHON_MODULE_NAME}")
+        # sdl 
+        add_custom_command(TARGET ${PYTHON_MODULE_NAME} POST_BUILD     # Adds a post-build event to MyTest
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different              # which executes "cmake - E copy_if_different..."
+                "${SDL2_RUNTIME_LIBRARIES}"                            # <--this is in-file
+                "${PYTHON_LIB_OUTPUT_DIRECTORY}/${PYTHON_MODULE_NAME}" # <--this is out-file path
+            BYPRODUCTS
+                "${PYTHON_LIB_OUTPUT_DIRECTORY}/${PYTHON_MODULE_NAME}/${SDL2_RUNTIME_LIB_NAME}") 
+        # glew
+        add_custom_command(TARGET ${PYTHON_MODULE_NAME} POST_BUILD     # Adds a post-build event to MyTest
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different              # which executes "cmake - E copy_if_different..."
+                "${GLEW_RUNTIME_LIBRARIES}"                            # <--this is in-file
+                "${PYTHON_LIB_OUTPUT_DIRECTORY}/${PYTHON_MODULE_NAME}" # <--this is out-file path
+            BYPRODUCTS
+                "${PYTHON_LIB_OUTPUT_DIRECTORY}/${PYTHON_MODULE_NAME}/${GLEW_RUNTIME_LIB_NAME}") 
+    endif()
+endif()
 
 # Configure and build the python package
 # The file configurations above will already have output setup.py and __init__.py to the appropriate places and created the directory for the module

@@ -533,16 +533,33 @@ TEMPLATE_VARIABLE_INSTANTIATE(newVariable, MsgArray2D::Description::newVariable)
 TEMPLATE_VARIABLE_INSTANTIATE(newVariable, MsgArray3D::Description::newVariable)
 TEMPLATE_VARIABLE_INSTANTIATE(newVariable, MsgBucket::Description::newVariable)
 
-
-
 // Instantiate template versions of host random functions from the API
 TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(uniform, HostRandom::uniformNoRange)
 TEMPLATE_VARIABLE_INSTANTIATE_INTS(uniform, HostRandom::uniformRange)
 TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(normal, HostRandom::normal)
 TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(logNormal, HostRandom::logNormal)
 
-
-
-
-
-
+// Optionally instantiate visualisation classes
+#ifdef VISUALISATION
+%{
+#include "flamegpu/visualiser/AgentStateVis.h"
+#include "flamegpu/visualiser/AgentVis.h"
+#include "flamegpu/visualiser/LineVis.h"
+#include "flamegpu/visualiser/ModelVis.h"
+#include "flamegpu/visualiser/StaticModelVis.h"
+#include "config/Stock.h"
+%}
+%include "flamegpu/visualiser/AgentStateVis.h"
+%include "flamegpu/visualiser/AgentVis.h"
+%include "flamegpu/visualiser/LineVis.h"
+%include "flamegpu/visualiser/ModelVis.h"
+%include "flamegpu/visualiser/StaticModelVis.h"
+%include "config/Stock.h"
+// This messes with a define, so must occur after all other files which might check VISUALISATION
+// #define VISUALISATION false, still causes #ifdef VISUALISATION as true
+// I tried `%inline %{const boolean VISUALISATION = false;%}` but swig didnt like it
+#undef VISUALISATION
+#define VISUALISATION true
+#else
+#define VISUALISATION false
+#endif
