@@ -16,7 +16,7 @@
 enum FLAME_GPU_AGENT_STATUS { ALIVE = 1, DEAD = 0 };
 
 typedef void(AgentFunctionWrapper)(
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
     DeviceExceptionBuffer *error_buffer,
 #endif
     Curve::NamespaceHash instance_id_hash,
@@ -53,7 +53,7 @@ typedef void(AgentFunctionWrapper)(
  */
 template<typename AgentFunction, typename MsgIn, typename MsgOut>
 __global__ void agent_function_wrapper(
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
     DeviceExceptionBuffer *error_buffer,
 #endif
     Curve::NamespaceHash instance_id_hash,
@@ -68,7 +68,7 @@ __global__ void agent_function_wrapper(
     unsigned int *scanFlag_agentDeath,
     unsigned int *scanFlag_messageOutput,
     unsigned int *scanFlag_agentOutput) {
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
     // We place this at the start of shared memory, so we can locate it anywhere in device code without a reference
     extern __shared__ DeviceExceptionBuffer *buff[];
     if (threadIdx.x == 0) {
@@ -93,7 +93,7 @@ __global__ void agent_function_wrapper(
     if (scanFlag_agentDeath) {
         // (scan flags will not be processed unless agent death has been requested in model definition)
         scanFlag_agentDeath[FLAMEGPU_DEVICE_API<MsgIn, MsgOut>::TID()] = flag;
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
     } else if (flag == DEAD) {
         DTHROW("Agent death must be enabled per agent function when defining the model.\n");
 #endif

@@ -8,7 +8,7 @@
 
 #include "flamegpu/gpu/CUDAScanCompaction.h"
 
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
 
 #include "flamegpu/exception/FGPUDeviceException_device.h"
 
@@ -48,9 +48,9 @@ class DeviceExceptionManager {
 };
 #else
 /**
- * Ignore the device error macro when NO_SEATBELTS is enabled
+ * Ignore the device error macro when SEATBELTS are off
  * These checks are costly to performance
  */
 #define DTHROW(nop)
-#endif  // NO_SEATBELTS
+#endif  // SEATBELTS=OFF
 #endif  // INCLUDE_FLAMEGPU_EXCEPTION_FGPUDEVICEEXCEPTION_H_

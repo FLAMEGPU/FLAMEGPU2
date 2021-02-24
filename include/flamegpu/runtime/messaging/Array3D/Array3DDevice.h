@@ -285,7 +285,7 @@ class MsgArray3D::In {
      * @note radius of 0 is unsupported
      */
     inline __device__ Filter operator() (const size_type &x, const size_type &y, const size_type &z, const size_type &radius = 1) const {
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
         if (radius == 0) {
             DTHROW("%llu is not a valid radius for accessing Array3D message lists.\n", radius);
         }
@@ -318,7 +318,7 @@ class MsgArray3D::In {
         return metadata->length;
     }
     __device__ Message at(const size_type &x, const size_type &y, const size_type &z) const {
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
         if (x >= metadata->dimensions[0] || y >= metadata->dimensions[1] || z >= metadata->dimensions[2]) {
             DTHROW("Index is out of bounds for Array3D messagelist ([%u, %u, %u] >= [%u, %u, %u]).\n", x, y, z, metadata->dimensions[0], metadata->dimensions[1], metadata->dimensions[2]);
         }
@@ -392,7 +392,7 @@ class MsgArray3D::Out {
 
 template<typename T, unsigned int N>
 __device__ T MsgArray3D::In::Message::getVariable(const char(&variable_name)[N]) const {
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
     // Ensure that the message is within bounds.
     if (index >= this->_parent.metadata->length) {
         DTHROW("Invalid Array3D message, unable to get variable '%s'.\n", variable_name);
@@ -404,7 +404,7 @@ __device__ T MsgArray3D::In::Message::getVariable(const char(&variable_name)[N])
 }
 template<typename T, unsigned int N>
 __device__ T MsgArray3D::In::Filter::Message::getVariable(const char(&variable_name)[N]) const {
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
     // Ensure that the message is within bounds.
     if (index_1d >= this->_parent.metadata->length) {
         DTHROW("Invalid Array3D message, unable to get variable '%s'.\n", variable_name);
@@ -437,7 +437,7 @@ __device__ inline void MsgArray3D::Out::setIndex(const size_type &x, const size_
         z * metadata->dimensions[0] * metadata->dimensions[1] +
         y * metadata->dimensions[0] +
         x;
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
     if (x >= metadata->dimensions[0] ||
         y >= metadata->dimensions[1] ||
         z >= metadata->dimensions[2]) {

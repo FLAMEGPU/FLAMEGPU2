@@ -286,6 +286,8 @@ class TestMessage_Array(TestCase):
 
     # Exception tests
     def test_DuplicateOutputException(self): 
+        if not pyflamegpu.SEATBELTS:
+            pytest.skip("Test requires SEATBELTS to be ON")
         m = pyflamegpu.ModelDescription(MODEL_NAME)
         msg = m.newMessageArray(MESSAGE_NAME)
         msg.setLength(AGENT_COUNT)

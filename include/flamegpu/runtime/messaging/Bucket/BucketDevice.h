@@ -193,7 +193,7 @@ class MsgBucket::In {
     * @param key The bucket to access
     */
     inline __device__ Filter operator() (const IntT &key) const {
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
         {
             if (key < metadata->min) {
                 DTHROW("Bucket messaging iterator key %d is lower than minimum key (%d).\n", key, metadata->min);
@@ -212,7 +212,7 @@ class MsgBucket::In {
     * @param endKey The bin beyond the last bin to access messages from
     */
     inline __device__ Filter operator() (const IntT &beginKey, const IntT &endKey) const {
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
         {
             if (beginKey < metadata->min) {
                 DTHROW("Bucket messaging iterator begin key %d is lower than minimum key (%d).\n", beginKey, metadata->min);
@@ -254,7 +254,7 @@ class MsgBucket::Out : public MsgBruteForce::Out {
     */
     __device__ Out(Curve::NamespaceHash agentfn_hash, Curve::NamespaceHash msg_hash, const void *_metadata, unsigned int *scan_flag_messageOutput)
         : MsgBruteForce::Out(agentfn_hash, msg_hash, nullptr, scan_flag_messageOutput)
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
         , metadata(reinterpret_cast<const MetaData*>(_metadata))
 #else
         , metadata(nullptr)
@@ -287,7 +287,7 @@ __device__ MsgBucket::In::Filter::Filter(const MetaData* _metadata, const Curve:
 __device__ void MsgBucket::Out::setKey(const IntT &key) const {
     unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;  // + d_message_count;
 
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
     if (key < metadata->min || key >= metadata->max) {
         DTHROW("MsgArray key %u is out of range [%d, %d).\n", key, metadata->min, metadata->max);
     }
@@ -301,7 +301,7 @@ __device__ void MsgBucket::Out::setKey(const IntT &key) const {
 
 template<typename T, unsigned int N>
 __device__ T MsgBucket::In::Filter::Message::getVariable(const char(&variable_name)[N]) const {
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
     // Ensure that the message is within bounds.
     if (cell_index >= _parent.bucket_end) {
         DTHROW("Bucket message index exceeds bin length, unable to get variable '%s'.\n", variable_name);

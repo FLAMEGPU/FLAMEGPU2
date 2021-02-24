@@ -322,6 +322,8 @@ class TestMessage_Array3D(TestCase):
 
     # Exception tests
     def test_DuplicateOutputException(self): 
+        if not pyflamegpu.SEATBELTS:
+            pytest.skip("Test requires SEATBELTS to be ON")
         m = pyflamegpu.ModelDescription(MODEL_NAME)
         msg = m.newMessageArray3D(MESSAGE_NAME)
         msg.setDimensions(CBRT_AGENT_COUNT, CBRT_AGENT_COUNT + 1, CBRT_AGENT_COUNT + 2)

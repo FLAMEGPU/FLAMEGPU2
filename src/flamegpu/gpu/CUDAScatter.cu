@@ -501,7 +501,7 @@ __global__ void reorder_array_messages(
     const unsigned int threadCount,
     const unsigned int array_length,
     const unsigned int *d_position,
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
     unsigned int *d_write_flag,
 #endif
     CUDAScatter::ScatterData *scatter_data,
@@ -518,7 +518,7 @@ __global__ void reorder_array_messages(
         for (unsigned int i = 0; i < scatter_len; ++i) {
             memcpy(scatter_data[i].out + (output_index * scatter_data[i].typeLen), scatter_data[i].in + (index * scatter_data[i].typeLen), scatter_data[i].typeLen);
         }
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
         // Set err check flag
         atomicInc(d_write_flag + output_index, UINT_MAX);
 #endif
@@ -581,12 +581,12 @@ void CUDAScatter::arrayMessageReorder(
     reorder_array_messages <<<gridSize, blockSize, 0, stream >>> (
         itemCount, array_length,
         d_position,
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
         d_write_flag,
 #endif
         streamResources[streamResourceId].d_data, static_cast<unsigned int>(sd.size()));
     gpuErrchkLaunch();
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
     // Check d_write_flag for dupes
     gpuErrchk(cub::DeviceReduce::Max(streamResources[streamResourceId].d_data, t_data_len, d_write_flag, d_position, array_length, stream));
     unsigned int maxBinSize = 0;

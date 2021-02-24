@@ -563,3 +563,13 @@ TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(logNormal, HostRandom::logNormal)
 #else
 #define VISUALISATION false
 #endif
+
+#if defined(SEATBELTS) && SEATBELTS
+#undef SEATBELTS
+#define SEATBELTS true
+#elif defined(SEATBELTS)
+#undef SEATBELTS
+#define SEATBELTS false
+#else
+#define SEATBELTS false
+#endif

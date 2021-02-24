@@ -377,9 +377,13 @@ function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
         add_compile_definitions(VISUALISATION)
     endif()
     
-    # This macro disables expensive runtime checks (when not in debug mode)
-    if (NOT SEATBELTS)
-        add_compile_definitions($<IF:$<CONFIG:Debug>,,NO_SEATBELTS>)
+    # Pass the SEATBELTS macro, which when set to off/0 (for non debug builds) removes expensive operations.
+    if (SEATBELTS)
+        # If on, all build configs have  seatbelts
+        add_compile_definitions(SEATBELTS=1)
+    else()
+        # Id off, debug builds have seatbelts, non debug builds do not.
+        add_compile_definitions($<IF:$<CONFIG:Debug>,SEATBELTS=1,SEATBELTS=0>)
     endif()
 
     # Flag the new linter target and the files to be linted.
@@ -435,9 +439,13 @@ function(add_flamegpu_library NAME SRC FLAMEGPU_ROOT)
         # find_package(SDL2 REQUIRED)   
     endif()
     
-    # This macro disables expensive runtime checks (when not in debug mode)
-    if (NOT SEATBELTS)
-        add_compile_definitions($<IF:$<CONFIG:Debug>,,NO_SEATBELTS>)
+    # Pass the SEATBELTS macro, which when set to off/0 (for non debug builds) removes expensive operations.
+    if (SEATBELTS)
+        # If on, all build configs have  seatbelts
+        add_compile_definitions(SEATBELTS=1)
+    else()
+        # Id off, debug builds have seatbelts, non debug builds do not.
+        add_compile_definitions($<IF:$<CONFIG:Debug>,SEATBELTS=1,SEATBELTS=0>)
     endif()
     
     if (NOT RTC_DISK_CACHE)

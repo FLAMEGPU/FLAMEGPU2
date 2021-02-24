@@ -323,7 +323,7 @@ TEST(TestMessage_Array2D, Moore2) {
 }
 
 // Exception tests
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
 TEST(TestMessage_Array2D, DuplicateOutputException) {
 #else
 TEST(TestMessage_Array2D, DISABLED_DuplicateOutputException) {

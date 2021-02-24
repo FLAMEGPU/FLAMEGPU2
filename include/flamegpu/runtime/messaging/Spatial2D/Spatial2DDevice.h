@@ -275,7 +275,7 @@ class MsgSpatial2D::Out : public MsgBruteForce::Out {
 
 template<typename T, unsigned int N>
 __device__ T MsgSpatial2D::In::Filter::Message::getVariable(const char(&variable_name)[N]) const {
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
     // Ensure that the message is within bounds.
     if (relative_cell >= 2) {
         DTHROW("MsgSpatial2D in invalid bin, unable to get variable '%s'.\n", variable_name);
