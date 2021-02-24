@@ -6,7 +6,7 @@
 
 #include <cstring>
 
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
 /**
  * This allows us to write DTHROW("My Error message: %d", 12); or similar to report an error in device code
  */
@@ -187,9 +187,9 @@ __device__ unsigned int DeviceException::getErrorCount() {
 #endif
 #else
 /**
- * Ignore the device error macro when NO_SEATBELTS is enabled
+ * Ignore the device error macro when SEATBELTS is OFF
  * These checks are costly to performance
  */
 #define DTHROW(nop)
-#endif  // NO_SEATBELTS
+#endif  // SEATBELTS=OFF
 #endif  // INCLUDE_FLAMEGPU_EXCEPTION_FGPUDEVICEEXCEPTION_DEVICE_H_

@@ -32,7 +32,7 @@ class FLAMEGPU_READ_ONLY_DEVICE_API {
     // Friends have access to TID() & TS_ID()
     template<typename AgentFunctionCondition>
     friend __global__ void agent_function_condition_wrapper(
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
         DeviceExceptionBuffer *error_buffer,
 #endif
         Curve::NamespaceHash,
@@ -115,7 +115,7 @@ class FLAMEGPU_DEVICE_API : public FLAMEGPU_READ_ONLY_DEVICE_API{
     // Friends have access to TID() & TS_ID()
     template<typename AgentFunction, typename _MsgIn, typename _MsgOut>
     friend __global__ void agent_function_wrapper(
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
         DeviceExceptionBuffer *error_buffer,
 #endif
         Curve::NamespaceHash,
@@ -317,7 +317,7 @@ __device__ void FLAMEGPU_DEVICE_API<MsgIn, MsgOut>::AgentOut::setVariable(const 
             // Mark scan flag
             this->scan_flag[index] = 1;
         }
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
     } else {
         DTHROW("Agent output must be enabled per agent function when defining the model.\n");
 #endif
@@ -338,7 +338,7 @@ __device__ void FLAMEGPU_DEVICE_API<MsgIn, MsgOut>::AgentOut::setVariable(const 
 
         // Mark scan flag
         this->scan_flag[index] = 1;
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
     } else {
         DTHROW("Agent output must be enabled per agent function when defining the model.\n");
 #endif

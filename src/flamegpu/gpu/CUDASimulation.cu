@@ -389,7 +389,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                 curandState *t_rng = d_rng + totalThreads;
                 unsigned int *scanFlag_agentDeath = this->singletons->scatter.Scan().Config(CUDAScanCompaction::Type::AGENT_DEATH, streamIdx).d_ptrs.scan_flag;
                 unsigned int sm_size = 0;
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
                 auto *error_buffer = this->singletons->exception.getDevicePtr(streamIdx, this->getStream(streamIdx));
                 sm_size = sizeof(error_buffer);
 #endif
@@ -401,7 +401,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                     //! Round up according to CUDAAgent state list size
                     gridSize = (state_list_size + blockSize - 1) / blockSize;
                     (func_des->condition) << <gridSize, blockSize, sm_size, this->getStream(streamIdx) >> > (
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
                     error_buffer,
 #endif
                     instance_id,
@@ -421,7 +421,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                     gridSize = (state_list_size + blockSize - 1) / blockSize;
                     // launch the kernel
                     CUresult a = instance.configure(gridSize, blockSize, sm_size, this->getStream(streamIdx)).launch({
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
                         reinterpret_cast<void*>(&error_buffer),
 #endif
                         const_cast<void*>(reinterpret_cast<const void*>(&instance_id)),
@@ -470,7 +470,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
 
             // unmap the function variables
             cuda_agent.unmapRuntimeVariables(*func_des, instance_id);
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
             // Error check after unmap vars
             this->singletons->exception.checkError("condition " + func_des->name, streamIdx, this->getStream(streamIdx));
 #endif
@@ -617,7 +617,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
             unsigned int *scanFlag_messageOutput = this->singletons->scatter.Scan().Config(CUDAScanCompaction::Type::MESSAGE_OUTPUT, streamIdx).d_ptrs.scan_flag;
             unsigned int *scanFlag_agentOutput = this->singletons->scatter.Scan().Config(CUDAScanCompaction::Type::AGENT_OUTPUT, streamIdx).d_ptrs.scan_flag;
             unsigned int sm_size = 0;
-    #ifndef NO_SEATBELTS
+    #if !defined(SEATBELTS) || SEATBELTS
             auto *error_buffer = this->singletons->exception.getDevicePtr(streamIdx, this->getStream(streamIdx));
             sm_size = sizeof(error_buffer);
     #endif
@@ -629,7 +629,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                 gridSize = (state_list_size + blockSize - 1) / blockSize;
 
                 (func_des->func) << <gridSize, blockSize, sm_size, this->getStream(streamIdx) >> > (
-    #ifndef NO_SEATBELTS
+    #if !defined(SEATBELTS) || SEATBELTS
                     error_buffer,
     #endif
                     instance_id,
@@ -655,7 +655,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                 gridSize = (state_list_size + blockSize - 1) / blockSize;
                 // launch the kernel
                 CUresult a = instance.configure(gridSize, blockSize, sm_size, this->getStream(streamIdx)).launch({
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
                     reinterpret_cast<void*>(&error_buffer),
 #endif
                     const_cast<void*>(reinterpret_cast<const void*>(&instance_id)),
@@ -743,7 +743,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
 
             // unmap the function variables
             cuda_agent.unmapRuntimeVariables(*func_des, instance_id);
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
             // Error check after unmap vars
             // This means that curve is cleaned up before we throw exception (mostly prevents curve being polluted if we catch and handle errors)
             this->singletons->exception.checkError(func_des->name, streamIdx, this->getStream(streamIdx));

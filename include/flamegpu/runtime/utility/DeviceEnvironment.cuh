@@ -81,7 +81,7 @@ template<typename T, unsigned int N>
 __device__ __forceinline__ T DeviceEnvironment::getProperty(const char(&name)[N]) const {
     Curve::VariableHash cvh = CURVE_NAMESPACE_HASH() + modelname_hash + Curve::variableHash(name);
     const auto cv = Curve::getVariable(cvh);
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
     if (cv ==  Curve::UNKNOWN_VARIABLE) {
         DTHROW("Environment property with name: %s was not found.\n", name);
     } else if (curve_internal::d_sizes[cv] != sizeof(T)) {
@@ -98,7 +98,7 @@ template<typename T, unsigned int N>
 __device__ __forceinline__ T DeviceEnvironment::getProperty(const char(&name)[N], const unsigned int &index) const {
     Curve::VariableHash cvh = CURVE_NAMESPACE_HASH() + modelname_hash + Curve::variableHash(name);
     const auto cv = Curve::getVariable(cvh);
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
     if (cv ==  Curve::UNKNOWN_VARIABLE) {
         DTHROW("Environment property array with name: %s was not found.\n", name);
     } else if (curve_internal::d_sizes[cv] != sizeof(T)) {

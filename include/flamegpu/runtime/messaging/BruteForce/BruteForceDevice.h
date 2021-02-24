@@ -201,7 +201,7 @@ class MsgBruteForce::Out {
 
 template<typename T, unsigned int N>
 __device__ T MsgBruteForce::In::Message::getVariable(const char(&variable_name)[N]) const {
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
     // Ensure that the message is within bounds.
     if (index >= this->_parent.len) {
         DTHROW("Brute force message index exceeds messagelist length, unable to get variable '%s'.\n", variable_name);

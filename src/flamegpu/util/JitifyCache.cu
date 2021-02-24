@@ -178,9 +178,11 @@ std::unique_ptr<KernelInstantiation> JitifyCache::compileKernel(const std::strin
     options.push_back("--std=c++14");
 #endif
 
-    // If NO_SEATBELTS is defined, forward it
-#ifdef NO_SEATBELTS
-    options.push_back("--define-macro=NO_SEATBELTS");
+    // If SEATBELTS is defined and false, forward it as off, otherwise forward it as on.
+#if !defined(SEATBELTS) || SEATBELTS
+    options.push_back("--define-macro=SEATBELTS=1");
+#else
+    options.push_back("--define-macro=SEATBELTS=0");
 #endif
 
     // cuda.h
@@ -218,6 +220,7 @@ std::unique_ptr<KernelInstantiation> JitifyCache::loadKernel(const std::string &
     const std::string arch = std::to_string((status == cudaSuccess) ? util::compute_capability::getComputeCapability(currentDeviceIdx) : 0);
     status = cudaRuntimeGetVersion(&currentDeviceIdx);
     const std::string cuda_version = std::to_string((status == cudaSuccess) ? currentDeviceIdx : 0);
+    const std::string seatbelts = std::to_string(SEATBELTS);
     // Cat kernel, dynamic header, header version
     const std::string long_reference = kernel_src + dynamic_header;  // Don't need to include rest, they are explicit in short reference/filename
     // Generate short reference string
@@ -225,6 +228,7 @@ std::unique_ptr<KernelInstantiation> JitifyCache::loadKernel(const std::string &
     const std::string short_reference =
         cuda_version + "_" +
         arch + "_" +
+        seatbelts + "_" +
         flamegpu_internal::getCommitHash() + "_" +
         // Use jitify hash methods for consistent hashing between OSs
         std::to_string(hash_combine(hash_larson64(kernel_src.c_str()), hash_larson64(dynamic_header.c_str())));

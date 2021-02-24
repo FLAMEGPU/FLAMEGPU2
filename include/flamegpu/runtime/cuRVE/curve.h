@@ -472,7 +472,7 @@ __device__ __forceinline__ void* Curve::getVariablePtrByHash(const VariableHash 
     Variable cv;
 
     cv = getVariable(variable_hash);
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
     // error checking
     if (cv == UNKNOWN_VARIABLE) {
         curve_internal::d_curve_error = DEVICE_ERROR_UNKNOWN_VARIABLE;
@@ -492,7 +492,7 @@ template <typename T>
 __device__ __forceinline__ T Curve::getVariableByHash(const VariableHash variable_hash, unsigned int index) {
     size_t offset = index *sizeof(T);
 
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
     // do a check on the size as otherwise the value_ptr may eb out of bounds.
     size_t size = getVariableSize(variable_hash);
 
@@ -505,7 +505,7 @@ __device__ __forceinline__ T Curve::getVariableByHash(const VariableHash variabl
     // get a pointer to the specific variable by offsetting by the provided index
     T *value_ptr = reinterpret_cast<T*>(getVariablePtrByHash(variable_hash, offset));
 
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
     if (!value_ptr)
         return 0;
 #endif
@@ -515,7 +515,7 @@ template <typename T>
 __device__ __forceinline__ T Curve::getVariableByHash_ldg(const VariableHash variable_hash, unsigned int index) {
     size_t offset = index *sizeof(T);
 
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
     // do a check on the size as otherwise the value_ptr may eb out of bounds.
     size_t size = getVariableSize(variable_hash);
 
@@ -528,7 +528,7 @@ __device__ __forceinline__ T Curve::getVariableByHash_ldg(const VariableHash var
     // get a pointer to the specific variable by offsetting by the provided index
     T *value_ptr = reinterpret_cast<T*>(getVariablePtrByHash(variable_hash, offset));
 
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
     if (!value_ptr)
         return 0;
 #endif
@@ -539,7 +539,7 @@ __device__ __forceinline__ T Curve::getArrayVariableByHash(const VariableHash va
     // do a check on the size as otherwise the value_ptr may eb out of bounds.
     const size_t var_size = N * sizeof(T);
     // error checking
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
     const size_t size = getVariableSize(variable_hash);
     if (size != var_size) {
         curve_internal::d_curve_error = DEVICE_ERROR_UNKNOWN_TYPE;
@@ -550,7 +550,7 @@ __device__ __forceinline__ T Curve::getArrayVariableByHash(const VariableHash va
     // get a pointer to the specific variable by offsetting by the provided index
     T *value_ptr = reinterpret_cast<T*>(getVariablePtrByHash(variable_hash, offset));
 
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
     if (!value_ptr)
         return 0;
 #endif
@@ -561,7 +561,7 @@ __device__ __forceinline__ T Curve::getArrayVariableByHash_ldg(const VariableHas
     // do a check on the size as otherwise the value_ptr may eb out of bounds.
     const size_t var_size = N * sizeof(T);
     // error checking
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
     const size_t size = getVariableSize(variable_hash);
     if (size != var_size) {
         curve_internal::d_curve_error = DEVICE_ERROR_UNKNOWN_TYPE;
@@ -572,7 +572,7 @@ __device__ __forceinline__ T Curve::getArrayVariableByHash_ldg(const VariableHas
     // get a pointer to the specific variable by offsetting by the provided index
     T *value_ptr = reinterpret_cast<T*>(getVariablePtrByHash(variable_hash, offset));
 
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
     if (!value_ptr)
         return 0;
 #endif
@@ -589,7 +589,7 @@ __device__ __forceinline__ T Curve::getMessageVariable(const char (&variableName
 template <typename T, unsigned int N>
 __device__ __forceinline__ T Curve::getVariable(const char (&variableName)[N], VariableHash namespace_hash, unsigned int index) {
     VariableHash variable_hash = variableHash(variableName);
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
     {
         const auto cv = getVariable(variable_hash+namespace_hash);
         if (cv ==  UNKNOWN_VARIABLE) {
@@ -612,7 +612,7 @@ __device__ __forceinline__ T Curve::getMessageVariable_ldg(const char (&variable
 template <typename T, unsigned int N>
 __device__ __forceinline__ T Curve::getVariable_ldg(const char (&variableName)[N], VariableHash namespace_hash, unsigned int index) {
     VariableHash variable_hash = variableHash(variableName);
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
     {
         const auto cv = getVariable(variable_hash+namespace_hash);
         if (cv ==  UNKNOWN_VARIABLE) {
@@ -631,7 +631,7 @@ __device__ __forceinline__ T Curve::getAgentArrayVariable(const char(&variableNa
 template <typename T, unsigned int N, unsigned int M>
 __device__ __forceinline__ T Curve::getArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, unsigned int agent_index, unsigned int array_index) {
     VariableHash variable_hash = variableHash(variableName);
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
     {
         const auto cv = getVariable(variable_hash+namespace_hash);
         if (cv ==  UNKNOWN_VARIABLE) {
@@ -656,7 +656,7 @@ __device__ __forceinline__ T Curve::getAgentArrayVariable_ldg(const char(&variab
 template <typename T, unsigned int N, unsigned int M>
 __device__ __forceinline__ T Curve::getArrayVariable_ldg(const char(&variableName)[M], VariableHash namespace_hash, unsigned int agent_index, unsigned int array_index) {
     VariableHash variable_hash = variableHash(variableName);
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
     {
         const auto cv = getVariable(variable_hash+namespace_hash);
         if (cv ==  UNKNOWN_VARIABLE) {
@@ -677,7 +677,7 @@ __device__ __forceinline__ T Curve::getArrayVariable_ldg(const char(&variableNam
 
 template <typename T>
 __device__ __forceinline__ void Curve::setVariableByHash(const VariableHash variable_hash, T variable, unsigned int index) {
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
     size_t size = getVariableSize(variable_hash);
     if (size != sizeof(T)) {
         curve_internal::d_curve_error = DEVICE_ERROR_UNKNOWN_TYPE;
@@ -691,7 +691,7 @@ __device__ __forceinline__ void Curve::setVariableByHash(const VariableHash vari
 template <typename T, unsigned int N>
 __device__ __forceinline__ void Curve::setArrayVariableByHash(const VariableHash variable_hash, T variable, unsigned int agent_index, unsigned int array_index) {
     const size_t var_size = N * sizeof(T);
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
     const size_t size = getVariableSize(variable_hash);
     if (size != var_size) {
         curve_internal::d_curve_error = DEVICE_ERROR_UNKNOWN_TYPE;
@@ -718,7 +718,7 @@ __device__ __forceinline__ void Curve::setNewAgentVariable(const char(&variableN
 template <typename T, unsigned int N>
 __device__ __forceinline__ void Curve::setVariable(const char(&variableName)[N], VariableHash namespace_hash, T variable, unsigned int index) {
     VariableHash variable_hash = variableHash(variableName);
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
     {
         const auto cv = getVariable(variable_hash+namespace_hash);
         if (cv ==  UNKNOWN_VARIABLE) {
@@ -741,7 +741,7 @@ __device__ __forceinline__ void Curve::setNewAgentArrayVariable(const char(&vari
 template <typename T, unsigned int N, unsigned int M>
 __device__ __forceinline__ void Curve::setArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, T variable, unsigned int agent_index, unsigned int array_index) {
     VariableHash variable_hash = variableHash(variableName);
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
     {
         const auto cv = getVariable(variable_hash+namespace_hash);
         if (cv ==  UNKNOWN_VARIABLE) {

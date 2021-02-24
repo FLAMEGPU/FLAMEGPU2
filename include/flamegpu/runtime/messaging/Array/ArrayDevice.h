@@ -259,7 +259,7 @@ class MsgArray::In {
      * @note radius of 0 is unsupported
      */
     inline __device__ Filter operator() (const size_type &x, const size_type &radius = 1) const {
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
         if (radius == 0 || radius > length) {
             DTHROW("Invalid radius %llu for accessing array messaglist of length %u\n", radius, length);
         }
@@ -273,7 +273,7 @@ class MsgArray::In {
         return length;
     }
     __device__ Message at(const size_type &index) const {
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
         if (index >= length) {
             DTHROW("Index is out of bounds for Array messagelist (%u >= %u).\n", index, length);
         }
@@ -308,7 +308,7 @@ class MsgArray::Out {
     __device__ Out(Curve::NamespaceHash agentfn_hash, Curve::NamespaceHash msg_hash, const void *_metadata, unsigned int *scan_flag_messageOutput)
         : combined_hash(agentfn_hash + msg_hash)
         , scan_flag(scan_flag_messageOutput)
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
         , metadata(reinterpret_cast<const MetaData*>(_metadata))
 #else
         , metadata(nullptr)
@@ -346,7 +346,7 @@ class MsgArray::Out {
 
 template<typename T, unsigned int N>
 __device__ T MsgArray::In::Message::getVariable(const char(&variable_name)[N]) const {
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
     // Ensure that the message is within bounds.
     if (index >= this->_parent.length) {
         DTHROW("Invalid Array message, unable to get variable '%s'.\n", variable_name);
@@ -358,7 +358,7 @@ __device__ T MsgArray::In::Message::getVariable(const char(&variable_name)[N]) c
 }
 template<typename T, unsigned int N>
 __device__ T MsgArray::In::Filter::Message::getVariable(const char(&variable_name)[N]) const {
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
     // Ensure that the message is within bounds.
     if (index_1d >= this->_parent.length) {
         DTHROW("Invalid Array message, unable to get variable '%s'.\n", variable_name);
@@ -388,7 +388,7 @@ __device__ void MsgArray::Out::setVariable(const char(&variable_name)[N], T valu
 __device__ void MsgArray::Out::setIndex(const size_type &id) const {
     unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
 
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
     if (id >= metadata->length) {
         DTHROW("MsgArray index [%u] is out of bounds [%u]\n", id, metadata->length);
     }

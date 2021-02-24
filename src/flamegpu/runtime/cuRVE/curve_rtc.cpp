@@ -351,7 +351,7 @@ void CurveRTCHost::initHeaderEnvironment() {
                 RTCEnvVariableProperties props = element.second;
                 if (props.elements == 1) {
                     getEnvVariableImpl <<   "    if (strings_equal(name, \"" << element.first << "\")) {\n";
-                    getEnvVariableImpl <<   "#ifndef NO_SEATBELTS\n";
+                    getEnvVariableImpl <<   "#if !defined(SEATBELTS) || SEATBELTS\n";
                     getEnvVariableImpl <<   "        if(sizeof(T) != " << element.second.type_size << ") {\n";
                     getEnvVariableImpl <<   "            DTHROW(\"Environment property '%s' type mismatch.\\n\", name);\n";
                     getEnvVariableImpl <<   "            return 0;\n";
@@ -361,7 +361,7 @@ void CurveRTCHost::initHeaderEnvironment() {
                     getEnvVariableImpl <<   "    };\n";
                 }
             }
-            getEnvVariableImpl <<           "#ifndef NO_SEATBELTS\n";
+            getEnvVariableImpl <<           "#if !defined(SEATBELTS) || SEATBELTS\n";
             getEnvVariableImpl <<           "    DTHROW(\"Environment property '%s' was not found.\\n\", name);\n";
             getEnvVariableImpl <<           "#endif\n";
             getEnvVariableImpl <<           "    return 0;\n";
@@ -376,7 +376,7 @@ void CurveRTCHost::initHeaderEnvironment() {
                 RTCEnvVariableProperties props = element.second;
                 if (props.elements > 1) {
                     getEnvArrayVariableImpl << "    if (strings_equal(name, \"" << element.first << "\")) {\n";
-                    getEnvArrayVariableImpl << "#ifndef NO_SEATBELTS\n";
+                    getEnvArrayVariableImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
                     getEnvArrayVariableImpl << "        if(sizeof(T) != " << element.second.type_size << ") {\n";
                     getEnvArrayVariableImpl << "            DTHROW(\"Environment array property '%s' type mismatch.\\n\", name);\n";
                     getEnvArrayVariableImpl << "            return 0;\n";
@@ -393,7 +393,7 @@ void CurveRTCHost::initHeaderEnvironment() {
                     getEnvArrayVariableImpl << "    };\n";
                 }
             }
-            getEnvArrayVariableImpl <<         "#ifndef NO_SEATBELTS\n";
+            getEnvArrayVariableImpl <<         "#if !defined(SEATBELTS) || SEATBELTS\n";
             getEnvArrayVariableImpl <<         "    DTHROW(\"Environment array property '%s' was not found.\\n\", name);\n";
             getEnvArrayVariableImpl <<         "#endif\n";
             getEnvArrayVariableImpl <<         "    return 0;\n";
@@ -424,7 +424,7 @@ void CurveRTCHost::initHeaderSetters() {
             RTCVariableProperties props = element.second;
             if (props.write && props.elements == 1) {
                 setAgentVariableImpl << "          if (strings_equal(name, \"" << element.first << "\")) {\n";
-                setAgentVariableImpl << "#ifndef NO_SEATBELTS\n";
+                setAgentVariableImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
                 setAgentVariableImpl << "                if(sizeof(T) != " << element.second.type_size << ") {\n";
                 setAgentVariableImpl << "                    DTHROW(\"Agent variable '%s' type mismatch during setVariable().\\n\", name);\n";
                 setAgentVariableImpl << "                    return;\n";
@@ -435,7 +435,7 @@ void CurveRTCHost::initHeaderSetters() {
                 setAgentVariableImpl << "          }\n";
             }
         }
-        setAgentVariableImpl <<         "#ifndef NO_SEATBELTS\n";
+        setAgentVariableImpl <<         "#if !defined(SEATBELTS) || SEATBELTS\n";
         setAgentVariableImpl <<         "          DTHROW(\"Agent variable '%s' was not found during setVariable().\\n\", name);\n";
         setAgentVariableImpl <<         "#endif\n";
         setHeaderPlaceholder("$DYNAMIC_SETAGENTVARIABLE_IMPL", setAgentVariableImpl.str());
@@ -447,7 +447,7 @@ void CurveRTCHost::initHeaderSetters() {
             RTCVariableProperties props = element.second;
             if (props.write && props.elements == 1) {
                 setMessageVariableImpl << "          if (strings_equal(name, \"" << element.first << "\")) {\n";
-                setMessageVariableImpl << "#ifndef NO_SEATBELTS\n";
+                setMessageVariableImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
                 setMessageVariableImpl << "                if(sizeof(T) != " << element.second.type_size << ") {\n";
                 setMessageVariableImpl << "                    DTHROW(\"Message variable '%s' type mismatch during setVariable().\\n\", name);\n";
                 setMessageVariableImpl << "                    return;\n";
@@ -458,7 +458,7 @@ void CurveRTCHost::initHeaderSetters() {
                 setMessageVariableImpl << "          }\n";
             }
         }
-        setMessageVariableImpl <<         "#ifndef NO_SEATBELTS\n";
+        setMessageVariableImpl <<         "#if !defined(SEATBELTS) || SEATBELTS\n";
         setMessageVariableImpl <<         "          DTHROW(\"Message variable '%s' was not found during setVariable().\\n\", name);\n";
         setMessageVariableImpl <<         "#endif\n";
         setHeaderPlaceholder("$DYNAMIC_SETMESSAGEVARIABLE_IMPL", setMessageVariableImpl.str());
@@ -470,7 +470,7 @@ void CurveRTCHost::initHeaderSetters() {
             RTCVariableProperties props = element.second;
             if (props.write && props.elements == 1) {
                 setNewAgentVariableImpl << "          if (strings_equal(name, \"" << element.first << "\")) {\n";
-                setNewAgentVariableImpl << "#ifndef NO_SEATBELTS\n";
+                setNewAgentVariableImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
                 setNewAgentVariableImpl << "                if(sizeof(T) != " << element.second.type_size << ") {\n";
                 setNewAgentVariableImpl << "                    DTHROW(\"New agent variable '%s' type mismatch during setVariable().\\n\", name);\n";
                 setNewAgentVariableImpl << "                    return;\n";
@@ -481,7 +481,7 @@ void CurveRTCHost::initHeaderSetters() {
                 setNewAgentVariableImpl << "          }\n";
             }
         }
-        setNewAgentVariableImpl <<         "#ifndef NO_SEATBELTS\n";
+        setNewAgentVariableImpl <<         "#if !defined(SEATBELTS) || SEATBELTS\n";
         setNewAgentVariableImpl <<         "          DTHROW(\"New agent variable '%s' was not found during setVariable().\\n\", name);\n";
         setNewAgentVariableImpl <<         "#endif\n";
         setHeaderPlaceholder("$DYNAMIC_SETNEWAGENTVARIABLE_IMPL", setNewAgentVariableImpl.str());
@@ -495,7 +495,7 @@ void CurveRTCHost::initHeaderSetters() {
             RTCVariableProperties props = element.second;
             if (props.write && props.elements > 1) {
                 setAgentArrayVariableImpl << "          if (strings_equal(name, \"" << element.first << "\")) {\n";
-                setAgentArrayVariableImpl << "#ifndef NO_SEATBELTS\n";
+                setAgentArrayVariableImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
                 setAgentArrayVariableImpl << "              if(sizeof(T) != " << element.second.type_size << ") {\n";
                 setAgentArrayVariableImpl << "                  DTHROW(\"Agent array variable '%s' type mismatch during setVariable().\\n\", name);\n";
                 setAgentArrayVariableImpl << "                  return;\n";
@@ -512,7 +512,7 @@ void CurveRTCHost::initHeaderSetters() {
                 setAgentArrayVariableImpl << "          }\n";
             }
         }
-        setAgentArrayVariableImpl <<         "#ifndef NO_SEATBELTS\n";
+        setAgentArrayVariableImpl <<         "#if !defined(SEATBELTS) || SEATBELTS\n";
         setAgentArrayVariableImpl <<         "          DTHROW(\"Agent array variable '%s' was not found during setVariable().\\n\", name);\n";
         setAgentArrayVariableImpl <<         "#endif\n";
         setHeaderPlaceholder("$DYNAMIC_SETAGENTARRAYVARIABLE_IMPL", setAgentArrayVariableImpl.str());
@@ -526,7 +526,7 @@ void CurveRTCHost::initHeaderSetters() {
             RTCVariableProperties props = element.second;
             if (props.write && props.elements > 1) {
                 setNewAgentArrayVariableImpl << "          if (strings_equal(name, \"" << element.first << "\")) {\n";
-                setNewAgentArrayVariableImpl << "#ifndef NO_SEATBELTS\n";
+                setNewAgentArrayVariableImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
                 setNewAgentArrayVariableImpl << "              if(sizeof(T) != " << element.second.type_size << ") {\n";
                 setNewAgentArrayVariableImpl << "                  DTHROW(\"New agent array variable '%s' type mismatch during setVariable().\\n\", name);\n";
                 setNewAgentArrayVariableImpl << "                  return;\n";
@@ -543,7 +543,7 @@ void CurveRTCHost::initHeaderSetters() {
                 setNewAgentArrayVariableImpl << "          }\n";
             }
         }
-        setNewAgentArrayVariableImpl <<         "#ifndef NO_SEATBELTS\n";
+        setNewAgentArrayVariableImpl <<         "#if !defined(SEATBELTS) || SEATBELTS\n";
         setNewAgentArrayVariableImpl <<         "          DTHROW(\"New agent array variable '%s' was not found during setVariable().\\n\", name);\n";
         setNewAgentArrayVariableImpl <<         "#endif\n";
         setHeaderPlaceholder("$DYNAMIC_SETNEWAGENTARRAYVARIABLE_IMPL", setNewAgentArrayVariableImpl.str());
@@ -557,7 +557,7 @@ void CurveRTCHost::initHeaderGetters() {
             RTCVariableProperties props = element.second;
             if (props.read && props.elements == 1) {
                 getAgentVariableImpl << "            if (strings_equal(name, \"" << element.first << "\")) {\n";
-                getAgentVariableImpl << "#ifndef NO_SEATBELTS\n";
+                getAgentVariableImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
                 getAgentVariableImpl << "                if(sizeof(T) != " << element.second.type_size << ") {\n";
                 getAgentVariableImpl << "                    DTHROW(\"Agent variable '%s' type mismatch during getVariable().\\n\", name);\n";
                 getAgentVariableImpl << "                    return 0;\n";
@@ -567,7 +567,7 @@ void CurveRTCHost::initHeaderGetters() {
                 getAgentVariableImpl << "            }\n";
             }
         }
-        getAgentVariableImpl <<         "#ifndef NO_SEATBELTS\n";
+        getAgentVariableImpl <<         "#if !defined(SEATBELTS) || SEATBELTS\n";
         getAgentVariableImpl <<         "            DTHROW(\"Agent variable '%s' was not found during getVariable().\\n\", name);\n";
         getAgentVariableImpl <<         "#endif\n";
         getAgentVariableImpl <<         "            return 0;\n";
@@ -580,7 +580,7 @@ void CurveRTCHost::initHeaderGetters() {
             RTCVariableProperties props = element.second;
             if (props.read && props.elements == 1) {
                 getMessageVariableImpl << "            if (strings_equal(name, \"" << element.first << "\")) {\n";
-                getMessageVariableImpl << "#ifndef NO_SEATBELTS\n";
+                getMessageVariableImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
                 getMessageVariableImpl << "                if(sizeof(T) != " << element.second.type_size << ") {\n";
                 getMessageVariableImpl << "                    DTHROW(\"Message variable '%s' type mismatch during getVariable().\\n\", name);\n";
                 getMessageVariableImpl << "                    return 0;\n";
@@ -590,7 +590,7 @@ void CurveRTCHost::initHeaderGetters() {
                 getMessageVariableImpl << "            }\n";
             }
         }
-        getMessageVariableImpl <<         "#ifndef NO_SEATBELTS\n";
+        getMessageVariableImpl <<         "#if !defined(SEATBELTS) || SEATBELTS\n";
         getMessageVariableImpl <<         "            DTHROW(\"Message variable '%s' was not found during getVariable().\\n\", name);\n";
         getMessageVariableImpl <<         "#endif\n";
         getMessageVariableImpl <<         "            return 0;\n";
@@ -603,7 +603,7 @@ void CurveRTCHost::initHeaderGetters() {
             RTCVariableProperties props = element.second;
             if (props.read && props.elements == 1) {
                 getAgentVariableLDGImpl << "            if (strings_equal(name, \"" << element.first << "\")) {\n";
-                getAgentVariableLDGImpl << "#ifndef NO_SEATBELTS\n";
+                getAgentVariableLDGImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
                 getAgentVariableLDGImpl << "                if(sizeof(T) != " << element.second.type_size << ") {\n";
                 getAgentVariableLDGImpl << "                    DTHROW(\"Agent variable '%s' type mismatch during getVariable().\\n\", name);\n";
                 getAgentVariableLDGImpl << "                    return 0;\n";
@@ -613,7 +613,7 @@ void CurveRTCHost::initHeaderGetters() {
                 getAgentVariableLDGImpl << "            }\n";
             }
         }
-        getAgentVariableLDGImpl <<         "#ifndef NO_SEATBELTS\n";
+        getAgentVariableLDGImpl <<         "#if !defined(SEATBELTS) || SEATBELTS\n";
         getAgentVariableLDGImpl <<         "            DTHROW(\"Agent variable '%s' was not found during getVariable().\\n\", name);\n";
         getAgentVariableLDGImpl <<         "#endif\n";
         getAgentVariableLDGImpl <<         "            return 0;\n";
@@ -626,7 +626,7 @@ void CurveRTCHost::initHeaderGetters() {
             RTCVariableProperties props = element.second;
             if (props.read && props.elements == 1) {
                 getMessageVariableLDGImpl << "            if (strings_equal(name, \"" << element.first << "\")) {\n";
-                getMessageVariableLDGImpl << "#ifndef NO_SEATBELTS\n";
+                getMessageVariableLDGImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
                 getMessageVariableLDGImpl << "                if(sizeof(T) != " << element.second.type_size << ") {\n";
                 getMessageVariableLDGImpl << "                    DTHROW(\"Message variable '%s' type mismatch during getVariable().\\n\", name);\n";
                 getMessageVariableLDGImpl << "                    return 0;\n";
@@ -636,7 +636,7 @@ void CurveRTCHost::initHeaderGetters() {
                 getMessageVariableLDGImpl << "            }\n";
             }
         }
-        getMessageVariableLDGImpl <<         "#ifndef NO_SEATBELTS\n";
+        getMessageVariableLDGImpl <<         "#if !defined(SEATBELTS) || SEATBELTS\n";
         getMessageVariableLDGImpl <<         "            DTHROW(\"Message variable '%s' was not found during getVariable().\\n\", name);\n";
         getMessageVariableLDGImpl <<         "#endif\n";
         getMessageVariableLDGImpl <<         "            return 0;\n";
@@ -651,7 +651,7 @@ void CurveRTCHost::initHeaderGetters() {
             RTCVariableProperties props = element.second;
             if (props.read && props.elements > 1) {
                 getAgentArrayVariableImpl << "          if (strings_equal(name, \"" << element.first << "\")) {\n";
-                getAgentArrayVariableImpl << "#ifndef NO_SEATBELTS\n";
+                getAgentArrayVariableImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
                 getAgentArrayVariableImpl << "              if(sizeof(T) != " << element.second.type_size << ") {\n";
                 getAgentArrayVariableImpl << "                  DTHROW(\"Agent array variable '%s' type mismatch during getVariable().\\n\", name);\n";
                 getAgentArrayVariableImpl << "                  return 0;\n";
@@ -667,7 +667,7 @@ void CurveRTCHost::initHeaderGetters() {
                 getAgentArrayVariableImpl << "           };\n";
             }
         }
-        getAgentArrayVariableImpl <<         "#ifndef NO_SEATBELTS\n";
+        getAgentArrayVariableImpl <<         "#if !defined(SEATBELTS) || SEATBELTS\n";
         getAgentArrayVariableImpl <<         "           DTHROW(\"Agent array variable '%s' was not found during getVariable().\\n\", name);\n";
         getAgentArrayVariableImpl <<         "#endif\n";
         getAgentArrayVariableImpl <<         "           return 0;\n";
@@ -682,7 +682,7 @@ void CurveRTCHost::initHeaderGetters() {
             RTCVariableProperties props = element.second;
             if (props.read && props.elements > 1) {
                 getAgentArrayVariableLDGImpl << "          if (strings_equal(name, \"" << element.first << "\")) {\n";
-                getAgentArrayVariableLDGImpl << "#ifndef NO_SEATBELTS\n";
+                getAgentArrayVariableLDGImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
                 getAgentArrayVariableLDGImpl << "              if(sizeof(T) != " << element.second.type_size << ") {\n";
                 getAgentArrayVariableLDGImpl << "                  DTHROW(\"Agent array variable '%s' type mismatch during getVariable().\\n\", name);\n";
                 getAgentArrayVariableLDGImpl << "                  return 0;\n";
@@ -698,7 +698,7 @@ void CurveRTCHost::initHeaderGetters() {
                 getAgentArrayVariableLDGImpl << "           };\n";
             }
         }
-        getAgentArrayVariableLDGImpl <<         "#ifndef NO_SEATBELTS\n";
+        getAgentArrayVariableLDGImpl <<         "#if !defined(SEATBELTS) || SEATBELTS\n";
         getAgentArrayVariableLDGImpl <<         "           DTHROW(\"Agent array variable '%s' was not found during getVariable().\\n\", name);\n";
         getAgentArrayVariableLDGImpl <<         "#endif\n";
         getAgentArrayVariableLDGImpl <<         "           return 0;\n";

@@ -3,8 +3,8 @@
 #include "flamegpu/flame_api.h"
 #include "flamegpu/runtime/flamegpu_api.h"
 
-// These tests wont work if built with NO_SEATBELTS, so mark them all as disabled instead
-#ifdef NO_SEATBELTS
+// These tests wont work if built with SEATBELTS=OFF, so mark them all as disabled instead
+#if defined(SEATBELTS) && !SEATBELTS
 #undef TEST
 #define TEST(test_suite_name, test_name) GTEST_TEST(test_suite_name, DISABLED_ ## test_name)
 #endif

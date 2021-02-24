@@ -439,7 +439,7 @@ class CUDASimulation : public Simulation {
        * Held here for tracking when to release cuda memory
        */
       EnvironmentManager &environment;
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
       /**
        * Provides buffers for device error checking
        */

@@ -10,7 +10,7 @@
 
 // ! FLAMEGPU function return type
 typedef void(AgentFunctionConditionWrapper)(
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
     DeviceExceptionBuffer *error_buffer,
 #endif
     Curve::NamespaceHash instance_id_hash,
@@ -32,7 +32,7 @@ typedef void(AgentFunctionConditionWrapper)(
  */
 template<typename AgentFunctionCondition>
 __global__ void agent_function_condition_wrapper(
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
     DeviceExceptionBuffer *error_buffer,
 #endif
     Curve::NamespaceHash instance_id_hash,
@@ -40,7 +40,7 @@ __global__ void agent_function_condition_wrapper(
     const unsigned int popNo,
     curandState *d_rng,
     unsigned int *scanFlag_conditionResult) {
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
     // We place this at the start of shared memory, so we can locate it anywhere in device code without a reference
     extern __shared__ DeviceExceptionBuffer *shared_mem[];
     if (threadIdx.x == 0) {

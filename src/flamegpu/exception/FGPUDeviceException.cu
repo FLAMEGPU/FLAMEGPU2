@@ -4,7 +4,7 @@
 #include "flamegpu/exception/FGPUDeviceException.h"
 
 #include "flamegpu/gpu/CUDAErrorChecking.h"
-#ifndef NO_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
 
 DeviceExceptionManager::DeviceExceptionManager()
     : d_buffer()
@@ -207,4 +207,4 @@ std::string DeviceExceptionManager::getErrorString(const DeviceExceptionBuffer &
     return out_buffer;
 }
 
-#endif  // NO_SEATBELTS
+#endif  // SEATBELTS are off
