@@ -10,7 +10,7 @@
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/model/SubModelData.h"
 #include "flamegpu/model/SubAgentData.h"
-#include "flamegpu/runtime/flamegpu_host_api.h"
+#include "flamegpu/runtime/HostAPI.h"
 #include "flamegpu/gpu/CUDAScanCompaction.h"
 #include "flamegpu/util/nvtx.h"
 #include "flamegpu/util/compute_capability.cuh"
@@ -1260,7 +1260,7 @@ void CUDASimulation::initialiseSingletons() {
         singletons->rng.reseed(getSimulationConfig().random_seed);
 
         // Pass created RandomManager to host api
-        host_api = std::make_unique<FLAMEGPU_HOST_API>(*this, singletons->rng, agentOffsets, agentData);
+        host_api = std::make_unique<HostAPI>(*this, singletons->rng, agentOffsets, agentData);
 
         for (auto &cm : message_map) {
             cm.second->init(singletons->scatter, 0);

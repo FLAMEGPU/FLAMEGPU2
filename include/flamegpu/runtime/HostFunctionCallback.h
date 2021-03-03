@@ -1,7 +1,7 @@
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_HOSTFUNCTIONCALLBACK_H_
 #define INCLUDE_FLAMEGPU_RUNTIME_HOSTFUNCTIONCALLBACK_H_
 
-// class FLAMEGPU_HOST_API;
+// class HostAPI;
 
 class HostFunctionCallback {
   /**
@@ -9,7 +9,7 @@ class HostFunctionCallback {
    * This is mostly required to allow swig wrapping of host functions in a target language
    */
  public:
-    virtual void run(FLAMEGPU_HOST_API*) = 0;
+    virtual void run(HostAPI*) = 0;
     virtual ~HostFunctionCallback() {}
 };
 
@@ -20,7 +20,7 @@ class HostFunctionConditionCallback {
    * This is mostly required to allow swig wrapping of host functions in a target language
    */
  public:
-    virtual FLAME_GPU_CONDITION_RESULT run(FLAMEGPU_HOST_API*) = 0;
+    virtual FLAME_GPU_CONDITION_RESULT run(HostAPI*) = 0;
     virtual ~HostFunctionConditionCallback() {}
 };
 

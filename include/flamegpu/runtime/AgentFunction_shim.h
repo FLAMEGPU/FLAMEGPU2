@@ -6,14 +6,14 @@
 
 
 template<typename MsgIn, typename MsgOut>
-class FLAMEGPU_DEVICE_API;
+class DeviceAPI;
 
 /**
  * Macro for defining agent transition functions with the correct input. Must always be a device function to be called by CUDA.
  *
  * struct SomeAgentFunction {
  *    // User Implemented agent function behaviour
- *     __device__ __forceinline__ FLAME_GPU_AGENT_STATUS operator()(FLAMEGPU_DEVICE_API<msg_in, msg_out> *FLAMEGPU) const {
+ *     __device__ __forceinline__ FLAME_GPU_AGENT_STATUS operator()(DeviceAPI<msg_in, msg_out> *FLAMEGPU) const {
  *         // do something
  *         return 0;
  *     }
@@ -29,21 +29,21 @@ class FLAMEGPU_DEVICE_API;
 #ifndef __CUDACC_RTC__
 #define FLAMEGPU_AGENT_FUNCTION(funcName, msg_in, msg_out)\
 struct funcName ## _impl {\
-    __device__ __forceinline__ FLAME_GPU_AGENT_STATUS operator()(FLAMEGPU_DEVICE_API<msg_in, msg_out> *FLAMEGPU) const;\
+    __device__ __forceinline__ FLAME_GPU_AGENT_STATUS operator()(DeviceAPI<msg_in, msg_out> *FLAMEGPU) const;\
     static constexpr AgentFunctionWrapper *fnPtr() { return &agent_function_wrapper<funcName ## _impl, msg_in, msg_out>; }\
     static std::type_index inType() { return std::type_index(typeid(msg_in)); }\
     static std::type_index outType() { return std::type_index(typeid(msg_out)); }\
 };\
 funcName ## _impl funcName;\
-__device__ __forceinline__ FLAME_GPU_AGENT_STATUS funcName ## _impl::operator()(FLAMEGPU_DEVICE_API<msg_in, msg_out> *FLAMEGPU) const
+__device__ __forceinline__ FLAME_GPU_AGENT_STATUS funcName ## _impl::operator()(DeviceAPI<msg_in, msg_out> *FLAMEGPU) const
 #else
 #define FLAMEGPU_AGENT_FUNCTION(funcName, msg_in, msg_out)\
 struct funcName ## _impl {\
-    __device__ __forceinline__ FLAME_GPU_AGENT_STATUS operator()(FLAMEGPU_DEVICE_API<msg_in, msg_out> *FLAMEGPU) const;\
+    __device__ __forceinline__ FLAME_GPU_AGENT_STATUS operator()(DeviceAPI<msg_in, msg_out> *FLAMEGPU) const;\
     static constexpr AgentFunctionWrapper *fnPtr() { return &agent_function_wrapper<funcName ## _impl, msg_in, msg_out>; }\
 }; \
 funcName ## _impl funcName; \
-__device__ __forceinline__ FLAME_GPU_AGENT_STATUS funcName ## _impl::operator()(FLAMEGPU_DEVICE_API<msg_in, msg_out> *FLAMEGPU) const
+__device__ __forceinline__ FLAME_GPU_AGENT_STATUS funcName ## _impl::operator()(DeviceAPI<msg_in, msg_out> *FLAMEGPU) const
 #endif
 
 /**

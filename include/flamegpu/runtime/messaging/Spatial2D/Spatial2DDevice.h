@@ -6,7 +6,7 @@
 
 
 /**
- * This class is accessible via FLAMEGPU_DEVICE_API.message_in if MsgSpatial3D is specified in FLAMEGPU_AGENT_FUNCTION
+ * This class is accessible via DeviceAPI.message_in if MsgSpatial3D is specified in FLAMEGPU_AGENT_FUNCTION
  * It gives access to functionality for reading spatially partitioned messages
  */
 class MsgSpatial2D::In {
@@ -249,7 +249,7 @@ class MsgSpatial2D::In {
 };
 
 /**
- * This class is accessible via FLAMEGPU_DEVICE_API.message_out if MsgSpatial3D is specified in FLAMEGPU_AGENT_FUNCTION
+ * This class is accessible via DeviceAPI.message_out if MsgSpatial3D is specified in FLAMEGPU_AGENT_FUNCTION
  * It gives access to functionality for outputting spatially partitioned messages
  */
 class MsgSpatial2D::Out : public MsgBruteForce::Out {

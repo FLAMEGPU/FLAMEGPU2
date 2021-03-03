@@ -1,5 +1,5 @@
-#ifndef INCLUDE_FLAMEGPU_RUNTIME_FLAMEGPU_HOST_API_H_
-#define INCLUDE_FLAMEGPU_RUNTIME_FLAMEGPU_HOST_API_H_
+#ifndef INCLUDE_FLAMEGPU_RUNTIME_HOSTAPI_H_
+#define INCLUDE_FLAMEGPU_RUNTIME_HOSTAPI_H_
 
 #include <cuda_runtime_api.h>
 #include <string>
@@ -11,7 +11,7 @@
 #include "flamegpu/gpu/CUDAErrorChecking.h"
 #include "flamegpu/runtime/utility/HostRandom.cuh"
 #include "flamegpu/runtime/utility/HostEnvironment.cuh"
-#include "flamegpu/runtime/flamegpu_host_api_macros.h"
+#include "flamegpu/runtime/HostAPI_macros.h"
 #include "flamegpu/runtime/HostNewAgentAPI.h"
 
 class CUDASimulation;
@@ -21,7 +21,7 @@ class HostAgentAPI;
  * @brief    A flame gpu api class for use by host functions only
  * This class should only be used by init/step/exit/exitcondition functions.
  */
-class FLAMEGPU_HOST_API {
+class HostAPI {
     /**
      * Requires internal access for resizeTempStorage()
      * @todo Could move this behaviour to a seperate singleton class 
@@ -39,14 +39,14 @@ class FLAMEGPU_HOST_API {
      * Initailises pointers to 0
      * Stores reference of CUDASimulation
      */
-     explicit FLAMEGPU_HOST_API(CUDASimulation&_agentModel,
+     explicit HostAPI(CUDASimulation&_agentModel,
         RandomManager &rng,
          const AgentOffsetMap &agentOffsets,
          AgentDataMap &agentData);
     /**
      * Frees held device memory
      */
-     ~FLAMEGPU_HOST_API();
+     ~HostAPI();
     /**
      * Returns methods that work on all agents of a certain type currently in a given state
      */
@@ -130,7 +130,7 @@ class FLAMEGPU_HOST_API {
 };
 
 template<typename T>
-void FLAMEGPU_HOST_API::resizeOutputSpace(const unsigned int &items) {
+void HostAPI::resizeOutputSpace(const unsigned int &items) {
     if (sizeof(T) * items > d_output_space_size) {
         if (d_output_space_size) {
             gpuErrchk(cudaFree(d_output_space));
@@ -140,4 +140,4 @@ void FLAMEGPU_HOST_API::resizeOutputSpace(const unsigned int &items) {
     }
 }
 
-#endif  // INCLUDE_FLAMEGPU_RUNTIME_FLAMEGPU_HOST_API_H_
+#endif  // INCLUDE_FLAMEGPU_RUNTIME_HOSTAPI_H_

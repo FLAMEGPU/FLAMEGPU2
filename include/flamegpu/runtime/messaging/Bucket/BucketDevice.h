@@ -5,7 +5,7 @@
 #include "flamegpu/runtime/messaging/BruteForce/BruteForceDevice.h"
 
 /**
- * This class is accessible via FLAMEGPU_DEVICE_API.message_in if MsgBucket is specified in FLAMEGPU_AGENT_FUNCTION
+ * This class is accessible via DeviceAPI.message_in if MsgBucket is specified in FLAMEGPU_AGENT_FUNCTION
  * It gives access to functionality for reading bucket
  */
 class MsgBucket::In {
@@ -240,7 +240,7 @@ class MsgBucket::In {
 };
 
 /**
- * This class is accessible via FLAMEGPU_DEVICE_API.message_out if MsgBucket is specified in FLAMEGPU_AGENT_FUNCTION
+ * This class is accessible via DeviceAPI.message_out if MsgBucket is specified in FLAMEGPU_AGENT_FUNCTION
  * It gives access to functionality for outputting bucketed messages
  */
 class MsgBucket::Out : public MsgBruteForce::Out {

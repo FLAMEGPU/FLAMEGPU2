@@ -353,9 +353,9 @@ namespace EnvironmentManager{
 %include "flamegpu/gpu/CUDASimulation.h"
 %feature("flatnested", ""); // flat nested off
 
-//%include "flamegpu/runtime/flamegpu_device_api.h"
+//%include "flamegpu/runtime/DeviceAPI.h"
 %ignore VarOffsetStruct; // not required but defined in HostNewAgentAPI
-%include "flamegpu/runtime/flamegpu_host_api.h"
+%include "flamegpu/runtime/HostAPI.h"
 %include "flamegpu/runtime/HostNewAgentAPI.h"
 
 %include "flamegpu/runtime/HostAgentAPI.h"

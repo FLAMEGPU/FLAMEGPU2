@@ -2,14 +2,14 @@
 #define INCLUDE_FLAMEGPU_RUNTIME_AGENTFUNCTIONCONDITION_SHIM_H_
 
 
-class FLAMEGPU_READ_ONLY_DEVICE_API;
+class ReadOnlyDeviceAPI;
 
 /**
  * Macro for defining agent transition functions conditions with the correct input. Must always be a device function to be called by CUDA.
  *
  * struct SomeAgentFunctionCondition {
  *    // User Implemented agent function condition behaviour
- *     __device__ __forceinline__ bool operator()(FLAMEGPU_READ_ONLY_DEVICE_API *FLAMEGPU) const {
+ *     __device__ __forceinline__ bool operator()(ReadOnlyDeviceAPI *FLAMEGPU) const {
  *         // do something
  *         return something ? true : false;
  *     }
@@ -22,11 +22,11 @@ class FLAMEGPU_READ_ONLY_DEVICE_API;
 
 #define FLAMEGPU_AGENT_FUNCTION_CONDITION(funcName)\
 struct funcName ## _cdn_impl {\
-    __device__ __forceinline__ bool operator()(FLAMEGPU_READ_ONLY_DEVICE_API *FLAMEGPU) const;\
+    __device__ __forceinline__ bool operator()(ReadOnlyDeviceAPI *FLAMEGPU) const;\
     static constexpr AgentFunctionConditionWrapper *fnPtr() { return &agent_function_condition_wrapper<funcName ## _cdn_impl>; }\
 };\
 funcName ## _cdn_impl funcName;\
-__device__ __forceinline__ bool funcName ## _cdn_impl::operator()(FLAMEGPU_READ_ONLY_DEVICE_API *FLAMEGPU) const
+__device__ __forceinline__ bool funcName ## _cdn_impl::operator()(ReadOnlyDeviceAPI *FLAMEGPU) const
 
 
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_AGENTFUNCTIONCONDITION_SHIM_H_

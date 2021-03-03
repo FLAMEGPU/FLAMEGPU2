@@ -9,10 +9,10 @@
 /**
 * Utility for accessing random generation within host functions
 * This is prefered over using std random, as it uses a common seed with the device random
-* This should only be instantiated by FLAMEGPU_HOST_API
+* This should only be instantiated by HostAPI
 */
 class HostRandom {
-    friend class FLAMEGPU_HOST_API;
+    friend class HostAPI;
  public:
     /**
     * Returns a float uniformly distributed between 0.0 and 1.0.

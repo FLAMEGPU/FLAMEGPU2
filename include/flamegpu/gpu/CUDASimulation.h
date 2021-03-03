@@ -474,7 +474,7 @@ class CUDASimulation : public Simulation {
     /**
      * One instance of host api is used for entire model
      */
-    std::unique_ptr<FLAMEGPU_HOST_API> host_api;
+    std::unique_ptr<HostAPI> host_api;
     /**
      * Adds any agents stored in agentData to the device
      * Clears agent storage in agentData

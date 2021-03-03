@@ -254,7 +254,7 @@ class DeviceExceptionTest : public testing::Test {
 };
 }  // namespace
 //
-// FLAMEGPU_READ_ONLY_DEVICE_API::getVariable<T, N>()
+// ReadOnlyDeviceAPI::getVariable<T, N>()
 FLAMEGPU_AGENT_FUNCTION(GetUnknownAgentVariable, MsgNone, MsgNone) {
     FLAMEGPU->getVariable<int>("nope");
     return ALIVE;
@@ -276,7 +276,7 @@ TEST_F(DeviceExceptionTest, GetAgentVariableBadType) {
     ms->run(1);
 }
 
-// FLAMEGPU_READ_ONLY_DEVICE_API::getVariable<T, N, M>()
+// ReadOnlyDeviceAPI::getVariable<T, N, M>()
 FLAMEGPU_AGENT_FUNCTION(GetUnknownAgentVariableArray, MsgNone, MsgNone) {
     FLAMEGPU->getVariable<int, 3>("nope", 0);
     return ALIVE;
@@ -308,7 +308,7 @@ TEST_F(DeviceExceptionTest, GetAgentVariableArrayOutOfRange) {
     ms->run(1);
 }
 
-// FLAMEGPU_DEVICE_API::setVariable<T, N>()
+// DeviceAPI::setVariable<T, N>()
 FLAMEGPU_AGENT_FUNCTION(SetUnknownAgentVariable, MsgNone, MsgNone) {
     FLAMEGPU->setVariable<int>("nope", 2);
     return ALIVE;
@@ -330,7 +330,7 @@ TEST_F(DeviceExceptionTest, SetAgentVariableBadType) {
     ms->run(1);
 }
 
-// FLAMEGPU_DEVICE_API::setVariable<T, N, M>()
+// DeviceAPI::setVariable<T, N, M>()
 FLAMEGPU_AGENT_FUNCTION(SetUnknownAgentVariableArray, MsgNone, MsgNone) {
     FLAMEGPU->setVariable<int, 3>("nope", 0, 2);
     return ALIVE;
