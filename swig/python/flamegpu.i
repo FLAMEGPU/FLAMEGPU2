@@ -354,14 +354,14 @@ namespace EnvironmentManager{
 %feature("flatnested", ""); // flat nested off
 
 //%include "flamegpu/runtime/flamegpu_device_api.h"
-%ignore VarOffsetStruct; // not required but defined in flamegpu_host_new_agent_api
+%ignore VarOffsetStruct; // not required but defined in HostNewAgentAPI
 %include "flamegpu/runtime/flamegpu_host_api.h"
-%include "flamegpu/runtime/flamegpu_host_new_agent_api.h"
+%include "flamegpu/runtime/HostNewAgentAPI.h"
 
-%include "flamegpu/runtime/flamegpu_host_agent_api.h"
-/* Extend HostAgentInstance to add a templated version of the sum function (with differing return type) with a different name so this can be instantiated */
-%extend HostAgentInstance{
-    template<typename InT, typename OutT> OutT HostAgentInstance::sumOutT(const std::string& variable) const {
+%include "flamegpu/runtime/HostAgentAPI.h"
+/* Extend HostAgentAPI to add a templated version of the sum function (with differing return type) with a different name so this can be instantiated */
+%extend HostAgentAPI{
+    template<typename InT, typename OutT> OutT HostAgentAPI::sumOutT(const std::string& variable) const {
         return $self->sum<InT,OutT>(variable);
     }
 }
@@ -483,11 +483,11 @@ TEMPLATE_VARIABLE_INSTANTIATE(getVariableArray, AgentInstance::getVariableArray)
 
 // Instantiate template versions of host agent instance functions from the API
 // Not currently supported: custom reductions, transformations or histograms
-TEMPLATE_VARIABLE_INSTANTIATE(sort, HostAgentInstance::sort)
-TEMPLATE_VARIABLE_INSTANTIATE(count, HostAgentInstance::count)
-TEMPLATE_VARIABLE_INSTANTIATE(min, HostAgentInstance::min)
-TEMPLATE_VARIABLE_INSTANTIATE(max, HostAgentInstance::max)
-TEMPLATE_SUM_INSTANTIATE(HostAgentInstance)
+TEMPLATE_VARIABLE_INSTANTIATE(sort, HostAgentAPI::sort)
+TEMPLATE_VARIABLE_INSTANTIATE(count, HostAgentAPI::count)
+TEMPLATE_VARIABLE_INSTANTIATE(min, HostAgentAPI::min)
+TEMPLATE_VARIABLE_INSTANTIATE(max, HostAgentAPI::max)
+TEMPLATE_SUM_INSTANTIATE(HostAgentAPI)
 
 // Instantiate template versions of host environment functions from the API
 TEMPLATE_VARIABLE_INSTANTIATE(getProperty, HostEnvironment::getProperty)
@@ -496,10 +496,10 @@ TEMPLATE_VARIABLE_INSTANTIATE(setProperty, HostEnvironment::setProperty)
 TEMPLATE_VARIABLE_INSTANTIATE(setPropertyArray, HostEnvironment::setPropertyArray)
 
 // Instantiate template versions of host agent functions from the API
-TEMPLATE_VARIABLE_INSTANTIATE(getVariable, FLAMEGPU_HOST_NEW_AGENT_API::getVariable)
-TEMPLATE_VARIABLE_INSTANTIATE(getVariableArray, FLAMEGPU_HOST_NEW_AGENT_API::getVariableArray)
-TEMPLATE_VARIABLE_INSTANTIATE(setVariable, FLAMEGPU_HOST_NEW_AGENT_API::setVariable)
-TEMPLATE_VARIABLE_INSTANTIATE(setVariableArray, FLAMEGPU_HOST_NEW_AGENT_API::setVariableArray)
+TEMPLATE_VARIABLE_INSTANTIATE(getVariable, HostNewAgentAPI::getVariable)
+TEMPLATE_VARIABLE_INSTANTIATE(getVariableArray, HostNewAgentAPI::getVariableArray)
+TEMPLATE_VARIABLE_INSTANTIATE(setVariable, HostNewAgentAPI::setVariable)
+TEMPLATE_VARIABLE_INSTANTIATE(setVariableArray, HostNewAgentAPI::setVariableArray)
 
 // Instantiate template versions of environment description functions from the API
 TEMPLATE_VARIABLE_INSTANTIATE(newProperty, EnvironmentDescription::newProperty)

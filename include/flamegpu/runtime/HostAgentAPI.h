@@ -1,5 +1,5 @@
-#ifndef INCLUDE_FLAMEGPU_RUNTIME_FLAMEGPU_HOST_AGENT_API_H_
-#define INCLUDE_FLAMEGPU_RUNTIME_FLAMEGPU_HOST_AGENT_API_H_
+#ifndef INCLUDE_FLAMEGPU_RUNTIME_HOSTAGENTAPI_H_
+#define INCLUDE_FLAMEGPU_RUNTIME_HOSTAGENTAPI_H_
 #ifdef _MSC_VER
 #pragma warning(push, 1)
 #pragma warning(disable : 4706 4834)
@@ -53,20 +53,13 @@ funcName ## _impl funcName;\
 template<typename InT, typename OutT>\
 __device__ __forceinline__ OutT funcName ## _impl::unary_function<InT, OutT>::operator()(const InT &a) const
 
-class HostAgentInstance {
+class HostAgentAPI {
  public:
-    HostAgentInstance(FLAMEGPU_HOST_API &_api, AgentInterface &_agent, const std::string &_stateName = "default")
+    HostAgentAPI(FLAMEGPU_HOST_API &_api, AgentInterface &_agent, const std::string &_stateName = "default")
         : api(_api),
         agent(_agent),
         hasState(true),
-        stateName(_stateName) {
-    }
-    /*HostAgentInstance(const CUDAAgent &_agent)
-        :agent(_agent),
-        hasState(false),
-        stateName("") {
-
-    }*/
+        stateName(_stateName) { }
     /*
      * Returns the number of agents in this state
      */
@@ -218,7 +211,7 @@ class HostAgentInstance {
     const std::string stateName;
 };
 
-inline unsigned HostAgentInstance::count() {
+inline unsigned HostAgentAPI::count() {
     return agent.getStateSize(stateName);
 }
 
@@ -227,20 +220,20 @@ inline unsigned HostAgentInstance::count() {
 //
 
 template<typename InT>
-InT HostAgentInstance::sum(const std::string &variable) const {
+InT HostAgentAPI::sum(const std::string &variable) const {
     return sum<InT, InT>(variable);
 }
 template<typename InT, typename OutT>
-OutT HostAgentInstance::sum(const std::string &variable) const {
+OutT HostAgentAPI::sum(const std::string &variable) const {
     static_assert(sizeof(InT) <= sizeof(OutT), "Template arg OutT should not be of a smaller size than InT");
     const auto &agentDesc = agent.getAgentDescription();
 
     std::type_index typ = agentDesc.description->getVariableType(variable);  // This will throw name exception
     if (agentDesc.variables.at(variable).elements != 1) {
-        THROW UnsupportedVarType("HostAgentInstance::sum() does not support agent array variables.");
+        THROW UnsupportedVarType("HostAgentAPI::sum() does not support agent array variables.");
     }
     if (std::type_index(typeid(InT)) != typ) {
-        THROW InvalidVarType("Wrong variable type passed to HostAgentInstance::sum(). "
+        THROW InvalidVarType("Wrong variable type passed to HostAgentAPI::sum(). "
             "This call expects '%s', but '%s' was requested.",
             agentDesc.variables.at(variable).type.name(), typeid(InT).name());
     }
@@ -263,14 +256,14 @@ OutT HostAgentInstance::sum(const std::string &variable) const {
     return rtn;
 }
 template<typename InT>
-InT HostAgentInstance::min(const std::string &variable) const {
+InT HostAgentAPI::min(const std::string &variable) const {
     const auto &agentDesc = agent.getAgentDescription();
     const std::type_index typ = agentDesc.description->getVariableType(variable);  // This will throw name exception
     if (agentDesc.variables.at(variable).elements != 1) {
-        THROW UnsupportedVarType("HostAgentInstance::lowerBound() does not support agent array variables.");
+        THROW UnsupportedVarType("HostAgentAPI::lowerBound() does not support agent array variables.");
     }
     if (std::type_index(typeid(InT)) != typ) {
-        THROW InvalidVarType("Wrong variable type passed to HostAgentInstance::lowerBound(). "
+        THROW InvalidVarType("Wrong variable type passed to HostAgentAPI::lowerBound(). "
             "This call expects '%s', but '%s' was requested.",
             agentDesc.variables.at(variable).type.name(), typeid(InT).name());
     }
@@ -294,14 +287,14 @@ InT HostAgentInstance::min(const std::string &variable) const {
     return rtn;
 }
 template<typename InT>
-InT HostAgentInstance::max(const std::string &variable) const {
+InT HostAgentAPI::max(const std::string &variable) const {
     const auto &agentDesc = agent.getAgentDescription();
     const std::type_index typ = agentDesc.description->getVariableType(variable);  // This will throw name exception
     if (agentDesc.variables.at(variable).elements != 1) {
-        THROW UnsupportedVarType("HostAgentInstance::upperBound() does not support agent array variables.");
+        THROW UnsupportedVarType("HostAgentAPI::upperBound() does not support agent array variables.");
     }
     if (std::type_index(typeid(InT)) != typ) {
-        THROW InvalidVarType("Wrong variable type passed to FLAMEGPU_HOST_AGENT_API::upperBound(). "
+        THROW InvalidVarType("Wrong variable type passed to HostAgentAPI::upperBound(). "
             "This call expects '%s', but '%s' was requested.",
             agentDesc.variables.at(variable).type.name(), typeid(InT).name());
     }
@@ -325,14 +318,14 @@ InT HostAgentInstance::max(const std::string &variable) const {
     return rtn;
 }
 template<typename InT>
-unsigned int HostAgentInstance::count(const std::string &variable, const InT &value) {
+unsigned int HostAgentAPI::count(const std::string &variable, const InT &value) {
     const auto &agentDesc = agent.getAgentDescription();
     const std::type_index typ = agentDesc.description->getVariableType(variable);  // This will throw name exception
     if (agentDesc.variables.at(variable).elements != 1) {
-        THROW UnsupportedVarType("HostAgentInstance::count() does not support agent array variables.");
+        THROW UnsupportedVarType("HostAgentAPI::count() does not support agent array variables.");
     }
     if (std::type_index(typeid(InT)) != typ) {
-        THROW InvalidVarType("Wrong variable type passed to FLAMEGPU_HOST_AGENT_API::count(). "
+        THROW InvalidVarType("Wrong variable type passed to HostAgentAPI::count(). "
             "This call expects '%s', but '%s' was requested.",
             agentDesc.variables.at(variable).type.name(), typeid(InT).name());
     }
@@ -344,22 +337,22 @@ unsigned int HostAgentInstance::count(const std::string &variable, const InT &va
     return rtn;
 }
 template<typename InT>
-std::vector<unsigned int> HostAgentInstance::histogramEven(const std::string &variable, const unsigned int &histogramBins, const InT &lowerBound, const InT &upperBound) const {
+std::vector<unsigned int> HostAgentAPI::histogramEven(const std::string &variable, const unsigned int &histogramBins, const InT &lowerBound, const InT &upperBound) const {
     return histogramEven<InT, unsigned int>(variable, histogramBins, lowerBound, upperBound);
 }
 template<typename InT, typename OutT>
-std::vector<OutT> HostAgentInstance::histogramEven(const std::string &variable, const unsigned int &histogramBins, const InT &lowerBound, const InT &upperBound) const {
+std::vector<OutT> HostAgentAPI::histogramEven(const std::string &variable, const unsigned int &histogramBins, const InT &lowerBound, const InT &upperBound) const {
     if (lowerBound >= upperBound) {
-        THROW InvalidArgument("lowerBound (%s) must be lower than < upperBound (%s) in HostAgentInstance::histogramEven().",
+        THROW InvalidArgument("lowerBound (%s) must be lower than < upperBound (%s) in HostAgentAPI::histogramEven().",
             std::to_string(lowerBound).c_str(), std::to_string(upperBound).c_str());
     }
     const auto &agentDesc = agent.getAgentDescription();
     const std::type_index typ = agentDesc.description->getVariableType(variable);  // This will throw name exception
     if (agentDesc.variables.at(variable).elements != 1) {
-        THROW UnsupportedVarType("HostAgentInstance::histogramEven() does not support agent array variables.");
+        THROW UnsupportedVarType("HostAgentAPI::histogramEven() does not support agent array variables.");
     }
     if (std::type_index(typeid(InT)) != typ) {
-        THROW InvalidVarType("Wrong variable type passed to HostAgentInstance::histogramEven(). "
+        THROW InvalidVarType("Wrong variable type passed to HostAgentAPI::histogramEven(). "
             "This call expects '%s', but '%s' was requested.",
             agentDesc.variables.at(variable).type.name(), typeid(InT).name());
     }
@@ -385,14 +378,14 @@ std::vector<OutT> HostAgentInstance::histogramEven(const std::string &variable, 
     return rtn;
 }
 template<typename InT, typename reductionOperatorT>
-InT HostAgentInstance::reduce(const std::string &variable, reductionOperatorT /*reductionOperator*/, const InT &init) const {
+InT HostAgentAPI::reduce(const std::string &variable, reductionOperatorT /*reductionOperator*/, const InT &init) const {
     const auto &agentDesc = agent.getAgentDescription();
     const std::type_index typ = agentDesc.description->getVariableType(variable);  // This will throw name exception
     if (agentDesc.variables.at(variable).elements != 1) {
-        THROW UnsupportedVarType("HostAgentInstance::reduce() does not support agent array variables.");
+        THROW UnsupportedVarType("HostAgentAPI::reduce() does not support agent array variables.");
     }
     if (std::type_index(typeid(InT)) != typ) {
-        THROW InvalidVarType("Wrong variable type passed to HostAgentInstance::reduce(). "
+        THROW InvalidVarType("Wrong variable type passed to HostAgentAPI::reduce(). "
             "This call expects '%s', but '%s' was requested.",
             agentDesc.variables.at(variable).type.name(), typeid(InT).name());
     }
@@ -418,14 +411,14 @@ InT HostAgentInstance::reduce(const std::string &variable, reductionOperatorT /*
     return rtn;
 }
 template<typename InT, typename OutT, typename transformOperatorT, typename reductionOperatorT>
-OutT HostAgentInstance::transformReduce(const std::string &variable, transformOperatorT /*transformOperator*/, reductionOperatorT /*reductionOperator*/, const OutT &init) const {
+OutT HostAgentAPI::transformReduce(const std::string &variable, transformOperatorT /*transformOperator*/, reductionOperatorT /*reductionOperator*/, const OutT &init) const {
     const auto &agentDesc = agent.getAgentDescription();
     const std::type_index typ = agentDesc.description->getVariableType(variable);  // This will throw name exception
     if (agentDesc.variables.at(variable).elements != 1) {
-        THROW UnsupportedVarType("HostAgentInstance::transformReduce() does not support agent array variables.");
+        THROW UnsupportedVarType("HostAgentAPI::transformReduce() does not support agent array variables.");
     }
     if (std::type_index(typeid(InT)) != typ) {
-        THROW InvalidVarType("Wrong variable type passed to HostAgentInstance::transformReduce(). "
+        THROW InvalidVarType("Wrong variable type passed to HostAgentAPI::transformReduce(). "
             "This call expects '%s', but '%s' was requested.",
             agentDesc.variables.at(variable).type.name(), typeid(InT).name());
     }
@@ -442,7 +435,7 @@ OutT HostAgentInstance::transformReduce(const std::string &variable, transformOp
 
 
 template<typename VarT>
-void HostAgentInstance::sort(const std::string &variable, Order order, int beginBit, int endBit) {
+void HostAgentAPI::sort(const std::string &variable, Order order, int beginBit, int endBit) {
     const unsigned int streamId = 0;
     auto &scatter = api.agentModel.singletons->scatter;
     auto &scan = scatter.Scan();
@@ -450,10 +443,10 @@ void HostAgentInstance::sort(const std::string &variable, Order order, int begin
     const auto &agentDesc = agent.getAgentDescription();
     const std::type_index typ = agentDesc.description->getVariableType(variable);  // This will throw name exception
     if (agentDesc.variables.at(variable).elements != 1) {
-        THROW UnsupportedVarType("HostAgentInstance::sort() does not support agent array variables.");
+        THROW UnsupportedVarType("HostAgentAPI::sort() does not support agent array variables.");
     }
     if (std::type_index(typeid(VarT)) != typ) {
-        THROW InvalidVarType("Wrong variable type passed to HostAgentInstance::sort(). "
+        THROW InvalidVarType("Wrong variable type passed to HostAgentAPI::sort(). "
             "This call expects '%s', but '%s' was requested.",
             agentDesc.variables.at(variable).type.name(), typeid(VarT).name());
     }
@@ -496,7 +489,7 @@ void HostAgentInstance::sort(const std::string &variable, Order order, int begin
 
 
 template<typename Var1T, typename Var2T>
-void HostAgentInstance::sort(const std::string &variable1, Order order1, const std::string &variable2, Order order2) {
+void HostAgentAPI::sort(const std::string &variable1, Order order1, const std::string &variable2, Order order2) {
     const unsigned int streamId = 0;
     auto &scatter = api.agentModel.singletons->scatter;
     auto &scan = scatter.Scan();
@@ -504,10 +497,10 @@ void HostAgentInstance::sort(const std::string &variable1, Order order1, const s
     {  // Check variable 1 is valid
         const std::type_index typ = agentDesc.description->getVariableType(variable1);  // This will throw name exception
         if (agentDesc.variables.at(variable1).elements != 1) {
-            THROW UnsupportedVarType("HostAgentInstance::sort() does not support agent array variables.");
+            THROW UnsupportedVarType("HostAgentAPI::sort() does not support agent array variables.");
         }
         if (std::type_index(typeid(Var1T)) != typ) {
-            THROW InvalidVarType("Wrong type for variable '%s' passed to HostAgentInstance::sort(). "
+            THROW InvalidVarType("Wrong type for variable '%s' passed to HostAgentAPI::sort(). "
                 "This call expects '%s', but '%s' was requested.",
                 variable1.c_str(), agentDesc.variables.at(variable1).type.name(), typeid(Var1T).name());
         }
@@ -515,10 +508,10 @@ void HostAgentInstance::sort(const std::string &variable1, Order order1, const s
     {  // Check variable 2 is valid
         const std::type_index typ = agentDesc.description->getVariableType(variable2);  // This will throw name exception
         if (agentDesc.variables.at(variable2).elements != 1) {
-            THROW UnsupportedVarType("HostAgentInstance::sort() does not support agent array variables.");
+            THROW UnsupportedVarType("HostAgentAPI::sort() does not support agent array variables.");
         }
         if (std::type_index(typeid(Var2T)) != typ) {
-            THROW InvalidVarType("Wrong type for variable '%s' passed to HostAgentInstance::sort(). "
+            THROW InvalidVarType("Wrong type for variable '%s' passed to HostAgentAPI::sort(). "
                 "This call expects '%s', but '%s' was requested.",
                 variable2.c_str(), agentDesc.variables.at(variable2).type.name(), typeid(Var2T).name());
         }
@@ -582,4 +575,4 @@ void HostAgentInstance::sort(const std::string &variable1, Order order1, const s
     // Scatter all agent variables
     api.agentModel.agent_map.at(agentDesc.name)->scatterSort(stateName, scatter, streamId, 0);  // @todo - use simulation specific stream.
 }
-#endif  // INCLUDE_FLAMEGPU_RUNTIME_FLAMEGPU_HOST_AGENT_API_H_
+#endif  // INCLUDE_FLAMEGPU_RUNTIME_HOSTAGENTAPI_H_

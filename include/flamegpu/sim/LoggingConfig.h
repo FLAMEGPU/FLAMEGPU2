@@ -7,7 +7,7 @@
 #include <utility>
 #include <memory>
 
-#include "flamegpu/runtime/flamegpu_host_agent_api.h"
+#include "flamegpu/runtime/HostAgentAPI.h"
 #include "flamegpu/model/ModelData.h"
 #include "flamegpu/gpu/CUDAEnsemble.h"
 
@@ -49,7 +49,7 @@ class LoggingConfig {
         }
     }
     typedef std::pair<std::string, std::string> NameStatePair;
-    typedef Any (ReductionFn)(HostAgentInstance &ai, const std::string &variable_name);
+    typedef Any (ReductionFn)(HostAgentAPI &ai, const std::string &variable_name);
     struct NameReductionFn {
         std::string name;
         Reduction reduction;

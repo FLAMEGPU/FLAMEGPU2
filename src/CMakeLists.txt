@@ -134,8 +134,8 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/flamegpu_device_api.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/flamegpu_host_api.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/flamegpu_host_api_macros.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/flamegpu_host_agent_api.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/flamegpu_host_new_agent_api.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/HostAgentAPI.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/HostNewAgentAPI.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/cuRVE/curve.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/cuRVE/curve_rtc.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging.h
@@ -225,7 +225,7 @@ SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/cuRVE/curve.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/cuRVE/curve_rtc.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/flamegpu_host_api.cu
-    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/flamegpu_host_agent_api.cu 
+    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/HostAgentAPI.cu 
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/BruteForce.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/Spatial2D.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/Spatial3D.cu

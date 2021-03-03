@@ -13,7 +13,7 @@
 #include "flamegpu/gpu/CUDAScatter.h"
 #include "flamegpu/gpu/CUDAEnsemble.h"
 #include "flamegpu/runtime/utility/RandomManager.cuh"
-#include "flamegpu/runtime/flamegpu_host_new_agent_api.h"
+#include "flamegpu/runtime/HostNewAgentAPI.h"
 #include "flamegpu/visualiser/ModelVis.h"
 
 #ifdef _MSC_VER
@@ -40,7 +40,7 @@ class CUDASimulation : public Simulation {
     /**
      * Requires internal access to scan/scatter singletons
      */
-    friend class HostAgentInstance;
+    friend class HostAgentAPI;
     friend class SimRunner;
     /**
      * Map of a number of CUDA agents by name.

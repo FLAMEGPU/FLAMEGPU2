@@ -6,16 +6,16 @@ namespace test_host_agent_sort {
 
 const unsigned int AGENT_COUNT = 1024;
 FLAMEGPU_STEP_FUNCTION(sort_ascending_float) {
-    FLAMEGPU->agent("agent").sort<float>("float", HostAgentInstance::Asc);
+    FLAMEGPU->agent("agent").sort<float>("float", HostAgentAPI::Asc);
 }
 FLAMEGPU_STEP_FUNCTION(sort_descending_float) {
-    FLAMEGPU->agent("agent").sort<float>("float", HostAgentInstance::Desc);
+    FLAMEGPU->agent("agent").sort<float>("float", HostAgentAPI::Desc);
 }
 FLAMEGPU_STEP_FUNCTION(sort_ascending_int) {
-  FLAMEGPU->agent("agent").sort<int>("int", HostAgentInstance::Asc);
+  FLAMEGPU->agent("agent").sort<int>("int", HostAgentAPI::Asc);
 }
 FLAMEGPU_STEP_FUNCTION(sort_descending_int) {
-    FLAMEGPU->agent("agent").sort<int>("int", HostAgentInstance::Desc);
+    FLAMEGPU->agent("agent").sort<int>("int", HostAgentAPI::Desc);
 }
 
 TEST(HostAgentSort, Ascending_float) {
@@ -172,22 +172,22 @@ TEST(HostAgentSort, Descending_int) {
 }
 
 FLAMEGPU_STEP_FUNCTION(sort2x_ascending_float) {
-    FLAMEGPU->agent("agent").sort<float, float>("float1", HostAgentInstance::Asc, "float2", HostAgentInstance::Asc);
+    FLAMEGPU->agent("agent").sort<float, float>("float1", HostAgentAPI::Asc, "float2", HostAgentAPI::Asc);
 }
 FLAMEGPU_STEP_FUNCTION(sort2x_descending_float) {
-    FLAMEGPU->agent("agent").sort<float, float>("float1", HostAgentInstance::Desc, "float2", HostAgentInstance::Desc);
+    FLAMEGPU->agent("agent").sort<float, float>("float1", HostAgentAPI::Desc, "float2", HostAgentAPI::Desc);
 }
 FLAMEGPU_STEP_FUNCTION(sort2x_ascending_int) {
-    FLAMEGPU->agent("agent").sort<int, int>("int1", HostAgentInstance::Asc, "int2", HostAgentInstance::Asc);
+    FLAMEGPU->agent("agent").sort<int, int>("int1", HostAgentAPI::Asc, "int2", HostAgentAPI::Asc);
 }
 FLAMEGPU_STEP_FUNCTION(sort2x_descending_int) {
-    FLAMEGPU->agent("agent").sort<int, int>("int1", HostAgentInstance::Desc, "int2", HostAgentInstance::Desc);
+    FLAMEGPU->agent("agent").sort<int, int>("int1", HostAgentAPI::Desc, "int2", HostAgentAPI::Desc);
 }
 FLAMEGPU_STEP_FUNCTION(sort2x_ascdesc_int) {
-    FLAMEGPU->agent("agent").sort<int, int>("int1", HostAgentInstance::Asc, "int2", HostAgentInstance::Desc);
+    FLAMEGPU->agent("agent").sort<int, int>("int1", HostAgentAPI::Asc, "int2", HostAgentAPI::Desc);
 }
 FLAMEGPU_STEP_FUNCTION(sort2x_descasc_int) {
-    FLAMEGPU->agent("agent").sort<int, int>("int1", HostAgentInstance::Desc, "int2", HostAgentInstance::Asc);
+    FLAMEGPU->agent("agent").sort<int, int>("int1", HostAgentAPI::Desc, "int2", HostAgentAPI::Asc);
 }
 TEST(HostAgentSort, 2x_Ascending_float) {
     // Define model
