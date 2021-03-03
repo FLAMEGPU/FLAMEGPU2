@@ -25,7 +25,7 @@
 
 #include "flamegpu/sim/AgentInterface.h"
 #include "flamegpu/model/AgentDescription.h"
-#include "flamegpu/runtime/flamegpu_host_api.h"
+#include "flamegpu/runtime/HostAPI.h"
 #include "flamegpu/gpu/CUDASimulation.h"
 #include "flamegpu/gpu/CUDAAgent.h"
 
@@ -55,7 +55,7 @@ __device__ __forceinline__ OutT funcName ## _impl::unary_function<InT, OutT>::op
 
 class HostAgentAPI {
  public:
-    HostAgentAPI(FLAMEGPU_HOST_API &_api, AgentInterface &_agent, const std::string &_stateName = "default")
+    HostAgentAPI(HostAPI &_api, AgentInterface &_agent, const std::string &_stateName = "default")
         : api(_api),
         agent(_agent),
         hasState(true),
@@ -205,7 +205,7 @@ class HostAgentAPI {
      * @param length Length of the buffer (how many items it can it hold)
      */
     static void sortBuffer(void *dest, void*src, unsigned int *position, const size_t &typeLen, const unsigned int &length, const cudaStream_t &stream);
-    FLAMEGPU_HOST_API &api;
+    HostAPI &api;
     AgentInterface &agent;
     bool hasState;
     const std::string stateName;
@@ -240,7 +240,7 @@ OutT HostAgentAPI::sum(const std::string &variable) const {
     void *var_ptr = agent.getStateVariablePtr(stateName, variable);
     const auto agentCount = agent.getStateSize(stateName);
     // Check if we need to resize cub storage
-    FLAMEGPU_HOST_API::CUB_Config cc = { FLAMEGPU_HOST_API::SUM, typeid(OutT).hash_code() };
+    HostAPI::CUB_Config cc = { HostAPI::SUM, typeid(OutT).hash_code() };
     if (api.tempStorageRequiresResize(cc, agentCount)) {
         // Resize cub storage
         size_t tempByte = 0;
@@ -270,7 +270,7 @@ InT HostAgentAPI::min(const std::string &variable) const {
     void *var_ptr = agent.getStateVariablePtr(stateName, variable);
     const auto agentCount = agent.getStateSize(stateName);
     // Check if we need to resize cub storage
-    FLAMEGPU_HOST_API::CUB_Config cc = { FLAMEGPU_HOST_API::MIN, typeid(InT).hash_code() };
+    HostAPI::CUB_Config cc = { HostAPI::MIN, typeid(InT).hash_code() };
     if (api.tempStorageRequiresResize(cc, agentCount)) {
         // Resize cub storage
         size_t tempByte = 0;
@@ -301,7 +301,7 @@ InT HostAgentAPI::max(const std::string &variable) const {
     void *var_ptr = agent.getStateVariablePtr(stateName, variable);
     const auto agentCount = agent.getStateSize(stateName);
     // Check if we need to resize cub storage
-    FLAMEGPU_HOST_API::CUB_Config cc = { FLAMEGPU_HOST_API::MAX, typeid(InT).hash_code() };
+    HostAPI::CUB_Config cc = { HostAPI::MAX, typeid(InT).hash_code() };
     if (api.tempStorageRequiresResize(cc, agentCount)) {
         // Resize cub storage
         size_t tempByte = 0;
@@ -359,7 +359,7 @@ std::vector<OutT> HostAgentAPI::histogramEven(const std::string &variable, const
     void *var_ptr = agent.getStateVariablePtr(stateName, variable);
     const auto agentCount = agent.getStateSize(stateName);
     // Check if we need to resize cub storage
-    FLAMEGPU_HOST_API::CUB_Config cc = { FLAMEGPU_HOST_API::HISTOGRAM_EVEN, histogramBins * sizeof(OutT) };
+    HostAPI::CUB_Config cc = { HostAPI::HISTOGRAM_EVEN, histogramBins * sizeof(OutT) };
     if (api.tempStorageRequiresResize(cc, agentCount)) {
         // Resize cub storage
         size_t tempByte = 0;
@@ -392,7 +392,7 @@ InT HostAgentAPI::reduce(const std::string &variable, reductionOperatorT /*reduc
     void *var_ptr = agent.getStateVariablePtr(stateName, variable);
     const auto agentCount = agent.getStateSize(stateName);
     // Check if we need to resize cub storage
-    FLAMEGPU_HOST_API::CUB_Config cc = { FLAMEGPU_HOST_API::CUSTOM_REDUCE, typeid(InT).hash_code() };
+    HostAPI::CUB_Config cc = { HostAPI::CUSTOM_REDUCE, typeid(InT).hash_code() };
     if (api.tempStorageRequiresResize(cc, agentCount)) {
         // Resize cub storage
         size_t tempByte = 0;
@@ -466,7 +466,7 @@ void HostAgentAPI::sort(const std::string &variable, Order order, int beginBit, 
     // Create array of agent values (use scanflag_death.scan_flag)
     gpuErrchk(cudaMemcpy(keys_in, var_ptr, total_variable_buffer_size, cudaMemcpyDeviceToDevice));
     // Check if we need to resize cub storage
-    const FLAMEGPU_HOST_API::CUB_Config cc = { FLAMEGPU_HOST_API::SORT, typeid(VarT).hash_code() };
+    const HostAPI::CUB_Config cc = { HostAPI::SORT, typeid(VarT).hash_code() };
     if (api.tempStorageRequiresResize(cc, agentCount)) {
         // Resize cub storage
         size_t tempByte = 0;

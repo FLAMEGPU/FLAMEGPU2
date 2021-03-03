@@ -24,7 +24,7 @@ class DeviceEnvironment {
     /**
      * Constructs the object
      */
-    friend class FLAMEGPU_READ_ONLY_DEVICE_API;
+    friend class ReadOnlyDeviceAPI;
     /**
      * Performs runtime validation that CURVE_NAMESPACE_HASH matches host value
      */

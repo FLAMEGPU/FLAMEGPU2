@@ -4,7 +4,7 @@
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 
-#include "flamegpu/runtime/flamegpu_device_api.h"
+#include "flamegpu/runtime/DeviceAPI.h"
 #include "flamegpu/runtime/AgentFunctionCondition_shim.h"
 #include "flamegpu/gpu/CUDAScanCompaction.h"
 
@@ -47,11 +47,11 @@ __global__ void agent_function_condition_wrapper(
         shared_mem[0] = error_buffer;
     }
 #endif
-    // Must be terminated here, else AgentRandom has bounds issues inside FLAMEGPU_DEVICE_API constructor
-    if (FLAMEGPU_READ_ONLY_DEVICE_API::TID() >= popNo)
+    // Must be terminated here, else AgentRandom has bounds issues inside DeviceAPI constructor
+    if (ReadOnlyDeviceAPI::TID() >= popNo)
         return;
     // create a new device FLAME_GPU instance
-    FLAMEGPU_READ_ONLY_DEVICE_API api = FLAMEGPU_READ_ONLY_DEVICE_API(
+    ReadOnlyDeviceAPI api = ReadOnlyDeviceAPI(
         instance_id_hash,
         agent_func_name_hash,
         d_rng);
@@ -61,7 +61,7 @@ __global__ void agent_function_condition_wrapper(
         // Negate the return value, we want false at the start of the scattered array
         bool conditionResult = !(AgentFunctionCondition()(&api));
         // (scan flags will be processed to filter agents
-        scanFlag_conditionResult[FLAMEGPU_READ_ONLY_DEVICE_API::TID()] = conditionResult;
+        scanFlag_conditionResult[ReadOnlyDeviceAPI::TID()] = conditionResult;
     }
 }
 

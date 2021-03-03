@@ -293,7 +293,7 @@ class MsgArray::In {
     const size_type length;
 };
 /**
- * This class is accessible via FLAMEGPU_DEVICE_API.message_out if MsgArray is specified in FLAMEGPU_AGENT_FUNCTION
+ * This class is accessible via DeviceAPI.message_out if MsgArray is specified in FLAMEGPU_AGENT_FUNCTION
  * It gives access to functionality for outputting array messages
  */
 class MsgArray::Out {

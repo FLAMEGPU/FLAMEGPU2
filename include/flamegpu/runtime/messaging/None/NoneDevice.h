@@ -10,7 +10,7 @@
 
 /**
  * Provides message input functionality during agent functions
- * Constructed and owned by FLAMEGPU_DEVICE_API
+ * Constructed and owned by DeviceAPI
  */
 class MsgNone::In {
  public:
@@ -24,7 +24,7 @@ class MsgNone::In {
 };
 /**
  * Provides message output functionality during agent functions
- * Constructed and owned by FLAMEGPU_DEVICE_API
+ * Constructed and owned by DeviceAPI
  */
 class MsgNone::Out {
  public:

@@ -131,9 +131,9 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/AgentFunctionCondition_shim.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/HostFunctionCallback.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/flamegpu_api.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/flamegpu_device_api.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/flamegpu_host_api.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/flamegpu_host_api_macros.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/DeviceAPI.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/HostAPI.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/HostAPI_macros.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/HostAgentAPI.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/HostNewAgentAPI.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/cuRVE/curve.h
@@ -224,7 +224,7 @@ SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/sim/Simulation.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/cuRVE/curve.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/cuRVE/curve_rtc.cpp
-    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/flamegpu_host_api.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/HostAPI.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/HostAgentAPI.cu 
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/BruteForce.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/Spatial2D.cu

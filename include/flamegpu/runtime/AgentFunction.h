@@ -75,11 +75,11 @@ __global__ void agent_function_wrapper(
         buff[0] = error_buffer;
     }
 #endif
-    // Must be terminated here, else AgentRandom has bounds issues inside FLAMEGPU_DEVICE_API constructor
-    if (FLAMEGPU_DEVICE_API<MsgIn, MsgOut>::TID() >= popNo)
+    // Must be terminated here, else AgentRandom has bounds issues inside DeviceAPI constructor
+    if (DeviceAPI<MsgIn, MsgOut>::TID() >= popNo)
         return;
     // create a new device FLAME_GPU instance
-    FLAMEGPU_DEVICE_API<MsgIn, MsgOut> api = FLAMEGPU_DEVICE_API<MsgIn, MsgOut>(
+    DeviceAPI<MsgIn, MsgOut> api = DeviceAPI<MsgIn, MsgOut>(
         instance_id_hash,
         agent_func_name_hash,
         agent_output_hash,
@@ -92,7 +92,7 @@ __global__ void agent_function_wrapper(
     FLAME_GPU_AGENT_STATUS flag = AgentFunction()(&api);
     if (scanFlag_agentDeath) {
         // (scan flags will not be processed unless agent death has been requested in model definition)
-        scanFlag_agentDeath[FLAMEGPU_DEVICE_API<MsgIn, MsgOut>::TID()] = flag;
+        scanFlag_agentDeath[DeviceAPI<MsgIn, MsgOut>::TID()] = flag;
 #if !defined(SEATBELTS) || SEATBELTS
     } else if (flag == DEAD) {
         DTHROW("Agent death must be enabled per agent function when defining the model.\n");

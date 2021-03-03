@@ -17,18 +17,18 @@
  * This class provides host function access to Environment Properties
  * It acts as a wrapper to EnvironmentManager, proxying calls, converting variable name and model_name into a combined hash
  * Pairs with EnvironmentManager, AgentEnvironment and EnvironmentDescription
- * This class is only to be constructed by FLAMEGPU_HOST_API
+ * This class is only to be constructed by HostAPI
  * @note Not thread-safe
  */
 class HostEnvironment {
     /**
-     * This class can only be constructed by FLAMEGPU_HOST_API
+     * This class can only be constructed by HostAPI
      */
-    friend class FLAMEGPU_HOST_API;
+    friend class HostAPI;
 
  protected:
     /**
-     * Constructor, to be called by FLAMEGPU_HOST_API
+     * Constructor, to be called by HostAPI
      */
     explicit HostEnvironment(const unsigned int &instance_id);
     /**

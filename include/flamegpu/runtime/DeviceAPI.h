@@ -1,14 +1,6 @@
-#ifndef INCLUDE_FLAMEGPU_RUNTIME_FLAMEGPU_DEVICE_API_H_
-#define INCLUDE_FLAMEGPU_RUNTIME_FLAMEGPU_DEVICE_API_H_
+#ifndef INCLUDE_FLAMEGPU_RUNTIME_DEVICEAPI_H_
+#define INCLUDE_FLAMEGPU_RUNTIME_DEVICEAPI_H_
 
-/**
- * @file flame_functions_api.h
- * @author  Paul Richmond, Mozhgan Kabiri Chimeh
- * @date    Feb 2017
- * @brief  FLAMEGPU_API is a singleton class for the device runtime
- *
- * \todo longer description
- */
 
 #include <cassert>
 #include <cstdint>
@@ -28,7 +20,12 @@
 #include "flamegpu/runtime/messaging_device.h"
 
 
-class FLAMEGPU_READ_ONLY_DEVICE_API {
+/**
+ * @brief  FLAMEGPU_API is a singleton class for the device runtime
+ *
+ * \todo longer description
+ */
+class ReadOnlyDeviceAPI {
     // Friends have access to TID() & TS_ID()
     template<typename AgentFunctionCondition>
     friend __global__ void agent_function_condition_wrapper(
@@ -46,7 +43,7 @@ class FLAMEGPU_READ_ONLY_DEVICE_API {
      * @param instance_id_hash CURVE hash of the CUDASimulation's instance id
      * @param modelname_hash CURVE hash of the model's name
      */
-    __device__ FLAMEGPU_READ_ONLY_DEVICE_API(
+    __device__ ReadOnlyDeviceAPI(
         const Curve::NamespaceHash &instance_id_hash,
         const Curve::NamespaceHash &agentfuncname_hash,
         curandState *&d_rng)
@@ -111,7 +108,7 @@ class FLAMEGPU_READ_ONLY_DEVICE_API {
  * @tparam MsgOut Output message type (the form found in flamegpu/runtime/messaging.h, MsgNone etc)
  */
 template<typename MsgIn, typename MsgOut>
-class FLAMEGPU_DEVICE_API : public FLAMEGPU_READ_ONLY_DEVICE_API{
+class DeviceAPI : public ReadOnlyDeviceAPI{
     // Friends have access to TID() & TS_ID()
     template<typename AgentFunction, typename _MsgIn, typename _MsgOut>
     friend __global__ void agent_function_wrapper(
@@ -176,7 +173,7 @@ class FLAMEGPU_DEVICE_API : public FLAMEGPU_READ_ONLY_DEVICE_API{
      * @param msg_in Input message handler
      * @param msg_out Output message handler
      */
-    __device__ FLAMEGPU_DEVICE_API(
+    __device__ DeviceAPI(
         const Curve::NamespaceHash &instance_id_hash,
         const Curve::NamespaceHash &agentfuncname_hash,
         const Curve::NamespaceHash &_agent_output_hash,
@@ -184,7 +181,7 @@ class FLAMEGPU_DEVICE_API : public FLAMEGPU_READ_ONLY_DEVICE_API{
         unsigned int *&scanFlag_agentOutput,
         typename MsgIn::In &&msg_in,
         typename MsgOut::Out &&msg_out)
-        : FLAMEGPU_READ_ONLY_DEVICE_API(instance_id_hash, agentfuncname_hash, d_rng)
+        : ReadOnlyDeviceAPI(instance_id_hash, agentfuncname_hash, d_rng)
         , message_in(msg_in)
         , message_out(msg_out)
         , agent_out(AgentOut(_agent_output_hash, scanFlag_agentOutput))
@@ -239,7 +236,7 @@ class FLAMEGPU_DEVICE_API : public FLAMEGPU_READ_ONLY_DEVICE_API{
  * \param variable_name Name of memory variable to retrieve
  */
 template<typename T, unsigned int N>
-__device__ T FLAMEGPU_READ_ONLY_DEVICE_API::getVariable(const char(&variable_name)[N]) {
+__device__ T ReadOnlyDeviceAPI::getVariable(const char(&variable_name)[N]) {
     // simple indexing assumes index is the thread number (this may change later)
     unsigned int index =  (blockDim.x * blockIdx.x) + threadIdx.x;
 
@@ -257,7 +254,7 @@ __device__ T FLAMEGPU_READ_ONLY_DEVICE_API::getVariable(const char(&variable_nam
  */
 template<typename MsgIn, typename MsgOut>
 template<typename T, unsigned int N>
-__device__ void FLAMEGPU_DEVICE_API<MsgIn, MsgOut>::setVariable(const char(&variable_name)[N], T value) {
+__device__ void DeviceAPI<MsgIn, MsgOut>::setVariable(const char(&variable_name)[N], T value) {
     if (variable_name[0] == '_') {
         return;  // Fail silently
     }
@@ -271,7 +268,7 @@ __device__ void FLAMEGPU_DEVICE_API<MsgIn, MsgOut>::setVariable(const char(&vari
  * \param variable_name Name of memory variable to retrieve
  */
 template<typename T, unsigned int N, unsigned int M>
-__device__ T FLAMEGPU_READ_ONLY_DEVICE_API::getVariable(const char(&variable_name)[M], const unsigned int &array_index) {
+__device__ T ReadOnlyDeviceAPI::getVariable(const char(&variable_name)[M], const unsigned int &array_index) {
     // simple indexing assumes index is the thread number (this may change later)
     unsigned int index =  (blockDim.x * blockIdx.x) + threadIdx.x;
 
@@ -289,7 +286,7 @@ __device__ T FLAMEGPU_READ_ONLY_DEVICE_API::getVariable(const char(&variable_nam
  */
 template<typename MsgIn, typename MsgOut>
 template<typename T, unsigned int N, unsigned int M>
-__device__ void FLAMEGPU_DEVICE_API<MsgIn, MsgOut>::setVariable(const char(&variable_name)[M], const unsigned int &array_index, const T &value) {
+__device__ void DeviceAPI<MsgIn, MsgOut>::setVariable(const char(&variable_name)[M], const unsigned int &array_index, const T &value) {
     if (variable_name[0] == '_') {
         return;  // Fail silently
     }
@@ -302,7 +299,7 @@ __device__ void FLAMEGPU_DEVICE_API<MsgIn, MsgOut>::setVariable(const char(&vari
 
 template<typename MsgIn, typename MsgOut>
 template<typename T, unsigned int N>
-__device__ void FLAMEGPU_DEVICE_API<MsgIn, MsgOut>::AgentOut::setVariable(const char(&variable_name)[N], T value) const {
+__device__ void DeviceAPI<MsgIn, MsgOut>::AgentOut::setVariable(const char(&variable_name)[N], T value) const {
     if (agent_output_hash) {
         if (variable_name[0] == '_') {
             return;  // Fail silently
@@ -325,7 +322,7 @@ __device__ void FLAMEGPU_DEVICE_API<MsgIn, MsgOut>::AgentOut::setVariable(const 
 }
 template<typename MsgIn, typename MsgOut>
 template<typename T, unsigned int N, unsigned int M>
-__device__ void FLAMEGPU_DEVICE_API<MsgIn, MsgOut>::AgentOut::setVariable(const char(&variable_name)[M], const unsigned int &array_index, T value) const {
+__device__ void DeviceAPI<MsgIn, MsgOut>::AgentOut::setVariable(const char(&variable_name)[M], const unsigned int &array_index, T value) const {
     if (agent_output_hash) {
         if (variable_name[0] == '_') {
             return;  // Fail silently
@@ -345,4 +342,4 @@ __device__ void FLAMEGPU_DEVICE_API<MsgIn, MsgOut>::AgentOut::setVariable(const 
     }
 }
 
-#endif  // INCLUDE_FLAMEGPU_RUNTIME_FLAMEGPU_DEVICE_API_H_
+#endif  // INCLUDE_FLAMEGPU_RUNTIME_DEVICEAPI_H_

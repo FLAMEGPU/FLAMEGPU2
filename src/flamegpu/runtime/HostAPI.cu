@@ -1,11 +1,11 @@
-#include "flamegpu/runtime/flamegpu_host_api.h"
+#include "flamegpu/runtime/HostAPI.h"
 #include "flamegpu/runtime/HostAgentAPI.h"
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/sim/Simulation.h"
 #include "flamegpu/util/nvtx.h"
 #include "flamegpu/gpu/CUDASimulation.h"
 
-FLAMEGPU_HOST_API::FLAMEGPU_HOST_API(CUDASimulation &_agentModel,
+HostAPI::HostAPI(CUDASimulation &_agentModel,
     RandomManager &rng,
     const AgentOffsetMap &_agentOffsets,
     AgentDataMap &_agentData)
@@ -19,7 +19,7 @@ FLAMEGPU_HOST_API::FLAMEGPU_HOST_API(CUDASimulation &_agentModel,
     , agentOffsets(_agentOffsets)
     , agentData(_agentData) { }
 
-FLAMEGPU_HOST_API::~FLAMEGPU_HOST_API() {
+HostAPI::~HostAPI() {
     // @todo - cuda is not allowed in destructor
     if (d_cub_temp) {
         gpuErrchk(cudaFree(d_cub_temp));
@@ -31,33 +31,33 @@ FLAMEGPU_HOST_API::~FLAMEGPU_HOST_API() {
     }
 }
 
-HostAgentAPI FLAMEGPU_HOST_API::agent(const std::string &agent_name, const std::string &stateName) {
+HostAgentAPI HostAPI::agent(const std::string &agent_name, const std::string &stateName) {
     return HostAgentAPI(*this, agentModel.getAgent(agent_name), stateName);
 }
 
-HostNewAgentAPI FLAMEGPU_HOST_API::newAgent(const std::string &agent_name) {
+HostNewAgentAPI HostAPI::newAgent(const std::string &agent_name) {
     // Validation
     auto &model = agentModel.getModelDescription();
     auto agent = model.agents.find(agent_name);
     if (agent == model.agents.end()) {
         THROW InvalidAgentName("Agent '%s' was not found within the model hierarchy, "
-            "in FLAMEGPU_HOST_API::newAgent()\n",
+            "in HostAPI::newAgent()\n",
             agent_name.c_str());
     }
     return newAgent(agent_name, agent->second->initial_state);
 }
-HostNewAgentAPI FLAMEGPU_HOST_API::newAgent(const std::string &agent_name, const std::string &state) {
+HostNewAgentAPI HostAPI::newAgent(const std::string &agent_name, const std::string &state) {
     // Validation
     auto &model = agentModel.getModelDescription();
     auto agent = model.agents.find(agent_name);
     if (agent == model.agents.end()) {
         THROW InvalidAgentName("Agent '%s' was not found within the model hierarchy, "
-            "in FLAMEGPU_HOST_API::newAgent()\n",
+            "in HostAPI::newAgent()\n",
             agent_name.c_str());
     }
     if (agent->second->states.find(state) == agent->second->states.end()) {
         THROW InvalidStateName("Agent '%s' does not contain state '%s', "
-            "in FLAMEGPU_HOST_API::newAgent()\n",
+            "in HostAPI::newAgent()\n",
             agent_name.c_str(), state.c_str());
     }
     // Create the agent in our backing data structure
@@ -68,7 +68,7 @@ HostNewAgentAPI FLAMEGPU_HOST_API::newAgent(const std::string &agent_name, const
     return HostNewAgentAPI(s.back());
 }
 
-bool FLAMEGPU_HOST_API::tempStorageRequiresResize(const CUB_Config &cc, const unsigned int &items) {
+bool HostAPI::tempStorageRequiresResize(const CUB_Config &cc, const unsigned int &items) {
     auto lao = cub_largestAllocatedOp.find(cc);
     if (lao != cub_largestAllocatedOp.end()) {
         if (lao->second >= items)
@@ -76,8 +76,8 @@ bool FLAMEGPU_HOST_API::tempStorageRequiresResize(const CUB_Config &cc, const un
     }
     return true;
 }
-void FLAMEGPU_HOST_API::resizeTempStorage(const CUB_Config &cc, const unsigned int &items, const size_t &newSize) {
-    NVTX_RANGE("FLAMEGPU_HOST_API::resizeTempStorage");
+void HostAPI::resizeTempStorage(const CUB_Config &cc, const unsigned int &items, const size_t &newSize) {
+    NVTX_RANGE("HostAPI::resizeTempStorage");
     if (newSize > d_cub_temp_size) {
         if (d_cub_temp) {
             gpuErrchk(cudaFree(d_cub_temp));
@@ -96,7 +96,7 @@ void FLAMEGPU_HOST_API::resizeTempStorage(const CUB_Config &cc, const unsigned i
  * Sepearate implementation to avoid dependency loop with cuda agent model.
  * @return the current step count, 0 indexed unsigned.
  */
-unsigned int FLAMEGPU_HOST_API::getStepCounter() const {
+unsigned int HostAPI::getStepCounter() const {
     return agentModel.getStepCounter();
 }
 

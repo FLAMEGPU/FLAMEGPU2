@@ -27,13 +27,13 @@
  * Nested Classes:
  *  
  *  In:
- *  This is available to the user via the FLAMEGPU_DEVICE_API object passed into agent functions.
+ *  This is available to the user via the DeviceAPI object passed into agent functions.
  *  This class should provide users access to messages in the message list.
  *  
  *  It's only required methods are the format of the construtor, see None.h for example.
  *  
  *  Out:
- *  This is available to the user via the FLAMEGPU_DEVICE_API object passed into agent functions.
+ *  This is available to the user via the DeviceAPI object passed into agent functions.
  *  This class should provide users access to messages ouput functionality
  *  
  *  It's only required methods are the format of the construtor, see None.h for example.
