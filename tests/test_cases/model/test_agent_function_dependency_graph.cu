@@ -16,6 +16,10 @@ FLAMEGPU_AGENT_FUNCTION(agent_fn3, MsgNone, MsgNone) {
     // do nothing
     return ALIVE;
 }
+FLAMEGPU_AGENT_FUNCTION(agent_fn4, MsgNone, MsgNone) {
+    // do nothing
+    return ALIVE;
+}
 
 const char *MODEL_NAME = "Model";
 const char *WRONG_MODEL_NAME = "Model2";
@@ -30,6 +34,7 @@ const char *VARIABLE_NAME3 = "Var3";
 const char *FUNCTION_NAME1 = "Function1";
 const char *FUNCTION_NAME2 = "Function2";
 const char *FUNCTION_NAME3 = "Function3";
+const char *FUNCTION_NAME4 = "Function4";
 const char *STATE_NAME = "State1";
 const char *NEW_STATE_NAME = "State2";
 const char *WRONG_STATE_NAME = "State3";
@@ -126,5 +131,48 @@ TEST(AgentFunctionDependencyGraphTest, ConstructLayersRootTwoChildrenConflict) {
     AgentFunctionDependencyGraph graph;
     graph.addRoot(&f);
     graph.generateLayers(_m); 
+}
+
+TEST(AgentFunctionDependencyGraphTest, DOTDiagramSingleChain) {
+    ModelDescription _m(MODEL_NAME);
+    AgentDescription &a = _m.newAgent(AGENT_NAME);
+    AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    AgentFunctionDescription &f2 = a.newFunction(FUNCTION_NAME2, agent_fn2);
+    AgentFunctionDescription &f3 = a.newFunction(FUNCTION_NAME3, agent_fn3);
+    f2.dependsOn(&f);
+    f3.dependsOn(&f2);
+    AgentFunctionDependencyGraph graph;
+    graph.addRoot(&f);
+    graph.generateLayers(_m);
+    graph.generateDOTDiagram("singlechain.gv");
+}
+
+TEST(AgentFunctionDependencyGraphTest, DOTDiagramTwoDependencies) {
+    ModelDescription _m(MODEL_NAME);
+    AgentDescription &a = _m.newAgent(AGENT_NAME);
+    AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    AgentFunctionDescription &f2 = a.newFunction(FUNCTION_NAME2, agent_fn2);
+    AgentFunctionDescription &f3 = a.newFunction(FUNCTION_NAME3, agent_fn3);
+    f2.dependsOn(&f);
+    f3.dependsOn(&f);
+    AgentFunctionDependencyGraph graph;
+    graph.addRoot(&f);
+    graph.generateDOTDiagram("twodeps.gv");
+}
+
+TEST(AgentFunctionDependencyGraphTest, DOTDiagramDiamond) {
+    ModelDescription _m(MODEL_NAME);
+    AgentDescription &a = _m.newAgent(AGENT_NAME);
+    AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    AgentFunctionDescription &f2 = a.newFunction(FUNCTION_NAME2, agent_fn2);
+    AgentFunctionDescription &f3 = a.newFunction(FUNCTION_NAME3, agent_fn3);
+    AgentFunctionDescription &f4 = a.newFunction(FUNCTION_NAME4, agent_fn4);
+    f2.dependsOn(&f);
+    f3.dependsOn(&f);
+    f4.dependsOn(&f2);
+    f4.dependsOn(&f3);
+    AgentFunctionDependencyGraph graph;
+    graph.addRoot(&f);
+    graph.generateDOTDiagram("diamond.gv");
 }
 }  // namespace test_agent_function_dependency_graph

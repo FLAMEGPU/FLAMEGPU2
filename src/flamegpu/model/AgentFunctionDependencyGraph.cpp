@@ -124,5 +124,30 @@ void AgentFunctionDependencyGraph::printGraph() const {
 }
 
 void AgentFunctionDependencyGraph::generateDOTDiagram(std::string outputFileName) const {
-    printf("generateDOTDiagram not yet implemented!\n");  
+    std::ofstream DOTFile(outputFileName);
+    if (DOTFile.is_open()) {
+        // File preamble
+        DOTFile << "digraph {" << std::endl;
+
+        // Lambda to recursively print relations
+        std::function<void(AgentFunctionDescription*)> printRelations;
+        printRelations = [&printRelations, &DOTFile] (AgentFunctionDescription* node) {
+            // Get this node's name
+            std::string parentName = node->getName();
+            
+            // For each child, print DOT relation and recurse
+            for (auto child : node->getDependents()) {
+                DOTFile << "    " << parentName << " -> " << child->getName() << ";" << std::endl;
+                printRelations(child);
+            }
+        }; 
+
+        // Recursively print relations
+        for (auto root : roots) {
+            printRelations(root); 
+        }
+
+        // EOF
+        DOTFile << "}";
+    }
 }
