@@ -18,7 +18,7 @@ FLAMEGPU_INIT_FUNCTION(init_function) {
     float max_x = FLAMEGPU->agent("agent").max<float>("x");
     printf("Init Function! (AgentCount: %u, Min: %g, Max: %g)\n", FLAMEGPU->agent("agent").count(), min_x, max_x);
     for (unsigned int i = AGENT_COUNT / 2; i < AGENT_COUNT; i++) {
-        FLAMEGPU_HOST_NEW_AGENT_API instance = FLAMEGPU->newAgent("agent");
+        HostNewAgentAPI instance = FLAMEGPU->newAgent("agent");
         instance.setVariable<float>("x", static_cast<float>(i));
         instance.setVariable<int>("a", i % 2 == 0 ? 1 : 0);
     }

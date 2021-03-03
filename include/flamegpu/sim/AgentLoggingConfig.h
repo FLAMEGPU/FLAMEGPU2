@@ -9,7 +9,7 @@
 
 #include "flamegpu/sim/LoggingConfig.h"
 #include "flamegpu/sim/AgentLoggingConfig_Reductions.cuh"
-#include "flamegpu/runtime/flamegpu_host_agent_api.h"
+#include "flamegpu/runtime/HostAgentAPI.h"
 
 struct ModelData;
 
@@ -121,24 +121,24 @@ template <typename T> struct sum_input_t { typedef T result_t; };
  *  this runs on the host as an init/step/exit or host layer function
  */
 template<typename T>
-Any getAgentVariableMeanFunc(HostAgentInstance &ai, const std::string &variable_name) {
+Any getAgentVariableMeanFunc(HostAgentAPI &ai, const std::string &variable_name) {
     return Any(ai.sum<T, typename sum_input_t<T>::result_t>(variable_name) / static_cast<double>(ai.count()));
 }
 template<typename T>
-Any getAgentVariableSumFunc(HostAgentInstance &ai, const std::string &variable_name) {
+Any getAgentVariableSumFunc(HostAgentAPI &ai, const std::string &variable_name) {
     return Any(ai.sum<T, typename sum_input_t<T>::result_t>(variable_name));
 }
 template<typename T>
-Any getAgentVariableMinFunc(HostAgentInstance &ai, const std::string &variable_name) {
+Any getAgentVariableMinFunc(HostAgentAPI &ai, const std::string &variable_name) {
     return Any(ai.min<T>(variable_name));
 }
 template<typename T>
-Any getAgentVariableMaxFunc(HostAgentInstance &ai, const std::string &variable_name) {
+Any getAgentVariableMaxFunc(HostAgentAPI &ai, const std::string &variable_name) {
     return Any(ai.max<T>(variable_name));
 }
 
 template<typename T>
-Any getAgentVariableStandardDevFunc(HostAgentInstance &ai, const std::string &variable_name) {
+Any getAgentVariableStandardDevFunc(HostAgentAPI &ai, const std::string &variable_name) {
     // Todo, workout how to make this more multi-thread/deviceable.
     // Todo, streams for the memcpy?
     // Work out the Mean

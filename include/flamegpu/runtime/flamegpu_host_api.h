@@ -12,10 +12,10 @@
 #include "flamegpu/runtime/utility/HostRandom.cuh"
 #include "flamegpu/runtime/utility/HostEnvironment.cuh"
 #include "flamegpu/runtime/flamegpu_host_api_macros.h"
-#include "flamegpu/runtime/flamegpu_host_new_agent_api.h"
+#include "flamegpu/runtime/HostNewAgentAPI.h"
 
 class CUDASimulation;
-class HostAgentInstance;
+class HostAgentAPI;
 
 /**
  * @brief    A flame gpu api class for use by host functions only
@@ -26,7 +26,7 @@ class FLAMEGPU_HOST_API {
      * Requires internal access for resizeTempStorage()
      * @todo Could move this behaviour to a seperate singleton class 
      */
-    friend class HostAgentInstance;
+    friend class HostAgentAPI;
 
  public:
     // Typedefs repeated from CUDASimulation
@@ -50,14 +50,14 @@ class FLAMEGPU_HOST_API {
     /**
      * Returns methods that work on all agents of a certain type currently in a given state
      */
-    HostAgentInstance agent(const std::string &agent_name, const std::string &stateName = ModelData::DEFAULT_STATE);
+    HostAgentAPI agent(const std::string &agent_name, const std::string &stateName = ModelData::DEFAULT_STATE);
     /**
      * Creates a new agent of the named type and returns an object for configuring it's member variables
      * The agent is created in their initial state as defined in model description hierarchy
      * @param agent_name Name of the agent type to be created
      * @throws InvalidAgentName If an agent with the provided name does not exist withint he model description hierarchy
      */
-    FLAMEGPU_HOST_NEW_AGENT_API newAgent(const std::string &agent_name);
+    HostNewAgentAPI newAgent(const std::string &agent_name);
     /**
      * Creates a new agent of the named type and returns an object for configuring it's member variables
      * The agent is created in their initial state as defined in model description hierarchy
@@ -66,7 +66,7 @@ class FLAMEGPU_HOST_API {
      * @throws InvalidAgentName If an agent with the provided name does not exist withint he model description hierarchy
      * @throws InvalidStateName If state name does not apply to named agent
      */
-    FLAMEGPU_HOST_NEW_AGENT_API newAgent(const std::string &agent_name, const std::string &state);
+    HostNewAgentAPI newAgent(const std::string &agent_name, const std::string &state);
     /**
      * Host API access to seeded random number generation
      */

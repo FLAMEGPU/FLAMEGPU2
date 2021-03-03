@@ -1562,7 +1562,7 @@ void CUDASimulation::processStepLog() {
         // Create the named sub map
         const std::string &agent_name = name_state.first.first;
         const std::string &agent_state = name_state.first.second;
-        HostAgentInstance host_agent = host_api->agent(agent_name, agent_state);
+        HostAgentAPI host_agent = host_api->agent(agent_name, agent_state);
         auto &agent_state_log = agents_log.emplace(name_state.first, std::make_pair(std::map<LoggingConfig::NameReductionFn, Any>(), UINT_MAX)).first->second;
         // Log individual variable reductions
         for (const auto &name_reduction : *name_state.second.first) {
@@ -1595,7 +1595,7 @@ void CUDASimulation::processExitLog() {
         // Create the named sub map
         const std::string &agent_name = name_state.first.first;
         const std::string &agent_state = name_state.first.second;
-        HostAgentInstance host_agent = host_api->agent(agent_name, agent_state);
+        HostAgentAPI host_agent = host_api->agent(agent_name, agent_state);
         auto &agent_state_log = agents_log.emplace(name_state.first, std::make_pair(std::map<LoggingConfig::NameReductionFn, Any>(), UINT_MAX)).first->second;
         // Log individual variable reductions
         for (const auto &name_reduction : *name_state.second.first) {

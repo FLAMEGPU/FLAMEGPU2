@@ -1,4 +1,4 @@
-#include "flamegpu/runtime/flamegpu_host_agent_api.h"
+#include "flamegpu/runtime/HostAgentAPI.h"
 
 __global__ void initToThreadIndex(unsigned int *output, unsigned int threadCount) {
     const unsigned int TID = blockIdx.x * blockDim.x + threadIdx.x;
@@ -7,7 +7,7 @@ __global__ void initToThreadIndex(unsigned int *output, unsigned int threadCount
     }
 }
 
-void HostAgentInstance::fillTIDArray(unsigned int *buffer, const unsigned int &threadCount, const cudaStream_t &stream) {
+void HostAgentAPI::fillTIDArray(unsigned int *buffer, const unsigned int &threadCount, const cudaStream_t &stream) {
     initToThreadIndex<<<(threadCount/512)+1, 512, 0, stream>>>(buffer, threadCount);
     gpuErrchkLaunch();
 }
@@ -19,7 +19,7 @@ __global__ void sortBuffer_kernel(char *dest, char*src, unsigned int *position, 
     }
 }
 
-void HostAgentInstance::sortBuffer(void *dest, void*src, unsigned int *position, const size_t &typeLen, const unsigned int &threadCount, const cudaStream_t &stream) {
+void HostAgentAPI::sortBuffer(void *dest, void*src, unsigned int *position, const size_t &typeLen, const unsigned int &threadCount, const cudaStream_t &stream) {
     sortBuffer_kernel<<<(threadCount/512)+1, 512, 0, stream >>>(static_cast<char*>(dest), static_cast<char*>(src), position, typeLen, threadCount);
     gpuErrchkLaunch();
 }

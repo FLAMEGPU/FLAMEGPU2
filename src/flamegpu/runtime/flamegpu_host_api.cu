@@ -1,5 +1,5 @@
 #include "flamegpu/runtime/flamegpu_host_api.h"
-#include "flamegpu/runtime/flamegpu_host_agent_api.h"
+#include "flamegpu/runtime/HostAgentAPI.h"
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/sim/Simulation.h"
 #include "flamegpu/util/nvtx.h"
@@ -31,11 +31,11 @@ FLAMEGPU_HOST_API::~FLAMEGPU_HOST_API() {
     }
 }
 
-HostAgentInstance FLAMEGPU_HOST_API::agent(const std::string &agent_name, const std::string &stateName) {
-    return HostAgentInstance(*this, agentModel.getAgent(agent_name), stateName);
+HostAgentAPI FLAMEGPU_HOST_API::agent(const std::string &agent_name, const std::string &stateName) {
+    return HostAgentAPI(*this, agentModel.getAgent(agent_name), stateName);
 }
 
-FLAMEGPU_HOST_NEW_AGENT_API FLAMEGPU_HOST_API::newAgent(const std::string &agent_name) {
+HostNewAgentAPI FLAMEGPU_HOST_API::newAgent(const std::string &agent_name) {
     // Validation
     auto &model = agentModel.getModelDescription();
     auto agent = model.agents.find(agent_name);
@@ -46,7 +46,7 @@ FLAMEGPU_HOST_NEW_AGENT_API FLAMEGPU_HOST_API::newAgent(const std::string &agent
     }
     return newAgent(agent_name, agent->second->initial_state);
 }
-FLAMEGPU_HOST_NEW_AGENT_API FLAMEGPU_HOST_API::newAgent(const std::string &agent_name, const std::string &state) {
+HostNewAgentAPI FLAMEGPU_HOST_API::newAgent(const std::string &agent_name, const std::string &state) {
     // Validation
     auto &model = agentModel.getModelDescription();
     auto agent = model.agents.find(agent_name);
@@ -65,7 +65,7 @@ FLAMEGPU_HOST_NEW_AGENT_API FLAMEGPU_HOST_API::newAgent(const std::string &agent
     auto &s = agentData.at(agent_name).at(state);
     s.push_back(t_agentData);
     // Point the returned object to the created agent
-    return FLAMEGPU_HOST_NEW_AGENT_API(s.back());
+    return HostNewAgentAPI(s.back());
 }
 
 bool FLAMEGPU_HOST_API::tempStorageRequiresResize(const CUB_Config &cc, const unsigned int &items) {

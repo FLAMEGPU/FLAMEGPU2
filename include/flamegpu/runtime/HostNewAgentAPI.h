@@ -1,5 +1,5 @@
-#ifndef INCLUDE_FLAMEGPU_RUNTIME_FLAMEGPU_HOST_NEW_AGENT_API_H_
-#define INCLUDE_FLAMEGPU_RUNTIME_FLAMEGPU_HOST_NEW_AGENT_API_H_
+#ifndef INCLUDE_FLAMEGPU_RUNTIME_HOSTNEWAGENTAPI_H_
+#define INCLUDE_FLAMEGPU_RUNTIME_HOSTNEWAGENTAPI_H_
 
 #include <unordered_map>
 #include <string>
@@ -282,24 +282,24 @@ struct NewAgentStorage {
 /**
  * This is the main API class used by a user for creating new agents on the host
  */
-class FLAMEGPU_HOST_NEW_AGENT_API {
+class HostNewAgentAPI {
  public:
     /**
      * Assigns a new agent it's storage
      */
-    explicit FLAMEGPU_HOST_NEW_AGENT_API(NewAgentStorage &_s)
+    explicit HostNewAgentAPI(NewAgentStorage &_s)
         : s(&_s) { }
     /**
      * Copy Constructor
      * This does not duplicate the agent, they both point to the same data, it updates the pointed to agent data
      */
-    FLAMEGPU_HOST_NEW_AGENT_API(const FLAMEGPU_HOST_NEW_AGENT_API &hna)
+    HostNewAgentAPI(const HostNewAgentAPI &hna)
         : s(hna.s) { }
     /**
      * Assignment Operator
      * This does not duplicate the agent, it updates the pointed to agent data
      */
-    FLAMEGPU_HOST_NEW_AGENT_API& operator=(const FLAMEGPU_HOST_NEW_AGENT_API &hna) {
+    HostNewAgentAPI& operator=(const HostNewAgentAPI &hna) {
         s = hna.s;
         return *this;
     }
@@ -311,7 +311,7 @@ class FLAMEGPU_HOST_NEW_AGENT_API {
     void setVariable(const std::string &var_name, const T &val) {
         if (!var_name.empty() && var_name[0] == '_') {
             THROW ReservedName("Agent variable names cannot begin with '_', this is reserved for internal usage, "
-                "in FLAMEGPU_HOST_NEW_AGENT_API::setVariable().");
+                "in HostNewAgentAPI::setVariable().");
         }
         s->setVariable<T>(var_name, val);
     }
@@ -319,7 +319,7 @@ class FLAMEGPU_HOST_NEW_AGENT_API {
     void setVariable(const std::string &var_name, const std::array<T, N> &val) {
         if (!var_name.empty() && var_name[0] == '_') {
             THROW ReservedName("Agent variable names cannot begin with '_', this is reserved for internal usage, "
-                "in FLAMEGPU_HOST_NEW_AGENT_API::setVariable().");
+                "in HostNewAgentAPI::setVariable().");
         }
         s->setVariable<T, N>(var_name, val);
     }
@@ -327,7 +327,7 @@ class FLAMEGPU_HOST_NEW_AGENT_API {
     void setVariable(const std::string &var_name, const unsigned int &index, const T &val) {
         if (!var_name.empty() && var_name[0] == '_') {
             THROW ReservedName("Agent variable names cannot begin with '_', this is reserved for internal usage, "
-                "in FLAMEGPU_HOST_NEW_AGENT_API::setVariable().");
+                "in HostNewAgentAPI::setVariable().");
         }
         s->setVariable<T>(var_name, index, val);
     }
@@ -336,7 +336,7 @@ class FLAMEGPU_HOST_NEW_AGENT_API {
     void setVariableArray(const std::string &var_name, const std::vector<T> &val) {
         if (!var_name.empty() && var_name[0] == '_') {
             THROW ReservedName("Agent variable names cannot begin with '_', this is reserved for internal usage, "
-                "in FLAMEGPU_HOST_NEW_AGENT_API::setVariable().");
+                "in HostNewAgentAPI::setVariable().");
         }
         s->setVariableArray<T>(var_name, val);
     }
@@ -368,4 +368,4 @@ class FLAMEGPU_HOST_NEW_AGENT_API {
     NewAgentStorage *s;
 };
 
-#endif  // INCLUDE_FLAMEGPU_RUNTIME_FLAMEGPU_HOST_NEW_AGENT_API_H_
+#endif  // INCLUDE_FLAMEGPU_RUNTIME_HOSTNEWAGENTAPI_H_

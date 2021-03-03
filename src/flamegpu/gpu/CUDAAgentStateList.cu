@@ -8,7 +8,7 @@
 #include "flamegpu/pop/AgentVector.h"
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/gpu/CUDAScatter.h"
-#include "flamegpu/runtime/flamegpu_host_new_agent_api.h"
+#include "flamegpu/runtime/HostNewAgentAPI.h"
 #include "flamegpu/exception/FGPUException.h"
 
 #ifdef _MSC_VER

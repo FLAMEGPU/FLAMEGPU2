@@ -156,7 +156,7 @@ class CUDAAgent : public AgentInterface {
      * @param state_name The state agents are scattered into
      * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
      * @param streamId The stream in which the corresponding agent function has executed
-     * @see HostAgentInstance::sort(const std::string &, HostAgentInstance::Order, int, int)
+     * @see HostAgentAPI::sort(const std::string &, HostAgentAPI::Order, int, int)
      */
     void scatterSort(const std::string &state_name, CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream);
     /**
