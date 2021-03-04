@@ -371,7 +371,7 @@ void AgentFunctionDescription::setRTCFunctionCondition(std::string func_cond_src
     }
 
     // append jitify program string and include
-    std::string func_cond_src_str = std::string(func_cond_name + "_program\n").append("#include \"flamegpu/runtime/flamegpu_device_api.h\"\n").append(func_cond_src);
+    std::string func_cond_src_str = std::string(func_cond_name + "_program\n").append("#include \"flamegpu/runtime/DeviceAPI.h\"\n").append(func_cond_src);
 
     // update the agent function data
     function->rtc_func_condition_name = func_cond_name;
@@ -466,7 +466,7 @@ bool AgentFunctionDescription::isRTC() const {
 AgentFunctionDescription& AgentDescription::newRTCFunction(const std::string& function_name, const char* func_src) {
     if (agent->functions.find(function_name) == agent->functions.end()) {
         // append jitify program string and include
-        std::string func_src_str = std::string(function_name + "_program\n").append("#include \"flamegpu/runtime/flamegpu_device_api.h\"\n").append(func_src);
+        std::string func_src_str = std::string(function_name + "_program\n").append("#include \"flamegpu/runtime/DeviceAPI.h\"\n").append(func_src);
         // Use Regex to get agent function name, and input/output message type
         std::regex rgx(R"###(.*FLAMEGPU_AGENT_FUNCTION\([ \t]*(\w+),[ \t]*(\w+),[ \t]*(\w+)[ \t]*\))###");
         std::smatch match;

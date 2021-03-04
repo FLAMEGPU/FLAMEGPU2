@@ -355,8 +355,51 @@ namespace EnvironmentManager{
 
 //%include "flamegpu/runtime/DeviceAPI.h"
 %ignore VarOffsetStruct; // not required but defined in HostNewAgentAPI
+%feature("valuewrapper") DeviceAgentVector;
 %include "flamegpu/runtime/HostAPI.h"
 %include "flamegpu/runtime/HostNewAgentAPI.h"
+%ignore DeviceAgentVector_t; // Not required, internal
+%ignore DeviceAgentVector_t::VariableBufferPair; // Not required, internal
+// Disable functions which use C++ iterators/type_index
+%ignore DeviceAgentVector::const_iterator;
+%ignore DeviceAgentVector::const_reverse_iterator;
+%ignore DeviceAgentVector::iterator;
+%ignore DeviceAgentVector::const_iterator;
+%ignore DeviceAgentVector::reverse_iterator;
+%ignore DeviceAgentVector::const_reverse_iterator;
+%ignore DeviceAgentVector::begin;
+%ignore DeviceAgentVector::cbegin;
+%ignore DeviceAgentVector::end;
+%ignore DeviceAgentVector::cend;
+%ignore DeviceAgentVector::rbegin;
+%ignore DeviceAgentVector::crbegin;
+%ignore DeviceAgentVector::rend;
+%ignore DeviceAgentVector::crend;
+%ignore DeviceAgentVector::insert;
+%ignore DeviceAgentVector::erase;
+%ignore DeviceAgentVector::getVariableType;
+%ignore DeviceAgentVector::getVariableMetaData;
+%ignore DeviceAgentVector::data;
+%rename(insert) DeviceAgentVector::py_insert; 
+%rename(erase) DeviceAgentVector::py_erase; 
+// Extend DeviceAgentVector so that it is python iterable
+%extend DeviceAgentVector {
+%pythoncode {
+    def __iter__(self):
+        return FLAMEGPUIterator(self)
+    def __len__(self):
+        return self.size()
+}
+    DeviceAgentVector::Agent DeviceAgentVector::__getitem__(const int &index) {
+        if (index >= 0)
+            return $self->operator[](index);
+        return $self->operator[]($self->size() + index);
+    }
+    void DeviceAgentVector::__setitem__(const size_type &index, const Agent &value) {
+        $self->operator[](index).setData(value);
+    }
+}
+%include "flamegpu/pop/DeviceAgentVector.h"
 
 %include "flamegpu/runtime/HostAgentAPI.h"
 /* Extend HostAgentAPI to add a templated version of the sum function (with differing return type) with a different name so this can be instantiated */

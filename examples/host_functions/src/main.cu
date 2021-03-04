@@ -14,11 +14,12 @@ FLAMEGPU_AGENT_FUNCTION(device_function, MsgNone, MsgNone) {
     return ALIVE;
 }
 FLAMEGPU_INIT_FUNCTION(init_function) {
-    float min_x = FLAMEGPU->agent("agent").min<float>("x");
-    float max_x = FLAMEGPU->agent("agent").max<float>("x");
+    HostAgentAPI agent = FLAMEGPU->agent("agent");
+    float min_x = agent.min<float>("x");
+    float max_x = agent.max<float>("x");
     printf("Init Function! (AgentCount: %u, Min: %g, Max: %g)\n", FLAMEGPU->agent("agent").count(), min_x, max_x);
     for (unsigned int i = AGENT_COUNT / 2; i < AGENT_COUNT; i++) {
-        HostNewAgentAPI instance = FLAMEGPU->newAgent("agent");
+        HostNewAgentAPI instance = agent.newAgent();
         instance.setVariable<float>("x", static_cast<float>(i));
         instance.setVariable<int>("a", i % 2 == 0 ? 1 : 0);
     }

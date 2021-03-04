@@ -27,7 +27,7 @@ class logging_ensemble_init(pyflamegpu.HostFunctionCallback):
     def run(self, FLAMEGPU):
         instance_id  = FLAMEGPU.environment.getPropertyInt("instance_id");
         for i in range(instance_id, instance_id + 101):
-            instance = FLAMEGPU.newAgent(AGENT_NAME1);
+            instance = FLAMEGPU.agent(AGENT_NAME1).newAgent();
             instance.setVariableFloat("float_var", i);
             instance.setVariableInt("int_var", i+1);
             instance.setVariableUInt("uint_var", i+2);

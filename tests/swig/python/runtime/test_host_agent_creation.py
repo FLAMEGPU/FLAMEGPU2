@@ -12,7 +12,7 @@ class BasicOutput(pyflamegpu.HostFunctionCallback):
 
     def run(self, FLAMEGPU):
         for i in range(NEW_AGENT_COUNT):
-            FLAMEGPU.newAgent("agent").setVariableFloat("x", 1.0)
+            FLAMEGPU.agent("agent").newAgent().setVariableFloat("x", 1.0)
      
 class BasicOutputCdn(pyflamegpu.HostFunctionConditionCallback):
     def __init__(self):
@@ -20,7 +20,7 @@ class BasicOutputCdn(pyflamegpu.HostFunctionConditionCallback):
 
     def run(self, FLAMEGPU):
         for i in range(NEW_AGENT_COUNT):
-            FLAMEGPU.newAgent("agent").setVariableFloat("x", 1.0)
+            FLAMEGPU.agent("agent").newAgent().setVariableFloat("x", 1.0)
         return pyflamegpu.CONTINUE  # New agents wont be created if EXIT is passed
     
 class OutputState(pyflamegpu.HostFunctionCallback):
@@ -29,7 +29,7 @@ class OutputState(pyflamegpu.HostFunctionCallback):
 
     def run(self, FLAMEGPU):
         for i in range(NEW_AGENT_COUNT):
-            FLAMEGPU.newAgent("agent", "b").setVariableFloat("x", 1.0)
+            FLAMEGPU.agent("agent", "b").newAgent().setVariableFloat("x", 1.0)
 
 class OutputMultiAgent(pyflamegpu.HostFunctionCallback):
     def __init__(self):
@@ -37,22 +37,22 @@ class OutputMultiAgent(pyflamegpu.HostFunctionCallback):
 
     def run(self, FLAMEGPU):
         for i in range(NEW_AGENT_COUNT): 
-            FLAMEGPU.newAgent("agent", "b").setVariableFloat("x", 1.0)
-            FLAMEGPU.newAgent("agent2").setVariableFloat("y", 2.0)
+            FLAMEGPU.agent("agent", "b").newAgent().setVariableFloat("x", 1.0)
+            FLAMEGPU.agent("agent2").newAgent().setVariableFloat("y", 2.0)
         
 class BadVarName(pyflamegpu.HostFunctionCallback):
     def __init__(self):
         super().__init__()
 
     def run(self, FLAMEGPU):
-        FLAMEGPU.newAgent("agent").setVariableFloat("nope", 1.0)
+        FLAMEGPU.agent("agent").newAgent().setVariableFloat("nope", 1.0)
 
 class BadVarType(pyflamegpu.HostFunctionCallback):
     def __init__(self):
         super().__init__()
 
     def run(self, FLAMEGPU):
-        FLAMEGPU.newAgent("agent").setVariableInt64("x", 1.0)
+        FLAMEGPU.agent("agent").newAgent().setVariableInt64("x", 1.0)
         
 class Getter(pyflamegpu.HostFunctionCallback):
     def __init__(self):
@@ -60,7 +60,7 @@ class Getter(pyflamegpu.HostFunctionCallback):
 
     def run(self, FLAMEGPU):
         for i in range(NEW_AGENT_COUNT): 
-            newAgt = FLAMEGPU.newAgent("agent")
+            newAgt = FLAMEGPU.agent("agent").newAgent()
             newAgt.setVariableFloat("x", newAgt.getVariableFloat("default"))
         
 class GetBadVarName(pyflamegpu.HostFunctionCallback):
@@ -69,8 +69,8 @@ class GetBadVarName(pyflamegpu.HostFunctionCallback):
 
     def run(self, FLAMEGPU):
         for i in range(NEW_AGENT_COUNT): 
-            newAgt = FLAMEGPU.newAgent("agent")
-            FLAMEGPU.newAgent("agent").getVariableFloat("nope")
+            newAgt = FLAMEGPU.agent("agent").newAgent()
+            FLAMEGPU.agent("agent").newAgent().getVariableFloat("nope")
                 
 class GetBadVarType(pyflamegpu.HostFunctionCallback):
     def __init__(self):
@@ -78,8 +78,8 @@ class GetBadVarType(pyflamegpu.HostFunctionCallback):
 
     def run(self, FLAMEGPU):
         for i in range(NEW_AGENT_COUNT): 
-            newAgt = FLAMEGPU.newAgent("agent")
-            FLAMEGPU.newAgent("agent").getVariableInt64("x")
+            newAgt = FLAMEGPU.agent("agent").newAgent()
+            FLAMEGPU.agent("agent").newAgent().getVariableInt64("x")
         
 class ArrayVarHostBirth(pyflamegpu.HostFunctionCallback):
     def __init__(self):
@@ -87,7 +87,7 @@ class ArrayVarHostBirth(pyflamegpu.HostFunctionCallback):
 
     def run(self, FLAMEGPU):
         for i in range(AGENT_COUNT): 
-            a = FLAMEGPU.newAgent("agent_name")
+            a = FLAMEGPU.agent("agent_name").newAgent()
             a.setVariableUInt("id", i)
             a.setVariableArrayInt("array_var", (2 + i, 4 + i, 8 + i, 16 + i) )
             a.setVariableInt("array_var2", 0, 3 + i)
@@ -102,7 +102,7 @@ class ArrayVarHostBirthSetGet(pyflamegpu.HostFunctionCallback):
 
     def run(self, FLAMEGPU):
         for i in range(AGENT_COUNT): 
-            a = FLAMEGPU.newAgent("agent_name")
+            a = FLAMEGPU.agent("agent_name").newAgent()
             a.setVariableUInt("id", i)
             # Set
             a.setVariableArrayInt("array_var", (2 + i, 4 + i, 8 + i, 16 + i) )
@@ -125,77 +125,77 @@ class ArrayVarHostBirth_DefaultWorks(pyflamegpu.HostFunctionCallback):
 
     def run(self, FLAMEGPU):
         for i in range(AGENT_COUNT): 
-            FLAMEGPU.newAgent("agent_name")
+            FLAMEGPU.agent("agent_name").newAgent()
                
 class ArrayVarHostBirth_LenWrong(pyflamegpu.HostFunctionCallback):
     def __init__(self):
         super().__init__()
 
     def run(self, FLAMEGPU):
-        FLAMEGPU.newAgent("agent_name").setVariableArrayInt("array_var", [0]*8)
+        FLAMEGPU.agent("agent_name").newAgent().setVariableArrayInt("array_var", [0]*8)
         
 class ArrayVarHostBirth_LenWrong2(pyflamegpu.HostFunctionCallback):
     def __init__(self):
         super().__init__()
 
     def run(self, FLAMEGPU):
-        FLAMEGPU.newAgent("agent_name").setVariableInt("array_var", 5, 0)
+        FLAMEGPU.agent("agent_name").newAgent().setVariableInt("array_var", 5, 0)
         
 class ArrayVarHostBirth_TypeWrong(pyflamegpu.HostFunctionCallback):
     def __init__(self):
         super().__init__()
 
     def run(self, FLAMEGPU):
-        FLAMEGPU.newAgent("agent_name").setVariableArrayFloat("array_var", [0]*4)
+        FLAMEGPU.agent("agent_name").newAgent().setVariableArrayFloat("array_var", [0]*4)
         
 class ArrayVarHostBirth_TypeWrong2(pyflamegpu.HostFunctionCallback):
     def __init__(self):
         super().__init__()
 
     def run(self, FLAMEGPU):
-        FLAMEGPU.newAgent("agent_name").setVariableFloat("array_var", 4, 0.0)
+        FLAMEGPU.agent("agent_name").newAgent().setVariableFloat("array_var", 4, 0.0)
         
 class ArrayVarHostBirth_NameWrong(pyflamegpu.HostFunctionCallback):
     def __init__(self):
         super().__init__()
 
     def run(self, FLAMEGPU):
-        FLAMEGPU.newAgent("agent_name").setVariableArrayInt("array_varAAAAAA", [0]*4)
+        FLAMEGPU.agent("agent_name").newAgent().setVariableArrayInt("array_varAAAAAA", [0]*4)
         
 class ArrayVarHostBirth_NameWrong2(pyflamegpu.HostFunctionCallback):
     def __init__(self):
         super().__init__()
 
     def run(self, FLAMEGPU):
-        FLAMEGPU.newAgent("agent_name").setVariableInt("array_varAAAAAA", 4, 0)
+        FLAMEGPU.agent("agent_name").newAgent().setVariableInt("array_varAAAAAA", 4, 0)
         
 class ArrayVarHostBirth_ArrayNotSuitableSet(pyflamegpu.HostFunctionCallback):
     def __init__(self):
         super().__init__()
 
     def run(self, FLAMEGPU):
-        FLAMEGPU.newAgent("agent_name").setVariableInt("array_var", 12)
+        FLAMEGPU.agent("agent_name").newAgent().setVariableInt("array_var", 12)
         
 class ArrayVarHostBirth_ArrayNotSuitableGet(pyflamegpu.HostFunctionCallback):
     def __init__(self):
         super().__init__()
 
     def run(self, FLAMEGPU):
-        FLAMEGPU.newAgent("agent_name").getVariableInt("array_var")
+        FLAMEGPU.agent("agent_name").newAgent().getVariableInt("array_var")
      
 class reserved_name_step(pyflamegpu.HostFunctionCallback):
     def __init__(self):
         super().__init__()
 
     def run(self, FLAMEGPU):
-        FLAMEGPU.newAgent("agent_name").setVariableInt("_", 0)
+        FLAMEGPU.agent("agent_name").newAgent().setVariableInt("_", 0)
         
 class reserved_name_step_array(pyflamegpu.HostFunctionCallback):
     def __init__(self):
         super().__init__()
 
     def run(self, FLAMEGPU):
-        FLAMEGPU.newAgent("agent_name").setVariableArrayInt("_", [0]*3)
+        FLAMEGPU.agent("agent_name").newAgent().setVariableArrayInt("_", [0]*3)
 
      
         

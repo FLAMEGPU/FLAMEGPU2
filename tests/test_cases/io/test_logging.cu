@@ -314,8 +314,9 @@ TEST(LoggingTest, CUDASimulationSimulate) {
 }
 FLAMEGPU_INIT_FUNCTION(logging_ensemble_init) {
     const int instance_id  = FLAMEGPU->environment.getProperty<int>("instance_id");
+    auto agt = FLAMEGPU->agent(AGENT_NAME1);
     for (int i = instance_id; i < instance_id + 101; ++i) {
-        auto instance = FLAMEGPU->newAgent(AGENT_NAME1);
+        auto instance = agt.newAgent();
         instance.setVariable<float>("float_var", static_cast<float>(i));
         instance.setVariable<int>("int_var", static_cast<int>(i+1));
         instance.setVariable<unsigned int>("uint_var", static_cast<unsigned int>(i+2));

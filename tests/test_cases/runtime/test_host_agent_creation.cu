@@ -18,41 +18,46 @@ namespace test_host_agent_creation {
 const unsigned int INIT_AGENT_COUNT = 512;
 const unsigned int NEW_AGENT_COUNT = 512;
 FLAMEGPU_STEP_FUNCTION(BasicOutput) {
+    auto t = FLAMEGPU->agent("agent");
     for (unsigned int i = 0; i < NEW_AGENT_COUNT; ++i)
-        FLAMEGPU->newAgent("agent").setVariable<float>("x", 1.0f);
+        t.newAgent().setVariable<float>("x", 1.0f);
 }
 FLAMEGPU_EXIT_CONDITION(BasicOutputCdn) {
+    auto t = FLAMEGPU->agent("agent");
     for (unsigned int i = 0; i < NEW_AGENT_COUNT; ++i)
-        FLAMEGPU->newAgent("agent").setVariable<float>("x", 1.0f);
+        t.newAgent().setVariable<float>("x", 1.0f);
     return CONTINUE;  // New agents wont be created if EXIT is passed
 }
 FLAMEGPU_STEP_FUNCTION(OutputState) {
+    auto t = FLAMEGPU->agent("agent", "b");
     for (unsigned int i = 0; i < NEW_AGENT_COUNT; ++i)
-        FLAMEGPU->newAgent("agent", "b").setVariable<float>("x", 1.0f);
+        t.newAgent().setVariable<float>("x", 1.0f);
 }
 FLAMEGPU_STEP_FUNCTION(OutputMultiAgent) {
+    auto t = FLAMEGPU->agent("agent", "b");
+    auto t2 = FLAMEGPU->agent("agent2");
     for (unsigned int i = 0; i < NEW_AGENT_COUNT; ++i) {
-        FLAMEGPU->newAgent("agent", "b").setVariable<float>("x", 1.0f);
-        FLAMEGPU->newAgent("agent2").setVariable<float>("y", 2.0f);
+        t.newAgent().setVariable<float>("x", 1.0f);
+        t2.newAgent().setVariable<float>("y", 2.0f);
     }
 }
 FLAMEGPU_STEP_FUNCTION(BadVarName) {
-    FLAMEGPU->newAgent("agent").setVariable<float>("nope", 1.0f);
+    FLAMEGPU->agent("agent").newAgent().setVariable<float>("nope", 1.0f);
 }
 FLAMEGPU_STEP_FUNCTION(BadVarType) {
-    FLAMEGPU->newAgent("agent").setVariable<int64_t>("x", static_cast<int64_t>(1.0f));
+    FLAMEGPU->agent("agent").newAgent().setVariable<int64_t>("x", static_cast<int64_t>(1.0f));
 }
 FLAMEGPU_STEP_FUNCTION(Getter) {
     for (unsigned int i = 0; i < NEW_AGENT_COUNT; ++i) {
-        auto newAgt = FLAMEGPU->newAgent("agent");
+        auto newAgt = FLAMEGPU->agent("agent").newAgent();
         newAgt.setVariable<float>("x", newAgt.getVariable<float>("default"));
     }
 }
 FLAMEGPU_STEP_FUNCTION(GetBadVarName) {
-    FLAMEGPU->newAgent("agent").getVariable<float>("nope");
+    FLAMEGPU->agent("agent").newAgent().getVariable<float>("nope");
 }
 FLAMEGPU_STEP_FUNCTION(GetBadVarType) {
-    FLAMEGPU->newAgent("agent").getVariable<int64_t>("x");
+    FLAMEGPU->agent("agent").newAgent().getVariable<int64_t>("x");
 }
 TEST(HostAgentCreationTest, FromInit) {
     // Define model
@@ -394,8 +399,9 @@ TEST(HostAgentCreationTest, GetterBadVarType) {
 // array variable stuff
 const unsigned int AGENT_COUNT = 1024;
 FLAMEGPU_STEP_FUNCTION(ArrayVarHostBirth) {
+    auto t = FLAMEGPU->agent("agent_name");
     for (int i = 0; i < static_cast<int>(AGENT_COUNT); ++i) {
-        auto a = FLAMEGPU->newAgent("agent_name");
+        auto a = t.newAgent();
         a.setVariable<unsigned int>("id", i);
         a.setVariable<int, 4>("array_var", { 2 + i, 4 + i, 8 + i, 16 + i });
         a.setVariable<int>("array_var2", 0, 3 + i);
@@ -406,8 +412,9 @@ FLAMEGPU_STEP_FUNCTION(ArrayVarHostBirth) {
     }
 }
 FLAMEGPU_STEP_FUNCTION(ArrayVarHostBirthSetGet) {
+    auto t = FLAMEGPU->agent("agent_name");
     for (int i = 0; i < static_cast<int>(AGENT_COUNT); ++i) {
-        auto a = FLAMEGPU->newAgent("agent_name");
+        auto a = t.newAgent();
         a.setVariable<unsigned int>("id", i);
         // Set
         a.setVariable<int, 4>("array_var", { 2 + i, 4 + i, 8 + i, 16 + i });
@@ -426,33 +433,34 @@ FLAMEGPU_STEP_FUNCTION(ArrayVarHostBirthSetGet) {
     }
 }
 FLAMEGPU_STEP_FUNCTION(ArrayVarHostBirth_DefaultWorks) {
+    auto t = FLAMEGPU->agent("agent_name");
     for (int i = 0; i < static_cast<int>(AGENT_COUNT); ++i) {
-        FLAMEGPU->newAgent("agent_name");
+        t.newAgent();
     }
 }
 FLAMEGPU_STEP_FUNCTION(ArrayVarHostBirth_LenWrong) {
-    FLAMEGPU->newAgent("agent_name").setVariable<int, 5>("array_var", {});
+    FLAMEGPU->agent("agent_name").newAgent().setVariable<int, 5>("array_var", {});
 }
 FLAMEGPU_STEP_FUNCTION(ArrayVarHostBirth_LenWrong2) {
-    FLAMEGPU->newAgent("agent_name").setVariable<int>("array_var", 5, 0);
+    FLAMEGPU->agent("agent_name").newAgent().setVariable<int>("array_var", 5, 0);
 }
 FLAMEGPU_STEP_FUNCTION(ArrayVarHostBirth_TypeWrong) {
-    FLAMEGPU->newAgent("agent_name").setVariable<float, 4>("array_var", {});
+    FLAMEGPU->agent("agent_name").newAgent().setVariable<float, 4>("array_var", {});
 }
 FLAMEGPU_STEP_FUNCTION(ArrayVarHostBirth_TypeWrong2) {
-    FLAMEGPU->newAgent("agent_name").setVariable<float>("array_var", 4, 0.0F);
+    FLAMEGPU->agent("agent_name").newAgent().setVariable<float>("array_var", 4, 0.0F);
 }
 FLAMEGPU_STEP_FUNCTION(ArrayVarHostBirth_NameWrong) {
-    FLAMEGPU->newAgent("agent_name").setVariable<int, 4>("array_varAAAAAA", {});
+    FLAMEGPU->agent("agent_name").newAgent().setVariable<int, 4>("array_varAAAAAA", {});
 }
 FLAMEGPU_STEP_FUNCTION(ArrayVarHostBirth_NameWrong2) {
-    FLAMEGPU->newAgent("agent_name").setVariable<int>("array_varAAAAAA", 4, 0);
+    FLAMEGPU->agent("agent_name").newAgent().setVariable<int>("array_varAAAAAA", 4, 0);
 }
 FLAMEGPU_STEP_FUNCTION(ArrayVarHostBirth_ArrayNotSuitableSet) {
-    FLAMEGPU->newAgent("agent_name").setVariable<int>("array_var", 12);
+    FLAMEGPU->agent("agent_name").newAgent().setVariable<int>("array_var", 12);
 }
 FLAMEGPU_STEP_FUNCTION(ArrayVarHostBirth_ArrayNotSuitableGet) {
-    FLAMEGPU->newAgent("agent_name").getVariable<int>("array_var");
+    FLAMEGPU->agent("agent_name").newAgent().getVariable<int>("array_var");
 }
 TEST(HostAgentCreationTest, HostAgentBirth_ArraySet) {
     const std::array<int, 4> TEST_REFERENCE = { 2, 4, 8, 16 };
@@ -635,10 +643,10 @@ TEST(HostAgentCreationTest, HostAgentBirth_ArrayNotSuitableGet) {
     EXPECT_THROW(sim.step(), InvalidAgentVar);
 }
 FLAMEGPU_STEP_FUNCTION(reserved_name_step) {
-    FLAMEGPU->newAgent("agent_name").setVariable<int>("_", 0);
+    FLAMEGPU->agent("agent_name").newAgent().setVariable<int>("_", 0);
 }
 FLAMEGPU_STEP_FUNCTION(reserved_name_step_array) {
-    FLAMEGPU->newAgent("agent_name").setVariable<int, 3>("_", {});
+    FLAMEGPU->agent("agent_name").newAgent().setVariable<int, 3>("_", {});
 }
 TEST(HostAgentCreationTest, reserved_name) {
     ModelDescription model("model");

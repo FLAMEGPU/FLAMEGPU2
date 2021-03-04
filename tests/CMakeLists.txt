@@ -71,6 +71,7 @@ SET(TEST_CASE_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/model/test_subenvironment.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/pop/test_agent_vector.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/pop/test_agent_instance.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/pop/test_device_agent_vector.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/sim/test_host_functions.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_agent_environment.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_agent_function_conditions.cu    

@@ -73,7 +73,6 @@ void CUDAFatAgentStateList::resize(const unsigned int &minSize, const bool &reta
     unsigned int newSize = bufferLen > 1024 ? bufferLen : 1024;
     while (newSize < minSize)
         newSize = static_cast<unsigned int>(newSize * 1.25f);
-
     // Resize all buffers in fat state list
     for (auto &buff : variables_unique) {
         const size_t var_size = buff->type_size * buff->elements;
@@ -246,4 +245,13 @@ void CUDAFatAgentStateList::swap(CUDAFatAgentStateList*other) {
     for (auto a = variables_unique.begin(), b=other->variables_unique.begin(); a != variables_unique.end() && b != other->variables_unique.end(); ++a, ++b) {
         (*a)->swap(b->get());
     }
+}
+std::list<std::shared_ptr<VariableBuffer>> CUDAFatAgentStateList::getBuffers(std::set<std::shared_ptr<VariableBuffer>>& exclusionSet) {
+    std::list<std::shared_ptr<VariableBuffer>> returnVars;
+    for (const auto& v : variables_unique) {
+        if (exclusionSet.find(v) == exclusionSet.end()) {
+            returnVars.push_back(v);
+        }
+    }
+    return returnVars;
 }
