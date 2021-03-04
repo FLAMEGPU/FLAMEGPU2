@@ -6,9 +6,12 @@
 #include "flamegpu/gpu/CUDASimulation.h"
 
 HostAPI::HostAPI(CUDASimulation &_agentModel,
-    RandomManager &rng,
+    RandomManager& rng,
+    CUDAScatter &_scatter,
     const AgentOffsetMap &_agentOffsets,
-    AgentDataMap &_agentData)
+    AgentDataMap &_agentData,
+    const unsigned int& _streamId,
+    cudaStream_t _stream)
     : random(rng)
     , environment(_agentModel.getInstanceID())
     , agentModel(_agentModel)
@@ -17,7 +20,10 @@ HostAPI::HostAPI(CUDASimulation &_agentModel,
     , d_output_space(nullptr)
     , d_output_space_size(0)
     , agentOffsets(_agentOffsets)
-    , agentData(_agentData) { }
+    , agentData(_agentData)
+    , scatter(_scatter)
+    , streamId(_streamId)
+    , stream(_stream) { }
 
 HostAPI::~HostAPI() {
     // @todo - cuda is not allowed in destructor
@@ -31,41 +37,16 @@ HostAPI::~HostAPI() {
     }
 }
 
-HostAgentAPI HostAPI::agent(const std::string &agent_name, const std::string &stateName) {
-    return HostAgentAPI(*this, agentModel.getAgent(agent_name), stateName);
-}
-
-HostNewAgentAPI HostAPI::newAgent(const std::string &agent_name) {
-    // Validation
-    auto &model = agentModel.getModelDescription();
-    auto agent = model.agents.find(agent_name);
-    if (agent == model.agents.end()) {
-        THROW InvalidAgentName("Agent '%s' was not found within the model hierarchy, "
-            "in HostAPI::newAgent()\n",
-            agent_name.c_str());
+HostAgentAPI HostAPI::agent(const std::string &agent_name, const std::string &state_name) {
+    auto agt = agentData.find(agent_name);
+    if (agt == agentData.end()) {
+        THROW InvalidAgent("Agent '%s' was not found in model description hierarchy.\n", agent_name.c_str());
     }
-    return newAgent(agent_name, agent->second->initial_state);
-}
-HostNewAgentAPI HostAPI::newAgent(const std::string &agent_name, const std::string &state) {
-    // Validation
-    auto &model = agentModel.getModelDescription();
-    auto agent = model.agents.find(agent_name);
-    if (agent == model.agents.end()) {
-        THROW InvalidAgentName("Agent '%s' was not found within the model hierarchy, "
-            "in HostAPI::newAgent()\n",
-            agent_name.c_str());
+    auto state = agt->second.find(state_name);
+    if (state == agt->second.end()) {
+        THROW InvalidAgentState("Agent '%s' in model description hierarchy does not contain state '%s'.\n", agent_name.c_str(), state_name.c_str());
     }
-    if (agent->second->states.find(state) == agent->second->states.end()) {
-        THROW InvalidStateName("Agent '%s' does not contain state '%s', "
-            "in HostAPI::newAgent()\n",
-            agent_name.c_str(), state.c_str());
-    }
-    // Create the agent in our backing data structure
-    NewAgentStorage t_agentData(agentOffsets.at(agent_name));
-    auto &s = agentData.at(agent_name).at(state);
-    s.push_back(t_agentData);
-    // Point the returned object to the created agent
-    return HostNewAgentAPI(s.back());
+    return HostAgentAPI(*this, agentModel.getAgent(agent_name), state_name, agentOffsets.at(agent_name), state->second);
 }
 
 bool HostAPI::tempStorageRequiresResize(const CUB_Config &cc, const unsigned int &items) {

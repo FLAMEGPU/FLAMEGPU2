@@ -13,6 +13,7 @@ class AgentInstance;
 class AgentDescription;
 class AgentVector_CAgent;
 class AgentVector_Agent;
+struct AgentData;
 
 class AgentVector {
     /**
@@ -25,6 +26,8 @@ class AgentVector {
      * Can't include CUDAAgentStateList to friend the specific method.
      */
     friend class CUDAAgentStateList;
+    friend class AgentVector_CAgent;
+    friend class AgentVector_Agent;
 
  public:
     typedef unsigned int size_type;
@@ -53,12 +56,17 @@ class AgentVector {
         const std::shared_ptr<const AgentData>& _agent;
         const std::weak_ptr<AgentDataMap> _data;
         size_type _pos;
+        /**
+         * Don't access this raw pointer unless _data can be locked
+         * It is used by AgentVector::Agent for change tracking
+         */
+        AgentVector* _parent;
      public:
         operator AgentVector::const_iterator() const {
-            return const_iterator(_agent, _data, _pos);
+            return const_iterator(_parent, _agent, _data, _pos);
         }
-        iterator(const std::shared_ptr<const AgentData>& agent, std::weak_ptr<AgentDataMap> data, size_type pos = 0)
-            : _agent(agent), _data(std::move(data)), _pos(pos) { }
+        iterator(AgentVector* parent, const std::shared_ptr<const AgentData>& agent, std::weak_ptr<AgentDataMap> data, size_type pos = 0)
+            : _agent(agent), _data(std::move(data)), _pos(pos), _parent(parent) { }
         iterator& operator++() { ++_pos; return *this; }
         iterator operator++(int) { iterator retval = *this; ++(*this); return retval; }
         bool operator==(iterator other) const { return _pos == other._pos &&
@@ -78,9 +86,14 @@ class AgentVector {
         const std::shared_ptr<const AgentData> &_agent;
         const std::weak_ptr<AgentDataMap> _data;
         size_type _pos;
+        /**
+         * Don't access this raw pointer unless _data can be locked
+         * It is used by AgentVector::Agent for change tracking
+         */
+        AgentVector* _parent;
      public:
-        const_iterator(const std::shared_ptr<const AgentData>& agent, std::weak_ptr<AgentDataMap> data, size_type pos = 0)
-            : _agent(agent), _data(std::move(data)), _pos(pos) { }
+        const_iterator(AgentVector* parent, const std::shared_ptr<const AgentData>& agent, std::weak_ptr<AgentDataMap> data, size_type pos = 0)
+            : _agent(agent), _data(std::move(data)), _pos(pos), _parent(parent) { }
         const_iterator& operator++() { ++_pos; return *this; }
         const_iterator operator++(int) { const_iterator retval = *this; ++(*this); return retval; }
         bool operator==(const_iterator other) const { return _pos == other._pos &&
@@ -100,12 +113,17 @@ class AgentVector {
         const std::shared_ptr<const AgentData> &_agent;
         const std::weak_ptr<AgentDataMap> _data;
         size_type _pos;
+        /**
+         * Don't access this raw pointer unless _data can be locked
+         * It is used by AgentVector::Agent for change tracking
+         */
+        AgentVector* _parent;
      public:
         operator AgentVector::const_reverse_iterator() const {
-            return const_reverse_iterator(_agent, _data, _pos);
+            return const_reverse_iterator(_parent, _agent, _data, _pos);
         }
-        explicit reverse_iterator(const std::shared_ptr<const AgentData>& agent, std::weak_ptr<AgentDataMap> data, size_type pos = 0)
-            : _agent(agent), _data(std::move(data)), _pos(pos) { }
+        explicit reverse_iterator(AgentVector* parent, const std::shared_ptr<const AgentData>& agent, std::weak_ptr<AgentDataMap> data, size_type pos = 0)
+            : _agent(agent), _data(std::move(data)), _pos(pos), _parent(parent) { }
         reverse_iterator& operator++() { --_pos; return *this; }
         reverse_iterator operator++(int) { reverse_iterator retval = *this; ++(*this); return retval; }
         bool operator==(reverse_iterator other) const { return _pos == other._pos &&
@@ -125,9 +143,14 @@ class AgentVector {
         const std::shared_ptr<const AgentData>& _agent;
         const std::weak_ptr<AgentDataMap> _data;
         size_type _pos;
+        /**
+         * Don't access this raw pointer unless _data can be locked
+         * It is used by AgentVector::Agent for change tracking
+         */
+        AgentVector* _parent;
      public:
-        explicit const_reverse_iterator(const std::shared_ptr<const AgentData>& agent, std::weak_ptr<AgentDataMap> data, size_type pos = 0)
-            : _agent(agent), _data(std::move(data)), _pos(pos) { }
+        explicit const_reverse_iterator(AgentVector* parent, const std::shared_ptr<const AgentData>& agent, std::weak_ptr<AgentDataMap> data, size_type pos = 0)
+            : _agent(agent), _data(std::move(data)), _pos(pos), _parent(parent) { }
         const_reverse_iterator& operator++() { --_pos; return *this; }
         const_reverse_iterator operator++(int) { const_reverse_iterator retval = *this; ++(*this); return retval; }
         bool operator==(const_reverse_iterator other) const { return _pos == other._pos &&
@@ -143,6 +166,7 @@ class AgentVector {
      * @param count The size of the container
      */
     explicit AgentVector(const AgentDescription &agent_desc, size_type count = 0);
+    explicit AgentVector(const AgentData &agent_desc, size_type count = 0);
     /**
      * Copy constructor.
      * Constructs the container with the copy of the contents of other
@@ -167,10 +191,14 @@ class AgentVector {
      * other is left in an empty but functional state.
      */
     AgentVector& operator=(AgentVector &&other) noexcept;
+    /**
+     * Default destructor, all memory should be automatically managed.
+     */
+    virtual ~AgentVector() = default;
 
     // Element access
     /**
-     * access specified element with bounds checking
+     * Access specified element with bounds checking
      * @param pos position of the element to return
      * @return Reference to the requested element.
      * @throws std::out_of_range if `!(pos < size())`
@@ -214,17 +242,57 @@ class AgentVector {
     const void* data(const std::string& variable_name) const;
 
     // Iterators
+    /**
+     * Forward iterator access to the start of the vector
+     */
     iterator begin() noexcept;
+    /**
+     * Forward iterator const access to the start of the vector
+     */
     const_iterator begin() const noexcept;
+    /**
+     * Forward iterator const access to the start of the vector
+     */
     const_iterator cbegin() const noexcept;
+    /**
+     * Forward iterator to position after the last element
+     */
     iterator end() noexcept;
+    /**
+     * Forward iterator to position after the last element
+     * (Const version of end())
+     */
     const_iterator end() const noexcept;
+    /**
+     * Forward iterator to position after the last element
+     * (Const version of end())
+     */
     const_iterator cend() const noexcept;
+    /**
+     * Reverse iterator access to the last element of the vector
+     */
     reverse_iterator rbegin() noexcept;
+    /**
+     * Reverse iterator const access to the last element of the vector
+     */
     const_reverse_iterator rbegin() const noexcept;
+    /**
+     * Reverse iterator const access to the last element of the vector
+     */
     const_reverse_iterator crbegin() const noexcept;
+    /**
+     * Reverse iterator to position before the first element
+     */
     reverse_iterator rend() noexcept;
+    /**
+     * Reverse iterator to position before the first element
+     * (Const version of rend())
+     */
     const_reverse_iterator rend() const noexcept;
+    /**
+     * Reverse iterator to position before the first element
+     * (Const version of rend())
+     */
     const_reverse_iterator crend() const noexcept;
 
     // Capacity
@@ -379,29 +447,29 @@ class AgentVector {
     void py_erase(size_type first, size_type last);
 #endif
     /**
-     * Appends the given element value to the end of the container.
+     * Appends the given agent to the end of the container.
      * The new element is initialized as a copy of value
      *
      * If the new size() is greater than capacity() then all iterators and references (including the past-the-end iterator) are invalidated.
      * Otherwise only the past-the-end iterator is invalidated.
      *
-     * @param value	the value of the element to append
+     * @param value	the value of the agent to append
      *
      * @throws InvalidAgent If the agent type of the AgentInstance doesn't match the agent type of the AgentVector
      */
     void push_back(const AgentInstance& value);
     /**
-     * Appends a default initialised element to the end of the container
+     * Appends a default initialised agent to the end of the container
      */
     void push_back();
     /**
-     * Removes the last element of the container.
+     * Removes the last agent of the container.
      * Calling pop_back on an empty container results in undefined behavior.
      * Iterators and references to the last element, as well as the end() iterator, are invalidated.
      */
     void pop_back();
     /**
-     * Resizes the container to contain count elements.
+     * Resizes the vector to contain count agents.
      *
      * If the current size is greater than count, the container is reduced to its first count elements.
      *
@@ -445,15 +513,68 @@ class AgentVector {
      */
     std::string getInitialState() const;
 
- private:
+ protected:
     /**
-     * Resizes the internal vector
-     * Note, this version only updates _capacity, _size remains unchanged.
+     * This is called after insert operations to notify sub-classes of data movement.
+     * @param pos Index in the array that first agent was inserts
+     * @param count Number of agents inserted
      */
-    void resize(size_type count, bool init);
+    virtual void _insert(size_type pos, size_type count) { }
+    /**
+     * This is called after erase operations to notify sub-classes of data movement.
+     * @param pos Index in the array of first agent that was erased
+     * @param count Number of agents erased
+     */
+    virtual void _erase(size_type pos, size_type count) { }
+    /**
+     * This is called to notify sub-classes that a variable (may have/) has been changed
+     * @param variable_name Name of the affected variable
+     * @param pos Index of the variables agent
+     */
+    virtual void _changed(const std::string& variable_name, size_type pos) { }
+    /**
+     * Useful for notifying changes due to inserting/removing items, which essentially move all trailing items
+     * @param variable_name Name of the variable that has been changed
+     * @param pos The first index that has been changed
+     * @note This is not called in conjunction with _insert() or _erase()
+     */
+    virtual void _changedAfter(const std::string &variable_name, size_type pos) { }
+    /**
+     * Notify any subclasses that a variable is about to be accessed, to allow it's data to be synced
+     * Should be called by operations which update variables (e.g. AgentVector::Agent::getVariable())
+     * @param variable_name Name of the variable that has been changed
+     */
+    virtual void _require(const std::string& variable_name) const { }
+    /**
+     * Notify any subclasses that all variables are about to be accessed
+     * Should be called by operations which move agents (e.g. insert/erase)
+     * @note This is not called in conjunction with _insert() or _erase()
+     */
+    virtual void _requireAll() const { }
+    /**
+     * Notify that the size is about to be accessed
+     * This reflects both whether size is accessed directly or indirectly
+     * @note This exists so DeviceAgentVector can poll HostNewAgent for creations and apply them to the data structure
+     */
+    virtual void _requireLength() const { }
+    /**
+     * Notify any subclasses that all variables are about to be accessed
+     * Should be called by operations which move agents (e.g. insert/erase)
+     * @note This is not called in conjunction with _insert() or _erase()
+     */
+    void internal_resize(size_type count, bool init);
+    /**
+     * Overwrite all variable buffers in the specified range with default values
+     * @param first Index to first index to overwrite
+     * @param last Index after the last index to overwrite
+     * @throws InvalidOperation When last<first
+     * @throws OutOfBoundsException when last > _capacity
+     */
+    void init(size_type first, size_type last);
     std::shared_ptr<const AgentData> agent;
-    size_type _size;
-    size_type _capacity;
+    // Mutable, incase size is increased by DeviceAgentVector hidden application of HostAgentBirth
+    mutable size_type _size;
+    mutable size_type _capacity;
     std::shared_ptr<AgentDataMap> _data;
 };
 
@@ -476,8 +597,12 @@ T* AgentVector::data(const std::string& variable_name) {
     }
     // Does the map have a vector
     const auto& map_it = _data->find(variable_name);
-    if (map_it != _data->end())
+    if (map_it != _data->end()) {
+        _requireLength();
+        _require(variable_name);
+        _changedAfter(variable_name, 0);
         return static_cast<T*>(map_it->second->getDataPtr());
+    }
     return nullptr;
 }
 template<typename T>
@@ -497,8 +622,11 @@ const T* AgentVector::data(const std::string& variable_name) const {
     }
     // Does the map have a vector
     const auto& map_it = _data->find(variable_name);
-    if (map_it != _data->end())
+    if (map_it != _data->end()) {
+        _requireLength();
+        _require(variable_name);
         return static_cast<T*>(map_it->second->getDataPtr());
+    }
     return nullptr;
 }
 
@@ -516,7 +644,7 @@ template<class InputIt>
 AgentVector::iterator AgentVector::insert(size_type pos, InputIt first, InputIt last) {
     // Insert elements inrange first-last before pos
     if (first == last)
-        return iterator(agent, _data, pos);
+        return iterator(this, agent, _data, pos);
     // Confirm they are for the same agent type
     if (first._agent != agent && *first._agent != *agent) {
         THROW InvalidAgent("Agent description mismatch, '%' provided to first, '%' required, "
@@ -533,12 +661,13 @@ AgentVector::iterator AgentVector::insert(size_type pos, InputIt first, InputIt 
     const size_type end_copy_index = first._pos < last._pos ? last._pos : first._pos;
     const size_type copy_count = end_copy_index - first_copy_index;
     {
+        _requireLength();
         size_type new_capacity = _capacity;
         assert((_capacity * RESIZE_FACTOR) + 1 > _capacity);
         while (_size + copy_count > new_capacity) {
             new_capacity = static_cast<size_type>(new_capacity * RESIZE_FACTOR) + 1;
         }
-        resize(new_capacity, true);
+        internal_resize(new_capacity, true);
     }
     // Get first index;
     const size_type insert_index = pos;
@@ -548,6 +677,9 @@ AgentVector::iterator AgentVector::insert(size_type pos, InputIt first, InputIt 
         THROW ExpiredWeakPtr("The AgentVector which owns the passed iterators has been deallocated, "
             "in AgentVector::insert().\n");
     }
+    // If we are not appending, ensure we have upto date device data
+    if (pos < _size)
+        _requireAll();
     for (const auto& v : agent->variables) {
         const auto it = _data->find(v.first);
         char* t_data = static_cast<char*>(it->second->getDataPtr());
@@ -564,8 +696,10 @@ AgentVector::iterator AgentVector::insert(size_type pos, InputIt first, InputIt 
     }
     // Increase size
     _size += copy_count;
+    // Notify subclasses
+    _insert(pos, copy_count);
     // Return iterator to first inserted item
-    return iterator(agent, _data, insert_index);
+    return iterator(this, agent, _data, insert_index);
 }
 
 #ifdef SWIG

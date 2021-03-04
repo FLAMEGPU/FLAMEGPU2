@@ -55,7 +55,7 @@ struct VarOffsetStruct {
     }
 };
 /**
-* This struct provides a compact smemory store for storing generic variables in a single struct
+* This struct provides a compact memory store for storing generic variables in a single struct
 */
 struct NewAgentStorage {
     explicit NewAgentStorage(const VarOffsetStruct &v)
@@ -69,7 +69,8 @@ struct NewAgentStorage {
         memcpy(data, other.data, offsets.totalSize);
     }
     ~NewAgentStorage() {
-        free(data);
+        if (data)
+            free(data);
     }
     template<typename T>
     void setVariable(const std::string &var_name, const T &val) {
@@ -274,6 +275,10 @@ struct NewAgentStorage {
      * Used by CUDASimulation::processHostAgentCreation() which needs raw access to the data buffer
      */
     friend class CUDASimulation;
+    /**
+     * Used by DeviceAgentVector which needs raw access to the data buffer if a dependency requires it
+     */
+    friend class DeviceAgentVector_impl;
  private:
     char *const data;
     const VarOffsetStruct &offsets;

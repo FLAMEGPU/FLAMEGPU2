@@ -51,6 +51,7 @@ class CUDAAgentStateList {
         const SubAgentData::Mapping &mapping);
     /**
      * Resize all variable buffers within the parent CUDAFatAgentStateList
+     * Only initialises unmapped agent data
      * @param minimumSize The minimum number of agents that must be representable
      * @param retainData If true existing buffer data is retained
      * @see CUDAFatAgentStateList::resize(const unsigned int &, const bool &)
@@ -117,10 +118,29 @@ class CUDAAgentStateList {
      */
     void initUnmappedVars(CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream);
     /**
+     * Initialises any agent variables within the CUDAFatAgentStateList which are not present in this CUDAAgentStateList
+     * @param count Number of variables to init
+     * @param offset Offset into the buffer of agents to init
+     * @param scatter Scatter instance and scan arrays to be used
+     * @param streamId This is required for scan compaction arrays and async
+     */
+    void initExcludedVars(const unsigned int& count, const unsigned int& offset, CUDAScatter& scatter, const unsigned int& streamId, const cudaStream_t& stream);
+    /**
      * Returns the statelist to an empty state
      * This resets the size to 0.
      */
     void clear();
+    /**
+     * Updates the number of alive agents, does not affect disabled agents or change agent data
+     * @param newSize Number of active agents
+     * @throw InvalidMemoryCapacity If the new number of disabled + active agents would exceed currently allocated buffer capacity
+     */
+    void setAgentCount(const unsigned int& newSize);
+    /**
+     * Returns a list of variable buffers attached to bound agents, not available in this agent
+     * @note This access is only intended for DeviceAgentVector's correctly handling of subagents
+     */
+    std::list<std::shared_ptr<VariableBuffer>> getUnboundVariableBuffers();
 
  private:
     /**

@@ -1260,7 +1260,7 @@ void CUDASimulation::initialiseSingletons() {
         singletons->rng.reseed(getSimulationConfig().random_seed);
 
         // Pass created RandomManager to host api
-        host_api = std::make_unique<HostAPI>(*this, singletons->rng, agentOffsets, agentData);
+        host_api = std::make_unique<HostAPI>(*this, singletons->rng, singletons->scatter, agentOffsets, agentData, 0, getStream(0));  // Host fns are currently all serial
 
         for (auto &cm : message_map) {
             cm.second->init(singletons->scatter, 0);
@@ -1629,7 +1629,7 @@ void CUDASimulation::createStreams(const unsigned int nStreams) {
 
 cudaStream_t CUDASimulation::getStream(const unsigned int n) {
     // Return the appropriate stream, unless concurrency is disabled in which case always stream 0.
-    if (this->streams.size() < n) {
+    if (this->streams.size() <= n) {
         unsigned int nStreams = getMaximumLayerWidth();
         this->createStreams(nStreams);
     }

@@ -15,28 +15,28 @@ class sort_ascending_float(pyflamegpu.HostFunctionCallback):
         super().__init__()
 
     def run(self, FLAMEGPU):
-        FLAMEGPU.agent("agent").sortFloat("float", pyflamegpu.HostAgentInstance.Asc)
+        FLAMEGPU.agent("agent").sortFloat("float", pyflamegpu.HostAgentAPI.Asc)
         
 class sort_descending_float(pyflamegpu.HostFunctionCallback):
     def __init__(self):
         super().__init__()
 
     def run(self, FLAMEGPU):
-        FLAMEGPU.agent("agent").sortFloat("float",  pyflamegpu.HostAgentInstance.Desc)
+        FLAMEGPU.agent("agent").sortFloat("float",  pyflamegpu.HostAgentAPI.Desc)
     
 class sort_ascending_int(pyflamegpu.HostFunctionCallback):
     def __init__(self):
         super().__init__()
 
     def run(self, FLAMEGPU):
-        FLAMEGPU.agent("agent").sortInt("int",  pyflamegpu.HostAgentInstance.Asc)
+        FLAMEGPU.agent("agent").sortInt("int",  pyflamegpu.HostAgentAPI.Asc)
    
 class sort_descending_int(pyflamegpu.HostFunctionCallback):
     def __init__(self):
         super().__init__()
 
     def run(self, FLAMEGPU):
-        FLAMEGPU.agent("agent").sortInt("int",  pyflamegpu.HostAgentInstance.Desc)
+        FLAMEGPU.agent("agent").sortInt("int",  pyflamegpu.HostAgentAPI.Desc)
 
 class HostAgentSort(TestCase):
 

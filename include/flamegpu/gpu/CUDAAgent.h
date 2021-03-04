@@ -7,6 +7,7 @@
 #include <string>
 #include <mutex>
 #include <unordered_map>
+#include <list>
 
 // include sub classes
 #include "flamegpu/util/JitifyCache.h"
@@ -216,7 +217,16 @@ class CUDAAgent : public AgentInterface {
      * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
      * @param streamId This is required for scan compaction arrays and async
      */
-    void initUnmappedVars(CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream);
+    void initUnmappedVars(CUDAScatter& scatter, const unsigned int& streamId, const cudaStream_t& stream);
+    /**
+     * Initialises any agent variables within the CUDAFatAgentStateList of state which are not present in the agent-state's CUDAAgentStateList
+     * @param state Affected state
+     * @param count Number of variables to init
+     * @param offset Offset into the buffer of agents to init
+     * @param scatter Scatter instance and scan arrays to be used
+     * @param streamId This is required for scan compaction arrays and async
+     */
+    void initExcludedVars(const std::string& state, const unsigned int& count, const unsigned int& offset, CUDAScatter& scatter, const unsigned int& streamId, const cudaStream_t& stream);
     /**
      * Resets the number of agents in every statelist to 0
      */
@@ -226,6 +236,27 @@ class CUDAAgent : public AgentInterface {
      * They count as unmapped if they are not mapped to a master state, sub mappings will be reset
      */
     void cullUnmappedStates();
+    /**
+     * Resize the state underlying buffers
+     * This is triggered on the CUDAFatAgentStateList, so unmapped agent variables are also resized
+     * @param state The minimum number of agents that must be representable
+     * @param minSize The minimum number of agents that must be representable
+     * @param retainData If true existing buffer data is retained
+     */
+    void resizeState(const std::string &state, const unsigned int& minSize, const bool& retainData);
+    /**
+     * Updates the number of alive agents, does not affect disabled agents or change agent data
+     * @param state The state to affect
+     * @param newSize Number of active agents
+     * @throw InvalidMemoryCapacity If the new number of disabled + active agents would exceed currently allocated buffer capacity
+     */
+    void setStateAgentCount(const std::string& state, const unsigned int &newSize);
+    /**
+     * Returns a list of variable buffers attached to bound agents, not available in this agent
+     * @param state The state affected state
+     * @note This access is only intended for DeviceAgentVector's correctly handling of subagents
+     */
+    std::list<std::shared_ptr<VariableBuffer>> getUnboundVariableBuffers(const std::string& state);
 
  private:
     /**

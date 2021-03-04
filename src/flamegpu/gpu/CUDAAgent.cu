@@ -219,6 +219,29 @@ unsigned int CUDAAgent::getStateAllocatedSize(const std::string &state) const {
     }
     return sm->second->getAllocatedSize();
 }
+void CUDAAgent::resizeState(const std::string& state, const unsigned int& minimumSize, const bool& retainData) {
+    // check the cuda agent state map to find the correct state list
+    const auto& sm = state_map.find(state);
+
+    if (sm == state_map.end()) {
+        THROW InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found, "
+            "in CUDAAgent::getStateAllocatedSize()",
+            agent_description.name.c_str(), state.c_str());
+    }
+    sm->second->resize(minimumSize, retainData);
+}
+
+void CUDAAgent::setStateAgentCount(const std::string& state, const unsigned int& newSize) {
+    // check the cuda agent state map to find the correct state list
+    const auto& sm = state_map.find(state);
+
+    if (sm == state_map.end()) {
+        THROW InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found, "
+            "in CUDAAgent::getStateAllocatedSize()",
+            agent_description.name.c_str(), state.c_str());
+    }
+    sm->second->setAgentCount(newSize);
+}
 const AgentData &CUDAAgent::getAgentDescription() const {
     return agent_description;
 }
@@ -589,6 +612,17 @@ void CUDAAgent::initUnmappedVars(CUDAScatter &scatter, const unsigned int &strea
         s.second->initUnmappedVars(scatter, streamId, stream);
     }
 }
+void CUDAAgent::initExcludedVars(const std::string &state, const unsigned int&count, const unsigned int&offset, CUDAScatter& scatter, const unsigned int& streamId, const cudaStream_t& stream) {
+    // check the cuda agent state map to find the correct state list
+    const auto& sm = state_map.find(state);
+
+    if (sm == state_map.end()) {
+        THROW InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found, "
+            "in CUDAAgent::initUnmappedVars()",
+            agent_description.name.c_str(), state.c_str());
+    }
+    sm->second->initExcludedVars(count, offset, scatter, streamId, stream);
+}
 void CUDAAgent::cullUnmappedStates() {
     for (auto &s : state_map) {
         if (!s.second->getIsSubStatelist()) {
@@ -600,4 +634,14 @@ void CUDAAgent::cullAllStates() {
     for (auto &s : state_map) {
         s.second->clear();
     }
+}
+std::list<std::shared_ptr<VariableBuffer>> CUDAAgent::getUnboundVariableBuffers(const std::string& state) {
+    const auto& sm = state_map.find(state);
+
+    if (sm == state_map.end()) {
+        THROW InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found, "
+            "in CUDAAgent::getUnboundVariableBuffers()",
+            agent_description.name.c_str(), state.c_str());
+    }
+    return sm->second->getUnboundVariableBuffers();
 }

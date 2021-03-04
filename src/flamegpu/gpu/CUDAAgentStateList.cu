@@ -119,7 +119,7 @@ void CUDAAgentStateList::getAgentData(AgentVector& population) const {
     }
     const unsigned int data_count = getSize();
     if (data_count) {
-        population.resize(data_count, false);
+        population.internal_resize(data_count, false);
         // Copy across the required data device->host
         for (auto& _var : variables) {
             // get the variable size from agent description
@@ -245,6 +245,21 @@ void CUDAAgentStateList::initUnmappedVars(CUDAScatter &scatter, const unsigned i
         }
     }
 }
+void CUDAAgentStateList::initExcludedVars(const unsigned int& count, const unsigned int& offset, CUDAScatter& scatter, const unsigned int& streamId, const cudaStream_t& stream) {
+    std::set<std::shared_ptr<VariableBuffer>> exclusionSet;
+    for (auto& a : variables)
+        exclusionSet.insert(a.second);
+    parent_list->initVariables(exclusionSet, count, offset, scatter, streamId, stream);
+}
 void CUDAAgentStateList::clear() {
     parent_list->setAgentCount(0, true);
+}
+void CUDAAgentStateList::setAgentCount(const unsigned int& newSize) {
+    parent_list->setAgentCount(newSize, false);
+}
+std::list<std::shared_ptr<VariableBuffer>> CUDAAgentStateList::getUnboundVariableBuffers() {
+    std::set<std::shared_ptr<VariableBuffer>> exclusionSet;
+    for (auto& a : variables)
+        exclusionSet.insert(a.second);
+    return parent_list->getBuffers(exclusionSet);
 }

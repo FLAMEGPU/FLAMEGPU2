@@ -136,12 +136,12 @@ FLAMEGPU_EXIT_CONDITION(ExitAlways) {
     return EXIT;
 }
 FLAMEGPU_HOST_FUNCTION(HostBirth) {
-    auto a = FLAMEGPU->newAgent(AGENT_NAME);
+    auto a = FLAMEGPU->agent(AGENT_NAME).newAgent();
     a.setVariable<unsigned int>(AGENT_VAR1_NAME, 5);
     a.setVariable<unsigned int>(AGENT_VAR2_NAME, 500);
 }
 FLAMEGPU_HOST_FUNCTION(HostBirth2) {
-    auto a = FLAMEGPU->newAgent(AGENT_NAME);
+    auto a = FLAMEGPU->agent(AGENT_NAME).newAgent();
     a.setVariable<unsigned int>(AGENT_VAR1_NAME, 5);
 }
 FLAMEGPU_AGENT_FUNCTION(HostBirthUpdate, MsgNone, MsgNone) {
@@ -1503,7 +1503,7 @@ TEST(TestCUDASubAgent, AgentStateTransition_UnmapToMap_BeforeSubModel) {
 }
 FLAMEGPU_INIT_FUNCTION(InitCreateAgents_AgentStateTransition_UnmapToUnmap_InSubModel) {
     for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
-        auto a = FLAMEGPU->newAgent(AGENT_NAME, UNMAPPED_STATE1);
+        auto a = FLAMEGPU->agent(AGENT_NAME, UNMAPPED_STATE1).newAgent();
         a.setVariable<unsigned int>(AGENT_VAR1_NAME, UINT_MAX/2);
     }
 }

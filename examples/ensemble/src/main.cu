@@ -9,9 +9,9 @@ FLAMEGPU_INIT_FUNCTION(Init) {
     const unsigned int POPULATION_TO_GENERATE = FLAMEGPU->environment.getProperty<unsigned int>("POPULATION_TO_GENERATE");
     const int init = FLAMEGPU->environment.getProperty<int>("init");
     const int init_offset = FLAMEGPU->environment.getProperty<int>("init_offset");
+    auto agent = FLAMEGPU->agent("Agent");
     for (unsigned int i = 0; i < POPULATION_TO_GENERATE; ++i) {
-        auto agent = FLAMEGPU->newAgent("Agent");
-        agent.setVariable<int>("x", init + i * init_offset);
+        agent.newAgent().setVariable<int>("x", init + i * init_offset);
     }
 }
 std::atomic<unsigned int> atomic_init = {0};

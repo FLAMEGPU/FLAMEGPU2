@@ -11,7 +11,9 @@
 const float AgentVector::RESIZE_FACTOR = 1.5f;
 
 AgentVector::AgentVector(const AgentDescription& agent_desc, size_type count)
-    : agent(agent_desc.agent->clone())
+    : AgentVector(*agent_desc.agent, count) { }
+AgentVector::AgentVector(const AgentData& agent_desc, size_type count)
+    : agent(agent_desc.clone())
     , _size(0)
     , _capacity(0)
     , _data(std::make_shared<AgentDataMap>()) {
@@ -24,7 +26,7 @@ AgentVector::AgentVector(const AgentVector& other)
     , _capacity(0)
     , _data(std::make_shared<AgentDataMap>()) {
     clear();
-    *this = other;
+    *this = std::move(other);
 }
 
 AgentVector::AgentVector(AgentVector&& other) noexcept
@@ -49,7 +51,7 @@ AgentVector& AgentVector::operator=(const AgentVector& other) {
         throw std::exception();  // AgentVectors are for different AgentDescriptions
     }
     // Copy size
-    resize(other.size(), false);
+    internal_resize(other.size(), false);
     _size = other.size();
     if (_size) {
         // Copy data
@@ -76,17 +78,23 @@ AgentVector& AgentVector::operator=(AgentVector&& other) noexcept {
 }
 
 AgentVector::Agent AgentVector::at(size_type pos) {
-    if (pos >= size()) {
-        THROW OutOfBoundsException("pos (%u) exceeds length of vector (%u) in AgentVector::at()", pos, size());
+    if (pos >= _size) {
+        _requireLength();
+        if (pos >= _size) {
+            THROW OutOfBoundsException("pos (%u) exceeds length of vector (%u) in AgentVector::at()", pos, _size);
+        }
     }
     // Return the agent instance
-    return Agent(agent, _data, pos);
+    return Agent(this, agent, _data, pos);
 }
 AgentVector::CAgent AgentVector::at(size_type pos) const {
-    if (pos >= size()) {
-        THROW OutOfBoundsException("pos (%u) exceeds length of vector (%u) in AgentVector::at()", pos, size());
+    if (pos >= _size) {
+        _requireLength();
+        if (pos >= _size) {
+            THROW OutOfBoundsException("pos (%u) exceeds length of vector (%u) in AgentVector::at()", pos, _size);
+        }
     }
-    return CAgent(agent, _data, pos);
+    return CAgent(const_cast<AgentVector*>(this), agent, _data, pos);
 }
 
 AgentVector::Agent AgentVector::operator[](size_type pos) {
@@ -103,9 +111,11 @@ AgentVector::CAgent AgentVector::front() const {
     return at(0);
 }
 AgentVector::Agent AgentVector::back() {
+    _requireLength();
     return at(_size - 1);
 }
 AgentVector::CAgent AgentVector::back() const {
+    _requireLength();
     return at(_size - 1);
 }
 
@@ -119,8 +129,12 @@ void* AgentVector::data(const std::string& variable_name) {
     }
     // Does the map have a vector
     const auto& map_it = _data->find(variable_name);
-    if (map_it != _data->end())
+    if (map_it != _data->end()) {
+        _requireLength();
+        _require(variable_name);
+        _changedAfter(variable_name, 0);
         return map_it->second->getDataPtr();
+    }
     return nullptr;
 }
 const void* AgentVector::data(const std::string& variable_name) const {
@@ -133,75 +147,106 @@ const void* AgentVector::data(const std::string& variable_name) const {
     }
     // Does the map have a vector
     const auto& map_it = _data->find(variable_name);
-    if (map_it != _data->end())
+    if (map_it != _data->end()) {
+        _requireLength();
+        _require(variable_name);
         return map_it->second->getDataPtr();
+    }
     return nullptr;
 }
 
 AgentVector::iterator AgentVector::begin() noexcept {
-    return iterator(agent, _data, 0);
+    _requireLength();
+    return iterator(this, agent, _data, 0);
 }
 AgentVector::const_iterator AgentVector::begin() const noexcept {
-    return const_iterator(agent, _data, 0);
+    _requireLength();
+    return const_iterator(const_cast<AgentVector*>(this), agent, _data, 0);
 }
 AgentVector::const_iterator AgentVector::cbegin() const noexcept {
-    return const_iterator(agent, _data, 0);
+    _requireLength();
+    return const_iterator(const_cast<AgentVector*>(this), agent, _data, 0);
 }
 AgentVector::iterator AgentVector::end() noexcept {
-    return iterator(agent, _data, _size);
+    return iterator(this, agent, _data, _size);
 }
 AgentVector::const_iterator AgentVector::end() const noexcept {
-    return const_iterator(agent, _data, _size);
+    return const_iterator(const_cast<AgentVector*>(this), agent, _data, _size);
 }
 AgentVector::const_iterator AgentVector::cend() const noexcept {
-    return const_iterator(agent, _data, _size);
+    return const_iterator(const_cast<AgentVector*>(this), agent, _data, _size);
 }
 AgentVector::reverse_iterator AgentVector::rbegin() noexcept {
-    return reverse_iterator(agent, _data, _size - 1);
+    _requireLength();
+    return reverse_iterator(this, agent, _data, _size - 1);
 }
 AgentVector::const_reverse_iterator AgentVector::rbegin() const noexcept {
-    return const_reverse_iterator(agent, _data, _size-1);
+    _requireLength();
+    return const_reverse_iterator(const_cast<AgentVector*>(this), agent, _data, _size-1);
 }
 AgentVector::const_reverse_iterator AgentVector::crbegin() const noexcept {
-    return const_reverse_iterator(agent, _data, _size-1);
+    _requireLength();
+    return const_reverse_iterator(const_cast<AgentVector*>(this), agent, _data, _size-1);
 }
 AgentVector::reverse_iterator AgentVector::rend() noexcept {
-    return reverse_iterator(agent, _data, std::numeric_limits<size_type>::max());
+    return reverse_iterator(this, agent, _data, std::numeric_limits<size_type>::max());
 }
 AgentVector::const_reverse_iterator AgentVector::rend() const noexcept {
-    return const_reverse_iterator(agent, _data, std::numeric_limits<size_type>::max());
+    return const_reverse_iterator(const_cast<AgentVector*>(this), agent, _data, std::numeric_limits<size_type>::max());
 }
 AgentVector::const_reverse_iterator AgentVector::crend() const noexcept {
-    return const_reverse_iterator(agent, _data, std::numeric_limits<size_type>::max());
+    return const_reverse_iterator(const_cast<AgentVector*>(this), agent, _data, std::numeric_limits<size_type>::max());
 }
 
-bool AgentVector::empty() const { return _size == 0; }
-AgentVector::size_type AgentVector::size() const { return _size; }
+bool AgentVector::empty() const {
+    _requireLength();
+    return _size == 0;
+}
+AgentVector::size_type AgentVector::size() const {
+    _requireLength();
+    return _size;
+}
 AgentVector::size_type AgentVector::max_size() { return std::numeric_limits<size_type>::max() - 1; }
 void AgentVector::reserve(size_type new_cap) {
     if (new_cap > _capacity) {
-        resize(new_cap, true);
+        internal_resize(new_cap, true);
     }
 }
 AgentVector::size_type AgentVector::capacity() const { return _capacity; }
 void AgentVector::shrink_to_fit() {
+    _requireLength();
     if (_size > _capacity) {
-        resize(_size, false);
+        internal_resize(_size, false);
     }
 }
 void AgentVector::clear() {
+    _requireLength();
     // Re initialise all variables
     if (_capacity) {
-        for (const auto& v : agent->variables) {
-            const auto it = _data->find(v.first);
-            const size_t variable_size = v.second.type_size * v.second.elements;
-            char* t_data = static_cast<char*>(it->second->getDataPtr());
-            for (unsigned int i = 0; i < _size; ++i) {
-                memcpy(t_data + i * variable_size, v.second.default_value, variable_size);
-            }
-        }
+        init(0, _size);
     }
     _size = 0;
+    _erase(0, _size);
+}
+void AgentVector::init(size_type first, size_type last) {
+    if (first >= last) {
+        THROW InvalidOperation("Last (%u) must exceed first(%u), "
+          "in AgentVector::init()\n",
+          last, first);
+    } else if (last > _capacity) {
+        THROW OutOfBoundsException("Last (%u) exceeds capacity (%u) in AgentVector::init(), "
+            "in AgentVector::init()\n",
+          last, _capacity);
+    }
+    // Re initialise all variables
+    for (const auto& v : agent->variables) {
+        const auto it = _data->find(v.first);
+        const size_t variable_size = v.second.type_size * v.second.elements;
+        char* t_data = static_cast<char*>(it->second->getDataPtr());
+        for (unsigned int i = first; i < last; ++i) {
+            memcpy(t_data + i * variable_size, v.second.default_value, variable_size);
+        }
+    }
 }
 
 AgentVector::iterator AgentVector::insert(const_iterator pos, const AgentInstance& value) {
@@ -221,7 +266,7 @@ AgentVector::iterator AgentVector::insert(const_iterator pos, size_type count, c
 }
 AgentVector::iterator AgentVector::insert(size_type pos, size_type count, const AgentInstance& value) {
     if (count == 0)
-        return iterator(agent, _data, pos);
+        return iterator(this, agent, _data, pos);
     // Confirm they are for the same agent type
     if (value._agent != agent && *value._agent != *agent) {
         THROW InvalidAgent("Agent description mismatch, '%' provided, '%' required, "
@@ -230,13 +275,17 @@ AgentVector::iterator AgentVector::insert(size_type pos, size_type count, const 
     }
     // Expand capacity if required
     {
+        _requireLength();
         size_type new_capacity = _capacity;
         assert((_capacity * RESIZE_FACTOR) + 1 > _capacity);
         while (_size + count > new_capacity) {
             new_capacity = static_cast<size_type>(new_capacity * RESIZE_FACTOR) + 1;
         }
-        resize(new_capacity, true);
+        internal_resize(new_capacity, true);
     }
+    // If we are not appending, ensure we have upto date device data
+    if (pos < _size)
+      _requireAll();
     // Get first index;
     const size_type insert_index = pos;
     // Fix each variable
@@ -257,15 +306,17 @@ AgentVector::iterator AgentVector::insert(size_type pos, size_type count, const 
     }
     // Increase size
     _size += count;
+    // Notify subclasses
+    _insert(pos, count);
     // Return iterator to first inserted item
-    return iterator(agent, _data, insert_index);
+    return iterator(this, agent, _data, insert_index);
 }
 AgentVector::iterator AgentVector::insert(const_iterator pos, size_type count, const Agent& value) {
     return insert(pos._pos, count, value);
 }
 AgentVector::iterator AgentVector::insert(size_type pos, size_type count, const Agent& value) {
     if (count == 0)
-        return iterator(agent, _data, pos);
+        return iterator(this, agent, _data, pos);
     // Confirm they are for the same agent type
     if (value._agent != agent && *value._agent != *agent) {
         THROW InvalidAgent("Agent description mismatch, '%' provided, '%' required, "
@@ -274,13 +325,17 @@ AgentVector::iterator AgentVector::insert(size_type pos, size_type count, const 
     }
     // Expand capacity if required
     {
+        _requireLength();
         size_type new_capacity = _capacity;
         assert((_capacity * RESIZE_FACTOR) + 1 > _capacity);
         while (_size + count > new_capacity) {
             new_capacity = static_cast<size_type>(new_capacity * RESIZE_FACTOR) + 1;
         }
-        resize(new_capacity, true);
+        internal_resize(new_capacity, true);
     }
+    // If we are not appending, ensure we have upto date device data
+    if (pos < _size)
+        _requireAll();
     // Get first index;
     const size_type insert_index = pos;
     // Fix each variable
@@ -307,8 +362,10 @@ AgentVector::iterator AgentVector::insert(size_type pos, size_type count, const 
     }
     // Increase size
     _size += count;
+    // Notify subclasses
+    _insert(pos, count);
     // Return iterator to first inserted item
-    return iterator(agent, _data, insert_index);
+    return iterator(this, agent, _data, insert_index);
 }
 AgentVector::iterator AgentVector::erase(const_iterator pos) {
     const auto first = pos++;
@@ -334,11 +391,12 @@ AgentVector::iterator AgentVector::erase(const_iterator first, const_iterator la
 }
 AgentVector::iterator AgentVector::erase(size_type first, size_type last) {
     if (first == last)
-        return iterator(agent, _data, last);
+        return iterator(this, agent, _data, last);
     // Get first index;
-    const size_type first_remove_index = first< last ? first : last;
+    const size_type first_remove_index = first < last ? first : last;
     const size_type first_move_index = first < last ? last : first;
     const size_type erase_count = first_move_index - first_remove_index;
+    _requireLength();
     const size_type first_empty_index = _size - erase_count;
     const size_type last_empty_index = _size;
     // Ensure indicies are in bounds
@@ -350,6 +408,9 @@ AgentVector::iterator AgentVector::erase(size_type first, size_type last) {
             "it must point to after the final selected item, "
             "in AgentVector::erase()\n", first_move_index);
     }
+    // If we are not erasing from the end, ensure we have upto date device data
+    if (first_move_index != _size)
+        _requireAll();
     // Fix each variable
     for (const auto& v : agent->variables) {
         const auto it = _data->find(v.first);
@@ -360,15 +421,15 @@ AgentVector::iterator AgentVector::erase(size_type first, size_type last) {
             // Copy items individually, incase the src and destination overlap
             memcpy(t_data + (i - erase_count) * variable_size, t_data + i * variable_size, variable_size);
         }
-        // Initialise newly empty variables
-        for (unsigned int i = first_empty_index; i < last_empty_index; ++i) {
-            memcpy(t_data + i * variable_size, v.second.default_value, variable_size);
-        }
     }
+    // Initialise newly empty variables
+    init(first_empty_index, last_empty_index);
     // Decrease size
     _size -= erase_count;
+    // Notify subclasses
+    _erase(first_remove_index, erase_count);
     // Return iterator following the last removed element
-    return iterator(agent, _data, first_remove_index + 1);
+    return iterator(this, agent, _data, first_remove_index + 1);
 }
 void AgentVector::push_back(const AgentInstance& value) {
     insert(cend(), value);
@@ -376,16 +437,19 @@ void AgentVector::push_back(const AgentInstance& value) {
 void AgentVector::push_back() {
     // Expand capacity if required
     {
+        _requireLength();
         size_type new_capacity = _capacity;
         assert((_capacity * RESIZE_FACTOR) + 1 > _capacity);
         while (_size + 1 > new_capacity) {
             new_capacity = static_cast<size_type>(_capacity * RESIZE_FACTOR) + 1;
         }
-        resize(new_capacity, true);
+        internal_resize(new_capacity, true);
     }
-    ++_size;
+    // Notify subclasses & increase size
+    _insert(_size++, 1);
 }
 void AgentVector::pop_back() {
+    _requireLength();
     if (_size) {
         --_size;
         // Reset removed item to default value
@@ -395,13 +459,23 @@ void AgentVector::pop_back() {
             char* t_data = static_cast<char*>(it->second->getDataPtr());
             memcpy(t_data + _size * variable_size, v.second.default_value, variable_size);
         }
+        // Notify subclasses
+        _erase(_size, 1);
     }
 }
 void AgentVector::resize(size_type count) {
-    resize(count, true);
+    _requireLength();
+    const size_type old_size = _size;
+    internal_resize(count, true);
     _size = count;
+    // Notify subclasses
+    if (count > old_size) {
+        _insert(old_size, count - old_size);
+    } else if (count < old_size) {
+        _erase(count, old_size - count);
+    }
 }
-void AgentVector::resize(size_type count, bool init) {
+void AgentVector::internal_resize(size_type count, bool init) {
     if (count == _capacity)
         return;
     for (const auto& v : agent->variables) {
@@ -423,16 +497,14 @@ void AgentVector::resize(size_type count, bool init) {
         } else {
             // Need to resize the variables vector
             it->second->resize(count);
-            // Default init all new elements
-            if (init) {
-                char* t_data = static_cast<char*>(it->second->getDataPtr());
-                for (unsigned int i = _capacity; i < count; ++i) {
-                    memcpy(t_data + i * variable_size, v.second.default_value, variable_size);
-                }
-            }
         }
     }
+    size_type old_capacity = _capacity;
     _capacity = count;
+    // Default init all new elements
+    if (init && count > old_capacity) {
+        this->init(old_capacity, _capacity);
+    }
 }
 void AgentVector::swap(AgentVector& other) noexcept {
     std::swap(_data, other._data);
@@ -442,10 +514,12 @@ void AgentVector::swap(AgentVector& other) noexcept {
 }
 
 bool AgentVector::operator==(const AgentVector& other) const {
+    _requireLength();
     if (_size != other._size)
         return false;
     if (*agent != *other.agent)
         return false;
+    _requireAll();
     for (const auto& v : agent->variables) {
         const auto it_a = _data->find(v.first);
         const auto it_b = other._data->find(v.first);
@@ -481,14 +555,14 @@ std::string AgentVector::getInitialState() const {
 }
 
 AgentVector::Agent AgentVector::iterator::operator*() const {
-    return Agent(_agent, _data, _pos);
+    return Agent(_parent, _agent, _data, _pos);
 }
 AgentVector::CAgent AgentVector::const_iterator::operator*() const {
-    return CAgent(_agent, _data, _pos);
+    return CAgent(_parent, _agent, _data, _pos);
 }
 AgentVector::Agent AgentVector::reverse_iterator::operator*() const {
-    return Agent(_agent, _data, _pos);
+    return Agent(_parent, _agent, _data, _pos);
 }
 AgentVector::CAgent AgentVector::const_reverse_iterator::operator*() const {
-    return CAgent(_agent, _data, _pos);
+    return CAgent(_parent, _agent, _data, _pos);
 }

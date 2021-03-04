@@ -241,6 +241,13 @@ class CUDAFatAgentStateList {
      * This is used when performing a state transition to an empty statelist
      */
     void swap(CUDAFatAgentStateList*other);
+    /**
+     * Returns a list of variable buffers managed by the CUDAFatAgentStateList, which do not occur in exclusionSet
+     * @param exclusionSet A set of buffers to compare against
+     * @note Comparison checks for identical shared_ptr, not equality of VariableBuffer
+     * @note This access is only intended for DeviceAgentVector's correctly handling of subagents
+     */
+    std::list<std::shared_ptr<VariableBuffer>> getBuffers(std::set<std::shared_ptr<VariableBuffer>>& exclusionSet);
 
  private:
     /**
