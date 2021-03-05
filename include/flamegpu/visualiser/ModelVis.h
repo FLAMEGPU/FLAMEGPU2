@@ -1,6 +1,5 @@
 #ifndef INCLUDE_FLAMEGPU_VISUALISER_MODELVIS_H_
 #define INCLUDE_FLAMEGPU_VISUALISER_MODELVIS_H_
-#include "LineVis.h"
 #ifdef VISUALISATION
 
 #include <string>
@@ -8,8 +7,11 @@
 #include <thread>
 #include <memory>
 #include <climits>
+
 #include "flamegpu/visualiser/AgentVis.h"
 #include "flamegpu/visualiser/StaticModelVis.h"
+#include "flamegpu/visualiser/LineVis.h"
+#include "flamegpu/visualiser/color/AutoPalette.h"
 #include "FLAMEGPU_Visualisation.h"
 #include "config/ModelConfig.h"
 
@@ -30,6 +32,17 @@ class ModelVis {
      */
     explicit ModelVis(const CUDASimulation &model/*TBD*/);
 
+    /**
+     * Sets the palette to automatically give color to agent added to the model
+     * This can be overriden at an agent level or disabled
+     * Similarly, individual agent-states can have their colour overriden
+     */
+    void setAutoPalette(const Palette &palette);
+    /**
+     * Disables the auto-palette, subsequently created AgentVis/AgentStateVis will not take colors from it
+     * @note AgentVis/AgentStateVis which have already sampled a color will not lose their existing color
+     */
+    void clearAutoPalette();
     /**
      * Enables visualisation of the named agent and returns the configuration handler
      * @see Agent(const std::string&)
@@ -179,6 +192,11 @@ class ModelVis {
      */
     ModelConfig modelCfg;
     /**
+     * Autopalette which provides default colors to all agents
+     * By default this uses Stock::Palettes:DARK2
+     */
+    std::shared_ptr<AutoPalette> autoPalette;
+    /**
      * Per agent, visualisation configuration options
      */
     std::unordered_map<std::string, AgentVis> agents;
@@ -195,6 +213,5 @@ class ModelVis {
      */
     std::unique_ptr<FLAMEGPU_Visualisation> visualiser;
 };
-
 #endif  // VISUALISATION
 #endif  // INCLUDE_FLAMEGPU_VISUALISER_MODELVIS_H_

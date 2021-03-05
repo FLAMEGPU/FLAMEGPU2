@@ -7,6 +7,8 @@
 #include "config/AgentStateConfig.h"
 #include "config/Stock.h"
 
+struct Color;
+class ColorFunction;
 class AgentVis;
 
 /**
@@ -22,11 +24,11 @@ class AgentStateVis {
     friend class AgentVis;
  public:
     /**
-     *
-     * @param _parent Visualisation options for the agent
+     * Creates a new AgentStateVis to configure visualisation options for a particular agent-state
+     * @param parent Visualisation options for the agent
      * @param state_name State of the agent for which this options should represent
      */
-    AgentStateVis(const AgentVis &_parent, const std::string &state_name);
+    AgentStateVis(const AgentVis &parent, const std::string &state_name);
 
     /**
      * Use a model from file
@@ -55,6 +57,14 @@ class AgentStateVis {
      * largest
      */
     void setModelScale(float maxLen);
+    /**
+     * Set a custom colour function
+     */
+    void setColor(const ColorFunction& cf);
+    /**
+     * Disable custom color, e.g. if you're using a textured model
+     */
+    void clearColor();
 
  private:
     /**

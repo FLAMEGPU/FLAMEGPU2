@@ -2,6 +2,7 @@
 
 #include "flamegpu/exception/FGPUException.h"
 #include "flamegpu/visualiser/AgentVis.h"
+#include "flamegpu/visualiser/color/ColorFunction.h"
 
 
 AgentStateVis::AgentStateVis(const AgentVis &_parent, const std::string &_state_name)
@@ -35,4 +36,14 @@ void AgentStateVis::setModelScale(float maxLen) {
     }
     config.model_scale[0] = -maxLen;
     configFlags.model_scale = 1;
+}
+void AgentStateVis::setColor(const ColorFunction& cf) {
+    config.color_var = cf.getAgentVariableName();
+    config.color_shader_src = cf.getSrc();
+    config.color_var_name = cf.getSamplerName();
+}
+void AgentStateVis::clearColor() {
+    config.color_var = "";
+    config.color_shader_src = "";
+    config.color_var_name = "";
 }

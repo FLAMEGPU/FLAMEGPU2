@@ -327,7 +327,7 @@ model = pyflamegpu.ModelDescription("Boids_BruteForce");
 """
 env = model.Environment();
 # Population size to generate, if no agents are loaded from disk
-env.newPropertyUInt("POPULATION_TO_GENERATE", 32768);
+env.newPropertyUInt("POPULATION_TO_GENERATE", 1024); #32768);
 
 # Environment Bounds
 env.newPropertyFloat("MIN_POSITION", -0.5);
@@ -409,8 +409,7 @@ if pyflamegpu.VISUALISATION:
     circ_agt = visualisation.addAgent("Boid");
     # Position vars are named x, y, z; so they are used by default
     circ_agt.setModel(pyflamegpu.ICOSPHERE);
-    circ_agt.setModelScale(env.getPropertyFloat("SEPARATION_RADIUS"));
-
+    circ_agt.setModelScale(env.getPropertyFloat("SEPARATION_RADIUS") * 10);
     visualisation.activate();
 
 """
