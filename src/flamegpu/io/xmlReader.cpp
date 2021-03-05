@@ -258,8 +258,8 @@ int xmlReader::parse() {
         const char* agentName = pNameElement->GetText();
         // Find agent state, use initial state if not set (means its old fgpu1 input file)
         tinyxml2::XMLElement* pStateElement = pElement->FirstChildElement("state");
-        const char* agentState = pStateElement ? pStateElement->GetText() : getInitialState(agentName).c_str();
-        std::shared_ptr<AgentVector> &agentVec = model_state.at({agentName, std::string(agentState)});
+        const std::string agentState = pStateElement ? std::string(pStateElement->GetText()) : getInitialState(agentName);
+        std::shared_ptr<AgentVector> &agentVec = model_state.at({agentName, agentState });
         const VariableMap& agentVariables = agentVec->getVariableMetaData();
         // Create instance to store variable data in
         agentVec->push_back();
