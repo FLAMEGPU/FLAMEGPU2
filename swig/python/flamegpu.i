@@ -565,19 +565,58 @@ TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(logNormal, HostRandom::logNormal)
 // Optionally instantiate visualisation classes
 #ifdef VISUALISATION
 %{
-#include "flamegpu/visualiser/AgentStateVis.h"
-#include "flamegpu/visualiser/AgentVis.h"
-#include "flamegpu/visualiser/LineVis.h"
-#include "flamegpu/visualiser/ModelVis.h"
-#include "flamegpu/visualiser/StaticModelVis.h"
+#include "flamegpu/visualiser/visualiser_api.h"
 #include "config/Stock.h"
 %}
+// SWIG is unable to wrap `Color::operator StaticColor()`
+// Therefore we manually add two functions to handle the implict conversion
+%extend AgentStateVis {
+   void AgentStateVis::setColor(const Color &cf) {
+        $self->setColor(cf);
+   }
+}
+%extend AgentVis {
+   void AgentVis::setColor(const Color &cf) {
+        $self->setColor(cf);
+   }
+}
+// Disable functions which use C++
+%ignore Palette::const_iterator;
+%ignore Palette::begin;
+%ignore Palette::end;
+%ignore Palette::colors;  // This is protected, i've no idea why SWIG is trying to wrap it
+// Extend Palette
+%extend Palette {
+%pythoncode {
+    def __iter__(self):
+        return FLAMEGPUIterator(self)
+    def __len__(self):
+        return self.size()
+}
+    Color Palette::__getitem__(const int &index) {
+        if (index >= 0)
+            return $self->operator[](index);
+        return $self->operator[]($self->size() + index);
+    }
+    // Palettes are currently immutable
+    //void Palette::__setitem__(const AgentVector::size_type &index, const Color &value) {
+    //     $self->operator[](index) = value;
+    //}
+}
 %include "flamegpu/visualiser/AgentStateVis.h"
 %include "flamegpu/visualiser/AgentVis.h"
 %include "flamegpu/visualiser/LineVis.h"
 %include "flamegpu/visualiser/ModelVis.h"
 %include "flamegpu/visualiser/StaticModelVis.h"
+%include "flamegpu/visualiser/color/Color.h"
+%include "flamegpu/visualiser/color/Palette.h"
+%include "flamegpu/visualiser/color/DiscreteColor.h"
+%include "flamegpu/visualiser/color/StaticColor.h"
+%include "flamegpu/visualiser/color/HSVInterpolation.h"
 %include "config/Stock.h"
+// Manually create the two DiscretColor templates
+%template(iDiscreteColor) DiscreteColor<int32_t>;
+%template(uDiscreteColor) DiscreteColor<uint32_t>;
 // This messes with a define, so must occur after all other files which might check VISUALISATION
 // #define VISUALISATION false, still causes #ifdef VISUALISATION as true
 // I tried `%inline %{const boolean VISUALISATION = false;%}` but swig didnt like it

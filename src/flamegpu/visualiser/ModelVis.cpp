@@ -5,9 +5,16 @@
 
 ModelVis::ModelVis(const CUDASimulation &_model)
     : modelCfg(_model.getModelDescription().name.c_str())
+    , autoPalette(std::make_shared<AutoPalette>(Stock::Palettes::DARK2))
     , model(_model)
     , modelData(_model.getModelDescription()) { }
 
+void ModelVis::setAutoPalette(const Palette& palette) {
+    autoPalette = std::make_shared<AutoPalette>(palette);
+}
+void ModelVis::clearAutoPalette() {
+    autoPalette = nullptr;
+}
 AgentVis &ModelVis::addAgent(const std::string &agent_name) {
     // If agent exists
     if (modelData.agents.find(agent_name) != modelData.agents.end()) {
@@ -15,7 +22,7 @@ AgentVis &ModelVis::addAgent(const std::string &agent_name) {
         auto visAgent = agents.find(agent_name);
         if (visAgent == agents.end()) {
             // Create new vis agent
-            return agents.emplace(agent_name, AgentVis(model.getCUDAAgent(agent_name))).first->second;
+            return agents.emplace(agent_name, AgentVis(model.getCUDAAgent(agent_name), autoPalette)).first->second;
         }
         return visAgent->second;
     }

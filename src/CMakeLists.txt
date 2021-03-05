@@ -249,11 +249,20 @@ SET(SRC_FLAMEGPU2
 if (VISUALISATION)
     SET(SRC_INCLUDE
         ${SRC_INCLUDE}
+        ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/visualiser_api.h
         ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/ModelVis.h
         ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/AgentVis.h
         ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/AgentStateVis.h
         ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/StaticModelVis.h
         ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/LineVis.h
+        ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/color/Color.h
+        ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/color/ColorFunction.h
+        ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/color/DiscreteColor.h
+        ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/color/StaticColor.h
+        ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/color/HSVInterpolation.h
+        ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/color/ViridisInterpolation.h
+        ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/color/Palette.h
+        ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/color/AutoPalette.h
     )
     SET(SRC_FLAMEGPU2
         ${SRC_FLAMEGPU2}
@@ -262,6 +271,10 @@ if (VISUALISATION)
         ${FLAMEGPU_ROOT}/src/flamegpu/visualiser/AgentStateVis.cpp
         ${FLAMEGPU_ROOT}/src/flamegpu/visualiser/StaticModelVis.cpp
         ${FLAMEGPU_ROOT}/src/flamegpu/visualiser/LineVis.cpp
+        ${FLAMEGPU_ROOT}/src/flamegpu/visualiser/color/DiscreteColor.cpp
+        ${FLAMEGPU_ROOT}/src/flamegpu/visualiser/color/StaticColor.cpp
+        ${FLAMEGPU_ROOT}/src/flamegpu/visualiser/color/HSVInterpolation.cpp
+        ${FLAMEGPU_ROOT}/src/flamegpu/visualiser/color/ViridisInterpolation.cpp
     )
 endif()
 SET(ALL_SRC

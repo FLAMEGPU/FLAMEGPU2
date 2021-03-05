@@ -11,9 +11,13 @@
 #include "config/AgentStateConfig.h"
 #include "config/Stock.h"
 
+struct Palette;
 struct AgentData;
 class CUDAAgent;
 class FLAMEGPU_Visualisation;
+class ColorFunction;
+struct Color;
+class AutoPalette;
 
 /**
  * This provides an interface for managing the render options for all agents of a specific type
@@ -26,10 +30,15 @@ class AgentVis {
  public:
     /**
      * @param agent The CUDAAgent this class is configuring the visualisation for
+     * @param autopalette Automatic source of colors for individual agent states
+     * @note Agent states only receive colors from the autopalette when AgentVis::State() is called for each state
+     * @note By default, all states share the same color from the autopalette
      */
-    explicit AgentVis(CUDAAgent &agent);
+    explicit AgentVis(CUDAAgent &agent, const std::shared_ptr<AutoPalette> &autopalette = nullptr);
     /**
      * Returns the configuration handler for the named state
+     * On first use for each state this will assign the state a color from the AutoPalette if available
+     * Clear the autopalette first if you wish for it to use the default color
      */
     AgentStateVis &State(const std::string &state_name);
 
@@ -93,14 +102,20 @@ class AgentVis {
      * @param maxLen World scale of the model's relative to the axis which it is largest
      */
     void setModelScale(float maxLen);
-
     /**
-     * Some shader modes wont want this though, e.g. tex
+     * Set the auto-palette used to assign agent-state's colors
+     * @note The color is assigned the first time State() is called, otherwise agents use the default color
      */
-    // void setColor(const float &r, const float &g, const float &b) { setColor(glm::vec4(r, g, b, 1.0f)); }
-    // void setColor(const float &r, const float &g, const float &b, const float &a) { setColor(glm::vec4(r, g, b, a)); }
-    // void setColor(const glm::vec3 &rgb) { setColor(glm::vec4(rgb, 1.0f)); }
-    // void setColor(const glm::vec4 &rgba);
+    void setAutoPalette(const Palette& ap);
+    /**
+     * Set a custom color function
+     * @note Disables the auto-palette
+     */
+    void setColor(const ColorFunction &cf);
+    /**
+     * Disable custom color and/or auto-palette, e.g. if you're using a textured model
+     */
+    void clearColor();
 
  private:
     /**
@@ -119,6 +134,14 @@ class AgentVis {
      * @note This should only be called when visualisation muted is held
      */
     void updateBuffers(std::unique_ptr<FLAMEGPU_Visualisation> &vis);
+    /**
+     * Link to the currently active auto_palette
+     */
+    std::weak_ptr<AutoPalette> auto_palette;
+    /**
+     * If setAutoPalette() is called, the created AutoPalette is stored here
+     */
+    std::shared_ptr<AutoPalette> owned_auto_palette;
     /**
      * This is the default configuration options for states of this agent
      * These values will be used for any state configuration options which have not been set independently
