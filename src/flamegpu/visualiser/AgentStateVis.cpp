@@ -38,12 +38,12 @@ void AgentStateVis::setModelScale(float maxLen) {
     configFlags.model_scale = 1;
 }
 void AgentStateVis::setColor(const ColorFunction& cf) {
-    config.color_var = cf.getAgentVariableName();
+    // Remove old, we only ever want 1 color value
+    config.tex_buffers.erase(TexBufferConfig::Color);
+    config.tex_buffers.emplace(TexBufferConfig::Color, CustomTexBufferConfig{ cf.getAgentVariableName(), cf.getSamplerName() });
     config.color_shader_src = cf.getSrc();
-    config.color_var_name = cf.getSamplerName();
 }
 void AgentStateVis::clearColor() {
-    config.color_var = "";
+    config.tex_buffers.erase(TexBufferConfig::Color);
     config.color_shader_src = "";
-    config.color_var_name = "";
 }
