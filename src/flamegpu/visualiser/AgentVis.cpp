@@ -9,13 +9,19 @@
 AgentVis::AgentVis(CUDAAgent &_agent, const std::shared_ptr<AutoPalette>& autopalette)
     : owned_auto_palette(nullptr)
     , agent(_agent)
-    , agentData(_agent.getAgentDescription())
-    , x_var(_agent.getAgentDescription().variables.find("x") != _agent.getAgentDescription().variables.end() ? "x" : "")
-    , y_var(_agent.getAgentDescription().variables.find("y") != _agent.getAgentDescription().variables.end() ? "y" : "")
-    , z_var(_agent.getAgentDescription().variables.find("z") != _agent.getAgentDescription().variables.end() ? "z" : "") {
+    , agentData(_agent.getAgentDescription()) {
+    if (_agent.getAgentDescription().variables.find("x") != _agent.getAgentDescription().variables.end()) {
+        core_tex_buffers.emplace(TexBufferConfig::Position_x, "x");
+    }
+    if (_agent.getAgentDescription().variables.find("y") != _agent.getAgentDescription().variables.end()) {
+        core_tex_buffers.emplace(TexBufferConfig::Position_y, "y");
+    }
+    if (_agent.getAgentDescription().variables.find("z") != _agent.getAgentDescription().variables.end()) {
+        core_tex_buffers.emplace(TexBufferConfig::Position_z, "z");
+    }
     if (autopalette) {
         setColor(autopalette->next());
-        auto_palette = autopalette;  // setColor() clears auto_pallete
+        auto_palette = autopalette;  // setColor() clears auto_palette
     }
 }
 
@@ -48,7 +54,7 @@ void AgentVis::setXVariable(const std::string &var_name) {
             "in AgentVis::setXVariable()\n",
             var_name.c_str(), agentData.name.c_str());
     }
-    x_var = var_name;
+    core_tex_buffers[TexBufferConfig::Position_x].agentVariableName = var_name;
 }
 void AgentVis::setYVariable(const std::string &var_name) {
     if (agentData.variables.find(var_name) == agentData.variables.end()) {
@@ -56,7 +62,7 @@ void AgentVis::setYVariable(const std::string &var_name) {
             "in AgentVis::setYVariable()\n",
             var_name.c_str(), agentData.name.c_str());
     }
-    y_var = var_name;
+    core_tex_buffers[TexBufferConfig::Position_y].agentVariableName = var_name;
 }
 void AgentVis::setZVariable(const std::string &var_name) {
     if (agentData.variables.find(var_name) == agentData.variables.end()) {
@@ -64,19 +70,163 @@ void AgentVis::setZVariable(const std::string &var_name) {
             "in AgentVis::setZVariable()\n",
             var_name.c_str(), agentData.name.c_str());
     }
-    z_var = var_name;
+    core_tex_buffers[TexBufferConfig::Position_z].agentVariableName = var_name;
 }
-void AgentVis::clearZVariables() {
-    z_var = "";
+void AgentVis::setForwardXVariable(const std::string& var_name) {
+    if (agentData.variables.find(var_name) == agentData.variables.end()) {
+        THROW InvalidAgentVar("Variable '%s' was not found within agent '%s', "
+            "in AgentVis::setDirectionXVariable()\n",
+            var_name.c_str(), agentData.name.c_str());
+    }
+    core_tex_buffers[TexBufferConfig::Forward_x].agentVariableName = var_name;
+}
+void AgentVis::setForwardYVariable(const std::string& var_name) {
+    if (agentData.variables.find(var_name) == agentData.variables.end()) {
+        THROW InvalidAgentVar("Variable '%s' was not found within agent '%s', "
+            "in AgentVis::setDirectionYVariable()\n",
+            var_name.c_str(), agentData.name.c_str());
+    }
+    core_tex_buffers[TexBufferConfig::Forward_y].agentVariableName = var_name;
+}
+void AgentVis::setForwardZVariable(const std::string& var_name) {
+    if (agentData.variables.find(var_name) == agentData.variables.end()) {
+        THROW InvalidAgentVar("Variable '%s' was not found within agent '%s', "
+            "in AgentVis::setDirectionZVariable()\n",
+            var_name.c_str(), agentData.name.c_str());
+    }
+    core_tex_buffers[TexBufferConfig::Forward_z].agentVariableName = var_name;
+}
+void AgentVis::setUpXVariable(const std::string& var_name) {
+    if (agentData.variables.find(var_name) == agentData.variables.end()) {
+        THROW InvalidAgentVar("Variable '%s' was not found within agent '%s', "
+            "in AgentVis::setUpXVariable()\n",
+            var_name.c_str(), agentData.name.c_str());
+    }
+    core_tex_buffers[TexBufferConfig::Up_x].agentVariableName = var_name;
+}
+void AgentVis::setUpYVariable(const std::string& var_name) {
+    if (agentData.variables.find(var_name) == agentData.variables.end()) {
+        THROW InvalidAgentVar("Variable '%s' was not found within agent '%s', "
+            "in AgentVis::setUpYVariable()\n",
+            var_name.c_str(), agentData.name.c_str());
+    }
+    core_tex_buffers[TexBufferConfig::Up_y].agentVariableName = var_name;
+}
+void AgentVis::setUpZVariable(const std::string& var_name) {
+    if (agentData.variables.find(var_name) == agentData.variables.end()) {
+        THROW InvalidAgentVar("Variable '%s' was not found within agent '%s', "
+            "in AgentVis::setUpZVariable()\n",
+            var_name.c_str(), agentData.name.c_str());
+    }
+    core_tex_buffers[TexBufferConfig::Up_z].agentVariableName = var_name;
+}
+void AgentVis::setYawVariable(const std::string& var_name) {
+    if (agentData.variables.find(var_name) == agentData.variables.end()) {
+        THROW InvalidAgentVar("Variable '%s' was not found within agent '%s', "
+            "in AgentVis::setYawVariable()\n",
+            var_name.c_str(), agentData.name.c_str());
+    }
+    core_tex_buffers[TexBufferConfig::Heading].agentVariableName = var_name;
+}
+void AgentVis::setPitchVariable(const std::string& var_name) {
+    if (agentData.variables.find(var_name) == agentData.variables.end()) {
+        THROW InvalidAgentVar("Variable '%s' was not found within agent '%s', "
+            "in AgentVis::setPitchVariable()\n",
+            var_name.c_str(), agentData.name.c_str());
+    }
+    core_tex_buffers[TexBufferConfig::Pitch].agentVariableName = var_name;
+}
+void AgentVis::setRollVariable(const std::string& var_name) {
+    if (agentData.variables.find(var_name) == agentData.variables.end()) {
+        THROW InvalidAgentVar("Variable '%s' was not found within agent '%s', "
+            "in AgentVis::setRollVariable()\n",
+            var_name.c_str(), agentData.name.c_str());
+    }
+    core_tex_buffers[TexBufferConfig::Bank].agentVariableName = var_name;
+}
+void AgentVis::clearXVariable() {
+    core_tex_buffers.erase(TexBufferConfig::Position_x);
+}
+void AgentVis::clearYVariable() {
+    core_tex_buffers.erase(TexBufferConfig::Position_y);
+}
+void AgentVis::clearZVariable() {
+    core_tex_buffers.erase(TexBufferConfig::Position_z);
+}
+void AgentVis::clearForwardXVariable() {
+    core_tex_buffers.erase(TexBufferConfig::Forward_x);
+}
+void AgentVis::clearForwardYVariable() {
+    core_tex_buffers.erase(TexBufferConfig::Forward_y);
+}
+void AgentVis::clearForwardZVariable() {
+    core_tex_buffers.erase(TexBufferConfig::Forward_z);
+}
+void AgentVis::clearUpXVariable() {
+    core_tex_buffers.erase(TexBufferConfig::Up_x);
+}
+void AgentVis::clearUpYVariable() {
+    core_tex_buffers.erase(TexBufferConfig::Up_y);
+}
+void AgentVis::clearUpZVariable() {
+    core_tex_buffers.erase(TexBufferConfig::Up_z);
+}
+void AgentVis::clearYawVariable() {
+    core_tex_buffers.erase(TexBufferConfig::Heading);
+}
+void AgentVis::clearPitchVariable() {
+    core_tex_buffers.erase(TexBufferConfig::Pitch);
+}
+void AgentVis::clearRollVariable() {
+    core_tex_buffers.erase(TexBufferConfig::Bank);
 }
 std::string AgentVis::getXVariable() const {
-    return x_var;
+    const auto it = core_tex_buffers.find(TexBufferConfig::Position_x);
+    return it != core_tex_buffers.end() ? it->second.agentVariableName : "";
 }
 std::string AgentVis::getYVariable() const {
-    return y_var;
+    const auto it = core_tex_buffers.find(TexBufferConfig::Position_y);
+    return it != core_tex_buffers.end() ? it->second.agentVariableName : "";
 }
 std::string AgentVis::getZVariable() const {
-    return z_var;
+    const auto it = core_tex_buffers.find(TexBufferConfig::Position_z);
+    return it != core_tex_buffers.end() ? it->second.agentVariableName : "";
+}
+std::string AgentVis::getForwardXVariable() const {
+    const auto it = core_tex_buffers.find(TexBufferConfig::Forward_x);
+    return it != core_tex_buffers.end() ? it->second.agentVariableName : "";
+}
+std::string AgentVis::getForwardYVariable() const {
+    const auto it = core_tex_buffers.find(TexBufferConfig::Forward_y);
+    return it != core_tex_buffers.end() ? it->second.agentVariableName : "";
+}
+std::string AgentVis::getForwardZVariable() const {
+    const auto it = core_tex_buffers.find(TexBufferConfig::Forward_z);
+    return it != core_tex_buffers.end() ? it->second.agentVariableName : "";
+}
+std::string AgentVis::getUpXVariable() const {
+    const auto it = core_tex_buffers.find(TexBufferConfig::Up_x);
+    return it != core_tex_buffers.end() ? it->second.agentVariableName : "";
+}
+std::string AgentVis::getUpYVariable() const {
+    const auto it = core_tex_buffers.find(TexBufferConfig::Up_y);
+    return it != core_tex_buffers.end() ? it->second.agentVariableName : "";
+}
+std::string AgentVis::getUpZVariable() const {
+    const auto it = core_tex_buffers.find(TexBufferConfig::Up_z);
+    return it != core_tex_buffers.end() ? it->second.agentVariableName : "";
+}
+std::string AgentVis::getYawVariable() const {
+    const auto it = core_tex_buffers.find(TexBufferConfig::Heading);
+    return it != core_tex_buffers.end() ? it->second.agentVariableName : "";
+}
+std::string AgentVis::getPitchVariable() const {
+    const auto it = core_tex_buffers.find(TexBufferConfig::Pitch);
+    return it != core_tex_buffers.end() ? it->second.agentVariableName : "";
+}
+std::string AgentVis::getRollVariable() const {
+    const auto it = core_tex_buffers.find(TexBufferConfig::Bank);
+    return it != core_tex_buffers.end() ? it->second.agentVariableName : "";
 }
 void AgentVis::initBindings(std::unique_ptr<FLAMEGPU_Visualisation> &vis) {
     // Pass each state's vis config to the visualiser
@@ -87,7 +237,7 @@ void AgentVis::initBindings(std::unique_ptr<FLAMEGPU_Visualisation> &vis) {
         if (states.find(state) != states.end()) {
             vc = states.at(state).config;
         }
-        vis->addAgentState(agentData.name, state, vc, !this->x_var.empty(), !this->y_var.empty(), !this->z_var.empty(), !vc.color_var.empty());
+        vis->addAgentState(agentData.name, state, vc, core_tex_buffers, vc.tex_buffers);
     }
 }
 void AgentVis::requestBufferResizes(std::unique_ptr<FLAMEGPU_Visualisation> &vis) {
@@ -103,20 +253,25 @@ void AgentVis::updateBuffers(std::unique_ptr<FLAMEGPU_Visualisation> &vis) {
             state_config = states.at(state).config;
         }
         auto& state_data_map = agent.state_map.at(state);
-        vis->updateAgentStateBuffer(agentData.name, state,
-            state_data_map->getSize(),
-            reinterpret_cast<float *>(x_var.empty() ? nullptr : state_data_map->getVariablePointer(x_var)),
-            reinterpret_cast<float *>(y_var.empty() ? nullptr : state_data_map->getVariablePointer(y_var)),
-            reinterpret_cast<float *>(z_var.empty() ? nullptr : state_data_map->getVariablePointer(z_var)),
-            reinterpret_cast<float*>(state_config.color_var.empty() ? nullptr : state_data_map->getVariablePointer(state_config.color_var)));
+        // Update buffer pointers inside the map
+        // These get changed per state, but should be fine
+        for (auto &tb : core_tex_buffers) {
+            tb.second.t_d_ptr = state_data_map->getVariablePointer(tb.second.agentVariableName);
+        }
+        for (auto &tb : state_config.tex_buffers) {
+            tb.second.t_d_ptr = state_data_map->getVariablePointer(tb.second.agentVariableName);
+        }
+        // Pass the updated map to the update function
+        vis->updateAgentStateBuffer(agentData.name, state, state_data_map->getSize(), core_tex_buffers, state_config.tex_buffers);
     }
-    // TODO Other buffers? (e.g. direction[xyz])
 }
 
 void AgentVis::setModel(const std::string &modelPath, const std::string &texturePath) {
     AgentStateConfig::setString(&defaultConfig.model_path, modelPath);
-    if (!texturePath.empty())
+    if (!texturePath.empty()) {
         AgentStateConfig::setString(&defaultConfig.model_texture, texturePath);
+        clearColor();
+    }
     // Apply to all states which haven't had the setting overriden
     for (auto &s : states) {
         if (!s.second.configFlags.model_path) {
@@ -173,16 +328,21 @@ void AgentVis::setAutoPalette(const Palette& ap) {
     auto_palette = owned_auto_palette;
 }
 void AgentVis::setColor(const ColorFunction& cf) {
-    defaultConfig.color_var = cf.getAgentVariableName();
+    // Remove old, we only ever want 1 color value
+    defaultConfig.tex_buffers.erase(TexBufferConfig::Color);
+    if (!cf.getAgentVariableName().empty() && !cf.getSamplerName().empty())
+        defaultConfig.tex_buffers.emplace(TexBufferConfig::Color, CustomTexBufferConfig{ cf.getAgentVariableName(), cf.getSamplerName() });
     defaultConfig.color_shader_src = cf.getSrc();
-    defaultConfig.color_var_name = cf.getSamplerName();
     auto_palette.reset();
     owned_auto_palette = nullptr;
+    // Clear texture, can't have both colour and texture
+    if (defaultConfig.model_texture) {
+        free(const_cast<char*>(defaultConfig.model_texture));
+    }
 }
 void AgentVis::clearColor() {
-    defaultConfig.color_var = "";
+    defaultConfig.tex_buffers.erase(TexBufferConfig::Color);
     defaultConfig.color_shader_src = "";
-    defaultConfig.color_var_name = "";
     auto_palette.reset();
     owned_auto_palette = nullptr;
 }

@@ -57,7 +57,9 @@ void ModelVis::activate() {
         visualiser = std::make_unique<FLAMEGPU_Visualisation>(modelCfg);  // Window resolution
         for (auto &agent : agents) {
             // If x and y aren't set, throw exception
-            if (agent.second.x_var.empty() && agent.second.y_var.empty() && agent.second.z_var.empty()) {
+            if (agent.second.core_tex_buffers.find(TexBufferConfig::Position_x) == agent.second.core_tex_buffers.end() &&
+                agent.second.core_tex_buffers.find(TexBufferConfig::Position_y) == agent.second.core_tex_buffers.end() &&
+                agent.second.core_tex_buffers.find(TexBufferConfig::Position_z) == agent.second.core_tex_buffers.end()) {
                 THROW VisualisationException("Agent '%s' has not had x, y or z variables set, agent requires location to render, "
                     "in ModelVis::activate()\n",
                     agent.second.agentData.name.c_str());
