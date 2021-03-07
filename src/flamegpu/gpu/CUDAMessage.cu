@@ -154,25 +154,22 @@ void CUDAMessage::mapReadRuntimeVariables(const AgentFunctionData& func, const C
         // get the message variable size
         size_t size = mmp.second.type_size;
 
-       // maximum population size
-        unsigned int length = this->getMessageCount();  // check to see if it is equal to pop
+        if (func.func) {
+            // maximum population size
+            unsigned int length = this->getMessageCount();  // check to see if it is equal to pop
 #ifdef _DEBUG
-        const Curve::Variable cv = curve.registerVariableByHash(var_hash + agent_hash + func_hash + message_hash + instance_id, d_ptr, size, length);
-        if (cv != static_cast<int>((var_hash + agent_hash + func_hash + message_hash + instance_id)%Curve::MAX_VARIABLES)) {
-            fprintf(stderr, "Curve Warning: Agent Function '%s' Message In Variable '%s' has a collision and may work improperly.\n", message_name.c_str(), mmp.first.c_str());
-        }
+            const Curve::Variable cv = curve.registerVariableByHash(var_hash + agent_hash + func_hash + message_hash + instance_id, d_ptr, size, length);
+            if (cv != static_cast<int>((var_hash + agent_hash + func_hash + message_hash + instance_id)%Curve::MAX_VARIABLES)) {
+                fprintf(stderr, "Curve Warning: Agent Function '%s' Message In Variable '%s' has a collision and may work improperly.\n", message_name.c_str(), mmp.first.c_str());
+            }
 #else
-        curve.registerVariableByHash(var_hash + agent_hash + func_hash + message_hash + instance_id, d_ptr, size, length);
+            curve.registerVariableByHash(var_hash + agent_hash + func_hash + message_hash + instance_id, d_ptr, size, length);
 #endif
-        // Map RTC variables (these must be mapped before each function execution as the runtime pointer may have changed to the swapping)
-        if (!func.rtc_func_name.empty()) {
-            // get the rtc variable ptr
-            const jitify::experimental::KernelInstantiation& instance = cuda_agent.getRTCInstantiation(func.name);
-            std::stringstream d_var_ptr_name;
-            d_var_ptr_name << "curve_rtc_ptr_" << agent_hash + func_hash + message_hash << "_" << mmp.first;
-            CUdeviceptr d_var_ptr = instance.get_global_ptr(d_var_ptr_name.str().c_str());
-            // copy runtime ptr (d_ptr) to rtc ptr (d_var_ptr)
-            gpuErrchkDriverAPI(cuMemcpyHtoD(d_var_ptr, &d_ptr, sizeof(void*)));
+        } else {
+            // Map RTC variables (these must be mapped before each function execution as the runtime pointer may have changed to the swapping)
+            // Copy data to rtc header cache
+            auto &rtc_header = cuda_agent.getRTCHeader(func.name);
+            memcpy(rtc_header.getMessageInVariableCachePtr(mmp.first.c_str()), &d_ptr, sizeof(void*));
         }
     }
 }
@@ -208,25 +205,22 @@ void CUDAMessage::mapWriteRuntimeVariables(const AgentFunctionData& func, const 
         // get the message variable size
         size_t size = mmp.second.type_size;
 
-        // maximum population size
-        unsigned int length = writeLen;  // check to see if it is equal to pop
+        if (func.func) {
+            // maximum population size
+            unsigned int length = writeLen;  // check to see if it is equal to pop
 #ifdef _DEBUG
-        const Curve::Variable cv = curve.registerVariableByHash(var_hash + agent_hash + func_hash + message_hash + instance_id, d_ptr, size, length);
-        if (cv != static_cast<int>((var_hash + agent_hash + func_hash + message_hash + instance_id)%Curve::MAX_VARIABLES)) {
-            fprintf(stderr, "Curve Warning: Agent Function '%s' Message '%s' Out? Variable '%s' has a collision and may work improperly.\n", func.name.c_str(), message_name.c_str(), mmp.first.c_str());
-        }
+            const Curve::Variable cv = curve.registerVariableByHash(var_hash + agent_hash + func_hash + message_hash + instance_id, d_ptr, size, length);
+            if (cv != static_cast<int>((var_hash + agent_hash + func_hash + message_hash + instance_id)%Curve::MAX_VARIABLES)) {
+                fprintf(stderr, "Curve Warning: Agent Function '%s' Message '%s' Out? Variable '%s' has a collision and may work improperly.\n", func.name.c_str(), message_name.c_str(), mmp.first.c_str());
+            }
 #else
-        curve.registerVariableByHash(var_hash + agent_hash + func_hash + message_hash + instance_id, d_ptr, size, length);
+            curve.registerVariableByHash(var_hash + agent_hash + func_hash + message_hash + instance_id, d_ptr, size, length);
 #endif
-        // Map RTC variables (these must be mapped before each function execution as the runtime pointer may have changed to the swapping)
-        if (!func.rtc_func_name.empty()) {
-            // get the rtc variable ptr
-            const jitify::experimental::KernelInstantiation& instance = cuda_agent.getRTCInstantiation(func.name);
-            std::stringstream d_var_ptr_name;
-            d_var_ptr_name << "curve_rtc_ptr_" << agent_hash + func_hash + message_hash << "_" << mmp.first;
-            CUdeviceptr d_var_ptr = instance.get_global_ptr(d_var_ptr_name.str().c_str());
-            // copy runtime ptr (d_ptr) to rtc ptr (d_var_ptr)
-            gpuErrchkDriverAPI(cuMemcpyHtoD(d_var_ptr, &d_ptr, sizeof(void*)));
+        } else {
+            // Map RTC variables (these must be mapped before each function execution as the runtime pointer may have changed to the swapping)
+            // Copy data to rtc header cache
+            auto& rtc_header = cuda_agent.getRTCHeader(func.name);
+            memcpy(rtc_header.getMessageOutVariableCachePtr(mmp.first.c_str()), &d_ptr, sizeof(void*));
         }
     }
 
@@ -235,12 +229,15 @@ void CUDAMessage::mapWriteRuntimeVariables(const AgentFunctionData& func, const 
 }
 
 void CUDAMessage::unmapRuntimeVariables(const AgentFunctionData& func, const unsigned int &instance_id) const {
-  if (!message_list) {
+    // Skip if RTC
+    if (!func.func)
+        return;
+    if (!message_list) {
       if (getMessageCount() == 0) {
           return;  // Message list is empty, this should be safe
       }
-  }
-  const std::string message_name = message_description.name;
+    }
+    const std::string message_name = message_description.name;
 
     const Curve::VariableHash message_hash = Curve::getInstance().variableRuntimeHash(message_name.c_str());
     const Curve::VariableHash agent_hash = Curve::getInstance().variableRuntimeHash(func.parent.lock()->name.c_str());

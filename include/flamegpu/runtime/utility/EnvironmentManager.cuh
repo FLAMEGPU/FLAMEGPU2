@@ -659,6 +659,11 @@ class EnvironmentManager {
      */
     void buildRTCOffsets(const unsigned int &instance_id, const unsigned int &master_instance_id, const DefragMap &mergeProperties);
     /**
+     * Returns the rtccache ptr for the named instance id
+     * @param instance_id Instance id of the cuda agent model that owns the properties
+     */
+    char* getRTCCache(const unsigned int& instance_id);
+    /**
      * Useful for adding individual variables to RTC cache later on
      */
     void addRTCOffset(const NamePair &name);

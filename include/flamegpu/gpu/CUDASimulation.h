@@ -211,13 +211,6 @@ class CUDASimulation : public Simulation {
      */
     void RTCSafeCudaMemcpyToSymbolAddress(void* ptr, const char* rtc_symbol_name, const void* src, size_t count, size_t offset = 0) const;
 
-    /**
-     * Updates the environment property cache for all RTC agent functions
-     * @param src Source memory address
-     * @param count Length of buffer (Probably EnvironmentManager::MAX_BUFFER_SIZE)
-     */
-    void RTCUpdateEnvironmentVariables(const void* src, size_t count) const;
-
    /**
      * Get the duration of the last time RTC was iniitliased 
      * With a resolution of around 0.5 microseconds (cudaEventElapsedtime)

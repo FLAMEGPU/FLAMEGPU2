@@ -13,6 +13,7 @@
 #include "flamegpu/gpu/CUDAAgentStateList.h"
 #include "flamegpu/model/AgentFunctionData.h"
 #include "flamegpu/model/SubAgentData.h"
+#include "flamegpu/runtime/cuRVE/curve_rtc.h"
 #include "flamegpu/sim/AgentInterface.h"
 
 class CUDAScatter;
@@ -30,7 +31,8 @@ class CUDAAgent : public AgentInterface {
     /**
      *  map of agent function name to RTC function instance
      */
-    typedef std::map<const std::string, std::unique_ptr<jitify::experimental::KernelInstantiation>> CUDARTCFuncMap;
+     typedef std::map<const std::string, std::unique_ptr<jitify::experimental::KernelInstantiation>> CUDARTCFuncMap;
+     typedef std::map<const std::string, std::unique_ptr<CurveRTCHost>> CUDARTCHeaderMap;
     /**
      * Element type of CUDARTCFuncMap
      */
@@ -203,6 +205,7 @@ class CUDAAgent : public AgentInterface {
      * @param function_name the name of the RTC agent function or the agent function name suffixed with condition (if it is a function condition)
      */
     const jitify::experimental::KernelInstantiation& getRTCInstantiation(const std::string &function_name) const;
+    CurveRTCHost &getRTCHeader(const std::string &function_name) const;
     /**
      * Returns the CUDARTCFuncMap
      */
@@ -268,6 +271,11 @@ class CUDAAgent : public AgentInterface {
      * map between function_name (or function_name_condition) and the jitify instance
      */
     CUDARTCFuncMap rtc_func_map;
+    /**
+     * map between function name (or function_name_condition) and the rtc header
+     * This allows access to the header data cache, for updating curve
+     */
+    CUDARTCHeaderMap rtc_header_map;
     /**
      * Used when allocated new buffers
      */
