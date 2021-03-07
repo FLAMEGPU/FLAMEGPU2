@@ -320,6 +320,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
     unsigned int totalThreads = 0;
 
     // Map agent memory
+    bool has_rtc_func_cond = false;
     for (const auto &func_des : layer->agent_functions) {
         if ((func_des->condition) || (!func_des->rtc_func_condition_name.empty())) {
             auto func_agent = func_des->parent.lock();
@@ -339,6 +340,17 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
             // Zero the scan flag that will be written to
             singletons->scatter.Scan().zero(CUDAScanCompaction::AGENT_DEATH, streamIdx);  // @todo - stream
 
+            // Push function's RTC cache to device if using RTC
+            if (!func_des->rtc_func_condition_name.empty()) {
+                has_rtc_func_cond = true;
+                std::string func_name = func_des->name + "_condition";
+                auto &rtc_header = cuda_agent.getRTCHeader(func_name);
+                // Sync EnvManager's RTC cache with RTC header's cache
+                rtc_header.updateEnvCache(singletons->environment.getRTCCache(instance_id));
+                // Push RTC header's cache to device
+                rtc_header.updateDevice(cuda_agent.getRTCInstantiation(func_name));
+            }
+
             totalThreads += state_list_size;
             ++streamIdx;
         }
@@ -348,9 +360,12 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
     if (totalThreads > 0) {
         auto env_shared_lock = this->singletons->environment.getSharedLock();
         auto env_device_lock = this->singletons->environment.getDeviceSharedLock();
-        this->singletons->environment.updateDevice(instance_id);
-        this->singletons->curve.updateDevice();
-        // this->synchronizeAllStreams();  // Not required, the above is snchronizing.
+        if (!has_rtc_func_cond) {
+            this->singletons->environment.updateDevice(instance_id);
+            this->singletons->curve.updateDevice();
+
+            // this->synchronizeAllStreams();  // Not required, the above is snchronizing.
+        }
 
         // Ensure RandomManager is the correct size to accommodate all threads to be launched
         curandState *d_rng = singletons->rng.resize(totalThreads);  // @todo - stream + sync.
@@ -480,6 +495,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
         }
     }
 
+    bool has_rtc_func = false;
     streamIdx = 0;
     // Sum the total number of threads being launched in the layer
     totalThreads = 0;
@@ -542,6 +558,16 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
             singletons->scatter.Scan().CUDAScanCompaction::zero(CUDAScanCompaction::AGENT_DEATH, streamIdx);  // @todo stream?
         }
 
+        // Push function's RTC cache to device if using RTC
+        if (!func_des->rtc_func_name.empty()) {
+            has_rtc_func = true;
+            auto& rtc_header = cuda_agent.getRTCHeader(func_des->name);
+            // Sync EnvManager's RTC cache with RTC header's cache
+            rtc_header.updateEnvCache(singletons->environment.getRTCCache(instance_id));
+            // Push RTC header's cache to device
+            rtc_header.updateDevice(cuda_agent.getRTCInstantiation(func_des->name));
+        }
+
         // Count total threads being launched
         totalThreads += cuda_agent.getStateSize(func_des->initial_state);
         ++streamIdx;
@@ -551,9 +577,11 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
     if (totalThreads > 0) {
         auto env_shared_lock = this->singletons->environment.getSharedLock();
         auto env_device_lock = this->singletons->environment.getDeviceSharedLock();
-        this->singletons->environment.updateDevice(instance_id);
-        this->singletons->curve.updateDevice();
-        this->synchronizeAllStreams();  // This is not striclty required as updateDevice is synchronous.
+        if (!has_rtc_func) {
+            this->singletons->environment.updateDevice(instance_id);
+            this->singletons->curve.updateDevice();
+            this->synchronizeAllStreams();  // This is not strictly required as updateDevice is synchronous.
+        }
 
         // Ensure RandomManager is the correct size to accommodate all threads to be launched
         curandState *d_rng = singletons->rng.resize(totalThreads);
@@ -1424,21 +1452,6 @@ void CUDASimulation::RTCSafeCudaMemcpyToSymbolAddress(void* ptr, const char* rtc
             rtc_dev_ptr = rtc_func_pair.second->get_global_ptr(rtc_symbol_name);
             // make the memcpy to the rtc version of the symbol
             gpuErrchkDriverAPI(cuMemcpyHtoD(rtc_dev_ptr + offset, src, count));
-        }
-    }
-}
-
-void CUDASimulation::RTCUpdateEnvironmentVariables(const void* src, size_t count) const {
-    // loop through agents
-    for (const auto& agent_pair : agent_map) {
-        // loop through any agent functions
-        for (const CUDAAgent::CUDARTCFuncMapPair& rtc_func_pair : agent_pair.second->getRTCFunctions()) {
-            CUdeviceptr rtc_dev_ptr = 0;
-            // get the RTC device symbol
-            std::string rtc_symbol_name = CurveRTCHost::getEnvVariableSymbolName();
-            rtc_dev_ptr = rtc_func_pair.second->get_global_ptr(rtc_symbol_name.c_str());
-            // make the memcpy to the rtc version of the symbol
-            gpuErrchkDriverAPI(cuMemcpyHtoD(rtc_dev_ptr, src, count));
         }
     }
 }

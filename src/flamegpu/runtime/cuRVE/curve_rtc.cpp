@@ -43,12 +43,12 @@ __device__ bool strings_equal(const char(&a)[N], const char(&b)[M]) {
 }
 
 /**
-* Dynamically generated version of Curve without hashing
-*/
-
+ * Dynamically generated version of Curve without hashing
+ * Both environment data, and curve variable ptrs are stored in this buffer
+ * Order: Env Data, Agent, MsgOut, MsgIn, NewAgent
+ * EnvData size must be a multiple of 8 bytes
+ */
 $DYNAMIC_VARIABLES
-
-$DYNAMIC_ENV_VARIABLES
 
 class Curve {
     public:
@@ -179,6 +179,9 @@ $DYNAMIC_ENV_CONTAINTS_IMPL
 CurveRTCHost::CurveRTCHost() : header(CurveRTCHost::curve_rtc_dynamic_h_template) {
 }
 
+CurveRTCHost::~CurveRTCHost() {
+    free(h_data_buffer);
+}
 
 void CurveRTCHost::registerAgentVariable(const char* variableName, unsigned int namespace_hash, const char* type, size_t type_size, unsigned int elements, bool read, bool write) {
     if (agent_namespace == 0)
@@ -294,6 +297,36 @@ void CurveRTCHost::unregisterNewAgentVariable(const char* variableName, unsigned
         newAgent_namespace = 0;
 }
 
+
+void* CurveRTCHost::getAgentVariableCachePtr(const char* variableName) {
+    const auto i = agent_variables.find(variableName);
+    if (i != agent_variables.end()) {
+        return i->second.h_data_ptr;
+    }
+    THROW UnknownInternalError("Variable '%s' not found when accessing variable: in CurveRTCHost::getAgentVariableCachePtr", variableName);
+}
+void* CurveRTCHost::getMessageOutVariableCachePtr(const char* variableName) {
+    const auto i = messageOut_variables.find(variableName);
+    if (i != messageOut_variables.end()) {
+        return i->second.h_data_ptr;
+    }
+    THROW UnknownInternalError("Variable '%s' not found when accessing variable: in CurveRTCHost::getMessageOutVariableCachePtr", variableName);
+}
+void* CurveRTCHost::getMessageInVariableCachePtr(const char* variableName) {
+    const auto i = messageIn_variables.find(variableName);
+    if (i != messageIn_variables.end()) {
+        return i->second.h_data_ptr;
+    }
+    THROW UnknownInternalError("Variable '%s' not found when accessing variable: in CurveRTCHost::getMessageInVariableCachePtr", variableName);
+}
+void* CurveRTCHost::getNewAgentVariableCachePtr(const char* variableName) {
+    const auto i = newAgent_variables.find(variableName);
+    if (i != newAgent_variables.end()) {
+        return i->second.h_data_ptr;
+    }
+    THROW UnknownInternalError("Variable '%s' not found when accessing variable: in CurveRTCHost::getNewAgentVariableCachePtr", variableName);
+}
+
 void CurveRTCHost::registerEnvVariable(const char* variableName, unsigned int namespace_hash, ptrdiff_t offset, const char* type, size_t type_size, unsigned int elements) {
     // check to see if namespace key already exists
     auto i = RTCEnvVariables.find(namespace_hash);
@@ -323,26 +356,18 @@ void CurveRTCHost::unregisterEnvVariable(const char* variableName, unsigned int 
 
 
 void CurveRTCHost::initHeaderEnvironment() {
-    // generate dynamic variables ($DYNAMIC_VARIABLES)
+    // Calculate size of, and generate dynamic variables buffer
     std::stringstream variables;
-    for (const auto &element : agent_variables) {
-        variables << "__device__ " << element.second.type << "* " << "curve_rtc_ptr_" << agent_namespace << "_" << element.first << ";\n";
+    data_buffer_size = EnvironmentManager::MAX_BUFFER_SIZE;
+    if (data_buffer_size % sizeof(void*) != 0) {
+        THROW UnknownInternalError("EnvironmentManager::MAX_BUFFER_SIZE should be a multiple of %llu!", sizeof(void*));
     }
-    for (const auto &element : messageIn_variables) {
-        variables << "__device__ " << element.second.type << "* " << "curve_rtc_ptr_" << messageIn_namespace << "_" << element.first << ";\n";
-    }
-    for (const auto &element : messageOut_variables) {
-        variables << "__device__ " << element.second.type << "* " << "curve_rtc_ptr_" << messageOut_namespace << "_" << element.first << ";\n";
-    }
-    for (const auto &element : newAgent_variables) {
-        variables << "__device__ " << element.second.type << "* " << "curve_rtc_ptr_" << newAgent_namespace << "_" << element.first << ";\n";
-    }
+    agent_data_offset = data_buffer_size;     data_buffer_size += agent_variables.size() * sizeof(void*);
+    msgOut_data_offset = data_buffer_size;    data_buffer_size += messageOut_variables.size() * sizeof(void*);
+    msgIn_data_offset = data_buffer_size;     data_buffer_size += messageIn_variables.size() * sizeof(void*);
+    newAgent_data_offset = data_buffer_size;  data_buffer_size += newAgent_variables.size() * sizeof(void*);
+    variables << "__constant__  char " << getVariableSymbolName() << "[" << data_buffer_size << "];\n";
     setHeaderPlaceholder("$DYNAMIC_VARIABLES", variables.str());
-
-    // generate dynamic environment variables ($DYNAMIC_ENV_VARIABLES)
-    std::stringstream envVariables;
-    envVariables << "__constant__  char " << getEnvVariableSymbolName() <<"[" << EnvironmentManager::MAX_BUFFER_SIZE << "];\n";
-    setHeaderPlaceholder("$DYNAMIC_ENV_VARIABLES", envVariables.str());
     // generate Environment::get func implementation ($DYNAMIC_ENV_GETVARIABLE_IMPL)
     {
         std::stringstream getEnvVariableImpl;
@@ -357,7 +382,7 @@ void CurveRTCHost::initHeaderEnvironment() {
                     getEnvVariableImpl <<   "            return 0;\n";
                     getEnvVariableImpl <<   "        }\n";
                     getEnvVariableImpl <<   "#endif\n";
-                    getEnvVariableImpl <<   "        return *reinterpret_cast<T*>(reinterpret_cast<void*>(" << getEnvVariableSymbolName() <<" + " << props.offset << "));\n";
+                    getEnvVariableImpl <<   "        return *reinterpret_cast<T*>(reinterpret_cast<void*>(" << getVariableSymbolName() <<" + " << props.offset << "));\n";
                     getEnvVariableImpl <<   "    };\n";
                 }
             }
@@ -389,7 +414,7 @@ void CurveRTCHost::initHeaderEnvironment() {
                     getEnvArrayVariableImpl << "            return 0;\n";
                     getEnvArrayVariableImpl << "        }\n";
                     getEnvArrayVariableImpl << "#endif\n";
-                    getEnvArrayVariableImpl << "        return reinterpret_cast<T*>(reinterpret_cast<void*>(" << getEnvVariableSymbolName() <<" + " << props.offset << "))[index];\n";
+                    getEnvArrayVariableImpl << "        return reinterpret_cast<T*>(reinterpret_cast<void*>(" << getVariableSymbolName() <<" + " << props.offset << "))[index];\n";
                     getEnvArrayVariableImpl << "    };\n";
                 }
             }
@@ -419,6 +444,7 @@ void CurveRTCHost::initHeaderEnvironment() {
 void CurveRTCHost::initHeaderSetters() {
     // generate setAgentVariable func implementation ($DYNAMIC_SETAGENTVARIABLE_IMPL)
     {
+        size_t ct = 0;
         std::stringstream setAgentVariableImpl;
         for (const auto &element : agent_variables) {
             RTCVariableProperties props = element.second;
@@ -430,10 +456,10 @@ void CurveRTCHost::initHeaderSetters() {
                 setAgentVariableImpl << "                    return;\n";
                 setAgentVariableImpl << "                }\n";
                 setAgentVariableImpl << "#endif\n";
-                setAgentVariableImpl << "              curve_rtc_ptr_" << agent_namespace << "_" << element.first << "[index] = (T) variable;\n";
+                setAgentVariableImpl << "              (*static_cast<T**>(static_cast<void*>(" << getVariableSymbolName() << " + " << agent_data_offset + (ct++ * sizeof(void*)) << ")))[index] = (T) variable;\n";
                 setAgentVariableImpl << "              return;\n";
                 setAgentVariableImpl << "          }\n";
-            }
+            } else { ++ct; }
         }
         setAgentVariableImpl <<         "#if !defined(SEATBELTS) || SEATBELTS\n";
         setAgentVariableImpl <<         "          DTHROW(\"Agent variable '%s' was not found during setVariable().\\n\", name);\n";
@@ -442,6 +468,7 @@ void CurveRTCHost::initHeaderSetters() {
     }
     // generate setMessageVariable func implementation ($DYNAMIC_SETMESSAGEVARIABLE_IMPL)
     {
+        size_t ct = 0;
         std::stringstream setMessageVariableImpl;
         for (const auto &element : messageOut_variables) {
             RTCVariableProperties props = element.second;
@@ -453,10 +480,10 @@ void CurveRTCHost::initHeaderSetters() {
                 setMessageVariableImpl << "                    return;\n";
                 setMessageVariableImpl << "                }\n";
                 setMessageVariableImpl << "#endif\n";
-                setMessageVariableImpl << "              curve_rtc_ptr_" << messageOut_namespace << "_" << element.first << "[index] = (T) variable;\n";
+                setMessageVariableImpl << "              (*static_cast<T**>(static_cast<void*>(" << getVariableSymbolName() << " + " << msgOut_data_offset + (ct++ * sizeof(void*)) << ")))[index] = (T) variable;\n";
                 setMessageVariableImpl << "              return;\n";
                 setMessageVariableImpl << "          }\n";
-            }
+            } else { ++ct; }
         }
         setMessageVariableImpl <<         "#if !defined(SEATBELTS) || SEATBELTS\n";
         setMessageVariableImpl <<         "          DTHROW(\"Message variable '%s' was not found during setVariable().\\n\", name);\n";
@@ -465,6 +492,7 @@ void CurveRTCHost::initHeaderSetters() {
     }
     // generate setNewAgentVariable func implementation ($DYNAMIC_SETNEWAGENTVARIABLE_IMPL)
     {
+        size_t ct = 0;
         std::stringstream setNewAgentVariableImpl;
         for (const auto &element : newAgent_variables) {
             RTCVariableProperties props = element.second;
@@ -476,10 +504,10 @@ void CurveRTCHost::initHeaderSetters() {
                 setNewAgentVariableImpl << "                    return;\n";
                 setNewAgentVariableImpl << "                }\n";
                 setNewAgentVariableImpl << "#endif\n";
-                setNewAgentVariableImpl << "              curve_rtc_ptr_" << newAgent_namespace << "_" << element.first << "[index] = (T) variable;\n";
+                setNewAgentVariableImpl << "              (*static_cast<T**>(static_cast<void*>(" << getVariableSymbolName() << " + " << newAgent_data_offset + (ct++ * sizeof(void*)) << ")))[index] = (T) variable;\n";
                 setNewAgentVariableImpl << "              return;\n";
                 setNewAgentVariableImpl << "          }\n";
-            }
+            } else { ++ct; }
         }
         setNewAgentVariableImpl <<         "#if !defined(SEATBELTS) || SEATBELTS\n";
         setNewAgentVariableImpl <<         "          DTHROW(\"New agent variable '%s' was not found during setVariable().\\n\", name);\n";
@@ -488,6 +516,7 @@ void CurveRTCHost::initHeaderSetters() {
     }
     // generate setAgentArrayVariable func implementation ($DYNAMIC_SETAGENTARRAYVARIABLE_IMPL)
     {
+        size_t ct = 0;
         std::stringstream setAgentArrayVariableImpl;
         if (!agent_variables.empty())
             setAgentArrayVariableImpl <<             "    const size_t i = (index * N) + array_index;\n";
@@ -507,10 +536,10 @@ void CurveRTCHost::initHeaderSetters() {
                 setAgentArrayVariableImpl << "                  return;\n";
                 setAgentArrayVariableImpl << "              }\n";
                 setAgentArrayVariableImpl << "#endif\n";
-                setAgentArrayVariableImpl << "              curve_rtc_ptr_" << agent_namespace << "_" << element.first << "[i] = (T) variable;\n";
+                setAgentArrayVariableImpl << "              (*static_cast<T**>(static_cast<void*>(" << getVariableSymbolName() << " + " << agent_data_offset + (ct++ * sizeof(void*)) << ")))[i] = (T) variable;\n";
                 setAgentArrayVariableImpl << "              return;\n";
                 setAgentArrayVariableImpl << "          }\n";
-            }
+            } else { ++ct; }
         }
         setAgentArrayVariableImpl <<         "#if !defined(SEATBELTS) || SEATBELTS\n";
         setAgentArrayVariableImpl <<         "          DTHROW(\"Agent array variable '%s' was not found during setVariable().\\n\", name);\n";
@@ -519,6 +548,7 @@ void CurveRTCHost::initHeaderSetters() {
     }
     // generate setNewAgentArrayVariable func implementation ($DYNAMIC_SETNEWAGENTARRAYVARIABLE_IMPL)
     {
+        size_t ct = 0;
         std::stringstream setNewAgentArrayVariableImpl;
         if (!newAgent_variables.empty())
             setNewAgentArrayVariableImpl <<             "    const size_t i = (index * N) + array_index;\n";
@@ -538,10 +568,10 @@ void CurveRTCHost::initHeaderSetters() {
                 setNewAgentArrayVariableImpl << "                  return;\n";
                 setNewAgentArrayVariableImpl << "              }\n";
                 setNewAgentArrayVariableImpl << "#endif\n";
-                setNewAgentArrayVariableImpl << "              curve_rtc_ptr_" << newAgent_namespace << "_" << element.first << "[i] = (T) variable;\n";
+                setNewAgentArrayVariableImpl << "              (*static_cast<T**>(static_cast<void*>(" << getVariableSymbolName() << " + " << newAgent_data_offset + (ct++ * sizeof(void*)) << ")))[i] = (T) variable;\n";
                 setNewAgentArrayVariableImpl << "              return;\n";
                 setNewAgentArrayVariableImpl << "          }\n";
-            }
+            } else { ++ct; }
         }
         setNewAgentArrayVariableImpl <<         "#if !defined(SEATBELTS) || SEATBELTS\n";
         setNewAgentArrayVariableImpl <<         "          DTHROW(\"New agent array variable '%s' was not found during setVariable().\\n\", name);\n";
@@ -552,6 +582,7 @@ void CurveRTCHost::initHeaderSetters() {
 void CurveRTCHost::initHeaderGetters() {
     // generate getAgentVariable func implementation ($DYNAMIC_GETAGENTVARIABLE_IMPL)
     {
+        size_t ct = 0;
         std::stringstream getAgentVariableImpl;
         for (const auto &element : agent_variables) {
             RTCVariableProperties props = element.second;
@@ -563,9 +594,9 @@ void CurveRTCHost::initHeaderGetters() {
                 getAgentVariableImpl << "                    return 0;\n";
                 getAgentVariableImpl << "                }\n";
                 getAgentVariableImpl << "#endif\n";
-                getAgentVariableImpl << "                return (T) " << "curve_rtc_ptr_" << agent_namespace << "_" << element.first << "[index];\n";
+                getAgentVariableImpl << "                return (*static_cast<T**>(static_cast<void*>(" << getVariableSymbolName() << " + " << agent_data_offset + (ct++ * sizeof(void*)) << ")))[index];\n";
                 getAgentVariableImpl << "            }\n";
-            }
+            } else { ++ct; }
         }
         getAgentVariableImpl <<         "#if !defined(SEATBELTS) || SEATBELTS\n";
         getAgentVariableImpl <<         "            DTHROW(\"Agent variable '%s' was not found during getVariable().\\n\", name);\n";
@@ -575,6 +606,7 @@ void CurveRTCHost::initHeaderGetters() {
     }
     // generate getMessageVariable func implementation ($DYNAMIC_GETMESSAGEVARIABLE_IMPL)
     {
+        size_t ct = 0;
         std::stringstream getMessageVariableImpl;
         for (const auto &element : messageIn_variables) {
             RTCVariableProperties props = element.second;
@@ -586,9 +618,9 @@ void CurveRTCHost::initHeaderGetters() {
                 getMessageVariableImpl << "                    return 0;\n";
                 getMessageVariableImpl << "                }\n";
                 getMessageVariableImpl << "#endif\n";
-                getMessageVariableImpl << "                return (T) " << "curve_rtc_ptr_" << messageIn_namespace << "_" << element.first << "[index];\n";
+                getMessageVariableImpl << "                return (*static_cast<T**>(static_cast<void*>(" << getVariableSymbolName() << " + " << msgIn_data_offset + (ct++ * sizeof(void*)) << ")))[index];\n";
                 getMessageVariableImpl << "            }\n";
-            }
+            } else { ++ct; }
         }
         getMessageVariableImpl <<         "#if !defined(SEATBELTS) || SEATBELTS\n";
         getMessageVariableImpl <<         "            DTHROW(\"Message variable '%s' was not found during getVariable().\\n\", name);\n";
@@ -598,6 +630,7 @@ void CurveRTCHost::initHeaderGetters() {
     }
     // generate getAgentVariable func implementation ($DYNAMIC_GETAGENTVARIABLE_LDG_IMPL)
     {
+        size_t ct = 0;
         std::stringstream getAgentVariableLDGImpl;
         for (const auto &element : agent_variables) {
             RTCVariableProperties props = element.second;
@@ -609,9 +642,9 @@ void CurveRTCHost::initHeaderGetters() {
                 getAgentVariableLDGImpl << "                    return 0;\n";
                 getAgentVariableLDGImpl << "                }\n";
                 getAgentVariableLDGImpl << "#endif\n";
-                getAgentVariableLDGImpl << "                return (T) " << "__ldg(&curve_rtc_ptr_" << agent_namespace << "_" << element.first << "[index]);\n";
+                getAgentVariableLDGImpl << "                return (T) __ldg((*static_cast<T**>(static_cast<void*>(" << getVariableSymbolName() << " + " << agent_data_offset + (ct++ * sizeof(void*)) << "))) + index);\n";
                 getAgentVariableLDGImpl << "            }\n";
-            }
+            } else { ++ct; }
         }
         getAgentVariableLDGImpl <<         "#if !defined(SEATBELTS) || SEATBELTS\n";
         getAgentVariableLDGImpl <<         "            DTHROW(\"Agent variable '%s' was not found during getVariable().\\n\", name);\n";
@@ -621,6 +654,7 @@ void CurveRTCHost::initHeaderGetters() {
     }
     // generate getMessageVariable func implementation ($DYNAMIC_GETMESSAGEVARIABLE_LDG_IMPL)
     {
+        size_t ct = 0;
         std::stringstream getMessageVariableLDGImpl;
         for (const auto &element : messageIn_variables) {
             RTCVariableProperties props = element.second;
@@ -632,9 +666,9 @@ void CurveRTCHost::initHeaderGetters() {
                 getMessageVariableLDGImpl << "                    return 0;\n";
                 getMessageVariableLDGImpl << "                }\n";
                 getMessageVariableLDGImpl << "#endif\n";
-                getMessageVariableLDGImpl << "                return (T) " << "curve_rtc_ptr_" << messageIn_namespace << "_" << element.first << "[index];\n";
+                getMessageVariableLDGImpl << "                return (T) __ldg((*static_cast<T**>(static_cast<void*>(" << getVariableSymbolName() << " + " << msgIn_data_offset + (ct++ * sizeof(void*)) << "))) + index);\n";
                 getMessageVariableLDGImpl << "            }\n";
-            }
+            } else { ++ct; }
         }
         getMessageVariableLDGImpl <<         "#if !defined(SEATBELTS) || SEATBELTS\n";
         getMessageVariableLDGImpl <<         "            DTHROW(\"Message variable '%s' was not found during getVariable().\\n\", name);\n";
@@ -644,6 +678,7 @@ void CurveRTCHost::initHeaderGetters() {
     }
     // generate getArrayVariable func implementation ($DYNAMIC_GETAGENTARRAYVARIABLE_IMPL)
     {
+        size_t ct = 0;
         std::stringstream getAgentArrayVariableImpl;
         if (!agent_variables.empty())
             getAgentArrayVariableImpl <<             "    const size_t i = (index * N) + array_index;\n";
@@ -663,9 +698,9 @@ void CurveRTCHost::initHeaderGetters() {
                 getAgentArrayVariableImpl << "                  return 0;\n";
                 getAgentArrayVariableImpl << "              }\n";
                 getAgentArrayVariableImpl << "#endif\n";
-                getAgentArrayVariableImpl << "              return (T) " << "curve_rtc_ptr_" << agent_namespace << "_" << element.first << "[i];\n";
+                getAgentArrayVariableImpl << "              return (*static_cast<T**>(static_cast<void*>(" << getVariableSymbolName() << " + " << agent_data_offset + (ct++ * sizeof(void*)) << ")))[i];\n";
                 getAgentArrayVariableImpl << "           };\n";
-            }
+            } else { ++ct; }
         }
         getAgentArrayVariableImpl <<         "#if !defined(SEATBELTS) || SEATBELTS\n";
         getAgentArrayVariableImpl <<         "           DTHROW(\"Agent array variable '%s' was not found during getVariable().\\n\", name);\n";
@@ -675,6 +710,7 @@ void CurveRTCHost::initHeaderGetters() {
     }
     // generate getArrayVariable func implementation ($DYNAMIC_GETAGENTARRAYVARIABLE_LDG_IMPL)
     {
+        size_t ct = 0;
         std::stringstream getAgentArrayVariableLDGImpl;
         if (!agent_variables.empty())
             getAgentArrayVariableLDGImpl <<             "    const size_t i = (index * N) + array_index;\n";
@@ -694,9 +730,9 @@ void CurveRTCHost::initHeaderGetters() {
                 getAgentArrayVariableLDGImpl << "                  return 0;\n";
                 getAgentArrayVariableLDGImpl << "              }\n";
                 getAgentArrayVariableLDGImpl << "#endif\n";
-                getAgentArrayVariableLDGImpl << "              return (T) " << "__ldg(&curve_rtc_ptr_" << agent_namespace << "_" << element.first << "[i]);\n";
+                getAgentArrayVariableLDGImpl << "              return (T) __ldg((*static_cast<T**>(static_cast<void*>(" << getVariableSymbolName() << " + " << agent_data_offset + (ct++ * sizeof(void*)) << "))) + i);\n";
                 getAgentArrayVariableLDGImpl << "           };\n";
-            }
+            } else { ++ct; }
         }
         getAgentArrayVariableLDGImpl <<         "#if !defined(SEATBELTS) || SEATBELTS\n";
         getAgentArrayVariableLDGImpl <<         "           DTHROW(\"Agent array variable '%s' was not found during getVariable().\\n\", name);\n";
@@ -705,12 +741,36 @@ void CurveRTCHost::initHeaderGetters() {
         setHeaderPlaceholder("$DYNAMIC_GETAGENTARRAYVARIABLE_LDG_IMPL", getAgentArrayVariableLDGImpl.str());
     }
 }
-
+void CurveRTCHost::initDataBuffer() {
+    if (data_buffer_size == 0 || h_data_buffer) {
+        THROW InvalidOperation("CurveRTCHost::initDataBuffer() should only be called once, during the init chain.\n");
+    }
+    // Alloc buffer
+    h_data_buffer = static_cast<char*>(malloc(data_buffer_size));
+    // Notify all variables of their ptr to store data in cache
+    size_t ct = 0;
+    for (auto &element : agent_variables) {
+        element.second.h_data_ptr = h_data_buffer + agent_data_offset + (ct++ * sizeof(void*));
+    }
+    ct = 0;
+    for (auto &element : messageOut_variables) {
+        element.second.h_data_ptr = h_data_buffer + msgOut_data_offset + (ct++ * sizeof(void*));
+    }
+    ct = 0;
+    for (auto &element : messageIn_variables) {
+        element.second.h_data_ptr = h_data_buffer + msgIn_data_offset + (ct++ * sizeof(void*));
+    }
+    ct = 0;
+    for (auto &element : newAgent_variables) {
+        element.second.h_data_ptr = h_data_buffer + newAgent_data_offset + (ct++ * sizeof(void*));
+    }
+}
 
 std::string CurveRTCHost::getDynamicHeader() {
     initHeaderEnvironment();
     initHeaderSetters();
     initHeaderGetters();
+    initDataBuffer();
     return header;
 }
 
@@ -724,16 +784,9 @@ void CurveRTCHost::setHeaderPlaceholder(std::string placeholder, std::string dst
     }
 }
 
-
-std::string CurveRTCHost::getVariableSymbolName(const char* variableName, unsigned int namespace_hash) {
+std::string CurveRTCHost::getVariableSymbolName() {
     std::stringstream name;
-    name << "curve_rtc_ptr_" << namespace_hash << "_" << variableName;
-    return name.str();
-}
-
-std::string CurveRTCHost::getEnvVariableSymbolName() {
-    std::stringstream name;
-    name << "curve_env_rtc_ptr";
+    name << "rtc_env_data_curve";
     return name.str();
 }
 
@@ -777,4 +830,14 @@ std::string CurveRTCHost::demangle(const char* verbose_name) {
 
 std::string CurveRTCHost::demangle(const std::type_index& type) {
     return demangle(type.name());
+}
+void CurveRTCHost::updateEnvCache(const char *env_ptr) {
+    if (env_ptr) {
+        memcpy(h_data_buffer, env_ptr, EnvironmentManager::MAX_BUFFER_SIZE);
+    }
+}
+void CurveRTCHost::updateDevice(const jitify::experimental::KernelInstantiation& instance) {
+    std::string cache_var_name = getVariableSymbolName();
+    CUdeviceptr d_var_ptr = instance.get_global_ptr(cache_var_name.c_str());
+    gpuErrchkDriverAPI(cuMemcpyHtoD(d_var_ptr, h_data_buffer, data_buffer_size));
 }

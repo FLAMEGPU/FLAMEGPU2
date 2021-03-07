@@ -492,6 +492,12 @@ void EnvironmentManager::buildRTCOffsets(const unsigned int &instance_id, const 
         rtc_caches.emplace(instance_id, cache);
     }
 }
+char * EnvironmentManager::getRTCCache(const unsigned int& instance_id) {
+    auto it = rtc_caches.find(instance_id);
+    if (it != rtc_caches.end())
+        return it->second->hc_buffer;
+    THROW UnknownInternalError("Instance with id '%u' not registered in EnvironmentManager for use with RTC in EnvironmentManager::getRTCCache", instance_id);
+}
 void EnvironmentManager::addRTCOffset(const NamePair &name) {
     // Do not lock mutex here, do it in the calling method
     auto mi_it = mapped_properties.find(name);
@@ -645,10 +651,7 @@ void EnvironmentManager::updateDevice(const unsigned int &instance_id) {
         }
     }
     if (rtc_update_required) {
-        // update RTC
-        const CUDASimulation& cuda_agent_model = getCUDASimulation(instance_id);
-        const auto &rtc_cache = rtc_caches.at(instance_id);
-        cuda_agent_model.RTCUpdateEnvironmentVariables(rtc_cache->hc_buffer, rtc_cache->nextFree);
+        // RTC is nolonger updated here, it's always updated before the CurveRTCHost is pushed to device.
         // Update instance's rtc update flag
         rtc_update_required = false;
     }

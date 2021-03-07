@@ -100,7 +100,7 @@ void CUDAAgent::mapRuntimeVariables(const AgentFunctionData& func, const unsigne
         const size_t type_size = mmp.second.type_size * mmp.second.elements;
 
         // maximum population num
-        {
+        if (func.func || func.condition) {
 #ifdef _DEBUG
             const Curve::Variable cv = curve.registerVariableByHash(var_hash + agent_hash + func_hash + instance_id, d_ptr, type_size, agent_count);
             if (cv != static_cast<int>((var_hash + agent_hash + func_hash + instance_id)%Curve::MAX_VARIABLES)) {
@@ -112,30 +112,25 @@ void CUDAAgent::mapRuntimeVariables(const AgentFunctionData& func, const unsigne
         }
         // Map RTC variables to agent function (these must be mapped before each function execution as the runtime pointer may have changed to the swapping)
         if (!func.rtc_func_name.empty()) {
-            // get the rtc varibale ptr
-            const jitify::experimental::KernelInstantiation& instance = getRTCInstantiation(func.name);
-            std::stringstream d_var_ptr_name;
-            d_var_ptr_name << CurveRTCHost::getVariableSymbolName(mmp.first.c_str(), agent_hash + func_hash);
-            CUdeviceptr d_var_ptr = instance.get_global_ptr(d_var_ptr_name.str().c_str());
-            // copy runtime ptr (d_ptr) to rtc ptr (d_var_ptr)
-            gpuErrchkDriverAPI(cuMemcpyHtoD(d_var_ptr, &d_ptr, sizeof(void*)));
+            // Copy data to rtc header cache
+            auto& rtc_header = getRTCHeader(func.name);
+            memcpy(rtc_header.getAgentVariableCachePtr(mmp.first.c_str()), &d_ptr, sizeof(void*));
         }
 
         // Map RTC variables to agent function conditions (these must be mapped before each function execution as the runtime pointer may have changed to the swapping)
         if (!func.rtc_func_condition_name.empty()) {
-            // get the rtc varibale ptr
+            // Copy data to rtc header cache
             std::string func_name = func.name + "_condition";
-            const jitify::experimental::KernelInstantiation& instance = getRTCInstantiation(func_name);
-            std::stringstream d_var_ptr_name;
-            d_var_ptr_name << CurveRTCHost::getVariableSymbolName(mmp.first.c_str(), agent_hash + func_hash);
-            CUdeviceptr d_var_ptr = instance.get_global_ptr(d_var_ptr_name.str().c_str());
-            // copy runtime ptr (d_ptr) to rtc ptr (d_var_ptr)
-            gpuErrchkDriverAPI(cuMemcpyHtoD(d_var_ptr, &d_ptr, sizeof(void*)));
+            auto& rtc_header = getRTCHeader(func_name);
+            memcpy(rtc_header.getAgentVariableCachePtr(mmp.first.c_str()), &d_ptr, sizeof(void*));
         }
     }
 }
 
 void CUDAAgent::unmapRuntimeVariables(const AgentFunctionData& func, const unsigned int &instance_id) const {
+    // Skip if RTC
+    if (!(func.func || func.condition))
+        return;
     // check the cuda agent state map to find the correct state list for functions starting state
     const auto &sm = state_map.find(func.initial_state);
 
@@ -360,23 +355,20 @@ void CUDAAgent::mapNewRuntimeVariables(const CUDAAgent& func_agent, const AgentF
             }
 
             // maximum population num
+            if (func.func) {
 #ifdef _DEBUG
-            const Curve::Variable cv = curve.registerVariableByHash(var_hash + (_agent_birth_hash ^ func_hash) + instance_id, d_ptr, type_size, maxLen);
-            if (cv != static_cast<int>((var_hash + (_agent_birth_hash ^ func_hash) + instance_id)%Curve::MAX_VARIABLES)) {
-                fprintf(stderr, "Curve Warning: Agent Function '%s' New Agent Variable '%s' has a collision and may work improperly.\n", func.name.c_str(), mmp.first.c_str());
-            }
+                const Curve::Variable cv = curve.registerVariableByHash(var_hash + (_agent_birth_hash ^ func_hash) + instance_id, d_ptr, type_size, maxLen);
+                if (cv != static_cast<int>((var_hash + (_agent_birth_hash ^ func_hash) + instance_id)%Curve::MAX_VARIABLES)) {
+                    fprintf(stderr, "Curve Warning: Agent Function '%s' New Agent Variable '%s' has a collision and may work improperly.\n", func.name.c_str(), mmp.first.c_str());
+                }
 #else
-            curve.registerVariableByHash(var_hash + (_agent_birth_hash ^ func_hash) + instance_id, d_ptr, type_size, maxLen);
+                curve.registerVariableByHash(var_hash + (_agent_birth_hash ^ func_hash) + instance_id, d_ptr, type_size, maxLen);
 #endif
-            // Map RTC variables (these must be mapped before each function execution as the runtime pointer may have changed to the swapping)
-            if (!func.rtc_func_name.empty()) {
-                // get the rtc variable ptr
-                const jitify::experimental::KernelInstantiation& instance = func_agent.getRTCInstantiation(func.name);
-                std::stringstream d_var_ptr_name;
-                d_var_ptr_name << CurveRTCHost::getVariableSymbolName(mmp.first.c_str(), _agent_birth_hash + func_hash);
-                CUdeviceptr d_var_ptr = instance.get_global_ptr(d_var_ptr_name.str().c_str());
-                // copy runtime ptr (d_ptr) to rtc ptr (d_var_ptr)
-                gpuErrchkDriverAPI(cuMemcpyHtoD(d_var_ptr, &d_ptr, sizeof(void*)));
+            } else  {
+                // Map RTC variables (these must be mapped before each function execution as the runtime pointer may have changed to the swapping)
+                // Copy data to rtc header cache
+                auto& rtc_header = func_agent.getRTCHeader(func.name);
+                memcpy(rtc_header.getNewAgentVariableCachePtr(mmp.first.c_str()), &d_ptr, sizeof(void*));
             }
         }
     }
@@ -395,6 +387,9 @@ void CUDAAgent::unmapNewRuntimeVariables(const AgentFunctionData& func, const un
                 assert(false);  // We don't have a new buffer reserved???
             }
         }
+        // Skip if RTC
+        if (!func.func)
+            return;
         // Unmap curve
         const Curve::VariableHash _agent_birth_hash = Curve::variableRuntimeHash("_agent_birth");
         const Curve::VariableHash func_hash = Curve::variableRuntimeHash(func.name.c_str());
@@ -442,7 +437,7 @@ void CUDAAgent::clearFunctionCondition(const std::string &state) {
 
 void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, bool function_condition) {
     // Generate the dynamic curve header
-    CurveRTCHost curve_header;
+    CurveRTCHost &curve_header = *rtc_header_map.emplace(function_condition ? func.name + "_condition" : func.name, std::make_unique<CurveRTCHost>()).first->second;
     // agent function hash
     Curve::NamespaceHash agentname_hash = Curve::variableRuntimeHash(this->getAgentDescription().name.c_str());
     Curve::NamespaceHash funcname_hash = Curve::variableRuntimeHash(func.name.c_str());
@@ -513,6 +508,7 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, bool f
             }
         }
     }
+
     // get the dynamically generated header from curve rtc
     std::string curve_dynamic_header = curve_header.getDynamicHeader();
 
@@ -549,14 +545,14 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, bool f
     JitifyCache &jitify = JitifyCache::getInstance();
     // switch between normal agent function and agent function condition
     if (!function_condition) {
-        const std::string func_impl = std::string(func.rtc_func_name).append("_impl");
-        const std::vector<std::string> template_args = { func_impl.c_str(), func.msg_in_type.c_str(), func.msg_out_type.c_str() };
+        const std::string t_func_impl = std::string(func.rtc_func_name).append("_impl");
+        const std::vector<std::string> template_args = { t_func_impl.c_str(), func.msg_in_type.c_str(), func.msg_out_type.c_str() };
         auto kernel_inst = jitify.loadKernel(func.rtc_func_name, template_args, func.rtc_source, curve_dynamic_header);
         // add kernel instance to map
         rtc_func_map.insert(CUDARTCFuncMap::value_type(func.name, std::move(kernel_inst)));
     } else {
-        const std::string func_impl = std::string(func.rtc_func_condition_name).append("_cdn_impl");
-        const std::vector<std::string> template_args = { func_impl.c_str() };
+        const std::string t_func_impl = std::string(func.rtc_func_condition_name).append("_cdn_impl");
+        const std::vector<std::string> template_args = { t_func_impl.c_str() };
         auto kernel_inst = jitify.loadKernel(func.rtc_func_name + "_condition", template_args, func.rtc_condition_source, curve_dynamic_header);
         // add kernel instance to map
         rtc_func_map.insert(CUDARTCFuncMap::value_type(func.name + "_condition", std::move(kernel_inst)));
@@ -568,6 +564,16 @@ const jitify::experimental::KernelInstantiation& CUDAAgent::getRTCInstantiation(
     if (mm == rtc_func_map.end()) {
         THROW InvalidAgentFunc("Function name '%s' is not a runtime compiled agent function in agent '%s', "
             "in CUDAAgent::getRTCInstantiation()\n",
+            function_name.c_str(), agent_description.name.c_str());
+    }
+
+    return *mm->second;
+}
+CurveRTCHost& CUDAAgent::getRTCHeader(const std::string& function_name) const {
+    CUDARTCHeaderMap::const_iterator mm = rtc_header_map.find(function_name);
+    if (mm == rtc_header_map.end()) {
+        THROW InvalidAgentFunc("Function name '%s' is not a runtime compiled agent function in agent '%s', "
+            "in CUDAAgent::getRTCHeader()\n",
             function_name.c_str(), agent_description.name.c_str());
     }
 
