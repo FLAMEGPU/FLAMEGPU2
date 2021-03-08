@@ -75,7 +75,7 @@ void AgentVis::initBindings(std::unique_ptr<FLAMEGPU_Visualisation> &vis) {
         if (states.find(state) != states.end()) {
             vc = states.at(state).config;
         }
-        vis->addAgentState(agentData.name, state, vc);
+        vis->addAgentState(agentData.name, state, vc, !this->x_var.empty(), !this->y_var.empty(), !this->z_var.empty());
     }
 }
 void AgentVis::requestBufferResizes(std::unique_ptr<FLAMEGPU_Visualisation> &vis) {
