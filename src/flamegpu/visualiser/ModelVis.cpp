@@ -50,8 +50,8 @@ void ModelVis::activate() {
         visualiser = std::make_unique<FLAMEGPU_Visualisation>(modelCfg);  // Window resolution
         for (auto &agent : agents) {
             // If x and y aren't set, throw exception
-            if (agent.second.x_var.empty() || agent.second.y_var.empty()) {
-                THROW VisualisationException("Agent '%s' has not had x and y variables set, "
+            if (agent.second.x_var.empty() && agent.second.y_var.empty() && agent.second.z_var.empty()) {
+                THROW VisualisationException("Agent '%s' has not had x, y or z variables set, agent requires location to render, "
                     "in ModelVis::activate()\n",
                     agent.second.agentData.name.c_str());
             }
@@ -146,6 +146,10 @@ void ModelVis::setViewClips(const float &nearClip, const float &farClip) {
 
 void ModelVis::setStepVisible(const bool& showStep) {
     modelCfg.stepVisible = showStep;
+}
+
+void ModelVis::setSimulationSpeed(const unsigned int& _stepsPerSecond) {
+    modelCfg.stepsPerSecond = _stepsPerSecond;
 }
 
 StaticModelVis ModelVis::addStaticModel(const std::string &modelPath, const std::string &texturePath) {

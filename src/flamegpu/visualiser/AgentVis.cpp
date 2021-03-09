@@ -89,8 +89,8 @@ void AgentVis::updateBuffers(std::unique_ptr<FLAMEGPU_Visualisation> &vis) {
         auto &state_map = agent.state_map.at(state);
         vis->updateAgentStateBuffer(agentData.name, state,
             state_map->getSize(),
-            reinterpret_cast<float *>(state_map->getVariablePointer(x_var)),
-            reinterpret_cast<float *>(state_map->getVariablePointer(y_var)),
+            reinterpret_cast<float *>(x_var == "" ? nullptr : state_map->getVariablePointer(x_var)),
+            reinterpret_cast<float *>(y_var == "" ? nullptr : state_map->getVariablePointer(y_var)),
             reinterpret_cast<float *>(z_var == "" ? nullptr : state_map->getVariablePointer(z_var)));
     }
     // TODO Tertiary buffers? (e.g. color, direction[xyz])

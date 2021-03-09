@@ -120,6 +120,13 @@ class ModelVis {
 	 */
     void setStepVisible(const bool& showStep);
     /**
+     * Sets a limit on the rate of simulation
+     * A value of 0 leaves the rate unlimited
+     * This value defaults to 0
+     * @param stepsPerSecond The number of simulation steps to execute per second
+     */
+    void setSimulationSpeed(const unsigned int& stepsPerSecond);
+    /**
      * Adds a static model to the visualisation
      * @param modelPath Path of the model on disk
      * @param texturePath Optional path to a texture fore the model on disk
