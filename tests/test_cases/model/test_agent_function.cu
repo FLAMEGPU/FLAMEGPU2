@@ -323,12 +323,12 @@ TEST(AgentFunctionDescriptionTest, AddSingleDependency) {
     EXPECT_TRUE(f2.hasDependencies());
     EXPECT_TRUE(f.hasDependents());
     // Check dependents vector state
-    const std::vector<AgentFunctionDescription*> fDependents = f.getDependents();
+    const std::vector<DependencyNode*> fDependents = f.getDependents();
     EXPECT_EQ(fDependents.size(), 1);
     if (fDependents.size())
         EXPECT_EQ(fDependents[0], &f2);
     // check dependency vector state
-    const std::vector<AgentFunctionDescription*> f2Dependencies = f2.getDependencies();
+    const std::vector<DependencyNode*> f2Dependencies = f2.getDependencies();
     EXPECT_EQ(f2Dependencies.size(), 1);
     if (f2Dependencies.size())
         EXPECT_EQ(f2Dependencies[0], &f);
@@ -346,18 +346,18 @@ TEST(AgentFunctionDescriptionTest, AddMultipleDependencies) {
     EXPECT_TRUE(f3.hasDependencies());
     EXPECT_TRUE(f.hasDependents());
     // Check dependents vector state
-    const std::vector<AgentFunctionDescription*> fDependents = f.getDependents();
+    const std::vector<DependencyNode*> fDependents = f.getDependents();
     EXPECT_EQ(fDependents.size(), 2);
     if (fDependents.size())
         EXPECT_EQ(fDependents[0], &f2);
     if (fDependents.size() > 1) 
         EXPECT_EQ(fDependents[1], &f3);
     // check dependency vector state
-    const std::vector<AgentFunctionDescription*> f2Dependencies = f2.getDependencies();
+    const std::vector<DependencyNode*> f2Dependencies = f2.getDependencies();
     EXPECT_EQ(f2Dependencies.size(), 1);
     if (f2Dependencies.size())
         EXPECT_EQ(f2Dependencies[0], &f);
-    const std::vector<AgentFunctionDescription*> f3Dependencies = f3.getDependencies();
+    const std::vector<DependencyNode*> f3Dependencies = f3.getDependencies();
     EXPECT_EQ(f3Dependencies.size(), 1);
     if (f3Dependencies.size())
         EXPECT_EQ(f3Dependencies[0], &f);

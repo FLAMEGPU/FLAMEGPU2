@@ -3,7 +3,7 @@
 AgentFunctionDependencyGraph::AgentFunctionDependencyGraph() {
 }
 
-void AgentFunctionDependencyGraph::addRoot(AgentFunctionDescription* root) {
+void AgentFunctionDependencyGraph::addRoot(DependencyNode* root) {
     roots.push_back(root);
 }
 
@@ -28,8 +28,8 @@ void AgentFunctionDependencyGraph::generateLayers(ModelDescription& model) {
     validateDependencyGraph();
     
     // Lambda to walk the graph and set minimum layer depths of nodes
-    std::function<void(AgentFunctionDescription*, int)> setMinLayerDepths;
-    setMinLayerDepths = [&setMinLayerDepths] (AgentFunctionDescription* node, int depth) {
+    std::function<void(DependencyNode*, int)> setMinLayerDepths;
+    setMinLayerDepths = [&setMinLayerDepths] (DependencyNode* node, int depth) {
         if (depth >= node->getMinimumLayerDepth()) { 
             node->setMinimumLayerDepth(depth);
         }
@@ -44,13 +44,13 @@ void AgentFunctionDependencyGraph::generateLayers(ModelDescription& model) {
     }
 
     // Build list of functions in their respective ideal layers assuming no conflicts
-    std::vector<std::vector<AgentFunctionDescription*>> idealLayers;
-    std::function<void(AgentFunctionDescription*)> buildIdealLayers;
-    buildIdealLayers = [&buildIdealLayers, &idealLayers] (AgentFunctionDescription* node) {
+    std::vector<std::vector<DependencyNode*>> idealLayers;
+    std::function<void(DependencyNode*)> buildIdealLayers;
+    buildIdealLayers = [&buildIdealLayers, &idealLayers] (DependencyNode* node) {
         // New layers required
         int nodeDepth = node->getMinimumLayerDepth();
         if (nodeDepth >= idealLayers.size()) {
-            idealLayers.push_back(std::vector<AgentFunctionDescription*>());
+            idealLayers.push_back(std::vector<DependencyNode*>());
         }
           
         // Add node to relevant layer
@@ -66,7 +66,7 @@ void AgentFunctionDependencyGraph::generateLayers(ModelDescription& model) {
         buildIdealLayers(root);
     } 
 
-    // idealLayers now contains AgentFunctionDescription pointers in their ideal layers, i.e. assuming no conflicts. 
+    // idealLayers now contains DependencyNode pointers in their ideal layers, i.e. assuming no conflicts. 
     // Now iterate structure attempting to add functions to layers.
     // If we encounter conflicts, introduce additional layers as necessary
 
@@ -76,23 +76,24 @@ void AgentFunctionDependencyGraph::generateLayers(ModelDescription& model) {
        
         // Attempt to add each function in the idealLayer to the layer
         for (auto agentFunction : idealLayer) { 
+            AgentFunctionDescription* afd = dynamic_cast<AgentFunctionDescription*>(agentFunction);
             try {
-                layer->addAgentFunction(*agentFunction);
+                layer->addAgentFunction(*afd);
             } catch (const InvalidAgentFunc& e) {
                 // Conflict, create new layer and add to that instead
                 layer = &model.newLayer();
-                layer->addAgentFunction(*agentFunction);
+                layer->addAgentFunction(*afd);
                 printf("New function execution layer created - InvalidAgentFunc exception\n");
             } catch (const InvalidLayerMember& e) {
                 layer = &model.newLayer();
-                layer->addAgentFunction(*agentFunction);
+                layer->addAgentFunction(*afd);
                 printf("New function execution layer created - InvalidLayerMember exception\n");
             }
         }
     } 
 }
 
-bool AgentFunctionDependencyGraph::validateSubTree(AgentFunctionDescription* node) {
+bool AgentFunctionDependencyGraph::validateSubTree(DependencyNode* node) {
     // Check if the function we are looking at already exists on the stack - if so we have a cycle
     if (doesFunctionExistInStack(node)) {
         return false;
@@ -109,7 +110,7 @@ bool AgentFunctionDependencyGraph::validateSubTree(AgentFunctionDescription* nod
     return true;
 } 
 
-bool AgentFunctionDependencyGraph::doesFunctionExistInStack(AgentFunctionDescription* function) {
+bool AgentFunctionDependencyGraph::doesFunctionExistInStack(DependencyNode* function) {
     // Iterating vector probably faster than using constant lookup structure for likely number of elements
     for (auto fn : functionStack) {
         if (fn == function) {
@@ -130,14 +131,14 @@ void AgentFunctionDependencyGraph::generateDOTDiagram(std::string outputFileName
         DOTFile << "digraph {" << std::endl;
 
         // Lambda to recursively print relations
-        std::function<void(AgentFunctionDescription*)> printRelations;
-        printRelations = [&printRelations, &DOTFile] (AgentFunctionDescription* node) {
+        std::function<void(DependencyNode*)> printRelations;
+        printRelations = [&printRelations, &DOTFile] (DependencyNode* node) {
             // Get this node's name
-            std::string parentName = node->getName();
+            std::string parentName = static_cast<AgentFunctionDescription*>(node)->getName();
             
             // For each child, print DOT relation and recurse
             for (auto child : node->getDependents()) {
-                DOTFile << "    " << parentName << " -> " << child->getName() << ";" << std::endl;
+                DOTFile << "    " << parentName << " -> " << static_cast<AgentFunctionDescription*>(child)->getName() << ";" << std::endl;
                 printRelations(child);
             }
         }; 

@@ -9,6 +9,7 @@
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/runtime/AgentFunction.h"
 #include "flamegpu/runtime/AgentFunctionCondition.h"
+#include "flamegpu/model/DependencyNode.h"
 #include "flamegpu/model/LayerDescription.h"
 #include "flamegpu/runtime/messaging/BruteForce.h"
 #include "flamegpu/runtime/cuRVE/curve_rtc.h"
@@ -29,7 +30,7 @@ struct AgentFunctionData;
  * This class is used to configure external elements of agent functions, such as inputs and outputs
  * @see AgentDescription::newFunction(const std::string&, AgentFunction) For creating instances of this class
  */
-class AgentFunctionDescription {
+class AgentFunctionDescription : public DependencyNode {
     /**
      * Data store class for this description, constructs instances of this class
      */
@@ -183,15 +184,7 @@ class AgentFunctionDescription {
      *
      */
     void setRTCFunctionCondition(std::string func_cond_src);
-    /**
-     * Specifies that this agent function depends on the completion of another agent function
-     * @param dependency The agent function which must be complete before this agent function may run
-     */
-    void dependsOn(AgentFunctionDescription* dependency);
-    /**
-     * Sets the minimum layer depth for this agent function
-     */
-    void setMinimumLayerDepth(const int minLayerDepth);
+    
     /**
      * @return A mutable reference to the message input of this agent function
      * @see AgentFunctionDescription::getMessageInput() for the immutable version
@@ -286,22 +279,7 @@ class AgentFunctionDescription {
      * @return The cuda kernel entry point for executing the agent function
      */
     AgentFunctionWrapper *getFunctionPtr() const;
-    /**
-     * @return Whether this agent function has any dependents
-     */
-    bool hasDependents() const;
-    /**
-     * @return Immutable vector of the dependents of this agent function
-     */
-    const std::vector<AgentFunctionDescription*> getDependents() const;
-    /**
-     * @return Whether this agent function has any dependencies
-     */
-    bool hasDependencies() const;
-    /**
-     * @return The vector of the dependencies of this agent function
-     */
-    const std::vector<AgentFunctionDescription*> getDependencies() const;
+    
     /**
      * @return The cuda kernel entry point for executing the agent function condition
      */
@@ -310,10 +288,6 @@ class AgentFunctionDescription {
      * @return True if the function is a runtime time specified function
      */
     bool isRTC() const;
-    /**
-     * @return The minimum layer depth for this agent function
-     */
-    const int getMinimumLayerDepth();
 
  private:
     /**
@@ -324,22 +298,6 @@ class AgentFunctionDescription {
      * The class which stores all of the layer's data.
      */
     AgentFunctionData *const function;
-    /**
-     * Vector storing the 'children' of this agent function in the dependency tree, i.e. those functions which depend on the completion of this one
-     */
-    std::vector<AgentFunctionDescription*> dependents;
-    /**
-     * Vector storing the 'parents' of this agent function in the dependency tree, i.e. those functions which must be completed before this one may begin
-     */
-    std::vector<AgentFunctionDescription*> dependencies;
-    /**
-     * Adds an agent function to this agent function's list of dependents
-     */
-    void addDependent(AgentFunctionDescription* dependent);
-    /**
-     * This functions minimum layer depth in the execution graph
-     */
-    int minLayerDepth = 0;
 };
 
 
