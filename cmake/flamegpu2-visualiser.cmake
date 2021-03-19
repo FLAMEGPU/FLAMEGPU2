@@ -29,9 +29,9 @@ if (VISUALISATION_ROOT)
         set(VISUALISATION_ROOT "${VISUALISATION_ROOT_ABS}")
         set(VISUALISATION_ROOT "${VISUALISATION_ROOT_ABS}" PARENT_SCOPE)
         # And set up the visualisation build 
-        add_subdirectory(${VISUALISATION_ROOT_ABS} ${CMAKE_CURRENT_BINARY_DIR}/_deps/flamegpu2-visualiser-build EXCLUDE_FROM_ALL)
+        add_subdirectory(${VISUALISATION_ROOT_ABS} ${CMAKE_CURRENT_BINARY_DIR}/_deps/flamegpu2_visualiser-build EXCLUDE_FROM_ALL)
         # Set locally and for parent scope, which are mutually exclusive
-        set(VISUALISATION_BUILD ${flamegpu2-visualiser_BINARY_DIR} CACHE INTERNAL "flamegpu2-visualiser_BINARY_DIR")
+        set(VISUALISATION_BUILD ${flamegpu2_visualiser_BINARY_DIR} CACHE INTERNAL "flamegpu2_visualiser_BINARY_DIR")
     else()
         # Send a fatal error if the visualstion root passed is invalid.
         message(FATAL_ERROR "Invalid VISUALISATION_ROOT '${VISUALISATION_ROOT}'.\nVISUALISATION_ROOT must be a valid directory containing '${VISUALISATION_INCLUDE_HEADER_FILE}'")
@@ -40,20 +40,20 @@ if (VISUALISATION_ROOT)
 else()
     # Otherwise download.
     FetchContent_Declare(
-        flamegpu2-visualiser
+        flamegpu2_visualiser
         GIT_REPOSITORY https://github.com/FLAMEGPU/FLAMEGPU2-visualiser.git
         GIT_TAG        master
         GIT_PROGRESS   ON
         # UPDATE_DISCONNECTED   ON
         )
-        FetchContent_GetProperties(flamegpu2-visualiser)
-    if(NOT flamegpu2-visualiser_POPULATED)
-        FetchContent_Populate(flamegpu2-visualiser)
+        FetchContent_GetProperties(flamegpu2_visualiser)
+    if(NOT flamegpu2_visualiser_POPULATED)
+        FetchContent_Populate(flamegpu2_visualiser)
     
-        add_subdirectory(${flamegpu2-visualiser_SOURCE_DIR} ${flamegpu2-visualiser_BINARY_DIR} EXCLUDE_FROM_ALL)
+        add_subdirectory(${flamegpu2_visualiser_SOURCE_DIR} ${flamegpu2_visualiser_BINARY_DIR} EXCLUDE_FROM_ALL)
         
         # Set locally and for parent scope, which are mutually exclusive
-        set(VISUALISATION_ROOT ${flamegpu2-visualiser_SOURCE_DIR} CACHE INTERNAL "flamegpu2-visualiser_SOURCE_DIR")
-        set(VISUALISATION_BUILD ${flamegpu2-visualiser_BINARY_DIR} CACHE INTERNAL "flamegpu2-visualiser_BINARY_DIR")
+        set(VISUALISATION_ROOT ${flamegpu2_visualiser_SOURCE_DIR} CACHE INTERNAL "flamegpu2_visualiser_SOURCE_DIR")
+        set(VISUALISATION_BUILD ${flamegpu2_visualiser_BINARY_DIR} CACHE INTERNAL "flamegpu2_visualiser_BINARY_DIR")
     endif()
 endif()
