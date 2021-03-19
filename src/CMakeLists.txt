@@ -41,7 +41,7 @@ include(${FLAMEGPU_ROOT}/cmake/common.cmake)
 include(${FLAMEGPU_ROOT}/cmake/doxygen.cmake)
 
 if(VISUALISATION)
-  include(${FLAMEGPU_ROOT}/cmake/flamegpu2_visualiser.cmake)
+  include(${FLAMEGPU_ROOT}/cmake/flamegpu2-visualiser.cmake)
 endif()
 
 # Define output location of static library

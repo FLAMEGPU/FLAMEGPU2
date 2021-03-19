@@ -131,7 +131,7 @@ On Linux you may need to install additional packages, refer to the CMake configu
 + [GLEW](http://glew.sourceforge.net/) *(GL extension loader)*
 + [FreeType](http://www.freetype.org/)  *(font loading)*
 
-The visualisation codebase can be found at [this location](https://github.com/FLAMEGPU/FLAMEGPU2_visualiser) and is a fork of [sdl_exp](https://github.com/Robadob/sdl_exp).
+The visualisation codebase can be found at [this location](https://github.com/FLAMEGPU/FLAMEGPU2-visualiser) and is a fork of [sdl_exp](https://github.com/Robadob/sdl_exp).
 
 ##### Testing
 

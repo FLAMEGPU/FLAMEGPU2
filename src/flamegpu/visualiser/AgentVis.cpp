@@ -4,7 +4,7 @@
 #include "flamegpu/model/AgentData.h"
 #include "flamegpu/visualiser/color/ColorFunction.h"
 #include "flamegpu/visualiser/color/StaticColor.h"
-#include "FLAMEGPU_Visualisation.h"  // TODO - This should probably be flamegpu_visualiser/FLAMEGPU_Visualisation.h?
+#include "FLAMEGPU_Visualisation.h"  // TODO - This should probably be flamegpu2-visualiser/FLAMEGPU_Visualisation.h?
 
 AgentVis::AgentVis(CUDAAgent &_agent, const std::shared_ptr<AutoPalette>& autopalette)
     : owned_auto_palette(nullptr)

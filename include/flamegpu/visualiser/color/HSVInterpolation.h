@@ -48,7 +48,7 @@ class HSVInterpolation : public ColorFunction {
      * If set false, hue will interpolate without wrapping (e.g. if hMax is < hMin), hMin will be assigned to the lower_bound
      * By default this is set to false
      */
-    HSVInterpolation& HSVInterpolation::setWrapHue(const bool& _wrapHue);
+    HSVInterpolation& setWrapHue(const bool& _wrapHue);
     /**
      * Returns GLSL for a function that returns a color based on the configured HSV interpolation
      */
