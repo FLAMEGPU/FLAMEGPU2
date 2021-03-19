@@ -291,8 +291,8 @@ __device__ T MsgSpatial2D::In::Filter::Message::getVariable(const char(&variable
 __device__ __forceinline__ MsgSpatial2D::GridPos2D getGridPosition2D(const MsgSpatial2D::MetaData *md, float x, float y) {
     // Clamp each grid coord to 0<=x<dim
     int gridPos[2] = {
-        static_cast<int>(floor(((x-md->min[0]) / md->environmentWidth[0])*md->gridDim[0])),
-        static_cast<int>(floor(((y-md->min[1]) / md->environmentWidth[1])*md->gridDim[1]))
+        static_cast<int>(floorf(((x-md->min[0]) / md->environmentWidth[0])*md->gridDim[0])),
+        static_cast<int>(floorf(((y-md->min[1]) / md->environmentWidth[1])*md->gridDim[1]))
     };
     MsgSpatial2D::GridPos2D rtn = {
         gridPos[0] < 0 ? 0 : (gridPos[0] >= static_cast<int>(md->gridDim[0]) ? static_cast<int>(md->gridDim[0]) - 1 : gridPos[0]),
