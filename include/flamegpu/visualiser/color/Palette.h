@@ -4,6 +4,7 @@
 #include <iterator>
 #include <vector>
 #include <array>
+#include <cmath>
 
 #include "flamegpu/visualiser/color/Color.h"
 #include "flamegpu/visualiser/color/ViridisInterpolation.h"
@@ -98,6 +99,7 @@ namespace Palettes {
  * Set1 from Colorbrewer
  */
 struct Set1 : Palette {
+    Set1() { }
     Category getCategory() const override { return Qualitative; }
     bool getColorBlindFriendly() const override { return false; }
     /**
@@ -137,6 +139,7 @@ struct Set1 : Palette {
  * @note Color names are approximations using https://www.color-blindness.com/color-name-hue/
  */
 struct Set2 : Palette {
+    Set2() { }  // Empty default constructor for warning suppression
     Category getCategory() const override { return Qualitative; }
     bool getColorBlindFriendly() const override { return true; }
     /**
@@ -174,6 +177,7 @@ struct Set2 : Palette {
  * @note Color names are approximations using https://www.color-blindness.com/color-name-hue/
  */
 struct Dark2 : Palette {
+    Dark2() { }  // Empty default constructor for warning suppression
     Category getCategory() const override { return Qualitative; }
     bool getColorBlindFriendly() const override { return true; }
     /**
@@ -212,6 +216,7 @@ struct Dark2 : Palette {
  * @note Color names are approximations using https://www.color-blindness.com/color-name-hue/
  */
 struct Pastel : Palette {
+    Pastel() { }  // Empty default constructor for warning suppression
     Category getCategory() const override { return Qualitative; }
     bool getColorBlindFriendly() const override { return false; }
     /**
@@ -252,6 +257,7 @@ struct Pastel : Palette {
  * YlOrRd palette from Colorbrewer
  */
 struct YlOrRd : Palette {
+    YlOrRd() { }  // Empty default constructor for warning suppression
     Category getCategory() const override { return Sequential; }
     bool getColorBlindFriendly() const override { return true; }
 
@@ -276,6 +282,7 @@ struct YlOrRd : Palette {
  * YlGn palette from Colorbrewer
  */
 struct YlGn : Palette {
+    YlGn() { }  // Empty default constructor for warning suppression
     Category getCategory() const override { return Sequential; }
     bool getColorBlindFriendly() const override { return true; }
 
@@ -300,6 +307,7 @@ struct YlGn : Palette {
  * Greys palette from Colorbrewer
  */
 struct Greys : Palette {
+    Greys() { }  // Empty default constructor for warning suppression
     Category getCategory() const override { return Sequential; }
     bool getColorBlindFriendly() const override { return true; }
 
@@ -324,6 +332,7 @@ struct Greys : Palette {
  * RdYlBu palette from Colorbrewer
  */
 struct RdYlBu : Palette {
+    RdYlBu() { }  // Empty default constructor for warning suppression
     Category getCategory() const override { return Diverging; }
     bool getColorBlindFriendly() const override { return true; }
 
@@ -350,6 +359,7 @@ struct RdYlBu : Palette {
  * PiYG palette from Colorbrewer
  */
 struct PiYG : Palette {
+    PiYG() { }  // Empty default constructor for warning suppression
     Category getCategory() const override { return Diverging; }
     bool getColorBlindFriendly() const override { return true; }
 
@@ -376,6 +386,7 @@ struct PiYG : Palette {
  * Viridis from BIDS/MatPlotLib: https://github.com/BIDS/colormap
  */
 struct Viridis : Palette {
+    Viridis() { }  // Empty default constructor for warning suppression
     Category getCategory() const override { return Sequential; }
     bool getColorBlindFriendly() const override { return true; }
     /**

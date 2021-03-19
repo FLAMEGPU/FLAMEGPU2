@@ -372,8 +372,6 @@ function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
                     "${GLEW_RUNTIME_LIBRARIES}"                           # <--this is in-file
                     $<TARGET_FILE_DIR:${NAME}>)                           # <--this is out-file path
         endif()
-        # fgpu2 lib will add this dependency
-        # target_link_libraries(${NAME} flamegpu2_visualiser)
         add_compile_definitions(VISUALISATION)
     endif()
     
