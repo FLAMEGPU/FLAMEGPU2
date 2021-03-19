@@ -1,21 +1,23 @@
-#ifndef INCLUDE_FLAMEGPU_MODEL_AGENTFUNCTIONDEPENDENCYGRAPH_H_
-#define INCLUDE_FLAMEGPU_MODEL_AGENTFUNCTIONDEPENDENCYGRAPH_H_
+#ifndef INCLUDE_FLAMEGPU_MODEL_DEPENDENCYGRAPH_H_
+#define INCLUDE_FLAMEGPU_MODEL_DEPENDENCYGRAPH_H_
 
 #include <functional> 
 
 #include "DependencyNode.h"
 #include "ModelDescription.h"
 #include "flamegpu/model/AgentFunctionDescription.h"
+#include "flamegpu/model/HostFunctionDescription.h"
+#include "flamegpu/model/SubModelDescription.h"
 
 /**
- * This class represents the dependency tree for agent functions. Each DependencyNode has its own dependencies/dependents, the purpose of this class is to
+ * This class represents the dependency tree for agent functions, host functions and submodels. Each DependencyNode has its own dependencies/dependents, the purpose of this class is to
  * walk the dependency tree and provide utility such as validation/layering.
  * @see DependencyNode
  */
 
-class AgentFunctionDependencyGraph {
+class DependencyGraph {
     public:
-        AgentFunctionDependencyGraph();
+        DependencyGraph();
         
         void addRoot(DependencyNode* root);
         bool validateDependencyGraph();
@@ -30,4 +32,4 @@ class AgentFunctionDependencyGraph {
         bool doesFunctionExistInStack(DependencyNode* function);
 };
 
-#endif
+#endif // INCLUDE_FLAMEGPU_MODEL_DEPENDENCYGRAPH_H_

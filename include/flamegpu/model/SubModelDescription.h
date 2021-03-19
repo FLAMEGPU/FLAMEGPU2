@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "LayerDescription.h"
+#include "DependencyNode.h"
 
 class SubAgentDescription;
 class SubEnvironmentDescription;
@@ -13,7 +14,7 @@ struct SubModelData;
 /**
  * This class provides an interface to a mapping between the parent and sub-model
  */
-class SubModelDescription {
+class SubModelDescription : public DependencyNode {
     /**
      * Data store class for this description, constructs instances of this class
      */
