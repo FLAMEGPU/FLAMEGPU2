@@ -140,6 +140,13 @@ class ModelVis {
      */
     void setSimulationSpeed(const unsigned int& stepsPerSecond);
     /**
+     * Sets whether the simulation should begin in a paused state or not
+     * This value defaults to false
+     * The simulation can be resumed (or re-paused) by pressing 'p'
+	 * @param beginPaused True if the simulation should begin paused
+     */
+    void setBeginPaused(const bool& beginPaused);
+    /**
      * Adds a static model to the visualisation
      * @param modelPath Path of the model on disk
      * @param texturePath Optional path to a texture fore the model on disk

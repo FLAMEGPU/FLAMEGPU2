@@ -159,6 +159,10 @@ void ModelVis::setSimulationSpeed(const unsigned int& _stepsPerSecond) {
     modelCfg.stepsPerSecond = _stepsPerSecond;
 }
 
+void ModelVis::setBeginPaused(const bool& beginPaused) {
+    modelCfg.beginPaused = beginPaused;
+}
+
 StaticModelVis ModelVis::addStaticModel(const std::string &modelPath, const std::string &texturePath) {
     // Create ModelConfig::StaticModel
     auto m = std::make_shared<ModelConfig::StaticModel>();
