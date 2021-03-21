@@ -405,10 +405,14 @@ if pyflamegpu.VISUALISATION:
     envWidth = env.getPropertyFloat("MAX_POSITION") - env.getPropertyFloat("MIN_POSITION");
     INIT_CAM = env.getPropertyFloat("MAX_POSITION") * 1.25;
     visualisation.setInitialCameraLocation(INIT_CAM, INIT_CAM, INIT_CAM);
-    visualisation.setCameraSpeed(0.002 * envWidth);
+    visualisation.setCameraSpeed(0.001 * envWidth);
+    visualisation.setViewClips(0.00001, 50);
     circ_agt = visualisation.addAgent("Boid");
     # Position vars are named x, y, z; so they are used by default
-    circ_agt.setModel(pyflamegpu.ICOSPHERE);
+    circ_agt.setForwardXVariable("fx");
+    circ_agt.setForwardYVariable("fy");
+    circ_agt.setForwardZVariable("fz");
+    circ_agt.setModel(pyflamegpu.STUNTPLANE);
     circ_agt.setModelScale(env.getPropertyFloat("SEPARATION_RADIUS") * 10);
     visualisation.activate();
 
