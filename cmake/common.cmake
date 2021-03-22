@@ -270,8 +270,18 @@ endif()
 find_file(CPPLINT NAMES cpplint cpplint.exe)
 if(CPPLINT)
     function(new_linter_target NAME SRC)
+        cmake_parse_arguments(
+            NEW_LINTER_TARGET
+            ""
+            ""
+            "EXCLUDE_FILTERS"
+            ${ARGN})
         # Don't lint external files
         list(FILTER SRC EXCLUDE REGEX "^${FLAMEGPU_ROOT}/externals/.*")
+        # Don't lint user provided list of regular expressions.
+        foreach(EXCLUDE_FILTER ${NEW_LINTER_TARGET_EXCLUDE_FILTERS})
+            list(FILTER SRC EXCLUDE REGEX "${EXCLUDE_FILTER}")
+        endforeach()
         # Add custom target for linting this
         if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
             # Output in visual studio format
@@ -313,6 +323,13 @@ endif()
 
 # Function to mask some of the steps to create an executable which links against the static library
 function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
+    # Parse optional arugments.
+    cmake_parse_arguments(
+        ADD_FLAMEGPU_EXECUTABLE
+        ""
+        ""
+        "LINT_EXCLUDE_FILTERS"
+        ${ARGN})
 
     # If the library does not exist as a target, add it.
     if (NOT TARGET flamegpu2)
@@ -384,8 +401,8 @@ function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
         add_compile_definitions($<IF:$<CONFIG:Debug>,SEATBELTS=1,SEATBELTS=0>)
     endif()
 
-    # Flag the new linter target and the files to be linted.
-    new_linter_target(${NAME} "${SRC}")
+    # Flag the new linter target and the files to be linted, and pass optional exclusions filters (regex)
+    new_linter_target(${NAME} "${SRC}" EXCLUDE_FILTERS "${ADD_FLAMEGPU_EXECUTABLE_LINT_EXCLUDE_FILTERS}")
     
     # Setup Visual Studio (and eclipse) filters
     #src/.h
