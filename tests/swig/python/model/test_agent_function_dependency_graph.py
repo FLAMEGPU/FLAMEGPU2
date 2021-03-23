@@ -150,7 +150,8 @@ class DependencyGraphTest(TestCase):
         f3.dependsOn(f2)
         graph = pyflamegpu.DependencyGraph()
         graph.addRoot(f)
-        graph.generateLayers(_m) 
+        graph.generateLayers(_m)
+        assert graph.validateDependencyGraph() == True
     
     def test_ConstructLayersRootTwoChildrenConflict(self):
         _m = pyflamegpu.ModelDescription(MODEL_NAME)
@@ -162,7 +163,7 @@ class DependencyGraphTest(TestCase):
         f3.dependsOn(f)
         graph = pyflamegpu.DependencyGraph()
         graph.addRoot(f)
-        graph.generateLayers(_m) 
+        graph.generateLayers(_m)
     
     def test_AddHostFunctionAsDependent(self):
         _m = pyflamegpu.ModelDescription(MODEL_NAME)
@@ -172,7 +173,8 @@ class DependencyGraphTest(TestCase):
         hf.dependsOn(f)
         graph = pyflamegpu.DependencyGraph()
         graph.addRoot(f)
-        graph.generateLayers(_m) 
+        graph.generateLayers(_m)
+        assert graph.validateDependencyGraph() == True
     
     def test_AddHostFunctionAsDependency(self):
         _m = pyflamegpu.ModelDescription(MODEL_NAME)
@@ -182,7 +184,8 @@ class DependencyGraphTest(TestCase):
         f.dependsOn(hf)
         graph = pyflamegpu.DependencyGraph()
         graph.addRoot(hf)
-        graph.generateLayers(_m) 
+        graph.generateLayers(_m)
+        assert graph.validateDependencyGraph() == True
     
     def test_AddSubmodelAsDependent(self):
         _m = pyflamegpu.ModelDescription(MODEL_NAME)
@@ -197,7 +200,8 @@ class DependencyGraphTest(TestCase):
         _smd.dependsOn(f)
         graph = pyflamegpu.DependencyGraph()
         graph.addRoot(f)
-        graph.generateLayers(_m) 
+        graph.generateLayers(_m)
+        assert graph.validateDependencyGraph() == True
     
     def test_AddSubmodelAsDependency(self):
         _m = pyflamegpu.ModelDescription(MODEL_NAME)
@@ -212,7 +216,8 @@ class DependencyGraphTest(TestCase):
         f.dependsOn(_smd)
         graph = pyflamegpu.DependencyGraph()
         graph.addRoot(_smd)
-        graph.generateLayers(_m) 
+        graph.generateLayers(_m)
+        assert graph.validateDependencyGraph() == True
     
     def test_DOTDiagramSingleChain(self):
         _m = pyflamegpu.ModelDescription(MODEL_NAME)
@@ -225,6 +230,7 @@ class DependencyGraphTest(TestCase):
         graph = pyflamegpu.DependencyGraph()
         graph.addRoot(f)
         graph.generateLayers(_m)
+        assert graph.validateDependencyGraph() == True
         graph.generateDOTDiagram("singlechain.gv")
     
     def test_DOTDiagramTwoDependencies(self):
@@ -237,6 +243,7 @@ class DependencyGraphTest(TestCase):
         f3.dependsOn(f)
         graph = pyflamegpu.DependencyGraph()
         graph.addRoot(f)
+        assert graph.validateDependencyGraph() == True
         graph.generateDOTDiagram("twodeps.gv")
     
     def test_DOTDiagramDiamond(self):
@@ -252,6 +259,7 @@ class DependencyGraphTest(TestCase):
         f4.dependsOn(f3)
         graph = pyflamegpu.DependencyGraph()
         graph.addRoot(f)
+        assert graph.validateDependencyGraph() == True
         graph.generateDOTDiagram("diamond.gv")
     
     def test_DOTDiagramHostFunctions(self):
@@ -271,6 +279,7 @@ class DependencyGraphTest(TestCase):
         graph = pyflamegpu.DependencyGraph()
         graph.addRoot(f)
         graph.addRoot(hf)
+        assert graph.validateDependencyGraph() == True
         graph.generateDOTDiagram("host_functions.gv")
     
     def test_DOTDiagramAllDependencies(self):
@@ -295,5 +304,6 @@ class DependencyGraphTest(TestCase):
         graph = pyflamegpu.DependencyGraph()
         graph.addRoot(f)
         graph.addRoot(hf)
+        assert graph.validateDependencyGraph() == True
         graph.generateDOTDiagram("all_dependencies.gv")
     

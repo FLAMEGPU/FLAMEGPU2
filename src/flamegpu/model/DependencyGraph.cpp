@@ -50,7 +50,7 @@ void DependencyGraph::generateLayers(ModelDescription& model) {
     std::function<void(DependencyNode*)> buildIdealLayers;
     buildIdealLayers = [&buildIdealLayers, &idealLayers] (DependencyNode* node) {
         // New layers required
-        int nodeDepth = node->getMinimumLayerDepth();
+        std::vector<std::vector<DependencyNode*>>::size_type nodeDepth = node->getMinimumLayerDepth();
         if (nodeDepth >= idealLayers.size()) {
             idealLayers.push_back(std::vector<DependencyNode*>());
         }
@@ -113,6 +113,7 @@ void DependencyGraph::generateLayers(ModelDescription& model) {
 
             // Host function
             if (HostFunctionDescription* hdf = dynamic_cast<HostFunctionDescription*>(node)) {
+#ifndef SWIG
                 try {
                     layer->addHostFunction(hdf->getFunctionPtr());
                 } catch (const InvalidLayerMember& e) {
@@ -120,6 +121,16 @@ void DependencyGraph::generateLayers(ModelDescription& model) {
                     layer->addHostFunction(hdf->getFunctionPtr());
                     printf("New host function layer created - InvalidLayerMember exception\n");
                 }
+#endif
+#ifdef SWIG
+                try {
+                    layer->addHostFunctionCallback(hdf->getCallbackObject());
+                } catch (const InvalidLayerMember& e) {
+                    layer = &model.newLayer();
+                    layer->addHostFunctionCallback(hdf->getCallbackObject());
+                    printf("New host function layer created - InvalidLayerMember exception\n");
+
+#endif
             }
         }
     } 
@@ -181,11 +192,11 @@ void DependencyGraph::generateDOTDiagram(std::string outputFileName) {
         std::function<void(DependencyNode*)> printNodes;
         printNodes = [&printNodes, &DOTFile] (DependencyNode* node) {
             std::string nodeName = DependencyGraph::getNodeName(node);
-            if (AgentFunctionDescription* afd = dynamic_cast<AgentFunctionDescription*>(node)) {
+            if (dynamic_cast<AgentFunctionDescription*>(node)) {
                 DOTFile << "    " << nodeName << "[style = filled, color = red];" << std::endl;
-            } else if (HostFunctionDescription* hfd = dynamic_cast<HostFunctionDescription*>(node)) {
+            } else if (dynamic_cast<HostFunctionDescription*>(node)) {
                 DOTFile << "    " << nodeName << "[style = filled, color = yellow];" << std::endl;
-            } else if (SubModelDescription* smd = dynamic_cast<SubModelDescription*>(node)) {
+            } else if (dynamic_cast<SubModelDescription*>(node)) {
                 DOTFile << "    " << nodeName << "[style = filled, color = green];" << std::endl;
             } 
 

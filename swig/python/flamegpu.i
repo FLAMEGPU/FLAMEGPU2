@@ -119,6 +119,7 @@ TEMPLATE_VARIABLE_INSTANTIATE_INTS(function, classfunction)
 %}
 
 
+
 /* Custom Iterator to Swigify iterable types (RunPlanVec, AgentVector) */
 %pythoncode %{
 class FLAMEGPUIterator(object):
@@ -281,8 +282,8 @@ namespace EnvironmentManager{
 
 /* SWIG header includes used to generate wrappers */
 %include "flamegpu/model/DependencyNode.h"
-%include "flamegpu/model/HostFunctionDescription.h"
 %include "flamegpu/model/DependencyGraph.h"
+%include "flamegpu/model/HostFunctionDescription.h"
 %include "flamegpu/model/ModelDescription.h"
 %include "flamegpu/model/AgentDescription.h"
 %include "flamegpu/model/AgentFunctionDescription.h"
@@ -496,7 +497,6 @@ TEMPLATE_VARIABLE_INSTANTIATE(getVariable, FLAMEGPU_HOST_NEW_AGENT_API::getVaria
 TEMPLATE_VARIABLE_INSTANTIATE(getVariableArray, FLAMEGPU_HOST_NEW_AGENT_API::getVariableArray)
 TEMPLATE_VARIABLE_INSTANTIATE(setVariable, FLAMEGPU_HOST_NEW_AGENT_API::setVariable)
 TEMPLATE_VARIABLE_INSTANTIATE(setVariableArray, FLAMEGPU_HOST_NEW_AGENT_API::setVariableArray)
-
 
 // Instantiate template versions of environment description functions from the API
 TEMPLATE_VARIABLE_INSTANTIATE(newProperty, EnvironmentDescription::newProperty)

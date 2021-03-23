@@ -13,6 +13,11 @@ HostFunctionDescription::HostFunctionDescription(std::string name, FLAMEGPU_HOST
     this->function = host_function;
 }
 
+HostFunctionDescription::HostFunctionDescription(std::string name, HostFunctionCallback *func_callback) {
+    this->name = name;
+    this->callbackObject = func_callback;
+}
+
 bool HostFunctionDescription::operator==(const HostFunctionDescription& rhs) const {
     return *this->function == *rhs.function;  // Compare content is functionally the same
 }
@@ -30,4 +35,8 @@ std::string HostFunctionDescription::getName() {
 
 FLAMEGPU_HOST_FUNCTION_POINTER HostFunctionDescription::getFunctionPtr() const {
     return function;
+}
+
+HostFunctionCallback* HostFunctionDescription::getCallbackObject() {
+    return callbackObject;
 }

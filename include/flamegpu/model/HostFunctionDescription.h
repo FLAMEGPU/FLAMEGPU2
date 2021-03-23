@@ -5,6 +5,9 @@
 #include <memory>
 #include <vector>
 
+#ifdef SWIG
+#include "flamegpu/runtime/HostFunctionCallback.h"
+#endif
 #include "flamegpu/model/DependencyNode.h"
 #include "flamegpu/model/LayerDescription.h"
 
@@ -35,6 +38,7 @@ class HostFunctionDescription : public DependencyNode {
 
  public:
    HostFunctionDescription(std::string host_function_name, FLAMEGPU_HOST_FUNCTION_POINTER host_function);
+   HostFunctionDescription(std::string host_funcation_name, HostFunctionCallback *func_callback);
 
     /**
      * Equality operator, checks whether HostFunctionDescription hierarchies are functionally the same
@@ -57,12 +61,16 @@ class HostFunctionDescription : public DependencyNode {
     /**
      * @return The cuda kernel entry point for executing the agent function
      */
+
     FLAMEGPU_HOST_FUNCTION_POINTER getFunctionPtr() const;
+    HostFunctionCallback* getCallbackObject();
     std::string getName();
 
 
  private:
+
     FLAMEGPU_HOST_FUNCTION_POINTER function;
+    HostFunctionCallback* callbackObject;
     std::string name;
     
 };
