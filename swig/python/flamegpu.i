@@ -280,6 +280,9 @@ namespace EnvironmentManager{
 }
 
 /* SWIG header includes used to generate wrappers */
+%include "flamegpu/model/DependencyNode.h"
+%include "flamegpu/model/HostFunctionDescription.h"
+%include "flamegpu/model/DependencyGraph.h"
 %include "flamegpu/model/ModelDescription.h"
 %include "flamegpu/model/AgentDescription.h"
 %include "flamegpu/model/AgentFunctionDescription.h"
