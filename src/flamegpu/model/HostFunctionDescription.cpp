@@ -8,7 +8,8 @@
  * Constructors
  */
 
-HostFunctionDescription::HostFunctionDescription(FLAMEGPU_HOST_FUNCTION_POINTER host_function) {
+HostFunctionDescription::HostFunctionDescription(std::string name, FLAMEGPU_HOST_FUNCTION_POINTER host_function) {
+    this->name = name;
     this->function = host_function;
 }
 
@@ -20,8 +21,12 @@ bool HostFunctionDescription::operator!=(const HostFunctionDescription& rhs) con
 }
 
 /**
- * Const Accessors
+ * Accessors
  */
+
+std::string HostFunctionDescription::getName() { 
+    return name;
+}
 
 FLAMEGPU_HOST_FUNCTION_POINTER HostFunctionDescription::getFunctionPtr() const {
     return function;

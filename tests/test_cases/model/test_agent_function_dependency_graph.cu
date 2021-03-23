@@ -21,6 +21,21 @@ FLAMEGPU_AGENT_FUNCTION(agent_fn4, MsgNone, MsgNone) {
     return ALIVE;
 }
 
+FLAMEGPU_HOST_FUNCTION(host_fn1) {
+    // do nothing
+    return;
+}
+
+FLAMEGPU_HOST_FUNCTION(host_fn2) {
+    // do nothing
+    return;
+}
+
+FLAMEGPU_HOST_FUNCTION(host_fn3) {
+    // do nothing
+    return;
+}
+
 const char *MODEL_NAME = "Model";
 const char *WRONG_MODEL_NAME = "Model2";
 const char *AGENT_NAME = "Agent1";
@@ -35,6 +50,9 @@ const char *FUNCTION_NAME1 = "Function1";
 const char *FUNCTION_NAME2 = "Function2";
 const char *FUNCTION_NAME3 = "Function3";
 const char *FUNCTION_NAME4 = "Function4";
+const char *HOST_FN_NAME1 = "HostFn1";
+const char *HOST_FN_NAME2 = "HostFn2";
+const char *HOST_FN_NAME3 = "HostFn3";
 const char *STATE_NAME = "State1";
 const char *NEW_STATE_NAME = "State2";
 const char *WRONG_STATE_NAME = "State3";
@@ -133,6 +151,28 @@ TEST(DependencyGraphTest, ConstructLayersRootTwoChildrenConflict) {
     graph.generateLayers(_m); 
 }
 
+TEST(DependencyGraphTest, AddHostFunctionAsDependent) {
+    ModelDescription _m(MODEL_NAME);
+    AgentDescription &a = _m.newAgent(AGENT_NAME);
+    AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    HostFunctionDescription hf(HOST_FN_NAME1, host_fn1);
+    hf.dependsOn(&f);
+    DependencyGraph graph;
+    graph.addRoot(&f);
+    graph.generateLayers(_m); 
+}
+
+TEST(DependencyGraphTest, AddHostFunctionAsDependency) {
+    ModelDescription _m(MODEL_NAME);
+    AgentDescription &a = _m.newAgent(AGENT_NAME);
+    AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    HostFunctionDescription hf(HOST_FN_NAME1, host_fn1);
+    f.dependsOn(&hf);
+    DependencyGraph graph;
+    graph.addRoot(&hf);
+    graph.generateLayers(_m); 
+}
+
 TEST(DependencyGraphTest, DOTDiagramSingleChain) {
     ModelDescription _m(MODEL_NAME);
     AgentDescription &a = _m.newAgent(AGENT_NAME);
@@ -174,5 +214,25 @@ TEST(DependencyGraphTest, DOTDiagramDiamond) {
     DependencyGraph graph;
     graph.addRoot(&f);
     graph.generateDOTDiagram("diamond.gv");
+}
+
+TEST(DependencyGraphTest, DOTDiagramHostFunctions) {
+    ModelDescription _m(MODEL_NAME);
+    AgentDescription &a = _m.newAgent(AGENT_NAME);
+    AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    AgentFunctionDescription &f2 = a.newFunction(FUNCTION_NAME2, agent_fn2);
+    AgentFunctionDescription &f3 = a.newFunction(FUNCTION_NAME3, agent_fn3);
+    AgentFunctionDescription &f4 = a.newFunction(FUNCTION_NAME4, agent_fn4);
+    HostFunctionDescription hf(HOST_FN_NAME1, host_fn1);
+    HostFunctionDescription hf2(HOST_FN_NAME2, host_fn2);
+    f2.dependsOn(&f);
+    f3.dependsOn(&hf);
+    f4.dependsOn(&f2);
+    f4.dependsOn(&hf);
+    hf2.dependsOn(&f3);
+    DependencyGraph graph;
+    graph.addRoot(&f);
+    graph.addRoot(&hf);
+    graph.generateDOTDiagram("host_functions.gv");
 }
 }  // namespace test_agent_function_dependency_graph

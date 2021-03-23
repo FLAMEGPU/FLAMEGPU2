@@ -2,6 +2,7 @@
 #define INCLUDE_FLAMEGPU_MODEL_DEPENDENCYGRAPH_H_
 
 #include <functional> 
+#include <string>   
 
 #include "DependencyNode.h"
 #include "ModelDescription.h"
@@ -23,13 +24,14 @@ class DependencyGraph {
         bool validateDependencyGraph();
         void generateLayers(ModelDescription& model);
         void printGraph() const;
-        void generateDOTDiagram(std::string outputFileName) const;
+        void generateDOTDiagram(std::string outputFileName);
     
     private:
         std::vector<DependencyNode*> roots;
         std::vector<DependencyNode*> functionStack;
         bool validateSubTree(DependencyNode* node);
         bool doesFunctionExistInStack(DependencyNode* function);
+        static std::string getNodeName(DependencyNode* node);
 };
 
 #endif // INCLUDE_FLAMEGPU_MODEL_DEPENDENCYGRAPH_H_

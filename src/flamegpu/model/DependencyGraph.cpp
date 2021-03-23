@@ -8,6 +8,8 @@ void DependencyGraph::addRoot(DependencyNode* root) {
 }
 
 bool DependencyGraph::validateDependencyGraph() {
+    functionStack.clear();
+
     if (roots.size() == 0) {
             THROW InvalidDependencyGraph("Warning! Agent function dependency graph is empty!");
     }
@@ -137,6 +139,8 @@ bool DependencyGraph::validateSubTree(DependencyNode* node) {
     }
    
     // No problems, tree formed by this node and its children is valid
+    // Pop this function from the stack and return
+    functionStack.pop_back();
     return true;
 } 
 
@@ -154,24 +158,59 @@ void DependencyGraph::printGraph() const {
     printf("printGraph not yet implemented!\n");
 }
 
-void DependencyGraph::generateDOTDiagram(std::string outputFileName) const {
+std::string DependencyGraph::getNodeName(DependencyNode* node) {
+    if (AgentFunctionDescription* afd = dynamic_cast<AgentFunctionDescription*>(node)) {
+        return afd->getName();
+    } else if (HostFunctionDescription* hfd = dynamic_cast<HostFunctionDescription*>(node)) {
+        return hfd->getName();
+    } else if (SubModelDescription* smd = dynamic_cast<SubModelDescription*>(node)) {
+        return std::string("Submodel");
+    } else {
+        return std::string("DependencyNode without concrete type!");
+    }
+}
+
+void DependencyGraph::generateDOTDiagram(std::string outputFileName) {
+    validateDependencyGraph();
     std::ofstream DOTFile(outputFileName);
     if (DOTFile.is_open()) {
         // File preamble
         DOTFile << "digraph {" << std::endl;
 
+        // Lambda to recursively print nodes
+        std::function<void(DependencyNode*)> printNodes;
+        printNodes = [&printNodes, &DOTFile] (DependencyNode* node) {
+            std::string nodeName = DependencyGraph::getNodeName(node);
+            if (AgentFunctionDescription* afd = dynamic_cast<AgentFunctionDescription*>(node)) {
+                DOTFile << "    " << nodeName << "[style = filled, color = red];" << std::endl;
+            } else if (HostFunctionDescription* hfd = dynamic_cast<HostFunctionDescription*>(node)) {
+                DOTFile << "    " << nodeName << "[style = filled, color = yellow];" << std::endl;
+            } else if (SubModelDescription* smd = dynamic_cast<SubModelDescription*>(node)) {
+                DOTFile << "    " << nodeName << "[style = filled, color = green];" << std::endl;
+            } 
+
+            for (auto child : node->getDependents()) {
+                printNodes(child);
+            }
+        };
+
         // Lambda to recursively print relations
         std::function<void(DependencyNode*)> printRelations;
         printRelations = [&printRelations, &DOTFile] (DependencyNode* node) {
             // Get this node's name
-            std::string parentName = static_cast<AgentFunctionDescription*>(node)->getName();
+            std::string parentName = DependencyGraph::getNodeName(node);
             
             // For each child, print DOT relation and recurse
             for (auto child : node->getDependents()) {
-                DOTFile << "    " << parentName << " -> " << static_cast<AgentFunctionDescription*>(child)->getName() << ";" << std::endl;
+                DOTFile << "    " << parentName << " -> " << getNodeName(child) << ";" << std::endl;
                 printRelations(child);
             }
         }; 
+
+        // Recursively print nodes
+        for (auto root : roots) {
+            printNodes(root);
+        }
 
         // Recursively print relations
         for (auto root : roots) {
