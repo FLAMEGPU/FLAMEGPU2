@@ -36,8 +36,14 @@ FLAMEGPU_HOST_FUNCTION(host_fn3) {
     return;
 }
 
+FLAMEGPU_EXIT_CONDITION(ExitAlways) {
+    return EXIT;
+}
+
 const char *MODEL_NAME = "Model";
 const char *WRONG_MODEL_NAME = "Model2";
+const char *SUBMODEL_NAME = "SubModel1";
+const char *SUBAGENT_NAME = "SubAgent1";
 const char *AGENT_NAME = "Agent1";
 const char *AGENT_NAME2 = "Agent2";
 const char *AGENT_NAME3 = "Agent3";
@@ -173,6 +179,38 @@ TEST(DependencyGraphTest, AddHostFunctionAsDependency) {
     graph.generateLayers(_m); 
 }
 
+TEST(DependencyGraphTest, AddSubmodelAsDependent) {
+    ModelDescription _m(MODEL_NAME);
+    AgentDescription &a = _m.newAgent(AGENT_NAME);
+    AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
+
+    ModelDescription _sm(SUBMODEL_NAME);
+    _sm.newAgent(SUBAGENT_NAME);
+    _sm.addExitCondition(ExitAlways);
+    SubModelDescription& _smd = _m.newSubModel("sub", _sm);
+
+    _smd.dependsOn(&f);
+    DependencyGraph graph;
+    graph.addRoot(&f);
+    graph.generateLayers(_m); 
+}
+
+TEST(DependencyGraphTest, AddSubmodelAsDependency) {
+    ModelDescription _m(MODEL_NAME);
+    AgentDescription &a = _m.newAgent(AGENT_NAME);
+    AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
+
+    ModelDescription _sm(SUBMODEL_NAME);
+    _sm.newAgent(SUBAGENT_NAME);
+    _sm.addExitCondition(ExitAlways);
+    SubModelDescription& _smd = _m.newSubModel("sub", _sm);
+
+    f.dependsOn(&_smd);
+    DependencyGraph graph;
+    graph.addRoot(&_smd);
+    graph.generateLayers(_m); 
+}
+
 TEST(DependencyGraphTest, DOTDiagramSingleChain) {
     ModelDescription _m(MODEL_NAME);
     AgentDescription &a = _m.newAgent(AGENT_NAME);
@@ -234,5 +272,30 @@ TEST(DependencyGraphTest, DOTDiagramHostFunctions) {
     graph.addRoot(&f);
     graph.addRoot(&hf);
     graph.generateDOTDiagram("host_functions.gv");
+}
+
+TEST(DependencyGraphTest, DOTDiagramAllDependencies) {
+    ModelDescription _m(MODEL_NAME);
+    AgentDescription &a = _m.newAgent(AGENT_NAME);
+    AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    AgentFunctionDescription &f2 = a.newFunction(FUNCTION_NAME2, agent_fn2);
+    AgentFunctionDescription &f3 = a.newFunction(FUNCTION_NAME3, agent_fn3);
+    AgentFunctionDescription &f4 = a.newFunction(FUNCTION_NAME4, agent_fn4);
+    HostFunctionDescription hf(HOST_FN_NAME1, host_fn1);
+    HostFunctionDescription hf2(HOST_FN_NAME2, host_fn2);
+    ModelDescription _sm(SUBMODEL_NAME);
+    _sm.newAgent(SUBAGENT_NAME);
+    _sm.addExitCondition(ExitAlways);
+    SubModelDescription& _smd = _m.newSubModel("sub", _sm);
+    f2.dependsOn(&f);
+    f3.dependsOn(&hf);
+    f4.dependsOn(&f2);
+    f4.dependsOn(&hf);
+    hf2.dependsOn(&f3);
+    _smd.dependsOn(&hf2);
+    DependencyGraph graph;
+    graph.addRoot(&f);
+    graph.addRoot(&hf);
+    graph.generateDOTDiagram("all_dependencies.gv");
 }
 }  // namespace test_agent_function_dependency_graph

@@ -164,7 +164,7 @@ std::string DependencyGraph::getNodeName(DependencyNode* node) {
     } else if (HostFunctionDescription* hfd = dynamic_cast<HostFunctionDescription*>(node)) {
         return hfd->getName();
     } else if (SubModelDescription* smd = dynamic_cast<SubModelDescription*>(node)) {
-        return std::string("Submodel");
+        return smd->getName();
     } else {
         return std::string("DependencyNode without concrete type!");
     }
