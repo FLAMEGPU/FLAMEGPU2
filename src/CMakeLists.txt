@@ -201,7 +201,8 @@ SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/model/HostFunctionDescription.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/model/DependencyNode.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/model/DependencyGraph.cpp
-    ${FLAMEGPU_ROOT}/src/flamegpu/pop/AgentPopulation.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/pop/AgentVector.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/pop/AgentVector_Agent.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/pop/AgentInstance.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAScanCompaction.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAMessageList.cu
