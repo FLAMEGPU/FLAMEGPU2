@@ -336,6 +336,17 @@ function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
         add_subdirectory("${FLAMEGPU_ROOT}/src" "${PROJECT_ROOT}/FLAMEGPU2")
     endif()
 
+    if(WIN32)
+      # configure a rc file to set application icon
+      set (FLAMEGPU_ICON_PATH ${FLAMEGPU_ROOT}/cmake/flamegpu.ico)
+      set (PYFLAMEGPU_ICON_PATH ${FLAMEGPU_ROOT}/cmake/pyflamegpu.ico)
+      configure_file(
+        ${FLAMEGPU_ROOT}/cmake/application_icon.rc.in
+        application_icon.rc
+        @ONLY)
+      SET(SRC ${SRC} application_icon.rc)
+    endif()
+
     # Define which source files are required for the target executable
     add_executable(${NAME} ${SRC})
     
@@ -423,7 +434,7 @@ function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
     #./.cpp
     set(T_SRC "${SRC}")
     list(FILTER T_SRC EXCLUDE REGEX "^${CMAKE_CURRENT_SOURCE_DIR}/src")
-    list(FILTER T_SRC EXCLUDE REGEX ".*\.(h|hpp|cuh)$")
+    list(FILTER T_SRC EXCLUDE REGEX ".*\.(h|hpp|cuh|rc)$")
     source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX src FILES ${T_SRC})
 
 
