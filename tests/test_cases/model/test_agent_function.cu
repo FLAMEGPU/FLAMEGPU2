@@ -297,14 +297,14 @@ TEST(AgentFunctionDescriptionTest, DefaultDependencies) {
     AgentDescription &a = _m.newAgent(AGENT_NAME);
     AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
     // Has no dependencies
-    EXPECT_FALSE(f.hasDependencies());     
+    EXPECT_FALSE(f.hasDependencies());
 }
 TEST(AgentFunctionDescriptionTest, DefaultDependents) {
     ModelDescription _m(MODEL_NAME);
     AgentDescription &a = _m.newAgent(AGENT_NAME);
     AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
     // Has no dependents
-    EXPECT_FALSE(f.hasDependents());     
+    EXPECT_FALSE(f.hasDependents());
 }
 TEST(AgentFunctionDescriptionTest, AddNullptrAsDependency) {
     ModelDescription _m(MODEL_NAME);
@@ -350,7 +350,7 @@ TEST(AgentFunctionDescriptionTest, AddMultipleDependencies) {
     EXPECT_EQ(fDependents.size(), 2);
     if (fDependents.size())
         EXPECT_EQ(fDependents[0], &f2);
-    if (fDependents.size() > 1) 
+    if (fDependents.size() > 1)
         EXPECT_EQ(fDependents[1], &f3);
     // check dependency vector state
     const std::vector<DependencyNode*> f2Dependencies = f2.getDependencies();

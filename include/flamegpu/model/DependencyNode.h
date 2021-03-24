@@ -5,7 +5,6 @@
 #include "flamegpu/exception/FGPUException.h"
 
 class DependencyNode {
-
  public:
     virtual ~DependencyNode();
 
