@@ -171,7 +171,12 @@ class ModelVis {
     /**
      * Sets the visualisation running in a background thread
      */
-    void activate();
+    void activate() {
+#ifdef SWIG
+        modelCfg.isPython = true;
+#endif
+        _activate();
+    }
     /**
      * Kills the background thread
      * Does nothing visualisation is not running
@@ -194,6 +199,11 @@ class ModelVis {
     void updateBuffers(const unsigned int &sc = UINT_MAX);
 
  private:
+    /**
+     * Private version called by public version
+     * Public version is defined inline so swig can get a different version
+     */
+    void _activate();
     /**
      * Main struct of visualisation configuration options for the model
      */

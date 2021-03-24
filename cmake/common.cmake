@@ -404,6 +404,14 @@ function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
                 COMMAND ${CMAKE_COMMAND} -E copy_if_different             # which executes "cmake - E copy_if_different..."
                     "${GLEW_RUNTIME_LIBRARIES}"                           # <--this is in-file
                     $<TARGET_FILE_DIR:${NAME}>)                           # <--this is out-file path
+            # DevIL
+            set(DEVIL_DIR ${VISUALISATION_BUILD}/devil)
+            mark_as_advanced(FORCE DEVIL_DIR)
+            find_package(DEVIL REQUIRED NO_MODULE)
+            add_custom_command(TARGET "${PROJECT_NAME}" POST_BUILD        # Adds a post-build event to MyTest
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different             # which executes "cmake - E copy_if_different..."
+                    ${IL_RUNTIME_LIBRARIES}                               # <--this is in-file
+                    $<TARGET_FILE_DIR:${NAME}>)
         endif()
         add_compile_definitions(VISUALISATION)
     endif()
