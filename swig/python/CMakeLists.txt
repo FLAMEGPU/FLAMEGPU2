@@ -145,6 +145,8 @@ if (VISUALISATION)
         # These might fall over if libraries becomes plural
         get_filename_component(SDL2_RUNTIME_LIB_NAME ${SDL2_RUNTIME_LIBRARIES} NAME)
         get_filename_component(GLEW_RUNTIME_LIB_NAME ${GLEW_RUNTIME_LIBRARIES} NAME)
+        get_filename_component(IL_RUNTIME_LIB_NAME ${IL_RUNTIME_LIBRARIES} NAME)
+        #get_filename_component(ILUT_RUNTIME_LIB_NAME ${ILUT_RUNTIME_LIBRARIES} NAME)
         # create the directory first (this is normally created by the following post-build commands
         add_custom_command(TARGET ${PYTHON_MODULE_NAME} POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E make_directory "${PYTHON_LIB_OUTPUT_DIRECTORY}/${PYTHON_MODULE_NAME}")
@@ -161,7 +163,14 @@ if (VISUALISATION)
                 "${GLEW_RUNTIME_LIBRARIES}"                            # <--this is in-file
                 "${PYTHON_LIB_OUTPUT_DIRECTORY}/${PYTHON_MODULE_NAME}" # <--this is out-file path
             BYPRODUCTS
-                "${PYTHON_LIB_OUTPUT_DIRECTORY}/${PYTHON_MODULE_NAME}/${GLEW_RUNTIME_LIB_NAME}") 
+                "${PYTHON_LIB_OUTPUT_DIRECTORY}/${PYTHON_MODULE_NAME}/${GLEW_RUNTIME_LIB_NAME}")
+        # DevIL
+        add_custom_command(TARGET ${PYTHON_MODULE_NAME} POST_BUILD     # Adds a post-build event to MyTest
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different              # which executes "cmake - E copy_if_different..."
+                ${IL_RUNTIME_LIBRARIES}                                # <--this is in-file
+                "${PYTHON_LIB_OUTPUT_DIRECTORY}/${PYTHON_MODULE_NAME}" # <--this is out-file path
+            BYPRODUCTS
+                "${PYTHON_LIB_OUTPUT_DIRECTORY}/${PYTHON_MODULE_NAME}/${IL_RUNTIME_LIB_NAME}")
     endif()
 endif()
 

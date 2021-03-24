@@ -141,6 +141,8 @@ On Linux you may need to install additional packages, refer to the CMake configu
 + [GLM](http://glm.g-truc.net/) *(consistent C++/GLSL vector maths functionality)*
 + [GLEW](http://glew.sourceforge.net/) *(GL extension loader)*
 + [FreeType](http://www.freetype.org/)  *(font loading)*
++ [DevIL](http://openil.sourceforge.net/)  *(image loading)*
++ [Fontconfig](https://www.fontconfig.org/)  *(Linux only, font detection)*
 
 The visualisation codebase can be found at [this location](https://github.com/FLAMEGPU/FLAMEGPU2-visualiser) and is a fork of [sdl_exp](https://github.com/Robadob/sdl_exp).
 

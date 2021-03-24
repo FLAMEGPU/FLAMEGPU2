@@ -52,7 +52,7 @@ AgentVis &ModelVis::Agent(const std::string &agent_name) {
 }
 
 // Below methods are related to executing the visualiser
-void ModelVis::activate() {
+void ModelVis::_activate() {
     // Only execute if background thread is not active
     if ((!visualiser || !visualiser->isRunning()) && !model.getSimulationConfig().console_mode) {
         // Init visualiser
