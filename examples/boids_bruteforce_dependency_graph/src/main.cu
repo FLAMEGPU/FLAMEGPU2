@@ -299,7 +299,7 @@ int main(int argc, const char ** argv) {
         message.newVariable<float>("fy");
         message.newVariable<float>("fz");
     }
-    
+
     // Boid agent
     AgentDescription &agent = model.newAgent("Boid");
     agent.newVariable<int>("id");
@@ -319,7 +319,6 @@ int main(int argc, const char ** argv) {
     inputdataDescription.dependsOn(&outputdataDescription);
     dependencyGraph.addRoot(&outputdataDescription);
     dependencyGraph.generateLayers(model);
-    
 
     /**
      * GLOBALS

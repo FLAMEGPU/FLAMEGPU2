@@ -52,7 +52,7 @@ class HostFunctionDescription : public DependencyNode {
      * @note Instead compare pointers if you wish to check that they are not the same instance
      */
     bool operator!=(const HostFunctionDescription& rhs) const;
-    
+
     /**
      * @return The cuda kernel entry point for executing the agent function
      */

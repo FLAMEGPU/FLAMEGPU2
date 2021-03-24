@@ -223,7 +223,7 @@ void DependencyGraph::generateDOTDiagram(std::string outputFileName) {
 
         // Recursively print relations
         for (auto root : roots) {
-            printRelations(root); 
+            printRelations(root);
         }
 
         // EOF

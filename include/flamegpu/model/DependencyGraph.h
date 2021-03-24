@@ -1,8 +1,9 @@
 #ifndef INCLUDE_FLAMEGPU_MODEL_DEPENDENCYGRAPH_H_
 #define INCLUDE_FLAMEGPU_MODEL_DEPENDENCYGRAPH_H_
 
-#include <functional> 
-#include <string>   
+#include <functional>
+#include <string>
+#include <vector>
 
 #include "DependencyNode.h"
 #include "ModelDescription.h"
@@ -17,21 +18,21 @@
  */
 
 class DependencyGraph {
-    public:
-        DependencyGraph();
-        
-        void addRoot(DependencyNode* root);
-        bool validateDependencyGraph();
-        void generateLayers(ModelDescription& model);
-        void printGraph() const;
-        void generateDOTDiagram(std::string outputFileName);
-    
-    private:
-        std::vector<DependencyNode*> roots;
-        std::vector<DependencyNode*> functionStack;
-        bool validateSubTree(DependencyNode* node);
-        bool doesFunctionExistInStack(DependencyNode* function);
-        static std::string getNodeName(DependencyNode* node);
+ public:
+    DependencyGraph();
+
+    void addRoot(DependencyNode* root);
+    bool validateDependencyGraph();
+    void generateLayers(ModelDescription& model);
+    void printGraph() const;
+    void generateDOTDiagram(std::string outputFileName);
+
+ private:
+    std::vector<DependencyNode*> roots;
+    std::vector<DependencyNode*> functionStack;
+    bool validateSubTree(DependencyNode* node);
+    bool doesFunctionExistInStack(DependencyNode* function);
+    static std::string getNodeName(DependencyNode* node);
 };
 
-#endif // INCLUDE_FLAMEGPU_MODEL_DEPENDENCYGRAPH_H_
+#endif  // INCLUDE_FLAMEGPU_MODEL_DEPENDENCYGRAPH_H_

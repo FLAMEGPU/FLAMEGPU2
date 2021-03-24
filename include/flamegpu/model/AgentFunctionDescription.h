@@ -184,7 +184,7 @@ class AgentFunctionDescription : public DependencyNode {
      *
      */
     void setRTCFunctionCondition(std::string func_cond_src);
-    
+
     /**
      * @return A mutable reference to the message input of this agent function
      * @see AgentFunctionDescription::getMessageInput() for the immutable version
@@ -279,7 +279,7 @@ class AgentFunctionDescription : public DependencyNode {
      * @return The cuda kernel entry point for executing the agent function
      */
     AgentFunctionWrapper *getFunctionPtr() const;
-    
+
     /**
      * @return The cuda kernel entry point for executing the agent function condition
      */

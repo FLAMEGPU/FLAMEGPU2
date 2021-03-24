@@ -6,8 +6,7 @@
 
 class DependencyNode {
 
-public:
-
+ public:
     virtual ~DependencyNode();
 
     /**
@@ -41,7 +40,7 @@ public:
      */
     int getMinimumLayerDepth();
 
-protected:
+ protected:
     /**
      * Vector storing the 'children' of this agent function in the dependency tree, i.e. those functions which depend on the completion of this one
      */
@@ -60,4 +59,4 @@ protected:
     int minLayerDepth = 0;
 };
 
-#endif // INCLUDE_FLAMEGPU_MODEL_DEPENDENCYNODE_H_
+#endif  // INCLUDE_FLAMEGPU_MODEL_DEPENDENCYNODE_H_

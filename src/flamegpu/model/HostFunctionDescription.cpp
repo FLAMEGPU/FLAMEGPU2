@@ -29,7 +29,7 @@ bool HostFunctionDescription::operator!=(const HostFunctionDescription& rhs) con
  * Accessors
  */
 
-std::string HostFunctionDescription::getName() { 
+std::string HostFunctionDescription::getName() {
     return name;
 }
 
