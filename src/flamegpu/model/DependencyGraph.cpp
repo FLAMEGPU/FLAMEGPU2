@@ -3,8 +3,8 @@
 DependencyGraph::DependencyGraph() {
 }
 
-void DependencyGraph::addRoot(DependencyNode* root) {
-    roots.push_back(root);
+void DependencyGraph::addRoot(DependencyNode& root) {
+    roots.push_back(&root);
 }
 
 bool DependencyGraph::validateDependencyGraph() {

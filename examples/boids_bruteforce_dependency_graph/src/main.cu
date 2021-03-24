@@ -316,8 +316,8 @@ int main(int argc, const char ** argv) {
 
     // Dependency specification
     DependencyGraph dependencyGraph;
-    inputdataDescription.dependsOn(&outputdataDescription);
-    dependencyGraph.addRoot(&outputdataDescription);
+    inputdataDescription.dependsOn(outputdataDescription);
+    dependencyGraph.addRoot(outputdataDescription);
     dependencyGraph.generateLayers(model);
 
     /**

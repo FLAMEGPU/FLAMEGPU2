@@ -74,7 +74,7 @@ TEST(DependencyGraphTest, ValidateSingleNode) {
     AgentDescription &a = _m.newAgent(AGENT_NAME);
     AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
     DependencyGraph graph;
-    graph.addRoot(&f);
+    graph.addRoot(f);
     EXPECT_TRUE(graph.validateDependencyGraph());
 }
 
@@ -84,10 +84,10 @@ TEST(DependencyGraphTest, ValidateSingleChain) {
     AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
     AgentFunctionDescription &f2 = a.newFunction(FUNCTION_NAME2, agent_fn2);
     AgentFunctionDescription &f3 = a.newFunction(FUNCTION_NAME3, agent_fn3);
-    f2.dependsOn(&f);
-    f3.dependsOn(&f2);
+    f2.dependsOn(f);
+    f3.dependsOn(f2);
     DependencyGraph graph;
-    graph.addRoot(&f);
+    graph.addRoot(f);
     EXPECT_TRUE(graph.validateDependencyGraph());
 }
 
@@ -97,10 +97,10 @@ TEST(DependencyGraphTest, ValidateBranch) {
     AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
     AgentFunctionDescription &f2 = a.newFunction(FUNCTION_NAME2, agent_fn2);
     AgentFunctionDescription &f3 = a.newFunction(FUNCTION_NAME3, agent_fn3);
-    f2.dependsOn(&f);
-    f3.dependsOn(&f);
+    f2.dependsOn(f);
+    f3.dependsOn(f);
     DependencyGraph graph;
-    graph.addRoot(&f);
+    graph.addRoot(f);
     EXPECT_TRUE(graph.validateDependencyGraph());
 }
 
@@ -110,11 +110,11 @@ TEST(DependencyGraphTest, ValidateCycle) {
     AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
     AgentFunctionDescription &f2 = a.newFunction(FUNCTION_NAME2, agent_fn2);
     AgentFunctionDescription &f3 = a.newFunction(FUNCTION_NAME3, agent_fn3);
-    f2.dependsOn(&f);
-    f2.dependsOn(&f3);
-    f3.dependsOn(&f2);
+    f2.dependsOn(f);
+    f2.dependsOn(f3);
+    f3.dependsOn(f2);
     DependencyGraph graph;
-    graph.addRoot(&f);
+    graph.addRoot(f);
     EXPECT_THROW(graph.validateDependencyGraph(), InvalidDependencyGraph);
 }
 
@@ -124,10 +124,10 @@ TEST(DependencyGraphTest, ValidateRootWithDependencies) {
     AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
     AgentFunctionDescription &f2 = a.newFunction(FUNCTION_NAME2, agent_fn2);
     AgentFunctionDescription &f3 = a.newFunction(FUNCTION_NAME3, agent_fn3);
-    f2.dependsOn(&f);
-    f3.dependsOn(&f2);
+    f2.dependsOn(f);
+    f3.dependsOn(f2);
     DependencyGraph graph;
-    graph.addRoot(&f2);
+    graph.addRoot(f2);
     EXPECT_THROW(graph.validateDependencyGraph(), InvalidDependencyGraph);
 }
 
@@ -137,10 +137,10 @@ TEST(DependencyGraphTest, ConstructLayersSingleChain) {
     AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
     AgentFunctionDescription &f2 = a.newFunction(FUNCTION_NAME2, agent_fn2);
     AgentFunctionDescription &f3 = a.newFunction(FUNCTION_NAME3, agent_fn3);
-    f2.dependsOn(&f);
-    f3.dependsOn(&f2);
+    f2.dependsOn(f);
+    f3.dependsOn(f2);
     DependencyGraph graph;
-    graph.addRoot(&f);
+    graph.addRoot(f);
     graph.generateLayers(_m);
 }
 
@@ -150,10 +150,10 @@ TEST(DependencyGraphTest, ConstructLayersRootTwoChildrenConflict) {
     AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
     AgentFunctionDescription &f2 = a.newFunction(FUNCTION_NAME2, agent_fn2);
     AgentFunctionDescription &f3 = a.newFunction(FUNCTION_NAME3, agent_fn3);
-    f2.dependsOn(&f);
-    f3.dependsOn(&f);
+    f2.dependsOn(f);
+    f3.dependsOn(f);
     DependencyGraph graph;
-    graph.addRoot(&f);
+    graph.addRoot(f);
     graph.generateLayers(_m);
 }
 
@@ -162,9 +162,9 @@ TEST(DependencyGraphTest, AddHostFunctionAsDependent) {
     AgentDescription &a = _m.newAgent(AGENT_NAME);
     AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
     HostFunctionDescription hf(HOST_FN_NAME1, host_fn1);
-    hf.dependsOn(&f);
+    hf.dependsOn(f);
     DependencyGraph graph;
-    graph.addRoot(&f);
+    graph.addRoot(f);
     graph.generateLayers(_m);
 }
 
@@ -173,9 +173,9 @@ TEST(DependencyGraphTest, AddHostFunctionAsDependency) {
     AgentDescription &a = _m.newAgent(AGENT_NAME);
     AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
     HostFunctionDescription hf(HOST_FN_NAME1, host_fn1);
-    f.dependsOn(&hf);
+    f.dependsOn(hf);
     DependencyGraph graph;
-    graph.addRoot(&hf);
+    graph.addRoot(hf);
     graph.generateLayers(_m);
 }
 
@@ -189,9 +189,9 @@ TEST(DependencyGraphTest, AddSubmodelAsDependent) {
     _sm.addExitCondition(ExitAlways);
     SubModelDescription& _smd = _m.newSubModel("sub", _sm);
 
-    _smd.dependsOn(&f);
+    _smd.dependsOn(f);
     DependencyGraph graph;
-    graph.addRoot(&f);
+    graph.addRoot(f);
     graph.generateLayers(_m);
 }
 
@@ -205,9 +205,9 @@ TEST(DependencyGraphTest, AddSubmodelAsDependency) {
     _sm.addExitCondition(ExitAlways);
     SubModelDescription& _smd = _m.newSubModel("sub", _sm);
 
-    f.dependsOn(&_smd);
+    f.dependsOn(_smd);
     DependencyGraph graph;
-    graph.addRoot(&_smd);
+    graph.addRoot(_smd);
     graph.generateLayers(_m);
 }
 
@@ -217,10 +217,10 @@ TEST(DependencyGraphTest, DOTDiagramSingleChain) {
     AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
     AgentFunctionDescription &f2 = a.newFunction(FUNCTION_NAME2, agent_fn2);
     AgentFunctionDescription &f3 = a.newFunction(FUNCTION_NAME3, agent_fn3);
-    f2.dependsOn(&f);
-    f3.dependsOn(&f2);
+    f2.dependsOn(f);
+    f3.dependsOn(f2);
     DependencyGraph graph;
-    graph.addRoot(&f);
+    graph.addRoot(f);
     graph.generateLayers(_m);
     graph.generateDOTDiagram("singlechain.gv");
 }
@@ -231,10 +231,10 @@ TEST(DependencyGraphTest, DOTDiagramTwoDependencies) {
     AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
     AgentFunctionDescription &f2 = a.newFunction(FUNCTION_NAME2, agent_fn2);
     AgentFunctionDescription &f3 = a.newFunction(FUNCTION_NAME3, agent_fn3);
-    f2.dependsOn(&f);
-    f3.dependsOn(&f);
+    f2.dependsOn(f);
+    f3.dependsOn(f);
     DependencyGraph graph;
-    graph.addRoot(&f);
+    graph.addRoot(f);
     graph.generateDOTDiagram("twodeps.gv");
 }
 
@@ -245,12 +245,12 @@ TEST(DependencyGraphTest, DOTDiagramDiamond) {
     AgentFunctionDescription &f2 = a.newFunction(FUNCTION_NAME2, agent_fn2);
     AgentFunctionDescription &f3 = a.newFunction(FUNCTION_NAME3, agent_fn3);
     AgentFunctionDescription &f4 = a.newFunction(FUNCTION_NAME4, agent_fn4);
-    f2.dependsOn(&f);
-    f3.dependsOn(&f);
-    f4.dependsOn(&f2);
-    f4.dependsOn(&f3);
+    f2.dependsOn(f);
+    f3.dependsOn(f);
+    f4.dependsOn(f2);
+    f4.dependsOn(f3);
     DependencyGraph graph;
-    graph.addRoot(&f);
+    graph.addRoot(f);
     graph.generateDOTDiagram("diamond.gv");
 }
 
@@ -263,14 +263,14 @@ TEST(DependencyGraphTest, DOTDiagramHostFunctions) {
     AgentFunctionDescription &f4 = a.newFunction(FUNCTION_NAME4, agent_fn4);
     HostFunctionDescription hf(HOST_FN_NAME1, host_fn1);
     HostFunctionDescription hf2(HOST_FN_NAME2, host_fn2);
-    f2.dependsOn(&f);
-    f3.dependsOn(&hf);
-    f4.dependsOn(&f2);
-    f4.dependsOn(&hf);
-    hf2.dependsOn(&f3);
+    f2.dependsOn(f);
+    f3.dependsOn(hf);
+    f4.dependsOn(f2);
+    f4.dependsOn(hf);
+    hf2.dependsOn(f3);
     DependencyGraph graph;
-    graph.addRoot(&f);
-    graph.addRoot(&hf);
+    graph.addRoot(f);
+    graph.addRoot(hf);
     graph.generateDOTDiagram("host_functions.gv");
 }
 
@@ -287,15 +287,15 @@ TEST(DependencyGraphTest, DOTDiagramAllDependencies) {
     _sm.newAgent(SUBAGENT_NAME);
     _sm.addExitCondition(ExitAlways);
     SubModelDescription& _smd = _m.newSubModel("sub", _sm);
-    f2.dependsOn(&f);
-    f3.dependsOn(&hf);
-    f4.dependsOn(&f2);
-    f4.dependsOn(&hf);
-    hf2.dependsOn(&f3);
-    _smd.dependsOn(&hf2);
+    f2.dependsOn(f);
+    f3.dependsOn(hf);
+    f4.dependsOn(f2);
+    f4.dependsOn(hf);
+    hf2.dependsOn(f3);
+    _smd.dependsOn(hf2);
     DependencyGraph graph;
-    graph.addRoot(&f);
-    graph.addRoot(&hf);
+    graph.addRoot(f);
+    graph.addRoot(hf);
     graph.generateDOTDiagram("all_dependencies.gv");
 }
 }  // namespace test_dependency_graph

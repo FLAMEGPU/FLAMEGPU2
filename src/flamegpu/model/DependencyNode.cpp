@@ -39,16 +39,11 @@ int DependencyNode::getMinimumLayerDepth() {
     return minLayerDepth;
 }
 
-void DependencyNode::dependsOn(DependencyNode* dependency) {
-    if (dependency) {
-        dependency->addDependent(this);
-        dependencies.push_back(dependency);
-    } else {
-        // TODO: Improve error message
-        THROW InvalidAgentFunc("Attempting to set dependency of DependencyNode to nullptr");
-    }
+void DependencyNode::dependsOn(DependencyNode& dependency) {
+    dependency.addDependent(*this);
+    dependencies.push_back(&dependency);
 }
 
-void DependencyNode::addDependent(DependencyNode* dependent) {
-    dependents.push_back(dependent);
+void DependencyNode::addDependent(DependencyNode& dependent) {
+    dependents.push_back(&dependent);
 }

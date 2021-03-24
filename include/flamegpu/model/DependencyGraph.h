@@ -21,7 +21,7 @@ class DependencyGraph {
  public:
     DependencyGraph();
 
-    void addRoot(DependencyNode* root);
+    void addRoot(DependencyNode& root);
     bool validateDependencyGraph();
     void generateLayers(ModelDescription& model);
     void printGraph() const;

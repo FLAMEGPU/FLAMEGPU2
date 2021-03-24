@@ -12,7 +12,7 @@ class DependencyNode {
      * Specifies that this agent function depends on the completion of another agent function
      * @param dependency The agent function which must be complete before this agent function may run
      */
-    void dependsOn(DependencyNode* dependency);
+    void dependsOn(DependencyNode& dependency);
     /**
      * Sets the minimum layer depth for this agent function
      */
@@ -51,7 +51,7 @@ class DependencyNode {
     /**
      * Adds an agent function to this agent function's list of dependents
      */
-    void addDependent(DependencyNode* dependent);
+    void addDependent(DependencyNode& dependent);
     /**
      * This functions minimum layer depth in the execution graph
      */
