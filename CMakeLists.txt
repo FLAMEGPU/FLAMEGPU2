@@ -47,6 +47,7 @@ option(BUILD_ALL_EXAMPLES "Enable building examples" ON)
 
 # Options to enable building individual examples, if BUILD_ALL_EXAMPLES is off.
 option(BUILD_EXAMPLE_BOIDS_BRUTEFORCE "Enable building examples/boids_bruteforce" OFF)
+option(BUILD_EXAMPLE_BOIDS_BRUTEFORCE_DEPENDENCY_GRAPH "Enable building examples/boids_bruteforce_dependency_graph" OFF)
 option(BUILD_EXAMPLE_BOIDS_SPATIAL3D "Enable building examples/boids_spatial3D" OFF)
 option(BUILD_EXAMPLE_BOIDS_RTC_BRUTEFORCE "Enable building examples/boids_rtc_bruteforce" OFF)
 option(BUILD_EXAMPLE_BOIDS_RTC_SPATIAL3D "Enable building examples/boids_rtc_spatial3D" OFF)
@@ -110,6 +111,10 @@ endif()
 
 if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_BOIDS_BRUTEFORCE)
     add_subdirectory(examples/boids_bruteforce)
+endif()
+
+if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_BOIDS_BRUTEFORCE_DEPENDENCY_GRAPH)
+    add_subdirectory(examples/boids_bruteforce_dependency_graph)
 endif()
 
 if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_BOIDS_SPATIAL3D)
