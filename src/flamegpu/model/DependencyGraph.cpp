@@ -13,7 +13,7 @@ bool DependencyGraph::validateDependencyGraph() {
     if (roots.size() == 0) {
             THROW InvalidDependencyGraph("Warning! Agent function dependency graph is empty!");
     }
-    for(auto& root : roots) {
+    for (auto& root : roots) {
         if (root->getDependencies().size() != 0) {
             THROW InvalidDependencyGraph("Warning! Root agent function has dependencies!");
         }
@@ -25,14 +25,13 @@ bool DependencyGraph::validateDependencyGraph() {
 }
 
 void DependencyGraph::generateLayers(ModelDescription& model) {
-    
     // Check dependency graph is valid before we attempt to build layers
     validateDependencyGraph();
-    
+
     // Lambda to walk the graph and set minimum layer depths of nodes
     std::function<void(DependencyNode*, int)> setMinLayerDepths;
     setMinLayerDepths = [&setMinLayerDepths] (DependencyNode* node, int depth) {
-        if (depth >= node->getMinimumLayerDepth()) { 
+        if (depth >= node->getMinimumLayerDepth()) {
             node->setMinimumLayerDepth(depth);
         }
         for (auto child : node->getDependents()) {
@@ -54,7 +53,7 @@ void DependencyGraph::generateLayers(ModelDescription& model) {
         if (nodeDepth >= idealLayers.size()) {
             idealLayers.push_back(std::vector<DependencyNode*>());
         }
-          
+
         // Add node to relevant layer
         idealLayers[nodeDepth].push_back(node);
 
@@ -62,34 +61,33 @@ void DependencyGraph::generateLayers(ModelDescription& model) {
         for (auto child : node->getDependents()) {
             buildIdealLayers(child);
         }
-    }; 
+    };
 
     for (auto root : roots) {
         buildIdealLayers(root);
-    } 
+    }
 
-    // idealLayers now contains DependencyNode pointers in their ideal layers, i.e. assuming no conflicts. 
+    // idealLayers now contains DependencyNode pointers in their ideal layers, i.e. assuming no conflicts.
     // Now iterate structure attempting to add functions to layers.
     // If we encounter conflicts, introduce additional layers as necessary
 
     for (auto idealLayer : idealLayers) {
         // Request a new layer from the model
         LayerDescription* layer = &model.newLayer();
-       
-        // Attempt to add each node in the idealLayer to the layer
-        for (auto node : idealLayer) { 
 
+        // Attempt to add each node in the idealLayer to the layer
+        for (auto node : idealLayer) {
             // Add node based on its concrete type
             // Agent function
             if (AgentFunctionDescription* afd = dynamic_cast<AgentFunctionDescription*>(node)) {
                 try {
                     layer->addAgentFunction(*afd);
-                } catch (const InvalidAgentFunc& e) {
+                } catch (const InvalidAgentFunc&) {
                     // Conflict, create new layer and add to that instead
                     layer = &model.newLayer();
                     layer->addAgentFunction(*afd);
                     printf("New function execution layer created - InvalidAgentFunc exception\n");
-                } catch (const InvalidLayerMember& e) {
+                } catch (const InvalidLayerMember&) {
                     layer = &model.newLayer();
                     layer->addAgentFunction(*afd);
                     printf("New function execution layer created - InvalidLayerMember exception\n");
@@ -100,11 +98,11 @@ void DependencyGraph::generateLayers(ModelDescription& model) {
             if (SubModelDescription* smd = dynamic_cast<SubModelDescription*>(node)) {
                 try {
                     layer->addSubModel(*smd);
-                } catch (const InvalidLayerMember& e) {
+                } catch (const InvalidLayerMember&) {
                     layer = &model.newLayer();
                     layer->addSubModel(*smd);
                     printf("New submodel layer created - InvalidLayerMember exception\n");
-                } catch (const InvalidSubModel& e) {
+                } catch (const InvalidSubModel&) {
                     layer = &model.newLayer();
                     layer->addSubModel(*smd);
                     printf("New submodel layer created - InvalidSubModel exception\n");
@@ -116,7 +114,7 @@ void DependencyGraph::generateLayers(ModelDescription& model) {
 #ifndef SWIG
                 try {
                     layer->addHostFunction(hdf->getFunctionPtr());
-                } catch (const InvalidLayerMember& e) {
+                } catch (const InvalidLayerMember&) {
                     layer = &model.newLayer();
                     layer->addHostFunction(hdf->getFunctionPtr());
                     printf("New host function layer created - InvalidLayerMember exception\n");
@@ -133,7 +131,7 @@ void DependencyGraph::generateLayers(ModelDescription& model) {
 #endif
             }
         }
-    } 
+    }
 }
 
 bool DependencyGraph::validateSubTree(DependencyNode* node) {
@@ -141,19 +139,19 @@ bool DependencyGraph::validateSubTree(DependencyNode* node) {
     if (doesFunctionExistInStack(node)) {
         return false;
     }
-    
+
     // No cycle detected, check if all child nodes form valid subtrees
     functionStack.push_back(node);
     for (auto child : node->getDependents()) {
-        if(!validateSubTree(child))
+        if (!validateSubTree(child))
             return false;
     }
-   
+
     // No problems, tree formed by this node and its children is valid
     // Pop this function from the stack and return
     functionStack.pop_back();
     return true;
-} 
+}
 
 bool DependencyGraph::doesFunctionExistInStack(DependencyNode* function) {
     // Iterating vector probably faster than using constant lookup structure for likely number of elements
@@ -198,7 +196,7 @@ void DependencyGraph::generateDOTDiagram(std::string outputFileName) {
                 DOTFile << "    " << nodeName << "[style = filled, color = yellow];" << std::endl;
             } else if (dynamic_cast<SubModelDescription*>(node)) {
                 DOTFile << "    " << nodeName << "[style = filled, color = green];" << std::endl;
-            } 
+            }
 
             for (auto child : node->getDependents()) {
                 printNodes(child);
@@ -210,13 +208,13 @@ void DependencyGraph::generateDOTDiagram(std::string outputFileName) {
         printRelations = [&printRelations, &DOTFile] (DependencyNode* node) {
             // Get this node's name
             std::string parentName = DependencyGraph::getNodeName(node);
-            
+
             // For each child, print DOT relation and recurse
             for (auto child : node->getDependents()) {
                 DOTFile << "    " << parentName << " -> " << getNodeName(child) << ";" << std::endl;
                 printRelations(child);
             }
-        }; 
+        };
 
         // Recursively print nodes
         for (auto root : roots) {

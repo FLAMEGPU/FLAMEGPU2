@@ -66,7 +66,7 @@ const char *OTHER_STATE_NAME = "State4";
 
 TEST(DependencyGraphTest, ValidateEmptyGraph) {
     DependencyGraph graph;
-    EXPECT_THROW(graph.validateDependencyGraph(), InvalidDependencyGraph); 
+    EXPECT_THROW(graph.validateDependencyGraph(), InvalidDependencyGraph);
 }
 
 TEST(DependencyGraphTest, ValidateSingleNode) {
@@ -75,7 +75,7 @@ TEST(DependencyGraphTest, ValidateSingleNode) {
     AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
     DependencyGraph graph;
     graph.addRoot(&f);
-    EXPECT_TRUE(graph.validateDependencyGraph()); 
+    EXPECT_TRUE(graph.validateDependencyGraph());
 }
 
 TEST(DependencyGraphTest, ValidateSingleChain) {
@@ -88,7 +88,7 @@ TEST(DependencyGraphTest, ValidateSingleChain) {
     f3.dependsOn(&f2);
     DependencyGraph graph;
     graph.addRoot(&f);
-    EXPECT_TRUE(graph.validateDependencyGraph()); 
+    EXPECT_TRUE(graph.validateDependencyGraph());
 }
 
 TEST(DependencyGraphTest, ValidateBranch) {
@@ -101,7 +101,7 @@ TEST(DependencyGraphTest, ValidateBranch) {
     f3.dependsOn(&f);
     DependencyGraph graph;
     graph.addRoot(&f);
-    EXPECT_TRUE(graph.validateDependencyGraph()); 
+    EXPECT_TRUE(graph.validateDependencyGraph());
 }
 
 TEST(DependencyGraphTest, ValidateCycle) {
@@ -115,7 +115,7 @@ TEST(DependencyGraphTest, ValidateCycle) {
     f3.dependsOn(&f2);
     DependencyGraph graph;
     graph.addRoot(&f);
-    EXPECT_THROW(graph.validateDependencyGraph(), InvalidDependencyGraph); 
+    EXPECT_THROW(graph.validateDependencyGraph(), InvalidDependencyGraph);
 }
 
 TEST(DependencyGraphTest, ValidateRootWithDependencies) {
@@ -128,7 +128,7 @@ TEST(DependencyGraphTest, ValidateRootWithDependencies) {
     f3.dependsOn(&f2);
     DependencyGraph graph;
     graph.addRoot(&f2);
-    EXPECT_THROW(graph.validateDependencyGraph(), InvalidDependencyGraph); 
+    EXPECT_THROW(graph.validateDependencyGraph(), InvalidDependencyGraph);
 }
 
 TEST(DependencyGraphTest, ConstructLayersSingleChain) {
@@ -141,7 +141,7 @@ TEST(DependencyGraphTest, ConstructLayersSingleChain) {
     f3.dependsOn(&f2);
     DependencyGraph graph;
     graph.addRoot(&f);
-    graph.generateLayers(_m); 
+    graph.generateLayers(_m);
 }
 
 TEST(DependencyGraphTest, ConstructLayersRootTwoChildrenConflict) {
@@ -154,7 +154,7 @@ TEST(DependencyGraphTest, ConstructLayersRootTwoChildrenConflict) {
     f3.dependsOn(&f);
     DependencyGraph graph;
     graph.addRoot(&f);
-    graph.generateLayers(_m); 
+    graph.generateLayers(_m);
 }
 
 TEST(DependencyGraphTest, AddHostFunctionAsDependent) {
@@ -165,7 +165,7 @@ TEST(DependencyGraphTest, AddHostFunctionAsDependent) {
     hf.dependsOn(&f);
     DependencyGraph graph;
     graph.addRoot(&f);
-    graph.generateLayers(_m); 
+    graph.generateLayers(_m);
 }
 
 TEST(DependencyGraphTest, AddHostFunctionAsDependency) {
@@ -176,7 +176,7 @@ TEST(DependencyGraphTest, AddHostFunctionAsDependency) {
     f.dependsOn(&hf);
     DependencyGraph graph;
     graph.addRoot(&hf);
-    graph.generateLayers(_m); 
+    graph.generateLayers(_m);
 }
 
 TEST(DependencyGraphTest, AddSubmodelAsDependent) {
@@ -192,7 +192,7 @@ TEST(DependencyGraphTest, AddSubmodelAsDependent) {
     _smd.dependsOn(&f);
     DependencyGraph graph;
     graph.addRoot(&f);
-    graph.generateLayers(_m); 
+    graph.generateLayers(_m);
 }
 
 TEST(DependencyGraphTest, AddSubmodelAsDependency) {
@@ -208,7 +208,7 @@ TEST(DependencyGraphTest, AddSubmodelAsDependency) {
     f.dependsOn(&_smd);
     DependencyGraph graph;
     graph.addRoot(&_smd);
-    graph.generateLayers(_m); 
+    graph.generateLayers(_m);
 }
 
 TEST(DependencyGraphTest, DOTDiagramSingleChain) {
@@ -298,4 +298,4 @@ TEST(DependencyGraphTest, DOTDiagramAllDependencies) {
     graph.addRoot(&hf);
     graph.generateDOTDiagram("all_dependencies.gv");
 }
-}  // namespace test_agent_function_dependency_graph
+}  // namespace test_dependency_graph

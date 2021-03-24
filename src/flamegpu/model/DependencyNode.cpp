@@ -31,8 +31,8 @@ const std::vector<DependencyNode*> DependencyNode::getDependencies() const {
 /**
  * Dependency functions
  */
-void DependencyNode::setMinimumLayerDepth(const int minLayerDepth) {
-    this->minLayerDepth = minLayerDepth;
+void DependencyNode::setMinimumLayerDepth(const int _minLayerDepth) {
+    this->minLayerDepth = _minLayerDepth;
 }
 
 int DependencyNode::getMinimumLayerDepth() {

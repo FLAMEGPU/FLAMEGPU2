@@ -18,7 +18,7 @@ class HostFunctionDescription : public DependencyNode {
     /**
      * Constructors
      */
-    
+
     /**
      * Default copy constructor, not implemented
      */
@@ -37,8 +37,8 @@ class HostFunctionDescription : public DependencyNode {
     HostFunctionDescription& operator=(HostFunctionDescription &&other_function) noexcept = delete;
 
  public:
-   HostFunctionDescription(std::string host_function_name, FLAMEGPU_HOST_FUNCTION_POINTER host_function);
-   HostFunctionDescription(std::string host_funcation_name, HostFunctionCallback *func_callback);
+    HostFunctionDescription(std::string host_function_name, FLAMEGPU_HOST_FUNCTION_POINTER host_function);
+    HostFunctionDescription(std::string host_funcation_name, HostFunctionCallback *func_callback);
 
     /**
      * Equality operator, checks whether HostFunctionDescription hierarchies are functionally the same
@@ -52,11 +52,6 @@ class HostFunctionDescription : public DependencyNode {
      * @note Instead compare pointers if you wish to check that they are not the same instance
      */
     bool operator!=(const HostFunctionDescription& rhs) const;
-
-    /**
-     * @return The function's name
-     */
-    //std::string getName() const;
     
     /**
      * @return The cuda kernel entry point for executing the agent function
@@ -68,11 +63,9 @@ class HostFunctionDescription : public DependencyNode {
 
 
  private:
-
     FLAMEGPU_HOST_FUNCTION_POINTER function;
     HostFunctionCallback* callbackObject;
     std::string name;
-    
 };
 
-#endif  // INCLUDE_FLAMEGPU_MODEL_HostFunctionDescription_H_
+#endif  // INCLUDE_FLAMEGPU_MODEL_HOSTFUNCTIONDESCRIPTION_H_
