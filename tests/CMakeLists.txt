@@ -65,7 +65,7 @@ SET(TEST_CASE_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/model/test_agent.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/model/test_message.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/model/test_agent_function.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/model/test_agent_function_dependency_graph.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/model/test_dependency_graph.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/model/test_layer.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/model/test_subagent.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/model/test_subenvironment.cu
