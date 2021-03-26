@@ -44,6 +44,10 @@ Only documentation can be built without the required dependencies (however Doxyg
 + Windows/MSVC and CUDA < 11.0
   + There may be intermittent compilation errors due to an NVCC+MSVC bug exposed by Thrust/CUB. 
   + Re-running the build appears to work in most cases, Otherwise consider upgrading to CUDA 11.0+ if possible.
++ Windows/MSVC and CUDA <= 11.0
+  + Incremental builds of executables may result in an error at link time (fatbinlink.c) if the flamegpu2 library has been rebuilt, due to a bug with the cuda visual studio integration when relative paths are used.
+  + If this presents itself, re-save the any `.cu` file for the executable you are working on and build again.
+  + A workaround is in place for CUDA 11.1+
 + CMake 3.16 has known issues on some platforms.
 + Python <= 3.5 may encounter issues with dependency installation such as setuptools. If so, please manually install the correct version.
   + i.e. `python3 -m pip install --upgrade 'setuptools; python_version >= "3.6"' 'setuptools<51.3.0; python_version < "3.6" and python_version >= "3.0"'`
@@ -101,6 +105,13 @@ FLAMEGPU2.sln
 ```
 
 `Visual Studio 16 2019` can be replaced with any supported [Visual studio generator](https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html#visual-studio-generators) that is installed.
+
+
+CMake will find and use the lastest CUDA toolkit avaialable by default. This choice can be overridden by specifying `CMAKE_GENERATOR_TOOLSET` to the desired CUDA version. I.e. to specify CUDA 11.1:
+
+```
+cmake .. -DCMAKE_GENERATOR_TOOLSET=cuda=11.1
+```
 
 #### Configuring CMake
 
