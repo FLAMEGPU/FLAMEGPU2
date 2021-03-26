@@ -361,6 +361,11 @@ function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
     # Link against the flamegpu2 static library target.
     if (TARGET flamegpu2)
         target_link_libraries(${NAME} flamegpu2)
+        # Workaround for incremental rebuilds on MSVC, where device link was not being performed.
+        if(MSVC AND CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL "11.1")
+            # Provide the absolute path to the lib file, rather than the relative version cmake provides.
+            target_link_libraries(${NAME} "${CMAKE_CURRENT_BINARY_DIR}/$<TARGET_FILE:flamegpu2>")
+        endif()
     endif()
     
     # Configure device link options
@@ -540,6 +545,18 @@ function(add_flamegpu_library NAME SRC FLAMEGPU_ROOT)
     CMAKE_SET_TARGET_FOLDER(${NAME} "FLAMEGPU")
     # Put the tinyxml2 in the folder
     CMAKE_SET_TARGET_FOLDER("tinyxml2" "FLAMEGPU/Dependencies")
+
+    # Emit some warnings that should only be issued once and are related to this file (but not this target)
+    if(MSVC AND CMAKE_CUDA_COMPILER_VERSION VERSION_LESS_EQUAL "10.2")
+        message(AUTHOR_WARNING "MSVC and NVCC <= 10.2 may encounter compiler errors due to an NVCC bug exposed by Thrust. Cosider using a newer CUDA toolkit.")
+    endif()
+    if(MSVC AND CMAKE_CUDA_COMPILER_VERSION VERSION_LESS_EQUAL "11.0")
+        message(AUTHOR_WARNING "MSVC and NVCC <= 11.0 may encounter errors at link time with incremental rebuilds. Cosider using a newer CUDA toolkit.")
+    endif()
+    if(MSVC AND CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER "11.3")
+        message(AUTHOR_WARNING "A workaround for incremental builds is in place for CUDA >= 11.1 which may be unstable in future CUDA versions. See https://github.com:FLAMEGPU/FLAMEGPU2/issues/483")
+    endif()
+
 endfunction()
 
 #-----------------------------------------------------------------------
