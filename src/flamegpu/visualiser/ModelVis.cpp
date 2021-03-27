@@ -1,5 +1,7 @@
 #include "flamegpu/visualiser/ModelVis.h"
 
+#include <thread>
+
 #include "flamegpu/gpu/CUDASimulation.h"
 #include "flamegpu/model/AgentData.h"
 
@@ -91,8 +93,16 @@ bool ModelVis::isRunning() const {
 
 void ModelVis::updateBuffers(const unsigned int &sc) {
     if (visualiser) {
+        bool has_agents = false;
         for (auto &a : agents) {
-            a.second.requestBufferResizes(visualiser);
+            has_agents = has_agents || a.second.requestBufferResizes(visualiser);
+        }
+        // Block the sim when we first get agents, until vis has resized buffers, incase vis is being slow to init
+        if (has_agents && (sc == 0 || sc == UINT_MAX)) {
+            while (!visualiser->isReady()) {
+                // Do nothing, just spin until ready
+                std::this_thread::yield();
+            }
         }
         // wait for lock visualiser (its probably executing render loop in separate thread) This might not be 100% safe. RequestResize might need extra thread safety.
         visualiser->lockMutex();
