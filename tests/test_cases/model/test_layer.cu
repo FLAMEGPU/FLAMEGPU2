@@ -24,14 +24,35 @@ FLAMEGPU_AGENT_FUNCTION(agent_fn5, MsgNone, MsgNone) {
     // do nothing
     return ALIVE;
 }
+FLAMEGPU_AGENT_FUNCTION(agent_fn_msgout1, MsgNone, MsgSpatial3D) {
+    // do nothing
+    return ALIVE;
+}
+FLAMEGPU_AGENT_FUNCTION(agent_fn_msgout2, MsgNone, MsgSpatial3D) {
+    // do nothing
+    return ALIVE;
+}
+FLAMEGPU_AGENT_FUNCTION(agent_fn_msgin1, MsgSpatial3D, MsgNone) {
+    // do nothing
+    return ALIVE;
+}
+FLAMEGPU_AGENT_FUNCTION(agent_fn_msgin2, MsgSpatial3D, MsgNone) {
+    // do nothing
+    return ALIVE;
+}
 FLAMEGPU_HOST_FUNCTION(host_fn) {
+    // do nothing
+}
+FLAMEGPU_HOST_FUNCTION(host_fn2) {
     // do nothing
 }
 FLAMEGPU_EXIT_CONDITION(exit_cdn) {
     return EXIT;
 }
 const char *MODEL_NAME = "Model";
-const char *AGENT_NAME = "Agent1";
+const char* AGENT_NAME = "Agent1";
+const char* AGENT_NAME2 = "Agent2";
+const char *MESSAGE_NAME = "Message";
 const char *LAYER_NAME = "Layer1";
 const char *FUNCTION_NAME1 = "Function1";
 const char *FUNCTION_NAME2 = "Function2";
@@ -227,6 +248,135 @@ TEST(LayerDescriptionTest, SameAgentAndState6) {
     EXPECT_THROW(l.addAgentFunction(AGENT_NAME, FUNCTION_NAME2), InvalidAgentFunc);
     EXPECT_THROW(l.addAgentFunction(f2), InvalidAgentFunc);
 }
+TEST(LayerDescriptionTest, SameMessageListOutOut) {
+    ModelDescription _m(MODEL_NAME);
+    AgentDescription& a1 = _m.newAgent(AGENT_NAME);
+    AgentDescription& a2 = _m.newAgent(AGENT_NAME2);
+    MsgSpatial3D::Description& msg = _m.newMessage<MsgSpatial3D>(MESSAGE_NAME);
+    AgentFunctionDescription& f1 = a1.newFunction(FUNCTION_NAME1, agent_fn_msgout1);
+    AgentFunctionDescription& f2 = a2.newFunction(FUNCTION_NAME1, agent_fn_msgout2);
+    f1.setMessageOutput(msg);
+    f2.setMessageOutput(msg);
+    LayerDescription& l = _m.newLayer();
+    // Both agent functions output to same message list
+    EXPECT_NO_THROW(l.addAgentFunction(f1));
+    EXPECT_THROW(l.addAgentFunction(f2), InvalidLayerMember);
+    EXPECT_THROW(l.addAgentFunction(AGENT_NAME2, FUNCTION_NAME1), InvalidLayerMember);
+    EXPECT_THROW(l.addAgentFunction(agent_fn_msgout2), InvalidLayerMember);
+}
+TEST(LayerDescriptionTest, SameMessageListOutIn) {
+    ModelDescription _m(MODEL_NAME);
+    AgentDescription& a1 = _m.newAgent(AGENT_NAME);
+    AgentDescription& a2 = _m.newAgent(AGENT_NAME2);
+    MsgSpatial3D::Description& msg = _m.newMessage<MsgSpatial3D>(MESSAGE_NAME);
+    AgentFunctionDescription& f1 = a1.newFunction(FUNCTION_NAME1, agent_fn_msgout1);
+    AgentFunctionDescription& f2 = a2.newFunction(FUNCTION_NAME1, agent_fn_msgin2);
+    f1.setMessageOutput(msg);
+    f2.setMessageInput(msg);
+    LayerDescription& l = _m.newLayer();
+    // Both agent functions output to same message list
+    EXPECT_NO_THROW(l.addAgentFunction(f1));
+    EXPECT_THROW(l.addAgentFunction(f2), InvalidLayerMember);
+    EXPECT_THROW(l.addAgentFunction(AGENT_NAME2, FUNCTION_NAME1), InvalidLayerMember);
+    EXPECT_THROW(l.addAgentFunction(agent_fn_msgin2), InvalidLayerMember);
+}
+TEST(LayerDescriptionTest, SameMessageListInOut) {
+    ModelDescription _m(MODEL_NAME);
+    AgentDescription& a1 = _m.newAgent(AGENT_NAME);
+    AgentDescription& a2 = _m.newAgent(AGENT_NAME2);
+    MsgSpatial3D::Description& msg = _m.newMessage<MsgSpatial3D>(MESSAGE_NAME);
+    AgentFunctionDescription& f1 = a1.newFunction(FUNCTION_NAME1, agent_fn_msgin1);
+    AgentFunctionDescription& f2 = a2.newFunction(FUNCTION_NAME1, agent_fn_msgout2);
+    f1.setMessageInput(msg);
+    f2.setMessageOutput(msg);
+    LayerDescription& l = _m.newLayer();
+    // Both agent functions output to same message list
+    EXPECT_NO_THROW(l.addAgentFunction(f1));
+    EXPECT_THROW(l.addAgentFunction(f2), InvalidLayerMember);
+    EXPECT_THROW(l.addAgentFunction(AGENT_NAME2, FUNCTION_NAME1), InvalidLayerMember);
+    EXPECT_THROW(l.addAgentFunction(agent_fn_msgout2), InvalidLayerMember);
+}
+TEST(LayerDescriptionTest, AgentOutMatchesInputState1) {
+    // Can't add an agent function which outputs to the same agent state that is an input state for another agent function
+    ModelDescription _m(MODEL_NAME);
+    AgentDescription& a1 = _m.newAgent(AGENT_NAME);
+    a1.newState("a");
+    a1.newState("b");
+    AgentFunctionDescription& f1 = a1.newFunction(FUNCTION_NAME1, agent_fn1);
+    AgentFunctionDescription& f2 = a1.newFunction(FUNCTION_NAME2, agent_fn2);
+    f1.setInitialState("a");
+    f1.setEndState("a");  // Redundant for the test?
+    f2.setInitialState("b");
+    f2.setEndState("b");  // Redundant for the test?
+    f2.setAgentOutput(a1, "a");
+    LayerDescription& l = _m.newLayer();
+    // Both agent functions output to same message list
+    EXPECT_NO_THROW(l.addAgentFunction(f1));
+    EXPECT_THROW(l.addAgentFunction(f2), InvalidLayerMember);
+    EXPECT_THROW(l.addAgentFunction(AGENT_NAME, FUNCTION_NAME2), InvalidLayerMember);
+    EXPECT_THROW(l.addAgentFunction(agent_fn2), InvalidLayerMember);
+}
+TEST(LayerDescriptionTest, AgentOutMatchesInputState2) {
+    // Can't add an agent function which outputs to the same agent state that is an input state for another agent function
+    // This tests the inverse order (agent output fn added first)
+    ModelDescription _m(MODEL_NAME);
+    AgentDescription& a1 = _m.newAgent(AGENT_NAME);
+    a1.newState("a");
+    a1.newState("b");
+    AgentFunctionDescription& f1 = a1.newFunction(FUNCTION_NAME1, agent_fn1);
+    AgentFunctionDescription& f2 = a1.newFunction(FUNCTION_NAME2, agent_fn2);
+    f1.setInitialState("a");
+    f1.setEndState("a");  // Redundant for the test?
+    f2.setInitialState("b");
+    f2.setEndState("b");  // Redundant for the test?
+    f1.setAgentOutput(a1, "b");
+    LayerDescription& l = _m.newLayer();
+    // Both agent functions output to same message list
+    EXPECT_NO_THROW(l.addAgentFunction(f1));
+    EXPECT_THROW(l.addAgentFunction(f2), InvalidLayerMember);
+    EXPECT_THROW(l.addAgentFunction(AGENT_NAME, FUNCTION_NAME2), InvalidLayerMember);
+    EXPECT_THROW(l.addAgentFunction(agent_fn2), InvalidLayerMember);
+}
+TEST(LayerDescriptionTest, NoSuitableAgentFunctions) {
+    ModelDescription _m(MODEL_NAME);
+    AgentDescription& a1 = _m.newAgent(AGENT_NAME);
+    AgentDescription& a2 = _m.newAgent(AGENT_NAME2);
+    a1.newFunction(FUNCTION_NAME1, agent_fn2);
+    a2.newFunction(FUNCTION_NAME1, agent_fn2);
+    LayerDescription& l = _m.newLayer();
+    // No agent functions within the model use this agent function body
+    EXPECT_THROW(l.addAgentFunction(agent_fn_msgout1), InvalidAgentFunc);
+}
+TEST(LayerDescriptionTest, MultipleSuitableAgentFunctions) {
+    ModelDescription _m(MODEL_NAME);
+    AgentDescription& a1 = _m.newAgent(AGENT_NAME);
+    AgentDescription& a2 = _m.newAgent(AGENT_NAME2);
+    a1.newFunction(FUNCTION_NAME1, agent_fn2);
+    a2.newFunction(FUNCTION_NAME1, agent_fn2);
+    LayerDescription& l = _m.newLayer();
+    // Multiple agent functions within the model use this agent function body
+    EXPECT_THROW(l.addAgentFunction(agent_fn2), InvalidAgentFunc);
+}
+TEST(LayerDescriptionTest, AgentFnHostFnSameLayer) {
+    ModelDescription _m(MODEL_NAME);
+    AgentDescription& a1 = _m.newAgent(AGENT_NAME);
+    auto &f1 = a1.newFunction(FUNCTION_NAME1, agent_fn1);
+    LayerDescription& l = _m.newLayer();
+    // Multiple agent functions within the model use this agent function body
+    EXPECT_NO_THROW(l.addAgentFunction(f1));
+    EXPECT_THROW(l.addHostFunction(host_fn), InvalidLayerMember);
+}
+TEST(LayerDescriptionTest, HostFnAgentFnSameLayer) {
+    ModelDescription _m(MODEL_NAME);
+    AgentDescription& a1 = _m.newAgent(AGENT_NAME);
+    auto& f1 = a1.newFunction(FUNCTION_NAME1, agent_fn1);
+    LayerDescription& l = _m.newLayer();
+    // Multiple agent functions within the model use this agent function body
+    EXPECT_NO_THROW(l.addHostFunction(host_fn));
+    EXPECT_THROW(l.addAgentFunction(f1), InvalidLayerMember);
+    EXPECT_THROW(l.addAgentFunction(AGENT_NAME, FUNCTION_NAME1), InvalidLayerMember);
+    EXPECT_THROW(l.addAgentFunction(agent_fn1), InvalidLayerMember);
+}
 
 TEST(LayerDescriptionTest, SubModelAndHostOrAgentFunction) {
     ModelDescription m2("model2");
@@ -237,28 +387,28 @@ TEST(LayerDescriptionTest, SubModelAndHostOrAgentFunction) {
     auto &sm = m.newSubModel("sm", m2);
     auto &sm2 = m.newSubModel("sm2", m3);
     AgentDescription &a = m.newAgent(AGENT_NAME);
-    auto &af1 = a.newFunction("", agent_fn1);
-    // Submodel can't go in layer with agent function and host fn
-    auto &layer1 = m.newLayer();
-    EXPECT_NO_THROW(layer1.addAgentFunction(af1));
-    EXPECT_NO_THROW(layer1.addHostFunction(host_fn));
-    EXPECT_THROW(layer1.addSubModel(sm), InvalidLayerMember);
+    AgentDescription &a2 = m.newAgent(AGENT_NAME2);
+
+    auto &af1 = a.newFunction("a", agent_fn1);
+    auto &af2 = a2.newFunction("b", agent_fn2);
     // Submodel can't go in layer with agent function
     auto &layer2 = m.newLayer();
     EXPECT_NO_THROW(layer2.addAgentFunction(af1));
     EXPECT_THROW(layer2.addSubModel(sm), InvalidLayerMember);
-    EXPECT_NO_THROW(layer2.addHostFunction(host_fn));
+    EXPECT_NO_THROW(layer2.addAgentFunction(af2));
     // Submodel can't go in layer with host function
     auto &layer3 = m.newLayer();
     EXPECT_NO_THROW(layer3.addHostFunction(host_fn));
     EXPECT_THROW(layer3.addSubModel(sm), InvalidLayerMember);
-    EXPECT_NO_THROW(layer3.addAgentFunction(af1));
+    EXPECT_NO_THROW(layer3.addHostFunction(host_fn2));
     // Host and agent functions can't go in layer with submodel
     // Submodel can't go in layer with submodel
     auto &layer4 = m.newLayer();
     EXPECT_NO_THROW(layer4.addSubModel(sm));
     EXPECT_THROW(layer4.addSubModel(sm2), InvalidSubModel);
     EXPECT_THROW(layer4.addAgentFunction(af1), InvalidLayerMember);
+    EXPECT_THROW(layer4.addAgentFunction(AGENT_NAME, ""), InvalidLayerMember);
+    EXPECT_THROW(layer4.addAgentFunction(agent_fn1), InvalidLayerMember);
     EXPECT_THROW(layer4.addHostFunction(host_fn), InvalidLayerMember);
 }
 }  // namespace test_layer

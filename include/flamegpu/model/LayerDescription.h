@@ -64,6 +64,7 @@ class LayerDescription {
      * @throw InvalidAgentFunc If the agent function does not exist within the model hierarchy
      * @throw InvalidAgentFunc If the agent function has already been added to the layer
      * @throw InvalidLayerMember If the layer already contains a SubModel
+     * @throw InvalidLayerMember If the agent function outputs to a message list output to by an existing agent function of the layer
      * @note The agent function must first be added to an Agent
      * @see AgentDescription::newFunction(const std::string &, AgentFunction)
      */
@@ -76,6 +77,8 @@ class LayerDescription {
      * @throw InvalidAgentFunc If the agent function does not exist within the model hierarchy
      * @throw InvalidAgentFunc If the agent function has already been added to the layer
      * @throw InvalidLayerMember If the layer already contains a SubModel
+     * @throw InvalidLayerMember If the agent function outputs to a message list output to by an existing agent function of the layer
+     * @throw InvalidLayerMember If the agent function outputs an agent in the same agent state as an existing agent function's input state (or vice versa)
      */
     void addAgentFunction(const AgentFunctionDescription &afd);
     /**
@@ -86,6 +89,8 @@ class LayerDescription {
      * @throw InvalidAgentFunc If the agent function does not exist within the model hierarchy
      * @throw InvalidAgentFunc If the agent function has already been added to the layer
      * @throw InvalidLayerMember If the layer already contains a SubModel
+     * @throw InvalidLayerMember If the agent function outputs to a message list output to by an existing agent function of the layer
+     * @throw InvalidLayerMember If the agent function outputs an agent in the same agent state as an existing agent function's input state (or vice versa)
      */
     void addAgentFunction(const std::string &agentName, const std::string &functionName);
     /**
@@ -96,6 +101,8 @@ class LayerDescription {
      * @throw InvalidAgentFunc If the agent function does not exist within the model hierarchy
      * @throw InvalidAgentFunc If the agent function has already been added to the layer
      * @throw InvalidLayerMember If the layer already contains a SubModel
+     * @throw InvalidLayerMember If the agent function outputs to a message list output to by an existing agent function of the layer
+     * @throw InvalidLayerMember If the agent function outputs an agent in the same agent state as an existing agent function's input state (or vice versa)
      * @note This version exists because the template overload was preventing implicit cast to std::string
      */
     void addAgentFunction(const char *agentName, const char *functionName);
@@ -200,18 +207,31 @@ class LayerDescription {
 
 template<typename AgentFunction>
 void LayerDescription::addAgentFunction(AgentFunction /*af*/) {
+    if (layer->sub_model) {
+        THROW InvalidLayerMember("A layer containing agent functions and/or host functions, may not also contain a submodel, "
+            "in LayerDescription::addAgentFunction()\n");
+    }
+    if (layer->host_functions.size() || layer->host_functions_callbacks.size()) {
+        THROW InvalidLayerMember("A layer containing host functions, may not also contain agent functions, "
+            "in LayerDescription::addAgentFunction()\n");
+    }
     AgentFunctionWrapper * func_compare = AgentFunction::fnPtr();
     // Find the matching agent function in model hierarchy
     auto mdl = model.lock();
     if (!mdl) {
         THROW ExpiredWeakPtr();
     }
+    unsigned int matches = 0;
+    std::shared_ptr<AgentFunctionData> match_ptr;
     for (auto a : mdl->agents) {
         for (auto f : a.second->functions) {
             if (f.second->func == func_compare) {
-                // Check that layer does not already contain function with same agent + states
+                auto a_agent_out = f.second->agent_output.lock();
+                auto a_msg_out = f.second->message_output.lock();
+                auto a_msg_in = f.second->message_input.lock();
                 for (const auto &b : layer->agent_functions) {
                     if (auto parent = b->parent.lock()) {
+                        // Check that layer does not already contain function with same agent + states
                         // If agent matches
                         if (parent->name == a.second->name) {
                             // If they share a state
@@ -225,15 +245,61 @@ void LayerDescription::addAgentFunction(AgentFunction /*af*/) {
                                     f.second->name.c_str(), b->name.c_str());
                             }
                         }
+                        // Check that the layer does not already contain function for the agent + state being output to
+                        if (a_agent_out) {
+                            // If agent matches
+                            if (parent->name == a_agent_out->name) {
+                                // If state matches
+                                if (b->initial_state == f.second->agent_output_state) {
+                                    THROW InvalidLayerMember("Agent functions '%s' cannot be added to this layer as agent function '%s' "
+                                        "within the layer requires the same agent state as an input, as this agent function births, "
+                                        "in LayerDescription::addAgentFunction().",
+                                        f.second->name.c_str(), b->name.c_str());
+                                }
+                            }
+                        }
+                        // Also check the inverse
+                        auto b_agent_out = b->agent_output.lock();
+                        if (b_agent_out) {
+                            // If agent matches
+                            if (a.second->name == b_agent_out->name) {
+                                // If state matches
+                                if (f.second->initial_state == b->agent_output_state) {
+                                    THROW InvalidLayerMember("Agent functions '%s' cannot be added to this layer as agent function '%s' "
+                                        "within the layer agent births to the same agent state as this agent function requires as an input, "
+                                        "in LayerDescription::addAgentFunction().",
+                                        f.second->name.c_str(), b->name.c_str());
+                                }
+                            }
+                        }
+                    }
+                    // Check the layer does not already contain function which outputs to same message list
+                    auto b_msg_out = b->message_output.lock();
+                    auto b_msg_in = b->message_input.lock();
+                    if ((a_msg_out && b_msg_out && a_msg_out == b_msg_out) ||
+                        (a_msg_out && b_msg_in && a_msg_out == b_msg_in) ||
+                        (a_msg_in && b_msg_out && a_msg_in == b_msg_out)) {  // Pointer comparison should be fine here
+                        THROW InvalidLayerMember("Agent functions '%s' cannot be added to this layer as agent function '%s' "
+                            "within the layer also inputs or outputs to the same messagelist, this is not permitted, "
+                            "in LayerDescription::addAgentFunction().",
+                            f.second->name.c_str(), b->name.c_str());
                     }
                 }
-                // Add it and check it succeeded
-                if (layer->agent_functions.emplace(f.second).second)
-                    return;
-                THROW InvalidAgentFunc("Attempted to add same agent function to same layer twice, "
-                    "in LayerDescription::addAgentFunction().");
+                match_ptr = f.second;
+                ++matches;
             }
         }
+    }
+    if (matches == 1) {
+        // Add it and check it succeeded
+        if (layer->agent_functions.emplace(match_ptr).second)
+            return;
+        THROW InvalidAgentFunc("Attempted to add same agent function to same layer twice, "
+            "in LayerDescription::addAgentFunction().");
+    }
+    if (matches > 1) {
+        THROW InvalidAgentFunc("There are %u possible agent functions to add to layer, please use a more specific method for adding this agent function to a layer, "
+            "in LayerDescription::addAgentFunction().", matches);
     }
     THROW InvalidAgentFunc("Agent function was not found, "
         "in LayerDescription::addAgentFunction().");
