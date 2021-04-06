@@ -95,7 +95,7 @@ void ModelVis::updateBuffers(const unsigned int &sc) {
     if (visualiser) {
         bool has_agents = false;
         for (auto &a : agents) {
-            has_agents = has_agents || a.second.requestBufferResizes(visualiser);
+            has_agents = a.second.requestBufferResizes(visualiser) || has_agents;
         }
         // Block the sim when we first get agents, until vis has resized buffers, incase vis is being slow to init
         if (has_agents && (sc == 0 || sc == UINT_MAX)) {
