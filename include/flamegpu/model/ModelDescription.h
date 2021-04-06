@@ -255,6 +255,14 @@ class ModelDescription {
      */
     std::string getName() const;
     /**
+     * @return A reference to the this model's DependencyGraph
+     */
+    DependencyGraph& getDependencyGraph() const;
+    /**
+     * Generates layers from the dependency graph
+     */
+    void generateLayers();
+    /**
      * Returns an immutable reference to the specified agent, which can be used to view the agent's configuration
      * @param agent_name Name which can be used to the refer to the desired agent within the model description hierarchy
      * @return An immutable reference to the specified AgentDescription

@@ -39,6 +39,9 @@ void LayerDescription::addAgentFunction(const std::string &agentName, const std:
         THROW InvalidLayerMember("A layer containing host functions, may not also contain agent functions, "
             "in LayerDescription::addAgentFunction()\n");
     }
+    if (!layer->host_functions.empty() || !layer->host_functions_callbacks.empty()) {
+        THROW InvalidLayerMember("A layer containing a host function may not also contain an agent function");
+    }
     // Locate the matching agent function in the model hierarchy
     auto mdl = model.lock();
     if (!mdl) {
@@ -129,17 +132,17 @@ void LayerDescription::addAgentFunction(const char *an, const char *fn) {
 }
 void LayerDescription::addHostFunction(FLAMEGPU_HOST_FUNCTION_POINTER func_p) {
     if (layer->sub_model) {
-        THROW InvalidLayerMember("A layer containing agent functions and/or host functions, may not also contain a submodel, "
-        "in LayerDescription::addHostFunction()\n");
+        THROW InvalidLayerMember("A layer containing a submodel may not also contain a host function, "
+        "in LayerDescription::addSubModel()\n");
     }
-    if (layer->agent_functions.size()) {
-        THROW InvalidLayerMember("A layer containing host functions, may not also contain agent functions, "
-            "in LayerDescription::addHostFunction()\n");
+    if (!layer->host_functions.empty() || !layer->agent_functions.empty() || !layer->host_functions_callbacks.empty()) {
+        THROW InvalidLayerMember("A layer containing agent functions or a host function may not also contain a host function");
     }
     if (!layer->host_functions.insert(func_p).second) {
         THROW InvalidHostFunc("HostFunction has already been added to LayerDescription,"
             "in LayerDescription::addHostFunction().");
     }
+
 }
 void LayerDescription::addSubModel(const std::string &name) {
     if (!layer->host_functions.empty() || !layer->agent_functions.empty() || !layer->host_functions_callbacks.empty()) {

@@ -26,6 +26,7 @@ class DependencyGraph {
     void generateLayers(ModelDescription& model);
     void printGraph() const;
     void generateDOTDiagram(std::string outputFileName);
+    std::string getConstructedLayersString();
 
  private:
     std::vector<DependencyNode*> roots;
@@ -33,6 +34,7 @@ class DependencyGraph {
     bool validateSubTree(DependencyNode* node);
     bool doesFunctionExistInStack(DependencyNode* function);
     static std::string getNodeName(DependencyNode* node);
+    std::vector<std::vector<std::string>> constructedLayers;
 };
 
 #endif  // INCLUDE_FLAMEGPU_MODEL_DEPENDENCYGRAPH_H_

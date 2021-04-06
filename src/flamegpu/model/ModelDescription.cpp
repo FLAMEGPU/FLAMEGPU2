@@ -1,5 +1,6 @@
 #include "flamegpu/model/ModelDescription.h"
 
+#include "flamegpu/model/DependencyGraph.h"
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/model/LayerDescription.h"
 #include "flamegpu/exception/FGPUException.h"
@@ -156,6 +157,17 @@ void ModelDescription::addExitCondition(FLAMEGPU_EXIT_CONDITION_POINTER func_p) 
         THROW InvalidHostFunc("Attempted to add same exit condition twice,"
             "in ModelDescription::addExitCondition()");
     }
+}
+
+void ModelDescription::generateLayers() {
+    model->dependencyGraph->generateLayers(*this);
+}
+
+/**
+ * Accessors
+ */
+DependencyGraph& ModelDescription::getDependencyGraph() const {
+    return *(model->dependencyGraph);
 }
 
 /**

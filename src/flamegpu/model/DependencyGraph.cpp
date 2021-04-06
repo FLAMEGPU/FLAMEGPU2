@@ -50,12 +50,20 @@ void DependencyGraph::generateLayers(ModelDescription& model) {
     buildIdealLayers = [&buildIdealLayers, &idealLayers] (DependencyNode* node) {
         // New layers required
         std::vector<std::vector<DependencyNode*>>::size_type nodeDepth = node->getMinimumLayerDepth();
-        if (nodeDepth >= idealLayers.size()) {
+        while (nodeDepth >= idealLayers.size()) {
             idealLayers.push_back(std::vector<DependencyNode*>());
         }
 
-        // Add node to relevant layer
-        idealLayers[nodeDepth].push_back(node);
+        // Add node to relevant layer if node hasn't already been added
+        bool alreadyAdded = false;
+        for (auto& includedNode : idealLayers[nodeDepth]) {
+            if (node == includedNode) {
+                alreadyAdded = true;
+            }
+        }
+        if (!alreadyAdded) {
+            idealLayers[nodeDepth].push_back(node);
+        }
 
         // Repeat for children
         for (auto child : node->getDependents()) {
@@ -70,11 +78,11 @@ void DependencyGraph::generateLayers(ModelDescription& model) {
     // idealLayers now contains DependencyNode pointers in their ideal layers, i.e. assuming no conflicts.
     // Now iterate structure attempting to add functions to layers.
     // If we encounter conflicts, introduce additional layers as necessary
-
+    constructedLayers.clear();
     for (auto idealLayer : idealLayers) {
         // Request a new layer from the model
         LayerDescription* layer = &model.newLayer();
-
+        constructedLayers.emplace_back();
         // Attempt to add each node in the idealLayer to the layer
         for (auto node : idealLayer) {
             // Add node based on its concrete type
@@ -82,14 +90,19 @@ void DependencyGraph::generateLayers(ModelDescription& model) {
             if (AgentFunctionDescription* afd = dynamic_cast<AgentFunctionDescription*>(node)) {
                 try {
                     layer->addAgentFunction(*afd);
+                    constructedLayers.back().emplace_back(DependencyGraph::getNodeName(afd));
                 } catch (const InvalidAgentFunc&) {
                     // Conflict, create new layer and add to that instead
                     layer = &model.newLayer();
                     layer->addAgentFunction(*afd);
+                    constructedLayers.emplace_back();
+                    constructedLayers.back().emplace_back(DependencyGraph::getNodeName(afd));
                     printf("New function execution layer created - InvalidAgentFunc exception\n");
                 } catch (const InvalidLayerMember&) {
                     layer = &model.newLayer();
                     layer->addAgentFunction(*afd);
+                    constructedLayers.emplace_back();
+                    constructedLayers.back().emplace_back(DependencyGraph::getNodeName(afd));
                     printf("New function execution layer created - InvalidLayerMember exception\n");
                 }
             }
@@ -98,13 +111,18 @@ void DependencyGraph::generateLayers(ModelDescription& model) {
             if (SubModelDescription* smd = dynamic_cast<SubModelDescription*>(node)) {
                 try {
                     layer->addSubModel(*smd);
+                    constructedLayers.back().emplace_back(DependencyGraph::getNodeName(smd));
                 } catch (const InvalidLayerMember&) {
                     layer = &model.newLayer();
                     layer->addSubModel(*smd);
+                    constructedLayers.emplace_back();
+                    constructedLayers.back().emplace_back(DependencyGraph::getNodeName(smd));
                     printf("New submodel layer created - InvalidLayerMember exception\n");
                 } catch (const InvalidSubModel&) {
                     layer = &model.newLayer();
                     layer->addSubModel(*smd);
+                    constructedLayers.emplace_back();
+                    constructedLayers.back().emplace_back(DependencyGraph::getNodeName(smd));
                     printf("New submodel layer created - InvalidSubModel exception\n");
                 }
             }
@@ -114,20 +132,25 @@ void DependencyGraph::generateLayers(ModelDescription& model) {
 #ifndef SWIG
                 try {
                     layer->addHostFunction(hdf->getFunctionPtr());
+                    constructedLayers.back().emplace_back(DependencyGraph::getNodeName(hdf));
                 } catch (const InvalidLayerMember&) {
                     layer = &model.newLayer();
                     layer->addHostFunction(hdf->getFunctionPtr());
+                    constructedLayers.emplace_back();
+                    constructedLayers.back().emplace_back(DependencyGraph::getNodeName(hdf));
                     printf("New host function layer created - InvalidLayerMember exception\n");
                 }
 #endif
 #ifdef SWIG
                 try {
                     layer->addHostFunctionCallback(hdf->getCallbackObject());
+                    constructedLayers.back().emplace_back(DependencyGraph::getNodeName(hdf));
                 } catch (const InvalidLayerMember& e) {
                     layer = &model.newLayer();
                     layer->addHostFunctionCallback(hdf->getCallbackObject());
+                    constructedLayers.emplace_back();
+                    constructedLayers.back().emplace_back(DependencyGraph::getNodeName(hdf));
                     printf("New host function layer created - InvalidLayerMember exception\n");
-
 #endif
             }
         }
@@ -229,4 +252,20 @@ void DependencyGraph::generateDOTDiagram(std::string outputFileName) {
         // EOF
         DOTFile << "}";
     }
+}
+
+std::string DependencyGraph::getConstructedLayersString() {
+    std::stringstream ss;
+    unsigned int layerCount = 0;
+    for (auto layer : constructedLayers) {
+        ss << "--------------------" << std::endl;
+        ss << "Layer " << layerCount << std::endl;
+        ss << "--------------------" << std::endl;
+        for (auto item : layer) {
+            ss << item << std::endl;
+        }
+        ss << std::endl;
+        layerCount++;
+    }
+    return ss.str();
 }

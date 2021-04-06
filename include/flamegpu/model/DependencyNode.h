@@ -9,10 +9,19 @@ class DependencyNode {
     virtual ~DependencyNode();
 
     /**
-     * Specifies that this agent function depends on the completion of another agent function
-     * @param dependency The agent function which must be complete before this agent function may run
+     * Specifies that this agent function depends on the completion of all of the provided functions
+     * @param dependencyList The host functions, agent functions and submodels which this depends on
      */
-    void dependsOn(DependencyNode& dependency);
+    template<typename A>
+    void dependsOn(A& dep) {
+       dependsOnImpl(dep);
+    }
+    template<typename A, typename...Args>
+    void dependsOn(A& dep, Args&...dependencyList) {
+       dependsOnImpl(dep);
+       dependsOn(dependencyList...);
+    }
+
     /**
      * Sets the minimum layer depth for this agent function
      */
@@ -56,6 +65,10 @@ class DependencyNode {
      * This functions minimum layer depth in the execution graph
      */
     int minLayerDepth = 0;
+    /**
+     * Auxillary function for dependency construction
+     */
+    void dependsOnImpl(DependencyNode& dependency);
 };
 
 #endif  // INCLUDE_FLAMEGPU_MODEL_DEPENDENCYNODE_H_

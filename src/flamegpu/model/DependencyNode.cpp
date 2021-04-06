@@ -39,7 +39,7 @@ int DependencyNode::getMinimumLayerDepth() {
     return minLayerDepth;
 }
 
-void DependencyNode::dependsOn(DependencyNode& dependency) {
+void DependencyNode::dependsOnImpl(DependencyNode& dependency) {
     dependency.addDependent(*this);
     dependencies.push_back(&dependency);
 }

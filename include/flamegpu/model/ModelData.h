@@ -16,6 +16,7 @@
 class HostFunctionCallback;
 class HostFunctionConditionCallback;
 class EnvironmentDescription;
+class DependencyGraph;
 struct AgentData;
 struct LayerData;
 struct SubModelData;
@@ -134,6 +135,10 @@ struct ModelData : std::enable_shared_from_this<ModelData>{
      * This must be unique among Simulation (e.g. CUDASimulation) instances
      */
     std::string name;
+    /**
+     * The dependency graph representing the dependencies of agent functions, submodels and host functions for this model.
+     */
+    std::shared_ptr<DependencyGraph> dependencyGraph;
     /**
      * Creates a copy of the entire model definition hierarchy
      * This is called when a ModelDescription is passed to a Simulation (e.g. CUDASimulation)

@@ -306,13 +306,6 @@ TEST(AgentFunctionDescriptionTest, DefaultDependents) {
     // Has no dependents
     EXPECT_FALSE(f.hasDependents());
 }
-TEST(AgentFunctionDescriptionTest, AddNullptrAsDependency) {
-    ModelDescription _m(MODEL_NAME);
-    AgentDescription &a = _m.newAgent(AGENT_NAME);
-    AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
-    // Cannot add nullptr as dependency
-    EXPECT_THROW(f.dependsOn(nullptr), InvalidAgentFunc);
-}
 TEST(AgentFunctionDescriptionTest, AddSingleDependency) {
     ModelDescription _m(MODEL_NAME);
     AgentDescription &a = _m.newAgent(AGENT_NAME);

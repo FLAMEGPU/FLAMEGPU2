@@ -11,6 +11,7 @@
 #include "flamegpu/model/SubModelData.h"
 #include "flamegpu/model/SubAgentData.h"
 #include "flamegpu/model/SubEnvironmentData.h"
+#include "flamegpu/model/DependencyGraph.h"
 #include "flamegpu/runtime/HostFunctionCallback.h"
 
 const char *ModelData::DEFAULT_STATE = "default";
@@ -20,6 +21,7 @@ const char *ModelData::DEFAULT_STATE = "default";
  */
 ModelData::ModelData(const std::string &model_name)
     : environment(new EnvironmentDescription())
+    , dependencyGraph(new DependencyGraph())
     , name(model_name) { }
 
 ModelData::~ModelData() { }
