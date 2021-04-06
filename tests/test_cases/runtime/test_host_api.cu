@@ -63,4 +63,36 @@ TEST(hostAPITest, getStepCounter) {
     cuda_model.simulate();
 }
 
+FLAMEGPU_STEP_FUNCTION(reduce_value) {
+    // Perform a reduction
+    EXPECT_NO_THROW(FLAMEGPU->agent("foo").sum<float>("bar"));
+}
+FLAMEGPU_AGENT_FUNCTION(birth_agent, MsgNone, MsgNone) {
+    FLAMEGPU->agent_out.setVariable<float>("bar", 1.0f);
+    return ALIVE;
+}
+TEST(hostAPITest, resizeTempMemory) {
+    // This test is an attempt to catch bugs inside HostAPI::tempStorageRequiresResize()
+    // e.g. if we don't resize enough memory before calling cub
+    ModelDescription model("model");
+    AgentDescription &agent = model.newAgent("foo");
+    agent.newVariable<float>("bar");
+
+    auto& afn = agent.newFunction("birth_agent", birth_agent);
+    afn.setAgentOutput(agent);
+
+    model.newLayer().addAgentFunction(afn);
+    model.addStepFunction(reduce_value);
+
+    // Init pop
+    const unsigned int agentCount = 1;
+    AgentVector init_population(agent, agentCount);
+    // Setup Model
+    CUDASimulation cuda_model(model);
+    cuda_model.setPopulationData(init_population);
+
+    cuda_model.SimulationConfig().steps = 16;
+    cuda_model.simulate();
+}
+
 }  // namespace test_host_api
