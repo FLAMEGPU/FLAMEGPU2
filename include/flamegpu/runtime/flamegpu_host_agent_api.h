@@ -251,12 +251,12 @@ OutT HostAgentInstance::sum(const std::string &variable) const {
     if (api.tempStorageRequiresResize(cc, agentCount)) {
         // Resize cub storage
         size_t tempByte = 0;
-        cub::DeviceReduce::Sum(nullptr, tempByte, reinterpret_cast<InT*>(var_ptr), reinterpret_cast<OutT*>(api.d_output_space), static_cast<int>(agentCount));
+        gpuErrchk(cub::DeviceReduce::Sum(nullptr, tempByte, reinterpret_cast<InT*>(var_ptr), reinterpret_cast<OutT*>(api.d_output_space), static_cast<int>(agentCount)));
         api.resizeTempStorage(cc, agentCount, tempByte);
     }
     // Resize output storage
     api.resizeOutputSpace<OutT>();
-    cub::DeviceReduce::Sum(api.d_cub_temp, api.d_cub_temp_size, reinterpret_cast<InT*>(var_ptr), reinterpret_cast<OutT*>(api.d_output_space), static_cast<int>(agentCount));
+    gpuErrchk(cub::DeviceReduce::Sum(api.d_cub_temp, api.d_cub_temp_size, reinterpret_cast<InT*>(var_ptr), reinterpret_cast<OutT*>(api.d_output_space), static_cast<int>(agentCount)));
     gpuErrchkLaunch();
     OutT rtn;
     gpuErrchk(cudaMemcpy(&rtn, api.d_output_space, sizeof(OutT), cudaMemcpyDeviceToHost));
@@ -281,13 +281,13 @@ InT HostAgentInstance::min(const std::string &variable) const {
     if (api.tempStorageRequiresResize(cc, agentCount)) {
         // Resize cub storage
         size_t tempByte = 0;
-        cub::DeviceReduce::Min(nullptr, tempByte, reinterpret_cast<InT*>(var_ptr), reinterpret_cast<InT*>(api.d_output_space), static_cast<int>(agentCount));
+        gpuErrchk(cub::DeviceReduce::Min(nullptr, tempByte, reinterpret_cast<InT*>(var_ptr), reinterpret_cast<InT*>(api.d_output_space), static_cast<int>(agentCount)));
         gpuErrchkLaunch();
         api.resizeTempStorage(cc, agentCount, tempByte);
     }
     // Resize output storage
     api.resizeOutputSpace<InT>();
-    cub::DeviceReduce::Min(api.d_cub_temp, api.d_cub_temp_size, reinterpret_cast<InT*>(var_ptr), reinterpret_cast<InT*>(api.d_output_space), static_cast<int>(agentCount));
+    gpuErrchk(cub::DeviceReduce::Min(api.d_cub_temp, api.d_cub_temp_size, reinterpret_cast<InT*>(var_ptr), reinterpret_cast<InT*>(api.d_output_space), static_cast<int>(agentCount)));
     gpuErrchkLaunch();
     InT rtn;
     gpuErrchk(cudaMemcpy(&rtn, api.d_output_space, sizeof(InT), cudaMemcpyDeviceToHost));
@@ -312,13 +312,13 @@ InT HostAgentInstance::max(const std::string &variable) const {
     if (api.tempStorageRequiresResize(cc, agentCount)) {
         // Resize cub storage
         size_t tempByte = 0;
-        cub::DeviceReduce::Max(nullptr, tempByte, reinterpret_cast<InT*>(var_ptr), reinterpret_cast<InT*>(api.d_output_space), static_cast<int>(agentCount));
+        gpuErrchk(cub::DeviceReduce::Max(nullptr, tempByte, reinterpret_cast<InT*>(var_ptr), reinterpret_cast<InT*>(api.d_output_space), static_cast<int>(agentCount)));
         gpuErrchkLaunch();
         api.resizeTempStorage(cc, agentCount, tempByte);
     }
     // Resize output storage
     api.resizeOutputSpace<InT>();
-    cub::DeviceReduce::Max(api.d_cub_temp, api.d_cub_temp_size, reinterpret_cast<InT*>(var_ptr), reinterpret_cast<InT*>(api.d_output_space), static_cast<int>(agentCount));
+    gpuErrchk(cub::DeviceReduce::Max(api.d_cub_temp, api.d_cub_temp_size, reinterpret_cast<InT*>(var_ptr), reinterpret_cast<InT*>(api.d_output_space), static_cast<int>(agentCount)));
     gpuErrchkLaunch();
     InT rtn;
     gpuErrchk(cudaMemcpy(&rtn, api.d_output_space, sizeof(InT), cudaMemcpyDeviceToHost));
@@ -370,15 +370,15 @@ std::vector<OutT> HostAgentInstance::histogramEven(const std::string &variable, 
     if (api.tempStorageRequiresResize(cc, agentCount)) {
         // Resize cub storage
         size_t tempByte = 0;
-        cub::DeviceHistogram::HistogramEven(nullptr, tempByte,
-            reinterpret_cast<InT*>(var_ptr), reinterpret_cast<int*>(api.d_output_space), histogramBins + 1, lowerBound, upperBound, static_cast<int>(agentCount));
+        gpuErrchk(cub::DeviceHistogram::HistogramEven(nullptr, tempByte,
+            reinterpret_cast<InT*>(var_ptr), reinterpret_cast<int*>(api.d_output_space), histogramBins + 1, lowerBound, upperBound, static_cast<int>(agentCount)));
         gpuErrchkLaunch();
         api.resizeTempStorage(cc, agentCount, tempByte);
     }
     // Resize output storage
     api.resizeOutputSpace<OutT>(histogramBins);
-    cub::DeviceHistogram::HistogramEven(api.d_cub_temp, api.d_cub_temp_size,
-        reinterpret_cast<InT*>(var_ptr), reinterpret_cast<OutT*>(api.d_output_space), histogramBins + 1, lowerBound, upperBound, static_cast<int>(agentCount));
+    gpuErrchk(cub::DeviceHistogram::HistogramEven(api.d_cub_temp, api.d_cub_temp_size,
+        reinterpret_cast<InT*>(var_ptr), reinterpret_cast<OutT*>(api.d_output_space), histogramBins + 1, lowerBound, upperBound, static_cast<int>(agentCount)));
     gpuErrchkLaunch();
     std::vector<OutT> rtn(histogramBins);
     gpuErrchk(cudaMemcpy(rtn.data(), api.d_output_space, histogramBins * sizeof(OutT), cudaMemcpyDeviceToHost));
@@ -403,15 +403,15 @@ InT HostAgentInstance::reduce(const std::string &variable, reductionOperatorT /*
     if (api.tempStorageRequiresResize(cc, agentCount)) {
         // Resize cub storage
         size_t tempByte = 0;
-        cub::DeviceReduce::Reduce(nullptr, tempByte, reinterpret_cast<InT*>(var_ptr), reinterpret_cast<InT*>(api.d_output_space),
-            static_cast<int>(agentCount), typename reductionOperatorT::template binary_function<InT>(), init);
+        gpuErrchk(cub::DeviceReduce::Reduce(nullptr, tempByte, reinterpret_cast<InT*>(var_ptr), reinterpret_cast<InT*>(api.d_output_space),
+            static_cast<int>(agentCount), typename reductionOperatorT::template binary_function<InT>(), init));
         gpuErrchkLaunch();
         api.resizeTempStorage(cc, agentCount, tempByte);
     }
     // Resize output storage
     api.resizeOutputSpace<InT>();
-    cub::DeviceReduce::Reduce(api.d_cub_temp, api.d_cub_temp_size, reinterpret_cast<InT*>(var_ptr), reinterpret_cast<InT*>(api.d_output_space),
-        static_cast<int>(agentCount), typename reductionOperatorT::template binary_function<InT>(), init);
+    gpuErrchk(cub::DeviceReduce::Reduce(api.d_cub_temp, api.d_cub_temp_size, reinterpret_cast<InT*>(var_ptr), reinterpret_cast<InT*>(api.d_output_space),
+        static_cast<int>(agentCount), typename reductionOperatorT::template binary_function<InT>(), init));
     gpuErrchkLaunch();
     InT rtn;
     gpuErrchk(cudaMemcpy(&rtn, api.d_output_space, sizeof(InT), cudaMemcpyDeviceToHost));
