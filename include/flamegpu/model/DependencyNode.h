@@ -22,6 +22,30 @@ class DependencyNode {
        dependsOn(dependencyList...);
     }
 
+    
+
+ protected:
+    friend class DependencyGraph;
+    /**
+     * Vector storing the 'children' of this agent function in the dependency tree, i.e. those functions which depend on the completion of this one
+     */
+    std::vector<DependencyNode*> dependents;
+    /**
+     * Vector storing the 'parents' of this agent function in the dependency tree, i.e. those functions which must be completed before this one may begin
+     */
+    std::vector<DependencyNode*> dependencies;
+    /**
+     * Adds an agent function to this agent function's list of dependents
+     */
+    void addDependent(DependencyNode& dependent);
+    /**
+     * This functions minimum layer depth in the execution graph
+     */
+    int minLayerDepth = 0;
+    /**
+     * Auxillary function for dependency construction
+     */
+    void dependsOnImpl(DependencyNode& dependency);
     /**
      * Sets the minimum layer depth for this agent function
      */
@@ -47,28 +71,6 @@ class DependencyNode {
      * @return The minimum layer depth for this agent function
      */
     int getMinimumLayerDepth();
-
- protected:
-    /**
-     * Vector storing the 'children' of this agent function in the dependency tree, i.e. those functions which depend on the completion of this one
-     */
-    std::vector<DependencyNode*> dependents;
-    /**
-     * Vector storing the 'parents' of this agent function in the dependency tree, i.e. those functions which must be completed before this one may begin
-     */
-    std::vector<DependencyNode*> dependencies;
-    /**
-     * Adds an agent function to this agent function's list of dependents
-     */
-    void addDependent(DependencyNode& dependent);
-    /**
-     * This functions minimum layer depth in the execution graph
-     */
-    int minLayerDepth = 0;
-    /**
-     * Auxillary function for dependency construction
-     */
-    void dependsOnImpl(DependencyNode& dependency);
 };
 
 #endif  // INCLUDE_FLAMEGPU_MODEL_DEPENDENCYNODE_H_
