@@ -71,7 +71,7 @@ FLAMEGPU_HOST_NEW_AGENT_API FLAMEGPU_HOST_API::newAgent(const std::string &agent
 bool FLAMEGPU_HOST_API::tempStorageRequiresResize(const CUB_Config &cc, const unsigned int &items) {
     auto lao = cub_largestAllocatedOp.find(cc);
     if (lao != cub_largestAllocatedOp.end()) {
-        if (lao->second < items)
+        if (lao->second >= items)
             return false;
     }
     return true;
