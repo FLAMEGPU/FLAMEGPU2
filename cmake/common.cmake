@@ -157,6 +157,12 @@ set(CMAKE_CUDA_FLAGS_RELEASE "${CMAKE_CUDA_FLAGS_RELEASE} -lineinfo")
 set(CMAKE_CUDA_FLAGS_PROFILE "${CMAKE_CUDA_FLAGS_PROFILE} -lineinfo -DPROFILE -D_PROFILE")
 # Addresses a cub::histogram warning
 set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr")
+
+# On windows, define NOMINMAX to remove the annoying defined min and max macros
+if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    add_compile_definitions(NOMINMAX)
+endif()
+
 # Enable default stream per thread for target, in-case of ensembles
 # This removes implicit syncs in default stream, using it has only been tested for basic models
 # It has not been tested with host functions, agent death, optional messages etc
