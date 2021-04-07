@@ -80,7 +80,6 @@ std::string loadFile(const path &filepath) {
 };  // namespace
 
 std::mutex JitifyCache::instance_mutex;
-
 std::unique_ptr<KernelInstantiation> JitifyCache::compileKernel(const std::string &func_name, const std::vector<std::string> &template_args, const std::string &kernel_src, const std::string &dynamic_header) {
     NVTX_RANGE("JitifyCache::compileKernel");
     // Init runtime compilation constants
@@ -88,20 +87,46 @@ std::unique_ptr<KernelInstantiation> JitifyCache::compileKernel(const std::strin
     static bool header_version_confirmed = false;
     static std::string env_cuda_path = std::getenv("CUDA_PATH");
     if (env_inc_fgp2.empty()) {
-        // Var is not set, attempt to use default arrangement
-        path test_include("");
+        // Start with the current working directory
+        path test_include(".");
         // Try 5 levels of directory, to see if we can find flame_api.h
         for (int i = 0; i < 5; ++i) {
+            // If break out the loop if the test_include directory does not exist.
+            if (!exists(test_include)) {
+                break;
+            }
+            // Check file assuming flamegpu2 is the root cmake project
             path check_file = test_include;
             check_file/= "include/flamegpu/version.h";
-            if (exists(check_file)) {
-                test_include/= "include";
-                env_inc_fgp2 = test_include.string();
-                break;
+            // Use try catch to suppress file permission exceptions etc
+            try {
+                if (exists(check_file)) {
+                    test_include /= "include";
+                    env_inc_fgp2 = test_include.string();
+                    break;
+                }
+            } catch (...) { }
+            // Check file assuming a standalone example is the root cmake project
+            // We want to see if we can find the build directory
+            for (auto& p : directory_iterator(test_include)) {
+                if (is_directory(p)) {
+                    check_file = p.path();
+                    check_file /= "_deps/flamegpu2-src/include/flamegpu/version.h";
+                    // Use try catch to suppress file permission exceptions etc
+                    try {
+                        if (exists(check_file)) {
+                            test_include = p.path();
+                            test_include /= "_deps/flamegpu2-src/include";
+                            env_inc_fgp2 = test_include.string();
+                            goto break_fgpu2_inc_dir_loop;  // Break out of nested loop
+                        }
+                    } catch (...) { }
+                }
             }
             // Go up a level for next iteration
             test_include/= "..";
         }
+break_fgpu2_inc_dir_loop:
         if (env_inc_fgp2.empty()) {
             THROW InvalidAgentFunc("Error compiling runtime agent function: Unable to automatically determine include directory and FLAMEGPU2_INC_DIR environment variable does not exist, "
                 "in JitifyCache::buildProgram().");
