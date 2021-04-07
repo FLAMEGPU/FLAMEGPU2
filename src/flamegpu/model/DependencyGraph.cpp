@@ -3,6 +3,53 @@
 DependencyGraph::DependencyGraph() {
 }
 
+DependencyGraph::DependencyGraph(const DependencyGraph& other) {
+    for (const auto& root : other.roots) {
+        roots.push_back(root);
+    }
+}
+
+
+bool DependencyGraph::operator==(const DependencyGraph& rhs) {
+    std::function<bool(DependencyNode*, DependencyNode*)> checkEqual;
+    checkEqual = [&checkEqual] (DependencyNode* lhs, DependencyNode* rhs) {
+        const auto& lhsDeps = lhs->getDependents();
+        const auto& rhsDeps = rhs->getDependents();
+        
+        // Different number of dependents -> not same
+        if (lhsDeps.size() != rhsDeps.size()) {
+            return false;
+        } else {
+            // Check children are equal
+            for  (unsigned int i = 0; i < lhsDeps.size(); i++) {
+                if (lhsDeps[i] != rhsDeps[i]) {
+                    return false;
+                }
+                if (!checkEqual(lhsDeps[i], rhsDeps[i])) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    };
+
+    // Check equal number of roots
+    const auto& lhsRoots = roots;
+    const auto& rhsRoots = rhs.roots;
+
+    if (lhsRoots.size() != rhsRoots.size()) {
+        return false;
+    } else {
+        for (unsigned int i = 0; i < lhsRoots.size(); i++) {
+            if(!checkEqual(lhsRoots[i], rhsRoots[i])) {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
 void DependencyGraph::addRoot(DependencyNode& root) {
     roots.push_back(&root);
 }
