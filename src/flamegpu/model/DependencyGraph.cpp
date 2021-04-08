@@ -74,7 +74,7 @@ bool DependencyGraph::validateDependencyGraph() {
     return true;
 }
 
-void DependencyGraph::generateLayers(ModelDescription& model) {
+void DependencyGraph::generateLayers(ModelDescription& _model) {
     // Check dependency graph is valid before we attempt to build layers
     validateDependencyGraph();
     checkForUnattachedFunctions();
@@ -132,7 +132,7 @@ void DependencyGraph::generateLayers(ModelDescription& model) {
     constructedLayers.clear();
     for (auto idealLayer : idealLayers) {
         // Request a new layer from the model
-        LayerDescription* layer = &model.newLayer();
+        LayerDescription* layer = &_model.newLayer();
         constructedLayers.emplace_back();
         // Attempt to add each node in the idealLayer to the layer
         for (auto node : idealLayer) {
@@ -144,13 +144,13 @@ void DependencyGraph::generateLayers(ModelDescription& model) {
                     constructedLayers.back().emplace_back(DependencyGraph::getNodeName(afd));
                 } catch (const InvalidAgentFunc&) {
                     // Conflict, create new layer and add to that instead
-                    layer = &model.newLayer();
+                    layer = &_model.newLayer();
                     layer->addAgentFunction(*afd);
                     constructedLayers.emplace_back();
                     constructedLayers.back().emplace_back(DependencyGraph::getNodeName(afd));
                     printf("New function execution layer created - InvalidAgentFunc exception\n");
                 } catch (const InvalidLayerMember&) {
-                    layer = &model.newLayer();
+                    layer = &_model.newLayer();
                     layer->addAgentFunction(*afd);
                     constructedLayers.emplace_back();
                     constructedLayers.back().emplace_back(DependencyGraph::getNodeName(afd));
@@ -164,13 +164,13 @@ void DependencyGraph::generateLayers(ModelDescription& model) {
                     layer->addSubModel(*smd);
                     constructedLayers.back().emplace_back(DependencyGraph::getNodeName(smd));
                 } catch (const InvalidLayerMember&) {
-                    layer = &model.newLayer();
+                    layer = &_model.newLayer();
                     layer->addSubModel(*smd);
                     constructedLayers.emplace_back();
                     constructedLayers.back().emplace_back(DependencyGraph::getNodeName(smd));
                     printf("New submodel layer created - InvalidLayerMember exception\n");
                 } catch (const InvalidSubModel&) {
-                    layer = &model.newLayer();
+                    layer = &_model.newLayer();
                     layer->addSubModel(*smd);
                     constructedLayers.emplace_back();
                     constructedLayers.back().emplace_back(DependencyGraph::getNodeName(smd));
@@ -185,7 +185,7 @@ void DependencyGraph::generateLayers(ModelDescription& model) {
                     layer->addHostFunction(hdf->getFunctionPtr());
                     constructedLayers.back().emplace_back(DependencyGraph::getNodeName(hdf));
                 } catch (const InvalidLayerMember&) {
-                    layer = &model.newLayer();
+                    layer = &_model.newLayer();
                     layer->addHostFunction(hdf->getFunctionPtr());
                     constructedLayers.emplace_back();
                     constructedLayers.back().emplace_back(DependencyGraph::getNodeName(hdf));
@@ -197,7 +197,7 @@ void DependencyGraph::generateLayers(ModelDescription& model) {
                     layer->addHostFunctionCallback(hdf->getCallbackObject());
                     constructedLayers.back().emplace_back(DependencyGraph::getNodeName(hdf));
                 } catch (const InvalidLayerMember& e) {
-                    layer = &model.newLayer();
+                    layer = &_model.newLayer();
                     layer->addHostFunctionCallback(hdf->getCallbackObject());
                     constructedLayers.emplace_back();
                     constructedLayers.back().emplace_back(DependencyGraph::getNodeName(hdf));
