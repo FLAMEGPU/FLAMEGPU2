@@ -13,31 +13,17 @@ jobs:
       # explicit include-based build matrix, of known valid options
       matrix:
         include:
-          # 20.04 supports CUDA 11.0+, once a github hosted runner is available.
-          # 18.04 supports CUDA 10.1+ (gcc <=8), 11.0+ (gcc<=9), 11.1+ (gcc<=10)
-          - os: ubuntu-18.04
+          # 20.04 supports CUDA 11.0+ (gcc >= 5 && gcc <= 10). SM < 52 deprecated since 11.0
+          - os: ubuntu-20.04
             cuda: "11.2"
+            cuda_arch: "52"
             gcc: 10
-          # - os: ubuntu-18.04
-          #   cuda: "11.1"
-          #   gcc: 10
-          # - os: ubuntu-18.04
-          #   cuda: "11.0"
-          #   gcc: 9
-          # - os: ubuntu-18.04
-          #   cuda: "10.2"
-          #   gcc: 8
-          # - os: ubuntu-18.04
-          #   cuda: "10.1"
-          #   gcc: 8
-
-          # 16.04 supports CUDA 8+, but we only support 10.0+
-          - os: ubuntu-16.04
+          # 18.04 supports CUDA 10.0+ (gcc <=8), 11.0+ (gcc<=9), 11.1+ (gcc<=10)
+          - os: ubuntu-18.04
             cuda: "10.0"
-            gcc: 7          
-
+            cuda_arch: "35"
+            gcc: 7
     env:
-      cuda_arch: "35;75"
       build_dir: "build"
       config: "Release"
       build_tests: "ON"
@@ -86,7 +72,7 @@ jobs:
       run: sudo apt-get install python3-venv
 
     - name: Configure cmake
-      run: cmake . -B ${{ env.build_dir }} -DCMAKE_BUILD_TYPE=${{ env.config }} -DBUILD_TESTS=${{ env.build_tests }} -DWARNINGS_AS_ERRORS=${{ env.Werror }} -DCUDA_ARCH="${{ env.cuda_arch }}" -Werror=dev -DBUILD_SWIG_PYTHON=ON -DBUILD_SWIG_PYTHON_VIRTUALENV=ON 
+      run: cmake . -B ${{ env.build_dir }} -DCMAKE_BUILD_TYPE=${{ env.config }} -DBUILD_TESTS=${{ env.build_tests }} -DWARNINGS_AS_ERRORS=${{ env.Werror }} -DCUDA_ARCH="${{ matrix.cuda_arch }}" -Werror=dev -DBUILD_SWIG_PYTHON=ON -DBUILD_SWIG_PYTHON_VIRTUALENV=ON 
 
     - name: Build flamegpu2
       run: cmake --build . --target flamegpu2 --verbose -j `nproc`
@@ -106,7 +92,7 @@ jobs:
       working-directory: ${{ env.build_dir }}
 
     - name: Configure Individual example
-      run: cmake . -B ${{ env.build_dir }} -DCMAKE_BUILD_TYPE=${{ env.config }} -DWARNINGS_AS_ERRORS=${{ env.Werror }} -DCUDA_ARCH="${{ env.cuda_arch }}" -Werror=dev
+      run: cmake . -B ${{ env.build_dir }} -DCMAKE_BUILD_TYPE=${{ env.config }} -DWARNINGS_AS_ERRORS=${{ env.Werror }} -DCUDA_ARCH="${{ matrix.cuda_arch }}" -Werror=dev
       working-directory: examples/${{ env.individual_example }}
     
     - name: Build Individual example
