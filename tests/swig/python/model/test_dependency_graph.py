@@ -83,7 +83,7 @@ class DependencyGraphTest(TestCase):
         _m = pyflamegpu.ModelDescription(MODEL_NAME)
         a = _m.newAgent(AGENT_NAME)
         f = a.newRTCFunction(FUNCTION_NAME1, self.agent_fn1)
-        graph = pyflamegpu.DependencyGraph()
+        graph = _m.getDependencyGraph()
         graph.addRoot(f)
         assert graph.validateDependencyGraph() == True
     
@@ -95,7 +95,7 @@ class DependencyGraphTest(TestCase):
         f3 = a.newRTCFunction(FUNCTION_NAME3, self.agent_fn3)
         f2.dependsOn(f)
         f3.dependsOn(f2)
-        graph = pyflamegpu.DependencyGraph()
+        graph = _m.getDependencyGraph()
         graph.addRoot(f)
         assert graph.validateDependencyGraph() == True
     
@@ -107,7 +107,7 @@ class DependencyGraphTest(TestCase):
         f3 = a.newRTCFunction(FUNCTION_NAME3, self.agent_fn3)
         f2.dependsOn(f)
         f3.dependsOn(f)
-        graph = pyflamegpu.DependencyGraph()
+        graph = _m.getDependencyGraph()
         graph.addRoot(f)
         assert graph.validateDependencyGraph() == True
     
@@ -120,7 +120,7 @@ class DependencyGraphTest(TestCase):
         f2.dependsOn(f)
         f2.dependsOn(f3)
         f3.dependsOn(f2)
-        graph = pyflamegpu.DependencyGraph()
+        graph = _m.getDependencyGraph()
         graph.addRoot(f)
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
             graph.validateDependencyGraph()
@@ -134,7 +134,7 @@ class DependencyGraphTest(TestCase):
         f3 = a.newRTCFunction(FUNCTION_NAME3, self.agent_fn3)
         f2.dependsOn(f)
         f3.dependsOn(f2)
-        graph = pyflamegpu.DependencyGraph()
+        graph = _m.getDependencyGraph()
         graph.addRoot(f2)
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
             graph.validateDependencyGraph()
@@ -148,7 +148,7 @@ class DependencyGraphTest(TestCase):
         f3 = a.newRTCFunction(FUNCTION_NAME3, self.agent_fn3)
         f2.dependsOn(f)
         f3.dependsOn(f2)
-        graph = pyflamegpu.DependencyGraph()
+        graph = _m.getDependencyGraph()
         graph.addRoot(f)
         graph.generateLayers(_m)
         assert graph.validateDependencyGraph() == True
@@ -161,7 +161,7 @@ class DependencyGraphTest(TestCase):
         f3 = a.newRTCFunction(FUNCTION_NAME3, self.agent_fn3)
         f2.dependsOn(f)
         f3.dependsOn(f)
-        graph = pyflamegpu.DependencyGraph()
+        graph = _m.getDependencyGraph()
         graph.addRoot(f)
         graph.generateLayers(_m)
     
@@ -171,7 +171,7 @@ class DependencyGraphTest(TestCase):
         f = a.newRTCFunction(FUNCTION_NAME1, self.agent_fn1)
         hf = pyflamegpu.HostFunctionDescription(HOST_FN_NAME1, self.host_fn1)
         hf.dependsOn(f)
-        graph = pyflamegpu.DependencyGraph()
+        graph = _m.getDependencyGraph()
         graph.addRoot(f)
         graph.generateLayers(_m)
         assert graph.validateDependencyGraph() == True
@@ -182,7 +182,7 @@ class DependencyGraphTest(TestCase):
         f = a.newRTCFunction(FUNCTION_NAME1, self.agent_fn1)
         hf = pyflamegpu.HostFunctionDescription(HOST_FN_NAME1, self.host_fn1)
         f.dependsOn(hf)
-        graph = pyflamegpu.DependencyGraph()
+        graph = _m.getDependencyGraph()
         graph.addRoot(hf)
         graph.generateLayers(_m)
         assert graph.validateDependencyGraph() == True
@@ -198,7 +198,7 @@ class DependencyGraphTest(TestCase):
         _smd = _m.newSubModel("sub", _sm)
     
         _smd.dependsOn(f)
-        graph = pyflamegpu.DependencyGraph()
+        graph = _m.getDependencyGraph()
         graph.addRoot(f)
         graph.generateLayers(_m)
         assert graph.validateDependencyGraph() == True
@@ -214,7 +214,7 @@ class DependencyGraphTest(TestCase):
         _smd = _m.newSubModel("sub", _sm)
     
         f.dependsOn(_smd)
-        graph = pyflamegpu.DependencyGraph()
+        graph = _m.getDependencyGraph()
         graph.addRoot(_smd)
         graph.generateLayers(_m)
         assert graph.validateDependencyGraph() == True
@@ -227,7 +227,7 @@ class DependencyGraphTest(TestCase):
         f3 = a.newRTCFunction(FUNCTION_NAME3, self.agent_fn3)
         f2.dependsOn(f)
         f3.dependsOn(f2)
-        graph = pyflamegpu.DependencyGraph()
+        graph = _m.getDependencyGraph()
         graph.addRoot(f)
         graph.generateLayers(_m)
         assert graph.validateDependencyGraph() == True
@@ -241,7 +241,7 @@ class DependencyGraphTest(TestCase):
         f3 = a.newRTCFunction(FUNCTION_NAME3, self.agent_fn3)
         f2.dependsOn(f)
         f3.dependsOn(f)
-        graph = pyflamegpu.DependencyGraph()
+        graph = _m.getDependencyGraph()
         graph.addRoot(f)
         assert graph.validateDependencyGraph() == True
         graph.generateDOTDiagram("twodeps.gv")
@@ -257,7 +257,7 @@ class DependencyGraphTest(TestCase):
         f3.dependsOn(f)
         f4.dependsOn(f2)
         f4.dependsOn(f3)
-        graph = pyflamegpu.DependencyGraph()
+        graph = _m.getDependencyGraph()
         graph.addRoot(f)
         assert graph.validateDependencyGraph() == True
         graph.generateDOTDiagram("diamond.gv")
@@ -276,7 +276,7 @@ class DependencyGraphTest(TestCase):
         f4.dependsOn(f2)
         f4.dependsOn(hf)
         hf2.dependsOn(f3)
-        graph = pyflamegpu.DependencyGraph()
+        graph = _m.getDependencyGraph()
         graph.addRoot(f)
         graph.addRoot(hf)
         assert graph.validateDependencyGraph() == True
@@ -301,7 +301,7 @@ class DependencyGraphTest(TestCase):
         f4.dependsOn(hf)
         hf2.dependsOn(f3)
         _smd.dependsOn(hf2)
-        graph = pyflamegpu.DependencyGraph()
+        graph = _m.getDependencyGraph()
         graph.addRoot(f)
         graph.addRoot(hf)
         assert graph.validateDependencyGraph() == True
