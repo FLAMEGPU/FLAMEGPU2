@@ -155,6 +155,7 @@ class FGPURuntimeException : public std::exception {
      FGPURuntimeException(std::string msg, std::string type) {
          err_message = msg;
          type_str = type;
+         str_str = std::string("(") + type + ") " + msg;
      }
      const char* what() const noexcept {
          return err_message.c_str();
@@ -162,9 +163,13 @@ class FGPURuntimeException : public std::exception {
      const char* type() const {
          return type_str.c_str();
      }
+     const char* __str__() const {
+         return str_str.c_str();
+     }
  protected:
     std::string err_message;
     std::string type_str;
+    std::string str_str;
 };
 %}
 // Exception handling
