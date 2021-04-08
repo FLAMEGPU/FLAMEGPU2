@@ -3,7 +3,10 @@
 DependencyGraph::DependencyGraph() {
 }
 
-DependencyGraph::DependencyGraph(const DependencyGraph& other) {
+DependencyGraph::DependencyGraph(const ModelData* _model) : model(_model){
+}
+
+DependencyGraph::DependencyGraph(const DependencyGraph& other) : model(other.model) {
     for (const auto& root : other.roots) {
         roots.push_back(root);
     }
@@ -74,6 +77,7 @@ bool DependencyGraph::validateDependencyGraph() {
 void DependencyGraph::generateLayers(ModelDescription& model) {
     // Check dependency graph is valid before we attempt to build layers
     validateDependencyGraph();
+    checkForUnattachedFunctions();
 
     // Lambda to walk the graph and set minimum layer depths of nodes
     std::function<void(DependencyNode*, int)> setMinLayerDepths;
@@ -231,6 +235,33 @@ bool DependencyGraph::doesFunctionExistInStack(DependencyNode* function) {
         }
     }
     return false;
+}
+
+void DependencyGraph::checkForUnattachedFunctions() {
+    // Build set of model's agent functions
+    std::set<AgentFunctionData*> modelFunctions;
+    for (const auto& agent : model->agents) {
+        for (const auto& func : agent.second->functions) {
+            modelFunctions.insert(func.second.get());
+        }
+    }
+
+    // Build set of functions present in the dependency graph
+    std::set<AgentFunctionData*> graphFunctions;
+    std::function<void(DependencyNode*)> captureFunctions;
+    captureFunctions = [&captureFunctions, &graphFunctions] (DependencyNode* node) {
+        if (AgentFunctionDescription* afd = dynamic_cast<AgentFunctionDescription*>(node)) {
+            graphFunctions.insert(afd->function);
+        }
+        for (const auto& child : node->getDependents()) {
+            captureFunctions(child);
+        }
+    };
+
+    // Compare sets
+    if (modelFunctions != graphFunctions) {
+        std::cout << "WARNING: Not all agent functions are used in the dependency graph - have you forgotten to add one?";
+    }
 }
 
 void DependencyGraph::printGraph() const {

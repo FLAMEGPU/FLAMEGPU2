@@ -22,7 +22,7 @@ const char *ModelData::DEFAULT_STATE = "default";
 ModelData::ModelData(const std::string &model_name)
     : environment(new EnvironmentDescription())
     , name(model_name)
-    , dependencyGraph(new DependencyGraph()) { }
+    , dependencyGraph(new DependencyGraph(this)) { }
 
 ModelData::~ModelData() { }
 

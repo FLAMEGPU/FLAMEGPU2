@@ -32,6 +32,10 @@ class AgentDescription {
      */
     friend struct AgentFunctionData;
     /**
+     * Accesses to check for unattached agent functions
+     */
+    friend class DependencyGraph;
+    /**
      * AgentVector takes a clone of AgentData
      */
     friend AgentVector::AgentVector(const AgentDescription& agent_desc, AgentVector::size_type);

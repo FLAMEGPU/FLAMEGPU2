@@ -3,6 +3,7 @@
 
 #include "flamegpu/model/DependencyNode.h"
 
+#include "flamegpu/model/AgentFunctionDescription.h"
 
 /**
  * Constructors
@@ -40,6 +41,13 @@ int DependencyNode::getMinimumLayerDepth() {
 }
 
 void DependencyNode::dependsOnImpl(DependencyNode& dependency) {
+    if (auto thisAsAFD = dynamic_cast<AgentFunctionDescription*>(this)) {
+        if (auto depAsAFD = dynamic_cast<AgentFunctionDescription*>(&dependency)) {
+            if (thisAsAFD->model.expired() || !(thisAsAFD->model.lock() == depAsAFD->model.lock())) {
+                THROW InvalidDependencyGraph("Attempting to add two agent functions from different models to dependency graph!");
+            }
+        }
+    }
     dependency.addDependent(*this);
     dependencies.push_back(&dependency);
 }

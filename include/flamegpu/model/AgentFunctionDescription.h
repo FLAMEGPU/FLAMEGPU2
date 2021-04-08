@@ -31,6 +31,7 @@ struct AgentFunctionData;
  * @see AgentDescription::newFunction(const std::string&, AgentFunction) For creating instances of this class
  */
 class AgentFunctionDescription : public DependencyNode {
+    friend class DependencyNode;
     /**
      * Data store class for this description, constructs instances of this class
      */
@@ -39,6 +40,10 @@ class AgentFunctionDescription : public DependencyNode {
      * Accesses internals to validate function description before adding to layer
      */
     friend void LayerDescription::addAgentFunction(const AgentFunctionDescription &);
+    /**
+     * Accesses internals to validate function belongs to the same model as the DependencyGraph
+     */
+    friend class DependencyGraph;
     /**
      * Constructors
      */

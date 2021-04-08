@@ -41,6 +41,7 @@ FLAMEGPU_EXIT_CONDITION(ExitAlways) {
 }
 
 const char *MODEL_NAME = "Model";
+const char *MODEL_NAME2 = "Model2";
 const char *WRONG_MODEL_NAME = "Model2";
 const char *SUBMODEL_NAME = "SubModel1";
 const char *SUBAGENT_NAME = "SubAgent1";
@@ -399,5 +400,34 @@ HostFn2
 
 )###";
     EXPECT_TRUE (expectedLayers == graph.getConstructedLayersString());
+}
+TEST(DependencyGraphTest, InterModelDependency) {
+    ModelDescription _m(MODEL_NAME);
+    AgentDescription &a = _m.newAgent(AGENT_NAME);
+    AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
+
+    ModelDescription _m2(MODEL_NAME2);
+    AgentDescription &a2 = _m2.newAgent(AGENT_NAME2);
+    AgentFunctionDescription &f2 = a2.newFunction(FUNCTION_NAME2, agent_fn2);
+
+    EXPECT_THROW(f2.dependsOn(f), InvalidDependencyGraph);
+}
+TEST(DependencyGraphTest, UnattachedFunctionWarning) {
+    ModelDescription _m(MODEL_NAME);
+    AgentDescription &a = _m.newAgent(AGENT_NAME);
+    AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    AgentFunctionDescription &f2 = a.newFunction(FUNCTION_NAME2, agent_fn2);
+    
+    DependencyGraph& graph = _m.getDependencyGraph();
+    graph.addRoot(f);
+    
+    // Intercept std::cout 
+    std::stringstream buffer;
+    std::streambuf* prev = std::cout.rdbuf();
+    std::cout.rdbuf(buffer.rdbuf());
+    _m.generateLayers();
+    // Reset cout
+    std::cout.rdbuf(prev);
+    EXPECT_TRUE(buffer.str() == "WARNING: Not all agent functions are used in the dependency graph - have you forgotten to add one?");
 }
 }  // namespace test_dependency_graph

@@ -20,6 +20,7 @@
 class DependencyGraph {
  public:
     DependencyGraph();
+    DependencyGraph(const ModelData* _model);
     DependencyGraph(const DependencyGraph& other);
 
     bool operator==(const DependencyGraph& rhs);
@@ -34,9 +35,14 @@ class DependencyGraph {
     std::vector<DependencyNode*> roots;
     std::vector<DependencyNode*> functionStack;
     bool validateSubTree(DependencyNode* node);
+    void checkForUnattachedFunctions();
     bool doesFunctionExistInStack(DependencyNode* function);
     static std::string getNodeName(DependencyNode* node);
     std::vector<std::vector<std::string>> constructedLayers;
+    /**
+     * Root of the model hierarchy, used for validating agent functions belong to correct model when added
+     */
+    const ModelData* model;
 };
 
 #endif  // INCLUDE_FLAMEGPU_MODEL_DEPENDENCYGRAPH_H_
