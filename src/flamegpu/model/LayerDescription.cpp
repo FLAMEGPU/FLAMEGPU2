@@ -142,7 +142,6 @@ void LayerDescription::addHostFunction(FLAMEGPU_HOST_FUNCTION_POINTER func_p) {
         THROW InvalidHostFunc("HostFunction has already been added to LayerDescription,"
             "in LayerDescription::addHostFunction().");
     }
-
 }
 void LayerDescription::addSubModel(const std::string &name) {
     if (!layer->host_functions.empty() || !layer->agent_functions.empty() || !layer->host_functions_callbacks.empty()) {

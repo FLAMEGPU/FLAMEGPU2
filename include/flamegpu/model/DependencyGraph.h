@@ -20,9 +20,8 @@
 class DependencyGraph {
  public:
     DependencyGraph();
-    DependencyGraph(const ModelData* _model);
-    DependencyGraph(const DependencyGraph& other);
-
+    explicit DependencyGraph(const ModelData* _model);
+    explicit DependencyGraph(const DependencyGraph& other);
     bool operator==(const DependencyGraph& rhs);
     void addRoot(DependencyNode& root);
     bool validateDependencyGraph();

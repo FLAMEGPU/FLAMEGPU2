@@ -3,7 +3,7 @@
 DependencyGraph::DependencyGraph() {
 }
 
-DependencyGraph::DependencyGraph(const ModelData* _model) : model(_model){
+DependencyGraph::DependencyGraph(const ModelData* _model) : model(_model) {
 }
 
 DependencyGraph::DependencyGraph(const DependencyGraph& other) : model(other.model) {
@@ -18,7 +18,7 @@ bool DependencyGraph::operator==(const DependencyGraph& rhs) {
     checkEqual = [&checkEqual] (DependencyNode* lhs, DependencyNode* rhs) {
         const auto& lhsDeps = lhs->getDependents();
         const auto& rhsDeps = rhs->getDependents();
-        
+
         // Different number of dependents -> not same
         if (lhsDeps.size() != rhsDeps.size()) {
             return false;
@@ -44,7 +44,7 @@ bool DependencyGraph::operator==(const DependencyGraph& rhs) {
         return false;
     } else {
         for (unsigned int i = 0; i < lhsRoots.size(); i++) {
-            if(!checkEqual(lhsRoots[i], rhsRoots[i])) {
+            if (!checkEqual(lhsRoots[i], rhsRoots[i])) {
                 return false;
             }
         }
