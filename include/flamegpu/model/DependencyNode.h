@@ -22,8 +22,6 @@ class DependencyNode {
        dependsOn(dependencyList...);
     }
 
-    
-
  protected:
     friend class DependencyGraph;
     /**
