@@ -53,7 +53,7 @@ endif()
 # set include directories for module build
 target_include_directories(${PYTHON_MODULE_NAME}
   PRIVATE
-  ../../include
+  ${FLAMEGPU_ROOT}/include
   ${Python3_INCLUDE_DIRS}
   )
   

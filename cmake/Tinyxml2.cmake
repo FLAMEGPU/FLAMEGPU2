@@ -51,7 +51,9 @@ if(NOT tinyxml2_POPULATED)
     
         # Specify the interface headers library, to be forwarded.
         # For our use  case, this is up a folder so we can use tinyxml2/tinyxml2.h as the include.
-        target_include_directories(tinyxml2 INTERFACE ${tinyxml2_SOURCE_DIR}/..)
+        # Find the resolved abs path to this. 
+        get_filename_component(tinyxml2_inc_dir ${tinyxml2_SOURCE_DIR}/../ REALPATH)
+        target_include_directories(tinyxml2 INTERFACE ${tinyxml2_inc_dir})
         
         # Add some compile time definitions
         target_compile_definitions(tinyxml2 INTERFACE $<$<CONFIG:Debug>:TINYXML2_DEBUG>)
