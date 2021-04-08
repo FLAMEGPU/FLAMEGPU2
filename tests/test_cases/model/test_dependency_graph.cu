@@ -357,7 +357,7 @@ Layer 6
 sub
 
 )###";
-    EXPECT_TRUE (expectedLayers == graph.getConstructedLayersString());
+    EXPECT_TRUE(expectedLayers == graph.getConstructedLayersString());
 }
 TEST(DependencyGraphTest, CorrectLayersConcurrent) {
     ModelDescription _m(MODEL_NAME);
@@ -399,7 +399,7 @@ Layer 3
 HostFn2
 
 )###";
-    EXPECT_TRUE (expectedLayers == graph.getConstructedLayersString());
+    EXPECT_EQ(expectedLayers, graph.getConstructedLayersString());
 }
 TEST(DependencyGraphTest, InterModelDependency) {
     ModelDescription _m(MODEL_NAME);
@@ -417,17 +417,17 @@ TEST(DependencyGraphTest, UnattachedFunctionWarning) {
     AgentDescription &a = _m.newAgent(AGENT_NAME);
     AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
     AgentFunctionDescription &f2 = a.newFunction(FUNCTION_NAME2, agent_fn2);
-    
+
     DependencyGraph& graph = _m.getDependencyGraph();
     graph.addRoot(f);
-    
-    // Intercept std::cout 
+
+    // Intercept std::cout
     std::stringstream buffer;
     std::streambuf* prev = std::cout.rdbuf();
     std::cout.rdbuf(buffer.rdbuf());
     _m.generateLayers();
     // Reset cout
     std::cout.rdbuf(prev);
-    EXPECT_TRUE(buffer.str() == "WARNING: Not all agent functions are used in the dependency graph - have you forgotten to add one?");
+    EXPECT_EQ(buffer.str(), "WARNING: Not all agent functions are used in the dependency graph - have you forgotten to add one?");
 }
 }  // namespace test_dependency_graph
