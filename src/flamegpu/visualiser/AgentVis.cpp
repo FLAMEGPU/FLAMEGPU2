@@ -240,11 +240,11 @@ void AgentVis::initBindings(std::unique_ptr<FLAMEGPU_Visualisation> &vis) {
         vis->addAgentState(agentData.name, state, vc, core_tex_buffers, vc.tex_buffers);
     }
 }
-bool AgentVis::requestBufferResizes(std::unique_ptr<FLAMEGPU_Visualisation> &vis) {
+bool AgentVis::requestBufferResizes(std::unique_ptr<FLAMEGPU_Visualisation> &vis, bool force) {
     unsigned int agents_requested = 0;
     for (auto &state : agentData.states) {
         auto &state_map = agent.state_map.at(state);
-        vis->requestBufferResizes(agentData.name, state, state_map->getSize());
+        vis->requestBufferResizes(agentData.name, state, state_map->getSize(), force);
         agents_requested += state_map->getSize();
     }
     return agents_requested;

@@ -94,18 +94,9 @@ bool ModelVis::isRunning() const {
 
 void ModelVis::updateBuffers(const unsigned int &sc) {
     if (visualiser) {
-        // Update step count
-        if (sc != UINT_MAX) {
-            // We lock mutex here, to prevent step count updating during pause
-            // The alternative would be pass sc to requestBufferResizes(), so that is used instead by Visualiser::requestBufferResizes()
-            // Then update step count could be moved back to the update buffers mutex lock
-            visualiser->lockMutex();
-            visualiser->setStepCount(sc);
-            visualiser->releaseMutex();
-        }
         bool has_agents = false;
         for (auto &a : agents) {
-            has_agents = a.second.requestBufferResizes(visualiser) || has_agents;
+            has_agents = a.second.requestBufferResizes(visualiser, sc == 0 || sc == UINT_MAX) || has_agents;
         }
         // Block the sim when we first get agents, until vis has resized buffers, incase vis is being slow to init
         if (has_agents && (sc == 0 || sc == UINT_MAX)) {
@@ -116,6 +107,10 @@ void ModelVis::updateBuffers(const unsigned int &sc) {
         }
         // wait for lock visualiser (its probably executing render loop in separate thread) This might not be 100% safe. RequestResize might need extra thread safety.
         visualiser->lockMutex();
+        // Update step count
+        if (sc != UINT_MAX) {
+            visualiser->setStepCount(sc);
+        }
         for (auto &a : agents) {
             a.second.updateBuffers(visualiser);
         }
