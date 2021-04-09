@@ -214,10 +214,11 @@ class AgentVis {
     /**
      * This requests that the visualisation resizes buffers
      * @param vis The affected visualisation
+     * @param force When true is passed, vis will delay closing the splash screen until this update has been processed
      * Used when agent population has grown
      * @return Returns true if a non-0 buffer was requested
      */
-    bool requestBufferResizes(std::unique_ptr<FLAMEGPU_Visualisation> &vis);
+    bool requestBufferResizes(std::unique_ptr<FLAMEGPU_Visualisation> &vis, bool force);
     /**
      * This passes the correct device pointers to the visualisation and forces it to update the data used for rendering
      * @param vis The affected visualisation
