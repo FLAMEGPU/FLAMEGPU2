@@ -47,6 +47,10 @@ class ViridisInterpolation : public ColorFunction {
      */
     std::string getAgentVariableName() const override;
     /**
+     * Returns std::type_index(typeid(float))
+     */
+    std::type_index getAgentVariableRequiredType() const override;
+    /**
      * Returns the raw colors used to generate the palette
      */
     static const std::array<const Color, 256>& rawColors();

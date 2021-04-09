@@ -34,6 +34,10 @@ template<typename T>
 std::string DiscreteColor<T>::getAgentVariableName() const {
     return variable_name;
 }
+template<typename T>
+std::type_index DiscreteColor<T>::getAgentVariableRequiredType() const {
+    return std::type_index(typeid(T));
+}
 
 template<typename T>
 bool DiscreteColor<T>::validate() const {
