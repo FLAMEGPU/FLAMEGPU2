@@ -269,10 +269,6 @@ void DependencyGraph::checkForUnattachedFunctions() {
     }
 }
 
-void DependencyGraph::printGraph() const {
-    printf("printGraph not yet implemented!\n");
-}
-
 std::string DependencyGraph::getNodeName(DependencyNode* node) {
     if (AgentFunctionDescription* afd = dynamic_cast<AgentFunctionDescription*>(node)) {
         return afd->getName();

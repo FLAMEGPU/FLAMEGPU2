@@ -26,7 +26,6 @@ class DependencyGraph {
     void addRoot(DependencyNode& root);
     bool validateDependencyGraph();
     void generateLayers(ModelDescription& model);
-    void printGraph() const;
     void generateDOTDiagram(std::string outputFileName);
     std::string getConstructedLayersString();
 
