@@ -21,6 +21,7 @@ class LayerDescription {
      * Data store class for this description, constructs instances of this class
      */
     friend struct LayerData;
+    friend class DependencyGraph;
     /**
     * Constructors
     */
@@ -140,6 +141,7 @@ class LayerDescription {
      * The host function will be called during this stage of model execution
      * @param func_callback a Host function callback object
      * @throw InvalidHostFunc If the function has already been added to the layer
+     * @note ONLY USED INTERNALLY AND BY PYTHON API - DO NOT CALL IN C++ BUILD
      */
     inline void addHostFunctionCallback(HostFunctionCallback *func_callback);
 #endif
@@ -194,6 +196,18 @@ class LayerDescription {
 #endif
 
  private:
+// Either appears public or private - dependency graph requires access, but shouldn't be available to user in non-python code
+#ifndef SWIG
+    /**
+     * Adds a host function to this layer, similar to addHostFunction
+     * however the runnable function is encapsulated within an object which permits cross language support in swig.
+     * The host function will be called during this stage of model execution
+     * @param func_callback a Host function callback object
+     * @throw InvalidHostFunc If the function has already been added to the layer
+     * @note ONLY USED INTERNALLY AND BY PYTHON API - DO NOT CALL IN C++ BUILD
+     */
+    inline void addHostFunctionCallback(HostFunctionCallback *func_callback);
+#endif
     /**
      * Root of the model hierarchy
      */
@@ -305,13 +319,15 @@ void LayerDescription::addAgentFunction(AgentFunction /*af*/) {
         "in LayerDescription::addAgentFunction().");
 }
 
-#ifdef SWIG
+// Not included in ifdef SWIG intentionally - needs to be available for DependencyGraph to call
 void LayerDescription::addHostFunctionCallback(HostFunctionCallback* func_callback) {
     if (!layer->host_functions_callbacks.insert(func_callback).second) {
             THROW InvalidHostFunc("Attempted to add same host function callback twice,"
                 "in LayerDescription::addHostFunctionCallback()");
         }
 }
+
+#ifdef SWIG
 ModelData::size_type LayerDescription::getHostFunctionCallbackCount() const {
     // Safe down-cast
     return static_cast<ModelData::size_type>(layer->host_functions_callbacks.size());

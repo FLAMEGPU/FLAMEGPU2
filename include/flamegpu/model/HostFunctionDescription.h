@@ -38,7 +38,7 @@ class HostFunctionDescription : public DependencyNode {
 
  public:
     HostFunctionDescription(std::string host_function_name, FLAMEGPU_HOST_FUNCTION_POINTER host_function);
-    HostFunctionDescription(std::string host_funcation_name, HostFunctionCallback *func_callback);
+    HostFunctionDescription(std::string host_function_name, HostFunctionCallback *func_callback);
 
     /**
      * Equality operator, checks whether HostFunctionDescription hierarchies are functionally the same

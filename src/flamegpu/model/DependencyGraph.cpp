@@ -185,29 +185,31 @@ void DependencyGraph::generateLayers(ModelDescription& _model) {
 
             // Host function
             if (HostFunctionDescription* hdf = dynamic_cast<HostFunctionDescription*>(node)) {
-#ifndef SWIG
-                try {
-                    layer->addHostFunction(hdf->getFunctionPtr());
-                    constructedLayers.back().emplace_back(DependencyGraph::getNodeName(hdf));
-                } catch (const InvalidLayerMember&) {
-                    layer = &_model.newLayer();
-                    layer->addHostFunction(hdf->getFunctionPtr());
-                    constructedLayers.emplace_back();
-                    constructedLayers.back().emplace_back(DependencyGraph::getNodeName(hdf));
-                    printf("New host function layer created - InvalidLayerMember exception\n");
+                // function ptr, callback object should be mutually exclusive. Callback only used for SWIG, ptr only for non-SWIG.
+                // If ptr is available, use that
+                if (hdf->getFunctionPtr() != nullptr) {
+                    try {
+                        layer->addHostFunction(hdf->getFunctionPtr());
+                        constructedLayers.back().emplace_back(DependencyGraph::getNodeName(hdf));
+                    } catch (const InvalidLayerMember&) {
+                        layer = &_model.newLayer();
+                        layer->addHostFunction(hdf->getFunctionPtr());
+                        constructedLayers.emplace_back();
+                        constructedLayers.back().emplace_back(DependencyGraph::getNodeName(hdf));
+                        printf("New host function layer created - InvalidLayerMember exception\n");
+                    }
+                } else {
+                    try {
+                        layer->addHostFunctionCallback(hdf->getCallbackObject());
+                        constructedLayers.back().emplace_back(DependencyGraph::getNodeName(hdf));
+                    } catch (const InvalidLayerMember& e) {
+                        layer = &_model.newLayer();
+                        layer->addHostFunctionCallback(hdf->getCallbackObject());
+                        constructedLayers.emplace_back();
+                        constructedLayers.back().emplace_back(DependencyGraph::getNodeName(hdf));
+                        printf("New host function layer created - InvalidLayerMember exception\n");
+                    }
                 }
-#endif
-#ifdef SWIG
-                try {
-                    layer->addHostFunctionCallback(hdf->getCallbackObject());
-                    constructedLayers.back().emplace_back(DependencyGraph::getNodeName(hdf));
-                } catch (const InvalidLayerMember& e) {
-                    layer = &_model.newLayer();
-                    layer->addHostFunctionCallback(hdf->getCallbackObject());
-                    constructedLayers.emplace_back();
-                    constructedLayers.back().emplace_back(DependencyGraph::getNodeName(hdf));
-                    printf("New host function layer created - InvalidLayerMember exception\n");
-#endif
             }
         }
     }
