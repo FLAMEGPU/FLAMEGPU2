@@ -12,11 +12,11 @@
 #include "flamegpu/visualiser/StaticModelVis.h"
 #include "flamegpu/visualiser/LineVis.h"
 #include "flamegpu/visualiser/color/AutoPalette.h"
-#include "FLAMEGPU_Visualisation.h"
 #include "config/ModelConfig.h"
 
 struct ModelData;
 class CUDASimulation;
+class FLAMEGPU_Visualisation;
 
 /**
  * This provides an interface for managing the render options for a specific CUDASimulation
