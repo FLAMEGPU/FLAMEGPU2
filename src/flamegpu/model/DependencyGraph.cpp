@@ -75,6 +75,11 @@ bool DependencyGraph::validateDependencyGraph() {
 }
 
 void DependencyGraph::generateLayers(ModelDescription& _model) {
+    // Check model doesn't already have layers attached
+    if (_model.getLayersCount() > 0) {
+        THROW InvalidDependencyGraph("DependencyGraph cannot generate layers on a model which already has layers attached!");
+    }
+
     // Check dependency graph is valid before we attempt to build layers
     validateDependencyGraph();
     checkForUnattachedFunctions();

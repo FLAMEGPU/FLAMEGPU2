@@ -64,6 +64,7 @@ const char *STATE_NAME = "State1";
 const char *NEW_STATE_NAME = "State2";
 const char *WRONG_STATE_NAME = "State3";
 const char *OTHER_STATE_NAME = "State4";
+const char *LAYER_NAME = "Layer1";
 
 TEST(DependencyGraphTest, ValidateEmptyGraph) {
     DependencyGraph graph;
@@ -429,5 +430,21 @@ TEST(DependencyGraphTest, UnattachedFunctionWarning) {
     // Reset cout
     std::cout.rdbuf(prev);
     EXPECT_EQ(buffer.str(), "WARNING: Not all agent functions are used in the dependency graph - have you forgotten to add one?");
+}
+TEST(DependencyGraphTest, ModelAlreadyHasLayers) {
+    ModelDescription _m(MODEL_NAME);
+    AgentDescription &a = _m.newAgent(AGENT_NAME);
+    AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    AgentFunctionDescription &f2 = a.newFunction(FUNCTION_NAME2, agent_fn2);
+
+    // Create manual layer
+    LayerDescription &l = _m.newLayer(LAYER_NAME);
+    l.addAgentFunction(f2);
+
+    // Create DG
+    DependencyGraph& graph = _m.getDependencyGraph();
+    graph.addRoot(f);
+
+    EXPECT_THROW(_m.generateLayers(), InvalidDependencyGraph);
 }
 }  // namespace test_dependency_graph
