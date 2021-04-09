@@ -22,6 +22,9 @@
 #include "flamegpu/gpu/CUDAMessage.h"
 #include "flamegpu/sim/LoggingConfig.h"
 #include "flamegpu/sim/LogFrame.h"
+#ifdef VISUALISATION
+#include "FLAMEGPU_Visualisation.h"
+#endif
 
 std::map<int, std::atomic<int>> CUDASimulation::active_device_instances;
 std::map<int, std::shared_timed_mutex> CUDASimulation::active_device_mutex;
