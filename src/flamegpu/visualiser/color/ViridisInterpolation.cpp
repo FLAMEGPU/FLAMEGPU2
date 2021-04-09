@@ -62,6 +62,9 @@ std::string ViridisInterpolation::getSamplerName() const {
 std::string ViridisInterpolation::getAgentVariableName() const {
     return variable_name;
 }
+std::type_index ViridisInterpolation::getAgentVariableRequiredType() const {
+    return std::type_index(typeid(float));
+}
 const std::array<const Color, 256> &ViridisInterpolation::rawColors() {
     static const std::array<const Color, 256> raw_colors = {
         Color{ 0.267004, 0.004874, 0.329415 },

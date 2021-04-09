@@ -61,6 +61,10 @@ class HSVInterpolation : public ColorFunction {
      * Returns variable_name
      */
     std::string getAgentVariableName() const override;
+    /**
+     * Returns std::type_index(typeid(float))
+     */
+    std::type_index getAgentVariableRequiredType() const override;
 
  private:
     /**

@@ -124,3 +124,6 @@ std::string HSVInterpolation::getSamplerName() const {
 std::string HSVInterpolation::getAgentVariableName() const {
     return variable_name;
 }
+std::type_index HSVInterpolation::getAgentVariableRequiredType() const {
+    return std::type_index(typeid(float));
+}

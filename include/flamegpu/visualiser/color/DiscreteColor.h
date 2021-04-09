@@ -71,6 +71,10 @@ class DiscreteColor : public ColorFunction, public std::map<T, Color> {
      * Returns variable_name
      */
     std::string getAgentVariableName() const override;
+    /**
+     * Returns std::type_index(typeid(T))
+     */
+    std::type_index getAgentVariableRequiredType() const override;
 
     /**
      * Checks whether the current components can be used as a valid RGBA colour

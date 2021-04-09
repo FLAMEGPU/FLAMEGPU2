@@ -2,6 +2,7 @@
 #define INCLUDE_FLAMEGPU_VISUALISER_COLOR_COLORFUNCTION_H_
 
 #include <string>
+#include <typeindex>
 
 /**
  * Interface for generating shader code for a function that generates a color during model execution
@@ -27,6 +28,12 @@ class ColorFunction {
      * Otherwise empty string
      */
     virtual std::string getAgentVariableName() const { return ""; }
+    /**
+     * If the shader source contains a samplerBuffer definition
+     * This should be the type of the agent variable so that the buffer can be bound to it
+     * Otherwise void typeid is returned.
+     */
+    virtual std::type_index getAgentVariableRequiredType() const { return std::type_index(typeid(void)); }
 };
 
 #endif  // INCLUDE_FLAMEGPU_VISUALISER_COLOR_COLORFUNCTION_H_
