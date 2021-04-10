@@ -22,9 +22,41 @@
 #include "flamegpu/gpu/CUDAMessage.h"
 #include "flamegpu/sim/LoggingConfig.h"
 #include "flamegpu/sim/LogFrame.h"
+#include "flamegpu/gpu/CUDAScatter.h"
+#include "flamegpu/runtime/utility/RandomManager.cuh"
 #ifdef VISUALISATION
+#include "flamegpu/visualiser/ModelVis.h"
+#include "flamegpu/visualiser/AgentStateVis.h"
+#include "flamegpu/visualiser/AgentVis.h"
 #include "FLAMEGPU_Visualisation.h"
 #endif
+
+struct CUDASimulation::Singletons {
+    /**
+     * Curve instance used for variable mapping
+     * @todo Is this necessary? CUDAAgent/CUDAMessage have their own copy
+     */
+     Curve& curve;
+     /**
+      * Resizes device random array during step()
+      */
+     RandomManager rng;
+     /**
+      * Held here for tracking when to release cuda memory
+      */
+     CUDAScatter scatter;
+     /**
+      * Held here for tracking when to release cuda memory
+      */
+     EnvironmentManager& environment;
+    #if !defined(SEATBELTS) || SEATBELTS
+     /**
+      * Provides buffers for device error checking
+      */
+     DeviceExceptionManager exception;
+    #endif
+     Singletons(Curve& curve, EnvironmentManager& environment) : curve(curve), environment(environment) { }
+};
 
 std::map<int, std::atomic<int>> CUDASimulation::active_device_instances;
 std::map<int, std::shared_timed_mutex> CUDASimulation::active_device_mutex;

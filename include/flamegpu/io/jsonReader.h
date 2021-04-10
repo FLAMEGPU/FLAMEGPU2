@@ -9,6 +9,7 @@
 #include "flamegpu/io/statereader.h"
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/util/StringPair.h"
+#include "flamegpu/model/EnvironmentDescription.h"
 
 // Derived classes
 class jsonReader : public StateReader {

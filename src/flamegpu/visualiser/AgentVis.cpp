@@ -4,6 +4,8 @@
 #include "flamegpu/model/AgentData.h"
 #include "flamegpu/visualiser/color/ColorFunction.h"
 #include "flamegpu/visualiser/color/StaticColor.h"
+#include "flamegpu/visualiser/color/AutoPalette.h"
+#include "flamegpu/visualiser/AgentStateVis.h"
 #include "FLAMEGPU_Visualisation.h"
 
 AgentVis::AgentVis(CUDAAgent &_agent, const std::shared_ptr<AutoPalette>& autopalette)

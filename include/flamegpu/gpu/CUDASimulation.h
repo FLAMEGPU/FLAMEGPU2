@@ -6,15 +6,11 @@
 #include <string>
 #include <unordered_map>
 #include <map>
+#include <shared_mutex>
 
 #include "flamegpu/exception/FGPUDeviceException.h"
 #include "flamegpu/sim/Simulation.h"
-
-#include "flamegpu/gpu/CUDAScatter.h"
-#include "flamegpu/gpu/CUDAEnsemble.h"
-#include "flamegpu/runtime/utility/RandomManager.cuh"
 #include "flamegpu/runtime/flamegpu_host_new_agent_api.h"
-#include "flamegpu/visualiser/ModelVis.h"
 
 #ifdef _MSC_VER
 #pragma warning(push, 2)
@@ -29,6 +25,7 @@ class CUDAAgent;
 class CUDAMessage;
 class LoggingConfig;
 class StepLoggingConfig;
+class ModelVis;
 
 struct RunLog;
 
@@ -412,37 +409,14 @@ class CUDASimulation : public Simulation {
      */
     void stepStepFunctions();
     bool stepExitConditions();
-
-
+    /**
+     * Container for all the singletons used by CUDASimulation
+     */
+    struct Singletons;
     /**
      * Struct containing references to the various singletons which may include CUDA code, and therefore can only be initialsed after the deferred arg parsing is completed.
      */
-    struct Singletons {
-      /**
-       * Curve instance used for variable mapping
-       * @todo Is this necessary? CUDAAgent/CUDAMessage have their own copy
-       */
-      Curve &curve;
-      /**
-       * Resizes device random array during step()
-       */
-      RandomManager rng;
-      /**
-       * Held here for tracking when to release cuda memory
-       */
-      CUDAScatter scatter;
-      /**
-       * Held here for tracking when to release cuda memory
-       */
-      EnvironmentManager &environment;
-#if !defined(SEATBELTS) || SEATBELTS
-      /**
-       * Provides buffers for device error checking
-       */
-      DeviceExceptionManager exception;
-#endif
-      Singletons(Curve &curve, EnvironmentManager &environment) : curve(curve), environment(environment) { }
-    } * singletons;
+    Singletons* singletons;
     /**
      * Common method for adding this Model's data to env manager
      */

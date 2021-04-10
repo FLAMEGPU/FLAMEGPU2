@@ -6,6 +6,8 @@
 #include <string>
 #include <cassert>
 
+#include "flamegpu/runtime/utility/EnvironmentManager.cuh"
+
 #ifndef __CUDACC_RTC__
 namespace flamegpu_internal {
     /**

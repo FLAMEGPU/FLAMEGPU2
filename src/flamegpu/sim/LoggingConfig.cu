@@ -4,6 +4,7 @@
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/model/ModelData.h"
 #include "flamegpu/model/AgentData.h"
+#include "flamegpu/model/EnvironmentDescription.h"
 
 LoggingConfig::LoggingConfig(const ModelDescription &_model)
     :model(_model.model->clone()) { }
