@@ -12,6 +12,7 @@
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/util/nvtx.h"
 #include "flamegpu/util/filesystem.h"
+#include "flamegpu/gpu/CUDASimulation.h"
 
 
 Simulation::Simulation(const std::shared_ptr<const ModelData> &_model)

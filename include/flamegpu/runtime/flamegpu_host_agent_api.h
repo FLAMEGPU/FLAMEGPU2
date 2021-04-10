@@ -28,6 +28,7 @@
 #include "flamegpu/runtime/flamegpu_host_api.h"
 #include "flamegpu/gpu/CUDASimulation.h"
 #include "flamegpu/gpu/CUDAAgent.h"
+#include "flamegpu/gpu/CUDAScatter.h"
 
 #define FLAMEGPU_CUSTOM_REDUCTION(funcName, a, b)\
 struct funcName ## _impl {\
@@ -444,7 +445,7 @@ OutT HostAgentInstance::transformReduce(const std::string &variable, transformOp
 template<typename VarT>
 void HostAgentInstance::sort(const std::string &variable, Order order, int beginBit, int endBit) {
     const unsigned int streamId = 0;
-    auto &scatter = api.agentModel.singletons->scatter;
+    auto &scatter = api.agentModel.getScatter();
     auto &scan = scatter.Scan();
     // Check variable is valid
     const auto &agentDesc = agent.getAgentDescription();
@@ -498,7 +499,7 @@ void HostAgentInstance::sort(const std::string &variable, Order order, int begin
 template<typename Var1T, typename Var2T>
 void HostAgentInstance::sort(const std::string &variable1, Order order1, const std::string &variable2, Order order2) {
     const unsigned int streamId = 0;
-    auto &scatter = api.agentModel.singletons->scatter;
+    auto &scatter = api.agentModel.getScatter();
     auto &scan = scatter.Scan();
     const auto &agentDesc = agent.getAgentDescription();
     {  // Check variable 1 is valid

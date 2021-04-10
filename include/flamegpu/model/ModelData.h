@@ -8,7 +8,6 @@
 #include <set>
 #include <string>
 
-#include "flamegpu/model/EnvironmentDescription.h"
 #include "flamegpu/runtime/flamegpu_host_api_macros.h"
 #include "flamegpu/runtime/messaging/BruteForce.h"
 

@@ -14,6 +14,7 @@
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/gpu/CUDASimulation.h"
 #include "flamegpu/pop/AgentVector.h"
+#include "flamegpu/runtime/utility/EnvironmentManager.cuh"
 
 #ifndef XMLCheckResult
 #define XMLCheckResult(a_eResult) if (a_eResult != tinyxml2::XML_SUCCESS) { FGPUException::setLocation(__FILE__, __LINE__);\

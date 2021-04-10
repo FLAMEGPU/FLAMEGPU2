@@ -8,12 +8,14 @@
 #include <unordered_map>
 
 #include "flamegpu/sim/AgentInterface.h"
+#include "flamegpu/util/Any.h"
 
 class AgentVector;
 class FLAMEGPU_HOST_API;
 class ModelDescription;
 struct ModelData;
 struct RunLog;
+class CUDASimulation;
 
 
 namespace std {

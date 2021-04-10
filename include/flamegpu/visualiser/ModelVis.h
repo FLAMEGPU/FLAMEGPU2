@@ -8,7 +8,6 @@
 #include <memory>
 #include <climits>
 
-#include "flamegpu/visualiser/AgentVis.h"
 #include "flamegpu/visualiser/StaticModelVis.h"
 #include "flamegpu/visualiser/LineVis.h"
 #include "flamegpu/visualiser/color/AutoPalette.h"
@@ -17,6 +16,7 @@
 struct ModelData;
 class CUDASimulation;
 class FLAMEGPU_Visualisation;
+class AgentVis;
 
 /**
  * This provides an interface for managing the render options for a specific CUDASimulation

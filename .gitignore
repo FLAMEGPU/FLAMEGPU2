@@ -3,6 +3,9 @@
 *.json
 *.bin
 
+# Visualisation screenshots
+*.png
+
 # dynamically generated version file
 include/flamegpu/version.h
 

@@ -31,6 +31,7 @@ using std::experimental::filesystem::v1::path;
 #include "flamegpu/gpu/CUDAScatter.h"
 #include "flamegpu/util/compute_capability.cuh"
 #include "flamegpu/util/nvtx.h"
+#include "flamegpu/runtime/utility/EnvironmentManager.cuh"
 
 CUDAAgent::CUDAAgent(const AgentData& description, const CUDASimulation &_cuda_model)
     : agent_description(description)  // This is a master agent, so it must create a new fat_agent

@@ -8,7 +8,6 @@
 #include <string>
 #include <map>
 
-#include "flamegpu/visualiser/AgentStateVis.h"
 #include "config/AgentStateConfig.h"
 #include "config/Stock.h"
 #include "config/TexBufferConfig.h"
@@ -20,6 +19,7 @@ class FLAMEGPU_Visualisation;
 class ColorFunction;
 struct Color;
 class AutoPalette;
+class AgentStateVis;
 
 /**
  * This provides an interface for managing the render options for all agents of a specific type

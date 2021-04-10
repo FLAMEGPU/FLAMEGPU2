@@ -17,6 +17,7 @@
 
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/util/StringPair.h"
+#include "flamegpu/model/EnvironmentDescription.h"
 
 class AgentVector;
 

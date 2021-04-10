@@ -12,6 +12,7 @@
 #include "flamegpu/pop/AgentVector.h"
 #include "flamegpu/gpu/CUDASimulation.h"
 #include "flamegpu/util/StringPair.h"
+#include "flamegpu/runtime/utility/EnvironmentManager.cuh"
 
 jsonWriter::jsonWriter(
     const std::string &model_name,

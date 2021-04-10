@@ -25,6 +25,7 @@
 #include "flamegpu/io/jsonLogger.h"
 #include "flamegpu/io/xmlLogger.h"
 #include "flamegpu/util/StringPair.h"
+#include "flamegpu/model/EnvironmentDescription.h"
 
 class AgentVector;
 
