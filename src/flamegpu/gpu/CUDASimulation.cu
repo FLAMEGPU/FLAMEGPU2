@@ -1685,3 +1685,9 @@ void CUDASimulation::synchronizeAllStreams() {
         gpuErrchk(cudaStreamSynchronize(stream));
     }
 }
+
+CUDAScatter &CUDASimulation::getScatter() {
+    if (!this->singletons)
+        initialiseSingletons();
+    return this->singletons->scatter;
+}

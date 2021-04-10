@@ -26,6 +26,7 @@ class CUDAMessage;
 class LoggingConfig;
 class StepLoggingConfig;
 class ModelVis;
+class CUDAScatter;
 
 struct RunLog;
 
@@ -417,6 +418,10 @@ class CUDASimulation : public Simulation {
      * Struct containing references to the various singletons which may include CUDA code, and therefore can only be initialsed after the deferred arg parsing is completed.
      */
     Singletons* singletons;
+    /**
+     * Return the CUDAScatter singleton
+     */
+    CUDAScatter &getScatter();
     /**
      * Common method for adding this Model's data to env manager
      */
