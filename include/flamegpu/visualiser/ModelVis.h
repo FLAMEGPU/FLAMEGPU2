@@ -31,7 +31,11 @@ class ModelVis {
      * > On resize, also update textures
      */
     explicit ModelVis(const CUDASimulation &model/*TBD*/);
-
+    /**
+     * Default destructor behaviour
+     * Defined explicitly, so that header include does not require including FLAMEGPU_Visualisation for std::unique_ptr destruction.
+     */
+    ~ModelVis();
     /**
      * Sets the palette to automatically give color to agent added to the model
      * This can be overriden at an agent level or disabled

@@ -11,7 +11,9 @@ ModelVis::ModelVis(const CUDASimulation &_model)
     , autoPalette(std::make_shared<AutoPalette>(Stock::Palettes::DARK2))
     , model(_model)
     , modelData(_model.getModelDescription()) { }
-
+ModelVis::~ModelVis() {
+    // Default behaviour
+}
 void ModelVis::setAutoPalette(const Palette& palette) {
     autoPalette = std::make_shared<AutoPalette>(palette);
 }

@@ -9,7 +9,6 @@
 //#pragma SWIG nowarn=325,302,401
 //#pragma SWIG nowarn=302
 
-
 // string support
 %include <stl.i>
 %include <std_string.i>
@@ -585,6 +584,8 @@ TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(logNormal, HostRandom::logNormal)
         $self->setColor(cf);
    }
 }
+// Disable functions which return std::type_index
+%ignore getAgentVariableRequiredType;
 // Disable functions which use C++
 %ignore Palette::const_iterator;
 %ignore Palette::begin;
