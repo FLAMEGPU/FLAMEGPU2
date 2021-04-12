@@ -135,6 +135,12 @@ class LayerDescription {
      */
     void addSubModel(const SubModelDescription &submodel);
 #ifdef SWIG
+    // Public for SWIG
+    public:
+#else
+    // Otherwise shouldn't be accessible publicly
+    private:
+#endif
     /**
      * Adds a host function to this layer, similar to addHostFunction
      * however the runnable function is encapsulated within an object which permits cross language support in swig.
@@ -144,7 +150,8 @@ class LayerDescription {
      * @note ONLY USED INTERNALLY AND BY PYTHON API - DO NOT CALL IN C++ BUILD
      */
     inline void addHostFunctionCallback(HostFunctionCallback *func_callback);
-#endif
+
+ public:
     /**
      * @return The layer's name
      */
@@ -196,18 +203,6 @@ class LayerDescription {
 #endif
 
  private:
-// Either appears public or private - dependency graph requires access, but shouldn't be available to user in non-python code
-#ifndef SWIG
-    /**
-     * Adds a host function to this layer, similar to addHostFunction
-     * however the runnable function is encapsulated within an object which permits cross language support in swig.
-     * The host function will be called during this stage of model execution
-     * @param func_callback a Host function callback object
-     * @throw InvalidHostFunc If the function has already been added to the layer
-     * @note ONLY USED INTERNALLY AND BY PYTHON API - DO NOT CALL IN C++ BUILD
-     */
-    inline void addHostFunctionCallback(HostFunctionCallback *func_callback);
-#endif
     /**
      * Root of the model hierarchy
      */
@@ -319,7 +314,7 @@ void LayerDescription::addAgentFunction(AgentFunction /*af*/) {
         "in LayerDescription::addAgentFunction().");
 }
 
-// Not included in ifdef SWIG intentionally - needs to be available for DependencyGraph to call
+// Can't be moved to cpp file because of inline hint
 void LayerDescription::addHostFunctionCallback(HostFunctionCallback* func_callback) {
     if (!layer->host_functions_callbacks.insert(func_callback).second) {
             THROW InvalidHostFunc("Attempted to add same host function callback twice,"
