@@ -316,6 +316,14 @@ void LayerDescription::addAgentFunction(AgentFunction /*af*/) {
 
 // Can't be moved to cpp file because of inline hint
 void LayerDescription::addHostFunctionCallback(HostFunctionCallback* func_callback) {
+    if (layer->sub_model) {
+        THROW InvalidLayerMember("A layer containing a submodel may not also contain a host function, "
+        "in LayerDescription::addHostFunction()\n");
+    }
+    if (!layer->host_functions.empty() || !layer->agent_functions.empty() || !layer->host_functions_callbacks.empty()) {
+        THROW InvalidLayerMember("A layer containing agent functions or a host function may not also contain a host function, "
+        "in LayerDescription::addHostFunction()\n");
+    }
     if (!layer->host_functions_callbacks.insert(func_callback).second) {
             THROW InvalidHostFunc("Attempted to add same host function callback twice,"
                 "in LayerDescription::addHostFunctionCallback()");

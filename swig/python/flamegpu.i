@@ -294,6 +294,9 @@ namespace EnvironmentManager{
 %include "flamegpu/model/SubAgentDescription.h"
 %include "flamegpu/model/SubEnvironmentDescription.h"
 
+/* DependencyNode template instantiations */
+%template(dependsOn) DependencyNode::dependsOn<DependencyNode>;
+
 /* Include AgentVector/AgentView/AgentInstance */
 // Disable functions which use C++ iterators/type_index
 %ignore AgentVector::const_iterator;

@@ -2,6 +2,7 @@
 #include "flamegpu/runtime/flamegpu_api.h"
 
 #include "gtest/gtest.h"
+#include <cstdio>
 
 namespace test_dependency_graph {
 FLAMEGPU_AGENT_FUNCTION(agent_fn1, MsgBruteForce, MsgBruteForce) {
@@ -225,6 +226,23 @@ TEST(DependencyGraphTest, DOTDiagramSingleChain) {
     graph.addRoot(f);
     _m.generateLayers();
     graph.generateDOTDiagram("singlechain.gv");
+
+    // Check file contents
+    std::ifstream dot("singlechain.gv");
+    std::stringstream dotBuffer;
+    if (dot) {
+        dotBuffer << dot.rdbuf();
+    }
+    std::string expectedDot = R"###(digraph {
+    Function1[style = filled, color = red];
+    Function2[style = filled, color = red];
+    Function3[style = filled, color = red];
+    Function1 -> Function2;
+    Function2 -> Function3;
+})###";
+    EXPECT_EQ(expectedDot, dotBuffer.str());
+    // Test passed, remove file
+    std::remove("singlechain.gv");
 }
 
 TEST(DependencyGraphTest, DOTDiagramTwoDependencies) {
@@ -238,6 +256,23 @@ TEST(DependencyGraphTest, DOTDiagramTwoDependencies) {
     DependencyGraph& graph = _m.getDependencyGraph();
     graph.addRoot(f);
     graph.generateDOTDiagram("twodeps.gv");
+
+    // Check file contents
+    std::ifstream dot("twodeps.gv");
+    std::stringstream dotBuffer;
+    if (dot) {
+        dotBuffer << dot.rdbuf();
+    }
+    std::string expectedDot = R"###(digraph {
+    Function1[style = filled, color = red];
+    Function2[style = filled, color = red];
+    Function3[style = filled, color = red];
+    Function1 -> Function2;
+    Function1 -> Function3;
+})###";
+    EXPECT_EQ(expectedDot, dotBuffer.str());
+    // Test passed, remove file
+    std::remove("twodeps.gv");
 }
 
 TEST(DependencyGraphTest, DOTDiagramDiamond) {
@@ -254,6 +289,27 @@ TEST(DependencyGraphTest, DOTDiagramDiamond) {
     DependencyGraph& graph = _m.getDependencyGraph();
     graph.addRoot(f);
     graph.generateDOTDiagram("diamond.gv");
+
+    // Check file contents
+    std::ifstream dot("diamond.gv");
+    std::stringstream dotBuffer;
+    if (dot) {
+        dotBuffer << dot.rdbuf();
+    }
+    std::string expectedDot = R"###(digraph {
+    Function1[style = filled, color = red];
+    Function2[style = filled, color = red];
+    Function4[style = filled, color = red];
+    Function3[style = filled, color = red];
+    Function4[style = filled, color = red];
+    Function1 -> Function2;
+    Function2 -> Function4;
+    Function1 -> Function3;
+    Function3 -> Function4;
+})###";
+    EXPECT_EQ(expectedDot, dotBuffer.str());
+    // Test passed, remove file
+    std::remove("diamond.gv");
 }
 
 TEST(DependencyGraphTest, DOTDiagramHostFunctions) {
@@ -274,6 +330,30 @@ TEST(DependencyGraphTest, DOTDiagramHostFunctions) {
     graph.addRoot(f);
     graph.addRoot(hf);
     graph.generateDOTDiagram("host_functions.gv");
+
+    // Check file contents
+    std::ifstream dot("host_functions.gv");
+    std::stringstream dotBuffer;
+    if (dot) {
+        dotBuffer << dot.rdbuf();
+    }
+    std::string expectedDot = R"###(digraph {
+    Function1[style = filled, color = red];
+    Function2[style = filled, color = red];
+    Function4[style = filled, color = red];
+    HostFn1[style = filled, color = yellow];
+    Function3[style = filled, color = red];
+    HostFn2[style = filled, color = yellow];
+    Function4[style = filled, color = red];
+    Function1 -> Function2;
+    Function2 -> Function4;
+    HostFn1 -> Function3;
+    Function3 -> HostFn2;
+    HostFn1 -> Function4;
+})###";
+    EXPECT_EQ(expectedDot, dotBuffer.str());
+    // Test passed, remove file
+    std::remove("host_functions.gv");
 }
 
 TEST(DependencyGraphTest, DOTDiagramAllDependencies) {
@@ -299,6 +379,32 @@ TEST(DependencyGraphTest, DOTDiagramAllDependencies) {
     graph.addRoot(f);
     graph.addRoot(hf);
     graph.generateDOTDiagram("all_dependencies.gv");
+
+    // Check file contents
+    std::ifstream dot("all_dependencies.gv");
+    std::stringstream dotBuffer;
+    if (dot) {
+        dotBuffer << dot.rdbuf();
+    }
+    std::string expectedDot = R"###(digraph {
+    Function1[style = filled, color = red];
+    Function2[style = filled, color = red];
+    Function4[style = filled, color = red];
+    HostFn1[style = filled, color = yellow];
+    Function3[style = filled, color = red];
+    HostFn2[style = filled, color = yellow];
+    sub[style = filled, color = green];
+    Function4[style = filled, color = red];
+    Function1 -> Function2;
+    Function2 -> Function4;
+    HostFn1 -> Function3;
+    Function3 -> HostFn2;
+    HostFn2 -> sub;
+    HostFn1 -> Function4;
+})###";
+    EXPECT_EQ(expectedDot, dotBuffer.str());
+    // Test passed, remove file
+    std::remove("all_dependencies.gv");
 }
 TEST(DependencyGraphTest, CorrectLayersAllDependencies) {
     ModelDescription _m(MODEL_NAME);
