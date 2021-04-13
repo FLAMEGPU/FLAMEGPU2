@@ -1,8 +1,9 @@
+#include <cstdio>
+
 #include "flamegpu/flame_api.h"
 #include "flamegpu/runtime/flamegpu_api.h"
 
 #include "gtest/gtest.h"
-#include <cstdio>
 
 namespace test_dependency_graph {
 FLAMEGPU_AGENT_FUNCTION(agent_fn1, MsgBruteForce, MsgBruteForce) {

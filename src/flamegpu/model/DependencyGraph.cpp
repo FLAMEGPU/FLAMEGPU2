@@ -202,7 +202,7 @@ void DependencyGraph::generateLayers(ModelDescription& _model) {
                     try {
                         layer->addHostFunctionCallback(hdf->getCallbackObject());
                         constructedLayers.back().emplace_back(DependencyGraph::getNodeName(hdf));
-                    } catch (const InvalidLayerMember& e) {
+                    } catch (const InvalidLayerMember&) {
                         layer = &_model.newLayer();
                         layer->addHostFunctionCallback(hdf->getCallbackObject());
                         constructedLayers.emplace_back();
@@ -271,7 +271,7 @@ void DependencyGraph::checkForUnattachedFunctions() {
 
     // Compare sets
     if (modelFunctions != graphFunctions) {
-        std::cout << "WARNING: Not all agent functions are used in the dependency graph - have you forgotten to add one?" << std::flush;
+        std::cerr << "WARNING: Not all agent functions are used in the dependency graph - have you forgotten to add one?" << std::flush;
     }
 }
 

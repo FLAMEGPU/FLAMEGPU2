@@ -40,7 +40,8 @@ void LayerDescription::addAgentFunction(const std::string &agentName, const std:
             "in LayerDescription::addAgentFunction()\n");
     }
     if (!layer->host_functions.empty() || !layer->host_functions_callbacks.empty()) {
-        THROW InvalidLayerMember("A layer containing a host function may not also contain an agent function");
+        THROW InvalidLayerMember("A layer containing a host function may not also contain an agent function"
+            "in LayerDescription::addAgentFunction()\n");
     }
     // Locate the matching agent function in the model hierarchy
     auto mdl = model.lock();
@@ -226,4 +227,19 @@ FLAMEGPU_HOST_FUNCTION_POINTER LayerDescription::getHostFunction(unsigned int in
     THROW OutOfBoundsException("Index %d is out of bounds (only %d items exist) "
         "in LayerDescription.getHostFunction().",
         index, layer->host_functions.size());
+}
+
+void LayerDescription::addHostFunctionCallback(HostFunctionCallback* func_callback) {
+    if (layer->sub_model) {
+        THROW InvalidLayerMember("A layer containing a submodel may not also contain a host function, "
+        "in LayerDescription::addHostFunctionCallback()\n");
+    }
+    if (!layer->host_functions.empty() || !layer->agent_functions.empty() || !layer->host_functions_callbacks.empty()) {
+        THROW InvalidLayerMember("A layer containing agent functions or a host function may not also contain a host function, "
+        "in LayerDescription::addHostFunctionCallback()\n");
+    }
+    if (!layer->host_functions_callbacks.insert(func_callback).second) {
+            THROW InvalidHostFunc("Attempted to add same host function callback twice,"
+                "in LayerDescription::addHostFunctionCallback()");
+        }
 }
