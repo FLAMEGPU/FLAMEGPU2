@@ -1,4 +1,5 @@
 #include <string>
+#include <set>
 
 #include "flamegpu/flame_api.h"
 
@@ -1316,6 +1317,274 @@ TEST(DeviceAgentVectorTest, HostAgentBirthAutoSync_resize_down) {
     sim.getPopulationData(av);
     // Also confirm the agents weren't added twice
     ASSERT_EQ(av.size(), AGENT_COUNT - 4u);
+}
+FLAMEGPU_HOST_FUNCTION(AgentID_DeviceAgentVectorBirth) {
+    auto agt_a = FLAMEGPU->agent("agent", "a");
+    auto agt_b = FLAMEGPU->agent("agent", "b");
+    DeviceAgentVector vec_a = agt_a.getPopulationData();
+    DeviceAgentVector vec_b = agt_b.getPopulationData();
+    const uint32_t birth_ct_a = vec_a.size();
+    const uint32_t birth_ct_b = vec_b.size();
+    vec_a.resize(birth_ct_a * 2);
+    vec_b.resize(birth_ct_b * 2);
+    for (uint32_t i = birth_ct_a; i < 2 * birth_ct_a; ++i) {
+        auto t = vec_a[i];
+        t.setVariable<id_t>("id_copy", t.getID());
+    }
+    for (uint32_t i = birth_ct_b; i < 2 * birth_ct_b; ++i) {
+        auto t = vec_b[i];
+        t.setVariable<id_t>("id_copy", t.getID());
+    }
+}
+TEST(DeviceAgentVectorTest, AgentID_MultipleStatesUniqueIDs) {
+    const uint32_t POP_SIZE = 100;
+    // Create agents via AgentVector to two agent states
+    // DeviceAgentVector Birth creates new agent in both states (at the end of the current agents)
+    // Store agent IDs to an agent variable inside model
+    // Export agents and check their IDs are unique
+    // Also check that the id's copied during model match those at export
+
+    ModelDescription model("test_agentid");
+    AgentDescription& agent = model.newAgent("agent");
+    agent.newVariable<id_t>("id_copy", ID_NOT_SET);
+    agent.newState("a");
+    agent.newState("b");
+
+    auto& layer_a = model.newLayer();
+    layer_a.addHostFunction(AgentID_DeviceAgentVectorBirth);
+
+    AgentVector pop_in(agent, POP_SIZE);
+
+    CUDASimulation sim(model);
+    sim.setPopulationData(pop_in, "a");
+    sim.setPopulationData(pop_in, "b");
+
+    sim.step();
+
+    AgentVector pop_out_a(agent);
+    AgentVector pop_out_b(agent);
+
+    sim.getPopulationData(pop_out_a, "a");
+    sim.getPopulationData(pop_out_b, "b");
+
+    std::set<id_t> ids;
+    // Validate that there are no ID collisions
+    for (auto a : pop_out_a) {
+        ids.insert(a.getID());
+        if (a.getVariable<id_t>("id_copy") != ID_NOT_SET) {
+            ASSERT_EQ(a.getID(), a.getVariable<id_t>("id_copy"));  // ID is same as reported at birth
+        }
+    }
+    for (auto a : pop_out_b) {
+        ids.insert(a.getID());
+        if (a.getVariable<id_t>("id_copy") != ID_NOT_SET) {
+            ASSERT_EQ(a.getID(), a.getVariable<id_t>("id_copy"));  // ID is same as reported at birth
+        }
+    }
+    ASSERT_EQ(ids.size(), 4 * POP_SIZE);  // No collisions
+}
+FLAMEGPU_HOST_FUNCTION(AgentID_DeviceAgentVectorBirthMultiAgent) {
+    auto agt_a = FLAMEGPU->agent("agent");
+    auto agt_b = FLAMEGPU->agent("agent2");
+    DeviceAgentVector vec_a = agt_a.getPopulationData();
+    DeviceAgentVector vec_b = agt_b.getPopulationData();
+    const uint32_t birth_ct_a = vec_a.size();
+    const uint32_t birth_ct_b = vec_b.size();
+    vec_a.resize(birth_ct_a * 2);
+    vec_b.resize(birth_ct_b * 2);
+    for (uint32_t i = birth_ct_a; i < 2 * birth_ct_a; ++i) {
+        auto t = vec_a[i];
+        t.setVariable<id_t>("id_copy", t.getID());
+    }
+    for (uint32_t i = birth_ct_b; i < 2 * birth_ct_b; ++i) {
+        auto t = vec_b[i];
+        t.setVariable<id_t>("id_copy", t.getID());
+    }
+}
+TEST(DeviceAgentVectorTest, AgentID_MultipleAgents) {
+    const uint32_t POP_SIZE = 100;
+    // Create agents via AgentVector to two agent types
+    // DeviceAgentVector Birth creates new agent in both types
+    // Store agent IDs to an agent variable inside model
+    // Export agents and check their IDs are unique
+    // Also check that the id's copied during model match those at export
+
+    ModelDescription model("test_agentid");
+    AgentDescription& agent = model.newAgent("agent");
+    agent.newVariable<id_t>("id_copy", ID_NOT_SET);
+    AgentDescription& agent2 = model.newAgent("agent2");
+    agent2.newVariable<id_t>("id_copy", ID_NOT_SET);
+
+    auto& layer_a = model.newLayer();
+    layer_a.addHostFunction(AgentID_DeviceAgentVectorBirthMultiAgent);
+
+    AgentVector pop_in_a(agent, POP_SIZE);
+    AgentVector pop_in_b(agent2, POP_SIZE);
+
+    CUDASimulation sim(model);
+    sim.setPopulationData(pop_in_a);
+    sim.setPopulationData(pop_in_b);
+
+    sim.step();
+
+    AgentVector pop_out_a(agent);
+    AgentVector pop_out_b(agent);
+
+    sim.getPopulationData(pop_out_a);
+    sim.getPopulationData(pop_out_b);
+
+    std::set<id_t> ids_a, ids_b;
+    // Validate that there are no ID collisions
+    for (auto a : pop_out_a) {
+        ids_a.insert(a.getID());
+        if (a.getVariable<id_t>("id_copy") != ID_NOT_SET) {
+            ASSERT_EQ(a.getID(), a.getVariable<id_t>("id_copy"));  // ID is same as reported at birth
+        }
+    }
+    ASSERT_EQ(ids_a.size(), 2 * POP_SIZE);  // No collisions
+    for (auto a : pop_out_b) {
+        ids_b.insert(a.getID());
+        if (a.getVariable<id_t>("id_copy") != ID_NOT_SET) {
+            ASSERT_EQ(a.getID(), a.getVariable<id_t>("id_copy"));  // ID is same as reported at birth
+        }
+    }
+    ASSERT_EQ(ids_b.size(), 2 * POP_SIZE);  // No collisions
+}
+FLAMEGPU_HOST_FUNCTION(AgentID_DeviceAgentVectorBirth2) {
+    auto agt_a = FLAMEGPU->agent("agent", "a");
+    auto agt_b = FLAMEGPU->agent("agent", "b");
+    DeviceAgentVector vec_a = agt_a.getPopulationData();
+    DeviceAgentVector vec_b = agt_b.getPopulationData();
+    const uint32_t birth_ct_a = vec_a.size();
+    const uint32_t birth_ct_b = vec_b.size();
+    AgentInstance copy_a(vec_a[0]);
+    AgentInstance copy_b(vec_a[0]);
+    auto it_a = vec_a.begin();
+    for (unsigned int i = 0; i < birth_ct_a / 2; ++i)
+        ++it_a;
+    auto it_b = vec_a.begin();
+    for (unsigned int i = 0; i < birth_ct_b / 2; ++i)
+        ++it_b;
+    vec_a.insert(it_a, birth_ct_a, copy_a);
+    vec_b.insert(it_b, birth_ct_b, copy_b);
+    for (uint32_t i = birth_ct_a; i < 2 * birth_ct_a; ++i) {
+        auto t = vec_a[i];
+        t.setVariable<id_t>("id_copy", t.getID());
+    }
+    for (uint32_t i = birth_ct_b; i < 2 * birth_ct_b; ++i) {
+        auto t = vec_b[i];
+        t.setVariable<id_t>("id_copy", t.getID());
+    }
+}
+TEST(DeviceAgentVectorTest, AgentID_MultipleStatesUniqueIDs2) {
+    const uint32_t POP_SIZE = 100;
+    // Create agents via AgentVector to two agent states
+    // DeviceAgentVector Birth creates new agent in both states (in the middle of the current agents)
+    // Store agent IDs to an agent variable inside model
+    // Export agents and check their IDs are unique
+    // Also check that the id's copied during model match those at export
+
+    ModelDescription model("test_agentid");
+    AgentDescription& agent = model.newAgent("agent");
+    agent.newVariable<id_t>("id_copy", ID_NOT_SET);
+    agent.newState("a");
+    agent.newState("b");
+
+    auto& layer_a = model.newLayer();
+    layer_a.addHostFunction(AgentID_DeviceAgentVectorBirth2);
+
+    AgentVector pop_in(agent, POP_SIZE);
+
+    CUDASimulation sim(model);
+    sim.setPopulationData(pop_in, "a");
+    sim.setPopulationData(pop_in, "b");
+
+    sim.step();
+
+    AgentVector pop_out_a(agent);
+    AgentVector pop_out_b(agent);
+
+    sim.getPopulationData(pop_out_a, "a");
+    sim.getPopulationData(pop_out_b, "b");
+
+    std::set<id_t> ids;
+    // Validate that there are no ID collisions
+    for (auto a : pop_out_a) {
+        ids.insert(a.getID());
+        if (a.getVariable<id_t>("id_copy") != ID_NOT_SET) {
+            ASSERT_EQ(a.getID(), a.getVariable<id_t>("id_copy"));  // ID is same as reported at birth
+        }
+    }
+    for (auto a : pop_out_b) {
+        ids.insert(a.getID());
+        if (a.getVariable<id_t>("id_copy") != ID_NOT_SET) {
+            ASSERT_EQ(a.getID(), a.getVariable<id_t>("id_copy"));  // ID is same as reported at birth
+        }
+    }
+    ASSERT_EQ(ids.size(), 4 * POP_SIZE);  // No collisions
+}
+FLAMEGPU_HOST_FUNCTION(AgentID_DeviceAgentVectorBirth3) {
+    auto agt_a = FLAMEGPU->agent("agent", "a");
+    auto agt_b = FLAMEGPU->agent("agent", "b");
+    DeviceAgentVector vec_a = agt_a.getPopulationData();
+    DeviceAgentVector vec_b = agt_b.getPopulationData();
+    const uint32_t birth_pos_a = vec_a.size();
+    vec_a.insert(birth_pos_a / 2, vec_b.begin(), vec_b.end());
+    const uint32_t birth_pos_b = vec_b.size();
+    vec_b.insert(birth_pos_b / 2, vec_a.begin(), vec_a.end());
+    for (auto t : vec_a) {
+        t.setVariable<id_t>("id_copy", t.getID());
+    }
+    for (auto t : vec_b) {
+        t.setVariable<id_t>("id_copy", t.getID());
+    }
+}
+TEST(DeviceAgentVectorTest, AgentID_MultipleStatesUniqueIDs3) {
+    const uint32_t POP_SIZE = 100;
+    // Create agents via AgentVector to two agent states
+    // DeviceAgentVector Birth creates new agent in both states (in the middle of the current agents)
+    // Store agent IDs to an agent variable inside model
+    // Export agents and check their IDs are unique
+    // Also check that the id's copied during model match those at export
+
+    ModelDescription model("test_agentid");
+    AgentDescription& agent = model.newAgent("agent");
+    agent.newVariable<id_t>("id_copy", ID_NOT_SET);
+    agent.newState("a");
+    agent.newState("b");
+
+    auto& layer_a = model.newLayer();
+    layer_a.addHostFunction(AgentID_DeviceAgentVectorBirth3);
+
+    AgentVector pop_in(agent, POP_SIZE);
+
+    CUDASimulation sim(model);
+    sim.setPopulationData(pop_in, "a");
+    sim.setPopulationData(pop_in, "b");
+
+    sim.step();
+
+    AgentVector pop_out_a(agent);
+    AgentVector pop_out_b(agent);
+
+    sim.getPopulationData(pop_out_a, "a");
+    sim.getPopulationData(pop_out_b, "b");
+
+    std::set<id_t> ids;
+    // Validate that there are no ID collisions
+    for (auto a : pop_out_a) {
+        ids.insert(a.getID());
+        if (a.getVariable<id_t>("id_copy") != ID_NOT_SET) {
+            ASSERT_EQ(a.getID(), a.getVariable<id_t>("id_copy"));  // ID is same as reported at birth
+        }
+    }
+    for (auto a : pop_out_b) {
+        ids.insert(a.getID());
+        if (a.getVariable<id_t>("id_copy") != ID_NOT_SET) {
+            ASSERT_EQ(a.getID(), a.getVariable<id_t>("id_copy"));  // ID is same as reported at birth
+        }
+    }
+    ASSERT_EQ(ids.size(), 5 * POP_SIZE);  // No collisions
 }
 
 }  // namespace DeviceAgentVectorTest

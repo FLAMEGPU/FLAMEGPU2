@@ -1,5 +1,6 @@
 #include <chrono>
 #include <thread>
+#include <set>
 
 #include "flamegpu/flame_api.h"
 #include "flamegpu/runtime/flamegpu_api.h"
@@ -543,6 +544,63 @@ TEST(TestCUDASimulation, MultipleInstances) {
     c1.setPopulationData(pop);
     // Set population data should trigger initialiseSingletons(), which is what leads to crash if EnvManager has matching name/id
     EXPECT_NO_THROW(CUDASimulation c2(m); c2.setPopulationData(pop););
+}
+
+FLAMEGPU_AGENT_FUNCTION(CopyID, MsgNone, MsgNone) {
+    FLAMEGPU->setVariable<id_t>("id_copy", FLAMEGPU->getID());
+    return ALIVE;
+}
+TEST(TestCUDASimulation, AgentID_MultipleStatesUniqueIDs) {
+    // Create agents via AgentVector to two agent states
+    // Store agent IDs to an agent variable inside model
+    // Export agents and check their IDs are unique
+    // Also check that the id's copied during model match those at export
+
+    ModelDescription model("test_agentid");
+    AgentDescription& agent = model.newAgent("agent");
+    agent.newVariable<id_t>("id_copy");
+    agent.newState("a");
+    agent.newState("b");
+    auto& af_a = agent.newFunction("copy_id", CopyID);
+    af_a.setInitialState("a");
+    af_a.setEndState("a");
+    auto& af_b = agent.newFunction("copy_id2", CopyID);
+    af_b.setInitialState("b");
+    af_b.setEndState("b");
+
+
+    auto& layer = model.newLayer();
+    layer.addAgentFunction(af_a);
+    layer.addAgentFunction(af_b);
+
+    AgentVector pop_in(agent, 100);
+
+    CUDASimulation sim(model);
+    sim.setPopulationData(pop_in, "a");
+    sim.setPopulationData(pop_in, "b");
+
+    sim.step();
+
+    AgentVector pop_out_a(agent);
+    AgentVector pop_out_b(agent);
+
+    sim.getPopulationData(pop_out_a, "a");
+    sim.getPopulationData(pop_out_b, "b");
+
+    std::set<id_t> ids_original, ids_copy;
+
+    for (auto a : pop_out_a) {
+        ids_original.insert(a.getID());
+        ids_copy.insert(a.getVariable<id_t>("id_copy"));
+        ASSERT_EQ(a.getID(), a.getVariable<id_t>("id_copy"));
+    }
+    for (auto a : pop_out_b) {
+        ids_original.insert(a.getID());
+        ids_copy.insert(a.getVariable<id_t>("id_copy"));
+        ASSERT_EQ(a.getID(), a.getVariable<id_t>("id_copy"));
+    }
+    ASSERT_EQ(ids_original.size(), pop_out_a.size() + pop_out_b.size());
+    ASSERT_EQ(ids_copy.size(), pop_out_a.size() + pop_out_b.size());
 }
 
 }  // namespace test_cuda_simulation

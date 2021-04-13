@@ -163,6 +163,7 @@ class DeviceAgentVector_impl : protected AgentVector {
      * The past-the-end iterator is also invalidated.
      *
      * @throw InvalidAgent If agent type of value does not match
+     * @note Inserted agents will be assigned a new unique ID
      */
     using AgentVector::insert;
 #ifdef SWIG
@@ -196,6 +197,7 @@ class DeviceAgentVector_impl : protected AgentVector {
 #endif
     /**
      * Appends a default initialised agent to the end of the container
+     * @note Inserted agent will be assigned a new unique ID
      */
     using AgentVector::push_back;
     /**

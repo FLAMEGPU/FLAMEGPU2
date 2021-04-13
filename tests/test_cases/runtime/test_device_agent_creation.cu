@@ -8,6 +8,7 @@
 * > With birthing agent transitioning state
 * > With birthing agent conditional state change
 */
+#include <set>
 
 #include "flamegpu/flame_api.h"
 #include "flamegpu/runtime/flamegpu_api.h"
@@ -1186,6 +1187,249 @@ TEST(DeviceAgentCreationTest, DeviceAgentBirth_DefaultWorks) {
         EXPECT_EQ(j % 3, 0u);
         EXPECT_EQ(array1, TEST_REFERENCE);
         EXPECT_EQ(instance.getVariable<float>("y"), 14.0f);
+    }
+}
+
+FLAMEGPU_AGENT_FUNCTION(CopyID, MsgNone, MsgNone) {
+    FLAMEGPU->setVariable<id_t>("id_copy", FLAMEGPU->getID());
+    return ALIVE;
+}
+FLAMEGPU_AGENT_FUNCTION(DeviceBirth, MsgNone, MsgNone) {
+    FLAMEGPU->setVariable<id_t>("id_other", FLAMEGPU->agent_out.getID());
+    FLAMEGPU->agent_out.setVariable<id_t>("id_other", FLAMEGPU->getID());
+    return ALIVE;
+}
+TEST(DeviceAgentCreationTest, AgentID_MultipleStatesUniqueIDs) {
+    // Create agents via AgentVector to two agent states
+    // All agents birth a new agent
+    // Store agent IDs to an agent variable inside model
+    // Export agents and check their IDs are unique
+    // Also check that the id's copied during model match those at export
+
+    ModelDescription model("test_agentid");
+    AgentDescription& agent = model.newAgent("agent");
+    agent.newVariable<id_t>("id_copy", ID_NOT_SET);
+    agent.newVariable<id_t>("id_other", ID_NOT_SET);
+    agent.newState("a");
+    agent.newState("b");
+    auto& af1_a = agent.newFunction("birth", DeviceBirth);
+    af1_a.setAgentOutput(agent, "a");
+    af1_a.setInitialState("a");
+    af1_a.setEndState("a");
+    auto& af1_b = agent.newFunction("birth2", DeviceBirth);
+    af1_b.setAgentOutput(agent, "b");
+    af1_b.setInitialState("b");
+    af1_b.setEndState("b");
+    auto& af_a = agent.newFunction("copy_id", CopyID);
+    af_a.setInitialState("a");
+    af_a.setEndState("a");
+    auto& af_b = agent.newFunction("copy_id2", CopyID);
+    af_b.setInitialState("b");
+    af_b.setEndState("b");
+
+
+    auto& layer_a = model.newLayer();
+    layer_a.addAgentFunction(af1_a);
+    auto& layer_b = model.newLayer();
+    layer_b.addAgentFunction(af1_b);
+
+    auto& layer2 = model.newLayer();
+    layer2.addAgentFunction(af_a);
+    layer2.addAgentFunction(af_b);
+
+    AgentVector pop_in(agent, 100);
+
+    CUDASimulation sim(model);
+    sim.setPopulationData(pop_in, "a");
+    sim.setPopulationData(pop_in, "b");
+
+    sim.step();
+
+    AgentVector pop_out_a(agent);
+    AgentVector pop_out_b(agent);
+
+    sim.getPopulationData(pop_out_a, "a");
+    sim.getPopulationData(pop_out_b, "b");
+
+    std::set<id_t> ids_original, ids_copy;
+    // Validate that there are no ID collisions
+    for (auto a : pop_out_a) {
+        ids_original.insert(a.getID());
+        ids_copy.insert(a.getVariable<id_t>("id_copy"));
+        ASSERT_EQ(a.getID(), a.getVariable<id_t>("id_copy"));
+    }
+    for (auto a : pop_out_b) {
+        ids_original.insert(a.getID());
+        ids_copy.insert(a.getVariable<id_t>("id_copy"));
+        ASSERT_EQ(a.getID(), a.getVariable<id_t>("id_copy"));
+    }
+    ASSERT_EQ(ids_original.size(), pop_out_a.size() + pop_out_b.size());
+    ASSERT_EQ(ids_copy.size(), pop_out_a.size() + pop_out_b.size());
+
+    // Validate that child/parent ID parings align
+    std::map<id_t, id_t> pairings;
+    // Add all agents to map with their pairings
+    for (auto a : pop_out_a) {
+        if (a.getVariable<id_t>("id_other") != ID_NOT_SET) {
+            pairings.insert(std::make_pair(a.getID(), a.getVariable<id_t>("id_other")));
+        }
+    }
+    for (auto a : pop_out_b) {
+        if (a.getVariable<id_t>("id_other") != ID_NOT_SET) {
+            pairings.insert(std::make_pair(a.getID(), a.getVariable<id_t>("id_other")));
+        }
+    }
+    // Check the reverse matches
+    for (auto a : pop_out_a) {
+        if (a.getVariable<id_t>("id_other") != ID_NOT_SET) {
+            ASSERT_EQ(a.getID(), pairings.at(a.getVariable<id_t>("id_other")));
+        }
+    }
+    for (auto a : pop_out_b) {
+        if (a.getVariable<id_t>("id_other") != ID_NOT_SET) {
+            ASSERT_EQ(a.getID(), pairings.at(a.getVariable<id_t>("id_other")));
+        }
+    }
+}
+TEST(DeviceAgentCreationTest, AgentID_DeviceBirth_MultipleAgents) {
+    // Create agents via AgentVector to two agent states (More agent B than A)
+    // All agent of type A birth an agent of type B
+    // Store agent IDs to an agent variable inside model
+    // Export agents and check that agent Bs IDs don't contain collisions
+    // --------------------
+    // this is based on the assumption that agent IDs run contiguous from 0 - UINT_MAX
+    // so if a birthed agent is given ID from the parent agent rather than it's own type, a collision should occur
+
+    ModelDescription model("test_agentid");
+    AgentDescription& agentA = model.newAgent("agentA");
+    agentA.newVariable<id_t>("id_other", ID_NOT_SET);  // Not required for test
+    AgentDescription& agentB = model.newAgent("agentB");
+    agentB.newVariable<id_t>("id_other", ID_NOT_SET);  // Not required for test
+    auto& af1_a = agentA.newFunction("birth", DeviceBirth);
+    af1_a.setAgentOutput(agentB);
+
+    auto& layer_a = model.newLayer();
+    layer_a.addAgentFunction(af1_a);
+
+    AgentVector pop_inA(agentA, 100);
+    AgentVector pop_inB(agentB, 200);
+
+    CUDASimulation sim(model);
+    sim.setPopulationData(pop_inA);
+    sim.setPopulationData(pop_inB);
+
+    sim.step();
+
+    AgentVector pop_out_a(agentA);
+    AgentVector pop_out_b(agentB);
+
+    sim.getPopulationData(pop_out_a);
+    sim.getPopulationData(pop_out_b);
+
+    std::set<id_t> ids;
+    // Validate that there are no ID collisions in pop B
+    for (auto a : pop_out_b) {
+        ids.insert(a.getID());
+    }
+    ASSERT_EQ(ids.size(), pop_out_b.size());
+}
+TEST(DeviceAgentCreationTest, AgentID_RTC_MultipleStatesUniqueIDs) {
+    // Create agents via AgentVector to two agent states
+    // All agents birth a new agent
+    // Store agent IDs to an agent variable inside model
+    // Export agents and check their IDs are unique
+    // Also check that the id's copied during model match those at export
+
+    ModelDescription model("test_agentid");
+    AgentDescription& agent = model.newAgent("agent");
+    agent.newVariable<id_t>("id_copy", ID_NOT_SET);
+    agent.newVariable<id_t>("id_other", ID_NOT_SET);
+    agent.newState("a");
+    agent.newState("b");
+    const char* RTC_DeviceBirth = R"###(
+FLAMEGPU_AGENT_FUNCTION(DeviceBirth, MsgNone, MsgNone) {
+    FLAMEGPU->setVariable<id_t>("id_other", FLAMEGPU->agent_out.getID());
+    FLAMEGPU->agent_out.setVariable<id_t>("id_other", FLAMEGPU->getID());
+    return ALIVE;
+}
+    )###";
+    auto& af1_a = agent.newRTCFunction("birth", RTC_DeviceBirth);
+    af1_a.setAgentOutput(agent, "a");
+    af1_a.setInitialState("a");
+    af1_a.setEndState("a");
+    auto& af1_b = agent.newRTCFunction("birth2", RTC_DeviceBirth);
+    af1_b.setAgentOutput(agent, "b");
+    af1_b.setInitialState("b");
+    af1_b.setEndState("b");
+    auto& af_a = agent.newFunction("copy_id", CopyID);
+    af_a.setInitialState("a");
+    af_a.setEndState("a");
+    auto& af_b = agent.newFunction("copy_id2", CopyID);
+    af_b.setInitialState("b");
+    af_b.setEndState("b");
+
+
+    auto& layer_a = model.newLayer();
+    layer_a.addAgentFunction(af1_a);
+    auto& layer_b = model.newLayer();
+    layer_b.addAgentFunction(af1_b);
+
+    auto& layer2 = model.newLayer();
+    layer2.addAgentFunction(af_a);
+    layer2.addAgentFunction(af_b);
+
+    AgentVector pop_in(agent, 100);
+
+    CUDASimulation sim(model);
+    sim.setPopulationData(pop_in, "a");
+    sim.setPopulationData(pop_in, "b");
+
+    sim.step();
+
+    AgentVector pop_out_a(agent);
+    AgentVector pop_out_b(agent);
+
+    sim.getPopulationData(pop_out_a, "a");
+    sim.getPopulationData(pop_out_b, "b");
+
+    std::set<id_t> ids_original, ids_copy;
+    // Validate that there are no ID collisions
+    for (auto a : pop_out_a) {
+        ids_original.insert(a.getID());
+        ids_copy.insert(a.getVariable<id_t>("id_copy"));
+        ASSERT_EQ(a.getID(), a.getVariable<id_t>("id_copy"));
+    }
+    for (auto a : pop_out_b) {
+        ids_original.insert(a.getID());
+        ids_copy.insert(a.getVariable<id_t>("id_copy"));
+        ASSERT_EQ(a.getID(), a.getVariable<id_t>("id_copy"));
+    }
+    ASSERT_EQ(ids_original.size(), pop_out_a.size() + pop_out_b.size());
+    ASSERT_EQ(ids_copy.size(), pop_out_a.size() + pop_out_b.size());
+
+    // Validate that child/parent ID parings align
+    std::map<id_t, id_t> pairings;
+    // Add all agents to map with their pairings
+    for (auto a : pop_out_a) {
+        if (a.getVariable<id_t>("id_other") != ID_NOT_SET) {
+            pairings.insert(std::make_pair(a.getID(), a.getVariable<id_t>("id_other")));
+        }
+    }
+    for (auto a : pop_out_b) {
+        if (a.getVariable<id_t>("id_other") != ID_NOT_SET) {
+            pairings.insert(std::make_pair(a.getID(), a.getVariable<id_t>("id_other")));
+        }
+    }
+    // Check the reverse matches
+    for (auto a : pop_out_a) {
+        if (a.getVariable<id_t>("id_other") != ID_NOT_SET) {
+            ASSERT_EQ(a.getID(), pairings.at(a.getVariable<id_t>("id_other")));
+        }
+    }
+    for (auto a : pop_out_b) {
+        if (a.getVariable<id_t>("id_other") != ID_NOT_SET) {
+            ASSERT_EQ(a.getID(), pairings.at(a.getVariable<id_t>("id_other")));
+        }
     }
 }
 }  // namespace test_device_agent_creation

@@ -118,7 +118,7 @@ FLAMEGPU_HOST_DEVICE_FUNCTION void clampPosition(float &x, float &y, float &z, c
 const char* outputdata = R"###(
 FLAMEGPU_AGENT_FUNCTION(outputdata, MsgNone, MsgSpatial3D) {
     // Output each agents publicly visible properties.
-    FLAMEGPU->message_out.setVariable<int>("id", FLAMEGPU->getVariable<int>("id"));
+    FLAMEGPU->message_out.setVariable<id_t>("id", FLAMEGPU->getID());
     FLAMEGPU->message_out.setVariable<float>("x", FLAMEGPU->getVariable<float>("x"));
     FLAMEGPU->message_out.setVariable<float>("y", FLAMEGPU->getVariable<float>("y"));
     FLAMEGPU->message_out.setVariable<float>("z", FLAMEGPU->getVariable<float>("z"));
@@ -174,7 +174,7 @@ FLAMEGPU_HOST_DEVICE_FUNCTION void clampPosition(float &x, float &y, float &z, c
 // Agent function
 FLAMEGPU_AGENT_FUNCTION(inputdata, MsgSpatial3D, MsgNone) {
     // Agent properties in local register
-    int id = FLAMEGPU->getVariable<int>("id");
+    const int id = FLAMEGPU->getID();
     // Agent position
     float agent_x = FLAMEGPU->getVariable<float>("x");
     float agent_y = FLAMEGPU->getVariable<float>("y");
@@ -206,7 +206,7 @@ FLAMEGPU_AGENT_FUNCTION(inputdata, MsgSpatial3D, MsgNone) {
     // Iterate location messages, accumulating relevant data and counts.
     for (const auto &message : FLAMEGPU->message_in(agent_x, agent_y, agent_z)) {
         // Ignore self messages.
-        if (message.getVariable<int>("id") != id) {
+        if (message.getVariable<id_t>("id") != id) {
             // Get the message location and velocity.
             const float message_x = message.getVariable<float>("x");
             const float message_y = message.getVariable<float>("y");
@@ -380,7 +380,6 @@ int main(int argc, const char ** argv) {
     }
     {   // Boid agent
         AgentDescription &agent = model.newAgent("Boid");
-        agent.newVariable<int>("id");
         agent.newVariable<float>("x");
         agent.newVariable<float>("y");
         agent.newVariable<float>("z");
@@ -445,7 +444,6 @@ int main(int argc, const char ** argv) {
         AgentVector population(model.Agent("Boid"), populationSize);
         for (unsigned int i = 0; i < populationSize; i++) {
             AgentVector::Agent instance = population[i];
-            instance.setVariable<int>("id", i);
 
             // Agent position in space
             instance.setVariable<float>("x", position_distribution(rngEngine));

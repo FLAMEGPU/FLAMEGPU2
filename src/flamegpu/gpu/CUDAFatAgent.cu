@@ -1,6 +1,7 @@
 #include "flamegpu/gpu/CUDAFatAgent.h"
 
 #include "flamegpu/gpu/CUDAScatter.h"
+#include "flamegpu/runtime/HostAPI.h"
 
 #ifdef _MSC_VER
 #pragma warning(push, 1)
@@ -12,7 +13,10 @@
 #endif
 
 CUDAFatAgent::CUDAFatAgent(const AgentData& description)
-  : mappedAgentCount(0) {
+    : mappedAgentCount(0)
+    , _nextID(ID_NOT_SET + 1)
+    , d_nextID(nullptr)
+    , hd_nextID(ID_NOT_SET) {
     for (const std::string &s : description.states) {
         // allocate memory for each state list by creating a new Agent State List
         AgentState state = {mappedAgentCount, s};
@@ -24,6 +28,9 @@ CUDAFatAgent::CUDAFatAgent(const AgentData& description)
         states_unique.insert(s.second);
 }
 CUDAFatAgent::~CUDAFatAgent() {
+    if (d_nextID) {
+        gpuErrchk(cudaFree(d_nextID));
+    }
     for (auto &b : d_newLists) {
         gpuErrchk(cudaFree(b.data));
     }
@@ -290,3 +297,92 @@ void CUDAFatAgent::freeNewBuffer(void *buff) {
     assert(false);
 }
 unsigned int CUDAFatAgent::getMappedAgentCount() const { return mappedAgentCount; }
+__global__ void allocateIDs(id_t*agentIDs, unsigned int threads, id_t UNSET_FLAG, id_t _nextID) {
+    const unsigned int tid = blockIdx.x * blockDim.x + threadIdx.x;
+    if (tid < threads) {
+        const id_t my_id = agentIDs[tid];
+        if (my_id == UNSET_FLAG) {
+            agentIDs[tid] = _nextID + tid;
+        }
+    }
+}
+id_t CUDAFatAgent::nextID(unsigned int count) {
+    id_t rtn = _nextID;
+    _nextID += count;
+    return rtn;
+}
+id_t *CUDAFatAgent::getDeviceNextID() {
+    if (!d_nextID) {
+        gpuErrchk(cudaMalloc(&d_nextID, sizeof(id_t)));
+    }
+    if (hd_nextID != _nextID) {
+        gpuErrchk(cudaMemcpy(d_nextID, &_nextID, sizeof(id_t), cudaMemcpyHostToDevice));
+        hd_nextID = _nextID;
+    }
+    return d_nextID;
+}
+void CUDAFatAgent::notifyDeviceBirths(unsigned int newCount) {
+    _nextID += newCount;
+    hd_nextID += newCount;
+#ifdef _DEBUG
+    // Sanity validation, check hd_nextID == d_nextID
+    assert(d_nextID);
+    id_t t = 0;
+    gpuErrchk(cudaMemcpy(&t, d_nextID, sizeof(id_t), cudaMemcpyDeviceToHost));
+    assert(t == hd_nextID);
+    assert(t == _nextID);  // At the end of device birth they should be equal, as no host birth can occur between pre and post processing agent fn
+#endif
+}
+void CUDAFatAgent::assignIDs(HostAPI& hostapi) {
+    NVTX_RANGE("CUDAFatAgent::assignIDs");
+    if (agent_ids_have_init) return;
+    id_t h_max = ID_NOT_SET;
+    // Find the max ID within the current agents
+    for (auto& s : states_unique) {
+        if (!s->getSize())
+            continue;
+        // Agents should never be disabled at this point
+        assert(s->getSizeWithDisabled() == s->getSize());
+        auto vb = s->getVariableBuffer(0, ID_VARIABLE_NAME);  // _id always belongs to the root agent
+        if (vb && vb->data) {
+            // Reduce for max
+            HostAPI::CUB_Config cc = { HostAPI::MAX, typeid(id_t).hash_code() };
+            if (hostapi.tempStorageRequiresResize(cc, s->getSize())) {
+                // Resize cub storage
+                size_t tempByte = 0;
+                gpuErrchk(cub::DeviceReduce::Max(nullptr, tempByte, static_cast<id_t*>(vb->data), reinterpret_cast<id_t*>(hostapi.d_output_space), s->getSize()));
+                gpuErrchkLaunch();
+                hostapi.resizeTempStorage(cc, s->getSize(), tempByte);
+            }
+            hostapi.resizeOutputSpace<id_t>();
+            gpuErrchk(cub::DeviceReduce::Max(hostapi.d_cub_temp, hostapi.d_cub_temp_size, static_cast<id_t*>(vb->data), reinterpret_cast<id_t*>(hostapi.d_output_space), s->getSize()));
+            gpuErrchk(cudaMemcpy(&h_max, hostapi.d_output_space, sizeof(id_t), cudaMemcpyDeviceToHost));
+            _nextID = std::max(_nextID, h_max + 1);
+        }
+    }
+
+    // For each agent state, assign IDs based on global thread index, skip if ID is already set
+    // This process will waste IDs for populations with partially pre-existing IDs
+    // But at the time of writing, we don't anticipate any models to come close to exceeding 4200m IDs
+    // This would necessitate creating and killing thousands of agents per step
+    // If this does affect a model, we can implement an ID reuse scheme in future.
+    for (auto &s : states_unique) {
+        auto vb = s->getVariableBuffer(0, ID_VARIABLE_NAME);  // _id always belongs to the root agent
+        if (vb && vb->data && s->getSize()) {
+            const unsigned int blockSize = 1024;
+            const unsigned int blocks = ((s->getSize() - 1) / blockSize) + 1;
+            allocateIDs<< <blocks, blockSize >> > (static_cast<id_t*>(vb->data), s->getSize(), ID_NOT_SET, _nextID);
+            gpuErrchkLaunch();
+        }
+        _nextID += s->getSizeWithDisabled();
+    }
+
+    agent_ids_have_init = true;
+}
+void CUDAFatAgent::resetIDCounter() {
+    // Resetting ID whilst agents exist is a bad idea, so fail silently
+    for (auto& s : states_unique)
+        if (s->getSize())
+            return;
+    _nextID = ID_NOT_SET + 1;
+}

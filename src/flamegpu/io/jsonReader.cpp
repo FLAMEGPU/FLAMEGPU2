@@ -2,6 +2,7 @@
 
 #include <rapidjson/stream.h>
 #include <rapidjson/reader.h>
+#include <rapidjson/error/en.h>
 #include <stack>
 #include <fstream>
 #include <string>
@@ -114,30 +115,44 @@ class jsonReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, j
         } else if (mode.top() == AgentInstance) {
             const std::shared_ptr<AgentVector> &pop = model_state.at({current_agent, current_state});
             AgentVector::Agent instance = pop->back();
-            const std::type_index val_type = pop->getVariableType(lastKey);
+            char *data = static_cast<char*>(const_cast<void*>(static_cast<std::shared_ptr<const AgentVector>>(pop)->data(lastKey)));
+            const VariableMap& agentVariables = pop->getVariableMetaData();
+            const auto var_data = agentVariables.at(lastKey);
+            const size_t v_size = var_data.type_size * var_data.elements;
+            const std::type_index val_type = var_data.type;
             if (val_type == std::type_index(typeid(float))) {
-                instance.setVariable<float>(lastKey, current_variable_array_index++, static_cast<float>(val));
+                const float t = static_cast<float>(val);
+                memcpy(data + ((pop->size() - 1) * v_size) + (var_data.type_size * current_variable_array_index++), &t, var_data.type_size);
             } else if (val_type == std::type_index(typeid(double))) {
-                instance.setVariable<double>(lastKey, current_variable_array_index++, static_cast<double>(val));
+                const double t = static_cast<double>(val);
+                memcpy(data + ((pop->size() - 1) * v_size) + (var_data.type_size * current_variable_array_index++), &t, var_data.type_size);
             } else if (val_type == std::type_index(typeid(int64_t))) {
-                instance.setVariable<int64_t>(lastKey, current_variable_array_index++, static_cast<int64_t>(val));
+                const int64_t t = static_cast<int64_t>(val);
+                memcpy(data + ((pop->size() - 1) * v_size) + (var_data.type_size * current_variable_array_index++), &t, var_data.type_size);
             } else if (val_type == std::type_index(typeid(uint64_t))) {
-                instance.setVariable<uint64_t>(lastKey, current_variable_array_index++, static_cast<uint64_t>(val));
+                const uint64_t t = static_cast<uint64_t>(val);
+                memcpy(data + ((pop->size() - 1) * v_size) + (var_data.type_size * current_variable_array_index++), &t, var_data.type_size);
             } else if (val_type == std::type_index(typeid(int32_t))) {
-                instance.setVariable<int32_t>(lastKey, current_variable_array_index++, static_cast<int32_t>(val));
+                const int32_t t = static_cast<int32_t>(val);
+                memcpy(data + ((pop->size() - 1) * v_size) + (var_data.type_size * current_variable_array_index++), &t, var_data.type_size);
             } else if (val_type == std::type_index(typeid(uint32_t))) {
-                instance.setVariable<uint32_t>(lastKey, current_variable_array_index++, static_cast<uint32_t>(val));
+                const uint32_t t = static_cast<uint32_t>(val);
+                memcpy(data + ((pop->size() - 1) * v_size) + (var_data.type_size * current_variable_array_index++), &t, var_data.type_size);
             } else if (val_type == std::type_index(typeid(int16_t))) {
-                instance.setVariable<int16_t>(lastKey, current_variable_array_index++, static_cast<int16_t>(val));
+                const int16_t t = static_cast<int16_t>(val);
+                memcpy(data + ((pop->size() - 1) * v_size) + (var_data.type_size * current_variable_array_index++), &t, var_data.type_size);
             } else if (val_type == std::type_index(typeid(uint16_t))) {
-                instance.setVariable<uint16_t>(lastKey, current_variable_array_index++, static_cast<uint16_t>(val));
+                const uint16_t t = static_cast<uint16_t>(val);
+                memcpy(data + ((pop->size() - 1) * v_size) + (var_data.type_size * current_variable_array_index++), &t, var_data.type_size);
             } else if (val_type == std::type_index(typeid(int8_t))) {
-                instance.setVariable<int8_t>(lastKey, current_variable_array_index++, static_cast<int8_t>(val));
+                const int8_t t = static_cast<int8_t>(val);
+                memcpy(data + ((pop->size() - 1) * v_size) + (var_data.type_size * current_variable_array_index++), &t, var_data.type_size);
             } else if (val_type == std::type_index(typeid(uint8_t))) {
-                instance.setVariable<uint8_t>(lastKey, current_variable_array_index++, static_cast<uint8_t>(val));
+                const uint8_t t = static_cast<uint8_t>(val);
+                memcpy(data + ((pop->size() - 1) * v_size) + (var_data.type_size * current_variable_array_index++), &t, var_data.type_size);
             } else {
-                THROW RapidJSONError("Model contains environment property '%s' of unsupported type '%s', "
-                    "in jsonReader::parse()\n", lastKey.c_str(), val_type.name());
+                THROW RapidJSONError("Model contains agent variable '%s:%s' of unsupported type '%s', "
+                    "in jsonReader::parse()\n", current_agent.c_str(), lastKey.c_str(), val_type.name());
             }
         }  else if (mode.top() == CUDACfg || mode.top() == SimCfg || mode.top() == Stats) {
             // Not useful
@@ -319,7 +334,7 @@ class jsonReader_agentsize_counter : public rapidjson::BaseReaderHandler<rapidjs
         if (mode.top() == SimCfg) {
             if (sim_instance) {
                 if (lastKey == "input_file") {
-                    if (filename != str)
+                    if (filename != str && str[0] != '\0')
                         printf("Warning: Input file '%s' refers to second input file '%s', this will not be loaded.\n", filename.c_str(), str);
                     // sim_instance->SimulationConfig().input_file = str;
                 }
@@ -405,7 +420,10 @@ int jsonReader::parse() {
     rapidjson::StringStream filess(filestring.c_str());
     rapidjson::Reader reader;
     // First parse the file and simply count the size of agent list
-    reader.Parse(filess, agentcounter);
+    rapidjson::ParseResult pr1 = reader.Parse(filess, agentcounter);
+    if (pr1.Code() != rapidjson::ParseErrorCode::kParseErrorNone) {
+        THROW RapidJSONError("Whilst parsing input file '%s', RapidJSON returned error: %s\n", inputFile.c_str(), rapidjson::GetParseError_En(pr1.Code()));
+    }
     const StringPairUnorderedMap<unsigned int> agentCounts = agentcounter.getAgentCounts();
     // Use this to preallocate the agent statelists
     for (auto &agt : agentCounts) {
@@ -416,6 +434,9 @@ int jsonReader::parse() {
     // Reset the string stream
     filess = rapidjson::StringStream(filestring.c_str());
     // Read in the file data
-    reader.Parse(filess, handler);
+    rapidjson::ParseResult pr2 = reader.Parse(filess, handler);
+    if (pr2.Code() != rapidjson::ParseErrorCode::kParseErrorNone) {
+        THROW RapidJSONError("Whilst parsing input file '%s', RapidJSON returned error: %s\n", inputFile.c_str(), rapidjson::GetParseError_En(pr1.Code()));
+    }
     return 0;
 }

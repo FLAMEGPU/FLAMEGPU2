@@ -17,6 +17,14 @@ using std::tr2::sys::path;
 using std::experimental::filesystem::v1::exists;
 using std::experimental::filesystem::v1::path;
 #endif
+#ifdef _MSC_VER
+#pragma warning(push, 1)
+#pragma warning(disable : 4706 4834)
+#include <cub/cub.cuh>
+#pragma warning(pop)
+#else
+#include <cub/cub.cuh>
+#endif
 
 #include "flamegpu/version.h"
 #include "flamegpu/gpu/CUDAFatAgent.h"
@@ -172,6 +180,9 @@ void CUDAAgent::setPopulationData(const AgentVector& population, const std::stri
     // Copy population data
     // This call hierarchy validates agent desc matches
     our_state->second->setAgentData(population, scatter, streamId, stream);
+    fat_agent->markIDsUnset();
+    // Validate that there are no ID collisions
+    validateIDCollisions();
 }
 void CUDAAgent::getPopulationData(AgentVector& population, const std::string& state_name) const {
     // Validate agent state
@@ -190,6 +201,76 @@ void CUDAAgent::getPopulationData(AgentVector& population, const std::string& st
     // Copy population data
     // This call hierarchy validates agent desc matches
     our_state->second->getAgentData(population);
+}
+__global__ void generateCollisionFlags(const id_t* d_sortedKeys, id_t* d_flagsOut, unsigned int threads, id_t UNSET_FLAG) {
+    const unsigned int id = blockIdx.x * blockDim.x + threadIdx.x;
+    if (id < threads) {
+        const id_t my_id = d_sortedKeys[id];
+        if (my_id != UNSET_FLAG && my_id == d_sortedKeys[id+1]) {
+            assert(UNSET_FLAG == 0);
+            d_flagsOut[id] = 1;  // my_id; // any non-0 value basically
+        }
+    }
+}
+void CUDAAgent::validateIDCollisions() const {
+    NVTX_RANGE("CUDAAgent::validateIDCollisions");
+    // All data is on device, so use a device technique to check for collisions
+    // Sort agent IDs, have a simple kernel check for neighbouring ID collisions to set a flag
+    // Scan that flag
+    // This could be improved by reusing buffers from elsewhere (e.g. StreamResources), rather than making temporary allocations for each method call
+    // However, I'm also concerned that a model with agents added to multiple states and no agent birth would then pre-allocate larger buffers than required during execution
+
+    // First count total agents across all states
+    unsigned int agentCount = 0;
+    for (const auto &s : state_map) {
+        agentCount += s.second->getSize();
+    }
+    if (!agentCount) return;
+    // Allocate buffers we will use
+    id_t * d_keysIn = nullptr, *d_keysOut = nullptr;
+    gpuErrchk(cudaMalloc(&d_keysIn, sizeof(id_t) * agentCount));
+    gpuErrchk(cudaMalloc(&d_keysOut, sizeof(id_t) * agentCount));
+    // Copy agent IDs to keysIn buff
+    ptrdiff_t buffOffset = 0;
+    for (const auto& s : state_map) {
+        const unsigned int t_size = s.second->getSize();
+        gpuErrchk(cudaMemcpy(d_keysIn + buffOffset, s.second->getVariablePointer(ID_VARIABLE_NAME), t_size * sizeof(id_t), cudaMemcpyDeviceToDevice));
+        buffOffset += t_size;
+    }
+    // Sort agent ids into d_keysOut
+    void* d_temp_storage = nullptr;
+    size_t temp_storage_bytes = 0;
+    gpuErrchk(cub::DeviceRadixSort::SortKeys(d_temp_storage, temp_storage_bytes, d_keysIn, d_keysOut, agentCount));
+    gpuErrchk(cudaMalloc(&d_temp_storage, temp_storage_bytes));
+    gpuErrchk(cub::DeviceRadixSort::SortKeys(d_temp_storage, temp_storage_bytes, d_keysIn, d_keysOut, agentCount));
+    // Reset d_keysIn
+    gpuErrchk(cudaMemset(d_keysIn, 0, sizeof(id_t) * agentCount));
+    // Launch a kernel to set flags if keys overlap their neighbour
+    const unsigned int blockSize = 1024;
+    const unsigned int blocks = ((agentCount-1) / blockSize) + 1;
+    generateCollisionFlags<<<blocks, blockSize>>>(d_keysOut, d_keysIn, agentCount-1, ID_NOT_SET);
+    gpuErrchkLaunch();
+    // Check whether any flags were set
+    size_t temp_storage_bytes2 = 0;
+    cub::DeviceReduce::Sum(nullptr, temp_storage_bytes2, d_keysIn, d_keysOut, agentCount - 1);
+    if (temp_storage_bytes2 > temp_storage_bytes) {
+        gpuErrchk(cudaFree(d_temp_storage));
+        temp_storage_bytes = temp_storage_bytes2;
+        gpuErrchk(cudaMalloc(&d_temp_storage, temp_storage_bytes));
+    }
+    cub::DeviceReduce::Sum(d_temp_storage, temp_storage_bytes, d_keysIn, d_keysOut, agentCount - 1);
+    id_t flagsSet = 0;
+    gpuErrchk(cudaMemcpy(&flagsSet, d_keysOut, sizeof(id_t), cudaMemcpyDeviceToHost));
+    // Cleanup
+    gpuErrchk(cudaFree(d_temp_storage));
+    gpuErrchk(cudaFree(d_keysIn));
+    gpuErrchk(cudaFree(d_keysOut));
+    if (flagsSet) {
+        THROW AgentIDCollision("%u agents of type '%s' share an ID with another agent of the same type, "
+            "you may need to explicitly reset agent IDs for 1 or more populations before adding them to the CUDASimulation, "
+            "in CUDAAgent::validateIDCollisions()\n",
+            static_cast<unsigned int>(flagsSet), agent_description.name.c_str());
+    }
 }
 /**
  * Returns the number of alive and active agents in the named state
@@ -451,7 +532,8 @@ void CUDAAgent::scatterNew(const AgentFunctionData& func, const unsigned int &ne
                 " in CUDAAgent::scatterNew()\n",
                 func.initial_state.c_str());
         }
-        sm->second->scatterNew(newBuff, newSize, scatter, streamId, stream);
+        unsigned int new_births = sm->second->scatterNew(newBuff, newSize, scatter, streamId, stream);
+        fat_agent->notifyDeviceBirths(new_births);
     }
 }
 void CUDAAgent::clearFunctionCondition(const std::string &state) {
@@ -624,16 +706,21 @@ void CUDAAgent::initExcludedVars(const std::string &state, const unsigned int&co
     sm->second->initExcludedVars(count, offset, scatter, streamId, stream);
 }
 void CUDAAgent::cullUnmappedStates() {
+    unsigned int i = 0;
     for (auto &s : state_map) {
         if (!s.second->getIsSubStatelist()) {
             s.second->clear();
+            ++i;
         }
     }
+    if (i == state_map.size())
+        fat_agent->resetIDCounter();
 }
 void CUDAAgent::cullAllStates() {
     for (auto &s : state_map) {
         s.second->clear();
     }
+    fat_agent->resetIDCounter();
 }
 std::list<std::shared_ptr<VariableBuffer>> CUDAAgent::getUnboundVariableBuffers(const std::string& state) {
     const auto& sm = state_map.find(state);
@@ -644,4 +731,13 @@ std::list<std::shared_ptr<VariableBuffer>> CUDAAgent::getUnboundVariableBuffers(
             agent_description.name.c_str(), state.c_str());
     }
     return sm->second->getUnboundVariableBuffers();
+}
+id_t CUDAAgent::nextID(unsigned int count) {
+    return fat_agent->nextID(count);
+}
+id_t* CUDAAgent::getDeviceNextID() {
+    return fat_agent->getDeviceNextID();
+}
+void CUDAAgent::assignIDs(HostAPI& hostapi) {
+    fat_agent->assignIDs(hostapi);
 }

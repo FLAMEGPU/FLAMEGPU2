@@ -20,6 +20,7 @@
 class CUDAScatter;
 class CUDAFatAgent;
 struct VarOffsetStruct;
+class HostAPI;
 /**
  * This is the regular CUDAAgent
  * It provides access to the device buffers representing the states of a particular agent
@@ -257,8 +258,29 @@ class CUDAAgent : public AgentInterface {
      * @note This access is only intended for DeviceAgentVector's correctly handling of subagents
      */
     std::list<std::shared_ptr<VariableBuffer>> getUnboundVariableBuffers(const std::string& state);
+    /**
+     * Returns the next free agent id, and increments the ID tracker by the specified count
+     * @param count Number that will be added to the return value on next call to this function
+     * @return An ID that can be assigned to an agent that wil be stored within this CUDAAgent's CUDAFatAgent
+     */
+    id_t nextID(unsigned int count = 1);
+    /**
+     * Returns a device pointer to the value returns by nextID(0)
+     * If the device value is changed, then the internal ID counter must be updated via CUDAAgent::scatterNew()
+     */
+    id_t* getDeviceNextID();
+    /**
+     * Assigns IDs to any agents who's ID has the value ID_NOT_SET
+     * @param hostapi HostAPI object, this is used to provide cub temp storage
+     */
+    void assignIDs(HostAPI &hostapi);
 
  private:
+    /**
+     * Validates all IDs for contained agents, if any share an ID (which is not ID_NOT_SET) an exception is thrown
+     * @throws AgentIDCollision If the contained agent populations contain multiple agents with the same ID
+     */
+    void validateIDCollisions() const;
     /**
      * Sums the size required for all variables
      */

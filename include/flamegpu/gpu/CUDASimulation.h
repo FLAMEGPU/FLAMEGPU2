@@ -490,6 +490,12 @@ class CUDASimulation : public Simulation {
     typedef std::unordered_map<std::string, AgentDataBufferStateMap> AgentDataMap;
 
  private:
+    void assignAgentIDs();
+    /**
+     * Set to false whenever an agent population is imported from outside
+     * Checked before init functions and when step() is called by a user
+     */
+    bool agent_ids_have_init = true;
     /**
      * Provides the offset data for variable storage
      * Used by host agent creation

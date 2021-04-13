@@ -36,7 +36,7 @@ int main(int argc, const char ** argv) {
         env.newProperty<int>("init_offset", 0);
         env.newProperty<int>("offset", 1);
     }
-    {   // Boid agent
+    {   // Agent
         AgentDescription &agent = model.newAgent("Agent");
         agent.newVariable<int>("x");
         agent.newFunction("AddOffset", AddOffset);

@@ -174,8 +174,28 @@ void DeviceAgentVector_impl::resizeUnboundBuffers(const unsigned int& new_capaci
 }
 
 void DeviceAgentVector_impl::_insert(size_type pos, size_type count) {
+    if (!count)
+        return;
+    // Init ID for all the inserted agents
+    {
+        auto d = _data->find(ID_VARIABLE_NAME);
+        if (d != _data->end()) {
+            _require(ID_VARIABLE_NAME);
+            id_t *h_ptr = static_cast<id_t*>(d->second->getDataPtr());
+            for (unsigned int i = pos; i < pos + count; ++i) {
+                // Always assign ID, as AgentVector should reset these to unset, but this saves us checking
+                // if (h_ptr[i] == ID_NOT_SET) {
+                    h_ptr[i] = cuda_agent.nextID();
+                // }
+            }
+            _changedAfter(ID_VARIABLE_NAME, pos);
+        } else {
+            THROW InvalidOperation("Internal agent ID variable was not found, "
+                "in DeviceAgentVector_impl._insert().");
+        }
+    }
     // No unbound buffers, return
-    if (unbound_buffers.empty() || !count)
+    if (unbound_buffers.empty())
         return;
     // Unbound buffers first use, init
     // This updates unbound_host_buffer_size to match known_device_buffer_size

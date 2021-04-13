@@ -8,6 +8,7 @@
 * > Exception thrown if setting/getting wrong variable name/type
 * > getVariable() works
 */
+#include <set>
 
 #include "flamegpu/flame_api.h"
 
@@ -662,5 +663,127 @@ TEST(HostAgentCreationTest, reserved_name_array) {
     model.addStepFunction(reserved_name_step_array);
     CUDASimulation sim(model);
     EXPECT_THROW(sim.step(), ReservedName);
+}
+FLAMEGPU_HOST_FUNCTION(AgentID_HostNewAgentBirth) {
+    const uint32_t birth_ct_a = FLAMEGPU->agent("agent", "a").count();
+    const uint32_t birth_ct_b = FLAMEGPU->agent("agent", "b").count();
+
+    for (uint32_t i = 0; i < birth_ct_a; ++i) {
+        auto t = FLAMEGPU->agent("agent", "a").newAgent();
+        t.setVariable<id_t>("id_copy", t.getID());
+    }
+    for (uint32_t i = 0; i < birth_ct_b; ++i) {
+        auto t = FLAMEGPU->agent("agent", "b").newAgent();
+        t.setVariable<id_t>("id_copy", t.getID());
+    }
+}
+TEST(HostAgentCreationTest, AgentID_HostNewAgent_MultipleStatesUniqueIDs) {
+    const uint32_t POP_SIZE = 100;
+    // Create agents via AgentVector to two agent states
+    // HostAgent Birth creates new agent in both states
+    // Store agent IDs to an agent variable inside model
+    // Export agents and check their IDs are unique
+    // Also check that the id's copied during model match those at export
+
+    ModelDescription model("test_agentid");
+    AgentDescription& agent = model.newAgent("agent");
+    agent.newVariable<id_t>("id_copy", ID_NOT_SET);
+    agent.newState("a");
+    agent.newState("b");
+
+    auto& layer_a = model.newLayer();
+    layer_a.addHostFunction(AgentID_HostNewAgentBirth);
+
+    AgentVector pop_in(agent, POP_SIZE);
+
+    CUDASimulation sim(model);
+    sim.setPopulationData(pop_in, "a");
+    sim.setPopulationData(pop_in, "b");
+
+    sim.step();
+
+    AgentVector pop_out_a(agent);
+    AgentVector pop_out_b(agent);
+
+    sim.getPopulationData(pop_out_a, "a");
+    sim.getPopulationData(pop_out_b, "b");
+
+    std::set<id_t> ids;
+    // Validate that there are no ID collisions
+    for (auto a : pop_out_a) {
+        ids.insert(a.getID());
+        if (a.getVariable<id_t>("id_copy") != ID_NOT_SET) {
+            ASSERT_EQ(a.getID(), a.getVariable<id_t>("id_copy"));  // ID is same as reported at birth
+        }
+    }
+    for (auto a : pop_out_b) {
+        ids.insert(a.getID());
+        if (a.getVariable<id_t>("id_copy") != ID_NOT_SET) {
+            ASSERT_EQ(a.getID(), a.getVariable<id_t>("id_copy"));  // ID is same as reported at birth
+        }
+    }
+    ASSERT_EQ(ids.size(), 4 * POP_SIZE);  // No collisions
+}
+FLAMEGPU_HOST_FUNCTION(AgentID_HostNewAgentBirth2) {
+    const uint32_t birth_ct_a = FLAMEGPU->agent("agent").count();
+    const uint32_t birth_ct_b = FLAMEGPU->agent("agent2").count();
+
+    for (uint32_t i = 0; i < birth_ct_a; ++i) {
+        auto t = FLAMEGPU->agent("agent").newAgent();
+        t.setVariable<id_t>("id_copy", t.getID());
+    }
+    for (uint32_t i = 0; i < birth_ct_b; ++i) {
+        auto t = FLAMEGPU->agent("agent2").newAgent();
+        t.setVariable<id_t>("id_copy", t.getID());
+    }
+}
+TEST(HostAgentCreationTest, AgentID_MultipleAgents) {
+    const uint32_t POP_SIZE = 100;
+    // Create agents via AgentVector to two agent types
+    // HostAgent Birth creates new agent in both types
+    // Store agent IDs to an agent variable inside model
+    // Export agents and check their IDs are unique
+    // Also check that the id's copied during model match those at export
+
+    ModelDescription model("test_agentid");
+    AgentDescription& agent = model.newAgent("agent");
+    agent.newVariable<id_t>("id_copy", ID_NOT_SET);
+    AgentDescription& agent2 = model.newAgent("agent2");
+    agent2.newVariable<id_t>("id_copy", ID_NOT_SET);
+
+    auto& layer_a = model.newLayer();
+    layer_a.addHostFunction(AgentID_HostNewAgentBirth2);
+
+    AgentVector pop_in_a(agent, POP_SIZE);
+    AgentVector pop_in_b(agent2, POP_SIZE);
+
+    CUDASimulation sim(model);
+    sim.setPopulationData(pop_in_a);
+    sim.setPopulationData(pop_in_b);
+
+    sim.step();
+
+    AgentVector pop_out_a(agent);
+    AgentVector pop_out_b(agent);
+
+    sim.getPopulationData(pop_out_a);
+    sim.getPopulationData(pop_out_b);
+
+    std::set<id_t> ids_a, ids_b;
+    // Validate that there are no ID collisions
+    for (auto a : pop_out_a) {
+        ids_a.insert(a.getID());
+        if (a.getVariable<id_t>("id_copy") != ID_NOT_SET) {
+            ASSERT_EQ(a.getID(), a.getVariable<id_t>("id_copy"));  // ID is same as reported at birth
+        }
+    }
+    ASSERT_EQ(ids_a.size(), 2 * POP_SIZE);  // No collisions
+    for (auto a : pop_out_b) {
+        ids_b.insert(a.getID());
+        if (a.getVariable<id_t>("id_copy") != ID_NOT_SET) {
+            ASSERT_EQ(a.getID(), a.getVariable<id_t>("id_copy"));  // ID is same as reported at birth
+        }
+    }
+    ASSERT_EQ(ids_b.size(), 2 * POP_SIZE);  // No collisions
 }
 }  // namespace test_host_agent_creation

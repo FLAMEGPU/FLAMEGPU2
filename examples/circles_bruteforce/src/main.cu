@@ -4,14 +4,14 @@
 
 
 FLAMEGPU_AGENT_FUNCTION(output_message, MsgNone, MsgBruteForce) {
-    FLAMEGPU->message_out.setVariable<int>("id", FLAMEGPU->getVariable<int>("id"));
+    FLAMEGPU->message_out.setVariable<id_t>("id", FLAMEGPU->getID());
     FLAMEGPU->message_out.setVariable<float>("x", FLAMEGPU->getVariable<float>("x"));
     FLAMEGPU->message_out.setVariable<float>("y", FLAMEGPU->getVariable<float>("y"));
     FLAMEGPU->message_out.setVariable<float>("z", FLAMEGPU->getVariable<float>("z"));
     return ALIVE;
 }
 FLAMEGPU_AGENT_FUNCTION(move, MsgBruteForce, MsgNone) {
-    const int ID = FLAMEGPU->getVariable<int>("id");
+    const id_t ID = FLAMEGPU->getID();
     const float REPULSE_FACTOR = FLAMEGPU->environment.getProperty<float>("repulse");
     const float RADIUS = FLAMEGPU->environment.getProperty<float>("radius");
     float fx = 0.0;
@@ -22,7 +22,7 @@ FLAMEGPU_AGENT_FUNCTION(move, MsgBruteForce, MsgNone) {
     const float z1 = FLAMEGPU->getVariable<float>("z");
     int count = 0;
     for (const auto &message : FLAMEGPU->message_in) {
-        if (message.getVariable<int>("id") != ID) {
+        if (message.getVariable<id_t>("id") != ID) {
             const float x2 = message.getVariable<float>("x");
             const float y2 = message.getVariable<float>("y");
             const float z2 = message.getVariable<float>("z");
@@ -76,14 +76,13 @@ int main(int argc, const char ** argv) {
     const float ENV_MAX = static_cast<float>(floor(cbrt(AGENT_COUNT)));
     {   // Location message
         MsgBruteForce::Description &message = model.newMessage("location");
-        message.newVariable<int>("id");
+        message.newVariable<id_t>("id");
         message.newVariable<float>("x");
         message.newVariable<float>("y");
         message.newVariable<float>("z");
     }
     {   // Circle agent
         AgentDescription &agent = model.newAgent("Circle");
-        agent.newVariable<int>("id");
         agent.newVariable<float>("x");
         agent.newVariable<float>("y");
         agent.newVariable<float>("z");
@@ -154,7 +153,6 @@ int main(int argc, const char ** argv) {
         AgentVector population(model.Agent("Circle"), AGENT_COUNT);
         for (unsigned int i = 0; i < AGENT_COUNT; i++) {
             AgentVector::Agent instance = population[i];
-            instance.setVariable<int>("id", i);
             instance.setVariable<float>("x", dist(rng));
             instance.setVariable<float>("y", dist(rng));
             instance.setVariable<float>("z", dist(rng));

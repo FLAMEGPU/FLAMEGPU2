@@ -8,6 +8,7 @@
 
 #include "flamegpu/model/Variable.h"
 #include "flamegpu/model/ModelData.h"
+#include "flamegpu/defines.h"
 
 class AgentDescription;
 struct AgentFunctionData;

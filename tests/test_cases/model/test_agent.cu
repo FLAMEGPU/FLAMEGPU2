@@ -61,11 +61,12 @@ TEST(AgentDescriptionTest, variables) {
     AgentDescription &a = m.newAgent(AGENT_NAME1);
     EXPECT_FALSE(a.hasVariable(VARIABLE_NAME1));
     EXPECT_FALSE(a.hasVariable(VARIABLE_NAME2));
-    EXPECT_EQ(a.getVariablesCount(), 0u);
-    a.newVariable<float>(VARIABLE_NAME1);
+    // When created, agent has 1 internal variable _id
     EXPECT_EQ(a.getVariablesCount(), 1u);
-    a.newVariable<int16_t>(VARIABLE_NAME2);
+    a.newVariable<float>(VARIABLE_NAME1);
     EXPECT_EQ(a.getVariablesCount(), 2u);
+    a.newVariable<int16_t>(VARIABLE_NAME2);
+    EXPECT_EQ(a.getVariablesCount(), 3u);
     // Cannot create variable with same name
     EXPECT_THROW(a.newVariable<int64_t>(VARIABLE_NAME1), InvalidAgentVar);
     auto newVarArray3 = &AgentDescription::newVariable<int64_t, 3>;  // Use function ptr, can't do more than 1 template arg inside macro
@@ -86,13 +87,14 @@ TEST(AgentDescriptionTest, variables_array) {
     AgentDescription &a = m.newAgent(AGENT_NAME1);
     EXPECT_FALSE(a.hasVariable(VARIABLE_NAME1));
     EXPECT_FALSE(a.hasVariable(VARIABLE_NAME2));
-    EXPECT_EQ(a.getVariablesCount(), 0u);
-    a.newVariable<float, 2>(VARIABLE_NAME1);
+    // When created, agent has 1 internal variable _id
     EXPECT_EQ(a.getVariablesCount(), 1u);
-    a.newVariable<int16_t>(VARIABLE_NAME3);
+    a.newVariable<float, 2>(VARIABLE_NAME1);
     EXPECT_EQ(a.getVariablesCount(), 2u);
-    a.newVariable<int16_t, 56>(VARIABLE_NAME2);
+    a.newVariable<int16_t>(VARIABLE_NAME3);
     EXPECT_EQ(a.getVariablesCount(), 3u);
+    a.newVariable<int16_t, 56>(VARIABLE_NAME2);
+    EXPECT_EQ(a.getVariablesCount(), 4u);
     // Cannot create variable with same name
     EXPECT_THROW(a.newVariable<int64_t>(VARIABLE_NAME1), InvalidAgentVar);
     // auto newVarArray3 = &AgentDescription::newVariable<int64_t, 1>;  // Use function ptr, can't do more than 1 template arg inside macro

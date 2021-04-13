@@ -36,6 +36,7 @@ class MiniSim():
         self.ed.newPropertyUInt32("uint32_", TEST_VALUE)
         self.ed.newPropertyInt64("int64_", TEST_VALUE)
         self.ed.newPropertyUInt64("uint64_", TEST_VALUE)
+        self.ed.newPropertyID("id_", TEST_VALUE)
         self.ed.newPropertyFloat("read_only", TEST_VALUE, True)
         
         self.ed.newPropertyArrayFloat("float_a_", 4, MiniSim.make_array())
@@ -48,6 +49,7 @@ class MiniSim():
         self.ed.newPropertyArrayUInt32("uint32_a_", 4, MiniSim.make_array())
         self.ed.newPropertyArrayInt64("int64_a_", 4, MiniSim.make_array())
         self.ed.newPropertyArrayUInt64("uint64_a_", 4, MiniSim.make_array())
+        self.ed.newPropertyArrayID("id_a_", 4, MiniSim.make_array())
         self.ed.newPropertyArrayInt("read_only_a", 4, MiniSim.make_array(), True)
     
     @staticmethod
@@ -217,6 +219,22 @@ class get_set_uint64(pyflamegpu.HostFunctionCallback):
     def apply_assertions(self):
         assert self.uint64 == TEST_VALUE
         assert self.uint64_ == TEST_VALUE * 2      
+
+class get_set_id(pyflamegpu.HostFunctionCallback):
+    def __init__(self):
+        super().__init__()
+
+    def run(self, FLAMEGPU):
+        # Test Set + Get (Description set value)
+        self.id = FLAMEGPU.environment.setPropertyID("id_", TEST_VALUE * 2)
+        # Test Get (Host func set value)
+        self.id_ = FLAMEGPU.environment.getPropertyID("id_")
+        # Reset for next iteration
+        FLAMEGPU.environment.setPropertyID("id_", TEST_VALUE)
+        
+    def apply_assertions(self):
+        assert self.id == TEST_VALUE
+        assert self.id_ == TEST_VALUE * 2      
 
 # Arrays
 
@@ -392,6 +410,23 @@ class get_set_array_uint64(pyflamegpu.HostFunctionCallback):
         assert list(self.set_uint64_a) == init1
         assert list(self.get_uint64_a) == init2 
         
+class get_set_array_id(pyflamegpu.HostFunctionCallback):
+    def __init__(self):
+        super().__init__()
+
+    def run(self, FLAMEGPU):
+        init1 = MiniSim.make_array()
+        init2 = MiniSim.make_array(TEST_ARRAY_OFFSET)
+        self.set_id_a = FLAMEGPU.environment.setPropertyArrayID("id_a_", init2)
+        self.get_id_a = FLAMEGPU.environment.getPropertyArrayID("id_a_")
+        FLAMEGPU.environment.setPropertyArrayID("id_a_", init1)
+        
+    def apply_assertions(self):
+        init1 = MiniSim.make_array()
+        init2 = MiniSim.make_array(TEST_ARRAY_OFFSET)
+        assert list(self.set_id_a) == init1
+        assert list(self.get_id_a) == init2 
+               
 # Array Elements
 
 class get_set_array_element_float(pyflamegpu.HostFunctionCallback):
@@ -543,7 +578,22 @@ class get_set_array_element_uint64(pyflamegpu.HostFunctionCallback):
         init1 = MiniSim.make_array()
         assert self.set_uint64_a == init1[TEST_ARRAY_LEN - 1]
         assert self.get_uint64_a == TEST_VALUE * 2  
+
+class get_set_array_element_id(pyflamegpu.HostFunctionCallback):
+    def __init__(self):
+        super().__init__()
+
+    def run(self, FLAMEGPU):
+        init1 = MiniSim.make_array()
+        self.set_id_a = FLAMEGPU.environment.setPropertyID("id_a_", TEST_ARRAY_LEN - 1, TEST_VALUE * 2)
+        self.get_id_a = FLAMEGPU.environment.getPropertyID("id_a_", TEST_ARRAY_LEN - 1)
+        FLAMEGPU.environment.setPropertyID("id_a_", TEST_ARRAY_LEN - 1, init1[TEST_ARRAY_LEN - 1])
         
+    def apply_assertions(self):
+        init1 = MiniSim.make_array()
+        assert self.set_id_a == init1[TEST_ARRAY_LEN - 1]
+        assert self.get_id_a == TEST_VALUE * 2  
+             
 # Exception ProprtyType
 
 class exception_property_type_float(pyflamegpu.HostFunctionCallback):
@@ -1300,6 +1350,14 @@ class HostEnvironmentTest(TestCase):
         ms.run()
         step.apply_assertions()
         
+    def test_get_set_get_id(self):
+        ms = MiniSim()
+        step = get_set_id()
+        ms.model.addStepFunctionCallback(step)
+        # Test and apply assertions
+        ms.run()
+        step.apply_assertions()
+        
 # Arrays
 
     def test_get_set_get_array_float(self):
@@ -1361,6 +1419,14 @@ class HostEnvironmentTest(TestCase):
     def test_get_set_get_array_uint64(self):
         ms = MiniSim()
         step = get_set_array_uint64()
+        ms.model.addStepFunctionCallback(step)
+        # Test and apply assertions
+        ms.run()
+        step.apply_assertions()
+        
+    def test_get_set_get_array_id(self):
+        ms = MiniSim()
+        step = get_set_array_id()
         ms.model.addStepFunctionCallback(step)
         # Test and apply assertions
         ms.run()
@@ -1443,6 +1509,14 @@ class HostEnvironmentTest(TestCase):
     def test_get_set_get_array_element_uint64(self):
         ms = MiniSim()
         step = get_set_array_element_uint64()
+        ms.model.addStepFunctionCallback(step)
+        # Test and apply assertions
+        ms.run()
+        step.apply_assertions()
+        
+    def test_get_set_get_array_element_id(self):
+        ms = MiniSim()
+        step = get_set_array_element_id()
         ms.model.addStepFunctionCallback(step)
         # Test and apply assertions
         ms.run()

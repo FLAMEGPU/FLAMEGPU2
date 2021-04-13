@@ -12,6 +12,8 @@
               ::testing::internal::GetTypeId<test_fixture>())
 #endif
 
+namespace test_device_exception {
+
 namespace {
 
 class MiniSim {
@@ -21,6 +23,7 @@ class MiniSim {
         agent(model.newAgent("agent")) {
         agent.newVariable<int>("int");
         agent.newVariable<int, 2>("array");
+        agent.newVariable<id_t>("id_other", ID_NOT_SET);
         model.Environment().newProperty<int>("int", 12);
         model.Environment().newProperty<int, 2>("array", {12, 13});
     }
@@ -1123,3 +1126,15 @@ TEST_F(DeviceExceptionTest, AgentDeathDisabled) {
     // Test Something
     ms->run(1);
 }
+FLAMEGPU_AGENT_FUNCTION(AgentOutGetID, MsgNone, MsgNone) {
+    FLAMEGPU->setVariable<id_t>("id_other", FLAMEGPU->agent_out.getID());
+    return ALIVE;
+}
+TEST_F(DeviceExceptionTest, AgentID_DeviceBirth) {
+    // Attempt to get ID of device agent, whilst agent birth is not enabled
+    ms->addFunc(AgentOutGetID);
+    // Test Something
+    ms->run(1);
+}
+
+}  // namespace test_device_exception

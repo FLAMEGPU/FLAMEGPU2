@@ -12,6 +12,8 @@
 #include "flamegpu/gpu/CUDAFatAgentStateList.h"
 #include "flamegpu/model/SubAgentData.h"
 
+class HostAPI;
+
 /**
  * This is a shared CUDAFatAgent
  * It manages the buffers for the variables of all agent-state combinations for a group of mapped agents
@@ -134,6 +136,38 @@ class CUDAFatAgent {
      * The number of mapped agents currently represented by this CUDAFatAgent
      */
     unsigned int getMappedAgentCount() const;
+    /**
+     * Returns the next free agent id, and increments the ID tracker by the specified count
+     * @param count Number that will be added to the return value on next call to this function
+     * @return An ID that can be assigned to an agent that wil be stored within this CUDAFatAgent
+     */
+    id_t nextID(unsigned int count = 1);
+    /**
+     * Returns a device pointer to the value returns by nextID(0)
+     * If the device value is changed, then the internal ID counter must be updated via CUDAAgent::scatterNew()
+     */
+    id_t *getDeviceNextID();
+    /**
+     * After device agent births have been processed, this function should be called by CUDAAgent::scatterNew()
+     * It updated _nextID and hd_nextID, based on the assumed changes to d_nextID
+     * @param newCount The number of agents birthed on device
+     */
+    void notifyDeviceBirths(unsigned int newCount);
+    /**
+     * Assigns IDs to any agents who's ID has the value ID_NOT_SET
+     * @param hostapi HostAPI object, this is used to provide cub temp storage
+     */
+    void assignIDs(HostAPI& hostapi);
+    /**
+     * Resets the flag agent_ids_have_init
+     */
+    void markIDsUnset() { agent_ids_have_init = false; }
+    /**
+     * Resets the ID counter (_nextID) to the first valid ID
+     * Useful for submodels which will keep resetting an agent population
+     * @note This will fail silently if it called if any state contains agents
+     */
+    void resetIDCounter();
 
  private:
     /**
@@ -171,6 +205,25 @@ class CUDAFatAgent {
      * This is used to assign fat_index's to newly represented agents
      */
     unsigned int mappedAgentCount;
+    /**
+     * Holds the next ID to be assigned
+     * IDs are assigned in consecutive order, however it cannot be guaranteed that IDs will always be consecutive due to agent death, parallel birth and multiple states.
+     */
+    id_t _nextID;
+    /**
+     * Device mirror of _nextID(), allocated when first requested
+     */
+    id_t *d_nextID;
+    /**
+     * Host copy of the value of d_nextID
+     * This is updated when a user requests d_nextID, or notifies of device births
+     */
+    id_t hd_nextID;
+    /**
+     * Set to false whenever an agent population is imported from outside
+     * Checked before init functions and when step() is called by a user
+     */
+    bool agent_ids_have_init = true;
 };
 
 #endif  // INCLUDE_FLAMEGPU_GPU_CUDAFATAGENT_H_

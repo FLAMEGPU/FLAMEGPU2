@@ -427,5 +427,10 @@ DERIVED_FGPUException(UnsycnedCUDAEventTimer, "Elapsed time requested for Un-syn
  * Defines an error reported by AgentFunctionDependencyGraph if the graph is invalid
  */
 DERIVED_FGPUException(InvalidDependencyGraph, "Agent function dependency graph is invalid");
+/**
+ * Defines an error when it is detected that multiple agents of the same type (even if in different states) share the same ID
+ * This should not occur if the shared ID matches ID_NOT_SET
+ */
+DERIVED_FGPUException(AgentIDCollision, "Multiple agents of same type share an ID");
 
 #endif  // INCLUDE_FLAMEGPU_EXCEPTION_FGPUEXCEPTION_H_
