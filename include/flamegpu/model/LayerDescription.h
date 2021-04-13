@@ -136,10 +136,10 @@ class LayerDescription {
     void addSubModel(const SubModelDescription &submodel);
 #ifdef SWIG
     // Public for SWIG
-     public:
+ public:
 #else
     // Otherwise shouldn't be accessible publicly
-     private:
+ private:
 #endif
     /**
      * Adds a host function to this layer, similar to addHostFunction
