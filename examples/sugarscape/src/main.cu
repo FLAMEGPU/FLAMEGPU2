@@ -74,7 +74,7 @@ FLAMEGPU_AGENT_FUNCTION(metabolise_and_growback, MsgNone, MsgNone) {
 FLAMEGPU_AGENT_FUNCTION(output_cell_status, MsgNone, MsgArray2D) {
     unsigned int agent_x = FLAMEGPU->getVariable<unsigned int, 2>("pos", 0);
     unsigned int agent_y = FLAMEGPU->getVariable<unsigned int, 2>("pos", 1);
-    FLAMEGPU->message_out.setVariable("location_id", FLAMEGPU->getVariable<int>("location_id"));
+    FLAMEGPU->message_out.setVariable("location_id", FLAMEGPU->getID());
     FLAMEGPU->message_out.setVariable("status", FLAMEGPU->getVariable<int>("status"));
     FLAMEGPU->message_out.setVariable("env_sugar_level", FLAMEGPU->getVariable<int>("env_sugar_level"));
     FLAMEGPU->message_out.setIndex(agent_x, agent_y);
@@ -83,7 +83,7 @@ FLAMEGPU_AGENT_FUNCTION(output_cell_status, MsgNone, MsgArray2D) {
 FLAMEGPU_AGENT_FUNCTION(movement_request, MsgArray2D, MsgArray2D) {
     int best_sugar_level = -1;
     float best_sugar_random = -1;
-    int best_location_id = -1;
+    id_t best_location_id = ID_NOT_SET;
 
     // if occupied then look for empty cells {
     // find the best location to move to (ensure we don't just pick first cell with max value)
@@ -104,20 +104,20 @@ FLAMEGPU_AGENT_FUNCTION(movement_request, MsgArray2D, MsgArray2D) {
                     (msg_env_sugar_level == best_sugar_level && msg_priority > best_sugar_random)) {
                     best_sugar_level = msg_env_sugar_level;
                     best_sugar_random = msg_priority;
-                    best_location_id = current_message.getVariable<int>("location_id");
+                    best_location_id = current_message.getVariable<id_t>("location_id");
                 }
             }
         }
 
         // if the agent has found a better location to move to then update its state
         // if there is a better location to move to then state indicates a movement request
-        status = best_location_id >= 0 ? AGENT_STATUS_MOVEMENT_REQUESTED : AGENT_STATUS_OCCUPIED;
+        status = best_location_id != ID_NOT_SET ? AGENT_STATUS_MOVEMENT_REQUESTED : AGENT_STATUS_OCCUPIED;
         FLAMEGPU->setVariable<int>("status", status);
     }
 
     // add a movement request
     FLAMEGPU->message_out.setVariable<int>("agent_id", FLAMEGPU->getVariable<int>("agent_id"));
-    FLAMEGPU->message_out.setVariable<int>("location_id", best_location_id);
+    FLAMEGPU->message_out.setVariable<id_t>("location_id", best_location_id);
     FLAMEGPU->message_out.setVariable<int>("sugar_level", FLAMEGPU->getVariable<int>("sugar_level"));
     FLAMEGPU->message_out.setVariable<int>("metabolism", FLAMEGPU->getVariable<int>("metabolism"));
     FLAMEGPU->message_out.setIndex(agent_x, agent_y);
@@ -131,15 +131,15 @@ FLAMEGPU_AGENT_FUNCTION(movement_response, MsgArray2D, MsgArray2D) {
     int best_request_metabolism = -1;
 
     int status = FLAMEGPU->getVariable<int>("status");
-    int location_id = FLAMEGPU->getVariable<int>("location_id");
-    unsigned int agent_x = FLAMEGPU->getVariable<unsigned int, 2>("pos", 0);
-    unsigned int agent_y = FLAMEGPU->getVariable<unsigned int, 2>("pos", 1);
+    const id_t location_id = FLAMEGPU->getID();
+    const unsigned int agent_x = FLAMEGPU->getVariable<unsigned int, 2>("pos", 0);
+    const unsigned int agent_y = FLAMEGPU->getVariable<unsigned int, 2>("pos", 1);
 
     for (auto current_message : FLAMEGPU->message_in(agent_x, agent_y)) {
         // if the location is unoccupied then check for agents requesting to move here
         if (status == AGENT_STATUS_UNOCCUPIED) {
             // check if request is to move to this location
-            if (current_message.getVariable<int>("location_id") == location_id) {
+            if (current_message.getVariable<id_t>("location_id") == location_id) {
                 // check the priority and maintain the best ranked agent
                 float message_priority = FLAMEGPU->random.uniform<float>();
                 if (message_priority > best_request_priority) {
@@ -162,7 +162,6 @@ FLAMEGPU_AGENT_FUNCTION(movement_response, MsgArray2D, MsgArray2D) {
     }
 
     // add a movement response
-    FLAMEGPU->message_out.setVariable<int>("location_id", FLAMEGPU->getVariable<int>("location_id"));
     FLAMEGPU->message_out.setVariable<int>("agent_id", best_request_id);
     FLAMEGPU->message_out.setIndex(agent_x, agent_y);
 
@@ -218,7 +217,6 @@ FLAMEGPU_EXIT_CONDITION(MovementExitCondition) {
 AgentDescription &makeCoreAgent(ModelDescription &model) {
     AgentDescription &agent = model.newAgent("agent");
     agent.newVariable<unsigned int, 2>("pos");
-    agent.newVariable<int>("location_id");
     agent.newVariable<int>("agent_id");
     agent.newVariable<int>("status");
     // agent specific variables
@@ -244,7 +242,7 @@ int main(int argc, const char ** argv) {
          */
         {   // cell_status message
             MsgArray2D::Description &message = submodel.newMessage<MsgArray2D>("cell_status");
-            message.newVariable<int>("location_id");
+            message.newVariable<id_t>("location_id");
             message.newVariable<int>("status");
             message.newVariable<int>("env_sugar_level");
             message.setDimensions(GRID_WIDTH, GRID_HEIGHT);
@@ -252,14 +250,14 @@ int main(int argc, const char ** argv) {
         {   // movement_request message
             MsgArray2D::Description &message = submodel.newMessage<MsgArray2D>("movement_request");
             message.newVariable<int>("agent_id");
-            message.newVariable<int>("location_id");
+            message.newVariable<id_t>("location_id");
             message.newVariable<int>("sugar_level");
             message.newVariable<int>("metabolism");
             message.setDimensions(GRID_WIDTH, GRID_HEIGHT);
         }
         {   // movement_response message
             MsgArray2D::Description &message = submodel.newMessage<MsgArray2D>("movement_response");
-            message.newVariable<int>("location_id");
+            message.newVariable<id_t>("location_id");
             message.newVariable<int>("agent_id");
             message.setDimensions(GRID_WIDTH, GRID_HEIGHT);
         }
@@ -424,16 +422,14 @@ int main(int argc, const char ** argv) {
         std::uniform_real_distribution<float> normal(0, 1);
         std::uniform_int_distribution<int> agent_sugar_dist(0, SUGAR_MAX_CAPACITY * 2);
         std::uniform_int_distribution<int> poor_env_sugar_dist(0, SUGAR_MAX_CAPACITY/2);
-        unsigned int location_id = 0;
+        unsigned int i = 0;
         unsigned int agent_id = 0;
         AgentVector init_pop(model.Agent("agent"), CELL_COUNT);
         for (unsigned int x = 0; x < GRID_WIDTH; ++x) {
             for (unsigned int y = 0; y < GRID_HEIGHT; ++y) {
-                AgentVector::Agent instance = init_pop[location_id];
+                AgentVector::Agent instance = init_pop[i++];
                 instance.setVariable<unsigned int, 2>("pos", { x, y });
                 // TODO: How should these values be init?
-                // Location index assigned linearly
-                instance.setVariable<int>("location_id", location_id++);
                 // agent specific variables
                 // 10% chance of cell holding an agent
                 if (normal(rng) < 0.1) {

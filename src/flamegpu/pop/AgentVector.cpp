@@ -26,7 +26,7 @@ AgentVector::AgentVector(const AgentVector& other)
     , _capacity(0)
     , _data(std::make_shared<AgentDataMap>()) {
     clear();
-    *this = std::move(other);
+    insert(0, other.begin(), other.end());
 }
 
 AgentVector::AgentVector(AgentVector&& other) noexcept
@@ -120,6 +120,10 @@ AgentVector::CAgent AgentVector::back() const {
 }
 
 void* AgentVector::data(const std::string& variable_name) {
+    if (!variable_name.empty() && variable_name[0] == '_') {
+        THROW ReservedName("Agent variable names that begin with '_' are reserved for internal usage and cannot be changed directly, "
+            "in AgentVector::data().");
+    }
     // Is variable name found
     const auto& var = agent->variables.find(variable_name);
     if (var == agent->variables.end()) {
@@ -228,6 +232,40 @@ void AgentVector::clear() {
     _size = 0;
     _erase(0, _size);
 }
+
+#ifdef _MSC_VER
+#pragma warning(push, 1)
+#pragma warning(disable : 4127)
+// Suppress condition expression is constant
+// The constant condition can be made constexpr in future with C++17
+#endif
+void AgentVector::resetAllIDs() {
+    _require(ID_VARIABLE_NAME);
+    const auto it = _data->find(ID_VARIABLE_NAME);
+    if (it != _data->end()) {
+        constexpr id_t DEFAULT_VALUE = ID_NOT_SET;
+        id_t* t_data = static_cast<id_t*>(it->second->getDataPtr());
+        if (DEFAULT_VALUE == 0) {
+            memset(t_data, 0, _size * sizeof(id_t));
+        } else {
+            for (unsigned int i = 0; i < _size; ++i) {
+                memcpy(t_data + i, &DEFAULT_VALUE, sizeof(id_t));
+            }
+        }
+    } else {
+        THROW InvalidOperation("Agent '%s' is missing internal ID variable, "
+            "in AgentVector::resetAllIDs()\n",
+            agent->name.c_str());
+    }
+    if (_size) {
+        // Mark all indices as changed (there isn't currently a single fn for this)
+        _changed(ID_VARIABLE_NAME, 0);
+        _changedAfter(ID_VARIABLE_NAME, 0);
+    }
+}
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 void AgentVector::init(size_type first, size_type last) {
     if (first >= last) {
         THROW InvalidOperation("Last (%u) must exceed first(%u), "
@@ -344,6 +382,7 @@ AgentVector::iterator AgentVector::insert(size_type pos, size_type count, const 
         THROW ExpiredWeakPtr("The AgentVector which owns the passed AgentVector::Agent has been deallocated, "
             "in AgentVector::insert().\n");
     }
+    const id_t ID_DEFAULT = ID_NOT_SET;
     for (const auto& v : agent->variables) {
         const auto it = _data->find(v.first);
         char* t_data = static_cast<char*>(it->second->getDataPtr());
@@ -353,11 +392,21 @@ AgentVector::iterator AgentVector::insert(size_type pos, size_type count, const 
             // Copy items individually, incase the src and destination overlap
             memcpy(t_data + (i + count) * variable_size, t_data + i * variable_size, variable_size);
         }
-        // Copy across item data
-        const auto other_it = value_data->find(v.first);
-        char* src_data = static_cast<char*>(other_it->second->getDataPtr());
-        for (unsigned int i = insert_index; i < insert_index + count; ++i) {
-            memcpy(t_data + i * variable_size, src_data + value.index * variable_size, variable_size);
+        // Copy across item data, ID has a special case, where it is default init instead of being copied
+        if (v.first == ID_VARIABLE_NAME) {
+            if (v.second.elements != 1 || v.second.type != std::type_index(typeid(id_t))) {
+                THROW InvalidOperation("Agent's internal ID variable is not type %s[1], "
+                        "in AgentVector::insert()\n", std::type_index(typeid(id_t)).name());
+            }
+            for (unsigned int i = insert_index; i < insert_index + count; ++i) {
+                memcpy(t_data + i * variable_size, &ID_DEFAULT, sizeof(id_t));
+            }
+        } else {
+            const auto other_it = value_data->find(v.first);
+            char* src_data = static_cast<char*>(other_it->second->getDataPtr());
+            for (unsigned int i = insert_index; i < insert_index + count; ++i) {
+                memcpy(t_data + i * variable_size, src_data + value.index * variable_size, variable_size);
+            }
         }
     }
     // Increase size

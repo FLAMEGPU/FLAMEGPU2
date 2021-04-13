@@ -6,7 +6,7 @@
 #include <curand_kernel.h>
 
 // #include "flamegpu/runtime/flamegpu_device_api.h"
-
+#include "flamegpu/defines.h"
 #include "flamegpu/exception/FGPUDeviceException.h"
 #include "flamegpu/runtime/AgentFunction_shim.h"
 #include "flamegpu/gpu/CUDAScanCompaction.h"
@@ -24,6 +24,7 @@ typedef void(AgentFunctionWrapper)(
     Curve::NamespaceHash messagename_inp_hash,
     Curve::NamespaceHash messagename_outp_hash,
     Curve::NamespaceHash agent_output_hash,
+    id_t *d_agent_output_nextID,
     const unsigned int popNo,
     const void *in_messagelist_metadata,
     const void *out_messagelist_metadata,
@@ -61,6 +62,7 @@ __global__ void agent_function_wrapper(
     Curve::NamespaceHash messagename_inp_hash,
     Curve::NamespaceHash messagename_outp_hash,
     Curve::NamespaceHash agent_output_hash,
+    id_t *d_agent_output_nextID,
     const unsigned int popNo,
     const void *in_messagelist_metadata,
     const void *out_messagelist_metadata,
@@ -76,13 +78,14 @@ __global__ void agent_function_wrapper(
     }
 #endif
     // Must be terminated here, else AgentRandom has bounds issues inside DeviceAPI constructor
-    if (DeviceAPI<MsgIn, MsgOut>::TID() >= popNo)
+    if (DeviceAPI<MsgIn, MsgOut>::getThreadIndex() >= popNo)
         return;
     // create a new device FLAME_GPU instance
     DeviceAPI<MsgIn, MsgOut> api = DeviceAPI<MsgIn, MsgOut>(
         instance_id_hash,
         agent_func_name_hash,
         agent_output_hash,
+        d_agent_output_nextID,
         d_rng,
         scanFlag_agentOutput,
         MsgIn::In(agent_func_name_hash, messagename_inp_hash, in_messagelist_metadata),
@@ -92,7 +95,7 @@ __global__ void agent_function_wrapper(
     FLAME_GPU_AGENT_STATUS flag = AgentFunction()(&api);
     if (scanFlag_agentDeath) {
         // (scan flags will not be processed unless agent death has been requested in model definition)
-        scanFlag_agentDeath[DeviceAPI<MsgIn, MsgOut>::TID()] = flag;
+        scanFlag_agentDeath[DeviceAPI<MsgIn, MsgOut>::getThreadIndex()] = flag;
 #if !defined(SEATBELTS) || SEATBELTS
     } else if (flag == DEAD) {
         DTHROW("Agent death must be enabled per agent function when defining the model.\n");

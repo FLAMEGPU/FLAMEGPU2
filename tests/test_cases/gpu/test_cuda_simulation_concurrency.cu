@@ -844,8 +844,11 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentMessageOutputInputSpa
 
 /**
  * Test for agent birth (to unique lists). Each agent type executes a function, and birth an agent to it's own population.
+ * @note Disabled since AgentID PR (#512), this PR adds a memcpy (before and) after agent birth.
+ * @see CUDAFatAgent::getDeviceNextID(): This is called before any agent functon with device birth enabled, however only memcpys on first step or after host agent birth
+ * @see CUDAFatAgent::notifyDeviceBirths(unsigned int): This  is called after any agent function with device birth enabled
  */
-RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, LayerConcurrencyBirth) {
+RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, DISABLED_LayerConcurrencyBirth) {
     // Define a model with multiple agent types
     ModelDescription m("LayerConcurrencyBirth");
 

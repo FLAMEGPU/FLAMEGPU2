@@ -1,3 +1,6 @@
+#include <iostream>
+#include <fstream>
+
 #include "gtest/gtest.h"
 
 #include "flamegpu/flame_api.h"
@@ -269,5 +272,122 @@ TEST_F(IOTest, XML_WriteRead) {
 }
 TEST_F(IOTest, JSON_WriteRead) {
     ms->run(JSON_FILE_NAME);
+}
+FLAMEGPU_HOST_FUNCTION(DoNothing) {
+    // Do nothing
+}
+TEST(IOTest2, AgentID_JSON_ExportImport) {
+    // Create an agent pop, add it to the model, step so that they are assigned ids
+    // Export pop
+    // getPopData to an agent vector
+    // Check that IDs are set to anything but unset ID.
+    // Create new CUDASim, reimport pop
+    // getPopData to an agent vector
+    // Check that IDs are set to anything but unset ID.
+    ModelDescription model("test_agentid");
+    AgentDescription& agent = model.newAgent("agent");
+    agent.newVariable<id_t>("id_other", ID_NOT_SET);
+    auto& layer_a = model.newLayer();
+    layer_a.addHostFunction(DoNothing);
+
+    {
+        AgentVector pop_in(agent, 100);
+        for (auto a : pop_in) {
+            ASSERT_EQ(a.getID(), ID_NOT_SET);
+        }
+        CUDASimulation sim(model);
+        sim.setPopulationData(pop_in);
+        sim.step();
+
+        AgentVector pop_out(agent);
+        sim.getPopulationData(pop_out);
+        for (auto a : pop_out) {
+            ASSERT_NE(a.getID(), ID_NOT_SET);
+        }
+        sim.exportData(JSON_FILE_NAME);
+    }
+    {
+        CUDASimulation sim(model);
+        sim.SimulationConfig().input_file = JSON_FILE_NAME;
+        EXPECT_NO_THROW(sim.applyConfig());
+
+        AgentVector pop_out(agent);
+        sim.getPopulationData(pop_out);
+        for (auto a : pop_out) {
+            ASSERT_NE(a.getID(), ID_NOT_SET);
+        }
+    }
+    // Cleanup
+    ASSERT_EQ(::remove(JSON_FILE_NAME), 0);
+}
+TEST(IOTest2, AgentID_XML_ExportImport) {
+    // Create an agent pop, add it to the model, step so that they are assigned ids
+    // Export pop
+    // getPopData to an agent vector
+    // Check that IDs are set to anything but unset ID.
+    // Create new CUDASim, reimport pop
+    // getPopData to an agent vector
+    // Check that IDs are set to anything but unset ID.
+    ModelDescription model("test_agentid");
+    AgentDescription& agent = model.newAgent("agent");
+    agent.newVariable<id_t>("id_other", ID_NOT_SET);
+    auto& layer_a = model.newLayer();
+    layer_a.addHostFunction(DoNothing);
+
+    {
+        AgentVector pop_in(agent, 100);
+        for (auto a : pop_in) {
+            ASSERT_EQ(a.getID(), ID_NOT_SET);
+        }
+        CUDASimulation sim(model);
+        sim.setPopulationData(pop_in);
+        sim.step();
+
+        AgentVector pop_out(agent);
+        sim.getPopulationData(pop_out);
+        for (auto a : pop_out) {
+            ASSERT_NE(a.getID(), ID_NOT_SET);
+        }
+        sim.exportData(JSON_FILE_NAME);
+    }
+    {
+        CUDASimulation sim(model);
+        sim.SimulationConfig().input_file = JSON_FILE_NAME;
+        EXPECT_NO_THROW(sim.applyConfig());
+
+        AgentVector pop_out(agent);
+        sim.getPopulationData(pop_out);
+        for (auto a : pop_out) {
+            ASSERT_NE(a.getID(), ID_NOT_SET);
+        }
+    }
+    // Cleanup
+    ASSERT_EQ(::remove(JSON_FILE_NAME), 0);
+}
+// Agent ID collision is detected on import from file
+
+TEST(IOTest2, AgentID_FileInput_IDCollision) {
+    const char* JSON_FILE_BODY = "{\"agents\":{\"agent\":{\"default\":[{\"_id\":1,\"id_other\":0},{\"_id\":2,\"id_other\":0},{\"_id\":1,\"id_other\":0}]}}}";  // 3 AGENTS, with ids 1,2,1
+    // Manually create test.json, containing an agent pop with ID collision
+    // Import pop and expect exception
+    // Delete test.json
+    // The actual part that handles the collision is input type agnostic, so don't need to test with XML too
+    {
+        std::ofstream myfile;
+        myfile.open(JSON_FILE_NAME, std::ofstream::out | std::ofstream::trunc);
+        myfile << JSON_FILE_BODY;
+        myfile.close();
+    }
+
+    ModelDescription model("test_agentid");
+    AgentDescription& agent = model.newAgent("agent");
+    agent.newVariable<id_t>("id_other", ID_NOT_SET);
+    auto& layer_a = model.newLayer();
+    layer_a.addHostFunction(DoNothing);
+    CUDASimulation sim(model);
+    sim.SimulationConfig().input_file = JSON_FILE_NAME;
+    EXPECT_THROW(sim.applyConfig(), AgentIDCollision);
+    // Cleanup
+    ASSERT_EQ(::remove(JSON_FILE_NAME), 0);
 }
 }  // namespace test_io

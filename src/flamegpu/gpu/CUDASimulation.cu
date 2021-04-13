@@ -250,6 +250,8 @@ bool CUDASimulation::step() {
     util::CUDAEventTimer stepTimer = util::CUDAEventTimer();
     stepTimer.start();
 
+    // Init any unset agent IDs
+    this->assignAgentIDs();
 
     // If verbose, print the step number.
     if (getSimulationConfig().verbose) {
@@ -303,8 +305,6 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
     NVTX_RANGE(std::string("stepLayer " + std::to_string(layerIndex)).c_str());
 
     std::string message_name;
-    Curve::NamespaceHash message_name_inp_hash = 0;
-    Curve::NamespaceHash message_name_outp_hash = 0;
 
     // If the layer contains a sub model, it can only execute the sub model.
     if (layer->sub_model) {
@@ -602,8 +602,15 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
             NVTX_RANGE(std::string(func_agent->name + "::" + func_des->name).c_str());
             const void *d_in_messagelist_metadata = nullptr;
             const void *d_out_messagelist_metadata = nullptr;
+            id_t *d_agentOut_nextID = nullptr;
             std::string agent_name = func_agent->name;
             std::string func_name = func_des->name;
+            Curve::NamespaceHash agentname_hash = Curve::variableRuntimeHash(agent_name.c_str());
+            Curve::NamespaceHash funcname_hash = Curve::variableRuntimeHash(func_name.c_str());
+            Curve::NamespaceHash agent_func_name_hash = agentname_hash + funcname_hash + instance_id;
+            Curve::NamespaceHash message_name_inp_hash = 0;
+            Curve::NamespaceHash message_name_outp_hash = 0;
+            Curve::NamespaceHash agentoutput_hash = 0;
 
             // check if a function has an input message
             if (auto im = func_des->message_input.lock()) {
@@ -626,6 +633,13 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                 d_out_messagelist_metadata = cuda_message.getMetaDataDevicePtr();
             }
 
+            // check if a function has agent output
+            if (auto oa = func_des->agent_output.lock()) {
+                agentoutput_hash = (Curve::variableRuntimeHash("_agent_birth") ^ funcname_hash) + instance_id;
+                CUDAAgent& output_agent = getCUDAAgent(oa->name);
+                d_agentOut_nextID = output_agent.getDeviceNextID();
+            }
+
             const CUDAAgent& cuda_agent = getCUDAAgent(agent_name);
 
             const unsigned int state_list_size = cuda_agent.getStateSize(func_des->initial_state);
@@ -639,10 +653,6 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
             int gridSize = 0;  // The actual grid size needed, based on input size
 
             // Agent function kernel wrapper args
-            Curve::NamespaceHash agentname_hash = Curve::variableRuntimeHash(agent_name.c_str());
-            Curve::NamespaceHash funcname_hash = Curve::variableRuntimeHash(func_name.c_str());
-            Curve::NamespaceHash agent_func_name_hash = agentname_hash + funcname_hash + instance_id;
-            Curve::NamespaceHash agentoutput_hash = func_des->agent_output.lock() ? (Curve::variableRuntimeHash("_agent_birth") ^ funcname_hash) + instance_id : 0;
             curandState * t_rng = d_rng + totalThreads;
             unsigned int *scanFlag_agentDeath = func_des->has_agent_death ? this->singletons->scatter.Scan().Config(CUDAScanCompaction::Type::AGENT_DEATH, streamIdx).d_ptrs.scan_flag : nullptr;
             unsigned int *scanFlag_messageOutput = this->singletons->scatter.Scan().Config(CUDAScanCompaction::Type::MESSAGE_OUTPUT, streamIdx).d_ptrs.scan_flag;
@@ -668,6 +678,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                     message_name_inp_hash,
                     message_name_outp_hash,
                     agentoutput_hash,
+                    d_agentOut_nextID,
                     state_list_size,
                     d_in_messagelist_metadata,
                     d_out_messagelist_metadata,
@@ -694,6 +705,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                     reinterpret_cast<void*>(&message_name_inp_hash),
                     reinterpret_cast<void*>(&message_name_outp_hash),
                     reinterpret_cast<void*>(&agentoutput_hash),
+                    reinterpret_cast<void*>(&d_agentOut_nextID),
                     const_cast<void*>(reinterpret_cast<const void*>(&state_list_size)),
                     const_cast<void*>(reinterpret_cast<const void*>(&d_in_messagelist_metadata)),
                     const_cast<void*>(reinterpret_cast<const void*>(&d_out_messagelist_metadata)),
@@ -902,6 +914,9 @@ void CUDASimulation::simulate() {
     unsigned int nStreams = getMaximumLayerWidth();
     this->createStreams(nStreams);
 
+    // Init any unset agent IDs
+    this->assignAgentIDs();
+
     // Reinitialise any unmapped agent variables
     if (submodel) {
         int streamIdx = 0;
@@ -1041,6 +1056,7 @@ void CUDASimulation::setPopulationData(AgentVector& population, const std::strin
     }
 #endif
     gpuErrchk(cudaDeviceSynchronize());
+    agent_ids_have_init = false;
 }
 void CUDASimulation::getPopulationData(AgentVector& population, const std::string& state_name) {
     // Ensure singletons have been initialised
@@ -1378,7 +1394,7 @@ void CUDASimulation::initOffsetsAndMap() {
         AgentDataBufferStateMap agent_states;
         for (const auto&state : agent.second->states)
             agent_states.emplace(state, AgentDataBuffer());
-        agentData.emplace(agent.first, agent_states);
+        agentData.emplace(agent.first, std::move(agent_states));
     }
 }
 
@@ -1653,5 +1669,18 @@ void CUDASimulation::synchronizeAllStreams() {
     // Destroy streams.
     for (auto stream : streams) {
         gpuErrchk(cudaStreamSynchronize(stream));
+    }
+}
+
+void CUDASimulation::assignAgentIDs() {
+    NVTX_RANGE("CUDASimulation::assignAgentIDs");
+    if (!agent_ids_have_init) {
+        // Ensure singletons have been initialised
+        initialiseSingletons();
+
+        for (auto &a : agent_map) {
+            a.second->assignIDs(*host_api);  // This is cheap if the CUDAAgent thinks it's IDs are already assigned
+        }
+        agent_ids_have_init = true;
     }
 }

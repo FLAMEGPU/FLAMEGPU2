@@ -4,6 +4,7 @@
 
 #include <cassert>
 #include <cstdint>
+#include <limits>
 
 // #include "flamegpu/gpu/CUDAErrorChecking.h"            // required for CUDA error handling functions
 #ifndef __CUDACC_RTC__
@@ -18,7 +19,7 @@
 #include "flamegpu/runtime/AgentFunction.h"
 #include "flamegpu/runtime/AgentFunctionCondition.h"
 #include "flamegpu/runtime/messaging_device.h"
-
+#include "flamegpu/defines.h"
 
 /**
  * @brief  FLAMEGPU_API is a singleton class for the device runtime
@@ -47,7 +48,7 @@ class ReadOnlyDeviceAPI {
         const Curve::NamespaceHash &instance_id_hash,
         const Curve::NamespaceHash &agentfuncname_hash,
         curandState *&d_rng)
-        : random(AgentRandom(&d_rng[TID()]))
+        : random(AgentRandom(&d_rng[getThreadIndex()]))
         , environment(DeviceEnvironment(instance_id_hash))
         , agent_func_name_hash(agentfuncname_hash) { }
 
@@ -55,6 +56,12 @@ class ReadOnlyDeviceAPI {
     T getVariable(const char(&variable_name)[N]);
     template<typename T, unsigned int N, unsigned int M> __device__
     T getVariable(const char(&variable_name)[M], const unsigned int &index);
+    /**
+     * Returns the agent's unique identifier
+     */
+    __device__ id_t getID() {
+        return getVariable<id_t>("_id");
+    }
 
     /**
      * Provides access to random functionality inside agent functions
@@ -74,13 +81,12 @@ class ReadOnlyDeviceAPI {
         return environment.getProperty<unsigned int>("_stepCount");
     }
 
- protected:
-    Curve::NamespaceHash agent_func_name_hash;
-
     /**
-     * Thread index
+     * Returns the current CUDA thread of the agent
+     * All agents execute in a unique thread, but their associated thread may change between agent functions
+     * Thread indices begin at 0 and continue to 1 below the number of agents executing
      */
-    __forceinline__ __device__ static unsigned int TID() {
+    __forceinline__ __device__ static unsigned int getThreadIndex() {
         /*
         // 3D version
         auto blockId = blockIdx.x + blockIdx.y * gridDim.x
@@ -90,12 +96,17 @@ class ReadOnlyDeviceAPI {
         + (threadIdx.y * blockDim.x)
         + threadIdx.x;
         return threadId;*/
+#ifdef SEATBELTS
         assert(blockDim.y == 1);
         assert(blockDim.z == 1);
         assert(gridDim.y == 1);
         assert(gridDim.z == 1);
+#endif
         return blockIdx.x * blockDim.x + threadIdx.x;
     }
+
+ protected:
+    Curve::NamespaceHash agent_func_name_hash;
 };
 
 /** @brief    A flame gpu api class for the device runtime only
@@ -120,6 +131,7 @@ class DeviceAPI : public ReadOnlyDeviceAPI{
         Curve::NamespaceHash,
         Curve::NamespaceHash,
         Curve::NamespaceHash,
+        id_t*,
         const unsigned int,
         const void *,
         const void *,
@@ -129,40 +141,65 @@ class DeviceAPI : public ReadOnlyDeviceAPI{
         unsigned int *);
 
  public:
-     class AgentOut {
-      public:
-         __device__ AgentOut(const Curve::NamespaceHash &aoh, unsigned int *&scan_flag_agentOutput)
-             : agent_output_hash(aoh)
-             , scan_flag(scan_flag_agentOutput) { }
-         /**
-          * Sets a variable in a new agent to be output after the agent function has completed
-          * @param variable_name The name of the variable
-          * @param value The value to set the variable
-          * @tparam T The type of the variable, as set within the model description hierarchy
-          * @tparam N Variable name length, this should be ignored as it is implicitly set
-          * @note Any agent variables not set will remain as their default values
-          * @note Atleast one AgentOut::setVariable() method must be called to trigger an agent output
-          */
-         template<typename T, unsigned int N>
-         __device__ void setVariable(const char(&variable_name)[N], T value) const;
-         /**
-          * Sets an element of an array variable in a new agent to be output after the agent function has completed
-          * @param variable_name The name of the array variable
-          * @param index The index to set within the array variable
-          * @param value The value to set the element of the array velement
-          * @tparam T The type of the variable, as set within the model description hierarchy
-          * @tparam N The length of the array variable, as set within the model description hierarchy
-          * @tparam M Variable name length, this should be ignored as it is implicitly set
-          * @note Any agent variables not set will remain as their default values
-          * @note Atleast one AgentOut::setVariable() method must be called to trigger an agent output
-          */
-         template<typename T, unsigned int N, unsigned int M>
-         __device__ void setVariable(const char(&variable_name)[M], const unsigned int &index, T value) const;
+    class AgentOut {
+     public:
+        __device__ AgentOut(const Curve::NamespaceHash &aoh, id_t *&d_agent_output_nextID, unsigned int *&scan_flag_agentOutput)
+            : agent_output_hash(aoh)
+            , scan_flag(scan_flag_agentOutput)
+            , nextID(d_agent_output_nextID) { }
+        /**
+         * Sets a variable in a new agent to be output after the agent function has completed
+         * @param variable_name The name of the variable
+         * @param value The value to set the variable
+         * @tparam T The type of the variable, as set within the model description hierarchy
+         * @tparam N Variable name length, this should be ignored as it is implicitly set
+         * @note Any agent variables not set will remain as their default values
+         * @note Calling AgentOut::setVariable() or AgentOut::getID() will trigger agent output
+         */
+        template<typename T, unsigned int N>
+        __device__ void setVariable(const char(&variable_name)[N], T value) const;
+        /**
+         * Sets an element of an array variable in a new agent to be output after the agent function has completed
+         * @param variable_name The name of the array variable
+         * @param index The index to set within the array variable
+         * @param value The value to set the element of the array velement
+         * @tparam T The type of the variable, as set within the model description hierarchy
+         * @tparam N The length of the array variable, as set within the model description hierarchy
+         * @tparam M Variable name length, this should be ignored as it is implicitly set
+         * @note Any agent variables not set will remain as their default values
+         * @note Calling AgentOut::setVariable() or AgentOut::getID() will trigger agent output
+         */
+        template<typename T, unsigned int N, unsigned int M>
+        __device__ void setVariable(const char(&variable_name)[M], const unsigned int &index, T value) const;
+        /**
+         * Return the ID of the agent to be created
+         * @note Calling AgentOut::setVariable() or AgentOut::getID() will trigger agent output
+         */
+        __device__ id_t getID() const;
 
-      private:
-         const Curve::NamespaceHash agent_output_hash;
-         unsigned int * const scan_flag;
-     };
+     private:
+        /**
+         * Sets scan flag and id
+         */
+        __device__ void genID() const;
+        /**
+         * Curve hash used for accessing new agent variables
+         */
+        const Curve::NamespaceHash agent_output_hash;
+        /**
+         * Scan flag, defaults to 0, set to 1, to mark than agent is output
+         */
+        unsigned int* const scan_flag;
+        /**
+         * Agent id if set
+         * @note mutable, because this object is always const
+         */
+        mutable id_t id = ID_NOT_SET;
+        /**
+         * Ptr to global address storing a counter to track the next available agent ID for the agent type being output
+         */
+        id_t *nextID;
+    };
     /**
      * Constructs the device-only API class instance.
      * @param instance_id_hash CURVE hash of the CUDASimulation's instance id
@@ -177,6 +214,7 @@ class DeviceAPI : public ReadOnlyDeviceAPI{
         const Curve::NamespaceHash &instance_id_hash,
         const Curve::NamespaceHash &agentfuncname_hash,
         const Curve::NamespaceHash &_agent_output_hash,
+        id_t *&d_agent_output_nextID,
         curandState *&d_rng,
         unsigned int *&scanFlag_agentOutput,
         typename MsgIn::In &&msg_in,
@@ -184,7 +222,7 @@ class DeviceAPI : public ReadOnlyDeviceAPI{
         : ReadOnlyDeviceAPI(instance_id_hash, agentfuncname_hash, d_rng)
         , message_in(msg_in)
         , message_out(msg_out)
-        , agent_out(AgentOut(_agent_output_hash, scanFlag_agentOutput))
+        , agent_out(AgentOut(_agent_output_hash, d_agent_output_nextID, scanFlag_agentOutput))
     { }
     /**
      * Sets a variable within the currently executing agent
@@ -238,7 +276,7 @@ class DeviceAPI : public ReadOnlyDeviceAPI{
 template<typename T, unsigned int N>
 __device__ T ReadOnlyDeviceAPI::getVariable(const char(&variable_name)[N]) {
     // simple indexing assumes index is the thread number (this may change later)
-    unsigned int index =  (blockDim.x * blockIdx.x) + threadIdx.x;
+    const unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
 
     // get the value from curve
     T value = Curve::getAgentVariable<T>(variable_name, agent_func_name_hash , index);
@@ -259,7 +297,7 @@ __device__ void DeviceAPI<MsgIn, MsgOut>::setVariable(const char(&variable_name)
         return;  // Fail silently
     }
     // simple indexing assumes index is the thread number (this may change later)
-    unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
+    const unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
     // set the variable using curve
     Curve::setAgentVariable<T>(variable_name, agent_func_name_hash,  value, index);
 }
@@ -270,7 +308,7 @@ __device__ void DeviceAPI<MsgIn, MsgOut>::setVariable(const char(&variable_name)
 template<typename T, unsigned int N, unsigned int M>
 __device__ T ReadOnlyDeviceAPI::getVariable(const char(&variable_name)[M], const unsigned int &array_index) {
     // simple indexing assumes index is the thread number (this may change later)
-    unsigned int index =  (blockDim.x * blockIdx.x) + threadIdx.x;
+    const unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
 
     // get the value from curve
     T value = Curve::getAgentArrayVariable<T, N>(variable_name, agent_func_name_hash , index, array_index);
@@ -291,7 +329,7 @@ __device__ void DeviceAPI<MsgIn, MsgOut>::setVariable(const char(&variable_name)
         return;  // Fail silently
     }
     // simple indexing assumes index is the thread number (this may change later)
-    unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
+    const unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
 
     // set the variable using curve
     Curve::setAgentArrayVariable<T, N>(variable_name , agent_func_name_hash,  value, index, array_index);
@@ -306,13 +344,13 @@ __device__ void DeviceAPI<MsgIn, MsgOut>::AgentOut::setVariable(const char(&vari
         }
         if (agent_output_hash) {
             // simple indexing assumes index is the thread number (this may change later)
-            unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
+            const unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
 
             // set the variable using curve
             Curve::setNewAgentVariable<T>(variable_name, agent_output_hash, value, index);
 
             // Mark scan flag
-            this->scan_flag[index] = 1;
+            genID();
         }
 #if !defined(SEATBELTS) || SEATBELTS
     } else {
@@ -328,18 +366,42 @@ __device__ void DeviceAPI<MsgIn, MsgOut>::AgentOut::setVariable(const char(&vari
             return;  // Fail silently
         }
         // simple indexing assumes index is the thread number (this may change later)
-        unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
+        const unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
 
         // set the variable using curve
         Curve::setNewAgentArrayVariable<T, N>(variable_name, agent_output_hash, value, index, array_index);
 
         // Mark scan flag
-        this->scan_flag[index] = 1;
+        genID();
 #if !defined(SEATBELTS) || SEATBELTS
     } else {
         DTHROW("Agent output must be enabled per agent function when defining the model.\n");
 #endif
     }
 }
+
+template<typename MsgIn, typename MsgOut>
+__device__ id_t DeviceAPI<MsgIn, MsgOut>::AgentOut::getID() const {
+    if (agent_output_hash) {
+        genID();
+        return this->id;
+    }
+#if !defined(SEATBELTS) || SEATBELTS
+    DTHROW("Agent output must be enabled per agent function when defining the model.\n");
+#endif
+    return ID_NOT_SET;
+}
+#ifdef __CUDACC__
+template<typename MsgIn, typename MsgOut>
+__device__ void DeviceAPI<MsgIn, MsgOut>::AgentOut::genID() const {
+    // Only assign id and scan flag once
+    if (this->id == ID_NOT_SET) {
+        this->id = atomicInc(this->nextID, std::numeric_limits<id_t>().max());
+        const unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
+        Curve::setNewAgentVariable<id_t>("_id", agent_output_hash, this->id, index);  // Can't use ID_VARIABLE_NAME inline, as it isn't of char[N] type
+        this->scan_flag[index] = 1;
+    }
+}
+#endif
 
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_DEVICEAPI_H_

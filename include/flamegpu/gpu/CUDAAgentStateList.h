@@ -105,8 +105,9 @@ class CUDAAgentStateList {
      * @param newSize The maximum number of new agents (this will be the size of the agent state executing func)
      * @param scatter Scatter instance and scan arrays to be used
      * @param streamId This is required for scan compaction arrays and async
+     * @return The number of newly birthed agents
      */
-    void scatterNew(void * d_newBuff, const unsigned int &newSize, CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream);
+    unsigned int scatterNew(void * d_newBuff, const unsigned int &newSize, CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream);
     /**
      * Returns true if the state list is not the primary statelist (and is mapped to a master agent state)
      */

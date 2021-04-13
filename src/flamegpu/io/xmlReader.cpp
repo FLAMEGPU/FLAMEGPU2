@@ -104,9 +104,9 @@ int xmlReader::parse() {
             tinyxml2::XMLElement *pSimCfgBlock = pElement->FirstChildElement("simulation");
             for (auto simCfgElement = pSimCfgBlock->FirstChildElement(); simCfgElement; simCfgElement = simCfgElement->NextSiblingElement()) {
                 std::string key = simCfgElement->Value();
-                std::string val = simCfgElement->GetText();
+                std::string val = simCfgElement->GetText() ? simCfgElement->GetText() : "";
                 if (key == "input_file") {
-                    if (inputFile != val)
+                    if (inputFile != val && !val.empty())
                         printf("Warning: Input file '%s' refers to second input file '%s', this will not be loaded.\n", inputFile.c_str(), val.c_str());
                     // sim_instance->SimulationConfig().input_file = val;
                 } else if (key == "steps") {
@@ -275,29 +275,41 @@ int xmlReader::parse() {
                 // Put string for the variable into a string stream
                 std::stringstream ss(pVarElement->GetText());
                 std::string token;
+                const size_t v_size = var_data.type_size * var_data.elements;
+                char* data = static_cast<char*>(const_cast<void*>(static_cast<std::shared_ptr<const AgentVector>>(agentVec)->data(variable_name)));
                 // Iterate elements of the stringstream
                 unsigned int el = 0;
                 while (getline(ss, token, ',')) {
                     if (var_data.type == std::type_index(typeid(float))) {
-                        instance.setVariable<float>(variable_name, el++, stof(token));
+                        const float t = stof(token);
+                        memcpy(data + ((agentVec->size() - 1) * v_size) + (var_data.type_size * el++), &t, var_data.type_size);
                     } else if (var_data.type == std::type_index(typeid(double))) {
-                        instance.setVariable<double>(variable_name, el++, stod(token));
+                        const double t = stod(token);
+                        memcpy(data + ((agentVec->size() - 1) * v_size) + (var_data.type_size * el++), &t, var_data.type_size);
                     } else if (var_data.type == std::type_index(typeid(int64_t))) {
-                        instance.setVariable<int64_t>(variable_name, el++, stoll(token));
+                        const int64_t t = stoll(token);
+                        memcpy(data + ((agentVec->size() - 1) * v_size) + (var_data.type_size * el++), &t, var_data.type_size);
                     } else if (var_data.type == std::type_index(typeid(uint64_t))) {
-                        instance.setVariable<uint64_t>(variable_name, el++, stoull(token));
+                        const uint64_t t = stoull(token);
+                        memcpy(data + ((agentVec->size() - 1) * v_size) + (var_data.type_size * el++), &t, var_data.type_size);
                     } else if (var_data.type == std::type_index(typeid(int32_t))) {
-                        instance.setVariable<int32_t>(variable_name, el++, static_cast<int32_t>(stoll(token)));
+                        const int32_t t = static_cast<int32_t>(stoll(token));
+                        memcpy(data + ((agentVec->size() - 1) * v_size) + (var_data.type_size * el++), &t, var_data.type_size);
                     } else if (var_data.type == std::type_index(typeid(uint32_t))) {
-                        instance.setVariable<uint32_t>(variable_name, el++, static_cast<uint32_t>(stoull(token)));
+                        const uint32_t t = static_cast<uint32_t>(stoull(token));
+                        memcpy(data + ((agentVec->size() - 1) * v_size) + (var_data.type_size * el++), &t, var_data.type_size);
                     } else if (var_data.type == std::type_index(typeid(int16_t))) {
-                        instance.setVariable<int16_t>(variable_name, el++, static_cast<int16_t>(stoll(token)));
+                        const int16_t t = static_cast<int16_t>(stoll(token));
+                        memcpy(data + ((agentVec->size() - 1) * v_size) + (var_data.type_size * el++), &t, var_data.type_size);
                     } else if (var_data.type == std::type_index(typeid(uint16_t))) {
-                        instance.setVariable<uint16_t>(variable_name, el++, static_cast<uint16_t>(stoull(token)));
+                        const uint16_t t = static_cast<uint16_t>(stoull(token));
+                        memcpy(data + ((agentVec->size() - 1) * v_size) + (var_data.type_size * el++), &t, var_data.type_size);
                     } else if (var_data.type == std::type_index(typeid(int8_t))) {
-                        instance.setVariable<int8_t>(variable_name, el++, static_cast<int8_t>(stoll(token)));
+                        const int8_t t = static_cast<int8_t>(stoll(token));
+                        memcpy(data + ((agentVec->size() - 1) * v_size) + (var_data.type_size * el++), &t, var_data.type_size);
                     } else if (var_data.type == std::type_index(typeid(uint8_t))) {
-                        instance.setVariable<uint8_t>(variable_name, el++, static_cast<uint8_t>(stoull(token)));
+                        const uint8_t t = static_cast<uint8_t>(stoull(token));
+                        memcpy(data + ((agentVec->size() - 1) * v_size) + (var_data.type_size * el++), &t, var_data.type_size);
                     } else {
                         THROW TinyXMLError("Agent '%s' contains variable '%s' of unsupported type '%s', "
                             "in xmlReader::parse()\n", agentName, variable_name.c_str(), var_data.type.name());

@@ -2249,4 +2249,94 @@ TEST(TestCUDASubAgent, UnmappedVariablesResetToDefaultBetweenSubmodelRuns) {
         EXPECT_EQ(ai.getVariable<unsigned int>(AGENT_VAR1_NAME), ai.getVariable<unsigned int>("id") + 1 + 1);  // If unmapped subvar persists would be + 1 + 2
     }
 }
+
+FLAMEGPU_AGENT_FUNCTION(CopyID, MsgNone, MsgNone) {
+    FLAMEGPU->setVariable<id_t>("id_copy", FLAMEGPU->getID());
+    return ALIVE;
+}
+FLAMEGPU_EXIT_CONDITION(AlwaysExit) {
+    return EXIT;
+}
+TEST(TestCUDASubAgent, AgentID_BindsID) {
+    // Define a model whereby, the submodel copies agent id to agent var
+    // Step model
+    // Get agent pop and check agent var value matches ID
+    ModelDescription submodel("subm");
+    AgentDescription& agent1 = submodel.newAgent("agent");
+    agent1.newVariable<id_t>("id_copy");
+    AgentFunctionDescription& af1 = agent1.newFunction("copy_id", CopyID);
+    submodel.newLayer().addAgentFunction(af1);
+    submodel.addExitCondition(AlwaysExit);
+
+    ModelDescription model("subm");
+    AgentDescription& agent2 = model.newAgent("agent");
+    agent2.newVariable<id_t>("id_copy");
+    SubModelDescription& smd = model.newSubModel("sm", submodel);
+    smd.bindAgent("agent", "agent", true);
+    model.newLayer().addSubModel(smd);
+
+    CUDASimulation sim(model);
+    AgentVector pop_in(agent2, 100);
+    sim.setPopulationData(pop_in);
+    sim.step();
+    AgentVector pop_out(agent2, 100);
+    sim.getPopulationData(pop_out);
+
+    for (auto p : pop_out) {
+        EXPECT_NE(p.getID(), ID_NOT_SET);
+        EXPECT_EQ(p.getID(), p.getVariable<id_t>("id_copy"));
+    }
+}
+// Submodel unbound agents id counter resets
+FLAMEGPU_AGENT_FUNCTION(BirthAndCopyID, MsgNone, MsgNone) {
+    FLAMEGPU->setVariable<id_t>("id_copy", FLAMEGPU->agent_out.getID());
+    return ALIVE;
+}
+TEST(TestCUDASubAgent, AgentID_ResetsOunboundAgentID) {
+    // Define a model whereby, the submodel every agent births an agent (of a second type not bound to parent model) and copies that agent's id to agent var
+    // Step model
+    // Get agent pop
+    // Step model
+    // Get agent pop and check set of copied IDs match the first pop's ids
+    ModelDescription submodel("subm");
+    AgentDescription& baby = submodel.newAgent("baby");
+    AgentDescription& agent1 = submodel.newAgent("agent");
+    agent1.newVariable<id_t>("id_copy");
+    AgentFunctionDescription& af1 = agent1.newFunction("birth_and_copy_id", BirthAndCopyID);
+    af1.setAgentOutput(baby);
+    submodel.newLayer().addAgentFunction(af1);
+    submodel.addExitCondition(AlwaysExit);
+
+    ModelDescription model("subm");
+    AgentDescription& agent2 = model.newAgent("agent");
+    agent2.newVariable<id_t>("id_copy");
+    SubModelDescription& smd = model.newSubModel("sm", submodel);
+    smd.bindAgent("agent", "agent", true);
+    model.newLayer().addSubModel(smd);
+
+    CUDASimulation sim(model);
+    AgentVector pop_in(agent2, 100);
+    sim.setPopulationData(pop_in);
+    sim.step();
+    AgentVector pop_out1(agent2, 100);
+    sim.getPopulationData(pop_out1);
+    sim.setPopulationData(pop_in);  // Reset the copy_id back
+    sim.step();
+    AgentVector pop_out2(agent2, 100);
+    sim.getPopulationData(pop_out2);
+    sim.step();                       // Attempt it without resetting copy_id back too
+    AgentVector pop_out3(agent2, 100);
+    sim.getPopulationData(pop_out3);
+
+    std::set<id_t> ids1, ids2, ids3;
+    for (unsigned int i = 0; i < pop_in.size(); ++i) {
+        ids1.insert(pop_out1[i].getVariable<id_t>("id_copy"));
+        ids2.insert(pop_out2[i].getVariable<id_t>("id_copy"));
+        ids3.insert(pop_out3[i].getVariable<id_t>("id_copy"));
+    }
+    EXPECT_EQ(ids1.size(), pop_in.size());
+    ASSERT_EQ(ids1, ids2);
+    ASSERT_EQ(ids1, ids3);
+}
+
 };  // namespace test_cuda_sub_agent

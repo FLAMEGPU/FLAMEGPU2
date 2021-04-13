@@ -128,7 +128,8 @@ void CUDAAgentStateList::getAgentData(AgentVector& population) const {
             const unsigned int  var_elements = var.elements;
 
             // get pointer to vector data
-            void* v_data = population.data(_var.first);
+            // Use the const method, but const cast away the const to avoid the reserved var check
+            void* v_data = const_cast<void*>(static_cast<const AgentVector&>(population).data(_var.first));
 
             // copy the host data to the GPU
             gpuErrchk(cudaMemcpy(v_data, _var.second->data, var_elements * var_size * data_count, cudaMemcpyDeviceToHost));
@@ -167,7 +168,7 @@ void CUDAAgentStateList::scatterHostCreation(const unsigned int& newSize, char* 
 void CUDAAgentStateList::scatterSort(CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream) {
     parent_list->scatterSort(scatter, streamId, stream);
 }
-void CUDAAgentStateList::scatterNew(void * d_newBuff, const unsigned int &newSize, CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream) {
+unsigned int CUDAAgentStateList::scatterNew(void * d_newBuff, const unsigned int &newSize, CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream) {
     if (newSize) {
         CUDAScanCompactionConfig &scanCfg = scatter.Scan().Config(CUDAScanCompaction::Type::AGENT_OUTPUT, streamId);
         // Perform scan
@@ -220,7 +221,7 @@ void CUDAAgentStateList::scatterNew(void * d_newBuff, const unsigned int &newSiz
             CUDAScatter::Type::AGENT_OUTPUT,
             scatterdata,
             newSize, parent_list->getSizeWithDisabled());
-        if (new_births == 0) return;
+        if (new_births == 0) return 0;
         // Initialise any buffers in the fat_agent which aren't part of the current agent description
         // TODO: This does redundant inits, it only needs to initialise parent/master agent variables which are not mapped
         //       Sub variables will already be init everytime the submodel is executed.
@@ -230,7 +231,9 @@ void CUDAAgentStateList::scatterNew(void * d_newBuff, const unsigned int &newSiz
         parent_list->initVariables(exclusionSet, newSize, parent_list->getSize(), scatter, streamId, stream);
         // Update number of alive agents
         parent_list->setAgentCount(parent_list->getSize() + new_births);
+        return new_births;
     }
+    return 0;
 }
 bool CUDAAgentStateList::getIsSubStatelist() {
     return isSubStateList;

@@ -28,6 +28,10 @@ class HostAPI {
      * @todo Could move this behaviour to a seperate singleton class 
      */
     friend class HostAgentAPI;
+    /**
+     * CUDAFatAgent::assignIDs() makes use of resizeTempStorage()
+     */
+    friend class CUDAFatAgent;
 
  public:
     // Typedefs repeated from CUDASimulation

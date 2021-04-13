@@ -21,6 +21,7 @@ class AgentFunctionDescription;
  * This class is used to configure external elements of agents, such as variables and functions
  * @see AgentData The internal data store for this class
  * @see ModelDescription::newAgent(const std::string&) For creating instances of this class
+ * @note To set an agent's id, the agent must be part of a model which has begun (id's are automatically assigned before initialisation functions and can not be manually set by users)
  */
 class AgentDescription {
     /**
@@ -183,6 +184,7 @@ class AgentDescription {
     ModelData::size_type getVariableLength(const std::string &variable_name) const;
     /**
      * The total number of variables within the agent
+     * @note This count includes internal variables used to track things such as agent ID
      */
     ModelData::size_type getVariablesCount() const;
     /**

@@ -109,7 +109,7 @@ VISUALISATION = True;
 outputdata = """
 FLAMEGPU_AGENT_FUNCTION(outputdata, MsgNone, MsgSpatial3D) {
     // Output each agents publicly visible properties.
-    FLAMEGPU->message_out.setVariable<int>("id", FLAMEGPU->getVariable<int>("id"));
+    FLAMEGPU->message_out.setVariable<unsigned int>("id", FLAMEGPU->getID());
     FLAMEGPU->message_out.setVariable<float>("x", FLAMEGPU->getVariable<float>("x"));
     FLAMEGPU->message_out.setVariable<float>("y", FLAMEGPU->getVariable<float>("y"));
     FLAMEGPU->message_out.setVariable<float>("z", FLAMEGPU->getVariable<float>("z"));
@@ -165,7 +165,7 @@ FLAMEGPU_HOST_DEVICE_FUNCTION void clampPosition(float &x, float &y, float &z, c
 // Agent function
 FLAMEGPU_AGENT_FUNCTION(inputdata, MsgSpatial3D, MsgNone) {
     // Agent properties in local register
-    int id = FLAMEGPU->getVariable<int>("id");
+    const id_t id = FLAMEGPU->getID();
     // Agent position
     float agent_x = FLAMEGPU->getVariable<float>("x");
     float agent_y = FLAMEGPU->getVariable<float>("y");
@@ -197,7 +197,7 @@ FLAMEGPU_AGENT_FUNCTION(inputdata, MsgSpatial3D, MsgNone) {
     // Iterate location messages, accumulating relevant data and counts.
     for (const auto &message : FLAMEGPU->message_in(agent_x, agent_y, agent_z)) {
         // Ignore self messages.
-        if (message.getVariable<int>("id") != id) {
+        if (message.getVariable<id_t>("id") != id) {
             // Get the message location and velocity.
             const float message_x = message.getVariable<float>("x");
             const float message_y = message.getVariable<float>("y");
@@ -359,7 +359,7 @@ message.setRadius(env.getPropertyFloat("INTERACTION_RADIUS"));
 message.setMin(env.getPropertyFloat("MIN_POSITION"), env.getPropertyFloat("MIN_POSITION"), env.getPropertyFloat("MIN_POSITION"));
 message.setMax(env.getPropertyFloat("MAX_POSITION"), env.getPropertyFloat("MAX_POSITION"), env.getPropertyFloat("MAX_POSITION"));
 # A message to hold the location of an agent.
-message.newVariableInt("id");
+message.newVariableID("id");
 # X Y Z are implicit.
 # message.newVariable<float>("x");
 # message.newVariable<float>("y");
@@ -372,7 +372,6 @@ message.newVariableFloat("fz");
   Boid agent
 """
 agent = model.newAgent("Boid");
-agent.newVariableInt("id");
 agent.newVariableFloat("x");
 agent.newVariableFloat("y");
 agent.newVariableFloat("z");
@@ -433,7 +432,6 @@ if not cuda_model.getSimulationConfig().input_file:
     population = pyflamegpu.AgentVector(model.Agent("Boid"), populationSize);
     for i in range(populationSize):
         instance = population[i];
-        instance.setVariableInt("id", i);
 
         # Agent position in space
         instance.setVariableFloat("x", random.uniform(min_pos, max_pos));

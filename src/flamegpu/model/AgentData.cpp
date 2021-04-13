@@ -11,6 +11,8 @@ AgentData::AgentData(std::shared_ptr<const ModelData> model, const std::string &
     , name(agent_name)
     , keepDefaultState(false) {
     states.insert(ModelData::DEFAULT_STATE);
+    // All agents have an internal _id variable
+    variables.emplace(ID_VARIABLE_NAME, Variable(std::array<id_t, 1>{ ID_NOT_SET }));
 }
 
 std::shared_ptr<const AgentData> AgentData::clone() const {

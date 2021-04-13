@@ -48,8 +48,9 @@ SubAgentDescription &SubModelDescription::bindAgent(const std::string &sub_agent
     auto rtn = std::shared_ptr<SubAgentData>(new SubAgentData(mdl, data->shared_from_this(), subagent->second, masteragent->second));
     data->subagents.emplace(sub_agent_name, rtn);
     // If auto_map, map any matching vars
-    if (auto_map_vars) {
-        for (auto &sub_var : subagent->second->variables) {
+    // Otherwise map all internal variables that begin _ (e.g. _id)
+    for (auto& sub_var : subagent->second->variables) {
+        if (auto_map_vars || (!sub_var.first.empty() && sub_var.first[0] == '_')) {
             auto master_var = masteragent->second->variables.find(sub_var.first);
             // If there exists variable with same name in both agents
             if (master_var != masteragent->second->variables.end()) {

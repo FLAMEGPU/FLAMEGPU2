@@ -171,6 +171,7 @@ class AgentVector {
      * Copy constructor.
      * Constructs the container with the copy of the contents of other
      * @param other another container to be used as source to initialize the elements of the container with
+     * @note The newly created agent copies will have their IDs updated to new unique values
      */
     AgentVector(const AgentVector &other);
     /**
@@ -349,6 +350,11 @@ class AgentVector {
      * Leaves the capacity() of the vector unchanged
      */
     void clear();
+    /**
+     * Sets the ID of all agents currently inside the vector to the unset flag
+     * @note The ID will only not have the unset flag, if the agents have been taken from a simulation which has executed
+     */
+    void resetAllIDs();
 
     /**
      * Inserts elements at the specified location in the container
@@ -360,6 +366,7 @@ class AgentVector {
      * The past-the-end iterator is also invalidated.
      *
      * @throw InvalidAgent If agent type of value does not match
+     * @note The newly insert agent will have their ID updated to a new unique value
      */
     iterator insert(const_iterator pos, const AgentInstance& value);
     iterator insert(size_type pos, const AgentInstance& value);
@@ -379,6 +386,7 @@ class AgentVector {
      * The past-the-end iterator is also invalidated.
      *
      * @throw InvalidAgent If agent type of value does not match
+     * @note The newly inserted agent copies will have their IDs updated to new unique values
      */
     iterator insert(const_iterator pos, size_type count, const AgentInstance& value);
     iterator insert(size_type pos, size_type count, const AgentInstance& value);
@@ -399,6 +407,7 @@ class AgentVector {
      * The past-the-end iterator is also invalidated.
      *
      * @throw InvalidAgent If agent type of first or last does not match
+     * @note The newly inserted agents will have their IDs updated to new unique values
      */
     template<class InputIt>
     iterator insert(const_iterator pos, InputIt first, InputIt last);
@@ -456,6 +465,7 @@ class AgentVector {
      * @param value	the value of the agent to append
      *
      * @throws InvalidAgent If the agent type of the AgentInstance doesn't match the agent type of the AgentVector
+     * @note The newly inserted agent will have a unique ID generated
      */
     void push_back(const AgentInstance& value);
     /**
@@ -582,6 +592,10 @@ class AgentVector {
 
 template<typename T>
 T* AgentVector::data(const std::string& variable_name) {
+    if (!variable_name.empty() && variable_name[0] == '_') {
+        THROW ReservedName("Agent variable names that begin with '_' are reserved for internal usage and cannot be changed directly, "
+            "in AgentVector::data().");
+    }
     // Is variable name found
     const auto &var = agent->variables.find(variable_name);
     if (var == agent->variables.end()) {
@@ -680,19 +694,32 @@ AgentVector::iterator AgentVector::insert(size_type pos, InputIt first, InputIt 
     // If we are not appending, ensure we have upto date device data
     if (pos < _size)
         _requireAll();
+    const id_t ID_DEFAULT = ID_NOT_SET;
     for (const auto& v : agent->variables) {
         const auto it = _data->find(v.first);
         char* t_data = static_cast<char*>(it->second->getDataPtr());
         const size_t variable_size = v.second.type_size * v.second.elements;
         // Move all items after this index backwards count places
-        for (unsigned int i = _size - 1; i >= insert_index; --i) {
-            // Copy items individually, incase the src and destination overlap
-            memcpy(t_data + (i + copy_count) * variable_size, t_data + i * variable_size, variable_size);
+        if (_size) {
+            for (unsigned int i = _size - 1; i >= insert_index; --i) {
+                // Copy items individually, incase the src and destination overlap
+                memcpy(t_data + (i + copy_count) * variable_size, t_data + i * variable_size, variable_size);
+            }
         }
-        // Copy across item data
-        const auto other_it = first_data->find(v.first);
-        const char* o_data = static_cast<const char*>(other_it->second->getReadOnlyDataPtr());
-        memcpy(t_data + insert_index * variable_size, o_data + first_copy_index * variable_size, copy_count * variable_size);
+        // Copy across item data, ID has a special case, where it is default init instead of being copied
+        if (v.first == ID_VARIABLE_NAME) {
+            if (v.second.elements != 1 || v.second.type != std::type_index(typeid(id_t))) {
+                THROW InvalidOperation("Agent's internal ID variable is not type %s[1], "
+                        "in AgentVector::insert()\n", std::type_index(typeid(id_t)).name());
+            }
+            for (unsigned int i = insert_index; i < insert_index + copy_count; ++i) {
+                memcpy(t_data + i * variable_size, &ID_DEFAULT, sizeof(id_t));
+            }
+        } else {
+            const auto other_it = first_data->find(v.first);
+            const char* o_data = static_cast<const char*>(other_it->second->getReadOnlyDataPtr());
+            memcpy(t_data + insert_index * variable_size, o_data + first_copy_index * variable_size, copy_count * variable_size);
+        }
     }
     // Increase size
     _size += copy_count;

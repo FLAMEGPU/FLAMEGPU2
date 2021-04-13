@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "flamegpu/model/Variable.h"
+#include "flamegpu/defines.h"
 
 /**
 * This struct holds a map of how memory for a compact representation of some unknown vars needs to look
@@ -19,6 +20,9 @@ struct VarOffsetStruct {
             : offset(_offset)
             , len(_len)
             , type(_type) { }
+        bool operator==(const OffsetLen& other) const {
+            return offset == other.offset && len == other.len && type == other.type;
+        }
     };
     std::unordered_map<std::string, OffsetLen> vars;
     const size_t totalSize;
@@ -58,15 +62,46 @@ struct VarOffsetStruct {
 * This struct provides a compact memory store for storing generic variables in a single struct
 */
 struct NewAgentStorage {
-    explicit NewAgentStorage(const VarOffsetStruct &v)
+    explicit NewAgentStorage(const VarOffsetStruct &v, id_t id)
         : data(reinterpret_cast<char*>(malloc(v.totalSize)))
         , offsets(v) {
         memcpy(data, offsets.default_data, offsets.totalSize);
+        // Overwrite _id value
+        const auto& var = offsets.vars.find(ID_VARIABLE_NAME);
+        if (var == offsets.vars.end()) {
+            THROW InvalidOperation("Internal agent ID variable was not found, "
+                "in NewAgentStorage.NewAgentStorage().");
+        }
+        // Don't bother checking type/len
+        memcpy(data + var->second.offset, &id, sizeof(id_t));
     }
-    NewAgentStorage(const NewAgentStorage &other)
-        : data(reinterpret_cast<char*>(malloc(other.offsets.totalSize)))
-        , offsets(other.offsets) {
-        memcpy(data, other.data, offsets.totalSize);
+    /**
+     * New agent storage cannot be copied, as it requires a unique ID
+     */
+    NewAgentStorage(const NewAgentStorage &other) = delete;
+    /**
+     * New agent storage can be moved
+     */
+    NewAgentStorage(NewAgentStorage &&other) noexcept
+      : data(other.data)
+      , offsets(other.offsets) {
+      other.data = nullptr;
+    }
+    /**
+     * Assigning new agent storage copies all items except for internal members (variables that begin with _, such as _id)
+     */
+    NewAgentStorage& operator=(const NewAgentStorage& hna) {
+        if (offsets.vars == hna.offsets.vars) {
+            // Iterate and copy all vars individually, skip those marked as internal
+            for (const auto &off : offsets.vars) {
+                if (off.first[0] != '_') {
+                    memcpy(this->data + off.second.offset, hna.data + off.second.offset, off.second.len);
+                }
+            }
+        } else {
+            THROW InvalidArgument("Attempting to assign data from agent of different type, in NewAgentStorage::operator=()\n");
+        }
+        return *this;
     }
     ~NewAgentStorage() {
         if (data)
@@ -280,7 +315,7 @@ struct NewAgentStorage {
      */
     friend class DeviceAgentVector_impl;
  private:
-    char *const data;
+    char *data;
     const VarOffsetStruct &offsets;
 };
 
@@ -302,15 +337,17 @@ class HostNewAgentAPI {
         : s(hna.s) { }
     /**
      * Assignment Operator
-     * This does not duplicate the agent, it updates the pointed to agent data
+     * This copies (non-internal) agent variable data from hna
+     * @throws InvalidArgument If hna is of a different agent type (has a different internal memory layout)
      */
     HostNewAgentAPI& operator=(const HostNewAgentAPI &hna) {
-        s = hna.s;
+        if (&hna != this)
+            *s = *hna.s;
         return *this;
     }
 
     /**
-     * Updates a varaiable within the new agent
+     * Updates a variable within the new agent
      */
     template<typename T>
     void setVariable(const std::string &var_name, const T &val) {
@@ -347,7 +384,7 @@ class HostNewAgentAPI {
     }
 #endif
     /**
-     * Returns a varaiable within the new agent
+     * Returns a variable within the new agent
      */
     template<typename T>
     T getVariable(const std::string &var_name) const {
@@ -367,6 +404,17 @@ class HostNewAgentAPI {
         return s->getVariableArray<T>(var_name);
     }
 #endif
+    /**
+     * Returns the agent's unique ID
+     */
+    id_t getID() const {
+        try {
+            return s->getVariable<id_t>(ID_VARIABLE_NAME);
+        } catch (...) {
+            // Rewrite all exceptions
+            THROW UnknownInternalError("Internal Error: Unable to read internal ID variable, in HostNewAgentAPI::getID()\n");
+        }
+    }
 
  private:
     // Can't use reference here, makes it non-assignable

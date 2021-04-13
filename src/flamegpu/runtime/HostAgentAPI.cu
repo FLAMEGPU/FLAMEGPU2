@@ -10,8 +10,7 @@ HostAgentAPI::~HostAgentAPI() {
 
 HostNewAgentAPI HostAgentAPI::newAgent() {
     // Create the agent in our backing data structure
-    NewAgentStorage t_agentData(agentOffsets);
-    newAgentData.emplace_back(NewAgentStorage(agentOffsets));
+    newAgentData.emplace_back(NewAgentStorage(agentOffsets, agent.nextID(1)));
     // Point the returned object to the created agent
     return HostNewAgentAPI(newAgentData.back());
 }

@@ -5,6 +5,13 @@
 #endif
 %}
 
+/* Compilation header includes */
+%{
+/* Includes the header in the wrapper code */
+#include "flamegpu/flame_api.h"
+#include "flamegpu/runtime/HostFunctionCallback.h"
+%}
+
 // supress known warnings
 //#pragma SWIG nowarn=325,302,401
 //#pragma SWIG nowarn=302
@@ -19,7 +26,7 @@
 
 // typemaps for integer types (allows mapping of python types to stdint types)
 %include <stdint.i>
-
+%include "flamegpu/defines.h"
 
 // Directors required for callback functions
 %module(directors="1") pyflamegpu
@@ -37,6 +44,7 @@
 %template(FloatVector) std::vector<float>;
 %template(DoubleVector) std::vector<double>;
 //%template(BoolVector) std::vector<bool>;
+//%template(DoubleVector) std::vector<double>;
 
 /**
  * TEMPLATE_VARIABLE_INSTANTIATE_FLOATS macro
@@ -86,6 +94,15 @@ TEMPLATE_VARIABLE_INSTANTIATE_INTS(function, classfunction)
 //%template(function ## Bool) classfunction<bool>;
 %enddef
 
+/**
+ * Special case of the macro for message types
+ * This also maps ID to id_t, this should be synonymous with UInt/unsigned int
+ */
+%define TEMPLATE_VARIABLE_INSTANTIATE_ID(function, classfunction)
+TEMPLATE_VARIABLE_INSTANTIATE(function, classfunction) 
+%template(function ## ID) classfunction<id_t>;
+%enddef
+
 
 /**
  * TEMPLATE_SUM_INSTANTIATE macro
@@ -110,15 +127,6 @@ TEMPLATE_VARIABLE_INSTANTIATE_INTS(function, classfunction)
 %template(sumUInt) sum_class ## ::sumOutT<unsigned int, uint64_t>;
 // no chars or bool
 %enddef
-
-/* Compilation header includes */
-%{
-/* Includes the header in the wrapper code */
-#include "flamegpu/flame_api.h"
-#include "flamegpu/runtime/HostFunctionCallback.h"
-%}
-
-
 
 /* Custom Iterator to Swigify iterable types (RunPlanVec, AgentVector) */
 %pythoncode %{
@@ -510,19 +518,19 @@ namespace EnvironmentManager{
 
 
 // Instantiate template versions of agent functions from the API
-TEMPLATE_VARIABLE_INSTANTIATE(newVariable, AgentDescription::newVariable)
-TEMPLATE_VARIABLE_INSTANTIATE(newVariableArray, AgentDescription::newVariableArray)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, AgentDescription::newVariable)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariableArray, AgentDescription::newVariableArray)
 
 // Instantiate template versions of AgentVector_Agent/AgentInstance from the API
-TEMPLATE_VARIABLE_INSTANTIATE(setVariable, AgentVector_Agent::setVariable)
-TEMPLATE_VARIABLE_INSTANTIATE(setVariableArray, AgentVector_Agent::setVariableArray)
-TEMPLATE_VARIABLE_INSTANTIATE(getVariable, AgentVector_Agent::getVariable)
-TEMPLATE_VARIABLE_INSTANTIATE(getVariableArray, AgentVector_Agent::getVariableArray)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(setVariable, AgentVector_Agent::setVariable)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(setVariableArray, AgentVector_Agent::setVariableArray)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(getVariable, AgentVector_Agent::getVariable)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(getVariableArray, AgentVector_Agent::getVariableArray)
 
-TEMPLATE_VARIABLE_INSTANTIATE(setVariable, AgentInstance::setVariable)
-TEMPLATE_VARIABLE_INSTANTIATE(setVariableArray, AgentInstance::setVariableArray)
-TEMPLATE_VARIABLE_INSTANTIATE(getVariable, AgentInstance::getVariable)
-TEMPLATE_VARIABLE_INSTANTIATE(getVariableArray, AgentInstance::getVariableArray)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(setVariable, AgentInstance::setVariable)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(setVariableArray, AgentInstance::setVariableArray)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(getVariable, AgentInstance::getVariable)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(getVariableArray, AgentInstance::getVariableArray)
 
 // Instantiate template versions of host agent instance functions from the API
 // Not currently supported: custom reductions, transformations or histograms
@@ -533,35 +541,35 @@ TEMPLATE_VARIABLE_INSTANTIATE(max, HostAgentAPI::max)
 TEMPLATE_SUM_INSTANTIATE(HostAgentAPI)
 
 // Instantiate template versions of host environment functions from the API
-TEMPLATE_VARIABLE_INSTANTIATE(getProperty, HostEnvironment::getProperty)
-TEMPLATE_VARIABLE_INSTANTIATE(getPropertyArray, HostEnvironment::getPropertyArray)
-TEMPLATE_VARIABLE_INSTANTIATE(setProperty, HostEnvironment::setProperty)
-TEMPLATE_VARIABLE_INSTANTIATE(setPropertyArray, HostEnvironment::setPropertyArray)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(getProperty, HostEnvironment::getProperty)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(getPropertyArray, HostEnvironment::getPropertyArray)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(setProperty, HostEnvironment::setProperty)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(setPropertyArray, HostEnvironment::setPropertyArray)
 
 // Instantiate template versions of host agent functions from the API
-TEMPLATE_VARIABLE_INSTANTIATE(getVariable, HostNewAgentAPI::getVariable)
-TEMPLATE_VARIABLE_INSTANTIATE(getVariableArray, HostNewAgentAPI::getVariableArray)
-TEMPLATE_VARIABLE_INSTANTIATE(setVariable, HostNewAgentAPI::setVariable)
-TEMPLATE_VARIABLE_INSTANTIATE(setVariableArray, HostNewAgentAPI::setVariableArray)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(getVariable, HostNewAgentAPI::getVariable)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(getVariableArray, HostNewAgentAPI::getVariableArray)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(setVariable, HostNewAgentAPI::setVariable)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(setVariableArray, HostNewAgentAPI::setVariableArray)
 
 // Instantiate template versions of environment description functions from the API
-TEMPLATE_VARIABLE_INSTANTIATE(newProperty, EnvironmentDescription::newProperty)
-TEMPLATE_VARIABLE_INSTANTIATE(newPropertyArray, EnvironmentDescription::newPropertyArray)
-TEMPLATE_VARIABLE_INSTANTIATE(getProperty, EnvironmentDescription::getProperty)
-TEMPLATE_VARIABLE_INSTANTIATE(getPropertyArray, EnvironmentDescription::getPropertyArray)
-//TEMPLATE_VARIABLE_INSTANTIATE(getPropertyAt, EnvironmentDescription::getPropertyArrayAtIndex)
-TEMPLATE_VARIABLE_INSTANTIATE(setProperty, EnvironmentDescription::setProperty)
-TEMPLATE_VARIABLE_INSTANTIATE(setPropertyArray, EnvironmentDescription::setPropertyArray)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(newProperty, EnvironmentDescription::newProperty)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(newPropertyArray, EnvironmentDescription::newPropertyArray)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(getProperty, EnvironmentDescription::getProperty)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(getPropertyArray, EnvironmentDescription::getPropertyArray)
+//TEMPLATE_VARIABLE_INSTANTIATE_ID(getPropertyAt, EnvironmentDescription::getPropertyArrayAtIndex)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(setProperty, EnvironmentDescription::setProperty)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(setPropertyArray, EnvironmentDescription::setPropertyArray)
 
 // Instantiate template versions of RunPlan functions from the API
-TEMPLATE_VARIABLE_INSTANTIATE(setProperty, RunPlan::setProperty)
-TEMPLATE_VARIABLE_INSTANTIATE(setPropertyArray, RunPlan::setPropertyArray)
-TEMPLATE_VARIABLE_INSTANTIATE(getProperty, RunPlan::getProperty)
-TEMPLATE_VARIABLE_INSTANTIATE(getPropertyArray, RunPlan::getPropertyArray)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(setProperty, RunPlan::setProperty)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(setPropertyArray, RunPlan::setPropertyArray)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(getProperty, RunPlan::getProperty)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(getPropertyArray, RunPlan::getPropertyArray)
 
 // Instantiate template versions of RunPlanVec functions from the API
-TEMPLATE_VARIABLE_INSTANTIATE(setProperty, RunPlanVec::setProperty)
-TEMPLATE_VARIABLE_INSTANTIATE(setPropertyArray, RunPlanVec::setPropertyArray)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(setProperty, RunPlanVec::setProperty)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(setPropertyArray, RunPlanVec::setPropertyArray)
 TEMPLATE_VARIABLE_INSTANTIATE(setPropertyUniformDistribution, RunPlanVec::setPropertyUniformDistribution)
 TEMPLATE_VARIABLE_INSTANTIATE(setPropertyUniformRandomDistribution, RunPlanVec::setPropertyUniformRandom)
 TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(setPropertyNormalRandomDistribution, RunPlanVec::setPropertyNormalRandom)
@@ -575,8 +583,8 @@ TEMPLATE_VARIABLE_INSTANTIATE(logStandardDev, AgentLoggingConfig::logStandardDev
 TEMPLATE_VARIABLE_INSTANTIATE(logSum, AgentLoggingConfig::logSum)
 
 // Instantiate template versions of LogFrame functions from the API
-TEMPLATE_VARIABLE_INSTANTIATE(getEnvironmentProperty, LogFrame::getEnvironmentProperty)
-TEMPLATE_VARIABLE_INSTANTIATE(getEnvironmentPropertyArray, LogFrame::getEnvironmentPropertyArray)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(getEnvironmentProperty, LogFrame::getEnvironmentProperty)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(getEnvironmentPropertyArray, LogFrame::getEnvironmentPropertyArray)
 
 // Instantiate template versions of AgentLogFrame functions from the API
 TEMPLATE_VARIABLE_INSTANTIATE(getMin, AgentLogFrame::getMin)
@@ -601,13 +609,14 @@ TEMPLATE_VARIABLE_INSTANTIATE(getSum, AgentLogFrame::getSum)
 %template(getMessageBucket) ModelDescription::getMessage<MsgBucket>;
 
 // Instantiate template versions of message functions from the API
-TEMPLATE_VARIABLE_INSTANTIATE(newVariable, MsgBruteForce::Description::newVariable)
-TEMPLATE_VARIABLE_INSTANTIATE(newVariable, MsgSpatial2D::Description::newVariable)
-TEMPLATE_VARIABLE_INSTANTIATE(newVariable, MsgSpatial3D::Description::newVariable)
-TEMPLATE_VARIABLE_INSTANTIATE(newVariable, MsgArray::Description::newVariable)
-TEMPLATE_VARIABLE_INSTANTIATE(newVariable, MsgArray2D::Description::newVariable)
-TEMPLATE_VARIABLE_INSTANTIATE(newVariable, MsgArray3D::Description::newVariable)
-TEMPLATE_VARIABLE_INSTANTIATE(newVariable, MsgBucket::Description::newVariable)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, MsgBruteForce::Description::newVariable)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, MsgSpatial2D::Description::newVariable)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, MsgSpatial3D::Description::newVariable)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, MsgArray::Description::newVariable)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, MsgArray2D::Description::newVariable)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, MsgArray3D::Description::newVariable)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, MsgBucket::Description::newVariable)
+
 
 // Instantiate template versions of host random functions from the API
 TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(uniform, HostRandom::uniformNoRange)

@@ -69,11 +69,14 @@ class AgentDescriptionTest(TestCase):
         a = m.newAgent(AGENT_NAME1)
         assert a.hasVariable(VARIABLE_NAME1) == False
         assert a.hasVariable(VARIABLE_NAME2) == False
-        assert a.getVariablesCount() == 0
-        a.newVariableFloat(VARIABLE_NAME1)
+        # When created, agent has 1 internal variable _id
         assert a.getVariablesCount() == 1
-        a.newVariableInt16(VARIABLE_NAME2)
+        a.newVariableFloat(VARIABLE_NAME1)
         assert a.getVariablesCount() == 2
+        a.newVariableInt16(VARIABLE_NAME2)
+        assert a.getVariablesCount() == 3
+        a.newVariableID("ID")
+        assert a.getVariablesCount() == 4
         # Cannot create variable with same name
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # InvalidAgentVar exception
             a.newVariableInt64(VARIABLE_NAME1)
@@ -98,13 +101,16 @@ class AgentDescriptionTest(TestCase):
         a = m.newAgent(AGENT_NAME1)
         assert a.hasVariable(VARIABLE_NAME1) == False
         assert a.hasVariable(VARIABLE_NAME2) == False
-        assert a.getVariablesCount() == 0
-        a.newVariableArrayFloat(VARIABLE_NAME1, 2)
+        # When created, agent has 1 internal variable _id
         assert a.getVariablesCount() == 1
-        a.newVariableInt16(VARIABLE_NAME2, 1)
+        a.newVariableArrayFloat(VARIABLE_NAME1, 2)
         assert a.getVariablesCount() == 2
-        a.newVariableArrayInt16(VARIABLE_NAME3, 32)
+        a.newVariableInt16(VARIABLE_NAME2, 1)
         assert a.getVariablesCount() == 3
+        a.newVariableArrayInt16(VARIABLE_NAME3, 32)
+        assert a.getVariablesCount() == 4
+        a.newVariableArrayID("IDs", 5)
+        assert a.getVariablesCount() == 5
         # Cannot create variable with same name
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # InvalidAgentVar exception
             a.newVariableInt64(VARIABLE_NAME1)

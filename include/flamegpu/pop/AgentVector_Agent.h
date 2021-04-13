@@ -41,6 +41,7 @@ class AgentVector_CAgent {
     template <typename T>
     std::vector<T> getVariableArray(const std::string& variable_name) const;
 #endif
+    id_t getID() const;
 
  protected:
     /**
@@ -69,6 +70,7 @@ class AgentVector_CAgent {
 
 /**
  * non-const view into AgentVector
+ * @note To set an agent's id, the agent must be part of a model which has begun (id's are automatically assigned before initialisation functions and can not be manually set by users)
  */
 class AgentVector_Agent : public AgentVector_CAgent {
     friend AgentVector::Agent AgentVector::at(AgentVector::size_type);
@@ -114,6 +116,11 @@ class AgentVector_Agent : public AgentVector_CAgent {
         }
     }
 #endif
+    /**
+     * Sets the ID of this agent to the unset flag
+     * @note The ID will only not have the unset flag, if the agent has been taken from a simulation which has executed
+     */
+    void resetID();
 
  private:
     /**
@@ -124,6 +131,10 @@ class AgentVector_Agent : public AgentVector_CAgent {
 
 template <typename T>
 void AgentVector_Agent::setVariable(const std::string &variable_name, const T &value) {
+    if (!variable_name.empty() && variable_name[0] == '_') {
+        THROW ReservedName("Agent variable names that begin with '_' are reserved for internal usage and cannot be changed directly, "
+            "in AgentVector::Agent::setVariable().");
+    }
     const auto data = _data.lock();
     if (!data) {
         THROW ExpiredWeakPtr("The AgentVector which owns this AgentVector::Agent has been deallocated, "
@@ -155,6 +166,10 @@ void AgentVector_Agent::setVariable(const std::string &variable_name, const T &v
 }
 template <typename T, unsigned int N>
 void AgentVector_Agent::setVariable(const std::string &variable_name, const std::array<T, N> &value) {
+    if (!variable_name.empty() && variable_name[0] == '_') {
+        THROW ReservedName("Agent variable names that begin with '_' are reserved for internal usage and cannot be changed directly, "
+            "in AgentVector::Agent::setVariable().");
+    }
     const auto data = _data.lock();
     if (!data) {
         THROW ExpiredWeakPtr("The AgentVector which owns this AgentVector::Agent has been deallocated, "
@@ -185,6 +200,10 @@ void AgentVector_Agent::setVariable(const std::string &variable_name, const std:
 }
 template <typename T>
 void AgentVector_Agent::setVariable(const std::string &variable_name, const unsigned int &array_index, const T &value) {
+    if (!variable_name.empty() && variable_name[0] == '_') {
+        THROW ReservedName("Agent variable names that begin with '_' are reserved for internal usage and cannot be changed directly, "
+            "in AgentVector::Agent::setVariable().");
+    }
     const auto data = _data.lock();
     if (!data) {
         THROW ExpiredWeakPtr("The AgentVector which owns this AgentVector::Agent has been deallocated, "
@@ -214,6 +233,10 @@ void AgentVector_Agent::setVariable(const std::string &variable_name, const unsi
 #ifdef SWIG
 template <typename T>
 void AgentVector_Agent::setVariableArray(const std::string &variable_name, const std::vector<T> &value) {
+    if (!variable_name.empty() && variable_name[0] == '_') {
+        THROW ReservedName("Agent variable names that begin with '_' are reserved for internal usage and cannot be changed directly, "
+            "in AgentVector::Agent::setVariableArray().");
+    }
     const auto data = _data.lock();
     if (!data) {
         THROW ExpiredWeakPtr("The AgentVector which owns this AgentVector::Agent has been deallocated, "
