@@ -134,22 +134,6 @@ class LayerDescription {
      * @see addSubModel(const std::string &)
      */
     void addSubModel(const SubModelDescription &submodel);
-#ifdef SWIG
-    // Public for SWIG
- public:
-#else
-    // Otherwise shouldn't be accessible publicly
- private:
-#endif
-    /**
-     * Adds a host function to this layer, similar to addHostFunction
-     * however the runnable function is encapsulated within an object which permits cross language support in swig.
-     * The host function will be called during this stage of model execution
-     * @param func_callback a Host function callback object
-     * @throw InvalidHostFunc If the function has already been added to the layer
-     * @note ONLY USED INTERNALLY AND BY PYTHON API - DO NOT CALL IN C++ BUILD
-     */
-    void addHostFunctionCallback(HostFunctionCallback *func_callback);
 
  public:
     /**
@@ -201,6 +185,16 @@ class LayerDescription {
      */
     inline HostFunctionCallback* getHostFunctionCallback(unsigned int index) const;
 #endif
+
+    /**
+     * Adds a host function to this layer, similar to addHostFunction
+     * however the runnable function is encapsulated within an object which permits cross language support in swig.
+     * The host function will be called during this stage of model execution
+     * @param func_callback a Host function callback object
+     * @throw InvalidHostFunc If the function has already been added to the layer
+     * @note ONLY USED INTERNALLY AND BY PYTHON API - DO NOT CALL IN C++ BUILD
+     */
+    void addHostFunctionCallback(HostFunctionCallback *func_callback);
 
  private:
     /**
