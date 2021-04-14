@@ -68,8 +68,20 @@ option(BUILD_TESTS "Enable building tests" OFF)
 
 # Option to enable/disable NVTX markers for improved profiling
 option(USE_NVTX "Build with NVTX markers enabled" OFF)
+
 # Option to enable/disable logging of dynamic RTC files to disk
 option(EXPORT_RTC_SOURCES "Export RTC source files to disk at runtime" OFF)
+
+# If CUDA >= 11.2, add an option to enable using NVCC_THREASD
+if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 11.2)
+    option(USE_NVCC_THREADS "Enable parallel compilation of multiple NVCC targets. See NVCC_THREADS for more control." ON)
+    # The number of threads to use defaults to 0, telling the compiler to use as many threads as required.
+    # In some cases, this may increase total runtime due to excessive thread creation, and lowering the number of threads, or lowering the value of `-j` passed to cmake may be beneficial.
+    if(NOT DEFINED NVCC_THREADS)
+        set(NVCC_THREADS "0")
+    endif()
+    SET(NVCC_THREADS "${NVCC_THREADS}" CACHE STRING "Number of concurrent threads for building multiple target architectures. 0 indicates use as many as required." FORCE)
+endif()
 
 # Control target CUDA_ARCH to compile for
 SET(CUDA_ARCH "${CUDA_ARCH}" CACHE STRING "List of CUDA Architectures to target. E.g. 61;70" FORCE)

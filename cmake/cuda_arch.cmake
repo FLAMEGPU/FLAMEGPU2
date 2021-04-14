@@ -112,3 +112,9 @@ endif()
 # But this is challenging due to multiline string detection.
 # Could potentially compile a simple program, without this flag to detect if its valid/deprecated? Would likely increase build time.
 set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+
+# If CUDA 11.2+, can build multiple architectures in parallel. Note this will be multiplicative against the number of threads launched for parallel cmake build, which may anger some systems.
+if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL "11.2" AND USE_NVCC_THREADS AND DEFINED NVCC_THREADS AND NVCC_THREADS GREATER_EQUAL 0)
+    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --threads ${NVCC_THREADS}")
+endif()
+
