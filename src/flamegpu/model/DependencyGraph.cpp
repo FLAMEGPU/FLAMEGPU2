@@ -200,11 +200,11 @@ void DependencyGraph::generateLayers(ModelDescription& _model) {
                     }
                 } else {
                     try {
-                        layer->addHostFunctionCallback(hdf->getCallbackObject());
+                        layer->_addHostFunctionCallback(hdf->getCallbackObject());
                         constructedLayers.back().emplace_back(DependencyGraph::getNodeName(hdf));
                     } catch (const InvalidLayerMember&) {
                         layer = &_model.newLayer();
-                        layer->addHostFunctionCallback(hdf->getCallbackObject());
+                        layer->_addHostFunctionCallback(hdf->getCallbackObject());
                         constructedLayers.emplace_back();
                         constructedLayers.back().emplace_back(DependencyGraph::getNodeName(hdf));
                         printf("New host function layer created - InvalidLayerMember exception\n");

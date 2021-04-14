@@ -134,6 +134,15 @@ class LayerDescription {
      * @see addSubModel(const std::string &)
      */
     void addSubModel(const SubModelDescription &submodel);
+    /**
+     * Adds a host function to this layer, similar to addHostFunction
+     * however the runnable function is encapsulated within an object which permits cross language support in swig.
+     * The host function will be called during this stage of model execution
+     * @param func_callback a Host function callback object
+     * @throw InvalidHostFunc If the function has already been added to the layer
+     * @note ONLY USED INTERNALLY AND BY PYTHON API - DO NOT CALL IN C++ BUILD
+     */
+    void _addHostFunctionCallback(HostFunctionCallback *func_callback);
 
  public:
     /**
@@ -157,6 +166,15 @@ class LayerDescription {
      * @return The total number of host function callbacks within the layer
      */
     inline ModelData::size_type getHostFunctionCallbackCount() const;
+    /**
+     * Adds a host function to this layer, similar to addHostFunction
+     * however the runnable function is encapsulated within an object which permits cross language support in swig.
+     * The host function will be called during this stage of model execution
+     * @param func_callback a Host function callback object
+     * @throw InvalidHostFunc If the function has already been added to the layer
+     * @note ONLY USED INTERNALLY AND BY PYTHON API - DO NOT CALL IN C++ BUILD
+     */
+    inline void addHostFunctionCallback(HostFunctionCallback *func_callback);
 #endif
 
     /**
@@ -185,16 +203,6 @@ class LayerDescription {
      */
     inline HostFunctionCallback* getHostFunctionCallback(unsigned int index) const;
 #endif
-
-    /**
-     * Adds a host function to this layer, similar to addHostFunction
-     * however the runnable function is encapsulated within an object which permits cross language support in swig.
-     * The host function will be called during this stage of model execution
-     * @param func_callback a Host function callback object
-     * @throw InvalidHostFunc If the function has already been added to the layer
-     * @note ONLY USED INTERNALLY AND BY PYTHON API - DO NOT CALL IN C++ BUILD
-     */
-    void addHostFunctionCallback(HostFunctionCallback *func_callback);
 
  private:
     /**
@@ -309,6 +317,9 @@ void LayerDescription::addAgentFunction(AgentFunction /*af*/) {
 }
 
 #ifdef SWIG
+void LayerDescription::addHostFunctionCallback(HostFunctionCallback* func_callback) {
+    this->_addHostFunctionCallback(func_callback);
+}
 ModelData::size_type LayerDescription::getHostFunctionCallbackCount() const {
     // Safe down-cast
     return static_cast<ModelData::size_type>(layer->host_functions_callbacks.size());

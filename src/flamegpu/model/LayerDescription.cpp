@@ -229,7 +229,7 @@ FLAMEGPU_HOST_FUNCTION_POINTER LayerDescription::getHostFunction(unsigned int in
         index, layer->host_functions.size());
 }
 
-void LayerDescription::addHostFunctionCallback(HostFunctionCallback* func_callback) {
+void LayerDescription::_addHostFunctionCallback(HostFunctionCallback* func_callback) {
     if (layer->sub_model) {
         THROW InvalidLayerMember("A layer containing a submodel may not also contain a host function, "
         "in LayerDescription::addHostFunctionCallback()\n");
