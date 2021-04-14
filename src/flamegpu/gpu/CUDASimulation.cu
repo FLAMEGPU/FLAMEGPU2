@@ -243,12 +243,13 @@ void CUDASimulation::exitFunctions() {
 
 bool CUDASimulation::step() {
     NVTX_RANGE(std::string("CUDASimulation::step " + std::to_string(step_count)).c_str());
+    // Ensure singletons have been initialised
+    initialiseSingletons();
+
     // Time the individual step.
     util::CUDAEventTimer stepTimer = util::CUDAEventTimer();
     stepTimer.start();
 
-    // Ensure singletons have been initialised
-    initialiseSingletons();
 
     // If verbose, print the step number.
     if (getSimulationConfig().verbose) {
@@ -893,6 +894,10 @@ void CUDASimulation::simulate() {
     // Ensure singletons have been initialised
     initialiseSingletons();
 
+    // Create the event timing object.
+    util::CUDAEventTimer simulationTimer = util::CUDAEventTimer();
+    simulationTimer.start();
+
     // Create as many streams as required
     unsigned int nStreams = getMaximumLayerWidth();
     this->createStreams(nStreams);
@@ -906,9 +911,6 @@ void CUDASimulation::simulate() {
         }
     }
 
-    // Create the event timing object.
-    util::CUDAEventTimer simulationTimer = util::CUDAEventTimer();
-    simulationTimer.start();
     // Reset the class' elapsed time value.
     this->elapsedMillisecondsSimulation = 0.f;
     this->elapsedMillisecondsPerStep.clear();
