@@ -141,7 +141,7 @@ class LayerDescriptionTest(TestCase):
         # Cannot create function with same name
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
             l.addHostFunctionCallback(self.host_fn)
-        assert e.value.type() == "InvalidHostFunc"
+        assert e.value.type() == "InvalidLayerMember"
 
     def test_agent_function_wrong_model(self):
         _m = pyflamegpu.ModelDescription(MODEL_NAME)

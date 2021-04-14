@@ -39,6 +39,10 @@ void LayerDescription::addAgentFunction(const std::string &agentName, const std:
         THROW InvalidLayerMember("A layer containing host functions, may not also contain agent functions, "
             "in LayerDescription::addAgentFunction()\n");
     }
+    if (!layer->host_functions.empty() || !layer->host_functions_callbacks.empty()) {
+        THROW InvalidLayerMember("A layer containing a host function may not also contain an agent function"
+            "in LayerDescription::addAgentFunction()\n");
+    }
     // Locate the matching agent function in the model hierarchy
     auto mdl = model.lock();
     if (!mdl) {
@@ -129,12 +133,12 @@ void LayerDescription::addAgentFunction(const char *an, const char *fn) {
 }
 void LayerDescription::addHostFunction(FLAMEGPU_HOST_FUNCTION_POINTER func_p) {
     if (layer->sub_model) {
-        THROW InvalidLayerMember("A layer containing agent functions and/or host functions, may not also contain a submodel, "
+        THROW InvalidLayerMember("A layer containing a submodel may not also contain a host function, "
         "in LayerDescription::addHostFunction()\n");
     }
-    if (layer->agent_functions.size()) {
-        THROW InvalidLayerMember("A layer containing host functions, may not also contain agent functions, "
-            "in LayerDescription::addHostFunction()\n");
+    if (!layer->host_functions.empty() || !layer->agent_functions.empty() || !layer->host_functions_callbacks.empty()) {
+        THROW InvalidLayerMember("A layer containing agent functions or a host function may not also contain a host function, "
+        "in LayerDescription::addHostFunction()\n");
     }
     if (!layer->host_functions.insert(func_p).second) {
         THROW InvalidHostFunc("HostFunction has already been added to LayerDescription,"
@@ -223,4 +227,19 @@ FLAMEGPU_HOST_FUNCTION_POINTER LayerDescription::getHostFunction(unsigned int in
     THROW OutOfBoundsException("Index %d is out of bounds (only %d items exist) "
         "in LayerDescription.getHostFunction().",
         index, layer->host_functions.size());
+}
+
+void LayerDescription::_addHostFunctionCallback(HostFunctionCallback* func_callback) {
+    if (layer->sub_model) {
+        THROW InvalidLayerMember("A layer containing a submodel may not also contain a host function, "
+        "in LayerDescription::addHostFunctionCallback()\n");
+    }
+    if (!layer->host_functions.empty() || !layer->agent_functions.empty() || !layer->host_functions_callbacks.empty()) {
+        THROW InvalidLayerMember("A layer containing agent functions or a host function may not also contain a host function, "
+        "in LayerDescription::addHostFunctionCallback()\n");
+    }
+    if (!layer->host_functions_callbacks.insert(func_callback).second) {
+            THROW InvalidHostFunc("Attempted to add same host function callback twice,"
+                "in LayerDescription::addHostFunctionCallback()");
+        }
 }

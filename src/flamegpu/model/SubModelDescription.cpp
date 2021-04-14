@@ -126,3 +126,6 @@ void SubModelDescription::setMaxSteps(const unsigned int &max_steps) {
 unsigned int SubModelDescription::getMaxSteps() const {
     return data->max_steps;
 }
+const std::string SubModelDescription::getName() {
+    return data->name;
+}

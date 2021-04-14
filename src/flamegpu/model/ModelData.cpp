@@ -11,6 +11,7 @@
 #include "flamegpu/model/SubModelData.h"
 #include "flamegpu/model/SubAgentData.h"
 #include "flamegpu/model/SubEnvironmentData.h"
+#include "flamegpu/model/DependencyGraph.h"
 #include "flamegpu/runtime/HostFunctionCallback.h"
 
 const char *ModelData::DEFAULT_STATE = "default";
@@ -20,7 +21,8 @@ const char *ModelData::DEFAULT_STATE = "default";
  */
 ModelData::ModelData(const std::string &model_name)
     : environment(new EnvironmentDescription())
-    , name(model_name) { }
+    , name(model_name)
+    , dependencyGraph(new DependencyGraph(this)) { }
 
 ModelData::~ModelData() { }
 
@@ -73,7 +75,8 @@ ModelData::ModelData(const ModelData &other)
     , exitConditions(other.exitConditions)
     , exitConditionCallbacks(other.exitConditionCallbacks)
     , environment(new EnvironmentDescription(*other.environment))
-    , name(other.name) {
+    , name(other.name)
+    , dependencyGraph(new DependencyGraph(*other.dependencyGraph)) {
     // Must be called from clone() so that items are all init
 }
 
@@ -93,7 +96,8 @@ bool ModelData::operator==(const ModelData& rhs) const {
         && exitFunctionCallbacks.size() == rhs.exitFunctionCallbacks.size()
         && exitConditionCallbacks.size() == rhs.exitConditionCallbacks.size()
         && exitConditions.size() == rhs.exitConditions.size()
-        && *environment == *rhs.environment) {
+        && *environment == *rhs.environment
+        && *dependencyGraph == *rhs.dependencyGraph) {
             {  // Compare agents (map)
                 for (auto &v : agents) {
                     auto _v = rhs.agents.find(v.first);

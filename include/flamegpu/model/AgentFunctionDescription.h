@@ -3,11 +3,13 @@
 
 #include <string>
 #include <memory>
+#include <vector>
 
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/runtime/AgentFunction.h"
 #include "flamegpu/runtime/AgentFunctionCondition.h"
+#include "flamegpu/model/DependencyNode.h"
 #include "flamegpu/model/LayerDescription.h"
 #include "flamegpu/runtime/messaging/BruteForce.h"
 #include "flamegpu/runtime/cuRVE/curve_rtc.h"
@@ -28,7 +30,8 @@ struct AgentFunctionData;
  * This class is used to configure external elements of agent functions, such as inputs and outputs
  * @see AgentDescription::newFunction(const std::string&, AgentFunction) For creating instances of this class
  */
-class AgentFunctionDescription {
+class AgentFunctionDescription : public DependencyNode {
+    friend class DependencyNode;
     /**
      * Data store class for this description, constructs instances of this class
      */
@@ -37,6 +40,10 @@ class AgentFunctionDescription {
      * Accesses internals to validate function description before adding to layer
      */
     friend void LayerDescription::addAgentFunction(const AgentFunctionDescription &);
+    /**
+     * Accesses internals to validate function belongs to the same model as the DependencyGraph
+     */
+    friend class DependencyGraph;
     /**
      * Constructors
      */
@@ -182,6 +189,7 @@ class AgentFunctionDescription {
      *
      */
     void setRTCFunctionCondition(std::string func_cond_src);
+
     /**
      * @return A mutable reference to the message input of this agent function
      * @see AgentFunctionDescription::getMessageInput() for the immutable version
@@ -276,6 +284,7 @@ class AgentFunctionDescription {
      * @return The cuda kernel entry point for executing the agent function
      */
     AgentFunctionWrapper *getFunctionPtr() const;
+
     /**
      * @return The cuda kernel entry point for executing the agent function condition
      */

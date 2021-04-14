@@ -19,6 +19,7 @@ struct AgentFunctionData;
 struct AgentData : std::enable_shared_from_this<AgentData> {
     friend class ModelDescription;
     friend struct ModelData;
+    friend class DependencyGraph;
     /**
      * Map of name:agent function definition
      * map<string, AgentFunctionData>
