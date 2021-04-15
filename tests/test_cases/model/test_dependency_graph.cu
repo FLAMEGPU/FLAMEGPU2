@@ -529,13 +529,13 @@ TEST(DependencyGraphTest, UnattachedFunctionWarning) {
     DependencyGraph& graph = _m.getDependencyGraph();
     graph.addRoot(f);
 
-    // Intercept std::cout
+    // Intercept std::cerr
     std::stringstream buffer;
-    std::streambuf* prev = std::cout.rdbuf();
-    std::cout.rdbuf(buffer.rdbuf());
+    std::streambuf* prev = std::cerr.rdbuf();
+    std::cerr.rdbuf(buffer.rdbuf());
     _m.generateLayers();
-    // Reset cout
-    std::cout.rdbuf(prev);
+    // Reset cerr
+    std::cerr.rdbuf(prev);
     EXPECT_EQ(buffer.str(), "WARNING: Not all agent functions are used in the dependency graph - have you forgotten to add one?");
 }
 TEST(DependencyGraphTest, ModelAlreadyHasLayers) {
