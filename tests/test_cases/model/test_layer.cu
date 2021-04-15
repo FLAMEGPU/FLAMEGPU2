@@ -125,7 +125,7 @@ TEST(LayerDescriptionTest, HostFunction) {
     l.addHostFunction(host_fn);
     EXPECT_EQ(l.getHostFunctionsCount(), 1u);
     // Cannot create function with same name
-    EXPECT_THROW(l.addHostFunction(host_fn), InvalidHostFunc);
+    EXPECT_THROW(l.addHostFunction(host_fn), InvalidLayerMember);
 }
 
 TEST(LayerDescriptionTest, AgentFunction_WrongModel) {
@@ -400,7 +400,7 @@ TEST(LayerDescriptionTest, SubModelAndHostOrAgentFunction) {
     auto &layer3 = m.newLayer();
     EXPECT_NO_THROW(layer3.addHostFunction(host_fn));
     EXPECT_THROW(layer3.addSubModel(sm), InvalidLayerMember);
-    EXPECT_NO_THROW(layer3.addHostFunction(host_fn2));
+    EXPECT_THROW(layer3.addHostFunction(host_fn2), InvalidLayerMember);
     // Host and agent functions can't go in layer with submodel
     // Submodel can't go in layer with submodel
     auto &layer4 = m.newLayer();

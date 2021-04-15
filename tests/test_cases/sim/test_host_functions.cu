@@ -155,12 +155,7 @@ TEST_F(HostFunctionTest, InitFuncMultiple) {
     EXPECT_NE(std::find(function_order.begin(), function_order.end(), Init2), function_order.end());
 }
 TEST_F(HostFunctionTest, HostLayerFuncMultiple) {
-    ms->hostfn_layer.addHostFunction(host_function2);
-    EXPECT_EQ(std::find(function_order.begin(), function_order.end(), HostLayer), function_order.end());
-    EXPECT_EQ(std::find(function_order.begin(), function_order.end(), HostLayer2), function_order.end());
-    ms->run(1);
-    EXPECT_NE(std::find(function_order.begin(), function_order.end(), HostLayer), function_order.end());
-    EXPECT_NE(std::find(function_order.begin(), function_order.end(), HostLayer2), function_order.end());
+    EXPECT_THROW(ms->hostfn_layer.addHostFunction(host_function2), InvalidLayerMember);
 }
 TEST_F(HostFunctionTest, StepFuncMultiple) {
     ms->model.addStepFunction(step_function2);
@@ -194,7 +189,7 @@ TEST_F(HostFunctionTest, InitFuncDuplicateException) {
     EXPECT_THROW(ms->model.addInitFunction(init_function), InvalidHostFunc);
 }
 TEST_F(HostFunctionTest, HostLayerFuncDuplicateException) {
-    EXPECT_THROW(ms->hostfn_layer.addHostFunction(host_function), InvalidHostFunc);
+    EXPECT_THROW(ms->hostfn_layer.addHostFunction(host_function), InvalidLayerMember);
 }
 TEST_F(HostFunctionTest, StepFuncDuplicateException) {
     EXPECT_THROW(ms->model.addStepFunction(step_function), InvalidHostFunc);
