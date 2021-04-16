@@ -168,3 +168,12 @@ Write-Output "CUDA_PATH_VX_Y $($CUDA_PATH_VX_Y)"
 # PATH needs updating elsewhere, anything in here won't persist.
 # Append $CUDA_PATH/bin to path.
 # Set CUDA_PATH as an environmental variable
+
+# If executing on github actions, emit the appropriate echo statements to update environment variables
+if (Test-Path "env:GITHUB_ACTIONS") { 
+    # Set paths for subsequent steps, using $env:CUDA_PATH
+    echo "Adding CUDA to CUDA_PATH, CUDA_PATH_X_Y and PATH"
+    echo "CUDA_PATH=$env:CUDA_PATH" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+    echo "$env:CUDA_PATH_VX_Y=$env:CUDA_PATH" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+    echo "$env:CUDA_PATH/bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+}
