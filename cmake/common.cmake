@@ -249,6 +249,11 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     # Suppress nodiscard warnings from the cuda frontend
     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcudafe --diag_suppress=2809")
 endif()
+# Supress CUDA 11.3 specific warnings.
+if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 11.3.0)
+    # Suppress 117-D, declared_but_not_referenced
+    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcudafe --diag_suppress=declared_but_not_referenced")
+endif()
 
 # Common CUDA args
 
@@ -368,6 +373,7 @@ function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
     if (TARGET flamegpu2)
         target_link_libraries(${NAME} flamegpu2)
         # Workaround for incremental rebuilds on MSVC, where device link was not being performed.
+        # https://github.com/FLAMEGPU/FLAMEGPU2/issues/483
         if(MSVC AND CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL "11.1")
             # Provide the absolute path to the lib file, rather than the relative version cmake provides.
             target_link_libraries(${NAME} "${CMAKE_CURRENT_BINARY_DIR}/$<TARGET_FILE:flamegpu2>")
@@ -565,12 +571,9 @@ function(add_flamegpu_library NAME SRC FLAMEGPU_ROOT)
         message(AUTHOR_WARNING "MSVC and NVCC <= 10.2 may encounter compiler errors due to an NVCC bug exposed by Thrust. Cosider using a newer CUDA toolkit.")
     endif()
     if(MSVC AND CMAKE_CUDA_COMPILER_VERSION VERSION_LESS_EQUAL "11.0")
+        # https://github.com/FLAMEGPU/FLAMEGPU2/issues/483
         message(AUTHOR_WARNING "MSVC and NVCC <= 11.0 may encounter errors at link time with incremental rebuilds. Cosider using a newer CUDA toolkit.")
     endif()
-    if(MSVC AND CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER "11.3")
-        message(AUTHOR_WARNING "A workaround for incremental builds is in place for CUDA >= 11.1 which may be unstable in future CUDA versions. See https://github.com:FLAMEGPU/FLAMEGPU2/issues/483")
-    endif()
-
 endfunction()
 
 #-----------------------------------------------------------------------

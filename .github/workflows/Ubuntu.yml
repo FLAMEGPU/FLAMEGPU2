@@ -15,7 +15,7 @@ jobs:
         include:
           # 20.04 supports CUDA 11.0+ (gcc >= 5 && gcc <= 10). SM < 52 deprecated since 11.0
           - os: ubuntu-20.04
-            cuda: "11.2"
+            cuda: "11.3"
             cuda_arch: "52"
             gcc: 10
           # 18.04 supports CUDA 10.0+ (gcc <=8), 11.0+ (gcc<=9), 11.1+ (gcc<=10)
