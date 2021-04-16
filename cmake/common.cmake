@@ -84,8 +84,10 @@ MARK_AS_ADVANCED(
     if(CMAKE_BUILD_TYPE MATCHES "Profile")
     SET(NVTX "ON")
     endif()
-    
-    
+
+# Ask Cmake to output compile_commands.json (if supported). This is useful for vscode include paths, clang-tidy/clang-format etc
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE INTERNAL "Control the output of compile_commands.json")
+
 # Declare variables to track extra include dirs / link dirs / link libraries
 set(FLAMEGPU_DEPENDENCY_INCLUDE_DIRECTORIES)
 set(FLAMEGPU_DEPENDENCY_LINK_LIBRARIES)
