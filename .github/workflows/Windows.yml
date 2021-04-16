@@ -51,17 +51,8 @@ jobs:
       env: 
         cuda: ${{ matrix.cuda }}
         visual_studio: ${{ matrix.visual_studio }}
-      run: |
-        # Install CUDA via a powershell script
-        .\scripts\actions\install_cuda_windows.ps1
-        if ($?) {
-          # Set paths for subsequent steps, using $env:CUDA_PATH
-          echo "Adding CUDA to CUDA_PATH, CUDA_PATH_X_Y and PATH"
-          echo "CUDA_PATH=$env:CUDA_PATH" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          echo "$env:CUDA_PATH_VX_Y=$env:CUDA_PATH" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          echo "$env:CUDA_PATH/bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-        }
       shell: powershell
+      run: .github\scripts\install_cuda_windows.ps1
 
     # Windows GHA fix: specify Python3_ROOT_DIR and _EXECUTABLE to make sure python.exe is found, not python3.exe which does not work with venv
     - name: Configure CMake
