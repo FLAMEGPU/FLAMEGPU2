@@ -15,28 +15,21 @@ jobs:
         include:
           # Windows2019 & VS 2019 supports 10.1+
           - os: windows-2019
-            cuda: "11.2.0"
+            cuda: "11.3.0"
+            cuda_arch: 52
             visual_studio: "Visual Studio 16 2019"
           # - os: windows-2019
-          #   cuda: "11.1.1"
-          #   visual_studio: "Visual Studio 16 2019"
-          # - os: windows-2019
-          #   cuda: "11.0.3"
-          #   visual_studio: "Visual Studio 16 2019"
-          # - os: windows-2019
-          #   cuda: "10.2.89"
-          #   visual_studio: "Visual Studio 16 2019"
-          # - os: windows-2019
-          #   cuda: "10.1.243"
+          #  cuda: "10.1.243"
+          #  cuda_arch: 35
           #   visual_studio: "Visual Studio 16 2019"
 
           # Windows2016 & VS 2017 supports 10.0+
           # - os: windows-2016
-          #   cuda: "10.0.130"
+          #  cuda: "10.0.130"
+          #  cuda_arch: 35
           #   visual_studio: "Visual Studio 15 2017"
 
     env:
-      cuda_arch: "35"
       build_dir: "build"
       config: "Release"
       build_tests: "OFF"
@@ -73,7 +66,7 @@ jobs:
     # Windows GHA fix: specify Python3_ROOT_DIR and _EXECUTABLE to make sure python.exe is found, not python3.exe which does not work with venv
     - name: Configure CMake
       id: configure
-      run: cmake . -B ${{ env.build_dir }} -G "${{ matrix.visual_studio }}" -A x64 -DBUILD_TESTS=${{ env.build_tests }} -DWARNINGS_AS_ERRORS=${{ env.werror }} -DCUDA_ARCH="${{ env.cuda_arch }}" -Werror=dev -DBUILD_SWIG_PYTHON=ON -DBUILD_SWIG_PYTHON_VIRTUALENV=ON -DPython3_ROOT_DIR=$(dirname $(which python)) -DPython3_EXECUTABLE=$(which python)
+      run: cmake . -B ${{ env.build_dir }} -G "${{ matrix.visual_studio }}" -A x64 -DBUILD_TESTS=${{ env.build_tests }} -DWARNINGS_AS_ERRORS=${{ env.werror }} -DCUDA_ARCH="${{ matrix.cuda_arch }}" -Werror=dev -DBUILD_SWIG_PYTHON=ON -DBUILD_SWIG_PYTHON_VIRTUALENV=ON -DPython3_ROOT_DIR=$(dirname $(which python)) -DPython3_EXECUTABLE=$(which python)
       shell: bash
 
     - name: Build flamegpu2
@@ -94,7 +87,7 @@ jobs:
       working-directory: ${{ env.build_dir }}
 
     - name: Configure Individual example
-      run: cmake . -B ${{ env.build_dir }} -G "${{ matrix.visual_studio }}" -A x64 -DWARNINGS_AS_ERRORS=${{ env.werror }} -DCUDA_ARCH="${{ env.cuda_arch }}" -Werror=dev
+      run: cmake . -B ${{ env.build_dir }} -G "${{ matrix.visual_studio }}" -A x64 -DWARNINGS_AS_ERRORS=${{ env.werror }} -DCUDA_ARCH="${{ matrix.cuda_arch }}" -Werror=dev
       working-directory: examples/${{ env.individual_example }}
     
     - name: Build Individual example
