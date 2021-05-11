@@ -64,7 +64,7 @@ jobs:
       run: sudo apt-get install python3-venv
 
     - name: Configure cmake
-      run: cmake . -B ${{ env.build_dir }} -DCMAKE_BUILD_TYPE=${{ env.config }} -DBUILD_TESTS=${{ env.build_tests }} -DWARNINGS_AS_ERRORS=${{ env.Werror }} -DCUDA_ARCH="${{ matrix.cuda_arch }}" -Werror=dev -DBUILD_SWIG_PYTHON=ON -DBUILD_SWIG_PYTHON_VIRTUALENV=ON 
+      run: cmake . -B ${{ env.build_dir }} -DCMAKE_BUILD_TYPE=${{ env.config }} -DBUILD_TESTS=${{ env.build_tests }} -DWARNINGS_AS_ERRORS=${{ env.Werror }} -DCUDA_ARCH="${{ matrix.cuda_arch }}" -Werror=dev -DBUILD_SWIG_PYTHON=ON -DBUILD_SWIG_PYTHON_VIRTUALENV=ON -DUSE_NVTX=ON
 
     - name: Build flamegpu2
       run: cmake --build . --target flamegpu2 --verbose -j `nproc`
