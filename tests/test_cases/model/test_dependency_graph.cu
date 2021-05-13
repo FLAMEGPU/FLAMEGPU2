@@ -242,6 +242,7 @@ TEST(DependencyGraphTest, DOTDiagramSingleChain) {
     Function2 -> Function3;
 })###";
     EXPECT_EQ(expectedDot, dotBuffer.str());
+    dot.close();
     // Test passed, remove file
     std::remove("singlechain.gv");
 }
@@ -272,6 +273,7 @@ TEST(DependencyGraphTest, DOTDiagramTwoDependencies) {
     Function1 -> Function3;
 })###";
     EXPECT_EQ(expectedDot, dotBuffer.str());
+    dot.close();
     // Test passed, remove file
     std::remove("twodeps.gv");
 }
@@ -309,6 +311,7 @@ TEST(DependencyGraphTest, DOTDiagramDiamond) {
     Function3 -> Function4;
 })###";
     EXPECT_EQ(expectedDot, dotBuffer.str());
+    dot.close();
     // Test passed, remove file
     std::remove("diamond.gv");
 }
@@ -353,6 +356,7 @@ TEST(DependencyGraphTest, DOTDiagramHostFunctions) {
     HostFn1 -> Function4;
 })###";
     EXPECT_EQ(expectedDot, dotBuffer.str());
+    dot.close();
     // Test passed, remove file
     std::remove("host_functions.gv");
 }
@@ -404,6 +408,7 @@ TEST(DependencyGraphTest, DOTDiagramAllDependencies) {
     HostFn1 -> Function4;
 })###";
     EXPECT_EQ(expectedDot, dotBuffer.str());
+    dot.close();
     // Test passed, remove file
     std::remove("all_dependencies.gv");
 }
