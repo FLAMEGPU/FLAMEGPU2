@@ -1,6 +1,7 @@
 # Model output files
 *.xml
 *.json
+*.gv
 *.bin
 
 # dynamically generated version file
