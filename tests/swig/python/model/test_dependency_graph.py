@@ -251,10 +251,10 @@ class DependencyGraphTest(TestCase):
     Function1 -> Function2;
     Function2 -> Function3;
 }'''
-        # Remove file
-        os.remove("singlechain.gv")
         assert expectedDot == dotBuffer
         dotFile.close()
+        # Remove file
+        os.remove("singlechain.gv")
 
     def test_DOTDiagramTwoDependencies(self):
         _m = pyflamegpu.ModelDescription(MODEL_NAME)
@@ -279,10 +279,10 @@ class DependencyGraphTest(TestCase):
     Function1 -> Function2;
     Function1 -> Function3;
 }'''
-        # Remove file
-        os.remove("twodeps.gv")
         assert expectedDot == dotBuffer
         dotFile.close()
+        # Remove file
+        os.remove("twodeps.gv")
     
     def test_DOTDiagramDiamond(self):
         _m = pyflamegpu.ModelDescription(MODEL_NAME)
@@ -314,10 +314,10 @@ class DependencyGraphTest(TestCase):
     Function1 -> Function3;
     Function3 -> Function4;
 }'''
-        # Remove file
-        os.remove("diamond.gv")
         assert expectedDot == dotBuffer
         dotFile.close()
+        # Remove file
+        os.remove("diamond.gv")
     
     def test_DOTDiagramHostFunctions(self):
         _m = pyflamegpu.ModelDescription(MODEL_NAME)
@@ -356,10 +356,10 @@ class DependencyGraphTest(TestCase):
     Function3 -> HostFn2;
     HostFn1 -> Function4;
 }'''
-        # Remove file
-        os.remove("host_functions.gv")
         assert expectedDot == dotBuffer
         dotFile.close()
+        # Remove file
+        os.remove("host_functions.gv")
     
     def test_DOTDiagramAllDependencies(self):
         _m = pyflamegpu.ModelDescription(MODEL_NAME)
@@ -405,10 +405,10 @@ class DependencyGraphTest(TestCase):
     HostFn2 -> sub;
     HostFn1 -> Function4;
 }'''
-        # Remove file
-        os.remove("all_dependencies.gv")
         assert expectedDot == dotBuffer
         dotFile.close()
+        # Remove file
+        os.remove("all_dependencies.gv")
     
     def test_CorrectLayersAllDependencies(self):
         _m = pyflamegpu.ModelDescription(MODEL_NAME)
