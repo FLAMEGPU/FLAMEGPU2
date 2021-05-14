@@ -18,6 +18,13 @@
 #include "flamegpu/runtime/AgentFunctionCondition.cuh"
 #include "flamegpu/defines.h"
 
+#ifdef USE_GLM
+#ifdef __CUDACC__
+#pragma diag_suppress = esa_on_defaulted_function_ignored
+#endif
+#include <glm/glm.hpp>
+#endif
+
 namespace flamegpu {
 
 /**
@@ -334,7 +341,6 @@ __device__ T ReadOnlyDeviceAPI::getVariable(const char(&variable_name)[M], const
     // return the variable from curve
     return value;
 }
-
 template<typename MsgIn, typename MsgOut>
 template<typename T, unsigned int N, unsigned int M>
 __device__ void DeviceAPI<MsgIn, MsgOut>::setVariable(const char(&variable_name)[M], const unsigned int &array_index, const T &value) {

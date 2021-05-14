@@ -103,7 +103,7 @@ TEST(DeviceAPITest, ArraySet) {
     cudaSimulation.getPopulationData(population);
     // Check data is intact
     // Might need to go more complicate and give different agents different values
-    // They should remain in order for such a basic function, but can't guarntee
+    // They should remain in order for such a basic function, but can't guarantee
     EXPECT_EQ(population.size(), AGENT_COUNT);
     for (AgentVector::Agent instance : population) {
         // Check neighbouring vars are correct
@@ -151,7 +151,7 @@ TEST(DeviceAPITest, ArrayGet) {
     cudaSimulation.getPopulationData(population);
     // Check data is intact
     // Might need to go more complicate and give different agents different values
-    // They should remain in order for such a basic function, but can't guarntee
+    // They should remain in order for such a basic function, but can't guarantee
     EXPECT_EQ(population.size(), AGENT_COUNT);
     for (AgentVector::Agent instance : population) {
         // Check neighbouring vars are correct
@@ -165,6 +165,119 @@ TEST(DeviceAPITest, ArrayGet) {
         EXPECT_EQ(instance.getVariable<int>("a4"), 16 + j);
     }
 }
+#ifdef USE_GLM
+FLAMEGPU_AGENT_FUNCTION(agent_fn_da_set_glm, MsgNone, MsgNone) {
+    // Read array from `array_var`
+    // Store it's values back in `a1` -> `a4`
+    const int id = FLAMEGPU->getVariable<int>("id");
+    FLAMEGPU->setVariable<glm::ivec4>("array_var", glm::ivec4(2 + id, 4 + id, 8 + id, 16 + id));
+    return ALIVE;
+}
+FLAMEGPU_AGENT_FUNCTION(agent_fn_da_get_glm, MsgNone, MsgNone) {
+    // Read array from `array_var`
+    // Store it's values back in `a1` -> `a4`
+    const glm::ivec4 t = FLAMEGPU->getVariable<glm::ivec4>("array_var");
+    FLAMEGPU->setVariable<int>("a1", t.x);
+    FLAMEGPU->setVariable<int>("a2", t.y);
+    FLAMEGPU->setVariable<int>("a3", t.z);
+    FLAMEGPU->setVariable<int>("a4", t.w);
+    return ALIVE;
+}
+TEST(DeviceAPITest, ArraySet_glm) {
+    ModelDescription model("model");
+    AgentDescription& agent = model.newAgent("agent_name");
+    agent.newVariable<float>("x");
+    agent.newVariable<int, 4>("array_var");
+    agent.newVariable<float>("y");
+    agent.newVariable<int>("id");
+    // Do nothing, but ensure variables are made available on device
+    AgentFunctionDescription& func = agent.newFunction("some_function", agent_fn_da_set_glm);
+    model.newLayer().addAgentFunction(func);
+    // Init pop
+    AgentVector init_population(agent, AGENT_COUNT);
+    for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
+        AgentVector::Agent instance = init_population[i];
+        instance.setVariable<float>("x", 12.0f);
+        instance.setVariable<float>("y", 14.0f);
+        instance.setVariable<int>("id", i);
+    }
+    // Setup Model
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(init_population);
+    // Run 1 step to ensure data is pushed to device
+    cudaSimulation.step();
+    // Recover data from device
+    AgentVector population(agent, AGENT_COUNT);
+    cudaSimulation.getPopulationData(population);
+    // Check data is intact
+    // Might need to go more complicate and give different agents different values
+    // They should remain in order for such a basic function, but can't guarantee
+    EXPECT_EQ(population.size(), AGENT_COUNT);
+    for (AgentVector::Agent instance : population) {
+        // Check neighbouring vars are correct
+        EXPECT_EQ(instance.getVariable<float>("x"), 12.0f);
+        EXPECT_EQ(instance.getVariable<float>("y"), 14.0f);
+        int j = instance.getVariable<int>("id");
+        // Check array sets are correct
+        auto output_array = instance.getVariable<int, 4>("array_var");
+        EXPECT_EQ(output_array[0], 2 + j);
+        EXPECT_EQ(output_array[1], 4 + j);
+        EXPECT_EQ(output_array[2], 8 + j);
+        EXPECT_EQ(output_array[3], 16 + j);
+    }
+}
+TEST(DeviceAPITest, ArrayGet_glm) {
+    ModelDescription model("model");
+    AgentDescription& agent = model.newAgent("agent_name");
+    agent.newVariable<float>("x");
+    agent.newVariable<int, 4>("array_var");
+    agent.newVariable<float>("y");
+    agent.newVariable<int>("id");
+    agent.newVariable<int>("a1");
+    agent.newVariable<int>("a2");
+    agent.newVariable<int>("a3");
+    agent.newVariable<int>("a4");
+    // Do nothing, but ensure variables are made available on device
+    AgentFunctionDescription& func = agent.newFunction("some_function", agent_fn_da_get_glm);
+    model.newLayer().addAgentFunction(func);
+    // Init pop
+    AgentVector init_population(agent, AGENT_COUNT);
+    for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
+        AgentVector::Agent instance = init_population[i];
+        instance.setVariable<float>("x", 12.0f);
+        instance.setVariable<int, 4>("array_var", { 2 + i, 4 + i, 8 + i, 16 + i });
+        instance.setVariable<float>("y", 14.0f);
+        instance.setVariable<int>("id", i);
+    }
+    // Setup Model
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(init_population);
+    // Run 1 step to ensure data is pushed to device
+    cudaSimulation.step();
+    // Recover data from device
+    AgentVector population(agent, AGENT_COUNT);
+    cudaSimulation.getPopulationData(population);
+    // Check data is intact
+    // Might need to go more complicate and give different agents different values
+    // They should remain in order for such a basic function, but can't guarantee
+    EXPECT_EQ(population.size(), AGENT_COUNT);
+    for (AgentVector::Agent instance : population) {
+        // Check neighbouring vars are correct
+        EXPECT_EQ(instance.getVariable<float>("x"), 12.0f);
+        EXPECT_EQ(instance.getVariable<float>("y"), 14.0f);
+        int j = instance.getVariable<int>("id");
+        // Check array sets are correct
+        EXPECT_EQ(instance.getVariable<int>("a1"), 2 + j);
+        EXPECT_EQ(instance.getVariable<int>("a2"), 4 + j);
+        EXPECT_EQ(instance.getVariable<int>("a3"), 8 + j);
+        EXPECT_EQ(instance.getVariable<int>("a4"), 16 + j);
+    }
+}
+#else
+// Mark that test is disabled
+TEST(DeviceAPITest, DISABLED_ArraySet_glm) { }
+TEST(DeviceAPITest, DISABLED_ArrayGet_glm) { }
+#endif
 
 // Test device_api::getStepCounter()
 FLAMEGPU_AGENT_FUNCTION(agent_testGetStepCounter, MsgNone, MsgNone) {

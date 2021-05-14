@@ -645,5 +645,151 @@ TEST(RTCSpatial2DMsgTest, ArrayVariable) {
     }
 }
 
+#if defined(USE_GLM)
+FLAMEGPU_AGENT_FUNCTION(ArrayOut_glm, MsgNone, MsgSpatial2D) {
+    const unsigned int x = FLAMEGPU->getVariable<unsigned int, 2>("index", 0);
+    const unsigned int y = FLAMEGPU->getVariable<unsigned int, 2>("index", 1);
+    glm::uvec3 t = glm::uvec3(x * 3, y * 7, y * 11);
+    FLAMEGPU->message_out.setVariable<glm::uvec3>("v", t);
+    FLAMEGPU->message_out.setLocation(static_cast<float>(x), static_cast<float>(y));
+    return ALIVE;
+}
+FLAMEGPU_AGENT_FUNCTION(ArrayIn_glm, MsgSpatial2D, MsgNone) {
+    const unsigned int x = FLAMEGPU->getVariable<unsigned int, 2>("index", 0);
+    const unsigned int y = FLAMEGPU->getVariable<unsigned int, 2>("index", 1);
+    for (auto &message : FLAMEGPU->message_in(static_cast<float>(x), static_cast<float>(y))) {
+        if (static_cast<unsigned int>(message.getVariable<float>("x")) == x &&
+            static_cast<unsigned int>(message.getVariable<float>("y")) == y) {
+            FLAMEGPU->setVariable<glm::uvec3>("message_read", message.getVariable<glm::uvec3>("v"));
+            break;
+        }
+    }
+    return ALIVE;
+}
+TEST(Spatial2DMsgTest, ArrayVariable_glm) {
+    const char* MODEL_NAME = "Model";
+    const char* AGENT_NAME = "Agent";
+    const char* MESSAGE_NAME = "Message";
+    const char* IN_FUNCTION_NAME = "InFunction";
+    const char* OUT_FUNCTION_NAME = "OutFunction";
+    const char* IN_LAYER_NAME = "InLayer";
+    const char* OUT_LAYER_NAME = "OutLayer";
+    const unsigned int SQRT_AGENT_COUNT = 64;
+    ModelDescription m(MODEL_NAME);
+    MsgSpatial2D::Description &msg = m.newMessage<MsgSpatial2D>(MESSAGE_NAME);
+    msg.setMin(0, 0);
+    msg.setMax(static_cast<float>(SQRT_AGENT_COUNT), static_cast<float>(SQRT_AGENT_COUNT));
+    msg.setRadius(1);
+    msg.newVariable<unsigned int, 3>("v");
+    AgentDescription &a = m.newAgent(AGENT_NAME);
+    a.newVariable<unsigned int, 2>("index");
+    a.newVariable<unsigned int, 3>("message_read", {UINT_MAX, UINT_MAX, UINT_MAX});
+    AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut_glm);
+    fo.setMessageOutput(msg);
+    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn_glm);
+    fi.setMessageInput(msg);
+    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    lo.addAgentFunction(fo);
+    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    li.addAgentFunction(fi);
+    AgentVector pop(a, SQRT_AGENT_COUNT * SQRT_AGENT_COUNT);
+    int k = 0;
+    for (unsigned int i = 0; i < SQRT_AGENT_COUNT; ++i) {
+        for (unsigned int j = 0; j < SQRT_AGENT_COUNT; ++j) {
+            AgentVector::Agent ai = pop[k++];
+            ai.setVariable<unsigned int, 2>("index", { i, j });
+        }
+    }
+    // Set pop in model
+    CUDASimulation c(m);
+    c.setPopulationData(pop);
+    c.step();
+    c.getPopulationData(pop);
+    // Validate each agent has same result
+    for (AgentVector::Agent ai : pop) {
+        const std::array<unsigned int, 2> index = ai.getVariable<unsigned int, 2>("index");
+        std::array<unsigned int, 3> v = ai.getVariable<unsigned int, 3>("message_read");
+        ASSERT_EQ(v[0], index[0] * 3);
+        ASSERT_EQ(v[1], index[1] * 7);
+        ASSERT_EQ(v[2], index[1] * 11);
+    }
+}
+const char* rtc_ArrayOut_func_glm = R"###(
+FLAMEGPU_AGENT_FUNCTION(ArrayOut, flamegpu::MsgNone, flamegpu::MsgSpatial2D) {
+    const unsigned int x = FLAMEGPU->getVariable<unsigned int, 2>("index", 0);
+    const unsigned int y = FLAMEGPU->getVariable<unsigned int, 2>("index", 1);
+    glm::uvec3 t = glm::uvec3(x * 3, y * 7, y * 11);
+    FLAMEGPU->message_out.setVariable<glm::uvec3>("v", t);
+    FLAMEGPU->message_out.setLocation(static_cast<float>(x), static_cast<float>(y));
+    return flamegpu::ALIVE;
+}
+)###";
+const char* rtc_ArrayIn_func_glm = R"###(
+FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MsgSpatial2D, flamegpu::MsgNone) {
+    const unsigned int x = FLAMEGPU->getVariable<unsigned int, 2>("index", 0);
+    const unsigned int y = FLAMEGPU->getVariable<unsigned int, 2>("index", 1);
+    for (auto &message : FLAMEGPU->message_in(static_cast<float>(x), static_cast<float>(y))) {
+        if (static_cast<unsigned int>(message.getVariable<float>("x")) == x &&
+            static_cast<unsigned int>(message.getVariable<float>("y")) == y) {
+            FLAMEGPU->setVariable<glm::uvec3>("message_read", message.getVariable<glm::uvec3>("v"));
+            break;
+        }
+    }
+    return flamegpu::ALIVE;
+}
+)###";
+TEST(RTCSpatial2DMsgTest, ArrayVariable_glm) {
+    const char* MODEL_NAME = "Model";
+    const char* AGENT_NAME = "Agent";
+    const char* MESSAGE_NAME = "Message";
+    const char* IN_FUNCTION_NAME = "InFunction";
+    const char* OUT_FUNCTION_NAME = "OutFunction";
+    const char* IN_LAYER_NAME = "InLayer";
+    const char* OUT_LAYER_NAME = "OutLayer";
+    const unsigned int SQRT_AGENT_COUNT = 64;
+    ModelDescription m(MODEL_NAME);
+    MsgSpatial2D::Description& msg = m.newMessage<MsgSpatial2D>(MESSAGE_NAME);
+    msg.setMin(0, 0);
+    msg.setMax(static_cast<float>(SQRT_AGENT_COUNT), static_cast<float>(SQRT_AGENT_COUNT));
+    msg.setRadius(1);
+    msg.newVariable<unsigned int, 3>("v");
+    AgentDescription& a = m.newAgent(AGENT_NAME);
+    a.newVariable<unsigned int, 2>("index");
+    a.newVariable<unsigned int, 3>("message_read", { UINT_MAX, UINT_MAX, UINT_MAX });
+    AgentFunctionDescription& fo = a.newRTCFunction(OUT_FUNCTION_NAME, rtc_ArrayOut_func_glm);
+    fo.setMessageOutput(msg);
+    AgentFunctionDescription& fi = a.newRTCFunction(IN_FUNCTION_NAME, rtc_ArrayIn_func_glm);
+    fi.setMessageInput(msg);
+    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    lo.addAgentFunction(fo);
+    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    li.addAgentFunction(fi);
+    AgentVector pop(a, SQRT_AGENT_COUNT * SQRT_AGENT_COUNT);
+    int k = 0;
+    for (unsigned int i = 0; i < SQRT_AGENT_COUNT; ++i) {
+        for (unsigned int j = 0; j < SQRT_AGENT_COUNT; ++j) {
+            AgentVector::Agent ai = pop[k++];
+            ai.setVariable<unsigned int, 2>("index", { i, j });
+        }
+    }
+    // Set pop in model
+    CUDASimulation c(m);
+    c.setPopulationData(pop);
+    c.step();
+    c.getPopulationData(pop);
+    // Validate each agent has same result
+    for (AgentVector::Agent ai : pop) {
+        const std::array<unsigned int, 2> index = ai.getVariable<unsigned int, 2>("index");
+        std::array<unsigned int, 3> v = ai.getVariable<unsigned int, 3>("message_read");
+        ASSERT_EQ(v[0], index[0] * 3);
+        ASSERT_EQ(v[1], index[1] * 7);
+        ASSERT_EQ(v[2], index[1] * 11);
+    }
+}
+#else
+TEST(Spatial2DMsgTest, DISABLED_ArrayVariable_glm) { }
+TEST(RTCSpatial2DMsgTest, DISABLED_ArrayVariable_glm) { }
+#endif
+
 }  // namespace test_message_spatial2d
 }  // namespace flamegpu

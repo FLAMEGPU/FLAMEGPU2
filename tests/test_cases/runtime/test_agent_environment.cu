@@ -525,4 +525,58 @@ TEST_F(AgentEnvironmentTest, Get_arrayElement_int64_t) {
     EXPECT_EQ(false, _bool_out);
     EXPECT_EQ(cudaGetLastError(), CUDA_SUCCESS);
 }
+#ifdef USE_GLM
+FLAMEGPU_AGENT_FUNCTION(get_array_glm, MsgNone, MsgNone) {
+    glm::vec3 t = FLAMEGPU->environment.getProperty<glm::vec3>("k");
+    FLAMEGPU->setVariable<float, 3>("k", 0, t[0]);
+    FLAMEGPU->setVariable<float, 3>("k", 1, t[1]);
+    FLAMEGPU->setVariable<float, 3>("k", 2, t[2]);
+    return ALIVE;
+}
+TEST_F(AgentEnvironmentTest, Get_array_glm) {
+    // Setup agent fn
+    ms->agent.newVariable<float, 3>("k");
+    AgentFunctionDescription& deviceFn = ms->agent.newFunction("device_function", get_array_glm);
+    LayerDescription& devicefn_layer = ms->model.newLayer("devicefn_layer");
+    devicefn_layer.addAgentFunction(deviceFn);
+    // Setup environment
+    const std::array<float, 3> t_in = { 12.0f, -12.5f, 13.0f };
+    ms->env.newProperty<float, 3>("k", t_in);
+    ms->run();
+    const std::array<float, 3> t_out = ms->population->at(0).getVariable<float, 3>("k");
+    ASSERT_EQ(t_in, t_out);
+}
+const char* rtc_get_array_glm = R"###(
+FLAMEGPU_AGENT_FUNCTION(get_array_glm, flamegpu::MsgNone, flamegpu::MsgNone) {
+    glm::vec3 t = FLAMEGPU->environment.getProperty<glm::vec3>("k");
+    FLAMEGPU->setVariable<float, 3>("k", 0, t[0]);
+    FLAMEGPU->setVariable<float, 3>("k", 1, t[1]);
+    FLAMEGPU->setVariable<float, 3>("k", 2, t[2]);
+    return flamegpu::ALIVE;
+}
+)###";
+TEST(RTCDeviceEnvironmentTest, Get_array_glm) {
+    ModelDescription model("device_env_test");
+    // Setup environment
+    const std::array<float, 3> t_in = { 12.0f, -12.5f, 13.0f };
+    model.Environment().newProperty<float, 3>("k", t_in);
+    // Setup agent fn
+    AgentDescription &agent = model.newAgent("agent");
+    agent.newVariable<float, 3>("k");
+    AgentFunctionDescription& deviceFn = agent.newRTCFunction("device_function", rtc_get_array_glm);
+    LayerDescription& devicefn_layer = model.newLayer("devicefn_layer");
+    devicefn_layer.addAgentFunction(deviceFn);
+    AgentVector population(agent, 1);
+    // Do Sim
+    CUDASimulation cudaSimulation = CUDASimulation(model);
+    cudaSimulation.SimulationConfig().steps = 2;
+    cudaSimulation.setPopulationData(population);
+    ASSERT_NO_THROW(cudaSimulation.simulate());
+    ASSERT_NO_THROW(cudaSimulation.getPopulationData(population));
+    const std::array<float, 3> t_out = population.at(0).getVariable<float, 3>("k");
+    ASSERT_EQ(t_in, t_out);
+}
+#else
+
+#endif
 }  // namespace flamegpu
