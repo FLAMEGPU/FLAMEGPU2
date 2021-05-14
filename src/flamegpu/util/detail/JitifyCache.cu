@@ -186,6 +186,14 @@ break_flamegpu_inc_dir_loop:
     // cuda include directory (via CUDA_PATH)
     options.push_back(std::string("-I" + env_cuda_path + "/include"));
 
+#ifdef USE_GLM
+    // GLM headers increase build time ~5x, so only enable glm if user is using it
+    if (kernel_src.find("glm") != std::string::npos) {
+        options.push_back(std::string("-I") + GLM_PATH);
+        options.push_back(std::string("-DUSE_GLM"));
+    }
+#endif
+
     // Set the compilation architecture target if it was successfully detected.
     int currentDeviceIdx = 0;
     cudaError_t status = cudaGetDevice(&currentDeviceIdx);

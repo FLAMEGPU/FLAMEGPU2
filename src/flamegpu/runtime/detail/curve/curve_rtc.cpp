@@ -349,12 +349,20 @@ void CurveRTCHost::initHeaderEnvironment() {
         std::stringstream getEnvVariableImpl;
         for (std::pair<std::string, RTCEnvVariableProperties> element : RTCEnvVariables) {
             RTCEnvVariableProperties props = element.second;
+#if !defined(USE_GLM)
             if (props.elements == 1) {
+#else
+            {
+#endif
                 getEnvVariableImpl <<   "    if (strings_equal(name, \"" << element.first << "\")) {\n";
                 getEnvVariableImpl <<   "#if !defined(SEATBELTS) || SEATBELTS\n";
+#if !defined(USE_GLM)
                 getEnvVariableImpl <<   "        if(sizeof(T) != " << element.second.type_size << ") {\n";
+#else
+                getEnvVariableImpl <<   "        if(sizeof(T) != " << element.second.type_size * element.second.elements << ") {\n";
+#endif
                 getEnvVariableImpl <<   "            DTHROW(\"Environment property '%s' type mismatch.\\n\", name);\n";
-                getEnvVariableImpl <<   "            return 0;\n";
+                getEnvVariableImpl <<   "            return {};\n";
                 getEnvVariableImpl <<   "        }\n";
                 getEnvVariableImpl <<   "#endif\n";
                 getEnvVariableImpl <<   "        return *reinterpret_cast<T*>(reinterpret_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() <<" + " << props.offset << "));\n";
@@ -364,7 +372,7 @@ void CurveRTCHost::initHeaderEnvironment() {
         getEnvVariableImpl <<           "#if !defined(SEATBELTS) || SEATBELTS\n";
         getEnvVariableImpl <<           "    DTHROW(\"Environment property '%s' was not found.\\n\", name);\n";
         getEnvVariableImpl <<           "#endif\n";
-        getEnvVariableImpl <<           "    return 0;\n";
+        getEnvVariableImpl <<           "    return  {};\n";
         setHeaderPlaceholder("$DYNAMIC_ENV_GETVARIABLE_IMPL", getEnvVariableImpl.str());
     }
     // generate Environment::get func implementation for array variables ($DYNAMIC_ENV_GETARRAYVARIABLE_IMPL)
@@ -377,14 +385,14 @@ void CurveRTCHost::initHeaderEnvironment() {
                 getEnvArrayVariableImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
                 getEnvArrayVariableImpl << "        if(sizeof(T) != " << element.second.type_size << ") {\n";
                 getEnvArrayVariableImpl << "            DTHROW(\"Environment array property '%s' type mismatch.\\n\", name);\n";
-                getEnvArrayVariableImpl << "            return 0;\n";
+                getEnvArrayVariableImpl << "            return {};\n";
                 // Env var doesn't currently require user to specify length
                 // getEnvArrayVariableImpl << "        } else if (N != " << element.second.elements << ") {\n";
                 // getEnvArrayVariableImpl << "            DTHROW(\"Environment array property '%s' length mismatch.\\n\", name);\n";
-                // getEnvArrayVariableImpl << "            return 0;\n";
+                // getEnvArrayVariableImpl << "            return {};\n";
                 getEnvArrayVariableImpl << "        } else if (index >= " << element.second.elements << ") {\n";
                 getEnvArrayVariableImpl << "            DTHROW(\"Environment array property '%s', index %d is out of bounds.\\n\", name, index);\n";
-                getEnvArrayVariableImpl << "            return 0;\n";
+                getEnvArrayVariableImpl << "            return {};\n";
                 getEnvArrayVariableImpl << "        }\n";
                 getEnvArrayVariableImpl << "#endif\n";
                 getEnvArrayVariableImpl << "        return reinterpret_cast<T*>(reinterpret_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() <<" + " << props.offset << "))[index];\n";
@@ -394,7 +402,7 @@ void CurveRTCHost::initHeaderEnvironment() {
         getEnvArrayVariableImpl <<         "#if !defined(SEATBELTS) || SEATBELTS\n";
         getEnvArrayVariableImpl <<         "    DTHROW(\"Environment array property '%s' was not found.\\n\", name);\n";
         getEnvArrayVariableImpl <<         "#endif\n";
-        getEnvArrayVariableImpl <<         "    return 0;\n";
+        getEnvArrayVariableImpl <<         "    return {};\n";
         setHeaderPlaceholder("$DYNAMIC_ENV_GETARRAYVARIABLE_IMPL", getEnvArrayVariableImpl.str());
     }
     // generate Environment::contains func implementation ($DYNAMIC_ENV_CONTAINTS_IMPL)
@@ -418,10 +426,18 @@ void CurveRTCHost::initHeaderSetters() {
         std::stringstream setAgentVariableImpl;
         for (const auto &element : agent_variables) {
             RTCVariableProperties props = element.second;
-            if (props.write && props.elements == 1) {
+            if (props.write
+#if !defined(USE_GLM)
+                && props.elements == 1
+#endif
+                ) {
                 setAgentVariableImpl << "          if (strings_equal(name, \"" << element.first << "\")) {\n";
                 setAgentVariableImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
+                setAgentVariableImpl << "#if defined(USE_GLM)\n";
+                setAgentVariableImpl << "                if(sizeof(T) != " << element.second.type_size * element.second.elements << ") {\n";
+                setAgentVariableImpl << "#else\n";
                 setAgentVariableImpl << "                if(sizeof(T) != " << element.second.type_size << ") {\n";
+                setAgentVariableImpl << "#endif\n";
                 setAgentVariableImpl << "                    DTHROW(\"Agent variable '%s' type mismatch during setVariable().\\n\", name);\n";
                 setAgentVariableImpl << "                    return;\n";
                 setAgentVariableImpl << "                }\n";
@@ -442,10 +458,18 @@ void CurveRTCHost::initHeaderSetters() {
         std::stringstream setMessageVariableImpl;
         for (const auto &element : messageOut_variables) {
             RTCVariableProperties props = element.second;
-            if (props.write && props.elements == 1) {
+            if (props.write
+#if !defined(USE_GLM)
+                && props.elements == 1
+#endif
+                ) {
                 setMessageVariableImpl << "          if (strings_equal(name, \"" << element.first << "\")) {\n";
                 setMessageVariableImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
+                setMessageVariableImpl << "#if defined(USE_GLM)\n";
+                setMessageVariableImpl << "                if(sizeof(T) != " << element.second.type_size * element.second.elements << ") {\n";
+                setMessageVariableImpl << "#else\n";
                 setMessageVariableImpl << "                if(sizeof(T) != " << element.second.type_size << ") {\n";
+                setMessageVariableImpl << "#endif\n";
                 setMessageVariableImpl << "                    DTHROW(\"Message variable '%s' type mismatch during setVariable().\\n\", name);\n";
                 setMessageVariableImpl << "                    return;\n";
                 setMessageVariableImpl << "                }\n";
@@ -466,10 +490,18 @@ void CurveRTCHost::initHeaderSetters() {
         std::stringstream setNewAgentVariableImpl;
         for (const auto &element : newAgent_variables) {
             RTCVariableProperties props = element.second;
-            if (props.write && props.elements == 1) {
+            if (props.write
+#if !defined(USE_GLM)
+                && props.elements == 1
+#endif
+                ) {
                 setNewAgentVariableImpl << "          if (strings_equal(name, \"" << element.first << "\")) {\n";
                 setNewAgentVariableImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
+                setNewAgentVariableImpl << "#if defined(USE_GLM)\n";
+                setNewAgentVariableImpl << "                if(sizeof(T) != " << element.second.type_size * element.second.elements << ") {\n";
+                setNewAgentVariableImpl << "#else\n";
                 setNewAgentVariableImpl << "                if(sizeof(T) != " << element.second.type_size << ") {\n";
+                setNewAgentVariableImpl << "#endif\n";
                 setNewAgentVariableImpl << "                    DTHROW(\"New agent variable '%s' type mismatch during setVariable().\\n\", name);\n";
                 setNewAgentVariableImpl << "                    return;\n";
                 setNewAgentVariableImpl << "                }\n";
@@ -588,12 +620,20 @@ void CurveRTCHost::initHeaderGetters() {
         std::stringstream getAgentVariableImpl;
         for (const auto &element : agent_variables) {
             RTCVariableProperties props = element.second;
-            if (props.read && props.elements == 1) {
+            if (props.read
+#if !defined(USE_GLM)
+                && props.elements == 1
+#endif
+            ) {
                 getAgentVariableImpl << "            if (strings_equal(name, \"" << element.first << "\")) {\n";
                 getAgentVariableImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
+                getAgentVariableImpl << "#if defined(USE_GLM)\n";
+                getAgentVariableImpl << "                if(sizeof(T) != " << element.second.type_size * element.second.elements << ") {\n";
+                getAgentVariableImpl << "#else\n";
                 getAgentVariableImpl << "                if(sizeof(T) != " << element.second.type_size << ") {\n";
+                getAgentVariableImpl << "#endif\n";
                 getAgentVariableImpl << "                    DTHROW(\"Agent variable '%s' type mismatch during getVariable().\\n\", name);\n";
-                getAgentVariableImpl << "                    return 0;\n";
+                getAgentVariableImpl << "                    return {};\n";
                 getAgentVariableImpl << "                }\n";
                 getAgentVariableImpl << "#endif\n";
                 getAgentVariableImpl << "                return (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << agent_data_offset + (ct++ * sizeof(void*)) << ")))[index];\n";
@@ -603,7 +643,7 @@ void CurveRTCHost::initHeaderGetters() {
         getAgentVariableImpl <<         "#if !defined(SEATBELTS) || SEATBELTS\n";
         getAgentVariableImpl <<         "            DTHROW(\"Agent variable '%s' was not found during getVariable().\\n\", name);\n";
         getAgentVariableImpl <<         "#endif\n";
-        getAgentVariableImpl <<         "            return 0;\n";
+        getAgentVariableImpl <<         "            return {};\n";
         setHeaderPlaceholder("$DYNAMIC_GETAGENTVARIABLE_IMPL", getAgentVariableImpl.str());
     }
     // generate getMessageVariable func implementation ($DYNAMIC_GETMESSAGEVARIABLE_IMPL)
@@ -612,12 +652,20 @@ void CurveRTCHost::initHeaderGetters() {
         std::stringstream getMessageVariableImpl;
         for (const auto &element : messageIn_variables) {
             RTCVariableProperties props = element.second;
-            if (props.read && props.elements == 1) {
+            if (props.read
+#if !defined(USE_GLM)
+                && props.elements == 1
+#endif
+                ) {
                 getMessageVariableImpl << "            if (strings_equal(name, \"" << element.first << "\")) {\n";
                 getMessageVariableImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
+                getMessageVariableImpl << "#if defined(USE_GLM)\n";
+                getMessageVariableImpl << "                if(sizeof(T) != " << element.second.type_size * element.second.elements << ") {\n";
+                getMessageVariableImpl << "#else\n";
                 getMessageVariableImpl << "                if(sizeof(T) != " << element.second.type_size << ") {\n";
+                getMessageVariableImpl << "#endif\n";
                 getMessageVariableImpl << "                    DTHROW(\"Message variable '%s' type mismatch during getVariable().\\n\", name);\n";
-                getMessageVariableImpl << "                    return 0;\n";
+                getMessageVariableImpl << "                    return {};\n";
                 getMessageVariableImpl << "                }\n";
                 getMessageVariableImpl << "#endif\n";
                 getMessageVariableImpl << "                return (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << msgIn_data_offset + (ct++ * sizeof(void*)) << ")))[index];\n";
@@ -627,7 +675,7 @@ void CurveRTCHost::initHeaderGetters() {
         getMessageVariableImpl <<         "#if !defined(SEATBELTS) || SEATBELTS\n";
         getMessageVariableImpl <<         "            DTHROW(\"Message variable '%s' was not found during getVariable().\\n\", name);\n";
         getMessageVariableImpl <<         "#endif\n";
-        getMessageVariableImpl <<         "            return 0;\n";
+        getMessageVariableImpl <<         "            return {};\n";
         setHeaderPlaceholder("$DYNAMIC_GETMESSAGEVARIABLE_IMPL", getMessageVariableImpl.str());
     }
     // generate getAgentVariable_ldg func implementation ($DYNAMIC_GETAGENTVARIABLE_LDG_IMPL)
@@ -636,22 +684,36 @@ void CurveRTCHost::initHeaderGetters() {
         std::stringstream getAgentVariableLDGImpl;
         for (const auto &element : agent_variables) {
             RTCVariableProperties props = element.second;
-            if (props.read && props.elements == 1) {
+            if (props.read
+#if !defined(USE_GLM)
+                && props.elements == 1
+#endif
+                ) {
                 getAgentVariableLDGImpl << "            if (strings_equal(name, \"" << element.first << "\")) {\n";
                 getAgentVariableLDGImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
+                getAgentVariableLDGImpl << "#if defined(USE_GLM)\n";
+                getAgentVariableLDGImpl << "                if(sizeof(T) != " << element.second.type_size * element.second.elements << ") {\n";
+                getAgentVariableLDGImpl << "#else\n";
                 getAgentVariableLDGImpl << "                if(sizeof(T) != " << element.second.type_size << ") {\n";
+                getAgentVariableLDGImpl << "#endif\n";
                 getAgentVariableLDGImpl << "                    DTHROW(\"Agent variable '%s' type mismatch during getVariable().\\n\", name);\n";
-                getAgentVariableLDGImpl << "                    return 0;\n";
+                getAgentVariableLDGImpl << "                    return {};\n";
                 getAgentVariableLDGImpl << "                }\n";
                 getAgentVariableLDGImpl << "#endif\n";
-                getAgentVariableLDGImpl << "                return (T) __ldg((*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << agent_data_offset + (ct++ * sizeof(void*)) << "))) + index);\n";
+                getAgentVariableLDGImpl << "#if !defined(USE_GLM)\n";
+                getAgentVariableLDGImpl << "                return (T) __ldg((*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << agent_data_offset + (ct * sizeof(void*)) << "))) + index);\n";
+                getAgentVariableLDGImpl << "#else\n";
+                getAgentVariableLDGImpl << "// GLM types (e.g. uvec3) cannot all be loaded via _ldg()\n";
+                getAgentVariableLDGImpl << "                return (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << agent_data_offset + (ct * sizeof(void*)) << ")))[index];\n";
+                getAgentVariableLDGImpl << "#endif\n";
                 getAgentVariableLDGImpl << "            }\n";
+                ++ct;  // Prev was part of the return line, but don't want confusion
             } else { ++ct; }
         }
         getAgentVariableLDGImpl <<         "#if !defined(SEATBELTS) || SEATBELTS\n";
         getAgentVariableLDGImpl <<         "            DTHROW(\"Agent variable '%s' was not found during getVariable().\\n\", name);\n";
         getAgentVariableLDGImpl <<         "#endif\n";
-        getAgentVariableLDGImpl <<         "            return 0;\n";
+        getAgentVariableLDGImpl <<         "            return {};\n";
         setHeaderPlaceholder("$DYNAMIC_GETAGENTVARIABLE_LDG_IMPL", getAgentVariableLDGImpl.str());
     }
     // generate getMessageVariable_ldg func implementation ($DYNAMIC_GETMESSAGEVARIABLE_LDG_IMPL)
@@ -660,22 +722,36 @@ void CurveRTCHost::initHeaderGetters() {
         std::stringstream getMessageVariableLDGImpl;
         for (const auto &element : messageIn_variables) {
             RTCVariableProperties props = element.second;
-            if (props.read && props.elements == 1) {
+            if (props.read
+#if !defined(USE_GLM)
+                && props.elements == 1
+#endif
+                ) {
                 getMessageVariableLDGImpl << "            if (strings_equal(name, \"" << element.first << "\")) {\n";
                 getMessageVariableLDGImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
+                getMessageVariableLDGImpl << "#if defined(USE_GLM)\n";
+                getMessageVariableLDGImpl << "                if(sizeof(T) != " << element.second.type_size * element.second.elements << ") {\n";
+                getMessageVariableLDGImpl << "#else\n";
                 getMessageVariableLDGImpl << "                if(sizeof(T) != " << element.second.type_size << ") {\n";
+                getMessageVariableLDGImpl << "#endif\n";
                 getMessageVariableLDGImpl << "                    DTHROW(\"Message variable '%s' type mismatch during getVariable().\\n\", name);\n";
-                getMessageVariableLDGImpl << "                    return 0;\n";
+                getMessageVariableLDGImpl << "                    return {};\n";
                 getMessageVariableLDGImpl << "                }\n";
                 getMessageVariableLDGImpl << "#endif\n";
-                getMessageVariableLDGImpl << "                return (T) __ldg((*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << msgIn_data_offset + (ct++ * sizeof(void*)) << "))) + index);\n";
+                getMessageVariableLDGImpl << "#if !defined(USE_GLM)\n";
+                getMessageVariableLDGImpl << "                return (T) __ldg((*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << msgIn_data_offset + (ct * sizeof(void*)) << "))) + index);\n";
+                getMessageVariableLDGImpl << "#else\n";
+                getMessageVariableLDGImpl << "// GLM types (e.g. uvec3) cannot all be loaded via _ldg()\n";
+                getMessageVariableLDGImpl << "                return (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << msgIn_data_offset + (ct * sizeof(void*)) << ")))[index];\n";
+                getMessageVariableLDGImpl << "#endif\n";
                 getMessageVariableLDGImpl << "            }\n";
+                ++ct;  // Prev was part of the return line, but don't want confusion
             } else { ++ct; }
         }
         getMessageVariableLDGImpl <<         "#if !defined(SEATBELTS) || SEATBELTS\n";
         getMessageVariableLDGImpl <<         "            DTHROW(\"Message variable '%s' was not found during getVariable().\\n\", name);\n";
         getMessageVariableLDGImpl <<         "#endif\n";
-        getMessageVariableLDGImpl <<         "            return 0;\n";
+        getMessageVariableLDGImpl <<         "            return {};\n";
         setHeaderPlaceholder("$DYNAMIC_GETMESSAGEVARIABLE_LDG_IMPL", getMessageVariableLDGImpl.str());
     }
     // generate getAgentArrayVariable func implementation ($DYNAMIC_GETAGENTARRAYVARIABLE_IMPL)
@@ -691,13 +767,13 @@ void CurveRTCHost::initHeaderGetters() {
                 getAgentArrayVariableImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
                 getAgentArrayVariableImpl << "              if(sizeof(T) != " << element.second.type_size << ") {\n";
                 getAgentArrayVariableImpl << "                  DTHROW(\"Agent array variable '%s' type mismatch during getVariable().\\n\", name);\n";
-                getAgentArrayVariableImpl << "                  return 0;\n";
+                getAgentArrayVariableImpl << "                  return {};\n";
                 getAgentArrayVariableImpl << "              } else if (N != " << element.second.elements << ") {\n";
                 getAgentArrayVariableImpl << "                  DTHROW(\"Agent array variable '%s' length mismatch during getVariable().\\n\", name);\n";
-                getAgentArrayVariableImpl << "                  return 0;\n";
+                getAgentArrayVariableImpl << "                  return {};\n";
                 getAgentArrayVariableImpl << "              } else if (array_index >= " << element.second.elements << ") {\n";
                 getAgentArrayVariableImpl << "                  DTHROW(\"Agent array variable '%s', index %d is out of bounds during getVariable().\\n\", name, array_index);\n";
-                getAgentArrayVariableImpl << "                  return 0;\n";
+                getAgentArrayVariableImpl << "                  return {};\n";
                 getAgentArrayVariableImpl << "              }\n";
                 getAgentArrayVariableImpl << "#endif\n";
                 getAgentArrayVariableImpl << "              return (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << agent_data_offset + (ct++ * sizeof(void*)) << ")))[i];\n";
@@ -707,7 +783,7 @@ void CurveRTCHost::initHeaderGetters() {
         getAgentArrayVariableImpl <<         "#if !defined(SEATBELTS) || SEATBELTS\n";
         getAgentArrayVariableImpl <<         "           DTHROW(\"Agent array variable '%s' was not found during getVariable().\\n\", name);\n";
         getAgentArrayVariableImpl <<         "#endif\n";
-        getAgentArrayVariableImpl <<         "           return 0;\n";
+        getAgentArrayVariableImpl <<         "           return {};\n";
         setHeaderPlaceholder("$DYNAMIC_GETAGENTARRAYVARIABLE_IMPL", getAgentArrayVariableImpl.str());
     }
     // generate getMessageArrayVariable func implementation ($DYNAMIC_GETMESSAGEARRAYVARIABLE_IMPL)
@@ -755,23 +831,29 @@ void CurveRTCHost::initHeaderGetters() {
                 getAgentArrayVariableLDGImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
                 getAgentArrayVariableLDGImpl << "              if(sizeof(T) != " << element.second.type_size << ") {\n";
                 getAgentArrayVariableLDGImpl << "                  DTHROW(\"Agent array variable '%s' type mismatch during getVariable().\\n\", name);\n";
-                getAgentArrayVariableLDGImpl << "                  return 0;\n";
+                getAgentArrayVariableLDGImpl << "                  return {};\n";
                 getAgentArrayVariableLDGImpl << "              } else if (N != " << element.second.elements << ") {\n";
                 getAgentArrayVariableLDGImpl << "                  DTHROW(\"Agent array variable '%s' length mismatch during getVariable().\\n\", name);\n";
-                getAgentArrayVariableLDGImpl << "                  return 0;\n";
+                getAgentArrayVariableLDGImpl << "                  return {};\n";
                 getAgentArrayVariableLDGImpl << "              } else if (array_index >= " << element.second.elements << ") {\n";
                 getAgentArrayVariableLDGImpl << "                  DTHROW(\"Agent array variable '%s', index %d is out of bounds during getVariable().\\n\", name, array_index);\n";
-                getAgentArrayVariableLDGImpl << "                  return 0;\n";
+                getAgentArrayVariableLDGImpl << "                  return {};\n";
                 getAgentArrayVariableLDGImpl << "              }\n";
                 getAgentArrayVariableLDGImpl << "#endif\n";
-                getAgentArrayVariableLDGImpl << "              return (T) __ldg((*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << agent_data_offset + (ct++ * sizeof(void*)) << "))) + i);\n";
+                getAgentArrayVariableLDGImpl << "#if !defined(USE_GLM)\n";
+                getAgentArrayVariableLDGImpl << "                return (T) __ldg((*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << agent_data_offset + (ct * sizeof(void*)) << "))) + i);\n";
+                getAgentArrayVariableLDGImpl << "#else\n";
+                getAgentArrayVariableLDGImpl << "// GLM types (e.g. uvec3) cannot all be loaded via _ldg()\n";
+                getAgentArrayVariableLDGImpl << "                return (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << agent_data_offset + (ct * sizeof(void*)) << ")))[i];\n";
+                getAgentArrayVariableLDGImpl << "#endif\n";
                 getAgentArrayVariableLDGImpl << "           };\n";
+                ++ct;  // Prev was part of the return line, but don't want confusion
             } else { ++ct; }
         }
         getAgentArrayVariableLDGImpl <<         "#if !defined(SEATBELTS) || SEATBELTS\n";
         getAgentArrayVariableLDGImpl <<         "           DTHROW(\"Agent array variable '%s' was not found during getVariable().\\n\", name);\n";
         getAgentArrayVariableLDGImpl <<         "#endif\n";
-        getAgentArrayVariableLDGImpl <<         "           return 0;\n";
+        getAgentArrayVariableLDGImpl <<         "           return {};\n";
         setHeaderPlaceholder("$DYNAMIC_GETAGENTARRAYVARIABLE_LDG_IMPL", getAgentArrayVariableLDGImpl.str());
     }
     // generate getMessageArrayVariable func implementation ($DYNAMIC_GETMESSAGEARRAYVARIABLE_LDG_IMPL)
@@ -796,8 +878,14 @@ void CurveRTCHost::initHeaderGetters() {
                 getMessageArrayVariableLDGImpl << "                  return {};\n";
                 getMessageArrayVariableLDGImpl << "              }\n";
                 getMessageArrayVariableLDGImpl << "#endif\n";
-                getMessageArrayVariableLDGImpl << "              return (T) __ldg((*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << msgIn_data_offset + (ct++ * sizeof(void*)) << "))) + i);\n";
+                getMessageArrayVariableLDGImpl << "#if !defined(USE_GLM)\n";
+                getMessageArrayVariableLDGImpl << "                return (T) __ldg((*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << msgIn_data_offset + (ct * sizeof(void*)) << "))) + i);\n";
+                getMessageArrayVariableLDGImpl << "#else\n";
+                getMessageArrayVariableLDGImpl << "// GLM types (e.g. uvec3) cannot all be loaded via _ldg()\n";
+                getMessageArrayVariableLDGImpl << "                return (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << msgIn_data_offset + (ct * sizeof(void*)) << ")))[i];\n";
+                getMessageArrayVariableLDGImpl << "#endif\n";
                 getMessageArrayVariableLDGImpl << "           };\n";
+                ++ct;  // Prev was part of the return line, but don't want confusion
             } else { ++ct; }
         }
         getMessageArrayVariableLDGImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";

@@ -330,6 +330,123 @@ TEST(DeviceRTCAPITest, AgentFunction_array_set) {
     }
 }
 
+#ifdef USE_GLM
+const char* rtc_array_get_agent_func_glm = R"###(
+FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MsgNone, flamegpu::MsgNone) {
+    // Read array from `array_var`
+    // Store it's values back in `a1` -> `a4`
+    const glm::ivec4 t = FLAMEGPU->getVariable<glm::ivec4>("array_var");
+    FLAMEGPU->setVariable<int>("a1", t.x);
+    FLAMEGPU->setVariable<int>("a2", t.y);
+    FLAMEGPU->setVariable<int>("a3", t.z);
+    FLAMEGPU->setVariable<int>("a4", t.w);
+    return flamegpu::ALIVE;
+}
+)###";
+/**
+ * Test an RTC function to ensure that the getVariable function works correctly for array variables. Expected result is 'array_var' values are copied into a1, a2, a3 and a4.
+ */
+TEST(DeviceRTCAPITest, AgentFunction_array_get_glm) {
+    ModelDescription model("model");
+    AgentDescription& agent = model.newAgent("agent_name");
+    agent.newVariable<int>("id");
+    agent.newVariable<int, 4>("array_var");
+    agent.newVariable<int>("a1");
+    agent.newVariable<int>("a2");
+    agent.newVariable<int>("a3");
+    agent.newVariable<int>("a4");
+    // add RTC agent function
+    AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_array_get_agent_func_glm);
+    model.newLayer().addAgentFunction(func);
+    // Init pop
+    AgentVector init_population(agent, AGENT_COUNT);
+    for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
+        AgentVector::Agent instance = init_population[i];
+        instance.setVariable<int>("id", i);
+        instance.setVariable<int, 4>("array_var", { 2 + i, 4 + i, 8 + i, 16 + i });
+    }
+    // Setup Model
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(init_population);
+    // Run 1 step to ensure data is pushed to device
+    cudaSimulation.step();
+    // Recover data from device
+    AgentVector population(agent);
+    cudaSimulation.getPopulationData(population);
+    for (AgentVector::Agent instance : population) {
+        int j = instance.getVariable<int>("id");
+        // Check scalar variables have been set correctly by agent function (which has read them from an array)
+        EXPECT_EQ(instance.getVariable<int>("a1"), 2 + j);
+        EXPECT_EQ(instance.getVariable<int>("a2"), 4 + j);
+        EXPECT_EQ(instance.getVariable<int>("a3"), 8 + j);
+        EXPECT_EQ(instance.getVariable<int>("a4"), 16 + j);
+    }
+}
+
+const char* rtc_array_set_agent_func_glm = R"###(
+FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MsgNone, flamegpu::MsgNone) {
+    // Read array from `array_var`
+    // Store it's values back in `a1` -> `a4`
+    const int id = FLAMEGPU->getVariable<int>("id");
+    FLAMEGPU->setVariable<glm::ivec4>("array_var", glm::ivec4(2 + id, 4 + id, 8 + id, 16 + id));
+    return flamegpu::ALIVE;
+}
+)###";
+/**
+ * Test an RTC function to ensure that the setVariable function works correctly for array variables. Expected result is a1, a2, a3 and a4 are copied into 'array_var'.
+ * Also includes a test to ensure that scalar variables can not use the array get and set functions of the API.
+ */
+TEST(DeviceRTCAPITest, AgentFunction_array_set_glm) {
+    ModelDescription model("model");
+    AgentDescription& agent = model.newAgent("agent_name");
+    agent.newVariable<int>("id");
+    agent.newVariable<int, 4>("array_var");
+    agent.newVariable<int>("a0");
+    agent.newVariable<int>("a1");
+    agent.newVariable<int>("a2");
+    agent.newVariable<int>("a3");
+    agent.newVariable<int>("a4");
+    AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_array_set_agent_func_glm);
+    model.newLayer().addAgentFunction(func);
+    // Init pop
+    AgentVector init_population(agent, AGENT_COUNT);
+    for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
+        AgentVector::Agent instance = init_population[i];
+        instance.setVariable<int>("id", i);
+        instance.setVariable<int>("a0", i);
+        instance.setVariable<int>("a1", 2 + i);
+        instance.setVariable<int>("a2", 4 + i);
+        instance.setVariable<int>("a3", 8 + i);
+        instance.setVariable<int>("a4", 16 + i);
+        instance.setVariable<int, 4>("array_var", { 0, 0, 0, 0 });
+    }
+    // Setup Model
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(init_population);
+    // Run 1 step to ensure data is pushed to device
+    cudaSimulation.step();
+    // Recover data from device
+    AgentVector population(agent);
+    cudaSimulation.getPopulationData(population);
+    for (unsigned int i = 0; i < population.size(); ++i) {
+        AgentVector::Agent instance = population[i];
+        int j = instance.getVariable<int>("id");
+        // Check array_var has been set from scalar variables
+        std::array<int, 4> array_var = instance.getVariable<int, 4>("array_var");
+        EXPECT_EQ(array_var[0], 2 + j);
+        EXPECT_EQ(array_var[1], 4 + j);
+        EXPECT_EQ(array_var[2], 8 + j);
+        EXPECT_EQ(array_var[3], 16 + j);
+        // Value should not have been set by agent function as the value is scalar and the setter used was for an array
+        EXPECT_EQ(instance.getVariable<int>("a0"), static_cast<int>(i));
+    }
+}
+#else
+// Mark that test is disabled
+TEST(DeviceRTCAPITest, DISABLED_AgentFunction_array_get_glm) { }
+TEST(DeviceRTCAPITest, DISABLED_AgentFunction_array_set_glm) { }
+#endif
+
 const char* rtc_msg_out_func = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_msg_out_func, flamegpu::MsgNone, flamegpu::MsgBruteForce) {
     FLAMEGPU->message_out.setVariable("x", FLAMEGPU->getVariable<int>("x"));

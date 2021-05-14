@@ -1181,5 +1181,131 @@ TEST(TestRTCMessage_Array3D, ArrayVariable) {
     }
 }
 
+#if defined(USE_GLM)
+FLAMEGPU_AGENT_FUNCTION(ArrayOut_glm, MsgNone, MsgArray3D) {
+    const unsigned int x = FLAMEGPU->getVariable<unsigned int, 3>("index", 0);
+    const unsigned int y = FLAMEGPU->getVariable<unsigned int, 3>("index", 1);
+    const unsigned int z = FLAMEGPU->getVariable<unsigned int, 3>("index", 2);
+    glm::uvec3 t = glm::uvec3(x * 3, y * 7, z * 11);
+    FLAMEGPU->message_out.setVariable<glm::uvec3>("v", t);
+    FLAMEGPU->message_out.setIndex(x, y, z);
+    return ALIVE;
+}
+FLAMEGPU_AGENT_FUNCTION(ArrayIn_glm, MsgArray3D, MsgNone) {
+    const unsigned int x = FLAMEGPU->getVariable<unsigned int, 3>("index", 0);
+    const unsigned int y = FLAMEGPU->getVariable<unsigned int, 3>("index", 1);
+    const unsigned int z = FLAMEGPU->getVariable<unsigned int, 3>("index", 2);
+    const auto& message = FLAMEGPU->message_in.at(x, y, z);
+    FLAMEGPU->setVariable<glm::uvec3>("message_read", message.getVariable<glm::uvec3>("v"));
+    return ALIVE;
+}
+TEST(TestMessage_Array3D, ArrayVariable_glm) {
+    ModelDescription m(MODEL_NAME);
+    MsgArray3D::Description& msg = m.newMessage<MsgArray3D>(MESSAGE_NAME);
+    msg.setDimensions(CBRT_AGENT_COUNT, CBRT_AGENT_COUNT, CBRT_AGENT_COUNT);
+    msg.newVariable<unsigned int, 3>("v");
+    AgentDescription& a = m.newAgent(AGENT_NAME);
+    a.newVariable<unsigned int, 3>("index");
+    a.newVariable<unsigned int, 3>("message_read", { UINT_MAX, UINT_MAX, UINT_MAX });
+    AgentFunctionDescription& fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut_glm);
+    fo.setMessageOutput(msg);
+    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn_glm);
+    fi.setMessageInput(msg);
+    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    lo.addAgentFunction(fo);
+    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    li.addAgentFunction(fi);
+    // Assign the numbers in shuffled order to agents
+    AgentVector pop(a, CBRT_AGENT_COUNT * CBRT_AGENT_COUNT * CBRT_AGENT_COUNT);
+    int t = 0;
+    for (unsigned int i = 0; i < CBRT_AGENT_COUNT; ++i) {
+        for (unsigned int j = 0; j < CBRT_AGENT_COUNT; ++j) {
+            for (unsigned int k = 0; k < CBRT_AGENT_COUNT; ++k) {
+                AgentVector::Agent ai = pop[t++];
+                ai.setVariable<unsigned int, 3>("index", { i, j, k });
+            }
+        }
+    }
+    // Set pop in model
+    CUDASimulation c(m);
+    c.setPopulationData(pop);
+    c.step();
+    c.getPopulationData(pop);
+    // Validate each agent has same result
+    for (AgentVector::Agent ai : pop) {
+        const std::array<unsigned int, 3> index = ai.getVariable<unsigned int, 3>("index");
+        std::array<unsigned int, 3> v = ai.getVariable<unsigned int, 3>("message_read");
+        ASSERT_EQ(v[0], index[0] * 3);
+        ASSERT_EQ(v[1], index[1] * 7);
+        ASSERT_EQ(v[2], index[2] * 11);
+    }
+}
+const char* rtc_ArrayOut_func_glm = R"###(
+FLAMEGPU_AGENT_FUNCTION(ArrayOut, flamegpu::MsgNone, flamegpu::MsgArray3D) {
+    const unsigned int x = FLAMEGPU->getVariable<unsigned int, 3>("index", 0);
+    const unsigned int y = FLAMEGPU->getVariable<unsigned int, 3>("index", 1);
+    const unsigned int z = FLAMEGPU->getVariable<unsigned int, 3>("index", 2);
+    glm::uvec3 t = glm::uvec3(x * 3, y * 7, z * 11);
+    FLAMEGPU->message_out.setVariable<glm::uvec3>("v", t);
+    FLAMEGPU->message_out.setIndex(x, y, z);
+    return flamegpu::ALIVE;
+}
+)###";
+const char* rtc_ArrayIn_func_glm = R"###(
+FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MsgArray3D, flamegpu::MsgNone) {
+    const unsigned int x = FLAMEGPU->getVariable<unsigned int, 3>("index", 0);
+    const unsigned int y = FLAMEGPU->getVariable<unsigned int, 3>("index", 1);
+    const unsigned int z = FLAMEGPU->getVariable<unsigned int, 3>("index", 2);
+    const auto& message = FLAMEGPU->message_in.at(x, y, z);
+    FLAMEGPU->setVariable<glm::uvec3>("message_read", message.getVariable<glm::uvec3>("v"));
+    return flamegpu::ALIVE;
+}
+)###";
+TEST(TestRTCMessage_Array3D, ArrayVariable_glm) {
+    ModelDescription m(MODEL_NAME);
+    MsgArray3D::Description& msg = m.newMessage<MsgArray3D>(MESSAGE_NAME);
+    msg.setDimensions(CBRT_AGENT_COUNT, CBRT_AGENT_COUNT, CBRT_AGENT_COUNT);
+    msg.newVariable<unsigned int, 3>("v");
+    AgentDescription& a = m.newAgent(AGENT_NAME);
+    a.newVariable<unsigned int, 3>("index");
+    a.newVariable<unsigned int, 3>("message_read", { UINT_MAX, UINT_MAX, UINT_MAX });
+    AgentFunctionDescription& fo = a.newRTCFunction(OUT_FUNCTION_NAME, rtc_ArrayOut_func_glm);
+    fo.setMessageOutput(msg);
+    AgentFunctionDescription& fi = a.newRTCFunction(IN_FUNCTION_NAME, rtc_ArrayIn_func_glm);
+    fi.setMessageInput(msg);
+    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    lo.addAgentFunction(fo);
+    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    li.addAgentFunction(fi);
+    // Assign the numbers in shuffled order to agents
+    AgentVector pop(a, CBRT_AGENT_COUNT * CBRT_AGENT_COUNT * CBRT_AGENT_COUNT);
+    int t = 0;
+    for (unsigned int i = 0; i < CBRT_AGENT_COUNT; ++i) {
+        for (unsigned int j = 0; j < CBRT_AGENT_COUNT; ++j) {
+            for (unsigned int k = 0; k < CBRT_AGENT_COUNT; ++k) {
+                AgentVector::Agent ai = pop[t++];
+                ai.setVariable<unsigned int, 3>("index", { i, j, k });
+            }
+        }
+    }
+    // Set pop in model
+    CUDASimulation c(m);
+    c.setPopulationData(pop);
+    c.step();
+    c.getPopulationData(pop);
+    // Validate each agent has same result
+    for (AgentVector::Agent ai : pop) {
+        const std::array<unsigned int, 3> index = ai.getVariable<unsigned int, 3>("index");
+        std::array<unsigned int, 3> v = ai.getVariable<unsigned int, 3>("message_read");
+        ASSERT_EQ(v[0], index[0] * 3);
+        ASSERT_EQ(v[1], index[1] * 7);
+        ASSERT_EQ(v[2], index[2] * 11);
+    }
+}
+#else
+TEST(TestMessage_Array3D, DISABLED_ArrayVariable_glm) { }
+TEST(TestRTCMessage_Array3D, DISABLED_ArrayVariable_glm) { }
+#endif
+
 }  // namespace test_message_array_3d
 }  // namespace flamegpu

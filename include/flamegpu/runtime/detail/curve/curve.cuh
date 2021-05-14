@@ -23,6 +23,13 @@
 
 #include "flamegpu/exception/FLAMEGPUDeviceException.cuh"
 
+#ifdef USE_GLM
+#ifdef __CUDACC__
+#pragma diag_suppress = esa_on_defaulted_function_ignored
+#endif
+#include <glm/glm.hpp>
+#endif
+
 namespace flamegpu {
 namespace detail {
 namespace curve {
@@ -753,7 +760,7 @@ __device__ __forceinline__ T Curve::getVariableByHash(const VariableHash variabl
 
     // error checking
     if (size != sizeof(T)) {
-        return 0;
+        return {};
     }
 #endif
     // get a pointer to the specific variable by offsetting by the provided index
@@ -761,7 +768,7 @@ __device__ __forceinline__ T Curve::getVariableByHash(const VariableHash variabl
 
 #if !defined(SEATBELTS) || SEATBELTS
     if (!value_ptr)
-        return 0;
+        return {};
 #endif
     return *value_ptr;
 }
@@ -775,7 +782,7 @@ __device__ __forceinline__ T Curve::getVariableByHash_ldg(const VariableHash var
 
     // error checking
     if (size != sizeof(T)) {
-        return NULL;
+        return {};
     }
 #endif
     // get a pointer to the specific variable by offsetting by the provided index
@@ -783,7 +790,7 @@ __device__ __forceinline__ T Curve::getVariableByHash_ldg(const VariableHash var
 
 #if !defined(SEATBELTS) || SEATBELTS
     if (!value_ptr)
-        return 0;
+        return {};
 #endif
     return __ldg(value_ptr);
 }
@@ -873,7 +880,12 @@ __device__ __forceinline__ T Curve::getVariable_ldg(const char (&variableName)[N
         }
     }
 #endif
+#if !defined(USE_GLM)
     return getVariableByHash_ldg<T>(variable_hash+namespace_hash, index);
+#else
+    // Some/All glm types (e.g. uvec3) cannot be loaded over _ldg
+    return getVariableByHash<T>(variable_hash + namespace_hash, index);
+#endif
 }
 template <typename T, unsigned int N, unsigned int M>
 __device__ __forceinline__ T Curve::getAgentArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, unsigned int agent_index, unsigned int array_index) {
@@ -931,7 +943,12 @@ __device__ __forceinline__ T Curve::getArrayVariable_ldg(const char(&variableNam
 #endif
     // Curve currently doesn't store whether a variable is an array
     // Curve stores M * sizeof(T), so this is checked instead
+#if !defined(USE_GLM)
     return getArrayVariableByHash_ldg<T, N>(variable_hash + namespace_hash, agent_index, array_index);
+#else
+    // Some/All glm types (e.g. uvec3) cannot be loaded over _ldg
+    return getArrayVariableByHash<T, N>(variable_hash + namespace_hash, agent_index, array_index);
+#endif
 }
 
 template <typename T>

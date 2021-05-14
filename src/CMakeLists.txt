@@ -37,6 +37,10 @@ option(SEATBELTS "Enable runtime checks which harm performance for release/profi
 # Option to enable/disable the default status of JitifyCache
 option(RTC_DISK_CACHE "Enable caching of RTC kernels to disk by default (this can still be overridden programatically)." ON)
 
+# Option to make put glm on the include path
+option(USE_GLM "Experimental: Make GLM available to flamegpu2 projects on the include path" OFF)
+mark_as_advanced(USE_GLM)
+
 # Include common rules.
 include(${FLAMEGPU_ROOT}/cmake/common.cmake)
 include(${FLAMEGPU_ROOT}/cmake/doxygen.cmake)

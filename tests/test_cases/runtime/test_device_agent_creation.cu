@@ -1432,5 +1432,149 @@ FLAMEGPU_AGENT_FUNCTION(DeviceBirth, flamegpu::MsgNone, flamegpu::MsgNone) {
         }
     }
 }
+
+FLAMEGPU_AGENT_FUNCTION(MandatoryOutputArray, MsgNone, MsgNone) {
+    unsigned int id = FLAMEGPU->getVariable<unsigned int>("id") + 1;
+    FLAMEGPU->agent_out.setVariable<float, 2>("x", 0, id + 12.0f);
+    FLAMEGPU->agent_out.setVariable<float, 2>("x", 1, id + 13.0f);
+    FLAMEGPU->agent_out.setVariable<unsigned int>("id", id);
+    return ALIVE;
+}
+TEST(DeviceAgentCreationTest, Output_Array) {
+    // Define model
+    ModelDescription model("Spatial3DMsgTestModel");
+    AgentDescription& agent = model.newAgent("agent");
+    agent.newVariable<float, 2>("x");
+    agent.newVariable<unsigned int>("id");
+    AgentFunctionDescription& function = agent.newFunction("output", MandatoryOutputArray);
+    function.setAgentOutput(agent);
+    LayerDescription& layer1 = model.newLayer();
+    layer1.addAgentFunction(function);
+    // Init agent pop
+    CUDASimulation cudaSimulation(model);
+    AgentVector population(model.Agent("agent"), AGENT_COUNT);
+    // Initialise agents
+    for (unsigned int i = 0; i < AGENT_COUNT; i++) {
+        AgentVector::Agent instance = population[i];
+        instance.setVariable<float, 2>("x", {i + 1.0f, i + 2.0f});
+        instance.setVariable<unsigned int>("id", i);
+    }
+    cudaSimulation.setPopulationData(population);
+    // Execute model
+    cudaSimulation.step();
+    // Test output
+    cudaSimulation.getPopulationData(population);
+    // Validate each agent has same result
+    EXPECT_EQ(population.size(), AGENT_COUNT * 2);
+    unsigned int is_1 = 0;
+    unsigned int is_12 = 0;
+    for (AgentVector::Agent ai : population) {
+        const unsigned int id = ai.getVariable<unsigned int>("id");
+        const std::array<float, 2> val = ai.getVariable<float, 2>("x");
+        if (val[0] - id == 1.0f && val[1] - id == 2.0f)
+            is_1++;
+        else if (val[0] - id == 12.0f && val[1] - id == 13.0f)
+            is_12++;
+    }
+    EXPECT_EQ(is_1, AGENT_COUNT);
+    EXPECT_EQ(is_12, AGENT_COUNT);
+}
+#ifdef USE_GLM
+FLAMEGPU_AGENT_FUNCTION(MandatoryOutputArray_glm, MsgNone, MsgNone) {
+    unsigned int id = FLAMEGPU->getVariable<unsigned int>("id") + 1;
+    FLAMEGPU->agent_out.setVariable<glm::vec2>("x", glm::vec2(id + 12.0f, id + 13.0f));
+    FLAMEGPU->agent_out.setVariable<unsigned int>("id", id);
+    return ALIVE;
+}
+TEST(DeviceAgentCreationTest, Output_Array_glm) {
+    // Define model
+    ModelDescription model("Spatial3DMsgTestModel");
+    AgentDescription& agent = model.newAgent("agent");
+    agent.newVariable<float, 2>("x");
+    agent.newVariable<unsigned int>("id");
+    AgentFunctionDescription& function = agent.newFunction("output", MandatoryOutputArray_glm);
+    function.setAgentOutput(agent);
+    LayerDescription& layer1 = model.newLayer();
+    layer1.addAgentFunction(function);
+    // Init agent pop
+    CUDASimulation cudaSimulation(model);
+    AgentVector population(model.Agent("agent"), AGENT_COUNT);
+    // Initialise agents
+    for (unsigned int i = 0; i < AGENT_COUNT; i++) {
+        AgentVector::Agent instance = population[i];
+        instance.setVariable<float, 2>("x", { i + 1.0f, i + 2.0f });
+        instance.setVariable<unsigned int>("id", i);
+    }
+    cudaSimulation.setPopulationData(population);
+    // Execute model
+    cudaSimulation.step();
+    // Test output
+    cudaSimulation.getPopulationData(population);
+    // Validate each agent has same result
+    EXPECT_EQ(population.size(), AGENT_COUNT * 2);
+    unsigned int is_1 = 0;
+    unsigned int is_12 = 0;
+    for (AgentVector::Agent ai : population) {
+        const unsigned int id = ai.getVariable<unsigned int>("id");
+        const std::array<float, 2> val = ai.getVariable<float, 2>("x");
+        if (val[0] - id == 1.0f && val[1] - id == 2.0f)
+            is_1++;
+        else if (val[0] - id == 12.0f && val[1] - id == 13.0f)
+            is_12++;
+    }
+    EXPECT_EQ(is_1, AGENT_COUNT);
+    EXPECT_EQ(is_12, AGENT_COUNT);
+}
+const char* rtc_MandatoryOutputArray_glm = R"###(
+FLAMEGPU_AGENT_FUNCTION(MandatoryOutputArray_glm, flamegpu::MsgNone, flamegpu::MsgNone) {
+    unsigned int id = FLAMEGPU->getVariable<unsigned int>("id") + 1;
+    FLAMEGPU->agent_out.setVariable<glm::vec2>("x", glm::vec2(id + 12.0f, id + 13.0f));
+    FLAMEGPU->agent_out.setVariable<unsigned int>("id", id);
+    return flamegpu::ALIVE;
+}
+)###";
+TEST(DeviceRTCAgentCreationTest, Output_Array_glm) {
+    // Define model
+    ModelDescription model("Spatial3DMsgTestModel");
+    AgentDescription& agent = model.newAgent("agent");
+    agent.newVariable<float, 2>("x");
+    agent.newVariable<unsigned int>("id");
+    AgentFunctionDescription& function = agent.newRTCFunction("output", rtc_MandatoryOutputArray_glm);
+    function.setAgentOutput(agent);
+    LayerDescription& layer1 = model.newLayer();
+    layer1.addAgentFunction(function);
+    // Init agent pop
+    CUDASimulation cudaSimulation(model);
+    AgentVector population(model.Agent("agent"), AGENT_COUNT);
+    // Initialise agents
+    for (unsigned int i = 0; i < AGENT_COUNT; i++) {
+        AgentVector::Agent instance = population[i];
+        instance.setVariable<float, 2>("x", { i + 1.0f, i + 2.0f });
+        instance.setVariable<unsigned int>("id", i);
+    }
+    cudaSimulation.setPopulationData(population);
+    // Execute model
+    cudaSimulation.step();
+    // Test output
+    cudaSimulation.getPopulationData(population);
+    // Validate each agent has same result
+    EXPECT_EQ(population.size(), AGENT_COUNT * 2);
+    unsigned int is_1 = 0;
+    unsigned int is_12 = 0;
+    for (AgentVector::Agent ai : population) {
+        const unsigned int id = ai.getVariable<unsigned int>("id");
+        const std::array<float, 2> val = ai.getVariable<float, 2>("x");
+        if (val[0] - id == 1.0f && val[1] - id == 2.0f)
+            is_1++;
+        else if (val[0] - id == 12.0f && val[1] - id == 13.0f)
+            is_12++;
+    }
+    EXPECT_EQ(is_1, AGENT_COUNT);
+    EXPECT_EQ(is_12, AGENT_COUNT);
+}
+#else
+TEST(DeviceAgentCreationTest, DISABLED_Output_Array_glm) {}
+TEST(DeviceRTCAgentCreationTest, DISABLED_Output_Array_glm) {}
+#endif
 }  // namespace test_device_agent_creation
 }  // namespace flamegpu

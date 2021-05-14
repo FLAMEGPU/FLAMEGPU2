@@ -18,6 +18,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/Thrust.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/Jitify.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/Tinyxml2.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/rapidjson.cmake)
+if(USE_GLM)
+include(${CMAKE_CURRENT_LIST_DIR}/glm.cmake)
+endif()
 
 # Common rules for other cmake files
 # Don't create installation scripts (and hide CMAKE_INSTALL_PREFIX from cmake-gui)
@@ -332,6 +335,16 @@ function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
                     $<TARGET_FILE_DIR:${NAME}>)
         endif()
         add_compile_definitions(VISUALISATION)
+    
+        # Make GLM accessible via include
+        if (USE_GLM)
+            if(glm_FOUND)
+                target_include_directories(${NAME} PUBLIC "${glm_INCLUDE_DIRS}")
+            else()
+                message(WARNING "USE_GLM enabled, but glm_FOUND is False.")
+            endif()
+            add_compile_definitions(USE_GLM)
+        endif()
     endif()
     
     # Pass the SEATBELTS macro, which when set to off/0 (for non debug builds) removes expensive operations.
@@ -393,7 +406,18 @@ function(add_flamegpu_library NAME SRC FLAMEGPU_ROOT)
         CMAKE_SET_TARGET_FOLDER(flamegpu_visualiser "FLAMEGPU")
         add_compile_definitions(VISUALISATION)
         # set(SDL2_DIR ${VISUALISATION_BUILD}/sdl2)
-        # find_package(SDL2 REQUIRED)   
+        # find_package(SDL2 REQUIRED)
+
+        # Make the visualisers GLM accessible via include
+        if (USE_GLM)
+            if(glm_FOUND)
+                target_include_directories(${NAME} PUBLIC "${glm_INCLUDE_DIRS}")
+                add_compile_definitions(GLM_PATH="${glm_INCLUDE_DIRS}")
+            else()
+                message(WARNING "USE_GLM enabled, but glm_FOUND is False.")
+            endif()
+            add_compile_definitions(USE_GLM)
+        endif()   
     endif()
     
     # Pass the SEATBELTS macro, which when set to off/0 (for non debug builds) removes expensive operations.

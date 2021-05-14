@@ -1,6 +1,13 @@
 #ifndef INCLUDE_FLAMEGPU_FLAMEGPU_H_
 #define INCLUDE_FLAMEGPU_FLAMEGPU_H_
 
+#ifdef USE_GLM
+#ifdef __CUDACC__
+#pragma diag_suppress = esa_on_defaulted_function_ignored
+#endif
+#include <glm/glm.hpp>
+#endif
+
 // include all host API classes (top level header from each module)
 #include "flamegpu/version.h"
 #include "flamegpu/runtime/HostAPI.h"

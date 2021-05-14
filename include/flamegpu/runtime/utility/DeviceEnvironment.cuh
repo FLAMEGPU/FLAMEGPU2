@@ -92,8 +92,13 @@ __device__ __forceinline__ T DeviceEnvironment::getProperty(const char(&name)[N]
 #if !defined(SEATBELTS) || SEATBELTS
     if (cv ==  detail::curve::Curve::UNKNOWN_VARIABLE) {
         DTHROW("Environment property with name: %s was not found.\n", name);
+#if defined(USE_GLM)
+    } else if (detail::curve::detail::d_sizes[cv] * detail::curve::detail::d_lengths[cv] != sizeof(T)) {
+        DTHROW("Environment property with name: %s type size mismatch %llu != %llu.\n", name, detail::curve::detail::d_sizes[cv] * detail::curve::detail::d_lengths[cv], sizeof(T));
+#else
     } else if (detail::curve::detail::d_sizes[cv] != sizeof(T)) {
         DTHROW("Environment property with name: %s type size mismatch %llu != %llu.\n", name, detail::curve::detail::d_sizes[cv], sizeof(T));
+#endif
     } else {
         return *reinterpret_cast<T*>(detail::c_envPropBuffer + reinterpret_cast<ptrdiff_t>(detail::curve::detail::d_variables[cv]));
     }
