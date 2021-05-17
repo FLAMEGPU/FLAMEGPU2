@@ -17,6 +17,8 @@
 #include "flamegpu/util/nvtx.h"
 
 
+namespace flamegpu {
+
 
 
 MsgSpatial2D::CUDAModelHandler::CUDAModelHandler(CUDAMessage &a)
@@ -269,3 +271,5 @@ float MsgSpatial2D::Description::getMaxX() const {
 float MsgSpatial2D::Description::getMaxY() const {
     return reinterpret_cast<Data *>(message)->maxY;
 }
+
+}  // namespace flamegpu

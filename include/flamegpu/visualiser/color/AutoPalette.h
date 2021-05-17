@@ -6,6 +6,9 @@
 #include "flamegpu/visualiser/color/Color.h"
 #include "flamegpu/visualiser/color/Palette.h"
 
+namespace flamegpu {
+namespace visualiser {
+
 /**
  * Automatically iterates the colors of a Palette on next()
  */
@@ -31,5 +34,8 @@ class AutoPalette {
         return palette[next_index++];
     }
 };
+
+}  // namespace visualiser
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_VISUALISER_COLOR_AUTOPALETTE_H_

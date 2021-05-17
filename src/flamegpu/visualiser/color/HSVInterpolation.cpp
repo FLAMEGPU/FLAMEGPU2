@@ -1,8 +1,12 @@
+// @todo - ifdef VISUALISATION
 #include "flamegpu/visualiser/color/HSVInterpolation.h"
 
 #include <sstream>
 
 #include "flamegpu/exception/FGPUException.h"
+
+namespace flamegpu {
+namespace visualiser {
 
 HSVInterpolation HSVInterpolation::REDGREEN(const std::string& variable_name, const float& _min_bound, const float& _max_bound) {
     auto rtn = HSVInterpolation(variable_name, 0.0f, 100.0f, 1.0f, 0.88f);
@@ -127,3 +131,6 @@ std::string HSVInterpolation::getAgentVariableName() const {
 std::type_index HSVInterpolation::getAgentVariableRequiredType() const {
     return std::type_index(typeid(float));
 }
+
+}  // namespace visualiser
+}  // namespace flamegpu

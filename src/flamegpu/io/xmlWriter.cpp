@@ -15,6 +15,8 @@
 #include "flamegpu/gpu/CUDASimulation.h"
 #include "flamegpu/pop/AgentVector.h"
 
+namespace flamegpu {
+
 #ifndef XMLCheckResult
  /**
   * Macro function for converting a tinyxml2 return code to an exception
@@ -61,7 +63,7 @@
 xmlWriter::xmlWriter(
     const std::string &model_name,
     const unsigned int &sim_instance_id,
-    const StringPairUnorderedMap<std::shared_ptr<AgentVector>> &model,
+    const util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> &model,
     const unsigned int &iterations,
     const std::string &output_file,
     const Simulation *_sim_instance)
@@ -267,3 +269,5 @@ int xmlWriter::writeStates(bool prettyPrint) {
     return tinyxml2::XML_SUCCESS;
 }
 
+
+}  // namespace flamegpu

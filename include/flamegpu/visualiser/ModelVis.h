@@ -14,9 +14,13 @@
 #include "flamegpu/visualiser/color/AutoPalette.h"
 #include "config/ModelConfig.h"
 
+namespace flamegpu {
+
 struct ModelData;
 class CUDASimulation;
 class FLAMEGPU_Visualisation;
+
+namespace visualiser {
 
 /**
  * This provides an interface for managing the render options for a specific CUDASimulation
@@ -30,7 +34,7 @@ class ModelVis {
      * > texturise agent variable pointers
      * > On resize, also update textures
      */
-    explicit ModelVis(const CUDASimulation &model/*TBD*/);
+    explicit ModelVis(const flamegpu::CUDASimulation &model/*TBD*/);
     /**
      * Default destructor behaviour
      * Defined explicitly, so that header include does not require including FLAMEGPU_Visualisation for std::unique_ptr destruction.
@@ -234,5 +238,9 @@ class ModelVis {
      */
     std::unique_ptr<FLAMEGPU_Visualisation> visualiser;
 };
+
+}  // namespace visualiser
+}  // namespace flamegpu
+
 #endif  // VISUALISATION
 #endif  // INCLUDE_FLAMEGPU_VISUALISER_MODELVIS_H_

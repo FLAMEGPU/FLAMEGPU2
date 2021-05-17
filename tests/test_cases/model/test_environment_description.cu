@@ -13,6 +13,8 @@
 #include "flamegpu/flame_api.h"
 
 #include "gtest/gtest.h"
+namespace flamegpu {
+
 
 namespace {
 const int ARRAY_TEST_LEN = 5;
@@ -357,3 +359,4 @@ TEST(EnvironmentDescriptionTest, reserved_name) {
     EXPECT_THROW((ed.*add)("_", { 1, 2 }, false), ReservedName);
     EXPECT_THROW((ed.*set)("_", { 1, 2 }), ReservedName);
 }
+}  // namespace flamegpu

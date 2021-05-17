@@ -12,6 +12,8 @@
 
 #include "flamegpu/exception/FGPUDeviceException_device.h"
 
+namespace flamegpu {
+
 /**
  * Host 'singleton', owned 1 per CUDASimulation, provides facility for generating and checking DeviceExceptionBuffers
  */
@@ -46,6 +48,7 @@ class DeviceExceptionManager {
      */
     DeviceExceptionBuffer hd_buffer[CUDAScanCompaction::MAX_STREAMS];
 };
+}  // namespace flamegpu
 #else
 /**
  * Ignore the device error macro when SEATBELTS are off

@@ -2,6 +2,8 @@
 
 #include "gtest/gtest.h"
 
+
+namespace flamegpu {
 namespace test_host_api {
 
 // Test host_api::getStepCounter()
@@ -96,3 +98,4 @@ TEST(hostAPITest, resizeTempMemory) {
 }
 
 }  // namespace test_host_api
+}  // namespace flamegpu

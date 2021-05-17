@@ -2,6 +2,9 @@
 
 #include "gtest/gtest.h"
 
+namespace flamegpu {
+
+
 namespace test_device_api {
     const unsigned int AGENT_COUNT = 1024;
 FLAMEGPU_AGENT_FUNCTION(agent_fn_ad_array, MsgNone, MsgNone) {
@@ -247,3 +250,4 @@ TEST(DeviceAPITest, getStepCounterFunctionCondition) {
 }
 
 }  // namespace test_device_api
+}  // namespace flamegpu

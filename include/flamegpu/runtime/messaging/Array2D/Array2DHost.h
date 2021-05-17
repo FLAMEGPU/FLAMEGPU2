@@ -1,7 +1,6 @@
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_ARRAY2D_ARRAY2DHOST_H_
 #define INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_ARRAY2D_ARRAY2DHOST_H_
 
-
 #include <string>
 #include <memory>
 #include <array>
@@ -10,6 +9,8 @@
 #include "flamegpu/runtime/messaging/Array2D.h"
 #include "flamegpu/runtime/messaging/BruteForce/BruteForceHost.h"
 
+
+namespace flamegpu {
 
 /**
  * Blank handler, brute force requires no index or special allocations
@@ -151,5 +152,7 @@ class MsgArray2D::Description : public MsgBruteForce::Description {
     size_type getDimX() const;
     size_type getDimY() const;
 };
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_ARRAY2D_ARRAY2DHOST_H_

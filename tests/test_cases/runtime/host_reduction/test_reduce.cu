@@ -1,4 +1,6 @@
 #include "helpers/host_reductions_common.h"
+namespace flamegpu {
+
 
 namespace test_host_reductions {
 FLAMEGPU_CUSTOM_REDUCTION(customMax, a, b) {
@@ -171,3 +173,4 @@ TEST_F(HostReductionTest, CustomReduceUnsignedInt64) {
     EXPECT_EQ(uint64_t_out, *std::max_element(in.begin(), in.end()));
 }
 }  // namespace test_host_reductions
+}  // namespace flamegpu

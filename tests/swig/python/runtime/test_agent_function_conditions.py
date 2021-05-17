@@ -17,23 +17,23 @@ STATE3 = "End2"
 class TestAgentFunctionConditions(TestCase):
    
     NullFn1 = """
-    FLAMEGPU_AGENT_FUNCTION(NullFn1, MsgNone, MsgNone) {
+    FLAMEGPU_AGENT_FUNCTION(NullFn1, flamegpu::MsgNone, flamegpu::MsgNone) {
         FLAMEGPU->setVariable<int>("x", FLAMEGPU->getVariable<int>("x") + 1);
         FLAMEGPU->setVariable<int, 4>("y", 0, 3);
         FLAMEGPU->setVariable<int, 4>("y", 1, 4);
         FLAMEGPU->setVariable<int, 4>("y", 2, 5);
         FLAMEGPU->setVariable<int, 4>("y", 3, 6);
-        return ALIVE;
+        return flamegpu::ALIVE;
     }"""
     
     NullFn2 = """
-    FLAMEGPU_AGENT_FUNCTION(NullFn2, MsgNone, MsgNone) {
+    FLAMEGPU_AGENT_FUNCTION(NullFn2, flamegpu::MsgNone, flamegpu::MsgNone) {
         FLAMEGPU->setVariable<int>("x", FLAMEGPU->getVariable<int>("x") - 1);
         FLAMEGPU->setVariable<int, 4>("y", 0, 23);
         FLAMEGPU->setVariable<int, 4>("y", 1, 24);
         FLAMEGPU->setVariable<int, 4>("y", 2, 25);
         FLAMEGPU->setVariable<int, 4>("y", 3, 26);
-        return ALIVE;
+        return flamegpu::ALIVE;
     }"""
     
     Condition1 = """

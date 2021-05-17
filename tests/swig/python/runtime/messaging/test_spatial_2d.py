@@ -6,29 +6,29 @@ import random as rand
 AGENT_COUNT = 2049
 
 out_mandatory2D = """
-FLAMEGPU_AGENT_FUNCTION(out_mandatory2D, MsgNone, MsgSpatial2D) {
+FLAMEGPU_AGENT_FUNCTION(out_mandatory2D, flamegpu::MsgNone, flamegpu::MsgSpatial2D) {
     FLAMEGPU->message_out.setVariable<int>("id", FLAMEGPU->getVariable<int>("id"));
     FLAMEGPU->message_out.setLocation(
         FLAMEGPU->getVariable<float>("x"),
         FLAMEGPU->getVariable<float>("y"));
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
 """
 
 out_optional2D = """
-FLAMEGPU_AGENT_FUNCTION(out_optional2D, MsgNone, MsgSpatial2D) {
+FLAMEGPU_AGENT_FUNCTION(out_optional2D, flamegpu::MsgNone, flamegpu::MsgSpatial2D) {
     if (FLAMEGPU->getVariable<int>("do_output")) {
         FLAMEGPU->message_out.setVariable<int>("id", FLAMEGPU->getVariable<int>("id"));
         FLAMEGPU->message_out.setLocation(
             FLAMEGPU->getVariable<float>("x"),
             FLAMEGPU->getVariable<float>("y"));
     }
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
 """
 
 in2D = """
-FLAMEGPU_AGENT_FUNCTION(in2D, MsgSpatial2D, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(in2D, flamegpu::MsgSpatial2D, flamegpu::MsgNone) {
     const float x1 = FLAMEGPU->getVariable<float>("x");
     const float y1 = FLAMEGPU->getVariable<float>("y");
     unsigned int count = 0;
@@ -57,12 +57,12 @@ FLAMEGPU_AGENT_FUNCTION(in2D, MsgSpatial2D, MsgNone) {
     }
     FLAMEGPU->setVariable<unsigned int>("count", count);
     FLAMEGPU->setVariable<unsigned int>("badCount", badCount);
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
 """
 
 count2D = """
-FLAMEGPU_AGENT_FUNCTION(count2D, MsgSpatial2D, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(count2D, flamegpu::MsgSpatial2D, flamegpu::MsgNone) {
     unsigned int count = 0;
     // Count how many messages we received (including our own)
     // This is all those which fall within the 3x3 Moore neighbourhood
@@ -70,7 +70,7 @@ FLAMEGPU_AGENT_FUNCTION(count2D, MsgSpatial2D, MsgNone) {
         count++;
     }
     FLAMEGPU->setVariable<unsigned int>("count", count);
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
 """
 

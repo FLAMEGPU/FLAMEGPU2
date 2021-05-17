@@ -22,6 +22,8 @@
 #include "jitify/jitify.hpp"
 #endif
 
+namespace flamegpu {
+
 struct ModelData;
 struct AgentFunctionData;
 
@@ -325,4 +327,7 @@ template<typename AgentFunctionCondition>
 void AgentFunctionDescription::setFunctionCondition(AgentFunctionCondition) {
     function->condition = AgentFunctionCondition::fnPtr();
 }
+
+}  // namespace flamegpu
+
 #endif  // INCLUDE_FLAMEGPU_MODEL_AGENTFUNCTIONDESCRIPTION_H_

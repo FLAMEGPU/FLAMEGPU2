@@ -10,6 +10,8 @@
 
 #include "gtest/gtest.h"
 
+namespace flamegpu {
+namespace tests {
 namespace test_cuda_simulation {
     const char *MODEL_NAME = "Model";
     const char *MODEL_NAME2 = "Model2";
@@ -62,7 +64,7 @@ TEST(TestCUDASimulation, AllDeviceIdValues) {
     }
     for (int i = 0; i < device_count; i++) {
         // Check if the specified device is allowed to run the tests to determine if the test should throw or not. This is system dependent so must be dynamic.
-        bool shouldThrowCCException = !util::compute_capability::checkComputeCapability(i);
+        bool shouldThrowCCException = !flamegpu::util::compute_capability::checkComputeCapability(i);
         // Initialise and run a simple model on each device in the system. This test is pointless on single GPU machines.
         ModelDescription m(MODEL_NAME);
         m.newAgent(AGENT_NAME);
@@ -506,8 +508,8 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, MsgNone, MsgNone) {
 
 
 const char* rtc_empty_agent_func = R"###(
-FLAMEGPU_AGENT_FUNCTION(rtc_test_func, MsgNone, MsgNone) {
-    return ALIVE;
+FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MsgNone, flamegpu::MsgNone) {
+    return flamegpu::ALIVE;
 }
 )###";
 /**
@@ -604,3 +606,5 @@ TEST(TestCUDASimulation, AgentID_MultipleStatesUniqueIDs) {
 }
 
 }  // namespace test_cuda_simulation
+}  // namespace tests
+}  // namespace flamegpu

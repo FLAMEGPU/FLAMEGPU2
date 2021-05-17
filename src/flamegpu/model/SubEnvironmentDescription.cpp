@@ -4,6 +4,8 @@
 #include "flamegpu/model/SubEnvironmentData.h"
 #include "flamegpu/model/EnvironmentDescription.h"
 
+namespace flamegpu {
+
 SubEnvironmentDescription::SubEnvironmentDescription(const std::shared_ptr<const ModelData> &_model, SubEnvironmentData *const _data)
     : model(_model)
     , data(_data) { }
@@ -97,3 +99,5 @@ void SubEnvironmentDescription::autoMapProperties() {
         }
     }
 }
+
+}  // namespace flamegpu

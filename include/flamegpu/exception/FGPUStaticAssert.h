@@ -3,6 +3,8 @@
 
 #include <cstdint>
 
+namespace flamegpu {
+
 /**
  * These are taken from MSVCs std to allow us to perform static assertions
  */
@@ -70,5 +72,7 @@ struct _Is_IntType
     || is_same<_Ty, int64_t>::value> {
 };
 }  // namespace FGPU_SA
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_EXCEPTION_FGPUSTATICASSERT_H_

@@ -6,6 +6,8 @@
 #include <cstdarg>
 #include <cstdio>
 
+namespace flamegpu {
+
 /**
  * If this macro is used instead of 'throw', FGPUException will 
  * prepend '__FILE__ (__LINE__): ' to err_message 
@@ -432,5 +434,7 @@ DERIVED_FGPUException(InvalidDependencyGraph, "Agent function dependency graph i
  * This should not occur if the shared ID matches ID_NOT_SET
  */
 DERIVED_FGPUException(AgentIDCollision, "Multiple agents of same type share an ID");
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_EXCEPTION_FGPUEXCEPTION_H_

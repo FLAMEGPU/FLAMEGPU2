@@ -10,6 +10,8 @@
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/util/StringPair.h"
 
+namespace flamegpu {
+
 /**
  * JSON format StateReader
  */
@@ -29,8 +31,8 @@ class jsonReader : public StateReader {
     jsonReader(
         const std::string &model_name,
         const std::unordered_map<std::string, EnvironmentDescription::PropData> &env_desc,
-        std::unordered_map<std::pair<std::string, unsigned int>, Any> &env_init,
-        StringPairUnorderedMap<std::shared_ptr<AgentVector>> &model_state,
+        std::unordered_map<std::pair<std::string, unsigned int>, util::Any> &env_init,
+        util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> &model_state,
         const std::string &input_file,
         Simulation *sim_instance);
     /**
@@ -38,7 +40,9 @@ class jsonReader : public StateReader {
      * @return Always 0
      * @throws RapidJSONError If parsing of the input file fails
      */
-    int parse();
+    int parse() override;
 };
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_IO_JSONREADER_H_

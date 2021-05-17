@@ -14,6 +14,8 @@
 #include "flamegpu/model/DependencyGraph.h"
 #include "flamegpu/runtime/HostFunctionCallback.h"
 
+namespace flamegpu {
+
 const char *ModelData::DEFAULT_STATE = "default";
 
 /**
@@ -184,3 +186,5 @@ ModelData::size_type ModelData::getMaxLayerWidth() const {
     }
     return maxWidth;
 }
+
+}  // namespace flamegpu

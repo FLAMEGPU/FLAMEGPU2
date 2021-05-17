@@ -16,6 +16,7 @@ using std::experimental::filesystem::v1::path;
 using std::experimental::filesystem::v1::create_directory;
 #endif
 
+namespace flamegpu {
 namespace util {
 namespace filesystem {
 /**
@@ -36,5 +37,6 @@ inline void recursive_create_dir(const path &dir) {
 
 }  // namespace filesystem
 }  // namespace util
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_UTIL_FILESYSTEM_H_

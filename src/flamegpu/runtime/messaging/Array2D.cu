@@ -6,6 +6,8 @@
 #include "flamegpu/runtime/messaging/Array2D/Array2DHost.h"
 // #include "flamegpu/runtime/messaging/Array2D/Array2DDevice.h"
 
+namespace flamegpu {
+
 /**
  * Constructor
  * Allocates memory on device for message list length
@@ -136,3 +138,5 @@ MsgArray2D::size_type MsgArray2D::Description::getDimX() const {
 MsgArray2D::size_type MsgArray2D::Description::getDimY() const {
     return reinterpret_cast<Data *>(message)->dimensions[1];
 }
+
+}  // namespace flamegpu

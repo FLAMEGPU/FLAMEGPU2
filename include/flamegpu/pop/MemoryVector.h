@@ -10,6 +10,8 @@
 
 #include "flamegpu/exception/FGPUException.h"
 
+namespace flamegpu {
+
 /**
  * Pure abstract memory vector
  */
@@ -97,7 +99,7 @@ class MemoryVector : public GenericMemoryVector {
      * @see getTypeSize()
      * @see getVariableSize()
      */
-    unsigned int getElements() const {
+    unsigned int getElements() const override {
         return elements;
     }
     /**
@@ -106,7 +108,7 @@ class MemoryVector : public GenericMemoryVector {
      * @see getElements()
      * @see getVariableSize()
      */
-    size_t getTypeSize() const {
+    size_t getTypeSize() const override {
         return type_size;
     }
     /**
@@ -115,7 +117,7 @@ class MemoryVector : public GenericMemoryVector {
      * @see getElements()
      * @see getTypeSize()
      */
-    size_t getVariableSize() const {
+    size_t getVariableSize() const override {
         return type_size * elements;
     }
     /**
@@ -141,7 +143,7 @@ class MemoryVector : public GenericMemoryVector {
     /**
      * Returns a copy of the vector with the same contents
      */
-    virtual MemoryVector<T>* clone() const {
+    MemoryVector<T>* clone() const override {
         return (new MemoryVector<T>(elements));
     }
     /**
@@ -181,5 +183,7 @@ typedef std::map<const std::string, std::unique_ptr<GenericMemoryVector>> StateM
 
 /*! Create a pair with std::strings for keys (indexes) and GenericAgentMemoryVector object.  A smart pointer has been used to automatically manage the object*/
 typedef std::pair<const std::string, std::unique_ptr<GenericMemoryVector>> StateMemoryMapPair;
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_POP_MEMORYVECTOR_H_

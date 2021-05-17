@@ -1,6 +1,7 @@
 #include "gtest/gtest.h"
 
 #include "flamegpu/flame_api.h"
+namespace flamegpu {
 
 
 namespace test_logging {
@@ -494,3 +495,4 @@ TEST(LoggingTest, CUDAEnsembleSimulate) {
 }
 
 }  // namespace test_logging
+}  // namespace flamegpu

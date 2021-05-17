@@ -1,4 +1,9 @@
+// @todo - ifdef visualisation
+
 #include "flamegpu/visualiser/LineVis.h"
+
+namespace flamegpu {
+namespace visualiser {
 
 LineVis::LineVis(std::shared_ptr<LineConfig> _l, float r, float g, float b, float a)
     : currentColor{r, g, b, a}
@@ -22,3 +27,6 @@ void LineVis::addVertex(float x, float y, float z) {
     l->colors.push_back(currentColor[2]);
     l->colors.push_back(currentColor[3]);
 }
+
+}  // namespace visualiser
+}  // namespace flamegpu

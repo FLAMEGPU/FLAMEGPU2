@@ -9,6 +9,9 @@
 
 #include "gtest/gtest.h"
 
+namespace flamegpu {
+
+
 namespace {
 
 __device__ bool bool_out;
@@ -523,3 +526,4 @@ TEST_F(AgentEnvironmentTest, Get_arrayElement_int64_t) {
     EXPECT_EQ(false, _bool_out);
     EXPECT_EQ(cudaGetLastError(), CUDA_SUCCESS);
 }
+}  // namespace flamegpu

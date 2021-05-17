@@ -5,6 +5,9 @@
 
 #include "gtest/gtest.h"
 
+namespace flamegpu {
+
+
 namespace test_dependency_graph {
 FLAMEGPU_AGENT_FUNCTION(agent_fn1, MsgBruteForce, MsgBruteForce) {
     // do nothing
@@ -560,3 +563,4 @@ TEST(DependencyGraphTest, ModelAlreadyHasLayers) {
     EXPECT_THROW(_m.generateLayers(), InvalidDependencyGraph);
 }
 }  // namespace test_dependency_graph
+}  // namespace flamegpu

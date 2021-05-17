@@ -26,6 +26,7 @@
    Could also include this in a device shutdown method, to report if there is a mismatch of push/pop and therefore an NVTX error.
 */
 
+namespace flamegpu {
 namespace util {
 namespace nvtx {
 
@@ -95,12 +96,12 @@ inline void pop() {
 class NVTXRange {
  public:
     /**
-    * Constuctor which pushes an NVTX marker onto the stack with the specified label
+    * Constructor which pushes an NVTX marker onto the stack with the specified label
     * @param label the label for the nvtx range.
     * @see NVTX_RANGE to use with minimal performance impact
     */
     explicit NVTXRange(const char *label) {
-         util::nvtx::push(label);
+        util::nvtx::push(label);
     }
     /**
      *  Destructor which pops a marker off the nvtx stack.
@@ -109,8 +110,10 @@ class NVTXRange {
         util::nvtx::pop();
     }
 };
-};  // namespace nvtx
-};  // namespace util
+
+}  // namespace nvtx
+}  // namespace util
+}  // namespace flamegpu
 
 // If USE_NVTX is enabled, provide macros which actually use NVTX
 #if defined(USE_NVTX)
@@ -120,18 +123,18 @@ class NVTXRange {
  * @param label the label for the NVTX marker.
  * @see util::nvtx::NVTXRange for implementation details
  */
-#define NVTX_RANGE(label) util::nvtx::NVTXRange uniq_name_using_macros(label)
+#define NVTX_RANGE(label) ::flamegpu::util::nvtx::NVTXRange uniq_name_using_macros(label)
 /**
  * Macro which pushes an NVTX marker onto the stack, if NVTX is defined.
  * @param label label for the NVTX marker
  * @see util::nvtx::push for implementation details.
  */
-#define NVTX_PUSH(label) util::nvtx::push(label)
+#define NVTX_PUSH(label) ::flamegpu::util::nvtx::push(label)
 /**
  * Macro which pops an NVTX marker onto the stack, if NVTX is defined.
  * @see util::nvtx::pop for implementation details.
  */
-#define NVTX_POP() util::nvtx::pop()
+#define NVTX_POP() ::flamegpu::util::nvtx::pop()
 #else
 // If NVTX is not enabled, provide macros which do nothing and optimise out any arguments.
 // Documentation is for the enabled version for doxygen.

@@ -6,6 +6,9 @@
 // LogFrame
 // AgentLogFrame
 
+namespace flamegpu {
+
+
 namespace test_logging_exception {
 const char *MODEL_NAME = "Model";
 const char *AGENT_NAME1 = "Agent1";
@@ -47,7 +50,7 @@ TEST(LoggingExceptionTest, LoggingConfigExceptions) {
     // Agent state does not exist
     EXPECT_THROW(lcfg.agent(AGENT_NAME1, "state2"), InvalidAgentState);
     // Agent/State does exist
-    EXPECT_NO_THROW(lcfg.agent(AGENT_NAME1, ModelData::DEFAULT_STATE));
+    EXPECT_NO_THROW(lcfg.agent(AGENT_NAME1, flamegpu::ModelData::DEFAULT_STATE));
     // THIS DOES NOT WORK, cfg holds a copy of the ModelDescription, not a reference to it.
     // Add new agent after lcfg
     AgentDescription &a2 = m.newAgent(AGENT_NAME2);
@@ -62,7 +65,7 @@ TEST(LoggingExceptionTest, AgentLoggingConfigExceptions) {
     a.newVariable<float, 2>("float_var_array");
 
     LoggingConfig lcfg(m);
-    auto alcfg = lcfg.agent(AGENT_NAME1, ModelData::DEFAULT_STATE);
+    auto alcfg = lcfg.agent(AGENT_NAME1, flamegpu::ModelData::DEFAULT_STATE);
 
     // Log functions all pass to the same common method which contains the checks
     // Test 1, test them all (mean, standard dev, min, max, sum)
@@ -186,3 +189,4 @@ TEST(LoggingExceptionTest, AgentLogFrameExceptions) {
 }
 
 }  // namespace test_logging_exception
+}  // namespace flamegpu

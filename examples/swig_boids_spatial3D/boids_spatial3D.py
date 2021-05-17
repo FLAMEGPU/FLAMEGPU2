@@ -107,16 +107,16 @@ VISUALISATION = True;
   outputdata agent function for Boid agents, which outputs publicly visible properties to a message list
 """
 outputdata = r"""
-FLAMEGPU_AGENT_FUNCTION(outputdata, MsgNone, MsgSpatial3D) {
+FLAMEGPU_AGENT_FUNCTION(outputdata, flamegpu::MsgNone, flamegpu::MsgSpatial3D) {
     // Output each agents publicly visible properties.
-    FLAMEGPU->message_out.setVariable<unsigned int>("id", FLAMEGPU->getID());
+    FLAMEGPU->message_out.setVariable<flamegpu::id_t>("id", FLAMEGPU->getID());
     FLAMEGPU->message_out.setVariable<float>("x", FLAMEGPU->getVariable<float>("x"));
     FLAMEGPU->message_out.setVariable<float>("y", FLAMEGPU->getVariable<float>("y"));
     FLAMEGPU->message_out.setVariable<float>("z", FLAMEGPU->getVariable<float>("z"));
     FLAMEGPU->message_out.setVariable<float>("fx", FLAMEGPU->getVariable<float>("fx"));
     FLAMEGPU->message_out.setVariable<float>("fy", FLAMEGPU->getVariable<float>("fy"));
     FLAMEGPU->message_out.setVariable<float>("fz", FLAMEGPU->getVariable<float>("fz"));
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
 """
 """
@@ -163,9 +163,9 @@ FLAMEGPU_HOST_DEVICE_FUNCTION void clampPosition(float &x, float &y, float &z, c
     z = (z > MAX_POSITION)? MAX_POSITION: z;
 }
 // Agent function
-FLAMEGPU_AGENT_FUNCTION(inputdata, MsgSpatial3D, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(inputdata, flamegpu::MsgSpatial3D, flamegpu::MsgNone) {
     // Agent properties in local register
-    const id_t id = FLAMEGPU->getID();
+    const flamegpu::id_t id = FLAMEGPU->getID();
     // Agent position
     float agent_x = FLAMEGPU->getVariable<float>("x");
     float agent_y = FLAMEGPU->getVariable<float>("y");
@@ -197,7 +197,7 @@ FLAMEGPU_AGENT_FUNCTION(inputdata, MsgSpatial3D, MsgNone) {
     // Iterate location messages, accumulating relevant data and counts.
     for (const auto &message : FLAMEGPU->message_in(agent_x, agent_y, agent_z)) {
         // Ignore self messages.
-        if (message.getVariable<id_t>("id") != id) {
+        if (message.getVariable<flamegpu::id_t>("id") != id) {
             // Get the message location and velocity.
             const float message_x = message.getVariable<float>("x");
             const float message_y = message.getVariable<float>("y");
@@ -316,7 +316,7 @@ FLAMEGPU_AGENT_FUNCTION(inputdata, MsgSpatial3D, MsgNone) {
     FLAMEGPU->setVariable<float>("fy", agent_fy);
     FLAMEGPU->setVariable<float>("fz", agent_fz);
 
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
 """
 

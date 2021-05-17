@@ -1,6 +1,8 @@
 #include "flamegpu/runtime/HostAgentAPI.h"
 #include "flamegpu/pop/DeviceAgentVector_impl.h"
 
+namespace flamegpu {
+
 HostAgentAPI::~HostAgentAPI() {
     if (population) {
         population->syncChanges();
@@ -54,3 +56,5 @@ DeviceAgentVector HostAgentAPI::getPopulationData() {
     }
     return *population;
 }
+
+}  // namespace flamegpu

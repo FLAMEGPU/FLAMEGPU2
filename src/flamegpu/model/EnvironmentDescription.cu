@@ -1,5 +1,7 @@
 #include "flamegpu/model/EnvironmentDescription.h"
 
+namespace flamegpu {
+
 EnvironmentDescription::EnvironmentDescription() {
     // Add CUDASimulation specific environment members
     // We do this here, to not break comparing different model description hierarchies before/after CUDASimulation creation
@@ -39,7 +41,7 @@ bool EnvironmentDescription::operator!=(const EnvironmentDescription& rhs) const
 }
 
 void EnvironmentDescription::newProperty(const std::string &name, const char *ptr, const size_t &length, const bool &isConst, const EnvironmentManager::size_type &elements, const std::type_index &type) {
-    properties.emplace(name, PropData(isConst,  Any(ptr, length, type, elements)));
+    properties.emplace(name, PropData(isConst, util::Any(ptr, length, type, elements)));
 }
 
 bool EnvironmentDescription::getConst(const std::string &name) {
@@ -56,3 +58,5 @@ bool EnvironmentDescription::getConst(const std::string &name) {
 const std::unordered_map<std::string, EnvironmentDescription::PropData> EnvironmentDescription::getPropertiesMap() const {
     return properties;
 }
+
+}  // namespace flamegpu

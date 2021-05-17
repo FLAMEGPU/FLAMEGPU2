@@ -1,5 +1,7 @@
 #include "flamegpu/pop/AgentVector_Agent.h"
 
+namespace flamegpu {
+
 AgentVector_CAgent::AgentVector_CAgent(AgentVector* parent, const std::shared_ptr<const AgentData>& agent, const std::weak_ptr<AgentVector::AgentDataMap>& data, AgentVector::size_type pos)
     : index(pos)
     , _data(data)
@@ -39,3 +41,5 @@ void AgentVector_Agent::resetID() {
     // Notify (_data was locked above)
     _parent->_changed(ID_VARIABLE_NAME, index);
 }
+
+}  // namespace flamegpu

@@ -2,7 +2,7 @@
 
 const unsigned int AGENT_COUNT = 1024;
 
-FLAMEGPU_AGENT_FUNCTION(device_function, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(device_function, flamegpu::MsgNone, flamegpu::MsgNone) {
     const float &prop_float = FLAMEGPU->environment.getProperty<float>("float");
     const int16_t &prop_int16 = FLAMEGPU->environment.getProperty<int16_t>("int16_t");
     const uint64_t &prop_uint64_0 = FLAMEGPU->environment.getProperty<uint64_t>("uint64_t", 0);
@@ -11,15 +11,15 @@ FLAMEGPU_AGENT_FUNCTION(device_function, MsgNone, MsgNone) {
     if (blockIdx.x * blockDim.x + threadIdx.x == 0) {
         printf("Agent Function[Thread 0]! Properties(Float: %g, int16: %hd, uint64[3]: {%llu, %llu, %llu})\n", prop_float, prop_int16, prop_uint64_0, prop_uint64_1, prop_uint64_2);
     }
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
 FLAMEGPU_INIT_FUNCTION(init_function) {
-    HostAgentAPI agent = FLAMEGPU->agent("agent");
+    flamegpu::HostAgentAPI agent = FLAMEGPU->agent("agent");
     float min_x = agent.min<float>("x");
     float max_x = agent.max<float>("x");
     printf("Init Function! (AgentCount: %u, Min: %g, Max: %g)\n", FLAMEGPU->agent("agent").count(), min_x, max_x);
     for (unsigned int i = AGENT_COUNT / 2; i < AGENT_COUNT; i++) {
-        HostNewAgentAPI instance = agent.newAgent();
+        flamegpu::HostNewAgentAPI instance = agent.newAgent();
         instance.setVariable<float>("x", static_cast<float>(i));
         instance.setVariable<int>("a", i % 2 == 0 ? 1 : 0);
     }
@@ -59,17 +59,17 @@ FLAMEGPU_EXIT_CONDITION(exit_condition) {
     printf("Exit Condition! (Rolled: %g)\n", uniform_real);
     if (uniform_real < CHANCE) {
         printf("Rolled number is less than %g, exiting!\n", CHANCE);
-        return EXIT;
+        return flamegpu::EXIT;
     }
-    return CONTINUE;
+    return flamegpu::CONTINUE;
 }
 
 
 int main(int argc, const char ** argv) {
-    ModelDescription model("host_functions_example");
+    flamegpu::ModelDescription model("host_functions_example");
 
     {  // agent
-        AgentDescription &agent = model.newAgent("agent");
+        flamegpu::AgentDescription  &agent = model.newAgent("agent");
         agent.newVariable<float>("x");
         agent.newVariable<int>("a");
         agent.newFunction("device_function", device_function);
@@ -79,7 +79,7 @@ int main(int argc, const char ** argv) {
      * GLOBALS
      */
     {
-        EnvironmentDescription &envProperties = model.Environment();
+        flamegpu::EnvironmentDescription  &envProperties = model.Environment();
         envProperties.newProperty<float>("float", 12.0f);
         envProperties.newProperty<int16_t>("int16_t", 0);
         envProperties.newProperty<uint64_t, 3>("uint64_t", {11llu, 12llu, 13llu});
@@ -95,21 +95,21 @@ int main(int argc, const char ** argv) {
      }
 
      {
-        LayerDescription &devicefn_layer = model.newLayer("devicefn_layer");
+        flamegpu::LayerDescription  &devicefn_layer = model.newLayer("devicefn_layer");
         devicefn_layer.addAgentFunction(device_function);
      }
 
      {
-        LayerDescription &hostfn_layer = model.newLayer("hostfn_layer");
+        flamegpu::LayerDescription  &hostfn_layer = model.newLayer("hostfn_layer");
         hostfn_layer.addHostFunction(host_function);
      }
 
     /**
      * Initialisation
      */
-    AgentVector population(model.Agent("agent"), AGENT_COUNT/2);
+    flamegpu::AgentVector population(model.Agent("agent"), AGENT_COUNT/2);
     for (unsigned int i = 0; i < AGENT_COUNT/2; i++) {
-        AgentVector::Agent instance = population[i];
+        flamegpu::AgentVector::Agent instance = population[i];
         instance.setVariable<float>("x", static_cast<float>(i));
         instance.setVariable<int>("a", i % 2 == 0 ? 1 : 0);
     }
@@ -117,7 +117,7 @@ int main(int argc, const char ** argv) {
     /**
      * Execution
      */
-    CUDASimulation cuda_model(model);
+    flamegpu::CUDASimulation cuda_model(model);
     cuda_model.SimulationConfig().steps = 0;
     cuda_model.setPopulationData(population);
     cuda_model.initialise(argc, argv);
@@ -125,6 +125,5 @@ int main(int argc, const char ** argv) {
 
     cuda_model.getPopulationData(population);
 
-    getchar();
     return 0;
 }

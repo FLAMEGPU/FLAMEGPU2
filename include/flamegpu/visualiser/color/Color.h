@@ -6,6 +6,9 @@
 
 #include "flamegpu/exception/FGPUException.h"
 
+namespace flamegpu {
+namespace visualiser {
+
 class StaticColor;
 /**
  * Store for a floating point rgba color
@@ -198,5 +201,8 @@ static const Color GREEN = Color{0.0f, 1.0f, 0.0f};
 static const Color BLUE =  Color{0.0f, 0.0f, 1.0f};
 }  // namespace Colors
 }  // namespace Stock
+
+}  // namespace visualiser
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_VISUALISER_COLOR_COLOR_H_

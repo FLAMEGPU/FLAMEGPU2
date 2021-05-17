@@ -3,6 +3,9 @@
 
 #include "gtest/gtest.h"
 
+namespace flamegpu {
+
+
 // Test nvtx versions, and whether or not use causes any potential issues.
 TEST(TestUtilNVTX, nvtx) {
     // NVTX PUSH, POP and RANGE have no measurable side effects whether USE_NVTX is enabled or not, so use alone shouldn't cause any issues. This is effectively a compile time/linker test. This should probably be resolved (but has a cost).
@@ -30,3 +33,4 @@ TEST(TestUtilNVTX, nvtx) {
         }
     #endif
 }
+}  // namespace flamegpu

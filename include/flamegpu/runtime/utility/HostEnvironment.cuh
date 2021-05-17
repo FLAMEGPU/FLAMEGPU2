@@ -13,6 +13,8 @@
 #include "flamegpu/gpu/CUDAErrorChecking.h"
 #include "flamegpu/runtime/utility/EnvironmentManager.cuh"
 
+namespace flamegpu {
+
 /**
  * This class provides host function access to Environment Properties
  * It acts as a wrapper to EnvironmentManager, proxying calls, converting variable name and model_name into a combined hash
@@ -167,7 +169,7 @@ std::vector<T> HostEnvironment::setPropertyArray(const std::string &name, const 
     }
     return env_mgr.setPropertyArray<T>({ instance_id, name }, value);
 }
-#endif
+#endif  // SWIG
 
 /**
  * Getters
@@ -189,5 +191,8 @@ template<typename T>
 std::vector<T> HostEnvironment::getPropertyArray(const std::string& name) const {
     return env_mgr.getPropertyArray<T>({instance_id, name});
 }
-#endif
+#endif  // SWIG
+
+}  // namespace flamegpu
+
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_UTILITY_HOSTENVIRONMENT_CUH_

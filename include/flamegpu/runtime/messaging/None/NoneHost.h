@@ -4,6 +4,8 @@
 #include "flamegpu/runtime/cuRVE/curve.h"
 #include "flamegpu/runtime/messaging/None.h"
 
+namespace flamegpu {
+
 class CUDAMessage;
 class CUDAScatter;
 /**
@@ -70,5 +72,6 @@ class MsgNone::CUDAModelHandler : public MsgSpecialisationHandler {
     CUDAMessage &sim_message;
 };
 
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_NONE_NONEHOST_H_

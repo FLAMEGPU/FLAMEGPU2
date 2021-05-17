@@ -4,6 +4,8 @@
 
 class ReadOnlyDeviceAPI;
 
+namespace flamegpu {
+
 /**
  * Macro for defining agent transition functions conditions with the correct input. Must always be a device function to be called by CUDA.
  *
@@ -22,11 +24,12 @@ class ReadOnlyDeviceAPI;
 
 #define FLAMEGPU_AGENT_FUNCTION_CONDITION(funcName)\
 struct funcName ## _cdn_impl {\
-    __device__ __forceinline__ bool operator()(ReadOnlyDeviceAPI *FLAMEGPU) const;\
-    static constexpr AgentFunctionConditionWrapper *fnPtr() { return &agent_function_condition_wrapper<funcName ## _cdn_impl>; }\
+    __device__ __forceinline__ bool operator()(flamegpu::ReadOnlyDeviceAPI *FLAMEGPU) const;\
+    static constexpr flamegpu::AgentFunctionConditionWrapper *fnPtr() { return &flamegpu::agent_function_condition_wrapper<funcName ## _cdn_impl>; }\
 };\
 funcName ## _cdn_impl funcName;\
-__device__ __forceinline__ bool funcName ## _cdn_impl::operator()(ReadOnlyDeviceAPI *FLAMEGPU) const
+__device__ __forceinline__ bool funcName ## _cdn_impl::operator()(flamegpu::ReadOnlyDeviceAPI *FLAMEGPU) const
 
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_AGENTFUNCTIONCONDITION_SHIM_H_

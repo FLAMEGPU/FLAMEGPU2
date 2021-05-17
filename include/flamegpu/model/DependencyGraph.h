@@ -11,6 +11,8 @@
 #include "flamegpu/model/HostFunctionDescription.h"
 #include "flamegpu/model/SubModelDescription.h"
 
+namespace flamegpu {
+
 /**
  * This class represents the dependency tree for agent functions, host functions and submodels. Each DependencyNode has its own dependencies/dependents, the purpose of this class is to
  * walk the dependency tree and provide utility such as validation/layering.
@@ -102,5 +104,7 @@ class DependencyGraph {
      */
     const ModelData* model;
 };
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_MODEL_DEPENDENCYGRAPH_H_

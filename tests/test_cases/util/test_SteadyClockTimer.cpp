@@ -3,6 +3,8 @@
 #include "flamegpu/util/SteadyClockTimer.h"
 
 #include "gtest/gtest.h"
+namespace flamegpu {
+
 
 TEST(TestSteadyClockTimer, SteadyClockTimer) {
     // Create an event timer, time should be 0 initially.
@@ -20,3 +22,4 @@ TEST(TestSteadyClockTimer, SteadyClockTimer) {
     // Trigger the destructor.
     EXPECT_NO_THROW(delete timer);
 }
+}  // namespace flamegpu

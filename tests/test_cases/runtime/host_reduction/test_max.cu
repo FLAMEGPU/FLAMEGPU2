@@ -1,4 +1,6 @@
 #include "helpers/host_reductions_common.h"
+namespace flamegpu {
+
 
 namespace test_host_reductions {
 FLAMEGPU_STEP_FUNCTION(step_maxfloat) {
@@ -167,4 +169,4 @@ TEST_F(HostReductionTest, MaxUnsignedInt64) {
     EXPECT_EQ(uint64_t_out, *std::max_element(in.begin(), in.end()));
 }
 }  // namespace test_host_reductions
-
+}  // namespace flamegpu

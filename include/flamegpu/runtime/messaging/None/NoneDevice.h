@@ -7,6 +7,7 @@
 
 #include "flamegpu/runtime/messaging/None.h"
 
+namespace flamegpu {
 
 /**
  * Provides message input functionality during agent functions
@@ -36,6 +37,8 @@ class MsgNone::Out {
     __device__ Out(Curve::NamespaceHash /*agent fn hash*/, Curve::NamespaceHash /*message name hash*/, const void * /*metadata*/, unsigned int * /*scan_flag_messageOutput*/){
     }
 };
+
+}  // namespace flamegpu
 
 
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_NONE_NONEDEVICE_H_

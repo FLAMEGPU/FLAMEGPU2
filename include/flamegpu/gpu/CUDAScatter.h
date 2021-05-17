@@ -10,6 +10,9 @@
 
 #include "flamegpu/model/Variable.h"
 #include "flamegpu/gpu/CUDAScanCompaction.h"
+
+namespace flamegpu {
+
 struct VarOffsetStruct;
 struct VariableBuffer;
 
@@ -291,5 +294,7 @@ class CUDAScatter {
     CUDAScatter(CUDAScatter const&) = delete;
     void operator=(CUDAScatter const&) = delete;
 };
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_GPU_CUDASCATTER_H_

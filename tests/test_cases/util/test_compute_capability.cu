@@ -4,6 +4,8 @@
 #include "flamegpu/gpu/CUDAErrorChecking.h"
 
 #include "gtest/gtest.h"
+namespace flamegpu {
+
 
 // Test the getting of a device's compute capability.
 TEST(TestUtilComputeCapability, getComputeCapability) {
@@ -59,3 +61,4 @@ TEST(TestUtilComputeCapability, checkComputeCapability) {
     EXPECT_ANY_THROW(util::compute_capability::checkComputeCapability(-1));
     EXPECT_ANY_THROW(util::compute_capability::checkComputeCapability(device_count));
 }
+}  // namespace flamegpu

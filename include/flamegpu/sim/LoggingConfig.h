@@ -7,9 +7,12 @@
 #include <utility>
 #include <memory>
 
+#include "flamegpu/util/StringPair.h"
 #include "flamegpu/runtime/HostAgentAPI.h"
 #include "flamegpu/model/ModelData.h"
 #include "flamegpu/gpu/CUDAEnsemble.h"
+
+namespace flamegpu {
 
 class AgentLoggingConfig;
 
@@ -52,14 +55,11 @@ class LoggingConfig {
         }
     }
     /**
-     * Pair of two strings representing an agent type name and state name
-     */
-    typedef std::pair<std::string, std::string> NameStatePair;
-    /**
      * ReductionFn is a prototype for reduction functions
      * Typedef'ing function prototypes like this allows for cleaner function pointers
+     * @note - this leads to a swig warning 504 which is suppressed.
      */
-    typedef Any (ReductionFn)(HostAgentAPI &ai, const std::string &variable_name);
+    typedef util::Any (ReductionFn)(HostAgentAPI &ai, const std::string &variable_name);
     /**
      * A user configured reduction to be logged
      */
@@ -128,7 +128,7 @@ class LoggingConfig {
      * Map of variable reductions per agent state to be logged
      * map<<agent_name:agent_state, variable_reductions:log_count>
      */
-    std::map<NameStatePair, std::pair<std::shared_ptr<std::set<NameReductionFn>>, bool>> agents;
+    std::map<util::StringPair, std::pair<std::shared_ptr<std::set<NameReductionFn>>, bool>> agents;
 };
 
 /**
@@ -174,5 +174,7 @@ class StepLoggingConfig : public LoggingConfig {
      */
     unsigned int frequency;
 };
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_SIM_LOGGINGCONFIG_H_

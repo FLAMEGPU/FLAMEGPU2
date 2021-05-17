@@ -3,6 +3,8 @@
 
 #include "flamegpu/model/ModelDescription.h"
 
+namespace flamegpu {
+
 RunPlan::RunPlan(const ModelDescription &model)
     : RunPlan(std::make_shared<std::unordered_map<std::string, EnvironmentDescription::PropData> const>(model.model->environment->getPropertiesMap()),
       model.model->exitConditions.size() + model.model->exitConditionCallbacks.size() > 0) { }
@@ -20,7 +22,7 @@ RunPlan& RunPlan::operator=(const RunPlan& other) {
     this->output_subdirectory = other.output_subdirectory;
     this->allow_0_steps = other.allow_0_steps;
     for (auto &i : other.property_overrides)
-        this->property_overrides.emplace(i.first, Any(i.second));
+        this->property_overrides.emplace(i.first, util::Any(i.second));
     return *this;
 }
 void RunPlan::setRandomSimulationSeed(const unsigned int &_random_seed) { random_seed = _random_seed; }
@@ -77,3 +79,5 @@ RunPlanVec RunPlan::operator*(const unsigned int& rhs) const {
     }
     return rtn;
 }
+
+}  // namespace flamegpu

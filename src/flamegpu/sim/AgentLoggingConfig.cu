@@ -3,6 +3,8 @@
 #include "flamegpu/sim/AgentLoggingConfig.h"
 #include "flamegpu/model/AgentData.h"
 
+namespace flamegpu {
+
 namespace flamegpu_internal {
     __constant__ double STANDARD_DEVIATION_MEAN;
     std::mutex STANDARD_DEVIATION_MEAN_mutex;
@@ -40,3 +42,5 @@ void AgentLoggingConfig::log(const LoggingConfig::NameReductionFn &nrf, const st
              agent->name.c_str(), nrf.name.c_str(), method_name.c_str(), method_name.c_str());
     }
 }
+
+}  // namespace flamegpu

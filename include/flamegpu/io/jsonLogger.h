@@ -7,6 +7,8 @@
 #include "flamegpu/io/Logger.h"
 #include "flamegpu/util/Any.h"
 
+namespace flamegpu {
+
 struct RunLog;
 struct LogFrame;
 class RunPlan;
@@ -93,11 +95,13 @@ class jsonLogger : public Logger{
      * @note Templated as can't forward declare rapidjson::Writer<rapidjson::StringBuffer>
      */
     template<typename T>
-    void writeAny(T &writer, const Any &value, const unsigned int &elements = 1) const;
+    void writeAny(T &writer, const util::Any &value, const unsigned int &elements = 1) const;
 
     std::string out_path;
     bool prettyPrint;
     bool truncateFile;
 };
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_IO_JSONLOGGER_H_

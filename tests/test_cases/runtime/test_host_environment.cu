@@ -13,6 +13,8 @@
 
 #include "gtest/gtest.h"
 
+namespace flamegpu {
+
 namespace {
 const unsigned int TEST_LEN = 256;
 const int TEST_ARRAY_LEN = 5;
@@ -1254,3 +1256,5 @@ TEST_F(HostEnvironmentTest, reserved_name_set_array) {
     CUDASimulation sim(model);
     EXPECT_THROW(sim.step(), ReservedName);
 }
+
+}  // namespace flamegpu

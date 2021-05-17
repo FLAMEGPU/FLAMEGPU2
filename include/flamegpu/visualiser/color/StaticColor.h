@@ -6,6 +6,9 @@
 #include "flamegpu/visualiser/color/ColorFunction.h"
 #include "flamegpu/visualiser/color/Color.h"
 
+namespace flamegpu {
+namespace visualiser {
+
 /**
  * Creates a color function returning a static color
  * You probably don't need to use this class directly, instances of Color are implicitly converted to a StaticColor
@@ -33,5 +36,8 @@ class StaticColor : public ColorFunction {
      */
     Color rgba;
 };
+
+}  // namespace visualiser
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_VISUALISER_COLOR_STATICCOLOR_H_

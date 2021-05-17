@@ -9,19 +9,19 @@ AGENT_COUNT = 100
 class GPUTest(TestCase):
 
     add_func = """
-    FLAMEGPU_AGENT_FUNCTION(add_func, MsgNone, MsgNone) {
+    FLAMEGPU_AGENT_FUNCTION(add_func, flamegpu::MsgNone, flamegpu::MsgNone) {
         int x = FLAMEGPU->getVariable<int>("x");
         FLAMEGPU->setVariable<int>("x", x + 2);
-        return ALIVE;
+        return flamegpu::ALIVE;
     }
     """
     
     sub_func = """
-    FLAMEGPU_AGENT_FUNCTION(sub_func, MsgNone, MsgNone) {
+    FLAMEGPU_AGENT_FUNCTION(sub_func, flamegpu::MsgNone, flamegpu::MsgNone) {
         int x = FLAMEGPU->getVariable<int>("x");
         int y = FLAMEGPU->getVariable<int>("y");
         FLAMEGPU->setVariable<int>("y", x - y);
-        return ALIVE;
+        return flamegpu::ALIVE;
     }
     """
 

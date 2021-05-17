@@ -11,6 +11,8 @@
 #include "flamegpu/gpu/CUDAErrorChecking.h"
 #include "flamegpu/util/nvtx.h"
 
+namespace flamegpu {
+
 namespace curve_internal {
     /**
      * Curve hashtable, registered variable hash array
@@ -281,3 +283,5 @@ Curve& Curve::getInstance() {
         return *f->second;
     return *(instances.emplace(device_id, std::unique_ptr<Curve>(new Curve())).first->second);
 }
+
+}  // namespace flamegpu

@@ -2,6 +2,7 @@
 #include "flamegpu/runtime/flamegpu_api.h"
 
 #include "gtest/gtest.h"
+namespace flamegpu {
 
 namespace test_model {
     const std::string MODEL_NAME = "something";
@@ -134,3 +135,4 @@ TEST(ModelDescriptionTest, SubModelRecursionNotAllowed) {
     // C is already a parent of D
     EXPECT_THROW(d.newSubModel("", c), InvalidSubModel);
 }
+}  // namespace flamegpu

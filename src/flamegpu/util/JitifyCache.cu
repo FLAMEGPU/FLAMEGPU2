@@ -2,7 +2,6 @@
 
 #include <cassert>
 
-
 #include "flamegpu/version.h"
 #include "flamegpu/exception/FGPUException.h"
 #include "flamegpu/util/compute_capability.cuh"
@@ -27,6 +26,9 @@ using std::experimental::filesystem::v1::directory_iterator;
 
 using jitify::detail::hash_combine;
 using jitify::detail::hash_larson64;
+
+namespace flamegpu {
+namespace util {
 
 namespace {
 /**
@@ -77,7 +79,7 @@ std::string loadFile(const path &filepath) {
     ifs.close();
     return rtn;
 }
-};  // namespace
+}  // namespace
 
 std::mutex JitifyCache::instance_mutex;
 std::unique_ptr<KernelInstantiation> JitifyCache::compileKernel(const std::string &func_name, const std::vector<std::string> &template_args, const std::string &kernel_src, const std::string &dynamic_header) {
@@ -147,11 +149,11 @@ break_fgpu2_inc_dir_loop:
             }
             vFile.close();
         }
-        if (fileHash == flamegpu_internal::getCommitHash()) {
+        if (fileHash == detail::getCommitHash()) {
             header_version_confirmed = true;
         } else {
             THROW VersionMismatch("RTC header version (%s) does not match version flamegpu2 library was built with (%s). Set the environment variable FLAMEGPU2_INC_DIR to the correct include directory.\n",
-                fileHash.c_str(), flamegpu_internal::getCommitHash().c_str());
+                fileHash.c_str(), detail::getCommitHash().c_str());
         }
     }
     if (env_cuda_path.empty()) {
@@ -177,7 +179,7 @@ break_fgpu2_inc_dir_loop:
     int currentDeviceIdx = 0;
     cudaError_t status = cudaGetDevice(&currentDeviceIdx);
     if (status == cudaSuccess) {
-        int arch = util::compute_capability::getComputeCapability(currentDeviceIdx);
+        int arch = compute_capability::getComputeCapability(currentDeviceIdx);
         options.push_back(std::string("--gpu-architecture=compute_" + std::to_string(arch)));
     }
 
@@ -228,7 +230,7 @@ break_fgpu2_inc_dir_loop:
     try {
         auto program = jitify::experimental::Program(kernel_src, headers, options);
         assert(template_args.size() == 1 || template_args.size() == 3);  // Add this assertion incase template args change
-        auto kernel = program.kernel(template_args.size() > 1 ? "agent_function_wrapper" : "agent_function_condition_wrapper");
+        auto kernel = program.kernel(template_args.size() > 1 ? "flamegpu::agent_function_wrapper" : "flamegpu::agent_function_condition_wrapper");
         return std::make_unique<KernelInstantiation>(kernel, template_args);
     } catch (std::runtime_error const&) {
         // jitify does not have a method for getting compile logs so rely on JITIFY_PRINT_LOG defined in cmake
@@ -244,7 +246,7 @@ std::unique_ptr<KernelInstantiation> JitifyCache::loadKernel(const std::string &
     // Detect current compute capability=
     int currentDeviceIdx = 0;
     cudaError_t status = cudaGetDevice(&currentDeviceIdx);
-    const std::string arch = std::to_string((status == cudaSuccess) ? util::compute_capability::getComputeCapability(currentDeviceIdx) : 0);
+    const std::string arch = std::to_string((status == cudaSuccess) ? compute_capability::getComputeCapability(currentDeviceIdx) : 0);
     status = cudaRuntimeGetVersion(&currentDeviceIdx);
     const std::string cuda_version = std::to_string((status == cudaSuccess) ? currentDeviceIdx : 0);
     const std::string seatbelts = std::to_string(SEATBELTS);
@@ -256,7 +258,7 @@ std::unique_ptr<KernelInstantiation> JitifyCache::loadKernel(const std::string &
         cuda_version + "_" +
         arch + "_" +
         seatbelts + "_" +
-        flamegpu_internal::getCommitHash() + "_" +
+        detail::getCommitHash() + "_" +
         // Use jitify hash methods for consistent hashing between OSs
         std::to_string(hash_combine(hash_larson64(kernel_src.c_str()), hash_larson64(dynamic_header.c_str())));
     // Does a copy with the right reference exist in memory?
@@ -352,3 +354,6 @@ JitifyCache& JitifyCache::getInstance() {
     static JitifyCache instance;  // Instantiated on first use.
     return instance;
 }
+
+}  // namespace util
+}  // namespace flamegpu

@@ -17,6 +17,8 @@
 #include "flamegpu/runtime/cuRVE/curve_rtc.h"
 #include "flamegpu/sim/AgentInterface.h"
 
+namespace flamegpu {
+
 class CUDAScatter;
 class CUDAFatAgent;
 struct VarOffsetStruct;
@@ -27,7 +29,9 @@ class HostAPI;
  * However it does not own these buffers, they are owned by it's parent CUDAFatAgent, as buffers are shared with all mapped agents too.
  */
 class CUDAAgent : public AgentInterface {
-    friend class AgentVis;
+#ifdef VISUALISATION
+    friend class visualiser::AgentVis;
+#endif  // VISUALISATION
 
  public:
     /**
@@ -96,7 +100,7 @@ class CUDAAgent : public AgentInterface {
      * Returns the number of alive and active agents in the named state
      * @param state The state to return information about
      */
-    unsigned int getStateSize(const std::string &state) const;
+    unsigned int getStateSize(const std::string &state) const override;
     /**
      * Returns the number of alive and active agents in the named state
      * @param state The state to return information about
@@ -105,12 +109,12 @@ class CUDAAgent : public AgentInterface {
     /**
      * Returns the Agent description which this CUDAAgent represents.
      */
-    const AgentData &getAgentDescription() const;
+    const AgentData &getAgentDescription() const override;
     /**
      * Returns the device pointer to the buffer for the associated state and variable
      * @note This returns data_condition, such that the buffer does not include disabled agents
      */
-    void *getStateVariablePtr(const std::string &state_name, const std::string &variable_name);
+    void *getStateVariablePtr(const std::string &state_name, const std::string &variable_name) override;
     /**
      * Processes agent death, this call is forwarded to the fat agent
      * All disabled agents are scattered to swap
@@ -272,7 +276,7 @@ class CUDAAgent : public AgentInterface {
      * @param count Number that will be added to the return value on next call to this function
      * @return An ID that can be assigned to an agent that wil be stored within this CUDAAgent's CUDAFatAgent
      */
-    id_t nextID(unsigned int count = 1);
+    id_t nextID(unsigned int count = 1) override;
     /**
      * Returns a device pointer to the value returns by nextID(0)
      * If the device value is changed, then the internal ID counter must be updated via CUDAAgent::scatterNew()
@@ -352,5 +356,7 @@ class CUDAAgent : public AgentInterface {
      */
     std::mutex newBuffsMutex;
 };
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_GPU_CUDAAGENT_H_

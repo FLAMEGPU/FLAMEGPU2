@@ -10,6 +10,8 @@
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/util/StringPair.h"
 
+namespace flamegpu {
+
 /**
  * XML format StateReader
  */
@@ -29,8 +31,8 @@ class xmlReader : public StateReader {
     xmlReader(
         const std::string &model_name,
         const std::unordered_map<std::string, EnvironmentDescription::PropData> &env_desc,
-        std::unordered_map<std::pair<std::string, unsigned int>, Any> &env_init,
-        StringPairUnorderedMap<std::shared_ptr<AgentVector>> &model_state,
+        std::unordered_map<std::pair<std::string, unsigned int>, util::Any> &env_init,
+        util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> &model_state,
         const std::string &input_file,
         Simulation *sim_instance);
     /**
@@ -38,7 +40,7 @@ class xmlReader : public StateReader {
      * @return Always tinyxml2::XML_SUCCESS
      * @throws TinyXMLError If parsing of the input file fails
      */
-    int parse();
+    int parse() override;
 
  private:
     /**
@@ -47,5 +49,7 @@ class xmlReader : public StateReader {
      */
     std::string getInitialState(const std::string& agent_name) const;
 };
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_IO_XMLREADER_H_

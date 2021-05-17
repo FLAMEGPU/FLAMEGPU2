@@ -5,6 +5,8 @@
 #include "flamegpu/runtime/messaging/Spatial2D/Spatial2DDevice.h"
 #include "flamegpu/runtime/messaging/BruteForce/BruteForceDevice.h"
 
+namespace flamegpu {
+
 /**
  * This class is accessible via DeviceAPI.message_in if MsgSpatial3D is specified in FLAMEGPU_AGENT_FUNCTION
  * It gives access to functionality for reading spatially partitioned messages
@@ -375,5 +377,7 @@ __device__ inline MsgSpatial3D::In::Filter::Message& MsgSpatial3D::In::Filter::M
     }
     return *this;
 }
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_SPATIAL3D_SPATIAL3DDEVICE_H_

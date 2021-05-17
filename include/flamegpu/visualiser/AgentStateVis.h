@@ -7,6 +7,9 @@
 #include "config/AgentStateConfig.h"
 #include "config/Stock.h"
 
+namespace flamegpu {
+namespace visualiser {
+
 struct Color;
 class ColorFunction;
 class AgentVis;
@@ -84,6 +87,9 @@ class AgentStateVis {
      */
     AgentStateConfigFlags configFlags;
 };
+
+}  // namespace visualiser
+}  // namespace flamegpu
 
 #endif  // VISUALISATION
 #endif  // INCLUDE_FLAMEGPU_VISUALISER_AGENTSTATEVIS_H_

@@ -7,6 +7,9 @@
 #include "flamegpu/visualiser/color/ColorFunction.h"
 #include "flamegpu/visualiser/color/Color.h"
 
+namespace flamegpu {
+namespace visualiser {
+
 /**
  * Agent color function for mapping a floating point value to the Viridis palette
  * Viridis is a color blind friendly palette
@@ -70,5 +73,8 @@ class ViridisInterpolation : public ColorFunction {
      */
     bool invert_palette;
 };
+
+}  // namespace visualiser
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_VISUALISER_COLOR_VIRIDISINTERPOLATION_H_

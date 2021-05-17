@@ -27,7 +27,7 @@
 #define VIS_MODE 1
 
 
-FLAMEGPU_AGENT_FUNCTION(metabolise_and_growback, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(metabolise_and_growback, flamegpu::MsgNone, flamegpu::MsgNone) {
     int sugar_level = FLAMEGPU->getVariable<int>("sugar_level");
     int env_sugar_level = FLAMEGPU->getVariable<int>("env_sugar_level");
     int env_max_sugar_level = FLAMEGPU->getVariable<int>("env_max_sugar_level");
@@ -69,21 +69,21 @@ FLAMEGPU_AGENT_FUNCTION(metabolise_and_growback, MsgNone, MsgNone) {
     FLAMEGPU->setVariable<int>("env_sugar_level", env_sugar_level);
     FLAMEGPU->setVariable<int>("status", status);
 
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(output_cell_status, MsgNone, MsgArray2D) {
+FLAMEGPU_AGENT_FUNCTION(output_cell_status, flamegpu::MsgNone, flamegpu::MsgArray2D) {
     unsigned int agent_x = FLAMEGPU->getVariable<unsigned int, 2>("pos", 0);
     unsigned int agent_y = FLAMEGPU->getVariable<unsigned int, 2>("pos", 1);
     FLAMEGPU->message_out.setVariable("location_id", FLAMEGPU->getID());
     FLAMEGPU->message_out.setVariable("status", FLAMEGPU->getVariable<int>("status"));
     FLAMEGPU->message_out.setVariable("env_sugar_level", FLAMEGPU->getVariable<int>("env_sugar_level"));
     FLAMEGPU->message_out.setIndex(agent_x, agent_y);
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(movement_request, MsgArray2D, MsgArray2D) {
+FLAMEGPU_AGENT_FUNCTION(movement_request, flamegpu::MsgArray2D, flamegpu::MsgArray2D) {
     int best_sugar_level = -1;
     float best_sugar_random = -1;
-    id_t best_location_id = ID_NOT_SET;
+    flamegpu::id_t best_location_id = flamegpu::ID_NOT_SET;
 
     // if occupied then look for empty cells {
     // find the best location to move to (ensure we don't just pick first cell with max value)
@@ -104,34 +104,34 @@ FLAMEGPU_AGENT_FUNCTION(movement_request, MsgArray2D, MsgArray2D) {
                     (msg_env_sugar_level == best_sugar_level && msg_priority > best_sugar_random)) {
                     best_sugar_level = msg_env_sugar_level;
                     best_sugar_random = msg_priority;
-                    best_location_id = current_message.getVariable<id_t>("location_id");
+                    best_location_id = current_message.getVariable<flamegpu::id_t>("location_id");
                 }
             }
         }
 
         // if the agent has found a better location to move to then update its state
         // if there is a better location to move to then state indicates a movement request
-        status = best_location_id != ID_NOT_SET ? AGENT_STATUS_MOVEMENT_REQUESTED : AGENT_STATUS_OCCUPIED;
+        status = best_location_id != flamegpu::ID_NOT_SET ? AGENT_STATUS_MOVEMENT_REQUESTED : AGENT_STATUS_OCCUPIED;
         FLAMEGPU->setVariable<int>("status", status);
     }
 
     // add a movement request
     FLAMEGPU->message_out.setVariable<int>("agent_id", FLAMEGPU->getVariable<int>("agent_id"));
-    FLAMEGPU->message_out.setVariable<id_t>("location_id", best_location_id);
+    FLAMEGPU->message_out.setVariable<flamegpu::id_t>("location_id", best_location_id);
     FLAMEGPU->message_out.setVariable<int>("sugar_level", FLAMEGPU->getVariable<int>("sugar_level"));
     FLAMEGPU->message_out.setVariable<int>("metabolism", FLAMEGPU->getVariable<int>("metabolism"));
     FLAMEGPU->message_out.setIndex(agent_x, agent_y);
 
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(movement_response, MsgArray2D, MsgArray2D) {
+FLAMEGPU_AGENT_FUNCTION(movement_response, flamegpu::MsgArray2D, flamegpu::MsgArray2D) {
     int best_request_id = -1;
     float best_request_priority = -1;
     int best_request_sugar_level = -1;
     int best_request_metabolism = -1;
 
     int status = FLAMEGPU->getVariable<int>("status");
-    const id_t location_id = FLAMEGPU->getID();
+    const flamegpu::id_t location_id = FLAMEGPU->getID();
     const unsigned int agent_x = FLAMEGPU->getVariable<unsigned int, 2>("pos", 0);
     const unsigned int agent_y = FLAMEGPU->getVariable<unsigned int, 2>("pos", 1);
 
@@ -139,7 +139,7 @@ FLAMEGPU_AGENT_FUNCTION(movement_response, MsgArray2D, MsgArray2D) {
         // if the location is unoccupied then check for agents requesting to move here
         if (status == AGENT_STATUS_UNOCCUPIED) {
             // check if request is to move to this location
-            if (current_message.getVariable<id_t>("location_id") == location_id) {
+            if (current_message.getVariable<flamegpu::id_t>("location_id") == location_id) {
                 // check the priority and maintain the best ranked agent
                 float message_priority = FLAMEGPU->random.uniform<float>();
                 if (message_priority > best_request_priority) {
@@ -165,9 +165,9 @@ FLAMEGPU_AGENT_FUNCTION(movement_response, MsgArray2D, MsgArray2D) {
     FLAMEGPU->message_out.setVariable<int>("agent_id", best_request_id);
     FLAMEGPU->message_out.setIndex(agent_x, agent_y);
 
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(movement_transaction, MsgArray2D, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(movement_transaction, flamegpu::MsgArray2D, flamegpu::MsgNone) {
     int status = FLAMEGPU->getVariable<int>("status");
     int agent_id = FLAMEGPU->getVariable<int>("agent_id");
     unsigned int agent_x = FLAMEGPU->getVariable<unsigned int, 2>("pos", 0);
@@ -194,7 +194,7 @@ FLAMEGPU_AGENT_FUNCTION(movement_transaction, MsgArray2D, MsgNone) {
 
     FLAMEGPU->setVariable<int>("status", status);
 
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
 FLAMEGPU_EXIT_CONDITION(MovementExitCondition) {
     static unsigned int iterations = 0;
@@ -204,18 +204,18 @@ FLAMEGPU_EXIT_CONDITION(MovementExitCondition) {
     if (iterations < 9) {
         // Agent movements still unresolved
         if (FLAMEGPU->agent("agent").count("status", AGENT_STATUS_MOVEMENT_UNRESOLVED)) {
-            return CONTINUE;
+            return flamegpu::CONTINUE;
         }
     }
 
     iterations = 0;
-    return EXIT;
+    return flamegpu::EXIT;
 }
 /**
  * Construct the common components of agent shared between both parent and submodel
  */
-AgentDescription &makeCoreAgent(ModelDescription &model) {
-    AgentDescription &agent = model.newAgent("agent");
+flamegpu::AgentDescription &makeCoreAgent(flamegpu::ModelDescription &model) {
+    flamegpu::AgentDescription  &agent = model.newAgent("agent");
     agent.newVariable<unsigned int, 2>("pos");
     agent.newVariable<int>("agent_id");
     agent.newVariable<int>("status");
@@ -235,29 +235,29 @@ AgentDescription &makeCoreAgent(ModelDescription &model) {
 int main(int argc, const char ** argv) {
     NVTX_RANGE("main");
     NVTX_PUSH("ModelDescription");
-    ModelDescription submodel("Movement_model");
+    flamegpu::ModelDescription submodel("Movement_model");
     {  // Define sub model for conflict resolution
         /**
          * Messages
          */
         {   // cell_status message
-            MsgArray2D::Description &message = submodel.newMessage<MsgArray2D>("cell_status");
-            message.newVariable<id_t>("location_id");
+            flamegpu::MsgArray2D::Description &message = submodel.newMessage<flamegpu::MsgArray2D>("cell_status");
+            message.newVariable<flamegpu::id_t>("location_id");
             message.newVariable<int>("status");
             message.newVariable<int>("env_sugar_level");
             message.setDimensions(GRID_WIDTH, GRID_HEIGHT);
         }
         {   // movement_request message
-            MsgArray2D::Description &message = submodel.newMessage<MsgArray2D>("movement_request");
+            flamegpu::MsgArray2D::Description &message = submodel.newMessage<flamegpu::MsgArray2D>("movement_request");
             message.newVariable<int>("agent_id");
-            message.newVariable<id_t>("location_id");
+            message.newVariable<flamegpu::id_t>("location_id");
             message.newVariable<int>("sugar_level");
             message.newVariable<int>("metabolism");
             message.setDimensions(GRID_WIDTH, GRID_HEIGHT);
         }
         {   // movement_response message
-            MsgArray2D::Description &message = submodel.newMessage<MsgArray2D>("movement_response");
-            message.newVariable<id_t>("location_id");
+            flamegpu::MsgArray2D::Description &message = submodel.newMessage<flamegpu::MsgArray2D>("movement_response");
+            message.newVariable<flamegpu::id_t>("location_id");
             message.newVariable<int>("agent_id");
             message.setDimensions(GRID_WIDTH, GRID_HEIGHT);
         }
@@ -265,7 +265,7 @@ int main(int argc, const char ** argv) {
          * Agents
          */
         {
-            AgentDescription &agent = makeCoreAgent(submodel);
+            flamegpu::AgentDescription  &agent = makeCoreAgent(submodel);
             auto &fn_output_cell_status = agent.newFunction("output_cell_status", output_cell_status);
             {
                 fn_output_cell_status.setMessageOutput("cell_status");
@@ -290,38 +290,38 @@ int main(int argc, const char ** argv) {
          * Globals
          */
         {
-            // EnvironmentDescription &env = model.Environment();
+            // flamegpu::EnvironmentDescription  &env = model.Environment();
         }
 
         /**
          * Control flow
          */
         {   // Layer #1
-            LayerDescription &layer = submodel.newLayer();
+            flamegpu::LayerDescription  &layer = submodel.newLayer();
             layer.addAgentFunction(output_cell_status);
         }
         {   // Layer #2
-            LayerDescription &layer = submodel.newLayer();
+            flamegpu::LayerDescription  &layer = submodel.newLayer();
             layer.addAgentFunction(movement_request);
         }
         {   // Layer #3
-            LayerDescription &layer = submodel.newLayer();
+            flamegpu::LayerDescription  &layer = submodel.newLayer();
             layer.addAgentFunction(movement_response);
         }
         {   // Layer #4
-            LayerDescription &layer = submodel.newLayer();
+            flamegpu::LayerDescription  &layer = submodel.newLayer();
             layer.addAgentFunction(movement_transaction);
         }
         submodel.addExitCondition(MovementExitCondition);
     }
 
-    ModelDescription model("Sugarscape_example");
+    flamegpu::ModelDescription model("Sugarscape_example");
 
     /**
      * Agents
      */
     {   // Per cell agent
-        AgentDescription &agent = makeCoreAgent(model);
+        flamegpu::AgentDescription  &agent = makeCoreAgent(model);
         // Functions
         agent.newFunction("metabolise_and_growback", metabolise_and_growback);
     }
@@ -329,7 +329,7 @@ int main(int argc, const char ** argv) {
     /**
      * Submodels
      */
-    SubModelDescription &movement_sub = model.newSubModel("movement_conflict_resolution_model", submodel);
+    flamegpu::SubModelDescription &movement_sub = model.newSubModel("movement_conflict_resolution_model", submodel);
     {
         movement_sub.bindAgent("agent", "agent", true, true);
     }
@@ -338,18 +338,18 @@ int main(int argc, const char ** argv) {
      * Globals
      */
     {
-        // EnvironmentDescription &env = model.Environment();
+        // flamegpu::EnvironmentDescription  &env = model.Environment();
     }
 
     /**
      * Control flow
      */
     {   // Layer #1
-        LayerDescription &layer = model.newLayer();
+        flamegpu::LayerDescription  &layer = model.newLayer();
         layer.addAgentFunction(metabolise_and_growback);
     }
     {   // Layer #2
-        LayerDescription &layer = model.newLayer();
+        flamegpu::LayerDescription  &layer = model.newLayer();
         layer.addSubModel(movement_sub);
     }
     NVTX_POP();
@@ -358,7 +358,7 @@ int main(int argc, const char ** argv) {
      * Create Model Runner
      */
     NVTX_PUSH("CUDAAgentModel creation");
-    CUDASimulation cuda_model(model);
+    flamegpu::CUDASimulation  cuda_model(model);
     NVTX_POP();
 
     /**
@@ -366,7 +366,7 @@ int main(int argc, const char ** argv) {
      * @note FGPU2 doesn't currently have proper support for discrete/2d visualisations
      */
 #ifdef VISUALISATION
-    ModelVis &visualisation = cuda_model.getVisualisation();
+    flamegpu::visualiser::ModelVis  &visualisation = cuda_model.getVisualisation();
     {
         visualisation.setSimulationSpeed(2);
         visualisation.setInitialCameraLocation(GRID_WIDTH / 2.0f, GRID_HEIGHT / 2.0f, 225.0f);
@@ -375,17 +375,17 @@ int main(int argc, const char ** argv) {
         visualisation.setViewClips(0.1f, 5000);
         auto &agt = visualisation.addAgent("agent");
         // Position vars are named x, y, z; so they are used by default
-        agt.setModel(Stock::Models::CUBE);  // 5 unwanted faces!
+        agt.setModel(flamegpu::visualiser::Stock::Models::CUBE);  // 5 unwanted faces!
         agt.setModelScale(1.0f);
 #if VIS_MODE == 0
-            DiscreteColor<int> cell_colors = DiscreteColor<int>("status", Color{"#666"});
-            cell_colors[AGENT_STATUS_UNOCCUPIED] = Stock::Colors::RED;
-            cell_colors[AGENT_STATUS_OCCUPIED] = Stock::Colors::GREEN;
-            cell_colors[AGENT_STATUS_MOVEMENT_REQUESTED] = Stock::Colors::BLUE;  // Not possible, only occurs inside the submodel
-            cell_colors[AGENT_STATUS_MOVEMENT_UNRESOLVED] = Stock::Colors::WHITE;
+            flamegpu::visualiser::DiscreteColor<int> cell_colors = flamegpu::visualiser::DiscreteColor<int>("status", flamegpu::visualiser::Color{"#666"});
+            cell_colors[AGENT_STATUS_UNOCCUPIED] = flamegpu::visualiser::Stock::Colors::RED;
+            cell_colors[AGENT_STATUS_OCCUPIED] = flamegpu::visualiser::Stock::Colors::GREEN;
+            cell_colors[AGENT_STATUS_MOVEMENT_REQUESTED] = flamegpu::visualiser::Stock::Colors::BLUE;  // Not possible, only occurs inside the submodel
+            cell_colors[AGENT_STATUS_MOVEMENT_UNRESOLVED] = flamegpu::visualiser::Stock::Colors::WHITE;
             agt.setColor(cell_colors);
 #else
-            DiscreteColor<int> cell_colors = DiscreteColor<int>("env_sugar_level", Stock::Palettes::Viridis(SUGAR_MAX_CAPACITY + 1), Color{"#f00"});
+            flamegpu::visualiser::DiscreteColor<int> cell_colors = flamegpu::visualiser::DiscreteColor<int>("env_sugar_level", flamegpu::visualiser::Stock::Palettes::Viridis(SUGAR_MAX_CAPACITY + 1), flamegpu::visualiser::Color{"#f00"});
             agt.setColor(cell_colors);
 #endif
     }
@@ -424,10 +424,10 @@ int main(int argc, const char ** argv) {
         std::uniform_int_distribution<int> poor_env_sugar_dist(0, SUGAR_MAX_CAPACITY/2);
         unsigned int i = 0;
         unsigned int agent_id = 0;
-        AgentVector init_pop(model.Agent("agent"), CELL_COUNT);
+        flamegpu::AgentVector init_pop(model.Agent("agent"), CELL_COUNT);
         for (unsigned int x = 0; x < GRID_WIDTH; ++x) {
             for (unsigned int y = 0; y < GRID_HEIGHT; ++y) {
-                AgentVector::Agent instance = init_pop[i++];
+                flamegpu::AgentVector::Agent instance = init_pop[i++];
                 instance.setVariable<unsigned int, 2>("pos", { x, y });
                 // TODO: How should these values be init?
                 // agent specific variables

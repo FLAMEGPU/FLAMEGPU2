@@ -3,6 +3,9 @@
 
 #include "gtest/gtest.h"
 
+namespace flamegpu {
+
+
 namespace test_layer {
 FLAMEGPU_AGENT_FUNCTION(agent_fn1, MsgNone, MsgNone) {
     // do nothing
@@ -412,3 +415,4 @@ TEST(LayerDescriptionTest, SubModelAndHostOrAgentFunction) {
     EXPECT_THROW(layer4.addHostFunction(host_fn), InvalidLayerMember);
 }
 }  // namespace test_layer
+}  // namespace flamegpu

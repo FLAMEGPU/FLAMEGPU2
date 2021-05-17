@@ -7,6 +7,8 @@
 #include <vector>
 
 
+namespace flamegpu {
+
 struct ModelData;
 class ModelDescription;
 class RunPlanVec;
@@ -142,5 +144,7 @@ class CUDAEnsemble {
      */
     float ensemble_elapsed_time = 0.f;
 };
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_GPU_CUDAENSEMBLE_H_

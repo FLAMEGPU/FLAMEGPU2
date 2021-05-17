@@ -17,6 +17,8 @@
 #include "flamegpu/io/xmlLogger.h"
 #include "flamegpu/util/StringPair.h"
 
+namespace flamegpu {
+
 class AgentVector;
 
 /**
@@ -53,8 +55,8 @@ class ReaderFactory {
     static StateReader* createReader(
         const std::string& model_name,
         const std::unordered_map<std::string, EnvironmentDescription::PropData>& env_desc,
-        std::unordered_map<std::pair<std::string, unsigned int>, Any>& env_init,
-        StringPairUnorderedMap<std::shared_ptr<AgentVector>>& model_state,
+        std::unordered_map<std::pair<std::string, unsigned int>, util::Any>& env_init,
+        util::StringPairUnorderedMap<std::shared_ptr<AgentVector>>& model_state,
         const std::string& input,
         Simulation* sim_instance) {
         const std::string extension = getFileExt(input);
@@ -95,7 +97,7 @@ class WriterFactory {
     static StateWriter* createWriter(
         const std::string& model_name,
         const unsigned int& sim_instance_id,
-        const StringPairUnorderedMap<std::shared_ptr<AgentVector>>& model_state,
+        const util::StringPairUnorderedMap<std::shared_ptr<AgentVector>>& model_state,
         const unsigned int& iterations,
         const std::string& output_file,
         const Simulation* sim_instance) {
@@ -146,5 +148,7 @@ class WriterFactory {
             output_path.c_str());
     }
 };
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_IO_FACTORY_H_

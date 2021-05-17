@@ -15,22 +15,22 @@ AGENT_COUNT = 128
 
 
 OutFunction = """
-FLAMEGPU_AGENT_FUNCTION(OutFunction, MsgNone, MsgBruteForce) {
+FLAMEGPU_AGENT_FUNCTION(OutFunction, flamegpu::MsgNone, flamegpu::MsgBruteForce) {
     FLAMEGPU->message_out.setVariable("x", FLAMEGPU->getVariable<int>("x"));
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
 """
 
 OutFunction_Optional = """
-FLAMEGPU_AGENT_FUNCTION(OutFunction_Optional, MsgNone, MsgBruteForce) {
+FLAMEGPU_AGENT_FUNCTION(OutFunction_Optional, flamegpu::MsgNone, flamegpu::MsgBruteForce) {
     const int x = FLAMEGPU->getVariable<int>("x");
     if (x) FLAMEGPU->message_out.setVariable("x", x);
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
 """
 
 InFunction = """
-FLAMEGPU_AGENT_FUNCTION(InFunction, MsgBruteForce, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(InFunction, flamegpu::MsgBruteForce, flamegpu::MsgNone) {
     int sum = FLAMEGPU->getVariable<int>("sum");
     int product = FLAMEGPU->getVariable<int>("product");
     for (auto &message : FLAMEGPU->message_in) {
@@ -41,12 +41,12 @@ FLAMEGPU_AGENT_FUNCTION(InFunction, MsgBruteForce, MsgNone) {
     }
     FLAMEGPU->setVariable<int>("sum", sum);
     FLAMEGPU->setVariable<int>("product", product);
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
 """
 
 InFunction2 = """
-FLAMEGPU_AGENT_FUNCTION(InFunction2, MsgBruteForce, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(InFunction2, flamegpu::MsgBruteForce, flamegpu::MsgNone) {
     int sum = FLAMEGPU->getVariable<int>("sum");
     int product = FLAMEGPU->getVariable<int>("product");
     for (auto &message : FLAMEGPU->message_in) {
@@ -59,12 +59,12 @@ FLAMEGPU_AGENT_FUNCTION(InFunction2, MsgBruteForce, MsgNone) {
     FLAMEGPU->setVariable<int>("product", product);
     int x = FLAMEGPU->getVariable<int>("x");
     FLAMEGPU->setVariable<int>("x", x + 1);
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
 """
 
 countBF = """
-FLAMEGPU_AGENT_FUNCTION(countBF, MsgBruteForce, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(countBF, flamegpu::MsgBruteForce, flamegpu::MsgNone) {
     unsigned int count = 0;
     // Count how many messages we received (including our own)
     // This is all those which fall within the 3x3 Moore neighbourhood
@@ -72,7 +72,7 @@ FLAMEGPU_AGENT_FUNCTION(countBF, MsgBruteForce, MsgNone) {
         count++;
     }
     FLAMEGPU->setVariable<unsigned int>("count", count);
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
 """
 

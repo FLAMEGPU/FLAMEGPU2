@@ -3,6 +3,7 @@
 
 #include <chrono>
 
+namespace flamegpu {
 namespace util {
 
 /** 
@@ -36,4 +37,6 @@ class SteadyClockTimer {
 };
 
 }  // namespace util
+}  // namespace flamegpu
+
 #endif  // INCLUDE_FLAMEGPU_UTIL_STEADYCLOCKTIMER_H_

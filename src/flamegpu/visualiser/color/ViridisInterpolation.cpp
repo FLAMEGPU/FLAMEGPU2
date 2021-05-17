@@ -1,6 +1,10 @@
+// @todo -  #ifdef VISUALISATION
 #include "flamegpu/visualiser/color/ViridisInterpolation.h"
 
 #include <sstream>
+
+namespace flamegpu {
+namespace visualiser {
 
 ViridisInterpolation::ViridisInterpolation(const std::string& _variable_name, const float& _min_bound, const float& _max_bound)
     : min_bound(_min_bound)
@@ -326,3 +330,6 @@ const std::array<const Color, 256> &ViridisInterpolation::rawColors() {
     };
     return raw_colors;
 }
+
+}  // namespace visualiser
+}  // namespace flamegpu

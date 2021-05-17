@@ -14,6 +14,8 @@
 
 #include "gtest/gtest.h"
 
+namespace flamegpu {
+
 
 namespace test_agent_state_transitions {
     const unsigned int AGENT_COUNT = 10;
@@ -257,3 +259,4 @@ TEST(TestAgentStateTransitions, Src_10_Dest_10) {
 }
 
 }  // namespace test_agent_state_transitions
+}  // namespace flamegpu

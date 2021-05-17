@@ -1,9 +1,9 @@
 #include "flamegpu/flame_api.h"
 
-FLAMEGPU_AGENT_FUNCTION(AddOffset, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(AddOffset, flamegpu::MsgNone, flamegpu::MsgNone) {
     // Output each agents publicly visible properties.
     FLAMEGPU->setVariable<int>("x", FLAMEGPU->getVariable<int>("x") + FLAMEGPU->environment.getProperty<int>("offset"));
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
 FLAMEGPU_INIT_FUNCTION(Init) {
     const unsigned int POPULATION_TO_GENERATE = FLAMEGPU->environment.getProperty<unsigned int>("POPULATION_TO_GENERATE");
@@ -21,14 +21,14 @@ FLAMEGPU_EXIT_FUNCTION(Exit) {
     atomic_result += FLAMEGPU->agent("Agent").sum<int>("x");
 }
 int main(int argc, const char ** argv) {
-    ModelDescription model("boids_spatial3D");
+    flamegpu::ModelDescription model("boids_spatial3D");
     const unsigned int POPULATION_TO_GENERATE = 100000;
     const unsigned int STEPS = 10;
     /**
      * GLOBALS
      */
      {
-        EnvironmentDescription &env = model.Environment();
+        flamegpu::EnvironmentDescription  &env = model.Environment();
 
         env.newProperty<unsigned int>("POPULATION_TO_GENERATE", POPULATION_TO_GENERATE, true);
 
@@ -37,7 +37,7 @@ int main(int argc, const char ** argv) {
         env.newProperty<int>("offset", 1);
     }
     {   // Agent
-        AgentDescription &agent = model.newAgent("Agent");
+        flamegpu::AgentDescription  &agent = model.newAgent("Agent");
         agent.newVariable<int>("x");
         agent.newFunction("AddOffset", AddOffset);
     }
@@ -46,7 +46,7 @@ int main(int argc, const char ** argv) {
      * Control flow
      */     
     {   // Layer #1
-        LayerDescription &layer = model.newLayer();
+        flamegpu::LayerDescription  &layer = model.newLayer();
         layer.addAgentFunction(AddOffset);
 
         model.addInitFunction(Init);
@@ -56,7 +56,7 @@ int main(int argc, const char ** argv) {
     /**
      * Create a run plan
      */
-    RunPlanVec runs(model, 100);
+    flamegpu::RunPlanVec runs(model, 100);
     {
         runs.setSteps(STEPS);
         runs.setRandomSimulationSeed(12, 1);
@@ -68,7 +68,7 @@ int main(int argc, const char ** argv) {
     /**
      * Create Model Runner
      */
-    CUDAEnsemble cuda_ensemble(model, argc, argv);
+    flamegpu::CUDAEnsemble cuda_ensemble(model, argc, argv);
 
     cuda_ensemble.simulate(runs);
 

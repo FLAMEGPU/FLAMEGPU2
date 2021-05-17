@@ -14,6 +14,9 @@
 
 #include "gtest/gtest.h"
 
+namespace flamegpu {
+
+
 namespace {
 const int TEST_LEN = 256;  // Agent count
 const float MS1_VAL = 12.0f;
@@ -130,3 +133,4 @@ TEST(EnvironmentManagerTest2, MultipleModels) {
     delete ms1;
     delete ms2;
 }
+}  // namespace flamegpu

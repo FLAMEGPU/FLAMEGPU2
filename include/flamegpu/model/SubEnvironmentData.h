@@ -5,6 +5,8 @@
 #include <string>
 #include <unordered_map>
 
+namespace flamegpu {
+
 struct ModelData;
 struct SubModelData;
 class EnvironmentDescription;
@@ -82,5 +84,7 @@ struct SubEnvironmentData : std::enable_shared_from_this<SubEnvironmentData> {
     */
     explicit SubEnvironmentData(const std::shared_ptr<const ModelData> &model, const std::shared_ptr<SubModelData> &_parent, const std::shared_ptr<EnvironmentDescription> &subEnv);
 };
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_MODEL_SUBENVIRONMENTDATA_H_

@@ -3,6 +3,8 @@
 #include "flamegpu/model/SubAgentData.h"
 #include "flamegpu/model/AgentData.h"
 
+namespace flamegpu {
+
 SubAgentDescription::SubAgentDescription(const std::shared_ptr<const ModelData> &_model, SubAgentData *const _data)
     : model(_model)
     , data(_data) { }
@@ -104,3 +106,5 @@ std::string SubAgentDescription::getVariableMapping(const std::string &sub_varia
     THROW InvalidAgentVar("Sub agent var '%s', either does not exist or has not been mapped yet, "
         "in SubAgentDescription::getVariableMapping()\n", sub_variable_name.c_str());
 }
+
+}  // namespace flamegpu

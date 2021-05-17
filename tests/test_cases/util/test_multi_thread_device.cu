@@ -6,6 +6,9 @@
 #include "gtest/gtest.h"
 #include "flamegpu/util/compute_capability.cuh"
 
+namespace flamegpu {
+
+
 namespace test_multi_thread_device {
 const char *MODEL_NAME = "Model";
 const char *AGENT_NAME = "Agent1";
@@ -855,3 +858,4 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_AgentFunctionCondition) {
     ASSERT_EQ(cudaSetDevice(0), cudaSuccess);
 }
 }  // namespace test_multi_thread_device
+}  // namespace flamegpu

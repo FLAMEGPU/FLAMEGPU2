@@ -3,6 +3,8 @@
 
 #include "flamegpu/runtime/HostAPI_macros.h"
 
+namespace flamegpu {
+
 /**
  * Virtual Callback class which allows a user to create a callback function to be used as a host function in either step, exit or init functions.
  * This is mostly required to allow swig wrapping of host functions in a target language
@@ -37,5 +39,6 @@ class HostFunctionConditionCallback {
     virtual ~HostFunctionConditionCallback() {}
 };
 
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_HOSTFUNCTIONCALLBACK_H_

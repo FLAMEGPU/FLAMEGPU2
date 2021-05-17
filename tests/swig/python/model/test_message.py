@@ -60,14 +60,14 @@ class MessageDescriptionTest(TestCase):
 
 
     NoInput = """
-    FLAMEGPU_AGENT_FUNCTION(NoInput, MsgNone, MsgSpatial3D) {
-        return ALIVE
+    FLAMEGPU_AGENT_FUNCTION(NoInput, flamegpu::MsgNone, flamegpu::MsgSpatial3D) {
+        return flamegpu::ALIVE
     }
     """
     
     NoOutput = """
-    FLAMEGPU_AGENT_FUNCTION(NoOutput, MsgSpatial2D, MsgNone) {
-        return ALIVE
+    FLAMEGPU_AGENT_FUNCTION(NoOutput, flamegpu::MsgSpatial2D, flamegpu::MsgNone) {
+        return flamegpu::ALIVE
     }
     """
 

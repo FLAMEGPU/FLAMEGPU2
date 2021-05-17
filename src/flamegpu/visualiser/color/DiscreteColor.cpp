@@ -1,6 +1,10 @@
+// @todo - ifdef VISUALISTION?
 #include "flamegpu/visualiser/color/DiscreteColor.h"
-
 #include "flamegpu/visualiser/color/Palette.h"
+
+namespace flamegpu {
+namespace visualiser {
+
 
 template<typename T>
 DiscreteColor<T>::DiscreteColor(const std::string& _variable_name, const Color& _fallback)
@@ -52,3 +56,7 @@ bool DiscreteColor<T>::validate() const {
 // Force instantiate the 2 supported types
 template class DiscreteColor<int32_t>;
 template class DiscreteColor<uint32_t>;
+
+}  // namespace visualiser
+}  // namespace flamegpu
+

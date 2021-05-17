@@ -10,6 +10,8 @@
 #include <vector>
 #include "flamegpu/sim/LogFrame.h"
 
+namespace flamegpu {
+
 struct ModelData;
 class LoggingConfig;
 class StepLoggingConfig;
@@ -118,5 +120,7 @@ class SimRunner {
      */
     std::condition_variable &log_export_queue_cdn;
 };
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_SIM_SIMRUNNER_H_

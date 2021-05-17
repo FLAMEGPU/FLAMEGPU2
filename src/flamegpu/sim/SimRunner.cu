@@ -12,6 +12,8 @@
 #include <pthread.h>
 #endif
 
+namespace flamegpu {
+
 SimRunner::SimRunner(const std::shared_ptr<const ModelData> _model,
     std::atomic<unsigned int> &_err_ct,
     std::atomic<unsigned int> &_next_run,
@@ -102,3 +104,5 @@ void SimRunner::start() {
         }
     }
 }
+
+}  // namespace flamegpu

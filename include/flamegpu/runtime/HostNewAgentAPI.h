@@ -8,6 +8,8 @@
 #include "flamegpu/model/Variable.h"
 #include "flamegpu/defines.h"
 
+namespace flamegpu {
+
 /**
 * This struct holds a map of how memory for a compact representation of some unknown vars needs to look
 */
@@ -440,5 +442,7 @@ class HostNewAgentAPI {
     // Can't use reference here, makes it non-assignable
     NewAgentStorage *s;
 };
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_HOSTNEWAGENTAPI_H_

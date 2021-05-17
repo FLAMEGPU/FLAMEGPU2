@@ -17,6 +17,8 @@
 
 #include "gtest/gtest.h"
 
+namespace flamegpu {
+
 namespace test_gpu_validation {
 FLAMEGPU_AGENT_FUNCTION(add_func, MsgNone, MsgNone) {
     // should've returned error if the type was not correct. Needs type check
@@ -105,8 +107,8 @@ TEST(GPUTest, GPUMemoryTest) {
 }
 
 /**
-* @brief      To verify the correctness of ::AgentVector::Agent::setVariable  and
-*  ::AgentVector::Agent::getVariable variable function and hashing after simulating a function
+* @brief      To verify the correctness of AgentVector::Agent::setVariable  and
+*  AgentVector::Agent::getVariable variable function and hashing after simulating a function
 *
 * To ensure initial values for agent population is transferred correctly onto
 * the GPU, this test checks the correctness of the values copied back from the device
@@ -226,6 +228,8 @@ TEST(GPUTest, GPUSimulationTestMultiple) {
         EXPECT_EQ(i2.getVariable<double>("y"), 0);
     }
 }
-    }  // namespace test_gpu_validation
+
+}  // namespace test_gpu_validation
+}  // namespace flamegpu
 
 #endif  // TESTS_TEST_CASES_GPU_TEST_GPU_VALIDATION_H_

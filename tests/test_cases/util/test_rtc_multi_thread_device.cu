@@ -6,6 +6,8 @@
 #include "gtest/gtest.h"
 #include "flamegpu/util/compute_capability.cuh"
 
+namespace flamegpu {
+
 namespace test_rtc_multi_thread_device {
 const char *MODEL_NAME = "Model";
 const char *AGENT_NAME = "Agent1";
@@ -13,25 +15,25 @@ const char *MESSAGE_NAME = "Message1";
 const char *FUNCTION_NAME1 = "Fn1";
 const char *FUNCTION_NAME2 = "Fn2";
 const char* rtc_SlowFn = R"###(
-FLAMEGPU_AGENT_FUNCTION(SlowFn, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(SlowFn, flamegpu::MsgNone, flamegpu::MsgNone) {
     int x = FLAMEGPU->getVariable<int>("x");
     // Do nothing, just waste time. Get values from environment to prevent optimisation
     for (int i = 0; i < FLAMEGPU->environment.getProperty<int>("ten thousand"); ++i) {
         x += FLAMEGPU->environment.getProperty<int>("zero");
     }
     FLAMEGPU->setVariable<int>("x", x + 1);
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
 )###";
 const char* rtc_FastFn = R"###(
-FLAMEGPU_AGENT_FUNCTION(FastFn, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(FastFn, flamegpu::MsgNone, flamegpu::MsgNone) {
     const int x = FLAMEGPU->getVariable<int>("x");
     FLAMEGPU->setVariable<int>("x", x + 1);
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
 )###";
 const char* rtc_SlowFnMsg = R"###(
-FLAMEGPU_AGENT_FUNCTION(SlowFnMsg, MsgBruteForce, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(SlowFnMsg, flamegpu::MsgBruteForce, flamegpu::MsgNone) {
     int x = FLAMEGPU->getVariable<int>("x");
     int y = 0;
     // Do nothing, just waste time. Get values from environment to prevent optimisation
@@ -39,36 +41,36 @@ FLAMEGPU_AGENT_FUNCTION(SlowFnMsg, MsgBruteForce, MsgNone) {
         y += m.getVariable<int>("x");
     }
     FLAMEGPU->setVariable<int>("x", x + y);
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
 )###";
 const char* rtc_FastFnMsg = R"###(
-FLAMEGPU_AGENT_FUNCTION(FastFnMsg, MsgNone, MsgBruteForce) {
+FLAMEGPU_AGENT_FUNCTION(FastFnMsg, flamegpu::MsgNone, flamegpu::MsgBruteForce) {
     const int x = FLAMEGPU->getVariable<int>("x");
     FLAMEGPU->message_out.setVariable<int>("x", 1);
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
 )###";
 const char* rtc_SlowFn2 = R"###(
-FLAMEGPU_AGENT_FUNCTION(SlowFn2, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(SlowFn2, flamegpu::MsgNone, flamegpu::MsgNone) {
     int x = FLAMEGPU->getVariable<int>("x");
     // Do nothing, just waste time. Get values from environment to prevent optimisation
     for (int i = 0; i < FLAMEGPU->environment.getProperty<int>("ten thousand"); ++i) {
         x += FLAMEGPU->environment.getProperty<int>("zero");
     }
     FLAMEGPU->setVariable<int>("x", x + FLAMEGPU->environment.getProperty<int>("one"));
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
 )###";
 const char* rtc_FastFn2 = R"###(
-FLAMEGPU_AGENT_FUNCTION(FastFn2, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(FastFn2, flamegpu::MsgNone, flamegpu::MsgNone) {
     const int x = FLAMEGPU->getVariable<int>("x");
     FLAMEGPU->setVariable<int>("x", x + FLAMEGPU->environment.getProperty<int>("three"));
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
 )###";
 const char* rtc_SlowFn3 = R"###(
-FLAMEGPU_AGENT_FUNCTION(SlowFn3, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(SlowFn3, flamegpu::MsgNone, flamegpu::MsgNone) {
     int x = FLAMEGPU->getVariable<int>("x");
     // Do nothing, just waste time. Get values from environment to prevent optimisation
     for (int i = 0; i < FLAMEGPU->environment.getProperty<int>("ten thousand"); ++i) {
@@ -76,7 +78,7 @@ FLAMEGPU_AGENT_FUNCTION(SlowFn3, MsgNone, MsgNone) {
     }
     FLAMEGPU->setVariable<int>("x", x + 1);
     FLAMEGPU->agent_out.setVariable<int>("x", 0);
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
 )###";
 const char* rtc_AllowEvenOnly = R"###(
@@ -414,3 +416,4 @@ TEST(RTCMultiThreadDeviceTest, SameModelMultiDevice_AgentFunctionCondition) {
     ASSERT_EQ(cudaSetDevice(0), cudaSuccess);
 }
 }  // namespace test_rtc_multi_thread_device
+}  // namespace flamegpu

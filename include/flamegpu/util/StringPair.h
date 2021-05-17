@@ -6,6 +6,8 @@
 #include <map>
 #include <unordered_map>
 
+namespace flamegpu {
+namespace util {
 /**
  * Pair of strings
  */
@@ -32,5 +34,8 @@ using StringPairMap = std::map<StringPair, T, StringPairHash>;
  */
 template<typename T>
 using StringPairUnorderedMap = std::unordered_map<StringPair, T, StringPairHash>;
+
+}  // namespace util
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_UTIL_STRINGPAIR_H_

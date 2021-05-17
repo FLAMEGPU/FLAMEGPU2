@@ -5,6 +5,8 @@
 
 #include "flamegpu/model/AgentFunctionDescription.h"
 
+namespace flamegpu {
+
 /**
  * Constructors
  */
@@ -55,3 +57,5 @@ void DependencyNode::dependsOnImpl(DependencyNode& dependency) {
 void DependencyNode::addDependent(DependencyNode& dependent) {
     dependents.push_back(&dependent);
 }
+
+}  // namespace flamegpu

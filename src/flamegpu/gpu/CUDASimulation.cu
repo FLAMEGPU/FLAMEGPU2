@@ -26,6 +26,8 @@
 #include "FLAMEGPU_Visualisation.h"
 #endif
 
+namespace flamegpu {
+
 std::map<int, std::atomic<int>> CUDASimulation::active_device_instances;
 std::map<int, std::shared_timed_mutex> CUDASimulation::active_device_mutex;
 std::shared_timed_mutex CUDASimulation::active_device_maps_mutex;
@@ -54,7 +56,7 @@ CUDASimulation::CUDASimulation(const std::shared_ptr<const ModelData> &_model)
     ++active_instances;
     initOffsetsAndMap();
     // Register the signal handler.
-    SignalHandlers::registerSignalHandlers();
+    util::SignalHandlers::registerSignalHandlers();
 
     // populate the CUDA agent map
     const auto &am = model->agents;
@@ -521,7 +523,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
     streamIdx = 0;
     // Sum the total number of threads being launched in the layer
     totalThreads = 0;
-    /*! for each func function - Loop through to do all mapping of agent and message variables */
+    // for each func function - Loop through to do all mapping of agent and message variables
     for (const auto &func_des : layer->agent_functions) {
         auto func_agent = func_des->parent.lock();
         if (!func_agent) {
@@ -1385,9 +1387,9 @@ const CUDASimulation::Config &CUDASimulation::getCUDAConfig() const {
     return config;
 }
 #ifdef VISUALISATION
-ModelVis &CUDASimulation::getVisualisation() {
+visualiser::ModelVis &CUDASimulation::getVisualisation() {
     if (!visualisation)
-        visualisation = std::make_unique<ModelVis>(*this);
+        visualisation = std::make_unique<visualiser::ModelVis>(*this);
     return *visualisation.get();
 }
 #endif
@@ -1586,18 +1588,18 @@ void CUDASimulation::processStepLog() {
     if (step_count % step_log_config->frequency != 0)
         return;
     // Iterate members of step log to build the step log frame
-    std::map<std::string, Any> environment_log;
+    std::map<std::string, util::Any> environment_log;
     for (const auto &prop_name : step_log_config->environment) {
         // Fetch the named environment prop
         environment_log.emplace(prop_name, singletons->environment.getPropertyAny(instance_id, prop_name));
     }
-    std::map<LoggingConfig::NameStatePair, std::pair<std::map<LoggingConfig::NameReductionFn, Any>, unsigned int>> agents_log;
+    std::map<util::StringPair, std::pair<std::map<LoggingConfig::NameReductionFn, util::Any>, unsigned int>> agents_log;
     for (const auto &name_state : step_log_config->agents) {
         // Create the named sub map
         const std::string &agent_name = name_state.first.first;
         const std::string &agent_state = name_state.first.second;
         HostAgentAPI host_agent = host_api->agent(agent_name, agent_state);
-        auto &agent_state_log = agents_log.emplace(name_state.first, std::make_pair(std::map<LoggingConfig::NameReductionFn, Any>(), UINT_MAX)).first->second;
+        auto &agent_state_log = agents_log.emplace(name_state.first, std::make_pair(std::map<LoggingConfig::NameReductionFn, util::Any>(), UINT_MAX)).first->second;
         // Log individual variable reductions
         for (const auto &name_reduction : *name_state.second.first) {
             // Perform the corresponding reduction
@@ -1619,18 +1621,18 @@ void CUDASimulation::processExitLog() {
     if (!exit_log_config)
         return;
     // Iterate members of step log to build the step log frame
-    std::map<std::string, Any> environment_log;
+    std::map<std::string, util::Any> environment_log;
     for (const auto &prop_name : step_log_config->environment) {
         // Fetch the named environment prop
         environment_log.emplace(prop_name, singletons->environment.getPropertyAny(instance_id, prop_name));
     }
-    std::map<LoggingConfig::NameStatePair, std::pair<std::map<LoggingConfig::NameReductionFn, Any>, unsigned int>> agents_log;
+    std::map<util::StringPair, std::pair<std::map<LoggingConfig::NameReductionFn, util::Any>, unsigned int>> agents_log;
     for (const auto &name_state : step_log_config->agents) {
         // Create the named sub map
         const std::string &agent_name = name_state.first.first;
         const std::string &agent_state = name_state.first.second;
         HostAgentAPI host_agent = host_api->agent(agent_name, agent_state);
-        auto &agent_state_log = agents_log.emplace(name_state.first, std::make_pair(std::map<LoggingConfig::NameReductionFn, Any>(), UINT_MAX)).first->second;
+        auto &agent_state_log = agents_log.emplace(name_state.first, std::make_pair(std::map<LoggingConfig::NameReductionFn, util::Any>(), UINT_MAX)).first->second;
         // Log individual variable reductions
         for (const auto &name_reduction : *name_state.second.first) {
             // Perform the corresponding reduction
@@ -1702,3 +1704,5 @@ void CUDASimulation::assignAgentIDs() {
         agent_ids_have_init = true;
     }
 }
+
+}  // namespace flamegpu

@@ -5,6 +5,9 @@
 
 #include "flamegpu/visualiser/color/ColorFunction.h"
 
+namespace flamegpu {
+namespace visualiser {
+
 /**
  * Agent color function for mapping a floating point value to a HSV hue
  */
@@ -95,5 +98,8 @@ class HSVInterpolation : public ColorFunction {
      */
     const std::string variable_name;
 };
+
+}  // namespace visualiser
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_VISUALISER_COLOR_HSVINTERPOLATION_H_

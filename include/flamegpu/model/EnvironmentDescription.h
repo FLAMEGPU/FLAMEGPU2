@@ -7,11 +7,26 @@
 #include <typeindex>
 #include <array>
 #include <vector>
+#include <utility>
 
 #include "flamegpu/exception/FGPUException.h"
 #include "flamegpu/runtime/utility/HostEnvironment.cuh"
 #include "flamegpu/util/Any.h"
 #include "flamegpu/gpu/CUDAEnsemble.h"
+
+namespace std {
+/**
+ * Hash operator for std::pair<std::string, unsigned int> , required for use of std::map etc for env_itn
+ * @todo - replace std::pair<std::string, unsigned int> with a typedef / struct with a meaningful name, and/or move this to a separate location
+ */
+template <> struct hash<std::pair<std::string, unsigned int>> {
+    std::size_t operator()(const std::pair<std::string, unsigned int>& k) const noexcept {
+        return ((std::hash<std::string>()(k.first) ^ (std::hash<unsigned int>()(k.second) << 1)) >> 1);
+    }
+};
+}  // namespace std
+
+namespace flamegpu {
 
 /**
  * @brief Description class for environment properties
@@ -49,11 +64,11 @@ class EnvironmentDescription {
          * @param _is_const Is the property constant
          * @param _data The data to initially fill the property with
          */
-        PropData(const bool &_is_const, const Any &_data)
+        PropData(const bool &_is_const, const util::Any &_data)
             : isConst(_is_const)
             , data(_data) { }
         bool isConst;
-        const Any data;
+        const util::Any data;
         bool operator==(const PropData &rhs) const {
             if (this->isConst != rhs.isConst
                || this->data.elements != rhs.data.elements
@@ -513,4 +528,6 @@ std::vector<T> EnvironmentDescription::setPropertyArray(const std::string& name,
         name.c_str());
 }
 #endif
+}  // namespace flamegpu
+
 #endif  // INCLUDE_FLAMEGPU_MODEL_ENVIRONMENTDESCRIPTION_H_

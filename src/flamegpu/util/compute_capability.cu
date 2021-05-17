@@ -1,7 +1,10 @@
 #include "flamegpu/util/compute_capability.cuh"
 #include "flamegpu/gpu/CUDAErrorChecking.h"
 
-int util::compute_capability::getComputeCapability(int deviceIndex) {
+namespace flamegpu {
+namespace util {
+
+int compute_capability::getComputeCapability(int deviceIndex) {
     int major = 0;
     int minor = 0;
 
@@ -25,7 +28,7 @@ int util::compute_capability::getComputeCapability(int deviceIndex) {
     return arch;
 }
 
-int util::compute_capability::minimumCompiledComputeCapability() {
+int compute_capability::minimumCompiledComputeCapability() {
     #if defined(MIN_CUDA_ARCH)
         return MIN_CUDA_ARCH;
     #else
@@ -34,7 +37,7 @@ int util::compute_capability::minimumCompiledComputeCapability() {
     #endif
 }
 
-bool util::compute_capability::checkComputeCapability(int deviceIndex) {
+bool compute_capability::checkComputeCapability(int deviceIndex) {
     // If the compile time minimum architecture is defined, fetch the device's compute capability and check that the executable (probably) supports this device.
     if (getComputeCapability(deviceIndex) < minimumCompiledComputeCapability()) {
         return false;
@@ -42,3 +45,6 @@ bool util::compute_capability::checkComputeCapability(int deviceIndex) {
         return true;
     }
 }
+
+}  // namespace util
+}  // namespace flamegpu

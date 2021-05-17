@@ -1,12 +1,12 @@
 #include "flamegpu/flame_api.h"
 #include "flamegpu/util/nvtx.h"
 
-FLAMEGPU_AGENT_FUNCTION(output, MsgNone, MsgArray2D) {
+FLAMEGPU_AGENT_FUNCTION(output, flamegpu::MsgNone, flamegpu::MsgArray2D) {
     FLAMEGPU->message_out.setVariable<char>("is_alive", FLAMEGPU->getVariable<unsigned int>("is_alive"));
     FLAMEGPU->message_out.setIndex(FLAMEGPU->getVariable<unsigned int, 2>("pos", 0), FLAMEGPU->getVariable<unsigned int, 2>("pos", 1));
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(update, MsgArray2D, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(update, flamegpu::MsgArray2D, flamegpu::MsgNone) {
     const unsigned int my_x = FLAMEGPU->getVariable<unsigned int, 2>("pos", 0);
     const unsigned int my_y = FLAMEGPU->getVariable<unsigned int, 2>("pos", 1);
 
@@ -29,22 +29,22 @@ FLAMEGPU_AGENT_FUNCTION(update, MsgArray2D, MsgNone) {
             is_alive = 1;
     }
     FLAMEGPU->setVariable<unsigned int>("is_alive", is_alive);
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
 int main(int argc, const char ** argv) {
     const unsigned int SQRT_AGENT_COUNT = 1000;
     const unsigned int AGENT_COUNT = SQRT_AGENT_COUNT * SQRT_AGENT_COUNT;
     NVTX_RANGE("main");
     NVTX_PUSH("ModelDescription");
-    ModelDescription model("Game_of_Life_example");
+    flamegpu::ModelDescription model("Game_of_Life_example");
 
     {   // Location message
-        MsgArray2D::Description &message = model.newMessage<MsgArray2D>("is_alive_msg");
+        flamegpu::MsgArray2D::Description &message = model.newMessage<flamegpu::MsgArray2D>("is_alive_msg");
         message.newVariable<char>("is_alive");
         message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT);
     }
     {   // Cell agent
-        AgentDescription &agent = model.newAgent("cell");
+        flamegpu::AgentDescription  &agent = model.newAgent("cell");
         agent.newVariable<unsigned int, 2>("pos");
         agent.newVariable<unsigned int>("is_alive");
 #ifdef VISUALISATION
@@ -60,7 +60,7 @@ int main(int argc, const char ** argv) {
      * GLOBALS
      */
     {
-        EnvironmentDescription &env = model.Environment();
+        flamegpu::EnvironmentDescription  &env = model.Environment();
         env.newProperty("repulse", 0.05f);
         env.newProperty("radius", 1.0f);
     }
@@ -69,11 +69,11 @@ int main(int argc, const char ** argv) {
      * Control flow
      */
     {   // Layer #1
-        LayerDescription &layer = model.newLayer();
+        flamegpu::LayerDescription  &layer = model.newLayer();
         layer.addAgentFunction(output);
     }
     {   // Layer #2
-        LayerDescription &layer = model.newLayer();
+        flamegpu::LayerDescription  &layer = model.newLayer();
         layer.addAgentFunction(update);
     }
     NVTX_POP();
@@ -82,7 +82,7 @@ int main(int argc, const char ** argv) {
      * Create Model Runner
      */
     NVTX_PUSH("CUDASimulation creation");
-    CUDASimulation cuda_model(model, argc, argv);
+    flamegpu::CUDASimulation  cuda_model(model, argc, argv);
     NVTX_POP();
 
     /**
@@ -92,15 +92,15 @@ int main(int argc, const char ** argv) {
         // Currently population has not been init, so generate an agent population on the fly
         std::default_random_engine rng;
         std::uniform_real_distribution<float> dist(0.0f, 1.0f);
-        AgentVector init_pop(model.Agent("cell"));
+        flamegpu::AgentVector init_pop(model.Agent("cell"));
         init_pop.reserve(AGENT_COUNT);
         for (unsigned int x = 0; x < SQRT_AGENT_COUNT; ++x) {
             for (unsigned int y = 0; y < SQRT_AGENT_COUNT; ++y) {
                 init_pop.push_back();
-                AgentVector::Agent instance = init_pop.back();
+                flamegpu::AgentVector::Agent instance = init_pop.back();
                 instance.setVariable<unsigned int, 2>("pos", { x, y });
                 char is_alive = dist(rng) < 0.4f ? 1 : 0;
-                instance.setVariable<unsigned int>("is_alive", is_alive);  // 40% Chance of being alive
+                instance.setVariable<unsigned int>("is_alive", is_alive);  // 40% Chance of being flamegpu::ALIVE
 #ifdef VISUALISATION
 // Redundant separate floating point position vars for vis
                 instance.setVariable<float>("x", static_cast<float>(x));
@@ -116,7 +116,7 @@ int main(int argc, const char ** argv) {
      * @note FGPU2 doesn't currently have proper support for discrete/2d visualisations
      */
 #ifdef VISUALISATION
-    ModelVis& visualisation = cuda_model.getVisualisation();
+    flamegpu::visualiser::ModelVis & visualisation = cuda_model.getVisualisation();
     {
         visualisation.setBeginPaused(true);
         visualisation.setSimulationSpeed(5);
@@ -127,11 +127,11 @@ int main(int argc, const char ** argv) {
         visualisation.setClearColor(0.6f, 0.6f, 0.6f);
         auto& agt = visualisation.addAgent("cell");
         // Position vars are named x, y, z; so they are used by default
-        agt.setModel(Stock::Models::CUBE);  // 5 unwanted faces!
+        agt.setModel(flamegpu::visualiser::Stock::Models::CUBE);  // 5 unwanted faces!
         agt.setModelScale(1.0f);
-        DiscreteColor<unsigned int> cell_colors = DiscreteColor<unsigned int>("is_alive", Color{ "#666" });
-        cell_colors[0] = Stock::Colors::BLACK;
-        cell_colors[1] = Stock::Colors::WHITE;
+        flamegpu::visualiser::DiscreteColor<unsigned int> cell_colors = flamegpu::visualiser::DiscreteColor<unsigned int>("is_alive", flamegpu::visualiser::Color{ "#666" });
+        cell_colors[0] = flamegpu::visualiser::Stock::Colors::BLACK;
+        cell_colors[1] = flamegpu::visualiser::Stock::Colors::WHITE;
         agt.setColor(cell_colors);
     }
     visualisation.activate();

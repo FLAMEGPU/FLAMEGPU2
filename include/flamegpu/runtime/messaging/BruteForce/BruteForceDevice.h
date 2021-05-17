@@ -6,6 +6,8 @@
 
 struct ModelData;
 
+namespace flamegpu {
+
 /**
  * This class is accessible via DeviceAPI.message_in if MsgBruteForce is specified in FLAMEGPU_AGENT_FUNCTION
  * It gives access to functionality for reading brute force messages
@@ -229,5 +231,7 @@ __device__ void MsgBruteForce::Out::setVariable(const char(&variable_name)[N], T
     // Set scan flag incase the message is optional
     this->scan_flag[index] = 1;
 }
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_BRUTEFORCE_BRUTEFORCEDEVICE_H_

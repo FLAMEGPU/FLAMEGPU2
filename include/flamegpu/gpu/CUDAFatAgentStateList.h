@@ -11,6 +11,8 @@
 #include "flamegpu/model/AgentData.h"
 #include "flamegpu/model/SubAgentData.h"
 
+namespace flamegpu {
+
 class CUDAScatter;
 
 /**
@@ -28,15 +30,23 @@ struct AgentVariable{
         return (agent == other.agent && variable == other.variable);
     }
 };
+
+}  // namespace flamegpu
+
+namespace std {
 /**
  * Hash operator for AgentVariable, required for use of std::map etc
  */
-template <> struct std::hash<AgentVariable> {
-    std::size_t operator()(const AgentVariable& k) const noexcept {
+template <> struct hash<flamegpu::AgentVariable> {
+    std::size_t operator()(const flamegpu::AgentVariable& k) const noexcept {
         return ((std::hash<unsigned int>()(k.agent)
             ^ (std::hash<std::string>()(k.variable) << 1)) >> 1);
     }
 };
+}  // namespace std
+
+namespace flamegpu {
+
 /**
  * This represents a raw buffer
  */
@@ -286,5 +296,7 @@ class CUDAFatAgentStateList {
      */
     std::list<std::shared_ptr<VariableBuffer>> variables_unique;
 };
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_GPU_CUDAFATAGENTSTATELIST_H_

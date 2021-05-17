@@ -1,5 +1,7 @@
 #include "helpers/host_reductions_common.h"
 
+namespace flamegpu {
+
 namespace test_host_reductions {
 FLAMEGPU_STEP_FUNCTION(step_countfloat) {
     uint32_t_out = FLAMEGPU->agent("agent").count<float>("float", 0);
@@ -203,3 +205,4 @@ TEST_F(HostReductionTest, CountUnsignedInt64) {
     EXPECT_EQ(uint32_t_out, std::count(in.begin(), in.end(), static_cast<uint64_t>(0)));
 }
 }  // namespace test_host_reductions
+}  // namespace flamegpu

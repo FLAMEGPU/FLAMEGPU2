@@ -17,6 +17,8 @@
 #include <cub/cub.cuh>
 #endif
 
+namespace flamegpu {
+
 // @todo - Make _async variants of functions which launch kernels. This can be called by the non async version and immediately sync.
 
 CUDAScatter::StreamData::StreamData()
@@ -605,3 +607,5 @@ void CUDAScatter::arrayMessageReorder(
     }
 #endif
 }
+
+}  // namespace flamegpu

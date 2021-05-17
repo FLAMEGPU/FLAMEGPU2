@@ -13,9 +13,12 @@
 #include "config/Stock.h"
 #include "config/TexBufferConfig.h"
 
-struct Palette;
+namespace flamegpu {
 struct AgentData;
 class CUDAAgent;
+
+namespace visualiser {
+struct Palette;
 class FLAMEGPU_Visualisation;
 class ColorFunction;
 struct Color;
@@ -322,6 +325,9 @@ class AgentVis {
      */
     std::map<TexBufferConfig::Function, TexBufferConfig> core_tex_buffers;
 };
+
+}  // namespace visualiser
+}  // namespace flamegpu
 
 #endif  // VISUALISATION
 #endif  // INCLUDE_FLAMEGPU_VISUALISER_AGENTVIS_H_

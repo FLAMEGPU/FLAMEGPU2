@@ -17,52 +17,52 @@ AGENT_COUNT = 128
 UINT_MAX = 4294967295
 
 OutFunction = """
-FLAMEGPU_AGENT_FUNCTION(OutFunction, MsgNone, MsgArray) {
+FLAMEGPU_AGENT_FUNCTION(OutFunction, flamegpu::MsgNone, flamegpu::MsgArray) {
     const unsigned int index = FLAMEGPU->getVariable<unsigned int>("message_write");
     FLAMEGPU->message_out.setVariable<unsigned int>("index_times_3", index * 3);
     FLAMEGPU->message_out.setIndex(index);
-    return ALIVE;
+    return flamegpu::ALIVE;
 }"""
 
 OutOptionalFunction = """
-FLAMEGPU_AGENT_FUNCTION(OutOptionalFunction, MsgNone, MsgArray) {
+FLAMEGPU_AGENT_FUNCTION(OutOptionalFunction, flamegpu::MsgNone, flamegpu::MsgArray) {
     const unsigned int index = FLAMEGPU->getVariable<unsigned int>("message_write");
     if (index % 2 == 0) {
         FLAMEGPU->message_out.setVariable<unsigned int>("index_times_3", index * 3);
         FLAMEGPU->message_out.setIndex(index);
     }
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
 """
 
 OutBad = """
-FLAMEGPU_AGENT_FUNCTION(OutBad, MsgNone, MsgArray) {
+FLAMEGPU_AGENT_FUNCTION(OutBad, flamegpu::MsgNone, flamegpu::MsgArray) {
     const unsigned int index = FLAMEGPU->getVariable<unsigned int>("message_write");
     FLAMEGPU->message_out.setVariable<unsigned int>("index_times_3", index * 3);
     FLAMEGPU->message_out.setIndex(index == 13 ? 0 : index);
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
 """
 
 InFunction = """
-FLAMEGPU_AGENT_FUNCTION(InFunction, MsgArray, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(InFunction, flamegpu::MsgArray, flamegpu::MsgNone) {
     const unsigned int my_index = FLAMEGPU->getVariable<unsigned int>("index");
     const auto &message = FLAMEGPU->message_in.at(my_index);
     FLAMEGPU->setVariable("message_read", message.getVariable<unsigned int>("index_times_3"));
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
 """
 
 OutSimple = """
-FLAMEGPU_AGENT_FUNCTION(OutSimple, MsgNone, MsgArray) {
+FLAMEGPU_AGENT_FUNCTION(OutSimple, flamegpu::MsgNone, flamegpu::MsgArray) {
     const unsigned int index = FLAMEGPU->getVariable<unsigned int>("index");
     FLAMEGPU->message_out.setIndex(index);
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
 """
 
 MooreTest1 = """
-FLAMEGPU_AGENT_FUNCTION(MooreTest1, MsgArray, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(MooreTest1, flamegpu::MsgArray, flamegpu::MsgNone) {
     const unsigned int my_index = FLAMEGPU->getVariable<unsigned int>("index");
 
     // Iterate and check it aligns
@@ -82,12 +82,12 @@ FLAMEGPU_AGENT_FUNCTION(MooreTest1, MsgArray, MsgNone) {
     if (msg == filter.end())
         message_read++;
     FLAMEGPU->setVariable<unsigned int>("message_read", message_read);
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
 """
 
 MooreTest2 = """
-FLAMEGPU_AGENT_FUNCTION(MooreTest2, MsgArray, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(MooreTest2, flamegpu::MsgArray, flamegpu::MsgNone) {
     const unsigned int my_index = FLAMEGPU->getVariable<unsigned int>("index");
 
     // Iterate and check it aligns
@@ -107,15 +107,15 @@ FLAMEGPU_AGENT_FUNCTION(MooreTest2, MsgArray, MsgNone) {
     if (msg == filter.end())
         message_read++;
     FLAMEGPU->setVariable<unsigned int>("message_read", message_read);
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
 """
 
 countArray = """
-FLAMEGPU_AGENT_FUNCTION(countArray, MsgArray, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(countArray, flamegpu::MsgArray, flamegpu::MsgNone) {
     unsigned int value = FLAMEGPU->message_in.at(0).getVariable<unsigned int>("value");
     FLAMEGPU->setVariable<unsigned int>("value", value);
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
 """
 

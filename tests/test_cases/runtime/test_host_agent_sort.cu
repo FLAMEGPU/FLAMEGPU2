@@ -2,6 +2,9 @@
 
 #include "gtest/gtest.h"
 
+namespace flamegpu {
+
+
 namespace test_host_agent_sort {
 
 const unsigned int AGENT_COUNT = 1024;
@@ -448,3 +451,4 @@ TEST(HostAgentSort, 2x_DescAsc_int) {
     }
 }
 }  // namespace test_host_agent_sort
+}  // namespace flamegpu

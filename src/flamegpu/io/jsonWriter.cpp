@@ -12,11 +12,12 @@
 #include "flamegpu/pop/AgentVector.h"
 #include "flamegpu/gpu/CUDASimulation.h"
 #include "flamegpu/util/StringPair.h"
+namespace flamegpu {
 
 jsonWriter::jsonWriter(
     const std::string &model_name,
     const unsigned int &sim_instance_id,
-    const StringPairUnorderedMap<std::shared_ptr<AgentVector>>&model,
+    const util::StringPairUnorderedMap<std::shared_ptr<AgentVector>>&model,
     const unsigned int &iterations,
     const std::string &output_file,
     const Simulation *_sim_instance)
@@ -230,3 +231,4 @@ int jsonWriter::writeStates(bool prettyPrint) {
     return 0;
 }
 
+}  // namespace flamegpu

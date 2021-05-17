@@ -1,6 +1,11 @@
 #include "flamegpu/flame_api.h"
 
 #include "gtest/gtest.h"
+
+namespace flamegpu {
+
+
+
 /***
  * Things to test on SubAgents
  * Simple:
@@ -2340,3 +2345,4 @@ TEST(TestCUDASubAgent, AgentID_ResetsOunboundAgentID) {
 }
 
 };  // namespace test_cuda_sub_agent
+}  // namespace flamegpu

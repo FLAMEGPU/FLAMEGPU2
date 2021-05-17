@@ -17,6 +17,8 @@
 #include "flamegpu/runtime/messaging/Bucket/BucketHost.h"
 // #include "flamegpu/runtime/messaging/Bucket/BucketDevice.h"
 
+namespace flamegpu {
+
 MsgBucket::CUDAModelHandler::CUDAModelHandler(CUDAMessage &a)
     : MsgSpecialisationHandler()
     , sim_message(a) {
@@ -196,3 +198,5 @@ IntT MsgBucket::Description::getLowerBound() const {
 IntT MsgBucket::Description::getUpperBound() const {
     return reinterpret_cast<Data *>(message)->upperBound;
 }
+
+}  // namespace flamegpu

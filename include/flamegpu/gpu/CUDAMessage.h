@@ -1,13 +1,3 @@
-/**
-* @file CUDAMessage.h
-* @authors
-* @date
-* @brief
-*
-* @see
-* @warning
-*/
-
 #ifndef INCLUDE_FLAMEGPU_GPU_CUDAMESSAGE_H_
 #define INCLUDE_FLAMEGPU_GPU_CUDAMESSAGE_H_
 
@@ -20,6 +10,8 @@
 #include "flamegpu/runtime/messaging/BruteForce/BruteForceHost.h"
 
 // forward declare classes from other modules
+
+namespace flamegpu {
 
 class CUDAScatter;
 struct AgentFunctionData;
@@ -182,5 +174,7 @@ class CUDAMessage {
      */
     const CUDASimulation& cuda_model;
 };
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_GPU_CUDAMESSAGE_H_

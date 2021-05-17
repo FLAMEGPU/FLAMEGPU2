@@ -15,32 +15,32 @@ OUT_LAYER2_NAME = "OutLayer2"
 AGENT_COUNT = 1024
 
 Out_AppendTruncate = """
-FLAMEGPU_AGENT_FUNCTION(Out_AppendTruncate, MsgNone, MsgBruteForce) {
+FLAMEGPU_AGENT_FUNCTION(Out_AppendTruncate, flamegpu::MsgNone, flamegpu::MsgBruteForce) {
     FLAMEGPU->message_out.setVariable("x", 0);
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
 """
 
 Out_AppendTruncate2 = """
-FLAMEGPU_AGENT_FUNCTION(Out_AppendTruncate2, MsgNone, MsgBruteForce) {
+FLAMEGPU_AGENT_FUNCTION(Out_AppendTruncate2, flamegpu::MsgNone, flamegpu::MsgBruteForce) {
     FLAMEGPU->message_out.setVariable("x", 1);
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
 """
 
 In_AppendTruncate = """
-FLAMEGPU_AGENT_FUNCTION(In_AppendTruncate, MsgBruteForce, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(In_AppendTruncate, flamegpu::MsgBruteForce, flamegpu::MsgNone) {
     int count = 0;
     for (auto &message : FLAMEGPU->message_in) {
         count++;
     }
     FLAMEGPU->setVariable<unsigned int>("count", count);
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
 """
 
 In_AppendTruncate2 = """
-FLAMEGPU_AGENT_FUNCTION(In_AppendTruncate2, MsgBruteForce, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(In_AppendTruncate2, flamegpu::MsgBruteForce, flamegpu::MsgNone) {
     int count0 = 0;
     int count1 = 0;
     for (auto &message : FLAMEGPU->message_in) {
@@ -52,28 +52,28 @@ FLAMEGPU_AGENT_FUNCTION(In_AppendTruncate2, MsgBruteForce, MsgNone) {
     }
     FLAMEGPU->setVariable<unsigned int>("count0", count0);
     FLAMEGPU->setVariable<unsigned int>("count1", count1);
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
 """
 
 OptionalOut_AppendTruncate = """
-FLAMEGPU_AGENT_FUNCTION(OptionalOut_AppendTruncate, MsgNone, MsgBruteForce) {
+FLAMEGPU_AGENT_FUNCTION(OptionalOut_AppendTruncate, flamegpu::MsgNone, flamegpu::MsgBruteForce) {
     if (FLAMEGPU->getVariable<unsigned int>("do_out") > 0) {
         FLAMEGPU->message_out.setVariable("x", 0);
         FLAMEGPU->setVariable<unsigned int>("do_out", 0);
     } else {
         FLAMEGPU->setVariable<unsigned int>("do_out", 1);
     }
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
 """
 
 OptionalOut_AppendTruncate2 = """
-FLAMEGPU_AGENT_FUNCTION(OptionalOut_AppendTruncate2, MsgNone, MsgBruteForce) {
+FLAMEGPU_AGENT_FUNCTION(OptionalOut_AppendTruncate2, flamegpu::MsgNone, flamegpu::MsgBruteForce) {
     if (FLAMEGPU->getVariable<unsigned int>("do_out") > 0) {
         FLAMEGPU->message_out.setVariable("x", 1);
     }
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
 """    
     

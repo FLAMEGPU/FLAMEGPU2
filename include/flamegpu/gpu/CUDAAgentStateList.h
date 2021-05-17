@@ -8,6 +8,8 @@
 
 #include "flamegpu/gpu/CUDAFatAgentStateList.h"
 
+namespace flamegpu {
+
 class CUDAScatter;
 struct VarOffsetStruct;
 class CUDAAgent;
@@ -176,5 +178,7 @@ class CUDAAgentStateList {
      */
     std::list<std::shared_ptr<VariableBuffer>> unmappedBuffers;
 };
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_GPU_CUDAAGENTSTATELIST_H_

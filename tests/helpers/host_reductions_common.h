@@ -22,6 +22,7 @@
 
 #include "gtest/gtest.h"
 
+namespace flamegpu {
 namespace test_host_reductions {
 const unsigned int TEST_LEN = 256;
 extern float float_out;
@@ -92,4 +93,5 @@ class HostReductionTest : public testing::Test {
     MiniSim *ms = nullptr;
 };
 }  // namespace test_host_reductions
+}  // namespace flamegpu
 #endif  // TESTS_HELPERS_HOST_REDUCTIONS_COMMON_H_

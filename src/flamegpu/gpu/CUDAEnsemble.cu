@@ -21,6 +21,8 @@
 #include "flamegpu/sim/LogFrame.h"
 #include "flamegpu/sim/SimLogger.h"
 
+namespace flamegpu {
+
 
 CUDAEnsemble::CUDAEnsemble(const ModelDescription& _model, int argc, const char** argv)
     : model(_model.model->clone()) {
@@ -287,3 +289,5 @@ void CUDAEnsemble::setExitLog(const LoggingConfig &exitConfig) {
 const std::vector<RunLog> &CUDAEnsemble::getLogs() {
     return run_logs;
 }
+
+}  // namespace flamegpu

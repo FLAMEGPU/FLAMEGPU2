@@ -9,6 +9,8 @@
 #include "flamegpu/gpu/CUDAScanCompaction.h"
 #include "flamegpu/gpu/CUDAScatter.h"
 
+namespace flamegpu {
+
 /**
 * CUDAMessageList class
 * @brief populates CUDA message map
@@ -151,3 +153,5 @@ unsigned int CUDAMessageList::scatterAll(const unsigned int &newCount, CUDAScatt
         newCount,
         oldCount);
 }
+
+}  // namespace flamegpu

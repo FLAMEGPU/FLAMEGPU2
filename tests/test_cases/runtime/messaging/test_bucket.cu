@@ -8,6 +8,8 @@
 
 #include "gtest/gtest.h"
 #include "flamegpu/flame_api.h"
+namespace flamegpu {
+
 
 namespace test_message_bucket {
 TEST(BucketMsgTest, DescriptionValidation) {
@@ -365,3 +367,4 @@ TEST(BucketMsgTest, Mandatory_Range) {
 }
 
 }  // namespace test_message_bucket
+}  // namespace flamegpu

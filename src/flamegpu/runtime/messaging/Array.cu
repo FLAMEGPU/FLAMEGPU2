@@ -6,6 +6,8 @@
 #include "flamegpu/runtime/messaging/Array/ArrayHost.h"
 // #include "flamegpu/runtime/messaging/Array/ArrayDevice.h"
 
+namespace flamegpu {
+
 /**
  * Constructor
  * Allocates memory on device for message list length
@@ -126,3 +128,5 @@ void MsgArray::Description::setLength(const size_type &len) {
 MsgArray::size_type MsgArray::Description::getLength() const {
     return reinterpret_cast<Data *>(message)->length;
 }
+
+}  // namespace flamegpu

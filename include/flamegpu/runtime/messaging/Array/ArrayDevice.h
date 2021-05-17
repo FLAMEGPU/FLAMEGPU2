@@ -4,6 +4,8 @@
 #include "flamegpu/runtime/messaging/Array.h"
 #include "flamegpu/runtime/messaging/BruteForce/BruteForceDevice.h"
 
+namespace flamegpu {
+
 /**
  * This class is accessible via DeviceAPI.message_in if MsgArray is specified in FLAMEGPU_AGENT_FUNCTION
  * It gives access to functionality for reading array messages
@@ -422,5 +424,7 @@ __device__ MsgArray::In::Filter::Message& MsgArray::In::Filter::Message::operato
     index_1d = (this->_parent.loc + relative_cell + this->_parent.length) % this->_parent.length;
     return *this;
 }
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_ARRAY_ARRAYDEVICE_H_

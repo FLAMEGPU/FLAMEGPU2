@@ -14,6 +14,8 @@
 #include "flamegpu/pop/AgentInstance.h"
 #include "flamegpu/model/AgentData.h"
 
+namespace flamegpu {
+
 class AgentFunctionDescription;
 
 /**
@@ -344,5 +346,7 @@ void AgentDescription::newVariableArray(const std::string& variable_name, const 
 // Found in "flamegpu/model/AgentFunctionDescription.h"
 // template<typename AgentFunction>
 // AgentFunctionDescription &AgentDescription::newFunction(const std::string &function_name, AgentFunction)
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_MODEL_AGENTDESCRIPTION_H_

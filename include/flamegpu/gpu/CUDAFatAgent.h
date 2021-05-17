@@ -12,6 +12,8 @@
 #include "flamegpu/gpu/CUDAFatAgentStateList.h"
 #include "flamegpu/model/SubAgentData.h"
 
+namespace flamegpu {
+
 class HostAPI;
 
 /**
@@ -228,5 +230,7 @@ class CUDAFatAgent {
      */
     bool agent_ids_have_init = true;
 };
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_GPU_CUDAFATAGENT_H_

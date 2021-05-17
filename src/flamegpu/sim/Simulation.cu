@@ -14,6 +14,8 @@
 #include "flamegpu/util/filesystem.h"
 
 
+namespace flamegpu {
+
 Simulation::Simulation(const std::shared_ptr<const ModelData> &_model)
     : model(_model->clone())
     , submodel(nullptr)
@@ -43,10 +45,10 @@ void Simulation::applyConfig() {
     if (!config.input_file.empty() && config.input_file != loaded_input_file) {
         const std::string current_input_file = config.input_file;
         // Build population vector
-        StringPairUnorderedMap<std::shared_ptr<AgentVector>> pops;
+        util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> pops;
         for (auto &agent : model->agents) {
             for (const auto &state : agent.second->states) {
-                pops.emplace(StringPair{ agent.first, state }, std::make_shared<AgentVector>(*agent.second->description));
+                pops.emplace(util::StringPair{ agent.first, state }, std::make_shared<AgentVector>(*agent.second->description));
             }
         }
 
@@ -101,12 +103,12 @@ const ModelData& Simulation::getModelDescription() const {
  */
 void Simulation::exportData(const std::string &path, bool prettyPrint) {
     // Build population vector
-    StringPairUnorderedMap<std::shared_ptr<AgentVector>> pops;
+    util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> pops;
     for (auto &agent : model->agents) {
         for (auto &state : agent.second->states) {
             auto a = std::make_shared<AgentVector>(*agent.second->description);
             getPopulationData(*a, state);
-            pops.emplace(StringPair{agent.first, state}, a);
+            pops.emplace(util::StringPair{agent.first, state}, a);
         }
     }
 
@@ -145,10 +147,10 @@ int Simulation::checkArgs(int argc, const char** argv) {
             // Load the input file
             {
                 // Build population vector
-                StringPairUnorderedMap<std::shared_ptr<AgentVector>> pops;
+                util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> pops;
                 for (auto &agent : model->agents) {
                     for (auto& state : agent.second->states) {
-                        pops.emplace(StringPair{ agent.first, state }, std::make_shared<AgentVector>(*agent.second->description));
+                        pops.emplace(util::StringPair{ agent.first, state }, std::make_shared<AgentVector>(*agent.second->description));
                     }
                 }
                 env_init.clear();
@@ -290,3 +292,5 @@ unsigned int Simulation::get_instance_id() {
     static std::atomic<unsigned int> i = {0};;
     return 641 * (i++);
 }
+
+}  // namespace flamegpu

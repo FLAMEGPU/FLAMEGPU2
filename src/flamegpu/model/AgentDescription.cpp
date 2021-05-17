@@ -3,6 +3,8 @@
 #include "flamegpu/model/AgentFunctionDescription.h"
 #include "flamegpu/exception/FGPUException.h"
 
+namespace flamegpu {
+
 /**
  * Constructors
  */
@@ -149,3 +151,5 @@ bool AgentDescription::hasFunction(const std::string &function_name) const {
 bool AgentDescription::isOutputOnDevice() const {
     return agent->isOutputOnDevice();
 }
+
+}  // namespace flamegpu

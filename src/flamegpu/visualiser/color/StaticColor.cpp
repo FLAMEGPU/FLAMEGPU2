@@ -1,8 +1,12 @@
+// @todo - ifdef VISUALISATION
 #include "flamegpu/visualiser/color/StaticColor.h"
 
 #include <sstream>
 
 #include "flamegpu/exception/FGPUException.h"
+
+namespace flamegpu {
+namespace visualiser {
 
 StaticColor::StaticColor(const Color& _rgba)
     : rgba(_rgba) {
@@ -22,3 +26,6 @@ std::string StaticColor::getSrc() const {
 Color::operator StaticColor() const {
     return StaticColor{*this};
 }
+
+}  // namespace visualiser
+}  // namespace flamegpu

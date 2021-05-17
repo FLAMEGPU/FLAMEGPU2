@@ -10,6 +10,9 @@
 #include "flamegpu/sim/RunPlan.h"
 #include "flamegpu/exception/FGPUStaticAssert.h"
 
+
+namespace flamegpu {
+
 class ModelDescription;
 class EnvironmentDescription;
 
@@ -595,4 +598,7 @@ inline void RunPlanVec::setPropertyUniformRandom(const std::string &name, const 
     std::uniform_int_distribution<int16_t> dist(min, max);
     setPropertyRandom<signed char>(name, index, dist);
 }
+
+}  // namespace flamegpu
+
 #endif  // INCLUDE_FLAMEGPU_SIM_RUNPLANVEC_H_

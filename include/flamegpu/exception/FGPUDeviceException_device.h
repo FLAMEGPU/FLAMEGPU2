@@ -6,6 +6,8 @@
 
 #include <cstring>
 
+namespace flamegpu {
+
 #if !defined(SEATBELTS) || SEATBELTS
 /**
  * This allows us to write DTHROW("My Error message: %d", 12); or similar to report an error in device code
@@ -192,4 +194,7 @@ __device__ unsigned int DeviceException::getErrorCount() {
  */
 #define DTHROW(nop)
 #endif  // SEATBELTS=OFF
+
+}  // namespace flamegpu
+
 #endif  // INCLUDE_FLAMEGPU_EXCEPTION_FGPUDEVICEEXCEPTION_DEVICE_H_

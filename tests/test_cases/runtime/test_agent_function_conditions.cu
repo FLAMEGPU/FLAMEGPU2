@@ -12,6 +12,8 @@
 
 #include "gtest/gtest.h"
 
+namespace flamegpu {
+
 
 namespace test_agent_function_conditions {
     const unsigned int AGENT_COUNT = 1000;
@@ -127,3 +129,4 @@ namespace test_agent_function_conditions {
         EXPECT_NO_THROW(c.step());
     }
 }  // namespace test_agent_function_conditions
+}  // namespace flamegpu

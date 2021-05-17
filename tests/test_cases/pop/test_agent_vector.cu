@@ -3,6 +3,9 @@
 #include "flamegpu/flame_api.h"
 #include "gtest/gtest.h"
 
+namespace flamegpu {
+
+
 TEST(AgentVectorTest, constructor) {
     const unsigned int POP_SIZE = 10;
     // Test correctness of AgentVector constructors, size(), array operator
@@ -1375,4 +1378,5 @@ TEST(AgentVectorTest, AgentVector_Agent) {
         EXPECT_THROW(ai.getVariable<int>("float", 0), InvalidVarType);
     }
 }
+}  // namespace flamegpu
 #endif  // TESTS_TEST_CASES_POP_TEST_AGENT_VECTOR_H_

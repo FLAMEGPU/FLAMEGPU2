@@ -2,6 +2,9 @@
 
 #include "gtest/gtest.h"
 
+namespace flamegpu {
+
+
 namespace test_messaging {
     const char *MODEL_NAME = "Model";
     const char *AGENT_NAME = "Agent";
@@ -53,3 +56,4 @@ TEST(TestMessage, NoAgents) {
     EXPECT_NO_THROW(c.simulate());
 }
 }  // namespace test_messaging
+}  // namespace flamegpu

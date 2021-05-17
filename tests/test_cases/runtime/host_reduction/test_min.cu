@@ -1,5 +1,7 @@
 #include "helpers/host_reductions_common.h"
 
+namespace flamegpu {
+
 namespace test_host_reductions {
 FLAMEGPU_STEP_FUNCTION(step_minfloat) {
     float_out = FLAMEGPU->agent("agent").min<float>("float");
@@ -163,3 +165,4 @@ TEST_F(HostReductionTest, MinUnsignedInt64) {
     EXPECT_EQ(uint64_t_out, *std::min_element(in.begin(), in.end()));
 }
 }  // namespace test_host_reductions
+}  // namespace flamegpu

@@ -6,8 +6,11 @@
 #include <string>
 #include <vector>
 
+
 #include "flamegpu/model/AgentData.h"
 #include "flamegpu/pop/AgentVector.h"
+
+namespace flamegpu {
 
 class AgentDescription;
 
@@ -73,7 +76,7 @@ class AgentInstance {
 #endif
 
  private:
-    std::map<std::string, Any> _data;
+    std::map<std::string, util::Any> _data;
     std::shared_ptr<const AgentData> _agent;
 };
 
@@ -257,6 +260,8 @@ void AgentInstance::setVariableArray(const std::string& variable_name, const std
     }
     memcpy(static_cast<T*>(v_buff.ptr), value.data(), sizeof(T) * v_buff.elements);
 }
-#endif
+#endif  // SWIG
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_POP_AGENTINSTANCE_H_

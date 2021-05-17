@@ -3,6 +3,8 @@
 #include "flamegpu/model/AgentDescription.h"  // Used by Move-Assign
 #include "flamegpu/gpu/CUDAMessage.h"
 
+namespace flamegpu {
+
 void MsgBruteForce::CUDAModelHandler::init(CUDAScatter &, const unsigned int &) {
     allocateMetaDataDevicePtr();
     // Allocate messages
@@ -122,3 +124,5 @@ ModelData::size_type MsgBruteForce::Description::getVariablesCount() const {
 bool MsgBruteForce::Description::hasVariable(const std::string &variable_name) const {
     return message->variables.find(variable_name) != message->variables.end();
 }
+
+}  // namespace flamegpu

@@ -3,6 +3,8 @@
 
 #include "flamegpu/runtime/messaging/BruteForce.h"
 
+namespace flamegpu {
+
 
 /**
  * Array messaging functionality
@@ -42,5 +44,7 @@ class MsgArray {
         size_type length;
     };
 };
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_ARRAY_H_

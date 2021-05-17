@@ -5,6 +5,8 @@
 #include "flamegpu/model/ModelData.h"
 #include "flamegpu/model/AgentData.h"
 
+namespace flamegpu {
+
 LoggingConfig::LoggingConfig(const ModelDescription &_model)
     :model(_model.model->clone()) { }
 LoggingConfig::LoggingConfig(const ModelData &_model)
@@ -26,7 +28,7 @@ AgentLoggingConfig LoggingConfig::agent(const std::string &agent_name, const std
             "in LoggingConfig::agent()\n",
             agent_state.c_str(), agent_name.c_str());
     }
-    NameStatePair name = std::make_pair(agent_name, agent_state);
+    util::StringPair name = std::make_pair(agent_name, agent_state);
     auto agent_it = agents.find(name);
     if (agent_it== agents.end())
         agent_it = agents.emplace(name, std::make_pair(std::make_shared<std::set<NameReductionFn>>(), false)).first;
@@ -63,3 +65,5 @@ StepLoggingConfig::StepLoggingConfig(const LoggingConfig &other)
 void StepLoggingConfig::setFrequency(const unsigned int &steps) {
     frequency = steps;
 }
+
+}  // namespace flamegpu

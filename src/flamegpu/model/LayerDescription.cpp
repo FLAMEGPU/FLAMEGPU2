@@ -3,6 +3,8 @@
 #include "flamegpu/model/SubModelDescription.h"
 #include "flamegpu/model/SubModelData.h"
 
+namespace flamegpu {
+
 LayerDescription::LayerDescription(const std::shared_ptr<const ModelData> &_model, LayerData *const data)
     : model(_model)
     , layer(data) { }
@@ -241,3 +243,5 @@ void LayerDescription::_addHostFunctionCallback(HostFunctionCallback* func_callb
                 "in LayerDescription::addHostFunctionCallback()");
         }
 }
+
+}  // namespace flamegpu

@@ -4,6 +4,9 @@
 
 #include "config/ModelConfig.h"
 
+namespace flamegpu {
+namespace visualiser {
+
 /**
  * This class serves as an interface for managing an instance of ModelConfig::StaticModel
  */
@@ -53,5 +56,8 @@ class StaticModelVis {
      */
     std::shared_ptr<ModelConfig::StaticModel> m;
 };
+
+}  // namespace visualiser
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_VISUALISER_STATICMODELVIS_H_

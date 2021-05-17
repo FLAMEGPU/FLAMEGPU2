@@ -9,6 +9,8 @@
 
 #include "gtest/gtest.h"
 
+namespace flamegpu {
+
 
 namespace test_message_spatial2d {
 
@@ -497,3 +499,4 @@ TEST(Spatial2DMsgTest, ReadEmpty) {
     EXPECT_EQ(pop_out[0].getVariable<unsigned int>("count"), 0u);
 }
 }  // namespace test_message_spatial2d
+}  // namespace flamegpu

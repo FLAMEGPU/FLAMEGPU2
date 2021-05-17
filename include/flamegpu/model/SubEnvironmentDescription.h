@@ -4,6 +4,8 @@
 #include <memory>
 #include <string>
 
+namespace flamegpu {
+
 struct ModelData;
 struct SubModelData;
 struct SubEnvironmentData;
@@ -75,5 +77,7 @@ class SubEnvironmentDescription {
      */
     SubEnvironmentData *const data;
 };
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_MODEL_SUBENVIRONMENTDESCRIPTION_H_

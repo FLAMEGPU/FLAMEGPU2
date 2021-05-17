@@ -12,6 +12,8 @@
 #include <cub/cub.cuh>
 #endif
 
+namespace flamegpu {
+
 CUDAFatAgent::CUDAFatAgent(const AgentData& description)
     : mappedAgentCount(0)
     , _nextID(ID_NOT_SET + 1)
@@ -386,3 +388,5 @@ void CUDAFatAgent::resetIDCounter() {
             return;
     _nextID = ID_NOT_SET + 1;
 }
+
+}  // namespace flamegpu

@@ -12,6 +12,8 @@
 #include "flamegpu/gpu/CUDAEnsemble.h"
 
 
+namespace flamegpu {
+
 class ModelDescription;
 class RunPlanVec;
 /**
@@ -168,7 +170,7 @@ class RunPlan {
     unsigned int random_seed;
     unsigned int steps;
     std::string output_subdirectory;
-    std::unordered_map<std::string, Any> property_overrides;
+    std::unordered_map<std::string, util::Any> property_overrides;
     /**
      * Reference to model environment data, for validation
      */
@@ -200,7 +202,7 @@ void RunPlan::setProperty(const std::string &name, const T&value) {
             name.c_str(), it->second.data.elements);
     }
     // Store property
-    property_overrides.emplace(name, Any(&value, sizeof(T), typeid(T), 1));
+    property_overrides.emplace(name, util::Any(&value, sizeof(T), typeid(T), 1));
 }
 template<typename T, EnvironmentManager::size_type N>
 void RunPlan::setProperty(const std::string &name, const std::array<T, N> &value) {
@@ -222,7 +224,7 @@ void RunPlan::setProperty(const std::string &name, const std::array<T, N> &value
             name.c_str(), it->second.data.elements, N);
     }
     // Store property
-    property_overrides.emplace(name, Any(value.data(), sizeof(T) * N, typeid(T), N));
+    property_overrides.emplace(name, util::Any(value.data(), sizeof(T) * N, typeid(T), N));
 }
 template<typename T>
 void RunPlan::setProperty(const std::string &name, const EnvironmentManager::size_type &index, const T &value) {
@@ -277,7 +279,7 @@ void RunPlan::setPropertyArray(const std::string &name, const EnvironmentManager
             name.c_str(), value.size(), N);
     }
     // Store property
-    property_overrides.emplace(name, Any(value.data(), sizeof(T) * N, typeid(T), N));
+    property_overrides.emplace(name, util::Any(value.data(), sizeof(T) * N, typeid(T), N));
 }
 #endif
 
@@ -391,5 +393,7 @@ std::vector<T> RunPlan::getPropertyArray(const std::string &name) {
     return rtn;
 }
 #endif
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_SIM_RUNPLAN_H_

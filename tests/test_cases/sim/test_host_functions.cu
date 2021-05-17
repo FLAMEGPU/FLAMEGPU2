@@ -6,6 +6,7 @@
 #include "flamegpu/flame_api.h"
 
 #include "gtest/gtest.h"
+namespace flamegpu {
 
 
 namespace {
@@ -215,4 +216,5 @@ TEST_F(HostFunctionTest, HostLayerFuncDuplicateLayerNoException) {
     ASSERT_NO_THROW(ms->run(1));
     EXPECT_EQ(std::count(function_order.begin(), function_order.end(), HostLayer), 2u);
 }
+}  // namespace flamegpu
 #endif  // TESTS_TEST_CASES_SIM_TEST_SIM_VALIDATION_H_

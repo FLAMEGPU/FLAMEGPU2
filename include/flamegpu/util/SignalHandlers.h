@@ -3,6 +3,8 @@
 #include <cstdlib>
 #include <csignal>
 
+namespace flamegpu {
+namespace util {
 /**
  * Signal handlers used to try and produce a clean exit on interrupt
  *
@@ -29,5 +31,8 @@ static void registerSignalHandlers(){
     std::signal(SIGINT, handleSIGINT);
 }
 };
+
+}  // namespace util
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_UTIL_SIGNALHANDLERS_H_

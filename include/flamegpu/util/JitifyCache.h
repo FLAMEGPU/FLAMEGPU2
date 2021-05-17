@@ -17,6 +17,9 @@
 
 using jitify::experimental::KernelInstantiation;
 
+namespace flamegpu {
+namespace util {
+
 /**
  * Load RTC kernels from in-memory or on-disk cache if an appropriate copy already exists
  * If not, compile and add to both caches
@@ -128,4 +131,8 @@ class JitifyCache {
     JitifyCache(JitifyCache const&) = delete;
     void operator=(JitifyCache const&) = delete;
 };
+
+}  // namespace util
+}  // namespace flamegpu
+
 #endif  // INCLUDE_FLAMEGPU_UTIL_JITIFYCACHE_H_
