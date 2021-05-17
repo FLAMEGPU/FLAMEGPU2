@@ -153,6 +153,7 @@ class RunPlanVec : private std::vector<RunPlan>  {
      * Integer types have a range [min, max]
      * Floating point types have a range [min, max)
      * @param name The name of the environment property to set
+     * @param index The index of the array element to set
      * @param min The value of the range to set the first environment property
      * @param max The value of the range to set the last environment property
      * @tparam T The type of the environment property, this must match the ModelDescription
@@ -182,6 +183,7 @@ class RunPlanVec : private std::vector<RunPlan>  {
      * Sweep named environment property over a normal random distribution
      * Only floating point types are supported
      * @param name The name of the environment property to set
+     * @param index The index of the array element to set
      * @param mean Mean of the distribution (its expected value). Which coincides with the location of its peak.
      * @param stddev Standard deviation: The square root of variance, representing the dispersion of values from the distribution mean.
      * @tparam T The type of the environment property, this must match the ModelDescription
@@ -211,6 +213,7 @@ class RunPlanVec : private std::vector<RunPlan>  {
      * Sweep named environment property over a log normal random distribution
      * Only floating point types are supported
      * @param name The name of the environment property to set
+     * @param index The index of the array element to set
      * @param mean Mean of the underlying normal distribution formed by the logarithm transformations of the possible values in this distribution.
      * @param stddev Standard deviation of the underlying normal distribution formed by the logarithm transformations of the possible values in this distribution.
      * @tparam T The type of the environment property, this must match the ModelDescription

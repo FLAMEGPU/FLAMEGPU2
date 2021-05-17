@@ -32,6 +32,7 @@ class StateReader {
      * @param _env_init Dictionary of loaded values map:<{name, index}, value>
      * @param _model_state Map of AgentVector to load the agent data into per agent, key should be agent name
      * @param input Filename of the input file (This will be used to determine which reader to return)
+     * @param _sim_instance Instance of the simulation (for configuration data IO)
      */
     StateReader(
         const std::string& _model_name,

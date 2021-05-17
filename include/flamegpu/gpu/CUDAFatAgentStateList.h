@@ -151,7 +151,7 @@ class CUDAFatAgentStateList {
      * Variables which are mapped will be assigned to the corresponding VariableBuffer
      * @param description Agent description of the sub agent
      * @param master_fat_index Fat index of the sub agent's mapped (parent) agent within the CUDAFatAgent
-     * @oaram sub_fat_index Fat index of the sub agent within the CUDAFatAgent
+     * @param sub_fat_index Fat index of the sub agent within the CUDAFatAgent
      * @param mapping Mapping definition for how this agent is connected with its master agent.
      */
     void addSubAgentVariables(
@@ -192,7 +192,8 @@ class CUDAFatAgentStateList {
     /**
      * Scatters all living agents (including disabled, according to the provided stream's death flag)
      * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
-     * @param streamId The stream in which the corresponding agent function has executed
+     * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
+     * @param stream CUDA stream to be used for async CUDA operations
      * @return The number of agents that are still alive (this includes temporarily disabled agents due to agent function condition)
      */
     unsigned int scatterDeath(CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream);
@@ -200,7 +201,8 @@ class CUDAFatAgentStateList {
      * Scatters all living agents which failed the agent function condition into the swap buffer (there should be no disabled at this time)
      * This does not swap buffers or update disabledAgent)
      * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
-     * @param streamId The stream in which the corresponding agent function has executed
+     * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
+     * @param stream CUDA stream to be used for async CUDA operations
      * @return The number of agents that were scattered (the number of agents which failed the condition)
      * @see scatterAgentFunctionConditionTrue(const unsigned int &, const unsigned int &)
      */
@@ -210,7 +212,8 @@ class CUDAFatAgentStateList {
      * Also swaps the buffers and sets the number of disabled agents
      * @param conditionFailCount The number of agents which failed the condition (they should already have been scattered to swap)
      * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
-     * @param streamId The stream in which the corresponding agent function has executed
+     * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
+     * @param stream CUDA stream to be used for async CUDA operations
      * @return The number of agents that were scattered (the number of agents which passed the condition)
      * @see scatterAgentFunctionConditionFalse(const unsigned int &)
      * @see setConditionState(const unsigned int &)
@@ -219,7 +222,8 @@ class CUDAFatAgentStateList {
     /**
      * Sorts all agent variables according to the positions stored inside Message Output scan buffer
      * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
-     * @param streamId The stream in which the corresponding agent function has executed
+     * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
+     * @param stream CUDA stream to be used for async CUDA operations
      */
     void scatterSort(CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream);
     /**
@@ -230,6 +234,14 @@ class CUDAFatAgentStateList {
     void setDisabledAgents(const unsigned int &numberOfDisabled);
     /**
      * Resets the value of all variables not present in exclusionSet to their defaults
+     *
+     * This is useful for when an agent in a submodel is birthed, and it's parent model requires variables initialising and other similar features
+     * @param exclusionSet Set of variable buffers not to be initialised
+     * @param initCount Total number of agents which require variables to be initialised
+     * @param initOffset Offset into the agent list to initialise variables from
+     * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
+     * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
+     * @param stream CUDA stream to be used for async CUDA operations
      */
     void initVariables(std::set<std::shared_ptr<VariableBuffer>> &exclusionSet, const unsigned int initCount, const unsigned initOffset, CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream);
     /**

@@ -31,6 +31,7 @@ class StateWriter {
      * @param _model_state Map of AgentVector to read the agent data from per agent, key should be agent name
      * @param _iterations The value from the step counter at the time of export.
      * @param output_file Filename of the input file (This will be used to determine which reader to return)
+     * @param _sim_instance Instance of the simulation (for configuration data IO)
      */
     StateWriter(const std::string &_model_name,
         const unsigned int &_sim_instance_id,

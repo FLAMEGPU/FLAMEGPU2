@@ -1,15 +1,6 @@
 #ifndef INCLUDE_FLAMEGPU_IO_XMLWRITER_H_
 #define INCLUDE_FLAMEGPU_IO_XMLWRITER_H_
 
-/**
- * @file xmlwriter.h
- * @author
- * @date
- * @brief
- *
- * \todo longer description
- */
-
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -18,7 +9,9 @@
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/util/StringPair.h"
 
-// Derived classes
+/**
+ * XML format StateWriter
+ */
 class xmlWriter : public StateWriter {
  public:
     /**

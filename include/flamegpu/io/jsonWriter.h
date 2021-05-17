@@ -9,7 +9,9 @@
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/util/StringPair.h"
 
-// Derived classes
+/**
+ * JSON format StateWriter
+ */
 class jsonWriter : public StateWriter {
  public:
     /**

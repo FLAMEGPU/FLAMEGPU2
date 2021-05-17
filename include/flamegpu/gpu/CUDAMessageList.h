@@ -66,6 +66,8 @@ class CUDAMessageList {
      * Perform a compaction using d_msg_scan_flag and d_msg_position
      * @param newCount Number of new messages to be scattered
      * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
+     * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
+     * @param append If true scattered messages will append to the existing message list, otherwise truncate
      * @return Total number of messages now in list (includes old + new counts if appending)
      */
     virtual unsigned int scatter(const unsigned int &newCount, CUDAScatter &scatter, const unsigned int &streamId, const bool &append);
@@ -75,28 +77,35 @@ class CUDAMessageList {
      * Used by swap() when appending messagelists
      * @param newCount Number of new messages to be scattered
      * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
+     * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      * @return Total number of messages now in list (includes old + new counts)
      */
     virtual unsigned int scatterAll(const unsigned int &newCount, CUDAScatter &scatter, const unsigned int &streamId);
+    /**
+     * @return Returns the map<variable_name, device_ptr> for reading message data
+     */
     const CUDAMsgMap &getReadList() { return d_list; }
+    /**
+     * @return Returns the map<variable_name, device_ptr> for writing message data (aka swap buffers)
+     */
     const CUDAMsgMap &getWriteList() { return d_swap_list; }
 
  protected:
      /**
       * Allocates device memory for the provided message list
-      * @param Message_list Message list to perform operation on
+      * @param memory_map Message list to perform operation on
       */
-     void allocateDeviceMessageList(CUDAMsgMap &Message_list);
+     void allocateDeviceMessageList(CUDAMsgMap &memory_map);
      /**
       * Frees device memory for the provided message list
-      * @param Message_list Message list to perform operation on
+      * @param memory_map Message list to perform operation on
       */
-     void releaseDeviceMessageList(CUDAMsgMap &Message_list);
+     void releaseDeviceMessageList(CUDAMsgMap &memory_map);
      /**
       * Zeros device memory for the provided message list
-      * @param Message_list Message list to perform operation on
+      * @param memory_map Message list to perform operation on
       */
-     void zeroDeviceMessageList(CUDAMsgMap &Message_list);
+     void zeroDeviceMessageList(CUDAMsgMap &memory_map);
 
  private:
      /**

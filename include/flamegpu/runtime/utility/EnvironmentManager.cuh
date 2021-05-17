@@ -222,8 +222,9 @@ class EnvironmentManager {
      * Activates a models unmapped environment properties, by adding them to constant cache
      * Maps a models mapped environment properties to their master property
      * @param instance_id instance_id of the CUDASimulation instance the properties are attached to
-     * @param master_instance_id instance_id of the CUDASimulation instance of the parent of the submodel
      * @param desc environment properties description to use
+     * @param master_instance_id instance_id of the CUDASimulation instance of the parent of the submodel
+     * @param mapping Metadata for which environment properties are mapped between master and submodels
      */
     void init(const unsigned int &instance_id, const EnvironmentDescription &desc, const unsigned int &master_instance_id, const SubEnvironmentData &mapping);
     /**
@@ -437,6 +438,7 @@ class EnvironmentManager {
      * Convenience method: Gets an element of an environment property array
      * @param instance_id instance_id of the CUDASimulation instance the property is attached to
      * @param var_name name used for accessing the property
+     * @param index The index of the element within the environment property array
      * @tparam T Type of the value to be returned
      * @throws InvalidEnvProperty If a property of the name does not exist
      * @throws std::out_of_range
@@ -642,7 +644,6 @@ class EnvironmentManager {
     /**
      * Cleanup freeFragments
      * @param curve The curve instance to use (important if thread has cuda device set wrong)
-     * @param unique_lock Due to a complex mutex interaction, defrag will release and re-lock this mutex during it's execution
      * @param mergeProps Used by init to defragement whilst merging in new data
      * @param newmaps Namepairs of newly mapped properties, yet to to be setup (essentially ones not yet registered in curve)
      * @note any EnvPROP

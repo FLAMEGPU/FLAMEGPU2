@@ -59,7 +59,7 @@ function(create_doxygen_target FLAMEGPU_ROOT DOXY_OUT_DIR XML_PATH)
         set(DOXYGEN_ENABLE_PREPROCESSING  YES)
         set(DOXYGEN_MACRO_EXPANSION       YES)
         set(DOXYGEN_EXPAND_ONLY_PREDEF    YES)
-        set(DOXYGEN_PREDEFINED            "DERIVED_FGPUException(name,default_msg)=class name: public FGPUException { public: explicit name(const char *format = default_msg)\; }")
+        set(DOXYGEN_PREDEFINED            "DERIVED_FGPUException(name,default_msg)=class name: public FGPUException { public: explicit name(const char *format = default_msg)\; }" "VISUALISATION= ")
         set(DOXY_INPUT_FILES              "${FLAMEGPU_ROOT}/include;${FLAMEGPU_ROOT}/src;${FLAMEGPU_ROOT}/README.md")
         # Create doxygen target            
         if("${XML_PATH}" STREQUAL "")

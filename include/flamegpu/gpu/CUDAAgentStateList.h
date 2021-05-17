@@ -1,12 +1,3 @@
- /**
- * @file CUDAAgentList.h
- * @author
- * @date    Feb 2017
- * @brief
- *
- * \todo longer description
- */
-
 #ifndef INCLUDE_FLAMEGPU_GPU_CUDAAGENTSTATELIST_H_
 #define INCLUDE_FLAMEGPU_GPU_CUDAAGENTSTATELIST_H_
 
@@ -34,7 +25,6 @@ class CUDAAgentStateList {
      * @param _fat_index The owning CUDAAgent's fat index within the CUDAFatAgent
      * @param description The owning CUDAAgent's description, used to identify variables
      * @param _isSubStateList If true, the statelist is mapped to a master agent (and will be reset after CUDASimulation::simulate())
-     * @param mapping Mapping definition for how the variables are to their master state.
      */
     CUDAAgentStateList(
         const std::shared_ptr<CUDAFatAgentStateList> &fat_list,
@@ -42,6 +32,15 @@ class CUDAAgentStateList {
         const unsigned int &_fat_index,
         const AgentData& description,
         bool _isSubStateList = false);
+    /**
+     * Construct a CUDAAgentStateList view into the provided fat_list
+     * @param fat_list The parent CUDAFatAgentStateList
+     * @param cuda_agent The owning CUDAAgent
+     * @param _fat_index The owning CUDAAgent's fat index within the CUDAFatAgent
+     * @param description The owning CUDAAgent's description, used to identify variables
+     * @param _isSubStateList If true, the statelist is mapped to a master agent (and will be reset after CUDASimulation::simulate())
+     * @param mapping Mapping definition for how the variables are to their master state.
+     */
     CUDAAgentStateList(
         const std::shared_ptr<CUDAFatAgentStateList> &fat_list,
         CUDAAgent& cuda_agent,
@@ -71,14 +70,15 @@ class CUDAAgentStateList {
     void *getVariablePointer(const std::string &variable_name);
     /**
      * Store agent data from agent state memory into state list
-     * @data data Source for agent data
+     * @param data data Source for agent data
      * @param scatter Scatter instance and scan arrays to be used
-     * @param streamId This is required for scan compaction arrays and async
+     * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
+     * @param stream CUDA stream to be used for async CUDA operations
      */
     void setAgentData(const AgentVector &data, CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t& stream);
     /**
      * Retrieve agent data from the agent state list into agent state memory
-     * @data data Destination for agent data
+     * @param data data Destination for agent data
      */
     void getAgentData(AgentVector&data) const;
     /**
@@ -89,13 +89,15 @@ class CUDAAgentStateList {
      * @param d_inBuff device pointer to buffer of agent init data
      * @param offsets Offset data explaining the layout of d_inBuff
      * @param scatter Scatter instance and scan arrays to be used
-     * @param streamId This is required for scan compaction arrays and async
+     * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
+     * @param stream CUDA stream to be used for async CUDA operations
      */
     void scatterHostCreation(const unsigned int &newSize, char *const d_inBuff, const VarOffsetStruct &offsets, CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream);
     /**
      * Sorts all agent variables according to the positions stored inside Message Output scan buffer
      * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
-     * @param streamId The stream in which the corresponding agent function has executed
+     * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
+     * @param stream CUDA stream to be used for async CUDA operations
      */
     void scatterSort(CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream);
     /**
@@ -104,7 +106,8 @@ class CUDAAgentStateList {
      * @param d_newBuff The buffer holding the new agent data
      * @param newSize The maximum number of new agents (this will be the size of the agent state executing func)
      * @param scatter Scatter instance and scan arrays to be used
-     * @param streamId This is required for scan compaction arrays and async
+     * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
+     * @param stream CUDA stream to be used for async CUDA operations
      * @return The number of newly birthed agents
      */
     unsigned int scatterNew(void * d_newBuff, const unsigned int &newSize, CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream);
@@ -115,7 +118,8 @@ class CUDAAgentStateList {
     /**
      * Returns any unmapped variables (for alive agents) to their default value
      * @param scatter Scatter instance and scan arrays to be used
-     * @param streamId This is required for scan compaction arrays and async
+     * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
+     * @param stream CUDA stream to be used for async CUDA operations
      */
     void initUnmappedVars(CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream);
     /**
@@ -123,7 +127,8 @@ class CUDAAgentStateList {
      * @param count Number of variables to init
      * @param offset Offset into the buffer of agents to init
      * @param scatter Scatter instance and scan arrays to be used
-     * @param streamId This is required for scan compaction arrays and async
+     * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
+     * @param stream CUDA stream to be used for async CUDA operations
      */
     void initExcludedVars(const unsigned int& count, const unsigned int& offset, CUDAScatter& scatter, const unsigned int& streamId, const cudaStream_t& stream);
     /**

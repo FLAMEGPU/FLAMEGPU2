@@ -30,11 +30,16 @@ struct NewAgentStorage;
 class DeviceAgentVector_impl : protected AgentVector {
  public:
     /**
-      * Construct a DeviceAgentVector interface to the on-device data of cuda_agent
-      * @param cuda_agent CUDAAgent instance holding pointers to the desired agent data
-      * @param cuda_agent_state Name of the state within cuda_agent to represent.
-      */
-    DeviceAgentVector_impl(CUDAAgent& cuda_agent, const std::string& cuda_agent_state,
+     * Construct a DeviceAgentVector interface to the on-device data of cuda_agent
+     * @param _cuda_agent CUDAAgent instance holding pointers to the desired agent data
+     * @param cuda_agent_state Name of the state within cuda_agent to represent.
+     * @param _agentOffsets Agent offset metadata for storing variable data into NewAgentStorage
+     * @param _newAgentData Vector of NewAgentStorage to automatically perform host agent birth when appropriate to save later host-device memcpys
+     * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
+     * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
+     * @param stream CUDA stream to be used for async CUDA operations
+     */
+    DeviceAgentVector_impl(CUDAAgent& _cuda_agent, const std::string& cuda_agent_state,
         const VarOffsetStruct& _agentOffsets, std::vector<NewAgentStorage>& _newAgentData,
         CUDAScatter& scatter, const unsigned int& streamId, const cudaStream_t& stream);
     /**

@@ -1,13 +1,3 @@
-/**
-* @file CUDAMessage.cpp
-* @authors
-* @date
-* @brief
-*
-* @see
-* @warning
-*/
-
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 
@@ -32,10 +22,6 @@
 #include <cub/cub.cuh>
 #endif
 
-/**
-* CUDAMessage class
-* @brief allocates the hash table/list for message variables and copy the list to device
-*/
 CUDAMessage::CUDAMessage(const MsgBruteForce::Data& description, const CUDASimulation& cuda_model)
     : message_description(description)
     , message_count(0)
@@ -47,29 +33,14 @@ CUDAMessage::CUDAMessage(const MsgBruteForce::Data& description, const CUDASimul
     // resize(0); // Think this call is redundant
 }
 
-/**
- * A destructor.
- * @brief Destroys the CUDAMessage object
- */
 CUDAMessage::~CUDAMessage(void) {
     // @todo - this should not be done in a destructor, rather an explicit cleanup method.
     specialisation_handler->freeMetaDataDevicePtr();
 }
 
-/**
-* @brief Returns message description
-* @param none
-* @return MessageDescription object
-*/
 const MsgBruteForce::Data& CUDAMessage::getMessageDescription() const {
     return message_description;
 }
-
-/**
-* @brief Sets initial message data to zero by allocating memory for message lists
-* @param empty
-* @return none
-*/
 
 void CUDAMessage::resize(unsigned int newSize, CUDAScatter &scatter, const unsigned int &streamId) {
     // Only grow currently
@@ -90,12 +61,6 @@ void CUDAMessage::resize(unsigned int newSize, CUDAScatter &scatter, const unsig
 }
 
 
-/**
-* @brief Returns the maximum list size
-* @param none
-* @return maximum size list that is equal to the maximum list size
-* @note may want to change this to maximum population size
-*/
 unsigned int CUDAMessage::getMaximumListSize() const {
     return max_list_size;
 }
@@ -111,11 +76,6 @@ void CUDAMessage::setMessageCount(const unsigned int &_message_count) {
 void CUDAMessage::init(CUDAScatter &scatter, const unsigned int &streamId) {
     specialisation_handler->init(scatter, streamId);
 }
-/**
-* @brief Sets all message variable data to zero
-* @param none
-* @return none
-*/
 void CUDAMessage::zeroAllMessageData() {
     if (!message_list) {
         THROW InvalidMessageData("MessageList '%s' is not yet allocated, in CUDAMessage::swap()\n", message_description.name.c_str());
@@ -123,9 +83,6 @@ void CUDAMessage::zeroAllMessageData() {
     message_list->zeroMessageData();
 }
 
-/**
-@bug message_name is input or output, run some tests to see which one is correct
-*/
 void CUDAMessage::mapReadRuntimeVariables(const AgentFunctionData& func, const CUDAAgent& cuda_agent, const unsigned int &instance_id) const {
     // check that the message list has been allocated
     if (!message_list) {

@@ -62,20 +62,20 @@ struct Color {
     /**
      * Construct a color from a hexcode
      * Supported formats:
-     * #abcdef
-     * #abc
-     * abcdef
-     * abc
+     *     #%abcdef
+     *     #%abc
+     *     abcdef
+     *     abc
      * @throws InvalidArgument If parsing fails
      */
     explicit Color(const char* hex) { *this = hex; }
     /**
      * Construct a color from a hexcode
      * Supported formats:
-     * #abcdef
-     * #abc
-     * abcdef
-     * abc
+     *     #%abcdef
+     *     #%abc
+     *     abcdef
+     *     abc
      * @throws InvalidArgument If parsing fails
      */
     Color& operator=(const char *hex) {

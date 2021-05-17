@@ -19,6 +19,7 @@ struct Variable {
     /**
       * Constructs a new variable
       * @param _elements The number of elements, this will be 1 unless the variable is an array
+      * @param T Any variable of the type for template argument T, the value of the variable is not used
       * @tparam T The type of the variable, it's size and std::type_index are derived from this
       * @note Cannot explicitly specify template args of constructor, so we take redundant arg for implicit template
       * @note This constructor does not set default value
@@ -36,6 +37,12 @@ struct Variable {
         static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value,
             "Only arithmetic types can be used");
     }
+    /**
+      * Constructs a new variable
+      * @param _default_value The default value to be used for the variable
+      * @tparam T The type of the variable, it's size and std::type_index are derived from this
+      * @tparam N The number of elements, this will be 1 unless the variable is an array
+      */
     template<typename T, std::size_t N>
     explicit Variable(const std::array<T, N> &_default_value)
         : type(typeid(T))
@@ -50,6 +57,12 @@ struct Variable {
             "Only arithmetic types can be used");
         memcpy(default_value, _default_value.data(), sizeof(T) * N);
     }
+    /**
+      * Constructs a new variable
+      * @param _default_value The default value to be used for the variable
+      * @param N The number of elements, this will be 1 unless the variable is an array
+      * @tparam T The type of the variable, it's size and std::type_index are derived from this
+      */
     template<typename T>
     explicit Variable(const unsigned int &N, const std::vector<T> &_default_value)
         : type(typeid(T))

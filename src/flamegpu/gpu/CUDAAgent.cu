@@ -337,14 +337,6 @@ void *CUDAAgent::getStateVariablePtr(const std::string &state_name, const std::s
     }
     return sm->second->getVariablePointer(variable_name);
 }
-/**
- * Processes agent death, this call is forwarded to the fat agent
- * All disabled agents are scattered to swap
- * Only alive agents with deathflag are scattered
- * @param func The agent function condition being processed
- * @param streamId The index of the agent function within the current layer
- * @see CUDAFatAgent::processDeath(const unsigned int &, const std::string &, const unsigned int &)
- */
 void CUDAAgent::processDeath(const AgentFunctionData& func, CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream) {
     // Optionally process agent death
     if (func.has_agent_death) {
@@ -352,27 +344,10 @@ void CUDAAgent::processDeath(const AgentFunctionData& func, CUDAScatter &scatter
         fat_agent->processDeath(fat_index, func.initial_state, scatter, streamId, stream);
     }
 }
-/**
- * Transitions all active agents from the source state to the destination state
- * @param _src The source state
- * @param _dest The destination state
- * @param streamId The index of the agent function within the current layer
- * @see CUDAFatAgent::transitionState(const unsigned int &, const std::string &, const std::string &, const unsigned int &)
- */
 void CUDAAgent::transitionState(const std::string &_src, const std::string &_dest, CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream) {
     // All mapped vars need to transition too, so handled by fat agent
     fat_agent->transitionState(fat_index, _src, _dest, scatter, streamId, stream);
 }
-/**
- * Scatters agents based on their output of the agent function condition
- * Agents which failed the condition are scattered to the front and marked as disabled
- * Agents which pass the condition are scatterd to after the disabled agents
- * @param func The agent function condition being processed
- * @param streamId The index of the agent function within the current layer
- * @see CUDAFatAgent::processFunctionCondition(const unsigned int &, const unsigned int &)
- * @note Named state must not already contain disabled agents
- * @note The disabled agents are re-enabled using clearFunctionCondition(const std::string &)
- */
 void CUDAAgent::processFunctionCondition(const AgentFunctionData& func, CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream) {
     // Optionally process function condition
     if ((func.condition) || (!func.rtc_func_condition_name.empty())) {

@@ -22,6 +22,7 @@ typedef void(AgentFunctionConditionWrapper)(
 /**
  * Wrapper function for launching agent functions
  * Initialises FLAMEGPU_API instance
+ * @param error_buffer Buffer used for detecting and reporting DeviceErrors (flamegpu must be built with SEATBELTS enabled for this to be used)
  * @param instance_id_hash CURVE hash of the CUDASimulation's instance id
  * @param agent_func_name_hash CURVE hash of the agent + function's names
  * @param popNo Total number of agents exeucting the function (number of threads launched)

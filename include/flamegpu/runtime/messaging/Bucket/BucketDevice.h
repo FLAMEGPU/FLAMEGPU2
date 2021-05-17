@@ -250,6 +250,7 @@ class MsgBucket::Out : public MsgBruteForce::Out {
     * Initialises member variables
     * @param agentfn_hash Added to msg_hash to produce combined_hash
     * @param msg_hash Added to agentfn_hash to produce combined_hash
+    * @param _metadata Message specialisation specific metadata struct (of type MsgBucket::MetaData)
     * @param scan_flag_messageOutput Scan flag array for optional message output
     */
     __device__ Out(Curve::NamespaceHash agentfn_hash, Curve::NamespaceHash msg_hash, const void *_metadata, unsigned int *scan_flag_messageOutput)

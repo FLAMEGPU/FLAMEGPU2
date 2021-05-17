@@ -36,11 +36,13 @@ typedef void(AgentFunctionWrapper)(
 /**
  * Wrapper function for launching agent functions
  * Initialises FLAMEGPU_API instance
+ * @param error_buffer Buffer used for detecting and reporting DeviceErrors (flamegpu must be built with SEATBELTS enabled for this to be used)
  * @param instance_id_hash CURVE hash of the CUDASimulation's instance id
  * @param agent_func_name_hash CURVE hash of the agent + function's names
  * @param messagename_inp_hash CURVE hash of the input message's name
  * @param messagename_outp_hash CURVE hash of the output message's name
  * @param agent_output_hash CURVE hash of "_agent_birth" or 0 if agent birth not present
+ * @param d_agent_output_nextID If agent output is enabled, this points to a global memory src of the next suitable agent id, this will be atomically incremented at birth
  * @param popNo Total number of agents executing the function (number of threads launched)
  * @param in_messagelist_metadata Pointer to the MsgIn metadata struct, it is interpreted by MsgIn
  * @param out_messagelist_metadata Pointer to the MsgOut metadata struct, it is interpreted by MsgOut

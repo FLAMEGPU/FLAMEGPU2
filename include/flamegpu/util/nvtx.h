@@ -40,13 +40,13 @@ const uint32_t palette[] = {0xff1b9e77, 0xffd95f02, 0xff7570b3, 0xffe7298a, 0xff
  */
 const uint32_t colourCount = sizeof(palette) / sizeof(uint32_t);
 
+#if defined(USE_NVTX)
 /**
  * Method to push an NVTX marker for improved profiling, if NVTX is defined
  * @param label label for the NVTX marker
  * @note The number of pushes must match the number of pops.
  * @see NVTX_PUSH to use with minimal performance impact
  */
-#if defined(USE_NVTX)
 inline void push(const char * label) {
     // Static variable to track the next colour to be used with auto rotation.
     static uint32_t nextColourIdx = 0;

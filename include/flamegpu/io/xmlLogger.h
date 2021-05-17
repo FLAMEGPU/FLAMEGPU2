@@ -66,7 +66,7 @@ class xmlLogger : public Logger{
     tinyxml2::XMLNode *logExit(tinyxml2::XMLDocument &doc, const RunLog &log) const;
     /**
      * Writes out a LogFrame instance as a JSON object to the provided node
-     * @param node tinyxml node to act as parent
+     * @param doc tinyxml document to append the log frame to
      * @param log LogFrame to be written
      * @return The created XMLNode, the calling method will then add it to the main XML hierarchy
      */
