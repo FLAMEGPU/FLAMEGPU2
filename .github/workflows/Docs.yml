@@ -13,8 +13,18 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Install doxygen
-      run: sudo apt -y install doxygen graphviz
+    - name: Install doxygen >= 1.9.0 + other dependencies
+      run: |
+        # Install graphviz + dependencies to build doxygen from source
+        sudo apt -y install graphviz flex bison
+        # Download doxygen and build from source
+        wget --content-disposition https://github.com/doxygen/doxygen/archive/refs/tags/Release_1_9_1.tar.gz
+        tar -zxf doxygen-Release_1_9_1.tar.gz
+        mkdir -p doxygen-Release_1_9_1/build
+        cd doxygen-Release_1_9_1/build
+        cmake .. -DCMAKE_BUILD_TYPE=Release
+        cmake --build . -j `nproc`
+        echo "$(pwd)/bin" >> $GITHUB_PATH
 
     - name: Configure cmake
       run: cmake . -B build -DBUILD_API_DOCUMENTATION=ON -DWARNINGS_AS_ERRORS=${{ env.Werror }}
