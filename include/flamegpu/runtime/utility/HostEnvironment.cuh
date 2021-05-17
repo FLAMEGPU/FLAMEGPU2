@@ -62,6 +62,7 @@ class HostEnvironment {
     /**
      * Gets an element of an environment property array
      * @param name name used for accessing the property
+     * @param index Index of the element within the environment property array to return
      * @tparam T Type of the elements of the environment property array
      * @throws InvalidEnvProperty If a property of the name does not exist
      * @throws std::out_of_range
@@ -105,7 +106,7 @@ class HostEnvironment {
     /**
      * Sets an element of an environment property array
      * @param name name used for accessing the property array
-     * @param index element within the environemtn property array to set
+     * @param index element within the environment property array to set
      * @param value to set the element of the property array
      * @tparam T Type of the environmental property array
      * @return Returns the previous value

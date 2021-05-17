@@ -50,15 +50,21 @@ class DeviceEnvironment {
      * Gets an environment property
      * @param name name used for accessing the property, this value should be a string literal e.g. "foobar"
      * @tparam T Type of the environment property being accessed
-     * @tparam N Length of variable name, this should always be implicit if passing a string literal
+     * @tparam N Length of property name, this should always be implicit if passing a string literal
+     * @throws DeviceError If name is not a valid property within the environment (flamegpu must be built with SEATBELTS enabled for device error checking)
+     * @throws DeviceError If T is not the type of the environment property specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
      */
     template<typename T, unsigned int N>
     __device__ __forceinline__ T getProperty(const char(&name)[N]) const;
     /**
      * Gets an element of an environment property array
      * @param name name used for accessing the property, this value should be a string literal e.g. "foobar"
+     * @param index Index of the element within the environment property array to return
      * @tparam T Type of the environment property being accessed
-     * @tparam N Length of variable name, this should always be implicit if passing a string literal
+     * @tparam N Length of property name, this should always be implicit if passing a string literal
+     * @throws DeviceError If name is not a valid property within the environment (flamegpu must be built with SEATBELTS enabled for device error checking)
+     * @throws DeviceError If T is not the type of the environment property specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
+     * @throws DeviceError If index is out of bounds for the environment property array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
      */
     template<typename T, unsigned int N>
     __device__ __forceinline__ T getProperty(const char(&name)[N], const unsigned int&index) const;
@@ -66,7 +72,7 @@ class DeviceEnvironment {
      * Returns whether the named env property exists
      * @param name name used for accessing the property, this value should be a string literal e.g. "foobar"
      * @tparam N Length of variable name, this should always be implicit if passing a string literal
-     * @note Use of this function is not recommended as it should be unnecessary
+     * @note Use of this function is not recommended as it should be unnecessary and will impact performance
      */
     template<unsigned int N>
     __device__ __forceinline__ bool containsProperty(const char(&name)[N]) const;
