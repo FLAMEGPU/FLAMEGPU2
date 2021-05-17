@@ -1,11 +1,6 @@
 #include "flamegpu/pop/DeviceAgentVector_impl.h"
 #include "flamegpu/gpu/CUDAAgent.h"
 
-/**
- * Pair of a host-backed device buffer
- * This allows transactions which impact master-agent unbound variables to work correctly
- */
-
 DeviceAgentVector_impl::DeviceAgentVector_impl(CUDAAgent& _cuda_agent, const std::string &_cuda_agent_state,
     const VarOffsetStruct& _agentOffsets, std::vector<NewAgentStorage>& _newAgentData,
     CUDAScatter& _scatter, const unsigned int& _streamId, const cudaStream_t& _stream)

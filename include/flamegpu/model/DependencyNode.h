@@ -10,12 +10,21 @@ class DependencyNode {
 
     /**
      * Specifies that this agent function depends on the completion of all of the provided functions
-     * @param dependencyList The host functions, agent functions and submodels which this depends on
+     * @param dep The host functions, agent functions and submodels which this depends on
+     * @tparam A function description object (e.g. AgentFunctionDescription, HostFunctionDescriotion)
      */
     template<typename A>
     void dependsOn(A& dep) {
        dependsOnImpl(dep);
     }
+    /**
+     * Varadic version of DependencyNode::dependsOn(A& dep) for specifying multiple dependencies of the same DependencyNode in a single statement
+     * Specifies that this agent function depends on the completion of all of the provided functions
+     * @param dep The host functions, agent functions and submodels which this depends on
+     * @param dependencyList More arguments suitable for dep
+     * @tparam A function description object (e.g. AgentFunctionDescription, HostFunctionDescriotion)
+     * @tparam Args function description object (e.g. AgentFunctionDescription, HostFunctionDescriotion)
+     */
     template<typename A, typename...Args>
     void dependsOn(A& dep, Args&...dependencyList) {
        dependsOnImpl(dep);

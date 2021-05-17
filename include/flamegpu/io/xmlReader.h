@@ -1,15 +1,6 @@
 #ifndef INCLUDE_FLAMEGPU_IO_XMLREADER_H_
 #define INCLUDE_FLAMEGPU_IO_XMLREADER_H_
 
-/**
- * @file xmlreader.h
- * @author
- * @date
- * @brief
- *
- * \todo longer description
- */
-
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -19,7 +10,9 @@
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/util/StringPair.h"
 
-// Derived classes
+/**
+ * XML format StateReader
+ */
 class xmlReader : public StateReader {
  public:
     /**
@@ -31,6 +24,7 @@ class xmlReader : public StateReader {
      * @param env_init Dictionary of loaded values map:<{name, index}, value>
      * @param model_state Map of AgentVector to load the agent data into per agent, key should be agent name
      * @param input_file Filename of the input file (This will be used to determine which reader to return)
+     * @param sim_instance Instance of the Simulation object (This is used for setting/getting config)
      */
     xmlReader(
         const std::string &model_name,

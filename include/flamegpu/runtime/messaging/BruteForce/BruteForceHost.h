@@ -44,13 +44,14 @@ class MsgBruteForce::CUDAModelHandler : public MsgSpecialisationHandler {
      * Allocates memory for the constructed index.
      * Sets data asthough message list is empty
      * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
-     * @param streamId Index of stream specific structures used
+     * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      */
     void init(CUDAScatter &scatter, const unsigned int &streamId) override;
     /**
      * Updates the length of the messagelist stored on device
      * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
-     * @param streamId Index of stream specific structures used
+     * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
+     * @param stream CUDA stream to be used for async CUDA operations
      */
     void buildIndex(CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream) override;
     /**

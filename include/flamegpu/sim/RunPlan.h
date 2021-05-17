@@ -46,7 +46,7 @@ class RunPlan {
     /**
      * Set the sub directory within the output directory for outputs of this run
      * If left empty, output will not goto subdirectories
-     * @param steps The number of steps to execute, 0 is unlimited but requires an exit condition
+     * @param subdir The subdirectory to output logfiles for this run to
      */
     void setOutputSubdirectory(const std::string &subdir);
     /**

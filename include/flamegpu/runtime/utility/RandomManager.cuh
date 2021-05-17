@@ -72,7 +72,7 @@ class RandomManager {
     float getShrinkModifier();
     /**
      * Generates a random number with the provided distribution
-     * @param distribution A distribution object defined by <random>
+     * @param distribution A distribution object defined by \<random\>
      * @tparam dist random distribution type to be used for generation (this should be implicitly detected)
      * @tparam T return type
      * @note Not believed to be thread-safe!

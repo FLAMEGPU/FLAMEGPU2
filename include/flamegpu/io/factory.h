@@ -1,15 +1,6 @@
 #ifndef INCLUDE_FLAMEGPU_IO_FACTORY_H_
 #define INCLUDE_FLAMEGPU_IO_FACTORY_H_
 
-/**
- * @file
- * @author
- * @date
- * @brief
- *
- * \todo longer description
- */
-
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -134,6 +125,8 @@ class WriterFactory {
     }
     /**
      * @param output_path File for the log to be output to, this will be used to determine the logger type
+     * @param prettyPrint If false, the output data will be in a compact/minified format which may not be very readable
+     * @param truncateFile If true and output file already exists, it will be truncated
      */
     static std::unique_ptr<Logger> createLogger(const std::string &output_path, bool prettyPrint, bool truncateFile = true) {
         const std::string extension = getFileExt(output_path);

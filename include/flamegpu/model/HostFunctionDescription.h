@@ -54,13 +54,17 @@ class HostFunctionDescription : public DependencyNode {
     bool operator!=(const HostFunctionDescription& rhs) const;
 
     /**
-     * @return The cuda kernel entry point for executing the agent function
+     * @return The function pointer for executing the host function if defined via the C/C++ API
      */
-
     FLAMEGPU_HOST_FUNCTION_POINTER getFunctionPtr() const;
+    /**
+     * @return The callback function for executing the host function if defined via the Python API
+     */
     HostFunctionCallback* getCallbackObject();
+    /**
+     * @return The name of the host function
+     */
     std::string getName();
-
 
  private:
     FLAMEGPU_HOST_FUNCTION_POINTER function;

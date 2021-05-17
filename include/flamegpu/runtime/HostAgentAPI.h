@@ -92,7 +92,7 @@ class HostAgentAPI {
     /**
      * Wraps cub::DeviceReduce::Sum()
      * @param variable The agent variable to perform the sum reduction across
-     * @tParam InT The type of the variable as specified in the model description hierarchy
+     * @tparam InT The type of the variable as specified in the model description hierarchy
      * @throws UnsupportedVarType Array variables are not supported
      * @throws InvalidAgentVar If the agent does not contain a variable of the same name
      * @throws InvalidVarType If the passed variable type does not match that specified in the model description hierarchy
@@ -103,7 +103,7 @@ class HostAgentAPI {
      * Wraps cub::DeviceReduce::Sum()
      * @param variable The agent variable to perform the sum reduction across
      * @tparam OutT The template arg, 'OutT' can be used if the sum is expected to exceed the representation of the type being summed
-     * @tParam InT The type of the variable as specified in the model description hierarchy
+     * @tparam InT The type of the variable as specified in the model description hierarchy
      * @throws UnsupportedVarType Array variables are not supported
      * @throws InvalidAgentVar If the agent does not contain a variable of the same name
      * @throws InvalidVarType If the passed variable type does not match that specified in the model description hierarchy
@@ -113,7 +113,7 @@ class HostAgentAPI {
     /**
      * Wraps cub::DeviceReduce::Min()
      * @param variable The agent variable to perform the lowerBound reduction across
-     * @tParam InT The type of the variable as specified in the model description hierarchy
+     * @tparam InT The type of the variable as specified in the model description hierarchy
      * @throws UnsupportedVarType Array variables are not supported
      * @throws InvalidAgentVar If the agent does not contain a variable of the same name
      * @throws InvalidVarType If the passed variable type does not match that specified in the model description hierarchy
@@ -123,7 +123,7 @@ class HostAgentAPI {
     /**
      * Wraps cub::DeviceReduce::Max()
      * @param variable The agent variable to perform the upperBound reduction across
-     * @tParam InT The type of the variable as specified in the model description hierarchy
+     * @tparam InT The type of the variable as specified in the model description hierarchy
      * @throws UnsupportedVarType Array variables are not supported
      * @throws InvalidAgentVar If the agent does not contain a variable of the same name
      * @throws InvalidVarType If the passed variable type does not match that specified in the model description hierarchy
@@ -134,7 +134,7 @@ class HostAgentAPI {
      * Wraps thrust::count(), to count the number of occurences of the provided value
      * @param variable The agent variable to perform the count reduction across
      * @param value The value to count occurences of
-     * @tParam InT The type of the variable as specified in the model description hierarchy
+     * @tparam InT The type of the variable as specified in the model description hierarchy
      * @throws UnsupportedVarType Array variables are not supported
      * @throws InvalidAgentVar If the agent does not contain a variable of the same name
      * @throws InvalidVarType If the passed variable type does not match that specified in the model description hierarchy
@@ -148,7 +148,7 @@ class HostAgentAPI {
      * @param lowerBound The (inclusive) lower sample value boundary of lowest bin
      * @param upperBound The (exclusive) upper sample value boundary of upper bin
      * @note 2nd template arg can be used if calculation requires higher bit type to avoid overflow
-     * @tParam InT The type of the variable as specified in the model description hierarchy
+     * @tparam InT The type of the variable as specified in the model description hierarchy
      * @throws UnsupportedVarType Array variables are not supported
      * @throws InvalidAgentVar If the agent does not contain a variable of the same name
      * @throws InvalidVarType If the passed variable type does not match that specified in the model description hierarchy
@@ -162,7 +162,7 @@ class HostAgentAPI {
      * @param variable The agent variable to perform the reduction across
      * @param reductionOperator The custom reduction function
      * @param init Initial value of the reduction
-     * @tParam InT The type of the variable as specified in the model description hierarchy
+     * @tparam InT The type of the variable as specified in the model description hierarchy
      * @throws UnsupportedVarType Array variables are not supported
      * @throws InvalidAgentVar If the agent does not contain a variable of the same name
      * @throws InvalidVarType If the passed variable type does not match that specified in the model description hierarchy
@@ -175,7 +175,7 @@ class HostAgentAPI {
      * @param transformOperator The custom unary transform function
      * @param reductionOperator The custom binary reduction function
      * @param init Initial value of the reduction
-     * @tParam InT The type of the variable as specified in the model description hierarchy
+     * @tparam InT The type of the variable as specified in the model description hierarchy
      * @throws UnsupportedVarType Array variables are not supported
      * @throws InvalidAgentVar If the agent does not contain a variable of the same name
      * @throws InvalidVarType If the passed variable type does not match that specified in the model description hierarchy
@@ -191,7 +191,7 @@ class HostAgentAPI {
      * @param order Whether the agents should be sorted in ascending or descending order of the variable
      * @param beginBit Advanced Option, see note
      * @param endBit Advanced Option, see note
-     * @tParam VarT The type of the variable as specified in the model description hierarchy
+     * @tparam VarT The type of the variable as specified in the model description hierarchy
      * @throws UnsupportedVarType Array variables are not supported
      * @throws InvalidAgentVar If the agent does not contain a variable of the same name
      * @throws InvalidVarType If the passed variable type does not match that specified in the model description hierarchy
@@ -207,8 +207,8 @@ class HostAgentAPI {
      * @param variable2 Agents with equal variable1's, will be sorted according this this variable
      * @param order2 The order that variable 2 should be sorted according to
      * @throws UnsupportedVarType Array variables are not supported
-     * @tParam Var1T The type of variable1 as specified in the model description hierarchy
-     * @tParam Var2T The type of variable2 as specified in the model description hierarchy
+     * @tparam Var1T The type of variable1 as specified in the model description hierarchy
+     * @tparam Var2T The type of variable2 as specified in the model description hierarchy
      * @throws InvalidAgentVar If the agent does not contain a variable of the same name
      * @throws InvalidVarType If the passed variable type does not match that specified in the model description hierarchy
      */
@@ -227,14 +227,17 @@ class HostAgentAPI {
      * Fills the provided device buffer with consecutive integers
      * @param d_buffer Device pointer to buffer to be filled
      * @param length Length of the buffer (how many unsigned ints can it hold)
+     * @param stream CUDA stream to be used for async CUDA operations
      */
     static void fillTIDArray(unsigned int *d_buffer, const unsigned int &length, const cudaStream_t &stream);
     /**
      * Sorts a buffer by the positions array, used for multi variable agent sorts
      * @param dest Device pointer to buffer for sorted data to be placed
      * @param src Device pointer to buffer to be sorted
+     * @param position Positions buffer
      * @param typeLen sizeof the type stored in the buffer (e.g. sizeof(int))
      * @param length Length of the buffer (how many items it can it hold)
+     * @param stream CUDA stream to be used for async CUDA operations
      */
     static void sortBuffer(void *dest, void*src, unsigned int *position, const size_t &typeLen, const unsigned int &length, const cudaStream_t &stream);
     HostAPI &api;

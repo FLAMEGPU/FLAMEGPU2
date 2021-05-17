@@ -10,7 +10,9 @@
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/util/StringPair.h"
 
-// Derived classes
+/**
+ * JSON format StateReader
+ */
 class jsonReader : public StateReader {
  public:
     /**

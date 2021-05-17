@@ -67,7 +67,7 @@ class ReadOnlyDeviceAPI {
      * @param variable_name name used for accessing the variable, this value should be a string literal e.g. "foobar"
      * @param index Index of the element within the variable array to return
      * @tparam T Type of the agent variable property being accessed
-     * @tparam N Length of variable name, this should always be implicit if passing a string literal
+     * @tparam N Length of variable_name, this should always be implicit if passing a string literal
      * @throws DeviceError If name is not a valid variable within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
      * @throws DeviceError If T is not the type of variable 'name' within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
      * @throws DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
@@ -228,6 +228,7 @@ class DeviceAPI : public ReadOnlyDeviceAPI{
      * @param instance_id_hash CURVE hash of the CUDASimulation's instance id
      * @param agentfuncname_hash Combined CURVE hashes of agent name and func name
      * @param _agent_output_hash Combined CURVE hashes for agent output
+     * @param d_agent_output_nextID If agent birth is enabled, a pointer to the next available ID in global memory. Device agent birth will atomically increment this value to allocate IDs.
      * @param d_rng Device pointer to curand state for this kernel, index 0 should for TID()==0
      * @param scanFlag_agentOutput Array for agent output scan flag
      * @param msg_in Input message handler
@@ -252,7 +253,7 @@ class DeviceAPI : public ReadOnlyDeviceAPI{
      * @param variable_name The name of the variable
      * @param value The value to set the variable
      * @tparam T The type of the variable, as set within the model description hierarchy
-     * @tparam N Variable name length, this should be ignored as it is implicitly set
+     * @tparam N variable_name length, this should be ignored as it is implicitly set
      * @throws DeviceError If name is not a valid variable within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
      * @throws DeviceError If T is not the type of variable 'name' within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
      */
@@ -265,7 +266,7 @@ class DeviceAPI : public ReadOnlyDeviceAPI{
      * @param value The value to set the element of the array velement
      * @tparam T The type of the variable, as set within the model description hierarchy
      * @tparam N The length of the array variable, as set within the model description hierarchy
-     * @tparam M Variable name length, this should be ignored as it is implicitly set
+     * @tparam M variable_namelength, this should be ignored as it is implicitly set
      * @throws DeviceError If name is not a valid variable within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
      * @throws DeviceError If T is not the type of variable 'name' within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
      * @throws DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)

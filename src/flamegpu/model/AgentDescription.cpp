@@ -6,9 +6,9 @@
 /**
  * Constructors
  */
-AgentDescription::AgentDescription(std::shared_ptr<const ModelData> _model, AgentData *const description)
+AgentDescription::AgentDescription(std::shared_ptr<const ModelData> _model, AgentData *const data)
     : model(_model)
-    , agent(description) { }
+    , agent(data) { }
 
 
 bool AgentDescription::operator==(const AgentDescription& rhs) const {

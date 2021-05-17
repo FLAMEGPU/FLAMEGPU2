@@ -125,11 +125,9 @@ void LayerDescription::addAgentFunction(const std::string &agentName, const std:
         "in LayerDescription::addAgentFunction()\n",
         functionName.c_str(), agentName.c_str());
 }
-/**
- * Template magic means that the implicit cast doesn't occur as normal
- */
-void LayerDescription::addAgentFunction(const char *an, const char *fn) {
-    addAgentFunction(std::string(an), std::string(fn));
+
+void LayerDescription::addAgentFunction(const char * agentName, const char * functionName) {
+    addAgentFunction(std::string(agentName), std::string(functionName));
 }
 void LayerDescription::addHostFunction(FLAMEGPU_HOST_FUNCTION_POINTER func_p) {
     if (layer->sub_model) {

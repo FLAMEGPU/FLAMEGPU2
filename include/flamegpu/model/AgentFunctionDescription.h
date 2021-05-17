@@ -81,11 +81,11 @@ class AgentFunctionDescription : public DependencyNode {
 
     /**
      * Sets the initial state which agents must be in to execute this function
-     * @param initial_state Name of the desired state
+     * @param init_state Name of the desired state
      * @throws InvalidStateName If the named state is not found within the agent
      * @see AgentFunctionDescription::setEndState(const std::string &)
      */
-    void setInitialState(const std::string &initial_state);
+    void setInitialState(const std::string &init_state);
     /**
      * Sets the end state which agents enter after executing this function
      * @param end_state Name of the desired state

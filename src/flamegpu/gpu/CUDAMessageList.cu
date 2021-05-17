@@ -46,11 +46,6 @@ void CUDAMessageList::cleanupAllocatedData() {
     releaseDeviceMessageList(d_swap_list);
 }
 
-/**
-* @brief Allocates Device  message list
-* @param variable of type CUDAMessageMap struct type
-* @return none
-*/
 void CUDAMessageList::allocateDeviceMessageList(CUDAMsgMap &memory_map) {
     // we use the  messages memory map to iterate the  message variables and do allocation within our GPU hash map
     const auto &mem = message.getMessageDescription().variables;
@@ -79,11 +74,6 @@ void CUDAMessageList::allocateDeviceMessageList(CUDAMsgMap &memory_map) {
     }
 }
 
-/**
-* @brief Frees
-* @param variable of type CUDAMsgMap struct type
-* @return none
-*/
 void CUDAMessageList::releaseDeviceMessageList(CUDAMsgMap& memory_map) {
     // for each device pointer in the cuda memory map we need to free these
     for (const CUDAMsgMapPair& mm : memory_map) {
@@ -92,11 +82,6 @@ void CUDAMessageList::releaseDeviceMessageList(CUDAMsgMap& memory_map) {
     }
 }
 
-/**
-* @brief
-* @param variable of type CUDAMsgMap struct type
-* @return none
-*/
 void CUDAMessageList::zeroDeviceMessageList(CUDAMsgMap& memory_map) {
     // for each device pointer in the cuda memory map set the values to 0
     for (const CUDAMsgMapPair& mm : memory_map) {

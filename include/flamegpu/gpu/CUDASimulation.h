@@ -400,7 +400,6 @@ class CUDASimulation : public Simulation {
 
     /**
      * Execute a single layer as part of a step.
-     * @future - this should not be user-callable.
      */
     void stepLayer(const std::shared_ptr<LayerData>& layer, const unsigned int layerIndex);
     void layerHostFunctions(const std::shared_ptr<LayerData>& layer, const unsigned int layerIndex);
@@ -408,7 +407,6 @@ class CUDASimulation : public Simulation {
     /**
      * Execute the step functions of the model. 
      * This should only be called within step();
-     * @future - this should not be user-callable
      */
     void stepStepFunctions();
     bool stepExitConditions();

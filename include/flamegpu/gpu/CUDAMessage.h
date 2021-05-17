@@ -36,6 +36,7 @@ class CUDAMessage {
       * Constructs a CUDAMessage object
       * Allocates enough memory for each variable within the provided MessageData
       * @param description The message to represent
+      * @param cuda_model The simulation which owns the CUDAMessage
       */
     explicit CUDAMessage(const MsgBruteForce::Data& description, const CUDASimulation& cuda_model);
     /**
@@ -78,6 +79,7 @@ class CUDAMessage {
      * Uses the cuRVE runtime to map the variables used by the agent function to the cuRVE library so that can be accessed by name within a n agent function
      * The read runtime variables are to be used when reading messages
      * @param func The agent function, this is used for the cuRVE hash mapping
+     * @param cuda_agent Agent which owns the agent function (condition) being mapped, if RTC function this holds the RTC header
      * @param instance_id The CUDASimulation instance_id of the parent instance. This is added to the hash, to differentiate instances
      */
     void mapReadRuntimeVariables(const AgentFunctionData& func, const CUDAAgent& cuda_agent, const unsigned int &instance_id) const;
@@ -85,6 +87,7 @@ class CUDAMessage {
      * Uses the cuRVE runtime to map the variables used by the agent function to the cuRVE library so that can be accessed by name within a n agent function
      * The write runtime variables are to be used when creating messages, as they are output to swap space
      * @param func The agent function, this is used for the cuRVE hash mapping
+     * @param cuda_agent Agent which owns the agent function (condition) being mapped, if RTC function this holds the RTC header
      * @param writeLen The number of messages to be output, as the length isn't updated till after output
      * @param instance_id The CUDASimulation instance_id of the parent instance. This is added to the hash, to differentiate instances
      * @note swap() or scatter() should be called after the agent function has written messages
@@ -122,7 +125,8 @@ class CUDAMessage {
     /**
      * Builds index, required to read messages (some messaging types won't require an implementation)
      * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
-     * @param streamId Index of stream specific structures used
+     * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
+     * @param stream CUDA stream to be used for async CUDA operations
      */
     void buildIndex(CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream);
     const void *getMetaDataDevicePtr() const;

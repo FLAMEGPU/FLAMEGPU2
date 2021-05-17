@@ -104,9 +104,9 @@ class AgentDescription {
     void setInitialState(const std::string &initial_state);
 
     /**
-     * Adds a new variable to the agent
-     * @param variable_name Name of the variable
-     * @param default_value Default value of variable for new agents if unset, defaults to 0
+     * Adds a new variable array to the agent
+     * @param variable_name Name of the variable array
+     * @param default_value Default value of variable for new agents if unset, defaults to each element set 0
      * @tparam T Type of the agent variable, this must be an arithmetic type
      * @tparam N The length of the variable array (1 if not an array, must be greater than 0)
      * @throws InvalidAgentVar If a variable already exists within the agent with the same name
@@ -114,9 +114,25 @@ class AgentDescription {
      */
     template<typename T, ModelData::size_type N>
     void newVariable(const std::string &variable_name, const std::array<T, N> &default_value = {});
+    /**
+     * Adds a new variable to the agent
+     * @param variable_name Name of the variable
+     * @param default_value Default value of variable for new agents if unset, defaults to 0
+     * @tparam T Type of the agent variable, this must be an arithmetic type
+     * @throws InvalidAgentVar If a variable already exists within the agent with the same name
+     */
     template<typename T>
     void newVariable(const std::string &variable_name, const T&default_value = 0);
 #ifdef SWIG
+    /**
+     * Adds a new variable array to the agent
+     * @param variable_name Name of the variable array
+     * @param length The length of the variable array (1 if not an array, must be greater than 0)
+     * @param default_value Default value of variable for new agents if unset, defaults to each element set 0
+     * @tparam T Type of the agent variable, this must be an arithmetic type
+     * @throws InvalidAgentVar If a variable already exists within the agent with the same name
+     * @throws InvalidAgentVar If length is <= 0
+     */
     template<typename T>
     void newVariableArray(const std::string &variable_name, const ModelData::size_type &length, const std::vector<T>&default_value = {});
 #endif

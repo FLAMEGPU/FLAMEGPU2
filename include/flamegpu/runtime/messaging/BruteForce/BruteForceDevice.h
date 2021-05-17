@@ -180,6 +180,7 @@ class MsgBruteForce::Out {
     /**
      * Sets the specified variable for this agents message
      * @param variable_name Name of the variable
+     * @param value The value to set the specified variable
      * @tparam T type of the variable
      * @tparam N Length of variable name (this should be implicit if a string literal is passed to variable name)
      * @return The specified variable, else 0x0 if an error occurs
@@ -213,11 +214,6 @@ __device__ T MsgBruteForce::In::Message::getVariable(const char(&variable_name)[
     return value;
 }
 
-/**
-* \brief adds a message
-* \param variable_name Name of message variable to set
-* \param value Value to set it to
-*/
 template<typename T, unsigned int N>
 __device__ void MsgBruteForce::Out::setVariable(const char(&variable_name)[N], T value) const {  // message name or variable name
     if (variable_name[0] == '_') {

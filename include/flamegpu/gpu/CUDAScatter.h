@@ -80,15 +80,16 @@ class CUDAScatter {
      * Used for device agent creation and agent death
      * CUDAScanCompaction::scan_flag is used to decide who should be scattered
      * CUDAScanCompaction::position is used to decide where to scatter to
-     * @param streamResourceId Index of internal resources to use
+     * @param streamResourceId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
+     * @param stream CUDA stream to be used for async CUDA operations
      * @param messageOrAgent Flag of whether message or agent CUDAScanCompaction arrays should be used
      * @param vars Variable description map from ModelData hierarchy
      * @param in Input variable name:ptr map
-     * @paramn out Output variable name:ptr map
+     * @param out Output variable name:ptr map
      * @param itemCount Total number of items in input array to consider
      * @param out_index_offset The offset to be applied to the ouput index (e.g. if out already contains data)
-     * @parma invert_scan_flag If true, agents with scan_flag set to 0 will be moved instead
-     * @parma scatter_all_count The number of agents at the start of in to be copied, ones after this use scanflag
+     * @param invert_scan_flag If true, agents with scan_flag set to 0 will be moved instead
+     * @param scatter_all_count The number of agents at the start of in to be copied, ones after this use scanflag
      * @note This is deprecated, unclear if still used
      */
      unsigned int scatter(
@@ -107,13 +108,14 @@ class CUDAScatter {
      * Used for device agent creation and agent death
      * CUDAScanCompaction::scan_flag is used to decide who should be scattered
      * CUDAScanCompaction::position is used to decide where to scatter to
-     * @param streamResourceId Index of internal resources to use
+     * @param streamResourceId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
+     * @param stream CUDA stream to be used for async CUDA operations
      * @param messageOrAgent Flag of whether message or agent CUDAScanCompaction arrays should be used
      * @param scatterData Vector of scatter configuration for each variable to be scattered
      * @param itemCount Total number of items in input array to consider
      * @param out_index_offset The offset to be applied to the ouput index (e.g. if out already contains data)
-     * @parma invert_scan_flag If true, agents with scan_flag set to 0 will be moved instead
-     * @parma scatter_all_count The number of agents at the start of in to be copied, ones after this use scanflag
+     * @param invert_scan_flag If true, agents with scan_flag set to 0 will be moved instead
+     * @param scatter_all_count The number of agents at the start of in to be copied, ones after this use scanflag
      */
     unsigned int scatter(
         const unsigned int &streamResourceId,
@@ -128,7 +130,8 @@ class CUDAScatter {
      * Scatters agents from SoA to SoA according to d_position flag as input_source, all variables are scattered
      * Used for Host function sort agent
      * CUDAScanCompaction::position is used to decide where to scatter to
-     * @param streamResourceId Index of internal resources to use
+     * @param streamResourceId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
+     * @param stream CUDA stream to be used for async CUDA operations
      * @param messageOrAgent Flag of whether message or agent CUDAScanCompaction arrays should be used
      * @param scatterData Vector of scatter configuration for each variable to be scattered
      * @param itemCount Total number of items in input array to consider
@@ -142,10 +145,11 @@ class CUDAScatter {
     /**
      * Returns the final CUDAScanCompaction::position item 
      * Same value as scatter, - scatter_a__count
-     * @param streamResourceId Index of internal resources to use
+     * @param streamResourceId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
+     * @param stream CUDA stream to be used for async CUDA operations
      * @param messageOrAgent Flag of whether message or agent CUDAScanCompaction arrays should be used
      * @param itemCount Total number of items in input array to consider
-     * @parma scatter_all_count The number offset into the array where the scan began
+     * @param scatter_all_count The number offset into the array where the scan began
      */
     unsigned int scatterCount(
         const unsigned int &streamResourceId,
@@ -156,7 +160,8 @@ class CUDAScatter {
     /**
      * Scatters a contigous block from SoA to SoA
      * CUDAScanCompaction::scan_flag/position are not used
-     * @param streamResourceId Index of internal resources to use
+     * @param streamResourceId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
+     * @param stream CUDA stream to be used for async CUDA operations
      * @param scatterData Vector of scatter configuration for each variable to be scattered
      * @param itemCount Total number of items in input array to consider
      * @param out_index_offset The offset to be applied to the ouput index (e.g. if out already contains data)
@@ -170,10 +175,13 @@ class CUDAScatter {
         const unsigned int &out_index_offset = 0);
     /**
      * Convenience wrapper to scatterAll()
-     * @param streamResourceId Index of internal resources to use
+     * @param streamResourceId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
+     * @param stream CUDA stream to be used for async CUDA operations
      * @param vars Variable description map from ModelData hierarchy
      * @param in Input variable name:ptr map
-     * @paramn out Output variable name:ptr map
+     * @param out Output variable name:ptr map
+     * @param itemCount Total number of items in input array to consider
+     * @param out_index_offset The offset to be applied to the output index (e.g. if out already contains data)
      */
     unsigned int scatterAll(
         const unsigned int &streamResourceId,
@@ -187,10 +195,11 @@ class CUDAScatter {
      * Used for reordering messages from SoA to SoA
      * Position information is taken using PBM data, rather than d_position
      * Used by spatial messaging.
-     * @param streamResourceId Index of internal resources to use
+     * @param streamResourceId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
+     * @param stream CUDA stream to be used for async CUDA operations
      * @param vars Variable description map from ModelData hierarchy
      * @param in Input variable name:ptr map
-     * @paramn out Output variable name:ptr map
+     * @param out Output variable name:ptr map
      * @param itemCount Total number of items in input array to consider
      * @param d_bin_index This idenitifies which bin each index should be sorted to
      * @param d_bin_sub_index This indentifies where within it's bin, an index should be sorted to
@@ -209,7 +218,8 @@ class CUDAScatter {
     /**
      * Scatters agents from AoS to SoA
      * Used by host agent creation
-     * @param streamResourceId Index of internal resources to use
+     * @param streamResourceId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
+     * @param stream CUDA stream to be used for async CUDA operations
      * @param scatterData Vector of scatter configuration for each variable to be scattered
      * @param totalAgentSize Total size of all of the variables in an agent
      * @param inCount Total number of items in input array to consider
@@ -225,7 +235,8 @@ class CUDAScatter {
     /**
      * Broadcasts a single value for each variable to a contiguous block in SoA
      * Used prior to device agent creation
-     * @param streamResourceId Index of internal resources to use
+     * @param streamResourceId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
+     * @param stream CUDA stream to be used for async CUDA operations
      * @param vars Variable description map from ModelData hierarchy
      * @param itemCount Total number of items in input array to consider
      * @param out_index_offset The offset to be applied to the ouput index (e.g. if out already contains data)
@@ -246,7 +257,12 @@ class CUDAScatter {
     /**
      * Used to reorder array messages based on __INDEX variable, that variable is not sorted
      * Also throws exception if any indexes are repeated
-     * @param streamResourceId Index of internal resources to use
+     * @param streamResourceId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
+     * @param stream CUDA stream to be used for async CUDA operations
+     * @param vars Map of variable metadata, must correspond to variables within in and out parameters
+     * @param in Map name:ptr of input buffers to be sorted
+     * @param out Map name:ptr of output buffers to return sorted variable data into
+     * @param itemCount Number of items to be reordered
      * @param array_length Length of the array messages are to be stored in (max index + 1)
      * @param d_write_flag Device pointer to array for tracking how many messages output to each bin, caller responsibiltiy to ensure it is array_length or longer
      */

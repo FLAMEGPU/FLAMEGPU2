@@ -80,7 +80,15 @@ class SubModelDescription : public DependencyNode {
      * @see SubModelDescription::SubAgent(const std::string &) for the mutable version
      */
     const SubAgentDescription &getSubAgent(const std::string &sub_agent_name) const;
+    /**
+     * Returns an interface for configuring mapped environment properties
+     * @param auto_map_props If true is passed, all properties with matching name, type and length between models will be mapped
+     */
     SubEnvironmentDescription &SubEnvironment(bool auto_map_props = false);
+    /**
+     * Returns an immutable interface for viewing the configuration of mapped environment properties
+     * @param auto_map_props If true is passed, all properties with matching name, type and length between models will be mapped
+     */
     const SubEnvironmentDescription &getSubEnvironment(bool auto_map_props = false) const;
     /**
      * Set the maximum number of steps per execution of the submodel
