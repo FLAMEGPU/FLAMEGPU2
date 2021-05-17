@@ -3,7 +3,9 @@
 #include(../../cmake/common.cmake)
 # Just include cuda_arch to suppress CMAKE 3.18 warnings on windows (where nvcc is used even when not neccesary)
 get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../../ REALPATH)
-include(${FLAMEGPU_ROOT}/cmake/cuda_arch.cmake)
+if(NOT CMAKE_CUDA_COMPILER STREQUAL NOTFOUND)
+  include(${FLAMEGPU_ROOT}/cmake/cuda_arch.cmake)
+endif()
 
 STRING(TOLOWER "${CMAKE_SYSTEM_NAME}" CMAKE_SYSTEM_NAME_LOWER)
 
@@ -34,66 +36,71 @@ swig_add_library(${PYTHON_MODULE_NAME}
 	LANGUAGE python 
 	OUTPUT_DIR ${PYTHON_LIB_TEMP_DIRECTORY}/${PYTHON_MODULE_NAME}
 	SOURCES ${SWIG_INPUT_FILE_NAME}.i)
-
-# configure wrapper code to build with cuda compiler
-set_source_files_properties(${PYTHON_LIB_TEMP_DIRECTORY}/${PYTHON_MODULE_NAME}/${SWIG_INPUT_FILE_NAME}PYTHON_wrap.cxx PROPERTIES LANGUAGE CUDA)
-
-# use the target include directories
-set_property(TARGET ${PYTHON_MODULE_NAME} PROPERTY SWIG_USE_TARGET_INCLUDE_DIRECTORIES ON)
-# needs to have RDC enable for the project
-set_property(TARGET ${PYTHON_MODULE_NAME} PROPERTY CUDA_SEPARABLE_COMPILATION ON)
-# Build with the SWIG pre-processor macro enabled
-set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY SWIG_GENERATED_COMPILE_DEFINITIONS "SWIG")
-# Suppress warnings during compilation of SWIG generated PYTHON_wrap.cxx
-set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcudafe --diag_suppress=\"declared_but_not_referenced\"")
-# set bigobj property for windows compiler (needed due to the sheer size of the generated swig file: https://www.reddit.com/r/AbsoluteUnits/)
-if(MSVC)
-	set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler /bigobj")
-endif()
-# set include directories for module build
-target_include_directories(${PYTHON_MODULE_NAME}
-  PRIVATE
-  ${FLAMEGPU_ROOT}/include
-  ${Python3_INCLUDE_DIRS}
-  )
   
-# Handle user options
-if (VISUALISATION)
-  set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY SWIG_COMPILE_DEFINITIONS VISUALISATION)
-  set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY SWIG_GENERATED_COMPILE_DEFINITIONS VISUALISATION)
-  target_include_directories(${PYTHON_MODULE_NAME} PUBLIC "${VISUALISATION_ROOT}/include")
-endif()
-if (SEATBELTS)
-  # Debug alwasy has seatbelts.
-  set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY SWIG_COMPILE_DEFINITIONS SEATBELTS=1)
-  set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY SWIG_GENERATED_COMPILE_DEFINITIONS SEATBELTS=1)
+if(NOT CMAKE_CUDA_COMPILER STREQUAL NOTFOUND)
+  # configure wrapper code to build with cuda compiler
+  set_source_files_properties(${PYTHON_LIB_TEMP_DIRECTORY}/${PYTHON_MODULE_NAME}/${SWIG_INPUT_FILE_NAME}PYTHON_wrap.cxx PROPERTIES LANGUAGE CUDA)
+
+  # use the target include directories
+  set_property(TARGET ${PYTHON_MODULE_NAME} PROPERTY SWIG_USE_TARGET_INCLUDE_DIRECTORIES ON)
+  # needs to have RDC enable for the project
+  set_property(TARGET ${PYTHON_MODULE_NAME} PROPERTY CUDA_SEPARABLE_COMPILATION ON)
+  # Build with the SWIG pre-processor macro enabled
+  set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY SWIG_GENERATED_COMPILE_DEFINITIONS "SWIG")
+  # Suppress warnings during compilation of SWIG generated PYTHON_wrap.cxx
+  set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcudafe --diag_suppress=\"declared_but_not_referenced\"")
+  # set bigobj property for windows compiler (needed due to the sheer size of the generated swig file: https://www.reddit.com/r/AbsoluteUnits/)
+  if(MSVC)
+    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler /bigobj")
+  endif()
+  # set include directories for module build
+  target_include_directories(${PYTHON_MODULE_NAME}
+    PRIVATE
+    ${FLAMEGPU_ROOT}/include
+    ${Python3_INCLUDE_DIRS}
+    )
+    
+  # Handle user options
+  if (VISUALISATION)
+    set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY SWIG_COMPILE_DEFINITIONS VISUALISATION)
+    set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY SWIG_GENERATED_COMPILE_DEFINITIONS VISUALISATION)
+    target_include_directories(${PYTHON_MODULE_NAME} PUBLIC "${VISUALISATION_ROOT}/include")
+  endif()
+  if (SEATBELTS)
+    # Debug alwasy has seatbelts.
+    set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY SWIG_COMPILE_DEFINITIONS SEATBELTS=1)
+    set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY SWIG_GENERATED_COMPILE_DEFINITIONS SEATBELTS=1)
+  else()
+    # Debug builds still have seatbelts. Non debug builds do not.
+    set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY SWIG_COMPILE_DEFINITIONS $<IF:$<CONFIG:Debug>,SEATBELTS=1,SEATBELTS=0>)
+    set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY SWIG_GENERATED_COMPILE_DEFINITIONS $<IF:$<CONFIG:Debug>,SEATBELTS=1,SEATBELTS=0>)
+  endif()
+  if (NOT RTC_DISK_CACHE)
+    set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY SWIG_COMPILE_DEFINITIONS DISABLE_RTC_DISK_CACHE)
+    set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY SWIG_GENERATED_COMPILE_DEFINITIONS DISABLE_RTC_DISK_CACHE)
+  endif()    
+  if (EXPORT_RTC_SOURCES)
+    set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY SWIG_COMPILE_DEFINITIONS OUTPUT_RTC_DYNAMIC_FILES)
+    set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY SWIG_GENERATED_COMPILE_DEFINITIONS OUTPUT_RTC_DYNAMIC_FILES)
+  endif ()
+  # Block windows.h min and max defines.
+  if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+      set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY SWIG_COMPILE_DEFINITIONS NOMINMAX)
+      set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY SWIG_GENERATED_COMPILE_DEFINITIONS NOMINMAX)
+  endif()
+    
+  # link with the static flamegpu and cuda libraries
+  target_link_libraries(${PYTHON_MODULE_NAME} PRIVATE flamegpu2 cuda)
+  # Variable PYTHON_LIBRARIES can contains keyword `optimized`
+  # which won't be interpreted inside a generator expression.
+  # i.e. we can't use: $<$<PLATFORM_ID:Windows>:${PYTHON_LIBRARIES}>
+  # see: https://cmake.org/cmake/help/git-stage/command/target_link_libraries.html#command:target_link_libraries
+  if(MSVC)
+    target_link_libraries(${PYTHON_MODULE_NAME} PRIVATE ${Python3_LIBRARIES} flamegpu2 cuda)
+  endif()
 else()
-  # Debug builds still have seatbelts. Non debug builds do not.
-  set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY SWIG_COMPILE_DEFINITIONS $<IF:$<CONFIG:Debug>,SEATBELTS=1,SEATBELTS=0>)
-  set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY SWIG_GENERATED_COMPILE_DEFINITIONS $<IF:$<CONFIG:Debug>,SEATBELTS=1,SEATBELTS=0>)
-endif()
-if (NOT RTC_DISK_CACHE)
-  set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY SWIG_COMPILE_DEFINITIONS DISABLE_RTC_DISK_CACHE)
-  set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY SWIG_GENERATED_COMPILE_DEFINITIONS DISABLE_RTC_DISK_CACHE)
-endif()    
-if (EXPORT_RTC_SOURCES)
-  set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY SWIG_COMPILE_DEFINITIONS OUTPUT_RTC_DYNAMIC_FILES)
-  set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY SWIG_GENERATED_COMPILE_DEFINITIONS OUTPUT_RTC_DYNAMIC_FILES)
-endif ()
-# Block windows.h min and max defines.
-if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY SWIG_COMPILE_DEFINITIONS NOMINMAX)
-    set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY SWIG_GENERATED_COMPILE_DEFINITIONS NOMINMAX)
-endif()
-  
-# link with the static flamegpu and cuda libraries
-target_link_libraries(${PYTHON_MODULE_NAME} PRIVATE flamegpu2 cuda)
-# Variable PYTHON_LIBRARIES can contains keyword `optimized`
-# which won't be interpreted inside a generator expression.
-# i.e. we can't use: $<$<PLATFORM_ID:Windows>:${PYTHON_LIBRARIES}>
-# see: https://cmake.org/cmake/help/git-stage/command/target_link_libraries.html#command:target_link_libraries
-if(MSVC)
-  target_link_libraries(${PYTHON_MODULE_NAME} PRIVATE ${Python3_LIBRARIES} flamegpu2 cuda)
+  # Disable compilation of the swig generated wrap file
+  set_source_files_properties(${PYTHON_LIB_TEMP_DIRECTORY}/${PYTHON_MODULE_NAME}/${SWIG_INPUT_FILE_NAME}PYTHON_wrap.cxx PROPERTIES HEADER_FILE_ONLY TRUE)
 endif()
 
 #######################
@@ -140,13 +147,84 @@ function(search_python_module MODULE_NAME)
       )
   endif()
 endfunction()
+if(NOT CMAKE_CUDA_COMPILER STREQUAL NOTFOUND)
+  # configure the python setup.py and __init__.py files for packaging and output to the final lib output folder
+  configure_file(
+    setup.py.in
+    ${PYTHON_LIB_TEMP_DIRECTORY}/setup.py.in
+    @ONLY)
+  file(GENERATE
+    OUTPUT ${PYTHON_LIB_OUTPUT_DIRECTORY}/setup.py
+    INPUT ${PYTHON_LIB_TEMP_DIRECTORY}/setup.py.in)
+  configure_file(
+    __init__.py.in
+    ${PYTHON_LIB_TEMP_DIRECTORY}/__init__.py.in
+    @ONLY)
+  file(GENERATE
+    OUTPUT ${PYTHON_LIB_OUTPUT_DIRECTORY}/${PYTHON_MODULE_NAME}/__init__.py
+    INPUT ${PYTHON_LIB_TEMP_DIRECTORY}/__init__.py.in)
 
-# Look for required python modules to build the python module
-# @todo - Python3.5 is no longer supported by setuptools > 51.3, so need to change the install command to reflect this in cases where pip is too old (i.e. ubuntu 16.04 on CI). It would be better to not install dependencies into non-venvs too.
-# Arguably, we could set up a requirements.txt for building (and exeucting)?
-# https://github.com/pypa/setuptools/issues/2541
-search_python_module(setuptools)
-search_python_module(wheel)
+
+  # Look for required python modules to build the python module
+  # @todo - Python3.5 is no longer supported by setuptools > 51.3, so need to change the install command to reflect this in cases where pip is too old (i.e. ubuntu 16.04 on CI). It would be better to not install dependencies into non-venvs too.
+  # Arguably, we could set up a requirements.txt for building (and exeucting)?
+  # https://github.com/pypa/setuptools/issues/2541
+  search_python_module(setuptools)
+  search_python_module(wheel)
+
+  # Copy the visualisation dlls if required, this must occur before the wheel is built
+  if (VISUALISATION)
+      # Copy DLLs
+      if(WIN32)
+          # These might fall over if libraries becomes plural
+          get_filename_component(SDL2_RUNTIME_LIB_NAME ${SDL2_RUNTIME_LIBRARIES} NAME)
+          get_filename_component(GLEW_RUNTIME_LIB_NAME ${GLEW_RUNTIME_LIBRARIES} NAME)
+          get_filename_component(IL_RUNTIME_LIB_NAME ${IL_RUNTIME_LIBRARIES} NAME)
+          #get_filename_component(ILUT_RUNTIME_LIB_NAME ${ILUT_RUNTIME_LIBRARIES} NAME)
+          # create the directory first (this is normally created by the following post-build commands
+          add_custom_command(TARGET ${PYTHON_MODULE_NAME} POST_BUILD
+              COMMAND ${CMAKE_COMMAND} -E make_directory "${PYTHON_LIB_OUTPUT_DIRECTORY}/${PYTHON_MODULE_NAME}")
+          # sdl 
+          add_custom_command(TARGET ${PYTHON_MODULE_NAME} POST_BUILD     # Adds a post-build event to MyTest
+              COMMAND ${CMAKE_COMMAND} -E copy_if_different              # which executes "cmake - E copy_if_different..."
+                  "${SDL2_RUNTIME_LIBRARIES}"                            # <--this is in-file
+                  "${PYTHON_LIB_OUTPUT_DIRECTORY}/${PYTHON_MODULE_NAME}" # <--this is out-file path
+              BYPRODUCTS
+                  "${PYTHON_LIB_OUTPUT_DIRECTORY}/${PYTHON_MODULE_NAME}/${SDL2_RUNTIME_LIB_NAME}") 
+          # glew
+          add_custom_command(TARGET ${PYTHON_MODULE_NAME} POST_BUILD     # Adds a post-build event to MyTest
+              COMMAND ${CMAKE_COMMAND} -E copy_if_different              # which executes "cmake - E copy_if_different..."
+                  "${GLEW_RUNTIME_LIBRARIES}"                            # <--this is in-file
+                  "${PYTHON_LIB_OUTPUT_DIRECTORY}/${PYTHON_MODULE_NAME}" # <--this is out-file path
+              BYPRODUCTS
+                  "${PYTHON_LIB_OUTPUT_DIRECTORY}/${PYTHON_MODULE_NAME}/${GLEW_RUNTIME_LIB_NAME}")
+          # DevIL
+          add_custom_command(TARGET ${PYTHON_MODULE_NAME} POST_BUILD     # Adds a post-build event to MyTest
+              COMMAND ${CMAKE_COMMAND} -E copy_if_different              # which executes "cmake - E copy_if_different..."
+                  ${IL_RUNTIME_LIBRARIES}                                # <--this is in-file
+                  "${PYTHON_LIB_OUTPUT_DIRECTORY}/${PYTHON_MODULE_NAME}" # <--this is out-file path
+              BYPRODUCTS
+                  "${PYTHON_LIB_OUTPUT_DIRECTORY}/${PYTHON_MODULE_NAME}/${IL_RUNTIME_LIB_NAME}")
+      endif()
+  endif()
+
+  # Configure and build the python package
+  # The file configurations above will already have output setup.py and __init__.py to the appropriate places and created the directory for the module
+  add_custom_command(TARGET ${PYTHON_MODULE_NAME} POST_BUILD
+    # copy generated python file to library output location
+    COMMAND ${CMAKE_COMMAND} -E copy ${PYTHON_LIB_TEMP_DIRECTORY}/${PYTHON_MODULE_NAME}/${PYTHON_MODULE_NAME}.py ${PYTHON_MODULE_NAME}
+    # copy the compiled pyd file to library output location
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${PYTHON_MODULE_NAME}> ${PYTHON_MODULE_NAME}
+    COMMAND ${Python3_EXECUTABLE} setup.py bdist_wheel
+    # by products of the packaging
+    BYPRODUCTS
+      ${PYTHON_MODULE_NAME}
+      build
+      dist
+      ${PYTHON_MODULE_NAME}.egg-info
+      setup.py
+    WORKING_DIRECTORY ${PYTHON_LIB_OUTPUT_DIRECTORY}
+  )
 
 # Create the package directory before we try and copy files to it
 add_custom_command(TARGET ${PYTHON_MODULE_NAME} POST_BUILD
@@ -190,53 +268,22 @@ if (VISUALISATION)
             BYPRODUCTS
                 "${PYTHON_LIB_OUTPUT_DIRECTORY}/${PYTHON_MODULE_NAME}/${IL_RUNTIME_LIB_NAME}")
     endif()
-endif()
+    # make a virtualenv to install our python package in it
+    add_custom_command(TARGET ${PYTHON_MODULE_NAME} POST_BUILD
+      # create venv
+      COMMAND ${VENV_EXECUTABLE} ${VENV_DIR}
 
-# Configure and build the python package
-# The file configurations above will already have output setup.py and __init__.py to the appropriate places and created the directory for the module
-add_custom_command(TARGET ${PYTHON_MODULE_NAME} POST_BUILD
-	# copy generated python file to library output location
-	COMMAND ${CMAKE_COMMAND} -E copy ${PYTHON_LIB_TEMP_DIRECTORY}/${PYTHON_MODULE_NAME}/${PYTHON_MODULE_NAME}.py ${PYTHON_MODULE_NAME}
-	# copy the compiled pyd file to library output location
-	COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${PYTHON_MODULE_NAME}> ${PYTHON_MODULE_NAME}
-	COMMAND ${Python3_EXECUTABLE} setup.py bdist_wheel
-	# by products of the packaging
-	BYPRODUCTS
-		${PYTHON_MODULE_NAME}
-		build
-		dist
-		${PYTHON_MODULE_NAME}.egg-info
-		setup.py
-	WORKING_DIRECTORY ${PYTHON_LIB_OUTPUT_DIRECTORY}
-)
-
-# Build Virtual Environment for python testing and install the packaged wheel
-if(BUILD_SWIG_PYTHON_VIRTUALENV)
-	# Look for python module virtualenv
-	search_python_module(venv)
-	# Testing using a virtual environment
-	set(VENV_EXECUTABLE ${Python3_EXECUTABLE} -m venv)
-	set(VENV_DIR ${PYTHON_LIB_OUTPUT_DIRECTORY}/venv)
-	if(WIN32)
-		set(VENV_PIP "${VENV_DIR}\\Scripts\\pip.exe")
-	else()
-		set(VENV_PIP ${VENV_DIR}/bin/pip)
-	endif()
-	# make a virtualenv to install our python package in it
-	add_custom_command(TARGET ${PYTHON_MODULE_NAME} POST_BUILD
-		# create venv
-		COMMAND ${VENV_EXECUTABLE} ${VENV_DIR}
-
-		# Must not call it in a folder containing the setup.py otherwise pip call it
-		# (i.e. "python setup.py bdist") while we want to consume the wheel package
-		COMMAND ${VENV_PIP} install --force-reinstall --find-links=dist --no-index -U ${PYTHON_MODULE_NAME}
-		# install pytest
-		COMMAND ${VENV_PIP} install pytest
-		BYPRODUCTS ${VENV_DIR}
-		# TODO: Add dependancy to ensure this post build step occurs after the previous post build step which builds the wheel
-		WORKING_DIRECTORY ${PYTHON_LIB_OUTPUT_DIRECTORY})
-	# TODO: Add tests (not supported by VS generator in CMAKE)
-	#add_test(...)
+      # Must not call it in a folder containing the setup.py otherwise pip call it
+      # (i.e. "python setup.py bdist") while we want to consume the wheel package
+      COMMAND ${VENV_PIP} install --force-reinstall --find-links=dist --no-index -U ${PYTHON_MODULE_NAME}
+      # install pytest
+      COMMAND ${VENV_PIP} install pytest
+      BYPRODUCTS ${VENV_DIR}
+      # TODO: Add dependancy to ensure this post build step occurs after the previous post build step which builds the wheel
+      WORKING_DIRECTORY ${PYTHON_LIB_OUTPUT_DIRECTORY})
+    # TODO: Add tests (not supported by VS generator in CMAKE)
+    #add_test(...)
+  endif()
 endif()
 
 # set project folders (for better organisation in visual studio)

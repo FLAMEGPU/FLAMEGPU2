@@ -151,6 +151,10 @@ include(UseSWIG)
 # enable doxygen translation
 if (SWIG_VERSION VERSION_GREATER_EQUAL 4)
 	list(APPEND CMAKE_SWIG_FLAGS "-doxygen")
+else()
+  if(NOT CMAKE_CUDA_COMPILER STREQUAL NOTFOUND)
+      message(WARNING "SWIG version found < 4.0, python docs will not be generated.")
+  endif()
 endif()
 
 if(Python_VERSION VERSION_GREATER_EQUAL 3)
