@@ -55,6 +55,20 @@ function(create_doxygen_target FLAMEGPU_ROOT DOXY_OUT_DIR XML_PATH)
         set(DOXYGEN_FULL_PATH_NAMES       YES)
         set(DOXYGEN_STRIP_FROM_PATH       ${FLAMEGPU_ROOT})
         set(DOXYGEN_STRIP_FROM_INC_PATH   ${FLAMEGPU_ROOT})
+        # Upgrade warnings
+        set(DOXYGEN_QUIET                 YES) # Supress non warning messages
+        set(DOXYGEN_WARNINGS              YES)
+        set(DOXYGEN_WARN_IF_UNDOCUMENTED  YES)
+        set(DOXYGEN_WARN_IF_DOC_ERROR     YES)
+        set(DOXYGEN_WARN_IF_INCOMPLETE_DOC YES)
+        set(DOXYGEN_WARN_NO_PARAMDOC      YES) # Defaults off, unlike other warning settings
+        if(WARNINGS_AS_ERRORS)
+            if(DOXYGEN_VERSION VERSION_GREATER_EQUAL 1.9.0)
+                set(DOXYGEN_WARN_AS_ERROR     FAIL_ON_WARNINGS)
+            else()
+                set(DOXYGEN_WARN_AS_ERROR     YES)
+            endif()
+        endif()
         # These are required for expanding FGPUException definition macros to be documented
         set(DOXYGEN_ENABLE_PREPROCESSING  YES)
         set(DOXYGEN_MACRO_EXPANSION       YES)
