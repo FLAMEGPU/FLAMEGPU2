@@ -5,6 +5,8 @@
 #include "flamegpu/runtime/flamegpu_api.h"
 
 #include "gtest/gtest.h"
+namespace flamegpu {
+
 
 namespace test_message_AppendTruncate {
     const char *MODEL_NAME = "Model";
@@ -242,3 +244,4 @@ namespace test_message_AppendTruncate {
         }
     }
 }  // namespace test_message_AppendTruncate
+}  // namespace flamegpu

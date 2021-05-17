@@ -2,6 +2,9 @@
 
 #include "gtest/gtest.h"
 
+namespace flamegpu {
+
+
 namespace test_sub_environment_manager {
 
 const int PROPERTY_READ_TEST = 12;
@@ -489,3 +492,4 @@ TEST(SubEnvironmentManagerTest, SubSubHostAPISetConstSub) {
     cm.step();
 }
 }  // namespace test_sub_environment_manager
+}  // namespace flamegpu

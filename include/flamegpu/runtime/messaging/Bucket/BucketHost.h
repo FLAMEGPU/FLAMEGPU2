@@ -8,6 +8,8 @@
 #include "flamegpu/runtime/messaging/Bucket.h"
 #include "flamegpu/runtime/messaging/BruteForce/BruteForceHost.h"
 
+namespace flamegpu {
+
 /**
 * CUDA host side handler of bucket messages
 * Allocates memory for and constructs PBM
@@ -200,5 +202,7 @@ class MsgBucket::Description : public MsgBruteForce::Description {
     */
     IntT getUpperBound() const;
 };
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_BUCKET_BUCKETHOST_H_

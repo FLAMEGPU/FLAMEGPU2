@@ -10,6 +10,8 @@
 #include "flamegpu/model/ModelData.h"
 #include "flamegpu/defines.h"
 
+namespace flamegpu {
+
 class AgentDescription;
 struct AgentFunctionData;
 
@@ -108,5 +110,7 @@ struct AgentData : std::enable_shared_from_this<AgentData> {
      */
     AgentData(std::shared_ptr<const ModelData> model, const std::string &agent_name);
 };
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_MODEL_AGENTDATA_H_

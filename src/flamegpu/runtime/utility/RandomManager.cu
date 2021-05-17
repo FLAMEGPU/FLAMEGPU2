@@ -13,6 +13,8 @@
 #include "flamegpu/gpu/CUDAErrorChecking.h"
 #include "flamegpu/gpu/CUDASimulation.h"
 
+namespace flamegpu {
+
 RandomManager::RandomManager() :
     deviceInitialised(false) {
     reseed(static_cast<unsigned int>(seedFromTime() % UINT_MAX));
@@ -200,3 +202,5 @@ uint64_t RandomManager::seed() {
 curandState *RandomManager::cudaRandomState() {
     return d_random_state;
 }
+
+}  // namespace flamegpu

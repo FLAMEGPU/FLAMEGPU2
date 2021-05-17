@@ -1,4 +1,6 @@
 #include "helpers/host_reductions_common.h"
+namespace flamegpu {
+
 
 namespace test_host_reductions {
 FLAMEGPU_CUSTOM_REDUCTION(customSum, a, b) {
@@ -194,3 +196,4 @@ TEST_F(HostReductionTest, CustomTransformReduceUnsignedInt64) {
     EXPECT_EQ(int32_t_out, std::count(inTransform.begin(), inTransform.end(), static_cast<int>(1)));
 }
 }  // namespace test_host_reductions
+}  // namespace flamegpu

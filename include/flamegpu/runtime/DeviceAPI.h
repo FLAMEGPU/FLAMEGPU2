@@ -21,6 +21,8 @@
 #include "flamegpu/runtime/messaging_device.h"
 #include "flamegpu/defines.h"
 
+namespace flamegpu {
+
 /**
  * @brief  FLAMEGPU_API is a singleton class for the device runtime
  *
@@ -416,5 +418,7 @@ __device__ void DeviceAPI<MsgIn, MsgOut>::AgentOut::genID() const {
     }
 }
 #endif
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_DEVICEAPI_H_

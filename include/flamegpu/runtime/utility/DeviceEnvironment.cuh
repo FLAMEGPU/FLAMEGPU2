@@ -6,6 +6,8 @@
 #include <string>
 #include <cassert>
 
+namespace flamegpu {
+
 #ifndef __CUDACC_RTC__
 namespace flamegpu_internal {
     /**
@@ -130,5 +132,7 @@ __device__ __forceinline__ bool DeviceEnvironment::containsProperty(const char(&
 }
 
 #endif  // __CUDACC_RTC__
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_UTILITY_DEVICEENVIRONMENT_CUH_

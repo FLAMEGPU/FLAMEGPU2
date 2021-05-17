@@ -11,6 +11,8 @@
 #include "flamegpu/runtime/AgentFunction.h"
 #include "flamegpu/model/AgentFunctionData.h"
 
+namespace flamegpu {
+
 /**
  * Within the model hierarchy, this class represents an execution layer for a FLAMEGPU model
  * This class is used to configure which agent and host functions execute at a stage of the model's execution
@@ -335,6 +337,8 @@ HostFunctionCallback* LayerDescription::getHostFunctionCallback(unsigned int ind
         "in LayerDescription.getHostFunctionCallback()\n",
         index, layer->host_functions_callbacks.size());
 }
-#endif
+#endif  // SWIG
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_MODEL_LAYERDESCRIPTION_H_

@@ -3,6 +3,8 @@
 
 #include "flamegpu/model/HostFunctionDescription.h"
 
+namespace flamegpu {
+
 
 /**
  * Constructors
@@ -40,3 +42,5 @@ FLAMEGPU_HOST_FUNCTION_POINTER HostFunctionDescription::getFunctionPtr() const {
 HostFunctionCallback* HostFunctionDescription::getCallbackObject() {
     return callbackObject;
 }
+
+}  // namespace flamegpu

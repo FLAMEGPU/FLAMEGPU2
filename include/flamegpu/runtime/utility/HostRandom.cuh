@@ -6,6 +6,8 @@
 #include "flamegpu/exception/FGPUStaticAssert.h"
 #include "flamegpu/runtime/utility/RandomManager.cuh"
 
+namespace flamegpu {
+
 /**
 * Utility for accessing random generation within host functions
 * This is prefered over using std random, as it uses a common seed with the device random
@@ -110,5 +112,6 @@ inline signed char HostRandom::uniform(const signed char& min, const signed char
     return static_cast<signed char>(rng.getDistribution<int16_t>(dist));
 }
 
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_UTILITY_HOSTRANDOM_CUH_

@@ -22,6 +22,8 @@
 #include <cub/cub.cuh>
 #endif
 
+namespace flamegpu {
+
 CUDAMessage::CUDAMessage(const MsgBruteForce::Data& description, const CUDASimulation& cuda_model)
     : message_description(description)
     , message_count(0)
@@ -265,3 +267,5 @@ void CUDAMessage::buildIndex(CUDAScatter &scatter, const unsigned int &streamId,
 const void *CUDAMessage::getMetaDataDevicePtr() const {
     return specialisation_handler->getMetaDataDevicePtr();
 }
+
+}  // namespace flamegpu

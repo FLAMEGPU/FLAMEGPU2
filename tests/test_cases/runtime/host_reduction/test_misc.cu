@@ -1,5 +1,7 @@
 #include "helpers/host_reductions_common.h"
 
+namespace flamegpu {
+
 namespace test_host_reductions {
 FLAMEGPU_CUSTOM_REDUCTION(customMax2, a, b) {
     return a > b ? a : b;
@@ -269,3 +271,4 @@ TEST(HostMiscTest, ArrayVarNotSupported_transformReduce) {
     EXPECT_THROW(cuda_model.step(), UnsupportedVarType);
 }
 }  // namespace test_host_reductions
+}  // namespace flamegpu

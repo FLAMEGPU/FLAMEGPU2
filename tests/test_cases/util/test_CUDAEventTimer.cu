@@ -5,6 +5,8 @@
 #include "flamegpu/gpu/CUDAErrorChecking.h"
 
 #include "gtest/gtest.h"
+namespace flamegpu {
+
 
 namespace test_CUDAEventTimer {
 
@@ -52,3 +54,4 @@ TEST(TestUtilCUDAEventTimer, CUDAEventTimer) {
 }
 
 }  // namespace test_CUDAEventTimer
+}  // namespace flamegpu

@@ -9,6 +9,8 @@
 #include "flamegpu/pop/MemoryVector.h"
 #include "flamegpu/model/AgentData.h"
 
+namespace flamegpu {
+
 class AgentInstance;
 class AgentDescription;
 class AgentVector_CAgent;
@@ -616,7 +618,12 @@ class AgentVector {
     std::shared_ptr<AgentDataMap> _data;
 };
 
+}  // namespace flamegpu
+
+// @todo - why is this include part way down?
 #include "flamegpu/pop/AgentVector_Agent.h"
+
+namespace flamegpu {
 
 template<typename T>
 T* AgentVector::data(const std::string& variable_name) {
@@ -776,5 +783,8 @@ void AgentVector::py_erase(size_type pos) {
 void AgentVector::py_erase(size_type first, size_type last) {
     erase(first, last);
 }
-#endif
+#endif  // ifdef SWIG
+
+}  // namespace flamegpu
+
 #endif  // INCLUDE_FLAMEGPU_POP_AGENTVECTOR_H_

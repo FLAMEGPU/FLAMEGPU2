@@ -6,9 +6,9 @@
 #include <random>
 #include <string>
 
-#include "flamegpu/runtime/utility/AgentRandom.cuh"
-
 #include "flamegpu/sim/Simulation.h"
+
+namespace flamegpu {
 
 // forward declare classes
 class CUDASimulation;
@@ -38,7 +38,7 @@ class RandomManager {
     /**
      * Inherit size_type from include-public partner class
      */
-    typedef AgentRandom::size_type size_type;
+    typedef unsigned int size_type;
     /**
      * Creates the random manager and calls reseed() with the return value from seedFromTime()
      */
@@ -187,5 +187,7 @@ template<typename T, typename dist>
 T RandomManager::getDistribution(dist &distribution) {
     return distribution(host_rng);
 }
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_UTILITY_RANDOMMANAGER_CUH_

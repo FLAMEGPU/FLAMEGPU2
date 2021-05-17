@@ -11,6 +11,8 @@
 
 #include "flamegpu/pop/MemoryVector.h"
 
+namespace flamegpu {
+
 /**
 * Common variable definition type
 * Used internally by AgentData and MessageData
@@ -124,5 +126,7 @@ struct Variable {
  * map (rather than unordered_map) is used here intentionally, as device agent birth relies on iteration order not changing. 
  */
 typedef std::map<std::string, Variable> VariableMap;
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_MODEL_VARIABLE_H_

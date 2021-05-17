@@ -1,10 +1,11 @@
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_ARRAY2D_ARRAY2DDEVICE_H_
 #define INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_ARRAY2D_ARRAY2DDEVICE_H_
 
-
 #include "flamegpu/runtime/messaging/Array2D.h"
 #include "flamegpu/runtime/messaging/BruteForce/BruteForceDevice.h"
 
+
+namespace flamegpu {
 
 
 /**
@@ -458,5 +459,7 @@ __device__ MsgArray2D::In::Filter::Message& MsgArray2D::In::Filter::Message::ope
         their_x;
     return *this;
 }
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_ARRAY2D_ARRAY2DDEVICE_H_

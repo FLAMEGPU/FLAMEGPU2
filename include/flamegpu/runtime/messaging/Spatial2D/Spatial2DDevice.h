@@ -4,6 +4,8 @@
 #include "flamegpu/runtime/messaging/Spatial2D.h"
 #include "flamegpu/runtime/messaging/BruteForce/BruteForceDevice.h"
 
+namespace flamegpu {
+
 
 /**
  * This class is accessible via DeviceAPI.message_in if MsgSpatial3D is specified in FLAMEGPU_AGENT_FUNCTION
@@ -357,6 +359,8 @@ __device__ inline MsgSpatial2D::In::Filter::Message& MsgSpatial2D::In::Filter::M
     }
     return *this;
 }
+
+}  // namespace flamegpu
 
 
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_SPATIAL2D_SPATIAL2DDEVICE_H_

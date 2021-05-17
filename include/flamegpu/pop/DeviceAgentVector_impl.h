@@ -12,6 +12,8 @@
 #include "flamegpu/pop/AgentVector.h"
 #include "flamegpu/gpu/CUDAFatAgentStateList.h"  // VariableBuffer
 
+namespace flamegpu {
+
 class CUDAScatter;
 class CUDAAgent;
 
@@ -361,5 +363,7 @@ class DeviceAgentVector_impl : protected AgentVector {
     const unsigned int& streamId;
     const cudaStream_t& stream;
 };
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_POP_DEVICEAGENTVECTOR_IMPL_H_

@@ -1,6 +1,8 @@
 #ifndef INCLUDE_FLAMEGPU_IO_LOGGER_H_
 #define INCLUDE_FLAMEGPU_IO_LOGGER_H_
 
+namespace flamegpu {
+
 struct RunLog;
 class RunPlan;
 
@@ -24,5 +26,7 @@ class Logger {
      */
     virtual void log(const RunLog &log, bool logConfig = true, bool logSteps = true, bool logExit = true) const = 0;
 };
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_IO_LOGGER_H_

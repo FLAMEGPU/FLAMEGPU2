@@ -2,6 +2,9 @@
 
 #include "gtest/gtest.h"
 
+namespace flamegpu {
+
+
 TEST(AgentInstanceTest, constructor) {
     ModelDescription model("model");
     AgentDescription& agent = model.newAgent("agent");
@@ -196,3 +199,4 @@ TEST(AgentInstanceTest, getsetVariable) {
         EXPECT_THROW(ai.getVariable<int>("float", 0), InvalidVarType);
     }
 }
+}  // namespace flamegpu

@@ -178,6 +178,7 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/util/SteadyClockTimer.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/SignalHandlers.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/compute_capability.cuh
+    ${FLAMEGPU_ROOT}/include/flamegpu/util/cxxname.hpp
     ${FLAMEGPU_ROOT}/include/flamegpu/util/JitifyCache.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/filesystem.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/StringPair.h

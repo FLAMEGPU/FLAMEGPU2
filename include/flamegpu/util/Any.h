@@ -1,6 +1,9 @@
 #ifndef INCLUDE_FLAMEGPU_UTIL_ANY_H_
 #define INCLUDE_FLAMEGPU_UTIL_ANY_H_
 
+namespace flamegpu {
+namespace util {
+
 /**
  * Minimal std::any replacement, works pre c++17
  */
@@ -66,5 +69,8 @@ struct Any {
      */
     const unsigned int elements;
 };
+
+}  // namespace util
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_UTIL_ANY_H_

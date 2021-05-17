@@ -1,8 +1,12 @@
+// @todo - ifdef visualisation?
 #include "flamegpu/visualiser/AgentStateVis.h"
 
 #include "flamegpu/exception/FGPUException.h"
 #include "flamegpu/visualiser/AgentVis.h"
 #include "flamegpu/visualiser/color/ColorFunction.h"
+
+namespace flamegpu {
+namespace visualiser {
 
 
 AgentStateVis::AgentStateVis(const AgentVis &_parent, const std::string &_state_name)
@@ -47,3 +51,6 @@ void AgentStateVis::clearColor() {
     config.tex_buffers.erase(TexBufferConfig::Color);
     config.color_shader_src = "";
 }
+
+}  // namespace visualiser
+}  // namespace flamegpu

@@ -7,6 +7,8 @@
 #include "flamegpu/sim/RunPlan.h"
 #include "flamegpu/sim/LogFrame.h"
 
+namespace flamegpu {
+
 #ifndef XMLCheckResult
 #define XMLCheckResult(a_eResult) if (a_eResult != tinyxml2::XML_SUCCESS) { FGPUException::setLocation(__FILE__, __LINE__);\
     switch (a_eResult) { \
@@ -220,7 +222,7 @@ tinyxml2::XMLNode *xmlLogger::writeLogFrame(tinyxml2::XMLDocument &doc, const Lo
     return pFrameElement;
 }
 
-void xmlLogger::writeAny(tinyxml2::XMLElement *pElement, const Any &value, const unsigned int &elements) const {
+void xmlLogger::writeAny(tinyxml2::XMLElement *pElement, const util::Any &value, const unsigned int &elements) const {
     std::stringstream ss;
     // Loop through elements, to construct csv string
     for (unsigned int el = 0; el < elements; ++el) {
@@ -255,3 +257,5 @@ void xmlLogger::writeAny(tinyxml2::XMLElement *pElement, const Any &value, const
     }
     pElement->SetText(ss.str().c_str());
 }
+
+}  // namespace flamegpu

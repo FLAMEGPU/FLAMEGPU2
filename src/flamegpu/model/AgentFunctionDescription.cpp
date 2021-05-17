@@ -7,6 +7,9 @@
 #include <regex>
 
 #include "flamegpu/model/AgentFunctionDescription.h"
+#include "flamegpu/util/cxxname.hpp"
+
+namespace flamegpu {
 
 
 /**
@@ -136,12 +139,15 @@ void AgentFunctionDescription::setMessageInput(const std::string &message_name) 
     }
     auto a = mdl->messages.find(message_name);
     if (a != mdl->messages.end()) {
-        if (this->function->msg_in_type == CurveRTCHost::demangle(a->second->getType())) {
+        // Just compare the classname is the same, to allow for the various approaches to namespace use. This should only be required for RTC functions.
+        auto msg_in_classname = util::cxxname::getUnqualifiedName(this->function->msg_in_type);
+        auto demangledClassName = util::cxxname::getUnqualifiedName(CurveRTCHost::demangle(a->second->getType()));
+        if (msg_in_classname == demangledClassName) {
             this->function->message_input = a->second;
         } else {
-            THROW InvalidMessageType("Message ('%s') type '%s' does not match type '%s' applied to FLAMEGPU_AGENT_FUNCTION, "
+            THROW InvalidMessageType("Message ('%s') type '%s' does not match type '%s' applied to FLAMEGPU_AGENT_FUNCTION ('%s'), "
                 "in AgentFunctionDescription::setMessageInput().",
-                message_name.c_str(), CurveRTCHost::demangle(a->second->getType()).c_str(), this->function->msg_in_type.c_str());
+                message_name.c_str(), demangledClassName.c_str(), msg_in_classname.c_str(), this->function->name.c_str());
         }
     } else {
         THROW InvalidMessageName("Model ('%s') does not contain message '%s', "
@@ -169,12 +175,15 @@ void AgentFunctionDescription::setMessageInput(MsgBruteForce::Description &messa
     auto a = mdl->messages.find(message.getName());
     if (a != mdl->messages.end()) {
         if (a->second->description.get() == &message) {
-            if (this->function->msg_in_type == CurveRTCHost::demangle(a->second->getType())) {
+            // Just compare the classname is the same, to allow for the various approaches to namespace use. This should only be required for RTC functions.
+            auto msg_in_classname = util::cxxname::getUnqualifiedName(this->function->msg_in_type);
+            auto demangledClassName = util::cxxname::getUnqualifiedName(CurveRTCHost::demangle(a->second->getType()));
+            if (msg_in_classname == demangledClassName) {
                 this->function->message_input = a->second;
             } else {
-                THROW InvalidMessageType("Message ('%s') type '%s' does not match type '%s' applied to FLAMEGPU_AGENT_FUNCTION, "
+                THROW InvalidMessageType("Message ('%s') type '%s' does not match type '%s' applied to FLAMEGPU_AGENT_FUNCTION ('%s'), "
                     "in AgentFunctionDescription::setMessageInput().",
-                    a->second->name.c_str(), CurveRTCHost::demangle(a->second->getType()).c_str(), this->function->msg_in_type.c_str());
+                    a->second->name.c_str(), demangledClassName.c_str(), msg_in_classname.c_str(), this->function->name.c_str());
             }
         } else {
             THROW InvalidMessage("Message '%s' is not from Model '%s', "
@@ -190,7 +199,7 @@ void AgentFunctionDescription::setMessageInput(MsgBruteForce::Description &messa
 void AgentFunctionDescription::setMessageOutput(const std::string &message_name) {
     if (auto other = function->message_input.lock()) {
         if (message_name == other->name) {
-            THROW InvalidMessageName("Message '%s' is already bound as message input in agent function %s, "
+            THROW InvalidMessageName("Message '%s' is already bound as message output in agent function %s, "
                 "the same message cannot be input and output by the same function, "
                 "in AgentFunctionDescription::setMessageOutput().",
                 message_name.c_str(), function->name.c_str());
@@ -208,15 +217,18 @@ void AgentFunctionDescription::setMessageOutput(const std::string &message_name)
     }
     auto a = mdl->messages.find(message_name);
     if (a != mdl->messages.end()) {
-        if (this->function->msg_out_type == CurveRTCHost::demangle(a->second->getType())) {
+        // Just compare the classname is the same, to allow for the various approaches to namespace use. This should only be required for RTC functions.
+        auto msg_out_classname = util::cxxname::getUnqualifiedName(this->function->msg_out_type);
+        auto demangledClassName = util::cxxname::getUnqualifiedName(CurveRTCHost::demangle(a->second->getType()));
+        if (msg_out_classname == demangledClassName) {
             this->function->message_output = a->second;
             if (this->function->message_output_optional) {
                 a->second->optional_outputs++;
             }
         } else {
-            THROW InvalidMessageType("Message ('%s') type '%s' does not match type '%s' applied to FLAMEGPU_AGENT_FUNCTION, "
+            THROW InvalidMessageType("Message ('%s') type '%s' does not match type '%s' applied to FLAMEGPU_AGENT_FUNCTION ('%s'), "
                 "in AgentFunctionDescription::setMessageOutput().",
-                message_name.c_str(), CurveRTCHost::demangle(a->second->getType()).c_str(), this->function->msg_in_type.c_str());
+                message_name.c_str(), demangledClassName.c_str(), msg_out_classname.c_str(), this->function->name.c_str());
         }
     } else {
         THROW InvalidMessageName("Model ('%s') does not contain message '%s', "
@@ -250,15 +262,18 @@ void AgentFunctionDescription::setMessageOutput(MsgBruteForce::Description &mess
     auto a = mdl->messages.find(message.getName());
     if (a != mdl->messages.end()) {
         if (a->second->description.get() == &message) {
-            if (this->function->msg_out_type == CurveRTCHost::demangle(a->second->getType())) {
+            // Just compare the classname is the same, to allow for the various approaches to namespace use. This should only be required for RTC functions.
+            auto msg_out_classname = util::cxxname::getUnqualifiedName(this->function->msg_out_type);
+            auto demangledClassName = util::cxxname::getUnqualifiedName(CurveRTCHost::demangle(a->second->getType()));
+            if (msg_out_classname == demangledClassName) {
                 this->function->message_output = a->second;
                 if (this->function->message_output_optional) {
                     a->second->optional_outputs++;
                 }
             } else {
-                THROW InvalidMessageType("Message ('%s') type '%s' does not match type '%s' applied to FLAMEGPU_AGENT_FUNCTION, "
+                THROW InvalidMessageType("Message ('%s') type '%s' does not match type '%s' applied to FLAMEGPU_AGENT_FUNCTION ('%s'), "
                     "in AgentFunctionDescription::setMessageOutput().",
-                    a->second->name.c_str(), CurveRTCHost::demangle(a->second->getType()).c_str(), this->function->msg_in_type.c_str());
+                    a->second->name.c_str(), demangledClassName.c_str(), msg_out_classname.c_str(), this->function->name.c_str());
             }
         } else {
             THROW InvalidMessage("Message '%s' is not from Model '%s', "
@@ -470,7 +485,7 @@ AgentFunctionDescription& AgentDescription::newRTCFunction(const std::string& fu
         // append jitify program string and include
         std::string func_src_str = std::string(function_name + "_program\n").append("#include \"flamegpu/runtime/DeviceAPI.h\"\n").append(func_src);
         // Use Regex to get agent function name, and input/output message type
-        std::regex rgx(R"###(.*FLAMEGPU_AGENT_FUNCTION\([ \t]*(\w+),[ \t]*(\w+),[ \t]*(\w+)[ \t]*\))###");
+        std::regex rgx(R"###(.*FLAMEGPU_AGENT_FUNCTION\([ \t]*(\w+),[ \t]*([:\w]+),[ \t]*([:\w]+)[ \t]*\))###");
         std::smatch match;
         if (std::regex_search(func_src_str, match, rgx)) {
             if (match.size() == 4) {
@@ -516,3 +531,5 @@ AgentFunctionDescription& AgentDescription::newRTCFunctionFile(const std::string
         "in AgentDescription::newRTCFunctionFile().",
         agent->name.c_str(), function_name.c_str());
 }
+
+}  // namespace flamegpu

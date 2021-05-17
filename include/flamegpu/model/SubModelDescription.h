@@ -6,6 +6,8 @@
 #include "LayerDescription.h"
 #include "DependencyNode.h"
 
+namespace flamegpu {
+
 class SubAgentDescription;
 class SubEnvironmentDescription;
 struct ModelData;
@@ -113,5 +115,7 @@ class SubModelDescription : public DependencyNode {
      */
     SubModelData *const data;
 };
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_MODEL_SUBMODELDESCRIPTION_H_

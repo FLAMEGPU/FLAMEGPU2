@@ -9,6 +9,8 @@
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/util/StringPair.h"
 
+namespace flamegpu {
+
 /**
  * JSON format StateWriter
  */
@@ -28,7 +30,7 @@ class jsonWriter : public StateWriter {
     jsonWriter(
         const std::string &model_name,
         const unsigned int &sim_instance_id,
-        const StringPairUnorderedMap<std::shared_ptr<AgentVector>> &model_state,
+        const util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> &model_state,
         const unsigned int &iterations,
         const std::string &output_file,
         const Simulation *sim_instance);
@@ -48,5 +50,7 @@ class jsonWriter : public StateWriter {
     template<typename T>
     void doWrite(T &writer);
 };
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_IO_JSONWRITER_H_

@@ -1,6 +1,8 @@
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_HOSTAPI_MACROS_H_
 #define INCLUDE_FLAMEGPU_RUNTIME_HOSTAPI_MACROS_H_
 
+namespace flamegpu {
+
 class HostAPI;
 
 /**
@@ -23,9 +25,9 @@ typedef FLAMEGPU_HOST_FUNCTION_POINTER FLAMEGPU_EXIT_FUNCTION_POINTER;
  * Ugly, but has same usage as device functions
  */
 #define FLAMEGPU_HOST_FUNCTION(funcName) \
-void funcName ## _impl(HostAPI* FLAMEGPU); \
-FLAMEGPU_HOST_FUNCTION_POINTER funcName = funcName ## _impl;\
-void funcName ## _impl(HostAPI* FLAMEGPU)
+void funcName ## _impl(flamegpu::HostAPI* FLAMEGPU); \
+flamegpu::FLAMEGPU_HOST_FUNCTION_POINTER funcName = funcName ## _impl;\
+void funcName ## _impl(flamegpu::HostAPI* FLAMEGPU)
 
 /**
  * Return type for FLAMEGPU conditions
@@ -49,8 +51,10 @@ typedef FLAMEGPU_HOST_CONDITION_POINTER FLAMEGPU_EXIT_CONDITION_POINTER;
  * Ugly, but has same usage as device functions
  */
 #define FLAMEGPU_HOST_CONDITION(funcName) \
-FLAME_GPU_CONDITION_RESULT funcName ## _impl(HostAPI* FLAMEGPU); \
-FLAMEGPU_HOST_CONDITION_POINTER funcName = funcName ## _impl;\
-FLAME_GPU_CONDITION_RESULT funcName ## _impl(HostAPI* FLAMEGPU)
+flamegpu::FLAME_GPU_CONDITION_RESULT funcName ## _impl(flamegpu::HostAPI* FLAMEGPU); \
+flamegpu::FLAMEGPU_HOST_CONDITION_POINTER funcName = funcName ## _impl;\
+flamegpu::FLAME_GPU_CONDITION_RESULT funcName ## _impl(flamegpu::HostAPI* FLAMEGPU)
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_HOSTAPI_MACROS_H_

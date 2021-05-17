@@ -1,15 +1,6 @@
 #ifndef INCLUDE_FLAMEGPU_IO_STATEWRITER_H_
 #define INCLUDE_FLAMEGPU_IO_STATEWRITER_H_
 
-/**
- * @file statewriter.h
- * @author
- * @date
- * @brief
- *
- * \todo longer description
- */
-
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -17,6 +8,8 @@
 #include "flamegpu/exception/FGPUException.h"
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/util/StringPair.h"
+
+namespace flamegpu {
 
 class AgentVector;
 
@@ -40,7 +33,7 @@ class StateWriter {
      */
     StateWriter(const std::string &_model_name,
         const unsigned int &_sim_instance_id,
-        const StringPairUnorderedMap<std::shared_ptr<AgentVector>> &_model_state,
+        const util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> &_model_state,
         const unsigned int &_iterations,
         const std::string &output_file,
         const Simulation *_sim_instance)
@@ -67,12 +60,14 @@ class StateWriter {
     virtual int writeStates(bool prettyPrint) = 0;
 
  protected:
-    const StringPairUnorderedMap<std::shared_ptr<AgentVector>> model_state{};
+    const util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> model_state{};
     unsigned int iterations;
     std::string outputFile;
     const std::string model_name;
     const unsigned int sim_instance_id;
     const Simulation *sim_instance;
 };
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_IO_STATEWRITER_H_

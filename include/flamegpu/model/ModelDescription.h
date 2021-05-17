@@ -12,6 +12,8 @@
 #include "flamegpu/gpu/CUDASimulation.h"
 #include "flamegpu/runtime/messaging/BruteForce/BruteForceHost.h"
 
+namespace flamegpu {
+
 class AgentDescription;
 class LayerDescription;
 class SubModelDescription;
@@ -407,5 +409,7 @@ void ModelDescription::addExitConditionCallback(HostFunctionConditionCallback *f
         }
 }
 #endif
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_MODEL_MODELDESCRIPTION_H_

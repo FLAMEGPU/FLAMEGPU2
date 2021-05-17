@@ -9,6 +9,8 @@
 #include "flamegpu/runtime/messaging/Spatial2D.h"
 #include "flamegpu/runtime/messaging/BruteForce/BruteForceHost.h"
 
+namespace flamegpu {
+
 
 /**
  * CUDA host side handler of spatial messages
@@ -192,6 +194,8 @@ class MsgSpatial2D::Description : public MsgBruteForce::Description {
     float getMaxX() const;
     float getMaxY() const;
 };
+
+}  // namespace flamegpu
 
 
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_SPATIAL2D_SPATIAL2DHOST_H_

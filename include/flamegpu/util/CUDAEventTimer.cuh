@@ -4,6 +4,7 @@
 #include "flamegpu/exception/FGPUException.h"
 #include "flamegpu/gpu/CUDAErrorChecking.h"
 
+namespace flamegpu {
 namespace util {
 
 /**
@@ -91,4 +92,6 @@ class CUDAEventTimer {
 };
 
 }  // namespace util
+}  // namespace flamegpu
+
 #endif  // INCLUDE_FLAMEGPU_UTIL_CUDAEVENTTIMER_CUH_

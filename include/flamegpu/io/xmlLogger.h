@@ -7,15 +7,17 @@
 #include "flamegpu/io/Logger.h"
 #include "flamegpu/util/Any.h"
 
-struct Any;
-struct RunLog;
-struct LogFrame;
-class RunPlan;
 namespace tinyxml2 {
 class XMLNode;
 class XMLDocument;
 class XMLElement;
 }  // namespace tinyxml2
+
+namespace flamegpu {
+
+struct RunLog;
+struct LogFrame;
+class RunPlan;
 
 /**
  * XML format Logger
@@ -82,11 +84,13 @@ class xmlLogger : public Logger{
      * @tparam T Instance of rapidjson::Writer or subclass (e.g. rapidjson::PrettyWriter)
      * @note Templated as can't forward declare rapidjson::Writer<rapidjson::StringBuffer>
      */
-    void writeAny(tinyxml2::XMLElement *element, const Any &value, const unsigned int &elements = 1) const;
+    void writeAny(tinyxml2::XMLElement *element, const util::Any &value, const unsigned int &elements = 1) const;
 
     std::string out_path;
     bool prettyPrint;
     bool truncateFile;
 };
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_IO_XMLLOGGER_H_

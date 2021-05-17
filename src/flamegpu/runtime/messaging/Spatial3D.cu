@@ -12,6 +12,8 @@
 #endif
 
 
+namespace flamegpu {
+
 
 MsgSpatial3D::CUDAModelHandler::CUDAModelHandler(CUDAMessage &a)
   : MsgSpecialisationHandler()
@@ -280,3 +282,5 @@ float MsgSpatial3D::Description::getMaxY() const {
 float MsgSpatial3D::Description::getMaxZ() const {
     return reinterpret_cast<Data *>(message)->maxZ;
 }
+
+}  // namespace flamegpu

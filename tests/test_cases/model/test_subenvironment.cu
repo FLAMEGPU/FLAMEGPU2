@@ -2,6 +2,9 @@
 
 #include "gtest/gtest.h"
 
+namespace flamegpu {
+
+
 namespace test_sub_environment_description {
 
 FLAMEGPU_EXIT_CONDITION(ExitAlways) {
@@ -118,3 +121,4 @@ TEST(SubEnvironmentDescriptionTest, AlreadyBound) {
     EXPECT_THROW(senv.mapProperty("a2_", "b2"), InvalidEnvProperty);
 }
 };  // namespace test_sub_environment_description
+}  // namespace flamegpu

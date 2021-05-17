@@ -4,10 +4,12 @@
 #include "flamegpu/flame_api.h"
 #include "flamegpu/runtime/flamegpu_api.h"
 
+namespace flamegpu {
+namespace tests {
 namespace {
     // Boolean to store the result of the test, in an anonymous namespace (i.e. static)
     bool _CUDASimulationContextCreationTime_result = false;
-}
+}  // namespace
 // Set a threshold value, which is large enough to account for context creation
 // Experimentally cudaFree(0); takes ~2us (nsys) without context creation,
 // while cudaFree(0) including context creation takes ~> 150ms in my linux titan v system.
@@ -43,3 +45,6 @@ void timeCUDASimulationContextCreationTest() {
 bool getCUDASimulationContextCreationTestResult() {
     return _CUDASimulationContextCreationTime_result;
 }
+
+}  // namespace tests
+}  // namespace flamegpu

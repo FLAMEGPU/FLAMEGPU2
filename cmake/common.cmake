@@ -590,6 +590,17 @@ function(add_flamegpu_library NAME SRC FLAMEGPU_ROOT)
             target_compile_definitions(${NAME} PUBLIC "THRUST_IGNORE_DEPRECATED_CPP_DIALECT")
         endif()
     endif()
+
+    # Compiler flags which we do not want to be set to all targets
+    # GNU specific flags.
+    # @todo - make this not just applied to the library, but also executables.
+    # @todo - currently disabled as tinyxml2 include is not marked as system (because it's inherrited via properties on the imported target). Might require https://gitlab.kitware.com/cmake/cmake/-/issues/18040 to be implemented to actually achieve this.
+    # if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        # target_compile_options(${NAME} PRIVATE -Wsuggest-override)
+        # set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -Wsuggest-override")
+        # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wsuggest-override")
+        # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wsuggest-override")
+    # endif() 
         
     # Thrust uses isystem if available
     target_link_libraries(${NAME} Thrust::Thrust)

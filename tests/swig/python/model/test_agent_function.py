@@ -25,23 +25,23 @@ OTHER_STATE_NAME = "State4"
 class AgentFunctionDescriptionTest(TestCase):
 
     agent_fn1 = """
-    FLAMEGPU_AGENT_FUNCTION(agent_fn1, MsgBruteForce, MsgBruteForce) {
+    FLAMEGPU_AGENT_FUNCTION(agent_fn1, flamegpu::MsgBruteForce, flamegpu::MsgBruteForce) {
         # do nothing
-        return ALIVE
+        return flamegpu::ALIVE
     }
     """
     
     agent_fn2 = """
-    FLAMEGPU_AGENT_FUNCTION(agent_fn2, MsgNone, MsgNone) {
+    FLAMEGPU_AGENT_FUNCTION(agent_fn2, flamegpu::MsgNone, flamegpu::MsgNone) {
         # do nothing
-        return ALIVE
+        return flamegpu::ALIVE
     }
     """
     
     agent_fn3 = """
-    FLAMEGPU_AGENT_FUNCTION(agent_fn3, MsgNone, MsgNone) {
+    FLAMEGPU_AGENT_FUNCTION(agent_fn3, flamegpu::MsgNone, flamegpu::MsgNone) {
         # do nothing
-        return ALIVE
+        return flamegpu::ALIVE
     }
     """
 

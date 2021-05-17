@@ -6,30 +6,30 @@ import random as rand
 AGENT_COUNT = 24
 
 out_mandatory = """
-FLAMEGPU_AGENT_FUNCTION(out_mandatory, MsgNone, MsgBucket) {
+FLAMEGPU_AGENT_FUNCTION(out_mandatory, flamegpu::MsgNone, flamegpu::MsgBucket) {
     int id = FLAMEGPU->getVariable<int>("id");
     FLAMEGPU->message_out.setVariable<int>("id", id);
     FLAMEGPU->message_out.setKey(12 + (id/2));
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
 """
 out_optional = """
-FLAMEGPU_AGENT_FUNCTION(out_optional, MsgNone, MsgBucket) {
+FLAMEGPU_AGENT_FUNCTION(out_optional, flamegpu::MsgNone, flamegpu::MsgBucket) {
     if (FLAMEGPU->getVariable<int>("do_output")) {
         int id = FLAMEGPU->getVariable<int>("id");
         FLAMEGPU->message_out.setVariable<int>("id", id);
         FLAMEGPU->message_out.setKey(12 + (id/2));
     }
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
 """
 out_optionalNone = """
-FLAMEGPU_AGENT_FUNCTION(out_optionalNone, MsgNone, MsgBucket) {
-    return ALIVE;
+FLAMEGPU_AGENT_FUNCTION(out_optionalNone, flamegpu::MsgNone, flamegpu::MsgBucket) {
+    return flamegpu::ALIVE;
 }
 """
 in_fn = """
-FLAMEGPU_AGENT_FUNCTION(in, MsgBucket, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(in, flamegpu::MsgBucket, flamegpu::MsgNone) {
     const int id = FLAMEGPU->getVariable<int>("id");
     const int id_m1 = id == 0 ? 0 : id-1;
     unsigned int count = 0;
@@ -41,11 +41,11 @@ FLAMEGPU_AGENT_FUNCTION(in, MsgBucket, MsgNone) {
     FLAMEGPU->setVariable<unsigned int>("count1", count);
     FLAMEGPU->setVariable<unsigned int>("count2", FLAMEGPU->message_in(12 + (id_m1/2)).size());
     FLAMEGPU->setVariable<unsigned int>("sum", sum);
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
 """
 in_range = """
-FLAMEGPU_AGENT_FUNCTION(in_range, MsgBucket, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(in_range, flamegpu::MsgBucket, flamegpu::MsgNone) {
     const int id = FLAMEGPU->getVariable<int>("id");
     const int id_m4 = 12 + ((id / 8) * 4);
     unsigned int count = 0;
@@ -57,7 +57,7 @@ FLAMEGPU_AGENT_FUNCTION(in_range, MsgBucket, MsgNone) {
     FLAMEGPU->setVariable<unsigned int>("count1", count);
     FLAMEGPU->setVariable<unsigned int>("count2", FLAMEGPU->message_in(12 + id/2).size());
     FLAMEGPU->setVariable<unsigned int>("sum", sum);
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
 """
 

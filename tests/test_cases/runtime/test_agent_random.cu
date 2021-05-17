@@ -22,6 +22,8 @@
 
 #include "gtest/gtest.h"
 
+namespace flamegpu {
+
 
 namespace test_agent_random {
 FLAMEGPU_AGENT_FUNCTION(random1_func, MsgNone, MsgNone) {
@@ -246,4 +248,5 @@ TEST(AgentRandomTest, AgentRandomArrayResizeNoExcept) {
     // Success if we get this far without an exception being thrown.
 }
 }  // namespace test_agent_random
+}  // namespace flamegpu
 #endif  // TESTS_TEST_CASES_RUNTIME_TEST_AGENT_RANDOM_H_

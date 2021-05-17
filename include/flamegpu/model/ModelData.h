@@ -12,6 +12,7 @@
 #include "flamegpu/runtime/HostAPI_macros.h"
 #include "flamegpu/runtime/messaging/BruteForce.h"
 
+namespace flamegpu {
 
 class HostFunctionCallback;
 class HostFunctionConditionCallback;
@@ -182,5 +183,7 @@ struct ModelData : std::enable_shared_from_this<ModelData>{
      */
     bool hasSubModelRecursive(const std::shared_ptr<const ModelData> &submodel_data) const;
 };
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_MODEL_MODELDATA_H_

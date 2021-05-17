@@ -11,6 +11,8 @@
 #include "flamegpu/runtime/messaging/None.h"
 #include "flamegpu/runtime/messaging/BruteForce.h"
 
+namespace flamegpu {
+
 typedef int IntT;
 
 /**
@@ -57,5 +59,7 @@ class MsgBucket {
         unsigned int *PBM;
     };
 };
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_BUCKET_H_

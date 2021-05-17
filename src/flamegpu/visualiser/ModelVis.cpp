@@ -1,3 +1,5 @@
+// @todo - ifdef visualisation
+
 #include "flamegpu/visualiser/ModelVis.h"
 
 #include <thread>
@@ -6,7 +8,10 @@
 #include "flamegpu/model/AgentData.h"
 #include "FLAMEGPU_Visualisation.h"
 
-ModelVis::ModelVis(const CUDASimulation &_model)
+namespace flamegpu {
+namespace visualiser {
+
+ModelVis::ModelVis(const flamegpu::CUDASimulation &_model)
     : modelCfg(_model.getModelDescription().name.c_str())
     , autoPalette(std::make_shared<AutoPalette>(Stock::Palettes::DARK2))
     , model(_model)
@@ -202,3 +207,6 @@ LineVis ModelVis::newPolylineSketch(float r, float g, float b, float a) {
     modelCfg.lines.push_back(m);
     return LineVis(m, r, g, b, a);
 }
+
+}  // namespace visualiser
+}  // namespace flamegpu

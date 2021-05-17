@@ -24,6 +24,8 @@
 #include "jitify/jitify.hpp"
 #endif
 
+namespace flamegpu {
+
 class AgentVector;
 class CUDAAgent;
 class CUDAMessage;
@@ -181,12 +183,12 @@ class CUDASimulation : public Simulation {
     /**
      * Returns a reference to the current exit log
      */
-    const RunLog &getRunLog() const;
+    const RunLog &getRunLog() const override;
 #ifdef VISUALISATION
     /**
      * Creates (on first call) and returns the visualisation configuration options for this model instance
      */
-    ModelVis &getVisualisation();
+    visualiser::ModelVis &getVisualisation();
 #endif
 
     /**
@@ -508,7 +510,7 @@ class CUDASimulation : public Simulation {
     /**
      * Empty if getVisualisation() hasn't been called
      */
-    std::unique_ptr<ModelVis> visualisation;
+    std::unique_ptr<visualiser::ModelVis> visualisation;
 #endif
     /**
      * This tracks the current number of alive CUDASimulation instances
@@ -546,5 +548,7 @@ class CUDASimulation : public Simulation {
      */
     static bool AUTO_CUDA_DEVICE_RESET;
 };
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_GPU_CUDASIMULATION_H_

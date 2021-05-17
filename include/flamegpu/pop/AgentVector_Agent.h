@@ -15,6 +15,8 @@
 
 #include "flamegpu/pop/AgentVector.h"
 
+namespace flamegpu {
+
 class AgentInstance;
 
 /**
@@ -379,6 +381,8 @@ std::vector<T> AgentVector_CAgent::getVariableArray(const std::string& variable_
     memcpy(rtn.data(), static_cast<T*>(v_buff->getDataPtr()) + (index * v_buff->getElements()), sizeof(T) * v_buff->getElements());
     return rtn;
 }
-#endif
+#endif  // IFDEF SWIG
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_POP_AGENTVECTOR_AGENT_H_

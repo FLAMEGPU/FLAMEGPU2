@@ -3,6 +3,8 @@
 
 #include "flamegpu/runtime/messaging/None.h"
 
+namespace flamegpu {
+
 struct ModelData;
 
 /**
@@ -32,5 +34,7 @@ class MsgBruteForce {
         unsigned int length = 0;
     };
 };
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_BRUTEFORCE_H_

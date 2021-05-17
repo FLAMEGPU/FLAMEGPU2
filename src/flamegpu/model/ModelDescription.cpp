@@ -8,6 +8,8 @@
 #include "flamegpu/model/SubModelData.h"
 #include "flamegpu/model/SubModelDescription.h"
 
+namespace flamegpu {
+
 /**
 * Constructors
 */
@@ -256,3 +258,5 @@ ModelData::size_type ModelDescription::getLayersCount() const {
     // This down-cast is safe
     return static_cast<ModelData::size_type>(model->layers.size());
 }
+
+}  // namespace flamegpu

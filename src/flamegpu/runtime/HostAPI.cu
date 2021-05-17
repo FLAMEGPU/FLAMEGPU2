@@ -5,6 +5,8 @@
 #include "flamegpu/util/nvtx.h"
 #include "flamegpu/gpu/CUDASimulation.h"
 
+namespace flamegpu {
+
 HostAPI::HostAPI(CUDASimulation &_agentModel,
     RandomManager& rng,
     CUDAScatter &_scatter,
@@ -71,7 +73,6 @@ void HostAPI::resizeTempStorage(const CUB_Config &cc, const unsigned int &items,
 }
 
 
-
 /**
  * Access the current stepCount
  * Sepearate implementation to avoid dependency loop with cuda agent model.
@@ -81,4 +82,4 @@ unsigned int HostAPI::getStepCounter() const {
     return agentModel.getStepCounter();
 }
 
-
+}  // namespace flamegpu

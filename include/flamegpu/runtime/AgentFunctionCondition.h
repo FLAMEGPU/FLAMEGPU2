@@ -8,6 +8,8 @@
 #include "flamegpu/runtime/AgentFunctionCondition_shim.h"
 #include "flamegpu/gpu/CUDAScanCompaction.h"
 
+namespace flamegpu {
+
 // ! FLAMEGPU function return type
 typedef void(AgentFunctionConditionWrapper)(
 #if !defined(SEATBELTS) || SEATBELTS
@@ -65,6 +67,8 @@ __global__ void agent_function_condition_wrapper(
         scanFlag_conditionResult[ReadOnlyDeviceAPI::getThreadIndex()] = conditionResult;
     }
 }
+
+}  // namespace flamegpu
 
 
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_AGENTFUNCTIONCONDITION_H_

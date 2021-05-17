@@ -1,6 +1,8 @@
 #ifndef INCLUDE_FLAMEGPU_DEFINES_H_
 #define INCLUDE_FLAMEGPU_DEFINES_H_
 
+namespace flamegpu {
+
 // Definitions class, for macros and so on.
 /**
  * Type used for generic identifiers, primarily used for Agent ids
@@ -15,5 +17,7 @@ constexpr const char* ID_VARIABLE_NAME = "_id";
  * If this value is changed, things may break
  */
 constexpr id_t ID_NOT_SET = 0;
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_DEFINES_H_

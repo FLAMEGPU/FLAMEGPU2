@@ -6,6 +6,9 @@
 
 #include "config/LineConfig.h"
 
+namespace flamegpu {
+namespace visualiser {
+
 /**
  * Interface for managing a LineConfig
  */
@@ -48,6 +51,9 @@ class LineVis {
      */
     std::shared_ptr<LineConfig> l;
 };
+
+}  // namespace visualiser
+}  // namespace flamegpu
 
 #endif  // VISUALISATION
 #endif  // INCLUDE_FLAMEGPU_VISUALISER_LINEVIS_H_

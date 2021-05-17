@@ -14,6 +14,8 @@
 #include "flamegpu/runtime/HostAPI_macros.h"
 #include "flamegpu/runtime/HostNewAgentAPI.h"
 
+namespace flamegpu {
+
 class CUDAScatter;
 class CUDASimulation;
 class HostAgentAPI;
@@ -143,5 +145,7 @@ void HostAPI::resizeOutputSpace(const unsigned int &items) {
         d_output_space_size = sizeof(T) * items;
     }
 }
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_HOSTAPI_H_

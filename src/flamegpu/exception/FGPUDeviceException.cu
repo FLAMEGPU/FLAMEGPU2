@@ -6,6 +6,8 @@
 #include "flamegpu/gpu/CUDAErrorChecking.h"
 #if !defined(SEATBELTS) || SEATBELTS
 
+namespace flamegpu {
+
 DeviceExceptionManager::DeviceExceptionManager()
     : d_buffer()
     , hd_buffer() {
@@ -206,5 +208,7 @@ std::string DeviceExceptionManager::getErrorString(const DeviceExceptionBuffer &
     }
     return out_buffer;
 }
+
+}  // namespace flamegpu
 
 #endif  // SEATBELTS are off

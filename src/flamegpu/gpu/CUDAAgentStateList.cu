@@ -14,11 +14,13 @@
 #ifdef _MSC_VER
 #pragma warning(push, 1)
 #pragma warning(disable : 4706 4834)
+#endif  // _MSC_VER
 #include <cub/cub.cuh>
+#ifdef _MSC_VER
 #pragma warning(pop)
-#else
-#include <cub/cub.cuh>
-#endif
+#endif  // _MSC_VER
+
+namespace flamegpu {
 
 CUDAAgentStateList::CUDAAgentStateList(
     const std::shared_ptr<CUDAFatAgentStateList> &fat_list,
@@ -266,3 +268,5 @@ std::list<std::shared_ptr<VariableBuffer>> CUDAAgentStateList::getUnboundVariabl
         exclusionSet.insert(a.second);
     return parent_list->getBuffers(exclusionSet);
 }
+
+}  // namespace flamegpu

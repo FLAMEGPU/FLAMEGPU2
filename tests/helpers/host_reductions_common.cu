@@ -1,5 +1,6 @@
 #include "helpers/host_reductions_common.h"
 
+namespace flamegpu {
 namespace test_host_reductions {
 float float_out = 0;
 double double_out = 0;
@@ -15,3 +16,4 @@ std::vector<unsigned int> uint_vec;
 std::vector<int> int_vec;
 
 }  // namespace test_host_reductions
+}  // namespace flamegpu

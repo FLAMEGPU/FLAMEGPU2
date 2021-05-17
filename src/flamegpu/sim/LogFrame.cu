@@ -1,11 +1,13 @@
 #include "flamegpu/sim/LogFrame.h"
 
+namespace flamegpu {
+
 LogFrame::LogFrame()
     : step_count(0) { }
 
 
-LogFrame::LogFrame(const std::map<std::string, Any> &&_environment,
-const std::map<LoggingConfig::NameStatePair,  std::pair<std::map<LoggingConfig::NameReductionFn, Any>, unsigned int>> &&_agents,
+LogFrame::LogFrame(const std::map<std::string, util::Any> &&_environment,
+const std::map<util::StringPair, std::pair<std::map<LoggingConfig::NameReductionFn, util::Any>, unsigned int>> &&_agents,
 const unsigned int &_step_count)
     : environment(_environment)
     , agents(_agents)
@@ -27,7 +29,7 @@ AgentLogFrame LogFrame::getAgent(const std::string &agent_name, const std::strin
     return AgentLogFrame(it->second.first, it->second.second);
 }
 
-AgentLogFrame::AgentLogFrame(const std::map<LoggingConfig::NameReductionFn, Any> &_data, const unsigned int &_count)
+AgentLogFrame::AgentLogFrame(const std::map<LoggingConfig::NameReductionFn, util::Any> &_data, const unsigned int &_count)
     : data(_data)
     , count(_count) { }
 
@@ -56,3 +58,5 @@ double AgentLogFrame::getStandardDev(const std::string &variable_name) const {
     }
     return *static_cast<double *>(it->second.ptr);
 }
+
+}  // namespace flamegpu

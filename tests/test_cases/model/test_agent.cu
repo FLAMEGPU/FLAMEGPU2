@@ -7,6 +7,8 @@
 
 #include "gtest/gtest.h"
 
+// Putting the tests inside the namespace is the minimal effort method of switching over
+namespace flamegpu {
 namespace test_agent {
 const char *MODEL_NAME = "Model";
 const char *AGENT_NAME1 = "Agent1";
@@ -195,9 +197,9 @@ TEST(AgentDescriptionTest, reserved_name) {
     EXPECT_THROW((a.*array_version)("sTate", {}), ReservedName);
 }
 const char* rtc_agent_func = R"###(
-FLAMEGPU_AGENT_FUNCTION(rtc_test_filefunc, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(rtc_test_filefunc, flamegpu::MsgNone, flamegpu::MsgNone) {
     FLAMEGPU->setVariable<int>("x", FLAMEGPU->getVariable<int>("x") + 1);
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
 )###";
 TEST(AgentDescriptionTest, rtc_function_from_file) {
@@ -240,3 +242,4 @@ TEST(AgentDescriptionTest, rtc_function_from_file_missing) {
 }
 
 }  // namespace test_agent
+}  // namespace flamegpu

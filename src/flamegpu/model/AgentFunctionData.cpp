@@ -3,6 +3,9 @@
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/model/AgentFunctionDescription.h"
 #include "flamegpu/runtime/cuRVE/curve_rtc.h"
+#include "flamegpu/util/cxxname.hpp"
+
+namespace flamegpu {
 
 AgentFunctionData::AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string &function_name, AgentFunctionWrapper *agent_function, const std::string &in_type, const std::string &out_type)
     : func(agent_function)
@@ -61,16 +64,22 @@ AgentFunctionData::AgentFunctionData(const std::shared_ptr<const ModelData> &mod
             if (_m != model->messages.end()) {
                 message_input = _m->second;
             }
-        } else if (other.msg_in_type != CurveRTCHost::demangle(std::type_index(typeid(MsgNone)))) {
-            THROW InvalidMessageType("Function '%s' is missing bound input message of type '%s', type provided was '%s'.", other.name.c_str(), other.msg_in_type.c_str(), CurveRTCHost::demangle(std::type_index(typeid(MsgNone))).c_str());
+        } else if (util::cxxname::getUnqualifiedName(other.msg_in_type) != util::cxxname::getUnqualifiedName(CurveRTCHost::demangle(std::type_index(typeid(MsgNone))))) {
+            THROW InvalidMessageType(
+                "Function '%s' is missing bound input message of type '%s', type provided was '%s'.", other.name.c_str(),
+                util::cxxname::getUnqualifiedName(other.msg_in_type).c_str(),
+                util::cxxname::getUnqualifiedName(CurveRTCHost::demangle(std::type_index(typeid(MsgNone)))).c_str());
         }
         if (auto a = other.message_output.lock()) {
             auto _m = model->messages.find(a->name);
             if (_m != model->messages.end()) {
                 message_output = _m->second;
             }
-        } else if (other.msg_out_type != CurveRTCHost::demangle(std::type_index(typeid(MsgNone)))) {
-            THROW InvalidMessageType("Function '%s' is missing bound output message of type '%s', type provided was '%s'.", other.name.c_str(), other.msg_out_type.c_str(), CurveRTCHost::demangle(std::type_index(typeid(MsgNone))).c_str());
+        } else if (util::cxxname::getUnqualifiedName(other.msg_out_type) != util::cxxname::getUnqualifiedName(CurveRTCHost::demangle(std::type_index(typeid(MsgNone))))) {
+            THROW InvalidMessageType(
+                "Function '%s' is missing bound output message of type '%s', type provided was '%s'.", other.name.c_str(),
+                util::cxxname::getUnqualifiedName(other.msg_out_type).c_str(),
+                util::cxxname::getUnqualifiedName(CurveRTCHost::demangle(std::type_index(typeid(MsgNone)))).c_str());
         }
         if (auto a = other.agent_output.lock()) {
             auto _a = model->agents.find(a->name);
@@ -170,3 +179,5 @@ bool AgentFunctionData::operator==(const AgentFunctionData &rhs) const {
 bool AgentFunctionData::operator!=(const AgentFunctionData &rhs) const {
     return !operator==(rhs);
 }
+
+}  // namespace flamegpu

@@ -1,12 +1,3 @@
- /**
- * @file CUDAMessageList.h
- * @author
- * @date
- * @brief
- *
- * \todo longer description
- */
-
 #ifndef INCLUDE_FLAMEGPU_GPU_CUDAMESSAGELIST_H_
 #define INCLUDE_FLAMEGPU_GPU_CUDAMESSAGELIST_H_
 
@@ -14,10 +5,10 @@
 #include <map>
 #include <utility>
 
+namespace flamegpu {
+
 class CUDAScatter;
 class CUDAMessage;
-
-// #define UNIFIED_GPU_MEMORY
 
 /**
  * Map used to map a variable name to buffer
@@ -127,5 +118,7 @@ class CUDAMessageList {
      */
     const CUDAMessage& message;
 };
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_GPU_CUDAMESSAGELIST_H_

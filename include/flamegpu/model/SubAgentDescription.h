@@ -4,6 +4,9 @@
 #include <memory>
 #include <string>
 
+
+namespace flamegpu {
+
 struct ModelData;
 struct SubModelData;
 struct SubAgentData;
@@ -83,5 +86,7 @@ class SubAgentDescription {
      */
     SubAgentData *const data;
 };
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_MODEL_SUBAGENTDESCRIPTION_H_

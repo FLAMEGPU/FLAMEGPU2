@@ -5,7 +5,9 @@
 #include <sstream>
 #include <limits>
 
-const char *FGPUException::file = nullptr;
+namespace flamegpu {
+
+const char * FGPUException::file = nullptr;
 unsigned int FGPUException::line = std::numeric_limits<unsigned int>::max();
 
 FGPUException::FGPUException()
@@ -18,7 +20,7 @@ FGPUException::FGPUException()
     }
 }
 
-const char *FGPUException::what() const noexcept {
+const char * FGPUException::what() const noexcept {
     return err_message.c_str();
 }
 
@@ -48,3 +50,5 @@ std::string FGPUException::parseArgs(const char * format, va_list argp) {
     free(buffer);
     return rtn;
 }
+
+}  // namespace flamegpu

@@ -11,6 +11,8 @@
 #include "flamegpu/model/DependencyNode.h"
 #include "flamegpu/model/LayerDescription.h"
 
+namespace flamegpu {
+
 /**
  * Within the model hierarchy, this class represents a host function for a FLAMEGPU model
  */
@@ -71,5 +73,7 @@ class HostFunctionDescription : public DependencyNode {
     HostFunctionCallback* callbackObject;
     std::string name;
 };
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_MODEL_HOSTFUNCTIONDESCRIPTION_H_

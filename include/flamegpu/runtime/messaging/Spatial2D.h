@@ -3,6 +3,8 @@
 
 #include "flamegpu/runtime/messaging/BruteForce.h"
 
+namespace flamegpu {
+
 /**
  * 2D Continuous spatial messaging functionality
  *
@@ -66,4 +68,7 @@ class MsgSpatial2D {
         float environmentWidth[3];
     };
 };
+
+}  // namespace flamegpu
+
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_SPATIAL2D_H_

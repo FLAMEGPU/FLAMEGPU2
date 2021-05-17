@@ -10,6 +10,8 @@
 #include "flamegpu/runtime/AgentFunction.h"
 #include "flamegpu/runtime/AgentFunctionCondition.h"
 
+namespace flamegpu {
+
 class AgentFunctionDescription;
 class AgentDescription;
 
@@ -150,5 +152,7 @@ struct AgentFunctionData {
      */
     AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string& function_name, const std::string &rtc_function_src, const std::string &in_type, const std::string& out_type, const std::string& code_func_name);
 };
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_MODEL_AGENTFUNCTIONDATA_H_

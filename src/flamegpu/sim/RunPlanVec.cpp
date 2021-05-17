@@ -1,6 +1,8 @@
 #include "flamegpu/sim/RunPlanVec.h"
 #include "flamegpu/model/ModelDescription.h"
 
+namespace flamegpu {
+
 RunPlanVec::RunPlanVec(const ModelDescription &model, unsigned int initial_length)
     : std::vector<RunPlan>(initial_length, RunPlan(model)),
       rand(std::random_device()())
@@ -118,3 +120,5 @@ RunPlanVec RunPlanVec::operator*(const unsigned int& rhs) const {
     }
     return *this;
 }
+
+}  // namespace flamegpu

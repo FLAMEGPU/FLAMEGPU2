@@ -6,6 +6,8 @@
 #include "flamegpu/flame_api.h"
 
 #include "gtest/gtest.h"
+namespace flamegpu {
+
 
 namespace {
 const unsigned int TEST_LEN = 256;
@@ -1036,4 +1038,5 @@ TEST_F(HostRandomTest, UniformLongLongRange) {
     }
 }
 
+}  // namespace flamegpu
 #endif  // TESTS_TEST_CASES_RUNTIME_TEST_HOST_RANDOM_H_

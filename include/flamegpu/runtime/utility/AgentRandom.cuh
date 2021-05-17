@@ -7,6 +7,8 @@
 #include "flamegpu/exception/FGPUStaticAssert.h"
 #include "flamegpu/exception/FGPUDeviceException.h"
 
+namespace flamegpu {
+
 /**
  * Utility for accessing random generation within agent functions
  * This should only be instantiated by FLAMEGPU_API
@@ -14,7 +16,6 @@
  */
 class AgentRandom {
  public:
-    typedef unsigned int size_type;
     /**
      * Constructs an AgentRandom instance
      * @param d_rng ThreadSafe device curand state instance
@@ -125,4 +126,7 @@ __forceinline__ __device__ uint64_t AgentRandom::uniform(const uint64_t& min, co
 #endif
     return static_cast<uint64_t>(min + (max - min) * uniform<double>());
 }
+
+}  // namespace flamegpu
+
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_UTILITY_AGENTRANDOM_CUH_

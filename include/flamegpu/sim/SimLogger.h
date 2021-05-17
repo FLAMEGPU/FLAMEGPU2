@@ -10,6 +10,8 @@
 
 #include "flamegpu/sim/LogFrame.h"
 
+namespace flamegpu {
+
 class RunPlanVec;
 
 /**
@@ -72,5 +74,7 @@ class SimLogger {
      */
     std::condition_variable &log_export_queue_cdn;
 };
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_SIM_SIMLOGGER_H_

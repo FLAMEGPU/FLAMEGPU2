@@ -5,34 +5,68 @@
 #endif
 %}
 
-/* Compilation header includes */
+// Suppress known warnings which do not need to be resolved.
+// Nested struct not currently supported
+#pragma SWIG nowarn=325
+// operator= ignored
+#pragma SWIG nowarn=362
+// operator++ ignored (not supported by python)
+#pragma SWIG nowarn=383
+// Warning 451 Setting a const char * variable may leak memory. Fix is to use a std::string instead?
+#pragma SWIG nowarn=451
+// LoggingConfig.h:65: Function flamegpu::LoggingConfig::Any(ReductionFn) must have a return type. Ignored. This actually a typedef function pointer?
+#pragma SWIG nowarn=504
+
+
+// Other warnings that could be suppressed but we should probably resolve.
+
+// Identifier redefined
+#pragma SWIG nowarn=302
+// Specialization of non-template
+#pragma SWIG nowarn=317
+// operator[] ignored (consider using %extend)
+#pragma SWIG nowarn=389
+// must be defined before it is used as a base class.
+#pragma SWIG nowarn=401
+// Template 'X' was already wrapped
+#pragma SWIG nowarn=404
+// Overloaded method X effectively ignored
+#pragma SWIG nowarn=509
+
+
+// name the module, and enabled directors for callback functions.
+%module(directors="1") pyflamegpu
+
+// Insert the api header and using namespace directive into the _wrap code.
 %{
-/* Includes the header in the wrapper code */
+// Include the main library header, that should subsequently make all other required (public) headers available.
 #include "flamegpu/flame_api.h"
-#include "flamegpu/runtime/HostFunctionCallback.h"
+// #include "flamegpu/runtime/HostFunctionCallback.h"
+using namespace flamegpu; // @todo - is this required? Ideally it shouldn't be, but swig just dumps stuff into the global namespace. 
 %}
 
-// supress known warnings
-//#pragma SWIG nowarn=325,302,401
-//#pragma SWIG nowarn=302
-
-// string support
+// Expand SWIG support for the standard library
 %include <stl.i>
 %include <std_string.i>
 %include <std_vector.i>
 %include <std_unordered_map.i>
 %include <std_array.i>
 %include <std_list.i>
-
-// typemaps for integer types (allows mapping of python types to stdint types)
 %include <stdint.i>
-%include "flamegpu/defines.h"
 
-// Directors required for callback functions
-%module(directors="1") pyflamegpu
+// argc/argv support
+%include <argcargv.i> 
+
+// Swig exception support
+%include "exception.i"
+
+// Enable the use of argc/argv
+%apply (int ARGC, char **ARGV) { (int argc, const char **) }   
 
 
-/* Instantiate the vector types used in the templated variable functions. Types must match those in TEMPLATE_VARIABLE_INSTANTIATE and TEMPLATE_VARIABLE_INSTANTIATE_N macros*/
+// Macros and Templates replated to types.
+
+// Instantiate the vector types used in the templated variable functions. Types must match those in TEMPLATE_VARIABLE_INSTANTIATE and TEMPLATE_VARIABLE_INSTANTIATE_N macros
 %template(Int8Vector) std::vector<int8_t>;
 %template(Int16Vector) std::vector<int16_t>;
 %template(Int32Vector) std::vector<int32_t>;
@@ -76,7 +110,7 @@
 
 /**
  * TEMPLATE_VARIABLE_INSTANTIATE macro
- * Given a function name and a class::function specifier, this macro instaciates a typed version of the function for a set of basic types. 
+ * Given a function name and a class::function specifier, this macro instanciates a typed version of the function for a set of basic types. 
  * E.g. TEMPLATE_VARIABLE_INSTANTIATE(function, SomeClass:function) will generate swig typed versions of the function like the following
  *    typedef SomeClass:function<int> functionInt;
  *    typedef SomeClass:function<float> functionFloat;
@@ -100,7 +134,7 @@ TEMPLATE_VARIABLE_INSTANTIATE_INTS(function, classfunction)
  */
 %define TEMPLATE_VARIABLE_INSTANTIATE_ID(function, classfunction)
 TEMPLATE_VARIABLE_INSTANTIATE(function, classfunction) 
-%template(function ## ID) classfunction<id_t>;
+%template(function ## ID) classfunction<flamegpu::id_t>;
 %enddef
 
 
@@ -128,7 +162,55 @@ TEMPLATE_VARIABLE_INSTANTIATE(function, classfunction)
 // no chars or bool
 %enddef
 
-/* Custom Iterator to Swigify iterable types (RunPlanVec, AgentVector) */
+/* Instantiate array types, these are required by message types when setting dimensions. */
+%template(UIntArray2) std::array<unsigned int, 2>;
+%template(UIntArray3) std::array<unsigned int, 3>;
+
+/* Create some type objects to obtain sizes and type info of flamegpu2 basic types.
+ * It is not required to demangle type names. These can be used to compare directly with the type_index 
+ * returned by the flamegpu2 library
+ */
+%nodefaultctor std::type_index;
+%inline %{
+    namespace Types {
+        template <typename T>
+        struct type_info{
+	        static unsigned int size(){
+		        return sizeof(T);
+	        }
+	
+	        static const char* typeName() {
+                return std::type_index(typeid(T)).name();
+	        }
+
+            static T empty() {
+                return T();
+            }
+
+            static T fromValue(T value) {
+                return value;
+            }
+        };
+        const char* typeName(const std::type_index& type) {
+            return type.name();
+        }
+    }
+%}
+%template(IntType) Types::type_info<int>;
+%template(Int8Type) Types::type_info<int8_t>;
+%template(Int16Type) Types::type_info<int16_t>;
+%template(Int32Type) Types::type_info<int32_t>;
+%template(Int64Type) Types::type_info<int64_t>;
+%template(UIntType) Types::type_info<unsigned int>;
+%template(UInt8Type) Types::type_info<uint8_t>;
+%template(UInt16Type) Types::type_info<uint16_t>;
+%template(UInt32Type) Types::type_info<uint32_t>;
+%template(UInt64Type) Types::type_info<uint64_t>;
+%template(FloatType) Types::type_info<float>;
+%template(DoubleType) Types::type_info<double>;
+//%template(BoolType) Types::type_info<bool>;
+
+// Add custom python code for an iterator class, needed when swigifying iterables.
 %pythoncode %{
 class FLAMEGPUIterator(object):
 
@@ -144,10 +226,7 @@ class FLAMEGPUIterator(object):
             raise StopIteration
 %}
 
-/* Instantiate array types, these are required by message types when setting dimensions. */
-%template(UIntArray2) std::array<unsigned int, 2>;
-%template(UIntArray3) std::array<unsigned int, 3>;
-
+// Exception handling.
 /** Exception handling
  * FGPURuntimeException class is a wrapper class to replace specific instances of FGPUException. It is constructed with a error mesage and type which can be queried to give the original error and the original exception class.
  * The FGPURuntimeException is constructed form the original FGPUException in the handler and then translated into the python version.
@@ -157,7 +236,6 @@ class FLAMEGPUIterator(object):
 // It was hoped that the following would provide a nice repr implementation of the Python FGPURuntimeException objects. It does not.
 //%feature("python:slot", "tp_str", functype="reprfunc") FGPURuntimeException::what
 %inline %{
-
 class FGPURuntimeException : public std::exception {
  public:
      FGPURuntimeException(std::string msg, std::string type) {
@@ -180,8 +258,6 @@ class FGPURuntimeException : public std::exception {
     std::string str_str;
 };
 %}
-// Exception handling
-%include "exception.i"
 
 // swig director exceptions (handle python callback exceptions as C++ exceptions not Runtime errors)
 %feature("director:except") {
@@ -194,7 +270,7 @@ class FGPURuntimeException : public std::exception {
     try {
         $action
     }
-    catch (FGPUException& e) {
+    catch (flamegpu::FGPUException& e) {
         FGPURuntimeException *except = new FGPURuntimeException(std::string(e.what()), std::string(e.exception_type()));
         PyObject *err = SWIG_NewPointerObj(except, SWIGTYPE_p_FGPURuntimeException, 1);
         SWIG_Python_Raise(err, except.type(), SWIGTYPE_p_FGPURuntimeException); 
@@ -211,252 +287,180 @@ class FGPURuntimeException : public std::exception {
     } 
 }
 
-/* Create some type objects to obtain sizes and type info of flamegpu2 basic types.
- * It is not required to demangle type names. These can be used to compare directly with the type_index 
- * returned by the flamegpu2 library
- */
-%nodefaultctor std::type_index;
-%inline %{
-    namespace Types{
-        template <typename T>
-        struct type_info{
-	
-	        static unsigned int size(){
-		        return sizeof(T);
-	        }
-	
-	        static const char* typeName() {
-                return std::type_index(typeid(T)).name();
-	        }
 
-            static T empty() {
-                return T();
-            }
+// Ignore directives. These go before any %includes. 
+// -----------------
 
-            static T fromValue(T value) {
-                return value;
-            }
-        };
+// Disable non RTC function and function condition set methods
+%ignore flamegpu::AgentDescription::newFunction;
+%ignore flamegpu::AgentFunctionDescription::getFunctionPtr;
+%ignore flamegpu::AgentFunctionDescription::setFunctionCondition;
+%ignore flamegpu::AgentFunctionDescription::getConditionPtr;
 
-        const char* typeName(const std::type_index& type) {
-            return type.name();
-        }
-    }
-%}
-%template(IntType) Types::type_info<int>;
-%template(Int8Type) Types::type_info<int8_t>;
-%template(Int16Type) Types::type_info<int16_t>;
-%template(Int32Type) Types::type_info<int32_t>;
-%template(Int64Type) Types::type_info<int64_t>;
-%template(UIntType) Types::type_info<unsigned int>;
-%template(UInt8Type) Types::type_info<uint8_t>;
-%template(UInt16Type) Types::type_info<uint16_t>;
-%template(UInt32Type) Types::type_info<uint32_t>;
-%template(UInt64Type) Types::type_info<uint64_t>;
-%template(FloatType) Types::type_info<float>;
-%template(DoubleType) Types::type_info<double>;
-//%template(BoolType) Types::type_info<bool>;
+// Ignore function which returns something not currently wrapped.
+%ignore flamegpu::AgentInterface::getAgentDescription;
 
+// Disable functions which allow raw C pointers in favour of callback objects
+%ignore flamegpu::ModelDescription::addInitFunction;
+%ignore flamegpu::ModelDescription::addStepFunction;
+%ignore flamegpu::ModelDescription::addExitFunction;
+%ignore flamegpu::ModelDescription::addExitCondition;
+%ignore flamegpu::LayerDescription::addHostFunction;
+
+// Disable functions which use C++ iterators/type_index
+%ignore flamegpu::AgentVector::const_iterator;
+%ignore flamegpu::AgentVector::const_reverse_iterator;
+%ignore flamegpu::AgentVector::iterator;
+%ignore flamegpu::AgentVector::const_iterator;
+%ignore flamegpu::AgentVector::reverse_iterator;
+%ignore flamegpu::AgentVector::const_reverse_iterator;
+%ignore flamegpu::AgentVector::begin;
+%ignore flamegpu::AgentVector::cbegin;
+%ignore flamegpu::AgentVector::end;
+%ignore flamegpu::AgentVector::cend;
+%ignore flamegpu::AgentVector::rbegin;
+%ignore flamegpu::AgentVector::crbegin;
+%ignore flamegpu::AgentVector::rend;
+%ignore flamegpu::AgentVector::crend;
+%ignore flamegpu::AgentVector::insert;
+%ignore flamegpu::AgentVector::erase;
+%ignore flamegpu::AgentVector::getVariableType;
+%ignore flamegpu::AgentVector::getVariableMetaData;
+%ignore flamegpu::AgentVector::data;
+
+%ignore flamegpu::VarOffsetStruct; // not required but defined in HostNewAgentAPI
+
+// Disable functions which use C++ iterators/type_index
+%ignore flamegpu::DeviceAgentVector_impl::const_iterator;
+%ignore flamegpu::DeviceAgentVector_impl::const_reverse_iterator;
+%ignore flamegpu::DeviceAgentVector_impl::iterator;
+%ignore flamegpu::DeviceAgentVector_impl::const_iterator;
+%ignore flamegpu::DeviceAgentVector_impl::reverse_iterator;
+%ignore flamegpu::DeviceAgentVector_impl::const_reverse_iterator;
+%ignore flamegpu::DeviceAgentVector_impl::begin;
+%ignore flamegpu::DeviceAgentVector_impl::cbegin;
+%ignore flamegpu::DeviceAgentVector_impl::end;
+%ignore flamegpu::DeviceAgentVector_impl::cend;
+%ignore flamegpu::DeviceAgentVector_impl::rbegin;
+%ignore flamegpu::DeviceAgentVector_impl::crbegin;
+%ignore flamegpu::DeviceAgentVector_impl::rend;
+%ignore flamegpu::DeviceAgentVector_impl::crend;
+%ignore flamegpu::DeviceAgentVector_impl::insert;
+%ignore flamegpu::DeviceAgentVector_impl::erase;
+%ignore flamegpu::DeviceAgentVector_impl::getVariableType;
+%ignore flamegpu::DeviceAgentVector_impl::getVariableMetaData;
+%ignore flamegpu::DeviceAgentVector_impl::data;
+
+%ignore flamegpu::HostRandom::uniform;
+
+%ignore flamegpu::flamegpu_internal;
+
+
+// Ignores for nested classes, where flatnested is enabled. 
+%feature("flatnested"); // flat nested on
+    // Ignore some of the internal host classes defined for messaging
+    // In the future should these be in the detail namespace which could globally be ignored? // @todo
+    %ignore *::Data;
+    %ignore *::CUDAModelHandler;
+    %ignore *::MetaData;
+
+%feature("flatnested", ""); // flat nested off
+
+// Rename directives. These go before any %includes
+// -----------------
+
+%rename(insert) flamegpu::AgentVector::py_insert; 
+%rename(erase) flamegpu::AgentVector::py_erase; 
+
+%rename(insert) flamegpu::DeviceAgentVector_impl::py_insert; 
+%rename(erase) flamegpu::DeviceAgentVector_impl::py_erase; 
+
+// Renames which require flatnested, as swig/python does not support nested classes.
+%feature("flatnested");     // flat nested on to ensure Config is included
+    %rename (CUDASimulation_Config) flamegpu::CUDASimulation::Config;
+    %rename (Simulation_Config) flamegpu::Simulation::Config;
+
+    %rename (MsgBruteForce_Description) flamegpu::MsgBruteForce::Description;
+    %rename (MsgSpatial2D_Description) flamegpu::MsgSpatial2D::Description;
+    %rename (MsgSpatial3D_Description) flamegpu::MsgSpatial3D::Description;
+    %rename (MsgSpatial3D_MetaData) flamegpu::MsgSpatial3D::MetaData;
+    %rename (MsgArray_Description) flamegpu::MsgArray::Description;
+    %rename (MsgArray2D_Description) flamegpu::MsgArray2D::Description;
+    %rename (MsgArray3D_Description) flamegpu::MsgArray3D::Description;
+    %rename (MsgBucket_Description) flamegpu::MsgBucket::Description;
+
+    %rename (CUDAEnsembleConfig) flamegpu::CUDAEnsemble::EnsembleConfig;
+%feature("flatnested", ""); // flat nested off
+
+// Director features. These go before the %includes.
+// -----------------
 /* Enable callback functions for step, exit and init through the use of "director" which allows Python -> C and C-> Python in callback.
  * FGPU2 supports callback or function pointers so no special tricks are needed. 
  * To prevent raw pointer functions being exposed in Python these are ignored so only the callback versions are accessible.
  */
-%feature("director") HostFunctionCallback;
-%feature("director") HostFunctionConditionCallback;
-%include "flamegpu/runtime/HostFunctionCallback.h"
-/* Rather than input a header with lots of other function pointer stuff just inline declare the required enum */
-enum FLAME_GPU_CONDITION_RESULT { CONTINUE, EXIT };
+%feature("director") flamegpu::HostFunctionCallback;
+%feature("director") flamegpu::HostFunctionConditionCallback;
 
-// Disable non RTC function and function condition set methods
-%ignore AgentDescription::newFunction;
-%ignore AgentFunctionDescription::getFunctionPtr;
-%ignore AgentFunctionDescription::setFunctionCondition;
-%ignore AgentFunctionDescription::getConditionPtr;
+// Apply type mappings go before %includes.
+// -----------------
 
-// Disable functions which allow raw C pointers in favour of callback objects
-%ignore ModelDescription::addInitFunction;
-%ignore ModelDescription::addStepFunction;
-%ignore ModelDescription::addExitFunction;
-%ignore ModelDescription::addExitCondition;
-%ignore LayerDescription::addHostFunction;
+// Manually map all template type redirections defined by AgentLoggingConfig
+%apply double { flamegpu::sum_input_t<float>::result_t, flamegpu::sum_input_t<double>::result_t }
+%apply uint64_t { flamegpu::sum_input_t<char>::result_t, flamegpu::sum_input_t<uint8_t>::result_t, flamegpu::sum_input_t<uint16_t>::result_t, flamegpu::sum_input_t<uint32_t>::result_t, flamegpu::sum_input_t<uint64_t>::result_t }
+%apply int64_t { flamegpu::sum_input_t<int8_t>::result_t, flamegpu::sum_input_t<int16_t>::result_t, flamegpu::sum_input_t<int32_t>::result_t, flamegpu::sum_input_t<int64_t>::result_t }
 
-/* Define ModelData and EnvironmentManager size type (as both are internal to the classes which are not a generated swig object) */
+// Value wrappers also go before includes.
+// -----------------
+// %feature("valuewrapper") flamegpu::DeviceAgentVector; // @todo - this doesn't appear to be required.
+ 
+// Enums / type definitions.
+// -----------------
+
+// Define ModelData and EnvironmentManager size type (as both are internal to the classes which are not a generated swig object)
+// Long term these should probable be either made publicly available or not used where they are not available.
+namespace flamegpu {
 namespace ModelData{
     typedef unsigned int size_type;
 }
 namespace EnvironmentManager{
     typedef unsigned int size_type;
 }
-
-/* SWIG header includes used to generate wrappers */
-%include "flamegpu/model/DependencyNode.h"
-%include "flamegpu/model/DependencyGraph.h"
-%include "flamegpu/model/HostFunctionDescription.h"
-%include "flamegpu/model/ModelDescription.h"
-%include "flamegpu/model/AgentDescription.h"
-%include "flamegpu/model/AgentFunctionDescription.h"
-%include "flamegpu/model/EnvironmentDescription.h"
-%include "flamegpu/model/LayerDescription.h"
-
-%include "flamegpu/model/SubModelDescription.h"
-%include "flamegpu/model/SubAgentDescription.h"
-%include "flamegpu/model/SubEnvironmentDescription.h"
-
-/* DependencyNode template instantiations */
-%template(dependsOn) DependencyNode::dependsOn<DependencyNode>;
-
-/* Include AgentVector/AgentView/AgentInstance */
-// Disable functions which use C++ iterators/type_index
-%ignore AgentVector::const_iterator;
-%ignore AgentVector::const_reverse_iterator;
-%ignore AgentVector::iterator;
-%ignore AgentVector::const_iterator;
-%ignore AgentVector::reverse_iterator;
-%ignore AgentVector::const_reverse_iterator;
-%ignore AgentVector::begin;
-%ignore AgentVector::cbegin;
-%ignore AgentVector::end;
-%ignore AgentVector::cend;
-%ignore AgentVector::rbegin;
-%ignore AgentVector::crbegin;
-%ignore AgentVector::rend;
-%ignore AgentVector::crend;
-%ignore AgentVector::insert;
-%ignore AgentVector::erase;
-%ignore AgentVector::getVariableType;
-%ignore AgentVector::getVariableMetaData;
-%ignore AgentVector::data;
-%rename(insert) AgentVector::py_insert; 
-%rename(erase) AgentVector::py_erase; 
-
-// Extend AgentVector so that it is python iterable
-%extend AgentVector {
-%pythoncode {
-    def __iter__(self):
-        return FLAMEGPUIterator(self)
-    def __len__(self):
-        return self.size()
-}
-    AgentVector::Agent AgentVector::__getitem__(const int &index) {
-        if (index >= 0)
-            return $self->operator[](index);
-        return $self->operator[]($self->size() + index);
-    }
-    void AgentVector::__setitem__(const AgentVector::size_type &index, const AgentVector::Agent &value) {
-        $self->operator[](index).setData(value);
-    }
 }
 
-%include "flamegpu/pop/AgentVector.h"
-%include "flamegpu/pop/AgentVector_Agent.h"
-%include "flamegpu/pop/AgentInstance.h"
+// Forward declare some classes as necessary.
+// -----------------
+// This is required where there are circular dependencies and how swig doesn't #include things. Instead, forward declare the class within the namespace that is otherwise #included.
 
-/* Include Simulation and CUDASimulation */
-%feature("flatnested");     // flat nested on to ensure Config is included
-%rename (CUDASimulation_Config) CUDASimulation::Config;
-%rename (Simulation_Config) Simulation::Config;
-%include <argcargv.i>                                           // Include and apply to swig library healer for processing argc and argv values
-%apply (int ARGC, char **ARGV) { (int argc, const char **) }    // This is required for CUDASimulation.initialise() 
-%include "flamegpu/sim/Simulation.h"
-%include "flamegpu/gpu/CUDASimulation.h"
-%feature("flatnested", ""); // flat nested off
-
-//%include "flamegpu/runtime/DeviceAPI.h"
-%ignore VarOffsetStruct; // not required but defined in HostNewAgentAPI
-%feature("valuewrapper") DeviceAgentVector;
-%include "flamegpu/runtime/HostAPI.h"
-%include "flamegpu/runtime/HostNewAgentAPI.h"
-%ignore DeviceAgentVector_impl::VariableBufferPair; // Not required, internal
-// Disable functions which use C++ iterators/type_index
-%ignore DeviceAgentVector_impl::const_iterator;
-%ignore DeviceAgentVector_impl::const_reverse_iterator;
-%ignore DeviceAgentVector_impl::iterator;
-%ignore DeviceAgentVector_impl::const_iterator;
-%ignore DeviceAgentVector_impl::reverse_iterator;
-%ignore DeviceAgentVector_impl::const_reverse_iterator;
-%ignore DeviceAgentVector_impl::begin;
-%ignore DeviceAgentVector_impl::cbegin;
-%ignore DeviceAgentVector_impl::end;
-%ignore DeviceAgentVector_impl::cend;
-%ignore DeviceAgentVector_impl::rbegin;
-%ignore DeviceAgentVector_impl::crbegin;
-%ignore DeviceAgentVector_impl::rend;
-%ignore DeviceAgentVector_impl::crend;
-%ignore DeviceAgentVector_impl::insert;
-%ignore DeviceAgentVector_impl::erase;
-%ignore DeviceAgentVector_impl::getVariableType;
-%ignore DeviceAgentVector_impl::getVariableMetaData;
-%ignore DeviceAgentVector_impl::data;
-%rename(insert) DeviceAgentVector_impl::py_insert; 
-%rename(erase) DeviceAgentVector_impl::py_erase; 
-// Extend DeviceAgentVector_impl so that it is python iterable
-%extend DeviceAgentVector_impl {
-%pythoncode {
-    def __iter__(self):
-        return FLAMEGPUIterator(self)
-    def __len__(self):
-        return self.size()
-}
-    DeviceAgentVector_impl::Agent DeviceAgentVector_impl::__getitem__(const int &index) {
-        if (index >= 0)
-            return $self->operator[](index);
-        return $self->operator[]($self->size() + index);
-    }
-    void DeviceAgentVector_impl::__setitem__(const size_type &index, const Agent &value) {
-        $self->operator[](index).setData(value);
-    }
-}
-%include "flamegpu/pop/DeviceAgentVector.h"
-%include "flamegpu/pop/DeviceAgentVector_impl.h"
-
-%include "flamegpu/runtime/HostAgentAPI.h"
-/* Extend HostAgentAPI to add a templated version of the sum function (with differing return type) with a different name so this can be instantiated */
-%extend HostAgentAPI{
-    template<typename InT, typename OutT> OutT HostAgentAPI::sumOutT(const std::string& variable) const {
-        return $self->sum<InT,OutT>(variable);
-    }
+namespace flamegpu { 
+class ModelDescription;  // For DependencyGraph circular dependency. 
 }
 
+// If visualisation is enabled, then CUDASimulation provides access to the visualisation class. This requires a forward declaraiton to place it in the correct namespace. 
+#ifdef VISUALISATION
+namespace flamegpu {
+namespace visualiser {
+class ModelVis;
+} // namespace visualiser
+}  // namespace flamegpu
+#endif
 
-/* Extend HostRandom to add a templated version of the uniform function with a different name so this can be instantiated 
- * It is required to ingore the orginal defintion of uniform and seperate the two functions to have a distinct name
- */
-%include "flamegpu/runtime/utility/HostRandom.cuh"
-%ignore HostRandom::uniform;
-%extend HostRandom{
-    template<typename T> inline T uniformRange(const T& min, const T& max) const {
-        return $self->uniform<T>(min, max);
-    }
+// %includes for classes to wrap. 
+// -----------------
+// A number of typedefs are not placed in the namespace, but they are currently unused anyway. 
+// SWIGTYPE_p_FGPURuntimeException - swig only, doesn't need to be namespaced? 
 
-    template<typename T> inline T uniformNoRange() const {
-        return $self->uniform<T>();
-    }
-}
+%include "flamegpu/defines.h" // Provides flamegpu::id_t amongst others.
+%include "flamegpu/runtime/HostAPI_macros.h" // Used in LayerDesc, LayerData, HostFuncDesc
 
-%include "flamegpu/runtime/utility/HostEnvironment.cuh"
+%include "flamegpu/sim/AgentInterface.h"
 
-%include "flamegpu/runtime/AgentFunction_shim.h"
-%include "flamegpu/runtime/AgentFunctionCondition_shim.h"
-
+%include "flamegpu/runtime/HostFunctionCallback.h"
 
 %feature("flatnested");     // flat nested on
-// Ignore some of the internal host classes defined for messaging
-%ignore *::Data;
-%ignore *::CUDAModelHandler;
-%ignore *::MetaData;
-%rename (MsgBruteForce_Description) MsgBruteForce::Description;
-%rename (MsgSpatial2D_Description) MsgSpatial2D::Description;
-%rename (MsgSpatial3D_Description) MsgSpatial3D::Description;
-%rename (MsgSpatial3D_MetaData) MsgSpatial3D::MetaData;
-%rename (MsgArray_Description) MsgArray::Description;
-%rename (MsgArray2D_Description) MsgArray2D::Description;
-%rename (MsgArray3D_Description) MsgArray3D::Description;
-%rename (MsgBucket_Description) MsgBucket::Description;
-
 %include "flamegpu/runtime/messaging/None.h"
 %include "flamegpu/runtime/messaging/None/NoneHost.h"
 %include "flamegpu/runtime/messaging/BruteForce.h"
-%include "flamegpu/runtime/messaging/BruteForce/BruteForceHost.h"
+%include "flamegpu/runtime/messaging/BruteForce/BruteForceHost.h"  // must be before ModelDesc, AgentFunctionDescription and more complex messaging types.
 %include "flamegpu/runtime/messaging/Spatial2D.h"
 %include "flamegpu/runtime/messaging/Spatial2D/Spatial2DHost.h"
 %include "flamegpu/runtime/messaging/Spatial3D.h"
@@ -471,20 +475,99 @@ namespace EnvironmentManager{
 %include "flamegpu/runtime/messaging/Bucket/BucketHost.h"
 %feature("flatnested", "");     // flat nested off
 
-// Manually map all template type redirections defined by AgentLoggingConfig
-%apply double { sum_input_t<float>::result_t, sum_input_t<double>::result_t }
-%apply uint64_t { sum_input_t<char>::result_t, sum_input_t<uint8_t>::result_t, sum_input_t<uint16_t>::result_t, sum_input_t<uint32_t>::result_t, sum_input_t<uint64_t>::result_t }
-%apply int64_t { sum_input_t<int8_t>::result_t, sum_input_t<int16_t>::result_t, sum_input_t<int32_t>::result_t, sum_input_t<int64_t>::result_t }
+%include "flamegpu/model/DependencyNode.h"
+%include "flamegpu/model/DependencyGraph.h"
+
+%include "flamegpu/model/EnvironmentDescription.h"
+%include "flamegpu/model/ModelDescription.h"
+%include "flamegpu/model/HostFunctionDescription.h"
+%include "flamegpu/model/AgentDescription.h"
+%include "flamegpu/model/AgentFunctionDescription.h"
+%include "flamegpu/model/LayerDescription.h"
+%include "flamegpu/model/SubModelDescription.h"
+%include "flamegpu/model/SubAgentDescription.h"
+%include "flamegpu/model/SubEnvironmentDescription.h"
+
+%include "flamegpu/runtime/utility/RandomManager.cuh"
+
+// Include Simulation and CUDASimulation
+%feature("flatnested");     // flat nested on to ensure Config is included
+%include "flamegpu/sim/Simulation.h"
+%include "flamegpu/gpu/CUDASimulation.h"
+%feature("flatnested", ""); // flat nested off
+
+%feature("flatnested");     // flat nested on to ensure Config is included
+%include "flamegpu/gpu/CUDAEnsemble.h"
+%feature("flatnested", ""); // flat nested off
+
+%include "flamegpu/runtime/AgentFunction_shim.h"
+%include "flamegpu/runtime/AgentFunctionCondition_shim.h"
+
+// These are essentially nested classes that have been split out. 
+%include "flamegpu/pop/AgentVector_Agent.h"
+%include "flamegpu/pop/AgentVector.h"
+%include "flamegpu/pop/AgentInstance.h"
+%include "flamegpu/pop/DeviceAgentVector_impl.h"
+%include "flamegpu/pop/DeviceAgentVector.h"
+
+// Must wrap these prior to HostAPI where they are used to avoid issues with no default constructors etc.
+%include "flamegpu/runtime/utility/HostRandom.cuh"
+%include "flamegpu/runtime/utility/HostEnvironment.cuh"
+
+%include "flamegpu/runtime/HostNewAgentAPI.h"
+%include "flamegpu/runtime/HostAgentAPI.h"
+%include "flamegpu/runtime/HostAPI.h" 
 
 // Include logging implementations
-%ignore flamegpu_internal;
 %include "flamegpu/sim/LoggingConfig.h"
 %include "flamegpu/sim/AgentLoggingConfig.h"
-%include "flamegpu/sim/LogFrame.h"
-%template(LogFrameList) std::list<LogFrame>;
+%include "flamegpu/sim/LogFrame.h"  // Includes RunLog. 
 
+// Include ensemble implementations
+%include "flamegpu/sim/RunPlan.h"
+%include "flamegpu/sim/RunPlanVec.h"
+
+// %extend classes go after %includes, but before tempalates (that use them)
+// -----------------
+
+// Extend HostAgentAPI to add a templated version of the sum function (with differing return type) with a different name so this can be instantiated
+%extend flamegpu::HostAgentAPI{
+    template<typename InT, typename OutT> OutT flamegpu::HostAgentAPI::sumOutT(const std::string& variable) const {
+        return $self->sum<InT,OutT>(variable);
+    }
+}
+
+// Extend AgentVector so that it is python iterable
+%extend flamegpu::AgentVector {
+    %pythoncode {
+        def __iter__(self):
+            return FLAMEGPUIterator(self)
+        def __len__(self):
+            return self.size()
+    }
+    flamegpu::AgentVector::Agent flamegpu::AgentVector::__getitem__(const int &index) {
+        if (index >= 0)
+            return $self->operator[](index);
+        return $self->operator[]($self->size() + index);
+    }
+    void flamegpu::AgentVector::__setitem__(const flamegpu::AgentVector::size_type &index, const flamegpu::AgentVector::Agent &value) {
+        $self->operator[](index).setData(value);
+    }
+}
+/* Extend HostRandom to add a templated version of the uniform function with a different name so this can be instantiated 
+ * It is required to ingore the original defintion of uniform and separate the two functions to have a distinct name
+ */
+%extend flamegpu::HostRandom{
+    template<typename T> inline T uniformRange(const T& min, const T& max) const {
+        return $self->uniform<T>(min, max);
+    }
+
+    template<typename T> inline T uniformNoRange() const {
+        return $self->uniform<T>();
+    }
+}
 // Extend RunPlanVec so that it is python iterable
-%extend RunPlanVec {
+%extend flamegpu::RunPlanVec {
 %pythoncode {
     def __iter__(self):
         return FLAMEGPUIterator(self)
@@ -497,206 +580,254 @@ namespace EnvironmentManager{
         else: # "insert" is used as if the vector is a native C++ container
             return self.insert(self, i, x)
    }
-   RunPlan &RunPlanVec::__getitem__(const int &index) {
+   flamegpu::RunPlan &flamegpu::RunPlanVec::__getitem__(const int &index) {
         if (index >= 0)
             return $self->operator[](index);
         return $self->operator[]($self->size() + index);
    }
-   void RunPlanVec::__setitem__(const size_t &index, RunPlan &value) {
+   void RunPlanVec::__setitem__(const size_t &index, flamegpu::RunPlan &value) {
         $self->operator[](index) = value;
    }
 }
 
-// Include ensemble implementations
-%include "flamegpu/sim/RunPlan.h"
-%include "flamegpu/sim/RunPlanVec.h"
-%feature("flatnested");     // flat nested on to ensure Config is included
-%rename (CUDAEnsembleConfig) CUDAEnsemble::EnsembleConfig;
-%include "flamegpu/gpu/CUDAEnsemble.h"
-%feature("flatnested", ""); // flat nested off
-%template(RunLogVec) std::vector<RunLog>;
-
-
-// Instantiate template versions of agent functions from the API
-TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, AgentDescription::newVariable)
-TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariableArray, AgentDescription::newVariableArray)
-
-// Instantiate template versions of AgentVector_Agent/AgentInstance from the API
-TEMPLATE_VARIABLE_INSTANTIATE_ID(setVariable, AgentVector_Agent::setVariable)
-TEMPLATE_VARIABLE_INSTANTIATE_ID(setVariableArray, AgentVector_Agent::setVariableArray)
-TEMPLATE_VARIABLE_INSTANTIATE_ID(getVariable, AgentVector_Agent::getVariable)
-TEMPLATE_VARIABLE_INSTANTIATE_ID(getVariableArray, AgentVector_Agent::getVariableArray)
-
-TEMPLATE_VARIABLE_INSTANTIATE_ID(setVariable, AgentInstance::setVariable)
-TEMPLATE_VARIABLE_INSTANTIATE_ID(setVariableArray, AgentInstance::setVariableArray)
-TEMPLATE_VARIABLE_INSTANTIATE_ID(getVariable, AgentInstance::getVariable)
-TEMPLATE_VARIABLE_INSTANTIATE_ID(getVariableArray, AgentInstance::getVariableArray)
-
-// Instantiate template versions of host agent instance functions from the API
-// Not currently supported: custom reductions, transformations or histograms
-TEMPLATE_VARIABLE_INSTANTIATE(sort, HostAgentAPI::sort)
-TEMPLATE_VARIABLE_INSTANTIATE(count, HostAgentAPI::count)
-TEMPLATE_VARIABLE_INSTANTIATE(min, HostAgentAPI::min)
-TEMPLATE_VARIABLE_INSTANTIATE(max, HostAgentAPI::max)
-TEMPLATE_SUM_INSTANTIATE(HostAgentAPI)
-
-// Instantiate template versions of host environment functions from the API
-TEMPLATE_VARIABLE_INSTANTIATE_ID(getProperty, HostEnvironment::getProperty)
-TEMPLATE_VARIABLE_INSTANTIATE_ID(getPropertyArray, HostEnvironment::getPropertyArray)
-TEMPLATE_VARIABLE_INSTANTIATE_ID(setProperty, HostEnvironment::setProperty)
-TEMPLATE_VARIABLE_INSTANTIATE_ID(setPropertyArray, HostEnvironment::setPropertyArray)
-
-// Instantiate template versions of host agent functions from the API
-TEMPLATE_VARIABLE_INSTANTIATE_ID(getVariable, HostNewAgentAPI::getVariable)
-TEMPLATE_VARIABLE_INSTANTIATE_ID(getVariableArray, HostNewAgentAPI::getVariableArray)
-TEMPLATE_VARIABLE_INSTANTIATE_ID(setVariable, HostNewAgentAPI::setVariable)
-TEMPLATE_VARIABLE_INSTANTIATE_ID(setVariableArray, HostNewAgentAPI::setVariableArray)
-
-// Instantiate template versions of environment description functions from the API
-TEMPLATE_VARIABLE_INSTANTIATE_ID(newProperty, EnvironmentDescription::newProperty)
-TEMPLATE_VARIABLE_INSTANTIATE_ID(newPropertyArray, EnvironmentDescription::newPropertyArray)
-TEMPLATE_VARIABLE_INSTANTIATE_ID(getProperty, EnvironmentDescription::getProperty)
-TEMPLATE_VARIABLE_INSTANTIATE_ID(getPropertyArray, EnvironmentDescription::getPropertyArray)
-//TEMPLATE_VARIABLE_INSTANTIATE_ID(getPropertyAt, EnvironmentDescription::getPropertyArrayAtIndex)
-TEMPLATE_VARIABLE_INSTANTIATE_ID(setProperty, EnvironmentDescription::setProperty)
-TEMPLATE_VARIABLE_INSTANTIATE_ID(setPropertyArray, EnvironmentDescription::setPropertyArray)
-
-// Instantiate template versions of RunPlan functions from the API
-TEMPLATE_VARIABLE_INSTANTIATE_ID(setProperty, RunPlan::setProperty)
-TEMPLATE_VARIABLE_INSTANTIATE_ID(setPropertyArray, RunPlan::setPropertyArray)
-TEMPLATE_VARIABLE_INSTANTIATE_ID(getProperty, RunPlan::getProperty)
-TEMPLATE_VARIABLE_INSTANTIATE_ID(getPropertyArray, RunPlan::getPropertyArray)
-
-// Instantiate template versions of RunPlanVec functions from the API
-TEMPLATE_VARIABLE_INSTANTIATE_ID(setProperty, RunPlanVec::setProperty)
-TEMPLATE_VARIABLE_INSTANTIATE_ID(setPropertyArray, RunPlanVec::setPropertyArray)
-TEMPLATE_VARIABLE_INSTANTIATE(setPropertyUniformDistribution, RunPlanVec::setPropertyUniformDistribution)
-TEMPLATE_VARIABLE_INSTANTIATE(setPropertyUniformRandomDistribution, RunPlanVec::setPropertyUniformRandom)
-TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(setPropertyNormalRandomDistribution, RunPlanVec::setPropertyNormalRandom)
-TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(setPropertyLogNormalRandomDistribution, RunPlanVec::setPropertyLogNormalRandom)
-
-// Instantiate template versions of AgentLoggingConfig functions from the API
-TEMPLATE_VARIABLE_INSTANTIATE(logMean, AgentLoggingConfig::logMean)
-TEMPLATE_VARIABLE_INSTANTIATE(logMin, AgentLoggingConfig::logMin)
-TEMPLATE_VARIABLE_INSTANTIATE(logMax, AgentLoggingConfig::logMax)
-TEMPLATE_VARIABLE_INSTANTIATE(logStandardDev, AgentLoggingConfig::logStandardDev)
-TEMPLATE_VARIABLE_INSTANTIATE(logSum, AgentLoggingConfig::logSum)
-
-// Instantiate template versions of LogFrame functions from the API
-TEMPLATE_VARIABLE_INSTANTIATE_ID(getEnvironmentProperty, LogFrame::getEnvironmentProperty)
-TEMPLATE_VARIABLE_INSTANTIATE_ID(getEnvironmentPropertyArray, LogFrame::getEnvironmentPropertyArray)
-
-// Instantiate template versions of AgentLogFrame functions from the API
-TEMPLATE_VARIABLE_INSTANTIATE(getMin, AgentLogFrame::getMin)
-TEMPLATE_VARIABLE_INSTANTIATE(getMax, AgentLogFrame::getMax)
-TEMPLATE_VARIABLE_INSTANTIATE(getSum, AgentLogFrame::getSum)
-
-// Instantiate template versions of new and get message types from the API
-%template(newMessageBruteForce) ModelDescription::newMessage<MsgBruteForce>;
-%template(newMessageSpatial2D) ModelDescription::newMessage<MsgSpatial2D>;
-%template(newMessageSpatial3D) ModelDescription::newMessage<MsgSpatial3D>;
-%template(newMessageArray) ModelDescription::newMessage<MsgArray>;
-%template(newMessageArray2D) ModelDescription::newMessage<MsgArray2D>;
-%template(newMessageArray3D) ModelDescription::newMessage<MsgArray3D>;
-%template(newMessageBucket) ModelDescription::newMessage<MsgBucket>;
-
-%template(getMessageBruteForce) ModelDescription::getMessage<MsgBruteForce>;
-%template(getMessageSpatial2D) ModelDescription::getMessage<MsgSpatial2D>;
-%template(getMessageSpatial3D) ModelDescription::getMessage<MsgSpatial3D>;
-%template(getMessageArray) ModelDescription::getMessage<MsgArray>;
-%template(getMessageArray2D) ModelDescription::getMessage<MsgArray2D>;
-%template(getMessageArray3D) ModelDescription::getMessage<MsgArray3D>;
-%template(getMessageBucket) ModelDescription::getMessage<MsgBucket>;
-
-// Instantiate template versions of message functions from the API
-TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, MsgBruteForce::Description::newVariable)
-TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, MsgSpatial2D::Description::newVariable)
-TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, MsgSpatial3D::Description::newVariable)
-TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, MsgArray::Description::newVariable)
-TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, MsgArray2D::Description::newVariable)
-TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, MsgArray3D::Description::newVariable)
-TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, MsgBucket::Description::newVariable)
-
-
-// Instantiate template versions of host random functions from the API
-TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(uniform, HostRandom::uniformNoRange)
-TEMPLATE_VARIABLE_INSTANTIATE_INTS(uniform, HostRandom::uniformRange)
-TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(normal, HostRandom::normal)
-TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(logNormal, HostRandom::logNormal)
-
-// Optionally instantiate visualisation classes
-#ifdef VISUALISATION
-%{
-#include "flamegpu/visualiser/visualiser_api.h"
-#include "config/Stock.h"
-%}
-// SWIG is unable to wrap `Color::operator StaticColor()`
-// Therefore we manually add two functions to handle the implict conversion
-%extend AgentStateVis {
-   void AgentStateVis::setColor(const Color &cf) {
-        $self->setColor(cf);
-   }
-}
-%extend AgentVis {
-   void AgentVis::setColor(const Color &cf) {
-        $self->setColor(cf);
-   }
-}
-// Disable functions which return std::type_index
-%ignore getAgentVariableRequiredType;
-// Disable functions which use C++
-%ignore Palette::const_iterator;
-%ignore Palette::begin;
-%ignore Palette::end;
-%ignore Palette::colors;  // This is protected, i've no idea why SWIG is trying to wrap it
-// Extend Palette
-%extend Palette {
-%pythoncode {
-    def __iter__(self):
-        return FLAMEGPUIterator(self)
-    def __len__(self):
-        return self.size()
-}
-    Color Palette::__getitem__(const int &index) {
+// Extend flamegpu::DeviceAgentVector so that it is python iterable
+%extend flamegpu::DeviceAgentVector_impl {
+    %pythoncode {
+        def __iter__(self):
+            return FLAMEGPUIterator(self)
+        def __len__(self):
+            return self.size()
+    }
+    flamegpu::DeviceAgentVector_impl::Agent flamegpu::DeviceAgentVector_impl::__getitem__(const int &index) {
         if (index >= 0)
             return $self->operator[](index);
         return $self->operator[]($self->size() + index);
     }
-    // Palettes are currently immutable
-    //void Palette::__setitem__(const AgentVector::size_type &index, const Color &value) {
-    //     $self->operator[](index) = value;
-    //}
+    void flamegpu::DeviceAgentVector_impl::__setitem__(const size_type &index, const Agent &value) {
+        $self->operator[](index).setData(value);
+    }
 }
-%include "flamegpu/visualiser/AgentStateVis.h"
-%include "flamegpu/visualiser/AgentVis.h"
-%include "flamegpu/visualiser/LineVis.h"
-%include "flamegpu/visualiser/ModelVis.h"
-%include "flamegpu/visualiser/StaticModelVis.h"
-%include "flamegpu/visualiser/color/Color.h"
-%include "flamegpu/visualiser/color/Palette.h"
-%include "flamegpu/visualiser/color/DiscreteColor.h"
-%include "flamegpu/visualiser/color/StaticColor.h"
-%include "flamegpu/visualiser/color/HSVInterpolation.h"
-%include "flamegpu/visualiser/color/ViridisInterpolation.h"
-%include "config/Stock.h"
-// Manually create the two DiscretColor templates
-%template(iDiscreteColor) DiscreteColor<int32_t>;
-%template(uDiscreteColor) DiscreteColor<uint32_t>;
-// This messes with a define, so must occur after all other files which might check VISUALISATION
-// #define VISUALISATION false, still causes #ifdef VISUALISATION as true
-// I tried `%inline %{const boolean VISUALISATION = false;%}` but swig didnt like it
-#undef VISUALISATION
-#define VISUALISATION true
-#else
-#define VISUALISATION false
+
+// Template expansions. Go after the %include and %extension
+// -----------------
+
+// DependencyNode template instantiations
+%template(dependsOn) flamegpu::DependencyNode::dependsOn<flamegpu::DependencyNode>;
+
+%template(LogFrameList) std::list<flamegpu::LogFrame>;
+%template(RunLogVec) std::vector<flamegpu::RunLog>;
+ 
+// Instantiate template versions of agent functions from the API
+TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, flamegpu::AgentDescription::newVariable)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariableArray, flamegpu::AgentDescription::newVariableArray)
+
+// Instantiate template versions of AgentVector_Agent/AgentInstance from the API
+TEMPLATE_VARIABLE_INSTANTIATE_ID(setVariable, flamegpu::AgentVector_Agent::setVariable)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(setVariableArray, flamegpu::AgentVector_Agent::setVariableArray)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(getVariable, flamegpu::AgentVector_Agent::getVariable)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(getVariableArray, flamegpu::AgentVector_Agent::getVariableArray)
+
+TEMPLATE_VARIABLE_INSTANTIATE_ID(setVariable, flamegpu::AgentInstance::setVariable)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(setVariableArray, flamegpu::AgentInstance::setVariableArray)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(getVariable, flamegpu::AgentInstance::getVariable)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(getVariableArray, flamegpu::AgentInstance::getVariableArray)
+
+// Instantiate template versions of host agent instance functions from the API
+// Not currently supported: custom reductions, transformations or histograms
+TEMPLATE_VARIABLE_INSTANTIATE(sort, flamegpu::HostAgentAPI::sort)
+TEMPLATE_VARIABLE_INSTANTIATE(count, flamegpu::HostAgentAPI::count)
+TEMPLATE_VARIABLE_INSTANTIATE(min, flamegpu::HostAgentAPI::min)
+TEMPLATE_VARIABLE_INSTANTIATE(max, flamegpu::HostAgentAPI::max)
+TEMPLATE_SUM_INSTANTIATE(flamegpu::HostAgentAPI)
+
+// Instantiate template versions of host environment functions from the API
+TEMPLATE_VARIABLE_INSTANTIATE_ID(getProperty, flamegpu::HostEnvironment::getProperty)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(getPropertyArray, flamegpu::HostEnvironment::getPropertyArray)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(setProperty, flamegpu::HostEnvironment::setProperty)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(setPropertyArray, flamegpu::HostEnvironment::setPropertyArray)
+
+// Instantiate template versions of host agent functions from the API
+TEMPLATE_VARIABLE_INSTANTIATE_ID(getVariable, flamegpu::HostNewAgentAPI::getVariable)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(getVariableArray, flamegpu::HostNewAgentAPI::getVariableArray)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(setVariable, flamegpu::HostNewAgentAPI::setVariable)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(setVariableArray, flamegpu::HostNewAgentAPI::setVariableArray)
+
+
+// Instantiate template versions of environment description functions from the API
+TEMPLATE_VARIABLE_INSTANTIATE_ID(newProperty, flamegpu::EnvironmentDescription::newProperty)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(newPropertyArray, flamegpu::EnvironmentDescription::newPropertyArray)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(getProperty, flamegpu::EnvironmentDescription::getProperty)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(getPropertyArray, flamegpu::EnvironmentDescription::getPropertyArray)
+//TEMPLATE_VARIABLE_INSTANTIATE_ID(getPropertyAt, flamegpu::EnvironmentDescription::getPropertyArrayAtIndex)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(setProperty, flamegpu::EnvironmentDescription::setProperty)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(setPropertyArray, flamegpu::EnvironmentDescription::setPropertyArray)
+
+// Instantiate template versions of RunPlan functions from the API
+TEMPLATE_VARIABLE_INSTANTIATE_ID(setProperty, flamegpu::RunPlan::setProperty)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(setPropertyArray, flamegpu::RunPlan::setPropertyArray)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(getProperty, flamegpu::RunPlan::getProperty)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(getPropertyArray, flamegpu::RunPlan::getPropertyArray)
+
+// Instantiate template versions of RunPlanVec functions from the API
+TEMPLATE_VARIABLE_INSTANTIATE_ID(setProperty, flamegpu::RunPlanVec::setProperty)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(setPropertyArray, flamegpu::RunPlanVec::setPropertyArray)
+TEMPLATE_VARIABLE_INSTANTIATE(setPropertyUniformDistribution, flamegpu::RunPlanVec::setPropertyUniformDistribution)
+TEMPLATE_VARIABLE_INSTANTIATE(setPropertyUniformRandomDistribution, flamegpu::RunPlanVec::setPropertyUniformRandom)
+TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(setPropertyNormalRandomDistribution, flamegpu::RunPlanVec::setPropertyNormalRandom)
+TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(setPropertyLogNormalRandomDistribution, flamegpu::RunPlanVec::setPropertyLogNormalRandom)
+
+// Instantiate template versions of AgentLoggingConfig functions from the API
+TEMPLATE_VARIABLE_INSTANTIATE(logMean, flamegpu::AgentLoggingConfig::logMean)
+TEMPLATE_VARIABLE_INSTANTIATE(logMin, flamegpu::AgentLoggingConfig::logMin)
+TEMPLATE_VARIABLE_INSTANTIATE(logMax, flamegpu::AgentLoggingConfig::logMax)
+TEMPLATE_VARIABLE_INSTANTIATE(logStandardDev, flamegpu::AgentLoggingConfig::logStandardDev)
+TEMPLATE_VARIABLE_INSTANTIATE(logSum, flamegpu::AgentLoggingConfig::logSum)
+
+// Instantiate template versions of LogFrame functions from the API
+TEMPLATE_VARIABLE_INSTANTIATE_ID(getEnvironmentProperty, flamegpu::LogFrame::getEnvironmentProperty)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(getEnvironmentPropertyArray, flamegpu::LogFrame::getEnvironmentPropertyArray)
+
+// Instantiate template versions of AgentLogFrame functions from the API
+TEMPLATE_VARIABLE_INSTANTIATE(getMin, flamegpu::AgentLogFrame::getMin)
+TEMPLATE_VARIABLE_INSTANTIATE(getMax, flamegpu::AgentLogFrame::getMax)
+TEMPLATE_VARIABLE_INSTANTIATE(getSum, flamegpu::AgentLogFrame::getSum)
+
+// Instantiate template versions of new and get message types from the API
+%template(newMessageBruteForce) flamegpu::ModelDescription::newMessage<flamegpu::MsgBruteForce>;
+%template(newMessageSpatial2D) flamegpu::ModelDescription::newMessage<flamegpu::MsgSpatial2D>;
+%template(newMessageSpatial3D) flamegpu::ModelDescription::newMessage<flamegpu::MsgSpatial3D>;
+%template(newMessageArray) flamegpu::ModelDescription::newMessage<flamegpu::MsgArray>;
+%template(newMessageArray2D) flamegpu::ModelDescription::newMessage<flamegpu::MsgArray2D>;
+%template(newMessageArray3D) flamegpu::ModelDescription::newMessage<flamegpu::MsgArray3D>;
+%template(newMessageBucket) flamegpu::ModelDescription::newMessage<flamegpu::MsgBucket>;
+
+%template(getMessageBruteForce) flamegpu::ModelDescription::getMessage<MsgBruteForce>;
+%template(getMessageSpatial2D) flamegpu::ModelDescription::getMessage<MsgSpatial2D>;
+%template(getMessageSpatial3D) flamegpu::ModelDescription::getMessage<MsgSpatial3D>;
+%template(getMessageArray) flamegpu::ModelDescription::getMessage<MsgArray>;
+%template(getMessageArray2D) flamegpu::ModelDescription::getMessage<MsgArray2D>;
+%template(getMessageArray3D) flamegpu::ModelDescription::getMessage<MsgArray3D>;
+%template(getMessageBucket) flamegpu::ModelDescription::getMessage<MsgBucket>;
+
+
+// Instantiate template versions of message functions from the API
+TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, flamegpu::MsgBruteForce::Description::newVariable)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, flamegpu::MsgSpatial2D::Description::newVariable)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, flamegpu::MsgSpatial3D::Description::newVariable)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, flamegpu::MsgArray::Description::newVariable)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, flamegpu::MsgArray2D::Description::newVariable)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, flamegpu::MsgArray3D::Description::newVariable)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, flamegpu::MsgBucket::Description::newVariable)
+
+// Instantiate template versions of host random functions from the API
+
+// Instantiate template versions of host random functions from the API
+TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(uniform, flamegpu::HostRandom::uniformNoRange)
+TEMPLATE_VARIABLE_INSTANTIATE_INTS(uniform, flamegpu::HostRandom::uniformRange)
+TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(normal, flamegpu::HostRandom::normal)
+TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(logNormal, flamegpu::HostRandom::logNormal)
+
+
+// Include visualisation support if enabled.
+#ifdef VISUALISATION
+    // Include relevenat headers in the generated c++
+    // @todo - Need to put the vis repo into a subfolder for more sensible include paths
+    %{
+        #include "flamegpu/visualiser/visualiser_api.h"
+        #include "config/Stock.h"
+        using namespace flamegpu;
+        using namespace flamegpu::visualiser;
+    %}
+
+    // Ignore directives. These go before any %includes. 
+    // -----------------
+    // Disable functions which return std::type_index
+    %ignore flamegpu::visualiser::ColorFunction::getAgentVariableRequiredType;
+    %ignore flamegpu::visualiser::DiscreteColor::getAgentVariableRequiredType;
+    %ignore flamegpu::visualiser::HSVInterpolation::getAgentVariableRequiredType;
+    %ignore flamegpu::visualiser::ViridisInterpolation::getAgentVariableRequiredType;
+    // Disable functions which use C++
+    %ignore flamegpu::visualiser::Color::operator StaticColor;
+    %ignore flamegpu::visualiser::Palette::const_iterator;
+    %ignore flamegpu::visualiser::Palette::begin;
+    %ignore flamegpu::visualiser::Palette::end;
+    %ignore flamegpu::visualiser::Palette::colors;  // This is protected, i've no idea why SWIG is trying to wrap it
+    // Rename directives. These go before any %includes
+    // -----------------
+    // Director features. These go before the %includes.
+    // -----------------
+    // Enums / type definitions.
+    // -----------------
+    // %includes for classes to wrap. 
+    // -----------------
+    %include "config/Stock.h"
+    %include "flamegpu/visualiser/StaticModelVis.h"
+    %include "flamegpu/visualiser/AgentStateVis.h"
+    %include "flamegpu/visualiser/AgentVis.h"
+    %include "flamegpu/visualiser/LineVis.h"
+    %include "flamegpu/visualiser/ModelVis.h"
+    %include "flamegpu/visualiser/color/Color.h"
+    %include "flamegpu/visualiser/color/ColorFunction.h"
+    %include "flamegpu/visualiser/color/Palette.h"
+    %include "flamegpu/visualiser/color/DiscreteColor.h"
+    %include "flamegpu/visualiser/color/StaticColor.h"
+    %include "flamegpu/visualiser/color/HSVInterpolation.h"
+    %include "flamegpu/visualiser/color/ViridisInterpolation.h"
+    // @todo - this probably does need to be wrapped.
+    // %extend classes go after %includes.
+    // -----------------
+    // SWIG is unable to wrap `Color::operator StaticColor()`
+    // Therefore we manually add two functions to handle the implict conversion
+    %extend flamegpu::visualiser::AgentStateVis {
+    void flamegpu::visualiser::AgentStateVis::setColor(const flamegpu::visualiser::Color &cf) {
+            $self->setColor(cf);
+    }
+    }
+    %extend flamegpu::visualiser::AgentVis {
+    void flamegpu::visualiser::AgentVis::setColor(const flamegpu::visualiser::Color &cf) {
+            $self->setColor(cf);
+    }
+    }
+    // Extend Palette
+    %extend flamegpu::visualiser::Palette {
+        %pythoncode {
+            def __iter__(self):
+                return FLAMEGPUIterator(self)
+            def __len__(self):
+                return self.size()
+        }
+        flamegpu::visualiser::Color flamegpu::visualiser::Palette::__getitem__(const int &index) {
+            if (index >= 0)
+                return $self->operator[](index);
+            return $self->operator[]($self->size() + index);
+        }
+        // Palettes are currently immutable
+        //void Palette::__setitem__(const AgentVector::size_type &index, const Color &value) {
+        //     $self->operator[](index) = value;
+        //}
+    }
+
+    // Template expansions. Go after the %include and extends
+    // -----------------
+    // Manually create the two DiscretColor templates
+    %template(iDiscreteColor) flamegpu::visualiser::DiscreteColor<int32_t>;
+    %template(uDiscreteColor) flamegpu::visualiser::DiscreteColor<uint32_t>;
+
+    // Redefine the value to ensure it makes it into the python modules
+    #undef VISUALISATION
+    #define VISUALISATION true
+#else 
+    // Define in the python module as false.
+    #define VISUALISATION false
 #endif
 
+// Define pyflamegpu.SEATBELTS as true or false as appropriate, so tests can be disabled / enabled  
 #if defined(SEATBELTS) && SEATBELTS
-#undef SEATBELTS
-#define SEATBELTS true
+    #undef SEATBELTS
+    #define SEATBELTS true
 #elif defined(SEATBELTS)
-#undef SEATBELTS
-#define SEATBELTS false
+    #undef SEATBELTS
+    #define SEATBELTS false
 #else
-#define SEATBELTS false
+    #define SEATBELTS false
 #endif

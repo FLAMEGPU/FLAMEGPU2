@@ -1,4 +1,6 @@
 #include "helpers/host_reductions_common.h"
+namespace flamegpu {
+
 
 namespace test_host_reductions {
 FLAMEGPU_STEP_FUNCTION(step_sumfloat) {
@@ -179,3 +181,4 @@ TEST_F(HostReductionTest, SumUnsignedInt64) {
     EXPECT_EQ(uint64_t_out, std::accumulate(in.begin(), in.end(), 0llu));
 }
 }  // namespace test_host_reductions
+}  // namespace flamegpu

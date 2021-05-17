@@ -9,6 +9,9 @@
 #include "flamegpu/visualiser/color/Color.h"
 #include "flamegpu/visualiser/color/ViridisInterpolation.h"
 
+namespace flamegpu {
+namespace visualiser {
+
 class AutoPalette;
 
 /**
@@ -444,5 +447,8 @@ static const RdYlBu RDYLBU;
 static const PiYG PIYG;
 }  // namespace Palettes
 }  // namespace Stock
+
+}  // namespace visualiser
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_VISUALISER_COLOR_PALETTE_H_

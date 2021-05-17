@@ -13,12 +13,16 @@
 #include "jitify/jitify.hpp"
 #endif
 
+namespace flamegpu {
+
 
 const char* CurveRTCHost::curve_rtc_dynamic_h_template = R"###(dynamic/curve_rtc_dynamic.h
 #ifndef CURVE_RTC_DYNAMIC_H_
 #define CURVE_RTC_DYNAMIC_H_
 
 #include "flamegpu/exception/FGPUDeviceException.h"
+
+namespace flamegpu {
 
 template <unsigned int N, unsigned int I> struct StringCompare {
     __device__ inline static bool strings_equal_loop(const char(&a)[N], const char(&b)[N]) {
@@ -154,8 +158,12 @@ __device__ __forceinline__ void Curve::setNewAgentArrayVariable(const char(&name
 $DYNAMIC_SETNEWAGENTARRAYVARIABLE_IMPL    
 }
 
+}  // namespace flamegpu 
+
 // has to be included after definition of curve namespace
 #include "flamegpu/runtime/utility/DeviceEnvironment.cuh"
+
+namespace flamegpu {
 
 template<typename T, unsigned int N>
 __device__ __forceinline__ T DeviceEnvironment::getProperty(const char(&name)[N]) const {
@@ -171,6 +179,8 @@ template<unsigned int N>
 __device__ __forceinline__ bool DeviceEnvironment::containsProperty(const char(&name)[N]) const {
 $DYNAMIC_ENV_CONTAINTS_IMPL
 }
+
+}  // namespace flamegpu
 
 #endif  // CURVE_RTC_DYNAMIC_H_
 )###";
@@ -788,7 +798,10 @@ void CurveRTCHost::updateEnvCache(const char *env_ptr) {
     }
 }
 void CurveRTCHost::updateDevice(const jitify::experimental::KernelInstantiation& instance) {
-    std::string cache_var_name = getVariableSymbolName();
+    // The namespace is required here, but not in other uses of getVariableSymbolName.
+    std::string cache_var_name = std::string("flamegpu::") + getVariableSymbolName();
     CUdeviceptr d_var_ptr = instance.get_global_ptr(cache_var_name.c_str());
     gpuErrchkDriverAPI(cuMemcpyHtoD(d_var_ptr, h_data_buffer, data_buffer_size));
 }
+
+}  // namespace flamegpu

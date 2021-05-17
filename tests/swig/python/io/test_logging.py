@@ -35,12 +35,12 @@ class logging_ensemble_init(pyflamegpu.HostFunctionCallback):
 class LoggingTest(TestCase):
 
     agent_fn1 = """
-        FLAMEGPU_AGENT_FUNCTION(agent_fn1, MsgNone, MsgNone) {
+        FLAMEGPU_AGENT_FUNCTION(agent_fn1, flamegpu::MsgNone, flamegpu::MsgNone) {
             // increment all variables
             FLAMEGPU->setVariable<float>("float_var", FLAMEGPU->getVariable<float>("float_var") + 1.0f);
             FLAMEGPU->setVariable<int>("int_var", FLAMEGPU->getVariable<int>("int_var") + 1);
             FLAMEGPU->setVariable<unsigned int>("uint_var", FLAMEGPU->getVariable<unsigned int>("uint_var") + 1);
-            return ALIVE;
+            return flamegpu::ALIVE;
         }
         """
 

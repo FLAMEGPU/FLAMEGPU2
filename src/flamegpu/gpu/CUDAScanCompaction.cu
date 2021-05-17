@@ -4,6 +4,8 @@
 #include "flamegpu/gpu/CUDAErrorChecking.h"
 #include "flamegpu/gpu/CUDASimulation.h"
 
+namespace flamegpu {
+
 /**
  * CUDAScanCompaction methods
  */
@@ -63,3 +65,5 @@ void CUDAScanCompactionConfig::resize_scan_flag(const unsigned int& count) {
         scan_flag_len = count + 1;
     }
 }
+
+}  // namespace flamegpu

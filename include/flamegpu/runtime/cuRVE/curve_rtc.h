@@ -12,6 +12,8 @@ namespace experimental {
 class KernelInstantiation;
 }
 }
+namespace flamegpu {
+
 
 /**
  * The Curve RTC host is a class for dynamically building a header file for use in RTC functions.
@@ -312,4 +314,6 @@ class CurveRTCHost {
      */
     std::map<std::string, RTCEnvVariableProperties> RTCEnvVariables;
 };
+}  // namespace flamegpu
+
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_CURVE_CURVE_RTC_H_

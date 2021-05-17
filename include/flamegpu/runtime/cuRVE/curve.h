@@ -23,6 +23,7 @@
 
 #include "flamegpu/exception/FGPUDeviceException.h"
 
+namespace flamegpu {
 
 /** @brief    A cuRVE instance.
  *
@@ -1098,4 +1099,7 @@ __device__ __host__ __forceinline__ const char* Curve::getDeviceErrorString(Devi
 __device__ __forceinline__ Curve::DeviceError Curve::getLastDeviceError() {
     return curve_internal::d_curve_error;
 }
+
+}  // namespace flamegpu
+
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_CURVE_CURVE_H_

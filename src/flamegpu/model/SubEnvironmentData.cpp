@@ -4,6 +4,8 @@
 #include "flamegpu/model/ModelData.h"
 #include "flamegpu/model/SubModelData.h"
 
+namespace flamegpu {
+
 bool SubEnvironmentData::operator==(const SubEnvironmentData& rhs) const {
     if (this == &rhs)  // They point to same object
         return true;
@@ -32,3 +34,5 @@ SubEnvironmentData::SubEnvironmentData(
     , masterEnvironment(model->environment)
     , parent(_parent)
     , description(new SubEnvironmentDescription(model, this)) { }
+
+}  // namespace flamegpu

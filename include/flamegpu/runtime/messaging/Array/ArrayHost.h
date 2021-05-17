@@ -9,6 +9,8 @@
 #include "flamegpu/runtime/messaging/BruteForce/BruteForceHost.h"
 
 
+namespace flamegpu {
+
 /**
  * Blank handler, brute force requires no index or special allocations
  * Only stores the length on device
@@ -146,5 +148,7 @@ class MsgArray::Description : public MsgBruteForce::Description {
 
     size_type getLength() const;
 };
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_ARRAY_ARRAYHOST_H_

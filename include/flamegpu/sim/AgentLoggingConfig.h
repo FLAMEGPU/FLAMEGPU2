@@ -11,6 +11,8 @@
 #include "flamegpu/sim/AgentLoggingConfig_Reductions.cuh"
 #include "flamegpu/runtime/HostAgentAPI.h"
 
+namespace flamegpu {
+
 struct ModelData;
 
 /**
@@ -162,24 +164,24 @@ template <typename T> struct sum_input_t { typedef T result_t; };
  *  this runs on the host as an init/step/exit or host layer function
  */
 template<typename T>
-Any getAgentVariableMeanFunc(HostAgentAPI &ai, const std::string &variable_name) {
-    return Any(ai.sum<T, typename sum_input_t<T>::result_t>(variable_name) / static_cast<double>(ai.count()));
+util::Any getAgentVariableMeanFunc(HostAgentAPI &ai, const std::string &variable_name) {
+    return util::Any(ai.sum<T, typename sum_input_t<T>::result_t>(variable_name) / static_cast<double>(ai.count()));
 }
 template<typename T>
-Any getAgentVariableSumFunc(HostAgentAPI &ai, const std::string &variable_name) {
-    return Any(ai.sum<T, typename sum_input_t<T>::result_t>(variable_name));
+util::Any getAgentVariableSumFunc(HostAgentAPI &ai, const std::string &variable_name) {
+    return util::Any(ai.sum<T, typename sum_input_t<T>::result_t>(variable_name));
 }
 template<typename T>
-Any getAgentVariableMinFunc(HostAgentAPI &ai, const std::string &variable_name) {
-    return Any(ai.min<T>(variable_name));
+util::Any getAgentVariableMinFunc(HostAgentAPI &ai, const std::string &variable_name) {
+    return util::Any(ai.min<T>(variable_name));
 }
 template<typename T>
-Any getAgentVariableMaxFunc(HostAgentAPI &ai, const std::string &variable_name) {
-    return Any(ai.max<T>(variable_name));
+util::Any getAgentVariableMaxFunc(HostAgentAPI &ai, const std::string &variable_name) {
+    return util::Any(ai.max<T>(variable_name));
 }
 
 template<typename T>
-Any getAgentVariableStandardDevFunc(HostAgentAPI &ai, const std::string &variable_name) {
+util::Any getAgentVariableStandardDevFunc(HostAgentAPI &ai, const std::string &variable_name) {
     // Todo, workout how to make this more multi-thread/deviceable.
     // Todo, streams for the memcpy?
     // Work out the Mean
@@ -191,7 +193,7 @@ Any getAgentVariableStandardDevFunc(HostAgentAPI &ai, const std::string &variabl
     const double variance = ai.transformReduce<T, double>(variable_name, flamegpu_internal::standard_deviation_subtract_mean, flamegpu_internal::standard_deviation_add, 0) / static_cast<double>(ai.count());
     lock.unlock();
     // Take the square root of that and we are done!
-    return Any(sqrt(variance));
+    return util::Any(sqrt(variance));
 }
 
 template<typename T>
@@ -229,4 +231,7 @@ void AgentLoggingConfig::logSum(const std::string &variable_name) {
     // Log the property (validation occurs in this common log method)
     log({variable_name, LoggingConfig::Sum, fn}, std::type_index(typeid(T)), "Sum");
 }
+
+}  // namespace flamegpu
+
 #endif  // INCLUDE_FLAMEGPU_SIM_AGENTLOGGINGCONFIG_H_

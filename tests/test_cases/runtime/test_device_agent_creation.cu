@@ -15,6 +15,7 @@
 
 #include "gtest/gtest.h"
 
+namespace flamegpu {
 
 namespace test_device_agent_creation {
 FLAMEGPU_AGENT_FUNCTION(MandatoryOutput, MsgNone, MsgNone) {
@@ -1347,10 +1348,10 @@ TEST(DeviceAgentCreationTest, AgentID_RTC_MultipleStatesUniqueIDs) {
     agent.newState("a");
     agent.newState("b");
     const char* RTC_DeviceBirth = R"###(
-FLAMEGPU_AGENT_FUNCTION(DeviceBirth, MsgNone, MsgNone) {
-    FLAMEGPU->setVariable<id_t>("id_other", FLAMEGPU->agent_out.getID());
-    FLAMEGPU->agent_out.setVariable<id_t>("id_other", FLAMEGPU->getID());
-    return ALIVE;
+FLAMEGPU_AGENT_FUNCTION(DeviceBirth, flamegpu::MsgNone, flamegpu::MsgNone) {
+    FLAMEGPU->setVariable<flamegpu::id_t>("id_other", FLAMEGPU->agent_out.getID());
+    FLAMEGPU->agent_out.setVariable<flamegpu::id_t>("id_other", FLAMEGPU->getID());
+    return flamegpu::ALIVE;
 }
     )###";
     auto& af1_a = agent.newRTCFunction("birth", RTC_DeviceBirth);
@@ -1433,3 +1434,4 @@ FLAMEGPU_AGENT_FUNCTION(DeviceBirth, MsgNone, MsgNone) {
     }
 }
 }  // namespace test_device_agent_creation
+}  // namespace flamegpu

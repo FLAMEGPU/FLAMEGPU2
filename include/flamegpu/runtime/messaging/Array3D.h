@@ -1,10 +1,10 @@
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_ARRAY3D_H_
 #define INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_ARRAY3D_H_
 
-
 #include "flamegpu/runtime/messaging/BruteForce.h"
 #include "flamegpu/runtime/messaging/Array2D.h"
 
+namespace flamegpu {
 
 /**
  * Array messaging functionality
@@ -48,5 +48,7 @@ class MsgArray3D {
         size_type length;
     };
 };
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_ARRAY3D_H_

@@ -3,6 +3,8 @@
 #include "flamegpu/model/LayerDescription.h"
 #include "flamegpu/model/SubModelData.h"
 
+namespace flamegpu {
+
 LayerData::LayerData(const std::shared_ptr<const ModelData> &model, const std::string &layer_name, const ModelData::size_type &layer_index)
     : description(new LayerDescription(model, this))
     , name(layer_name)
@@ -77,3 +79,5 @@ bool LayerData::operator==(const LayerData &rhs) const {
 bool LayerData::operator!=(const LayerData &rhs) const {
     return !operator==(rhs);
 }
+
+}  // namespace flamegpu

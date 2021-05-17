@@ -5,6 +5,7 @@
 
 #include "gtest/gtest.h"
 
+namespace flamegpu {
 
 // Tests for detecting concurrency within CUDASimulation.
 
@@ -1234,7 +1235,7 @@ RELEASE_ONLY_SEATBELTS_TEST(TestCUDASimulationConcurrency, LayerConcurrencyDevic
  * Slow and uninteresting RTC agent function which will take a while to run for accurate timing
  */
 const char* rtc_slowAgentFunction = R"###(
-    FLAMEGPU_AGENT_FUNCTION(rtc_slowAgentFunction, MsgNone, MsgNone) {
+    FLAMEGPU_AGENT_FUNCTION(rtc_slowAgentFunction, flamegpu::MsgNone, flamegpu::MsgNone) {
         // Repeatedly do some pointless maths on the value in register
         const int INTERNAL_REPETITIONS = 65536;
         for (int i = 0; i < INTERNAL_REPETITIONS; i++) {
@@ -1242,7 +1243,7 @@ const char* rtc_slowAgentFunction = R"###(
             float v = FLAMEGPU->getVariable<float>("v");
             FLAMEGPU->setVariable("v", v + v);
         }
-        return ALIVE;
+        return flamegpu::ALIVE;
     }
     )###";
 
@@ -1289,3 +1290,4 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, RTCLayerConcurrency) {
 }
 
 }  // namespace test_cuda_simulation_concurrency
+}  // namespace flamegpu

@@ -13,6 +13,8 @@
 #include "flamegpu/util/Any.h"
 #include "flamegpu/exception/FGPUException.h"
 
+namespace flamegpu {
+
 struct AgentLogFrame;
 
 /**
@@ -28,8 +30,8 @@ struct LogFrame {
     /**
      * Creates a log with pre-populated data
      */
-    LogFrame(const std::map<std::string, Any> &&_environment,
-    const std::map<LoggingConfig::NameStatePair, std::pair<std::map<LoggingConfig::NameReductionFn, Any>, unsigned int>> &&_agents,
+    LogFrame(const std::map<std::string, util::Any> &&_environment,
+    const std::map<util::StringPair, std::pair<std::map<LoggingConfig::NameReductionFn, util::Any>, unsigned int>> &&_agents,
     const unsigned int &_step_count);
     /**
      * Returns the step count of the log
@@ -61,15 +63,15 @@ struct LogFrame {
     /**
      * Raw access to environment log map
      */
-    const std::map<std::string, Any> &getEnvironment() const { return environment; }
+    const std::map<std::string, util::Any> &getEnvironment() const { return environment; }
     /**
      * Raw access to agent log map
      */
-    const std::map<LoggingConfig::NameStatePair, std::pair<std::map<LoggingConfig::NameReductionFn, Any>, unsigned int>> &getAgents() const { return agents; }
+    const std::map<util::StringPair, std::pair<std::map<LoggingConfig::NameReductionFn, util::Any>, unsigned int>> &getAgents() const { return agents; }
 
  private:
-    std::map<std::string, Any> environment;
-    std::map<LoggingConfig::NameStatePair, std::pair<std::map<LoggingConfig::NameReductionFn, Any>, unsigned int>> agents;
+    std::map<std::string, util::Any> environment;
+    std::map<util::StringPair, std::pair<std::map<LoggingConfig::NameReductionFn, util::Any>, unsigned int>> agents;
     unsigned int step_count;
 };
 /**
@@ -140,7 +142,7 @@ struct AgentLogFrame {
      * @param data Map of reduction data
      * @param count Population size (alive agents)
      */
-    explicit AgentLogFrame(const std::map<LoggingConfig::NameReductionFn, Any> &data, const unsigned int &count);
+    explicit AgentLogFrame(const std::map<LoggingConfig::NameReductionFn, util::Any> &data, const unsigned int &count);
     /**
      * Return the number of alive agents in the population
      * @return The population size
@@ -204,7 +206,7 @@ struct AgentLogFrame {
     /**
      * Logging data
      */
-    const std::map<LoggingConfig::NameReductionFn, Any> &data;
+    const std::map<LoggingConfig::NameReductionFn, util::Any> &data;
     /**
      * Population size of the related agent state
      */
@@ -319,5 +321,7 @@ typename sum_input_t<T>::result_t AgentLogFrame::getSum(const std::string &varia
     }
     return *static_cast<typename sum_input_t<T>::result_t *>(it->second.ptr);
 }
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_SIM_LOGFRAME_H_

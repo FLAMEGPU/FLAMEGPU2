@@ -3,6 +3,9 @@
 
 #include "gtest/gtest.h"
 
+namespace flamegpu {
+
+
 namespace test_agent_function {
 FLAMEGPU_AGENT_FUNCTION(agent_fn1, MsgBruteForce, MsgBruteForce) {
     // do nothing
@@ -294,3 +297,4 @@ TEST(AgentFunctionDescriptionTest, SameAgentAndStateInLayer) {
 }
 
 }  // namespace test_agent_function
+}  // namespace flamegpu

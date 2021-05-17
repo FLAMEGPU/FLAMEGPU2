@@ -14,6 +14,8 @@
 
 #include "gtest/gtest.h"
 
+namespace flamegpu {
+
 
 namespace test_host_agent_creation {
 const unsigned int INIT_AGENT_COUNT = 512;
@@ -787,3 +789,4 @@ TEST(HostAgentCreationTest, AgentID_MultipleAgents) {
     ASSERT_EQ(ids_b.size(), 2 * POP_SIZE);  // No collisions
 }
 }  // namespace test_host_agent_creation
+}  // namespace flamegpu

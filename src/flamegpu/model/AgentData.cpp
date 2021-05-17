@@ -4,6 +4,8 @@
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/model/AgentFunctionDescription.h"
 
+namespace flamegpu {
+
 AgentData::AgentData(std::shared_ptr<const ModelData> model, const std::string &agent_name)
     : initial_state(ModelData::DEFAULT_STATE)
     , agent_outputs(0)
@@ -77,3 +79,5 @@ bool AgentData::operator!=(const AgentData &rhs) const {
 bool AgentData::isOutputOnDevice() const {
     return agent_outputs > 0;
 }
+
+}  // namespace flamegpu

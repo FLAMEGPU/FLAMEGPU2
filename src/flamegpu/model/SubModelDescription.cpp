@@ -6,6 +6,8 @@
 #include "flamegpu/model/SubEnvironmentData.h"
 #include "flamegpu/model/SubEnvironmentDescription.h"
 
+namespace flamegpu {
+
 SubModelDescription::SubModelDescription(const std::shared_ptr<const ModelData> &_model, SubModelData *const _data)
     : model(_model)
     , data(_data) { }
@@ -130,3 +132,5 @@ unsigned int SubModelDescription::getMaxSteps() const {
 const std::string SubModelDescription::getName() {
     return data->name;
 }
+
+}  // namespace flamegpu

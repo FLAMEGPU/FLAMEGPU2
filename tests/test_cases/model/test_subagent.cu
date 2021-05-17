@@ -2,6 +2,9 @@
 
 #include "gtest/gtest.h"
 
+namespace flamegpu {
+
+
 namespace test_sub_agent_description {
 
 FLAMEGPU_EXIT_CONDITION(ExitAlways) {
@@ -144,3 +147,4 @@ TEST(SubAgentDescriptionTest, AlreadyBound) {
     EXPECT_NO_THROW(smd.bindAgent("a2", "b2", false, false));
 }
 };  // namespace test_sub_agent_description
+}  // namespace flamegpu

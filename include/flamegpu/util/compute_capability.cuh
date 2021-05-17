@@ -3,6 +3,7 @@
 
 #include "flamegpu/gpu/CUDAErrorChecking.h"
 
+namespace flamegpu {
 namespace util {
 namespace compute_capability {
 
@@ -30,4 +31,6 @@ bool checkComputeCapability(int deviceIndex);
 
 }  // namespace compute_capability
 }  // namespace util
+}  // namespace flamegpu
+
 #endif  // INCLUDE_FLAMEGPU_UTIL_COMPUTE_CAPABILITY_CUH_

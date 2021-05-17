@@ -1,6 +1,8 @@
 #include "flamegpu/gpu/CUDAFatAgentStateList.h"
 #include "flamegpu/gpu/CUDAScatter.h"
 
+namespace flamegpu {
+
 CUDAFatAgentStateList::CUDAFatAgentStateList(const AgentData& description)
     : aliveAgents(0)
     , disabledAgents(0)
@@ -255,3 +257,5 @@ std::list<std::shared_ptr<VariableBuffer>> CUDAFatAgentStateList::getBuffers(std
     }
     return returnVars;
 }
+
+}  // namespace flamegpu

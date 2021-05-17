@@ -1,5 +1,7 @@
 #include "flamegpu/model/DependencyGraph.h"
 
+namespace flamegpu {
+
 DependencyGraph::DependencyGraph() {
 }
 
@@ -354,3 +356,5 @@ std::string DependencyGraph::getConstructedLayersString() {
     }
     return ss.str();
 }
+
+}  // namespace flamegpu

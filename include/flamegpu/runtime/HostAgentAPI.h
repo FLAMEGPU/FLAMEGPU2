@@ -3,26 +3,21 @@
 #ifdef _MSC_VER
 #pragma warning(push, 1)
 #pragma warning(disable : 4706 4834)
+#endif  // _MSC_VER
 #include <cub/cub.cuh>
 #include <thrust/count.h>
 #include <thrust/device_ptr.h>
 #include <thrust/sort.h>
 #include <thrust/execution_policy.h>
+#ifdef _MSC_VER
 #pragma warning(pop)
-#else
-#include <cub/cub.cuh>
-#include <thrust/count.h>
-#include <thrust/device_ptr.h>
-#include <thrust/sort.h>
-#include <thrust/execution_policy.h>
-#endif
+#endif  // _MSC_VER
 
 #include <algorithm>
 #include <string>
 #include <vector>
 #include <functional>
 #include <memory>
-
 
 #include "flamegpu/sim/AgentInterface.h"
 #include "flamegpu/model/AgentDescription.h"
@@ -31,6 +26,8 @@
 #include "flamegpu/gpu/CUDAAgent.h"
 #include "flamegpu/pop/DeviceAgentVector.h"
 #include "flamegpu/pop/DeviceAgentVector_impl.h"
+
+namespace flamegpu {
 
 #define FLAMEGPU_CUSTOM_REDUCTION(funcName, a, b)\
 struct funcName ## _impl {\
@@ -692,4 +689,7 @@ void HostAgentAPI::sort(const std::string &variable1, Order order1, const std::s
         population->purgeCache();
     }
 }
+
+}  // namespace flamegpu
+
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_HOSTAGENTAPI_H_

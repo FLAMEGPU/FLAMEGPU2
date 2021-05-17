@@ -6,10 +6,12 @@
 
 #include <string>
 
-namespace flamegpu_internal {
+namespace flamegpu {
+namespace detail {
 inline std::string getCommitHash() {
     return "${SHORT_HASH}";
 }
-}  // namespace flamegpu_internal
+}  // namespace detail
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_VERSION_H_

@@ -10,6 +10,8 @@
 #include "flamegpu/gpu/CUDASimulation.h"
 #include "flamegpu/util/nvtx.h"
 
+namespace flamegpu {
+
 /**
  * Internal namespace to hide __constant__ declarations from modeller
  */
@@ -719,17 +721,17 @@ EnvironmentManager& EnvironmentManager::getInstance() {
 }
 
 
-Any EnvironmentManager::getPropertyAny(const unsigned int &instance_id, const std::string &var_name) const {
+util::Any EnvironmentManager::getPropertyAny(const unsigned int &instance_id, const std::string &var_name) const {
     std::shared_lock<std::shared_timed_mutex> lock(mutex);
     const NamePair name = toName(instance_id, var_name);
     auto a = properties.find(name);
     if (a != properties.end())
-        return Any(hc_buffer + a->second.offset, a->second.length, a->second.type, a->second.elements);
+        return util::Any(hc_buffer + a->second.offset, a->second.length, a->second.type, a->second.elements);
     const auto b = mapped_properties.find(name);
     if (b != mapped_properties.end()) {
         a = properties.find(b->second.masterProp);
         if (a != properties.end())
-            return Any(hc_buffer + a->second.offset, a->second.length, a->second.type, a->second.elements);
+            return util::Any(hc_buffer + a->second.offset, a->second.length, a->second.type, a->second.elements);
         THROW InvalidEnvProperty("Mapped environmental property with name '%u:%s' maps to missing property with name '%u:%s', "
             "in EnvironmentManager::getPropertyAny().",
             name.first, name.second.c_str(), b->second.masterProp.first, b->second.masterProp.second.c_str());
@@ -738,3 +740,5 @@ Any EnvironmentManager::getPropertyAny(const unsigned int &instance_id, const st
         "in EnvironmentManager::getPropertyAny().",
         name.first, name.second.c_str());
 }
+
+}  // namespace flamegpu

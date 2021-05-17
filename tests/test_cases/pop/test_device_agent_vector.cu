@@ -5,6 +5,9 @@
 
 #include "gtest/gtest.h"
 
+namespace flamegpu {
+
+
 namespace DeviceAgentVectorTest {
     const unsigned int AGENT_COUNT = 10;
     const std::string MODEL_NAME = "model";
@@ -1588,3 +1591,4 @@ TEST(DeviceAgentVectorTest, AgentID_MultipleStatesUniqueIDs3) {
 }
 
 }  // namespace DeviceAgentVectorTest
+}  // namespace flamegpu

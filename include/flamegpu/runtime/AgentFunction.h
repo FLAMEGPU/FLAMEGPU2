@@ -11,6 +11,7 @@
 #include "flamegpu/runtime/AgentFunction_shim.h"
 #include "flamegpu/gpu/CUDAScanCompaction.h"
 
+namespace flamegpu {
 
 // ! FLAMEGPU function return type
 enum FLAME_GPU_AGENT_STATUS { ALIVE = 1, DEAD = 0 };
@@ -105,5 +106,6 @@ __global__ void agent_function_wrapper(
     }
 }
 
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_AGENTFUNCTION_H_

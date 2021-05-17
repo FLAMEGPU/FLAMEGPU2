@@ -6,6 +6,9 @@
 
 #include "gtest/gtest.h"
 
+namespace flamegpu {
+
+
 namespace test_message_brute_force {
     const char *MODEL_NAME = "Model";
     const char *AGENT_NAME = "Agent";
@@ -349,3 +352,4 @@ TEST(TestMessage_BruteForce, ReadEmpty) {
 }
 
 }  // namespace test_message_brute_force
+}  // namespace flamegpu

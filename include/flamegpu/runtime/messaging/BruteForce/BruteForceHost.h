@@ -19,6 +19,8 @@
 #include "flamegpu/runtime/messaging/BruteForce.h"
 
 
+namespace flamegpu {
+
 /**
  * Blank handler, brute force requires no index or special allocations
  * Only stores the length on device
@@ -264,5 +266,6 @@ void MsgBruteForce::Description::newVariable(const std::string &variable_name) {
         message->name.c_str(), variable_name.c_str());
 }
 
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_BRUTEFORCE_BRUTEFORCEHOST_H_

@@ -5,6 +5,8 @@
 #include "flamegpu/model/ModelData.h"
 
 
+namespace flamegpu {
+
 bool SubAgentData::operator==(const SubAgentData &rhs) const {
     if (this == &rhs)  // They point to same object
         return true;
@@ -32,3 +34,5 @@ SubAgentData::SubAgentData(const std::shared_ptr<const ModelData> &model, const 
     , masterAgent(_masterAgent)
     , parent(_parent)
     , description(new SubAgentDescription(model, this)) { }
+
+}  // namespace flamegpu

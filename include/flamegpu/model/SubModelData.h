@@ -7,6 +7,8 @@
 
 #include "flamegpu/model/SubModelDescription.h"
 
+namespace flamegpu {
+
 struct ModelData;
 struct SubAgentData;
 struct AgentData;
@@ -90,5 +92,7 @@ struct SubModelData : std::enable_shared_from_this<SubModelData> {
      */
     explicit SubModelData(const std::shared_ptr<ModelData> &model, const std::string &submodel_name, const std::shared_ptr<ModelData> &submodel);
 };
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_MODEL_SUBMODELDATA_H_

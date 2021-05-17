@@ -1,12 +1,13 @@
 #include "flamegpu/pop/AgentVector.h"
-
 #include "flamegpu/model/AgentDescription.h"
-
 #include "flamegpu/pop/AgentVector_Agent.h"
 
+// @todo - this shouldn't be required anymore?
 #ifdef max
 #undef max  // Unclear where this definition is leaking from
 #endif
+
+namespace flamegpu {
 
 const float AgentVector::RESIZE_FACTOR = 1.5f;
 
@@ -615,3 +616,5 @@ AgentVector::Agent AgentVector::reverse_iterator::operator*() const {
 AgentVector::CAgent AgentVector::const_reverse_iterator::operator*() const {
     return CAgent(_parent, _agent, _data, _pos);
 }
+
+}  // namespace flamegpu

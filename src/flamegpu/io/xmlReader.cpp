@@ -18,6 +18,8 @@
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/gpu/CUDASimulation.h"
 
+namespace flamegpu {
+
 #ifndef XMLCheckResult
 /**
  * Macro function for converting a tinyxml2 return code to an exception
@@ -64,8 +66,8 @@
 xmlReader::xmlReader(
     const std::string &model_name,
     const std::unordered_map<std::string, EnvironmentDescription::PropData> &env_desc,
-    std::unordered_map<std::pair<std::string, unsigned int>, Any> &env_init,
-    StringPairUnorderedMap<std::shared_ptr<AgentVector>> &model_state,
+    std::unordered_map<std::pair<std::string, unsigned int>, util::Any> &env_init,
+    util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> &model_state,
     const std::string &input,
     Simulation *sim_instance)
     : StateReader(model_name, env_desc, env_init, model_state, input, sim_instance) {}
@@ -198,34 +200,34 @@ int xmlReader::parse() {
                 }
                 if (val_type == std::type_index(typeid(float))) {
                     const float t = stof(token);
-                    env_init.emplace(make_pair(std::string(key), el++), Any(&t, sizeof(float), val_type, 1));
+                    env_init.emplace(make_pair(std::string(key), el++), util::Any(&t, sizeof(float), val_type, 1));
                 } else if (val_type == std::type_index(typeid(double))) {
                     const double t = stod(token);
-                    env_init.emplace(make_pair(std::string(key), el++), Any(&t, sizeof(double), val_type, 1));
+                    env_init.emplace(make_pair(std::string(key), el++), util::Any(&t, sizeof(double), val_type, 1));
                 } else if (val_type == std::type_index(typeid(int64_t))) {
                     const int64_t t = stoll(token);
-                    env_init.emplace(make_pair(std::string(key), el++), Any(&t, sizeof(int64_t), val_type, 1));
+                    env_init.emplace(make_pair(std::string(key), el++), util::Any(&t, sizeof(int64_t), val_type, 1));
                 } else if (val_type == std::type_index(typeid(uint64_t))) {
                     const uint64_t t = stoull(token);
-                    env_init.emplace(make_pair(std::string(key), el++), Any(&t, sizeof(uint64_t), val_type, 1));
+                    env_init.emplace(make_pair(std::string(key), el++), util::Any(&t, sizeof(uint64_t), val_type, 1));
                 } else if (val_type == std::type_index(typeid(int32_t))) {
                     const int32_t t = static_cast<int32_t>(stoll(token));
-                    env_init.emplace(make_pair(std::string(key), el++), Any(&t, sizeof(int32_t), val_type, 1));
+                    env_init.emplace(make_pair(std::string(key), el++), util::Any(&t, sizeof(int32_t), val_type, 1));
                 } else if (val_type == std::type_index(typeid(uint32_t))) {
                     const uint32_t t = static_cast<uint32_t>(stoull(token));
-                    env_init.emplace(make_pair(std::string(key), el++), Any(&t, sizeof(uint32_t), val_type, 1));
+                    env_init.emplace(make_pair(std::string(key), el++), util::Any(&t, sizeof(uint32_t), val_type, 1));
                 } else if (val_type == std::type_index(typeid(int16_t))) {
                     const int16_t t = static_cast<int16_t>(stoll(token));
-                    env_init.emplace(make_pair(std::string(key), el++), Any(&t, sizeof(int16_t), val_type, 1));
+                    env_init.emplace(make_pair(std::string(key), el++), util::Any(&t, sizeof(int16_t), val_type, 1));
                 } else if (val_type == std::type_index(typeid(uint16_t))) {
                     const uint16_t t = static_cast<uint16_t>(stoull(token));
-                    env_init.emplace(make_pair(std::string(key), el++), Any(&t, sizeof(uint16_t), val_type, 1));
+                    env_init.emplace(make_pair(std::string(key), el++), util::Any(&t, sizeof(uint16_t), val_type, 1));
                 } else if (val_type == std::type_index(typeid(int8_t))) {
                     const int8_t t = static_cast<int8_t>(stoll(token));
-                    env_init.emplace(make_pair(std::string(key), el++), Any(&t, sizeof(int8_t), val_type, 1));
+                    env_init.emplace(make_pair(std::string(key), el++), util::Any(&t, sizeof(int8_t), val_type, 1));
                 } else if (val_type == std::type_index(typeid(uint8_t))) {
                     const uint8_t t = static_cast<uint8_t>(stoull(token));
-                    env_init.emplace(make_pair(std::string(key), el++), Any(&t, sizeof(uint8_t), val_type, 1));
+                    env_init.emplace(make_pair(std::string(key), el++), util::Any(&t, sizeof(uint8_t), val_type, 1));
                 } else {
                     THROW TinyXMLError("Model contains environment property '%s' of unsupported type '%s', "
                         "in xmlReader::parse()\n", key, val_type.name());
@@ -241,7 +243,7 @@ int xmlReader::parse() {
     }
 
     // Count how many of each agent are in the file and resize state lists
-    StringPairUnorderedMap<unsigned int> cts;
+    util::StringPairUnorderedMap<unsigned int> cts;
     for (pElement = pRoot->FirstChildElement("xagent"); pElement != nullptr; pElement = pElement->NextSiblingElement("xagent")) {
         std::string agent_name = pElement->FirstChildElement("name")->GetText();
         tinyxml2::XMLElement *state_element = pElement->FirstChildElement("state");
@@ -335,3 +337,5 @@ int xmlReader::parse() {
 
     return tinyxml2::XML_SUCCESS;
 }
+
+}  // namespace flamegpu

@@ -137,10 +137,10 @@ class TestSimulation(TestCase):
 
 
     SetGetFn = """
-    FLAMEGPU_AGENT_FUNCTION(SetGetFn, MsgNone, MsgNone) {
+    FLAMEGPU_AGENT_FUNCTION(SetGetFn, flamegpu::MsgNone, flamegpu::MsgNone) {
         int i = FLAMEGPU->getVariable<int>("test");
         FLAMEGPU->setVariable<int>("test", i * 3);
-        return ALIVE;
+        return flamegpu::ALIVE;
     }
     """
     def test_set_get_population_data(self):
@@ -249,12 +249,12 @@ class TestSimulation(TestCase):
         assert c.getStepCounter() == 3
 
     DeathFunc = """
-        FLAMEGPU_AGENT_FUNCTION(DeathFunc, MsgNone, MsgNone) {
+        FLAMEGPU_AGENT_FUNCTION(DeathFunc, flamegpu::MsgNone, flamegpu::MsgNone) {
             unsigned int x = FLAMEGPU->getVariable<unsigned int>("x");
             // Agents with even value for 'x' die
             if (x % 2 == 0)
-                return DEAD;
-            return ALIVE;
+                return flamegpu::DEAD;
+            return flamegpu::ALIVE;
         }
         """
 

@@ -17,18 +17,18 @@ AGENT_COUNT = SQRT_AGENT_COUNT * (SQRT_AGENT_COUNT+1)
 UINT_MAX = 4294967295
 
 OutFunction = """
-FLAMEGPU_AGENT_FUNCTION(OutFunction, MsgNone, MsgArray2D) {
+FLAMEGPU_AGENT_FUNCTION(OutFunction, flamegpu::MsgNone, flamegpu::MsgArray2D) {
     const unsigned int index = FLAMEGPU->getVariable<unsigned int>("message_write");
     FLAMEGPU->message_out.setVariable<unsigned int>("index_times_3", index * 3);
     const unsigned int index_x = index % 12;
     const unsigned int index_y = index / 12;
     FLAMEGPU->message_out.setIndex(index_x, index_y);
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
 """
 
 OutOptionalFunction = """
-FLAMEGPU_AGENT_FUNCTION(OutOptionalFunction, MsgNone, MsgArray2D) {
+FLAMEGPU_AGENT_FUNCTION(OutOptionalFunction, flamegpu::MsgNone, flamegpu::MsgArray2D) {
     const unsigned int index = FLAMEGPU->getVariable<unsigned int>("message_write");
     if (index % 2 == 0) {
         FLAMEGPU->message_out.setVariable<unsigned int>("index_times_3", index * 3);
@@ -36,45 +36,45 @@ FLAMEGPU_AGENT_FUNCTION(OutOptionalFunction, MsgNone, MsgArray2D) {
         const unsigned int index_y = index / 12;
         FLAMEGPU->message_out.setIndex(index_x, index_y);
     }
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
 """
 
 OutBad = """
-FLAMEGPU_AGENT_FUNCTION(OutBad, MsgNone, MsgArray2D) {
+FLAMEGPU_AGENT_FUNCTION(OutBad, flamegpu::MsgNone, flamegpu::MsgArray2D) {
     unsigned int index = FLAMEGPU->getVariable<unsigned int>("message_write");
     FLAMEGPU->message_out.setVariable<unsigned int>("index_times_3", index * 3);
     index = index == 13 ? 0 : index;
     const unsigned int index_x = index % 12;
     const unsigned int index_y = index / 12;
     FLAMEGPU->message_out.setIndex(index_x, index_y);
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
 """
 
 InFunction = """
-FLAMEGPU_AGENT_FUNCTION(InFunction, MsgArray2D, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(InFunction, flamegpu::MsgArray2D, flamegpu::MsgNone) {
     const unsigned int my_index = FLAMEGPU->getVariable<unsigned int>("index");
     const unsigned int index_x = my_index % 12;
     const unsigned int index_y = my_index / 12;
     const auto &message = FLAMEGPU->message_in.at(index_x, index_y);
     FLAMEGPU->setVariable("message_read", message.getVariable<unsigned int>("index_times_3"));
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
 """
 
 OutSimple = """
-FLAMEGPU_AGENT_FUNCTION(OutSimple, MsgNone, MsgArray2D) {
+FLAMEGPU_AGENT_FUNCTION(OutSimple, flamegpu::MsgNone, flamegpu::MsgArray2D) {
     const unsigned int index = FLAMEGPU->getVariable<unsigned int>("index");
     const unsigned int index_x = index % 12;
     const unsigned int index_y = index / 12;
     FLAMEGPU->message_out.setIndex(index_x, index_y);
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
 """
 
 MooreTest1 = """
-FLAMEGPU_AGENT_FUNCTION(MooreTest1, MsgArray2D, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(MooreTest1, flamegpu::MsgArray2D, flamegpu::MsgNone) {
     const unsigned int my_index = FLAMEGPU->getVariable<unsigned int>("index");
     const unsigned int index_x = my_index % 12;
     const unsigned int index_y = my_index / 12;
@@ -99,12 +99,12 @@ FLAMEGPU_AGENT_FUNCTION(MooreTest1, MsgArray2D, MsgNone) {
     if (msg == filter.end())
         message_read++;
     FLAMEGPU->setVariable<unsigned int>("message_read", message_read);
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
 """
 
 MooreTest2 = """
-FLAMEGPU_AGENT_FUNCTION(MooreTest2, MsgArray2D, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(MooreTest2, flamegpu::MsgArray2D, flamegpu::MsgNone) {
     const unsigned int my_index = FLAMEGPU->getVariable<unsigned int>("index");
     const unsigned int index_x = my_index % 12;
     const unsigned int index_y = my_index / 12;
@@ -129,15 +129,15 @@ FLAMEGPU_AGENT_FUNCTION(MooreTest2, MsgArray2D, MsgNone) {
     if (msg == filter.end())
         message_read++;
     FLAMEGPU->setVariable<unsigned int>("message_read", message_read);
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
 """
 
 countArray2D = """
-FLAMEGPU_AGENT_FUNCTION(countArray2D, MsgArray2D, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(countArray2D, flamegpu::MsgArray2D, flamegpu::MsgNone) {
     unsigned int value = FLAMEGPU->message_in.at(0, 0).getVariable<unsigned int>("value");
     FLAMEGPU->setVariable<unsigned int>("value", value);
-    return ALIVE;
+    return flamegpu::ALIVE;
 }
 """
 

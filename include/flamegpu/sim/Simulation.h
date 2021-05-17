@@ -9,31 +9,14 @@
 
 #include "flamegpu/sim/AgentInterface.h"
 
+namespace flamegpu {
+
 class AgentVector;
 class HostAPI;
 class ModelDescription;
 struct ModelData;
 struct RunLog;
 
-
-namespace std {
-/**
- * Required so this pair type can be key in an unordered_map
- */
-template <>
-struct hash<std::pair<std::string, unsigned int>> {
-    std::size_t operator()(const std::pair<std::string, unsigned int>& k) const noexcept {
-        using std::string;
-
-        // Compute individual hash values for first,
-        // second and combine them using XOR
-        // and bit shifting:
-
-        return ((hash<string>()(k.first)
-            ^ (hash<unsigned int>()(k.second) << 1)) >> 1);
-    }
-};
-}  // namespace std
 
 /**
  * Abstract representation of a ModelDescription that can be executed
@@ -183,7 +166,7 @@ class Simulation {
     /**
      * Initial environment items if they have been loaded from file, prior to device selection
      */
-    std::unordered_map<std::pair<std::string, unsigned int>, Any> env_init;
+    std::unordered_map<std::pair<std::string, unsigned int>, util::Any> env_init;
     /**
      * the width of the widest layer in the concrete version of the model (calculated once)
      */
@@ -197,5 +180,7 @@ class Simulation {
     void printHelp(const char *executable);
     int checkArgs(int argc, const char** argv);
 };
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_SIM_SIMULATION_H_

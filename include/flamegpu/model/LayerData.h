@@ -8,6 +8,9 @@
 
 #include "flamegpu/runtime/HostAPI_macros.h"  // Todo replace with std/cub style fns (see AgentFunction.h)
 #include "flamegpu/model/ModelData.h"
+
+namespace flamegpu {
+
 struct AgentFunctionData;
 class LayerDescription;
 class HostFunctionCallback;
@@ -82,5 +85,7 @@ struct LayerData {
      */
     LayerData(const std::shared_ptr<const ModelData> &model, const std::string &name, const ModelData::size_type &index);
 };
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_MODEL_LAYERDATA_H_

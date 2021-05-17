@@ -4,6 +4,9 @@
 #include <string>
 #include <typeindex>
 
+namespace flamegpu {
+namespace visualiser {
+
 /**
  * Interface for generating shader code for a function that generates a color during model execution
  */
@@ -35,5 +38,8 @@ class ColorFunction {
      */
     virtual std::type_index getAgentVariableRequiredType() const { return std::type_index(typeid(void)); }
 };
+
+}  // namespace visualiser
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_VISUALISER_COLOR_COLORFUNCTION_H_

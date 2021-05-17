@@ -7,17 +7,17 @@ AGENT_COUNT = 5
 class AgentRandomTest(TestCase):
 
     random1_func = """
-    FLAMEGPU_AGENT_FUNCTION(random1_func, MsgNone, MsgNone) {
+    FLAMEGPU_AGENT_FUNCTION(random1_func, flamegpu::MsgNone, flamegpu::MsgNone) {
         FLAMEGPU->setVariable<float>("a", FLAMEGPU->random.uniform<float>());
         FLAMEGPU->setVariable<float>("b", FLAMEGPU->random.uniform<float>());
         FLAMEGPU->setVariable<float>("c", FLAMEGPU->random.uniform<float>());
 
-        return ALIVE;
+        return flamegpu::ALIVE;
     }
     """
     
     random2_func = """
-    FLAMEGPU_AGENT_FUNCTION(random2_func, MsgNone, MsgNone) {
+    FLAMEGPU_AGENT_FUNCTION(random2_func, flamegpu::MsgNone, flamegpu::MsgNone) {
         FLAMEGPU->setVariable<float>("uniform_float", FLAMEGPU->random.uniform<float>());
         FLAMEGPU->setVariable<double>("uniform_double", FLAMEGPU->random.uniform<double>());
 
@@ -40,7 +40,7 @@ class AgentRandomTest(TestCase):
         FLAMEGPU->setVariable<int64_t>("uniform_longlong", FLAMEGPU->random.uniform<int64_t>(INT64_MIN, INT64_MAX));
         FLAMEGPU->setVariable<uint64_t>("uniform_u_longlong", FLAMEGPU->random.uniform<uint64_t>(0, UINT64_MAX));
 
-        return ALIVE;
+        return flamegpu::ALIVE;
     }
     """
 

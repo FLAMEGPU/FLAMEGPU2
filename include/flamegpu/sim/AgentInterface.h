@@ -6,6 +6,8 @@
 #include "flamegpu/model/ModelData.h"
 #include "flamegpu/defines.h"
 
+namespace flamegpu {
+
 /**
  * Base-class (interface) for classes like CUDAAgent, which provide access to agent data
  */
@@ -22,5 +24,7 @@ class AgentInterface {
      */
     virtual id_t nextID(unsigned int count) = 0;
 };
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_SIM_AGENTINTERFACE_H_

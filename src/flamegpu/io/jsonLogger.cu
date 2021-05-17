@@ -10,6 +10,8 @@
 #include "flamegpu/sim/RunPlan.h"
 #include "flamegpu/sim/LogFrame.h"
 
+namespace flamegpu {
+
 jsonLogger::jsonLogger(const std::string &outPath, bool _prettyPrint, bool _truncateFile)
     : out_path(outPath)
     , prettyPrint(_prettyPrint)
@@ -23,7 +25,7 @@ void jsonLogger::log(const RunLog &log, bool logConfig, bool logSteps, bool logE
 }
 
 template<typename T>
-void jsonLogger::writeAny(T &writer, const Any &value, const unsigned int &elements) const {
+void jsonLogger::writeAny(T &writer, const util::Any &value, const unsigned int &elements) const {
     // Output value
     if (elements > 1) {
         writer.StartArray();
@@ -243,3 +245,5 @@ void jsonLogger::logCommon(const RunLog &log, const RunPlan *plan, bool doLogCon
     out << "\n";
     out.close();
 }
+
+}  // namespace flamegpu

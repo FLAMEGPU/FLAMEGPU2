@@ -4,6 +4,8 @@
 #include "flamegpu/flame_api.h"
 #include "flamegpu/runtime/flamegpu_api.h"
 
+namespace flamegpu {
+
 // These tests wont work if built with SEATBELTS=OFF, so mark them all as disabled instead
 #if defined(SEATBELTS) && !SEATBELTS
 #undef TEST_F
@@ -1138,3 +1140,4 @@ TEST_F(DeviceExceptionTest, AgentID_DeviceBirth) {
 }
 
 }  // namespace test_device_exception
+}  // namespace flamegpu

@@ -1,4 +1,6 @@
 #include "helpers/host_reductions_common.h"
+namespace flamegpu {
+
 
 namespace test_host_reductions {
 FLAMEGPU_STEP_FUNCTION(step_histogramEvenfloat) {
@@ -216,3 +218,4 @@ TEST_F(HostReductionTest, HistogramEvenUnsignedInt64) {
     }
 }
 }  // namespace test_host_reductions
+}  // namespace flamegpu

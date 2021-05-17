@@ -4,6 +4,8 @@
 #include <vector>
 #include "flamegpu/exception/FGPUException.h"
 
+namespace flamegpu {
+
 /**
  * Node of DependencyGraph
  */
@@ -82,5 +84,7 @@ class DependencyNode {
      */
     int getMinimumLayerDepth();
 };
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_MODEL_DEPENDENCYNODE_H_

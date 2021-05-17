@@ -10,6 +10,9 @@
 #include "flamegpu/visualiser/color/ColorFunction.h"
 #include "flamegpu/visualiser/color/Color.h"
 
+namespace flamegpu {
+namespace visualiser {
+
 struct Palette;
 
 /**
@@ -127,4 +130,7 @@ std::string DiscreteColor<T>::getSrc() const {
     ss << "}" << "\n";
     return ss.str();
 }
+}  // namespace visualiser
+}  // namespace flamegpu
+
 #endif  // INCLUDE_FLAMEGPU_VISUALISER_COLOR_DISCRETECOLOR_H_

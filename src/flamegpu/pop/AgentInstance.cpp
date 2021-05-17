@@ -4,11 +4,13 @@
 #include "flamegpu/model/AgentData.h"
 #include "flamegpu/pop/AgentVector.h"
 
+namespace flamegpu {
+
 AgentInstance::AgentInstance(const AgentDescription& agent_desc)
     : _agent(agent_desc.agent->clone()) {
     // Fill data map with default values
     for (const auto& v : _agent->variables) {
-        _data.emplace(v.first, Any(v.second.default_value, v.second.type_size * v.second.elements, v.second.type, v.second.elements));
+        _data.emplace(v.first, util::Any(v.second.default_value, v.second.type_size * v.second.elements, v.second.type, v.second.elements));
     }
 }
 
@@ -31,7 +33,7 @@ AgentInstance::AgentInstance(const AgentVector::CAgent& other)
     for (const auto& v : _agent->variables) {
         const auto &it = other_data->at(v.first);
         const auto variable_size = v.second.elements * v.second.type_size;
-        _data.emplace(v.first, Any(static_cast<const char*>(it->getReadOnlyDataPtr()) + other.index * variable_size,
+        _data.emplace(v.first, util::Any(static_cast<const char*>(it->getReadOnlyDataPtr()) + other.index * variable_size,
             variable_size, it->getType(), it->getElements()));
     }
 }
@@ -65,8 +67,10 @@ AgentInstance& AgentInstance::operator=(const AgentVector::CAgent& other) {
     for (const auto& v : _agent->variables) {
         const auto& it = other_data->at(v.first);
         const auto variable_size = v.second.elements * v.second.type_size;
-        _data.emplace(v.first, Any(static_cast<const char*>(it->getReadOnlyDataPtr()) + other.index * variable_size,
+        _data.emplace(v.first, util::Any(static_cast<const char*>(it->getReadOnlyDataPtr()) + other.index * variable_size,
             variable_size, it->getType(), it->getElements()));
     }
     return *this;
 }
+
+}  // namespace flamegpu

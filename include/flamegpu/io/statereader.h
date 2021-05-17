@@ -1,15 +1,6 @@
 #ifndef INCLUDE_FLAMEGPU_IO_STATEREADER_H_
 #define INCLUDE_FLAMEGPU_IO_STATEREADER_H_
 
-/**
- * @file statereader.h
- * @author
- * @date
- * @brief
- *
- * \todo longer description
- */
-
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -17,6 +8,8 @@
 
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/util/StringPair.h"
+
+namespace flamegpu {
 
 class AgentVector;
 
@@ -41,8 +34,8 @@ class StateReader {
     StateReader(
         const std::string& _model_name,
         const std::unordered_map<std::string, EnvironmentDescription::PropData>& _env_desc,
-        std::unordered_map<std::pair<std::string, unsigned int>, Any>& _env_init,
-        StringPairUnorderedMap<std::shared_ptr<AgentVector>>& _model_state,
+        std::unordered_map<std::pair<std::string, unsigned int>, util::Any>& _env_init,
+        util::StringPairUnorderedMap<std::shared_ptr<AgentVector>>& _model_state,
         const std::string& input,
         Simulation* _sim_instance)
     : model_state(_model_state)
@@ -67,12 +60,14 @@ class StateReader {
     virtual int parse() = 0;
 
  protected:
-    StringPairUnorderedMap<std::shared_ptr<AgentVector>>& model_state;
+    util::StringPairUnorderedMap<std::shared_ptr<AgentVector>>& model_state;
     std::string inputFile;
     const std::string model_name;
     const std::unordered_map<std::string, EnvironmentDescription::PropData> &env_desc;
-    std::unordered_map<std::pair<std::string, unsigned int>, Any> &env_init;
+    std::unordered_map<std::pair<std::string, unsigned int>, util::Any> &env_init;
     Simulation *sim_instance;
 };
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_IO_STATEREADER_H_

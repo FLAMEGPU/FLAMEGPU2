@@ -9,44 +9,44 @@ class DeviceAPITest(TestCase):
 
 
     agent_fn_da_set = """
-    FLAMEGPU_AGENT_FUNCTION(agent_fn_da_set, MsgNone, MsgNone) {
+    FLAMEGPU_AGENT_FUNCTION(agent_fn_da_set, flamegpu::MsgNone, flamegpu::MsgNone) {
         // Read array from `array_var`
         // Store it's values back in `a1` -> `a4`
         FLAMEGPU->setVariable<int, 4>("array_var", 0, 2 + FLAMEGPU->getVariable<int>("id"));
         FLAMEGPU->setVariable<int, 4>("array_var", 1, 4 + FLAMEGPU->getVariable<int>("id"));
         FLAMEGPU->setVariable<int, 4>("array_var", 2, 8 + FLAMEGPU->getVariable<int>("id"));
         FLAMEGPU->setVariable<int, 4>("array_var", 3, 16 + FLAMEGPU->getVariable<int>("id"));
-        return ALIVE;
+        return flamegpu::ALIVE;
     }"""
     
     agent_fn_da_get = """
-    FLAMEGPU_AGENT_FUNCTION(agent_fn_da_get, MsgNone, MsgNone) {
+    FLAMEGPU_AGENT_FUNCTION(agent_fn_da_get, flamegpu::MsgNone, flamegpu::MsgNone) {
         // Read array from `array_var`
         // Store it's values back in `a1` -> `a4`
         FLAMEGPU->setVariable<int>("a1", FLAMEGPU->getVariable<int, 4>("array_var", 0));
         FLAMEGPU->setVariable<int>("a2", FLAMEGPU->getVariable<int, 4>("array_var", 1));
         FLAMEGPU->setVariable<int>("a3", FLAMEGPU->getVariable<int, 4>("array_var", 2));
         FLAMEGPU->setVariable<int>("a4", FLAMEGPU->getVariable<int, 4>("array_var", 3));
-        return ALIVE;
+        return flamegpu::ALIVE;
     }
     """
     
     agent_fn_da_arrayunsuitable = """
-    FLAMEGPU_AGENT_FUNCTION(agent_fn_da_arrayunsuitable, MsgNone, MsgNone) {
+    FLAMEGPU_AGENT_FUNCTION(agent_fn_da_arrayunsuitable, flamegpu::MsgNone, flamegpu::MsgNone) {
         FLAMEGPU->setVariable<int>("array_var", 0);
         FLAMEGPU->setVariable<int>("array_var", 0);
         FLAMEGPU->setVariable<int>("array_var", 0);
         FLAMEGPU->setVariable<int>("array_var", 0);
         FLAMEGPU->setVariable<int>("var", FLAMEGPU->getVariable<int>("array_var"));
-        return ALIVE;
+        return flamegpu::ALIVE;
     }
     """
 
     agent_fn_ad_array = """
-    FLAMEGPU_AGENT_FUNCTION(agent_fn_ad_array, MsgNone, MsgNone){
+    FLAMEGPU_AGENT_FUNCTION(agent_fn_ad_array, flamegpu::MsgNone, flamegpu::MsgNone){
         if (threadIdx.x % 2 == 0)
-            return DEAD;
-        return ALIVE;
+            return flamegpu::DEAD;
+        return flamegpu::ALIVE;
     }
     """
 

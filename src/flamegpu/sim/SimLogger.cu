@@ -24,6 +24,8 @@ using std::experimental::filesystem::v1::create_directory;
 #include <pthread.h>
 #endif
 
+namespace flamegpu {
+
 SimLogger::SimLogger(const std::vector<RunLog> &_run_logs,
         const RunPlanVec &_run_plans,
         const std::string &_out_directory,
@@ -89,3 +91,5 @@ void SimLogger::start() {
         } while (!log_export_queue.empty());
     }
 }
+
+}  // namespace flamegpu

@@ -5,6 +5,7 @@
 
 #include "flamegpu/flame_api.h"
 
+namespace flamegpu {
 
 namespace test_io {
 bool validate_has_run = false;
@@ -391,3 +392,4 @@ TEST(IOTest2, AgentID_FileInput_IDCollision) {
     ASSERT_EQ(::remove(JSON_FILE_NAME), 0);
 }
 }  // namespace test_io
+}  // namespace flamegpu

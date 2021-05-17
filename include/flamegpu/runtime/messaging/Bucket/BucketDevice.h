@@ -4,6 +4,8 @@
 #include "flamegpu/runtime/messaging/Bucket.h"
 #include "flamegpu/runtime/messaging/BruteForce/BruteForceDevice.h"
 
+namespace flamegpu {
+
 /**
  * This class is accessible via DeviceAPI.message_in if MsgBucket is specified in FLAMEGPU_AGENT_FUNCTION
  * It gives access to functionality for reading bucket
@@ -313,5 +315,7 @@ __device__ T MsgBucket::In::Filter::Message::getVariable(const char(&variable_na
     T value = Curve::getMessageVariable<T>(variable_name, this->_parent.combined_hash, cell_index);
     return value;
 }
+}  // namespace flamegpu
+
 
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_BUCKET_BUCKETDEVICE_H_

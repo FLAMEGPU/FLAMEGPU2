@@ -5,6 +5,8 @@
 #include "flamegpu/runtime/flamegpu_api.h"
 
 #include "gtest/gtest.h"
+namespace flamegpu {
+
 
 namespace test_message_array {
     const char *MODEL_NAME = "Model";
@@ -390,3 +392,4 @@ TEST(TestMessage_Array, ReadEmpty) {
 }
 
 }  // namespace test_message_array
+}  // namespace flamegpu

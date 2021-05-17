@@ -1,3 +1,5 @@
+// @todo - ifdef visualisation?
+
 #include "flamegpu/visualiser/AgentVis.h"
 
 #include "flamegpu/gpu/CUDAAgent.h"
@@ -5,6 +7,9 @@
 #include "flamegpu/visualiser/color/ColorFunction.h"
 #include "flamegpu/visualiser/color/StaticColor.h"
 #include "FLAMEGPU_Visualisation.h"
+
+namespace flamegpu {
+namespace visualiser {
 
 AgentVis::AgentVis(CUDAAgent &_agent, const std::shared_ptr<AutoPalette>& autopalette)
     : owned_auto_palette(nullptr)
@@ -521,3 +526,6 @@ void AgentVis::clearColor() {
     auto_palette.reset();
     owned_auto_palette = nullptr;
 }
+
+}  // namespace visualiser
+}  // namespace flamegpu

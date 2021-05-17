@@ -1,6 +1,10 @@
+// @todo - ifdef visualisation
 #include "flamegpu/visualiser/StaticModelVis.h"
 
 #include "flamegpu/exception/FGPUException.h"
+
+namespace flamegpu {
+namespace visualiser {
 
 StaticModelVis::StaticModelVis(std::shared_ptr<ModelConfig::StaticModel> _m)
     : m(std::move(_m)) { }
@@ -33,3 +37,6 @@ void StaticModelVis::setModelRotation(float x, float y, float z, float radians) 
     m->rotation[2] = z;
     m->rotation[3] = radians;
 }
+
+}  // namespace visualiser
+}  // namespace flamegpu

@@ -24,6 +24,8 @@
 #include "flamegpu/runtime/cuRVE/curve.h"
 #include "flamegpu/util/Any.h"
 
+namespace flamegpu {
+
 struct SubEnvironmentData;
 class EnvironmentDescription;
 class CUDASimulation;
@@ -455,7 +457,7 @@ class EnvironmentManager {
      * @param var_name name used for accessing the property
      * @throws InvalidEnvProperty If a property of the name does not exist
      */
-    Any getPropertyAny(const unsigned int &instance_id, const std::string &var_name) const;
+    util::Any getPropertyAny(const unsigned int &instance_id, const std::string &var_name) const;
     /**
      * Removes an environment property
      * @param name name used for accessing the property
@@ -1122,5 +1124,7 @@ template<typename T>
 T EnvironmentManager::getProperty(const unsigned int &instance_id, const std::string &var_name, const size_type &index) {
     return getProperty<T>(toName(instance_id, var_name), index);
 }
+
+}  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_UTILITY_ENVIRONMENTMANAGER_CUH_
