@@ -49,7 +49,8 @@ CUDASimulation::CUDASimulation(const std::shared_ptr<const ModelData> &_model)
     , streams(std::vector<cudaStream_t>())
     , singletons(nullptr)
     , singletonsInitialised(false)
-    , rtcInitialised(false) {
+    , rtcInitialised(false)
+    , isPureRTC(detectPureRTC(model)) {
     ++active_instances;
     initOffsetsAndMap();
     // Register the signal handler.
@@ -77,6 +78,22 @@ CUDASimulation::CUDASimulation(const std::shared_ptr<const ModelData> &_model)
         submodel_map.emplace(it_sm->first, std::unique_ptr<CUDASimulation>(new CUDASimulation(it_sm->second, this)));
     }
 }
+bool CUDASimulation::detectPureRTC(const std::shared_ptr<const ModelData>& _model) {
+    const auto& am = _model->agents;
+    for (auto it = am.cbegin(); it != am.cend(); ++it) {
+        for (const auto& af : it->second->functions) {
+            if (af.second->func || af.second->condition)
+                return false;
+        }
+    }
+    // TODO: In future this will need to be extended for new forms of device function, e.g. device init
+    const auto& as = _model->submodels;
+    for (auto it = as.cbegin(); it != as.cend(); ++it) {
+        if (!detectPureRTC(it->second->submodel))
+          return false;
+    }
+    return true;
+}
 CUDASimulation::CUDASimulation(const std::shared_ptr<SubModelData> &submodel_desc, CUDASimulation *master_model)
     : Simulation(submodel_desc, master_model)
     , step_count(0)
@@ -84,7 +101,8 @@ CUDASimulation::CUDASimulation(const std::shared_ptr<SubModelData> &submodel_des
     , streams(std::vector<cudaStream_t>())
     , singletons(nullptr)
     , singletonsInitialised(false)
-    , rtcInitialised(false) {
+    , rtcInitialised(false)
+    , isPureRTC(master_model->isPureRTC) {
     ++active_instances;
     initOffsetsAndMap();
     // Ensure submodel is valid
@@ -1284,9 +1302,9 @@ void CUDASimulation::initialiseSingletons() {
 
         // Populate the environment properties
         if (!submodel) {
-            singletons->environment.init(instance_id, *model->environment);
+            singletons->environment.init(instance_id, *model->environment, isPureRTC);
         } else {
-            singletons->environment.init(instance_id, *model->environment, mastermodel->getInstanceID(), *submodel->subenvironment);
+            singletons->environment.init(instance_id, *model->environment, isPureRTC, mastermodel->getInstanceID(), *submodel->subenvironment);
         }
 
         // Propagate singleton init to submodels
