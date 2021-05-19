@@ -96,10 +96,15 @@ if(MSVC)
   target_link_libraries(${PYTHON_MODULE_NAME} PRIVATE ${Python3_LIBRARIES} flamegpu2 cuda)
 endif()
 
-
 #######################
 ## Python Packaging  ##
 #######################
+# cleanup the flamegpu2 include file paths, so they're relative (begin `include/`) and seperated by `", "`
+foreach(FGPU2_INC_FILE IN LISTS FGPU2_INCLUDE)
+  file(RELATIVE_PATH FGPU2_INC_FILE_CLEAN "${FLAMEGPU_ROOT}" "${FGPU2_INC_FILE}")
+  set(FGPU2_INCLUDE_CLEAN "${FGPU2_INCLUDE_CLEAN}'${FGPU2_INC_FILE_CLEAN}', ")
+endforeach()
+
 # configure the python setup.py and __init__.py files for packaging and output to the final lib output folder
 configure_file(
 	setup.py.in
@@ -143,6 +148,17 @@ endfunction()
 search_python_module(setuptools)
 search_python_module(wheel)
 
+# Create the package directory before we try and copy files to it
+add_custom_command(TARGET ${PYTHON_MODULE_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${PYTHON_LIB_OUTPUT_DIRECTORY}/${PYTHON_MODULE_NAME}/include")
+
+# Copy the FGPU2 headers to a local path, this must occur before the wheel is built
+add_custom_command(TARGET ${PYTHON_MODULE_NAME} POST_BUILD     # Adds a post-build event to MyTest
+    COMMAND ${CMAKE_COMMAND} -E copy_directory              # which executes "cmake - E copy_directory..."
+        "${FLAMEGPU_ROOT}/include"                                     # <--this is in-dir
+        "${PYTHON_LIB_OUTPUT_DIRECTORY}/${PYTHON_MODULE_NAME}/include" # <--this is out-dir path
+    ) 
+
 # Copy the visualisation dlls if required, this must occur before the wheel is built
 if (VISUALISATION)
     # Copy DLLs
@@ -152,9 +168,6 @@ if (VISUALISATION)
         get_filename_component(GLEW_RUNTIME_LIB_NAME ${GLEW_RUNTIME_LIBRARIES} NAME)
         get_filename_component(IL_RUNTIME_LIB_NAME ${IL_RUNTIME_LIBRARIES} NAME)
         #get_filename_component(ILUT_RUNTIME_LIB_NAME ${ILUT_RUNTIME_LIBRARIES} NAME)
-        # create the directory first (this is normally created by the following post-build commands
-        add_custom_command(TARGET ${PYTHON_MODULE_NAME} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E make_directory "${PYTHON_LIB_OUTPUT_DIRECTORY}/${PYTHON_MODULE_NAME}")
         # sdl 
         add_custom_command(TARGET ${PYTHON_MODULE_NAME} POST_BUILD     # Adds a post-build event to MyTest
             COMMAND ${CMAKE_COMMAND} -E copy_if_different              # which executes "cmake - E copy_if_different..."

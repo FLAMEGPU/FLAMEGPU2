@@ -290,6 +290,7 @@ SET(ALL_SRC
     ${SRC_INCLUDE}
     ${SRC_FLAMEGPU2}
 )
+SET(FGPU2_INCLUDE ${SRC_INCLUDE} CACHE INTERNAL "Include files required by FLAMEGPU2 RTC")
 
 # Setup Visual Studio (and eclipse) filters
 source_group(TREE ${FLAMEGPU_ROOT}/include/flamegpu PREFIX include FILES ${SRC_INCLUDE})
