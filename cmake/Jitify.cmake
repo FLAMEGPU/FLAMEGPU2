@@ -10,7 +10,7 @@ cmake_policy(SET CMP0079 NEW)
 FetchContent_Declare(
     jitify
     GIT_REPOSITORY https://github.com/NVIDIA/jitify.git
-    GIT_TAG        2f65aa60c5ebabe28d254feb092e727a5a754a25
+    GIT_TAG        00232c873704f53dbdec92ad8656f2cc3b1a4067
     SOURCE_DIR     ${FETCHCONTENT_BASE_DIR}/jitify-src/jitify
     GIT_PROGRESS   ON
     # UPDATE_DISCONNECTED   ON
