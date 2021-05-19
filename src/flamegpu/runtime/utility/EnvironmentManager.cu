@@ -51,7 +51,7 @@ void EnvironmentManager::purge() {
     initialiseDevice();
 }
 
-void EnvironmentManager::init(const unsigned int &instance_id, const EnvironmentDescription &desc) {
+void EnvironmentManager::init(const unsigned int &instance_id, const EnvironmentDescription &desc, bool isPureRTC) {
     std::unique_lock<std::shared_timed_mutex> lock(mutex);
     // Error if reinit
     for (auto &&i : properties) {
@@ -85,11 +85,11 @@ void EnvironmentManager::init(const unsigned int &instance_id, const Environment
             "in EnvironmentManager::init().");
     }
     // Defragment to rebuild it properly
-    defragment(Curve::getInstance(), &orderedProperties);
+    defragment(Curve::getInstance(), &orderedProperties, {}, isPureRTC);
     // Setup RTC version
     buildRTCOffsets(instance_id, instance_id, orderedProperties);
 }
-void EnvironmentManager::init(const unsigned int &instance_id, const EnvironmentDescription &desc, const unsigned int &master_instance_id, const SubEnvironmentData &mapping) {
+void EnvironmentManager::init(const unsigned int &instance_id, const EnvironmentDescription &desc, bool isPureRTC, const unsigned int &master_instance_id, const SubEnvironmentData &mapping) {
     assert(deviceRequiresUpdate.size());  // submodel init should never be called first, requires parent init first for mapping
     std::unique_lock<std::shared_timed_mutex> lock(mutex);
 
@@ -142,7 +142,7 @@ void EnvironmentManager::init(const unsigned int &instance_id, const Environment
             "in EnvironmentManager::init().");
     }
     // Defragment to rebuild it properly
-    defragment(Curve::getInstance(), &orderedProperties, new_mapped_props);
+    defragment(Curve::getInstance(), &orderedProperties, new_mapped_props, isPureRTC);
     // Setup RTC version
     buildRTCOffsets(instance_id, master_instance_id, orderedProperties);
 }
@@ -315,7 +315,11 @@ void EnvironmentManager::newProperty(const NamePair &name, const char *ptr, cons
     setDeviceRequiresUpdateFlag();
 }
 
-void EnvironmentManager::defragment(Curve &curve, const DefragMap * mergeProperties, std::set<NamePair> newmaps) {
+#ifdef _DEBUG
+void EnvironmentManager::defragment(Curve &curve, const DefragMap * mergeProperties, std::set<NamePair> newmaps, bool isPureRTC) {
+#else
+void EnvironmentManager::defragment(Curve & curve, const DefragMap * mergeProperties, std::set<NamePair> newmaps, bool) {
+#endif
     // Do not lock mutex here, do it in the calling method
     auto device_lock = std::unique_lock<std::shared_timed_mutex>(device_mutex);
     // Build a multimap to sort the elements (to create natural alignment in compact form)
@@ -379,7 +383,7 @@ void EnvironmentManager::defragment(Curve &curve, const DefragMap * mergePropert
                     "in EnvironmentManager::defragment().");
             }
 #ifdef _DEBUG
-            if (CURVE_RESULT != static_cast<int>(cvh%Curve::MAX_VARIABLES)) {
+            if (!isPureRTC && CURVE_RESULT != static_cast<int>(cvh%Curve::MAX_VARIABLES)) {
                 fprintf(stderr, "Curve Warning: Environment Property '%s' has a collision and may work improperly.\n", name.second.c_str());
             }
 #endif
@@ -417,7 +421,7 @@ void EnvironmentManager::defragment(Curve &curve, const DefragMap * mergePropert
                 "in EnvironmentManager::defragment().");
         }
 #ifdef _DEBUG
-        if (CURVE_RESULT != static_cast<int>(cvh%Curve::MAX_VARIABLES)) {
+        if (!isPureRTC && CURVE_RESULT != static_cast<int>(cvh%Curve::MAX_VARIABLES)) {
             fprintf(stderr, "Curve Warning: Environment Property '%s' has a collision and may work improperly.\n", mp.first.second.c_str());
         }
 #endif

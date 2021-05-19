@@ -215,18 +215,20 @@ class EnvironmentManager {
      * Activates a models environment properties, by adding them to constant cache
      * @param instance_id instance_id of the CUDASimulation instance the properties are attached to
      * @param desc environment properties description to use
+     * @param isPureRTC If true, Curve collision warnings (debug build only) will be suppressed as they are irrelevant to RTC models
      */
-    void init(const unsigned int &instance_id, const EnvironmentDescription &desc);
+    void init(const unsigned int &instance_id, const EnvironmentDescription &desc, bool isPureRTC);
     /**
      * Submodel variant of init()
      * Activates a models unmapped environment properties, by adding them to constant cache
      * Maps a models mapped environment properties to their master property
      * @param instance_id instance_id of the CUDASimulation instance the properties are attached to
      * @param desc environment properties description to use
+     * @param isPureRTC If true, Curve collision warnings (debug build only) will be suppressed as they are irrelevant to RTC models
      * @param master_instance_id instance_id of the CUDASimulation instance of the parent of the submodel
      * @param mapping Metadata for which environment properties are mapped between master and submodels
      */
-    void init(const unsigned int &instance_id, const EnvironmentDescription &desc, const unsigned int &master_instance_id, const SubEnvironmentData &mapping);
+    void init(const unsigned int &instance_id, const EnvironmentDescription &desc, bool isPureRTC, const unsigned int &master_instance_id, const SubEnvironmentData &mapping);
     /**
      * RTC functions hold their own unique constants for environment variables. This function copies all environment variable to the RTC copies.
      * It can not be incorporated into init() as init will be called before RTC functions have been compiled.
@@ -646,9 +648,10 @@ class EnvironmentManager {
      * @param curve The curve instance to use (important if thread has cuda device set wrong)
      * @param mergeProps Used by init to defragement whilst merging in new data
      * @param newmaps Namepairs of newly mapped properties, yet to to be setup (essentially ones not yet registered in curve)
+     * @param isPureRTC If true, Curve collision warnings (debug build only) will be suppressed as they are irrelevant to RTC models
      * @note any EnvPROP
      */
-    void defragment(Curve &curve, const DefragMap * mergeProps = nullptr, std::set<NamePair> newmaps = {});
+    void defragment(Curve &curve, const DefragMap * mergeProps = nullptr, std::set<NamePair> newmaps = {}, bool isPureRTC = false);
     /**
      * This is the RTC version of defragment()
      * RTC Constant offsets are fixed at RTC time, and exist in their own constant block.

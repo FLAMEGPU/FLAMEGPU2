@@ -527,6 +527,18 @@ class CUDASimulation : public Simulation {
      * This controls access to active_device_instances, active_device_mutex
      */
     static std::shared_timed_mutex active_device_maps_mutex;
+    /**
+     * Returns false if any agent functions or agent function conditions are not RTC
+     * Used by constructor to set isPureRTC constant value
+     * @param _model The agent model hierarchy to check
+     */
+    static bool detectPureRTC(const std::shared_ptr<const ModelData>& _model);
+
+ protected:
+    /**
+     * If true, the model is pureRTC, and hence does not use non-RTC curve
+     */
+    const bool isPureRTC;
 
  public:
     /**
