@@ -163,12 +163,6 @@ if(BUILD_SWIG_PYTHON)
     add_subdirectory(swig)
 endif()
 
-if(${BUILD_API_DOCUMENTATION})    
-    get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR} REALPATH)
-    include(./cmake/doxygen.cmake)
-    create_doxygen_target("${FLAMEGPU_ROOT}" "${CMAKE_CURRENT_BINARY_DIR}/.." "")
-endif()
-
 # Put all_lint within Lint filter
 CMAKE_SET_TARGET_FOLDER(all_lint "Lint")
 
