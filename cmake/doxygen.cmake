@@ -144,10 +144,11 @@ macro(create_pydoxygen_target FLAMEGPU_ROOT DOXY_OUT_DIR XML_PATH)
         if(VISUALISATION)
           set(DEFINE_VISUALISATION "-I${VISUALISATION_ROOT}/include -DVISUALISATION")
         endif()
+        # set(TRANSLATE_DOXYGEN "-doxygen")
         add_custom_target(
             pyflamegpu_pyonly
             COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/pyflamegpu_docs"
-            COMMAND ${CMAKE_COMMAND} -E env "SWIG_LIB=${SWIG_DIR}" ${SWIG_EXECUTABLE} -python -doxygen "-I${FLAMEGPU_ROOT}/include" ${DEFINE_VISUALISATION} ${DEFINE_SEATBELTS} -DNOMINMAX -threads -outdir "${CMAKE_BINARY_DIR}/pyflamegpu_docs" -c++ -module pyflamegpu -interface _pyflamegpu -o flamegpuPYTHON_wrap.cxx "${FLAMEGPU_ROOT}/swig/python/flamegpu.i"
+            COMMAND ${CMAKE_COMMAND} -E env "SWIG_LIB=${SWIG_DIR}" ${SWIG_EXECUTABLE} -python ${TRANSLATE_DOXYGEN} "-I${FLAMEGPU_ROOT}/include" ${DEFINE_VISUALISATION} ${DEFINE_SEATBELTS} -DNOMINMAX -threads -outdir "${CMAKE_BINARY_DIR}/pyflamegpu_docs" -c++ -module pyflamegpu -interface _pyflamegpu -o flamegpuPYTHON_wrap.cxx "${FLAMEGPU_ROOT}/swig/python/flamegpu.i"
         )
         # And now do the doxygen bits
         set(DOXYGEN_STRIP_FROM_PATH       "${CMAKE_BINARY_DIR}/pyflamegpu_docs")
