@@ -148,7 +148,7 @@ macro(create_pydoxygen_target FLAMEGPU_ROOT DOXY_OUT_DIR XML_PATH)
         add_custom_target(
             pyflamegpu_pyonly
             COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/pyflamegpu_docs"
-            COMMAND ${CMAKE_COMMAND} -E env "SWIG_LIB=${SWIG_DIR}" ${SWIG_EXECUTABLE} -python ${TRANSLATE_DOXYGEN} "-I${FLAMEGPU_ROOT}/include" ${DEFINE_VISUALISATION} ${DEFINE_SEATBELTS} -DNOMINMAX -threads -outdir "${CMAKE_BINARY_DIR}/pyflamegpu_docs" -c++ -module pyflamegpu -interface _pyflamegpu -o flamegpuPYTHON_wrap.cxx "${FLAMEGPU_ROOT}/swig/python/flamegpu.i"
+            COMMAND ${CMAKE_COMMAND} -E env "SWIG_LIB=${SWIG_DIR}" ${SWIG_EXECUTABLE} -python ${TRANSLATE_DOXYGEN} "-I${FLAMEGPU_ROOT}/include" ${DEFINE_VISUALISATION} ${DEFINE_SEATBELTS} -DNOMINMAX -threads -outdir "${CMAKE_BINARY_DIR}/pyflamegpu_docs" -c++ -module pyflamegpu -interface _pyflamegpu -o "${CMAKE_BINARY_DIR}/pyflamegpu_docs/flamegpuPYTHON_wrap.cxx" "${FLAMEGPU_ROOT}/swig/python/flamegpu.i"
         )
         # And now do the doxygen bits
         set(DOXYGEN_STRIP_FROM_PATH       "${CMAKE_BINARY_DIR}/pyflamegpu_docs")
@@ -156,6 +156,7 @@ macro(create_pydoxygen_target FLAMEGPU_ROOT DOXY_OUT_DIR XML_PATH)
         set(DOXYGEN_PREDEFINED            "")
         set(DOXYGEN_PYTHON_DOCSTRING      NO)
         set(DOXY_INPUT_FILES "${CMAKE_BINARY_DIR}/pyflamegpu_docs/pyflamegpu.py")
+        set(DOXYGEN_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/pyflamegpu_docs")
         if("${XML_PATH}" STREQUAL "")
             doxygen_add_docs("pydocs" "${DOXY_INPUT_FILES}")
             set_target_properties("pydocs" PROPERTIES EXCLUDE_FROM_ALL TRUE)
