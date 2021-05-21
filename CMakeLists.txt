@@ -166,7 +166,6 @@ endif()
 if(${BUILD_API_DOCUMENTATION})    
     get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR} REALPATH)
     include(./cmake/doxygen.cmake)
-    # This must be done after the pyflamegpu target is created
     create_doxygen_target("${FLAMEGPU_ROOT}" "${CMAKE_CURRENT_BINARY_DIR}/.." "")
 endif()
 
