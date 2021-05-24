@@ -9,7 +9,7 @@
 
 /**
  * This class is accessible via DeviceAPI.message_in if MsgArray2D is specified in FLAMEGPU_AGENT_FUNCTION
- * It gives access to functionality for reading array messages
+ * It gives access to functionality for reading two dimensional array messages
  */
 class MsgArray2D::In {
  public:

@@ -16,7 +16,8 @@
 struct AgentLogFrame;
 
 /**
- * Perhaps separate the data and interface in these classes?
+ * Generic frame of logging data
+ * This can contain logged data related to agents or the environment
  */
 struct LogFrame {
     friend class CUDASimulation;
@@ -71,41 +72,142 @@ struct LogFrame {
     std::map<LoggingConfig::NameStatePair, std::pair<std::map<LoggingConfig::NameReductionFn, Any>, unsigned int>> agents;
     unsigned int step_count;
 };
-
+/**
+ * A collection of LogFrame's related to a single model run
+ * The data available depends on the LoggingConfig used at runtime
+ */
 struct RunLog {
     friend class CUDASimulation;
     /**
      * Constructs an empty RunLog
      */
     RunLog() { }
+    /**
+     * Constructs a RunLog from existing data frames
+     * @param _exit Exit LogFrame
+     * @param _step Ordered list of step LogFrames
+     */
     RunLog(const LogFrame &_exit, const std::list<LogFrame> &_step)
         : exit(_exit)
         , step(_step) { }
-
+     /**
+      * Return the exit LogFrame
+      * @return The logging information collected after completion of the model run
+      */
     const LogFrame &getExitLog() const { return exit; }
+    /**
+     * Return the ordered list of step LogFrames
+     * @return The logging information collected after each model step
+     * @note If logging frequency was changed in the StepLoggingConfig, there may be less than 1 LogFrame per step.
+     * @see getStepLogFrequency()
+     */
     const std::list<LogFrame> &getStepLog() const {return step; }
+    /**
+     * Returns the random seed used for this run
+     */
     unsigned int getRandomSeed() const { return random_seed; }
+    /**
+     * Returns the frequency that steps were logged
+     * @note This value is configured via StepLoggingConfig::setFrequency()
+     */
+    unsigned int getStepLogFrequency() const { return step_log_frequency; }
 
  private:
+    /**
+     * Exit LogFrame
+     */
     LogFrame exit;
+    /**
+     * Ordered list of step LogFrames
+     */
     std::list<LogFrame> step;
+    /**
+     * Random seed
+     */
     unsigned int random_seed = 0;
+    /**
+     * Step log frequency
+     */
     unsigned int step_log_frequency = 0;
 };
+/**
+ * Frame of logging data related to a specific agent type and state.
+ * The data available depends on the AgentLoggingConfig used for the agent type at runtime
+ */
 struct AgentLogFrame {
+    /**
+     * Constructs an AgentLogFrame from existing data
+     * @param data Map of reduction data
+     * @param count Population size (alive agents)
+     */
     explicit AgentLogFrame(const std::map<LoggingConfig::NameReductionFn, Any> &data, const unsigned int &count);
+    /**
+     * Return the number of alive agents in the population
+     * @return The population size
+     */
     unsigned int getCount() const;
+    /**
+     * Return the result of a min reduction performed on the specified agent variable
+     * This returns the maximum value of the specified variable found in the agent population
+     * @param variable_name The agent variable that was reduced
+     * @tparam T The type of agent variable variable_name
+     * @return The result of the min reduction
+     * @throws InvalidAgentVar If a min reduction of the agent variable of name variable_name was not found within the log.
+     * @throws InvalidVarType If the agent variable variable_name does not have type T within the agent.
+     */
     template<typename T>
     T getMin(const std::string &variable_name) const;
+    /**
+     * Return the result of a max reduction performed on the specified agent variable
+     * This returns the minimum value of the specified variable found in the agent population
+     * @param variable_name The agent variable that was reduced
+     * @tparam T The type of agent variable variable_name
+     * @return The result of the max reduction
+     * @throws InvalidAgentVar If a max reduction of the agent variable of name variable_name was not found within the log.
+     * @throws InvalidVarType If the agent variable variable_name does not have type T within the agent.
+     */
     template<typename T>
     T getMax(const std::string &variable_name) const;
+    /**
+     * Return the result of a sum reduction performed on the specified agent variable
+     * This returns the result of summing every agent's copy of the specified variable
+     * @param variable_name The agent variable that was summed
+     * @tparam T The type of agent variable variable_name
+     * @return The result of the sum (The type of this return value is the highest range type of the same format)
+     * @throws InvalidAgentVar If a sum reduction of the agent variable of name variable_name was not found within the log.
+     * @throws InvalidVarType If the agent variable variable_name does not have type T within the agent.
+     */
     template<typename T>
     typename sum_input_t<T>::result_t getSum(const std::string &variable_name) const;
+    /**
+     * Return the result of a mean reduction performed on the specified agent variable
+     * This returns the mean average value of the specified agent variable
+     * @param variable_name The agent variable that was averaged
+     * @tparam T The type of agent variable variable_name
+     * @return The result of the average
+     * @throws InvalidAgentVar If a mean reduction of the agent variable of name variable_name was not found within the log.
+     * @throws InvalidVarType If the agent variable variable_name does not have type T within the agent.
+     */
     double getMean(const std::string &variable_name) const;
+    /**
+     * Return the result of a standard deviation reduction performed on the specified agent variable
+     * This returns the standard deviation of the set of agent's copies of the specified agent variable
+     * @param variable_name The agent variable that was reduced
+     * @tparam T The type of agent variable variable_name
+     * @return The result of the standard deviation reduction
+     * @throws InvalidAgentVar If a standard deviation reduction of the agent variable of name variable_name was not found within the log.
+     * @throws InvalidVarType If the agent variable variable_name does not have type T within the agent.
+     */
     double getStandardDev(const std::string &variable_name) const;
 
  private:
+    /**
+     * Logging data
+     */
     const std::map<LoggingConfig::NameReductionFn, Any> &data;
+    /**
+     * Population size of the related agent state
+     */
     const unsigned int &count;
 };
 

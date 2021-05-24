@@ -60,9 +60,9 @@ class CUDASimulation : public Simulation {
     typedef std::map<std::string, std::unique_ptr<CUDASimulation>> CUDASubModelMap;
 
  public:
-     /**
-      * CUDA runner specific config
-      */
+    /**
+     * CUDA runner specific config
+     */
     struct Config {
         /**
          * GPU to execute model on

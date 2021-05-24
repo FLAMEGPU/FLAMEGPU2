@@ -19,7 +19,13 @@ class CUDAMessage;
 
 // #define UNIFIED_GPU_MEMORY
 
+/**
+ * Map used to map a variable name to buffer
+ */
 typedef std::map <std::string, void*> CUDAMsgMap;
+/**
+ * Key Value pair of CUDAMsgMap
+ */
 typedef std::pair <std::string, void*> CUDAMsgMapPair;
 
 /**

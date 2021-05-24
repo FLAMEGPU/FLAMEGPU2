@@ -17,6 +17,9 @@ class XMLDocument;
 class XMLElement;
 }  // namespace tinyxml2
 
+/**
+ * XML format Logger
+ */
 class xmlLogger : public Logger{
  public:
     xmlLogger(const std::string &outPath, bool prettyPrint, bool truncateFile);

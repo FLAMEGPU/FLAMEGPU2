@@ -159,8 +159,17 @@ class DeviceAPI : public ReadOnlyDeviceAPI{
         unsigned int *);
 
  public:
+    /**
+     * Collection of DeviceAPI functions related to agent birth
+     */
     class AgentOut {
      public:
+        /**
+         * Constructor
+         * @param aoh Agent output hash (as required for accessing Curve)
+         * @param d_agent_output_nextID Pointer to global memory holding the IDs to be assigned to new agents (selected via atomic inc)
+         * @param scan_flag_agentOutput Pointer to (the start of) buffer of scan flags to be set true if this thread outputs an agent
+         */
         __device__ AgentOut(const Curve::NamespaceHash &aoh, id_t *&d_agent_output_nextID, unsigned int *&scan_flag_agentOutput)
             : agent_output_hash(aoh)
             , scan_flag(scan_flag_agentOutput)

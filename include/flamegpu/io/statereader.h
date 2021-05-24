@@ -20,7 +20,11 @@
 
 class AgentVector;
 
-// Base class
+/**
+ * Abstract representation of a class for importing model data (agent population data, environment properties, run configuration) from file
+ * @see XMLReader The XML implementation of a StateReader
+ * @see JSONReader The JSON implementation of a StateReader
+ */
 class StateReader {
  public:
     /**
@@ -47,7 +51,10 @@ class StateReader {
     , env_desc(_env_desc)
     , env_init(_env_init)
     , sim_instance(_sim_instance) {}
-    ~StateReader() {}
+    /**
+     * Virtual destructor for correct inheritance behaviour
+     */
+    virtual ~StateReader() {}
 
     // -----------------------------------------------------------------------
     //  The interface
@@ -58,25 +65,6 @@ class StateReader {
      * @todo: This should probably be the same return code between subclasses, and seems redundant with our exceptions as should never return fail.
      */
     virtual int parse() = 0;
-
-    // void setFileName(const char* input) {    inputFile = std::string(input); }
-
-    // void setModelDesc(const ModelDescription &model_desc) {    model_description_ = model_desc; }
-/*
-    StateReader& create(const ModelDescription &model, const char *input) {
-        string extension = getFileExt(input);
-        StateReader *object_to_return = nullptr;
-
-        if (extension == "xml") {
-            object_to_return = new xmlReader(model);
-        }
-        if (extension == "bin") {
-            object_to_return = new binReader(model);
-        }
-
-        return *object_to_return;
-    }
-*/
 
  protected:
     StringPairUnorderedMap<std::shared_ptr<AgentVector>>& model_state;

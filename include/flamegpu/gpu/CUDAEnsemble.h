@@ -19,13 +19,37 @@ struct RunLog;
  */
 class CUDAEnsemble {
  public:
+    /**
+     * Execution config for running a CUDAEnsemble
+     */
     struct EnsembleConfig {
         // std::string in = "";
+        /**
+         * Directory to store output data (primarily logs)
+         */
         std::string out_directory = "";
+        /**
+         * Output format
+         * This must be a supported format e.g.: "json" or "xml"
+         */
         std::string out_format = "json";
+        /**
+         * The maximum number of concurrent runs
+         */
         unsigned int concurrent_runs = 4;
+        /**
+         * The CUDA device ids of devices to be used
+         * If this is left empty, all available devices will be used
+         */
         std::set<int> devices;
+        /**
+         * If true progress logging to stdout will be suppressed
+         */
         bool silent = false;
+        /**
+         * If true, the total runtime for the ensemble will be printed to stdout at completion
+         * This is independent of the EnsembleConfig::silent
+         */
         bool timing = false;
     };
     /**

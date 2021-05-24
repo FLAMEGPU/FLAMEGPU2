@@ -4,6 +4,10 @@
 #include "flamegpu/runtime/messaging/Array.h"
 #include "flamegpu/runtime/messaging/BruteForce/BruteForceDevice.h"
 
+/**
+ * This class is accessible via DeviceAPI.message_in if MsgArray is specified in FLAMEGPU_AGENT_FUNCTION
+ * It gives access to functionality for reading array messages
+ */
 class MsgArray::In {
     /**
      * Message has full access to In, they are treated as the same class so share everything

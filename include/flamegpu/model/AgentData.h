@@ -63,17 +63,20 @@ struct AgentData : std::enable_shared_from_this<AgentData> {
      */
     bool keepDefaultState;
     /**
-     * Returns true if this type of agent is created by any agent functions
+     * Check whether any agent functions within the ModelDescription hierarchy output agents of this type
+     * @return true if this type of agent is created by any agent functions
      */
     bool isOutputOnDevice() const;
     /**
      * Equality operator, checks whether AgentData hierarchies are functionally the same
+     * @param rhs Right hand side
      * @returns True when agents are the same
      * @note Instead compare pointers if you wish to check that they are the same instance
      */
     bool operator==(const AgentData &rhs) const;
     /**
      * Equality operator, checks whether AgentData hierarchies are functionally different
+     * @param rhs Right hand side
      * @returns True when agents are not the same
      * @note Instead compare pointers if you wish to check that they are not the same instance
      */
@@ -85,6 +88,7 @@ struct AgentData : std::enable_shared_from_this<AgentData> {
     /**
      * Returns a constant copy of this agent's hierarchy
      * Does not copy description, sets it to nullptr instead
+     * @return A shared ptr to a copy
      */
     std::shared_ptr<const AgentData> clone() const;
 
@@ -93,10 +97,14 @@ struct AgentData : std::enable_shared_from_this<AgentData> {
      * Copy constructor
      * This is unsafe, should only be used internally, use clone() instead
      * This does not setup functions map 
+     * @param model New parent model (we do not copy the other AgentData's parent model)
+     * @param other Other AgentData to copy data from
      */
     AgentData(std::shared_ptr<const ModelData> model, const AgentData &other);
     /**
      * Normal constructor, only to be called by ModelDescription
+     * @param model Parent model
+     * @param agent_name Name of the agent
      */
     AgentData(std::shared_ptr<const ModelData> model, const std::string &agent_name);
 };

@@ -56,23 +56,42 @@ funcName ## _impl funcName;\
 template<typename InT, typename OutT>\
 __device__ __forceinline__ OutT funcName ## _impl::unary_function<InT, OutT>::operator()(const InT &a) const
 
+/**
+ * Collection of HostAPI functions related to agents
+ *
+ * Mostly provides access to reductions over agent variables
+ */
 class HostAgentAPI {
  public:
+   /**
+    * Construct a new HostAgentAPI instance for a specified agent type and state
+    *
+    * @param _api Parent HostAPI instance
+    * @param _agent Agent object holding the agent data
+    * @param _stateName Name of the agent state to be represented
+    * @param _agentOffsets Layout of memory within the Host Agent Birth data structure (_newAgentData)
+    * @param _newAgentData Structure containing agents birthed via Host Agent Birth
+    */
     HostAgentAPI(HostAPI &_api, AgentInterface &_agent, const std::string &_stateName, const VarOffsetStruct &_agentOffsets, HostAPI::AgentDataBuffer&_newAgentData)
         : api(_api)
         , agent(_agent)
-        , hasState(true)
         , stateName(_stateName)
         , population(nullptr)
         , agentOffsets(_agentOffsets)
         , newAgentData(_newAgentData) { }
-
+    /**
+     * Destructor
+     *
+     * Ensures any changes to agent data or births are synchronised prior to the host function returning.
+     */
     ~HostAgentAPI();
-
+    /**
+     * Copy constructor
+     * Not actually sure this is required
+     */
     HostAgentAPI(const HostAgentAPI& other)
         : api(other.api)
         , agent(other.agent)
-        , hasState(other.hasState)
         , stateName(other.stateName)
         , population(nullptr)  // Never copy DeviceAgentVector
         , agentOffsets(other.agentOffsets)
@@ -182,6 +201,10 @@ class HostAgentAPI {
      */
     template<typename InT, typename OutT, typename transformOperatorT, typename reductionOperatorT>
     OutT transformReduce(const std::string &variable, transformOperatorT transformOperator, reductionOperatorT reductionOperator, const OutT &init) const;
+    /**
+     * Sort ordering
+     * Ascending or Descending
+     */
     enum Order {Asc, Desc};
     /**
      * Sorts agents according to the named variable
@@ -238,14 +261,32 @@ class HostAgentAPI {
      * @param stream CUDA stream to be used for async CUDA operations
      */
     static void sortBuffer(void *dest, void*src, unsigned int *position, const size_t &typeLen, const unsigned int &length, const cudaStream_t &stream);
+    /**
+     * Parent HostAPI
+     */
     HostAPI &api;
+    /**
+     * Main object containing agent data
+     * Probably type CUDAAgent
+     */
     AgentInterface &agent;
-    bool hasState;
+    /**
+     * Agent state being accessed
+     */
     const std::string stateName;
+    /**
+     * Nullptr until getPopulationData() is called, after which it holds the return value
+     */
     std::shared_ptr<DeviceAgentVector_impl> population;
-    // Holds offsets for accessing newAgentData
+    /**
+     * Holds offsets for accessing newAgentData
+     * @see newAgent()
+     */
     const VarOffsetStruct& agentOffsets;
-    // Compact data store for efficient host agent creation
+    /**
+     * Compact data store for efficient host agent creation
+     * @see newAgent()
+     */
     HostAPI::AgentDataBuffer& newAgentData;
 };
 
