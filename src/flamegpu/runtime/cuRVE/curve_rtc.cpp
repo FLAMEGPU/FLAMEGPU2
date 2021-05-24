@@ -183,118 +183,82 @@ CurveRTCHost::~CurveRTCHost() {
     free(h_data_buffer);
 }
 
-void CurveRTCHost::registerAgentVariable(const char* variableName, unsigned int namespace_hash, const char* type, size_t type_size, unsigned int elements, bool read, bool write) {
-    if (agent_namespace == 0)
-        agent_namespace = namespace_hash;
-    if (namespace_hash != agent_namespace) {
-        THROW UnknownInternalError("A different namespace hash (%d) is already registered to the one provided (%d): in CurveRTCHost::registerAgentVariable", agent_namespace, namespace_hash);
-    }
+void CurveRTCHost::registerAgentVariable(const char* variableName, const char* type, size_t type_size, unsigned int elements, bool read, bool write) {
     RTCVariableProperties props;
     props.type = CurveRTCHost::demangle(type);
     props.read = read;
     props.write = write;
     props.elements = elements;
     props.type_size = type_size;
-    agent_variables.emplace(variableName, props);
+    if (!agent_variables.emplace(variableName, props).second) {
+        THROW UnknownInternalError("Variable '%s' is already registered, in CurveRTCHost::registerAgentVariable()", variableName);
+    }
 }
-void CurveRTCHost::registerMessageInVariable(const char* variableName, unsigned int namespace_hash, const char* type, size_t type_size, unsigned int elements, bool read, bool write) {
-    if (messageIn_namespace == 0)
-        messageIn_namespace = namespace_hash;
-    if (namespace_hash != messageIn_namespace) {
-        THROW UnknownInternalError("A different namespace hash (%d) is already registered to the one provided (%d): in CurveRTCHost::registerMessageInVariable", messageIn_namespace, namespace_hash);
-    }
+void CurveRTCHost::registerMessageInVariable(const char* variableName, const char* type, size_t type_size, unsigned int elements, bool read, bool write) {
     RTCVariableProperties props;
     props.type = CurveRTCHost::demangle(type);
     props.read = read;
     props.write = write;
     props.elements = elements;
     props.type_size = type_size;
-    messageIn_variables.emplace(variableName, props);
+    if (!messageIn_variables.emplace(variableName, props).second) {
+        THROW UnknownInternalError("Variable '%s' is already registered, in CurveRTCHost::registerMessageInVariable()", variableName);
+    }
 }
-void CurveRTCHost::registerMessageOutVariable(const char* variableName, unsigned int namespace_hash, const char* type, size_t type_size, unsigned int elements, bool read, bool write) {
-    if (messageOut_namespace == 0)
-        messageOut_namespace = namespace_hash;
-    if (namespace_hash != messageOut_namespace) {
-        THROW UnknownInternalError("A different namespace hash (%d) is already registered to the one provided (%d): in CurveRTCHost::registerMessageOutVariable", messageOut_namespace, namespace_hash);
-    }
+void CurveRTCHost::registerMessageOutVariable(const char* variableName, const char* type, size_t type_size, unsigned int elements, bool read, bool write) {
     RTCVariableProperties props;
     props.type = CurveRTCHost::demangle(type);
     props.read = read;
     props.write = write;
     props.elements = elements;
     props.type_size = type_size;
-    messageOut_variables.emplace(variableName, props);
+    if (!messageOut_variables.emplace(variableName, props).second) {
+        THROW UnknownInternalError("Variable '%s' is already registered, in CurveRTCHost::registerMessageOutVariable()", variableName);
+    }
 }
-void CurveRTCHost::registerNewAgentVariable(const char* variableName, unsigned int namespace_hash, const char* type, size_t type_size, unsigned int elements, bool read, bool write) {
-    if (newAgent_namespace == 0)
-        newAgent_namespace = namespace_hash;
-    if (namespace_hash != newAgent_namespace) {
-        THROW UnknownInternalError("A different namespace hash (%d) is already registered to the one provided (%d): in CurveRTCHost::registerNewAgentVariable", newAgent_namespace, namespace_hash);
-    }
+void CurveRTCHost::registerNewAgentVariable(const char* variableName, const char* type, size_t type_size, unsigned int elements, bool read, bool write) {
     RTCVariableProperties props;
     props.type = CurveRTCHost::demangle(type);
     props.read = read;
     props.write = write;
     props.elements = elements;
     props.type_size = type_size;
-    newAgent_variables.emplace(variableName, props);
+    if (!newAgent_variables.emplace(variableName, props).second) {
+        THROW UnknownInternalError("Variable '%s' is already registered, in CurveRTCHost::registerNewAgentVariable()", variableName);
+    }
 }
 
-void CurveRTCHost::unregisterAgentVariable(const char* variableName, unsigned int namespace_hash) {
-    if (namespace_hash != agent_namespace) {
-        THROW UnknownInternalError("Namespace hash (%d) not found when removing variable: in CurveRTCHost::unregisterAgentVariable", namespace_hash);
-    }
+void CurveRTCHost::unregisterAgentVariable(const char* variableName) {
     auto i = agent_variables.find(variableName);
     if (i != agent_variables.end()) {
         agent_variables.erase(variableName);
     } else {
-        THROW UnknownInternalError("Variable '%s' not found when removing variable: in CurveRTCHost::unregisterAgentVariable", variableName);
+        THROW UnknownInternalError("Variable '%s' not found when removing variable, in CurveRTCHost::unregisterAgentVariable()", variableName);
     }
-    // Clear namespace on last var
-    if (agent_variables.empty())
-        agent_namespace = 0;
 }
-void CurveRTCHost::unregisterMessageOutVariable(const char* variableName, unsigned int namespace_hash) {
-    if (namespace_hash != messageOut_namespace) {
-        THROW UnknownInternalError("Namespace hash (%d) not found when removing variable: in CurveRTCHost::unregisterMessageOutVariable", namespace_hash);
-    }
+void CurveRTCHost::unregisterMessageOutVariable(const char* variableName) {
     auto i = messageOut_variables.find(variableName);
     if (i != messageOut_variables.end()) {
         messageOut_variables.erase(variableName);
     } else {
-        THROW UnknownInternalError("Variable '%s' not found when removing variable: in CurveRTCHost::unregisterMessageOutVariable", variableName);
+        THROW UnknownInternalError("Variable '%s' not found when removing variable, in CurveRTCHost::unregisterMessageOutVariable()", variableName);
     }
-    // Clear namespace on last var
-    if (messageOut_variables.empty())
-        messageOut_namespace = 0;
 }
-void CurveRTCHost::unregisterMessageInVariable(const char* variableName, unsigned int namespace_hash) {
-    if (namespace_hash != messageIn_namespace) {
-        THROW UnknownInternalError("Namespace hash (%d) not found when removing variable: in CurveRTCHost::unregisterMessageInVariable", namespace_hash);
-    }
+void CurveRTCHost::unregisterMessageInVariable(const char* variableName) {
     auto i = messageIn_variables.find(variableName);
     if (i != messageIn_variables.end()) {
         messageIn_variables.erase(variableName);
     } else {
-        THROW UnknownInternalError("Variable '%s' not found when removing variable: in CurveRTCHost::unregisterMessageInVariable", variableName);
+        THROW UnknownInternalError("Variable '%s' not found when removing variable, in CurveRTCHost::unregisterMessageInVariable()", variableName);
     }
-    // Clear namespace on last var
-    if (messageIn_variables.empty())
-        messageIn_namespace = 0;
 }
-void CurveRTCHost::unregisterNewAgentVariable(const char* variableName, unsigned int namespace_hash) {
-    if (namespace_hash != newAgent_namespace) {
-        THROW UnknownInternalError("Namespace hash (%d) not found when removing variable: in CurveRTCHost::unregisterNewAgentVariable", namespace_hash);
-    }
+void CurveRTCHost::unregisterNewAgentVariable(const char* variableName) {
     auto i = newAgent_variables.find(variableName);
     if (i != newAgent_variables.end()) {
         newAgent_variables.erase(variableName);
     } else {
-        THROW UnknownInternalError("Variable '%s' not found when removing variable: in CurveRTCHost::unregisterNewAgentVariable", variableName);
+        THROW UnknownInternalError("Variable '%s' not found when removing variable, in CurveRTCHost::unregisterNewAgentVariable()", variableName);
     }
-    // Clear namespace on last var
-    if (newAgent_variables.empty())
-        newAgent_namespace = 0;
 }
 
 
@@ -303,54 +267,47 @@ void* CurveRTCHost::getAgentVariableCachePtr(const char* variableName) {
     if (i != agent_variables.end()) {
         return i->second.h_data_ptr;
     }
-    THROW UnknownInternalError("Variable '%s' not found when accessing variable: in CurveRTCHost::getAgentVariableCachePtr", variableName);
+    THROW UnknownInternalError("Variable '%s' not found when accessing variable, in CurveRTCHost::getAgentVariableCachePtr()", variableName);
 }
 void* CurveRTCHost::getMessageOutVariableCachePtr(const char* variableName) {
     const auto i = messageOut_variables.find(variableName);
     if (i != messageOut_variables.end()) {
         return i->second.h_data_ptr;
     }
-    THROW UnknownInternalError("Variable '%s' not found when accessing variable: in CurveRTCHost::getMessageOutVariableCachePtr", variableName);
+    THROW UnknownInternalError("Variable '%s' not found when accessing variable, in CurveRTCHost::getMessageOutVariableCachePtr()", variableName);
 }
 void* CurveRTCHost::getMessageInVariableCachePtr(const char* variableName) {
     const auto i = messageIn_variables.find(variableName);
     if (i != messageIn_variables.end()) {
         return i->second.h_data_ptr;
     }
-    THROW UnknownInternalError("Variable '%s' not found when accessing variable: in CurveRTCHost::getMessageInVariableCachePtr", variableName);
+    THROW UnknownInternalError("Variable '%s' not found when accessing variable, in CurveRTCHost::getMessageInVariableCachePtr()", variableName);
 }
 void* CurveRTCHost::getNewAgentVariableCachePtr(const char* variableName) {
     const auto i = newAgent_variables.find(variableName);
     if (i != newAgent_variables.end()) {
         return i->second.h_data_ptr;
     }
-    THROW UnknownInternalError("Variable '%s' not found when accessing variable: in CurveRTCHost::getNewAgentVariableCachePtr", variableName);
+    THROW UnknownInternalError("Variable '%s' not found when accessing variable, in CurveRTCHost::getNewAgentVariableCachePtr()", variableName);
 }
 
-void CurveRTCHost::registerEnvVariable(const char* variableName, unsigned int namespace_hash, ptrdiff_t offset, const char* type, size_t type_size, unsigned int elements) {
-    // check to see if namespace key already exists
-    auto i = RTCEnvVariables.find(namespace_hash);
+void CurveRTCHost::registerEnvVariable(const char* propertyName, ptrdiff_t offset, const char* type, size_t type_size, unsigned int elements) {
     RTCEnvVariableProperties props;
     props.type = CurveRTCHost::demangle(type);
     props.elements = elements;
     props.offset = offset;
     props.type_size = type_size;
-    if (i != RTCEnvVariables.end()) {
-        // emplace into existing namespace key
-        i->second.emplace(variableName, props);
-    } else {
-        std::map<std::string, RTCEnvVariableProperties> inner;
-        inner.emplace(variableName, props);
-        RTCEnvVariables.emplace(namespace_hash, inner);
+    if (!RTCEnvVariables.emplace(propertyName, props).second) {
+        THROW UnknownInternalError("Environment property with name '%s' is already registered, in CurveRTCHost::registerEnvVariable()", propertyName);
     }
 }
 
-void CurveRTCHost::unregisterEnvVariable(const char* variableName, unsigned int namespace_hash) {
-    auto i = RTCEnvVariables.find(namespace_hash);
+void CurveRTCHost::unregisterEnvVariable(const char* propertyName) {
+    auto i = RTCEnvVariables.find(propertyName);
     if (i != RTCEnvVariables.end()) {
-        i->second.erase(variableName);
+        RTCEnvVariables.erase(propertyName);
     } else {
-        THROW UnknownInternalError("Namespace hash (%d) not found when removing environment variable: in CurveRTCHost::unregisterEnvVariable", namespace_hash);
+        THROW UnknownInternalError("Environment property '%s' not found when removing environment property, in CurveRTCHost::unregisterEnvVariable()", propertyName);
     }
 }
 
@@ -371,73 +328,67 @@ void CurveRTCHost::initHeaderEnvironment() {
     // generate Environment::get func implementation ($DYNAMIC_ENV_GETVARIABLE_IMPL)
     {
         std::stringstream getEnvVariableImpl;
-        for (auto key_pair : RTCEnvVariables) {
-            for (std::pair<std::string, RTCEnvVariableProperties> element : key_pair.second) {
-                RTCEnvVariableProperties props = element.second;
-                if (props.elements == 1) {
-                    getEnvVariableImpl <<   "    if (strings_equal(name, \"" << element.first << "\")) {\n";
-                    getEnvVariableImpl <<   "#if !defined(SEATBELTS) || SEATBELTS\n";
-                    getEnvVariableImpl <<   "        if(sizeof(T) != " << element.second.type_size << ") {\n";
-                    getEnvVariableImpl <<   "            DTHROW(\"Environment property '%s' type mismatch.\\n\", name);\n";
-                    getEnvVariableImpl <<   "            return 0;\n";
-                    getEnvVariableImpl <<   "        }\n";
-                    getEnvVariableImpl <<   "#endif\n";
-                    getEnvVariableImpl <<   "        return *reinterpret_cast<T*>(reinterpret_cast<void*>(" << getVariableSymbolName() <<" + " << props.offset << "));\n";
-                    getEnvVariableImpl <<   "    };\n";
-                }
+        for (std::pair<std::string, RTCEnvVariableProperties> element : RTCEnvVariables) {
+            RTCEnvVariableProperties props = element.second;
+            if (props.elements == 1) {
+                getEnvVariableImpl <<   "    if (strings_equal(name, \"" << element.first << "\")) {\n";
+                getEnvVariableImpl <<   "#if !defined(SEATBELTS) || SEATBELTS\n";
+                getEnvVariableImpl <<   "        if(sizeof(T) != " << element.second.type_size << ") {\n";
+                getEnvVariableImpl <<   "            DTHROW(\"Environment property '%s' type mismatch.\\n\", name);\n";
+                getEnvVariableImpl <<   "            return 0;\n";
+                getEnvVariableImpl <<   "        }\n";
+                getEnvVariableImpl <<   "#endif\n";
+                getEnvVariableImpl <<   "        return *reinterpret_cast<T*>(reinterpret_cast<void*>(" << getVariableSymbolName() <<" + " << props.offset << "));\n";
+                getEnvVariableImpl <<   "    };\n";
             }
-            getEnvVariableImpl <<           "#if !defined(SEATBELTS) || SEATBELTS\n";
-            getEnvVariableImpl <<           "    DTHROW(\"Environment property '%s' was not found.\\n\", name);\n";
-            getEnvVariableImpl <<           "#endif\n";
-            getEnvVariableImpl <<           "    return 0;\n";
         }
+        getEnvVariableImpl <<           "#if !defined(SEATBELTS) || SEATBELTS\n";
+        getEnvVariableImpl <<           "    DTHROW(\"Environment property '%s' was not found.\\n\", name);\n";
+        getEnvVariableImpl <<           "#endif\n";
+        getEnvVariableImpl <<           "    return 0;\n";
         setHeaderPlaceholder("$DYNAMIC_ENV_GETVARIABLE_IMPL", getEnvVariableImpl.str());
     }
     // generate Environment::get func implementation for array variables ($DYNAMIC_ENV_GETARRAYVARIABLE_IMPL)
     {
         std::stringstream getEnvArrayVariableImpl;
-        for (auto key_pair : RTCEnvVariables) {
-            for (std::pair<std::string, RTCEnvVariableProperties> element : key_pair.second) {
-                RTCEnvVariableProperties props = element.second;
-                if (props.elements > 1) {
-                    getEnvArrayVariableImpl << "    if (strings_equal(name, \"" << element.first << "\")) {\n";
-                    getEnvArrayVariableImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
-                    getEnvArrayVariableImpl << "        if(sizeof(T) != " << element.second.type_size << ") {\n";
-                    getEnvArrayVariableImpl << "            DTHROW(\"Environment array property '%s' type mismatch.\\n\", name);\n";
-                    getEnvArrayVariableImpl << "            return 0;\n";
-                    // Env var doesn't currently require user to specify length
-                    // getEnvArrayVariableImpl << "        } else if (N != " << element.second.elements << ") {\n";
-                    // getEnvArrayVariableImpl << "            DTHROW(\"Environment array property '%s' length mismatch.\\n\", name);\n";
-                    // getEnvArrayVariableImpl << "            return 0;\n";
-                    getEnvArrayVariableImpl << "        } else if (index >= " << element.second.elements << ") {\n";
-                    getEnvArrayVariableImpl << "            DTHROW(\"Environment array property '%s', index %d is out of bounds.\\n\", name, index);\n";
-                    getEnvArrayVariableImpl << "            return 0;\n";
-                    getEnvArrayVariableImpl << "        }\n";
-                    getEnvArrayVariableImpl << "#endif\n";
-                    getEnvArrayVariableImpl << "        return reinterpret_cast<T*>(reinterpret_cast<void*>(" << getVariableSymbolName() <<" + " << props.offset << "))[index];\n";
-                    getEnvArrayVariableImpl << "    };\n";
-                }
+        for (std::pair<std::string, RTCEnvVariableProperties> element : RTCEnvVariables) {
+            RTCEnvVariableProperties props = element.second;
+            if (props.elements > 1) {
+                getEnvArrayVariableImpl << "    if (strings_equal(name, \"" << element.first << "\")) {\n";
+                getEnvArrayVariableImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
+                getEnvArrayVariableImpl << "        if(sizeof(T) != " << element.second.type_size << ") {\n";
+                getEnvArrayVariableImpl << "            DTHROW(\"Environment array property '%s' type mismatch.\\n\", name);\n";
+                getEnvArrayVariableImpl << "            return 0;\n";
+                // Env var doesn't currently require user to specify length
+                // getEnvArrayVariableImpl << "        } else if (N != " << element.second.elements << ") {\n";
+                // getEnvArrayVariableImpl << "            DTHROW(\"Environment array property '%s' length mismatch.\\n\", name);\n";
+                // getEnvArrayVariableImpl << "            return 0;\n";
+                getEnvArrayVariableImpl << "        } else if (index >= " << element.second.elements << ") {\n";
+                getEnvArrayVariableImpl << "            DTHROW(\"Environment array property '%s', index %d is out of bounds.\\n\", name, index);\n";
+                getEnvArrayVariableImpl << "            return 0;\n";
+                getEnvArrayVariableImpl << "        }\n";
+                getEnvArrayVariableImpl << "#endif\n";
+                getEnvArrayVariableImpl << "        return reinterpret_cast<T*>(reinterpret_cast<void*>(" << getVariableSymbolName() <<" + " << props.offset << "))[index];\n";
+                getEnvArrayVariableImpl << "    };\n";
             }
-            getEnvArrayVariableImpl <<         "#if !defined(SEATBELTS) || SEATBELTS\n";
-            getEnvArrayVariableImpl <<         "    DTHROW(\"Environment array property '%s' was not found.\\n\", name);\n";
-            getEnvArrayVariableImpl <<         "#endif\n";
-            getEnvArrayVariableImpl <<         "    return 0;\n";
         }
+        getEnvArrayVariableImpl <<         "#if !defined(SEATBELTS) || SEATBELTS\n";
+        getEnvArrayVariableImpl <<         "    DTHROW(\"Environment array property '%s' was not found.\\n\", name);\n";
+        getEnvArrayVariableImpl <<         "#endif\n";
+        getEnvArrayVariableImpl <<         "    return 0;\n";
         setHeaderPlaceholder("$DYNAMIC_ENV_GETARRAYVARIABLE_IMPL", getEnvArrayVariableImpl.str());
     }
     // generate Environment::contains func implementation ($DYNAMIC_ENV_CONTAINTS_IMPL)
     {
         std::stringstream containsEnvVariableImpl;
-        for (auto key_pair : RTCEnvVariables) {
-            for (std::pair<std::string, RTCEnvVariableProperties> element : key_pair.second) {
-                RTCEnvVariableProperties props = element.second;
-                if (props.elements == 1) {
-                    containsEnvVariableImpl <<   "    if (strings_equal(name, \"" << element.first << "\"))\n";
-                    containsEnvVariableImpl <<   "        return true;\n";
-                }
+        for (std::pair<std::string, RTCEnvVariableProperties> element : RTCEnvVariables) {
+            RTCEnvVariableProperties props = element.second;
+            if (props.elements == 1) {
+                containsEnvVariableImpl <<   "    if (strings_equal(name, \"" << element.first << "\"))\n";
+                containsEnvVariableImpl <<   "        return true;\n";
             }
-            containsEnvVariableImpl <<           "    return false;\n";
         }
+        containsEnvVariableImpl <<           "    return false;\n";
         setHeaderPlaceholder("$DYNAMIC_ENV_CONTAINTS_IMPL", containsEnvVariableImpl.str());
     }
 }

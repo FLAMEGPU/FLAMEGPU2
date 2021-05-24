@@ -518,45 +518,35 @@ void CUDAAgent::clearFunctionCondition(const std::string &state) {
 void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, bool function_condition) {
     // Generate the dynamic curve header
     CurveRTCHost &curve_header = *rtc_header_map.emplace(function_condition ? func.name + "_condition" : func.name, std::make_unique<CurveRTCHost>()).first->second;
-    // agent function hash
-    Curve::NamespaceHash agentname_hash = Curve::variableRuntimeHash(this->getAgentDescription().name.c_str());
-    Curve::NamespaceHash funcname_hash = Curve::variableRuntimeHash(func.name.c_str());
-    Curve::NamespaceHash agent_func_name_hash = agentname_hash + funcname_hash;
 
     // set agent function variables in rtc curve
     for (const auto& mmp : func.parent.lock()->variables) {
-        curve_header.registerAgentVariable(mmp.first.c_str(), agent_func_name_hash, mmp.second.type.name(), mmp.second.type_size, mmp.second.elements);
+        curve_header.registerAgentVariable(mmp.first.c_str(), mmp.second.type.name(), mmp.second.type_size, mmp.second.elements);
     }
 
     // for normal agent function (e.g. not an agent function condition) append messages and agent outputs
     if (!function_condition) {
         // Set input message variables in curve
         if (auto im = func.message_input.lock()) {
-            // get the message input hash
-            Curve::NamespaceHash msg_in_hash = Curve::variableRuntimeHash(im->name.c_str());
             for (auto msg_in_var : im->variables) {
                 // register message variables using combined hash
-                curve_header.registerMessageInVariable(msg_in_var.first.c_str(), msg_in_hash + agent_func_name_hash,
+                curve_header.registerMessageInVariable(msg_in_var.first.c_str(),
                 msg_in_var.second.type.name(), msg_in_var.second.type_size, msg_in_var.second.elements, true, false);
             }
         }
         // Set output message variables in curve
         if (auto om = func.message_output.lock()) {
-            // get the message input hash
-            Curve::NamespaceHash msg_out_hash = Curve::variableRuntimeHash(om->name.c_str());
             for (auto msg_out_var : om->variables) {
                 // register message variables using combined hash
-                curve_header.registerMessageOutVariable(msg_out_var.first.c_str(), msg_out_hash + agent_func_name_hash,
+                curve_header.registerMessageOutVariable(msg_out_var.first.c_str(),
                 msg_out_var.second.type.name(), msg_out_var.second.type_size, msg_out_var.second.elements, false, true);
             }
         }
         // Set agent output variables in curve
         if (auto ao = func.agent_output.lock()) {
-            // get the message input hash
-            Curve::NamespaceHash agent_out_hash = Curve::variableRuntimeHash("_agent_birth");
             for (auto agent_out_var : ao->variables) {
                 // register message variables using combined hash
-                curve_header.registerNewAgentVariable(agent_out_var.first.c_str(), agent_out_hash + funcname_hash,
+                curve_header.registerNewAgentVariable(agent_out_var.first.c_str(),
                 agent_out_var.second.type.name(), agent_out_var.second.type_size, agent_out_var.second.elements, false, true);
             }
         }
@@ -573,7 +563,7 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, bool f
                 const char* type = p.second.type.name();
                 unsigned int elements = p.second.elements;
                 ptrdiff_t offset = p.second.rtc_offset;
-                curve_header.registerEnvVariable(variableName, cuda_model.getInstanceID(), offset, type, p.second.length/elements, elements);
+                curve_header.registerEnvVariable(variableName, offset, type, p.second.length/elements, elements);
             }
         }
         // Set mapped environment variables in curve
@@ -584,7 +574,7 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, bool f
                 const char* type = p.type.name();
                 unsigned int elements = p.elements;
                 ptrdiff_t offset = p.rtc_offset;
-                curve_header.registerEnvVariable(variableName, cuda_model.getInstanceID(), offset, type, p.length/elements, elements);
+                curve_header.registerEnvVariable(variableName, offset, type, p.length/elements, elements);
             }
         }
     }
