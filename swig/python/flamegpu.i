@@ -4,6 +4,8 @@
 #define SWIG_PYTHON_INTERPRETER_NO_DEBUG
 #endif
 %}
+// Don't translate doxygen from doxygen format to pydoc format
+%feature("doxygen:notranslate")
 
 /* Compilation header includes */
 %{

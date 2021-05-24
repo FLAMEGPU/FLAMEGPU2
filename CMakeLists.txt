@@ -24,7 +24,7 @@ if(NOT CMAKE_CUDA_COMPILER OR CMAKE_CUDA_COMPILER_VERSION VERSION_LESS ${MINIMUM
     else()
         message(STATUS "Documentation-only build: CUDA ${MINIMUM_SUPPORTED_CUDA_VERSION} or greater is required for library compilation.")
     endif()
-    #Not able to build code, so just make docs    
+    #Not able to build code, so just make docs
     get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR} REALPATH)
     include(./cmake/doxygen.cmake)
     if(${BUILD_API_DOCUMENTATION})
