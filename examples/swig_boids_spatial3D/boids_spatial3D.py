@@ -106,7 +106,7 @@ VISUALISATION = True;
 """
   outputdata agent function for Boid agents, which outputs publicly visible properties to a message list
 """
-outputdata = """
+outputdata = r"""
 FLAMEGPU_AGENT_FUNCTION(outputdata, MsgNone, MsgSpatial3D) {
     // Output each agents publicly visible properties.
     FLAMEGPU->message_out.setVariable<unsigned int>("id", FLAMEGPU->getID());
@@ -122,7 +122,7 @@ FLAMEGPU_AGENT_FUNCTION(outputdata, MsgNone, MsgSpatial3D) {
 """
   inputdata agent function for Boid agents, which reads data from neighbouring Boid agents, to perform the boid flocking model.
 """
-inputdata = """
+inputdata = r"""
 // Vector utility functions, see top of file for versions with commentary
 FLAMEGPU_HOST_DEVICE_FUNCTION float vec3Length(const float x, const float y, const float z) {
     return sqrtf(x * x + y * y + z * z);
