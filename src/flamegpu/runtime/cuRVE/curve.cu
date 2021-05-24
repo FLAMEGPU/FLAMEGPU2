@@ -12,12 +12,33 @@
 #include "flamegpu/util/nvtx.h"
 
 namespace curve_internal {
-    __constant__ Curve::VariableHash d_hashes[Curve::MAX_VARIABLES];  // Device array of the hash values of registered variables
-    __device__ char* d_variables[Curve::MAX_VARIABLES];               // Device array of pointer to device memory addresses for variable storage
-    __constant__ size_t d_sizes[Curve::MAX_VARIABLES];                // Device array of the types of registered variables
-    __constant__ unsigned int d_lengths[Curve::MAX_VARIABLES];        // Device array of the length of registered variables (i.e: vector length)
-
+    /**
+     * Curve hashtable, registered variable hash array
+     */
+    __constant__ Curve::VariableHash d_hashes[Curve::MAX_VARIABLES];
+    /**
+     * Curve hashtable, registered variable buffer array
+     */
+    __device__ char* d_variables[Curve::MAX_VARIABLES];
+    /**
+     * Curve hashtable, registered variable size array
+     * For array variables this holds: elements * type_size
+     */
+    __constant__ size_t d_sizes[Curve::MAX_VARIABLES];
+    /**
+     * Curve hashtable, registered variable buffer length array
+     * Holds the length of the buffer (in terms of agents/items, rather than bytes)
+     */
+    __constant__ unsigned int d_lengths[Curve::MAX_VARIABLES];
+    /**
+     * Legacy method for catching curve errors, this has now been replaced by DeviceException
+     * @todo Remove this legacy code
+     */
     __device__ Curve::DeviceError d_curve_error;
+    /**
+     * Legacy method for catching curve errors, this should now be replaced with various exceptions
+     * @todo Remove this legacy code
+     */
     Curve::HostError h_curve_error;
 }  // namespace curve_internal
 

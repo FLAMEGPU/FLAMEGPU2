@@ -434,6 +434,7 @@ class Curve {
      * @param function A constant string function name.
      * @param line A constant integer line number.
      * @note This error checking is unrelated to DeviceError
+     * @todo Remove this legacy code
      */
     __device__ __forceinline__ static void printLastDeviceError(const char* file, const char* function, const int line);
     /**
@@ -444,6 +445,7 @@ class Curve {
      * @param function A constant string function name.
      * @param line A constant integer line number.
      * @note This error checking is unrelated to DeviceError
+     * @todo Remove this legacy code
      */
     void __host__ printLastHostError(const char* file, const char* function, const int line);
 
@@ -455,6 +457,7 @@ class Curve {
      * @param function A constant string function name.
      * @param line A constant integer line number.
      * @note This error checking is unrelated to DeviceError
+     * @todo Remove this legacy code
      */
     void __host__ printErrors(const char* file, const char* function, const int line);
     /**
@@ -464,6 +467,7 @@ class Curve {
      * @param error_code A DeviceError error code.
      * @return A string error description
      * @note This error checking is unrelated to DeviceError
+     * @todo Remove this legacy code
      */
     __device__ __host__ __forceinline__ static const char*  getDeviceErrorString(DeviceError error_code);
     /**
@@ -472,12 +476,14 @@ class Curve {
      * Returns an error description given a HostError error code.
      * @param error_code A HostError error code.
      * @return A string error description
+     * @todo Remove this legacy code
      */
     __host__ const char*  getHostErrorString(HostError error_code);
     /**
      * Device API function for returning the last reported error code
      *
      * @return A DeviceError error code
+     * @todo Remove this legacy code
      */
     __device__ __forceinline__ static DeviceError getLastDeviceError();
 
@@ -485,10 +491,12 @@ class Curve {
      * Host API function for returning the last reported error code
      *
      * @return A HostError error code
+     * @todo Remove this legacy code
      */
     __host__ HostError getLastHostError();
     /**
      * Host API function for clearing both the device and host error codes
+     * @todo Remove this legacy code
      */
     __host__ void clearErrors();
     /**
@@ -1063,10 +1071,12 @@ __device__ __forceinline__ void Curve::setArrayVariable(const char(&variableName
     return setArrayVariableByHash<T, N>(variable_hash + namespace_hash, variable, agent_index, array_index);
 }
 
-/* ERROR CHECKING API FUNCTIONS */
-#define curveReportLastDeviceError() { Curve::curvePrintLastDeviceError(__FILE__, __FUNCTION__, __LINE__); }    // ! Prints the last reported device error using the file, function and line number of the call to this macro
-#define curveReportLastHostError() { curvePrintLastHostError(__FILE__, __FUNCTION__, __LINE__); }        // ! Prints the last reported host API error using the file, function and line number of the call to this macro
-#define curveReportErrors() { curvePrintErrors(__FILE__, __FUNCTION__, __LINE__); }  // ! Prints the last reported device or host API error using the file, function and line number of the call to this macro
+/**
+ * Prints the last reported device error using the file, function and line number of the call to this macro
+ * @see Curve::printLastDeviceError()
+ * @todo Remove this legacy code
+ */
+#define curveReportLastDeviceError() { Curve::curvePrintLastDeviceError(__FILE__, __FUNCTION__, __LINE__); }
 
 __device__ __forceinline__ void Curve::printLastDeviceError(const char* file, const char* function, const int line) {
     if (curve_internal::d_curve_error != DEVICE_ERROR_NO_ERRORS) {

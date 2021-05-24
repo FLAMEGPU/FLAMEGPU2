@@ -19,7 +19,10 @@
 
 class AgentVector;
 
-//  move later
+/**
+ * Utility function for returning the file extension from a string
+ * @param s String containing a file path
+ */
 inline std::string getFileExt(const std::string& s) {
     // Find the last position of '.' in given string
     size_t i = s.rfind('.', s.length());
@@ -31,9 +34,8 @@ inline std::string getFileExt(const std::string& s) {
 }
 
 /**
-* Concrete factory creates concrete products, but
-* returns them as abstract.
-*/
+ * Factory for creating instances of StateReader
+ */
 class ReaderFactory {
  public:
     /**
@@ -73,6 +75,9 @@ class ReaderFactory {
     }
 };
 
+/**
+ * Factory for creating instances of StateWriter
+ */
 class WriterFactory {
  public:
     /**

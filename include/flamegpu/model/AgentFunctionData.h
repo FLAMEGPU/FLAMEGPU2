@@ -19,6 +19,9 @@ class AgentDescription;
  */
 struct AgentFunctionData {
     friend class AgentDescription;
+    /**
+     * Cloning an AgentData requires access to AgentFunctionData for building the cloned function map
+     */
     friend std::shared_ptr<const AgentData> AgentData::clone() const;
     friend struct ModelData;
 
@@ -122,14 +125,28 @@ struct AgentFunctionData {
     /**
      * Copy constructor
      * This is unsafe, should only be used internally, use clone() instead
+     * @param model Model hierarchy root, used for performing lookup copies (e.g. messages)
+     * @param _parent Parent agent description
+     * @param other Agent function description being copied
      */
     AgentFunctionData(const std::shared_ptr<const ModelData> &model, std::shared_ptr<AgentData> _parent, const AgentFunctionData &other);
     /**
      * Normal constructor, only to be called by AgentDescription
+     * @param _parent Parent agent description
+     * @param function_name User defined name of the agent function
+     * @param agent_function Pointer to compile time agent function
+     * @param in_type String form of the input message type
+     * @param out_type String form of the output message type
      */
     AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string &function_name, AgentFunctionWrapper *agent_function, const std::string &in_type, const std::string &out_type);
     /**
      * Normal constructor for RTC function, only to be called by AgentDescription
+     * @param _parent Parent agent description
+     * @param function_name User defined name of the agent function
+     * @param rtc_function_src Pointer to runtime agent function
+     * @param in_type String form of the input message type
+     * @param out_type String form of the output message type
+     * @param code_func_name Name of the RTC agent function
      */
     AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string& function_name, const std::string &rtc_function_src, const std::string &in_type, const std::string& out_type, const std::string& code_func_name);
 };

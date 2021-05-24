@@ -6,8 +6,14 @@
 #include <map>
 #include <unordered_map>
 
+/**
+ * Pair of strings
+ */
 typedef std::pair<std::string, std::string> StringPair;
 
+/**
+ * Hash function so that StringPair can be used as a key in a map
+ */
 struct StringPairHash {
     size_t operator()(const std::pair<std::string, std::string>& k) const {
         return std::hash<std::string>()(k.first) ^
@@ -15,9 +21,15 @@ struct StringPairHash {
     }
 };
 
+/**
+ * Ordered map with StringPair as the key type
+ */
 template<typename T>
 using StringPairMap = std::map<StringPair, T, StringPairHash>;
 
+/**
+ * Unordered map with StringPair as the key type
+ */
 template<typename T>
 using StringPairUnorderedMap = std::unordered_map<StringPair, T, StringPairHash>;
 

@@ -4,6 +4,9 @@
 #include <vector>
 #include "flamegpu/exception/FGPUException.h"
 
+/**
+ * Node of DependencyGraph
+ */
 class DependencyNode {
  public:
     virtual ~DependencyNode();

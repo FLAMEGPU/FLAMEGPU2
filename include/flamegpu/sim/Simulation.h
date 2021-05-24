@@ -35,8 +35,15 @@ struct hash<std::pair<std::string, unsigned int>> {
 };
 }  // namespace std
 
+/**
+ * Abstract representation of a ModelDescription that can be executed
+ * @see CUDASimulation The CUDA implementation of a Simulation
+ */
 class Simulation {
  public:
+    /**
+     * General simulation runner specific config
+     */
     struct Config {
         Config() : random_seed(static_cast<unsigned int>(time(nullptr))) {
         }

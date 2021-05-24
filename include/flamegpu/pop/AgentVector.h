@@ -15,6 +15,11 @@ class AgentVector_CAgent;
 class AgentVector_Agent;
 struct AgentData;
 
+/**
+ * Vector of agent data for a single type of Agent
+ * The interface is designed to work similar to std::vector
+ * AgentVector has no concept of agent states, if you wish to represent agents in two states, you need two AgentVectors
+ */
 class AgentVector {
     /**
      * Proportion which capacity increases when size must be increased automatically
@@ -44,6 +49,12 @@ class AgentVector {
     // They might all be wrong
     class const_iterator;
     class const_reverse_iterator;
+    /**
+     * Basic AgentVectors forward iterator
+     * Provides access to members of the vector, in front-to-back order.
+     * @see AgentVector::begin()
+     * @see AgentVector::end()
+     */
     class iterator {
         typedef std::input_iterator_tag iterator_category;
         typedef Agent value_type;
@@ -74,6 +85,12 @@ class AgentVector {
         bool operator!=(iterator other) const { return !(*this == other); }
         Agent operator*() const;
     };
+    /**
+     * Basic AgentVectors forward const iterator
+     * Provides const access to members of the vector, in front-to-back order.
+     * @see AgentVector::cbegin()
+     * @see AgentVector::cend()
+     */
     class const_iterator {
         typedef std::input_iterator_tag iterator_category;
         typedef CAgent value_type;
@@ -101,6 +118,12 @@ class AgentVector {
         bool operator!=(const_iterator other) const { return !(*this == other); }
         CAgent operator*() const;
     };
+    /**
+     * Basic AgentVectors reverse iterator
+     * Provides access to members of the vector, in back-to-front order.
+     * @see AgentVector::rbegin()
+     * @see AgentVector::rend()
+     */
     class reverse_iterator {
         typedef std::input_iterator_tag iterator_category;
         typedef Agent value_type;
@@ -131,6 +154,12 @@ class AgentVector {
         bool operator!=(reverse_iterator other) const { return !(*this == other); }
         Agent operator*() const;
     };
+    /**
+     * Basic AgentVectors reverse const iterator
+     * Provides const access to members of the vector, in back-to-front order.
+     * @see AgentVector::crbegin()
+     * @see AgentVector::crend()
+     */
     class const_reverse_iterator {
         typedef std::input_iterator_tag iterator_category;
         typedef CAgent value_type;

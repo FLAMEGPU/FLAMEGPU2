@@ -16,6 +16,10 @@
 #include "flamegpu/pop/AgentVector.h"
 
 #ifndef XMLCheckResult
+ /**
+  * Macro function for converting a tinyxml2 return code to an exception
+  * @param a_eResult The tinyxml2 return code
+  */
 #define XMLCheckResult(a_eResult) if (a_eResult != tinyxml2::XML_SUCCESS) { FGPUException::setLocation(__FILE__, __LINE__);\
     switch (a_eResult) { \
     case tinyxml2::XML_ERROR_FILE_NOT_FOUND : \

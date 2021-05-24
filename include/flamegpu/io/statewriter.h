@@ -20,6 +20,11 @@
 
 class AgentVector;
 
+/**
+ * Abstract representation of a class for exporting model data (agent population data, environment properties, run configuration) to file
+ * @see XMLWriter The XML implementation of a StateWriter
+ * @see JSONWriter The JSON implementation of a StateWriter
+ */
 class StateWriter {
  public:
     /**
@@ -45,7 +50,10 @@ class StateWriter {
     , model_name(_model_name)
     , sim_instance_id(_sim_instance_id)
     , sim_instance(_sim_instance) {}
-    ~StateWriter() {}
+    /**
+     * Virtual destructor for correct inheritance behaviour
+     */
+    virtual ~StateWriter() {}
 
     // -----------------------------------------------------------------------
     //  The interface

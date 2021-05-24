@@ -38,22 +38,51 @@ class LoggingConfig {
      * Enum representing the available reduction types for agent variables
      */
     enum Reduction{ Mean, StandardDev, Min, Max, Sum };
+    /**
+     * Converts a Reduction enum to a string representation
+     */
     static constexpr const char *toString(const Reduction &r) {
         switch (r) {
         case Mean: return "mean";
-        case StandardDev:  return "standard_deviation";;
+        case StandardDev:  return "standard_deviation";
         case Min: return "min";
         case Max: return "max";
         case Sum: return "sum";
         default: return "unknown";
         }
     }
+    /**
+     * Pair of two strings representing an agent type name and state name
+     */
     typedef std::pair<std::string, std::string> NameStatePair;
+    /**
+     * ReductionFn is a prototype for reduction functions
+     * Typedef'ing function prototypes like this allows for cleaner function pointers
+     */
     typedef Any (ReductionFn)(HostAgentAPI &ai, const std::string &variable_name);
+    /**
+     * A user configured reduction to be logged
+     */
     struct NameReductionFn {
+        /**
+         * Variable name to reduce over
+         */
         std::string name;
+        /**
+         * The type of reduction
+         */
         Reduction reduction;
+        /**
+         * Pointer to instantiated reduction function
+         * (Reduction functions are templated so much be instantiated)
+         */
         ReductionFn *function;
+        /**
+         * Generic ordering function, to allow instances of this type to be stored in ordered collections
+         * The defined order is not important
+         * @param other The other instance to compare vs
+         * @return Returns whether this instance should come before other
+         */
         bool operator<(const NameReductionFn &other) const {
             if (name == other.name) {
                 return reduction < other.reduction;
@@ -63,9 +92,13 @@ class LoggingConfig {
     };
     /**
      * Constructor
-     * @param model The ModelDescriptionHierarchy to produce a logging config for
+     * @param model The ModelDescription hierarchy to produce a logging config for
      */
     explicit LoggingConfig(const ModelDescription &model);
+    /**
+     * Constructor
+     * @param model The ModelDescription hierarchy to produce a logging config for
+     */
     explicit LoggingConfig(const ModelData &model);
     /**
      * Copy Constructor
@@ -83,14 +116,24 @@ class LoggingConfig {
     void logEnvironment(const std::string &property_name);
 
  private:
+    /**
+     * The ModelDescription hierarchy to setup the logging for
+     */
     std::shared_ptr<const ModelData> model;
+    /**
+     * Set of environment properties to be logged
+     */
     std::set<std::string> environment;
     /**
+     * Map of variable reductions per agent state to be logged
      * map<<agent_name:agent_state, variable_reductions:log_count>
      */
     std::map<NameStatePair, std::pair<std::shared_ptr<std::set<NameReductionFn>>, bool>> agents;
 };
 
+/**
+ * Interface to the data structure for controlling how model data is logged each step
+ */
 class StepLoggingConfig : public LoggingConfig {
     /**
      * CUDASimulation::processStepLog() requires access for reading the config
@@ -99,14 +142,23 @@ class StepLoggingConfig : public LoggingConfig {
  public:
     /**
      * Constructor
-     * @param model The ModelDescriptionHierarchy to produce a logging config for
+     * @param model The ModelDescription hierarchy to produce a logging config for
      */
     explicit StepLoggingConfig(const ModelDescription &model);
+    /**
+     * Constructor
+     * @param model The ModelDescription hierarchy to produce a logging config for
+     */
     explicit StepLoggingConfig(const ModelData &model);
     /**
      * Copy Constructor
+     * @param model Other
      */
     explicit StepLoggingConfig(const StepLoggingConfig &model);
+    /**
+     * Copy Constructor
+     * @param model Other
+     */
     explicit StepLoggingConfig(const LoggingConfig &model);
     /**
      * Set the frequency of step log collection
@@ -116,6 +168,10 @@ class StepLoggingConfig : public LoggingConfig {
     void setFrequency(const unsigned int &steps);
 
  private:
+    /**
+     * Frequency that step logs should be collected
+     * A value of 1 will collect a log every step, a value of 2 will collect a log every 2 steps, etc
+     */
     unsigned int frequency;
 };
 

@@ -4,8 +4,14 @@
 struct RunLog;
 class RunPlan;
 
+/**
+ * Pure abstract class for defining loggers of different output formats
+ */
 class Logger {
  public:
+    /**
+     * Virtual destructor for correct inheritance behaviour
+     */
     virtual ~Logger() = default;
     /**
      * Log a runlog to file, using a RunPlan in place of config

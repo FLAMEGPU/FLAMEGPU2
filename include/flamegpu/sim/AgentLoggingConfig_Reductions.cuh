@@ -4,19 +4,36 @@
 #include <functional>
 
 namespace flamegpu_internal {
-// standard_deviation_add_impl is a manual expansion of FLAMEGPU_CUSTOM_REDUCTION()
-// This is required, so that the instance definition can be extern'd, as it is placed in a header
+
+/**
+ * standard_deviation_add_impl is a manual expansion of FLAMEGPU_CUSTOM_REDUCTION()
+ * This is required, so that the instance definition can be extern'd, as it is placed in a header
+ */
 struct standard_deviation_add_impl {
  public:
+    /**
+     * Calculates the mean for standard deviation
+     * @param a 1st argument
+     * @param b 2nd argument
+     * @tparam OutT The return type
+     */
     template <typename OutT>
     struct binary_function {
         __device__ __forceinline__ OutT operator()(const OutT &a, const OutT &b) const;
     };
 };
-// standard_deviation_subtract_mean_impl is a manual expansion of FLAMEGPU_CUSTOM_TRANSFORM()
-// This is required, so that the instance definition can be extern'd, as it is placed in a header
+/**
+ * standard_deviation_subtract_mean_impl is a manual expansion of FLAMEGPU_CUSTOM_TRANSFORM()
+ * This is required, so that the instance definition can be extern'd, as it is placed in a header
+ */
 struct standard_deviation_subtract_mean_impl {
  public:
+     /**
+      * Calculates pow(a - mean, 2) for standard deviation
+      * @param a 1st argument
+      * @tparam InT The input type
+      * @tparam OutT The return type
+      */
     template<typename InT, typename OutT>
     struct unary_function {
         __host__ __device__ OutT operator()(const InT &a) const;

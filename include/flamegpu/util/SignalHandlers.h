@@ -1,8 +1,13 @@
 #ifndef INCLUDE_FLAMEGPU_UTIL_SIGNALHANDLERS_H_
 #define INCLUDE_FLAMEGPU_UTIL_SIGNALHANDLERS_H_
-#include <stdlib.h>
+#include <cstdlib>
 #include <csignal>
 
+/**
+ * Signal handlers used to try and produce a clean exit on interrupt
+ *
+ * These currently don't do anything significantly different from default behaviour
+ */
 class SignalHandlers {
  private:
 /**

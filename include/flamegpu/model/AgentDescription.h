@@ -78,12 +78,14 @@ class AgentDescription {
  public:
     /**
      * Equality operator, checks whether AgentDescription hierarchies are functionally the same
+     * @param rhs right hand side
      * @returns True when agents are the same
      * @note Instead compare pointers if you wish to check that they are the same instance
      */
     bool operator==(const AgentDescription& rhs) const;
     /**
      * Equality operator, checks whether AgentDescription hierarchies are functionally different
+     * @param rhs right hand side
      * @returns True when agents are not the same
      * @note Instead compare pointers if you wish to check that they are not the same instance
      */
@@ -210,7 +212,8 @@ class AgentDescription {
      */
     ModelData::size_type getVariableLength(const std::string &variable_name) const;
     /**
-     * The total number of variables within the agent
+     * Get the total number of variables this agent has
+     * @return The total number of variables within the agent
      * @note This count includes internal variables used to track things such as agent ID
      */
     ModelData::size_type getVariablesCount() const;
@@ -223,11 +226,13 @@ class AgentDescription {
      */
     const AgentFunctionDescription& getFunction(const std::string &function_name) const;
     /**
-     * The total number of functions within the agent
+     * Get the total number of functions this agent has
+     * @return The total number of functions within the agent
      */
     ModelData::size_type getFunctionsCount() const;
     /**
-     * The total number of agent functions, within the model hierarchy, which create new agents of this type
+     * The total number of agent functions, within the ModelDescription hierarchy, which create new agents of this type
+     * @return The total number of agent functions within the ModelDescription hierarchy which create new agents of this type
      * @see AgentDescription::isOutputOnDevice()
      */
     ModelData::size_type getAgentOutputsCount() const;
@@ -246,12 +251,14 @@ class AgentDescription {
      * @return True when a function with the specified name exists within the agent
      */
     bool hasFunction(const std::string &function_name) const;
-    /*
+    /**
+     * Check whether any agent functions output agents of this type
      * @return True if any agent functions, with the model hierarchy, create new agents of this type
      * @see AgentDescription::getAgentOutputsCount()
      */
     bool isOutputOnDevice() const;
-    /*
+    /**
+     * Get the set of possible states for an agent of this type
      * @return An immutable reference to the set of states agents of this type can enter
      */
     const std::set<std::string> &getStates() const;

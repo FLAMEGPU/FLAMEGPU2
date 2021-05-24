@@ -12,14 +12,26 @@
 * This struct holds a map of how memory for a compact representation of some unknown vars needs to look
 */
 struct VarOffsetStruct {
+    /**
+     * Tuple containing the offset, length and type index of a variable
+     */
     struct OffsetLen {
         const ptrdiff_t offset;
         const size_t len;
         const std::type_index type;
+        /**
+         * Constructor
+         * @param _offset Offset of the variable within the buffer
+         * @param _len Length of the variables data within the buffer
+         * @param _type Type of the variable's base type (does not account for whether it's an array)
+         */
         OffsetLen(const ptrdiff_t &_offset, const size_t &_len, const std::type_index _type)
             : offset(_offset)
             , len(_len)
             , type(_type) { }
+        /**
+         * Equality operator, returns true if all 3 components match
+         */
         bool operator==(const OffsetLen& other) const {
             return offset == other.offset && len == other.len && type == other.type;
         }
@@ -27,6 +39,10 @@ struct VarOffsetStruct {
     std::unordered_map<std::string, OffsetLen> vars;
     const size_t totalSize;
     char *const default_data;
+    /**
+     * Construct a new VarOffsetStruct from a map of variable metadata
+     * @param vmap Map of variable metadata to construct for
+     */
     explicit VarOffsetStruct(const VariableMap &vmap)
         : totalSize(buildVars(vmap))
         , default_data(reinterpret_cast<char*>(malloc(totalSize))) {
@@ -38,10 +54,14 @@ struct VarOffsetStruct {
                 memcpy(default_data + b.offset, a.second.default_value, b.len);
         }
     }
+    /**
+     * Copy constructor
+     * @param other Item to be copied
+     */
     explicit VarOffsetStruct(const VarOffsetStruct &other)
         : vars(other.vars)
         , totalSize(other.totalSize)
-        , default_data(reinterpret_cast<char*>(malloc(totalSize))) {
+        , default_data(reinterpret_cast<char*>(malloc(other.totalSize))) {
         memcpy(default_data, other.default_data, totalSize);
     }
     ~VarOffsetStruct() {

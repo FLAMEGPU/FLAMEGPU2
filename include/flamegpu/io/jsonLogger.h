@@ -11,6 +11,9 @@ struct RunLog;
 struct LogFrame;
 class RunPlan;
 
+/**
+ * JSON format Logger
+ */
 class jsonLogger : public Logger{
  public:
     jsonLogger(const std::string &outPath, bool prettyPrint, bool truncateFile);
