@@ -5,7 +5,7 @@
 #endif
 %}
 // Don't translate doxygen from doxygen format to pydoc format
-#%feature("doxygen:notranslate")
+%feature("doxygen:notranslate")
 
 /* Compilation header includes */
 %{

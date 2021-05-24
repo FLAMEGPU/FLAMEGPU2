@@ -144,7 +144,7 @@ macro(create_pydoxygen_target FLAMEGPU_ROOT DOXY_OUT_DIR XML_PATH)
         if(VISUALISATION)
           set(DEFINE_VISUALISATION "-I${VISUALISATION_ROOT}/include -DVISUALISATION")
         endif()
-        # set(TRANSLATE_DOXYGEN "-doxygen")
+        set(TRANSLATE_DOXYGEN "-doxygen")
         add_custom_target(
             pyflamegpu_pyonly
             COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/pyflamegpu_docs"
