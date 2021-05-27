@@ -1,6 +1,7 @@
 import pytest
 from unittest import TestCase
 from pyflamegpu import *
+import os
 
 
 AGENT_NAME1 = "Agent1"
@@ -235,3 +236,45 @@ class AgentDescriptionTest(TestCase):
             a.newVariableArrayInt("sTate", 3)
         assert e.value.type() == "ReservedName"
 
+    def rtc_function_from_file(self):
+        test_file_name = "test_rtcfunc_file";
+        # Create RTC function inside file
+        rtc_agent_func = r"""
+        FLAMEGPU_AGENT_FUNCTION(rtc_test_filefunc, MsgNone, MsgNone) {
+            FLAMEGPU->setVariable<int>("x", FLAMEGPU->getVariable<int>("x") + 1);
+            return ALIVE;
+        }
+        """
+        with open(test_file_name, "w") as out:
+            out.write(rtc_agent_func)
+        # Add it to a model
+        m = pyflamegpu.ModelDescription(MODEL_NAME);
+        a = m.newAgent(AGENT_NAME1);
+        a.newVariableInt("x");
+        a.newRTCFunctionFile("rtc_test_filefunc", test_file_name);
+        m.newLayer().addAgentFunction(AGENT_NAME1, "rtc_test_filefunc");
+        # Create and step the model without error
+        pop = pyflamegpu.AgentVector(a, 10);
+        for i in range(pop.size()):
+          pop[i].setVariableInt("x", i);
+        sim = pyflamegpu.CUDASimulation(m);
+        sim.setPopulationData(pop);
+        sim.step();
+        # Check results are as expected
+        pop_out = pyflamegpu.AgentVector(a, 10);
+        sim.getPopulationData(pop_out);
+        assert pop.size() == pop_out.size();
+        for i in range(pop_out.size()):
+            assert pop_out[i].getVariableInt("x") == i + 1;
+        # Cleanup the file we created
+        os.remove(test_file_name)
+
+    def rtc_function_from_file_missing(self):
+        test_file_name = "test_rtcfunc_file2";
+        # Add it to a model
+        m = pyflamegpu.ModelDescription(MODEL_NAME);
+        a = m.newAgent(AGENT_NAME1);
+        a.newVariableInt("x");
+        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # InvalidFilePath exception
+            a.newRTCFunctionFile("test_rtcfunc_file2", test_file_name)
+        assert e.value.type() == "InvalidFilePath"
