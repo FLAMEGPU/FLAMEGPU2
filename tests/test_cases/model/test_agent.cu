@@ -1,3 +1,7 @@
+#include <fstream>
+#include <string>
+#include <iostream>
+
 #include "flamegpu/flame_api.h"
 #include "flamegpu/runtime/flamegpu_api.h"
 
@@ -189,6 +193,50 @@ TEST(AgentDescriptionTest, reserved_name) {
     EXPECT_THROW((a.*array_version)("state", {}), ReservedName);
     EXPECT_THROW((a.*array_version)("nAme", {}), ReservedName);
     EXPECT_THROW((a.*array_version)("sTate", {}), ReservedName);
+}
+const char* rtc_agent_func = R"###(
+FLAMEGPU_AGENT_FUNCTION(rtc_test_filefunc, MsgNone, MsgNone) {
+    FLAMEGPU->setVariable<int>("x", FLAMEGPU->getVariable<int>("x") + 1);
+    return ALIVE;
+}
+)###";
+TEST(AgentDescriptionTest, rtc_function_from_file) {
+    const std::string test_file_name = "test_rtcfunc_file";
+    // Create RTC function inside file
+    std::ofstream out(test_file_name);
+    ASSERT_TRUE(out.is_open());
+    out << std::string(rtc_agent_func);
+    out.close();
+    // Add it to a model
+    ModelDescription m(MODEL_NAME);
+    AgentDescription& a = m.newAgent(AGENT_NAME1);
+    a.newVariable<int>("x");
+    EXPECT_NO_THROW(a.newRTCFunctionFile("rtc_test_filefunc", test_file_name));
+    m.newLayer().addAgentFunction(AGENT_NAME1, "rtc_test_filefunc");
+    // Create and step the model without error
+    AgentVector pop(a, 10);
+    for (unsigned int i = 0; i < pop.size(); ++i)
+      pop[i].setVariable<int>("x", static_cast<int>(i));
+    CUDASimulation sim(m);
+    sim.setPopulationData(pop);
+    EXPECT_NO_THROW(sim.step());
+    // Check results are as expected
+    AgentVector pop_out(a, 10);
+    sim.getPopulationData(pop_out);
+    EXPECT_EQ(pop.size(), pop_out.size());
+    for (unsigned int i = 0; i < pop_out.size(); ++i) {
+        EXPECT_EQ(pop_out[i].getVariable<int>("x"), static_cast<int>(i + 1));
+    }
+    // Cleanup the file we created
+    ASSERT_EQ(::remove(test_file_name.c_str()), 0);
+}
+TEST(AgentDescriptionTest, rtc_function_from_file_missing) {
+    const std::string test_file_name = "test_rtcfunc_file2";
+    // Add it to a model
+    ModelDescription m(MODEL_NAME);
+    AgentDescription& a = m.newAgent(AGENT_NAME1);
+    a.newVariable<int>("x");
+    EXPECT_THROW(a.newRTCFunctionFile("test_rtcfunc_file2", test_file_name), InvalidFilePath);
 }
 
 }  // namespace test_agent

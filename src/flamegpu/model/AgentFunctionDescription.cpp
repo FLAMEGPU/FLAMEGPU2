@@ -1,6 +1,8 @@
 #include <nvrtc.h>
 #include <cuda.h>
+#include <fstream>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <regex>
 
@@ -463,7 +465,7 @@ bool AgentFunctionDescription::isRTC() const {
     return !function->rtc_source.empty();
 }
 
-AgentFunctionDescription& AgentDescription::newRTCFunction(const std::string& function_name, const char* func_src) {
+AgentFunctionDescription& AgentDescription::newRTCFunction(const std::string& function_name, const std::string& func_src) {
     if (agent->functions.find(function_name) == agent->functions.end()) {
         // append jitify program string and include
         std::string func_src_str = std::string(function_name + "_program\n").append("#include \"flamegpu/runtime/DeviceAPI.h\"\n").append(func_src);
@@ -491,6 +493,26 @@ AgentFunctionDescription& AgentDescription::newRTCFunction(const std::string& fu
         }
     }
     THROW InvalidAgentFunc("Agent ('%s') already contains function '%s', "
-        "in AgentDescription::newFunction().",
+        "in AgentDescription::newRTCFunction().",
+        agent->name.c_str(), function_name.c_str());
+}
+
+AgentFunctionDescription& AgentDescription::newRTCFunctionFile(const std::string& function_name, const std::string& file_path) {
+    if (agent->functions.find(function_name) == agent->functions.end()) {
+        // Load file and forward to regular RTC method
+        std::ifstream file;
+        file.open(file_path);
+        if (file.is_open()) {
+            std::stringstream sstream;
+            sstream << file.rdbuf();
+            const std::string func_src = sstream.str();
+            return newRTCFunction(function_name, func_src);
+        }
+        THROW InvalidFilePath("Unable able to open file '%s', "
+            "in AgentDescription::newRTCFunctionFile().",
+            file_path.c_str());
+    }
+    THROW InvalidAgentFunc("Agent ('%s') already contains function '%s', "
+        "in AgentDescription::newRTCFunctionFile().",
         agent->name.c_str(), function_name.c_str());
 }
