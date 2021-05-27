@@ -41,22 +41,23 @@ option(BUILD_FLAMEGPU2 "Enable building FLAMEGPU2 library" ON)
 
 # Option to enable/disable building the static library
 option(VISUALISATION "Enable visualisation support" OFF)
+if(NOT NO_EXAMPLES)
+    # Option to enable building all examples
+    option(BUILD_ALL_EXAMPLES "Enable building examples" ON)
 
-# Option to enable building all examples
-option(BUILD_ALL_EXAMPLES "Enable building examples" ON)
-
-# Options to enable building individual examples, if BUILD_ALL_EXAMPLES is off.
-option(BUILD_EXAMPLE_BOIDS_BRUTEFORCE "Enable building examples/boids_bruteforce" OFF)
-option(BUILD_EXAMPLE_BOIDS_BRUTEFORCE_DEPENDENCY_GRAPH "Enable building examples/boids_bruteforce_dependency_graph" OFF)
-option(BUILD_EXAMPLE_BOIDS_SPATIAL3D "Enable building examples/boids_spatial3D" OFF)
-option(BUILD_EXAMPLE_BOIDS_RTC_BRUTEFORCE "Enable building examples/boids_rtc_bruteforce" OFF)
-option(BUILD_EXAMPLE_BOIDS_RTC_SPATIAL3D "Enable building examples/boids_rtc_spatial3D" OFF)
-option(BUILD_EXAMPLE_CIRCLES_BRUTEFORCE "Enable building examples/circles_bruteforcespatial3D" OFF)
-option(BUILD_EXAMPLE_CIRCLES_SPATIAL3D "Enable building examples/circles_spatial3D" OFF)
-option(BUILD_EXAMPLE_GAME_OF_LIFE "Enable building examples/game_of_life" OFF)
-option(BUILD_EXAMPLE_HOST_FUNCTIONS "Enable building examples/host_functions" OFF)
-option(BUILD_EXAMPLE_ENSEMBLE "Enable building examples/ensemble" OFF)
-option(BUILD_EXAMPLE_SUGARSCAPE "Enable building examples/sugarscape" OFF)
+    # Options to enable building individual examples, if BUILD_ALL_EXAMPLES is off.
+    option(BUILD_EXAMPLE_BOIDS_BRUTEFORCE "Enable building examples/boids_bruteforce" OFF)
+    option(BUILD_EXAMPLE_BOIDS_BRUTEFORCE_DEPENDENCY_GRAPH "Enable building examples/boids_bruteforce_dependency_graph" OFF)
+    option(BUILD_EXAMPLE_BOIDS_SPATIAL3D "Enable building examples/boids_spatial3D" OFF)
+    option(BUILD_EXAMPLE_BOIDS_RTC_BRUTEFORCE "Enable building examples/boids_rtc_bruteforce" OFF)
+    option(BUILD_EXAMPLE_BOIDS_RTC_SPATIAL3D "Enable building examples/boids_rtc_spatial3D" OFF)
+    option(BUILD_EXAMPLE_CIRCLES_BRUTEFORCE "Enable building examples/circles_bruteforcespatial3D" OFF)
+    option(BUILD_EXAMPLE_CIRCLES_SPATIAL3D "Enable building examples/circles_spatial3D" OFF)
+    option(BUILD_EXAMPLE_GAME_OF_LIFE "Enable building examples/game_of_life" OFF)
+    option(BUILD_EXAMPLE_HOST_FUNCTIONS "Enable building examples/host_functions" OFF)
+    option(BUILD_EXAMPLE_ENSEMBLE "Enable building examples/ensemble" OFF)
+    option(BUILD_EXAMPLE_SUGARSCAPE "Enable building examples/sugarscape" OFF)
+endif()
 
 option(BUILD_SWIG_PYTHON "Enable python bindings via SWIG" OFF)
 cmake_dependent_option(BUILD_SWIG_PYTHON_VIRTUALENV "Enable building of SWIG Python Virtual Env for Python Testing" OFF
