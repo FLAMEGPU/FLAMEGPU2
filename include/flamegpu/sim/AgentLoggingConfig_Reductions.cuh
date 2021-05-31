@@ -9,7 +9,7 @@ namespace flamegpu_internal {
 struct standard_deviation_add_impl {
  public:
     template <typename OutT>
-    struct binary_function : public std::binary_function<OutT, OutT, OutT> {
+    struct binary_function {
         __device__ __forceinline__ OutT operator()(const OutT &a, const OutT &b) const;
     };
 };
@@ -18,7 +18,7 @@ struct standard_deviation_add_impl {
 struct standard_deviation_subtract_mean_impl {
  public:
     template<typename InT, typename OutT>
-    struct unary_function : public std::unary_function<InT, OutT> {
+    struct unary_function {
         __host__ __device__ OutT operator()(const InT &a) const;
     };
 };

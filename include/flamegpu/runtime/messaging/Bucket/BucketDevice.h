@@ -79,10 +79,10 @@ class MsgBucket::In {
         /**
         * Stock iterator for iterating MsgBucket::In::Filter::Message objects
         */
-        class iterator {  // class iterator : public std::iterator <std::random_access_iterator_tag, void, void, void, void> {
-                          /**
-                          * The message returned to the user
-                          */
+        class iterator {
+            /**
+             * The message returned to the user
+             */
             Message _message;
 
          public:
