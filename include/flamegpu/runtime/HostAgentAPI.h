@@ -36,7 +36,7 @@
 struct funcName ## _impl {\
  public:\
     template <typename OutT>\
-    struct binary_function : public std::binary_function<OutT, OutT, OutT> {\
+    struct binary_function {\
         __device__ __forceinline__ OutT operator()(const OutT &a, const OutT &b) const;\
     };\
 };\
@@ -48,7 +48,7 @@ __device__ __forceinline__ OutT funcName ## _impl::binary_function<OutT>::operat
 struct funcName ## _impl {\
  public:\
     template<typename InT, typename OutT>\
-    struct unary_function : public std::unary_function<InT, OutT> {\
+    struct unary_function {\
         __host__ __device__ OutT operator()(const InT &a) const;\
     };\
 };\
@@ -182,8 +182,6 @@ class HostAgentAPI {
      */
     template<typename InT, typename OutT, typename transformOperatorT, typename reductionOperatorT>
     OutT transformReduce(const std::string &variable, transformOperatorT transformOperator, reductionOperatorT reductionOperator, const OutT &init) const;
-    // template<typename InT, typename OutT, typename transformOperatorT, typename reductionOperatorT>
-    // OutT transformReduce(const std::string &variable, std::unary_function<OutT, OutT> transformOperator, std::binary_function<OutT, OutT, OutT>, const OutT &init) const;
     enum Order {Asc, Desc};
     /**
      * Sorts agents according to the named variable
@@ -488,9 +486,6 @@ OutT HostAgentAPI::transformReduce(const std::string &variable, transformOperato
     }
     void *var_ptr = agent.getStateVariablePtr(stateName, variable);
     const auto agentCount = agent.getStateSize(stateName);
-    // auto a = is_1_0<InT, OutT>();
-    // auto b = my_sum<OutT>();
-    // <thrust::device_ptr<InT>, std::unary_function<InT, OutT>, OutT, std::binary_function<OutT, OutT, OutT>>
     OutT rtn = thrust::transform_reduce(thrust::device_ptr<InT>(reinterpret_cast<InT*>(var_ptr)), thrust::device_ptr<InT>(reinterpret_cast<InT*>(var_ptr) + agentCount),
         typename transformOperatorT::template unary_function<InT, OutT>(), init, typename reductionOperatorT::template binary_function<OutT>());
     gpuErrchkLaunch();

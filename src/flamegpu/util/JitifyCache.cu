@@ -198,8 +198,10 @@ break_fgpu2_inc_dir_loop:
     options.push_back("-DNDEBUG");
 #endif
 
-    // pass the c++14 language dialect if detected successfully.
-#if defined(__cplusplus) && __cplusplus > 201400L
+// pass the c++ language dialect. It may be better to explicitly pass this from CMake.
+#if defined(__cplusplus) && __cplusplus > 201700L && defined(__CUDACC_VER_MAJOR__) && __CUDACC_VER_MAJOR__ >= 11
+    options.push_back("--std=c++17");
+#elif defined(__cplusplus) && __cplusplus > 201400L
     options.push_back("--std=c++14");
 #endif
 

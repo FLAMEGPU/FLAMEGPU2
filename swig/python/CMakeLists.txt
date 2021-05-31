@@ -5,6 +5,19 @@
 get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../../ REALPATH)
 include(${FLAMEGPU_ROOT}/cmake/cuda_arch.cmake)
 
+
+# Duplicated because common is not imported. Must be before swig_add_library.#
+set(CMAKE_CXX_EXTENSIONS OFF)
+if(NOT DEFINED CMAKE_CXX_STANDARD)
+    set(CMAKE_CXX_STANDARD ${FLAMEGPU_CXX_STD})
+    set(CMAKE_CXX_STANDARD_REQUIRED true)
+endif()
+if(NOT DEFINED CMAKE_CUDA_STANDARD)
+    set(CMAKE_CUDA_STANDARD ${FLAMEGPU_CXX_STD})
+    set(CMAKE_CUDA_STANDARD_REQUIRED True)
+endif()
+
+
 STRING(TOLOWER "${CMAKE_SYSTEM_NAME}" CMAKE_SYSTEM_NAME_LOWER)
 
 # Python module name (must match module name in swig input *.i file)

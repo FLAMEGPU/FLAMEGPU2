@@ -41,17 +41,15 @@ class AgentVector {
     typedef AgentVector_CAgent CAgent;
     typedef std::map<std::string, std::unique_ptr<GenericMemoryVector>> AgentDataMap;
 
-    // member typedefs provided through inheriting from std::iterator
     // They might all be wrong
     class const_iterator;
     class const_reverse_iterator;
-    class iterator : public std::iterator<
-        std::input_iterator_tag,  // iterator_category
-        Agent,                    // value_type
-        size_type,                // difference_type
-        const Agent*,             // pointer
-        Agent                     // reference
-    > {
+    class iterator {
+        typedef std::input_iterator_tag iterator_category;
+        typedef Agent value_type;
+        typedef size_type difference_type;
+        typedef const Agent* pointer;
+        typedef Agent reference;
         friend class AgentVector;
         const std::shared_ptr<const AgentData>& _agent;
         const std::weak_ptr<AgentDataMap> _data;
@@ -61,6 +59,7 @@ class AgentVector {
          * It is used by AgentVector::Agent for change tracking
          */
         AgentVector* _parent;
+
      public:
         operator AgentVector::const_iterator() const {
             return const_iterator(_parent, _agent, _data, _pos);
@@ -75,13 +74,12 @@ class AgentVector {
         bool operator!=(iterator other) const { return !(*this == other); }
         Agent operator*() const;
     };
-    class const_iterator : public std::iterator<
-        std::input_iterator_tag,  // iterator_category
-        CAgent,                   // value_type
-        size_type,                // difference_type
-        const CAgent*,            // pointer
-        CAgent                    // reference
-    > {
+    class const_iterator {
+        typedef std::input_iterator_tag iterator_category;
+        typedef CAgent value_type;
+        typedef size_type difference_type;
+        typedef const CAgent* pointer;
+        typedef CAgent reference;
         friend class AgentVector;
         const std::shared_ptr<const AgentData> &_agent;
         const std::weak_ptr<AgentDataMap> _data;
@@ -91,6 +89,7 @@ class AgentVector {
          * It is used by AgentVector::Agent for change tracking
          */
         AgentVector* _parent;
+
      public:
         const_iterator(AgentVector* parent, const std::shared_ptr<const AgentData>& agent, std::weak_ptr<AgentDataMap> data, size_type pos = 0)
             : _agent(agent), _data(std::move(data)), _pos(pos), _parent(parent) { }
@@ -102,13 +101,12 @@ class AgentVector {
         bool operator!=(const_iterator other) const { return !(*this == other); }
         CAgent operator*() const;
     };
-    class reverse_iterator : public std::iterator<
-        std::input_iterator_tag,  // iterator_category
-        Agent,                    // value_type
-        size_type,                // difference_type
-        const Agent*,             // pointer
-        Agent                     // reference
-    > {
+    class reverse_iterator {
+        typedef std::input_iterator_tag iterator_category;
+        typedef Agent value_type;
+        typedef size_type difference_type;
+        typedef const Agent* pointer;
+        typedef Agent reference;
         friend class AgentVector;
         const std::shared_ptr<const AgentData> &_agent;
         const std::weak_ptr<AgentDataMap> _data;
@@ -118,6 +116,7 @@ class AgentVector {
          * It is used by AgentVector::Agent for change tracking
          */
         AgentVector* _parent;
+
      public:
         operator AgentVector::const_reverse_iterator() const {
             return const_reverse_iterator(_parent, _agent, _data, _pos);
@@ -132,13 +131,12 @@ class AgentVector {
         bool operator!=(reverse_iterator other) const { return !(*this == other); }
         Agent operator*() const;
     };
-    class const_reverse_iterator : public std::iterator<
-        std::input_iterator_tag,  // iterator_category
-        CAgent,                   // value_type
-        size_type,                // difference_type
-        const CAgent*,            // pointer
-        CAgent                    // reference
-    > {
+    class const_reverse_iterator {
+        typedef std::input_iterator_tag iterator_category;
+        typedef CAgent value_type;
+        typedef size_type difference_type;
+        typedef const CAgent* pointer;
+        typedef CAgent reference;
         friend class AgentVector;
         const std::shared_ptr<const AgentData>& _agent;
         const std::weak_ptr<AgentDataMap> _data;
@@ -148,6 +146,7 @@ class AgentVector {
          * It is used by AgentVector::Agent for change tracking
          */
         AgentVector* _parent;
+
      public:
         explicit const_reverse_iterator(AgentVector* parent, const std::shared_ptr<const AgentData>& agent, std::weak_ptr<AgentDataMap> data, size_type pos = 0)
             : _agent(agent), _data(std::move(data)), _pos(pos), _parent(parent) { }

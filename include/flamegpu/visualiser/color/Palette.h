@@ -24,10 +24,17 @@ struct Palette {
      * Diverging: Colors that are ordered such towards a central midpoint
      */
     enum Category{ Qualitative, Sequential, Diverging };
+    typedef size_t size_type;
     /**
      * Basic iterator that provides constant access to a palettes colors.
      */
-    class const_iterator : public std::iterator<std::input_iterator_tag, const Color> {
+    class const_iterator {
+        typedef std::input_iterator_tag iterator_category;
+        typedef Color value_type;
+        typedef size_type difference_type;
+        typedef const Color* pointer;
+        typedef const Color& reference;
+
         const Palette& palette;
         difference_type pos;
      public:

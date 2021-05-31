@@ -106,7 +106,7 @@ class MsgSpatial2D::In {
         /**
          * Stock iterator for iterating MsgSpatial3D::In::Filter::Message objects
          */
-        class iterator {  // class iterator : public std::iterator <std::random_access_iterator_tag, void, void, void, void> {
+        class iterator {
             /**
              * The message returned to the user
              */

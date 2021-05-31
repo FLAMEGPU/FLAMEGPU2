@@ -93,7 +93,7 @@ class HostAPI {
     /**
      * Need to define a hash_fn for tuple
      */
-    struct key_hash : public std::unary_function<CUB_Config, std::size_t> {
+    struct key_hash {
         std::size_t operator()(const CUB_Config& k) const {
             return static_cast<size_t>(std::get<0>(k)) ^ std::get<1>(k);
         }
