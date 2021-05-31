@@ -677,6 +677,7 @@ TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(logNormal, HostRandom::logNormal)
 %include "flamegpu/visualiser/color/DiscreteColor.h"
 %include "flamegpu/visualiser/color/StaticColor.h"
 %include "flamegpu/visualiser/color/HSVInterpolation.h"
+%include "flamegpu/visualiser/color/ViridisInterpolation.h"
 %include "config/Stock.h"
 // Manually create the two DiscretColor templates
 %template(iDiscreteColor) DiscreteColor<int32_t>;
