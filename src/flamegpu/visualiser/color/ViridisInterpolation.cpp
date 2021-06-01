@@ -42,9 +42,9 @@ std::string ViridisInterpolation::getSrc() const {
     // Fetch the modifier from texture cache
     ss << "    float modifier = texelFetch(color_arg, gl_InstanceID).x;" << "\n";
     // Clamp the modifier to bounds
-    ss << "    modifier = clamp(modifier, " << min_bound << ", " << max_bound << ");" << "\n";
+    ss << "    modifier = clamp(modifier, float(" << min_bound << "), float(" << max_bound << "));" << "\n";
     // Scale modifier to range [0.0, 255.0]
-    ss << "    modifier = 255 * (modifier - " << min_bound << ") / " << (max_bound - min_bound) << ";" << "\n";
+    ss << "    modifier = 255 * (modifier - " << min_bound << ") / float(" << (max_bound - min_bound) << ");" << "\n";
     // Decide which colors to pull, and how to lerp
     ss << "    const float a = floor(modifier);" << "\n";
     ss << "    const float t = modifier - a;" << "\n";

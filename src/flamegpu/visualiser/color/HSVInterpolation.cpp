@@ -92,9 +92,9 @@ vec3 hsv2rgb(vec3 hsv) {
     // Fetch the modifier from texture cache
     ss << "    float modifier = texelFetch(color_arg, gl_InstanceID).x;" << "\n";
     // Clamp the modifier to bounds
-    ss << "    modifier = clamp(modifier, " << min_bound << ", " << max_bound << ");" << "\n";
+    ss << "    modifier = clamp(modifier, float(" << min_bound << "), float(" << max_bound << "));" << "\n";
     // Scale modifier to range [0.0, 1.0]
-    ss << "    modifier = (modifier - " << min_bound << ") / " << (max_bound - min_bound) << ";" << "\n";
+    ss << "    modifier = (modifier - " << min_bound << ") / float(" << (max_bound - min_bound) << ");" << "\n";
     // Apply HSV interpolation
     if (wrap_hue) {
         // Calculate hue
