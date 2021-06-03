@@ -292,7 +292,7 @@ TEST(TestMessage_Array3D, Moore1) {
     // Validate each agent has read 8 correct messages
     for (AgentVector::Agent ai : pop) {
         const unsigned int message_read = ai.getVariable<unsigned int>("message_read");
-        EXPECT_EQ(27u, message_read);
+        EXPECT_EQ(27u, message_read);  // @todo This actually should be 26?
     }
 }
 TEST(TestMessage_Array3D, Moore2) {
@@ -325,7 +325,7 @@ TEST(TestMessage_Array3D, Moore2) {
     // Validate each agent has read 8 correct messages
     for (AgentVector::Agent ai : pop) {
         const unsigned int message_read = ai.getVariable<unsigned int>("message_read");
-        EXPECT_EQ(125u, message_read);
+        EXPECT_EQ(125u, message_read);  // @todo - 124?
     }
 }
 
@@ -429,6 +429,218 @@ TEST(TestMessage_Array3D, ReadEmpty) {
     EXPECT_EQ(pop_out.size(), 1u);
     auto ai = pop_out[0];
     EXPECT_EQ(ai.getVariable<unsigned int>("value"), 0u);  // Unset array msgs should be 0
+}
+
+/*
+ * Test for fixed size grids with various com radii to check edge cases + expected cases.
+ * 3x3x3 issue highlighted by see https://github.com/FLAMEGPU/FLAMEGPU2/issues/547
+ */
+FLAMEGPU_AGENT_FUNCTION(OutSimpleXYZ, MsgNone, MsgArray3D) {
+    const unsigned int index = FLAMEGPU->getVariable<unsigned int>("index");
+    const unsigned int x = FLAMEGPU->getVariable<unsigned int>("x");
+    const unsigned int y = FLAMEGPU->getVariable<unsigned int>("y");
+    const unsigned int z = FLAMEGPU->getVariable<unsigned int>("z");
+    FLAMEGPU->message_out.setVariable("index", index);
+    FLAMEGPU->message_out.setIndex(x, y, z);
+    return ALIVE;
+}
+FLAMEGPU_AGENT_FUNCTION(MooreTestXYZC, MsgArray3D, MsgNone) {
+    const unsigned int index = FLAMEGPU->getVariable<unsigned int>("index");
+    const unsigned int x = FLAMEGPU->getVariable<unsigned int>("x");
+    const unsigned int y = FLAMEGPU->getVariable<unsigned int>("y");
+    const unsigned int z = FLAMEGPU->getVariable<unsigned int>("z");
+    const unsigned int COMRADIUS = FLAMEGPU->environment.getProperty<unsigned int>("COMRADIUS");
+    // Iterate message list counting how many messages were read.
+    unsigned int count = 0;
+    for (const auto &message : FLAMEGPU->message_in(x, y, z, COMRADIUS)) {
+        // @todo - check its the correct messages?
+        /* if(index == 0){
+            printf("message from %u: %u %u %u\n", message.getVariable<unsigned int>("index"), message.getX(), message.getY(), message.getZ());
+        } */
+        count++;
+    }
+    FLAMEGPU->setVariable<unsigned int>("message_read", count);
+    return ALIVE;
+}
+
+void test_mooore_comradius(
+    const unsigned int GRID_WIDTH,
+    const unsigned int GRID_HEIGHT,
+    const unsigned int GRID_DEPTH,
+    const unsigned int COMRADIUS
+    ) {
+    // Calc the population
+    const unsigned int agentCount =  GRID_WIDTH * GRID_HEIGHT * GRID_DEPTH;
+    // Some debug logging. @todo
+    /* printf("GRID_WIDTH %u\n", GRID_WIDTH);
+    printf("GRID_HEIGHT %u\n", GRID_HEIGHT);
+    printf("GRID_DEPTH %u\n", GRID_DEPTH);
+    printf("COMRADIUS %u\n", COMRADIUS);
+    printf("agentCount %u\n", agentCount); */
+
+    // Define the model
+    ModelDescription model("MooreXYZC");
+
+    // Use an env var for the communication radius to use, rather than a __device__ or a #define.
+    EnvironmentDescription &env = model.Environment();
+    env.newProperty<unsigned int>("COMRADIUS", COMRADIUS);
+
+    // Define the message
+    MsgArray3D::Description &message = model.newMessage<MsgArray3D>(MESSAGE_NAME);
+    message.newVariable<unsigned int>("index");
+    message.setDimensions(GRID_WIDTH, GRID_HEIGHT, GRID_DEPTH);
+    AgentDescription &agent = model.newAgent(AGENT_NAME);
+    agent.newVariable<unsigned int>("index");
+    agent.newVariable<unsigned int>("x");
+    agent.newVariable<unsigned int>("y");
+    agent.newVariable<unsigned int>("z");
+    agent.newVariable<unsigned int>("message_read", UINT_MAX);
+    // Define the function and layers.
+    AgentFunctionDescription &outputFunction = agent.newFunction("OutSimpleXYZ", OutSimpleXYZ);
+    outputFunction.setMessageOutput(message);
+    AgentFunctionDescription &inputFunction = agent.newFunction("MooreTestXYZC", MooreTestXYZC);
+    inputFunction.setMessageInput(message);
+    model.newLayer().addAgentFunction(outputFunction);
+    LayerDescription &li = model.newLayer();
+    li.addAgentFunction(inputFunction);
+    // Assign the numbers in shuffled order to agents
+    AgentVector population(agent, agentCount);
+    for (unsigned int x = 0; x < GRID_WIDTH; x++) {
+        for (unsigned int y = 0; y < GRID_HEIGHT; y++) {
+            for (unsigned int z = 0; z < GRID_DEPTH; z++) {
+                unsigned int idx = (x * GRID_HEIGHT * GRID_DEPTH) + (y * GRID_DEPTH) + z;
+                AgentVector::Agent instance = population[idx];
+                instance.setVariable<unsigned int>("index", idx);
+                instance.setVariable<unsigned int>("x", x);
+                instance.setVariable<unsigned int>("y", y);
+                instance.setVariable<unsigned int>("z", z);
+                instance.setVariable<unsigned int>("message_read", UINT_MAX);
+            }
+        }
+    }
+    // Set pop in model
+    CUDASimulation simulation(model);
+    simulation.setPopulationData(population);
+    simulation.step();
+    simulation.getPopulationData(population);
+    // Validate each agent has read correct messages
+
+    // Calc the expected number of messages. This depoends on the env dims and the comm radius.
+    // Radius 0 is not supported, and currently the centre cell is not returned for other radii (so usually -1).
+    // If one of the environemnt dimensions is too small, < 2 * radius + 1, then either fewer messages should be read, or messages will be re-read.
+    // In this case, the centre cell may / is currently also read.
+
+    // const unsigned int nowrapExpectedCount = pow((2 * COMRADIUS) + 1, 3) - 1;
+    // If any dim is less than 2 * rad + 1, then there are fewere unique messages to be read, and the center will be re-read.
+    const bool xFewerReads = (2 * COMRADIUS) + 1 > GRID_WIDTH;
+    const bool yFewerReads = (2 * COMRADIUS) + 1 > GRID_HEIGHT;
+    const bool zFewerReads = (2 * COMRADIUS) + 1 > GRID_DEPTH;
+    const unsigned int xReadRange = !xFewerReads ? (2 * COMRADIUS) + 1 : GRID_WIDTH;
+    const unsigned int yReadRange = !yFewerReads ? (2 * COMRADIUS) + 1 : GRID_HEIGHT;
+    const unsigned int zReadRange = !zFewerReads ? (2 * COMRADIUS) + 1 : GRID_DEPTH;
+    // @todo - verify if the self message should ever be returned, even when wrapped. Can always -1 if it should never be read.
+    const unsigned int selfRead = xFewerReads || yFewerReads || zFewerReads ? 0 : 1;
+    const unsigned int expected_count = (xReadRange * yReadRange * zReadRange) - selfRead;
+
+    /*
+    // @todo 
+    printf("xFewerReads %d\n", xFewerReads);
+    printf("yFewerReads %d\n", yFewerReads);
+    printf("zFewerReads %d\n", zFewerReads);
+    printf("xReadRange %u\n", xReadRange);
+    printf("yReadRange %u\n", yReadRange);
+    printf("zReadRange %u\n", zReadRange);
+    printf("selfRead %u\n", selfRead);
+    printf("expected_count %u\n", expected_count); */
+
+    for (AgentVector::Agent instance : population) {
+        const unsigned int message_read = instance.getVariable<unsigned int>("message_read");
+        ASSERT_EQ(expected_count, message_read);
+    }
+}
+// Test a range of environment sizes for comradius of 1, including small sizes which are an edge case.
+// Also try non-uniform dimensions.
+// @todo - decide if these should be one or many tests.
+TEST(TestMessage_Array3D, MooreX1Y1Z1R1) {
+    test_mooore_comradius(1, 1, 1, 1);
+}
+TEST(TestMessage_Array3D, MooreX2Y2Z2R1) {
+    test_mooore_comradius(2, 2, 2, 1);
+}
+TEST(TestMessage_Array3D, MooreX3Y3Z3R1) {
+    test_mooore_comradius(3, 3, 3, 1);
+}
+TEST(TestMessage_Array3D, MooreX4Y4Z4R1) {
+    test_mooore_comradius(4, 4, 4, 1);
+}
+TEST(TestMessage_Array3D, MooreX2Y2Z1R1) {
+    test_mooore_comradius(2, 2, 1, 1);
+}
+TEST(TestMessage_Array3D, MooreX3Y3Z1R1) {
+    test_mooore_comradius(3, 3, 1, 1);
+}
+TEST(TestMessage_Array3D, MooreX4Y4Z1R1) {
+    test_mooore_comradius(4, 4, 1, 1);
+}
+TEST(TestMessage_Array3D, MooreX2Y1Z1R1) {
+    test_mooore_comradius(2, 1, 1, 1);
+}
+TEST(TestMessage_Array3D, MooreX3Y1Z1R1) {
+    test_mooore_comradius(3, 1, 1, 1);
+}
+TEST(TestMessage_Array3D, MooreX4Y1Z1R1) {
+    test_mooore_comradius(4, 1, 1, 1);
+}
+// Test a range of environment sizes for comradius of 2, including small sizes which are an edge case.
+// Also try non-uniform dimensions.
+// @todo - decide if these should be one or many tests.
+TEST(TestMessage_Array3D, MooreXX1Y1Z1R2) {
+    test_mooore_comradius(1, 1, 1, 2);
+}
+TEST(TestMessage_Array3D, MooreXX2Y2Z2R2) {
+    test_mooore_comradius(2, 2, 2, 2);
+}
+TEST(TestMessage_Array3D, MooreXX3Y3Z3R2) {
+    test_mooore_comradius(3, 3, 3, 2);
+}
+TEST(TestMessage_Array3D, MooreXX4Y4Z4R2) {
+    test_mooore_comradius(4, 4, 4, 2);
+}
+TEST(TestMessage_Array3D, MooreXX5Y5Z5R2) {
+    test_mooore_comradius(5, 5, 5, 2);
+}
+TEST(TestMessage_Array3D, MooreXX6Y6Z6R2) {
+    test_mooore_comradius(6, 6, 6, 2);
+}
+TEST(TestMessage_Array3D, MooreXX2Y2Z1R2) {
+    test_mooore_comradius(2, 2, 1, 2);
+}
+TEST(TestMessage_Array3D, MooreXX3Y3Z1R2) {
+    test_mooore_comradius(3, 3, 1, 2);
+}
+TEST(TestMessage_Array3D, MooreXX4Y4Z1R2) {
+    test_mooore_comradius(4, 4, 1, 2);
+}
+TEST(TestMessage_Array3D, MooreXX5Y5Z1R2) {
+    test_mooore_comradius(5, 5, 1, 2);
+}
+TEST(TestMessage_Array3D, MooreXX6Y6Z1R2) {
+    test_mooore_comradius(6, 6, 1, 2);
+}
+TEST(TestMessage_Array3D, MooreXX2Y1Z1R2) {
+    test_mooore_comradius(2, 1, 1, 2);
+}
+TEST(TestMessage_Array3D, MooreXX3Y1Z1R2) {
+    test_mooore_comradius(3, 1, 1, 2);
+}
+TEST(TestMessage_Array3D, MooreXX4Y1Z1R2) {
+    test_mooore_comradius(4, 1, 1, 2);
+}
+TEST(TestMessage_Array3D, MooreXX5Y1Z1R2) {
+    test_mooore_comradius(5, 1, 1, 2);
+}
+TEST(TestMessage_Array3D, MooreXX6Y1Z1R2) {
+    test_mooore_comradius(6, 1, 1, 2);
 }
 
 }  // namespace test_message_array_3d
