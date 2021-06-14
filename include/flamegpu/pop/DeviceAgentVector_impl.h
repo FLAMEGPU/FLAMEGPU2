@@ -29,6 +29,8 @@ struct NewAgentStorage;
  */
 class DeviceAgentVector_impl : protected AgentVector {
  public:
+    using AgentVector::Agent;
+    using AgentVector::CAgent;
     /**
      * Construct a DeviceAgentVector interface to the on-device data of cuda_agent
      * @param _cuda_agent CUDAAgent instance holding pointers to the desired agent data
