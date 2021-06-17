@@ -20,8 +20,6 @@ include(${CMAKE_CURRENT_LIST_DIR}/Tinyxml2.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/rapidjson.cmake)
 
 # Common rules for other cmake files
-# Make available lowercase 'linux'/'windows' vars (used for build dirs)
-STRING(TOLOWER "${CMAKE_SYSTEM_NAME}" CMAKE_SYSTEM_NAME_LOWER)
 # Don't create installation scripts (and hide CMAKE_INSTALL_PREFIX from cmake-gui)
 set(CMAKE_SKIP_INSTALL_RULES TRUE)
 set(CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}" CACHE INTERNAL "" FORCE)
