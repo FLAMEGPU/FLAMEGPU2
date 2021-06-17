@@ -3,6 +3,10 @@ set build_dir=build
 IF NOT "%1"=="" (
     set build_dir=%1
 )
-cd ../../%build_dir%/lib/windows-x64/python/venv/Scripts
+set config=Debug
+IF NOT "%2"=="" (
+    set config=%2
+)
+cd ../../%build_dir%/lib/windows-x64/%config%/python/venv/Scripts
 call activate.bat
-cd ../../../../../../examples/swig_boids_spatial3D
+cd ../../../../../../../examples/swig_boids_spatial3D
