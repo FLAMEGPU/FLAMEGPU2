@@ -57,7 +57,7 @@ jobs:
     # Windows GHA fix: specify Python3_ROOT_DIR and _EXECUTABLE to make sure python.exe is found, not python3.exe which does not work with venv
     - name: Configure CMake
       id: configure
-      run: cmake . -B ${{ env.build_dir }} -G "${{ matrix.visual_studio }}" -A x64 -DBUILD_TESTS=${{ env.build_tests }} -DWARNINGS_AS_ERRORS=${{ env.werror }} -DCUDA_ARCH="${{ matrix.cuda_arch }}" -Werror=dev -DBUILD_SWIG_PYTHON=ON -DBUILD_SWIG_PYTHON_VIRTUALENV=ON -DPython3_ROOT_DIR=$(dirname $(which python)) -DPython3_EXECUTABLE=$(which python) -DUSE_NVTX=ON
+      run: cmake . -B ${{ env.build_dir }} -G "${{ matrix.visual_studio }}" -A x64 -DBUILD_TESTS=${{ env.build_tests }} -DWARNINGS_AS_ERRORS=${{ env.werror }} -DCUDA_ARCH="${{ matrix.cuda_arch }}" -Werror=dev -DBUILD_SWIG_PYTHON=ON -DPython3_ROOT_DIR=$(dirname $(which python)) -DPython3_EXECUTABLE=$(which python) -DUSE_NVTX=ON
       shell: bash
 
     - name: Build flamegpu2
