@@ -17,20 +17,17 @@ if(NOT DEFINED CMAKE_CUDA_STANDARD)
     set(CMAKE_CUDA_STANDARD_REQUIRED True)
 endif()
 
-
-STRING(TOLOWER "${CMAKE_SYSTEM_NAME}" CMAKE_SYSTEM_NAME_LOWER)
-
 # Python module name (must match module name in swig input *.i file)
 SET(PYTHON_MODULE_NAME pyflamegpu)
 
 # Set the output directory where the wheel etc should be placed.
 # CMAKE 3.20 is required for byproducts contianing $<CONFIG> (i.e. multiconfig generators.) Workaround by only setting if supported, or usiing CMAKE_BUILD_TYPE for non-multi-generators.
 # This is required for msvc multi-generator usage. For older cmake and non-mulit-config generators CMAKE_BUILD_TYPE can be used instead.
-SET(PYTHON_LIB_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib/${CMAKE_SYSTEM_NAME_LOWER}-x64/$<CONFIG>/python)
+SET(PYTHON_LIB_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib/$<CONFIG>/python)
 SET(PYTHON_LIB_OUTPUT_DIRECTORY_BYPRODUCTS TRUE)
 if(${CMAKE_VERSION} VERSION_LESS "3.20")
   if(NOT ${GENERATOR_IS_MULTI_CONFIG})
-    SET(PYTHON_LIB_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib/${CMAKE_SYSTEM_NAME_LOWER}-x64/${CMAKE_BUILD_TYPE}/python)
+    SET(PYTHON_LIB_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib/${CMAKE_BUILD_TYPE}/python)
   else()
     SET(PYTHON_LIB_OUTPUT_DIRECTORY_BYPRODUCTS FALSE)
   endif()

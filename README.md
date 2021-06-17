@@ -211,7 +211,7 @@ I.e. `-DUSE_NVTX=ON` will enable NVTX markers and allow custom markers to be inc
 See `include/util/nvtx.h` and the associated documentation for how to apply custom markers.
 
 ### Running FLAME GPU 2
-Examples for FLAME GPU 2 build to `<cmake_build_path>/bin/<operating_system>-x64/<Debug|Release|Profile>/`, and can be executed from that directory via command line.
+Examples for FLAME GPU 2 build to `<cmake_build_path>/bin/<Debug|Release|Profile>/`, and can be executed from that directory via command line.
 
 If wishing to run examples within Visual Studio it is necessary to right click the desired example in the Solution Explorer and select `Debug > Start New Instance`. Alternatively, if `Set as StartUp Project` is selected, the main debugging menus can be used to initiate execution. To configure command line argument for execution within Visual Studio, right click the desired example in the Solution Explorer and select `Properties`, in this dialog select `Debugging` in the left hand menu to display the entry field for `command arguments`. Note, it may be necessary to change the configuration as the properties dialog may be targeting a different configuration to the current build configuration.
 

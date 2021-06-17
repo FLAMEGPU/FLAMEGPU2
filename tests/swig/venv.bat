@@ -7,6 +7,6 @@ set config=Debug
 IF NOT "%2"=="" (
     set config=%2
 )
-cd ../../%build_dir%/lib/windows-x64/%config%/python/venv/Scripts
+cd ../../%build_dir%/lib/%config%/python/venv/Scripts
 call activate.bat
-cd ../../../../../../../tests/swig
+cd ../../../../../../tests/swig
