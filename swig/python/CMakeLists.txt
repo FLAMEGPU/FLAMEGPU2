@@ -224,8 +224,8 @@ add_custom_command(TARGET ${PYTHON_MODULE_NAME} POST_BUILD
 )
 
 # Build Virtual Environment for python testing and install the packaged wheel
-if(BUILD_SWIG_PYTHON_VIRTUALENV)
-	# Look for python module virtualenv
+if(BUILD_SWIG_PYTHON_VENV)
+	# Look for python module venv
 	search_python_module(venv)
 	# Testing using a virtual environment
 	set(VENV_EXECUTABLE ${Python3_EXECUTABLE} -m venv)
@@ -235,7 +235,7 @@ if(BUILD_SWIG_PYTHON_VIRTUALENV)
 	else()
 		set(VENV_PIP ${VENV_DIR}/bin/pip)
 	endif()
-	# make a virtualenv to install our python package in it
+	# make a venv to install our python package in it
 	add_custom_command(TARGET ${PYTHON_MODULE_NAME} POST_BUILD
 		# create venv
 		COMMAND ${VENV_EXECUTABLE} ${VENV_DIR}

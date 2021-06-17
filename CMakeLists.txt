@@ -91,9 +91,8 @@ if(NOT NO_EXAMPLES)
 endif()
 
 option(BUILD_SWIG_PYTHON "Enable python bindings via SWIG" OFF)
-cmake_dependent_option(BUILD_SWIG_PYTHON_VIRTUALENV "Enable building of SWIG Python Virtual Env for Python Testing" OFF
-                       "BUILD_SWIG_PYTHON" OFF)
-
+# By default, build into a venv, otherwise it is set to ON anyway. 
+cmake_dependent_option(BUILD_SWIG_PYTHON_VENV "Enable the use of a venv for swig/python installation" ON "BUILD_SWIG_PYTHON" ON)
 
 
 # Option to enable/disable tests.
