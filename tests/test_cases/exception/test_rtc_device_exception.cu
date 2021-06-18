@@ -1,7 +1,6 @@
 #include "gtest/gtest.h"
 
 #include "flamegpu/flamegpu.h"
-#include "flamegpu/runtime/flamegpu_api.h"
 
 namespace flamegpu {
 

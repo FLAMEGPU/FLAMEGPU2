@@ -11,7 +11,6 @@
 #include <set>
 
 #include "flamegpu/flamegpu.h"
-#include "flamegpu/runtime/flamegpu_api.h"
 
 #include "gtest/gtest.h"
 

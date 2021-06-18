@@ -132,7 +132,6 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/AgentFunctionCondition.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/AgentFunctionCondition_shim.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/HostFunctionCallback.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/flamegpu_api.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/DeviceAPI.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/HostAPI.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/HostAPI_macros.h
