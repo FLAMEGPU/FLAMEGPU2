@@ -4,7 +4,7 @@
 #include <functional>
 
 namespace flamegpu {
-namespace flamegpu_internal {
+namespace detail {
 
 /**
  * standard_deviation_add_impl is a manual expansion of FLAMEGPU_CUSTOM_REDUCTION()
@@ -50,10 +50,10 @@ __device__ __forceinline__ OutT standard_deviation_add_impl::binary_function<Out
 }
 template<typename InT, typename OutT>
 __device__ __forceinline__ OutT standard_deviation_subtract_mean_impl::unary_function<InT, OutT>::operator()(const InT &a) const {
-    return pow(a - flamegpu_internal::STANDARD_DEVIATION_MEAN, 2.0);
+    return pow(a - detail::STANDARD_DEVIATION_MEAN, 2.0);
 }
 
-}  // namespace flamegpu_internal
+}  // namespace detail
 }  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_SIM_AGENTLOGGINGCONFIG_REDUCTIONS_CUH_
