@@ -3,7 +3,9 @@
 
 // include all host API classes (top level header from each module)
 #include "flamegpu/version.h"
-#include "flamegpu/runtime/flamegpu_api.h"
+#include "flamegpu/runtime/HostAPI.h"
+#include "flamegpu/runtime/HostAgentAPI.h"
+#include "flamegpu/runtime/DeviceAPI.h"
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/model/AgentFunctionDescription.h"

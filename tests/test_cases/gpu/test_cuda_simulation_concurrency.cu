@@ -1,5 +1,4 @@
 #include "flamegpu/flamegpu.h"
-#include "flamegpu/runtime/flamegpu_api.h"
 #include "flamegpu/util/compute_capability.cuh"
 #include "helpers/device_initialisation.h"
 

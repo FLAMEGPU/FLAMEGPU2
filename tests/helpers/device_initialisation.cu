@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <chrono>
 #include "flamegpu/flamegpu.h"
-#include "flamegpu/runtime/flamegpu_api.h"
 
 namespace flamegpu {
 namespace tests {
