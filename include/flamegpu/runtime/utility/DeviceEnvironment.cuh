@@ -92,14 +92,14 @@ __device__ __forceinline__ T DeviceEnvironment::getProperty(const char(&name)[N]
 #if !defined(SEATBELTS) || SEATBELTS
     if (cv ==  Curve::UNKNOWN_VARIABLE) {
         DTHROW("Environment property with name: %s was not found.\n", name);
-    } else if (curve_internal::d_sizes[cv] != sizeof(T)) {
-        DTHROW("Environment property with name: %s type size mismatch %llu != %llu.\n", name, curve_internal::d_sizes[cv], sizeof(T));
+    } else if (curve::detail::d_sizes[cv] != sizeof(T)) {
+        DTHROW("Environment property with name: %s type size mismatch %llu != %llu.\n", name, curve::detail::d_sizes[cv], sizeof(T));
     } else {
-        return *reinterpret_cast<T*>(detail::c_envPropBuffer + reinterpret_cast<ptrdiff_t>(curve_internal::d_variables[cv]));
+        return *reinterpret_cast<T*>(detail::c_envPropBuffer + reinterpret_cast<ptrdiff_t>(curve::detail::d_variables[cv]));
     }
     return {};
 #else
-    return *reinterpret_cast<T*>(detail::c_envPropBuffer + reinterpret_cast<ptrdiff_t>(curve_internal::d_variables[cv]));
+    return *reinterpret_cast<T*>(detail::c_envPropBuffer + reinterpret_cast<ptrdiff_t>(curve::detail::d_variables[cv]));
 #endif
 }
 template<typename T, unsigned int N>
@@ -109,16 +109,16 @@ __device__ __forceinline__ T DeviceEnvironment::getProperty(const char(&name)[N]
 #if !defined(SEATBELTS) || SEATBELTS
     if (cv ==  Curve::UNKNOWN_VARIABLE) {
         DTHROW("Environment property array with name: %s was not found.\n", name);
-    } else if (curve_internal::d_sizes[cv] != sizeof(T)) {
-        DTHROW("Environment property array with name: %s type size mismatch %llu != %llu.\n", name, curve_internal::d_sizes[cv], sizeof(T));
-    } else if (curve_internal::d_lengths[cv] <= index) {
-        DTHROW("Environment property array with name: %s index %u is out of bounds (length %u).\n", name, index, curve_internal::d_lengths[cv]);
+    } else if (curve::detail::d_sizes[cv] != sizeof(T)) {
+        DTHROW("Environment property array with name: %s type size mismatch %llu != %llu.\n", name, curve::detail::d_sizes[cv], sizeof(T));
+    } else if (curve::detail::d_lengths[cv] <= index) {
+        DTHROW("Environment property array with name: %s index %u is out of bounds (length %u).\n", name, index, curve::detail::d_lengths[cv]);
     } else {
-        return *(reinterpret_cast<T*>(detail::c_envPropBuffer + reinterpret_cast<ptrdiff_t>(curve_internal::d_variables[cv])) + index);
+        return *(reinterpret_cast<T*>(detail::c_envPropBuffer + reinterpret_cast<ptrdiff_t>(curve::detail::d_variables[cv])) + index);
     }
     return {};
 #else
-    return *(reinterpret_cast<T*>(detail::c_envPropBuffer + reinterpret_cast<ptrdiff_t>(curve_internal::d_variables[cv])) + index);
+    return *(reinterpret_cast<T*>(detail::c_envPropBuffer + reinterpret_cast<ptrdiff_t>(curve::detail::d_variables[cv])) + index);
 #endif
 }
 
