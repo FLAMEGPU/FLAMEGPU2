@@ -86,7 +86,7 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/exception/FGPUException.h
     ${FLAMEGPU_ROOT}/include/flamegpu/exception/FGPUDeviceException.h
     ${FLAMEGPU_ROOT}/include/flamegpu/exception/FGPUDeviceException_device.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/exception/FGPUStaticAssert.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/util/StaticAssert.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/LayerDescription.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/ModelData.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/AgentData.h

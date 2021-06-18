@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "flamegpu/sim/RunPlan.h"
-#include "flamegpu/exception/FGPUStaticAssert.h"
+#include "flamegpu/util/StaticAssert.h"
 
 
 namespace flamegpu {
@@ -509,37 +509,37 @@ void RunPlanVector::setPropertyRandom(const std::string &name, const Environment
  */
 template<typename T>
 void RunPlanVector::setPropertyUniformRandom(const std::string &name, const T &min, const T &max) {
-    static_assert(FGPU_SA::_Is_IntType<T>::value, "Invalid template argument for RunPlanVector::setPropertyUniformRandom(const std::string &name, const T &min, const T&max)");
+    static_assert(util::StaticAssert::_Is_IntType<T>::value, "Invalid template argument for RunPlanVector::setPropertyUniformRandom(const std::string &name, const T &min, const T&max)");
     std::uniform_int_distribution<T> dist(min, max);
     setPropertyRandom<T>(name, dist);
 }
 template<typename T>
 void RunPlanVector::setPropertyUniformRandom(const std::string &name, const EnvironmentManager::size_type &index, const T &min, const T &max) {
-    static_assert(FGPU_SA::_Is_IntType<T>::value, "Invalid template argument for RunPlanVector::setPropertyUniformRandom(const std::string &name, const EnvironmentManager::size_type &index, const T &min, const T&max)");
+    static_assert(util::StaticAssert::_Is_IntType<T>::value, "Invalid template argument for RunPlanVector::setPropertyUniformRandom(const std::string &name, const EnvironmentManager::size_type &index, const T &min, const T&max)");
     std::uniform_int_distribution<T> dist(min, max);
     setPropertyRandom<T>(name, index, dist);
 }
 template<typename T>
 void RunPlanVector::setPropertyNormalRandom(const std::string &name, const T &mean, const T &stddev) {
-    static_assert(FGPU_SA::_Is_RealType<T>::value, "Invalid template argument for RunPlanVector::setPropertyNormalRandom(const std::string &name, const T &mean, const T &stddev)");
+    static_assert(util::StaticAssert::_Is_RealType<T>::value, "Invalid template argument for RunPlanVector::setPropertyNormalRandom(const std::string &name, const T &mean, const T &stddev)");
     std::normal_distribution<T> dist(mean, stddev);
     setPropertyRandom<T>(name, dist);
 }
 template<typename T>
 void RunPlanVector::setPropertyNormalRandom(const std::string &name, const EnvironmentManager::size_type &index, const T &mean, const T &stddev) {
-    static_assert(FGPU_SA::_Is_RealType<T>::value, "Invalid template argument for RunPlanVector::setPropertyNormalRandom(const std::string &name, const EnvironmentManager::size_type &index, const T &mean, const T &stddev)");
+    static_assert(util::StaticAssert::_Is_RealType<T>::value, "Invalid template argument for RunPlanVector::setPropertyNormalRandom(const std::string &name, const EnvironmentManager::size_type &index, const T &mean, const T &stddev)");
     std::normal_distribution<T> dist(mean, stddev);
     setPropertyRandom<T>(name, index, dist);
 }
 template<typename T>
 void RunPlanVector::setPropertyLogNormalRandom(const std::string &name, const T &mean, const T &stddev) {
-    static_assert(FGPU_SA::_Is_RealType<T>::value, "Invalid template argument for RunPlanVector::setPropertyLogNormalRandom(const std::string &name, const T &mean, const T &stddev)");
+    static_assert(util::StaticAssert::_Is_RealType<T>::value, "Invalid template argument for RunPlanVector::setPropertyLogNormalRandom(const std::string &name, const T &mean, const T &stddev)");
     std::lognormal_distribution<T> dist(mean, stddev);
     setPropertyRandom<T>(name, dist);
 }
 template<typename T>
 void RunPlanVector::setPropertyLogNormalRandom(const std::string &name, const EnvironmentManager::size_type &index, const T &mean, const T &stddev) {
-    static_assert(FGPU_SA::_Is_RealType<T>::value, "Invalid template argument for RunPlanVector::setPropertyLogNormalRandom(const std::string &name, const EnvironmentManager::size_type &index, const T &mean, const T &stddev)");
+    static_assert(util::StaticAssert::_Is_RealType<T>::value, "Invalid template argument for RunPlanVector::setPropertyLogNormalRandom(const std::string &name, const EnvironmentManager::size_type &index, const T &mean, const T &stddev)");
     std::lognormal_distribution<T> dist(mean, stddev);
     setPropertyRandom<T>(name, index, dist);
 }

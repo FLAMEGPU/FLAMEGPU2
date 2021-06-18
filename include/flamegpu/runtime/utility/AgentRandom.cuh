@@ -4,7 +4,7 @@
 #include <curand_kernel.h>
 #include <cassert>
 
-#include "flamegpu/exception/FGPUStaticAssert.h"
+#include "flamegpu/util/StaticAssert.h"
 #include "flamegpu/exception/FGPUDeviceException.h"
 
 namespace flamegpu {
@@ -100,7 +100,7 @@ __forceinline__ __device__ double AgentRandom::logNormal(const double& mean, con
 */
 template<typename T>
 __forceinline__ __device__ T AgentRandom::uniform(const T& min, const T& max) const {
-    static_assert(FGPU_SA::_Is_IntType<T>::value, "Invalid template argument for AgentRandom::uniform(const T& lowerBound, const T& max)");
+    static_assert(util::StaticAssert::_Is_IntType<T>::value, "Invalid template argument for AgentRandom::uniform(const T& lowerBound, const T& max)");
 #if !defined(SEATBELTS) || SEATBELTS
     if (min > max) {
         DTHROW("Invalid arguments passed to AgentRandom::uniform(), %lld > %lld\n", static_cast<int64_t>(min), static_cast<int64_t>(max));
