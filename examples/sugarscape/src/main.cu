@@ -3,11 +3,7 @@
 #include <cstdlib>
 #include <fstream>
 
-
 #include "flamegpu/flamegpu.h"
-#include "flamegpu/runtime/flamegpu_api.h"
-#include "flamegpu/io/factory.h"
-#include "flamegpu/util/nvtx.h"
 
 // Grid Size (the product of these is the agent count)
 #define GRID_WIDTH 256

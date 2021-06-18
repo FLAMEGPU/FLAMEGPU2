@@ -1,7 +1,4 @@
 #include "flamegpu/flamegpu.h"
-#include "flamegpu/util/nvtx.h"
-
-
 
 FLAMEGPU_AGENT_FUNCTION(output_message, flamegpu::MsgNone, flamegpu::MsgBruteForce) {
     FLAMEGPU->message_out.setVariable<flamegpu::id_t>("id", FLAMEGPU->getID());

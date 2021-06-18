@@ -1,5 +1,4 @@
 #include "flamegpu/flamegpu.h"
-#include "flamegpu/util/nvtx.h"
 
 FLAMEGPU_AGENT_FUNCTION(output, flamegpu::MsgNone, flamegpu::MsgArray2D) {
     FLAMEGPU->message_out.setVariable<char>("is_alive", FLAMEGPU->getVariable<unsigned int>("is_alive"));
