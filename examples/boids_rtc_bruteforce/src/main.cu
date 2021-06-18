@@ -3,7 +3,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "flamegpu/flame_api.h"
+#include "flamegpu/flamegpu.h"
 
 /**
  * FLAME GPU 2 implementation of the Boids model, using BruteForce messaging.

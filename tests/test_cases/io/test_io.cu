@@ -3,7 +3,7 @@
 
 #include "gtest/gtest.h"
 
-#include "flamegpu/flame_api.h"
+#include "flamegpu/flamegpu.h"
 
 namespace flamegpu {
 

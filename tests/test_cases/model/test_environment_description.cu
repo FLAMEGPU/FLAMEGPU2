@@ -10,7 +10,7 @@
  * > newProperty() [per supported type, individual/array]
  */
 
-#include "flamegpu/flame_api.h"
+#include "flamegpu/flamegpu.h"
 
 #include "gtest/gtest.h"
 namespace flamegpu {

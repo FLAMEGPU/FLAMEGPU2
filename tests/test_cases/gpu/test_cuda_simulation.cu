@@ -2,7 +2,7 @@
 #include <thread>
 #include <set>
 
-#include "flamegpu/flame_api.h"
+#include "flamegpu/flamegpu.h"
 #include "flamegpu/runtime/flamegpu_api.h"
 #include "flamegpu/util/compute_capability.cuh"
 #include "helpers/device_initialisation.h"

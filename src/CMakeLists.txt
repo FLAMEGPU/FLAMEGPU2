@@ -72,7 +72,7 @@ endif()
 SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/version.h
     ${FLAMEGPU_ROOT}/include/flamegpu/defines.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/flame_api.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/flamegpu.h
     ${FLAMEGPU_ROOT}/include/flamegpu/io/statereader.h
     ${FLAMEGPU_ROOT}/include/flamegpu/io/statewriter.h
     ${FLAMEGPU_ROOT}/include/flamegpu/io/jsonReader.h

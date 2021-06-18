@@ -1,4 +1,4 @@
-#include "flamegpu/flame_api.h"
+#include "flamegpu/flamegpu.h"
 
 FLAMEGPU_AGENT_FUNCTION(AddOffset, flamegpu::MsgNone, flamegpu::MsgNone) {
     // Output each agents publicly visible properties.

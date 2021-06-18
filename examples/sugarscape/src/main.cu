@@ -4,7 +4,7 @@
 #include <fstream>
 
 
-#include "flamegpu/flame_api.h"
+#include "flamegpu/flamegpu.h"
 #include "flamegpu/runtime/flamegpu_api.h"
 #include "flamegpu/io/factory.h"
 #include "flamegpu/util/nvtx.h"
