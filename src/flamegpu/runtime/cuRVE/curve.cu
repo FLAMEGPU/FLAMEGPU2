@@ -12,8 +12,8 @@
 #include "flamegpu/util/nvtx.h"
 
 namespace flamegpu {
-
-namespace curve_internal {
+namespace curve {
+namespace detail {
     /**
      * Curve hashtable, registered variable hash array
      */
@@ -42,7 +42,8 @@ namespace curve_internal {
      * @todo Remove this legacy code
      */
     Curve::HostError h_curve_error;
-}  // namespace curve_internal
+}  // namespace detail
+}  // namespace curve
 
 std::mutex Curve::instance_mutex;
 
@@ -50,12 +51,12 @@ std::mutex Curve::instance_mutex;
 __host__ Curve::Curve() :
     deviceInitialised(false) {
     // Initialise some host variables.
-    curve_internal::h_curve_error  = ERROR_NO_ERRORS;
+    curve::detail::h_curve_error  = ERROR_NO_ERRORS;
 }
 __host__ void Curve::purge() {
     auto lock = std::unique_lock<std::shared_timed_mutex>(mutex);
     deviceInitialised = false;
-    curve_internal::h_curve_error = ERROR_NO_ERRORS;
+    curve::detail::h_curve_error = ERROR_NO_ERRORS;
     initialiseDevice();
 }
 __host__ void Curve::initialiseDevice() {
@@ -67,10 +68,10 @@ __host__ void Curve::initialiseDevice() {
         size_t* _d_sizes;
 
         // get a host pointer to d_hashes and d_variables
-        gpuErrchk(cudaGetSymbolAddress(reinterpret_cast<void **>(&_d_hashes), curve_internal::d_hashes));
-        gpuErrchk(cudaGetSymbolAddress(reinterpret_cast<void **>(&_d_variables), curve_internal::d_variables));
-        gpuErrchk(cudaGetSymbolAddress(reinterpret_cast<void **>(&_d_lengths), curve_internal::d_lengths));
-        gpuErrchk(cudaGetSymbolAddress(reinterpret_cast<void **>(&_d_sizes), curve_internal::d_sizes));
+        gpuErrchk(cudaGetSymbolAddress(reinterpret_cast<void **>(&_d_hashes), curve::detail::d_hashes));
+        gpuErrchk(cudaGetSymbolAddress(reinterpret_cast<void **>(&_d_variables), curve::detail::d_variables));
+        gpuErrchk(cudaGetSymbolAddress(reinterpret_cast<void **>(&_d_lengths), curve::detail::d_lengths));
+        gpuErrchk(cudaGetSymbolAddress(reinterpret_cast<void **>(&_d_sizes), curve::detail::d_sizes));
 
         // set values of hash table to 0 on host and device
         memset(h_hashes, 0, sizeof(unsigned int)*MAX_VARIABLES);
@@ -136,7 +137,7 @@ __host__ Curve::Variable Curve::_registerVariableByHash(VariableHash variable_ha
     while (h_hashes[i] != EMPTY_FLAG && h_hashes[i] != DELETED_FLAG) {
         n += 1;
         if (n >= MAX_VARIABLES) {
-            curve_internal::h_curve_error = ERROR_TOO_MANY_VARIABLES;
+            curve::detail::h_curve_error = ERROR_TOO_MANY_VARIABLES;
             return UNKNOWN_VARIABLE;
         }
         i += 1;
@@ -205,17 +206,17 @@ __host__ void Curve::updateDevice() {
     // Initialise the device (if required)
     assert(deviceInitialised);  // No reason for this to ever fail. Purge calls init device
     // Copy
-    gpuErrchk(cudaMemcpyToSymbol(curve_internal::d_hashes, h_hashes, sizeof(unsigned int) * MAX_VARIABLES));
-    gpuErrchk(cudaMemcpyToSymbol(curve_internal::d_variables, h_d_variables, sizeof(void*) * MAX_VARIABLES));
-    gpuErrchk(cudaMemcpyToSymbol(curve_internal::d_sizes, h_sizes, sizeof(size_t) * MAX_VARIABLES));
-    gpuErrchk(cudaMemcpyToSymbol(curve_internal::d_lengths, h_lengths, sizeof(unsigned int) * MAX_VARIABLES));
+    gpuErrchk(cudaMemcpyToSymbol(curve::detail::d_hashes, h_hashes, sizeof(unsigned int) * MAX_VARIABLES));
+    gpuErrchk(cudaMemcpyToSymbol(curve::detail::d_variables, h_d_variables, sizeof(void*) * MAX_VARIABLES));
+    gpuErrchk(cudaMemcpyToSymbol(curve::detail::d_sizes, h_sizes, sizeof(size_t) * MAX_VARIABLES));
+    gpuErrchk(cudaMemcpyToSymbol(curve::detail::d_lengths, h_lengths, sizeof(unsigned int) * MAX_VARIABLES));
 }
 
 /* errors */
 void __host__ Curve::printLastHostError(const char* file, const char* function, const int line) {
     // Do not lock mutex here, do it in the calling method
-    if (curve_internal::h_curve_error != ERROR_NO_ERRORS) {
-        printf("%s.%s.%d: cuRVE Host Error %d (%s)\n", file, function, line, (unsigned int)curve_internal::h_curve_error, getHostErrorString(curve_internal::h_curve_error));
+    if (curve::detail::h_curve_error != ERROR_NO_ERRORS) {
+        printf("%s.%s.%d: cuRVE Host Error %d (%s)\n", file, function, line, (unsigned int)curve::detail::h_curve_error, getHostErrorString(curve::detail::h_curve_error));
     }
 }
 
@@ -229,7 +230,7 @@ void __host__ Curve::printErrors(const char* file, const char* function, const i
     printLastHostError(file, function, line);
 
     // check device errors
-    gpuErrchk(cudaMemcpyFromSymbol(&d_curve_error_local, curve_internal::d_curve_error, sizeof(DeviceError)));
+    gpuErrchk(cudaMemcpyFromSymbol(&d_curve_error_local, curve::detail::d_curve_error, sizeof(DeviceError)));
     if (d_curve_error_local != DEVICE_ERROR_NO_ERRORS) {
         printf("%s.%s.%d: cuRVE Device Error %d (%s)\n", file, function, line, (unsigned int)d_curve_error_local, getDeviceErrorString(d_curve_error_local));
     }
@@ -249,7 +250,7 @@ __host__ const char* Curve::getHostErrorString(HostError e) {
 }
 __host__ Curve::HostError Curve::getLastHostError() {
     auto lock = std::shared_lock<std::shared_timed_mutex>(mutex);
-    return curve_internal::h_curve_error;
+    return curve::detail::h_curve_error;
 }
 __host__ void Curve::clearErrors() {
     auto lock = std::unique_lock<std::shared_timed_mutex>(mutex);
@@ -259,9 +260,9 @@ __host__ void Curve::clearErrors() {
     DeviceError curve_error_none;
 
     curve_error_none = DEVICE_ERROR_NO_ERRORS;
-    curve_internal::h_curve_error  = ERROR_NO_ERRORS;
+    curve::detail::h_curve_error  = ERROR_NO_ERRORS;
 
-    gpuErrchk(cudaMemcpyToSymbol(curve_internal::d_curve_error, &curve_error_none, sizeof(DeviceError)));
+    gpuErrchk(cudaMemcpyToSymbol(curve::detail::d_curve_error, &curve_error_none, sizeof(DeviceError)));
 }
 
 __host__ unsigned int Curve::checkHowManyMappedItems() {

@@ -695,7 +695,8 @@ class Curve {
 };
 
 
-namespace curve_internal {
+namespace curve {
+namespace detail {
     extern __constant__ Curve::VariableHash d_hashes[Curve::MAX_VARIABLES];   // Device array of the hash values of registered variables
     extern __device__ char* d_variables[Curve::MAX_VARIABLES];                // Device array of pointer to device memory addresses for variable storage
     extern __constant__ size_t d_sizes[Curve::MAX_VARIABLES];                // Device array of the types of registered variables
@@ -703,7 +704,8 @@ namespace curve_internal {
 
     extern __device__ Curve::DeviceError d_curve_error;
     extern Curve::HostError h_curve_error;
-}  // namespace curve_internal
+}  // namespace detail
+}  // namespace curve
 
 
 /* TEMPLATE HASHING FUNCTIONS */
@@ -754,7 +756,7 @@ __host__ void Curve::unregisterVariable(const char(&variableName)[N]) {
 __device__ __forceinline__ Curve::Variable Curve::getVariable(const VariableHash variable_hash) {
     for (unsigned int x = 0; x< MAX_VARIABLES; x++) {
         const Variable i = ((variable_hash + x) & (MAX_VARIABLES - 1));
-        const VariableHash h = curve_internal::d_hashes[i];
+        const VariableHash h = curve::detail::d_hashes[i];
         if (h == variable_hash)
             return i;
     }
@@ -771,14 +773,14 @@ __device__ __forceinline__ size_t Curve::getVariableSize(const VariableHash vari
 
     cv = getVariable(variable_hash);
 
-    return curve_internal::d_sizes[cv];
+    return curve::detail::d_sizes[cv];
 }
 __device__ __forceinline__ unsigned int Curve::getVariableLength(const VariableHash variable_hash) {
     Variable cv;
 
     cv = getVariable(variable_hash);
 
-    return curve_internal::d_lengths[cv];
+    return curve::detail::d_lengths[cv];
 }
 __device__ __forceinline__ void* Curve::getVariablePtrByHash(const VariableHash variable_hash, size_t offset) {
     Variable cv;
@@ -787,18 +789,18 @@ __device__ __forceinline__ void* Curve::getVariablePtrByHash(const VariableHash 
 #if !defined(SEATBELTS) || SEATBELTS
     // error checking
     if (cv == UNKNOWN_VARIABLE) {
-        curve_internal::d_curve_error = DEVICE_ERROR_UNKNOWN_VARIABLE;
+        curve::detail::d_curve_error = DEVICE_ERROR_UNKNOWN_VARIABLE;
         return nullptr;
     }
 
     // check vector length
-    if (offset > curve_internal::d_sizes[cv] * curve_internal::d_lengths[cv]) {  // Note : offset is basicly index * sizeof(T)
-        curve_internal::d_curve_error = DEVICE_ERROR_UNKNOWN_LENGTH;
+    if (offset > curve::detail::d_sizes[cv] * curve::detail::d_lengths[cv]) {  // Note : offset is basicly index * sizeof(T)
+        curve::detail::d_curve_error = DEVICE_ERROR_UNKNOWN_LENGTH;
         return nullptr;
     }
 #endif
     // return a generic pointer to variable address for given offset (no bounds checking here!)
-    return curve_internal::d_variables[cv] + offset;
+    return curve::detail::d_variables[cv] + offset;
 }
 template <typename T>
 __device__ __forceinline__ T Curve::getVariableByHash(const VariableHash variable_hash, unsigned int index) {
@@ -810,7 +812,7 @@ __device__ __forceinline__ T Curve::getVariableByHash(const VariableHash variabl
 
     // error checking
     if (size != sizeof(T)) {
-        curve_internal::d_curve_error = DEVICE_ERROR_UNKNOWN_TYPE;
+        curve::detail::d_curve_error = DEVICE_ERROR_UNKNOWN_TYPE;
         return 0;
     }
 #endif
@@ -833,7 +835,7 @@ __device__ __forceinline__ T Curve::getVariableByHash_ldg(const VariableHash var
 
     // error checking
     if (size != sizeof(T)) {
-        curve_internal::d_curve_error = DEVICE_ERROR_UNKNOWN_TYPE;
+        curve::detail::d_curve_error = DEVICE_ERROR_UNKNOWN_TYPE;
         return NULL;
     }
 #endif
@@ -854,7 +856,7 @@ __device__ __forceinline__ T Curve::getArrayVariableByHash(const VariableHash va
 #if !defined(SEATBELTS) || SEATBELTS
     const size_t size = getVariableSize(variable_hash);
     if (size != var_size) {
-        curve_internal::d_curve_error = DEVICE_ERROR_UNKNOWN_TYPE;
+        curve::detail::d_curve_error = DEVICE_ERROR_UNKNOWN_TYPE;
         return NULL;
     }
 #endif
@@ -876,7 +878,7 @@ __device__ __forceinline__ T Curve::getArrayVariableByHash_ldg(const VariableHas
 #if !defined(SEATBELTS) || SEATBELTS
     const size_t size = getVariableSize(variable_hash);
     if (size != var_size) {
-        curve_internal::d_curve_error = DEVICE_ERROR_UNKNOWN_TYPE;
+        curve::detail::d_curve_error = DEVICE_ERROR_UNKNOWN_TYPE;
         return NULL;
     }
 #endif
@@ -906,8 +908,8 @@ __device__ __forceinline__ T Curve::getVariable(const char (&variableName)[N], V
         const auto cv = getVariable(variable_hash+namespace_hash);
         if (cv ==  UNKNOWN_VARIABLE) {
             DTHROW("Curve variable with name '%s' was not found.\n", variableName);
-        } else if (curve_internal::d_sizes[cv] != sizeof(T)) {
-            DTHROW("Curve variable with name '%s' type size mismatch %llu != %llu.\n", variableName, curve_internal::d_sizes[cv], sizeof(T));
+        } else if (curve::detail::d_sizes[cv] != sizeof(T)) {
+            DTHROW("Curve variable with name '%s' type size mismatch %llu != %llu.\n", variableName, curve::detail::d_sizes[cv], sizeof(T));
         }
     }
 #endif
@@ -929,8 +931,8 @@ __device__ __forceinline__ T Curve::getVariable_ldg(const char (&variableName)[N
         const auto cv = getVariable(variable_hash+namespace_hash);
         if (cv ==  UNKNOWN_VARIABLE) {
             DTHROW("Curve variable with name '%s' was not found.\n", variableName);
-        } else if (curve_internal::d_sizes[cv] != sizeof(T)) {
-            DTHROW("Curve variable with name '%s' type size mismatch %llu != %llu.\n", variableName, curve_internal::d_sizes[cv], sizeof(T));
+        } else if (curve::detail::d_sizes[cv] != sizeof(T)) {
+            DTHROW("Curve variable with name '%s' type size mismatch %llu != %llu.\n", variableName, curve::detail::d_sizes[cv], sizeof(T));
         }
     }
 #endif
@@ -948,8 +950,8 @@ __device__ __forceinline__ T Curve::getArrayVariable(const char(&variableName)[M
         const auto cv = getVariable(variable_hash+namespace_hash);
         if (cv ==  UNKNOWN_VARIABLE) {
             DTHROW("Curve variable array with name '%s' was not found.\n", variableName);
-        } else if (curve_internal::d_sizes[cv] != sizeof(T) * N) {
-            DTHROW("Curve variable array with name '%s', type size mismatch %llu != %llu.\n", variableName, curve_internal::d_sizes[cv], sizeof(T) * N);
+        } else if (curve::detail::d_sizes[cv] != sizeof(T) * N) {
+            DTHROW("Curve variable array with name '%s', type size mismatch %llu != %llu.\n", variableName, curve::detail::d_sizes[cv], sizeof(T) * N);
         }
     }
     if (array_index >= N) {
@@ -973,8 +975,8 @@ __device__ __forceinline__ T Curve::getArrayVariable_ldg(const char(&variableNam
         const auto cv = getVariable(variable_hash+namespace_hash);
         if (cv ==  UNKNOWN_VARIABLE) {
             DTHROW("Curve variable array with name '%s' was not found.\n", variableName);
-        } else if (curve_internal::d_sizes[cv] != sizeof(T) * N) {
-            DTHROW("Curve variable array with name '%s', type size mismatch %llu != %llu.\n", variableName, curve_internal::d_sizes[cv], sizeof(T) * N);
+        } else if (curve::detail::d_sizes[cv] != sizeof(T) * N) {
+            DTHROW("Curve variable array with name '%s', type size mismatch %llu != %llu.\n", variableName, curve::detail::d_sizes[cv], sizeof(T) * N);
         }
     }
     if (array_index >= N) {
@@ -992,7 +994,7 @@ __device__ __forceinline__ void Curve::setVariableByHash(const VariableHash vari
 #if !defined(SEATBELTS) || SEATBELTS
     size_t size = getVariableSize(variable_hash);
     if (size != sizeof(T)) {
-        curve_internal::d_curve_error = DEVICE_ERROR_UNKNOWN_TYPE;
+        curve::detail::d_curve_error = DEVICE_ERROR_UNKNOWN_TYPE;
         return;
     }
 #endif
@@ -1006,7 +1008,7 @@ __device__ __forceinline__ void Curve::setArrayVariableByHash(const VariableHash
 #if !defined(SEATBELTS) || SEATBELTS
     const size_t size = getVariableSize(variable_hash);
     if (size != var_size) {
-        curve_internal::d_curve_error = DEVICE_ERROR_UNKNOWN_TYPE;
+        curve::detail::d_curve_error = DEVICE_ERROR_UNKNOWN_TYPE;
         return;
     }
 #endif
@@ -1035,8 +1037,8 @@ __device__ __forceinline__ void Curve::setVariable(const char(&variableName)[N],
         const auto cv = getVariable(variable_hash+namespace_hash);
         if (cv ==  UNKNOWN_VARIABLE) {
             DTHROW("Curve variable with name '%s' was not found.\n", variableName);
-        } else if (curve_internal::d_sizes[cv] != sizeof(T)) {
-            DTHROW("Curve variable with name '%s', type size mismatch %llu != %llu.\n", variableName, curve_internal::d_sizes[cv], sizeof(T));
+        } else if (curve::detail::d_sizes[cv] != sizeof(T)) {
+            DTHROW("Curve variable with name '%s', type size mismatch %llu != %llu.\n", variableName, curve::detail::d_sizes[cv], sizeof(T));
         }
     }
 #endif
@@ -1058,8 +1060,8 @@ __device__ __forceinline__ void Curve::setArrayVariable(const char(&variableName
         const auto cv = getVariable(variable_hash+namespace_hash);
         if (cv ==  UNKNOWN_VARIABLE) {
             DTHROW("Curve variable array with name '%s' was not found.\n", variableName);
-        } else if (curve_internal::d_sizes[cv] != sizeof(T) * N) {
-            DTHROW("Curve variable array with name '%s', size mismatch %llu != %llu.\n", variableName, curve_internal::d_sizes[cv], sizeof(T) * N);
+        } else if (curve::detail::d_sizes[cv] != sizeof(T) * N) {
+            DTHROW("Curve variable array with name '%s', size mismatch %llu != %llu.\n", variableName, curve::detail::d_sizes[cv], sizeof(T) * N);
         }
     }
     if (array_index >= N) {
@@ -1080,8 +1082,8 @@ __device__ __forceinline__ void Curve::setArrayVariable(const char(&variableName
 #define curveReportLastDeviceError() { Curve::curvePrintLastDeviceError(__FILE__, __FUNCTION__, __LINE__); }
 
 __device__ __forceinline__ void Curve::printLastDeviceError(const char* file, const char* function, const int line) {
-    if (curve_internal::d_curve_error != DEVICE_ERROR_NO_ERRORS) {
-        printf("%s.%s.%d: cuRVE Device Error %d (%s)\n", file, function, line, (unsigned int)curve_internal::d_curve_error, getDeviceErrorString(curve_internal::d_curve_error));
+    if (curve::detail::d_curve_error != DEVICE_ERROR_NO_ERRORS) {
+        printf("%s.%s.%d: cuRVE Device Error %d (%s)\n", file, function, line, (unsigned int)curve::detail::d_curve_error, getDeviceErrorString(curve::detail::d_curve_error));
     }
 }
 __device__ __host__ __forceinline__ const char* Curve::getDeviceErrorString(DeviceError e) {
@@ -1097,7 +1099,7 @@ __device__ __host__ __forceinline__ const char* Curve::getDeviceErrorString(Devi
     }
 }
 __device__ __forceinline__ Curve::DeviceError Curve::getLastDeviceError() {
-    return curve_internal::d_curve_error;
+    return curve::detail::d_curve_error;
 }
 
 }  // namespace flamegpu
