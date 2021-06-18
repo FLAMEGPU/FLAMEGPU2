@@ -117,13 +117,13 @@ int main(int argc, const char ** argv) {
     /**
      * Execution
      */
-    flamegpu::CUDASimulation cuda_model(model);
-    cuda_model.SimulationConfig().steps = 0;
-    cuda_model.setPopulationData(population);
-    cuda_model.initialise(argc, argv);
-    cuda_model.simulate();
+    flamegpu::CUDASimulation cudaSimulation(model);
+    cudaSimulation.SimulationConfig().steps = 0;
+    cudaSimulation.setPopulationData(population);
+    cudaSimulation.initialise(argc, argv);
+    cudaSimulation.simulate();
 
-    cuda_model.getPopulationData(population);
+    cudaSimulation.getPopulationData(population);
 
     return 0;
 }

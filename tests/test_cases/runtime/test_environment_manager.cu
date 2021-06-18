@@ -61,14 +61,14 @@ class MiniSim {
         // CudaModel must be declared here
         // As the initial call to constructor fixes the agent population
         // This means if we haven't called model.newAgent(agent) first
-        CUDASimulation cuda_model(model);
-        cuda_model.SimulationConfig().steps = 1;
+        CUDASimulation cudaSimulation(model);
+        cudaSimulation.SimulationConfig().steps = 1;
         // This fails as agentMap is empty
-        cuda_model.setPopulationData(*population);
-        ASSERT_NO_THROW(cuda_model.simulate());
-        // The negative of this, is that cuda_model is inaccessible within the test!
+        cudaSimulation.setPopulationData(*population);
+        ASSERT_NO_THROW(cudaSimulation.simulate());
+        // The negative of this, is that cudaSimulation is inaccessible within the test!
         // So copy across population data here
-        ASSERT_NO_THROW(cuda_model.getPopulationData(*population));
+        ASSERT_NO_THROW(cudaSimulation.getPopulationData(*population));
     }
     ModelDescription model;
     AgentDescription &agent;

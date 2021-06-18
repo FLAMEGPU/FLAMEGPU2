@@ -36,10 +36,10 @@ TEST(RTCDeviceExceptionTest, getAgentVar_name) {
         instance.setVariable<int>("id", i);
     }
     // Setup Model
-    CUDASimulation cuda_model(model);
-    cuda_model.setPopulationData(init_population);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
-    EXPECT_THROW(cuda_model.step(), DeviceError);
+    EXPECT_THROW(cudaSimulation.step(), DeviceError);
 }
 const char* rtc_dthrow_agent_func_getAgentVarType = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MsgNone, flamegpu::MsgNone) {
@@ -61,10 +61,10 @@ TEST(RTCDeviceExceptionTest, getAgentVar_typesize) {
         instance.setVariable<int>("id", i);
     }
     // Setup Model
-    CUDASimulation cuda_model(model);
-    cuda_model.setPopulationData(init_population);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
-    EXPECT_THROW(cuda_model.step(), DeviceError);
+    EXPECT_THROW(cudaSimulation.step(), DeviceError);
 }
 /**
  * Test that exceptions on getArrayVariable() works
@@ -88,10 +88,10 @@ TEST(RTCDeviceExceptionTest, getAgentArrayVar_name) {
         AgentVector::Agent instance = init_population[i];
     }
     // Setup Model
-    CUDASimulation cuda_model(model);
-    cuda_model.setPopulationData(init_population);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
-    EXPECT_THROW(cuda_model.step(), DeviceError);
+    EXPECT_THROW(cudaSimulation.step(), DeviceError);
 }
 const char* rtc_dthrow_agent_func_getAgentArrayVar1 = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MsgNone, flamegpu::MsgNone) {
@@ -112,10 +112,10 @@ TEST(RTCDeviceExceptionTest, getAgentArrayVar_typesize) {
         AgentVector::Agent instance = init_population[i];
     }
     // Setup Model
-    CUDASimulation cuda_model(model);
-    cuda_model.setPopulationData(init_population);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
-    EXPECT_THROW(cuda_model.step(), DeviceError);
+    EXPECT_THROW(cudaSimulation.step(), DeviceError);
 }
 const char* rtc_dthrow_agent_func_getAgentArrayVar2 = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MsgNone, flamegpu::MsgNone) {
@@ -136,10 +136,10 @@ TEST(RTCDeviceExceptionTest, getAgentArrayVar_length) {
         AgentVector::Agent instance = init_population[i];
     }
     // Setup Model
-    CUDASimulation cuda_model(model);
-    cuda_model.setPopulationData(init_population);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
-    EXPECT_THROW(cuda_model.step(), DeviceError);
+    EXPECT_THROW(cudaSimulation.step(), DeviceError);
 }
 const char* rtc_dthrow_agent_func_getAgentArrayVar3 = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MsgNone, flamegpu::MsgNone) {
@@ -160,10 +160,10 @@ TEST(RTCDeviceExceptionTest, getAgentArrayVar_bounds) {
         AgentVector::Agent instance = init_population[i];
     }
     // Setup Model
-    CUDASimulation cuda_model(model);
-    cuda_model.setPopulationData(init_population);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
-    EXPECT_THROW(cuda_model.step(), DeviceError);
+    EXPECT_THROW(cudaSimulation.step(), DeviceError);
 }
 /**
  * Test that exceptions on setVariable() works
@@ -188,10 +188,10 @@ TEST(RTCDeviceExceptionTest, setAgentVar_name) {
         instance.setVariable<int>("id", i);
     }
     // Setup Model
-    CUDASimulation cuda_model(model);
-    cuda_model.setPopulationData(init_population);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
-    EXPECT_THROW(cuda_model.step(), DeviceError);
+    EXPECT_THROW(cudaSimulation.step(), DeviceError);
 }
 const char* rtc_dthrow_agent_func_setAgentVar2 = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MsgNone, flamegpu::MsgNone) {
@@ -213,10 +213,10 @@ TEST(RTCDeviceExceptionTest, setAgentVar_typesize) {
         instance.setVariable<int>("id", i);
     }
     // Setup Model
-    CUDASimulation cuda_model(model);
-    cuda_model.setPopulationData(init_population);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
-    EXPECT_THROW(cuda_model.step(), DeviceError);
+    EXPECT_THROW(cudaSimulation.step(), DeviceError);
 }
 /**
  * Test that exceptions on setVariable() work
@@ -240,10 +240,10 @@ TEST(RTCDeviceExceptionTest, setAgentArrayVar_name) {
         AgentVector::Agent instance = init_population[i];
     }
     // Setup Model
-    CUDASimulation cuda_model(model);
-    cuda_model.setPopulationData(init_population);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
-    EXPECT_THROW(cuda_model.step(), DeviceError);
+    EXPECT_THROW(cudaSimulation.step(), DeviceError);
 }
 const char* rtc_dthrow_agent_func_setAgentArrayVar1 = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MsgNone, flamegpu::MsgNone) {
@@ -264,10 +264,10 @@ TEST(RTCDeviceExceptionTest, setAgentArrayVar_typesize) {
         AgentVector::Agent instance = init_population[i];
     }
     // Setup Model
-    CUDASimulation cuda_model(model);
-    cuda_model.setPopulationData(init_population);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
-    EXPECT_THROW(cuda_model.step(), DeviceError);
+    EXPECT_THROW(cudaSimulation.step(), DeviceError);
 }
 const char* rtc_dthrow_agent_func_setAgentArrayVar2 = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MsgNone, flamegpu::MsgNone) {
@@ -288,10 +288,10 @@ TEST(RTCDeviceExceptionTest, setAgentArrayVar_length) {
         AgentVector::Agent instance = init_population[i];
     }
     // Setup Model
-    CUDASimulation cuda_model(model);
-    cuda_model.setPopulationData(init_population);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
-    EXPECT_THROW(cuda_model.step(), DeviceError);
+    EXPECT_THROW(cudaSimulation.step(), DeviceError);
 }
 const char* rtc_dthrow_agent_func_setAgentArrayVar3 = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MsgNone, flamegpu::MsgNone) {
@@ -312,10 +312,10 @@ TEST(RTCDeviceExceptionTest, setAgentArrayVar_bounds) {
         AgentVector::Agent instance = init_population[i];
     }
     // Setup Model
-    CUDASimulation cuda_model(model);
-    cuda_model.setPopulationData(init_population);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
-    EXPECT_THROW(cuda_model.step(), DeviceError);
+    EXPECT_THROW(cudaSimulation.step(), DeviceError);
 }
 /**
  * Test that exceptions on environment.getProperty() work
@@ -341,10 +341,10 @@ TEST(RTCDeviceExceptionTest, getEnvironmentProp_name) {
         instance.setVariable<int>("id", i);
     }
     // Setup Model
-    CUDASimulation cuda_model(model);
-    cuda_model.setPopulationData(init_population);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
-    EXPECT_THROW(cuda_model.step(), DeviceError);
+    EXPECT_THROW(cudaSimulation.step(), DeviceError);
 }
 const char* rtc_dthrow_agent_func_getEnvironmentProp1 = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MsgNone, flamegpu::MsgNone) {
@@ -367,10 +367,10 @@ TEST(RTCDeviceExceptionTest, getEnvironmentProp_typesize) {
         instance.setVariable<int>("id", i);
     }
     // Setup Model
-    CUDASimulation cuda_model(model);
-    cuda_model.setPopulationData(init_population);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
-    EXPECT_THROW(cuda_model.step(), DeviceError);
+    EXPECT_THROW(cudaSimulation.step(), DeviceError);
 }
 /**
  * Test that exceptions on environment.getArrayProperty() work
@@ -396,10 +396,10 @@ TEST(RTCDeviceExceptionTest, getEnvironmentArrayProp_name) {
         instance.setVariable<int>("id", i);
     }
     // Setup Model
-    CUDASimulation cuda_model(model);
-    cuda_model.setPopulationData(init_population);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
-    EXPECT_THROW(cuda_model.step(), DeviceError);
+    EXPECT_THROW(cudaSimulation.step(), DeviceError);
 }
 const char* rtc_dthrow_agent_func_getEnvironmentArrayProp1 = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MsgNone, flamegpu::MsgNone) {
@@ -422,10 +422,10 @@ TEST(RTCDeviceExceptionTest, getEnvironmentArrayProp_typesize) {
         instance.setVariable<int>("id", i);
     }
     // Setup Model
-    CUDASimulation cuda_model(model);
-    cuda_model.setPopulationData(init_population);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
-    EXPECT_THROW(cuda_model.step(), DeviceError);
+    EXPECT_THROW(cudaSimulation.step(), DeviceError);
 }
 // Device environment does not currently require user to specify length of array
 // const char* rtc_dthrow_agent_func_getEnvironmentArrayProp2 = R"###(
@@ -449,10 +449,10 @@ TEST(RTCDeviceExceptionTest, getEnvironmentArrayProp_typesize) {
 //         instance.setVariable<int>("id", i);
 //     }
 //     // Setup Model
-//     CUDASimulation cuda_model(model);
-//     cuda_model.setPopulationData(init_population);
+//     CUDASimulation cudaSimulation(model);
+//     cudaSimulation.setPopulationData(init_population);
 //     // Run 1 step to ensure data is pushed to device
-//     EXPECT_THROW(cuda_model.step(), DeviceError);
+//     EXPECT_THROW(cudaSimulation.step(), DeviceError);
 // }
 const char* rtc_dthrow_agent_func_getEnvironmentArrayProp3 = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MsgNone, flamegpu::MsgNone) {
@@ -475,10 +475,10 @@ TEST(RTCDeviceExceptionTest, getEnvironmentArrayProp_bounds) {
         instance.setVariable<int>("id", i);
     }
     // Setup Model
-    CUDASimulation cuda_model(model);
-    cuda_model.setPopulationData(init_population);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
-    EXPECT_THROW(cuda_model.step(), DeviceError);
+    EXPECT_THROW(cudaSimulation.step(), DeviceError);
 }
 
 }  // namespace test_rtc_device_exception

@@ -353,13 +353,13 @@ int main(int argc, const char ** argv) {
     /**
      * Create Model Runner
      */
-    flamegpu::CUDASimulation cuda_model(model);
+    flamegpu::CUDASimulation cudaSimulation(model);
 
     /**
      * Create visualisation
      */
 #ifdef VISUALISATION
-    flamegpu::visualiser::ModelVis &visualisation = cuda_model.getVisualisation();
+    flamegpu::visualiser::ModelVis &visualisation = cudaSimulation.getVisualisation();
     {
         flamegpu::EnvironmentDescription &env = model.Environment();
         float envWidth = env.getProperty<float>("MAX_POSITION") - env.getProperty<float>("MIN_POSITION");
@@ -375,13 +375,13 @@ int main(int argc, const char ** argv) {
 #endif
 
     // Initialisation
-    cuda_model.initialise(argc, argv);
+    cudaSimulation.initialise(argc, argv);
 
     // If no xml model file was is provided, generate a population.
-    if (cuda_model.getSimulationConfig().input_file.empty()) {
+    if (cudaSimulation.getSimulationConfig().input_file.empty()) {
         flamegpu::EnvironmentDescription &env = model.Environment();
         // Uniformly distribute agents within space, with uniformly distributed initial velocity.
-        std::mt19937 rngEngine(cuda_model.getSimulationConfig().random_seed);
+        std::mt19937 rngEngine(cudaSimulation.getSimulationConfig().random_seed);
         std::uniform_real_distribution<float> position_distribution(env.getProperty<float>("MIN_POSITION"), env.getProperty<float>("MAX_POSITION"));
         std::uniform_real_distribution<float> velocity_distribution(-1, 1);
         std::uniform_real_distribution<float> velocity_magnitude_distribution(env.getProperty<float>("MIN_INITIAL_SPEED"), env.getProperty<float>("MAX_INITIAL_SPEED"));
@@ -410,19 +410,19 @@ int main(int argc, const char ** argv) {
             instance.setVariable<float>("fy", fy);
             instance.setVariable<float>("fz", fz);
         }
-        cuda_model.setPopulationData(population);
+        cudaSimulation.setPopulationData(population);
     }
 
     /**
      * Execution
      */
-    cuda_model.simulate();
+    cudaSimulation.simulate();
 
 
     /**
      * Export Pop
      */
-    // cuda_model.exportData("end.xml");
+    // cudaSimulation.exportData("end.xml");
 
 #ifdef VISUALISATION
     visualisation.join();

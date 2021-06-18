@@ -71,13 +71,13 @@ class DeviceAPITest(TestCase):
             instance.setVariableInt("id", i)
         
         # Setup Model
-        cuda_model = pyflamegpu.CUDASimulation(model)
-        cuda_model.setPopulationData(init_population)
+        cudaSimulation = pyflamegpu.CUDASimulation(model)
+        cudaSimulation.setPopulationData(init_population)
         # Run 1 step to ensure data is pushed to device
-        cuda_model.step()
+        cudaSimulation.step()
         # Recover data from device
         population = pyflamegpu.AgentVector(agent)
-        cuda_model.getPopulationData(population)
+        cudaSimulation.getPopulationData(population)
         # Check data is intact
         # Might need to go more complicate and give different agents different values
         # They should remain in order for such a basic function, but can't guarntee
@@ -115,13 +115,13 @@ class DeviceAPITest(TestCase):
             instance.setVariableInt("id", i)
         
         # Setup Model
-        cuda_model = pyflamegpu.CUDASimulation(model)
-        cuda_model.setPopulationData(init_population)
+        cudaSimulation = pyflamegpu.CUDASimulation(model)
+        cudaSimulation.setPopulationData(init_population)
         # Run 1 step to ensure data is pushed to device
-        cuda_model.step()
+        cudaSimulation.step()
         # Recover data from device
         population = pyflamegpu.AgentVector(agent, AGENT_COUNT)
-        cuda_model.getPopulationData(population)
+        cudaSimulation.getPopulationData(population)
         # Check data is intact
         # Might need to go more complicate and give different agents different values
         # They should remain in order for such a basic function, but can't guarntee
@@ -163,13 +163,13 @@ class DeviceAPITest(TestCase):
             instance.setVariableInt("id", i)
         
         # Setup Model
-        cuda_model = pyflamegpu.CUDASimulation(model)
-        cuda_model.setPopulationData(init_population)
+        cudaSimulation = pyflamegpu.CUDASimulation(model)
+        cudaSimulation.setPopulationData(init_population)
         # Run 1 step to ensure data is pushed to device
-        cuda_model.step()
+        cudaSimulation.step()
         # Recover data from device
         population = pyflamegpu.AgentVector(agent, AGENT_COUNT)
-        cuda_model.getPopulationData(population)
+        cudaSimulation.getPopulationData(population)
         # Check data is intact
         # Might need to go more complicate and give different agents different values
         # They should remain in order for such a basic function, but can't guarntee

@@ -58,7 +58,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_SameState) {
     LayerDescription &layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
-    CUDASimulation cuda_model(model);
+    CUDASimulation cudaSimulation(model);
     const unsigned int AGENT_COUNT = 1024;
     AgentVector population(model.Agent("agent"), AGENT_COUNT);
     // Initialise agents
@@ -67,11 +67,11 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_SameState) {
         instance.setVariable<float>("x", i + 1.0f);
         instance.setVariable<unsigned int>("id", i);
     }
-    cuda_model.setPopulationData(population);
+    cudaSimulation.setPopulationData(population);
     // Execute model
-    cuda_model.step();
+    cudaSimulation.step();
     // Test output
-    cuda_model.getPopulationData(population);
+    cudaSimulation.getPopulationData(population);
     // Validate each agent has same result
     EXPECT_EQ(population.size(), AGENT_COUNT * 2);
     unsigned int is_1 = 0;
@@ -98,7 +98,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_SameState) {
     LayerDescription &layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
-    CUDASimulation cuda_model(model);
+    CUDASimulation cudaSimulation(model);
     const unsigned int AGENT_COUNT = 1024;
     AgentVector population(model.Agent("agent"), AGENT_COUNT);
     // Initialise agents
@@ -107,11 +107,11 @@ TEST(DeviceAgentCreationTest, Optional_Output_SameState) {
         instance.setVariable<float>("x", i + 1.0f);
         instance.setVariable<unsigned int>("id", i);
     }
-    cuda_model.setPopulationData(population);
+    cudaSimulation.setPopulationData(population);
     // Execute model
-    cuda_model.step();
+    cudaSimulation.step();
     // Test output
-    cuda_model.getPopulationData(population);
+    cudaSimulation.getPopulationData(population);
     // Validate each agent has same result
     EXPECT_EQ(population.size(), (unsigned int)(AGENT_COUNT * 1.5));
     unsigned int is_1 = 0;
@@ -142,7 +142,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentState) {
     LayerDescription &layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
-    CUDASimulation cuda_model(model);
+    CUDASimulation cudaSimulation(model);
     const unsigned int AGENT_COUNT = 1024;
     AgentVector population(model.Agent("agent"), AGENT_COUNT);
     // Initialise agents
@@ -151,14 +151,14 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentState) {
         instance.setVariable<float>("x", i + 1.0f);
         instance.setVariable<unsigned int>("id", i);
     }
-    cuda_model.setPopulationData(population, "a");
+    cudaSimulation.setPopulationData(population, "a");
     // Execute model
-    cuda_model.step();
+    cudaSimulation.step();
     // Test output
     AgentVector population_a(model.Agent("agent"));
     AgentVector population_b(model.Agent("agent"));
-    cuda_model.getPopulationData(population_a, "a");
-    cuda_model.getPopulationData(population_b, "b");
+    cudaSimulation.getPopulationData(population_a, "a");
+    cudaSimulation.getPopulationData(population_b, "b");
     // Validate each agent has same result
     EXPECT_EQ(population_a.size(), AGENT_COUNT);
     EXPECT_EQ(population_b.size(), AGENT_COUNT);
@@ -184,7 +184,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentState) {
     LayerDescription &layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
-    CUDASimulation cuda_model(model);
+    CUDASimulation cudaSimulation(model);
     const unsigned int AGENT_COUNT = 1024;
     AgentVector population(model.Agent("agent"), AGENT_COUNT);
     // Initialise agents
@@ -193,14 +193,14 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentState) {
         instance.setVariable<float>("x", i + 1.0f);
         instance.setVariable<unsigned int>("id", i);
     }
-    cuda_model.setPopulationData(population, "a");
+    cudaSimulation.setPopulationData(population, "a");
     // Execute model
-    cuda_model.step();
+    cudaSimulation.step();
     // Test output
     AgentVector population_a(model.Agent("agent"));
     AgentVector population_b(model.Agent("agent"));
-    cuda_model.getPopulationData(population_a, "a");
-    cuda_model.getPopulationData(population_b, "b");
+    cudaSimulation.getPopulationData(population_a, "a");
+    cudaSimulation.getPopulationData(population_b, "b");
     // Validate each agent has same result
     EXPECT_EQ(population_a.size(), AGENT_COUNT);
     EXPECT_EQ(population_b.size(), AGENT_COUNT / 2);
@@ -223,7 +223,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_SameState_WithDeath) {
     LayerDescription &layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
-    CUDASimulation cuda_model(model);
+    CUDASimulation cudaSimulation(model);
     const unsigned int AGENT_COUNT = 1024;
     AgentVector population(model.Agent("agent"), AGENT_COUNT);
     // Initialise agents
@@ -232,11 +232,11 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_SameState_WithDeath) {
         instance.setVariable<float>("x", i + 1.0f);
         instance.setVariable<unsigned int>("id", i);
     }
-    cuda_model.setPopulationData(population);
+    cudaSimulation.setPopulationData(population);
     // Execute model
-    cuda_model.step();
+    cudaSimulation.step();
     // Test output
-    cuda_model.getPopulationData(population);
+    cudaSimulation.getPopulationData(population);
     // Validate each agent has same result
     EXPECT_EQ(population.size(), AGENT_COUNT);
     unsigned int is_1 = 0;
@@ -264,7 +264,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_SameState_WithDeath) {
     LayerDescription &layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
-    CUDASimulation cuda_model(model);
+    CUDASimulation cudaSimulation(model);
     const unsigned int AGENT_COUNT = 1024;
     AgentVector population(model.Agent("agent"), AGENT_COUNT);
     // Initialise agents
@@ -273,11 +273,11 @@ TEST(DeviceAgentCreationTest, Optional_Output_SameState_WithDeath) {
         instance.setVariable<float>("x", i + 1.0f);
         instance.setVariable<unsigned int>("id", i);
     }
-    cuda_model.setPopulationData(population);
+    cudaSimulation.setPopulationData(population);
     // Execute model
-    cuda_model.step();
+    cudaSimulation.step();
     // Test output
-    cuda_model.getPopulationData(population);
+    cudaSimulation.getPopulationData(population);
     // Validate each agent has same result
     EXPECT_EQ(population.size(), AGENT_COUNT);
     unsigned int is_1 = 0;
@@ -309,7 +309,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentState_WithDeath) {
     LayerDescription &layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
-    CUDASimulation cuda_model(model);
+    CUDASimulation cudaSimulation(model);
     const unsigned int AGENT_COUNT = 1024;
     AgentVector population(model.Agent("agent"), AGENT_COUNT);
     // Initialise agents
@@ -318,14 +318,14 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentState_WithDeath) {
         instance.setVariable<float>("x", i + 1.0f);
         instance.setVariable<unsigned int>("id", i);
     }
-    cuda_model.setPopulationData(population, "a");
+    cudaSimulation.setPopulationData(population, "a");
     // Execute model
-    cuda_model.step();
+    cudaSimulation.step();
     // Test output
     AgentVector population_a(model.Agent("agent"));
     AgentVector population_b(model.Agent("agent"));
-    cuda_model.getPopulationData(population_a, "a");
-    cuda_model.getPopulationData(population_b, "b");
+    cudaSimulation.getPopulationData(population_a, "a");
+    cudaSimulation.getPopulationData(population_b, "b");
     // Validate each agent has same result
     EXPECT_EQ(population_a.size(), 0u);
     EXPECT_EQ(population_b.size(), AGENT_COUNT);
@@ -349,7 +349,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentState_WithDeath) {
     LayerDescription &layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
-    CUDASimulation cuda_model(model);
+    CUDASimulation cudaSimulation(model);
     const unsigned int AGENT_COUNT = 1024;
     AgentVector population(model.Agent("agent"), AGENT_COUNT);
     // Initialise agents
@@ -358,14 +358,14 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentState_WithDeath) {
         instance.setVariable<float>("x", i + 1.0f);
         instance.setVariable<unsigned int>("id", i);
     }
-    cuda_model.setPopulationData(population, "a");
+    cudaSimulation.setPopulationData(population, "a");
     // Execute model
-    cuda_model.step();
+    cudaSimulation.step();
     // Test output
     AgentVector population_a(model.Agent("agent"));
     AgentVector population_b(model.Agent("agent"));
-    cuda_model.getPopulationData(population_a, "a");
-    cuda_model.getPopulationData(population_b, "b");
+    cudaSimulation.getPopulationData(population_a, "a");
+    cudaSimulation.getPopulationData(population_b, "b");
     // Validate each agent has same result
     EXPECT_EQ(population_a.size(), AGENT_COUNT / 2);
     EXPECT_EQ(population_b.size(), AGENT_COUNT / 2);
@@ -393,7 +393,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentAgent) {
     LayerDescription &layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
-    CUDASimulation cuda_model(model);
+    CUDASimulation cudaSimulation(model);
     const unsigned int AGENT_COUNT = 1024;
     AgentVector population(model.Agent("agent2"), AGENT_COUNT);
     // Initialise agents
@@ -402,13 +402,13 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentAgent) {
         instance.setVariable<float>("x", i + 1.0f);
         instance.setVariable<unsigned int>("id", i);
     }
-    cuda_model.setPopulationData(population);
+    cudaSimulation.setPopulationData(population);
     // Execute model
-    cuda_model.step();
+    cudaSimulation.step();
     // Test output
     AgentVector newPopulation(model.Agent("agent"));
-    cuda_model.getPopulationData(population);
-    cuda_model.getPopulationData(newPopulation, "b");
+    cudaSimulation.getPopulationData(population);
+    cudaSimulation.getPopulationData(newPopulation, "b");
     // Validate each agent has same result
     EXPECT_EQ(population.size(), AGENT_COUNT);
     EXPECT_EQ(newPopulation.size(), AGENT_COUNT);
@@ -453,7 +453,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentAgent) {
     LayerDescription &layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
-    CUDASimulation cuda_model(model);
+    CUDASimulation cudaSimulation(model);
     const unsigned int AGENT_COUNT = 1024;
     AgentVector population(model.Agent("agent2"), AGENT_COUNT);
     // Initialise agents
@@ -462,13 +462,13 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentAgent) {
         instance.setVariable<float>("x", i + 1.0f);
         instance.setVariable<unsigned int>("id", i);
     }
-    cuda_model.setPopulationData(population);
+    cudaSimulation.setPopulationData(population);
     // Execute model
-    cuda_model.step();
+    cudaSimulation.step();
     // Test output
     AgentVector newPopulation(model.Agent("agent"));
-    cuda_model.getPopulationData(population);
-    cuda_model.getPopulationData(newPopulation, "b");
+    cudaSimulation.getPopulationData(population);
+    cudaSimulation.getPopulationData(newPopulation, "b");
     // Validate each agent has same result
     EXPECT_EQ(population.size(), AGENT_COUNT);
     EXPECT_EQ(newPopulation.size(), AGENT_COUNT / 2);
@@ -509,7 +509,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentAgent_WithDeath) {
     LayerDescription &layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
-    CUDASimulation cuda_model(model);
+    CUDASimulation cudaSimulation(model);
     const unsigned int AGENT_COUNT = 1024;
     AgentVector population(model.Agent("agent2"), AGENT_COUNT);
     // Initialise agents
@@ -518,13 +518,13 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentAgent_WithDeath) {
         instance.setVariable<float>("x", i + 1.0f);
         instance.setVariable<unsigned int>("id", i);
     }
-    cuda_model.setPopulationData(population);
+    cudaSimulation.setPopulationData(population);
     // Execute model
-    cuda_model.step();
+    cudaSimulation.step();
     // Test output
     AgentVector newPopulation(model.Agent("agent"));
-    cuda_model.getPopulationData(population);
-    cuda_model.getPopulationData(newPopulation, "b");
+    cudaSimulation.getPopulationData(population);
+    cudaSimulation.getPopulationData(newPopulation, "b");
     // Validate each agent has same result
     EXPECT_EQ(population.size(), 0u);
     EXPECT_EQ(newPopulation.size(), AGENT_COUNT);
@@ -568,7 +568,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentAgent_WithDeath) {
     LayerDescription &layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
-    CUDASimulation cuda_model(model);
+    CUDASimulation cudaSimulation(model);
     const unsigned int AGENT_COUNT = 1024;
     AgentVector population(model.Agent("agent2"), AGENT_COUNT);
     // Initialise agents
@@ -577,15 +577,15 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentAgent_WithDeath) {
         instance.setVariable<float>("x", i + 1.0f);
         instance.setVariable<unsigned int>("id", i);
     }
-    cuda_model.setPopulationData(population);
+    cudaSimulation.setPopulationData(population);
     // Execute model
-    cuda_model.step();
+    cudaSimulation.step();
     // Test output
-    cuda_model.getPopulationData(population);
+    cudaSimulation.getPopulationData(population);
     // Validate each agent has same result
     AgentVector newPopulation(model.Agent("agent"));
-    cuda_model.getPopulationData(population);
-    cuda_model.getPopulationData(newPopulation, "b");
+    cudaSimulation.getPopulationData(population);
+    cudaSimulation.getPopulationData(newPopulation, "b");
     // Validate each agent has same result
     EXPECT_EQ(population.size(), AGENT_COUNT / 2);
     EXPECT_EQ(newPopulation.size(), AGENT_COUNT / 2);
@@ -613,7 +613,7 @@ TEST(DeviceAgentCreationTest, DefaultVariableValue) {
     LayerDescription &layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
-    CUDASimulation cuda_model(model);
+    CUDASimulation cudaSimulation(model);
     const unsigned int AGENT_COUNT = 1024;
     AgentVector population(model.Agent("agent2"), AGENT_COUNT);
     // Initialise agents
@@ -622,13 +622,13 @@ TEST(DeviceAgentCreationTest, DefaultVariableValue) {
         instance.setVariable<float>("x", i + 1.0f);
         instance.setVariable<unsigned int>("id", i);
     }
-    cuda_model.setPopulationData(population);
+    cudaSimulation.setPopulationData(population);
     // Execute model
-    cuda_model.step();
+    cudaSimulation.step();
     // Test output
     AgentVector newPopulation(model.Agent("agent"));
-    cuda_model.getPopulationData(population);
-    cuda_model.getPopulationData(newPopulation);
+    cudaSimulation.getPopulationData(population);
+    cudaSimulation.getPopulationData(newPopulation);
     // Validate each new agent has default value
     EXPECT_EQ(newPopulation.size(), AGENT_COUNT);
     unsigned int is_15 = 0;
@@ -667,7 +667,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_SameState_WithAgentFunctionCondit
     LayerDescription &layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
-    CUDASimulation cuda_model(model);
+    CUDASimulation cudaSimulation(model);
     const unsigned int AGENT_COUNT = 1024;
     AgentVector population(model.Agent("agent"), AGENT_COUNT);
     // Initialise agents
@@ -676,14 +676,14 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_SameState_WithAgentFunctionCondit
         instance.setVariable<float>("x", i + 1.0f);
         instance.setVariable<unsigned int>("id", i);
     }
-    cuda_model.setPopulationData(population, "a");
+    cudaSimulation.setPopulationData(population, "a");
     // Execute model
-    cuda_model.step();
+    cudaSimulation.step();
     // Test output
     AgentVector population_a(model.Agent("agent"));
     AgentVector population_b(model.Agent("agent"));
-    cuda_model.getPopulationData(population_a, "a");
-    cuda_model.getPopulationData(population_b, "b");
+    cudaSimulation.getPopulationData(population_a, "a");
+    cudaSimulation.getPopulationData(population_b, "b");
     // Validate each agent has same result
     EXPECT_EQ(population_a.size(), AGENT_COUNT / 2);
     EXPECT_EQ(population_b.size(), AGENT_COUNT);
@@ -731,7 +731,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_SameState_WithAgentFunctionConditi
     LayerDescription &layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
-    CUDASimulation cuda_model(model);
+    CUDASimulation cudaSimulation(model);
     const unsigned int AGENT_COUNT = 1024;
     AgentVector population(model.Agent("agent"), AGENT_COUNT);
     // Initialise agents
@@ -740,14 +740,14 @@ TEST(DeviceAgentCreationTest, Optional_Output_SameState_WithAgentFunctionConditi
         instance.setVariable<float>("x", i + 1.0f);
         instance.setVariable<unsigned int>("id", i);
     }
-    cuda_model.setPopulationData(population, "a");
+    cudaSimulation.setPopulationData(population, "a");
     // Execute model
-    cuda_model.step();
+    cudaSimulation.step();
     // Test output
     AgentVector population_a(model.Agent("agent"));
     AgentVector population_b(model.Agent("agent"));
-    cuda_model.getPopulationData(population_a, "a");
-    cuda_model.getPopulationData(population_b, "b");
+    cudaSimulation.getPopulationData(population_a, "a");
+    cudaSimulation.getPopulationData(population_b, "b");
     // Validate each agent has same result
     EXPECT_EQ(population_a.size(), AGENT_COUNT / 2);
     EXPECT_EQ(population_b.size(), AGENT_COUNT / 2 + AGENT_COUNT / 4);
@@ -790,7 +790,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentState_WithAgentFunctionC
     LayerDescription &layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
-    CUDASimulation cuda_model(model);
+    CUDASimulation cudaSimulation(model);
     const unsigned int AGENT_COUNT = 1024;
     AgentVector population(model.Agent("agent"), AGENT_COUNT);
     // Initialise agents
@@ -799,16 +799,16 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentState_WithAgentFunctionC
         instance.setVariable<float>("x", i + 1.0f);
         instance.setVariable<unsigned int>("id", i);
     }
-    cuda_model.setPopulationData(population, "a");
+    cudaSimulation.setPopulationData(population, "a");
     // Execute model
-    cuda_model.step();
+    cudaSimulation.step();
     // Test output
     AgentVector population_a(model.Agent("agent"));
     AgentVector population_b(model.Agent("agent"));
     AgentVector population_c(model.Agent("agent"));
-    cuda_model.getPopulationData(population_a, "a");
-    cuda_model.getPopulationData(population_b, "b");
-    cuda_model.getPopulationData(population_c, "c");
+    cudaSimulation.getPopulationData(population_a, "a");
+    cudaSimulation.getPopulationData(population_b, "b");
+    cudaSimulation.getPopulationData(population_c, "c");
     // Validate each agent has same result
     EXPECT_EQ(population_a.size(), AGENT_COUNT / 2);
     EXPECT_EQ(population_b.size(), AGENT_COUNT / 2);
@@ -851,7 +851,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentState_WithAgentFunctionCo
     LayerDescription &layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
-    CUDASimulation cuda_model(model);
+    CUDASimulation cudaSimulation(model);
     const unsigned int AGENT_COUNT = 1024;
     AgentVector population(model.Agent("agent"), AGENT_COUNT);
     // Initialise agents
@@ -860,16 +860,16 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentState_WithAgentFunctionCo
         instance.setVariable<float>("x", i + 1.0f);
         instance.setVariable<unsigned int>("id", i);
     }
-    cuda_model.setPopulationData(population, "a");
+    cudaSimulation.setPopulationData(population, "a");
     // Execute model
-    cuda_model.step();
+    cudaSimulation.step();
     // Test output
     AgentVector population_a(model.Agent("agent"));
     AgentVector population_b(model.Agent("agent"));
     AgentVector population_c(model.Agent("agent"));
-    cuda_model.getPopulationData(population_a, "a");
-    cuda_model.getPopulationData(population_b, "b");
-    cuda_model.getPopulationData(population_c, "c");
+    cudaSimulation.getPopulationData(population_a, "a");
+    cudaSimulation.getPopulationData(population_b, "b");
+    cudaSimulation.getPopulationData(population_c, "c");
     // Validate each agent has same result
     EXPECT_EQ(population_a.size(), AGENT_COUNT / 2);
     EXPECT_EQ(population_b.size(), AGENT_COUNT / 4);
@@ -900,7 +900,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_SameState_WithDeath_WithAgentFunc
     LayerDescription &layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
-    CUDASimulation cuda_model(model);
+    CUDASimulation cudaSimulation(model);
     const unsigned int AGENT_COUNT = 1024;
     AgentVector population(model.Agent("agent"), AGENT_COUNT);
     // Initialise agents
@@ -909,11 +909,11 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_SameState_WithDeath_WithAgentFunc
         instance.setVariable<float>("x", i + 1.0f);
         instance.setVariable<unsigned int>("id", i);
     }
-    cuda_model.setPopulationData(population);
+    cudaSimulation.setPopulationData(population);
     // Execute model
-    cuda_model.step();
+    cudaSimulation.step();
     // Test output
-    cuda_model.getPopulationData(population);
+    cudaSimulation.getPopulationData(population);
     // Validate each agent has same result
     // 50% original agents output new agent and died, 50% original agents lived on disabled
     EXPECT_EQ(population.size(), AGENT_COUNT);
@@ -953,7 +953,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_SameState_WithDeath_WithAgentFunct
     LayerDescription &layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
-    CUDASimulation cuda_model(model);
+    CUDASimulation cudaSimulation(model);
     const unsigned int AGENT_COUNT = 1024;
     AgentVector population(model.Agent("agent"), AGENT_COUNT);
     // Initialise agents
@@ -962,11 +962,11 @@ TEST(DeviceAgentCreationTest, Optional_Output_SameState_WithDeath_WithAgentFunct
         instance.setVariable<float>("x", i + 1.0f);
         instance.setVariable<unsigned int>("id", i);
     }
-    cuda_model.setPopulationData(population);
+    cudaSimulation.setPopulationData(population);
     // Execute model
-    cuda_model.step();
+    cudaSimulation.step();
     // Test output
-    cuda_model.getPopulationData(population);
+    cudaSimulation.getPopulationData(population);
     // Validate each agent has same result
     // 50 % original agents did not execute so lived on = AGENT_COUNT / 2
     // 25 % original agents executed, output new agent and died
@@ -1014,7 +1014,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentState_WithDeath_WithAgen
     LayerDescription &layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
-    CUDASimulation cuda_model(model);
+    CUDASimulation cudaSimulation(model);
     const unsigned int AGENT_COUNT = 1024;
     AgentVector population(model.Agent("agent"), AGENT_COUNT);
     // Initialise agents
@@ -1023,14 +1023,14 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentState_WithDeath_WithAgen
         instance.setVariable<float>("x", i + 1.0f);
         instance.setVariable<unsigned int>("id", i);
     }
-    cuda_model.setPopulationData(population, "a");
+    cudaSimulation.setPopulationData(population, "a");
     // Execute model
-    cuda_model.step();
+    cudaSimulation.step();
     // Test output
     AgentVector population_a(model.Agent("agent"));
     AgentVector population_b(model.Agent("agent"));
-    cuda_model.getPopulationData(population_a, "a");
-    cuda_model.getPopulationData(population_b, "b");
+    cudaSimulation.getPopulationData(population_a, "a");
+    cudaSimulation.getPopulationData(population_b, "b");
     // Validate each agent has same result
     EXPECT_EQ(population_a.size(), AGENT_COUNT / 2);
     EXPECT_EQ(population_b.size(), AGENT_COUNT / 2);
@@ -1060,7 +1060,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentState_WithDeath_WithAgent
     LayerDescription &layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
-    CUDASimulation cuda_model(model);
+    CUDASimulation cudaSimulation(model);
     const unsigned int AGENT_COUNT = 1024;
     AgentVector population(model.Agent("agent"), AGENT_COUNT);
     // Initialise agents
@@ -1069,14 +1069,14 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentState_WithDeath_WithAgent
         instance.setVariable<float>("x", i + 1.0f);
         instance.setVariable<unsigned int>("id", i);
     }
-    cuda_model.setPopulationData(population, "a");
+    cudaSimulation.setPopulationData(population, "a");
     // Execute model
-    cuda_model.step();
+    cudaSimulation.step();
     // Test output
     AgentVector population_a(model.Agent("agent"));
     AgentVector population_b(model.Agent("agent"));
-    cuda_model.getPopulationData(population_a, "a");
-    cuda_model.getPopulationData(population_b, "b");
+    cudaSimulation.getPopulationData(population_a, "a");
+    cudaSimulation.getPopulationData(population_b, "b");
     // Validate each agent has same result
     EXPECT_EQ(population_a.size(), AGENT_COUNT / 2 + AGENT_COUNT / 4);
     EXPECT_EQ(population_b.size(), AGENT_COUNT / 4);

@@ -116,7 +116,7 @@ class Spatial3DMsgTest(TestCase):
         layer = model.newLayer()
         layer.addAgentFunction(inf)
 
-        cuda_model = pyflamegpu.CUDASimulation(model)
+        cudaSimulation = pyflamegpu.CUDASimulation(model)
 
         population = pyflamegpu.AgentVector(model.Agent("agent"), AGENT_COUNT)
         # Initialise agents (TODO)
@@ -139,7 +139,7 @@ class Spatial3DMsgTest(TestCase):
             # increment bin count
             bin_counts[bin_index] += 1
         
-        cuda_model.setPopulationData(population)
+        cudaSimulation.setPopulationData(population)
 
 
         # Generate results expectation
@@ -172,11 +172,11 @@ class Spatial3DMsgTest(TestCase):
                     bin_results[bin_index1] = count_sum
 
         # Execute a single step of the model
-        cuda_model.step()
+        cudaSimulation.step()
 
         # Recover the results and check they match what was expected
 
-        cuda_model.getPopulationData(population)
+        cudaSimulation.getPopulationData(population)
         # Validate each agent has same result
         badCountWrong = 0
         for ai in population:
@@ -225,7 +225,7 @@ class Spatial3DMsgTest(TestCase):
         layer = model.newLayer()
         layer.addAgentFunction(inf)
 
-        cuda_model = pyflamegpu.CUDASimulation(model)
+        cudaSimulation = pyflamegpu.CUDASimulation(model)
 
         population = pyflamegpu.AgentVector(model.Agent("agent"), AGENT_COUNT)
         # Initialise agents (TODO)
@@ -257,7 +257,7 @@ class Spatial3DMsgTest(TestCase):
                     bin_counts_optional[bin_index] = 0
                 bin_counts_optional[bin_index] += 1
         
-        cuda_model.setPopulationData(population)
+        cudaSimulation.setPopulationData(population)
 
 
         # Generate results expectation
@@ -294,11 +294,11 @@ class Spatial3DMsgTest(TestCase):
                     bin_results_optional[bin_index1] = count_sum_optional
 
         # Execute a single step of the model
-        cuda_model.step()
+        cudaSimulation.step()
 
         # Recover the results and check they match what was expected
 
-        cuda_model.getPopulationData(population)
+        cudaSimulation.getPopulationData(population)
         # Validate each agent has same result
         badCountWrong = 0
         for ai in population:
@@ -413,14 +413,14 @@ class Spatial3DMsgTest(TestCase):
         
         # Create 1 agent
         pop_in = pyflamegpu.AgentVector(model.Agent("agent"), 1)
-        cuda_model = pyflamegpu.CUDASimulation(model)
-        cuda_model.setPopulationData(pop_in)
+        cudaSimulation = pyflamegpu.CUDASimulation(model)
+        cudaSimulation.setPopulationData(pop_in)
         # Execute model
-        cuda_model.step()
+        cudaSimulation.step()
         # Check result
         pop_out = pyflamegpu.AgentVector(model.Agent("agent"), 1)
         pop_out[0].setVariableUInt("count", 1)
-        cuda_model.getPopulationData(pop_out)
+        cudaSimulation.getPopulationData(pop_out)
         assert len(pop_out) == 1
         ai = pop_out[0]
         assert ai.getVariableUInt("count") == 0

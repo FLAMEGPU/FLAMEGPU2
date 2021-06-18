@@ -126,16 +126,16 @@ class MiniSim():
         self.population = pyflamegpu.AgentVector(self.agent, TEST_LEN)
     
     def run(self, args): 
-        self.cuda_model = pyflamegpu.CUDASimulation(self.model)
-        self.cuda_model.SimulationConfig().steps = 1
-        self.cuda_model.setPopulationData(self.population)
+        self.cudaSimulation = pyflamegpu.CUDASimulation(self.model)
+        self.cudaSimulation.SimulationConfig().steps = 1
+        self.cudaSimulation.setPopulationData(self.population)
         if len(args) > 0:
-            self.cuda_model.initialise(args)
+            self.cudaSimulation.initialise(args)
         
-        self.cuda_model.simulate()
-        # The negative of this, is that cuda_model is inaccessible within the test!
+        self.cudaSimulation.simulate()
+        # The negative of this, is that cudaSimulation is inaccessible within the test!
         # So copy across population data here
-        self.cuda_model.getPopulationData(self.population)
+        self.cudaSimulation.getPopulationData(self.population)
         
     def rand_test(self, function, Type, arga=None, argb=None):
         """

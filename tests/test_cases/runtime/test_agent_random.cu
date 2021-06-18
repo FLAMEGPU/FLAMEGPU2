@@ -64,8 +64,8 @@ TEST(AgentRandomTest, AgentRandomCheck) {
     LayerDescription &layer = model.newLayer("layer");
     layer.addAgentFunction(af);
 
-    CUDASimulation cuda_model(model);
-    cuda_model.SimulationConfig().steps = 1;
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.SimulationConfig().steps = 1;
     const char *args_1[5] = { "process.exe", "-r", "0", "-s", "1" };
     const char *args_2[5] = { "process.exe", "-r", "1", "-s", "1" };
     std::string _t_unused = std::string();
@@ -77,12 +77,12 @@ TEST(AgentRandomTest, AgentRandomCheck) {
         * Does random number change each time it's called
         */
         // Seed random
-        cuda_model.initialise(5, args_1);
-        cuda_model.setPopulationData(init_population);
+        cudaSimulation.initialise(5, args_1);
+        cudaSimulation.setPopulationData(init_population);
 
-        cuda_model.simulate();
+        cudaSimulation.simulate();
 
-        cuda_model.getPopulationData(population);
+        cudaSimulation.getPopulationData(population);
 
         float a1 = -1, b1 = -1, c1 = -1, a2 = -1, b2 = -1, c2 = -1;
         for (unsigned int i = 0; i < population.size(); i++) {
@@ -115,12 +115,12 @@ TEST(AgentRandomTest, AgentRandomCheck) {
          * Different seed produces different random numbers
          */
         // Seed random
-        cuda_model.initialise(5, args_2);
-        cuda_model.setPopulationData(init_population);
+        cudaSimulation.initialise(5, args_2);
+        cudaSimulation.setPopulationData(init_population);
 
-        cuda_model.simulate();
+        cudaSimulation.simulate();
 
-        cuda_model.getPopulationData(population);
+        cudaSimulation.getPopulationData(population);
 
         for (unsigned int i = 0; i < population.size(); i++) {
             AgentVector::Agent instance = population[i];
@@ -143,12 +143,12 @@ TEST(AgentRandomTest, AgentRandomCheck) {
         */
         results2.clear();
         // Seed random
-        cuda_model.initialise(5, args_1);
-        cuda_model.setPopulationData(init_population);
+        cudaSimulation.initialise(5, args_1);
+        cudaSimulation.setPopulationData(init_population);
 
-        cuda_model.simulate();
+        cudaSimulation.simulate();
 
-        cuda_model.getPopulationData(population);
+        cudaSimulation.getPopulationData(population);
 
         for (unsigned int i = 0; i < population.size(); i++) {
             AgentVector::Agent instance = population[i];
@@ -231,10 +231,10 @@ TEST(AgentRandomTest, AgentRandomFunctionsNoExcept) {
     LayerDescription &layer = model.newLayer("layer");
     layer.addAgentFunction(do_random);
 
-    CUDASimulation cuda_model(model);
-    cuda_model.SimulationConfig().steps = 1;
-    cuda_model.setPopulationData(population);
-    ASSERT_NO_THROW(cuda_model.simulate());
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.SimulationConfig().steps = 1;
+    cudaSimulation.setPopulationData(population);
+    ASSERT_NO_THROW(cudaSimulation.simulate());
     // Success if we get this far without an exception being thrown.
 }
 

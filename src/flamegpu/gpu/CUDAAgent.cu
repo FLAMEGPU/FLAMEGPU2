@@ -42,11 +42,11 @@ using std::experimental::filesystem::v1::path;
 
 namespace flamegpu {
 
-CUDAAgent::CUDAAgent(const AgentData& description, const CUDASimulation &_cuda_model)
+CUDAAgent::CUDAAgent(const AgentData& description, const CUDASimulation &_cudaSimulation)
     : agent_description(description)  // This is a master agent, so it must create a new fat_agent
     , fat_agent(std::make_shared<CUDAFatAgent>(agent_description))  // if we create fat agent, we're index 0
     , fat_index(0)
-    , cuda_model(_cuda_model)
+    , cudaSimulation(_cudaSimulation)
     , TOTAL_AGENT_VARIABLE_SIZE(calcTotalVarSize(description)) {
     // Generate state map from fat_agent
     auto fatstate_map = fat_agent->getStateMap(fat_index);
@@ -61,13 +61,13 @@ CUDAAgent::CUDAAgent(const AgentData& description, const CUDASimulation &_cuda_m
 }
 CUDAAgent::CUDAAgent(
     const AgentData &description,
-    const CUDASimulation &_cuda_model,
+    const CUDASimulation &_cudaSimulation,
     const std::unique_ptr<CUDAAgent> &master_agent,
     const std::shared_ptr<SubAgentData> &mapping)
     : agent_description(description)
     , fat_agent(master_agent->getFatAgent())
     , fat_index(fat_agent->getMappedAgentCount())
-    , cuda_model(_cuda_model)
+    , cudaSimulation(_cudaSimulation)
     , TOTAL_AGENT_VARIABLE_SIZE(calcTotalVarSize(description)) {
     // This is next agent to be added to fat_agent, so it takes existing count
     // Pass required info, so fat agent can generate new buffers and mappings
@@ -560,7 +560,7 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, bool f
         auto lock = EnvironmentManager::getInstance().getSharedLock();
         const auto &prop_map = EnvironmentManager::getInstance().getPropertiesMap();
         for (auto p : prop_map) {
-            if (p.first.first == cuda_model.getInstanceID()) {
+            if (p.first.first == cudaSimulation.getInstanceID()) {
                 const char* variableName = p.first.second.c_str();
                 const char* type = p.second.type.name();
                 unsigned int elements = p.second.elements;
@@ -570,7 +570,7 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, bool f
         }
         // Set mapped environment variables in curve
         for (const auto mp : EnvironmentManager::getInstance().getMappedProperties()) {
-            if (mp.first.first == cuda_model.getInstanceID()) {
+            if (mp.first.first == cudaSimulation.getInstanceID()) {
                 auto p = prop_map.at(mp.second.masterProp);
                 const char* variableName = mp.second.masterProp.second.c_str();
                 const char* type = p.type.name();

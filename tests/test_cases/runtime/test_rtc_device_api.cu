@@ -31,10 +31,10 @@ TEST(DeviceRTCAPITest, AgentFunction_empty) {
         instance.setVariable<float>("x", static_cast<float>(i));
     }
     // Setup Model
-    CUDASimulation cuda_model(model);
-    cuda_model.setPopulationData(init_population);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(init_population);
     // Run 1 step to ensure agent function compiles and runs
-    cuda_model.step();
+    cudaSimulation.step();
 }
 
 /**
@@ -55,10 +55,10 @@ TEST(DeviceRTCAPITest, AgentFunction_differentName) {
         instance.setVariable<float>("x", static_cast<float>(i));
     }
     // Setup Model
-    CUDASimulation cuda_model(model);
-    cuda_model.setPopulationData(init_population);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(init_population);
     // Run 1 step to ensure agent function compiles and runs
-    cuda_model.step();
+    cudaSimulation.step();
 }
 
 const char* rtc_error_agent_func = R"###(
@@ -88,10 +88,10 @@ TEST(DeviceRTCAPITest, AgentFunction_compile_error) {
     // Setup Model
     EXPECT_THROW({
         // expected to throw an exception before running due to agent function compile error
-        CUDASimulation cuda_model(model);
-        cuda_model.setPopulationData(init_population);
+        CUDASimulation cudaSimulation(model);
+        cudaSimulation.setPopulationData(init_population);
         // Run 1 step to ensure agent function compiles and runs
-        cuda_model.step();
+        cudaSimulation.step();
     }, InvalidAgentFunc);
 }
 */
@@ -121,13 +121,13 @@ TEST(DeviceRTCAPITest, AgentFunction_death) {
         instance.setVariable<int>("id", i);
     }
     // Setup Model
-    CUDASimulation cuda_model(model);
-    cuda_model.setPopulationData(init_population);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
-    cuda_model.step();
+    cudaSimulation.step();
     // Recover data from device
     AgentVector population(agent);
-    cuda_model.getPopulationData(population);
+    cudaSimulation.getPopulationData(population);
     // Check population size is half of initial
     EXPECT_EQ(population.size(), AGENT_COUNT / 2);
 }
@@ -159,13 +159,13 @@ TEST(DeviceRTCAPITest, AgentFunction_get) {
         instance.setVariable<int>("id", i);
     }
     // Setup Model
-    CUDASimulation cuda_model(model);
-    cuda_model.setPopulationData(init_population);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
-    cuda_model.step();
+    cudaSimulation.step();
     // Recover data from device
     AgentVector population(agent);
-    cuda_model.getPopulationData(population);
+    cudaSimulation.getPopulationData(population);
     // Check population size is half of initial (which is only possible if get has returned the correct id)
     EXPECT_EQ(population.size(), AGENT_COUNT / 2);
 }
@@ -196,13 +196,13 @@ TEST(DeviceRTCAPITest, AgentFunction_getset) {
         instance.setVariable<int>("id_out", 0);
     }
     // Setup Model
-    CUDASimulation cuda_model(model);
-    cuda_model.setPopulationData(init_population);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
-    cuda_model.step();
+    cudaSimulation.step();
     // Recover data from device
     AgentVector population(agent);
-    cuda_model.getPopulationData(population);
+    cudaSimulation.getPopulationData(population);
     for (int i = 0; i < static_cast<int>(population.size()); i++) {
         AgentVector::Agent instance = population[i];
         // Check neighbouring vars are correct
@@ -245,13 +245,13 @@ TEST(DeviceRTCAPITest, AgentFunction_array_get) {
         instance.setVariable<int, 4>("array_var", { 2 + i, 4 + i, 8 + i, 16 + i });
     }
     // Setup Model
-    CUDASimulation cuda_model(model);
-    cuda_model.setPopulationData(init_population);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
-    cuda_model.step();
+    cudaSimulation.step();
     // Recover data from device
     AgentVector population(agent);
-    cuda_model.getPopulationData(population);
+    cudaSimulation.getPopulationData(population);
     for (AgentVector::Agent instance : population) {
         int j = instance.getVariable<int>("id");
         // Check scalar variables have been set correctly by agent function (which has read them from an array)
@@ -308,13 +308,13 @@ TEST(DeviceRTCAPITest, AgentFunction_array_set) {
         instance.setVariable<int, 5>("array_var", {0, 0, 0, 0, 0 });
     }
     // Setup Model
-    CUDASimulation cuda_model(model);
-    cuda_model.setPopulationData(init_population);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
-    cuda_model.step();
+    cudaSimulation.step();
     // Recover data from device
     AgentVector population(agent);
-    cuda_model.getPopulationData(population);
+    cudaSimulation.getPopulationData(population);
     for (unsigned int i = 0; i < population.size(); ++i) {
         AgentVector::Agent instance = population[i];
         int j = instance.getVariable<int>("id");
@@ -417,13 +417,13 @@ TEST(DeviceRTCAPITest, AgentFunction_random) {
         instance.setVariable<float>("c", 0);
     }
     // Setup Model
-    CUDASimulation cuda_model(model);
-    cuda_model.setPopulationData(init_population);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
-    cuda_model.step();
+    cudaSimulation.step();
     // Recover data from device
     AgentVector population(agent);
-    cuda_model.getPopulationData(population);
+    cudaSimulation.getPopulationData(population);
     for (unsigned int i = 0; i < population.size(); i++) {
         AgentVector::Agent instance = population[i];
         // Check for random values
@@ -524,14 +524,14 @@ TEST(DeviceRTCAPITest, AgentFunction_env) {
     // add step function to increase environment variable
     model.addStepFunction(etc_env_step);
     // Setup Model
-    CUDASimulation cuda_model(model);
-    cuda_model.setPopulationData(init_population);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(init_population);
     // Set the number of steps to 2
-    cuda_model.SimulationConfig().steps = 2;
-    cuda_model.simulate();
+    cudaSimulation.SimulationConfig().steps = 2;
+    cudaSimulation.simulate();
     // Recover data from device
     AgentVector population(agent);
-    cuda_model.getPopulationData(population);
+    cudaSimulation.getPopulationData(population);
     for (AgentVector::Agent instance : population) {
         // Check constant environment values have been updated
         int e1_out = instance.getVariable<int>("e1_out");
@@ -583,13 +583,13 @@ TEST(DeviceRTCAPITest, AgentFunction_agent_output) {
         instance.setVariable<unsigned int>("id", i);
     }
     // Setup Model
-    CUDASimulation cuda_model(model);
-    cuda_model.setPopulationData(init_population);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(init_population);
     // Run 1 step
-    cuda_model.step();
+    cudaSimulation.step();
     // Test output
     AgentVector population(agent);
-    cuda_model.getPopulationData(population);
+    cudaSimulation.getPopulationData(population);
     // Validate each agent has same result
     EXPECT_EQ(population.size(), (unsigned int)(AGENT_COUNT * 1.5));
     unsigned int is_1 = 0;
@@ -642,15 +642,15 @@ TEST(DeviceRTCAPITest, AgentFunction_cond_non_rtc) {
         instance.setVariable<int>("id_out", 0);
     }
     // Setup Model
-    CUDASimulation cuda_model(model);
-    cuda_model.setPopulationData(init_population);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
-    cuda_model.step();
+    cudaSimulation.step();
     // Recover data from device
     AgentVector population_default(agent);
     AgentVector population_odd_state(agent);
-    cuda_model.getPopulationData(population_default, "default");
-    cuda_model.getPopulationData(population_odd_state, "odd_state");
+    cudaSimulation.getPopulationData(population_default, "default");
+    cudaSimulation.getPopulationData(population_odd_state, "odd_state");
     // Check population size is half of initial
     EXPECT_EQ(population_default.size(), AGENT_COUNT / 2);
     EXPECT_EQ(population_odd_state.size(), AGENT_COUNT / 2);
@@ -707,15 +707,15 @@ TEST(DeviceRTCAPITest, AgentFunction_cond_rtc) {
         instance.setVariable<int>("id_out", 0);
     }
     // Setup Model
-    CUDASimulation cuda_model(model);
-    cuda_model.setPopulationData(init_population);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
-    cuda_model.step();
+    cudaSimulation.step();
     // Recover data from device
     AgentVector population_default(agent);
     AgentVector population_odd_state(agent);
-    cuda_model.getPopulationData(population_default, "default");
-    cuda_model.getPopulationData(population_odd_state, "odd_state");
+    cudaSimulation.getPopulationData(population_default, "default");
+    cudaSimulation.getPopulationData(population_odd_state, "odd_state");
     // Check population size is half of initial
     EXPECT_EQ(population_default.size(), AGENT_COUNT / 2);
     EXPECT_EQ(population_odd_state.size(), AGENT_COUNT / 2);
@@ -759,15 +759,15 @@ TEST(DeviceRTCAPITest, getStepCounter) {
         instance.setVariable<unsigned int>("step", 0);
     }
     // Setup Model
-    CUDASimulation cuda_model(model);
-    cuda_model.setPopulationData(init_population);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(init_population);
 
     const unsigned int STEPS = 2;
     for (unsigned int step = 0; step < STEPS; step++) {
-        cuda_model.step();
+        cudaSimulation.step();
         // Recover data from device
         AgentVector population(agent);
-        cuda_model.getPopulationData(population);
+        cudaSimulation.getPopulationData(population);
         // Check data is correct.
         for (AgentVector::Agent instance : population) {
             // Check neighbouring vars are correct

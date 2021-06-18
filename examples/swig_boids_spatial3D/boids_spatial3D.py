@@ -393,13 +393,13 @@ model.newLayer().addAgentFunction("Boid", "inputdata");
 """
   Create Model Runner
 """   
-cuda_model = pyflamegpu.CUDASimulation(model);
+cudaSimulation = pyflamegpu.CUDASimulation(model);
 
 """
   Create Visualisation
 """
 if pyflamegpu.VISUALISATION:
-    visualisation = cuda_model.getVisualisation();
+    visualisation = cudaSimulation.getVisualisation();
     # Configure vis
     envWidth = env.getPropertyFloat("MAX_POSITION") - env.getPropertyFloat("MIN_POSITION");
     INIT_CAM = env.getPropertyFloat("MAX_POSITION") * 1.25;
@@ -418,12 +418,12 @@ if pyflamegpu.VISUALISATION:
 """
   Initialise Model
 """
-cuda_model.initialise(sys.argv);
+cudaSimulation.initialise(sys.argv);
 
 # If no xml model file was is provided, generate a population.
-if not cuda_model.getSimulationConfig().input_file:
+if not cudaSimulation.getSimulationConfig().input_file:
     # Uniformly distribute agents within space, with uniformly distributed initial velocity.
-    random.seed(cuda_model.getSimulationConfig().random_seed);
+    random.seed(cudaSimulation.getSimulationConfig().random_seed);
     min_pos = env.getPropertyFloat("MIN_POSITION");
     max_pos = env.getPropertyFloat("MAX_POSITION");
     min_speed = env.getPropertyFloat("MIN_INITIAL_SPEED");
@@ -453,17 +453,17 @@ if not cuda_model.getSimulationConfig().input_file:
         instance.setVariableFloat("fy", fy);
         instance.setVariableFloat("fz", fz);
 
-    cuda_model.setPopulationData(population);
+    cudaSimulation.setPopulationData(population);
 
 """
   Execution
 """
-cuda_model.simulate();
+cudaSimulation.simulate();
 
 """
   Export Pop
 """
-# cuda_model.exportData("end.xml");
+# cudaSimulation.exportData("end.xml");
 
 if pyflamegpu.VISUALISATION:
     visualisation.join();

@@ -418,14 +418,14 @@ TEST(TestMessage_Array3D, ReadEmpty) {
     }
     // Create 1 agent
     AgentVector pop_in(model.Agent("agent"), 1);
-    CUDASimulation cuda_model(model);
-    cuda_model.setPopulationData(pop_in);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(pop_in);
     // Execute model
-    EXPECT_NO_THROW(cuda_model.step());
+    EXPECT_NO_THROW(cudaSimulation.step());
     // Check result
     AgentVector pop_out(model.Agent("agent"), 1);
     pop_out[0].setVariable<unsigned int>("value", 22221);
-    cuda_model.getPopulationData(pop_out);
+    cudaSimulation.getPopulationData(pop_out);
     EXPECT_EQ(pop_out.size(), 1u);
     auto ai = pop_out[0];
     EXPECT_EQ(ai.getVariable<unsigned int>("value"), 0u);  // Unset array msgs should be 0

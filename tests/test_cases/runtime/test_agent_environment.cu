@@ -134,11 +134,11 @@ class MiniSim {
       agent(model.newAgent("agent")),
       population(nullptr),
       env(model.Environment()),
-      cuda_model(nullptr) {
+      cudaSimulation(nullptr) {
         agent.newVariable<float>("x");  // Redundant
     }
     ~MiniSim() {
-        delete cuda_model;
+        delete cudaSimulation;
         delete population;
     }
     void run() {
@@ -146,20 +146,20 @@ class MiniSim {
         // CudaModel must be declared here
         // As the initial call to constructor fixes the agent population
         // This means if we haven't called model.newAgent(agent) first
-        cuda_model = new CUDASimulation(model);
-        cuda_model->SimulationConfig().steps = 2;
+        cudaSimulation = new CUDASimulation(model);
+        cudaSimulation->SimulationConfig().steps = 2;
         // This fails as agentMap is empty
-        cuda_model->setPopulationData(*population);
-        ASSERT_NO_THROW(cuda_model->simulate());
-        // The negative of this, is that cuda_model is inaccessible within the test!
+        cudaSimulation->setPopulationData(*population);
+        ASSERT_NO_THROW(cudaSimulation->simulate());
+        // The negative of this, is that cudaSimulation is inaccessible within the test!
         // So copy across population data here
-        ASSERT_NO_THROW(cuda_model->getPopulationData(*population));
+        ASSERT_NO_THROW(cudaSimulation->getPopulationData(*population));
     }
     ModelDescription model;
     AgentDescription &agent;
     AgentVector *population;
     EnvironmentDescription &env;
-    CUDASimulation *cuda_model;
+    CUDASimulation *cudaSimulation;
 
     template <typename T>
     T Get_test() {

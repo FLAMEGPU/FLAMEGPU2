@@ -24,14 +24,14 @@
 
 namespace flamegpu {
 
-CUDAMessage::CUDAMessage(const MsgBruteForce::Data& description, const CUDASimulation& cuda_model)
+CUDAMessage::CUDAMessage(const MsgBruteForce::Data& description, const CUDASimulation& cudaSimulation)
     : message_description(description)
     , message_count(0)
     , max_list_size(0)
     , truncate_messagelist_flag(true)
     , pbm_construction_required(false)
     , specialisation_handler(description.getSpecialisationHander(*this))
-    , cuda_model(cuda_model) {
+    , cudaSimulation(cudaSimulation) {
     // resize(0); // Think this call is redundant
 }
 

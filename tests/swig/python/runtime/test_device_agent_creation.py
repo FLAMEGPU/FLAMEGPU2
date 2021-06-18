@@ -90,7 +90,7 @@ class DeviceAgentCreationTest(TestCase):
         layer1 = model.newLayer()
         layer1.addAgentFunction(function)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDASimulation(model)
+        cudaSimulation = pyflamegpu.CUDASimulation(model)
         population = pyflamegpu.AgentVector(model.Agent("agent"), AGENT_COUNT)
         # Initialise agents
         for i in range(AGENT_COUNT):
@@ -98,11 +98,11 @@ class DeviceAgentCreationTest(TestCase):
             instance.setVariableFloat("x", i + 1.0)
             instance.setVariableUInt("id", i)
         
-        cuda_model.setPopulationData(population)
+        cudaSimulation.setPopulationData(population)
         # Execute model
-        cuda_model.step()
+        cudaSimulation.step()
         # Test output
-        cuda_model.getPopulationData(population)
+        cudaSimulation.getPopulationData(population)
         # Validate each agent has same result
         assert len(population) == AGENT_COUNT * 2
         is_1 = 0
@@ -129,7 +129,7 @@ class DeviceAgentCreationTest(TestCase):
         layer1 = model.newLayer()
         layer1.addAgentFunction(function)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDASimulation(model)
+        cudaSimulation = pyflamegpu.CUDASimulation(model)
         population = pyflamegpu.AgentVector(model.Agent("agent"), AGENT_COUNT)
         # Initialise agents
         for i in range(AGENT_COUNT):
@@ -137,11 +137,11 @@ class DeviceAgentCreationTest(TestCase):
             instance.setVariableFloat("x", i + 1.0)
             instance.setVariableUInt("id", i)
         
-        cuda_model.setPopulationData(population)
+        cudaSimulation.setPopulationData(population)
         # Execute model
-        cuda_model.step()
+        cudaSimulation.step()
         # Test output
-        cuda_model.getPopulationData(population)
+        cudaSimulation.getPopulationData(population)
         # Validate each agent has same result
         assert len(population) == int(AGENT_COUNT * 1.5)
         is_1 = 0
@@ -172,7 +172,7 @@ class DeviceAgentCreationTest(TestCase):
         layer1 = model.newLayer()
         layer1.addAgentFunction(function)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDASimulation(model)
+        cudaSimulation = pyflamegpu.CUDASimulation(model)
         population = pyflamegpu.AgentVector(model.Agent("agent"), AGENT_COUNT)
         # Initialise agents
         for i in range(AGENT_COUNT):
@@ -180,14 +180,14 @@ class DeviceAgentCreationTest(TestCase):
             instance.setVariableFloat("x", i + 1.0)
             instance.setVariableUInt("id", i)
         
-        cuda_model.setPopulationData(population, "a")
+        cudaSimulation.setPopulationData(population, "a")
         # Execute model
-        cuda_model.step()
+        cudaSimulation.step()
         # Test output
         population_a = pyflamegpu.AgentVector(model.Agent("agent"))
         population_b = pyflamegpu.AgentVector(model.Agent("agent"))
-        cuda_model.getPopulationData(population_a, "a")
-        cuda_model.getPopulationData(population_b, "b")
+        cudaSimulation.getPopulationData(population_a, "a")
+        cudaSimulation.getPopulationData(population_b, "b")
         # Validate each agent has same result
         assert len(population_a) == AGENT_COUNT
         assert len(population_b) == AGENT_COUNT
@@ -212,7 +212,7 @@ class DeviceAgentCreationTest(TestCase):
         layer1 = model.newLayer()
         layer1.addAgentFunction(function)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDASimulation(model)
+        cudaSimulation = pyflamegpu.CUDASimulation(model)
         population = pyflamegpu.AgentVector(model.Agent("agent"), AGENT_COUNT)
         # Initialise agents
         for i in range(AGENT_COUNT):
@@ -220,14 +220,14 @@ class DeviceAgentCreationTest(TestCase):
             instance.setVariableFloat("x", i + 1.0)
             instance.setVariableUInt("id", i)
         
-        cuda_model.setPopulationData(population, "a")
+        cudaSimulation.setPopulationData(population, "a")
         # Execute model
-        cuda_model.step()
+        cudaSimulation.step()
         # Test output
         population_a = pyflamegpu.AgentVector(model.Agent("agent"))
         population_b = pyflamegpu.AgentVector(model.Agent("agent"))
-        cuda_model.getPopulationData(population_a, "a")
-        cuda_model.getPopulationData(population_b, "b")
+        cudaSimulation.getPopulationData(population_a, "a")
+        cudaSimulation.getPopulationData(population_b, "b")
         # Validate each agent has same result
         assert len(population_a) == AGENT_COUNT
         assert len(population_b) == AGENT_COUNT / 2
@@ -249,7 +249,7 @@ class DeviceAgentCreationTest(TestCase):
         layer1 = model.newLayer()
         layer1.addAgentFunction(function)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDASimulation(model)
+        cudaSimulation = pyflamegpu.CUDASimulation(model)
         population = pyflamegpu.AgentVector(model.Agent("agent"), AGENT_COUNT)
         # Initialise agents
         for i in range(AGENT_COUNT):
@@ -257,11 +257,11 @@ class DeviceAgentCreationTest(TestCase):
             instance.setVariableFloat("x", i + 1.0)
             instance.setVariableUInt("id", i)
         
-        cuda_model.setPopulationData(population)
+        cudaSimulation.setPopulationData(population)
         # Execute model
-        cuda_model.step()
+        cudaSimulation.step()
         # Test output
-        cuda_model.getPopulationData(population)
+        cudaSimulation.getPopulationData(population)
         # Validate each agent has same result
         assert len(population) == AGENT_COUNT
         is_1 = 0
@@ -289,7 +289,7 @@ class DeviceAgentCreationTest(TestCase):
         layer1 = model.newLayer()
         layer1.addAgentFunction(function)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDASimulation(model)
+        cudaSimulation = pyflamegpu.CUDASimulation(model)
         AGENT_COUNT = 1024
         population = pyflamegpu.AgentVector(model.Agent("agent"), AGENT_COUNT)
         # Initialise agents
@@ -298,11 +298,11 @@ class DeviceAgentCreationTest(TestCase):
             instance.setVariableFloat("x", i + 1.0)
             instance.setVariableUInt("id", i)
         
-        cuda_model.setPopulationData(population)
+        cudaSimulation.setPopulationData(population)
         # Execute model
-        cuda_model.step()
+        cudaSimulation.step()
         # Test output
-        cuda_model.getPopulationData(population)
+        cudaSimulation.getPopulationData(population)
         # Validate each agent has same result
         assert len(population) == AGENT_COUNT
         is_1 = 0
@@ -334,7 +334,7 @@ class DeviceAgentCreationTest(TestCase):
         layer1 = model.newLayer()
         layer1.addAgentFunction(function)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDASimulation(model)
+        cudaSimulation = pyflamegpu.CUDASimulation(model)
         population = pyflamegpu.AgentVector(model.Agent("agent"), AGENT_COUNT)
         # Initialise agents
         for i in range(AGENT_COUNT):
@@ -342,14 +342,14 @@ class DeviceAgentCreationTest(TestCase):
             instance.setVariableFloat("x", i + 1.0)
             instance.setVariableUInt("id", i)
         
-        cuda_model.setPopulationData(population, "a")
+        cudaSimulation.setPopulationData(population, "a")
         # Execute model
-        cuda_model.step()
+        cudaSimulation.step()
         # Test output
         population_a = pyflamegpu.AgentVector(model.Agent("agent"))
         population_b = pyflamegpu.AgentVector(model.Agent("agent"))
-        cuda_model.getPopulationData(population_a, "a")
-        cuda_model.getPopulationData(population_b, "b")
+        cudaSimulation.getPopulationData(population_a, "a")
+        cudaSimulation.getPopulationData(population_b, "b")
         # Validate each agent has same result
         assert len(population_a) == 0
         assert len(population_b) == AGENT_COUNT
@@ -372,7 +372,7 @@ class DeviceAgentCreationTest(TestCase):
         layer1 = model.newLayer()
         layer1.addAgentFunction(function)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDASimulation(model)
+        cudaSimulation = pyflamegpu.CUDASimulation(model)
         population = pyflamegpu.AgentVector(model.Agent("agent"), AGENT_COUNT)
         # Initialise agents
         for i in range(AGENT_COUNT):
@@ -380,14 +380,14 @@ class DeviceAgentCreationTest(TestCase):
             instance.setVariableFloat("x", i + 1.0)
             instance.setVariableUInt("id", i)
         
-        cuda_model.setPopulationData(population, "a")
+        cudaSimulation.setPopulationData(population, "a")
         # Execute model
-        cuda_model.step()
+        cudaSimulation.step()
         # Test output
         population_a = pyflamegpu.AgentVector(model.Agent("agent"))
         population_b = pyflamegpu.AgentVector(model.Agent("agent"))
-        cuda_model.getPopulationData(population_a, "a")
-        cuda_model.getPopulationData(population_b, "b")
+        cudaSimulation.getPopulationData(population_a, "a")
+        cudaSimulation.getPopulationData(population_b, "b")
         # Validate each agent has same result
         assert len(population_a) == AGENT_COUNT / 2
         assert len(population_b) == AGENT_COUNT / 2
@@ -414,7 +414,7 @@ class DeviceAgentCreationTest(TestCase):
         layer1 = model.newLayer()
         layer1.addAgentFunction(function)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDASimulation(model)
+        cudaSimulation = pyflamegpu.CUDASimulation(model)
         population = pyflamegpu.AgentVector(model.Agent("agent2"), AGENT_COUNT)
         # Initialise agents
         for i in range(AGENT_COUNT):
@@ -422,13 +422,13 @@ class DeviceAgentCreationTest(TestCase):
             instance.setVariableFloat("x", i + 1.0)
             instance.setVariableUInt("id", i)
         
-        cuda_model.setPopulationData(population)
+        cudaSimulation.setPopulationData(population)
         # Execute model
-        cuda_model.step()
+        cudaSimulation.step()
         # Test output
         newPopulation = pyflamegpu.AgentVector(model.Agent("agent"))
-        cuda_model.getPopulationData(population)
-        cuda_model.getPopulationData(newPopulation, "b")
+        cudaSimulation.getPopulationData(population)
+        cudaSimulation.getPopulationData(newPopulation, "b")
         # Validate each agent has same result
         assert len(population) == AGENT_COUNT
         assert len(newPopulation) == AGENT_COUNT
@@ -471,7 +471,7 @@ class DeviceAgentCreationTest(TestCase):
         layer1 = model.newLayer()
         layer1.addAgentFunction(function)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDASimulation(model)
+        cudaSimulation = pyflamegpu.CUDASimulation(model)
         population = pyflamegpu.AgentVector(model.Agent("agent2"), AGENT_COUNT)
         # Initialise agents
         for i in range(AGENT_COUNT):
@@ -479,13 +479,13 @@ class DeviceAgentCreationTest(TestCase):
             instance.setVariableFloat("x", i + 1.0)
             instance.setVariableUInt("id", i)
         
-        cuda_model.setPopulationData(population)
+        cudaSimulation.setPopulationData(population)
         # Execute model
-        cuda_model.step()
+        cudaSimulation.step()
         # Test output
         newPopulation = pyflamegpu.AgentVector(model.Agent("agent"))
-        cuda_model.getPopulationData(population)
-        cuda_model.getPopulationData(newPopulation, "b")
+        cudaSimulation.getPopulationData(population)
+        cudaSimulation.getPopulationData(newPopulation, "b")
         # Validate each agent has same result
         assert len(population) == AGENT_COUNT
         assert len(newPopulation) == AGENT_COUNT / 2
@@ -523,7 +523,7 @@ class DeviceAgentCreationTest(TestCase):
         layer1 = model.newLayer()
         layer1.addAgentFunction(function)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDASimulation(model)
+        cudaSimulation = pyflamegpu.CUDASimulation(model)
         population = pyflamegpu.AgentVector(model.Agent("agent2"), AGENT_COUNT)
         # Initialise agents
         for i in range(AGENT_COUNT):
@@ -531,13 +531,13 @@ class DeviceAgentCreationTest(TestCase):
             instance.setVariableFloat("x", i + 1.0)
             instance.setVariableUInt("id", i)
         
-        cuda_model.setPopulationData(population)
+        cudaSimulation.setPopulationData(population)
         # Execute model
-        cuda_model.step()
+        cudaSimulation.step()
         # Test output
         newPopulation = pyflamegpu.AgentVector(model.Agent("agent"))
-        cuda_model.getPopulationData(population)
-        cuda_model.getPopulationData(newPopulation, "b")
+        cudaSimulation.getPopulationData(population)
+        cudaSimulation.getPopulationData(newPopulation, "b")
         # Validate each agent has same result
         assert len(population) == 0
         assert len(newPopulation) == AGENT_COUNT
@@ -579,7 +579,7 @@ class DeviceAgentCreationTest(TestCase):
         layer1 = model.newLayer()
         layer1.addAgentFunction(function)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDASimulation(model)
+        cudaSimulation = pyflamegpu.CUDASimulation(model)
         population = pyflamegpu.AgentVector(model.Agent("agent2"), AGENT_COUNT)
         # Initialise agents
         for i in range(AGENT_COUNT):
@@ -587,15 +587,15 @@ class DeviceAgentCreationTest(TestCase):
             instance.setVariableFloat("x", i + 1.0)
             instance.setVariableUInt("id", i)
         
-        cuda_model.setPopulationData(population)
+        cudaSimulation.setPopulationData(population)
         # Execute model
-        cuda_model.step()
+        cudaSimulation.step()
         # Test output
-        cuda_model.getPopulationData(population)
+        cudaSimulation.getPopulationData(population)
         # Validate each agent has same result
         newPopulation = pyflamegpu.AgentVector(model.Agent("agent"))
-        cuda_model.getPopulationData(population)
-        cuda_model.getPopulationData(newPopulation, "b")
+        cudaSimulation.getPopulationData(population)
+        cudaSimulation.getPopulationData(newPopulation, "b")
         # Validate each agent has same result
         assert len(population) == AGENT_COUNT / 2
         assert len(newPopulation) == AGENT_COUNT / 2
@@ -622,7 +622,7 @@ class DeviceAgentCreationTest(TestCase):
         layer1 = model.newLayer()
         layer1.addAgentFunction(function)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDASimulation(model)
+        cudaSimulation = pyflamegpu.CUDASimulation(model)
         AGENT_COUNT = 1024
         population = pyflamegpu.AgentVector(model.Agent("agent2"), AGENT_COUNT)
         # Initialise agents
@@ -631,13 +631,13 @@ class DeviceAgentCreationTest(TestCase):
             instance.setVariableFloat("x", i + 1.0)
             instance.setVariableUInt("id", i)
         
-        cuda_model.setPopulationData(population)
+        cudaSimulation.setPopulationData(population)
         # Execute model
-        cuda_model.step()
+        cudaSimulation.step()
         # Test output
         newPopulation = pyflamegpu.AgentVector(model.Agent("agent"))
-        # cuda_model.getPopulationData(population)
-        cuda_model.getPopulationData(newPopulation)
+        # cudaSimulation.getPopulationData(population)
+        cudaSimulation.getPopulationData(newPopulation)
         # Validate each new agent has default value
         assert len(newPopulation) == AGENT_COUNT
         is_15 = 0
@@ -671,7 +671,7 @@ class DeviceAgentCreationTest(TestCase):
         layer1 = model.newLayer()
         layer1.addAgentFunction(function)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDASimulation(model)
+        cudaSimulation = pyflamegpu.CUDASimulation(model)
         population = pyflamegpu.AgentVector(model.Agent("agent"), AGENT_COUNT)
         # Initialise agents
         for i in range(AGENT_COUNT):
@@ -679,14 +679,14 @@ class DeviceAgentCreationTest(TestCase):
             instance.setVariableFloat("x", i + 1.0)
             instance.setVariableUInt("id", i)
         
-        cuda_model.setPopulationData(population, "a")
+        cudaSimulation.setPopulationData(population, "a")
         # Execute model
-        cuda_model.step()
+        cudaSimulation.step()
         # Test output
         population_a = pyflamegpu.AgentVector(model.Agent("agent"))
         population_b = pyflamegpu.AgentVector(model.Agent("agent"))
-        cuda_model.getPopulationData(population_a, "a")
-        cuda_model.getPopulationData(population_b, "b")
+        cudaSimulation.getPopulationData(population_a, "a")
+        cudaSimulation.getPopulationData(population_b, "b")
         # Validate each agent has same result
         assert len(population_a) == AGENT_COUNT / 2
         assert len(population_b) == AGENT_COUNT
@@ -732,7 +732,7 @@ class DeviceAgentCreationTest(TestCase):
         layer1 = model.newLayer()
         layer1.addAgentFunction(function)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDASimulation(model)
+        cudaSimulation = pyflamegpu.CUDASimulation(model)
         population = pyflamegpu.AgentVector(model.Agent("agent"), AGENT_COUNT)
         # Initialise agents
         for i in range(AGENT_COUNT):
@@ -740,14 +740,14 @@ class DeviceAgentCreationTest(TestCase):
             instance.setVariableFloat("x", i + 1.0)
             instance.setVariableUInt("id", i)
         
-        cuda_model.setPopulationData(population, "a")
+        cudaSimulation.setPopulationData(population, "a")
         # Execute model
-        cuda_model.step()
+        cudaSimulation.step()
         # Test output
         population_a = pyflamegpu.AgentVector(model.Agent("agent"))
         population_b = pyflamegpu.AgentVector(model.Agent("agent"))
-        cuda_model.getPopulationData(population_a, "a")
-        cuda_model.getPopulationData(population_b, "b")
+        cudaSimulation.getPopulationData(population_a, "a")
+        cudaSimulation.getPopulationData(population_b, "b")
         # Validate each agent has same result
         assert len(population_a) == AGENT_COUNT / 2
         assert len(population_b) == AGENT_COUNT / 2 + AGENT_COUNT / 4
@@ -790,7 +790,7 @@ class DeviceAgentCreationTest(TestCase):
         layer1 = model.newLayer()
         layer1.addAgentFunction(function)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDASimulation(model)
+        cudaSimulation = pyflamegpu.CUDASimulation(model)
         population = pyflamegpu.AgentVector(model.Agent("agent"), AGENT_COUNT)
         # Initialise agents
         for i in range(AGENT_COUNT):
@@ -798,16 +798,16 @@ class DeviceAgentCreationTest(TestCase):
             instance.setVariableFloat("x", i + 1.0)
             instance.setVariableUInt("id", i)
         
-        cuda_model.setPopulationData(population, "a")
+        cudaSimulation.setPopulationData(population, "a")
         # Execute model
-        cuda_model.step()
+        cudaSimulation.step()
         # Test output
         population_a = pyflamegpu.AgentVector(model.Agent("agent"))
         population_b = pyflamegpu.AgentVector(model.Agent("agent"))
         population_c = pyflamegpu.AgentVector(model.Agent("agent"))
-        cuda_model.getPopulationData(population_a, "a")
-        cuda_model.getPopulationData(population_b, "b")
-        cuda_model.getPopulationData(population_c, "c")
+        cudaSimulation.getPopulationData(population_a, "a")
+        cudaSimulation.getPopulationData(population_b, "b")
+        cudaSimulation.getPopulationData(population_c, "c")
         # Validate each agent has same result
         assert len(population_a) == AGENT_COUNT / 2
         assert len(population_b) == AGENT_COUNT / 2
@@ -848,7 +848,7 @@ class DeviceAgentCreationTest(TestCase):
         layer1 = model.newLayer()
         layer1.addAgentFunction(function)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDASimulation(model)
+        cudaSimulation = pyflamegpu.CUDASimulation(model)
         population = pyflamegpu.AgentVector(model.Agent("agent"), AGENT_COUNT)
         # Initialise agents
         for i in range(AGENT_COUNT):
@@ -856,16 +856,16 @@ class DeviceAgentCreationTest(TestCase):
             instance.setVariableFloat("x", i + 1.0)
             instance.setVariableUInt("id", i)
         
-        cuda_model.setPopulationData(population, "a")
+        cudaSimulation.setPopulationData(population, "a")
         # Execute model
-        cuda_model.step()
+        cudaSimulation.step()
         # Test output
         population_a = pyflamegpu.AgentVector(model.Agent("agent"))
         population_b = pyflamegpu.AgentVector(model.Agent("agent"))
         population_c = pyflamegpu.AgentVector(model.Agent("agent"))
-        cuda_model.getPopulationData(population_a, "a")
-        cuda_model.getPopulationData(population_b, "b")
-        cuda_model.getPopulationData(population_c, "c")
+        cudaSimulation.getPopulationData(population_a, "a")
+        cudaSimulation.getPopulationData(population_b, "b")
+        cudaSimulation.getPopulationData(population_c, "c")
         # Validate each agent has same result
         assert len(population_a) == AGENT_COUNT / 2
         assert len(population_b) == AGENT_COUNT / 4
@@ -895,7 +895,7 @@ class DeviceAgentCreationTest(TestCase):
         layer1 = model.newLayer()
         layer1.addAgentFunction(function)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDASimulation(model)
+        cudaSimulation = pyflamegpu.CUDASimulation(model)
         population = pyflamegpu.AgentVector(model.Agent("agent"), AGENT_COUNT)
         # Initialise agents
         for i in range(AGENT_COUNT):
@@ -903,11 +903,11 @@ class DeviceAgentCreationTest(TestCase):
             instance.setVariableFloat("x", i + 1.0)
             instance.setVariableUInt("id", i)
         
-        cuda_model.setPopulationData(population)
+        cudaSimulation.setPopulationData(population)
         # Execute model
-        cuda_model.step()
+        cudaSimulation.step()
         # Test output
-        cuda_model.getPopulationData(population)
+        cudaSimulation.getPopulationData(population)
         # Validate each agent has same result
         # 50% original agents output new agent and died, 50% original agents lived on disabled
         assert len(population) == AGENT_COUNT
@@ -947,7 +947,7 @@ class DeviceAgentCreationTest(TestCase):
         layer1 = model.newLayer()
         layer1.addAgentFunction(function)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDASimulation(model)
+        cudaSimulation = pyflamegpu.CUDASimulation(model)
         AGENT_COUNT = 1024
         population = pyflamegpu.AgentVector(model.Agent("agent"), AGENT_COUNT)
         # Initialise agents
@@ -956,11 +956,11 @@ class DeviceAgentCreationTest(TestCase):
             instance.setVariableFloat("x", i + 1.0)
             instance.setVariableUInt("id", i)
         
-        cuda_model.setPopulationData(population)
+        cudaSimulation.setPopulationData(population)
         # Execute model
-        cuda_model.step()
+        cudaSimulation.step()
         # Test output
-        cuda_model.getPopulationData(population)
+        cudaSimulation.getPopulationData(population)
         # Validate each agent has same result
         # 50 % original agents did not execute so lived on = AGENT_COUNT / 2
         # 25 % original agents executed, output new agent and died
@@ -1007,7 +1007,7 @@ class DeviceAgentCreationTest(TestCase):
         layer1 = model.newLayer()
         layer1.addAgentFunction(function)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDASimulation(model)
+        cudaSimulation = pyflamegpu.CUDASimulation(model)
         population = pyflamegpu.AgentVector(model.Agent("agent"), AGENT_COUNT)
         # Initialise agents
         for i in range(AGENT_COUNT):
@@ -1015,14 +1015,14 @@ class DeviceAgentCreationTest(TestCase):
             instance.setVariableFloat("x", i + 1.0)
             instance.setVariableUInt("id", i)
         
-        cuda_model.setPopulationData(population, "a")
+        cudaSimulation.setPopulationData(population, "a")
         # Execute model
-        cuda_model.step()
+        cudaSimulation.step()
         # Test output
         population_a = pyflamegpu.AgentVector(model.Agent("agent"))
         population_b = pyflamegpu.AgentVector(model.Agent("agent"))
-        cuda_model.getPopulationData(population_a, "a")
-        cuda_model.getPopulationData(population_b, "b")
+        cudaSimulation.getPopulationData(population_a, "a")
+        cudaSimulation.getPopulationData(population_b, "b")
         # Validate each agent has same result
         assert len(population_a) == AGENT_COUNT / 2
         assert len(population_b) == AGENT_COUNT / 2
@@ -1051,7 +1051,7 @@ class DeviceAgentCreationTest(TestCase):
         layer1 = model.newLayer()
         layer1.addAgentFunction(function)
         # Init agent pop
-        cuda_model = pyflamegpu.CUDASimulation(model)
+        cudaSimulation = pyflamegpu.CUDASimulation(model)
         AGENT_COUNT = 1024
         population = pyflamegpu.AgentVector(model.Agent("agent"), AGENT_COUNT)
         # Initialise agents
@@ -1060,14 +1060,14 @@ class DeviceAgentCreationTest(TestCase):
             instance.setVariableFloat("x", i + 1.0)
             instance.setVariableUInt("id", i)
         
-        cuda_model.setPopulationData(population, "a")
+        cudaSimulation.setPopulationData(population, "a")
         # Execute model
-        cuda_model.step()
+        cudaSimulation.step()
         # Test output
         population_a = pyflamegpu.AgentVector(model.Agent("agent"))
         population_b = pyflamegpu.AgentVector(model.Agent("agent"))
-        cuda_model.getPopulationData(population_a, "a")
-        cuda_model.getPopulationData(population_b, "b")
+        cudaSimulation.getPopulationData(population_a, "a")
+        cudaSimulation.getPopulationData(population_b, "b")
         # Validate each agent has same result
         assert len(population_a) == AGENT_COUNT / 2 + AGENT_COUNT / 4
         assert len(population_b) == AGENT_COUNT / 4

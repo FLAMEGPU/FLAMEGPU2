@@ -27,14 +27,14 @@ class MiniSim:
         # CudaModel must be declared here
         # As the initial call to constructor fixes the agent population
         # This means if we haven't called model.newAgent(agent) first
-        self.cuda_model = pyflamegpu.CUDASimulation(self.model)
-        self.cuda_model.SimulationConfig().steps = 1
+        self.cudaSimulation = pyflamegpu.CUDASimulation(self.model)
+        self.cudaSimulation.SimulationConfig().steps = 1
         # This fails as agentMap is empty
-        self.cuda_model.setPopulationData(self.population)
-        self.cuda_model.simulate()
-        # The negative of this, is that cuda_model is inaccessible within the test!
+        self.cudaSimulation.setPopulationData(self.population)
+        self.cudaSimulation.simulate()
+        # The negative of this, is that cudaSimulation is inaccessible within the test!
         # So copy across population data here
-        self.cuda_model.getPopulationData(self.population)
+        self.cudaSimulation.getPopulationData(self.population)
 
 
 class AlignTest(pyflamegpu.HostFunctionCallback):

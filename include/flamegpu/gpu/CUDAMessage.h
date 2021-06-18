@@ -28,9 +28,9 @@ class CUDAMessage {
       * Constructs a CUDAMessage object
       * Allocates enough memory for each variable within the provided MessageData
       * @param description The message to represent
-      * @param cuda_model The simulation which owns the CUDAMessage
+      * @param cudaSimulation The simulation which owns the CUDAMessage
       */
-    explicit CUDAMessage(const MsgBruteForce::Data& description, const CUDASimulation& cuda_model);
+    explicit CUDAMessage(const MsgBruteForce::Data& description, const CUDASimulation& cudaSimulation);
     /**
      * Destructor, releases CUDA memory
      */
@@ -172,7 +172,7 @@ class CUDAMessage {
     /**
      * A reference to the cuda model which this object belongs to
      */
-    const CUDASimulation& cuda_model;
+    const CUDASimulation& cudaSimulation;
 };
 
 }  // namespace flamegpu

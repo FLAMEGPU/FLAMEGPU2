@@ -57,12 +57,12 @@ class HostAgentSort(TestCase):
             instance.setVariableFloat("spare", t+12.0)
         
         # Setup Model
-        cuda_model = pyflamegpu.CUDASimulation(model)
-        cuda_model.setPopulationData(pop)
+        cudaSimulation = pyflamegpu.CUDASimulation(model)
+        cudaSimulation.setPopulationData(pop)
         # Execute step fn
-        cuda_model.step()
+        cudaSimulation.step()
         # Check results
-        cuda_model.getPopulationData(pop)
+        cudaSimulation.getPopulationData(pop)
         assert AGENT_COUNT == pop.size()
         prev = 1
         for instance in pop:
@@ -93,12 +93,12 @@ class HostAgentSort(TestCase):
             instance.setVariableFloat("spare", t+12.0)
         
         # Setup Model
-        cuda_model = pyflamegpu.CUDASimulation(model)
-        cuda_model.setPopulationData(pop)
+        cudaSimulation = pyflamegpu.CUDASimulation(model)
+        cudaSimulation.setPopulationData(pop)
         # Execute step fn
-        cuda_model.step()
+        cudaSimulation.step()
         # Check results
-        cuda_model.getPopulationData(pop)
+        cudaSimulation.getPopulationData(pop)
         assert AGENT_COUNT == pop.size()
         prev = 1000000
         for instance in pop:
@@ -134,12 +134,12 @@ class HostAgentSort(TestCase):
             instance.setVariableInt("spare", t+12)
         
         # Setup Model
-        cuda_model = pyflamegpu.CUDASimulation(model)
-        cuda_model.setPopulationData(pop)
+        cudaSimulation = pyflamegpu.CUDASimulation(model)
+        cudaSimulation.setPopulationData(pop)
         # Execute step fn
-        cuda_model.step()
+        cudaSimulation.step()
         # Check results
-        cuda_model.getPopulationData(pop)
+        cudaSimulation.getPopulationData(pop)
         assert AGENT_COUNT == pop.size()
         prev = 0
         for instance in pop:
@@ -170,12 +170,12 @@ class HostAgentSort(TestCase):
             instance.setVariableInt("spare", t+12)
         
         # Setup Model
-        cuda_model = pyflamegpu.CUDASimulation(model)
-        cuda_model.setPopulationData(pop)
+        cudaSimulation = pyflamegpu.CUDASimulation(model)
+        cudaSimulation.setPopulationData(pop)
         # Execute step fn
-        cuda_model.step()
+        cudaSimulation.step()
         # Check results
-        cuda_model.getPopulationData(pop)
+        cudaSimulation.getPopulationData(pop)
         assert AGENT_COUNT == pop.size()
         prev = 1000000
         for instance in pop:

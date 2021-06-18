@@ -63,14 +63,14 @@ class MiniSim():
         # CudaModel must be declarself.ed here
         # As the initial call to constructor fixes the agent population
         # This means if we haven't callself.ed model.newAgent(agent) first
-        self.cuda_model = pyflamegpu.CUDASimulation(self.model)
-        self.cuda_model.SimulationConfig().steps = steps
+        self.cudaSimulation = pyflamegpu.CUDASimulation(self.model)
+        self.cudaSimulation.SimulationConfig().steps = steps
         # This fails as agentMap is empty
-        self.cuda_model.setPopulationData(self.population)
-        self.cuda_model.simulate()
-        # The negative of this, is that cuda_model is inaccessible within the test!
+        self.cudaSimulation.setPopulationData(self.population)
+        self.cudaSimulation.simulate()
+        # The negative of this, is that cudaSimulation is inaccessible within the test!
         # So copy across population data here
-        self.cuda_model.getPopulationData(self.population)
+        self.cudaSimulation.getPopulationData(self.population)
 
 
 class get_set_float(pyflamegpu.HostFunctionCallback):
