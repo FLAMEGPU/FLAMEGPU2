@@ -353,7 +353,7 @@ class FGPURuntimeException : public std::exception {
 
 %ignore flamegpu::HostRandom::uniform;
 
-%ignore flamegpu::flamegpu_internal;
+%ignore flamegpu::detail;
 
 
 // Ignores for nested classes, where flatnested is enabled. 

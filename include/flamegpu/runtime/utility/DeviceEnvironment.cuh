@@ -9,12 +9,12 @@
 namespace flamegpu {
 
 #ifndef __CUDACC_RTC__
-namespace flamegpu_internal {
+namespace detail {
     /**
      * Defined in EnvironmentManager.cu
      */
     extern __constant__ char c_envPropBuffer[EnvironmentManager::MAX_BUFFER_SIZE];
-}  // namespace flamegpu_internal
+}  // namespace detail
 #endif
 
 /**
@@ -95,11 +95,11 @@ __device__ __forceinline__ T DeviceEnvironment::getProperty(const char(&name)[N]
     } else if (curve_internal::d_sizes[cv] != sizeof(T)) {
         DTHROW("Environment property with name: %s type size mismatch %llu != %llu.\n", name, curve_internal::d_sizes[cv], sizeof(T));
     } else {
-        return *reinterpret_cast<T*>(flamegpu_internal::c_envPropBuffer + reinterpret_cast<ptrdiff_t>(curve_internal::d_variables[cv]));
+        return *reinterpret_cast<T*>(detail::c_envPropBuffer + reinterpret_cast<ptrdiff_t>(curve_internal::d_variables[cv]));
     }
     return {};
 #else
-    return *reinterpret_cast<T*>(flamegpu_internal::c_envPropBuffer + reinterpret_cast<ptrdiff_t>(curve_internal::d_variables[cv]));
+    return *reinterpret_cast<T*>(detail::c_envPropBuffer + reinterpret_cast<ptrdiff_t>(curve_internal::d_variables[cv]));
 #endif
 }
 template<typename T, unsigned int N>
@@ -114,11 +114,11 @@ __device__ __forceinline__ T DeviceEnvironment::getProperty(const char(&name)[N]
     } else if (curve_internal::d_lengths[cv] <= index) {
         DTHROW("Environment property array with name: %s index %u is out of bounds (length %u).\n", name, index, curve_internal::d_lengths[cv]);
     } else {
-        return *(reinterpret_cast<T*>(flamegpu_internal::c_envPropBuffer + reinterpret_cast<ptrdiff_t>(curve_internal::d_variables[cv])) + index);
+        return *(reinterpret_cast<T*>(detail::c_envPropBuffer + reinterpret_cast<ptrdiff_t>(curve_internal::d_variables[cv])) + index);
     }
     return {};
 #else
-    return *(reinterpret_cast<T*>(flamegpu_internal::c_envPropBuffer + reinterpret_cast<ptrdiff_t>(curve_internal::d_variables[cv])) + index);
+    return *(reinterpret_cast<T*>(detail::c_envPropBuffer + reinterpret_cast<ptrdiff_t>(curve_internal::d_variables[cv])) + index);
 #endif
 }
 

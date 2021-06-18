@@ -5,12 +5,12 @@
 
 namespace flamegpu {
 
-namespace flamegpu_internal {
+namespace detail {
     __constant__ double STANDARD_DEVIATION_MEAN;
     std::mutex STANDARD_DEVIATION_MEAN_mutex;
     standard_deviation_add_impl standard_deviation_add;
     standard_deviation_subtract_mean_impl standard_deviation_subtract_mean;
-}
+}  // namespace detail
 
 AgentLoggingConfig::AgentLoggingConfig(
     std::shared_ptr<const AgentData> _agent,
