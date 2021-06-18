@@ -30,7 +30,7 @@ class ModelDescription {
      */
     friend CUDASimulation::CUDASimulation(const ModelDescription& _model, int argc, const char** argv);
     friend CUDAEnsemble::CUDAEnsemble(const ModelDescription& model, int argc, const char** argv);
-    friend class RunPlanVec;
+    friend class RunPlanVector;
     friend class RunPlan;
     friend class LoggingConfig;
  public:

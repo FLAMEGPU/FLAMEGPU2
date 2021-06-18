@@ -1,5 +1,5 @@
 #include "flamegpu/sim/RunPlan.h"
-#include "flamegpu/sim/RunPlanVec.h"
+#include "flamegpu/sim/RunPlanVector.h"
 
 #include "flamegpu/model/ModelDescription.h"
 
@@ -47,33 +47,33 @@ std::string RunPlan::getOutputSubdirectory() const {
     return output_subdirectory;
 }
 
-RunPlanVec RunPlan::operator+(const RunPlan& rhs) const {
+RunPlanVector RunPlan::operator+(const RunPlan& rhs) const {
     // Validation
     if (*rhs.environment != *this->environment) {
         THROW InvalidArgument("RunPlan is for a different ModelDescription, "
             "in ::operator+(RunPlan, RunPlan)");
     }
     // Operation
-    RunPlanVec rtn(this->environment, this->allow_0_steps);
+    RunPlanVector rtn(this->environment, this->allow_0_steps);
     rtn+=*this;
     rtn+=rhs;
     return rtn;
 }
-RunPlanVec RunPlan::operator+(const RunPlanVec& rhs) const {
-    // This function is defined internally inside both RunPlan and RunPlanVec as it's the only way to both pass CI and have SWIG build
+RunPlanVector RunPlan::operator+(const RunPlanVector& rhs) const {
+    // This function is defined internally inside both RunPlan and RunPlanVector as it's the only way to both pass CI and have SWIG build
     // Validation
     if (*rhs.environment != *this->environment) {
         THROW InvalidArgument("RunPlan is for a different ModelDescription, "
-            "in ::operator+(RunPlan, RunPlanVec)");
+            "in ::operator+(RunPlan, RunPlanVector)");
     }
     // Operation
-    RunPlanVec rtn(rhs);
+    RunPlanVector rtn(rhs);
     rtn+=*this;
     return rtn;
 }
-RunPlanVec RunPlan::operator*(const unsigned int& rhs) const {
+RunPlanVector RunPlan::operator*(const unsigned int& rhs) const {
     // Operation
-    RunPlanVec rtn(this->environment, this->allow_0_steps);
+    RunPlanVector rtn(this->environment, this->allow_0_steps);
     for (unsigned int i = 0; i < rhs; ++i) {
         rtn+=*this;
     }

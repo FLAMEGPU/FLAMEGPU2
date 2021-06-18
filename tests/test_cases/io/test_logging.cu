@@ -365,7 +365,7 @@ TEST(LoggingTest, CUDAEnsembleSimulate) {
     slcfg.setFrequency(2);
 
     // Set up the runplan
-    RunPlanVec plan(m, 10);
+    RunPlanVector plan(m, 10);
     int i_id = 0;
     for (auto &p : plan) {
         p.setSteps(10);

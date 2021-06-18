@@ -15,7 +15,7 @@ namespace flamegpu {
 struct ModelData;
 class LoggingConfig;
 class StepLoggingConfig;
-class RunPlanVec;
+class RunPlanVector;
 
 /**
  * A thread class which executes RunPlans on a single GPU
@@ -27,7 +27,7 @@ class SimRunner {
     friend class CUDAEnsemble;
     /**
      * Constructor, creates and initialise a new SimRunner
-     * @param _model A copy of the ModelDescription hierarchy for the RunPlanVec, this is used to create the CUDASimulation instances.
+     * @param _model A copy of the ModelDescription hierarchy for the RunPlanVector, this is used to create the CUDASimulation instances.
      * @param _err_ct Reference to an atomic integer for tracking how many errors have occurred
      * @param _next_run Atomic counter for safely selecting the next run plan to execute across multiple threads
      * @param _plans The vector of run plans to be executed by the ensemble
@@ -44,7 +44,7 @@ class SimRunner {
     SimRunner(const std::shared_ptr<const ModelData> _model,
         std::atomic<unsigned int> &_err_ct,
         std::atomic<unsigned int> &_next_run,
-        const RunPlanVec &_plans,
+        const RunPlanVector &_plans,
         std::shared_ptr<const StepLoggingConfig> _step_log_config,
         std::shared_ptr<const LoggingConfig> _exit_log_config,
         int _device_id,
@@ -59,7 +59,7 @@ class SimRunner {
      */
     const std::shared_ptr<const ModelData> model;
     /**
-     * Index of current/last run in RunPlanVec executed by this SimRunner
+     * Index of current/last run in RunPlanVector executed by this SimRunner
      */
     unsigned int run_id;
     /**
@@ -94,7 +94,7 @@ class SimRunner {
     /**
      * Reference to the vector of run configurations to be executed
      */
-    const RunPlanVec &plans;
+    const RunPlanVector &plans;
     /**
      * Config specifying which data to log per step
      */

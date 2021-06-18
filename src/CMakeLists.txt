@@ -123,7 +123,7 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/sim/LoggingConfig.h
     ${FLAMEGPU_ROOT}/include/flamegpu/sim/LogFrame.h
     ${FLAMEGPU_ROOT}/include/flamegpu/sim/RunPlan.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/sim/RunPlanVec.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/sim/RunPlanVector.h
     ${FLAMEGPU_ROOT}/include/flamegpu/sim/SimRunner.h
     ${FLAMEGPU_ROOT}/include/flamegpu/sim/SimLogger.h
     ${FLAMEGPU_ROOT}/include/flamegpu/sim/Simulation.h
@@ -221,7 +221,7 @@ SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/sim/LoggingConfig.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/sim/LogFrame.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/sim/RunPlan.cpp
-    ${FLAMEGPU_ROOT}/src/flamegpu/sim/RunPlanVec.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/sim/RunPlanVector.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/sim/SimRunner.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/sim/SimLogger.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/sim/Simulation.cu

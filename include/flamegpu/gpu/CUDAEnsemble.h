@@ -11,7 +11,7 @@ namespace flamegpu {
 
 struct ModelData;
 class ModelDescription;
-class RunPlanVec;
+class RunPlanVector;
 class LoggingConfig;
 class StepLoggingConfig;
 struct RunLog;
@@ -73,7 +73,7 @@ class CUDAEnsemble {
      * This call will block until all simulations have completed or MAX_ERRORS simulations exit with an error
      * @param plan The plan of individual runs to execute during the ensemble
      */
-    void simulate(const RunPlanVec &plan);
+    void simulate(const RunPlanVector &plan);
 
     /**
      * @return A mutable reference to the ensemble configuration struct

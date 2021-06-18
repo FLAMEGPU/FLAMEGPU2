@@ -56,7 +56,7 @@ int main(int argc, const char ** argv) {
     /**
      * Create a run plan
      */
-    flamegpu::RunPlanVec runs(model, 100);
+    flamegpu::RunPlanVector runs(model, 100);
     {
         runs.setSteps(STEPS);
         runs.setRandomSimulationSeed(12, 1);

@@ -4,7 +4,7 @@
 
 #include "flamegpu/model/ModelData.h"
 #include "flamegpu/gpu/CUDASimulation.h"
-#include "flamegpu/sim/RunPlanVec.h"
+#include "flamegpu/sim/RunPlanVector.h"
 
 #ifdef _MSC_VER
 #include <windows.h>
@@ -17,7 +17,7 @@ namespace flamegpu {
 SimRunner::SimRunner(const std::shared_ptr<const ModelData> _model,
     std::atomic<unsigned int> &_err_ct,
     std::atomic<unsigned int> &_next_run,
-    const RunPlanVec &_plans,
+    const RunPlanVector &_plans,
     std::shared_ptr<const StepLoggingConfig> _step_log_config,
     std::shared_ptr<const LoggingConfig> _exit_log_config,
     int _device_id,
