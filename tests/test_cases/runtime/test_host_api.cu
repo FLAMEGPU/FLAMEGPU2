@@ -58,11 +58,11 @@ TEST(hostAPITest, getStepCounter) {
     const unsigned int agentCount = 1;
     AgentVector init_population(agent, agentCount);
     // Setup Model
-    CUDASimulation cuda_model(model);
-    cuda_model.setPopulationData(init_population);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(init_population);
 
-    cuda_model.SimulationConfig().steps = TOTAL_STEPS;
-    cuda_model.simulate();
+    cudaSimulation.SimulationConfig().steps = TOTAL_STEPS;
+    cudaSimulation.simulate();
 }
 
 FLAMEGPU_STEP_FUNCTION(reduce_value) {
@@ -90,11 +90,11 @@ TEST(hostAPITest, resizeTempMemory) {
     const unsigned int agentCount = 1;
     AgentVector init_population(agent, agentCount);
     // Setup Model
-    CUDASimulation cuda_model(model);
-    cuda_model.setPopulationData(init_population);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(init_population);
 
-    cuda_model.SimulationConfig().steps = 16;
-    cuda_model.simulate();
+    cudaSimulation.SimulationConfig().steps = 16;
+    cudaSimulation.simulate();
 }
 
 }  // namespace test_host_api

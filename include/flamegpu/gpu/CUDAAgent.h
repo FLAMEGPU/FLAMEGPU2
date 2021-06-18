@@ -46,19 +46,19 @@ class CUDAAgent : public AgentInterface {
     /**
      * Normal constructor
      * @param description Agent description of the agent
-     * @param _cuda_model Parent CUDASimulation of the agent
+     * @param _cudaSimulation Parent CUDASimulation of the agent
      */
-    CUDAAgent(const AgentData& description, const CUDASimulation &_cuda_model);
+    CUDAAgent(const AgentData& description, const CUDASimulation &_cudaSimulation);
     /**
      * Subagent form constructor, used when creating a CUDAAgent for a mapped agent within a submodel
      * @param description Agent description of the agent
-     * @param _cuda_model Parent CUDASimulation of the agent
+     * @param _cudaSimulation Parent CUDASimulation of the agent
      * @param master_agent The (parent) agent which this is agent is mapped to
      * @param mapping Mapping definition for how this agent is connected with its master agent.
      */
     CUDAAgent(
         const AgentData &description,
-        const CUDASimulation &_cuda_model,
+        const CUDASimulation &_cudaSimulation,
         const std::unique_ptr<CUDAAgent> &master_agent,
         const std::shared_ptr<SubAgentData> &mapping);
     /** 
@@ -332,7 +332,7 @@ class CUDAAgent : public AgentInterface {
     /**
      * The parent model
      */
-    const CUDASimulation &cuda_model;
+    const CUDASimulation &cudaSimulation;
     /**
      * map between function_name (or function_name_condition) and the jitify instance
      */

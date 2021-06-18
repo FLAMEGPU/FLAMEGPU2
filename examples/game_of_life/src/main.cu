@@ -81,13 +81,13 @@ int main(int argc, const char ** argv) {
      * Create Model Runner
      */
     NVTX_PUSH("CUDASimulation creation");
-    flamegpu::CUDASimulation  cuda_model(model, argc, argv);
+    flamegpu::CUDASimulation  cudaSimulation(model, argc, argv);
     NVTX_POP();
 
     /**
      * Initialisation
      */
-    if (cuda_model.getSimulationConfig().input_file.empty()) {
+    if (cudaSimulation.getSimulationConfig().input_file.empty()) {
         // Currently population has not been init, so generate an agent population on the fly
         std::default_random_engine rng;
         std::uniform_real_distribution<float> dist(0.0f, 1.0f);
@@ -107,7 +107,7 @@ int main(int argc, const char ** argv) {
 #endif
             }
         }
-        cuda_model.setPopulationData(init_pop);
+        cudaSimulation.setPopulationData(init_pop);
     }
 
     /**
@@ -115,7 +115,7 @@ int main(int argc, const char ** argv) {
      * @note FGPU2 doesn't currently have proper support for discrete/2d visualisations
      */
 #ifdef VISUALISATION
-    flamegpu::visualiser::ModelVis & visualisation = cuda_model.getVisualisation();
+    flamegpu::visualiser::ModelVis & visualisation = cudaSimulation.getVisualisation();
     {
         visualisation.setBeginPaused(true);
         visualisation.setSimulationSpeed(5);
@@ -139,7 +139,7 @@ int main(int argc, const char ** argv) {
     /**
      * Execution
      */
-    cuda_model.simulate();
+    cudaSimulation.simulate();
 
     /**
      * Export Pop

@@ -160,7 +160,7 @@ class MiniSim {
         // This means if we haven't called model.newAgent(agent) first
         // This fails as agentMap is empty
         ASSERT_NO_THROW(simulation->simulate());
-        // The negative of this, is that cuda_model is inaccessible within the test!
+        // The negative of this, is that cudaSimulation is inaccessible within the test!
         // So copy across population data here
         ASSERT_NO_THROW(simulation->getPopulationData(population));
     }

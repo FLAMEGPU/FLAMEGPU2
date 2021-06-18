@@ -294,14 +294,14 @@ class TestMessage_BruteForce(TestCase):
         
         # Create 1 agent
         pop_in = pyflamegpu.AgentVector(model.Agent("agent"), 1)
-        cuda_model = pyflamegpu.CUDASimulation(model)
-        cuda_model.setPopulationData(pop_in)
+        cudaSimulation = pyflamegpu.CUDASimulation(model)
+        cudaSimulation.setPopulationData(pop_in)
         # Execute model
-        cuda_model.step()
+        cudaSimulation.step()
         # Check result
         pop_out = pyflamegpu.AgentVector(model.Agent("agent"), 1)
         pop_out.front().setVariableUInt("count", 1)
-        cuda_model.getPopulationData(pop_out)
+        cudaSimulation.getPopulationData(pop_out)
         assert len(pop_out) == 1
         ai = pop_out.front()
         assert ai.getVariableUInt("count") == 0

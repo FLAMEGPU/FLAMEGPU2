@@ -33,13 +33,13 @@ TEST(DeviceAPITest, AgentDeath_array) {
         instance.setVariable<int>("id", i);
     }
     // Setup Model
-    CUDASimulation cuda_model(model);
-    cuda_model.setPopulationData(init_population);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
-    cuda_model.step();
+    cudaSimulation.step();
     // Recover data from device
     AgentVector population(agent);
-    cuda_model.getPopulationData(population);
+    cudaSimulation.getPopulationData(population);
     // Check data is intact
     // Might need to go more complicate and give different agents different values
     // They should remain in order for such a basic function, but can't guarntee
@@ -94,13 +94,13 @@ TEST(DeviceAPITest, ArraySet) {
         instance.setVariable<int>("id", i);
     }
     // Setup Model
-    CUDASimulation cuda_model(model);
-    cuda_model.setPopulationData(init_population);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
-    cuda_model.step();
+    cudaSimulation.step();
     // Recover data from device
     AgentVector population(agent, AGENT_COUNT);
-    cuda_model.getPopulationData(population);
+    cudaSimulation.getPopulationData(population);
     // Check data is intact
     // Might need to go more complicate and give different agents different values
     // They should remain in order for such a basic function, but can't guarntee
@@ -142,13 +142,13 @@ TEST(DeviceAPITest, ArrayGet) {
         instance.setVariable<int>("id", i);
     }
     // Setup Model
-    CUDASimulation cuda_model(model);
-    cuda_model.setPopulationData(init_population);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
-    cuda_model.step();
+    cudaSimulation.step();
     // Recover data from device
     AgentVector population(agent, AGENT_COUNT);
-    cuda_model.getPopulationData(population);
+    cudaSimulation.getPopulationData(population);
     // Check data is intact
     // Might need to go more complicate and give different agents different values
     // They should remain in order for such a basic function, but can't guarntee
@@ -186,15 +186,15 @@ TEST(DeviceAPITest, getStepCounter) {
         instance.setVariable<unsigned int>("step", 0);
     }
     // Setup Model
-    CUDASimulation cuda_model(model);
-    cuda_model.setPopulationData(init_population);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(init_population);
 
     const unsigned int STEPS = 2;
     for (unsigned int step = 0; step < STEPS; step++) {
-        cuda_model.step();
+        cudaSimulation.step();
         // Recover data from device
         AgentVector population(agent);
-        cuda_model.getPopulationData(population);
+        cudaSimulation.getPopulationData(population);
         // Check data is correct.
         for (AgentVector::Agent instance : population) {
             // Check neighbouring vars are correct
@@ -231,16 +231,16 @@ TEST(DeviceAPITest, getStepCounterFunctionCondition) {
     }
     const unsigned int STEPS = 4;
     // Setup Model
-    CUDASimulation cuda_model(model);
-    cuda_model.setPopulationData(init_population);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(init_population);
 
     // RUN STEPS steps of simulation.
-    cuda_model.SimulationConfig().steps = STEPS;
-    cuda_model.simulate();
+    cudaSimulation.SimulationConfig().steps = STEPS;
+    cudaSimulation.simulate();
 
     // Recover data from device
     AgentVector population(agent);
-    cuda_model.getPopulationData(population);
+    cudaSimulation.getPopulationData(population);
     // Check data is correct.
     const unsigned int EXPECTED_COUNT = 1;
     for (AgentVector::Agent instance : population) {

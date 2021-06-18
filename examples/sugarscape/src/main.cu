@@ -354,7 +354,7 @@ int main(int argc, const char ** argv) {
      * Create Model Runner
      */
     NVTX_PUSH("CUDAAgentModel creation");
-    flamegpu::CUDASimulation  cuda_model(model);
+    flamegpu::CUDASimulation  cudaSimulation(model);
     NVTX_POP();
 
     /**
@@ -362,7 +362,7 @@ int main(int argc, const char ** argv) {
      * @note FGPU2 doesn't currently have proper support for discrete/2d visualisations
      */
 #ifdef VISUALISATION
-    flamegpu::visualiser::ModelVis  &visualisation = cuda_model.getVisualisation();
+    flamegpu::visualiser::ModelVis  &visualisation = cudaSimulation.getVisualisation();
     {
         visualisation.setSimulationSpeed(2);
         visualisation.setInitialCameraLocation(GRID_WIDTH / 2.0f, GRID_HEIGHT / 2.0f, 225.0f);
@@ -392,8 +392,8 @@ int main(int argc, const char ** argv) {
      * Initialisation
      */
     NVTX_PUSH("CUDAAgentModel initialisation");
-    cuda_model.initialise(argc, argv);
-    if (cuda_model.getSimulationConfig().input_file.empty()) {
+    cudaSimulation.initialise(argc, argv);
+    if (cudaSimulation.getSimulationConfig().input_file.empty()) {
         std::default_random_engine rng;
         // Pre init, decide the sugar hotspots
         std::vector<std::tuple<unsigned int, unsigned int, unsigned int, unsigned int>> sugar_hotspots;
@@ -469,19 +469,19 @@ int main(int argc, const char ** argv) {
 #endif
             }
         }
-        cuda_model.setPopulationData(init_pop);
+        cudaSimulation.setPopulationData(init_pop);
     }
     NVTX_POP();
 
     /**
      * Execution
      */
-    cuda_model.simulate();
+    cudaSimulation.simulate();
 
     /**
      * Export Pop
      */
-    // cuda_model.exportData("end.xml");
+    // cudaSimulation.exportData("end.xml");
 
 #ifdef VISUALISATION
     visualisation.join();

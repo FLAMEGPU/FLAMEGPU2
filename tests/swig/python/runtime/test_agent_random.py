@@ -61,8 +61,8 @@ class AgentRandomTest(TestCase):
         layer = model.newLayer("layer")
         layer.addAgentFunction(af)
 
-        cuda_model = pyflamegpu.CUDASimulation(model)
-        cuda_model.SimulationConfig().steps = 1
+        cudaSimulation = pyflamegpu.CUDASimulation(model)
+        cudaSimulation.SimulationConfig().steps = 1
         args_1 =  ("process.exe", "-r", "0", "-s", "1")
         args_2 =  ("process.exe", "-r", "1", "-s", "1")
         
@@ -75,10 +75,10 @@ class AgentRandomTest(TestCase):
         # Does random number change each time it's called
 
         # Seed random
-        cuda_model.initialise(args_1)
-        cuda_model.setPopulationData(init_population)
-        cuda_model.simulate()
-        cuda_model.getPopulationData(population)
+        cudaSimulation.initialise(args_1)
+        cudaSimulation.setPopulationData(init_population)
+        cudaSimulation.simulate()
+        cudaSimulation.getPopulationData(population)
 
         a1 = b1 = c1 = a2 = b2 = c2 = -1
         for i in range(len(population)): 
@@ -108,10 +108,10 @@ class AgentRandomTest(TestCase):
         # Test Model 2
         # Different seed produces different random numbers
         # Seed random
-        cuda_model.initialise(args_2)
-        cuda_model.setPopulationData(init_population)
-        cuda_model.simulate()
-        cuda_model.getPopulationData(population)
+        cudaSimulation.initialise(args_2)
+        cudaSimulation.setPopulationData(init_population)
+        cudaSimulation.simulate()
+        cudaSimulation.getPopulationData(population)
 
         for i in range(len(population)):
             instance = population[i]
@@ -130,10 +130,10 @@ class AgentRandomTest(TestCase):
         # Different seed produces different random numbers
         results2.clear()
         # Seed random
-        cuda_model.initialise(args_1)
-        cuda_model.setPopulationData(init_population)
-        cuda_model.simulate()
-        cuda_model.getPopulationData(population)
+        cudaSimulation.initialise(args_1)
+        cudaSimulation.setPopulationData(init_population)
+        cudaSimulation.simulate()
+        cudaSimulation.getPopulationData(population)
 
         for i in range(len(population)):
             instance = population[i]
@@ -182,10 +182,10 @@ class AgentRandomTest(TestCase):
         layer = model.newLayer("layer")
         layer.addAgentFunction(do_random)
 
-        cuda_model = pyflamegpu.CUDASimulation(model)
-        cuda_model.SimulationConfig().steps = 1
-        cuda_model.setPopulationData(population)
-        cuda_model.simulate()
+        cudaSimulation = pyflamegpu.CUDASimulation(model)
+        cudaSimulation.SimulationConfig().steps = 1
+        cudaSimulation.setPopulationData(population)
+        cudaSimulation.simulate()
         # Success if we get this far without an exception being thrown.
 
 

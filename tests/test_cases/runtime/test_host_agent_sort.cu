@@ -40,12 +40,12 @@ TEST(HostAgentSort, Ascending_float) {
         instance.setVariable<int>("spare", static_cast<int>(t+12));
     }
     // Setup Model
-    CUDASimulation cuda_model(model);
-    cuda_model.setPopulationData(pop);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(pop);
     // Execute step fn
-    cuda_model.step();
+    cudaSimulation.step();
     // Check results
-    cuda_model.getPopulationData(pop);
+    cudaSimulation.getPopulationData(pop);
     EXPECT_EQ(AGENT_COUNT, pop.size());
     float prev = 1;
     for (AgentVector::Agent instance : pop) {
@@ -78,12 +78,12 @@ TEST(HostAgentSort, Descending_float) {
         instance.setVariable<int>("spare", static_cast<int>(t+12));
     }
     // Setup Model
-    CUDASimulation cuda_model(model);
-    cuda_model.setPopulationData(pop);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(pop);
     // Execute step fn
-    cuda_model.step();
+    cudaSimulation.step();
     // Check results
-    cuda_model.getPopulationData(pop);
+    cudaSimulation.getPopulationData(pop);
     EXPECT_EQ(AGENT_COUNT, pop.size());
     float prev = 1000000;
     for (AgentVector::Agent instance : pop) {
@@ -116,12 +116,12 @@ TEST(HostAgentSort, Ascending_int) {
         instance.setVariable<int>("spare", t+12);
     }
     // Setup Model
-    CUDASimulation cuda_model(model);
-    cuda_model.setPopulationData(pop);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(pop);
     // Execute step fn
-    cuda_model.step();
+    cudaSimulation.step();
     // Check results
-    cuda_model.getPopulationData(pop);
+    cudaSimulation.getPopulationData(pop);
     EXPECT_EQ(AGENT_COUNT, pop.size());
     int prev = 0;
     for (AgentVector::Agent instance : pop) {
@@ -154,12 +154,12 @@ TEST(HostAgentSort, Descending_int) {
         instance.setVariable<int>("spare", t+12);
     }
     // Setup Model
-    CUDASimulation cuda_model(model);
-    cuda_model.setPopulationData(pop);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(pop);
     // Execute step fn
-    cuda_model.step();
+    cudaSimulation.step();
     // Check results
-    cuda_model.getPopulationData(pop);
+    cudaSimulation.getPopulationData(pop);
     EXPECT_EQ(AGENT_COUNT, pop.size());
     int prev = 1000000;
     for (AgentVector::Agent instance : pop) {
@@ -215,12 +215,12 @@ TEST(HostAgentSort, 2x_Ascending_float) {
         instance.setVariable<int>("spare", static_cast<int>(t2+12));
     }
     // Setup Model
-    CUDASimulation cuda_model(model);
-    cuda_model.setPopulationData(pop);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(pop);
     // Execute step fn
-    cuda_model.step();
+    cudaSimulation.step();
     // Check results
-    cuda_model.getPopulationData(pop);
+    cudaSimulation.getPopulationData(pop);
     EXPECT_EQ(AGENT_COUNT, pop.size());
     float prev = 1;
     for (AgentVector::Agent instance : pop) {
@@ -258,12 +258,12 @@ TEST(HostAgentSort, 2x_Descending_float) {
         instance.setVariable<int>("spare", static_cast<int>(t2+12));
     }
     // Setup Model
-    CUDASimulation cuda_model(model);
-    cuda_model.setPopulationData(pop);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(pop);
     // Execute step fn
-    cuda_model.step();
+    cudaSimulation.step();
     // Check results
-    cuda_model.getPopulationData(pop);
+    cudaSimulation.getPopulationData(pop);
     EXPECT_EQ(AGENT_COUNT, pop.size());
     float prev = 1000000;
     for (AgentVector::Agent instance : pop) {
@@ -301,12 +301,12 @@ TEST(HostAgentSort, 2x_Ascending_int) {
         instance.setVariable<int>("spare", static_cast<int>(t2+12));
     }
     // Setup Model
-    CUDASimulation cuda_model(model);
-    cuda_model.setPopulationData(pop);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(pop);
     // Execute step fn
-    cuda_model.step();
+    cudaSimulation.step();
     // Check results
-    cuda_model.getPopulationData(pop);
+    cudaSimulation.getPopulationData(pop);
     EXPECT_EQ(AGENT_COUNT, pop.size());
     int prev = 0;
     for (AgentVector::Agent instance : pop) {
@@ -344,12 +344,12 @@ TEST(HostAgentSort, 2x_Descending_int) {
         instance.setVariable<int>("spare", static_cast<int>(t2+12));
     }
     // Setup Model
-    CUDASimulation cuda_model(model);
-    cuda_model.setPopulationData(pop);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(pop);
     // Execute step fn
-    cuda_model.step();
+    cudaSimulation.step();
     // Check results
-    cuda_model.getPopulationData(pop);
+    cudaSimulation.getPopulationData(pop);
     EXPECT_EQ(AGENT_COUNT, pop.size());
     int prev = 1000000;
     for (AgentVector::Agent instance : pop) {
@@ -387,12 +387,12 @@ TEST(HostAgentSort, 2x_AscDesc_int) {
         instance.setVariable<int>("spare", static_cast<int>(t2+12));
     }
     // Setup Model
-    CUDASimulation cuda_model(model);
-    cuda_model.setPopulationData(pop);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(pop);
     // Execute step fn
-    cuda_model.step();
+    cudaSimulation.step();
     // Check results
-    cuda_model.getPopulationData(pop);
+    cudaSimulation.getPopulationData(pop);
     EXPECT_EQ(AGENT_COUNT, pop.size());
     int prev = 0;
     for (AgentVector::Agent instance : pop) {
@@ -430,12 +430,12 @@ TEST(HostAgentSort, 2x_DescAsc_int) {
         instance.setVariable<int>("spare", static_cast<int>(t2+12));
     }
     // Setup Model
-    CUDASimulation cuda_model(model);
-    cuda_model.setPopulationData(pop);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(pop);
     // Execute step fn
-    cuda_model.step();
+    cudaSimulation.step();
     // Check results
-    cuda_model.getPopulationData(pop);
+    cudaSimulation.getPopulationData(pop);
     EXPECT_EQ(AGENT_COUNT, pop.size());
     int prev = 1000000;
     for (AgentVector::Agent instance : pop) {

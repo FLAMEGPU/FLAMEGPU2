@@ -93,14 +93,14 @@ class TestMessage_Bucket(TestCase):
         # Test Data copy constructor knows when bounds have not been init
         msg = m.newMessageBucket("buckets")
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-            cuda_model = pyflamegpu.CUDASimulation(m)  # Max not set
+            cudaSimulation = pyflamegpu.CUDASimulation(m)  # Max not set
         assert e.value.type() == "InvalidMessage"
         msg.setLowerBound(1);  # It should default to 0
         with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
-            cuda_model = pyflamegpu.CUDASimulation(m)  # Min not set
+            cudaSimulation = pyflamegpu.CUDASimulation(m)  # Min not set
         assert e.value.type() == "InvalidMessage"
         msg.setUpperBound(10);
-        cuda_model = pyflamegpu.CUDASimulation(m)
+        cudaSimulation = pyflamegpu.CUDASimulation(m)
         
     def test_reserved_name(self):
         m = pyflamegpu.ModelDescription("BucketMsgTest")
@@ -135,7 +135,7 @@ class TestMessage_Bucket(TestCase):
         li = model.newLayer();
         li.addAgentFunction(fi);
        
-        cuda_model = pyflamegpu.CUDASimulation(model)
+        cudaSimulation = pyflamegpu.CUDASimulation(model)
 
         population = pyflamegpu.AgentVector(agent, AGENT_COUNT)
         # Initialise agents
@@ -150,13 +150,13 @@ class TestMessage_Bucket(TestCase):
             bucket_count[int(i/2)] += 1;
             bucket_sum[int(i/2)] += i;
             
-        cuda_model.setPopulationData(population);
+        cudaSimulation.setPopulationData(population);
 
         # Execute a single step of the model
-        cuda_model.step();
+        cudaSimulation.step();
 
         # Recover the results and check they match what was expected
-        cuda_model.getPopulationData(population);
+        cudaSimulation.getPopulationData(population);
         # Validate each agent has correct result
         for ai in population:
             id = ai.getVariableInt("id");
@@ -196,7 +196,7 @@ class TestMessage_Bucket(TestCase):
         li = model.newLayer();
         li.addAgentFunction(fi);
         
-        cuda_model = pyflamegpu.CUDASimulation(model)
+        cudaSimulation = pyflamegpu.CUDASimulation(model)
 
         population = pyflamegpu.AgentVector(agent, AGENT_COUNT)
         # Initialise agents
@@ -214,13 +214,13 @@ class TestMessage_Bucket(TestCase):
                 bucket_count[int(i/2)] += 1;
                 bucket_sum[int(i/2)] += i;
             
-        cuda_model.setPopulationData(population);
+        cudaSimulation.setPopulationData(population);
 
         # Execute a single step of the model
-        cuda_model.step();
+        cudaSimulation.step();
 
         # Recover the results and check they match what was expected
-        cuda_model.getPopulationData(population);
+        cudaSimulation.getPopulationData(population);
         # Validate each agent has correct result
         for ai in population:
             id = ai.getVariableInt("id");
@@ -259,7 +259,7 @@ class TestMessage_Bucket(TestCase):
         li = model.newLayer();
         li.addAgentFunction(fi);
        
-        cuda_model = pyflamegpu.CUDASimulation(model)
+        cudaSimulation = pyflamegpu.CUDASimulation(model)
 
         population = pyflamegpu.AgentVector(agent, AGENT_COUNT)
         # Initialise agents
@@ -272,13 +272,13 @@ class TestMessage_Bucket(TestCase):
                 bucket_count[int(i/2)] = 0;
                 bucket_sum[int(i/2)] = 0;
             
-        cuda_model.setPopulationData(population);
+        cudaSimulation.setPopulationData(population);
 
         # Execute a single step of the model
-        cuda_model.step();
+        cudaSimulation.step();
 
         # Recover the results and check they match what was expected
-        cuda_model.getPopulationData(population);
+        cudaSimulation.getPopulationData(population);
         # Validate each agent has correct result
         for ai in population:
             id = ai.getVariableInt("id");
@@ -316,7 +316,7 @@ class TestMessage_Bucket(TestCase):
         li = model.newLayer();
         li.addAgentFunction(fi);
        
-        cuda_model = pyflamegpu.CUDASimulation(model)
+        cudaSimulation = pyflamegpu.CUDASimulation(model)
 
         population = pyflamegpu.AgentVector(agent, AGENT_COUNT)
         # Initialise agents
@@ -331,13 +331,13 @@ class TestMessage_Bucket(TestCase):
             bucket_count[int(i/2)] += 1;
             bucket_sum[int(i/2)] += i;
             
-        cuda_model.setPopulationData(population);
+        cudaSimulation.setPopulationData(population);
 
         # Execute a single step of the model
-        cuda_model.step();
+        cudaSimulation.step();
 
         # Recover the results and check they match what was expected
-        cuda_model.getPopulationData(population);
+        cudaSimulation.getPopulationData(population);
         # Validate each agent has correct result
         for ai in population:
             id = ai.getVariableInt("id");

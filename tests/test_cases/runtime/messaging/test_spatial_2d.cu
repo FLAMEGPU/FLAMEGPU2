@@ -94,7 +94,7 @@ TEST(Spatial2DMsgTest, Mandatory) {
         LayerDescription &layer = model.newLayer();
         layer.addAgentFunction(in2D);
     }
-    CUDASimulation cuda_model(model);
+    CUDASimulation cudaSimulation(model);
 
     const int AGENT_COUNT = 2049;
     AgentVector population(model.Agent("agent"), AGENT_COUNT);
@@ -124,7 +124,7 @@ TEST(Spatial2DMsgTest, Mandatory) {
             }
             bin_counts[bin_index] += 1;
         }
-        cuda_model.setPopulationData(population);
+        cudaSimulation.setPopulationData(population);
     }
 
     // Generate results expectation
@@ -168,11 +168,11 @@ TEST(Spatial2DMsgTest, Mandatory) {
     }
 
     // Execute a single step of the model
-    cuda_model.step();
+    cudaSimulation.step();
 
     // Recover the results and check they match what was expected
 
-    cuda_model.getPopulationData(population);
+    cudaSimulation.getPopulationData(population);
     // Validate each agent has same result
     unsigned int badCountWrong = 0;
     for (AgentVector::Agent ai : population) {
@@ -224,7 +224,7 @@ TEST(Spatial2DMsgTest, Optional) {
         LayerDescription &layer = model.newLayer();
         layer.addAgentFunction(in2D);
     }
-    CUDASimulation cuda_model(model);
+    CUDASimulation cudaSimulation(model);
 
     const int AGENT_COUNT = 2049;
     AgentVector population(model.Agent("agent"), AGENT_COUNT);
@@ -257,7 +257,7 @@ TEST(Spatial2DMsgTest, Optional) {
                 bin_counts_optional[bin_index] += 1;  // NEW!
             }
         }
-        cuda_model.setPopulationData(population);
+        cudaSimulation.setPopulationData(population);
     }
 
     // Generate results expectation
@@ -305,11 +305,11 @@ TEST(Spatial2DMsgTest, Optional) {
     }
 
     // Execute a single step of the model
-    cuda_model.step();
+    cudaSimulation.step();
 
     // Recover the results and check they match what was expected
 
-    cuda_model.getPopulationData(population);
+    cudaSimulation.getPopulationData(population);
     // Validate each agent has same result
     unsigned int badCountWrong = 0;
     for (AgentVector::Agent ai : population) {
@@ -360,7 +360,7 @@ TEST(Spatial2DMsgTest, OptionalNone) {
         LayerDescription &layer = model.newLayer();
         layer.addAgentFunction(in2D);
     }
-    CUDASimulation cuda_model(model);
+    CUDASimulation cudaSimulation(model);
 
     const int AGENT_COUNT = 2049;
     AgentVector population(model.Agent("agent"), AGENT_COUNT);
@@ -393,15 +393,15 @@ TEST(Spatial2DMsgTest, OptionalNone) {
                 bin_counts_optional[bin_index] += 1;  // NEW!
             }
         }
-        cuda_model.setPopulationData(population);
+        cudaSimulation.setPopulationData(population);
     }
 
     // Execute a single step of the model
-    cuda_model.step();
+    cudaSimulation.step();
 
     // Recover the results and check they match what was expected
 
-    cuda_model.getPopulationData(population);
+    cudaSimulation.getPopulationData(population);
     // Validate each agent has same result
     unsigned int badCountWrong = 0;
     for (AgentVector::Agent ai : population) {
@@ -486,14 +486,14 @@ TEST(Spatial2DMsgTest, ReadEmpty) {
     }
     // Create 1 agent
     AgentVector pop_in(model.Agent("agent"), 1);
-    CUDASimulation cuda_model(model);
-    cuda_model.setPopulationData(pop_in);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(pop_in);
     // Execute model
-    EXPECT_NO_THROW(cuda_model.step());
+    EXPECT_NO_THROW(cudaSimulation.step());
     // Check result
     AgentVector pop_out(model.Agent("agent"), 1);
     pop_out[0].setVariable<unsigned int>("count", 1);
-    cuda_model.getPopulationData(pop_out);
+    cudaSimulation.getPopulationData(pop_out);
     EXPECT_EQ(pop_out.size(), 1u);
     EXPECT_EQ(pop_out[0].getVariable<unsigned int>("count"), 0u);
 }

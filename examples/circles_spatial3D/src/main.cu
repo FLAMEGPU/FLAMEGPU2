@@ -115,13 +115,13 @@ int main(int argc, const char ** argv) {
     /**
      * Create Model Runner
      */
-    flamegpu::CUDASimulation  cuda_model(model, argc, argv);
+    flamegpu::CUDASimulation  cudaSimulation(model, argc, argv);
 
     /**
      * Create visualisation
      */
 #ifdef VISUALISATION
-    flamegpu::visualiser::ModelVis  &m_vis = cuda_model.getVisualisation();
+    flamegpu::visualiser::ModelVis  &m_vis = cudaSimulation.getVisualisation();
     {
         const float INIT_CAM = ENV_MAX * 1.25F;
         m_vis.setInitialCameraLocation(INIT_CAM, INIT_CAM, INIT_CAM);
@@ -164,7 +164,7 @@ int main(int argc, const char ** argv) {
     /**
      * Initialisation
      */
-    if (cuda_model.getSimulationConfig().input_file.empty()) {
+    if (cudaSimulation.getSimulationConfig().input_file.empty()) {
         // Currently population has not been init, so generate an agent population on the fly
         std::default_random_engine rng;
         std::uniform_real_distribution<float> dist(0.0f, ENV_MAX);
@@ -175,18 +175,18 @@ int main(int argc, const char ** argv) {
             instance.setVariable<float>("y", dist(rng));
             instance.setVariable<float>("z", dist(rng));
         }
-        cuda_model.setPopulationData(population);
+        cudaSimulation.setPopulationData(population);
     }
 
     /**
      * Execution
      */
-    cuda_model.simulate();
+    cudaSimulation.simulate();
 
     /**
      * Export Pop
      */
-    cuda_model.exportData("end.xml");
+    cudaSimulation.exportData("end.xml");
 
 #ifdef VISUALISATION
     m_vis.join();

@@ -91,10 +91,10 @@ TEST(GPUTest, GPUMemoryTest) {
         instance.setVariable<int>("id", i);
     }
 
-    CUDASimulation cuda_model(flame_model);
-    cuda_model.setPopulationData(population);
+    CUDASimulation cudaSimulation(flame_model);
+    cudaSimulation.setPopulationData(population);
 
-    cuda_model.getPopulationData(population);
+    cudaSimulation.getPopulationData(population);
 
     GTEST_COUT << "Testing values copied back from device without simulating any functions .." << std::endl;
 
@@ -141,18 +141,18 @@ TEST(GPUTest, GPUSimulationTest) {
     add_layer.addAgentFunction(add_data);
 
 
-    CUDASimulation cuda_model(flame_model);
+    CUDASimulation cudaSimulation(flame_model);
     const int STEPS = 5;
-    cuda_model.SimulationConfig().steps = STEPS;
+    cudaSimulation.SimulationConfig().steps = STEPS;
 
-    cuda_model.setPopulationData(population);
+    cudaSimulation.setPopulationData(population);
 
-    cuda_model.simulate();
+    cudaSimulation.simulate();
 
     GTEST_COUT << "Testing values copied back from device after simulating functions .." << std::endl;
 
     // Re-use the same population to read back the simulation step results
-    cuda_model.getPopulationData(population);
+    cudaSimulation.getPopulationData(population);
 
     // check values are the same
     for (int i = 0; i < 10; i++) {
@@ -206,16 +206,16 @@ TEST(GPUTest, GPUSimulationTestMultiple) {
 
 
     /* Run the model */
-    CUDASimulation cuda_model(flame_model);
-    cuda_model.SimulationConfig().steps = 1;
+    CUDASimulation cudaSimulation(flame_model);
+    cudaSimulation.SimulationConfig().steps = 1;
 
-    cuda_model.setPopulationData(population1);
-    cuda_model.setPopulationData(population2);
+    cudaSimulation.setPopulationData(population1);
+    cudaSimulation.setPopulationData(population2);
 
-    cuda_model.simulate();
+    cudaSimulation.simulate();
 
-    cuda_model.getPopulationData(population1);
-    cuda_model.getPopulationData(population2);
+    cudaSimulation.getPopulationData(population1);
+    cudaSimulation.getPopulationData(population2);
 
 
     // check values are the same

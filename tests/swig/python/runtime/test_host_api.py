@@ -78,10 +78,10 @@ class HostAPITest(TestCase):
         init_population = pyflamegpu.AgentVector(agent, agentCount)
         
         # Setup Model
-        cuda_model = pyflamegpu.CUDASimulation(model)
-        cuda_model.setPopulationData(init_population)
-        cuda_model.SimulationConfig().steps = TOTAL_STEPS
-        cuda_model.simulate()
+        cudaSimulation = pyflamegpu.CUDASimulation(model)
+        cudaSimulation.setPopulationData(init_population)
+        cudaSimulation.SimulationConfig().steps = TOTAL_STEPS
+        cudaSimulation.simulate()
         
         # assert
         init.apply_assertions()

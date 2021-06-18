@@ -58,11 +58,11 @@ class MiniSim():
 
     
     def run(self): 
-        self.cuda_model = pyflamegpu.CUDASimulation(self.model)
-        self.cuda_model.SimulationConfig().steps = 1
-        self.cuda_model.setPopulationData(self.population)      
-        self.cuda_model.simulate()
-        self.cuda_model.getPopulationData(self.population)
+        self.cudaSimulation = pyflamegpu.CUDASimulation(self.model)
+        self.cudaSimulation.SimulationConfig().steps = 1
+        self.cudaSimulation.setPopulationData(self.population)      
+        self.cudaSimulation.simulate()
+        self.cudaSimulation.getPopulationData(self.population)
         # check assertions
         self.step.assert_sum(self.expected_sum)
         

@@ -149,15 +149,15 @@ void EnvironmentManager::init(const unsigned int &instance_id, const Environment
     buildRTCOffsets(instance_id, master_instance_id, orderedProperties);
 }
 
-void EnvironmentManager::initRTC(const CUDASimulation& cuda_model) {
+void EnvironmentManager::initRTC(const CUDASimulation& cudaSimulation) {
     std::unique_lock<std::shared_timed_mutex> lock(mutex);
     // check to ensure that model name is not already registered
-    auto res = cuda_agent_models.find(cuda_model.getInstanceID());
+    auto res = cuda_agent_models.find(cudaSimulation.getInstanceID());
     if (res != cuda_agent_models.end()) {
-        THROW UnknownInternalError("Agent model name '%s' already registered in initRTC()", cuda_model.getModelDescription().name.c_str());
+        THROW UnknownInternalError("Agent model name '%s' already registered in initRTC()", cudaSimulation.getModelDescription().name.c_str());
     }
     // register model name
-    cuda_agent_models.emplace(cuda_model.getInstanceID(), cuda_model);
+    cuda_agent_models.emplace(cudaSimulation.getInstanceID(), cudaSimulation);
 }
 
 void EnvironmentManager::initialiseDevice() {

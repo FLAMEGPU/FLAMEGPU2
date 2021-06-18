@@ -32,12 +32,12 @@ class MiniSim {
         // CudaModel must be declared here
         // As the initial call to constructor fixes the agent population
         // This means if we haven't called model.newAgent(agent) first
-        CUDASimulation cuda_model(model);
-        cuda_model.SimulationConfig().steps = steps;
+        CUDASimulation cudaSimulation(model);
+        cudaSimulation.SimulationConfig().steps = steps;
         // This fails as agentMap is empty
         AgentVector population(agent, 1);
-        cuda_model.setPopulationData(population);
-        EXPECT_THROW(cuda_model.simulate(), DeviceError);
+        cudaSimulation.setPopulationData(population);
+        EXPECT_THROW(cudaSimulation.simulate(), DeviceError);
     }
     template<typename T>
     void addFunc(T func) {

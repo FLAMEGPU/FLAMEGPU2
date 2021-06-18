@@ -116,7 +116,7 @@ TEST(BucketMsgTest, Mandatory) {
         LayerDescription &layer = model.newLayer();
         layer.addAgentFunction(in);
     }
-    CUDASimulation cuda_model(model);
+    CUDASimulation cudaSimulation(model);
 
     AgentVector population(model.Agent("agent"), AGENT_COUNT);
     // Initialise agents (TODO)
@@ -133,14 +133,14 @@ TEST(BucketMsgTest, Mandatory) {
             bucket_count[i/2] += 1;
             bucket_sum[i/2] += i;
         }
-        cuda_model.setPopulationData(population);
+        cudaSimulation.setPopulationData(population);
     }
 
     // Execute a single step of the model
-    cuda_model.step();
+    cudaSimulation.step();
 
     // Recover the results and check they match what was expected
-    cuda_model.getPopulationData(population);
+    cudaSimulation.getPopulationData(population);
     // Validate each agent has correct result
     for (AgentVector::Agent ai : population) {
         const int id = ai.getVariable<int>("id");
@@ -184,7 +184,7 @@ TEST(BucketMsgTest, Optional) {
         LayerDescription &layer = model.newLayer();
         layer.addAgentFunction(in);
     }
-    CUDASimulation cuda_model(model);
+    CUDASimulation cudaSimulation(model);
 
     AgentVector population(model.Agent("agent"), AGENT_COUNT);
     // Initialise agents (TODO)
@@ -207,14 +207,14 @@ TEST(BucketMsgTest, Optional) {
                 bucket_sum[i/2] += i;
             }
         }
-        cuda_model.setPopulationData(population);
+        cudaSimulation.setPopulationData(population);
     }
 
     // Execute a single step of the model
-    cuda_model.step();
+    cudaSimulation.step();
 
     // Recover the results and check they match what was expected
-    cuda_model.getPopulationData(population);
+    cudaSimulation.getPopulationData(population);
     // Validate each agent has correct result
     for (AgentVector::Agent ai : population) {
         const int id = ai.getVariable<int>("id");
@@ -258,7 +258,7 @@ TEST(BucketMsgTest, OptionalNone) {
         LayerDescription &layer = model.newLayer();
         layer.addAgentFunction(in);
     }
-    CUDASimulation cuda_model(model);
+    CUDASimulation cudaSimulation(model);
 
     AgentVector population(model.Agent("agent"), AGENT_COUNT);
     // Initialise agents (TODO)
@@ -275,14 +275,14 @@ TEST(BucketMsgTest, OptionalNone) {
                 bucket_sum.emplace(i/2, 0);
             }
         }
-        cuda_model.setPopulationData(population);
+        cudaSimulation.setPopulationData(population);
     }
 
     // Execute a single step of the model
-    cuda_model.step();
+    cudaSimulation.step();
 
     // Recover the results and check they match what was expected
-    cuda_model.getPopulationData(population);
+    cudaSimulation.getPopulationData(population);
     // Validate each agent has correct result
     for (AgentVector::Agent ai : population) {
         unsigned int count1 = ai.getVariable<unsigned int>("count1");
@@ -322,7 +322,7 @@ TEST(BucketMsgTest, Mandatory_Range) {
         LayerDescription &layer = model.newLayer();
         layer.addAgentFunction(in_range);
     }
-    CUDASimulation cuda_model(model);
+    CUDASimulation cudaSimulation(model);
 
     AgentVector population(model.Agent("agent"), AGENT_COUNT);
     // Initialise agents (TODO)
@@ -339,14 +339,14 @@ TEST(BucketMsgTest, Mandatory_Range) {
             bucket_count[i/2] += 1;
             bucket_sum[i/2] += i;
         }
-        cuda_model.setPopulationData(population);
+        cudaSimulation.setPopulationData(population);
     }
 
     // Execute a single step of the model
-    cuda_model.step();
+    cudaSimulation.step();
 
     // Recover the results and check they match what was expected
-    cuda_model.getPopulationData(population);
+    cudaSimulation.getPopulationData(population);
     // Validate each agent has correct result
     for (AgentVector::Agent ai : population) {
         const int id = ai.getVariable<int>("id");

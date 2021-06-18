@@ -234,10 +234,10 @@ class EnvironmentManager {
     /**
      * RTC functions hold their own unique constants for environment variables. This function copies all environment variable to the RTC copies.
      * It can not be incorporated into init() as init will be called before RTC functions have been compiled.
-     * Uses the already populated Environment data from the cuda_model rather than environmentDescription.
-     * @param cuda_model the cuda model being initialised.
+     * Uses the already populated Environment data from the cudaSimulation rather than environmentDescription.
+     * @param cudaSimulation the cuda model being initialised.
      */
-    void initRTC(const CUDASimulation &cuda_model);
+    void initRTC(const CUDASimulation &cudaSimulation);
     /**
      * Deactives all environmental properties linked to the named model from constant cache
      * @param curve The Curve singleton instance to use, it is important that we purge curve for the correct device
