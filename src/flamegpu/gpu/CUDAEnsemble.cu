@@ -10,7 +10,7 @@
 #include <condition_variable>
 
 #include "flamegpu/model/ModelDescription.h"
-#include "flamegpu/sim/RunPlanVec.h"
+#include "flamegpu/sim/RunPlanVector.h"
 #include "flamegpu/util/compute_capability.cuh"
 #include "flamegpu/util/SteadyClockTimer.h"
 #include "flamegpu/gpu/CUDASimulation.h"
@@ -34,7 +34,7 @@ CUDAEnsemble::~CUDAEnsemble() {
 
 
 
-void CUDAEnsemble::simulate(const RunPlanVec &plans) {
+void CUDAEnsemble::simulate(const RunPlanVector &plans) {
     // Validate that RunPlan model matches CUDAEnsemble model
     if (*plans.environment != this->model->environment->properties) {
         THROW InvalidArgument("RunPlan is for a different ModelDescription, in CUDAEnsemble::simulate()");

@@ -377,7 +377,7 @@ class LoggingTest(TestCase):
         slcfg.setFrequency(2);
 
         # Set up the runplan
-        plan = pyflamegpu.RunPlanVec(m, 10);
+        plan = pyflamegpu.RunPlanVector(m, 10);
         i_id = 0;
         for p in plan:
             p.setSteps(10);

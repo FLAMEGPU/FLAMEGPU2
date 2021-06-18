@@ -1,5 +1,5 @@
-#ifndef INCLUDE_FLAMEGPU_SIM_RUNPLANVEC_H_
-#define INCLUDE_FLAMEGPU_SIM_RUNPLANVEC_H_
+#ifndef INCLUDE_FLAMEGPU_SIM_RUNPLANVECTOR_H_
+#define INCLUDE_FLAMEGPU_SIM_RUNPLANVECTOR_H_
 
 #include <random>
 #include <vector>
@@ -18,19 +18,19 @@ class EnvironmentDescription;
 
 /**
  * Vector of RunPlan
- * Contains additional methods for generating collections of RunPlans and combining RunPlanVecs
+ * Contains additional methods for generating collections of RunPlans and combining RunPlanVectors
  */
-class RunPlanVec : private std::vector<RunPlan>  {
+class RunPlanVector : private std::vector<RunPlan>  {
     friend class RunPlan;
     friend class SimRunner;
-    friend void CUDAEnsemble::simulate(const RunPlanVec &plans);
+    friend void CUDAEnsemble::simulate(const RunPlanVector &plans);
 
  public:
     /**
      * Constructor, requires the model description to validate environment properties match up
      * @todo Unsure if this will require additional info, e.g. steps?
      */
-    explicit RunPlanVec(const ModelDescription &model, unsigned int initial_length);
+    explicit RunPlanVector(const ModelDescription &model, unsigned int initial_length);
     /**
      * Set the random simulation seed of each RunPlan currently within this vector
      * @param initial_seed The random seed applied to the first item
@@ -274,15 +274,15 @@ class RunPlanVec : private std::vector<RunPlan>  {
     /**
      * Operator methods for combining vectors
      */
-    RunPlanVec operator+(const RunPlan& rhs) const;
-    RunPlanVec operator+(const RunPlanVec& rhs) const;
-    RunPlanVec& operator+=(const RunPlan& rhs);
-    RunPlanVec& operator+=(const RunPlanVec& rhs);
-    RunPlanVec& operator*=(const unsigned int& rhs);
-    RunPlanVec operator*(const unsigned int& rhs) const;
+    RunPlanVector operator+(const RunPlan& rhs) const;
+    RunPlanVector operator+(const RunPlanVector& rhs) const;
+    RunPlanVector& operator+=(const RunPlan& rhs);
+    RunPlanVector& operator+=(const RunPlanVector& rhs);
+    RunPlanVector& operator*=(const unsigned int& rhs);
+    RunPlanVector operator*(const unsigned int& rhs) const;
 
  private:
-    RunPlanVec(const std::shared_ptr<const std::unordered_map<std::string, EnvironmentDescription::PropData>> &environment, const bool &allow_0_steps);
+    RunPlanVector(const std::shared_ptr<const std::unordered_map<std::string, EnvironmentDescription::PropData>> &environment, const bool &allow_0_steps);
     /**
      * Random distribution used by setPropertyRandom()
      * Initially set to a random seed with std::random_device (which is a platform specific source of random integers)
@@ -293,22 +293,22 @@ class RunPlanVec : private std::vector<RunPlan>  {
 };
 
 template<typename T>
-void RunPlanVec::setProperty(const std::string &name, const T &value) {
+void RunPlanVector::setProperty(const std::string &name, const T &value) {
     // Validation
     const auto it = environment->find(name);
     if (it == environment->end()) {
         THROW InvalidEnvProperty("Environment description does not contain property '%s', "
-            "in RunPlanVec::setProperty()\n",
+            "in RunPlanVector::setProperty()\n",
             name.c_str());
     }
     if (it->second.data.type != std::type_index(typeid(T))) {
         THROW InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
-            "in RunPlanVec::setProperty()\n",
+            "in RunPlanVector::setProperty()\n",
             name.c_str(), it->second.data.type.name(), std::type_index(typeid(T)).name());
     }
     if (it->second.data.elements == 1) {
         THROW InvalidEnvPropertyType("Environment property '%s' is an array with %u elements, array method should be used, "
-            "in RunPlanVec::setProperty()\n",
+            "in RunPlanVector::setProperty()\n",
             name.c_str(), it->second.data.elements);
     }
     for (auto &i : *this) {
@@ -316,17 +316,17 @@ void RunPlanVec::setProperty(const std::string &name, const T &value) {
     }
 }
 template<typename T, EnvironmentManager::size_type N>
-void RunPlanVec::setProperty(const std::string &name, const std::array<T, N> &value) {
+void RunPlanVector::setProperty(const std::string &name, const std::array<T, N> &value) {
     // Validation
     const auto it = environment->find(name);
     if (it == environment->end()) {
         THROW InvalidEnvProperty("Environment description does not contain property '%s', "
-            "in RunPlanVec::setProperty()\n",
+            "in RunPlanVector::setProperty()\n",
             name.c_str());
     }
     if (it->second.data.type != std::type_index(typeid(T))) {
         THROW InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
-            "in RunPlanVec::setProperty()\n",
+            "in RunPlanVector::setProperty()\n",
             name.c_str(), it->second.data.type.name(), std::type_index(typeid(T)).name());
     }
     if (it->second.data.elements != N) {
@@ -339,17 +339,17 @@ void RunPlanVec::setProperty(const std::string &name, const std::array<T, N> &va
     }
 }
 template<typename T>
-void RunPlanVec::setProperty(const std::string &name, const EnvironmentManager::size_type &index, const T &value) {
+void RunPlanVector::setProperty(const std::string &name, const EnvironmentManager::size_type &index, const T &value) {
     // Validation
     const auto it = environment->find(name);
     if (it == environment->end()) {
         THROW InvalidEnvProperty("Environment description does not contain property '%s', "
-            "in RunPlanVec::setProperty()\n",
+            "in RunPlanVector::setProperty()\n",
             name.c_str());
     }
     if (it->second.data.type != std::type_index(typeid(T))) {
         THROW InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
-            "in RunPlanVec::setProperty()\n",
+            "in RunPlanVector::setProperty()\n",
             name.c_str(), it->second.data.type.name(), std::type_index(typeid(T)).name());
     }
     if (it->second.data.elements >= index) {
@@ -362,27 +362,27 @@ void RunPlanVec::setProperty(const std::string &name, const EnvironmentManager::
 }
 #ifdef SWIG
 template<typename T>
-void RunPlanVec::setPropertyArray(const std::string &name, const EnvironmentManager::size_type &N, const std::vector<T> &value) {
+void RunPlanVector::setPropertyArray(const std::string &name, const EnvironmentManager::size_type &N, const std::vector<T> &value) {
     // Validation
     const auto it = environment->find(name);
     if (it == environment->end()) {
         THROW InvalidEnvProperty("Environment description does not contain property '%s', "
-            "in RunPlanVec::setProperty()\n",
+            "in RunPlanVector::setProperty()\n",
             name.c_str());
     }
     if (it->second.data.type != std::type_index(typeid(T))) {
         THROW InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
-            "in RunPlanVec::setProperty()\n",
+            "in RunPlanVector::setProperty()\n",
             name.c_str(), it->second.data.type.name(), std::type_index(typeid(T)).name());
     }
     if (it->second.data.elements != N) {
         THROW InvalidEnvPropertyType("Environment property array '%s' length mismatch %u != %u "
-            "in RunPlanVec::setProperty()\n",
+            "in RunPlanVector::setProperty()\n",
             name.c_str(), it->second.data.elements, N);
     }
     if (value.size() != N) {
         THROW InvalidEnvProperty("Environment property array length does not match the value provided, %u != %llu,"
-            "in RunPlanVec::setProperty()\n",
+            "in RunPlanVector::setProperty()\n",
             name.c_str(), value.size(), N);
     }
     for (auto &i : *this) {
@@ -392,26 +392,26 @@ void RunPlanVec::setPropertyArray(const std::string &name, const EnvironmentMana
 #endif
 
 template<typename T>
-void RunPlanVec::setPropertyUniformDistribution(const std::string &name, const T &min, const T &max) {
+void RunPlanVector::setPropertyUniformDistribution(const std::string &name, const T &min, const T &max) {
     // Validation
     if (this->size() < 2) {
         THROW std::out_of_range("Unable to apply a property distribution a vector with less than 2 elements, "
-            "in RunPlanVec::setPropertyUniformDistribution()\n");
+            "in RunPlanVector::setPropertyUniformDistribution()\n");
     }
     const auto it = environment->find(name);
     if (it == environment->end()) {
         THROW InvalidEnvProperty("Environment description does not contain property '%s', "
-            "in RunPlanVec::setPropertyUniformDistribution()\n",
+            "in RunPlanVector::setPropertyUniformDistribution()\n",
             name.c_str());
     }
     if (it->second.data.type != std::type_index(typeid(T))) {
         THROW InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
-            "in RunPlanVec::setPropertyUniformDistribution()\n",
+            "in RunPlanVector::setPropertyUniformDistribution()\n",
             name.c_str(), it->second.data.type.name(), std::type_index(typeid(T)).name());
     }
     if (it->second.data.elements != 1) {
         THROW InvalidEnvPropertyType("Environment property '%s' is an array with %u elements, array method should be used, "
-            "in RunPlanVec::setPropertyUniformDistribution()\n",
+            "in RunPlanVector::setPropertyUniformDistribution()\n",
             name.c_str(), it->second.data.elements);
     }
     unsigned int ct = 0;
@@ -422,21 +422,21 @@ void RunPlanVec::setPropertyUniformDistribution(const std::string &name, const T
     }
 }
 template<typename T>
-void RunPlanVec::setPropertyUniformDistribution(const std::string &name, const EnvironmentManager::size_type &index, const T &min, const T &max) {
+void RunPlanVector::setPropertyUniformDistribution(const std::string &name, const EnvironmentManager::size_type &index, const T &min, const T &max) {
     // Validation
     if (this->size() < 2) {
         THROW std::out_of_range("Unable to apply a property distribution a vector with less than 2 elements, "
-            "in RunPlanVec::setPropertyUniformDistribution()\n");
+            "in RunPlanVector::setPropertyUniformDistribution()\n");
     }
     const auto it = environment->find(name);
     if (it == environment->end()) {
         THROW InvalidEnvProperty("Environment description does not contain property '%s', "
-            "in RunPlanVec::setPropertyUniformDistribution()\n",
+            "in RunPlanVector::setPropertyUniformDistribution()\n",
             name.c_str());
     }
     if (it->second.data.type != std::type_index(typeid(T))) {
         THROW InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
-            "in RunPlanVec::setPropertyUniformDistribution()\n",
+            "in RunPlanVector::setPropertyUniformDistribution()\n",
             name.c_str(), it->second.data.type.name(), std::type_index(typeid(T)).name());
     }
     if (it->second.data.elements >= index) {
@@ -452,26 +452,26 @@ void RunPlanVec::setPropertyUniformDistribution(const std::string &name, const E
 }
 
 template<typename T, typename rand_dist>
-void RunPlanVec::setPropertyRandom(const std::string &name, rand_dist &distribution) {
+void RunPlanVector::setPropertyRandom(const std::string &name, rand_dist &distribution) {
     // Validation
     if (this->size() < 2) {
         THROW std::out_of_range("Unable to apply a property distribution a vector with less than 2 elements, "
-            "in RunPlanVec::setPropertyUniformDistribution()\n");
+            "in RunPlanVector::setPropertyUniformDistribution()\n");
     }
     const auto it = environment->find(name);
     if (it == environment->end()) {
         THROW InvalidEnvProperty("Environment description does not contain property '%s', "
-            "in RunPlanVec::setPropertyUniformDistribution()\n",
+            "in RunPlanVector::setPropertyUniformDistribution()\n",
             name.c_str());
     }
     if (it->second.data.type != std::type_index(typeid(T))) {
         THROW InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
-            "in RunPlanVec::setPropertyUniformDistribution()\n",
+            "in RunPlanVector::setPropertyUniformDistribution()\n",
             name.c_str(), it->second.data.type.name(), std::type_index(typeid(T)).name());
     }
     if (it->second.data.elements != 1) {
         THROW InvalidEnvPropertyType("Environment property '%s' is an array with %u elements, array method should be used, "
-            "in RunPlanVec::setPropertyUniformDistribution()\n",
+            "in RunPlanVector::setPropertyUniformDistribution()\n",
             name.c_str(), it->second.data.elements);
     }
     for (auto &i : *this) {
@@ -479,21 +479,21 @@ void RunPlanVec::setPropertyRandom(const std::string &name, rand_dist &distribut
     }
 }
 template<typename T, typename rand_dist>
-void RunPlanVec::setPropertyRandom(const std::string &name, const EnvironmentManager::size_type &index, rand_dist &distribution) {
+void RunPlanVector::setPropertyRandom(const std::string &name, const EnvironmentManager::size_type &index, rand_dist &distribution) {
     // Validation
     if (this->size() < 2) {
         THROW std::out_of_range("Unable to apply a property distribution a vector with less than 2 elements, "
-            "in RunPlanVec::setPropertyUniformDistribution()\n");
+            "in RunPlanVector::setPropertyUniformDistribution()\n");
     }
     const auto it = environment->find(name);
     if (it == environment->end()) {
         THROW InvalidEnvProperty("Environment description does not contain property '%s', "
-            "in RunPlanVec::setPropertyUniformDistribution()\n",
+            "in RunPlanVector::setPropertyUniformDistribution()\n",
             name.c_str());
     }
     if (it->second.data.type != std::type_index(typeid(T))) {
         THROW InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
-            "in RunPlanVec::setPropertyUniformDistribution()\n",
+            "in RunPlanVector::setPropertyUniformDistribution()\n",
             name.c_str(), it->second.data.type.name(), std::type_index(typeid(T)).name());
     }
     if (it->second.data.elements >= index) {
@@ -508,38 +508,38 @@ void RunPlanVec::setPropertyRandom(const std::string &name, const EnvironmentMan
  * Convenience random implementations
  */
 template<typename T>
-void RunPlanVec::setPropertyUniformRandom(const std::string &name, const T &min, const T &max) {
-    static_assert(FGPU_SA::_Is_IntType<T>::value, "Invalid template argument for RunPlanVec::setPropertyUniformRandom(const std::string &name, const T &min, const T&max)");
+void RunPlanVector::setPropertyUniformRandom(const std::string &name, const T &min, const T &max) {
+    static_assert(FGPU_SA::_Is_IntType<T>::value, "Invalid template argument for RunPlanVector::setPropertyUniformRandom(const std::string &name, const T &min, const T&max)");
     std::uniform_int_distribution<T> dist(min, max);
     setPropertyRandom<T>(name, dist);
 }
 template<typename T>
-void RunPlanVec::setPropertyUniformRandom(const std::string &name, const EnvironmentManager::size_type &index, const T &min, const T &max) {
-    static_assert(FGPU_SA::_Is_IntType<T>::value, "Invalid template argument for RunPlanVec::setPropertyUniformRandom(const std::string &name, const EnvironmentManager::size_type &index, const T &min, const T&max)");
+void RunPlanVector::setPropertyUniformRandom(const std::string &name, const EnvironmentManager::size_type &index, const T &min, const T &max) {
+    static_assert(FGPU_SA::_Is_IntType<T>::value, "Invalid template argument for RunPlanVector::setPropertyUniformRandom(const std::string &name, const EnvironmentManager::size_type &index, const T &min, const T&max)");
     std::uniform_int_distribution<T> dist(min, max);
     setPropertyRandom<T>(name, index, dist);
 }
 template<typename T>
-void RunPlanVec::setPropertyNormalRandom(const std::string &name, const T &mean, const T &stddev) {
-    static_assert(FGPU_SA::_Is_RealType<T>::value, "Invalid template argument for RunPlanVec::setPropertyNormalRandom(const std::string &name, const T &mean, const T &stddev)");
+void RunPlanVector::setPropertyNormalRandom(const std::string &name, const T &mean, const T &stddev) {
+    static_assert(FGPU_SA::_Is_RealType<T>::value, "Invalid template argument for RunPlanVector::setPropertyNormalRandom(const std::string &name, const T &mean, const T &stddev)");
     std::normal_distribution<T> dist(mean, stddev);
     setPropertyRandom<T>(name, dist);
 }
 template<typename T>
-void RunPlanVec::setPropertyNormalRandom(const std::string &name, const EnvironmentManager::size_type &index, const T &mean, const T &stddev) {
-    static_assert(FGPU_SA::_Is_RealType<T>::value, "Invalid template argument for RunPlanVec::setPropertyNormalRandom(const std::string &name, const EnvironmentManager::size_type &index, const T &mean, const T &stddev)");
+void RunPlanVector::setPropertyNormalRandom(const std::string &name, const EnvironmentManager::size_type &index, const T &mean, const T &stddev) {
+    static_assert(FGPU_SA::_Is_RealType<T>::value, "Invalid template argument for RunPlanVector::setPropertyNormalRandom(const std::string &name, const EnvironmentManager::size_type &index, const T &mean, const T &stddev)");
     std::normal_distribution<T> dist(mean, stddev);
     setPropertyRandom<T>(name, index, dist);
 }
 template<typename T>
-void RunPlanVec::setPropertyLogNormalRandom(const std::string &name, const T &mean, const T &stddev) {
-    static_assert(FGPU_SA::_Is_RealType<T>::value, "Invalid template argument for RunPlanVec::setPropertyLogNormalRandom(const std::string &name, const T &mean, const T &stddev)");
+void RunPlanVector::setPropertyLogNormalRandom(const std::string &name, const T &mean, const T &stddev) {
+    static_assert(FGPU_SA::_Is_RealType<T>::value, "Invalid template argument for RunPlanVector::setPropertyLogNormalRandom(const std::string &name, const T &mean, const T &stddev)");
     std::lognormal_distribution<T> dist(mean, stddev);
     setPropertyRandom<T>(name, dist);
 }
 template<typename T>
-void RunPlanVec::setPropertyLogNormalRandom(const std::string &name, const EnvironmentManager::size_type &index, const T &mean, const T &stddev) {
-    static_assert(FGPU_SA::_Is_RealType<T>::value, "Invalid template argument for RunPlanVec::setPropertyLogNormalRandom(const std::string &name, const EnvironmentManager::size_type &index, const T &mean, const T &stddev)");
+void RunPlanVector::setPropertyLogNormalRandom(const std::string &name, const EnvironmentManager::size_type &index, const T &mean, const T &stddev) {
+    static_assert(FGPU_SA::_Is_RealType<T>::value, "Invalid template argument for RunPlanVector::setPropertyLogNormalRandom(const std::string &name, const EnvironmentManager::size_type &index, const T &mean, const T &stddev)");
     std::lognormal_distribution<T> dist(mean, stddev);
     setPropertyRandom<T>(name, index, dist);
 }
@@ -549,56 +549,56 @@ void RunPlanVec::setPropertyLogNormalRandom(const std::string &name, const Envir
  * char != signed char (or unsigned char)
  */
 template<>
-inline void RunPlanVec::setPropertyUniformRandom(const std::string &name, const float &min, const float &max) {
+inline void RunPlanVector::setPropertyUniformRandom(const std::string &name, const float &min, const float &max) {
     std::uniform_real_distribution<float> dist(min, max);
     setPropertyRandom<float>(name, dist);
 }
 template<>
-inline void RunPlanVec::setPropertyUniformRandom(const std::string &name, const EnvironmentManager::size_type &index, const float &min, const float &max) {
+inline void RunPlanVector::setPropertyUniformRandom(const std::string &name, const EnvironmentManager::size_type &index, const float &min, const float &max) {
     std::uniform_real_distribution<float> dist(min, max);
     setPropertyRandom<float>(name, index, dist);
 }
 template<>
-inline void RunPlanVec::setPropertyUniformRandom(const std::string &name, const double &min, const double &max) {
+inline void RunPlanVector::setPropertyUniformRandom(const std::string &name, const double &min, const double &max) {
     std::uniform_real_distribution<double> dist(min, max);
     setPropertyRandom<double>(name, dist);
 }
 template<>
-inline void RunPlanVec::setPropertyUniformRandom(const std::string &name, const EnvironmentManager::size_type &index, const double &min, const double &max) {
+inline void RunPlanVector::setPropertyUniformRandom(const std::string &name, const EnvironmentManager::size_type &index, const double &min, const double &max) {
     std::uniform_real_distribution<double> dist(min, max);
     setPropertyRandom<double>(name, index, dist);
 }
 template<>
-inline void RunPlanVec::setPropertyUniformRandom(const std::string &name, const char &min, const char &max) {
+inline void RunPlanVector::setPropertyUniformRandom(const std::string &name, const char &min, const char &max) {
     std::uniform_int_distribution<int16_t> dist(min, max);
     setPropertyRandom<char>(name, dist);
 }
 template<>
-inline void RunPlanVec::setPropertyUniformRandom(const std::string &name, const EnvironmentManager::size_type &index, const char &min, const char &max) {
+inline void RunPlanVector::setPropertyUniformRandom(const std::string &name, const EnvironmentManager::size_type &index, const char &min, const char &max) {
     std::uniform_int_distribution<int16_t> dist(min, max);
     setPropertyRandom<char>(name, index, dist);
 }
 template<>
-inline void RunPlanVec::setPropertyUniformRandom(const std::string &name, const unsigned char &min, const unsigned char &max) {
+inline void RunPlanVector::setPropertyUniformRandom(const std::string &name, const unsigned char &min, const unsigned char &max) {
     std::uniform_int_distribution<uint16_t> dist(min, max);
     setPropertyRandom<unsigned char>(name, dist);
 }
 template<>
-inline void RunPlanVec::setPropertyUniformRandom(const std::string &name, const EnvironmentManager::size_type &index, const unsigned char &min, const unsigned char &max) {
+inline void RunPlanVector::setPropertyUniformRandom(const std::string &name, const EnvironmentManager::size_type &index, const unsigned char &min, const unsigned char &max) {
     std::uniform_int_distribution<uint16_t> dist(min, max);
     setPropertyRandom<unsigned char>(name, index, dist);
 }
 template<>
-inline void RunPlanVec::setPropertyUniformRandom(const std::string &name, const signed char &min, const signed char &max) {
+inline void RunPlanVector::setPropertyUniformRandom(const std::string &name, const signed char &min, const signed char &max) {
     std::uniform_int_distribution<int16_t> dist(min, max);
     setPropertyRandom<signed char>(name, dist);
 }
 template<>
-inline void RunPlanVec::setPropertyUniformRandom(const std::string &name, const EnvironmentManager::size_type &index, const signed char &min, const signed char &max) {
+inline void RunPlanVector::setPropertyUniformRandom(const std::string &name, const EnvironmentManager::size_type &index, const signed char &min, const signed char &max) {
     std::uniform_int_distribution<int16_t> dist(min, max);
     setPropertyRandom<signed char>(name, index, dist);
 }
 
 }  // namespace flamegpu
 
-#endif  // INCLUDE_FLAMEGPU_SIM_RUNPLANVEC_H_
+#endif  // INCLUDE_FLAMEGPU_SIM_RUNPLANVECTOR_H_

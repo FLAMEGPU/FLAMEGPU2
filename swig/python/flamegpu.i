@@ -525,7 +525,7 @@ class ModelVis;
 
 // Include ensemble implementations
 %include "flamegpu/sim/RunPlan.h"
-%include "flamegpu/sim/RunPlanVec.h"
+%include "flamegpu/sim/RunPlanVector.h"
 
 // %extend classes go after %includes, but before tempalates (that use them)
 // -----------------
@@ -566,8 +566,8 @@ class ModelVis;
         return $self->uniform<T>();
     }
 }
-// Extend RunPlanVec so that it is python iterable
-%extend flamegpu::RunPlanVec {
+// Extend RunPlanVector so that it is python iterable
+%extend flamegpu::RunPlanVector {
 %pythoncode {
     def __iter__(self):
         return FLAMEGPUIterator(self)
@@ -580,12 +580,12 @@ class ModelVis;
         else: # "insert" is used as if the vector is a native C++ container
             return self.insert(self, i, x)
    }
-   flamegpu::RunPlan &flamegpu::RunPlanVec::__getitem__(const int &index) {
+   flamegpu::RunPlan &flamegpu::RunPlanVector::__getitem__(const int &index) {
         if (index >= 0)
             return $self->operator[](index);
         return $self->operator[]($self->size() + index);
    }
-   void RunPlanVec::__setitem__(const size_t &index, flamegpu::RunPlan &value) {
+   void RunPlanVector::__setitem__(const size_t &index, flamegpu::RunPlan &value) {
         $self->operator[](index) = value;
    }
 }
@@ -668,13 +668,13 @@ TEMPLATE_VARIABLE_INSTANTIATE_ID(setPropertyArray, flamegpu::RunPlan::setPropert
 TEMPLATE_VARIABLE_INSTANTIATE_ID(getProperty, flamegpu::RunPlan::getProperty)
 TEMPLATE_VARIABLE_INSTANTIATE_ID(getPropertyArray, flamegpu::RunPlan::getPropertyArray)
 
-// Instantiate template versions of RunPlanVec functions from the API
-TEMPLATE_VARIABLE_INSTANTIATE_ID(setProperty, flamegpu::RunPlanVec::setProperty)
-TEMPLATE_VARIABLE_INSTANTIATE_ID(setPropertyArray, flamegpu::RunPlanVec::setPropertyArray)
-TEMPLATE_VARIABLE_INSTANTIATE(setPropertyUniformDistribution, flamegpu::RunPlanVec::setPropertyUniformDistribution)
-TEMPLATE_VARIABLE_INSTANTIATE(setPropertyUniformRandomDistribution, flamegpu::RunPlanVec::setPropertyUniformRandom)
-TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(setPropertyNormalRandomDistribution, flamegpu::RunPlanVec::setPropertyNormalRandom)
-TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(setPropertyLogNormalRandomDistribution, flamegpu::RunPlanVec::setPropertyLogNormalRandom)
+// Instantiate template versions of RunPlanVector functions from the API
+TEMPLATE_VARIABLE_INSTANTIATE_ID(setProperty, flamegpu::RunPlanVector::setProperty)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(setPropertyArray, flamegpu::RunPlanVector::setPropertyArray)
+TEMPLATE_VARIABLE_INSTANTIATE(setPropertyUniformDistribution, flamegpu::RunPlanVector::setPropertyUniformDistribution)
+TEMPLATE_VARIABLE_INSTANTIATE(setPropertyUniformRandomDistribution, flamegpu::RunPlanVector::setPropertyUniformRandom)
+TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(setPropertyNormalRandomDistribution, flamegpu::RunPlanVector::setPropertyNormalRandom)
+TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(setPropertyLogNormalRandomDistribution, flamegpu::RunPlanVector::setPropertyLogNormalRandom)
 
 // Instantiate template versions of AgentLoggingConfig functions from the API
 TEMPLATE_VARIABLE_INSTANTIATE(logMean, flamegpu::AgentLoggingConfig::logMean)

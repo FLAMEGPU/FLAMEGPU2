@@ -1,7 +1,7 @@
 #include "flamegpu/sim/SimLogger.h"
 
 #include "flamegpu/io/factory.h"
-#include "flamegpu/sim/RunPlanVec.h"
+#include "flamegpu/sim/RunPlanVector.h"
 
 // If earlier than VS 2019
 #if defined(_MSC_VER) && _MSC_VER < 1920
@@ -27,7 +27,7 @@ using std::experimental::filesystem::v1::create_directory;
 namespace flamegpu {
 
 SimLogger::SimLogger(const std::vector<RunLog> &_run_logs,
-        const RunPlanVec &_run_plans,
+        const RunPlanVector &_run_plans,
         const std::string &_out_directory,
         const std::string &_out_format,
         std::queue<unsigned int> &_log_export_queue,

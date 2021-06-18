@@ -53,7 +53,7 @@ class EnvironmentDescription {
     friend class CUDASimulation;
 
     friend class SimRunner;
-    friend void CUDAEnsemble::simulate(const RunPlanVec &plans);
+    friend void CUDAEnsemble::simulate(const RunPlanVector &plans);
 
  public:
     /**

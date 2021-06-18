@@ -15,12 +15,12 @@
 namespace flamegpu {
 
 class ModelDescription;
-class RunPlanVec;
+class RunPlanVector;
 /**
  * Individual run config
  */
 class RunPlan {
-    friend class RunPlanVec;
+    friend class RunPlanVector;
     friend class SimRunner;
     friend class jsonLogger;
     friend class xmlLogger;
@@ -161,9 +161,9 @@ class RunPlan {
     /**
      * Operator methods for combining vectors
      */
-    RunPlanVec operator+(const RunPlan& rhs) const;
-    RunPlanVec operator+(const RunPlanVec& rhs) const;
-    RunPlanVec operator*(const unsigned int& rhs) const;
+    RunPlanVector operator+(const RunPlan& rhs) const;
+    RunPlanVector operator+(const RunPlanVector& rhs) const;
+    RunPlanVector operator*(const unsigned int& rhs) const;
 
  private:
     explicit RunPlan(const std::shared_ptr<const std::unordered_map<std::string, EnvironmentDescription::PropData>> &environment, const bool &allow_0);
