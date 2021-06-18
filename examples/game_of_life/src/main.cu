@@ -1,4 +1,4 @@
-#include "flamegpu/flame_api.h"
+#include "flamegpu/flamegpu.h"
 #include "flamegpu/util/nvtx.h"
 
 FLAMEGPU_AGENT_FUNCTION(output, flamegpu::MsgNone, flamegpu::MsgArray2D) {

@@ -17,7 +17,7 @@
 #include <tuple>
 #include <vector>
 
-#include "flamegpu/flame_api.h"
+#include "flamegpu/flamegpu.h"
 #include "helpers/common.h"
 
 #include "gtest/gtest.h"

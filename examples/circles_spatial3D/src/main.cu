@@ -1,4 +1,4 @@
-#include "flamegpu/flame_api.h"
+#include "flamegpu/flamegpu.h"
 
 FLAMEGPU_AGENT_FUNCTION(output_message, flamegpu::MsgNone, flamegpu::MsgSpatial3D) {
     FLAMEGPU->message_out.setVariable<flamegpu::id_t>("id", FLAMEGPU->getID());

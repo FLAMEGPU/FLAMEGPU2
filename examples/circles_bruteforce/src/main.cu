@@ -1,4 +1,4 @@
-#include "flamegpu/flame_api.h"
+#include "flamegpu/flamegpu.h"
 #include "flamegpu/util/nvtx.h"
 
 

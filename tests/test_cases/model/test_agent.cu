@@ -2,7 +2,7 @@
 #include <string>
 #include <iostream>
 
-#include "flamegpu/flame_api.h"
+#include "flamegpu/flamegpu.h"
 #include "flamegpu/runtime/flamegpu_api.h"
 
 #include "gtest/gtest.h"

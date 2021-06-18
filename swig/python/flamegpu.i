@@ -40,7 +40,7 @@
 // Insert the api header and using namespace directive into the _wrap code.
 %{
 // Include the main library header, that should subsequently make all other required (public) headers available.
-#include "flamegpu/flame_api.h"
+#include "flamegpu/flamegpu.h"
 // #include "flamegpu/runtime/HostFunctionCallback.h"
 using namespace flamegpu; // @todo - is this required? Ideally it shouldn't be, but swig just dumps stuff into the global namespace. 
 %}

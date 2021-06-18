@@ -3,7 +3,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "flamegpu/flame_api.h"
+#include "flamegpu/flamegpu.h"
 
 
 
