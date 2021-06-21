@@ -85,7 +85,7 @@ std::unique_ptr<KernelInstantiation> JitifyCache::compileKernel(const std::strin
     // Init runtime compilation constants
     static std::string env_inc_fgp2 = std::getenv("FLAMEGPU2_INC_DIR") ? std::getenv("FLAMEGPU2_INC_DIR") : "";
     static bool header_version_confirmed = false;
-    static std::string env_cuda_path = std::getenv("CUDA_PATH");
+    static std::string env_cuda_path = std::getenv("CUDA_PATH") ? std::getenv("CUDA_PATH") : "";
     if (env_inc_fgp2.empty()) {
         // Start with the current working directory
         path test_include(".");
@@ -129,7 +129,7 @@ std::unique_ptr<KernelInstantiation> JitifyCache::compileKernel(const std::strin
 break_fgpu2_inc_dir_loop:
         if (env_inc_fgp2.empty()) {
             THROW InvalidAgentFunc("Error compiling runtime agent function: Unable to automatically determine include directory and FLAMEGPU2_INC_DIR environment variable does not exist, "
-                "in JitifyCache::buildProgram().");
+                "in JitifyCache::compileKernel().");
         }
     }
     if (!header_version_confirmed) {
@@ -156,7 +156,7 @@ break_fgpu2_inc_dir_loop:
     }
     if (env_cuda_path.empty()) {
         THROW InvalidAgentFunc("Error compiling runtime agent function: CUDA_PATH environment variable does not exist, "
-            "in CUDAAgent::addInstantitateRTCFunction().");
+            "in CUDAAgent::compileKernel().");
     }
     // If the last char is a / or \, remove it. Only removes a single slash.
     if ((env_cuda_path.back() == '/' || env_cuda_path.back() == '\\')) {
