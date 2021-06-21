@@ -282,7 +282,18 @@ class CUDAAgent : public AgentInterface {
      * Returns a device pointer to the value returns by nextID(0)
      * If the device value is changed, then the internal ID counter must be updated via CUDAAgent::scatterNew()
      */
+    id_t* getDeviceNextIDAsync(cudaStream_t stream);
+    /**
+     * Returns a device pointer to the value returns by nextID(0)
+     * If the device value is changed, then the internal ID counter must be updated via CUDAAgent::scatterNew()
+     */
     id_t* getDeviceNextID();
+    /**
+     * Assigns IDs to any agents who's ID has the value ID_NOT_SET
+     * @param hostapi HostAPI object, this is used to provide cub temp storage
+     * @param stream Stream to perform the work with asynchronously.
+     */
+    void assignIDsAsync(HostAPI& hostapi, cudaStream_t stream);
     /**
      * Assigns IDs to any agents who's ID has the value ID_NOT_SET
      * @param hostapi HostAPI object, this is used to provide cub temp storage

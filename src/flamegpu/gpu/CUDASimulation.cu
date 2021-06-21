@@ -286,9 +286,6 @@ bool CUDASimulation::step() {
     std::unique_ptr<util::detail::Timer> stepTimer = getDriverAppropriateTimer();
     stepTimer->start();
 
-    // Init any unset agent IDs
-    this->assignAgentIDs();
-
     // If verbose, print the step number.
     if (getSimulationConfig().verbose) {
         fprintf(stdout, "Processing Simulation Step %u\n", step_count);
@@ -298,6 +295,9 @@ bool CUDASimulation::step() {
     // Taking into consideration if in-layer concurrency is disabled or not.
     unsigned int nStreams = getMaximumLayerWidth();
     this->createStreams(nStreams);
+
+    // Init any unset agent IDs
+    this->assignAgentIDs();
 
     // Reset message list flags
     for (auto m =  message_map.begin(); m != message_map.end(); ++m) {
@@ -672,7 +672,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
             if (auto oa = func_des->agent_output.lock()) {
                 agentoutput_hash = (detail::curve::Curve::variableRuntimeHash("_agent_birth") ^ funcname_hash) + instance_id;
                 CUDAAgent& output_agent = getCUDAAgent(oa->name);
-                d_agentOut_nextID = output_agent.getDeviceNextID();
+                d_agentOut_nextID = output_agent.getDeviceNextIDAsync(this->getStream(streamIdx));
             }
 
             const CUDAAgent& cuda_agent = getCUDAAgent(agent_name);
@@ -1724,8 +1724,20 @@ void CUDASimulation::assignAgentIDs() {
         // Ensure singletons have been initialised
         initialiseSingletons();
 
+        // Ensure there are enough streasm
+        unsigned int nStreams = static_cast<unsigned int>(agent_map.size());
+        this->createStreams(nStreams);
+
+        unsigned int idx = 0;
         for (auto &a : agent_map) {
-            a.second->assignIDs(*host_api);  // This is cheap if the CUDAAgent thinks it's IDs are already assigned
+            a.second->assignIDsAsync(*host_api, this->getStream(idx));  // This is cheap if the CUDAAgent thinks it's IDs are already assigned
+            idx++;
+        }
+
+        // Sync all the streams used here
+        // @todo - Record an event in each participating stream, and sync that event. Ideally create and destroy the event once.
+        for (idx = 0; idx < nStreams; idx++) {
+            gpuErrchk(cudaStreamSynchronize(this->getStream(idx)));
         }
         agent_ids_have_init = true;
     }

@@ -711,8 +711,14 @@ std::list<std::shared_ptr<VariableBuffer>> CUDAAgent::getUnboundVariableBuffers(
 id_t CUDAAgent::nextID(unsigned int count) {
     return fat_agent->nextID(count);
 }
+id_t* CUDAAgent::getDeviceNextIDAsync(cudaStream_t stream) {
+    return fat_agent->getDeviceNextIDAsync(stream);
+}
 id_t* CUDAAgent::getDeviceNextID() {
     return fat_agent->getDeviceNextID();
+}
+void CUDAAgent::assignIDsAsync(HostAPI& hostapi, cudaStream_t stream) {
+    fat_agent->assignIDsAsync(hostapi, stream);
 }
 void CUDAAgent::assignIDs(HostAPI& hostapi) {
     fat_agent->assignIDs(hostapi);
