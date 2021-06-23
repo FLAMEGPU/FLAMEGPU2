@@ -1,6 +1,8 @@
 #ifndef INCLUDE_FLAMEGPU_UTIL_FILESYSTEM_H_
 #define INCLUDE_FLAMEGPU_UTIL_FILESYSTEM_H_
 
+#include <string>
+
 // If earlier than VS 2019
 #if defined(_MSC_VER) && _MSC_VER < 1920
 #include <filesystem>
@@ -33,6 +35,20 @@ inline void recursive_create_dir(const path &dir) {
         recursive_create_dir(parent_dir);
     }
     create_directory(dir);
+}
+
+/**
+ * Utility function for returning the file extension from a string
+ * @param s String containing a file path
+ */
+inline std::string getFileExt(const std::string& s) {
+    // Find the last position of '.' in given string
+    size_t i = s.rfind('.', s.length());
+    if (i != std::string::npos) {
+        return(s.substr(i + 1, s.length() - i));
+    }
+    // In case of no extension return empty string
+    return("");
 }
 
 }  // namespace filesystem

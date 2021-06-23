@@ -8,7 +8,7 @@
  * \todo longer description
  */
 
-#include "flamegpu/io/xmlReader.h"
+#include "flamegpu/io/XMLStateReader.h"
 #include <sstream>
 #include <algorithm>
 #include <tuple>
@@ -63,7 +63,7 @@ namespace flamegpu {
 }
 #endif
 
-xmlReader::xmlReader(
+XMLStateReader::XMLStateReader(
     const std::string &model_name,
     const std::unordered_map<std::string, EnvironmentDescription::PropData> &env_desc,
     std::unordered_map<std::pair<std::string, unsigned int>, util::Any> &env_init,
@@ -72,7 +72,7 @@ xmlReader::xmlReader(
     Simulation *sim_instance)
     : StateReader(model_name, env_desc, env_init, model_state, input, sim_instance) {}
 
-std::string xmlReader::getInitialState(const std::string &agent_name) const {
+std::string XMLStateReader::getInitialState(const std::string &agent_name) const {
     for (const auto &i : model_state) {
         if (agent_name == i.first.first)
             return i.second->getInitialState();
@@ -82,7 +82,7 @@ std::string xmlReader::getInitialState(const std::string &agent_name) const {
 /**
 * \brief parses the xml file
 */
-int xmlReader::parse() {
+int XMLStateReader::parse() {
     tinyxml2::XMLDocument doc;
 
     tinyxml2::XMLError errorId = doc.LoadFile(inputFile.c_str());
@@ -188,7 +188,7 @@ int xmlReader::parse() {
             const auto it = env_desc.find(std::string(key));
             if (it == env_desc.end()) {
                 THROW TinyXMLError("Input file contains unrecognised environment property '%s',"
-                    "in xmlReader::parse()\n", key);
+                    "in XMLStateReader::parse()\n", key);
             }
             const std::type_index val_type = it->second.data.type;
             const auto elements = it->second.data.elements;
@@ -196,7 +196,7 @@ int xmlReader::parse() {
             while (getline(ss, token, ',')) {
                 if (env_init.find(make_pair(std::string(key), el)) != env_init.end()) {
                     THROW TinyXMLError("Input file contains environment property '%s' multiple times, "
-                        "in xmlReader::parse()\n", key);
+                        "in XMLStateReader::parse()\n", key);
                 }
                 if (val_type == std::type_index(typeid(float))) {
                     const float t = stof(token);
@@ -230,7 +230,7 @@ int xmlReader::parse() {
                     env_init.emplace(make_pair(std::string(key), el++), util::Any(&t, sizeof(uint8_t), val_type, 1));
                 } else {
                     THROW TinyXMLError("Model contains environment property '%s' of unsupported type '%s', "
-                        "in xmlReader::parse()\n", key, val_type.name());
+                        "in XMLStateReader::parse()\n", key, val_type.name());
                 }
             }
             if (el != elements) {
@@ -318,7 +318,7 @@ int xmlReader::parse() {
                         memcpy(data + ((agentVec->size() - 1) * v_size) + (var_data.type_size * el++), &t, var_data.type_size);
                     } else {
                         THROW TinyXMLError("Agent '%s' contains variable '%s' of unsupported type '%s', "
-                            "in xmlReader::parse()\n", agentName, variable_name.c_str(), var_data.type.name());
+                            "in XMLStateReader::parse()\n", agentName, variable_name.c_str(), var_data.type.name());
                     }
                 }
                 // Warn if var is wrong length

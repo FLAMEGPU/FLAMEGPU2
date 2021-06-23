@@ -1,6 +1,6 @@
 #include "flamegpu/sim/SimLogger.h"
 
-#include "flamegpu/io/factory.h"
+#include "flamegpu/io/LoggerFactory.h"
 #include "flamegpu/sim/RunPlanVector.h"
 
 // If earlier than VS 2019
@@ -79,10 +79,10 @@ void SimLogger::start() {
             }
             // Log items
             const path exit_path = p_out_directory/path(run_plans[target_log].getOutputSubdirectory())/path("exit." + out_format);
-            const auto exit_logger = WriterFactory::createLogger(exit_path.generic_string(), false, false);
+            const auto exit_logger = LoggerFactory::createLogger(exit_path.generic_string(), false, false);
             exit_logger->log(run_logs[target_log], true, false, true);
             const path step_path = p_out_directory/path(run_plans[target_log].getOutputSubdirectory())/path(std::to_string(target_log)+"."+out_format);
-            const auto step_logger = WriterFactory::createLogger(step_path.generic_string(), false, false);
+            const auto step_logger = LoggerFactory::createLogger(step_path.generic_string(), false, false);
             step_logger->log(run_logs[target_log], true, true, false);
 
             // Continue

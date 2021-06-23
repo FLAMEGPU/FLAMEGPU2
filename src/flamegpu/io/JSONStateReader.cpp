@@ -1,4 +1,4 @@
-#include "flamegpu/io/jsonReader.h"
+#include "flamegpu/io/JSONStateReader.h"
 
 #include <rapidjson/stream.h>
 #include <rapidjson/reader.h>
@@ -17,7 +17,7 @@
 
 namespace flamegpu {
 
-jsonReader::jsonReader(
+JSONStateReader::JSONStateReader(
     const std::string &model_name,
     const std::unordered_map<std::string, EnvironmentDescription::PropData> &env_desc,
     std::unordered_map<std::pair<std::string, unsigned int>, util::Any> &env_init,
@@ -29,7 +29,7 @@ jsonReader::jsonReader(
  * This is the main sax style parser for the json state
  * It stores it's current position within the hierarchy with mode, lastKey and current_variable_array_index
  */
-class jsonReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, jsonReader_impl>  {
+class JSONStateReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, JSONStateReader_impl>  {
     enum Mode{ Nop, Root, Config, Stats, SimCfg, CUDACfg, Environment, Agents, Agent, State, AgentInstance, VariableArray };
     std::stack<Mode> mode;
     std::string lastKey;
@@ -54,7 +54,7 @@ class jsonReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, j
     std::string current_state;
 
  public:
-    jsonReader_impl(const std::string &_filename,
+    JSONStateReader_impl(const std::string &_filename,
         const std::unordered_map<std::string, EnvironmentDescription::PropData> &_env_desc,
         std::unordered_map<std::pair<std::string, unsigned int>, util::Any> &_env_init,
         util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> &_model_state)
@@ -73,11 +73,11 @@ class jsonReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, j
             const auto it = env_desc.find(lastKey);
             if (it == env_desc.end()) {
                 THROW RapidJSONError("Input file contains unrecognised environment property '%s',"
-                    "in jsonReader::parse()\n", lastKey.c_str());
+                    "in JSONStateReader::parse()\n", lastKey.c_str());
             }
             if (env_init.find(make_pair(lastKey, current_variable_array_index)) != env_init.end()) {
                 THROW RapidJSONError("Input file contains environment property '%s' multiple times, "
-                    "in jsonReader::parse()\n", lastKey.c_str());
+                    "in JSONStateReader::parse()\n", lastKey.c_str());
             }
             const std::type_index val_type = it->second.data.type;
             if (val_type == std::type_index(typeid(float))) {
@@ -112,7 +112,7 @@ class jsonReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, j
                 env_init.emplace(make_pair(lastKey, current_variable_array_index++), util::Any(&t, sizeof(uint8_t), val_type, 1));
             } else {
                 THROW RapidJSONError("Model contains environment property '%s' of unsupported type '%s', "
-                    "in jsonReader::parse()\n", lastKey.c_str(), val_type.name());
+                    "in JSONStateReader::parse()\n", lastKey.c_str(), val_type.name());
             }
         } else if (mode.top() == AgentInstance) {
             const std::shared_ptr<AgentVector> &pop = model_state.at({current_agent, current_state});
@@ -154,7 +154,7 @@ class jsonReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, j
                 memcpy(data + ((pop->size() - 1) * v_size) + (var_data.type_size * current_variable_array_index++), &t, var_data.type_size);
             } else {
                 THROW RapidJSONError("Model contains agent variable '%s:%s' of unsupported type '%s', "
-                    "in jsonReader::parse()\n", current_agent.c_str(), lastKey.c_str(), val_type.name());
+                    "in JSONStateReader::parse()\n", current_agent.c_str(), lastKey.c_str(), val_type.name());
             }
         }  else if (mode.top() == CUDACfg || mode.top() == SimCfg || mode.top() == Stats) {
             // Not useful
@@ -258,7 +258,7 @@ class jsonReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, j
  * This allows the agent statelists to be preallocated
  * It also reads the config blocks, so that device can be init before we do environment
  */
-class jsonReader_agentsize_counter : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, jsonReader_impl>  {
+class JSONStateReader_agentsize_counter : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, JSONStateReader_impl>  {
     enum Mode{ Nop, Root, Config, Stats, SimCfg, CUDACfg, Environment, Agents, Agent, State, AgentInstance, VariableArray };
     std::stack<Mode> mode;
     std::string lastKey;
@@ -274,7 +274,7 @@ class jsonReader_agentsize_counter : public rapidjson::BaseReaderHandler<rapidjs
      util::StringPairUnorderedMap<unsigned int> getAgentCounts() const {
         return agentstate_counts;
     }
-    explicit jsonReader_agentsize_counter(const std::string &_filename, Simulation *_sim_instance)
+    explicit JSONStateReader_agentsize_counter(const std::string &_filename, Simulation *_sim_instance)
         : filename(_filename)
         , sim_instance(_sim_instance)
         , cudamodel_instance(dynamic_cast<CUDASimulation*>(_sim_instance)) { }
@@ -411,13 +411,13 @@ class jsonReader_agentsize_counter : public rapidjson::BaseReaderHandler<rapidjs
     }
 };
 
-int jsonReader::parse() {
+int JSONStateReader::parse() {
     std::ifstream in(inputFile, std::ios::in | std::ios::binary);
     if (!in) {
         THROW RapidJSONError("Unable to open file '%s' for reading.\n", inputFile.c_str());
     }
-    jsonReader_agentsize_counter agentcounter(inputFile, sim_instance);
-    jsonReader_impl handler(inputFile, env_desc, env_init, model_state);
+    JSONStateReader_agentsize_counter agentcounter(inputFile, sim_instance);
+    JSONStateReader_impl handler(inputFile, env_desc, env_init, model_state);
     std::string filestring = std::string((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
     rapidjson::StringStream filess(filestring.c_str());
     rapidjson::Reader reader;

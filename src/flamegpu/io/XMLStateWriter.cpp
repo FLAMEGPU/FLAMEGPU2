@@ -7,7 +7,7 @@
  *
  * \todo longer description
  */
-#include "flamegpu/io/xmlWriter.h"
+#include "flamegpu/io/XMLStateWriter.h"
 #include <sstream>
 #include "tinyxml2/tinyxml2.h"              // downloaded from https:// github.com/leethomason/tinyxml2, the list of xml parsers : http:// lars.ruoff.free.fr/xmlcpp/
 #include "flamegpu/exception/FGPUException.h"
@@ -60,7 +60,7 @@ namespace flamegpu {
 }
 #endif
 
-xmlWriter::xmlWriter(
+XMLStateWriter::XMLStateWriter(
     const std::string &model_name,
     const unsigned int &sim_instance_id,
     const util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> &model,
@@ -69,7 +69,7 @@ xmlWriter::xmlWriter(
     const Simulation *_sim_instance)
     : StateWriter(model_name, sim_instance_id, model, iterations, output_file, _sim_instance) {}
 
-int xmlWriter::writeStates(bool prettyPrint) {
+int XMLStateWriter::writeStates(bool prettyPrint) {
     tinyxml2::XMLDocument doc;
 
     tinyxml2::XMLNode * pRoot = doc.NewElement("states");
@@ -178,7 +178,7 @@ int xmlWriter::writeStates(bool prettyPrint) {
                         ss << static_cast<uint32_t>(*reinterpret_cast<const uint8_t*>(env_buffer + a.second.offset + (el * sizeof(uint8_t))));  // Char outputs weird if being used as an integer
                     } else {
                         THROW TinyXMLError("Model contains environment property '%s' of unsupported type '%s', "
-                            "in xmlWriter::writeStates()\n", a.first.second.c_str(), a.second.type.name());
+                            "in XMLStateWriter::writeStates()\n", a.first.second.c_str(), a.second.type.name());
                     }
                     if (el + 1 != a.second.elements)
                         ss << ",";
@@ -249,7 +249,7 @@ int xmlWriter::writeStates(bool prettyPrint) {
                             ss << static_cast<uint32_t>(instance.getVariable<uint8_t>(variable_name, el));  // Char outputs weird if being used as an integer
                         } else {
                             THROW TinyXMLError("Agent '%s' contains variable '%s' of unsupported type '%s', "
-                                "in xmlWriter::writeStates()\n", agent_name.c_str(), variable_name.c_str(), iter_mm->second.type.name());
+                                "in XMLStateWriter::writeStates()\n", agent_name.c_str(), variable_name.c_str(), iter_mm->second.type.name());
                         }
                         if (el + 1 != iter_mm->second.elements)
                             ss << ",";

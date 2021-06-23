@@ -22,8 +22,8 @@ class RunPlanVector;
 class RunPlan {
     friend class RunPlanVector;
     friend class SimRunner;
-    friend class jsonLogger;
-    friend class xmlLogger;
+    friend class JSONLogger;
+    friend class XMLLogger;
 
  public:
     /**

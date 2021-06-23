@@ -59,11 +59,11 @@ class EnvironmentManager {
     /**
      * Accesses properties to find all of a model's vars
      */
-    friend class xmlWriter;
-    friend class xmlReader;
-    friend class jsonWriter;
-    friend class jsonReader;
-    friend class jsonReader_impl;
+    friend class XMLStateWriter;
+    friend class XMLStateReader;
+    friend class JSONStateWriter;
+    friend class JSONStateReader;
+    friend class JSONStateReader_impl;
     /**
      * CUDASimulation instance id and Property name
      */

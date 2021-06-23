@@ -10,7 +10,7 @@ AGENT_NAME2 = "Agent2";
 class LoggingExceptionTest(TestCase):
 
     def test_LoggerSupportedFileType(self):
-        # WriterFactory::createLogger() - UnsupportedFileType
+        # LoggerFactory::createLogger() - UnsupportedFileType
         m = pyflamegpu.ModelDescription(MODEL_NAME);
         m.newAgent(AGENT_NAME1);
         sim = pyflamegpu.CUDASimulation(m);

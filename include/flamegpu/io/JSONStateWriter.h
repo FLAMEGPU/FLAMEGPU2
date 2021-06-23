@@ -1,23 +1,23 @@
-#ifndef INCLUDE_FLAMEGPU_IO_XMLWRITER_H_
-#define INCLUDE_FLAMEGPU_IO_XMLWRITER_H_
+#ifndef INCLUDE_FLAMEGPU_IO_JSONSTATEWRITER_H_
+#define INCLUDE_FLAMEGPU_IO_JSONSTATEWRITER_H_
 
 #include <memory>
 #include <string>
 #include <unordered_map>
 
-#include "flamegpu/io/statewriter.h"
+#include "flamegpu/io/StateWriter.h"
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/util/StringPair.h"
 
 namespace flamegpu {
 
 /**
- * XML format StateWriter
+ * JSON format StateWriter
  */
-class xmlWriter : public StateWriter {
+class JSONStateWriter : public StateWriter {
  public:
     /**
-     * Returns a writer capable of writing model state to an XML file
+     * Returns a writer capable of writing model state to a JSON file
      * Environment properties from the Simulation instance pointed to by 'sim_instance_id' will be used 
      * Agent data will be read from 'model_state'
      * @param model_name Name from the model description hierarchy of the model to be exported
@@ -27,7 +27,7 @@ class xmlWriter : public StateWriter {
      * @param output_file Filename of the input file (This will be used to determine which reader to return)
      * @param sim_instance Instance of the Simulation object (This is used for setting/getting config)
      */
-    xmlWriter(
+    JSONStateWriter(
         const std::string &model_name,
         const unsigned int &sim_instance_id,
         const util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> &model_state,
@@ -36,13 +36,21 @@ class xmlWriter : public StateWriter {
         const Simulation *sim_instance);
     /**
      * Actually perform the writing to file
+     * @return Always 0
      * @param prettyPrint Whether to include indentation and line breaks to aide human reading
-     * @return Always tinyxml2::XML_SUCCESS
-     * @throws TinyXMLError If export of the model state fails
+     * @throws RapidJSONError If export of the model state fails
      */
     int writeStates(bool prettyPrint) override;
+
+ private:
+    /**
+     * We cannot dynamic_cast between rapidjson::Writer and rapidjson::PrettyWriter
+     * So we use template instead of repeating the code
+     */
+    template<typename T>
+    void doWrite(T &writer);
 };
 
 }  // namespace flamegpu
 
-#endif  // INCLUDE_FLAMEGPU_IO_XMLWRITER_H_
+#endif  // INCLUDE_FLAMEGPU_IO_JSONSTATEWRITER_H_

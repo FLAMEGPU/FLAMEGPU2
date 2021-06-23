@@ -22,9 +22,9 @@ class RunPlan;
 /**
  * XML format Logger
  */
-class xmlLogger : public Logger{
+class XMLLogger : public Logger{
  public:
-    xmlLogger(const std::string &outPath, bool prettyPrint, bool truncateFile);
+    XMLLogger(const std::string &outPath, bool prettyPrint, bool truncateFile);
     /**
      * Log a runlog to file, using a RunPlan in place of config
      * @throws May throw exceptions if logging to file failed for any reason
