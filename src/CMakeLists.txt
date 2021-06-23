@@ -73,16 +73,18 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/version.h
     ${FLAMEGPU_ROOT}/include/flamegpu/defines.h
     ${FLAMEGPU_ROOT}/include/flamegpu/flamegpu.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/io/statereader.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/io/statewriter.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/io/jsonReader.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/io/jsonWriter.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/io/xmlReader.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/io/xmlWriter.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/io/factory.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/io/StateReader.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/io/StateWriter.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/io/JSONStateReader.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/io/JSONStateWriter.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/io/XMLStateReader.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/io/XMLStateWriter.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/io/StateReaderFactory.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/io/StateWriterFactory.h
     ${FLAMEGPU_ROOT}/include/flamegpu/io/Logger.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/io/xmlLogger.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/io/jsonLogger.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/io/LoggerFactory.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/io/XMLLogger.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/io/JSONLogger.h
     ${FLAMEGPU_ROOT}/include/flamegpu/exception/FGPUException.h
     ${FLAMEGPU_ROOT}/include/flamegpu/exception/FGPUDeviceException.h
     ${FLAMEGPU_ROOT}/include/flamegpu/exception/FGPUDeviceException_device.h
@@ -236,12 +238,12 @@ SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/Array2D.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/Array3D.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/Bucket.cu
-    ${FLAMEGPU_ROOT}/src/flamegpu/io/jsonReader.cpp
-    ${FLAMEGPU_ROOT}/src/flamegpu/io/jsonWriter.cpp
-    ${FLAMEGPU_ROOT}/src/flamegpu/io/xmlReader.cpp
-    ${FLAMEGPU_ROOT}/src/flamegpu/io/xmlWriter.cpp
-    ${FLAMEGPU_ROOT}/src/flamegpu/io/xmlLogger.cu
-    ${FLAMEGPU_ROOT}/src/flamegpu/io/jsonLogger.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/io/JSONStateReader.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/io/JSONStateWriter.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/io/XMLStateReader.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/io/XMLStateWriter.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/io/XMLLogger.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/io/JSONLogger.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/utility/HostEnvironment.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/utility/EnvironmentManager.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/utility/RandomManager.cu

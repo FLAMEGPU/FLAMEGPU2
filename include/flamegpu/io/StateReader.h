@@ -15,8 +15,8 @@ class AgentVector;
 
 /**
  * Abstract representation of a class for importing model data (agent population data, environment properties, run configuration) from file
- * @see XMLReader The XML implementation of a StateReader
- * @see JSONReader The JSON implementation of a StateReader
+ * @see XMLStateReader The XML implementation of a StateReader
+ * @see JSONStateReader The JSON implementation of a StateReader
  */
 class StateReader {
  public:

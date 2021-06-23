@@ -15,8 +15,8 @@ class AgentVector;
 
 /**
  * Abstract representation of a class for exporting model data (agent population data, environment properties, run configuration) to file
- * @see XMLWriter The XML implementation of a StateWriter
- * @see JSONWriter The JSON implementation of a StateWriter
+ * @see XMLStateWriter The XML implementation of a StateWriter
+ * @see JSONStateWriter The JSON implementation of a StateWriter
  */
 class StateWriter {
  public:

@@ -1,24 +1,24 @@
-#ifndef INCLUDE_FLAMEGPU_IO_XMLREADER_H_
-#define INCLUDE_FLAMEGPU_IO_XMLREADER_H_
+#ifndef INCLUDE_FLAMEGPU_IO_JSONSTATEREADER_H_
+#define INCLUDE_FLAMEGPU_IO_JSONSTATEREADER_H_
 
 #include <memory>
 #include <string>
 #include <unordered_map>
 #include <utility>
 
-#include "flamegpu/io/statereader.h"
+#include "flamegpu/io/StateReader.h"
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/util/StringPair.h"
 
 namespace flamegpu {
 
 /**
- * XML format StateReader
+ * JSON format StateReader
  */
-class xmlReader : public StateReader {
+class JSONStateReader : public StateReader {
  public:
     /**
-     * Constructs a reader capable of reading model state from XML files
+     * Constructs a reader capable of reading model state from JSON files
      * Environment properties will be read into the Simulation instance pointed to by 'sim_instance_id'
      * Agent data will be read into 'model_state'
      * @param model_name Name from the model description hierarchy of the model to be loaded
@@ -28,7 +28,7 @@ class xmlReader : public StateReader {
      * @param input_file Filename of the input file (This will be used to determine which reader to return)
      * @param sim_instance Instance of the Simulation object (This is used for setting/getting config)
      */
-    xmlReader(
+    JSONStateReader(
         const std::string &model_name,
         const std::unordered_map<std::string, EnvironmentDescription::PropData> &env_desc,
         std::unordered_map<std::pair<std::string, unsigned int>, util::Any> &env_init,
@@ -37,19 +37,12 @@ class xmlReader : public StateReader {
         Simulation *sim_instance);
     /**
      * Actual performs the XML parsing to load the model state
-     * @return Always tinyxml2::XML_SUCCESS
-     * @throws TinyXMLError If parsing of the input file fails
+     * @return Always 0
+     * @throws RapidJSONError If parsing of the input file fails
      */
     int parse() override;
-
- private:
-    /**
-     * Flamegpu1 xml input files are allowed to omit state
-     * This function extracts the initial state for the named agent from model_state;
-     */
-    std::string getInitialState(const std::string& agent_name) const;
 };
 
 }  // namespace flamegpu
 
-#endif  // INCLUDE_FLAMEGPU_IO_XMLREADER_H_
+#endif  // INCLUDE_FLAMEGPU_IO_JSONSTATEREADER_H_

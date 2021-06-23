@@ -15,7 +15,7 @@ const char *AGENT_NAME1 = "Agent1";
 const char *AGENT_NAME2 = "Agent2";
 
 TEST(LoggingExceptionTest, LoggerSupportedFileType) {
-    // WriterFactory::createLogger() - UnsupportedFileType
+    // LoggerFactory::createLogger() - UnsupportedFileType
     ModelDescription m(MODEL_NAME);
     m.newAgent(AGENT_NAME1);
     CUDASimulation sim(m);

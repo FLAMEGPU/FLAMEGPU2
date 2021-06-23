@@ -16,9 +16,9 @@ class RunPlan;
 /**
  * JSON format Logger
  */
-class jsonLogger : public Logger{
+class JSONLogger : public Logger{
  public:
-    jsonLogger(const std::string &outPath, bool prettyPrint, bool truncateFile);
+    JSONLogger(const std::string &outPath, bool prettyPrint, bool truncateFile);
     /**
      * Log a runlog to file, using a RunPlan in place of config
      * @throws May throw exceptions if logging to file failed for any reason

@@ -14,7 +14,7 @@
 #include "flamegpu/util/compute_capability.cuh"
 #include "flamegpu/util/SteadyClockTimer.h"
 #include "flamegpu/gpu/CUDASimulation.h"
-#include "flamegpu/io/factory.h"
+#include "flamegpu/io/StateWriterFactory.h"
 #include "flamegpu/util/filesystem.h"
 #include "flamegpu/sim/LoggingConfig.h"
 #include "flamegpu/sim/SimRunner.h"
@@ -42,7 +42,7 @@ void CUDAEnsemble::simulate(const RunPlanVector &plans) {
     // Validate/init output directories
     if (!config.out_directory.empty()) {
         // Validate out format is right
-        config.out_format = WriterFactory::detectSupportedFileExt(config.out_format);
+        config.out_format = StateWriterFactory::detectSupportedFileExt(config.out_format);
         if (config.out_format.empty()) {
             THROW InvalidArgument("The out_directory config option also requires the out_format options to be set to a suitable type (e.g. 'json', 'xml'), in CUDAEnsemble::simulate()");
         }
@@ -235,7 +235,7 @@ int CUDAEnsemble::checkArgs(int argc, const char** argv) {
                 return false;
             }
             // Validate output format is available in io module
-            config.out_format = WriterFactory::detectSupportedFileExt(argv[++i]);
+            config.out_format = StateWriterFactory::detectSupportedFileExt(argv[++i]);
             if (config.out_format.empty()) {
                 fprintf(stderr, "'%s' is not a supported output file type.\n", argv[i]);
                 return false;

@@ -1,4 +1,4 @@
-#include "flamegpu/io/xmlLogger.h"
+#include "flamegpu/io/XMLLogger.h"
 
 #include <sstream>
 
@@ -48,19 +48,19 @@ namespace flamegpu {
 }
 #endif
 
-xmlLogger::xmlLogger(const std::string &outPath, bool _prettyPrint, bool _truncateFile)
+XMLLogger::XMLLogger(const std::string &outPath, bool _prettyPrint, bool _truncateFile)
     : out_path(outPath)
     , prettyPrint(_prettyPrint)
     , truncateFile(_truncateFile) { }
 
-void xmlLogger::log(const RunLog &log, const RunPlan &plan, bool logSteps, bool logExit) const {
+void XMLLogger::log(const RunLog &log, const RunPlan &plan, bool logSteps, bool logExit) const {
   logCommon(log, &plan, false, logSteps, logExit);
 }
-void xmlLogger::log(const RunLog &log, bool logConfig, bool logSteps, bool logExit) const {
+void XMLLogger::log(const RunLog &log, bool logConfig, bool logSteps, bool logExit) const {
   logCommon(log, nullptr, logConfig, logSteps, logExit);
 }
 
-void xmlLogger::logCommon(const RunLog &log, const RunPlan *plan, bool doLogConfig, bool doLogSteps, bool doLogExit) const {
+void XMLLogger::logCommon(const RunLog &log, const RunPlan *plan, bool doLogConfig, bool doLogSteps, bool doLogExit) const {
     tinyxml2::XMLDocument doc;
 
     tinyxml2::XMLNode * pRoot = doc.NewElement("log");
@@ -92,7 +92,7 @@ void xmlLogger::logCommon(const RunLog &log, const RunPlan *plan, bool doLogConf
     fclose(fptr);
 }
 
-tinyxml2::XMLNode *xmlLogger::logConfig(tinyxml2::XMLDocument &doc, const RunLog &log) const {
+tinyxml2::XMLNode *XMLLogger::logConfig(tinyxml2::XMLDocument &doc, const RunLog &log) const {
     tinyxml2::XMLElement *pConfigElement = doc.NewElement("config");
     {
         tinyxml2::XMLElement *pListElement;
@@ -102,7 +102,7 @@ tinyxml2::XMLNode *xmlLogger::logConfig(tinyxml2::XMLDocument &doc, const RunLog
     }
     return pConfigElement;
 }
-tinyxml2::XMLNode *xmlLogger::logConfig(tinyxml2::XMLDocument &doc, const RunPlan &plan) const {
+tinyxml2::XMLNode *XMLLogger::logConfig(tinyxml2::XMLDocument &doc, const RunPlan &plan) const {
     tinyxml2::XMLElement *pConfigElement = doc.NewElement("config");
     {
         tinyxml2::XMLElement *pListElement;
@@ -127,7 +127,7 @@ tinyxml2::XMLNode *xmlLogger::logConfig(tinyxml2::XMLDocument &doc, const RunPla
     }
     return pConfigElement;
 }
-tinyxml2::XMLNode *xmlLogger::logSteps(tinyxml2::XMLDocument &doc, const RunLog &log) const {
+tinyxml2::XMLNode *XMLLogger::logSteps(tinyxml2::XMLDocument &doc, const RunLog &log) const {
     tinyxml2::XMLElement *pStepsElement = doc.NewElement("steps");
     {
         for (const auto &step : log.getStepLog()) {
@@ -136,13 +136,13 @@ tinyxml2::XMLNode *xmlLogger::logSteps(tinyxml2::XMLDocument &doc, const RunLog 
     }
     return pStepsElement;
 }
-tinyxml2::XMLNode *xmlLogger::logExit(tinyxml2::XMLDocument &doc, const RunLog &log) const {
+tinyxml2::XMLNode *XMLLogger::logExit(tinyxml2::XMLDocument &doc, const RunLog &log) const {
     tinyxml2::XMLElement *pExitElement = doc.NewElement("exit");
     pExitElement->InsertEndChild(writeLogFrame(doc, log.getExitLog()));
     return pExitElement;
 }
 
-tinyxml2::XMLNode *xmlLogger::writeLogFrame(tinyxml2::XMLDocument &doc, const LogFrame &frame) const {
+tinyxml2::XMLNode *XMLLogger::writeLogFrame(tinyxml2::XMLDocument &doc, const LogFrame &frame) const {
     tinyxml2::XMLElement *pFrameElement = doc.NewElement("step");
     {
         tinyxml2::XMLElement *pListElement;
@@ -222,7 +222,7 @@ tinyxml2::XMLNode *xmlLogger::writeLogFrame(tinyxml2::XMLDocument &doc, const Lo
     return pFrameElement;
 }
 
-void xmlLogger::writeAny(tinyxml2::XMLElement *pElement, const util::Any &value, const unsigned int &elements) const {
+void XMLLogger::writeAny(tinyxml2::XMLElement *pElement, const util::Any &value, const unsigned int &elements) const {
     std::stringstream ss;
     // Loop through elements, to construct csv string
     for (unsigned int el = 0; el < elements; ++el) {
@@ -250,7 +250,7 @@ void xmlLogger::writeAny(tinyxml2::XMLElement *pElement, const util::Any &value,
             ss << static_cast<int32_t>(static_cast<const char*>(value.ptr)[el]);  // Char outputs weird if being used as an integer
         } else {
             THROW TinyXMLError("Attempting to export value of unsupported type '%s', "
-                "in xmlLogger::writeAny()\n", value.type.name());
+                "in XMLLogger::writeAny()\n", value.type.name());
        }
         if (el + 1 != elements)
             ss << ",";

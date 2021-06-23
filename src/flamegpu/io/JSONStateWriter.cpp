@@ -1,4 +1,4 @@
-#include "flamegpu/io/jsonWriter.h"
+#include "flamegpu/io/JSONStateWriter.h"
 
 #include <rapidjson/writer.h>
 #include <rapidjson/prettywriter.h>
@@ -14,7 +14,7 @@
 #include "flamegpu/util/StringPair.h"
 namespace flamegpu {
 
-jsonWriter::jsonWriter(
+JSONStateWriter::JSONStateWriter(
     const std::string &model_name,
     const unsigned int &sim_instance_id,
     const util::StringPairUnorderedMap<std::shared_ptr<AgentVector>>&model,
@@ -24,7 +24,7 @@ jsonWriter::jsonWriter(
     : StateWriter(model_name, sim_instance_id, model, iterations, output_file, _sim_instance) {}
 
 template<typename T>
-void jsonWriter::doWrite(T &writer) {
+void JSONStateWriter::doWrite(T &writer) {
     // Begin json output object
     writer.StartObject();
 
@@ -128,7 +128,7 @@ void jsonWriter::doWrite(T &writer) {
                         writer.Uint(static_cast<uint32_t>(*reinterpret_cast<const uint8_t*>(env_buffer + a.second.offset + (el * sizeof(uint8_t)))));  // Char outputs weird if being used as an integer
                     } else {
                         THROW RapidJSONError("Model contains environment property '%s' of unsupported type '%s', "
-                            "in jsonWriter::writeStates()\n", a.first.second.c_str(), a.second.type.name());
+                            "in JSONStateWriter::writeStates()\n", a.first.second.c_str(), a.second.type.name());
                     }
                 }
                 if (a.second.elements > 1) {
@@ -192,7 +192,7 @@ void jsonWriter::doWrite(T &writer) {
                             writer.Uint(instance.getVariable<uint8_t>(variable_name, el));  // Char outputs weird if being used as an integer
                         } else {
                             THROW RapidJSONError("Agent '%s' contains variable '%s' of unsupported type '%s', "
-                                "in jsonWriter::writeStates()\n", agent.first.first.c_str(), variable_name.c_str(), var.second.type.name());
+                                "in JSONStateWriter::writeStates()\n", agent.first.first.c_str(), variable_name.c_str(), var.second.type.name());
                         }
                     }
                     if (var.second.elements > 1) {
@@ -212,7 +212,7 @@ void jsonWriter::doWrite(T &writer) {
     writer.EndObject();
 }
 
-int jsonWriter::writeStates(bool prettyPrint) {
+int JSONStateWriter::writeStates(bool prettyPrint) {
     rapidjson::StringBuffer s;
     if (prettyPrint) {
         rapidjson::PrettyWriter<rapidjson::StringBuffer> writer = rapidjson::PrettyWriter<rapidjson::StringBuffer>(s);

@@ -1,4 +1,4 @@
-#include "flamegpu/io/jsonLogger.h"
+#include "flamegpu/io/JSONLogger.h"
 
 #include <rapidjson/writer.h>
 #include <rapidjson/prettywriter.h>
@@ -12,20 +12,20 @@
 
 namespace flamegpu {
 
-jsonLogger::jsonLogger(const std::string &outPath, bool _prettyPrint, bool _truncateFile)
+JSONLogger::JSONLogger(const std::string &outPath, bool _prettyPrint, bool _truncateFile)
     : out_path(outPath)
     , prettyPrint(_prettyPrint)
     , truncateFile(_truncateFile) { }
 
-void jsonLogger::log(const RunLog &log, const RunPlan &plan, bool logSteps, bool logExit) const {
+void JSONLogger::log(const RunLog &log, const RunPlan &plan, bool logSteps, bool logExit) const {
   logCommon(log, &plan, false, logSteps, logExit);
 }
-void jsonLogger::log(const RunLog &log, bool logConfig, bool logSteps, bool logExit) const {
+void JSONLogger::log(const RunLog &log, bool logConfig, bool logSteps, bool logExit) const {
   logCommon(log, nullptr, logConfig, logSteps, logExit);
 }
 
 template<typename T>
-void jsonLogger::writeAny(T &writer, const util::Any &value, const unsigned int &elements) const {
+void JSONLogger::writeAny(T &writer, const util::Any &value, const unsigned int &elements) const {
     // Output value
     if (elements > 1) {
         writer.StartArray();
@@ -56,7 +56,7 @@ void jsonLogger::writeAny(T &writer, const util::Any &value, const unsigned int 
             writer.Int(static_cast<int32_t>(static_cast<const char*>(value.ptr)[el]));  // Char outputs weird if being used as an integer
         } else {
             THROW RapidJSONError("Attempting to export value of unsupported type '%s', "
-                "in jsonLogger::writeAny()\n", value.type.name());
+                "in JSONLogger::writeAny()\n", value.type.name());
         }
     }
     if (elements > 1) {
@@ -64,7 +64,7 @@ void jsonLogger::writeAny(T &writer, const util::Any &value, const unsigned int 
     }
 }
 template<typename T>
-void jsonLogger::writeLogFrame(T &writer, const LogFrame &frame) const {
+void JSONLogger::writeLogFrame(T &writer, const LogFrame &frame) const {
     writer.StartObject();
     {
         // Add static items
@@ -146,7 +146,7 @@ void jsonLogger::writeLogFrame(T &writer, const LogFrame &frame) const {
 }
 
 template<typename T>
-void jsonLogger::logConfig(T &writer, const RunLog &log) const {
+void JSONLogger::logConfig(T &writer, const RunLog &log) const {
     writer.Key("config");
     writer.StartObject();
     {
@@ -156,7 +156,7 @@ void jsonLogger::logConfig(T &writer, const RunLog &log) const {
     writer.EndObject();
 }
 template<typename T>
-void jsonLogger::logConfig(T &writer, const RunPlan &plan) const {
+void JSONLogger::logConfig(T &writer, const RunPlan &plan) const {
     writer.Key("config");
     writer.StartObject();
     {
@@ -180,7 +180,7 @@ void jsonLogger::logConfig(T &writer, const RunPlan &plan) const {
     writer.EndObject();
 }
 template<typename T>
-void jsonLogger::logSteps(T &writer, const RunLog &log) const {
+void JSONLogger::logSteps(T &writer, const RunLog &log) const {
     writer.Key("steps");
     writer.StartArray();
     {
@@ -191,13 +191,13 @@ void jsonLogger::logSteps(T &writer, const RunLog &log) const {
     writer.EndArray();
 }
 template<typename T>
-void jsonLogger::logExit(T &writer, const RunLog &log) const {
+void JSONLogger::logExit(T &writer, const RunLog &log) const {
     writer.Key("exit");
     writeLogFrame(writer, log.getExitLog());
 }
 
 template<typename T>
-void jsonLogger::logCommon(T &writer, const RunLog &log, const RunPlan *plan, bool doLogConfig, bool doLogSteps, bool doLogExit) const {
+void JSONLogger::logCommon(T &writer, const RunLog &log, const RunPlan *plan, bool doLogConfig, bool doLogSteps, bool doLogExit) const {
     // Begin json output object
     writer->StartObject();
     {
@@ -221,7 +221,7 @@ void jsonLogger::logCommon(T &writer, const RunLog &log, const RunPlan *plan, bo
     // End Json file
     writer->EndObject();
 }
-void jsonLogger::logCommon(const RunLog &log, const RunPlan *plan, bool doLogConfig, bool doLogSteps, bool doLogExit) const {
+void JSONLogger::logCommon(const RunLog &log, const RunPlan *plan, bool doLogConfig, bool doLogSteps, bool doLogExit) const {
     // Init writer
     rapidjson::StringBuffer s;
     if (prettyPrint) {
