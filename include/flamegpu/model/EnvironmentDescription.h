@@ -14,18 +14,6 @@
 #include "flamegpu/util/Any.h"
 #include "flamegpu/gpu/CUDAEnsemble.h"
 
-namespace std {
-/**
- * Hash operator for std::pair<std::string, unsigned int> , required for use of std::map etc for env_itn
- * @todo - replace std::pair<std::string, unsigned int> with a typedef / struct with a meaningful name, and/or move this to a separate location
- */
-template <> struct hash<std::pair<std::string, unsigned int>> {
-    std::size_t operator()(const std::pair<std::string, unsigned int>& k) const noexcept {
-        return ((std::hash<std::string>()(k.first) ^ (std::hash<unsigned int>()(k.second) << 1)) >> 1);
-    }
-};
-}  // namespace std
-
 namespace flamegpu {
 
 /**

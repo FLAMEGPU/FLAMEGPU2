@@ -8,6 +8,8 @@
 #include <unordered_map>
 
 #include "flamegpu/sim/AgentInterface.h"
+#include "flamegpu/util/StringUint32Pair.h"
+
 
 namespace flamegpu {
 
@@ -166,7 +168,7 @@ class Simulation {
     /**
      * Initial environment items if they have been loaded from file, prior to device selection
      */
-    std::unordered_map<std::pair<std::string, unsigned int>, util::Any> env_init;
+    util::StringUint32PairUnorderedMap<util::Any> env_init;
     /**
      * the width of the widest layer in the concrete version of the model (calculated once)
      */

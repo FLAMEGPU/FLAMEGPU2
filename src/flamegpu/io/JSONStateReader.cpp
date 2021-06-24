@@ -21,7 +21,7 @@ namespace io {
 JSONStateReader::JSONStateReader(
     const std::string &model_name,
     const std::unordered_map<std::string, EnvironmentDescription::PropData> &env_desc,
-    std::unordered_map<std::pair<std::string, unsigned int>, util::Any> &env_init,
+    util::StringUint32PairUnorderedMap<util::Any> &env_init,
     util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> &model_state,
     const std::string &input,
     Simulation *sim_instance)
@@ -36,7 +36,7 @@ class JSONStateReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8
     std::string lastKey;
     std::string filename;
     const std::unordered_map<std::string, EnvironmentDescription::PropData> env_desc;
-    std::unordered_map<std::pair<std::string, unsigned int>, util::Any> &env_init;
+    util::StringUint32PairUnorderedMap<util::Any> &env_init;
     /**
      * Used for setting agent values
      */
@@ -57,7 +57,7 @@ class JSONStateReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8
  public:
     JSONStateReader_impl(const std::string &_filename,
         const std::unordered_map<std::string, EnvironmentDescription::PropData> &_env_desc,
-        std::unordered_map<std::pair<std::string, unsigned int>, util::Any> &_env_init,
+        util::StringUint32PairUnorderedMap<util::Any> &_env_init,
         util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> &_model_state)
         : filename(_filename)
         , env_desc(_env_desc)
