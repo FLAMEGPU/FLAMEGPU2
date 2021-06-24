@@ -199,14 +199,14 @@ FLAMEGPU_AGENT_FUNCTION(OutSimple, MsgNone, MsgArray3D) {
     FLAMEGPU->message_out.setIndex(index_x, index_y, index_z);
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(MooreTest1, MsgArray3D, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(MooreTest1W, MsgArray3D, MsgNone) {
     const unsigned int my_index = FLAMEGPU->getVariable<unsigned int>("index");
     const unsigned int index_x = my_index % (dCBRT_AGENT_COUNT);
     const unsigned int index_y = (my_index / dCBRT_AGENT_COUNT) % (dCBRT_AGENT_COUNT + 1);
     const unsigned int index_z = my_index / ((dCBRT_AGENT_COUNT) * (dCBRT_AGENT_COUNT + 1));
 
     // Iterate and check it aligns
-    auto filter = FLAMEGPU->message_in(index_x, index_y, index_z);
+    auto filter = FLAMEGPU->message_in.wrap(index_x, index_y, index_z);
     auto msg = filter.begin();
     unsigned int message_read = 0;
     for (int i = -1; i <= 1; ++i) {
@@ -230,14 +230,14 @@ FLAMEGPU_AGENT_FUNCTION(MooreTest1, MsgArray3D, MsgNone) {
     FLAMEGPU->setVariable<unsigned int>("message_read", message_read);
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(MooreTest2, MsgArray3D, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(MooreTest2W, MsgArray3D, MsgNone) {
     const unsigned int my_index = FLAMEGPU->getVariable<unsigned int>("index");
     const unsigned int index_x = my_index % (dCBRT_AGENT_COUNT);
     const unsigned int index_y = (my_index / dCBRT_AGENT_COUNT) % (dCBRT_AGENT_COUNT + 1);
     const unsigned int index_z = my_index / ((dCBRT_AGENT_COUNT) * (dCBRT_AGENT_COUNT + 1));
 
     // Iterate and check it aligns
-    auto filter = FLAMEGPU->message_in(index_x, index_y, index_z, 2);
+    auto filter = FLAMEGPU->message_in.wrap(index_x, index_y, index_z, 2);
     auto msg = filter.begin();
     unsigned int message_read = 0;
     for (int i = -2; i <= 2; ++i) {
@@ -261,7 +261,7 @@ FLAMEGPU_AGENT_FUNCTION(MooreTest2, MsgArray3D, MsgNone) {
     FLAMEGPU->setVariable<unsigned int>("message_read", message_read);
     return ALIVE;
 }
-TEST(TestMessage_Array3D, Moore1) {
+TEST(TestMessage_Array3D, Moore1W) {
     ModelDescription m(MODEL_NAME);
     MsgArray3D::Description &msg = m.newMessage<MsgArray3D>(MESSAGE_NAME);
     msg.setDimensions(CBRT_AGENT_COUNT, CBRT_AGENT_COUNT + 1, CBRT_AGENT_COUNT + 2);
@@ -270,7 +270,7 @@ TEST(TestMessage_Array3D, Moore1) {
     a.newVariable<unsigned int>("message_read", UINT_MAX);
     AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, OutSimple);
     fo.setMessageOutput(msg);
-    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, MooreTest1);
+    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, MooreTest1W);
     fi.setMessageInput(msg);
     LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
@@ -294,7 +294,7 @@ TEST(TestMessage_Array3D, Moore1) {
         EXPECT_EQ(27u, message_read);  // @todo This actually should be 26?
     }
 }
-TEST(TestMessage_Array3D, Moore2) {
+TEST(TestMessage_Array3D, Moore2W) {
     ModelDescription m(MODEL_NAME);
     MsgArray3D::Description &msg = m.newMessage<MsgArray3D>(MESSAGE_NAME);
     msg.setDimensions(CBRT_AGENT_COUNT, CBRT_AGENT_COUNT + 1, CBRT_AGENT_COUNT + 2);
@@ -303,7 +303,7 @@ TEST(TestMessage_Array3D, Moore2) {
     a.newVariable<unsigned int>("message_read", UINT_MAX);
     AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, OutSimple);
     fo.setMessageOutput(msg);
-    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, MooreTest2);
+    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, MooreTest2W);
     fi.setMessageInput(msg);
     LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
@@ -339,8 +339,6 @@ TEST(TestMessage_Array3D, DISABLED_DuplicateOutputException) {
     msg.setDimensions(CBRT_AGENT_COUNT, CBRT_AGENT_COUNT + 1, CBRT_AGENT_COUNT + 2);
     msg.newVariable<unsigned int>("index_times_3");
     AgentDescription &a = m.newAgent(AGENT_NAME);
-    a.newVariable<unsigned int>("index");
-    a.newVariable<unsigned int>("message_read", UINT_MAX);
     a.newVariable<unsigned int>("message_write");
     AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, OutBad);
     fo.setMessageOutput(msg);
@@ -362,9 +360,7 @@ TEST(TestMessage_Array3D, DISABLED_DuplicateOutputException) {
     AgentVector pop(a, AGENT_COUNT);
     for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
         AgentVector::Agent ai = pop[i];
-        ai.setVariable<unsigned int>("index", i);
-        ai.setVariable<unsigned int>("message_read", UINT_MAX);
-        ai.setVariable<unsigned int>("message_write", numbers[i]);
+        ai.setVariable<unsigned int>("message_write", i);
     }
     // Set pop in model
     CUDASimulation c(m);
@@ -429,6 +425,367 @@ TEST(TestMessage_Array3D, ReadEmpty) {
     auto ai = pop_out[0];
     EXPECT_EQ(ai.getVariable<unsigned int>("value"), 0u);  // Unset array msgs should be 0
 }
+#if !defined(SEATBELTS) || SEATBELTS
+FLAMEGPU_AGENT_FUNCTION(InMooreWOutOfBoundsX, MsgArray3D, MsgNone) {
+    for (auto a : FLAMEGPU->message_in.wrap(dCBRT_AGENT_COUNT, 0, 0)) {
+        FLAMEGPU->setVariable<unsigned int>("index", a.getVariable<unsigned int>("index_times_3"));
+    }
+    return ALIVE;
+}
+TEST(TestMessage_Array3D, MooreW_InitOutOfBoundsX) {
+#else
+TEST(TestMessage_Array3D, DISABLED_MooreW_InitOutOfBoundsX) {
+#endif
+    ModelDescription m(MODEL_NAME);
+    MsgArray3D::Description& msg = m.newMessage<MsgArray3D>(MESSAGE_NAME);
+    msg.setDimensions(CBRT_AGENT_COUNT, CBRT_AGENT_COUNT + 1, CBRT_AGENT_COUNT + 2);
+    msg.newVariable<unsigned int>("index_times_3");
+    AgentDescription& a = m.newAgent(AGENT_NAME);
+    a.newVariable<unsigned int>("index");
+    a.newVariable<unsigned int>("message_read", UINT_MAX);
+    a.newVariable<unsigned int>("message_write");
+    AgentFunctionDescription& fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
+    fo.setMessageOutput(msg);
+    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, InMooreWOutOfBoundsX);
+    fi.setMessageInput(msg);
+    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    lo.addAgentFunction(fo);
+    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    li.addAgentFunction(fi);
+    // Assign the numbers in shuffled order to agents
+    AgentVector pop(a, AGENT_COUNT);
+    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+        AgentVector::Agent ai = pop[i];
+        ai.setVariable<unsigned int>("index", i);
+        ai.setVariable<unsigned int>("message_read", UINT_MAX);
+        ai.setVariable<unsigned int>("message_write", i);
+    }
+    // Set pop in model
+    CUDASimulation c(m);
+    c.setPopulationData(pop);
+    EXPECT_THROW(c.step(), DeviceError);
+}
+#if !defined(SEATBELTS) || SEATBELTS
+FLAMEGPU_AGENT_FUNCTION(InMooreWOutOfBoundsY, MsgArray3D, MsgNone) {
+    for (auto a : FLAMEGPU->message_in.wrap(0, dCBRT_AGENT_COUNT + 1, 0)) {
+        FLAMEGPU->setVariable<unsigned int>("index", a.getVariable<unsigned int>("index_times_3"));
+    }
+    return ALIVE;
+}
+TEST(TestMessage_Array3D, MooreW_InitOutOfBoundsY) {
+#else
+TEST(TestMessage_Array3D, DISABLED_MooreW_InitOutOfBoundsY) {
+#endif
+    ModelDescription m(MODEL_NAME);
+    MsgArray3D::Description& msg = m.newMessage<MsgArray3D>(MESSAGE_NAME);
+    msg.setDimensions(CBRT_AGENT_COUNT, CBRT_AGENT_COUNT + 1, CBRT_AGENT_COUNT + 2);
+    msg.newVariable<unsigned int>("index_times_3");
+    AgentDescription& a = m.newAgent(AGENT_NAME);
+    a.newVariable<unsigned int>("index");
+    a.newVariable<unsigned int>("message_read", UINT_MAX);
+    a.newVariable<unsigned int>("message_write");
+    AgentFunctionDescription& fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
+    fo.setMessageOutput(msg);
+    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, InMooreWOutOfBoundsY);
+    fi.setMessageInput(msg);
+    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    lo.addAgentFunction(fo);
+    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    li.addAgentFunction(fi);
+    // Assign the numbers in shuffled order to agents
+    AgentVector pop(a, AGENT_COUNT);
+    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+        AgentVector::Agent ai = pop[i];
+        ai.setVariable<unsigned int>("index", i);
+        ai.setVariable<unsigned int>("message_read", UINT_MAX);
+        ai.setVariable<unsigned int>("message_write", i);
+    }
+    // Set pop in model
+    CUDASimulation c(m);
+    c.setPopulationData(pop);
+    EXPECT_THROW(c.step(), DeviceError);
+}
+#if !defined(SEATBELTS) || SEATBELTS
+FLAMEGPU_AGENT_FUNCTION(InMooreWOutOfBoundsZ, MsgArray3D, MsgNone) {
+    for (auto a : FLAMEGPU->message_in.wrap(0, 0, dCBRT_AGENT_COUNT + 2)) {
+        FLAMEGPU->setVariable<unsigned int>("index", a.getVariable<unsigned int>("index_times_3"));
+    }
+    return ALIVE;
+}
+TEST(TestMessage_Array3D, MooreW_InitOutOfBoundsZ) {
+#else
+TEST(TestMessage_Array3D, DISABLED_MooreW_InitOutOfBoundsZ) {
+#endif
+    ModelDescription m(MODEL_NAME);
+    MsgArray3D::Description& msg = m.newMessage<MsgArray3D>(MESSAGE_NAME);
+    msg.setDimensions(CBRT_AGENT_COUNT, CBRT_AGENT_COUNT + 1, CBRT_AGENT_COUNT + 2);
+    msg.newVariable<unsigned int>("index_times_3");
+    AgentDescription& a = m.newAgent(AGENT_NAME);
+    a.newVariable<unsigned int>("index");
+    a.newVariable<unsigned int>("message_read", UINT_MAX);
+    a.newVariable<unsigned int>("message_write");
+    AgentFunctionDescription& fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
+    fo.setMessageOutput(msg);
+    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, InMooreWOutOfBoundsZ);
+    fi.setMessageInput(msg);
+    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    lo.addAgentFunction(fo);
+    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    li.addAgentFunction(fi);
+    // Assign the numbers in shuffled order to agents
+    AgentVector pop(a, AGENT_COUNT);
+    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+        AgentVector::Agent ai = pop[i];
+        ai.setVariable<unsigned int>("index", i);
+        ai.setVariable<unsigned int>("message_read", UINT_MAX);
+        ai.setVariable<unsigned int>("message_write", i);
+    }
+    // Set pop in model
+    CUDASimulation c(m);
+    c.setPopulationData(pop);
+    EXPECT_THROW(c.step(), DeviceError);
+}
+#if !defined(SEATBELTS) || SEATBELTS
+FLAMEGPU_AGENT_FUNCTION(InMooreWBadRadius1, MsgArray3D, MsgNone) {
+    for (auto a : FLAMEGPU->message_in.wrap(0, 0, 0, 0)) {
+        FLAMEGPU->setVariable<unsigned int>("index", a.getVariable<unsigned int>("index_times_3"));
+    }
+    return ALIVE;
+}
+TEST(TestMessage_Array3D, MooreW_BadRadius1) {
+#else
+TEST(TestMessage_Array3D, DISABLED_MooreW_BadRadius1) {
+#endif
+    ModelDescription m(MODEL_NAME);
+    MsgArray3D::Description& msg = m.newMessage<MsgArray3D>(MESSAGE_NAME);
+    msg.setDimensions(CBRT_AGENT_COUNT, CBRT_AGENT_COUNT + 1, CBRT_AGENT_COUNT + 2);
+    msg.newVariable<unsigned int>("index_times_3");
+    AgentDescription& a = m.newAgent(AGENT_NAME);
+    a.newVariable<unsigned int>("index");
+    a.newVariable<unsigned int>("message_read", UINT_MAX);
+    a.newVariable<unsigned int>("message_write");
+    AgentFunctionDescription& fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
+    fo.setMessageOutput(msg);
+    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, InMooreWBadRadius1);
+    fi.setMessageInput(msg);
+    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    lo.addAgentFunction(fo);
+    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    li.addAgentFunction(fi);
+    // Assign the numbers in shuffled order to agents
+    AgentVector pop(a, AGENT_COUNT);
+    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+        AgentVector::Agent ai = pop[i];
+        ai.setVariable<unsigned int>("index", i);
+        ai.setVariable<unsigned int>("message_read", UINT_MAX);
+        ai.setVariable<unsigned int>("message_write", i);
+    }
+    // Set pop in model
+    CUDASimulation c(m);
+    c.setPopulationData(pop);
+    EXPECT_THROW(c.step(), DeviceError);
+}
+#if !defined(SEATBELTS) || SEATBELTS
+FLAMEGPU_AGENT_FUNCTION(InMooreWBadRadius2, MsgArray3D, MsgNone) {
+    for (auto a : FLAMEGPU->message_in.wrap(0, 0, 0, 3)) {
+        FLAMEGPU->setVariable<unsigned int>("index", a.getVariable<unsigned int>("index_times_3"));
+    }
+    return ALIVE;
+}
+TEST(TestMessage_Array3D, MooreW_BadRadius2) {
+#else
+TEST(TestMessage_Array3D, DISABLED_MooreW_BadRadius2) {
+#endif
+    ModelDescription m(MODEL_NAME);
+    MsgArray3D::Description& msg = m.newMessage<MsgArray3D>(MESSAGE_NAME);
+    msg.setDimensions(CBRT_AGENT_COUNT, CBRT_AGENT_COUNT + 1, CBRT_AGENT_COUNT + 2);
+    msg.newVariable<unsigned int>("index_times_3");
+    AgentDescription& a = m.newAgent(AGENT_NAME);
+    a.newVariable<unsigned int>("index");
+    a.newVariable<unsigned int>("message_read", UINT_MAX);
+    a.newVariable<unsigned int>("message_write");
+    AgentFunctionDescription& fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
+    fo.setMessageOutput(msg);
+    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, InMooreWBadRadius2);
+    fi.setMessageInput(msg);
+    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    lo.addAgentFunction(fo);
+    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    li.addAgentFunction(fi);
+    // Assign the numbers in shuffled order to agents
+    AgentVector pop(a, AGENT_COUNT);
+    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+        AgentVector::Agent ai = pop[i];
+        ai.setVariable<unsigned int>("index", i);
+        ai.setVariable<unsigned int>("message_read", UINT_MAX);
+        ai.setVariable<unsigned int>("message_write", i);
+    }
+    // Set pop in model
+    CUDASimulation c(m);
+    c.setPopulationData(pop);
+    EXPECT_THROW(c.step(), DeviceError);
+}
+#if !defined(SEATBELTS) || SEATBELTS
+FLAMEGPU_AGENT_FUNCTION(InMooreOutOfBoundsX, MsgArray3D, MsgNone) {
+    for (auto a : FLAMEGPU->message_in(dCBRT_AGENT_COUNT, 0, 0)) {
+        FLAMEGPU->setVariable<unsigned int>("index", a.getVariable<unsigned int>("index_times_3"));
+    }
+    return ALIVE;
+}
+TEST(TestMessage_Array3D, Moore_InitOutOfBoundsX) {
+#else
+TEST(TestMessage_Array3D, DISABLED_Moore_InitOutOfBoundsX) {
+#endif
+    ModelDescription m(MODEL_NAME);
+    MsgArray3D::Description& msg = m.newMessage<MsgArray3D>(MESSAGE_NAME);
+    msg.setDimensions(CBRT_AGENT_COUNT, CBRT_AGENT_COUNT + 1, CBRT_AGENT_COUNT + 2);
+    msg.newVariable<unsigned int>("index_times_3");
+    AgentDescription& a = m.newAgent(AGENT_NAME);
+    a.newVariable<unsigned int>("index");
+    a.newVariable<unsigned int>("message_read", UINT_MAX);
+    a.newVariable<unsigned int>("message_write");
+    AgentFunctionDescription& fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
+    fo.setMessageOutput(msg);
+    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, InMooreOutOfBoundsX);
+    fi.setMessageInput(msg);
+    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    lo.addAgentFunction(fo);
+    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    li.addAgentFunction(fi);
+    // Assign the numbers in shuffled order to agents
+    AgentVector pop(a, AGENT_COUNT);
+    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+        AgentVector::Agent ai = pop[i];
+        ai.setVariable<unsigned int>("index", i);
+        ai.setVariable<unsigned int>("message_read", UINT_MAX);
+        ai.setVariable<unsigned int>("message_write", i);
+    }
+    // Set pop in model
+    CUDASimulation c(m);
+    c.setPopulationData(pop);
+    EXPECT_THROW(c.step(), DeviceError);
+}
+#if !defined(SEATBELTS) || SEATBELTS
+FLAMEGPU_AGENT_FUNCTION(InMooreOutOfBoundsY, MsgArray3D, MsgNone) {
+    for (auto a : FLAMEGPU->message_in(0, dCBRT_AGENT_COUNT + 1, 0)) {
+        FLAMEGPU->setVariable<unsigned int>("index", a.getVariable<unsigned int>("index_times_3"));
+    }
+    return ALIVE;
+}
+TEST(TestMessage_Array3D, Moore_InitOutOfBoundsY) {
+#else
+TEST(TestMessage_Array3D, DISABLED_Moore_InitOutOfBoundsY) {
+#endif
+    ModelDescription m(MODEL_NAME);
+    MsgArray3D::Description& msg = m.newMessage<MsgArray3D>(MESSAGE_NAME);
+    msg.setDimensions(CBRT_AGENT_COUNT, CBRT_AGENT_COUNT + 1, CBRT_AGENT_COUNT + 2);
+    msg.newVariable<unsigned int>("index_times_3");
+    AgentDescription& a = m.newAgent(AGENT_NAME);
+    a.newVariable<unsigned int>("index");
+    a.newVariable<unsigned int>("message_read", UINT_MAX);
+    a.newVariable<unsigned int>("message_write");
+    AgentFunctionDescription& fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
+    fo.setMessageOutput(msg);
+    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, InMooreOutOfBoundsY);
+    fi.setMessageInput(msg);
+    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    lo.addAgentFunction(fo);
+    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    li.addAgentFunction(fi);
+    // Assign the numbers in shuffled order to agents
+    AgentVector pop(a, AGENT_COUNT);
+    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+        AgentVector::Agent ai = pop[i];
+        ai.setVariable<unsigned int>("index", i);
+        ai.setVariable<unsigned int>("message_read", UINT_MAX);
+        ai.setVariable<unsigned int>("message_write", i);
+    }
+    // Set pop in model
+    CUDASimulation c(m);
+    c.setPopulationData(pop);
+    EXPECT_THROW(c.step(), DeviceError);
+}
+#if !defined(SEATBELTS) || SEATBELTS
+FLAMEGPU_AGENT_FUNCTION(InMooreOutOfBoundsZ, MsgArray3D, MsgNone) {
+    for (auto a : FLAMEGPU->message_in(0, 0, dCBRT_AGENT_COUNT + 2)) {
+        FLAMEGPU->setVariable<unsigned int>("index", a.getVariable<unsigned int>("index_times_3"));
+    }
+    return ALIVE;
+}
+TEST(TestMessage_Array3D, Moore_InitOutOfBoundsZ) {
+#else
+TEST(TestMessage_Array3D, DISABLED_Moore_InitOutOfBoundsZ) {
+#endif
+    ModelDescription m(MODEL_NAME);
+    MsgArray3D::Description& msg = m.newMessage<MsgArray3D>(MESSAGE_NAME);
+    msg.setDimensions(CBRT_AGENT_COUNT, CBRT_AGENT_COUNT + 1, CBRT_AGENT_COUNT + 2);
+    msg.newVariable<unsigned int>("index_times_3");
+    AgentDescription& a = m.newAgent(AGENT_NAME);
+    a.newVariable<unsigned int>("index");
+    a.newVariable<unsigned int>("message_read", UINT_MAX);
+    a.newVariable<unsigned int>("message_write");
+    AgentFunctionDescription& fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
+    fo.setMessageOutput(msg);
+    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, InMooreOutOfBoundsZ);
+    fi.setMessageInput(msg);
+    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    lo.addAgentFunction(fo);
+    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    li.addAgentFunction(fi);
+    // Assign the numbers in shuffled order to agents
+    AgentVector pop(a, AGENT_COUNT);
+    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+        AgentVector::Agent ai = pop[i];
+        ai.setVariable<unsigned int>("index", i);
+        ai.setVariable<unsigned int>("message_read", UINT_MAX);
+        ai.setVariable<unsigned int>("message_write", i);
+    }
+    // Set pop in model
+    CUDASimulation c(m);
+    c.setPopulationData(pop);
+    EXPECT_THROW(c.step(), DeviceError);
+}
+#if !defined(SEATBELTS) || SEATBELTS
+FLAMEGPU_AGENT_FUNCTION(InMooreBadRadius, MsgArray3D, MsgNone) {
+    for (auto a : FLAMEGPU->message_in(0, 0, 0, 0)) {
+        FLAMEGPU->setVariable<unsigned int>("index", a.getVariable<unsigned int>("index_times_3"));
+    }
+    return ALIVE;
+}
+TEST(TestMessage_Array3D, Moore_BadRadius) {
+#else
+TEST(TestMessage_Array3D, DISABLED_Moore_BadRadius) {
+#endif
+    ModelDescription m(MODEL_NAME);
+    MsgArray3D::Description& msg = m.newMessage<MsgArray3D>(MESSAGE_NAME);
+    msg.setDimensions(CBRT_AGENT_COUNT, CBRT_AGENT_COUNT + 1, CBRT_AGENT_COUNT + 2);
+    msg.newVariable<unsigned int>("index_times_3");
+    AgentDescription& a = m.newAgent(AGENT_NAME);
+    a.newVariable<unsigned int>("index");
+    a.newVariable<unsigned int>("message_read", UINT_MAX);
+    a.newVariable<unsigned int>("message_write");
+    AgentFunctionDescription& fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
+    fo.setMessageOutput(msg);
+    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, InMooreBadRadius);
+    fi.setMessageInput(msg);
+    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    lo.addAgentFunction(fo);
+    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    li.addAgentFunction(fi);
+    // Assign the numbers in shuffled order to agents
+    AgentVector pop(a, AGENT_COUNT);
+    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+        AgentVector::Agent ai = pop[i];
+        ai.setVariable<unsigned int>("index", i);
+        ai.setVariable<unsigned int>("message_read", UINT_MAX);
+        ai.setVariable<unsigned int>("message_write", i);
+    }
+    // Set pop in model
+    CUDASimulation c(m);
+    c.setPopulationData(pop);
+    EXPECT_THROW(c.step(), DeviceError);
+}
+
 
 /*
  * Test for fixed size grids with various com radii to check edge cases + expected cases.

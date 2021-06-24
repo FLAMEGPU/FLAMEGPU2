@@ -493,7 +493,7 @@ class MsgArray3D::In {
                    (radius * 2) + 1 > metadata->dimensions[2]) {
             unsigned int min_r = metadata->dimensions[0] < metadata->dimensions[1] ? metadata->dimensions[0] : metadata->dimensions[1];
             min_r = min_r < metadata->dimensions[2] ? min_r : metadata->dimensions[2];
-            min_r = min_r % 2 == 0 ? min_r + 2: min_r + 1;
+            min_r = min_r % 2 == 0 ? min_r - 2: min_r - 1;
             min_r /= 2;
             DTHROW("%u is not a valid radius for accessing Array3D message lists, as the diameter of messages accessed exceeds one or more of the message list dimensions (%u, %u, %u)."
             " Maximum supported radius for this message list is %u.\n",
