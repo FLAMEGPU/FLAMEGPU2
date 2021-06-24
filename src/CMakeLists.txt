@@ -183,6 +183,7 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/util/JitifyCache.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/filesystem.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/StringPair.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/util/StringUint32Pair.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/SubModelData.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/SubAgentData.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/SubEnvironmentData.h

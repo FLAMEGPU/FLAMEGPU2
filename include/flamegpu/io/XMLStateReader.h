@@ -9,6 +9,7 @@
 #include "flamegpu/io/StateReader.h"
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/util/StringPair.h"
+#include "flamegpu/util/StringUint32Pair.h"
 
 namespace flamegpu {
 namespace io {
@@ -31,7 +32,7 @@ class XMLStateReader : public StateReader {
     XMLStateReader(
         const std::string &model_name,
         const std::unordered_map<std::string, EnvironmentDescription::PropData> &env_desc,
-        std::unordered_map<std::pair<std::string, unsigned int>, util::Any> &env_init,
+        util::StringUint32PairUnorderedMap<util::Any> &env_init,
         util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> &model_state,
         const std::string &input_file,
         Simulation *sim_instance);

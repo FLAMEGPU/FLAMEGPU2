@@ -8,6 +8,7 @@
 
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/util/StringPair.h"
+#include "flamegpu/util/StringUint32Pair.h"
 
 namespace flamegpu {
 
@@ -36,7 +37,7 @@ class StateReader {
     StateReader(
         const std::string& _model_name,
         const std::unordered_map<std::string, EnvironmentDescription::PropData>& _env_desc,
-        std::unordered_map<std::pair<std::string, unsigned int>, util::Any>& _env_init,
+        util::StringUint32PairUnorderedMap<util::Any>& _env_init,
         util::StringPairUnorderedMap<std::shared_ptr<AgentVector>>& _model_state,
         const std::string& input,
         Simulation* _sim_instance)
@@ -66,7 +67,7 @@ class StateReader {
     std::string inputFile;
     const std::string model_name;
     const std::unordered_map<std::string, EnvironmentDescription::PropData> &env_desc;
-    std::unordered_map<std::pair<std::string, unsigned int>, util::Any> &env_init;
+    util::StringUint32PairUnorderedMap<util::Any> &env_init;
     Simulation *sim_instance;
 };
 }  // namespace io
