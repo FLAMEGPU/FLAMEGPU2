@@ -10,7 +10,7 @@
 #include "flamegpu/util/StringPair.h"
 
 namespace flamegpu {
-
+namespace io {
 /**
  * XML format StateWriter
  */
@@ -42,7 +42,7 @@ class XMLStateWriter : public StateWriter {
      */
     int writeStates(bool prettyPrint) override;
 };
-
+}  // namespace io
 }  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_IO_XMLSTATEWRITER_H_

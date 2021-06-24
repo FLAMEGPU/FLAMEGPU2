@@ -11,7 +11,7 @@
 #include "flamegpu/util/StringPair.h"
 
 namespace flamegpu {
-
+namespace io {
 /**
  * XML format StateReader
  */
@@ -49,7 +49,7 @@ class XMLStateReader : public StateReader {
      */
     std::string getInitialState(const std::string& agent_name) const;
 };
-
+}  // namespace io
 }  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_IO_XMLSTATEREADER_H_

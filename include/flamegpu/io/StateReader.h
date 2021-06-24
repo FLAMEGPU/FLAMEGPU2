@@ -13,6 +13,8 @@ namespace flamegpu {
 
 class AgentVector;
 
+namespace io {
+
 /**
  * Abstract representation of a class for importing model data (agent population data, environment properties, run configuration) from file
  * @see XMLStateReader The XML implementation of a StateReader
@@ -67,7 +69,7 @@ class StateReader {
     std::unordered_map<std::pair<std::string, unsigned int>, util::Any> &env_init;
     Simulation *sim_instance;
 };
-
+}  // namespace io
 }  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_IO_STATEREADER_H_

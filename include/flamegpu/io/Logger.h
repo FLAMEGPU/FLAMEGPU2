@@ -2,9 +2,10 @@
 #define INCLUDE_FLAMEGPU_IO_LOGGER_H_
 
 namespace flamegpu {
-
 struct RunLog;
 class RunPlan;
+
+namespace io {
 
 /**
  * Pure abstract class for defining loggers of different output formats
@@ -26,7 +27,7 @@ class Logger {
      */
     virtual void log(const RunLog &log, bool logConfig = true, bool logSteps = true, bool logExit = true) const = 0;
 };
-
+}  // namespace io
 }  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_IO_LOGGER_H_

@@ -19,6 +19,8 @@ namespace flamegpu {
 
 class AgentVector;
 
+namespace io {
+
 /**
  * Factory for creating instances of StateWriter
  */
@@ -73,7 +75,7 @@ class StateWriterFactory {
         return "";
     }
 };
-
+}  // namespace io
 }  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_IO_STATEWRITERFACTORY_H_

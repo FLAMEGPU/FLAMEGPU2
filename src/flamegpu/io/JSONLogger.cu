@@ -11,6 +11,7 @@
 #include "flamegpu/sim/LogFrame.h"
 
 namespace flamegpu {
+namespace io {
 
 JSONLogger::JSONLogger(const std::string &outPath, bool _prettyPrint, bool _truncateFile)
     : out_path(outPath)
@@ -246,4 +247,5 @@ void JSONLogger::logCommon(const RunLog &log, const RunPlan *plan, bool doLogCon
     out.close();
 }
 
+}  // namespace io
 }  // namespace flamegpu

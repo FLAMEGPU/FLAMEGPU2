@@ -12,7 +12,9 @@
 #include "flamegpu/pop/AgentVector.h"
 #include "flamegpu/gpu/CUDASimulation.h"
 #include "flamegpu/util/StringPair.h"
+
 namespace flamegpu {
+namespace io {
 
 JSONStateWriter::JSONStateWriter(
     const std::string &model_name,
@@ -231,4 +233,5 @@ int JSONStateWriter::writeStates(bool prettyPrint) {
     return 0;
 }
 
+}  // namespace io
 }  // namespace flamegpu

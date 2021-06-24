@@ -31,6 +31,14 @@ class EnvironmentDescription;
 class CUDASimulation;
 class CUDAAgent;
 
+namespace io {
+class XMLStateWriter;
+class XMLStateReader;
+class JSONStateWriter;
+class JSONStateReader;
+class JSONStateReader_impl;
+}  // namespace io
+
 /**
  * Singleton manager for managing environment properties storage in constant memory
  * This is an internal class, that should not be accessed directly by modellers
@@ -59,11 +67,11 @@ class EnvironmentManager {
     /**
      * Accesses properties to find all of a model's vars
      */
-    friend class XMLStateWriter;
-    friend class XMLStateReader;
-    friend class JSONStateWriter;
-    friend class JSONStateReader;
-    friend class JSONStateReader_impl;
+    friend class io::XMLStateWriter;
+    friend class io::XMLStateReader;
+    friend class io::JSONStateWriter;
+    friend class io::JSONStateReader;
+    friend class io::JSONStateReader_impl;
     /**
      * CUDASimulation instance id and Property name
      */

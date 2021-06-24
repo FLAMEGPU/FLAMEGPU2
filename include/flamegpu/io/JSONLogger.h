@@ -8,10 +8,11 @@
 #include "flamegpu/util/Any.h"
 
 namespace flamegpu {
-
 struct RunLog;
 struct LogFrame;
 class RunPlan;
+
+namespace io {
 
 /**
  * JSON format Logger
@@ -101,7 +102,7 @@ class JSONLogger : public Logger{
     bool prettyPrint;
     bool truncateFile;
 };
-
+}  // namespace io
 }  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_IO_JSONLOGGER_H_

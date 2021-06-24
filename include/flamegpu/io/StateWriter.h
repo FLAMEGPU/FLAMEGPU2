@@ -13,6 +13,8 @@ namespace flamegpu {
 
 class AgentVector;
 
+namespace io {
+
 /**
  * Abstract representation of a class for exporting model data (agent population data, environment properties, run configuration) to file
  * @see XMLStateWriter The XML implementation of a StateWriter
@@ -67,7 +69,7 @@ class StateWriter {
     const unsigned int sim_instance_id;
     const Simulation *sim_instance;
 };
-
+}  // namespace io
 }  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_IO_STATEWRITER_H_

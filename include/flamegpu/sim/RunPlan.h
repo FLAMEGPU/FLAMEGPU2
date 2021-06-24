@@ -16,14 +16,20 @@ namespace flamegpu {
 
 class ModelDescription;
 class RunPlanVector;
+
+namespace io {
+class JSONLogger;
+class XMLLogger;
+}  // namespace io
+
 /**
  * Individual run config
  */
 class RunPlan {
     friend class RunPlanVector;
     friend class SimRunner;
-    friend class JSONLogger;
-    friend class XMLLogger;
+    friend class io::JSONLogger;
+    friend class io::XMLLogger;
 
  public:
     /**

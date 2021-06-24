@@ -14,8 +14,9 @@
 #include "flamegpu/util/filesystem.h"
 
 namespace flamegpu {
-
 class AgentVector;
+
+namespace io {
 
 /**
  * Factory for creating instances of StateReader
@@ -53,6 +54,7 @@ class StateReaderFactory {
             input.c_str());
     }
 };
+}  // namespace io
 }  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_IO_STATEREADERFACTORY_H_

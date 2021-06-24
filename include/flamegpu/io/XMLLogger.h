@@ -19,6 +19,7 @@ struct RunLog;
 struct LogFrame;
 class RunPlan;
 
+namespace io {
 /**
  * XML format Logger
  */
@@ -90,7 +91,7 @@ class XMLLogger : public Logger{
     bool prettyPrint;
     bool truncateFile;
 };
-
+}  // namespace io
 }  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_IO_XMLLOGGER_H_

@@ -16,6 +16,7 @@
 #include "flamegpu/util/StringPair.h"
 
 namespace flamegpu {
+namespace io {
 
 JSONStateReader::JSONStateReader(
     const std::string &model_name,
@@ -443,4 +444,5 @@ int JSONStateReader::parse() {
     return 0;
 }
 
+}  // namespace io
 }  // namespace flamegpu

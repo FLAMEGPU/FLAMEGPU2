@@ -16,6 +16,7 @@
 #include "flamegpu/pop/AgentVector.h"
 
 namespace flamegpu {
+namespace io {
 
 #ifndef XMLCheckResult
  /**
@@ -270,4 +271,5 @@ int XMLStateWriter::writeStates(bool prettyPrint) {
 }
 
 
+}  // namespace io
 }  // namespace flamegpu
