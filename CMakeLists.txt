@@ -8,23 +8,54 @@ set(FLAMEGPU_PROJECT_VERSION "2.0.0")
 set(CMAKE_SKIP_INSTALL_RULES TRUE)
 set(CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}" CACHE INTERNAL ""  FORCE)
 
-# See if the minimum CUDA version is available. If not, only enable documentation building.
-set(MINIMUM_SUPPORTED_CUDA_VERSION 10.0)
+# If sufficiently new and working CXX / CUDA compilers are not available, then documentation only build is the only option.
+set(DOCUMENTATION_ONLY_BUILD OFF)
+
+# Check if CXX is available, if so enable it.
 include(CheckLanguage)
-# See if CUDA is available
+check_language(CXX)
+if(CMAKE_CXX_COMPILER)
+    enable_language(CXX)
+else()
+    set(DOCUMENTATION_ONLY_BUILD ON)
+    message(STATUS "Documentation-only build: CXX compiler required for compilation.")
+endif()
+# Check if CUDA is available, if so enable it.
 check_language(CUDA)
-# If so, enable CUDA to check the version.
 if(CMAKE_CUDA_COMPILER)
     enable_language(CUDA)
+else()
+    set(DOCUMENTATION_ONLY_BUILD ON)
+    message(STATUS "Documentation-only build: CUDA toolkit required for compilation.")
 endif()
-# If CUDA is not available, or the minimum version is too low only build the docs.
-if(NOT CMAKE_CUDA_COMPILER OR CMAKE_CUDA_COMPILER_VERSION VERSION_LESS ${MINIMUM_SUPPORTED_CUDA_VERSION})
-    if(NOT CMAKE_CUDA_COMPILER)
-        message(STATUS "Documentation-only build: CUDA toolkit required for library compilation.")
-    else()
-        message(STATUS "Documentation-only build: CUDA ${MINIMUM_SUPPORTED_CUDA_VERSION} or greater is required for library compilation.")
+
+# The CXX host compiler must be sufficiently new for certain build options. 
+# Additionally, there are some known bad versions which do not agree with CUDA when used to build FLAMEGPU  
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    # g++ 6 is the minimum required G++ version (if it is supported by the current NVCC)
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 6)  
+        set(DOCUMENTATION_ONLY_BUILD ON)      
+        message(STATUS "Documentation-only build: GCC/G++ >= 6 is required for compilation.")
     endif()
-    #Not able to build code, so just make docs    
+    # GCC 10.3 and 11.1 contain a bug in <chrono> which is exposed by CUDA (or just when used on its own). Block these versions.
+    # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=100102 
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 10.3.0 OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 11.1.0)
+        set(DOCUMENTATION_ONLY_BUILD ON)
+        message(STATUS "Documentation-only build: GCC ${CMAKE_CXX_COMPILER_VERSION} is incompatible with CUDA due to a GCC bug.")
+    endif()
+endif()
+
+# CUDA 10.0 is the current minimum supported verison.
+set(MINIMUM_SUPPORTED_CUDA_VERSION 10.0)
+# If the CUDA compiler is too old, trigger a docs only build.
+if(CMAKE_CUDA_COMPILER_VERSION VERSION_LESS ${MINIMUM_SUPPORTED_CUDA_VERSION})
+    set(DOCUMENTATION_ONLY_BUILD ON)
+    message(STATUS "Documentation-only build: CUDA ${MINIMUM_SUPPORTED_CUDA_VERSION} or greater is required for compilation.")
+endif()
+
+# If CUDA is not available, or the minimum version is too low only build the docs.
+if(DOCUMENTATION_ONLY_BUILD)
+    # Not able to build code, so just make docs    
     get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR} REALPATH)
     include(./cmake/doxygen.cmake)
     if(${BUILD_API_DOCUMENTATION})
@@ -88,22 +119,6 @@ endif()
 # Control target CUDA_ARCH to compile for
 SET(CUDA_ARCH "${CUDA_ARCH}" CACHE STRING "List of CUDA Architectures to target. E.g. 61;70" FORCE)
 
-# Enable the CXX compiler required for feature detection.
-enable_language(CXX)
-
-# If the CXX compiler is GNU, it needs to be >= 6 to build the library and >= 7 to build the tests. This will block certain cuda compilers.
-if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    # g++-6 is required - 5.5 is a broken compiler, lowever versions untested.
-    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 6)        
-        message(FATAL_ERROR "g++ version >= 6 is required")
-    elseif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7)
-        if (BUILD_TESTS)
-            message(WARNING "  g++ < 7 is incompatible with googletest when using CUDA.\n  Setting BUILD_TESTS OFF.")
-            set(BUILD_TESTS OFF)
-        endif()
-    endif()
-endif()
-
 # Define a function to add a lint target.
 find_file(CPPLINT NAMES cpplint cpplint.exe)
 if(CPPLINT)
@@ -157,7 +172,13 @@ if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_SUGARSCAPE)
 endif()
 # Add the tests directory (if required)
 if(BUILD_TESTS)
-    add_subdirectory(tests)
+    # g++ 7 is required for c++ tests to build.
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7)
+        message(WARNING "  g++ < 7 is incompatible with googletest when using CUDA.\n  Setting BUILD_TESTS OFF.")
+        set(BUILD_TESTS OFF)
+    else()
+        add_subdirectory(tests)
+    endif()
 endif()
 
 if(BUILD_SWIG_PYTHON)
