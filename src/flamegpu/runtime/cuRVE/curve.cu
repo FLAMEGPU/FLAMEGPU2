@@ -185,7 +185,7 @@ __host__ void Curve::_unregisterVariableByHash(VariableHash variable_hash) {
 
     // error checking
     if (cv == UNKNOWN_VARIABLE) {
-        THROW CurveException("Cannot unregister '%u', hash not found within curve table.", variable_hash);
+        THROW exception::CurveException("Cannot unregister '%u', hash not found within curve table.", variable_hash);
     }
 
     // clear hash location on host and copy hash to device

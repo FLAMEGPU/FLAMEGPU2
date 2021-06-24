@@ -41,7 +41,7 @@ path getTMP() {
         path tmp =  std::getenv("FLAMEGPU2_TMP_DIR") ? std::getenv("FLAMEGPU2_TMP_DIR") : temp_directory_path();
         // Create the $tmp/fgpu2/jitifycache(/debug) folder hierarchy
         if (!::exists(tmp) && !create_directory(tmp)) {
-            THROW InvalidFilePath("Directory '%s' does not exist and cannot be created by JitifyCache.", tmp.generic_string().c_str());
+            THROW exception::InvalidFilePath("Directory '%s' does not exist and cannot be created by JitifyCache.", tmp.generic_string().c_str());
         }
         if (!std::getenv("FLAMEGPU2_TMP_DIR")) {
             tmp /= "fgpu2";
@@ -130,7 +130,7 @@ std::unique_ptr<KernelInstantiation> JitifyCache::compileKernel(const std::strin
         }
 break_fgpu2_inc_dir_loop:
         if (env_inc_fgp2.empty()) {
-            THROW InvalidAgentFunc("Error compiling runtime agent function: Unable to automatically determine include directory and FLAMEGPU2_INC_DIR environment variable does not exist, "
+            THROW exception::InvalidAgentFunc("Error compiling runtime agent function: Unable to automatically determine include directory and FLAMEGPU2_INC_DIR environment variable does not exist, "
                 "in JitifyCache::compileKernel().");
         }
     }
@@ -152,12 +152,12 @@ break_fgpu2_inc_dir_loop:
         if (fileHash == detail::getCommitHash()) {
             header_version_confirmed = true;
         } else {
-            THROW VersionMismatch("RTC header version (%s) does not match version flamegpu2 library was built with (%s). Set the environment variable FLAMEGPU2_INC_DIR to the correct include directory.\n",
+            THROW exception::VersionMismatch("RTC header version (%s) does not match version flamegpu2 library was built with (%s). Set the environment variable FLAMEGPU2_INC_DIR to the correct include directory.\n",
                 fileHash.c_str(), detail::getCommitHash().c_str());
         }
     }
     if (env_cuda_path.empty()) {
-        THROW InvalidAgentFunc("Error compiling runtime agent function: CUDA_PATH environment variable does not exist, "
+        THROW exception::InvalidAgentFunc("Error compiling runtime agent function: CUDA_PATH environment variable does not exist, "
             "in CUDAAgent::compileKernel().");
     }
     // If the last char is a / or \, remove it. Only removes a single slash.
@@ -234,7 +234,7 @@ break_fgpu2_inc_dir_loop:
         return std::make_unique<KernelInstantiation>(kernel, template_args);
     } catch (std::runtime_error const&) {
         // jitify does not have a method for getting compile logs so rely on JITIFY_PRINT_LOG defined in cmake
-        THROW InvalidAgentFunc("Error compiling runtime agent function (or function condition) ('%s'): function had compilation errors (see std::cout), "
+        THROW exception::InvalidAgentFunc("Error compiling runtime agent function (or function condition) ('%s'): function had compilation errors (see std::cout), "
             "in JitifyCache::buildProgram().",
             func_name.c_str());
     }

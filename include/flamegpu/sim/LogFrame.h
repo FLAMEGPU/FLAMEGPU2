@@ -51,7 +51,7 @@ struct LogFrame {
      * Gets an environment property array
      * @param name name used for accessing the property
      * @tparam T Type of the elements of the environment property array
-     * @throws InvalidEnvProperty If a property array of the name does not exist
+     * @throws exception::InvalidEnvProperty If a property array of the name does not exist
      */
     template<typename T>
     std::vector<T> getEnvironmentPropertyArray(const std::string &property_name) const;
@@ -154,8 +154,8 @@ struct AgentLogFrame {
      * @param variable_name The agent variable that was reduced
      * @tparam T The type of agent variable variable_name
      * @return The result of the min reduction
-     * @throws InvalidAgentVar If a min reduction of the agent variable of name variable_name was not found within the log.
-     * @throws InvalidVarType If the agent variable variable_name does not have type T within the agent.
+     * @throws exception::InvalidAgentVar If a min reduction of the agent variable of name variable_name was not found within the log.
+     * @throws exception::InvalidVarType If the agent variable variable_name does not have type T within the agent.
      */
     template<typename T>
     T getMin(const std::string &variable_name) const;
@@ -165,8 +165,8 @@ struct AgentLogFrame {
      * @param variable_name The agent variable that was reduced
      * @tparam T The type of agent variable variable_name
      * @return The result of the max reduction
-     * @throws InvalidAgentVar If a max reduction of the agent variable of name variable_name was not found within the log.
-     * @throws InvalidVarType If the agent variable variable_name does not have type T within the agent.
+     * @throws exception::InvalidAgentVar If a max reduction of the agent variable of name variable_name was not found within the log.
+     * @throws exception::InvalidVarType If the agent variable variable_name does not have type T within the agent.
      */
     template<typename T>
     T getMax(const std::string &variable_name) const;
@@ -176,8 +176,8 @@ struct AgentLogFrame {
      * @param variable_name The agent variable that was summed
      * @tparam T The type of agent variable variable_name
      * @return The result of the sum (The type of this return value is the highest range type of the same format)
-     * @throws InvalidAgentVar If a sum reduction of the agent variable of name variable_name was not found within the log.
-     * @throws InvalidVarType If the agent variable variable_name does not have type T within the agent.
+     * @throws exception::InvalidAgentVar If a sum reduction of the agent variable of name variable_name was not found within the log.
+     * @throws exception::InvalidVarType If the agent variable variable_name does not have type T within the agent.
      */
     template<typename T>
     typename sum_input_t<T>::result_t getSum(const std::string &variable_name) const;
@@ -187,8 +187,8 @@ struct AgentLogFrame {
      * @param variable_name The agent variable that was averaged
      * @tparam T The type of agent variable variable_name
      * @return The result of the average
-     * @throws InvalidAgentVar If a mean reduction of the agent variable of name variable_name was not found within the log.
-     * @throws InvalidVarType If the agent variable variable_name does not have type T within the agent.
+     * @throws exception::InvalidAgentVar If a mean reduction of the agent variable of name variable_name was not found within the log.
+     * @throws exception::InvalidVarType If the agent variable variable_name does not have type T within the agent.
      */
     double getMean(const std::string &variable_name) const;
     /**
@@ -197,8 +197,8 @@ struct AgentLogFrame {
      * @param variable_name The agent variable that was reduced
      * @tparam T The type of agent variable variable_name
      * @return The result of the standard deviation reduction
-     * @throws InvalidAgentVar If a standard deviation reduction of the agent variable of name variable_name was not found within the log.
-     * @throws InvalidVarType If the agent variable variable_name does not have type T within the agent.
+     * @throws exception::InvalidAgentVar If a standard deviation reduction of the agent variable of name variable_name was not found within the log.
+     * @throws exception::InvalidVarType If the agent variable variable_name does not have type T within the agent.
      */
     double getStandardDev(const std::string &variable_name) const;
 
@@ -217,17 +217,17 @@ template<typename T>
 T LogFrame::getEnvironmentProperty(const std::string &property_name) const {
     const auto &it = environment.find(property_name);
     if (it == environment.end()) {
-      THROW InvalidEnvProperty("Environment property '%s' was not found in the log, "
+      THROW exception::InvalidEnvProperty("Environment property '%s' was not found in the log, "
           "in LogFrame::getEnvironmentProperty()\n",
           property_name.c_str());
     }
     if (it->second.type != std::type_index(typeid(T))) {
-      THROW InvalidEnvPropertyType("Environment property '%s' has type %s, but requested type %s, "
+      THROW exception::InvalidEnvPropertyType("Environment property '%s' has type %s, but requested type %s, "
           "in LogFrame::getEnvironmentProperty()\n",
           property_name.c_str(), it->second.type.name(), std::type_index(typeid(T)).name());
     }
     if (it->second.elements != 1) {
-      THROW InvalidEnvPropertyType("Environment property '%s' is an array, use alternate function with array interface, "
+      THROW exception::InvalidEnvPropertyType("Environment property '%s' is an array, use alternate function with array interface, "
           "in LogFrame::getEnvironmentProperty()\n",
           property_name.c_str(), it->second.type.name(), std::type_index(typeid(T)).name());
     }
@@ -237,17 +237,17 @@ template<typename T, unsigned int N>
 std::array<T, N> LogFrame::getEnvironmentProperty(const std::string &property_name) const {
     const auto &it = environment.find(property_name);
     if (it == environment.end()) {
-      THROW InvalidEnvProperty("Environment property '%s' was not found in the log, "
+      THROW exception::InvalidEnvProperty("Environment property '%s' was not found in the log, "
           "in LogFrame::getEnvironmentProperty()\n",
           property_name.c_str());
     }
     if (it->second.type != std::type_index(typeid(T))) {
-      THROW InvalidEnvPropertyType("Environment property '%s' has type %s, but requested type %s, "
+      THROW exception::InvalidEnvPropertyType("Environment property '%s' has type %s, but requested type %s, "
           "in LogFrame::getEnvironmentProperty()\n",
           property_name.c_str(), it->second.type.name(), std::type_index(typeid(T)).name());
     }
     if (it->second.elements != N) {
-      THROW InvalidEnvPropertyType("Environment property array '%s' has %u elements, but requested array with %u, "
+      THROW exception::InvalidEnvPropertyType("Environment property array '%s' has %u elements, but requested array with %u, "
           "in LogFrame::getEnvironmentProperty()\n",
           property_name.c_str(), it->second.elements, N);
     }
@@ -260,12 +260,12 @@ template<typename T>
 std::vector<T> LogFrame::getEnvironmentPropertyArray(const std::string& property_name) const {
     const auto &it = environment.find(property_name);
     if (it == environment.end()) {
-      THROW InvalidEnvProperty("Environment property '%s' was not found in the log, "
+      THROW exception::InvalidEnvProperty("Environment property '%s' was not found in the log, "
           "in LogFrame::getEnvironmentPropertyArray()\n",
           property_name.c_str());
     }
     if (it->second.type != std::type_index(typeid(T))) {
-      THROW InvalidEnvPropertyType("Environment property '%s' has type %s, but requested type %s, "
+      THROW exception::InvalidEnvPropertyType("Environment property '%s' has type %s, but requested type %s, "
           "in LogFrame::getEnvironmentPropertyArray()\n",
           property_name.c_str(), it->second.type.name(), std::type_index(typeid(T)).name());
     }
@@ -280,12 +280,12 @@ template<typename T>
 T AgentLogFrame::getMin(const std::string &variable_name) const {
     const auto &it = data.find({variable_name, LoggingConfig::Min});
     if (it == data.end()) {
-        THROW InvalidAgentVar("Min of agent variable '%s' was not found in the log, "
+        THROW exception::InvalidAgentVar("Min of agent variable '%s' was not found in the log, "
             "in AgentLogFrame::getMin()\n",
             variable_name.c_str());
     }
     if (it->second.type != std::type_index(typeid(T))) {
-      THROW InvalidVarType("Agent variable '%s' has type %s, but requested type %s, "
+      THROW exception::InvalidVarType("Agent variable '%s' has type %s, but requested type %s, "
           "in AgentLogFrame::getMin()\n",
           variable_name.c_str(), it->second.type.name(), std::type_index(typeid(T)).name());
     }
@@ -295,12 +295,12 @@ template<typename T>
 T AgentLogFrame::getMax(const std::string &variable_name) const {
     const auto &it = data.find({variable_name, LoggingConfig::Max});
     if (it == data.end()) {
-        THROW InvalidAgentVar("Max of agent variable '%s' was not found in the log, "
+        THROW exception::InvalidAgentVar("Max of agent variable '%s' was not found in the log, "
             "in AgentLogFrame::getMax()\n",
             variable_name.c_str());
     }
     if (it->second.type != std::type_index(typeid(T))) {
-      THROW InvalidVarType("Agent variable '%s' has type %s, but requested type %s, "
+      THROW exception::InvalidVarType("Agent variable '%s' has type %s, but requested type %s, "
           "in AgentLogFrame::getMax()\n",
           variable_name.c_str(), it->second.type.name(), std::type_index(typeid(T)).name());
     }
@@ -310,12 +310,12 @@ template<typename T>
 typename sum_input_t<T>::result_t AgentLogFrame::getSum(const std::string &variable_name) const {
     const auto &it = data.find({variable_name, LoggingConfig::Sum});
     if (it == data.end()) {
-        THROW InvalidAgentVar("Sum of agent variable '%s' was not found in the log, "
+        THROW exception::InvalidAgentVar("Sum of agent variable '%s' was not found in the log, "
             "in AgentLogFrame::getSum()\n",
             variable_name.c_str());
     }
     if (it->second.type != std::type_index(typeid(typename sum_input_t<T>::result_t))) {
-      THROW InvalidVarType("Agent variable is not of type '%s', but requested type %s, "
+      THROW exception::InvalidVarType("Agent variable is not of type '%s', but requested type %s, "
           "in AgentLogFrame::getSum()\n",
           variable_name.c_str(), std::type_index(typeid(T)).name());
     }

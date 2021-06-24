@@ -34,7 +34,7 @@ class StateReaderFactory {
      * @param model_state Map of AgentVector to load the agent data into per agent, key should be agent name
      * @param input Filename of the input file (This will be used to determine which reader to return)
      * @param sim_instance Instance of the Simulation object (This is used for setting/getting config)
-     * @throws UnsupportedFileType If the file extension does not match an appropriate reader
+     * @throws exception::UnsupportedFileType If the file extension does not match an appropriate reader
      */
     static StateReader* createReader(
         const std::string& model_name,
@@ -50,7 +50,7 @@ class StateReaderFactory {
         } else if (extension == "json") {
             return new JSONStateReader(model_name, env_desc, env_init, model_state, input, sim_instance);
         }
-        THROW UnsupportedFileType("File '%s' is not a type which can be read "
+        THROW exception::UnsupportedFileType("File '%s' is not a type which can be read "
             "by StateReaderFactory::createReader().",
             input.c_str());
     }

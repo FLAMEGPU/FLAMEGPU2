@@ -47,7 +47,7 @@ void AgentDescription::newState(const std::string &state_name) {
         agent->keepDefaultState = true;
         agent->states.insert(state_name);  // Re add incase it was dropped
     } else {
-        THROW InvalidStateName("Agent ('%s') already contains state '%s', "
+        THROW exception::InvalidStateName("Agent ('%s') already contains state '%s', "
             "in AgentDescription::newState().",
             agent->name.c_str(), state_name.c_str());
     }
@@ -57,7 +57,7 @@ void AgentDescription::setInitialState(const std::string &init_state) {
         this->agent->initial_state = init_state;
         return;
     }
-    THROW InvalidStateName("Agent ('%s') does not contain state '%s', "
+    THROW exception::InvalidStateName("Agent ('%s') does not contain state '%s', "
         "in AgentDescription::setInitialState().",
         agent->name.c_str(), init_state.c_str());
 }
@@ -67,7 +67,7 @@ AgentFunctionDescription &AgentDescription::Function(const std::string &function
     if (f != agent->functions.end()) {
         return *f->second->description;
     }
-    THROW InvalidAgentFunc("Agent ('%s') does not contain function '%s', "
+    THROW exception::InvalidAgentFunc("Agent ('%s') does not contain function '%s', "
         "in AgentDescription::Function().",
         agent->name.c_str(), function_name.c_str());
 }
@@ -91,7 +91,7 @@ const std::type_index &AgentDescription::getVariableType(const std::string &vari
     if (f != agent->variables.end()) {
         return f->second.type;
     }
-    THROW InvalidAgentVar("Agent ('%s') does not contain variable '%s', "
+    THROW exception::InvalidAgentVar("Agent ('%s') does not contain variable '%s', "
         "in AgentDescription::getVariableType().",
         agent->name.c_str(), variable_name.c_str());
 }
@@ -100,7 +100,7 @@ size_t AgentDescription::getVariableSize(const std::string &variable_name) const
     if (f != agent->variables.end()) {
         return f->second.type_size;
     }
-    THROW InvalidAgentVar("Agent ('%s') does not contain variable '%s', "
+    THROW exception::InvalidAgentVar("Agent ('%s') does not contain variable '%s', "
         "in AgentDescription::getVariableSize().",
         agent->name.c_str(), variable_name.c_str());
 }
@@ -109,7 +109,7 @@ ModelData::size_type AgentDescription::getVariableLength(const std::string &vari
     if (f != agent->variables.end()) {
         return f->second.elements;
     }
-    THROW InvalidAgentVar("Agent ('%s') does not contain variable '%s', "
+    THROW exception::InvalidAgentVar("Agent ('%s') does not contain variable '%s', "
         "in AgentDescription::getVariableLength().",
         agent->name.c_str(), variable_name.c_str());
 }
@@ -122,7 +122,7 @@ const AgentFunctionDescription& AgentDescription::getFunction(const std::string 
     if (f != agent->functions.end()) {
         return *f->second->description;
     }
-    THROW InvalidAgentFunc("Agent ('%s') does not contain function '%s', "
+    THROW exception::InvalidAgentFunc("Agent ('%s') does not contain function '%s', "
         "in AgentDescription::getFunction().",
         agent->name.c_str(), function_name.c_str());
 }

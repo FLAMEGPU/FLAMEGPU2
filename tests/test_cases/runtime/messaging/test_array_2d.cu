@@ -358,26 +358,26 @@ TEST(TestMessage_Array2D, DISABLED_DuplicateOutputException) {
     // Set pop in model
     CUDASimulation c(m);
     c.setPopulationData(pop);
-    EXPECT_THROW(c.step(), ArrayMessageWriteConflict);
+    EXPECT_THROW(c.step(), exception::ArrayMessageWriteConflict);
 }
 TEST(TestMessage_Array2D, ArrayLenZeroException) {
     ModelDescription m(MODEL_NAME);
     MsgArray2D::Description &msg = m.newMessage<MsgArray2D>(MESSAGE_NAME);
-    EXPECT_THROW(msg.setDimensions(0, SQRT_AGENT_COUNT), InvalidArgument);
-    EXPECT_THROW(msg.setDimensions({ 0, SQRT_AGENT_COUNT }), InvalidArgument);
-    EXPECT_THROW(msg.setDimensions(SQRT_AGENT_COUNT, 0), InvalidArgument);
-    EXPECT_THROW(msg.setDimensions({ SQRT_AGENT_COUNT, 0 }), InvalidArgument);
+    EXPECT_THROW(msg.setDimensions(0, SQRT_AGENT_COUNT), exception::InvalidArgument);
+    EXPECT_THROW(msg.setDimensions({ 0, SQRT_AGENT_COUNT }), exception::InvalidArgument);
+    EXPECT_THROW(msg.setDimensions(SQRT_AGENT_COUNT, 0), exception::InvalidArgument);
+    EXPECT_THROW(msg.setDimensions({ SQRT_AGENT_COUNT, 0 }), exception::InvalidArgument);
 }
 TEST(TestMessage_Array2D, UnsetDimensions) {
     ModelDescription model(MODEL_NAME);
     model.newMessage<MsgArray2D>(MESSAGE_NAME);
     // message.setDimensions(5, 5);  // Intentionally commented out
-    EXPECT_THROW(CUDASimulation m(model), InvalidMessage);
+    EXPECT_THROW(CUDASimulation m(model), exception::InvalidMessage);
 }
 TEST(TestMessage_Array2D, reserved_name) {
     ModelDescription model(MODEL_NAME);
     MsgArray2D::Description &message = model.newMessage<MsgArray2D>(MESSAGE_NAME);
-    EXPECT_THROW(message.newVariable<int>("_"), ReservedName);
+    EXPECT_THROW(message.newVariable<int>("_"), exception::ReservedName);
 }
 FLAMEGPU_AGENT_FUNCTION(countArray2D, MsgArray2D, MsgNone) {
     unsigned int value = FLAMEGPU->message_in.at(0, 0).getVariable<unsigned int>("value");

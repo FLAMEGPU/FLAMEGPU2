@@ -47,7 +47,7 @@ AgentStateVis &AgentVis::State(const std::string &state_name) {
         }
         return visAgentState->second;
     }
-    THROW InvalidAgentName("State '%s' was not found within agent '%s', "
+    THROW exception::InvalidAgentName("State '%s' was not found within agent '%s', "
         "in AgentVis::State()\n",
         state_name.c_str(), agentData.name.c_str());
 }
@@ -56,11 +56,11 @@ AgentStateVis &AgentVis::State(const std::string &state_name) {
 void AgentVis::setXVariable(const std::string &var_name) {
     auto it = agentData.variables.find(var_name);
     if (it == agentData.variables.end()) {
-        THROW InvalidAgentVar("Variable '%s' was not found within agent '%s', "
+        THROW exception::InvalidAgentVar("Variable '%s' was not found within agent '%s', "
             "in AgentVis::setXVariable()\n",
             var_name.c_str(), agentData.name.c_str());
     } else if (it->second.type != std::type_index(typeid(float)) || it->second.elements != 1) {
-        THROW InvalidAgentVar("Visualisation position x variable must be type float[1], agent '%s' variable '%s' is type %s[%u], "
+        THROW exception::InvalidAgentVar("Visualisation position x variable must be type float[1], agent '%s' variable '%s' is type %s[%u], "
             "in AgentVis::setXVariable()\n",
             agentData.name.c_str(), var_name.c_str(), it->second.type.name(), it->second.elements);
     }
@@ -69,11 +69,11 @@ void AgentVis::setXVariable(const std::string &var_name) {
 void AgentVis::setYVariable(const std::string &var_name) {
     auto it = agentData.variables.find(var_name);
     if (it == agentData.variables.end()) {
-        THROW InvalidAgentVar("Variable '%s' was not found within agent '%s', "
+        THROW exception::InvalidAgentVar("Variable '%s' was not found within agent '%s', "
             "in AgentVis::setYVariable()\n",
             var_name.c_str(), agentData.name.c_str());
     } else if (it->second.type != std::type_index(typeid(float)) || it->second.elements != 1) {
-        THROW InvalidAgentVar("Visualisation position Y variable must be type float[1], agent '%s' variable '%s' is type %s[%u], "
+        THROW exception::InvalidAgentVar("Visualisation position Y variable must be type float[1], agent '%s' variable '%s' is type %s[%u], "
             "in AgentVis::setYVariable()\n",
             agentData.name.c_str(), var_name.c_str(), it->second.type.name(), it->second.elements);
     }
@@ -82,11 +82,11 @@ void AgentVis::setYVariable(const std::string &var_name) {
 void AgentVis::setZVariable(const std::string &var_name) {
     auto it = agentData.variables.find(var_name);
     if (it == agentData.variables.end()) {
-        THROW InvalidAgentVar("Variable '%s' was not found within agent '%s', "
+        THROW exception::InvalidAgentVar("Variable '%s' was not found within agent '%s', "
             "in AgentVis::setZVariable()\n",
             var_name.c_str(), agentData.name.c_str());
     } else if (it->second.type != std::type_index(typeid(float)) || it->second.elements != 1) {
-        THROW InvalidAgentVar("Visualisation position z variable must be type float[1], agent '%s' variable '%s' is type %s[%u], "
+        THROW exception::InvalidAgentVar("Visualisation position z variable must be type float[1], agent '%s' variable '%s' is type %s[%u], "
             "in AgentVis::setZVariable()\n",
             agentData.name.c_str(), var_name.c_str(), it->second.type.name(), it->second.elements);
     }
@@ -95,11 +95,11 @@ void AgentVis::setZVariable(const std::string &var_name) {
 void AgentVis::setForwardXVariable(const std::string& var_name) {
     auto it = agentData.variables.find(var_name);
     if (it == agentData.variables.end()) {
-        THROW InvalidAgentVar("Variable '%s' was not found within agent '%s', "
+        THROW exception::InvalidAgentVar("Variable '%s' was not found within agent '%s', "
             "in AgentVis::setDirectionXVariable()\n",
             var_name.c_str(), agentData.name.c_str());
     } else if (it->second.type != std::type_index(typeid(float)) || it->second.elements != 1) {
-        THROW InvalidAgentVar("Visualisation forward x variable must be type float[1], agent '%s' variable '%s' is type %s[%u], "
+        THROW exception::InvalidAgentVar("Visualisation forward x variable must be type float[1], agent '%s' variable '%s' is type %s[%u], "
             "in AgentVis::setDirectionXVariable()\n",
             agentData.name.c_str(), var_name.c_str(), it->second.type.name(), it->second.elements);
     }
@@ -109,11 +109,11 @@ void AgentVis::setForwardXVariable(const std::string& var_name) {
 void AgentVis::setForwardYVariable(const std::string& var_name) {
     auto it = agentData.variables.find(var_name);
     if (it == agentData.variables.end()) {
-        THROW InvalidAgentVar("Variable '%s' was not found within agent '%s', "
+        THROW exception::InvalidAgentVar("Variable '%s' was not found within agent '%s', "
             "in AgentVis::setDirectionYVariable()\n",
             var_name.c_str(), agentData.name.c_str());
     } else if (it->second.type != std::type_index(typeid(float)) || it->second.elements != 1) {
-        THROW InvalidAgentVar("Visualisation forward y variable must be type float[1], agent '%s' variable '%s' is type %s[%u], "
+        THROW exception::InvalidAgentVar("Visualisation forward y variable must be type float[1], agent '%s' variable '%s' is type %s[%u], "
             "in AgentVis::setDirectionYVariable()\n",
             agentData.name.c_str(), var_name.c_str(), it->second.type.name(), it->second.elements);
     }
@@ -123,11 +123,11 @@ void AgentVis::setForwardYVariable(const std::string& var_name) {
 void AgentVis::setForwardZVariable(const std::string& var_name) {
     auto it = agentData.variables.find(var_name);
     if (it == agentData.variables.end()) {
-        THROW InvalidAgentVar("Variable '%s' was not found within agent '%s', "
+        THROW exception::InvalidAgentVar("Variable '%s' was not found within agent '%s', "
             "in AgentVis::setDirectionZVariable()\n",
             var_name.c_str(), agentData.name.c_str());
     } else if (it->second.type != std::type_index(typeid(float)) || it->second.elements != 1) {
-        THROW InvalidAgentVar("Visualisation forward z variable must be type float[1], agent '%s' variable '%s' is type %s[%u], "
+        THROW exception::InvalidAgentVar("Visualisation forward z variable must be type float[1], agent '%s' variable '%s' is type %s[%u], "
             "in AgentVis::setDirectionZVariable()\n",
             agentData.name.c_str(), var_name.c_str(), it->second.type.name(), it->second.elements);
     }
@@ -137,11 +137,11 @@ void AgentVis::setForwardZVariable(const std::string& var_name) {
 void AgentVis::setUpXVariable(const std::string& var_name) {
     auto it = agentData.variables.find(var_name);
     if (it == agentData.variables.end()) {
-        THROW InvalidAgentVar("Variable '%s' was not found within agent '%s', "
+        THROW exception::InvalidAgentVar("Variable '%s' was not found within agent '%s', "
             "in AgentVis::setUpXVariable()\n",
             var_name.c_str(), agentData.name.c_str());
     } else if (it->second.type != std::type_index(typeid(float)) || it->second.elements != 1) {
-        THROW InvalidAgentVar("Visualisation up x variable must be type float[1], agent '%s' variable '%s' is type %s[%u], "
+        THROW exception::InvalidAgentVar("Visualisation up x variable must be type float[1], agent '%s' variable '%s' is type %s[%u], "
             "in AgentVis::setUpXVariable()\n",
             agentData.name.c_str(), var_name.c_str(), it->second.type.name(), it->second.elements);
     }
@@ -151,11 +151,11 @@ void AgentVis::setUpXVariable(const std::string& var_name) {
 void AgentVis::setUpYVariable(const std::string& var_name) {
     auto it = agentData.variables.find(var_name);
     if (it == agentData.variables.end()) {
-        THROW InvalidAgentVar("Variable '%s' was not found within agent '%s', "
+        THROW exception::InvalidAgentVar("Variable '%s' was not found within agent '%s', "
             "in AgentVis::setUpYVariable()\n",
             var_name.c_str(), agentData.name.c_str());
     } else if (it->second.type != std::type_index(typeid(float)) || it->second.elements != 1) {
-        THROW InvalidAgentVar("Visualisation up y variable must be type float[1], agent '%s' variable '%s' is type %s[%u], "
+        THROW exception::InvalidAgentVar("Visualisation up y variable must be type float[1], agent '%s' variable '%s' is type %s[%u], "
             "in AgentVis::setUpYVariable()\n",
             agentData.name.c_str(), var_name.c_str(), it->second.type.name(), it->second.elements);
     }
@@ -165,11 +165,11 @@ void AgentVis::setUpYVariable(const std::string& var_name) {
 void AgentVis::setUpZVariable(const std::string& var_name) {
     auto it = agentData.variables.find(var_name);
     if (it == agentData.variables.end()) {
-        THROW InvalidAgentVar("Variable '%s' was not found within agent '%s', "
+        THROW exception::InvalidAgentVar("Variable '%s' was not found within agent '%s', "
             "in AgentVis::setUpZVariable()\n",
             var_name.c_str(), agentData.name.c_str());
     } else if (it->second.type != std::type_index(typeid(float)) || it->second.elements != 1) {
-        THROW InvalidAgentVar("Visualisation up z variable must be type float[1], agent '%s' variable '%s' is type %s[%u], "
+        THROW exception::InvalidAgentVar("Visualisation up z variable must be type float[1], agent '%s' variable '%s' is type %s[%u], "
             "in AgentVis::setUpZVariable()\n",
             agentData.name.c_str(), var_name.c_str(), it->second.type.name(), it->second.elements);
     }
@@ -179,11 +179,11 @@ void AgentVis::setUpZVariable(const std::string& var_name) {
 void AgentVis::setYawVariable(const std::string& var_name) {
     auto it = agentData.variables.find(var_name);
     if (it == agentData.variables.end()) {
-        THROW InvalidAgentVar("Variable '%s' was not found within agent '%s', "
+        THROW exception::InvalidAgentVar("Variable '%s' was not found within agent '%s', "
             "in AgentVis::setYawVariable()\n",
             var_name.c_str(), agentData.name.c_str());
     } else if (it->second.type != std::type_index(typeid(float)) || it->second.elements != 1) {
-        THROW InvalidAgentVar("Visualisation yaw variable must be type float[1], agent '%s' variable '%s' is type %s[%u], "
+        THROW exception::InvalidAgentVar("Visualisation yaw variable must be type float[1], agent '%s' variable '%s' is type %s[%u], "
             "in AgentVis::setYawVariable()\n",
             agentData.name.c_str(), var_name.c_str(), it->second.type.name(), it->second.elements);
     }
@@ -194,11 +194,11 @@ void AgentVis::setYawVariable(const std::string& var_name) {
 void AgentVis::setPitchVariable(const std::string& var_name) {
     auto it = agentData.variables.find(var_name);
     if (it == agentData.variables.end()) {
-        THROW InvalidAgentVar("Variable '%s' was not found within agent '%s', "
+        THROW exception::InvalidAgentVar("Variable '%s' was not found within agent '%s', "
             "in AgentVis::setPitchVariable()\n",
             var_name.c_str(), agentData.name.c_str());
     } else if (it->second.type != std::type_index(typeid(float)) || it->second.elements != 1) {
-        THROW InvalidAgentVar("Visualisation pitch variable must be type float[1], agent '%s' variable '%s' is type %s[%u], "
+        THROW exception::InvalidAgentVar("Visualisation pitch variable must be type float[1], agent '%s' variable '%s' is type %s[%u], "
             "in AgentVis::setPitchVariable()\n",
             agentData.name.c_str(), var_name.c_str(), it->second.type.name(), it->second.elements);
     }
@@ -208,11 +208,11 @@ void AgentVis::setPitchVariable(const std::string& var_name) {
 void AgentVis::setRollVariable(const std::string& var_name) {
     auto it = agentData.variables.find(var_name);
     if (it == agentData.variables.end()) {
-        THROW InvalidAgentVar("Variable '%s' was not found within agent '%s', "
+        THROW exception::InvalidAgentVar("Variable '%s' was not found within agent '%s', "
             "in AgentVis::setRollVariable()\n",
             var_name.c_str(), agentData.name.c_str());
     } else if (it->second.type != std::type_index(typeid(float)) || it->second.elements != 1) {
-        THROW InvalidAgentVar("Visualisation roll variable must be type float[1], agent '%s' variable '%s' is type %s[%u], "
+        THROW exception::InvalidAgentVar("Visualisation roll variable must be type float[1], agent '%s' variable '%s' is type %s[%u], "
             "in AgentVis::setRollVariable()\n",
             agentData.name.c_str(), var_name.c_str(), it->second.type.name(), it->second.elements);
     }
@@ -224,11 +224,11 @@ void AgentVis::setRollVariable(const std::string& var_name) {
 void AgentVis::setUniformScaleVariable(const std::string& var_name) {
     auto it = agentData.variables.find(var_name);
     if (it == agentData.variables.end()) {
-        THROW InvalidAgentVar("Variable '%s' was not found within agent '%s', "
+        THROW exception::InvalidAgentVar("Variable '%s' was not found within agent '%s', "
             "in AgentVis::setUniformScaleVariable()\n",
             var_name.c_str(), agentData.name.c_str());
     } else if (it->second.type != std::type_index(typeid(float)) || it->second.elements != 1) {
-        THROW InvalidAgentVar("Visualisation scale variable must be type float[1], agent '%s' variable '%s' is type %s[%u], "
+        THROW exception::InvalidAgentVar("Visualisation scale variable must be type float[1], agent '%s' variable '%s' is type %s[%u], "
             "in AgentVis::setUniformScaleVariable()\n",
             agentData.name.c_str(), var_name.c_str(), it->second.type.name(), it->second.elements);
     }
@@ -240,11 +240,11 @@ void AgentVis::setUniformScaleVariable(const std::string& var_name) {
 void AgentVis::setScaleXVariable(const std::string& var_name) {
     auto it = agentData.variables.find(var_name);
     if (it == agentData.variables.end()) {
-        THROW InvalidAgentVar("Variable '%s' was not found within agent '%s', "
+        THROW exception::InvalidAgentVar("Variable '%s' was not found within agent '%s', "
             "in AgentVis::setScaleXVariable()\n",
             var_name.c_str(), agentData.name.c_str());
     } else if (it->second.type != std::type_index(typeid(float)) || it->second.elements != 1) {
-        THROW InvalidAgentVar("Visualisation scale x variable must be type float[1], agent '%s' variable '%s' is type %s[%u], "
+        THROW exception::InvalidAgentVar("Visualisation scale x variable must be type float[1], agent '%s' variable '%s' is type %s[%u], "
             "in AgentVis::setScaleXVariable()\n",
             agentData.name.c_str(), var_name.c_str(), it->second.type.name(), it->second.elements);
     }
@@ -254,11 +254,11 @@ void AgentVis::setScaleXVariable(const std::string& var_name) {
 void AgentVis::setScaleYVariable(const std::string& var_name) {
     auto it = agentData.variables.find(var_name);
     if (it == agentData.variables.end()) {
-        THROW InvalidAgentVar("Variable '%s' was not found within agent '%s', "
+        THROW exception::InvalidAgentVar("Variable '%s' was not found within agent '%s', "
             "in AgentVis::setScaleYVariable()\n",
             var_name.c_str(), agentData.name.c_str());
     } else if (it->second.type != std::type_index(typeid(float)) || it->second.elements != 1) {
-        THROW InvalidAgentVar("Visualisation scale y variable must be type float[1], agent '%s' variable '%s' is type %s[%u], "
+        THROW exception::InvalidAgentVar("Visualisation scale y variable must be type float[1], agent '%s' variable '%s' is type %s[%u], "
             "in AgentVis::setScaleYVariable()\n",
             agentData.name.c_str(), var_name.c_str(), it->second.type.name(), it->second.elements);
     }
@@ -268,11 +268,11 @@ void AgentVis::setScaleYVariable(const std::string& var_name) {
 void AgentVis::setScaleZVariable(const std::string& var_name) {
     auto it = agentData.variables.find(var_name);
     if (it == agentData.variables.end()) {
-        THROW InvalidAgentVar("Variable '%s' was not found within agent '%s', "
+        THROW exception::InvalidAgentVar("Variable '%s' was not found within agent '%s', "
             "in AgentVis::setScaleZVariable()\n",
             var_name.c_str(), agentData.name.c_str());
     } else if (it->second.type != std::type_index(typeid(float)) || it->second.elements != 1) {
-        THROW InvalidAgentVar("Visualisation scale z variable must be type float[1], agent '%s' variable '%s' is type %s[%u], "
+        THROW exception::InvalidAgentVar("Visualisation scale z variable must be type float[1], agent '%s' variable '%s' is type %s[%u], "
             "in AgentVis::setScaleZVariable()\n",
             agentData.name.c_str(), var_name.c_str(), it->second.type.name(), it->second.elements);
     }
@@ -462,7 +462,7 @@ void AgentVis::setModel(const Stock::Models::Model &model) {
 }
 void AgentVis::setModelScale(float xLen, float yLen, float zLen) {
     if (xLen <= 0 || yLen <= 0 || zLen <= 0) {
-        THROW InvalidArgument("AgentVis::setModelScale(): Invalid argument, lengths must all be positive.\n");
+        THROW exception::InvalidArgument("AgentVis::setModelScale(): Invalid argument, lengths must all be positive.\n");
     }
     defaultConfig.model_scale[0] = xLen;
     defaultConfig.model_scale[1] = yLen;
@@ -478,7 +478,7 @@ void AgentVis::setModelScale(float xLen, float yLen, float zLen) {
 }
 void AgentVis::setModelScale(float maxLen) {
   if (maxLen <= 0) {
-        THROW InvalidArgument("AgentVis::setModelScale(): Invalid argument, maxLen must be positive.\n");
+        THROW exception::InvalidArgument("AgentVis::setModelScale(): Invalid argument, maxLen must be positive.\n");
     }
     defaultConfig.model_scale[0] = -maxLen;
     // Apply to all states which haven't had the setting overriden
@@ -498,12 +498,12 @@ void AgentVis::setColor(const ColorFunction& cf) {
     if (!cf.getAgentVariableName().empty()) {
         auto it = agentData.variables.find(cf.getAgentVariableName());
         if (it == agentData.variables.end()) {
-            THROW InvalidAgentVar("Variable '%s' bound to color function was not found within agent '%s', "
+            THROW exception::InvalidAgentVar("Variable '%s' bound to color function was not found within agent '%s', "
                 "in AgentVis::setColor()\n",
                 cf.getAgentVariableName().c_str(), agentData.name.c_str());
         }
         if (it->second.type != cf.getAgentVariableRequiredType() || it->second.elements != 1) {
-            THROW InvalidAgentVar("Visualisation color function variable must be type %s[1], agent '%s' variable '%s' is type %s[%u], "
+            THROW exception::InvalidAgentVar("Visualisation color function variable must be type %s[1], agent '%s' variable '%s' is type %s[%u], "
                 "in AgentVis::setColor()\n",
                 cf.getAgentVariableRequiredType().name(), agentData.name.c_str(), cf.getAgentVariableName().c_str(), it->second.type.name(), it->second.elements);
         }

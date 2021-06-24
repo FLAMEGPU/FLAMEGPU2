@@ -26,7 +26,7 @@ TEST(SubAgentDescriptionTest, RequiresExitCondition) {
     }
     m.newSubModel("sub", sm);
     // Missing exit condition
-    EXPECT_THROW(CUDASimulation s(m), InvalidSubModel);
+    EXPECT_THROW(CUDASimulation s(m), exception::InvalidSubModel);
     sm.addExitCondition(ExitAlways);
     EXPECT_NO_THROW(CUDASimulation s(m));
 }
@@ -43,8 +43,8 @@ TEST(SubAgentDescriptionTest, InvalidAgentName) {
     }
     auto &smd = m.newSubModel("sub", sm);
     // Invalid agent
-    EXPECT_THROW(smd.bindAgent("c", "b", false, false), InvalidSubAgentName);
-    EXPECT_THROW(smd.bindAgent("a", "c", false, false), InvalidAgentName);
+    EXPECT_THROW(smd.bindAgent("c", "b", false, false), exception::InvalidSubAgentName);
+    EXPECT_THROW(smd.bindAgent("a", "c", false, false), exception::InvalidAgentName);
     // Good
     EXPECT_NO_THROW(smd.bindAgent("a", "b", false, false));
 }
@@ -71,13 +71,13 @@ TEST(SubAgentDescriptionTest, InvalidAgentState) {
     auto &smd = m.newSubModel("sub", sm);
     auto &agent_map = smd.bindAgent("a", "b", false, false);
     // Invalid name
-    EXPECT_THROW(agent_map.mapState("c", "b"), InvalidAgentState);
-    EXPECT_THROW(agent_map.mapState("a", "c"), InvalidAgentState);
+    EXPECT_THROW(agent_map.mapState("c", "b"), exception::InvalidAgentState);
+    EXPECT_THROW(agent_map.mapState("a", "c"), exception::InvalidAgentState);
     // Good
     EXPECT_NO_THROW(agent_map.mapState("a", "b"));
     // Already Bound
-    EXPECT_THROW(agent_map.mapState("a2", "b"), InvalidAgentState);
-    EXPECT_THROW(agent_map.mapState("a", "b2"), InvalidAgentState);
+    EXPECT_THROW(agent_map.mapState("a2", "b"), exception::InvalidAgentState);
+    EXPECT_THROW(agent_map.mapState("a", "b2"), exception::InvalidAgentState);
     // Good
     EXPECT_NO_THROW(agent_map.mapState("a2", "b2"));
 }
@@ -106,21 +106,21 @@ TEST(SubAgentDescriptionTest, InvalidAgentVariable) {
     auto &smd = m.newSubModel("sub", sm);
     auto &agent_map = smd.bindAgent("a", "b", false, false);
     // Bad name
-    EXPECT_THROW(agent_map.mapVariable("c", "b_float"), InvalidAgentVar);
-    EXPECT_THROW(agent_map.mapVariable("a_float", "c"), InvalidAgentVar);
+    EXPECT_THROW(agent_map.mapVariable("c", "b_float"), exception::InvalidAgentVar);
+    EXPECT_THROW(agent_map.mapVariable("a_float", "c"), exception::InvalidAgentVar);
     // Bad data type
-    EXPECT_THROW(agent_map.mapVariable("a_uint", "b_float"), InvalidAgentVar);
-    EXPECT_THROW(agent_map.mapVariable("a_float", "a_uint"), InvalidAgentVar);
+    EXPECT_THROW(agent_map.mapVariable("a_uint", "b_float"), exception::InvalidAgentVar);
+    EXPECT_THROW(agent_map.mapVariable("a_float", "a_uint"), exception::InvalidAgentVar);
     // Bad array length
-    EXPECT_THROW(agent_map.mapVariable("a_uint", "b_uint2"), InvalidAgentVar);
-    EXPECT_THROW(agent_map.mapVariable("a_uint2", "b_uint"), InvalidAgentVar);
+    EXPECT_THROW(agent_map.mapVariable("a_uint", "b_uint2"), exception::InvalidAgentVar);
+    EXPECT_THROW(agent_map.mapVariable("a_uint2", "b_uint"), exception::InvalidAgentVar);
     // Good
     EXPECT_NO_THROW(agent_map.mapVariable("a_float", "b_float"));
     EXPECT_NO_THROW(agent_map.mapVariable("a_uint", "b_uint"));
     EXPECT_NO_THROW(agent_map.mapVariable("a_uint2", "b_uint2"));
     // Already bound
-    EXPECT_THROW(agent_map.mapVariable("a_float2", "b_float"), InvalidAgentVar);
-    EXPECT_THROW(agent_map.mapVariable("a_float", "b_float2"), InvalidAgentVar);
+    EXPECT_THROW(agent_map.mapVariable("a_float2", "b_float"), exception::InvalidAgentVar);
+    EXPECT_THROW(agent_map.mapVariable("a_float", "b_float2"), exception::InvalidAgentVar);
     // Good
     EXPECT_NO_THROW(agent_map.mapVariable("a_float2", "b_float2"));
 }
@@ -141,8 +141,8 @@ TEST(SubAgentDescriptionTest, AlreadyBound) {
     // Good
     EXPECT_NO_THROW(smd.bindAgent("a", "b", false, false));
     // Already Bound
-    EXPECT_THROW(smd.bindAgent("a2", "b", false, false), InvalidAgentName);
-    EXPECT_THROW(smd.bindAgent("a", "b2", false, false), InvalidSubAgentName);
+    EXPECT_THROW(smd.bindAgent("a2", "b", false, false), exception::InvalidAgentName);
+    EXPECT_THROW(smd.bindAgent("a", "b2", false, false), exception::InvalidSubAgentName);
     // Good
     EXPECT_NO_THROW(smd.bindAgent("a2", "b2", false, false));
 }

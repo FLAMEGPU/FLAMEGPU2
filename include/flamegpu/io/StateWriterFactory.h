@@ -36,7 +36,7 @@ class StateWriterFactory {
      * @param iterations The value from the step counter at the time of export.
      * @param output_file Filename of the input file (This will be used to determine which reader to return)
      * @param sim_instance Instance of the Simulation object (This is used for setting/getting config)
-     * @throws UnsupportedFileType If the file extension does not match an appropriate reader
+     * @throws exception::UnsupportedFileType If the file extension does not match an appropriate reader
      */
     static StateWriter* createWriter(
         const std::string& model_name,
@@ -52,7 +52,7 @@ class StateWriterFactory {
         } else if (extension == "json") {
             return new JSONStateWriter(model_name, sim_instance_id, model_state, iterations, output_file, sim_instance);
         }
-        THROW UnsupportedFileType("File '%s' is not a type which can be written "
+        THROW exception::UnsupportedFileType("File '%s' is not a type which can be written "
             "by StateWriterFactory::createWriter().",
             output_file.c_str());
     }

@@ -109,10 +109,10 @@ void ExceptionPropertyType_test() {
     }
     ed.newProperty<T>("a", a, true);
     ed.newProperty<T, ARRAY_TEST_LEN>("b", b, true);
-    EXPECT_THROW(ed.setProperty<_T>("a", _a), InvalidEnvPropertyType);
-    // EXPECT_THROW(ed.set<_T>("b", _b), InvalidEnvPropertyType);  // Doesn't build on Travis
-    EXPECT_THROW((ed.*setArray)("b", _b), InvalidEnvPropertyType);
-    EXPECT_THROW(ed.setProperty<_T>("b", 0, _a), InvalidEnvPropertyType);
+    EXPECT_THROW(ed.setProperty<_T>("a", _a), exception::InvalidEnvPropertyType);
+    // EXPECT_THROW(ed.set<_T>("b", _b), exception::InvalidEnvPropertyType);  // Doesn't build on Travis
+    EXPECT_THROW((ed.*setArray)("b", _b), exception::InvalidEnvPropertyType);
+    EXPECT_THROW(ed.setProperty<_T>("b", 0, _a), exception::InvalidEnvPropertyType);
 }
 
 template<typename T>
@@ -126,9 +126,9 @@ void ExceptionPropertyLength_test() {
     auto fn1 = &EnvironmentDescription::setProperty<T, 1>;
     auto fn2 = &EnvironmentDescription::setProperty<T, ARRAY_TEST_LEN + 1>;
     auto fn3 = &EnvironmentDescription::setProperty<T, ARRAY_TEST_LEN * 2>;
-    EXPECT_THROW((ed.*fn1)("a", _b1), OutOfBoundsException);
-    EXPECT_THROW((ed.*fn2)("a", _b2), OutOfBoundsException);
-    EXPECT_THROW((ed.*fn3)("a", _b3), OutOfBoundsException);
+    EXPECT_THROW((ed.*fn1)("a", _b1), exception::OutOfBoundsException);
+    EXPECT_THROW((ed.*fn2)("a", _b2), exception::OutOfBoundsException);
+    EXPECT_THROW((ed.*fn3)("a", _b3), exception::OutOfBoundsException);
 }
 
 template<typename T>
@@ -139,8 +139,8 @@ void ExceptionPropertyRange_test() {
     T c = static_cast<T>(12);
 
     for (int i = 0; i < 5; ++i) {
-        EXPECT_THROW(ed.setProperty<T>("a", ARRAY_TEST_LEN + i, c), OutOfBoundsException);
-        EXPECT_THROW(ed.getProperty<T>("a", ARRAY_TEST_LEN + i), OutOfBoundsException);
+        EXPECT_THROW(ed.setProperty<T>("a", ARRAY_TEST_LEN + i, c), exception::OutOfBoundsException);
+        EXPECT_THROW(ed.getProperty<T>("a", ARRAY_TEST_LEN + i), exception::OutOfBoundsException);
     }
 }
 
@@ -336,12 +336,12 @@ TEST(EnvironmentDescriptionTest, ExceptionPropertyRange_uint64_t) {
 TEST(EnvironmentDescriptionTest, ExceptionPropertyDoesntExist) {
     EnvironmentDescription ed;
     float a = static_cast<float>(12);
-    EXPECT_THROW(ed.getProperty<float>("a"), InvalidEnvProperty);
+    EXPECT_THROW(ed.getProperty<float>("a"), exception::InvalidEnvProperty);
     ed.newProperty<float>("a", a);
     EXPECT_EQ(ed.getProperty<float>("a"), a);
     // array version
     auto f = &EnvironmentDescription::getProperty<int, 2>;
-    EXPECT_THROW((ed.*f)("b"), InvalidEnvProperty);
+    EXPECT_THROW((ed.*f)("b"), exception::InvalidEnvProperty);
     auto addArray = &EnvironmentDescription::newProperty<int, ARRAY_TEST_LEN>;
     std::array<int, ARRAY_TEST_LEN> b;
     // EXPECT_NO_THROW(ed.newProperty<int>("b", b));  // Doesn't build on Travis
@@ -352,11 +352,11 @@ TEST(EnvironmentDescriptionTest, ExceptionPropertyDoesntExist) {
 
 TEST(EnvironmentDescriptionTest, reserved_name) {
     EnvironmentDescription ed;
-    EXPECT_THROW(ed.newProperty<int>("_", 1), ReservedName);
-    EXPECT_THROW(ed.setProperty<int>("_", 1), ReservedName);
+    EXPECT_THROW(ed.newProperty<int>("_", 1), exception::ReservedName);
+    EXPECT_THROW(ed.setProperty<int>("_", 1), exception::ReservedName);
     auto add = &EnvironmentDescription::newProperty<int, 2>;
     auto set = &EnvironmentDescription::setProperty<int, 2>;
-    EXPECT_THROW((ed.*add)("_", { 1, 2 }, false), ReservedName);
-    EXPECT_THROW((ed.*set)("_", { 1, 2 }), ReservedName);
+    EXPECT_THROW((ed.*add)("_", { 1, 2 }, false), exception::ReservedName);
+    EXPECT_THROW((ed.*set)("_", { 1, 2 }), exception::ReservedName);
 }
 }  // namespace flamegpu

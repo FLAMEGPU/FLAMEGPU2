@@ -47,8 +47,8 @@ class SubAgentDescription {
      * Links the named states between the master and sub agent
      * @param sub_state_name Name of the state in the sub models agent
      * @param master_state_name Name of the state in the master models agent
-     * @throws InvalidParent If the sub agent or master agent weak_ptrs have expired (this should never happen)
-     * @throws InvalidAgentState If the named state does not exist within the bound sub or master agent
+     * @throws exception::InvalidParent If the sub agent or master agent weak_ptrs have expired (this should never happen)
+     * @throws exception::InvalidAgentState If the named state does not exist within the bound sub or master agent
      */
     void mapState(const std::string &sub_state_name, const std::string &master_state_name);
     /**
@@ -56,23 +56,23 @@ class SubAgentDescription {
      * These variables must have the same type and number of elements (1 unless they're an array variable)
      * @param sub_variable_name Name of the variable in the sub models agent
      * @param master_variable_name Name of the variable in the master models agent
-     * @throws InvalidParent If the sub agent or master agent weak_ptrs have expired (this should never happen)
-     * @throws InvalidAgentVar If the named variable does not exist within the bound sub or master agent
-     * @throws InvalidAgentVar If there is a mismatch between the variables types or number of elements
+     * @throws exception::InvalidParent If the sub agent or master agent weak_ptrs have expired (this should never happen)
+     * @throws exception::InvalidAgentVar If the named variable does not exist within the bound sub or master agent
+     * @throws exception::InvalidAgentVar If there is a mismatch between the variables types or number of elements
      */
     void mapVariable(const std::string &sub_variable_name, const std::string &master_variable_name);
     /**
      * Returns the master agent state which has been mapped to the name subagent state
      * @param sub_state_name Name of the state in the sub agent to check
      * @return The name of the state within the master agent which is mapped
-     * @throws InvalidAgentState If the sub agent state does not exist or has not been mapped yet
+     * @throws exception::InvalidAgentState If the sub agent state does not exist or has not been mapped yet
      */
     std::string getStateMapping(const std::string &sub_state_name);
     /**
      * Returns the master agent variable which has been mapped to the name subagent variable
      * @param sub_variable_name Name of the variable in the sub agent to check
      * @return The name of the variable within the master agent which is mapped
-     * @throws InvalidAgentVar If the sub agent variable does not exist or has not been mapped yet
+     * @throws exception::InvalidAgentVar If the sub agent variable does not exist or has not been mapped yet
      */
     std::string getVariableMapping(const std::string &sub_variable_name);
 

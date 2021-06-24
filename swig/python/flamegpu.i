@@ -270,7 +270,7 @@ class FGPURuntimeException : public std::exception {
     try {
         $action
     }
-    catch (flamegpu::FGPUException& e) {
+    catch (flamegpu::exception::FGPUException& e) {
         FGPURuntimeException *except = new FGPURuntimeException(std::string(e.what()), std::string(e.exception_type()));
         PyObject *err = SWIG_NewPointerObj(except, SWIGTYPE_p_FGPURuntimeException, 1);
         SWIG_Python_Raise(err, except.type(), SWIGTYPE_p_FGPURuntimeException); 

@@ -89,7 +89,7 @@ void CUDAFatAgent::addSubAgent(
 void CUDAFatAgent::processDeath(const unsigned int &agent_fat_id, const std::string &state_name, CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream) {
     auto sm = states.find({agent_fat_id, state_name});
     if (sm == states.end()) {
-        THROW InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found "
+        THROW exception::InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found "
             "in CUDAFatAgent::processDeath()",
             "?", state_name.c_str());
     }
@@ -132,7 +132,7 @@ void CUDAFatAgent::transitionState(const unsigned int &agent_fat_id, const std::
     if (_src != _dest) {
         auto src = states.find({agent_fat_id, _src});
         if (src == states.end()) {
-            THROW InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found "
+            THROW exception::InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found "
                 "in CUDAFatAgent::transitionState()",
                 "?", _src.c_str());
         }
@@ -141,7 +141,7 @@ void CUDAFatAgent::transitionState(const unsigned int &agent_fat_id, const std::
             return;
         auto dest = states.find({agent_fat_id, _dest});
         if (dest == states.end()) {
-            THROW InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found "
+            THROW exception::InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found "
                 "in CUDAFatAgent::transitionState()",
                 "?", _dest.c_str());
         }
@@ -177,7 +177,7 @@ void CUDAFatAgent::transitionState(const unsigned int &agent_fat_id, const std::
 void CUDAFatAgent::processFunctionCondition(const unsigned int &agent_fat_id, const std::string &state_name, CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream) {
     auto sm = states.find({agent_fat_id, state_name});
     if (sm == states.end()) {
-        THROW InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found "
+        THROW exception::InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found "
             "in CUDAFatAgent::processFunctionCondition()",
             "?", state_name.c_str());
     }
@@ -233,7 +233,7 @@ void CUDAFatAgent::setConditionState(const unsigned int &agent_fat_id, const std
     // check the cuda agent state map to find the correct state list for functions starting state
     auto sm = states.find({agent_fat_id, state_name});
     if (sm == states.end()) {
-        THROW InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found "
+        THROW exception::InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found "
             "in CUDAFatAgent::setConditionState()",
             "?", state_name.c_str());
     }

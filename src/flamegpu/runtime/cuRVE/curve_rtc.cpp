@@ -201,7 +201,7 @@ void CurveRTCHost::registerAgentVariable(const char* variableName, const char* t
     props.elements = elements;
     props.type_size = type_size;
     if (!agent_variables.emplace(variableName, props).second) {
-        THROW UnknownInternalError("Variable '%s' is already registered, in CurveRTCHost::registerAgentVariable()", variableName);
+        THROW exception::UnknownInternalError("Variable '%s' is already registered, in CurveRTCHost::registerAgentVariable()", variableName);
     }
 }
 void CurveRTCHost::registerMessageInVariable(const char* variableName, const char* type, size_t type_size, unsigned int elements, bool read, bool write) {
@@ -212,7 +212,7 @@ void CurveRTCHost::registerMessageInVariable(const char* variableName, const cha
     props.elements = elements;
     props.type_size = type_size;
     if (!messageIn_variables.emplace(variableName, props).second) {
-        THROW UnknownInternalError("Variable '%s' is already registered, in CurveRTCHost::registerMessageInVariable()", variableName);
+        THROW exception::UnknownInternalError("Variable '%s' is already registered, in CurveRTCHost::registerMessageInVariable()", variableName);
     }
 }
 void CurveRTCHost::registerMessageOutVariable(const char* variableName, const char* type, size_t type_size, unsigned int elements, bool read, bool write) {
@@ -223,7 +223,7 @@ void CurveRTCHost::registerMessageOutVariable(const char* variableName, const ch
     props.elements = elements;
     props.type_size = type_size;
     if (!messageOut_variables.emplace(variableName, props).second) {
-        THROW UnknownInternalError("Variable '%s' is already registered, in CurveRTCHost::registerMessageOutVariable()", variableName);
+        THROW exception::UnknownInternalError("Variable '%s' is already registered, in CurveRTCHost::registerMessageOutVariable()", variableName);
     }
 }
 void CurveRTCHost::registerNewAgentVariable(const char* variableName, const char* type, size_t type_size, unsigned int elements, bool read, bool write) {
@@ -234,7 +234,7 @@ void CurveRTCHost::registerNewAgentVariable(const char* variableName, const char
     props.elements = elements;
     props.type_size = type_size;
     if (!newAgent_variables.emplace(variableName, props).second) {
-        THROW UnknownInternalError("Variable '%s' is already registered, in CurveRTCHost::registerNewAgentVariable()", variableName);
+        THROW exception::UnknownInternalError("Variable '%s' is already registered, in CurveRTCHost::registerNewAgentVariable()", variableName);
     }
 }
 
@@ -243,7 +243,7 @@ void CurveRTCHost::unregisterAgentVariable(const char* variableName) {
     if (i != agent_variables.end()) {
         agent_variables.erase(variableName);
     } else {
-        THROW UnknownInternalError("Variable '%s' not found when removing variable, in CurveRTCHost::unregisterAgentVariable()", variableName);
+        THROW exception::UnknownInternalError("Variable '%s' not found when removing variable, in CurveRTCHost::unregisterAgentVariable()", variableName);
     }
 }
 void CurveRTCHost::unregisterMessageOutVariable(const char* variableName) {
@@ -251,7 +251,7 @@ void CurveRTCHost::unregisterMessageOutVariable(const char* variableName) {
     if (i != messageOut_variables.end()) {
         messageOut_variables.erase(variableName);
     } else {
-        THROW UnknownInternalError("Variable '%s' not found when removing variable, in CurveRTCHost::unregisterMessageOutVariable()", variableName);
+        THROW exception::UnknownInternalError("Variable '%s' not found when removing variable, in CurveRTCHost::unregisterMessageOutVariable()", variableName);
     }
 }
 void CurveRTCHost::unregisterMessageInVariable(const char* variableName) {
@@ -259,7 +259,7 @@ void CurveRTCHost::unregisterMessageInVariable(const char* variableName) {
     if (i != messageIn_variables.end()) {
         messageIn_variables.erase(variableName);
     } else {
-        THROW UnknownInternalError("Variable '%s' not found when removing variable, in CurveRTCHost::unregisterMessageInVariable()", variableName);
+        THROW exception::UnknownInternalError("Variable '%s' not found when removing variable, in CurveRTCHost::unregisterMessageInVariable()", variableName);
     }
 }
 void CurveRTCHost::unregisterNewAgentVariable(const char* variableName) {
@@ -267,7 +267,7 @@ void CurveRTCHost::unregisterNewAgentVariable(const char* variableName) {
     if (i != newAgent_variables.end()) {
         newAgent_variables.erase(variableName);
     } else {
-        THROW UnknownInternalError("Variable '%s' not found when removing variable, in CurveRTCHost::unregisterNewAgentVariable()", variableName);
+        THROW exception::UnknownInternalError("Variable '%s' not found when removing variable, in CurveRTCHost::unregisterNewAgentVariable()", variableName);
     }
 }
 
@@ -277,28 +277,28 @@ void* CurveRTCHost::getAgentVariableCachePtr(const char* variableName) {
     if (i != agent_variables.end()) {
         return i->second.h_data_ptr;
     }
-    THROW UnknownInternalError("Variable '%s' not found when accessing variable, in CurveRTCHost::getAgentVariableCachePtr()", variableName);
+    THROW exception::UnknownInternalError("Variable '%s' not found when accessing variable, in CurveRTCHost::getAgentVariableCachePtr()", variableName);
 }
 void* CurveRTCHost::getMessageOutVariableCachePtr(const char* variableName) {
     const auto i = messageOut_variables.find(variableName);
     if (i != messageOut_variables.end()) {
         return i->second.h_data_ptr;
     }
-    THROW UnknownInternalError("Variable '%s' not found when accessing variable, in CurveRTCHost::getMessageOutVariableCachePtr()", variableName);
+    THROW exception::UnknownInternalError("Variable '%s' not found when accessing variable, in CurveRTCHost::getMessageOutVariableCachePtr()", variableName);
 }
 void* CurveRTCHost::getMessageInVariableCachePtr(const char* variableName) {
     const auto i = messageIn_variables.find(variableName);
     if (i != messageIn_variables.end()) {
         return i->second.h_data_ptr;
     }
-    THROW UnknownInternalError("Variable '%s' not found when accessing variable, in CurveRTCHost::getMessageInVariableCachePtr()", variableName);
+    THROW exception::UnknownInternalError("Variable '%s' not found when accessing variable, in CurveRTCHost::getMessageInVariableCachePtr()", variableName);
 }
 void* CurveRTCHost::getNewAgentVariableCachePtr(const char* variableName) {
     const auto i = newAgent_variables.find(variableName);
     if (i != newAgent_variables.end()) {
         return i->second.h_data_ptr;
     }
-    THROW UnknownInternalError("Variable '%s' not found when accessing variable, in CurveRTCHost::getNewAgentVariableCachePtr()", variableName);
+    THROW exception::UnknownInternalError("Variable '%s' not found when accessing variable, in CurveRTCHost::getNewAgentVariableCachePtr()", variableName);
 }
 
 void CurveRTCHost::registerEnvVariable(const char* propertyName, ptrdiff_t offset, const char* type, size_t type_size, unsigned int elements) {
@@ -308,7 +308,7 @@ void CurveRTCHost::registerEnvVariable(const char* propertyName, ptrdiff_t offse
     props.offset = offset;
     props.type_size = type_size;
     if (!RTCEnvVariables.emplace(propertyName, props).second) {
-        THROW UnknownInternalError("Environment property with name '%s' is already registered, in CurveRTCHost::registerEnvVariable()", propertyName);
+        THROW exception::UnknownInternalError("Environment property with name '%s' is already registered, in CurveRTCHost::registerEnvVariable()", propertyName);
     }
 }
 
@@ -317,7 +317,7 @@ void CurveRTCHost::unregisterEnvVariable(const char* propertyName) {
     if (i != RTCEnvVariables.end()) {
         RTCEnvVariables.erase(propertyName);
     } else {
-        THROW UnknownInternalError("Environment property '%s' not found when removing environment property, in CurveRTCHost::unregisterEnvVariable()", propertyName);
+        THROW exception::UnknownInternalError("Environment property '%s' not found when removing environment property, in CurveRTCHost::unregisterEnvVariable()", propertyName);
     }
 }
 
@@ -327,7 +327,7 @@ void CurveRTCHost::initHeaderEnvironment() {
     std::stringstream variables;
     data_buffer_size = EnvironmentManager::MAX_BUFFER_SIZE;
     if (data_buffer_size % sizeof(void*) != 0) {
-        THROW UnknownInternalError("EnvironmentManager::MAX_BUFFER_SIZE should be a multiple of %llu!", sizeof(void*));
+        THROW exception::UnknownInternalError("EnvironmentManager::MAX_BUFFER_SIZE should be a multiple of %llu!", sizeof(void*));
     }
     agent_data_offset = data_buffer_size;     data_buffer_size += agent_variables.size() * sizeof(void*);
     msgOut_data_offset = data_buffer_size;    data_buffer_size += messageOut_variables.size() * sizeof(void*);
@@ -704,7 +704,7 @@ void CurveRTCHost::initHeaderGetters() {
 }
 void CurveRTCHost::initDataBuffer() {
     if (data_buffer_size == 0 || h_data_buffer) {
-        THROW InvalidOperation("CurveRTCHost::initDataBuffer() should only be called once, during the init chain.\n");
+        THROW exception::InvalidOperation("CurveRTCHost::initDataBuffer() should only be called once, during the init chain.\n");
     }
     // Alloc buffer
     h_data_buffer = static_cast<char*>(malloc(data_buffer_size));
@@ -741,7 +741,7 @@ void CurveRTCHost::setHeaderPlaceholder(std::string placeholder, std::string dst
     if (pos != std::string::npos) {
         header.replace(pos, placeholder.length(), dst);
     } else {
-        THROW UnknownInternalError("String (%s) not found when creating dynamic version of curve for RTC: in CurveRTCHost::setHeaderPlaceholder", placeholder.c_str());
+        THROW exception::UnknownInternalError("String (%s) not found when creating dynamic version of curve for RTC: in CurveRTCHost::setHeaderPlaceholder", placeholder.c_str());
     }
 }
 

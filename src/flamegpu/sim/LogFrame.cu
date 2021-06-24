@@ -22,7 +22,7 @@ bool LogFrame::hasEnvironmentProperty(const std::string &property_name) const {
 AgentLogFrame LogFrame::getAgent(const std::string &agent_name, const std::string &state_name) const {
     const auto &it = agents.find({agent_name, state_name});
     if (it == agents.end()) {
-          THROW InvalidAgentState("Log data for agent '%s' state '%s' was not found, "
+          THROW exception::InvalidAgentState("Log data for agent '%s' state '%s' was not found, "
               "in LogFrame::getEnvironmentProperty()\n",
               agent_name.c_str(), state_name.c_str());
     }
@@ -37,13 +37,13 @@ AgentLogFrame::AgentLogFrame(const std::map<LoggingConfig::NameReductionFn, util
 unsigned int AgentLogFrame::getCount() const {
     if (count != UINT_MAX)
         return count;
-    THROW InvalidOperation("Count of agents in state was not found in the log, "
+    THROW exception::InvalidOperation("Count of agents in state was not found in the log, "
         "in AgentLogFrame::getCount()\n");
 }
 double AgentLogFrame::getMean(const std::string &variable_name) const {
     const auto &it = data.find({variable_name, LoggingConfig::Mean});
     if (it == data.end()) {
-        THROW InvalidAgentVar("Mean of agent variable '%s' was not found in the log, "
+        THROW exception::InvalidAgentVar("Mean of agent variable '%s' was not found in the log, "
             "in AgentLogFrame::getMean()\n",
             variable_name.c_str());
     }
@@ -52,7 +52,7 @@ double AgentLogFrame::getMean(const std::string &variable_name) const {
 double AgentLogFrame::getStandardDev(const std::string &variable_name) const {
     const auto &it = data.find({variable_name, LoggingConfig::StandardDev});
     if (it == data.end()) {
-        THROW InvalidAgentVar("Standard deviation of agent variable '%s' was not found in the log, "
+        THROW exception::InvalidAgentVar("Standard deviation of agent variable '%s' was not found in the log, "
             "in AgentLogFrame::getStandardDev()\n",
             variable_name.c_str());
     }

@@ -176,7 +176,7 @@ class MiniSim {
             am.CUDAConfig().device_id = 1000;
             // Perform import
             am.SimulationConfig().input_file = test_file_name;
-            EXPECT_NO_THROW(am.applyConfig());  // If loading device id from config file didn't work, this would throw InvalidCUDAdevice
+            EXPECT_NO_THROW(am.applyConfig());  // If loading device id from config file didn't work, this would throw exception::InvalidCUDAdevice
             // Validate config matches
             EXPECT_EQ(am.getSimulationConfig().random_seed, 654321u);
             EXPECT_EQ(am.getSimulationConfig().steps, 123u);
@@ -387,7 +387,7 @@ TEST(IOTest2, AgentID_FileInput_IDCollision) {
     layer_a.addHostFunction(DoNothing);
     CUDASimulation sim(model);
     sim.SimulationConfig().input_file = JSON_FILE_NAME;
-    EXPECT_THROW(sim.applyConfig(), AgentIDCollision);
+    EXPECT_THROW(sim.applyConfig(), exception::AgentIDCollision);
     // Cleanup
     ASSERT_EQ(::remove(JSON_FILE_NAME), 0);
 }

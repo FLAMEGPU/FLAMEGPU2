@@ -54,16 +54,16 @@ class SubEnvironmentDescription {
      * Const master properties cannot be mapped to non-const sub properties, however the inverse is permitted
      * @param sub_property_name Name of the property in the sub models agent
      * @param master_property_name Name of the property in the master models agent
-     * @throws InvalidParent If the sub agent or master agent weak_ptrs have expired (this should never happen)
-     * @throws InvalidEnvProperty If the named property does not exist within the bound sub or master environment
-     * @throws InvalidEnvProperty If the named properties do not share the same type and length
+     * @throws exception::InvalidParent If the sub agent or master agent weak_ptrs have expired (this should never happen)
+     * @throws exception::InvalidEnvProperty If the named property does not exist within the bound sub or master environment
+     * @throws exception::InvalidEnvProperty If the named properties do not share the same type and length
      */
     void mapProperty(const std::string &sub_property_name, const std::string &master_property_name);
     /**
      * Returns the master agent property which has been mapped to the name subagent state
      * @param sub_property_name Name of the state in the sub agent to check
      * @return The name of the state within the master agent which is mapped
-     * @throws InvalidEnvProperty If the sub environment property does not exist or has not been mapped yet
+     * @throws exception::InvalidEnvProperty If the sub environment property does not exist or has not been mapped yet
      */
     std::string getPropertyMapping(const std::string &sub_property_name);
 

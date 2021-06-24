@@ -64,10 +64,10 @@ class LayerDescription {
      * The agent function will be called during this stage of model execution
      * @param a Agent function as defined using FLAMEGPU_AGENT_FUNCTION notation
      * @tparam AgentFunction Struct containing agent function definition
-     * @throw InvalidAgentFunc If the agent function does not exist within the model hierarchy
-     * @throw InvalidAgentFunc If the agent function has already been added to the layer
-     * @throw InvalidLayerMember If the layer already contains a SubModel
-     * @throw InvalidLayerMember If the agent function outputs to a message list output to by an existing agent function of the layer
+     * @throw exception::InvalidAgentFunc If the agent function does not exist within the model hierarchy
+     * @throw exception::InvalidAgentFunc If the agent function has already been added to the layer
+     * @throw exception::InvalidLayerMember If the layer already contains a SubModel
+     * @throw exception::InvalidLayerMember If the agent function outputs to a message list output to by an existing agent function of the layer
      * @note The agent function must first be added to an Agent
      * @see AgentDescription::newFunction(const std::string &, AgentFunction)
      */
@@ -77,11 +77,11 @@ class LayerDescription {
      * Adds an agent function to this layer
      * The agent function will be called during this stage of model execution
      * @param afd Agent function description to execute during this layer
-     * @throw InvalidAgentFunc If the agent function does not exist within the model hierarchy
-     * @throw InvalidAgentFunc If the agent function has already been added to the layer
-     * @throw InvalidLayerMember If the layer already contains a SubModel
-     * @throw InvalidLayerMember If the agent function outputs to a message list output to by an existing agent function of the layer
-     * @throw InvalidLayerMember If the agent function outputs an agent in the same agent state as an existing agent function's input state (or vice versa)
+     * @throw exception::InvalidAgentFunc If the agent function does not exist within the model hierarchy
+     * @throw exception::InvalidAgentFunc If the agent function has already been added to the layer
+     * @throw exception::InvalidLayerMember If the layer already contains a SubModel
+     * @throw exception::InvalidLayerMember If the agent function outputs to a message list output to by an existing agent function of the layer
+     * @throw exception::InvalidLayerMember If the agent function outputs an agent in the same agent state as an existing agent function's input state (or vice versa)
      */
     void addAgentFunction(const AgentFunctionDescription &afd);
     /**
@@ -89,11 +89,11 @@ class LayerDescription {
      * The agent function will be called during this stage of model execution
      * @param agentName Name of the agent which owns the function to execute during this layer
      * @param functionName Name of the agent function description to execute during this layer
-     * @throw InvalidAgentFunc If the agent function does not exist within the model hierarchy
-     * @throw InvalidAgentFunc If the agent function has already been added to the layer
-     * @throw InvalidLayerMember If the layer already contains a SubModel
-     * @throw InvalidLayerMember If the agent function outputs to a message list output to by an existing agent function of the layer
-     * @throw InvalidLayerMember If the agent function outputs an agent in the same agent state as an existing agent function's input state (or vice versa)
+     * @throw exception::InvalidAgentFunc If the agent function does not exist within the model hierarchy
+     * @throw exception::InvalidAgentFunc If the agent function has already been added to the layer
+     * @throw exception::InvalidLayerMember If the layer already contains a SubModel
+     * @throw exception::InvalidLayerMember If the agent function outputs to a message list output to by an existing agent function of the layer
+     * @throw exception::InvalidLayerMember If the agent function outputs an agent in the same agent state as an existing agent function's input state (or vice versa)
      */
     void addAgentFunction(const std::string &agentName, const std::string &functionName);
     /**
@@ -101,11 +101,11 @@ class LayerDescription {
      * The agent function will be called during this stage of model execution
      * @param agentName Name of the agent which owns the function to execute during this layer
      * @param functionName Name of the agent function description to execute during this layer
-     * @throw InvalidAgentFunc If the agent function does not exist within the model hierarchy
-     * @throw InvalidAgentFunc If the agent function has already been added to the layer
-     * @throw InvalidLayerMember If the layer already contains a SubModel
-     * @throw InvalidLayerMember If the agent function outputs to a message list output to by an existing agent function of the layer
-     * @throw InvalidLayerMember If the agent function outputs an agent in the same agent state as an existing agent function's input state (or vice versa)
+     * @throw exception::InvalidAgentFunc If the agent function does not exist within the model hierarchy
+     * @throw exception::InvalidAgentFunc If the agent function has already been added to the layer
+     * @throw exception::InvalidLayerMember If the layer already contains a SubModel
+     * @throw exception::InvalidLayerMember If the agent function outputs to a message list output to by an existing agent function of the layer
+     * @throw exception::InvalidLayerMember If the agent function outputs an agent in the same agent state as an existing agent function's input state (or vice versa)
      * @note This version exists because the template overload was preventing implicit cast to std::string
      */
     void addAgentFunction(const char *agentName, const char *functionName);
@@ -113,8 +113,8 @@ class LayerDescription {
      * Adds a host function to this layer
      * The host function will be called during this stage of model execution
      * @param func_p Function pointer to the host function declared using FLAMEGPU_HOST_FUNCTION notation
-     * @throw InvalidHostFunc If the function has already been added to the layer
-     * @throw InvalidLayerMember If the layer already contains a SubModel
+     * @throw exception::InvalidHostFunc If the function has already been added to the layer
+     * @throw exception::InvalidLayerMember If the layer already contains a SubModel
      * @note There is no guarantee on the order in which multiple host functions in the same layer will be executed
      */
     void addHostFunction(FLAMEGPU_HOST_FUNCTION_POINTER func_p);
@@ -122,8 +122,8 @@ class LayerDescription {
      * Adds a submodel to a layer
      * If layer contains a submodel, it may contain nothing else
      * @param name Name of the submodel (passed to ModelDescription::newSubModel() was called)
-     * @throw InvalidLayerMember If the layer already contains any agent functions or host functions
-     * @throw InvalidSubModel If the layer already contains a submodel
+     * @throw exception::InvalidLayerMember If the layer already contains any agent functions or host functions
+     * @throw exception::InvalidSubModel If the layer already contains a submodel
      * @see addSubModel(const SubModelDescription &)
      */
     void addSubModel(const std::string &name);
@@ -131,8 +131,8 @@ class LayerDescription {
      * Adds a submodel to a layer
      * If layer contains a submodel, it may contain nothing else
      * @param submodel SubModel description of the layer to be bound
-     * @throw InvalidLayerMember If the layer already contains any agent functions or host functions
-     * @throw InvalidSubModel If the layer already contains a submodel
+     * @throw exception::InvalidLayerMember If the layer already contains any agent functions or host functions
+     * @throw exception::InvalidSubModel If the layer already contains a submodel
      * @see addSubModel(const std::string &)
      */
     void addSubModel(const SubModelDescription &submodel);
@@ -141,7 +141,7 @@ class LayerDescription {
      * however the runnable function is encapsulated within an object which permits cross language support in swig.
      * The host function will be called during this stage of model execution
      * @param func_callback a Host function callback object
-     * @throw InvalidHostFunc If the function has already been added to the layer
+     * @throw exception::InvalidHostFunc If the function has already been added to the layer
      * @note ONLY USED INTERNALLY AND BY PYTHON API - DO NOT CALL IN C++ BUILD
      */
     void _addHostFunctionCallback(HostFunctionCallback *func_callback);
@@ -173,7 +173,7 @@ class LayerDescription {
      * however the runnable function is encapsulated within an object which permits cross language support in swig.
      * The host function will be called during this stage of model execution
      * @param func_callback a Host function callback object
-     * @throw InvalidHostFunc If the function has already been added to the layer
+     * @throw exception::InvalidHostFunc If the function has already been added to the layer
      * @note ONLY USED INTERNALLY AND BY PYTHON API - DO NOT CALL IN C++ BUILD
      */
     inline void addHostFunctionCallback(HostFunctionCallback *func_callback);
@@ -182,7 +182,7 @@ class LayerDescription {
     /**
      * @param index Index of the function to return
      * @return An immutable reference to the agent function at the provided index
-     * @throw OutOfBoundsException When index exceeds number of agent functions in the layer
+     * @throw exception::OutOfBoundsException When index exceeds number of agent functions in the layer
      * @see LayerDescription::getAgentFunctionsCount()
      * @note Functions are stored in a set, so order may change as new functions are added
      */
@@ -190,7 +190,7 @@ class LayerDescription {
     /**
      * @param index Index of the function to return
      * @return A function pointer to the host function at the provided index
-     * @throw OutOfBoundsException When index exceeds number of host functions in the layer
+     * @throw exception::OutOfBoundsException When index exceeds number of host functions in the layer
      * @see LayerDescription::getHostFunctionsCount()
      * @note Functions are stored in a set, so order may change as new functions are added
      */
@@ -199,7 +199,7 @@ class LayerDescription {
     /**
      * @param index Index of the function to return
      * @return A function callback to the host function at the provided index
-     * @throw OutOfBoundsException When index exceeds number of host functions in the layer
+     * @throw exception::OutOfBoundsException When index exceeds number of host functions in the layer
      * @see LayerDescription::getHostFunctionCallbackCount()
      * @note Functions are stored in a set, so order may change as new functions are added
      */
@@ -221,18 +221,18 @@ class LayerDescription {
 template<typename AgentFunction>
 void LayerDescription::addAgentFunction(AgentFunction /*af*/) {
     if (layer->sub_model) {
-        THROW InvalidLayerMember("A layer containing agent functions and/or host functions, may not also contain a submodel, "
+        THROW exception::InvalidLayerMember("A layer containing agent functions and/or host functions, may not also contain a submodel, "
             "in LayerDescription::addAgentFunction()\n");
     }
     if (layer->host_functions.size() || layer->host_functions_callbacks.size()) {
-        THROW InvalidLayerMember("A layer containing host functions, may not also contain agent functions, "
+        THROW exception::InvalidLayerMember("A layer containing host functions, may not also contain agent functions, "
             "in LayerDescription::addAgentFunction()\n");
     }
     AgentFunctionWrapper * func_compare = AgentFunction::fnPtr();
     // Find the matching agent function in model hierarchy
     auto mdl = model.lock();
     if (!mdl) {
-        THROW ExpiredWeakPtr();
+        THROW exception::ExpiredWeakPtr();
     }
     unsigned int matches = 0;
     std::shared_ptr<AgentFunctionData> match_ptr;
@@ -252,7 +252,7 @@ void LayerDescription::addAgentFunction(AgentFunction /*af*/) {
                                 b->initial_state == f.second->end_state ||
                                 b->end_state == f.second->initial_state ||
                                 b->end_state == f.second->end_state) {
-                                THROW InvalidAgentFunc("Agent functions '%s' cannot be added to this layer as agent function '%s' "
+                                THROW exception::InvalidAgentFunc("Agent functions '%s' cannot be added to this layer as agent function '%s' "
                                     "within the layer shares an input or output state, this is not permitted, "
                                     "in LayerDescription::addAgentFunction().",
                                     f.second->name.c_str(), b->name.c_str());
@@ -264,7 +264,7 @@ void LayerDescription::addAgentFunction(AgentFunction /*af*/) {
                             if (parent->name == a_agent_out->name) {
                                 // If state matches
                                 if (b->initial_state == f.second->agent_output_state) {
-                                    THROW InvalidLayerMember("Agent functions '%s' cannot be added to this layer as agent function '%s' "
+                                    THROW exception::InvalidLayerMember("Agent functions '%s' cannot be added to this layer as agent function '%s' "
                                         "within the layer requires the same agent state as an input, as this agent function births, "
                                         "in LayerDescription::addAgentFunction().",
                                         f.second->name.c_str(), b->name.c_str());
@@ -278,7 +278,7 @@ void LayerDescription::addAgentFunction(AgentFunction /*af*/) {
                             if (a.second->name == b_agent_out->name) {
                                 // If state matches
                                 if (f.second->initial_state == b->agent_output_state) {
-                                    THROW InvalidLayerMember("Agent functions '%s' cannot be added to this layer as agent function '%s' "
+                                    THROW exception::InvalidLayerMember("Agent functions '%s' cannot be added to this layer as agent function '%s' "
                                         "within the layer agent births to the same agent state as this agent function requires as an input, "
                                         "in LayerDescription::addAgentFunction().",
                                         f.second->name.c_str(), b->name.c_str());
@@ -292,7 +292,7 @@ void LayerDescription::addAgentFunction(AgentFunction /*af*/) {
                     if ((a_msg_out && b_msg_out && a_msg_out == b_msg_out) ||
                         (a_msg_out && b_msg_in && a_msg_out == b_msg_in) ||
                         (a_msg_in && b_msg_out && a_msg_in == b_msg_out)) {  // Pointer comparison should be fine here
-                        THROW InvalidLayerMember("Agent functions '%s' cannot be added to this layer as agent function '%s' "
+                        THROW exception::InvalidLayerMember("Agent functions '%s' cannot be added to this layer as agent function '%s' "
                             "within the layer also inputs or outputs to the same messagelist, this is not permitted, "
                             "in LayerDescription::addAgentFunction().",
                             f.second->name.c_str(), b->name.c_str());
@@ -307,14 +307,14 @@ void LayerDescription::addAgentFunction(AgentFunction /*af*/) {
         // Add it and check it succeeded
         if (layer->agent_functions.emplace(match_ptr).second)
             return;
-        THROW InvalidAgentFunc("Attempted to add same agent function to same layer twice, "
+        THROW exception::InvalidAgentFunc("Attempted to add same agent function to same layer twice, "
             "in LayerDescription::addAgentFunction().");
     }
     if (matches > 1) {
-        THROW InvalidAgentFunc("There are %u possible agent functions to add to layer, please use a more specific method for adding this agent function to a layer, "
+        THROW exception::InvalidAgentFunc("There are %u possible agent functions to add to layer, please use a more specific method for adding this agent function to a layer, "
             "in LayerDescription::addAgentFunction().", matches);
     }
-    THROW InvalidAgentFunc("Agent function was not found, "
+    THROW exception::InvalidAgentFunc("Agent function was not found, "
         "in LayerDescription::addAgentFunction().");
 }
 
@@ -333,7 +333,7 @@ HostFunctionCallback* LayerDescription::getHostFunctionCallback(unsigned int ind
             ++it;
         return *it;
     }
-    THROW OutOfBoundsException("Index %d is out of bounds (only %d items exist) "
+    THROW exception::OutOfBoundsException("Index %d is out of bounds (only %d items exist) "
         "in LayerDescription.getHostFunctionCallback()\n",
         index, layer->host_functions_callbacks.size());
 }

@@ -58,7 +58,7 @@ void EnvironmentManager::init(const unsigned int &instance_id, const Environment
     // Error if reinit
     for (auto &&i : properties) {
         if (i.first.first == instance_id) {
-            THROW EnvDescriptionAlreadyLoaded("Environment description with same instance id '%u' is already loaded, "
+            THROW exception::EnvDescriptionAlreadyLoaded("Environment description with same instance id '%u' is already loaded, "
                 "in EnvironmentManager::init().",
                 instance_id);
         }
@@ -83,7 +83,7 @@ void EnvironmentManager::init(const unsigned int &instance_id, const Environment
     if (newSize > m_freeSpace) {
         // Ran out of constant cache space! (this can only trigger when a DefragMap is passed)
         // Arguably this check should be performed by init()
-        THROW OutOfMemory("Insufficient EnvProperty memory to create new properties,"
+        THROW exception::OutOfMemory("Insufficient EnvProperty memory to create new properties,"
             "in EnvironmentManager::init().");
     }
     // Defragment to rebuild it properly
@@ -103,7 +103,7 @@ void EnvironmentManager::init(const unsigned int &instance_id, const Environment
     // Error if reinit
     for (auto &&i : properties) {
         if (i.first.first == instance_id) {
-            THROW EnvDescriptionAlreadyLoaded("Environment description with same instance id '%u' is already loaded, "
+            THROW exception::EnvDescriptionAlreadyLoaded("Environment description with same instance id '%u' is already loaded, "
                 "in EnvironmentManager::init().",
                 instance_id);
         }
@@ -140,7 +140,7 @@ void EnvironmentManager::init(const unsigned int &instance_id, const Environment
     if (newSize > m_freeSpace) {
         // Ran out of constant cache space! (this can only trigger when a DefragMap is passed)
         // Arguably this check should be performed by init()
-        THROW OutOfMemory("Insufficient EnvProperty memory to create new properties,"
+        THROW exception::OutOfMemory("Insufficient EnvProperty memory to create new properties,"
             "in EnvironmentManager::init().");
     }
     // Defragment to rebuild it properly
@@ -154,7 +154,7 @@ void EnvironmentManager::initRTC(const CUDASimulation& cudaSimulation) {
     // check to ensure that model name is not already registered
     auto res = cuda_agent_models.find(cudaSimulation.getInstanceID());
     if (res != cuda_agent_models.end()) {
-        THROW UnknownInternalError("Agent model name '%s' already registered in initRTC()", cudaSimulation.getModelDescription().name.c_str());
+        THROW exception::UnknownInternalError("Agent model name '%s' already registered in initRTC()", cudaSimulation.getModelDescription().name.c_str());
     }
     // register model name
     cuda_agent_models.emplace(cudaSimulation.getInstanceID(), cudaSimulation);
@@ -290,7 +290,7 @@ void EnvironmentManager::newProperty(const NamePair &name, const char *ptr, cons
             nextFree += length;
         } else {
             // Ran out of constant cache space!
-            THROW OutOfMemory("Insufficient EnvProperty memory to create new property,"
+            THROW exception::OutOfMemory("Insufficient EnvProperty memory to create new property,"
                 "in EnvironmentManager::add().");
         }
     }
@@ -305,7 +305,7 @@ void EnvironmentManager::newProperty(const NamePair &name, const char *ptr, cons
     Curve::VariableHash cvh = toHash(name);
     const auto CURVE_RESULT = Curve::getInstance().registerVariableByHash(cvh, reinterpret_cast<void*>(buffOffset), typeSize, elements);
     if (CURVE_RESULT == Curve::UNKNOWN_VARIABLE) {
-        THROW CurveException("curveRegisterVariableByHash() returned UNKNOWN_CURVE_VARIABLE"
+        THROW exception::CurveException("curveRegisterVariableByHash() returned UNKNOWN_CURVE_VARIABLE"
             "in EnvironmentManager::add().");
     }
 #ifdef _DEBUG
@@ -381,7 +381,7 @@ void EnvironmentManager::defragment(Curve & curve, const DefragMap * mergeProper
             const auto CURVE_RESULT = curve.registerVariableByHash(cvh, reinterpret_cast<void*>(buffOffset),
                 typeSize, i.elements);
             if (CURVE_RESULT == Curve::UNKNOWN_VARIABLE) {
-                THROW CurveException("curveRegisterVariableByHash() returned UNKNOWN_CURVE_VARIABLE, "
+                THROW exception::CurveException("curveRegisterVariableByHash() returned UNKNOWN_CURVE_VARIABLE, "
                     "in EnvironmentManager::defragment().");
             }
 #ifdef _DEBUG
@@ -394,7 +394,7 @@ void EnvironmentManager::defragment(Curve & curve, const DefragMap * mergeProper
         } else {
             // Ran out of constant cache space! (this can only trigger when a DefragMap is passed)
             // Arguably this check should be performed by init()
-            THROW OutOfMemory("Insufficient EnvProperty memory to create new properties, "
+            THROW exception::OutOfMemory("Insufficient EnvProperty memory to create new properties, "
                 "in EnvironmentManager::defragment().");
         }
     }
@@ -419,7 +419,7 @@ void EnvironmentManager::defragment(Curve & curve, const DefragMap * mergeProper
         const auto CURVE_RESULT = curve.registerVariableByHash(cvh, reinterpret_cast<void*>(masterprop.offset),
                 masterprop.length / masterprop.elements, masterprop.elements);
         if (CURVE_RESULT == Curve::UNKNOWN_VARIABLE) {
-            THROW CurveException("curveRegisterVariableByHash() returned UNKNOWN_CURVE_VARIABLE, "
+            THROW exception::CurveException("curveRegisterVariableByHash() returned UNKNOWN_CURVE_VARIABLE, "
                 "in EnvironmentManager::defragment().");
         }
 #ifdef _DEBUG
@@ -457,7 +457,7 @@ void EnvironmentManager::buildRTCOffsets(const unsigned int &instance_id, const 
                 // Ran out of constant cache space! (this can only trigger when a DefragMap is passed)
                 // Arguably this check should be performed by init()
                 // This should never happen, it would be caught by defrag sooner
-                THROW OutOfMemory("Insufficient EnvProperty memory to create new properties, "
+                THROW exception::OutOfMemory("Insufficient EnvProperty memory to create new properties, "
                     "in EnvironmentManager::buildRTCOffsets().");
             }
         }
@@ -489,7 +489,7 @@ void EnvironmentManager::buildRTCOffsets(const unsigned int &instance_id, const 
                     // Ran out of constant cache space! (this can only trigger when a DefragMap is passed)
                     // Arguably this check should be performed by init()
                     // This should never happen, it would be caught by defrag sooner
-                    THROW OutOfMemory("Insufficient EnvProperty memory to create new properties, "
+                    THROW exception::OutOfMemory("Insufficient EnvProperty memory to create new properties, "
                         "in EnvironmentManager::buildRTCOffsets().");
                 }
             }
@@ -502,7 +502,7 @@ char * EnvironmentManager::getRTCCache(const unsigned int& instance_id) {
     auto it = rtc_caches.find(instance_id);
     if (it != rtc_caches.end())
         return it->second->hc_buffer;
-    THROW UnknownInternalError("Instance with id '%u' not registered in EnvironmentManager for use with RTC in EnvironmentManager::getRTCCache", instance_id);
+    THROW exception::UnknownInternalError("Instance with id '%u' not registered in EnvironmentManager for use with RTC in EnvironmentManager::getRTCCache", instance_id);
 }
 void EnvironmentManager::addRTCOffset(const NamePair &name) {
     // Do not lock mutex here, do it in the calling method
@@ -523,11 +523,11 @@ void EnvironmentManager::addRTCOffset(const NamePair &name) {
             // Increase buffer offset length that has been added
             cache->nextFree += p.length;
         } else {
-            THROW OutOfMemory("Insufficient EnvProperty memory to create new properties, "
+            THROW exception::OutOfMemory("Insufficient EnvProperty memory to create new properties, "
                 "in EnvironmentManager::buildRTCOffsets().");
         }
     } else {
-        THROW OutOfMemory("Support for mapped (sub) properties is not currently implemented, "
+        THROW exception::OutOfMemory("Support for mapped (sub) properties is not currently implemented, "
             "in EnvironmentManager::addRTCOffset().");
     }
 }
@@ -536,7 +536,7 @@ const CUDASimulation& EnvironmentManager::getCUDASimulation(const unsigned int &
     // Don't lock mutex here, lock it in the calling function
     auto res = cuda_agent_models.find(instance_id);
     if (res == cuda_agent_models.end()) {
-        THROW UnknownInternalError("Instance with id '%u' not registered in EnvironmentManager for use with RTC in EnvironmentManager::getCUDASimulation", instance_id);
+        THROW exception::UnknownInternalError("Instance with id '%u' not registered in EnvironmentManager for use with RTC in EnvironmentManager::getCUDASimulation", instance_id);
     }
     return res->second;
 }
@@ -673,7 +673,7 @@ void EnvironmentManager::updateDevice(const unsigned int &instance_id) {
                 const auto CURVE_RESULT = curve.registerVariableByHash(cvh, reinterpret_cast<void*>(prop.offset),
                         prop.length / prop.elements, prop.elements);
                 if (CURVE_RESULT == Curve::UNKNOWN_VARIABLE) {
-                    THROW CurveException("curveRegisterVariableByHash() returned UNKNOWN_CURVE_VARIABLE, "
+                    THROW exception::CurveException("curveRegisterVariableByHash() returned UNKNOWN_CURVE_VARIABLE, "
                         "in EnvironmentManager::updateDevice().");
                 }
 #ifdef _DEBUG
@@ -693,7 +693,7 @@ void EnvironmentManager::updateDevice(const unsigned int &instance_id) {
                 const auto CURVE_RESULT = curve.registerVariableByHash(cvh, reinterpret_cast<void*>(masterprop.offset),
                         masterprop.length / masterprop.elements, masterprop.elements);
                 if (CURVE_RESULT == Curve::UNKNOWN_VARIABLE) {
-                    THROW CurveException("curveRegisterVariableByHash() returned UNKNOWN_CURVE_VARIABLE, "
+                    THROW exception::CurveException("curveRegisterVariableByHash() returned UNKNOWN_CURVE_VARIABLE, "
                         "in EnvironmentManager::updateDevice().");
                 }
 #ifdef _DEBUG
@@ -732,11 +732,11 @@ util::Any EnvironmentManager::getPropertyAny(const unsigned int &instance_id, co
         a = properties.find(b->second.masterProp);
         if (a != properties.end())
             return util::Any(hc_buffer + a->second.offset, a->second.length, a->second.type, a->second.elements);
-        THROW InvalidEnvProperty("Mapped environmental property with name '%u:%s' maps to missing property with name '%u:%s', "
+        THROW exception::InvalidEnvProperty("Mapped environmental property with name '%u:%s' maps to missing property with name '%u:%s', "
             "in EnvironmentManager::getPropertyAny().",
             name.first, name.second.c_str(), b->second.masterProp.first, b->second.masterProp.second.c_str());
     }
-    THROW InvalidEnvProperty("Environmental property with name '%u:%s' does not exist, "
+    THROW exception::InvalidEnvProperty("Environmental property with name '%u:%s' does not exist, "
         "in EnvironmentManager::getPropertyAny().",
         name.first, name.second.c_str());
 }

@@ -336,7 +336,7 @@ TEST(HostAgentCreationTest, BadVarName) {
     // Init agent pop
     CUDASimulation cudaSimulation(model);
     // Execute model
-    EXPECT_THROW(cudaSimulation.step(), InvalidAgentVar);
+    EXPECT_THROW(cudaSimulation.step(), exception::InvalidAgentVar);
 }
 TEST(HostAgentCreationTest, BadVarType) {
     // Define model
@@ -347,7 +347,7 @@ TEST(HostAgentCreationTest, BadVarType) {
     // Init agent pop
     CUDASimulation cudaSimulation(model);
     // Execute model
-    EXPECT_THROW(cudaSimulation.step(), InvalidVarType);
+    EXPECT_THROW(cudaSimulation.step(), exception::InvalidVarType);
 }
 TEST(HostAgentCreationTest, GetterWorks) {
     // Define model
@@ -385,7 +385,7 @@ TEST(HostAgentCreationTest, GetterBadVarName) {
     // Init agent pop
     CUDASimulation cudaSimulation(model);
     // Execute model
-    EXPECT_THROW(cudaSimulation.step(), InvalidAgentVar);
+    EXPECT_THROW(cudaSimulation.step(), exception::InvalidAgentVar);
 }
 TEST(HostAgentCreationTest, GetterBadVarType) {
     // Define model
@@ -396,7 +396,7 @@ TEST(HostAgentCreationTest, GetterBadVarType) {
     // Init agent pop
     CUDASimulation cudaSimulation(model);
     // Execute model
-    EXPECT_THROW(cudaSimulation.step(), InvalidVarType);
+    EXPECT_THROW(cudaSimulation.step(), exception::InvalidVarType);
 }
 
 // array variable stuff
@@ -562,7 +562,7 @@ TEST(HostAgentCreationTest, HostAgentBirth_ArrayLenWrong) {
     // Run the init function
     model.addStepFunction(ArrayVarHostBirth_LenWrong);
     CUDASimulation sim(model);
-    EXPECT_THROW(sim.step(), InvalidVarArrayLen);
+    EXPECT_THROW(sim.step(), exception::InvalidVarArrayLen);
 }
 TEST(HostAgentCreationTest, HostAgentBirth_ArrayLenWrong2) {
     ModelDescription model("model");
@@ -571,7 +571,7 @@ TEST(HostAgentCreationTest, HostAgentBirth_ArrayLenWrong2) {
     // Run the init function
     model.addStepFunction(ArrayVarHostBirth_LenWrong2);
     CUDASimulation sim(model);
-    EXPECT_THROW(sim.step(), OutOfRangeVarArray);
+    EXPECT_THROW(sim.step(), exception::OutOfRangeVarArray);
 }
 TEST(HostAgentCreationTest, HostAgentBirth_ArrayLenWrong3) {
     ModelDescription model("model");
@@ -580,7 +580,7 @@ TEST(HostAgentCreationTest, HostAgentBirth_ArrayLenWrong3) {
     // Run the init function
     model.addStepFunction(ArrayVarHostBirth_LenWrong);
     CUDASimulation sim(model);
-    EXPECT_THROW(sim.step(), InvalidVarArrayLen);
+    EXPECT_THROW(sim.step(), exception::InvalidVarArrayLen);
 }
 TEST(HostAgentCreationTest, HostAgentBirth_ArrayLenWrong4) {
     ModelDescription model("model");
@@ -589,7 +589,7 @@ TEST(HostAgentCreationTest, HostAgentBirth_ArrayLenWrong4) {
     // Run the init function
     model.addStepFunction(ArrayVarHostBirth_LenWrong2);
     CUDASimulation sim(model);
-    EXPECT_THROW(sim.step(), OutOfRangeVarArray);
+    EXPECT_THROW(sim.step(), exception::OutOfRangeVarArray);
 }
 TEST(HostAgentCreationTest, HostAgentBirth_ArrayTypeWrong) {
     ModelDescription model("model");
@@ -598,7 +598,7 @@ TEST(HostAgentCreationTest, HostAgentBirth_ArrayTypeWrong) {
     // Run the init function
     model.addStepFunction(ArrayVarHostBirth_TypeWrong);
     CUDASimulation sim(model);
-    EXPECT_THROW(sim.step(), InvalidVarType);
+    EXPECT_THROW(sim.step(), exception::InvalidVarType);
 }
 TEST(HostAgentCreationTest, HostAgentBirth_ArrayTypeWrong2) {
     ModelDescription model("model");
@@ -607,7 +607,7 @@ TEST(HostAgentCreationTest, HostAgentBirth_ArrayTypeWrong2) {
     // Run the init function
     model.addStepFunction(ArrayVarHostBirth_TypeWrong2);
     CUDASimulation sim(model);
-    EXPECT_THROW(sim.step(), InvalidVarType);
+    EXPECT_THROW(sim.step(), exception::InvalidVarType);
 }
 TEST(HostAgentCreationTest, HostAgentBirth_ArrayNameWrong) {
     ModelDescription model("model");
@@ -616,7 +616,7 @@ TEST(HostAgentCreationTest, HostAgentBirth_ArrayNameWrong) {
     // Run the init function
     model.addStepFunction(ArrayVarHostBirth_NameWrong);
     CUDASimulation sim(model);
-    EXPECT_THROW(sim.step(), InvalidAgentVar);
+    EXPECT_THROW(sim.step(), exception::InvalidAgentVar);
 }
 TEST(HostAgentCreationTest, HostAgentBirth_ArrayNameWrong2) {
     ModelDescription model("model");
@@ -625,7 +625,7 @@ TEST(HostAgentCreationTest, HostAgentBirth_ArrayNameWrong2) {
     // Run the init function
     model.addStepFunction(ArrayVarHostBirth_NameWrong);
     CUDASimulation sim(model);
-    EXPECT_THROW(sim.step(), InvalidAgentVar);
+    EXPECT_THROW(sim.step(), exception::InvalidAgentVar);
 }
 TEST(HostAgentCreationTest, HostAgentBirth_ArrayNotSuitableSet) {
     ModelDescription model("model");
@@ -634,7 +634,7 @@ TEST(HostAgentCreationTest, HostAgentBirth_ArrayNotSuitableSet) {
     // Run the init function
     model.addStepFunction(ArrayVarHostBirth_ArrayNotSuitableSet);
     CUDASimulation sim(model);
-    EXPECT_THROW(sim.step(), InvalidAgentVar);
+    EXPECT_THROW(sim.step(), exception::InvalidAgentVar);
 }
 TEST(HostAgentCreationTest, HostAgentBirth_ArrayNotSuitableGet) {
     ModelDescription model("model");
@@ -643,7 +643,7 @@ TEST(HostAgentCreationTest, HostAgentBirth_ArrayNotSuitableGet) {
     // Run the init function
     model.addStepFunction(ArrayVarHostBirth_ArrayNotSuitableGet);
     CUDASimulation sim(model);
-    EXPECT_THROW(sim.step(), InvalidAgentVar);
+    EXPECT_THROW(sim.step(), exception::InvalidAgentVar);
 }
 FLAMEGPU_STEP_FUNCTION(reserved_name_step) {
     FLAMEGPU->agent("agent_name").newAgent().setVariable<int>("_", 0);
@@ -657,14 +657,14 @@ TEST(HostAgentCreationTest, reserved_name) {
     // Run the init function
     model.addStepFunction(reserved_name_step);
     CUDASimulation sim(model);
-    EXPECT_THROW(sim.step(), ReservedName);
+    EXPECT_THROW(sim.step(), exception::ReservedName);
 }
 TEST(HostAgentCreationTest, reserved_name_array) {
     ModelDescription model("model");
     model.newAgent("agent_name");
     model.addStepFunction(reserved_name_step_array);
     CUDASimulation sim(model);
-    EXPECT_THROW(sim.step(), ReservedName);
+    EXPECT_THROW(sim.step(), exception::ReservedName);
 }
 FLAMEGPU_HOST_FUNCTION(AgentID_HostNewAgentBirth) {
     const uint32_t birth_ct_a = FLAMEGPU->agent("agent", "a").count();

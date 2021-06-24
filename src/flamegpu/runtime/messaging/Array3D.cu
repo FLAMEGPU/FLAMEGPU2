@@ -105,7 +105,7 @@ MsgArray3D::Data::Data(const std::shared_ptr<const ModelData> &model, const Data
     , dimensions(other.dimensions) {
     description = std::unique_ptr<MsgArray3D::Description>(model ? new MsgArray3D::Description(model, this) : nullptr);
     if (dimensions[0] == 0 || dimensions[1] == 0 || dimensions[2] == 0) {
-        THROW InvalidMessage("All dimensions must be above zero in array3D message '%s'\n", other.name.c_str());
+        THROW exception::InvalidMessage("All dimensions must be above zero in array3D message '%s'\n", other.name.c_str());
     }
 }
 MsgArray3D::Data *MsgArray3D::Data::clone(const std::shared_ptr<const ModelData> &newParent) {
@@ -125,7 +125,7 @@ void MsgArray3D::Description::setDimensions(const size_type& len_x, const size_t
 }
 void MsgArray3D::Description::setDimensions(const std::array<size_type, 3> &dims) {
     if (dims[0] == 0 || dims[1] == 0 || dims[2] == 0) {
-        THROW InvalidArgument("All dimensions must be above zero in array3D message.\n");
+        THROW exception::InvalidArgument("All dimensions must be above zero in array3D message.\n");
     }
     reinterpret_cast<Data *>(message)->dimensions = dims;
 }

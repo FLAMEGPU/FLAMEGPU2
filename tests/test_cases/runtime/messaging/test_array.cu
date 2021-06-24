@@ -334,23 +334,23 @@ TEST(TestMessage_Array, DISABLED_DuplicateOutputException) {
     // Set pop in model
     CUDASimulation c(m);
     c.setPopulationData(pop);
-    EXPECT_THROW(c.step(), ArrayMessageWriteConflict);
+    EXPECT_THROW(c.step(), exception::ArrayMessageWriteConflict);
 }
 TEST(TestMessage_Array, ArrayLenZeroException) {
     ModelDescription m(MODEL_NAME);
     MsgArray::Description &msg = m.newMessage<MsgArray>(MESSAGE_NAME);
-    EXPECT_THROW(msg.setLength(0), InvalidArgument);
+    EXPECT_THROW(msg.setLength(0), exception::InvalidArgument);
 }
 TEST(TestMessage_Array, UnsetLength) {
     ModelDescription model(MODEL_NAME);
     model.newMessage<MsgArray>(MESSAGE_NAME);
     // message.setLength(5);  // Intentionally commented out
-    EXPECT_THROW(CUDASimulation m(model), InvalidMessage);
+    EXPECT_THROW(CUDASimulation m(model), exception::InvalidMessage);
 }
 TEST(TestMessage_Array, reserved_name) {
     ModelDescription model(MODEL_NAME);
     MsgArray::Description &message = model.newMessage<MsgArray>(MESSAGE_NAME);
-    EXPECT_THROW(message.newVariable<int>("_"), ReservedName);
+    EXPECT_THROW(message.newVariable<int>("_"), exception::ReservedName);
 }
 FLAMEGPU_AGENT_FUNCTION(countArray, MsgArray, MsgNone) {
     unsigned int value = FLAMEGPU->message_in.at(0).getVariable<unsigned int>("value");

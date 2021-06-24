@@ -37,20 +37,20 @@ CUDAEnsemble::~CUDAEnsemble() {
 void CUDAEnsemble::simulate(const RunPlanVector &plans) {
     // Validate that RunPlan model matches CUDAEnsemble model
     if (*plans.environment != this->model->environment->properties) {
-        THROW InvalidArgument("RunPlan is for a different ModelDescription, in CUDAEnsemble::simulate()");
+        THROW exception::InvalidArgument("RunPlan is for a different ModelDescription, in CUDAEnsemble::simulate()");
     }
     // Validate/init output directories
     if (!config.out_directory.empty()) {
         // Validate out format is right
         config.out_format = io::StateWriterFactory::detectSupportedFileExt(config.out_format);
         if (config.out_format.empty()) {
-            THROW InvalidArgument("The out_directory config option also requires the out_format options to be set to a suitable type (e.g. 'json', 'xml'), in CUDAEnsemble::simulate()");
+            THROW exception::InvalidArgument("The out_directory config option also requires the out_format options to be set to a suitable type (e.g. 'json', 'xml'), in CUDAEnsemble::simulate()");
         }
         // Create any missing directories
         try {
             util::filesystem::recursive_create_dir(config.out_directory);
         } catch (const std::exception &e) {
-            THROW InvalidArgument("Unable to use output directory '%s', in CUDAEnsemble::simulate(): %s", config.out_directory.c_str(), e.what());
+            THROW exception::InvalidArgument("Unable to use output directory '%s', in CUDAEnsemble::simulate(): %s", config.out_directory.c_str(), e.what());
         }
         for (const auto &p : plans) {
             const auto subdir = p.getOutputSubdirectory();
@@ -60,7 +60,7 @@ void CUDAEnsemble::simulate(const RunPlanVector &plans) {
                     sub_path.append(subdir);
                     util::filesystem::recursive_create_dir(sub_path);
                 } catch (const std::exception &e) {
-                    THROW InvalidArgument("Unable to use output subdirectory '%s', in CUDAEnsemble::simulate(): %s", sub_path.generic_string().c_str(), e.what());
+                    THROW exception::InvalidArgument("Unable to use output subdirectory '%s', in CUDAEnsemble::simulate(): %s", sub_path.generic_string().c_str(), e.what());
                 }
             }
         }
@@ -273,7 +273,7 @@ void CUDAEnsemble::printHelp(const char *executable) {
 void CUDAEnsemble::setStepLog(const StepLoggingConfig &stepConfig) {
     // Validate ModelDescription matches
     if (*stepConfig.model != *model) {
-      THROW InvalidArgument("Model descriptions attached to LoggingConfig and CUDAEnsemble do not match, in CUDAEnsemble::setStepLog()\n");
+      THROW exception::InvalidArgument("Model descriptions attached to LoggingConfig and CUDAEnsemble do not match, in CUDAEnsemble::setStepLog()\n");
     }
     // Set internal config
     step_log_config = std::make_shared<StepLoggingConfig>(stepConfig);
@@ -281,7 +281,7 @@ void CUDAEnsemble::setStepLog(const StepLoggingConfig &stepConfig) {
 void CUDAEnsemble::setExitLog(const LoggingConfig &exitConfig) {
     // Validate ModelDescription matches
     if (*exitConfig.model != *model) {
-      THROW InvalidArgument("Model descriptions attached to LoggingConfig and CUDAEnsemble do not match, in CUDAEnsemble::setExitLog()\n");
+      THROW exception::InvalidArgument("Model descriptions attached to LoggingConfig and CUDAEnsemble do not match, in CUDAEnsemble::setExitLog()\n");
     }
     // Set internal config
     exit_log_config = std::make_shared<LoggingConfig>(exitConfig);

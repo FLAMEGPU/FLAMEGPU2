@@ -26,29 +26,29 @@ HSVInterpolation::HSVInterpolation(const std::string &_variable_name, const floa
     , val(v)
     , variable_name(_variable_name) {
     if (hue_min < 0.0f || hue_min > 360.0f) {
-        THROW InvalidArgument("%f is not a valid hue value, hue components must be in the inclusive range [0.0, 360.0], "
+        THROW exception::InvalidArgument("%f is not a valid hue value, hue components must be in the inclusive range [0.0, 360.0], "
         "in HSVInterpolation::HSVInterpolation()\n", hue_min);
     }
     if (hue_max < 0.0f || hue_max > 360.0f) {
-        THROW InvalidArgument("%f is not a valid hue value, hue components must be in the inclusive range [0.0, 360.0], "
+        THROW exception::InvalidArgument("%f is not a valid hue value, hue components must be in the inclusive range [0.0, 360.0], "
         "in HSVInterpolation::HSVInterpolation()\n", hue_max);
     }
     if (hue_max == hue_min) {
-        THROW InvalidArgument("hue_min and _hue_max must differ, "
+        THROW exception::InvalidArgument("hue_min and _hue_max must differ, "
         "in HSVInterpolation::HSVInterpolation()\n", hue_max);
     }
     if (saturation < 0.0f || saturation > 1.0f) {
-        THROW InvalidArgument("%f is not a valid saturation, saturation must be in the inclusive range [0.0, 1.0], "
+        THROW exception::InvalidArgument("%f is not a valid saturation, saturation must be in the inclusive range [0.0, 1.0], "
         "in HSVInterpolation::HSVInterpolation()\n", saturation);
     }
     if (val < 0.0f || val > 1.0f) {
-        THROW InvalidArgument("%f is not a valid val, val must be in the inclusive range [0.0, 1.0], "
+        THROW exception::InvalidArgument("%f is not a valid val, val must be in the inclusive range [0.0, 1.0], "
         "in HSVInterpolation::HSVInterpolation()\n", val);
     }
 }
 HSVInterpolation& HSVInterpolation::setBounds(const float& _min_bound, const float& _max_bound) {
     if (_min_bound >= _max_bound) {
-        THROW InvalidArgument("max_bound (%f) must be greater than min_bound (%f), "
+        THROW exception::InvalidArgument("max_bound (%f) must be greater than min_bound (%f), "
             "in HSVInterpolation::setBounds()\n",
             _max_bound, _min_bound);
     }

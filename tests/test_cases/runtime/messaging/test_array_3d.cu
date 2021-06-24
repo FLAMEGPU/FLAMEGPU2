@@ -370,28 +370,28 @@ TEST(TestMessage_Array3D, DISABLED_DuplicateOutputException) {
     // Set pop in model
     CUDASimulation c(m);
     c.setPopulationData(pop);
-    EXPECT_THROW(c.step(), ArrayMessageWriteConflict);
+    EXPECT_THROW(c.step(), exception::ArrayMessageWriteConflict);
 }
 TEST(TestMessage_Array3D, ArrayLenZeroException) {
     ModelDescription m(MODEL_NAME);
     MsgArray3D::Description &msg = m.newMessage<MsgArray3D>(MESSAGE_NAME);
-    EXPECT_THROW(msg.setDimensions(0, 0, CBRT_AGENT_COUNT), InvalidArgument);
-    EXPECT_THROW(msg.setDimensions({ 0, 0, CBRT_AGENT_COUNT }), InvalidArgument);
-    EXPECT_THROW(msg.setDimensions(0, CBRT_AGENT_COUNT, 0), InvalidArgument);
-    EXPECT_THROW(msg.setDimensions({ 0, CBRT_AGENT_COUNT, 0 }), InvalidArgument);
-    EXPECT_THROW(msg.setDimensions(CBRT_AGENT_COUNT, 0, 0), InvalidArgument);
-    EXPECT_THROW(msg.setDimensions({ CBRT_AGENT_COUNT, 0, 0 }), InvalidArgument);
+    EXPECT_THROW(msg.setDimensions(0, 0, CBRT_AGENT_COUNT), exception::InvalidArgument);
+    EXPECT_THROW(msg.setDimensions({ 0, 0, CBRT_AGENT_COUNT }), exception::InvalidArgument);
+    EXPECT_THROW(msg.setDimensions(0, CBRT_AGENT_COUNT, 0), exception::InvalidArgument);
+    EXPECT_THROW(msg.setDimensions({ 0, CBRT_AGENT_COUNT, 0 }), exception::InvalidArgument);
+    EXPECT_THROW(msg.setDimensions(CBRT_AGENT_COUNT, 0, 0), exception::InvalidArgument);
+    EXPECT_THROW(msg.setDimensions({ CBRT_AGENT_COUNT, 0, 0 }), exception::InvalidArgument);
 }
 TEST(TestMessage_Array3D, UnsetDimensions) {
     ModelDescription model(MODEL_NAME);
     model.newMessage<MsgArray3D>(MESSAGE_NAME);
     // message.setDimensions(5, 5, 5);  // Intentionally commented out
-    EXPECT_THROW(CUDASimulation m(model), InvalidMessage);
+    EXPECT_THROW(CUDASimulation m(model), exception::InvalidMessage);
 }
 TEST(TestMessage_Array3D, reserved_name) {
     ModelDescription model(MODEL_NAME);
     MsgArray3D::Description &message = model.newMessage<MsgArray3D>(MESSAGE_NAME);
-    EXPECT_THROW(message.newVariable<int>("_"), ReservedName);
+    EXPECT_THROW(message.newVariable<int>("_"), exception::ReservedName);
 }
 FLAMEGPU_AGENT_FUNCTION(countArray3D, MsgArray3D, MsgNone) {
     unsigned int value = FLAMEGPU->message_in.at(0, 0, 0).getVariable<unsigned int>("value");

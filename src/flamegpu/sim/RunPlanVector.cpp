@@ -45,7 +45,7 @@ RunPlanVector RunPlanVector::operator+(const RunPlan& rhs) const {
     // This function is defined internally inside both RunPlan and RunPlanVector as it's the only way to both pass CI and have SWIG build
     // Validation
     if (*rhs.environment != *this->environment) {
-        THROW InvalidArgument("RunPlan is for a different ModelDescription, "
+        THROW exception::InvalidArgument("RunPlan is for a different ModelDescription, "
             "in ::operator+(RunPlanVector, RunPlan)");
     }
     // Operation
@@ -56,7 +56,7 @@ RunPlanVector RunPlanVector::operator+(const RunPlan& rhs) const {
 RunPlanVector RunPlanVector::operator+(const RunPlanVector& rhs) const {
     // Validation
     if (*rhs.environment != *this->environment) {
-        THROW InvalidArgument("RunPlanVectors are for different ModelDescriptions, "
+        THROW exception::InvalidArgument("RunPlanVectors are for different ModelDescriptions, "
             "in ::operator+(RunPlanVector, RunPlanVector)");
     }
     // Operation
@@ -67,7 +67,7 @@ RunPlanVector RunPlanVector::operator+(const RunPlanVector& rhs) const {
 RunPlanVector& RunPlanVector::operator+=(const RunPlan& rhs) {
     // Validation
     if (*rhs.environment != *this->environment) {
-        THROW InvalidArgument("RunPlan is for a different ModelDescription, "
+        THROW exception::InvalidArgument("RunPlan is for a different ModelDescription, "
             "in ::operator+=(RunPlanVector, RunPlan)");
     }
     // Update shared_ptr to env
@@ -83,7 +83,7 @@ RunPlanVector& RunPlanVector::operator+=(const RunPlanVector& rhs) {
         return *this*=2;
     }
     if (*rhs.environment != *this->environment) {
-        THROW InvalidArgument("RunPlan is for a different ModelDescription, "
+        THROW exception::InvalidArgument("RunPlan is for a different ModelDescription, "
             "in ::operator+=(RunPlanVector, RunPlan)");
     }
     // Operation

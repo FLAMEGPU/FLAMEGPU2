@@ -38,7 +38,7 @@ class XMLStateWriter : public StateWriter {
      * Actually perform the writing to file
      * @param prettyPrint Whether to include indentation and line breaks to aide human reading
      * @return Always tinyxml2::XML_SUCCESS
-     * @throws TinyXMLError If export of the model state fails
+     * @throws exception::TinyXMLError If export of the model state fails
      */
     int writeStates(bool prettyPrint) override;
 };

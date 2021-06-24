@@ -153,10 +153,10 @@ MsgBucket::Data::Data(const std::shared_ptr<const ModelData> &model, const Data 
     , upperBound(other.upperBound) {
     description = std::unique_ptr<MsgBucket::Description>(model ? new MsgBucket::Description(model, this) : nullptr);
     if (lowerBound == std::numeric_limits<IntT>::max()) {
-        THROW InvalidMessage("Minimum bound has not been set for bucket message '%s.", other.name.c_str());
+        THROW exception::InvalidMessage("Minimum bound has not been set for bucket message '%s.", other.name.c_str());
     }
     if (upperBound == std::numeric_limits<IntT>::max()) {
-        THROW InvalidMessage("Maximum bound has not been set for bucket message '%s.", other.name.c_str());
+        THROW exception::InvalidMessage("Maximum bound has not been set for bucket message '%s.", other.name.c_str());
     }
 }
 MsgBucket::Data *MsgBucket::Data::clone(const std::shared_ptr<const ModelData> &newParent) {
@@ -174,19 +174,19 @@ MsgBucket::Description::Description(const std::shared_ptr<const ModelData> &_mod
 void MsgBucket::Description::setLowerBound(const IntT &min) {
     if (reinterpret_cast<Data *>(message)->upperBound != std::numeric_limits<IntT>::max() &&
         min >= reinterpret_cast<Data *>(message)->upperBound) {
-        THROW InvalidArgument("Bucket messaging minimum bound must be lower than upper bound, %lld !< %lld.", min, static_cast<int64_t>(reinterpret_cast<Data *>(message)->upperBound));
+        THROW exception::InvalidArgument("Bucket messaging minimum bound must be lower than upper bound, %lld !< %lld.", min, static_cast<int64_t>(reinterpret_cast<Data *>(message)->upperBound));
     }
     reinterpret_cast<Data *>(message)->lowerBound = min;
 }
 void MsgBucket::Description::setUpperBound(const IntT &max) {
     if (max <= reinterpret_cast<Data *>(message)->lowerBound) {
-        THROW InvalidArgument("Bucket messaging upperBound bound must be greater than lower bound, %lld !> %lld.", static_cast<int64_t>(max), static_cast<int64_t>(reinterpret_cast<Data *>(message)->lowerBound));
+        THROW exception::InvalidArgument("Bucket messaging upperBound bound must be greater than lower bound, %lld !> %lld.", static_cast<int64_t>(max), static_cast<int64_t>(reinterpret_cast<Data *>(message)->lowerBound));
     }
     reinterpret_cast<Data *>(message)->upperBound = max;
 }
 void MsgBucket::Description::setBounds(const IntT &min, const IntT &max) {
     if (max <= min) {
-        THROW InvalidArgument("Bucket messaging upperBound bound must be greater than lower bound, %lld !> %lld.", static_cast<int64_t>(max), static_cast<int64_t>(min));
+        THROW exception::InvalidArgument("Bucket messaging upperBound bound must be greater than lower bound, %lld !> %lld.", static_cast<int64_t>(max), static_cast<int64_t>(min));
     }
     reinterpret_cast<Data *>(message)->lowerBound = min;
     reinterpret_cast<Data *>(message)->upperBound = max;

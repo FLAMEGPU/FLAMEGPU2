@@ -77,7 +77,7 @@ void Simulation::applyConfig() {
                 util::filesystem::recursive_create_dir(t_path);
             }
         } catch(std::exception &e) {
-            THROW InvalidArgument("Failed to init step log file directory '%s': %s\n", t_path.c_str(), e.what());
+            THROW exception::InvalidArgument("Failed to init step log file directory '%s': %s\n", t_path.c_str(), e.what());
         }
     }
     if (!config.exit_log_file.empty()) {
@@ -88,7 +88,7 @@ void Simulation::applyConfig() {
                 util::filesystem::recursive_create_dir(t_path);
             }
         } catch(std::exception &e) {
-            THROW InvalidArgument("Failed to init exit log file directory: '%s': %s\n", t_path.c_str(), e.what());
+            THROW exception::InvalidArgument("Failed to init exit log file directory: '%s': %s\n", t_path.c_str(), e.what());
         }
     }
     // Call derived class config stuff first

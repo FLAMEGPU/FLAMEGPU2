@@ -11,7 +11,7 @@ StaticModelVis::StaticModelVis(std::shared_ptr<ModelConfig::StaticModel> _m)
 
 void StaticModelVis::setModelScale(float xLen, float yLen, float zLen) {
     if (xLen <= 0 || yLen <= 0 || zLen <= 0) {
-        THROW InvalidArgument("StaticModelVis::setModelScale(): Invalid argument, lengths must all be positive.\n");
+        THROW exception::InvalidArgument("StaticModelVis::setModelScale(): Invalid argument, lengths must all be positive.\n");
     }
     m->scale[0] = xLen;
     m->scale[1] = yLen;
@@ -19,7 +19,7 @@ void StaticModelVis::setModelScale(float xLen, float yLen, float zLen) {
 }
 void StaticModelVis::setModelScale(float maxLen) {
     if (maxLen <= 0) {
-        THROW InvalidArgument("StaticModelVis::setModelScale(): Invalid argument, maxLen must be positive.\n");
+        THROW exception::InvalidArgument("StaticModelVis::setModelScale(): Invalid argument, maxLen must be positive.\n");
     }
     m->scale[0] = -maxLen;
 }
@@ -30,7 +30,7 @@ void StaticModelVis::setModelLocation(float x, float y, float z) {
 }
 void StaticModelVis::setModelRotation(float x, float y, float z, float radians) {
     if (x == 0 && y == 0 && z == 0) {
-        THROW InvalidArgument("StaticModelVis::setModelRotation(): Invalid argument, axis cannot be (0,0,0).\n");
+        THROW exception::InvalidArgument("StaticModelVis::setModelRotation(): Invalid argument, axis cannot be (0,0,0).\n");
     }
     m->rotation[0] = x;
     m->rotation[1] = y;

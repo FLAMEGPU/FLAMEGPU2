@@ -11,13 +11,13 @@ namespace flamegpu {
 namespace io {
 
 #ifndef XMLCheckResult
-#define XMLCheckResult(a_eResult) if (a_eResult != tinyxml2::XML_SUCCESS) { FGPUException::setLocation(__FILE__, __LINE__);\
+#define XMLCheckResult(a_eResult) if (a_eResult != tinyxml2::XML_SUCCESS) { exception::FGPUException::setLocation(__FILE__, __LINE__);\
     switch (a_eResult) { \
     case tinyxml2::XML_ERROR_FILE_NOT_FOUND : \
     case tinyxml2::XML_ERROR_FILE_COULD_NOT_BE_OPENED : \
-        throw InvalidInputFile("TinyXML error: File could not be opened.\n Error code: %d", a_eResult); \
+        throw exception::InvalidInputFile("TinyXML error: File could not be opened.\n Error code: %d", a_eResult); \
     case tinyxml2::XML_ERROR_FILE_READ_ERROR : \
-        throw InvalidInputFile("TinyXML error: File could not be read.\n Error code: %d", a_eResult); \
+        throw exception::InvalidInputFile("TinyXML error: File could not be read.\n Error code: %d", a_eResult); \
     case tinyxml2::XML_ERROR_PARSING_ELEMENT : \
     case tinyxml2::XML_ERROR_PARSING_ATTRIBUTE : \
     case tinyxml2::XML_ERROR_PARSING_TEXT : \
@@ -26,25 +26,25 @@ namespace io {
     case tinyxml2::XML_ERROR_PARSING_DECLARATION : \
     case tinyxml2::XML_ERROR_PARSING_UNKNOWN : \
     case tinyxml2::XML_ERROR_PARSING : \
-        throw TinyXMLError("TinyXML error: Error parsing file.\n Error code: %d", a_eResult); \
+        throw exception::TinyXMLError("TinyXML error: Error parsing file.\n Error code: %d", a_eResult); \
     case tinyxml2::XML_ERROR_EMPTY_DOCUMENT : \
-        throw TinyXMLError("TinyXML error: XML_ERROR_EMPTY_DOCUMENT\n Error code: %d", a_eResult); \
+        throw exception::TinyXMLError("TinyXML error: XML_ERROR_EMPTY_DOCUMENT\n Error code: %d", a_eResult); \
     case tinyxml2::XML_ERROR_MISMATCHED_ELEMENT : \
-        throw TinyXMLError("TinyXML error: XML_ERROR_MISMATCHED_ELEMENT\n Error code: %d", a_eResult); \
+        throw exception::TinyXMLError("TinyXML error: XML_ERROR_MISMATCHED_ELEMENT\n Error code: %d", a_eResult); \
     case tinyxml2::XML_CAN_NOT_CONVERT_TEXT : \
-        throw TinyXMLError("TinyXML error: XML_CAN_NOT_CONVERT_TEXT\n Error code: %d", a_eResult); \
+        throw exception::TinyXMLError("TinyXML error: XML_CAN_NOT_CONVERT_TEXT\n Error code: %d", a_eResult); \
     case tinyxml2::XML_NO_TEXT_NODE : \
-        throw TinyXMLError("TinyXML error: XML_NO_TEXT_NODE\n Error code: %d", a_eResult); \
+        throw exception::TinyXMLError("TinyXML error: XML_NO_TEXT_NODE\n Error code: %d", a_eResult); \
     case tinyxml2::XML_ELEMENT_DEPTH_EXCEEDED : \
-        throw TinyXMLError("TinyXML error: XML_ELEMENT_DEPTH_EXCEEDED\n Error code: %d", a_eResult); \
+        throw exception::TinyXMLError("TinyXML error: XML_ELEMENT_DEPTH_EXCEEDED\n Error code: %d", a_eResult); \
     case tinyxml2::XML_ERROR_COUNT : \
-        throw TinyXMLError("TinyXML error: XML_ERROR_COUNT\n Error code: %d", a_eResult); \
+        throw exception::TinyXMLError("TinyXML error: XML_ERROR_COUNT\n Error code: %d", a_eResult); \
     case tinyxml2::XML_NO_ATTRIBUTE: \
-        throw TinyXMLError("TinyXML error: XML_NO_ATTRIBUTE\n Error code: %d", a_eResult); \
+        throw exception::TinyXMLError("TinyXML error: XML_NO_ATTRIBUTE\n Error code: %d", a_eResult); \
     case tinyxml2::XML_WRONG_ATTRIBUTE_TYPE : \
-        throw TinyXMLError("TinyXML error: XML_WRONG_ATTRIBUTE_TYPE\n Error code: %d", a_eResult); \
+        throw exception::TinyXMLError("TinyXML error: XML_WRONG_ATTRIBUTE_TYPE\n Error code: %d", a_eResult); \
     default: \
-        throw TinyXMLError("TinyXML error: Unrecognised error code\n Error code: %d", a_eResult); \
+        throw exception::TinyXMLError("TinyXML error: Unrecognised error code\n Error code: %d", a_eResult); \
     } \
 }
 #endif
@@ -86,7 +86,7 @@ void XMLLogger::logCommon(const RunLog &log, const RunPlan *plan, bool doLogConf
     // export
     FILE *fptr = fopen(out_path.c_str(), truncateFile ? "w" : "a");
     if (fptr == nullptr) {
-        THROW TinyXMLError("Unable to open file '%s' for writing\n", out_path.c_str());
+        THROW exception::TinyXMLError("Unable to open file '%s' for writing\n", out_path.c_str());
     }
     XMLCheckResult(doc.SaveFile(fptr, !prettyPrint));
     fwrite("\n", sizeof(char), 1, fptr);
@@ -250,7 +250,7 @@ void XMLLogger::writeAny(tinyxml2::XMLElement *pElement, const util::Any &value,
         } else if (value.type == std::type_index(typeid(char))) {
             ss << static_cast<int32_t>(static_cast<const char*>(value.ptr)[el]);  // Char outputs weird if being used as an integer
         } else {
-            THROW TinyXMLError("Attempting to export value of unsupported type '%s', "
+            THROW exception::TinyXMLError("Attempting to export value of unsupported type '%s', "
                 "in XMLLogger::writeAny()\n", value.type.name());
        }
         if (el + 1 != elements)

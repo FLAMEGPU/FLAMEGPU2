@@ -56,7 +56,7 @@ void JSONLogger::writeAny(T &writer, const util::Any &value, const unsigned int 
         } else if (value.type == std::type_index(typeid(char))) {
             writer.Int(static_cast<int32_t>(static_cast<const char*>(value.ptr)[el]));  // Char outputs weird if being used as an integer
         } else {
-            THROW RapidJSONError("Attempting to export value of unsupported type '%s', "
+            THROW exception::RapidJSONError("Attempting to export value of unsupported type '%s', "
                 "in JSONLogger::writeAny()\n", value.type.name());
         }
     }
@@ -239,7 +239,7 @@ void JSONLogger::logCommon(const RunLog &log, const RunPlan *plan, bool doLogCon
     // Perform output
     std::ofstream out(out_path, truncateFile ? std::ofstream::trunc : std::ofstream::app);
     if (!out.is_open()) {
-        THROW RapidJSONError("Unable to open file '%s' for writing\n", out_path.c_str());
+        THROW exception::RapidJSONError("Unable to open file '%s' for writing\n", out_path.c_str());
     }
 
     out << s.GetString();

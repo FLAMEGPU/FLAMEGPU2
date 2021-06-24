@@ -207,7 +207,7 @@ class MsgBruteForce::Description {
      * Adds a new variable to the message
      * @param variable_name Name of the variable
      * @tparam T Type of the message variable, this must be an arithmetic type
-     * @throws InvalidMessageVar If a variable already exists within the message with the same name
+     * @throws exception::InvalidMessageVar If a variable already exists within the message with the same name
      */
     template<typename T>
     void newVariable(const std::string &variable_name);
@@ -219,13 +219,13 @@ class MsgBruteForce::Description {
     /**
      * @param variable_name Name used to refer to the desired variable
      * @return The type of the named variable
-     * @throws InvalidAgentVar If a variable with the name does not exist within the message
+     * @throws exception::InvalidAgentVar If a variable with the name does not exist within the message
      */
     const std::type_index& getVariableType(const std::string &variable_name) const;
     /**
      * @param variable_name Name used to refer to the desired variable
      * @return The size of the named variable's type
-     * @throws InvalidAgentVar If a variable with the name does not exist within the message
+     * @throws exception::InvalidAgentVar If a variable with the name does not exist within the message
      */
     size_t getVariableSize(const std::string &variable_name) const;
     /**
@@ -254,14 +254,14 @@ class MsgBruteForce::Description {
 template<typename T>
 void MsgBruteForce::Description::newVariable(const std::string &variable_name) {
     if (!variable_name.empty() && variable_name[0] == '_') {
-        THROW ReservedName("Message variable names cannot begin with '_', this is reserved for internal usage, "
+        THROW exception::ReservedName("Message variable names cannot begin with '_', this is reserved for internal usage, "
             "in MsgBruteForce::Description::newVariable().");
     }
     if (message->variables.find(variable_name) == message->variables.end()) {
         message->variables.emplace(variable_name, Variable(1, T()));
         return;
     }
-    THROW InvalidMessageVar("Message ('%s') already contains variable '%s', "
+    THROW exception::InvalidMessageVar("Message ('%s') already contains variable '%s', "
         "in MessageDescription::newVariable().",
         message->name.c_str(), variable_name.c_str());
 }

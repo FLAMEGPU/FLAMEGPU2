@@ -7,12 +7,13 @@
 #include <cstring>
 
 namespace flamegpu {
+namespace exception {
 
 #if !defined(SEATBELTS) || SEATBELTS
 /**
  * This allows us to write DTHROW("My Error message: %d", 12); or similar to report an error in device code
  */
-#define DTHROW DeviceException::create(__FILE__, __LINE__).setMessage
+#define DTHROW flamegpu::exception::DeviceException::create(__FILE__, __LINE__).setMessage
 
 /**
  * This struct should exist in device memory per stream
@@ -195,6 +196,7 @@ __device__ unsigned int DeviceException::getErrorCount() {
 #define DTHROW(nop)
 #endif  // SEATBELTS=OFF
 
+}  // namespace exception
 }  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_EXCEPTION_FGPUDEVICEEXCEPTION_DEVICE_H_

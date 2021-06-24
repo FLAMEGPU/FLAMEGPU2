@@ -73,11 +73,11 @@ class JSONStateReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8
         if (mode.top() == Environment) {
             const auto it = env_desc.find(lastKey);
             if (it == env_desc.end()) {
-                THROW RapidJSONError("Input file contains unrecognised environment property '%s',"
+                THROW exception::RapidJSONError("Input file contains unrecognised environment property '%s',"
                     "in JSONStateReader::parse()\n", lastKey.c_str());
             }
             if (env_init.find(make_pair(lastKey, current_variable_array_index)) != env_init.end()) {
-                THROW RapidJSONError("Input file contains environment property '%s' multiple times, "
+                THROW exception::RapidJSONError("Input file contains environment property '%s' multiple times, "
                     "in JSONStateReader::parse()\n", lastKey.c_str());
             }
             const std::type_index val_type = it->second.data.type;
@@ -112,7 +112,7 @@ class JSONStateReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8
                 const uint8_t t = static_cast<uint8_t>(val);
                 env_init.emplace(make_pair(lastKey, current_variable_array_index++), util::Any(&t, sizeof(uint8_t), val_type, 1));
             } else {
-                THROW RapidJSONError("Model contains environment property '%s' of unsupported type '%s', "
+                THROW exception::RapidJSONError("Model contains environment property '%s' of unsupported type '%s', "
                     "in JSONStateReader::parse()\n", lastKey.c_str(), val_type.name());
             }
         } else if (mode.top() == AgentInstance) {
@@ -154,14 +154,14 @@ class JSONStateReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8
                 const uint8_t t = static_cast<uint8_t>(val);
                 memcpy(data + ((pop->size() - 1) * v_size) + (var_data.type_size * current_variable_array_index++), &t, var_data.type_size);
             } else {
-                THROW RapidJSONError("Model contains agent variable '%s:%s' of unsupported type '%s', "
+                THROW exception::RapidJSONError("Model contains agent variable '%s:%s' of unsupported type '%s', "
                     "in JSONStateReader::parse()\n", current_agent.c_str(), lastKey.c_str(), val_type.name());
             }
         }  else if (mode.top() == CUDACfg || mode.top() == SimCfg || mode.top() == Stats) {
             // Not useful
             // Cfg are loaded by counter
         } else {
-            THROW RapidJSONError("Unexpected value whilst parsing input file '%s'.\n", filename.c_str());
+            THROW exception::RapidJSONError("Unexpected value whilst parsing input file '%s'.\n", filename.c_str());
         }
         if (isArray == VariableArray) {
             mode.push(isArray);
@@ -182,7 +182,7 @@ class JSONStateReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8
         if (mode.top() == SimCfg || mode.top() == CUDACfg) {
             return true;
         }
-        THROW RapidJSONError("Unexpected string whilst parsing input file '%s'.\n", filename.c_str());
+        THROW exception::RapidJSONError("Unexpected string whilst parsing input file '%s'.\n", filename.c_str());
     }
     bool StartObject() {
         if (mode.empty()) {
@@ -197,7 +197,7 @@ class JSONStateReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8
             } else if (lastKey == "agents") {
                 mode.push(Agents);
             } else {
-                THROW RapidJSONError("Unexpected object start whilst parsing input file '%s'.\n", filename.c_str());
+                THROW exception::RapidJSONError("Unexpected object start whilst parsing input file '%s'.\n", filename.c_str());
             }
         } else if (mode.top() == Config) {
             if (lastKey == "simulation") {
@@ -205,7 +205,7 @@ class JSONStateReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8
             } else if (lastKey == "cuda") {
                 mode.push(CUDACfg);
             } else {
-                THROW RapidJSONError("Unexpected object start whilst parsing input file '%s'.\n", filename.c_str());
+                THROW exception::RapidJSONError("Unexpected object start whilst parsing input file '%s'.\n", filename.c_str());
             }
         } else if (mode.top() == Agents) {
             current_agent = lastKey;
@@ -214,11 +214,11 @@ class JSONStateReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8
             mode.push(AgentInstance);
             auto f = model_state.find({ current_agent, current_state });
             if (f == model_state.end()) {
-                THROW RapidJSONError("Input file '%s' contains data for agent:state combination '%s:%s' not found in model description hierarchy.\n", filename.c_str());
+                THROW exception::RapidJSONError("Input file '%s' contains data for agent:state combination '%s:%s' not found in model description hierarchy.\n", filename.c_str());
             }
             f->second->push_back();
         } else {
-            THROW RapidJSONError("Unexpected object start whilst parsing input file '%s'.\n", filename.c_str());
+            THROW exception::RapidJSONError("Unexpected object start whilst parsing input file '%s'.\n", filename.c_str());
         }
         return true;
     }
@@ -232,7 +232,7 @@ class JSONStateReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8
     }
     bool StartArray() {
         if (current_variable_array_index != 0) {
-            THROW RapidJSONError("Array start when current_variable_array_index !=0, in file '%s'. This should never happen.\n", filename.c_str());
+            THROW exception::RapidJSONError("Array start when current_variable_array_index !=0, in file '%s'. This should never happen.\n", filename.c_str());
         }
         if (mode.top() == AgentInstance) {
             mode.push(VariableArray);
@@ -242,7 +242,7 @@ class JSONStateReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8
             current_state = lastKey;
             mode.push(State);
         } else {
-            THROW RapidJSONError("Unexpected array start whilst parsing input file '%s'.\n", filename.c_str());
+            THROW exception::RapidJSONError("Unexpected array start whilst parsing input file '%s'.\n", filename.c_str());
         }
         return true;
     }
@@ -306,7 +306,7 @@ class JSONStateReader_agentsize_counter : public rapidjson::BaseReaderHandler<ra
                     }
 #endif
                 } else {
-                    THROW RapidJSONError("Unexpected simulation config item '%s' in input file '%s'.\n", lastKey.c_str(), filename.c_str());
+                    THROW exception::RapidJSONError("Unexpected simulation config item '%s' in input file '%s'.\n", lastKey.c_str(), filename.c_str());
                 }
             }
         } else if (mode.top() == CUDACfg) {
@@ -314,7 +314,7 @@ class JSONStateReader_agentsize_counter : public rapidjson::BaseReaderHandler<ra
                 if (lastKey == "device_id") {
                     cudamodel_instance->CUDAConfig().device_id = static_cast<unsigned int>(val);
                 } else {
-                    THROW RapidJSONError("Unexpected CUDA config item '%s' in input file '%s'.\n", lastKey.c_str(), filename.c_str());
+                    THROW exception::RapidJSONError("Unexpected CUDA config item '%s' in input file '%s'.\n", lastKey.c_str(), filename.c_str());
                 }
             }
         }  else {
@@ -358,7 +358,7 @@ class JSONStateReader_agentsize_counter : public rapidjson::BaseReaderHandler<ra
             } else if (lastKey == "agents") {
                 mode.push(Agents);
             } else {
-                THROW RapidJSONError("Unexpected object start whilst parsing input file '%s'.\n", filename.c_str());
+                THROW exception::RapidJSONError("Unexpected object start whilst parsing input file '%s'.\n", filename.c_str());
             }
         } else if (mode.top() == Config) {
             if (lastKey == "simulation") {
@@ -366,7 +366,7 @@ class JSONStateReader_agentsize_counter : public rapidjson::BaseReaderHandler<ra
             } else if (lastKey == "cuda") {
                 mode.push(CUDACfg);
             } else {
-                THROW RapidJSONError("Unexpected object start whilst parsing input file '%s'.\n", filename.c_str());
+                THROW exception::RapidJSONError("Unexpected object start whilst parsing input file '%s'.\n", filename.c_str());
             }
         }  else if (mode.top() == Agents) {
             current_agent = lastKey;
@@ -375,7 +375,7 @@ class JSONStateReader_agentsize_counter : public rapidjson::BaseReaderHandler<ra
             agentstate_counts[{current_agent, current_state}]++;
             mode.push(AgentInstance);
         } else {
-            THROW RapidJSONError("Unexpected object start whilst parsing input file '%s'.\n", filename.c_str());
+            THROW exception::RapidJSONError("Unexpected object start whilst parsing input file '%s'.\n", filename.c_str());
         }
         return true;
     }
@@ -389,7 +389,7 @@ class JSONStateReader_agentsize_counter : public rapidjson::BaseReaderHandler<ra
     }
     bool StartArray() {
         if (currentIndex != 0) {
-            THROW RapidJSONError("Array start when current_variable_array_index !=0, in file '%s'. This should never happen.\n", filename.c_str());
+            THROW exception::RapidJSONError("Array start when current_variable_array_index !=0, in file '%s'. This should never happen.\n", filename.c_str());
         }
         if (mode.top() == AgentInstance) {
             mode.push(VariableArray);
@@ -399,7 +399,7 @@ class JSONStateReader_agentsize_counter : public rapidjson::BaseReaderHandler<ra
             current_state = lastKey;
             mode.push(State);
         } else {
-            THROW RapidJSONError("Unexpected array start whilst parsing input file '%s'.\n", filename.c_str());
+            THROW exception::RapidJSONError("Unexpected array start whilst parsing input file '%s'.\n", filename.c_str());
         }
         return true;
     }
@@ -415,7 +415,7 @@ class JSONStateReader_agentsize_counter : public rapidjson::BaseReaderHandler<ra
 int JSONStateReader::parse() {
     std::ifstream in(inputFile, std::ios::in | std::ios::binary);
     if (!in) {
-        THROW RapidJSONError("Unable to open file '%s' for reading.\n", inputFile.c_str());
+        THROW exception::RapidJSONError("Unable to open file '%s' for reading.\n", inputFile.c_str());
     }
     JSONStateReader_agentsize_counter agentcounter(inputFile, sim_instance);
     JSONStateReader_impl handler(inputFile, env_desc, env_init, model_state);
@@ -425,7 +425,7 @@ int JSONStateReader::parse() {
     // First parse the file and simply count the size of agent list
     rapidjson::ParseResult pr1 = reader.Parse(filess, agentcounter);
     if (pr1.Code() != rapidjson::ParseErrorCode::kParseErrorNone) {
-        THROW RapidJSONError("Whilst parsing input file '%s', RapidJSON returned error: %s\n", inputFile.c_str(), rapidjson::GetParseError_En(pr1.Code()));
+        THROW exception::RapidJSONError("Whilst parsing input file '%s', RapidJSON returned error: %s\n", inputFile.c_str(), rapidjson::GetParseError_En(pr1.Code()));
     }
     const util::StringPairUnorderedMap<unsigned int> agentCounts = agentcounter.getAgentCounts();
     // Use this to preallocate the agent statelists
@@ -439,7 +439,7 @@ int JSONStateReader::parse() {
     // Read in the file data
     rapidjson::ParseResult pr2 = reader.Parse(filess, handler);
     if (pr2.Code() != rapidjson::ParseErrorCode::kParseErrorNone) {
-        THROW RapidJSONError("Whilst parsing input file '%s', RapidJSON returned error: %s\n", inputFile.c_str(), rapidjson::GetParseError_En(pr1.Code()));
+        THROW exception::RapidJSONError("Whilst parsing input file '%s', RapidJSON returned error: %s\n", inputFile.c_str(), rapidjson::GetParseError_En(pr1.Code()));
     }
     return 0;
 }

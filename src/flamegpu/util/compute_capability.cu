@@ -10,7 +10,7 @@ int compute_capability::getComputeCapability(int deviceIndex) {
 
     // Throw an exception if the deviceIndex is negative.
     if (deviceIndex < 0) {
-        THROW InvalidCUDAdevice();
+        THROW exception::InvalidCUDAdevice();
     }
 
     // Ensure deviceIndex is valid.
@@ -18,7 +18,7 @@ int compute_capability::getComputeCapability(int deviceIndex) {
     gpuErrchk(cudaGetDeviceCount(&deviceCount));
     if (deviceIndex >= deviceCount) {
         // Throw an excpetion if the device index is bad.
-        THROW InvalidCUDAdevice();
+        THROW exception::InvalidCUDAdevice();
     }
     // Load device attributes
     gpuErrchk(cudaDeviceGetAttribute(&minor, cudaDevAttrComputeCapabilityMinor, deviceIndex));

@@ -36,7 +36,7 @@ FLAMEGPU_STEP_FUNCTION(AlignTest) {
 FLAMEGPU_STEP_FUNCTION(Multi_ms1) {
     ASSERT_EQ(FLAMEGPU->environment.getProperty<float>("ms1_float"), MS1_VAL);
     ASSERT_EQ(FLAMEGPU->environment.getProperty<float>("ms1_float2"), MS1_VAL2);
-    ASSERT_THROW(FLAMEGPU->environment.getProperty<double>("ms2_double"), InvalidEnvProperty);
+    ASSERT_THROW(FLAMEGPU->environment.getProperty<double>("ms2_double"), exception::InvalidEnvProperty);
 }
 FLAMEGPU_STEP_FUNCTION(Multi_ms2) {
     ASSERT_EQ(FLAMEGPU->environment.getProperty<double>("ms2_double"), MS2_VAL);
@@ -114,7 +114,7 @@ TEST_F(EnvironmentManagerTest, OutOfMemory1) {
     ms->env.newProperty<char, EnvironmentManager::MAX_BUFFER_SIZE / 2>("char_5kb_a", char_5kb_a);
     ms->env.newProperty<char, EnvironmentManager::MAX_BUFFER_SIZE / 2>("char_5kb_b", char_5kb_b);
     ms->env.newProperty<char, EnvironmentManager::MAX_BUFFER_SIZE / 2>("char_5kb_c", char_5kb_c);
-    EXPECT_THROW(ms->run(), OutOfMemory);
+    EXPECT_THROW(ms->run(), exception::OutOfMemory);
 }
 
 // Multiple models

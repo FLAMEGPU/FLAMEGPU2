@@ -39,7 +39,7 @@ class CurveRTCHost {
      * @param elements The number of elements in the variable (1 unless the variable is an array variable)
      * @param read True if the variable should be readable
      * @param write True if the variable should be writable
-     * @throws UnknownInternalError If an agent variable with the same name is already registered
+     * @throws exception::UnknownInternalError If an agent variable with the same name is already registered
      */
     void registerAgentVariable(const char* variableName, const char* type, size_t type_size, unsigned int elements = 1, bool read = true, bool write = true);
     /**
@@ -50,7 +50,7 @@ class CurveRTCHost {
      * @param elements The number of elements in the variable (1 unless the variable is an array variable)
      * @param read True if the variable should be readable
      * @param write True if the variable should be writable
-     * @throws UnknownInternalError If an output message variable with the same name is already registered
+     * @throws exception::UnknownInternalError If an output message variable with the same name is already registered
      */
     void registerMessageOutVariable(const char* variableName, const char* type, size_t type_size, unsigned int elements = 1, bool read = true, bool write = true);
     /**
@@ -61,7 +61,7 @@ class CurveRTCHost {
      * @param elements The number of elements in the variable (1 unless the variable is an array variable)
      * @param read True if the variable should be readable
      * @param write True if the variable should be writable
-     * @throws UnknownInternalError If an input message variable with the same name is already registered
+     * @throws exception::UnknownInternalError If an input message variable with the same name is already registered
      */
     void registerMessageInVariable(const char* variableName, const char* type, size_t type_size, unsigned int elements = 1, bool read = true, bool write = true);
     /**
@@ -72,56 +72,56 @@ class CurveRTCHost {
      * @param elements The number of elements in the variable (1 unless the variable is an array variable)
      * @param read True if the variable should be readable
      * @param write True if the variable should be writable
-     * @throws UnknownInternalError If an output agent variable with the same name is already registered
+     * @throws exception::UnknownInternalError If an output agent variable with the same name is already registered
      */
     void registerNewAgentVariable(const char* variableName, const char* type, size_t type_size, unsigned int elements = 1, bool read = true, bool write = true);
 
     /**
      * Unregister an agent variable, so that it is nolonger included in the dynamic header
      * @param variableName The variable's name
-     * @throws UnknownInternalError If the specified variable is not registered
+     * @throws exception::UnknownInternalError If the specified variable is not registered
      */
     void unregisterAgentVariable(const char* variableName);
     /**
      * Unregister an output message variable, so that it is nolonger included in the dynamic header
      * @param variableName The variable's name
-     * @throws UnknownInternalError If the specified variable is not registered
+     * @throws exception::UnknownInternalError If the specified variable is not registered
      */
     void unregisterMessageOutVariable(const char* variableName);
     /**
      * Unregister an input message variable, so that it is nolonger included in the dynamic header
      * @param variableName The variable's name
-     * @throws UnknownInternalError If the specified variable is not registered
+     * @throws exception::UnknownInternalError If the specified variable is not registered
      */
     void unregisterMessageInVariable(const char* variableName);
     /**
      * Unregister an output agent variable (device agent birth), so that it is nolonger included in the dynamic header
      * @param variableName The variable's name
-     * @throws UnknownInternalError If the specified variable is not registered
+     * @throws exception::UnknownInternalError If the specified variable is not registered
      */
     void unregisterNewAgentVariable(const char* variableName);
     /**
      * Returns a host pointer to the memory which stores the device pointer to be included for the specified variable in the dynamic header
      * @param variableName The variable's name
-     * @throws UnknownInternalError If the specified variable is not registered
+     * @throws exception::UnknownInternalError If the specified variable is not registered
      */
     void* getAgentVariableCachePtr(const char* variableName);
     /**
      * Returns a host pointer to the memory which stores the device pointer to be included for the specified variable in the dynamic header
      * @param variableName The variable's name
-     * @throws UnknownInternalError If the specified variable is not registered
+     * @throws exception::UnknownInternalError If the specified variable is not registered
      */
     void* getMessageOutVariableCachePtr(const char* variableName);
     /**
      * Returns a host pointer to the memory which stores the device pointer to be included for the specified variable in the dynamic header
      * @param variableName The variable's name
-     * @throws UnknownInternalError If the specified variable is not registered
+     * @throws exception::UnknownInternalError If the specified variable is not registered
      */
     void* getMessageInVariableCachePtr(const char* variableName);
     /**
      * Returns a host pointer to the memory which stores the device pointer to be included for the specified variable in the dynamic header
      * @param variableName The variable's name
-     * @throws UnknownInternalError If the specified variable is not registered
+     * @throws exception::UnknownInternalError If the specified variable is not registered
      */
     void* getNewAgentVariableCachePtr(const char* variableName);
     /**
@@ -131,13 +131,13 @@ class CurveRTCHost {
      * @param type The name of the property's type (%std::type_index::name())
      * @param type_size The type size of the property's base type (sizeof()), this is the size of a single element if the property is an array property.
      * @param elements The number of elements in the property (1 unless the property is an array property)
-     * @throws UnknownInternalError If an environment property with the same name is already registered
+     * @throws exception::UnknownInternalError If an environment property with the same name is already registered
      */
     void registerEnvVariable(const char* propertyName, ptrdiff_t offset, const char* type, size_t type_size, unsigned int elements = 1);
     /**
      * Unregister an environment property, so that it is nolonger included in the dynamic header
      * @param propertyName The property's name
-     * @throws UnknownInternalError If the specified property is not registered
+     * @throws exception::UnknownInternalError If the specified property is not registered
      */
     void unregisterEnvVariable(const char* propertyName);
     /**
@@ -182,7 +182,7 @@ class CurveRTCHost {
     * Utility method for replacing tokens within the dynamic header with dynamically computed strings
     * @param placeholder String to locate within the header
     * @param dst Replacement for the string located within the header
-    * @throws UnknownInternalError If placeholder could not be found within the header
+    * @throws exception::UnknownInternalError If placeholder could not be found within the header
     */
     void setHeaderPlaceholder(std::string placeholder, std::string dst);
     /**
@@ -252,7 +252,7 @@ class CurveRTCHost {
     /**
      * Initialise all the variable h_data_ptr properties
      * This should only be called once during the init chain
-     * @throws InvalidOperation If this method has already been called
+     * @throws exception::InvalidOperation If this method has already been called
      */
     void initDataBuffer();
     /**

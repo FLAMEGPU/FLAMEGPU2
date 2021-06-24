@@ -13,6 +13,7 @@
 #include "flamegpu/exception/FGPUDeviceException_device.h"
 
 namespace flamegpu {
+namespace exception {
 
 /**
  * Host 'singleton', owned 1 per CUDASimulation, provides facility for generating and checking DeviceExceptionBuffers
@@ -48,6 +49,7 @@ class DeviceExceptionManager {
      */
     DeviceExceptionBuffer hd_buffer[CUDAScanCompaction::MAX_STREAMS];
 };
+}  // namespace exception
 }  // namespace flamegpu
 #else
 /**

@@ -48,7 +48,7 @@ class HostEnvironment {
      * Gets an environment property
      * @param name name used for accessing the property
      * @tparam T Type of the environment property
-     * @throws InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
      */
     template<typename T>
     T getProperty(const std::string &name) const;
@@ -57,7 +57,7 @@ class HostEnvironment {
      * @param name name used for accessing the property
      * @tparam T Type of the elements of the environment property array
      * @tparam N Length of the environment property array
-     * @throws InvalidEnvProperty If a property array of the name does not exist
+     * @throws exception::InvalidEnvProperty If a property array of the name does not exist
      */
     template<typename T, EnvironmentManager::size_type N>
     std::array<T, N> getProperty(const std::string &name) const;
@@ -66,7 +66,7 @@ class HostEnvironment {
      * @param name name used for accessing the property
      * @param index Index of the element within the environment property array to return
      * @tparam T Type of the elements of the environment property array
-     * @throws InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
      * @throws std::out_of_range
      * @see get(const std::string &)
      */
@@ -77,7 +77,7 @@ class HostEnvironment {
      * Gets an environment property array
      * @param name name used for accessing the property
      * @tparam T Type of the elements of the environment property array
-     * @throws InvalidEnvProperty If a property array of the name does not exist
+     * @throws exception::InvalidEnvProperty If a property array of the name does not exist
      */
     template<typename T>
     std::vector<T> getPropertyArray(const std::string &name) const;
@@ -88,8 +88,8 @@ class HostEnvironment {
      * @param value to set the property
      * @tparam T Type of the elements of the environment property
      * @return Returns the previous value
-     * @throws InvalidEnvProperty If a property of the name does not exist
-     * @throws ReadOnlyEnvProperty If the named property is marked as const
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::ReadOnlyEnvProperty If the named property is marked as const
      */
     template<typename T>
     T setProperty(const std::string &name, const T &value) const;
@@ -100,8 +100,8 @@ class HostEnvironment {
      * @tparam T Type of the elements of the environment property array
      * @tparam N Length of the environmental property array
      * @return Returns the previous value
-     * @throws InvalidEnvProperty If a property of the name does not exist
-     * @throws ReadOnlyEnvProperty If the named property is marked as const
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::ReadOnlyEnvProperty If the named property is marked as const
      */
     template<typename T, EnvironmentManager::size_type N>
     std::array<T, N> setProperty(const std::string &name, const std::array<T, N> &value) const;
@@ -112,7 +112,7 @@ class HostEnvironment {
      * @param value to set the element of the property array
      * @tparam T Type of the environmental property array
      * @return Returns the previous value
-     * @throws InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
      * @throws std::out_of_range
      * @see get(const std::string &)
      */
@@ -125,8 +125,8 @@ class HostEnvironment {
      * @param value to set the property array
      * @tparam T Type of the elements of the environment property array
      * @return Returns the previous value
-     * @throws InvalidEnvProperty If a property of the name does not exist
-     * @throws ReadOnlyEnvProperty If the named property is marked as const
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::ReadOnlyEnvProperty If the named property is marked as const
      */
     template<typename T>
     std::vector<T> setPropertyArray(const std::string &name, const std::vector<T> &value) const;
@@ -139,7 +139,7 @@ class HostEnvironment {
 template<typename T>
 T HostEnvironment::setProperty(const std::string &name, const T &value) const {
     if (!name.empty() && name[0] == '_') {
-        THROW ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
+        THROW exception::ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
             "in HostEnvironment::set().");
     }
     return env_mgr.setProperty<T>({ instance_id, name }, value);
@@ -147,7 +147,7 @@ T HostEnvironment::setProperty(const std::string &name, const T &value) const {
 template<typename T, EnvironmentManager::size_type N>
 std::array<T, N> HostEnvironment::setProperty(const std::string &name, const std::array<T, N> &value) const {
     if (!name.empty() && name[0] == '_') {
-        THROW ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
+        THROW exception::ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
             "in HostEnvironment::set().");
     }
     return env_mgr.setProperty<T, N>({ instance_id, name }, value);
@@ -155,7 +155,7 @@ std::array<T, N> HostEnvironment::setProperty(const std::string &name, const std
 template<typename T>
 T HostEnvironment::setProperty(const std::string &name, const EnvironmentManager::size_type &index, const T &value) const {
     if (!name.empty() && name[0] == '_') {
-        THROW ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
+        THROW exception::ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
             "in HostEnvironment::set().");
     }
     return env_mgr.setProperty<T>({ instance_id, name }, index, value);
@@ -164,7 +164,7 @@ T HostEnvironment::setProperty(const std::string &name, const EnvironmentManager
 template<typename T>
 std::vector<T> HostEnvironment::setPropertyArray(const std::string &name, const std::vector<T> &value) const {
     if (!name.empty() && name[0] == '_') {
-        THROW ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
+        THROW exception::ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
             "in HostEnvironment::setArray().");
     }
     return env_mgr.setPropertyArray<T>({ instance_id, name }, value);

@@ -174,10 +174,10 @@ TEST(AgentVectorTest, at) {
     }
 
     // Out of bounds exception
-    EXPECT_THROW(pop.at(POP_SIZE), OutOfBoundsException);
-    EXPECT_THROW(const_pop.at(POP_SIZE), OutOfBoundsException);
-    EXPECT_THROW(pop.at(POP_SIZE + 10), OutOfBoundsException);
-    EXPECT_THROW(const_pop.at(POP_SIZE + 10), OutOfBoundsException);
+    EXPECT_THROW(pop.at(POP_SIZE), exception::OutOfBoundsException);
+    EXPECT_THROW(const_pop.at(POP_SIZE), exception::OutOfBoundsException);
+    EXPECT_THROW(pop.at(POP_SIZE + 10), exception::OutOfBoundsException);
+    EXPECT_THROW(const_pop.at(POP_SIZE + 10), exception::OutOfBoundsException);
 }
 TEST(AgentVectorTest, array_operator) {
     const unsigned int POP_SIZE = 10;
@@ -212,10 +212,10 @@ TEST(AgentVectorTest, array_operator) {
     }
 
     // Out of bounds exception
-    EXPECT_THROW(pop[POP_SIZE], OutOfBoundsException);
-    EXPECT_THROW(const_pop[POP_SIZE], OutOfBoundsException);
-    EXPECT_THROW(pop[POP_SIZE + 10], OutOfBoundsException);
-    EXPECT_THROW(const_pop[POP_SIZE + 10], OutOfBoundsException);
+    EXPECT_THROW(pop[POP_SIZE], exception::OutOfBoundsException);
+    EXPECT_THROW(const_pop[POP_SIZE], exception::OutOfBoundsException);
+    EXPECT_THROW(pop[POP_SIZE + 10], exception::OutOfBoundsException);
+    EXPECT_THROW(const_pop[POP_SIZE + 10], exception::OutOfBoundsException);
 }
 TEST(AgentVectorTest, front) {
     const unsigned int POP_SIZE = 10;
@@ -236,8 +236,8 @@ TEST(AgentVectorTest, front) {
 
     // Out of bounds exception
     AgentVector empty_pop(agent);
-    EXPECT_THROW(empty_pop.front(), OutOfBoundsException);
-    EXPECT_THROW(static_cast<const AgentVector>(empty_pop).front(), OutOfBoundsException);
+    EXPECT_THROW(empty_pop.front(), exception::OutOfBoundsException);
+    EXPECT_THROW(static_cast<const AgentVector>(empty_pop).front(), exception::OutOfBoundsException);
 }
 TEST(AgentVectorTest, back) {
     const unsigned int POP_SIZE = 10;
@@ -258,8 +258,8 @@ TEST(AgentVectorTest, back) {
 
     // Out of bounds exception
     AgentVector empty_pop(agent);
-    EXPECT_THROW(empty_pop.back(), OutOfBoundsException);
-    EXPECT_THROW(static_cast<const AgentVector>(empty_pop).back(), OutOfBoundsException);
+    EXPECT_THROW(empty_pop.back(), exception::OutOfBoundsException);
+    EXPECT_THROW(static_cast<const AgentVector>(empty_pop).back(), exception::OutOfBoundsException);
 }
 TEST(AgentVectorTest, data) {
     const unsigned int POP_SIZE = 10;
@@ -294,14 +294,14 @@ TEST(AgentVectorTest, data) {
     EXPECT_EQ(static_cast<const AgentVector>(empty_pop).data<int>("int"), nullptr);
     EXPECT_EQ(static_cast<const AgentVector>(empty_pop).data("int"), nullptr);
 
-    // Invalid InvalidAgentVar
-    EXPECT_THROW(pop.data<int>("float"), InvalidAgentVar);
-    EXPECT_THROW(pop.data<unsigned int>("uint"), InvalidAgentVar);
-    EXPECT_THROW(pop.data<int>("int12"), InvalidAgentVar);
-    // Invalid InvalidVarType
-    EXPECT_THROW(pop.data<float>("int"), InvalidVarType);
-    EXPECT_THROW(pop.data<unsigned int>("int"), InvalidVarType);
-    EXPECT_THROW(pop.data<int64_t>("int"), InvalidVarType);
+    // Invalid exception::InvalidAgentVar
+    EXPECT_THROW(pop.data<int>("float"), exception::InvalidAgentVar);
+    EXPECT_THROW(pop.data<unsigned int>("uint"), exception::InvalidAgentVar);
+    EXPECT_THROW(pop.data<int>("int12"), exception::InvalidAgentVar);
+    // Invalid exception::InvalidVarType
+    EXPECT_THROW(pop.data<float>("int"), exception::InvalidVarType);
+    EXPECT_THROW(pop.data<unsigned int>("int"), exception::InvalidVarType);
+    EXPECT_THROW(pop.data<int64_t>("int"), exception::InvalidVarType);
 }
 TEST(AgentVectorTest, iterator) {
     const unsigned int POP_SIZE = 10;
@@ -840,16 +840,16 @@ TEST(AgentVectorTest, insert) {
     // AgentInstance to insert
     AgentInstance  wrong_insert_ai(agent2);
 
-    EXPECT_THROW(pop.insert(it, wrong_insert_ai), InvalidAgent);
-    EXPECT_THROW(pop.insert(4, wrong_insert_ai), InvalidAgent);
-    EXPECT_THROW(pop.insert(it, wrong_insert_ava), InvalidAgent);
-    EXPECT_THROW(pop.insert(4, wrong_insert_ava), InvalidAgent);
-    EXPECT_THROW(pop.insert(it, 3, wrong_insert_ai), InvalidAgent);
-    EXPECT_THROW(pop.insert(4, 3, wrong_insert_ai), InvalidAgent);
-    EXPECT_THROW(pop.insert(it, 3, wrong_insert_ava), InvalidAgent);
-    EXPECT_THROW(pop.insert(4, 3, wrong_insert_ava), InvalidAgent);
-    EXPECT_THROW(pop.insert(it, wrong_insert_av.begin(), wrong_insert_av.end()), InvalidAgent);
-    EXPECT_THROW(pop.insert(4, wrong_insert_av.begin(), wrong_insert_av.end()), InvalidAgent);
+    EXPECT_THROW(pop.insert(it, wrong_insert_ai), exception::InvalidAgent);
+    EXPECT_THROW(pop.insert(4, wrong_insert_ai), exception::InvalidAgent);
+    EXPECT_THROW(pop.insert(it, wrong_insert_ava), exception::InvalidAgent);
+    EXPECT_THROW(pop.insert(4, wrong_insert_ava), exception::InvalidAgent);
+    EXPECT_THROW(pop.insert(it, 3, wrong_insert_ai), exception::InvalidAgent);
+    EXPECT_THROW(pop.insert(4, 3, wrong_insert_ai), exception::InvalidAgent);
+    EXPECT_THROW(pop.insert(it, 3, wrong_insert_ava), exception::InvalidAgent);
+    EXPECT_THROW(pop.insert(4, 3, wrong_insert_ava), exception::InvalidAgent);
+    EXPECT_THROW(pop.insert(it, wrong_insert_av.begin(), wrong_insert_av.end()), exception::InvalidAgent);
+    EXPECT_THROW(pop.insert(4, wrong_insert_av.begin(), wrong_insert_av.end()), exception::InvalidAgent);
 }
 TEST(AgentVectorTest, erase_single) {
     const unsigned int POP_SIZE = 10;
@@ -911,8 +911,8 @@ TEST(AgentVectorTest, erase_single) {
 
     // Test exceptions
     AgentVector pop(agent, POP_SIZE);
-    EXPECT_THROW(pop.erase(POP_SIZE), OutOfBoundsException);
-    EXPECT_THROW(pop.erase(POP_SIZE + 2), OutOfBoundsException);
+    EXPECT_THROW(pop.erase(POP_SIZE), exception::OutOfBoundsException);
+    EXPECT_THROW(pop.erase(POP_SIZE + 2), exception::OutOfBoundsException);
     EXPECT_NO_THROW(pop.erase(POP_SIZE-1));
 }
 TEST(AgentVectorTest, erase_range) {
@@ -974,9 +974,9 @@ TEST(AgentVectorTest, erase_range) {
 
     // Test exceptions
     AgentVector pop(agent, POP_SIZE);
-    EXPECT_THROW(pop.erase(POP_SIZE, POP_SIZE + 2), OutOfBoundsException);
-    EXPECT_THROW(pop.erase(POP_SIZE/2, POP_SIZE + 2), OutOfBoundsException);
-    EXPECT_THROW(pop.erase(POP_SIZE + 2, POP_SIZE + 4), OutOfBoundsException);
+    EXPECT_THROW(pop.erase(POP_SIZE, POP_SIZE + 2), exception::OutOfBoundsException);
+    EXPECT_THROW(pop.erase(POP_SIZE/2, POP_SIZE + 2), exception::OutOfBoundsException);
+    EXPECT_THROW(pop.erase(POP_SIZE + 2, POP_SIZE + 4), exception::OutOfBoundsException);
     EXPECT_NO_THROW(pop.erase(0, POP_SIZE));
 }
 TEST(AgentVectorTest, push_back) {
@@ -1002,7 +1002,7 @@ TEST(AgentVectorTest, push_back) {
     AgentDescription& agent2 = model.newAgent("agent2");
     agent2.newVariable<float>("float", 2.0f);
     AgentInstance ai2(agent2);
-    EXPECT_THROW(pop.push_back(ai2), InvalidAgent);
+    EXPECT_THROW(pop.push_back(ai2), exception::InvalidAgent);
 }
 TEST(AgentVectorTest, pop_back) {
     const unsigned int POP_SIZE = 10;
@@ -1245,7 +1245,7 @@ TEST(AgentVectorTest, getVariableType) {
     AgentVector pop(agent, POP_SIZE);
     EXPECT_EQ(pop.getVariableType("uint"), std::type_index(typeid(unsigned int)));
     EXPECT_EQ(pop.getVariableType("int"), std::type_index(typeid(int)));
-    EXPECT_THROW(pop.getVariableType("float"), InvalidAgentVar);
+    EXPECT_THROW(pop.getVariableType("float"), exception::InvalidAgentVar);
 }
 // TEST(AgentVectorTest, getVariableMetaData): can't test this
 TEST(AgentVectorTest, getInitialState) {
@@ -1323,11 +1323,11 @@ TEST(AgentVectorTest, AgentVector_Agent) {
     AgentVector::Agent ai = pop.front();
     {  // setVariable(const std::string &variable_name, const T &value)
         // Bad name
-        EXPECT_THROW(ai.setVariable<int>("wrong", 1), InvalidAgentVar);
+        EXPECT_THROW(ai.setVariable<int>("wrong", 1), exception::InvalidAgentVar);
         // Array passed to non-array method
-        EXPECT_THROW(ai.setVariable<int>("int2", 1), InvalidVarType);
+        EXPECT_THROW(ai.setVariable<int>("int2", 1), exception::InvalidVarType);
         // Wrong type
-        EXPECT_THROW(ai.setVariable<int>("float", 1), InvalidVarType);
+        EXPECT_THROW(ai.setVariable<int>("float", 1), exception::InvalidVarType);
     }
     {  // setVariable(const std::string &variable_name, const std::array<T, N> &value)
         auto fn = &AgentVector::Agent::setVariable<int, 3>;
@@ -1335,47 +1335,47 @@ TEST(AgentVectorTest, AgentVector_Agent) {
         const std::array<int, 3> int3_ref2 = { 2, 3, 4 };
         const std::array<float, 3> float3_ref = { 2.0f, 3.0f, 4.0f };
         // Bad name
-        EXPECT_THROW((ai.*fn)("wrong", int3_ref2), InvalidAgentVar);
+        EXPECT_THROW((ai.*fn)("wrong", int3_ref2), exception::InvalidAgentVar);
         // Array passed to non-array method
-        EXPECT_THROW((ai.*fn)("int2", int3_ref2), InvalidVarType);
+        EXPECT_THROW((ai.*fn)("int2", int3_ref2), exception::InvalidVarType);
         // Wrong type
-        EXPECT_THROW((ai.*fn2)("int3", float3_ref), InvalidVarType);
+        EXPECT_THROW((ai.*fn2)("int3", float3_ref), exception::InvalidVarType);
     }
     {  // setVariable(const std::string &variable_name, const unsigned int &array_index, const T &value)
         // Bad name
-        EXPECT_THROW(ai.setVariable<int>("wrong", 0, 1), InvalidAgentVar);
+        EXPECT_THROW(ai.setVariable<int>("wrong", 0, 1), exception::InvalidAgentVar);
         // Index out of bounds
-        EXPECT_THROW(ai.setVariable<int>("int2", 2, 1), OutOfBoundsException);
-        EXPECT_THROW(ai.setVariable<float>("float", 1, 1), OutOfBoundsException);
+        EXPECT_THROW(ai.setVariable<int>("int2", 2, 1), exception::OutOfBoundsException);
+        EXPECT_THROW(ai.setVariable<float>("float", 1, 1), exception::OutOfBoundsException);
         // Wrong type
-        EXPECT_THROW(ai.setVariable<int>("float", 0, 1), InvalidVarType);
+        EXPECT_THROW(ai.setVariable<int>("float", 0, 1), exception::InvalidVarType);
     }
     {  // getVariable(const std::string &variable_name) const
         // Bad name
-        EXPECT_THROW(ai.getVariable<int>("wrong"), InvalidAgentVar);
+        EXPECT_THROW(ai.getVariable<int>("wrong"), exception::InvalidAgentVar);
         // Array passed to non-array method
-        EXPECT_THROW(ai.getVariable<int>("int2"), InvalidVarType);
+        EXPECT_THROW(ai.getVariable<int>("int2"), exception::InvalidVarType);
         // Wrong type
-        EXPECT_THROW(ai.getVariable<int>("float"), InvalidVarType);
+        EXPECT_THROW(ai.getVariable<int>("float"), exception::InvalidVarType);
     }
     {  // getVariable(const std::string &variable_name)
         auto fn = &AgentVector::Agent::getVariable<int, 3>;
         auto fn2 = &AgentVector::Agent::getVariable<float, 3>;
         // Bad name
-        EXPECT_THROW((ai.*fn)("wrong"), InvalidAgentVar);
+        EXPECT_THROW((ai.*fn)("wrong"), exception::InvalidAgentVar);
         // Array passed to non-array method
-        EXPECT_THROW((ai.*fn)("int2"), InvalidVarType);
+        EXPECT_THROW((ai.*fn)("int2"), exception::InvalidVarType);
         // Wrong type
-        EXPECT_THROW((ai.*fn2)("int3"), InvalidVarType);
+        EXPECT_THROW((ai.*fn2)("int3"), exception::InvalidVarType);
     }
     {  // getVariable(const std::string &variable_name, const unsigned int &array_index)
         // Bad name
-        EXPECT_THROW(ai.getVariable<int>("wrong", 0), InvalidAgentVar);
+        EXPECT_THROW(ai.getVariable<int>("wrong", 0), exception::InvalidAgentVar);
         // Index out of bounds
-        EXPECT_THROW(ai.getVariable<int>("int2", 2), OutOfBoundsException);
-        EXPECT_THROW(ai.getVariable<float>("float", 1), OutOfBoundsException);
+        EXPECT_THROW(ai.getVariable<int>("int2", 2), exception::OutOfBoundsException);
+        EXPECT_THROW(ai.getVariable<float>("float", 1), exception::OutOfBoundsException);
         // Wrong type
-        EXPECT_THROW(ai.getVariable<int>("float", 0), InvalidVarType);
+        EXPECT_THROW(ai.getVariable<int>("float", 0), exception::InvalidVarType);
     }
 }
 }  // namespace flamegpu

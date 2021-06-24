@@ -144,11 +144,11 @@ TEST(AgentInstanceTest, getsetVariable) {
     // Check various exceptions
     {  // setVariable(const std::string &variable_name, const T &value)
         // Bad name
-        EXPECT_THROW(ai.setVariable<int>("wrong", 1), InvalidAgentVar);
+        EXPECT_THROW(ai.setVariable<int>("wrong", 1), exception::InvalidAgentVar);
         // Array passed to non-array method
-        EXPECT_THROW(ai.setVariable<int>("int2", 1), InvalidVarType);
+        EXPECT_THROW(ai.setVariable<int>("int2", 1), exception::InvalidVarType);
         // Wrong type
-        EXPECT_THROW(ai.setVariable<int>("float", 1), InvalidVarType);
+        EXPECT_THROW(ai.setVariable<int>("float", 1), exception::InvalidVarType);
     }
     {  // setVariable(const std::string &variable_name, const std::array<T, N> &value)
         auto fn = &AgentInstance::setVariable<int, 3>;
@@ -156,47 +156,47 @@ TEST(AgentInstanceTest, getsetVariable) {
         const std::array<int, 3> int3_ref2 = { 2, 3, 4 };
         const std::array<float, 3> float3_ref = { 2.0f, 3.0f, 4.0f };
         // Bad name
-        EXPECT_THROW((ai.*fn)("wrong", int3_ref2), InvalidAgentVar);
+        EXPECT_THROW((ai.*fn)("wrong", int3_ref2), exception::InvalidAgentVar);
         // Array passed to non-array method
-        EXPECT_THROW((ai.*fn)("int2", int3_ref2), InvalidVarType);
+        EXPECT_THROW((ai.*fn)("int2", int3_ref2), exception::InvalidVarType);
         // Wrong type
-        EXPECT_THROW((ai.*fn2)("int3", float3_ref), InvalidVarType);
+        EXPECT_THROW((ai.*fn2)("int3", float3_ref), exception::InvalidVarType);
     }
     {  // setVariable(const std::string &variable_name, const unsigned int &array_index, const T &value)
         // Bad name
-        EXPECT_THROW(ai.setVariable<int>("wrong", 0, 1), InvalidAgentVar);
+        EXPECT_THROW(ai.setVariable<int>("wrong", 0, 1), exception::InvalidAgentVar);
         // Index out of bounds
-        EXPECT_THROW(ai.setVariable<int>("int2", 2, 1), OutOfBoundsException);
-        EXPECT_THROW(ai.setVariable<float>("float", 1, 1), OutOfBoundsException);
+        EXPECT_THROW(ai.setVariable<int>("int2", 2, 1), exception::OutOfBoundsException);
+        EXPECT_THROW(ai.setVariable<float>("float", 1, 1), exception::OutOfBoundsException);
         // Wrong type
-        EXPECT_THROW(ai.setVariable<int>("float", 0, 1), InvalidVarType);
+        EXPECT_THROW(ai.setVariable<int>("float", 0, 1), exception::InvalidVarType);
     }
     {  // getVariable(const std::string &variable_name) const
         // Bad name
-        EXPECT_THROW(ai.getVariable<int>("wrong"), InvalidAgentVar);
+        EXPECT_THROW(ai.getVariable<int>("wrong"), exception::InvalidAgentVar);
         // Array passed to non-array method
-        EXPECT_THROW(ai.getVariable<int>("int2"), InvalidVarType);
+        EXPECT_THROW(ai.getVariable<int>("int2"), exception::InvalidVarType);
         // Wrong type
-        EXPECT_THROW(ai.getVariable<int>("float"), InvalidVarType);
+        EXPECT_THROW(ai.getVariable<int>("float"), exception::InvalidVarType);
     }
     {  // getVariable(const std::string &variable_name) const
         auto fn = &AgentInstance::getVariable<int, 3>;
         auto fn2 = &AgentInstance::getVariable<float, 3>;
         // Bad name
-        EXPECT_THROW((ai.*fn)("wrong"), InvalidAgentVar);
+        EXPECT_THROW((ai.*fn)("wrong"), exception::InvalidAgentVar);
         // Array passed to non-array method
-        EXPECT_THROW((ai.*fn)("int2"), InvalidVarType);
+        EXPECT_THROW((ai.*fn)("int2"), exception::InvalidVarType);
         // Wrong type
-        EXPECT_THROW((ai.*fn2)("int3"), InvalidVarType);
+        EXPECT_THROW((ai.*fn2)("int3"), exception::InvalidVarType);
     }
     {  // getVariable(const std::string &variable_name, const unsigned int &array_index) const
         // Bad name
-        EXPECT_THROW(ai.getVariable<int>("wrong", 0), InvalidAgentVar);
+        EXPECT_THROW(ai.getVariable<int>("wrong", 0), exception::InvalidAgentVar);
         // Index out of bounds
-        EXPECT_THROW(ai.getVariable<int>("int2", 2), OutOfBoundsException);
-        EXPECT_THROW(ai.getVariable<float>("float", 1), OutOfBoundsException);
+        EXPECT_THROW(ai.getVariable<int>("int2", 2), exception::OutOfBoundsException);
+        EXPECT_THROW(ai.getVariable<float>("float", 1), exception::OutOfBoundsException);
         // Wrong type
-        EXPECT_THROW(ai.getVariable<int>("float", 0), InvalidVarType);
+        EXPECT_THROW(ai.getVariable<int>("float", 0), exception::InvalidVarType);
     }
 }
 }  // namespace flamegpu

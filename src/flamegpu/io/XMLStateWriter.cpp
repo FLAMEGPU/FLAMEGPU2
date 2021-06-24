@@ -23,13 +23,13 @@ namespace io {
   * Macro function for converting a tinyxml2 return code to an exception
   * @param a_eResult The tinyxml2 return code
   */
-#define XMLCheckResult(a_eResult) if (a_eResult != tinyxml2::XML_SUCCESS) { FGPUException::setLocation(__FILE__, __LINE__);\
+#define XMLCheckResult(a_eResult) if (a_eResult != tinyxml2::XML_SUCCESS) { exception::FGPUException::setLocation(__FILE__, __LINE__);\
     switch (a_eResult) { \
     case tinyxml2::XML_ERROR_FILE_NOT_FOUND : \
     case tinyxml2::XML_ERROR_FILE_COULD_NOT_BE_OPENED : \
-        throw InvalidInputFile("TinyXML error: File could not be opened.\n Error code: %d", a_eResult); \
+        throw exception::InvalidInputFile("TinyXML error: File could not be opened.\n Error code: %d", a_eResult); \
     case tinyxml2::XML_ERROR_FILE_READ_ERROR : \
-        throw InvalidInputFile("TinyXML error: File could not be read.\n Error code: %d", a_eResult); \
+        throw exception::InvalidInputFile("TinyXML error: File could not be read.\n Error code: %d", a_eResult); \
     case tinyxml2::XML_ERROR_PARSING_ELEMENT : \
     case tinyxml2::XML_ERROR_PARSING_ATTRIBUTE : \
     case tinyxml2::XML_ERROR_PARSING_TEXT : \
@@ -38,25 +38,25 @@ namespace io {
     case tinyxml2::XML_ERROR_PARSING_DECLARATION : \
     case tinyxml2::XML_ERROR_PARSING_UNKNOWN : \
     case tinyxml2::XML_ERROR_PARSING : \
-        throw TinyXMLError("TinyXML error: Error parsing file.\n Error code: %d", a_eResult); \
+        throw exception::TinyXMLError("TinyXML error: Error parsing file.\n Error code: %d", a_eResult); \
     case tinyxml2::XML_ERROR_EMPTY_DOCUMENT : \
-        throw TinyXMLError("TinyXML error: XML_ERROR_EMPTY_DOCUMENT\n Error code: %d", a_eResult); \
+        throw exception::TinyXMLError("TinyXML error: XML_ERROR_EMPTY_DOCUMENT\n Error code: %d", a_eResult); \
     case tinyxml2::XML_ERROR_MISMATCHED_ELEMENT : \
-        throw TinyXMLError("TinyXML error: XML_ERROR_MISMATCHED_ELEMENT\n Error code: %d", a_eResult); \
+        throw exception::TinyXMLError("TinyXML error: XML_ERROR_MISMATCHED_ELEMENT\n Error code: %d", a_eResult); \
     case tinyxml2::XML_CAN_NOT_CONVERT_TEXT : \
-        throw TinyXMLError("TinyXML error: XML_CAN_NOT_CONVERT_TEXT\n Error code: %d", a_eResult); \
+        throw exception::TinyXMLError("TinyXML error: XML_CAN_NOT_CONVERT_TEXT\n Error code: %d", a_eResult); \
     case tinyxml2::XML_NO_TEXT_NODE : \
-        throw TinyXMLError("TinyXML error: XML_NO_TEXT_NODE\n Error code: %d", a_eResult); \
+        throw exception::TinyXMLError("TinyXML error: XML_NO_TEXT_NODE\n Error code: %d", a_eResult); \
     case tinyxml2::XML_ELEMENT_DEPTH_EXCEEDED : \
-        throw TinyXMLError("TinyXML error: XML_ELEMENT_DEPTH_EXCEEDED\n Error code: %d", a_eResult); \
+        throw exception::TinyXMLError("TinyXML error: XML_ELEMENT_DEPTH_EXCEEDED\n Error code: %d", a_eResult); \
     case tinyxml2::XML_ERROR_COUNT : \
-        throw TinyXMLError("TinyXML error: XML_ERROR_COUNT\n Error code: %d", a_eResult); \
+        throw exception::TinyXMLError("TinyXML error: XML_ERROR_COUNT\n Error code: %d", a_eResult); \
     case tinyxml2::XML_NO_ATTRIBUTE: \
-        throw TinyXMLError("TinyXML error: XML_NO_ATTRIBUTE\n Error code: %d", a_eResult); \
+        throw exception::TinyXMLError("TinyXML error: XML_NO_ATTRIBUTE\n Error code: %d", a_eResult); \
     case tinyxml2::XML_WRONG_ATTRIBUTE_TYPE : \
-        throw TinyXMLError("TinyXML error: XML_WRONG_ATTRIBUTE_TYPE\n Error code: %d", a_eResult); \
+        throw exception::TinyXMLError("TinyXML error: XML_WRONG_ATTRIBUTE_TYPE\n Error code: %d", a_eResult); \
     default: \
-        throw TinyXMLError("TinyXML error: Unrecognised error code\n Error code: %d", a_eResult); \
+        throw exception::TinyXMLError("TinyXML error: Unrecognised error code\n Error code: %d", a_eResult); \
     } \
 }
 #endif
@@ -178,7 +178,7 @@ int XMLStateWriter::writeStates(bool prettyPrint) {
                     } else if (a.second.type == std::type_index(typeid(uint8_t))) {
                         ss << static_cast<uint32_t>(*reinterpret_cast<const uint8_t*>(env_buffer + a.second.offset + (el * sizeof(uint8_t))));  // Char outputs weird if being used as an integer
                     } else {
-                        THROW TinyXMLError("Model contains environment property '%s' of unsupported type '%s', "
+                        THROW exception::TinyXMLError("Model contains environment property '%s' of unsupported type '%s', "
                             "in XMLStateWriter::writeStates()\n", a.first.second.c_str(), a.second.type.name());
                     }
                     if (el + 1 != a.second.elements)
@@ -249,7 +249,7 @@ int XMLStateWriter::writeStates(bool prettyPrint) {
                         } else if (iter_mm->second.type == std::type_index(typeid(uint8_t))) {
                             ss << static_cast<uint32_t>(instance.getVariable<uint8_t>(variable_name, el));  // Char outputs weird if being used as an integer
                         } else {
-                            THROW TinyXMLError("Agent '%s' contains variable '%s' of unsupported type '%s', "
+                            THROW exception::TinyXMLError("Agent '%s' contains variable '%s' of unsupported type '%s', "
                                 "in XMLStateWriter::writeStates()\n", agent_name.c_str(), variable_name.c_str(), iter_mm->second.type.name());
                         }
                         if (el + 1 != iter_mm->second.elements)

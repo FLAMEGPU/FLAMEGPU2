@@ -85,18 +85,18 @@ template <typename T>
 T AgentInstance::getVariable(const std::string& variable_name) const {
     const auto v_it = _data.find(variable_name);
     if (v_it == _data.end()) {
-        THROW InvalidAgentVar("Variable with name '%s' was not found in agent, "
+        THROW exception::InvalidAgentVar("Variable with name '%s' was not found in agent, "
             "in AgentInstance::getVariable().",
             variable_name.c_str());
     }
     const auto& v_buff = v_it->second;
     if (v_buff.elements != 1) {
-        THROW InvalidVarType("Variable '%s' is an array variable, use the array method instead, "
+        THROW exception::InvalidVarType("Variable '%s' is an array variable, use the array method instead, "
             "in AgentInstance::getVariable().",
             variable_name.c_str());
     }
     if (v_buff.type != std::type_index(typeid(T))) {
-        THROW InvalidVarType("Variable '%s' is of a different type. "
+        THROW exception::InvalidVarType("Variable '%s' is of a different type. "
             "'%s' was expected, but '%s' was requested,"
             "in AgentInstance::getVariable().",
             variable_name.c_str(), v_buff.type.name(), typeid(T).name());
@@ -107,18 +107,18 @@ template <typename T, unsigned int N>
 std::array<T, N> AgentInstance::getVariable(const std::string& variable_name) const {
     const auto v_it = _data.find(variable_name);
     if (v_it == _data.end()) {
-        THROW InvalidAgentVar("Variable with name '%s' was not found in agent, "
+        THROW exception::InvalidAgentVar("Variable with name '%s' was not found in agent, "
             "in AgentInstance::getVariable().",
             variable_name.c_str());
     }
     const auto& v_buff = v_it->second;
     if (v_buff.elements != N) {
-        THROW InvalidVarType("Variable '%s' has '%u' elements, but an array of length %u was passed, "
+        THROW exception::InvalidVarType("Variable '%s' has '%u' elements, but an array of length %u was passed, "
             "in AgentInstance::getVariable().",
             variable_name.c_str(), v_buff.elements, N);
     }
     if (v_buff.type != std::type_index(typeid(T))) {
-        THROW InvalidVarType("Variable '%s' is of a different type. "
+        THROW exception::InvalidVarType("Variable '%s' is of a different type. "
             "'%s' was expected, but '%s' was requested,"
             "in AgentInstance::getVariable().",
             variable_name.c_str(), v_buff.type.name(), typeid(T).name());
@@ -131,18 +131,18 @@ template <typename T>
 T AgentInstance::getVariable(const std::string& variable_name, const unsigned int& index) const {
     const auto v_it = _data.find(variable_name);
     if (v_it == _data.end()) {
-        THROW InvalidAgentVar("Variable with name '%s' was not found in agent, "
+        THROW exception::InvalidAgentVar("Variable with name '%s' was not found in agent, "
             "in AgentInstance::getVariable().",
             variable_name.c_str());
     }
     const auto& v_buff = v_it->second;
     if (index >= v_buff.elements) {
-        THROW OutOfBoundsException("Index '%u' exceeds array bounds [0-%u) of variable '%s',  "
+        THROW exception::OutOfBoundsException("Index '%u' exceeds array bounds [0-%u) of variable '%s',  "
             "in AgentInstance::getVariable().",
             index, v_buff.elements, variable_name.c_str());
     }
     if (v_buff.type != std::type_index(typeid(T))) {
-        THROW InvalidVarType("Variable '%s' is of a different type. "
+        THROW exception::InvalidVarType("Variable '%s' is of a different type. "
             "'%s' was expected, but '%s' was requested,"
             "in AgentInstance::getVariable().",
             variable_name.c_str(), v_buff.type.name(), typeid(T).name());
@@ -154,13 +154,13 @@ template <typename T>
 std::vector<T> AgentInstance::getVariableArray(const std::string& variable_name) const {
     const auto v_it = _data.find(variable_name);
     if (v_it == _data.end()) {
-        THROW InvalidAgentVar("Variable with name '%s' was not found in agent, "
+        THROW exception::InvalidAgentVar("Variable with name '%s' was not found in agent, "
             "in AgentInstance::getVariableArray().",
             variable_name.c_str());
     }
     const auto& v_buff = v_it->second;
     if (v_buff.type != std::type_index(typeid(T))) {
-        THROW InvalidVarType("Variable '%s' is of a different type. "
+        THROW exception::InvalidVarType("Variable '%s' is of a different type. "
             "'%s' was expected, but '%s' was requested,"
             "in AgentInstance::getVariableArray().",
             variable_name.c_str(), v_buff.type.name(), typeid(T).name());
@@ -174,18 +174,18 @@ template <typename T>
 void AgentInstance::setVariable(const std::string& variable_name, const T& value) {
     const auto v_it = _data.find(variable_name);
     if (v_it == _data.end()) {
-        THROW InvalidAgentVar("Variable with name '%s' was not found in agent, "
+        THROW exception::InvalidAgentVar("Variable with name '%s' was not found in agent, "
             "in AgentInstance::setVariable().",
             variable_name.c_str());
     }
     auto& v_buff = v_it->second;
     if (v_buff.elements != 1) {
-        THROW InvalidVarType("Variable '%s' is an array variable, use the array method instead, "
+        THROW exception::InvalidVarType("Variable '%s' is an array variable, use the array method instead, "
             "in AgentInstance::setVariable().",
             variable_name.c_str());
     }
     if (v_buff.type != std::type_index(typeid(T))) {
-        THROW InvalidVarType("Variable '%s' is of a different type. "
+        THROW exception::InvalidVarType("Variable '%s' is of a different type. "
             "'%s' was expected, but '%s' was requested,"
             "in AgentInstance::setVariable().",
             variable_name.c_str(), v_buff.type.name(), typeid(T).name());
@@ -197,18 +197,18 @@ template <typename T, unsigned int N>
 void AgentInstance::setVariable(const std::string& variable_name, const std::array<T, N>& value) {
     const auto v_it = _data.find(variable_name);
     if (v_it == _data.end()) {
-        THROW InvalidAgentVar("Variable with name '%s' was not found in agent, "
+        THROW exception::InvalidAgentVar("Variable with name '%s' was not found in agent, "
             "in AgentInstance::setVariable().",
             variable_name.c_str());
     }
     auto& v_buff = v_it->second;
     if (v_buff.elements != N) {
-        THROW InvalidVarType("Variable '%s' has '%u' elements, but an array of length %u was passed, "
+        THROW exception::InvalidVarType("Variable '%s' has '%u' elements, but an array of length %u was passed, "
             "in AgentInstance::setVariable().",
             variable_name.c_str(), v_buff.elements, N);
     }
     if (v_buff.type != std::type_index(typeid(T))) {
-        THROW InvalidVarType("Variable '%s' is of a different type. "
+        THROW exception::InvalidVarType("Variable '%s' is of a different type. "
             "'%s' was expected, but '%s' was requested,"
             "in AgentInstance::setVariable().",
             variable_name.c_str(), v_buff.type.name(), typeid(T).name());
@@ -219,18 +219,18 @@ template <typename T>
 void AgentInstance::setVariable(const std::string& variable_name, const unsigned int& index, const T& value) {
     const auto v_it = _data.find(variable_name);
     if (v_it == _data.end()) {
-        THROW InvalidAgentVar("Variable with name '%s' was not found in agent, "
+        THROW exception::InvalidAgentVar("Variable with name '%s' was not found in agent, "
             "in AgentInstance::setVariable().",
             variable_name.c_str());
     }
     auto& v_buff = v_it->second;
     if (index >= v_buff.elements) {
-        THROW OutOfBoundsException("Index '%u' exceeds array bounds [0-%u) of variable '%s',  "
+        THROW exception::OutOfBoundsException("Index '%u' exceeds array bounds [0-%u) of variable '%s',  "
             "in AgentInstance::setVariable().",
             index, v_buff.elements, variable_name.c_str());
     }
     if (v_buff.type != std::type_index(typeid(T))) {
-        THROW InvalidVarType("Variable '%s' is of a different type. "
+        THROW exception::InvalidVarType("Variable '%s' is of a different type. "
             "'%s' was expected, but '%s' was requested,"
             "in AgentInstance::setVariable().",
             variable_name.c_str(), v_buff.type.name(), typeid(T).name());
@@ -242,18 +242,18 @@ template <typename T>
 void AgentInstance::setVariableArray(const std::string& variable_name, const std::vector<T>& value) {
     const auto v_it = _data.find(variable_name);
     if (v_it == _data.end()) {
-        THROW InvalidAgentVar("Variable with name '%s' was not found in agent, "
+        THROW exception::InvalidAgentVar("Variable with name '%s' was not found in agent, "
             "in AgentInstance::setVariableArray().",
             variable_name.c_str());
     }
     auto& v_buff = v_it->second;
     if (v_buff.elements != value.size()) {
-        THROW InvalidVarType("Variable '%s' has '%u' elements, but an array of length %u was passed, "
+        THROW exception::InvalidVarType("Variable '%s' has '%u' elements, but an array of length %u was passed, "
             "in AgentInstance::setVariableArray().",
             variable_name.c_str(), v_buff.elements, value.size());
     }
     if (v_buff.type != std::type_index(typeid(T))) {
-        THROW InvalidVarType("Variable '%s' is of a different type. "
+        THROW exception::InvalidVarType("Variable '%s' is of a different type. "
             "'%s' was expected, but '%s' was requested,"
             "in AgentInstance::setVariableArray().",
             variable_name.c_str(), v_buff.type.name(), typeid(T).name());

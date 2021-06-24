@@ -141,7 +141,7 @@ class CUDAAgentStateList {
     /**
      * Updates the number of alive agents, does not affect disabled agents or change agent data
      * @param newSize Number of active agents
-     * @throw InvalidMemoryCapacity If the new number of disabled + active agents would exceed currently allocated buffer capacity
+     * @throw exception::InvalidMemoryCapacity If the new number of disabled + active agents would exceed currently allocated buffer capacity
      */
     void setAgentCount(const unsigned int& newSize);
     /**

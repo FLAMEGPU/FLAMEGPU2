@@ -52,7 +52,7 @@ class DependencyGraph {
     /**
      * Generates optimal layers based on the dependencies specified and adds them to the model
      * @param model The model the layers should be added to
-     * @throws InvalidDependencyGraph if the model already has layers attached
+     * @throws exception::InvalidDependencyGraph if the model already has layers attached
      */
     void generateLayers(ModelDescription& model);
     /**

@@ -6,6 +6,7 @@
 #include <limits>
 
 namespace flamegpu {
+namespace exception {
 
 const char * FGPUException::file = nullptr;
 unsigned int FGPUException::line = std::numeric_limits<unsigned int>::max();
@@ -51,4 +52,5 @@ std::string FGPUException::parseArgs(const char * format, va_list argp) {
     return rtn;
 }
 
+}  // namespace exception
 }  // namespace flamegpu

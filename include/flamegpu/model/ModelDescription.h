@@ -72,14 +72,14 @@ class ModelDescription {
      * Creates a new agent with the specified name
      * @param agent_name Name which can be used to refer to the agent within the model description hierarchy
      * @return A mutable reference to the specified AgentDescription
-     * @throws InvalidAgentName If an agent with the same name already exists within the model description hierarchy
+     * @throws exception::InvalidAgentName If an agent with the same name already exists within the model description hierarchy
      */
     AgentDescription& newAgent(const std::string &agent_name);
     /**
      * Returns a mutable reference to the named agent, which can be used to configure the agent
      * @param agent_name Name which can be used to the refer to the desired agent within the model description hierarchy
      * @return A mutable reference to the specified AgentDescription
-     * @throws InvalidAgentName If an agent with the name does not exist within the model description hierarchy
+     * @throws exception::InvalidAgentName If an agent with the name does not exist within the model description hierarchy
      * @see ModelDescription::getAgent(const std::string &) for the immutable version
      */
     AgentDescription& Agent(const std::string &agent_name);
@@ -88,7 +88,7 @@ class ModelDescription {
      * Creates a new message with the specified name
      * @param message_name Name which can be used to refer to the message within the model description hierarchy
      * @return A mutable reference to the new MessageDescription
-     * @throws InvalidMessageName If a message with the same name already exists within the model description hierarchy
+     * @throws exception::InvalidMessageName If a message with the same name already exists within the model description hierarchy
      */
     template<typename MsgType>
     typename MsgType::Description& newMessage(const std::string &message_name) {
@@ -97,7 +97,7 @@ class ModelDescription {
             model->messages.emplace(message_name, rtn);
             return *reinterpret_cast<typename MsgType::Description*>(rtn->description.get());
         }
-        THROW InvalidMessageName("Message with name '%s' already exists, "
+        THROW exception::InvalidMessageName("Message with name '%s' already exists, "
             "in ModelDescription::newMessage().",
             message_name.c_str());
     }
@@ -106,7 +106,7 @@ class ModelDescription {
      * Returns a mutable reference to the named message, which can be used to configure the message
      * @param message_name Name used to refer to the desired message within the model description hierarchy
      * @return A mutable reference to the specified MessageDescription
-     * @throws InvalidMessageName If a message with the name does not exist within the model description hierarchy
+     * @throws exception::InvalidMessageName If a message with the name does not exist within the model description hierarchy
      * @see ModelDescription::getMessage(const std::string &) for the immutable version
      */
     template<typename MsgType>
@@ -116,11 +116,11 @@ class ModelDescription {
             if (auto r = std::dynamic_pointer_cast<typename MsgType::Data>(rtn->second)) {
                 return *reinterpret_cast<typename MsgType::Description*>(r->description.get());
             }
-            THROW InvalidMessageName("Message ('%s') is not of correct type, "
+            THROW exception::InvalidMessageName("Message ('%s') is not of correct type, "
                 "in ModelDescription::Message().",
                 message_name.c_str());
         }
-        THROW InvalidMessageName("Message ('%s') was not found, "
+        THROW exception::InvalidMessageName("Message ('%s') was not found, "
             "in ModelDescription::Message().",
             message_name.c_str());
     }
@@ -142,7 +142,7 @@ class ModelDescription {
      * Returns a mutable reference to the named submodel
      * @param submodel_name Name which can be used to the refer to the desired submodel within the model description hierarchy
      * @return A mutable reference to the specified SubModelDescription
-     * @throws InvalidSubModelName If a submodel with the name does not exist within the model description hierarchy
+     * @throws exception::InvalidSubModelName If a submodel with the name does not exist within the model description hierarchy
      * @see ModelDescription::getSubModel(const std::string &) for the immutable version
      */
     SubModelDescription &SubModel(const std::string &submodel_name);
@@ -151,7 +151,7 @@ class ModelDescription {
      * Creates a new layer with the specified name
      * @param name Name which can be used to refer to the message within the model description hierarchy
      * @return A mutable reference to the new LayerDescription
-     * @throws InvalidFuncLayerIndx If a layer with the same name already exists within the model description hierarchy
+     * @throws exception::InvalidFuncLayerIndx If a layer with the same name already exists within the model description hierarchy
      * @note Layer names are not required, passing empty string will not set a name
      */
     LayerDescription& newLayer(const std::string &name = "");
@@ -159,7 +159,7 @@ class ModelDescription {
      * Returns a mutable reference to the named layer, which can be used to configure the layer
      * @param name Name used to refer to the desired layer within the model description hierarchy
      * @return A mutable reference to the specified LayerDescription
-     * @throws InvalidFuncLayerIndx If a layer with the name does not exist within the model description hierarchy
+     * @throws exception::InvalidFuncLayerIndx If a layer with the name does not exist within the model description hierarchy
      * @see ModelDescription::Layer(const ModelData::size_type &)
      * @see ModelDescription::getLayer(const std::string &) for the immutable version
      */
@@ -168,7 +168,7 @@ class ModelDescription {
      * Returns a mutable reference to the named layer, which can be used to configure the layer
      * @param layer_index Index of the desired layer within the model description hierarchy
      * @return A mutable reference to the specified LayerDescription
-     * @throws InvalidFuncLayerIndx If a layer with the name does not exist within the model description hierarchy
+     * @throws exception::InvalidFuncLayerIndx If a layer with the name does not exist within the model description hierarchy
      * @see ModelDescription::Layer(const std::string &)
      * @see ModelDescription::getLayer(const ModelData::size_type &) for the immutable version
      */
@@ -178,7 +178,7 @@ class ModelDescription {
      * Adds an init function to the simulation
      * Init functions execute once before the simulation begins
      * @param func_p Pointer to the desired init function
-     * @throws InvalidHostFunc If the init function has already been added to this model description
+     * @throws exception::InvalidHostFunc If the init function has already been added to this model description
      * @note There is no guarantee on the order in which multiple init functions will be executed
      */
     void addInitFunction(FLAMEGPU_INIT_FUNCTION_POINTER func_p);
@@ -186,7 +186,7 @@ class ModelDescription {
      * Adds a step function to the simulation
      * Step functions execute once per step, after all layers have been executed, before exit conditions
      * @param func_p Pointer to the desired step function
-     * @throws InvalidHostFunc If the step function has already been added to this model description
+     * @throws exception::InvalidHostFunc If the step function has already been added to this model description
      * @note There is no guarantee on the order in which multiple step functions will be executed, host-layer functions can be used if order is required.
      */
     void addStepFunction(FLAMEGPU_STEP_FUNCTION_POINTER func_p);
@@ -194,7 +194,7 @@ class ModelDescription {
      * Adds an exit function to the simulation
      * Exit functions execute once after all simulation steps have completed or an exit conditions has returned EXIT
      * @param func_p Pointer to the desired exit function
-     * @throws InvalidHostFunc If the exit function has already been added to this model description
+     * @throws exception::InvalidHostFunc If the exit function has already been added to this model description
      * @note There is no guarantee on the order in which multiple exit functions will be executed
      */
     void addExitFunction(FLAMEGPU_EXIT_FUNCTION_POINTER func_p);
@@ -204,7 +204,7 @@ class ModelDescription {
      * however the runnable function is encapsulated within an object which permits cross language support in swig.
      * Init functions execute once before the simulation begins
      * @param func_callback Pointer to the desired init function callback
-     * @throws InvalidHostFunc If the init function has already been added to this model description
+     * @throws exception::InvalidHostFunc If the init function has already been added to this model description
      * @note There is no guarantee on the order in which multiple init functions will be executed
      */
     inline void addInitFunctionCallback(HostFunctionCallback *func_callback);
@@ -213,7 +213,7 @@ class ModelDescription {
      * however the runnable function is encapsulated within an object which permits cross language support in swig.
      * Exit functions execute once after the simulation ends
      * @param func_callback Pointer to the desired exit function callback
-     * @throws InvalidHostFunc If the step function has already been added to this model description
+     * @throws exception::InvalidHostFunc If the step function has already been added to this model description
      * @note There is no guarantee on the order in which multiple step functions will be executed, host-layer functions can be used if order is required.
      */
     inline void addStepFunctionCallback(HostFunctionCallback *func_callback);
@@ -222,7 +222,7 @@ class ModelDescription {
      * however the runnable function is encapsulated within an object which permits cross language support in swig.
      * Exit functions execute once after all simulation steps have completed or an exit conditions has returned EXIT
      * @param func_callback Pointer to the desired exit function callback
-     * @throws InvalidHostFunc If the exit function has already been added to this model description
+     * @throws exception::InvalidHostFunc If the exit function has already been added to this model description
      * @note There is no guarantee on the order in which multiple exit functions will be executed
      */
     inline void addExitFunctionCallback(HostFunctionCallback *func_callback);
@@ -232,7 +232,7 @@ class ModelDescription {
      * Exit conditions execute once per step, after all layers and step functions have been executed
      * If the condition returns false, the simulation exits early
      * @param func_p Pointer to the desired exit condition function
-     * @throws InvalidHostFunc If the exit condition has already been added to this model description
+     * @throws exception::InvalidHostFunc If the exit condition has already been added to this model description
      * @note Exit conditions are the last functions to operate each step and can still make changes to the model
      * @note The step counter is updated after exit conditions have completed
      * @note There is no guarantee on the order in which multiple exit conditions will be executed
@@ -244,7 +244,7 @@ class ModelDescription {
      * Exit conditions execute once per step, after all layers and step functions have been executed
      * If the condition returns false, the simulation exits early
      * @param func_callback Pointer to the desired exit condition callback
-     * @throws InvalidHostFunc If the exit condition has already been added to this model description
+     * @throws exception::InvalidHostFunc If the exit condition has already been added to this model description
      * @note Exit conditions are the last functions to operate each step and can still make changes to the model
      * @note The step counter is updated after exit conditions have completed
      * @note There is no guarantee on the order in which multiple exit conditions will be executed
@@ -268,7 +268,7 @@ class ModelDescription {
      * Returns an immutable reference to the specified agent, which can be used to view the agent's configuration
      * @param agent_name Name which can be used to the refer to the desired agent within the model description hierarchy
      * @return An immutable reference to the specified AgentDescription
-     * @throws InvalidAgentName If an agent with the name does not exist within the model description hierarchy
+     * @throws exception::InvalidAgentName If an agent with the name does not exist within the model description hierarchy
      * @see ModelDescription::Agent(const std::string &) for the mutable version
      */
     const AgentDescription& getAgent(const std::string &agent_name) const;
@@ -276,7 +276,7 @@ class ModelDescription {
      * Returns a mutable reference to the named message, which can be used to configure the message
      * @param message_name Name used to refer to the desired message within the model description hierarchy
      * @return An immutable reference to the specified MessageDescription
-     * @throws InvalidMessageName If a message with the name does not exist within the model description hierarchy
+     * @throws exception::InvalidMessageName If a message with the name does not exist within the model description hierarchy
      * @see ModelDescription::Message(const std::string &) for the mutable version
      */
     template<typename MsgType>
@@ -286,11 +286,11 @@ class ModelDescription {
             if (auto r = std::dynamic_pointer_cast<typename MsgType::Data>(rtn->second)) {
                 return *reinterpret_cast<typename MsgType::Description*>(r->description.get());
             }
-            THROW InvalidMessageType("Message ('%s') is not of correct type, "
+            THROW exception::InvalidMessageType("Message ('%s') is not of correct type, "
                 "in ModelDescription::getMessage().",
                 message_name.c_str());
         }
-        THROW InvalidMessageName("Message ('%s') was not found, "
+        THROW exception::InvalidMessageName("Message ('%s') was not found, "
             "in ModelDescription::getMessage().",
             message_name.c_str());
     }
@@ -299,7 +299,7 @@ class ModelDescription {
      * Returns an immutable reference to the specified submodel, which can be used to view the submodel's configuration
      * @param submodel_name Name which can be used to the refer to the desired submodel within the model description hierarchy
      * @return An immutable reference to the specified SubModelDescription
-     * @throws InvalidSubModelName If a submodel with the name does not exist within the model description hierarchy
+     * @throws exception::InvalidSubModelName If a submodel with the name does not exist within the model description hierarchy
      * @see ModelDescription::SubModel(const std::string &) for the mutable version
      */
     const SubModelDescription& getSubModel(const std::string &submodel_name) const;
@@ -313,7 +313,7 @@ class ModelDescription {
      * Returns a mutable reference to the named layer, which can be used to configure the layer
      * @param name Name used to refer to the desired layer within the model description hierarchy
      * @return An immutable reference to the specified LayerDescription
-     * @throws InvalidFuncLayerIndx If a layer with the name does not exist within the model description hierarchy
+     * @throws exception::InvalidFuncLayerIndx If a layer with the name does not exist within the model description hierarchy
      * @see ModelDescription::getLayer(const ModelData::size_type &)
      * @see ModelDescription::Layer(const std::string &) for the mutable version
      */
@@ -322,7 +322,7 @@ class ModelDescription {
      * Returns a mutable reference to the named layer, which can be used to configure the layer
      * @param layer_index Index of the desired layer within the model description hierarchy
      * @return An immutable reference to the specified LayerDescription
-     * @throws InvalidFuncLayerIndx If a layer with the name does not exist within the model description hierarchy
+     * @throws exception::InvalidFuncLayerIndx If a layer with the name does not exist within the model description hierarchy
      * @see ModelDescription::getLayer(const std::string &)
      * @see ModelDescription::Layer(const ModelData::size_type &) for the mutable version
      */
@@ -386,25 +386,25 @@ class ModelDescription {
 #ifdef SWIG
 void ModelDescription::addInitFunctionCallback(HostFunctionCallback* func_callback) {
     if (!model->initFunctionCallbacks.insert(func_callback).second) {
-            THROW InvalidHostFunc("Attempted to add same init function callback twice,"
+            THROW exception::InvalidHostFunc("Attempted to add same init function callback twice,"
                 "in ModelDescription::addInitFunctionCallback()");
         }
 }
 void ModelDescription::addStepFunctionCallback(HostFunctionCallback* func_callback) {
     if (!model->stepFunctionCallbacks.insert(func_callback).second) {
-            THROW InvalidHostFunc("Attempted to add same step function callback twice,"
+            THROW exception::InvalidHostFunc("Attempted to add same step function callback twice,"
                 "in ModelDescription::addStepFunctionCallback()");
         }
 }
 void ModelDescription::addExitFunctionCallback(HostFunctionCallback* func_callback) {
     if (!model->exitFunctionCallbacks.insert(func_callback).second) {
-            THROW InvalidHostFunc("Attempted to add same exit function callback twice,"
+            THROW exception::InvalidHostFunc("Attempted to add same exit function callback twice,"
                 "in ModelDescription::addExitFunctionCallback()");
         }
 }
 void ModelDescription::addExitConditionCallback(HostFunctionConditionCallback *func_callback) {
     if (!model->exitConditionCallbacks.insert(func_callback).second) {
-            THROW InvalidHostFunc("Attempted to add same exit condition callback twice,"
+            THROW exception::InvalidHostFunc("Attempted to add same exit condition callback twice,"
                 "in ModelDescription::addExitConditionCallback()");
         }
 }

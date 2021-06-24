@@ -130,14 +130,14 @@ class CUDASimulation : public Simulation {
      * Replaces internal population data for the specified agent
      * @param population The agent type and data to replace agents with
      * @param state_name The agent state to add the agents to
-     * @throw InvalidCudaAgent If the agent type is not recognised
+     * @throw exception::InvalidCudaAgent If the agent type is not recognised
      */
     void setPopulationData(AgentVector& population, const std::string &state_name = ModelData::DEFAULT_STATE) override;
     /**
      * Returns the internal population data for the specified agent
      * @param population The agent type and data to fetch
      * @param state_name The agent state to get the agents from
-     * @throw InvalidCudaAgent If the agent type is not recognised
+     * @throw exception::InvalidCudaAgent If the agent type is not recognised
      */
     void getPopulationData(AgentVector& population, const std::string& state_name = ModelData::DEFAULT_STATE) override;
     /**
@@ -439,7 +439,7 @@ class CUDASimulation : public Simulation {
       /**
        * Provides buffers for device error checking
        */
-      DeviceExceptionManager exception;
+      exception::DeviceExceptionManager exception;
 #endif
       Singletons(Curve &curve, EnvironmentManager &environment) : curve(curve), environment(environment) { }
     } * singletons;

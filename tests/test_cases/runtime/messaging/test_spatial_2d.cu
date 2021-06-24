@@ -416,43 +416,43 @@ TEST(Spatial2DMsgTest, OptionalNone) {
 TEST(Spatial2DMsgTest, BadRadius) {
     ModelDescription model("Spatial2DMsgTestModel");
     MsgSpatial2D::Description &message = model.newMessage<MsgSpatial2D>("location");
-    EXPECT_THROW(message.setRadius(0), InvalidArgument);
-    EXPECT_THROW(message.setRadius(-10), InvalidArgument);
+    EXPECT_THROW(message.setRadius(0), exception::InvalidArgument);
+    EXPECT_THROW(message.setRadius(-10), exception::InvalidArgument);
 }
 TEST(Spatial2DMsgTest, BadMin) {
     ModelDescription model("Spatial2DMsgTestModel");
     MsgSpatial2D::Description &message = model.newMessage<MsgSpatial2D>("location");
     message.setMax(5, 5);
-    EXPECT_THROW(message.setMin(5, 0), InvalidArgument);
-    EXPECT_THROW(message.setMin(0, 5), InvalidArgument);
-    EXPECT_THROW(message.setMin(6, 0), InvalidArgument);
-    EXPECT_THROW(message.setMin(0, 6), InvalidArgument);
+    EXPECT_THROW(message.setMin(5, 0), exception::InvalidArgument);
+    EXPECT_THROW(message.setMin(0, 5), exception::InvalidArgument);
+    EXPECT_THROW(message.setMin(6, 0), exception::InvalidArgument);
+    EXPECT_THROW(message.setMin(0, 6), exception::InvalidArgument);
 }
 TEST(Spatial2DMsgTest, BadMax) {
     ModelDescription model("Spatial2DMsgTestModel");
     MsgSpatial2D::Description &message = model.newMessage<MsgSpatial2D>("location");
     message.setMin(5, 5);
-    EXPECT_THROW(message.setMax(5, 0), InvalidArgument);
-    EXPECT_THROW(message.setMax(0, 5), InvalidArgument);
-    EXPECT_THROW(message.setMax(4, 0), InvalidArgument);
-    EXPECT_THROW(message.setMax(0, 4), InvalidArgument);
+    EXPECT_THROW(message.setMax(5, 0), exception::InvalidArgument);
+    EXPECT_THROW(message.setMax(0, 5), exception::InvalidArgument);
+    EXPECT_THROW(message.setMax(4, 0), exception::InvalidArgument);
+    EXPECT_THROW(message.setMax(0, 4), exception::InvalidArgument);
 }
 TEST(Spatial2DMsgTest, UnsetMax) {
     ModelDescription model("Spatial2DMsgTestModel");
     MsgSpatial2D::Description &message = model.newMessage<MsgSpatial2D>("location");
     message.setMin(5, 5);
-    EXPECT_THROW(CUDASimulation m(model), InvalidMessage);
+    EXPECT_THROW(CUDASimulation m(model), exception::InvalidMessage);
 }
 TEST(Spatial2DMsgTest, UnsetMin) {
     ModelDescription model("Spatial2DMsgTestModel");
     MsgSpatial2D::Description &message = model.newMessage<MsgSpatial2D>("location");
     message.setMin(5, 5);
-    EXPECT_THROW(CUDASimulation m(model), InvalidMessage);
+    EXPECT_THROW(CUDASimulation m(model), exception::InvalidMessage);
 }
 TEST(Spatial2DMsgTest, reserved_name) {
     ModelDescription model("Spatial2DMsgTestModel");
     MsgSpatial2D::Description &message = model.newMessage<MsgSpatial2D>("location");
-    EXPECT_THROW(message.newVariable<int>("_"), ReservedName);
+    EXPECT_THROW(message.newVariable<int>("_"), exception::ReservedName);
 }
 
 FLAMEGPU_AGENT_FUNCTION(count2D, MsgSpatial2D, MsgNone) {

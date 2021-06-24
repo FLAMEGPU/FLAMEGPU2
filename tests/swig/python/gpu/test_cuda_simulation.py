@@ -32,7 +32,7 @@ class TestSimulation(TestCase):
         c = pyflamegpu.CUDASimulation(m)
         argv = [ "prog.exe", "--in", "test" ]
         assert c.getSimulationConfig().input_file == ""
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # UnsupportedFileType exception
+        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::UnsupportedFileType exception
             c.initialise(argv)
         assert e.value.type() == "UnsupportedFileType"
         assert c.getSimulationConfig().input_file == argv[2]
@@ -46,7 +46,7 @@ class TestSimulation(TestCase):
         c = pyflamegpu.CUDASimulation(m)
         argv = [ "prog.exe", "-i", "I_DO_NOT_EXIST.xml" ]
         assert c.getSimulationConfig().input_file == ""
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # InvalidInputFile
+        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidInputFile
             c.initialise(argv)
         assert e.value.type() == "InvalidInputFile"
         assert c.getSimulationConfig().input_file == argv[2]
@@ -110,7 +110,7 @@ class TestSimulation(TestCase):
         assert c.getCUDAConfig().device_id == 0
         # Setting an invalid device ID is the only safe way to do this without making internal methods accessible
         # As can set to a valid device, we haven't build code for
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # InvalidCUDAdevice exception
+        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidCUDAdevice exception
             c.initialise(argv)
         assert e.value.type() == "InvalidCUDAdevice"
         assert c.getCUDAConfig().device_id == 1200
@@ -126,7 +126,7 @@ class TestSimulation(TestCase):
         assert c.getCUDAConfig().device_id == 0
         # Setting an invalid device ID is the only safe way to do this without making internal methods accessible
         # As can set to a valid device, we haven't build code for
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # InvalidCUDAdevice exception 
+        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidCUDAdevice exception 
             c.initialise(argv)
         assert e.value.type() == "InvalidCUDAdevice"
         assert c.getCUDAConfig().device_id == 1200
@@ -153,7 +153,7 @@ class TestSimulation(TestCase):
         for _i in range(AGENT_COUNT):
             i = pop[_i];
             i.setVariableInt("test", _i)
-            with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # InvalidVarType exception 
+            with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidVarType exception 
                 i.setVariableFloat("test", float(_i))
             assert e.value.type() == "InvalidVarType"
         c = pyflamegpu.CUDASimulation(m)
@@ -174,7 +174,7 @@ class TestSimulation(TestCase):
         for _i in range(AGENT_COUNT):
             i = pop[_i];
             assert i.getVariableInt("test") == _i * 3 * 2
-            with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # InvalidVarType exception
+            with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidVarType exception
                 i.getVariableFloat("test")
             assert e.value.type() == "InvalidVarType"
 
@@ -188,12 +188,12 @@ class TestSimulation(TestCase):
 
         c = pyflamegpu.CUDASimulation(m)
         # Test setPopulationData
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # InvalidCudaAgent exception
+        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidCudaAgent exception
             c.setPopulationData(pop)
         assert e.value.type() == "InvalidAgent"
         
         # Test getPopulationData
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # InvalidCudaAgent exception
+        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidCudaAgent exception
             c.getPopulationData(pop)
         assert e.value.type() == "InvalidAgent"
 

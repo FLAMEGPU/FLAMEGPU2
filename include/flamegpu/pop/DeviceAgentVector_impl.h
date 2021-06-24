@@ -171,7 +171,7 @@ class DeviceAgentVector_impl : protected AgentVector {
      * Otherwise, only the iterators and references before the insertion point remain valid.
      * The past-the-end iterator is also invalidated.
      *
-     * @throw InvalidAgent If agent type of value does not match
+     * @throw exception::InvalidAgent If agent type of value does not match
      * @note Inserted agents will be assigned a new unique ID
      */
     using AgentVector::insert;
@@ -195,7 +195,7 @@ class DeviceAgentVector_impl : protected AgentVector {
      *
      * @return Iterator following the last removed element
      * @return If pos refers to the last element, then the end() iterator is returned
-     * @throw OutOfBoundsException pos >= size()
+     * @throw exception::OutOfBoundsException pos >= size()
      */
     using AgentVector::erase;
 #ifdef SWIG

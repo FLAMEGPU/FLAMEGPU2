@@ -92,7 +92,7 @@ TEST(DeviceRTCAPITest, AgentFunction_compile_error) {
         cudaSimulation.setPopulationData(init_population);
         // Run 1 step to ensure agent function compiles and runs
         cudaSimulation.step();
-    }, InvalidAgentFunc);
+    }, exception::InvalidAgentFunc);
 }
 */
 
