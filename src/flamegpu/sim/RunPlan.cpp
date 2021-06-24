@@ -50,7 +50,7 @@ std::string RunPlan::getOutputSubdirectory() const {
 RunPlanVector RunPlan::operator+(const RunPlan& rhs) const {
     // Validation
     if (*rhs.environment != *this->environment) {
-        THROW InvalidArgument("RunPlan is for a different ModelDescription, "
+        THROW exception::InvalidArgument("RunPlan is for a different ModelDescription, "
             "in ::operator+(RunPlan, RunPlan)");
     }
     // Operation
@@ -63,7 +63,7 @@ RunPlanVector RunPlan::operator+(const RunPlanVector& rhs) const {
     // This function is defined internally inside both RunPlan and RunPlanVector as it's the only way to both pass CI and have SWIG build
     // Validation
     if (*rhs.environment != *this->environment) {
-        THROW InvalidArgument("RunPlan is for a different ModelDescription, "
+        THROW exception::InvalidArgument("RunPlan is for a different ModelDescription, "
             "in ::operator+(RunPlan, RunPlanVector)");
     }
     // Operation

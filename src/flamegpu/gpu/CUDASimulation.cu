@@ -109,7 +109,7 @@ CUDASimulation::CUDASimulation(const std::shared_ptr<SubModelData> &submodel_des
     initOffsetsAndMap();
     // Ensure submodel is valid
     if (submodel_desc->submodel->exitConditions.empty() && submodel_desc->submodel->exitConditionCallbacks.empty() && submodel_desc->max_steps == 0) {
-        THROW InvalidSubModel("Model '%s' does not contain any exit conditions or exit condition callbacks and submodel '%s' max steps is set to 0, SubModels must exit of their own accord, "
+        THROW exception::InvalidSubModel("Model '%s' does not contain any exit conditions or exit condition callbacks and submodel '%s' max steps is set to 0, SubModels must exit of their own accord, "
             "in CUDASimulation::CUDASimulation().",
             submodel_desc->submodel->name.c_str(), submodel_desc->name.c_str());
     }
@@ -126,7 +126,7 @@ CUDASimulation::CUDASimulation(const std::shared_ptr<SubModelData> &submodel_des
             // Locate the master agent
             std::shared_ptr<AgentData> masterAgentDesc = mapping->masterAgent.lock();
             if (!masterAgentDesc) {
-                THROW InvalidParent("Master agent description has expired, in CUDASimulation SubModel constructor.\n");
+                THROW exception::InvalidParent("Master agent description has expired, in CUDASimulation SubModel constructor.\n");
             }
             std::unique_ptr<CUDAAgent> &masterAgent = master_model->agent_map.at(masterAgentDesc->name);
             agent_map.emplace(it->first, std::make_unique<CUDAAgent>(*it->second, *this, masterAgent, mapping));
@@ -403,7 +403,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                 auto func_agent = func_des->parent.lock();
                 NVTX_RANGE(std::string("condition " + func_agent->name + "::" + func_des->name).c_str());
                 if (!func_agent) {
-                    THROW InvalidAgentFunc("Agent function condition refers to expired agent.");
+                    THROW exception::InvalidAgentFunc("Agent function condition refers to expired agent.");
                 }
                 std::string agent_name = func_agent->name;
                 std::string func_name = func_des->name;
@@ -470,7 +470,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                     if (a != CUresult::CUDA_SUCCESS) {
                         const char* err_str = nullptr;
                         cuGetErrorString(a, &err_str);
-                        THROW InvalidAgentFunc("There was a problem launching the runtime agent function condition '%s': %s", func_des->rtc_func_condition_name.c_str(), err_str);
+                        THROW exception::InvalidAgentFunc("There was a problem launching the runtime agent function condition '%s': %s", func_des->rtc_func_condition_name.c_str(), err_str);
                     }
                     gpuErrchkLaunch();
                 }
@@ -494,7 +494,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
         if ((func_des->condition) || (!func_des->rtc_func_condition_name.empty())) {
             auto func_agent = func_des->parent.lock();
             if (!func_agent) {
-                THROW InvalidAgentFunc("Agent function condition refers to expired agent.");
+                THROW exception::InvalidAgentFunc("Agent function condition refers to expired agent.");
             }
             NVTX_RANGE(std::string("condition unmap " + func_agent->name + "::" + func_des->name).c_str());
             CUDAAgent& cuda_agent = getCUDAAgent(func_agent->name);
@@ -527,7 +527,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
     for (const auto &func_des : layer->agent_functions) {
         auto func_agent = func_des->parent.lock();
         if (!func_agent) {
-            THROW InvalidAgentFunc("Agent function refers to expired agent.");
+            THROW exception::InvalidAgentFunc("Agent function refers to expired agent.");
         }
         NVTX_RANGE(std::string("map" + func_agent->name + "::" + func_des->name).c_str());
 
@@ -617,7 +617,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
         for (const auto &func_des : layer->agent_functions) {
             auto func_agent = func_des->parent.lock();
             if (!func_agent) {
-                THROW InvalidAgentFunc("Agent function refers to expired agent.");
+                THROW exception::InvalidAgentFunc("Agent function refers to expired agent.");
             }
             NVTX_RANGE(std::string(func_agent->name + "::" + func_des->name).c_str());
             const void *d_in_messagelist_metadata = nullptr;
@@ -736,7 +736,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                 if (a != CUresult::CUDA_SUCCESS) {
                     const char* err_str = nullptr;
                     cuGetErrorString(a, &err_str);
-                    THROW InvalidAgentFunc("There was a problem launching the runtime agent function '%s': %s", func_name.c_str(), err_str);
+                    THROW exception::InvalidAgentFunc("There was a problem launching the runtime agent function '%s': %s", func_name.c_str(), err_str);
                 }
                 gpuErrchkLaunch();
             }
@@ -755,7 +755,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
     for (const auto &func_des : layer->agent_functions) {
         auto func_agent = func_des->parent.lock();
         if (!func_agent) {
-            THROW InvalidAgentFunc("Agent function refers to expired agent.");
+            THROW exception::InvalidAgentFunc("Agent function refers to expired agent.");
         }
         NVTX_RANGE(std::string("unmap" + func_agent->name + "::" + func_des->name).c_str());
         CUDAAgent& cuda_agent = getCUDAAgent(func_agent->name);
@@ -920,7 +920,7 @@ void CUDASimulation::simulate() {
 
     // Ensure there is work to do.
     if (agent_map.size() == 0) {
-        THROW InvalidCudaAgentMapSize("Simulation has no agents, in CUDASimulation::simulate().");
+        THROW exception::InvalidCudaAgentMapSize("Simulation has no agents, in CUDASimulation::simulate().");
     }
 
     // Ensure singletons have been initialised
@@ -1064,7 +1064,7 @@ void CUDASimulation::setPopulationData(AgentVector& population, const std::strin
     NVTX_RANGE("CUDASimulation::setPopulationData()");
     auto it = agent_map.find(population.getAgentName());
     if (it == agent_map.end()) {
-        THROW InvalidAgent("Agent '%s' was not found, "
+        THROW exception::InvalidAgent("Agent '%s' was not found, "
             "in CUDASimulation::setPopulationData()",
             population.getAgentName().c_str());
     }
@@ -1085,7 +1085,7 @@ void CUDASimulation::getPopulationData(AgentVector& population, const std::strin
     gpuErrchk(cudaDeviceSynchronize());
     auto it = agent_map.find(population.getAgentName());
     if (it == agent_map.end()) {
-        THROW InvalidAgent("Agent '%s' was not found, "
+        THROW exception::InvalidAgent("Agent '%s' was not found, "
             "in CUDASimulation::setPopulationData()",
             population.getAgentName().c_str());
     }
@@ -1099,7 +1099,7 @@ CUDAAgent& CUDASimulation::getCUDAAgent(const std::string& agent_name) const {
     it = agent_map.find(agent_name);
 
     if (it == agent_map.end()) {
-        THROW InvalidCudaAgent("CUDA agent ('%s') not found, in CUDASimulation::getCUDAAgent().",
+        THROW exception::InvalidCudaAgent("CUDA agent ('%s') not found, in CUDASimulation::getCUDAAgent().",
             agent_name.c_str());
     }
 
@@ -1113,7 +1113,7 @@ AgentInterface& CUDASimulation::getAgent(const std::string& agent_name) {
     auto it = agent_map.find(agent_name);
 
     if (it == agent_map.end()) {
-        THROW InvalidCudaAgent("CUDA agent ('%s') not found, in CUDASimulation::getAgent().",
+        THROW exception::InvalidCudaAgent("CUDA agent ('%s') not found, in CUDASimulation::getAgent().",
             agent_name.c_str());
     }
 
@@ -1125,7 +1125,7 @@ CUDAMessage& CUDASimulation::getCUDAMessage(const std::string& message_name) con
     it = message_map.find(message_name);
 
     if (it == message_map.end()) {
-        THROW InvalidCudaMessage("CUDA message ('%s') not found, in CUDASimulation::getCUDAMessage().",
+        THROW exception::InvalidCudaMessage("CUDA message ('%s') not found, in CUDASimulation::getCUDAMessage().",
             message_name.c_str());
     }
 
@@ -1135,7 +1135,7 @@ CUDAMessage& CUDASimulation::getCUDAMessage(const std::string& message_name) con
 void CUDASimulation::setStepLog(const StepLoggingConfig &stepConfig) {
     // Validate ModelDescription matches
     if (*stepConfig.model != *model) {
-        THROW InvalidArgument("Model descriptions attached to LoggingConfig and CUDASimulation do not match, in CUDASimulation::setStepLog()\n");
+        THROW exception::InvalidArgument("Model descriptions attached to LoggingConfig and CUDASimulation do not match, in CUDASimulation::setStepLog()\n");
     }
     // Set internal config
     step_log_config = std::make_shared<StepLoggingConfig>(stepConfig);
@@ -1143,7 +1143,7 @@ void CUDASimulation::setStepLog(const StepLoggingConfig &stepConfig) {
 void CUDASimulation::setExitLog(const LoggingConfig &exitConfig) {
     // Validate ModelDescription matches
     if (*exitConfig.model != *model) {
-        THROW InvalidArgument("Model descriptions attached to LoggingConfig and CUDASimulation do not match, in CUDASimulation::setExitLog()\n");
+        THROW exception::InvalidArgument("Model descriptions attached to LoggingConfig and CUDASimulation do not match, in CUDASimulation::setExitLog()\n");
     }
     // Set internal config
     exit_log_config = std::make_shared<LoggingConfig>(exitConfig);
@@ -1187,30 +1187,30 @@ void CUDASimulation::applyConfig_derived() {
     cudaStatus = cudaGetDeviceCount(&device_count);
 
     if (cudaStatus != cudaSuccess) {
-        THROW InvalidCUDAdevice("Error finding CUDA devices!  Do you have a CUDA-capable GPU installed?");
+        THROW exception::InvalidCUDAdevice("Error finding CUDA devices!  Do you have a CUDA-capable GPU installed?");
     }
     if (device_count == 0) {
-        THROW InvalidCUDAdevice("Error no CUDA devices found!");
+        THROW exception::InvalidCUDAdevice("Error no CUDA devices found!");
     }
 
     // Select device
     if (config.device_id >= device_count) {
-        THROW InvalidCUDAdevice("Error setting CUDA device to '%d', only %d available!", config.device_id, device_count);
+        THROW exception::InvalidCUDAdevice("Error setting CUDA device to '%d', only %d available!", config.device_id, device_count);
     }
     if (deviceInitialised !=- 1 && deviceInitialised != config.device_id) {
-        THROW InvalidCUDAdevice("Unable to set CUDA device to '%d' after the CUDASimulation has already initialised on device '%d'.", config.device_id, deviceInitialised);
+        THROW exception::InvalidCUDAdevice("Unable to set CUDA device to '%d' after the CUDASimulation has already initialised on device '%d'.", config.device_id, deviceInitialised);
     }
 
     // Check the compute capability of the device, throw an exception if not valid for the executable.
     if (!util::compute_capability::checkComputeCapability(static_cast<int>(config.device_id))) {
         int min_cc = util::compute_capability::minimumCompiledComputeCapability();
         int cc = util::compute_capability::getComputeCapability(static_cast<int>(config.device_id));
-        THROW InvalidCUDAComputeCapability("Error application compiled for CUDA Compute Capability %d and above. Device %u is compute capability %d. Rebuild for SM_%d.", min_cc, config.device_id, cc, cc);
+        THROW exception::InvalidCUDAComputeCapability("Error application compiled for CUDA Compute Capability %d and above. Device %u is compute capability %d. Rebuild for SM_%d.", min_cc, config.device_id, cc, cc);
     }
 
     cudaStatus = cudaSetDevice(static_cast<int>(config.device_id));
     if (cudaStatus != cudaSuccess) {
-        THROW InvalidCUDAdevice("Unknown error setting CUDA device to '%d'. (%d available)", config.device_id, device_count);
+        THROW exception::InvalidCUDAdevice("Unknown error setting CUDA device to '%d'. (%d available)", config.device_id, device_count);
     }
     // Call cudaFree to initialise the context early
     gpuErrchk(cudaFree(nullptr));
@@ -1259,7 +1259,7 @@ void CUDASimulation::initialiseSingletons() {
         if (!util::compute_capability::checkComputeCapability(static_cast<int>(config.device_id))) {
             int min_cc = util::compute_capability::minimumCompiledComputeCapability();
             int cc = util::compute_capability::getComputeCapability(static_cast<int>(config.device_id));
-            THROW InvalidCUDAComputeCapability("Error application compiled for CUDA Compute Capability %d and above. Device %u is compute capability %d. Rebuild for SM_%d.", min_cc, config.device_id, cc, cc);
+            THROW exception::InvalidCUDAComputeCapability("Error application compiled for CUDA Compute Capability %d and above. Device %u is compute capability %d. Rebuild for SM_%d.", min_cc, config.device_id, cc, cc);
         }
         gpuErrchk(cudaGetDevice(&deviceInitialised));
         std::unique_lock<std::shared_timed_mutex> maps_lock(active_device_maps_mutex);
@@ -1318,7 +1318,7 @@ void CUDASimulation::initialiseSingletons() {
         int t = -1;
         gpuErrchk(cudaGetDevice(&t));
         if (t != deviceInitialised) {
-            THROW CUDAError("CUDASimulation initialised on device %d, but stepped on device %d.\n", deviceInitialised, t);
+            THROW exception::CUDAError("CUDASimulation initialised on device %d, but stepped on device %d.\n", deviceInitialised, t);
         }
     }
     // Populate the environment properties
@@ -1529,21 +1529,21 @@ std::vector<float> CUDASimulation::getElapsedTimeSteps() const {
 
 float CUDASimulation::getElapsedTimeStep(unsigned int step) const {
     if (step > this->elapsedMillisecondsPerStep.size()) {
-        THROW OutOfBoundsException("getElapsedTimeStep out of bounds.\n");
+        THROW exception::OutOfBoundsException("getElapsedTimeStep out of bounds.\n");
     }
     return this->elapsedMillisecondsPerStep.at(step);
 }
 
 void CUDASimulation::initEnvironmentMgr() {
     if (!singletons) {
-        THROW UnknownInternalError("CUDASimulation::initEnvironmentMgr() called before singletons member initialised.");
+        THROW exception::UnknownInternalError("CUDASimulation::initEnvironmentMgr() called before singletons member initialised.");
     }
 
     // Set any properties loaded from file during arg parse stage
     for (const auto &prop : env_init) {
         const EnvironmentManager::NamePair np = { instance_id , prop.first.first };
         if (!singletons->environment.containsProperty(np)) {
-            THROW InvalidEnvProperty("Environment init data contains unexpected environment property '%s', "
+            THROW exception::InvalidEnvProperty("Environment init data contains unexpected environment property '%s', "
                 "in CUDASimulation::initEnvironmentMgr()\n", prop.first.first.c_str());
         }
         const std::type_index val_type = singletons->environment.type(np);
@@ -1568,7 +1568,7 @@ void CUDASimulation::initEnvironmentMgr() {
         } else if (val_type == std::type_index(typeid(uint8_t))) {
             singletons->environment.setProperty<uint8_t>(np, prop.first.second, *static_cast<uint8_t*>(prop.second.ptr));
         } else {
-            THROW InvalidEnvProperty("Environment init data contains environment property '%s' of unsupported type '%s', "
+            THROW exception::InvalidEnvProperty("Environment init data contains environment property '%s' of unsupported type '%s', "
                 "this should have been caught during file parsing, "
                 "in CUDASimulation::initEnvironmentMgr()\n", prop.first.first.c_str(), val_type.name());
         }

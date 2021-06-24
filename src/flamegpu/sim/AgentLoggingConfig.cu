@@ -23,21 +23,21 @@ void AgentLoggingConfig::log(const LoggingConfig::NameReductionFn &nrf, const st
     // Validate variable name and type
     const auto var = agent->variables.find(nrf.name);
     if (var == agent->variables.end()) {
-        THROW InvalidAgentVar("Agent ('%s') variable '%s' was not found in the model description, "
+        THROW exception::InvalidAgentVar("Agent ('%s') variable '%s' was not found in the model description, "
             "in AgentLoggingConfig::log%s()\n",
             agent->name.c_str(), nrf.name.c_str(), method_name.c_str());
     } else if (var->second.type != variable_type) {
-        THROW InvalidVarType("Agent ('%s') variable '%s' has type '%s', incorrect type '%s' was provided to template, "
+        THROW exception::InvalidVarType("Agent ('%s') variable '%s' has type '%s', incorrect type '%s' was provided to template, "
             "in AgentLoggingConfig::log%s()\n",
             agent->name.c_str(), nrf.name.c_str(), var->second.type.name(), variable_type.name(), method_name.c_str());
     } else if (var->second.elements != 1) {
-        THROW InvalidVarType("Agent ('%s') variable '%s' is an array variable, this function does not support array variables, "
+        THROW exception::InvalidVarType("Agent ('%s') variable '%s' is an array variable, this function does not support array variables, "
             "in AgentLoggingConfig::log%s()\n",
             agent->name.c_str(), nrf.name.c_str(), method_name.c_str());
     }
     // Store it in the map
     if (!agent_set->emplace(nrf).second) {
-        THROW InvalidArgument("Agent ('%s') variable '%s' %s has already been marked for logging, "
+        THROW exception::InvalidArgument("Agent ('%s') variable '%s' %s has already been marked for logging, "
             "in AgentLoggingConfig::log%s()\n",
              agent->name.c_str(), nrf.name.c_str(), method_name.c_str(), method_name.c_str());
     }

@@ -13,7 +13,7 @@ namespace flamegpu {
 // ! FLAMEGPU function return type
 typedef void(AgentFunctionConditionWrapper)(
 #if !defined(SEATBELTS) || SEATBELTS
-    DeviceExceptionBuffer *error_buffer,
+    exception::DeviceExceptionBuffer *error_buffer,
 #endif
     Curve::NamespaceHash instance_id_hash,
     Curve::NamespaceHash agent_func_name_hash,
@@ -24,7 +24,7 @@ typedef void(AgentFunctionConditionWrapper)(
 /**
  * Wrapper function for launching agent functions
  * Initialises FLAMEGPU_API instance
- * @param error_buffer Buffer used for detecting and reporting DeviceErrors (flamegpu must be built with SEATBELTS enabled for this to be used)
+ * @param error_buffer Buffer used for detecting and reporting exception::DeviceErrors (flamegpu must be built with SEATBELTS enabled for this to be used)
  * @param instance_id_hash CURVE hash of the CUDASimulation's instance id
  * @param agent_func_name_hash CURVE hash of the agent + function's names
  * @param popNo Total number of agents exeucting the function (number of threads launched)
@@ -36,7 +36,7 @@ typedef void(AgentFunctionConditionWrapper)(
 template<typename AgentFunctionCondition>
 __global__ void agent_function_condition_wrapper(
 #if !defined(SEATBELTS) || SEATBELTS
-    DeviceExceptionBuffer *error_buffer,
+    exception::DeviceExceptionBuffer *error_buffer,
 #endif
     Curve::NamespaceHash instance_id_hash,
     Curve::NamespaceHash agent_func_name_hash,
@@ -45,7 +45,7 @@ __global__ void agent_function_condition_wrapper(
     unsigned int *scanFlag_conditionResult) {
 #if !defined(SEATBELTS) || SEATBELTS
     // We place this at the start of shared memory, so we can locate it anywhere in device code without a reference
-    extern __shared__ DeviceExceptionBuffer *shared_mem[];
+    extern __shared__ exception::DeviceExceptionBuffer *shared_mem[];
     if (threadIdx.x == 0) {
         shared_mem[0] = error_buffer;
     }

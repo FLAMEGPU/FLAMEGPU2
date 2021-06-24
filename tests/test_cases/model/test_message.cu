@@ -23,7 +23,7 @@ TEST(MessageDescriptionTest, variables) {
     m.newVariable<int16_t>(VARIABLE_NAME2);
     EXPECT_EQ(m.getVariablesCount(), 2u);
     // Cannot create variable with same name
-    EXPECT_THROW(m.newVariable<int64_t>(VARIABLE_NAME1), InvalidMessageVar);
+    EXPECT_THROW(m.newVariable<int64_t>(VARIABLE_NAME1), exception::InvalidMessageVar);
     // Variable have the right name
     EXPECT_TRUE(m.hasVariable(VARIABLE_NAME1));
     EXPECT_TRUE(m.hasVariable(VARIABLE_NAME2));
@@ -46,10 +46,10 @@ TEST(MessageDescriptionTest, variables_array) {
     m.newVariable<int16_t>(VARIABLE_NAME2);
     EXPECT_EQ(m.getVariablesCount(), 3u);
     // Cannot create variable with same name
-    EXPECT_THROW(m.newVariable<int64_t>(VARIABLE_NAME1), InvalidMessageVar);
+    EXPECT_THROW(m.newVariable<int64_t>(VARIABLE_NAME1), exception::InvalidMessageVar);
     // Cannot create array of length 0 (disabled, blocked at compilation with static_assert)
     // auto newVarArray0 = &MessageDescription::newVariable<int64_t, 0>;  // Use function ptr, can't do more than 1 template arg inside macro
-    // EXPECT_THROW((m.*newVarArray0)(VARIABLE_NAME4), InvalidMessageVar);
+    // EXPECT_THROW((m.*newVarArray0)(VARIABLE_NAME4), exception::InvalidMessageVar);
     // Variable have the right name
     EXPECT_TRUE(m.hasVariable(VARIABLE_NAME1));
     EXPECT_TRUE(m.hasVariable(VARIABLE_NAME2));
@@ -73,7 +73,7 @@ TEST(MessageDescriptionTest, CorrectMessageTypeBound1) {
     AgentFunctionDescription &fo = a.newFunction("bar", NoInput);
     LayerDescription &lo = m.newLayer("foo2");
     lo.addAgentFunction(fo);
-    EXPECT_THROW(CUDASimulation c(m), InvalidMessageType);
+    EXPECT_THROW(CUDASimulation c(m), exception::InvalidMessageType);
 }
 TEST(MessageDescriptionTest, CorrectMessageTypeBound2) {
     ModelDescription m(MODEL_NAME);
@@ -81,23 +81,23 @@ TEST(MessageDescriptionTest, CorrectMessageTypeBound2) {
     AgentFunctionDescription &fo = a.newFunction("bar", NoOutput);
     LayerDescription &lo = m.newLayer("foo2");
     lo.addAgentFunction(fo);
-    EXPECT_THROW(CUDASimulation c(m), InvalidMessageType);
+    EXPECT_THROW(CUDASimulation c(m), exception::InvalidMessageType);
 }
 TEST(MessageDescriptionTest, CorrectMessageTypeBound3) {
     ModelDescription m(MODEL_NAME);
     AgentDescription &a = m.newAgent("foo");
     AgentFunctionDescription &fo = a.newFunction("bar", NoInput);
     MsgBruteForce::Description &md = m.newMessage<MsgBruteForce>("foo2");
-    EXPECT_THROW(fo.setMessageOutput(md), InvalidMessageType);
-    EXPECT_THROW(fo.setMessageInput(md), InvalidMessageType);
+    EXPECT_THROW(fo.setMessageOutput(md), exception::InvalidMessageType);
+    EXPECT_THROW(fo.setMessageInput(md), exception::InvalidMessageType);
 }
 TEST(MessageDescriptionTest, CorrectMessageTypeBound4) {
     ModelDescription m(MODEL_NAME);
     AgentDescription &a = m.newAgent("foo");
     AgentFunctionDescription &fo = a.newFunction("bar", NoOutput);
     MsgBruteForce::Description &md = m.newMessage<MsgBruteForce>("foo2");
-    EXPECT_THROW(fo.setMessageOutput(md), InvalidMessageType);
-    EXPECT_THROW(fo.setMessageInput(md), InvalidMessageType);
+    EXPECT_THROW(fo.setMessageOutput(md), exception::InvalidMessageType);
+    EXPECT_THROW(fo.setMessageInput(md), exception::InvalidMessageType);
 }
 
 }  // namespace test_message

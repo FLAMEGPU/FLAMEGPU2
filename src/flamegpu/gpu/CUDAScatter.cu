@@ -541,7 +541,7 @@ void CUDAScatter::arrayMessageReorder(
     }
 
     if (itemCount > array_length) {
-        THROW ArrayMessageWriteConflict("Too many messages output for array message structure (%u > %u).\n", itemCount, array_length);
+        THROW exception::ArrayMessageWriteConflict("Too many messages output for array message structure (%u > %u).\n", itemCount, array_length);
     }
     int blockSize = 0;  // The launch configurator returned block size
     int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
@@ -603,7 +603,7 @@ void CUDAScatter::arrayMessageReorder(
             if (hd_write_flag[i] > 1)
                 fprintf(stderr, "Array messagelist contains %u messages at index %u!\n", hd_write_flag[i], i);
         }
-        THROW ArrayMessageWriteConflict("Multiple threads output array messages to the same index, see stderr.\n");
+        THROW exception::ArrayMessageWriteConflict("Multiple threads output array messages to the same index, see stderr.\n");
     }
 #endif
 }

@@ -26,7 +26,7 @@ AgentInstance::AgentInstance(const AgentVector::CAgent& other)
     : _agent(other._agent->clone()) {
     const auto other_data = other._data.lock();
     if (!other_data) {
-        THROW ExpiredWeakPtr("The AgentVector which owns this AgentVector::Agent has been deallocated, "
+        THROW exception::ExpiredWeakPtr("The AgentVector which owns this AgentVector::Agent has been deallocated, "
             "in AgentInstance::AgentInstance().\n");
     }
     // Copy data items manually because format change
@@ -60,7 +60,7 @@ AgentInstance& AgentInstance::operator=(const AgentVector::CAgent& other) {
     _data.clear();
     const auto other_data = other._data.lock();
     if (!other_data) {
-        THROW ExpiredWeakPtr("The AgentVector which owns this AgentVector::Agent has been deallocated, "
+        THROW exception::ExpiredWeakPtr("The AgentVector which owns this AgentVector::Agent has been deallocated, "
         "in AgentInstance::operator=().\n");
     }
     // Copy data items manually because format change

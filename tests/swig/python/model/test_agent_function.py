@@ -71,13 +71,13 @@ class AgentFunctionDescriptionTest(TestCase):
         a.newState(NEW_STATE_NAME)
         assert f.getInitialState() == NEW_STATE_NAME
         # Can't set state to one not held by parent agent
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # InvalidStateName exception
+        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidStateName exception
             f.setInitialState(WRONG_STATE_NAME)
         assert e.value.type() == "InvalidStateName"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # InvalidStateName exception
+        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidStateName exception
             f2.setInitialState(WRONG_STATE_NAME)
         assert e.value.type() == "InvalidStateName"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # InvalidStateName exception
+        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidStateName exception
             f3.setInitialState(WRONG_STATE_NAME)
         assert e.value.type() == "InvalidStateName"
     
@@ -107,13 +107,13 @@ class AgentFunctionDescriptionTest(TestCase):
         a.newState(NEW_STATE_NAME)
         assert f.getEndState() == NEW_STATE_NAME
         # Can't set state to one not held by parent agent
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # InvalidStateName exception
+        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidStateName exception
             f.setEndState(WRONG_STATE_NAME)
         assert e.value.type() == "InvalidStateName"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # InvalidStateName exception
+        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidStateName exception
             f2.setEndState(WRONG_STATE_NAME)
         assert e.value.type() == "InvalidStateName"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # InvalidStateName exception
+        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidStateName exception
             f3.setEndState(WRONG_STATE_NAME)
         assert e.value.type() == "InvalidStateName"
 

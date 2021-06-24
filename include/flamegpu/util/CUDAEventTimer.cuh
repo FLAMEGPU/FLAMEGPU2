@@ -67,7 +67,7 @@ class CUDAEventTimer {
      */
     float getElapsedMilliseconds() {
         if (!synced) {
-            THROW UnsycnedCUDAEventTimer();
+            THROW exception::UnsycnedCUDAEventTimer();
         }
         return ms;
     }

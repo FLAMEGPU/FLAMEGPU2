@@ -60,17 +60,17 @@ class SubModelDescription : public DependencyNode {
      * @param master_agent_name Name of the agent in the parent/host/master model
      * @param auto_map_vars Whether to automatically map matching variables of the two agents
      * @param auto_map_states Whether to automatically map matching states of the two agents
-     * @throws InvalidSubAgentName If the sub agent name does not map to a valid agent
-     * @throws InvalidAgentName If the  master agent has already been bound
-     * @throws InvalidSubAgentName If the sub agent name does not map to a valid agent
-     * @throws InvalidAgentName If the master agent has already been bound
+     * @throws exception::InvalidSubAgentName If the sub agent name does not map to a valid agent
+     * @throws exception::InvalidAgentName If the  master agent has already been bound
+     * @throws exception::InvalidSubAgentName If the sub agent name does not map to a valid agent
+     * @throws exception::InvalidAgentName If the master agent has already been bound
      */
     SubAgentDescription &bindAgent(const std::string &sub_agent_name, const std::string &master_agent_name, bool auto_map_vars = false, bool auto_map_states = true);
     /**
      * Returns a mutable reference to the named SubAgent description if it has already been bound to a master agent
      * @param sub_agent_name Name of the sub agent, who's description to return
      * @return A mutable reference to the named SubAgent description
-     * @throws InvalidSubAgentName If the sub_agent_name does not exist within the sub_model and/or has not been bound yet
+     * @throws exception::InvalidSubAgentName If the sub_agent_name does not exist within the sub_model and/or has not been bound yet
      * @see SubModelDescription::getSubAgent(const std::string &) for the immutable version
      */
     SubAgentDescription &SubAgent(const std::string &sub_agent_name);
@@ -78,7 +78,7 @@ class SubModelDescription : public DependencyNode {
      * Returns an immutable reference to the named SubAgent description if it has already been bound to a master agent
      * @param sub_agent_name Name of the sub agent, who's description to return
      * @return An immutable reference to the named SubAgent description
-     * @throws InvalidSubAgentName If the sub_agent_name does not exist within the sub_model and/or has not been bound yet
+     * @throws exception::InvalidSubAgentName If the sub_agent_name does not exist within the sub_model and/or has not been bound yet
      * @see SubModelDescription::SubAgent(const std::string &) for the mutable version
      */
     const SubAgentDescription &getSubAgent(const std::string &sub_agent_name) const;

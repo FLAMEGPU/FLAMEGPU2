@@ -109,7 +109,7 @@ std::string DiscreteColor<T>::getSrc() const {
     static_assert(std::is_same<T, int32_t>::value || std::is_same<T, uint32_t>::value, "T must be of type int32_t or uint32_t");
     // Validate colors
     if (!validate()) {
-        THROW InvalidOperation("DiscreteColor contains invalid color!");
+        THROW exception::InvalidOperation("DiscreteColor contains invalid color!");
     }
     std::stringstream ss;
     ss << "uniform samplerBuffer color_arg;" << "\n";

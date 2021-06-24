@@ -39,8 +39,8 @@ class AgentLoggingConfig {
      * Mark the mean of the named agent variable to be logged
      * @param variable_name Name of the agent variable to have it's mean logged
      * @tparam T The type of the named variable
-     * @throws InvalidAgentVar If the agent var was not found inside the specified agent
-     * @throws InvalidArgument If the agent var's mean has already been marked for logging
+     * @throws exception::InvalidAgentVar If the agent var was not found inside the specified agent
+     * @throws exception::InvalidArgument If the agent var's mean has already been marked for logging
      */
     template<typename T>
     void logMean(const std::string &variable_name);
@@ -48,8 +48,8 @@ class AgentLoggingConfig {
      * Mark the standard deviation of the named agent variable to be logged
      * @param variable_name Name of the agent variable to have it's standard deviation logged
      * @tparam T The type of the named variable
-     * @throws InvalidAgentVar If the agent var was not found inside the specified agent
-     * @throws InvalidArgument If the agent var's standard deviation has already been marked for logging
+     * @throws exception::InvalidAgentVar If the agent var was not found inside the specified agent
+     * @throws exception::InvalidArgument If the agent var's standard deviation has already been marked for logging
      */
     template<typename T>
     void logStandardDev(const std::string &variable_name);
@@ -57,8 +57,8 @@ class AgentLoggingConfig {
      * Mark the min of the named agent variable to be logged
      * @param variable_name Name of the agent variable to have it's min logged
      * @tparam T The type of the named variable
-     * @throws InvalidAgentVar If the agent var was not found inside the specified agent
-     * @throws InvalidArgument If the agent var's min has already been marked for logging
+     * @throws exception::InvalidAgentVar If the agent var was not found inside the specified agent
+     * @throws exception::InvalidArgument If the agent var's min has already been marked for logging
      */
     template<typename T>
     void logMin(const std::string &variable_name);
@@ -66,8 +66,8 @@ class AgentLoggingConfig {
      * Mark the max of the named agent variable to be logged
      * @param variable_name Name of the agent variable to have it's max logged
      * @tparam T The type of the named variable
-     * @throws InvalidAgentVar If the agent var was not found inside the specified agent
-     * @throws InvalidArgument If the agent var's max has already been marked for logging
+     * @throws exception::InvalidAgentVar If the agent var was not found inside the specified agent
+     * @throws exception::InvalidArgument If the agent var's max has already been marked for logging
      */
     template<typename T>
     void logMax(const std::string &variable_name);
@@ -75,8 +75,8 @@ class AgentLoggingConfig {
      * Mark the sum of the named agent variable to be logged
      * @param variable_name Name of the agent variable to have it's sum logged
      * @tparam T The type of the named variable
-     * @throws InvalidAgentVar If the agent var was not found inside the specified agent
-     * @throws InvalidArgument If the agent var's sum has already been marked for logging
+     * @throws exception::InvalidAgentVar If the agent var was not found inside the specified agent
+     * @throws exception::InvalidArgument If the agent var's sum has already been marked for logging
      */
     template<typename T>
     void logSum(const std::string &variable_name);
@@ -85,7 +85,7 @@ class AgentLoggingConfig {
     /**
      * Generic logging method
      * Returns false if that property combo already exists
-     * @throws InvalidAgentVar If the agent var was not found inside the specified agent
+     * @throws exception::InvalidAgentVar If the agent var was not found inside the specified agent
      */
     void log(const LoggingConfig::NameReductionFn &name, const std::type_index &variable_type, const std::string &method_name);
     /**

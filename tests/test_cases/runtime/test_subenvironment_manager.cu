@@ -30,8 +30,8 @@ FLAMEGPU_HOST_FUNCTION(HostAPISetFn) {
 }
 FLAMEGPU_HOST_FUNCTION(HostAPISetIsConstFn) {
     auto array_set_fn = &HostEnvironment::setProperty<int, 2>;
-    EXPECT_THROW(FLAMEGPU->environment.setProperty<int>("property_read", 0), ReadOnlyEnvProperty);
-    EXPECT_THROW((FLAMEGPU->environment.*array_set_fn)("property_read2", {0, 0}), ReadOnlyEnvProperty);
+    EXPECT_THROW(FLAMEGPU->environment.setProperty<int>("property_read", 0), exception::ReadOnlyEnvProperty);
+    EXPECT_THROW((FLAMEGPU->environment.*array_set_fn)("property_read2", {0, 0}), exception::ReadOnlyEnvProperty);
 }
 TEST(SubEnvironmentManagerTest, SubDeviceAPIGetDefault) {
     ModelDescription m2("sub");

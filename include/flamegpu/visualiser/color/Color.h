@@ -69,7 +69,7 @@ struct Color {
      *     #%abc
      *     abcdef
      *     abc
-     * @throws InvalidArgument If parsing fails
+     * @throws exception::InvalidArgument If parsing fails
      */
     explicit Color(const char* hex) { *this = hex; }
     /**
@@ -79,7 +79,7 @@ struct Color {
      *     #%abc
      *     abcdef
      *     abc
-     * @throws InvalidArgument If parsing fails
+     * @throws exception::InvalidArgument If parsing fails
      */
     Color& operator=(const char *hex) {
         a = 1.0f;
@@ -115,7 +115,7 @@ struct Color {
                 return *this;
             }
         }
-        THROW InvalidArgument("Unable to parse hex string '%s', must be a string of either 3, 4, 6 or 8 hexidecimal characters, "
+        THROW exception::InvalidArgument("Unable to parse hex string '%s', must be a string of either 3, 4, 6 or 8 hexidecimal characters, "
             "in Color::Color().\n",
             hex);
     }
@@ -124,7 +124,7 @@ struct Color {
      */
     float& operator[](unsigned int index) {
         if (index >= 4) {
-            THROW InvalidArgument("index '%u' is not in the inclusive range [0, 3], "
+            THROW exception::InvalidArgument("index '%u' is not in the inclusive range [0, 3], "
                 "in Color::operator[]().\n",
                 index);
         }
@@ -135,7 +135,7 @@ struct Color {
      */
     float operator[](unsigned int index) const {
         if (index >= 4) {
-            THROW InvalidArgument("index '%u' is not in the inclusive range [0, 3], "
+            THROW exception::InvalidArgument("index '%u' is not in the inclusive range [0, 3], "
                 "in Color::operator[]().\n",
                 index);
         }

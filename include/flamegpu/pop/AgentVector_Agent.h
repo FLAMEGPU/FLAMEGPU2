@@ -92,12 +92,12 @@ class AgentVector_Agent : public AgentVector_CAgent {
     void setData(const AgentVector_Agent & other) {
         const auto data = _data.lock();
         if (!data) {
-            THROW ExpiredWeakPtr("The AgentVector which owns this AgentVector::Agent has been deallocated, "
+            THROW exception::ExpiredWeakPtr("The AgentVector which owns this AgentVector::Agent has been deallocated, "
                 "in AgentVector_Agent::setVariable().\n");
         }
         const auto other_data = other._data.lock();
         if (!other_data) {
-            THROW ExpiredWeakPtr("The AgentVector which owns the passed AgentVector::Agent has been deallocated, "
+            THROW exception::ExpiredWeakPtr("The AgentVector which owns the passed AgentVector::Agent has been deallocated, "
                 "in AgentVector_Agent::setVariable().\n");
         }
         if (_agent == other._agent || *_agent == *other._agent) {
@@ -112,7 +112,7 @@ class AgentVector_Agent : public AgentVector_CAgent {
                 }
             }
         } else {
-            THROW InvalidAgent("Agent description mismatch, '%' provided, '%' required, "
+            THROW exception::InvalidAgent("Agent description mismatch, '%' provided, '%' required, "
                 "in AgentVector_Agent::setData().\n",
                 other._agent->name.c_str(), _agent->name.c_str());
         }
@@ -134,28 +134,28 @@ class AgentVector_Agent : public AgentVector_CAgent {
 template <typename T>
 void AgentVector_Agent::setVariable(const std::string &variable_name, const T &value) {
     if (!variable_name.empty() && variable_name[0] == '_') {
-        THROW ReservedName("Agent variable names that begin with '_' are reserved for internal usage and cannot be changed directly, "
+        THROW exception::ReservedName("Agent variable names that begin with '_' are reserved for internal usage and cannot be changed directly, "
             "in AgentVector::Agent::setVariable().");
     }
     const auto data = _data.lock();
     if (!data) {
-        THROW ExpiredWeakPtr("The AgentVector which owns this AgentVector::Agent has been deallocated, "
+        THROW exception::ExpiredWeakPtr("The AgentVector which owns this AgentVector::Agent has been deallocated, "
             "in AgentVector_Agent::setVariable().\n");
     }
     const auto v_it = data->find(variable_name);
     if (v_it == data->end()) {
-        THROW InvalidAgentVar("Variable with name '%s' was not found in agent, "
+        THROW exception::InvalidAgentVar("Variable with name '%s' was not found in agent, "
             "in AgentVector_Agent::setVariable().",
             variable_name.c_str());
     }
     auto& v_buff = v_it->second;
     if (v_buff->getElements() != 1) {
-        THROW InvalidVarType("Variable '%s' is an array variable, use the array method instead, "
+        THROW exception::InvalidVarType("Variable '%s' is an array variable, use the array method instead, "
             "in AgentVector_Agent::setVariable().",
             variable_name.c_str());
     }
     if (v_buff->getType() != std::type_index(typeid(T))) {
-        THROW InvalidVarType("Variable '%s' is of a different type. "
+        THROW exception::InvalidVarType("Variable '%s' is of a different type. "
             "'%s' was expected, but '%s' was requested,"
             "in AgentVector_Agent::setVariable().",
             variable_name.c_str(), v_buff->getType().name(), typeid(T).name());
@@ -169,28 +169,28 @@ void AgentVector_Agent::setVariable(const std::string &variable_name, const T &v
 template <typename T, unsigned int N>
 void AgentVector_Agent::setVariable(const std::string &variable_name, const std::array<T, N> &value) {
     if (!variable_name.empty() && variable_name[0] == '_') {
-        THROW ReservedName("Agent variable names that begin with '_' are reserved for internal usage and cannot be changed directly, "
+        THROW exception::ReservedName("Agent variable names that begin with '_' are reserved for internal usage and cannot be changed directly, "
             "in AgentVector::Agent::setVariable().");
     }
     const auto data = _data.lock();
     if (!data) {
-        THROW ExpiredWeakPtr("The AgentVector which owns this AgentVector::Agent has been deallocated, "
+        THROW exception::ExpiredWeakPtr("The AgentVector which owns this AgentVector::Agent has been deallocated, "
             "in AgentVector_Agent::setVariable().\n");
     }
     const auto v_it = data->find(variable_name);
     if (v_it == data->end()) {
-        THROW InvalidAgentVar("Variable with name '%s' was not found in agent, "
+        THROW exception::InvalidAgentVar("Variable with name '%s' was not found in agent, "
             "in AgentVector_Agent::setVariable().",
             variable_name.c_str());
     }
     auto& v_buff = v_it->second;
     if (v_buff->getElements() != N) {
-        THROW InvalidVarType("Variable '%s' has '%u' elements, but an array of length %u was passed, "
+        THROW exception::InvalidVarType("Variable '%s' has '%u' elements, but an array of length %u was passed, "
             "in AgentVector_Agent::setVariable().",
             variable_name.c_str(), v_buff->getElements(), N);
     }
     if (v_buff->getType() != std::type_index(typeid(T))) {
-        THROW InvalidVarType("Variable '%s' is of a different type. "
+        THROW exception::InvalidVarType("Variable '%s' is of a different type. "
             "'%s' was expected, but '%s' was requested,"
             "in AgentVector_Agent::setVariable().",
             variable_name.c_str(), v_buff->getType().name(), typeid(T).name());
@@ -203,29 +203,29 @@ void AgentVector_Agent::setVariable(const std::string &variable_name, const std:
 template <typename T>
 void AgentVector_Agent::setVariable(const std::string &variable_name, const unsigned int &array_index, const T &value) {
     if (!variable_name.empty() && variable_name[0] == '_') {
-        THROW ReservedName("Agent variable names that begin with '_' are reserved for internal usage and cannot be changed directly, "
+        THROW exception::ReservedName("Agent variable names that begin with '_' are reserved for internal usage and cannot be changed directly, "
             "in AgentVector::Agent::setVariable().");
     }
     const auto data = _data.lock();
     if (!data) {
-        THROW ExpiredWeakPtr("The AgentVector which owns this AgentVector::Agent has been deallocated, "
+        THROW exception::ExpiredWeakPtr("The AgentVector which owns this AgentVector::Agent has been deallocated, "
           "in AgentVector_Agent::setVariable().\n");
     }
     const auto v_it = data->find(variable_name);
     if (v_it == data->end()) {
-        THROW InvalidAgentVar("Variable with name '%s' was not found in agent, "
+        THROW exception::InvalidAgentVar("Variable with name '%s' was not found in agent, "
             "in AgentVector_Agent::setVariable().",
             variable_name.c_str());
     }
     auto& v_buff = v_it->second;
     if (v_buff->getType() != std::type_index(typeid(T))) {
-        THROW InvalidVarType("Variable '%s' is of a different type. "
+        THROW exception::InvalidVarType("Variable '%s' is of a different type. "
             "'%s' was expected, but '%s' was requested,"
             "in AgentVector_Agent::setVariable().",
             variable_name.c_str(), v_buff->getType().name(), typeid(T).name());
     }
     if (array_index >= v_buff->getElements()) {
-        THROW OutOfBoundsException("Index '%u' exceeds array bounds [0-%u) of variable '%s',  "
+        THROW exception::OutOfBoundsException("Index '%u' exceeds array bounds [0-%u) of variable '%s',  "
             "in AgentVector_Agent::setVariable().",
             array_index, v_buff->getElements(), variable_name.c_str());
     }
@@ -236,28 +236,28 @@ void AgentVector_Agent::setVariable(const std::string &variable_name, const unsi
 template <typename T>
 void AgentVector_Agent::setVariableArray(const std::string &variable_name, const std::vector<T> &value) {
     if (!variable_name.empty() && variable_name[0] == '_') {
-        THROW ReservedName("Agent variable names that begin with '_' are reserved for internal usage and cannot be changed directly, "
+        THROW exception::ReservedName("Agent variable names that begin with '_' are reserved for internal usage and cannot be changed directly, "
             "in AgentVector::Agent::setVariableArray().");
     }
     const auto data = _data.lock();
     if (!data) {
-        THROW ExpiredWeakPtr("The AgentVector which owns this AgentVector::Agent has been deallocated, "
+        THROW exception::ExpiredWeakPtr("The AgentVector which owns this AgentVector::Agent has been deallocated, "
             "in AgentVector_Agent::setVariableArray().\n");
     }
     const auto v_it = data->find(variable_name);
     if (v_it == data->end()) {
-        THROW InvalidAgentVar("Variable with name '%s' was not found in agent, "
+        THROW exception::InvalidAgentVar("Variable with name '%s' was not found in agent, "
             "in AgentVector_Agent::setVariableArray().",
             variable_name.c_str());
     }
     auto& v_buff = v_it->second;
     if (v_buff->getElements() != value.size()) {
-        THROW InvalidVarType("Variable '%s' has '%u' elements, but an array of length %u was passed, "
+        THROW exception::InvalidVarType("Variable '%s' has '%u' elements, but an array of length %u was passed, "
             "in AgentVector_Agent::setVariableArray().",
             variable_name.c_str(), v_buff->getElements(), value.size());
     }
     if (v_buff->getType() != std::type_index(typeid(T))) {
-        THROW InvalidVarType("Variable '%s' is of a different type. "
+        THROW exception::InvalidVarType("Variable '%s' is of a different type. "
             "'%s' was expected, but '%s' was requested,"
             "in AgentVector_Agent::setVariableArray().",
             variable_name.c_str(), v_buff->getType().name(), typeid(T).name());
@@ -273,23 +273,23 @@ template <typename T>
 T AgentVector_CAgent::getVariable(const std::string &variable_name) const {
     const auto data = _data.lock();
     if (!data) {
-        THROW ExpiredWeakPtr("The AgentVector which owns this AgentVector::Agent has been deallocated, "
+        THROW exception::ExpiredWeakPtr("The AgentVector which owns this AgentVector::Agent has been deallocated, "
             "in AgentVector_Agent::getVariable().\n");
     }
     const auto v_it = data->find(variable_name);
     if (v_it == data->end()) {
-        THROW InvalidAgentVar("Variable with name '%s' was not found in agent, "
+        THROW exception::InvalidAgentVar("Variable with name '%s' was not found in agent, "
             "in AgentVector_Agent::getVariable().",
             variable_name.c_str());
     }
     const auto &v_buff = v_it->second;
     if (v_buff->getElements() != 1) {
-        THROW InvalidVarType("Variable '%s' is an array variable, use the array method instead, "
+        THROW exception::InvalidVarType("Variable '%s' is an array variable, use the array method instead, "
             "in AgentVector_Agent::getVariable().",
             variable_name.c_str());
     }
     if (v_buff->getType() != std::type_index(typeid(T))) {
-        THROW InvalidVarType("Variable '%s' is of a different type. "
+        THROW exception::InvalidVarType("Variable '%s' is of a different type. "
             "'%s' was expected, but '%s' was requested,"
             "in AgentVector_Agent::getVariable().",
             variable_name.c_str(), v_buff->getType().name(), typeid(T).name());
@@ -301,23 +301,23 @@ template <typename T, unsigned int N>
 std::array<T, N> AgentVector_CAgent::getVariable(const std::string &variable_name) const {
     const auto data = _data.lock();
     if (!data) {
-        THROW ExpiredWeakPtr("The AgentVector which owns this AgentVector::Agent has been deallocated, "
+        THROW exception::ExpiredWeakPtr("The AgentVector which owns this AgentVector::Agent has been deallocated, "
             "in AgentVector_Agent::getVariable().\n");
     }
     const auto v_it = data->find(variable_name);
     if (v_it == data->end()) {
-        THROW InvalidAgentVar("Variable with name '%s' was not found in agent, "
+        THROW exception::InvalidAgentVar("Variable with name '%s' was not found in agent, "
             "in AgentVector_Agent::getVariable().",
             variable_name.c_str());
     }
     const auto& v_buff = v_it->second;
     if (v_buff->getElements() != N) {
-        THROW InvalidVarType("Variable '%s' has '%u' elements, but an array of length %u was passed, "
+        THROW exception::InvalidVarType("Variable '%s' has '%u' elements, but an array of length %u was passed, "
             "in AgentVector_Agent::getVariable().",
             variable_name.c_str(), v_buff->getElements(), N);
     }
     if (v_buff->getType() != std::type_index(typeid(T))) {
-        THROW InvalidVarType("Variable '%s' is of a different type. "
+        THROW exception::InvalidVarType("Variable '%s' is of a different type. "
             "'%s' was expected, but '%s' was requested,"
             "in AgentVector_Agent::getVariable().",
             variable_name.c_str(), v_buff->getType().name(), typeid(T).name());
@@ -331,23 +331,23 @@ template <typename T>
 T AgentVector_CAgent::getVariable(const std::string &variable_name, const unsigned int &array_index) const {
     const auto data = _data.lock();
     if (!data) {
-        THROW ExpiredWeakPtr("The AgentVector which owns this AgentVector::Agent has been deallocated, "
+        THROW exception::ExpiredWeakPtr("The AgentVector which owns this AgentVector::Agent has been deallocated, "
             "in AgentVector_Agent::getVariable().\n");
     }
     const auto v_it = data->find(variable_name);
     if (v_it == data->end()) {
-        THROW InvalidAgentVar("Variable with name '%s' was not found in agent, "
+        THROW exception::InvalidAgentVar("Variable with name '%s' was not found in agent, "
             "in AgentVector_Agent::getVariable().",
             variable_name.c_str());
     }
     const auto& v_buff = v_it->second;
     if (array_index >= v_buff->getElements()) {
-        THROW OutOfBoundsException("Index '%u' exceeds array bounds [0-%u) of variable '%s',  "
+        THROW exception::OutOfBoundsException("Index '%u' exceeds array bounds [0-%u) of variable '%s',  "
             "in AgentVector_Agent::getVariable().",
             array_index, v_buff->getElements(), variable_name.c_str());
     }
     if (v_buff->getType() != std::type_index(typeid(T))) {
-        THROW InvalidVarType("Variable '%s' is of a different type. "
+        THROW exception::InvalidVarType("Variable '%s' is of a different type. "
             "'%s' was expected, but '%s' was requested,"
             "in AgentVector_Agent::getVariable().",
             variable_name.c_str(), v_buff->getType().name(), typeid(T).name());
@@ -360,18 +360,18 @@ template <typename T>
 std::vector<T> AgentVector_CAgent::getVariableArray(const std::string& variable_name) const {
     const auto data = _data.lock();
     if (!data) {
-        THROW ExpiredWeakPtr("The AgentVector which owns this AgentVector::Agent has been deallocated, "
+        THROW exception::ExpiredWeakPtr("The AgentVector which owns this AgentVector::Agent has been deallocated, "
             "in AgentVector_Agent::getVariableArray().\n");
     }
     const auto v_it = data->find(variable_name);
     if (v_it == data->end()) {
-        THROW InvalidAgentVar("Variable with name '%s' was not found in agent, "
+        THROW exception::InvalidAgentVar("Variable with name '%s' was not found in agent, "
             "in AgentVector_Agent::getVariableArray().",
             variable_name.c_str());
     }
     const auto& v_buff = v_it->second;
     if (v_buff->getType() != std::type_index(typeid(T))) {
-        THROW InvalidVarType("Variable '%s' is of a different type. "
+        THROW exception::InvalidVarType("Variable '%s' is of a different type. "
             "'%s' was expected, but '%s' was requested,"
             "in AgentVector_Agent::getVariableArray().",
             variable_name.c_str(), v_buff->getType().name(), typeid(T).name());

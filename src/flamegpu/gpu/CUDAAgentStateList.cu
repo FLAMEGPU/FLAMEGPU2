@@ -70,7 +70,7 @@ void *CUDAAgentStateList::getVariablePointer(const std::string &variable_name) {
     auto var = variables.find(variable_name);
 
     if (var == variables.end()) {
-        THROW InvalidAgentVar("Error: Agent ('%s') variable ('%s') was not found "
+        THROW exception::InvalidAgentVar("Error: Agent ('%s') variable ('%s') was not found "
             "in CUDAAgentStateList::getVariablePointer()",
             agent.getAgentDescription().name.c_str(), variable_name.c_str());
     }
@@ -80,7 +80,7 @@ void *CUDAAgentStateList::getVariablePointer(const std::string &variable_name) {
 void CUDAAgentStateList::setAgentData(const AgentVector& population, CUDAScatter& scatter, const unsigned int& streamId, const cudaStream_t& stream) {
     // Validate AgentData matches
     if (!population.matchesAgentType(agent.getAgentDescription())) {
-        THROW InvalidCudaAgentDesc("Agent description for agent '%s' does not match that of AgentVector, "
+        THROW exception::InvalidCudaAgentDesc("Agent description for agent '%s' does not match that of AgentVector, "
             "in CUDAAgentStateList::setAgentData()",
             population.getAgentName().c_str());
     }
@@ -115,7 +115,7 @@ void CUDAAgentStateList::setAgentData(const AgentVector& population, CUDAScatter
 void CUDAAgentStateList::getAgentData(AgentVector& population) const {
     // Validate AgentData matches
     if (!population.matchesAgentType(agent.getAgentDescription())) {
-        THROW InvalidCudaAgentDesc("Agent description for agent '%s' does not match that of AgentVector, "
+        THROW exception::InvalidCudaAgentDesc("Agent description for agent '%s' does not match that of AgentVector, "
             "in CUDAAgentStateList::setAgentData()",
             population.getAgentName().c_str());
     }

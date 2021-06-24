@@ -38,7 +38,7 @@ class JSONStateWriter : public StateWriter {
      * Actually perform the writing to file
      * @return Always 0
      * @param prettyPrint Whether to include indentation and line breaks to aide human reading
-     * @throws RapidJSONError If export of the model state fails
+     * @throws exception::RapidJSONError If export of the model state fails
      */
     int writeStates(bool prettyPrint) override;
 

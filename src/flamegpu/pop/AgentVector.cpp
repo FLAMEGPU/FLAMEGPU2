@@ -82,7 +82,7 @@ AgentVector::Agent AgentVector::at(size_type pos) {
     if (pos >= _size) {
         _requireLength();
         if (pos >= _size) {
-            THROW OutOfBoundsException("pos (%u) exceeds length of vector (%u) in AgentVector::at()", pos, _size);
+            THROW exception::OutOfBoundsException("pos (%u) exceeds length of vector (%u) in AgentVector::at()", pos, _size);
         }
     }
     // Return the agent instance
@@ -92,7 +92,7 @@ AgentVector::CAgent AgentVector::at(size_type pos) const {
     if (pos >= _size) {
         _requireLength();
         if (pos >= _size) {
-            THROW OutOfBoundsException("pos (%u) exceeds length of vector (%u) in AgentVector::at()", pos, _size);
+            THROW exception::OutOfBoundsException("pos (%u) exceeds length of vector (%u) in AgentVector::at()", pos, _size);
         }
     }
     return CAgent(const_cast<AgentVector*>(this), agent, _data, pos);
@@ -122,13 +122,13 @@ AgentVector::CAgent AgentVector::back() const {
 
 void* AgentVector::data(const std::string& variable_name) {
     if (!variable_name.empty() && variable_name[0] == '_') {
-        THROW ReservedName("Agent variable names that begin with '_' are reserved for internal usage and cannot be changed directly, "
+        THROW exception::ReservedName("Agent variable names that begin with '_' are reserved for internal usage and cannot be changed directly, "
             "in AgentVector::data().");
     }
     // Is variable name found
     const auto& var = agent->variables.find(variable_name);
     if (var == agent->variables.end()) {
-        THROW InvalidAgentVar("Variable with name '%s' was not found in agent '%s', "
+        THROW exception::InvalidAgentVar("Variable with name '%s' was not found in agent '%s', "
             "in AgentVector::data().",
             variable_name.c_str(), agent->name.c_str());
     }
@@ -146,7 +146,7 @@ const void* AgentVector::data(const std::string& variable_name) const {
     // Is variable name found
     const auto& var = agent->variables.find(variable_name);
     if (var == agent->variables.end()) {
-        THROW InvalidAgentVar("Variable with name '%s' was not found in agent '%s', "
+        THROW exception::InvalidAgentVar("Variable with name '%s' was not found in agent '%s', "
             "in AgentVector::data().",
             variable_name.c_str(), agent->name.c_str());
     }
@@ -254,7 +254,7 @@ void AgentVector::resetAllIDs() {
             }
         }
     } else {
-        THROW InvalidOperation("Agent '%s' is missing internal ID variable, "
+        THROW exception::InvalidOperation("Agent '%s' is missing internal ID variable, "
             "in AgentVector::resetAllIDs()\n",
             agent->name.c_str());
     }
@@ -269,11 +269,11 @@ void AgentVector::resetAllIDs() {
 #endif
 void AgentVector::init(size_type first, size_type last) {
     if (first >= last) {
-        THROW InvalidOperation("Last (%u) must exceed first(%u), "
+        THROW exception::InvalidOperation("Last (%u) must exceed first(%u), "
           "in AgentVector::init()\n",
           last, first);
     } else if (last > _capacity) {
-        THROW OutOfBoundsException("Last (%u) exceeds capacity (%u) in AgentVector::init(), "
+        THROW exception::OutOfBoundsException("Last (%u) exceeds capacity (%u) in AgentVector::init(), "
             "in AgentVector::init()\n",
           last, _capacity);
     }
@@ -308,7 +308,7 @@ AgentVector::iterator AgentVector::insert(size_type pos, size_type count, const 
         return iterator(this, agent, _data, pos);
     // Confirm they are for the same agent type
     if (value._agent != agent && *value._agent != *agent) {
-        THROW InvalidAgent("Agent description mismatch, '%' provided, '%' required, "
+        THROW exception::InvalidAgent("Agent description mismatch, '%' provided, '%' required, "
             "in AgentVector::push_back().\n",
             value._agent->name.c_str(), agent->name.c_str());
     }
@@ -358,7 +358,7 @@ AgentVector::iterator AgentVector::insert(size_type pos, size_type count, const 
         return iterator(this, agent, _data, pos);
     // Confirm they are for the same agent type
     if (value._agent != agent && *value._agent != *agent) {
-        THROW InvalidAgent("Agent description mismatch, '%' provided, '%' required, "
+        THROW exception::InvalidAgent("Agent description mismatch, '%' provided, '%' required, "
             "in AgentVector::push_back().\n",
             value._agent->name.c_str(), agent->name.c_str());
     }
@@ -380,7 +380,7 @@ AgentVector::iterator AgentVector::insert(size_type pos, size_type count, const 
     // Fix each variable
     auto value_data = value._data.lock();
     if (!value_data) {
-        THROW ExpiredWeakPtr("The AgentVector which owns the passed AgentVector::Agent has been deallocated, "
+        THROW exception::ExpiredWeakPtr("The AgentVector which owns the passed AgentVector::Agent has been deallocated, "
             "in AgentVector::insert().\n");
     }
     const id_t ID_DEFAULT = ID_NOT_SET;
@@ -396,7 +396,7 @@ AgentVector::iterator AgentVector::insert(size_type pos, size_type count, const 
         // Copy across item data, ID has a special case, where it is default init instead of being copied
         if (v.first == ID_VARIABLE_NAME) {
             if (v.second.elements != 1 || v.second.type != std::type_index(typeid(id_t))) {
-                THROW InvalidOperation("Agent's internal ID variable is not type %s[1], "
+                THROW exception::InvalidOperation("Agent's internal ID variable is not type %s[1], "
                         "in AgentVector::insert()\n", std::type_index(typeid(id_t)).name());
             }
             for (unsigned int i = insert_index; i < insert_index + count; ++i) {
@@ -428,12 +428,12 @@ AgentVector::iterator AgentVector::erase(size_type pos) {
 AgentVector::iterator AgentVector::erase(const_iterator first, const_iterator last) {
     // Confirm they are for the same agent type
     if (first._agent != agent && *first._agent != *agent) {
-        THROW InvalidAgent("Agent description mismatch, '%' provided, '%' required, "
+        THROW exception::InvalidAgent("Agent description mismatch, '%' provided, '%' required, "
             "in AgentVector::push_back().\n",
             first._agent->name.c_str(), agent->name.c_str());
     }
     if (last._agent != agent && *last._agent != *agent) {
-        THROW InvalidAgent("Agent description mismatch, '%' provided, '%' required, "
+        THROW exception::InvalidAgent("Agent description mismatch, '%' provided, '%' required, "
             "in AgentVector::push_back().\n",
             last._agent->name.c_str(), agent->name.c_str());
     }
@@ -451,10 +451,10 @@ AgentVector::iterator AgentVector::erase(size_type first, size_type last) {
     const size_type last_empty_index = _size;
     // Ensure indicies are in bounds
     if (first_remove_index >= _size) {
-        THROW OutOfBoundsException("%u is not a valid index into the vector, "
+        THROW exception::OutOfBoundsException("%u is not a valid index into the vector, "
           "in AgentVector::erase()\n", first_remove_index);
     } else if (first_move_index > _size) {
-        THROW OutOfBoundsException("%u is not a valid index to the end of a range of vector items, "
+        THROW exception::OutOfBoundsException("%u is not a valid index to the end of a range of vector items, "
             "it must point to after the final selected item, "
             "in AgentVector::erase()\n", first_move_index);
     }
@@ -591,7 +591,7 @@ bool AgentVector::matchesAgentType(const AgentDescription& other) const { return
 std::type_index AgentVector::getVariableType(const std::string &variable_name) const {
     const auto &it = agent->variables.find(variable_name);
     if (it == agent->variables.end()) {
-        THROW InvalidAgentVar("Agent '%s' does not contain variable with name '%s', "
+        THROW exception::InvalidAgentVar("Agent '%s' does not contain variable with name '%s', "
             "in AgentVector::getVariableType()\n",
             agent->name.c_str(), variable_name.c_str());
     }

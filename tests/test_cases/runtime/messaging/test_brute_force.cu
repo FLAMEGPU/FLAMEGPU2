@@ -306,7 +306,7 @@ TEST(TestMessage_BruteForce, OptionalNone) {
 TEST(TestMessage_BruteForce, reserved_name) {
     ModelDescription m(MODEL_NAME);
     MsgBruteForce::Description &msg = m.newMessage(MESSAGE_NAME);
-    EXPECT_THROW(msg.newVariable<int>("_"), ReservedName);
+    EXPECT_THROW(msg.newVariable<int>("_"), exception::ReservedName);
 }
 
 FLAMEGPU_AGENT_FUNCTION(countBF, MsgBruteForce, MsgNone) {

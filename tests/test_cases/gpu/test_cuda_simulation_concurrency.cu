@@ -1222,7 +1222,7 @@ RELEASE_ONLY_SEATBELTS_TEST(TestCUDASimulationConcurrency, LayerConcurrencyDevic
         s.setPopulationData(*pop);
     }
     // Run and time the simulation, expecting a throw.
-    EXPECT_THROW(s.simulate(), DeviceError);
+    EXPECT_THROW(s.simulate(), exception::DeviceError);
 }
 
 

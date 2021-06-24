@@ -126,7 +126,7 @@ unsigned int CUDAFatAgentStateList::getAllocatedSize() const {
 }
 void CUDAFatAgentStateList::setAgentCount(const unsigned int &newCount, const bool &resetDisabled) {
     if ((resetDisabled && newCount > bufferLen) || (!resetDisabled && (newCount + disabledAgents> bufferLen))) {
-        THROW InvalidMemoryCapacity("Agent count will exceed allocated buffer size, "
+        THROW exception::InvalidMemoryCapacity("Agent count will exceed allocated buffer size, "
         "in CUDAFatAgentStateList::setAgentCount()\n");
     }
     if (resetDisabled) {

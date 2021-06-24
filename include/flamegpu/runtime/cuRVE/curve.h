@@ -434,7 +434,7 @@ class Curve {
      * @param file A constant string filename.
      * @param function A constant string function name.
      * @param line A constant integer line number.
-     * @note This error checking is unrelated to DeviceError
+     * @note This error checking is unrelated to exception::DeviceError
      * @todo Remove this legacy code
      */
     __device__ __forceinline__ static void printLastDeviceError(const char* file, const char* function, const int line);
@@ -445,7 +445,7 @@ class Curve {
      * @param file A constant string filename.
      * @param function A constant string function name.
      * @param line A constant integer line number.
-     * @note This error checking is unrelated to DeviceError
+     * @note This error checking is unrelated to exception::DeviceError
      * @todo Remove this legacy code
      */
     void __host__ printLastHostError(const char* file, const char* function, const int line);
@@ -457,7 +457,7 @@ class Curve {
      * @param file A constant string filename.
      * @param function A constant string function name.
      * @param line A constant integer line number.
-     * @note This error checking is unrelated to DeviceError
+     * @note This error checking is unrelated to exception::DeviceError
      * @todo Remove this legacy code
      */
     void __host__ printErrors(const char* file, const char* function, const int line);
@@ -467,7 +467,7 @@ class Curve {
      * Returns an error description given a DeviceError error code.
      * @param error_code A DeviceError error code.
      * @return A string error description
-     * @note This error checking is unrelated to DeviceError
+     * @note This error checking is unrelated to exception::DeviceError
      * @todo Remove this legacy code
      */
     __device__ __host__ __forceinline__ static const char*  getDeviceErrorString(DeviceError error_code);
@@ -483,7 +483,7 @@ class Curve {
     /**
      * Device API function for returning the last reported error code
      *
-     * @return A DeviceError error code
+     * @return A exception::DeviceError error code
      * @todo Remove this legacy code
      */
     __device__ __forceinline__ static DeviceError getLastDeviceError();

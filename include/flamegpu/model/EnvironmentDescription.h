@@ -83,7 +83,7 @@ class EnvironmentDescription {
      * @param value stored value of the property
      * @param isConst If set to true, it is not possible to change the value during the simulation
      * @tparam T Type of the environmental property to be created
-     * @throws DuplicateEnvProperty If a property of the same name already exists
+     * @throws exception::DuplicateEnvProperty If a property of the same name already exists
      */
     template<typename T>
     void newProperty(const std::string &name, const T &value, const bool &isConst = false);
@@ -94,7 +94,7 @@ class EnvironmentDescription {
      * @param isConst If set to true, it is not possible to change the value during the simulation
      * @tparam T Type of the environmental property array to be created
      * @tparam N Length of the environmental property array to be created
-     * @throws DuplicateEnvProperty If a property of the same name already exists
+     * @throws exception::DuplicateEnvProperty If a property of the same name already exists
      */
     template<typename T, EnvironmentManager::size_type N>
     void newProperty(const std::string &name, const std::array<T, N> &value, const bool &isConst = false);
@@ -106,7 +106,7 @@ class EnvironmentDescription {
      * @param value Stored value of the property
      * @param isConst If set to true, it is not possible to change the value during the simulation
      * @tparam T Type of the environmental property array to be created
-     * @throws DuplicateEnvProperty If a property of the same name already exists
+     * @throws exception::DuplicateEnvProperty If a property of the same name already exists
      */
     template<typename T>
     void newPropertyArray(const std::string &name, const EnvironmentManager::size_type &length, const std::vector<T> &value, const bool &isConst = false);
@@ -115,7 +115,7 @@ class EnvironmentDescription {
      * Gets an environment property
      * @param name name used for accessing the property
      * @tparam T Type of the value to be returned
-     * @throws InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
      */
     template<typename T>
     T getProperty(const std::string &name) const;
@@ -124,7 +124,7 @@ class EnvironmentDescription {
      * @param name name used for accessing the property
      * @tparam T Type of the value to be returned
      * @tparam N Length of the array to be returned
-     * @throws InvalidEnvProperty If a property array of the name does not exist
+     * @throws exception::InvalidEnvProperty If a property array of the name does not exist
      */
     template<typename T, EnvironmentManager::size_type N>
     std::array<T, N> getProperty(const std::string &name) const;
@@ -133,7 +133,7 @@ class EnvironmentDescription {
      * @param name name used for accessing the property
      * @param index element from the environment property array to return
      * @tparam T Type of the value to be returned
-     * @throws InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
      * @throws std::out_of_range
      */
     template<typename T>
@@ -143,7 +143,7 @@ class EnvironmentDescription {
      * Gets an environment property array
      * @param name name used for accessing the property
      * @tparam T Type of the value to be returned
-     * @throws InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
      * @throws std::out_of_range
      */
     template<typename T>
@@ -152,7 +152,7 @@ class EnvironmentDescription {
     /**
      * Returns whether an environment property is marked as const
      * @param name name used for accessing the property
-     * @throws InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
      */
     bool getConst(const std::string &name);
     /**
@@ -161,7 +161,7 @@ class EnvironmentDescription {
      * @param value value to set the property
      * @tparam T Type of the value to be returned
      * @return Returns the previous value
-     * @throws InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
      */
     template<typename T>
     T setProperty(const std::string &name, const T &value);
@@ -172,7 +172,7 @@ class EnvironmentDescription {
      * @tparam T Type of the value to be returned
      * @tparam N Length of the array to be returned
      * @return Returns the previous value
-     * @throws InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
      */
     template<typename T, EnvironmentManager::size_type N>
     std::array<T, N> setProperty(const std::string &name, const std::array<T, N> &value);
@@ -183,7 +183,7 @@ class EnvironmentDescription {
      * @param value value to set the property
      * @tparam T Type of the value to be returned
      * @return Returns the previous value of the environment property array element which has been set
-     * @throws InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
      * @throws std::out_of_range
      * @see set(const std::string &, const T &value)
      */
@@ -196,7 +196,7 @@ class EnvironmentDescription {
      * @param value value to set the property (vector must be of the correct length)
      * @tparam T Type of the value to be returned
      * @return Returns the previous value
-     * @throws InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
      */
     template<typename T>
     std::vector<T> setPropertyArray(const std::string &name, const std::vector<T> &value);
@@ -228,7 +228,7 @@ class EnvironmentDescription {
 template<typename T>
 void EnvironmentDescription::newProperty(const std::string &name, const T &value, const bool &isConst) {
     if (!name.empty() && name[0] == '_') {
-        THROW ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
+        THROW exception::ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
             "in EnvironmentDescription::add().");
     }
     // Limited to Arithmetic types
@@ -236,7 +236,7 @@ void EnvironmentDescription::newProperty(const std::string &name, const T &value
     static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value,
         "Only arithmetic types can be used as environmental properties");
     if (properties.find(name) != properties.end()) {
-        THROW DuplicateEnvProperty("Environmental property with name '%s' already exists, "
+        THROW exception::DuplicateEnvProperty("Environmental property with name '%s' already exists, "
             "in EnvironmentDescription::add().",
             name.c_str());
     }
@@ -245,7 +245,7 @@ void EnvironmentDescription::newProperty(const std::string &name, const T &value
 template<typename T, EnvironmentManager::size_type N>
 void EnvironmentDescription::newProperty(const std::string &name, const std::array<T, N> &value, const bool &isConst) {
     if (!name.empty() && name[0] == '_') {
-        THROW ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
+        THROW exception::ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
             "in EnvironmentDescription::add().");
     }
     static_assert(N > 0, "Environment property arrays must have a length greater than 0.");
@@ -254,7 +254,7 @@ void EnvironmentDescription::newProperty(const std::string &name, const std::arr
     static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value,
         "Only arithmetic types can be used as environmental properties");
     if (properties.find(name) != properties.end()) {
-        THROW DuplicateEnvProperty("Environmental property with name '%s' already exists, "
+        THROW exception::DuplicateEnvProperty("Environmental property with name '%s' already exists, "
             "in EnvironmentDescription::add().",
             name.c_str());
     }
@@ -264,15 +264,15 @@ void EnvironmentDescription::newProperty(const std::string &name, const std::arr
 template<typename T>
 void EnvironmentDescription::newPropertyArray(const std::string &name, const EnvironmentManager::size_type &N, const std::vector<T> &value, const bool& isConst) {
     if (!name.empty() && name[0] == '_') {
-        THROW ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
+        THROW exception::ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
             "in EnvironmentDescription::addArray().");
     }
     if (value.size() != N) {
-        THROW InvalidEnvProperty("Environment property array length does not match the value provided, %u != %llu,"
+        THROW exception::InvalidEnvProperty("Environment property array length does not match the value provided, %u != %llu,"
             "in EnvironmentDescription::addArray().", N, value.size());
     }
     if (N == 0) {
-        THROW InvalidEnvProperty("Environment property arrays must have a length greater than 0."
+        THROW exception::InvalidEnvProperty("Environment property arrays must have a length greater than 0."
             "in EnvironmentDescription::addArray().");
     }
     // Limited to Arithmetic types
@@ -280,7 +280,7 @@ void EnvironmentDescription::newPropertyArray(const std::string &name, const Env
     static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value,
         "Only arithmetic types can be used as environmental properties");
     if (properties.find(name) != properties.end()) {
-        THROW DuplicateEnvProperty("Environmental property with name '%s' already exists, "
+        THROW exception::DuplicateEnvProperty("Environmental property with name '%s' already exists, "
             "in EnvironmentDescription::addArray().",
             name.c_str());
     }
@@ -299,13 +299,13 @@ T EnvironmentDescription::getProperty(const std::string &name) const {
     auto &&i = properties.find(name);
     if (i != properties.end()) {
         if (i->second.data.type != std::type_index(typeid(T))) {
-            THROW InvalidEnvPropertyType("Environmental property ('%s') type (%s) does not match template argument T (%s), "
+            THROW exception::InvalidEnvPropertyType("Environmental property ('%s') type (%s) does not match template argument T (%s), "
                 "in EnvironmentDescription::get().",
                 name.c_str(), i->second.data.type.name(), typeid(T).name());
         }
         return *reinterpret_cast<T*>(i->second.data.ptr);
     }
-    THROW InvalidEnvProperty("Environmental property with name '%s' does not exist, "
+    THROW exception::InvalidEnvProperty("Environmental property with name '%s' does not exist, "
         "in EnvironmentDescription::get().",
         name.c_str());
 }
@@ -318,12 +318,12 @@ std::array<T, N> EnvironmentDescription::getProperty(const std::string &name) co
     auto &&i = properties.find(name);
     if (i != properties.end()) {
         if (i->second.data.type != std::type_index(typeid(T))) {
-            THROW InvalidEnvPropertyType("Environmental property array ('%s') type (%s) does not match template argument T (%s), "
+            THROW exception::InvalidEnvPropertyType("Environmental property array ('%s') type (%s) does not match template argument T (%s), "
                 "in EnvironmentDescription::get().",
                 name.c_str(), i->second.data.type.name(), typeid(T).name());
         }
         if (i->second.data.elements != N) {
-            THROW OutOfBoundsException("Length of named environmental property array (%u) does not match template argument N (%u), "
+            THROW exception::OutOfBoundsException("Length of named environmental property array (%u) does not match template argument N (%u), "
                 "in EnvironmentDescription::get().",
                 i->second.data.elements, N);
         }
@@ -332,7 +332,7 @@ std::array<T, N> EnvironmentDescription::getProperty(const std::string &name) co
         memcpy(rtn.data(), reinterpret_cast<T*>(i->second.data.ptr), N * sizeof(T));
         return rtn;
     }
-    THROW InvalidEnvProperty("Environmental property with name '%s' does not exist, "
+    THROW exception::InvalidEnvProperty("Environmental property with name '%s' does not exist, "
         "in EnvironmentDescription::get().",
         name.c_str());
 }
@@ -345,19 +345,19 @@ T EnvironmentDescription::getProperty(const std::string &name, const Environment
     auto &&i = properties.find(name);
     if (i != properties.end()) {
         if (i->second.data.type != std::type_index(typeid(T))) {
-            THROW InvalidEnvPropertyType("Environmental property array ('%s') type (%s) does not match template argument T (%s), "
+            THROW exception::InvalidEnvPropertyType("Environmental property array ('%s') type (%s) does not match template argument T (%s), "
                 "in EnvironmentDescription::get().",
                 name.c_str(), i->second.data.type.name(), typeid(T).name());
         }
         if (i->second.data.elements <= index) {
-            THROW OutOfBoundsException("Index (%u) exceeds named environmental property array's length (%u), "
+            THROW exception::OutOfBoundsException("Index (%u) exceeds named environmental property array's length (%u), "
                 "in EnvironmentDescription::get().",
                 index, i->second.data.elements);
         }
         // Copy old data to return
         return *(reinterpret_cast<T*>(i->second.data.ptr) + index);
     }
-    THROW InvalidEnvProperty("Environmental property with name '%s' does not exist, "
+    THROW exception::InvalidEnvProperty("Environmental property with name '%s' does not exist, "
         "in EnvironmentDescription::get().",
         name.c_str());
 }
@@ -371,7 +371,7 @@ std::vector<T> EnvironmentDescription::getPropertyArray(const std::string& name)
     auto &&i = properties.find(name);
     if (i != properties.end()) {
         if (i->second.data.type != std::type_index(typeid(T))) {
-            THROW InvalidEnvPropertyType("Environmental property array ('%s') type (%s) does not match template argument T (%s), "
+            THROW exception::InvalidEnvPropertyType("Environmental property array ('%s') type (%s) does not match template argument T (%s), "
                 "in EnvironmentDescription::getArray().",
                 name.c_str(), i->second.data.type.name(), typeid(T).name());
         }
@@ -380,7 +380,7 @@ std::vector<T> EnvironmentDescription::getPropertyArray(const std::string& name)
         memcpy(rtn.data(), reinterpret_cast<T*>(i->second.data.ptr), i->second.data.elements * sizeof(T));
         return rtn;
     }
-    THROW InvalidEnvProperty("Environmental property with name '%s' does not exist, "
+    THROW exception::InvalidEnvProperty("Environmental property with name '%s' does not exist, "
         "in EnvironmentDescription::getArray().",
         name.c_str());
 }
@@ -392,7 +392,7 @@ std::vector<T> EnvironmentDescription::getPropertyArray(const std::string& name)
 template<typename T>
 T EnvironmentDescription::setProperty(const std::string &name, const T &value) {
     if (!name.empty() && name[0] == '_') {
-        THROW ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
+        THROW exception::ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
             "in EnvironmentDescription::set().");
     }
     // Limited to Arithmetic types
@@ -402,7 +402,7 @@ T EnvironmentDescription::setProperty(const std::string &name, const T &value) {
     auto &&i = properties.find(name);
     if (i != properties.end()) {
         if (i->second.data.type != std::type_index(typeid(T))) {
-            THROW InvalidEnvPropertyType("Environmental property ('%s') type (%s) does not match template argument T (%s), "
+            THROW exception::InvalidEnvPropertyType("Environmental property ('%s') type (%s) does not match template argument T (%s), "
                 "in EnvironmentDescription::set().",
                 name.c_str(), i->second.data.type.name(), typeid(T).name());
         }
@@ -412,14 +412,14 @@ T EnvironmentDescription::setProperty(const std::string &name, const T &value) {
         memcpy(i->second.data.ptr, &value, sizeof(T));
         return rtn;
     }
-    THROW InvalidEnvProperty("Environmental property with name '%s' does not exist, "
+    THROW exception::InvalidEnvProperty("Environmental property with name '%s' does not exist, "
         "in EnvironmentDescription::set().",
         name.c_str());
 }
 template<typename T, EnvironmentManager::size_type N>
 std::array<T, N> EnvironmentDescription::setProperty(const std::string &name, const std::array<T, N> &value) {
     if (!name.empty() && name[0] == '_') {
-        THROW ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
+        THROW exception::ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
             "in EnvironmentDescription::set().");
     }
     // Limited to Arithmetic types
@@ -429,12 +429,12 @@ std::array<T, N> EnvironmentDescription::setProperty(const std::string &name, co
     auto &&i = properties.find(name);
     if (i != properties.end()) {
         if (i->second.data.type != std::type_index(typeid(T))) {
-            THROW InvalidEnvPropertyType("Environmental property array ('%s') type (%s) does not match template argument T (%s), "
+            THROW exception::InvalidEnvPropertyType("Environmental property array ('%s') type (%s) does not match template argument T (%s), "
                 "in EnvironmentDescription::set().",
                 name.c_str(), i->second.data.type.name(), typeid(T).name());
         }
         if (i->second.data.elements != N) {
-            THROW OutOfBoundsException("Length of named environmental property array (%u) does not match template argument N (%u), "
+            THROW exception::OutOfBoundsException("Length of named environmental property array (%u) does not match template argument N (%u), "
                 "in EnvironmentDescription::set().",
                 i->second.data.elements, N);
         }
@@ -445,14 +445,14 @@ std::array<T, N> EnvironmentDescription::setProperty(const std::string &name, co
         memcpy(reinterpret_cast<T*>(i->second.data.ptr), value.data(), N * sizeof(T));
         return rtn;
     }
-    THROW InvalidEnvProperty("Environmental property with name '%s' does not exist, "
+    THROW exception::InvalidEnvProperty("Environmental property with name '%s' does not exist, "
         "in EnvironmentDescription::set().",
         name.c_str());
 }
 template<typename T>
 T EnvironmentDescription::setProperty(const std::string &name, const EnvironmentManager::size_type &index, const T &value) {
     if (!name.empty() && name[0] == '_') {
-        THROW ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
+        THROW exception::ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
             "in EnvironmentDescription::set().");
     }
     // Limited to Arithmetic types
@@ -462,12 +462,12 @@ T EnvironmentDescription::setProperty(const std::string &name, const Environment
     auto &&i = properties.find(name);
     if (i != properties.end()) {
         if (i->second.data.type != std::type_index(typeid(T))) {
-            THROW InvalidEnvPropertyType("Environmental property array ('%s') type (%s) does not match template argument T (%s), "
+            THROW exception::InvalidEnvPropertyType("Environmental property array ('%s') type (%s) does not match template argument T (%s), "
                 "in EnvironmentDescription::set().",
                 name.c_str(), i->second.data.type.name(), typeid(T).name());
         }
         if (i->second.data.elements <= index) {
-            THROW OutOfBoundsException("Index (%u) exceeds named environmental property array's length (%u), "
+            THROW exception::OutOfBoundsException("Index (%u) exceeds named environmental property array's length (%u), "
                 "in EnvironmentDescription::set().",
                 index, i->second.data.elements);
         }
@@ -477,7 +477,7 @@ T EnvironmentDescription::setProperty(const std::string &name, const Environment
         memcpy(reinterpret_cast<T*>(i->second.data.ptr) + index, &value, sizeof(T));
         return rtn;
     }
-    THROW InvalidEnvProperty("Environmental property with name '%s' does not exist, "
+    THROW exception::InvalidEnvProperty("Environmental property with name '%s' does not exist, "
         "in EnvironmentDescription::set().",
         name.c_str());
 }
@@ -485,7 +485,7 @@ T EnvironmentDescription::setProperty(const std::string &name, const Environment
 template<typename T>
 std::vector<T> EnvironmentDescription::setPropertyArray(const std::string& name, const std::vector<T>& value) {
     if (!name.empty() && name[0] == '_') {
-        THROW ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
+        THROW exception::ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
             "in EnvironmentDescription::set().");
     }
     // Limited to Arithmetic types
@@ -495,12 +495,12 @@ std::vector<T> EnvironmentDescription::setPropertyArray(const std::string& name,
     auto &&i = properties.find(name);
     if (i != properties.end()) {
         if (i->second.data.type != std::type_index(typeid(T))) {
-            THROW InvalidEnvPropertyType("Environmental property array ('%s') type (%s) does not match template argument T (%s), "
+            THROW exception::InvalidEnvPropertyType("Environmental property array ('%s') type (%s) does not match template argument T (%s), "
                 "in EnvironmentDescription::set().",
                 name.c_str(), i->second.data.type.name(), typeid(T).name());
         }
         if (i->second.data.elements != value.size()) {
-            THROW OutOfBoundsException("Length of named environmental property array (%u) does not match length of provided vector (%llu), "
+            THROW exception::OutOfBoundsException("Length of named environmental property array (%u) does not match length of provided vector (%llu), "
                 "in EnvironmentDescription::set().",
                 i->second.data.elements, value.size());
         }
@@ -511,7 +511,7 @@ std::vector<T> EnvironmentDescription::setPropertyArray(const std::string& name,
         memcpy(reinterpret_cast<T*>(i->second.data.ptr), value.data(), i->second.data.elements * sizeof(T));
         return rtn;
     }
-    THROW InvalidEnvProperty("Environmental property with name '%s' does not exist, "
+    THROW exception::InvalidEnvProperty("Environmental property with name '%s' does not exist, "
         "in EnvironmentDescription::set().",
         name.c_str());
 }

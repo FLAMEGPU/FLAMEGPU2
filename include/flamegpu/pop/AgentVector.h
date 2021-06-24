@@ -261,8 +261,8 @@ class AgentVector {
     /**
      * Returns pointer to the underlying array serving as element storage for the named variable.
      * @param variable_name Name of the variable array to return
-     * @throws InvalidAgentVar Agent does not contain variable variable_name
-     * @throws InvalidVarType Agent variable variable_name is not of type T
+     * @throws exception::InvalidAgentVar Agent does not contain variable variable_name
+     * @throws exception::InvalidVarType Agent variable variable_name is not of type T
      * @note Returns nullptr if vector is has not yet allocated buffers.
      */
     template<typename T>
@@ -395,7 +395,7 @@ class AgentVector {
      * Otherwise, only the iterators and references before the insertion point remain valid.
      * The past-the-end iterator is also invalidated.
      *
-     * @throw InvalidAgent If agent type of value does not match
+     * @throw exception::InvalidAgent If agent type of value does not match
      * @note The newly insert agent will have their ID updated to a new unique value
      */
     iterator insert(const_iterator pos, const AgentInstance& value);
@@ -415,7 +415,7 @@ class AgentVector {
      * Otherwise, only the iterators and references before the insertion point remain valid.
      * The past-the-end iterator is also invalidated.
      *
-     * @throw InvalidAgent If agent type of value does not match
+     * @throw exception::InvalidAgent If agent type of value does not match
      * @note The newly inserted agent copies will have their IDs updated to new unique values
      */
     iterator insert(const_iterator pos, size_type count, const AgentInstance& value);
@@ -436,7 +436,7 @@ class AgentVector {
      * Otherwise, only the iterators and references before the insertion point remain valid.
      * The past-the-end iterator is also invalidated.
      *
-     * @throw InvalidAgent If agent type of first or last does not match
+     * @throw exception::InvalidAgent If agent type of first or last does not match
      * @note The newly inserted agents will have their IDs updated to new unique values
      */
     template<class InputIt>
@@ -456,7 +456,7 @@ class AgentVector {
      *
      * @return Iterator following the last removed element
      * @return If pos refers to the last element, then the end() iterator is returned
-     * @throw OutOfBoundsException pos >= size()
+     * @throw exception::OutOfBoundsException pos >= size()
      */
     iterator erase(const_iterator pos);
     iterator erase(size_type pos);
@@ -477,8 +477,8 @@ class AgentVector {
      * @return Iterator following the last removed element
      * @return if last==end() prior to removal,then the updated end() iterator is returned.
      * @return if [first, last) is an empty range, then last is returned
-     * @throw OutOfBoundsException first >= size()
-     * @throw OutOfBoundsException last > size()
+     * @throw exception::OutOfBoundsException first >= size()
+     * @throw exception::OutOfBoundsException last > size()
      */
     iterator erase(const_iterator first, const_iterator last);
     iterator erase(size_type first, size_type last);
@@ -494,7 +494,7 @@ class AgentVector {
      *
      * @param value	the value of the agent to append
      *
-     * @throws InvalidAgent If the agent type of the AgentInstance doesn't match the agent type of the AgentVector
+     * @throws exception::InvalidAgent If the agent type of the AgentInstance doesn't match the agent type of the AgentVector
      * @note The newly inserted agent will have a unique ID generated
      */
     void push_back(const AgentInstance& value);
@@ -541,7 +541,7 @@ class AgentVector {
     bool matchesAgentType(const AgentDescription& other) const;
     /**
      * Returns the type_index of the named variable
-     * @throw InvalidAgentVar When variable_name is not valid
+     * @throw exception::InvalidAgentVar When variable_name is not valid
      */
     std::type_index getVariableType(const std::string& variable_name) const;
     /**
@@ -607,8 +607,8 @@ class AgentVector {
      * Overwrite all variable buffers in the specified range with default values
      * @param first Index to first index to overwrite
      * @param last Index after the last index to overwrite
-     * @throws InvalidOperation When last<first
-     * @throws OutOfBoundsException when last > _capacity
+     * @throws exception::InvalidOperation When last<first
+     * @throws exception::OutOfBoundsException when last > _capacity
      */
     void init(size_type first, size_type last);
     std::shared_ptr<const AgentData> agent;
@@ -628,18 +628,18 @@ namespace flamegpu {
 template<typename T>
 T* AgentVector::data(const std::string& variable_name) {
     if (!variable_name.empty() && variable_name[0] == '_') {
-        THROW ReservedName("Agent variable names that begin with '_' are reserved for internal usage and cannot be changed directly, "
+        THROW exception::ReservedName("Agent variable names that begin with '_' are reserved for internal usage and cannot be changed directly, "
             "in AgentVector::data().");
     }
     // Is variable name found
     const auto &var = agent->variables.find(variable_name);
     if (var == agent->variables.end()) {
-        THROW InvalidAgentVar("Variable with name '%s' was not found in agent '%s', "
+        THROW exception::InvalidAgentVar("Variable with name '%s' was not found in agent '%s', "
             "in AgentVector::data().",
             variable_name.c_str(), agent->name.c_str());
     }
     if (std::type_index(typeid(T)) != var->second.type) {
-        THROW InvalidVarType("Variable '%s' is of a different type. "
+        THROW exception::InvalidVarType("Variable '%s' is of a different type. "
             "'%s' was expected, but '%s' was requested,"
             "in AgentVector::data().",
             variable_name.c_str(), var->second.type.name(), typeid(T).name());
@@ -659,12 +659,12 @@ const T* AgentVector::data(const std::string& variable_name) const {
     // Is variable name found
     const auto& var = agent->variables.find(variable_name);
     if (var == agent->variables.end()) {
-        THROW InvalidAgentVar("Variable with name '%s' was not found in agent '%s', "
+        THROW exception::InvalidAgentVar("Variable with name '%s' was not found in agent '%s', "
             "in AgentVector::data().",
             variable_name.c_str(), agent->name.c_str());
     }
     if (std::type_index(typeid(T)) != var->second.type) {
-        THROW InvalidVarType("Variable '%s' is of a different type. "
+        THROW exception::InvalidVarType("Variable '%s' is of a different type. "
             "'%s' was expected, but '%s' was requested,"
             "in AgentVector::data().",
             variable_name.c_str(), var->second.type.name(), typeid(T).name());
@@ -682,7 +682,7 @@ const T* AgentVector::data(const std::string& variable_name) const {
 template<class InputIt>
 AgentVector::iterator AgentVector::insert(const_iterator pos, InputIt first, InputIt last) {
     if (pos._agent != agent && *pos._agent != *agent) {
-        THROW InvalidAgent("Agent description mismatch, '%' provided to pos, '%' required, "
+        THROW exception::InvalidAgent("Agent description mismatch, '%' provided to pos, '%' required, "
             "in AgentVector::push_back().\n",
             last._agent->name.c_str(), agent->name.c_str());
     }
@@ -696,12 +696,12 @@ AgentVector::iterator AgentVector::insert(size_type pos, InputIt first, InputIt 
         return iterator(this, agent, _data, pos);
     // Confirm they are for the same agent type
     if (first._agent != agent && *first._agent != *agent) {
-        THROW InvalidAgent("Agent description mismatch, '%' provided to first, '%' required, "
+        THROW exception::InvalidAgent("Agent description mismatch, '%' provided to first, '%' required, "
             "in AgentVector::push_back().\n",
             first._agent->name.c_str(), agent->name.c_str());
     }
     if (last._agent != agent && *last._agent != *agent) {
-        THROW InvalidAgent("Agent description mismatch, '%' provided to last, '%' required, "
+        THROW exception::InvalidAgent("Agent description mismatch, '%' provided to last, '%' required, "
             "in AgentVector::push_back().\n",
             last._agent->name.c_str(), agent->name.c_str());
     }
@@ -723,7 +723,7 @@ AgentVector::iterator AgentVector::insert(size_type pos, InputIt first, InputIt 
     // Fix each variable
     auto first_data = first._data.lock();
     if (!first_data) {
-        THROW ExpiredWeakPtr("The AgentVector which owns the passed iterators has been deallocated, "
+        THROW exception::ExpiredWeakPtr("The AgentVector which owns the passed iterators has been deallocated, "
             "in AgentVector::insert().\n");
     }
     // If we are not appending, ensure we have upto date device data
@@ -744,7 +744,7 @@ AgentVector::iterator AgentVector::insert(size_type pos, InputIt first, InputIt 
         // Copy across item data, ID has a special case, where it is default init instead of being copied
         if (v.first == ID_VARIABLE_NAME) {
             if (v.second.elements != 1 || v.second.type != std::type_index(typeid(id_t))) {
-                THROW InvalidOperation("Agent's internal ID variable is not type %s[1], "
+                THROW exception::InvalidOperation("Agent's internal ID variable is not type %s[1], "
                         "in AgentVector::insert()\n", std::type_index(typeid(id_t)).name());
             }
             for (unsigned int i = insert_index; i < insert_index + copy_count; ++i) {

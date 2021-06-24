@@ -25,7 +25,7 @@ TEST(ModelDescriptionTest, Agent) {
     AgentDescription &b = m.newAgent(test_model::AGENT_NAME2);
     EXPECT_EQ(m.getAgentsCount(), 2u);
     // Cannot create agent with same name
-    EXPECT_THROW(m.newAgent(test_model::AGENT_NAME1), InvalidAgentName);
+    EXPECT_THROW(m.newAgent(test_model::AGENT_NAME1), exception::InvalidAgentName);
     // Two created agents are different
     EXPECT_NE(a, b);
     // Agents have the right name
@@ -49,7 +49,7 @@ TEST(ModelDescriptionTest, Message) {
     MsgBruteForce::Description &b = m.newMessage(test_model::AGENT_NAME2);
     EXPECT_EQ(m.getMessagesCount(), 2u);
     // Cannot create message with same name
-    EXPECT_THROW(m.newMessage(test_model::AGENT_NAME1), InvalidMessageName);
+    EXPECT_THROW(m.newMessage(test_model::AGENT_NAME1), exception::InvalidMessageName);
     // Two created messages are different
     EXPECT_NE(a, b);
     // Messages have the right name
@@ -77,7 +77,7 @@ TEST(ModelDescriptionTest, Layer) {
     LayerDescription &b = m.newLayer(test_model::AGENT_NAME2);
     EXPECT_EQ(m.getLayersCount(), 2u);
     // Cannot create layer with same name
-    EXPECT_THROW(m.newLayer(test_model::AGENT_NAME1), InvalidFuncLayerIndx);
+    EXPECT_THROW(m.newLayer(test_model::AGENT_NAME1), exception::InvalidFuncLayerIndx);
     // Two created layers are different
     EXPECT_NE(a, b);
     // Layers have the right name
@@ -114,24 +114,24 @@ TEST(ModelDescriptionTest, SubModelRecursionNotAllowed) {
     EXPECT_NO_THROW(a.newSubModel("b", b));
     EXPECT_NO_THROW(a.newSubModel("c", c));
     // Name already exists
-    EXPECT_THROW(a.newSubModel("c", d), InvalidSubModelName);
+    EXPECT_THROW(a.newSubModel("c", d), exception::InvalidSubModelName);
     EXPECT_NO_THROW(c.newSubModel("d", d));
     // A cannot sub itself
-    EXPECT_THROW(a.newSubModel("", a), InvalidSubModel);
+    EXPECT_THROW(a.newSubModel("", a), exception::InvalidSubModel);
     // B is already sub of A
-    EXPECT_THROW(a.newSubModel("", b), InvalidSubModel);
+    EXPECT_THROW(a.newSubModel("", b), exception::InvalidSubModel);
     // A is already a parent of B
-    EXPECT_THROW(b.newSubModel("", a), InvalidSubModel);
+    EXPECT_THROW(b.newSubModel("", a), exception::InvalidSubModel);
     // A is already a parent of C
-    EXPECT_THROW(c.newSubModel("", a), InvalidSubModel);
-    EXPECT_THROW(d.newSubModel("", a), InvalidSubModel);
+    EXPECT_THROW(c.newSubModel("", a), exception::InvalidSubModel);
+    EXPECT_THROW(d.newSubModel("", a), exception::InvalidSubModel);
     // D is already a child of A
-    EXPECT_THROW(c.newSubModel("", d), InvalidSubModel);
+    EXPECT_THROW(c.newSubModel("", d), exception::InvalidSubModel);
     // Submodel can be added twice if to different branches
     EXPECT_NO_THROW(b.newSubModel("d2", d));
     // D cannot add itself
-    EXPECT_THROW(d.newSubModel("", d), InvalidSubModel);
+    EXPECT_THROW(d.newSubModel("", d), exception::InvalidSubModel);
     // C is already a parent of D
-    EXPECT_THROW(d.newSubModel("", c), InvalidSubModel);
+    EXPECT_THROW(d.newSubModel("", c), exception::InvalidSubModel);
 }
 }  // namespace flamegpu

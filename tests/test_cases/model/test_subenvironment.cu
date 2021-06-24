@@ -26,10 +26,10 @@ TEST(SubEnvironmentDescriptionTest, InvalidNames) {
     }
     auto &sm = m.newSubModel("sub", m2);
     auto &senv = sm.SubEnvironment();
-    EXPECT_THROW(senv.mapProperty("c", "b"), InvalidEnvProperty);
-    EXPECT_THROW(senv.mapProperty("c", "b2"), InvalidEnvProperty);
-    EXPECT_THROW(senv.mapProperty("a", "c"), InvalidEnvProperty);
-    EXPECT_THROW(senv.mapProperty("a2", "c"), InvalidEnvProperty);
+    EXPECT_THROW(senv.mapProperty("c", "b"), exception::InvalidEnvProperty);
+    EXPECT_THROW(senv.mapProperty("c", "b2"), exception::InvalidEnvProperty);
+    EXPECT_THROW(senv.mapProperty("a", "c"), exception::InvalidEnvProperty);
+    EXPECT_THROW(senv.mapProperty("a2", "c"), exception::InvalidEnvProperty);
     EXPECT_NO_THROW(senv.mapProperty("a2", "b2"));
     EXPECT_NO_THROW(senv.mapProperty("a", "b"));
 }
@@ -49,8 +49,8 @@ TEST(SubEnvironmentDescriptionTest, TypesDoNotMatch) {
     }
     auto &sm = m.newSubModel("sub", m2);
     auto &senv = sm.SubEnvironment();
-    EXPECT_THROW(senv.mapProperty("a", "b"), InvalidEnvProperty);
-    EXPECT_THROW(senv.mapProperty("a2", "b2"), InvalidEnvProperty);
+    EXPECT_THROW(senv.mapProperty("a", "b"), exception::InvalidEnvProperty);
+    EXPECT_THROW(senv.mapProperty("a2", "b2"), exception::InvalidEnvProperty);
 }
 TEST(SubEnvironmentDescriptionTest, ElementsDoNotMatch) {
     ModelDescription m2("sub");
@@ -68,8 +68,8 @@ TEST(SubEnvironmentDescriptionTest, ElementsDoNotMatch) {
     }
     auto &sm = m.newSubModel("sub", m2);
     auto &senv = sm.SubEnvironment();
-    EXPECT_THROW(senv.mapProperty("a", "b2"), InvalidEnvProperty);
-    EXPECT_THROW(senv.mapProperty("a2", "b"), InvalidEnvProperty);
+    EXPECT_THROW(senv.mapProperty("a", "b2"), exception::InvalidEnvProperty);
+    EXPECT_THROW(senv.mapProperty("a2", "b"), exception::InvalidEnvProperty);
     EXPECT_NO_THROW(senv.mapProperty("a2", "b2"));
     EXPECT_NO_THROW(senv.mapProperty("a", "b"));
 }
@@ -89,8 +89,8 @@ TEST(SubEnvironmentDescriptionTest, IsConstWrong) {
     }
     auto &sm = m.newSubModel("sub", m2);
     auto &senv = sm.SubEnvironment();
-    EXPECT_THROW(senv.mapProperty("a", "b"), InvalidEnvProperty);
-    EXPECT_THROW(senv.mapProperty("a2", "b2"), InvalidEnvProperty);
+    EXPECT_THROW(senv.mapProperty("a", "b"), exception::InvalidEnvProperty);
+    EXPECT_THROW(senv.mapProperty("a2", "b2"), exception::InvalidEnvProperty);
 }
 TEST(SubEnvironmentDescriptionTest, AlreadyBound) {
     ModelDescription m2("sub");
@@ -115,10 +115,10 @@ TEST(SubEnvironmentDescriptionTest, AlreadyBound) {
     auto &senv = sm.SubEnvironment();
     EXPECT_NO_THROW(senv.mapProperty("a", "b"));
     EXPECT_NO_THROW(senv.mapProperty("a2", "b2"));
-    EXPECT_THROW(senv.mapProperty("a", "b_"), InvalidEnvProperty);
-    EXPECT_THROW(senv.mapProperty("a2", "b2_"), InvalidEnvProperty);
-    EXPECT_THROW(senv.mapProperty("a_", "b"), InvalidEnvProperty);
-    EXPECT_THROW(senv.mapProperty("a2_", "b2"), InvalidEnvProperty);
+    EXPECT_THROW(senv.mapProperty("a", "b_"), exception::InvalidEnvProperty);
+    EXPECT_THROW(senv.mapProperty("a2", "b2_"), exception::InvalidEnvProperty);
+    EXPECT_THROW(senv.mapProperty("a_", "b"), exception::InvalidEnvProperty);
+    EXPECT_THROW(senv.mapProperty("a2_", "b2"), exception::InvalidEnvProperty);
 }
 };  // namespace test_sub_environment_description
 }  // namespace flamegpu

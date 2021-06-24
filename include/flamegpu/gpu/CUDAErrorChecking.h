@@ -25,7 +25,7 @@ namespace flamegpu {
  */
 inline void gpuAssert(cudaError_t code, const char *file, int line) {
     if (code != cudaSuccess) {
-        THROW CUDAError("CUDA Error: %s(%d): %s", file, line, cudaGetErrorString(code));
+        THROW exception::CUDAError("CUDA Error: %s(%d): %s", file, line, cudaGetErrorString(code));
     }
 }
 
@@ -44,7 +44,7 @@ inline void gpuAssert(cudaError_t code, const char *file, int line) {
 inline void gpuAssert(CUresult code, const char* file, int line) {
     if (code != CUDA_SUCCESS) {
         const char *error_str;
-        THROW CUDAError("CUDA Driver Error: %s(%d): %s", file, line, cuGetErrorString(code, &error_str));
+        THROW exception::CUDAError("CUDA Driver Error: %s(%d): %s", file, line, cuGetErrorString(code, &error_str));
     }
 }
 

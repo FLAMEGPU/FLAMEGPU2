@@ -50,7 +50,7 @@ bool EnvironmentDescription::getConst(const std::string &name) {
             return i.second.isConst;
         }
     }
-    THROW InvalidEnvProperty("Environmental property with name '%s' does not exist, "
+    THROW exception::InvalidEnvProperty("Environmental property with name '%s' does not exist, "
         "in EnvironmentDescription::getConst().",
         name.c_str());
 }

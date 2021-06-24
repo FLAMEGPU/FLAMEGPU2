@@ -72,7 +72,7 @@ const char *LAYER_NAME = "Layer1";
 
 TEST(DependencyGraphTest, ValidateEmptyGraph) {
     DependencyGraph graph;
-    EXPECT_THROW(graph.validateDependencyGraph(), InvalidDependencyGraph);
+    EXPECT_THROW(graph.validateDependencyGraph(), exception::InvalidDependencyGraph);
 }
 
 TEST(DependencyGraphTest, ValidateSingleNode) {
@@ -121,7 +121,7 @@ TEST(DependencyGraphTest, ValidateCycle) {
     f3.dependsOn(f2);
     DependencyGraph& graph = _m.getDependencyGraph();
     graph.addRoot(f);
-    EXPECT_THROW(graph.validateDependencyGraph(), InvalidDependencyGraph);
+    EXPECT_THROW(graph.validateDependencyGraph(), exception::InvalidDependencyGraph);
 }
 
 TEST(DependencyGraphTest, ValidateRootWithDependencies) {
@@ -134,7 +134,7 @@ TEST(DependencyGraphTest, ValidateRootWithDependencies) {
     f3.dependsOn(f2);
     DependencyGraph& graph = _m.getDependencyGraph();
     graph.addRoot(f2);
-    EXPECT_THROW(graph.validateDependencyGraph(), InvalidDependencyGraph);
+    EXPECT_THROW(graph.validateDependencyGraph(), exception::InvalidDependencyGraph);
 }
 
 TEST(DependencyGraphTest, ConstructLayersSingleChain) {
@@ -525,7 +525,7 @@ TEST(DependencyGraphTest, InterModelDependency) {
     AgentDescription &a2 = _m2.newAgent(AGENT_NAME2);
     AgentFunctionDescription &f2 = a2.newFunction(FUNCTION_NAME2, agent_fn2);
 
-    EXPECT_THROW(f2.dependsOn(f), InvalidDependencyGraph);
+    EXPECT_THROW(f2.dependsOn(f), exception::InvalidDependencyGraph);
 }
 TEST(DependencyGraphTest, UnattachedFunctionWarning) {
     ModelDescription _m(MODEL_NAME);
@@ -559,7 +559,7 @@ TEST(DependencyGraphTest, ModelAlreadyHasLayers) {
     DependencyGraph& graph = _m.getDependencyGraph();
     graph.addRoot(f);
 
-    EXPECT_THROW(_m.generateLayers(), InvalidDependencyGraph);
+    EXPECT_THROW(_m.generateLayers(), exception::InvalidDependencyGraph);
 }
 }  // namespace test_dependency_graph
 }  // namespace flamegpu

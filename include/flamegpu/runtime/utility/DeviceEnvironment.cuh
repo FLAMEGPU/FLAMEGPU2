@@ -53,8 +53,8 @@ class DeviceEnvironment {
      * @param name name used for accessing the property, this value should be a string literal e.g. "foobar"
      * @tparam T Type of the environment property being accessed
      * @tparam N Length of property name, this should always be implicit if passing a string literal
-     * @throws DeviceError If name is not a valid property within the environment (flamegpu must be built with SEATBELTS enabled for device error checking)
-     * @throws DeviceError If T is not the type of the environment property specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
+     * @throws exception::DeviceError If name is not a valid property within the environment (flamegpu must be built with SEATBELTS enabled for device error checking)
+     * @throws exception::DeviceError If T is not the type of the environment property specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
      */
     template<typename T, unsigned int N>
     __device__ __forceinline__ T getProperty(const char(&name)[N]) const;
@@ -64,9 +64,9 @@ class DeviceEnvironment {
      * @param index Index of the element within the environment property array to return
      * @tparam T Type of the environment property being accessed
      * @tparam N Length of property name, this should always be implicit if passing a string literal
-     * @throws DeviceError If name is not a valid property within the environment (flamegpu must be built with SEATBELTS enabled for device error checking)
-     * @throws DeviceError If T is not the type of the environment property specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
-     * @throws DeviceError If index is out of bounds for the environment property array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
+     * @throws exception::DeviceError If name is not a valid property within the environment (flamegpu must be built with SEATBELTS enabled for device error checking)
+     * @throws exception::DeviceError If T is not the type of the environment property specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
+     * @throws exception::DeviceError If index is out of bounds for the environment property array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
      */
     template<typename T, unsigned int N>
     __device__ __forceinline__ T getProperty(const char(&name)[N], const unsigned int&index) const;

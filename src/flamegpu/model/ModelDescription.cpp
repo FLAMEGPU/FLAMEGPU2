@@ -32,7 +32,7 @@ AgentDescription& ModelDescription::newAgent(const std::string &agent_name) {
         model->agents.emplace(agent_name, rtn);
         return *rtn->description;
     }
-    THROW InvalidAgentName("Agent with name '%s' already exists, "
+    THROW exception::InvalidAgentName("Agent with name '%s' already exists, "
         "in ModelDescription::newAgent().",
         agent_name.c_str());
 }
@@ -40,7 +40,7 @@ AgentDescription& ModelDescription::Agent(const std::string &agent_name) {
     auto rtn = model->agents.find(agent_name);
     if (rtn != model->agents.end())
         return *rtn->second->description;
-    THROW InvalidAgentName("Agent ('%s') was not found, "
+    THROW exception::InvalidAgentName("Agent ('%s') was not found, "
         "in ModelDescription::Agent().",
         agent_name.c_str());
 }
@@ -59,20 +59,20 @@ EnvironmentDescription& ModelDescription::Environment() {
 SubModelDescription& ModelDescription::newSubModel(const std::string &submodel_name, const ModelDescription &submodel_description) {
     // Submodel is not self
     if (submodel_description.model == this->model) {
-        THROW InvalidSubModel("A model cannot be a submodel of itself, that would create infinite recursion, "
+        THROW exception::InvalidSubModel("A model cannot be a submodel of itself, that would create infinite recursion, "
             "in ModelDescription::newSubModel().");
     }
     // Submodel is not already a submodel of this model
     for (auto &m : this->model->submodels) {
         if (m.second->submodel == submodel_description.model) {
-            THROW InvalidSubModel("Model '%s' is already a submodel of '%s', "
+            THROW exception::InvalidSubModel("Model '%s' is already a submodel of '%s', "
                 "in ModelDescription::newSubModel().",
                 submodel_name.c_str(), this->model->name.c_str());
         }
     }
     // Submodel is not already in the submodel hierarchy above us
     if (submodel_description.model->hasSubModelRecursive(this->model)) {
-        THROW InvalidSubModel("Models cannot exist in their own submodel hierarchy, that would create infinite recursion,"
+        THROW exception::InvalidSubModel("Models cannot exist in their own submodel hierarchy, that would create infinite recursion,"
             "in ModelDescription::newSubModel().");
     }
     // Submodel name is not in use
@@ -84,7 +84,7 @@ SubModelDescription& ModelDescription::newSubModel(const std::string &submodel_n
         model->submodels.emplace(submodel_name, rtn);
         return *rtn->description;
     }
-    THROW InvalidSubModelName("SubModel with name '%s' already exists, "
+    THROW exception::InvalidSubModelName("SubModel with name '%s' already exists, "
         "in ModelDescription::newSubModel().",
         submodel_name.c_str());
 }
@@ -92,7 +92,7 @@ SubModelDescription &ModelDescription::SubModel(const std::string &submodel_name
     auto rtn = model->submodels.find(submodel_name);
     if (rtn != model->submodels.end())
         return *rtn->second->description;
-    THROW InvalidSubModelName("SubModel ('%s') was not found, "
+    THROW exception::InvalidSubModelName("SubModel ('%s') was not found, "
         "in ModelDescription::SubModel().",
         submodel_name.c_str());
 }
@@ -102,7 +102,7 @@ LayerDescription& ModelDescription::newLayer(const std::string &name) {
     if (!name.empty()) {
         for (auto it = model->layers.begin(); it != model->layers.end(); ++it) {
             if ((*it)->name == name) {
-                THROW InvalidFuncLayerIndx("Layer ('%s') already exists, "
+                THROW exception::InvalidFuncLayerIndx("Layer ('%s') already exists, "
                     "in ModelDescription::newLayer().",
                     name.c_str());
             }
@@ -119,7 +119,7 @@ LayerDescription& ModelDescription::Layer(const ModelData::size_type &layer_inde
             ++it;
         return *(*it)->description;
     }
-    THROW OutOfBoundsException("Layer %d is out of bounds, "
+    THROW exception::OutOfBoundsException("Layer %d is out of bounds, "
         "in ModelDescription::Layer().",
         layer_index);
 }
@@ -130,33 +130,33 @@ LayerDescription& ModelDescription::Layer(const std::string &name) {
                 return *layer->description;
         }
     }
-    THROW InvalidFuncLayerIndx("Layer '%s' was not found, "
+    THROW exception::InvalidFuncLayerIndx("Layer '%s' was not found, "
         "in ModelDescription::Layer().",
         name.c_str());
 }
 
 void ModelDescription::addInitFunction(FLAMEGPU_INIT_FUNCTION_POINTER func_p) {
     if (!model->initFunctions.insert(func_p).second) {
-        THROW InvalidHostFunc("Attempted to add same init function twice,"
+        THROW exception::InvalidHostFunc("Attempted to add same init function twice,"
             "in ModelDescription::addInitFunction()");
     }
 }
 void ModelDescription::addStepFunction(FLAMEGPU_STEP_FUNCTION_POINTER func_p) {
     if (!model->stepFunctions.insert(func_p).second) {
-        THROW InvalidHostFunc("Attempted to add same step function twice,"
+        THROW exception::InvalidHostFunc("Attempted to add same step function twice,"
             "in ModelDescription::addStepFunction()");
     }
 }
 void ModelDescription::addExitFunction(FLAMEGPU_EXIT_FUNCTION_POINTER func_p) {
     if (!model->exitFunctions.insert(func_p).second) {
-        THROW InvalidHostFunc("Attempted to add same exit function twice,"
+        THROW exception::InvalidHostFunc("Attempted to add same exit function twice,"
             "in ModelDescription::addExitFunction()");
     }
 }
 
 void ModelDescription::addExitCondition(FLAMEGPU_EXIT_CONDITION_POINTER func_p) {
     if (!model->exitConditions.insert(func_p).second) {
-        THROW InvalidHostFunc("Attempted to add same exit condition twice,"
+        THROW exception::InvalidHostFunc("Attempted to add same exit condition twice,"
             "in ModelDescription::addExitCondition()");
     }
 }
@@ -183,7 +183,7 @@ const AgentDescription& ModelDescription::getAgent(const std::string &agent_name
     const auto rtn = model->agents.find(agent_name);
     if (rtn != model->agents.end())
         return *rtn->second->description;
-    THROW InvalidAgentName("Agent ('%s') was not found, "
+    THROW exception::InvalidAgentName("Agent ('%s') was not found, "
         "in ModelDescription::getAgent().",
         agent_name.c_str());
 }
@@ -194,7 +194,7 @@ const SubModelDescription &ModelDescription::getSubModel(const std::string &subm
     const auto rtn = model->submodels.find(submodel_name);
     if (rtn != model->submodels.end())
         return *rtn->second->description;
-    THROW InvalidSubModelName("SubModel ('%s') was not found, "
+    THROW exception::InvalidSubModelName("SubModel ('%s') was not found, "
         "in ModelDescription::getSubModel().",
         submodel_name.c_str());
 }
@@ -208,7 +208,7 @@ const LayerDescription& ModelDescription::getLayer(const std::string &name) cons
                 return *(*it)->description;
         }
     }
-    THROW InvalidFuncLayerIndx("Layer ('%s') was not found, "
+    THROW exception::InvalidFuncLayerIndx("Layer ('%s') was not found, "
         "in ModelDescription::getAgent().",
         name.c_str());
 }
@@ -219,7 +219,7 @@ const LayerDescription& ModelDescription::getLayer(const ModelData::size_type &l
             ++it;
         return *(*it)->description;
     }
-    THROW OutOfBoundsException("Layer %d is out of bounds, "
+    THROW exception::OutOfBoundsException("Layer %d is out of bounds, "
         "in ModelDescription::Layer().",
         layer_index);
 }

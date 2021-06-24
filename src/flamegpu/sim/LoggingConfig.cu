@@ -19,12 +19,12 @@ AgentLoggingConfig LoggingConfig::agent(const std::string &agent_name, const std
     // Validate the agent state combination exists
     auto model_agent_it = model->agents.find(agent_name);
     if (model_agent_it == model->agents.end()) {
-        THROW InvalidAgentName("Agent '%s' was not found in the model description, "
+        THROW exception::InvalidAgentName("Agent '%s' was not found in the model description, "
             "in LoggingConfig::agent()\n",
             agent_name.c_str());
     }
     if (model_agent_it->second->states.find(agent_state) == model_agent_it->second->states.end()) {
-        THROW InvalidAgentState("State '%s' was not found within agent '%s' in the model description, "
+        THROW exception::InvalidAgentState("State '%s' was not found within agent '%s' in the model description, "
             "in LoggingConfig::agent()\n",
             agent_state.c_str(), agent_name.c_str());
     }
@@ -39,13 +39,13 @@ void LoggingConfig::logEnvironment(const std::string &property_name) {
     // Validate the environment property exists
     auto env_map = model->environment->getPropertiesMap();
     if (env_map.find(property_name) == env_map.end()) {
-        THROW InvalidEnvProperty("Environment property '%s' was not found in the model description, "
+        THROW exception::InvalidEnvProperty("Environment property '%s' was not found in the model description, "
             "in LoggingConfig::logEnvironment()\n",
             property_name.c_str());
     }
     // Log the property
     if (!environment.emplace(property_name).second) {
-        THROW InvalidEnvProperty("Environment property '%s' has already been marked for logging, "
+        THROW exception::InvalidEnvProperty("Environment property '%s' has already been marked for logging, "
             "in LoggingConfig::logEnvironment()\n",
             property_name.c_str());
     }

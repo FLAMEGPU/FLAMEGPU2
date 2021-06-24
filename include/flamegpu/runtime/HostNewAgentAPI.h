@@ -91,7 +91,7 @@ struct NewAgentStorage {
         // Overwrite _id value
         const auto& var = offsets.vars.find(ID_VARIABLE_NAME);
         if (var == offsets.vars.end()) {
-            THROW InvalidOperation("Internal agent ID variable was not found, "
+            THROW exception::InvalidOperation("Internal agent ID variable was not found, "
                 "in NewAgentStorage.NewAgentStorage().");
         }
         // Don't bother checking type/len
@@ -121,7 +121,7 @@ struct NewAgentStorage {
                 }
             }
         } else {
-            THROW InvalidArgument("Attempting to assign data from agent of different type, in NewAgentStorage::operator=()\n");
+            THROW exception::InvalidArgument("Attempting to assign data from agent of different type, in NewAgentStorage::operator=()\n");
         }
         return *this;
     }
@@ -133,18 +133,18 @@ struct NewAgentStorage {
     void setVariable(const std::string &var_name, const T &val) {
         const auto &var = offsets.vars.find(var_name);
         if (var == offsets.vars.end()) {
-            THROW InvalidAgentVar("Variable '%s' not found, "
+            THROW exception::InvalidAgentVar("Variable '%s' not found, "
                 "in NewAgentStorage.setVariable().",
                 var_name.c_str());
         }
         const auto t_type = std::type_index(typeid(T));
         if (var->second.type != std::type_index(typeid(T))) {
-            THROW InvalidVarType("Variable '%s' has type '%s, incorrect  type '%s' was requested, "
+            THROW exception::InvalidVarType("Variable '%s' has type '%s, incorrect  type '%s' was requested, "
                 "in NewAgentStorage.setVariable().",
                 var_name.c_str(), var->second.type.name(), t_type.name());
         }
         if (var->second.len != sizeof(T)) {
-            THROW InvalidAgentVar("This method is not suitable for agent array variables, "
+            THROW exception::InvalidAgentVar("This method is not suitable for agent array variables, "
                 " variable '%s' was passed, "
                 "in NewAgentStorage::setVariable().",
                 var_name.c_str());
@@ -155,23 +155,23 @@ struct NewAgentStorage {
     void setVariable(const std::string &var_name, const std::array<T, N> &val) {
         const auto &var = offsets.vars.find(var_name);
         if (var == offsets.vars.end()) {
-            THROW InvalidAgentVar("Variable '%s' not found, "
+            THROW exception::InvalidAgentVar("Variable '%s' not found, "
                 "in NewAgentStorage.setVariable().",
                 var_name.c_str());
         }
         // if (var.second.len == 1 || N == 1) {
-        //     THROW InvalidAgentVar("Agent variable '%s' in not an array variable, "
+        //     THROW exception::InvalidAgentVar("Agent variable '%s' in not an array variable, "
         //         "in NewAgentStorage::setVariable().",
         //         var_name.c_str());
         // }
         const auto t_type = std::type_index(typeid(T));
         if (var->second.type != std::type_index(typeid(T))) {
-            THROW InvalidVarType("Variable '%s' has type '%s, incorrect  type '%s' was requested, "
+            THROW exception::InvalidVarType("Variable '%s' has type '%s, incorrect  type '%s' was requested, "
                 "in NewAgentStorage.setVariable().",
                 var_name.c_str(), var->second.type.name(), t_type.name());
         }
         if (var->second.len != sizeof(T) * N) {
-            THROW InvalidVarArrayLen("Variable '%s' is an array with %u elements, incorrect array of length %u was provided, "
+            THROW exception::InvalidVarArrayLen("Variable '%s' is an array with %u elements, incorrect array of length %u was provided, "
                 "in NewAgentStorage.setVariable().",
                 var_name.c_str(), var->second.len / sizeof(T), N);
         }
@@ -181,23 +181,23 @@ struct NewAgentStorage {
     void setVariable(const std::string &var_name, const unsigned int &index, const T &val) {
         const auto &var = offsets.vars.find(var_name);
         if (var == offsets.vars.end()) {
-            THROW InvalidAgentVar("Variable '%s' not found, "
+            THROW exception::InvalidAgentVar("Variable '%s' not found, "
                 "in NewAgentStorage.setVariable().",
                 var_name.c_str());
         }
         // if (var.second.len == 1) {
-        //     THROW InvalidAgentVar("Agent variable '%s' in not an array variable, "
+        //     THROW exception::InvalidAgentVar("Agent variable '%s' in not an array variable, "
         //         "in NewAgentStorage::setVariable().",
         //         var_name.c_str());
         // }
         const auto t_type = std::type_index(typeid(T));
         if (var->second.type != std::type_index(typeid(T))) {
-            THROW InvalidVarType("Variable '%s' has type '%s, incorrect  type '%s' was requested, "
+            THROW exception::InvalidVarType("Variable '%s' has type '%s, incorrect  type '%s' was requested, "
                 "in NewAgentStorage.setVariable().",
                 var_name.c_str(), var->second.type.name(), t_type.name());
         }
         if (var->second.len < sizeof(T) * (index + 1)) {
-            THROW OutOfRangeVarArray("Variable '%s' is an array with %u elements, index %u is out of range, "
+            THROW exception::OutOfRangeVarArray("Variable '%s' is an array with %u elements, index %u is out of range, "
                 "in NewAgentStorage.setVariable().",
                 var_name.c_str(), var->second.len / sizeof(T), index);
         }
@@ -208,23 +208,23 @@ struct NewAgentStorage {
     void setVariableArray(const std::string &var_name, const std::vector<T> &val) {
         const auto &var = offsets.vars.find(var_name);
         if (var == offsets.vars.end()) {
-            THROW InvalidAgentVar("Variable '%s' not found, "
+            THROW exception::InvalidAgentVar("Variable '%s' not found, "
                 "in NewAgentStorage.setVariableArray().",
                 var_name.c_str());
         }
         // if (var.second.len == 1 || N == 1) {
-        //     THROW InvalidAgentVar("Agent variable '%s' in not an array variable, "
+        //     THROW exception::InvalidAgentVar("Agent variable '%s' in not an array variable, "
         //         "in NewAgentStorage::setVariableArray().",
         //         var_name.c_str());
         // }
         const auto t_type = std::type_index(typeid(T));
         if (var->second.type != std::type_index(typeid(T))) {
-            THROW InvalidVarType("Variable '%s' has type '%s, incorrect  type '%s' was requested, "
+            THROW exception::InvalidVarType("Variable '%s' has type '%s, incorrect  type '%s' was requested, "
                 "in NewAgentStorage.setVariableArray().",
                 var_name.c_str(), var->second.type.name(), t_type.name());
         }
         if (var->second.len != sizeof(T) * val.size()) {
-            THROW InvalidVarArrayLen("Variable '%s' is an array with %u elements, incorrect array of length %u was provided, "
+            THROW exception::InvalidVarArrayLen("Variable '%s' is an array with %u elements, incorrect array of length %u was provided, "
                 "in NewAgentStorage.setVariableArray().",
                 var_name.c_str(), var->second.len / sizeof(T), val.size());
         }
@@ -235,18 +235,18 @@ struct NewAgentStorage {
     T getVariable(const std::string &var_name) const {
         const auto &var = offsets.vars.find(var_name);
         if (var == offsets.vars.end()) {
-            THROW InvalidAgentVar("Variable '%s' not found, "
+            THROW exception::InvalidAgentVar("Variable '%s' not found, "
                 "in NewAgentStorage.getVariable()",
                 var_name.c_str());
         }
         const auto t_type = std::type_index(typeid(T));
         if (var->second.type != std::type_index(typeid(T))) {
-            THROW InvalidVarType("Variable '%s' has type '%s, incorrect  type '%s' was requested, "
+            THROW exception::InvalidVarType("Variable '%s' has type '%s, incorrect  type '%s' was requested, "
                 "in NewAgentStorage.getVariable().",
                 var_name.c_str(), var->second.type.name(), t_type.name());
         }
         if (var->second.len != sizeof(T)) {
-            THROW InvalidAgentVar("This method is not suitable for agent array variables, "
+            THROW exception::InvalidAgentVar("This method is not suitable for agent array variables, "
                 " variable '%s' was passed, "
                 "in NewAgentStorage::getVariable().",
                 var_name.c_str());
@@ -257,23 +257,23 @@ struct NewAgentStorage {
     std::array<T, N> getVariable(const std::string &var_name) {
         const auto &var = offsets.vars.find(var_name);
         if (var == offsets.vars.end()) {
-            THROW InvalidAgentVar("Variable '%s' not found, "
+            THROW exception::InvalidAgentVar("Variable '%s' not found, "
                 "in NewAgentStorage.getVariable().",
                 var_name.c_str());
         }
         // if (var.second.len == 1 || N == 1) {
-        //     THROW InvalidAgentVar("Agent variable '%s' in not an array variable, "
+        //     THROW exception::InvalidAgentVar("Agent variable '%s' in not an array variable, "
         //         "in NewAgentStorage::getVariable().",
         //         var_name.c_str());
         // }
         const auto t_type = std::type_index(typeid(T));
         if (var->second.type != std::type_index(typeid(T))) {
-            THROW InvalidVarType("Variable '%s' has type '%s, incorrect  type '%s' was requested, "
+            THROW exception::InvalidVarType("Variable '%s' has type '%s, incorrect  type '%s' was requested, "
                 "in NewAgentStorage.getVariable().",
                 var_name.c_str(), var->second.type.name(), t_type.name());
         }
         if (var->second.len != sizeof(T) * N) {
-            THROW InvalidVarArrayLen("Variable '%s' is an array with %u elements, incorrect array of length %u was specified, "
+            THROW exception::InvalidVarArrayLen("Variable '%s' is an array with %u elements, incorrect array of length %u was specified, "
                 "in NewAgentStorage.getVariable().",
                 var_name.c_str(), var->second.len / sizeof(T), N);
         }
@@ -285,23 +285,23 @@ struct NewAgentStorage {
     T getVariable(const std::string &var_name, const unsigned int &index) {
         const auto &var = offsets.vars.find(var_name);
         if (var == offsets.vars.end()) {
-            THROW InvalidAgentVar("Variable '%s' not found, "
+            THROW exception::InvalidAgentVar("Variable '%s' not found, "
                 "in NewAgentStorage.getVariable().",
                 var_name.c_str());
         }
         // if (var.second.len == 1) {
-        //     THROW InvalidAgentVar("Agent variable '%s' in not an array variable, "
+        //     THROW exception::InvalidAgentVar("Agent variable '%s' in not an array variable, "
         //         "in NewAgentStorage::getVariable().",
         //         var_name.c_str());
         // }
         const auto t_type = std::type_index(typeid(T));
         if (var->second.type != std::type_index(typeid(T))) {
-            THROW InvalidVarType("Variable '%s' has type '%s, incorrect  type '%s' was requested, "
+            THROW exception::InvalidVarType("Variable '%s' has type '%s, incorrect  type '%s' was requested, "
                 "in NewAgentStorage.getVariable().",
                 var_name.c_str(), var->second.type.name(), t_type.name());
         }
         if (var->second.len < sizeof(T) * (index + 1)) {
-            THROW OutOfRangeVarArray("Variable '%s' is an array with %u elements, index %u is out of range, "
+            THROW exception::OutOfRangeVarArray("Variable '%s' is an array with %u elements, index %u is out of range, "
                 "in NewAgentStorage.getVariable().",
                 var_name.c_str(), var->second.len / sizeof(T), index);
         }
@@ -312,13 +312,13 @@ struct NewAgentStorage {
     std::vector<T> getVariableArray(const std::string &var_name) {
         const auto &var = offsets.vars.find(var_name);
         if (var == offsets.vars.end()) {
-            THROW InvalidAgentVar("Variable '%s' not found, "
+            THROW exception::InvalidAgentVar("Variable '%s' not found, "
                 "in NewAgentStorage.getVariableArray().",
                 var_name.c_str());
         }
         const auto t_type = std::type_index(typeid(T));
         if (var->second.type != std::type_index(typeid(T))) {
-            THROW InvalidVarType("Variable '%s' has type '%s, incorrect  type '%s' was requested, "
+            THROW exception::InvalidVarType("Variable '%s' has type '%s, incorrect  type '%s' was requested, "
                 "in NewAgentStorage.getVariableArray().",
                 var_name.c_str(), var->second.type.name(), t_type.name());
         }
@@ -360,7 +360,7 @@ class HostNewAgentAPI {
     /**
      * Assignment Operator
      * This copies (non-internal) agent variable data from hna
-     * @throws InvalidArgument If hna is of a different agent type (has a different internal memory layout)
+     * @throws exception::InvalidArgument If hna is of a different agent type (has a different internal memory layout)
      */
     HostNewAgentAPI& operator=(const HostNewAgentAPI &hna) {
         if (&hna != this)
@@ -374,7 +374,7 @@ class HostNewAgentAPI {
     template<typename T>
     void setVariable(const std::string &var_name, const T &val) {
         if (!var_name.empty() && var_name[0] == '_') {
-            THROW ReservedName("Agent variable names cannot begin with '_', this is reserved for internal usage, "
+            THROW exception::ReservedName("Agent variable names cannot begin with '_', this is reserved for internal usage, "
                 "in HostNewAgentAPI::setVariable().");
         }
         s->setVariable<T>(var_name, val);
@@ -382,7 +382,7 @@ class HostNewAgentAPI {
     template<typename T, unsigned int N>
     void setVariable(const std::string &var_name, const std::array<T, N> &val) {
         if (!var_name.empty() && var_name[0] == '_') {
-            THROW ReservedName("Agent variable names cannot begin with '_', this is reserved for internal usage, "
+            THROW exception::ReservedName("Agent variable names cannot begin with '_', this is reserved for internal usage, "
                 "in HostNewAgentAPI::setVariable().");
         }
         s->setVariable<T, N>(var_name, val);
@@ -390,7 +390,7 @@ class HostNewAgentAPI {
     template<typename T>
     void setVariable(const std::string &var_name, const unsigned int &index, const T &val) {
         if (!var_name.empty() && var_name[0] == '_') {
-            THROW ReservedName("Agent variable names cannot begin with '_', this is reserved for internal usage, "
+            THROW exception::ReservedName("Agent variable names cannot begin with '_', this is reserved for internal usage, "
                 "in HostNewAgentAPI::setVariable().");
         }
         s->setVariable<T>(var_name, index, val);
@@ -399,7 +399,7 @@ class HostNewAgentAPI {
     template<typename T>
     void setVariableArray(const std::string &var_name, const std::vector<T> &val) {
         if (!var_name.empty() && var_name[0] == '_') {
-            THROW ReservedName("Agent variable names cannot begin with '_', this is reserved for internal usage, "
+            THROW exception::ReservedName("Agent variable names cannot begin with '_', this is reserved for internal usage, "
                 "in HostNewAgentAPI::setVariable().");
         }
         s->setVariableArray<T>(var_name, val);
@@ -434,7 +434,7 @@ class HostNewAgentAPI {
             return s->getVariable<id_t>(ID_VARIABLE_NAME);
         } catch (...) {
             // Rewrite all exceptions
-            THROW UnknownInternalError("Internal Error: Unable to read internal ID variable, in HostNewAgentAPI::getID()\n");
+            THROW exception::UnknownInternalError("Internal Error: Unable to read internal ID variable, in HostNewAgentAPI::getID()\n");
         }
     }
 

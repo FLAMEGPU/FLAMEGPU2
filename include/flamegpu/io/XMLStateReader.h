@@ -39,7 +39,7 @@ class XMLStateReader : public StateReader {
     /**
      * Actual performs the XML parsing to load the model state
      * @return Always tinyxml2::XML_SUCCESS
-     * @throws TinyXMLError If parsing of the input file fails
+     * @throws exception::TinyXMLError If parsing of the input file fails
      */
     int parse() override;
 

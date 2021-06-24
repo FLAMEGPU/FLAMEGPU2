@@ -101,16 +101,16 @@ TEST(LayerDescriptionTest, AgentFunction) {
     EXPECT_EQ(l.getAgentFunctionsCount(), 4u);
 
     // Cannot add function not attached to an agent
-    EXPECT_THROW(l.addAgentFunction(f1), InvalidAgentFunc);
-    EXPECT_THROW(l.addAgentFunction(f4), InvalidAgentFunc);
-    EXPECT_THROW(l.addAgentFunction(agent_fn5), InvalidAgentFunc);
+    EXPECT_THROW(l.addAgentFunction(f1), exception::InvalidAgentFunc);
+    EXPECT_THROW(l.addAgentFunction(f4), exception::InvalidAgentFunc);
+    EXPECT_THROW(l.addAgentFunction(agent_fn5), exception::InvalidAgentFunc);
     EXPECT_EQ(l.getAgentFunctionsCount(), 4u);
 
     // Cannot add duplicate function variable with same name
-    EXPECT_THROW(l.addAgentFunction(agent_fn2), InvalidAgentFunc);
-    EXPECT_THROW(l.addAgentFunction(f3), InvalidAgentFunc);
-    EXPECT_THROW(l.addAgentFunction(AGENT_NAME, std::string(FUNCTION_NAME4)), InvalidAgentFunc);
-    EXPECT_THROW(l.addAgentFunction(AGENT_NAME, FUNCTION_NAME1), InvalidAgentFunc);
+    EXPECT_THROW(l.addAgentFunction(agent_fn2), exception::InvalidAgentFunc);
+    EXPECT_THROW(l.addAgentFunction(f3), exception::InvalidAgentFunc);
+    EXPECT_THROW(l.addAgentFunction(AGENT_NAME, std::string(FUNCTION_NAME4)), exception::InvalidAgentFunc);
+    EXPECT_THROW(l.addAgentFunction(AGENT_NAME, FUNCTION_NAME1), exception::InvalidAgentFunc);
     EXPECT_EQ(l.getAgentFunctionsCount(), 4u);
 
     // Function have the right name (not implemented
@@ -127,7 +127,7 @@ TEST(LayerDescriptionTest, HostFunction) {
     l.addHostFunction(host_fn);
     EXPECT_EQ(l.getHostFunctionsCount(), 1u);
     // Cannot create function with same name
-    EXPECT_THROW(l.addHostFunction(host_fn), InvalidLayerMember);
+    EXPECT_THROW(l.addHostFunction(host_fn), exception::InvalidLayerMember);
 }
 
 TEST(LayerDescriptionTest, AgentFunction_WrongModel) {
@@ -140,7 +140,7 @@ TEST(LayerDescriptionTest, AgentFunction_WrongModel) {
     LayerDescription &l = _m.newLayer(LAYER_NAME);
 
     EXPECT_NO_THROW(l.addAgentFunction(f1));
-    EXPECT_THROW(l.addAgentFunction(f2), DifferentModel);
+    EXPECT_THROW(l.addAgentFunction(f2), exception::DifferentModel);
 }
 
 TEST(LayerDescriptionTest, SameAgentAndState1) {
@@ -151,9 +151,9 @@ TEST(LayerDescriptionTest, SameAgentAndState1) {
     LayerDescription &l = _m.newLayer();
     // Both have agent in default state
     EXPECT_NO_THROW(l.addAgentFunction(agent_fn2));
-    EXPECT_THROW(l.addAgentFunction(agent_fn3), InvalidAgentFunc);
-    EXPECT_THROW(l.addAgentFunction(AGENT_NAME, FUNCTION_NAME2), InvalidAgentFunc);
-    EXPECT_THROW(l.addAgentFunction(f2), InvalidAgentFunc);
+    EXPECT_THROW(l.addAgentFunction(agent_fn3), exception::InvalidAgentFunc);
+    EXPECT_THROW(l.addAgentFunction(AGENT_NAME, FUNCTION_NAME2), exception::InvalidAgentFunc);
+    EXPECT_THROW(l.addAgentFunction(f2), exception::InvalidAgentFunc);
 }
 TEST(LayerDescriptionTest, SameAgentAndState2) {
     ModelDescription _m(MODEL_NAME);
@@ -170,9 +170,9 @@ TEST(LayerDescriptionTest, SameAgentAndState2) {
     LayerDescription &l = _m.newLayer();
     // Both have STATE_NAME:NEW_STATE_NAME state
     EXPECT_NO_THROW(l.addAgentFunction(agent_fn2));
-    EXPECT_THROW(l.addAgentFunction(agent_fn3), InvalidAgentFunc);
-    EXPECT_THROW(l.addAgentFunction(AGENT_NAME, FUNCTION_NAME2), InvalidAgentFunc);
-    EXPECT_THROW(l.addAgentFunction(f2), InvalidAgentFunc);
+    EXPECT_THROW(l.addAgentFunction(agent_fn3), exception::InvalidAgentFunc);
+    EXPECT_THROW(l.addAgentFunction(AGENT_NAME, FUNCTION_NAME2), exception::InvalidAgentFunc);
+    EXPECT_THROW(l.addAgentFunction(f2), exception::InvalidAgentFunc);
 }
 TEST(LayerDescriptionTest, SameAgentAndState3) {
     ModelDescription _m(MODEL_NAME);
@@ -189,9 +189,9 @@ TEST(LayerDescriptionTest, SameAgentAndState3) {
     LayerDescription &l = _m.newLayer();
     // Both share initial state
     EXPECT_NO_THROW(l.addAgentFunction(agent_fn2));
-    EXPECT_THROW(l.addAgentFunction(agent_fn3), InvalidAgentFunc);
-    EXPECT_THROW(l.addAgentFunction(AGENT_NAME, FUNCTION_NAME2), InvalidAgentFunc);
-    EXPECT_THROW(l.addAgentFunction(f2), InvalidAgentFunc);
+    EXPECT_THROW(l.addAgentFunction(agent_fn3), exception::InvalidAgentFunc);
+    EXPECT_THROW(l.addAgentFunction(AGENT_NAME, FUNCTION_NAME2), exception::InvalidAgentFunc);
+    EXPECT_THROW(l.addAgentFunction(f2), exception::InvalidAgentFunc);
 }
 TEST(LayerDescriptionTest, SameAgentAndState4) {
     ModelDescription _m(MODEL_NAME);
@@ -208,9 +208,9 @@ TEST(LayerDescriptionTest, SameAgentAndState4) {
     LayerDescription &l = _m.newLayer();
     // start matches end and vice versa
     EXPECT_NO_THROW(l.addAgentFunction(agent_fn2));
-    EXPECT_THROW(l.addAgentFunction(agent_fn3), InvalidAgentFunc);
-    EXPECT_THROW(l.addAgentFunction(AGENT_NAME, FUNCTION_NAME2), InvalidAgentFunc);
-    EXPECT_THROW(l.addAgentFunction(f2), InvalidAgentFunc);
+    EXPECT_THROW(l.addAgentFunction(agent_fn3), exception::InvalidAgentFunc);
+    EXPECT_THROW(l.addAgentFunction(AGENT_NAME, FUNCTION_NAME2), exception::InvalidAgentFunc);
+    EXPECT_THROW(l.addAgentFunction(f2), exception::InvalidAgentFunc);
 }
 TEST(LayerDescriptionTest, SameAgentAndState5) {
     ModelDescription _m(MODEL_NAME);
@@ -227,9 +227,9 @@ TEST(LayerDescriptionTest, SameAgentAndState5) {
     LayerDescription &l = _m.newLayer();
     // end matches start state
     EXPECT_NO_THROW(l.addAgentFunction(agent_fn2));
-    EXPECT_THROW(l.addAgentFunction(agent_fn3), InvalidAgentFunc);
-    EXPECT_THROW(l.addAgentFunction(AGENT_NAME, FUNCTION_NAME2), InvalidAgentFunc);
-    EXPECT_THROW(l.addAgentFunction(f2), InvalidAgentFunc);
+    EXPECT_THROW(l.addAgentFunction(agent_fn3), exception::InvalidAgentFunc);
+    EXPECT_THROW(l.addAgentFunction(AGENT_NAME, FUNCTION_NAME2), exception::InvalidAgentFunc);
+    EXPECT_THROW(l.addAgentFunction(f2), exception::InvalidAgentFunc);
 }
 TEST(LayerDescriptionTest, SameAgentAndState6) {
     ModelDescription _m(MODEL_NAME);
@@ -246,9 +246,9 @@ TEST(LayerDescriptionTest, SameAgentAndState6) {
     LayerDescription &l = _m.newLayer();
     // start matches end state
     EXPECT_NO_THROW(l.addAgentFunction(agent_fn2));
-    EXPECT_THROW(l.addAgentFunction(agent_fn3), InvalidAgentFunc);
-    EXPECT_THROW(l.addAgentFunction(AGENT_NAME, FUNCTION_NAME2), InvalidAgentFunc);
-    EXPECT_THROW(l.addAgentFunction(f2), InvalidAgentFunc);
+    EXPECT_THROW(l.addAgentFunction(agent_fn3), exception::InvalidAgentFunc);
+    EXPECT_THROW(l.addAgentFunction(AGENT_NAME, FUNCTION_NAME2), exception::InvalidAgentFunc);
+    EXPECT_THROW(l.addAgentFunction(f2), exception::InvalidAgentFunc);
 }
 TEST(LayerDescriptionTest, SameMessageListOutOut) {
     ModelDescription _m(MODEL_NAME);
@@ -262,9 +262,9 @@ TEST(LayerDescriptionTest, SameMessageListOutOut) {
     LayerDescription& l = _m.newLayer();
     // Both agent functions output to same message list
     EXPECT_NO_THROW(l.addAgentFunction(f1));
-    EXPECT_THROW(l.addAgentFunction(f2), InvalidLayerMember);
-    EXPECT_THROW(l.addAgentFunction(AGENT_NAME2, FUNCTION_NAME1), InvalidLayerMember);
-    EXPECT_THROW(l.addAgentFunction(agent_fn_msgout2), InvalidLayerMember);
+    EXPECT_THROW(l.addAgentFunction(f2), exception::InvalidLayerMember);
+    EXPECT_THROW(l.addAgentFunction(AGENT_NAME2, FUNCTION_NAME1), exception::InvalidLayerMember);
+    EXPECT_THROW(l.addAgentFunction(agent_fn_msgout2), exception::InvalidLayerMember);
 }
 TEST(LayerDescriptionTest, SameMessageListOutIn) {
     ModelDescription _m(MODEL_NAME);
@@ -278,9 +278,9 @@ TEST(LayerDescriptionTest, SameMessageListOutIn) {
     LayerDescription& l = _m.newLayer();
     // Both agent functions output to same message list
     EXPECT_NO_THROW(l.addAgentFunction(f1));
-    EXPECT_THROW(l.addAgentFunction(f2), InvalidLayerMember);
-    EXPECT_THROW(l.addAgentFunction(AGENT_NAME2, FUNCTION_NAME1), InvalidLayerMember);
-    EXPECT_THROW(l.addAgentFunction(agent_fn_msgin2), InvalidLayerMember);
+    EXPECT_THROW(l.addAgentFunction(f2), exception::InvalidLayerMember);
+    EXPECT_THROW(l.addAgentFunction(AGENT_NAME2, FUNCTION_NAME1), exception::InvalidLayerMember);
+    EXPECT_THROW(l.addAgentFunction(agent_fn_msgin2), exception::InvalidLayerMember);
 }
 TEST(LayerDescriptionTest, SameMessageListInOut) {
     ModelDescription _m(MODEL_NAME);
@@ -294,9 +294,9 @@ TEST(LayerDescriptionTest, SameMessageListInOut) {
     LayerDescription& l = _m.newLayer();
     // Both agent functions output to same message list
     EXPECT_NO_THROW(l.addAgentFunction(f1));
-    EXPECT_THROW(l.addAgentFunction(f2), InvalidLayerMember);
-    EXPECT_THROW(l.addAgentFunction(AGENT_NAME2, FUNCTION_NAME1), InvalidLayerMember);
-    EXPECT_THROW(l.addAgentFunction(agent_fn_msgout2), InvalidLayerMember);
+    EXPECT_THROW(l.addAgentFunction(f2), exception::InvalidLayerMember);
+    EXPECT_THROW(l.addAgentFunction(AGENT_NAME2, FUNCTION_NAME1), exception::InvalidLayerMember);
+    EXPECT_THROW(l.addAgentFunction(agent_fn_msgout2), exception::InvalidLayerMember);
 }
 TEST(LayerDescriptionTest, AgentOutMatchesInputState1) {
     // Can't add an agent function which outputs to the same agent state that is an input state for another agent function
@@ -314,9 +314,9 @@ TEST(LayerDescriptionTest, AgentOutMatchesInputState1) {
     LayerDescription& l = _m.newLayer();
     // Both agent functions output to same message list
     EXPECT_NO_THROW(l.addAgentFunction(f1));
-    EXPECT_THROW(l.addAgentFunction(f2), InvalidLayerMember);
-    EXPECT_THROW(l.addAgentFunction(AGENT_NAME, FUNCTION_NAME2), InvalidLayerMember);
-    EXPECT_THROW(l.addAgentFunction(agent_fn2), InvalidLayerMember);
+    EXPECT_THROW(l.addAgentFunction(f2), exception::InvalidLayerMember);
+    EXPECT_THROW(l.addAgentFunction(AGENT_NAME, FUNCTION_NAME2), exception::InvalidLayerMember);
+    EXPECT_THROW(l.addAgentFunction(agent_fn2), exception::InvalidLayerMember);
 }
 TEST(LayerDescriptionTest, AgentOutMatchesInputState2) {
     // Can't add an agent function which outputs to the same agent state that is an input state for another agent function
@@ -335,9 +335,9 @@ TEST(LayerDescriptionTest, AgentOutMatchesInputState2) {
     LayerDescription& l = _m.newLayer();
     // Both agent functions output to same message list
     EXPECT_NO_THROW(l.addAgentFunction(f1));
-    EXPECT_THROW(l.addAgentFunction(f2), InvalidLayerMember);
-    EXPECT_THROW(l.addAgentFunction(AGENT_NAME, FUNCTION_NAME2), InvalidLayerMember);
-    EXPECT_THROW(l.addAgentFunction(agent_fn2), InvalidLayerMember);
+    EXPECT_THROW(l.addAgentFunction(f2), exception::InvalidLayerMember);
+    EXPECT_THROW(l.addAgentFunction(AGENT_NAME, FUNCTION_NAME2), exception::InvalidLayerMember);
+    EXPECT_THROW(l.addAgentFunction(agent_fn2), exception::InvalidLayerMember);
 }
 TEST(LayerDescriptionTest, NoSuitableAgentFunctions) {
     ModelDescription _m(MODEL_NAME);
@@ -347,7 +347,7 @@ TEST(LayerDescriptionTest, NoSuitableAgentFunctions) {
     a2.newFunction(FUNCTION_NAME1, agent_fn2);
     LayerDescription& l = _m.newLayer();
     // No agent functions within the model use this agent function body
-    EXPECT_THROW(l.addAgentFunction(agent_fn_msgout1), InvalidAgentFunc);
+    EXPECT_THROW(l.addAgentFunction(agent_fn_msgout1), exception::InvalidAgentFunc);
 }
 TEST(LayerDescriptionTest, MultipleSuitableAgentFunctions) {
     ModelDescription _m(MODEL_NAME);
@@ -357,7 +357,7 @@ TEST(LayerDescriptionTest, MultipleSuitableAgentFunctions) {
     a2.newFunction(FUNCTION_NAME1, agent_fn2);
     LayerDescription& l = _m.newLayer();
     // Multiple agent functions within the model use this agent function body
-    EXPECT_THROW(l.addAgentFunction(agent_fn2), InvalidAgentFunc);
+    EXPECT_THROW(l.addAgentFunction(agent_fn2), exception::InvalidAgentFunc);
 }
 TEST(LayerDescriptionTest, AgentFnHostFnSameLayer) {
     ModelDescription _m(MODEL_NAME);
@@ -366,7 +366,7 @@ TEST(LayerDescriptionTest, AgentFnHostFnSameLayer) {
     LayerDescription& l = _m.newLayer();
     // Multiple agent functions within the model use this agent function body
     EXPECT_NO_THROW(l.addAgentFunction(f1));
-    EXPECT_THROW(l.addHostFunction(host_fn), InvalidLayerMember);
+    EXPECT_THROW(l.addHostFunction(host_fn), exception::InvalidLayerMember);
 }
 TEST(LayerDescriptionTest, HostFnAgentFnSameLayer) {
     ModelDescription _m(MODEL_NAME);
@@ -375,9 +375,9 @@ TEST(LayerDescriptionTest, HostFnAgentFnSameLayer) {
     LayerDescription& l = _m.newLayer();
     // Multiple agent functions within the model use this agent function body
     EXPECT_NO_THROW(l.addHostFunction(host_fn));
-    EXPECT_THROW(l.addAgentFunction(f1), InvalidLayerMember);
-    EXPECT_THROW(l.addAgentFunction(AGENT_NAME, FUNCTION_NAME1), InvalidLayerMember);
-    EXPECT_THROW(l.addAgentFunction(agent_fn1), InvalidLayerMember);
+    EXPECT_THROW(l.addAgentFunction(f1), exception::InvalidLayerMember);
+    EXPECT_THROW(l.addAgentFunction(AGENT_NAME, FUNCTION_NAME1), exception::InvalidLayerMember);
+    EXPECT_THROW(l.addAgentFunction(agent_fn1), exception::InvalidLayerMember);
 }
 
 TEST(LayerDescriptionTest, SubModelAndHostOrAgentFunction) {
@@ -396,22 +396,22 @@ TEST(LayerDescriptionTest, SubModelAndHostOrAgentFunction) {
     // Submodel can't go in layer with agent function
     auto &layer2 = m.newLayer();
     EXPECT_NO_THROW(layer2.addAgentFunction(af1));
-    EXPECT_THROW(layer2.addSubModel(sm), InvalidLayerMember);
+    EXPECT_THROW(layer2.addSubModel(sm), exception::InvalidLayerMember);
     EXPECT_NO_THROW(layer2.addAgentFunction(af2));
     // Submodel can't go in layer with host function
     auto &layer3 = m.newLayer();
     EXPECT_NO_THROW(layer3.addHostFunction(host_fn));
-    EXPECT_THROW(layer3.addSubModel(sm), InvalidLayerMember);
-    EXPECT_THROW(layer3.addHostFunction(host_fn2), InvalidLayerMember);
+    EXPECT_THROW(layer3.addSubModel(sm), exception::InvalidLayerMember);
+    EXPECT_THROW(layer3.addHostFunction(host_fn2), exception::InvalidLayerMember);
     // Host and agent functions can't go in layer with submodel
     // Submodel can't go in layer with submodel
     auto &layer4 = m.newLayer();
     EXPECT_NO_THROW(layer4.addSubModel(sm));
-    EXPECT_THROW(layer4.addSubModel(sm2), InvalidSubModel);
-    EXPECT_THROW(layer4.addAgentFunction(af1), InvalidLayerMember);
-    EXPECT_THROW(layer4.addAgentFunction(AGENT_NAME, ""), InvalidLayerMember);
-    EXPECT_THROW(layer4.addAgentFunction(agent_fn1), InvalidLayerMember);
-    EXPECT_THROW(layer4.addHostFunction(host_fn), InvalidLayerMember);
+    EXPECT_THROW(layer4.addSubModel(sm2), exception::InvalidSubModel);
+    EXPECT_THROW(layer4.addAgentFunction(af1), exception::InvalidLayerMember);
+    EXPECT_THROW(layer4.addAgentFunction(AGENT_NAME, ""), exception::InvalidLayerMember);
+    EXPECT_THROW(layer4.addAgentFunction(agent_fn1), exception::InvalidLayerMember);
+    EXPECT_THROW(layer4.addHostFunction(host_fn), exception::InvalidLayerMember);
 }
 }  // namespace test_layer
 }  // namespace flamegpu

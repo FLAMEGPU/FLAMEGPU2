@@ -428,10 +428,10 @@ FLAMEGPU_STEP_FUNCTION(ExceptionPropertyType_float) {
     * They don't build on Travis with implied template args
     */
     auto setArray = &HostEnvironment::setProperty<uint64_t, TEST_ARRAY_LEN>;
-    EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("float_", _a), InvalidEnvPropertyType);
-    // EXPECT_THROW(FLAMEGPU->environment.set<uint64_t>("float_a_", _b), InvalidEnvPropertyType);  // Doesn't build on Travis
-    EXPECT_THROW((FLAMEGPU->environment.*setArray)("float_a_", _b), InvalidEnvPropertyType);
-    EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("float_a_", 0, _a), InvalidEnvPropertyType);
+    EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("float_", _a), exception::InvalidEnvPropertyType);
+    // EXPECT_THROW(FLAMEGPU->environment.set<uint64_t>("float_a_", _b), exception::InvalidEnvPropertyType);  // Doesn't build on Travis
+    EXPECT_THROW((FLAMEGPU->environment.*setArray)("float_a_", _b), exception::InvalidEnvPropertyType);
+    EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("float_a_", 0, _a), exception::InvalidEnvPropertyType);
 }
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyType_double) {
     uint64_t _a = static_cast<uint64_t>(TEST_VALUE);
@@ -446,10 +446,10 @@ FLAMEGPU_STEP_FUNCTION(ExceptionPropertyType_double) {
     * They don't build on Travis with implied template args
     */
     auto setArray = &HostEnvironment::setProperty<uint64_t, TEST_ARRAY_LEN>;
-    EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("double_", _a), InvalidEnvPropertyType);
-    // EXPECT_THROW(FLAMEGPU->environment.set<uint64_t>("double_a_", _b), InvalidEnvPropertyType);  // Doesn't build on Travis
-    EXPECT_THROW((FLAMEGPU->environment.*setArray)("double_a_", _b), InvalidEnvPropertyType);
-    EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("double_a_", 0, _a), InvalidEnvPropertyType);
+    EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("double_", _a), exception::InvalidEnvPropertyType);
+    // EXPECT_THROW(FLAMEGPU->environment.set<uint64_t>("double_a_", _b), exception::InvalidEnvPropertyType);  // Doesn't build on Travis
+    EXPECT_THROW((FLAMEGPU->environment.*setArray)("double_a_", _b), exception::InvalidEnvPropertyType);
+    EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("double_a_", 0, _a), exception::InvalidEnvPropertyType);
 }
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyType_int8_t) {
     uint64_t _a = static_cast<uint64_t>(TEST_VALUE);
@@ -464,10 +464,10 @@ FLAMEGPU_STEP_FUNCTION(ExceptionPropertyType_int8_t) {
     * They don't build on Travis with implied template args
     */
     auto setArray = &HostEnvironment::setProperty<uint64_t, TEST_ARRAY_LEN>;
-    EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("int8_t_", _a), InvalidEnvPropertyType);
-    // EXPECT_THROW(FLAMEGPU->environment.set<uint64_t>("int8_t_a_", _b), InvalidEnvPropertyType);  // Doesn't build on Travis
-    EXPECT_THROW((FLAMEGPU->environment.*setArray)("int8_t_a_", _b), InvalidEnvPropertyType);
-    EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("int8_t_a_", 0, _a), InvalidEnvPropertyType);
+    EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("int8_t_", _a), exception::InvalidEnvPropertyType);
+    // EXPECT_THROW(FLAMEGPU->environment.set<uint64_t>("int8_t_a_", _b), exception::InvalidEnvPropertyType);  // Doesn't build on Travis
+    EXPECT_THROW((FLAMEGPU->environment.*setArray)("int8_t_a_", _b), exception::InvalidEnvPropertyType);
+    EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("int8_t_a_", 0, _a), exception::InvalidEnvPropertyType);
 }
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyType_uint8_t) {
     uint64_t _a = static_cast<uint64_t>(TEST_VALUE);
@@ -482,10 +482,10 @@ FLAMEGPU_STEP_FUNCTION(ExceptionPropertyType_uint8_t) {
     * They don't build on Travis with implied template args
     */
     auto setArray = &HostEnvironment::setProperty<uint64_t, TEST_ARRAY_LEN>;
-    EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("uint8_t_", _a), InvalidEnvPropertyType);
-    // EXPECT_THROW(FLAMEGPU->environment.set<uint64_t>("uint8_t_a_", _b), InvalidEnvPropertyType);  // Doesn't build on Travis
-    EXPECT_THROW((FLAMEGPU->environment.*setArray)("uint8_t_a_", _b), InvalidEnvPropertyType);
-    EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("uint8_t_a_", 0, _a), InvalidEnvPropertyType);
+    EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("uint8_t_", _a), exception::InvalidEnvPropertyType);
+    // EXPECT_THROW(FLAMEGPU->environment.set<uint64_t>("uint8_t_a_", _b), exception::InvalidEnvPropertyType);  // Doesn't build on Travis
+    EXPECT_THROW((FLAMEGPU->environment.*setArray)("uint8_t_a_", _b), exception::InvalidEnvPropertyType);
+    EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("uint8_t_a_", 0, _a), exception::InvalidEnvPropertyType);
 }
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyType_int16_t) {
     uint64_t _a = static_cast<uint64_t>(TEST_VALUE);
@@ -500,10 +500,10 @@ FLAMEGPU_STEP_FUNCTION(ExceptionPropertyType_int16_t) {
     * They don't build on Travis with implied template args
     */
     auto setArray = &HostEnvironment::setProperty<uint64_t, TEST_ARRAY_LEN>;
-    EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("int16_t_", _a), InvalidEnvPropertyType);
-    // EXPECT_THROW(FLAMEGPU->environment.set<uint64_t>("int16_t_a_", _b), InvalidEnvPropertyType);  // Doesn't build on Travis
-    EXPECT_THROW((FLAMEGPU->environment.*setArray)("int16_t_a_", _b), InvalidEnvPropertyType);
-    EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("int16_t_a_", 0, _a), InvalidEnvPropertyType);
+    EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("int16_t_", _a), exception::InvalidEnvPropertyType);
+    // EXPECT_THROW(FLAMEGPU->environment.set<uint64_t>("int16_t_a_", _b), exception::InvalidEnvPropertyType);  // Doesn't build on Travis
+    EXPECT_THROW((FLAMEGPU->environment.*setArray)("int16_t_a_", _b), exception::InvalidEnvPropertyType);
+    EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("int16_t_a_", 0, _a), exception::InvalidEnvPropertyType);
 }
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyType_uint16_t) {
     uint64_t _a = static_cast<uint64_t>(TEST_VALUE);
@@ -518,10 +518,10 @@ FLAMEGPU_STEP_FUNCTION(ExceptionPropertyType_uint16_t) {
     * They don't build on Travis with implied template args
     */
     auto setArray = &HostEnvironment::setProperty<uint64_t, TEST_ARRAY_LEN>;
-    EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("uint16_t_", _a), InvalidEnvPropertyType);
-    // EXPECT_THROW(FLAMEGPU->environment.set<uint64_t>("uint16_t_a_", _b), InvalidEnvPropertyType);  // Doesn't build on Travis
-    EXPECT_THROW((FLAMEGPU->environment.*setArray)("uint16_t_a_", _b), InvalidEnvPropertyType);
-    EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("uint16_t_a_", 0, _a), InvalidEnvPropertyType);
+    EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("uint16_t_", _a), exception::InvalidEnvPropertyType);
+    // EXPECT_THROW(FLAMEGPU->environment.set<uint64_t>("uint16_t_a_", _b), exception::InvalidEnvPropertyType);  // Doesn't build on Travis
+    EXPECT_THROW((FLAMEGPU->environment.*setArray)("uint16_t_a_", _b), exception::InvalidEnvPropertyType);
+    EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("uint16_t_a_", 0, _a), exception::InvalidEnvPropertyType);
 }
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyType_int32_t) {
     uint64_t _a = static_cast<uint64_t>(TEST_VALUE);
@@ -536,10 +536,10 @@ FLAMEGPU_STEP_FUNCTION(ExceptionPropertyType_int32_t) {
     * They don't build on Travis with implied template args
     */
     auto setArray = &HostEnvironment::setProperty<uint64_t, TEST_ARRAY_LEN>;
-    EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("int32_t_", _a), InvalidEnvPropertyType);
-    // EXPECT_THROW(FLAMEGPU->environment.set<uint64_t>("int32_t_a_", _b), InvalidEnvPropertyType);  // Doesn't build on Travis
-    EXPECT_THROW((FLAMEGPU->environment.*setArray)("int32_t_a_", _b), InvalidEnvPropertyType);
-    EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("int32_t_a_", 0, _a), InvalidEnvPropertyType);
+    EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("int32_t_", _a), exception::InvalidEnvPropertyType);
+    // EXPECT_THROW(FLAMEGPU->environment.set<uint64_t>("int32_t_a_", _b), exception::InvalidEnvPropertyType);  // Doesn't build on Travis
+    EXPECT_THROW((FLAMEGPU->environment.*setArray)("int32_t_a_", _b), exception::InvalidEnvPropertyType);
+    EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("int32_t_a_", 0, _a), exception::InvalidEnvPropertyType);
 }
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyType_uint32_t) {
     uint64_t _a = static_cast<uint64_t>(TEST_VALUE);
@@ -554,10 +554,10 @@ FLAMEGPU_STEP_FUNCTION(ExceptionPropertyType_uint32_t) {
     * They don't build on Travis with implied template args
     */
     auto setArray = &HostEnvironment::setProperty<uint64_t, TEST_ARRAY_LEN>;
-    EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("uint32_t_", _a), InvalidEnvPropertyType);
-    // EXPECT_THROW(FLAMEGPU->environment.set<uint64_t>("uint32_t_a_", _b), InvalidEnvPropertyType);  // Doesn't build on Travis
-    EXPECT_THROW((FLAMEGPU->environment.*setArray)("uint32_t_a_", _b), InvalidEnvPropertyType);
-    EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("uint32_t_a_", 0, _a), InvalidEnvPropertyType);
+    EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("uint32_t_", _a), exception::InvalidEnvPropertyType);
+    // EXPECT_THROW(FLAMEGPU->environment.set<uint64_t>("uint32_t_a_", _b), exception::InvalidEnvPropertyType);  // Doesn't build on Travis
+    EXPECT_THROW((FLAMEGPU->environment.*setArray)("uint32_t_a_", _b), exception::InvalidEnvPropertyType);
+    EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("uint32_t_a_", 0, _a), exception::InvalidEnvPropertyType);
 }
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyType_int64_t) {
     float _a = static_cast<float>(TEST_VALUE);
@@ -572,10 +572,10 @@ FLAMEGPU_STEP_FUNCTION(ExceptionPropertyType_int64_t) {
     * They don't build on Travis with implied template args
     */
     auto setArray = &HostEnvironment::setProperty<float, TEST_ARRAY_LEN>;
-    EXPECT_THROW(FLAMEGPU->environment.setProperty<float>("int64_t_", _a), InvalidEnvPropertyType);
-    // EXPECT_THROW(FLAMEGPU->environment.set<float>("int64_t_a_", _b), InvalidEnvPropertyType);  // Doesn't build on Travis
-    EXPECT_THROW((FLAMEGPU->environment.*setArray)("int64_t_a_", _b), InvalidEnvPropertyType);
-    EXPECT_THROW(FLAMEGPU->environment.setProperty<float>("int64_t_a_", 0, _a), InvalidEnvPropertyType);
+    EXPECT_THROW(FLAMEGPU->environment.setProperty<float>("int64_t_", _a), exception::InvalidEnvPropertyType);
+    // EXPECT_THROW(FLAMEGPU->environment.set<float>("int64_t_a_", _b), exception::InvalidEnvPropertyType);  // Doesn't build on Travis
+    EXPECT_THROW((FLAMEGPU->environment.*setArray)("int64_t_a_", _b), exception::InvalidEnvPropertyType);
+    EXPECT_THROW(FLAMEGPU->environment.setProperty<float>("int64_t_a_", 0, _a), exception::InvalidEnvPropertyType);
 }
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyType_uint64_t) {
     float _a = static_cast<float>(TEST_VALUE);
@@ -590,10 +590,10 @@ FLAMEGPU_STEP_FUNCTION(ExceptionPropertyType_uint64_t) {
     * They don't build on Travis with implied template args
     */
     auto setArray = &HostEnvironment::setProperty<float, TEST_ARRAY_LEN>;
-    EXPECT_THROW(FLAMEGPU->environment.setProperty<float>("uint64_t_", _a), InvalidEnvPropertyType);
-    // EXPECT_THROW(FLAMEGPU->environment.set<float>("uint64_t_a_", _b), InvalidEnvPropertyType);  // Doesn't build on Travis
-    EXPECT_THROW((FLAMEGPU->environment.*setArray)("uint64_t_a_", _b), InvalidEnvPropertyType);
-    EXPECT_THROW(FLAMEGPU->environment.setProperty<float>("uint64_t_a_", 0, _a), InvalidEnvPropertyType);
+    EXPECT_THROW(FLAMEGPU->environment.setProperty<float>("uint64_t_", _a), exception::InvalidEnvPropertyType);
+    // EXPECT_THROW(FLAMEGPU->environment.set<float>("uint64_t_a_", _b), exception::InvalidEnvPropertyType);  // Doesn't build on Travis
+    EXPECT_THROW((FLAMEGPU->environment.*setArray)("uint64_t_a_", _b), exception::InvalidEnvPropertyType);
+    EXPECT_THROW(FLAMEGPU->environment.setProperty<float>("uint64_t_a_", 0, _a), exception::InvalidEnvPropertyType);
 }
 
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_float) {
@@ -610,9 +610,9 @@ FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_float) {
     auto setArray3 = &HostEnvironment::setProperty<float, TEST_ARRAY_LEN + 1>;
     auto setArray4 = &HostEnvironment::setProperty<float, TEST_ARRAY_LEN * 2>;
     EXPECT_NO_THROW((FLAMEGPU->environment.*setArray1)("float_a_", b));
-    EXPECT_THROW((FLAMEGPU->environment.*setArray2)("float_a_", _b1), OutOfBoundsException);
-    EXPECT_THROW((FLAMEGPU->environment.*setArray3)("float_a_", _b2), OutOfBoundsException);
-    EXPECT_THROW((FLAMEGPU->environment.*setArray4)("float_a_", _b3), OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.*setArray2)("float_a_", _b1), exception::OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.*setArray3)("float_a_", _b2), exception::OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.*setArray4)("float_a_", _b3), exception::OutOfBoundsException);
 }
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_double) {
     std::array<double, TEST_ARRAY_LEN> b;
@@ -628,9 +628,9 @@ FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_double) {
     auto setArray3 = &HostEnvironment::setProperty<double, TEST_ARRAY_LEN + 1>;
     auto setArray4 = &HostEnvironment::setProperty<double, TEST_ARRAY_LEN * 2>;
     EXPECT_NO_THROW((FLAMEGPU->environment.*setArray1)("double_a_", b));
-    EXPECT_THROW((FLAMEGPU->environment.*setArray2)("double_a_", _b1), OutOfBoundsException);
-    EXPECT_THROW((FLAMEGPU->environment.*setArray3)("double_a_", _b2), OutOfBoundsException);
-    EXPECT_THROW((FLAMEGPU->environment.*setArray4)("double_a_", _b3), OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.*setArray2)("double_a_", _b1), exception::OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.*setArray3)("double_a_", _b2), exception::OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.*setArray4)("double_a_", _b3), exception::OutOfBoundsException);
 }
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_int8_t) {
     std::array<int8_t, TEST_ARRAY_LEN> b;
@@ -646,9 +646,9 @@ FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_int8_t) {
     auto setArray3 = &HostEnvironment::setProperty<int8_t, TEST_ARRAY_LEN + 1>;
     auto setArray4 = &HostEnvironment::setProperty<int8_t, TEST_ARRAY_LEN * 2>;
     EXPECT_NO_THROW((FLAMEGPU->environment.*setArray1)("int8_t_a_", b));
-    EXPECT_THROW((FLAMEGPU->environment.*setArray2)("int8_t_a_", _b1), OutOfBoundsException);
-    EXPECT_THROW((FLAMEGPU->environment.*setArray3)("int8_t_a_", _b2), OutOfBoundsException);
-    EXPECT_THROW((FLAMEGPU->environment.*setArray4)("int8_t_a_", _b3), OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.*setArray2)("int8_t_a_", _b1), exception::OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.*setArray3)("int8_t_a_", _b2), exception::OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.*setArray4)("int8_t_a_", _b3), exception::OutOfBoundsException);
 }
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_uint8_t) {
     std::array<uint8_t, TEST_ARRAY_LEN> b;
@@ -664,9 +664,9 @@ FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_uint8_t) {
     auto setArray3 = &HostEnvironment::setProperty<uint8_t, TEST_ARRAY_LEN + 1>;
     auto setArray4 = &HostEnvironment::setProperty<uint8_t, TEST_ARRAY_LEN * 2>;
     EXPECT_NO_THROW((FLAMEGPU->environment.*setArray1)("uint8_t_a_", b));
-    EXPECT_THROW((FLAMEGPU->environment.*setArray2)("uint8_t_a_", _b1), OutOfBoundsException);
-    EXPECT_THROW((FLAMEGPU->environment.*setArray3)("uint8_t_a_", _b2), OutOfBoundsException);
-    EXPECT_THROW((FLAMEGPU->environment.*setArray4)("uint8_t_a_", _b3), OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.*setArray2)("uint8_t_a_", _b1), exception::OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.*setArray3)("uint8_t_a_", _b2), exception::OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.*setArray4)("uint8_t_a_", _b3), exception::OutOfBoundsException);
 }
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_int16_t) {
     std::array<int16_t, TEST_ARRAY_LEN> b;
@@ -682,9 +682,9 @@ FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_int16_t) {
     auto setArray3 = &HostEnvironment::setProperty<int16_t, TEST_ARRAY_LEN + 1>;
     auto setArray4 = &HostEnvironment::setProperty<int16_t, TEST_ARRAY_LEN * 2>;
     EXPECT_NO_THROW((FLAMEGPU->environment.*setArray1)("int16_t_a_", b));
-    EXPECT_THROW((FLAMEGPU->environment.*setArray2)("int16_t_a_", _b1), OutOfBoundsException);
-    EXPECT_THROW((FLAMEGPU->environment.*setArray3)("int16_t_a_", _b2), OutOfBoundsException);
-    EXPECT_THROW((FLAMEGPU->environment.*setArray4)("int16_t_a_", _b3), OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.*setArray2)("int16_t_a_", _b1), exception::OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.*setArray3)("int16_t_a_", _b2), exception::OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.*setArray4)("int16_t_a_", _b3), exception::OutOfBoundsException);
 }
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_uint16_t) {
     std::array<uint16_t, TEST_ARRAY_LEN> b;
@@ -700,9 +700,9 @@ FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_uint16_t) {
     auto setArray3 = &HostEnvironment::setProperty<uint16_t, TEST_ARRAY_LEN + 1>;
     auto setArray4 = &HostEnvironment::setProperty<uint16_t, TEST_ARRAY_LEN * 2>;
     EXPECT_NO_THROW((FLAMEGPU->environment.*setArray1)("uint16_t_a_", b));
-    EXPECT_THROW((FLAMEGPU->environment.*setArray2)("uint16_t_a_", _b1), OutOfBoundsException);
-    EXPECT_THROW((FLAMEGPU->environment.*setArray3)("uint16_t_a_", _b2), OutOfBoundsException);
-    EXPECT_THROW((FLAMEGPU->environment.*setArray4)("uint16_t_a_", _b3), OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.*setArray2)("uint16_t_a_", _b1), exception::OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.*setArray3)("uint16_t_a_", _b2), exception::OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.*setArray4)("uint16_t_a_", _b3), exception::OutOfBoundsException);
 }
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_int32_t) {
     std::array<int32_t, TEST_ARRAY_LEN> b;
@@ -718,9 +718,9 @@ FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_int32_t) {
     auto setArray3 = &HostEnvironment::setProperty<int32_t, TEST_ARRAY_LEN + 1>;
     auto setArray4 = &HostEnvironment::setProperty<int32_t, TEST_ARRAY_LEN * 2>;
     EXPECT_NO_THROW((FLAMEGPU->environment.*setArray1)("int32_t_a_", b));
-    EXPECT_THROW((FLAMEGPU->environment.*setArray2)("int32_t_a_", _b1), OutOfBoundsException);
-    EXPECT_THROW((FLAMEGPU->environment.*setArray3)("int32_t_a_", _b2), OutOfBoundsException);
-    EXPECT_THROW((FLAMEGPU->environment.*setArray4)("int32_t_a_", _b3), OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.*setArray2)("int32_t_a_", _b1), exception::OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.*setArray3)("int32_t_a_", _b2), exception::OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.*setArray4)("int32_t_a_", _b3), exception::OutOfBoundsException);
 }
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_uint32_t) {
     std::array<uint32_t, TEST_ARRAY_LEN> b;
@@ -736,9 +736,9 @@ FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_uint32_t) {
     auto setArray3 = &HostEnvironment::setProperty<uint32_t, TEST_ARRAY_LEN + 1>;
     auto setArray4 = &HostEnvironment::setProperty<uint32_t, TEST_ARRAY_LEN * 2>;
     EXPECT_NO_THROW((FLAMEGPU->environment.*setArray1)("uint32_t_a_", b));
-    EXPECT_THROW((FLAMEGPU->environment.*setArray2)("uint32_t_a_", _b1), OutOfBoundsException);
-    EXPECT_THROW((FLAMEGPU->environment.*setArray3)("uint32_t_a_", _b2), OutOfBoundsException);
-    EXPECT_THROW((FLAMEGPU->environment.*setArray4)("uint32_t_a_", _b3), OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.*setArray2)("uint32_t_a_", _b1), exception::OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.*setArray3)("uint32_t_a_", _b2), exception::OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.*setArray4)("uint32_t_a_", _b3), exception::OutOfBoundsException);
 }
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_int64_t) {
     std::array<int64_t, TEST_ARRAY_LEN> b;
@@ -754,9 +754,9 @@ FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_int64_t) {
     auto setArray3 = &HostEnvironment::setProperty<int64_t, TEST_ARRAY_LEN + 1>;
     auto setArray4 = &HostEnvironment::setProperty<int64_t, TEST_ARRAY_LEN * 2>;
     EXPECT_NO_THROW((FLAMEGPU->environment.*setArray1)("int64_t_a_", b));
-    EXPECT_THROW((FLAMEGPU->environment.*setArray2)("int64_t_a_", _b1), OutOfBoundsException);
-    EXPECT_THROW((FLAMEGPU->environment.*setArray3)("int64_t_a_", _b2), OutOfBoundsException);
-    EXPECT_THROW((FLAMEGPU->environment.*setArray4)("int64_t_a_", _b3), OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.*setArray2)("int64_t_a_", _b1), exception::OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.*setArray3)("int64_t_a_", _b2), exception::OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.*setArray4)("int64_t_a_", _b3), exception::OutOfBoundsException);
 }
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_uint64_t) {
     std::array<uint64_t, TEST_ARRAY_LEN> b;
@@ -772,97 +772,97 @@ FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_uint64_t) {
     auto setArray3 = &HostEnvironment::setProperty<uint64_t, TEST_ARRAY_LEN + 1>;
     auto setArray4 = &HostEnvironment::setProperty<uint64_t, TEST_ARRAY_LEN * 2>;
     EXPECT_NO_THROW((FLAMEGPU->environment.*setArray1)("uint64_t_a_", b));
-    EXPECT_THROW((FLAMEGPU->environment.*setArray2)("uint64_t_a_", _b1), OutOfBoundsException);
-    EXPECT_THROW((FLAMEGPU->environment.*setArray3)("uint64_t_a_", _b2), OutOfBoundsException);
-    EXPECT_THROW((FLAMEGPU->environment.*setArray4)("uint64_t_a_", _b3), OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.*setArray2)("uint64_t_a_", _b1), exception::OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.*setArray3)("uint64_t_a_", _b2), exception::OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.*setArray4)("uint64_t_a_", _b3), exception::OutOfBoundsException);
 }
 
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyRange_float) {
     float c = static_cast<float>(TEST_VALUE);
     for (int i = 0; i < 5; ++i) {
-        EXPECT_THROW(FLAMEGPU->environment.setProperty<float>("float_a_", TEST_ARRAY_LEN + i, c), OutOfBoundsException);
-        EXPECT_THROW(FLAMEGPU->environment.getProperty<float>("float_a_", TEST_ARRAY_LEN + i), OutOfBoundsException);
+        EXPECT_THROW(FLAMEGPU->environment.setProperty<float>("float_a_", TEST_ARRAY_LEN + i, c), exception::OutOfBoundsException);
+        EXPECT_THROW(FLAMEGPU->environment.getProperty<float>("float_a_", TEST_ARRAY_LEN + i), exception::OutOfBoundsException);
     }
 }
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyRange_double) {
     double c = static_cast<double>(TEST_VALUE);
     for (int i = 0; i < 5; ++i) {
-        EXPECT_THROW(FLAMEGPU->environment.setProperty<double>("double_a_", TEST_ARRAY_LEN + i, c), OutOfBoundsException);
-        EXPECT_THROW(FLAMEGPU->environment.getProperty<double>("double_a_", TEST_ARRAY_LEN + i), OutOfBoundsException);
+        EXPECT_THROW(FLAMEGPU->environment.setProperty<double>("double_a_", TEST_ARRAY_LEN + i, c), exception::OutOfBoundsException);
+        EXPECT_THROW(FLAMEGPU->environment.getProperty<double>("double_a_", TEST_ARRAY_LEN + i), exception::OutOfBoundsException);
     }
 }
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyRange_int8_t) {
     int8_t c = static_cast<int8_t>(TEST_VALUE);
     for (int i = 0; i < 5; ++i) {
-        EXPECT_THROW(FLAMEGPU->environment.setProperty<int8_t>("int8_t_a_", TEST_ARRAY_LEN + i, c), OutOfBoundsException);
-        EXPECT_THROW(FLAMEGPU->environment.getProperty<int8_t>("int8_t_a_", TEST_ARRAY_LEN + i), OutOfBoundsException);
+        EXPECT_THROW(FLAMEGPU->environment.setProperty<int8_t>("int8_t_a_", TEST_ARRAY_LEN + i, c), exception::OutOfBoundsException);
+        EXPECT_THROW(FLAMEGPU->environment.getProperty<int8_t>("int8_t_a_", TEST_ARRAY_LEN + i), exception::OutOfBoundsException);
     }
 }
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyRange_uint8_t) {
     uint8_t c = static_cast<uint8_t>(TEST_VALUE);
     for (int i = 0; i < 5; ++i) {
-        EXPECT_THROW(FLAMEGPU->environment.setProperty<uint8_t>("uint8_t_a_", TEST_ARRAY_LEN + i, c), OutOfBoundsException);
-        EXPECT_THROW(FLAMEGPU->environment.getProperty<uint8_t>("uint8_t_a_", TEST_ARRAY_LEN + i), OutOfBoundsException);
+        EXPECT_THROW(FLAMEGPU->environment.setProperty<uint8_t>("uint8_t_a_", TEST_ARRAY_LEN + i, c), exception::OutOfBoundsException);
+        EXPECT_THROW(FLAMEGPU->environment.getProperty<uint8_t>("uint8_t_a_", TEST_ARRAY_LEN + i), exception::OutOfBoundsException);
     }
 }
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyRange_int16_t) {
     int16_t c = static_cast<int16_t>(TEST_VALUE);
     for (int i = 0; i < 5; ++i) {
-        EXPECT_THROW(FLAMEGPU->environment.setProperty<int16_t>("int16_t_a_", TEST_ARRAY_LEN + i, c), OutOfBoundsException);
-        EXPECT_THROW(FLAMEGPU->environment.getProperty<int16_t>("int16_t_a_", TEST_ARRAY_LEN + i), OutOfBoundsException);
+        EXPECT_THROW(FLAMEGPU->environment.setProperty<int16_t>("int16_t_a_", TEST_ARRAY_LEN + i, c), exception::OutOfBoundsException);
+        EXPECT_THROW(FLAMEGPU->environment.getProperty<int16_t>("int16_t_a_", TEST_ARRAY_LEN + i), exception::OutOfBoundsException);
     }
 }
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyRange_uint16_t) {
     uint16_t c = static_cast<uint16_t>(TEST_VALUE);
     for (int i = 0; i < 5; ++i) {
-        EXPECT_THROW(FLAMEGPU->environment.setProperty<uint16_t>("uint16_t_a_", TEST_ARRAY_LEN + i, c), OutOfBoundsException);
-        EXPECT_THROW(FLAMEGPU->environment.getProperty<uint16_t>("uint16_t_a_", TEST_ARRAY_LEN + i), OutOfBoundsException);
+        EXPECT_THROW(FLAMEGPU->environment.setProperty<uint16_t>("uint16_t_a_", TEST_ARRAY_LEN + i, c), exception::OutOfBoundsException);
+        EXPECT_THROW(FLAMEGPU->environment.getProperty<uint16_t>("uint16_t_a_", TEST_ARRAY_LEN + i), exception::OutOfBoundsException);
     }
 }
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyRange_int32_t) {
     int32_t c = static_cast<int32_t>(TEST_VALUE);
     for (int i = 0; i < 5; ++i) {
-        EXPECT_THROW(FLAMEGPU->environment.setProperty<int32_t>("int32_t_a_", TEST_ARRAY_LEN + i, c), OutOfBoundsException);
-        EXPECT_THROW(FLAMEGPU->environment.getProperty<int32_t>("int32_t_a_", TEST_ARRAY_LEN + i), OutOfBoundsException);
+        EXPECT_THROW(FLAMEGPU->environment.setProperty<int32_t>("int32_t_a_", TEST_ARRAY_LEN + i, c), exception::OutOfBoundsException);
+        EXPECT_THROW(FLAMEGPU->environment.getProperty<int32_t>("int32_t_a_", TEST_ARRAY_LEN + i), exception::OutOfBoundsException);
     }
 }
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyRange_uint32_t) {
     uint32_t c = static_cast<uint32_t>(TEST_VALUE);
     for (int i = 0; i < 5; ++i) {
-        EXPECT_THROW(FLAMEGPU->environment.setProperty<uint32_t>("uint32_t_a_", TEST_ARRAY_LEN + i, c), OutOfBoundsException);
-        EXPECT_THROW(FLAMEGPU->environment.getProperty<uint32_t>("uint32_t_a_", TEST_ARRAY_LEN + i), OutOfBoundsException);
+        EXPECT_THROW(FLAMEGPU->environment.setProperty<uint32_t>("uint32_t_a_", TEST_ARRAY_LEN + i, c), exception::OutOfBoundsException);
+        EXPECT_THROW(FLAMEGPU->environment.getProperty<uint32_t>("uint32_t_a_", TEST_ARRAY_LEN + i), exception::OutOfBoundsException);
     }
 }
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyRange_int64_t) {
     int64_t c = static_cast<int64_t>(TEST_VALUE);
     for (int i = 0; i < 5; ++i) {
-        EXPECT_THROW(FLAMEGPU->environment.setProperty<int64_t>("int64_t_a_", TEST_ARRAY_LEN + i, c), OutOfBoundsException);
-        EXPECT_THROW(FLAMEGPU->environment.getProperty<int64_t>("int64_t_a_", TEST_ARRAY_LEN + i), OutOfBoundsException);
+        EXPECT_THROW(FLAMEGPU->environment.setProperty<int64_t>("int64_t_a_", TEST_ARRAY_LEN + i, c), exception::OutOfBoundsException);
+        EXPECT_THROW(FLAMEGPU->environment.getProperty<int64_t>("int64_t_a_", TEST_ARRAY_LEN + i), exception::OutOfBoundsException);
     }
 }
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyRange_uint64_t) {
     uint64_t c = static_cast<uint64_t>(TEST_VALUE);
     for (int i = 0; i < 5; ++i) {
-        EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("uint64_t_a_", TEST_ARRAY_LEN + i, c), OutOfBoundsException);
-        EXPECT_THROW(FLAMEGPU->environment.getProperty<uint64_t>("uint64_t_a_", TEST_ARRAY_LEN + i), OutOfBoundsException);
+        EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("uint64_t_a_", TEST_ARRAY_LEN + i, c), exception::OutOfBoundsException);
+        EXPECT_THROW(FLAMEGPU->environment.getProperty<uint64_t>("uint64_t_a_", TEST_ARRAY_LEN + i), exception::OutOfBoundsException);
     }
 }
 
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyDoesntExist) {
     // array version
-    EXPECT_THROW(FLAMEGPU->environment.getProperty<float>("a"), InvalidEnvProperty);
-    EXPECT_THROW(FLAMEGPU->environment.getProperty<float>("a", 1), InvalidEnvProperty);
+    EXPECT_THROW(FLAMEGPU->environment.getProperty<float>("a"), exception::InvalidEnvProperty);
+    EXPECT_THROW(FLAMEGPU->environment.getProperty<float>("a", 1), exception::InvalidEnvProperty);
 }
 
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyReadOnly) {
     float a = static_cast<float>(TEST_VALUE);
-    EXPECT_THROW(FLAMEGPU->environment.setProperty<float>("read_only", a), ReadOnlyEnvProperty);
+    EXPECT_THROW(FLAMEGPU->environment.setProperty<float>("read_only", a), exception::ReadOnlyEnvProperty);
     EXPECT_NO_THROW(FLAMEGPU->environment.getProperty<float>("read_only"));
     // array version
     std::array<int, TEST_ARRAY_LEN> b;
     auto setArray = &HostEnvironment::setProperty<int, TEST_ARRAY_LEN>;
-    // EXPECT_THROW(FLAMEGPU->environment.set<int>("read_only_a", b), ReadOnlyEnvProperty);  // Doesn't build on Travis
-    EXPECT_THROW((FLAMEGPU->environment.*setArray)("read_only_a", b), ReadOnlyEnvProperty);
+    // EXPECT_THROW(FLAMEGPU->environment.set<int>("read_only_a", b), exception::ReadOnlyEnvProperty);  // Doesn't build on Travis
+    EXPECT_THROW((FLAMEGPU->environment.*setArray)("read_only_a", b), exception::ReadOnlyEnvProperty);
     EXPECT_NO_THROW(FLAMEGPU->environment.getProperty<int>("read_only_a"));
     EXPECT_NO_THROW(FLAMEGPU->environment.getProperty<int>("read_only_a", 1));
 }
@@ -1248,13 +1248,13 @@ TEST_F(HostEnvironmentTest, reserved_name_set) {
     ModelDescription model("model");
     model.addStepFunction(reserved_name_set_step);
     CUDASimulation sim(model);
-    EXPECT_THROW(sim.step(), ReservedName);
+    EXPECT_THROW(sim.step(), exception::ReservedName);
 }
 TEST_F(HostEnvironmentTest, reserved_name_set_array) {
     ModelDescription model("model");
     model.addStepFunction(reserved_name_set_array_step);
     CUDASimulation sim(model);
-    EXPECT_THROW(sim.step(), ReservedName);
+    EXPECT_THROW(sim.step(), exception::ReservedName);
 }
 
 }  // namespace flamegpu

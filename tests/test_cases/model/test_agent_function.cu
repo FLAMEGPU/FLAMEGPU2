@@ -65,9 +65,9 @@ TEST(AgentFunctionDescriptionTest, InitialState) {
     a.newState(NEW_STATE_NAME);
     EXPECT_EQ(f.getInitialState(), NEW_STATE_NAME);
     // Can't set state to one not held by parent agent
-    EXPECT_THROW(f.setInitialState(WRONG_STATE_NAME), InvalidStateName);
-    EXPECT_THROW(f2.setInitialState(WRONG_STATE_NAME), InvalidStateName);
-    EXPECT_THROW(f3.setInitialState(WRONG_STATE_NAME), InvalidStateName);
+    EXPECT_THROW(f.setInitialState(WRONG_STATE_NAME), exception::InvalidStateName);
+    EXPECT_THROW(f2.setInitialState(WRONG_STATE_NAME), exception::InvalidStateName);
+    EXPECT_THROW(f3.setInitialState(WRONG_STATE_NAME), exception::InvalidStateName);
 }
 TEST(AgentFunctionDescriptionTest, EndState) {
     ModelDescription _m(MODEL_NAME);
@@ -97,9 +97,9 @@ TEST(AgentFunctionDescriptionTest, EndState) {
     a.newState(NEW_STATE_NAME);
     EXPECT_EQ(f.getEndState(), NEW_STATE_NAME);
     // Can't set state to one not held by parent agent
-    EXPECT_THROW(f.setEndState(WRONG_STATE_NAME), InvalidStateName);
-    EXPECT_THROW(f2.setEndState(WRONG_STATE_NAME), InvalidStateName);
-    EXPECT_THROW(f3.setEndState(WRONG_STATE_NAME), InvalidStateName);
+    EXPECT_THROW(f.setEndState(WRONG_STATE_NAME), exception::InvalidStateName);
+    EXPECT_THROW(f2.setEndState(WRONG_STATE_NAME), exception::InvalidStateName);
+    EXPECT_THROW(f3.setEndState(WRONG_STATE_NAME), exception::InvalidStateName);
 }
 TEST(AgentFunctionDescriptionTest, MessageInput) {
     ModelDescription _m(MODEL_NAME);
@@ -109,7 +109,7 @@ TEST(AgentFunctionDescriptionTest, MessageInput) {
     AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
     // Begins empty
     EXPECT_FALSE(f.hasMessageInput());
-    EXPECT_THROW(f.getMessageInput(), OutOfBoundsException);
+    EXPECT_THROW(f.getMessageInput(), exception::OutOfBoundsException);
     // Can be set
     f.setMessageInput(m);
     EXPECT_TRUE(f.hasMessageInput());
@@ -129,7 +129,7 @@ TEST(AgentFunctionDescriptionTest, MessageOutput) {
     AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
     // Begins empty
     EXPECT_FALSE(f.hasMessageOutput());
-    EXPECT_THROW(f.getMessageOutput(), OutOfBoundsException);
+    EXPECT_THROW(f.getMessageOutput(), exception::OutOfBoundsException);
     // Can be set
     f.setMessageOutput(m);
     EXPECT_TRUE(f.hasMessageOutput());
@@ -163,7 +163,7 @@ TEST(AgentFunctionDescriptionTest, AgentOutput) {
     AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
     // Begins empty
     EXPECT_FALSE(f.hasAgentOutput());
-    EXPECT_THROW(f.getAgentOutput(), OutOfBoundsException);
+    EXPECT_THROW(f.getAgentOutput(), exception::OutOfBoundsException);
     // Can be set
     f.setAgentOutput(a);
     EXPECT_TRUE(f.hasAgentOutput());
@@ -181,15 +181,15 @@ TEST(AgentFunctionDescriptionTest, AgentOutputState) {
     AgentDescription &a2 = _m.newAgent(AGENT_NAME2);
     AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
     // Can't set it to a state that doesn't exist
-    EXPECT_THROW(f.setAgentOutput(a, "wrong"), InvalidStateName);
+    EXPECT_THROW(f.setAgentOutput(a, "wrong"), exception::InvalidStateName);
     a.newState("a");
     a.newState("b");
     a2.newState("c");
-    EXPECT_THROW(f.setAgentOutput(a, "c"), InvalidStateName);
+    EXPECT_THROW(f.setAgentOutput(a, "c"), exception::InvalidStateName);
     // Can set it to a valid state though
     EXPECT_NO_THROW(f.setAgentOutput(a, "a"));
     // Can't set it to default if default not a state
-    EXPECT_THROW(f.setAgentOutput(a), InvalidStateName);
+    EXPECT_THROW(f.setAgentOutput(a), exception::InvalidStateName);
     // Returns the expected value
     EXPECT_EQ(f.getAgentOutputState(), "a");
     // Can be updated
@@ -226,7 +226,7 @@ TEST(AgentFunctionDescriptionTest, MessageInput_WrongModel) {
     MsgBruteForce::Description &m2 = _m2.newMessage(MESSAGE_NAME2);
     AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
 
-    EXPECT_THROW(f.setMessageInput(m2), DifferentModel);
+    EXPECT_THROW(f.setMessageInput(m2), exception::DifferentModel);
     EXPECT_NO_THROW(f.setMessageInput(m1));
 }
 TEST(AgentFunctionDescriptionTest, MessageOutput_WrongModel) {
@@ -237,7 +237,7 @@ TEST(AgentFunctionDescriptionTest, MessageOutput_WrongModel) {
     MsgBruteForce::Description &m2 = _m2.newMessage(MESSAGE_NAME2);
     AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
 
-    EXPECT_THROW(f.setMessageOutput(m2), DifferentModel);
+    EXPECT_THROW(f.setMessageOutput(m2), exception::DifferentModel);
     EXPECT_NO_THROW(f.setMessageOutput(m1));
 }
 TEST(AgentFunctionDescriptionTest, AgentOutput_WrongModel) {
@@ -247,7 +247,7 @@ TEST(AgentFunctionDescriptionTest, AgentOutput_WrongModel) {
     AgentDescription &a2 = _m2.newAgent(AGENT_NAME2);
     AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
 
-    EXPECT_THROW(f.setAgentOutput(a2), DifferentModel);
+    EXPECT_THROW(f.setAgentOutput(a2), exception::DifferentModel);
     EXPECT_NO_THROW(f.setAgentOutput(a));
 }
 TEST(AgentFunctionDescriptionTest, MessageInputOutput) {
@@ -258,7 +258,7 @@ TEST(AgentFunctionDescriptionTest, MessageInputOutput) {
     AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
     // Cannot bind same message to input and output
     EXPECT_NO_THROW(f.setMessageInput(m));
-    EXPECT_THROW(f.setMessageOutput(m), InvalidMessageName);
+    EXPECT_THROW(f.setMessageOutput(m), exception::InvalidMessageName);
     EXPECT_NO_THROW(f.setMessageOutput(m2));
 }
 TEST(AgentFunctionDescriptionTest, MessageOutputInput) {
@@ -269,7 +269,7 @@ TEST(AgentFunctionDescriptionTest, MessageOutputInput) {
     AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
     // Cannot bind same message to output and input
     EXPECT_NO_THROW(f.setMessageOutput(m));
-    EXPECT_THROW(f.setMessageInput(m), InvalidMessageName);
+    EXPECT_THROW(f.setMessageInput(m), exception::InvalidMessageName);
     EXPECT_NO_THROW(f.setMessageInput(m2));
 }
 TEST(AgentFunctionDescriptionTest, SameAgentAndStateInLayer) {
@@ -289,10 +289,10 @@ TEST(AgentFunctionDescriptionTest, SameAgentAndStateInLayer) {
     // start matches end state
     EXPECT_NO_THROW(l.addAgentFunction(agent_fn2));
     EXPECT_NO_THROW(l.addAgentFunction(agent_fn3));
-    EXPECT_THROW(f2.setInitialState(STATE_NAME), InvalidAgentFunc);
-    EXPECT_THROW(f2.setInitialState(NEW_STATE_NAME), InvalidAgentFunc);
-    EXPECT_THROW(f2.setEndState(STATE_NAME), InvalidAgentFunc);
-    EXPECT_THROW(f2.setEndState(NEW_STATE_NAME), InvalidAgentFunc);
+    EXPECT_THROW(f2.setInitialState(STATE_NAME), exception::InvalidAgentFunc);
+    EXPECT_THROW(f2.setInitialState(NEW_STATE_NAME), exception::InvalidAgentFunc);
+    EXPECT_THROW(f2.setEndState(STATE_NAME), exception::InvalidAgentFunc);
+    EXPECT_THROW(f2.setEndState(NEW_STATE_NAME), exception::InvalidAgentFunc);
 }
 
 }  // namespace test_agent_function

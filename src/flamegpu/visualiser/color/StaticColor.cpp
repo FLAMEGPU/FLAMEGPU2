@@ -11,7 +11,7 @@ namespace visualiser {
 StaticColor::StaticColor(const Color& _rgba)
     : rgba(_rgba) {
     if (!rgba.validate()) {
-        THROW InvalidArgument("Provided color has invalid components, "
+        THROW exception::InvalidArgument("Provided color has invalid components, "
             "in StaticColor::StaticColor\n");
     }
 }

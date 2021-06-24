@@ -23,7 +23,7 @@ TEST(TestUtilCUDAEventTimer, CUDAEventTimer) {
     // Create an event timer, time should be 0 initially.
     util::CUDAEventTimer * timer = nullptr;
     EXPECT_NO_THROW(timer = new util::CUDAEventTimer());
-    EXPECT_THROW(timer->getElapsedMilliseconds(), UnsycnedCUDAEventTimer);
+    EXPECT_THROW(timer->getElapsedMilliseconds(), exception::UnsycnedCUDAEventTimer);
     // Time an arbitrary event, and check the value is approximately correct.
     timer->start();
     const int sleep_duration_seconds = 1;

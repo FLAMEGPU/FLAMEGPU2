@@ -7,12 +7,13 @@
 #include <cstdio>
 
 namespace flamegpu {
+namespace exception {
 
 /**
  * If this macro is used instead of 'throw', FGPUException will 
  * prepend '__FILE__ (__LINE__): ' to err_message 
  */
-#define THROW FGPUException::setLocation(__FILE__, __LINE__); throw
+#define THROW exception::FGPUException::setLocation(__FILE__, __LINE__); throw
 
 /*! Class for unknown exceptions thrown*/
 class UnknownError : public std::exception {};
@@ -435,6 +436,7 @@ DERIVED_FGPUException(InvalidDependencyGraph, "Agent function dependency graph i
  */
 DERIVED_FGPUException(AgentIDCollision, "Multiple agents of same type share an ID");
 
+}  // namespace exception
 }  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_EXCEPTION_FGPUEXCEPTION_H_

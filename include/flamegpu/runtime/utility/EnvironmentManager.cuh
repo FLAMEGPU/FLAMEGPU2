@@ -258,7 +258,7 @@ class EnvironmentManager {
      * @param value stored value of the property
      * @param isConst If set to true, it is not possible to change the value
      * @tparam T Type of the environmental property to be created
-     * @throws DuplicateEnvProperty If a property of the same name already exists
+     * @throws exception::DuplicateEnvProperty If a property of the same name already exists
      */
     template<typename T>
     void newProperty(const NamePair &name, const T &value, const bool &isConst = false);
@@ -269,7 +269,7 @@ class EnvironmentManager {
      * @param value stored value of the property
      * @param isConst If set to true, it is not possible to change the value
      * @tparam T Type of the environmental property to be created
-     * @throws DuplicateEnvProperty If a property of the same name already exists
+     * @throws exception::DuplicateEnvProperty If a property of the same name already exists
      * @see add(const NamePair &, const T &, const bool &)
      */
     template<typename T>
@@ -281,7 +281,7 @@ class EnvironmentManager {
      * @param isConst If set to true, it is not possible to change the value
      * @tparam T Type of the environmental property array to be created
      * @tparam N Length of the environmental property array to be created
-     * @throws DuplicateEnvProperty If a property of the same name already exists
+     * @throws exception::DuplicateEnvProperty If a property of the same name already exists
      */
     template<typename T, size_type N>
     void newProperty(const NamePair &name, const std::array<T, N> &value, const bool &isConst = false);
@@ -293,7 +293,7 @@ class EnvironmentManager {
      * @param isConst If set to true, it is not possible to change the value
      * @tparam T Type of the environmental property array to be created
      * @tparam N Length of the environmental property array to be created
-     * @throws DuplicateEnvProperty If a property of the same name already exists
+     * @throws exception::DuplicateEnvProperty If a property of the same name already exists
      * @see add(const NamePair &, const std::array<T, N> &, const bool &)
      */
     template<typename T, size_type N>
@@ -304,8 +304,8 @@ class EnvironmentManager {
      * @param value value to set the property
      * @tparam T Type of the environmental property array to be created
      * @return Returns the previous value
-     * @throws InvalidEnvProperty If a property of the name does not exist
-     * @throws ReadOnlyEnvProperty If the named property is marked as const
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::ReadOnlyEnvProperty If the named property is marked as const
      */
     template<typename T>
     T setProperty(const NamePair &name, const T &value);
@@ -316,8 +316,8 @@ class EnvironmentManager {
      * @param value value to set the property
      * @tparam T Type of the environmental property array to be created
      * @return Returns the previous value
-     * @throws InvalidEnvProperty If a property of the name does not exist
-     * @throws ReadOnlyEnvProperty If the named property is marked as const
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::ReadOnlyEnvProperty If the named property is marked as const
      * @see add(const NamePair &, const T &)
      */
     template<typename T>
@@ -329,8 +329,8 @@ class EnvironmentManager {
      * @tparam T Type of the environmental property array to be created
      * @tparam N Length of the environmental property array to be created
      * @return Returns the previous value
-     * @throws InvalidEnvProperty If a property of the name does not exist
-     * @throws ReadOnlyEnvProperty If the named property is marked as const
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::ReadOnlyEnvProperty If the named property is marked as const
      */
     template<typename T, size_type N>
     std::array<T, N> setProperty(const NamePair &name, const std::array<T, N> &value);
@@ -342,8 +342,8 @@ class EnvironmentManager {
      * @tparam T Type of the environmental property array to be created
      * @tparam N Length of the environmental property array to be created
      * @return Returns the previous value
-     * @throws InvalidEnvProperty If a property of the name does not exist
-     * @throws ReadOnlyEnvProperty If the named property is marked as const
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::ReadOnlyEnvProperty If the named property is marked as const
      * @see set(const NamePair &, const std::array<T, N> &)
      */
     template<typename T, size_type N>
@@ -355,8 +355,8 @@ class EnvironmentManager {
      * @param value value to set the property array
      * @tparam T Type of the environmental property array to be created
      * @return Returns the previous value
-     * @throws InvalidEnvProperty If a property of the name does not exist
-     * @throws ReadOnlyEnvProperty If the named property is marked as const
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::ReadOnlyEnvProperty If the named property is marked as const
      */
     template<typename T>
     std::vector<T> setPropertyArray(const NamePair &name, const std::vector<T> &value);
@@ -368,7 +368,7 @@ class EnvironmentManager {
      * @param value value to set the element of the property array
      * @tparam T Type of the environmental property array to be created
      * @return Returns the previous value
-     * @throws InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
      * @throws std::out_of_range
      */
     template<typename T>
@@ -381,7 +381,7 @@ class EnvironmentManager {
      * @param value value to set the element of the property array
      * @tparam T Type of the environmental property array to be created
      * @return Returns the previous value
-     * @throws InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
      * @throws std::out_of_range
      * @see set(const NamePair &, const size_type &, const T &)
      */
@@ -391,7 +391,7 @@ class EnvironmentManager {
      * Gets an environment property
      * @param name name used for accessing the property
      * @tparam T Type of the environmental property array to be created
-     * @throws InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
      * @see get(const NamePair &)
      */
     template<typename T>
@@ -401,7 +401,7 @@ class EnvironmentManager {
      * @param instance_id instance_id of the CUDASimulation instance the property is attached to
      * @param var_name name used for accessing the property
      * @tparam T Type of the environmental property array to be created
-     * @throws InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
      */
     template<typename T>
     T getProperty(const unsigned int &instance_id, const std::string &var_name);
@@ -410,7 +410,7 @@ class EnvironmentManager {
      * @param name name used for accessing the property array
      * @tparam T Type of the environmental property array to be created
      * @tparam N Length of the environmental property array to be created
-     * @throws InvalidEnvProperty If a property array of the name does not exist
+     * @throws exception::InvalidEnvProperty If a property array of the name does not exist
      */
     template<typename T, size_type N>
     std::array<T, N> getProperty(const NamePair &name);
@@ -420,7 +420,7 @@ class EnvironmentManager {
      * @param var_name name used for accessing the property
      * @tparam T Type of the environmental property array to be created
      * @tparam N Length of the environmental property array to be created
-     * @throws InvalidEnvProperty If a property array of the name does not exist
+     * @throws exception::InvalidEnvProperty If a property array of the name does not exist
      * @see get(const NamePair &)
      */
     template<typename T, size_type N>
@@ -430,7 +430,7 @@ class EnvironmentManager {
      * @param name name used for accessing the property array
      * @param index Index of the element within the array
      * @tparam T Type of the value to be returned
-     * @throws InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
      * @throws std::out_of_range
      */
     template<typename T>
@@ -440,7 +440,7 @@ class EnvironmentManager {
      * Convenience method: Gets an environment property array
      * @param name name used for accessing the property array
      * @tparam T Type of the environmental property array to be created
-     * @throws InvalidEnvProperty If a property array of the name does not exist
+     * @throws exception::InvalidEnvProperty If a property array of the name does not exist
      * @see get(const NamePair &)
      */
     template<typename T>
@@ -452,7 +452,7 @@ class EnvironmentManager {
      * @param var_name name used for accessing the property
      * @param index The index of the element within the environment property array
      * @tparam T Type of the value to be returned
-     * @throws InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
      * @throws std::out_of_range
      * @see get(const NamePair &, const size_type &)
      */
@@ -463,13 +463,13 @@ class EnvironmentManager {
      * This method should not be exposed to users
      * @param instance_id instance_id of the CUDASimulation instance the property is attached to
      * @param var_name name used for accessing the property
-     * @throws InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
      */
     util::Any getPropertyAny(const unsigned int &instance_id, const std::string &var_name) const;
     /**
      * Removes an environment property
      * @param name name used for accessing the property
-     * @throws InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
      * @note This may be used to remove and recreate environment properties (and arrays) marked const
      */
     void removeProperty(const NamePair &name);
@@ -477,7 +477,7 @@ class EnvironmentManager {
      * Convenience method: Removes an environment property
      * @param instance_id instance_id of the CUDASimulation instance the property is attached to
      * @param var_name name used for accessing the property
-     * @throws InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
      * @note This may be used to remove and recreate environment properties (and arrays) marked const
      * @see remove(const NamePair &)
      */
@@ -509,7 +509,7 @@ class EnvironmentManager {
      * Returns whether the named env property is marked as const
      * @param name name used for accessing the property
      * @return true if the var is marked as constant (cannot be changed during simulation)
-     * @throws InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
      */
     inline bool isConst(const NamePair &name) const {
         std::shared_lock<std::shared_timed_mutex> lock(mutex);
@@ -520,7 +520,7 @@ class EnvironmentManager {
         if (b != mapped_properties.end()) {
             return b->second.isConst;
         }
-        THROW InvalidEnvProperty("Environmental property with name '%u:%s' does not exist, "
+        THROW exception::InvalidEnvProperty("Environmental property with name '%u:%s' does not exist, "
             "in EnvironmentManager::isConst().",
             name.first, name.second.c_str());
     }
@@ -529,14 +529,14 @@ class EnvironmentManager {
      * @param instance_id instance_id of the CUDASimulation instance the property is attached to
      * @param var_name name used for accessing the property
      * @return true if the var is marked as constant (cannot be changed during simulation)
-     * @throws InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
      * @see isConst(const NamePair &)
      */
     inline bool isConst(const unsigned int &instance_id, const std::string &var_name) const { return isConst(toName(instance_id, var_name)); }
     /**
      * Returns the number of elements of the named env property (1 if not an array)
      * @param name name used for accessing the property
-     * @throws InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
      */
     inline size_type length(const NamePair &name) const {
         std::shared_lock<std::shared_timed_mutex> lock(mutex);
@@ -548,11 +548,11 @@ class EnvironmentManager {
             a = properties.find(b->second.masterProp);
             if (a != properties.end())
                 return a->second.elements;
-            THROW InvalidEnvProperty("Mapped environmental property with name '%u:%s' maps to missing property with name '%u:%s', "
+            THROW exception::InvalidEnvProperty("Mapped environmental property with name '%u:%s' maps to missing property with name '%u:%s', "
                 "in EnvironmentManager::length().",
                 name.first, name.second.c_str(), b->second.masterProp.first, b->second.masterProp.second.c_str());
         }
-        THROW InvalidEnvProperty("Environmental property with name '%u:%s' does not exist, "
+        THROW exception::InvalidEnvProperty("Environmental property with name '%u:%s' does not exist, "
             "in EnvironmentManager::length().",
             name.first, name.second.c_str());
     }
@@ -560,14 +560,14 @@ class EnvironmentManager {
      * Convenience method: Returns the number of elements of the named env property (1 if not an array)
      * @param instance_id instance_id of the CUDASimulation instance the property is attached to
      * @param var_name name used for accessing the property
-     * @throws InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
      * @see length(const NamePair &)
      */
     inline size_type length(const unsigned int &instance_id, const std::string &var_name) const { return length(toName(instance_id, var_name)); }
     /**
      * Returns the variable type of named env property
      * @param name name used for accessing the property
-     * @throws InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
      */
     inline std::type_index type(const NamePair &name) const {
         std::shared_lock<std::shared_timed_mutex> lock(mutex);
@@ -579,11 +579,11 @@ class EnvironmentManager {
             a = properties.find(b->second.masterProp);
             if (a != properties.end())
                 return a->second.type;
-            THROW InvalidEnvProperty("Mapped environmental property with name '%u:%s' maps to missing property with name '%u:%s', "
+            THROW exception::InvalidEnvProperty("Mapped environmental property with name '%u:%s' maps to missing property with name '%u:%s', "
                 "in EnvironmentManager::type().",
                 name.first, name.second.c_str(), b->second.masterProp.first, b->second.masterProp.second.c_str());
         }
-        THROW InvalidEnvProperty("Environmental property with name '%u:%s' does not exist, "
+        THROW exception::InvalidEnvProperty("Environmental property with name '%u:%s' does not exist, "
             "in EnvironmentManager::type().",
             name.first, name.second.c_str());
     }
@@ -591,7 +591,7 @@ class EnvironmentManager {
      * Convenience method: Returns the variable type of named env property
      * @param instance_id instance_id of the CUDASimulation instance the property is attached to
      * @param var_name name used for accessing the property
-     * @throws InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
      * @see type(const NamePair &)
      */
     inline std::type_index type(const unsigned int &instance_id, const std::string &var_name) const { return type(toName(instance_id, var_name)); }
@@ -816,7 +816,7 @@ void EnvironmentManager::newProperty(const NamePair &name, const T &value, const
     static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value,
         "Only arithmetic types can be used as environmental properties");
     if (containsProperty(name)) {
-        THROW DuplicateEnvProperty("Environmental property with name '%u:%s' already exists, "
+        THROW exception::DuplicateEnvProperty("Environmental property with name '%u:%s' already exists, "
             "in EnvironmentManager::add().",
             name.first, name.second.c_str());
     }
@@ -833,7 +833,7 @@ void EnvironmentManager::newProperty(const NamePair &name, const std::array<T, N
     static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value,
         "Only arithmetic types can be used as environmental properties");
     if (containsProperty(name)) {
-        THROW DuplicateEnvProperty("Environmental property with name '%u:%s' already exists, "
+        THROW exception::DuplicateEnvProperty("Environmental property with name '%u:%s' already exists, "
             "in EnvironmentManager::add().",
             name.first, name.second.c_str());
     }
@@ -851,12 +851,12 @@ template<typename T>
 T EnvironmentManager::setProperty(const NamePair &name, const T &value) {
     const std::type_index typ_id = type(name);
     if (typ_id != std::type_index(typeid(T))) {
-        THROW InvalidEnvPropertyType("Environmental property ('%u:%s') type (%s) does not match template argument T (%s), "
+        THROW exception::InvalidEnvPropertyType("Environmental property ('%u:%s') type (%s) does not match template argument T (%s), "
             "in EnvironmentManager::set().",
             name.first, name.second.c_str(), typ_id.name(), typeid(T).name());
     }
     if (isConst(name)) {
-        THROW ReadOnlyEnvProperty("Environmental property ('%u:%s') is marked as const and cannot be changed, "
+        THROW exception::ReadOnlyEnvProperty("Environmental property ('%u:%s') is marked as const and cannot be changed, "
             "in EnvironmentManager::set().",
             name.first, name.second.c_str());
     }
@@ -888,18 +888,18 @@ template<typename T, EnvironmentManager::size_type N>
 std::array<T, N> EnvironmentManager::setProperty(const NamePair &name, const std::array<T, N> &value) {
     const std::type_index typ_id = type(name);
     if (typ_id != std::type_index(typeid(T))) {
-        THROW InvalidEnvPropertyType("Environmental property array ('%u:%s') type (%s) does not match template argument T (%s), "
+        THROW exception::InvalidEnvPropertyType("Environmental property array ('%u:%s') type (%s) does not match template argument T (%s), "
             "in EnvironmentManager::set().",
             name.first, name.second.c_str(), typ_id.name(), typeid(T).name());
     }
     if (isConst(name)) {
-        THROW ReadOnlyEnvProperty("Environmental property array ('%u:%s') is marked as const and cannot be changed, "
+        THROW exception::ReadOnlyEnvProperty("Environmental property array ('%u:%s') is marked as const and cannot be changed, "
             "in EnvironmentManager::set().",
             name.first, name.second.c_str());
     }
     const size_type array_len = length(name);
     if (array_len != N) {
-        THROW OutOfBoundsException("Length of named environmental property array (%u) does not match template argument N (%u)! "
+        THROW exception::OutOfBoundsException("Length of named environmental property array (%u) does not match template argument N (%u)! "
             "in EnvironmentManager::set().",
             array_len, N);
     }
@@ -932,18 +932,18 @@ template<typename T>
 std::vector<T> EnvironmentManager::setPropertyArray(const NamePair& name, const std::vector<T>& value) {
     const std::type_index typ_id = type(name);
     if (typ_id != std::type_index(typeid(T))) {
-        THROW InvalidEnvPropertyType("Environmental property array ('%u:%s') type (%s) does not match template argument T (%s), "
+        THROW exception::InvalidEnvPropertyType("Environmental property array ('%u:%s') type (%s) does not match template argument T (%s), "
             "in EnvironmentManager::set().",
             name.first, name.second.c_str(), typ_id.name(), typeid(T).name());
     }
     if (isConst(name)) {
-        THROW ReadOnlyEnvProperty("Environmental property array ('%u:%s') is marked as const and cannot be changed, "
+        THROW exception::ReadOnlyEnvProperty("Environmental property array ('%u:%s') is marked as const and cannot be changed, "
             "in EnvironmentManager::set().",
             name.first, name.second.c_str());
     }
     const size_type array_len = length(name);
     if (array_len != value.size()) {
-        THROW OutOfBoundsException("Length of named environmental property array (%u) does not match length of provided array (%llu)! "
+        THROW exception::OutOfBoundsException("Length of named environmental property array (%u) does not match length of provided array (%llu)! "
             "in EnvironmentManager::set().",
             array_len, value.size());
     }
@@ -977,18 +977,18 @@ template<typename T>
 T EnvironmentManager::setProperty(const NamePair &name, const size_type &index, const T &value) {
     const std::type_index typ_id = type(name);
     if (typ_id != std::type_index(typeid(T))) {
-        THROW InvalidEnvPropertyType("Environmental property array ('%u:%s') type (%s) does not match template argument T (%s), "
+        THROW exception::InvalidEnvPropertyType("Environmental property array ('%u:%s') type (%s) does not match template argument T (%s), "
             "in EnvironmentManager::set().",
             name.first, name.second.c_str(), typ_id.name(), typeid(T).name());
     }
     if (isConst(name)) {
-        THROW ReadOnlyEnvProperty("Environmental property array ('%u:%s') is marked as const and cannot be changed, "
+        THROW exception::ReadOnlyEnvProperty("Environmental property array ('%u:%s') is marked as const and cannot be changed, "
             "in EnvironmentManager::set().",
             name.first, name.second.c_str());
     }
     const size_type array_len = length(name);
     if (index >= array_len) {
-        THROW OutOfBoundsException("Index(%u) exceeds named environmental property array's length (%u), "
+        THROW exception::OutOfBoundsException("Index(%u) exceeds named environmental property array's length (%u), "
             "in EnvironmentManager::set().",
             index, array_len);
     }
@@ -1029,7 +1029,7 @@ T EnvironmentManager::getProperty(const NamePair &name) {
         "Only arithmetic types can be used as environmental properties");
     std::type_index typ_id = type(name);
     if (typ_id != std::type_index(typeid(T))) {
-        THROW InvalidEnvPropertyType("Environmental property ('%u:%s') type (%s) does not match template argument T (%s), "
+        THROW exception::InvalidEnvPropertyType("Environmental property ('%u:%s') type (%s) does not match template argument T (%s), "
             "in EnvironmentManager::get().",
             name.first, name.second.c_str(), typ_id.name(), typeid(T).name());
     }
@@ -1052,13 +1052,13 @@ std::array<T, N> EnvironmentManager::getProperty(const NamePair &name) {
         "Only arithmetic types can be used as environmental properties");
     const std::type_index typ_id = type(name);
     if (typ_id != std::type_index(typeid(T))) {
-        THROW InvalidEnvPropertyType("Environmental property array ('%u:%s') type (%s) does not match template argument T (%s), "
+        THROW exception::InvalidEnvPropertyType("Environmental property array ('%u:%s') type (%s) does not match template argument T (%s), "
             "in EnvironmentManager::get().",
             name.first, name.second.c_str(), typ_id.name(), typeid(T).name());
     }
     const size_type array_len = length(name);
     if (array_len != N) {
-        THROW OutOfBoundsException("Length of named environmental property array (%u) does not match template argument N (%u)! "
+        THROW exception::OutOfBoundsException("Length of named environmental property array (%u) does not match template argument N (%u)! "
             "in EnvironmentManager::get().",
             array_len, N);
     }
@@ -1085,13 +1085,13 @@ T EnvironmentManager::getProperty(const NamePair &name, const size_type &index) 
         "Only arithmetic types can be used as environmental properties");
     const std::type_index typ_id = type(name);
     if (typ_id != std::type_index(typeid(T))) {
-        THROW InvalidEnvPropertyType("Environmental property array ('%u:%s') type (%s) does not match template argument T (%s), "
+        THROW exception::InvalidEnvPropertyType("Environmental property array ('%u:%s') type (%s) does not match template argument T (%s), "
             "in EnvironmentManager::get().",
             name.first, name.second.c_str(), typ_id.name(), typeid(T).name());
     }
     const size_type array_len = length(name);
     if (index >= array_len) {
-        THROW OutOfBoundsException("Index(%u) exceeds named environmental property array's length (%u), "
+        THROW exception::OutOfBoundsException("Index(%u) exceeds named environmental property array's length (%u), "
             "in EnvironmentManager::set().",
             index, array_len);
     }
@@ -1111,7 +1111,7 @@ std::vector<T> EnvironmentManager::getPropertyArray(const NamePair& name) {
         "Only arithmetic types can be used as environmental properties");
     const std::type_index typ_id = type(name);
     if (typ_id != std::type_index(typeid(T))) {
-        THROW InvalidEnvPropertyType("Environmental property array ('%u:%s') type (%s) does not match template argument T (%s), "
+        THROW exception::InvalidEnvPropertyType("Environmental property array ('%u:%s') type (%s) does not match template argument T (%s), "
             "in EnvironmentManager::get().",
             name.first, name.second.c_str(), typ_id.name(), typeid(T).name());
     }

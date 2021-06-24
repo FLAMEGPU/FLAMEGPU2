@@ -60,7 +60,7 @@ void DeviceAgentVector_impl::syncChanges() {
     // Copy all unbound buffes
     if (unbound_buffers_has_changed) {
         if (unbound_host_buffer_size != _size) {
-            THROW InvalidOperation("Unbound buffers have gone out of sync, in DeviceAgentVector::syncChanges().\n");
+            THROW exception::InvalidOperation("Unbound buffers have gone out of sync, in DeviceAgentVector::syncChanges().\n");
         }
         for (auto &buff : unbound_buffers) {
             const size_t variable_size = buff.device->type_size * buff.device->elements;
@@ -92,7 +92,7 @@ void DeviceAgentVector_impl::initUnboundBuffers() {
     // Resize to match _capacity
     for (auto &buff : unbound_buffers) {
         if (buff.host) {
-            THROW InvalidOperation("Host buffer is already allocated, in DeviceAgentVector::initUnboundBuffers().\n");
+            THROW exception::InvalidOperation("Host buffer is already allocated, in DeviceAgentVector::initUnboundBuffers().\n");
         }
         // Alloc
         const size_t var_size = buff.device->type_size * buff.device->elements;
@@ -115,12 +115,12 @@ void DeviceAgentVector_impl::reinitUnboundBuffers() {
     const unsigned int device_len = cuda_agent.getStateSize(cuda_agent_state);
     const unsigned int copy_len = _size;
     if (device_len > _size) {
-        THROW InvalidOperation("Unexpected state, in DeviceAgentVector::reinitUnboundBuffers()\n");
+        THROW exception::InvalidOperation("Unexpected state, in DeviceAgentVector::reinitUnboundBuffers()\n");
     }
     // Resize to match _capacity
     for (auto& buff : unbound_buffers) {
         if (!buff.host) {
-            THROW InvalidOperation("Host buffer is not already allocated, in DeviceAgentVector::reinitUnboundBuffers().\n");
+            THROW exception::InvalidOperation("Host buffer is not already allocated, in DeviceAgentVector::reinitUnboundBuffers().\n");
         }
         const size_t var_size = buff.device->type_size * buff.device->elements;
         if (unbound_host_buffer_capacity < _capacity) {
@@ -146,7 +146,7 @@ void DeviceAgentVector_impl::resizeUnboundBuffers(const unsigned int& new_capaci
     // Resize to match agent_count
     for (auto& buff : unbound_buffers) {
         if (!buff.host) {
-            THROW InvalidOperation("Not setup to resize before init");
+            THROW exception::InvalidOperation("Not setup to resize before init");
         }
         // Alloc new buff
         const size_t var_size = buff.device->type_size * buff.device->elements;
@@ -187,7 +187,7 @@ void DeviceAgentVector_impl::_insert(size_type pos, size_type count) {
             }
             _changedAfter(ID_VARIABLE_NAME, pos);
         } else {
-            THROW InvalidOperation("Internal agent ID variable was not found, "
+            THROW exception::InvalidOperation("Internal agent ID variable was not found, "
                 "in DeviceAgentVector_impl._insert().");
         }
     }
@@ -232,7 +232,7 @@ void DeviceAgentVector_impl::_insert(size_type pos, size_type count) {
     unbound_host_buffer_size = new_size;
     known_device_buffer_size = _size;
     if (unbound_host_buffer_size != _size) {
-        THROW InvalidOperation("Unbound buffers have gone out of sync, in DeviceAgentVector::_insert().\n");
+        THROW exception::InvalidOperation("Unbound buffers have gone out of sync, in DeviceAgentVector::_insert().\n");
     }
     // Update change detail for all variables
     for (const auto& v : agent->variables) {
@@ -278,7 +278,7 @@ void DeviceAgentVector_impl::_erase(size_type pos, size_type count) {
     unbound_host_buffer_size = new_size;
     known_device_buffer_size = _size;
     if (unbound_host_buffer_size != _size) {
-        THROW InvalidOperation("Unbound buffers have gone out of sync, in DeviceAgentVector::_erase().\n");
+        THROW exception::InvalidOperation("Unbound buffers have gone out of sync, in DeviceAgentVector::_erase().\n");
     }
     // Update change detail for all variables
     for (const auto &v : agent->variables) {
@@ -300,7 +300,7 @@ void DeviceAgentVector_impl::_changed(const std::string& variable_name, size_typ
     // Check the variable exists
     auto var = agent->variables.find(variable_name);
     if (var == agent->variables.end()) {
-        THROW InvalidAgentVar("Variable %s was not found, "
+        THROW exception::InvalidAgentVar("Variable %s was not found, "
             "in DeviceAgentVector::_changed()\n",
             variable_name.c_str());
     }
@@ -319,7 +319,7 @@ void DeviceAgentVector_impl::_changedAfter(const std::string& variable_name, siz
     // Check the variable exists
     auto var = agent->variables.find(variable_name);
     if (var == agent->variables.end()) {
-        THROW InvalidAgentVar("Variable %s was not found, "
+        THROW exception::InvalidAgentVar("Variable %s was not found, "
             "in DeviceAgentVector::_changed()\n",
             variable_name.c_str());
     }

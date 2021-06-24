@@ -41,9 +41,9 @@ TEST(AgentDescriptionTest, functions) {
     AgentFunctionDescription &f2 = a.newFunction(FUNCTION_NAME2, agent_fn2);
     EXPECT_EQ(a.getFunctionsCount(), 2u);
     // Cannot create function with same name
-    EXPECT_THROW(a.newFunction(FUNCTION_NAME1, agent_fn1), InvalidAgentFunc);
-    EXPECT_THROW(a.newFunction(FUNCTION_NAME1, agent_fn2), InvalidAgentFunc);
-    EXPECT_THROW(a.newFunction(FUNCTION_NAME2, agent_fn2), InvalidAgentFunc);
+    EXPECT_THROW(a.newFunction(FUNCTION_NAME1, agent_fn1), exception::InvalidAgentFunc);
+    EXPECT_THROW(a.newFunction(FUNCTION_NAME1, agent_fn2), exception::InvalidAgentFunc);
+    EXPECT_THROW(a.newFunction(FUNCTION_NAME2, agent_fn2), exception::InvalidAgentFunc);
     // Functions have the right name
     EXPECT_TRUE(a.hasFunction(FUNCTION_NAME1));
     EXPECT_TRUE(a.hasFunction(FUNCTION_NAME2));
@@ -73,9 +73,9 @@ TEST(AgentDescriptionTest, variables) {
     a.newVariable<int16_t>(VARIABLE_NAME2);
     EXPECT_EQ(a.getVariablesCount(), 3u);
     // Cannot create variable with same name
-    EXPECT_THROW(a.newVariable<int64_t>(VARIABLE_NAME1), InvalidAgentVar);
+    EXPECT_THROW(a.newVariable<int64_t>(VARIABLE_NAME1), exception::InvalidAgentVar);
     auto newVarArray3 = &AgentDescription::newVariable<int64_t, 3>;  // Use function ptr, can't do more than 1 template arg inside macro
-    EXPECT_THROW((a.*newVarArray3)(VARIABLE_NAME1, { }), InvalidAgentVar);
+    EXPECT_THROW((a.*newVarArray3)(VARIABLE_NAME1, { }), exception::InvalidAgentVar);
     // Variable have the right name
     EXPECT_TRUE(a.hasVariable(VARIABLE_NAME1));
     EXPECT_TRUE(a.hasVariable(VARIABLE_NAME2));
@@ -101,13 +101,13 @@ TEST(AgentDescriptionTest, variables_array) {
     a.newVariable<int16_t, 56>(VARIABLE_NAME2);
     EXPECT_EQ(a.getVariablesCount(), 4u);
     // Cannot create variable with same name
-    EXPECT_THROW(a.newVariable<int64_t>(VARIABLE_NAME1), InvalidAgentVar);
+    EXPECT_THROW(a.newVariable<int64_t>(VARIABLE_NAME1), exception::InvalidAgentVar);
     // auto newVarArray3 = &AgentDescription::newVariable<int64_t, 1>;  // Use function ptr, can't do more than 1 template arg inside macro
-    // EXPECT_THROW((a.*newVarArray3)(VARIABLE_NAME1, {}), InvalidAgentVar);
-    EXPECT_THROW(a.newVariable<int64_t>(VARIABLE_NAME1, 0), InvalidAgentVar);
+    // EXPECT_THROW((a.*newVarArray3)(VARIABLE_NAME1, {}), exception::InvalidAgentVar);
+    EXPECT_THROW(a.newVariable<int64_t>(VARIABLE_NAME1, 0), exception::InvalidAgentVar);
     // Cannot create array of length 0 (disabled, blocked at compilation with static_assert)
     // auto newVarArray0 = &AgentDescription::newVariable<int64_t, 0>;  // Use function ptr, can't do more than 1 template arg inside macro
-    // EXPECT_THROW((a.*newVarArray0)(VARIABLE_NAME4), InvalidAgentVar);
+    // EXPECT_THROW((a.*newVarArray0)(VARIABLE_NAME4), exception::InvalidAgentVar);
     // Variable have the right name
     EXPECT_TRUE(a.hasVariable(VARIABLE_NAME1));
     EXPECT_TRUE(a.hasVariable(VARIABLE_NAME2));
@@ -130,8 +130,8 @@ TEST(AgentDescriptionTest, states) {
     a.newState(STATE_NAME2);
     EXPECT_EQ(a.getStatesCount(), 2u);
     // Cannot create state with same name
-    EXPECT_THROW(a.newState(STATE_NAME1), InvalidStateName);
-    EXPECT_THROW(a.newState(STATE_NAME2), InvalidStateName);
+    EXPECT_THROW(a.newState(STATE_NAME1), exception::InvalidStateName);
+    EXPECT_THROW(a.newState(STATE_NAME2), exception::InvalidStateName);
     // States have the right name
     EXPECT_TRUE(a.hasState(STATE_NAME1));
     EXPECT_TRUE(a.hasState(STATE_NAME2));
@@ -183,17 +183,17 @@ TEST(AgentDescriptionTest, agent_outputs) {
 TEST(AgentDescriptionTest, reserved_name) {
     ModelDescription m(MODEL_NAME);
     AgentDescription &a = m.newAgent(AGENT_NAME1);
-    EXPECT_THROW(a.newVariable<int>("_"), ReservedName);
-    EXPECT_THROW(a.newVariable<int>("name"), ReservedName);
-    EXPECT_THROW(a.newVariable<int>("state"), ReservedName);
-    EXPECT_THROW(a.newVariable<int>("nAme"), ReservedName);
-    EXPECT_THROW(a.newVariable<int>("sTate"), ReservedName);
+    EXPECT_THROW(a.newVariable<int>("_"), exception::ReservedName);
+    EXPECT_THROW(a.newVariable<int>("name"), exception::ReservedName);
+    EXPECT_THROW(a.newVariable<int>("state"), exception::ReservedName);
+    EXPECT_THROW(a.newVariable<int>("nAme"), exception::ReservedName);
+    EXPECT_THROW(a.newVariable<int>("sTate"), exception::ReservedName);
     auto array_version = &AgentDescription::newVariable<int, 3>;
-    EXPECT_THROW((a.*array_version)("_", {}), ReservedName);
-    EXPECT_THROW((a.*array_version)("name", {}), ReservedName);
-    EXPECT_THROW((a.*array_version)("state", {}), ReservedName);
-    EXPECT_THROW((a.*array_version)("nAme", {}), ReservedName);
-    EXPECT_THROW((a.*array_version)("sTate", {}), ReservedName);
+    EXPECT_THROW((a.*array_version)("_", {}), exception::ReservedName);
+    EXPECT_THROW((a.*array_version)("name", {}), exception::ReservedName);
+    EXPECT_THROW((a.*array_version)("state", {}), exception::ReservedName);
+    EXPECT_THROW((a.*array_version)("nAme", {}), exception::ReservedName);
+    EXPECT_THROW((a.*array_version)("sTate", {}), exception::ReservedName);
 }
 const char* rtc_agent_func = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_test_filefunc, flamegpu::MsgNone, flamegpu::MsgNone) {
@@ -237,7 +237,7 @@ TEST(AgentDescriptionTest, rtc_function_from_file_missing) {
     ModelDescription m(MODEL_NAME);
     AgentDescription& a = m.newAgent(AGENT_NAME1);
     a.newVariable<int>("x");
-    EXPECT_THROW(a.newRTCFunctionFile("test_rtcfunc_file2", test_file_name), InvalidFilePath);
+    EXPECT_THROW(a.newRTCFunctionFile("test_rtcfunc_file2", test_file_name), exception::InvalidFilePath);
 }
 
 }  // namespace test_agent

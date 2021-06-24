@@ -101,7 +101,7 @@ class CUDAMessage {
      * @param newMsgCount The number of output messages (including optional messages which were not output)
      * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
      * @param streamId Index of stream specific structures used
-     * @throw InvalidCudaMessage If this is called before the internal buffers have been allocated
+     * @throw exception::InvalidCudaMessage If this is called before the internal buffers have been allocated
      */
     void swap(bool isOptional, const unsigned int &newMsgCount, CUDAScatter &scatter, const unsigned int &streamId);
     /**

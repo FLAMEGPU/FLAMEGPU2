@@ -16,17 +16,17 @@ SubAgentDescription &SubModelDescription::bindAgent(const std::string &sub_agent
     // Sub agent exists
     const auto subagent = data->submodel->agents.find(sub_agent_name);
     if (subagent == data->submodel->agents.end()) {
-        THROW InvalidSubAgentName("SubModel '%s' does not contain Agent '%s', "
+        THROW exception::InvalidSubAgentName("SubModel '%s' does not contain Agent '%s', "
             "in SubModelDescription::bindAgent()\n", data->submodel->name.c_str(), sub_agent_name.c_str());
     }
     auto mdl = model.lock();
     if (!mdl) {
-        THROW ExpiredWeakPtr();
+        THROW exception::ExpiredWeakPtr();
     }
     // Master agent exists
     const auto masteragent = mdl->agents.find(master_agent_name);
     if (masteragent == mdl->agents.end()) {
-        THROW InvalidAgentName("Master Model '%s' does not contain Agent '%s', "
+        THROW exception::InvalidAgentName("Master Model '%s' does not contain Agent '%s', "
             "in SubModelDescription::bindAgent()\n", mdl->name.c_str(), master_agent_name.c_str());
     }
     // Sub agent has not been bound yet
@@ -34,7 +34,7 @@ SubAgentDescription &SubModelDescription::bindAgent(const std::string &sub_agent
         const auto subagent_bind = data->subagents.find(sub_agent_name);
         if (subagent_bind != data->subagents.end()) {
             auto master_agent_ptr = subagent_bind->second->masterAgent.lock();
-            THROW InvalidSubAgentName("SubModel '%s's Agent '%s' has already been bound to Master agent '%s', "
+            THROW exception::InvalidSubAgentName("SubModel '%s's Agent '%s' has already been bound to Master agent '%s', "
                 "in SubModelDescription::bindAgent()\n", data->submodel->name.c_str(), sub_agent_name.c_str(), master_agent_ptr ? master_agent_ptr->name.c_str() : "?");
         }
     }
@@ -42,7 +42,7 @@ SubAgentDescription &SubModelDescription::bindAgent(const std::string &sub_agent
     for (auto &a : data->subagents) {
         const auto master_agent_ptr = a.second->masterAgent.lock();
         if (master_agent_ptr && master_agent_ptr->name == master_agent_name) {
-            THROW InvalidAgentName("Master Agent '%s' has already been bound to Sub agent '%s', "
+            THROW exception::InvalidAgentName("Master Agent '%s' has already been bound to Sub agent '%s', "
                 "in SubModelDescription::bindAgent()\n", master_agent_name.c_str(), a.first.c_str());
         }
     }
@@ -84,7 +84,7 @@ SubAgentDescription &SubModelDescription::SubAgent(const std::string &sub_agent_
     const auto rtn = data->subagents.find(sub_agent_name);
     if (rtn != data->subagents.end())
         return *rtn->second->description;
-    THROW InvalidSubAgentName("SubAgent ('%s') either does not exist, or has not been bound yet, "
+    THROW exception::InvalidSubAgentName("SubAgent ('%s') either does not exist, or has not been bound yet, "
         "in SubModelDescription::SubAgent().",
         sub_agent_name.c_str());
 }
@@ -92,7 +92,7 @@ const SubAgentDescription &SubModelDescription::getSubAgent(const std::string &s
     const auto rtn = data->subagents.find(sub_agent_name);
     if (rtn != data->subagents.end())
         return *rtn->second->description;
-    THROW InvalidSubAgentName("SubAgent ('%s')  either does not exist, or has not been bound yet, "
+    THROW exception::InvalidSubAgentName("SubAgent ('%s')  either does not exist, or has not been bound yet, "
         "in SubModelDescription::getSubAgent().",
         sub_agent_name.c_str());
 }
@@ -102,7 +102,7 @@ SubEnvironmentDescription &SubModelDescription::SubEnvironment(bool auto_map_pro
     if (!data->subenvironment) {
         auto mdl = model.lock();
         if (!mdl) {
-            THROW ExpiredWeakPtr();
+            THROW exception::ExpiredWeakPtr();
         }
         data->subenvironment = std::shared_ptr<SubEnvironmentData>(new SubEnvironmentData(mdl, data->shared_from_this(), data->submodel->environment));
     }
@@ -114,7 +114,7 @@ const SubEnvironmentDescription &SubModelDescription::getSubEnvironment(bool aut
     if (!data->subenvironment) {
         auto mdl = model.lock();
         if (!mdl) {
-            THROW ExpiredWeakPtr();
+            THROW exception::ExpiredWeakPtr();
         }
         data->subenvironment = std::shared_ptr<SubEnvironmentData>(new SubEnvironmentData(mdl, data->shared_from_this(), data->submodel->environment));
     }

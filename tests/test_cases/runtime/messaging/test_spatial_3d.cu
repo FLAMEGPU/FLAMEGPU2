@@ -457,47 +457,47 @@ TEST(Spatial3DMsgTest, OptionalNone) {
 TEST(Spatial3DMsgTest, BadRadius) {
     ModelDescription model("Spatial3DMsgTestModel");
     MsgSpatial3D::Description &message = model.newMessage<MsgSpatial3D>("location");
-    EXPECT_THROW(message.setRadius(0), InvalidArgument);
-    EXPECT_THROW(message.setRadius(-10), InvalidArgument);
+    EXPECT_THROW(message.setRadius(0), exception::InvalidArgument);
+    EXPECT_THROW(message.setRadius(-10), exception::InvalidArgument);
 }
 TEST(Spatial3DMsgTest, BadMin) {
     ModelDescription model("Spatial3DMsgTestModel");
     MsgSpatial3D::Description &message = model.newMessage<MsgSpatial3D>("location");
     message.setMax(5, 5, 5);
-    EXPECT_THROW(message.setMin(5, 0, 0), InvalidArgument);
-    EXPECT_THROW(message.setMin(0, 5, 0), InvalidArgument);
-    EXPECT_THROW(message.setMin(0, 0, 5), InvalidArgument);
-    EXPECT_THROW(message.setMin(6, 0, 0), InvalidArgument);
-    EXPECT_THROW(message.setMin(0, 6, 0), InvalidArgument);
-    EXPECT_THROW(message.setMin(0, 0, 6), InvalidArgument);
+    EXPECT_THROW(message.setMin(5, 0, 0), exception::InvalidArgument);
+    EXPECT_THROW(message.setMin(0, 5, 0), exception::InvalidArgument);
+    EXPECT_THROW(message.setMin(0, 0, 5), exception::InvalidArgument);
+    EXPECT_THROW(message.setMin(6, 0, 0), exception::InvalidArgument);
+    EXPECT_THROW(message.setMin(0, 6, 0), exception::InvalidArgument);
+    EXPECT_THROW(message.setMin(0, 0, 6), exception::InvalidArgument);
 }
 TEST(Spatial3DMsgTest, BadMax) {
     ModelDescription model("Spatial3DMsgTestModel");
     MsgSpatial3D::Description &message = model.newMessage<MsgSpatial3D>("location");
     message.setMin(5, 5, 5);
-    EXPECT_THROW(message.setMax(5, 0, 0), InvalidArgument);
-    EXPECT_THROW(message.setMax(0, 5, 0), InvalidArgument);
-    EXPECT_THROW(message.setMax(0, 0, 5), InvalidArgument);
-    EXPECT_THROW(message.setMax(4, 0, 0), InvalidArgument);
-    EXPECT_THROW(message.setMax(0, 4, 0), InvalidArgument);
-    EXPECT_THROW(message.setMax(0, 0, 4), InvalidArgument);
+    EXPECT_THROW(message.setMax(5, 0, 0), exception::InvalidArgument);
+    EXPECT_THROW(message.setMax(0, 5, 0), exception::InvalidArgument);
+    EXPECT_THROW(message.setMax(0, 0, 5), exception::InvalidArgument);
+    EXPECT_THROW(message.setMax(4, 0, 0), exception::InvalidArgument);
+    EXPECT_THROW(message.setMax(0, 4, 0), exception::InvalidArgument);
+    EXPECT_THROW(message.setMax(0, 0, 4), exception::InvalidArgument);
 }
 TEST(Spatial3DMsgTest, UnsetMax) {
     ModelDescription model("Spatial23MsgTestModel");
     MsgSpatial3D::Description &message = model.newMessage<MsgSpatial3D>("location");
     message.setMin(5, 5, 5);
-    EXPECT_THROW(CUDASimulation m(model), InvalidMessage);
+    EXPECT_THROW(CUDASimulation m(model), exception::InvalidMessage);
 }
 TEST(Spatial3DMsgTest, UnsetMin) {
     ModelDescription model("Spatial3DMsgTestModel");
     MsgSpatial3D::Description &message = model.newMessage<MsgSpatial3D>("location");
     message.setMin(5, 5, 5);
-    EXPECT_THROW(CUDASimulation m(model), InvalidMessage);
+    EXPECT_THROW(CUDASimulation m(model), exception::InvalidMessage);
 }
 TEST(Spatial3DMsgTest, reserved_name) {
     ModelDescription model("Spatial3DMsgTestModel");
     MsgSpatial3D::Description &message = model.newMessage<MsgSpatial3D>("location");
-    EXPECT_THROW(message.newVariable<int>("_"), ReservedName);
+    EXPECT_THROW(message.newVariable<int>("_"), exception::ReservedName);
 }
 
 FLAMEGPU_AGENT_FUNCTION(count3D, MsgSpatial3D, MsgNone) {

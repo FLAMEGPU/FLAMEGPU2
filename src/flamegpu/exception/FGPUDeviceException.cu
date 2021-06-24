@@ -7,6 +7,7 @@
 #if !defined(SEATBELTS) || SEATBELTS
 
 namespace flamegpu {
+namespace exception {
 
 DeviceExceptionManager::DeviceExceptionManager()
     : d_buffer()
@@ -21,7 +22,7 @@ DeviceExceptionManager::~DeviceExceptionManager() {
 }
 DeviceExceptionBuffer *DeviceExceptionManager::getDevicePtr(const unsigned int &streamId, const cudaStream_t &stream) {
     if (streamId >= CUDAScanCompaction::MAX_STREAMS) {
-        THROW OutOfBoundsException("Stream id %u is out of bounds, %u >= %u, "
+        THROW exception::OutOfBoundsException("Stream id %u is out of bounds, %u >= %u, "
         "in FGPUDeviceException::getDevicePtr()\n", streamId, streamId, CUDAScanCompaction::MAX_STREAMS);
     }
     // It may be better to move this (and the memsets) out to a separate up-front reset call in the future.
@@ -38,7 +39,7 @@ DeviceExceptionBuffer *DeviceExceptionManager::getDevicePtr(const unsigned int &
 }
 void DeviceExceptionManager::checkError(const std::string &function, const unsigned int &streamId, const cudaStream_t &stream) {
     if (streamId >= CUDAScanCompaction::MAX_STREAMS) {
-        THROW OutOfBoundsException("Stream id %u is out of bounds, %u >= %u, "
+        THROW exception::OutOfBoundsException("Stream id %u is out of bounds, %u >= %u, "
         "in FGPUDeviceException::checkError()\n", streamId, streamId, CUDAScanCompaction::MAX_STREAMS);
     }
     if (d_buffer[streamId]) {
@@ -49,12 +50,12 @@ void DeviceExceptionManager::checkError(const std::string &function, const unsig
         if (hd_buffer[streamId].error_count) {
             std::string location_string = getLocationString(hd_buffer[streamId]);
             std::string error_string = getErrorString(hd_buffer[streamId]);
-            throw DeviceError(
+            throw exception::DeviceError(
             "Device function '%s' reported %u errors.\nFirst error:\n%s:\n%s",
             function.c_str(), hd_buffer[streamId].error_count, location_string.c_str(), error_string.c_str());
         }
     } else {
-        THROW OutOfBoundsException("FGPUDeviceExceptionBuffer for stream %u has not been allocated, "
+        THROW exception::OutOfBoundsException("FGPUDeviceExceptionBuffer for stream %u has not been allocated, "
         "in FGPUDeviceException::checkError()\n", streamId, streamId, CUDAScanCompaction::MAX_STREAMS);
     }
 }
@@ -209,6 +210,7 @@ std::string DeviceExceptionManager::getErrorString(const DeviceExceptionBuffer &
     return out_buffer;
 }
 
+}  // namespace exception
 }  // namespace flamegpu
 
 #endif  // SEATBELTS are off

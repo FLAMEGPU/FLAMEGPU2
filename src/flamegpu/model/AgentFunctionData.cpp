@@ -65,7 +65,7 @@ AgentFunctionData::AgentFunctionData(const std::shared_ptr<const ModelData> &mod
                 message_input = _m->second;
             }
         } else if (util::cxxname::getUnqualifiedName(other.msg_in_type) != util::cxxname::getUnqualifiedName(CurveRTCHost::demangle(std::type_index(typeid(MsgNone))))) {
-            THROW InvalidMessageType(
+            THROW exception::InvalidMessageType(
                 "Function '%s' is missing bound input message of type '%s', type provided was '%s'.", other.name.c_str(),
                 util::cxxname::getUnqualifiedName(other.msg_in_type).c_str(),
                 util::cxxname::getUnqualifiedName(CurveRTCHost::demangle(std::type_index(typeid(MsgNone)))).c_str());
@@ -76,7 +76,7 @@ AgentFunctionData::AgentFunctionData(const std::shared_ptr<const ModelData> &mod
                 message_output = _m->second;
             }
         } else if (util::cxxname::getUnqualifiedName(other.msg_out_type) != util::cxxname::getUnqualifiedName(CurveRTCHost::demangle(std::type_index(typeid(MsgNone))))) {
-            THROW InvalidMessageType(
+            THROW exception::InvalidMessageType(
                 "Function '%s' is missing bound output message of type '%s', type provided was '%s'.", other.name.c_str(),
                 util::cxxname::getUnqualifiedName(other.msg_out_type).c_str(),
                 util::cxxname::getUnqualifiedName(CurveRTCHost::demangle(std::type_index(typeid(MsgNone)))).c_str());

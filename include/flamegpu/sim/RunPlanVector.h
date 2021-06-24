@@ -55,8 +55,8 @@ class RunPlanVector : private std::vector<RunPlan>  {
      * @param name The name of the environment property to set
      * @param value The value of the environment property to set
      * @tparam T The type of the environment property, this must match the ModelDescription
-     * @throws InvalidEnvProperty If a property of the name does not exist
-     * @throws InvalidEnvPropertyType If a property with the name has a type different to T, or length > 1
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::InvalidEnvPropertyType If a property with the name has a type different to T, or length > 1
      */
     template<typename T>
     void setProperty(const std::string &name, const T &value);
@@ -67,8 +67,8 @@ class RunPlanVector : private std::vector<RunPlan>  {
      * @param value Environment property value (override)
      * @tparam T Type of the environment property
      * @tparam N Length of the array to be returned
-     * @throws InvalidEnvProperty If a property of the name does not exist
-     * @throws InvalidEnvPropertyType If a property with the name has a type different to T, or length to N
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::InvalidEnvPropertyType If a property with the name has a type different to T, or length to N
      */
     template<typename T, EnvironmentManager::size_type N>
     void setProperty(const std::string &name, const std::array<T, N> &value);
@@ -78,8 +78,8 @@ class RunPlanVector : private std::vector<RunPlan>  {
      * @param index The index of the environment property array to set
      * @param value The value of the environment property array to set
      * @tparam T The type of the environment property, this must match the ModelDescription
-     * @throws InvalidEnvProperty If a property of the name does not exist
-     * @throws InvalidEnvPropertyType If a property with the name has a type different to T
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::InvalidEnvPropertyType If a property with the name has a type different to T
      * @throws std::out_of_range If index is not in range of the length of the property array
      * @see setProperty(const std::string &name, const T &value)
      */
@@ -93,9 +93,9 @@ class RunPlanVector : private std::vector<RunPlan>  {
      * @param length Length of the environmental property array to be created
      * @param value Environment property value (override)
      * @tparam T Type of the environment property
-     * @throws InvalidEnvProperty If a property of the name does not exist
-     * @throws InvalidEnvProperty If value.size() != length
-     * @throws InvalidEnvPropertyType If a property with the name has a type different to T, or length to N
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::InvalidEnvProperty If value.size() != length
+     * @throws exception::InvalidEnvPropertyType If a property with the name has a type different to T, or length to N
      */
     template<typename T>
     void setPropertyArray(const std::string &name, const EnvironmentManager::size_type &length, const std::vector<T> &value);
@@ -107,8 +107,8 @@ class RunPlanVector : private std::vector<RunPlan>  {
      * @param min The value to set the first environment property
      * @param max The value to set the last environment property
      * @tparam T The type of the environment property, this must match the ModelDescription
-     * @throws InvalidEnvProperty If a property of the name does not exist
-     * @throws InvalidEnvPropertyType If a property with the name has a type different to T, or length > 1
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::InvalidEnvPropertyType If a property with the name has a type different to T, or length > 1
      * @throws std::out_of_range If this vector has a length less than 2
      */
     template<typename T>
@@ -122,8 +122,8 @@ class RunPlanVector : private std::vector<RunPlan>  {
      * @param min The value to set the first environment property array element
      * @param max The value to set the last environment property array element
      * @tparam T The type of the environment property, this must match the ModelDescription
-     * @throws InvalidEnvProperty If a property of the name does not exist
-     * @throws InvalidEnvPropertyType If a property with the name has a type different to T
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::InvalidEnvPropertyType If a property with the name has a type different to T
      * @throws std::out_of_range If index is greater than or equal to the length of the environment property array
      * @throws std::out_of_range If this vector has a length less than 2
      * @see setPropertyUniformDistribution(const std::string &name, const T &min, const T &max)
@@ -144,8 +144,8 @@ class RunPlanVector : private std::vector<RunPlan>  {
      * @param min The value of the range to set the first environment property
      * @param max The value of the range to set the last environment property
      * @tparam T The type of the environment property, this must match the ModelDescription
-     * @throws InvalidEnvProperty If a property of the name does not exist
-     * @throws InvalidEnvPropertyType If a property with the name has a type different to T, or length > 1
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::InvalidEnvPropertyType If a property with the name has a type different to T, or length > 1
      * @throws std::out_of_range If this vector has a length less than 2
      */
     template<typename T>
@@ -160,8 +160,8 @@ class RunPlanVector : private std::vector<RunPlan>  {
      * @param min The value of the range to set the first environment property
      * @param max The value of the range to set the last environment property
      * @tparam T The type of the environment property, this must match the ModelDescription
-     * @throws InvalidEnvProperty If a property of the name does not exist
-     * @throws InvalidEnvPropertyType If a property with the name has a type different to T
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::InvalidEnvPropertyType If a property with the name has a type different to T
      * @throws std::out_of_range If index is greater than or equal to the length of the environment property array
      * @throws std::out_of_range If this vector has a length less than 2
      * @see setPropertyUniformRandom(const std::string &name, const T &min, const T &max)
@@ -175,8 +175,8 @@ class RunPlanVector : private std::vector<RunPlan>  {
      * @param mean Mean of the distribution (its expected value). Which coincides with the location of its peak.
      * @param stddev Standard deviation: The square root of variance, representing the dispersion of values from the distribution mean.
      * @tparam T The type of the environment property, this must match the ModelDescription
-     * @throws InvalidEnvProperty If a property of the name does not exist
-     * @throws InvalidEnvPropertyType If a property with the name has a type different to T, or length > 1
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::InvalidEnvPropertyType If a property with the name has a type different to T, or length > 1
      * @throws std::out_of_range If this vector has a length less than 2
      */
     template<typename T>
@@ -190,8 +190,8 @@ class RunPlanVector : private std::vector<RunPlan>  {
      * @param mean Mean of the distribution (its expected value). Which coincides with the location of its peak.
      * @param stddev Standard deviation: The square root of variance, representing the dispersion of values from the distribution mean.
      * @tparam T The type of the environment property, this must match the ModelDescription
-     * @throws InvalidEnvProperty If a property of the name does not exist
-     * @throws InvalidEnvPropertyType If a property with the name has a type different to T
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::InvalidEnvPropertyType If a property with the name has a type different to T
      * @throws std::out_of_range If index is greater than or equal to the length of the environment property array
      * @throws std::out_of_range If this vector has a length less than 2
      * @see setPropertyNormalRandom(const std::string &name, const T &mean, const T &stddev)
@@ -205,8 +205,8 @@ class RunPlanVector : private std::vector<RunPlan>  {
      * @param mean Mean of the underlying normal distribution formed by the logarithm transformations of the possible values in this distribution.
      * @param stddev Standard deviation of the underlying normal distribution formed by the logarithm transformations of the possible values in this distribution.
      * @tparam T The type of the environment property, this must match the ModelDescription
-     * @throws InvalidEnvProperty If a property of the name does not exist
-     * @throws InvalidEnvPropertyType If a property with the name has a type different to T, or length > 1
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::InvalidEnvPropertyType If a property with the name has a type different to T, or length > 1
      * @throws std::out_of_range If this vector has a length less than 2
      */
     template<typename T>
@@ -220,8 +220,8 @@ class RunPlanVector : private std::vector<RunPlan>  {
      * @param mean Mean of the underlying normal distribution formed by the logarithm transformations of the possible values in this distribution.
      * @param stddev Standard deviation of the underlying normal distribution formed by the logarithm transformations of the possible values in this distribution.
      * @tparam T The type of the environment property, this must match the ModelDescription
-     * @throws InvalidEnvProperty If a property of the name does not exist
-     * @throws InvalidEnvPropertyType If a property with the name has a type different to T
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::InvalidEnvPropertyType If a property with the name has a type different to T
      * @throws std::out_of_range If index is greater than or equal to the length of the environment property array
      * @throws std::out_of_range If this vector has a length less than 2
      * @see setPropertyNormalRandom(const std::string &name, const T &mean, const T &stddev)
@@ -234,8 +234,8 @@ class RunPlanVector : private std::vector<RunPlan>  {
      * @param distribution The random distribution to use for generating random property values
      * @tparam T The type of the environment property, this must match the ModelDescription
      * @tparam rand_dist An object satisfying the requirements of RandomNumberDistribution e.g. std::uniform_real_distribution
-     * @throws InvalidEnvProperty If a property of the name does not exist
-     * @throws InvalidEnvPropertyType If a property with the name has a type different to T, or length to N
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::InvalidEnvPropertyType If a property with the name has a type different to T, or length to N
      * @throws std::out_of_range If this vector has a length less than 2
      */
     template<typename T, typename rand_dist>
@@ -248,8 +248,8 @@ class RunPlanVector : private std::vector<RunPlan>  {
      * @param distribution The random distribution to use for generating random property values
      * @tparam T The type of the environment property array, this must match the ModelDescription
      * @tparam rand_dist An object satisfying the requirements of RandomNumberDistribution e.g. std::uniform_real_distribution
-     * @throws InvalidEnvProperty If a property of the name does not exist
-     * @throws InvalidEnvPropertyType If a property with the name has a type different to T, or length to N
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::InvalidEnvPropertyType If a property with the name has a type different to T, or length to N
      * @throws std::out_of_range If index is greater than or equal to the length of the environment property array
      * @throws std::out_of_range If this vector has a length less than 2
      */
@@ -297,17 +297,17 @@ void RunPlanVector::setProperty(const std::string &name, const T &value) {
     // Validation
     const auto it = environment->find(name);
     if (it == environment->end()) {
-        THROW InvalidEnvProperty("Environment description does not contain property '%s', "
+        THROW exception::InvalidEnvProperty("Environment description does not contain property '%s', "
             "in RunPlanVector::setProperty()\n",
             name.c_str());
     }
     if (it->second.data.type != std::type_index(typeid(T))) {
-        THROW InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
+        THROW exception::InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
             "in RunPlanVector::setProperty()\n",
             name.c_str(), it->second.data.type.name(), std::type_index(typeid(T)).name());
     }
     if (it->second.data.elements == 1) {
-        THROW InvalidEnvPropertyType("Environment property '%s' is an array with %u elements, array method should be used, "
+        THROW exception::InvalidEnvPropertyType("Environment property '%s' is an array with %u elements, array method should be used, "
             "in RunPlanVector::setProperty()\n",
             name.c_str(), it->second.data.elements);
     }
@@ -320,17 +320,17 @@ void RunPlanVector::setProperty(const std::string &name, const std::array<T, N> 
     // Validation
     const auto it = environment->find(name);
     if (it == environment->end()) {
-        THROW InvalidEnvProperty("Environment description does not contain property '%s', "
+        THROW exception::InvalidEnvProperty("Environment description does not contain property '%s', "
             "in RunPlanVector::setProperty()\n",
             name.c_str());
     }
     if (it->second.data.type != std::type_index(typeid(T))) {
-        THROW InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
+        THROW exception::InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
             "in RunPlanVector::setProperty()\n",
             name.c_str(), it->second.data.type.name(), std::type_index(typeid(T)).name());
     }
     if (it->second.data.elements != N) {
-        THROW InvalidEnvPropertyType("Environment property array '%s' length mismatch %u != %u "
+        THROW exception::InvalidEnvPropertyType("Environment property array '%s' length mismatch %u != %u "
             "in RunPlan::setProperty()\n",
             name.c_str(), it->second.data.elements, N);
     }
@@ -343,12 +343,12 @@ void RunPlanVector::setProperty(const std::string &name, const EnvironmentManage
     // Validation
     const auto it = environment->find(name);
     if (it == environment->end()) {
-        THROW InvalidEnvProperty("Environment description does not contain property '%s', "
+        THROW exception::InvalidEnvProperty("Environment description does not contain property '%s', "
             "in RunPlanVector::setProperty()\n",
             name.c_str());
     }
     if (it->second.data.type != std::type_index(typeid(T))) {
-        THROW InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
+        THROW exception::InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
             "in RunPlanVector::setProperty()\n",
             name.c_str(), it->second.data.type.name(), std::type_index(typeid(T)).name());
     }
@@ -366,22 +366,22 @@ void RunPlanVector::setPropertyArray(const std::string &name, const EnvironmentM
     // Validation
     const auto it = environment->find(name);
     if (it == environment->end()) {
-        THROW InvalidEnvProperty("Environment description does not contain property '%s', "
+        THROW exception::InvalidEnvProperty("Environment description does not contain property '%s', "
             "in RunPlanVector::setProperty()\n",
             name.c_str());
     }
     if (it->second.data.type != std::type_index(typeid(T))) {
-        THROW InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
+        THROW exception::InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
             "in RunPlanVector::setProperty()\n",
             name.c_str(), it->second.data.type.name(), std::type_index(typeid(T)).name());
     }
     if (it->second.data.elements != N) {
-        THROW InvalidEnvPropertyType("Environment property array '%s' length mismatch %u != %u "
+        THROW exception::InvalidEnvPropertyType("Environment property array '%s' length mismatch %u != %u "
             "in RunPlanVector::setProperty()\n",
             name.c_str(), it->second.data.elements, N);
     }
     if (value.size() != N) {
-        THROW InvalidEnvProperty("Environment property array length does not match the value provided, %u != %llu,"
+        THROW exception::InvalidEnvProperty("Environment property array length does not match the value provided, %u != %llu,"
             "in RunPlanVector::setProperty()\n",
             name.c_str(), value.size(), N);
     }
@@ -400,17 +400,17 @@ void RunPlanVector::setPropertyUniformDistribution(const std::string &name, cons
     }
     const auto it = environment->find(name);
     if (it == environment->end()) {
-        THROW InvalidEnvProperty("Environment description does not contain property '%s', "
+        THROW exception::InvalidEnvProperty("Environment description does not contain property '%s', "
             "in RunPlanVector::setPropertyUniformDistribution()\n",
             name.c_str());
     }
     if (it->second.data.type != std::type_index(typeid(T))) {
-        THROW InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
+        THROW exception::InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
             "in RunPlanVector::setPropertyUniformDistribution()\n",
             name.c_str(), it->second.data.type.name(), std::type_index(typeid(T)).name());
     }
     if (it->second.data.elements != 1) {
-        THROW InvalidEnvPropertyType("Environment property '%s' is an array with %u elements, array method should be used, "
+        THROW exception::InvalidEnvPropertyType("Environment property '%s' is an array with %u elements, array method should be used, "
             "in RunPlanVector::setPropertyUniformDistribution()\n",
             name.c_str(), it->second.data.elements);
     }
@@ -430,12 +430,12 @@ void RunPlanVector::setPropertyUniformDistribution(const std::string &name, cons
     }
     const auto it = environment->find(name);
     if (it == environment->end()) {
-        THROW InvalidEnvProperty("Environment description does not contain property '%s', "
+        THROW exception::InvalidEnvProperty("Environment description does not contain property '%s', "
             "in RunPlanVector::setPropertyUniformDistribution()\n",
             name.c_str());
     }
     if (it->second.data.type != std::type_index(typeid(T))) {
-        THROW InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
+        THROW exception::InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
             "in RunPlanVector::setPropertyUniformDistribution()\n",
             name.c_str(), it->second.data.type.name(), std::type_index(typeid(T)).name());
     }
@@ -460,17 +460,17 @@ void RunPlanVector::setPropertyRandom(const std::string &name, rand_dist &distri
     }
     const auto it = environment->find(name);
     if (it == environment->end()) {
-        THROW InvalidEnvProperty("Environment description does not contain property '%s', "
+        THROW exception::InvalidEnvProperty("Environment description does not contain property '%s', "
             "in RunPlanVector::setPropertyUniformDistribution()\n",
             name.c_str());
     }
     if (it->second.data.type != std::type_index(typeid(T))) {
-        THROW InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
+        THROW exception::InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
             "in RunPlanVector::setPropertyUniformDistribution()\n",
             name.c_str(), it->second.data.type.name(), std::type_index(typeid(T)).name());
     }
     if (it->second.data.elements != 1) {
-        THROW InvalidEnvPropertyType("Environment property '%s' is an array with %u elements, array method should be used, "
+        THROW exception::InvalidEnvPropertyType("Environment property '%s' is an array with %u elements, array method should be used, "
             "in RunPlanVector::setPropertyUniformDistribution()\n",
             name.c_str(), it->second.data.elements);
     }
@@ -487,12 +487,12 @@ void RunPlanVector::setPropertyRandom(const std::string &name, const Environment
     }
     const auto it = environment->find(name);
     if (it == environment->end()) {
-        THROW InvalidEnvProperty("Environment description does not contain property '%s', "
+        THROW exception::InvalidEnvProperty("Environment description does not contain property '%s', "
             "in RunPlanVector::setPropertyUniformDistribution()\n",
             name.c_str());
     }
     if (it->second.data.type != std::type_index(typeid(T))) {
-        THROW InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
+        THROW exception::InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
             "in RunPlanVector::setPropertyUniformDistribution()\n",
             name.c_str(), it->second.data.type.name(), std::type_index(typeid(T)).name());
     }

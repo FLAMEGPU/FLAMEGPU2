@@ -42,7 +42,7 @@ class HSVInterpolation : public ColorFunction {
      * @param min_bound The agent variable value that should map to the minimum hue, must be smaller than max_bound
      * @param max_bound The agent variable value that should map to the maximum hue, must be larger than min_bound
      * @return Returns itself, so that you can chain the method (otherwise constructor would have too many optional args)
-     * @throws InvalidArgument if min_bound > max_bound
+     * @throws exception::InvalidArgument if min_bound > max_bound
      * @note Defaults to (0.0, 1.0)
      */
     HSVInterpolation &setBounds(const float& min_bound, const float& max_bound);

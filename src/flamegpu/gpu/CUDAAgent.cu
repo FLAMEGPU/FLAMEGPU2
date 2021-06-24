@@ -89,7 +89,7 @@ void CUDAAgent::mapRuntimeVariables(const AgentFunctionData& func, const unsigne
     auto sm = state_map.find(func.initial_state);
 
     if (sm == state_map.end()) {
-        THROW InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found "
+        THROW exception::InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found "
             "in CUDAAgent::mapRuntimeVariables()",
             agent_description.name.c_str(), func.initial_state.c_str());
     }
@@ -145,7 +145,7 @@ void CUDAAgent::unmapRuntimeVariables(const AgentFunctionData& func, const unsig
     const auto &sm = state_map.find(func.initial_state);
 
     if (sm == state_map.end()) {
-        THROW InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found "
+        THROW exception::InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found "
             "in CUDAAgent::unmapRuntimeVariables()",
             agent_description.name.c_str(), func.initial_state.c_str());
     }
@@ -170,11 +170,11 @@ void CUDAAgent::setPopulationData(const AgentVector& population, const std::stri
     auto our_state = state_map.find(state_name);
     if (our_state == state_map.end()) {
         if (state_name == ModelData::DEFAULT_STATE) {
-            THROW InvalidAgentState("Agent '%s' does not use the default state, so the state must be passed explicitly, "
+            THROW exception::InvalidAgentState("Agent '%s' does not use the default state, so the state must be passed explicitly, "
                 "in CUDAAgent::setPopulationData()",
                 state_name.c_str(), population.getAgentName().c_str());
         } else {
-            THROW InvalidAgentState("State '%s' was not found in agent '%s', "
+            THROW exception::InvalidAgentState("State '%s' was not found in agent '%s', "
                 "in CUDAAgent::setPopulationData()",
                 state_name.c_str(), population.getAgentName().c_str());
         }
@@ -191,11 +191,11 @@ void CUDAAgent::getPopulationData(AgentVector& population, const std::string& st
     auto our_state = state_map.find(state_name);
     if (our_state == state_map.end()) {
         if (state_name == ModelData::DEFAULT_STATE) {
-            THROW InvalidAgentState("Agent '%s' does not use the default state, so the state must be passed explicitly, "
+            THROW exception::InvalidAgentState("Agent '%s' does not use the default state, so the state must be passed explicitly, "
                 "in CUDAAgent::getPopulationData()",
                 state_name.c_str(), population.getAgentName().c_str());
         } else {
-            THROW InvalidAgentState("State '%s' was not found in agent '%s', "
+            THROW exception::InvalidAgentState("State '%s' was not found in agent '%s', "
                 "in CUDAAgent::getPopulationData()",
                 state_name.c_str(), population.getAgentName().c_str());
         }
@@ -268,7 +268,7 @@ void CUDAAgent::validateIDCollisions() const {
     gpuErrchk(cudaFree(d_keysIn));
     gpuErrchk(cudaFree(d_keysOut));
     if (flagsSet) {
-        THROW AgentIDCollision("%u agents of type '%s' share an ID with another agent of the same type, "
+        THROW exception::AgentIDCollision("%u agents of type '%s' share an ID with another agent of the same type, "
             "you may need to explicitly reset agent IDs for 1 or more populations before adding them to the CUDASimulation, "
             "in CUDAAgent::validateIDCollisions()\n",
             static_cast<unsigned int>(flagsSet), agent_description.name.c_str());
@@ -282,7 +282,7 @@ unsigned int CUDAAgent::getStateSize(const std::string &state) const {
     const auto &sm = state_map.find(state);
 
     if (sm == state_map.end()) {
-        THROW InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found, "
+        THROW exception::InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found, "
             "in CUDAAgent::getStateSize()",
             agent_description.name.c_str(), state.c_str());
     }
@@ -296,7 +296,7 @@ unsigned int CUDAAgent::getStateAllocatedSize(const std::string &state) const {
     const auto &sm = state_map.find(state);
 
     if (sm == state_map.end()) {
-        THROW InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found, "
+        THROW exception::InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found, "
             "in CUDAAgent::getStateAllocatedSize()",
             agent_description.name.c_str(), state.c_str());
     }
@@ -307,7 +307,7 @@ void CUDAAgent::resizeState(const std::string& state, const unsigned int& minimu
     const auto& sm = state_map.find(state);
 
     if (sm == state_map.end()) {
-        THROW InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found, "
+        THROW exception::InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found, "
             "in CUDAAgent::getStateAllocatedSize()",
             agent_description.name.c_str(), state.c_str());
     }
@@ -319,7 +319,7 @@ void CUDAAgent::setStateAgentCount(const std::string& state, const unsigned int&
     const auto& sm = state_map.find(state);
 
     if (sm == state_map.end()) {
-        THROW InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found, "
+        THROW exception::InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found, "
             "in CUDAAgent::getStateAllocatedSize()",
             agent_description.name.c_str(), state.c_str());
     }
@@ -333,7 +333,7 @@ void *CUDAAgent::getStateVariablePtr(const std::string &state_name, const std::s
     const auto &sm = state_map.find(state_name);
 
     if (sm == state_map.end()) {
-        THROW InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found, "
+        THROW exception::InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found, "
             "in CUDAAgent::getStateVariablePtr()",
             agent_description.name.c_str(), state_name.c_str());
     }
@@ -360,7 +360,7 @@ void CUDAAgent::processFunctionCondition(const AgentFunctionData& func, CUDAScat
 void CUDAAgent::scatterHostCreation(const std::string &state_name, const unsigned int &newSize, char *const d_inBuff, const VarOffsetStruct &offsets, CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream) {
     auto sm = state_map.find(state_name);
     if (sm == state_map.end()) {
-        THROW InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found "
+        THROW exception::InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found "
             "in CUDAAgent::scatterHostCreation()",
             agent_description.name.c_str(), state_name.c_str());
     }
@@ -369,7 +369,7 @@ void CUDAAgent::scatterHostCreation(const std::string &state_name, const unsigne
 void CUDAAgent::scatterSort(const std::string &state_name, CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream) {
     auto sm = state_map.find(state_name);
     if (sm == state_map.end()) {
-        THROW InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found "
+        THROW exception::InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found "
             "in CUDAAgent::scatterHostCreation()",
             agent_description.name.c_str(), state_name.c_str());
     }
@@ -382,7 +382,7 @@ void CUDAAgent::mapNewRuntimeVariables(const CUDAAgent& func_agent, const AgentF
         auto sm = state_map.find(func.agent_output_state);
 
         if (sm == state_map.end()) {
-            THROW InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found "
+            THROW exception::InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found "
                 "in CUDAAgent::mapNewRuntimeVariables()",
                 agent_description.name.c_str(), func.agent_output_state.c_str());
         }
@@ -491,7 +491,7 @@ void CUDAAgent::scatterNew(const AgentFunctionData& func, const unsigned int &ne
     if (auto oa = func.agent_output.lock()) {
         auto sm = state_map.find(func.agent_output_state);
         if (sm == state_map.end()) {
-            THROW InvalidStateName("Agent '%s' does not contain state '%s', "
+            THROW exception::InvalidStateName("Agent '%s' does not contain state '%s', "
                 "in CUDAAgent::scatterNew()\n",
                 agent_description.name.c_str(), func.agent_output_state.c_str());
         }
@@ -505,7 +505,7 @@ void CUDAAgent::scatterNew(const AgentFunctionData& func, const unsigned int &ne
             }
         }
         if (!newBuff) {
-            THROW InvalidAgentFunc("New buffer not present for function within init state: %s,"
+            THROW exception::InvalidAgentFunc("New buffer not present for function within init state: %s,"
                 " in CUDAAgent::scatterNew()\n",
                 func.initial_state.c_str());
         }
@@ -634,7 +634,7 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, bool f
 const jitify::experimental::KernelInstantiation& CUDAAgent::getRTCInstantiation(const std::string &function_name) const {
     CUDARTCFuncMap::const_iterator mm = rtc_func_map.find(function_name);
     if (mm == rtc_func_map.end()) {
-        THROW InvalidAgentFunc("Function name '%s' is not a runtime compiled agent function in agent '%s', "
+        THROW exception::InvalidAgentFunc("Function name '%s' is not a runtime compiled agent function in agent '%s', "
             "in CUDAAgent::getRTCInstantiation()\n",
             function_name.c_str(), agent_description.name.c_str());
     }
@@ -644,7 +644,7 @@ const jitify::experimental::KernelInstantiation& CUDAAgent::getRTCInstantiation(
 CurveRTCHost& CUDAAgent::getRTCHeader(const std::string& function_name) const {
     CUDARTCHeaderMap::const_iterator mm = rtc_header_map.find(function_name);
     if (mm == rtc_header_map.end()) {
-        THROW InvalidAgentFunc("Function name '%s' is not a runtime compiled agent function in agent '%s', "
+        THROW exception::InvalidAgentFunc("Function name '%s' is not a runtime compiled agent function in agent '%s', "
             "in CUDAAgent::getRTCHeader()\n",
             function_name.c_str(), agent_description.name.c_str());
     }
@@ -666,7 +666,7 @@ void CUDAAgent::initExcludedVars(const std::string &state, const unsigned int&co
     const auto& sm = state_map.find(state);
 
     if (sm == state_map.end()) {
-        THROW InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found, "
+        THROW exception::InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found, "
             "in CUDAAgent::initUnmappedVars()",
             agent_description.name.c_str(), state.c_str());
     }
@@ -693,7 +693,7 @@ std::list<std::shared_ptr<VariableBuffer>> CUDAAgent::getUnboundVariableBuffers(
     const auto& sm = state_map.find(state);
 
     if (sm == state_map.end()) {
-        THROW InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found, "
+        THROW exception::InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found, "
             "in CUDAAgent::getUnboundVariableBuffers()",
             agent_description.name.c_str(), state.c_str());
     }

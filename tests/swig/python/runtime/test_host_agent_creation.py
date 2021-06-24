@@ -499,7 +499,7 @@ class HostAgentCreationTest(TestCase):
         # Init agent pop
         cudaSimulation = pyflamegpu.CUDASimulation(model)
         # Execute model
-        with pytest.raises (TypeError) as e: # Python raises TypeError rather than InvalidVarType when passing float as int
+        with pytest.raises (TypeError) as e: # Python raises TypeError rather than exception::InvalidVarType when passing float as int
             cudaSimulation.step() 
 
     def test_GetterWorks(self): 

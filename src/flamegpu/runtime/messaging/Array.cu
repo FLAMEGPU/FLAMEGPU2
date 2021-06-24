@@ -104,7 +104,7 @@ MsgArray::Data::Data(const std::shared_ptr<const ModelData>&model, const Data &o
     , length(other.length) {
     description = std::unique_ptr<MsgArray::Description>(model ? new MsgArray::Description(model, this) : nullptr);
     if (length == 0) {
-        THROW InvalidMessage("Length must not be zero in array message '%s'\n", other.name.c_str());
+        THROW exception::InvalidMessage("Length must not be zero in array message '%s'\n", other.name.c_str());
     }
 }
 MsgArray::Data *MsgArray::Data::clone(const std::shared_ptr<const ModelData> &newParent) {
@@ -121,7 +121,7 @@ MsgArray::Description::Description(const std::shared_ptr<const ModelData>&_model
 
 void MsgArray::Description::setLength(const size_type &len) {
     if (len == 0) {
-        THROW InvalidArgument("Array messaging length must not be zero.\n");
+        THROW exception::InvalidArgument("Array messaging length must not be zero.\n");
     }
     reinterpret_cast<Data *>(message)->length = len;
 }

@@ -16,14 +16,14 @@ TEST(BucketMsgTest, DescriptionValidation) {
     ModelDescription model("BucketMsgTest");
     // Test description accessors
     MsgBucket::Description &message = model.newMessage<MsgBucket>("buckets");
-    EXPECT_THROW(message.setUpperBound(0), InvalidArgument);  // Min should default to 0, this would mean no buckets
+    EXPECT_THROW(message.setUpperBound(0), exception::InvalidArgument);  // Min should default to 0, this would mean no buckets
     EXPECT_NO_THROW(message.setLowerBound(10));
     EXPECT_NO_THROW(message.setUpperBound(11));
-    EXPECT_THROW(message.setUpperBound(0), InvalidArgument);  // Max < Min
+    EXPECT_THROW(message.setUpperBound(0), exception::InvalidArgument);  // Max < Min
     EXPECT_NO_THROW(message.setUpperBound(12));
-    EXPECT_THROW(message.setLowerBound(13), InvalidArgument);  // Min > Max
-    EXPECT_THROW(message.setBounds(12, 12), InvalidArgument);  // Min == Max
-    EXPECT_THROW(message.setBounds(13, 12), InvalidArgument);  // Min > Max
+    EXPECT_THROW(message.setLowerBound(13), exception::InvalidArgument);  // Min > Max
+    EXPECT_THROW(message.setBounds(12, 12), exception::InvalidArgument);  // Min == Max
+    EXPECT_THROW(message.setBounds(13, 12), exception::InvalidArgument);  // Min > Max
     EXPECT_NO_THROW(message.setBounds(12, 13));
     EXPECT_NO_THROW(message.newVariable<int>("somevar"));
 }
@@ -31,16 +31,16 @@ TEST(BucketMsgTest, DataValidation) {
     ModelDescription model("BucketMsgTest");
     // Test Data copy constructor knows when bounds have not been init
     MsgBucket::Description &message = model.newMessage<MsgBucket>("buckets");
-    EXPECT_THROW(CUDASimulation c(model), InvalidMessage);  // Max not set
+    EXPECT_THROW(CUDASimulation c(model), exception::InvalidMessage);  // Max not set
     message.setLowerBound(1);  // It should default to 0
-    EXPECT_THROW(CUDASimulation c(model), InvalidMessage);  // Max not set
+    EXPECT_THROW(CUDASimulation c(model), exception::InvalidMessage);  // Max not set
     message.setUpperBound(10);
     EXPECT_NO_THROW(CUDASimulation c(model));
 }
 TEST(BucketMsgTest, reserved_name) {
     ModelDescription model("BucketMsgTest");
     MsgBucket::Description &message = model.newMessage<MsgBucket>("buckets");
-    EXPECT_THROW(message.newVariable<int>("_"), ReservedName);
+    EXPECT_THROW(message.newVariable<int>("_"), exception::ReservedName);
 }
 
 FLAMEGPU_AGENT_FUNCTION(out_mandatory, MsgNone, MsgBucket) {

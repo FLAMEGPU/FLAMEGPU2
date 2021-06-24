@@ -105,7 +105,7 @@ MsgArray2D::Data::Data(const std::shared_ptr<const ModelData> &model, const Data
     , dimensions(other.dimensions) {
     description = std::unique_ptr<MsgArray2D::Description>(model ? new MsgArray2D::Description(model, this) : nullptr);
     if (dimensions[0] == 0 || dimensions[1] == 0) {
-        THROW InvalidMessage("All dimensions must be ABOVE zero in array2D message '%s'\n", other.name.c_str());
+        THROW exception::InvalidMessage("All dimensions must be ABOVE zero in array2D message '%s'\n", other.name.c_str());
     }
 }
 MsgArray2D::Data *MsgArray2D::Data::clone(const std::shared_ptr<const ModelData> &newParent) {
@@ -125,7 +125,7 @@ void MsgArray2D::Description::setDimensions(const size_type& len_x, const size_t
 }
 void MsgArray2D::Description::setDimensions(const std::array<size_type, 2> &dims) {
     if (dims[0] == 0 || dims[1] == 0) {
-        THROW InvalidArgument("All dimensions must be above zero in array2D message.\n");
+        THROW exception::InvalidArgument("All dimensions must be above zero in array2D message.\n");
     }
     reinterpret_cast<Data *>(message)->dimensions = dims;
 }

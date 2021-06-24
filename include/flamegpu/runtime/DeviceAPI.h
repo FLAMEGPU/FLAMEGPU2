@@ -33,7 +33,7 @@ class ReadOnlyDeviceAPI {
     template<typename AgentFunctionCondition>
     friend __global__ void agent_function_condition_wrapper(
 #if !defined(SEATBELTS) || SEATBELTS
-        DeviceExceptionBuffer *error_buffer,
+        exception::DeviceExceptionBuffer *error_buffer,
 #endif
         Curve::NamespaceHash,
         Curve::NamespaceHash,
@@ -59,8 +59,8 @@ class ReadOnlyDeviceAPI {
      * @param variable_name name used for accessing the variable, this value should be a string literal e.g. "foobar"
      * @tparam T Type of the agent variable property being accessed
      * @tparam N Length of variable name, this should always be implicit if passing a string literal
-     * @throws DeviceError If name is not a valid variable within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
-     * @throws DeviceError If T is not the type of variable 'name' within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
+     * @throws exception::DeviceError If name is not a valid variable within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
+     * @throws exception::DeviceError If T is not the type of variable 'name' within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
      */
     template<typename T, unsigned int N> __device__
     T getVariable(const char(&variable_name)[N]);
@@ -70,9 +70,9 @@ class ReadOnlyDeviceAPI {
      * @param index Index of the element within the variable array to return
      * @tparam T Type of the agent variable property being accessed
      * @tparam N Length of variable_name, this should always be implicit if passing a string literal
-     * @throws DeviceError If name is not a valid variable within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
-     * @throws DeviceError If T is not the type of variable 'name' within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
-     * @throws DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
+     * @throws exception::DeviceError If name is not a valid variable within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
+     * @throws exception::DeviceError If T is not the type of variable 'name' within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
+     * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
      */
     template<typename T, unsigned int N, unsigned int M> __device__
     T getVariable(const char(&variable_name)[M], const unsigned int &index);
@@ -144,7 +144,7 @@ class DeviceAPI : public ReadOnlyDeviceAPI{
     template<typename AgentFunction, typename _MsgIn, typename _MsgOut>
     friend __global__ void agent_function_wrapper(
 #if !defined(SEATBELTS) || SEATBELTS
-        DeviceExceptionBuffer *error_buffer,
+        exception::DeviceExceptionBuffer *error_buffer,
 #endif
         Curve::NamespaceHash,
         Curve::NamespaceHash,
@@ -184,8 +184,8 @@ class DeviceAPI : public ReadOnlyDeviceAPI{
          * @tparam N Variable name length, this should be ignored as it is implicitly set
          * @note Any agent variables not set will remain as their default values
          * @note Calling AgentOut::setVariable() or AgentOut::getID() will trigger agent output
-         * @throws DeviceError If name is not a valid variable within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
-         * @throws DeviceError If T is not the type of variable 'name' within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
+         * @throws exception::DeviceError If name is not a valid variable within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
+         * @throws exception::DeviceError If T is not the type of variable 'name' within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
          */
         template<typename T, unsigned int N>
         __device__ void setVariable(const char(&variable_name)[N], T value) const;
@@ -199,9 +199,9 @@ class DeviceAPI : public ReadOnlyDeviceAPI{
          * @tparam M Variable name length, this should be ignored as it is implicitly set
          * @note Any agent variables not set will remain as their default values
          * @note Calling AgentOut::setVariable() or AgentOut::getID() will trigger agent output
-         * @throws DeviceError If name is not a valid variable within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
-         * @throws DeviceError If T is not the type of variable 'name' within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
-         * @throws DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
+         * @throws exception::DeviceError If name is not a valid variable within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
+         * @throws exception::DeviceError If T is not the type of variable 'name' within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
+         * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
          */
         template<typename T, unsigned int N, unsigned int M>
         __device__ void setVariable(const char(&variable_name)[M], const unsigned int &index, T value) const;
@@ -265,8 +265,8 @@ class DeviceAPI : public ReadOnlyDeviceAPI{
      * @param value The value to set the variable
      * @tparam T The type of the variable, as set within the model description hierarchy
      * @tparam N variable_name length, this should be ignored as it is implicitly set
-     * @throws DeviceError If name is not a valid variable within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
-     * @throws DeviceError If T is not the type of variable 'name' within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
+     * @throws exception::DeviceError If name is not a valid variable within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
+     * @throws exception::DeviceError If T is not the type of variable 'name' within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
      */
     template<typename T, unsigned int N>
     __device__ void setVariable(const char(&variable_name)[N], T value);
@@ -278,9 +278,9 @@ class DeviceAPI : public ReadOnlyDeviceAPI{
      * @tparam T The type of the variable, as set within the model description hierarchy
      * @tparam N The length of the array variable, as set within the model description hierarchy
      * @tparam M variable_namelength, this should be ignored as it is implicitly set
-     * @throws DeviceError If name is not a valid variable within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
-     * @throws DeviceError If T is not the type of variable 'name' within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
-     * @throws DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
+     * @throws exception::DeviceError If name is not a valid variable within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
+     * @throws exception::DeviceError If T is not the type of variable 'name' within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
+     * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
      */
     template<typename T, unsigned int N, unsigned int M>
     __device__ void setVariable(const char(&variable_name)[M], const unsigned int &index, const T &value);

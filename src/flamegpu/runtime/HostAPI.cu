@@ -42,11 +42,11 @@ HostAPI::~HostAPI() {
 HostAgentAPI HostAPI::agent(const std::string &agent_name, const std::string &state_name) {
     auto agt = agentData.find(agent_name);
     if (agt == agentData.end()) {
-        THROW InvalidAgent("Agent '%s' was not found in model description hierarchy.\n", agent_name.c_str());
+        THROW exception::InvalidAgent("Agent '%s' was not found in model description hierarchy.\n", agent_name.c_str());
     }
     auto state = agt->second.find(state_name);
     if (state == agt->second.end()) {
-        THROW InvalidAgentState("Agent '%s' in model description hierarchy does not contain state '%s'.\n", agent_name.c_str(), state_name.c_str());
+        THROW exception::InvalidAgentState("Agent '%s' in model description hierarchy does not contain state '%s'.\n", agent_name.c_str(), state_name.c_str());
     }
     return HostAgentAPI(*this, agentModel.getAgent(agent_name), state_name, agentOffsets.at(agent_name), state->second);
 }

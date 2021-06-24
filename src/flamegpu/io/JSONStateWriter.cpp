@@ -129,7 +129,7 @@ void JSONStateWriter::doWrite(T &writer) {
                     } else if (a.second.type == std::type_index(typeid(uint8_t))) {
                         writer.Uint(static_cast<uint32_t>(*reinterpret_cast<const uint8_t*>(env_buffer + a.second.offset + (el * sizeof(uint8_t)))));  // Char outputs weird if being used as an integer
                     } else {
-                        THROW RapidJSONError("Model contains environment property '%s' of unsupported type '%s', "
+                        THROW exception::RapidJSONError("Model contains environment property '%s' of unsupported type '%s', "
                             "in JSONStateWriter::writeStates()\n", a.first.second.c_str(), a.second.type.name());
                     }
                 }
@@ -193,7 +193,7 @@ void JSONStateWriter::doWrite(T &writer) {
                         } else if (var.second.type == std::type_index(typeid(uint8_t))) {
                             writer.Uint(instance.getVariable<uint8_t>(variable_name, el));  // Char outputs weird if being used as an integer
                         } else {
-                            THROW RapidJSONError("Agent '%s' contains variable '%s' of unsupported type '%s', "
+                            THROW exception::RapidJSONError("Agent '%s' contains variable '%s' of unsupported type '%s', "
                                 "in JSONStateWriter::writeStates()\n", agent.first.first.c_str(), variable_name.c_str(), var.second.type.name());
                         }
                     }

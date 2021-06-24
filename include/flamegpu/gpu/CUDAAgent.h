@@ -209,12 +209,12 @@ class CUDAAgent : public AgentInterface {
      * Uses Jitify to create an instantiation of the program. Any compilation errors in the user provided agent function will be reported here.
      * @param func The Agent function data structu containing the src for the function
      * @param function_condition If true then this function will instantiate a function condition rather than an agent function
-     * @throw InvalidAgentFunc thrown if the user supplied agent function has compilation errors
+     * @throw exception::InvalidAgentFunc thrown if the user supplied agent function has compilation errors
      */
     void addInstantitateRTCFunction(const AgentFunctionData& func, bool function_condition = false);
     /**
      * Returns the jitify kernel instantiation of the agent function.
-     * Will throw an InvalidAgentFunc excpetion if the function name does not have a valid instantiation
+     * Will throw an exception::InvalidAgentFunc excpetion if the function name does not have a valid instantiation
      * @param function_name the name of the RTC agent function or the agent function name suffixed with condition (if it is a function condition)
      */
     const jitify::experimental::KernelInstantiation& getRTCInstantiation(const std::string &function_name) const;
@@ -262,7 +262,7 @@ class CUDAAgent : public AgentInterface {
      * Updates the number of alive agents, does not affect disabled agents or change agent data
      * @param state The state to affect
      * @param newSize Number of active agents
-     * @throw InvalidMemoryCapacity If the new number of disabled + active agents would exceed currently allocated buffer capacity
+     * @throw exception::InvalidMemoryCapacity If the new number of disabled + active agents would exceed currently allocated buffer capacity
      */
     void setStateAgentCount(const std::string& state, const unsigned int &newSize);
     /**
@@ -291,7 +291,7 @@ class CUDAAgent : public AgentInterface {
  private:
     /**
      * Validates all IDs for contained agents, if any share an ID (which is not ID_NOT_SET) an exception is thrown
-     * @throws AgentIDCollision If the contained agent populations contain multiple agents with the same ID
+     * @throws exception::AgentIDCollision If the contained agent populations contain multiple agents with the same ID
      */
     void validateIDCollisions() const;
     /**

@@ -46,7 +46,7 @@ void DependencyNode::dependsOnImpl(DependencyNode& dependency) {
     if (auto thisAsAFD = dynamic_cast<AgentFunctionDescription*>(this)) {
         if (auto depAsAFD = dynamic_cast<AgentFunctionDescription*>(&dependency)) {
             if (thisAsAFD->model.expired() || !(thisAsAFD->model.lock() == depAsAFD->model.lock())) {
-                THROW InvalidDependencyGraph("Attempting to add two agent functions from different models to dependency graph!");
+                THROW exception::InvalidDependencyGraph("Attempting to add two agent functions from different models to dependency graph!");
             }
         }
     }

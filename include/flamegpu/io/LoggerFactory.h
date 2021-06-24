@@ -32,7 +32,7 @@ class LoggerFactory {
         } else if (extension == "json") {
             return std::make_unique<JSONLogger>(output_path, prettyPrint, truncateFile);
         }
-        THROW UnsupportedFileType("File '%s' is not a type which can be written "
+        THROW exception::UnsupportedFileType("File '%s' is not a type which can be written "
             "by StateWriterFactory::createLogger().",
             output_path.c_str());
     }

@@ -97,13 +97,13 @@ class AgentDescription {
      * Adds a new state to the possible states this agent can enter
      * State's only exist as strings and have no additional configuration
      * @param state_name Name of the state
-     * @throws InvalidStateName If the agent already has a state with the same name
+     * @throws exception::InvalidStateName If the agent already has a state with the same name
      */
     void newState(const std::string &state_name);
     /**
      * Sets the initial state which new agents begin in
      * @param initial_state Name of the desired state
-     * @throws InvalidStateName If the named state is not found within the agent
+     * @throws exception::InvalidStateName If the named state is not found within the agent
      */
     void setInitialState(const std::string &initial_state);
 
@@ -113,8 +113,8 @@ class AgentDescription {
      * @param default_value Default value of variable for new agents if unset, defaults to each element set 0
      * @tparam T Type of the agent variable, this must be an arithmetic type
      * @tparam N The length of the variable array (1 if not an array, must be greater than 0)
-     * @throws InvalidAgentVar If a variable already exists within the agent with the same name
-     * @throws InvalidAgentVar If N is <= 0
+     * @throws exception::InvalidAgentVar If a variable already exists within the agent with the same name
+     * @throws exception::InvalidAgentVar If N is <= 0
      */
     template<typename T, ModelData::size_type N>
     void newVariable(const std::string &variable_name, const std::array<T, N> &default_value = {});
@@ -123,7 +123,7 @@ class AgentDescription {
      * @param variable_name Name of the variable
      * @param default_value Default value of variable for new agents if unset, defaults to 0
      * @tparam T Type of the agent variable, this must be an arithmetic type
-     * @throws InvalidAgentVar If a variable already exists within the agent with the same name
+     * @throws exception::InvalidAgentVar If a variable already exists within the agent with the same name
      */
     template<typename T>
     void newVariable(const std::string &variable_name, const T&default_value = 0);
@@ -134,8 +134,8 @@ class AgentDescription {
      * @param length The length of the variable array (1 if not an array, must be greater than 0)
      * @param default_value Default value of variable for new agents if unset, defaults to each element set 0
      * @tparam T Type of the agent variable, this must be an arithmetic type
-     * @throws InvalidAgentVar If a variable already exists within the agent with the same name
-     * @throws InvalidAgentVar If length is <= 0
+     * @throws exception::InvalidAgentVar If a variable already exists within the agent with the same name
+     * @throws exception::InvalidAgentVar If length is <= 0
      */
     template<typename T>
     void newVariableArray(const std::string &variable_name, const ModelData::size_type &length, const std::vector<T>&default_value = {});
@@ -148,7 +148,7 @@ class AgentDescription {
      * Should be declared using FLAMEGPU_AGENT_FUNCTION notation
      * @tparam AgentFunction The agent function's containing struct type
      * @return A mutable reference to the new AgentFunctionDescription
-     * @throws InvalidAgentFunc If a variable already exists within the agent with the same name
+     * @throws exception::InvalidAgentFunc If a variable already exists within the agent with the same name
      * @note The same agent function can be passed to the same agent twice
      */
     template<typename AgentFunction>
@@ -159,7 +159,7 @@ class AgentDescription {
      * @param func_src representation of an agent function
      * Should be declared using FLAMEGPU_AGENT_FUNCTION notation
      * @return A mutable reference to the new AgentFunctionDescription
-     * @throws InvalidAgentFunc If a variable already exists within the agent with the same name
+     * @throws exception::InvalidAgentFunc If a variable already exists within the agent with the same name
      * @note The same agent function can be passed to the same agent twice
      */
     AgentFunctionDescription& newRTCFunction(const std::string& function_name, const std::string& func_src);
@@ -169,8 +169,8 @@ class AgentDescription {
      * @param file_path File path to file containing source for the agent function
      * Should be declared using FLAMEGPU_AGENT_FUNCTION notation
      * @return A mutable reference to the new AgentFunctionDescription
-     * @throws InvalidFilePath If file_path cannot be read
-     * @throws InvalidAgentFunc If a variable already exists within the agent with the same name
+     * @throws exception::InvalidFilePath If file_path cannot be read
+     * @throws exception::InvalidAgentFunc If a variable already exists within the agent with the same name
      * @note The same agent function can be passed to the same agent twice
      */
     AgentFunctionDescription& newRTCFunctionFile(const std::string& function_name, const std::string& file_path);
@@ -178,7 +178,7 @@ class AgentDescription {
      * Returns a mutable reference to the named agent function, which can be used to configure the function
      * @param function_name Name used to refer to the desired agent function
      * @return A mutable reference to the specified AgentFunctionDescription
-     * @throws InvalidAgentFunc If a functions with the name does not exist within the agent
+     * @throws exception::InvalidAgentFunc If a functions with the name does not exist within the agent
      * @see AgentDescription::getFunction(const std::string &) for the immutable version
      */
     AgentFunctionDescription &Function(const std::string &function_name);
@@ -198,19 +198,19 @@ class AgentDescription {
     /**
      * @param variable_name Name used to refer to the desired variable
      * @return The type of the named variable
-     * @throws InvalidAgentVar If a variable with the name does not exist within the agent
+     * @throws exception::InvalidAgentVar If a variable with the name does not exist within the agent
      */
     const std::type_index &getVariableType(const std::string &variable_name) const;
     /**
      * @param variable_name Name used to refer to the desired variable
      * @return The size of the named variable's type
-     * @throws InvalidAgentVar If a variable with the name does not exist within the agent
+     * @throws exception::InvalidAgentVar If a variable with the name does not exist within the agent
      */
     size_t getVariableSize(const std::string &variable_name) const;
     /**
      * @param variable_name Name used to refer to the desired variable
      * @return The number of elements in the name variable (1 if it isn't an array)
-     * @throws InvalidAgentVar If a variable with the name does not exist within the agent
+     * @throws exception::InvalidAgentVar If a variable with the name does not exist within the agent
      */
     ModelData::size_type getVariableLength(const std::string &variable_name) const;
     /**
@@ -223,7 +223,7 @@ class AgentDescription {
      * Returns an immutable reference to the named agent function
      * @param function_name Name used to refer to the desired agent function
      * @return An immutable reference to the specified AgentFunctionDescription
-     * @throws InvalidAgentFunc If a function with the name does not exist within the agent
+     * @throws exception::InvalidAgentFunc If a function with the name does not exist within the agent
      * @see AgentDescription::Function(const std::string &) for the mutable version
      */
     const AgentFunctionDescription& getFunction(const std::string &function_name) const;
@@ -282,14 +282,14 @@ class AgentDescription {
 template <typename T, ModelData::size_type N>
 void AgentDescription::newVariable(const std::string &variable_name, const std::array<T, N> &default_value) {
     if (!variable_name.empty() && variable_name[0] == '_') {
-        THROW ReservedName("Agent variable names cannot begin with '_', this is reserved for internal usage, "
+        THROW exception::ReservedName("Agent variable names cannot begin with '_', this is reserved for internal usage, "
             "in AgentDescription::newVariable().");
     }
     std::string lower_variable_name = variable_name;
     for (auto& c : lower_variable_name)
         c = static_cast<char>(tolower(c));
     if (lower_variable_name == "name" || lower_variable_name == "state") {
-        THROW ReservedName("Agent variables cannot be named 'name' or 'state', these are reserved for backwards compatibility reasons, "
+        THROW exception::ReservedName("Agent variables cannot be named 'name' or 'state', these are reserved for backwards compatibility reasons, "
             "in AgentDescription::newVariable().");
     }
     // Array length 0 makes no sense
@@ -298,7 +298,7 @@ void AgentDescription::newVariable(const std::string &variable_name, const std::
         agent->variables.emplace(variable_name, Variable(default_value));
         return;
     }
-    THROW InvalidAgentVar("Agent ('%s') already contains variable '%s', "
+    THROW exception::InvalidAgentVar("Agent ('%s') already contains variable '%s', "
         "in AgentDescription::newVariable().",
         agent->name.c_str(), variable_name.c_str());
 }
@@ -310,22 +310,22 @@ void AgentDescription::newVariable(const std::string &variable_name, const T &de
 template<typename T>
 void AgentDescription::newVariableArray(const std::string& variable_name, const ModelData::size_type& length, const std::vector<T>& default_value) {
     if (!variable_name.empty() && variable_name[0] == '_') {
-        THROW ReservedName("Agent variable names cannot begin with '_', this is reserved for internal usage, "
+        THROW exception::ReservedName("Agent variable names cannot begin with '_', this is reserved for internal usage, "
             "in AgentDescription::newVariable().");
     }
     std::string lower_variable_name = variable_name;
     for (auto& c : lower_variable_name)
         c = static_cast<char>(tolower(c));
     if (lower_variable_name == "name" || lower_variable_name == "state") {
-        THROW ReservedName("Agent variables cannot be named 'name' or 'state', these are reserved for backwards compatibility reasons, "
+        THROW exception::ReservedName("Agent variables cannot be named 'name' or 'state', these are reserved for backwards compatibility reasons, "
             "in AgentDescription::newVariable().");
     }
     if (length == 0) {
-        THROW InvalidAgentVar("Agent variable arrays must have a length greater than 0."
+        THROW exception::InvalidAgentVar("Agent variable arrays must have a length greater than 0."
             "in AgentDescription::newVariable().");
     }
     if (default_value.size() && default_value.size() != length) {
-        THROW InvalidAgentVar("Agent variable array length specified as %d, but default value provided with %llu elements, "
+        THROW exception::InvalidAgentVar("Agent variable array length specified as %d, but default value provided with %llu elements, "
             "in AgentDescription::newVariable().",
             length, static_cast<unsigned int>(default_value.size()));
     }
@@ -338,7 +338,7 @@ void AgentDescription::newVariableArray(const std::string& variable_name, const 
         }
         return;
     }
-    THROW InvalidAgentVar("Agent ('%s') already contains variable '%s', "
+    THROW exception::InvalidAgentVar("Agent ('%s') already contains variable '%s', "
         "in AgentDescription::newVariable().",
         agent->name.c_str(), variable_name.c_str());
 }

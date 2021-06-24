@@ -84,14 +84,14 @@ class AgentFunctionDescription : public DependencyNode {
     /**
      * Sets the initial state which agents must be in to execute this function
      * @param init_state Name of the desired state
-     * @throws InvalidStateName If the named state is not found within the agent
+     * @throws exception::InvalidStateName If the named state is not found within the agent
      * @see AgentFunctionDescription::setEndState(const std::string &)
      */
     void setInitialState(const std::string &init_state);
     /**
      * Sets the end state which agents enter after executing this function
      * @param end_state Name of the desired state
-     * @throws InvalidStateName If the named state is not found within the agent
+     * @throws exception::InvalidStateName If the named state is not found within the agent
      * @see AgentFunctionDescription::setInitialState(const std::string &)
      */
     void setEndState(const std::string &end_state);
@@ -99,8 +99,8 @@ class AgentFunctionDescription : public DependencyNode {
      * Sets the message type that can be read during this agent function
      * This is optional, and only one type of message can be read per agent function
      * @param message_name Name of the message type to be input
-     * @throws InvalidMessageName If a message with the same name is not found within the model's hierarchy
-     * @throws InvalidMessageName If the same message is already bound to the message output of this agent function
+     * @throws exception::InvalidMessageName If a message with the same name is not found within the model's hierarchy
+     * @throws exception::InvalidMessageName If the same message is already bound to the message output of this agent function
      * @see AgentFunctionDescription::setMessageInput(MessageDescription &)
      */
     void setMessageInput(const std::string &message_name);
@@ -108,9 +108,9 @@ class AgentFunctionDescription : public DependencyNode {
      * Sets the message type that can be read during this agent function
      * This is optional, and only one type of message can be read per agent function
      * @param message Type of message to be input
-     * @throws DifferentModel If the message is not from this model hierarchy
-     * @throws InvalidMessageName If a message with the same name is not found within the model's hierarchy
-     * @throws InvalidMessageName If the same message is already bound to the message output of this agent function
+     * @throws exception::DifferentModel If the message is not from this model hierarchy
+     * @throws exception::InvalidMessageName If a message with the same name is not found within the model's hierarchy
+     * @throws exception::InvalidMessageName If the same message is already bound to the message output of this agent function
      * @see AgentFunctionDescription::setMessageInput(const std::string &)
      */
     void setMessageInput(MsgBruteForce::Description &message);
@@ -118,8 +118,8 @@ class AgentFunctionDescription : public DependencyNode {
      * Sets the message type that can be output during this agent function
      * This is optional, and only one type of message can be output per agent function
      * @param message_name Name of the message type to be output
-     * @throws InvalidMessageName If a message with the same name is not found within the model's hierarchy
-     * @throws InvalidMessageName If the same message is already bound to the message input of this agent function
+     * @throws exception::InvalidMessageName If a message with the same name is not found within the model's hierarchy
+     * @throws exception::InvalidMessageName If the same message is already bound to the message input of this agent function
      * @see AgentFunctionDescription::setMessageOutput(MessageDescription &)
      * @see AgentFunctionDescription::setMessageOutputOptional(const bool &) To configure whether all agents must output messages
      */
@@ -128,9 +128,9 @@ class AgentFunctionDescription : public DependencyNode {
      * Sets the message type that can be output during this agent function
      * This is optional, and only one type of message can be output per agent function
      * @param message Type of message to be output
-     * @throws DifferentModel If the message is not from this model hierarchy
-     * @throws InvalidMessageName If a message with the same name is not found within the model's hierarchy
-     * @throws InvalidMessageName If the same message is already bound to the message input of this agent function
+     * @throws exception::DifferentModel If the message is not from this model hierarchy
+     * @throws exception::InvalidMessageName If a message with the same name is not found within the model's hierarchy
+     * @throws exception::InvalidMessageName If the same message is already bound to the message input of this agent function
      * @see AgentFunctionDescription::setMessageInput(const std::string &)
      * @see AgentFunctionDescription::setMessageOutputOptional(const bool &) To configure whether all agents must output messages
      */
@@ -148,8 +148,8 @@ class AgentFunctionDescription : public DependencyNode {
      * This is optional, and only one type of agent can be output per agent function
      * @param agent_name Name of the agent type to be output
      * @param state The stage agents should be created in
-     * @throws InvalidAgentName If an agent with the same name is not found within the model's hierarchy
-     * @throws InvalidStateName If the named agent does not contain the named state
+     * @throws exception::InvalidAgentName If an agent with the same name is not found within the model's hierarchy
+     * @throws exception::InvalidStateName If the named agent does not contain the named state
      * @see AgentFunctionDescription::setAgentOutput(AgentDescription &)
      */
     void setAgentOutput(const std::string &agent_name, const std::string state = ModelData::DEFAULT_STATE);
@@ -158,9 +158,9 @@ class AgentFunctionDescription : public DependencyNode {
      * This is optional, and only one type of agent can be output per agent function
      * @param agent Type of agent to be output
      * @param state The stage agents should be created in
-     * @throws DifferentModel If the agent is not from this model hierarchy
-     * @throws InvalidAgentName If an agent with the same name is not found within the model's hierarchy
-     * @throws InvalidStateName If the named agent does not contain the named state
+     * @throws exception::DifferentModel If the agent is not from this model hierarchy
+     * @throws exception::InvalidAgentName If an agent with the same name is not found within the model's hierarchy
+     * @throws exception::InvalidStateName If the named agent does not contain the named state
      * @see AgentFunctionDescription::setAgentOutput(AgentDescription &)
      */
     void setAgentOutput(AgentDescription &agent, const std::string state = ModelData::DEFAULT_STATE);
@@ -195,13 +195,13 @@ class AgentFunctionDescription : public DependencyNode {
     /**
      * @return A mutable reference to the message input of this agent function
      * @see AgentFunctionDescription::getMessageInput() for the immutable version
-     * @throw OutOfBoundsException If the message input has not been set
+     * @throw exception::OutOfBoundsException If the message input has not been set
      */
     MsgBruteForce::Description &MessageInput();
     /**
      * @return An mutable reference to the message output of this agent function
      * @see AgentFunctionDescription::getMessageOutput() for the immutable version
-     * @throw OutOfBoundsException If the message output has not been set
+     * @throw exception::OutOfBoundsException If the message output has not been set
      */
     MsgBruteForce::Description &MessageOutput();
     /**
@@ -232,13 +232,13 @@ class AgentFunctionDescription : public DependencyNode {
     /**
      * @return An immutable reference to the message input of this agent function
      * @see AgentFunctionDescription::MessageInput() for the mutable version
-     * @throw OutOfBoundsException If the message input has not been set
+     * @throw exception::OutOfBoundsException If the message input has not been set
      */
     const MsgBruteForce::Description &getMessageInput() const;
     /**
      * @return An immutable reference to the message output of this agent function
      * @see AgentFunctionDescription::MessageOutput() for the mutable version
-     * @throw OutOfBoundsException If the message output has not been set
+     * @throw exception::OutOfBoundsException If the message output has not been set
      */
     const MsgBruteForce::Description &getMessageOutput() const;
     /**
@@ -247,12 +247,12 @@ class AgentFunctionDescription : public DependencyNode {
     bool getMessageOutputOptional() const;
     /**
      * @return An immutable reference to the agent output of this agent function
-     * @throw OutOfBoundsException If the agent output has not been set
+     * @throw exception::OutOfBoundsException If the agent output has not been set
      */
     const AgentDescription &getAgentOutput() const;
     /**
      * @return The state output agents will be output in
-     * @throw OutOfBoundsException If the agent output has not been set
+     * @throw exception::OutOfBoundsException If the agent output has not been set
      */
     std::string getAgentOutputState() const;
     /**
@@ -318,7 +318,7 @@ AgentFunctionDescription &AgentDescription::newFunction(const std::string &funct
         agent->functions.emplace(function_name, rtn);
         return *rtn->description;
     }
-    THROW InvalidAgentFunc("Agent ('%s') already contains function '%s', "
+    THROW exception::InvalidAgentFunc("Agent ('%s') already contains function '%s', "
         "in AgentDescription::newFunction().",
         agent->name.c_str(), function_name.c_str());
 }

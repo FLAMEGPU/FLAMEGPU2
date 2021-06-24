@@ -62,8 +62,8 @@ class RunPlan {
      * @param name Environment property name
      * @param value Environment property value (override)
      * @tparam T Type of the environment property
-     * @throws InvalidEnvProperty If a property of the name does not exist
-     * @throws InvalidEnvPropertyType If a property with the name has a type different to T
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::InvalidEnvPropertyType If a property with the name has a type different to T
      */
     template<typename T>
     void setProperty(const std::string &name, const T&value);
@@ -74,8 +74,8 @@ class RunPlan {
      * @param value Environment property value (override)
      * @tparam T Type of the environment property
      * @tparam N Length of the array to be returned
-     * @throws InvalidEnvProperty If a property of the name does not exist
-     * @throws InvalidEnvPropertyType If a property with the name has a type different to T, or length to N
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::InvalidEnvPropertyType If a property with the name has a type different to T, or length to N
      */
     template<typename T, EnvironmentManager::size_type N>
     void setProperty(const std::string &name, const std::array<T, N> &value);
@@ -86,8 +86,8 @@ class RunPlan {
      * @param index Length of the array to be returned
      * @param value Environment property value (override)
      * @tparam T Type of the environment property
-     * @throws InvalidEnvProperty If a property of the name does not exist
-     * @throws InvalidEnvPropertyType If a property with the name has a type different to T
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::InvalidEnvPropertyType If a property with the name has a type different to T
      * @throws std::out_of_range If index is not in range of the length of the property array
      */
     template<typename T>
@@ -100,9 +100,9 @@ class RunPlan {
      * @param length Length of the environmental property array to be created
      * @param value Environment property value (override)
      * @tparam T Type of the environment property
-     * @throws InvalidEnvProperty If a property of the name does not exist
-     * @throws InvalidEnvProperty If value.size() != length
-     * @throws InvalidEnvPropertyType If a property with the name has a type different to T, or length to N
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::InvalidEnvProperty If value.size() != length
+     * @throws exception::InvalidEnvPropertyType If a property with the name has a type different to T, or length to N
      */
     template<typename T>
     void setPropertyArray(const std::string &name, const EnvironmentManager::size_type &length, const std::vector<T> &value);
@@ -126,8 +126,8 @@ class RunPlan {
      * Gets the currently configured environment property value
      * @param name name used for accessing the property
      * @tparam T Type of the value to be returned
-     * @throws InvalidEnvProperty If a property of the name does not exist
-     * @throws InvalidEnvPropertyType If a property with the name has a type different to T
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::InvalidEnvPropertyType If a property with the name has a type different to T
      */
     template<typename T>
     T getProperty(const std::string &name) const;
@@ -136,8 +136,8 @@ class RunPlan {
      * @param name name used for accessing the property
      * @tparam T Type of the value to be returned
      * @tparam N Length of the array to be returned
-     * @throws InvalidEnvProperty If a property array of the name does not exist
-     * @throws InvalidEnvPropertyType If a property with the name has a type different to T
+     * @throws exception::InvalidEnvProperty If a property array of the name does not exist
+     * @throws exception::InvalidEnvPropertyType If a property with the name has a type different to T
      */
     template<typename T, EnvironmentManager::size_type N>
     std::array<T, N> getProperty(const std::string &name) const;
@@ -146,8 +146,8 @@ class RunPlan {
      * @param name name used for accessing the property
      * @param index element from the environment property array to return
      * @tparam T Type of the value to be returned
-     * @throws InvalidEnvProperty If a property of the name does not exist
-     * @throws InvalidEnvPropertyType If a property with the name has a type different to T
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::InvalidEnvPropertyType If a property with the name has a type different to T
      * @throws std::out_of_range If index is not in range of the length of the property array
      */
     template<typename T>
@@ -157,8 +157,8 @@ class RunPlan {
      * Gets the currently configured environment property array value
      * @param name Environment property name
      * @tparam T Type of the environment property
-     * @throws InvalidEnvProperty If a property of the name does not exist
-     * @throws InvalidEnvPropertyType If a property with the name has a type different to T
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::InvalidEnvPropertyType If a property with the name has a type different to T
      */
     template<typename T>
     std::vector<T> getPropertyArray(const std::string &name);
@@ -193,17 +193,17 @@ void RunPlan::setProperty(const std::string &name, const T&value) {
     // Validation
     const auto it = environment->find(name);
     if (it == environment->end()) {
-        THROW InvalidEnvProperty("Environment description does not contain property '%s', "
+        THROW exception::InvalidEnvProperty("Environment description does not contain property '%s', "
             "in RunPlan::setProperty()\n",
             name.c_str());
     }
     if (it->second.data.type != std::type_index(typeid(T))) {
-        THROW InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
+        THROW exception::InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
             "in RunPlan::setProperty()\n",
             name.c_str(), it->second.data.type.name(), std::type_index(typeid(T)).name());
     }
     if (it->second.data.elements != 1) {
-        THROW InvalidEnvPropertyType("Environment property '%s' is an array with %u elements, array method should be used, "
+        THROW exception::InvalidEnvPropertyType("Environment property '%s' is an array with %u elements, array method should be used, "
             "in RunPlan::setProperty()\n",
             name.c_str(), it->second.data.elements);
     }
@@ -215,17 +215,17 @@ void RunPlan::setProperty(const std::string &name, const std::array<T, N> &value
     // Validation
     const auto it = environment->find(name);
     if (it == environment->end()) {
-        THROW InvalidEnvProperty("Environment description does not contain property '%s', "
+        THROW exception::InvalidEnvProperty("Environment description does not contain property '%s', "
             "in RunPlan::setProperty()\n",
             name.c_str());
     }
     if (it->second.data.type != std::type_index(typeid(T))) {
-        THROW InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
+        THROW exception::InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
             "in RunPlan::setProperty()\n",
             name.c_str(), it->second.data.type.name(), std::type_index(typeid(T)).name());
     }
     if (it->second.data.elements != N) {
-        THROW InvalidEnvPropertyType("Environment property array '%s' length mismatch %u != %u "
+        THROW exception::InvalidEnvPropertyType("Environment property array '%s' length mismatch %u != %u "
             "in RunPlan::setProperty()\n",
             name.c_str(), it->second.data.elements, N);
     }
@@ -237,12 +237,12 @@ void RunPlan::setProperty(const std::string &name, const EnvironmentManager::siz
     // Validation
     const auto it = environment->find(name);
     if (it == environment->end()) {
-        THROW InvalidEnvProperty("Environment description does not contain property '%s', "
+        THROW exception::InvalidEnvProperty("Environment description does not contain property '%s', "
             "in RunPlan::setProperty()\n",
             name.c_str());
     }
     if (it->second.data.type != std::type_index(typeid(T))) {
-        THROW InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
+        THROW exception::InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
             "in RunPlan::setProperty()\n",
             name.c_str(), it->second.data.type.name(), std::type_index(typeid(T)).name());
     }
@@ -265,22 +265,22 @@ void RunPlan::setPropertyArray(const std::string &name, const EnvironmentManager
     // Validation
     const auto it = environment->find(name);
     if (it == environment->end()) {
-        THROW InvalidEnvProperty("Environment description does not contain property '%s', "
+        THROW exception::InvalidEnvProperty("Environment description does not contain property '%s', "
             "in RunPlan::setProperty()\n",
             name.c_str());
     }
     if (it->second.data.type != std::type_index(typeid(T))) {
-        THROW InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
+        THROW exception::InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
             "in RunPlan::setProperty()\n",
             name.c_str(), it->second.data.type.name(), std::type_index(typeid(T)).name());
     }
     if (it->second.data.elements != N) {
-        THROW InvalidEnvProperty("Environment property array '%s' length mismatch %u != %u, "
+        THROW exception::InvalidEnvProperty("Environment property array '%s' length mismatch %u != %u, "
             "in RunPlan::setProperty()\n",
             name.c_str(), it->second.data.elements, N);
     }
     if (value.size() != N) {
-        THROW InvalidEnvProperty("Environment property array length does not match the value provided, %u != %llu,"
+        THROW exception::InvalidEnvProperty("Environment property array length does not match the value provided, %u != %llu,"
             "in RunPlan::setProperty()\n",
             name.c_str(), value.size(), N);
     }
@@ -294,17 +294,17 @@ T RunPlan::getProperty(const std::string &name) const {
     // Validation
     const auto it = environment->find(name);
     if (it == environment->end()) {
-        THROW InvalidEnvProperty("Environment description does not contain property '%s', "
+        THROW exception::InvalidEnvProperty("Environment description does not contain property '%s', "
             "in RunPlan::getProperty()\n",
             name.c_str());
     }
     if (it->second.data.type != std::type_index(typeid(T))) {
-        THROW InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
+        THROW exception::InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
             "in RunPlan::getProperty()\n",
             name.c_str(), it->second.data.type.name(), std::type_index(typeid(T)).name());
     }
     if (it->second.data.elements != 1) {
-        THROW InvalidEnvPropertyType("Environment property '%s' is an array with %u elements, array method should be used, "
+        THROW exception::InvalidEnvPropertyType("Environment property '%s' is an array with %u elements, array method should be used, "
             "in RunPlan::getProperty()\n",
             name.c_str(), it->second.data.elements);
     }
@@ -319,17 +319,17 @@ std::array<T, N> RunPlan::getProperty(const std::string &name) const {
     // Validation
     const auto it = environment->find(name);
     if (it == environment->end()) {
-        THROW InvalidEnvProperty("Environment description does not contain property '%s', "
+        THROW exception::InvalidEnvProperty("Environment description does not contain property '%s', "
             "in RunPlan::getProperty()\n",
             name.c_str());
     }
     if (it->second.data.type != std::type_index(typeid(T))) {
-        THROW InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
+        THROW exception::InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
             "in RunPlan::getProperty()\n",
             name.c_str(), it->second.data.type.name(), std::type_index(typeid(T)).name());
     }
     if (it->second.data.elements != N) {
-        THROW InvalidEnvPropertyType("Environment property array '%s' length mismatch %u != %u "
+        THROW exception::InvalidEnvPropertyType("Environment property array '%s' length mismatch %u != %u "
             "in RunPlan::getProperty()\n",
             name.c_str(), it->second.data.elements, N);
     }
@@ -348,12 +348,12 @@ T RunPlan::getProperty(const std::string &name, const EnvironmentManager::size_t
     // Validation
     const auto it = environment->find(name);
     if (it == environment->end()) {
-        THROW InvalidEnvProperty("Environment description does not contain property '%s', "
+        THROW exception::InvalidEnvProperty("Environment description does not contain property '%s', "
             "in RunPlan::getProperty()\n",
             name.c_str());
     }
     if (it->second.data.type != std::type_index(typeid(T))) {
-        THROW InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
+        THROW exception::InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
             "in RunPlan::getProperty()\n",
             name.c_str(), it->second.data.type.name(), std::type_index(typeid(T)).name());
     }
@@ -372,19 +372,19 @@ T RunPlan::getProperty(const std::string &name, const EnvironmentManager::size_t
  * Gets the currently configured environment property array value
  * @param name Environment property name
  * @tparam T Type of the environment property
- * @throws InvalidEnvProperty If a property of the name does not exist
+ * @throws exception::InvalidEnvProperty If a property of the name does not exist
  */
 template<typename T>
 std::vector<T> RunPlan::getPropertyArray(const std::string &name) {
     // Validation
     const auto it = environment->find(name);
     if (it == environment->end()) {
-        THROW InvalidEnvProperty("Environment description does not contain property '%s', "
+        THROW exception::InvalidEnvProperty("Environment description does not contain property '%s', "
             "in RunPlan::getProperty()\n",
             name.c_str());
     }
     if (it->second.data.type != std::type_index(typeid(T))) {
-        THROW InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
+        THROW exception::InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
             "in RunPlan::getProperty()\n",
             name.c_str(), it->second.data.type.name(), std::type_index(typeid(T)).name());
     }

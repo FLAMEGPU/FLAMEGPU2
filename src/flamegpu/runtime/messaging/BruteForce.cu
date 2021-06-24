@@ -104,7 +104,7 @@ const std::type_index& MsgBruteForce::Description::getVariableType(const std::st
     if (f != message->variables.end()) {
         return f->second.type;
     }
-    THROW InvalidMessageVar("Message ('%s') does not contain variable '%s', "
+    THROW exception::InvalidMessageVar("Message ('%s') does not contain variable '%s', "
         "in MessageDescription::getVariableType().",
         message->name.c_str(), variable_name.c_str());
 }
@@ -113,7 +113,7 @@ size_t MsgBruteForce::Description::getVariableSize(const std::string &variable_n
     if (f != message->variables.end()) {
         return f->second.type_size;
     }
-    THROW InvalidMessageVar("Message ('%s') does not contain variable '%s', "
+    THROW exception::InvalidMessageVar("Message ('%s') does not contain variable '%s', "
         "in MessageDescription::getVariableSize().",
         message->name.c_str(), variable_name.c_str());
 }

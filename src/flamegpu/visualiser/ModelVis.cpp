@@ -36,7 +36,7 @@ AgentVis &ModelVis::addAgent(const std::string &agent_name) {
         }
         return visAgent->second;
     }
-    THROW InvalidAgentName("Agent name '%s' was not found within the model description hierarchy, "
+    THROW exception::InvalidAgentName("Agent name '%s' was not found within the model description hierarchy, "
         "in ModelVis::addAgent()\n",
         agent_name.c_str());
 }
@@ -50,11 +50,11 @@ AgentVis &ModelVis::Agent(const std::string &agent_name) {
             // Create new vis agent
             return visAgent->second;
         }
-        THROW InvalidAgentName("Agent name '%s' has not been marked for visualisation, ModelVis::addAgent() must be called first, "
+        THROW exception::InvalidAgentName("Agent name '%s' has not been marked for visualisation, ModelVis::addAgent() must be called first, "
             "in ModelVis::Agent()\n",
             agent_name.c_str());
     }
-    THROW InvalidAgentName("Agent name '%s' was not found within the model description hierarchy, "
+    THROW exception::InvalidAgentName("Agent name '%s' was not found within the model description hierarchy, "
         "in ModelVis::Agent()\n",
         agent_name.c_str());
 }
@@ -70,7 +70,7 @@ void ModelVis::_activate() {
             if (agent.second.core_tex_buffers.find(TexBufferConfig::Position_x) == agent.second.core_tex_buffers.end() &&
                 agent.second.core_tex_buffers.find(TexBufferConfig::Position_y) == agent.second.core_tex_buffers.end() &&
                 agent.second.core_tex_buffers.find(TexBufferConfig::Position_z) == agent.second.core_tex_buffers.end()) {
-                THROW VisualisationException("Agent '%s' has not had x, y or z variables set, agent requires location to render, "
+                THROW exception::VisualisationException("Agent '%s' has not had x, y or z variables set, agent requires location to render, "
                     "in ModelVis::activate()\n",
                     agent.second.agentData.name.c_str());
             }

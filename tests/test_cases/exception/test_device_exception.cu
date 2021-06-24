@@ -37,7 +37,7 @@ class MiniSim {
         // This fails as agentMap is empty
         AgentVector population(agent, 1);
         cudaSimulation.setPopulationData(population);
-        EXPECT_THROW(cudaSimulation.simulate(), DeviceError);
+        EXPECT_THROW(cudaSimulation.simulate(), exception::DeviceError);
     }
     template<typename T>
     void addFunc(T func) {

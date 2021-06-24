@@ -109,9 +109,9 @@ class HostAgentAPI {
      * Wraps cub::DeviceReduce::Sum()
      * @param variable The agent variable to perform the sum reduction across
      * @tparam InT The type of the variable as specified in the model description hierarchy
-     * @throws UnsupportedVarType Array variables are not supported
-     * @throws InvalidAgentVar If the agent does not contain a variable of the same name
-     * @throws InvalidVarType If the passed variable type does not match that specified in the model description hierarchy
+     * @throws exception::UnsupportedVarType Array variables are not supported
+     * @throws exception::InvalidAgentVar If the agent does not contain a variable of the same name
+     * @throws exception::InvalidVarType If the passed variable type does not match that specified in the model description hierarchy
      */
     template<typename InT>
     InT sum(const std::string &variable) const;
@@ -120,9 +120,9 @@ class HostAgentAPI {
      * @param variable The agent variable to perform the sum reduction across
      * @tparam OutT The template arg, 'OutT' can be used if the sum is expected to exceed the representation of the type being summed
      * @tparam InT The type of the variable as specified in the model description hierarchy
-     * @throws UnsupportedVarType Array variables are not supported
-     * @throws InvalidAgentVar If the agent does not contain a variable of the same name
-     * @throws InvalidVarType If the passed variable type does not match that specified in the model description hierarchy
+     * @throws exception::UnsupportedVarType Array variables are not supported
+     * @throws exception::InvalidAgentVar If the agent does not contain a variable of the same name
+     * @throws exception::InvalidVarType If the passed variable type does not match that specified in the model description hierarchy
      */
     template<typename InT, typename OutT>
     OutT sum(const std::string &variable) const;
@@ -130,9 +130,9 @@ class HostAgentAPI {
      * Wraps cub::DeviceReduce::Min()
      * @param variable The agent variable to perform the lowerBound reduction across
      * @tparam InT The type of the variable as specified in the model description hierarchy
-     * @throws UnsupportedVarType Array variables are not supported
-     * @throws InvalidAgentVar If the agent does not contain a variable of the same name
-     * @throws InvalidVarType If the passed variable type does not match that specified in the model description hierarchy
+     * @throws exception::UnsupportedVarType Array variables are not supported
+     * @throws exception::InvalidAgentVar If the agent does not contain a variable of the same name
+     * @throws exception::InvalidVarType If the passed variable type does not match that specified in the model description hierarchy
      */
     template<typename InT>
     InT min(const std::string &variable) const;
@@ -140,9 +140,9 @@ class HostAgentAPI {
      * Wraps cub::DeviceReduce::Max()
      * @param variable The agent variable to perform the upperBound reduction across
      * @tparam InT The type of the variable as specified in the model description hierarchy
-     * @throws UnsupportedVarType Array variables are not supported
-     * @throws InvalidAgentVar If the agent does not contain a variable of the same name
-     * @throws InvalidVarType If the passed variable type does not match that specified in the model description hierarchy
+     * @throws exception::UnsupportedVarType Array variables are not supported
+     * @throws exception::InvalidAgentVar If the agent does not contain a variable of the same name
+     * @throws exception::InvalidVarType If the passed variable type does not match that specified in the model description hierarchy
      */
     template<typename InT>
     InT max(const std::string &variable) const;
@@ -151,9 +151,9 @@ class HostAgentAPI {
      * @param variable The agent variable to perform the count reduction across
      * @param value The value to count occurences of
      * @tparam InT The type of the variable as specified in the model description hierarchy
-     * @throws UnsupportedVarType Array variables are not supported
-     * @throws InvalidAgentVar If the agent does not contain a variable of the same name
-     * @throws InvalidVarType If the passed variable type does not match that specified in the model description hierarchy
+     * @throws exception::UnsupportedVarType Array variables are not supported
+     * @throws exception::InvalidAgentVar If the agent does not contain a variable of the same name
+     * @throws exception::InvalidVarType If the passed variable type does not match that specified in the model description hierarchy
      */
     template<typename InT>
     unsigned int count(const std::string &variable, const InT &value);
@@ -165,9 +165,9 @@ class HostAgentAPI {
      * @param upperBound The (exclusive) upper sample value boundary of upper bin
      * @note 2nd template arg can be used if calculation requires higher bit type to avoid overflow
      * @tparam InT The type of the variable as specified in the model description hierarchy
-     * @throws UnsupportedVarType Array variables are not supported
-     * @throws InvalidAgentVar If the agent does not contain a variable of the same name
-     * @throws InvalidVarType If the passed variable type does not match that specified in the model description hierarchy
+     * @throws exception::UnsupportedVarType Array variables are not supported
+     * @throws exception::InvalidAgentVar If the agent does not contain a variable of the same name
+     * @throws exception::InvalidVarType If the passed variable type does not match that specified in the model description hierarchy
      */
     template<typename InT>
     std::vector<unsigned int> histogramEven(const std::string &variable, const unsigned int &histogramBins, const InT &lowerBound, const InT &upperBound) const;
@@ -179,9 +179,9 @@ class HostAgentAPI {
      * @param reductionOperator The custom reduction function
      * @param init Initial value of the reduction
      * @tparam InT The type of the variable as specified in the model description hierarchy
-     * @throws UnsupportedVarType Array variables are not supported
-     * @throws InvalidAgentVar If the agent does not contain a variable of the same name
-     * @throws InvalidVarType If the passed variable type does not match that specified in the model description hierarchy
+     * @throws exception::UnsupportedVarType Array variables are not supported
+     * @throws exception::InvalidAgentVar If the agent does not contain a variable of the same name
+     * @throws exception::InvalidVarType If the passed variable type does not match that specified in the model description hierarchy
      */
     template<typename InT, typename reductionOperatorT>
     InT reduce(const std::string &variable, reductionOperatorT reductionOperator, const InT &init) const;
@@ -192,9 +192,9 @@ class HostAgentAPI {
      * @param reductionOperator The custom binary reduction function
      * @param init Initial value of the reduction
      * @tparam InT The type of the variable as specified in the model description hierarchy
-     * @throws UnsupportedVarType Array variables are not supported
-     * @throws InvalidAgentVar If the agent does not contain a variable of the same name
-     * @throws InvalidVarType If the passed variable type does not match that specified in the model description hierarchy
+     * @throws exception::UnsupportedVarType Array variables are not supported
+     * @throws exception::InvalidAgentVar If the agent does not contain a variable of the same name
+     * @throws exception::InvalidVarType If the passed variable type does not match that specified in the model description hierarchy
      */
     template<typename InT, typename OutT, typename transformOperatorT, typename reductionOperatorT>
     OutT transformReduce(const std::string &variable, transformOperatorT transformOperator, reductionOperatorT reductionOperator, const OutT &init) const;
@@ -210,9 +210,9 @@ class HostAgentAPI {
      * @param beginBit Advanced Option, see note
      * @param endBit Advanced Option, see note
      * @tparam VarT The type of the variable as specified in the model description hierarchy
-     * @throws UnsupportedVarType Array variables are not supported
-     * @throws InvalidAgentVar If the agent does not contain a variable of the same name
-     * @throws InvalidVarType If the passed variable type does not match that specified in the model description hierarchy
+     * @throws exception::UnsupportedVarType Array variables are not supported
+     * @throws exception::InvalidAgentVar If the agent does not contain a variable of the same name
+     * @throws exception::InvalidVarType If the passed variable type does not match that specified in the model description hierarchy
      * @note An optional bit subrange [begin_bit, end_bit) of differentiating variable bits can be specified. This can reduce overall sorting overhead and yield a corresponding performance improvement.
      * @note The sort provides no guarantee of stability
      */
@@ -224,11 +224,11 @@ class HostAgentAPI {
      * @param order1 The order that variable 1 should be sorted according to
      * @param variable2 Agents with equal variable1's, will be sorted according this this variable
      * @param order2 The order that variable 2 should be sorted according to
-     * @throws UnsupportedVarType Array variables are not supported
+     * @throws exception::UnsupportedVarType Array variables are not supported
      * @tparam Var1T The type of variable1 as specified in the model description hierarchy
      * @tparam Var2T The type of variable2 as specified in the model description hierarchy
-     * @throws InvalidAgentVar If the agent does not contain a variable of the same name
-     * @throws InvalidVarType If the passed variable type does not match that specified in the model description hierarchy
+     * @throws exception::InvalidAgentVar If the agent does not contain a variable of the same name
+     * @throws exception::InvalidVarType If the passed variable type does not match that specified in the model description hierarchy
      */
     template<typename Var1T, typename Var2T>
     void sort(const std::string &variable1, Order order1, const std::string &variable2, Order order2);
@@ -306,10 +306,10 @@ OutT HostAgentAPI::sum(const std::string &variable) const {
 
     std::type_index typ = agentDesc.description->getVariableType(variable);  // This will throw name exception
     if (agentDesc.variables.at(variable).elements != 1) {
-        THROW UnsupportedVarType("HostAgentAPI::sum() does not support agent array variables.");
+        THROW exception::UnsupportedVarType("HostAgentAPI::sum() does not support agent array variables.");
     }
     if (std::type_index(typeid(InT)) != typ) {
-        THROW InvalidVarType("Wrong variable type passed to HostAgentAPI::sum(). "
+        THROW exception::InvalidVarType("Wrong variable type passed to HostAgentAPI::sum(). "
             "This call expects '%s', but '%s' was requested.",
             agentDesc.variables.at(variable).type.name(), typeid(InT).name());
     }
@@ -340,10 +340,10 @@ InT HostAgentAPI::min(const std::string &variable) const {
     const auto &agentDesc = agent.getAgentDescription();
     const std::type_index typ = agentDesc.description->getVariableType(variable);  // This will throw name exception
     if (agentDesc.variables.at(variable).elements != 1) {
-        THROW UnsupportedVarType("HostAgentAPI::lowerBound() does not support agent array variables.");
+        THROW exception::UnsupportedVarType("HostAgentAPI::lowerBound() does not support agent array variables.");
     }
     if (std::type_index(typeid(InT)) != typ) {
-        THROW InvalidVarType("Wrong variable type passed to HostAgentAPI::lowerBound(). "
+        THROW exception::InvalidVarType("Wrong variable type passed to HostAgentAPI::lowerBound(). "
             "This call expects '%s', but '%s' was requested.",
             agentDesc.variables.at(variable).type.name(), typeid(InT).name());
     }
@@ -375,10 +375,10 @@ InT HostAgentAPI::max(const std::string &variable) const {
     const auto &agentDesc = agent.getAgentDescription();
     const std::type_index typ = agentDesc.description->getVariableType(variable);  // This will throw name exception
     if (agentDesc.variables.at(variable).elements != 1) {
-        THROW UnsupportedVarType("HostAgentAPI::upperBound() does not support agent array variables.");
+        THROW exception::UnsupportedVarType("HostAgentAPI::upperBound() does not support agent array variables.");
     }
     if (std::type_index(typeid(InT)) != typ) {
-        THROW InvalidVarType("Wrong variable type passed to HostAgentAPI::upperBound(). "
+        THROW exception::InvalidVarType("Wrong variable type passed to HostAgentAPI::upperBound(). "
             "This call expects '%s', but '%s' was requested.",
             agentDesc.variables.at(variable).type.name(), typeid(InT).name());
     }
@@ -410,10 +410,10 @@ unsigned int HostAgentAPI::count(const std::string &variable, const InT &value) 
     const auto &agentDesc = agent.getAgentDescription();
     const std::type_index typ = agentDesc.description->getVariableType(variable);  // This will throw name exception
     if (agentDesc.variables.at(variable).elements != 1) {
-        THROW UnsupportedVarType("HostAgentAPI::count() does not support agent array variables.");
+        THROW exception::UnsupportedVarType("HostAgentAPI::count() does not support agent array variables.");
     }
     if (std::type_index(typeid(InT)) != typ) {
-        THROW InvalidVarType("Wrong variable type passed to HostAgentAPI::count(). "
+        THROW exception::InvalidVarType("Wrong variable type passed to HostAgentAPI::count(). "
             "This call expects '%s', but '%s' was requested.",
             agentDesc.variables.at(variable).type.name(), typeid(InT).name());
     }
@@ -435,16 +435,16 @@ std::vector<OutT> HostAgentAPI::histogramEven(const std::string &variable, const
         population->syncChanges();
     }
     if (lowerBound >= upperBound) {
-        THROW InvalidArgument("lowerBound (%s) must be lower than < upperBound (%s) in HostAgentAPI::histogramEven().",
+        THROW exception::InvalidArgument("lowerBound (%s) must be lower than < upperBound (%s) in HostAgentAPI::histogramEven().",
             std::to_string(lowerBound).c_str(), std::to_string(upperBound).c_str());
     }
     const auto &agentDesc = agent.getAgentDescription();
     const std::type_index typ = agentDesc.description->getVariableType(variable);  // This will throw name exception
     if (agentDesc.variables.at(variable).elements != 1) {
-        THROW UnsupportedVarType("HostAgentAPI::histogramEven() does not support agent array variables.");
+        THROW exception::UnsupportedVarType("HostAgentAPI::histogramEven() does not support agent array variables.");
     }
     if (std::type_index(typeid(InT)) != typ) {
-        THROW InvalidVarType("Wrong variable type passed to HostAgentAPI::histogramEven(). "
+        THROW exception::InvalidVarType("Wrong variable type passed to HostAgentAPI::histogramEven(). "
             "This call expects '%s', but '%s' was requested.",
             agentDesc.variables.at(variable).type.name(), typeid(InT).name());
     }
@@ -478,10 +478,10 @@ InT HostAgentAPI::reduce(const std::string &variable, reductionOperatorT /*reduc
     const auto &agentDesc = agent.getAgentDescription();
     const std::type_index typ = agentDesc.description->getVariableType(variable);  // This will throw name exception
     if (agentDesc.variables.at(variable).elements != 1) {
-        THROW UnsupportedVarType("HostAgentAPI::reduce() does not support agent array variables.");
+        THROW exception::UnsupportedVarType("HostAgentAPI::reduce() does not support agent array variables.");
     }
     if (std::type_index(typeid(InT)) != typ) {
-        THROW InvalidVarType("Wrong variable type passed to HostAgentAPI::reduce(). "
+        THROW exception::InvalidVarType("Wrong variable type passed to HostAgentAPI::reduce(). "
             "This call expects '%s', but '%s' was requested.",
             agentDesc.variables.at(variable).type.name(), typeid(InT).name());
     }
@@ -515,10 +515,10 @@ OutT HostAgentAPI::transformReduce(const std::string &variable, transformOperato
     const auto &agentDesc = agent.getAgentDescription();
     const std::type_index typ = agentDesc.description->getVariableType(variable);  // This will throw name exception
     if (agentDesc.variables.at(variable).elements != 1) {
-        THROW UnsupportedVarType("HostAgentAPI::transformReduce() does not support agent array variables.");
+        THROW exception::UnsupportedVarType("HostAgentAPI::transformReduce() does not support agent array variables.");
     }
     if (std::type_index(typeid(InT)) != typ) {
-        THROW InvalidVarType("Wrong variable type passed to HostAgentAPI::transformReduce(). "
+        THROW exception::InvalidVarType("Wrong variable type passed to HostAgentAPI::transformReduce(). "
             "This call expects '%s', but '%s' was requested.",
             agentDesc.variables.at(variable).type.name(), typeid(InT).name());
     }
@@ -544,10 +544,10 @@ void HostAgentAPI::sort(const std::string &variable, Order order, int beginBit, 
     const auto &agentDesc = agent.getAgentDescription();
     const std::type_index typ = agentDesc.description->getVariableType(variable);  // This will throw name exception
     if (agentDesc.variables.at(variable).elements != 1) {
-        THROW UnsupportedVarType("HostAgentAPI::sort() does not support agent array variables.");
+        THROW exception::UnsupportedVarType("HostAgentAPI::sort() does not support agent array variables.");
     }
     if (std::type_index(typeid(VarT)) != typ) {
-        THROW InvalidVarType("Wrong variable type passed to HostAgentAPI::sort(). "
+        THROW exception::InvalidVarType("Wrong variable type passed to HostAgentAPI::sort(). "
             "This call expects '%s', but '%s' was requested.",
             agentDesc.variables.at(variable).type.name(), typeid(VarT).name());
     }
@@ -606,10 +606,10 @@ void HostAgentAPI::sort(const std::string &variable1, Order order1, const std::s
     {  // Check variable 1 is valid
         const std::type_index typ = agentDesc.description->getVariableType(variable1);  // This will throw name exception
         if (agentDesc.variables.at(variable1).elements != 1) {
-            THROW UnsupportedVarType("HostAgentAPI::sort() does not support agent array variables.");
+            THROW exception::UnsupportedVarType("HostAgentAPI::sort() does not support agent array variables.");
         }
         if (std::type_index(typeid(Var1T)) != typ) {
-            THROW InvalidVarType("Wrong type for variable '%s' passed to HostAgentAPI::sort(). "
+            THROW exception::InvalidVarType("Wrong type for variable '%s' passed to HostAgentAPI::sort(). "
                 "This call expects '%s', but '%s' was requested.",
                 variable1.c_str(), agentDesc.variables.at(variable1).type.name(), typeid(Var1T).name());
         }
@@ -617,10 +617,10 @@ void HostAgentAPI::sort(const std::string &variable1, Order order1, const std::s
     {  // Check variable 2 is valid
         const std::type_index typ = agentDesc.description->getVariableType(variable2);  // This will throw name exception
         if (agentDesc.variables.at(variable2).elements != 1) {
-            THROW UnsupportedVarType("HostAgentAPI::sort() does not support agent array variables.");
+            THROW exception::UnsupportedVarType("HostAgentAPI::sort() does not support agent array variables.");
         }
         if (std::type_index(typeid(Var2T)) != typ) {
-            THROW InvalidVarType("Wrong type for variable '%s' passed to HostAgentAPI::sort(). "
+            THROW exception::InvalidVarType("Wrong type for variable '%s' passed to HostAgentAPI::sort(). "
                 "This call expects '%s', but '%s' was requested.",
                 variable2.c_str(), agentDesc.variables.at(variable2).type.name(), typeid(Var2T).name());
         }

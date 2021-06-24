@@ -40,7 +40,7 @@ class JSONStateReader : public StateReader {
     /**
      * Actual performs the XML parsing to load the model state
      * @return Always 0
-     * @throws RapidJSONError If parsing of the input file fails
+     * @throws exception::RapidJSONError If parsing of the input file fails
      */
     int parse() override;
 };

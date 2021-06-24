@@ -75,9 +75,9 @@ TEST(TestCUDASimulation, AllDeviceIdValues) {
             c.SimulationConfig().steps = 1;
             //  Apply the config (and therefore set the device.)
             if (shouldThrowCCException) {
-                // Should throw InvalidCUDAComputeCapability if bad compute capability.
-                EXPECT_THROW(c.applyConfig(), InvalidCUDAComputeCapability);
-                EXPECT_THROW(c.simulate(), InvalidCUDAComputeCapability);
+                // Should throw exception::InvalidCUDAComputeCapability if bad compute capability.
+                EXPECT_THROW(c.applyConfig(), exception::InvalidCUDAComputeCapability);
+                EXPECT_THROW(c.simulate(), exception::InvalidCUDAComputeCapability);
             } else {
                 // Should not get any excpetions if CC is valid.
                 EXPECT_NO_THROW(c.applyConfig());
@@ -93,7 +93,7 @@ TEST(TestSimulation, ArgParse_inputfile_long) {
     CUDASimulation c(m);
     const char *argv[3] = { "prog.exe", "--in", "test" };
     EXPECT_EQ(c.getSimulationConfig().input_file, "");
-    EXPECT_THROW(c.initialise(sizeof(argv)/sizeof(char*), argv), UnsupportedFileType);  // cant detect filetype
+    EXPECT_THROW(c.initialise(sizeof(argv)/sizeof(char*), argv), exception::UnsupportedFileType);  // cant detect filetype
     EXPECT_EQ(c.getSimulationConfig().input_file, argv[2]);
     // Blank init resets value to default
     c.initialise(0, nullptr);
@@ -104,7 +104,7 @@ TEST(TestSimulation, ArgParse_inputfile_short) {
     CUDASimulation c(m);
     const char *argv[3] = { "prog.exe", "-i", "I_DO_NOT_EXIST.xml" };
     EXPECT_EQ(c.getSimulationConfig().input_file, "");
-    EXPECT_THROW(c.initialise(sizeof(argv) / sizeof(char*), argv), InvalidInputFile);  // File doesn't exist
+    EXPECT_THROW(c.initialise(sizeof(argv) / sizeof(char*), argv), exception::InvalidInputFile);  // File doesn't exist
     EXPECT_EQ(c.getSimulationConfig().input_file, argv[2]);
     // Blank init resets value to default
     c.initialise(0, nullptr);
@@ -162,7 +162,7 @@ TEST(TestCUDASimulation, ArgParse_device_long) {
     EXPECT_EQ(c.getCUDAConfig().device_id, 0);
     // Setting an invalid device ID is the only safe way to do this without making internal methods accessible
     // As can set to a valid device, we haven't build code for
-    EXPECT_THROW(c.initialise(sizeof(argv) / sizeof(char*), argv), InvalidCUDAdevice);
+    EXPECT_THROW(c.initialise(sizeof(argv) / sizeof(char*), argv), exception::InvalidCUDAdevice);
     EXPECT_EQ(c.getCUDAConfig().device_id, 1200);
     // Blank init resets value to default
     ASSERT_EQ(cudaGetLastError(), cudaSuccess);
@@ -178,7 +178,7 @@ TEST(TestCUDASimulation, ArgParse_device_short) {
     EXPECT_EQ(c.getCUDAConfig().device_id, 0);
     // Setting an invalid device ID is the only safe way to do this without making internal methods accessible
     // As can set to a valid device, we haven't build code for
-    EXPECT_THROW(c.initialise(sizeof(argv) / sizeof(char*), argv), InvalidCUDAdevice);
+    EXPECT_THROW(c.initialise(sizeof(argv) / sizeof(char*), argv), exception::InvalidCUDAdevice);
     EXPECT_EQ(c.getCUDAConfig().device_id, 1200);
     // Blank init resets value to default
     ASSERT_EQ(cudaGetLastError(), cudaSuccess);
@@ -200,7 +200,7 @@ TEST(TestCUDASimulation, SetGetPopulationData) {
     for (int _i = 0; _i < AGENT_COUNT; ++_i) {
         AgentVector::Agent i = pop[_i];
         i.setVariable<int>(VARIABLE_NAME, _i);
-        EXPECT_THROW(i.setVariable<float>(VARIABLE_NAME, static_cast<float>(_i)), InvalidVarType);
+        EXPECT_THROW(i.setVariable<float>(VARIABLE_NAME, static_cast<float>(_i)), exception::InvalidVarType);
     }
     CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
@@ -218,7 +218,7 @@ TEST(TestCUDASimulation, SetGetPopulationData) {
     for (int _i = 0; _i < AGENT_COUNT; ++_i) {
         AgentVector::Agent i = pop[_i];
         EXPECT_EQ(i.getVariable<int>(VARIABLE_NAME), _i * MULTIPLIER * 2);
-        EXPECT_THROW(i.getVariable<float>(VARIABLE_NAME), InvalidVarType);
+        EXPECT_THROW(i.getVariable<float>(VARIABLE_NAME), exception::InvalidVarType);
     }
 }
 TEST(TestCUDASimulation, SetGetPopulationData_InvalidAgent) {
@@ -230,8 +230,8 @@ TEST(TestCUDASimulation, SetGetPopulationData_InvalidAgent) {
     AgentVector pop(a2, static_cast<unsigned int>(AGENT_COUNT));
 
     CUDASimulation c(m);
-    EXPECT_THROW(c.setPopulationData(pop), InvalidAgent);
-    EXPECT_THROW(c.getPopulationData(pop), InvalidAgent);
+    EXPECT_THROW(c.setPopulationData(pop), exception::InvalidAgent);
+    EXPECT_THROW(c.getPopulationData(pop), exception::InvalidAgent);
 }
 TEST(TestCUDASimulation, GetAgent) {
     ModelDescription m(MODEL_NAME);
