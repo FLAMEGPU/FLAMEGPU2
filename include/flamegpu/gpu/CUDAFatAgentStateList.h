@@ -31,21 +31,15 @@ struct AgentVariable{
     }
 };
 
-}  // namespace flamegpu
-
-namespace std {
 /**
- * Hash operator for AgentVariable, required for use of std::map etc
+ * Hash function so that AgentVariable can be used as a key in a map.
  */
-template <> struct hash<flamegpu::AgentVariable> {
+struct AgentVariableHash {
     std::size_t operator()(const flamegpu::AgentVariable& k) const noexcept {
         return ((std::hash<unsigned int>()(k.agent)
             ^ (std::hash<std::string>()(k.variable) << 1)) >> 1);
     }
 };
-}  // namespace std
-
-namespace flamegpu {
 
 /**
  * This represents a raw buffer
@@ -289,7 +283,7 @@ class CUDAFatAgentStateList {
     /**
      * Mapping from {agent fat index, variable name} to variable buffer
      */
-    std::unordered_map<AgentVariable, std::shared_ptr<VariableBuffer>> variables;
+    std::unordered_map<AgentVariable, std::shared_ptr<VariableBuffer>, AgentVariableHash> variables;
     /**
      * The collection of unique variables represented
      * This is a list, however it contains no duplicates
