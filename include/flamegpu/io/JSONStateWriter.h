@@ -10,7 +10,7 @@
 #include "flamegpu/util/StringPair.h"
 
 namespace flamegpu {
-
+namespace io {
 /**
  * JSON format StateWriter
  */
@@ -50,7 +50,7 @@ class JSONStateWriter : public StateWriter {
     template<typename T>
     void doWrite(T &writer);
 };
-
+}  // namespace io
 }  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_IO_JSONSTATEWRITER_H_

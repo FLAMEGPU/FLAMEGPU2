@@ -19,6 +19,7 @@
 #include "flamegpu/gpu/CUDASimulation.h"
 
 namespace flamegpu {
+namespace io {
 
 #ifndef XMLCheckResult
 /**
@@ -338,4 +339,5 @@ int XMLStateReader::parse() {
     return tinyxml2::XML_SUCCESS;
 }
 
+}  // namespace io
 }  // namespace flamegpu

@@ -42,7 +42,7 @@ void CUDAEnsemble::simulate(const RunPlanVector &plans) {
     // Validate/init output directories
     if (!config.out_directory.empty()) {
         // Validate out format is right
-        config.out_format = StateWriterFactory::detectSupportedFileExt(config.out_format);
+        config.out_format = io::StateWriterFactory::detectSupportedFileExt(config.out_format);
         if (config.out_format.empty()) {
             THROW InvalidArgument("The out_directory config option also requires the out_format options to be set to a suitable type (e.g. 'json', 'xml'), in CUDAEnsemble::simulate()");
         }
@@ -235,7 +235,7 @@ int CUDAEnsemble::checkArgs(int argc, const char** argv) {
                 return false;
             }
             // Validate output format is available in io module
-            config.out_format = StateWriterFactory::detectSupportedFileExt(argv[++i]);
+            config.out_format = io::StateWriterFactory::detectSupportedFileExt(argv[++i]);
             if (config.out_format.empty()) {
                 fprintf(stderr, "'%s' is not a supported output file type.\n", argv[i]);
                 return false;

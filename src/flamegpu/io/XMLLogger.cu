@@ -8,6 +8,7 @@
 #include "flamegpu/sim/LogFrame.h"
 
 namespace flamegpu {
+namespace io {
 
 #ifndef XMLCheckResult
 #define XMLCheckResult(a_eResult) if (a_eResult != tinyxml2::XML_SUCCESS) { FGPUException::setLocation(__FILE__, __LINE__);\
@@ -258,4 +259,5 @@ void XMLLogger::writeAny(tinyxml2::XMLElement *pElement, const util::Any &value,
     pElement->SetText(ss.str().c_str());
 }
 
+}  // namespace io
 }  // namespace flamegpu

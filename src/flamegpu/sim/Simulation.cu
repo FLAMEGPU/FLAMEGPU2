@@ -56,7 +56,7 @@ void Simulation::applyConfig() {
 
         env_init.clear();
         const auto env_desc = model->environment->getPropertiesMap();  // For some reason this method returns a copy, not a reference
-        StateReader *read__ = StateReaderFactory::createReader(model->name, env_desc, env_init, pops, config.input_file.c_str(), this);
+        io::StateReader *read__ = io::StateReaderFactory::createReader(model->name, env_desc, env_init, pops, config.input_file.c_str(), this);
         if (read__) {
             read__->parse();
             for (auto &agent : pops) {
@@ -114,12 +114,12 @@ void Simulation::exportData(const std::string &path, bool prettyPrint) {
         }
     }
 
-    StateWriter *write__ = StateWriterFactory::createWriter(model->name, getInstanceID(), pops, getStepCounter(), path, this);
+    io::StateWriter *write__ = io::StateWriterFactory::createWriter(model->name, getInstanceID(), pops, getStepCounter(), path, this);
     write__->writeStates(prettyPrint);
 }
 void Simulation::exportLog(const std::string &path, bool steps, bool exit, bool prettyPrint) {
     // Create the correct type of logger
-    auto logger = LoggerFactory::createLogger(path, prettyPrint, config.truncate_log_files);
+    auto logger = io::LoggerFactory::createLogger(path, prettyPrint, config.truncate_log_files);
     // Perform logging
     logger->log(getRunLog(), true, steps, exit);
 }
@@ -157,7 +157,7 @@ int Simulation::checkArgs(int argc, const char** argv) {
                 }
                 env_init.clear();
                 const auto env_desc = model->environment->getPropertiesMap();  // For some reason this method returns a copy, not a reference
-                StateReader *read__ = StateReaderFactory::createReader(model->name, env_desc, env_init, pops, config.input_file.c_str(), this);
+                io::StateReader *read__ = io::StateReaderFactory::createReader(model->name, env_desc, env_init, pops, config.input_file.c_str(), this);
                 if (read__) {
                     read__->parse();
                     for (auto &agent : pops) {

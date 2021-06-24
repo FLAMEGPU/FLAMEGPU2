@@ -11,6 +11,7 @@
 #include "flamegpu/util/StringPair.h"
 
 namespace flamegpu {
+namespace io {
 
 /**
  * JSON format StateReader
@@ -42,7 +43,7 @@ class JSONStateReader : public StateReader {
      */
     int parse() override;
 };
-
+}  // namespace io
 }  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_IO_JSONSTATEREADER_H_

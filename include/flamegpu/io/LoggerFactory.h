@@ -13,7 +13,7 @@
 #include "flamegpu/util/filesystem.h"
 
 namespace flamegpu {
-
+namespace io {
 /**
  * Factory for creating instances of flamegpu::Logger
  */
@@ -37,7 +37,7 @@ class LoggerFactory {
             output_path.c_str());
     }
 };
-
+}  // namespace io
 }  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_IO_LOGGERFACTORY_H_
