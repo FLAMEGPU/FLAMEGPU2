@@ -69,7 +69,10 @@ function(create_doxygen_target FLAMEGPU_ROOT DOXY_OUT_DIR XML_PATH)
                 set(DOXYGEN_WARN_AS_ERROR     YES)
             endif()
         endif()
-        # These are required for expanding FGPUException definition macros to be documented
+        # Ignore some namespaces where forward declarationss lead to empty namespaces in the docs.
+        # @todo - optionally don't block detail, for developer docs
+        set(DOXYGEN_EXCLUDE_SYMBOLS "jitify" "tinyxml2" "detail")
+        # These are required for expanding FLAMEGPUException definition macros to be documented
         set(DOXYGEN_ENABLE_PREPROCESSING  YES)
         set(DOXYGEN_MACRO_EXPANSION       YES)
         set(DOXYGEN_EXPAND_ONLY_PREDEF    YES)
