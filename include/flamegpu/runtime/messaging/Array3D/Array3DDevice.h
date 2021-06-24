@@ -119,9 +119,12 @@ class MsgArray3D::In {
              */
             __device__ bool operator==(const Message& rhs) const {
                 return this->index_1d == rhs.index_1d
-                    && this->_parent.loc[0] == rhs._parent.loc[0]
-                    && this->_parent.loc[1] == rhs._parent.loc[1]
-                    && this->_parent.loc[2] == rhs._parent.loc[2];
+                    && this->relative_cell[0] == rhs.relative_cell[0]
+                    && this->relative_cell[1] == rhs.relative_cell[1]
+                    && this->relative_cell[2] == rhs.relative_cell[2];
+                    // && this->_parent.loc[0] == rhs._parent.loc[0]
+                    // && this->_parent.loc[1] == rhs._parent.loc[1]
+                    // && this->_parent.loc[2] == rhs._parent.loc[2];
             }
             /**
              * Inequality operator
