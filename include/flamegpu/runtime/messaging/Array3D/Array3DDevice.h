@@ -75,7 +75,7 @@ class MsgArray3D::In {
      */
     class WrapFilter {
         /**
-         * Message has full access to Filter, they are treated as the same class so share everything
+         * Message has full access to WrapFilter, they are treated as the same class so share everything
          * Reduces/memory data duplication
          */
         friend class Message;
@@ -84,11 +84,11 @@ class MsgArray3D::In {
         /**
          * Provides access to a specific message
          * Returned by the iterator
-         * @see In::Filter::iterator
+         * @see In::WrapFilter::iterator
          */
         class Message {
             /**
-             * Paired Filter class which created the iterator
+             * Paired WrapFilter class which created the iterator
              */
             const WrapFilter&_parent;
             /**
@@ -165,7 +165,7 @@ class MsgArray3D::In {
             __device__ T getVariable(const char(&variable_name)[N]) const;
         };
         /**
-         * Stock iterator for iterating MsgSpatial3D::In::Filter::Message objects
+         * Stock iterator for iterating MsgSpatial3D::In::WrapFilter::Message objects
          */
         class iterator {
             /**
@@ -177,7 +177,7 @@ class MsgArray3D::In {
             /**
              * Constructor
              * This iterator is constructed by MsgArray3D::In::WrapFilter::begin()(size_type, size_type, size_type, size_type)
-             * @see MsgArray3D::In::wrap()(size_type, size_type, size_type, size_type)
+             * @see MsgArray3D::In::wrap(size_type, size_type, size_type, size_type)
              */
             __device__ iterator(const WrapFilter&parent, const int &relative_x, const int &relative_y, const int &relative_z)
                 : _message(parent, relative_x, relative_y, relative_z) {
@@ -529,7 +529,7 @@ class MsgArray3D::In {
     inline __device__ Filter operator()(const size_type& x, const size_type& y, const size_type& z, const size_type& radius = 1) const {
 #if !defined(SEATBELTS) || SEATBELTS
         if (radius == 0) {
-            DTHROW("%llu is not a valid radius for accessing Array3D message lists.\n", radius);
+            DTHROW("%u is not a valid radius for accessing Array3D message lists.\n", radius);
         } else if (x >= metadata->dimensions[0] ||
                    y >= metadata->dimensions[1] ||
                    z >= metadata->dimensions[2]) {

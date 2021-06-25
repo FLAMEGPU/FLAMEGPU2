@@ -195,13 +195,13 @@ FLAMEGPU_AGENT_FUNCTION(OutSimple, MsgNone, MsgArray2D) {
     FLAMEGPU->message_out.setIndex(index_x, index_y);
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(MooreTest1, MsgArray2D, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(MooreTest1W, MsgArray2D, MsgNone) {
     const unsigned int my_index = FLAMEGPU->getVariable<unsigned int>("index");
     const unsigned int index_x = my_index % dSQRT_AGENT_COUNT;
     const unsigned int index_y = my_index / dSQRT_AGENT_COUNT;
 
     // Iterate and check it aligns
-    auto filter = FLAMEGPU->message_in(index_x, index_y);
+    auto filter = FLAMEGPU->message_in.wrap(index_x, index_y);
     auto msg = filter.begin();
     unsigned int message_read = 0;
     for (int i = -1; i <= 1; ++i) {
@@ -222,13 +222,13 @@ FLAMEGPU_AGENT_FUNCTION(MooreTest1, MsgArray2D, MsgNone) {
     FLAMEGPU->setVariable<unsigned int>("message_read", message_read);
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(MooreTest2, MsgArray2D, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(MooreTest2W, MsgArray2D, MsgNone) {
     const unsigned int my_index = FLAMEGPU->getVariable<unsigned int>("index");
     const unsigned int index_x = my_index % dSQRT_AGENT_COUNT;
     const unsigned int index_y = my_index / dSQRT_AGENT_COUNT;
 
     // Iterate and check it aligns
-    auto filter = FLAMEGPU->message_in(index_x, index_y, 2);
+    auto filter = FLAMEGPU->message_in.wrap(index_x, index_y, 2);
     auto msg = filter.begin();
     unsigned int message_read = 0;
     for (int i = -2; i <= 2; ++i) {
@@ -249,7 +249,7 @@ FLAMEGPU_AGENT_FUNCTION(MooreTest2, MsgArray2D, MsgNone) {
     FLAMEGPU->setVariable<unsigned int>("message_read", message_read);
     return ALIVE;
 }
-TEST(TestMessage_Array2D, Moore1) {
+TEST(TestMessage_Array2D, Moore1W) {
     ModelDescription m(MODEL_NAME);
     MsgArray2D::Description &msg = m.newMessage<MsgArray2D>(MESSAGE_NAME);
     msg.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1);
@@ -258,7 +258,7 @@ TEST(TestMessage_Array2D, Moore1) {
     a.newVariable<unsigned int>("message_read", UINT_MAX);
     AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, OutSimple);
     fo.setMessageOutput(msg);
-    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, MooreTest1);
+    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, MooreTest1W);
     fi.setMessageInput(msg);
     LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
@@ -282,7 +282,7 @@ TEST(TestMessage_Array2D, Moore1) {
         EXPECT_EQ(9u, message_read);
     }
 }
-TEST(TestMessage_Array2D, Moore2) {
+TEST(TestMessage_Array2D, Moore2W) {
     ModelDescription m(MODEL_NAME);
     MsgArray2D::Description &msg = m.newMessage<MsgArray2D>(MESSAGE_NAME);
     msg.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1);
@@ -291,7 +291,7 @@ TEST(TestMessage_Array2D, Moore2) {
     a.newVariable<unsigned int>("message_read", UINT_MAX);
     AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, OutSimple);
     fo.setMessageOutput(msg);
-    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, MooreTest2);
+    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, MooreTest2W);
     fi.setMessageInput(msg);
     LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
@@ -327,8 +327,6 @@ TEST(TestMessage_Array2D, DISABLED_DuplicateOutputException) {
     msg.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1);
     msg.newVariable<unsigned int>("index_times_3");
     AgentDescription &a = m.newAgent(AGENT_NAME);
-    a.newVariable<unsigned int>("index");
-    a.newVariable<unsigned int>("message_read", UINT_MAX);
     a.newVariable<unsigned int>("message_write");
     AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, OutBad);
     fo.setMessageOutput(msg);
@@ -350,9 +348,7 @@ TEST(TestMessage_Array2D, DISABLED_DuplicateOutputException) {
     AgentVector pop(a, AGENT_COUNT);
     for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
         AgentVector::Agent ai = pop[i];
-        ai.setVariable<unsigned int>("index", i);
-        ai.setVariable<unsigned int>("message_read", UINT_MAX);
-        ai.setVariable<unsigned int>("message_write", numbers[i]);
+        ai.setVariable<unsigned int>("message_write", i);  // numbers[i]
     }
     // Set pop in model
     CUDASimulation c(m);
@@ -415,6 +411,287 @@ TEST(TestMessage_Array2D, ReadEmpty) {
     auto ai = pop_out[0];
     EXPECT_EQ(ai.getVariable<unsigned int>("value"), 0u);  // Unset array msgs should be 0
 }
+#if !defined(SEATBELTS) || SEATBELTS
+FLAMEGPU_AGENT_FUNCTION(InMooreWOutOfBoundsX, MsgArray2D, MsgNone) {
+    for (auto a : FLAMEGPU->message_in.wrap(dSQRT_AGENT_COUNT, 0)) {
+        FLAMEGPU->setVariable<unsigned int>("index", a.getVariable<unsigned int>("index_times_3"));
+    }
+    return ALIVE;
+}
+TEST(TestMessage_Array2D, MooreW_InitOutOfBoundsX) {
+#else
+TEST(TestMessage_Array2D, DISABLED_MooreW_InitOutOfBoundsX) {
+#endif
+    ModelDescription m(MODEL_NAME);
+    MsgArray2D::Description& msg = m.newMessage<MsgArray2D>(MESSAGE_NAME);
+    msg.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1);
+    msg.newVariable<unsigned int>("index_times_3");
+    AgentDescription& a = m.newAgent(AGENT_NAME);
+    a.newVariable<unsigned int>("index");
+    a.newVariable<unsigned int>("message_read", UINT_MAX);
+    a.newVariable<unsigned int>("message_write");
+    AgentFunctionDescription& fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
+    fo.setMessageOutput(msg);
+    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, InMooreWOutOfBoundsX);
+    fi.setMessageInput(msg);
+    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    lo.addAgentFunction(fo);
+    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    li.addAgentFunction(fi);
+    // Assign the numbers in shuffled order to agents
+    AgentVector pop(a, AGENT_COUNT);
+    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+        AgentVector::Agent ai = pop[i];
+        ai.setVariable<unsigned int>("index", i);
+        ai.setVariable<unsigned int>("message_read", UINT_MAX);
+        ai.setVariable<unsigned int>("message_write", i);
+    }
+    // Set pop in model
+    CUDASimulation c(m);
+    c.setPopulationData(pop);
+    EXPECT_THROW(c.step(), DeviceError);
+}
+#if !defined(SEATBELTS) || SEATBELTS
+FLAMEGPU_AGENT_FUNCTION(InMooreWOutOfBoundsY, MsgArray2D, MsgNone) {
+    for (auto a : FLAMEGPU->message_in.wrap(0, dSQRT_AGENT_COUNT + 1, 0)) {
+        FLAMEGPU->setVariable<unsigned int>("index", a.getVariable<unsigned int>("index_times_3"));
+    }
+    return ALIVE;
+}
+TEST(TestMessage_Array2D, MooreW_InitOutOfBoundsY) {
+#else
+TEST(TestMessage_Array2D, DISABLED_MooreW_InitOutOfBoundsY) {
+#endif
+    ModelDescription m(MODEL_NAME);
+    MsgArray2D::Description& msg = m.newMessage<MsgArray2D>(MESSAGE_NAME);
+    msg.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1);
+    msg.newVariable<unsigned int>("index_times_3");
+    AgentDescription& a = m.newAgent(AGENT_NAME);
+    a.newVariable<unsigned int>("index");
+    a.newVariable<unsigned int>("message_read", UINT_MAX);
+    a.newVariable<unsigned int>("message_write");
+    AgentFunctionDescription& fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
+    fo.setMessageOutput(msg);
+    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, InMooreWOutOfBoundsY);
+    fi.setMessageInput(msg);
+    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    lo.addAgentFunction(fo);
+    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    li.addAgentFunction(fi);
+    // Assign the numbers in shuffled order to agents
+    AgentVector pop(a, AGENT_COUNT);
+    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+        AgentVector::Agent ai = pop[i];
+        ai.setVariable<unsigned int>("index", i);
+        ai.setVariable<unsigned int>("message_read", UINT_MAX);
+        ai.setVariable<unsigned int>("message_write", i);
+    }
+    // Set pop in model
+    CUDASimulation c(m);
+    c.setPopulationData(pop);
+    EXPECT_THROW(c.step(), DeviceError);
+}
+#if !defined(SEATBELTS) || SEATBELTS
+FLAMEGPU_AGENT_FUNCTION(InMooreWBadRadius1, MsgArray2D, MsgNone) {
+    for (auto a : FLAMEGPU->message_in.wrap(0, 0, 0)) {
+        FLAMEGPU->setVariable<unsigned int>("index", a.getVariable<unsigned int>("index_times_3"));
+    }
+    return ALIVE;
+}
+TEST(TestMessage_Array2D, MooreW_BadRadius1) {
+#else
+TEST(TestMessage_Array2D, DISABLED_MooreW_BadRadius1) {
+#endif
+    ModelDescription m(MODEL_NAME);
+    MsgArray2D::Description& msg = m.newMessage<MsgArray2D>(MESSAGE_NAME);
+    msg.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1);
+    msg.newVariable<unsigned int>("index_times_3");
+    AgentDescription& a = m.newAgent(AGENT_NAME);
+    a.newVariable<unsigned int>("index");
+    a.newVariable<unsigned int>("message_read", UINT_MAX);
+    a.newVariable<unsigned int>("message_write");
+    AgentFunctionDescription& fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
+    fo.setMessageOutput(msg);
+    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, InMooreWBadRadius1);
+    fi.setMessageInput(msg);
+    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    lo.addAgentFunction(fo);
+    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    li.addAgentFunction(fi);
+    // Assign the numbers in shuffled order to agents
+    AgentVector pop(a, AGENT_COUNT);
+    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+        AgentVector::Agent ai = pop[i];
+        ai.setVariable<unsigned int>("index", i);
+        ai.setVariable<unsigned int>("message_read", UINT_MAX);
+        ai.setVariable<unsigned int>("message_write", i);
+    }
+    // Set pop in model
+    CUDASimulation c(m);
+    c.setPopulationData(pop);
+    EXPECT_THROW(c.step(), DeviceError);
+}
+#if !defined(SEATBELTS) || SEATBELTS
+FLAMEGPU_AGENT_FUNCTION(InMooreWBadRadius2, MsgArray2D, MsgNone) {
+    for (auto a : FLAMEGPU->message_in.wrap(0, 0, 6)) {
+        FLAMEGPU->setVariable<unsigned int>("index", a.getVariable<unsigned int>("index_times_3"));
+    }
+    return ALIVE;
+}
+TEST(TestMessage_Array2D, MooreW_BadRadius2) {
+#else
+TEST(TestMessage_Array2D, DISABLED_MooreW_BadRadius2) {
+#endif
+    ModelDescription m(MODEL_NAME);
+    MsgArray2D::Description& msg = m.newMessage<MsgArray2D>(MESSAGE_NAME);
+    msg.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1);
+    msg.newVariable<unsigned int>("index_times_3");
+    AgentDescription& a = m.newAgent(AGENT_NAME);
+    a.newVariable<unsigned int>("index");
+    a.newVariable<unsigned int>("message_read", UINT_MAX);
+    a.newVariable<unsigned int>("message_write");
+    AgentFunctionDescription& fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
+    fo.setMessageOutput(msg);
+    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, InMooreWBadRadius2);
+    fi.setMessageInput(msg);
+    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    lo.addAgentFunction(fo);
+    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    li.addAgentFunction(fi);
+    // Assign the numbers in shuffled order to agents
+    AgentVector pop(a, AGENT_COUNT);
+    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+        AgentVector::Agent ai = pop[i];
+        ai.setVariable<unsigned int>("index", i);
+        ai.setVariable<unsigned int>("message_read", UINT_MAX);
+        ai.setVariable<unsigned int>("message_write", i);
+    }
+    // Set pop in model
+    CUDASimulation c(m);
+    c.setPopulationData(pop);
+    EXPECT_THROW(c.step(), DeviceError);
+}
+#if !defined(SEATBELTS) || SEATBELTS
+FLAMEGPU_AGENT_FUNCTION(InMooreOutOfBoundsX, MsgArray2D, MsgNone) {
+    for (auto a : FLAMEGPU->message_in(dSQRT_AGENT_COUNT, 0)) {
+        FLAMEGPU->setVariable<unsigned int>("index", a.getVariable<unsigned int>("index_times_3"));
+    }
+    return ALIVE;
+}
+TEST(TestMessage_Array2D, Moore_InitOutOfBoundsX) {
+#else
+TEST(TestMessage_Array2D, DISABLED_Moore_InitOutOfBoundsX) {
+#endif
+    ModelDescription m(MODEL_NAME);
+    MsgArray2D::Description& msg = m.newMessage<MsgArray2D>(MESSAGE_NAME);
+    msg.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1);
+    msg.newVariable<unsigned int>("index_times_3");
+    AgentDescription& a = m.newAgent(AGENT_NAME);
+    a.newVariable<unsigned int>("index");
+    a.newVariable<unsigned int>("message_read", UINT_MAX);
+    a.newVariable<unsigned int>("message_write");
+    AgentFunctionDescription& fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
+    fo.setMessageOutput(msg);
+    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, InMooreOutOfBoundsX);
+    fi.setMessageInput(msg);
+    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    lo.addAgentFunction(fo);
+    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    li.addAgentFunction(fi);
+    // Assign the numbers in shuffled order to agents
+    AgentVector pop(a, AGENT_COUNT);
+    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+        AgentVector::Agent ai = pop[i];
+        ai.setVariable<unsigned int>("index", i);
+        ai.setVariable<unsigned int>("message_read", UINT_MAX);
+        ai.setVariable<unsigned int>("message_write", i);
+    }
+    // Set pop in model
+    CUDASimulation c(m);
+    c.setPopulationData(pop);
+    EXPECT_THROW(c.step(), DeviceError);
+}
+#if !defined(SEATBELTS) || SEATBELTS
+FLAMEGPU_AGENT_FUNCTION(InMooreOutOfBoundsY, MsgArray2D, MsgNone) {
+    for (auto a : FLAMEGPU->message_in(0, dSQRT_AGENT_COUNT + 1)) {
+        FLAMEGPU->setVariable<unsigned int>("index", a.getVariable<unsigned int>("index_times_3"));
+    }
+    return ALIVE;
+}
+TEST(TestMessage_Array2D, Moore_InitOutOfBoundsY) {
+#else
+TEST(TestMessage_Array2D, DISABLED_Moore_InitOutOfBoundsY) {
+#endif
+    ModelDescription m(MODEL_NAME);
+    MsgArray2D::Description& msg = m.newMessage<MsgArray2D>(MESSAGE_NAME);
+    msg.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1);
+    msg.newVariable<unsigned int>("index_times_3");
+    AgentDescription& a = m.newAgent(AGENT_NAME);
+    a.newVariable<unsigned int>("index");
+    a.newVariable<unsigned int>("message_read", UINT_MAX);
+    a.newVariable<unsigned int>("message_write");
+    AgentFunctionDescription& fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
+    fo.setMessageOutput(msg);
+    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, InMooreOutOfBoundsY);
+    fi.setMessageInput(msg);
+    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    lo.addAgentFunction(fo);
+    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    li.addAgentFunction(fi);
+    // Assign the numbers in shuffled order to agents
+    AgentVector pop(a, AGENT_COUNT);
+    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+        AgentVector::Agent ai = pop[i];
+        ai.setVariable<unsigned int>("index", i);
+        ai.setVariable<unsigned int>("message_read", UINT_MAX);
+        ai.setVariable<unsigned int>("message_write", i);
+    }
+    // Set pop in model
+    CUDASimulation c(m);
+    c.setPopulationData(pop);
+    EXPECT_THROW(c.step(), DeviceError);
+}
+#if !defined(SEATBELTS) || SEATBELTS
+FLAMEGPU_AGENT_FUNCTION(InMooreBadRadius, MsgArray2D, MsgNone) {
+    for (auto a : FLAMEGPU->message_in(0, 0, 0)) {
+        FLAMEGPU->setVariable<unsigned int>("index", a.getVariable<unsigned int>("index_times_3"));
+    }
+    return ALIVE;
+}
+TEST(TestMessage_Array2D, Moore_BadRadius) {
+#else
+TEST(TestMessage_Array2D, DISABLED_Moore_BadRadius) {
+#endif
+    ModelDescription m(MODEL_NAME);
+    MsgArray2D::Description& msg = m.newMessage<MsgArray2D>(MESSAGE_NAME);
+    msg.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1);
+    msg.newVariable<unsigned int>("index_times_3");
+    AgentDescription& a = m.newAgent(AGENT_NAME);
+    a.newVariable<unsigned int>("index");
+    a.newVariable<unsigned int>("message_read", UINT_MAX);
+    a.newVariable<unsigned int>("message_write");
+    AgentFunctionDescription& fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
+    fo.setMessageOutput(msg);
+    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, InMooreBadRadius);
+    fi.setMessageInput(msg);
+    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    lo.addAgentFunction(fo);
+    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    li.addAgentFunction(fi);
+    // Assign the numbers in shuffled order to agents
+    AgentVector pop(a, AGENT_COUNT);
+    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+        AgentVector::Agent ai = pop[i];
+        ai.setVariable<unsigned int>("index", i);
+        ai.setVariable<unsigned int>("message_read", UINT_MAX);
+        ai.setVariable<unsigned int>("message_write", i);
+    }
+    // Set pop in model
+    CUDASimulation c(m);
+    c.setPopulationData(pop);
+    EXPECT_THROW(c.step(), DeviceError);
+}
+
 
 /*
  * Test for fixed size grids with various com radii to check edge cases + expected cases.
@@ -428,6 +705,152 @@ FLAMEGPU_AGENT_FUNCTION(OutSimpleXY, MsgNone, MsgArray2D) {
     FLAMEGPU->message_out.setIndex(x, y);
     return ALIVE;
 }
+FLAMEGPU_AGENT_FUNCTION(MooreWTestXYC, MsgArray2D, MsgNone) {
+    const unsigned int index = FLAMEGPU->getVariable<unsigned int>("index");
+    const unsigned int x = FLAMEGPU->getVariable<unsigned int>("x");
+    const unsigned int y = FLAMEGPU->getVariable<unsigned int>("y");
+    const unsigned int COMRADIUS = FLAMEGPU->environment.getProperty<unsigned int>("COMRADIUS");
+    // Iterate message list counting how many messages were read.
+    unsigned int count = 0;
+    for (const auto &message : FLAMEGPU->message_in.wrap(x, y, COMRADIUS)) {
+        // @todo - check its the correct messages?
+        count++;
+    }
+    FLAMEGPU->setVariable<unsigned int>("message_read", count);
+    return ALIVE;
+}
+
+void test_mooorew_comradius(
+    const unsigned int GRID_WIDTH,
+    const unsigned int GRID_HEIGHT,
+    const unsigned int COMRADIUS
+    ) {
+    // Calc the population
+    const unsigned int agentCount = GRID_WIDTH * GRID_HEIGHT;
+
+    // Define the model
+    ModelDescription model("MooreXRC");
+
+    // Use an env var for the communication radius to use, rather than a __device__ or a #define.
+    EnvironmentDescription &env = model.Environment();
+    env.newProperty<unsigned int>("COMRADIUS", COMRADIUS);
+
+    // Define the message
+    MsgArray2D::Description &message = model.newMessage<MsgArray2D>(MESSAGE_NAME);
+    message.newVariable<unsigned int>("index");
+    message.setDimensions(GRID_WIDTH, GRID_HEIGHT);
+    AgentDescription &agent = model.newAgent(AGENT_NAME);
+    agent.newVariable<unsigned int>("index");
+    agent.newVariable<unsigned int>("x");
+    agent.newVariable<unsigned int>("y");
+    agent.newVariable<unsigned int>("message_read", UINT_MAX);
+    // Define the function and layers.
+    AgentFunctionDescription &outputFunction = agent.newFunction("OutSimpleXY", OutSimpleXY);
+    outputFunction.setMessageOutput(message);
+    AgentFunctionDescription &inputFunction = agent.newFunction("MooreWTestXYC", MooreWTestXYC);
+    inputFunction.setMessageInput(message);
+    model.newLayer().addAgentFunction(outputFunction);
+    LayerDescription &li = model.newLayer();
+    li.addAgentFunction(inputFunction);
+    // Assign the numbers in shuffled order to agents
+    AgentVector population(agent, agentCount);
+    for (unsigned int x = 0; x < GRID_WIDTH; x++) {
+        for (unsigned int y = 0; y < GRID_HEIGHT; y++) {
+            unsigned int idx = (x * GRID_HEIGHT) + y;
+            AgentVector::Agent instance = population[idx];
+            instance.setVariable<unsigned int>("index", idx);
+            instance.setVariable<unsigned int>("x", x);
+            instance.setVariable<unsigned int>("y", y);
+            instance.setVariable<unsigned int>("message_read", UINT_MAX);
+        }
+    }
+    // Set pop in model
+    CUDASimulation simulation(model);
+    simulation.setPopulationData(population);
+
+    if ((COMRADIUS * 2) + 1 <= GRID_WIDTH &&
+        (COMRADIUS * 2) + 1 <= GRID_HEIGHT) {
+        simulation.step();
+        simulation.getPopulationData(population);
+        // Validate each agent has read correct messages
+
+        // Calc the expected number of messages. This depoends on comm radius for wrapped moore neighbourhood
+        const unsigned int expected_count = static_cast<unsigned int>(pow((COMRADIUS * 2) + 1, 2)) - 1;
+
+        for (AgentVector::Agent instance : population) {
+            const unsigned int message_read = instance.getVariable<unsigned int>("message_read");
+            ASSERT_EQ(expected_count, message_read);
+        }
+    } else {
+        // If the comradius would lead to double message reads, a device error is thrown when SEATBELTS is enabled
+        // Behaviour is otherwise undefined
+#if !defined(SEATBELTS) || SEATBELTS
+        EXPECT_THROW(simulation.step(), DeviceError);
+#endif
+    }
+}
+// Test a range of environment sizes for comradius of 1, including small sizes which are an edge case.
+// Also try non-uniform dimensions.
+// @todo - decide if these should be one or many tests.
+TEST(TestMessage_Array2D, MooreWX1Y1R1) {
+    test_mooorew_comradius(1, 1, 1);
+}
+TEST(TestMessage_Array2D, MooreWX2Y2R1) {
+    test_mooorew_comradius(2, 2, 1);
+}
+TEST(TestMessage_Array2D, MooreWX3Y3R1) {
+    test_mooorew_comradius(3, 3, 1);
+}
+TEST(TestMessage_Array2D, MooreWX4Y4R1) {
+    test_mooorew_comradius(4, 4, 1);
+}
+TEST(TestMessage_Array2D, MooreWX2Y1R1) {
+    test_mooorew_comradius(2, 1, 1);
+}
+TEST(TestMessage_Array2D, MooreWX3Y1R1) {
+    test_mooorew_comradius(3, 1, 1);
+}
+TEST(TestMessage_Array2D, MooreWX4Y1R1) {
+    test_mooorew_comradius(4, 1, 1);
+}
+
+// Test a range of environment sizes for comradius of 2, including small sizes which are an edge case.
+// Also try non-uniform dimensions.
+// @todo - decide if these should be one or many tests.
+TEST(TestMessage_Array2D, MooreWX1Y1R2) {
+    test_mooorew_comradius(1, 1, 2);
+}
+TEST(TestMessage_Array2D, MooreWX2Y2R2) {
+    test_mooorew_comradius(2, 2, 2);
+}
+TEST(TestMessage_Array2D, MooreWX3Y3R2) {
+    test_mooorew_comradius(3, 3, 2);
+}
+TEST(TestMessage_Array2D, MooreWX4Y4R2) {
+    test_mooorew_comradius(4, 4, 2);
+}
+TEST(TestMessage_Array2D, MooreWX5Y5R2) {
+    test_mooorew_comradius(5, 5, 2);
+}
+TEST(TestMessage_Array2D, MooreWX6Y6R2) {
+    test_mooorew_comradius(6, 6, 2);
+}
+TEST(TestMessage_Array2D, MooreWX2Y1R2) {
+    test_mooorew_comradius(2, 1, 2);
+}
+TEST(TestMessage_Array2D, MooreWX3Y1R2) {
+    test_mooorew_comradius(3, 1, 2);
+}
+TEST(TestMessage_Array2D, MooreWX4Y1R2) {
+    test_mooorew_comradius(4, 1, 2);
+}
+TEST(TestMessage_Array2D, MooreWX5Y1R2) {
+    test_mooorew_comradius(5, 1, 2);
+}
+TEST(TestMessage_Array2D, MooreWX6Y1R2) {
+    test_mooorew_comradius(6, 1, 2);
+}
+
 FLAMEGPU_AGENT_FUNCTION(MooreTestXYC, MsgArray2D, MsgNone) {
     const unsigned int index = FLAMEGPU->getVariable<unsigned int>("index");
     const unsigned int x = FLAMEGPU->getVariable<unsigned int>("x");
@@ -450,11 +873,6 @@ void test_mooore_comradius(
     ) {
     // Calc the population
     const unsigned int agentCount = GRID_WIDTH * GRID_HEIGHT;
-    // Some debug logging. @todo
-    /* printf("GRID_WIDTH %u\n", GRID_WIDTH);
-    printf("GRID_HEIGHT %u\n", GRID_HEIGHT);
-    printf("COMRADIUS %u\n", COMRADIUS);
-    printf("agentCount %u\n", agentCount); */
 
     // Define the model
     ModelDescription model("MooreXRC");
@@ -497,35 +915,22 @@ void test_mooore_comradius(
     simulation.setPopulationData(population);
     simulation.step();
     simulation.getPopulationData(population);
-    // Validate each agent has read correct messages
-    // Calc the expected number of messages. This depoends on the env dims and the comm radius.
-    // Radius 0 is not supported, and currently the centre cell is not returned for other radii (so usually -1).
-    // If one of the environemnt dimensions is too small, < 2 * radius + 1, then either fewer messages should be read, or messages will be re-read.
-    // In this case, the centre cell may / is currently also read.
-
-    // const unsigned int nowrapExpectedCount = pow((2 * COMRADIUS) + 1, 2) - 1;
-    // If any dim is less than 2 * rad + 1, then there are fewere unique messages to be read, and the center will be re-read.
-    const bool xFewerReads = (2 * COMRADIUS) + 1 > GRID_WIDTH;
-    const bool yFewerReads = (2 * COMRADIUS) + 1 > GRID_HEIGHT;
-    const unsigned int xReadRange = !xFewerReads ? (2 * COMRADIUS) + 1 : GRID_WIDTH;
-    const unsigned int yReadRange = !yFewerReads ? (2 * COMRADIUS) + 1 : GRID_HEIGHT;
-    // @todo - verify if the self message should ever be returned, even when wrapped. Can always -1 if it should never be read.
-    const unsigned int selfRead = xFewerReads || yFewerReads ? 0 : 1;
-    const unsigned int expected_count = (xReadRange * yReadRange) - selfRead;
-
-    /*
-    // @todo 
-    printf("xFewerReads %d\n", xFewerReads);
-    printf("yFewerReads %d\n", yFewerReads);
-    printf("xReadRange %u\n", xReadRange);
-    printf("yReadRange %u\n", yReadRange);
-    printf("selfRead %u\n", selfRead);
-    printf("expected_count %u\n", expected_count); */
-
+    unsigned int right_count = 0;
+    // Validate each agent has read correct number of messages
     for (AgentVector::Agent instance : population) {
+        const unsigned int x = instance.getVariable<unsigned int>("x");
+        const unsigned int y = instance.getVariable<unsigned int>("y");
         const unsigned int message_read = instance.getVariable<unsigned int>("message_read");
-        ASSERT_EQ(expected_count, message_read);
+
+        unsigned int expected_read = 1;
+        expected_read *= (std::min<int>(static_cast<int>(x + COMRADIUS), static_cast<int>(GRID_WIDTH) - 1) - std::max<int>(static_cast<int>(x) - static_cast<int>(COMRADIUS), 0) + 1);
+        expected_read *= (std::min<int>(static_cast<int>(y + COMRADIUS), static_cast<int>(GRID_HEIGHT) - 1) - std::max<int>(static_cast<int>(y) - static_cast<int>(COMRADIUS), 0) + 1);
+        expected_read--;
+        // ASSERT_EQ(message_read, expected_read);
+        if (message_read == expected_read)
+            right_count++;
     }
+    ASSERT_EQ(right_count, population.size());
 }
 // Test a range of environment sizes for comradius of 1, including small sizes which are an edge case.
 // Also try non-uniform dimensions.

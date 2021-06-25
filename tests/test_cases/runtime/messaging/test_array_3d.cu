@@ -360,7 +360,7 @@ TEST(TestMessage_Array3D, DISABLED_DuplicateOutputException) {
     AgentVector pop(a, AGENT_COUNT);
     for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
         AgentVector::Agent ai = pop[i];
-        ai.setVariable<unsigned int>("message_write", i);
+        ai.setVariable<unsigned int>("message_write", i);  // numbers[i]
     }
     // Set pop in model
     CUDASimulation c(m);
@@ -810,9 +810,6 @@ FLAMEGPU_AGENT_FUNCTION(MooreWTestXYZC, MsgArray3D, MsgNone) {
     unsigned int count = 0;
     for (const auto &message : FLAMEGPU->message_in.wrap(x, y, z, COMRADIUS)) {
         // @todo - check its the correct messages?
-        /* if(index == 0){
-            printf("message from %u: %u %u %u\n", message.getVariable<unsigned int>("index"), message.getX(), message.getY(), message.getZ());
-        } */
         count++;
     }
     FLAMEGPU->setVariable<unsigned int>("message_read", count);
@@ -827,12 +824,6 @@ void test_mooorew_comradius(
     ) {
     // Calc the population
     const unsigned int agentCount =  GRID_WIDTH * GRID_HEIGHT * GRID_DEPTH;
-    // Some debug logging. @todo
-    /* printf("GRID_WIDTH %u\n", GRID_WIDTH);
-    printf("GRID_HEIGHT %u\n", GRID_HEIGHT);
-    printf("GRID_DEPTH %u\n", GRID_DEPTH);
-    printf("COMRADIUS %u\n", COMRADIUS);
-    printf("agentCount %u\n", agentCount); */
 
     // Define the model
     ModelDescription model("MooreXYZC");
@@ -887,17 +878,6 @@ void test_mooorew_comradius(
 
         // Calc the expected number of messages. This depoends on comm radius for wrapped moore neighbourhood
         const unsigned int expected_count = static_cast<unsigned int>(pow((COMRADIUS * 2) + 1, 3)) - 1;
-
-        /*
-        // @todo 
-        printf("xFewerReads %d\n", xFewerReads);
-        printf("yFewerReads %d\n", yFewerReads);
-        printf("zFewerReads %d\n", zFewerReads);
-        printf("xReadRange %u\n", xReadRange);
-        printf("yReadRange %u\n", yReadRange);
-        printf("zReadRange %u\n", zReadRange);
-        printf("selfRead %u\n", selfRead);
-        printf("expected_count %u\n", expected_count); */
 
         for (AgentVector::Agent instance : population) {
             const unsigned int message_read = instance.getVariable<unsigned int>("message_read");
@@ -1006,9 +986,6 @@ FLAMEGPU_AGENT_FUNCTION(MooreTestXYZC, MsgArray3D, MsgNone) {
     unsigned int count = 0;
     for (const auto& message : FLAMEGPU->message_in(x, y, z, COMRADIUS)) {
         // @todo - check its the correct messages?
-        // if (threadIdx.x == 0 && blockIdx.x == 0) {
-        //    printf("message from %u: %u %u %u\n", message.getVariable<unsigned int>("index"), message.getX(), message.getY(), message.getZ());
-        // }
         count++;
     }
     FLAMEGPU->setVariable<unsigned int>("message_read", count);
