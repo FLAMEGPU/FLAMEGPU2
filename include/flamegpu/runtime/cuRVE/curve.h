@@ -39,26 +39,6 @@ class Curve {
     typedef unsigned int             NamespaceHash;      // !< Typedef for cuRVE variable namespace string hash
 
     /**
-     * Enumerator for GPU device error code which may be raised by CUDA kernels
-     */
-    enum DeviceError {
-        DEVICE_ERROR_NO_ERRORS,                // !< No errors raised on the device
-        DEVICE_ERROR_UNKNOWN_VARIABLE,         // !< A function has requested an unknown variable or a variable not registered in the current namespace
-        DEVICE_ERROR_VARIABLE_DISABLED,        // !< A function has requested a variable which is disabled
-        DEVICE_ERROR_UNKNOWN_TYPE,             // !< A function has requested an unknown type or a type not registered in the current namespace
-        DEVICE_ERROR_UNKNOWN_LENGTH            // !< A function has requested an unknown vector length or the length not registered in the current namespace
-    };
-
-    /**
-     * Enumerator for cuRVE host error codes which may be raised by cuRVE API function calls
-     */
-    enum HostError {
-        ERROR_NO_ERRORS,                       // !< No errors raised by host API functions
-        ERROR_UNKNOWN_VARIABLE,                // !< A host API function has requested an unknown variable or a variable not registered in the current namespace
-        ERROR_TOO_MANY_VARIABLES               // !< The maximum number of curve variables has been reached
-    };
-
-    /**
      * Main cuRVE variable hashing function for strings of length determined at runtime and not compile time
      * Should only be used for registered variables as this will be much slower than the compile time alternative.
      * @param str String to be hashed
@@ -425,86 +405,6 @@ class Curve {
     template <typename T, unsigned int N, unsigned int M>
     __device__ __forceinline__ static void setNewAgentArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, T variable, unsigned int variable_index, unsigned int array_index);
 
-    /* ERROR CHECKING API FUNCTIONS */
-
-    /**
-     * Device function for printing the last device error
-     *
-     * Prints the last device error using the provided source location information. The preferred method for printing is to use the curveReportLastDeviceError macro which inserts source location information.
-     * @param file A constant string filename.
-     * @param function A constant string function name.
-     * @param line A constant integer line number.
-     * @note This error checking is unrelated to exception::DeviceError
-     * @todo Remove this legacy code
-     */
-    __device__ __forceinline__ static void printLastDeviceError(const char* file, const char* function, const int line);
-    /**
-     * Host API function for printing the last host error
-     *
-     * Prints the last host API error using the provided source location information. The preferred method for printing is to use the curveReportLastHostError macro which inserts source location information.
-     * @param file A constant string filename.
-     * @param function A constant string function name.
-     * @param line A constant integer line number.
-     * @note This error checking is unrelated to exception::DeviceError
-     * @todo Remove this legacy code
-     */
-    void __host__ printLastHostError(const char* file, const char* function, const int line);
-
-    /**
-     * Host API function for printing the last host or device error
-     *
-     * Prints the last device or host API error (or both) using the provided source location information. The preferred method for printing is to use the curveReportErrors macro which inserts source location information.
-     * @param file A constant string filename.
-     * @param function A constant string function name.
-     * @param line A constant integer line number.
-     * @note This error checking is unrelated to exception::DeviceError
-     * @todo Remove this legacy code
-     */
-    void __host__ printErrors(const char* file, const char* function, const int line);
-    /**
-     * Device API function for returning a constant string error description
-     *
-     * Returns an error description given a DeviceError error code.
-     * @param error_code A DeviceError error code.
-     * @return A string error description
-     * @note This error checking is unrelated to exception::DeviceError
-     * @todo Remove this legacy code
-     */
-    __device__ __host__ __forceinline__ static const char*  getDeviceErrorString(DeviceError error_code);
-    /**
-     * Host API function for returning a constant string error description
-     *
-     * Returns an error description given a HostError error code.
-     * @param error_code A HostError error code.
-     * @return A string error description
-     * @todo Remove this legacy code
-     */
-    __host__ const char*  getHostErrorString(HostError error_code);
-    /**
-     * Device API function for returning the last reported error code
-     *
-     * @return A exception::DeviceError error code
-     * @todo Remove this legacy code
-     */
-    __device__ __forceinline__ static DeviceError getLastDeviceError();
-
-    /**
-     * Host API function for returning the last reported error code
-     *
-     * @return A HostError error code
-     * @todo Remove this legacy code
-     */
-    __host__ HostError getLastHostError();
-    /**
-     * Host API function for clearing both the device and host error codes
-     * @todo Remove this legacy code
-     */
-    __host__ void clearErrors();
-    /**
-     * Old size function?
-     * @see Curve::size()
-     */
-    __host__ unsigned int checkHowManyMappedItems();
     static const int MAX_VARIABLES = 1024;          // !< Default maximum number of cuRVE variables (must be a power of 2)
     static const VariableHash EMPTY_FLAG = 0;
     static const VariableHash DELETED_FLAG = 1;
@@ -701,9 +601,6 @@ namespace detail {
     extern __device__ char* d_variables[Curve::MAX_VARIABLES];                // Device array of pointer to device memory addresses for variable storage
     extern __constant__ size_t d_sizes[Curve::MAX_VARIABLES];                // Device array of the types of registered variables
     extern __constant__ unsigned int d_lengths[Curve::MAX_VARIABLES];
-
-    extern __device__ Curve::DeviceError d_curve_error;
-    extern Curve::HostError h_curve_error;
 }  // namespace detail
 }  // namespace curve
 
@@ -789,13 +686,11 @@ __device__ __forceinline__ void* Curve::getVariablePtrByHash(const VariableHash 
 #if !defined(SEATBELTS) || SEATBELTS
     // error checking
     if (cv == UNKNOWN_VARIABLE) {
-        curve::detail::d_curve_error = DEVICE_ERROR_UNKNOWN_VARIABLE;
         return nullptr;
     }
 
     // check vector length
     if (offset > curve::detail::d_sizes[cv] * curve::detail::d_lengths[cv]) {  // Note : offset is basicly index * sizeof(T)
-        curve::detail::d_curve_error = DEVICE_ERROR_UNKNOWN_LENGTH;
         return nullptr;
     }
 #endif
@@ -812,7 +707,6 @@ __device__ __forceinline__ T Curve::getVariableByHash(const VariableHash variabl
 
     // error checking
     if (size != sizeof(T)) {
-        curve::detail::d_curve_error = DEVICE_ERROR_UNKNOWN_TYPE;
         return 0;
     }
 #endif
@@ -835,7 +729,6 @@ __device__ __forceinline__ T Curve::getVariableByHash_ldg(const VariableHash var
 
     // error checking
     if (size != sizeof(T)) {
-        curve::detail::d_curve_error = DEVICE_ERROR_UNKNOWN_TYPE;
         return NULL;
     }
 #endif
@@ -856,7 +749,6 @@ __device__ __forceinline__ T Curve::getArrayVariableByHash(const VariableHash va
 #if !defined(SEATBELTS) || SEATBELTS
     const size_t size = getVariableSize(variable_hash);
     if (size != var_size) {
-        curve::detail::d_curve_error = DEVICE_ERROR_UNKNOWN_TYPE;
         return NULL;
     }
 #endif
@@ -878,7 +770,6 @@ __device__ __forceinline__ T Curve::getArrayVariableByHash_ldg(const VariableHas
 #if !defined(SEATBELTS) || SEATBELTS
     const size_t size = getVariableSize(variable_hash);
     if (size != var_size) {
-        curve::detail::d_curve_error = DEVICE_ERROR_UNKNOWN_TYPE;
         return NULL;
     }
 #endif
@@ -994,7 +885,6 @@ __device__ __forceinline__ void Curve::setVariableByHash(const VariableHash vari
 #if !defined(SEATBELTS) || SEATBELTS
     size_t size = getVariableSize(variable_hash);
     if (size != sizeof(T)) {
-        curve::detail::d_curve_error = DEVICE_ERROR_UNKNOWN_TYPE;
         return;
     }
 #endif
@@ -1008,7 +898,6 @@ __device__ __forceinline__ void Curve::setArrayVariableByHash(const VariableHash
 #if !defined(SEATBELTS) || SEATBELTS
     const size_t size = getVariableSize(variable_hash);
     if (size != var_size) {
-        curve::detail::d_curve_error = DEVICE_ERROR_UNKNOWN_TYPE;
         return;
     }
 #endif
@@ -1072,34 +961,6 @@ __device__ __forceinline__ void Curve::setArrayVariable(const char(&variableName
     // Curve currently doesn't store whether a variable is an array
     // Curve stores M * sizeof(T), so this is checked instead
     return setArrayVariableByHash<T, N>(variable_hash + namespace_hash, variable, agent_index, array_index);
-}
-
-/**
- * Prints the last reported device error using the file, function and line number of the call to this macro
- * @see Curve::printLastDeviceError()
- * @todo Remove this legacy code
- */
-#define curveReportLastDeviceError() { Curve::curvePrintLastDeviceError(__FILE__, __FUNCTION__, __LINE__); }
-
-__device__ __forceinline__ void Curve::printLastDeviceError(const char* file, const char* function, const int line) {
-    if (curve::detail::d_curve_error != DEVICE_ERROR_NO_ERRORS) {
-        printf("%s.%s.%d: cuRVE Device Error %d (%s)\n", file, function, line, (unsigned int)curve::detail::d_curve_error, getDeviceErrorString(curve::detail::d_curve_error));
-    }
-}
-__device__ __host__ __forceinline__ const char* Curve::getDeviceErrorString(DeviceError e) {
-    switch (e) {
-    case(DEVICE_ERROR_NO_ERRORS):
-        return "No cuRVE errors";
-    case(DEVICE_ERROR_UNKNOWN_VARIABLE):
-        return "Unknown cuRVE variable in current namespace";
-    case(DEVICE_ERROR_VARIABLE_DISABLED):
-        return "cuRVE variable is disabled";
-    default:
-        return "Unspecified cuRVE error";
-    }
-}
-__device__ __forceinline__ Curve::DeviceError Curve::getLastDeviceError() {
-    return curve::detail::d_curve_error;
 }
 
 }  // namespace flamegpu
