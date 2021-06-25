@@ -854,7 +854,7 @@ void test_mooorew_comradius(
     // Define the function and layers.
     AgentFunctionDescription &outputFunction = agent.newFunction("OutSimpleXYZ", OutSimpleXYZ);
     outputFunction.setMessageOutput(message);
-    AgentFunctionDescription &inputFunction = agent.newFunction("MooreTestXYZC", MooreWTestXYZC);
+    AgentFunctionDescription &inputFunction = agent.newFunction("MooreWTestXYZC", MooreWTestXYZC);
     inputFunction.setMessageInput(message);
     model.newLayer().addAgentFunction(outputFunction);
     LayerDescription &li = model.newLayer();
@@ -994,6 +994,182 @@ TEST(TestMessage_Array3D, MooreWXX5Y1Z1R2) {
 }
 TEST(TestMessage_Array3D, MooreWXX6Y1Z1R2) {
     test_mooorew_comradius(6, 1, 1, 2);
+}
+
+FLAMEGPU_AGENT_FUNCTION(MooreTestXYZC, MsgArray3D, MsgNone) {
+    const unsigned int index = FLAMEGPU->getVariable<unsigned int>("index");
+    const unsigned int x = FLAMEGPU->getVariable<unsigned int>("x");
+    const unsigned int y = FLAMEGPU->getVariable<unsigned int>("y");
+    const unsigned int z = FLAMEGPU->getVariable<unsigned int>("z");
+    const unsigned int COMRADIUS = FLAMEGPU->environment.getProperty<unsigned int>("COMRADIUS");
+    // Iterate message list counting how many messages were read.
+    unsigned int count = 0;
+    for (const auto& message : FLAMEGPU->message_in(x, y, z, COMRADIUS)) {
+        // @todo - check its the correct messages?
+        // if (threadIdx.x == 0 && blockIdx.x == 0) {
+        //    printf("message from %u: %u %u %u\n", message.getVariable<unsigned int>("index"), message.getX(), message.getY(), message.getZ());
+        // }
+        count++;
+    }
+    FLAMEGPU->setVariable<unsigned int>("message_read", count);
+    return ALIVE;
+}
+void test_mooore_comradius(
+    const unsigned int GRID_WIDTH,
+    const unsigned int GRID_HEIGHT,
+    const unsigned int GRID_DEPTH,
+    const unsigned int COMRADIUS
+) {
+    // Calc the population
+    const unsigned int agentCount = GRID_WIDTH * GRID_HEIGHT * GRID_DEPTH;
+
+    // Define the model
+    ModelDescription model("MooreXYZC");
+
+    // Use an env var for the communication radius to use, rather than a __device__ or a #define.
+    EnvironmentDescription& env = model.Environment();
+    env.newProperty<unsigned int>("COMRADIUS", COMRADIUS);
+
+    // Define the message
+    MsgArray3D::Description& message = model.newMessage<MsgArray3D>(MESSAGE_NAME);
+    message.newVariable<unsigned int>("index");
+    message.setDimensions(GRID_WIDTH, GRID_HEIGHT, GRID_DEPTH);
+    AgentDescription& agent = model.newAgent(AGENT_NAME);
+    agent.newVariable<unsigned int>("index");
+    agent.newVariable<unsigned int>("x");
+    agent.newVariable<unsigned int>("y");
+    agent.newVariable<unsigned int>("z");
+    agent.newVariable<unsigned int>("message_read", UINT_MAX);
+    // Define the function and layers.
+    AgentFunctionDescription& outputFunction = agent.newFunction("OutSimpleXYZ", OutSimpleXYZ);
+    outputFunction.setMessageOutput(message);
+    AgentFunctionDescription& inputFunction = agent.newFunction("MooreTestXYZC", MooreTestXYZC);
+    inputFunction.setMessageInput(message);
+    model.newLayer().addAgentFunction(outputFunction);
+    LayerDescription& li = model.newLayer();
+    li.addAgentFunction(inputFunction);
+    // Assign the numbers in shuffled order to agents
+    AgentVector population(agent, agentCount);
+    for (unsigned int x = 0; x < GRID_WIDTH; x++) {
+        for (unsigned int y = 0; y < GRID_HEIGHT; y++) {
+            for (unsigned int z = 0; z < GRID_DEPTH; z++) {
+                unsigned int idx = (x * GRID_HEIGHT * GRID_DEPTH) + (y * GRID_DEPTH) + z;
+                AgentVector::Agent instance = population[idx];
+                instance.setVariable<unsigned int>("index", idx);
+                instance.setVariable<unsigned int>("x", x);
+                instance.setVariable<unsigned int>("y", y);
+                instance.setVariable<unsigned int>("z", z);
+                instance.setVariable<unsigned int>("message_read", UINT_MAX);
+            }
+        }
+    }
+    // Set pop in model
+    CUDASimulation simulation(model);
+    simulation.setPopulationData(population);
+    simulation.step();
+    simulation.getPopulationData(population);
+    unsigned int right_count = 0;
+    // Validate each agent has read correct number of messages
+    for (AgentVector::Agent instance : population) {
+        const unsigned int x = instance.getVariable<unsigned int>("x");
+        const unsigned int y = instance.getVariable<unsigned int>("y");
+        const unsigned int z = instance.getVariable<unsigned int>("z");
+        const unsigned int message_read = instance.getVariable<unsigned int>("message_read");
+
+        unsigned int expected_read = 1;
+        expected_read *= (std::min<int>(static_cast<int>(x + COMRADIUS), static_cast<int>(GRID_WIDTH) - 1) - std::max<int>(static_cast<int>(x) - static_cast<int>(COMRADIUS), 0) + 1);
+        expected_read *= (std::min<int>(static_cast<int>(y + COMRADIUS), static_cast<int>(GRID_HEIGHT) - 1) - std::max<int>(static_cast<int>(y) - static_cast<int>(COMRADIUS), 0) + 1);
+        expected_read *= (std::min<int>(static_cast<int>(z + COMRADIUS), static_cast<int>(GRID_DEPTH) - 1) - std::max<int>(static_cast<int>(z) - static_cast<int>(COMRADIUS), 0) + 1);
+        expected_read--;
+        // ASSERT_EQ(message_read, expected_read);
+        if (message_read == expected_read)
+            right_count++;
+    }
+    ASSERT_EQ(right_count, population.size());
+}
+// Test a range of environment sizes for comradius of 1, including small sizes which are an edge case.
+// Also try non-uniform dimensions.
+// @todo - decide if these should be one or many tests.
+TEST(TestMessage_Array3D, MooreX1Y1Z1R1) {
+    test_mooore_comradius(1, 1, 1, 1);
+}
+TEST(TestMessage_Array3D, MooreX2Y2Z2R1) {
+    test_mooore_comradius(2, 2, 2, 1);
+}
+TEST(TestMessage_Array3D, MooreX3Y3Z3R1) {
+    test_mooore_comradius(3, 3, 3, 1);
+}
+TEST(TestMessage_Array3D, MooreX4Y4Z4R1) {
+    test_mooore_comradius(4, 4, 4, 1);
+}
+TEST(TestMessage_Array3D, MooreX2Y2Z1R1) {
+    test_mooore_comradius(2, 2, 1, 1);
+}
+TEST(TestMessage_Array3D, MooreX3Y3Z1R1) {
+    test_mooore_comradius(3, 3, 1, 1);
+}
+TEST(TestMessage_Array3D, MooreX4Y4Z1R1) {
+    test_mooore_comradius(4, 4, 1, 1);
+}
+TEST(TestMessage_Array3D, MooreX2Y1Z1R1) {
+    test_mooore_comradius(2, 1, 1, 1);
+}
+TEST(TestMessage_Array3D, MooreX3Y1Z1R1) {
+    test_mooore_comradius(3, 1, 1, 1);
+}
+TEST(TestMessage_Array3D, MooreX4Y1Z1R1) {
+    test_mooore_comradius(4, 1, 1, 1);
+}
+// Test a range of environment sizes for comradius of 2, including small sizes which are an edge case.
+// Also try non-uniform dimensions.
+// @todo - decide if these should be one or many tests.
+TEST(TestMessage_Array3D, MooreXX1Y1Z1R2) {
+    test_mooore_comradius(1, 1, 1, 2);
+}
+TEST(TestMessage_Array3D, MooreXX2Y2Z2R2) {
+    test_mooore_comradius(2, 2, 2, 2);
+}
+TEST(TestMessage_Array3D, MooreXX3Y3Z3R2) {
+    test_mooore_comradius(3, 3, 3, 2);
+}
+TEST(TestMessage_Array3D, MooreXX4Y4Z4R2) {
+    test_mooore_comradius(4, 4, 4, 2);
+}
+TEST(TestMessage_Array3D, MooreXX5Y5Z5R2) {
+    test_mooore_comradius(5, 5, 5, 2);
+}
+TEST(TestMessage_Array3D, MooreXX6Y6Z6R2) {
+    test_mooore_comradius(6, 6, 6, 2);
+}
+TEST(TestMessage_Array3D, MooreXX2Y2Z1R2) {
+    test_mooore_comradius(2, 2, 1, 2);
+}
+TEST(TestMessage_Array3D, MooreXX3Y3Z1R2) {
+    test_mooore_comradius(3, 3, 1, 2);
+}
+TEST(TestMessage_Array3D, MooreXX4Y4Z1R2) {
+    test_mooore_comradius(4, 4, 1, 2);
+}
+TEST(TestMessage_Array3D, MooreXX5Y5Z1R2) {
+    test_mooore_comradius(5, 5, 1, 2);
+}
+TEST(TestMessage_Array3D, MooreXX6Y6Z1R2) {
+    test_mooore_comradius(6, 6, 1, 2);
+}
+TEST(TestMessage_Array3D, MooreXX2Y1Z1R2) {
+    test_mooore_comradius(2, 1, 1, 2);
+}
+TEST(TestMessage_Array3D, MooreXX3Y1Z1R2) {
+    test_mooore_comradius(3, 1, 1, 2);
+}
+TEST(TestMessage_Array3D, MooreXX4Y1Z1R2) {
+    test_mooore_comradius(4, 1, 1, 2);
+}
+TEST(TestMessage_Array3D, MooreXX5Y1Z1R2) {
+    test_mooore_comradius(5, 1, 1, 2);
+}
+TEST(TestMessage_Array3D, MooreXX6Y1Z1R2) {
+    test_mooore_comradius(6, 1, 1, 2);
 }
 
 }  // namespace test_message_array_3d

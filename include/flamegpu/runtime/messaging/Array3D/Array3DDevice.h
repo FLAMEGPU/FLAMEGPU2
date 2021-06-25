@@ -118,8 +118,7 @@ class MsgArray3D::In {
              * @note Does not compare _parent
              */
             __device__ bool operator==(const Message& rhs) const {
-                return this->index_1d == rhs.index_1d
-                    && this->relative_cell[0] == rhs.relative_cell[0]
+                return this->relative_cell[0] == rhs.relative_cell[0]
                     && this->relative_cell[1] == rhs.relative_cell[1]
                     && this->relative_cell[2] == rhs.relative_cell[2];
                     // && this->_parent.loc[0] == rhs._parent.loc[0]
@@ -314,10 +313,12 @@ class MsgArray3D::In {
              * @note Does not compare _parent
              */
             __device__ bool operator==(const Message& rhs) const {
-                return this->index_1d == rhs.index_1d
-                    && this->_parent.loc[0] == rhs._parent.loc[0]
-                    && this->_parent.loc[1] == rhs._parent.loc[1]
-                    && this->_parent.loc[2] == rhs._parent.loc[2];
+                return this->relative_cell[0] == rhs.relative_cell[0]
+                    && this->relative_cell[1] == rhs.relative_cell[1]
+                    && this->relative_cell[2] == rhs.relative_cell[2];
+                    // && this->_parent.loc[0] == rhs._parent.loc[0]
+                    // && this->_parent.loc[1] == rhs._parent.loc[1]
+                    // && this->_parent.loc[2] == rhs._parent.loc[2];
             }
             /**
              * Inequality operator
@@ -756,7 +757,7 @@ __device__ inline MsgArray3D::In::Filter::Filter(const MetaData* _metadata, cons
     min_cell[2] = static_cast<int>(z) - static_cast<int>(_radius) < 0 ? -static_cast<int>(z) : - static_cast<int>(_radius);
     max_cell[0] = x + _radius >= _metadata->dimensions[0] ? static_cast<int>(_metadata->dimensions[0]) - 1 - static_cast<int>(x) : static_cast<int>(_radius);
     max_cell[1] = y + _radius >= _metadata->dimensions[1] ? static_cast<int>(_metadata->dimensions[1]) - 1 - static_cast<int>(y) : static_cast<int>(_radius);
-    max_cell[2] = z + _radius >= _metadata->dimensions[2] ? static_cast<int>(_metadata->dimensions[2]) - 1 - static_cast<int>(z) : static_cast<int>(z + _radius);
+    max_cell[2] = z + _radius >= _metadata->dimensions[2] ? static_cast<int>(_metadata->dimensions[2]) - 1 - static_cast<int>(z) : static_cast<int>(_radius);
 }
 __device__ inline MsgArray3D::In::Filter::Message& MsgArray3D::In::Filter::Message::operator++() {
     if (relative_cell[2] >= _parent.max_cell[2]) {
