@@ -396,7 +396,7 @@ class MsgArray::In {
             return iterator(*this, max_cell);
         }
 
-      private:
+     private:
         /**
          * Search origin
          */
