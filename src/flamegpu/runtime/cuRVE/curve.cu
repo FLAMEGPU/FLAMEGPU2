@@ -32,16 +32,6 @@ namespace detail {
      * Holds the length of the buffer (in terms of agents/items, rather than bytes)
      */
     __constant__ unsigned int d_lengths[Curve::MAX_VARIABLES];
-    /**
-     * Legacy method for catching curve errors, this has now been replaced by DeviceException
-     * @todo Remove this legacy code
-     */
-    __device__ Curve::DeviceError d_curve_error;
-    /**
-     * Legacy method for catching curve errors, this should now be replaced with various exceptions
-     * @todo Remove this legacy code
-     */
-    Curve::HostError h_curve_error;
 }  // namespace detail
 }  // namespace curve
 
@@ -50,13 +40,10 @@ std::mutex Curve::instance_mutex;
 /* header implementations */
 __host__ Curve::Curve() :
     deviceInitialised(false) {
-    // Initialise some host variables.
-    curve::detail::h_curve_error  = ERROR_NO_ERRORS;
 }
 __host__ void Curve::purge() {
     auto lock = std::unique_lock<std::shared_timed_mutex>(mutex);
     deviceInitialised = false;
-    curve::detail::h_curve_error = ERROR_NO_ERRORS;
     initialiseDevice();
 }
 __host__ void Curve::initialiseDevice() {
@@ -137,7 +124,6 @@ __host__ Curve::Variable Curve::_registerVariableByHash(VariableHash variable_ha
     while (h_hashes[i] != EMPTY_FLAG && h_hashes[i] != DELETED_FLAG) {
         n += 1;
         if (n >= MAX_VARIABLES) {
-            curve::detail::h_curve_error = ERROR_TOO_MANY_VARIABLES;
             return UNKNOWN_VARIABLE;
         }
         i += 1;
@@ -212,67 +198,6 @@ __host__ void Curve::updateDevice() {
     gpuErrchk(cudaMemcpyToSymbol(curve::detail::d_lengths, h_lengths, sizeof(unsigned int) * MAX_VARIABLES));
 }
 
-/* errors */
-void __host__ Curve::printLastHostError(const char* file, const char* function, const int line) {
-    // Do not lock mutex here, do it in the calling method
-    if (curve::detail::h_curve_error != ERROR_NO_ERRORS) {
-        printf("%s.%s.%d: cuRVE Host Error %d (%s)\n", file, function, line, (unsigned int)curve::detail::h_curve_error, getHostErrorString(curve::detail::h_curve_error));
-    }
-}
-
-void __host__ Curve::printErrors(const char* file, const char* function, const int line) {
-    auto lock = std::unique_lock<std::shared_timed_mutex>(mutex);
-    // Initialise the device (if required)
-    initialiseDevice();
-
-    DeviceError d_curve_error_local;
-
-    printLastHostError(file, function, line);
-
-    // check device errors
-    gpuErrchk(cudaMemcpyFromSymbol(&d_curve_error_local, curve::detail::d_curve_error, sizeof(DeviceError)));
-    if (d_curve_error_local != DEVICE_ERROR_NO_ERRORS) {
-        printf("%s.%s.%d: cuRVE Device Error %d (%s)\n", file, function, line, (unsigned int)d_curve_error_local, getDeviceErrorString(d_curve_error_local));
-    }
-}
-__host__ const char* Curve::getHostErrorString(HostError e) {
-    // Do not lock mutex here, do it in the calling method
-    switch (e) {
-    case(ERROR_NO_ERRORS):
-        return "No cuRVE errors";
-    case(ERROR_UNKNOWN_VARIABLE):
-        return "Unknown cuRVE variable";
-    case(ERROR_TOO_MANY_VARIABLES):
-        return "Too many cuRVE variables";
-    default:
-        return "Unspecified cuRVE error";
-    }
-}
-__host__ Curve::HostError Curve::getLastHostError() {
-    auto lock = std::shared_lock<std::shared_timed_mutex>(mutex);
-    return curve::detail::h_curve_error;
-}
-__host__ void Curve::clearErrors() {
-    auto lock = std::unique_lock<std::shared_timed_mutex>(mutex);
-    // Initialise the device (if required)
-    initialiseDevice();
-
-    DeviceError curve_error_none;
-
-    curve_error_none = DEVICE_ERROR_NO_ERRORS;
-    curve::detail::h_curve_error  = ERROR_NO_ERRORS;
-
-    gpuErrchk(cudaMemcpyToSymbol(curve::detail::d_curve_error, &curve_error_none, sizeof(DeviceError)));
-}
-
-__host__ unsigned int Curve::checkHowManyMappedItems() {
-    auto lock = std::shared_lock<std::shared_timed_mutex>(mutex);
-    unsigned int rtn = 0;
-    for (unsigned int i = 0; i < MAX_VARIABLES; ++i)
-        if (h_hashes[i] != EMPTY_FLAG && h_hashes[i] != DELETED_FLAG)
-            rtn++;
-    return rtn;
-}
 Curve& Curve::getInstance() {
     auto lock = std::unique_lock<std::mutex>(instance_mutex);  // Mutex to protect from two threads triggering the static instantiation concurrently
     static std::map<int, std::unique_ptr<Curve>> instances = {};  // Instantiated on first use.

@@ -10,8 +10,8 @@
 namespace jitify {
 namespace experimental {
 class KernelInstantiation;
-}
-}
+}  // namespace experimental
+}  // namespace jitify
 namespace flamegpu {
 
 
