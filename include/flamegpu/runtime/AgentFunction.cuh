@@ -1,5 +1,5 @@
-#ifndef INCLUDE_FLAMEGPU_RUNTIME_AGENTFUNCTION_H_
-#define INCLUDE_FLAMEGPU_RUNTIME_AGENTFUNCTION_H_
+#ifndef INCLUDE_FLAMEGPU_RUNTIME_AGENTFUNCTION_CUH_
+#define INCLUDE_FLAMEGPU_RUNTIME_AGENTFUNCTION_CUH_
 
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
@@ -108,4 +108,4 @@ __global__ void agent_function_wrapper(
 
 }  // namespace flamegpu
 
-#endif  // INCLUDE_FLAMEGPU_RUNTIME_AGENTFUNCTION_H_
+#endif  // INCLUDE_FLAMEGPU_RUNTIME_AGENTFUNCTION_CUH_

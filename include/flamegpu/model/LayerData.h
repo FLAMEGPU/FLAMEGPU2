@@ -6,7 +6,7 @@
 #include <memory>
 #include <string>
 
-#include "flamegpu/runtime/HostAPI_macros.h"  // Todo replace with std/cub style fns (see AgentFunction.h)
+#include "flamegpu/runtime/HostAPI_macros.h"  // Todo replace with std/cub style fns (see AgentFunction.cuh)
 #include "flamegpu/model/ModelData.h"
 
 namespace flamegpu {

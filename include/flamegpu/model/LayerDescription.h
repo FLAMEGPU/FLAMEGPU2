@@ -8,8 +8,8 @@
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/model/ModelData.h"
 #include "flamegpu/model/LayerData.h"
-#include "flamegpu/runtime/AgentFunction.h"
-#include "flamegpu/model/AgentFunctionData.h"
+#include "flamegpu/runtime/AgentFunction.cuh"
+#include "flamegpu/model/AgentFunctionData.cuh"
 
 namespace flamegpu {
 
