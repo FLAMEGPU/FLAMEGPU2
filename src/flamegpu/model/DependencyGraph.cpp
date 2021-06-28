@@ -2,9 +2,6 @@
 
 namespace flamegpu {
 
-DependencyGraph::DependencyGraph() {
-}
-
 DependencyGraph::DependencyGraph(const ModelData* _model) : model(_model) {
 }
 

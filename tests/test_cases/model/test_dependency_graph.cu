@@ -71,7 +71,11 @@ const char *OTHER_STATE_NAME = "State4";
 const char *LAYER_NAME = "Layer1";
 
 TEST(DependencyGraphTest, ValidateEmptyGraph) {
-    DependencyGraph graph;
+    ModelDescription _m(MODEL_NAME);
+    AgentDescription &a = _m.newAgent(AGENT_NAME);
+    AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    ModelDescription model(MODEL_NAME);
+    DependencyGraph &graph = _m.getDependencyGraph();
     EXPECT_THROW(graph.validateDependencyGraph(), exception::InvalidDependencyGraph);
 }
 

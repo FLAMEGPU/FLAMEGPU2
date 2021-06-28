@@ -24,7 +24,6 @@ class DependencyGraph {
     /**
      * Constructors
      */
-    DependencyGraph();
     /**
      * Used by ModelData for instantiation
      */
