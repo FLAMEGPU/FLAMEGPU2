@@ -79,6 +79,11 @@ __global__ void agent_function_wrapper(
     if (threadIdx.x == 0) {
         buff[0] = error_buffer;
     }
+
+    #if defined(__CUDACC__)  // @todo - This should not be required. This template should only ever be processed by a CUDA compiler.
+    // Sync the block after Thread 0 has written to shared.
+    __syncthreads();
+    #endif  // __CUDACC__
 #endif
     // Must be terminated here, else AgentRandom has bounds issues inside DeviceAPI constructor
     if (DeviceAPI<MsgIn, MsgOut>::getThreadIndex() >= popNo)
