@@ -115,12 +115,6 @@ DERIVED_FGPUException(InvalidInputFile, "Invalid Input File");
 
 /**
  * Defines a type of object to be thrown as exception.
- * It is used to report errors when hash list is full.
- */
-DERIVED_FGPUException(InvalidHashList, "Hash list full. This should never happen");
-
-/**
- * Defines a type of object to be thrown as exception.
  * It reports errors that are due to invalid agent variable type.
  * This could happen when retriving or setting a variable of differet type.
  */
@@ -138,12 +132,6 @@ DERIVED_FGPUException(UnsupportedVarType, "Variables of this type are not suppor
  * It reports errors that are due to invalid agent state name.
  */
 DERIVED_FGPUException(InvalidStateName, "Invalid agent state name");
-
-/**
- * Defines a type of object to be thrown as exception.
- * It reports errors that are due to invalid map entry.
- */
-DERIVED_FGPUException(InvalidMapEntry, "Missing entry in type sizes map. Something went bad.");
 
 /**
  * Defines a type of object to be thrown as exception.
@@ -218,12 +206,6 @@ DERIVED_FGPUException(InvalidMessageData, "Invalid Message data");
 
 /**
  * Defines a type of object to be thrown as exception.
- * It reports errors that are due to invalid message list size.
- */
-DERIVED_FGPUException(InvalidMessageSize, "Invalid Message List size");
-
-/**
- * Defines a type of object to be thrown as exception.
  * It reports errors that are due to invalid sub models
  */
 DERIVED_FGPUException(InvalidSubModel, "Invalid SubModel");
@@ -285,12 +267,6 @@ DERIVED_FGPUException(InvalidAgentFunc, "Unknown agent function");
  * It reports errors that are due to invalid function layer index.
  */
 DERIVED_FGPUException(InvalidFuncLayerIndx, "Agent function layer index out of bounds!");
-
-/**
- * Defines a type of object to be thrown as exception.
- * It reports errors that are due to invalid population data.
- */
-DERIVED_FGPUException(InvalidPopulationData, "Invalid Population data");
 
 /**
  * Defines a type of object to be thrown as exception.
