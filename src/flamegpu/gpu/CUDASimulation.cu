@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <string>
 
-#include "flamegpu/model/AgentFunctionData.h"
+#include "flamegpu/model/AgentFunctionData.cuh"
 #include "flamegpu/model/LayerData.h"
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/model/SubModelData.h"

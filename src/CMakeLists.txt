@@ -92,7 +92,7 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/model/LayerDescription.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/ModelData.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/AgentData.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/model/AgentFunctionData.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/model/AgentFunctionData.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/model/DependencyNode.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/DependencyGraph.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/LayerData.h
@@ -129,7 +129,7 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/sim/SimRunner.h
     ${FLAMEGPU_ROOT}/include/flamegpu/sim/SimLogger.h
     ${FLAMEGPU_ROOT}/include/flamegpu/sim/Simulation.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/AgentFunction.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/AgentFunction.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/AgentFunction_shim.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/AgentFunctionCondition.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/AgentFunctionCondition_shim.h

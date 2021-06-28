@@ -1,9 +1,6 @@
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_AGENTFUNCTION_SHIM_H_
 #define INCLUDE_FLAMEGPU_RUNTIME_AGENTFUNCTION_SHIM_H_
 
-// #include "flamegpu/runtime/AgentFunction.h"
-
-
 namespace flamegpu {
 
 

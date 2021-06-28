@@ -1,13 +1,13 @@
 
-#ifndef INCLUDE_FLAMEGPU_MODEL_AGENTFUNCTIONDATA_H_
-#define INCLUDE_FLAMEGPU_MODEL_AGENTFUNCTIONDATA_H_
+#ifndef INCLUDE_FLAMEGPU_MODEL_AGENTFUNCTIONDATA_CUH_
+#define INCLUDE_FLAMEGPU_MODEL_AGENTFUNCTIONDATA_CUH_
 
 #include <memory>
 #include <string>
 
 #include "flamegpu/model/ModelData.h"
 #include "flamegpu/model/AgentData.h"
-#include "flamegpu/runtime/AgentFunction.h"
+#include "flamegpu/runtime/AgentFunction.cuh"
 #include "flamegpu/runtime/AgentFunctionCondition.h"
 
 namespace flamegpu {
@@ -155,4 +155,4 @@ struct AgentFunctionData {
 
 }  // namespace flamegpu
 
-#endif  // INCLUDE_FLAMEGPU_MODEL_AGENTFUNCTIONDATA_H_
+#endif  // INCLUDE_FLAMEGPU_MODEL_AGENTFUNCTIONDATA_CUH_
