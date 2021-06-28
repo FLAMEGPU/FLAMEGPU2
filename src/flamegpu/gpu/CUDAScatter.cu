@@ -4,7 +4,7 @@
 #include <vector>
 #include <cassert>
 
-#include "flamegpu/gpu/CUDAErrorChecking.h"
+#include "flamegpu/gpu/CUDAErrorChecking.cuh"
 #include "flamegpu/gpu/CUDAFatAgentStateList.h"
 #include "flamegpu/gpu/CUDAScanCompaction.h"
 

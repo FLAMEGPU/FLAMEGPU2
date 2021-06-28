@@ -1,5 +1,5 @@
 #include "flamegpu/util/compute_capability.cuh"
-#include "flamegpu/gpu/CUDAErrorChecking.h"
+#include "flamegpu/gpu/CUDAErrorChecking.cuh"
 
 namespace flamegpu {
 namespace util {
