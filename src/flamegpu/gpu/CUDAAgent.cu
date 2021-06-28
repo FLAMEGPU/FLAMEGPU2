@@ -29,7 +29,7 @@ using std::experimental::filesystem::v1::path;
 #include "flamegpu/version.h"
 #include "flamegpu/gpu/CUDAFatAgent.h"
 #include "flamegpu/gpu/CUDAAgentStateList.h"
-#include "flamegpu/gpu/CUDAErrorChecking.h"
+#include "flamegpu/gpu/CUDAErrorChecking.cuh"
 #include "flamegpu/gpu/CUDASimulation.h"
 
 #include "flamegpu/model/AgentDescription.h"

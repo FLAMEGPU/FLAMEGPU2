@@ -3,7 +3,7 @@
 #include <cassert>
 #include <memory>
 
-#include "flamegpu/gpu/CUDAErrorChecking.h"
+#include "flamegpu/gpu/CUDAErrorChecking.cuh"
 #include "flamegpu/runtime/utility/DeviceEnvironment.cuh"
 #include "flamegpu/model/EnvironmentDescription.h"
 #include "flamegpu/model/SubEnvironmentData.h"

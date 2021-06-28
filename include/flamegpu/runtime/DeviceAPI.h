@@ -6,7 +6,7 @@
 #include <cstdint>
 #include <limits>
 
-// #include "flamegpu/gpu/CUDAErrorChecking.h"            // required for CUDA error handling functions
+// #include "flamegpu/gpu/CUDAErrorChecking.cuh"            // required for CUDA error handling functions
 #ifndef __CUDACC_RTC__
 #include "flamegpu/runtime/cuRVE/curve.h"
 #else

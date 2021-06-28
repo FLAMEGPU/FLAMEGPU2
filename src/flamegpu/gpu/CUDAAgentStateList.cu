@@ -4,7 +4,7 @@
 #include <device_launch_parameters.h>
 
 #include "flamegpu/gpu/CUDAAgent.h"
-#include "flamegpu/gpu/CUDAErrorChecking.h"
+#include "flamegpu/gpu/CUDAErrorChecking.cuh"
 #include "flamegpu/pop/AgentVector.h"
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/gpu/CUDAScatter.h"

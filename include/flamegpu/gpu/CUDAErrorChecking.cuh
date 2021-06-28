@@ -1,5 +1,5 @@
-#ifndef INCLUDE_FLAMEGPU_GPU_CUDAERRORCHECKING_H_
-#define INCLUDE_FLAMEGPU_GPU_CUDAERRORCHECKING_H_
+#ifndef INCLUDE_FLAMEGPU_GPU_CUDAERRORCHECKING_CUH_
+#define INCLUDE_FLAMEGPU_GPU_CUDAERRORCHECKING_CUH_
 
 // #include <device_launch_parameters.h>
 // #include <cuda_runtime.h>
@@ -71,4 +71,4 @@ inline void gpuLaunchAssert(const char *file, int line) {
 
 }  // namespace flamegpu
 
-#endif  // INCLUDE_FLAMEGPU_GPU_CUDAERRORCHECKING_H_
+#endif  // INCLUDE_FLAMEGPU_GPU_CUDAERRORCHECKING_CUH_

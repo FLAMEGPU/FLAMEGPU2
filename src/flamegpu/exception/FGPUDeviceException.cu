@@ -3,7 +3,7 @@
 #define FGPUDEVICEEXCEPTION_CU
 #include "flamegpu/exception/FGPUDeviceException.h"
 
-#include "flamegpu/gpu/CUDAErrorChecking.h"
+#include "flamegpu/gpu/CUDAErrorChecking.cuh"
 #if !defined(SEATBELTS) || SEATBELTS
 
 namespace flamegpu {

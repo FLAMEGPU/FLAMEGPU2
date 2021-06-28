@@ -10,7 +10,7 @@
 #include <string>
 
 #include "flamegpu/model/Variable.h"
-#include "flamegpu/gpu/CUDAErrorChecking.h"
+#include "flamegpu/gpu/CUDAErrorChecking.cuh"
 #include "flamegpu/gpu/CUDAScanCompaction.h"
 #include "flamegpu/util/nvtx.h"
 #include "flamegpu/runtime/cuRVE/curve.h"
