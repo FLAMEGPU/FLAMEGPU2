@@ -314,7 +314,8 @@ int main(int argc, const char ** argv) {
     inputdataDescription.setMessageInput("location");
 
     // Dependency specification
-    flamegpu::DependencyGraph dependencyGraph;
+    flamegpu::DependencyGraph& dependencyGraph = model.getDependencyGraph();
+
     inputdataDescription.dependsOn(outputdataDescription);
     dependencyGraph.addRoot(outputdataDescription);
     dependencyGraph.generateLayers(model);
