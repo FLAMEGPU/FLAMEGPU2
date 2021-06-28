@@ -49,6 +49,10 @@ __global__ void agent_function_condition_wrapper(
     if (threadIdx.x == 0) {
         shared_mem[0] = error_buffer;
     }
+    // @todo - this tempalte should onyl ever be seen by a cuda compiler.
+    #if defined(__CUDACC__)
+        __syncthreads();
+    #endif
 #endif
     // Must be terminated here, else AgentRandom has bounds issues inside DeviceAPI constructor
     if (ReadOnlyDeviceAPI::getThreadIndex() >= popNo)
