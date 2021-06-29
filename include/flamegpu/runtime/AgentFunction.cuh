@@ -14,7 +14,7 @@
 namespace flamegpu {
 
 // ! FLAMEGPU function return type
-enum FLAME_GPU_AGENT_STATUS { ALIVE = 1, DEAD = 0 };
+enum AGENT_STATUS { ALIVE = 1, DEAD = 0 };
 
 typedef void(AgentFunctionWrapper)(
 #if !defined(SEATBELTS) || SEATBELTS
@@ -100,7 +100,7 @@ __global__ void agent_function_wrapper(
         MsgOut::Out(agent_func_name_hash, messagename_outp_hash, out_messagelist_metadata, scanFlag_messageOutput));
 
     // call the user specified device function
-    FLAME_GPU_AGENT_STATUS flag = AgentFunction()(&api);
+    AGENT_STATUS flag = AgentFunction()(&api);
     if (scanFlag_agentDeath) {
         // (scan flags will not be processed unless agent death has been requested in model definition)
         scanFlag_agentDeath[DeviceAPI<MsgIn, MsgOut>::getThreadIndex()] = flag;

@@ -166,7 +166,7 @@ class AgentFunctionDescription : public DependencyNode {
     void setAgentOutput(AgentDescription &agent, const std::string state = ModelData::DEFAULT_STATE);
     /**
      * Configures whether agents can die during execution of this function
-     * (e.g. by returning FLAME_GPU_AGENT_STATUS::DEAD from the agent function)
+     * (e.g. by returning AGENT_STATUS::DEAD from the agent function)
      * @param has_death True if some agents executing this agent function may die
      * @see AgentFunctionDescription::AllowAgentDeath()
      * @see AgentFunctionDescription::getAllowAgentDeath()
