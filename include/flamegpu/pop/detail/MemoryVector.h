@@ -1,5 +1,5 @@
-#ifndef INCLUDE_FLAMEGPU_POP_MEMORYVECTOR_H_
-#define INCLUDE_FLAMEGPU_POP_MEMORYVECTOR_H_
+#ifndef INCLUDE_FLAMEGPU_POP_DETAIL_MEMORYVECTOR_H_
+#define INCLUDE_FLAMEGPU_POP_DETAIL_MEMORYVECTOR_H_
 
 #include <vector>
 #include <typeindex>
@@ -11,6 +11,7 @@
 #include "flamegpu/exception/FLAMEGPUException.h"
 
 namespace flamegpu {
+namespace detail {
 
 /**
  * Pure abstract memory vector
@@ -184,6 +185,7 @@ typedef std::map<const std::string, std::unique_ptr<GenericMemoryVector>> StateM
 /*! Create a pair with std::strings for keys (indexes) and GenericAgentMemoryVector object.  A smart pointer has been used to automatically manage the object*/
 typedef std::pair<const std::string, std::unique_ptr<GenericMemoryVector>> StateMemoryMapPair;
 
+}  // namespace detail
 }  // namespace flamegpu
 
-#endif  // INCLUDE_FLAMEGPU_POP_MEMORYVECTOR_H_
+#endif  // INCLUDE_FLAMEGPU_POP_DETAIL_MEMORYVECTOR_H_
