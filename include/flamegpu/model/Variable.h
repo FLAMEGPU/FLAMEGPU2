@@ -9,7 +9,7 @@
 #include <cstring>
 #include <vector>
 
-#include "flamegpu/pop/MemoryVector.h"
+#include "flamegpu/pop/detail/MemoryVector.h"
 
 namespace flamegpu {
 
@@ -31,7 +31,7 @@ struct Variable {
         : type(typeid(T))
         , type_size(sizeof(T))
         , elements(_elements)
-        , memory_vector(new MemoryVector<T>(_elements))
+        , memory_vector(new detail::MemoryVector<T>(_elements))
         , default_value(nullptr) {
         assert(_elements > 0);  // This should be enforced with static_assert where Variable's are defined, see MessageDescription::newVariable()
         // Limited to Arithmetic types
@@ -50,7 +50,7 @@ struct Variable {
         : type(typeid(T))
         , type_size(sizeof(T))
         , elements(N)
-        , memory_vector(new MemoryVector<T>(N))
+        , memory_vector(new detail::MemoryVector<T>(N))
         , default_value(malloc(sizeof(T) * N)) {
         assert(N > 0);  // This should be enforced with static_assert where Variable's are defined, see MessageDescription::newVariable()
         // Limited to Arithmetic types
@@ -70,7 +70,7 @@ struct Variable {
         : type(typeid(T))
         , type_size(sizeof(T))
         , elements(N)
-        , memory_vector(new MemoryVector<T>(N))
+        , memory_vector(new detail::MemoryVector<T>(N))
         , default_value(malloc(sizeof(T) * N)) {
         assert(N > 0);  // This should be enforced with static_assert where Variable's are defined, see MessageDescription::newVariable()
         assert(N  ==  _default_value.size());  // This should be enforced where variables are defined
@@ -102,7 +102,7 @@ struct Variable {
     /**
      * Holds the variables memory vector type so we can dynamically create them with clone()
      */
-    const std::unique_ptr<GenericMemoryVector> memory_vector;
+    const std::unique_ptr<detail::GenericMemoryVector> memory_vector;
     /**
      * Default value for new agents
      */

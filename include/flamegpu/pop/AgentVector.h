@@ -6,7 +6,7 @@
 #include <memory>
 #include <map>
 
-#include "flamegpu/pop/MemoryVector.h"
+#include "flamegpu/pop/detail/MemoryVector.h"
 #include "flamegpu/model/AgentData.h"
 
 namespace flamegpu {
@@ -46,7 +46,7 @@ class AgentVector {
      * View into the AgentVector to provide immutable access to a specific Agent's data
      */
     typedef AgentVector_CAgent CAgent;
-    typedef std::map<std::string, std::unique_ptr<GenericMemoryVector>> AgentDataMap;
+    typedef std::map<std::string, std::unique_ptr<detail::GenericMemoryVector>> AgentDataMap;
 
     // They might all be wrong
     class const_iterator;

@@ -534,7 +534,7 @@ void AgentVector::internal_resize(size_type count, bool init) {
         const size_t variable_size = v.second.type_size * v.second.elements;
         if (it == _data->end()) {
             // Need to create the variable's vector
-            auto t = std::unique_ptr<GenericMemoryVector>(v.second.memory_vector->clone());
+            auto t = std::unique_ptr<detail::GenericMemoryVector>(v.second.memory_vector->clone());
             t->resize(count);
             // Default init all new elements
             if (init) {
