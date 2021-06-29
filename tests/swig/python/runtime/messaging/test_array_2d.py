@@ -340,23 +340,23 @@ class TestMessage_Array2D(TestCase):
         # Set pop in model
         c = pyflamegpu.CUDASimulation(m)
         c.setPopulationData(pop)
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             c.step()
         assert e.value.type() == "ArrayMessageWriteConflict"
 
     def test_ArrayLenZeroException(self): 
         m = pyflamegpu.ModelDescription(MODEL_NAME)
         msg = m.newMessageArray2D(MESSAGE_NAME)       
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             msg.setDimensions(0, SQRT_AGENT_COUNT)
         assert e.value.type() == "InvalidArgument"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             msg.setDimensions([ 0, SQRT_AGENT_COUNT ])
         assert e.value.type() == "InvalidArgument"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             msg.setDimensions(SQRT_AGENT_COUNT, 0)
         assert e.value.type() == "InvalidArgument"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             msg.setDimensions([ SQRT_AGENT_COUNT, 0 ])
         assert e.value.type() == "InvalidArgument"
 
@@ -364,14 +364,14 @@ class TestMessage_Array2D(TestCase):
         model = pyflamegpu.ModelDescription(MODEL_NAME)
         model.newMessageArray2D(MESSAGE_NAME)
         # message.setLength(5)  # Intentionally commented out
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             m = pyflamegpu.CUDASimulation(model)
         assert e.value.type() == "InvalidMessage"
 
     def test_reserved_name(self): 
         model = pyflamegpu.ModelDescription(MODEL_NAME)
         msg = model.newMessageArray2D(MESSAGE_NAME)
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             msg.newVariableInt("_")
         assert e.value.type() == "ReservedName"
 

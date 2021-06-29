@@ -1,7 +1,7 @@
 // @todo - ifdef visualisation?
 #include "flamegpu/visualiser/AgentStateVis.h"
 
-#include "flamegpu/exception/FGPUException.h"
+#include "flamegpu/exception/FLAMEGPUException.h"
 #include "flamegpu/visualiser/AgentVis.h"
 #include "flamegpu/visualiser/color/ColorFunction.h"
 

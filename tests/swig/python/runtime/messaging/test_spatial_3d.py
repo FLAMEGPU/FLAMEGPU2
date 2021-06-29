@@ -315,10 +315,10 @@ class Spatial3DMsgTest(TestCase):
     def test_BadRadius(self): 
         model = pyflamegpu.ModelDescription("Spatial3DMsgTestModel")
         message = model.newMessageSpatial3D("location")
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             message.setRadius(0)
         assert e.value.type() == "InvalidArgument"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             message.setRadius(-10)
         assert e.value.type() == "InvalidArgument"
 
@@ -326,22 +326,22 @@ class Spatial3DMsgTest(TestCase):
         model = pyflamegpu.ModelDescription("Spatial3DMsgTestModel")
         message = model.newMessageSpatial3D("location")
         message.setMax(5, 5, 5)
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             message.setMin(5, 0, 0)
         assert e.value.type() == "InvalidArgument"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             message.setMin(0, 5, 0)
         assert e.value.type() == "InvalidArgument"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             message.setMin(0, 0, 5)
         assert e.value.type() == "InvalidArgument"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             message.setMin(6, 0, 0)
         assert e.value.type() == "InvalidArgument"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             message.setMin(0, 6, 0)
         assert e.value.type() == "InvalidArgument"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             message.setMin(0, 0, 6)
         assert e.value.type() == "InvalidArgument"
 
@@ -349,22 +349,22 @@ class Spatial3DMsgTest(TestCase):
         model = pyflamegpu.ModelDescription("Spatial3DMsgTestModel")
         message = model.newMessageSpatial3D("location")
         message.setMin(5, 5, 5)
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             message.setMax(5, 0, 0)
         assert e.value.type() == "InvalidArgument"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             message.setMax(0, 5, 0)
         assert e.value.type() == "InvalidArgument"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             message.setMax(0, 0, 5)
         assert e.value.type() == "InvalidArgument"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             message.setMax(6, 0, 0)
         assert e.value.type() == "InvalidArgument"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             message.setMax(0, 6, 0)
         assert e.value.type() == "InvalidArgument"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             message.setMax(0, 0, 6)
         assert e.value.type() == "InvalidArgument"
 
@@ -372,7 +372,7 @@ class Spatial3DMsgTest(TestCase):
         model = pyflamegpu.ModelDescription("Spatial3DMsgTestModel")
         message = model.newMessageSpatial3D("location")
         message.setMin(5, 5, 5)
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             m = pyflamegpu.CUDASimulation(model)
         assert e.value.type() == "InvalidMessage"
 
@@ -380,14 +380,14 @@ class Spatial3DMsgTest(TestCase):
         model = pyflamegpu.ModelDescription("Spatial3DMsgTestModel")
         message = model.newMessageSpatial3D("location")
         message.setMin(5, 5, 5)
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             m = pyflamegpu.CUDASimulation(model)
         assert e.value.type() == "InvalidMessage"
 
     def test_reserved_name(self): 
         model = pyflamegpu.ModelDescription("Spatial3DMsgTestModel")
         message = model.newMessageSpatial3D("location")
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             message.newVariableInt("_")
         assert e.value.type() == "ReservedName"
 

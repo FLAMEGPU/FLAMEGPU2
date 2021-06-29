@@ -112,7 +112,7 @@ int main(int argc, const char ** argv) {
 
     /**
      * Create visualisation
-     * @note FGPU2 doesn't currently have proper support for discrete/2d visualisations
+     * @note FLAMEGPU2 doesn't currently have proper support for discrete/2d visualisations
      */
 #ifdef VISUALISATION
     flamegpu::visualiser::ModelVis & visualisation = cudaSimulation.getVisualisation();

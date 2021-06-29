@@ -71,13 +71,13 @@ class AgentFunctionDescriptionTest(TestCase):
         a.newState(NEW_STATE_NAME)
         assert f.getInitialState() == NEW_STATE_NAME
         # Can't set state to one not held by parent agent
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidStateName exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidStateName exception
             f.setInitialState(WRONG_STATE_NAME)
         assert e.value.type() == "InvalidStateName"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidStateName exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidStateName exception
             f2.setInitialState(WRONG_STATE_NAME)
         assert e.value.type() == "InvalidStateName"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidStateName exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidStateName exception
             f3.setInitialState(WRONG_STATE_NAME)
         assert e.value.type() == "InvalidStateName"
     
@@ -107,13 +107,13 @@ class AgentFunctionDescriptionTest(TestCase):
         a.newState(NEW_STATE_NAME)
         assert f.getEndState() == NEW_STATE_NAME
         # Can't set state to one not held by parent agent
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidStateName exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidStateName exception
             f.setEndState(WRONG_STATE_NAME)
         assert e.value.type() == "InvalidStateName"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidStateName exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidStateName exception
             f2.setEndState(WRONG_STATE_NAME)
         assert e.value.type() == "InvalidStateName"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidStateName exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidStateName exception
             f3.setEndState(WRONG_STATE_NAME)
         assert e.value.type() == "InvalidStateName"
 
@@ -125,7 +125,7 @@ class AgentFunctionDescriptionTest(TestCase):
         f = a.newRTCFunction(FUNCTION_NAME1, self.agent_fn1)
         # Begins empty
         assert f.hasMessageInput() == False
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e: 
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e: 
             f.getMessageInput()
         assert e.value.type() == "OutOfBoundsException"
         # Can be set
@@ -147,7 +147,7 @@ class AgentFunctionDescriptionTest(TestCase):
         f = a.newRTCFunction(FUNCTION_NAME1, self.agent_fn1)
         # Begins empty
         assert f.hasMessageOutput() == False
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e: 
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e: 
             f.getMessageOutput()
         assert e.value.type() == "OutOfBoundsException"
         # Can be set
@@ -183,7 +183,7 @@ class AgentFunctionDescriptionTest(TestCase):
         f = a.newRTCFunction(FUNCTION_NAME1, self.agent_fn1)
         # Begins empty
         assert f.hasAgentOutput() == False
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e: 
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e: 
             f.getAgentOutput()
         assert e.value.type() == "OutOfBoundsException"
         # Can be set
@@ -204,19 +204,19 @@ class AgentFunctionDescriptionTest(TestCase):
         a2 = m.newAgent(AGENT_NAME2)
         f = a.newRTCFunction(FUNCTION_NAME1, self.agent_fn1)
         # Can't set it to a state that doesn't exist
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e: 
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e: 
             f.setAgentOutput(a, "wrong")
         assert e.value.type() == "InvalidStateName"
         a.newState("a")
         a.newState("b")
         a2.newState("c")
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e: 
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e: 
             f.setAgentOutput(a, "c")
         assert e.value.type() == "InvalidStateName"
         # Can set it to a valid state though
         f.setAgentOutput(a, "a")
         # Can't set it to default if default not a state
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e: 
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e: 
             f.setAgentOutput(a)
         assert e.value.type() == "InvalidStateName"
         # Returns the expected value
@@ -251,7 +251,7 @@ class AgentFunctionDescriptionTest(TestCase):
         msg1 = m.newMessageBruteForce(MESSAGE_NAME1)
         msg2 = m2.newMessageBruteForce(MESSAGE_NAME2)
         f = a.newRTCFunction(FUNCTION_NAME1, self.agent_fn1)
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e: 
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e: 
             f.setMessageInput(msg2)
         assert e.value.type() == "DifferentModel"
         f.setMessageInput(msg1)
@@ -263,7 +263,7 @@ class AgentFunctionDescriptionTest(TestCase):
         msg1 = m.newMessageBruteForce(MESSAGE_NAME1)
         msg2 = m2.newMessageBruteForce(MESSAGE_NAME2)
         f = a.newRTCFunction(FUNCTION_NAME1, self.agent_fn1)
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e: 
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e: 
             f.setMessageOutput(msg2)
         assert e.value.type() == "DifferentModel"
         f.setMessageOutput(msg1)
@@ -274,7 +274,7 @@ class AgentFunctionDescriptionTest(TestCase):
         a = m.newAgent(AGENT_NAME)
         a2 = m2.newAgent(AGENT_NAME2)
         f = a.newRTCFunction(FUNCTION_NAME1, self.agent_fn1)
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e: 
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e: 
             f.setAgentOutput(a2)
         assert e.value.type() == "DifferentModel"
         f.setAgentOutput(a)
@@ -287,7 +287,7 @@ class AgentFunctionDescriptionTest(TestCase):
         f = a.newRTCFunction(FUNCTION_NAME1, self.agent_fn1)
         # Cannot bind same message to input and output
         f.setMessageInput(msg1)
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e: 
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e: 
             f.setMessageOutput(msg1)
         assert e.value.type() == "InvalidMessageName"
         f.setMessageOutput(msg2)
@@ -300,7 +300,7 @@ class AgentFunctionDescriptionTest(TestCase):
         f = a.newRTCFunction(FUNCTION_NAME1, self.agent_fn1)
         # Cannot bind same message to input and output
         f.setMessageOutput(msg1)
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e: 
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e: 
             f.setMessageInput(msg1)
         assert e.value.type() == "InvalidMessageName"
         f.setMessageInput(msg2)
@@ -322,16 +322,16 @@ class AgentFunctionDescriptionTest(TestCase):
         # start matches end state
         l.addAgentFunction(f)
         l.addAgentFunction(f2)
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e: 
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e: 
             f2.setInitialState(STATE_NAME)
         assert e.value.type() == "InvalidAgentFunc"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e: 
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e: 
             f2.setInitialState(NEW_STATE_NAME)
         assert e.value.type() == "InvalidAgentFunc"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e: 
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e: 
             f2.setEndState(STATE_NAME)
         assert e.value.type() == "InvalidAgentFunc"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e: 
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e: 
             f2.setEndState(NEW_STATE_NAME)
         assert e.value.type() == "InvalidAgentFunc"
 

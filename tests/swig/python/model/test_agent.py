@@ -44,13 +44,13 @@ class AgentDescriptionTest(TestCase):
         f2 = a.newRTCFunction(FUNCTION_NAME2, self.agent_fn2)
         assert a.getFunctionsCount() == 2
         # Cannot create function with same name
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidAgentFunc exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidAgentFunc exception
             a.newRTCFunction(FUNCTION_NAME1, self.agent_fn1)
         assert e.value.type() == "InvalidAgentFunc"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidAgentFunc exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidAgentFunc exception
             a.newRTCFunction(FUNCTION_NAME1, self.agent_fn2)
         assert e.value.type() == "InvalidAgentFunc"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidAgentFunc exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidAgentFunc exception
             a.newRTCFunction(FUNCTION_NAME2, self.agent_fn2)
         assert e.value.type() == "InvalidAgentFunc"
         # Functions have the right name
@@ -79,10 +79,10 @@ class AgentDescriptionTest(TestCase):
         a.newVariableID("ID")
         assert a.getVariablesCount() == 4
         # Cannot create variable with same name
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidAgentVar exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidAgentVar exception
             a.newVariableInt64(VARIABLE_NAME1)
         assert e.value.type() == "InvalidAgentVar"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidAgentVar exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidAgentVar exception
             a.newVariableArrayInt64(VARIABLE_NAME1, 3)
         assert e.value.type() == "InvalidAgentVar"
         # Variable have the right name
@@ -113,10 +113,10 @@ class AgentDescriptionTest(TestCase):
         a.newVariableArrayID("IDs", 5)
         assert a.getVariablesCount() == 5
         # Cannot create variable with same name
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidAgentVar exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidAgentVar exception
             a.newVariableInt64(VARIABLE_NAME1)
         assert e.value.type() == "InvalidAgentVar"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidAgentVar exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidAgentVar exception
             a.newVariableInt64(VARIABLE_NAME1, 0)   # with default arg
         assert e.value.type() == "InvalidAgentVar"
         assert a.hasVariable(VARIABLE_NAME1)
@@ -144,10 +144,10 @@ class AgentDescriptionTest(TestCase):
         a.newState(STATE_NAME2)
         assert a.getStatesCount() == 2
         # Cannot create state with same name
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidStateName exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidStateName exception
             a.newState(STATE_NAME1)
         assert e.value.type() == "InvalidStateName"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidStateName exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidStateName exception
             a.newState(STATE_NAME2)
         assert e.value.type() == "InvalidStateName"
         # States have the right name
@@ -204,35 +204,35 @@ class AgentDescriptionTest(TestCase):
         m = pyflamegpu.ModelDescription("test_variables_array")
         a = m.newAgent(AGENT_NAME1)
         # scalar variable tests
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::ReservedName exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::ReservedName exception
             a.newVariableInt("_")
         assert e.value.type() == "ReservedName"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::ReservedName exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::ReservedName exception
             a.newVariableInt("name")
         assert e.value.type() == "ReservedName"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::ReservedName exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::ReservedName exception
             a.newVariableInt("state")
         assert e.value.type() == "ReservedName"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::ReservedName exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::ReservedName exception
             a.newVariableInt("nAme")
         assert e.value.type() == "ReservedName"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::ReservedName exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::ReservedName exception
             a.newVariableInt("sTate")
         assert e.value.type() == "ReservedName"
         # Array versions of the above
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::ReservedName exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::ReservedName exception
             a.newVariableArrayInt("_", 3)
         assert e.value.type() == "ReservedName"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::ReservedName exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::ReservedName exception
             a.newVariableArrayInt("name", 3)
         assert e.value.type() == "ReservedName"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::ReservedName exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::ReservedName exception
             a.newVariableArrayInt("state", 3)
         assert e.value.type() == "ReservedName"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::ReservedName exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::ReservedName exception
             a.newVariableArrayInt("nAme", 3)
         assert e.value.type() == "ReservedName"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::ReservedName exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::ReservedName exception
             a.newVariableArrayInt("sTate", 3)
         assert e.value.type() == "ReservedName"
 
@@ -275,6 +275,6 @@ class AgentDescriptionTest(TestCase):
         m = pyflamegpu.ModelDescription(MODEL_NAME);
         a = m.newAgent(AGENT_NAME1);
         a.newVariableInt("x");
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidFilePath exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidFilePath exception
             a.newRTCFunctionFile("test_rtcfunc_file2", test_file_name)
         assert e.value.type() == "InvalidFilePath"

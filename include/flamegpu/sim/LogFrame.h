@@ -11,7 +11,7 @@
 
 #include "flamegpu/sim/LoggingConfig.h"
 #include "flamegpu/util/Any.h"
-#include "flamegpu/exception/FGPUException.h"
+#include "flamegpu/exception/FLAMEGPUException.h"
 
 namespace flamegpu {
 

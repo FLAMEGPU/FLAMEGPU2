@@ -11,7 +11,7 @@ namespace flamegpu {
 namespace io {
 
 #ifndef XMLCheckResult
-#define XMLCheckResult(a_eResult) if (a_eResult != tinyxml2::XML_SUCCESS) { exception::FGPUException::setLocation(__FILE__, __LINE__);\
+#define XMLCheckResult(a_eResult) if (a_eResult != tinyxml2::XML_SUCCESS) { exception::FLAMEGPUException::setLocation(__FILE__, __LINE__);\
     switch (a_eResult) { \
     case tinyxml2::XML_ERROR_FILE_NOT_FOUND : \
     case tinyxml2::XML_ERROR_FILE_COULD_NOT_BE_OPENED : \

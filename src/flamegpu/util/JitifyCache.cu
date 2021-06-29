@@ -3,7 +3,7 @@
 #include <cassert>
 
 #include "flamegpu/version.h"
-#include "flamegpu/exception/FGPUException.h"
+#include "flamegpu/exception/FLAMEGPUException.h"
 #include "flamegpu/util/compute_capability.cuh"
 #include "flamegpu/util/nvtx.h"
 
@@ -39,12 +39,12 @@ path getTMP() {
     static path result;
     if (result.empty()) {
         path tmp =  std::getenv("FLAMEGPU2_TMP_DIR") ? std::getenv("FLAMEGPU2_TMP_DIR") : temp_directory_path();
-        // Create the $tmp/fgpu2/jitifycache(/debug) folder hierarchy
+        // Create the $tmp/flamegpu2/jitifycache(/debug) folder hierarchy
         if (!::exists(tmp) && !create_directory(tmp)) {
             THROW exception::InvalidFilePath("Directory '%s' does not exist and cannot be created by JitifyCache.", tmp.generic_string().c_str());
         }
         if (!std::getenv("FLAMEGPU2_TMP_DIR")) {
-            tmp /= "fgpu2";
+            tmp /= "flamegpu2";
             if (!::exists(tmp)) {
                 create_directory(tmp);
             }
@@ -120,7 +120,7 @@ std::unique_ptr<KernelInstantiation> JitifyCache::compileKernel(const std::strin
                             test_include = p.path();
                             test_include /= "_deps/flamegpu2-src/include";
                             env_inc_fgp2 = test_include.string();
-                            goto break_fgpu2_inc_dir_loop;  // Break out of nested loop
+                            goto break_flamegpu2_inc_dir_loop;  // Break out of nested loop
                         }
                     } catch (...) { }
                 }
@@ -128,7 +128,7 @@ std::unique_ptr<KernelInstantiation> JitifyCache::compileKernel(const std::strin
             // Go up a level for next iteration
             test_include/= "..";
         }
-break_fgpu2_inc_dir_loop:
+break_flamegpu2_inc_dir_loop:
         if (env_inc_fgp2.empty()) {
             THROW exception::InvalidAgentFunc("Error compiling runtime agent function: Unable to automatically determine include directory and FLAMEGPU2_INC_DIR environment variable does not exist, "
                 "in JitifyCache::compileKernel().");

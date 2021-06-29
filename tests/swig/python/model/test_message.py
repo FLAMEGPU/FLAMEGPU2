@@ -22,7 +22,7 @@ class MessageDescriptionTest(TestCase):
         m.newVariableInt16(VARIABLE_NAME2)
         assert m.getVariablesCount() == 2
         # Cannot create variable with same name
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             m.newVariableInt64(VARIABLE_NAME1)
         assert e.value.type() == "InvalidMessageVar"
         # Variable have the right name
@@ -47,7 +47,7 @@ class MessageDescriptionTest(TestCase):
         m.newVariableInt16(VARIABLE_NAME2)
         assert m.getVariablesCount() == 3
         # Cannot create variable with same name
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             m.newVariableInt16(VARIABLE_NAME1)
         assert e.value.type() == "InvalidMessageVar"
         assert m.hasVariable(VARIABLE_NAME1)
@@ -77,7 +77,7 @@ class MessageDescriptionTest(TestCase):
         fo = a.newRTCFunction("bar", self.NoInput)
         lo = m.newLayer("foo2")
         lo.addAgentFunction(fo)
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             c = pyflamegpu.CUDASimulation(m)
         assert e.value.type() == "InvalidMessageType"
 
@@ -87,7 +87,7 @@ class MessageDescriptionTest(TestCase):
         fo = a.newRTCFunction("bar", self.NoOutput)
         lo = m.newLayer("foo2")
         lo.addAgentFunction(fo)
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             c = pyflamegpu.CUDASimulation(m)
         assert e.value.type() == "InvalidMessageType"
 
@@ -96,10 +96,10 @@ class MessageDescriptionTest(TestCase):
         a = m.newAgent("foo")
         fo = a.newRTCFunction("bar", self.NoInput)
         md = m.newMessageBruteForce("foo2")
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             fo.setMessageOutput(md)
         assert e.value.type() == "InvalidMessageType"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             fo.setMessageInput(md)
         assert e.value.type() == "InvalidMessageType"
 
@@ -108,10 +108,10 @@ class MessageDescriptionTest(TestCase):
         a = m.newAgent("foo")
         fo = a.newRTCFunction("bar", self.NoOutput)
         md = m.newMessageBruteForce("foo2")
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             fo.setMessageOutput(md)
         assert e.value.type() == "InvalidMessageType"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             fo.setMessageInput(md)
         assert e.value.type() == "InvalidMessageType"
 

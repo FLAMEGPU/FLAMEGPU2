@@ -8,7 +8,7 @@
 #include <utility>
 #include <string>
 
-#include "flamegpu/exception/FGPUException.h"
+#include "flamegpu/exception/FLAMEGPUException.h"
 
 namespace flamegpu {
 

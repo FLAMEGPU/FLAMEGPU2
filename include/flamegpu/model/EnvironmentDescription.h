@@ -9,7 +9,7 @@
 #include <vector>
 #include <utility>
 
-#include "flamegpu/exception/FGPUException.h"
+#include "flamegpu/exception/FLAMEGPUException.h"
 #include "flamegpu/runtime/utility/HostEnvironment.cuh"
 #include "flamegpu/util/Any.h"
 #include "flamegpu/gpu/CUDAEnsemble.h"

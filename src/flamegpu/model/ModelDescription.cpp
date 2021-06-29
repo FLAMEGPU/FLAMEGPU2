@@ -3,7 +3,7 @@
 #include "flamegpu/model/DependencyGraph.h"
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/model/LayerDescription.h"
-#include "flamegpu/exception/FGPUException.h"
+#include "flamegpu/exception/FLAMEGPUException.h"
 #include "flamegpu/runtime/messaging/BruteForce.h"
 #include "flamegpu/model/SubModelData.h"
 #include "flamegpu/model/SubModelDescription.h"

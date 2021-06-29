@@ -604,11 +604,11 @@ class exception_property_type_float(pyflamegpu.HostFunctionCallback):
         init1 = MiniSim.make_array()
         try:
             FLAMEGPU.environment.setPropertyUInt64("float_", TEST_VALUE)
-        except pyflamegpu.FGPURuntimeException as e:
+        except pyflamegpu.FLAMEGPURuntimeException as e:
             self.e1 = e.type()
         try:
             FLAMEGPU.environment.setPropertyArrayUInt64("float_", init1)
-        except pyflamegpu.FGPURuntimeException as e:
+        except pyflamegpu.FLAMEGPURuntimeException as e:
             self.e2 = e.type()
         
     def apply_assertions(self):
@@ -624,11 +624,11 @@ class exception_property_type_double(pyflamegpu.HostFunctionCallback):
         init1 = MiniSim.make_array()
         try:
             FLAMEGPU.environment.setPropertyUInt64("double_", TEST_VALUE)
-        except pyflamegpu.FGPURuntimeException as e:
+        except pyflamegpu.FLAMEGPURuntimeException as e:
             self.e1 = e.type()
         try:
             FLAMEGPU.environment.setPropertyArrayUInt64("double_", init1)
-        except pyflamegpu.FGPURuntimeException as e:
+        except pyflamegpu.FLAMEGPURuntimeException as e:
             self.e2 = e.type()
         
     def apply_assertions(self):
@@ -644,11 +644,11 @@ class exception_property_type_int8(pyflamegpu.HostFunctionCallback):
         init1 = MiniSim.make_array()
         try:
             FLAMEGPU.environment.setPropertyUInt64("int8_", TEST_VALUE)
-        except pyflamegpu.FGPURuntimeException as e:
+        except pyflamegpu.FLAMEGPURuntimeException as e:
             self.e1 = e.type()
         try:
             FLAMEGPU.environment.setPropertyArrayUInt64("int8_", init1)
-        except pyflamegpu.FGPURuntimeException as e:
+        except pyflamegpu.FLAMEGPURuntimeException as e:
             self.e2 = e.type()
         
     def apply_assertions(self):
@@ -664,11 +664,11 @@ class exception_property_type_uint8(pyflamegpu.HostFunctionCallback):
         init1 = MiniSim.make_array()
         try:
             FLAMEGPU.environment.setPropertyUInt64("uint8_", TEST_VALUE)
-        except pyflamegpu.FGPURuntimeException as e:
+        except pyflamegpu.FLAMEGPURuntimeException as e:
             self.e1 = e.type()
         try:
             FLAMEGPU.environment.setPropertyArrayUInt64("uint8_", init1)
-        except pyflamegpu.FGPURuntimeException as e:
+        except pyflamegpu.FLAMEGPURuntimeException as e:
             self.e2 = e.type()
         
     def apply_assertions(self):
@@ -684,11 +684,11 @@ class exception_property_type_int16(pyflamegpu.HostFunctionCallback):
         init1 = MiniSim.make_array()
         try:
             FLAMEGPU.environment.setPropertyUInt64("int16_", TEST_VALUE)
-        except pyflamegpu.FGPURuntimeException as e:
+        except pyflamegpu.FLAMEGPURuntimeException as e:
             self.e1 = e.type()
         try:
             FLAMEGPU.environment.setPropertyArrayUInt64("int16_", init1)
-        except pyflamegpu.FGPURuntimeException as e:
+        except pyflamegpu.FLAMEGPURuntimeException as e:
             self.e2 = e.type()
         
     def apply_assertions(self):
@@ -704,11 +704,11 @@ class exception_property_type_uint16(pyflamegpu.HostFunctionCallback):
         init1 = MiniSim.make_array()
         try:
             FLAMEGPU.environment.setPropertyUInt64("uint16_", TEST_VALUE)
-        except pyflamegpu.FGPURuntimeException as e:
+        except pyflamegpu.FLAMEGPURuntimeException as e:
             self.e1 = e.type()
         try:
             FLAMEGPU.environment.setPropertyArrayUInt64("uint16_", init1)
-        except pyflamegpu.FGPURuntimeException as e:
+        except pyflamegpu.FLAMEGPURuntimeException as e:
             self.e2 = e.type()
         
     def apply_assertions(self):
@@ -724,11 +724,11 @@ class exception_property_type_int32(pyflamegpu.HostFunctionCallback):
         init1 = MiniSim.make_array()
         try:
             FLAMEGPU.environment.setPropertyUInt64("int32_", TEST_VALUE)
-        except pyflamegpu.FGPURuntimeException as e:
+        except pyflamegpu.FLAMEGPURuntimeException as e:
             self.e1 = e.type()
         try:
             FLAMEGPU.environment.setPropertyArrayUInt64("int32_", init1)
-        except pyflamegpu.FGPURuntimeException as e:
+        except pyflamegpu.FLAMEGPURuntimeException as e:
             self.e2 = e.type()
         
     def apply_assertions(self):
@@ -744,11 +744,11 @@ class exception_property_type_uint32(pyflamegpu.HostFunctionCallback):
         init1 = MiniSim.make_array()
         try:
             FLAMEGPU.environment.setPropertyUInt64("uint32_", TEST_VALUE)
-        except pyflamegpu.FGPURuntimeException as e:
+        except pyflamegpu.FLAMEGPURuntimeException as e:
             self.e1 = e.type()
         try:
             FLAMEGPU.environment.setPropertyArrayUInt64("uint32_", init1)
-        except pyflamegpu.FGPURuntimeException as e:
+        except pyflamegpu.FLAMEGPURuntimeException as e:
             self.e2 = e.type()
         
     def apply_assertions(self):
@@ -764,11 +764,11 @@ class exception_property_type_int64(pyflamegpu.HostFunctionCallback):
         init1 = MiniSim.make_array()
         try:
             FLAMEGPU.environment.setPropertyFloat("int64_", TEST_VALUE)
-        except pyflamegpu.FGPURuntimeException as e:
+        except pyflamegpu.FLAMEGPURuntimeException as e:
             self.e1 = e.type()
         try:
             FLAMEGPU.environment.setPropertyArrayFloat("int64_", init1)
-        except pyflamegpu.FGPURuntimeException as e:
+        except pyflamegpu.FLAMEGPURuntimeException as e:
             self.e2 = e.type()
         
     def apply_assertions(self):
@@ -784,11 +784,11 @@ class exception_property_type_uint64(pyflamegpu.HostFunctionCallback):
         init1 = MiniSim.make_array()
         try:
             FLAMEGPU.environment.setPropertyFloat("uint64_", TEST_VALUE)
-        except pyflamegpu.FGPURuntimeException as e:
+        except pyflamegpu.FLAMEGPURuntimeException as e:
             self.e1 = e.type()
         try:
             FLAMEGPU.environment.setPropertyArrayFloat("uint64_", init1)
-        except pyflamegpu.FGPURuntimeException as e:
+        except pyflamegpu.FLAMEGPURuntimeException as e:
             self.e2 = e.type()
         
     def apply_assertions(self):
@@ -809,11 +809,11 @@ class exception_property_length_float(pyflamegpu.HostFunctionCallback):
         FLAMEGPU.environment.setPropertyArrayFloat("float_a_", b)
         try:
             FLAMEGPU.environment.setPropertyArrayFloat("float_a_", b1)
-        except pyflamegpu.FGPURuntimeException as e:
+        except pyflamegpu.FLAMEGPURuntimeException as e:
             self.e1 = e.type()
         try:
             FLAMEGPU.environment.setPropertyArrayFloat("float_a_", b2)
-        except pyflamegpu.FGPURuntimeException as e:
+        except pyflamegpu.FLAMEGPURuntimeException as e:
             self.e2 = e.type()
         
     def apply_assertions(self):
@@ -831,11 +831,11 @@ class exception_property_length_double(pyflamegpu.HostFunctionCallback):
         FLAMEGPU.environment.setPropertyArrayDouble("double_a_", b)
         try:
             FLAMEGPU.environment.setPropertyArrayDouble("double_a_", b1)
-        except pyflamegpu.FGPURuntimeException as e:
+        except pyflamegpu.FLAMEGPURuntimeException as e:
             self.e1 = e.type()
         try:
             FLAMEGPU.environment.setPropertyArrayDouble("double_a_", b2)
-        except pyflamegpu.FGPURuntimeException as e:
+        except pyflamegpu.FLAMEGPURuntimeException as e:
             self.e2 = e.type()
         
     def apply_assertions(self):
@@ -853,11 +853,11 @@ class exception_property_length_int8(pyflamegpu.HostFunctionCallback):
         FLAMEGPU.environment.setPropertyArrayInt8("int8_a_", b)
         try:
             FLAMEGPU.environment.setPropertyArrayInt8("int8_a_", b1)
-        except pyflamegpu.FGPURuntimeException as e:
+        except pyflamegpu.FLAMEGPURuntimeException as e:
             self.e1 = e.type()
         try:
             FLAMEGPU.environment.setPropertyArrayInt8("int8_a_", b2)
-        except pyflamegpu.FGPURuntimeException as e:
+        except pyflamegpu.FLAMEGPURuntimeException as e:
             self.e2 = e.type()
         
     def apply_assertions(self):
@@ -875,11 +875,11 @@ class exception_property_length_uint8(pyflamegpu.HostFunctionCallback):
         FLAMEGPU.environment.setPropertyArrayUInt8("uint8_a_", b)
         try:
             FLAMEGPU.environment.setPropertyArrayUInt8("uint8_a_", b1)
-        except pyflamegpu.FGPURuntimeException as e:
+        except pyflamegpu.FLAMEGPURuntimeException as e:
             self.e1 = e.type()
         try:
             FLAMEGPU.environment.setPropertyArrayUInt8("uint8_a_", b2)
-        except pyflamegpu.FGPURuntimeException as e:
+        except pyflamegpu.FLAMEGPURuntimeException as e:
             self.e2 = e.type()
         
     def apply_assertions(self):
@@ -897,11 +897,11 @@ class exception_property_length_int16(pyflamegpu.HostFunctionCallback):
         FLAMEGPU.environment.setPropertyArrayInt16("int16_a_", b)
         try:
             FLAMEGPU.environment.setPropertyArrayInt16("int16_a_", b1)
-        except pyflamegpu.FGPURuntimeException as e:
+        except pyflamegpu.FLAMEGPURuntimeException as e:
             self.e1 = e.type()
         try:
             FLAMEGPU.environment.setPropertyArrayInt16("int16_a_", b2)
-        except pyflamegpu.FGPURuntimeException as e:
+        except pyflamegpu.FLAMEGPURuntimeException as e:
             self.e2 = e.type()
         
     def apply_assertions(self):
@@ -919,11 +919,11 @@ class exception_property_length_uint16(pyflamegpu.HostFunctionCallback):
         FLAMEGPU.environment.setPropertyArrayUInt16("uint16_a_", b)
         try:
             FLAMEGPU.environment.setPropertyArrayUInt16("uint16_a_", b1)
-        except pyflamegpu.FGPURuntimeException as e:
+        except pyflamegpu.FLAMEGPURuntimeException as e:
             self.e1 = e.type()
         try:
             FLAMEGPU.environment.setPropertyArrayUInt16("uint16_a_", b2)
-        except pyflamegpu.FGPURuntimeException as e:
+        except pyflamegpu.FLAMEGPURuntimeException as e:
             self.e2 = e.type()
         
     def apply_assertions(self):
@@ -941,11 +941,11 @@ class exception_property_length_int32(pyflamegpu.HostFunctionCallback):
         FLAMEGPU.environment.setPropertyArrayInt32("int32_a_", b)
         try:
             FLAMEGPU.environment.setPropertyArrayInt32("int32_a_", b1)
-        except pyflamegpu.FGPURuntimeException as e:
+        except pyflamegpu.FLAMEGPURuntimeException as e:
             self.e1 = e.type()
         try:
             FLAMEGPU.environment.setPropertyArrayInt32("int32_a_", b2)
-        except pyflamegpu.FGPURuntimeException as e:
+        except pyflamegpu.FLAMEGPURuntimeException as e:
             self.e2 = e.type()
         
     def apply_assertions(self):
@@ -963,11 +963,11 @@ class exception_property_length_uint32(pyflamegpu.HostFunctionCallback):
         FLAMEGPU.environment.setPropertyArrayUInt32("uint32_a_", b)
         try:
             FLAMEGPU.environment.setPropertyArrayUInt32("uint32_a_", b1)
-        except pyflamegpu.FGPURuntimeException as e:
+        except pyflamegpu.FLAMEGPURuntimeException as e:
             self.e1 = e.type()
         try:
             FLAMEGPU.environment.setPropertyArrayUInt32("uint32_a_", b2)
-        except pyflamegpu.FGPURuntimeException as e:
+        except pyflamegpu.FLAMEGPURuntimeException as e:
             self.e2 = e.type()
         
     def apply_assertions(self):
@@ -985,11 +985,11 @@ class exception_property_length_int64(pyflamegpu.HostFunctionCallback):
         FLAMEGPU.environment.setPropertyArrayInt64("int64_a_", b)
         try:
             FLAMEGPU.environment.setPropertyArrayInt64("int64_a_", b1)
-        except pyflamegpu.FGPURuntimeException as e:
+        except pyflamegpu.FLAMEGPURuntimeException as e:
             self.e1 = e.type()
         try:
             FLAMEGPU.environment.setPropertyArrayInt64("int64_a_", b2)
-        except pyflamegpu.FGPURuntimeException as e:
+        except pyflamegpu.FLAMEGPURuntimeException as e:
             self.e2 = e.type()
         
     def apply_assertions(self):
@@ -1007,11 +1007,11 @@ class exception_property_length_uint64(pyflamegpu.HostFunctionCallback):
         FLAMEGPU.environment.setPropertyArrayUInt64("uint64_a_", b)
         try:
             FLAMEGPU.environment.setPropertyArrayUInt64("uint64_a_", b1)
-        except pyflamegpu.FGPURuntimeException as e:
+        except pyflamegpu.FLAMEGPURuntimeException as e:
             self.e1 = e.type()
         try:
             FLAMEGPU.environment.setPropertyArrayUInt64("uint64_a_", b2)
-        except pyflamegpu.FGPURuntimeException as e:
+        except pyflamegpu.FLAMEGPURuntimeException as e:
             self.e2 = e.type()
         
     def apply_assertions(self):
@@ -1028,11 +1028,11 @@ class exception_property_range_float(pyflamegpu.HostFunctionCallback):
         for i in range(TEST_ARRAY_LEN): 
             try:
                 FLAMEGPU.environment.setPropertyFloat("float_a_", TEST_ARRAY_LEN + i, TEST_VALUE)
-            except pyflamegpu.FGPURuntimeException as e:
+            except pyflamegpu.FLAMEGPURuntimeException as e:
                 self.e1 = e.type()
             try:
                 FLAMEGPU.environment.getPropertyFloat("float_a_", TEST_ARRAY_LEN + i)
-            except pyflamegpu.FGPURuntimeException as e:
+            except pyflamegpu.FLAMEGPURuntimeException as e:
                 self.e2 = e.type()
         
     def apply_assertions(self):
@@ -1047,11 +1047,11 @@ class exception_property_range_double(pyflamegpu.HostFunctionCallback):
         for i in range(TEST_ARRAY_LEN): 
             try:
                 FLAMEGPU.environment.setPropertyDouble("double_a_", TEST_ARRAY_LEN + i, TEST_VALUE)
-            except pyflamegpu.FGPURuntimeException as e:
+            except pyflamegpu.FLAMEGPURuntimeException as e:
                 self.e1 = e.type()
             try:
                 FLAMEGPU.environment.getPropertyDouble("double_a_", TEST_ARRAY_LEN + i)
-            except pyflamegpu.FGPURuntimeException as e:
+            except pyflamegpu.FLAMEGPURuntimeException as e:
                 self.e2 = e.type()
         
     def apply_assertions(self):
@@ -1066,11 +1066,11 @@ class exception_property_range_int8(pyflamegpu.HostFunctionCallback):
         for i in range(TEST_ARRAY_LEN): 
             try:
                 FLAMEGPU.environment.setPropertyInt8("int8_a_", TEST_ARRAY_LEN + i, TEST_VALUE)
-            except pyflamegpu.FGPURuntimeException as e:
+            except pyflamegpu.FLAMEGPURuntimeException as e:
                 self.e1 = e.type()
             try:
                 FLAMEGPU.environment.getPropertyInt8("int8_a_", TEST_ARRAY_LEN + i)
-            except pyflamegpu.FGPURuntimeException as e:
+            except pyflamegpu.FLAMEGPURuntimeException as e:
                 self.e2 = e.type()
         
     def apply_assertions(self):
@@ -1085,11 +1085,11 @@ class exception_property_range_uint8(pyflamegpu.HostFunctionCallback):
         for i in range(TEST_ARRAY_LEN): 
             try:
                 FLAMEGPU.environment.setPropertyUInt8("uint8_a_", TEST_ARRAY_LEN + i, TEST_VALUE)
-            except pyflamegpu.FGPURuntimeException as e:
+            except pyflamegpu.FLAMEGPURuntimeException as e:
                 self.e1 = e.type()
             try:
                 FLAMEGPU.environment.getPropertyUInt8("uint8_a_", TEST_ARRAY_LEN + i)
-            except pyflamegpu.FGPURuntimeException as e:
+            except pyflamegpu.FLAMEGPURuntimeException as e:
                 self.e2 = e.type()
         
     def apply_assertions(self):
@@ -1104,11 +1104,11 @@ class exception_property_range_int16(pyflamegpu.HostFunctionCallback):
         for i in range(TEST_ARRAY_LEN): 
             try:
                 FLAMEGPU.environment.setPropertyInt16("int16_a_", TEST_ARRAY_LEN + i, TEST_VALUE)
-            except pyflamegpu.FGPURuntimeException as e:
+            except pyflamegpu.FLAMEGPURuntimeException as e:
                 self.e1 = e.type()
             try:
                 FLAMEGPU.environment.getPropertyInt16("int16_a_", TEST_ARRAY_LEN + i)
-            except pyflamegpu.FGPURuntimeException as e:
+            except pyflamegpu.FLAMEGPURuntimeException as e:
                 self.e2 = e.type()
         
     def apply_assertions(self):
@@ -1123,11 +1123,11 @@ class exception_property_range_uint16(pyflamegpu.HostFunctionCallback):
         for i in range(TEST_ARRAY_LEN): 
             try:
                 FLAMEGPU.environment.setPropertyUInt16("uint16_a_", TEST_ARRAY_LEN + i, TEST_VALUE)
-            except pyflamegpu.FGPURuntimeException as e:
+            except pyflamegpu.FLAMEGPURuntimeException as e:
                 self.e1 = e.type()
             try:
                 FLAMEGPU.environment.getPropertyUInt16("uint16_a_", TEST_ARRAY_LEN + i)
-            except pyflamegpu.FGPURuntimeException as e:
+            except pyflamegpu.FLAMEGPURuntimeException as e:
                 self.e2 = e.type()
         
     def apply_assertions(self):
@@ -1142,11 +1142,11 @@ class exception_property_range_int32(pyflamegpu.HostFunctionCallback):
         for i in range(TEST_ARRAY_LEN): 
             try:
                 FLAMEGPU.environment.setPropertyInt32("int32_a_", TEST_ARRAY_LEN + i, TEST_VALUE)
-            except pyflamegpu.FGPURuntimeException as e:
+            except pyflamegpu.FLAMEGPURuntimeException as e:
                 self.e1 = e.type()
             try:
                 FLAMEGPU.environment.getPropertyInt32("int32_a_", TEST_ARRAY_LEN + i)
-            except pyflamegpu.FGPURuntimeException as e:
+            except pyflamegpu.FLAMEGPURuntimeException as e:
                 self.e2 = e.type()
         
     def apply_assertions(self):
@@ -1161,11 +1161,11 @@ class exception_property_range_uint32(pyflamegpu.HostFunctionCallback):
         for i in range(TEST_ARRAY_LEN): 
             try:
                 FLAMEGPU.environment.setPropertyUInt32("uint32_a_", TEST_ARRAY_LEN + i, TEST_VALUE)
-            except pyflamegpu.FGPURuntimeException as e:
+            except pyflamegpu.FLAMEGPURuntimeException as e:
                 self.e1 = e.type()
             try:
                 FLAMEGPU.environment.getPropertyUInt32("uint32_a_", TEST_ARRAY_LEN + i)
-            except pyflamegpu.FGPURuntimeException as e:
+            except pyflamegpu.FLAMEGPURuntimeException as e:
                 self.e2 = e.type()
         
     def apply_assertions(self):
@@ -1180,11 +1180,11 @@ class exception_property_range_int64(pyflamegpu.HostFunctionCallback):
         for i in range(TEST_ARRAY_LEN): 
             try:
                 FLAMEGPU.environment.setPropertyInt64("int64_a_", TEST_ARRAY_LEN + i, TEST_VALUE)
-            except pyflamegpu.FGPURuntimeException as e:
+            except pyflamegpu.FLAMEGPURuntimeException as e:
                 self.e1 = e.type()
             try:
                 FLAMEGPU.environment.getPropertyInt64("int64_a_", TEST_ARRAY_LEN + i)
-            except pyflamegpu.FGPURuntimeException as e:
+            except pyflamegpu.FLAMEGPURuntimeException as e:
                 self.e2 = e.type()
         
     def apply_assertions(self):
@@ -1199,11 +1199,11 @@ class exception_property_range_uint64(pyflamegpu.HostFunctionCallback):
         for i in range(TEST_ARRAY_LEN): 
             try:
                 FLAMEGPU.environment.setPropertyUInt64("uint64_a_", TEST_ARRAY_LEN + i, TEST_VALUE)
-            except pyflamegpu.FGPURuntimeException as e:
+            except pyflamegpu.FLAMEGPURuntimeException as e:
                 self.e1 = e.type()
             try:
                 FLAMEGPU.environment.getPropertyUInt64("uint64_a_", TEST_ARRAY_LEN + i)
-            except pyflamegpu.FGPURuntimeException as e:
+            except pyflamegpu.FLAMEGPURuntimeException as e:
                 self.e2 = e.type()
         
     def apply_assertions(self):
@@ -1219,11 +1219,11 @@ class exception_property_doesnt_exist(pyflamegpu.HostFunctionCallback):
     def run(self, FLAMEGPU):
         try:
             FLAMEGPU.environment.getPropertyFloat("a")
-        except pyflamegpu.FGPURuntimeException as e:
+        except pyflamegpu.FLAMEGPURuntimeException as e:
             self.e1 = e.type()
         try:
             FLAMEGPU.environment.getPropertyFloat("a", 1)
-        except pyflamegpu.FGPURuntimeException as e:
+        except pyflamegpu.FLAMEGPURuntimeException as e:
             self.e2 = e.type()
         
     def apply_assertions(self):
@@ -1240,14 +1240,14 @@ class exception_property_read_only(pyflamegpu.HostFunctionCallback):
         b = [0]* TEST_ARRAY_LEN
         try:
             FLAMEGPU.environment.setPropertyFloat("read_only", a)
-        except pyflamegpu.FGPURuntimeException as e:
+        except pyflamegpu.FLAMEGPURuntimeException as e:
             self.e1 = e.type()
         # no throw
         FLAMEGPU.environment.getPropertyFloat("read_only")
         # array version
         try:
             FLAMEGPU.environment.setPropertyArrayInt("read_only_a", b)
-        except pyflamegpu.FGPURuntimeException as e:
+        except pyflamegpu.FLAMEGPURuntimeException as e:
             self.e2 = e.type()
         # no throw
         FLAMEGPU.environment.getPropertyInt("read_only_a")
@@ -1792,7 +1792,7 @@ class HostEnvironmentTest(TestCase):
         model.addStepFunctionCallback(step)
         sim = pyflamegpu.CUDASimulation(model)
         # Test and apply assertions
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             sim.step()
         assert e.value.type() == "ReservedName"
         
@@ -1802,6 +1802,6 @@ class HostEnvironmentTest(TestCase):
         model.addStepFunctionCallback(step)
         sim = pyflamegpu.CUDASimulation(model)
         # Test and apply assertions
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             sim.step()
         assert e.value.type() == "ReservedName"

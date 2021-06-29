@@ -7,7 +7,7 @@
 #include <unordered_map>
 #include <map>
 
-#include "flamegpu/exception/FGPUDeviceException.h"
+#include "flamegpu/exception/FLAMEGPUDeviceException.h"
 #include "flamegpu/sim/Simulation.h"
 
 #include "flamegpu/gpu/CUDAScatter.h"
@@ -36,7 +36,7 @@ struct RunLog;
 
 /**
  * CUDA runner for Simulation interface
- * Executes a FGPU2 model using GPU
+ * Executes a FLAMEGPU2 model using GPU
  */
 class CUDASimulation : public Simulation {
     /**

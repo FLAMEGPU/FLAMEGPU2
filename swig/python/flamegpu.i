@@ -228,17 +228,17 @@ class FLAMEGPUIterator(object):
 
 // Exception handling.
 /** Exception handling
- * FGPURuntimeException class is a wrapper class to replace specific instances of FGPUException. It is constructed with a error mesage and type which can be queried to give the original error and the original exception class.
- * The FGPURuntimeException is constructed form the original FGPUException in the handler and then translated into the python version.
- * The approach avoids having to wrap every exception class which extends FGPUException
+ * FLAMEGPURuntimeException class is a wrapper class to replace specific instances of FLAMEGPUException. It is constructed with a error mesage and type which can be queried to give the original error and the original exception class.
+ * The FLAMEGPURuntimeException is constructed form the original FLAMEGPUException in the handler and then translated into the python version.
+ * The approach avoids having to wrap every exception class which extends FLAMEGPUException
  */
-%exceptionclass FGPURuntimeException;
-// It was hoped that the following would provide a nice repr implementation of the Python FGPURuntimeException objects. It does not.
-//%feature("python:slot", "tp_str", functype="reprfunc") FGPURuntimeException::what
+%exceptionclass FLAMEGPURuntimeException;
+// It was hoped that the following would provide a nice repr implementation of the Python FLAMEGPURuntimeException objects. It does not.
+//%feature("python:slot", "tp_str", functype="reprfunc") FLAMEGPURuntimeException::what
 %inline %{
-class FGPURuntimeException : public std::exception {
+class FLAMEGPURuntimeException : public std::exception {
  public:
-     FGPURuntimeException(std::string msg, std::string type) {
+     FLAMEGPURuntimeException(std::string msg, std::string type) {
          err_message = msg;
          type_str = type;
          str_str = std::string("(") + type + ") " + msg;
@@ -270,10 +270,10 @@ class FGPURuntimeException : public std::exception {
     try {
         $action
     }
-    catch (flamegpu::exception::FGPUException& e) {
-        FGPURuntimeException *except = new FGPURuntimeException(std::string(e.what()), std::string(e.exception_type()));
-        PyObject *err = SWIG_NewPointerObj(except, SWIGTYPE_p_FGPURuntimeException, 1);
-        SWIG_Python_Raise(err, except.type(), SWIGTYPE_p_FGPURuntimeException); 
+    catch (flamegpu::exception::FLAMEGPUException& e) {
+        FLAMEGPURuntimeException *except = new FLAMEGPURuntimeException(std::string(e.what()), std::string(e.exception_type()));
+        PyObject *err = SWIG_NewPointerObj(except, SWIGTYPE_p_FLAMEGPURuntimeException, 1);
+        SWIG_Python_Raise(err, except.type(), SWIGTYPE_p_FLAMEGPURuntimeException); 
         SWIG_fail;
     }
     catch (Swig::DirectorException&) { 
@@ -395,7 +395,7 @@ class FGPURuntimeException : public std::exception {
 // Director features. These go before the %includes.
 // -----------------
 /* Enable callback functions for step, exit and init through the use of "director" which allows Python -> C and C-> Python in callback.
- * FGPU2 supports callback or function pointers so no special tricks are needed. 
+ * FLAMEGPU2 supports callback or function pointers so no special tricks are needed. 
  * To prevent raw pointer functions being exposed in Python these are ignored so only the callback versions are accessible.
  */
 %feature("director") flamegpu::HostFunctionCallback;
@@ -447,7 +447,7 @@ class ModelVis;
 // %includes for classes to wrap. 
 // -----------------
 // A number of typedefs are not placed in the namespace, but they are currently unused anyway. 
-// SWIGTYPE_p_FGPURuntimeException - swig only, doesn't need to be namespaced? 
+// SWIGTYPE_p_FLAMEGPURuntimeException - swig only, doesn't need to be namespaced? 
 
 %include "flamegpu/defines.h" // Provides flamegpu::id_t amongst others.
 %include "flamegpu/runtime/HostAPI_macros.h" // Used in LayerDesc, LayerData, HostFuncDesc

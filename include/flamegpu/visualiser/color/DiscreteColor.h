@@ -6,7 +6,7 @@
 
 #include <sstream>
 
-#include "flamegpu/exception/FGPUException.h"
+#include "flamegpu/exception/FLAMEGPUException.h"
 #include "flamegpu/visualiser/color/ColorFunction.h"
 #include "flamegpu/visualiser/color/Color.h"
 

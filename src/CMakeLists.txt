@@ -85,9 +85,9 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/io/LoggerFactory.h
     ${FLAMEGPU_ROOT}/include/flamegpu/io/XMLLogger.h
     ${FLAMEGPU_ROOT}/include/flamegpu/io/JSONLogger.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/exception/FGPUException.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/exception/FGPUDeviceException.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/exception/FGPUDeviceException_device.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/exception/FLAMEGPUException.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/exception/FLAMEGPUDeviceException.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/exception/FLAMEGPUDeviceException_device.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/StaticAssert.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/LayerDescription.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/ModelData.h
@@ -192,8 +192,8 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/model/SubEnvironmentDescription.h
 )
 SET(SRC_FLAMEGPU2
-    ${FLAMEGPU_ROOT}/src/flamegpu/exception/FGPUException.cpp
-    ${FLAMEGPU_ROOT}/src/flamegpu/exception/FGPUDeviceException.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/exception/FLAMEGPUException.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/exception/FLAMEGPUDeviceException.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/model/LayerDescription.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/model/ModelData.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/model/AgentData.cpp
@@ -293,7 +293,7 @@ SET(ALL_SRC
     ${SRC_INCLUDE}
     ${SRC_FLAMEGPU2}
 )
-SET(FGPU2_INCLUDE ${SRC_INCLUDE} CACHE INTERNAL "Include files required by FLAMEGPU2 RTC")
+SET(FLAMEGPU2_INCLUDE ${SRC_INCLUDE} CACHE INTERNAL "Include files required by FLAMEGPU2 RTC")
 
 # Setup Visual Studio (and eclipse) filters
 source_group(TREE ${FLAMEGPU_ROOT}/include/flamegpu PREFIX include FILES ${SRC_INCLUDE})

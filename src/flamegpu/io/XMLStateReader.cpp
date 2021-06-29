@@ -13,7 +13,7 @@
 #include <algorithm>
 #include <tuple>
 #include "tinyxml2/tinyxml2.h"              // downloaded from https:// github.com/leethomason/tinyxml2, the list of xml parsers : http:// lars.ruoff.free.fr/xmlcpp/
-#include "flamegpu/exception/FGPUException.h"
+#include "flamegpu/exception/FLAMEGPUException.h"
 #include "flamegpu/pop/AgentVector.h"
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/gpu/CUDASimulation.h"
@@ -26,7 +26,7 @@ namespace io {
  * Macro function for converting a tinyxml2 return code to an exception
  * @param a_eResult The tinyxml2 return code
  */
-#define XMLCheckResult(a_eResult) if (a_eResult != tinyxml2::XML_SUCCESS) { exception::FGPUException::setLocation(__FILE__, __LINE__);\
+#define XMLCheckResult(a_eResult) if (a_eResult != tinyxml2::XML_SUCCESS) { exception::FLAMEGPUException::setLocation(__FILE__, __LINE__);\
     switch (a_eResult) { \
     case tinyxml2::XML_ERROR_FILE_NOT_FOUND : \
     case tinyxml2::XML_ERROR_FILE_COULD_NOT_BE_OPENED : \
@@ -263,7 +263,7 @@ int XMLStateReader::parse() {
         // Find agent name
         tinyxml2::XMLElement* pNameElement = pElement->FirstChildElement("name");
         const char* agentName = pNameElement->GetText();
-        // Find agent state, use initial state if not set (means its old fgpu1 input file)
+        // Find agent state, use initial state if not set (means its old flame gpu 1 input file)
         tinyxml2::XMLElement* pStateElement = pElement->FirstChildElement("state");
         const std::string agentState = pStateElement ? std::string(pStateElement->GetText()) : getInitialState(agentName);
         std::shared_ptr<AgentVector> &agentVec = model_state.at({agentName, agentState });

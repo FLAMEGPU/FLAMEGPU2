@@ -1,7 +1,7 @@
 #include <sstream>
 
 #include "flamegpu/runtime/cuRVE/curve_rtc.h"
-#include "flamegpu/exception/FGPUException.h"
+#include "flamegpu/exception/FLAMEGPUException.h"
 #include "flamegpu/runtime/utility/EnvironmentManager.cuh"
 
 // jitify include for demangle
@@ -20,7 +20,7 @@ const char* CurveRTCHost::curve_rtc_dynamic_h_template = R"###(dynamic/curve_rtc
 #ifndef CURVE_RTC_DYNAMIC_H_
 #define CURVE_RTC_DYNAMIC_H_
 
-#include "flamegpu/exception/FGPUDeviceException.h"
+#include "flamegpu/exception/FLAMEGPUDeviceException.h"
 
 namespace flamegpu {
 

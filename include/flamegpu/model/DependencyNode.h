@@ -2,7 +2,7 @@
 #define INCLUDE_FLAMEGPU_MODEL_DEPENDENCYNODE_H_
 
 #include <vector>
-#include "flamegpu/exception/FGPUException.h"
+#include "flamegpu/exception/FLAMEGPUException.h"
 
 namespace flamegpu {
 

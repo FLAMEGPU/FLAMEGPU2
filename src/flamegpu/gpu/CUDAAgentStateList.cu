@@ -9,7 +9,7 @@
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/gpu/CUDAScatter.h"
 #include "flamegpu/runtime/HostNewAgentAPI.h"
-#include "flamegpu/exception/FGPUException.h"
+#include "flamegpu/exception/FLAMEGPUException.h"
 
 #ifdef _MSC_VER
 #pragma warning(push, 1)
