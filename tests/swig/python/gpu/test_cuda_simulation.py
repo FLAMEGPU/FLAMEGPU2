@@ -293,3 +293,63 @@ class TestSimulation(TestCase):
         c.CUDAConfig().inLayerConcurrency = False
         # Assert that it is disabled.
         assert c.getCUDAConfig().inLayerConcurrency == False
+
+    CopyID = """
+        FLAMEGPU_AGENT_FUNCTION(CopyID, flamegpu::MsgNone, flamegpu::MsgNone) {
+            FLAMEGPU->setVariable<flamegpu::id_t>("id_copy", FLAMEGPU->getID());
+            return flamegpu::ALIVE;
+        }
+        """
+
+    def test_AgentID_MultipleStatesUniqueIDs(self):
+        # Create agents via AgentVector to two agent states
+        # Store agent IDs to an agent variable inside model
+        # Export agents and check their IDs are unique
+        # Also check that the id's copied during model match those at export
+
+        model = pyflamegpu.ModelDescription("test_agentid")
+        agent = model.newAgent("agent")
+        agent.newVariableID("id_copy")
+        agent.newState("a")
+        agent.newState("b")
+        af_a = agent.newRTCFunction("copy_id", self.CopyID)
+        af_a.setInitialState("a")
+        af_a.setEndState("a")
+        af_b = agent.newRTCFunction("copy_id2", self.CopyID)
+        af_b.setInitialState("b")
+        af_b.setEndState("b")
+
+        layer = model.newLayer()
+        layer.addAgentFunction(af_a)
+        layer.addAgentFunction(af_b)
+
+        pop_in = pyflamegpu.AgentVector(agent, 100)
+
+        sim = pyflamegpu.CUDASimulation(model)
+
+        sim.setPopulationData(pop_in, "a")
+        sim.setPopulationData(pop_in, "b")
+
+        sim.step()
+
+        pop_out_a = pyflamegpu.AgentVector(agent)
+        pop_out_b = pyflamegpu.AgentVector(agent)
+
+        sim.getPopulationData(pop_out_a, "a")
+        sim.getPopulationData(pop_out_b, "b")
+
+        ids_original = set()
+        ids_copy = set()
+
+        for a in pop_out_a:
+            ids_original.add(a.getID())
+            ids_copy.add(a.getVariableID("id_copy"))
+            assert a.getID() == a.getVariableID("id_copy")
+
+        for a in pop_out_b:
+            ids_original.add(a.getID())
+            ids_copy.add(a.getVariableID("id_copy"))
+            assert a.getID() == a.getVariableID("id_copy")
+
+        assert len(ids_original) == len(pop_out_a) + len(pop_out_b)
+        assert len(ids_copy) == len(pop_out_a) + len(pop_out_b)
