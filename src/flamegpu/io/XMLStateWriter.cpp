@@ -10,7 +10,7 @@
 #include "flamegpu/io/XMLStateWriter.h"
 #include <sstream>
 #include "tinyxml2/tinyxml2.h"              // downloaded from https:// github.com/leethomason/tinyxml2, the list of xml parsers : http:// lars.ruoff.free.fr/xmlcpp/
-#include "flamegpu/exception/FGPUException.h"
+#include "flamegpu/exception/FLAMEGPUException.h"
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/gpu/CUDASimulation.h"
 #include "flamegpu/pop/AgentVector.h"
@@ -23,7 +23,7 @@ namespace io {
   * Macro function for converting a tinyxml2 return code to an exception
   * @param a_eResult The tinyxml2 return code
   */
-#define XMLCheckResult(a_eResult) if (a_eResult != tinyxml2::XML_SUCCESS) { exception::FGPUException::setLocation(__FILE__, __LINE__);\
+#define XMLCheckResult(a_eResult) if (a_eResult != tinyxml2::XML_SUCCESS) { exception::FLAMEGPUException::setLocation(__FILE__, __LINE__);\
     switch (a_eResult) { \
     case tinyxml2::XML_ERROR_FILE_NOT_FOUND : \
     case tinyxml2::XML_ERROR_FILE_COULD_NOT_BE_OPENED : \

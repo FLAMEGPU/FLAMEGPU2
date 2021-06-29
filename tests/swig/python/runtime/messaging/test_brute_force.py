@@ -270,7 +270,7 @@ class TestMessage_BruteForce(TestCase):
     def test_reserved_name(self): 
         m = pyflamegpu.ModelDescription(MODEL_NAME)
         msg = m.newMessageBruteForce(MESSAGE_NAME)
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             msg.newVariableInt("_")
         assert e.value.type() == "ReservedName"
 

@@ -5,7 +5,7 @@
 #include <cassert>
 
 #include "flamegpu/util/StaticAssert.h"
-#include "flamegpu/exception/FGPUDeviceException.h"
+#include "flamegpu/exception/FLAMEGPUDeviceException.h"
 
 namespace flamegpu {
 

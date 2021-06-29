@@ -91,13 +91,13 @@ def ExceptionPropertyType_test(type1: str, type2: str):
     add_func_t1("a", a_t1, True)
     add_func_array_t1("b", ARRAY_TEST_LEN, b_t1, True)
     
-    with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+    with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
         set_func_t2("a", a_t2)
     assert e.value.type() == "InvalidEnvPropertyType"
-    with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+    with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
         set_func_array_t2("b", b_t2)
     assert e.value.type() == "InvalidEnvPropertyType"
-    with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+    with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
         set_func_t2("b", 0, a_t2)
     assert e.value.type() == "InvalidEnvPropertyType"
         
@@ -117,11 +117,11 @@ def ExceptionPropertyLength_test(type: str):
     _b3 = [0] * ARRAY_TEST_LEN * 2
 
     add_func("a", ARRAY_TEST_LEN, b)
-    with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+    with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
         set_func("a", _b1)
-    with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+    with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
         set_func("a", _b2)
-    with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+    with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
         set_func("a", _b3)
     # Added extra case to ensure that the above TypeErrors are not a result of the set_func not being found
     set_func("a", b)
@@ -137,10 +137,10 @@ def ExceptionPropertyRange_test(type:str):
     c = 12
 
     for i in range(ARRAY_TEST_LEN):
-        with pytest.raises(pyflamegpu.FGPURuntimeException)  as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException)  as e:
             set_func("a", ARRAY_TEST_LEN + i, c)
         assert e.value.type() == "OutOfBoundsException"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             get_func("a", ARRAY_TEST_LEN + i)
         assert e.value.type() == "OutOfBoundsException"
 
@@ -344,7 +344,7 @@ class EnvironmentDescriptionTest(TestCase):
     def test_exception_property_doesnt_exist(self):
         ed = pyflamegpu.EnvironmentDescription()
         a = 12.0
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             ed.getPropertyFloat("a")
         assert e.value.type() == "InvalidEnvProperty"
         ed.newPropertyFloat("a", a)
@@ -357,25 +357,25 @@ class EnvironmentDescriptionTest(TestCase):
         add_int_array_func("b", ARRAY_TEST_LEN, b, False)
         get_int_array_func("b")
         ed.getPropertyInt("b", 1)
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             get_float_array_func("c")
         assert e.value.type() == "InvalidEnvProperty"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             ed.getPropertyFloat("c", 1)
         assert e.value.type() == "InvalidEnvProperty"
 
     def test_reserved_name(self):
         ed = pyflamegpu.EnvironmentDescription()
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             ed.newPropertyInt("_", 1)
         assert e.value.type() == "ReservedName"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             ed.setPropertyInt("_", 1)
         assert e.value.type() == "ReservedName"
         # Array version
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             ed.newPropertyArrayInt("_", 2, [ 1, 2 ], False)
         assert e.value.type() == "ReservedName"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             ed.setPropertyArrayInt("_", [ 1, 2 ])
         assert e.value.type() == "ReservedName"

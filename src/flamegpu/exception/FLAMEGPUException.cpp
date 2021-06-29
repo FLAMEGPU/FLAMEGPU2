@@ -1,4 +1,4 @@
-#include "flamegpu/exception/FGPUException.h"
+#include "flamegpu/exception/FLAMEGPUException.h"
 
 #include <cstdio>
 #include <cstring>
@@ -8,10 +8,10 @@
 namespace flamegpu {
 namespace exception {
 
-const char * FGPUException::file = nullptr;
-unsigned int FGPUException::line = std::numeric_limits<unsigned int>::max();
+const char * FLAMEGPUException::file = nullptr;
+unsigned int FLAMEGPUException::line = std::numeric_limits<unsigned int>::max();
 
-FGPUException::FGPUException()
+FLAMEGPUException::FLAMEGPUException()
     : err_message("") {
     if (file) {
         std::stringstream ss;
@@ -21,17 +21,17 @@ FGPUException::FGPUException()
     }
 }
 
-const char * FGPUException::what() const noexcept {
+const char * FLAMEGPUException::what() const noexcept {
     return err_message.c_str();
 }
 
-void FGPUException::setLocation(const char *_file, const unsigned int &_line) {
+void FLAMEGPUException::setLocation(const char *_file, const unsigned int &_line) {
     file = _file;
     line = _line;
 }
 
 
-std::string FGPUException::parseArgs(const char * format, va_list argp) {
+std::string FLAMEGPUException::parseArgs(const char * format, va_list argp) {
     if (!argp)
         return format;
     std::string rtn = format;

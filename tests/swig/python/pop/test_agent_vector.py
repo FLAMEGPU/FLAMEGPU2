@@ -94,16 +94,16 @@ class AgentVectorTest(TestCase):
 
 
         # Out of bounds exception
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             pop.at(POP_SIZE)
         assert e.value.type() == "OutOfBoundsException"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             const_pop.at(POP_SIZE)
         assert e.value.type() == "OutOfBoundsException"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             pop.at(POP_SIZE + 10)
         assert e.value.type() == "OutOfBoundsException"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             const_pop.at(POP_SIZE + 10)
         assert e.value.type() == "OutOfBoundsException"
 
@@ -140,16 +140,16 @@ class AgentVectorTest(TestCase):
 
 
         # Out of bounds exception
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             pop[POP_SIZE]
         assert e.value.type() == "OutOfBoundsException"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             const_pop[POP_SIZE]
         assert e.value.type() == "OutOfBoundsException"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             pop[POP_SIZE + 10]
         assert e.value.type() == "OutOfBoundsException"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             const_pop[POP_SIZE + 10]
         assert e.value.type() == "OutOfBoundsException"
 
@@ -170,7 +170,7 @@ class AgentVectorTest(TestCase):
 
         # Out of bounds exception
         empty_pop = pyflamegpu.AgentVector(agent);
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             empty_pop.front()
         assert e.value.type() == "OutOfBoundsException"
 
@@ -191,7 +191,7 @@ class AgentVectorTest(TestCase):
 
         # Out of bounds exception
         empty_pop = pyflamegpu.AgentVector(agent);
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             empty_pop.back()
         assert e.value.type() == "OutOfBoundsException"
 
@@ -449,16 +449,16 @@ class AgentVectorTest(TestCase):
         # AgentInstance to insert
         wrong_insert_ai = pyflamegpu.AgentInstance(agent2);
 
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             pop.insert(4, wrong_insert_ai)
         assert e.value.type() == "InvalidAgent";
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             pop.insert(4, wrong_insert_ava)
         assert e.value.type() == "InvalidAgent";
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             pop.insert(4, 3, wrong_insert_ai)
         assert e.value.type() == "InvalidAgent";
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             pop.insert(4, 3, wrong_insert_ava)
         assert e.value.type() == "InvalidAgent";    
 
@@ -490,10 +490,10 @@ class AgentVectorTest(TestCase):
 
         # Test exceptions
         pop = pyflamegpu.AgentVector(agent, POP_SIZE);
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             pop.erase(POP_SIZE)
         assert e.value.type() == "OutOfBoundsException"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             pop.erase(POP_SIZE + 2)
         assert e.value.type() == "OutOfBoundsException"
         pop.erase(POP_SIZE-1); # No throw
@@ -524,13 +524,13 @@ class AgentVectorTest(TestCase):
 
         # Test exceptions
         pop = pyflamegpu.AgentVector(agent, POP_SIZE);
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             pop.erase(POP_SIZE, POP_SIZE + 2)
         assert e.value.type() == "OutOfBoundsException"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             pop.erase(int(POP_SIZE/2), POP_SIZE + 2)
         assert e.value.type() == "OutOfBoundsException"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             pop.erase(POP_SIZE + 2, POP_SIZE + 4)
         assert e.value.type() == "OutOfBoundsException"
         pop.erase(0, POP_SIZE); # No throw
@@ -558,7 +558,7 @@ class AgentVectorTest(TestCase):
         agent2 = model.newAgent("agent2");
         agent2.newVariableFloat("float", 2.0);
         ai2 = pyflamegpu.AgentInstance(agent2);
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             pop.push_back(ai2)
         assert e.value.type() == "InvalidAgent"
 
@@ -869,15 +869,15 @@ class AgentVectorTest(TestCase):
         ai = pop.front();
         # setVariable(const std::string &variable_name, const T &value)
         # Bad name
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             ai.setVariableInt("wrong", 1)
         assert e.value.type() == "InvalidAgentVar"
         # Array passed to non-array method
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             ai.setVariableInt("int2", 1)
         assert e.value.type() == "InvalidVarType"
         # Wrong type
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             ai.setVariableInt("float", 1)
         assert e.value.type() == "InvalidVarType"
 
@@ -885,73 +885,73 @@ class AgentVectorTest(TestCase):
         int3_ref2 = [ 2, 3, 4 ];
         float3_ref = [ 2.0, 3.0, 4.0 ];
         # Bad name
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             ai.setVariableArrayInt("wrong", int3_ref2);
         assert e.value.type() == "InvalidAgentVar"
         # Array passed to non-array method
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             ai.setVariableArrayInt("int2", int3_ref2);
         assert e.value.type() == "InvalidVarType"
         # Wrong type
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             ai.setVariableArrayFloat("int3", float3_ref);
         assert e.value.type() == "InvalidVarType"
 
         # setVariable(const std::string &variable_name, const unsigned int &array_index, const T &value)
         # Bad name
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             ai.setVariableInt("wrong", 0, 1)
         assert e.value.type() == "InvalidAgentVar"
         # Index out of bounds
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             ai.setVariableInt("int2", 2, 1)
         assert e.value.type() == "OutOfBoundsException"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             ai.setVariableFloat("float", 1, 1)
         assert e.value.type() == "OutOfBoundsException"
         # Wrong type
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             ai.setVariableInt("float", 0, 1)
         assert e.value.type() == "InvalidVarType"
 
         # getVariable(const std::string &variable_name) const
         # Bad name
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             ai.getVariableInt("wrong")
         assert e.value.type() == "InvalidAgentVar"
         # Array passed to non-array method
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             ai.getVariableInt("int2")
         assert e.value.type() == "InvalidVarType"
         # Wrong type
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             ai.getVariableInt("float")
         assert e.value.type() == "InvalidVarType"
 
         # getVariableArray(const std::string &variable_name)
         # Bad name
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             ai.getVariableArrayInt("wrong")
         assert e.value.type() == "InvalidAgentVar"
         # Wrong type
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             ai.getVariableArrayFloat("int3")
         assert e.value.type() == "InvalidVarType"
 
         # getVariable(const std::string &variable_name, const unsigned int &array_index)
         # Bad name
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             ai.getVariableInt("wrong", 0)
         assert e.value.type() == "InvalidAgentVar"
         # Index out of bounds
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             ai.getVariableInt("int2", 2)
         assert e.value.type() == "OutOfBoundsException"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             ai.getVariableFloat("float", 1)
         assert e.value.type() == "OutOfBoundsException"
         # Wrong type
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             ai.getVariableInt("float", 0)
         assert e.value.type() == "InvalidVarType"
 

@@ -86,15 +86,15 @@ class AgentInstanceTest(TestCase):
         # Check various exceptions
         # setVariable(const std::string &variable_name, const T &value)
         # Bad name
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             ai.setVariableInt("wrong", 1)
         assert e.value.type() == "InvalidAgentVar"
         # Array passed to non-array method
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             ai.setVariableInt("int2", 1)
         assert e.value.type() == "InvalidVarType"
         # Wrong type
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             ai.setVariableInt("float", 1)
         assert e.value.type() == "InvalidVarType"
         
@@ -102,70 +102,70 @@ class AgentInstanceTest(TestCase):
         int3_ref2 = ( 2, 3, 4 );
         float3_ref = ( 2.0, 3.0, 4.0 );
         # Bad name
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             ai.setVariableArrayInt("wrong", int3_ref2);
         assert e.value.type() == "InvalidAgentVar"
         # Array passed to non-array method
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             ai.setVariableArrayInt("int2", int3_ref2);
         assert e.value.type() == "InvalidVarType"
         # Wrong type
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             ai.setVariableArrayFloat("int3", float3_ref);
         assert e.value.type() == "InvalidVarType"
         
         # setVariable(const std::string &variable_name, const unsigned int &array_index, const T &value)
         # Bad name
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             ai.setVariableInt("wrong", 0, 1);
         assert e.value.type() == "InvalidAgentVar"
         # Index out of bounds
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             ai.setVariableInt("int2", 2, 1);
         assert e.value.type() == "OutOfBoundsException"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             ai.setVariableFloat("float", 1, 1);
         assert e.value.type() == "OutOfBoundsException"
         # Wrong type
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             ai.setVariableInt("float", 0, 1);
         assert e.value.type() == "InvalidVarType"
         
         # getVariable(const std::string &variable_name) const
         # Bad name
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             ai.getVariableInt("wrong");
         assert e.value.type() == "InvalidAgentVar"
         # Array passed to non-array method
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             ai.getVariableInt("int2");
         assert e.value.type() == "InvalidVarType"
         # Wrong type
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             ai.getVariableInt("float");
         assert e.value.type() == "InvalidVarType"
         
         # getVariable(const std::string &variable_name) const
         # Bad name
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             ai.getVariableArrayInt("wrong");
         assert e.value.type() == "InvalidAgentVar"
         # Wrong type
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             ai.getVariableArrayFloat("int3");
         assert e.value.type() == "InvalidVarType"
         
         # getVariable(const std::string &variable_name, const unsigned int &array_index) const
         # Bad name
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             ai.getVariableInt("wrong", 0);
         assert e.value.type() == "InvalidAgentVar"
         # Index out of bounds
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             ai.getVariableInt("int2", 2);
         assert e.value.type() == "OutOfBoundsException"
         # Wrong type
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             ai.setVariableArrayFloat("int3", float3_ref);
         assert e.value.type() == "InvalidVarType"
         

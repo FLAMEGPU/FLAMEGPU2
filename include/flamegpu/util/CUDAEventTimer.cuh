@@ -1,7 +1,7 @@
 #ifndef INCLUDE_FLAMEGPU_UTIL_CUDAEVENTTIMER_CUH_
 #define INCLUDE_FLAMEGPU_UTIL_CUDAEVENTTIMER_CUH_
 
-#include "flamegpu/exception/FGPUException.h"
+#include "flamegpu/exception/FLAMEGPUException.h"
 #include "flamegpu/gpu/CUDAErrorChecking.cuh"
 
 namespace flamegpu {

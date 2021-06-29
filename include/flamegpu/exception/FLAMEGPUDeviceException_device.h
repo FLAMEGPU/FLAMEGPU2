@@ -1,5 +1,5 @@
-#ifndef INCLUDE_FLAMEGPU_EXCEPTION_FGPUDEVICEEXCEPTION_DEVICE_H_
-#define INCLUDE_FLAMEGPU_EXCEPTION_FGPUDEVICEEXCEPTION_DEVICE_H_
+#ifndef INCLUDE_FLAMEGPU_EXCEPTION_FLAMEGPUDEVICEEXCEPTION_DEVICE_H_
+#define INCLUDE_FLAMEGPU_EXCEPTION_FLAMEGPUDEVICEEXCEPTION_DEVICE_H_
 
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
@@ -166,7 +166,7 @@ __device__ void DeviceException::subformat(DeviceExceptionBuffer *buff, T t) {
         }
     }
 }
-#if defined(__CUDACC_RTC__) || defined(FGPUDEVICEEXCEPTION_CU)
+#if defined(__CUDACC_RTC__) || defined(FLAMEGPUDeviceException_CU)
 template<>
 __device__ void DeviceException::subformat(DeviceExceptionBuffer *buff, const char *t) {
     if (buff->arg_count < DeviceExceptionBuffer::MAX_ARGS) {
@@ -199,4 +199,4 @@ __device__ unsigned int DeviceException::getErrorCount() {
 }  // namespace exception
 }  // namespace flamegpu
 
-#endif  // INCLUDE_FLAMEGPU_EXCEPTION_FGPUDEVICEEXCEPTION_DEVICE_H_
+#endif  // INCLUDE_FLAMEGPU_EXCEPTION_FLAMEGPUDEVICEEXCEPTION_DEVICE_H_

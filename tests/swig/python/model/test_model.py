@@ -25,7 +25,7 @@ class ModelDescriptionTest(TestCase):
         b = m.newAgent(AGENT_NAME2)
         assert m.getAgentsCount() == 2
         # Cannot create agent with same name
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             m.newAgent(AGENT_NAME1)
         assert e.value.type() == "InvalidAgentName"
         # Two created agents are different
@@ -51,7 +51,7 @@ class ModelDescriptionTest(TestCase):
         b = m.newMessageBruteForce(AGENT_NAME2)
         assert m.getMessagesCount() == 2
         # Cannot create message with same name
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             m.newMessage(AGENT_NAME1)
         assert e.value.type() == "InvalidMessageName"
         # Two created messages are different
@@ -81,7 +81,7 @@ class ModelDescriptionTest(TestCase):
         b = m.newLayer(AGENT_NAME2)
         assert m.getLayersCount() == 2
         # Cannot create layer with same name
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             m.newLayer(AGENT_NAME1)
         assert e.value.type() == "InvalidFuncLayerIndx"
         # Two created layers are different

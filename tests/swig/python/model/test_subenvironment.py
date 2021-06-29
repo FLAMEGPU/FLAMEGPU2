@@ -24,13 +24,13 @@ class SubEnvironmentDescriptionTest(TestCase):
         m.Environment().newPropertyArrayFloat("b2", 2, [0] * 2);
         sm = m.newSubModel("sub", m2);
         senv = sm.SubEnvironment();
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
             senv.mapProperty("c", "b");
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
             senv.mapProperty("c", "b2");
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
             senv.mapProperty("a", "c");
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
             senv.mapProperty("a2", "c");
         senv.mapProperty("a2", "b2");
         senv.mapProperty("a", "b");
@@ -48,9 +48,9 @@ class SubEnvironmentDescriptionTest(TestCase):
         m.Environment().newPropertyArrayFloat("b2", 2, [0] * 2);
         sm = m.newSubModel("sub", m2);
         senv = sm.SubEnvironment();
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
             senv.mapProperty("a", "b");
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
             senv.mapProperty("a2", "b2");
 
     def test_ElementsDoNotMatch(self):
@@ -66,9 +66,9 @@ class SubEnvironmentDescriptionTest(TestCase):
         m.Environment().newPropertyArrayFloat("b2", 2, [0] * 2);
         sm = m.newSubModel("sub", m2);
         senv = sm.SubEnvironment();
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
             senv.mapProperty("a", "b2");
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
             senv.mapProperty("a2", "b");
         senv.mapProperty("a2", "b2");
         senv.mapProperty("a", "b");
@@ -86,9 +86,9 @@ class SubEnvironmentDescriptionTest(TestCase):
         m.Environment().newPropertyArrayFloat("b2", 2, [0] * 2, True);
         sm = m.newSubModel("sub", m2);
         senv = sm.SubEnvironment();
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
             senv.mapProperty("a", "b");
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
             senv.mapProperty("a2", "b2");
 
     def test_AlreadyBound(self):
@@ -111,12 +111,12 @@ class SubEnvironmentDescriptionTest(TestCase):
         senv = sm.SubEnvironment();
         senv.mapProperty("a", "b");
         senv.mapProperty("a2", "b2");
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
             senv.mapProperty("a", "b_");
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
             senv.mapProperty("a2", "b2_");
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
             senv.mapProperty("a_", "b");
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
             senv.mapProperty("a2_", "b2");
 

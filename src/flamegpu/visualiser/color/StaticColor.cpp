@@ -3,7 +3,7 @@
 
 #include <sstream>
 
-#include "flamegpu/exception/FGPUException.h"
+#include "flamegpu/exception/FLAMEGPUException.h"
 
 namespace flamegpu {
 namespace visualiser {

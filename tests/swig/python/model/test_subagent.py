@@ -23,7 +23,7 @@ class SubAgentDescriptionTest(TestCase):
         ma.newState("b");
         # Missing exit condition        
         m.newSubModel("sub", sm);
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidSubModel exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidSubModel exception
             s = pyflamegpu.CUDASimulation(m)
         assert e.value.type() == "InvalidSubModel"
         exitcdn = ExitAlways()
@@ -41,9 +41,9 @@ class SubAgentDescriptionTest(TestCase):
         m.newAgent("b");
         smd = m.newSubModel("sub", sm);
         # Invalid agent
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidSubAgentName exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidSubAgentName exception
             smd.bindAgent("c", "b", False, False);
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidAgentName exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidAgentName exception
             smd.bindAgent("a", "c", False, False);
         # Good
         smd.bindAgent("a", "b", False, False)
@@ -68,16 +68,16 @@ class SubAgentDescriptionTest(TestCase):
         smd = m.newSubModel("sub", sm);
         agent_map = smd.bindAgent("a", "b", False, False);
         # Invalid name
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidAgentState exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidAgentState exception
             agent_map.mapState("c", "b");
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidAgentState exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidAgentState exception
             agent_map.mapState("a", "c");
         # Good
         agent_map.mapState("a", "b");
         # Already Bound
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidAgentState exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidAgentState exception
             agent_map.mapState("a2", "b");
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidAgentState exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidAgentState exception
             agent_map.mapState("a", "b2");
         # Good
         agent_map.mapState("a2", "b2");
@@ -104,28 +104,28 @@ class SubAgentDescriptionTest(TestCase):
         smd = m.newSubModel("sub", sm);
         agent_map = smd.bindAgent("a", "b", False, False);
         # Bad name
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidAgentVar exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidAgentVar exception
             agent_map.mapVariable("c", "b_float");
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidAgentVar exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidAgentVar exception
             agent_map.mapVariable("a_float", "c");
         # Bad data type
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidAgentVar exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidAgentVar exception
             agent_map.mapVariable("a_uint", "b_float");
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidAgentVar exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidAgentVar exception
             agent_map.mapVariable("a_float", "a_uint");
         # Bad array length
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidAgentVar exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidAgentVar exception
             agent_map.mapVariable("a_uint", "b_uint2");
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidAgentVar exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidAgentVar exception
             agent_map.mapVariable("a_uint2", "b_uint");
         # Good
         agent_map.mapVariable("a_float", "b_float");
         agent_map.mapVariable("a_uint", "b_uint");
         agent_map.mapVariable("a_uint2", "b_uint2");
         # Already bound
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidAgentVar exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidAgentVar exception
             agent_map.mapVariable("a_float2", "b_float");
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidAgentVar exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidAgentVar exception
             agent_map.mapVariable("a_float", "b_float2");
         # Good
         agent_map.mapVariable("a_float2", "b_float2");
@@ -144,9 +144,9 @@ class SubAgentDescriptionTest(TestCase):
         # Good
         smd.bindAgent("a", "b", False, False);
         # Already Bound
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidAgentName exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidAgentName exception
             smd.bindAgent("a2", "b", False, False);
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:  # exception::InvalidSubAgentName exception
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidSubAgentName exception
             smd.bindAgent("a", "b2", False, False);
         # Good
         smd.bindAgent("a2", "b2", False, False);

@@ -21,7 +21,7 @@
 #include <shared_mutex>
 #endif
 
-#include "flamegpu/exception/FGPUDeviceException.h"
+#include "flamegpu/exception/FLAMEGPUDeviceException.h"
 
 namespace flamegpu {
 

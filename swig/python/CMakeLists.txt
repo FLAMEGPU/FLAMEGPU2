@@ -121,9 +121,9 @@ endif()
 ## Python Packaging  ##
 #######################
 # cleanup the flamegpu2 include file paths, so they're relative (begin `include/`) and seperated by `", "`
-foreach(FGPU2_INC_FILE IN LISTS FGPU2_INCLUDE)
-  file(RELATIVE_PATH FGPU2_INC_FILE_CLEAN "${FLAMEGPU_ROOT}" "${FGPU2_INC_FILE}")
-  set(FGPU2_INCLUDE_CLEAN "${FGPU2_INCLUDE_CLEAN}'${FGPU2_INC_FILE_CLEAN}', ")
+foreach(FLAMEGPU2_INC_FILE IN LISTS FLAMEGPU2_INCLUDE)
+  file(RELATIVE_PATH FLAMEGPU2_INC_FILE_CLEAN "${FLAMEGPU_ROOT}" "${FLAMEGPU2_INC_FILE}")
+  set(FLAMEGPU2_INCLUDE_CLEAN "${FLAMEGPU2_INCLUDE_CLEAN}'${FLAMEGPU2_INC_FILE_CLEAN}', ")
 endforeach()
 
 # configure the python setup.py and __init__.py files for packaging and output to the final lib output folder
@@ -173,7 +173,7 @@ search_python_module(wheel)
 add_custom_command(TARGET ${PYTHON_MODULE_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory "${PYTHON_LIB_OUTPUT_DIRECTORY}/${PYTHON_MODULE_NAME}/include")
 
-# Copy the FGPU2 headers to a local path, this must occur before the wheel is built
+# Copy the FLAMEGPU2 headers to a local path, this must occur before the wheel is built
 add_custom_command(TARGET ${PYTHON_MODULE_NAME} POST_BUILD     # Adds a post-build event to MyTest
     COMMAND ${CMAKE_COMMAND} -E copy_directory              # which executes "cmake - E copy_directory..."
         "${FLAMEGPU_ROOT}/include"                                     # <--this is in-dir

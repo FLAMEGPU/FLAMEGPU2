@@ -91,7 +91,7 @@ class Multi_ms1(pyflamegpu.HostFunctionCallback):
         """
         self.ms1_float = FLAMEGPU.environment.getPropertyFloat("ms1_float");
         self.ms1_float2 = FLAMEGPU.environment.getPropertyFloat("ms1_float2");
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             FLAMEGPU.environment.getPropertyDouble("ms2_double")
         assert e.value.type() == "InvalidEnvProperty"
         

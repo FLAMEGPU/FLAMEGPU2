@@ -7,7 +7,7 @@
 #include <fstream>
 #include <string>
 
-#include "flamegpu/exception/FGPUException.h"
+#include "flamegpu/exception/FLAMEGPUException.h"
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/pop/AgentVector.h"
 #include "flamegpu/gpu/CUDASimulation.h"

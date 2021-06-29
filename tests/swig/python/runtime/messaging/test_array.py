@@ -318,14 +318,14 @@ class TestMessage_Array(TestCase):
         # Set pop in model
         c = pyflamegpu.CUDASimulation(m)
         c.setPopulationData(pop)
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             c.step()
         assert e.value.type() == "ArrayMessageWriteConflict"
 
     def test_ArrayLenZeroException(self): 
         m = pyflamegpu.ModelDescription(MODEL_NAME)
         msg = m.newMessageArray(MESSAGE_NAME)
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             msg.setLength(0)
         assert e.value.type() == "InvalidArgument"
 
@@ -333,14 +333,14 @@ class TestMessage_Array(TestCase):
         model = pyflamegpu.ModelDescription(MODEL_NAME)
         model.newMessageArray(MESSAGE_NAME)
         # message.setLength(5)  # Intentionally commented out
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             m = pyflamegpu.CUDASimulation(model)
         assert e.value.type() == "InvalidMessage"
 
     def test_reserved_name(self): 
         model = pyflamegpu.ModelDescription(MODEL_NAME)
         msg = model.newMessageArray(MESSAGE_NAME)
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             msg.newVariableInt("_")
         assert e.value.type() == "ReservedName"
 

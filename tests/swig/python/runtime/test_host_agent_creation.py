@@ -485,7 +485,7 @@ class HostAgentCreationTest(TestCase):
         # Init agent pop
         cudaSimulation = pyflamegpu.CUDASimulation(model)
         # Execute model
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             cudaSimulation.step()
         assert e.value.type() == "InvalidAgentVar"
 
@@ -540,7 +540,7 @@ class HostAgentCreationTest(TestCase):
         # Init agent pop
         cudaSimulation = pyflamegpu.CUDASimulation(model)
         # Execute model
-        with pytest.raises (pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises (pyflamegpu.FLAMEGPURuntimeException) as e:
             cudaSimulation.step()
         assert e.value.type() == "InvalidAgentVar"
 
@@ -554,7 +554,7 @@ class HostAgentCreationTest(TestCase):
         # Init agent pop
         cudaSimulation = pyflamegpu.CUDASimulation(model)
         # Execute model
-        with pytest.raises (pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises (pyflamegpu.FLAMEGPURuntimeException) as e:
             cudaSimulation.step()
         assert e.value.type() == "InvalidVarType"
 
@@ -660,7 +660,7 @@ class HostAgentCreationTest(TestCase):
         func = ArrayVarHostBirth_LenWrong()
         model.addStepFunctionCallback(func)
         sim = pyflamegpu.CUDASimulation(model)
-        with pytest.raises (pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises (pyflamegpu.FLAMEGPURuntimeException) as e:
             sim.step()
         assert e.value.type() == "InvalidVarArrayLen"
 
@@ -672,7 +672,7 @@ class HostAgentCreationTest(TestCase):
         func = ArrayVarHostBirth_LenWrong2()
         model.addStepFunctionCallback(func)
         sim = pyflamegpu.CUDASimulation(model)
-        with pytest.raises (pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises (pyflamegpu.FLAMEGPURuntimeException) as e:
             sim.step()
         assert e.value.type() == "OutOfRangeVarArray"
 
@@ -684,7 +684,7 @@ class HostAgentCreationTest(TestCase):
         func = ArrayVarHostBirth_LenWrong()
         model.addStepFunctionCallback(func)
         sim = pyflamegpu.CUDASimulation(model)
-        with pytest.raises (pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises (pyflamegpu.FLAMEGPURuntimeException) as e:
             sim.step()
         assert e.value.type() == "InvalidVarArrayLen"
 
@@ -696,7 +696,7 @@ class HostAgentCreationTest(TestCase):
         func = ArrayVarHostBirth_LenWrong2()
         model.addStepFunctionCallback(func)
         sim = pyflamegpu.CUDASimulation(model)
-        with pytest.raises (pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises (pyflamegpu.FLAMEGPURuntimeException) as e:
             sim.step()
         assert e.value.type() == "OutOfRangeVarArray"
 
@@ -708,7 +708,7 @@ class HostAgentCreationTest(TestCase):
         func = ArrayVarHostBirth_TypeWrong()
         model.addStepFunctionCallback(func)
         sim = pyflamegpu.CUDASimulation(model)
-        with pytest.raises (pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises (pyflamegpu.FLAMEGPURuntimeException) as e:
             sim.step()
         assert e.value.type() == "InvalidVarType"
 
@@ -720,7 +720,7 @@ class HostAgentCreationTest(TestCase):
         func = ArrayVarHostBirth_TypeWrong2()
         model.addStepFunctionCallback(func)
         sim = pyflamegpu.CUDASimulation(model)
-        with pytest.raises (pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises (pyflamegpu.FLAMEGPURuntimeException) as e:
             sim.step()
         assert e.value.type() == "InvalidVarType"
 
@@ -732,7 +732,7 @@ class HostAgentCreationTest(TestCase):
         func = ArrayVarHostBirth_NameWrong()
         model.addStepFunctionCallback(func)
         sim = pyflamegpu.CUDASimulation(model)
-        with pytest.raises (pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises (pyflamegpu.FLAMEGPURuntimeException) as e:
             sim.step()
         assert e.value.type() == "InvalidAgentVar"
 
@@ -744,7 +744,7 @@ class HostAgentCreationTest(TestCase):
         func = ArrayVarHostBirth_NameWrong()
         model.addStepFunctionCallback(func)
         sim = pyflamegpu.CUDASimulation(model)
-        with pytest.raises (pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises (pyflamegpu.FLAMEGPURuntimeException) as e:
             sim.step()
         assert e.value.type() == "InvalidAgentVar"
 
@@ -756,7 +756,7 @@ class HostAgentCreationTest(TestCase):
         func = ArrayVarHostBirth_ArrayNotSuitableSet()
         model.addStepFunctionCallback(func)
         sim = pyflamegpu.CUDASimulation(model)
-        with pytest.raises (pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises (pyflamegpu.FLAMEGPURuntimeException) as e:
             sim.step()
         assert e.value.type() == "InvalidAgentVar"
 
@@ -768,7 +768,7 @@ class HostAgentCreationTest(TestCase):
         func = ArrayVarHostBirth_ArrayNotSuitableGet()
         model.addStepFunctionCallback(func)
         sim = pyflamegpu.CUDASimulation(model)
-        with pytest.raises (pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises (pyflamegpu.FLAMEGPURuntimeException) as e:
             sim.step()
         assert e.value.type() == "InvalidAgentVar"
 
@@ -780,7 +780,7 @@ class HostAgentCreationTest(TestCase):
         func = reserved_name_step()
         model.addStepFunctionCallback(func)
         sim = pyflamegpu.CUDASimulation(model)
-        with pytest.raises (pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises (pyflamegpu.FLAMEGPURuntimeException) as e:
             sim.step()
         assert e.value.type() == "ReservedName"
 
@@ -790,7 +790,7 @@ class HostAgentCreationTest(TestCase):
         func = reserved_name_step_array()
         model.addStepFunctionCallback(func)
         sim = pyflamegpu.CUDASimulation(model)
-        with pytest.raises (pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises (pyflamegpu.FLAMEGPURuntimeException) as e:
             sim.step()
         assert e.value.type() == "ReservedName"
 

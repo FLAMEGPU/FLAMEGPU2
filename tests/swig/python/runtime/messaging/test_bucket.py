@@ -67,22 +67,22 @@ class TestMessage_Bucket(TestCase):
         m = pyflamegpu.ModelDescription("BucketMsgTest")
         # Test description accessors
         msg = m.newMessageBucket("buckets")
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             msg.setUpperBound(0); # Min should default to 0, this would mean no buckets
         assert e.value.type() == "InvalidArgument"
         msg.setLowerBound(10);
         msg.setUpperBound(11);
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             msg.setUpperBound(0); # Max < Min
         assert e.value.type() == "InvalidArgument"
         msg.setUpperBound(12);
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             msg.setLowerBound(13); # Min > Max
         assert e.value.type() == "InvalidArgument"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             msg.setBounds(12, 12); # Min == Max
         assert e.value.type() == "InvalidArgument"
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             msg.setBounds(13, 12); # Min > Max
         assert e.value.type() == "InvalidArgument"
         msg.setBounds(12, 13);
@@ -92,11 +92,11 @@ class TestMessage_Bucket(TestCase):
         m = pyflamegpu.ModelDescription("BucketMsgTest")
         # Test Data copy constructor knows when bounds have not been init
         msg = m.newMessageBucket("buckets")
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             cudaSimulation = pyflamegpu.CUDASimulation(m)  # Max not set
         assert e.value.type() == "InvalidMessage"
         msg.setLowerBound(1);  # It should default to 0
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             cudaSimulation = pyflamegpu.CUDASimulation(m)  # Min not set
         assert e.value.type() == "InvalidMessage"
         msg.setUpperBound(10);
@@ -105,7 +105,7 @@ class TestMessage_Bucket(TestCase):
     def test_reserved_name(self):
         m = pyflamegpu.ModelDescription("BucketMsgTest")
         msg = m.newMessageBucket("buckets")
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             msg.newVariableInt("_")
         assert e.value.type() == "ReservedName"
         

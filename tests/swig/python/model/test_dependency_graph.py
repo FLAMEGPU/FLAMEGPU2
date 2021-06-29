@@ -80,7 +80,7 @@ class DependencyGraphTest(TestCase):
     
     def test_ValidateEmptyGraph(self):
         graph = pyflamegpu.DependencyGraph()
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             graph.validateDependencyGraph()
         assert e.value.type() == "InvalidDependencyGraph"
     
@@ -127,7 +127,7 @@ class DependencyGraphTest(TestCase):
         f3.dependsOn(f2)
         graph = _m.getDependencyGraph()
         graph.addRoot(f)
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             graph.validateDependencyGraph()
         assert e.value.type() == "InvalidDependencyGraph"
     
@@ -141,7 +141,7 @@ class DependencyGraphTest(TestCase):
         f3.dependsOn(f2)
         graph = _m.getDependencyGraph()
         graph.addRoot(f2)
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             graph.validateDependencyGraph()
         assert e.value.type() == "InvalidDependencyGraph"
     
@@ -528,7 +528,7 @@ HostFn2
         a2 = _m2.newAgent(AGENT_NAME2)
         f2 = a2.newRTCFunction(FUNCTION_NAME2, self.agent_fn2)
 
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             f2.dependsOn(f)
         assert e.value.type() == "InvalidDependencyGraph"
 
@@ -545,6 +545,6 @@ HostFn2
         graph = _m.getDependencyGraph()
         graph.addRoot(f)
 
-        with pytest.raises(pyflamegpu.FGPURuntimeException) as e:
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             _m.generateLayers()
         assert e.value.type() == "InvalidDependencyGraph"

@@ -1,5 +1,5 @@
-#ifndef INCLUDE_FLAMEGPU_EXCEPTION_FGPUDEVICEEXCEPTION_H_
-#define INCLUDE_FLAMEGPU_EXCEPTION_FGPUDEVICEEXCEPTION_H_
+#ifndef INCLUDE_FLAMEGPU_EXCEPTION_FLAMEGPUDEVICEEXCEPTION_H_
+#define INCLUDE_FLAMEGPU_EXCEPTION_FLAMEGPUDEVICEEXCEPTION_H_
 
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
@@ -10,7 +10,7 @@
 
 #if !defined(SEATBELTS) || SEATBELTS
 
-#include "flamegpu/exception/FGPUDeviceException_device.h"
+#include "flamegpu/exception/FLAMEGPUDeviceException_device.h"
 
 namespace flamegpu {
 namespace exception {
@@ -58,4 +58,4 @@ class DeviceExceptionManager {
  */
 #define DTHROW(nop)
 #endif  // SEATBELTS=OFF
-#endif  // INCLUDE_FLAMEGPU_EXCEPTION_FGPUDEVICEEXCEPTION_H_
+#endif  // INCLUDE_FLAMEGPU_EXCEPTION_FLAMEGPUDEVICEEXCEPTION_H_

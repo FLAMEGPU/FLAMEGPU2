@@ -7,7 +7,7 @@
 
 // #include "flamegpu/runtime/flamegpu_device_api.h"
 #include "flamegpu/defines.h"
-#include "flamegpu/exception/FGPUDeviceException.h"
+#include "flamegpu/exception/FLAMEGPUDeviceException.h"
 #include "flamegpu/runtime/AgentFunction_shim.h"
 #include "flamegpu/gpu/CUDAScanCompaction.h"
 
