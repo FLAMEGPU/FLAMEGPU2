@@ -14,7 +14,10 @@
 #include "flamegpu/gpu/CUDAEnsemble.h"
 #include "flamegpu/runtime/utility/RandomManager.cuh"
 #include "flamegpu/runtime/HostNewAgentAPI.h"
+
+#ifdef VISUALISATION
 #include "flamegpu/visualiser/ModelVis.h"
+#endif
 
 #ifdef _MSC_VER
 #pragma warning(push, 2)
