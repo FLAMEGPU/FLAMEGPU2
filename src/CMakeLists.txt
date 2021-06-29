@@ -103,6 +103,7 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/model/ModelDescription.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/Variable.h
     ${FLAMEGPU_ROOT}/include/flamegpu/pop/detail/MemoryVector.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/pop/detail/GenericMemoryVector.h
     ${FLAMEGPU_ROOT}/include/flamegpu/pop/AgentVector.h
     ${FLAMEGPU_ROOT}/include/flamegpu/pop/AgentVector_Agent.h
     ${FLAMEGPU_ROOT}/include/flamegpu/pop/AgentInstance.h
