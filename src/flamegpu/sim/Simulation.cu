@@ -13,7 +13,7 @@
 #include "flamegpu/pop/AgentVector.h"
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/util/nvtx.h"
-#include "flamegpu/util/filesystem.h"
+#include "flamegpu/util/detail/filesystem.h"
 
 
 namespace flamegpu {
@@ -74,7 +74,7 @@ void Simulation::applyConfig() {
         try {
             t_path = t_path.parent_path();
             if (!t_path.empty()) {
-                util::filesystem::recursive_create_dir(t_path);
+                util::detail::filesystem::recursive_create_dir(t_path);
             }
         } catch(std::exception &e) {
             THROW exception::InvalidArgument("Failed to init step log file directory '%s': %s\n", t_path.c_str(), e.what());
@@ -85,7 +85,7 @@ void Simulation::applyConfig() {
         try {
             t_path = t_path.parent_path();
             if (!t_path.empty()) {
-                util::filesystem::recursive_create_dir(t_path);
+                util::detail::filesystem::recursive_create_dir(t_path);
             }
         } catch(std::exception &e) {
             THROW exception::InvalidArgument("Failed to init exit log file directory: '%s': %s\n", t_path.c_str(), e.what());

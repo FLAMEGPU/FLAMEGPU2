@@ -13,7 +13,7 @@
 #include "flamegpu/io/JSONLogger.h"
 #include "flamegpu/io/XMLLogger.h"
 #include "flamegpu/util/StringPair.h"
-#include "flamegpu/util/filesystem.h"
+#include "flamegpu/util/detail/filesystem.h"
 
 namespace flamegpu {
 
@@ -45,7 +45,7 @@ class StateWriterFactory {
         const unsigned int& iterations,
         const std::string& output_file,
         const Simulation* sim_instance) {
-        const std::string extension = util::filesystem::getFileExt(output_file);
+        const std::string extension = util::detail::filesystem::getFileExt(output_file);
 
         if (extension == "xml") {
             return new XMLStateWriter(model_name, sim_instance_id, model_state, iterations, output_file, sim_instance);

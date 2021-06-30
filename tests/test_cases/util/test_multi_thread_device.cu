@@ -4,7 +4,7 @@
 
 #include "flamegpu/flamegpu.h"
 #include "gtest/gtest.h"
-#include "flamegpu/util/compute_capability.cuh"
+#include "flamegpu/util/detail/compute_capability.cuh"
 
 namespace flamegpu {
 
@@ -517,7 +517,7 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_Agent) {
     // For each device
     for (int device = 0; device < devices; ++device) {
         // If built with a suitable compute capability
-        if (util::compute_capability::checkComputeCapability(device)) {
+        if (util::detail::compute_capability::checkComputeCapability(device)) {
             for (int i = 0; i < SIMS_PER_DEVICE; ++i) {
                 // Set sim Running
                 sims.emplace(sims.end(), std::make_shared<CUDASimulation>(m));
@@ -581,7 +581,7 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_Message) {
     // For each device
     for (int device = 0; device < devices; ++device) {
         // If built with a suitable compute capability
-        if (util::compute_capability::checkComputeCapability(device)) {
+        if (util::detail::compute_capability::checkComputeCapability(device)) {
             for (int i = 0; i < SIMS_PER_DEVICE; ++i) {
                 // Set sim Running
                 sims.emplace(sims.end(), std::make_shared<CUDASimulation>(m));
@@ -657,7 +657,7 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_Environment) {
     // For each device
     for (int device = 0; device < devices; ++device) {
         // If built with a suitable compute capability
-        if (util::compute_capability::checkComputeCapability(device)) {
+        if (util::detail::compute_capability::checkComputeCapability(device)) {
             for (int i = 0; i < SIMS_PER_DEVICE; ++i) {
                 // Set sim Running
                 m.Environment().setProperty<int>("one", 1 * (offset + 1));
@@ -742,7 +742,7 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_AgentOutput) {
     // For each device
     for (int device = 0; device < devices; ++device) {
         // If built with a suitable compute capability
-        if (util::compute_capability::checkComputeCapability(device)) {
+        if (util::detail::compute_capability::checkComputeCapability(device)) {
             for (int i = 0; i < SIMS_PER_DEVICE; ++i) {
                 // Set sim Running
                 sims.emplace(sims.end(), std::make_shared<CUDASimulation>(m));
@@ -817,7 +817,7 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_AgentFunctionCondition) {
     // For each device
     for (int device = 0; device < devices; ++device) {
         // If built with a suitable compute capability
-        if (util::compute_capability::checkComputeCapability(device)) {
+        if (util::detail::compute_capability::checkComputeCapability(device)) {
             for (int i = 0; i < SIMS_PER_DEVICE; ++i) {
                 // Set sim Running
                 sims.emplace(sims.end(), std::make_shared<CUDASimulation>(m));

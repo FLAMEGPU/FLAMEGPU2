@@ -7,7 +7,7 @@
 #include <regex>
 
 #include "flamegpu/model/AgentFunctionDescription.h"
-#include "flamegpu/util/cxxname.hpp"
+#include "flamegpu/util/detail/cxxname.hpp"
 
 namespace flamegpu {
 
@@ -140,8 +140,8 @@ void AgentFunctionDescription::setMessageInput(const std::string &message_name) 
     auto a = mdl->messages.find(message_name);
     if (a != mdl->messages.end()) {
         // Just compare the classname is the same, to allow for the various approaches to namespace use. This should only be required for RTC functions.
-        auto msg_in_classname = util::cxxname::getUnqualifiedName(this->function->msg_in_type);
-        auto demangledClassName = util::cxxname::getUnqualifiedName(CurveRTCHost::demangle(a->second->getType()));
+        auto msg_in_classname = util::detail::cxxname::getUnqualifiedName(this->function->msg_in_type);
+        auto demangledClassName = util::detail::cxxname::getUnqualifiedName(CurveRTCHost::demangle(a->second->getType()));
         if (msg_in_classname == demangledClassName) {
             this->function->message_input = a->second;
         } else {
@@ -176,8 +176,8 @@ void AgentFunctionDescription::setMessageInput(MsgBruteForce::Description &messa
     if (a != mdl->messages.end()) {
         if (a->second->description.get() == &message) {
             // Just compare the classname is the same, to allow for the various approaches to namespace use. This should only be required for RTC functions.
-            auto msg_in_classname = util::cxxname::getUnqualifiedName(this->function->msg_in_type);
-            auto demangledClassName = util::cxxname::getUnqualifiedName(CurveRTCHost::demangle(a->second->getType()));
+            auto msg_in_classname = util::detail::cxxname::getUnqualifiedName(this->function->msg_in_type);
+            auto demangledClassName = util::detail::cxxname::getUnqualifiedName(CurveRTCHost::demangle(a->second->getType()));
             if (msg_in_classname == demangledClassName) {
                 this->function->message_input = a->second;
             } else {
@@ -218,8 +218,8 @@ void AgentFunctionDescription::setMessageOutput(const std::string &message_name)
     auto a = mdl->messages.find(message_name);
     if (a != mdl->messages.end()) {
         // Just compare the classname is the same, to allow for the various approaches to namespace use. This should only be required for RTC functions.
-        auto msg_out_classname = util::cxxname::getUnqualifiedName(this->function->msg_out_type);
-        auto demangledClassName = util::cxxname::getUnqualifiedName(CurveRTCHost::demangle(a->second->getType()));
+        auto msg_out_classname = util::detail::cxxname::getUnqualifiedName(this->function->msg_out_type);
+        auto demangledClassName = util::detail::cxxname::getUnqualifiedName(CurveRTCHost::demangle(a->second->getType()));
         if (msg_out_classname == demangledClassName) {
             this->function->message_output = a->second;
             if (this->function->message_output_optional) {
@@ -263,8 +263,8 @@ void AgentFunctionDescription::setMessageOutput(MsgBruteForce::Description &mess
     if (a != mdl->messages.end()) {
         if (a->second->description.get() == &message) {
             // Just compare the classname is the same, to allow for the various approaches to namespace use. This should only be required for RTC functions.
-            auto msg_out_classname = util::cxxname::getUnqualifiedName(this->function->msg_out_type);
-            auto demangledClassName = util::cxxname::getUnqualifiedName(CurveRTCHost::demangle(a->second->getType()));
+            auto msg_out_classname = util::detail::cxxname::getUnqualifiedName(this->function->msg_out_type);
+            auto demangledClassName = util::detail::cxxname::getUnqualifiedName(CurveRTCHost::demangle(a->second->getType()));
             if (msg_out_classname == demangledClassName) {
                 this->function->message_output = a->second;
                 if (this->function->message_output_optional) {

@@ -3,7 +3,7 @@
 #include <set>
 
 #include "flamegpu/flamegpu.h"
-#include "flamegpu/util/compute_capability.cuh"
+#include "flamegpu/util/detail/compute_capability.cuh"
 #include "helpers/device_initialisation.h"
 
 
@@ -63,7 +63,7 @@ TEST(TestCUDASimulation, AllDeviceIdValues) {
     }
     for (int i = 0; i < device_count; i++) {
         // Check if the specified device is allowed to run the tests to determine if the test should throw or not. This is system dependent so must be dynamic.
-        bool shouldThrowCCException = !flamegpu::util::compute_capability::checkComputeCapability(i);
+        bool shouldThrowCCException = !flamegpu::util::detail::compute_capability::checkComputeCapability(i);
         // Initialise and run a simple model on each device in the system. This test is pointless on single GPU machines.
         ModelDescription m(MODEL_NAME);
         m.newAgent(AGENT_NAME);

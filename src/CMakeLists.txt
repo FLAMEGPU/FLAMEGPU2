@@ -88,7 +88,6 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/exception/FLAMEGPUException.h
     ${FLAMEGPU_ROOT}/include/flamegpu/exception/FLAMEGPUDeviceException.h
     ${FLAMEGPU_ROOT}/include/flamegpu/exception/FLAMEGPUDeviceException_device.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/util/StaticAssert.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/LayerDescription.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/ModelData.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/AgentData.h
@@ -176,15 +175,16 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/RandomManager.cuh    
     ${FLAMEGPU_ROOT}/include/flamegpu/util/Any.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/nvtx.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/util/CUDAEventTimer.cuh
-    ${FLAMEGPU_ROOT}/include/flamegpu/util/SteadyClockTimer.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/util/SignalHandlers.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/util/compute_capability.cuh
-    ${FLAMEGPU_ROOT}/include/flamegpu/util/cxxname.hpp
-    ${FLAMEGPU_ROOT}/include/flamegpu/util/JitifyCache.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/util/filesystem.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/StringPair.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/StringUint32Pair.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/util/detail/compute_capability.cuh
+    ${FLAMEGPU_ROOT}/include/flamegpu/util/detail/CUDAEventTimer.cuh
+    ${FLAMEGPU_ROOT}/include/flamegpu/util/detail/cxxname.hpp
+    ${FLAMEGPU_ROOT}/include/flamegpu/util/detail/filesystem.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/util/detail/SignalHandlers.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/util/detail/StaticAssert.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/util/detail/SteadyClockTimer.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/util/detail/JitifyCache.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/SubModelData.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/SubAgentData.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/SubEnvironmentData.h
@@ -250,8 +250,8 @@ SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/utility/EnvironmentManager.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/utility/RandomManager.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/utility/HostRandom.cu
-    ${FLAMEGPU_ROOT}/src/flamegpu/util/compute_capability.cu
-    ${FLAMEGPU_ROOT}/src/flamegpu/util/JitifyCache.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/util/detail/compute_capability.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/util/detail/JitifyCache.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/model/SubModelData.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/model/SubAgentData.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/model/SubEnvironmentData.cpp

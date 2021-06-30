@@ -1,10 +1,11 @@
-#ifndef INCLUDE_FLAMEGPU_UTIL_STATICASSERT_H_
-#define INCLUDE_FLAMEGPU_UTIL_STATICASSERT_H_
+#ifndef INCLUDE_FLAMEGPU_UTIL_DETAIL_STATICASSERT_H_
+#define INCLUDE_FLAMEGPU_UTIL_DETAIL_STATICASSERT_H_
 
 #include <cstdint>
 
 namespace flamegpu {
 namespace util {
+namespace detail {
 /**
  * These are taken from MSVCs std to allow us to perform static assertions
  * Although this is not a class static_assert is a reserved keyword, hence CapitolCase
@@ -73,7 +74,8 @@ struct _Is_IntType
     || is_same<_Ty, int64_t>::value> {
 };
 }  // namespace StaticAssert
+}  // namespace detail
 }  // namespace util
 }  // namespace flamegpu
 
-#endif  // INCLUDE_FLAMEGPU_UTIL_STATICASSERT_H_
+#endif  // INCLUDE_FLAMEGPU_UTIL_DETAIL_STATICASSERT_H_

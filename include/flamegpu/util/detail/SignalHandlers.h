@@ -1,10 +1,11 @@
-#ifndef INCLUDE_FLAMEGPU_UTIL_SIGNALHANDLERS_H_
-#define INCLUDE_FLAMEGPU_UTIL_SIGNALHANDLERS_H_
+#ifndef INCLUDE_FLAMEGPU_UTIL_DETAIL_SIGNALHANDLERS_H_
+#define INCLUDE_FLAMEGPU_UTIL_DETAIL_SIGNALHANDLERS_H_
 #include <cstdlib>
 #include <csignal>
 
 namespace flamegpu {
 namespace util {
+namespace detail {
 /**
  * Signal handlers used to try and produce a clean exit on interrupt
  *
@@ -32,7 +33,8 @@ static void registerSignalHandlers(){
 }
 };
 
+}  // namespace detail
 }  // namespace util
 }  // namespace flamegpu
 
-#endif  // INCLUDE_FLAMEGPU_UTIL_SIGNALHANDLERS_H_
+#endif  // INCLUDE_FLAMEGPU_UTIL_DETAIL_SIGNALHANDLERS_H_
