@@ -175,6 +175,10 @@ std::unique_ptr<MessageSpecialisationHandler> MessageSpatial3D::Data::getSpecial
 }
 std::type_index MessageSpatial3D::Data::getType() const { return std::type_index(typeid(MessageSpatial3D)); }
 
+flamegpu::MessageSortingType MessageSpatial3D::Data::getSortingType() const {
+    return flamegpu::MessageSortingType::spatial3D;
+}
+
 MessageSpatial3D::Description::Description(const std::shared_ptr<const ModelData> &_model, Data *const data)
     : MessageBruteForce::Description(_model, data) { }
 

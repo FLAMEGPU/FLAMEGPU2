@@ -65,6 +65,10 @@ struct AgentData : std::enable_shared_from_this<AgentData> {
      */
     bool keepDefaultState;
     /**
+     * Sort the agent every sortPeriod steps. 0 means no sorting.
+     */
+    unsigned int sortPeriod;
+    /**
      * Check whether any agent functions within the ModelDescription hierarchy output agents of this type
      * @return true if this type of agent is created by any agent functions
      */

@@ -36,7 +36,7 @@ SET(TESTS_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/sim/test_RunPlan.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/sim/test_RunPlanVector.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_device_environment.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_agent_function_conditions.cu    
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_agent_function_conditions.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_agent_random.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_agent_state_transition.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_device_agent_creation.cu
@@ -50,6 +50,7 @@ SET(TESTS_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_host_environment.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_host_macro_property.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_host_random.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_spatial_agent_sort.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/host_reduction/test_min.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/host_reduction/test_max.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/host_reduction/test_sum.cu

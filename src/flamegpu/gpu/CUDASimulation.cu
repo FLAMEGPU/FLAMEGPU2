@@ -20,6 +20,7 @@
 #include "flamegpu/util/detail/CUDAEventTimer.cuh"
 #include "flamegpu/runtime/detail/curve/curve_rtc.cuh"
 #include "flamegpu/runtime/HostFunctionCallback.h"
+#include "flamegpu/runtime/messaging.h"
 #include "flamegpu/gpu/CUDAAgent.h"
 #include "flamegpu/gpu/CUDAMessage.h"
 #include "flamegpu/sim/LoggingConfig.h"
@@ -95,6 +96,9 @@ CUDASimulation::CUDASimulation(const std::shared_ptr<const ModelData> &_model)
     for (auto it_sm = smm.cbegin(); it_sm != smm.cend(); ++it_sm) {
         submodel_map.emplace(it_sm->first, std::unique_ptr<CUDASimulation>(new CUDASimulation(it_sm->second, this)));
     }
+
+    // Determine which agents will be spatially sorted
+    this->determineAgentsToSort();
 }
 bool CUDASimulation::detectPureRTC(const std::shared_ptr<const ModelData>& _model) {
     const auto& am = _model->agents;
@@ -277,6 +281,163 @@ void CUDASimulation::exitFunctions() {
     }
 }
 
+__global__ void spatialSortInitToThreadIndex(unsigned int *output, unsigned int threadCount) {
+    const unsigned int TID = blockIdx.x * blockDim.x + threadIdx.x;
+    if (TID < threadCount) {
+        output[TID] = TID;
+    }
+}
+
+namespace detail {
+template <typename T> struct Dims {
+    T x;
+    T y;
+    T z;
+};
+}
+
+__global__ void calculateSpatialHash(float* x, float* y, float* z, unsigned int* binIndex, detail::Dims<float> envMin, detail::Dims<float> envWidth, detail::Dims<unsigned int> gridDim, unsigned int threadCount) {
+    const unsigned int TID = blockIdx.x * blockDim.x + threadIdx.x;
+    if (TID < threadCount) {
+        // Compute hash (effectivley an index for to a bin within the partitioning grid in this case)
+        int gridPos[3] = {
+            static_cast<int>(floorf(((x[TID]-envMin.x) / envWidth.x)*gridDim.x)),
+            static_cast<int>(floorf(((y[TID]-envMin.y) / envWidth.y)*gridDim.y)),
+            0
+        };
+
+        // If 3D, set 3rd component
+        if (z) {
+            gridPos[2] = static_cast<int>(floorf(((z[TID]-envMin.z) / envWidth.z)*gridDim.z));
+        }
+
+        // Compute and set the bin index
+        unsigned int bindex;
+
+        if (z) {
+            bindex = (unsigned int)(
+            (gridPos[2] * gridDim.x * gridDim.y +   // z
+            (gridPos[1] * gridDim.x) +              // y
+            gridPos[0]));                           // x
+
+        } else {
+            bindex = (unsigned int)(
+            (gridPos[1] * gridDim.x) +              // y
+            gridPos[0]);                            // x
+        }
+
+        binIndex[TID] = bindex;
+    }
+}
+
+void CUDASimulation::determineAgentsToSort() {
+    const auto& am = model->agents;
+
+    // Iterate agents and then agent functions to find any functions which use spatial messaging
+    for (auto it = am.cbegin(); it != am.cend(); ++it) {
+        const auto& mf = it->second->functions;
+        for (auto it_f = mf.cbegin(); it_f != mf.cend(); ++it_f) {
+            if (auto ptr = it_f->second->message_input.lock()) {
+                // Check if this agent function uses 3D spatial messages
+                if (ptr->getSortingType() == flamegpu::MessageSortingType::spatial3D) {
+                    // Agent uses spatial, check it has correct variables
+                    const auto& ad = *(it->second->description);
+                    if (ad.hasVariable("x") && ad.hasVariable("y") && ad.hasVariable("z")) {
+                        sortTriggers3D.insert(it_f->first);
+                    }
+                }
+
+                // Check if this agent function uses 2D spatial messages
+                if (ptr->getSortingType() == flamegpu::MessageSortingType::spatial2D) {
+                    // Agent uses spatial, check it has correct variables
+                    const auto& ad = *(it->second->description);
+                    if (ad.hasVariable("x") && ad.hasVariable("y")) {
+                        sortTriggers2D.insert(it_f->first);
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+void CUDASimulation::spatialSortAgent(const std::string& funcName, const std::string& agentName, const std::string& state, const int mode) {
+    // Fetch the appropriate message name
+    CUDAAgent& cuda_agent = getCUDAAgent(agentName);
+    auto& cudaAgentData = cuda_agent.getAgentDescription();
+    auto& funcData = cudaAgentData.functions.at(funcName);
+    std::string messageName;
+    if (auto ptr = funcData->message_input.lock()) {
+        messageName = ptr->name;
+    } else {
+        throw("Function " + funcName + " registered for auto-spatial sorting but input message type not found!\n");
+    }
+    MessageBruteForce::Data* msgData = model->messages.at(messageName).get();
+
+    // Get the spatial metadata
+    float radius;
+    detail::Dims<float> envMin {};
+    detail::Dims<float> envMax {};
+    detail::Dims<float> envWidth {};
+    detail::Dims<unsigned int> gridDim {};
+
+    if (auto messageSpatialData2D = dynamic_cast<MessageSpatial2D::Data*>(msgData)) {
+        radius = messageSpatialData2D->radius;
+        envMin = {messageSpatialData2D->minX, messageSpatialData2D->minY, 0.0f};
+        envMax = {messageSpatialData2D->maxX, messageSpatialData2D->maxY, 0.0f};
+    } else if (auto messageSpatialData3D = dynamic_cast<MessageSpatial3D::Data*>(msgData)) {
+        radius = messageSpatialData3D->radius;
+        envMin = {messageSpatialData3D->minX, messageSpatialData3D->minY, messageSpatialData3D->minZ};
+        envMax = {messageSpatialData3D->maxX, messageSpatialData3D->maxY, messageSpatialData3D->maxZ};
+    } else {
+        radius = 0.0f;
+        envMin = {0.0f, 0.0f, 0.0f};
+        envMax = {0.0f, 0.0f, 0.0f};
+    }
+    if (radius) {
+        envWidth = {(envMax.x-envMin.x), (envMax.y-envMin.y), (envMax.z-envMin.z)};
+        gridDim = {static_cast<unsigned int>(ceilf(envWidth.x / radius)), static_cast<unsigned int>(ceilf(envWidth.y / radius)), static_cast<unsigned int>(ceilf(envWidth.z / radius))};
+    }
+
+
+    // Any agent in this list is guaranteed to have x, y, z and _auto_sort_bin_index vars - used in the computation of spatial hash
+    // TODO: User could supply alternatives to "x", "y", "z" to use alternative variables?
+    void* xPtr = cuda_agent.getStateVariablePtr(state, "x");
+    void* yPtr = cuda_agent.getStateVariablePtr(state, "y");
+    void* zPtr = mode == Agent3D ? cuda_agent.getStateVariablePtr(state, "z") : 0;
+    void* binIndexPtr = cuda_agent.getStateVariablePtr(state, "_auto_sort_bin_index");
+
+    // Compute occupancy
+    int blockSize = 0;  // The launch configurator returned block size
+    int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
+    int gridSize = 0;  // The actual grid size needed, based on input size
+    const unsigned int state_list_size = cuda_agent.getStateSize(state);
+    cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, calculateSpatialHash, 0, state_list_size);
+
+    //! Round up according to CUDAAgent state list size
+    gridSize = (state_list_size + blockSize - 1) / blockSize;
+
+    unsigned int sm_size = 0;
+    unsigned int streamIdx = 0;
+#if !defined(SEATBELTS) || SEATBELTS
+    auto *error_buffer = this->singletons->exception.getDevicePtr(streamIdx, this->getStream(streamIdx));
+    sm_size = sizeof(error_buffer);
+#endif
+
+    // Launch kernel
+    calculateSpatialHash<<<gridSize, blockSize, sm_size, this->getStream(streamIdx) >>> (reinterpret_cast<float*>(xPtr),
+    reinterpret_cast<float*>(yPtr),
+    reinterpret_cast<float*>(zPtr),
+    reinterpret_cast<unsigned int*>(binIndexPtr),
+    envMin,
+    envWidth,
+    gridDim,
+    state_list_size);
+
+    assert(host_api);
+    host_api->agent(agentName).sort<unsigned int>("_auto_sort_bin_index", HostAgentAPI::Asc);
+}
+
 bool CUDASimulation::step() {
     NVTX_RANGE(std::string("CUDASimulation::step " + std::to_string(step_count)).c_str());
     // Ensure singletons have been initialised
@@ -293,6 +454,7 @@ bool CUDASimulation::step() {
     if (getSimulationConfig().verbose) {
         fprintf(stdout, "Processing Simulation Step %u\n", step_count);
     }
+
 
     // Ensure there are enough streams to execute the layer.
     // Taking into consideration if in-layer concurrency is disabled or not.
@@ -357,6 +519,19 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
     int streamIdx = 0;
     // Sum the total number of threads being launched in the layer
     unsigned int totalThreads = 0;
+
+    // Spatially sort the agents
+    for (const auto &func_des : layer->agent_functions) {
+        auto func_agent = func_des->parent.lock();
+        if ((func_agent->sortPeriod != 0) && (step_count % func_agent->sortPeriod == 0)) {
+            if (sortTriggers3D.find(func_des->name) != sortTriggers3D.end()) {
+                this->spatialSortAgent(func_des->name, func_agent->name, func_des->initial_state, Agent3D);
+            }
+            if (sortTriggers2D.find(func_des->name) != sortTriggers2D.end()) {
+                this->spatialSortAgent(func_des->name, func_agent->name, func_des->initial_state, Agent2D);
+            }
+        }
+    }
 
     // Map agent memory
     bool has_rtc_func_cond = false;

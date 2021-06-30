@@ -74,6 +74,10 @@ std::unique_ptr<MessageSpecialisationHandler> MessageBruteForce::Data::getSpecia
     return std::unique_ptr<MessageSpecialisationHandler>(new MessageBruteForce::CUDAModelHandler(owner));
 }
 
+flamegpu::MessageSortingType flamegpu::MessageBruteForce::Data::getSortingType() const {
+    return flamegpu::MessageSortingType::none;
+}
+
 // Used for the MessageBruteForce::Data::getType() type and derived methods
 std::type_index MessageBruteForce::Data::getType() const { return std::type_index(typeid(MessageBruteForce)); }
 

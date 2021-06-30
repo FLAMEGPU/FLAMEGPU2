@@ -6,6 +6,7 @@
 #include <string>
 #include <unordered_map>
 #include <map>
+#include <set>
 
 #include "flamegpu/exception/FLAMEGPUDeviceException.cuh"
 #include "flamegpu/sim/Simulation.h"
@@ -247,7 +248,6 @@ class CUDASimulation : public Simulation {
      */
     std::vector<double> getElapsedTimeSteps() const;
 
-
     /** 
      * Get the duration of an individual step in seconds.
      * @param step Index of step, must be less than the number of steps executed.
@@ -415,6 +415,25 @@ class CUDASimulation : public Simulation {
     void stepStepFunctions();
     bool stepExitConditions();
 
+    /**
+     * Spatially sort the agents.
+     * This should only be called within step();
+     */
+    void spatialSortAgent(const std::string& funcName, const std::string& agentName, const std::string& state, const int mode);
+
+    constexpr static int Agent2D = 0;
+    constexpr static int Agent3D = 1;
+
+    /**
+     * Store the agent functions which require spatial sorting
+     */
+    std::set<std::string> sortTriggers2D;
+    std::set<std::string> sortTriggers3D;
+
+    /**
+     * Determines which agents require sorting - only used once during initialisation. Must be called manually if not using .simulate()
+     */
+    void determineAgentsToSort();
 
     /**
      * Struct containing references to the various singletons which may include CUDA code, and therefore can only be initialsed after the deferred arg parsing is completed.

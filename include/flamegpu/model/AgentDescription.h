@@ -264,6 +264,11 @@ class AgentDescription {
      * @return An immutable reference to the set of states agents of this type can enter
      */
     const std::set<std::string> &getStates() const;
+    /**
+     * Set how often this agent is sorted. Default value is 1.
+     * @param sortPeriod Sort this agent every sortPeriod steps. A value of 0 means no sorting will take place
+     */
+    void setSortPeriod(const unsigned int sortPeriod);
 
  private:
     /**
@@ -290,6 +295,10 @@ void AgentDescription::newVariable(const std::string &variable_name, const std::
         c = static_cast<char>(tolower(c));
     if (lower_variable_name == "name" || lower_variable_name == "state") {
         THROW exception::ReservedName("Agent variables cannot be named 'name' or 'state', these are reserved for backwards compatibility reasons, "
+            "in AgentDescription::newVariable().");
+    }
+    if (lower_variable_name == "_auto_sort_bin_index") {
+        THROW exception::ReservedName("The variable name '_auto_sort_bin_index' is reserved for internal usage, "
             "in AgentDescription::newVariable().");
     }
     // Array length 0 makes no sense
