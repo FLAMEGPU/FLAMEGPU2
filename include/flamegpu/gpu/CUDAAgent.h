@@ -14,7 +14,7 @@
 #include "flamegpu/gpu/CUDAAgentStateList.h"
 #include "flamegpu/model/AgentFunctionData.cuh"
 #include "flamegpu/model/SubAgentData.h"
-#include "flamegpu/runtime/cuRVE/curve_rtc.h"
+#include "flamegpu/runtime/detail/curve/curve_rtc.h"
 #include "flamegpu/sim/AgentInterface.h"
 
 namespace flamegpu {
@@ -38,7 +38,7 @@ class CUDAAgent : public AgentInterface {
      *  map of agent function name to RTC function instance
      */
      typedef std::map<const std::string, std::unique_ptr<jitify::experimental::KernelInstantiation>> CUDARTCFuncMap;
-     typedef std::map<const std::string, std::unique_ptr<CurveRTCHost>> CUDARTCHeaderMap;
+     typedef std::map<const std::string, std::unique_ptr<detail::curve::CurveRTCHost>> CUDARTCHeaderMap;
     /**
      * Element type of CUDARTCFuncMap
      */
@@ -218,7 +218,7 @@ class CUDAAgent : public AgentInterface {
      * @param function_name the name of the RTC agent function or the agent function name suffixed with condition (if it is a function condition)
      */
     const jitify::experimental::KernelInstantiation& getRTCInstantiation(const std::string &function_name) const;
-    CurveRTCHost &getRTCHeader(const std::string &function_name) const;
+    detail::curve::CurveRTCHost &getRTCHeader(const std::string &function_name) const;
     /**
      * Returns the CUDARTCFuncMap
      */

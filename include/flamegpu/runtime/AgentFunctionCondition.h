@@ -13,8 +13,8 @@ typedef void(AgentFunctionConditionWrapper)(
 #if !defined(SEATBELTS) || SEATBELTS
     exception::DeviceExceptionBuffer *error_buffer,
 #endif
-    Curve::NamespaceHash instance_id_hash,
-    Curve::NamespaceHash agent_func_name_hash,
+    detail::curve::Curve::NamespaceHash instance_id_hash,
+    detail::curve::Curve::NamespaceHash agent_func_name_hash,
     const unsigned int popNo,
     curandState *d_rng,
     unsigned int *scanFlag_conditionResult);  // Can't put __global__ in a typedef
@@ -36,8 +36,8 @@ __global__ void agent_function_condition_wrapper(
 #if !defined(SEATBELTS) || SEATBELTS
     exception::DeviceExceptionBuffer *error_buffer,
 #endif
-    Curve::NamespaceHash instance_id_hash,
-    Curve::NamespaceHash agent_func_name_hash,
+    detail::curve::Curve::NamespaceHash instance_id_hash,
+    detail::curve::Curve::NamespaceHash agent_func_name_hash,
     const unsigned int popNo,
     curandState *d_rng,
     unsigned int *scanFlag_conditionResult) {

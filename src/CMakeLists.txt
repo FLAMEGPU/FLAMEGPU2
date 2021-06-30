@@ -139,8 +139,8 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/HostAPI_macros.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/HostAgentAPI.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/HostNewAgentAPI.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/cuRVE/curve.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/cuRVE/curve_rtc.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/detail/curve/curve.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/detail/curve/curve_rtc.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging_device.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/None.h
@@ -229,8 +229,8 @@ SET(SRC_FLAMEGPU2
     ${FLAMEGPU_ROOT}/src/flamegpu/sim/SimRunner.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/sim/SimLogger.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/sim/Simulation.cu
-    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/cuRVE/curve.cu
-    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/cuRVE/curve_rtc.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/detail/curve/curve.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/detail/curve/curve_rtc.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/HostAPI.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/HostAgentAPI.cu 
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/BruteForce.cu

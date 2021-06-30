@@ -1,5 +1,5 @@
-#ifndef INCLUDE_FLAMEGPU_RUNTIME_CURVE_CURVE_RTC_H_
-#define INCLUDE_FLAMEGPU_RUNTIME_CURVE_CURVE_RTC_H_
+#ifndef INCLUDE_FLAMEGPU_RUNTIME_DETAIL_CURVE_CURVE_RTC_H_
+#define INCLUDE_FLAMEGPU_RUNTIME_DETAIL_CURVE_CURVE_RTC_H_
 
 #include <cstring>
 #include <string>
@@ -13,6 +13,8 @@ class KernelInstantiation;
 }  // namespace experimental
 }  // namespace jitify
 namespace flamegpu {
+namespace detail {
+namespace curve {
 
 
 /**
@@ -314,6 +316,9 @@ class CurveRTCHost {
      */
     std::map<std::string, RTCEnvVariableProperties> RTCEnvVariables;
 };
+
+}  // namespace curve
+}  // namespace detail
 }  // namespace flamegpu
 
-#endif  // INCLUDE_FLAMEGPU_RUNTIME_CURVE_CURVE_RTC_H_
+#endif  // INCLUDE_FLAMEGPU_RUNTIME_DETAIL_CURVE_CURVE_RTC_H_

@@ -1,6 +1,6 @@
 #include <sstream>
 
-#include "flamegpu/runtime/cuRVE/curve_rtc.h"
+#include "flamegpu/runtime/detail/curve/curve_rtc.h"
 #include "flamegpu/exception/FLAMEGPUException.h"
 #include "flamegpu/runtime/utility/EnvironmentManager.cuh"
 
@@ -14,6 +14,8 @@
 #endif
 
 namespace flamegpu {
+namespace detail {
+namespace curve {
 
 
 const char* CurveRTCHost::curve_rtc_dynamic_h_template = R"###(dynamic/curve_rtc_dynamic.h
@@ -45,6 +47,9 @@ template <unsigned int N, unsigned int M>
 __device__ bool strings_equal(const char(&a)[N], const char(&b)[M]) {
     return false;
 }
+
+namespace detail {
+namespace curve {
 
 /**
  * Dynamically generated version of Curve without hashing
@@ -158,6 +163,8 @@ __device__ __forceinline__ void Curve::setNewAgentArrayVariable(const char(&name
 $DYNAMIC_SETNEWAGENTARRAYVARIABLE_IMPL    
 }
 
+}  // namespace curve 
+}  // namespace detail 
 }  // namespace flamegpu 
 
 // has to be included after definition of curve namespace
@@ -348,7 +355,7 @@ void CurveRTCHost::initHeaderEnvironment() {
                 getEnvVariableImpl <<   "            return 0;\n";
                 getEnvVariableImpl <<   "        }\n";
                 getEnvVariableImpl <<   "#endif\n";
-                getEnvVariableImpl <<   "        return *reinterpret_cast<T*>(reinterpret_cast<void*>(" << getVariableSymbolName() <<" + " << props.offset << "));\n";
+                getEnvVariableImpl <<   "        return *reinterpret_cast<T*>(reinterpret_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() <<" + " << props.offset << "));\n";
                 getEnvVariableImpl <<   "    };\n";
             }
         }
@@ -378,7 +385,7 @@ void CurveRTCHost::initHeaderEnvironment() {
                 getEnvArrayVariableImpl << "            return 0;\n";
                 getEnvArrayVariableImpl << "        }\n";
                 getEnvArrayVariableImpl << "#endif\n";
-                getEnvArrayVariableImpl << "        return reinterpret_cast<T*>(reinterpret_cast<void*>(" << getVariableSymbolName() <<" + " << props.offset << "))[index];\n";
+                getEnvArrayVariableImpl << "        return reinterpret_cast<T*>(reinterpret_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() <<" + " << props.offset << "))[index];\n";
                 getEnvArrayVariableImpl << "    };\n";
             }
         }
@@ -417,7 +424,7 @@ void CurveRTCHost::initHeaderSetters() {
                 setAgentVariableImpl << "                    return;\n";
                 setAgentVariableImpl << "                }\n";
                 setAgentVariableImpl << "#endif\n";
-                setAgentVariableImpl << "              (*static_cast<T**>(static_cast<void*>(" << getVariableSymbolName() << " + " << agent_data_offset + (ct++ * sizeof(void*)) << ")))[index] = (T) variable;\n";
+                setAgentVariableImpl << "              (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << agent_data_offset + (ct++ * sizeof(void*)) << ")))[index] = (T) variable;\n";
                 setAgentVariableImpl << "              return;\n";
                 setAgentVariableImpl << "          }\n";
             } else { ++ct; }
@@ -441,7 +448,7 @@ void CurveRTCHost::initHeaderSetters() {
                 setMessageVariableImpl << "                    return;\n";
                 setMessageVariableImpl << "                }\n";
                 setMessageVariableImpl << "#endif\n";
-                setMessageVariableImpl << "              (*static_cast<T**>(static_cast<void*>(" << getVariableSymbolName() << " + " << msgOut_data_offset + (ct++ * sizeof(void*)) << ")))[index] = (T) variable;\n";
+                setMessageVariableImpl << "              (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << msgOut_data_offset + (ct++ * sizeof(void*)) << ")))[index] = (T) variable;\n";
                 setMessageVariableImpl << "              return;\n";
                 setMessageVariableImpl << "          }\n";
             } else { ++ct; }
@@ -465,7 +472,7 @@ void CurveRTCHost::initHeaderSetters() {
                 setNewAgentVariableImpl << "                    return;\n";
                 setNewAgentVariableImpl << "                }\n";
                 setNewAgentVariableImpl << "#endif\n";
-                setNewAgentVariableImpl << "              (*static_cast<T**>(static_cast<void*>(" << getVariableSymbolName() << " + " << newAgent_data_offset + (ct++ * sizeof(void*)) << ")))[index] = (T) variable;\n";
+                setNewAgentVariableImpl << "              (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << newAgent_data_offset + (ct++ * sizeof(void*)) << ")))[index] = (T) variable;\n";
                 setNewAgentVariableImpl << "              return;\n";
                 setNewAgentVariableImpl << "          }\n";
             } else { ++ct; }
@@ -497,7 +504,7 @@ void CurveRTCHost::initHeaderSetters() {
                 setAgentArrayVariableImpl << "                  return;\n";
                 setAgentArrayVariableImpl << "              }\n";
                 setAgentArrayVariableImpl << "#endif\n";
-                setAgentArrayVariableImpl << "              (*static_cast<T**>(static_cast<void*>(" << getVariableSymbolName() << " + " << agent_data_offset + (ct++ * sizeof(void*)) << ")))[i] = (T) variable;\n";
+                setAgentArrayVariableImpl << "              (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << agent_data_offset + (ct++ * sizeof(void*)) << ")))[i] = (T) variable;\n";
                 setAgentArrayVariableImpl << "              return;\n";
                 setAgentArrayVariableImpl << "          }\n";
             } else { ++ct; }
@@ -529,7 +536,7 @@ void CurveRTCHost::initHeaderSetters() {
                 setNewAgentArrayVariableImpl << "                  return;\n";
                 setNewAgentArrayVariableImpl << "              }\n";
                 setNewAgentArrayVariableImpl << "#endif\n";
-                setNewAgentArrayVariableImpl << "              (*static_cast<T**>(static_cast<void*>(" << getVariableSymbolName() << " + " << newAgent_data_offset + (ct++ * sizeof(void*)) << ")))[i] = (T) variable;\n";
+                setNewAgentArrayVariableImpl << "              (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << newAgent_data_offset + (ct++ * sizeof(void*)) << ")))[i] = (T) variable;\n";
                 setNewAgentArrayVariableImpl << "              return;\n";
                 setNewAgentArrayVariableImpl << "          }\n";
             } else { ++ct; }
@@ -555,7 +562,7 @@ void CurveRTCHost::initHeaderGetters() {
                 getAgentVariableImpl << "                    return 0;\n";
                 getAgentVariableImpl << "                }\n";
                 getAgentVariableImpl << "#endif\n";
-                getAgentVariableImpl << "                return (*static_cast<T**>(static_cast<void*>(" << getVariableSymbolName() << " + " << agent_data_offset + (ct++ * sizeof(void*)) << ")))[index];\n";
+                getAgentVariableImpl << "                return (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << agent_data_offset + (ct++ * sizeof(void*)) << ")))[index];\n";
                 getAgentVariableImpl << "            }\n";
             } else { ++ct; }
         }
@@ -579,7 +586,7 @@ void CurveRTCHost::initHeaderGetters() {
                 getMessageVariableImpl << "                    return 0;\n";
                 getMessageVariableImpl << "                }\n";
                 getMessageVariableImpl << "#endif\n";
-                getMessageVariableImpl << "                return (*static_cast<T**>(static_cast<void*>(" << getVariableSymbolName() << " + " << msgIn_data_offset + (ct++ * sizeof(void*)) << ")))[index];\n";
+                getMessageVariableImpl << "                return (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << msgIn_data_offset + (ct++ * sizeof(void*)) << ")))[index];\n";
                 getMessageVariableImpl << "            }\n";
             } else { ++ct; }
         }
@@ -603,7 +610,7 @@ void CurveRTCHost::initHeaderGetters() {
                 getAgentVariableLDGImpl << "                    return 0;\n";
                 getAgentVariableLDGImpl << "                }\n";
                 getAgentVariableLDGImpl << "#endif\n";
-                getAgentVariableLDGImpl << "                return (T) __ldg((*static_cast<T**>(static_cast<void*>(" << getVariableSymbolName() << " + " << agent_data_offset + (ct++ * sizeof(void*)) << "))) + index);\n";
+                getAgentVariableLDGImpl << "                return (T) __ldg((*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << agent_data_offset + (ct++ * sizeof(void*)) << "))) + index);\n";
                 getAgentVariableLDGImpl << "            }\n";
             } else { ++ct; }
         }
@@ -627,7 +634,7 @@ void CurveRTCHost::initHeaderGetters() {
                 getMessageVariableLDGImpl << "                    return 0;\n";
                 getMessageVariableLDGImpl << "                }\n";
                 getMessageVariableLDGImpl << "#endif\n";
-                getMessageVariableLDGImpl << "                return (T) __ldg((*static_cast<T**>(static_cast<void*>(" << getVariableSymbolName() << " + " << msgIn_data_offset + (ct++ * sizeof(void*)) << "))) + index);\n";
+                getMessageVariableLDGImpl << "                return (T) __ldg((*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << msgIn_data_offset + (ct++ * sizeof(void*)) << "))) + index);\n";
                 getMessageVariableLDGImpl << "            }\n";
             } else { ++ct; }
         }
@@ -659,7 +666,7 @@ void CurveRTCHost::initHeaderGetters() {
                 getAgentArrayVariableImpl << "                  return 0;\n";
                 getAgentArrayVariableImpl << "              }\n";
                 getAgentArrayVariableImpl << "#endif\n";
-                getAgentArrayVariableImpl << "              return (*static_cast<T**>(static_cast<void*>(" << getVariableSymbolName() << " + " << agent_data_offset + (ct++ * sizeof(void*)) << ")))[i];\n";
+                getAgentArrayVariableImpl << "              return (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << agent_data_offset + (ct++ * sizeof(void*)) << ")))[i];\n";
                 getAgentArrayVariableImpl << "           };\n";
             } else { ++ct; }
         }
@@ -691,7 +698,7 @@ void CurveRTCHost::initHeaderGetters() {
                 getAgentArrayVariableLDGImpl << "                  return 0;\n";
                 getAgentArrayVariableLDGImpl << "              }\n";
                 getAgentArrayVariableLDGImpl << "#endif\n";
-                getAgentArrayVariableLDGImpl << "              return (T) __ldg((*static_cast<T**>(static_cast<void*>(" << getVariableSymbolName() << " + " << agent_data_offset + (ct++ * sizeof(void*)) << "))) + i);\n";
+                getAgentArrayVariableLDGImpl << "              return (T) __ldg((*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << agent_data_offset + (ct++ * sizeof(void*)) << "))) + i);\n";
                 getAgentArrayVariableLDGImpl << "           };\n";
             } else { ++ct; }
         }
@@ -799,9 +806,11 @@ void CurveRTCHost::updateEnvCache(const char *env_ptr) {
 }
 void CurveRTCHost::updateDevice(const jitify::experimental::KernelInstantiation& instance) {
     // The namespace is required here, but not in other uses of getVariableSymbolName.
-    std::string cache_var_name = std::string("flamegpu::") + getVariableSymbolName();
+    std::string cache_var_name = std::string("flamegpu::detail::curve::") + getVariableSymbolName();
     CUdeviceptr d_var_ptr = instance.get_global_ptr(cache_var_name.c_str());
     gpuErrchkDriverAPI(cuMemcpyHtoD(d_var_ptr, h_data_buffer, data_buffer_size));
 }
 
+}  // namespace curve
+}  // namespace detail
 }  // namespace flamegpu

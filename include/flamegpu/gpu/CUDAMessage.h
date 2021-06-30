@@ -16,7 +16,11 @@ namespace flamegpu {
 class CUDAScatter;
 struct AgentFunctionData;
 struct MessageData;
+namespace detail {
+namespace curve {
 class Curve;
+}  // namespace curve
+}  // namespace detail
 class MsgSpecialisationHandler;
 class CUDAAgent;
 /**

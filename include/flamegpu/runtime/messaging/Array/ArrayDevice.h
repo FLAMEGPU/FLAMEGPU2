@@ -205,7 +205,7 @@ class MsgArray::In {
          * @param x Search origin x coord
          * @param _radius Search radius
          */
-        __device__ inline Filter(const size_type &_length, const Curve::NamespaceHash &_combined_hash, const size_type &x, const size_type &_radius);
+        __device__ inline Filter(const size_type &_length, const detail::curve::Curve::NamespaceHash &_combined_hash, const size_type &x, const size_type &_radius);
         /**
          * Returns an iterator to the start of the message list subset about the search origin
          */
@@ -239,7 +239,7 @@ class MsgArray::In {
          * CURVE hash for accessing message data
          * agent function hash + message hash
          */
-        Curve::NamespaceHash combined_hash;
+        detail::curve::Curve::NamespaceHash combined_hash;
     };
     /**
      * Constructer
@@ -248,7 +248,7 @@ class MsgArray::In {
      * @param msg_hash Added to agentfn_hash to produce combined_hash
      * @param metadata Reinterpreted as type MsgArray::MetaData to extract length
      */
-    __device__ In(Curve::NamespaceHash agentfn_hash, Curve::NamespaceHash msg_hash, const void *metadata)
+    __device__ In(detail::curve::Curve::NamespaceHash agentfn_hash, detail::curve::Curve::NamespaceHash msg_hash, const void *metadata)
         : combined_hash(agentfn_hash + msg_hash)
         , length(reinterpret_cast<const MetaData*>(metadata)->length)
     { }
@@ -292,7 +292,7 @@ class MsgArray::In {
      * CURVE hash for accessing message data
      * agent function hash + message hash
      */
-    Curve::NamespaceHash combined_hash;
+    detail::curve::Curve::NamespaceHash combined_hash;
     /**
      * Metadata struct for accessing messages
      */
@@ -312,7 +312,7 @@ class MsgArray::Out {
      * @param _metadata Message specialisation specific metadata struct (of type MsgArray::MetaData)
      * @param scan_flag_messageOutput Scan flag array for optional message output
      */
-    __device__ Out(Curve::NamespaceHash agentfn_hash, Curve::NamespaceHash msg_hash, const void *_metadata, unsigned int *scan_flag_messageOutput)
+    __device__ Out(detail::curve::Curve::NamespaceHash agentfn_hash, detail::curve::Curve::NamespaceHash msg_hash, const void *_metadata, unsigned int *scan_flag_messageOutput)
         : combined_hash(agentfn_hash + msg_hash)
         , scan_flag(scan_flag_messageOutput)
 #if !defined(SEATBELTS) || SEATBELTS
@@ -341,7 +341,7 @@ class MsgArray::Out {
      * CURVE hash for accessing message data
      * agentfn_hash + msg_hash
      */
-    Curve::NamespaceHash combined_hash;
+    detail::curve::Curve::NamespaceHash combined_hash;
     /**
      * Scan flag array for optional message output
      */
@@ -362,7 +362,7 @@ __device__ T MsgArray::In::Message::getVariable(const char(&variable_name)[N]) c
     }
 #endif
     // get the value from curve using the stored hashes and message index.
-    return Curve::getMessageVariable<T>(variable_name, this->_parent.combined_hash, index);
+    return detail::curve::Curve::getMessageVariable<T>(variable_name, this->_parent.combined_hash, index);
 }
 template<typename T, unsigned int N>
 __device__ T MsgArray::In::Filter::Message::getVariable(const char(&variable_name)[N]) const {
@@ -374,7 +374,7 @@ __device__ T MsgArray::In::Filter::Message::getVariable(const char(&variable_nam
     }
 #endif
     // get the value from curve using the stored hashes and message index.
-    return Curve::getMessageVariable<T>(variable_name, this->_parent.combined_hash, index_1d);
+    return detail::curve::Curve::getMessageVariable<T>(variable_name, this->_parent.combined_hash, index_1d);
 }
 
 template<typename T, unsigned int N>
@@ -385,7 +385,7 @@ __device__ void MsgArray::Out::setVariable(const char(&variable_name)[N], T valu
     unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
 
     // set the variable using curve
-    Curve::setMessageVariable<T>(variable_name, combined_hash, value, index);
+    detail::curve::Curve::setMessageVariable<T>(variable_name, combined_hash, value, index);
 
     // setIndex() sets the optional msg scan flag
 }
@@ -403,12 +403,12 @@ __device__ void MsgArray::Out::setIndex(const size_type &id) const {
 #endif
 
     // set the variable using curve
-    Curve::setMessageVariable<size_type>("___INDEX", combined_hash, id, index);
+    detail::curve::Curve::setMessageVariable<size_type>("___INDEX", combined_hash, id, index);
 
     // Set scan flag incase the message is optional
     this->scan_flag[index] = 1;
 }
-__device__ MsgArray::In::Filter::Filter(const size_type &_length, const Curve::NamespaceHash &_combined_hash, const size_type &x, const size_type &_radius)
+__device__ MsgArray::In::Filter::Filter(const size_type &_length, const detail::curve::Curve::NamespaceHash &_combined_hash, const size_type &x, const size_type &_radius)
     : radius(_radius)
     , length(_length)
     , combined_hash(_combined_hash) {

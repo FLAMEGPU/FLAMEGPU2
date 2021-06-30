@@ -16,7 +16,7 @@
 #include "flamegpu/util/detail/compute_capability.cuh"
 #include "flamegpu/util/detail/SignalHandlers.h"
 #include "flamegpu/util/detail/CUDAEventTimer.cuh"
-#include "flamegpu/runtime/cuRVE/curve_rtc.h"
+#include "flamegpu/runtime/detail/curve/curve_rtc.h"
 #include "flamegpu/runtime/HostFunctionCallback.h"
 #include "flamegpu/gpu/CUDAAgent.h"
 #include "flamegpu/gpu/CUDAMessage.h"
@@ -200,7 +200,7 @@ CUDASimulation::~CUDASimulation() {
             // Could mutex it with init simulation cuda stuff, but really seems unlikely
             gpuErrchk(cudaDeviceReset());
             EnvironmentManager::getInstance().purge();
-            Curve::getInstance().purge();
+            detail::curve::Curve::getInstance().purge();
         }
     }
     if (t_device_id != deviceInitialised) {
@@ -421,9 +421,9 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                 int gridSize = 0;  // The actual grid size needed, based on input size
 
                 //  Agent function condition kernel wrapper args
-                Curve::NamespaceHash agentname_hash = Curve::variableRuntimeHash(agent_name.c_str());
-                Curve::NamespaceHash funcname_hash = Curve::variableRuntimeHash(func_name.c_str());
-                Curve::NamespaceHash agent_func_name_hash = agentname_hash + funcname_hash + instance_id;
+                detail::curve::Curve::NamespaceHash agentname_hash = detail::curve::Curve::variableRuntimeHash(agent_name.c_str());
+                detail::curve::Curve::NamespaceHash funcname_hash = detail::curve::Curve::variableRuntimeHash(func_name.c_str());
+                detail::curve::Curve::NamespaceHash agent_func_name_hash = agentname_hash + funcname_hash + instance_id;
                 curandState *t_rng = d_rng + totalThreads;
                 unsigned int *scanFlag_agentDeath = this->singletons->scatter.Scan().Config(CUDAScanCompaction::Type::AGENT_DEATH, streamIdx).d_ptrs.scan_flag;
                 unsigned int sm_size = 0;
@@ -625,12 +625,12 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
             id_t *d_agentOut_nextID = nullptr;
             std::string agent_name = func_agent->name;
             std::string func_name = func_des->name;
-            Curve::NamespaceHash agentname_hash = Curve::variableRuntimeHash(agent_name.c_str());
-            Curve::NamespaceHash funcname_hash = Curve::variableRuntimeHash(func_name.c_str());
-            Curve::NamespaceHash agent_func_name_hash = agentname_hash + funcname_hash + instance_id;
-            Curve::NamespaceHash message_name_inp_hash = 0;
-            Curve::NamespaceHash message_name_outp_hash = 0;
-            Curve::NamespaceHash agentoutput_hash = 0;
+            detail::curve::Curve::NamespaceHash agentname_hash = detail::curve::Curve::variableRuntimeHash(agent_name.c_str());
+            detail::curve::Curve::NamespaceHash funcname_hash = detail::curve::Curve::variableRuntimeHash(func_name.c_str());
+            detail::curve::Curve::NamespaceHash agent_func_name_hash = agentname_hash + funcname_hash + instance_id;
+            detail::curve::Curve::NamespaceHash message_name_inp_hash = 0;
+            detail::curve::Curve::NamespaceHash message_name_outp_hash = 0;
+            detail::curve::Curve::NamespaceHash agentoutput_hash = 0;
 
             // check if a function has an input message
             if (auto im = func_des->message_input.lock()) {
@@ -638,7 +638,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                 const CUDAMessage& cuda_message = getCUDAMessage(inpMessage_name);
 
                 // hash message name
-                message_name_inp_hash = Curve::variableRuntimeHash(inpMessage_name.c_str());
+                message_name_inp_hash = detail::curve::Curve::variableRuntimeHash(inpMessage_name.c_str());
 
                 d_in_messagelist_metadata = cuda_message.getMetaDataDevicePtr();
             }
@@ -649,13 +649,13 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                 const CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
 
                 // hash message name
-                message_name_outp_hash =  Curve::variableRuntimeHash(outpMessage_name.c_str());
+                message_name_outp_hash =  detail::curve::Curve::variableRuntimeHash(outpMessage_name.c_str());
                 d_out_messagelist_metadata = cuda_message.getMetaDataDevicePtr();
             }
 
             // check if a function has agent output
             if (auto oa = func_des->agent_output.lock()) {
-                agentoutput_hash = (Curve::variableRuntimeHash("_agent_birth") ^ funcname_hash) + instance_id;
+                agentoutput_hash = (detail::curve::Curve::variableRuntimeHash("_agent_birth") ^ funcname_hash) + instance_id;
                 CUDAAgent& output_agent = getCUDAAgent(oa->name);
                 d_agentOut_nextID = output_agent.getDeviceNextID();
             }
@@ -1275,7 +1275,7 @@ void CUDASimulation::initialiseSingletons() {
         gpuErrchk(cudaMemcpyFromSymbol(&DEVICE_HAS_RESET_CHECK, DEVICE_HAS_RESET, sizeof(unsigned int)));
         if (DEVICE_HAS_RESET_CHECK == DEVICE_HAS_RESET_FLAG) {
             // Device has been reset, purge host mirrors of static objects/singletons
-            Curve::getInstance().purge();
+            detail::curve::Curve::getInstance().purge();
             if (singletons) {
                 singletons->rng.purge();
                 singletons->scatter.purge();
@@ -1289,7 +1289,7 @@ void CUDASimulation::initialiseSingletons() {
         maps_lock.unlock();
         // Get references to all required singleton and store in the instance.
         singletons = new Singletons(
-            Curve::getInstance(),
+            detail::curve::Curve::getInstance(),
             EnvironmentManager::getInstance());
 
         // Reinitialise random for this simulation instance

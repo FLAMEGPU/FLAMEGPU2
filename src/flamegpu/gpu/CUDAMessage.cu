@@ -9,7 +9,7 @@
 
 #include "flamegpu/runtime/messaging/BruteForce.h"
 #include "flamegpu/model/AgentFunctionDescription.h"
-#include "flamegpu/runtime/cuRVE/curve.h"
+#include "flamegpu/runtime/detail/curve/curve.h"
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/runtime/messaging.h"
 
@@ -98,17 +98,17 @@ void CUDAMessage::mapReadRuntimeVariables(const AgentFunctionData& func, const C
 
     const std::string message_name = message_description.name;
 
-    const Curve::VariableHash message_hash = Curve::getInstance().variableRuntimeHash(message_name.c_str());
-    const Curve::VariableHash agent_hash = Curve::getInstance().variableRuntimeHash(func.parent.lock()->name.c_str());
-    const Curve::VariableHash func_hash = Curve::getInstance().variableRuntimeHash(func.name.c_str());
-    auto &curve = Curve::getInstance();
+    const detail::curve::Curve::VariableHash message_hash = detail::curve::Curve::getInstance().variableRuntimeHash(message_name.c_str());
+    const detail::curve::Curve::VariableHash agent_hash = detail::curve::Curve::getInstance().variableRuntimeHash(func.parent.lock()->name.c_str());
+    const detail::curve::Curve::VariableHash func_hash = detail::curve::Curve::getInstance().variableRuntimeHash(func.name.c_str());
+    auto &curve = detail::curve::Curve::getInstance();
     // loop through the message variables to map each variable name using cuRVE
     for (const auto &mmp : message_description.variables) {
         // get a device pointer for the message variable name
         void* d_ptr = message_list->getReadMessageListVariablePointer(mmp.first);
 
         // map using curve
-        Curve::VariableHash var_hash = Curve::getInstance().variableRuntimeHash(mmp.first.c_str());
+        detail::curve::Curve::VariableHash var_hash = detail::curve::Curve::getInstance().variableRuntimeHash(mmp.first.c_str());
 
         // get the message variable size
         size_t size = mmp.second.type_size;
@@ -117,9 +117,9 @@ void CUDAMessage::mapReadRuntimeVariables(const AgentFunctionData& func, const C
             // maximum population size
             unsigned int length = this->getMessageCount();  // check to see if it is equal to pop
 #ifdef _DEBUG
-            const Curve::Variable cv = curve.registerVariableByHash(var_hash + agent_hash + func_hash + message_hash + instance_id, d_ptr, size, length);
-            if (cv != static_cast<int>((var_hash + agent_hash + func_hash + message_hash + instance_id)%Curve::MAX_VARIABLES)) {
-                fprintf(stderr, "Curve Warning: Agent Function '%s' Message In Variable '%s' has a collision and may work improperly.\n", message_name.c_str(), mmp.first.c_str());
+            const detail::curve::Curve::Variable cv = curve.registerVariableByHash(var_hash + agent_hash + func_hash + message_hash + instance_id, d_ptr, size, length);
+            if (cv != static_cast<int>((var_hash + agent_hash + func_hash + message_hash + instance_id)%detail::curve::Curve::MAX_VARIABLES)) {
+                fprintf(stderr, "detail::curve::Curve Warning: Agent Function '%s' Message In Variable '%s' has a collision and may work improperly.\n", message_name.c_str(), mmp.first.c_str());
             }
 #else
             curve.registerVariableByHash(var_hash + agent_hash + func_hash + message_hash + instance_id, d_ptr, size, length);
@@ -149,17 +149,17 @@ void CUDAMessage::mapWriteRuntimeVariables(const AgentFunctionData& func, const 
 
     const std::string message_name = message_description.name;
 
-    const Curve::VariableHash message_hash = Curve::getInstance().variableRuntimeHash(message_name.c_str());
-    const Curve::VariableHash agent_hash = Curve::getInstance().variableRuntimeHash(func.parent.lock()->name.c_str());
-    const Curve::VariableHash func_hash = Curve::getInstance().variableRuntimeHash(func.name.c_str());
-    auto &curve = Curve::getInstance();
+    const detail::curve::Curve::VariableHash message_hash = detail::curve::Curve::getInstance().variableRuntimeHash(message_name.c_str());
+    const detail::curve::Curve::VariableHash agent_hash = detail::curve::Curve::getInstance().variableRuntimeHash(func.parent.lock()->name.c_str());
+    const detail::curve::Curve::VariableHash func_hash = detail::curve::Curve::getInstance().variableRuntimeHash(func.name.c_str());
+    auto &curve = detail::curve::Curve::getInstance();
     // loop through the message variables to map each variable name using cuRVE
     for (const auto &mmp : message_description.variables) {
         // get a device pointer for the message variable name
         void* d_ptr = message_list->getWriteMessageListVariablePointer(mmp.first);
 
         // map using curve
-        Curve::VariableHash var_hash = Curve::variableRuntimeHash(mmp.first.c_str());
+        detail::curve::Curve::VariableHash var_hash = detail::curve::Curve::variableRuntimeHash(mmp.first.c_str());
 
         // get the message variable size
         size_t size = mmp.second.type_size;
@@ -168,9 +168,9 @@ void CUDAMessage::mapWriteRuntimeVariables(const AgentFunctionData& func, const 
             // maximum population size
             unsigned int length = writeLen;  // check to see if it is equal to pop
 #ifdef _DEBUG
-            const Curve::Variable cv = curve.registerVariableByHash(var_hash + agent_hash + func_hash + message_hash + instance_id, d_ptr, size, length);
-            if (cv != static_cast<int>((var_hash + agent_hash + func_hash + message_hash + instance_id)%Curve::MAX_VARIABLES)) {
-                fprintf(stderr, "Curve Warning: Agent Function '%s' Message '%s' Out? Variable '%s' has a collision and may work improperly.\n", func.name.c_str(), message_name.c_str(), mmp.first.c_str());
+            const detail::curve::Curve::Variable cv = curve.registerVariableByHash(var_hash + agent_hash + func_hash + message_hash + instance_id, d_ptr, size, length);
+            if (cv != static_cast<int>((var_hash + agent_hash + func_hash + message_hash + instance_id)%detail::curve::Curve::MAX_VARIABLES)) {
+                fprintf(stderr, "detail::curve::Curve Warning: Agent Function '%s' Message '%s' Out? Variable '%s' has a collision and may work improperly.\n", func.name.c_str(), message_name.c_str(), mmp.first.c_str());
             }
 #else
             curve.registerVariableByHash(var_hash + agent_hash + func_hash + message_hash + instance_id, d_ptr, size, length);
@@ -198,14 +198,14 @@ void CUDAMessage::unmapRuntimeVariables(const AgentFunctionData& func, const uns
     }
     const std::string message_name = message_description.name;
 
-    const Curve::VariableHash message_hash = Curve::getInstance().variableRuntimeHash(message_name.c_str());
-    const Curve::VariableHash agent_hash = Curve::getInstance().variableRuntimeHash(func.parent.lock()->name.c_str());
-    const Curve::VariableHash func_hash = Curve::getInstance().variableRuntimeHash(func.name.c_str());
-    auto &curve = Curve::getInstance();
+    const detail::curve::Curve::VariableHash message_hash = detail::curve::Curve::getInstance().variableRuntimeHash(message_name.c_str());
+    const detail::curve::Curve::VariableHash agent_hash = detail::curve::Curve::getInstance().variableRuntimeHash(func.parent.lock()->name.c_str());
+    const detail::curve::Curve::VariableHash func_hash = detail::curve::Curve::getInstance().variableRuntimeHash(func.name.c_str());
+    auto &curve = detail::curve::Curve::getInstance();
     // loop through the message variables to map each variable name using cuRVE
     for (const auto &mmp : message_description.variables) {
         // unmap using curve
-        Curve::VariableHash var_hash = Curve::variableRuntimeHash(mmp.first.c_str());
+        detail::curve::Curve::VariableHash var_hash = detail::curve::Curve::variableRuntimeHash(mmp.first.c_str());
         curve.unregisterVariableByHash(var_hash + agent_hash + func_hash + message_hash + instance_id);
     }
 }

@@ -5,13 +5,14 @@
 #include <map>
 #include <memory>
 
-#include "flamegpu/runtime/cuRVE/curve.h"
+#include "flamegpu/runtime/detail/curve/curve.h"
 
 
 #include "flamegpu/gpu/detail/CUDAErrorChecking.cuh"
 #include "flamegpu/util/nvtx.h"
 
 namespace flamegpu {
+namespace detail {
 namespace curve {
 namespace detail {
     /**
@@ -33,7 +34,6 @@ namespace detail {
      */
     __constant__ unsigned int d_lengths[Curve::MAX_VARIABLES];
 }  // namespace detail
-}  // namespace curve
 
 std::mutex Curve::instance_mutex;
 
@@ -210,4 +210,6 @@ Curve& Curve::getInstance() {
     return *(instances.emplace(device_id, std::unique_ptr<Curve>(new Curve())).first->second);
 }
 
+}  // namespace curve
+}  // namespace detail
 }  // namespace flamegpu

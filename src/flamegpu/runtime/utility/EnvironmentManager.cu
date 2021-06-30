@@ -26,7 +26,7 @@ std::mutex EnvironmentManager::instance_mutex;
 const char EnvironmentManager::CURVE_NAMESPACE_STRING[23] = "ENVIRONMENT_PROPERTIES";
 
 EnvironmentManager::EnvironmentManager() :
-    CURVE_NAMESPACE_HASH(Curve::variableRuntimeHash(CURVE_NAMESPACE_STRING)),
+    CURVE_NAMESPACE_HASH(detail::curve::Curve::variableRuntimeHash(CURVE_NAMESPACE_STRING)),
     nextFree(0),
     m_freeSpace(EnvironmentManager::MAX_BUFFER_SIZE),
     freeFragments(),
@@ -87,7 +87,7 @@ void EnvironmentManager::init(const unsigned int &instance_id, const Environment
             "in EnvironmentManager::init().");
     }
     // Defragment to rebuild it properly
-    defragment(Curve::getInstance(), &orderedProperties, {}, isPureRTC);
+    defragment(detail::curve::Curve::getInstance(), &orderedProperties, {}, isPureRTC);
     // Setup RTC version
     buildRTCOffsets(instance_id, instance_id, orderedProperties);
 }
@@ -144,7 +144,7 @@ void EnvironmentManager::init(const unsigned int &instance_id, const Environment
             "in EnvironmentManager::init().");
     }
     // Defragment to rebuild it properly
-    defragment(Curve::getInstance(), &orderedProperties, new_mapped_props, isPureRTC);
+    defragment(detail::curve::Curve::getInstance(), &orderedProperties, new_mapped_props, isPureRTC);
     // Setup RTC version
     buildRTCOffsets(instance_id, master_instance_id, orderedProperties);
 }
@@ -171,13 +171,13 @@ void EnvironmentManager::initialiseDevice() {
         deviceInitialised = true;
     }
 }
-void EnvironmentManager::free(Curve &curve, const unsigned int &instance_id) {
+void EnvironmentManager::free(detail::curve::Curve &curve, const unsigned int &instance_id) {
     std::unique_lock<std::shared_timed_mutex> lock(mutex);
     // Release regular properties
     for (auto &&i = properties.begin(); i != properties.end();) {
         if (i->first.first == instance_id) {
             // Release from CURVE
-            Curve::VariableHash cvh = toHash(i->first);
+            detail::curve::Curve::VariableHash cvh = toHash(i->first);
             curve.unregisterVariableByHash(cvh);
             // Drop from properties map
             i = properties.erase(i);
@@ -189,7 +189,7 @@ void EnvironmentManager::free(Curve &curve, const unsigned int &instance_id) {
     for (auto &&i = mapped_properties.begin(); i != mapped_properties.end();) {
         if (i->first.first == instance_id) {
             // Release from CURVE
-            Curve::VariableHash cvh = toHash(i->first);
+            detail::curve::Curve::VariableHash cvh = toHash(i->first);
             curve.unregisterVariableByHash(cvh);
             // Drop from properties map
             i = mapped_properties.erase(i);
@@ -227,8 +227,8 @@ EnvironmentManager::NamePair EnvironmentManager::toName(const unsigned int &inst
 /**
  * @note Not static, because eventually we might need to use curve singleton
  */
-Curve::VariableHash EnvironmentManager::toHash(const NamePair &name) const {
-    Curve::VariableHash var_cvh = Curve::variableRuntimeHash(name.second.c_str());
+detail::curve::Curve::VariableHash EnvironmentManager::toHash(const NamePair &name) const {
+    detail::curve::Curve::VariableHash var_cvh = detail::curve::Curve::variableRuntimeHash(name.second.c_str());
     return CURVE_NAMESPACE_HASH + name.first + var_cvh;
 }
 
@@ -276,7 +276,7 @@ void EnvironmentManager::newProperty(const NamePair &name, const char *ptr, cons
     }
     if (buffOffset == MAX_BUFFER_SIZE) {  // buffOffset hasn't changed from init value
         // defragment() and retry using nextFree
-        defragment(Curve::getInstance());
+        defragment(detail::curve::Curve::getInstance());
         const ptrdiff_t alignmentOffset = nextFree % typeSize;
         const ptrdiff_t alignmentFix = alignmentOffset != 0 ? typeSize - alignmentOffset : 0;
         if (nextFree + alignmentFix + length < MAX_BUFFER_SIZE) {
@@ -302,14 +302,14 @@ void EnvironmentManager::newProperty(const NamePair &name, const char *ptr, cons
     // Store data
     memcpy(hc_buffer + buffOffset, ptr, length);
     // Register in cuRVE
-    Curve::VariableHash cvh = toHash(name);
-    const auto CURVE_RESULT = Curve::getInstance().registerVariableByHash(cvh, reinterpret_cast<void*>(buffOffset), typeSize, elements);
-    if (CURVE_RESULT == Curve::UNKNOWN_VARIABLE) {
+    detail::curve::Curve::VariableHash cvh = toHash(name);
+    const auto CURVE_RESULT = detail::curve::Curve::getInstance().registerVariableByHash(cvh, reinterpret_cast<void*>(buffOffset), typeSize, elements);
+    if (CURVE_RESULT == detail::curve::Curve::UNKNOWN_VARIABLE) {
         THROW exception::CurveException("curveRegisterVariableByHash() returned UNKNOWN_CURVE_VARIABLE"
             "in EnvironmentManager::add().");
     }
 #ifdef _DEBUG
-    if (CURVE_RESULT != static_cast<int>(cvh%Curve::MAX_VARIABLES)) {
+    if (CURVE_RESULT != static_cast<int>(cvh%detail::curve::Curve::MAX_VARIABLES)) {
         fprintf(stderr, "Curve Warning: Environment Property '%s' has a collision and may work improperly.\n", name.second.c_str());
     }
 #endif
@@ -318,9 +318,9 @@ void EnvironmentManager::newProperty(const NamePair &name, const char *ptr, cons
 }
 
 #ifdef _DEBUG
-void EnvironmentManager::defragment(Curve &curve, const DefragMap * mergeProperties, std::set<NamePair> newmaps, bool isPureRTC) {
+void EnvironmentManager::defragment(detail::curve::Curve &curve, const DefragMap * mergeProperties, std::set<NamePair> newmaps, bool isPureRTC) {
 #else
-void EnvironmentManager::defragment(Curve & curve, const DefragMap * mergeProperties, std::set<NamePair> newmaps, bool) {
+void EnvironmentManager::defragment(detail::curve::Curve & curve, const DefragMap * mergeProperties, std::set<NamePair> newmaps, bool) {
 #endif
     // Do not lock mutex here, do it in the calling method
     auto device_lock = std::unique_lock<std::shared_timed_mutex>(device_mutex);
@@ -360,7 +360,7 @@ void EnvironmentManager::defragment(Curve & curve, const DefragMap * mergeProper
             memcpy(t_buffer + buffOffset, i.data, i.length);
             t_properties.emplace(name, EnvProp(buffOffset, i.length, i.isConst, i.elements, i.type, i.rtc_offset));
             // Update cuRVE (There isn't an update, so unregister and reregister)  // TODO: curveGetVariableHandle()?
-            Curve::VariableHash cvh = toHash(name);
+            detail::curve::Curve::VariableHash cvh = toHash(name);
             // Only unregister variable if it's already registered
             if (!mergeProperties) {  // Merge properties are only provided on 1st init, when vars can't be unregistered
                 curve.unregisterVariableByHash(cvh);
@@ -380,12 +380,12 @@ void EnvironmentManager::defragment(Curve & curve, const DefragMap * mergeProper
             }
             const auto CURVE_RESULT = curve.registerVariableByHash(cvh, reinterpret_cast<void*>(buffOffset),
                 typeSize, i.elements);
-            if (CURVE_RESULT == Curve::UNKNOWN_VARIABLE) {
+            if (CURVE_RESULT == detail::curve::Curve::UNKNOWN_VARIABLE) {
                 THROW exception::CurveException("curveRegisterVariableByHash() returned UNKNOWN_CURVE_VARIABLE, "
                     "in EnvironmentManager::defragment().");
             }
 #ifdef _DEBUG
-            if (!isPureRTC && CURVE_RESULT != static_cast<int>(cvh%Curve::MAX_VARIABLES)) {
+            if (!isPureRTC && CURVE_RESULT != static_cast<int>(cvh%detail::curve::Curve::MAX_VARIABLES)) {
                 fprintf(stderr, "Curve Warning: Environment Property '%s' has a collision and may work improperly.\n", name.second.c_str());
             }
 #endif
@@ -408,7 +408,7 @@ void EnvironmentManager::defragment(Curve & curve, const DefragMap * mergeProper
     // Update cub for any mapped properties
     for (auto &mp : mapped_properties) {
         // Generate hash for the subproperty name
-        Curve::VariableHash cvh = toHash(mp.first);
+        detail::curve::Curve::VariableHash cvh = toHash(mp.first);
         // Unregister the property if it's already been registered
         if (newmaps.find(mp.first) == newmaps.end()) {
             curve.unregisterVariableByHash(cvh);
@@ -418,12 +418,12 @@ void EnvironmentManager::defragment(Curve & curve, const DefragMap * mergeProper
         // Create the mapping
         const auto CURVE_RESULT = curve.registerVariableByHash(cvh, reinterpret_cast<void*>(masterprop.offset),
                 masterprop.length / masterprop.elements, masterprop.elements);
-        if (CURVE_RESULT == Curve::UNKNOWN_VARIABLE) {
+        if (CURVE_RESULT == detail::curve::Curve::UNKNOWN_VARIABLE) {
             THROW exception::CurveException("curveRegisterVariableByHash() returned UNKNOWN_CURVE_VARIABLE, "
                 "in EnvironmentManager::defragment().");
         }
 #ifdef _DEBUG
-        if (!isPureRTC && CURVE_RESULT != static_cast<int>(cvh%Curve::MAX_VARIABLES)) {
+        if (!isPureRTC && CURVE_RESULT != static_cast<int>(cvh%detail::curve::Curve::MAX_VARIABLES)) {
             fprintf(stderr, "Curve Warning: Environment Property '%s' has a collision and may work improperly.\n", mp.first.second.c_str());
         }
 #endif
@@ -576,8 +576,8 @@ void EnvironmentManager::updateRTCValue(const NamePair &name) {
 void EnvironmentManager::removeProperty(const NamePair &name) {
     std::unique_lock<std::shared_timed_mutex> lock(mutex);
     // Unregister in cuRVE
-    Curve::VariableHash cvh = toHash(name);
-    Curve::getInstance().unregisterVariableByHash(cvh);
+    detail::curve::Curve::VariableHash cvh = toHash(name);
+    detail::curve::Curve::getInstance().unregisterVariableByHash(cvh);
     // Update free space
     // Remove from properties map
     auto realprop = properties.find(name);
@@ -662,22 +662,22 @@ void EnvironmentManager::updateDevice(const unsigned int &instance_id) {
         rtc_update_required = false;
     }
     if (curve_registration_required) {
-        auto &curve = Curve::getInstance();
+        auto &curve = detail::curve::Curve::getInstance();
         // Update cub for any not mapped properties
         for (auto &p : properties) {
             if (p.first.first == instance_id) {
                 // Generate hash for the subproperty name
-                Curve::VariableHash cvh = toHash(p.first);
+                detail::curve::Curve::VariableHash cvh = toHash(p.first);
                 const auto &prop = p.second;
                 // Create the mapping
                 const auto CURVE_RESULT = curve.registerVariableByHash(cvh, reinterpret_cast<void*>(prop.offset),
                         prop.length / prop.elements, prop.elements);
-                if (CURVE_RESULT == Curve::UNKNOWN_VARIABLE) {
+                if (CURVE_RESULT == detail::curve::Curve::UNKNOWN_VARIABLE) {
                     THROW exception::CurveException("curveRegisterVariableByHash() returned UNKNOWN_CURVE_VARIABLE, "
                         "in EnvironmentManager::updateDevice().");
                 }
 #ifdef _DEBUG
-                if (CURVE_RESULT != static_cast<int>(cvh%Curve::MAX_VARIABLES)) {
+                if (CURVE_RESULT != static_cast<int>(cvh%detail::curve::Curve::MAX_VARIABLES)) {
                     fprintf(stderr, "Curve Warning: Environment Property '%s' has a collision and may work improperly.\n", p.first.second.c_str());
                 }
 #endif
@@ -687,17 +687,17 @@ void EnvironmentManager::updateDevice(const unsigned int &instance_id) {
         for (auto &mp : mapped_properties) {
             if (mp.first.first == instance_id) {
                 // Generate hash for the subproperty name
-                Curve::VariableHash cvh = toHash(mp.first);
+                detail::curve::Curve::VariableHash cvh = toHash(mp.first);
                 const auto &masterprop = properties.at(mp.second.masterProp);
                 // Create the mapping
                 const auto CURVE_RESULT = curve.registerVariableByHash(cvh, reinterpret_cast<void*>(masterprop.offset),
                         masterprop.length / masterprop.elements, masterprop.elements);
-                if (CURVE_RESULT == Curve::UNKNOWN_VARIABLE) {
+                if (CURVE_RESULT == detail::curve::Curve::UNKNOWN_VARIABLE) {
                     THROW exception::CurveException("curveRegisterVariableByHash() returned UNKNOWN_CURVE_VARIABLE, "
                         "in EnvironmentManager::updateDevice().");
                 }
 #ifdef _DEBUG
-                if (CURVE_RESULT != static_cast<int>(cvh%Curve::MAX_VARIABLES)) {
+                if (CURVE_RESULT != static_cast<int>(cvh%detail::curve::Curve::MAX_VARIABLES)) {
                     fprintf(stderr, "Curve Warning: Environment Property '%s' has a collision and may work improperly.\n", mp.first.second.c_str());
                 }
 #endif

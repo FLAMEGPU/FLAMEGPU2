@@ -1,7 +1,7 @@
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_NONE_NONEHOST_H_
 #define INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_NONE_NONEHOST_H_
 
-#include "flamegpu/runtime/cuRVE/curve.h"
+#include "flamegpu/runtime/detail/curve/curve.h"
 #include "flamegpu/runtime/messaging/None.h"
 
 namespace flamegpu {

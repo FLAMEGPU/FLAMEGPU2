@@ -1,5 +1,5 @@
-#ifndef INCLUDE_FLAMEGPU_RUNTIME_CURVE_CURVE_H_
-#define INCLUDE_FLAMEGPU_RUNTIME_CURVE_CURVE_H_
+#ifndef INCLUDE_FLAMEGPU_RUNTIME_DETAIL_CURVE_CURVE_H_
+#define INCLUDE_FLAMEGPU_RUNTIME_DETAIL_CURVE_CURVE_H_
 
 /**
  * @file   curve.h
@@ -24,6 +24,8 @@
 #include "flamegpu/exception/FLAMEGPUDeviceException.h"
 
 namespace flamegpu {
+namespace detail {
+namespace curve {
 
 /** @brief    A cuRVE instance.
  *
@@ -564,11 +566,10 @@ class Curve {
     /**
      * Has access to call purge
      */
-    friend class CUDASimulation;
+    friend class flamegpu::CUDASimulation;
     /**
      * Wipes out host mirrors of device memory
      * Only really to be used after calls to cudaDeviceReset()
-     * @note Only currently used after some tests
      */
     __host__ void purge();
 
@@ -595,14 +596,12 @@ class Curve {
 };
 
 
-namespace curve {
 namespace detail {
     extern __constant__ Curve::VariableHash d_hashes[Curve::MAX_VARIABLES];   // Device array of the hash values of registered variables
     extern __device__ char* d_variables[Curve::MAX_VARIABLES];                // Device array of pointer to device memory addresses for variable storage
     extern __constant__ size_t d_sizes[Curve::MAX_VARIABLES];                // Device array of the types of registered variables
     extern __constant__ unsigned int d_lengths[Curve::MAX_VARIABLES];
 }  // namespace detail
-}  // namespace curve
 
 
 /* TEMPLATE HASHING FUNCTIONS */
@@ -963,6 +962,8 @@ __device__ __forceinline__ void Curve::setArrayVariable(const char(&variableName
     return setArrayVariableByHash<T, N>(variable_hash + namespace_hash, variable, agent_index, array_index);
 }
 
+}  // namespace curve
+}  // namespace detail
 }  // namespace flamegpu
 
-#endif  // INCLUDE_FLAMEGPU_RUNTIME_CURVE_CURVE_H_
+#endif  // INCLUDE_FLAMEGPU_RUNTIME_DETAIL_CURVE_CURVE_H_
