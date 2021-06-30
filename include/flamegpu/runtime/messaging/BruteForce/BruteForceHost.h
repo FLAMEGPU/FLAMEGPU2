@@ -11,8 +11,6 @@
 
 #include "flamegpu/model/Variable.h"
 #include "flamegpu/gpu/detail/CUDAErrorChecking.cuh"
-#include "flamegpu/gpu/CUDAScanCompaction.h"
-#include "flamegpu/util/nvtx.h"
 #include "flamegpu/runtime/cuRVE/curve.h"
 
 #include "flamegpu/runtime/messaging/None/NoneHost.h"

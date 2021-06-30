@@ -2,11 +2,9 @@
 #define INCLUDE_FLAMEGPU_RUNTIME_AGENTFUNCTIONCONDITION_H_
 
 #include <cuda_runtime.h>
-#include <device_launch_parameters.h>
 
 #include "flamegpu/runtime/DeviceAPI.h"
 #include "flamegpu/runtime/AgentFunctionCondition_shim.h"
-#include "flamegpu/gpu/CUDAScanCompaction.h"
 
 namespace flamegpu {
 
