@@ -188,6 +188,10 @@ class CUDASimulation : public Simulation {
      * Returns a reference to the current exit log
      */
     const RunLog &getRunLog() const override;
+    /**
+     * Sets the frequency at which spatial agents are sorted
+     */
+    void setSortAgentsEveryNSteps(const unsigned int n);
 #ifdef VISUALISATION
     /**
      * Creates (on first call) and returns the visualisation configuration options for this model instance
@@ -415,6 +419,33 @@ class CUDASimulation : public Simulation {
     void stepStepFunctions();
     bool stepExitConditions();
 
+    /**
+     * Determines which agents require sorting - only used once during initialisation
+     */
+    void determineAgentsToSort();
+
+    /** 
+     * Spatially sort the agents.
+     * This should only be called within step();
+     */
+    void spatialSortAgents();
+
+    /**
+     * Store the agents which require spatial sorting
+     */
+    std::set<std::string> agentsToSort2D;
+    std::set<std::string> agentsToSort3D;
+
+    /**
+     * How often to sort spatial agents
+     */
+    unsigned int sort_agents_every_n_steps = 10;
+
+    /**
+     * Memory used in sorting - TODO: remove and use pre-existing cub temp
+     */
+    void* d_temp_storage;
+    size_t tempBytes = 0;
 
     /**
      * Struct containing references to the various singletons which may include CUDA code, and therefore can only be initialsed after the deferred arg parsing is completed.

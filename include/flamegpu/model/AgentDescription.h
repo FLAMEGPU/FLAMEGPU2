@@ -292,6 +292,10 @@ void AgentDescription::newVariable(const std::string &variable_name, const std::
         THROW exception::ReservedName("Agent variables cannot be named 'name' or 'state', these are reserved for backwards compatibility reasons, "
             "in AgentDescription::newVariable().");
     }
+    if (lower_variable_name == "fgpu2_reserved_bin_index") {
+        THROW ReservedName("The variable name 'fgpu2_reserved_bin_index' is reserved for internal usage, "
+            "in AgentDescription::newVariable().");
+    }
     // Array length 0 makes no sense
     static_assert(N > 0, "A variable cannot have 0 elements.");
     if (agent->variables.find(variable_name) == agent->variables.end()) {

@@ -277,6 +277,110 @@ void CUDASimulation::exitFunctions() {
     }
 }
 
+void setSortAgentsEveryNSteps(const unsigned int n) {
+    setSortAgentsEveryNSteps = n;
+}
+
+__global__ void spatialSortInitToThreadIndex(unsigned int *output, unsigned int threadCount) {
+    const unsigned int TID = blockIdx.x * blockDim.x + threadIdx.x;
+    if (TID < threadCount) {
+        output[TID] = TID;
+    }
+}
+
+void CUDASimulation::determineAgentsToSort() {
+
+    const auto& am = model->agents;
+    
+    // Iterate agents and then agent functions to find any functions which use spatial messaging
+    for (auto it = am.cbegin(); it != am.cend(); ++it) {
+        const auto& mf = it->second->functions;
+        for (auto it_f = mf.cbegin(); it_f != mf.cend(); ++it_f) {
+            // Check if this agent function uses 3D spatial messages
+            if (it_f->second->msg_in_type == CurveRTCHost::demangle(std::type_index(typeid(MsgSpatial3D)))) {
+                // Agent uses spatial, check it has correct variables
+                const auto& ad = *(it->second->description);
+                if (ad.hasVariable("x") && ad.hasVariable("y") && ad.hasVariable("z")) {
+                    agentsToSort3D.insert(it->first);
+                }
+            }
+            // Check if this agent function uses 2D spatial messages
+            if (it_f->second->msg_in_type == CurveRTCHost::demangle(std::type_index(typeid(MsgSpatial2D)))) {
+                // Agent uses spatial, check it has correct variables
+                const auto& ad = *(it->second->description);
+                if (ad.hasVariable("x") && ad.hasVariable("y")) {
+                    agentsToSort2D.insert(it->first);
+                }
+            }
+        }
+    }
+}
+
+
+void CUDASimulation::spatialSortAgents() {
+
+    assert(host_api);
+    for (const std::string& agentName : agentsToSort3D) {
+        host_api->agent(agentName).sort<unsigned int>("fgpu2_reserved_bin_index", HostAgentAPI::Asc);
+    }
+    
+    for (const std::string& agentName : agentsToSort2D) {
+        host_api->agent(agentName).sort<unsigned int>("fgpu2_reserved_bin_index", HostAgentAPI::Asc);
+    }
+
+    /**using VarT = unsigned int;
+    const unsigned int streamId = 0;
+    auto& scatter = singletons->scatter;
+    auto& scan = scatter.Scan();
+    
+    for (const std::string& agentName : agentsToSort3D) {
+
+        // Get agent
+        CUDAAgent& cuda_agent = getCUDAAgent(agentName);
+
+        // How many agents are we sorting - TODO: Check this is the correct size to use
+        const unsigned int agentCount = cuda_agent.getStateSize("default");
+
+        // Get pointer variable we will be sorting by
+        void* binIndexPtr = cuda_agent.getStateVariablePtr("default", "fgpu2_reserved_bin_index");
+
+        // Update buffer sizes for use in sort
+        const size_t total_variable_buffer_size = sizeof(unsigned int) * agentCount;
+        const unsigned int fake_num_agent = static_cast<unsigned int>(total_variable_buffer_size/sizeof(unsigned int)) +1;
+        scan.resize(fake_num_agent, CUDAScanCompaction::AGENT_DEATH, streamId);
+        scan.resize(agentCount, CUDAScanCompaction::MESSAGE_OUTPUT, streamId);
+
+        // Set pointers for keys & vals
+        VarT *keys_in = reinterpret_cast<VarT *>(scan.Config(CUDAScanCompaction::Type::AGENT_DEATH, streamId).d_ptrs.scan_flag);
+        VarT *keys_out = reinterpret_cast<VarT *>(scan.Config(CUDAScanCompaction::Type::AGENT_DEATH, streamId).d_ptrs.position);
+        unsigned int *vals_in = scan.Config(CUDAScanCompaction::Type::MESSAGE_OUTPUT, streamId).d_ptrs.scan_flag;
+        unsigned int *vals_out = scan.Config(CUDAScanCompaction::Type::MESSAGE_OUTPUT, streamId).d_ptrs.position;
+
+        // Fill vals_in with monotonically increasing ints - original positions before sort
+        //fillTIDArray(vals_in, agentCount, 0);  // @todo - use a non default stream
+        spatialSortInitToThreadIndex<<<(agentCount/512)+1, 512, 0, 0>>>(vals_in, agentCount);
+        gpuErrchkLaunch();
+        // Copy fgpu2_reserved_bin_index into keys_in
+        gpuErrchk(cudaMemcpy(keys_in, binIndexPtr, total_variable_buffer_size, cudaMemcpyDeviceToDevice));
+
+        // Resize temp if necessary 
+        size_t requiredBytes = 0;
+        gpuErrchk(cub::DeviceRadixSort::SortPairs(nullptr, requiredBytes, keys_in, keys_out, vals_in, vals_out, agentCount));
+        if (requiredBytes > tempBytes) {
+            cudaFree(d_temp_storage);
+            cudaMalloc()
+        }
+        
+
+        // Perform the sort - vals_out now contains new indices
+        gpuErrchk(cub::DeviceRadixSort::SortPairs(d_temp_storage, tempBytes, keys_in, keys_out, vals_in, vals_out, agentCount));
+
+        // Actually reorder the agents
+        cuda_agent.scatterSort("default", scatter, streamId, 0); 
+    }*/
+    
+}
+
 bool CUDASimulation::step() {
     NVTX_RANGE(std::string("CUDASimulation::step " + std::to_string(step_count)).c_str());
     // Ensure singletons have been initialised
@@ -292,6 +396,11 @@ bool CUDASimulation::step() {
     // If verbose, print the step number.
     if (getSimulationConfig().verbose) {
         fprintf(stdout, "Processing Simulation Step %u\n", step_count);
+    }
+
+    // Spatially sort the agents
+    if (step_count % setSortAgentsEveryNSteps == 0) {
+        this->spatialSortAgents();
     }
 
     // Ensure there are enough streams to execute the layer.
@@ -977,6 +1086,9 @@ void CUDASimulation::simulate() {
     // Execute init functions
     this->initFunctions();
 
+    // Determine which agents will be spatially sorted
+    this->determineAgentsToSort();
+
     // Reset and log initial state to step log 0
     resetLog();
     processStepLog();
@@ -1009,6 +1121,9 @@ void CUDASimulation::simulate() {
     // Exit functions
     this->exitFunctions();
     processExitLog();
+
+    // Free temp agent sorting mem - TODO: Remove when switching to cub temp
+    cudaFree(d_temp_storage);
 
     // Sync visualistaion after the exit functions
     #ifdef VISUALISATION

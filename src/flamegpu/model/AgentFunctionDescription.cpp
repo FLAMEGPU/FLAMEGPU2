@@ -519,6 +519,11 @@ AgentFunctionDescription& AgentDescription::newRTCFunction(const std::string& fu
                 std::string code_func_name = match[1];  // not yet clear if this is required
                 std::string in_type_name = match[2];
                 std::string out_type_name = match[3];
+                if (in_type_name == "MsgSpatial3D" || in_type_name == "MsgSpatial2D" || out_type_name == "MsgSpatial3D" || out_type_name == "MsgSpatial2D") {
+                    if (agent->variables.find("fgpu2_reserved_bin_index") == agent->variables.end()) {
+                        agent->variables.emplace("fgpu2_reserved_bin_index", Variable(1, std::vector<unsigned int> {0}));
+                    }
+                }
                 // set the runtime agent function source in agent function data
                 std::string func_src_str = std::string(function_name + "_program\n");
 #ifdef OUTPUT_RTC_DYNAMIC_FILES
