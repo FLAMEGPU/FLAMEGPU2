@@ -139,7 +139,7 @@ class MsgBucket::In {
         * @param beginKey Inclusive first bucket of range to access
         * @param endKey Exclusive final bucket of range to access, this is the final bucket + 1
         */
-        inline __device__ Filter(const MetaData *_metadata, const Curve::NamespaceHash &combined_hash, const IntT &beginKey, const IntT &endKey);
+        inline __device__ Filter(const MetaData *_metadata, const detail::curve::Curve::NamespaceHash &combined_hash, const IntT &beginKey, const IntT &endKey);
         /**
         * Returns an iterator to the start of the message list subset about the search origin
         */
@@ -175,7 +175,7 @@ class MsgBucket::In {
         * CURVE hash for accessing message data
         * agent function hash + message hash
         */
-        Curve::NamespaceHash combined_hash;
+        detail::curve::Curve::NamespaceHash combined_hash;
     };
     /**
     * Constructor
@@ -184,7 +184,7 @@ class MsgBucket::In {
     * @param msg_hash Added to agentfn_hash to produce combined_hash
     * @param _metadata Reinterpreted as type MsgBucket::MetaData
     */
-    __device__ In(Curve::NamespaceHash agentfn_hash, Curve::NamespaceHash msg_hash, const void *_metadata)
+    __device__ In(detail::curve::Curve::NamespaceHash agentfn_hash, detail::curve::Curve::NamespaceHash msg_hash, const void *_metadata)
         : combined_hash(agentfn_hash + msg_hash)
         , metadata(reinterpret_cast<const MetaData*>(_metadata))
     { }
@@ -233,7 +233,7 @@ class MsgBucket::In {
     * CURVE hash for accessing message data
     * agentfn_hash + msg_hash
     */
-    Curve::NamespaceHash combined_hash;
+    detail::curve::Curve::NamespaceHash combined_hash;
     /**
     * Device pointer to metadata required for accessing data structure
     * e.g. PBM, search origin, environment bounds
@@ -255,7 +255,7 @@ class MsgBucket::Out : public MsgBruteForce::Out {
     * @param _metadata Message specialisation specific metadata struct (of type MsgBucket::MetaData)
     * @param scan_flag_messageOutput Scan flag array for optional message output
     */
-    __device__ Out(Curve::NamespaceHash agentfn_hash, Curve::NamespaceHash msg_hash, const void *_metadata, unsigned int *scan_flag_messageOutput)
+    __device__ Out(detail::curve::Curve::NamespaceHash agentfn_hash, detail::curve::Curve::NamespaceHash msg_hash, const void *_metadata, unsigned int *scan_flag_messageOutput)
         : MsgBruteForce::Out(agentfn_hash, msg_hash, nullptr, scan_flag_messageOutput)
 #if !defined(SEATBELTS) || SEATBELTS
         , metadata(reinterpret_cast<const MetaData*>(_metadata))
@@ -275,7 +275,7 @@ class MsgBucket::Out : public MsgBruteForce::Out {
     const MetaData * const metadata;
 };
 
-__device__ MsgBucket::In::Filter::Filter(const MetaData* _metadata, const Curve::NamespaceHash &_combined_hash, const IntT& beginKey, const IntT& endKey)
+__device__ MsgBucket::In::Filter::Filter(const MetaData* _metadata, const detail::curve::Curve::NamespaceHash &_combined_hash, const IntT& beginKey, const IntT& endKey)
     : bucket_begin(0)
     , bucket_end(0)
     , metadata(_metadata)
@@ -296,7 +296,7 @@ __device__ void MsgBucket::Out::setKey(const IntT &key) const {
     }
 #endif
     // set the variables using curve
-    Curve::setMessageVariable<IntT>("_key", combined_hash, key, index);
+    detail::curve::Curve::setMessageVariable<IntT>("_key", combined_hash, key, index);
 
     // Set scan flag incase the message is optional
     this->scan_flag[index] = 1;
@@ -312,7 +312,7 @@ __device__ T MsgBucket::In::Filter::Message::getVariable(const char(&variable_na
     }
 #endif
     // get the value from curve using the stored hashes and message index.
-    T value = Curve::getMessageVariable<T>(variable_name, this->_parent.combined_hash, cell_index);
+    T value = detail::curve::Curve::getMessageVariable<T>(variable_name, this->_parent.combined_hash, cell_index);
     return value;
 }
 }  // namespace flamegpu

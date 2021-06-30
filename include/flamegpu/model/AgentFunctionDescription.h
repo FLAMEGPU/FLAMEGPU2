@@ -12,7 +12,7 @@
 #include "flamegpu/model/DependencyNode.h"
 #include "flamegpu/model/LayerDescription.h"
 #include "flamegpu/runtime/messaging/BruteForce.h"
-#include "flamegpu/runtime/cuRVE/curve_rtc.h"
+#include "flamegpu/runtime/detail/curve/curve_rtc.h"
 
 #ifdef _MSC_VER
 #pragma warning(push, 2)
@@ -312,8 +312,8 @@ template<typename AgentFunction>
 AgentFunctionDescription &AgentDescription::newFunction(const std::string &function_name, AgentFunction) {
     if (agent->functions.find(function_name) == agent->functions.end()) {
         AgentFunctionWrapper *f = AgentFunction::fnPtr();
-        std::string in_t = CurveRTCHost::demangle(AgentFunction::inType().name());
-        std::string out_t = CurveRTCHost::demangle(AgentFunction::outType().name());
+        std::string in_t = detail::curve::CurveRTCHost::demangle(AgentFunction::inType().name());
+        std::string out_t = detail::curve::CurveRTCHost::demangle(AgentFunction::outType().name());
         auto rtn = std::shared_ptr<AgentFunctionData>(new AgentFunctionData(this->agent->shared_from_this(), function_name, f, in_t, out_t));
         agent->functions.emplace(function_name, rtn);
         return *rtn->description;

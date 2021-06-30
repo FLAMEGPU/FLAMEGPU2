@@ -17,11 +17,11 @@ typedef void(AgentFunctionWrapper)(
 #if !defined(SEATBELTS) || SEATBELTS
     exception::DeviceExceptionBuffer *error_buffer,
 #endif
-    Curve::NamespaceHash instance_id_hash,
-    Curve::NamespaceHash agent_func_name_hash,
-    Curve::NamespaceHash messagename_inp_hash,
-    Curve::NamespaceHash messagename_outp_hash,
-    Curve::NamespaceHash agent_output_hash,
+    detail::curve::Curve::NamespaceHash instance_id_hash,
+    detail::curve::Curve::NamespaceHash agent_func_name_hash,
+    detail::curve::Curve::NamespaceHash messagename_inp_hash,
+    detail::curve::Curve::NamespaceHash messagename_outp_hash,
+    detail::curve::Curve::NamespaceHash agent_output_hash,
     id_t *d_agent_output_nextID,
     const unsigned int popNo,
     const void *in_messagelist_metadata,
@@ -57,11 +57,11 @@ __global__ void agent_function_wrapper(
 #if !defined(SEATBELTS) || SEATBELTS
     exception::DeviceExceptionBuffer *error_buffer,
 #endif
-    Curve::NamespaceHash instance_id_hash,
-    Curve::NamespaceHash agent_func_name_hash,
-    Curve::NamespaceHash messagename_inp_hash,
-    Curve::NamespaceHash messagename_outp_hash,
-    Curve::NamespaceHash agent_output_hash,
+    detail::curve::Curve::NamespaceHash instance_id_hash,
+    detail::curve::Curve::NamespaceHash agent_func_name_hash,
+    detail::curve::Curve::NamespaceHash messagename_inp_hash,
+    detail::curve::Curve::NamespaceHash messagename_outp_hash,
+    detail::curve::Curve::NamespaceHash agent_output_hash,
     id_t *d_agent_output_nextID,
     const unsigned int popNo,
     const void *in_messagelist_metadata,

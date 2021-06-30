@@ -9,7 +9,7 @@
 
 #include "flamegpu/exception/FLAMEGPUDeviceException.h"
 #include "flamegpu/sim/Simulation.h"
-
+#include "flamegpu/runtime/detail/curve/curve.h"
 #include "flamegpu/gpu/CUDAScatter.h"
 #include "flamegpu/gpu/CUDAEnsemble.h"
 #include "flamegpu/runtime/utility/RandomManager.cuh"
@@ -425,7 +425,7 @@ class CUDASimulation : public Simulation {
        * Curve instance used for variable mapping
        * @todo Is this necessary? CUDAAgent/CUDAMessage have their own copy
        */
-      Curve &curve;
+      detail::curve::Curve &curve;
       /**
        * Resizes device random array during step()
        */
@@ -444,7 +444,7 @@ class CUDASimulation : public Simulation {
        */
       exception::DeviceExceptionManager exception;
 #endif
-      Singletons(Curve &curve, EnvironmentManager &environment) : curve(curve), environment(environment) { }
+      Singletons(detail::curve::Curve &curve, EnvironmentManager &environment) : curve(curve), environment(environment) { }
     } * singletons;
     /**
      * Common method for adding this Model's data to env manager

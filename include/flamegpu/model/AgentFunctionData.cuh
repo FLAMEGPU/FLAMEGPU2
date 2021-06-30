@@ -29,7 +29,7 @@ struct AgentFunctionData {
 
     /**
      * The cuda kernel entry point for executing the agent function
-     * @see void agent_function_wrapper(Curve::NamespaceHash, Curve::NamespaceHash, Curve::NamespaceHash, Curve::NamespaceHash, const int, const void *, const unsigned int, const unsigned int)
+     * @see void agent_function_wrapper(detail::curve::Curve::NamespaceHash, detail::curve::Curve::NamespaceHash, detail::curve::Curve::NamespaceHash, detail::curve::Curve::NamespaceHash, const int, const void *, const unsigned int, const unsigned int)
      */
     AgentFunctionWrapper *func;
     /**
@@ -75,7 +75,7 @@ struct AgentFunctionData {
     bool has_agent_death = false;
     /**
      * The cuda kernel entry point for executing the agent function condition
-     * @see void agent_function_condition_wrapper(Curve::NamespaceHash, Curve::NamespaceHash, const int, const unsigned int, const unsigned int)
+     * @see void agent_function_condition_wrapper(detail::curve::Curve::NamespaceHash, detail::curve::Curve::NamespaceHash, const int, const unsigned int, const unsigned int)
      */
     AgentFunctionConditionWrapper *condition;
     /**

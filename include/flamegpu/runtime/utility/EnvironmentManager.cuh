@@ -21,7 +21,7 @@
 
 #include "flamegpu/exception/FLAMEGPUException.h"
 #include "flamegpu/gpu/detail/CUDAErrorChecking.cuh"
-#include "flamegpu/runtime/cuRVE/curve.h"
+#include "flamegpu/runtime/detail/curve/curve.h"
 #include "flamegpu/util/Any.h"
 
 namespace flamegpu {
@@ -251,7 +251,7 @@ class EnvironmentManager {
      * @param curve The Curve singleton instance to use, it is important that we purge curve for the correct device
      * @param instance_id instance_id of the CUDASimulation instance the properties are attached to
      */
-    void free(Curve &curve, const unsigned int &instance_id);
+    void free(detail::curve::Curve &curve, const unsigned int &instance_id);
     /**
      * Adds a new environment property
      * @param name name used for accessing the property
@@ -607,7 +607,7 @@ class EnvironmentManager {
      * Hash never changes, so we store a copy at creation
      * Also ensure the device constexpr version matches
      */
-    const Curve::NamespaceHash CURVE_NAMESPACE_HASH;
+    const detail::curve::Curve::NamespaceHash CURVE_NAMESPACE_HASH;
     /**
      * Returns read-only access to the properties map
      * @note You must acquire a lock on mutex before calling this method
@@ -648,7 +648,7 @@ class EnvironmentManager {
      * @param name Pair of the two items to produce the curve value hash
      * @note Not static, because eventually we might need to use curve singleton
      */
-    Curve::VariableHash toHash(const NamePair &name) const;
+    detail::curve::Curve::VariableHash toHash(const NamePair &name) const;
     /**
      * Common add handler
      */
@@ -661,7 +661,7 @@ class EnvironmentManager {
      * @param isPureRTC If true, Curve collision warnings (debug build only) will be suppressed as they are irrelevant to RTC models
      * @note any EnvPROP
      */
-    void defragment(Curve &curve, const DefragMap * mergeProps = nullptr, std::set<NamePair> newmaps = {}, bool isPureRTC = false);
+    void defragment(detail::curve::Curve &curve, const DefragMap * mergeProps = nullptr, std::set<NamePair> newmaps = {}, bool isPureRTC = false);
     /**
      * This is the RTC version of defragment()
      * RTC Constant offsets are fixed at RTC time, and exist in their own constant block.
