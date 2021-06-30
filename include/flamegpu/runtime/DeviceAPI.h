@@ -6,16 +6,13 @@
 #include <cstdint>
 #include <limits>
 
-// #include "flamegpu/gpu/CUDAErrorChecking.cuh"            // required for CUDA error handling functions
 #ifndef __CUDACC_RTC__
 #include "flamegpu/runtime/cuRVE/curve.h"
 #else
 #include "dynamic/curve_rtc_dynamic.h"
 #endif  // !_RTC
-// #include "flamegpu/exception/FLAMEGPUException.h"
 #include "flamegpu/runtime/utility/AgentRandom.cuh"
 #include "flamegpu/runtime/utility/DeviceEnvironment.cuh"
-#include "flamegpu/gpu/CUDAScanCompaction.h"
 #include "flamegpu/runtime/AgentFunction.cuh"
 #include "flamegpu/runtime/AgentFunctionCondition.h"
 #include "flamegpu/runtime/messaging_device.h"

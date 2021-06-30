@@ -6,7 +6,6 @@
 
 #include "flamegpu/gpu/detail/CUDAErrorChecking.cuh"
 #include "flamegpu/gpu/CUDAFatAgentStateList.h"
-#include "flamegpu/gpu/CUDAScanCompaction.h"
 
 #ifdef _MSC_VER
 #pragma warning(push, 1)

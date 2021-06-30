@@ -2,6 +2,7 @@
 
 #include "flamegpu/gpu/CUDAScatter.h"
 #include "flamegpu/runtime/HostAPI.h"
+#include "flamegpu/util/nvtx.h"
 
 #ifdef _MSC_VER
 #pragma warning(push, 1)
