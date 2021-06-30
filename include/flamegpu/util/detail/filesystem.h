@@ -1,5 +1,5 @@
-#ifndef INCLUDE_FLAMEGPU_UTIL_FILESYSTEM_H_
-#define INCLUDE_FLAMEGPU_UTIL_FILESYSTEM_H_
+#ifndef INCLUDE_FLAMEGPU_UTIL_DETAIL_FILESYSTEM_H_
+#define INCLUDE_FLAMEGPU_UTIL_DETAIL_FILESYSTEM_H_
 
 #include <string>
 
@@ -20,6 +20,7 @@ using std::experimental::filesystem::v1::create_directory;
 
 namespace flamegpu {
 namespace util {
+namespace detail {
 namespace filesystem {
 /**
  * Creates the directory pointed to by path
@@ -52,7 +53,8 @@ inline std::string getFileExt(const std::string& s) {
 }
 
 }  // namespace filesystem
+}  // namespace detail
 }  // namespace util
 }  // namespace flamegpu
 
-#endif  // INCLUDE_FLAMEGPU_UTIL_FILESYSTEM_H_
+#endif  // INCLUDE_FLAMEGPU_UTIL_DETAIL_FILESYSTEM_H_

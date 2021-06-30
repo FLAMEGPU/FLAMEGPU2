@@ -13,9 +13,9 @@
 #include "flamegpu/runtime/HostAPI.h"
 #include "flamegpu/gpu/CUDAScanCompaction.h"
 #include "flamegpu/util/nvtx.h"
-#include "flamegpu/util/compute_capability.cuh"
-#include "flamegpu/util/SignalHandlers.h"
-#include "flamegpu/util/CUDAEventTimer.cuh"
+#include "flamegpu/util/detail/compute_capability.cuh"
+#include "flamegpu/util/detail/SignalHandlers.h"
+#include "flamegpu/util/detail/CUDAEventTimer.cuh"
 #include "flamegpu/runtime/cuRVE/curve_rtc.h"
 #include "flamegpu/runtime/HostFunctionCallback.h"
 #include "flamegpu/gpu/CUDAAgent.h"
@@ -56,7 +56,7 @@ CUDASimulation::CUDASimulation(const std::shared_ptr<const ModelData> &_model)
     ++active_instances;
     initOffsetsAndMap();
     // Register the signal handler.
-    util::SignalHandlers::registerSignalHandlers();
+    util::detail::SignalHandlers::registerSignalHandlers();
 
     // populate the CUDA agent map
     const auto &am = model->agents;
@@ -213,7 +213,7 @@ CUDASimulation::~CUDASimulation() {
 
 void CUDASimulation::initFunctions() {
     NVTX_RANGE("CUDASimulation::initFunctions");
-    util::CUDAEventTimer initFunctionsTimer = util::CUDAEventTimer();
+    util::detail::CUDAEventTimer initFunctionsTimer = util::detail::CUDAEventTimer();
     initFunctionsTimer.start();
 
     // Execute normal init functions
@@ -240,7 +240,7 @@ void CUDASimulation::initFunctions() {
 
 void CUDASimulation::exitFunctions() {
     NVTX_RANGE("CUDASimulation::exitFunctions");
-    util::CUDAEventTimer exitFunctionsTimer = util::CUDAEventTimer();
+    util::detail::CUDAEventTimer exitFunctionsTimer = util::detail::CUDAEventTimer();
     exitFunctionsTimer.start();
 
     // Execute exit functions
@@ -267,7 +267,7 @@ bool CUDASimulation::step() {
     initialiseSingletons();
 
     // Time the individual step.
-    util::CUDAEventTimer stepTimer = util::CUDAEventTimer();
+    util::detail::CUDAEventTimer stepTimer = util::detail::CUDAEventTimer();
     stepTimer.start();
 
     // Init any unset agent IDs
@@ -927,7 +927,7 @@ void CUDASimulation::simulate() {
     initialiseSingletons();
 
     // Create the event timing object.
-    util::CUDAEventTimer simulationTimer = util::CUDAEventTimer();
+    util::detail::CUDAEventTimer simulationTimer = util::detail::CUDAEventTimer();
     simulationTimer.start();
 
     // Create as many streams as required
@@ -1202,9 +1202,9 @@ void CUDASimulation::applyConfig_derived() {
     }
 
     // Check the compute capability of the device, throw an exception if not valid for the executable.
-    if (!util::compute_capability::checkComputeCapability(static_cast<int>(config.device_id))) {
-        int min_cc = util::compute_capability::minimumCompiledComputeCapability();
-        int cc = util::compute_capability::getComputeCapability(static_cast<int>(config.device_id));
+    if (!util::detail::compute_capability::checkComputeCapability(static_cast<int>(config.device_id))) {
+        int min_cc = util::detail::compute_capability::minimumCompiledComputeCapability();
+        int cc = util::detail::compute_capability::getComputeCapability(static_cast<int>(config.device_id));
         THROW exception::InvalidCUDAComputeCapability("Error application compiled for CUDA Compute Capability %d and above. Device %u is compute capability %d. Rebuild for SM_%d.", min_cc, config.device_id, cc, cc);
     }
 
@@ -1256,9 +1256,9 @@ void CUDASimulation::initialiseSingletons() {
     if (!singletonsInitialised) {
         // If the device has not been specified, also check the compute capability is OK
         // Check the compute capability of the device, throw an exception if not valid for the executable.
-        if (!util::compute_capability::checkComputeCapability(static_cast<int>(config.device_id))) {
-            int min_cc = util::compute_capability::minimumCompiledComputeCapability();
-            int cc = util::compute_capability::getComputeCapability(static_cast<int>(config.device_id));
+        if (!util::detail::compute_capability::checkComputeCapability(static_cast<int>(config.device_id))) {
+            int min_cc = util::detail::compute_capability::minimumCompiledComputeCapability();
+            int cc = util::detail::compute_capability::getComputeCapability(static_cast<int>(config.device_id));
             THROW exception::InvalidCUDAComputeCapability("Error application compiled for CUDA Compute Capability %d and above. Device %u is compute capability %d. Rebuild for SM_%d.", min_cc, config.device_id, cc, cc);
         }
         gpuErrchk(cudaGetDevice(&deviceInitialised));
@@ -1337,7 +1337,7 @@ void CUDASimulation::initialiseRTC() {
     // Only do this once.
     if (!rtcInitialised) {
         NVTX_RANGE("CUDASimulation::initialiseRTC");
-        util::CUDAEventTimer rtcTimer = util::CUDAEventTimer();
+        util::detail::CUDAEventTimer rtcTimer = util::detail::CUDAEventTimer();
         rtcTimer.start();
         // Build any RTC functions
         const auto& am = model->agents;

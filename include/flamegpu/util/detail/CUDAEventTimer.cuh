@@ -1,11 +1,12 @@
-#ifndef INCLUDE_FLAMEGPU_UTIL_CUDAEVENTTIMER_CUH_
-#define INCLUDE_FLAMEGPU_UTIL_CUDAEVENTTIMER_CUH_
+#ifndef INCLUDE_FLAMEGPU_UTIL_DETAIL_CUDAEVENTTIMER_CUH_
+#define INCLUDE_FLAMEGPU_UTIL_DETAIL_CUDAEVENTTIMER_CUH_
 
 #include "flamegpu/exception/FLAMEGPUException.h"
 #include "flamegpu/gpu/CUDAErrorChecking.cuh"
 
 namespace flamegpu {
 namespace util {
+namespace detail {
 
 /**
  * Class to simplify the use of CUDAEvents for timing.
@@ -91,7 +92,8 @@ class CUDAEventTimer {
     bool synced;
 };
 
+}  // namespace detail
 }  // namespace util
 }  // namespace flamegpu
 
-#endif  // INCLUDE_FLAMEGPU_UTIL_CUDAEVENTTIMER_CUH_
+#endif  // INCLUDE_FLAMEGPU_UTIL_DETAIL_CUDAEVENTTIMER_CUH_

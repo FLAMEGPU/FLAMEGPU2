@@ -1,10 +1,11 @@
-#ifndef INCLUDE_FLAMEGPU_UTIL_STEADYCLOCKTIMER_H_
-#define INCLUDE_FLAMEGPU_UTIL_STEADYCLOCKTIMER_H_
+#ifndef INCLUDE_FLAMEGPU_UTIL_DETAIL_STEADYCLOCKTIMER_H_
+#define INCLUDE_FLAMEGPU_UTIL_DETAIL_STEADYCLOCKTIMER_H_
 
 #include <chrono>
 
 namespace flamegpu {
 namespace util {
+namespace detail {
 
 /** 
  * Class to simplify the finding of elapsed time using a chrono::steady_clock timer.
@@ -36,7 +37,8 @@ class SteadyClockTimer {
     std::chrono::time_point<std::chrono::steady_clock> _stop;
 };
 
+}  // namespace detail
 }  // namespace util
 }  // namespace flamegpu
 
-#endif  // INCLUDE_FLAMEGPU_UTIL_STEADYCLOCKTIMER_H_
+#endif  // INCLUDE_FLAMEGPU_UTIL_DETAIL_STEADYCLOCKTIMER_H_

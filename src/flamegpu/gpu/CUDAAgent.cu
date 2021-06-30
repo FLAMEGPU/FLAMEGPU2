@@ -37,7 +37,7 @@ using std::experimental::filesystem::v1::path;
 #include "flamegpu/runtime/cuRVE/curve.h"
 #include "flamegpu/runtime/cuRVE/curve_rtc.h"
 #include "flamegpu/gpu/CUDAScatter.h"
-#include "flamegpu/util/compute_capability.cuh"
+#include "flamegpu/util/detail/compute_capability.cuh"
 #include "flamegpu/util/nvtx.h"
 
 namespace flamegpu {
@@ -614,7 +614,7 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, bool f
         agent_function_file.close();
 #endif
 
-    util::JitifyCache &jitify = util::JitifyCache::getInstance();
+    util::detail::JitifyCache &jitify = util::detail::JitifyCache::getInstance();
     // switch between normal agent function and agent function condition
     if (!function_condition) {
         const std::string t_func_impl = std::string(func.rtc_func_name).append("_impl");

@@ -10,7 +10,7 @@
 #include <list>
 
 // include sub classes
-#include "flamegpu/util/JitifyCache.h"
+#include "flamegpu/util/detail/JitifyCache.h"
 #include "flamegpu/gpu/CUDAAgentStateList.h"
 #include "flamegpu/model/AgentFunctionData.cuh"
 #include "flamegpu/model/SubAgentData.h"

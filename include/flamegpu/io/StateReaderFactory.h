@@ -12,7 +12,7 @@
 #include "flamegpu/io/JSONStateReader.h"
 #include "flamegpu/util/StringPair.h"
 #include "flamegpu/util/StringUint32Pair.h"
-#include "flamegpu/util/filesystem.h"
+#include "flamegpu/util/detail/filesystem.h"
 
 namespace flamegpu {
 class AgentVector;
@@ -43,7 +43,7 @@ class StateReaderFactory {
         util::StringPairUnorderedMap<std::shared_ptr<AgentVector>>& model_state,
         const std::string& input,
         Simulation* sim_instance) {
-        const std::string extension = util::filesystem::getFileExt(input);
+        const std::string extension = util::detail::filesystem::getFileExt(input);
 
         if (extension == "xml") {
             return new XMLStateReader(model_name, env_desc, env_init, model_state, input, sim_instance);

@@ -1,10 +1,11 @@
-#ifndef INCLUDE_FLAMEGPU_UTIL_CXXNAME_HPP_
-#define INCLUDE_FLAMEGPU_UTIL_CXXNAME_HPP_
+#ifndef INCLUDE_FLAMEGPU_UTIL_DETAIL_CXXNAME_HPP_
+#define INCLUDE_FLAMEGPU_UTIL_DETAIL_CXXNAME_HPP_
 
 #include <string>
 
 namespace flamegpu {
 namespace util {
+namespace detail {
 namespace cxxname {
 
 /**
@@ -24,7 +25,8 @@ inline std::string getUnqualifiedName(std::string qualified) {
 }
 
 }  // namespace cxxname
+}  // namespace detail
 }  // namespace util
 }  // namespace flamegpu
 
-#endif  // INCLUDE_FLAMEGPU_UTIL_CXXNAME_HPP_
+#endif  // INCLUDE_FLAMEGPU_UTIL_DETAIL_CXXNAME_HPP_

@@ -1,5 +1,5 @@
 #include <string>
-#include "flamegpu/util/cxxname.hpp"
+#include "flamegpu/util/detail/cxxname.hpp"
 
 #include "gtest/gtest.h"
 
@@ -10,15 +10,15 @@ namespace test_cxxname {
  */
 TEST(TestUtilCxxname, getUnqualifiedName) {
     // Check with no qualification
-    EXPECT_EQ(flamegpu::util::cxxname::getUnqualifiedName(std::string("ClassName")), std::string("ClassName"));
+    EXPECT_EQ(flamegpu::util::detail::cxxname::getUnqualifiedName(std::string("ClassName")), std::string("ClassName"));
     // Check with one qualifier
-    EXPECT_EQ(flamegpu::util::cxxname::getUnqualifiedName(std::string("namespace::ClassName")), std::string("ClassName"));
+    EXPECT_EQ(flamegpu::util::detail::cxxname::getUnqualifiedName(std::string("namespace::ClassName")), std::string("ClassName"));
 
     // Check with two qualifiers
-    EXPECT_EQ(flamegpu::util::cxxname::getUnqualifiedName(std::string("namespace::subnamespace::ClassName")), std::string("ClassName"));
+    EXPECT_EQ(flamegpu::util::detail::cxxname::getUnqualifiedName(std::string("namespace::subnamespace::ClassName")), std::string("ClassName"));
 
     // Check with const char * as an argument
-    EXPECT_EQ(flamegpu::util::cxxname::getUnqualifiedName("namespace::ClassName"), "ClassName");
+    EXPECT_EQ(flamegpu::util::detail::cxxname::getUnqualifiedName("namespace::ClassName"), "ClassName");
 }
 
 }  // namespace test_cxxname

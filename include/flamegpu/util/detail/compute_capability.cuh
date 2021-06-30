@@ -1,10 +1,11 @@
-#ifndef INCLUDE_FLAMEGPU_UTIL_COMPUTE_CAPABILITY_CUH_
-#define INCLUDE_FLAMEGPU_UTIL_COMPUTE_CAPABILITY_CUH_
+#ifndef INCLUDE_FLAMEGPU_UTIL_DETAIL_COMPUTE_CAPABILITY_CUH_
+#define INCLUDE_FLAMEGPU_UTIL_DETAIL_COMPUTE_CAPABILITY_CUH_
 
 #include "flamegpu/gpu/CUDAErrorChecking.cuh"
 
 namespace flamegpu {
 namespace util {
+namespace detail {
 namespace compute_capability {
 
 /**
@@ -30,7 +31,8 @@ int minimumCompiledComputeCapability();
 bool checkComputeCapability(int deviceIndex);
 
 }  // namespace compute_capability
+}  // namespace detail
 }  // namespace util
 }  // namespace flamegpu
 
-#endif  // INCLUDE_FLAMEGPU_UTIL_COMPUTE_CAPABILITY_CUH_
+#endif  // INCLUDE_FLAMEGPU_UTIL_DETAIL_COMPUTE_CAPABILITY_CUH_

@@ -1,10 +1,10 @@
-#include "flamegpu/util/JitifyCache.h"
+#include "flamegpu/util/detail/JitifyCache.h"
 
 #include <cassert>
 
 #include "flamegpu/version.h"
 #include "flamegpu/exception/FLAMEGPUException.h"
-#include "flamegpu/util/compute_capability.cuh"
+#include "flamegpu/util/detail/compute_capability.cuh"
 #include "flamegpu/util/nvtx.h"
 
 // If MSVC earlier than VS 2019
@@ -29,6 +29,7 @@ using jitify::detail::hash_larson64;
 
 namespace flamegpu {
 namespace util {
+namespace detail {
 
 namespace {
 /**
@@ -149,11 +150,11 @@ break_flamegpu2_inc_dir_loop:
             }
             vFile.close();
         }
-        if (fileHash == detail::getCommitHash()) {
+        if (fileHash == flamegpu::detail::getCommitHash()) {
             header_version_confirmed = true;
         } else {
             THROW exception::VersionMismatch("RTC header version (%s) does not match version flamegpu2 library was built with (%s). Set the environment variable FLAMEGPU2_INC_DIR to the correct include directory.\n",
-                fileHash.c_str(), detail::getCommitHash().c_str());
+                fileHash.c_str(), flamegpu::detail::getCommitHash().c_str());
         }
     }
     if (env_cuda_path.empty()) {
@@ -258,7 +259,7 @@ std::unique_ptr<KernelInstantiation> JitifyCache::loadKernel(const std::string &
         cuda_version + "_" +
         arch + "_" +
         seatbelts + "_" +
-        detail::getCommitHash() + "_" +
+        flamegpu::detail::getCommitHash() + "_" +
         // Use jitify hash methods for consistent hashing between OSs
         std::to_string(hash_combine(hash_larson64(kernel_src.c_str()), hash_larson64(dynamic_header.c_str())));
     // Does a copy with the right reference exist in memory?
@@ -355,5 +356,6 @@ JitifyCache& JitifyCache::getInstance() {
     return instance;
 }
 
+}  // namespace detail
 }  // namespace util
 }  // namespace flamegpu

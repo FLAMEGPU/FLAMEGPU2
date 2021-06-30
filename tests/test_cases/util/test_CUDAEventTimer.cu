@@ -1,6 +1,6 @@
 #include <thread>
 #include <chrono>
-#include "flamegpu/util/CUDAEventTimer.cuh"
+#include "flamegpu/util/detail/CUDAEventTimer.cuh"
 #include "flamegpu/util/nvtx.h"
 #include "flamegpu/gpu/CUDAErrorChecking.cuh"
 
@@ -21,8 +21,8 @@ namespace test_CUDAEventTimer {
 TEST(TestUtilCUDAEventTimer, CUDAEventTimer) {
     NVTX_RANGE("TestUtilCUDAEventTimer:CUDAEventTimer");
     // Create an event timer, time should be 0 initially.
-    util::CUDAEventTimer * timer = nullptr;
-    EXPECT_NO_THROW(timer = new util::CUDAEventTimer());
+    util::detail::CUDAEventTimer * timer = nullptr;
+    EXPECT_NO_THROW(timer = new util::detail::CUDAEventTimer());
     EXPECT_THROW(timer->getElapsedMilliseconds(), exception::UnsycnedCUDAEventTimer);
     // Time an arbitrary event, and check the value is approximately correct.
     timer->start();

@@ -10,7 +10,7 @@
 #include "flamegpu/io/Logger.h"
 #include "flamegpu/io/JSONLogger.h"
 #include "flamegpu/io/XMLLogger.h"
-#include "flamegpu/util/filesystem.h"
+#include "flamegpu/util/detail/filesystem.h"
 
 namespace flamegpu {
 namespace io {
@@ -25,7 +25,7 @@ class LoggerFactory {
      * @param truncateFile If true and output file already exists, it will be truncated
      */
     static std::unique_ptr<Logger> createLogger(const std::string &output_path, bool prettyPrint, bool truncateFile = true) {
-        const std::string extension = util::filesystem::getFileExt(output_path);
+        const std::string extension = util::detail::filesystem::getFileExt(output_path);
 
         if (extension == "xml") {
             return std::make_unique<XMLLogger>(output_path, prettyPrint, truncateFile);

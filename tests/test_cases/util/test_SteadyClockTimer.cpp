@@ -1,6 +1,6 @@
 #include <thread>
 #include <chrono>
-#include "flamegpu/util/SteadyClockTimer.h"
+#include "flamegpu/util/detail/SteadyClockTimer.h"
 
 #include "gtest/gtest.h"
 namespace flamegpu {
@@ -8,8 +8,8 @@ namespace flamegpu {
 
 TEST(TestSteadyClockTimer, SteadyClockTimer) {
     // Create an event timer, time should be 0 initially.
-    util::SteadyClockTimer * timer = nullptr;
-    EXPECT_NO_THROW(timer = new util::SteadyClockTimer());
+    util::detail::SteadyClockTimer * timer = nullptr;
+    EXPECT_NO_THROW(timer = new util::detail::SteadyClockTimer());
 
     // Time an arbitrary event, and check the value is approximately correct.
     timer->start();

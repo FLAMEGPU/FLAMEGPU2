@@ -1,8 +1,9 @@
-#include "flamegpu/util/compute_capability.cuh"
+#include "flamegpu/util/detail/compute_capability.cuh"
 #include "flamegpu/gpu/CUDAErrorChecking.cuh"
 
 namespace flamegpu {
 namespace util {
+namespace detail {
 
 int compute_capability::getComputeCapability(int deviceIndex) {
     int major = 0;
@@ -46,5 +47,6 @@ bool compute_capability::checkComputeCapability(int deviceIndex) {
     }
 }
 
+}  // namespace detail
 }  // namespace util
 }  // namespace flamegpu
