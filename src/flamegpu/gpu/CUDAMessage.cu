@@ -4,7 +4,7 @@
 #include "flamegpu/gpu/CUDAMessage.h"
 #include "flamegpu/gpu/CUDAAgent.h"
 #include "flamegpu/gpu/CUDAMessageList.h"
-#include "flamegpu/gpu/CUDAErrorChecking.cuh"
+#include "flamegpu/gpu/detail/CUDAErrorChecking.cuh"
 #include "flamegpu/gpu/CUDAScatter.h"
 
 #include "flamegpu/runtime/messaging/BruteForce.h"

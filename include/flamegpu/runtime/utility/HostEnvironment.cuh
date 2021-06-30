@@ -10,7 +10,7 @@
 #include <set>
 #include <vector>
 
-#include "flamegpu/gpu/CUDAErrorChecking.cuh"
+#include "flamegpu/gpu/detail/CUDAErrorChecking.cuh"
 #include "flamegpu/runtime/utility/EnvironmentManager.cuh"
 
 namespace flamegpu {

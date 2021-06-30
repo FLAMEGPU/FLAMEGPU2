@@ -1,7 +1,7 @@
 #ifndef INCLUDE_FLAMEGPU_UTIL_DETAIL_COMPUTE_CAPABILITY_CUH_
 #define INCLUDE_FLAMEGPU_UTIL_DETAIL_COMPUTE_CAPABILITY_CUH_
 
-#include "flamegpu/gpu/CUDAErrorChecking.cuh"
+#include "flamegpu/gpu/detail/CUDAErrorChecking.cuh"
 
 namespace flamegpu {
 namespace util {

@@ -8,7 +8,7 @@
 #include "flamegpu/runtime/cuRVE/curve.h"
 
 
-#include "flamegpu/gpu/CUDAErrorChecking.cuh"
+#include "flamegpu/gpu/detail/CUDAErrorChecking.cuh"
 #include "flamegpu/util/nvtx.h"
 
 namespace flamegpu {

@@ -20,7 +20,7 @@
 #include <memory>
 
 #include "flamegpu/exception/FLAMEGPUException.h"
-#include "flamegpu/gpu/CUDAErrorChecking.cuh"
+#include "flamegpu/gpu/detail/CUDAErrorChecking.cuh"
 #include "flamegpu/runtime/cuRVE/curve.h"
 #include "flamegpu/util/Any.h"
 

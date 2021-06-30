@@ -1,7 +1,7 @@
 #include <cuda_runtime.h>
 
 #include "flamegpu/util/detail/compute_capability.cuh"
-#include "flamegpu/gpu/CUDAErrorChecking.cuh"
+#include "flamegpu/gpu/detail/CUDAErrorChecking.cuh"
 
 #include "gtest/gtest.h"
 namespace flamegpu {
