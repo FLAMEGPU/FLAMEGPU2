@@ -10,7 +10,7 @@
 #include <cstdio>
 #include <algorithm>
 
-#include "flamegpu/gpu/CUDAErrorChecking.cuh"
+#include "flamegpu/gpu/detail/CUDAErrorChecking.cuh"
 #include "flamegpu/gpu/CUDASimulation.h"
 
 namespace flamegpu {

@@ -2,7 +2,7 @@
 #include <chrono>
 #include "flamegpu/util/detail/CUDAEventTimer.cuh"
 #include "flamegpu/util/nvtx.h"
-#include "flamegpu/gpu/CUDAErrorChecking.cuh"
+#include "flamegpu/gpu/detail/CUDAErrorChecking.cuh"
 
 #include "gtest/gtest.h"
 namespace flamegpu {
