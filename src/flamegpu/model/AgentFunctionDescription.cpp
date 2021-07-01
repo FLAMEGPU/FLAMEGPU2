@@ -482,17 +482,26 @@ bool AgentFunctionDescription::isRTC() const {
 
 AgentFunctionDescription& AgentDescription::newRTCFunction(const std::string& function_name, const std::string& func_src) {
     if (agent->functions.find(function_name) == agent->functions.end()) {
-        // append jitify program string and include
-        std::string func_src_str = std::string(function_name + "_program\n").append("#include \"flamegpu/runtime/DeviceAPI.cuh\"\n").append(func_src);
         // Use Regex to get agent function name, and input/output message type
         std::regex rgx(R"###(.*FLAMEGPU_AGENT_FUNCTION\([ \t]*(\w+),[ \t]*([:\w]+),[ \t]*([:\w]+)[ \t]*\))###");
         std::smatch match;
-        if (std::regex_search(func_src_str, match, rgx)) {
+        if (std::regex_search(func_src, match, rgx)) {
             if (match.size() == 4) {
                 std::string code_func_name = match[1];  // not yet clear if this is required
                 std::string in_type_name = match[2];
                 std::string out_type_name = match[3];
                 // set the runtime agent function source in agent function data
+                std::string func_src_str = std::string(function_name + "_program\n").append("#include \"flamegpu/runtime/DeviceAPI.cuh\"\n");
+                // Include the required headers for the input message type.
+                std::string in_type_include_name = in_type_name.substr(in_type_name.find_last_of("Msg") + 1);
+                func_src_str = func_src_str.append("#include \"flamegpu/runtime/messaging/"+ in_type_include_name + "/" + in_type_include_name + "Device.cuh\"\n");
+                // If the message input and output types do not match, also include the input type
+                if (in_type_name != out_type_name) {
+                    std::string out_type_include_name = out_type_name.substr(in_type_name.find_last_of("Msg") + 1);
+                    func_src_str = func_src_str.append("#include \"flamegpu/runtime/messaging/"+ out_type_include_name + "/" + out_type_include_name + "Device.cuh\"\n");
+                }
+                // Append the function source
+                func_src_str = func_src_str.append(func_src);
                 auto rtn = std::shared_ptr<AgentFunctionData>(new AgentFunctionData(this->agent->shared_from_this(), function_name, func_src_str, in_type_name, out_type_name, code_func_name));
                 agent->functions.emplace(function_name, rtn);
                 return *rtn->description;

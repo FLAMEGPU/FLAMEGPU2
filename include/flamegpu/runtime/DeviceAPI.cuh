@@ -8,6 +8,7 @@
 
 #ifndef __CUDACC_RTC__
 #include "flamegpu/runtime/detail/curve/curve.cuh"
+#include "flamegpu/runtime/messaging_device.h"
 #else
 #include "dynamic/curve_rtc_dynamic.h"
 #endif  // !_RTC
@@ -15,7 +16,6 @@
 #include "flamegpu/runtime/utility/DeviceEnvironment.cuh"
 #include "flamegpu/runtime/AgentFunction.cuh"
 #include "flamegpu/runtime/AgentFunctionCondition.cuh"
-#include "flamegpu/runtime/messaging_device.h"
 #include "flamegpu/defines.h"
 
 namespace flamegpu {
