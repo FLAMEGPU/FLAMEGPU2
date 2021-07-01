@@ -5,7 +5,7 @@
 #include <memory>
 #include <string>
 
-#include "flamegpu/runtime/detail/curve/curve.h"
+#include "flamegpu/runtime/detail/curve/curve.cuh"
 #endif  // __CUDACC_RTC__
 
 #include "flamegpu/runtime/messaging/None.h"

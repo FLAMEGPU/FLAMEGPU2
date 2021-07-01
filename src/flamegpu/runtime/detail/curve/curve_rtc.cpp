@@ -1,6 +1,6 @@
 #include <sstream>
 
-#include "flamegpu/runtime/detail/curve/curve_rtc.h"
+#include "flamegpu/runtime/detail/curve/curve_rtc.cuh"
 #include "flamegpu/exception/FLAMEGPUException.h"
 #include "flamegpu/runtime/utility/EnvironmentManager.cuh"
 
@@ -22,7 +22,7 @@ const char* CurveRTCHost::curve_rtc_dynamic_h_template = R"###(dynamic/curve_rtc
 #ifndef CURVE_RTC_DYNAMIC_H_
 #define CURVE_RTC_DYNAMIC_H_
 
-#include "flamegpu/exception/FLAMEGPUDeviceException.h"
+#include "flamegpu/exception/FLAMEGPUDeviceException.cuh"
 
 namespace flamegpu {
 

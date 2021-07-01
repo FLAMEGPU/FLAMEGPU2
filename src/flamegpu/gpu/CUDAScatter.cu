@@ -1,4 +1,4 @@
-#include "flamegpu/gpu/CUDAScatter.h"
+#include "flamegpu/gpu/CUDAScatter.cuh"
 
 #include <cuda_runtime.h>
 #include <vector>

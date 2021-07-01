@@ -1,7 +1,7 @@
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_HOSTAPI_H_
 #define INCLUDE_FLAMEGPU_RUNTIME_HOSTAPI_H_
 
-#include <cuda_runtime_api.h>
+#include <cuda_runtime.h>  // required for cudaStream_t. This doesn't require nvcc however, as no device code.
 #include <string>
 #include <utility>
 #include <functional>

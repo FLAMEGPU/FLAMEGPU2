@@ -8,7 +8,7 @@
 #include "flamegpu/model/ModelData.h"
 #include "flamegpu/model/AgentData.h"
 #include "flamegpu/runtime/AgentFunction.cuh"
-#include "flamegpu/runtime/AgentFunctionCondition.h"
+#include "flamegpu/runtime/AgentFunctionCondition.cuh"
 
 namespace flamegpu {
 

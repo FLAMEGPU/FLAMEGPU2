@@ -8,11 +8,11 @@
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/runtime/AgentFunction.cuh"
-#include "flamegpu/runtime/AgentFunctionCondition.h"
+#include "flamegpu/runtime/AgentFunctionCondition.cuh"
 #include "flamegpu/model/DependencyNode.h"
 #include "flamegpu/model/LayerDescription.h"
 #include "flamegpu/runtime/messaging/BruteForce.h"
-#include "flamegpu/runtime/detail/curve/curve_rtc.h"
+#include "flamegpu/runtime/detail/curve/curve_rtc.cuh"
 
 #ifdef _MSC_VER
 #pragma warning(push, 2)

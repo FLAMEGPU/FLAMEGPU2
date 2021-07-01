@@ -16,7 +16,7 @@
 #include "flamegpu/util/detail/compute_capability.cuh"
 #include "flamegpu/util/detail/SignalHandlers.h"
 #include "flamegpu/util/detail/CUDAEventTimer.cuh"
-#include "flamegpu/runtime/detail/curve/curve_rtc.h"
+#include "flamegpu/runtime/detail/curve/curve_rtc.cuh"
 #include "flamegpu/runtime/HostFunctionCallback.h"
 #include "flamegpu/gpu/CUDAAgent.h"
 #include "flamegpu/gpu/CUDAMessage.h"

@@ -86,8 +86,8 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/io/XMLLogger.h
     ${FLAMEGPU_ROOT}/include/flamegpu/io/JSONLogger.h
     ${FLAMEGPU_ROOT}/include/flamegpu/exception/FLAMEGPUException.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/exception/FLAMEGPUDeviceException.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/exception/FLAMEGPUDeviceException_device.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/exception/FLAMEGPUDeviceException.cuh
+    ${FLAMEGPU_ROOT}/include/flamegpu/exception/FLAMEGPUDeviceException_device.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/model/LayerDescription.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/ModelData.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/AgentData.h
@@ -118,7 +118,7 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAAgentStateList.h
     ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAFatAgent.h
     ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAFatAgentStateList.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAScatter.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAScatter.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/sim/AgentInterface.h
     ${FLAMEGPU_ROOT}/include/flamegpu/sim/AgentLoggingConfig.h
     ${FLAMEGPU_ROOT}/include/flamegpu/sim/AgentLoggingConfig_Reductions.cuh
@@ -130,43 +130,43 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/sim/SimLogger.h
     ${FLAMEGPU_ROOT}/include/flamegpu/sim/Simulation.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/AgentFunction.cuh
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/AgentFunction_shim.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/AgentFunctionCondition.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/AgentFunctionCondition_shim.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/AgentFunction_shim.cuh
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/AgentFunctionCondition.cuh
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/AgentFunctionCondition_shim.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/HostFunctionCallback.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/DeviceAPI.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/DeviceAPI.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/HostAPI.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/HostAPI_macros.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/HostAgentAPI.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/HostAgentAPI.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/HostNewAgentAPI.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/detail/curve/curve.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/detail/curve/curve_rtc.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/detail/curve/curve.cuh
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/detail/curve/curve_rtc.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging_device.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/None.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/None/NoneHost.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/None/NoneDevice.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/None/NoneDevice.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/BruteForce.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/BruteForce/BruteForceDevice.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/BruteForce/BruteForceDevice.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/BruteForce/BruteForceHost.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Spatial2D.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Spatial2D/Spatial2DHost.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Spatial2D/Spatial2DDevice.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Spatial2D/Spatial2DDevice.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Spatial3D.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Spatial3D/Spatial3DHost.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Spatial3D/Spatial3DDevice.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Spatial3D/Spatial3DDevice.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Array.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Array/ArrayHost.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Array/ArrayDevice.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Array/ArrayDevice.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Array2D.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Array2D/Array2DHost.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Array2D/Array2DDevice.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Array2D/Array2DDevice.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Array3D.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Array3D/Array3DHost.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Array3D/Array3DDevice.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Array3D/Array3DDevice.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Bucket.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Bucket/BucketHost.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Bucket/BucketDevice.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Bucket/BucketDevice.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/AgentRandom.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/DeviceEnvironment.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/EnvironmentManager.cuh

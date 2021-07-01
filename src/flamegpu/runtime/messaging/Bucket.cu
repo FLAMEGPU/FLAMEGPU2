@@ -11,11 +11,11 @@
 
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/gpu/CUDAMessage.h"
-#include "flamegpu/gpu/CUDAScatter.h"
+#include "flamegpu/gpu/CUDAScatter.cuh"
 #include "flamegpu/util/nvtx.h"
 
 #include "flamegpu/runtime/messaging/Bucket/BucketHost.h"
-// #include "flamegpu/runtime/messaging/Bucket/BucketDevice.h"
+// #include "flamegpu/runtime/messaging/Bucket/BucketDevice.cuh"
 
 namespace flamegpu {
 

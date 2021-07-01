@@ -1,7 +1,7 @@
 // This define forces the header to include the DeviceException::subformat() template specialisation for const char *
 // It needs to be in the header so that RTC can also use it
 #define FLAMEGPUDeviceException_CU
-#include "flamegpu/exception/FLAMEGPUDeviceException.h"
+#include "flamegpu/exception/FLAMEGPUDeviceException.cuh"
 
 #include "flamegpu/gpu/detail/CUDAErrorChecking.cuh"
 #if !defined(SEATBELTS) || SEATBELTS

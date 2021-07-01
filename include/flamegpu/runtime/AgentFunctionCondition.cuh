@@ -1,10 +1,10 @@
-#ifndef INCLUDE_FLAMEGPU_RUNTIME_AGENTFUNCTIONCONDITION_H_
-#define INCLUDE_FLAMEGPU_RUNTIME_AGENTFUNCTIONCONDITION_H_
+#ifndef INCLUDE_FLAMEGPU_RUNTIME_AGENTFUNCTIONCONDITION_CUH_
+#define INCLUDE_FLAMEGPU_RUNTIME_AGENTFUNCTIONCONDITION_CUH_
 
 #include <cuda_runtime.h>
 
-#include "flamegpu/runtime/DeviceAPI.h"
-#include "flamegpu/runtime/AgentFunctionCondition_shim.h"
+#include "flamegpu/runtime/DeviceAPI.cuh"
+#include "flamegpu/runtime/AgentFunctionCondition_shim.cuh"
 
 namespace flamegpu {
 
@@ -73,4 +73,4 @@ __global__ void agent_function_condition_wrapper(
 }  // namespace flamegpu
 
 
-#endif  // INCLUDE_FLAMEGPU_RUNTIME_AGENTFUNCTIONCONDITION_H_
+#endif  // INCLUDE_FLAMEGPU_RUNTIME_AGENTFUNCTIONCONDITION_CUH_

@@ -34,9 +34,9 @@ using std::experimental::filesystem::v1::path;
 
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/model/AgentFunctionDescription.h"
-#include "flamegpu/runtime/detail/curve/curve.h"
-#include "flamegpu/runtime/detail/curve/curve_rtc.h"
-#include "flamegpu/gpu/CUDAScatter.h"
+#include "flamegpu/runtime/detail/curve/curve.cuh"
+#include "flamegpu/runtime/detail/curve/curve_rtc.cuh"
+#include "flamegpu/gpu/CUDAScatter.cuh"
 #include "flamegpu/util/detail/compute_capability.cuh"
 #include "flamegpu/util/nvtx.h"
 

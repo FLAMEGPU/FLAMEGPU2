@@ -4,7 +4,7 @@
 #include <memory>
 #include <string>
 
-#include "flamegpu/runtime/detail/curve/curve.h"
+#include "flamegpu/runtime/detail/curve/curve.cuh"
 #include "flamegpu/model/Variable.h"
 #include "flamegpu/runtime/messaging/Spatial2D.h"
 #include "flamegpu/runtime/messaging/BruteForce/BruteForceHost.h"

@@ -1,8 +1,8 @@
-#ifndef INCLUDE_FLAMEGPU_RUNTIME_DETAIL_CURVE_CURVE_H_
-#define INCLUDE_FLAMEGPU_RUNTIME_DETAIL_CURVE_CURVE_H_
+#ifndef INCLUDE_FLAMEGPU_RUNTIME_DETAIL_CURVE_CURVE_CUH_
+#define INCLUDE_FLAMEGPU_RUNTIME_DETAIL_CURVE_CURVE_CUH_
 
 /**
- * @file   curve.h
+ * @file   curve.cuh
  * @author Paul Richmond (p.richmond@sheffield.ac.uk) http:// www.paulrichmond.staff.shef.ac.uk/
  * @date   Feb 2017
  * @brief  Main cuRVE header file
@@ -21,7 +21,7 @@
 #include <shared_mutex>
 #endif
 
-#include "flamegpu/exception/FLAMEGPUDeviceException.h"
+#include "flamegpu/exception/FLAMEGPUDeviceException.cuh"
 
 namespace flamegpu {
 namespace detail {
@@ -966,4 +966,4 @@ __device__ __forceinline__ void Curve::setArrayVariable(const char(&variableName
 }  // namespace detail
 }  // namespace flamegpu
 
-#endif  // INCLUDE_FLAMEGPU_RUNTIME_DETAIL_CURVE_CURVE_H_
+#endif  // INCLUDE_FLAMEGPU_RUNTIME_DETAIL_CURVE_CURVE_CUH_

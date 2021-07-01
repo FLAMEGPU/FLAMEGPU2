@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "flamegpu/util/StringPair.h"
-#include "flamegpu/runtime/HostAgentAPI.h"
+#include "flamegpu/runtime/HostAgentAPI.cuh"
 #include "flamegpu/model/ModelData.h"
 #include "flamegpu/gpu/CUDAEnsemble.h"
 

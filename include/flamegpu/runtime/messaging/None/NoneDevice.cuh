@@ -1,8 +1,8 @@
-#ifndef INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_NONE_NONEDEVICE_H_
-#define INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_NONE_NONEDEVICE_H_
+#ifndef INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_NONE_NONEDEVICE_CUH_
+#define INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_NONE_NONEDEVICE_CUH_
 
 #ifndef __CUDACC_RTC__
-#include "flamegpu/runtime/detail/curve/curve.h"
+#include "flamegpu/runtime/detail/curve/curve.cuh"
 #endif  // __CUDACC_RTC__
 
 #include "flamegpu/runtime/messaging/None.h"
@@ -41,4 +41,4 @@ class MsgNone::Out {
 }  // namespace flamegpu
 
 
-#endif  // INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_NONE_NONEDEVICE_H_
+#endif  // INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_NONE_NONEDEVICE_CUH_

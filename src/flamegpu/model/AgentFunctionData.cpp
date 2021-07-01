@@ -2,7 +2,7 @@
 
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/model/AgentFunctionDescription.h"
-#include "flamegpu/runtime/detail/curve/curve_rtc.h"
+#include "flamegpu/runtime/detail/curve/curve_rtc.cuh"
 #include "flamegpu/util/detail/cxxname.hpp"
 
 namespace flamegpu {

@@ -1,7 +1,7 @@
 #include "flamegpu/runtime/messaging/Spatial3D/Spatial3DHost.h"
-#include "flamegpu/runtime/messaging/Spatial3D/Spatial3DDevice.h"
+#include "flamegpu/runtime/messaging/Spatial3D/Spatial3DDevice.cuh"
 
-#include "flamegpu/gpu/CUDAScatter.h"
+#include "flamegpu/gpu/CUDAScatter.cuh"
 #ifdef _MSC_VER
 #pragma warning(push, 1)
 #pragma warning(disable : 4706 4834)

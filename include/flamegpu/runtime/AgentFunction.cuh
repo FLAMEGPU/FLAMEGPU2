@@ -5,8 +5,8 @@
 #include <curand_kernel.h>
 
 #include "flamegpu/defines.h"
-#include "flamegpu/exception/FLAMEGPUDeviceException.h"
-#include "flamegpu/runtime/AgentFunction_shim.h"
+#include "flamegpu/exception/FLAMEGPUDeviceException.cuh"
+#include "flamegpu/runtime/AgentFunction_shim.cuh"
 
 namespace flamegpu {
 

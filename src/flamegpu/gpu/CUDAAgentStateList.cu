@@ -7,7 +7,7 @@
 #include "flamegpu/gpu/detail/CUDAErrorChecking.cuh"
 #include "flamegpu/pop/AgentVector.h"
 #include "flamegpu/model/AgentDescription.h"
-#include "flamegpu/gpu/CUDAScatter.h"
+#include "flamegpu/gpu/CUDAScatter.cuh"
 #include "flamegpu/runtime/HostNewAgentAPI.h"
 #include "flamegpu/exception/FLAMEGPUException.h"
 

@@ -1,10 +1,10 @@
 #include "flamegpu/runtime/messaging/Array2D.h"
 #include "flamegpu/model/AgentDescription.h"  // Used by Move-Assign
 #include "flamegpu/gpu/CUDAMessage.h"
-#include "flamegpu/gpu/CUDAScatter.h"
+#include "flamegpu/gpu/CUDAScatter.cuh"
 
 #include "flamegpu/runtime/messaging/Array2D/Array2DHost.h"
-// #include "flamegpu/runtime/messaging/Array2D/Array2DDevice.h"
+// #include "flamegpu/runtime/messaging/Array2D/Array2DDevice.cuh"
 
 namespace flamegpu {
 
