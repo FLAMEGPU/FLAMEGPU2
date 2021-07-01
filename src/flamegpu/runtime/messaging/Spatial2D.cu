@@ -11,9 +11,9 @@
 
 #include "flamegpu/runtime/messaging.h"
 #include "flamegpu/runtime/messaging/Spatial2D/Spatial2DHost.h"
-#include "flamegpu/runtime/messaging/Spatial2D/Spatial2DDevice.h"
+#include "flamegpu/runtime/messaging/Spatial2D/Spatial2DDevice.cuh"
 #include "flamegpu/gpu/CUDAMessage.h"
-#include "flamegpu/gpu/CUDAScatter.h"
+#include "flamegpu/gpu/CUDAScatter.cuh"
 #include "flamegpu/util/nvtx.h"
 
 

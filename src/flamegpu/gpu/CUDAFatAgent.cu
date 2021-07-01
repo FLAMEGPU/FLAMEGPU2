@@ -1,6 +1,6 @@
 #include "flamegpu/gpu/CUDAFatAgent.h"
 
-#include "flamegpu/gpu/CUDAScatter.h"
+#include "flamegpu/gpu/CUDAScatter.cuh"
 #include "flamegpu/runtime/HostAPI.h"
 #include "flamegpu/util/nvtx.h"
 

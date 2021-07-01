@@ -1,5 +1,5 @@
 #include "flamegpu/runtime/messaging/BruteForce/BruteForceHost.h"
-#include "flamegpu/runtime/messaging/BruteForce/BruteForceDevice.h"
+#include "flamegpu/runtime/messaging/BruteForce/BruteForceDevice.cuh"
 #include "flamegpu/model/AgentDescription.h"  // Used by Move-Assign
 #include "flamegpu/gpu/CUDAMessage.h"
 

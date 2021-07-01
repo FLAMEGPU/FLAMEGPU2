@@ -1,8 +1,6 @@
 #ifndef INCLUDE_FLAMEGPU_GPU_CUDASCANCOMPACTION_H_
 #define INCLUDE_FLAMEGPU_GPU_CUDASCANCOMPACTION_H_
 
-// @todo - This needs to include atleast cuda_runtime
-
 namespace flamegpu {
 
 // forward declare classes from other modules

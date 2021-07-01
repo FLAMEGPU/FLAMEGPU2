@@ -1,5 +1,5 @@
-#ifndef INCLUDE_FLAMEGPU_RUNTIME_DEVICEAPI_H_
-#define INCLUDE_FLAMEGPU_RUNTIME_DEVICEAPI_H_
+#ifndef INCLUDE_FLAMEGPU_RUNTIME_DEVICEAPI_CUH_
+#define INCLUDE_FLAMEGPU_RUNTIME_DEVICEAPI_CUH_
 
 
 #include <cassert>
@@ -7,14 +7,14 @@
 #include <limits>
 
 #ifndef __CUDACC_RTC__
-#include "flamegpu/runtime/detail/curve/curve.h"
+#include "flamegpu/runtime/detail/curve/curve.cuh"
 #else
 #include "dynamic/curve_rtc_dynamic.h"
 #endif  // !_RTC
 #include "flamegpu/runtime/utility/AgentRandom.cuh"
 #include "flamegpu/runtime/utility/DeviceEnvironment.cuh"
 #include "flamegpu/runtime/AgentFunction.cuh"
-#include "flamegpu/runtime/AgentFunctionCondition.h"
+#include "flamegpu/runtime/AgentFunctionCondition.cuh"
 #include "flamegpu/runtime/messaging_device.h"
 #include "flamegpu/defines.h"
 
@@ -418,4 +418,4 @@ __device__ void DeviceAPI<MsgIn, MsgOut>::AgentOut::genID() const {
 
 }  // namespace flamegpu
 
-#endif  // INCLUDE_FLAMEGPU_RUNTIME_DEVICEAPI_H_
+#endif  // INCLUDE_FLAMEGPU_RUNTIME_DEVICEAPI_CUH_

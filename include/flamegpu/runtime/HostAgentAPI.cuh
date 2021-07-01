@@ -1,5 +1,5 @@
-#ifndef INCLUDE_FLAMEGPU_RUNTIME_HOSTAGENTAPI_H_
-#define INCLUDE_FLAMEGPU_RUNTIME_HOSTAGENTAPI_H_
+#ifndef INCLUDE_FLAMEGPU_RUNTIME_HOSTAGENTAPI_CUH_
+#define INCLUDE_FLAMEGPU_RUNTIME_HOSTAGENTAPI_CUH_
 #ifdef _MSC_VER
 #pragma warning(push, 1)
 #pragma warning(disable : 4706 4834)
@@ -692,4 +692,4 @@ void HostAgentAPI::sort(const std::string &variable1, Order order1, const std::s
 
 }  // namespace flamegpu
 
-#endif  // INCLUDE_FLAMEGPU_RUNTIME_HOSTAGENTAPI_H_
+#endif  // INCLUDE_FLAMEGPU_RUNTIME_HOSTAGENTAPI_CUH_

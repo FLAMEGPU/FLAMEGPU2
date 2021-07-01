@@ -1,5 +1,5 @@
 #include "flamegpu/gpu/CUDAFatAgentStateList.h"
-#include "flamegpu/gpu/CUDAScatter.h"
+#include "flamegpu/gpu/CUDAScatter.cuh"
 
 namespace flamegpu {
 

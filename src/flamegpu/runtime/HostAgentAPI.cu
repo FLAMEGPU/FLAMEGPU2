@@ -1,4 +1,4 @@
-#include "flamegpu/runtime/HostAgentAPI.h"
+#include "flamegpu/runtime/HostAgentAPI.cuh"
 #include "flamegpu/pop/DeviceAgentVector_impl.h"
 
 namespace flamegpu {

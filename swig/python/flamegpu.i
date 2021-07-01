@@ -500,8 +500,8 @@ class ModelVis;
 %include "flamegpu/gpu/CUDAEnsemble.h"
 %feature("flatnested", ""); // flat nested off
 
-%include "flamegpu/runtime/AgentFunction_shim.h"
-%include "flamegpu/runtime/AgentFunctionCondition_shim.h"
+%include "flamegpu/runtime/AgentFunction_shim.cuh"
+%include "flamegpu/runtime/AgentFunctionCondition_shim.cuh"
 
 // These are essentially nested classes that have been split out. 
 %include "flamegpu/pop/AgentVector_Agent.h"
@@ -515,7 +515,7 @@ class ModelVis;
 %include "flamegpu/runtime/utility/HostEnvironment.cuh"
 
 %include "flamegpu/runtime/HostNewAgentAPI.h"
-%include "flamegpu/runtime/HostAgentAPI.h"
+%include "flamegpu/runtime/HostAgentAPI.cuh"
 %include "flamegpu/runtime/HostAPI.h" 
 
 // Include logging implementations

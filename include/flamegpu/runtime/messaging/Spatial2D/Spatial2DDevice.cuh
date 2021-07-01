@@ -1,23 +1,23 @@
-#ifndef INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_SPATIAL3D_SPATIAL3DDEVICE_H_
-#define INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_SPATIAL3D_SPATIAL3DDEVICE_H_
+#ifndef INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_SPATIAL2D_SPATIAL2DDEVICE_CUH_
+#define INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_SPATIAL2D_SPATIAL2DDEVICE_CUH_
 
-#include "flamegpu/runtime/messaging/Spatial3D.h"
-#include "flamegpu/runtime/messaging/Spatial2D/Spatial2DDevice.h"
-#include "flamegpu/runtime/messaging/BruteForce/BruteForceDevice.h"
+#include "flamegpu/runtime/messaging/Spatial2D.h"
+#include "flamegpu/runtime/messaging/BruteForce/BruteForceDevice.cuh"
 
 namespace flamegpu {
+
 
 /**
  * This class is accessible via DeviceAPI.message_in if MsgSpatial3D is specified in FLAMEGPU_AGENT_FUNCTION
  * It gives access to functionality for reading spatially partitioned messages
  */
-class MsgSpatial3D::In {
+class MsgSpatial2D::In {
  public:
     /**
-     * This class is created when a search origin is provided to MsgSpatial3D::In::operator()(float, float, float)
+     * This class is created when a search origin is provided to MsgSpatial2D::In::operator()(float, float)
      * It provides iterator access to a subset of the full message list, according to the provided search origin
      * 
-     * @see MsgSpatial3D::In::operator()(float, float, float)
+     * @see MsgSpatial2D::In::operator()(float, float)
      */
     class Filter {
      public:
@@ -34,10 +34,9 @@ class MsgSpatial3D::In {
             /**
              * Relative strip within the Moore neighbourhood
              * Strips run along the x axis
-             * relative_cell[0] corresponds to y offset
-             * relative_cell[1] corresponds to z offset
+             * relative_cell corresponds to y offset
              */
-            int relative_cell[2] = { -2, 1 };
+            int relative_cell = { -2 };
             /**
              * This is the index after the final message, relative to the full message list, in the current bin
              */
@@ -52,12 +51,11 @@ class MsgSpatial3D::In {
              * Constructs a message and directly initialises all of it's member variables
              * @note See member variable documentation for their purposes
              */
-            __device__ Message(const Filter &parent, const int &relative_cell_y, const int &relative_cell_z, const int &_cell_index_max, const int &_cell_index)
+            __device__ Message(const Filter &parent, const int &relative_cell_y, const int &_cell_index_max, const int &_cell_index)
                 : _parent(parent)
                 , cell_index_max(_cell_index_max)
                 , cell_index(_cell_index) {
-                relative_cell[0] = relative_cell_y;
-                relative_cell[1] = relative_cell_z;
+                relative_cell = relative_cell_y;
             }
             /**
              * False minimal constructor used by iterator::end()
@@ -69,9 +67,8 @@ class MsgSpatial3D::In {
              * Compares all internal member vars for equality
              * @note Does not compare _parent
              */
-            __device__ bool operator==(const Message &rhs) const {
-                return this->relative_cell[0] == rhs.relative_cell[0]
-                    && this->relative_cell[1] == rhs.relative_cell[1]
+            __device__ bool operator==(const Message& rhs) const {
+                return this->relative_cell == rhs.relative_cell
                     && this->cell_index_max == rhs.cell_index_max
                     && this->cell_index == rhs.cell_index;
             }
@@ -81,11 +78,11 @@ class MsgSpatial3D::In {
              * Therefore it does not even perform the equality operation
              * @note Use operator==() if proper equality is required
              */
-            __device__ bool operator!=(const Message&) const {
+            __device__ bool operator!=(const Message& rhs) const {
                 // The incoming Message& is end(), so we don't care about that
                 // We only care that the host object has reached end
                 // When the strip number equals 2, it has exceeded the [-1, 1] range
-                return !(this->relative_cell[0] >= 2);
+                return !(this->relative_cell >= 2);
             }
             /**
              * Updates the message to return variables from the next message in the message list
@@ -96,12 +93,7 @@ class MsgSpatial3D::In {
              * Utility function for deciding next strip to access
              */
             __device__ void nextStrip() {
-                if (relative_cell[1] >= 1) {
-                    relative_cell[1] = -1;
-                    relative_cell[0]++;
-                } else {
-                    relative_cell[1]++;
-                }
+                relative_cell++;
             }
             /**
              * Returns the value for the current message attached to the named variable
@@ -125,11 +117,11 @@ class MsgSpatial3D::In {
          public:
             /**
              * Constructor
-             * This iterator is constructed by MsgSpatial3D::In::Filter::begin()(float, float, float)
-             * @see MsgSpatial3D::In::Operator()(float, float, float)
+             * This iterator is constructed by MsgSpatial2D::In::Filter::begin()(float, float)
+             * @see MsgSpatial2D::In::Operator()(float, float)
              */
-            __device__ iterator(const Filter &parent, const int &relative_cell_y, const int &relative_cell_z, const int &_cell_index_max, const int &_cell_index)
-                : _message(parent, relative_cell_y, relative_cell_z, _cell_index_max, _cell_index) {
+            __device__ iterator(const Filter &parent, const int &relative_cell_y, const int &_cell_index_max, const int &_cell_index)
+                : _message(parent, relative_cell_y, _cell_index_max, _cell_index) {
                 // Increment to find first message
                 ++_message;
             }
@@ -178,15 +170,14 @@ class MsgSpatial3D::In {
          * @param combined_hash agentfn+message hash for accessing message data
          * @param x Search origin x coord
          * @param y Search origin y coord
-         * @param z search origin z coord
          */
-        __device__ Filter(const MetaData *_metadata, const detail::curve::Curve::NamespaceHash &combined_hash, const float &x, const float &y, const float &z);
+        __device__ Filter(const MetaData *_metadata, const detail::curve::Curve::NamespaceHash &combined_hash, const float &x, const float &y);
         /**
          * Returns an iterator to the start of the message list subset about the search origin
          */
         inline __device__ iterator begin(void) const {
             // Bin before initial bin, as the constructor calls increment operator
-            return iterator(*this, -2, 1, 1, 0);
+            return iterator(*this, -2, 1, 0);
         }
         /**
          * Returns an iterator to the position beyond the end of the message list subset
@@ -202,11 +193,11 @@ class MsgSpatial3D::In {
         /**
          * Search origin
          */
-        float loc[3];
+        float loc[2];
         /**
          * Search origin's grid cell
          */
-        GridPos3D cell;
+        GridPos2D cell;
         /**
          * Pointer to message list metadata, e.g. environment bounds, search radius, PBM location
          */
@@ -217,7 +208,6 @@ class MsgSpatial3D::In {
          */
         detail::curve::Curve::NamespaceHash combined_hash;
     };
-
     /**
      * Constructer
      * Initialises member variables
@@ -232,20 +222,19 @@ class MsgSpatial3D::In {
     /**
      * Returns a Filter object which provides access to message iterator
      * for iterating a subset of messages including those within the radius of the search origin
-     * 
+     *
      * @param x Search origin x coord
      * @param y Search origin y coord
-     * @param z Search origin z coord
      */
-    inline __device__ Filter operator() (const float &x, const float &y, const float &z) const {
-        return Filter(metadata, combined_hash, x, y, z);
-    }
+     inline __device__ Filter operator() (const float &x, const float &y) const {
+         return Filter(metadata, combined_hash, x, y);
+     }
 
     /**
      * Returns the search radius of the message list defined in the model description
      */
-    __forceinline__ __device__ float radius() const {
-        return metadata->radius;
+     __forceinline__ __device__ float radius() const {
+         return metadata->radius;
     }
 
  private:
@@ -265,7 +254,7 @@ class MsgSpatial3D::In {
  * This class is accessible via DeviceAPI.message_out if MsgSpatial3D is specified in FLAMEGPU_AGENT_FUNCTION
  * It gives access to functionality for outputting spatially partitioned messages
  */
-class MsgSpatial3D::Out : public MsgBruteForce::Out {
+class MsgSpatial2D::Out : public MsgBruteForce::Out {
  public:
     /**
      * Constructer
@@ -281,18 +270,17 @@ class MsgSpatial3D::Out : public MsgBruteForce::Out {
      * Sets the location for this agents message
      * @param x Message x coord
      * @param y Message y coord
-     * @param z Message z coord
      * @note Convenience wrapper for setVariable()
      */
-    __device__ void setLocation(const float &x, const float &y, const float &z) const;
+    __device__ void setLocation(const float &x, const float &y) const;
 };
 
 template<typename T, unsigned int N>
-__device__ T MsgSpatial3D::In::Filter::Message::getVariable(const char(&variable_name)[N]) const {
+__device__ T MsgSpatial2D::In::Filter::Message::getVariable(const char(&variable_name)[N]) const {
 #if !defined(SEATBELTS) || SEATBELTS
     // Ensure that the message is within bounds.
-    if (relative_cell[0] >= 2) {
-        DTHROW("MsgSpatial3D in invalid bin, unable to get variable '%s'.\n", variable_name);
+    if (relative_cell >= 2) {
+        DTHROW("MsgSpatial2D in invalid bin, unable to get variable '%s'.\n", variable_name);
         return static_cast<T>(0);
     }
 #endif
@@ -302,68 +290,62 @@ __device__ T MsgSpatial3D::In::Filter::Message::getVariable(const char(&variable
 }
 
 
-__device__ __forceinline__ MsgSpatial3D::GridPos3D getGridPosition3D(const MsgSpatial3D::MetaData *md, float x, float y, float z) {
+__device__ __forceinline__ MsgSpatial2D::GridPos2D getGridPosition2D(const MsgSpatial2D::MetaData *md, float x, float y) {
     // Clamp each grid coord to 0<=x<dim
-    int gridPos[3] = {
+    int gridPos[2] = {
         static_cast<int>(floorf(((x-md->min[0]) / md->environmentWidth[0])*md->gridDim[0])),
-        static_cast<int>(floorf(((y-md->min[1]) / md->environmentWidth[1])*md->gridDim[1])),
-        static_cast<int>(floorf(((z-md->min[2]) / md->environmentWidth[2])*md->gridDim[2]))
+        static_cast<int>(floorf(((y-md->min[1]) / md->environmentWidth[1])*md->gridDim[1]))
     };
-    MsgSpatial3D::GridPos3D rtn = {
+    MsgSpatial2D::GridPos2D rtn = {
         gridPos[0] < 0 ? 0 : (gridPos[0] >= static_cast<int>(md->gridDim[0]) ? static_cast<int>(md->gridDim[0]) - 1 : gridPos[0]),
-        gridPos[1] < 0 ? 0 : (gridPos[1] >= static_cast<int>(md->gridDim[1]) ? static_cast<int>(md->gridDim[1]) - 1 : gridPos[1]),
-        gridPos[2] < 0 ? 0 : (gridPos[2] >= static_cast<int>(md->gridDim[2]) ? static_cast<int>(md->gridDim[2]) - 1 : gridPos[2])
+        gridPos[1] < 0 ? 0 : (gridPos[1] >= static_cast<int>(md->gridDim[1]) ? static_cast<int>(md->gridDim[1]) - 1 : gridPos[1])
     };
     return rtn;
 }
-__device__ __forceinline__ unsigned int getHash3D(const MsgSpatial3D::MetaData *md, const MsgSpatial3D::GridPos3D &xyz) {
+__device__ __forceinline__ unsigned int getHash2D(const MsgSpatial2D::MetaData *md, const MsgSpatial2D::GridPos2D &xyz) {
     // Bound gridPos to gridDimensions
     unsigned int gridPos[3] = {
         (unsigned int)(xyz.x < 0 ? 0 : (xyz.x >= static_cast<int>(md->gridDim[0]) - 1 ? static_cast<int>(md->gridDim[0]) - 1 : xyz.x)),  // Only x should ever be out of bounds here
-        (unsigned int) xyz.y,  // xyz.y < 0 ? 0 : (xyz.y >= md->gridDim[1] - 1 ? md->gridDim[1] - 1 : xyz.y),
-        (unsigned int) xyz.z,  // xyz.z < 0 ? 0 : (xyz.z >= md->gridDim[2] - 1 ? md->gridDim[2] - 1 : xyz.z)
+        (unsigned int) xyz.y,  // xyz.y < 0 ? 0 : (xyz.y >= md->gridDim[1] - 1 ? md->gridDim[1] - 1 : xyz.y)
     };
     // Compute hash (effectivley an index for to a bin within the partitioning grid in this case)
     return (unsigned int)(
-        (gridPos[2] * md->gridDim[0] * md->gridDim[1]) +   // z
         (gridPos[1] * md->gridDim[0]) +                    // y
         gridPos[0]);                                      // x
 }
 
-__device__ inline void MsgSpatial3D::Out::setLocation(const float &x, const float &y, const float &z) const {
+__device__ inline void MsgSpatial2D::Out::setLocation(const float &x, const float &y) const {
     unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;  // + d_message_count;
 
     // set the variables using curve
     detail::curve::Curve::setMessageVariable<float>("x", combined_hash, x, index);
     detail::curve::Curve::setMessageVariable<float>("y", combined_hash, y, index);
-    detail::curve::Curve::setMessageVariable<float>("z", combined_hash, z, index);
 
     // Set scan flag incase the message is optional
     this->scan_flag[index] = 1;
 }
 
-__device__ inline MsgSpatial3D::In::Filter::Filter(const MetaData* _metadata, const detail::curve::Curve::NamespaceHash &_combined_hash, const float& x, const float& y, const float& z)
+__device__ inline MsgSpatial2D::In::Filter::Filter(const MetaData* _metadata, const detail::curve::Curve::NamespaceHash &_combined_hash, const float& x, const float& y)
     : metadata(_metadata)
     , combined_hash(_combined_hash) {
     loc[0] = x;
     loc[1] = y;
-    loc[2] = z;
-    cell = getGridPosition3D(_metadata, x, y, z);
+    cell = getGridPosition2D(_metadata, x, y);
 }
-__device__ inline MsgSpatial3D::In::Filter::Message& MsgSpatial3D::In::Filter::Message::operator++() {
+__device__ inline MsgSpatial2D::In::Filter::Message& MsgSpatial2D::In::Filter::Message::operator++() {
     cell_index++;
     bool move_strip = cell_index >= cell_index_max;
     while (move_strip) {
         nextStrip();
         cell_index = 0;
         cell_index_max = 1;
-        if (relative_cell[0] < 2) {
+        if (relative_cell < 2) {
             // Calculate the strips start and end hash
-            int absolute_cell[2] = { _parent.cell.y + relative_cell[0], _parent.cell.z + relative_cell[1] };
+            int absolute_cell_y = _parent.cell.y + relative_cell;
             // Skip the strip if it is completely out of bounds
-            if (absolute_cell[0] >= 0 && absolute_cell[1] >= 0 && absolute_cell[0] < static_cast<int>(_parent.metadata->gridDim[1]) && absolute_cell[1] < static_cast<int>(_parent.metadata->gridDim[2])) {
-                unsigned int start_hash = getHash3D(_parent.metadata, { _parent.cell.x - 1, absolute_cell[0], absolute_cell[1] });
-                unsigned int end_hash = getHash3D(_parent.metadata, { _parent.cell.x + 1, absolute_cell[0], absolute_cell[1] });
+            if (absolute_cell_y >= 0 && absolute_cell_y < static_cast<int>(_parent.metadata->gridDim[1])) {
+                unsigned int start_hash = getHash2D(_parent.metadata, { _parent.cell.x - 1, absolute_cell_y });
+                unsigned int end_hash = getHash2D(_parent.metadata, { _parent.cell.x + 1, absolute_cell_y });
                 // Lookup start and end indicies from PBM
                 cell_index = _parent.metadata->PBM[start_hash];
                 cell_index_max = _parent.metadata->PBM[end_hash + 1];
@@ -380,4 +362,5 @@ __device__ inline MsgSpatial3D::In::Filter::Message& MsgSpatial3D::In::Filter::M
 
 }  // namespace flamegpu
 
-#endif  // INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_SPATIAL3D_SPATIAL3DDEVICE_H_
+
+#endif  // INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_SPATIAL2D_SPATIAL2DDEVICE_CUH_

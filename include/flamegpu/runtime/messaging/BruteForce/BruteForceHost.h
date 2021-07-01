@@ -11,7 +11,7 @@
 
 #include "flamegpu/model/Variable.h"
 #include "flamegpu/gpu/detail/CUDAErrorChecking.cuh"
-#include "flamegpu/runtime/detail/curve/curve.h"
+#include "flamegpu/runtime/detail/curve/curve.cuh"
 
 #include "flamegpu/runtime/messaging/None/NoneHost.h"
 #include "flamegpu/runtime/messaging/BruteForce.h"

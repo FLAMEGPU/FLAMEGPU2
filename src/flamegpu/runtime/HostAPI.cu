@@ -1,5 +1,5 @@
 #include "flamegpu/runtime/HostAPI.h"
-#include "flamegpu/runtime/HostAgentAPI.h"
+#include "flamegpu/runtime/HostAgentAPI.cuh"
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/sim/Simulation.h"
 #include "flamegpu/util/nvtx.h"

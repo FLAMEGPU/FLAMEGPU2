@@ -5,7 +5,7 @@
 #include <map>
 #include <memory>
 
-#include "flamegpu/runtime/detail/curve/curve.h"
+#include "flamegpu/runtime/detail/curve/curve.cuh"
 
 
 #include "flamegpu/gpu/detail/CUDAErrorChecking.cuh"

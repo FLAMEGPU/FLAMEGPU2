@@ -21,7 +21,7 @@
 
 #include "flamegpu/exception/FLAMEGPUException.h"
 #include "flamegpu/gpu/detail/CUDAErrorChecking.cuh"
-#include "flamegpu/runtime/detail/curve/curve.h"
+#include "flamegpu/runtime/detail/curve/curve.cuh"
 #include "flamegpu/util/Any.h"
 
 namespace flamegpu {

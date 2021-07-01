@@ -7,10 +7,10 @@
 #include <unordered_map>
 #include <map>
 
-#include "flamegpu/exception/FLAMEGPUDeviceException.h"
+#include "flamegpu/exception/FLAMEGPUDeviceException.cuh"
 #include "flamegpu/sim/Simulation.h"
-#include "flamegpu/runtime/detail/curve/curve.h"
-#include "flamegpu/gpu/CUDAScatter.h"
+#include "flamegpu/runtime/detail/curve/curve.cuh"
+#include "flamegpu/gpu/CUDAScatter.cuh"
 #include "flamegpu/gpu/CUDAEnsemble.h"
 #include "flamegpu/runtime/utility/RandomManager.cuh"
 #include "flamegpu/runtime/HostNewAgentAPI.h"

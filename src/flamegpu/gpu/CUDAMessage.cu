@@ -5,11 +5,11 @@
 #include "flamegpu/gpu/CUDAAgent.h"
 #include "flamegpu/gpu/CUDAMessageList.h"
 #include "flamegpu/gpu/detail/CUDAErrorChecking.cuh"
-#include "flamegpu/gpu/CUDAScatter.h"
+#include "flamegpu/gpu/CUDAScatter.cuh"
 
 #include "flamegpu/runtime/messaging/BruteForce.h"
 #include "flamegpu/model/AgentFunctionDescription.h"
-#include "flamegpu/runtime/detail/curve/curve.h"
+#include "flamegpu/runtime/detail/curve/curve.cuh"
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/runtime/messaging.h"
 

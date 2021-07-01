@@ -1,8 +1,8 @@
-#ifndef INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_BUCKET_BUCKETDEVICE_H_
-#define INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_BUCKET_BUCKETDEVICE_H_
+#ifndef INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_BUCKET_BUCKETDEVICE_CUH_
+#define INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_BUCKET_BUCKETDEVICE_CUH_
 
 #include "flamegpu/runtime/messaging/Bucket.h"
-#include "flamegpu/runtime/messaging/BruteForce/BruteForceDevice.h"
+#include "flamegpu/runtime/messaging/BruteForce/BruteForceDevice.cuh"
 
 namespace flamegpu {
 
@@ -318,4 +318,4 @@ __device__ T MsgBucket::In::Filter::Message::getVariable(const char(&variable_na
 }  // namespace flamegpu
 
 
-#endif  // INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_BUCKET_BUCKETDEVICE_H_
+#endif  // INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_BUCKET_BUCKETDEVICE_CUH_
