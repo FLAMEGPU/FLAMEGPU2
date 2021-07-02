@@ -32,12 +32,12 @@ void funcName ## _impl(flamegpu::HostAPI* FLAMEGPU)
 /**
  * Return type for FLAMEGPU conditions
  */
-enum FLAME_GPU_CONDITION_RESULT { CONTINUE, EXIT };
+enum CONDITION_RESULT { CONTINUE, EXIT };
 /**
  * @brief FLAMEGPU host function pointer definition
  *  this runs on the host as an init/step/exit or host layer function
  */
-typedef FLAME_GPU_CONDITION_RESULT (*FLAMEGPU_HOST_CONDITION_POINTER)(HostAPI *api);
+typedef CONDITION_RESULT (*FLAMEGPU_HOST_CONDITION_POINTER)(HostAPI *api);
 
 /**
  * Only use of condition at current is exit fn
@@ -51,9 +51,9 @@ typedef FLAMEGPU_HOST_CONDITION_POINTER FLAMEGPU_EXIT_CONDITION_POINTER;
  * Ugly, but has same usage as device functions
  */
 #define FLAMEGPU_HOST_CONDITION(funcName) \
-flamegpu::FLAME_GPU_CONDITION_RESULT funcName ## _impl(flamegpu::HostAPI* FLAMEGPU); \
+flamegpu::CONDITION_RESULT funcName ## _impl(flamegpu::HostAPI* FLAMEGPU); \
 flamegpu::FLAMEGPU_HOST_CONDITION_POINTER funcName = funcName ## _impl;\
-flamegpu::FLAME_GPU_CONDITION_RESULT funcName ## _impl(flamegpu::HostAPI* FLAMEGPU)
+flamegpu::CONDITION_RESULT funcName ## _impl(flamegpu::HostAPI* FLAMEGPU)
 
 }  // namespace flamegpu
 
