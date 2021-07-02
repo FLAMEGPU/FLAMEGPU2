@@ -66,20 +66,6 @@ class Curve {
     typedef int                      Variable;
     typedef unsigned int             VariableHash;
     typedef unsigned int             NamespaceHash;
-
-    enum DeviceError {
-        DEVICE_ERROR_NO_ERRORS,
-        DEVICE_ERROR_UNKNOWN_VARIABLE,
-        DEVICE_ERROR_VARIABLE_DISABLED,
-        DEVICE_ERROR_UNKNOWN_TYPE,
-        DEVICE_ERROR_UNKNOWN_LENGTH
-    };
-
-    enum HostError {
-        ERROR_NO_ERRORS,
-        ERROR_UNKNOWN_VARIABLE,
-        ERROR_TOO_MANY_VARIABLES
-    };
     
     template <typename T, unsigned int N>
     __device__ __forceinline__ static T getAgentVariable(const char(&name)[N], VariableHash namespace_hash, unsigned int index);
