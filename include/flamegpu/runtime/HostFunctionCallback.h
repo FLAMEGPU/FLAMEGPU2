@@ -32,7 +32,7 @@ class HostFunctionConditionCallback {
       * This is the method that will be implemented by a user in Python to define their host condition
       * @return Either pyflamegpu.EXIT or pyflamegpu.CONTINUE, denoting whether the simulation should exit
       */
-    virtual FLAME_GPU_CONDITION_RESULT run(HostAPI*) = 0;
+    virtual CONDITION_RESULT run(HostAPI*) = 0;
     /**
      * Virtual destructor for correct inheritance behaviour
      */
