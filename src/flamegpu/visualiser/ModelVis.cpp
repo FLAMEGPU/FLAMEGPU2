@@ -6,7 +6,7 @@
 
 #include "flamegpu/gpu/CUDASimulation.h"
 #include "flamegpu/model/AgentData.h"
-#include "FLAMEGPU_Visualisation.h"
+#include "flamegpu/visualiser/FLAMEGPU_Visualisation.h"
 
 namespace flamegpu {
 namespace visualiser {
