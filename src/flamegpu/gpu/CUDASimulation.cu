@@ -362,7 +362,7 @@ void CUDASimulation::spatialSortAgents() {
     }
 
     // TODO: For each agent state rather than just default
-    for (const std::string& agentName : agentsToSort3D)
+    for (const std::string& agentName : agentsToSort3D) {
         CUDAAgent& cuda_agent = getCUDAAgent(agentName);
 
         // Any agent in this list is guaranteed to have x, y, z and fgpu2_reserved_bin_index vars - used in the computation of spatial hash
@@ -389,7 +389,14 @@ void CUDASimulation::spatialSortAgents() {
 #endif
 
         // Launch kernel
-        calculateSpatialHash<<<gridSize, blockSize, sm_size, this->getStream(streamIdx) >>> (reinterpret_cast<float*>(xPtr), reinterpret_cast<float*>(yPtr), reinterpret_cast<float*>(zPtr), reinterpret_cast<unsigned int*>(binIndexPtr), envMin, envWidth, gridDim, state_list_size);
+        calculateSpatialHash<<<gridSize, blockSize, sm_size, this->getStream(streamIdx) >>> (reinterpret_cast<float*>(xPtr), 
+        reinterpret_cast<float*>(yPtr), 
+        reinterpret_cast<float*>(zPtr), 
+        reinterpret_cast<unsigned int*>(binIndexPtr), 
+        envMin, 
+        envWidth, 
+        gridDim, 
+        state_list_size);
     }
 
     assert(host_api);
