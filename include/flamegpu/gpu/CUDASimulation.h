@@ -439,13 +439,7 @@ class CUDASimulation : public Simulation {
     /**
      * How often to sort spatial agents
      */
-    unsigned int sort_agents_every_n_steps = 10;
-
-    /**
-     * Memory used in sorting - TODO: remove and use pre-existing cub temp
-     */
-    void* d_temp_storage;
-    size_t tempBytes = 0;
+    unsigned int sortAgentsEveryNSteps;
 
     /**
      * Struct containing references to the various singletons which may include CUDA code, and therefore can only be initialsed after the deferred arg parsing is completed.

@@ -94,6 +94,11 @@ int main(int argc, const char ** argv) {
     {
         flamegpu::EnvironmentDescription  &env = model.Environment();
         env.newProperty("repulse", 0.05f);
+
+        // Setting these allows us to take advantage of the automatic spatial sorting which considerably increases performance
+        env.newProperty("MIN_POSITION", -static_cast<float>(floor(cbrt(AGENT_COUNT))));
+        env.newProperty("MAX_POSITION", static_cast<float>(floor(cbrt(AGENT_COUNT))));
+        env.newProperty("INTERACTION_RADIUS", RADIUS);
     }
 
     /**

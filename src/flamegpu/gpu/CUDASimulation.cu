@@ -65,6 +65,7 @@ CUDASimulation::CUDASimulation(const std::shared_ptr<const ModelData> &_model)
     , macro_env(*_model->environment, *this)
     , run_log(std::make_unique<RunLog>())
     , streams(std::vector<cudaStream_t>())
+    , sortAgentsEveryNSteps(10)
     , singletons(nullptr)
     , singletonsInitialised(false)
     , rtcInitialised(false)
@@ -277,14 +278,39 @@ void CUDASimulation::exitFunctions() {
     }
 }
 
-void setSortAgentsEveryNSteps(const unsigned int n) {
-    setSortAgentsEveryNSteps = n;
+void CUDASimulation::setSortAgentsEveryNSteps(const unsigned int n) {
+    sortAgentsEveryNSteps = n;
 }
 
 __global__ void spatialSortInitToThreadIndex(unsigned int *output, unsigned int threadCount) {
     const unsigned int TID = blockIdx.x * blockDim.x + threadIdx.x;
     if (TID < threadCount) {
         output[TID] = TID;
+    }
+}
+
+namespace detail {
+template <typename T> struct Dims {
+    T x;
+    T y;
+    T z;
+};
+}
+
+__global__ void calculateSpatialHash(float* x, float* y, float* z, unsigned int* binIndex, detail::Dims<float> envMin, detail::Dims<float> envWidth, detail::Dims<unsigned int> gridDim, unsigned int threadCount) {
+    const unsigned int TID = blockIdx.x * blockDim.x + threadIdx.x;
+    if (TID < threadCount) {
+        // Compute hash (effectivley an index for to a bin within the partitioning grid in this case)
+        int gridPos[3] = {
+            static_cast<int>(floorf(((x[TID]-envMin.x) / envWidth.x)*gridDim.x)),
+            static_cast<int>(floorf(((y[TID]-envMin.y) / envWidth.y)*gridDim.y)),
+            static_cast<int>(floorf(((z[TID]-envMin.z) / envWidth.z)*gridDim.z))
+        };
+        unsigned int bindex = (unsigned int)(
+            (gridPos[2] * gridDim.x * gridDim.y +   // z
+            (gridPos[1] * gridDim.x) +              // y
+            gridPos[0]));                           // x
+        binIndex[TID] = bindex;
     }
 }
 
@@ -319,6 +345,57 @@ void CUDASimulation::determineAgentsToSort() {
 
 void CUDASimulation::spatialSortAgents() {
 
+    float radius;
+    detail::Dims<float> envMin;
+    detail::Dims<float> envMax;
+    detail::Dims<float> envWidth;
+    detail::Dims<unsigned int> gridDim;
+
+    try {
+        radius = host_api->environment.getProperty<float>("INTERACTION_RADIUS");
+        envMin = {host_api->environment.getProperty<float>("MIN_POSITION"), host_api->environment.getProperty<float>("MIN_POSITION"), host_api->environment.getProperty<float>("MIN_POSITION")};
+        envMax = {host_api->environment.getProperty<float>("MAX_POSITION"), host_api->environment.getProperty<float>("MAX_POSITION"), host_api->environment.getProperty<float>("MAX_POSITION")};
+        envWidth = {(envMax.x-envMin.x), (envMax.y-envMin.y), (envMax.z-envMin.z)};
+        gridDim = {static_cast<unsigned int>(ceilf(envWidth.x / radius)), static_cast<unsigned int>(ceilf(envWidth.y / radius)), static_cast<unsigned int>(ceilf(envWidth.z / radius))};
+    } catch (InvalidEnvProperty& e) {
+        std::cout << "WARNING: Please set the INTERACTION_RADIUS, MIN_POSITION and MAX_POSITION environment properties to enable spatial sorting\n";
+        this->setSortAgentsEveryNSteps(UINT_MAX);
+        return;
+    }
+
+
+    // TODO: For each agent state rather than just default 
+    for (const std::string& agentName : agentsToSort3D) {
+        CUDAAgent& cuda_agent = getCUDAAgent(agentName);
+
+        // Any agent in this list is guaranteed to have x, y, z and fgpu2_reserved_bin_index vars - used in the computation of spatial hash
+        void* xPtr = cuda_agent.getStateVariablePtr("default", "x");
+        void* yPtr = cuda_agent.getStateVariablePtr("default", "y");
+        void* zPtr = cuda_agent.getStateVariablePtr("default", "z");
+        void* binIndexPtr = cuda_agent.getStateVariablePtr("default", "fgpu2_reserved_bin_index");
+
+        // Compute occupancy
+        int blockSize = 0;  // The launch configurator returned block size
+        int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
+        int gridSize = 0;  // The actual grid size needed, based on input size
+        const unsigned int state_list_size = cuda_agent.getStateSize("default");
+        cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, calculateSpatialHash, 0, state_list_size);
+        
+        //! Round up according to CUDAAgent state list size
+        gridSize = (state_list_size + blockSize - 1) / blockSize;
+        
+        unsigned int sm_size = 0;
+#if !defined(SEATBELTS) || SEATBELTS
+        auto *error_buffer = this->singletons->exception.getDevicePtr(streamIdx, this->getStream(streamIdx));
+        sm_size = sizeof(error_buffer);
+#endif
+        unsigned int streamIdx = 0;
+
+        // Launch kernel
+        calculateSpatialHash<<<gridSize, blockSize, sm_size, this->getStream(streamIdx) >>> ((float*)xPtr, (float*)yPtr, (float*)zPtr, (unsigned int*)binIndexPtr, envMin, envWidth, gridDim, state_list_size);
+        
+    }
+
     assert(host_api);
     for (const std::string& agentName : agentsToSort3D) {
         host_api->agent(agentName).sort<unsigned int>("fgpu2_reserved_bin_index", HostAgentAPI::Asc);
@@ -327,58 +404,6 @@ void CUDASimulation::spatialSortAgents() {
     for (const std::string& agentName : agentsToSort2D) {
         host_api->agent(agentName).sort<unsigned int>("fgpu2_reserved_bin_index", HostAgentAPI::Asc);
     }
-
-    /**using VarT = unsigned int;
-    const unsigned int streamId = 0;
-    auto& scatter = singletons->scatter;
-    auto& scan = scatter.Scan();
-    
-    for (const std::string& agentName : agentsToSort3D) {
-
-        // Get agent
-        CUDAAgent& cuda_agent = getCUDAAgent(agentName);
-
-        // How many agents are we sorting - TODO: Check this is the correct size to use
-        const unsigned int agentCount = cuda_agent.getStateSize("default");
-
-        // Get pointer variable we will be sorting by
-        void* binIndexPtr = cuda_agent.getStateVariablePtr("default", "fgpu2_reserved_bin_index");
-
-        // Update buffer sizes for use in sort
-        const size_t total_variable_buffer_size = sizeof(unsigned int) * agentCount;
-        const unsigned int fake_num_agent = static_cast<unsigned int>(total_variable_buffer_size/sizeof(unsigned int)) +1;
-        scan.resize(fake_num_agent, CUDAScanCompaction::AGENT_DEATH, streamId);
-        scan.resize(agentCount, CUDAScanCompaction::MESSAGE_OUTPUT, streamId);
-
-        // Set pointers for keys & vals
-        VarT *keys_in = reinterpret_cast<VarT *>(scan.Config(CUDAScanCompaction::Type::AGENT_DEATH, streamId).d_ptrs.scan_flag);
-        VarT *keys_out = reinterpret_cast<VarT *>(scan.Config(CUDAScanCompaction::Type::AGENT_DEATH, streamId).d_ptrs.position);
-        unsigned int *vals_in = scan.Config(CUDAScanCompaction::Type::MESSAGE_OUTPUT, streamId).d_ptrs.scan_flag;
-        unsigned int *vals_out = scan.Config(CUDAScanCompaction::Type::MESSAGE_OUTPUT, streamId).d_ptrs.position;
-
-        // Fill vals_in with monotonically increasing ints - original positions before sort
-        //fillTIDArray(vals_in, agentCount, 0);  // @todo - use a non default stream
-        spatialSortInitToThreadIndex<<<(agentCount/512)+1, 512, 0, 0>>>(vals_in, agentCount);
-        gpuErrchkLaunch();
-        // Copy fgpu2_reserved_bin_index into keys_in
-        gpuErrchk(cudaMemcpy(keys_in, binIndexPtr, total_variable_buffer_size, cudaMemcpyDeviceToDevice));
-
-        // Resize temp if necessary 
-        size_t requiredBytes = 0;
-        gpuErrchk(cub::DeviceRadixSort::SortPairs(nullptr, requiredBytes, keys_in, keys_out, vals_in, vals_out, agentCount));
-        if (requiredBytes > tempBytes) {
-            cudaFree(d_temp_storage);
-            cudaMalloc()
-        }
-        
-
-        // Perform the sort - vals_out now contains new indices
-        gpuErrchk(cub::DeviceRadixSort::SortPairs(d_temp_storage, tempBytes, keys_in, keys_out, vals_in, vals_out, agentCount));
-
-        // Actually reorder the agents
-        cuda_agent.scatterSort("default", scatter, streamId, 0); 
-    }*/
-    
 }
 
 bool CUDASimulation::step() {
@@ -399,7 +424,7 @@ bool CUDASimulation::step() {
     }
 
     // Spatially sort the agents
-    if (step_count % setSortAgentsEveryNSteps == 0) {
+    if (step_count % sortAgentsEveryNSteps == 0) {
         this->spatialSortAgents();
     }
 
@@ -1121,9 +1146,6 @@ void CUDASimulation::simulate() {
     // Exit functions
     this->exitFunctions();
     processExitLog();
-
-    // Free temp agent sorting mem - TODO: Remove when switching to cub temp
-    cudaFree(d_temp_storage);
 
     // Sync visualistaion after the exit functions
     #ifdef VISUALISATION
