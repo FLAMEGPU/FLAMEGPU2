@@ -202,9 +202,6 @@ FLAMEGPU_AGENT_FUNCTION(inputdata, MsgSpatial3D, MsgNone) {
             const float message_x = message.getVariable<float>("x");
             const float message_y = message.getVariable<float>("y");
             const float message_z = message.getVariable<float>("z");
-            const float message_fx = message.getVariable<float>("fx");
-            const float message_fy = message.getVariable<float>("fy");
-            const float message_fz = message.getVariable<float>("fz");
 
             // Check interaction radius
             float separation = vec3Length(agent_x - message_x, agent_y - message_y, agent_z - message_z);
@@ -217,6 +214,9 @@ FLAMEGPU_AGENT_FUNCTION(inputdata, MsgSpatial3D, MsgNone) {
                 perceived_count++;
 
                 // Update percieved velocity matching
+                const float message_fx = message.getVariable<float>("fx");
+                const float message_fy = message.getVariable<float>("fy");
+                const float message_fz = message.getVariable<float>("fz");
                 global_velocity_x += message_fx;
                 global_velocity_y += message_fy;
                 global_velocity_z += message_fz;
