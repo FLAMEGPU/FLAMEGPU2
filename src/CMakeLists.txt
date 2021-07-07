@@ -143,6 +143,7 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/detail/curve/curve_rtc.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging_device.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/MsgSpecialisationHandler.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/None.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/None/NoneHost.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/None/NoneDevice.cuh
