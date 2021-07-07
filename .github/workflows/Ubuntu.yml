@@ -13,9 +13,9 @@ jobs:
       # explicit include-based build matrix, of known valid options
       matrix:
         include:
-          # 20.04 supports CUDA 11.0+ (gcc >= 5 && gcc <= 10). SM < 52 deprecated since 11.0
+          # 20.04 supports CUDA 11.0+ (gcc >= 5 && gcc <= 10.2). SM < 52 deprecated since 11.0
           - os: ubuntu-20.04
-            cuda: "11.3"
+            cuda: "11.4"
             cuda_arch: "52"
             gcc: 9
           # 18.04 supports CUDA 10.0+ (gcc <=8), 11.0+ (gcc<=9), 11.1+ (gcc<=10)

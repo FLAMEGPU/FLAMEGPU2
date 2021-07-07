@@ -13,7 +13,7 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            cuda: "11.3"
+            cuda: "11.4"
     env:
       build_dir: "build"
       build_tests: "ON"
