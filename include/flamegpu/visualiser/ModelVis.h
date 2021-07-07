@@ -8,11 +8,12 @@
 #include <memory>
 #include <climits>
 
+// @todo - All vis headers should live in the vis repo.
 #include "flamegpu/visualiser/AgentVis.h"
 #include "flamegpu/visualiser/StaticModelVis.h"
 #include "flamegpu/visualiser/LineVis.h"
 #include "flamegpu/visualiser/color/AutoPalette.h"
-#include "config/ModelConfig.h"
+#include "flamegpu/visualiser/config/ModelConfig.h"
 
 namespace flamegpu {
 

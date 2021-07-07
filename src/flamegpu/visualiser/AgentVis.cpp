@@ -6,7 +6,7 @@
 #include "flamegpu/model/AgentData.h"
 #include "flamegpu/visualiser/color/ColorFunction.h"
 #include "flamegpu/visualiser/color/StaticColor.h"
-#include "FLAMEGPU_Visualisation.h"
+#include "flamegpu/visualiser/FLAMEGPU_Visualisation.h"
 
 namespace flamegpu {
 namespace visualiser {

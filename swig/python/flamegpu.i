@@ -734,7 +734,7 @@ TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(logNormal, flamegpu::HostRandom::logNormal)
     // @todo - Need to put the vis repo into a subfolder for more sensible include paths
     %{
         #include "flamegpu/visualiser/visualiser_api.h"
-        #include "config/Stock.h"
+        #include "flamegpu/visualiser/config/Stock.h"
         using namespace flamegpu;
         using namespace flamegpu::visualiser;
     %}
@@ -760,7 +760,7 @@ TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(logNormal, flamegpu::HostRandom::logNormal)
     // -----------------
     // %includes for classes to wrap. 
     // -----------------
-    %include "config/Stock.h"
+    %include "flamegpu/visualiser/config/Stock.h"
     %include "flamegpu/visualiser/StaticModelVis.h"
     %include "flamegpu/visualiser/AgentStateVis.h"
     %include "flamegpu/visualiser/AgentVis.h"

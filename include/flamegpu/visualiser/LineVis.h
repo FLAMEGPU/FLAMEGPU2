@@ -4,7 +4,8 @@
 
 #include <memory>
 
-#include "config/LineConfig.h"
+// @todo - All vis headers should live in the vis repo.
+#include "flamegpu/visualiser/config/LineConfig.h"
 
 namespace flamegpu {
 namespace visualiser {

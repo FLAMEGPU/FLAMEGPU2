@@ -8,10 +8,11 @@
 #include <string>
 #include <map>
 
+// @todo - All vis headers should live in the vis repo.
 #include "flamegpu/visualiser/AgentStateVis.h"
-#include "config/AgentStateConfig.h"
-#include "config/Stock.h"
-#include "config/TexBufferConfig.h"
+#include "flamegpu/visualiser/config/AgentStateConfig.h"
+#include "flamegpu/visualiser/config/Stock.h"
+#include "flamegpu/visualiser/config/TexBufferConfig.h"
 
 namespace flamegpu {
 struct AgentData;

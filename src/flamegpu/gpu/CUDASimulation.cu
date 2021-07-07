@@ -23,7 +23,7 @@
 #include "flamegpu/sim/LoggingConfig.h"
 #include "flamegpu/sim/LogFrame.h"
 #ifdef VISUALISATION
-#include "FLAMEGPU_Visualisation.h"
+#include "flamegpu/visualiser/FLAMEGPU_Visualisation.h"
 #endif
 
 namespace flamegpu {

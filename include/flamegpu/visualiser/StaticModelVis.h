@@ -2,7 +2,7 @@
 #define INCLUDE_FLAMEGPU_VISUALISER_STATICMODELVIS_H_
 #include <memory>
 
-#include "config/ModelConfig.h"
+#include "flamegpu/visualiser/config/ModelConfig.h"
 
 namespace flamegpu {
 namespace visualiser {

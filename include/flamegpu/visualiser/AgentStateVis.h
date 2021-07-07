@@ -4,8 +4,9 @@
 
 #include <string>
 
-#include "config/AgentStateConfig.h"
-#include "config/Stock.h"
+// @todo - All vis headers should live in the vis repo.
+#include "flamegpu/visualiser/config/AgentStateConfig.h"
+#include "flamegpu/visualiser/config/Stock.h"
 
 namespace flamegpu {
 namespace visualiser {
