@@ -315,9 +315,8 @@ __global__ void calculateSpatialHash(float* x, float* y, float* z, unsigned int*
 }
 
 void CUDASimulation::determineAgentsToSort() {
-
     const auto& am = model->agents;
-    
+
     // Iterate agents and then agent functions to find any functions which use spatial messaging
     for (auto it = am.cbegin(); it != am.cend(); ++it) {
         const auto& mf = it->second->functions;
@@ -344,7 +343,6 @@ void CUDASimulation::determineAgentsToSort() {
 
 
 void CUDASimulation::spatialSortAgents() {
-
     float radius;
     detail::Dims<float> envMin;
     detail::Dims<float> envMax;
@@ -363,9 +361,8 @@ void CUDASimulation::spatialSortAgents() {
         return;
     }
 
-
-    // TODO: For each agent state rather than just default 
-    for (const std::string& agentName : agentsToSort3D) {
+    // TODO: For each agent state rather than just default
+    for (const std::string& agentName : agentsToSort3D)
         CUDAAgent& cuda_agent = getCUDAAgent(agentName);
 
         // Any agent in this list is guaranteed to have x, y, z and fgpu2_reserved_bin_index vars - used in the computation of spatial hash
@@ -380,27 +377,26 @@ void CUDASimulation::spatialSortAgents() {
         int gridSize = 0;  // The actual grid size needed, based on input size
         const unsigned int state_list_size = cuda_agent.getStateSize("default");
         cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, calculateSpatialHash, 0, state_list_size);
-        
+
         //! Round up according to CUDAAgent state list size
         gridSize = (state_list_size + blockSize - 1) / blockSize;
-        
+
         unsigned int sm_size = 0;
+        unsigned int streamIdx = 0;
 #if !defined(SEATBELTS) || SEATBELTS
         auto *error_buffer = this->singletons->exception.getDevicePtr(streamIdx, this->getStream(streamIdx));
         sm_size = sizeof(error_buffer);
 #endif
-        unsigned int streamIdx = 0;
 
         // Launch kernel
-        calculateSpatialHash<<<gridSize, blockSize, sm_size, this->getStream(streamIdx) >>> ((float*)xPtr, (float*)yPtr, (float*)zPtr, (unsigned int*)binIndexPtr, envMin, envWidth, gridDim, state_list_size);
-        
+        calculateSpatialHash<<<gridSize, blockSize, sm_size, this->getStream(streamIdx) >>> (reinterpret_cast<float*>(xPtr), reinterpret_cast<float*>(yPtr), reinterpret_cast<float*>(zPtr), reinterpret_cast<unsigned int*>(binIndexPtr), envMin, envWidth, gridDim, state_list_size);
     }
 
     assert(host_api);
     for (const std::string& agentName : agentsToSort3D) {
         host_api->agent(agentName).sort<unsigned int>("fgpu2_reserved_bin_index", HostAgentAPI::Asc);
     }
-    
+
     for (const std::string& agentName : agentsToSort2D) {
         host_api->agent(agentName).sort<unsigned int>("fgpu2_reserved_bin_index", HostAgentAPI::Asc);
     }

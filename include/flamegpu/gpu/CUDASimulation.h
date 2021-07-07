@@ -6,6 +6,7 @@
 #include <string>
 #include <unordered_map>
 #include <map>
+#include <set>
 
 #include "flamegpu/exception/FLAMEGPUDeviceException.cuh"
 #include "flamegpu/sim/Simulation.h"
