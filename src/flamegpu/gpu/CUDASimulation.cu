@@ -389,13 +389,13 @@ void CUDASimulation::spatialSortAgents() {
 #endif
 
         // Launch kernel
-        calculateSpatialHash<<<gridSize, blockSize, sm_size, this->getStream(streamIdx) >>> (reinterpret_cast<float*>(xPtr), 
-        reinterpret_cast<float*>(yPtr), 
-        reinterpret_cast<float*>(zPtr), 
-        reinterpret_cast<unsigned int*>(binIndexPtr), 
-        envMin, 
-        envWidth, 
-        gridDim, 
+        calculateSpatialHash<<<gridSize, blockSize, sm_size, this->getStream(streamIdx) >>> (reinterpret_cast<float*>(xPtr),
+        reinterpret_cast<float*>(yPtr),
+        reinterpret_cast<float*>(zPtr),
+        reinterpret_cast<unsigned int*>(binIndexPtr),
+        envMin,
+        envWidth,
+        gridDim,
         state_list_size);
     }
 
