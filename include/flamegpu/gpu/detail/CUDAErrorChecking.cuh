@@ -1,8 +1,6 @@
 #ifndef INCLUDE_FLAMEGPU_GPU_DETAIL_CUDAERRORCHECKING_CUH_
 #define INCLUDE_FLAMEGPU_GPU_DETAIL_CUDAERRORCHECKING_CUH_
 
-// #include <device_launch_parameters.h>
-// #include <cuda_runtime.h>
 #include <cuda.h>
 
 #include <string>
