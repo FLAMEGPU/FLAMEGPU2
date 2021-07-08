@@ -13,7 +13,7 @@ namespace exception {
  * If this macro is used instead of 'throw', FLAMEGPUException will 
  * prepend '__FILE__ (__LINE__): ' to err_message 
  */
-#define THROW exception::FLAMEGPUException::setLocation(__FILE__, __LINE__); throw
+#define THROW flamegpu::exception::FLAMEGPUException::setLocation(__FILE__, __LINE__); throw
 
 /*! Class for unknown exceptions thrown*/
 class UnknownError : public std::exception {};
