@@ -369,7 +369,7 @@ int main(int argc, const char ** argv) {
         message.setMin(env.getProperty<float>("MIN_POSITION"), env.getProperty<float>("MIN_POSITION"), env.getProperty<float>("MIN_POSITION"));
         message.setMax(env.getProperty<float>("MAX_POSITION"), env.getProperty<float>("MAX_POSITION"), env.getProperty<float>("MAX_POSITION"));
         // A message to hold the location of an agent.
-        message.newVariable<int>("id");
+        message.newVariable<flamegpu::id_t>("id");
         // X Y Z are implicit.
         // message.newVariable<float>("x");
         // message.newVariable<float>("y");
