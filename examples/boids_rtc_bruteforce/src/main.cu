@@ -335,7 +335,7 @@ int main(int argc, const char ** argv) {
     {   // Location message
         flamegpu::MsgBruteForce::Description &message = model.newMessage("location");
         // A message to hold the location of an agent.
-        message.newVariable<int>("id");
+        message.newVariable<flamegpu::id_t>("id");
         message.newVariable<float>("x");
         message.newVariable<float>("y");
         message.newVariable<float>("z");
