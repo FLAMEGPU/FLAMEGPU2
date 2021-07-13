@@ -254,13 +254,13 @@ void CUDAAgent::validateIDCollisions() const {
     gpuErrchkLaunch();
     // Check whether any flags were set
     size_t temp_storage_bytes2 = 0;
-    cub::DeviceReduce::Sum(nullptr, temp_storage_bytes2, d_keysIn, d_keysOut, agentCount - 1);
+    gpuErrchk(cub::DeviceReduce::Sum(nullptr, temp_storage_bytes2, d_keysIn, d_keysOut, agentCount - 1));
     if (temp_storage_bytes2 > temp_storage_bytes) {
         gpuErrchk(cudaFree(d_temp_storage));
         temp_storage_bytes = temp_storage_bytes2;
         gpuErrchk(cudaMalloc(&d_temp_storage, temp_storage_bytes));
     }
-    cub::DeviceReduce::Sum(d_temp_storage, temp_storage_bytes, d_keysIn, d_keysOut, agentCount - 1);
+    gpuErrchk(cub::DeviceReduce::Sum(d_temp_storage, temp_storage_bytes, d_keysIn, d_keysOut, agentCount - 1));
     id_t flagsSet = 0;
     gpuErrchk(cudaMemcpy(&flagsSet, d_keysOut, sizeof(id_t), cudaMemcpyDeviceToHost));
     // Cleanup
