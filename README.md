@@ -51,6 +51,7 @@ Only documentation can be built without the required dependencies (however Doxyg
 + CMake 3.16 has known issues on some platforms.
 + Python <= 3.5 may encounter issues with dependency installation such as setuptools. If so, please manually install the correct version.
   + i.e. `python3 -m pip install --upgrade 'setuptools; python_version >= "3.6"' 'setuptools<51.3.0; python_version < "3.6" and python_version >= "3.0"'`
++ Debug builds under linux with CUDA 11.0 may encounter cuda errors during `validateIDCollisions`. Consider using an alternate CUDA version if this is required. See [FLAMEGPU/FLAMEGPU2#569](https://github.com/FLAMEGPU/FLAMEGPU2/issues/569)
 
 
 ### Building FLAME GPU 2
