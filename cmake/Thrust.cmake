@@ -18,7 +18,7 @@ cmake_policy(SET CMP0079 NEW)
 # Once https://github.com/NVIDIA/thrust/issues/1294 is resolved (CUDA 11.2?) Then we can attempt to find the CUDA distributed version of thrust, and use that if it is atleast the supported version 
 # (This will prevent us having to track the CUDA release version explicitly in the future. )
 
-set(THRUST_DOWNLOAD_VERSION 1.10.0)
+set(THRUST_DOWNLOAD_VERSION 1.13.0)
 
 FetchContent_Declare(
     thrust
