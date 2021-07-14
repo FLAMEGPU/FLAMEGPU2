@@ -11,7 +11,7 @@ FLAMEGPU_AGENT_FUNCTION(update, flamegpu::MsgArray2D, flamegpu::MsgNone) {
 
     unsigned int living_neighbours = 0;
     // Iterate 3x3 Moore neighbourhood (this does no include the central cell)
-    for (auto &msg : FLAMEGPU->message_in(my_x, my_y)) {
+    for (auto &msg : FLAMEGPU->message_in.wrap(my_x, my_y)) {
         living_neighbours += msg.getVariable<char>("is_alive") ? 1 : 0;
     }
     // Using count, decide and output new value for is_alive
