@@ -86,7 +86,7 @@ FLAMEGPU_AGENT_FUNCTION(MooreTest1, flamegpu::MsgArray3D, flamegpu::MsgNone) {
     const unsigned int index_z = my_index / ((6) * (6 + 1));
 
     // Iterate and check it aligns
-    auto filter = FLAMEGPU->message_in(index_x, index_y, index_z);
+    auto filter = FLAMEGPU->message_in.wrap(index_x, index_y, index_z);
     auto msg = filter.begin();
     unsigned int message_read = 0;
     for (int i = -1; i <= 1; ++i) {
@@ -105,8 +105,6 @@ FLAMEGPU_AGENT_FUNCTION(MooreTest1, flamegpu::MsgArray3D, flamegpu::MsgNone) {
             }
         }
     }
-    if (msg == filter.end())
-        message_read++;
     FLAMEGPU->setVariable<unsigned int>("message_read", message_read);
     return flamegpu::ALIVE;
 }
@@ -120,7 +118,7 @@ FLAMEGPU_AGENT_FUNCTION(MooreTest2, flamegpu::MsgArray3D, flamegpu::MsgNone) {
     const unsigned int index_z = my_index / ((6) * (6 + 1));
 
     // Iterate and check it aligns
-    auto filter = FLAMEGPU->message_in(index_x, index_y, index_z, 2);
+    auto filter = FLAMEGPU->message_in.wrap(index_x, index_y, index_z, 2);
     auto msg = filter.begin();
     unsigned int message_read = 0;
     for (int i = -2; i <= 2; ++i) {
@@ -139,8 +137,6 @@ FLAMEGPU_AGENT_FUNCTION(MooreTest2, flamegpu::MsgArray3D, flamegpu::MsgNone) {
             }
         }
     }
-    if (msg == filter.end())
-        message_read++;
     FLAMEGPU->setVariable<unsigned int>("message_read", message_read);
     return flamegpu::ALIVE;
 }
@@ -250,7 +246,7 @@ class TestMessage_Array3D(TestCase):
             assert index * 3 == message_read
         
 
-    def test_Moore1(self): 
+    def test_Moore1W(self): 
         m = pyflamegpu.ModelDescription(MODEL_NAME)
         msg = m.newMessageArray3D(MESSAGE_NAME)
         msg.setDimensions(CBRT_AGENT_COUNT, CBRT_AGENT_COUNT + 1, CBRT_AGENT_COUNT + 2)
@@ -280,10 +276,10 @@ class TestMessage_Array3D(TestCase):
         # Validate each agent has read 8 correct messages
         for ai in pop:
             message_read = ai.getVariableUInt("message_read")
-            assert 27 == message_read
+            assert 26 == message_read
         
 
-    def test_Moore2(self): 
+    def test_Moore2W(self): 
         m = pyflamegpu.ModelDescription(MODEL_NAME)
         msg = m.newMessageArray3D(MESSAGE_NAME)
         msg.setDimensions(CBRT_AGENT_COUNT, CBRT_AGENT_COUNT + 1, CBRT_AGENT_COUNT + 2)
@@ -313,7 +309,7 @@ class TestMessage_Array3D(TestCase):
         # Validate each agent has read 8 correct messages
         for ai in pop:
             message_read = ai.getVariableUInt("message_read")
-            assert 125 == message_read
+            assert 124 == message_read
         
 
     # Exception tests
