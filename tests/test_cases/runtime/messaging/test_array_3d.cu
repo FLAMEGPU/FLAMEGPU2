@@ -427,15 +427,15 @@ TEST(TestMessage_Array3D, ReadEmpty) {
     EXPECT_EQ(ai.getVariable<unsigned int>("value"), 0u);  // Unset array msgs should be 0
 }
 #if !defined(SEATBELTS) || SEATBELTS
-FLAMEGPU_AGENT_FUNCTION(InMooreWOutOfBoundsX, MsgArray3D, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(InMooreWrapOutOfBoundsX, MsgArray3D, MsgNone) {
     for (auto a : FLAMEGPU->message_in.wrap(dCBRT_AGENT_COUNT, 0, 0)) {
         FLAMEGPU->setVariable<unsigned int>("index", a.getVariable<unsigned int>("index_times_3"));
     }
     return ALIVE;
 }
-TEST(TestMessage_Array3D, MooreW_InitOutOfBoundsX) {
+TEST(TestMessage_Array3D, MooreWrap_InitOutOfBoundsX) {
 #else
-TEST(TestMessage_Array3D, DISABLED_MooreW_InitOutOfBoundsX) {
+TEST(TestMessage_Array3D, DISABLED_MooreWrap_InitOutOfBoundsX) {
 #endif
     ModelDescription m(MODEL_NAME);
     MsgArray3D::Description& msg = m.newMessage<MsgArray3D>(MESSAGE_NAME);
@@ -447,7 +447,7 @@ TEST(TestMessage_Array3D, DISABLED_MooreW_InitOutOfBoundsX) {
     a.newVariable<unsigned int>("message_write");
     AgentFunctionDescription& fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
     fo.setMessageOutput(msg);
-    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, InMooreWOutOfBoundsX);
+    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, InMooreWrapOutOfBoundsX);
     fi.setMessageInput(msg);
     LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
@@ -467,15 +467,15 @@ TEST(TestMessage_Array3D, DISABLED_MooreW_InitOutOfBoundsX) {
     EXPECT_THROW(c.step(), flamegpu::exception::DeviceError);
 }
 #if !defined(SEATBELTS) || SEATBELTS
-FLAMEGPU_AGENT_FUNCTION(InMooreWOutOfBoundsY, MsgArray3D, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(InMooreWrapOutOfBoundsY, MsgArray3D, MsgNone) {
     for (auto a : FLAMEGPU->message_in.wrap(0, dCBRT_AGENT_COUNT + 1, 0)) {
         FLAMEGPU->setVariable<unsigned int>("index", a.getVariable<unsigned int>("index_times_3"));
     }
     return ALIVE;
 }
-TEST(TestMessage_Array3D, MooreW_InitOutOfBoundsY) {
+TEST(TestMessage_Array3D, MooreWrap_InitOutOfBoundsY) {
 #else
-TEST(TestMessage_Array3D, DISABLED_MooreW_InitOutOfBoundsY) {
+TEST(TestMessage_Array3D, DISABLED_MooreWrap_InitOutOfBoundsY) {
 #endif
     ModelDescription m(MODEL_NAME);
     MsgArray3D::Description& msg = m.newMessage<MsgArray3D>(MESSAGE_NAME);
@@ -487,7 +487,7 @@ TEST(TestMessage_Array3D, DISABLED_MooreW_InitOutOfBoundsY) {
     a.newVariable<unsigned int>("message_write");
     AgentFunctionDescription& fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
     fo.setMessageOutput(msg);
-    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, InMooreWOutOfBoundsY);
+    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, InMooreWrapOutOfBoundsY);
     fi.setMessageInput(msg);
     LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
@@ -507,15 +507,15 @@ TEST(TestMessage_Array3D, DISABLED_MooreW_InitOutOfBoundsY) {
     EXPECT_THROW(c.step(), flamegpu::exception::DeviceError);
 }
 #if !defined(SEATBELTS) || SEATBELTS
-FLAMEGPU_AGENT_FUNCTION(InMooreWOutOfBoundsZ, MsgArray3D, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(InMooreWrapOutOfBoundsZ, MsgArray3D, MsgNone) {
     for (auto a : FLAMEGPU->message_in.wrap(0, 0, dCBRT_AGENT_COUNT + 2)) {
         FLAMEGPU->setVariable<unsigned int>("index", a.getVariable<unsigned int>("index_times_3"));
     }
     return ALIVE;
 }
-TEST(TestMessage_Array3D, MooreW_InitOutOfBoundsZ) {
+TEST(TestMessage_Array3D, MooreWrap_InitOutOfBoundsZ) {
 #else
-TEST(TestMessage_Array3D, DISABLED_MooreW_InitOutOfBoundsZ) {
+TEST(TestMessage_Array3D, DISABLED_MooreWrap_InitOutOfBoundsZ) {
 #endif
     ModelDescription m(MODEL_NAME);
     MsgArray3D::Description& msg = m.newMessage<MsgArray3D>(MESSAGE_NAME);
@@ -527,7 +527,7 @@ TEST(TestMessage_Array3D, DISABLED_MooreW_InitOutOfBoundsZ) {
     a.newVariable<unsigned int>("message_write");
     AgentFunctionDescription& fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
     fo.setMessageOutput(msg);
-    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, InMooreWOutOfBoundsZ);
+    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, InMooreWrapOutOfBoundsZ);
     fi.setMessageInput(msg);
     LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
@@ -547,15 +547,15 @@ TEST(TestMessage_Array3D, DISABLED_MooreW_InitOutOfBoundsZ) {
     EXPECT_THROW(c.step(), flamegpu::exception::DeviceError);
 }
 #if !defined(SEATBELTS) || SEATBELTS
-FLAMEGPU_AGENT_FUNCTION(InMooreWBadRadius1, MsgArray3D, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(InMooreWrapBadRadius1, MsgArray3D, MsgNone) {
     for (auto a : FLAMEGPU->message_in.wrap(0, 0, 0, 0)) {
         FLAMEGPU->setVariable<unsigned int>("index", a.getVariable<unsigned int>("index_times_3"));
     }
     return ALIVE;
 }
-TEST(TestMessage_Array3D, MooreW_BadRadius1) {
+TEST(TestMessage_Array3D, MooreWrap_BadRadius1) {
 #else
-TEST(TestMessage_Array3D, DISABLED_MooreW_BadRadius1) {
+TEST(TestMessage_Array3D, DISABLED_MooreWrap_BadRadius1) {
 #endif
     ModelDescription m(MODEL_NAME);
     MsgArray3D::Description& msg = m.newMessage<MsgArray3D>(MESSAGE_NAME);
@@ -567,7 +567,7 @@ TEST(TestMessage_Array3D, DISABLED_MooreW_BadRadius1) {
     a.newVariable<unsigned int>("message_write");
     AgentFunctionDescription& fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
     fo.setMessageOutput(msg);
-    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, InMooreWBadRadius1);
+    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, InMooreWrapBadRadius1);
     fi.setMessageInput(msg);
     LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
@@ -587,15 +587,15 @@ TEST(TestMessage_Array3D, DISABLED_MooreW_BadRadius1) {
     EXPECT_THROW(c.step(), flamegpu::exception::DeviceError);
 }
 #if !defined(SEATBELTS) || SEATBELTS
-FLAMEGPU_AGENT_FUNCTION(InMooreWBadRadius2, MsgArray3D, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(InMooreWrapBadRadius2, MsgArray3D, MsgNone) {
     for (auto a : FLAMEGPU->message_in.wrap(0, 0, 0, 3)) {
         FLAMEGPU->setVariable<unsigned int>("index", a.getVariable<unsigned int>("index_times_3"));
     }
     return ALIVE;
 }
-TEST(TestMessage_Array3D, MooreW_BadRadius2) {
+TEST(TestMessage_Array3D, MooreWrap_BadRadius2) {
 #else
-TEST(TestMessage_Array3D, DISABLED_MooreW_BadRadius2) {
+TEST(TestMessage_Array3D, DISABLED_MooreWrap_BadRadius2) {
 #endif
     ModelDescription m(MODEL_NAME);
     MsgArray3D::Description& msg = m.newMessage<MsgArray3D>(MESSAGE_NAME);
@@ -607,7 +607,7 @@ TEST(TestMessage_Array3D, DISABLED_MooreW_BadRadius2) {
     a.newVariable<unsigned int>("message_write");
     AgentFunctionDescription& fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
     fo.setMessageOutput(msg);
-    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, InMooreWBadRadius2);
+    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, InMooreWrapBadRadius2);
     fi.setMessageInput(msg);
     LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
@@ -801,7 +801,7 @@ FLAMEGPU_AGENT_FUNCTION(OutSimpleXYZ, MsgNone, MsgArray3D) {
     FLAMEGPU->message_out.setIndex(x, y, z);
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(MooreWTestXYZC, MsgArray3D, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(MooreWrapTestXYZC, MsgArray3D, MsgNone) {
     const unsigned int index = FLAMEGPU->getVariable<unsigned int>("index");
     const unsigned int x = FLAMEGPU->getVariable<unsigned int>("x");
     const unsigned int y = FLAMEGPU->getVariable<unsigned int>("y");
@@ -817,7 +817,7 @@ FLAMEGPU_AGENT_FUNCTION(MooreWTestXYZC, MsgArray3D, MsgNone) {
     return ALIVE;
 }
 
-void test_mooorew_comradius(
+void test_moore_wrapped_comradius(
     const unsigned int GRID_WIDTH,
     const unsigned int GRID_HEIGHT,
     const unsigned int GRID_DEPTH,
@@ -846,7 +846,7 @@ void test_mooorew_comradius(
     // Define the function and layers.
     AgentFunctionDescription &outputFunction = agent.newFunction("OutSimpleXYZ", OutSimpleXYZ);
     outputFunction.setMessageOutput(message);
-    AgentFunctionDescription &inputFunction = agent.newFunction("MooreWTestXYZC", MooreWTestXYZC);
+    AgentFunctionDescription &inputFunction = agent.newFunction("MooreWrapTestXYZC", MooreWrapTestXYZC);
     inputFunction.setMessageInput(message);
     model.newLayer().addAgentFunction(outputFunction);
     LayerDescription &li = model.newLayer();
@@ -895,86 +895,86 @@ void test_mooorew_comradius(
 // Test a range of environment sizes for comradius of 1, including small sizes which are an edge case.
 // Also try non-uniform dimensions.
 // @todo - decide if these should be one or many tests.
-TEST(TestMessage_Array3D, MooreWX1Y1Z1R1) {
-    test_mooorew_comradius(1, 1, 1, 1);
+TEST(TestMessage_Array3D, MooreWrapX1Y1Z1R1) {
+    test_moore_wrapped_comradius(1, 1, 1, 1);
 }
-TEST(TestMessage_Array3D, MooreWX2Y2Z2R1) {
-    test_mooorew_comradius(2, 2, 2, 1);
+TEST(TestMessage_Array3D, MooreWrapX2Y2Z2R1) {
+    test_moore_wrapped_comradius(2, 2, 2, 1);
 }
-TEST(TestMessage_Array3D, MooreWX3Y3Z3R1) {
-    test_mooorew_comradius(3, 3, 3, 1);
+TEST(TestMessage_Array3D, MooreWrapX3Y3Z3R1) {
+    test_moore_wrapped_comradius(3, 3, 3, 1);
 }
-TEST(TestMessage_Array3D, MooreWX4Y4Z4R1) {
-    test_mooorew_comradius(4, 4, 4, 1);
+TEST(TestMessage_Array3D, MooreWrapX4Y4Z4R1) {
+    test_moore_wrapped_comradius(4, 4, 4, 1);
 }
-TEST(TestMessage_Array3D, MooreWX2Y2Z1R1) {
-    test_mooorew_comradius(2, 2, 1, 1);
+TEST(TestMessage_Array3D, MooreWrapX2Y2Z1R1) {
+    test_moore_wrapped_comradius(2, 2, 1, 1);
 }
-TEST(TestMessage_Array3D, MooreWX3Y3Z1R1) {
-    test_mooorew_comradius(3, 3, 1, 1);
+TEST(TestMessage_Array3D, MooreWrapX3Y3Z1R1) {
+    test_moore_wrapped_comradius(3, 3, 1, 1);
 }
-TEST(TestMessage_Array3D, MooreWX4Y4Z1R1) {
-    test_mooorew_comradius(4, 4, 1, 1);
+TEST(TestMessage_Array3D, MooreWrapX4Y4Z1R1) {
+    test_moore_wrapped_comradius(4, 4, 1, 1);
 }
-TEST(TestMessage_Array3D, MooreWX2Y1Z1R1) {
-    test_mooorew_comradius(2, 1, 1, 1);
+TEST(TestMessage_Array3D, MooreWrapX2Y1Z1R1) {
+    test_moore_wrapped_comradius(2, 1, 1, 1);
 }
-TEST(TestMessage_Array3D, MooreWX3Y1Z1R1) {
-    test_mooorew_comradius(3, 1, 1, 1);
+TEST(TestMessage_Array3D, MooreWrapX3Y1Z1R1) {
+    test_moore_wrapped_comradius(3, 1, 1, 1);
 }
-TEST(TestMessage_Array3D, MooreWX4Y1Z1R1) {
-    test_mooorew_comradius(4, 1, 1, 1);
+TEST(TestMessage_Array3D, MooreWrapX4Y1Z1R1) {
+    test_moore_wrapped_comradius(4, 1, 1, 1);
 }
 // Test a range of environment sizes for comradius of 2, including small sizes which are an edge case.
 // Also try non-uniform dimensions.
 // @todo - decide if these should be one or many tests.
-TEST(TestMessage_Array3D, MooreWXX1Y1Z1R2) {
-    test_mooorew_comradius(1, 1, 1, 2);
+TEST(TestMessage_Array3D, MooreWrapX1Y1Z1R2) {
+    test_moore_wrapped_comradius(1, 1, 1, 2);
 }
-TEST(TestMessage_Array3D, MooreWXX2Y2Z2R2) {
-    test_mooorew_comradius(2, 2, 2, 2);
+TEST(TestMessage_Array3D, MooreWrapX2Y2Z2R2) {
+    test_moore_wrapped_comradius(2, 2, 2, 2);
 }
-TEST(TestMessage_Array3D, MooreWXX3Y3Z3R2) {
-    test_mooorew_comradius(3, 3, 3, 2);
+TEST(TestMessage_Array3D, MooreWrapX3Y3Z3R2) {
+    test_moore_wrapped_comradius(3, 3, 3, 2);
 }
-TEST(TestMessage_Array3D, MooreWXX4Y4Z4R2) {
-    test_mooorew_comradius(4, 4, 4, 2);
+TEST(TestMessage_Array3D, MooreWrapX4Y4Z4R2) {
+    test_moore_wrapped_comradius(4, 4, 4, 2);
 }
-TEST(TestMessage_Array3D, MooreWXX5Y5Z5R2) {
-    test_mooorew_comradius(5, 5, 5, 2);
+TEST(TestMessage_Array3D, MooreWrapX5Y5Z5R2) {
+    test_moore_wrapped_comradius(5, 5, 5, 2);
 }
-TEST(TestMessage_Array3D, MooreWXX6Y6Z6R2) {
-    test_mooorew_comradius(6, 6, 6, 2);
+TEST(TestMessage_Array3D, MooreWrapX6Y6Z6R2) {
+    test_moore_wrapped_comradius(6, 6, 6, 2);
 }
-TEST(TestMessage_Array3D, MooreWXX2Y2Z1R2) {
-    test_mooorew_comradius(2, 2, 1, 2);
+TEST(TestMessage_Array3D, MooreWrapX2Y2Z1R2) {
+    test_moore_wrapped_comradius(2, 2, 1, 2);
 }
-TEST(TestMessage_Array3D, MooreWXX3Y3Z1R2) {
-    test_mooorew_comradius(3, 3, 1, 2);
+TEST(TestMessage_Array3D, MooreWrapX3Y3Z1R2) {
+    test_moore_wrapped_comradius(3, 3, 1, 2);
 }
-TEST(TestMessage_Array3D, MooreWXX4Y4Z1R2) {
-    test_mooorew_comradius(4, 4, 1, 2);
+TEST(TestMessage_Array3D, MooreWrapX4Y4Z1R2) {
+    test_moore_wrapped_comradius(4, 4, 1, 2);
 }
-TEST(TestMessage_Array3D, MooreWXX5Y5Z1R2) {
-    test_mooorew_comradius(5, 5, 1, 2);
+TEST(TestMessage_Array3D, MooreWrapX5Y5Z1R2) {
+    test_moore_wrapped_comradius(5, 5, 1, 2);
 }
-TEST(TestMessage_Array3D, MooreWXX6Y6Z1R2) {
-    test_mooorew_comradius(6, 6, 1, 2);
+TEST(TestMessage_Array3D, MooreWrapX6Y6Z1R2) {
+    test_moore_wrapped_comradius(6, 6, 1, 2);
 }
-TEST(TestMessage_Array3D, MooreWXX2Y1Z1R2) {
-    test_mooorew_comradius(2, 1, 1, 2);
+TEST(TestMessage_Array3D, MooreWrapX2Y1Z1R2) {
+    test_moore_wrapped_comradius(2, 1, 1, 2);
 }
-TEST(TestMessage_Array3D, MooreWXX3Y1Z1R2) {
-    test_mooorew_comradius(3, 1, 1, 2);
+TEST(TestMessage_Array3D, MooreWrapX3Y1Z1R2) {
+    test_moore_wrapped_comradius(3, 1, 1, 2);
 }
-TEST(TestMessage_Array3D, MooreWXX4Y1Z1R2) {
-    test_mooorew_comradius(4, 1, 1, 2);
+TEST(TestMessage_Array3D, MooreWrapX4Y1Z1R2) {
+    test_moore_wrapped_comradius(4, 1, 1, 2);
 }
-TEST(TestMessage_Array3D, MooreWXX5Y1Z1R2) {
-    test_mooorew_comradius(5, 1, 1, 2);
+TEST(TestMessage_Array3D, MooreWrapX5Y1Z1R2) {
+    test_moore_wrapped_comradius(5, 1, 1, 2);
 }
-TEST(TestMessage_Array3D, MooreWXX6Y1Z1R2) {
-    test_mooorew_comradius(6, 1, 1, 2);
+TEST(TestMessage_Array3D, MooreWrapX6Y1Z1R2) {
+    test_moore_wrapped_comradius(6, 1, 1, 2);
 }
 
 FLAMEGPU_AGENT_FUNCTION(MooreTestXYZC, MsgArray3D, MsgNone) {
@@ -1101,52 +1101,52 @@ TEST(TestMessage_Array3D, MooreX4Y1Z1R1) {
 // Test a range of environment sizes for comradius of 2, including small sizes which are an edge case.
 // Also try non-uniform dimensions.
 // @todo - decide if these should be one or many tests.
-TEST(TestMessage_Array3D, MooreXX1Y1Z1R2) {
+TEST(TestMessage_Array3D, MooreX1Y1Z1R2) {
     test_mooore_comradius(1, 1, 1, 2);
 }
-TEST(TestMessage_Array3D, MooreXX2Y2Z2R2) {
+TEST(TestMessage_Array3D, MooreX2Y2Z2R2) {
     test_mooore_comradius(2, 2, 2, 2);
 }
-TEST(TestMessage_Array3D, MooreXX3Y3Z3R2) {
+TEST(TestMessage_Array3D, MooreX3Y3Z3R2) {
     test_mooore_comradius(3, 3, 3, 2);
 }
-TEST(TestMessage_Array3D, MooreXX4Y4Z4R2) {
+TEST(TestMessage_Array3D, MooreX4Y4Z4R2) {
     test_mooore_comradius(4, 4, 4, 2);
 }
-TEST(TestMessage_Array3D, MooreXX5Y5Z5R2) {
+TEST(TestMessage_Array3D, MooreX5Y5Z5R2) {
     test_mooore_comradius(5, 5, 5, 2);
 }
-TEST(TestMessage_Array3D, MooreXX6Y6Z6R2) {
+TEST(TestMessage_Array3D, MooreX6Y6Z6R2) {
     test_mooore_comradius(6, 6, 6, 2);
 }
-TEST(TestMessage_Array3D, MooreXX2Y2Z1R2) {
+TEST(TestMessage_Array3D, MooreX2Y2Z1R2) {
     test_mooore_comradius(2, 2, 1, 2);
 }
-TEST(TestMessage_Array3D, MooreXX3Y3Z1R2) {
+TEST(TestMessage_Array3D, MooreX3Y3Z1R2) {
     test_mooore_comradius(3, 3, 1, 2);
 }
-TEST(TestMessage_Array3D, MooreXX4Y4Z1R2) {
+TEST(TestMessage_Array3D, MooreX4Y4Z1R2) {
     test_mooore_comradius(4, 4, 1, 2);
 }
-TEST(TestMessage_Array3D, MooreXX5Y5Z1R2) {
+TEST(TestMessage_Array3D, MooreX5Y5Z1R2) {
     test_mooore_comradius(5, 5, 1, 2);
 }
-TEST(TestMessage_Array3D, MooreXX6Y6Z1R2) {
+TEST(TestMessage_Array3D, MooreX6Y6Z1R2) {
     test_mooore_comradius(6, 6, 1, 2);
 }
-TEST(TestMessage_Array3D, MooreXX2Y1Z1R2) {
+TEST(TestMessage_Array3D, MooreX2Y1Z1R2) {
     test_mooore_comradius(2, 1, 1, 2);
 }
-TEST(TestMessage_Array3D, MooreXX3Y1Z1R2) {
+TEST(TestMessage_Array3D, MooreX3Y1Z1R2) {
     test_mooore_comradius(3, 1, 1, 2);
 }
-TEST(TestMessage_Array3D, MooreXX4Y1Z1R2) {
+TEST(TestMessage_Array3D, MooreX4Y1Z1R2) {
     test_mooore_comradius(4, 1, 1, 2);
 }
-TEST(TestMessage_Array3D, MooreXX5Y1Z1R2) {
+TEST(TestMessage_Array3D, MooreX5Y1Z1R2) {
     test_mooore_comradius(5, 1, 1, 2);
 }
-TEST(TestMessage_Array3D, MooreXX6Y1Z1R2) {
+TEST(TestMessage_Array3D, MooreX6Y1Z1R2) {
     test_mooore_comradius(6, 1, 1, 2);
 }
 

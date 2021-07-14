@@ -387,15 +387,15 @@ TEST(TestMessage_Array, ReadEmpty) {
     EXPECT_EQ(ai.getVariable<unsigned int>("value"), 0u);  // Unset array msgs should be 0
 }
 #if !defined(SEATBELTS) || SEATBELTS
-FLAMEGPU_AGENT_FUNCTION(InMooreWOutOfBoundsX, MsgArray, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(InMooreWrapOutOfBoundsX, MsgArray, MsgNone) {
     for (auto a : FLAMEGPU->message_in.wrap(dAGENT_COUNT)) {
         FLAMEGPU->setVariable<unsigned int>("index", a.getVariable<unsigned int>("index_times_3"));
     }
     return ALIVE;
 }
-TEST(TestMessage_Array, MooreW_InitOutOfBoundsX) {
+TEST(TestMessage_Array, MooreWrap_InitOutOfBoundsX) {
 #else
-TEST(TestMessage_Array, DISABLED_MooreW_InitOutOfBoundsX) {
+TEST(TestMessage_Array, DISABLED_MooreWrap_InitOutOfBoundsX) {
 #endif
     ModelDescription m(MODEL_NAME);
     MsgArray::Description& msg = m.newMessage<MsgArray>(MESSAGE_NAME);
@@ -407,7 +407,7 @@ TEST(TestMessage_Array, DISABLED_MooreW_InitOutOfBoundsX) {
     a.newVariable<unsigned int>("message_write");
     AgentFunctionDescription& fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
     fo.setMessageOutput(msg);
-    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, InMooreWOutOfBoundsX);
+    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, InMooreWrapOutOfBoundsX);
     fi.setMessageInput(msg);
     LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
@@ -427,15 +427,15 @@ TEST(TestMessage_Array, DISABLED_MooreW_InitOutOfBoundsX) {
     EXPECT_THROW(c.step(), flamegpu::exception::DeviceError);
 }
 #if !defined(SEATBELTS) || SEATBELTS
-FLAMEGPU_AGENT_FUNCTION(InMooreWBadRadius1, MsgArray, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(InMooreWrapBadRadius1, MsgArray, MsgNone) {
     for (auto a : FLAMEGPU->message_in.wrap(0, 0)) {
         FLAMEGPU->setVariable<unsigned int>("index", a.getVariable<unsigned int>("index_times_3"));
     }
     return ALIVE;
 }
-TEST(TestMessage_Array, MooreW_BadRadius1) {
+TEST(TestMessage_Array, MooreWrap_BadRadius1) {
 #else
-TEST(TestMessage_Array, DISABLED_MooreW_BadRadius1) {
+TEST(TestMessage_Array, DISABLED_MooreWrap_BadRadius1) {
 #endif
     ModelDescription m(MODEL_NAME);
     MsgArray::Description& msg = m.newMessage<MsgArray>(MESSAGE_NAME);
@@ -447,7 +447,7 @@ TEST(TestMessage_Array, DISABLED_MooreW_BadRadius1) {
     a.newVariable<unsigned int>("message_write");
     AgentFunctionDescription& fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
     fo.setMessageOutput(msg);
-    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, InMooreWBadRadius1);
+    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, InMooreWrapBadRadius1);
     fi.setMessageInput(msg);
     LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
@@ -467,15 +467,15 @@ TEST(TestMessage_Array, DISABLED_MooreW_BadRadius1) {
     EXPECT_THROW(c.step(), flamegpu::exception::DeviceError);
 }
 #if !defined(SEATBELTS) || SEATBELTS
-FLAMEGPU_AGENT_FUNCTION(InMooreWBadRadius2, MsgArray, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(InMooreWrapBadRadius2, MsgArray, MsgNone) {
     for (auto a : FLAMEGPU->message_in.wrap(0, 64)) {
         FLAMEGPU->setVariable<unsigned int>("index", a.getVariable<unsigned int>("index_times_3"));
     }
     return ALIVE;
 }
-TEST(TestMessage_Array, MooreW_BadRadius2) {
+TEST(TestMessage_Array, MooreWrap_BadRadius2) {
 #else
-TEST(TestMessage_Array, DISABLED_MooreW_BadRadius2) {
+TEST(TestMessage_Array, DISABLED_MooreWrap_BadRadius2) {
 #endif
     ModelDescription m(MODEL_NAME);
     MsgArray::Description& msg = m.newMessage<MsgArray>(MESSAGE_NAME);
@@ -487,7 +487,7 @@ TEST(TestMessage_Array, DISABLED_MooreW_BadRadius2) {
     a.newVariable<unsigned int>("message_write");
     AgentFunctionDescription& fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
     fo.setMessageOutput(msg);
-    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, InMooreWBadRadius2);
+    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, InMooreWrapBadRadius2);
     fi.setMessageInput(msg);
     LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
@@ -598,7 +598,7 @@ FLAMEGPU_AGENT_FUNCTION(OutSimpleX, MsgNone, MsgArray) {
     FLAMEGPU->message_out.setIndex(x);
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(MooreWTestXC, MsgArray, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(MooreWrapTestXC, MsgArray, MsgNone) {
     const unsigned int index = FLAMEGPU->getVariable<unsigned int>("index");
     const unsigned int x = FLAMEGPU->getVariable<unsigned int>("x");
     const unsigned int COMRADIUS = FLAMEGPU->environment.getProperty<unsigned int>("COMRADIUS");
@@ -612,7 +612,7 @@ FLAMEGPU_AGENT_FUNCTION(MooreWTestXC, MsgArray, MsgNone) {
     return ALIVE;
 }
 
-void test_mooorew_comradius(
+void test_moore_wrap_comradius(
     const unsigned int GRID_WIDTH,
     const unsigned int COMRADIUS
     ) {
@@ -637,7 +637,7 @@ void test_mooorew_comradius(
     // Define the function and layers.
     AgentFunctionDescription &outputFunction = agent.newFunction("OutSimpleX", OutSimpleX);
     outputFunction.setMessageOutput(message);
-    AgentFunctionDescription &inputFunction = agent.newFunction("MooreWTestXC", MooreWTestXC);
+    AgentFunctionDescription &inputFunction = agent.newFunction("MooreWrapTestXC", MooreWrapTestXC);
     inputFunction.setMessageInput(message);
     model.newLayer().addAgentFunction(outputFunction);
     LayerDescription &li = model.newLayer();
@@ -678,39 +678,39 @@ void test_mooorew_comradius(
 // Test a range of environment sizes for comradius of 1, including small sizes which are an edge case.
 // Also try non-uniform dimensions.
 // @todo - decide if these should be one or many tests.
-TEST(TestMessage_Array, MooreWX1R1) {
-    test_mooorew_comradius(1, 1);
+TEST(TestMessage_Array, MooreWrapX1R1) {
+    test_moore_wrap_comradius(1, 1);
 }
-TEST(TestMessage_Array, MooreWX2R1) {
-    test_mooorew_comradius(2, 1);
+TEST(TestMessage_Array, MooreWrapX2R1) {
+    test_moore_wrap_comradius(2, 1);
 }
-TEST(TestMessage_Array, MooreWX3R1) {
-    test_mooorew_comradius(3, 1);
+TEST(TestMessage_Array, MooreWrapX3R1) {
+    test_moore_wrap_comradius(3, 1);
 }
-TEST(TestMessage_Array, MooreWX4R1) {
-    test_mooorew_comradius(4, 1);
+TEST(TestMessage_Array, MooreWrapX4R1) {
+    test_moore_wrap_comradius(4, 1);
 }
 
 // Test a range of environment sizes for comradius of 2, including small sizes which are an edge case.
 // Also try non-uniform dimensions.
 // @todo - decide if these should be one or many tests.
-TEST(TestMessage_Array, MooreWX1R2) {
-    test_mooorew_comradius(1, 2);
+TEST(TestMessage_Array, MooreWrapX1R2) {
+    test_moore_wrap_comradius(1, 2);
 }
-TEST(TestMessage_Array, MooreWX2R2) {
-    test_mooorew_comradius(2, 2);
+TEST(TestMessage_Array, MooreWrapX2R2) {
+    test_moore_wrap_comradius(2, 2);
 }
-TEST(TestMessage_Array, MooreWX3R2) {
-    test_mooorew_comradius(3, 2);
+TEST(TestMessage_Array, MooreWrapX3R2) {
+    test_moore_wrap_comradius(3, 2);
 }
-TEST(TestMessage_Array, MooreWX4R2) {
-    test_mooorew_comradius(4, 2);
+TEST(TestMessage_Array, MooreWrapX4R2) {
+    test_moore_wrap_comradius(4, 2);
 }
-TEST(TestMessage_Array, MooreWX5R2) {
-    test_mooorew_comradius(5, 2);
+TEST(TestMessage_Array, MooreWrapX5R2) {
+    test_moore_wrap_comradius(5, 2);
 }
-TEST(TestMessage_Array, MooreWX6R2) {
-    test_mooorew_comradius(6, 2);
+TEST(TestMessage_Array, MooreWrapX6R2) {
+    test_moore_wrap_comradius(6, 2);
 }
 
 FLAMEGPU_AGENT_FUNCTION(MooreTestXC, MsgArray, MsgNone) {
