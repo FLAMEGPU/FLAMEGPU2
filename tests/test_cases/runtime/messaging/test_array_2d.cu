@@ -790,65 +790,35 @@ void test_moore_wrap_comradius(
 #endif
     }
 }
-// Test a range of environment sizes for comradius of 1, including small sizes which are an edge case.
-// Also try non-uniform dimensions.
-// @todo - decide if these should be one or many tests.
-TEST(TestMessage_Array2D, MooreWrapX1Y1R1) {
+// Test a range of environment sizes for comradius of 1, including small sizes which are an edge case, with wrapping
+TEST(TestMessage_Array2D, MooreWrapR1) {
     test_moore_wrap_comradius(1, 1, 1);
-}
-TEST(TestMessage_Array2D, MooreWrapX2Y2R1) {
     test_moore_wrap_comradius(2, 2, 1);
-}
-TEST(TestMessage_Array2D, MooreWrapX3Y3R1) {
     test_moore_wrap_comradius(3, 3, 1);
-}
-TEST(TestMessage_Array2D, MooreWrapX4Y4R1) {
     test_moore_wrap_comradius(4, 4, 1);
 }
-TEST(TestMessage_Array2D, MooreWrapX2Y1R1) {
+// Test a range of environment sizes for comradius of 1, including small sizes which are an edge case, with wrapping and non-uniform dimensions
+TEST(TestMessage_Array2D, MooreWrapR1NonUniform) {
     test_moore_wrap_comradius(2, 1, 1);
-}
-TEST(TestMessage_Array2D, MooreWrapX3Y1R1) {
     test_moore_wrap_comradius(3, 1, 1);
-}
-TEST(TestMessage_Array2D, MooreWrapX4Y1R1) {
     test_moore_wrap_comradius(4, 1, 1);
 }
 
-// Test a range of environment sizes for comradius of 2, including small sizes which are an edge case.
-// Also try non-uniform dimensions.
-// @todo - decide if these should be one or many tests.
-TEST(TestMessage_Array2D, MooreWrapX1Y1R2) {
+// Test a range of environment sizes for comradius of 2, including small sizes which are an edge case, with wrapping
+TEST(TestMessage_Array2D, MooreWrapR2) {
     test_moore_wrap_comradius(1, 1, 2);
-}
-TEST(TestMessage_Array2D, MooreWrapX2Y2R2) {
     test_moore_wrap_comradius(2, 2, 2);
-}
-TEST(TestMessage_Array2D, MooreWrapX3Y3R2) {
     test_moore_wrap_comradius(3, 3, 2);
-}
-TEST(TestMessage_Array2D, MooreWrapX4Y4R2) {
     test_moore_wrap_comradius(4, 4, 2);
-}
-TEST(TestMessage_Array2D, MooreWrapX5Y5R2) {
     test_moore_wrap_comradius(5, 5, 2);
-}
-TEST(TestMessage_Array2D, MooreWrapX6Y6R2) {
     test_moore_wrap_comradius(6, 6, 2);
 }
-TEST(TestMessage_Array2D, MooreWrapX2Y1R2) {
+// Test a range of environment sizes for comradius of 2, including small sizes which are an edge case, with wrapping and non-uniform dimensions
+TEST(TestMessage_Array2D, MooreWrapR2NonUniform) {
     test_moore_wrap_comradius(2, 1, 2);
-}
-TEST(TestMessage_Array2D, MooreWrapX3Y1R2) {
     test_moore_wrap_comradius(3, 1, 2);
-}
-TEST(TestMessage_Array2D, MooreWrapX4Y1R2) {
     test_moore_wrap_comradius(4, 1, 2);
-}
-TEST(TestMessage_Array2D, MooreWrapX5Y1R2) {
     test_moore_wrap_comradius(5, 1, 2);
-}
-TEST(TestMessage_Array2D, MooreWrapX6Y1R2) {
     test_moore_wrap_comradius(6, 1, 2);
 }
 
@@ -934,64 +904,34 @@ void test_mooore_comradius(
     ASSERT_EQ(right_count, population.size());
 }
 // Test a range of environment sizes for comradius of 1, including small sizes which are an edge case.
-// Also try non-uniform dimensions.
-// @todo - decide if these should be one or many tests.
-TEST(TestMessage_Array2D, MooreX1Y1R1) {
+TEST(TestMessage_Array2D, MooreR1) {
     test_mooore_comradius(1, 1, 1);
-}
-TEST(TestMessage_Array2D, MooreX2Y2R1) {
     test_mooore_comradius(2, 2, 1);
-}
-TEST(TestMessage_Array2D, MooreX3Y3R1) {
     test_mooore_comradius(3, 3, 1);
-}
-TEST(TestMessage_Array2D, MooreX4Y4R1) {
     test_mooore_comradius(4, 4, 1);
 }
-TEST(TestMessage_Array2D, MooreX2Y1R1) {
+// Test a range of environment sizes for comradius of 1, with non-uniform dimensions
+TEST(TestMessage_Array2D, MooreR1NonUnifiorm) {
     test_mooore_comradius(2, 1, 1);
-}
-TEST(TestMessage_Array2D, MooreX3Y1R1) {
     test_mooore_comradius(3, 1, 1);
-}
-TEST(TestMessage_Array2D, MooreX4Y1R1) {
     test_mooore_comradius(4, 1, 1);
 }
 
 // Test a range of environment sizes for comradius of 2, including small sizes which are an edge case.
-// Also try non-uniform dimensions.
-// @todo - decide if these should be one or many tests.
-TEST(TestMessage_Array2D, MooreX1Y1R2) {
+TEST(TestMessage_Array2D, MooreR2) {
     test_mooore_comradius(1, 1, 2);
-}
-TEST(TestMessage_Array2D, MooreX2Y2R2) {
     test_mooore_comradius(2, 2, 2);
-}
-TEST(TestMessage_Array2D, MooreX3Y3R2) {
     test_mooore_comradius(3, 3, 2);
-}
-TEST(TestMessage_Array2D, MooreX4Y4R2) {
     test_mooore_comradius(4, 4, 2);
-}
-TEST(TestMessage_Array2D, MooreX5Y5R2) {
     test_mooore_comradius(5, 5, 2);
-}
-TEST(TestMessage_Array2D, MooreX6Y6R2) {
     test_mooore_comradius(6, 6, 2);
 }
-TEST(TestMessage_Array2D, MooreX2Y1R2) {
+// Test a range of environment sizes for comradius of 2, with non uniform dimensions
+TEST(TestMessage_Array2D, MooreR2NonUniform) {
     test_mooore_comradius(2, 1, 2);
-}
-TEST(TestMessage_Array2D, MooreX3Y1R2) {
     test_mooore_comradius(3, 1, 2);
-}
-TEST(TestMessage_Array2D, MooreX4Y1R2) {
     test_mooore_comradius(4, 1, 2);
-}
-TEST(TestMessage_Array2D, MooreX5Y1R2) {
     test_mooore_comradius(5, 1, 2);
-}
-TEST(TestMessage_Array2D, MooreX6Y1R2) {
     test_mooore_comradius(6, 1, 2);
 }
 
