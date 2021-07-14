@@ -201,8 +201,6 @@ FLAMEGPU_AGENT_FUNCTION(MooreTest1W, MsgArray, MsgNone) {
             ++msg;
         }
     }
-    if (msg == filter.end())
-        message_read++;
     FLAMEGPU->setVariable<unsigned int>("message_read", message_read);
     return ALIVE;
 }
@@ -223,8 +221,6 @@ FLAMEGPU_AGENT_FUNCTION(MooreTest2W, MsgArray, MsgNone) {
             ++msg;
         }
     }
-    if (msg == filter.end())
-        message_read++;
     FLAMEGPU->setVariable<unsigned int>("message_read", message_read);
     return ALIVE;
 }
@@ -258,7 +254,7 @@ TEST(TestMessage_Array, Moore1W) {
     // Validate each agent has read 8 correct messages
     for (AgentVector::Agent ai : pop) {
         const unsigned int message_read = ai.getVariable<unsigned int>("message_read");
-        EXPECT_EQ(3u, message_read);
+        EXPECT_EQ(2u, message_read);
     }
 }
 TEST(TestMessage_Array, Moore2W) {
@@ -291,7 +287,7 @@ TEST(TestMessage_Array, Moore2W) {
     // Validate each agent has read 8 correct messages
     for (AgentVector::Agent ai : pop) {
         const unsigned int message_read = ai.getVariable<unsigned int>("message_read");
-        EXPECT_EQ(5u, message_read);
+        EXPECT_EQ(4u, message_read);
     }
 }
 // Exception tests
