@@ -90,7 +90,7 @@ FLAMEGPU_AGENT_FUNCTION(movement_request, flamegpu::MsgArray2D, flamegpu::MsgArr
 
     // if occupied then look for empty cells
     if (status == AGENT_STATUS_MOVEMENT_UNRESOLVED) {
-        for (auto current_message : FLAMEGPU->message_in(agent_x, agent_y)) {
+        for (auto current_message : FLAMEGPU->message_in.wrap(agent_x, agent_y)) {
             // if location is unoccupied then check for empty locations
             if (current_message.getVariable<int>("status") == AGENT_STATUS_UNOCCUPIED) {
                 // if the sugar level at current location is better than currently stored then update
@@ -131,7 +131,7 @@ FLAMEGPU_AGENT_FUNCTION(movement_response, flamegpu::MsgArray2D, flamegpu::MsgAr
     const unsigned int agent_x = FLAMEGPU->getVariable<unsigned int, 2>("pos", 0);
     const unsigned int agent_y = FLAMEGPU->getVariable<unsigned int, 2>("pos", 1);
 
-    for (auto current_message : FLAMEGPU->message_in(agent_x, agent_y)) {
+    for (auto current_message : FLAMEGPU->message_in.wrap(agent_x, agent_y)) {
         // if the location is unoccupied then check for agents requesting to move here
         if (status == AGENT_STATUS_UNOCCUPIED) {
             // check if request is to move to this location
@@ -169,7 +169,7 @@ FLAMEGPU_AGENT_FUNCTION(movement_transaction, flamegpu::MsgArray2D, flamegpu::Ms
     unsigned int agent_x = FLAMEGPU->getVariable<unsigned int, 2>("pos", 0);
     unsigned int agent_y = FLAMEGPU->getVariable<unsigned int, 2>("pos", 1);
 
-    for (auto current_message : FLAMEGPU->message_in(agent_x, agent_y)) {
+    for (auto current_message : FLAMEGPU->message_in.wrap(agent_x, agent_y)) {
         // if location contains an agent wanting to move then look for responses allowing relocation
         if (status == AGENT_STATUS_MOVEMENT_REQUESTED) {  // if the movement response request came from this location
             if (current_message.getVariable<int>("agent_id") == agent_id) {
