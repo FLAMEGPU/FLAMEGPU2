@@ -15,27 +15,26 @@ class InstallPlatlib(install):
 
 setup(
   name='@PYTHON_MODULE_NAME@',
-  version='@FLAMEGPU_PROJECT_VERSION@',
+  version='@FLAMEGPU_VERSION_PYTHON_PUBLIC@',
   author='Paul Richmond',
   author_email='\"Paul Richmond\" <p.richmond@sheffield.ac.uk>',
   url='https://github.com/FLAMEGPU/FLAMEGPU2',
   distclass=BinaryDistribution,
   cmdclass={'install': InstallPlatlib},
   packages=find_packages(),
-  package_data={
-  '@PYTHON_MODULE_NAME@':['$<TARGET_FILE_NAME:@PYTHON_MODULE_NAME@>', @FLAMEGPU2_INCLUDE_CLEAN@'glew32.dll', 'SDL2.dll', 'DevIL.dll'],
-  },
   include_package_data=True,
   classifiers=[
-  'Development Status :: 5 - Production/Stable',
+  'Development Status :: 3 - Alpha',
+  'Environment :: GPU :: NVIDIA CUDA :: @CMAKE_CUDA_COMPILER_VERSION_MAJOR@.@CMAKE_CUDA_COMPILER_VERSION_MINOR@'
   'Intended Audience :: Developers',
-  'License :: OSI Approved :: Apache Software License',
+  'License :: OSI Approved :: MIT License',
   'Operating System :: POSIX :: Linux',
-  'Operating System :: MacOS :: MacOS X',
   'Operating System :: Microsoft :: Windows',
   'Programming Language :: Python',
   'Programming Language :: C++',
   'Topic :: Scientific/Engineering',
-  'Topic :: Software Development :: Libraries :: Python Modules'
   ],
+  package_data={
+  '@PYTHON_MODULE_NAME@':['$<TARGET_FILE_NAME:@PYTHON_MODULE_NAME@>', @FLAMEGPU2_INCLUDE_CLEAN@@FLAMEGPU2_PYTHON_PACKAGE_DATA_OS_SPECIFIC@],
+  },
 )

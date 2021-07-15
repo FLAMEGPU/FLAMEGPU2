@@ -25,9 +25,10 @@ if(CMAKE_CUDA_COMPILER STREQUAL NOTFOUND)
     endif()
     return()
 endif()
+include(${FLAMEGPU_ROOT}/cmake/version.cmake)
 
 # Name the project and set languages
-project(flamegpu2 CUDA CXX)
+project(flamegpu2 LANGUAGES CUDA CXX VERSION ${FLAMEGPU_VERSION})
 
 # Option to enable/disable runtime checks which may impact performance
 # This will primarily prevent device code from reporting errors
@@ -43,6 +44,16 @@ include(${FLAMEGPU_ROOT}/cmake/doxygen.cmake)
 if(VISUALISATION)
   include(${FLAMEGPU_ROOT}/cmake/flamegpu2-visualiser.cmake)
 endif()
+
+# Output the full FLAMEGPU version
+if(FLAMEGPU_VERSION_FULL)
+    message(STATUS "${PROJECT_NAME} version ${FLAMEGPU_VERSION_FULL}")
+endif()
+
+# Configure the version header file. Ideally this would configure a .cpp file in the build directory, but that doesn't allow for rtc header include checking sub major/minor/patch.
+set(DYNAMIC_VERSION_HEADER_SRC "${FLAMEGPU_ROOT}/cmake/version.h.in")
+set(DYNAMIC_VERSION_HEADER_DEST "${FLAMEGPU_ROOT}/include/flamegpu/version.h")
+configure_file(${DYNAMIC_VERSION_HEADER_SRC} ${DYNAMIC_VERSION_HEADER_DEST})
 
 # Define output location of static library
 if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
@@ -70,7 +81,7 @@ endif()
 # Can't do this automatically, as CMake wouldn't know when to regen (as CMakeLists.txt would be unchanged)
 # version.h is automatically generated so does not exist prior to configure time
 SET(SRC_INCLUDE
-    ${FLAMEGPU_ROOT}/include/flamegpu/version.h
+    ${DYNAMIC_VERSION_HEADER_DEST}
     ${FLAMEGPU_ROOT}/include/flamegpu/defines.h
     ${FLAMEGPU_ROOT}/include/flamegpu/flamegpu.h
     ${FLAMEGPU_ROOT}/include/flamegpu/io/StateReader.h

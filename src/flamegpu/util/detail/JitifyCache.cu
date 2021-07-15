@@ -1,6 +1,7 @@
 #include "flamegpu/util/detail/JitifyCache.h"
 
 #include <cassert>
+#include <regex>
 
 #include "flamegpu/version.h"
 #include "flamegpu/exception/FLAMEGPUException.h"
@@ -39,13 +40,13 @@ namespace {
 path getTMP() {
     static path result;
     if (result.empty()) {
-        path tmp =  std::getenv("FLAMEGPU2_TMP_DIR") ? std::getenv("FLAMEGPU2_TMP_DIR") : temp_directory_path();
-        // Create the $tmp/flamegpu2/jitifycache(/debug) folder hierarchy
+        path tmp =  std::getenv("FLAMEGPU_TMP_DIR") ? std::getenv("FLAMEGPU_TMP_DIR") : temp_directory_path();
+        // Create the $tmp/flamegpu/jitifycache(/debug) folder hierarchy
         if (!::exists(tmp) && !create_directory(tmp)) {
             THROW exception::InvalidFilePath("Directory '%s' does not exist and cannot be created by JitifyCache.", tmp.generic_string().c_str());
         }
-        if (!std::getenv("FLAMEGPU2_TMP_DIR")) {
-            tmp /= "flamegpu2";
+        if (!std::getenv("FLAMEGPU_TMP_DIR")) {
+            tmp /= "flamegpu";
             if (!::exists(tmp)) {
                 create_directory(tmp);
             }
@@ -98,7 +99,7 @@ std::unique_ptr<KernelInstantiation> JitifyCache::compileKernel(const std::strin
             if (!exists(test_include)) {
                 break;
             }
-            // Check file assuming flamegpu2 is the root cmake project
+            // Check file assuming flamegpu is the root cmake project
             path check_file = test_include;
             check_file/= "include/flamegpu/version.h";
             // Use try catch to suppress file permission exceptions etc
@@ -121,7 +122,7 @@ std::unique_ptr<KernelInstantiation> JitifyCache::compileKernel(const std::strin
                             test_include = p.path();
                             test_include /= "_deps/flamegpu2-src/include";
                             env_inc_fgp2 = test_include.string();
-                            goto break_flamegpu2_inc_dir_loop;  // Break out of nested loop
+                            goto break_flamegpu_inc_dir_loop;  // Break out of nested loop
                         }
                     } catch (...) { }
                 }
@@ -129,7 +130,7 @@ std::unique_ptr<KernelInstantiation> JitifyCache::compileKernel(const std::strin
             // Go up a level for next iteration
             test_include/= "..";
         }
-break_flamegpu2_inc_dir_loop:
+break_flamegpu_inc_dir_loop:
         if (env_inc_fgp2.empty()) {
             THROW exception::InvalidAgentFunc("Error compiling runtime agent function: Unable to automatically determine include directory and FLAMEGPU2_INC_DIR environment variable does not exist, "
                 "in JitifyCache::compileKernel().");
@@ -137,6 +138,7 @@ break_flamegpu2_inc_dir_loop:
     }
     if (!header_version_confirmed) {
         std::string fileHash;
+        std::string fileVersion;
         // Open version.h
         path version_file = env_inc_fgp2;
         version_file/= "flamegpu/version.h";
@@ -144,17 +146,25 @@ break_flamegpu2_inc_dir_loop:
         if (vFile.is_open()) {
             // Read the first line
             std::string line;
-            if (getline(vFile, line)) {
-                // If characters 3-onwards match programatic hash we have success, else fail
-                fileHash = line.substr(3, std::string::npos);
+            // Use a regular expression to match the FLAMEGPU_VERSION number macro.
+            std::regex pattern("^static constexpr char VERSION_FULL\\[\\] = \"(.+)\";$");
+            std::smatch match;
+            while (std::getline(vFile, line)) {
+                if (std::regex_search(line, match, pattern)) {
+                    fileVersion = match[1];
+                    break;
+                }
             }
             vFile.close();
+            if (match.length() == 0) {
+                THROW exception::VersionMismatch("Could not extract RTC header version hash.\n");
+            }
         }
-        if (fileHash == flamegpu::detail::getCommitHash()) {
+        if (fileVersion == std::string(flamegpu::VERSION_FULL)) {
             header_version_confirmed = true;
         } else {
-            THROW exception::VersionMismatch("RTC header version (%s) does not match version flamegpu2 library was built with (%s). Set the environment variable FLAMEGPU2_INC_DIR to the correct include directory.\n",
-                fileHash.c_str(), flamegpu::detail::getCommitHash().c_str());
+            THROW exception::VersionMismatch("RTC header version (%s) does not match version flamegpu library was built with (%s). Set the environment variable FLAMEGPU2_INC_DIR to the correct include directory.\n",
+                fileVersion.c_str(), flamegpu::VERSION_FULL);
         }
     }
     if (env_cuda_path.empty()) {
@@ -259,7 +269,7 @@ std::unique_ptr<KernelInstantiation> JitifyCache::loadKernel(const std::string &
         cuda_version + "_" +
         arch + "_" +
         seatbelts + "_" +
-        flamegpu::detail::getCommitHash() + "_" +
+        std::string(flamegpu::VERSION_FULL) + "_" +
         // Use jitify hash methods for consistent hashing between OSs
         std::to_string(hash_combine(hash_larson64(kernel_src.c_str()), hash_larson64(dynamic_header.c_str())));
     // Does a copy with the right reference exist in memory?
@@ -274,7 +284,7 @@ std::unique_ptr<KernelInstantiation> JitifyCache::loadKernel(const std::string &
     }
     // Does a copy with the right reference exist on disk?
     const path cache_file = getTMP() / short_reference;
-    const path reference_file = path(cache_file).replace_extension(".ref");
+    const path reference_file = cache_file.parent_path() / path(cache_file.filename().string() + ".ref");
     if (use_disk_cache && exists(cache_file)) {
         // Load the long reference for the cache file
         const std::string file_long_reference = loadFile(reference_file);

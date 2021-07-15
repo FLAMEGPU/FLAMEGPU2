@@ -355,6 +355,8 @@ class FLAMEGPURuntimeException : public std::exception {
 
 %ignore flamegpu::detail;
 
+// Do not provide the FLAMEGPU_VERSION macro, instead just the pyflamegpu.VERSION* variants.
+%ignore FLAMEGPU_VERSION;
 
 // Ignores for nested classes, where flatnested is enabled. 
 %feature("flatnested"); // flat nested on
@@ -450,6 +452,7 @@ class ModelVis;
 // SWIGTYPE_p_FLAMEGPURuntimeException - swig only, doesn't need to be namespaced? 
 
 %include "flamegpu/defines.h" // Provides flamegpu::id_t amongst others.
+%include "flamegpu/version.h" // provides FLAMEGPU_VERSION etc
 %include "flamegpu/runtime/HostAPI_macros.h" // Used in LayerDesc, LayerData, HostFuncDesc
 
 %include "flamegpu/sim/AgentInterface.h"
