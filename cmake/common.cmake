@@ -543,9 +543,6 @@ endfunction()
 
 # Function to mask some of the flag setting for the static library
 function(add_flamegpu_library NAME SRC FLAMEGPU_ROOT)
-    # Generate version file
-    GET_COMMIT_HASH()
-  
     # Define which source files are required for the target executable
     add_library(${NAME} STATIC ${SRC})
 
@@ -673,43 +670,4 @@ macro(CMAKE_SET_TARGET_FOLDER tgt folder)
   else()
     set_property(GLOBAL PROPERTY USE_FOLDERS OFF)
   endif()
-endmacro()
-
-#-----------------------------------------------------------------------
-# Generate files that act as informal version numbers
-# ${CMAKE_CURRENT_BINARY_DIR}/short_hash.txt - File only contains git short hash for use by CMake
-# ${FLAMEGPU_ROOT}/include/flamegpu/version.h - Programatically accessible version
-#
-# Based on https://cmake.org/pipermail/cmake/2018-October/068388.html
-#-----------------------------------------------------------------------
-macro(GET_COMMIT_HASH)
-# If git changes, we reconfigure
-# This is a very aggressive version
-# Might be better to simply make generation of the file a pre-build script
-# That would be cheaper than re-configure
-set_property(
-  DIRECTORY 
-  APPEND 
-  PROPERTY CMAKE_CONFIGURE_DEPENDS 
-  "${FLAMEGPU_ROOT}/.git/index"
-)
-set(SHORT_HASH_FILE ${CMAKE_CURRENT_BINARY_DIR}/short_hash.txt)
-find_package(Git)
-if(Git_FOUND)
-    execute_process(
-        COMMAND
-            ${GIT_EXECUTABLE} rev-parse --short HEAD
-        WORKING_DIRECTORY
-            ${FLAMEGPU_ROOT}
-        RESULT_VARIABLE
-            SHORT_HASH_RESULT
-        OUTPUT_VARIABLE
-            SHORT_HASH
-        OUTPUT_STRIP_TRAILING_WHITESPACE)
-else()
-    set(SHORT_HASH "GitHash") # Placeholder, though its unlikely to be required
-endif()
-
-# Also create version.h
-configure_file(${FLAMEGPU_ROOT}/cmake/version.h ${FLAMEGPU_ROOT}/include/flamegpu/version.h)
 endmacro()

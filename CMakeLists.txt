@@ -2,7 +2,6 @@
 cmake_minimum_required(VERSION VERSION 3.15 FATAL_ERROR)
 
 project(FLAMEGPU2 LANGUAGES NONE)
-set(FLAMEGPU_PROJECT_VERSION "2.0.0")
 
 # Don't create installation scripts (and hide CMAKE_INSTALL_PREFIX from cmake-gui)
 set(CMAKE_SKIP_INSTALL_RULES TRUE)
@@ -134,7 +133,7 @@ endif()
 if(BUILD_FLAMEGPU2)
     add_subdirectory(src "${PROJECT_BINARY_DIR}/FLAMEGPU2")
     # Set as startup project
-    set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"  PROPERTY VS_STARTUP_PROJECT flamegpu2)
+    set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"  PROPERTY VS_STARTUP_PROJECT flamegpu)
 endif()
 
 # Add each example

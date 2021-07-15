@@ -73,6 +73,7 @@ SET(TESTS_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/exception/test_rtc_device_exception.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/test_namespaces/test_namespaces.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/test_namespaces/test_rtc_namespaces.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/test_version.cpp
 )
 # Source files for the tests_dev target 
 SET(TESTS_DEV_SRC
