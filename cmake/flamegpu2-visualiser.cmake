@@ -11,7 +11,7 @@ if (VISUALISATION_ROOT)
     # @todo - we should make the visualisation package find_package() compatible, and check it exists if VISUALISATION_ROOT is set. 
 
     # Look for the main visualisation header to get the abs path, but only look relative to the hints/paths, no cmake defaults (for now)
-    set(VISUALISATION_INCLUDE_HEADER_FILE include/FLAMEGPU_Visualisation.h)
+    set(VISUALISATION_INCLUDE_HEADER_FILE include/flamegpu/visualiser/FLAMEGPU_Visualisation.h)
     find_path(VISUALISATION_ROOT_ABS
         NAMES
             ${VISUALISATION_INCLUDE_HEADER_FILE}
