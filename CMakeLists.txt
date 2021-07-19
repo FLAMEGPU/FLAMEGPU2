@@ -97,6 +97,8 @@ cmake_dependent_option(BUILD_SWIG_PYTHON_VENV "Enable the use of a venv for swig
 
 # Option to enable/disable tests.
 option(BUILD_TESTS "Enable building tests" OFF)
+# Option to enable the development tests target, test_dev. This is independant from build_tests
+option(BUILD_TESTS_DEV "Enable building test_dev" ON)
 
 # Option to enable/disable NVTX markers for improved profiling
 option(USE_NVTX "Build with NVTX markers enabled" OFF)
@@ -170,11 +172,12 @@ if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_SUGARSCAPE)
     add_subdirectory(examples/sugarscape)
 endif()
 # Add the tests directory (if required)
-if(BUILD_TESTS)
+if(BUILD_TESTS OR BUILD_TESTS_DEV)
     # g++ 7 is required for c++ tests to build.
     if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7)
         message(WARNING "  g++ < 7 is incompatible with googletest when using CUDA.\n  Setting BUILD_TESTS OFF.")
         set(BUILD_TESTS OFF)
+        set(BUILD_TESTS_DEV OFF)
     else()
         add_subdirectory(tests)
     endif()
