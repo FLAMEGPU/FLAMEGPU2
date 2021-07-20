@@ -60,8 +60,8 @@ jobs:
       run: cmake . -B ${{ env.build_dir }} -G "${{ matrix.visual_studio }}" -A x64 -DBUILD_TESTS=${{ env.build_tests }} -DWARNINGS_AS_ERRORS=${{ env.werror }} -DCUDA_ARCH="${{ matrix.cuda_arch }}" -Werror=dev -DBUILD_SWIG_PYTHON=ON -DPython3_ROOT_DIR=$(dirname $(which python)) -DPython3_EXECUTABLE=$(which python) -DUSE_NVTX=ON
       shell: bash
 
-    - name: Build flamegpu2
-      run: cmake --build . --config ${{ env.config }} --target flamegpu2 --verbose
+    - name: Build flamegpu
+      run: cmake --build . --config ${{ env.config }} --target flamegpu --verbose
       working-directory: ${{ env.build_dir }}
 
     - name: Build pyflamegpu

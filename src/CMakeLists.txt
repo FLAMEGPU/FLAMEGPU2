@@ -16,7 +16,7 @@ get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/.. REALPATH)
 include(CheckLanguage)
 check_language(CUDA)
 if(CMAKE_CUDA_COMPILER STREQUAL NOTFOUND)
-    project(flamegpu2 NONE)
+    project(flamegpu NONE)
     #Not able to build code, so just make docs
     message("Suitable compilers for building code not found.\n" "Attempting generation of minimal documentation only project.")
     include(${FLAMEGPU_ROOT}/cmake/doxygen.cmake)
@@ -28,7 +28,7 @@ endif()
 include(${FLAMEGPU_ROOT}/cmake/version.cmake)
 
 # Name the project and set languages
-project(flamegpu2 LANGUAGES CUDA CXX VERSION ${FLAMEGPU_VERSION})
+project(flamegpu LANGUAGES CUDA CXX VERSION ${FLAMEGPU_VERSION})
 
 # Option to enable/disable runtime checks which may impact performance
 # This will primarily prevent device code from reporting errors
@@ -204,7 +204,7 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/model/SubAgentDescription.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/SubEnvironmentDescription.h
 )
-SET(SRC_FLAMEGPU2
+SET(SRC_FLAMEGPU
     ${FLAMEGPU_ROOT}/src/flamegpu/exception/FLAMEGPUException.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/exception/FLAMEGPUDeviceException.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/model/LayerDescription.cpp
@@ -289,8 +289,8 @@ if (VISUALISATION)
         ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/color/Palette.h
         ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/color/AutoPalette.h
     )
-    SET(SRC_FLAMEGPU2
-        ${SRC_FLAMEGPU2}
+    SET(SRC_FLAMEGPU
+        ${SRC_FLAMEGPU}
         ${FLAMEGPU_ROOT}/src/flamegpu/visualiser/ModelVis.cpp    
         ${FLAMEGPU_ROOT}/src/flamegpu/visualiser/AgentVis.cpp     
         ${FLAMEGPU_ROOT}/src/flamegpu/visualiser/AgentStateVis.cpp
@@ -304,16 +304,16 @@ if (VISUALISATION)
 endif()
 SET(ALL_SRC
     ${SRC_INCLUDE}
-    ${SRC_FLAMEGPU2}
+    ${SRC_FLAMEGPU}
 )
-SET(FLAMEGPU2_INCLUDE ${SRC_INCLUDE} CACHE INTERNAL "Include files required by FLAMEGPU2 RTC")
+SET(FLAMEGPU_INCLUDE ${SRC_INCLUDE} CACHE INTERNAL "Include files required by FLAMEGPU RTC")
 
 # Setup Visual Studio (and eclipse) filters
 source_group(TREE ${FLAMEGPU_ROOT}/include/flamegpu PREFIX include FILES ${SRC_INCLUDE})
-set(T_SRC "${SRC_FLAMEGPU2}")
+set(T_SRC "${SRC_FLAMEGPU}")
 list(FILTER T_SRC INCLUDE REGEX ".*\.(h|hpp|cuh)$")
 source_group(TREE ${FLAMEGPU_ROOT}/src/flamegpu PREFIX headers FILES ${T_SRC})
-set(T_SRC "${SRC_FLAMEGPU2}")
+set(T_SRC "${SRC_FLAMEGPU}")
 list(FILTER T_SRC EXCLUDE REGEX ".*\.(h|hpp|cuh)$")
 source_group(TREE ${FLAMEGPU_ROOT}/src/flamegpu PREFIX src FILES ${T_SRC})
 set(T_SRC "${SRC_EXTERNAL}")

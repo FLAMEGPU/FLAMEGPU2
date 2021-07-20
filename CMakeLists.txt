@@ -1,7 +1,7 @@
 # CMake 3.15+ for Thrust/Cub support
 cmake_minimum_required(VERSION VERSION 3.15 FATAL_ERROR)
 
-project(FLAMEGPU2 LANGUAGES NONE)
+project(FLAMEGPU LANGUAGES NONE)
 
 # Don't create installation scripts (and hide CMAKE_INSTALL_PREFIX from cmake-gui)
 set(CMAKE_SKIP_INSTALL_RULES TRUE)
@@ -67,7 +67,7 @@ endif()
 include(CMakeDependentOption)
 
 # Option to enable/disable building the static library
-option(BUILD_FLAMEGPU2 "Enable building FLAMEGPU2 library" ON)
+option(BUILD_FLAMEGPU "Enable building FLAMEGPU library" ON)
 
 # Option to enable/disable building the static library
 option(VISUALISATION "Enable visualisation support" OFF)
@@ -130,8 +130,8 @@ if(CPPLINT)
 endif()
 
 # Add the library building subdirectory
-if(BUILD_FLAMEGPU2)
-    add_subdirectory(src "${PROJECT_BINARY_DIR}/FLAMEGPU2")
+if(BUILD_FLAMEGPU)
+    add_subdirectory(src "${PROJECT_BINARY_DIR}/FLAMEGPU")
     # Set as startup project
     set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"  PROPERTY VS_STARTUP_PROJECT flamegpu)
 endif()
