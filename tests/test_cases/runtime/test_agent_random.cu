@@ -1,17 +1,5 @@
-/**
- * @copyright  2019 University of Sheffield
- *
- *
- * @file       test_agent_random.h
- * @authors    Robert Chisholm
- * @brief      Test suite for validating methods in simulation folder
- *
- * @see        https://github.com/FLAMEGPU/FLAMEGPU2_dev
- * @bug        No known bugs
- */
 #ifndef TESTS_TEST_CASES_RUNTIME_TEST_AGENT_RANDOM_H_
 #define TESTS_TEST_CASES_RUNTIME_TEST_AGENT_RANDOM_H_
-
 
 #include <string>
 #include <tuple>
@@ -23,7 +11,6 @@
 #include "gtest/gtest.h"
 
 namespace flamegpu {
-
 
 namespace test_agent_random {
 FLAMEGPU_AGENT_FUNCTION(random1_func, MsgNone, MsgNone) {

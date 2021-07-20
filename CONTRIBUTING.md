@@ -9,7 +9,7 @@ Please take a moment to review this document in order to make the contribution p
 1. Use the GitHub issue search -- check if the issue has already been reported.
 2. Check if the issue has been fixed -- try to reproduce it with the latest `master` or development branch.
 3. Isolate the problem -- ideally create a [minimal example](https://stackoverflow.com/help/minimal-reproducible-example).
-4. Complete the [bug report template](https://github.com/FLAMEGPU/FLAMEGPU2_dev/issues/new?template=bug_report.md&title=[BugReport]) -- provide as much relevant detail as possible.
+4. Complete the [bug report template](https://github.com/FLAMEGPU/FLAMEGPU2/issues/new?template=bug_report.md&title=[BugReport]) -- provide as much relevant detail as possible.
 
 A good bug report should contain all the information necessary to allow a developer to reproduce the issue, without needing to ask for further information.
 Please try to be as detailed as possible in your report. What is your environment? What steps will reproduce the issue? What CUDA version, GPU and OS experience the problem? What is the expected outcome?
@@ -19,7 +19,7 @@ All of these details assist the process of investigating and fixing bugs.
 
 Feature requests are welcome, FLAME GPU 2 is under active development and as a general agent-based modelling framework aims to provide all functionality required by modellers. However, it's up to *you* to make a strong case to convince the project's developers of the merits and priority of this feature. Please provide as much detail and context as possible.
 
-Complete the [feature request template](https://github.com/FLAMEGPU/FLAMEGPU2_dev/issues/new?template=feature_request.md&title=[FeatureReq]).
+Complete the [feature request template](https://github.com/FLAMEGPU/FLAMEGPU2/issues/new?template=feature_request.md&title=[FeatureReq]).
 
 ## Submitting Pull Requests
 
