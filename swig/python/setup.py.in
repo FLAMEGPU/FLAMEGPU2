@@ -18,7 +18,7 @@ setup(
   version='@FLAMEGPU_VERSION_PYTHON_PUBLIC@',
   author='Paul Richmond',
   author_email='\"Paul Richmond\" <p.richmond@sheffield.ac.uk>',
-  url='https://github.com/FLAMEGPU/FLAMEGPU',
+  url='https://github.com/FLAMEGPU/FLAMEGPU2',
   distclass=BinaryDistribution,
   cmdclass={'install': InstallPlatlib},
   packages=find_packages(),

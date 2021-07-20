@@ -1,16 +1,5 @@
 #ifndef TESTS_TEST_CASES_GPU_TEST_GPU_VALIDATION_H_
 #define TESTS_TEST_CASES_GPU_TEST_GPU_VALIDATION_H_
-/**
- * @copyright  2017 University of Sheffield
- *
- *
- * @file       test_gpu_validation.h
- * @authors    Mozhgan Kabiri Chimeh, Paul Richmond
- * @brief      Test suite for validating methods in GPU folder
- *
- * @see        https://github.com/FLAMEGPU/FLAMEGPU2_dev
- * @bug        No known bugs
- */
 
 #include "helpers/common.h"
 #include "flamegpu/flamegpu.h"

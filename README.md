@@ -11,7 +11,7 @@ The Code is currently under active development and should **not be used** until 
 Continuous Integration (CI) is provided by Github Actions.
 CI jobs *only* include compilation, as the CI workers do not include CUDA-capable GPUs.
 
-[![Ubuntu](https://github.com/FLAMEGPU/FLAMEGPU2_dev/workflows/Ubuntu/badge.svg?branch=master)](https://github.com/FLAMEGPU/FLAMEGPU2_dev/actions?query=workflow%3AUbuntu+branch%3Amaster) [![Windows](https://github.com/FLAMEGPU/FLAMEGPU2_dev/workflows/Windows/badge.svg?branch=master)](https://github.com/FLAMEGPU/FLAMEGPU2_dev/actions?query=workflow%3AWindows+branch%3Amaster) [![Lint](https://github.com/FLAMEGPU/FLAMEGPU2_dev/workflows/Lint/badge.svg?branch=master)](https://github.com/FLAMEGPU/FLAMEGPU2_dev/actions?query=workflow%3ALint+branch%3Amaster) [![Docs](https://github.com/FLAMEGPU/FLAMEGPU2_dev/workflows/Docs/badge.svg?branch=master)](https://github.com/FLAMEGPU/FLAMEGPU2_dev/actions?query=workflow%3ADocs+branch%3Amaster)
+[![Ubuntu](https://github.com/FLAMEGPU/FLAMEGPU2/workflows/Ubuntu/badge.svg?branch=master)](https://github.com/FLAMEGPU/FLAMEGPU2/actions?query=workflow%3AUbuntu+branch%3Amaster) [![Windows](https://github.com/FLAMEGPU/FLAMEGPU2/workflows/Windows/badge.svg?branch=master)](https://github.com/FLAMEGPU/FLAMEGPU2/actions?query=workflow%3AWindows+branch%3Amaster) [![Lint](https://github.com/FLAMEGPU/FLAMEGPU2/workflows/Lint/badge.svg?branch=master)](https://github.com/FLAMEGPU/FLAMEGPU2/actions?query=workflow%3ALint+branch%3Amaster) [![Docs](https://github.com/FLAMEGPU/FLAMEGPU2/workflows/Docs/badge.svg?branch=master)](https://github.com/FLAMEGPU/FLAMEGPU2/actions?query=workflow%3ADocs+branch%3Amaster)
 
 
 
