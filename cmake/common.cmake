@@ -415,8 +415,8 @@ function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
         ${ARGN})
 
     # If the library does not exist as a target, add it.
-    if (NOT TARGET flamegpu2)
-        add_subdirectory("${FLAMEGPU_ROOT}/src" "${PROJECT_ROOT}/FLAMEGPU2")
+    if (NOT TARGET flamegpu)
+        add_subdirectory("${FLAMEGPU_ROOT}/src" "${PROJECT_ROOT}/FLAMEGPU")
     endif()
 
     if(WIN32)
@@ -441,14 +441,14 @@ function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
     # Enable RDC for the target
     set_property(TARGET ${NAME} PROPERTY CUDA_SEPARABLE_COMPILATION ON)
 
-    # Link against the flamegpu2 static library target.
-    if (TARGET flamegpu2)
-        target_link_libraries(${NAME} flamegpu2)
+    # Link against the flamegpu static library target.
+    if (TARGET flamegpu)
+        target_link_libraries(${NAME} flamegpu)
         # Workaround for incremental rebuilds on MSVC, where device link was not being performed.
         # https://github.com/FLAMEGPU/FLAMEGPU2/issues/483
         if(MSVC AND CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL "11.1")
             # Provide the absolute path to the lib file, rather than the relative version cmake provides.
-            target_link_libraries(${NAME} "${CMAKE_CURRENT_BINARY_DIR}/$<TARGET_FILE:flamegpu2>")
+            target_link_libraries(${NAME} "${CMAKE_CURRENT_BINARY_DIR}/$<TARGET_FILE:flamegpu>")
         endif()
     endif()
     

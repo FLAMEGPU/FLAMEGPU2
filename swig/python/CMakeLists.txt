@@ -114,29 +114,29 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 endif()
   
 # link with the static flamegpu and cuda libraries
-target_link_libraries(${PYTHON_MODULE_NAME} PRIVATE flamegpu2 cuda)
+target_link_libraries(${PYTHON_MODULE_NAME} PRIVATE flamegpu cuda)
 # Variable PYTHON_LIBRARIES can contains keyword `optimized`
 # which won't be interpreted inside a generator expression.
 # i.e. we can't use: $<$<PLATFORM_ID:Windows>:${PYTHON_LIBRARIES}>
 # see: https://cmake.org/cmake/help/git-stage/command/target_link_libraries.html#command:target_link_libraries
 if(MSVC)
-  target_link_libraries(${PYTHON_MODULE_NAME} PRIVATE ${Python3_LIBRARIES} flamegpu2 cuda)
+  target_link_libraries(${PYTHON_MODULE_NAME} PRIVATE ${Python3_LIBRARIES} flamegpu cuda)
 endif()
 
 #######################
 ## Python Packaging  ##
 #######################
-# cleanup the flamegpu2 include file paths, so they're relative (begin `include/`) and seperated by `", "`
-foreach(FLAMEGPU2_INC_FILE IN LISTS FLAMEGPU2_INCLUDE)
-  file(RELATIVE_PATH FLAMEGPU2_INC_FILE_CLEAN "${FLAMEGPU_ROOT}" "${FLAMEGPU2_INC_FILE}")
-  set(FLAMEGPU2_INCLUDE_CLEAN "${FLAMEGPU2_INCLUDE_CLEAN}'${FLAMEGPU2_INC_FILE_CLEAN}', ")
+# cleanup the flamegpu include file paths, so they're relative (begin `include/`) and seperated by `", "`
+foreach(FLAMEGPU_INC_FILE IN LISTS FLAMEGPU_INCLUDE)
+  file(RELATIVE_PATH FLAMEGPU_INC_FILE_CLEAN "${FLAMEGPU_ROOT}" "${FLAMEGPU_INC_FILE}")
+  set(FLAMEGPU_INCLUDE_CLEAN "${FLAMEGPU_INCLUDE_CLEAN}'${FLAMEGPU_INC_FILE_CLEAN}', ")
 endforeach()
 
 # Build a list of OS specific python package_data entries.
-set(FLAMEGPU2_PYTHON_PACKAGE_DATA_OS_SPECIFIC "")
+set(FLAMEGPU_PYTHON_PACKAGE_DATA_OS_SPECIFIC "")
 if(WIN32)
   # @todo - See if there is a dynamic way to achieve this through target properties?  
-  set(FLAMEGPU2_PYTHON_PACKAGE_DATA_OS_SPECIFIC "${FLAMEGPU2_PYTHON_PACKAGE_DATA_OS_SPECIFIC}'glew32.dll', 'SDL2.dll', 'DevIL.dll'")
+  set(FLAMEGPU_PYTHON_PACKAGE_DATA_OS_SPECIFIC "${FLAMEGPU_PYTHON_PACKAGE_DATA_OS_SPECIFIC}'glew32.dll', 'SDL2.dll', 'DevIL.dll'")
 endif()
 
 
@@ -154,7 +154,7 @@ configure_file(
 unset(CMAKE_CUDA_COMPILER_VERSION_LIST)
 unset(CMAKE_CUDA_COMPILER_VERSION_MAJOR)
 unset(CMAKE_CUDA_COMPILER_VERSION_MINOR)
-unset(FLAMEGPU2_PYTHON_PACKAGE_DATA_OS_SPECIFIC)
+unset(FLAMEGPU_PYTHON_PACKAGE_DATA_OS_SPECIFIC)
 
 file(GENERATE
 	OUTPUT ${PYTHON_LIB_OUTPUT_DIRECTORY}/setup.py
@@ -198,7 +198,7 @@ search_python_module(wheel)
 add_custom_command(TARGET ${PYTHON_MODULE_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory "${PYTHON_LIB_OUTPUT_DIRECTORY}/${PYTHON_MODULE_NAME}/include")
 
-# Copy the FLAMEGPU2 headers to a local path, this must occur before the wheel is built
+# Copy the FLAMEGPU headers to a local path, this must occur before the wheel is built
 add_custom_command(TARGET ${PYTHON_MODULE_NAME} POST_BUILD     # Adds a post-build event to MyTest
     COMMAND ${CMAKE_COMMAND} -E copy_directory              # which executes "cmake - E copy_directory..."
         "${FLAMEGPU_ROOT}/include"                                     # <--this is in-dir
