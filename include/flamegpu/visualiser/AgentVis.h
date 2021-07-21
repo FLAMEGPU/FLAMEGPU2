@@ -53,12 +53,84 @@ class AgentVis {
      * Set the name of the variable representing the agents x/y/z location coordinates
      * @param var_name Name of the agent variable
      * @note unnecessary if the variables are named "x", "y", "z" respectively
+     * @note Implicitly calls clearXYVariable(), clearXYZVariable()
+     * @throws InvalidAgentVar If the variable is not type float[1]
      */
     void setXVariable(const std::string &var_name);
     void setYVariable(const std::string &var_name);
     void setZVariable(const std::string &var_name);
     /**
-     * Set the name of the variable representing the agents x/y/z direction vector components
+     * Set the name of the array variable (length 2) representing the agents x/y location coordinates
+     * @param var_name Name of the agent variable
+     * @note Implicitly calls clearXVariable(),  clearYVariable(), clearZVariable(),clearXYZVariable()
+     * @throws InvalidAgentVar If the variable is not type float[2]
+     */
+    void setXYVariable(const std::string &var_name);
+    /**
+     * Set the name of the array variable (length 3) representing the agents x/y/z location coordinates
+     * @param var_name Name of the agent variable
+     * @note Implicitly calls clearXVariable(),  clearYVariable(), clearZVariable(),clearXYVariable()
+     * @throws InvalidAgentVar If the variable is not type float[3]
+     */
+    void setXYZVariable(const std::string &var_name);
+    /**
+     * Set the name of the variable representing the agents x direction vector components
+     * Single axis rotation only requires x/z components
+     * Double axis rotation requires all 3 components
+     * Triple axis rotation requires all 3 components and additionally all 3 Up components
+     * @param var_name Name of the agent variable
+     * @note setForwardXVariable() and setForwardZVariable() are an alternate to providing a yaw angle
+     * @see setYawVariable(const std::string&)
+     * @note Forward is a synonym for Direction
+     * @note Implicitly calls clearHeadingVariable(), clearForwardXZVariable(), clearForwardXYZVariable(),
+     * clearDirectionYPVariable(), clearDirectionYPRVariable()
+     * @throws InvalidAgentVar If the variable is not type float[1]
+     */
+    void setForwardXVariable(const std::string& var_name);
+    /**
+     * Set the name of the variable representing the agents y direction vector components
+     * Single axis rotation only requires x/z components
+     * Double axis rotation requires all 3 components
+     * Triple axis rotation requires all 3 components and additionally all 3 Up components
+     * @param var_name Name of the agent variable
+     * @note setForwardYVariable() is an alternate to providing a pitch angle
+     * @see setPitchVariable(const std::string&)
+     * @note Forward is a synonym for Direction
+     * @note Implicitly calls clearPitchVariable(), clearForwardXYZVariable(), clearDirectionYPVariable(),
+     * clearDirectionYPRVariable()
+     * @throws InvalidAgentVar If the variable is not type float[1]
+     */
+    void setForwardYVariable(const std::string& var_name);
+    /**
+     * Set the name of the variable representing the agents z direction vector components
+     * Single axis rotation only requires x/z components
+     * Double axis rotation requires all 3 components
+     * Triple axis rotation requires all 3 components and additionally all 3 Up components
+     * @param var_name Name of the agent variable
+     * @note setForwardXVariable() and setForwardZVariable() are an alternate to providing a yaw angle
+     * @see setYawVariable(const std::string&)
+     * @note Forward is a synonym for Direction
+     * @note Implicitly calls clearHeadingVariable(), clearForwardXZVariable(), clearForwardXYZVariable(),
+     * clearDirectionYPVariable(), clearDirectionYPRVariable()
+     * @throws InvalidAgentVar If the variable is not type float[1]
+     */
+    void setForwardZVariable(const std::string& var_name);
+    /**
+     * Set the name of the array variable (length 2) representing the agents x/z direction vector components
+     * Single axis rotation only requires x/z components
+     * @param var_name Name of the agent variable
+     * @note setForwardXVariable() and setForwardZVariable() are an alternate to providing a yaw angle, setting either of these will erase yaw if bound
+     * @see setYawVariable(const std::string&)
+     * @note setForwardYVariable() is an alternate to providing a pitch angle, setting this will erase pitch if bound
+     * @see setPitchVariable(const std::string&)
+     * @note Forward is a synonym for Direction
+     * @note Implicitly calls clearHeadingVariable(), clearForwardXVariable(), clearForwardYVariable(),
+     * clearForwardZVariable(), clearForwardXYZVariable(),clearDirectionYPVariable(), clearDirectionYPRVariable()
+     * @throws InvalidAgentVar If the variable is not type float[2]
+     */
+    void setForwardXZVariable(const std::string& var_name);
+    /**
+     * Set the name of the array variable (length 3) representing the agents x/y/z direction vector components
      * Single axis rotation only requires x/z components
      * Double axis rotation requires all 3 components
      * Triple axis rotation requires all 3 components and additionally all 3 Up components
@@ -68,20 +140,36 @@ class AgentVis {
      * @note setForwardYVariable() is an alternate to providing a pitch angle, setting this will erase pitch if bound
      * @see setPitchVariable(const std::string&)
      * @note Forward is a synonym for Direction
+     * @note Implicitly calls clearHeadingVariable(), clearForwardXVariable(), clearForwardYVariable(),
+     * clearForwardZVariable(), clearForwardXZVariable(),clearDirectionYPVariable(), clearDirectionYPRVariable()
+     * @throws InvalidAgentVar If the variable is not type float[3]
      */
-    void setForwardXVariable(const std::string& var_name);
-    void setForwardYVariable(const std::string& var_name);
-    void setForwardZVariable(const std::string& var_name);
+    void setForwardXYZVariable(const std::string& var_name);
     /**
      * Set the name of the variable representing the agents x/y/z UP vector
      * This should be 90 degrees perpendicular to the direction vector
      * @param var_name Name of the agent variable
      * @note setUpXVariable(), setUpYVariable() and setUpZVariable() are an alternate to providing a roll angle, setting any of these will erase roll if bound
      * @see setRollVariable(const std::string&)
+     * @note Implicitly calls clearRollVariable(), clearUpXYZVariable(), clearDirectionYPRVariable()
+     * @note Up can only be used in combination with Forward x/y/z (and not Yaw, Pitch or directionYP)
+     * @throws InvalidAgentVar If the variable is not type float[1]
      */
     void setUpXVariable(const std::string& var_name);
     void setUpYVariable(const std::string& var_name);
     void setUpZVariable(const std::string& var_name);
+    /**
+     * Set the name of the array variable (length 3) representing the agents x/y/z UP vector
+     * This should be 90 degrees perpendicular to the direction vector
+     * @param var_name Name of the agent variable
+     * @note setUpXVariable(), setUpYVariable() and setUpZVariable() are an alternate to providing a roll angle, setting any of these will erase roll if bound
+     * @see setRollVariable(const std::string&)
+     * @note Implicitly calls clearRollVariable(), clearUpXVariable(), clearUpYVariable(), clearUpZVariable(),
+     * clearDirectionYPRVariable()
+     * @note Up can only be used in combination with Forward x/y/z (and not Yaw, Pitch or directionYP)
+     * @throws InvalidAgentVar If the variable is not type float[3]
+     */
+    void setUpXYZVariable(const std::string& var_name);
     /**
      * Set the name of the variable representing the agents yaw rotation angle (radians)
      *
@@ -89,7 +177,12 @@ class AgentVis {
      * @note This is an alternate to providing a direction vector, setting this will erase forward x/z if bound
      * @see setForwardXVariable(const std::string&)
      * @see setForwardZVariable(const std::string&)
+     * @see setDirectionYPVariable(const std::string&)
+     * @see setDirectionYPRVariable(const std::string&)
      * @note Heading is a synonym for Yaw
+     * @note Implicitly calls clearForwardXVariable(), clearForwardYVariable(), clearForwardZVariable(),
+     * clearForwardXYZVariable(), clearDirectionYPVariable(), clearDirectionYPRVariable()
+     * @throws InvalidAgentVar If the variable is not type float[1]
      */
     void setYawVariable(const std::string& var_name);
     /**
@@ -98,6 +191,10 @@ class AgentVis {
      * @param var_name Name of the agent variable
      * @note This is an alternate to providing a direction vector, setting this will erase forward y if bound
      * @see setForwardYVariable(const std::string&)
+     * @see setDirectionYPVariable(const std::string&)
+     * @see setDirectionYPRVariable(const std::string&)
+     * @note Implicitly calls clearForwardYVariable(), clearForwardXYZVariable(), clearDirectionYPVariable(),
+     * clearDirectionYPRVariable()
      */
     void setPitchVariable(const std::string& var_name);
     /**
@@ -108,9 +205,42 @@ class AgentVis {
      * @see setUpXVariable(const std::string&)
      * @see setUpYVariable(const std::string&)
      * @see setUpZVariable(const std::string&)
+     * @see setDirectionYPRVariable(const std::string&)
      * @note Bank is a synonym for Roll
+     * @note Implicitly calls clearUpXVariable(), clearUpYVariable(), clearUpZVariable(), clearUpXYZVariable(),
+     * clearDirectionYPRVariable()
+     * @throws InvalidAgentVar If the variable is not type float[1]
      */
     void setRollVariable(const std::string& var_name);
+    /**
+     * Set the name of the array variable (length 2) representing the agents yaw/pitch rotation angles (radians)
+     *
+     * @param var_name Name of the agent variable
+     * @note This is an alternate to providing a direction vector, setting this will erase forward x/z if bound
+     * @see setForwardXVariable(const std::string&)
+     * @see setForwardZVariable(const std::string&)
+     * @note Heading is a synonym for Yaw
+     * @note Implicitly calls clearForwardXVariable(), clearForwardYVariable(), clearForwardZVariable(),
+     * clearForwardXZVariable(), clearForwardXYZVariable(), clearHeadingVariable(), clearPitchVariable(),
+     * clearDirectionYPRVariable()
+     * @throws InvalidAgentVar If the variable is not type float[2]
+     */
+    void setDirectionYPVariable(const std::string& var_name);
+    /**
+     * Set the name of the array variable (length 3) representing the agents yaw/pitch/roll rotation angles (radians)
+     *
+     * @param var_name Name of the agent variable
+     * @note This is an alternate to providing a direction vector, setting this will erase forward x/z if bound
+     * @see setForwardXVariable(const std::string&)
+     * @see setForwardZVariable(const std::string&)
+     * @note Heading is a synonym for Yaw
+     * @note Bank is a synonym for Roll
+     * @note Implicitly calls clearForwardXVariable(), clearForwardYVariable(), clearForwardZVariable(),
+     * clearForwardXZVariable(), clearForwardXYZVariable(), clearUpXVariable(), clearUpYVariable(), clearUpZVariable(),
+     * clearUpXYZVariable(), clearHeadingVariable(), clearPitchVariable(), clearRollVariable(), clearDirectionYPVariable()
+     * @throws InvalidAgentVar If the variable is not type float[3]
+     */
+    void setDirectionYPRVariable(const std::string& var_name);
     /**
      * Set the name of the variable representing the agents uniform scale multiplier
      *
@@ -136,19 +266,58 @@ class AgentVis {
      * @see setUniformScaleVariable(const std::string&)
      * @see setModelScale(float)
      * @see setModelScale(float, float, float)
+     * @throws InvalidAgentVar If the variable is not type float[1]
      */
     void setScaleXVariable(const std::string& var_name);
     void setScaleYVariable(const std::string& var_name);
     void setScaleZVariable(const std::string& var_name);
     /**
+     * Set the name of the array variable (length 2) representing the agents x/y scale multiplier components
+     * It is not necessary to set all 3 components if only 1 or 2 are required. Unset values will be treated as a 1.0 multiplier
+     *
+     * The scale multiplier is multiplied by the model scale
+     *
+     * @param var_name Name of the agent variable
+     * @note This is an alternate to providing a single uniform scale multiplier, setting this will erase uniform scale or individual scale components if bound
+     * @see setUniformScaleVariable(const std::string&)
+     * @see setModelScale(float)
+     * @see setModelScale(float, float, float)
+     * @throws InvalidAgentVar If the variable is not type float[2]
+     */
+    void setScaleXYVariable(const std::string& var_name);
+    /**
+     * Set the name of the array variable (length 3) representing the agents x/y/z scale multiplier components
+     * It is not necessary to set all 3 components if only 1 or 2 are required. Unset values will be treated as a 1.0 multiplier
+     *
+     * The scale multiplier is multiplied by the model scale
+     *
+     * @param var_name Name of the agent variable
+     * @note This is an alternate to providing a single uniform scale multiplier, setting this will erase uniform scale or individual scale components if bound
+     * @see setUniformScaleVariable(const std::string&)
+     * @see setModelScale(float)
+     * @see setModelScale(float, float, float)
+     * @throws InvalidAgentVar If the variable is not type float[3]
+     */
+    void setScaleXYZVariable(const std::string& var_name);
+    /**
      * Clears the agent's x/y/z location variable bindings
-     * @see setXVariable(conCst std::string &)
-     * @see setYVariable(conCst std::string &)
-     * @see setZVariable(conCst std::string &)
+     * @see setXVariable(const std::string &)
+     * @see setYVariable(const std::string &)
+     * @see setZVariable(const std::string &)
      */
     void clearXVariable();
     void clearYVariable();
     void clearZVariable();
+    /**
+     * Clears the agent's xy location variable bindings
+     * @see setXYVariable(const std::string &)
+     */
+    void clearXYVariable();
+    /**
+     * Clears the agent's xyz location variable bindings
+     * @see setXYZVariable(const std::string &)
+     */
+    void clearXYZVariable();
     /**
      * Clears the agent's x/y/z forward variable bindings
      * @see setForwardXVariable(const std::string &)
@@ -159,6 +328,16 @@ class AgentVis {
     void clearForwardYVariable();
     void clearForwardZVariable();
     /**
+     * Clears the agent's xz forward variable bindings
+     * @see setForwardXZVariable(const std::string &)
+     */
+    void clearForwardXZVariable();
+    /**
+     * Clears the agent's xyz forward variable bindings
+     * @see setForwardXYZVariable(const std::string &)
+     */
+    void clearForwardXYZVariable();
+    /**
      * Clears the agent's x/y/z UP variable bindings
      * @see setUpXVariable(const std::string &)
      * @see setUpYVariable(const std::string &)
@@ -167,6 +346,11 @@ class AgentVis {
     void clearUpXVariable();
     void clearUpYVariable();
     void clearUpZVariable();
+    /**
+     * Clears the agent's xyz UP variable bindings
+     * @see setUpXYZVariable(const std::string &)
+     */
+    void clearUpXYZVariable();
     /**
      * Clears the agent's yaw angle variable bindings
      * @see setYawVariable(const std::string &)
@@ -183,6 +367,16 @@ class AgentVis {
      */
     void clearRollVariable();
     /**
+     * Clears the agent's yaw angle variable bindings
+     * @see setDirectionYPVariable(const std::string &)
+     */
+    void clearDirectionYPVariable();
+    /**
+     * Clears the agent's yaw angle variable bindings
+     * @see setDirectionYPRVariable(const std::string &)
+     */
+    void clearDirectionYPRVariable();
+    /**
      * Clears the agent's uniform scale multiplier variable bindings
      * @see setUniformScaleVariable(const std::string &)
      */
@@ -197,11 +391,29 @@ class AgentVis {
     void clearScaleYVariable();
     void clearScaleZVariable();
     /**
+     * Clears the agent's xy scale multiplier variable bindings
+     * @see setScaleXYVariable(const std::string &)
+     */
+    void clearScaleXYVariable();
+    /**
+     * Clears the agent's xyz scale multiplier variable bindings
+     * @see setScaleXYZVariable(const std::string &)
+     */
+    void clearScaleXYZVariable();
+    /**
      * Returns the variable used for the agent's x/y/z location coordinates
      */
     std::string getXVariable() const;
     std::string getYVariable() const;
     std::string getZVariable() const;
+    /**
+     * Returns the variable used for the agent's xy location coordinates
+     */
+    std::string getXYVariable() const;
+    /**
+     * Returns the variable used for the agent's xyz location coordinates
+     */
+    std::string getXYZVariable() const;
     /**
      * Returns the variable used for the agent's x/y/z forward vector components
      */
@@ -209,11 +421,23 @@ class AgentVis {
     std::string getForwardYVariable() const;
     std::string getForwardZVariable() const;
     /**
+     * Returns the variable used for the agent's xz forward vector components
+     */
+    std::string getForwardXZVariable() const;
+    /**
+     * Returns the variable used for the agent's xyz forward vector components
+     */
+    std::string getForwardXYZVariable() const;
+    /**
      * Returns the variable used for the agent's x/y/z up vector components
      */
     std::string getUpXVariable() const;
     std::string getUpYVariable() const;
     std::string getUpZVariable() const;
+    /**
+     * Returns the variable used for the agent's xyz up vector components
+     */
+    std::string getUpXYZVariable() const;
     /**
      * Returns the variable used for the agent's yaw angle
      */
@@ -227,6 +451,14 @@ class AgentVis {
      */
     std::string getRollVariable() const;
     /**
+     * Returns the variable used for the agent's roll angle
+     */
+    std::string getDirectionYPVariable() const;
+    /**
+     * Returns the variable used for the agent's roll angle
+     */
+    std::string getDirectionYPRVariable() const;
+    /**
      * Returns the variable used for the agent's uniform scaling multiplier
      */
     std::string getUniformScaleVariable() const;
@@ -236,6 +468,14 @@ class AgentVis {
     std::string getScaleXVariable() const;
     std::string getScaleYVariable() const;
     std::string getScaleZVariable() const;
+    /**
+     * Returns the variable used for the agent's xy scale multiplier components
+     */
+    std::string getScaleXYVariable() const;
+    /**
+     * Returns the variable used for the agent's xyz scale multiplier components
+     */
+    std::string getScaleXYZVariable() const;
 
     /**
      * Use a model from file
