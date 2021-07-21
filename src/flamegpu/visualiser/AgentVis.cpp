@@ -64,6 +64,8 @@ void AgentVis::setXVariable(const std::string &var_name) {
             "in AgentVis::setXVariable()\n",
             agentData.name.c_str(), var_name.c_str(), it->second.type.name(), it->second.elements);
     }
+    core_tex_buffers.erase(TexBufferConfig::Position_xy);
+    core_tex_buffers.erase(TexBufferConfig::Position_xyz);
     core_tex_buffers[TexBufferConfig::Position_x].agentVariableName = var_name;
 }
 void AgentVis::setYVariable(const std::string &var_name) {
@@ -77,6 +79,8 @@ void AgentVis::setYVariable(const std::string &var_name) {
             "in AgentVis::setYVariable()\n",
             agentData.name.c_str(), var_name.c_str(), it->second.type.name(), it->second.elements);
     }
+    core_tex_buffers.erase(TexBufferConfig::Position_xy);
+    core_tex_buffers.erase(TexBufferConfig::Position_xyz);
     core_tex_buffers[TexBufferConfig::Position_y].agentVariableName = var_name;
 }
 void AgentVis::setZVariable(const std::string &var_name) {
@@ -90,49 +94,135 @@ void AgentVis::setZVariable(const std::string &var_name) {
             "in AgentVis::setZVariable()\n",
             agentData.name.c_str(), var_name.c_str(), it->second.type.name(), it->second.elements);
     }
+    core_tex_buffers.erase(TexBufferConfig::Position_xy);
+    core_tex_buffers.erase(TexBufferConfig::Position_xyz);
     core_tex_buffers[TexBufferConfig::Position_z].agentVariableName = var_name;
+}
+void AgentVis::setXYVariable(const std::string& var_name) {
+    auto it = agentData.variables.find(var_name);
+    if (it == agentData.variables.end()) {
+        THROW exception::InvalidAgentVar("Variable '%s' was not found within agent '%s', "
+            "in AgentVis::setXYVariable()\n",
+            var_name.c_str(), agentData.name.c_str());
+    } else if (it->second.type != std::type_index(typeid(float)) || it->second.elements != 2) {
+        THROW exception::InvalidAgentVar("Visualisation position x variable must be type float[2], agent '%s' variable '%s' is type %s[%u], "
+            "in AgentVis::setXYVariable()\n",
+            agentData.name.c_str(), var_name.c_str(), it->second.type.name(), it->second.elements);
+    }
+    core_tex_buffers.erase(TexBufferConfig::Position_x);
+    core_tex_buffers.erase(TexBufferConfig::Position_y);
+    core_tex_buffers.erase(TexBufferConfig::Position_z);
+    core_tex_buffers.erase(TexBufferConfig::Position_xyz);
+    core_tex_buffers[TexBufferConfig::Position_xy].agentVariableName = var_name;
+}
+void AgentVis::setXYZVariable(const std::string& var_name) {
+    auto it = agentData.variables.find(var_name);
+    if (it == agentData.variables.end()) {
+        THROW exception::InvalidAgentVar("Variable '%s' was not found within agent '%s', "
+            "in AgentVis::setXYZVariable()\n",
+            var_name.c_str(), agentData.name.c_str());
+    } else if (it->second.type != std::type_index(typeid(float)) || it->second.elements != 3) {
+        THROW exception::InvalidAgentVar("Visualisation position x variable must be type float[3], agent '%s' variable '%s' is type %s[%u], "
+            "in AgentVis::setXYZVariable()\n",
+            agentData.name.c_str(), var_name.c_str(), it->second.type.name(), it->second.elements);
+    }
+    core_tex_buffers.erase(TexBufferConfig::Position_x);
+    core_tex_buffers.erase(TexBufferConfig::Position_y);
+    core_tex_buffers.erase(TexBufferConfig::Position_z);
+    core_tex_buffers.erase(TexBufferConfig::Position_xy);
+    core_tex_buffers[TexBufferConfig::Position_xyz].agentVariableName = var_name;
 }
 void AgentVis::setForwardXVariable(const std::string& var_name) {
     auto it = agentData.variables.find(var_name);
     if (it == agentData.variables.end()) {
         THROW exception::InvalidAgentVar("Variable '%s' was not found within agent '%s', "
-            "in AgentVis::setDirectionXVariable()\n",
+            "in AgentVis::setForwardXVariable()\n",
             var_name.c_str(), agentData.name.c_str());
     } else if (it->second.type != std::type_index(typeid(float)) || it->second.elements != 1) {
         THROW exception::InvalidAgentVar("Visualisation forward x variable must be type float[1], agent '%s' variable '%s' is type %s[%u], "
-            "in AgentVis::setDirectionXVariable()\n",
+            "in AgentVis::setForwardXVariable()\n",
             agentData.name.c_str(), var_name.c_str(), it->second.type.name(), it->second.elements);
     }
     core_tex_buffers.erase(TexBufferConfig::Heading);
+    core_tex_buffers.erase(TexBufferConfig::Forward_xz);
+    core_tex_buffers.erase(TexBufferConfig::Forward_xyz);
+    core_tex_buffers.erase(TexBufferConfig::Direction_hp);
+    core_tex_buffers.erase(TexBufferConfig::Direction_hpb);
     core_tex_buffers[TexBufferConfig::Forward_x].agentVariableName = var_name;
 }
 void AgentVis::setForwardYVariable(const std::string& var_name) {
     auto it = agentData.variables.find(var_name);
     if (it == agentData.variables.end()) {
         THROW exception::InvalidAgentVar("Variable '%s' was not found within agent '%s', "
-            "in AgentVis::setDirectionYVariable()\n",
+            "in AgentVis::setForwardYVariable()\n",
             var_name.c_str(), agentData.name.c_str());
     } else if (it->second.type != std::type_index(typeid(float)) || it->second.elements != 1) {
         THROW exception::InvalidAgentVar("Visualisation forward y variable must be type float[1], agent '%s' variable '%s' is type %s[%u], "
-            "in AgentVis::setDirectionYVariable()\n",
+            "in AgentVis::setForwardYVariable()\n",
             agentData.name.c_str(), var_name.c_str(), it->second.type.name(), it->second.elements);
     }
     core_tex_buffers.erase(TexBufferConfig::Pitch);
+    core_tex_buffers.erase(TexBufferConfig::Forward_xyz);
+    core_tex_buffers.erase(TexBufferConfig::Direction_hp);
+    core_tex_buffers.erase(TexBufferConfig::Direction_hpb);
     core_tex_buffers[TexBufferConfig::Forward_y].agentVariableName = var_name;
 }
 void AgentVis::setForwardZVariable(const std::string& var_name) {
     auto it = agentData.variables.find(var_name);
     if (it == agentData.variables.end()) {
         THROW exception::InvalidAgentVar("Variable '%s' was not found within agent '%s', "
-            "in AgentVis::setDirectionZVariable()\n",
+            "in AgentVis::setForwardZVariable()\n",
             var_name.c_str(), agentData.name.c_str());
     } else if (it->second.type != std::type_index(typeid(float)) || it->second.elements != 1) {
         THROW exception::InvalidAgentVar("Visualisation forward z variable must be type float[1], agent '%s' variable '%s' is type %s[%u], "
-            "in AgentVis::setDirectionZVariable()\n",
+            "in AgentVis::setForwardZVariable()\n",
             agentData.name.c_str(), var_name.c_str(), it->second.type.name(), it->second.elements);
     }
     core_tex_buffers.erase(TexBufferConfig::Heading);
+    core_tex_buffers.erase(TexBufferConfig::Forward_xz);
+    core_tex_buffers.erase(TexBufferConfig::Forward_xyz);
+    core_tex_buffers.erase(TexBufferConfig::Direction_hp);
+    core_tex_buffers.erase(TexBufferConfig::Direction_hpb);
     core_tex_buffers[TexBufferConfig::Forward_z].agentVariableName = var_name;
+}
+void AgentVis::setForwardXZVariable(const std::string& var_name) {
+    auto it = agentData.variables.find(var_name);
+    if (it == agentData.variables.end()) {
+        THROW exception::InvalidAgentVar("Variable '%s' was not found within agent '%s', "
+            "in AgentVis::setForwardXZVariable()\n",
+            var_name.c_str(), agentData.name.c_str());
+    } else if (it->second.type != std::type_index(typeid(float)) || it->second.elements != 2) {
+        THROW exception::InvalidAgentVar("Visualisation forward xz variable must be type float[2], agent '%s' variable '%s' is type %s[%u], "
+            "in AgentVis::setForwardXZVariable()\n",
+            agentData.name.c_str(), var_name.c_str(), it->second.type.name(), it->second.elements);
+    }
+    core_tex_buffers.erase(TexBufferConfig::Heading);
+    core_tex_buffers.erase(TexBufferConfig::Forward_x);
+    core_tex_buffers.erase(TexBufferConfig::Forward_y);
+    core_tex_buffers.erase(TexBufferConfig::Forward_z);
+    core_tex_buffers.erase(TexBufferConfig::Forward_xyz);
+    core_tex_buffers.erase(TexBufferConfig::Direction_hp);
+    core_tex_buffers.erase(TexBufferConfig::Direction_hpb);
+    core_tex_buffers[TexBufferConfig::Forward_xz].agentVariableName = var_name;
+}
+void AgentVis::setForwardXYZVariable(const std::string& var_name) {
+    auto it = agentData.variables.find(var_name);
+    if (it == agentData.variables.end()) {
+        THROW exception::InvalidAgentVar("Variable '%s' was not found within agent '%s', "
+            "in AgentVis::setForwardXYZVariable()\n",
+            var_name.c_str(), agentData.name.c_str());
+    } else if (it->second.type != std::type_index(typeid(float)) || it->second.elements != 3) {
+        THROW exception::InvalidAgentVar("Visualisation forward xyz variable must be type float[2], agent '%s' variable '%s' is type %s[%u], "
+            "in AgentVis::setForwardXYZVariable()\n",
+            agentData.name.c_str(), var_name.c_str(), it->second.type.name(), it->second.elements);
+    }
+    core_tex_buffers.erase(TexBufferConfig::Heading);
+    core_tex_buffers.erase(TexBufferConfig::Forward_x);
+    core_tex_buffers.erase(TexBufferConfig::Forward_z);
+    core_tex_buffers.erase(TexBufferConfig::Forward_xz);
+    core_tex_buffers.erase(TexBufferConfig::Direction_hp);
+    core_tex_buffers.erase(TexBufferConfig::Direction_hpb);
+    core_tex_buffers[TexBufferConfig::Forward_xyz].agentVariableName = var_name;
 }
 void AgentVis::setUpXVariable(const std::string& var_name) {
     auto it = agentData.variables.find(var_name);
@@ -146,6 +236,8 @@ void AgentVis::setUpXVariable(const std::string& var_name) {
             agentData.name.c_str(), var_name.c_str(), it->second.type.name(), it->second.elements);
     }
     core_tex_buffers.erase(TexBufferConfig::Bank);
+    core_tex_buffers.erase(TexBufferConfig::Up_xyz);
+    core_tex_buffers.erase(TexBufferConfig::Direction_hpb);
     core_tex_buffers[TexBufferConfig::Up_x].agentVariableName = var_name;
 }
 void AgentVis::setUpYVariable(const std::string& var_name) {
@@ -160,6 +252,8 @@ void AgentVis::setUpYVariable(const std::string& var_name) {
             agentData.name.c_str(), var_name.c_str(), it->second.type.name(), it->second.elements);
     }
     core_tex_buffers.erase(TexBufferConfig::Bank);
+    core_tex_buffers.erase(TexBufferConfig::Up_xyz);
+    core_tex_buffers.erase(TexBufferConfig::Direction_hpb);
     core_tex_buffers[TexBufferConfig::Up_y].agentVariableName = var_name;
 }
 void AgentVis::setUpZVariable(const std::string& var_name) {
@@ -174,7 +268,27 @@ void AgentVis::setUpZVariable(const std::string& var_name) {
             agentData.name.c_str(), var_name.c_str(), it->second.type.name(), it->second.elements);
     }
     core_tex_buffers.erase(TexBufferConfig::Bank);
+    core_tex_buffers.erase(TexBufferConfig::Up_xyz);
+    core_tex_buffers.erase(TexBufferConfig::Direction_hpb);
     core_tex_buffers[TexBufferConfig::Up_z].agentVariableName = var_name;
+}
+void AgentVis::setUpXYZVariable(const std::string& var_name) {
+    auto it = agentData.variables.find(var_name);
+    if (it == agentData.variables.end()) {
+        THROW exception::InvalidAgentVar("Variable '%s' was not found within agent '%s', "
+            "in AgentVis::setUpXYZVariable()\n",
+            var_name.c_str(), agentData.name.c_str());
+    } else if (it->second.type != std::type_index(typeid(float)) || it->second.elements != 3) {
+        THROW exception::InvalidAgentVar("Visualisation up xyz variable must be type float[3], agent '%s' variable '%s' is type %s[%u], "
+            "in AgentVis::setUpXYZVariable()\n",
+            agentData.name.c_str(), var_name.c_str(), it->second.type.name(), it->second.elements);
+    }
+    core_tex_buffers.erase(TexBufferConfig::Bank);
+    core_tex_buffers.erase(TexBufferConfig::Up_x);
+    core_tex_buffers.erase(TexBufferConfig::Up_y);
+    core_tex_buffers.erase(TexBufferConfig::Up_z);
+    core_tex_buffers.erase(TexBufferConfig::Direction_hpb);
+    core_tex_buffers[TexBufferConfig::Up_xyz].agentVariableName = var_name;
 }
 void AgentVis::setYawVariable(const std::string& var_name) {
     auto it = agentData.variables.find(var_name);
@@ -189,6 +303,10 @@ void AgentVis::setYawVariable(const std::string& var_name) {
     }
     core_tex_buffers.erase(TexBufferConfig::Forward_x);
     core_tex_buffers.erase(TexBufferConfig::Forward_z);
+    core_tex_buffers.erase(TexBufferConfig::Forward_xz);
+    core_tex_buffers.erase(TexBufferConfig::Forward_xyz);
+    core_tex_buffers.erase(TexBufferConfig::Direction_hp);
+    core_tex_buffers.erase(TexBufferConfig::Direction_hpb);
     core_tex_buffers[TexBufferConfig::Heading].agentVariableName = var_name;
 }
 void AgentVis::setPitchVariable(const std::string& var_name) {
@@ -203,6 +321,9 @@ void AgentVis::setPitchVariable(const std::string& var_name) {
             agentData.name.c_str(), var_name.c_str(), it->second.type.name(), it->second.elements);
     }
     core_tex_buffers.erase(TexBufferConfig::Forward_y);
+    core_tex_buffers.erase(TexBufferConfig::Forward_xyz);
+    core_tex_buffers.erase(TexBufferConfig::Direction_hp);
+    core_tex_buffers.erase(TexBufferConfig::Direction_hpb);
     core_tex_buffers[TexBufferConfig::Pitch].agentVariableName = var_name;
 }
 void AgentVis::setRollVariable(const std::string& var_name) {
@@ -219,7 +340,54 @@ void AgentVis::setRollVariable(const std::string& var_name) {
     core_tex_buffers.erase(TexBufferConfig::Up_x);
     core_tex_buffers.erase(TexBufferConfig::Up_y);
     core_tex_buffers.erase(TexBufferConfig::Up_z);
+    core_tex_buffers.erase(TexBufferConfig::Up_xyz);
+    core_tex_buffers.erase(TexBufferConfig::Direction_hpb);
     core_tex_buffers[TexBufferConfig::Bank].agentVariableName = var_name;
+}
+void AgentVis::setDirectionYPVariable(const std::string& var_name) {
+    auto it = agentData.variables.find(var_name);
+    if (it == agentData.variables.end()) {
+        THROW exception::InvalidAgentVar("Variable '%s' was not found within agent '%s', "
+            "in AgentVis::setDirectionYPVariable()\n",
+            var_name.c_str(), agentData.name.c_str());
+    } else if (it->second.type != std::type_index(typeid(float)) || it->second.elements != 2) {
+        THROW exception::InvalidAgentVar("Visualisation direction yaw/pitch variable must be type float[2], agent '%s' variable '%s' is type %s[%u], "
+            "in AgentVis::setDirectionYPVariable()\n",
+            agentData.name.c_str(), var_name.c_str(), it->second.type.name(), it->second.elements);
+    }
+    core_tex_buffers.erase(TexBufferConfig::Forward_x);
+    core_tex_buffers.erase(TexBufferConfig::Forward_z);
+    core_tex_buffers.erase(TexBufferConfig::Forward_xz);
+    core_tex_buffers.erase(TexBufferConfig::Forward_xyz);
+    core_tex_buffers.erase(TexBufferConfig::Heading);
+    core_tex_buffers.erase(TexBufferConfig::Pitch);
+    core_tex_buffers.erase(TexBufferConfig::Direction_hpb);
+    core_tex_buffers[TexBufferConfig::Heading].agentVariableName = var_name;
+}
+void AgentVis::setDirectionYPRVariable(const std::string& var_name) {
+    auto it = agentData.variables.find(var_name);
+    if (it == agentData.variables.end()) {
+        THROW exception::InvalidAgentVar("Variable '%s' was not found within agent '%s', "
+            "in AgentVis::setDirectionYPRVariable()\n",
+            var_name.c_str(), agentData.name.c_str());
+    } else if (it->second.type != std::type_index(typeid(float)) || it->second.elements != 3) {
+        THROW exception::InvalidAgentVar("Visualisation direction yaw/pitch/roll variable must be type float[3], agent '%s' variable '%s' is type %s[%u], "
+            "in AgentVis::setDirectionYPRVariable()\n",
+            agentData.name.c_str(), var_name.c_str(), it->second.type.name(), it->second.elements);
+    }
+    core_tex_buffers.erase(TexBufferConfig::Forward_x);
+    core_tex_buffers.erase(TexBufferConfig::Forward_z);
+    core_tex_buffers.erase(TexBufferConfig::Forward_xz);
+    core_tex_buffers.erase(TexBufferConfig::Forward_xyz);
+    core_tex_buffers.erase(TexBufferConfig::Up_x);
+    core_tex_buffers.erase(TexBufferConfig::Up_y);
+    core_tex_buffers.erase(TexBufferConfig::Up_z);
+    core_tex_buffers.erase(TexBufferConfig::Up_xyz);
+    core_tex_buffers.erase(TexBufferConfig::Heading);
+    core_tex_buffers.erase(TexBufferConfig::Pitch);
+    core_tex_buffers.erase(TexBufferConfig::Bank);
+    core_tex_buffers.erase(TexBufferConfig::Direction_hp);
+    core_tex_buffers[TexBufferConfig::Heading].agentVariableName = var_name;
 }
 void AgentVis::setUniformScaleVariable(const std::string& var_name) {
     auto it = agentData.variables.find(var_name);
@@ -235,6 +403,8 @@ void AgentVis::setUniformScaleVariable(const std::string& var_name) {
     core_tex_buffers.erase(TexBufferConfig::Scale_x);
     core_tex_buffers.erase(TexBufferConfig::Scale_y);
     core_tex_buffers.erase(TexBufferConfig::Scale_z);
+    core_tex_buffers.erase(TexBufferConfig::Scale_xy);
+    core_tex_buffers.erase(TexBufferConfig::Scale_xyz);
     core_tex_buffers[TexBufferConfig::UniformScale].agentVariableName = var_name;
 }
 void AgentVis::setScaleXVariable(const std::string& var_name) {
@@ -249,6 +419,8 @@ void AgentVis::setScaleXVariable(const std::string& var_name) {
             agentData.name.c_str(), var_name.c_str(), it->second.type.name(), it->second.elements);
     }
     core_tex_buffers.erase(TexBufferConfig::UniformScale);
+    core_tex_buffers.erase(TexBufferConfig::Scale_xy);
+    core_tex_buffers.erase(TexBufferConfig::Scale_xyz);
     core_tex_buffers[TexBufferConfig::Scale_x].agentVariableName = var_name;
 }
 void AgentVis::setScaleYVariable(const std::string& var_name) {
@@ -263,6 +435,8 @@ void AgentVis::setScaleYVariable(const std::string& var_name) {
             agentData.name.c_str(), var_name.c_str(), it->second.type.name(), it->second.elements);
     }
     core_tex_buffers.erase(TexBufferConfig::UniformScale);
+    core_tex_buffers.erase(TexBufferConfig::Scale_xy);
+    core_tex_buffers.erase(TexBufferConfig::Scale_xyz);
     core_tex_buffers[TexBufferConfig::Scale_y].agentVariableName = var_name;
 }
 void AgentVis::setScaleZVariable(const std::string& var_name) {
@@ -277,7 +451,45 @@ void AgentVis::setScaleZVariable(const std::string& var_name) {
             agentData.name.c_str(), var_name.c_str(), it->second.type.name(), it->second.elements);
     }
     core_tex_buffers.erase(TexBufferConfig::UniformScale);
+    core_tex_buffers.erase(TexBufferConfig::Scale_xy);
+    core_tex_buffers.erase(TexBufferConfig::Scale_xyz);
     core_tex_buffers[TexBufferConfig::Scale_z].agentVariableName = var_name;
+}
+void AgentVis::setScaleXYVariable(const std::string& var_name) {
+    auto it = agentData.variables.find(var_name);
+    if (it == agentData.variables.end()) {
+        THROW exception::InvalidAgentVar("Variable '%s' was not found within agent '%s', "
+            "in AgentVis::setScaleXYVariable()\n",
+            var_name.c_str(), agentData.name.c_str());
+    } else if (it->second.type != std::type_index(typeid(float)) || it->second.elements != 2) {
+        THROW exception::InvalidAgentVar("Visualisation scale xy variable must be type float[2], agent '%s' variable '%s' is type %s[%u], "
+            "in AgentVis::setScaleXYVariable()\n",
+            agentData.name.c_str(), var_name.c_str(), it->second.type.name(), it->second.elements);
+    }
+    core_tex_buffers.erase(TexBufferConfig::UniformScale);
+    core_tex_buffers.erase(TexBufferConfig::Scale_x);
+    core_tex_buffers.erase(TexBufferConfig::Scale_y);
+    core_tex_buffers.erase(TexBufferConfig::Scale_z);
+    core_tex_buffers.erase(TexBufferConfig::Scale_xyz);
+    core_tex_buffers[TexBufferConfig::Scale_xy].agentVariableName = var_name;
+}
+void AgentVis::setScaleXYZVariable(const std::string& var_name) {
+    auto it = agentData.variables.find(var_name);
+    if (it == agentData.variables.end()) {
+        THROW exception::InvalidAgentVar("Variable '%s' was not found within agent '%s', "
+            "in AgentVis::setScaleXYZVariable()\n",
+            var_name.c_str(), agentData.name.c_str());
+    } else if (it->second.type != std::type_index(typeid(float)) || it->second.elements != 3) {
+        THROW exception::InvalidAgentVar("Visualisation scale xyz variable must be type float[3], agent '%s' variable '%s' is type %s[%u], "
+            "in AgentVis::setScaleXYZVariable()\n",
+            agentData.name.c_str(), var_name.c_str(), it->second.type.name(), it->second.elements);
+    }
+    core_tex_buffers.erase(TexBufferConfig::UniformScale);
+    core_tex_buffers.erase(TexBufferConfig::Scale_x);
+    core_tex_buffers.erase(TexBufferConfig::Scale_y);
+    core_tex_buffers.erase(TexBufferConfig::Scale_z);
+    core_tex_buffers.erase(TexBufferConfig::Scale_xy);
+    core_tex_buffers[TexBufferConfig::Scale_xyz].agentVariableName = var_name;
 }
 void AgentVis::clearXVariable() {
     core_tex_buffers.erase(TexBufferConfig::Position_x);
@@ -288,6 +500,12 @@ void AgentVis::clearYVariable() {
 void AgentVis::clearZVariable() {
     core_tex_buffers.erase(TexBufferConfig::Position_z);
 }
+void AgentVis::clearXYVariable() {
+    core_tex_buffers.erase(TexBufferConfig::Position_xy);
+}
+void AgentVis::clearXYZVariable() {
+    core_tex_buffers.erase(TexBufferConfig::Position_xyz);
+}
 void AgentVis::clearForwardXVariable() {
     core_tex_buffers.erase(TexBufferConfig::Forward_x);
 }
@@ -296,6 +514,12 @@ void AgentVis::clearForwardYVariable() {
 }
 void AgentVis::clearForwardZVariable() {
     core_tex_buffers.erase(TexBufferConfig::Forward_z);
+}
+void AgentVis::clearForwardXZVariable() {
+    core_tex_buffers.erase(TexBufferConfig::Forward_xz);
+}
+void AgentVis::clearForwardXYZVariable() {
+    core_tex_buffers.erase(TexBufferConfig::Forward_xyz);
 }
 void AgentVis::clearUpXVariable() {
     core_tex_buffers.erase(TexBufferConfig::Up_x);
@@ -306,6 +530,9 @@ void AgentVis::clearUpYVariable() {
 void AgentVis::clearUpZVariable() {
     core_tex_buffers.erase(TexBufferConfig::Up_z);
 }
+void AgentVis::clearUpXYZVariable() {
+    core_tex_buffers.erase(TexBufferConfig::Up_xyz);
+}
 void AgentVis::clearYawVariable() {
     core_tex_buffers.erase(TexBufferConfig::Heading);
 }
@@ -314,6 +541,12 @@ void AgentVis::clearPitchVariable() {
 }
 void AgentVis::clearRollVariable() {
     core_tex_buffers.erase(TexBufferConfig::Bank);
+}
+void AgentVis::clearDirectionYPVariable() {
+    core_tex_buffers.erase(TexBufferConfig::Direction_hp);
+}
+void AgentVis::clearDirectionYPRVariable() {
+    core_tex_buffers.erase(TexBufferConfig::Direction_hpb);
 }
 void AgentVis::clearUniformScaleVariable() {
     core_tex_buffers.erase(TexBufferConfig::UniformScale);
@@ -327,6 +560,12 @@ void AgentVis::clearScaleYVariable() {
 void AgentVis::clearScaleZVariable() {
     core_tex_buffers.erase(TexBufferConfig::Scale_z);
 }
+void AgentVis::clearScaleXYVariable() {
+    core_tex_buffers.erase(TexBufferConfig::Scale_xy);
+}
+void AgentVis::clearScaleXYZVariable() {
+    core_tex_buffers.erase(TexBufferConfig::Scale_xyz);
+}
 std::string AgentVis::getXVariable() const {
     const auto it = core_tex_buffers.find(TexBufferConfig::Position_x);
     return it != core_tex_buffers.end() ? it->second.agentVariableName : "";
@@ -337,6 +576,14 @@ std::string AgentVis::getYVariable() const {
 }
 std::string AgentVis::getZVariable() const {
     const auto it = core_tex_buffers.find(TexBufferConfig::Position_z);
+    return it != core_tex_buffers.end() ? it->second.agentVariableName : "";
+}
+std::string AgentVis::getXYVariable() const {
+    const auto it = core_tex_buffers.find(TexBufferConfig::Position_xy);
+    return it != core_tex_buffers.end() ? it->second.agentVariableName : "";
+}
+std::string AgentVis::getXYZVariable() const {
+    const auto it = core_tex_buffers.find(TexBufferConfig::Position_xyz);
     return it != core_tex_buffers.end() ? it->second.agentVariableName : "";
 }
 std::string AgentVis::getForwardXVariable() const {
@@ -355,12 +602,24 @@ std::string AgentVis::getUpXVariable() const {
     const auto it = core_tex_buffers.find(TexBufferConfig::Up_x);
     return it != core_tex_buffers.end() ? it->second.agentVariableName : "";
 }
+std::string AgentVis::getForwardXZVariable() const {
+    const auto it = core_tex_buffers.find(TexBufferConfig::Forward_xz);
+    return it != core_tex_buffers.end() ? it->second.agentVariableName : "";
+}
+std::string AgentVis::getForwardXYZVariable() const {
+    const auto it = core_tex_buffers.find(TexBufferConfig::Forward_xyz);
+    return it != core_tex_buffers.end() ? it->second.agentVariableName : "";
+}
 std::string AgentVis::getUpYVariable() const {
     const auto it = core_tex_buffers.find(TexBufferConfig::Up_y);
     return it != core_tex_buffers.end() ? it->second.agentVariableName : "";
 }
 std::string AgentVis::getUpZVariable() const {
     const auto it = core_tex_buffers.find(TexBufferConfig::Up_z);
+    return it != core_tex_buffers.end() ? it->second.agentVariableName : "";
+}
+std::string AgentVis::getUpXYZVariable() const {
+    const auto it = core_tex_buffers.find(TexBufferConfig::Up_xyz);
     return it != core_tex_buffers.end() ? it->second.agentVariableName : "";
 }
 std::string AgentVis::getYawVariable() const {
@@ -373,6 +632,14 @@ std::string AgentVis::getPitchVariable() const {
 }
 std::string AgentVis::getRollVariable() const {
     const auto it = core_tex_buffers.find(TexBufferConfig::Bank);
+    return it != core_tex_buffers.end() ? it->second.agentVariableName : "";
+}
+std::string AgentVis::getDirectionYPVariable() const {
+    const auto it = core_tex_buffers.find(TexBufferConfig::Direction_hp);
+    return it != core_tex_buffers.end() ? it->second.agentVariableName : "";
+}
+std::string AgentVis::getDirectionYPRVariable() const {
+    const auto it = core_tex_buffers.find(TexBufferConfig::Direction_hpb);
     return it != core_tex_buffers.end() ? it->second.agentVariableName : "";
 }
 std::string AgentVis::getUniformScaleVariable() const {
@@ -389,6 +656,14 @@ std::string AgentVis::getScaleYVariable() const {
 }
 std::string AgentVis::getScaleZVariable() const {
     const auto it = core_tex_buffers.find(TexBufferConfig::Scale_z);
+    return it != core_tex_buffers.end() ? it->second.agentVariableName : "";
+}
+std::string AgentVis::getScaleXYVariable() const {
+    const auto it = core_tex_buffers.find(TexBufferConfig::Scale_xy);
+    return it != core_tex_buffers.end() ? it->second.agentVariableName : "";
+}
+std::string AgentVis::getScaleXYZVariable() const {
+    const auto it = core_tex_buffers.find(TexBufferConfig::Scale_xyz);
     return it != core_tex_buffers.end() ? it->second.agentVariableName : "";
 }
 void AgentVis::initBindings(std::unique_ptr<FLAMEGPU_Visualisation> &vis) {
