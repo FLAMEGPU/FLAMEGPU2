@@ -289,6 +289,21 @@ class Curve {
     template <typename T, unsigned int N, unsigned int M>
     __device__ __forceinline__ static T getAgentArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, unsigned int variable_index, unsigned int array_index);
     /**
+     * This forwards directly to Curve::getArrayVariable(const char(&variableName)[N], VariableHash namespace_hash, unsigned int agent_index, unsigned int array_index)
+     *
+     * The proxy method allows RTC's dynamic Curve headers to remove otherwise redundant branches when accessing agent variables
+     * @param variableName A constant char array (C string) variable name.
+     * @param namespace_hash Curve namespace hash for the variable
+     * @param variable_index The index of the variable in the named variable vector. This corresponds to the agent's index within the agent population.
+     * @param array_index The index of the element in the named variable array.
+     * @tparam T Type of the variable (This should be type of an element, if variable is an array).
+     * @tparam N Length of the array variable specified by variableName
+     * @tparam M Length of variableName, this should always be implicit if passing a string literal
+     * @see Curve::getArrayVariable(const char(&variableName)[N], VariableHash namespace_hash, unsigned int agent_index, unsigned int array_index)
+     */
+    template <typename T, unsigned int N, unsigned int M>
+    __device__ __forceinline__ static T getMessageArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, unsigned int variable_index, unsigned int array_index);
+    /**
      * This forwards directly to Curve::getArrayVariable_ldg(const char(&variableName)[N], VariableHash namespace_hash, unsigned int agent_index, unsigned int array_index)
      *
      * The proxy method allows RTC's dynamic Curve headers to remove otherwise redundant branches when accessing agent variables
@@ -303,6 +318,21 @@ class Curve {
      */
     template <typename T, unsigned int N, unsigned int M>
     __device__ __forceinline__ static T getAgentArrayVariable_ldg(const char(&variableName)[M], VariableHash namespace_hash, unsigned int variable_index, unsigned int array_index);
+    /**
+     * This forwards directly to Curve::getArrayVariable_ldg(const char(&variableName)[N], VariableHash namespace_hash, unsigned int agent_index, unsigned int array_index)
+     *
+     * The proxy method allows RTC's dynamic Curve headers to remove otherwise redundant branches when accessing agent variables
+     * @param variableName A constant char array (C string) variable name.
+     * @param namespace_hash Curve namespace hash for the variable
+     * @param variable_index The index of the variable in the named variable vector. This corresponds to the agent's index within the agent population.
+     * @param array_index The index of the element in the named variable array.
+     * @tparam T Type of the variable (This should be type of an element, if variable is an array).
+     * @tparam N Length of the array variable specified by variableName
+     * @tparam M Length of variableName, this should always be implicit if passing a string literal
+     * @see Curve::getArrayVariable_ldg(const char(&variableName)[N], VariableHash namespace_hash, unsigned int agent_index, unsigned int array_index)
+     */
+    template <typename T, unsigned int N, unsigned int M>
+    __device__ __forceinline__ static T getMessageArrayVariable_ldg(const char(&variableName)[M], VariableHash namespace_hash, unsigned int variable_index, unsigned int array_index);
     /**
      * Device function for setting a single typed value from a VariableHash
      *
@@ -389,6 +419,23 @@ class Curve {
      */
     template <typename T, unsigned int N, unsigned int M>
     __device__ __forceinline__ static void setAgentArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, T variable, unsigned int variable_index, unsigned int array_index);
+    /**
+     * This forwards directly to Curve::setArrayVariable(const char(&variableName)[N], VariableHash namespace_hash, T variable, unsigned int agent_index, unsigned int array_index)
+     *
+     * The proxy method allows RTC's dynamic Curve headers to remove otherwise redundant branches when accessing agent variables
+     * @param variableName A constant char array (C string) variable name.
+     * @param namespace_hash Curve namespace hash for the variable
+     * @param variable The value to set the specified variable
+     * @param variable_index The index of the variable in the named variable vector. This corresponds to the agent's index within the agent population.
+     * @param array_index The index of the element in the named variable array.
+     * @tparam T Type of the variable (This should be type of an element, if variable is an array).
+     * @tparam N Length of the array variable specified by variableName
+     * @tparam M Length of variableName, this should always be implicit if passing a string literal
+     *
+     * @see Curve::setArrayVariable(const char(&variableName)[N], VariableHash namespace_hash, T variable, unsigned int agent_index, unsigned int array_index)
+     */
+    template <typename T, unsigned int N, unsigned int M>
+    __device__ __forceinline__ static void setMessageArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, T variable, unsigned int variable_index, unsigned int array_index);
     /**
      * This forwards directly to Curve::setArrayVariable(const char(&variableName)[N], VariableHash namespace_hash, T variable, unsigned int agent_index, unsigned int array_index)
      *
@@ -833,6 +880,10 @@ __device__ __forceinline__ T Curve::getAgentArrayVariable(const char(&variableNa
     return getArrayVariable<T, N>(variableName, namespace_hash, agent_index, array_index);
 }
 template <typename T, unsigned int N, unsigned int M>
+__device__ __forceinline__ T Curve::getMessageArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, unsigned int message_index, unsigned int array_index) {
+    return getArrayVariable<T, N>(variableName, namespace_hash, message_index, array_index);
+}
+template <typename T, unsigned int N, unsigned int M>
 __device__ __forceinline__ T Curve::getArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, unsigned int agent_index, unsigned int array_index) {
     VariableHash variable_hash = variableHash(variableName);
 #if !defined(SEATBELTS) || SEATBELTS
@@ -856,6 +907,10 @@ __device__ __forceinline__ T Curve::getArrayVariable(const char(&variableName)[M
 template <typename T, unsigned int N, unsigned int M>
 __device__ __forceinline__ T Curve::getAgentArrayVariable_ldg(const char(&variableName)[M], VariableHash namespace_hash, unsigned int agent_index, unsigned int array_index) {
     return getArrayVariable_ldg<T, N>(variableName, namespace_hash, agent_index, array_index);
+}
+template <typename T, unsigned int N, unsigned int M>
+__device__ __forceinline__ T Curve::getMessageArrayVariable_ldg(const char(&variableName)[M], VariableHash namespace_hash, unsigned int message_index, unsigned int array_index) {
+    return getArrayVariable_ldg<T, N>(variableName, namespace_hash, message_index, array_index);
 }
 template <typename T, unsigned int N, unsigned int M>
 __device__ __forceinline__ T Curve::getArrayVariable_ldg(const char(&variableName)[M], VariableHash namespace_hash, unsigned int agent_index, unsigned int array_index) {
@@ -935,6 +990,10 @@ __device__ __forceinline__ void Curve::setVariable(const char(&variableName)[N],
 template <typename T, unsigned int N, unsigned int M>
 __device__ __forceinline__ void Curve::setAgentArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, T variable, unsigned int agent_index, unsigned int array_index) {
     setArrayVariable<T, N>(variableName, namespace_hash, variable, agent_index, array_index);
+}
+template <typename T, unsigned int N, unsigned int M>
+__device__ __forceinline__ void Curve::setMessageArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, T variable, unsigned int message_index, unsigned int array_index) {
+    setArrayVariable<T, N>(variableName, namespace_hash, variable, message_index, array_index);
 }
 template <typename T, unsigned int N, unsigned int M>
 __device__ __forceinline__ void Curve::setNewAgentArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, T variable, unsigned int agent_index, unsigned int array_index) {

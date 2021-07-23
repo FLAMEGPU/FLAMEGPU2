@@ -57,7 +57,7 @@ void CUDAMessageList::allocateDeviceMessageList(CUDAMsgMap &memory_map) {
         std::string var_name = mm.first;
 
         // get the variable size from  message description
-        size_t var_size = mm.second.type_size;
+        size_t var_size = mm.second.type_size * mm.second.elements;
 
         // do the device allocation
         void * d_ptr;
@@ -87,7 +87,8 @@ void CUDAMessageList::zeroDeviceMessageList(CUDAMsgMap& memory_map) {
     // for each device pointer in the cuda memory map set the values to 0
     for (const CUDAMsgMapPair& mm : memory_map) {
         // get the variable size from message description
-        size_t var_size = message.getMessageDescription().variables.at(mm.first).type_size;
+        const auto var = message.getMessageDescription().variables.at(mm.first);
+        const size_t var_size = var.type_size * var.elements;
 
         // set the memory to zero
         gpuErrchk(cudaMemset(mm.second, 0, var_size*message.getMaximumListSize()));
@@ -97,8 +98,9 @@ void CUDAMessageList::zeroDeviceMessageList(CUDAMsgMap& memory_map) {
 void* CUDAMessageList::getReadMessageListVariablePointer(std::string variable_name) {
     CUDAMsgMap::iterator mm = d_list.find(variable_name);
     if (mm == d_list.end()) {
-        // TODO: Error variable not found in message list
-        return 0;
+        THROW exception::InvalidMessageVar("Variable '%s' was not found in message '%s', "
+          "in CUDAMessageList::getReadMessageListVariablePointer()",
+          variable_name.c_str(), message.getMessageDescription().name.c_str());
     }
 
     return mm->second;
@@ -106,8 +108,9 @@ void* CUDAMessageList::getReadMessageListVariablePointer(std::string variable_na
 void* CUDAMessageList::getWriteMessageListVariablePointer(std::string variable_name) {
     CUDAMsgMap::iterator mm = d_swap_list.find(variable_name);
     if (mm == d_swap_list.end()) {
-        // TODO: Error variable not found in message list
-        return 0;
+        THROW exception::InvalidMessageVar("Variable '%s' was not found in message '%s', "
+            "in CUDAMessageList::getWriteMessageListVariablePointer()",
+            variable_name.c_str(), message.getMessageDescription().name.c_str());
     }
 
     return mm->second;

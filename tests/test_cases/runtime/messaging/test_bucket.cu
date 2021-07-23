@@ -12,6 +12,14 @@ namespace flamegpu {
 
 
 namespace test_message_bucket {
+    const char* MODEL_NAME = "Model";
+    const char* AGENT_NAME = "Agent";
+    const char* MESSAGE_NAME = "Message";
+    const char* IN_FUNCTION_NAME = "InFunction";
+    const char* OUT_FUNCTION_NAME = "OutFunction";
+    const char* IN_LAYER_NAME = "InLayer";
+    const char* OUT_LAYER_NAME = "OutLayer";
+    const unsigned int AGENT_COUNT = 1024;  // must be a multiple of 4
 TEST(BucketMsgTest, DescriptionValidation) {
     ModelDescription model("BucketMsgTest");
     // Test description accessors
@@ -89,7 +97,6 @@ FLAMEGPU_AGENT_FUNCTION(in_range, MsgBucket, MsgNone) {
     return ALIVE;
 }
 TEST(BucketMsgTest, Mandatory) {
-    const int AGENT_COUNT = 1024;
     std::unordered_map<int, unsigned int> bucket_count;
     std::unordered_map<int, unsigned int> bucket_sum;
     // Construct model
@@ -154,7 +161,6 @@ TEST(BucketMsgTest, Mandatory) {
     }
 }
 TEST(BucketMsgTest, Optional) {
-    const int AGENT_COUNT = 1024;
     std::unordered_map<int, unsigned int> bucket_count;
     std::unordered_map<int, unsigned int> bucket_sum;
     // Construct model
@@ -229,7 +235,6 @@ TEST(BucketMsgTest, Optional) {
 }
 // Test optional message output, wehre no messages are output.
 TEST(BucketMsgTest, OptionalNone) {
-    const int AGENT_COUNT = 1024;
     std::unordered_map<int, unsigned int> bucket_count;
     std::unordered_map<int, unsigned int> bucket_sum;
     // Construct model
@@ -295,7 +300,6 @@ TEST(BucketMsgTest, OptionalNone) {
 }
 TEST(BucketMsgTest, Mandatory_Range) {
     // Agent count must be multiple of 4
-    const int AGENT_COUNT = 1024;
     std::unordered_map<int, unsigned int> bucket_count;
     std::unordered_map<int, unsigned int> bucket_sum;
     // Construct model
@@ -363,6 +367,117 @@ TEST(BucketMsgTest, Mandatory_Range) {
         EXPECT_EQ(count1, _count1);
         EXPECT_EQ(count2, bucket_count.at(id/2));
         EXPECT_EQ(sum, _sum);
+    }
+}
+
+FLAMEGPU_AGENT_FUNCTION(ArrayOut, MsgNone, MsgBucket) {
+    const unsigned int index = FLAMEGPU->getVariable<unsigned int>("index");
+    FLAMEGPU->message_out.setVariable<unsigned int, 3>("v", 0, index * 3);
+    FLAMEGPU->message_out.setVariable<unsigned int, 3>("v", 1, index * 7);
+    FLAMEGPU->message_out.setVariable<unsigned int, 3>("v", 2, index * 11);
+    FLAMEGPU->message_out.setKey(index);
+    return ALIVE;
+}
+FLAMEGPU_AGENT_FUNCTION(ArrayIn, MsgBucket, MsgNone) {
+    const unsigned int my_index = FLAMEGPU->getVariable<unsigned int>("index");
+    for (auto &message : FLAMEGPU->message_in(my_index)) {
+        FLAMEGPU->setVariable<unsigned int, 3>("message_read", 0, message.getVariable<unsigned int, 3>("v", 0));
+        FLAMEGPU->setVariable<unsigned int, 3>("message_read", 1, message.getVariable<unsigned int, 3>("v", 1));
+        FLAMEGPU->setVariable<unsigned int, 3>("message_read", 2, message.getVariable<unsigned int, 3>("v", 2));
+    }
+    return ALIVE;
+}
+TEST(TestMessage_Bucket, ArrayVariable) {
+    ModelDescription m(MODEL_NAME);
+    MsgBucket::Description &msg = m.newMessage<MsgBucket>(MESSAGE_NAME);
+    msg.setBounds(0, AGENT_COUNT);
+    msg.newVariable<unsigned int, 3>("v");
+    AgentDescription &a = m.newAgent(AGENT_NAME);
+    a.newVariable<unsigned int>("index");
+    a.newVariable<unsigned int, 3>("message_read", {UINT_MAX, UINT_MAX, UINT_MAX});
+    AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut);
+    fo.setMessageOutput(msg);
+    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn);
+    fi.setMessageInput(msg);
+    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    lo.addAgentFunction(fo);
+    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    li.addAgentFunction(fi);
+    // Assign the numbers in shuffled order to agents
+    AgentVector pop(a, AGENT_COUNT);
+    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+        AgentVector::Agent ai = pop[i];
+        ai.setVariable<unsigned int>("index", i);
+    }
+    // Set pop in model
+    CUDASimulation c(m);
+    c.setPopulationData(pop);
+    c.step();
+    c.getPopulationData(pop);
+    // Validate each agent has same result
+    for (AgentVector::Agent ai : pop) {
+        const unsigned int index = ai.getVariable<unsigned int>("index");
+        std::array<unsigned int, 3> v = ai.getVariable<unsigned int, 3>("message_read");
+        ASSERT_EQ(v[0], index * 3);
+        ASSERT_EQ(v[1], index * 7);
+        ASSERT_EQ(v[2], index * 11);
+    }
+}
+const char* rtc_ArrayOut_func = R"###(
+FLAMEGPU_AGENT_FUNCTION(ArrayOut, flamegpu::MsgNone, flamegpu::MsgBucket) {
+    const unsigned int index = FLAMEGPU->getVariable<unsigned int>("index");
+    FLAMEGPU->message_out.setVariable<unsigned int, 3>("v", 0, index * 3);
+    FLAMEGPU->message_out.setVariable<unsigned int, 3>("v", 1, index * 7);
+    FLAMEGPU->message_out.setVariable<unsigned int, 3>("v", 2, index * 11);
+    FLAMEGPU->message_out.setKey(index);
+    return flamegpu::ALIVE;
+}
+)###";
+const char* rtc_ArrayIn_func = R"###(
+FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MsgBucket, flamegpu::MsgNone) {
+    const unsigned int my_index = FLAMEGPU->getVariable<unsigned int>("index");
+    for (auto &message : FLAMEGPU->message_in(my_index)) {
+        FLAMEGPU->setVariable<unsigned int, 3>("message_read", 0, message.getVariable<unsigned int, 3>("v", 0));
+        FLAMEGPU->setVariable<unsigned int, 3>("message_read", 1, message.getVariable<unsigned int, 3>("v", 1));
+        FLAMEGPU->setVariable<unsigned int, 3>("message_read", 2, message.getVariable<unsigned int, 3>("v", 2));
+    }
+    return flamegpu::ALIVE;
+}
+)###";
+TEST(TestRTCMessage_Bucket, ArrayVariable) {
+    ModelDescription m(MODEL_NAME);
+    MsgBucket::Description& msg = m.newMessage<MsgBucket>(MESSAGE_NAME);
+    msg.setBounds(0, AGENT_COUNT);
+    msg.newVariable<unsigned int, 3>("v");
+    AgentDescription& a = m.newAgent(AGENT_NAME);
+    a.newVariable<unsigned int>("index");
+    a.newVariable<unsigned int, 3>("message_read", { UINT_MAX, UINT_MAX, UINT_MAX });
+    AgentFunctionDescription& fo = a.newRTCFunction(OUT_FUNCTION_NAME, rtc_ArrayOut_func);
+    fo.setMessageOutput(msg);
+    AgentFunctionDescription& fi = a.newRTCFunction(IN_FUNCTION_NAME, rtc_ArrayIn_func);
+    fi.setMessageInput(msg);
+    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    lo.addAgentFunction(fo);
+    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    li.addAgentFunction(fi);
+    // Assign the numbers in shuffled order to agents
+    AgentVector pop(a, AGENT_COUNT);
+    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+        AgentVector::Agent ai = pop[i];
+        ai.setVariable<unsigned int>("index", i);
+    }
+    // Set pop in model
+    CUDASimulation c(m);
+    c.setPopulationData(pop);
+    c.step();
+    c.getPopulationData(pop);
+    // Validate each agent has same result
+    for (AgentVector::Agent ai : pop) {
+        const unsigned int index = ai.getVariable<unsigned int>("index");
+        std::array<unsigned int, 3> v = ai.getVariable<unsigned int, 3>("message_read");
+        ASSERT_EQ(v[0], index * 3);
+        ASSERT_EQ(v[1], index * 7);
+        ASSERT_EQ(v[2], index * 11);
     }
 }
 

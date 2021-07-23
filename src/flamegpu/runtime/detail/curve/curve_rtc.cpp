@@ -79,11 +79,13 @@ class Curve {
     
     template <typename T, unsigned int N, unsigned int M>
     __device__ __forceinline__ static T getAgentArrayVariable(const char(&name)[M], VariableHash namespace_hash, unsigned int variable_index, unsigned int array_index);
+    template <typename T, unsigned int N, unsigned int M>
+    __device__ __forceinline__ static T getMessageArrayVariable(const char(&name)[M], VariableHash namespace_hash, unsigned int variable_index, unsigned int array_index);
     
     template <typename T, unsigned int N, unsigned int M>
-    __device__ __forceinline__ static T getAgentArrayVariable_ldg(const char(&name)[M], VariableHash namespace_hash, unsigned int variable_index, unsigned int array_index);
+    __device__ __forceinline__ static T getAgentArrayVariable_ldg(const char(&name)[M], VariableHash namespace_hash, unsigned int variable_index, unsigned int array_index);    
     template <typename T, unsigned int N, unsigned int M>
-    __device__ __forceinline__ static T getArrayVariable_ldg(const char(&name)[M], VariableHash namespace_hash, unsigned int variable_index, unsigned int array_index);
+    __device__ __forceinline__ static T getMessageArrayVariable_ldg(const char(&name)[M], VariableHash namespace_hash, unsigned int variable_index, unsigned int array_index);
     
     template <typename T, unsigned int N>
     __device__ __forceinline__ static void setAgentVariable(const char(&name)[N], VariableHash namespace_hash, T variable, unsigned int index);
@@ -94,6 +96,8 @@ class Curve {
     
     template <typename T, unsigned int N, unsigned int M>
     __device__ __forceinline__ static void setAgentArrayVariable(const char(&name)[M], VariableHash namespace_hash, T variable, unsigned int variable_index, unsigned int array_index);
+    template <typename T, unsigned int N, unsigned int M>
+    __device__ __forceinline__ static void setMessageArrayVariable(const char(&name)[M], VariableHash namespace_hash, T variable, unsigned int variable_index, unsigned int array_index);
     template <typename T, unsigned int N, unsigned int M>
     __device__ __forceinline__ static void setNewAgentArrayVariable(const char(&name)[M], VariableHash namespace_hash, T variable, unsigned int variable_index, unsigned int array_index);
 
@@ -121,10 +125,18 @@ template <typename T, unsigned int N, unsigned int M>
 __device__ __forceinline__ T Curve::getAgentArrayVariable(const char(&name)[M], VariableHash namespace_hash, unsigned int index, unsigned int array_index) {
 $DYNAMIC_GETAGENTARRAYVARIABLE_IMPL
 }
+template <typename T, unsigned int N, unsigned int M>
+__device__ __forceinline__ T Curve::getMessageArrayVariable(const char(&name)[M], VariableHash namespace_hash, unsigned int index, unsigned int array_index) {
+$DYNAMIC_GETMESSAGEARRAYVARIABLE_IMPL
+}
 
 template <typename T, unsigned int N, unsigned int M>
 __device__ __forceinline__ T Curve::getAgentArrayVariable_ldg(const char(&name)[M], VariableHash namespace_hash, unsigned int index, unsigned int array_index) {
 $DYNAMIC_GETAGENTARRAYVARIABLE_LDG_IMPL
+}
+template <typename T, unsigned int N, unsigned int M>
+__device__ __forceinline__ T Curve::getMessageArrayVariable_ldg(const char(&name)[M], VariableHash namespace_hash, unsigned int index, unsigned int array_index) {
+$DYNAMIC_GETMESSAGEARRAYVARIABLE_LDG_IMPL
 }
 
 template <typename T, unsigned int N>
@@ -143,6 +155,10 @@ $DYNAMIC_SETNEWAGENTVARIABLE_IMPL
 template <typename T, unsigned int N, unsigned int M>
 __device__ __forceinline__ void Curve::setAgentArrayVariable(const char(&name)[M], VariableHash namespace_hash, T variable, unsigned int index, unsigned int array_index) {
 $DYNAMIC_SETAGENTARRAYVARIABLE_IMPL    
+}
+template <typename T, unsigned int N, unsigned int M>
+__device__ __forceinline__ void Curve::setMessageArrayVariable(const char(&name)[M], VariableHash namespace_hash, T variable, unsigned int index, unsigned int array_index) {
+$DYNAMIC_SETMESSAGEARRAYVARIABLE_IMPL    
 }
 template <typename T, unsigned int N, unsigned int M>
 __device__ __forceinline__ void Curve::setNewAgentArrayVariable(const char(&name)[M], VariableHash namespace_hash, T variable, unsigned int index, unsigned int array_index) {
@@ -500,6 +516,38 @@ void CurveRTCHost::initHeaderSetters() {
         setAgentArrayVariableImpl <<         "#endif\n";
         setHeaderPlaceholder("$DYNAMIC_SETAGENTARRAYVARIABLE_IMPL", setAgentArrayVariableImpl.str());
     }
+    // generate setMessageArrayVariable func implementation ($DYNAMIC_SETMESSAGEARRAYVARIABLE_IMPL)
+    {
+        size_t ct = 0;
+        std::stringstream setMessageArrayVariableImpl;
+        if (!messageOut_variables.empty())
+            setMessageArrayVariableImpl << "    const size_t i = (index * N) + array_index;\n";
+        for (const auto& element : messageOut_variables) {
+            RTCVariableProperties props = element.second;
+            if (props.write && props.elements > 1) {
+                setMessageArrayVariableImpl << "          if (strings_equal(name, \"" << element.first << "\")) {\n";
+                setMessageArrayVariableImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
+                setMessageArrayVariableImpl << "              if(sizeof(T) != " << element.second.type_size << ") {\n";
+                setMessageArrayVariableImpl << "                  DTHROW(\"Message array variable '%s' type mismatch during setVariable().\\n\", name);\n";
+                setMessageArrayVariableImpl << "                  return;\n";
+                setMessageArrayVariableImpl << "              } else if (N != " << element.second.elements << ") {\n";
+                setMessageArrayVariableImpl << "                  DTHROW(\"Message array variable '%s' length mismatch during setVariable().\\n\", name);\n";
+                setMessageArrayVariableImpl << "                  return;\n";
+                setMessageArrayVariableImpl << "              } else if (array_index >= " << element.second.elements << ") {\n";
+                setMessageArrayVariableImpl << "                  DTHROW(\"Message array variable '%s', index %d is out of bounds during setVariable().\\n\", name, array_index);\n";
+                setMessageArrayVariableImpl << "                  return;\n";
+                setMessageArrayVariableImpl << "              }\n";
+                setMessageArrayVariableImpl << "#endif\n";
+                setMessageArrayVariableImpl << "              (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << msgOut_data_offset + (ct++ * sizeof(void*)) << ")))[i] = (T) variable;\n";
+                setMessageArrayVariableImpl << "              return;\n";
+                setMessageArrayVariableImpl << "          }\n";
+            } else { ++ct; }
+        }
+        setMessageArrayVariableImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
+        setMessageArrayVariableImpl << "          DTHROW(\"Message array variable '%s' was not found during setVariable().\\n\", name);\n";
+        setMessageArrayVariableImpl << "#endif\n";
+        setHeaderPlaceholder("$DYNAMIC_SETMESSAGEARRAYVARIABLE_IMPL", setMessageArrayVariableImpl.str());
+    }
     // generate setNewAgentArrayVariable func implementation ($DYNAMIC_SETNEWAGENTARRAYVARIABLE_IMPL)
     {
         size_t ct = 0;
@@ -582,7 +630,7 @@ void CurveRTCHost::initHeaderGetters() {
         getMessageVariableImpl <<         "            return 0;\n";
         setHeaderPlaceholder("$DYNAMIC_GETMESSAGEVARIABLE_IMPL", getMessageVariableImpl.str());
     }
-    // generate getAgentVariable func implementation ($DYNAMIC_GETAGENTVARIABLE_LDG_IMPL)
+    // generate getAgentVariable_ldg func implementation ($DYNAMIC_GETAGENTVARIABLE_LDG_IMPL)
     {
         size_t ct = 0;
         std::stringstream getAgentVariableLDGImpl;
@@ -606,7 +654,7 @@ void CurveRTCHost::initHeaderGetters() {
         getAgentVariableLDGImpl <<         "            return 0;\n";
         setHeaderPlaceholder("$DYNAMIC_GETAGENTVARIABLE_LDG_IMPL", getAgentVariableLDGImpl.str());
     }
-    // generate getMessageVariable func implementation ($DYNAMIC_GETMESSAGEVARIABLE_LDG_IMPL)
+    // generate getMessageVariable_ldg func implementation ($DYNAMIC_GETMESSAGEVARIABLE_LDG_IMPL)
     {
         size_t ct = 0;
         std::stringstream getMessageVariableLDGImpl;
@@ -630,7 +678,7 @@ void CurveRTCHost::initHeaderGetters() {
         getMessageVariableLDGImpl <<         "            return 0;\n";
         setHeaderPlaceholder("$DYNAMIC_GETMESSAGEVARIABLE_LDG_IMPL", getMessageVariableLDGImpl.str());
     }
-    // generate getArrayVariable func implementation ($DYNAMIC_GETAGENTARRAYVARIABLE_IMPL)
+    // generate getAgentArrayVariable func implementation ($DYNAMIC_GETAGENTARRAYVARIABLE_IMPL)
     {
         size_t ct = 0;
         std::stringstream getAgentArrayVariableImpl;
@@ -662,7 +710,39 @@ void CurveRTCHost::initHeaderGetters() {
         getAgentArrayVariableImpl <<         "           return 0;\n";
         setHeaderPlaceholder("$DYNAMIC_GETAGENTARRAYVARIABLE_IMPL", getAgentArrayVariableImpl.str());
     }
-    // generate getArrayVariable func implementation ($DYNAMIC_GETAGENTARRAYVARIABLE_LDG_IMPL)
+    // generate getMessageArrayVariable func implementation ($DYNAMIC_GETMESSAGEARRAYVARIABLE_IMPL)
+    {
+        size_t ct = 0;
+        std::stringstream getMessageArrayVariableImpl;
+        if (!messageIn_variables.empty())
+            getMessageArrayVariableImpl << "    const size_t i = (index * N) + array_index;\n";
+        for (const auto& element : messageIn_variables) {
+            RTCVariableProperties props = element.second;
+            if (props.read && props.elements > 1) {
+                getMessageArrayVariableImpl << "          if (strings_equal(name, \"" << element.first << "\")) {\n";
+                getMessageArrayVariableImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
+                getMessageArrayVariableImpl << "              if(sizeof(T) != " << element.second.type_size << ") {\n";
+                getMessageArrayVariableImpl << "                  DTHROW(\"Message array variable '%s' type mismatch during getVariable().\\n\", name);\n";
+                getMessageArrayVariableImpl << "                  return {};\n";
+                getMessageArrayVariableImpl << "              } else if (N != " << element.second.elements << ") {\n";
+                getMessageArrayVariableImpl << "                  DTHROW(\"Message array variable '%s' length mismatch during getVariable().\\n\", name);\n";
+                getMessageArrayVariableImpl << "                  return {};\n";
+                getMessageArrayVariableImpl << "              } else if (array_index >= " << element.second.elements << ") {\n";
+                getMessageArrayVariableImpl << "                  DTHROW(\"Message array variable '%s', index %d is out of bounds during getVariable().\\n\", name, array_index);\n";
+                getMessageArrayVariableImpl << "                  return {};\n";
+                getMessageArrayVariableImpl << "              }\n";
+                getMessageArrayVariableImpl << "#endif\n";
+                getMessageArrayVariableImpl << "              return (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << msgIn_data_offset + (ct++ * sizeof(void*)) << ")))[i];\n";
+                getMessageArrayVariableImpl << "           };\n";
+            } else { ++ct; }
+        }
+        getMessageArrayVariableImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
+        getMessageArrayVariableImpl << "           DTHROW(\"Message array variable '%s' was not found during getVariable().\\n\", name);\n";
+        getMessageArrayVariableImpl << "#endif\n";
+        getMessageArrayVariableImpl << "           return {};\n";
+        setHeaderPlaceholder("$DYNAMIC_GETMESSAGEARRAYVARIABLE_IMPL", getMessageArrayVariableImpl.str());
+    }
+    // generate getAgentArrayVariable_ldg func implementation ($DYNAMIC_GETAGENTARRAYVARIABLE_LDG_IMPL)
     {
         size_t ct = 0;
         std::stringstream getAgentArrayVariableLDGImpl;
@@ -693,6 +773,38 @@ void CurveRTCHost::initHeaderGetters() {
         getAgentArrayVariableLDGImpl <<         "#endif\n";
         getAgentArrayVariableLDGImpl <<         "           return 0;\n";
         setHeaderPlaceholder("$DYNAMIC_GETAGENTARRAYVARIABLE_LDG_IMPL", getAgentArrayVariableLDGImpl.str());
+    }
+    // generate getMessageArrayVariable func implementation ($DYNAMIC_GETMESSAGEARRAYVARIABLE_LDG_IMPL)
+    {
+        size_t ct = 0;
+        std::stringstream getMessageArrayVariableLDGImpl;
+        if (!messageIn_variables.empty())
+            getMessageArrayVariableLDGImpl << "    const size_t i = (index * N) + array_index;\n";
+        for (const auto& element : messageIn_variables) {
+            RTCVariableProperties props = element.second;
+            if (props.read && props.elements > 1) {
+                getMessageArrayVariableLDGImpl << "          if (strings_equal(name, \"" << element.first << "\")) {\n";
+                getMessageArrayVariableLDGImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
+                getMessageArrayVariableLDGImpl << "              if(sizeof(T) != " << element.second.type_size << ") {\n";
+                getMessageArrayVariableLDGImpl << "                  DTHROW(\"Message array variable '%s' type mismatch during getVariable().\\n\", name);\n";
+                getMessageArrayVariableLDGImpl << "                  return {};\n";
+                getMessageArrayVariableLDGImpl << "              } else if (N != " << element.second.elements << ") {\n";
+                getMessageArrayVariableLDGImpl << "                  DTHROW(\"Message array variable '%s' length mismatch during getVariable().\\n\", name);\n";
+                getMessageArrayVariableLDGImpl << "                  return {};\n";
+                getMessageArrayVariableLDGImpl << "              } else if (array_index >= " << element.second.elements << ") {\n";
+                getMessageArrayVariableLDGImpl << "                  DTHROW(\"Message array variable '%s', index %d is out of bounds during getVariable().\\n\", name, array_index);\n";
+                getMessageArrayVariableLDGImpl << "                  return {};\n";
+                getMessageArrayVariableLDGImpl << "              }\n";
+                getMessageArrayVariableLDGImpl << "#endif\n";
+                getMessageArrayVariableLDGImpl << "              return (T) __ldg((*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << msgIn_data_offset + (ct++ * sizeof(void*)) << "))) + i);\n";
+                getMessageArrayVariableLDGImpl << "           };\n";
+            } else { ++ct; }
+        }
+        getMessageArrayVariableLDGImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
+        getMessageArrayVariableLDGImpl << "           DTHROW(\"Message array variable '%s' was not found during getVariable().\\n\", name);\n";
+        getMessageArrayVariableLDGImpl << "#endif\n";
+        getMessageArrayVariableLDGImpl << "           return {};\n";
+        setHeaderPlaceholder("$DYNAMIC_GETMESSAGEARRAYVARIABLE_LDG_IMPL", getMessageArrayVariableLDGImpl.str());
     }
 }
 void CurveRTCHost::initDataBuffer() {

@@ -54,25 +54,26 @@ class ReadOnlyDeviceAPI {
     /**
      * Returns the specified variable from the currently executing agent
      * @param variable_name name used for accessing the variable, this value should be a string literal e.g. "foobar"
-     * @tparam T Type of the agent variable property being accessed
+     * @tparam T Type of the agent variable being accessed
      * @tparam N Length of variable name, this should always be implicit if passing a string literal
      * @throws exception::DeviceError If name is not a valid variable within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
      * @throws exception::DeviceError If T is not the type of variable 'name' within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
      */
     template<typename T, unsigned int N> __device__
-    T getVariable(const char(&variable_name)[N]);
+    T getVariable(const char(&variable_name)[N]) const;
     /**
      * Returns the specified variable array element from the currently executing agent
      * @param variable_name name used for accessing the variable, this value should be a string literal e.g. "foobar"
      * @param index Index of the element within the variable array to return
-     * @tparam T Type of the agent variable property being accessed
-     * @tparam N Length of variable_name, this should always be implicit if passing a string literal
+     * @tparam T Type of the agent variable being accessed
+     * @tparam N The length of the array variable, as set within the model description hierarchy
+     * @tparam M Length of variable_name, this should always be implicit if passing a string literal
      * @throws exception::DeviceError If name is not a valid variable within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
      * @throws exception::DeviceError If T is not the type of variable 'name' within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
      * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
      */
     template<typename T, unsigned int N, unsigned int M> __device__
-    T getVariable(const char(&variable_name)[M], const unsigned int &index);
+    T getVariable(const char(&variable_name)[M], const unsigned int &index) const;
     /**
      * Returns the agent's unique identifier
      */
@@ -271,10 +272,10 @@ class DeviceAPI : public ReadOnlyDeviceAPI{
      * Sets an element of an array variable within the currently executing agent
      * @param variable_name The name of the array variable
      * @param index The index to set within the array variable
-     * @param value The value to set the element of the array velement
+     * @param value The value to set the element of the array element
      * @tparam T The type of the variable, as set within the model description hierarchy
      * @tparam N The length of the array variable, as set within the model description hierarchy
-     * @tparam M variable_namelength, this should be ignored as it is implicitly set
+     * @tparam M variable_name length, this should be ignored as it is implicitly set
      * @throws exception::DeviceError If name is not a valid variable within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
      * @throws exception::DeviceError If T is not the type of variable 'name' within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
      * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
@@ -300,7 +301,7 @@ class DeviceAPI : public ReadOnlyDeviceAPI{
 /******************************************************************************************************* Implementation ********************************************************/
 
 template<typename T, unsigned int N>
-__device__ T ReadOnlyDeviceAPI::getVariable(const char(&variable_name)[N]) {
+__device__ T ReadOnlyDeviceAPI::getVariable(const char(&variable_name)[N]) const {
     // simple indexing assumes index is the thread number (this may change later)
     const unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
 
@@ -323,7 +324,7 @@ __device__ void DeviceAPI<MsgIn, MsgOut>::setVariable(const char(&variable_name)
     detail::curve::Curve::setAgentVariable<T>(variable_name, agent_func_name_hash,  value, index);
 }
 template<typename T, unsigned int N, unsigned int M>
-__device__ T ReadOnlyDeviceAPI::getVariable(const char(&variable_name)[M], const unsigned int &array_index) {
+__device__ T ReadOnlyDeviceAPI::getVariable(const char(&variable_name)[M], const unsigned int &array_index) const {
     // simple indexing assumes index is the thread number (this may change later)
     const unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
 
