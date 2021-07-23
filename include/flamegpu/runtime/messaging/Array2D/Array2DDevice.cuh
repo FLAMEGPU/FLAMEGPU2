@@ -61,6 +61,19 @@ class MsgArray2D::In {
          */
         template<typename T, unsigned int N>
         __device__ T getVariable(const char(&variable_name)[N]) const;
+        /**
+         * Returns the specified variable array element from the current message attached to the named variable
+         * @param variable_name name used for accessing the variable, this value should be a string literal e.g. "foobar"
+         * @param index Index of the element within the variable array to return
+         * @tparam T Type of the message variable being accessed
+         * @tparam N The length of the array variable, as set within the model description hierarchy
+         * @tparam M Length of variable_name, this should always be implicit if passing a string literal
+         * @throws exception::DeviceError If name is not a valid variable within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
+         * @throws exception::DeviceError If T is not the type of variable 'name' within the message (flamegpu must be built with SEATBELTS enabled for device error checking)
+         * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
+         */
+        template<typename T, MsgNone::size_type N, unsigned int M>
+        __device__ T getVariable(const char(&variable_name)[M], const unsigned int& index) const;
     };
 
     /**
@@ -151,6 +164,19 @@ class MsgArray2D::In {
              */
             template<typename T, unsigned int N>
             __device__ T getVariable(const char(&variable_name)[N]) const;
+            /**
+             * Returns the specified variable array element from the current message attached to the named variable
+             * @param variable_name name used for accessing the variable, this value should be a string literal e.g. "foobar"
+             * @param index Index of the element within the variable array to return
+             * @tparam T Type of the message variable being accessed
+             * @tparam N The length of the array variable, as set within the model description hierarchy
+             * @tparam M Length of variable_name, this should always be implicit if passing a string literal
+             * @throws exception::DeviceError If name is not a valid variable within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
+             * @throws exception::DeviceError If T is not the type of variable 'name' within the message (flamegpu must be built with SEATBELTS enabled for device error checking)
+             * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
+             */
+            template<typename T, MsgNone::size_type N, unsigned int M>
+            __device__ T getVariable(const char(&variable_name)[M], const unsigned int& index) const;
         };
         /**
          * Stock iterator for iterating MsgSpatial3D::In::WrapFilter::Message objects
@@ -337,6 +363,19 @@ class MsgArray2D::In {
              */
             template<typename T, unsigned int N>
             __device__ T getVariable(const char(&variable_name)[N]) const;
+            /**
+             * Returns the specified variable array element from the current message attached to the named variable
+             * @param variable_name name used for accessing the variable, this value should be a string literal e.g. "foobar"
+             * @param index Index of the element within the variable array to return
+             * @tparam T Type of the message variable being accessed
+             * @tparam N The length of the array variable, as set within the model description hierarchy
+             * @tparam M Length of variable_name, this should always be implicit if passing a string literal
+             * @throws exception::DeviceError If name is not a valid variable within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
+             * @throws exception::DeviceError If T is not the type of variable 'name' within the message (flamegpu must be built with SEATBELTS enabled for device error checking)
+             * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
+             */
+            template<typename T, MsgNone::size_type N, unsigned int M>
+            __device__ T getVariable(const char(&variable_name)[M], const unsigned int& index) const;
         };
         /**
          * Stock iterator for iterating MsgSpatial3D::In::Filter::Message objects
@@ -590,6 +629,20 @@ class MsgArray2D::Out {
      */
     template<typename T, unsigned int N>
     __device__ void setVariable(const char(&variable_name)[N], T value) const;
+    /**
+     * Sets an element of an array variable for this agents message
+     * @param variable_name The name of the array variable
+     * @param index The index to set within the array variable
+     * @param value The value to set the element of the array element
+     * @tparam T The type of the variable, as set within the model description hierarchy
+     * @tparam N The length of the array variable, as set within the model description hierarchy
+     * @tparam M variable_name length, this should be ignored as it is implicitly set
+     * @throws exception::DeviceError If name is not a valid variable within the message (flamegpu must be built with SEATBELTS enabled for device error checking)
+     * @throws exception::DeviceError If T is not the type of variable 'name' within the message (flamegpu must be built with SEATBELTS enabled for device error checking)
+     * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
+     */
+    template<typename T, unsigned int N, unsigned int M>
+    __device__ void setVariable(const char(&variable_name)[M], const unsigned int& index, T value) const;
 
  protected:
     /**
@@ -621,6 +674,19 @@ __device__ T MsgArray2D::In::Message::getVariable(const char(&variable_name)[N])
     // get the value from curve using the stored hashes and message index.
     return detail::curve::Curve::getMessageVariable<T>(variable_name, this->_parent.combined_hash, index);
 }
+template<typename T, MsgNone::size_type N, unsigned int M> __device__
+T MsgArray2D::In::Message::getVariable(const char(&variable_name)[M], const unsigned int& array_index) const {
+#if !defined(SEATBELTS) || SEATBELTS
+    // Ensure that the message is within bounds.
+    if (index >= this->_parent.metadata->length) {
+        DTHROW("Invalid Array2D message, unable to get variable '%s'.\n", variable_name);
+        return static_cast<T>(0);
+    }
+#endif
+    // get the value from curve using the stored hashes and message index.
+    T value = detail::curve::Curve::getMessageArrayVariable<T, N>(variable_name, this->_parent.combined_hash, index, array_index);
+    return value;
+}
 template<typename T, unsigned int N>
 __device__ T MsgArray2D::In::WrapFilter::Message::getVariable(const char(&variable_name)[N]) const {
 #if !defined(SEATBELTS) || SEATBELTS
@@ -632,6 +698,19 @@ __device__ T MsgArray2D::In::WrapFilter::Message::getVariable(const char(&variab
 #endif
     // get the value from curve using the stored hashes and message index.
     return detail::curve::Curve::getMessageVariable<T>(variable_name, this->_parent.combined_hash, index_1d);
+}
+template<typename T, MsgNone::size_type N, unsigned int M> __device__
+T MsgArray2D::In::WrapFilter::Message::getVariable(const char(&variable_name)[M], const unsigned int& array_index) const {
+#if !defined(SEATBELTS) || SEATBELTS
+    // Ensure that the message is within bounds.
+    if (index_1d >= this->_parent.metadata->length) {
+        DTHROW("Invalid Array2D message, unable to get variable '%s'.\n", variable_name);
+        return static_cast<T>(0);
+    }
+#endif
+    // get the value from curve using the stored hashes and message index.
+    T value = detail::curve::Curve::getMessageArrayVariable<T, N>(variable_name, this->_parent.combined_hash, index_1d, array_index);
+    return value;
 }
 template<typename T, unsigned int N>
 __device__ T MsgArray2D::In::Filter::Message::getVariable(const char(&variable_name)[N]) const {
@@ -645,6 +724,19 @@ __device__ T MsgArray2D::In::Filter::Message::getVariable(const char(&variable_n
     // get the value from curve using the stored hashes and message index.
     return detail::curve::Curve::getMessageVariable<T>(variable_name, this->_parent.combined_hash, index_1d);
 }
+template<typename T, MsgNone::size_type N, unsigned int M> __device__
+T MsgArray2D::In::Filter::Message::getVariable(const char(&variable_name)[M], const unsigned int& array_index) const {
+#if !defined(SEATBELTS) || SEATBELTS
+    // Ensure that the message is within bounds.
+    if (index_1d >= this->_parent.metadata->length) {
+        DTHROW("Invalid Array2D message, unable to get variable '%s'.\n", variable_name);
+        return static_cast<T>(0);
+    }
+#endif
+    // get the value from curve using the stored hashes and message index.
+    T value = detail::curve::Curve::getMessageArrayVariable<T, N>(variable_name, this->_parent.combined_hash, index_1d, array_index);
+    return value;
+}
 
 template<typename T, unsigned int N>
 __device__ void MsgArray2D::Out::setVariable(const char(&variable_name)[N], T value) const {  // message name or variable name
@@ -655,6 +747,18 @@ __device__ void MsgArray2D::Out::setVariable(const char(&variable_name)[N], T va
 
     // set the variable using curve
     detail::curve::Curve::setMessageVariable<T>(variable_name, combined_hash, value, index);
+
+    // setIndex() sets the optional msg scan flag
+}
+template<typename T, unsigned int N, unsigned int M>
+__device__ void MsgArray2D::Out::setVariable(const char(&variable_name)[M], const unsigned int& array_index, T value) const {
+    if (variable_name[0] == '_') {
+        return;  // Fail silently
+    }
+    unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
+
+    // set the variable using curve
+    detail::curve::Curve::setMessageArrayVariable<T, N>(variable_name, combined_hash, value, index, array_index);
 
     // setIndex() sets the optional msg scan flag
 }

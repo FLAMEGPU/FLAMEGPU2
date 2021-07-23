@@ -5,6 +5,7 @@
 #include <memory>
 #include <unordered_map>
 #include <string>
+#include <vector>
 
 #include "flamegpu/model/Variable.h"
 #include "flamegpu/gpu/detail/CUDAErrorChecking.cuh"
@@ -206,7 +207,28 @@ class MsgBruteForce::Description {
      */
     template<typename T>
     void newVariable(const std::string &variable_name);
-
+    /**
+     * Adds a new variable array to the message
+     * @param variable_name Name of the variable array
+     * @tparam T Type of the message variable, this must be an arithmetic type
+     * @tparam N The length of the variable array (1 if not an array, must be greater than 0)
+     * @throws exception::InvalidMessageVar If a variable already exists within the message with the same name
+     * @throws exception::InvalidMessageVar If N is <= 0
+     */
+    template<typename T, MsgNone::size_type N>
+    void newVariable(const std::string& variable_name);
+#ifdef SWIG
+    /**
+     * Adds a new variable array to the message
+     * @param variable_name Name of the variable array
+     * @param length The length of the variable array (1 if not an array, must be greater than 0)
+     * @tparam T Type of the agent variable, this must be an arithmetic type
+     * @throws exception::InvalidMessageVar If a variable already exists within the message with the same name
+     * @throws exception::InvalidMessageVar If length is <= 0
+     */
+    template<typename T>
+    void newVariableArray(const std::string& variable_name, const size_type& length);
+#endif
     /**
      * @return The message's name
      */
@@ -248,18 +270,45 @@ class MsgBruteForce::Description {
  */
 template<typename T>
 void MsgBruteForce::Description::newVariable(const std::string &variable_name) {
+    newVariable<T, 1>(variable_name);
+}
+template<typename T, MsgNone::size_type N>
+void MsgBruteForce::Description::newVariable(const std::string& variable_name) {
     if (!variable_name.empty() && variable_name[0] == '_') {
         THROW exception::ReservedName("Message variable names cannot begin with '_', this is reserved for internal usage, "
-            "in MsgBruteForce::Description::newVariable().");
+            "in MessageDescription::newVariable().");
     }
+    // Array length 0 makes no sense
+    static_assert(N > 0, "A variable cannot have 0 elements.");
     if (message->variables.find(variable_name) == message->variables.end()) {
-        message->variables.emplace(variable_name, Variable(1, T()));
+        message->variables.emplace(variable_name, Variable(std::array<T, N>{}));
         return;
     }
     THROW exception::InvalidMessageVar("Message ('%s') already contains variable '%s', "
         "in MessageDescription::newVariable().",
         message->name.c_str(), variable_name.c_str());
 }
+#ifdef SWIG
+template<typename T>
+void MsgBruteForce::Description::newVariableArray(const std::string& variable_name, const size_type& length) {
+    if (!variable_name.empty() && variable_name[0] == '_') {
+        THROW exception::ReservedName("Message variable names cannot begin with '_', this is reserved for internal usage, "
+            "in MessageDescription::newVariable().");
+    }
+    if (length == 0) {
+        THROW exception::InvalidMessageVar("Message variable arrays must have a length greater than 0."
+            "in MessageDescription::newVariable().");
+    }
+    if (message->variables.find(variable_name) == message->variables.end()) {
+        std::vector<T> temp(static_cast<size_t>(length));
+        message->variables.emplace(variable_name, Variable(length, temp));
+        return;
+    }
+    THROW exception::InvalidMessageVar("Message ('%s') already contains variable '%s', "
+        "in MessageDescription::newVariable().",
+        message->name.c_str(), variable_name.c_str());
+}
+#endif
 
 }  // namespace flamegpu
 

@@ -77,6 +77,19 @@ class MsgBucket::In {
             */
             template<typename T, size_type N>
             __device__ T getVariable(const char(&variable_name)[N]) const;
+            /**
+             * Returns the specified variable array element from the current message attached to the named variable
+             * @param variable_name name used for accessing the variable, this value should be a string literal e.g. "foobar"
+             * @param index Index of the element within the variable array to return
+             * @tparam T Type of the message variable being accessed
+             * @tparam N The length of the array variable, as set within the model description hierarchy
+             * @tparam M Length of variable_name, this should always be implicit if passing a string literal
+             * @throws exception::DeviceError If name is not a valid variable within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
+             * @throws exception::DeviceError If T is not the type of variable 'name' within the message (flamegpu must be built with SEATBELTS enabled for device error checking)
+             * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
+             */
+            template<typename T, MsgNone::size_type N, unsigned int M> __device__
+            T getVariable(const char(&variable_name)[M], const unsigned int &index) const;
         };
         /**
         * Stock iterator for iterating MsgBucket::In::Filter::Message objects
@@ -313,6 +326,19 @@ __device__ T MsgBucket::In::Filter::Message::getVariable(const char(&variable_na
 #endif
     // get the value from curve using the stored hashes and message index.
     T value = detail::curve::Curve::getMessageVariable<T>(variable_name, this->_parent.combined_hash, cell_index);
+    return value;
+}
+template<typename T, MsgNone::size_type N, unsigned int M> __device__
+T MsgBucket::In::Filter::Message::getVariable(const char(&variable_name)[M], const unsigned int& array_index) const {
+#if !defined(SEATBELTS) || SEATBELTS
+    // Ensure that the message is within bounds.
+    if (cell_index >= _parent.bucket_end) {
+        DTHROW("Bucket message index exceeds bin length, unable to get variable '%s'.\n", variable_name);
+        return {};
+    }
+#endif
+    // get the value from curve using the stored hashes and message index.
+    T value = detail::curve::Curve::getMessageArrayVariable<T, N>(variable_name, this->_parent.combined_hash, cell_index, array_index);
     return value;
 }
 }  // namespace flamegpu

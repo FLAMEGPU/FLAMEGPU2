@@ -1,6 +1,7 @@
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_BRUTEFORCE_BRUTEFORCEDEVICE_CUH_
 #define INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_BRUTEFORCE_BRUTEFORCEDEVICE_CUH_
 
+#include "flamegpu/defines.h"
 #include "flamegpu/runtime/messaging/None.h"
 #include "flamegpu/runtime/messaging/BruteForce.h"
 
@@ -107,9 +108,24 @@ class MsgBruteForce::In {
          * @tparam T type of the variable
          * @tparam N Length of variable name (this should be implicit if a string literal is passed to variable name)
          * @return The specified variable, else 0x0 if an error occurs
+         * @throws exception::DeviceError If name is not a valid variable within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
+         * @throws exception::DeviceError If T is not the type of variable 'name' within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
          */
-        template<typename T, size_type N>
-        __device__ T getVariable(const char(&variable_name)[N]) const;
+        template<typename T, unsigned int N> __device__
+        T getVariable(const char(&variable_name)[N]) const;
+        /**
+         * Returns the specified variable array element from the current message attached to the named variable
+         * @param variable_name name used for accessing the variable, this value should be a string literal e.g. "foobar"
+         * @param index Index of the element within the variable array to return
+         * @tparam T Type of the message variable being accessed
+         * @tparam N The length of the array variable, as set within the model description hierarchy
+         * @tparam M Length of variable_name, this should always be implicit if passing a string literal
+         * @throws exception::DeviceError If name is not a valid variable within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
+         * @throws exception::DeviceError If T is not the type of variable 'name' within the message (flamegpu must be built with SEATBELTS enabled for device error checking)
+         * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
+         */
+        template<typename T, MsgNone::size_type N, unsigned int M> __device__
+        T getVariable(const char(&variable_name)[M], const unsigned int &index) const;
     };
 
     /**
@@ -189,6 +205,20 @@ class MsgBruteForce::Out {
      */
     template<typename T, unsigned int N>
     __device__ void setVariable(const char(&variable_name)[N], T value) const;
+    /**
+     * Sets an element of an array variable for this agents message
+     * @param variable_name The name of the array variable
+     * @param index The index to set within the array variable
+     * @param value The value to set the element of the array element
+     * @tparam T The type of the variable, as set within the model description hierarchy
+     * @tparam N The length of the array variable, as set within the model description hierarchy
+     * @tparam M variable_name length, this should be ignored as it is implicitly set
+     * @throws exception::DeviceError If name is not a valid variable within the message (flamegpu must be built with SEATBELTS enabled for device error checking)
+     * @throws exception::DeviceError If T is not the type of variable 'name' within the message (flamegpu must be built with SEATBELTS enabled for device error checking)
+     * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
+     */
+    template<typename T, unsigned int N, unsigned int M>
+    __device__ void setVariable(const char(&variable_name)[M], const unsigned int& index, T value) const;
 
  protected:
     /**
@@ -202,8 +232,8 @@ class MsgBruteForce::Out {
     unsigned int *scan_flag;
 };
 
-template<typename T, unsigned int N>
-__device__ T MsgBruteForce::In::Message::getVariable(const char(&variable_name)[N]) const {
+template<typename T, unsigned int N> __device__
+T MsgBruteForce::In::Message::getVariable(const char(&variable_name)[N]) const {
 #if !defined(SEATBELTS) || SEATBELTS
     // Ensure that the message is within bounds.
     if (index >= this->_parent.len) {
@@ -213,6 +243,21 @@ __device__ T MsgBruteForce::In::Message::getVariable(const char(&variable_name)[
 #endif
     // get the value from curve using the stored hashes and message index.
     T value = detail::curve::Curve::getMessageVariable_ldg<T>(variable_name, this->_parent.combined_hash, index);
+    return value;
+}
+template<typename T, MsgNone::size_type N, unsigned int M> __device__
+T MsgBruteForce::In::Message::getVariable(const char(&variable_name)[M], const unsigned int& array_index) const {
+    // simple indexing assumes index is the thread number (this may change later)
+    const unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
+#if !defined(SEATBELTS) || SEATBELTS
+    // Ensure that the message is within bounds.
+    if (index >= this->_parent.len) {
+        DTHROW("Brute force message index exceeds messagelist length, unable to get variable '%s'.\n", variable_name);
+        return static_cast<T>(0);
+    }
+#endif
+    // get the value from curve using the stored hashes and message index.
+    T value = detail::curve::Curve::getMessageArrayVariable_ldg<T, N>(variable_name, this->_parent.combined_hash, index, array_index);
     return value;
 }
 
@@ -227,6 +272,21 @@ __device__ void MsgBruteForce::Out::setVariable(const char(&variable_name)[N], T
 
     // set the variable using curve
     detail::curve::Curve::setMessageVariable<T>(variable_name, combined_hash, value, index);
+
+    // Set scan flag incase the message is optional
+    this->scan_flag[index] = 1;
+}
+template<typename T, unsigned int N, unsigned int M>
+__device__ void MsgBruteForce::Out::setVariable(const char(&variable_name)[M], const unsigned int& array_index, T value) const {
+    if (variable_name[0] == '_') {
+        return;  // Fail silently
+    }
+    unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
+
+    // Todo: checking if the output message type is single or optional?  (d_message_type)
+
+    // set the variable using curve
+    detail::curve::Curve::setMessageArrayVariable<T, N>(variable_name, combined_hash, value, index, array_index);
 
     // Set scan flag incase the message is optional
     this->scan_flag[index] = 1;

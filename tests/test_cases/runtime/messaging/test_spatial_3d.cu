@@ -542,5 +542,165 @@ TEST(Spatial3DMsgTest, ReadEmpty) {
     EXPECT_EQ(pop_out.size(), 1u);
     EXPECT_EQ(pop_out[0].getVariable<unsigned int>("count"), 0u);
 }
+
+
+
+FLAMEGPU_AGENT_FUNCTION(ArrayOut, MsgNone, MsgSpatial3D) {
+    const unsigned int x = FLAMEGPU->getVariable<unsigned int, 3>("index", 0);
+    const unsigned int y = FLAMEGPU->getVariable<unsigned int, 3>("index", 1);
+    const unsigned int z = FLAMEGPU->getVariable<unsigned int, 3>("index", 2);
+    FLAMEGPU->message_out.setVariable<unsigned int, 3>("v", 0, x * 3);
+    FLAMEGPU->message_out.setVariable<unsigned int, 3>("v", 1, y * 7);
+    FLAMEGPU->message_out.setVariable<unsigned int, 3>("v", 2, z * 11);
+    FLAMEGPU->message_out.setLocation(static_cast<float>(x), static_cast<float>(y), static_cast<float>(z));
+    return ALIVE;
+}
+FLAMEGPU_AGENT_FUNCTION(ArrayIn, MsgSpatial3D, MsgNone) {
+    const unsigned int x = FLAMEGPU->getVariable<unsigned int, 3>("index", 0);
+    const unsigned int y = FLAMEGPU->getVariable<unsigned int, 3>("index", 1);
+    const unsigned int z = FLAMEGPU->getVariable<unsigned int, 3>("index", 2);
+    for (auto &message : FLAMEGPU->message_in(static_cast<float>(x), static_cast<float>(y), static_cast<float>(z))) {
+        if (static_cast<unsigned int>(message.getVariable<float>("x")) == x &&
+            static_cast<unsigned int>(message.getVariable<float>("y")) == y &&
+            static_cast<unsigned int>(message.getVariable<float>("z")) == z) {
+            FLAMEGPU->setVariable<unsigned int, 3>("message_read", 0, message.getVariable<unsigned int, 3>("v", 0));
+            FLAMEGPU->setVariable<unsigned int, 3>("message_read", 1, message.getVariable<unsigned int, 3>("v", 1));
+            FLAMEGPU->setVariable<unsigned int, 3>("message_read", 2, message.getVariable<unsigned int, 3>("v", 2));
+            break;
+        }
+    }
+    return ALIVE;
+}
+TEST(Spatial3DMsgTest, ArrayVariable) {
+    const char* MODEL_NAME = "Model";
+    const char* AGENT_NAME = "Agent";
+    const char* MESSAGE_NAME = "Message";
+    const char* IN_FUNCTION_NAME = "InFunction";
+    const char* OUT_FUNCTION_NAME = "OutFunction";
+    const char* IN_LAYER_NAME = "InLayer";
+    const char* OUT_LAYER_NAME = "OutLayer";
+    const unsigned int CBRT_AGENT_COUNT = 11;
+    ModelDescription m(MODEL_NAME);
+    MsgSpatial3D::Description &msg = m.newMessage<MsgSpatial3D>(MESSAGE_NAME);
+    msg.setMin(0, 0, 0);
+    msg.setMax(static_cast<float>(CBRT_AGENT_COUNT), static_cast<float>(CBRT_AGENT_COUNT), static_cast<float>(CBRT_AGENT_COUNT));
+    msg.setRadius(1);
+    msg.newVariable<unsigned int, 3>("v");
+    AgentDescription &a = m.newAgent(AGENT_NAME);
+    a.newVariable<unsigned int, 3>("index");
+    a.newVariable<unsigned int, 3>("message_read", {UINT_MAX, UINT_MAX, UINT_MAX});
+    AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut);
+    fo.setMessageOutput(msg);
+    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn);
+    fi.setMessageInput(msg);
+    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    lo.addAgentFunction(fo);
+    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    li.addAgentFunction(fi);
+    AgentVector pop(a, CBRT_AGENT_COUNT * CBRT_AGENT_COUNT * CBRT_AGENT_COUNT);
+    int t = 0;
+    for (unsigned int i = 0; i < CBRT_AGENT_COUNT; ++i) {
+        for (unsigned int j = 0; j < CBRT_AGENT_COUNT; ++j) {
+            for (unsigned int k = 0; k < CBRT_AGENT_COUNT; ++k) {
+                AgentVector::Agent ai = pop[t++];
+                ai.setVariable<unsigned int, 3>("index", { i, j, k });
+            }
+        }
+    }
+    // Set pop in model
+    CUDASimulation c(m);
+    c.setPopulationData(pop);
+    c.step();
+    c.getPopulationData(pop);
+    // Validate each agent has same result
+    for (AgentVector::Agent ai : pop) {
+        const std::array<unsigned int, 3> index = ai.getVariable<unsigned int, 3>("index");
+        std::array<unsigned int, 3> v = ai.getVariable<unsigned int, 3>("message_read");
+        ASSERT_EQ(v[0], index[0] * 3);
+        ASSERT_EQ(v[1], index[1] * 7);
+        ASSERT_EQ(v[2], index[2] * 11);
+    }
+}
+const char* rtc_ArrayOut_func = R"###(
+FLAMEGPU_AGENT_FUNCTION(ArrayOut, flamegpu::MsgNone, flamegpu::MsgSpatial3D) {
+    const unsigned int x = FLAMEGPU->getVariable<unsigned int, 3>("index", 0);
+    const unsigned int y = FLAMEGPU->getVariable<unsigned int, 3>("index", 1);
+    const unsigned int z = FLAMEGPU->getVariable<unsigned int, 3>("index", 2);
+    FLAMEGPU->message_out.setVariable<unsigned int, 3>("v", 0, x * 3);
+    FLAMEGPU->message_out.setVariable<unsigned int, 3>("v", 1, y * 7);
+    FLAMEGPU->message_out.setVariable<unsigned int, 3>("v", 2, z * 11);
+    FLAMEGPU->message_out.setLocation(static_cast<float>(x), static_cast<float>(y), static_cast<float>(z));
+    return flamegpu::ALIVE;
+}
+)###";
+const char* rtc_ArrayIn_func = R"###(
+FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MsgSpatial3D, flamegpu::MsgNone) {
+    const unsigned int x = FLAMEGPU->getVariable<unsigned int, 3>("index", 0);
+    const unsigned int y = FLAMEGPU->getVariable<unsigned int, 3>("index", 1);
+    const unsigned int z = FLAMEGPU->getVariable<unsigned int, 3>("index", 2);
+    for (auto &message : FLAMEGPU->message_in(static_cast<float>(x), static_cast<float>(y), static_cast<float>(z))) {
+        if (static_cast<unsigned int>(message.getVariable<float>("x")) == x &&
+            static_cast<unsigned int>(message.getVariable<float>("y")) == y &&
+            static_cast<unsigned int>(message.getVariable<float>("z")) == z) {
+            FLAMEGPU->setVariable<unsigned int, 3>("message_read", 0, message.getVariable<unsigned int, 3>("v", 0));
+            FLAMEGPU->setVariable<unsigned int, 3>("message_read", 1, message.getVariable<unsigned int, 3>("v", 1));
+            FLAMEGPU->setVariable<unsigned int, 3>("message_read", 2, message.getVariable<unsigned int, 3>("v", 2));
+            break;
+        }
+    }
+    return flamegpu::ALIVE;
+}
+)###";
+TEST(RTCSpatial3DMsgTest, ArrayVariable) {
+    const char* MODEL_NAME = "Model";
+    const char* AGENT_NAME = "Agent";
+    const char* MESSAGE_NAME = "Message";
+    const char* IN_FUNCTION_NAME = "InFunction";
+    const char* OUT_FUNCTION_NAME = "OutFunction";
+    const char* IN_LAYER_NAME = "InLayer";
+    const char* OUT_LAYER_NAME = "OutLayer";
+    const unsigned int CBRT_AGENT_COUNT = 11;
+    ModelDescription m(MODEL_NAME);
+    MsgSpatial3D::Description& msg = m.newMessage<MsgSpatial3D>(MESSAGE_NAME);
+    msg.setMin(0, 0, 0);
+    msg.setMax(static_cast<float>(CBRT_AGENT_COUNT), static_cast<float>(CBRT_AGENT_COUNT), static_cast<float>(CBRT_AGENT_COUNT));
+    msg.setRadius(1);
+    msg.newVariable<unsigned int, 3>("v");
+    AgentDescription& a = m.newAgent(AGENT_NAME);
+    a.newVariable<unsigned int, 3>("index");
+    a.newVariable<unsigned int, 3>("message_read", { UINT_MAX, UINT_MAX, UINT_MAX });
+    AgentFunctionDescription& fo = a.newRTCFunction(OUT_FUNCTION_NAME, rtc_ArrayOut_func);
+    fo.setMessageOutput(msg);
+    AgentFunctionDescription& fi = a.newRTCFunction(IN_FUNCTION_NAME, rtc_ArrayIn_func);
+    fi.setMessageInput(msg);
+    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    lo.addAgentFunction(fo);
+    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    li.addAgentFunction(fi);
+    AgentVector pop(a, CBRT_AGENT_COUNT * CBRT_AGENT_COUNT * CBRT_AGENT_COUNT);
+    int t = 0;
+    for (unsigned int i = 0; i < CBRT_AGENT_COUNT; ++i) {
+        for (unsigned int j = 0; j < CBRT_AGENT_COUNT; ++j) {
+            for (unsigned int k = 0; k < CBRT_AGENT_COUNT; ++k) {
+                AgentVector::Agent ai = pop[t++];
+                ai.setVariable<unsigned int, 3>("index", { i, j, k });
+            }
+        }
+    }
+    // Set pop in model
+    CUDASimulation c(m);
+    c.setPopulationData(pop);
+    c.step();
+    c.getPopulationData(pop);
+    // Validate each agent has same result
+    for (AgentVector::Agent ai : pop) {
+        const std::array<unsigned int, 3> index = ai.getVariable<unsigned int, 3>("index");
+        std::array<unsigned int, 3> v = ai.getVariable<unsigned int, 3>("message_read");
+        ASSERT_EQ(v[0], index[0] * 3);
+        ASSERT_EQ(v[1], index[1] * 7);
+        ASSERT_EQ(v[2], index[2] * 11);
+    }
+}
+
 }  // namespace test_message_spatial3d
 }  // namespace flamegpu

@@ -721,6 +721,13 @@ TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, flamegpu::MsgArray::Description::n
 TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, flamegpu::MsgArray2D::Description::newVariable)
 TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, flamegpu::MsgArray3D::Description::newVariable)
 TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, flamegpu::MsgBucket::Description::newVariable)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariableArray, flamegpu::MsgBruteForce::Description::newVariableArray)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariableArray, flamegpu::MsgSpatial2D::Description::newVariableArray)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariableArray, flamegpu::MsgSpatial3D::Description::newVariableArray)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariableArray, flamegpu::MsgArray::Description::newVariableArray)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariableArray, flamegpu::MsgArray2D::Description::newVariableArray)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariableArray, flamegpu::MsgArray3D::Description::newVariableArray)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariableArray, flamegpu::MsgBucket::Description::newVariableArray)
 
 // Instantiate template versions of host random functions from the API
 

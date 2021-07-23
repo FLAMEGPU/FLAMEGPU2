@@ -111,7 +111,7 @@ void CUDAMessage::mapReadRuntimeVariables(const AgentFunctionData& func, const C
         detail::curve::Curve::VariableHash var_hash = detail::curve::Curve::getInstance().variableRuntimeHash(mmp.first.c_str());
 
         // get the message variable size
-        size_t size = mmp.second.type_size;
+        const size_t size = mmp.second.type_size * mmp.second.elements;
 
         if (func.func) {
             // maximum population size
@@ -162,7 +162,7 @@ void CUDAMessage::mapWriteRuntimeVariables(const AgentFunctionData& func, const 
         detail::curve::Curve::VariableHash var_hash = detail::curve::Curve::variableRuntimeHash(mmp.first.c_str());
 
         // get the message variable size
-        size_t size = mmp.second.type_size;
+        const size_t size = mmp.second.type_size * mmp.second.elements;
 
         if (func.func) {
             // maximum population size
