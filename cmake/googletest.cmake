@@ -25,5 +25,10 @@ if(NOT googletest_POPULATED)
     set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
     add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR} EXCLUDE_FROM_ALL)
     CMAKE_SET_TARGET_FOLDER("gtest" "Tests/Dependencies")
+    # Suppress warnigns from this target.
+    include(${CMAKE_CURRENT_LIST_DIR}/warnings.cmake)
+    if(TARGET gtest)
+        DisableCompilerWarnings(TARGET gtest)
+    endif()
 endif()
 

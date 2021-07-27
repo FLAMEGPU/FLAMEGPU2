@@ -62,5 +62,9 @@ if(NOT tinyxml2_POPULATED)
         if(MSVC)
             target_compile_definitions(tinyxml2 PUBLIC -D_CRT_SECURE_NO_WARNINGS)
         endif(MSVC)
+
+        # Suppress warnigns from this target.
+        include(${CMAKE_CURRENT_LIST_DIR}/warnings.cmake)
+        DisableCompilerWarnings(TARGET tinyxml2)
     endif()
 endif()

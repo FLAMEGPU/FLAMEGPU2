@@ -29,6 +29,9 @@ option(WARNINGS_AS_ERRORS "Promote compilation warnings to errors" OFF)
 option(CMAKE_USE_FOLDERS "Enable folder grouping of projects in IDEs." ON)
 mark_as_advanced(CMAKE_USE_FOLDERS)
 
+# Include files which define target specific functions.
+include(${CMAKE_CURRENT_LIST_DIR}/warnings.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/cxxstd.cmake)
 
 # Cmake 3.16 has an issue with the order of CUDA includes when using SYSTEM for user-provided thrust. Avoid this by not using SYSTEM for cmake 3.16
 set(INCLUDE_SYSTEM_FLAG SYSTEM)
@@ -165,37 +168,8 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     add_compile_definitions(NOMINMAX)
 endif()
 
-# Enable default stream per thread for target, in-case of ensembles
-# This removes implicit syncs in default stream, using it has only been tested for basic models
-# It has not been tested with host functions, agent death, optional messages etc
-# Hence using it is unsafe
-#set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --default-stream per-thread")    
-    
-# Host Compiler version specific high warnings
+# MSVC handling of SYSTEM for external includes.
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    # Only set W4 for MSVC, WAll is more like Wall, Wextra and Wpedantic
-    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler /W4")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /W4")
-    # Also suppress some unwanted W4 warnings
-    # decorated name length exceeded, name was truncated
-    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler /wd4503")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4503")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4503")
-    # 'function' : unreferenced local function has been removed
-    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler /wd4505")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4505")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4505")
-    # unreferenced formal parameter warnings disabled - tests make use of it.
-    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler /wd4100")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4100")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4100")
-    # Suppress some VS2015 specific warnings.
-    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 19.10)
-        set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler /wd4091")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4091")
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4091")
-    endif()
     if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.10)
         # These flags don't currently have any effect on how CMake passes system-private includes to msvc (VS 2017+)
         set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "/external:I")
@@ -203,130 +177,6 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
         # VS 2017+
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /experimental:external")
     endif()
-else()
-    # Assume using GCC/Clang which Wall is relatively sane for. 
-    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -Wall,-Wsign-compare")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wsign-compare")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wsign-compare")
-
-    # CUB 1.9.10 prevents Wreorder being usable on windows. Cannot suppress via diag_suppress pragmas.
-    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --Wreorder")
-endif()
-
-# Promote  warnings to errors if requested
-if(WARNINGS_AS_ERRORS)
-    # OS Specific flags
-    if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-        set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler /WX")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX")
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /WX")
-    else()
-        set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -Werror")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror")
-    endif()
-
-    # Generic WError settings for nvcc
-    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xptxas=\"-Werror\"  -Xnvlink=\"-Werror\"")
-
-    # If CUDA 10.2+, add all_warnings to the Werror option
-    if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL "10.2")
-        set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Werror all-warnings")
-    endif()
-
-    # If not msvc, add cross-execution-space-call. This is blocked under msvc by a jitify related bug (untested > CUDA 10.1): https://github.com/NVIDIA/jitify/issues/62
-    if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-        set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Werror cross-execution-space-call ")
-    endif()
-
-    # If not msvc, add reorder to Werror. This is blocked under msvc by cub/thrust and the lack of isystem on msvc. Appears unable to suppress the warning via diag_suppress pragmas.
-    if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-        set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Werror reorder ")
-    endif()
-endif()
-
-# Ask the cuda frontend to include warnings numbers, so they can be targetted for suppression.
-set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcudafe --display_error_number")
-if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    # Suppress nodiscard warnings from the cuda frontend
-    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcudafe --diag_suppress=2809")
-endif()
-# Supress CUDA 11.3 specific warnings.
-if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 11.3.0)
-    # Suppress 117-D, declared_but_not_referenced
-    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcudafe --diag_suppress=declared_but_not_referenced")
-endif()
-
-# Select the CXX standard to use. 
-if(NOT FLAMEGPU_CXX_STD)
-    # FLAME GPU is c++14, however due to MSVC 16.10 regressions we build as 17 if possible, else 14. 
-    # 14 Support is still required (CUDA 10.x, swig?).
-    # Start by assuming both should be availble.
-    set(CXX17_SUPPORTED ON)
-    # CMake 3.18 adds CUDA CXX 17, 20
-    # CMake 3.10 adds CUDA CXX 14
-    if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.18)
-        # 17 OK
-    elseif(CMAKE_VERSION VERSION_GREATER_EQUAL 3.10)
-        set(CXX17_SUPPORTED OFF)
-    else()
-        message(FATAL_ERROR "CMAKE ${CMAKE_VERSION} does not support -std=c++14")
-    endif()
-    # CUDA 11.0 adds CXX 17
-    # CUDA 9.0 adds CXX 14
-    if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 11.0.0)
-        # 17 is ok.
-    elseif(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 9.0.0)
-        # 14 is ok, 17 is not.
-        set(CXX17_SUPPORTED OFF)
-    else()
-        # Fatal Error.
-        message(FATAL_ERROR "CUDA ${CMAKE_CUDA_COMPILER_VERSION} does not support -std=c++14")
-    endif()
-
-    # VS 2019 16.10.0 breaks CXX 14 + cuda. - 1930? 19.29.30037?
-    # VS 2017 version 15.3 added /std:c++17 - 1911
-    # MSVC VS2015 Update 3 added /std:c++14 >= 1900 && < 1910? 
-    if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-        if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.29)
-            # 17 required.
-            if(NOT CXX17_SUPPORTED)
-                message(FATAL_ERROR "MSVC >= 19.29 requires CMake >= 3.18 and CUDA >= 11.0")
-            endif()
-        elseif(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.11)
-            # 17 available?
-        elseif(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.10)
-            set(CXX17_SUPPORTED OFF)
-        else()
-            message(FATAL_ERROR "MSVC ${CMAKE_CXX_COMPILER_VERSION} does not support -std=c++14")
-        endif()
-    endif()
-
-    # gcc supported C++17 since 5, so any version supported by cuda 10+ (no need to check, a configure time error will already occur.)
-    # Inside source code, __STDC_VERSION__ can be used on msvc, which will have a value such as 201710L for c++17
-
-    # Set a cmake variable so this is only calcualted once, and can be applied afterwards.
-    if(CXX17_SUPPORTED)
-        set(FLAMEGPU_CXX_STD 17)
-    else()
-        set(FLAMEGPU_CXX_STD 14)
-    endif()
-    if(NOT CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
-        # Forward to the parent scope so it persists between calls.
-        set(FLAMEGPU_CXX_STD ${FLAMEGPU_CXX_STD} PARENT_SCOPE)
-    endif()
-endif()
-
-
-# @future - set this on a per target basis using set_target_properties?
-set(CMAKE_CXX_EXTENSIONS OFF)
-if(NOT DEFINED CMAKE_CXX_STANDARD)
-    set(CMAKE_CXX_STANDARD ${FLAMEGPU_CXX_STD})
-    set(CMAKE_CXX_STANDARD_REQUIRED true)
-endif()
-if(NOT DEFINED CMAKE_CUDA_STANDARD)
-    set(CMAKE_CUDA_STANDARD ${FLAMEGPU_CXX_STD})
-    set(CMAKE_CUDA_STANDARD_REQUIRED True)
 endif()
 
 # Common CUDA args
@@ -432,6 +282,9 @@ function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
 
     # Define which source files are required for the target executable
     add_executable(${NAME} ${SRC})
+
+    # Set target level warnings.
+    EnableCompilerWarnings(TARGET "${NAME}")
     
     # @todo - Once public/private/interface is perfected on the library, some includes may need adding back here.
 
@@ -471,27 +324,37 @@ function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
     if (VISUALISATION)
         target_include_directories(${NAME} PUBLIC "${VISUALISATION_ROOT}/include")
         # Copy DLLs
+        # @todo - this would be better to be a post flamegpu2-visualiser build step, so it's only done once not N times?
         if(WIN32)
             # sdl
-            set(SDL2_DIR ${VISUALISATION_BUILD}/sdl2)
-            mark_as_advanced(FORCE SDL2_DIR)
-            find_package(SDL2 REQUIRED)   
+            # if(NOT sdl2_FOUND)
+                # Force finding this is disabled, as the cmake vars should already be set.
+                # set(SDL2_DIR ${VISUALISATION_BUILD}/)
+                # mark_as_advanced(FORCE SDL2_DIR)
+                # find_package(SDL2 REQUIRED)
+            # endif()
             add_custom_command(TARGET "${PROJECT_NAME}" POST_BUILD        # Adds a post-build event to MyTest
                 COMMAND ${CMAKE_COMMAND} -E copy_if_different             # which executes "cmake - E copy_if_different..."
                     "${SDL2_RUNTIME_LIBRARIES}"                           # <--this is in-file
                     $<TARGET_FILE_DIR:${NAME}>)                           # <--this is out-file path
             # glew
-            set(GLEW_DIR ${VISUALISATION_BUILD}/glew)
-            mark_as_advanced(FORCE GLEW_DIR)
-            find_package(GLEW REQUIRED)   
+            # if(NOT glew_FOUND)
+                # Force finding this is disabled, as the cmake vars should already be set.
+                # set(GLEW_DIR ${VISUALISATION_BUILD}/glew)
+                # mark_as_advanced(FORCE GLEW_DIR)
+                # find_package(GLEW REQUIRED)
+            # endif()
             add_custom_command(TARGET "${PROJECT_NAME}" POST_BUILD        # Adds a post-build event to MyTest
                 COMMAND ${CMAKE_COMMAND} -E copy_if_different             # which executes "cmake - E copy_if_different..."
                     "${GLEW_RUNTIME_LIBRARIES}"                           # <--this is in-file
                     $<TARGET_FILE_DIR:${NAME}>)                           # <--this is out-file path
             # DevIL
-            set(DEVIL_DIR ${VISUALISATION_BUILD}/devil)
-            mark_as_advanced(FORCE DEVIL_DIR)
-            find_package(DEVIL REQUIRED NO_MODULE)
+            # if(NOT devil_FOUND)
+                # Force finding this is disabled, as the cmake vars should already be set.
+                # set(DEVIL_DIR ${VISUALISATION_BUILD}/devil)
+                # mark_as_advanced(FORCE DEVIL_DIR)
+                # find_package(DEVIL REQUIRED NO_MODULE)
+            # endif()
             add_custom_command(TARGET "${PROJECT_NAME}" POST_BUILD        # Adds a post-build event to MyTest
                 COMMAND ${CMAKE_COMMAND} -E copy_if_different             # which executes "cmake - E copy_if_different..."
                     ${IL_RUNTIME_LIBRARIES}                               # <--this is in-file
@@ -545,6 +408,9 @@ endfunction()
 function(add_flamegpu_library NAME SRC FLAMEGPU_ROOT)
     # Define which source files are required for the target executable
     add_library(${NAME} STATIC ${SRC})
+
+    # Set target level warnings.
+    EnableCompilerWarnings(TARGET "${NAME}")
 
     # enable "fpic" for linux to allow shared libraries to be build from the static library (required for swig)
     set_property(TARGET ${NAME} PROPERTY POSITION_INDEPENDENT_CODE ON)
