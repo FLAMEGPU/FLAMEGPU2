@@ -171,6 +171,9 @@ if(CPPLINT)
             list(FILTER SRC EXCLUDE REGEX "${EXCLUDE_FILTER}")
         endforeach()
 
+        # Only lint accepted file type extensions h++, hxx, cuh, cu, c, c++, cxx, cc, hpp, h, cpp, hh
+        list(FILTER SRC INCLUDE REGEX ".*\\.(h\\+\\+|hxx|cuh|cu|c|c\\+\\+|cxx|cc|hpp|h|cpp|hh)$")
+
         # Build a list of arguments to pass to CPPLINT
         LIST(APPEND CPPLINT_ARGS "")
 
