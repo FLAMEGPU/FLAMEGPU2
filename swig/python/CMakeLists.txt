@@ -3,20 +3,13 @@
 #include(../../cmake/common.cmake)
 # Just include cuda_arch to suppress CMAKE 3.18 warnings on windows (where nvcc is used even when not neccesary)
 get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../../ REALPATH)
+
+# Set CUDA gencode arguments
 include(${FLAMEGPU_ROOT}/cmake/cuda_arch.cmake)
+# Set the C++ and CUDA standard to use
+include(${FLAMEGPU_ROOT}/cmake/cxxstd.cmake)
+# Get FLAMEGPU Version information
 include(${FLAMEGPU_ROOT}/cmake/version.cmake)
-
-
-# Duplicated because common is not imported. Must be before swig_add_library.#
-set(CMAKE_CXX_EXTENSIONS OFF)
-if(NOT DEFINED CMAKE_CXX_STANDARD)
-    set(CMAKE_CXX_STANDARD ${FLAMEGPU_CXX_STD})
-    set(CMAKE_CXX_STANDARD_REQUIRED true)
-endif()
-if(NOT DEFINED CMAKE_CUDA_STANDARD)
-    set(CMAKE_CUDA_STANDARD ${FLAMEGPU_CXX_STD})
-    set(CMAKE_CUDA_STANDARD_REQUIRED True)
-endif()
 
 # Python module name (must match module name in swig input *.i file)
 SET(PYTHON_MODULE_NAME pyflamegpu)
