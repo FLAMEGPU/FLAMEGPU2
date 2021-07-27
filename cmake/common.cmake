@@ -44,47 +44,17 @@ get_property(GENERATOR_IS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG
 if(${GENERATOR_IS_MULTI_CONFIG})
     # CMAKE_CONFIGURATION_TYPES defaults to something platform specific
     # Therefore can't detect if user has changed value and not reset it
-    # So force "Debug;Release;Profile"
-    set(CMAKE_CONFIGURATION_TYPES "Debug;Release;Profile" CACHE INTERNAL
-        "Choose the types of build, options are: Debug Release Profile." FORCE)#
+    # So force "Debug;Release"
+    set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE INTERNAL
+        "Choose the types of build, options are: Debug Release." FORCE)#
 else()
     if(NOT CMAKE_BUILD_TYPE)
         set(default_build_type "Release")
         message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
         set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE STRING 
-            "Choose the type of build, options are: None Debug Release Profile." FORCE)
+            "Choose the type of build, options are: None Debug Release." FORCE)
     endif()
 endif()
-
-# Create the profile build modes, based on release
-SET( CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_RELEASE}" CACHE STRING
-    "Flags used by the C++ compiler during profile builds."
-    FORCE )
-SET( CMAKE_C_FLAGS_PROFILE "${CMAKE_C_FLAGS_RELEASE}" CACHE STRING
-    "Flags used by the C compiler during profile builds."
-    FORCE )
-SET( CMAKE_CUDA_FLAGS_PROFILE "${CMAKE_CUDA_FLAGS_RELEASE}" CACHE STRING
-    "Flags used by the CUDA compiler during profile builds."
-    FORCE )
-SET( CMAKE_EXE_LINKER_FLAGS_PROFILE
-    "${CMAKE_EXE_LINKER_FLAGS_RELEASE}" CACHE STRING
-    "Flags used for linking binaries during profile builds."
-    FORCE )
-SET( CMAKE_SHARED_LINKER_FLAGS_PROFILE
-    "${CMAKE_SHARED_LINKER_FLAGS_RELEASE}" CACHE STRING
-    "Flags used by the shared libraries linker during profile builds."
-    FORCE )
-MARK_AS_ADVANCED(
-    CMAKE_CXX_FLAGS_PROFILE
-    CMAKE_C_FLAGS_PROFILE
-    CMAKE_EXE_LINKER_FLAGS_PROFILE
-    CMAKE_SHARED_LINKER_FLAGS_PROFILE )
-
-    
-    # If using profile build, imply NVTX
-    if(CMAKE_BUILD_TYPE MATCHES "Profile")
-    SET(NVTX "ON")
-    endif()
 
 # Ask Cmake to output compile_commands.json (if supported). This is useful for vscode include paths, clang-tidy/clang-format etc
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE INTERNAL "Control the output of compile_commands.json")
@@ -158,8 +128,6 @@ set(CMAKE_CUDA_FLAGS_DEBUG "${CMAKE_CUDA_FLAGS_DEBUG} -G -D_DEBUG -DDEBUG")
 # Lineinfo for non -G release
 set(CMAKE_CUDA_FLAGS_RELEASE "${CMAKE_CUDA_FLAGS_RELEASE} -lineinfo")
 
-# profile specific CUDA flags.
-set(CMAKE_CUDA_FLAGS_PROFILE "${CMAKE_CUDA_FLAGS_PROFILE} -lineinfo -DPROFILE -D_PROFILE")
 # Addresses a cub::histogram warning
 set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr")
 
