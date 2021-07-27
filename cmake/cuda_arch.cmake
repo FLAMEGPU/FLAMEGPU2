@@ -11,7 +11,7 @@ endif()
 string(LENGTH "${CUDA_ARCH}" CUDA_ARCH_LENGTH)
 
 # Define the default compute capabilites incase not provided by the user
-set(DEFAULT_CUDA_ARCH "20;35;50;60;70;80;")
+set(DEFAULT_CUDA_ARCH "35;50;60;70;80;")
 
 # Get the valid options for the current compiler.
 # Run nvcc --help to get the help string which contains all valid compute_ sm_ for that version.
