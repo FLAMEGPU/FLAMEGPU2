@@ -531,7 +531,7 @@ TEST(DependencyGraphTest, UnattachedFunctionWarning) {
     ModelDescription _m(MODEL_NAME);
     AgentDescription &a = _m.newAgent(AGENT_NAME);
     AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
-    AgentFunctionDescription &f2 = a.newFunction(FUNCTION_NAME2, agent_fn2);
+    a.newFunction(FUNCTION_NAME2, agent_fn2);
 
     DependencyGraph& graph = _m.getDependencyGraph();
     graph.addRoot(f);
