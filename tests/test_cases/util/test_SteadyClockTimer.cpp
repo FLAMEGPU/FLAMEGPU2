@@ -14,7 +14,7 @@ TEST(TestSteadyClockTimer, SteadyClockTimer) {
     // Time an arbitrary event, and check the value is approximately correct.
     timer->start();
     const int sleep_duration_seconds = 1;
-    const int min_expected_millis = sleep_duration_seconds * 1000. * 0.9;
+    const int min_expected_millis = static_cast<int>(sleep_duration_seconds * 1000. * 0.9);
     std::this_thread::sleep_for(std::chrono::seconds(sleep_duration_seconds));
     timer->stop();
     EXPECT_GE(timer->getElapsedMilliseconds(), min_expected_millis);
