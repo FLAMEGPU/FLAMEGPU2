@@ -114,12 +114,12 @@ void CUDAEnsemble::simulate(const RunPlanVector &plans) {
 
     // Init with placement new
     {
-        if (!config.silent)
+        if (!config.quiet)
             printf("\rCUDAEnsemble progress: %u/%u", 0, static_cast<unsigned int>(plans.size()));
         unsigned int i = 0;
         for (auto &d : devices) {
             for (unsigned int j = 0; j < config.concurrent_runs; ++j) {
-                new (&runners[i++]) SimRunner(model, err_ct, next_run, plans, step_log_config, exit_log_config, d, j, !config.silent, run_logs, log_export_queue, log_export_queue_mutex, log_export_queue_cdn);
+                new (&runners[i++]) SimRunner(model, err_ct, next_run, plans, step_log_config, exit_log_config, d, j, !config.quiet, run_logs, log_export_queue, log_export_queue_mutex, log_export_queue_cdn);
             }
         }
     }
@@ -154,7 +154,7 @@ void CUDAEnsemble::simulate(const RunPlanVector &plans) {
     ensemble_elapsed_time = ensemble_timer.getElapsedMilliseconds();
 
     // Ensemble has finished, print summary
-    if (!config.silent) {
+    if (!config.quiet) {
         printf("\rCUDAEnsemble completed %u runs successfully!\n", static_cast<unsigned int>(plans.size() - err_ct));
         if (err_ct)
             printf("There were a total of %u errors.\n", err_ct.load());
@@ -172,7 +172,7 @@ void CUDAEnsemble::initialise(int argc, const char** argv) {
         exit(EXIT_FAILURE);
     }
     // If verbsoe, output the flamegpu version.
-    if (!config.silent) {
+    if (!config.quiet) {
         fprintf(stdout, "FLAME GPU %s\n", flamegpu::VERSION_FULL);
     }
 }
@@ -247,9 +247,9 @@ int CUDAEnsemble::checkArgs(int argc, const char** argv) {
             }
             continue;
         }
-        // -s/--silent, Don't report progress to console.
-        if (arg.compare("--silent") == 0 || arg.compare("-s") == 0) {
-            config.silent = true;
+        // -q/--quiet, Don't report progress to console.
+        if (arg.compare("--quiet") == 0 || arg.compare("-q") == 0) {
+            config.quiet = true;
             continue;
         }
         // -t/--timing, Output timing information to stdout
@@ -273,7 +273,7 @@ void CUDAEnsemble::printHelp(const char *executable) {
     printf(line_fmt, "-c, --concurrent <runs>", "Number of concurrent simulations to run per device");
     printf(line_fmt, "", "By default, 4 will be used.");
     printf(line_fmt, "-o, --out <directory> <filetype>", "Directory and filetype for ensemble outputs");
-    printf(line_fmt, "-s, --silent", "Don't print progress information to console");
+    printf(line_fmt, "-q, --quiet", "Don't print progress information to console");
     printf(line_fmt, "-t, --timing", "Output timing information to stdout");
 }
 void CUDAEnsemble::setStepLog(const StepLoggingConfig &stepConfig) {

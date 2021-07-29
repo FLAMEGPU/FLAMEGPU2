@@ -47,10 +47,10 @@ class CUDAEnsemble {
         /**
          * If true progress logging to stdout will be suppressed
          */
-        bool silent = false;
+        bool quiet = false;
         /**
          * If true, the total runtime for the ensemble will be printed to stdout at completion
-         * This is independent of the EnsembleConfig::silent
+         * This is independent of the EnsembleConfig::quiet
          */
         bool timing = false;
     };

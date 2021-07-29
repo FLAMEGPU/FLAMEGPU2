@@ -376,7 +376,7 @@ TEST(LoggingTest, CUDAEnsembleSimulate) {
     // Run model
     CUDAEnsemble sim(m);
     sim.Config().concurrent_runs = 5;
-    sim.Config().silent = true;
+    sim.Config().quiet = true;
     sim.Config().timing = false;
     // sim.Config().out_directory = "ensemble_out";
     // sim.Config().out_format = "json";
