@@ -225,8 +225,8 @@ int Simulation::checkArgs(int argc, const char** argv) {
             config.timing = true;
             continue;
         }
-        // -os/--out_step <file.xml/file.json>, Step log file path
-        if (arg.compare("--out_step") == 0 || arg.compare("-os") == 0) {
+        // --out-step <file.xml/file.json>, Step log file path
+        if (arg.compare("--out-step") == 0) {
             if (i + 1 >= argc) {
                 fprintf(stderr, "%s requires a trailing argument\n", arg.c_str());
                 return false;
@@ -234,8 +234,8 @@ int Simulation::checkArgs(int argc, const char** argv) {
             config.step_log_file = argv[++i];
             continue;
         }
-        // -oe/--out_exit <file.xml/file.json>, Exit log file path
-        if (arg.compare("--out_exit") == 0 || arg.compare("-oe") == 0) {
+        // --out-exit <file.xml/file.json>, Exit log file path
+        if (arg.compare("--out-exit") == 0) {
             if (i + 1 >= argc) {
                 fprintf(stderr, "%s requires a trailing argument\n", arg.c_str());
                 return false;
@@ -243,8 +243,8 @@ int Simulation::checkArgs(int argc, const char** argv) {
             config.exit_log_file = argv[++i];
             continue;
         }
-        // -ol/--out_log <file.xml/file.json>, Common log file path
-        if (arg.compare("--out_log") == 0 || arg.compare("-ol") == 0) {
+        // --out-log <file.xml/file.json>, Common log file path
+        if (arg.compare("--out-log") == 0) {
             if (i + 1 >= argc) {
                 fprintf(stderr, "%s requires a trailing argument\n", arg.c_str());
                 return false;
@@ -277,9 +277,9 @@ void Simulation::printHelp(const char* executable) {
     const char *line_fmt = "%-18s %s\n";
     printf(line_fmt, "-h, --help", "show this help message and exit");
     printf(line_fmt, "-i, --in <file.xml/file.json>", "Initial state file (XML or JSON)");
-    printf(line_fmt, "-os, --out_step <file.xml/file.json>", "Step log file (XML or JSON)");
-    printf(line_fmt, "-oe, --out_exit <file.xml/file.json>", "Exit log file (XML or JSON)");
-    printf(line_fmt, "-ol, --out_log <file.xml/file.json>", "Common log file (XML or JSON)");
+    printf(line_fmt, "    --out-step <file.xml/file.json>", "Step log file (XML or JSON)");
+    printf(line_fmt, "    --out-exit <file.xml/file.json>", "Exit log file (XML or JSON)");
+    printf(line_fmt, "    --out-log <file.xml/file.json>", "Common log file (XML or JSON)");
     printf(line_fmt, "-s, --steps <steps>", "Number of simulation iterations");
     printf(line_fmt, "-r, --random <seed>", "RandomManager seed");
     printf(line_fmt, "-v, --verbose", "Verbose FLAME GPU output");
