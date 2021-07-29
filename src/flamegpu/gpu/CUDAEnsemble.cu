@@ -9,6 +9,7 @@
 #include <mutex>
 #include <condition_variable>
 
+#include "flamegpu/version.h"
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/sim/RunPlanVector.h"
 #include "flamegpu/util/detail/compute_capability.cuh"
@@ -170,6 +171,10 @@ void CUDAEnsemble::initialise(int argc, const char** argv) {
     if (!checkArgs(argc, argv)) {
         exit(EXIT_FAILURE);
     }
+    // If verbsoe, output the flamegpu version.
+    if (!config.silent) {
+        fprintf(stdout, "FLAME GPU %s\n", flamegpu::VERSION_FULL);
+    }
 }
 int CUDAEnsemble::checkArgs(int argc, const char** argv) {
     // Parse optional args
@@ -259,6 +264,7 @@ int CUDAEnsemble::checkArgs(int argc, const char** argv) {
     return true;
 }
 void CUDAEnsemble::printHelp(const char *executable) {
+    printf("FLAME GPU %s\n", flamegpu::VERSION_FULL);
     printf("Usage: %s [optional arguments]\n", executable);
     printf("Optional Arguments:\n");
     const char *line_fmt = "%-18s %s\n";

@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <atomic>
 
+#include "flamegpu/version.h"
 #include "flamegpu/model/ModelData.h"
 #include "flamegpu/model/SubModelData.h"
 #include "flamegpu/io/XMLStateWriter.h"
@@ -90,6 +91,10 @@ void Simulation::applyConfig() {
         } catch(std::exception &e) {
             THROW exception::InvalidArgument("Failed to init exit log file directory: '%s': %s\n", t_path.c_str(), e.what());
         }
+    }
+    // If verbsoe, output the flamegpu version.
+    if (config.verbose) {
+        fprintf(stdout, "FLAME GPU %s\n", flamegpu::VERSION_FULL);
     }
     // Call derived class config stuff first
     applyConfig_derived();
@@ -261,6 +266,7 @@ int Simulation::checkArgs(int argc, const char** argv) {
 }
 
 void Simulation::printHelp(const char* executable) {
+    printf("FLAME GPU %s\n", flamegpu::VERSION_FULL);
     printf("Usage: %s [-s steps] [-d device_id] [-r random_seed]\n", executable);
     printf("Optional Arguments:\n");
     const char *line_fmt = "%-18s %s\n";
