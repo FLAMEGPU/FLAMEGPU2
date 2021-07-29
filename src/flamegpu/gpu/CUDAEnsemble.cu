@@ -183,6 +183,11 @@ int CUDAEnsemble::checkArgs(int argc, const char** argv) {
         // Get arg as lowercase
         std::string arg(argv[i]);
         std::transform(arg.begin(), arg.end(), arg.begin(), [](unsigned char c) { return std::use_facet< std::ctype<char>>(std::locale()).tolower(c); });
+        // -h/--help. Print the help output and exit.
+        if (arg.compare("--help") == 0 || arg.compare("-h") == 0) {
+            printHelp(argv[0]);
+            return false;
+        }
         // --concurrent <runs>, Number of concurrent simulations to run per device
         if (arg.compare("--concurrent") == 0 || arg.compare("-c") == 0) {
             if (i + 1 >= argc) {
@@ -268,6 +273,7 @@ void CUDAEnsemble::printHelp(const char *executable) {
     printf("Usage: %s [optional arguments]\n", executable);
     printf("Optional Arguments:\n");
     const char *line_fmt = "%-18s %s\n";
+    printf(line_fmt, "-h, --help", "show this help message and exit");
     printf(line_fmt, "-d, --devices <device ids>", "Comma separated list of device ids to be used");
     printf(line_fmt, "", "By default, all available devices will be used.");
     printf(line_fmt, "-c, --concurrent <runs>", "Number of concurrent simulations to run per device");

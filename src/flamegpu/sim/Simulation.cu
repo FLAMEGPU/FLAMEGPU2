@@ -185,6 +185,11 @@ int Simulation::checkArgs(int argc, const char** argv) {
         // Get arg as lowercase
         std::string arg(argv[i]);
         std::transform(arg.begin(), arg.end(), arg.begin(), [](unsigned char c) { return std::use_facet< std::ctype<char>>(std::locale()).tolower(c); });
+        // -h/--help. Print the help output and exit.
+        if (arg.compare("--help") == 0 || arg.compare("-h") == 0) {
+            printHelp(argv[0]);
+            return false;
+        }
         // -in <string>, Specifies the input state file
         if (arg.compare("--in") == 0 || arg.compare("-i") == 0) {
             // We already processed input file above, skip here
@@ -270,6 +275,7 @@ void Simulation::printHelp(const char* executable) {
     printf("Usage: %s [-s steps] [-d device_id] [-r random_seed]\n", executable);
     printf("Optional Arguments:\n");
     const char *line_fmt = "%-18s %s\n";
+    printf(line_fmt, "-h, --help", "show this help message and exit");
     printf(line_fmt, "-i, --in <file.xml/file.json>", "Initial state file (XML or JSON)");
     printf(line_fmt, "-os, --out_step <file.xml/file.json>", "Step log file (XML or JSON)");
     printf(line_fmt, "-oe, --out_exit <file.xml/file.json>", "Exit log file (XML or JSON)");
