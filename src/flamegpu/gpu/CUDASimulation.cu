@@ -149,7 +149,7 @@ CUDASimulation::CUDASimulation(const std::shared_ptr<SubModelData> &submodel_des
     for (auto it_sm = smm.cbegin(); it_sm != smm.cend(); ++it_sm) {
         submodel_map.emplace(it_sm->first, std::unique_ptr<CUDASimulation>(new CUDASimulation(it_sm->second, this)));
     }
-    // Submodels all run silent by default
+    // Submodels all run quiet/not verbose by default
     SimulationConfig().verbose = false;
     SimulationConfig().steps = submodel_desc->max_steps;
 }

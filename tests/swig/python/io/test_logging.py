@@ -389,7 +389,7 @@ class LoggingTest(TestCase):
         # Run model
         sim = pyflamegpu.CUDAEnsemble(m);
         sim.Config().concurrent_runs = 5;
-        sim.Config().silent = True;
+        sim.Config().quiet = True;
         sim.Config().timing = False;
         # sim.Config().out_directory = "ensemble_out";
         # sim.Config().out_format = "json";
